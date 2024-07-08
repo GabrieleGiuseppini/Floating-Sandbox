@@ -70,17 +70,17 @@ StructuralMaterial StructuralMaterial::Create(
 
         bool const isHull = Utils::GetMandatoryJsonMember<bool>(structuralMaterialJson, "is_hull");
         float const waterIntake = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "water_intake", 1.0);
-        float const waterDiffusionSpeed = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "water_diffusion_speed");
-        float const waterRetention = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "water_retention");
+        float const waterDiffusionSpeed = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "water_diffusion_speed", 0.5f);
+        float const waterRetention = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "water_retention", 0.05f);
         float const rustReceptivity = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "rust_receptivity", 1.0);
 
         // Heat
 
         float const ignitionTemperature = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "ignition_temperature");
         float const meltingTemperature = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "melting_temperature");
-        float const thermalConductivity = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "thermal_conductivity");
+        float const thermalConductivity = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "thermal_conductivity", 50.0f);
         float const thermalExpansionCoefficient = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "thermal_expansion_coefficient", 0.0);
-        float const specificHeat = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "specific_heat");
+        float const specificHeat = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "specific_heat", 100.0f);
         MaterialCombustionType const combustionType = StrToMaterialCombustionType(Utils::GetMandatoryJsonMember<std::string>(structuralMaterialJson, "combustion_type"));
         float const explosiveCombustionRadius = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "explosive_combustion_radius", 0.0);
         float const explosiveCombustionStrength = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "explosive_combustion_strength", 1.0);
@@ -91,6 +91,11 @@ StructuralMaterial StructuralMaterial::Create(
         float const waterReactivity = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "water_reactivity", 0.0f);
         bool isLegacyElectrical = Utils::GetOptionalJsonMember<bool>(structuralMaterialJson, "is_legacy_electrical", false);
         bool isExemptFromPalette = Utils::GetOptionalJsonMember<bool>(structuralMaterialJson, "is_exempt_from_palette", false);
+
+        // NPC-specific
+
+        float const npcSpringReductionFraction = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "npc_spring_reduction_fraction", 0.97f);
+        float const npcSpringDampingCoefficient = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "npc_spring_damping_coefficient", 0.5f);
 
         // Palette coordinates
 
@@ -142,6 +147,9 @@ StructuralMaterial StructuralMaterial::Create(
             windReceptivity,
             waterReactivity,
             isLegacyElectrical,
+            // NPC-specific
+            npcSpringReductionFraction,
+            npcSpringDampingCoefficient,
             // Palette
             paletteCoordinates);
     }
@@ -607,37 +615,4 @@ std::string ElectricalMaterial::MakeInstancedElementLabel(ElectricalElementInsta
     }
 
     return ss.str();
-}
-
-NpcMaterial NpcMaterial::Create(picojson::object const & npcMaterialJson)
-{
-    std::string const name = Utils::GetMandatoryJsonMember<std::string>(npcMaterialJson, "name");
-
-    try
-    {
-        rgbColor const renderColor = Utils::Hex2RgbColor(Utils::GetMandatoryJsonMember<std::string>(npcMaterialJson, "render_color"));
-
-        float const mass = Utils::GetMandatoryJsonMember<float>(npcMaterialJson, "mass");
-        float const springReductionFraction = Utils::GetMandatoryJsonMember<float>(npcMaterialJson, "spring_reduction_fraction");
-        float const springDampingCoefficient = Utils::GetMandatoryJsonMember<float>(npcMaterialJson, "spring_damping_coefficient");
-        float const staticFriction = Utils::GetMandatoryJsonMember<float>(npcMaterialJson, "static_friction");
-        float const kineticFriction = Utils::GetMandatoryJsonMember<float>(npcMaterialJson, "kinetic_friction");
-        float const elasticity = Utils::GetMandatoryJsonMember<float>(npcMaterialJson, "elasticity");
-        float const buoyancyVolumeFill = Utils::GetMandatoryJsonMember<float>(npcMaterialJson, "buoyancy_volume_fill");
-
-        return NpcMaterial(
-            name,
-            rgbaColor(renderColor, rgbaColor::data_type_max),
-            mass,
-            springReductionFraction,
-            springDampingCoefficient,
-            staticFriction,
-            kineticFriction,
-            elasticity,
-            buoyancyVolumeFill);
-    }
-    catch (GameException const & ex)
-    {
-        throw GameException(std::string("Error parsing NPC material \"") + name + "\": " + ex.what());
-    }
 }

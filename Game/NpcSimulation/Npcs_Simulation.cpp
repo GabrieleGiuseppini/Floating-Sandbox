@@ -894,16 +894,24 @@ void Npcs::UpdateNpcParticlePhysics(
                     // *intention* to move (which is trajectory)
                     //
 
+                    // Get edge's material (by taking arbitrarily the material of one of its endpoints)
+                    auto const & meshMaterial = homeShip.GetPoints().GetStructuralMaterial(
+                        homeShip.GetTriangles().GetPointIndices(npcParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex)[nonInertialEdgeOrdinal]);
+
                     float frictionCoefficient;
                     if (std::abs(npcParticle.ConstrainedState->MeshRelativeVelocity.dot(edgeDir)) > 0.01f) // Magic number
                     {
                         // Kinetic friction
-                        frictionCoefficient = mParticles.GetMaterialProperties(npcParticle.ParticleIndex).KineticFriction * gameParameters.KineticFrictionAdjustment;
+                        frictionCoefficient =
+                            (mParticles.GetMaterialProperties(npcParticle.ParticleIndex).KineticFriction + meshMaterial.KineticFrictionCoefficient) / 2.0f
+                            * gameParameters.KineticFrictionAdjustment;
                     }
                     else
                     {
                         // Static friction
-                        frictionCoefficient = mParticles.GetMaterialProperties(npcParticle.ParticleIndex).StaticFriction * gameParameters.StaticFrictionAdjustment;
+                        frictionCoefficient =
+                            (mParticles.GetMaterialProperties(npcParticle.ParticleIndex).StaticFriction + meshMaterial.StaticFrictionCoefficient) / 2.0f
+                            * gameParameters.StaticFrictionAdjustment;
                     }
 
                     // Calculate friction (integrated) force magnitude (along edgeDir),
@@ -2875,16 +2883,22 @@ void Npcs::BounceConstrainedNpcParticle(
         vec2f const normalVelocity = floorEdgeNormal * apparentParticleVelocityAlongNormal;
         vec2f const tangentialVelocity = apparentParticleVelocity - normalVelocity;
 
+        // Get edge's material (by taking arbitrarily the material of one of its endpoints)
+        auto const & meshMaterial = homeShip.GetPoints().GetStructuralMaterial(
+            homeShip.GetTriangles().GetPointIndices(npcParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex)[bounceEdgeOrdinal]);
+
         // Calculate normal reponse: Vn' = -e*Vn (e = elasticity, [0.0 - 1.0])
+        float const materialElasticityCoefficient = (particles.GetMaterialProperties(npcParticle.ParticleIndex).Elasticity + meshMaterial.ElasticityCoefficient) / 2.0f;
         vec2f const normalResponse =
             -normalVelocity
-            * particles.GetMaterialProperties(npcParticle.ParticleIndex).Elasticity
+            * materialElasticityCoefficient
             * gameParameters.ElasticityAdjustment;
 
         // Calculate tangential response: Vt' = a*Vt (a = (1.0-friction), [0.0 - 1.0])
+        float const materialFrictionCoefficient = (particles.GetMaterialProperties(npcParticle.ParticleIndex).KineticFriction + meshMaterial.KineticFrictionCoefficient) / 2.0f;
         vec2f const tangentialResponse =
             tangentialVelocity
-            * std::max(0.0f, 1.0f - particles.GetMaterialProperties(npcParticle.ParticleIndex).KineticFriction * gameParameters.KineticFrictionAdjustment);
+            * std::max(0.0f, 1.0f - materialFrictionCoefficient * gameParameters.KineticFrictionAdjustment);
 
         // Calculate whole response (which, given that we've been working in *apparent* space (we've calc'd the collision response to *trajectory* which is apparent displacement)),
         // is a relative velocity (relative to mesh)

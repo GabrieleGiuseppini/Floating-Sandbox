@@ -282,10 +282,10 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 
 			float const baseWidth = 1.5f; // Futurework: from NPC database
 			float const baseHeight = 1.5f; // Futurework: from NPC database
-			auto const & furnitureMaterial = mMaterialDatabase.GetNpcMaterial("Crate"); // Futurework: from NPC database
+			auto const & furnitureMaterial = mMaterialDatabase.GetStructuralMaterial("Solid Pine Wood I-Beam"); // Futurework: from NPC database
 
 			float const mass = CalculateParticleMass(
-				furnitureMaterial.Mass,
+				furnitureMaterial.GetMass(),
 				mCurrentSizeAdjustment
 #ifdef IN_BARYLAB
 				, mCurrentMassAdjustment
@@ -331,10 +331,10 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 				}
 
 				auto const particleIndex = mParticles.Add(
-					furnitureMaterial.Mass,
-					furnitureMaterial.StaticFriction,
-					furnitureMaterial.KineticFriction,
-					furnitureMaterial.Elasticity,
+					furnitureMaterial.GetMass(),
+					furnitureMaterial.StaticFrictionCoefficient,
+					furnitureMaterial.KineticFrictionCoefficient,
+					furnitureMaterial.ElasticityCoefficient,
 					furnitureMaterial.BuoyancyVolumeFill,
 					mass,
 					buoyancyFactor,
@@ -350,8 +350,8 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 				NoneElementIndex,
 				NoneElementIndex,
 				0,
-				furnitureMaterial.SpringReductionFraction,
-				furnitureMaterial.SpringDampingCoefficient);
+				furnitureMaterial.NpcSpringReductionFraction,
+				furnitureMaterial.NpcSpringDampingCoefficient);
 
 			// 0 - 1
 			{
@@ -427,10 +427,10 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 
 			// Primary
 
-			auto const & furnitureMaterial = mMaterialDatabase.GetNpcMaterial("Crate"); // Futurework: from mNpcDatabase
+			auto const & furnitureMaterial = mMaterialDatabase.GetStructuralMaterial("Solid Pine Wood I-Beam"); // Futurework: from mNpcDatabase
 
 			float const mass = CalculateParticleMass(
-				furnitureMaterial.Mass,
+				furnitureMaterial.GetMass(),
 				mCurrentSizeAdjustment
 #ifdef IN_BARYLAB
 				, mCurrentMassAdjustment
@@ -446,10 +446,10 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 			);
 
 			auto const primaryParticleIndex = mParticles.Add(
-				furnitureMaterial.Mass,
-				furnitureMaterial.StaticFriction,
-				furnitureMaterial.KineticFriction,
-				furnitureMaterial.Elasticity,
+				furnitureMaterial.GetMass(),
+				furnitureMaterial.StaticFrictionCoefficient,
+				furnitureMaterial.KineticFrictionCoefficient,
+				furnitureMaterial.ElasticityCoefficient,
 				furnitureMaterial.BuoyancyVolumeFill,
 				mass,
 				buoyancyFactor,
@@ -532,10 +532,10 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
 	// Feet (primary)
 
 	// Futurework: from mNpcDatabase
-	auto const & feetMaterial = mMaterialDatabase.GetNpcMaterial("HumanFeet");
+	auto const & feetMaterial = mMaterialDatabase.GetStructuralMaterial("NPC Human Feet");
 
 	float const feetMass = CalculateParticleMass(
-		feetMaterial.Mass,
+		feetMaterial.GetMass(),
 		mCurrentSizeAdjustment
 #ifdef IN_BARYLAB
 		, mCurrentMassAdjustment
@@ -551,10 +551,10 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
 	);
 
 	auto const primaryParticleIndex = mParticles.Add(
-		feetMaterial.Mass,
-		feetMaterial.StaticFriction,
-		feetMaterial.KineticFriction,
-		feetMaterial.Elasticity,
+		feetMaterial.GetMass(),
+		feetMaterial.StaticFrictionCoefficient,
+		feetMaterial.KineticFrictionCoefficient,
+		feetMaterial.ElasticityCoefficient,
 		feetMaterial.BuoyancyVolumeFill,
 		feetMass,
 		feetBuoyancyFactor,
@@ -566,10 +566,10 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
 	// Head (secondary)
 
 	// Futurework: from mNpcDatabase
-	auto const & headMaterial = mMaterialDatabase.GetNpcMaterial("HumanHead");
+	auto const & headMaterial = mMaterialDatabase.GetStructuralMaterial("NPC Human Head");
 
 	float const headMass = CalculateParticleMass(
-		headMaterial.Mass,
+		headMaterial.GetMass(),
 		mCurrentSizeAdjustment
 #ifdef IN_BARYLAB
 		, mCurrentMassAdjustment
@@ -585,10 +585,10 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
 	);
 
 	auto const secondaryParticleIndex = mParticles.Add(
-		headMaterial.Mass,
-		headMaterial.StaticFriction,
-		headMaterial.KineticFriction,
-		headMaterial.Elasticity,
+		headMaterial.GetMass(),
+		headMaterial.StaticFrictionCoefficient,
+		headMaterial.KineticFrictionCoefficient,
+		headMaterial.ElasticityCoefficient,
 		headMaterial.BuoyancyVolumeFill,
 		headMass,
 		headBuoyancyFactor,
@@ -603,8 +603,8 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
 		primaryParticleIndex,
 		secondaryParticleIndex,
 		baseHeight,
-		headMaterial.SpringReductionFraction,
-		headMaterial.SpringDampingCoefficient);
+		(headMaterial.NpcSpringReductionFraction + feetMaterial.NpcSpringReductionFraction) / 2.0f,
+		(headMaterial.NpcSpringDampingCoefficient + feetMaterial.NpcSpringDampingCoefficient) / 2.0f);
 
 	CalculateSprings(
 		mCurrentSizeAdjustment,

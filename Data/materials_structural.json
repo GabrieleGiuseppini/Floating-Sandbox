@@ -3763,7 +3763,66 @@
             "water_diffusion_speed": 0.0,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
-        }
+        },
+
+
+
+
+	{        
+	    "name": "NPC Human Head",
+	    "color_key": "#070780",
+	    "render_color": "#070780",
+	    "mass": {
+	        "density": 0.035,
+	        "nominal_mass": 985
+	    },
+
+	    "npc_spring_reduction_fraction": 0.39,
+	    "npc_spring_damping_coefficient": 0.5,
+	    "buoyancy_volume_fill": 0.05,
+
+	    "is_exempt_from_palette": true,
+
+            "elasticity_coefficient": 0.34,
+            "friction_kinetic_coefficient": 0.001,
+            "friction_static_coefficient": 0.001,
+
+	    "combustion_type": "Combustion",
+	    "ignition_temperature": 453.0,
+	    "is_hull": true,
+	    "melting_temperature": 1000000.0,
+	    "strength": 1.0,
+	    "wind_receptivity": 0.1
+
+	},
+
+	{        
+	    "name": "NPC Human Feet",
+	    "color_key": "#070781",
+	    "render_color": "#070781",
+	    "mass": {
+	        "density": 0.035,
+	        "nominal_mass": 985
+	    },
+
+	    "npc_spring_reduction_fraction": 0.39,
+	    "npc_spring_damping_coefficient": 0.5,
+	    "buoyancy_volume_fill": 0.03,
+
+	    "is_exempt_from_palette": true,
+
+            "elasticity_coefficient": 0.34,
+            "friction_kinetic_coefficient": 1.75,
+            "friction_static_coefficient": 1.84,
+
+	    "combustion_type": "Combustion",
+	    "ignition_temperature": 453.0,
+	    "is_hull": true,
+	    "melting_temperature": 1000000.0,
+	    "strength": 1.0,
+	    "wind_receptivity": 0.1
+
+	}
     ],
     "palettes": {
         "ropes_palette": [

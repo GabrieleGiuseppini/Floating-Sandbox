@@ -333,7 +333,7 @@ Arch
 				+ Add to script as check
 					+ Together with is_exempt+palette
 			+ Do indexing
-		= 2. Port NPCMaterial to StructuralMaterial
+		+ 2. Port NPCMaterial to StructuralMaterial
 			+ Port GameParameters::OceanFloorElasticity and OceanFloorFriction to all materials as ElasticityCoefficient, StaticFrictionCoefficient, KineticFrictionCoefficient (same values)
 				+ Script: fill-in 
 				+ Material: parse & expose
@@ -366,21 +366,58 @@ Arch
 					+ Figure out first why we can't stop tangential response
 				+ Fix adjust terrain: calculate world end taking into account snap (use helper)
 				+ Check again role of silting in friction test at 30deg
-			- Add SpringReductionCoeff, SpringDampingCoeff as NpcSpringReductionCoeff, NpcSpringDampingCoeff 
-				- optional, defaults = <reasonable>
-		- 3. StructuralMaterial:
-			- Do not store (& expose) IsExemptFromPalette
-		- 4. Port NPC materials to structural_materials
-			- Elast and two frictions: new values so that (new + ocean) / 2 == current in json (ocean because that's the value for ship materials now)
-			- Hide it from palette
-		- 5. Nuke NpcMaterial (json and class/es) from Materials/MaterialDatabase
-		- 6. Use at Npcs
-			- Structural materials
-			- Elast, frictions: consider both materials - make average and use adjustments
+			+ Add SpringReductionCoeff, SpringDampingCoeff as NpcSpringReductionCoeff, NpcSpringDampingCoeff 
+				+ optional, defaults = <reasonable>
+		+ 3. StructuralMaterial:
+			+ Do not store (& expose) IsExemptFromPalette
+		+ 4. Port NPC materials to structural_materials
+			+ Elast and two frictions: new values so that (new + ocean) / 2 == current in json (ocean because that's the value for ship materials now)
+			+ Hide it from palette
+		+ 5. Nuke NpcMaterial (json and class/es) from Materials/MaterialDatabase
+		= 6. Use at Npcs
+			+ Structural materials
+				= "Crate": use some wood
+			+ We really want to do average of materials' elasticity and friction
+				+ Elast, frictions: consider both materials - make average and use adjustments
+					+ @ Flattened traj
+						+ Take one of the vertices arbitrarily
+					+ @ Bounce
+						+ Take one of the vertices arbitrarily
+			- Tests:
+				- Human
+					- Slide (friction)
+					- Bounce (friction & elasticity)
+					- Floating
+				- Crate
+					- Slide (friction)
+					- Bounce (friction & elasticity)
+					- Floating
+						- BuoyancyVolumeFill: was 0.05, now 1.0
+			- Nuke npc json
+		- 6b. See if may nuke NpcParticles::MaterialProperties in favor of StructuralMaterial &
 		- 7. Material propertygrid @ ShipBuilder
+		- Change friction of:
+			- Steel, Iron
+			- Fiberglass
+			- Concrete (up)
 		+ Rewrite NpcDB spec below for material fetching
 		- Merge material_rearc into npcs_v1
 		- Backport to BaryLab
+
+		- For reference: this was Crate:
+			{
+			"name": "Crate",
+			"render_color": "#000060", 
+
+			"mass": 34.5,
+			"spring_reduction_fraction": 0.97,
+			"spring_damping_coefficient": 0.5,
+			"static_friction": 0.07,
+			"kinetic_friction": 0.05,
+			"elasticity": 0.6,
+			"buoyancy_volume_fill": 0.05
+			},
+
 
 	= Settings:
 		- List:
@@ -467,6 +504,7 @@ Arch
 		- Impact (at end of step)
 	- World border
 		- At end of step
+		- If hit, become free! So we avoid bouncing back and forth
 	- Triangle destruction: 
 		- Should be enough to check for current triangle being deleted at beginning of UpdateNpc(.), and if so, become free
 	- Swimming humans generate bubbles

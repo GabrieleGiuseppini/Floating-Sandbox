@@ -106,6 +106,10 @@ public:
     float WaterReactivity;
     bool IsLegacyElectrical;
 
+    // NPC-specific
+    float NpcSpringReductionFraction;
+    float NpcSpringDampingCoefficient;
+
     // Palette
     std::optional<MaterialPaletteCoordinatesType> PaletteCoordinates;
 
@@ -180,6 +184,9 @@ public:
         float windReceptivity,
         float waterReactivity,
         bool isLegacyElectrical,
+        // NPC-specific
+        float npcSpringReductionFraction,
+        float npcSpringDampingCoefficient,
         // Palette
         std::optional<MaterialPaletteCoordinatesType> paletteCoordinates)
         : ColorKey(colorKey)
@@ -214,6 +221,8 @@ public:
         , WindReceptivity(windReceptivity)
         , WaterReactivity(waterReactivity)
         , IsLegacyElectrical(isLegacyElectrical)
+        , NpcSpringReductionFraction(npcSpringReductionFraction)
+        , NpcSpringDampingCoefficient(npcSpringDampingCoefficient)
         , PaletteCoordinates(paletteCoordinates)
     {}
 
@@ -251,6 +260,8 @@ public:
         , WindReceptivity(1.0f)
         , WaterReactivity(0.0f)
         , IsLegacyElectrical(false)
+        , NpcSpringReductionFraction(1.0f)
+        , NpcSpringDampingCoefficient(1.0f)
         , PaletteCoordinates(std::nullopt)
     {}
 };
@@ -478,45 +489,4 @@ public:
     }
 
     std::string MakeInstancedElementLabel(ElectricalElementInstanceIndex instanceIndex) const;
-};
-
-struct NpcMaterial
-{
-public:
-
-    std::string Name; // Unique, key
-    rgbaColor RenderColor;
-
-    float Mass;
-    float SpringReductionFraction;
-    float SpringDampingCoefficient;
-    float StaticFriction;
-    float KineticFriction;
-    float Elasticity;
-    float BuoyancyVolumeFill;
-
-public:
-
-    static NpcMaterial Create(picojson::object const & npcMaterialJson);
-
-    NpcMaterial(
-        std::string name,
-        rgbaColor const & renderColor,
-        float mass,
-        float springReductionFraction,
-        float springDampingCoefficient,
-        float staticFriction,
-        float kineticFriction,
-        float elasticity,
-        float buoyancyVolumeFill)
-        : Name(name)
-        , RenderColor(renderColor)
-        , Mass(mass)
-        , SpringReductionFraction(springReductionFraction)
-        , SpringDampingCoefficient(springDampingCoefficient)
-        , StaticFriction(staticFriction)
-        , KineticFriction(kineticFriction)
-        , Elasticity(elasticity)
-        , BuoyancyVolumeFill(buoyancyVolumeFill)
-    {}
 };

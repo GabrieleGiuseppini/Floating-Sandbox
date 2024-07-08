@@ -100,15 +100,13 @@ public:
     using MaterialColorMap = std::map<MaterialColorKey, TMaterial>;
 
     template<typename TMaterial>
-    using MaterialNameMap = std::map<std::string, TMaterial const &>;
+    using MaterialNameMap = std::map<std::string, MaterialColorKey>;
 
 private:
 
     using UniqueStructuralMaterialsArray = std::array<std::pair<MaterialColorKey, StructuralMaterial const *>, static_cast<size_t>(StructuralMaterial::MaterialUniqueType::_Last) + 1>;
 
     static constexpr auto RopeUniqueMaterialIndex = static_cast<size_t>(StructuralMaterial::MaterialUniqueType::Rope);
-
-    using NpcMaterialMap = std::map<std::string, NpcMaterial>;
 
 public:
 
@@ -151,7 +149,7 @@ public:
             srchIt != mStructuralMaterialNameMap.cend())
         {
             // Found
-            return srchIt->second;
+            return mStructuralMaterialColorMap.at(srchIt->second);
         }
 
         throw GameException("Cannot find material \"" + name + "\"");
@@ -247,20 +245,6 @@ public:
         return static_cast<ElectricalElementInstanceIndex>(colorKey.b);
     }
 
-    // ------------------------
-
-    // Note: not supposed to be invoked at runtime - only at NpcDatabase initialization
-    NpcMaterial const & GetNpcMaterial(std::string const & name) const
-    {
-        if (auto const srchIt = mNpcMaterialMap.find(name);
-            srchIt != mNpcMaterialMap.end())
-        {
-            return srchIt->second;
-        }
-
-        throw GameException("Cannot find NPC material \"" + name + "\"");
-    }
-
 private:
 
     struct InstancedColorKeyComparer
@@ -283,8 +267,7 @@ private:
         float largestStructuralMass,
         MaterialColorMap<ElectricalMaterial> electricalMaterialColorMap,
         std::map<MaterialColorKey, ElectricalMaterial const *, InstancedColorKeyComparer> instancedElectricalMaterialMap,
-        Palette<ElectricalMaterial> electricalMaterialPalette,
-        NpcMaterialMap npcMaterialMap)
+        Palette<ElectricalMaterial> electricalMaterialPalette)
         : mStructuralMaterialColorMap(std::move(structuralMaterialColorMap))
         , mStructuralMaterialNameMap(std::move(structuralMaterialNameMap))
         , mUniqueStructuralMaterials(uniqueStructuralMaterials)
@@ -294,7 +277,6 @@ private:
         , mElectricalMaterialColorMap(std::move(electricalMaterialColorMap))
         , mInstancedElectricalMaterialMap(std::move(instancedElectricalMaterialMap))
         , mElectricalMaterialPalette(std::move(electricalMaterialPalette))
-        , mNpcMaterialMap(std::move(npcMaterialMap))
     {
     }
 
@@ -312,7 +294,4 @@ private:
     MaterialColorMap<ElectricalMaterial> mElectricalMaterialColorMap;
     std::map<MaterialColorKey, ElectricalMaterial const *, InstancedColorKeyComparer> mInstancedElectricalMaterialMap; // Redundant map for (legacy) instanced material lookup
     Palette<ElectricalMaterial> mElectricalMaterialPalette;
-
-    // NPC
-    NpcMaterialMap mNpcMaterialMap;
 };

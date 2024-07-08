@@ -148,7 +148,7 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
                 auto const [_, isNameInserted] = structuralMaterialNameMap.emplace(
                     std::make_pair(
                         material.Name,
-                        instanceIt->second));
+                        colorKey));
                 if (!isNameInserted)
                 {
                     throw GameException("Material name \"" + material.Name + "\" already belongs to another material");
@@ -344,49 +344,6 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
     }
 
     //
-    // NPC
-    //
-
-    NpcMaterialMap npcMaterialMap;
-
-    picojson::value const npcMaterialsJson = Utils::ParseJSONFile(
-        materialsRootDirectory / "materials_npc.json");
-
-    if (!npcMaterialsJson.is<picojson::array>())
-    {
-        throw GameException("NPC materials definition is not a JSON array");
-    }
-
-    picojson::array const & npcMaterialsRootArray = npcMaterialsJson.get<picojson::array>();
-
-    // Parse materials
-    for (auto const & materialElem : npcMaterialsRootArray)
-    {
-        if (!materialElem.is<picojson::object>())
-        {
-            throw GameException("Found a non-object in NPC materials definition");
-        }
-
-        picojson::object const & materialObject = materialElem.get<picojson::object>();
-
-        // Create instance of this material
-        NpcMaterial const material = NpcMaterial::Create(materialObject);
-
-        // Make sure there are no dupes
-        if (auto const searchIt = npcMaterialMap.find(material.Name);
-            searchIt != npcMaterialMap.end())
-        {
-            throw GameException("NPC material name \"" + material.Name + "\" is not unique.");
-        }
-
-        // Store
-        auto const storedEntry = npcMaterialMap.emplace(
-            std::make_pair(
-                material.Name,
-                material));
-    }
-
-    //
     // Wrap it up
     //
 
@@ -399,8 +356,7 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
         largestStructuralMass,
         std::move(electricalMaterialColorMap),
         std::move(instancedElectricalMaterialMap),
-        std::move(electricalMaterialPalette),
-        std::move(npcMaterialMap));
+        std::move(electricalMaterialPalette));
 }
 
 ///////////////////////////////////////////////////////////////////////
