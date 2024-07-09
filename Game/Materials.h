@@ -70,7 +70,7 @@ public:
     float Strength;
     float NominalMass;
     float Density;
-    float BuoyancyVolumeFill;
+    float BuoyancyVolumeFill; // Hull has usually 0.0 (as it never gets water yet we want it to sink), and non-hull usually \1.0 (as it gets water)
     float Stiffness;
     float StrainThresholdFraction;
     float ElasticityCoefficient;

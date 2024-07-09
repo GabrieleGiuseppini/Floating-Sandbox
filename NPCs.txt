@@ -378,6 +378,11 @@ Arch
 						+ Take one of the vertices arbitrarily
 					+ @ Bounce
 						+ Take one of the vertices arbitrarily
+			- BuoyancyVolumeFill: Create was 0.05, now 1.0 
+				- New optional StructuralMaterial property: NpcBuoyancyVolumeFill
+					- Default: 0.05
+					- Comment @ Material: in FS, hull has buoyancy_volume_fill=0.0 (as it never gets water yet we want it to sink), and non-hull=1.0 (as it gets water)
+				- Take it in Npcs:: calculation of buoyancy factor
 			- Tests:
 				- Human
 					- Slide (friction)
@@ -387,7 +392,7 @@ Arch
 					- Slide (friction)
 					- Bounce (friction & elasticity)
 					- Floating
-						- BuoyancyVolumeFill: was 0.05, now 1.0 - TODOHERE
+						
 			- Nuke npc json
 		+ 6b. See if may nuke NpcParticles::MaterialProperties in favor of StructuralMaterial &
 		- 7. Material propertygrid @ ShipBuilder
@@ -398,10 +403,10 @@ Arch
 			- Concrete (up)
 		+ Rewrite NpcDB spec below for material fetching
 		- Merge material_rearc into npcs_v1
-		= Backport to BaryLab
+		+ Backport to BaryLab
 			+ See human sliding on feet
 			+ Profile
-			- Merge into master
+			+ Merge into master
 
 		- For reference: this was Crate:
 			{
@@ -435,6 +440,7 @@ Arch
 
 	- Misc possible improvements:
 		- Maintain spring lengths during BeingPlaced (to avoid elongations)
+			- Try that other spring relaxation algo
 		- How to avoid folding (==compressions) at bounce?
 			- See how folds come to be
 		+ fmod improvements
@@ -462,7 +468,7 @@ Arch
 		- json refers to frames (in NPC texture DB) by name, but cctor - which also takes texture DB - stores references (or even directly coords!) by numeric ID
 			- json tells all frame names for all applicable variants, including limbs together with orientation variants
 				- Yes, the json for humans will list all frames for variants and all
-					- Might have a new type (at NpcDatabse or as as new GameType) that holds together all texture info's for a human (e.g. "head front", "head side", etc.) and the json basically fills this
+					- Might have a new type (at NpcDatabase or as as new GameType) that holds together all texture info's for a human (e.g. "head front", "head side", etc.) and the json basically fills this
 		- Allow for merging of multiple "packs"
 			- So SubKind domain is expandable at runtime
 		- Also affects UI (for menu with list of subkind names, which might have multiple languages)
@@ -471,6 +477,7 @@ Arch
 			- @ GameTypes
 				- Nuke old FurnitureNpcKindType, NpcKindType
 			- No different aliases for the two different NpcKind's - we will have a 2D coord for a specific subkind (NpcKindType, NpcSubKindIdType)
+				- So NpcSubKindIdType=X means one thing for Humans and another thing for Furniture
 		- Humans:
 			- (NpcSubKindIdType) -> Material X 2
 			- (NpcSubKindIdType) -> TextureCoords (or that new GameType we talk about above which holds together all texture info's for all variants), colors
