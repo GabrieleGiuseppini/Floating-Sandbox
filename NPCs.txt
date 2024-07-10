@@ -406,7 +406,7 @@ Arch
 			+ Glass (down)
 			+ Concrete (up) 6.0
 		+ Rewrite NpcDB spec below for material fetching
-		- Merge material_rearc into npcs_v1
+		+ Merge material_rearc into npcs_v1
 		= Backport to BaryLab
 			+ See human sliding on feet
 			+ Profile
