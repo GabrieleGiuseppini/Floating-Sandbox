@@ -1135,7 +1135,7 @@ private:
 			return true;
 		}
 
-		// Ok, it's a floor and this is a secondary particle of a dipole
+		// Ok, it's a floor and this is a secondary particle of a dipole (e.g. head)
 		//
 		// Secondary particles have a ton of rules to ensure that e.g. the head
 		// of a NPC doesn't behave as if it were disjoint from the feet; for
@@ -1197,7 +1197,7 @@ private:
 		bcoords3f const primaryBaryCoords = homeShip.GetTriangles().ToBarycentricCoordinates(primaryPosition, triangleElementIndex, homeShip.GetPoints());
 
 		// It's on the other side of the edge if its "edge's" b-coord is negative
-		if (primaryBaryCoords[(edgeOrdinal + 2) % 3] >= 0.0f)
+		if (primaryBaryCoords[(edgeOrdinal + 2) % 3] >= -0.05f) // Some slack
 		{
 			return true;
 		}

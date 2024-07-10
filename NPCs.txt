@@ -438,11 +438,11 @@ Arch
 		+ SettingsDialog
 			+ Lights, Electricals, Fishes, and NPCs
 
-	- Primary/Secondary edge-separation at floor check: see if can be improved by looking at third vertex of triangle of particle for which we check
+	+ Primary/Secondary edge-separation at floor check: see if can be improved by looking at third vertex of triangle of particle for which we check
 		+ Backport to barylab first
-		- Repro in BaryLab with a million puppets
-		- Fix in barylab
-		- Port to FS
+		+ Repro in BaryLab with a million puppets
+		+ Fix in barylab
+		+ Port to FS
 
 	- Misc possible improvements:
 		- Maintain spring lengths during BeingPlaced (to avoid elongations)
