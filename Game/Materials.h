@@ -109,6 +109,7 @@ public:
     // NPC-specific
     float NpcSpringReductionFraction;
     float NpcSpringDampingCoefficient;
+    float NpcBuoyancyVolumeFill; // NPC particles do not get water (and hullness plays no role), hence we need a specific here
 
     // Palette
     std::optional<MaterialPaletteCoordinatesType> PaletteCoordinates;
@@ -187,6 +188,7 @@ public:
         // NPC-specific
         float npcSpringReductionFraction,
         float npcSpringDampingCoefficient,
+        float npcBuoyancyVolumeFill,
         // Palette
         std::optional<MaterialPaletteCoordinatesType> paletteCoordinates)
         : ColorKey(colorKey)
@@ -223,6 +225,7 @@ public:
         , IsLegacyElectrical(isLegacyElectrical)
         , NpcSpringReductionFraction(npcSpringReductionFraction)
         , NpcSpringDampingCoefficient(npcSpringDampingCoefficient)
+        , NpcBuoyancyVolumeFill(npcBuoyancyVolumeFill)
         , PaletteCoordinates(paletteCoordinates)
     {}
 
@@ -262,6 +265,7 @@ public:
         , IsLegacyElectrical(false)
         , NpcSpringReductionFraction(1.0f)
         , NpcSpringDampingCoefficient(1.0f)
+        , NpcBuoyancyVolumeFill(1.0f)
         , PaletteCoordinates(std::nullopt)
     {}
 };

@@ -378,24 +378,28 @@ Arch
 						+ Take one of the vertices arbitrarily
 					+ @ Bounce
 						+ Take one of the vertices arbitrarily
-			- BuoyancyVolumeFill: Create was 0.05, now 1.0 
-				- New optional StructuralMaterial property: NpcBuoyancyVolumeFill
-					- Default: 0.05
-					- Comment @ Material: in FS, hull has buoyancy_volume_fill=0.0 (as it never gets water yet we want it to sink), and non-hull=1.0 (as it gets water)
-				- Take it in Npcs:: calculation of buoyancy factor
-			- Tests:
+			+ BuoyancyVolumeFill: Crate was 0.05, now 1.0 
+				+ New optional StructuralMaterial property: NpcBuoyancyVolumeFill
+					+ Default: 0.05
+					+ Comment @ Material: in FS, hull has buoyancy_volume_fill=0.0 (as it never gets water yet we want it to sink), and non-hull=1.0 (as it gets water)				    
+				+ Take it in Npcs:: calculation of buoyancy factor
+				+ Adjust Human x 2
+				+ Adjust Crate's NpcBVF 
+					+ Default NpcBuoyancyVolumeFill: calculated
+			= Tests:
 				- Human
 					- Slide (friction)
 					- Bounce (friction & elasticity)
-					- Floating
+					+ Floating
 				- Crate
 					- Slide (friction)
 					- Bounce (friction & elasticity)
-					- Floating
+					+ Floating
 						
 			- Nuke npc json
 		+ 6b. See if may nuke NpcParticles::MaterialProperties in favor of StructuralMaterial &
 		- 7. Material propertygrid @ ShipBuilder
+			- Friction X 2, Elasticity
 			- See if there's room
 		- Change friction of:
 			- Steel, Iron
@@ -403,10 +407,12 @@ Arch
 			- Concrete (up)
 		+ Rewrite NpcDB spec below for material fetching
 		- Merge material_rearc into npcs_v1
-		+ Backport to BaryLab
+		- Backport to BaryLab
 			+ See human sliding on feet
 			+ Profile
 			+ Merge into master
+			- Code + json
+				- And nuke npc json
 
 		- For reference: this was Crate:
 			{
@@ -489,7 +495,15 @@ Arch
 			- (NpcSubKindIdType) -> NpcParticleMesh info
 			- (NpcSubKindIdType, Language) -> Name
 	- Impl:
+		- NpcDatabase:
+			- static NpcDatabase Load(ResourceLocator const & resourceLocator, TextureDB const &, MaterialDB const &)
+				- Invoked right after we build MaterialDB
+			- Add(NpcDatabase const &, TextureDB const &, MaterialDB const &)
 		- NpcDatabase replaces MaterialDatabase that is passed over to Npcs class
+		- MainFrame:
+			- private BuildNpcSubmenus()
+				- From NpcDatabase (where taken from?)
+				- Cleans up and rebuilds
 
 - Rendering:
 	- Atlas textures are simply flat frames and all, NpcDatabase groups them together

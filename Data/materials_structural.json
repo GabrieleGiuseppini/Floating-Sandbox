@@ -3779,7 +3779,7 @@
 
 	    "npc_spring_reduction_fraction": 0.39,
 	    "npc_spring_damping_coefficient": 0.5,
-	    "buoyancy_volume_fill": 0.05,
+	    "npc_buoyancy_volume_fill": 0.05,
 
 	    "is_exempt_from_palette": true,
 
@@ -3807,7 +3807,7 @@
 
 	    "npc_spring_reduction_fraction": 0.39,
 	    "npc_spring_damping_coefficient": 0.5,
-	    "buoyancy_volume_fill": 0.03,
+	    "npc_buoyancy_volume_fill": 0.03,
 
 	    "is_exempt_from_palette": true,
 

@@ -293,7 +293,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 			);
 
 			float const buoyancyFactor = CalculateParticleBuoyancyFactor(
-				furnitureMaterial.BuoyancyVolumeFill,
+				furnitureMaterial.NpcBuoyancyVolumeFill,
 				mCurrentSizeAdjustment
 #ifdef IN_BARYLAB
 				, mCurrentBuoyancyAdjustment
@@ -434,7 +434,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 			);
 
 			float const buoyancyFactor = CalculateParticleBuoyancyFactor(
-				furnitureMaterial.BuoyancyVolumeFill,
+				furnitureMaterial.NpcBuoyancyVolumeFill,
 				mCurrentSizeAdjustment
 #ifdef IN_BARYLAB
 				, mCurrentBuoyancyAdjustment
@@ -535,7 +535,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
 	);
 
 	float const feetBuoyancyFactor = CalculateParticleBuoyancyFactor(
-		feetMaterial.BuoyancyVolumeFill,
+		feetMaterial.NpcBuoyancyVolumeFill,
 		mCurrentSizeAdjustment
 #ifdef IN_BARYLAB
 		, mCurrentBuoyancyAdjustment
@@ -565,7 +565,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
 	);
 
 	float const headBuoyancyFactor = CalculateParticleBuoyancyFactor(
-		headMaterial.BuoyancyVolumeFill,
+		headMaterial.NpcBuoyancyVolumeFill,
 		mCurrentSizeAdjustment
 #ifdef IN_BARYLAB
 		, mCurrentBuoyancyAdjustment

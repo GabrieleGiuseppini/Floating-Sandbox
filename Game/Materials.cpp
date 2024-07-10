@@ -5,6 +5,8 @@
  ***************************************************************************************/
 #include "Materials.h"
 
+#include "GameParameters.h"
+
 #include <GameCore/Utils.h>
 
 #include <sstream>
@@ -38,7 +40,7 @@ StructuralMaterial StructuralMaterial::Create(
         picojson::object massJson = Utils::GetMandatoryJsonObject(structuralMaterialJson, "mass");
         float const nominalMass = Utils::GetMandatoryJsonMember<float>(massJson, "nominal_mass");
         float const density = Utils::GetMandatoryJsonMember<float>(massJson, "density");
-        float const buoyancyVolumeFill = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "buoyancy_volume_fill");
+        float const buoyancyVolumeFill = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "buoyancy_volume_fill", 1.0f);
         float const stiffness = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "stiffness", 1.0);
         float const strainThresholdFraction = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "strain_threshold_fraction", 0.5f);
         float const elasticityCoefficient = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "elasticity_coefficient", 0.5f);
@@ -97,6 +99,13 @@ StructuralMaterial StructuralMaterial::Create(
         float const npcSpringReductionFraction = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "npc_spring_reduction_fraction", 0.97f);
         float const npcSpringDampingCoefficient = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "npc_spring_damping_coefficient", 0.5f);
 
+        // Default buoyancy volume fill: so that particle has a specific upward acceleration
+        float constexpr TargetBuoyancyUpwardAcceleration = 4.4f; // Empirical
+        float const defaultNpcBuoyancyVolumeFill =
+            (nominalMass * density) * (TargetBuoyancyUpwardAcceleration + GameParameters::GravityMagnitude)
+            / (1000.0f * GameParameters::GravityMagnitude);
+        float const npcBuoyancyVolumeFill = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "npc_buoyancy_volume_fill", defaultNpcBuoyancyVolumeFill);
+
         // Palette coordinates
 
         std::optional<MaterialPaletteCoordinatesType> paletteCoordinates;
@@ -150,6 +159,7 @@ StructuralMaterial StructuralMaterial::Create(
             // NPC-specific
             npcSpringReductionFraction,
             npcSpringDampingCoefficient,
+            npcBuoyancyVolumeFill,
             // Palette
             paletteCoordinates);
     }
