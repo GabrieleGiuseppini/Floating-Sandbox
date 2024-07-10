@@ -369,7 +369,7 @@ Arch
 			+ Elast and two frictions: new values so that (new + ocean) / 2 == current in json (ocean because that's the value for ship materials now)
 			+ Hide it from palette
 		+ 5. Nuke NpcMaterial (json and class/es) from Materials/MaterialDatabase
-		= 6. Use at Npcs
+		+ 6. Use at Npcs
 			+ Structural materials
 				= "Crate": use some wood
 			+ We really want to do average of materials' elasticity and friction
@@ -386,33 +386,34 @@ Arch
 				+ Adjust Human x 2
 				+ Adjust Crate's NpcBVF 
 					+ Default NpcBuoyancyVolumeFill: calculated
-			= Tests:
-				- Human
-					- Slide (friction)
-					- Bounce (friction & elasticity)
+			+ Tests:
+				+ Human
+					+ Slide (friction)
+					+ Bounce (friction & elasticity)
 					+ Floating
-				- Crate
-					- Slide (friction)
-					- Bounce (friction & elasticity)
+				+ Crate
+					+ Slide (friction)
+					+ Bounce (friction & elasticity)
 					+ Floating
 						
-			- Nuke npc json
+			+ Nuke npc json
 		+ 6b. See if may nuke NpcParticles::MaterialProperties in favor of StructuralMaterial &
-		- 7. Material propertygrid @ ShipBuilder
-			- Friction X 2, Elasticity
-			- See if there's room
-		- Change friction of:
-			- Steel, Iron
-			- Fiberglass
-			- Concrete (up)
+		X 7. Material propertygrid @ ShipBuilder
+			X Friction X 2, Elasticity
+			X See if there's room
+		- Change friction of (to slide on surface and NPCs) (see if can test and calc via Ocean only):
+			- Steel, Iron (down)
+			- Fiberglass (down)
+			= Concrete (up) 6.0
 		+ Rewrite NpcDB spec below for material fetching
 		- Merge material_rearc into npcs_v1
-		- Backport to BaryLab
+		= Backport to BaryLab
 			+ See human sliding on feet
 			+ Profile
 			+ Merge into master
-			- Code + json
-				- And nuke npc json
+			+ Code + json
+				+ And nuke npc json
+			- Commit
 
 		- For reference: this was Crate:
 			{
