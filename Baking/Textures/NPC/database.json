@@ -4,6 +4,7 @@
 	"groupName": "NPC",
 	"comment": "World scaling is irrelevant",
 	"hasOwnAmbientLight": false,
+	"autoAssignFrameIndices": true,
 	"frames":[
 		{	
 			"worldScaling": 1.0,

@@ -503,6 +503,13 @@ Arch
 			+ Add 'filenameStem' to frame metadata, and have TextureAtlasMetadata build an index off it
 					+ Verify unique when loading/deserializing			
 			+ Run texture atlas/DB unit tests
+			+ Assign frame index when not present
+				+ First off, nuke frameIndex
+					+ World json
+					+ Code
+				+ @ group reading: "autoAssignFrameIndices" bool, default=false
+				+ Complain if auto-assign & specified (if we haven't nuked code)
+				+ Test land/ocean textures
 			- Make actual NPC atlas
 				= BakingTool: add "build-atlas" (sibling of "build-regular-atlas")
 		- NpcDatabase:

@@ -171,6 +171,7 @@ TextureDatabase<TextureDatabaseTraits> TextureDatabase<TextureDatabaseTraits>::L
         bool groupHasOwnAmbientLight = Utils::GetOptionalJsonMember<bool>(groupJson, "hasOwnAmbientLight", false);
         int groupAnchorOffsetX = Utils::GetOptionalJsonMember<int>(groupJson, "anchorOffsetX", 0);
         int groupAnchorOffsetY = Utils::GetOptionalJsonMember<int>(groupJson, "anchorOffsetY", 0);
+        bool const doAutoAssignFrameIndices = Utils::GetOptionalJsonMember<bool>(groupJson, "autoAssignFrameIndices", false);
 
         //
         // Process frames from JSON and build texture frames
@@ -188,7 +189,6 @@ TextureDatabase<TextureDatabaseTraits> TextureDatabase<TextureDatabaseTraits>::L
             auto frameJson = frameValue.get<picojson::object>();
 
             // Get frame properties
-            std::optional<int> const frameOptionalIndex = Utils::GetOptionalJsonMember<int>(frameJson, "index");
             std::optional<float> const frameWorldScaling = Utils::GetOptionalJsonMember<float>(frameJson, "worldScaling");
             std::optional<float> frameWorldWidth = Utils::GetOptionalJsonMember<float>(frameJson, "worldWidth");
             std::optional<float> frameWorldHeight = Utils::GetOptionalJsonMember<float>(frameJson, "worldHeight");
@@ -223,11 +223,10 @@ TextureDatabase<TextureDatabaseTraits> TextureDatabase<TextureDatabaseTraits>::L
                     //
 
                     TextureFrameIndex frameIndex;
-
-                    if (!!frameOptionalIndex)
+                    if (doAutoAssignFrameIndices)
                     {
-                        // Take provided index
-                        frameIndex = static_cast<TextureFrameIndex>(*frameOptionalIndex);
+                        // Assign frame ID
+                        frameIndex = static_cast<TextureFrameIndex>(textureFrames.size());
                     }
                     else
                     {
@@ -236,13 +235,12 @@ TextureDatabase<TextureDatabaseTraits> TextureDatabase<TextureDatabaseTraits>::L
                         std::smatch frameIndexMatch;
                         if (!std::regex_match(fileData.Stem, frameIndexMatch, TextureFilenameFrameIndexRegex))
                         {
-                            throw GameException("Texture database: cannot find frame index in texture filename \"" + fileData.Stem + "\"");
+                            throw GameException("Texture database: cannot extract frame index from texture filename \"" + fileData.Stem + "\", and auto-assigning indices is disabled");
                         }
 
                         assert(frameIndexMatch.size() == 2);
                         frameIndex = static_cast<TextureFrameIndex>(std::stoi(frameIndexMatch[1].str()));
                     }
-
 
                     //
                     // Resolve properties
