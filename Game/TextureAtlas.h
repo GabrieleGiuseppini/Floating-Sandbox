@@ -106,9 +106,9 @@ public:
         return mFrameMetadata;
     }
 
-    inline TextureAtlasFrameMetadata<TextureGroups> const & GetFrameMetadata(TextureFrameId<TextureGroups> const & textureFrameId) const
+    inline TextureAtlasFrameMetadata<TextureGroups> const & GetFrameMetadata(TextureFrameId<TextureGroups> const & frameId) const
     {
-        return GetFrameMetadata(textureFrameId.Group, textureFrameId.FrameIndex);
+        return GetFrameMetadata(frameId.Group, frameId.FrameIndex);
     }
 
     inline TextureAtlasFrameMetadata<TextureGroups> const & GetFrameMetadata(
@@ -118,6 +118,12 @@ public:
         assert(static_cast<size_t>(group) < mFrameMetadataIndices.size());
         assert(frameIndex < mFrameMetadataIndices[static_cast<size_t>(group)].size());
         return mFrameMetadata[mFrameMetadataIndices[static_cast<size_t>(group)][frameIndex]];
+    }
+
+    inline TextureAtlasFrameMetadata<TextureGroups> const & GetFrameMetadata(std::string const & filenameStem) const
+    {
+        assert(mFrameMetadataByFilenameStem.count(filenameStem) == 1);
+        return mFrameMetadata[mFrameMetadataByFilenameStem.at(filenameStem)];
     }
 
     inline size_t GetFrameCount(TextureGroups group) const
@@ -142,6 +148,9 @@ private:
 
     // Indexed by group first and frame index then
     std::vector<std::vector<size_t>> mFrameMetadataIndices;
+
+    // Indexed by filename stem, value is index in FrameMetadata array
+    std::map<std::string, size_t> mFrameMetadataByFilenameStem;
 };
 
 /*

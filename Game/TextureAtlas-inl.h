@@ -52,6 +52,22 @@ TextureAtlasMetadata<TextureGroups>::TextureAtlasMetadata(
         assert(static_cast<size_t>(mFrameMetadata[frameIndex].FrameMetadata.FrameId.FrameIndex) == mFrameMetadataIndices.back().size());
         mFrameMetadataIndices.back().emplace_back(frameIndex);
     }
+
+    //
+    // Build index by filename stem
+    //
+
+    for (size_t i = 0; i < mFrameMetadata.size(); ++i)
+    {
+        auto const [_, isInserted] = mFrameMetadataByFilenameStem.try_emplace(
+            mFrameMetadata[i].FrameMetadata.FilenameStem,
+            i);
+
+        if (!isInserted)
+        {
+            throw GameException("Atlas metadata frame filename \"" + mFrameMetadata[i].FrameMetadata.FilenameStem + "\" is duplicated");
+        }
+    }
 }
 
 template <typename TextureGroups>
@@ -125,7 +141,7 @@ TextureAtlasFrameMetadata<TextureGroups> TextureAtlasFrameMetadata<TextureGroups
         textureSpaceWidth,
         textureSpaceHeight,
         textureCoordinatesBottomLeft,
-        textureCoordinatesAnchorCenter,        
+        textureCoordinatesAnchorCenter,
         textureCoordinatesTopRight,
         frameLeftX,
         frameBottomY,

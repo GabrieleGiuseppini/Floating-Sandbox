@@ -16,8 +16,8 @@ class Baker
 {
 public:
 
-    template <typename TextureDatabaseTraits>
-    static void BakeRegularAtlas(
+    template <typename TextureDatabaseTraits, bool IsRegular>
+    static void BakeAtlas(
         std::filesystem::path const & databaseRootDirectoryPath,
         std::filesystem::path const & outputDirectoryPath,
         bool doAlphaPremultiply)
@@ -41,13 +41,21 @@ public:
 
         std::cout << "Creating atlas..";
 
-        auto textureAtlas = Render::TextureAtlasBuilder<typename TextureDatabaseTraits::TextureGroups>::BuildRegularAtlas(
-            textureDatabase,
-            doAlphaPremultiply ? Render::AtlasOptions::AlphaPremultiply : Render::AtlasOptions::None,
-            [](float, ProgressMessageType)
-            {
-                std::cout << ".";
-            });
+        auto textureAtlas = IsRegular
+            ? Render::TextureAtlasBuilder<typename TextureDatabaseTraits::TextureGroups>::BuildRegularAtlas(
+                textureDatabase,
+                doAlphaPremultiply ? Render::AtlasOptions::AlphaPremultiply : Render::AtlasOptions::None,
+                [](float, ProgressMessageType)
+                {
+                    std::cout << ".";
+                })
+            : Render::TextureAtlasBuilder<typename TextureDatabaseTraits::TextureGroups>::BuildAtlas(
+                textureDatabase,
+                doAlphaPremultiply ? Render::AtlasOptions::AlphaPremultiply : Render::AtlasOptions::None,
+                [](float, ProgressMessageType)
+                {
+                    std::cout << ".";
+                });
 
         std::cout << std::endl;
 

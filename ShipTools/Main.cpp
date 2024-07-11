@@ -22,7 +22,8 @@
 #define SEPARATOR "------------------------------------------------------"
 
 int DoAnalyzeShip(int argc, char ** argv);
-int DoBakeRegularAtlas(int argc, char ** argv);
+template <bool IsRegular>
+int DoBakeAtlas(int argc, char ** argv);
 int DoQuantize(int argc, char ** argv);
 int DoResize(int argc, char ** argv);
 
@@ -47,9 +48,13 @@ int main(int argc, char ** argv)
         {
             return DoAnalyzeShip(argc, argv);
         }
+        else if (verb == "bake_atlas")
+        {
+            return DoBakeAtlas<false>(argc, argv);
+        }
         else if (verb == "bake_regular_atlas")
         {
-            return DoBakeRegularAtlas(argc, argv);
+            return DoBakeAtlas<true>(argc, argv);
         }
         else if (verb == "quantize")
         {
@@ -97,7 +102,8 @@ int DoAnalyzeShip(int argc, char ** argv)
     return 0;
 }
 
-int DoBakeRegularAtlas(int argc, char ** argv)
+template<bool IsRegular>
+int DoBakeAtlas(int argc, char ** argv)
 {
     if (argc < 5 || argc > 6)
     {
@@ -124,22 +130,43 @@ int DoBakeRegularAtlas(int argc, char ** argv)
     }
 
     std::cout << SEPARATOR << std::endl;
-    std::cout << "Running bake_regular_atlas:" << std::endl;
+
+    if (!IsRegular)
+        std::cout << "Running bake_atlas:" << std::endl;
+    else
+        std::cout << "Running bake_regular_atlas:" << std::endl;
     std::cout << "  database name           : " << databaseName << std::endl;
     std::cout << "  database root directory : " << databaseRootDirectoryPath << std::endl;
     std::cout << "  output directory        : " << outputDirectoryPath << std::endl;
     std::cout << "  alpha-premultiply       : " << doAlphaPremultiply << std::endl;
 
-    if (Utils::CaseInsensitiveEquals(databaseName, "explosion"))
+    if constexpr (IsRegular)
     {
-        Baker::BakeRegularAtlas<Render::ExplosionTextureDatabaseTraits>(
-            databaseRootDirectoryPath,
-            outputDirectoryPath,
-            doAlphaPremultiply);
+        if (Utils::CaseInsensitiveEquals(databaseName, "explosion"))
+        {
+            Baker::BakeAtlas<Render::ExplosionTextureDatabaseTraits, true>(
+                databaseRootDirectoryPath,
+                outputDirectoryPath,
+                doAlphaPremultiply);
+        }
+        else
+        {
+            throw std::runtime_error("Unrecognized database name '" + databaseName + "'");
+        }
     }
     else
     {
-        throw std::runtime_error("Unrecognized database name '" + databaseName + "'");
+        if (Utils::CaseInsensitiveEquals(databaseName, "npc"))
+        {
+            Baker::BakeAtlas<Render::NpcTextureDatabaseTraits, false>(
+                databaseRootDirectoryPath,
+                outputDirectoryPath,
+                doAlphaPremultiply);
+        }
+        else
+        {
+            throw std::runtime_error("Unrecognized database name '" + databaseName + "'");
+        }
     }
 
     std::cout << "Baking completed." << std::endl;
@@ -244,6 +271,7 @@ void PrintUsage()
     std::cout << std::endl;
     std::cout << "Usage:" << std::endl;
     std::cout << " analyze <materials_dir> <in_file>" << std::endl;
+    std::cout << " bake_atlas NPC <database_dir> <out_dir> [-a]" << std::endl;
     std::cout << " bake_regular_atlas Explosion <database_dir> <out_dir> [-a]" << std::endl;
     std::cout << " quantize <materials_dir> <in_file> <out_png> [-c <target_fixed_color>]" << std::endl;
     std::cout << "          -r, --keep_ropes] [-g, --keep_glass]" << std::endl;

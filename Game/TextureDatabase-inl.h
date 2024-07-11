@@ -38,8 +38,9 @@ void TextureFrameMetadata<TextureGroups>::Serialize(picojson::object & root) con
     frameId["group"] = picojson::value(static_cast<int64_t>(FrameId.Group));
     frameId["frameIndex"] = picojson::value(static_cast<int64_t>(FrameId.FrameIndex));
     root["id"] = picojson::value(frameId);
+    root["filenameStem"] = picojson::value(FilenameStem);
 
-    root["displayName"] = picojson::value(FrameDisplayName);
+    root["displayName"] = picojson::value(DisplayName);
 }
 
 template <typename TextureGroups>
@@ -69,6 +70,7 @@ TextureFrameMetadata<TextureGroups> TextureFrameMetadata<TextureGroups>::Deseria
     picojson::object const & frameIdJson = root.at("id").get<picojson::object>();
     TextureGroups group = static_cast<TextureGroups>(frameIdJson.at("group").get<std::int64_t>());
     TextureFrameIndex frameIndex = static_cast<TextureFrameIndex>(frameIdJson.at("frameIndex").get<std::int64_t>());
+    std::string const & filenameStem = root.at("filenameStem").get<std::string>();
 
     std::string const & displayName = root.at("displayName").get<std::string>();
 
@@ -80,6 +82,7 @@ TextureFrameMetadata<TextureGroups> TextureFrameMetadata<TextureGroups>::Deseria
         anchorCenter,
         anchorCenterWorld,
         TextureFrameId<TextureGroups>(group, frameIndex),
+        filenameStem,
         displayName);
 }
 
@@ -319,6 +322,7 @@ TextureDatabase<TextureDatabaseTraits> TextureDatabase<TextureDatabaseTraits>::L
                                     anchorWorldX,
                                     anchorWorldY),
                                 TextureFrameId<TextureGroups>(group, frameIndex),
+                                fileData.Stem,
                                 frameDisplayName.has_value() ? *frameDisplayName : fileData.Stem),
                             fileData.Path));
 

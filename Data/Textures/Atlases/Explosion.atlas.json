@@ -11,6 +11,7 @@
           "y": 256
         },
         "displayName": "explosion1_0",
+        "filenameStem": "explosion1_0",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 0,
@@ -53,6 +54,7 @@
           "y": 256
         },
         "displayName": "explosion1_1",
+        "filenameStem": "explosion1_1",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 1,
@@ -95,6 +97,7 @@
           "y": 256
         },
         "displayName": "explosion1_2",
+        "filenameStem": "explosion1_2",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 2,
@@ -137,6 +140,7 @@
           "y": 256
         },
         "displayName": "explosion1_3",
+        "filenameStem": "explosion1_3",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 3,
@@ -179,6 +183,7 @@
           "y": 256
         },
         "displayName": "explosion1_4",
+        "filenameStem": "explosion1_4",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 4,
@@ -221,6 +226,7 @@
           "y": 256
         },
         "displayName": "explosion1_5",
+        "filenameStem": "explosion1_5",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 5,
@@ -263,6 +269,7 @@
           "y": 256
         },
         "displayName": "explosion1_6",
+        "filenameStem": "explosion1_6",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 6,
@@ -305,6 +312,7 @@
           "y": 256
         },
         "displayName": "explosion1_7",
+        "filenameStem": "explosion1_7",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 7,
@@ -347,6 +355,7 @@
           "y": 256
         },
         "displayName": "explosion1_8",
+        "filenameStem": "explosion1_8",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 8,
@@ -389,6 +398,7 @@
           "y": 256
         },
         "displayName": "explosion1_9",
+        "filenameStem": "explosion1_9",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 9,
@@ -431,6 +441,7 @@
           "y": 256
         },
         "displayName": "explosion1_10",
+        "filenameStem": "explosion1_10",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 10,
@@ -473,6 +484,7 @@
           "y": 256
         },
         "displayName": "explosion1_11",
+        "filenameStem": "explosion1_11",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 11,
@@ -515,6 +527,7 @@
           "y": 256
         },
         "displayName": "explosion1_12",
+        "filenameStem": "explosion1_12",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 12,
@@ -557,6 +570,7 @@
           "y": 256
         },
         "displayName": "explosion1_13",
+        "filenameStem": "explosion1_13",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 13,
@@ -599,6 +613,7 @@
           "y": 256
         },
         "displayName": "explosion1_14",
+        "filenameStem": "explosion1_14",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 14,
@@ -641,6 +656,7 @@
           "y": 256
         },
         "displayName": "explosion1_15",
+        "filenameStem": "explosion1_15",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 15,
@@ -683,6 +699,7 @@
           "y": 256
         },
         "displayName": "explosion2_16",
+        "filenameStem": "explosion2_16",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 16,
@@ -725,6 +742,7 @@
           "y": 256
         },
         "displayName": "explosion2_17",
+        "filenameStem": "explosion2_17",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 17,
@@ -767,6 +785,7 @@
           "y": 256
         },
         "displayName": "explosion2_18",
+        "filenameStem": "explosion2_18",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 18,
@@ -809,6 +828,7 @@
           "y": 256
         },
         "displayName": "explosion2_19",
+        "filenameStem": "explosion2_19",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 19,
@@ -851,6 +871,7 @@
           "y": 256
         },
         "displayName": "explosion2_20",
+        "filenameStem": "explosion2_20",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 20,
@@ -893,6 +914,7 @@
           "y": 256
         },
         "displayName": "explosion2_21",
+        "filenameStem": "explosion2_21",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 21,
@@ -935,6 +957,7 @@
           "y": 256
         },
         "displayName": "explosion2_22",
+        "filenameStem": "explosion2_22",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 22,
@@ -977,6 +1000,7 @@
           "y": 256
         },
         "displayName": "explosion2_23",
+        "filenameStem": "explosion2_23",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 23,
@@ -1019,6 +1043,7 @@
           "y": 256
         },
         "displayName": "explosion2_24",
+        "filenameStem": "explosion2_24",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 24,
@@ -1061,6 +1086,7 @@
           "y": 256
         },
         "displayName": "explosion2_25",
+        "filenameStem": "explosion2_25",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 25,
@@ -1103,6 +1129,7 @@
           "y": 256
         },
         "displayName": "explosion2_26",
+        "filenameStem": "explosion2_26",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 26,
@@ -1145,6 +1172,7 @@
           "y": 256
         },
         "displayName": "explosion2_27",
+        "filenameStem": "explosion2_27",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 27,
@@ -1187,6 +1215,7 @@
           "y": 256
         },
         "displayName": "explosion2_28",
+        "filenameStem": "explosion2_28",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 28,
@@ -1229,6 +1258,7 @@
           "y": 256
         },
         "displayName": "explosion2_29",
+        "filenameStem": "explosion2_29",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 29,
@@ -1271,6 +1301,7 @@
           "y": 256
         },
         "displayName": "explosion2_30",
+        "filenameStem": "explosion2_30",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 30,
@@ -1313,6 +1344,7 @@
           "y": 256
         },
         "displayName": "explosion2_31",
+        "filenameStem": "explosion2_31",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 31,
@@ -1355,6 +1387,7 @@
           "y": 256
         },
         "displayName": "explosion3_32",
+        "filenameStem": "explosion3_32",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 32,
@@ -1397,6 +1430,7 @@
           "y": 256
         },
         "displayName": "explosion3_33",
+        "filenameStem": "explosion3_33",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 33,
@@ -1439,6 +1473,7 @@
           "y": 256
         },
         "displayName": "explosion3_34",
+        "filenameStem": "explosion3_34",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 34,
@@ -1481,6 +1516,7 @@
           "y": 256
         },
         "displayName": "explosion3_35",
+        "filenameStem": "explosion3_35",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 35,
@@ -1523,6 +1559,7 @@
           "y": 256
         },
         "displayName": "explosion3_36",
+        "filenameStem": "explosion3_36",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 36,
@@ -1565,6 +1602,7 @@
           "y": 256
         },
         "displayName": "explosion3_37",
+        "filenameStem": "explosion3_37",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 37,
@@ -1607,6 +1645,7 @@
           "y": 256
         },
         "displayName": "explosion3_38",
+        "filenameStem": "explosion3_38",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 38,
@@ -1649,6 +1688,7 @@
           "y": 256
         },
         "displayName": "explosion3_39",
+        "filenameStem": "explosion3_39",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 39,
@@ -1691,6 +1731,7 @@
           "y": 256
         },
         "displayName": "explosion3_40",
+        "filenameStem": "explosion3_40",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 40,
@@ -1733,6 +1774,7 @@
           "y": 256
         },
         "displayName": "explosion3_41",
+        "filenameStem": "explosion3_41",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 41,
@@ -1775,6 +1817,7 @@
           "y": 256
         },
         "displayName": "explosion3_42",
+        "filenameStem": "explosion3_42",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 42,
@@ -1817,6 +1860,7 @@
           "y": 256
         },
         "displayName": "explosion3_43",
+        "filenameStem": "explosion3_43",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 43,
@@ -1859,6 +1903,7 @@
           "y": 256
         },
         "displayName": "explosion3_44",
+        "filenameStem": "explosion3_44",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 44,
@@ -1901,6 +1946,7 @@
           "y": 256
         },
         "displayName": "explosion3_45",
+        "filenameStem": "explosion3_45",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 45,
@@ -1943,6 +1989,7 @@
           "y": 256
         },
         "displayName": "explosion3_46",
+        "filenameStem": "explosion3_46",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 46,
@@ -1985,6 +2032,7 @@
           "y": 256
         },
         "displayName": "explosion3_47",
+        "filenameStem": "explosion3_47",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 47,
@@ -2027,6 +2075,7 @@
           "y": 256
         },
         "displayName": "explosion4_48",
+        "filenameStem": "explosion4_48",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 48,
@@ -2069,6 +2118,7 @@
           "y": 256
         },
         "displayName": "explosion4_49",
+        "filenameStem": "explosion4_49",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 49,
@@ -2111,6 +2161,7 @@
           "y": 256
         },
         "displayName": "explosion4_50",
+        "filenameStem": "explosion4_50",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 50,
@@ -2153,6 +2204,7 @@
           "y": 256
         },
         "displayName": "explosion4_51",
+        "filenameStem": "explosion4_51",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 51,
@@ -2195,6 +2247,7 @@
           "y": 256
         },
         "displayName": "explosion4_52",
+        "filenameStem": "explosion4_52",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 52,
@@ -2237,6 +2290,7 @@
           "y": 256
         },
         "displayName": "explosion4_53",
+        "filenameStem": "explosion4_53",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 53,
@@ -2279,6 +2333,7 @@
           "y": 256
         },
         "displayName": "explosion4_54",
+        "filenameStem": "explosion4_54",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 54,
@@ -2321,6 +2376,7 @@
           "y": 256
         },
         "displayName": "explosion4_55",
+        "filenameStem": "explosion4_55",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 55,
@@ -2363,6 +2419,7 @@
           "y": 256
         },
         "displayName": "explosion4_56",
+        "filenameStem": "explosion4_56",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 56,
@@ -2405,6 +2462,7 @@
           "y": 256
         },
         "displayName": "explosion4_57",
+        "filenameStem": "explosion4_57",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 57,
@@ -2447,6 +2505,7 @@
           "y": 256
         },
         "displayName": "explosion4_58",
+        "filenameStem": "explosion4_58",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 58,
@@ -2489,6 +2548,7 @@
           "y": 256
         },
         "displayName": "explosion4_59",
+        "filenameStem": "explosion4_59",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 59,
@@ -2531,6 +2591,7 @@
           "y": 256
         },
         "displayName": "explosion4_60",
+        "filenameStem": "explosion4_60",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 60,
@@ -2573,6 +2634,7 @@
           "y": 256
         },
         "displayName": "explosion4_61",
+        "filenameStem": "explosion4_61",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 61,
@@ -2615,6 +2677,7 @@
           "y": 256
         },
         "displayName": "explosion4_62",
+        "filenameStem": "explosion4_62",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 62,
@@ -2657,6 +2720,7 @@
           "y": 256
         },
         "displayName": "explosion4_63",
+        "filenameStem": "explosion4_63",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 63,

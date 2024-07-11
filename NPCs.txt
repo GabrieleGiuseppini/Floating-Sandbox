@@ -468,10 +468,10 @@ Arch
 				- Global
 					- Materials, dimensions
 				- Per-role
-					- Role colors, frame IDs
+					- Role colors, textureFilenameStem's
 			- Furniture
 				- Per-type
-					- Material, dimensions, frame IDs
+					- Material, dimensions, textureFilenameStem
 		- json refers to frames (in NPC texture DB) by name, but cctor - which also takes texture DB - stores references (or even directly coords!) by numeric ID
 			- json tells all frame names for all applicable variants, including limbs together with orientation variants
 				- Yes, the json for humans will list all frames for variants and all
@@ -500,12 +500,11 @@ Arch
 			+ json changes:
 				+ "name" -> "displayName"
 				+ "filename" -> "filenamePattern"
-			- Add 'filename' to frame metadata, and have TextureAtlasMetadata build an index off it
-					- Verify unique when loading/deserializing
-				- And add GetXByFilename(.)
-				! 1 frame multiple filenames
-			- BakingTool: add "build-atlas" (sibling of "build-regular-atlas")
-			- TODOHERE
+			+ Add 'filenameStem' to frame metadata, and have TextureAtlasMetadata build an index off it
+					+ Verify unique when loading/deserializing			
+			+ Run texture atlas/DB unit tests
+			- Make actual NPC atlas
+				= BakingTool: add "build-atlas" (sibling of "build-regular-atlas")
 		- NpcDatabase:
 			- static NpcDatabase Load(ResourceLocator const & resourceLocator, TextureAtlas(Metadata?) const &, MaterialDB const &)
 				- Invoked right after we build MaterialDB

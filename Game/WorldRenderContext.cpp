@@ -583,7 +583,7 @@ void WorldRenderContext::InitializeWorldTextures(ResourceLocator const & resourc
         assert(static_cast<size_t>(tfs.Metadata.FrameId.FrameIndex) == mOceanAvailableThumbnails.size());
 
         mOceanAvailableThumbnails.emplace_back(
-            tfs.Metadata.FrameDisplayName,
+            tfs.Metadata.DisplayName,
             std::move(textureThumbnail));
     }
 
@@ -603,7 +603,7 @@ void WorldRenderContext::InitializeWorldTextures(ResourceLocator const & resourc
         assert(static_cast<size_t>(tfs.Metadata.FrameId.FrameIndex) == mLandAvailableThumbnails.size());
 
         mLandAvailableThumbnails.emplace_back(
-            tfs.Metadata.FrameDisplayName,
+            tfs.Metadata.DisplayName,
             std::move(textureThumbnail));
     }
 }

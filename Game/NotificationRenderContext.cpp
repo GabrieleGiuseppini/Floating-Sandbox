@@ -93,6 +93,7 @@ NotificationRenderContext::NotificationRenderContext(
             TextureFrameId<FontTextureGroups>(
                 FontTextureGroups::Font,
                 static_cast<TextureFrameIndex>(f)),
+            std::to_string(f),
             std::to_string(f));
 
         fontTextures.emplace_back(
