@@ -65,6 +65,8 @@ TextureAtlasMetadata<TextureGroups>::TextureAtlasMetadata(
 
         if (!isInserted)
         {
+            // Note: this may happen if the same file is, for example, used with different world sizes; in such cases,
+            // one cannot use an Atlas
             throw GameException("Atlas metadata frame filename \"" + mFrameMetadata[i].FrameMetadata.FilenameStem + "\" is duplicated");
         }
     }
