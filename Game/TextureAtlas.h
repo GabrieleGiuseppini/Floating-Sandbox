@@ -101,7 +101,7 @@ public:
         return (static_cast<int>(mOptions) & static_cast<int>(AtlasOptions::AlphaPremultiply));
     }
 
-    inline std::vector<TextureAtlasFrameMetadata<TextureGroups>> const & GetFrameMetadata() const
+    inline std::vector<TextureAtlasFrameMetadata<TextureGroups>> const & GetAllFramesMetadata() const
     {
         return mFrameMetadata;
     }

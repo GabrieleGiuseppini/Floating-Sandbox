@@ -460,6 +460,7 @@ Arch
 			- Human height & width: just for consistency, doesn't use frames to calc anything
 				- Replaces GameParameters'
 				- Only height though? We don't need width, right?
+				- TODO: neither - we don't want to repeat H for each passenger; but may be multiplier/s?
 			- Furniture and human materials: json references structural materials by name
 				- Human references both (head & feet)
 		- Two sections, each own schema:
@@ -495,10 +496,20 @@ Arch
 			- (NpcSubKindIdType) -> NpcParticleMesh info
 			- (NpcSubKindIdType, Language) -> Name
 	- Impl:
+		- NPC Texture Database:
+			+ json changes:
+				+ "name" -> "displayName"
+				+ "filename" -> "filenamePattern"
+			- Add 'filename' to frame metadata, and have TextureAtlasMetadata build an index off it
+					- Verify unique when loading/deserializing
+				- And add GetXByFilename(.)
+				! 1 frame multiple filenames
+			- BakingTool: add "build-atlas" (sibling of "build-regular-atlas")
+			- TODOHERE
 		- NpcDatabase:
-			- static NpcDatabase Load(ResourceLocator const & resourceLocator, TextureDB const &, MaterialDB const &)
+			- static NpcDatabase Load(ResourceLocator const & resourceLocator, TextureAtlas(Metadata?) const &, MaterialDB const &)
 				- Invoked right after we build MaterialDB
-			- Add(NpcDatabase const &, TextureDB const &, MaterialDB const &)
+			- Add(NpcDatabase const &, TextureAtlas(Metadata?) const &, MaterialDB const &)
 		- NpcDatabase replaces MaterialDatabase that is passed over to Npcs class
 		- MainFrame:
 			- private BuildNpcSubmenus()

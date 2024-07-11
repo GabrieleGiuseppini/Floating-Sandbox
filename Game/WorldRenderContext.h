@@ -210,7 +210,7 @@ public:
         // Populate quad in buffer
         //
 
-        size_t const cloudTextureIndex = static_cast<size_t>(cloudId) % mCloudTextureAtlasMetadata->GetFrameMetadata().size();
+        size_t const cloudTextureIndex = static_cast<size_t>(cloudId) % mCloudTextureAtlasMetadata->GetAllFramesMetadata().size();
 
         auto const & cloudAtlasFrameMetadata = mCloudTextureAtlasMetadata->GetFrameMetadata(
             CloudTextureGroups::Cloud,
@@ -404,7 +404,7 @@ public:
             case OceanRenderModeType::Texture:
             {
                 // We squash the top a little towards the rest position, to give a slight ondulation
-                oceanSegment.yTexture1 = yTop * 0.75f; 
+                oceanSegment.yTexture1 = yTop * 0.75f;
                 oceanSegment.yTexture2 = yVisibleWorldBottom;
 
                 break;

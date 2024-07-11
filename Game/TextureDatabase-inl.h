@@ -39,7 +39,7 @@ void TextureFrameMetadata<TextureGroups>::Serialize(picojson::object & root) con
     frameId["frameIndex"] = picojson::value(static_cast<int64_t>(FrameId.FrameIndex));
     root["id"] = picojson::value(frameId);
 
-    root["name"] = picojson::value(FrameName);
+    root["displayName"] = picojson::value(FrameDisplayName);
 }
 
 template <typename TextureGroups>
@@ -70,7 +70,7 @@ TextureFrameMetadata<TextureGroups> TextureFrameMetadata<TextureGroups>::Deseria
     TextureGroups group = static_cast<TextureGroups>(frameIdJson.at("group").get<std::int64_t>());
     TextureFrameIndex frameIndex = static_cast<TextureFrameIndex>(frameIdJson.at("frameIndex").get<std::int64_t>());
 
-    std::string const & name = root.at("name").get<std::string>();
+    std::string const & displayName = root.at("displayName").get<std::string>();
 
     return TextureFrameMetadata<TextureGroups>(
         size,
@@ -80,7 +80,7 @@ TextureFrameMetadata<TextureGroups> TextureFrameMetadata<TextureGroups>::Deseria
         anchorCenter,
         anchorCenterWorld,
         TextureFrameId<TextureGroups>(group, frameIndex),
-        name);
+        displayName);
 }
 
 template <typename TextureDatabaseTraits>
@@ -169,7 +169,6 @@ TextureDatabase<TextureDatabaseTraits> TextureDatabase<TextureDatabaseTraits>::L
         int groupAnchorOffsetX = Utils::GetOptionalJsonMember<int>(groupJson, "anchorOffsetX", 0);
         int groupAnchorOffsetY = Utils::GetOptionalJsonMember<int>(groupJson, "anchorOffsetY", 0);
 
-
         //
         // Process frames from JSON and build texture frames
         //
@@ -186,18 +185,18 @@ TextureDatabase<TextureDatabaseTraits> TextureDatabase<TextureDatabaseTraits>::L
             auto frameJson = frameValue.get<picojson::object>();
 
             // Get frame properties
-            std::optional<int> frameOptionalIndex = Utils::GetOptionalJsonMember<int>(frameJson, "index");
-            std::optional<float> frameWorldScaling = Utils::GetOptionalJsonMember<float>(frameJson, "worldScaling");
+            std::optional<int> const frameOptionalIndex = Utils::GetOptionalJsonMember<int>(frameJson, "index");
+            std::optional<float> const frameWorldScaling = Utils::GetOptionalJsonMember<float>(frameJson, "worldScaling");
             std::optional<float> frameWorldWidth = Utils::GetOptionalJsonMember<float>(frameJson, "worldWidth");
             std::optional<float> frameWorldHeight = Utils::GetOptionalJsonMember<float>(frameJson, "worldHeight");
-            std::optional<bool> frameHasOwnAmbientLight = Utils::GetOptionalJsonMember<bool>(frameJson, "hasOwnAmbientLight");
-            std::optional<int> frameAnchorOffsetX = Utils::GetOptionalJsonMember<int>(frameJson, "anchorOffsetX");
-            std::optional<int> frameAnchorOffsetY = Utils::GetOptionalJsonMember<int>(frameJson, "anchorOffsetY");
-            std::optional<std::string> frameName = Utils::GetOptionalJsonMember<std::string>(frameJson, "name");
+            std::optional<bool> const frameHasOwnAmbientLight = Utils::GetOptionalJsonMember<bool>(frameJson, "hasOwnAmbientLight");
+            std::optional<int> const frameAnchorOffsetX = Utils::GetOptionalJsonMember<int>(frameJson, "anchorOffsetX");
+            std::optional<int> const frameAnchorOffsetY = Utils::GetOptionalJsonMember<int>(frameJson, "anchorOffsetY");
+            std::optional<std::string> const frameDisplayName = Utils::GetOptionalJsonMember<std::string>(frameJson, "displayName");
 
             // Get filename and make regex out of it
-            std::string frameFilename = Utils::GetMandatoryJsonMember<std::string>(frameJson, "filename");
-            std::regex const frameFilenameRegex("^" + frameFilename + "$");
+            std::string const frameFilenamePattern = Utils::GetMandatoryJsonMember<std::string>(frameJson, "filenamePattern");
+            std::regex const frameFilenameRegex("^" + frameFilenamePattern + "$");
 
             // Find all files matching the regex
             int filesFoundFromFrameCount = 0;
@@ -290,7 +289,7 @@ TextureDatabase<TextureDatabaseTraits> TextureDatabase<TextureDatabaseTraits>::L
                     }
                     else
                     {
-                        throw GameException("Texture database: cannot find world dimensions for frame \"" + frameFilename + "\"");
+                        throw GameException("Texture database: cannot find world dimensions for frame \"" + frameFilenamePattern + "\"");
                     }
 
                     bool hasOwnAmbientLight = frameHasOwnAmbientLight.has_value() ? *frameHasOwnAmbientLight : groupHasOwnAmbientLight;
@@ -301,9 +300,6 @@ TextureDatabase<TextureDatabaseTraits> TextureDatabase<TextureDatabaseTraits>::L
                     // Transform to world
                     float anchorWorldX = static_cast<float>(anchorX) * worldWidth / static_cast<float>(textureSize.width);
                     float anchorWorldY = static_cast<float>(textureSize.height - anchorY) * worldHeight / static_cast<float>(textureSize.height);
-
-                    std::string name = frameName.has_value() ? *frameName : std::to_string(frameIndex);
-
 
                     //
                     // Store frame specification
@@ -323,7 +319,7 @@ TextureDatabase<TextureDatabaseTraits> TextureDatabase<TextureDatabaseTraits>::L
                                     anchorWorldX,
                                     anchorWorldY),
                                 TextureFrameId<TextureGroups>(group, frameIndex),
-                                name),
+                                frameDisplayName.has_value() ? *frameDisplayName : fileData.Stem),
                             fileData.Path));
 
 
@@ -340,7 +336,7 @@ TextureDatabase<TextureDatabaseTraits> TextureDatabase<TextureDatabaseTraits>::L
             // Make sure at least one matching file was found for this frame specification
             if (0 == filesFoundFromFrameCount)
             {
-                throw GameException("Texture database: couldn't match any file to frame file \"" + frameFilename + "\"");
+                throw GameException("Texture database: couldn't match any file to frame filename pattern \"" + frameFilenamePattern + "\"");
             }
         }
 

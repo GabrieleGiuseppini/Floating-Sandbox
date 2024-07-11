@@ -63,7 +63,7 @@ void Quantizer::Quantize(
 
     std::vector<std::pair<vec3f, rgbColor>> gameColors;
 
-    for (auto const & entry : materials.GetStructuralMaterialMap())
+    for (auto const & entry : materials.GetStructuralMaterialColorMap())
     {
         if ( (!entry.second.IsUniqueType(StructuralMaterial::MaterialUniqueType::Rope) || doKeepRopes)
             && (entry.second.Name != "Glass" || doKeepGlass))
@@ -71,7 +71,7 @@ void Quantizer::Quantize(
             gameColors.emplace_back(
                 std::make_pair(
                     entry.first.toVec3f(),
-                    entry.first));
+                    rgbColor(entry.first)));
         }
     }
 

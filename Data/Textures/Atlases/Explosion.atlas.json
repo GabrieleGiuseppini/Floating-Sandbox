@@ -10,12 +10,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion1_0",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 0,
           "group": 0
         },
-        "name": "0",
         "size": {
           "height": 512,
           "width": 512
@@ -52,12 +52,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion1_1",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 1,
           "group": 0
         },
-        "name": "1",
         "size": {
           "height": 512,
           "width": 512
@@ -94,12 +94,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion1_2",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 2,
           "group": 0
         },
-        "name": "2",
         "size": {
           "height": 512,
           "width": 512
@@ -136,12 +136,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion1_3",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 3,
           "group": 0
         },
-        "name": "3",
         "size": {
           "height": 512,
           "width": 512
@@ -178,12 +178,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion1_4",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 4,
           "group": 0
         },
-        "name": "4",
         "size": {
           "height": 512,
           "width": 512
@@ -220,12 +220,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion1_5",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 5,
           "group": 0
         },
-        "name": "5",
         "size": {
           "height": 512,
           "width": 512
@@ -262,12 +262,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion1_6",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 6,
           "group": 0
         },
-        "name": "6",
         "size": {
           "height": 512,
           "width": 512
@@ -304,12 +304,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion1_7",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 7,
           "group": 0
         },
-        "name": "7",
         "size": {
           "height": 512,
           "width": 512
@@ -346,12 +346,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion1_8",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 8,
           "group": 0
         },
-        "name": "8",
         "size": {
           "height": 512,
           "width": 512
@@ -388,12 +388,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion1_9",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 9,
           "group": 0
         },
-        "name": "9",
         "size": {
           "height": 512,
           "width": 512
@@ -430,12 +430,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion1_10",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 10,
           "group": 0
         },
-        "name": "10",
         "size": {
           "height": 512,
           "width": 512
@@ -472,12 +472,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion1_11",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 11,
           "group": 0
         },
-        "name": "11",
         "size": {
           "height": 512,
           "width": 512
@@ -514,12 +514,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion1_12",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 12,
           "group": 0
         },
-        "name": "12",
         "size": {
           "height": 512,
           "width": 512
@@ -556,12 +556,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion1_13",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 13,
           "group": 0
         },
-        "name": "13",
         "size": {
           "height": 512,
           "width": 512
@@ -598,12 +598,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion1_14",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 14,
           "group": 0
         },
-        "name": "14",
         "size": {
           "height": 512,
           "width": 512
@@ -640,12 +640,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion1_15",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 15,
           "group": 0
         },
-        "name": "15",
         "size": {
           "height": 512,
           "width": 512
@@ -682,12 +682,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion2_16",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 16,
           "group": 0
         },
-        "name": "16",
         "size": {
           "height": 512,
           "width": 512
@@ -724,12 +724,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion2_17",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 17,
           "group": 0
         },
-        "name": "17",
         "size": {
           "height": 512,
           "width": 512
@@ -766,12 +766,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion2_18",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 18,
           "group": 0
         },
-        "name": "18",
         "size": {
           "height": 512,
           "width": 512
@@ -808,12 +808,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion2_19",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 19,
           "group": 0
         },
-        "name": "19",
         "size": {
           "height": 512,
           "width": 512
@@ -850,12 +850,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion2_20",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 20,
           "group": 0
         },
-        "name": "20",
         "size": {
           "height": 512,
           "width": 512
@@ -892,12 +892,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion2_21",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 21,
           "group": 0
         },
-        "name": "21",
         "size": {
           "height": 512,
           "width": 512
@@ -934,12 +934,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion2_22",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 22,
           "group": 0
         },
-        "name": "22",
         "size": {
           "height": 512,
           "width": 512
@@ -976,12 +976,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion2_23",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 23,
           "group": 0
         },
-        "name": "23",
         "size": {
           "height": 512,
           "width": 512
@@ -1018,12 +1018,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion2_24",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 24,
           "group": 0
         },
-        "name": "24",
         "size": {
           "height": 512,
           "width": 512
@@ -1060,12 +1060,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion2_25",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 25,
           "group": 0
         },
-        "name": "25",
         "size": {
           "height": 512,
           "width": 512
@@ -1102,12 +1102,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion2_26",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 26,
           "group": 0
         },
-        "name": "26",
         "size": {
           "height": 512,
           "width": 512
@@ -1144,12 +1144,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion2_27",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 27,
           "group": 0
         },
-        "name": "27",
         "size": {
           "height": 512,
           "width": 512
@@ -1186,12 +1186,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion2_28",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 28,
           "group": 0
         },
-        "name": "28",
         "size": {
           "height": 512,
           "width": 512
@@ -1228,12 +1228,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion2_29",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 29,
           "group": 0
         },
-        "name": "29",
         "size": {
           "height": 512,
           "width": 512
@@ -1270,12 +1270,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion2_30",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 30,
           "group": 0
         },
-        "name": "30",
         "size": {
           "height": 512,
           "width": 512
@@ -1312,12 +1312,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion2_31",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 31,
           "group": 0
         },
-        "name": "31",
         "size": {
           "height": 512,
           "width": 512
@@ -1354,12 +1354,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion3_32",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 32,
           "group": 0
         },
-        "name": "32",
         "size": {
           "height": 512,
           "width": 512
@@ -1396,12 +1396,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion3_33",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 33,
           "group": 0
         },
-        "name": "33",
         "size": {
           "height": 512,
           "width": 512
@@ -1438,12 +1438,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion3_34",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 34,
           "group": 0
         },
-        "name": "34",
         "size": {
           "height": 512,
           "width": 512
@@ -1480,12 +1480,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion3_35",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 35,
           "group": 0
         },
-        "name": "35",
         "size": {
           "height": 512,
           "width": 512
@@ -1522,12 +1522,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion3_36",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 36,
           "group": 0
         },
-        "name": "36",
         "size": {
           "height": 512,
           "width": 512
@@ -1564,12 +1564,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion3_37",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 37,
           "group": 0
         },
-        "name": "37",
         "size": {
           "height": 512,
           "width": 512
@@ -1606,12 +1606,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion3_38",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 38,
           "group": 0
         },
-        "name": "38",
         "size": {
           "height": 512,
           "width": 512
@@ -1648,12 +1648,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion3_39",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 39,
           "group": 0
         },
-        "name": "39",
         "size": {
           "height": 512,
           "width": 512
@@ -1690,12 +1690,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion3_40",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 40,
           "group": 0
         },
-        "name": "40",
         "size": {
           "height": 512,
           "width": 512
@@ -1732,12 +1732,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion3_41",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 41,
           "group": 0
         },
-        "name": "41",
         "size": {
           "height": 512,
           "width": 512
@@ -1774,12 +1774,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion3_42",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 42,
           "group": 0
         },
-        "name": "42",
         "size": {
           "height": 512,
           "width": 512
@@ -1816,12 +1816,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion3_43",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 43,
           "group": 0
         },
-        "name": "43",
         "size": {
           "height": 512,
           "width": 512
@@ -1858,12 +1858,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion3_44",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 44,
           "group": 0
         },
-        "name": "44",
         "size": {
           "height": 512,
           "width": 512
@@ -1900,12 +1900,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion3_45",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 45,
           "group": 0
         },
-        "name": "45",
         "size": {
           "height": 512,
           "width": 512
@@ -1942,12 +1942,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion3_46",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 46,
           "group": 0
         },
-        "name": "46",
         "size": {
           "height": 512,
           "width": 512
@@ -1984,12 +1984,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion3_47",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 47,
           "group": 0
         },
-        "name": "47",
         "size": {
           "height": 512,
           "width": 512
@@ -2026,12 +2026,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion4_48",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 48,
           "group": 0
         },
-        "name": "48",
         "size": {
           "height": 512,
           "width": 512
@@ -2068,12 +2068,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion4_49",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 49,
           "group": 0
         },
-        "name": "49",
         "size": {
           "height": 512,
           "width": 512
@@ -2110,12 +2110,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion4_50",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 50,
           "group": 0
         },
-        "name": "50",
         "size": {
           "height": 512,
           "width": 512
@@ -2152,12 +2152,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion4_51",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 51,
           "group": 0
         },
-        "name": "51",
         "size": {
           "height": 512,
           "width": 512
@@ -2194,12 +2194,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion4_52",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 52,
           "group": 0
         },
-        "name": "52",
         "size": {
           "height": 512,
           "width": 512
@@ -2236,12 +2236,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion4_53",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 53,
           "group": 0
         },
-        "name": "53",
         "size": {
           "height": 512,
           "width": 512
@@ -2278,12 +2278,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion4_54",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 54,
           "group": 0
         },
-        "name": "54",
         "size": {
           "height": 512,
           "width": 512
@@ -2320,12 +2320,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion4_55",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 55,
           "group": 0
         },
-        "name": "55",
         "size": {
           "height": 512,
           "width": 512
@@ -2362,12 +2362,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion4_56",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 56,
           "group": 0
         },
-        "name": "56",
         "size": {
           "height": 512,
           "width": 512
@@ -2404,12 +2404,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion4_57",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 57,
           "group": 0
         },
-        "name": "57",
         "size": {
           "height": 512,
           "width": 512
@@ -2446,12 +2446,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion4_58",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 58,
           "group": 0
         },
-        "name": "58",
         "size": {
           "height": 512,
           "width": 512
@@ -2488,12 +2488,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion4_59",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 59,
           "group": 0
         },
-        "name": "59",
         "size": {
           "height": 512,
           "width": 512
@@ -2530,12 +2530,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion4_60",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 60,
           "group": 0
         },
-        "name": "60",
         "size": {
           "height": 512,
           "width": 512
@@ -2572,12 +2572,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion4_61",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 61,
           "group": 0
         },
-        "name": "61",
         "size": {
           "height": 512,
           "width": 512
@@ -2614,12 +2614,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion4_62",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 62,
           "group": 0
         },
-        "name": "62",
         "size": {
           "height": 512,
           "width": 512
@@ -2656,12 +2656,12 @@
           "x": 256,
           "y": 256
         },
+        "displayName": "explosion4_63",
         "has_own_ambient_light": true,
         "id": {
           "frameIndex": 63,
           "group": 0
         },
-        "name": "63",
         "size": {
           "height": 512,
           "width": 512

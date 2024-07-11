@@ -300,7 +300,7 @@ WorldRenderContext::WorldRenderContext(
     glBindVertexArray(0);
 
     // Set texture parameters
-    
+
     mShaderManager.ActivateProgram<ProgramType::OceanFlatDetailedBackground>();
     mShaderManager.SetTextureParameters<ProgramType::OceanFlatDetailedBackground>();
     mShaderManager.ActivateProgram<ProgramType::OceanFlatDetailedForeground>();
@@ -583,7 +583,7 @@ void WorldRenderContext::InitializeWorldTextures(ResourceLocator const & resourc
         assert(static_cast<size_t>(tfs.Metadata.FrameId.FrameIndex) == mOceanAvailableThumbnails.size());
 
         mOceanAvailableThumbnails.emplace_back(
-            tfs.Metadata.FrameName,
+            tfs.Metadata.FrameDisplayName,
             std::move(textureThumbnail));
     }
 
@@ -603,7 +603,7 @@ void WorldRenderContext::InitializeWorldTextures(ResourceLocator const & resourc
         assert(static_cast<size_t>(tfs.Metadata.FrameId.FrameIndex) == mLandAvailableThumbnails.size());
 
         mLandAvailableThumbnails.emplace_back(
-            tfs.Metadata.FrameName,
+            tfs.Metadata.FrameDisplayName,
             std::move(textureThumbnail));
     }
 }
@@ -1211,7 +1211,7 @@ void WorldRenderContext::RenderDrawOcean(bool opaquely, RenderParameters const &
 
             mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
             glBindTexture(GL_TEXTURE_1D, *mCloudShadowsTextureOpenGLHandle);
-            
+
             // Draw background if drawing opaquely, else foreground
 
             glBindVertexArray(*mOceanDetailedVAO);
@@ -1244,7 +1244,7 @@ void WorldRenderContext::RenderDrawOcean(bool opaquely, RenderParameters const &
 
                     mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture>();
                     glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(NoiseType::Fine));
-                    
+
                     break;
                 }
 
@@ -1928,14 +1928,14 @@ void WorldRenderContext::ApplyOceanDarkeningRateChanges(RenderParameters const &
 }
 
 void WorldRenderContext::ApplyOceanRenderParametersChanges(RenderParameters const & renderParameters)
-{    
+{
     // Set ocean parameters in all water programs
 
     vec3f const depthColorStart = renderParameters.DepthOceanColorStart.toVec3f();
 
     mShaderManager.ActivateProgram<ProgramType::OceanDepthBasic>();
     mShaderManager.SetProgramParameter<ProgramType::OceanDepthBasic, ProgramParameterType::OceanDepthColorStart>(depthColorStart);
-    
+
     mShaderManager.ActivateProgram<ProgramType::OceanDepthDetailedBackground>();
     mShaderManager.SetProgramParameter<ProgramType::OceanDepthDetailedBackground, ProgramParameterType::OceanDepthColorStart>(depthColorStart);
 

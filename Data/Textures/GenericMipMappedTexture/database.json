@@ -7,7 +7,7 @@
 		{	
 			"worldWidth": 2.0,
 			"worldHeight": 2.0,
-			"filename": "air_bubble_\\d+"
+			"filenamePattern": "air_bubble_\\d+"
 		}
 	]
 },
@@ -21,7 +21,7 @@
 			"worldHeight": 12.0,
 			"anchorOffsetX": 0,
 			"anchorOffsetY": 0,
-			"filename": "am_bomb_armor_\\d+"
+			"filenamePattern": "am_bomb_armor_\\d+"
 		}
 	]
 },
@@ -33,7 +33,7 @@
 		{	
 			"worldWidth": 6.0,
 			"worldHeight": 6.0,
-			"filename": "am_bomb_sphere_\\d+"
+			"filenamePattern": "am_bomb_sphere_\\d+"
 		}
 	]
 },
@@ -45,7 +45,7 @@
 		{	
 			"worldWidth": 6.0,
 			"worldHeight": 6.0,
-			"filename": "am_bomb_sphere_cloud_\\d+"
+			"filenamePattern": "am_bomb_sphere_cloud_\\d+"
 		}
 	]
 },
@@ -57,7 +57,7 @@
 		{	
 			"worldWidth": 2.0,
 			"worldHeight": 2.0,
-			"filename": "engine_wake_\\d+"
+			"filenamePattern": "engine_wake_\\d+"
 		}
 	]
 },
@@ -69,7 +69,7 @@
 		{	
 			"worldWidth": 6.0,
 			"worldHeight": 6.0,
-			"filename": "impact_bomb_.*"
+			"filenamePattern": "impact_bomb_.*"
 		}
 	]
 },
@@ -81,7 +81,7 @@
 		{	
 			"worldWidth": 1.0,
 			"worldHeight": 1.0,
-			"filename": "laser_cannon_\\d+"
+			"filenamePattern": "laser_cannon_\\d+"
 		}
 	]
 },
@@ -95,7 +95,7 @@
 			"worldHeight": 12.0,
 			"anchorOffsetX": -2,
 			"anchorOffsetY": 2,
-			"filename": "physics_probe_\\d+"
+			"filenamePattern": "physics_probe_\\d+"
 		}
 	]
 },
@@ -109,7 +109,7 @@
 			"worldHeight": 12.0,
 			"anchorOffsetX": -2,
 			"anchorOffsetY": 2,
-			"filename": "physics_probe_ping_\\d+"
+			"filenamePattern": "physics_probe_ping_\\d+"
 		}
 	]
 },
@@ -121,7 +121,7 @@
 		{	
 			"worldWidth": 6.0,
 			"worldHeight": 6.0,
-			"filename": "pinned_point_.*"
+			"filenamePattern": "pinned_point_.*"
 		}
 	]
 },
@@ -134,7 +134,7 @@
 			"worldWidth": 12.0,
 			"worldHeight": 12.0,
 			"anchorOffsetX": -7,
-			"filename": "rc_bomb_\\d+"
+			"filenamePattern": "rc_bomb_\\d+"
 		}
 	]
 },
@@ -147,7 +147,7 @@
 			"worldWidth": 12.0,
 			"worldHeight": 12.0,
 			"anchorOffsetX": -7,
-			"filename": "rc_bomb_ping_\\d+"
+			"filenamePattern": "rc_bomb_ping_\\d+"
 		}
 	]
 },
@@ -159,7 +159,7 @@
 		{	
 			"worldWidth": 24.0,
 			"worldHeight": 24.0,
-			"filename": "smoke_dark_\\d+"
+			"filenamePattern": "smoke_dark_\\d+"
 		}
 	]
 },
@@ -171,7 +171,7 @@
 		{	
 			"worldWidth": 24.0,
 			"worldHeight": 24.0,
-			"filename": "smoke_light_\\d+"
+			"filenamePattern": "smoke_light_\\d+"
 		}
 	]
 },
@@ -185,7 +185,7 @@
 			"worldHeight": 12.0,
 			"anchorOffsetX": -1,
 			"anchorOffsetY": 57,
-			"filename": "timer_bomb_\\d+"
+			"filenamePattern": "timer_bomb_\\d+"
 		}
 	]
 },
@@ -199,7 +199,7 @@
 			"worldHeight": 12.0,
 			"anchorOffsetX": -1,
 			"anchorOffsetY": 57,
-			"filename": "timer_bomb_fuse_\\d+"
+			"filenamePattern": "timer_bomb_fuse_\\d+"
 		}
 	]
 }
