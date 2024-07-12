@@ -27,10 +27,8 @@ NotificationLayer::NotificationLayer(
 	, mIsExtendedStatusTextEnabled(false)
     , mStatusTextLines()
 	, mIsStatusTextDirty(true)
-	// Notification text
-	, mEphemeralTextLines()
-	, mIsNotificationTextDirty(true)
-	// Texture notifications
+	// Notifications
+	, mRollingText()
 	, mIsUltraViolentModeIndicatorOn(isUltraViolentMode)
 	, mIsSoundMuteIndicatorOn(isSoundMuted)
 	, mIsDayLightCycleOn(isDayLightCycleOn)
@@ -169,15 +167,11 @@ void NotificationLayer::SetStatusTexts(
     }
 }
 
-void NotificationLayer::AddEphemeralTextLine(
+void NotificationLayer::PublishNotificationText(
 	std::string const & text,
 	std::chrono::duration<float> lifetime)
 {
-	// Store ephemeral line
-	mEphemeralTextLines.emplace_back(text, lifetime);
-
-	// Text needs to be re-uploaded
-	mIsNotificationTextDirty = true;
+	mRollingText.AddLine(text, lifetime);
 }
 
 void NotificationLayer::SetPhysicsProbePanelState(float open)
@@ -249,9 +243,8 @@ void NotificationLayer::SetAutoFocusIndicator(bool isAutoFocusOn)
 
 void NotificationLayer::Reset()
 {
-	// Nuke notification text
-	mEphemeralTextLines.clear();
-	mIsNotificationTextDirty = true;
+	// Nuke rolling text
+	mRollingText.Reset();
 
 	// Reset physics probe
 	mPhysicsProbePanelState.Reset();
@@ -276,120 +269,14 @@ void NotificationLayer::Reset()
 	mLineGuideToRender2.reset();
 }
 
-void NotificationLayer::Update(float now)
+void NotificationLayer::Update(
+	float now,
+	float currentSimulationTime)
 {
 	//
-	// Update ephemeral lines
-	//
+	// Update rolling text
 
-	{
-		// 1) Trim initial lines if we've got too many
-		while (mEphemeralTextLines.size() > 8)
-		{
-			mEphemeralTextLines.pop_front();
-
-			// Text needs to be re-uploaded
-			mIsNotificationTextDirty = true;
-		}
-
-		// 2) Update state of remaining ones
-		for (auto it = mEphemeralTextLines.begin(); it != mEphemeralTextLines.end(); )
-		{
-			bool doDeleteLine = false;
-
-			switch (it->State)
-			{
-				case EphemeralTextLine::StateType::Initial:
-				{
-					// Initialize fade-in
-					it->State = EphemeralTextLine::StateType::FadingIn;
-					it->CurrentStateStartTimestamp = now;
-
-					[[fallthrough]];
-				}
-
-				case EphemeralTextLine::StateType::FadingIn:
-				{
-					it->CurrentStateProgress = GameWallClock::Progress(now, it->CurrentStateStartTimestamp, 500ms);
-
-					// See if time to transition
-					if (it->CurrentStateProgress >= 1.0f)
-					{
-						it->State = EphemeralTextLine::StateType::Displaying;
-						it->CurrentStateStartTimestamp = now;
-						it->CurrentStateProgress = 0.0f;
-					}
-
-					// Text needs to be re-uploaded (for alpha)
-					mIsNotificationTextDirty = true;
-
-					break;
-				}
-
-				case EphemeralTextLine::StateType::Displaying:
-				{
-					it->CurrentStateProgress = GameWallClock::Progress(now, it->CurrentStateStartTimestamp, it->Lifetime);
-
-					// See if time to transition
-					if (it->CurrentStateProgress >= 1.0f)
-					{
-						it->State = EphemeralTextLine::StateType::FadingOut;
-						it->CurrentStateStartTimestamp = now;
-						it->CurrentStateProgress = 0.0f;
-					}
-
-					break;
-				}
-
-				case EphemeralTextLine::StateType::FadingOut:
-				{
-					it->CurrentStateProgress = GameWallClock::Progress(now, it->CurrentStateStartTimestamp, 500ms);
-
-					// See if time to transition
-					if (it->CurrentStateProgress >= 1.0f)
-					{
-						it->State = EphemeralTextLine::StateType::Disappearing;
-						it->CurrentStateStartTimestamp = now;
-						it->CurrentStateProgress = 0.0f;
-					}
-
-					// Text needs to be re-uploaded (for alpha)
-					mIsNotificationTextDirty = true;
-
-					break;
-				}
-
-				case EphemeralTextLine::StateType::Disappearing:
-				{
-					it->CurrentStateProgress = GameWallClock::Progress(now, it->CurrentStateStartTimestamp, 500ms);
-
-					// See if time to turn off
-					if (it->CurrentStateProgress >= 1.0f)
-					{
-						doDeleteLine = true;
-					}
-
-					// Text needs to be re-uploaded (for vertical offset)
-					mIsNotificationTextDirty = true;
-
-					break;
-				}
-			}
-
-			// Advance
-			if (doDeleteLine)
-			{
-				it = mEphemeralTextLines.erase(it);
-
-				// Text needs to be re-uploaded
-				mIsNotificationTextDirty = true;
-			}
-			else
-			{
-				++it;
-			}
-		}
-	}
+	mRollingText.Update(currentSimulationTime);
 
 	//
 	// Update physics probe panel
@@ -506,83 +393,10 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 	}
 
 	//
-	// Upload notification text, if needed
+	// Upload notification text
 	//
 
-	if (mIsNotificationTextDirty)
-	{
-		notificationRenderContext.UploadNotificationTextStart();
-
-		vec2f screenOffset = vec2f::zero(); // Cumulative vertical offset
-		for (auto const & etl : mEphemeralTextLines)
-		{
-			switch (etl.State)
-			{
-				case EphemeralTextLine::StateType::FadingIn:
-				{
-					// Upload text
-					notificationRenderContext.UploadNotificationTextLine(
-						etl.Text,
-						Render::AnchorPositionType::TopRight,
-						screenOffset,
-						std::min(1.0f, etl.CurrentStateProgress));
-
-					// Update offset of next line
-					screenOffset.y += 1.0f;
-
-					break;
-				}
-
-				case EphemeralTextLine::StateType::Displaying:
-				{
-					// Upload text
-					notificationRenderContext.UploadNotificationTextLine(
-						etl.Text,
-						Render::AnchorPositionType::TopRight,
-						screenOffset,
-						1.0f);
-
-					// Update offset of next line
-					screenOffset.y += 1.0f;
-
-					break;
-				}
-
-				case EphemeralTextLine::StateType::FadingOut:
-				{
-					// Upload text
-					notificationRenderContext.UploadNotificationTextLine(
-						etl.Text,
-						Render::AnchorPositionType::TopRight,
-						screenOffset,
-						1.0f - std::min(1.0f, etl.CurrentStateProgress));
-
-					// Update offset of next line
-					screenOffset.y += 1.0f;
-
-					break;
-				}
-
-				case EphemeralTextLine::StateType::Disappearing:
-				{
-					// Update offset of next line
-					screenOffset.y += (1.0f - std::min(1.0f, etl.CurrentStateProgress));
-
-					break;
-				}
-
-				default:
-				{
-					// Do not upload
-					break;
-				}
-			}
-		}
-
-		notificationRenderContext.UploadNotificationTextEnd();
-
-		mIsNotificationTextDirty = false;
-	}
+	mRollingText.RenderUpload(notificationRenderContext);
 
 	//
 	// Upload texture notifications, when needed

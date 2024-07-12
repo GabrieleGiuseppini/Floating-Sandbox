@@ -8,6 +8,7 @@
 #include "GameEventDispatcher.h"
 #include "PerfStats.h"
 #include "RenderContext.h"
+#include "RollingText.h"
 
 #include <GameCore/GameTypes.h>
 
@@ -47,7 +48,7 @@ public:
         vec2f const & camera,
         Render::RenderStatistics renderStats);
 
-	void AddEphemeralTextLine(
+	void PublishNotificationText(
 		std::string const & text,
 		std::chrono::duration<float> lifetime = std::chrono::duration<float>(1.0f));
 
@@ -148,7 +149,9 @@ public:
 
 	void Reset();
 
-    void Update(float now);
+    void Update(
+		float now,
+		float currentSimulationTime);
 
 	void RenderUpload(Render::RenderContext & renderContext);
 
@@ -188,47 +191,10 @@ private:
 	bool mIsStatusTextDirty;
 
 	//
-	// Notification text
+	// Notifications
 	//
 
-	struct EphemeralTextLine
-	{
-		std::string Text;
-		std::chrono::duration<float> Lifetime;
-
-		enum class StateType
-		{
-			Initial,
-			FadingIn,
-			Displaying,
-			FadingOut,
-			Disappearing
-		};
-
-		StateType State;
-		float CurrentStateStartTimestamp;
-		float CurrentStateProgress;
-
-		EphemeralTextLine(
-			std::string const & text,
-			std::chrono::duration<float> const lifetime)
-			: Text(text)
-			, Lifetime(lifetime)
-			, State(StateType::Initial)
-			, CurrentStateStartTimestamp(0.0f)
-			, CurrentStateProgress(0.0f)
-		{}
-
-		EphemeralTextLine(EphemeralTextLine && other) = default;
-		EphemeralTextLine & operator=(EphemeralTextLine && other) = default;
-	};
-
-	std::deque<EphemeralTextLine> mEphemeralTextLines; // Ordered from top to bottom
-	bool mIsNotificationTextDirty;
-
-	//
-	// Texture notifications
-	//
+	RollingText mRollingText;
 
 	bool mIsUltraViolentModeIndicatorOn;
 	bool mIsSoundMuteIndicatorOn;

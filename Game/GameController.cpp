@@ -402,7 +402,7 @@ void GameController::RunGameIteration()
         UpdateAllStateMachines(mWorld->GetCurrentSimulationTime());
 
         // Update notification layer
-        mNotificationLayer.Update(nowGame);
+        mNotificationLayer.Update(nowGame, mWorld->GetCurrentSimulationTime());
 
         // Tell RenderContext we've finished an update
         mRenderContext->UpdateEnd();
@@ -574,7 +574,7 @@ void GameController::SetMoveToolEngaged(bool isEngaged)
 
 void GameController::DisplaySettingsLoadedNotification()
 {
-    mNotificationLayer.AddEphemeralTextLine("SETTINGS LOADED");
+    mNotificationLayer.PublishNotificationText("SETTINGS LOADED");
 }
 
 bool GameController::GetShowStatusText() const
@@ -599,7 +599,7 @@ void GameController::SetShowExtendedStatusText(bool value)
 
 void GameController::DisplayEphemeralTextLine(std::string const & text)
 {
-    mNotificationLayer.AddEphemeralTextLine(text);
+    mNotificationLayer.PublishNotificationText(text);
 }
 
 void GameController::NotifySoundMuted(bool isSoundMuted)
@@ -1531,7 +1531,7 @@ void GameController::OnTsunami(float x)
 
 void GameController::OnShipRepaired(ShipId /*shipId*/)
 {
-    mNotificationLayer.AddEphemeralTextLine("SHIP REPAIRED!");
+    mNotificationLayer.PublishNotificationText("SHIP REPAIRED!");
 
     LogMessage("Ship repaired!");
 }

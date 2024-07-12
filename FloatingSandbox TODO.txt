@@ -15,9 +15,7 @@
 		- 2. Calculate spring forces due to deltapos'
 		- 3. Integrate spring forces and calculate final velocity from 1 to 3
 
-	- Redo notifications' EphemeralText
-		- As RollingText
-		- TODO: spec
+	+ Redo notifications' EphemeralText: RollingText
 
 	= Quad rendering with indices
 		+ Sharing VBOs (for indices) in VAOs: 

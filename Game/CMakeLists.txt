@@ -38,6 +38,8 @@ set  (GAME_SOURCES
 	ResourceLocator.cpp
 	ResourceLocator.h
 	RopeBuffer.h
+	RollingText.cpp
+	RollingText.h
 	ShipAutoTexturizationSettings.cpp
 	ShipAutoTexturizationSettings.h
 	ShipDefinition.h
