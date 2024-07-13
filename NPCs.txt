@@ -446,122 +446,36 @@ Arch
 
 	- Misc possible improvements:
 		- Maintain spring lengths during BeingPlaced (to avoid elongations)
+		- See if can avoid furniture bending
 			- Try that other spring relaxation algo
 		+ fmod improvements
 			+ See https://cboard.cprogramming.com/c-programming/105096-fmod.html
 
-= NpcDatabase:
-	! Spec:
-		! cctor takes MaterialDatabase (for taking Materials referenced to by name in json) and NPC Texture Atlas(for taking TextureCoords)
-		! Provides info on humans (e.g. role colors, frame IDs) and furniture (height, frame IDs, material)
-			! Furniture height: used to calculate width based off texture frame
-			! Human: only SizeMultiplier
-				! We don't want to repeat H for each human
-			! Furniture and human materials: json references structural materials by name
-				! Human references both (head & feet)
-		! Two sections, each own schema:
-			! Humans
-				! Global
-					! Material X 2
-				! Per-kind
-					! Role, Name
-					! SizeMultiplier
-					! TextureFilenameStem's
-			! Furniture
-				! Per-kind
-					! Name
-					! Material
-					! Mesh
-						! Type (@ NpcDatabase)
-						! Dimension
-					! TextureFilenameStem
-		! json refers to frames (in NPC texture DB) by name, but cctor - which also takes texture DB - stores references (or even directly coords!) by numeric ID
-			! json tells all frame names for all applicable variants, including limbs together with orientation variants
-				! Yes, the json for humans will list all frames for variants and all
-					! Might have a new type (at NpcDatabase or as as new GameType) that holds together all texture info's for a human (e.g. "head front", "head side", etc.) and the json basically fills this
-		- Allow for merging of multiple "packs"
-			- So SubKind domain is expandable at runtime
-		- Also affects UI (for menu with list of subkind names, which might have multiple languages)
-	- Details:
-		+ NpcSubKindIdType: alias for uint 
-			+ @ GameTypes
-				+ Nuke old FurnitureNpcKindType, NpcKindType
-			+ No different aliases for the two different NpcKind's - we will have a 2D coord for a specific subkind (NpcKindType, NpcSubKindIdType)
-				+ So NpcSubKindIdType=X means one thing for Humans and another thing for Furniture
-		+ Humans:
-			+ (NpcSubKindIdType) -> Material X 2 (GetHeadMaterial, GetFeetMaterial)
-			+ (NpcSubKindIdType) -> SizeMultiplier
-			+ (NpcSubKindIdType) -> TextureCoords (or that new GameType we talk about above which holds together all texture info's for all variants), colors
-				- Initialization gets texture DB to populate this
-			+ (NpcSubKindIdType, Language) -> Name
-		+ Furniture:
-			+ (NpcSubKindIdType) -> Material
-			+ (NpcSubKindIdType) -> TextureCoords
-			+ (NpcSubKindIdType) -> NpcParticleMesh info
-			+ (NpcSubKindIdType, Language) -> Name
-	= Impl:
-		+ NPC Texture Database:
-			+ json changes:
-				+ "name" -> "displayName"
-				+ "filename" -> "filenamePattern"
-			+ Add 'filenameStem' to frame metadata, and have TextureAtlasMetadata build an index off it
-					+ Verify unique when loading/deserializing			
-			+ Run texture atlas/DB unit tests
-			+ Assign frame index when not present
-				+ First off, nuke frameIndex
-					+ World json
-					+ Code
-				+ @ group reading: "autoAssignFrameIndices" bool, default=false
-				+ Complain if auto-assign & specified (if we haven't nuked code)
-				+ Test land/ocean textures
-			+ Make actual NPC atlas
-				+ BakingTool: add "build-atlas" (sibling of "build-regular-atlas")
-				+ Dummy
-				+ Crate
-		- NpcDatabase:
-			+ static NpcDatabase Load(ResourceLocator const & resourceLocator, TextureAtlas(Metadata?) const &, MaterialDB const &)
-				+ Invoked right after we build MaterialDB
-			- AddDatabase(NpcDatabase const &, TextureAtlas(Metadata?) const &, MaterialDB const &)
-				- TODOHERE: not sure yet, might remove this item and postpone it to when needed?
-		+ GameController:
-			+ Loads NpcTextureAtlas
-			+ Loads NpcDatabase
-			+ Passes (moves) NpcTextureAtlas to RenderContext
-		+ RenderContext:
-			+ cctor takes NpcTextureAtlas and passes it to Global::InitializeNpcTextures(.)
-			+ Global::InitializeNpcTextures(.): upload texture
-		= Npcs:
-			+ NpcDatabase replaces MaterialDatabase that is passed over to Npcs class
-			= State:
-				+ Human: store Role
-				- Texture quad/s
-			= Npcs::AddXYZ
-				+ Adapt
-				- Store texture quads (as const &) in kind-specific
-		+ MainFrame:
-			+ private RebuildNpcSubmenus()
-				+ From NpcDatabase (indirectly, via GameController)
-				+ Cleans up and rebuilds
-		- ShipRenderContext:
-			- Rendering of NPCs activates texture first
-				- Make sure other subsequent texture usage activates their own			
-
 - Rendering:
-	- Atlas textures are simply flat frames and all, NpcDatabase groups them together
-		- But we use naming conventions to not go crazy ourselves
+	! Atlas textures are simply flat frames and all, NpcDatabase groups them together
+		! But we use naming conventions to not go crazy ourselves
 	- NPCs will have two sets of vertex attributes:
-		- Static ones: contain static properties (colors - incl, highlight, texture coords)
+		- Static ones: contain static properties (colors - incl. highlight, texture coords)
 			- Only reloaded at e.g. NPC insertion/removal, or when face direction of at least one NPC changes, or when highlight of at least one NPC changes
 				- Face direction changes done via single helper, which also marks "static render attributes dirty" (a single Npcs-wide boolean)
 		- Dynamics ones: contain things that change at each frame (world vertices, )
 	+ Use indices for quad vertices
 		+ Good use case to experiment with the "quad single index buffer" feature
+	- ShipRenderContext:
+		- TextureCoords upload
+		- Rendering of NPCs activates texture first
+			- Make sure other subsequent texture usage activates their own			
 	- Shader ("ship_npcs_texture"):
 		- We keep existing limb-based shader, just change all its vertex attributes/parameters/etc. to become "texture"
 		- Discard when transparent
 			- But only after testing with two connected components - & inverse order of drawing; should bug out when near NPC is drawn before far NPC and they are on top of each other
 				- Requires following their triangle
 		- Night time color
+	- Port to BaryLab
+		- Copy NPC files
+		- Create NpcDatabase
+			- TODOHERE: have it without atlas, so maim it
+		- Adapt RenderContext
 
 - Physical Interactions:
 	+ Make NpcDamping subject to other adjustment
@@ -756,6 +670,11 @@ Next release:
 - Floorplan layer from user:
 	- ShipFactory: when a floorplan layer is present, it needs to inform tessellation (i.e. triangle selection) which needs
 	  to use floor information (ipv hull springs) to decide between covering triangles
+
+- NPC packs:
+	- NpcDatabase:
+		- AddDatabase(NpcDatabase const &, TextureAtlas(Metadata?) const &, MaterialDB const &) // (this might be old)
+
 
 ===================
 ===================
@@ -2534,3 +2453,94 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 			+ Test performance (also with old Dell) and decide whether mipmapping on-demand is really feasible
 			+ Full ShipBuilder test, up to saving
 		+ Port ShipFloorplanizer back into Barylab
+
++ NpcDatabase:
+	! Spec:
+		! cctor takes MaterialDatabase (for taking Materials referenced to by name in json) and NPC Texture Atlas(for taking TextureCoords)
+		! Provides info on humans (e.g. role colors, frame IDs) and furniture (height, frame IDs, material)
+			! Furniture height: used to calculate width based off texture frame
+			! Human: only SizeMultiplier
+				! We don't want to repeat H for each human
+			! Furniture and human materials: json references structural materials by name
+				! Human references both (head & feet)
+		! Two sections, each own schema:
+			! Humans
+				! Global
+					! Material X 2
+				! Per-kind
+					! Role, Name
+					! SizeMultiplier
+					! TextureFilenameStem's
+			! Furniture
+				! Per-kind
+					! Name
+					! Material
+					! Mesh
+						! Type (@ NpcDatabase)
+						! Dimension
+					! TextureFilenameStem
+		! json refers to frames (in NPC texture DB) by name, but cctor - which also takes texture DB - stores references (or even directly coords!) by numeric ID
+			! json tells all frame names for all applicable variants, including limbs together with orientation variants
+				! Yes, the json for humans will list all frames for variants and all
+					! Might have a new type (at NpcDatabase or as as new GameType) that holds together all texture info's for a human (e.g. "head front", "head side", etc.) and the json basically fills this
+		- Allow for merging of multiple "packs"
+			- So SubKind domain is expandable at runtime
+		! Also affects UI (for menu with list of subkind names, which might have multiple languages)
+	+ Details:
+		+ NpcSubKindIdType: alias for uint 
+			+ @ GameTypes
+				+ Nuke old FurnitureNpcKindType, NpcKindType
+			+ No different aliases for the two different NpcKind's - we will have a 2D coord for a specific subkind (NpcKindType, NpcSubKindIdType)
+				+ So NpcSubKindIdType=X means one thing for Humans and another thing for Furniture
+		+ Humans:
+			+ (NpcSubKindIdType) -> Material X 2 (GetHeadMaterial, GetFeetMaterial)
+			+ (NpcSubKindIdType) -> SizeMultiplier
+			+ (NpcSubKindIdType) -> TextureCoords (or that new GameType we talk about above which holds together all texture info's for all variants), colors
+				- Initialization gets texture DB to populate this
+			+ (NpcSubKindIdType, Language) -> Name
+		+ Furniture:
+			+ (NpcSubKindIdType) -> Material
+			+ (NpcSubKindIdType) -> TextureCoords
+			+ (NpcSubKindIdType) -> NpcParticleMesh info
+			+ (NpcSubKindIdType, Language) -> Name
+	+ Impl:
+		+ NPC Texture Database:
+			+ json changes:
+				+ "name" -> "displayName"
+				+ "filename" -> "filenamePattern"
+			+ Add 'filenameStem' to frame metadata, and have TextureAtlasMetadata build an index off it
+					+ Verify unique when loading/deserializing			
+			+ Run texture atlas/DB unit tests
+			+ Assign frame index when not present
+				+ First off, nuke frameIndex
+					+ World json
+					+ Code
+				+ @ group reading: "autoAssignFrameIndices" bool, default=false
+				+ Complain if auto-assign & specified (if we haven't nuked code)
+				+ Test land/ocean textures
+			+ Make actual NPC atlas
+				+ BakingTool: add "build-atlas" (sibling of "build-regular-atlas")
+				+ Dummy
+				+ Crate
+		+ NpcDatabase:
+			+ static NpcDatabase Load(ResourceLocator const & resourceLocator, TextureAtlas(Metadata?) const &, MaterialDB const &)
+				+ Invoked right after we build MaterialDB
+		+ GameController:
+			+ Loads NpcTextureAtlas
+			+ Loads NpcDatabase
+			+ Passes (moves) NpcTextureAtlas to RenderContext
+		+ RenderContext:
+			+ cctor takes NpcTextureAtlas and passes it to Global::InitializeNpcTextures(.)
+			+ Global::InitializeNpcTextures(.): upload texture
+		+ Npcs:
+			+ NpcDatabase replaces MaterialDatabase that is passed over to Npcs class
+			+ State:
+				+ Human: store Role
+				+ Texture quad/s
+			+ Npcs::AddXYZ
+				+ Adapt
+				+ Store texture quads (as const &) in kind-specific
+		+ MainFrame:
+			+ private RebuildNpcSubmenus()
+				+ From NpcDatabase (indirectly, via GameController)
+				+ Cleans up and rebuilds

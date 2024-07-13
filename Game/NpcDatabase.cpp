@@ -119,7 +119,7 @@ NpcDatabase::HumanKind NpcDatabase::ParseHumanKind(
     float const sizeMultiplier = Utils::GetOptionalJsonMember<float>(kindObject, "size_multiplier", 1.0f);
 
     auto const & textureFilenameStemsObject = Utils::GetMandatoryJsonObject(kindObject, "texture_filename_stems");
-    HumanTextureFrames humanTextureFrames({
+    HumanTextureFramesType humanTextureFrames({
         ParseTextureCoordinatesQuad(textureFilenameStemsObject, "head_f", npcTextureAtlas),
         ParseTextureCoordinatesQuad(textureFilenameStemsObject, "head_b", npcTextureAtlas),
         ParseTextureCoordinatesQuad(textureFilenameStemsObject, "head_s", npcTextureAtlas),

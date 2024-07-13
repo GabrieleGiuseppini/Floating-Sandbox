@@ -463,7 +463,8 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 	// Furniture
 
 	StateType::KindSpecificStateType::FurnitureNpcStateType furnitureState = StateType::KindSpecificStateType::FurnitureNpcStateType(
-		subKind);
+		subKind,
+		mNpcDatabase.GetFurnitureTextureCoordinatesQuad(subKind));
 
 	//
 	// Store NPC
@@ -629,6 +630,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
 		mNpcDatabase.GetHumanRole(subKind),
 		widthMultiplier,
 		walkingSpeedBase,
+		mNpcDatabase.GetHumanTextureCoordinatesQuads(subKind),
 		StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::BeingPlaced,
 		currentSimulationTime);
 

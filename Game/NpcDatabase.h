@@ -31,7 +31,7 @@ public:
         Quad
     };
 
-    struct HumanTextureFrames
+    struct HumanTextureFramesType
     {
         Render::TextureCoordinatesQuad HeadFront;
         Render::TextureCoordinatesQuad HeadBack;
@@ -86,7 +86,7 @@ public:
         return mHumanKinds.at(subKindId).SizeMultiplier;
     }
 
-    HumanTextureFrames const & GetHumanTextureCoordinatesQuads(NpcSubKindIdType subKindId) const
+    HumanTextureFramesType const & GetHumanTextureCoordinatesQuads(NpcSubKindIdType subKindId) const
     {
         return mHumanKinds.at(subKindId).TextureCoordinatesQuads;
     }
@@ -148,7 +148,7 @@ private:
 
         float SizeMultiplier;
 
-        HumanTextureFrames const TextureCoordinatesQuads;
+        HumanTextureFramesType const TextureCoordinatesQuads;
     };
 
     struct FurnitureKind

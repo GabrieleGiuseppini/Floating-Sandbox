@@ -10,6 +10,7 @@
 #include "NpcDatabase.h"
 #include "Physics.h"
 #include "RenderContext.h"
+#include "RenderTypes.h"
 
 #include <GameCore/BarycentricCoords.h>
 #include <GameCore/ElementIndexRangeIterator.h>
@@ -211,19 +212,26 @@ private:
 		{
 			struct FurnitureNpcStateType final
 			{
-				NpcSubKindIdType const SubKind;
+				NpcSubKindIdType const SubKindId;
 
-				FurnitureNpcStateType(NpcSubKindIdType subKind)
-					: SubKind(subKind)
+				Render::TextureCoordinatesQuad const TextureCoordinatesQuad;
+
+				FurnitureNpcStateType(
+					NpcSubKindIdType subKindId,
+					Render::TextureCoordinatesQuad const & textureCoordinatesQuad)
+					: SubKindId(subKindId)
+					, TextureCoordinatesQuad(textureCoordinatesQuad)
 				{}
 			} FurnitureNpcState;
 
 			struct HumanNpcStateType final
 			{
-				NpcSubKindIdType const SubKind;
+				NpcSubKindIdType const SubKindId;
 				NpcHumanRoleType const Role;
 				float const WidthMultipier; // Randomization
 				float const WalkingSpeedBase;
+
+				NpcDatabase::HumanTextureFramesType TextureFrames;
 
 				enum class BehaviorType
 				{
@@ -418,16 +426,18 @@ private:
 				} AnimationState;
 
 				HumanNpcStateType(
-					NpcSubKindIdType subKind,
+					NpcSubKindIdType subKindId,
 					NpcHumanRoleType role,
 					float widthMultipier,
 					float walkingSpeedBase,
+					NpcDatabase::HumanTextureFramesType const & textureFrames,
 					BehaviorType initialBehavior,
 					float currentSimulationTime)
-					: SubKind(subKind)
+					: SubKindId(subKindId)
 					, Role(role)
 					, WidthMultipier(widthMultipier)
 					, WalkingSpeedBase(walkingSpeedBase)
+					, TextureFrames(textureFrames)
 					, EquilibriumTorque(0.0f)
 					, CurrentEquilibriumSoftTerminationDecision(0.0f)
 					, CurrentFaceOrientation(1.0f)
