@@ -14,6 +14,7 @@
 #include "IGameEventHandlers.h"
 #include "MaterialDatabase.h"
 #include "NotificationLayer.h"
+#include "NpcDatabase.h"
 #include "PerfStats.h"
 #include "Physics.h"
 #include "RenderContext.h"
@@ -236,8 +237,8 @@ public:
     void ApplyThanosSnapAt(DisplayLogicalCoordinates const & screenCoordinates, bool isSparseMode) override;
     void ScareFish(DisplayLogicalCoordinates const & screenCoordinates, float radius, std::chrono::milliseconds delay) override;
     void AttractFish(DisplayLogicalCoordinates const & screenCoordinates, float radius, std::chrono::milliseconds delay) override;
-    std::optional<PickedObjectId<NpcId>> BeginPlaceNewFurnitureNpc(FurnitureNpcKindType furnitureKind, DisplayLogicalCoordinates const & screenCoordinates) override;
-    std::optional<PickedObjectId<NpcId>> BeginPlaceNewHumanNpc(HumanNpcKindType humanKind, DisplayLogicalCoordinates const & screenCoordinates) override;
+    std::optional<PickedObjectId<NpcId>> BeginPlaceNewFurnitureNpc(NpcSubKindIdType subKind, DisplayLogicalCoordinates const & screenCoordinates) override;
+    std::optional<PickedObjectId<NpcId>> BeginPlaceNewHumanNpc(NpcSubKindIdType subKind, DisplayLogicalCoordinates const & screenCoordinates) override;
     std::optional<PickedObjectId<NpcId>> ProbeNpcAt(DisplayLogicalCoordinates const & screenCoordinates) const override;
     void BeginMoveNpc(NpcId id) override;
     void MoveNpcTo(NpcId id, DisplayLogicalCoordinates const & screenCoordinates, vec2f const & worldOffset) override;
@@ -939,6 +940,7 @@ private:
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         std::unique_ptr<PerfStats> perfStats,
         FishSpeciesDatabase && fishSpeciesDatabase,
+        NpcDatabase && npcDatabase,
         MaterialDatabase && materialDatabase,
         ResourceLocator const & resourceLocator,
         ProgressCallback const & progressCallback);
@@ -995,14 +997,12 @@ private:
     std::unique_ptr<Physics::World> mWorld;
 
     FishSpeciesDatabase mFishSpeciesDatabase;
+    NpcDatabase mNpcDatabase;
     MaterialDatabase mMaterialDatabase;
-
 
     //
     // Ship factory
     //
-
-
 
     ShipStrengthRandomizer mShipStrengthRandomizer;
     ShipTexturizer mShipTexturizer;

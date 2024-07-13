@@ -105,6 +105,8 @@ public:
 
     std::filesystem::path GetFishSpeciesDatabaseFilePath() const;
 
+    std::filesystem::path GetNpcDatabaseFilePath() const;
+
     std::filesystem::path GetShipNamePrefixListFilePath() const;
 
 

@@ -31,6 +31,8 @@ set  (GAME_SOURCES
 	MaterialDatabase.h
 	NotificationLayer.cpp
 	NotificationLayer.h
+	NpcDatabase.cpp
+	NpcDatabase.h
 	OceanFloorTerrain.cpp
 	OceanFloorTerrain.h
 	PerfStats.h

@@ -1055,24 +1055,14 @@ enum class NpcKindType
 };
 
 /*
- * Furniture NPC types (second level).
- * TODO: will be replaced by opaque int, managed via NpcDatabase.
+ * Second level of NPC type hierarchy; domain is open
+ * as it may be expanded after compile time, via NPC packs.
+ * The unique identifier of an NPC kind is the whole
+ * <NpcKindType,NpcSubKindIdType> tuple; so, for example,
+ * NpcSubKindIdType=X means one thing for Humans and another
+ * thing for Furniture.
  */
-enum class FurnitureNpcKindType
-{
-    Particle,
-    Quad
-};
-
-/*
- * Human NPC types (second level).
- * TODO: will be replaced by opaque int, managed via NpcDatabase.
- */
-enum class HumanNpcKindType
-{
-    Passenger,
-    Programmer
-};
+using NpcSubKindIdType = std::uint32_t;
 
 enum class NpcFloorKindType
 {

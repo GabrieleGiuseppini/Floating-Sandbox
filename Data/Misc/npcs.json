@@ -1,0 +1,29 @@
+{
+	"humans": {
+		"global": {
+			"head_material": "NPC Human Head",
+			"feet_material": "NPC Human Feet"
+		},
+		"roles": [
+
+			{
+				"name": [
+					{ "value": "Passenger", "language": "en" },
+					{ "value": "Passeggero", "language": "it" }
+				],
+			}
+		]
+	},
+
+	"furniture": {
+		"kinds": [
+
+			{
+				"name": [
+					{ "value": "Crate", "language": "en" },
+					{ "value": "Cassa", "language": "it" }
+				],
+			}
+		]
+	}
+}

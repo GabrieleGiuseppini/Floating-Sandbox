@@ -246,7 +246,7 @@ void Npcs::OnShipRemoved(ShipId shipId)
 }
 
 std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
-	FurnitureNpcKindType furnitureKind,
+	NpcSubKindIdType subKind,
 	vec2f const & worldCoordinates,
 	float /*currentSimulationTime*/)
 {
@@ -494,7 +494,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 }
 
 std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
-	HumanNpcKindType humanKind,
+	NpcSubKindIdType subKind,
 	vec2f const & worldCoordinates,
 	float currentSimulationTime)
 {

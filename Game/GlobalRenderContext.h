@@ -35,6 +35,8 @@ public:
 
     void InitializeExplosionTextures(ResourceLocator const & resourceLocator);
 
+    void InitializeNpcTextures(TextureAtlas<NpcTextureGroups> && npcTextureAtlas);
+
     void ProcessParameterChanges(RenderParameters const & renderParameters);
 
     void RenderPrepare();

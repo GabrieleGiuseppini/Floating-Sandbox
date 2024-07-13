@@ -56,6 +56,7 @@ namespace /*anonymous*/ {
 
 RenderContext::RenderContext(
     RenderDeviceProperties const & renderDeviceProperties,
+    Render::TextureAtlas<Render::NpcTextureGroups> && npcTextureAtlas,
     PerfStats & perfStats,
     ResourceLocator const & resourceLocator,
     ProgressCallback const & progressCallback)
@@ -174,6 +175,12 @@ RenderContext::RenderContext(
         [&]()
         {
             mGlobalRenderContext->InitializeExplosionTextures(resourceLocator);
+        });
+
+    mRenderThread.RunSynchronously(
+        [&]()
+        {
+            mGlobalRenderContext->InitializeNpcTextures(std::move(npcTextureAtlas)); // Safe as it's synchronous
         });
 
     mRenderThread.RunSynchronously(

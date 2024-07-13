@@ -133,8 +133,8 @@ struct IGameController
     virtual void ApplyThanosSnapAt(DisplayLogicalCoordinates const & screenCoordinates, bool isSparseMode) = 0;
     virtual void ScareFish(DisplayLogicalCoordinates const & screenCoordinates, float radius, std::chrono::milliseconds delay) = 0;
     virtual void AttractFish(DisplayLogicalCoordinates const & screenCoordinates, float radius, std::chrono::milliseconds delay) = 0;
-    virtual std::optional<PickedObjectId<NpcId>> BeginPlaceNewFurnitureNpc(FurnitureNpcKindType furnitureKind, DisplayLogicalCoordinates const & screenCoordinates) = 0;
-    virtual std::optional<PickedObjectId<NpcId>> BeginPlaceNewHumanNpc(HumanNpcKindType humanKind, DisplayLogicalCoordinates const & screenCoordinates) = 0;
+    virtual std::optional<PickedObjectId<NpcId>> BeginPlaceNewFurnitureNpc(NpcSubKindIdType subKind, DisplayLogicalCoordinates const & screenCoordinates) = 0;
+    virtual std::optional<PickedObjectId<NpcId>> BeginPlaceNewHumanNpc(NpcSubKindIdType subKind, DisplayLogicalCoordinates const & screenCoordinates) = 0;
     virtual std::optional<PickedObjectId<NpcId>> ProbeNpcAt(DisplayLogicalCoordinates const & screenCoordinates) const = 0;
     virtual void BeginMoveNpc(NpcId id) = 0;
     virtual void MoveNpcTo(NpcId id, DisplayLogicalCoordinates const & screenCoordinates, vec2f const & worldOffset) = 0;

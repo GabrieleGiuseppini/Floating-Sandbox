@@ -9,7 +9,7 @@
 #include "FishSpeciesDatabase.h"
 #include "GameEventDispatcher.h"
 #include "GameParameters.h"
-#include "MaterialDatabase.h"
+#include "NpcDatabase.h"
 #include "PerfStats.h"
 #include "Physics.h"
 #include "RenderContext.h"
@@ -41,8 +41,8 @@ public:
     World(
         OceanFloorTerrain && oceanFloorTerrain,
         bool areCloudShadowsEnabled,
-        MaterialDatabase const & materialDatabase,
         FishSpeciesDatabase const & fishSpeciesDatabase,
+        NpcDatabase const & npcDatabase,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         GameParameters const & gameParameters,
         VisibleWorld const & visibleWorld);
@@ -354,11 +354,11 @@ public:
         std::chrono::milliseconds delay);
 
     std::optional<PickedObjectId<NpcId>> BeginPlaceNewFurnitureNpc(
-        FurnitureNpcKindType furnitureKind,
+        NpcSubKindIdType subKind,
         vec2f const & position);
 
     std::optional<PickedObjectId<NpcId>> BeginPlaceNewHumanNpc(
-        HumanNpcKindType humanKind,
+        NpcSubKindIdType subKind,
         vec2f const & position);
 
     std::optional<PickedObjectId<NpcId>> ProbeNpcAt(

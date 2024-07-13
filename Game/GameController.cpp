@@ -7,6 +7,8 @@
 
 #include "ComputerCalibration.h"
 #include "ShipDeSerializer.h"
+#include "TextureAtlas.h"
+#include "TextureTypes.h"
 
 #include <GameCore/GameMath.h>
 #include <GameCore/Log.h>
@@ -23,6 +25,14 @@ std::unique_ptr<GameController> GameController::Create(
     // Load fish species
     FishSpeciesDatabase fishSpeciesDatabase = FishSpeciesDatabase::Load(resourceLocator);
 
+    // Load NPC teture atlas
+    auto npcTextureAtlas = Render::TextureAtlas<Render::NpcTextureGroups>::Deserialize(
+        Render::NpcTextureDatabaseTraits::DatabaseName,
+        resourceLocator.GetTexturesRootFolderPath());
+
+    // Load NPCs
+    NpcDatabase npcDatabase = NpcDatabase::Load(resourceLocator, npcTextureAtlas);
+
     // Load materials
     MaterialDatabase materialDatabase = MaterialDatabase::Load(resourceLocator);
 
@@ -35,6 +45,7 @@ std::unique_ptr<GameController> GameController::Create(
     // Create render context
     std::unique_ptr<Render::RenderContext> renderContext = std::make_unique<Render::RenderContext>(
         renderDeviceProperties,
+        std::move(npcTextureAtlas),
         *perfStats,
         resourceLocator,
         [&progressCallback](float progress, ProgressMessageType message)
@@ -52,6 +63,7 @@ std::unique_ptr<GameController> GameController::Create(
             std::move(gameEventDispatcher),
             std::move(perfStats),
             std::move(fishSpeciesDatabase),
+            std::move(npcDatabase),
             std::move(materialDatabase),
             resourceLocator,
             progressCallback));
@@ -62,6 +74,7 @@ GameController::GameController(
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     std::unique_ptr<PerfStats> perfStats,
     FishSpeciesDatabase && fishSpeciesDatabase,
+    NpcDatabase && npcDatabase,
     MaterialDatabase && materialDatabase,
     ResourceLocator const & resourceLocator,
     ProgressCallback const & progressCallback)
@@ -72,6 +85,7 @@ GameController::GameController(
     // World
     , mWorld()
     , mFishSpeciesDatabase(std::move(fishSpeciesDatabase))
+    , mNpcDatabase(std::move(npcDatabase))
     , mMaterialDatabase(std::move(materialDatabase))
     // Ship factory
     , mShipStrengthRandomizer()
@@ -119,8 +133,8 @@ GameController::GameController(
     mWorld = std::make_unique<Physics::World>(
         OceanFloorTerrain::LoadFromImage(resourceLocator.GetDefaultOceanFloorTerrainFilePath()),
         CalculateAreCloudShadowsEnabled(mRenderContext->GetOceanRenderDetail()),
-        mMaterialDatabase,
         mFishSpeciesDatabase,
+        mNpcDatabase,
         mGameEventDispatcher,
         mGameParameters,
         mRenderContext->GetVisibleWorld());
@@ -1250,27 +1264,27 @@ void GameController::AttractFish(
 }
 
 std::optional<PickedObjectId<NpcId>> GameController::BeginPlaceNewFurnitureNpc(
-    FurnitureNpcKindType furnitureKind,
+    NpcSubKindIdType subKind,
     DisplayLogicalCoordinates const & screenCoordinates)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
     assert(!!mWorld);
     auto const pickedObjectId = mWorld->BeginPlaceNewFurnitureNpc(
-        furnitureKind,
+        subKind,
         worldCoordinates);
     return pickedObjectId;
 }
 
 std::optional<PickedObjectId<NpcId>> GameController::BeginPlaceNewHumanNpc(
-    HumanNpcKindType humanKind,
+    NpcSubKindIdType subKind,
     DisplayLogicalCoordinates const & screenCoordinates)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
     assert(!!mWorld);
     auto const pickedObjectId = mWorld->BeginPlaceNewHumanNpc(
-        humanKind,
+        subKind,
         worldCoordinates);
     return pickedObjectId;
 }
@@ -1558,8 +1572,8 @@ ShipMetadata GameController::InternalResetAndLoadShip(ShipLoadSpecifications con
     auto newWorld = std::make_unique<Physics::World>(
         OceanFloorTerrain(mWorld->GetOceanFloorTerrain()),
         CalculateAreCloudShadowsEnabled(mRenderContext->GetOceanRenderDetail()),
-        mMaterialDatabase,
         mFishSpeciesDatabase,
+        mNpcDatabase,
         mGameEventDispatcher,
         mGameParameters,
         mRenderContext->GetVisibleWorld());

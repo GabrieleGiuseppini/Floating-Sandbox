@@ -213,6 +213,11 @@ std::filesystem::path ResourceLocator::GetFishSpeciesDatabaseFilePath() const
     return MakeAbsolutePath(std::filesystem::path("Data")) / "Misc" / "fish_species.json";
 }
 
+std::filesystem::path ResourceLocator::GetNpcDatabaseFilePath() const
+{
+    return MakeAbsolutePath(std::filesystem::path("Data")) / "Misc" / "npcs.json";
+}
+
 std::filesystem::path ResourceLocator::GetShipNamePrefixListFilePath() const
 {
     return MakeAbsolutePath(std::filesystem::path("Data")) / "Misc" / "ship_name_prefixes.txt";

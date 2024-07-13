@@ -12,6 +12,9 @@
 #include <optional>
 #include <string>
 
+/*
+ * A set of notification lines rolling from the bottom and pausing in the middle.
+ */
 class RollingText
 {
 public:

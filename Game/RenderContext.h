@@ -61,6 +61,7 @@ public:
 
     RenderContext(
         RenderDeviceProperties const & renderDeviceProperties,
+        Render::TextureAtlas<Render::NpcTextureGroups> && npcTextureAtlas,
         PerfStats & perfStats,
         ResourceLocator const & resourceLocator,
         ProgressCallback const & progressCallback);

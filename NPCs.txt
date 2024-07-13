@@ -447,14 +447,12 @@ Arch
 	- Misc possible improvements:
 		- Maintain spring lengths during BeingPlaced (to avoid elongations)
 			- Try that other spring relaxation algo
-		- How to avoid folding (==compressions) at bounce?
-			- See how folds come to be
 		+ fmod improvements
 			+ See https://cboard.cprogramming.com/c-programming/105096-fmod.html
 
-- NpcDatabase:
-	- Spec:
-		- cctor takes MaterialDatabase (for taking Materials referenced to by name in json) and NPC TextureDatabase (for taking TextureCoords)
+= NpcDatabase:
+	! Spec:
+		! cctor takes MaterialDatabase (for taking Materials referenced to by name in json) and NPC Texture Atlas(for taking TextureCoords)
 		- Provides info on humans (e.g. role colors, height & width, frame IDs) and furniture (height, frame IDs, material)
 			- Furniture height: used to calculate width based off texture frame
 			- Human height & width: just for consistency, doesn't use frames to calc anything
@@ -466,9 +464,9 @@ Arch
 		- Two sections, each own schema:
 			- Humans
 				- Global
-					- Materials, dimensions
+					- Material X 2
 				- Per-role
-					- Role colors, textureFilenameStem's
+					- SizeMultiplier, Role colors, textureFilenameStem's
 			- Furniture
 				- Per-type
 					- Material, dimensions, textureFilenameStem
@@ -480,13 +478,14 @@ Arch
 			- So SubKind domain is expandable at runtime
 		- Also affects UI (for menu with list of subkind names, which might have multiple languages)
 	- Details:
-		- NpcSubKindIdType: alias for uint 
-			- @ GameTypes
-				- Nuke old FurnitureNpcKindType, NpcKindType
-			- No different aliases for the two different NpcKind's - we will have a 2D coord for a specific subkind (NpcKindType, NpcSubKindIdType)
-				- So NpcSubKindIdType=X means one thing for Humans and another thing for Furniture
+		+ NpcSubKindIdType: alias for uint 
+			+ @ GameTypes
+				+ Nuke old FurnitureNpcKindType, NpcKindType
+			+ No different aliases for the two different NpcKind's - we will have a 2D coord for a specific subkind (NpcKindType, NpcSubKindIdType)
+				+ So NpcSubKindIdType=X means one thing for Humans and another thing for Furniture
 		- Humans:
 			- (NpcSubKindIdType) -> Material X 2
+			- (NpcSubKindIdType) -> SizeMultiplier
 			- (NpcSubKindIdType) -> TextureCoords (or that new GameType we talk about above which holds together all texture info's for all variants), colors
 				- Initialization gets texture DB to populate this
 			- (NpcSubKindIdType, Language) -> Name
@@ -496,7 +495,7 @@ Arch
 			- (NpcSubKindIdType) -> NpcParticleMesh info
 			- (NpcSubKindIdType, Language) -> Name
 	- Impl:
-		- NPC Texture Database:
+		+ NPC Texture Database:
 			+ json changes:
 				+ "name" -> "displayName"
 				+ "filename" -> "filenamePattern"
@@ -510,17 +509,31 @@ Arch
 				+ @ group reading: "autoAssignFrameIndices" bool, default=false
 				+ Complain if auto-assign & specified (if we haven't nuked code)
 				+ Test land/ocean textures
-			- Make actual NPC atlas
-				= BakingTool: add "build-atlas" (sibling of "build-regular-atlas")
+			+ Make actual NPC atlas
+				+ BakingTool: add "build-atlas" (sibling of "build-regular-atlas")
+				+ Dummy
+				+ Crate
 		- NpcDatabase:
 			- static NpcDatabase Load(ResourceLocator const & resourceLocator, TextureAtlas(Metadata?) const &, MaterialDB const &)
 				- Invoked right after we build MaterialDB
 			- Add(NpcDatabase const &, TextureAtlas(Metadata?) const &, MaterialDB const &)
-		- NpcDatabase replaces MaterialDatabase that is passed over to Npcs class
+		+ GameController:
+			+ Loads NpcTextureAtlas
+			+ Loads NpcDatabase
+			+ Passes (moves) NpcTextureAtlas to RenderContext
+		= RenderContext:
+			+ cctor takes NpcTextureAtlas and passes it to Global::InitializeNpcTextures(.)
+			- Global::InitializeNpcTextures(.): upload texture
+		= Npcs:
+			+ NpcDatabase replaces MaterialDatabase that is passed over to Npcs class
+			- Npcs::AddXYZ
 		- MainFrame:
 			- private BuildNpcSubmenus()
 				- From NpcDatabase (where taken from?)
 				- Cleans up and rebuilds
+		- ShipRenderContext:
+			- Rendering of NPCs activates texture first
+				- Make sure other subsequent texture usage activates their own			
 
 - Rendering:
 	- Atlas textures are simply flat frames and all, NpcDatabase groups them together

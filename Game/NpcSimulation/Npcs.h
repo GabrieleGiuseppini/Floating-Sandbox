@@ -7,7 +7,7 @@
 
 #include "GameEventDispatcher.h"
 #include "GameParameters.h"
-#include "MaterialDatabase.h"
+#include "NpcDatabase.h"
 #include "Physics.h"
 #include "RenderContext.h"
 
@@ -211,16 +211,16 @@ private:
 		{
 			struct FurnitureNpcStateType final
 			{
-				FurnitureNpcKindType const Kind;
+				NpcSubKindIdType const SubKind;
 
-				FurnitureNpcStateType(FurnitureNpcKindType kind)
-					: Kind(kind)
+				FurnitureNpcStateType(NpcSubKindIdType subKind)
+					: SubKind(subKind)
 				{}
 			} FurnitureNpcState;
 
 			struct HumanNpcStateType final
 			{
-				HumanNpcKindType const Kind;
+				NpcSubKindIdType const SubKind;
 				float const WidthMultipier; // Randomization
 				float const WalkingSpeedBase;
 
@@ -417,12 +417,12 @@ private:
 				} AnimationState;
 
 				HumanNpcStateType(
-					HumanNpcKindType kind,
+					NpcSubKindIdType subKind,
 					float widthMultipier,
 					float walkingSpeedBase,
 					BehaviorType initialBehavior,
 					float currentSimulationTime)
-					: Kind(kind)
+					: SubKind(subKind)
 					, WidthMultipier(widthMultipier)
 					, WalkingSpeedBase(walkingSpeedBase)
 					, EquilibriumTorque(0.0f)
@@ -610,10 +610,10 @@ public:
 
 	Npcs(
 		Physics::World & parentWorld,
-		MaterialDatabase const & materialDatabase,
+		NpcDatabase const & npcDatabase,
 		std::shared_ptr<GameEventDispatcher> gameEventHandler)
 		: mParentWorld(parentWorld)
-		, mMaterialDatabase(materialDatabase)
+		, mNpcDatabase(npcDatabase)
 		, mGameEventHandler(std::move(gameEventHandler))
 		// Container
 		, mStateBuffer()
@@ -646,12 +646,12 @@ public:
 	void OnShipRemoved(ShipId shipId);
 
 	std::optional<PickedObjectId<NpcId>> BeginPlaceNewFurnitureNpc(
-		FurnitureNpcKindType furnitureKind,
+		NpcSubKindIdType subKind,
 		vec2f const & worldCoordinates,
 		float currentSimulationTime);
 
 	std::optional<PickedObjectId<NpcId>> BeginPlaceNewHumanNpc(
-		HumanNpcKindType humanKind,
+		NpcSubKindIdType subKind,
 		vec2f const & worldCoordinates,
 		float currentSimulationTime);
 
@@ -1307,7 +1307,7 @@ private:
 private:
 
 	World & mParentWorld;
-	MaterialDatabase const & mMaterialDatabase;
+	NpcDatabase const & mNpcDatabase;
 	std::shared_ptr<GameEventDispatcher> mGameEventHandler;
 
 	//

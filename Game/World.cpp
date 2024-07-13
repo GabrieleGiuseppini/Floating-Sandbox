@@ -15,8 +15,8 @@ namespace Physics {
 World::World(
     OceanFloorTerrain && oceanFloorTerrain,
     bool areCloudShadowsEnabled,
-    MaterialDatabase const & materialDatabase,
     FishSpeciesDatabase const & fishSpeciesDatabase,
+    NpcDatabase const & npcDatabase,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     GameParameters const & gameParameters,
     VisibleWorld const & /*visibleWorld*/)
@@ -33,7 +33,7 @@ World::World(
     , mOceanSurface(*this, mGameEventHandler)
     , mOceanFloor(std::move(oceanFloorTerrain))
     , mFishes(fishSpeciesDatabase, mGameEventHandler)
-    , mNpcs(std::make_unique<Npcs>(*this, materialDatabase, mGameEventHandler))
+    , mNpcs(std::make_unique<Npcs>(*this, npcDatabase, mGameEventHandler))
     //
     , mAllAABBs()
 {
@@ -981,12 +981,12 @@ void World::AttractFish(
 }
 
 std::optional<PickedObjectId<NpcId>> World::BeginPlaceNewFurnitureNpc(
-    FurnitureNpcKindType furnitureKind,
+    NpcSubKindIdType subKind,
     vec2f const & position)
 {
     assert(mNpcs);
     auto const pickedObjectId = mNpcs->BeginPlaceNewFurnitureNpc(
-        furnitureKind,
+        subKind,
         position,
         mCurrentSimulationTime);
 
@@ -994,12 +994,12 @@ std::optional<PickedObjectId<NpcId>> World::BeginPlaceNewFurnitureNpc(
 }
 
 std::optional<PickedObjectId<NpcId>> World::BeginPlaceNewHumanNpc(
-    HumanNpcKindType humanKind,
+    NpcSubKindIdType subKind,
     vec2f const & position)
 {
     assert(mNpcs);
     auto const pickedObjectId = mNpcs->BeginPlaceNewHumanNpc(
-        humanKind,
+        subKind,
         position,
         mCurrentSimulationTime);
 
