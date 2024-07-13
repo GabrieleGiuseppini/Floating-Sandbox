@@ -194,9 +194,10 @@ NpcDatabase::FurnitureKind NpcDatabase::ParseFurnitureKind(
     }
 
     Render::TextureCoordinatesQuad textureCoordinatesQuad = Render::TextureCoordinatesQuad({
-        atlasFrameMetadata.TextureCoordinatesBottomLeft,
-        atlasFrameMetadata.TextureCoordinatesTopRight
-        });
+        atlasFrameMetadata.TextureCoordinatesBottomLeft.x,
+        atlasFrameMetadata.TextureCoordinatesTopRight.x,
+        atlasFrameMetadata.TextureCoordinatesBottomLeft.y,
+        atlasFrameMetadata.TextureCoordinatesTopRight.y });
 
     return FurnitureKind({
         std::move(name),
@@ -278,9 +279,10 @@ Render::TextureCoordinatesQuad NpcDatabase::ParseTextureCoordinatesQuad(
     std::string const & frameFilenameStem = Utils::GetMandatoryJsonMember<std::string>(containerObject, memberName);
     auto const & atlasFrameMetadata = npcTextureAtlas.Metadata.GetFrameMetadata(frameFilenameStem);
     return Render::TextureCoordinatesQuad({
-        atlasFrameMetadata.TextureCoordinatesBottomLeft,
-        atlasFrameMetadata.TextureCoordinatesTopRight
-        });
+        atlasFrameMetadata.TextureCoordinatesBottomLeft.x,
+        atlasFrameMetadata.TextureCoordinatesTopRight.x,
+        atlasFrameMetadata.TextureCoordinatesBottomLeft.y,
+        atlasFrameMetadata.TextureCoordinatesTopRight.y });
 }
 
 template<typename TNpcSubKindContainer>

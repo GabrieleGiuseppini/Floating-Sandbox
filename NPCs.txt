@@ -458,14 +458,14 @@ Arch
 		- Static ones: contain static properties (colors - incl. highlight, texture coords)
 			- Only reloaded at e.g. NPC insertion/removal, or when face direction of at least one NPC changes, or when highlight of at least one NPC changes
 				- Face direction changes done via single helper, which also marks "static render attributes dirty" (a single Npcs-wide boolean)
+			- TODO: face directions may change too often, and we don't want to re-upload all the time
+				- Could load surgically (when one change only) or whole (when > 1 change)?
 		- Dynamics ones: contain things that change at each frame (world vertices, )
 	+ Use indices for quad vertices
 		+ Good use case to experiment with the "quad single index buffer" feature
-	- ShipRenderContext:
+	+ ShipRenderContext:
 		+ TextureCoords upload
-		- Rendering of NPCs activates texture first
-			- Make sure other subsequent texture usage activates their own			
-	- Shader ("ship_npcs_texture"):
+	= Shader ("ship_npcs_texture"):
 		+ We keep existing limb-based shader, just change all its vertex attributes/parameters/etc. to become "texture"
 		+ Sampler
 		- Discard when transparent
@@ -475,10 +475,12 @@ Arch
 	- Misc improvements & technical debt:
 		+ When drawing human on side, legs first and arms then (as arms are longer)
 		- Furniture: anti-alias: TODO: shader or image?
-		- TextureCoordinatesQuad: shall we have float for RightX, LeftX, TopY, BottomY?
+		+ TextureCoordinatesQuad: shall we have float for RightX, LeftX, TopY, BottomY?
 		- Human frames: they are out of aspect
 			- Option 1: change human body ratios to match standard frame pixel dimensions (e.g. head square, etc.)
 			- Option2: recalculate standard frame pixel dimensions to match human body ratios
+		- Frame specs:
+			- Furniture: leave 1px border around - IFF WE END UP DOING ANTI-ALIAS IN IMAGE
 	- Test on Dell:
 		- Max number of textures (we've added 9th!)
 		-

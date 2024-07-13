@@ -1944,30 +1944,20 @@ void Npcs::RenderNpc(
 					// When UpperLegLengthFraction=1 (i.e. whole leg), kneeTextureY is bottom;
 					// otherwise, it's in-between top and bottom
 					float const kneeTextureY =
-						humanNpcState.TextureFrames.LegSide.TopRight.y
-						- animationState.UpperLegLengthFraction * (humanNpcState.TextureFrames.LegSide.TopRight.y - humanNpcState.TextureFrames.LegSide.BottomLeft.y);
+						humanNpcState.TextureFrames.LegSide.TopY
+						- animationState.UpperLegLengthFraction * (humanNpcState.TextureFrames.LegSide.TopY - humanNpcState.TextureFrames.LegSide.BottomY);
 
-					Render::TextureCoordinatesQuad upperLegTextureQuad = Render::TextureCoordinatesQuad({
-						// BottomLeft
-						vec2f(
-							humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.LegSide.BottomLeft.x : humanNpcState.TextureFrames.LegSide.TopRight.x,
-							kneeTextureY),
-						// TopRight
-						vec2f(
-							humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.LegSide.TopRight.x : humanNpcState.TextureFrames.LegSide.BottomLeft.x,
-							humanNpcState.TextureFrames.LegSide.TopRight.y)
-						});
+					Render::TextureCoordinatesQuad const upperLegTextureQuad = Render::TextureCoordinatesQuad({
+						humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.LegSide.LeftX : humanNpcState.TextureFrames.LegSide.RightX,
+						humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.LegSide.RightX : humanNpcState.TextureFrames.LegSide.LeftX,
+						kneeTextureY,
+						humanNpcState.TextureFrames.LegSide.TopY });
 
-					Render::TextureCoordinatesQuad lowerLegTextureQuad = Render::TextureCoordinatesQuad({
-						// BottomLeft
-						vec2f(
-							humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.LegSide.BottomLeft.x : humanNpcState.TextureFrames.LegSide.TopRight.x,
-							humanNpcState.TextureFrames.LegSide.BottomLeft.y),
-						// TopRight
-						vec2f(
-							humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.LegSide.TopRight.x : humanNpcState.TextureFrames.LegSide.BottomLeft.x,
-							kneeTextureY)
-						});
+					Render::TextureCoordinatesQuad const lowerLegTextureQuad = Render::TextureCoordinatesQuad({
+						humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.LegSide.LeftX : humanNpcState.TextureFrames.LegSide.RightX,
+						humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.LegSide.RightX : humanNpcState.TextureFrames.LegSide.LeftX,
+						humanNpcState.TextureFrames.LegSide.BottomY,
+						kneeTextureY });
 
 					// We extrude the corners to make them join nicely to the previous
 					// and next segments. The calculation of the extrusion (J) between two

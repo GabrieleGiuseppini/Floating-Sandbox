@@ -20,15 +20,18 @@ namespace Render {
 
 struct TextureCoordinatesQuad
 {
-    vec2f BottomLeft;
-    vec2f TopRight;
+    float LeftX;
+    float RightX;
+    float BottomY;
+    float TopY;
 
     TextureCoordinatesQuad FlipH() const
     {
         return TextureCoordinatesQuad({
-            vec2f(TopRight.x, BottomLeft.y),
-            vec2f(BottomLeft.x, TopRight.y),
-            });
+            RightX,
+            LeftX,
+            BottomY,
+            TopY });
     }
 };
 

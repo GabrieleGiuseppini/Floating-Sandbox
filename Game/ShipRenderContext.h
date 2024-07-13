@@ -273,28 +273,28 @@ public:
         // TopLeft
         mNpcTextureQuadVertexBuffer.emplace_back(
             topLeftPosition,
-            vec2f(textureCoords.BottomLeft.x, textureCoords.TopRight.y),
+            vec2f(textureCoords.LeftX, textureCoords.TopY),
             fPlaneId,
             overlayColor);
 
         // BottomLeft
         mNpcTextureQuadVertexBuffer.emplace_back(
             bottomLeftPosition,
-            textureCoords.BottomLeft,
+            vec2f(textureCoords.LeftX, textureCoords.BottomY),
             fPlaneId,
             overlayColor);
 
         // TopRight
         mNpcTextureQuadVertexBuffer.emplace_back(
             topRightPosition,
-            textureCoords.TopRight,
+            vec2f(textureCoords.RightX, textureCoords.TopY),
             fPlaneId,
             overlayColor);
 
         // BottomRight
         mNpcTextureQuadVertexBuffer.emplace_back(
             bottomRightPosition,
-            vec2f(textureCoords.TopRight.x, textureCoords.BottomLeft.y),
+            vec2f(textureCoords.RightX, textureCoords.BottomY),
             fPlaneId,
             overlayColor);
     }
