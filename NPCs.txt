@@ -453,27 +453,32 @@ Arch
 = NpcDatabase:
 	! Spec:
 		! cctor takes MaterialDatabase (for taking Materials referenced to by name in json) and NPC Texture Atlas(for taking TextureCoords)
-		- Provides info on humans (e.g. role colors, height & width, frame IDs) and furniture (height, frame IDs, material)
-			- Furniture height: used to calculate width based off texture frame
-			- Human height & width: just for consistency, doesn't use frames to calc anything
-				- Replaces GameParameters'
-				- Only height though? We don't need width, right?
-				- TODO: neither - we don't want to repeat H for each passenger; but may be multiplier/s?
-			- Furniture and human materials: json references structural materials by name
-				- Human references both (head & feet)
-		- Two sections, each own schema:
-			- Humans
-				- Global
-					- Material X 2
-				- Per-role
-					- SizeMultiplier, Role colors, textureFilenameStem's
-			- Furniture
-				- Per-type
-					- Material, dimensions, textureFilenameStem
-		- json refers to frames (in NPC texture DB) by name, but cctor - which also takes texture DB - stores references (or even directly coords!) by numeric ID
-			- json tells all frame names for all applicable variants, including limbs together with orientation variants
-				- Yes, the json for humans will list all frames for variants and all
-					- Might have a new type (at NpcDatabase or as as new GameType) that holds together all texture info's for a human (e.g. "head front", "head side", etc.) and the json basically fills this
+		! Provides info on humans (e.g. role colors, frame IDs) and furniture (height, frame IDs, material)
+			! Furniture height: used to calculate width based off texture frame
+			! Human: only SizeMultiplier
+				! We don't want to repeat H for each human
+			! Furniture and human materials: json references structural materials by name
+				! Human references both (head & feet)
+		! Two sections, each own schema:
+			! Humans
+				! Global
+					! Material X 2
+				! Per-kind
+					! Role, Name
+					! SizeMultiplier
+					! TextureFilenameStem's
+			! Furniture
+				! Per-kind
+					! Name
+					! Material
+					! Mesh
+						! Type (@ NpcDatabase)
+						! Dimension
+					! TextureFilenameStem
+		! json refers to frames (in NPC texture DB) by name, but cctor - which also takes texture DB - stores references (or even directly coords!) by numeric ID
+			! json tells all frame names for all applicable variants, including limbs together with orientation variants
+				! Yes, the json for humans will list all frames for variants and all
+					! Might have a new type (at NpcDatabase or as as new GameType) that holds together all texture info's for a human (e.g. "head front", "head side", etc.) and the json basically fills this
 		- Allow for merging of multiple "packs"
 			- So SubKind domain is expandable at runtime
 		- Also affects UI (for menu with list of subkind names, which might have multiple languages)
@@ -483,18 +488,18 @@ Arch
 				+ Nuke old FurnitureNpcKindType, NpcKindType
 			+ No different aliases for the two different NpcKind's - we will have a 2D coord for a specific subkind (NpcKindType, NpcSubKindIdType)
 				+ So NpcSubKindIdType=X means one thing for Humans and another thing for Furniture
-		- Humans:
-			- (NpcSubKindIdType) -> Material X 2
-			- (NpcSubKindIdType) -> SizeMultiplier
-			- (NpcSubKindIdType) -> TextureCoords (or that new GameType we talk about above which holds together all texture info's for all variants), colors
+		+ Humans:
+			+ (NpcSubKindIdType) -> Material X 2 (GetHeadMaterial, GetFeetMaterial)
+			+ (NpcSubKindIdType) -> SizeMultiplier
+			+ (NpcSubKindIdType) -> TextureCoords (or that new GameType we talk about above which holds together all texture info's for all variants), colors
 				- Initialization gets texture DB to populate this
-			- (NpcSubKindIdType, Language) -> Name
-		- Furniture:
-			- (NpcSubKindIdType) -> Material
-			- (NpcSubKindIdType) -> TextureCoords
-			- (NpcSubKindIdType) -> NpcParticleMesh info
-			- (NpcSubKindIdType, Language) -> Name
-	- Impl:
+			+ (NpcSubKindIdType, Language) -> Name
+		+ Furniture:
+			+ (NpcSubKindIdType) -> Material
+			+ (NpcSubKindIdType) -> TextureCoords
+			+ (NpcSubKindIdType) -> NpcParticleMesh info
+			+ (NpcSubKindIdType, Language) -> Name
+	= Impl:
 		+ NPC Texture Database:
 			+ json changes:
 				+ "name" -> "displayName"
@@ -514,23 +519,29 @@ Arch
 				+ Dummy
 				+ Crate
 		- NpcDatabase:
-			- static NpcDatabase Load(ResourceLocator const & resourceLocator, TextureAtlas(Metadata?) const &, MaterialDB const &)
-				- Invoked right after we build MaterialDB
-			- Add(NpcDatabase const &, TextureAtlas(Metadata?) const &, MaterialDB const &)
+			+ static NpcDatabase Load(ResourceLocator const & resourceLocator, TextureAtlas(Metadata?) const &, MaterialDB const &)
+				+ Invoked right after we build MaterialDB
+			- AddDatabase(NpcDatabase const &, TextureAtlas(Metadata?) const &, MaterialDB const &)
+				- TODOHERE: not sure yet, might remove this item and postpone it to when needed?
 		+ GameController:
 			+ Loads NpcTextureAtlas
 			+ Loads NpcDatabase
 			+ Passes (moves) NpcTextureAtlas to RenderContext
-		= RenderContext:
+		+ RenderContext:
 			+ cctor takes NpcTextureAtlas and passes it to Global::InitializeNpcTextures(.)
-			- Global::InitializeNpcTextures(.): upload texture
+			+ Global::InitializeNpcTextures(.): upload texture
 		= Npcs:
 			+ NpcDatabase replaces MaterialDatabase that is passed over to Npcs class
-			- Npcs::AddXYZ
-		- MainFrame:
-			- private BuildNpcSubmenus()
-				- From NpcDatabase (where taken from?)
-				- Cleans up and rebuilds
+			= State:
+				+ Human: store Role
+				- Texture quad/s
+			= Npcs::AddXYZ
+				+ Adapt
+				- Store texture quads (as const &) in kind-specific
+		+ MainFrame:
+			+ private RebuildNpcSubmenus()
+				+ From NpcDatabase (indirectly, via GameController)
+				+ Cleans up and rebuilds
 		- ShipRenderContext:
 			- Rendering of NPCs activates texture first
 				- Make sure other subsequent texture usage activates their own			
@@ -650,6 +661,8 @@ Arch
 			- Ditto
 		- Close to water entering (leaking point w/inflow)
 			- Ditto
+
+- NPC stats rendering as RollingText
 
 - Walk planning:
 	- First off: WalkingBehaviorState remembers CurrentTriangleElementIndex (of primary)

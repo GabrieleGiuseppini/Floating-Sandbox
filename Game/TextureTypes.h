@@ -7,11 +7,23 @@
 
 #include <GameCore/GameException.h>
 #include <GameCore/Utils.h>
+#include <GameCore/Vectors.h>
 
 #include <cstdint>
 #include <string>
 
 namespace Render {
+
+//
+// Texture
+//
+
+struct TextureCoordinatesQuad
+{
+    vec2f BottomLeft;
+    vec2f TopRight;
+};
+
 
 //
 // Texture databases

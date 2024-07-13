@@ -718,7 +718,7 @@ PlaceFurnitureNpcTool::PlaceFurnitureNpcTool(
         gameController,
         soundController,
         resourceLocator)
-    , mKind(FurnitureNpcKindType::Quad) // Just as a start
+    , mKind(0) // Will be set later
 {
 }
 
@@ -733,7 +733,7 @@ PlaceHumanNpcTool::PlaceHumanNpcTool(
         gameController,
         soundController,
         resourceLocator)
-    , mKind(HumanNpcKindType::Passenger) // Just as a start
+    , mKind(0) // Will be set later
 {
 }
 

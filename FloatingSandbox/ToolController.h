@@ -49,17 +49,17 @@ public:
         InternalSetCurrentToolCursor();
     }
 
-    void SetPlaceFurnitureNpcTool(FurnitureNpcKindType furnitureNpcKind)
+    void SetPlaceFurnitureNpcTool(NpcSubKindIdType npcSubKindId)
     {
         PlaceFurnitureNpcTool * tool = dynamic_cast<PlaceFurnitureNpcTool *>(mAllTools[static_cast<size_t>(ToolType::PlaceFurnitureNpc)].get());
-        tool->SetKind(furnitureNpcKind);
+        tool->SetKind(npcSubKindId);
         SetTool(ToolType::PlaceFurnitureNpc);
     }
 
-    void SetPlaceHumanNpcTool(HumanNpcKindType humanNpcKind)
+    void SetPlaceHumanNpcTool(NpcSubKindIdType npcSubKindId)
     {
         PlaceHumanNpcTool * tool = dynamic_cast<PlaceHumanNpcTool *>(mAllTools[static_cast<size_t>(ToolType::PlaceHumanNpc)].get());
-        tool->SetKind(humanNpcKind);
+        tool->SetKind(npcSubKindId);
         SetTool(ToolType::PlaceHumanNpc);
     }
 

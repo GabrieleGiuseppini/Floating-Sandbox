@@ -162,9 +162,10 @@ enum class ProgramParameterType : uint8_t
     LandTexture,                            // 6
     NoiseTexture,                           // 7
     OceanTexture,                           // 8
+    NpcAtlasTexture,                        // 9
 
     _FirstTexture = SharedTexture,
-    _LastTexture = OceanTexture
+    _LastTexture = NpcAtlasTexture
 };
 
 ProgramParameterType StrToProgramParameterType(std::string const & str);

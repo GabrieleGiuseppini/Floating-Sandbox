@@ -490,24 +490,10 @@ MainFrame::MainFrame(
 
             // Add human
             {
-                wxMenu * humanNpcSubMenu = new wxMenu(_(""));
-                {
-                    // Futurework: kinds come from database
-                    {
-                        auto const commandId = wxNewId();
-                        humanNpcSubMenu->Append(new wxMenuItem(nullptr, commandId, _("Passenger"), wxEmptyString, wxITEM_NORMAL));
-                        humanNpcSubMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [this](wxCommandEvent &) { OnAddHumanNpcMenuItemSelected(HumanNpcKindType::Passenger); }, commandId);
-                    }
-
-                    {
-                        auto const commandId = wxNewId();
-                        humanNpcSubMenu->Append(new wxMenuItem(nullptr, commandId, _("Programmer"), wxEmptyString, wxITEM_NORMAL));
-                        humanNpcSubMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [this](wxCommandEvent &) { OnAddHumanNpcMenuItemSelected(HumanNpcKindType::Programmer); }, commandId);
-                    }
-                }
+                mHumanNpcSubMenu = new wxMenu(_(""));
 
                 // Create menu
-                mAddHumanNpcMenuItem = new wxMenuItem(mToolsMenu, wxID_ANY, _("Add Human NPC..."), wxEmptyString, wxITEM_RADIO, humanNpcSubMenu);
+                mAddHumanNpcMenuItem = new wxMenuItem(mToolsMenu, wxID_ANY, _("Add Human NPC..."), wxEmptyString, wxITEM_RADIO, mHumanNpcSubMenu);
                 auto img = wxImage(resourceLocator.GetIconFilePath("add_human_npc_icon").string(), wxBITMAP_TYPE_PNG);
                 SET_BITMAP(mAddHumanNpcMenuItem, img);
                 mToolsMenu->Append(mAddHumanNpcMenuItem);
@@ -516,24 +502,17 @@ MainFrame::MainFrame(
 
             // Add furniture
             {
-                wxMenu * furnitureNpcSubMenu = new wxMenu(_(""));
-                {
-                    // Futurework: kinds come from database
-                    {
-                        auto const commandId = wxNewId();
-                        furnitureNpcSubMenu->Append(new wxMenuItem(nullptr, commandId, _("Quad"), wxEmptyString, wxITEM_NORMAL));
-                        furnitureNpcSubMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [this](wxCommandEvent &) { OnAddFurnitureNpcMenuItemSelected(FurnitureNpcKindType::Quad); }, commandId);
-                    }
-                }
+                mFurnitureNpcSubMenu = new wxMenu(_(""));
 
                 // Create menu
-                mAddFurnitureNpcMenuItem = new wxMenuItem(mToolsMenu, wxID_ANY, _("Add Furniture NPC..."), wxEmptyString, wxITEM_RADIO, furnitureNpcSubMenu);
+                mAddFurnitureNpcMenuItem = new wxMenuItem(mToolsMenu, wxID_ANY, _("Add Furniture NPC..."), wxEmptyString, wxITEM_RADIO, mFurnitureNpcSubMenu);
                 auto img = wxImage(resourceLocator.GetIconFilePath("add_furniture_npc_icon").string(), wxBITMAP_TYPE_PNG);
                 SET_BITMAP(mAddFurnitureNpcMenuItem, img);
                 mToolsMenu->Append(mAddFurnitureNpcMenuItem);
                 mAddFurnitureNpcMenuItem->Enable(true); // Note: here we're assuming we _can_ add NPCs; unfortunately the NPCs class is created _before_ we register for events, hence have to guess here
             }
 
+            // Move
             {
                 auto const id = wxNewId();
                 mMoveNpcMenuItem = new wxMenuItem(mToolsMenu, id, _("Move NPC\t3"), wxEmptyString, wxITEM_RADIO);
@@ -545,6 +524,7 @@ MainFrame::MainFrame(
                 mMoveNpcMenuItem->Enable(false);
             }
 
+            // Remove
             {
                 auto const id = wxNewId();
                 mRemoveNpcMenuItem = new wxMenuItem(mToolsMenu, id, _("Remove NPC"), wxEmptyString, wxITEM_RADIO);
@@ -1102,6 +1082,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     //
 
     ReconciliateUIWithUIPreferencesAndSettings();
+    RebuildNpcMenus();
 
 
     //
@@ -1999,7 +1980,7 @@ void MainFrame::OnScareFishMenuItemSelected(wxCommandEvent & /*event*/)
     mToolController->SetTool(ToolType::ScareFish);
 }
 
-void MainFrame::OnAddHumanNpcMenuItemSelected(HumanNpcKindType kind)
+void MainFrame::OnAddHumanNpcMenuItemSelected(NpcSubKindIdType kind)
 {
     mAddHumanNpcMenuItem->Check(true);
 
@@ -2007,7 +1988,7 @@ void MainFrame::OnAddHumanNpcMenuItemSelected(HumanNpcKindType kind)
     mToolController->SetPlaceHumanNpcTool(kind);
 }
 
-void MainFrame::OnAddFurnitureNpcMenuItemSelected(FurnitureNpcKindType kind)
+void MainFrame::OnAddFurnitureNpcMenuItemSelected(NpcSubKindIdType kind)
 {
     mAddFurnitureNpcMenuItem->Check(true);
 
@@ -2663,6 +2644,63 @@ void MainFrame::ReconciliateUIWithUIPreferencesAndSettings()
     mShowStatusTextMenuItem->Check(mUIPreferencesManager->GetShowStatusText());
     mShowExtendedStatusTextMenuItem->Check(mUIPreferencesManager->GetShowExtendedStatusText());
     mMuteMenuItem->Check(mUIPreferencesManager->GetGlobalMute());
+}
+
+void MainFrame::RebuildNpcMenus()
+{
+    assert(mGameController);
+
+    auto const language = mLocalizationManager.GetEnforcedLanguageIdentifier();
+
+    // Humans
+    {
+        // Clear first
+        auto const menuItems = mHumanNpcSubMenu->GetMenuItems();
+        for (auto const & item : menuItems)
+        {
+            wxMenuItem * removedItem = mHumanNpcSubMenu->Remove(item);
+            delete removedItem;
+        }
+
+        // Add all
+        for (auto const & subKindInfo : mGameController->GetHumanNpcSubKinds(language))
+        {
+            auto const commandId = wxNewId();
+            mHumanNpcSubMenu->Append(new wxMenuItem(nullptr, commandId, std::get<1>(subKindInfo), wxEmptyString, wxITEM_NORMAL));
+            mHumanNpcSubMenu->Bind(
+                wxEVT_COMMAND_MENU_SELECTED,
+                [this, subKindId=std::get<0>(subKindInfo)](wxCommandEvent &)
+                {
+                    OnAddHumanNpcMenuItemSelected(subKindId);
+                },
+                commandId);
+        }
+    }
+
+    // Furniture
+    {
+        // Clear first
+        auto const menuItems = mFurnitureNpcSubMenu->GetMenuItems();
+        for (auto const & item : menuItems)
+        {
+            wxMenuItem * removedItem = mFurnitureNpcSubMenu->Remove(item);
+            delete removedItem;
+        }
+
+        // Add all
+        for (auto const & subKindInfo : mGameController->GetFurnitureNpcSubKinds(language))
+        {
+            auto const commandId = wxNewId();
+            mFurnitureNpcSubMenu->Append(new wxMenuItem(nullptr, commandId, std::get<1>(subKindInfo), wxEmptyString, wxITEM_NORMAL));
+            mFurnitureNpcSubMenu->Bind(
+                wxEVT_COMMAND_MENU_SELECTED,
+                [this, subKindId = std::get<0>(subKindInfo)](wxCommandEvent &)
+                {
+                    OnAddFurnitureNpcMenuItemSelected(subKindId);
+                },
+                commandId);
+        }
+    }
 }
 
 std::filesystem::path MainFrame::ChooseDefaultShip(ResourceLocator const & resourceLocator)

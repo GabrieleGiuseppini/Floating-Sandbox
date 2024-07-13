@@ -19,6 +19,7 @@ GlobalRenderContext::GlobalRenderContext(ShaderManager<ShaderManagerTraits> & sh
     , mGenericMipMappedTextureAtlasMetadata()
     , mExplosionTextureAtlasOpenGLHandle()
     , mExplosionTextureAtlasMetadata()
+    , mNpcTextureAtlasOpenGLHandle()
     , mUploadedNoiseTexturesManager()
 {
 }
@@ -221,6 +222,41 @@ void GlobalRenderContext::InitializeExplosionTextures(ResourceLocator const & re
     // Set texture in ship shaders
     mShaderManager.ActivateProgram<ProgramType::ShipExplosions>();
     mShaderManager.SetTextureParameters<ProgramType::ShipExplosions>();
+}
+
+void GlobalRenderContext::InitializeNpcTextures(TextureAtlas<NpcTextureGroups> && npcTextureAtlas)
+{
+    LogMessage("NPC texture atlas size: ", npcTextureAtlas.AtlasData.Size.ToString());
+
+    // Activate texture
+    mShaderManager.ActivateTexture<ProgramParameterType::NpcAtlasTexture>();
+
+    // Create OpenGL handle
+    GLuint tmpGLuint;
+    glGenTextures(1, &tmpGLuint);
+    mNpcTextureAtlasOpenGLHandle = tmpGLuint;
+
+    // Bind texture atlas
+    glBindTexture(GL_TEXTURE_2D, *mNpcTextureAtlasOpenGLHandle);
+    CheckOpenGLError();
+
+    // Upload atlas texture
+    GameOpenGL::UploadTexture(std::move(npcTextureAtlas.AtlasData));
+
+    // Set repeat mode - we want to clamp, to leverage the fact that
+    // all frames are perfectly transparent at the edges
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    CheckOpenGLError();
+
+    // Set texture filtering parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    CheckOpenGLError();
+
+    // Set texture in ship shaders
+    mShaderManager.ActivateProgram<ProgramType::ShipNpcsTexture>();
+    mShaderManager.SetTextureParameters<ProgramType::ShipNpcsTexture>();
 }
 
 void GlobalRenderContext::ProcessParameterChanges(RenderParameters const & renderParameters)

@@ -1064,6 +1064,16 @@ enum class NpcKindType
  */
 using NpcSubKindIdType = std::uint32_t;
 
+/*
+ * Roles for humans.
+ */
+enum class NpcHumanRoleType
+{
+    Passenger
+};
+
+NpcHumanRoleType StrToNpcHumanRoleType(std::string const & str);
+
 enum class NpcFloorKindType
 {
     NotAFloor,

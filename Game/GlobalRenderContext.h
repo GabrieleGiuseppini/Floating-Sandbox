@@ -101,6 +101,8 @@ private:
     GameOpenGLTexture mExplosionTextureAtlasOpenGLHandle;
     std::unique_ptr<TextureAtlasMetadata<ExplosionTextureGroups>> mExplosionTextureAtlasMetadata;
 
+    GameOpenGLTexture mNpcTextureAtlasOpenGLHandle;
+
     UploadedTextureManager<NoiseTextureGroups> mUploadedNoiseTexturesManager;
 };
 

@@ -22,7 +22,10 @@ std::unique_ptr<GameController> GameController::Create(
     ResourceLocator const & resourceLocator,
     ProgressCallback const & progressCallback)
 {
-    // Load fish species
+    // Load material database
+    MaterialDatabase materialDatabase = MaterialDatabase::Load(resourceLocator);
+
+    // Load fish species database
     FishSpeciesDatabase fishSpeciesDatabase = FishSpeciesDatabase::Load(resourceLocator);
 
     // Load NPC teture atlas
@@ -30,11 +33,11 @@ std::unique_ptr<GameController> GameController::Create(
         Render::NpcTextureDatabaseTraits::DatabaseName,
         resourceLocator.GetTexturesRootFolderPath());
 
-    // Load NPCs
-    NpcDatabase npcDatabase = NpcDatabase::Load(resourceLocator, npcTextureAtlas);
-
-    // Load materials
-    MaterialDatabase materialDatabase = MaterialDatabase::Load(resourceLocator);
+    // Load NPC database
+    NpcDatabase npcDatabase = NpcDatabase::Load(
+        resourceLocator,
+        materialDatabase,
+        npcTextureAtlas);
 
     // Create game event dispatcher
     auto gameEventDispatcher = std::make_shared<GameEventDispatcher>();

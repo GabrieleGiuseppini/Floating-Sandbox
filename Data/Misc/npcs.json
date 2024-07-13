@@ -4,13 +4,28 @@
 			"head_material": "NPC Human Head",
 			"feet_material": "NPC Human Feet"
 		},
-		"roles": [
+		"kinds": [
 
 			{
 				"name": [
-					{ "value": "Passenger", "language": "en" },
-					{ "value": "Passeggero", "language": "it" }
+					{ "value": "Dummy", "language": "en" },
+					{ "value": "Dummy", "language": "it" }
 				],
+				"role": "Passenger",
+				"texture_filename_stems": {
+					"head_f": "dummy_head_f",
+					"head_b": "dummy_head_b",
+					"head_s": "dummy_head_s",
+					"torso_f": "dummy_torso_f",
+					"torso_b": "dummy_torso_b",
+					"torso_s": "dummy_torso_s",
+					"arm_f": "dummy_arm_f",
+					"arm_b": "dummy_arm_b",
+					"arm_s": "dummy_arm_s",
+					"leg_f": "dummy_leg_f",
+					"leg_b": "dummy_leg_b",
+					"leg_s": "dummy_leg_s"
+				}
 			}
 		]
 	},
@@ -23,6 +38,12 @@
 					{ "value": "Crate", "language": "en" },
 					{ "value": "Cassa", "language": "it" }
 				],
+				"material": "Solid Pine Wood I-Beam",
+				"particle_mesh": {
+					"kind": "Quad",
+					"height": 0.5
+				},
+				"texture_filename_stem": "crate_1"
 			}
 		]
 	}

@@ -53,8 +53,8 @@
           "x": 8,
           "y": 16
         },
-        "displayName": "dummy-arm-b",
-        "filenameStem": "dummy-arm-b",
+        "displayName": "dummy_arm_b",
+        "filenameStem": "dummy_arm_b",
         "has_own_ambient_light": false,
         "id": {
           "frameIndex": 1,
@@ -96,8 +96,8 @@
           "x": 8,
           "y": 16
         },
-        "displayName": "dummy-arm-f",
-        "filenameStem": "dummy-arm-f",
+        "displayName": "dummy_arm_f",
+        "filenameStem": "dummy_arm_f",
         "has_own_ambient_light": false,
         "id": {
           "frameIndex": 2,
@@ -139,8 +139,8 @@
           "x": 8,
           "y": 16
         },
-        "displayName": "dummy-arm-s",
-        "filenameStem": "dummy-arm-s",
+        "displayName": "dummy_arm_s",
+        "filenameStem": "dummy_arm_s",
         "has_own_ambient_light": false,
         "id": {
           "frameIndex": 3,

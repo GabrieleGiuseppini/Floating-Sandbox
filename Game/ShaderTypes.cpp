@@ -476,6 +476,8 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::LandTexture;
     else if (str == "NoiseTexture")
         return ProgramParameterType::NoiseTexture;
+    else if (str == "NpcAtlasTexture")
+        return ProgramParameterType::NpcAtlasTexture;
     else if (str == "OceanTexture")
         return ProgramParameterType::OceanTexture;
     else
@@ -567,6 +569,8 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
         return "LandTexture";
     case ProgramParameterType::NoiseTexture:
         return "NoiseTexture";
+    case ProgramParameterType::NpcAtlasTexture:
+        return "NpcAtlasTexture";
     case ProgramParameterType::OceanTexture:
         return "OceanTexture";
     }

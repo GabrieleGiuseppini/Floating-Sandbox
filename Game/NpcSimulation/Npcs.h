@@ -221,6 +221,7 @@ private:
 			struct HumanNpcStateType final
 			{
 				NpcSubKindIdType const SubKind;
+				NpcHumanRoleType const Role;
 				float const WidthMultipier; // Randomization
 				float const WalkingSpeedBase;
 
@@ -418,11 +419,13 @@ private:
 
 				HumanNpcStateType(
 					NpcSubKindIdType subKind,
+					NpcHumanRoleType role,
 					float widthMultipier,
 					float walkingSpeedBase,
 					BehaviorType initialBehavior,
 					float currentSimulationTime)
 					: SubKind(subKind)
+					, Role(role)
 					, WidthMultipier(widthMultipier)
 					, WalkingSpeedBase(walkingSpeedBase)
 					, EquilibriumTorque(0.0f)

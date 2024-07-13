@@ -12,11 +12,10 @@
 
 NpcDatabase NpcDatabase::Load(
     ResourceLocator const & resourceLocator,
+    MaterialDatabase const & materialDatabase,
     Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas)
 {
-    auto const npcDatabaseFilePath = resourceLocator.GetFishSpeciesDatabaseFilePath();
-
-    picojson::value const root = Utils::ParseJSONFile(npcDatabaseFilePath);
+    picojson::value const root = Utils::ParseJSONFile(resourceLocator.GetNpcDatabaseFilePath());
     if (!root.is<picojson::object>())
     {
         throw GameException("NPC database is not a JSON object");
@@ -24,7 +23,7 @@ NpcDatabase NpcDatabase::Load(
 
     picojson::object const & rootObject = root.get<picojson::object>();
 
-    std::map<NpcSubKindIdType, HumanRole> humanRoles;
+    std::map<NpcSubKindIdType, HumanKind> humanKinds;
     std::map<NpcSubKindIdType, FurnitureKind> furnitureKinds;
 
     //
@@ -35,22 +34,29 @@ NpcDatabase NpcDatabase::Load(
         auto const humansObject = Utils::GetMandatoryJsonObject(rootObject, "humans");
 
         auto const humansGlobalObject = Utils::GetMandatoryJsonObject(humansObject, "global");
-        // TODOHERE
+
+        StructuralMaterial const & headMaterial = materialDatabase.GetStructuralMaterial(
+            Utils::GetMandatoryJsonMember<std::string>(humansGlobalObject, "head_material"));
+
+        StructuralMaterial const & feetMaterial = materialDatabase.GetStructuralMaterial(
+            Utils::GetMandatoryJsonMember<std::string>(humansGlobalObject, "feet_material"));
 
         NpcSubKindIdType nextKindId = 0;
-        auto const humanRolesArray = Utils::GetMandatoryJsonArray(humansObject, "roles");
-        for (auto const & humanRoleArrayElement : humanRolesArray)
+        auto const humanKindsArray = Utils::GetMandatoryJsonArray(humansObject, "kinds");
+        for (auto const & humanKindArrayElement : humanKindsArray)
         {
-            if (!humanRoleArrayElement.is<picojson::object>())
+            if (!humanKindArrayElement.is<picojson::object>())
             {
-                throw GameException("Human NPC role array element is not a JSON object");
+                throw GameException("Human NPC kind array element is not a JSON object");
             }
 
-            HumanRole role = ParseHumanRole(
-                humanRoleArrayElement.get<picojson::object>(),
+            HumanKind kind = ParseHumanKind(
+                humanKindArrayElement.get<picojson::object>(),
+                headMaterial,
+                feetMaterial,
                 npcTextureAtlas);
 
-            humanRoles.try_emplace(nextKindId, std::move(role));
+            humanKinds.try_emplace(nextKindId, std::move(kind));
             ++nextKindId;
         }
     }
@@ -60,7 +66,6 @@ NpcDatabase NpcDatabase::Load(
     //
 
     {
-
         auto const furnitureObject = Utils::GetMandatoryJsonObject(rootObject, "furniture");
 
         NpcSubKindIdType nextKindId = 0;
@@ -74,6 +79,7 @@ NpcDatabase NpcDatabase::Load(
 
             FurnitureKind kind = ParseFurnitureKind(
                 furnitureKindArrayElement.get<picojson::object>(),
+                materialDatabase,
                 npcTextureAtlas);
 
             furnitureKinds.try_emplace(nextKindId, std::move(kind));
@@ -86,13 +92,13 @@ NpcDatabase NpcDatabase::Load(
     //
 
     return NpcDatabase(
-        std::move(humanRoles),
+        std::move(humanKinds),
         std::move(furnitureKinds));
 }
 
 std::vector<std::tuple<NpcSubKindIdType, std::string>> NpcDatabase::GetHumanSubKinds(std::string const & language) const
 {
-    return GetSubKinds(mHumanRoles, language);
+    return GetSubKinds(mHumanKinds, language);
 }
 
 std::vector<std::tuple<NpcSubKindIdType, std::string>> NpcDatabase::GetFurnitureSubKinds(std::string const & language) const
@@ -102,18 +108,103 @@ std::vector<std::tuple<NpcSubKindIdType, std::string>> NpcDatabase::GetFurniture
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-NpcDatabase::HumanRole NpcDatabase::ParseHumanRole(
-    picojson::object const & roleObject,
+NpcDatabase::HumanKind NpcDatabase::ParseHumanKind(
+    picojson::object const & kindObject,
+    StructuralMaterial const & headMaterial,
+    StructuralMaterial const & feetMaterial,
     Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas)
 {
-    // TODOHERE
+    MultiLingualText name = ParseMultilingualText(kindObject, "name");
+    NpcHumanRoleType const role = StrToNpcHumanRoleType(Utils::GetMandatoryJsonMember<std::string>(kindObject, "role"));
+    float const sizeMultiplier = Utils::GetOptionalJsonMember<float>(kindObject, "size_multiplier", 1.0f);
+
+    auto const & textureFilenameStemsObject = Utils::GetMandatoryJsonObject(kindObject, "texture_filename_stems");
+    HumanTextureFrames humanTextureFrames({
+        ParseTextureCoordinatesQuad(textureFilenameStemsObject, "head_f", npcTextureAtlas),
+        ParseTextureCoordinatesQuad(textureFilenameStemsObject, "head_b", npcTextureAtlas),
+        ParseTextureCoordinatesQuad(textureFilenameStemsObject, "head_s", npcTextureAtlas),
+        ParseTextureCoordinatesQuad(textureFilenameStemsObject, "torso_f", npcTextureAtlas),
+        ParseTextureCoordinatesQuad(textureFilenameStemsObject, "torso_b", npcTextureAtlas),
+        ParseTextureCoordinatesQuad(textureFilenameStemsObject, "torso_s", npcTextureAtlas),
+        ParseTextureCoordinatesQuad(textureFilenameStemsObject, "arm_f", npcTextureAtlas),
+        ParseTextureCoordinatesQuad(textureFilenameStemsObject, "arm_b", npcTextureAtlas),
+        ParseTextureCoordinatesQuad(textureFilenameStemsObject, "arm_s", npcTextureAtlas),
+        ParseTextureCoordinatesQuad(textureFilenameStemsObject, "leg_f", npcTextureAtlas),
+        ParseTextureCoordinatesQuad(textureFilenameStemsObject, "leg_b", npcTextureAtlas),
+        ParseTextureCoordinatesQuad(textureFilenameStemsObject, "leg_s", npcTextureAtlas)
+        });
+
+    return HumanKind({
+        std::move(name),
+        role,
+        headMaterial,
+        feetMaterial,
+        sizeMultiplier,
+        std::move(humanTextureFrames) });
 }
 
 NpcDatabase::FurnitureKind NpcDatabase::ParseFurnitureKind(
     picojson::object const & kindObject,
+    MaterialDatabase const & materialDatabase,
     Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas)
 {
-    // TODOHERE
+    MultiLingualText name = ParseMultilingualText(kindObject, "name");
+
+    StructuralMaterial const & material = materialDatabase.GetStructuralMaterial(
+        Utils::GetMandatoryJsonMember<std::string>(kindObject, "material"));
+
+    std::string const & frameFilenameStem = Utils::GetMandatoryJsonMember<std::string>(kindObject, "texture_filename_stem");
+    auto const & atlasFrameMetadata = npcTextureAtlas.Metadata.GetFrameMetadata(frameFilenameStem);
+
+    auto const & particleMeshObject = Utils::GetMandatoryJsonObject(kindObject, "particle_mesh");
+    ParticleMeshKindType const particleMeshKind = StrToParticleMeshKindType(
+        Utils::GetMandatoryJsonMember<std::string>(particleMeshObject, "kind"));
+
+    float height = 0.0f, width = 0.0f;
+    switch (particleMeshKind)
+    {
+        case ParticleMeshKindType::Dipole:
+        {
+            height = Utils::GetMandatoryJsonMember<float>(particleMeshObject, "height");
+            width = 0;
+
+            break;
+        }
+
+        case ParticleMeshKindType::Particle:
+        {
+            height = 0;
+            width = 0;
+
+            break;
+        }
+
+        case ParticleMeshKindType::Quad:
+        {
+            height = Utils::GetMandatoryJsonMember<float>(particleMeshObject, "height");
+
+            // Calculate width based off texture frame
+            float const textureFrameAspectRatio =
+                static_cast<float>(atlasFrameMetadata.FrameMetadata.Size.width)
+                / static_cast<float>(atlasFrameMetadata.FrameMetadata.Size.height);
+            width = height * textureFrameAspectRatio;
+
+            break;
+        }
+    }
+
+    Render::TextureCoordinatesQuad textureCoordinatesQuad = Render::TextureCoordinatesQuad({
+        atlasFrameMetadata.TextureCoordinatesBottomLeft,
+        atlasFrameMetadata.TextureCoordinatesTopRight
+        });
+
+    return FurnitureKind({
+        std::move(name),
+        material,
+        particleMeshKind,
+        height,
+        width,
+        std::move(textureCoordinatesQuad) });
 }
 
 NpcDatabase::MultiLingualText NpcDatabase::ParseMultilingualText(
@@ -179,6 +270,19 @@ NpcDatabase::MultiLingualText NpcDatabase::ParseMultilingualText(
     return MultiLingualText(std::move(valuesByLanguageMap));
 }
 
+Render::TextureCoordinatesQuad NpcDatabase::ParseTextureCoordinatesQuad(
+    picojson::object const & containerObject,
+    std::string const & memberName,
+    Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas)
+{
+    std::string const & frameFilenameStem = Utils::GetMandatoryJsonMember<std::string>(containerObject, memberName);
+    auto const & atlasFrameMetadata = npcTextureAtlas.Metadata.GetFrameMetadata(frameFilenameStem);
+    return Render::TextureCoordinatesQuad({
+        atlasFrameMetadata.TextureCoordinatesBottomLeft,
+        atlasFrameMetadata.TextureCoordinatesTopRight
+        });
+}
+
 template<typename TNpcSubKindContainer>
 std::vector<std::tuple<NpcSubKindIdType, std::string>> NpcDatabase::GetSubKinds(
     TNpcSubKindContainer const & container,
@@ -192,4 +296,16 @@ std::vector<std::tuple<NpcSubKindIdType, std::string>> NpcDatabase::GetSubKinds(
     }
 
     return kinds;
+}
+
+NpcDatabase::ParticleMeshKindType NpcDatabase::StrToParticleMeshKindType(std::string const & str)
+{
+    if (Utils::CaseInsensitiveEquals(str, "Dipole"))
+        return ParticleMeshKindType::Dipole;
+    else if (Utils::CaseInsensitiveEquals(str, "Particle"))
+        return ParticleMeshKindType::Particle;
+    else if (Utils::CaseInsensitiveEquals(str, "Quad"))
+        return ParticleMeshKindType::Quad;
+    else
+        throw GameException("Unrecognized ParticleMeshKindType \"" + str + "\"");
 }

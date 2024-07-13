@@ -127,6 +127,8 @@ private:
     wxMenu * mToolsMenu;
     wxMenuItem * mSmashMenuItem;
     wxMenuItem * mScareFishMenuItem;
+    wxMenu * mHumanNpcSubMenu;
+    wxMenu * mFurnitureNpcSubMenu;
     wxMenuItem * mRCBombsDetonateMenuItem;
     wxMenuItem * mAntiMatterBombsDetonateMenuItem;
     wxMenuItem * mTriggerStormMenuItem;
@@ -239,8 +241,8 @@ private:
     void OnRepairStructureMenuItemSelected(wxCommandEvent & event);
     void OnScrubMenuItemSelected(wxCommandEvent & event);
     void OnScareFishMenuItemSelected(wxCommandEvent & event);
-    void OnAddHumanNpcMenuItemSelected(HumanNpcKindType kind);
-    void OnAddFurnitureNpcMenuItemSelected(FurnitureNpcKindType kind);
+    void OnAddHumanNpcMenuItemSelected(NpcSubKindIdType kind);
+    void OnAddFurnitureNpcMenuItemSelected(NpcSubKindIdType kind);
     void OnMoveNpcMenuItemSelected(wxCommandEvent & event);
     void OnRemoveNpcMenuItemSelected(wxCommandEvent & event);
     void OnTriggerLightningMenuItemSelected(wxCommandEvent & event);
@@ -438,6 +440,8 @@ private:
     void StartLowFrequencyTimer();
 
     void ReconciliateUIWithUIPreferencesAndSettings();
+
+    void RebuildNpcMenus();
 
     static std::filesystem::path ChooseDefaultShip(ResourceLocator const & resourceLocator);
 

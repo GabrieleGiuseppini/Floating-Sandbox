@@ -263,13 +263,61 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 	// Create NPC
 	//
 
+	auto const & furnitureMaterial = mNpcDatabase.GetFurnitureMaterial(subKind);
+
 	StateType::ParticleMeshType particleMesh;
+	vec2f pickAnchorOffset;
 
-	vec2f anchorOffset;
-
-	switch (furnitureKind)
+	switch (mNpcDatabase.GetFurnitureParticleMeshKindType(subKind))
 	{
-		case FurnitureNpcKindType::Quad:
+		case NpcDatabase::ParticleMeshKindType::Dipole:
+		{
+			// TODO
+			throw GameException("Dipoles not yet supported!");
+		}
+
+		case NpcDatabase::ParticleMeshKindType::Particle:
+		{
+			// Check if there are enough particles
+
+			if (mParticles.GetRemainingParticlesCount() < 1)
+			{
+				return std::nullopt;
+			}
+
+			// Primary
+
+			float const mass = CalculateParticleMass(
+				furnitureMaterial.GetMass(),
+				mCurrentSizeAdjustment
+#ifdef IN_BARYLAB
+				, mCurrentMassAdjustment
+#endif
+			);
+
+			float const buoyancyFactor = CalculateParticleBuoyancyFactor(
+				furnitureMaterial.NpcBuoyancyVolumeFill,
+				mCurrentSizeAdjustment
+#ifdef IN_BARYLAB
+				, mCurrentBuoyancyAdjustment
+#endif
+			);
+
+			auto const primaryParticleIndex = mParticles.Add(
+				mass,
+				buoyancyFactor,
+				&furnitureMaterial,
+				worldCoordinates,
+				furnitureMaterial.RenderColor);
+
+			particleMesh.Particles.emplace_back(primaryParticleIndex, std::nullopt);
+
+			pickAnchorOffset = vec2f(0.0f, 0.0f);
+
+			break;
+		}
+
+		case NpcDatabase::ParticleMeshKindType::Quad:
 		{
 			// Check if there are enough particles
 
@@ -280,9 +328,8 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 
 			// Create Particles
 
-			float const baseWidth = 1.5f; // Futurework: from NPC database
-			float const baseHeight = 1.5f; // Futurework: from NPC database
-			auto const & furnitureMaterial = mMaterialDatabase.GetStructuralMaterial("Solid Pine Wood I-Beam"); // Futurework: from NPC database
+			float const baseWidth = mNpcDatabase.GetFurnitureWidth(subKind);
+			float const baseHeight = mNpcDatabase.GetFurnitureHeight(subKind);
 
 			float const mass = CalculateParticleMass(
 				furnitureMaterial.GetMass(),
@@ -407,50 +454,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 				mParticles,
 				particleMesh);
 
-			anchorOffset = vec2f(width / 2.0f, -height / 2.0f);
-
-			break;
-		}
-
-		case FurnitureNpcKindType::Particle:
-		{
-			// Check if there are enough particles
-
-			if (mParticles.GetRemainingParticlesCount() < 1)
-			{
-				return std::nullopt;
-			}
-
-			// Primary
-
-			auto const & furnitureMaterial = mMaterialDatabase.GetStructuralMaterial("Solid Pine Wood I-Beam"); // Futurework: from mNpcDatabase
-
-			float const mass = CalculateParticleMass(
-				furnitureMaterial.GetMass(),
-				mCurrentSizeAdjustment
-#ifdef IN_BARYLAB
-				, mCurrentMassAdjustment
-#endif
-			);
-
-			float const buoyancyFactor = CalculateParticleBuoyancyFactor(
-				furnitureMaterial.NpcBuoyancyVolumeFill,
-				mCurrentSizeAdjustment
-#ifdef IN_BARYLAB
-				, mCurrentBuoyancyAdjustment
-#endif
-			);
-
-			auto const primaryParticleIndex = mParticles.Add(
-				mass,
-				buoyancyFactor,
-				&furnitureMaterial,
-				worldCoordinates,
-				furnitureMaterial.RenderColor);
-
-			particleMesh.Particles.emplace_back(primaryParticleIndex, std::nullopt);
-
-			anchorOffset = vec2f(0.0f, 0.0f);
+			pickAnchorOffset = vec2f(width / 2.0f, -height / 2.0f);
 
 			break;
 		}
@@ -459,7 +463,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 	// Furniture
 
 	StateType::KindSpecificStateType::FurnitureNpcStateType furnitureState = StateType::KindSpecificStateType::FurnitureNpcStateType(
-		furnitureKind);
+		subKind);
 
 	//
 	// Store NPC
@@ -490,7 +494,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 	++(mShips[shipId]->FurnitureNpcCount);
 	mGameEventHandler->OnNpcCountsUpdated(CalculateTotalNpcCount());
 
-	return PickedObjectId<NpcId>(npcId, anchorOffset);
+	return PickedObjectId<NpcId>(npcId, pickAnchorOffset);
 }
 
 std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
@@ -515,17 +519,17 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
 
 	// Calculate height
 
-	float const baseHeight = GameRandomEngine::GetInstance().GenerateNormalReal(
-		GameParameters::HumanNpcGeometry::BodyLengthMean,
-		GameParameters::HumanNpcGeometry::BodyLengthStdDev);
+	float const baseHeight =
+		GameRandomEngine::GetInstance().GenerateNormalReal(
+			GameParameters::HumanNpcGeometry::BodyLengthMean,
+			GameParameters::HumanNpcGeometry::BodyLengthStdDev)
+		* mNpcDatabase.GetHumanSizeMultiplier(subKind);
 
 	float const height = CalculateSpringLength(baseHeight, mCurrentSizeAdjustment);
 
 	// Feet (primary)
 
-	// Futurework: from mNpcDatabase
-	auto const & feetMaterial = mMaterialDatabase.GetStructuralMaterial("NPC Human Feet");
-
+	auto const & feetMaterial = mNpcDatabase.GetHumanFeetMaterial(subKind);
 	float const feetMass = CalculateParticleMass(
 		feetMaterial.GetMass(),
 		mCurrentSizeAdjustment
@@ -553,9 +557,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
 
 	// Head (secondary)
 
-	// Futurework: from mNpcDatabase
-	auto const & headMaterial = mMaterialDatabase.GetStructuralMaterial("NPC Human Head");
-
+	auto const & headMaterial = mNpcDatabase.GetHumanHeadMaterial(subKind);
 	float const headMass = CalculateParticleMass(
 		headMaterial.GetMass(),
 		mCurrentSizeAdjustment
@@ -623,7 +625,8 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
 		* baseHeight / 1.65f; // Just comes from 1m/s looking good when human is 1.65
 
 	StateType::KindSpecificStateType::HumanNpcStateType humanState = StateType::KindSpecificStateType::HumanNpcStateType(
-		humanKind,
+		subKind,
+		mNpcDatabase.GetHumanRole(subKind),
 		widthMultiplier,
 		walkingSpeedBase,
 		StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::BeingPlaced,

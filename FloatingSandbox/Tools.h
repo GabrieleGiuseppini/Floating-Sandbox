@@ -3817,7 +3817,7 @@ public:
         SoundController & soundController,
         ResourceLocator const & resourceLocator);
 
-    void SetKind(FurnitureNpcKindType kind)
+    void SetKind(NpcSubKindIdType kind)
     {
         mKind = kind;
     }
@@ -3833,7 +3833,7 @@ protected:
 
 private:
 
-    FurnitureNpcKindType mKind;
+    NpcSubKindIdType mKind;
 };
 
 class PlaceHumanNpcTool final : public PlaceNpcToolBase
@@ -3846,7 +3846,7 @@ public:
         SoundController & soundController,
         ResourceLocator const & resourceLocator);
 
-    void SetKind(HumanNpcKindType kind)
+    void SetKind(NpcSubKindIdType kind)
     {
         mKind = kind;
     }
@@ -3862,7 +3862,7 @@ protected:
 
 private:
 
-    HumanNpcKindType mKind;
+    NpcSubKindIdType mKind;
 };
 
 class MoveNpcTool final : public Tool

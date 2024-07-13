@@ -83,6 +83,16 @@ public:
         return mShipStrengthRandomizer;
     }
 
+    auto GetHumanNpcSubKinds(std::string const & language) const
+    {
+        return mNpcDatabase.GetHumanSubKinds(language);
+    }
+
+    auto GetFurnitureNpcSubKinds(std::string const & language) const
+    {
+        return mNpcDatabase.GetFurnitureSubKinds(language);
+    }
+
     /////////////////////////////////////////////////////////
     // IGameController
     /////////////////////////////////////////////////////////
