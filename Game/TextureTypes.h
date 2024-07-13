@@ -22,6 +22,14 @@ struct TextureCoordinatesQuad
 {
     vec2f BottomLeft;
     vec2f TopRight;
+
+    TextureCoordinatesQuad FlipH() const
+    {
+        return TextureCoordinatesQuad({
+            vec2f(TopRight.x, BottomLeft.y),
+            vec2f(BottomLeft.x, TopRight.y),
+            });
+    }
 };
 
 

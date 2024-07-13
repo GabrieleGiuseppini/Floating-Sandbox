@@ -466,11 +466,18 @@ Arch
 		- Rendering of NPCs activates texture first
 			- Make sure other subsequent texture usage activates their own			
 	- Shader ("ship_npcs_texture"):
-		- We keep existing limb-based shader, just change all its vertex attributes/parameters/etc. to become "texture"
+		+ We keep existing limb-based shader, just change all its vertex attributes/parameters/etc. to become "texture"
+		+ Sampler
 		- Discard when transparent
 			- But only after testing with two connected components - & inverse order of drawing; should bug out when near NPC is drawn before far NPC and they are on top of each other
 				- Requires following their triangle
 		- Night time color
+	- Misc improvements & technical debt:
+		- When drawing human on side, legs first and arms then (as arms are longer)
+		- Furniture: anti-alias: TODO: shader or image?
+		- TextureCoordinatesQuad: shall we have float for RightX, LeftX, TopY, BottomY?
+		- Human frames:
+			- Recalculate pixel dimensions to support human body ratios
 	- Port to BaryLab
 		- Copy NPC files
 		- Create NpcDatabase

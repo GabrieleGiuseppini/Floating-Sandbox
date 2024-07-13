@@ -61,7 +61,7 @@ in float tailSwing;
 in float tailProgress;
 in vec2 shadowPosNdc;
 
-// The texture
+// Textures
 uniform sampler2D paramFishesAtlasTexture;
 uniform sampler2D paramNoiseTexture;
 #ifdef DETAILED_FISHES

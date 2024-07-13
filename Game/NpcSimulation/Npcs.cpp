@@ -1738,14 +1738,10 @@ void Npcs::RenderNpc(
 				shipRenderContext.UploadNpcTextureQuad(
 					planeId,
 					headPosition - actualBodyHDir * halfHeadW,
-					vec2f(-1.0f, +1.0f),
 					headPosition + actualBodyHDir * halfHeadW,
-					vec2f(+1.0f, +1.0f),
 					neckPosition - actualBodyHDir * halfHeadW,
-					vec2f(-1.0f, -1.0f),
 					neckPosition + actualBodyHDir * halfHeadW,
-					vec2f(+1.0f, -1.0f),
-					humanNpcState.CurrentFaceOrientation,
+					humanNpcState.CurrentFaceOrientation > 0.0f ? humanNpcState.TextureFrames.HeadFront : humanNpcState.TextureFrames.HeadBack,
 					npc.Highlight);
 
 				// Arms and legs
@@ -1767,14 +1763,10 @@ void Npcs::RenderNpc(
 					shipRenderContext.UploadNpcTextureQuad(
 						planeId,
 						leftArmJointPosition - leftArmTraverseVector,
-						vec2f(-1.0f, +1.0f),
 						leftArmJointPosition + leftArmTraverseVector,
-						vec2f(+1.0f, +1.0f),
 						leftArmJointPosition + leftArmVector - leftArmTraverseVector,
-						vec2f(-1.0f, -1.0f),
 						leftArmJointPosition + leftArmVector + leftArmTraverseVector,
-						vec2f(+1.0f, -1.0f),
-						humanNpcState.CurrentFaceOrientation,
+						humanNpcState.TextureFrames.ArmFront,
 						npc.Highlight);
 
 					// Right arm (on right side of the screen)
@@ -1784,14 +1776,10 @@ void Npcs::RenderNpc(
 					shipRenderContext.UploadNpcTextureQuad(
 						planeId,
 						rightArmJointPosition - rightArmTraverseVector,
-						vec2f(-1.0f, +1.0f),
 						rightArmJointPosition + rightArmTraverseVector,
-						vec2f(+1.0f, +1.0f),
 						rightArmJointPosition + rightArmVector - rightArmTraverseVector,
-						vec2f(-1.0f, -1.0f),
 						rightArmJointPosition + rightArmVector + rightArmTraverseVector,
-						vec2f(+1.0f, -1.0f),
-						humanNpcState.CurrentFaceOrientation,
+						humanNpcState.TextureFrames.ArmFront.FlipH(),
 						npc.Highlight);
 
 					// Left leg (on left side of the screen)
@@ -1801,14 +1789,10 @@ void Npcs::RenderNpc(
 					shipRenderContext.UploadNpcTextureQuad(
 						planeId,
 						leftLegJointPosition - leftLegTraverseVector,
-						vec2f(-1.0f, +1.0f),
 						leftLegJointPosition + leftLegTraverseVector,
-						vec2f(+1.0f, +1.0f),
 						leftLegJointPosition + leftLegVector - leftLegTraverseVector,
-						vec2f(-1.0f, -1.0f),
 						leftLegJointPosition + leftLegVector + leftLegTraverseVector,
-						vec2f(+1.0f, -1.0f),
-						humanNpcState.CurrentFaceOrientation,
+						humanNpcState.TextureFrames.LegFront,
 						npc.Highlight);
 
 					// Right leg (on right side of the screen)
@@ -1818,14 +1802,10 @@ void Npcs::RenderNpc(
 					shipRenderContext.UploadNpcTextureQuad(
 						planeId,
 						rightLegJointPosition - rightLegTraverseVector,
-						vec2f(-1.0f, +1.0f),
 						rightLegJointPosition + rightLegTraverseVector,
-						vec2f(+1.0f, +1.0f),
 						rightLegJointPosition + rightLegVector - rightLegTraverseVector,
-						vec2f(-1.0f, -1.0f),
 						rightLegJointPosition + rightLegVector + rightLegTraverseVector,
-						vec2f(+1.0f, -1.0f),
-						humanNpcState.CurrentFaceOrientation,
+						humanNpcState.TextureFrames.LegFront.FlipH(),
 						npc.Highlight);
 				}
 				else
@@ -1839,14 +1819,10 @@ void Npcs::RenderNpc(
 					shipRenderContext.UploadNpcTextureQuad(
 						planeId,
 						rightArmJointPosition - leftArmTraverseVector,
-						vec2f(-1.0f, +1.0f),
 						rightArmJointPosition + leftArmTraverseVector,
-						vec2f(+1.0f, +1.0f),
 						rightArmJointPosition + leftArmVector - leftArmTraverseVector,
-						vec2f(-1.0f, -1.0f),
 						rightArmJointPosition + leftArmVector + leftArmTraverseVector,
-						vec2f(+1.0f, -1.0f),
-						humanNpcState.CurrentFaceOrientation,
+						humanNpcState.TextureFrames.ArmBack,
 						npc.Highlight);
 
 					// Right arm (on left side of the screen)
@@ -1856,14 +1832,10 @@ void Npcs::RenderNpc(
 					shipRenderContext.UploadNpcTextureQuad(
 						planeId,
 						leftArmJointPosition - rightArmTraverseVector,
-						vec2f(-1.0f, +1.0f),
 						leftArmJointPosition + rightArmTraverseVector,
-						vec2f(+1.0f, +1.0f),
 						leftArmJointPosition + rightArmVector - rightArmTraverseVector,
-						vec2f(-1.0f, -1.0f),
 						leftArmJointPosition + rightArmVector + rightArmTraverseVector,
-						vec2f(+1.0f, -1.0f),
-						humanNpcState.CurrentFaceOrientation,
+						humanNpcState.TextureFrames.ArmBack.FlipH(),
 						npc.Highlight);
 
 					// Left leg (on right side of the screen)
@@ -1873,14 +1845,10 @@ void Npcs::RenderNpc(
 					shipRenderContext.UploadNpcTextureQuad(
 						planeId,
 						rightLegJointPosition - leftLegTraverseVector,
-						vec2f(-1.0f, +1.0f),
 						rightLegJointPosition + leftLegTraverseVector,
-						vec2f(+1.0f, +1.0f),
 						rightLegJointPosition + leftLegVector - leftLegTraverseVector,
-						vec2f(-1.0f, -1.0f),
 						rightLegJointPosition + leftLegVector + leftLegTraverseVector,
-						vec2f(+1.0f, -1.0f),
-						humanNpcState.CurrentFaceOrientation,
+						humanNpcState.TextureFrames.LegBack,
 						npc.Highlight);
 
 					// Right leg (on left side of the screen)
@@ -1890,14 +1858,10 @@ void Npcs::RenderNpc(
 					shipRenderContext.UploadNpcTextureQuad(
 						planeId,
 						leftLegJointPosition - rightLegTraverseVector,
-						vec2f(-1.0f, +1.0f),
 						leftLegJointPosition + rightLegTraverseVector,
-						vec2f(+1.0f, +1.0f),
 						leftLegJointPosition + rightLegVector - rightLegTraverseVector,
-						vec2f(-1.0f, -1.0f),
 						leftLegJointPosition + rightLegVector + rightLegTraverseVector,
-						vec2f(+1.0f, -1.0f),
-						humanNpcState.CurrentFaceOrientation,
+						humanNpcState.TextureFrames.LegBack.FlipH(),
 						npc.Highlight);
 				}
 
@@ -1906,14 +1870,10 @@ void Npcs::RenderNpc(
 				shipRenderContext.UploadNpcTextureQuad(
 					planeId,
 					neckPosition - actualBodyHDir * halfTorsoW,
-					vec2f(-1.0f, +1.0f),
 					neckPosition + actualBodyHDir * halfTorsoW,
-					vec2f(+1.0f, +1.0f),
 					crotchPosition - actualBodyHDir * halfTorsoW,
-					vec2f(-1.0f, -1.0f),
 					crotchPosition + actualBodyHDir * halfTorsoW,
-					vec2f(+1.0f, -1.0f),
-					humanNpcState.CurrentFaceOrientation,
+					humanNpcState.CurrentFaceOrientation > 0.0f ? humanNpcState.TextureFrames.TorsoFront : humanNpcState.TextureFrames.TorsoBack,
 					npc.Highlight);
 			}
 			else
@@ -1925,13 +1885,10 @@ void Npcs::RenderNpc(
 				struct TextureQuad
 				{
 					vec2f TopLeftPosition;
-					vec2f TopLeftTexture;
 					vec2f TopRightPosition;
-					vec2f TopRightTexture;
 					vec2f BottomLeftPosition;
-					vec2f BottomLeftTexture;
 					vec2f BottomRightPosition;
-					vec2f BottomRightTexture;
+					Render::TextureCoordinatesQuad TextureCoords;
 
 					TextureQuad() = default;
 				};
@@ -1941,11 +1898,6 @@ void Npcs::RenderNpc(
 				float const halfArmD = (adjustedIdealHumanHeight * GameParameters::HumanNpcGeometry::ArmDepthFraction * humanNpcState.WidthMultipier) / 2.0f;
 				float const halfLegD = (adjustedIdealHumanHeight * GameParameters::HumanNpcGeometry::LegDepthFraction * humanNpcState.WidthMultipier) / 2.0f;
 
-				vec2f topLeftTexture(-humanNpcState.CurrentFaceDirectionX, +1.0f);
-				vec2f topRightTexture(humanNpcState.CurrentFaceDirectionX, +1.0f);
-				vec2f bottomLeftTexture(-humanNpcState.CurrentFaceDirectionX, -1.0f);
-				vec2f bottomRightTexture(humanNpcState.CurrentFaceDirectionX, -1.0f);
-
 				// Note: angles are with body vertical, regardless of L/R
 
 				vec2f const leftArmDir = actualBodyVDir.rotate(animationState.LimbAnglesCos.LeftArm, animationState.LimbAnglesSin.LeftArm);
@@ -1953,26 +1905,20 @@ void Npcs::RenderNpc(
 				vec2f const leftArmTraverseVector = leftArmDir.to_perpendicular() * halfArmD;
 				TextureQuad leftArmQuad{
 					shoulderPosition - leftArmTraverseVector,
-					topLeftTexture,
 					shoulderPosition + leftArmTraverseVector,
-					topRightTexture,
 					shoulderPosition + leftArmVector - leftArmTraverseVector,
-					bottomLeftTexture,
 					shoulderPosition + leftArmVector + leftArmTraverseVector,
-					bottomRightTexture };
+					humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.ArmSide : humanNpcState.TextureFrames.ArmSide.FlipH()};
 
 				vec2f const rightArmDir = actualBodyVDir.rotate(animationState.LimbAnglesCos.RightArm, animationState.LimbAnglesSin.RightArm);
 				vec2f const rightArmVector = rightArmDir * rightArmLength;
 				vec2f const rightArmTraverseVector = rightArmDir.to_perpendicular() * halfArmD;
 				TextureQuad rightArmQuad{
 					shoulderPosition - rightArmTraverseVector,
-					topLeftTexture,
 					shoulderPosition + rightArmTraverseVector,
-					topRightTexture,
 					shoulderPosition + rightArmVector - rightArmTraverseVector,
-					bottomLeftTexture,
 					shoulderPosition + rightArmVector + rightArmTraverseVector,
-					bottomRightTexture };
+					humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.ArmSide : humanNpcState.TextureFrames.ArmSide.FlipH() };
 
 				vec2f const leftUpperLegDir = actualBodyVDir.rotate(animationState.LimbAnglesCos.LeftLeg, animationState.LimbAnglesSin.LeftLeg);
 				vec2f const leftUpperLegVector = leftUpperLegDir * leftLegLength * animationState.UpperLegLengthFraction;
@@ -1995,7 +1941,33 @@ void Npcs::RenderNpc(
 					// Both upper and lower legs
 					//
 
-					float const kneeTextureY = 1.0f - 2.0f * animationState.UpperLegLengthFraction;
+					// When UpperLegLengthFraction=1 (i.e. whole leg), kneeTextureY is bottom;
+					// otherwise, it's in-between top and bottom
+					float const kneeTextureY =
+						humanNpcState.TextureFrames.LegSide.TopRight.y
+						- animationState.UpperLegLengthFraction * (humanNpcState.TextureFrames.LegSide.TopRight.y - humanNpcState.TextureFrames.LegSide.BottomLeft.y);
+
+					Render::TextureCoordinatesQuad upperLegTextureQuad = Render::TextureCoordinatesQuad({
+						// BottomLeft
+						vec2f(
+							humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.LegSide.BottomLeft.x : humanNpcState.TextureFrames.LegSide.TopRight.x,
+							kneeTextureY),
+						// TopRight
+						vec2f(
+							humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.LegSide.TopRight.x : humanNpcState.TextureFrames.LegSide.BottomLeft.x,
+							humanNpcState.TextureFrames.LegSide.TopRight.y)
+						});
+
+					Render::TextureCoordinatesQuad lowerLegTextureQuad = Render::TextureCoordinatesQuad({
+						// BottomLeft
+						vec2f(
+							humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.LegSide.BottomLeft.x : humanNpcState.TextureFrames.LegSide.TopRight.x,
+							humanNpcState.TextureFrames.LegSide.BottomLeft.y),
+						// TopRight
+						vec2f(
+							humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.LegSide.TopRight.x : humanNpcState.TextureFrames.LegSide.BottomLeft.x,
+							kneeTextureY)
+						});
 
 					// We extrude the corners to make them join nicely to the previous
 					// and next segments. The calculation of the extrusion (J) between two
@@ -2015,23 +1987,17 @@ void Npcs::RenderNpc(
 
 					leftUpperLegQuad = {
 						crotchPosition - leftUpperLegTraverseDir * halfLegD,
-						topLeftTexture,
 						crotchPosition + leftUpperLegTraverseDir * halfLegD,
-						topRightTexture,
 						leftKneeOrFootPosition - leftLegJ,
-						vec2f(bottomLeftTexture.x, kneeTextureY),
 						leftKneeOrFootPosition + leftLegJ,
-						vec2f(bottomRightTexture.x, kneeTextureY) };
+						upperLegTextureQuad };
 
 					leftLowerLegQuad = {
 						leftKneeOrFootPosition - leftLegJ,
-						vec2f(bottomLeftTexture.x, kneeTextureY),
 						leftKneeOrFootPosition + leftLegJ,
-						vec2f(bottomRightTexture.x, kneeTextureY),
 						leftKneeOrFootPosition + leftLowerLegVector - leftLowerLegTraverseDir * halfLegD,
-						bottomLeftTexture,
 						leftKneeOrFootPosition + leftLowerLegVector + leftLowerLegTraverseDir * halfLegD,
-						bottomRightTexture };
+						lowerLegTextureQuad };
 
 					vec2f const rightLowerLegDir = (feetPosition - rightKneeOrFootPosition).normalise_approx();
 					vec2f const rightLowerLegVector = rightLowerLegDir * rightLegLength * lowerLegLengthFraction;
@@ -2041,23 +2007,17 @@ void Npcs::RenderNpc(
 
 					rightUpperLegQuad = {
 						crotchPosition - rightUpperLegTraverseDir * halfLegD,
-						topLeftTexture,
 						crotchPosition + rightUpperLegTraverseDir * halfLegD,
-						topRightTexture,
 						rightKneeOrFootPosition - rightLegJ,
-						vec2f(bottomLeftTexture.x, kneeTextureY),
 						rightKneeOrFootPosition + rightLegJ,
-						vec2f(bottomRightTexture.x, kneeTextureY) };
+						upperLegTextureQuad };
 
 					rightLowerLegQuad = {
 						rightKneeOrFootPosition - rightLegJ,
-						vec2f(bottomLeftTexture.x, kneeTextureY),
 						rightKneeOrFootPosition + rightLegJ,
-						vec2f(bottomRightTexture.x, kneeTextureY),
 						rightKneeOrFootPosition + rightLowerLegVector - rightLowerLegTraverseDir * halfLegD,
-						bottomLeftTexture,
 						rightKneeOrFootPosition + rightLowerLegVector + rightLowerLegTraverseDir * halfLegD,
-						bottomRightTexture };
+						lowerLegTextureQuad };
 				}
 				else
 				{
@@ -2065,23 +2025,17 @@ void Npcs::RenderNpc(
 
 					leftUpperLegQuad = {
 						crotchPosition - leftUpperLegTraverseDir * halfLegD,
-						topLeftTexture,
 						crotchPosition + leftUpperLegTraverseDir * halfLegD,
-						topRightTexture,
 						leftKneeOrFootPosition - leftUpperLegTraverseDir * halfLegD,
-						bottomLeftTexture,
 						leftKneeOrFootPosition + leftUpperLegTraverseDir * halfLegD,
-						bottomRightTexture };
+						humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.LegSide : humanNpcState.TextureFrames.LegSide.FlipH() };
 
 					rightUpperLegQuad = {
 						crotchPosition - rightUpperLegTraverseDir * halfLegD,
-						topLeftTexture,
 						crotchPosition + rightUpperLegTraverseDir * halfLegD,
-						topRightTexture,
 						rightKneeOrFootPosition - rightUpperLegTraverseDir * halfLegD,
-						bottomLeftTexture,
 						rightKneeOrFootPosition + rightUpperLegTraverseDir * halfLegD,
-						bottomRightTexture };
+						humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.LegSide : humanNpcState.TextureFrames.LegSide.FlipH() };
 				}
 
 				// Arm and leg far
@@ -2092,42 +2046,30 @@ void Npcs::RenderNpc(
 					shipRenderContext.UploadNpcTextureQuad(
 						planeId,
 						leftArmQuad.TopLeftPosition,
-						leftArmQuad.TopLeftTexture,
 						leftArmQuad.TopRightPosition,
-						leftArmQuad.TopRightTexture,
 						leftArmQuad.BottomLeftPosition,
-						leftArmQuad.BottomLeftTexture,
 						leftArmQuad.BottomRightPosition,
-						leftArmQuad.BottomRightTexture,
-						humanNpcState.CurrentFaceOrientation,
+						leftArmQuad.TextureCoords,
 						npc.Highlight);
 
 					// Left leg
 					shipRenderContext.UploadNpcTextureQuad(
 						planeId,
 						leftUpperLegQuad.TopLeftPosition,
-						leftUpperLegQuad.TopLeftTexture,
 						leftUpperLegQuad.TopRightPosition,
-						leftUpperLegQuad.TopRightTexture,
 						leftUpperLegQuad.BottomLeftPosition,
-						leftUpperLegQuad.BottomLeftTexture,
 						leftUpperLegQuad.BottomRightPosition,
-						leftUpperLegQuad.BottomRightTexture,
-						humanNpcState.CurrentFaceOrientation,
+						leftUpperLegQuad.TextureCoords,
 						npc.Highlight);
 					if (leftLowerLegQuad.has_value())
 					{
 						shipRenderContext.UploadNpcTextureQuad(
 							planeId,
 							leftLowerLegQuad->TopLeftPosition,
-							leftLowerLegQuad->TopLeftTexture,
 							leftLowerLegQuad->TopRightPosition,
-							leftLowerLegQuad->TopRightTexture,
 							leftLowerLegQuad->BottomLeftPosition,
-							leftLowerLegQuad->BottomLeftTexture,
 							leftLowerLegQuad->BottomRightPosition,
-							leftLowerLegQuad->BottomRightTexture,
-							humanNpcState.CurrentFaceOrientation,
+							leftLowerLegQuad->TextureCoords,
 							npc.Highlight);
 					}
 				}
@@ -2137,42 +2079,30 @@ void Npcs::RenderNpc(
 					shipRenderContext.UploadNpcTextureQuad(
 						planeId,
 						rightArmQuad.TopLeftPosition,
-						rightArmQuad.TopLeftTexture,
 						rightArmQuad.TopRightPosition,
-						rightArmQuad.TopRightTexture,
 						rightArmQuad.BottomLeftPosition,
-						rightArmQuad.BottomLeftTexture,
 						rightArmQuad.BottomRightPosition,
-						rightArmQuad.BottomRightTexture,
-						humanNpcState.CurrentFaceOrientation,
+						rightArmQuad.TextureCoords,
 						npc.Highlight);
 
 					// Right leg
 					shipRenderContext.UploadNpcTextureQuad(
 						planeId,
 						rightUpperLegQuad.TopLeftPosition,
-						rightUpperLegQuad.TopLeftTexture,
 						rightUpperLegQuad.TopRightPosition,
-						rightUpperLegQuad.TopRightTexture,
 						rightUpperLegQuad.BottomLeftPosition,
-						rightUpperLegQuad.BottomLeftTexture,
 						rightUpperLegQuad.BottomRightPosition,
-						rightUpperLegQuad.BottomRightTexture,
-						humanNpcState.CurrentFaceOrientation,
+						rightUpperLegQuad.TextureCoords,
 						npc.Highlight);
 					if (rightLowerLegQuad.has_value())
 					{
 						shipRenderContext.UploadNpcTextureQuad(
 							planeId,
 							rightLowerLegQuad->TopLeftPosition,
-							rightLowerLegQuad->TopLeftTexture,
 							rightLowerLegQuad->TopRightPosition,
-							rightLowerLegQuad->TopRightTexture,
 							rightLowerLegQuad->BottomLeftPosition,
-							rightLowerLegQuad->BottomLeftTexture,
 							rightLowerLegQuad->BottomRightPosition,
-							rightLowerLegQuad->BottomRightTexture,
-							humanNpcState.CurrentFaceOrientation,
+							rightLowerLegQuad->TextureCoords,
 							npc.Highlight);
 					}
 				}
@@ -2182,14 +2112,10 @@ void Npcs::RenderNpc(
 				shipRenderContext.UploadNpcTextureQuad(
 					planeId,
 					headPosition - actualBodyHDir * halfHeadD,
-					topLeftTexture,
 					headPosition + actualBodyHDir * halfHeadD,
-					topRightTexture,
 					neckPosition - actualBodyHDir * halfHeadD,
-					bottomLeftTexture,
 					neckPosition + actualBodyHDir * halfHeadD,
-					bottomRightTexture,
-					humanNpcState.CurrentFaceOrientation,
+					humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.HeadSide : humanNpcState.TextureFrames.HeadSide.FlipH(),
 					npc.Highlight);
 
 				// Torso
@@ -2197,60 +2123,43 @@ void Npcs::RenderNpc(
 				shipRenderContext.UploadNpcTextureQuad(
 					planeId,
 					neckPosition - actualBodyHDir * halfTorsoD,
-					topLeftTexture,
 					neckPosition + actualBodyHDir * halfTorsoD,
-					topRightTexture,
 					crotchPosition - actualBodyHDir * halfTorsoD,
-					bottomLeftTexture,
 					crotchPosition + actualBodyHDir * halfTorsoD,
-					bottomRightTexture,
-					humanNpcState.CurrentFaceOrientation,
+					humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.TorsoSide : humanNpcState.TextureFrames.TorsoSide.FlipH(),
 					npc.Highlight);
 
 				// Arm and leg near
 
 				if (humanNpcState.CurrentFaceDirectionX > 0.0f)
 				{
-					// Right arm
 					shipRenderContext.UploadNpcTextureQuad(
 						planeId,
 						rightArmQuad.TopLeftPosition,
-						rightArmQuad.TopLeftTexture,
 						rightArmQuad.TopRightPosition,
-						rightArmQuad.TopRightTexture,
 						rightArmQuad.BottomLeftPosition,
-						rightArmQuad.BottomLeftTexture,
 						rightArmQuad.BottomRightPosition,
-						rightArmQuad.BottomRightTexture,
-						humanNpcState.CurrentFaceOrientation,
+						rightArmQuad.TextureCoords,
 						npc.Highlight);
 
 					// Right leg
 					shipRenderContext.UploadNpcTextureQuad(
 						planeId,
 						rightUpperLegQuad.TopLeftPosition,
-						rightUpperLegQuad.TopLeftTexture,
 						rightUpperLegQuad.TopRightPosition,
-						rightUpperLegQuad.TopRightTexture,
 						rightUpperLegQuad.BottomLeftPosition,
-						rightUpperLegQuad.BottomLeftTexture,
 						rightUpperLegQuad.BottomRightPosition,
-						rightUpperLegQuad.BottomRightTexture,
-						humanNpcState.CurrentFaceOrientation,
+						rightUpperLegQuad.TextureCoords,
 						npc.Highlight);
 					if (rightLowerLegQuad.has_value())
 					{
 						shipRenderContext.UploadNpcTextureQuad(
 							planeId,
 							rightLowerLegQuad->TopLeftPosition,
-							rightLowerLegQuad->TopLeftTexture,
 							rightLowerLegQuad->TopRightPosition,
-							rightLowerLegQuad->TopRightTexture,
 							rightLowerLegQuad->BottomLeftPosition,
-							rightLowerLegQuad->BottomLeftTexture,
 							rightLowerLegQuad->BottomRightPosition,
-							rightLowerLegQuad->BottomRightTexture,
-							humanNpcState.CurrentFaceOrientation,
+							rightLowerLegQuad->TextureCoords,
 							npc.Highlight);
 					}
 				}
@@ -2260,42 +2169,30 @@ void Npcs::RenderNpc(
 					shipRenderContext.UploadNpcTextureQuad(
 						planeId,
 						leftArmQuad.TopLeftPosition,
-						leftArmQuad.TopLeftTexture,
 						leftArmQuad.TopRightPosition,
-						leftArmQuad.TopRightTexture,
 						leftArmQuad.BottomLeftPosition,
-						leftArmQuad.BottomLeftTexture,
 						leftArmQuad.BottomRightPosition,
-						leftArmQuad.BottomRightTexture,
-						humanNpcState.CurrentFaceOrientation,
+						leftArmQuad.TextureCoords,
 						npc.Highlight);
 
 					// Left leg
 					shipRenderContext.UploadNpcTextureQuad(
 						planeId,
 						leftUpperLegQuad.TopLeftPosition,
-						leftUpperLegQuad.TopLeftTexture,
 						leftUpperLegQuad.TopRightPosition,
-						leftUpperLegQuad.TopRightTexture,
 						leftUpperLegQuad.BottomLeftPosition,
-						leftUpperLegQuad.BottomLeftTexture,
 						leftUpperLegQuad.BottomRightPosition,
-						leftUpperLegQuad.BottomRightTexture,
-						humanNpcState.CurrentFaceOrientation,
+						leftUpperLegQuad.TextureCoords,
 						npc.Highlight);
 					if (leftLowerLegQuad.has_value())
 					{
 						shipRenderContext.UploadNpcTextureQuad(
 							planeId,
 							leftLowerLegQuad->TopLeftPosition,
-							leftLowerLegQuad->TopLeftTexture,
 							leftLowerLegQuad->TopRightPosition,
-							leftLowerLegQuad->TopRightTexture,
 							leftLowerLegQuad->BottomLeftPosition,
-							leftLowerLegQuad->BottomLeftTexture,
 							leftLowerLegQuad->BottomRightPosition,
-							leftLowerLegQuad->BottomRightTexture,
-							humanNpcState.CurrentFaceOrientation,
+							leftLowerLegQuad->TextureCoords,
 							npc.Highlight);
 					}
 				}
@@ -2314,14 +2211,10 @@ void Npcs::RenderNpc(
 				shipRenderContext.UploadNpcTextureQuad(
 					planeId,
 					mParticles.GetPosition(npc.ParticleMesh.Particles[0].ParticleIndex),
-					vec2f{-1.0f, 1.0f},
 					mParticles.GetPosition(npc.ParticleMesh.Particles[1].ParticleIndex),
-					vec2f{ 1.0f, 1.0f },
 					mParticles.GetPosition(npc.ParticleMesh.Particles[3].ParticleIndex),
-					vec2f{ -1.0f, -1.0f },
 					mParticles.GetPosition(npc.ParticleMesh.Particles[2].ParticleIndex),
-					vec2f{ 1.0f, -1.0f },
-					1.0f,
+					npc.KindSpecificState.FurnitureNpcState.TextureCoordinatesQuad,
 					npc.Highlight);
 			}
 			else
@@ -2336,14 +2229,10 @@ void Npcs::RenderNpc(
 					shipRenderContext.UploadNpcTextureQuad(
 						planeId,
 						vec2f(position.x - ParticleHalfWidth, position.y + ParticleHalfWidth),
-						vec2f{ -1.0f, 1.0f },
 						vec2f(position.x + ParticleHalfWidth, position.y + ParticleHalfWidth),
-						vec2f{ 1.0f, 1.0f },
 						vec2f(position.x - ParticleHalfWidth, position.y - ParticleHalfWidth),
-						vec2f{ -1.0f, -1.0f },
 						vec2f(position.x + ParticleHalfWidth, position.y - ParticleHalfWidth),
-						vec2f{ 1.0f, -1.0f },
-						1.0f,
+						npc.KindSpecificState.FurnitureNpcState.TextureCoordinatesQuad,
 						npc.Highlight);
 				}
 			}

@@ -341,10 +341,10 @@ ShipRenderContext::ShipRenderContext(
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::NpcTextureAttributeGroup1));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::NpcTextureAttributeGroup1), 4, GL_FLOAT, GL_FALSE, sizeof(NpcTextureQuadVertex), (void *)0);
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::NpcTextureAttributeGroup2));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::NpcTextureAttributeGroup2), 3, GL_FLOAT, GL_FALSE, sizeof(NpcTextureQuadVertex), (void *)(4 * sizeof(float)));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::NpcTextureAttributeGroup2), 1, GL_FLOAT, GL_FALSE, sizeof(NpcTextureQuadVertex), (void *)(4 * sizeof(float)));
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::NpcTextureAttributeGroup3));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::NpcTextureAttributeGroup3), 4, GL_FLOAT, GL_FALSE, sizeof(NpcTextureQuadVertex), (void *)((4 + 3) * sizeof(float)));
-        static_assert(sizeof(NpcTextureQuadVertex) == (4 + 3 + 4) * sizeof(float));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::NpcTextureAttributeGroup3), 4, GL_FLOAT, GL_FALSE, sizeof(NpcTextureQuadVertex), (void *)((4 + 1) * sizeof(float)));
+        static_assert(sizeof(NpcTextureQuadVertex) == (4 + 1 + 4) * sizeof(float));
 
         // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
         // in the VAO. So we won't associate the element VBO here, but rather before each drawing call.

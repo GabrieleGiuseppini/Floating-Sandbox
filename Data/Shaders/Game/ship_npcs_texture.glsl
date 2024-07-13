@@ -4,14 +4,12 @@
 #define out varying
 
 // Inputs
-in vec4 inNpcTextureAttributeGroup1; // Position, VertexSpacePosition
-in vec3 inNpcTextureAttributeGroup2; // PlaneId, BackDepth, OrientationDepth
+in vec4 inNpcTextureAttributeGroup1; // Position, TextureCoords
+in vec3 inNpcTextureAttributeGroup2; // PlaneId
 in vec4 inNpcTextureAttributeGroup3; // OverlayColor
 
 // Outputs        
-out vec2 vertexSpacePosition;
-out float vertexBackDepth;
-out float vertexOrientationDepth;
+out vec2 textureCoords;
 out vec4 vertexOverlayColor;
 
 // Params
@@ -19,9 +17,7 @@ uniform mat4 paramOrthoMatrix;
 
 void main()
 {
-    vertexSpacePosition = inNpcTextureAttributeGroup1.zw;
-    vertexBackDepth = inNpcTextureAttributeGroup2.y;
-    vertexOrientationDepth = inNpcTextureAttributeGroup2.z;
+    textureCoords = inNpcTextureAttributeGroup1.zw;
     vertexOverlayColor = inNpcTextureAttributeGroup3;
 
     gl_Position = paramOrthoMatrix * vec4(inNpcTextureAttributeGroup1.xy, inNpcTextureAttributeGroup2.x, 1.0);
@@ -32,16 +28,21 @@ void main()
 #define in varying
 
 // Inputs from previous shader        
-in vec2 vertexSpacePosition; // [(-1.0, -1.0), (1.0, 1.0)]
-in float vertexBackDepth;
-in float vertexOrientationDepth;
+in vec2 textureCoords;
 in vec4 vertexOverlayColor;
+
+// The texture
+uniform sampler2D paramNpcAtlasTexture;
 
 // Params
 uniform float paramEffectiveAmbientLightIntensity;
 
 void main()
 {
+    vec4 c = texture2D(paramNpcAtlasTexture, textureCoords);
+
+    // TODOOLD
+    /*
     vec2 uv = vec2(pow(vertexSpacePosition.x, 3.0), vertexSpacePosition.y);
     
     float d = distance(uv, vec2(.0, .0));    
@@ -58,6 +59,7 @@ void main()
     vec4 c = vec4(
         mix(cInner, cBorder, borderAlpha) * oppositeDirShade,
         alpha);
+    */
 
     // Luminosity blend
     float l = (c.r + c.g + c.b) / 3.0;
