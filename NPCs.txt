@@ -462,7 +462,7 @@ Arch
 	+ Use indices for quad vertices
 		+ Good use case to experiment with the "quad single index buffer" feature
 	- ShipRenderContext:
-		- TextureCoords upload
+		+ TextureCoords upload
 		- Rendering of NPCs activates texture first
 			- Make sure other subsequent texture usage activates their own			
 	- Shader ("ship_npcs_texture"):
@@ -473,11 +473,15 @@ Arch
 				- Requires following their triangle
 		- Night time color
 	- Misc improvements & technical debt:
-		- When drawing human on side, legs first and arms then (as arms are longer)
+		+ When drawing human on side, legs first and arms then (as arms are longer)
 		- Furniture: anti-alias: TODO: shader or image?
 		- TextureCoordinatesQuad: shall we have float for RightX, LeftX, TopY, BottomY?
-		- Human frames:
-			- Recalculate pixel dimensions to support human body ratios
+		- Human frames: they are out of aspect
+			- Option 1: change human body ratios to match standard frame pixel dimensions (e.g. head square, etc.)
+			- Option2: recalculate standard frame pixel dimensions to match human body ratios
+	- Test on Dell:
+		- Max number of textures (we've added 9th!)
+		-
 	- Port to BaryLab
 		- Copy NPC files
 		- Create NpcDatabase

@@ -2042,16 +2042,6 @@ void Npcs::RenderNpc(
 
 				if (humanNpcState.CurrentFaceDirectionX > 0.0f)
 				{
-					// Left arm
-					shipRenderContext.UploadNpcTextureQuad(
-						planeId,
-						leftArmQuad.TopLeftPosition,
-						leftArmQuad.TopRightPosition,
-						leftArmQuad.BottomLeftPosition,
-						leftArmQuad.BottomRightPosition,
-						leftArmQuad.TextureCoords,
-						npc.Highlight);
-
 					// Left leg
 					shipRenderContext.UploadNpcTextureQuad(
 						planeId,
@@ -2072,19 +2062,19 @@ void Npcs::RenderNpc(
 							leftLowerLegQuad->TextureCoords,
 							npc.Highlight);
 					}
+
+					// Left arm
+					shipRenderContext.UploadNpcTextureQuad(
+						planeId,
+						leftArmQuad.TopLeftPosition,
+						leftArmQuad.TopRightPosition,
+						leftArmQuad.BottomLeftPosition,
+						leftArmQuad.BottomRightPosition,
+						leftArmQuad.TextureCoords,
+						npc.Highlight);
 				}
 				else
 				{
-					// Right arm
-					shipRenderContext.UploadNpcTextureQuad(
-						planeId,
-						rightArmQuad.TopLeftPosition,
-						rightArmQuad.TopRightPosition,
-						rightArmQuad.BottomLeftPosition,
-						rightArmQuad.BottomRightPosition,
-						rightArmQuad.TextureCoords,
-						npc.Highlight);
-
 					// Right leg
 					shipRenderContext.UploadNpcTextureQuad(
 						planeId,
@@ -2105,6 +2095,16 @@ void Npcs::RenderNpc(
 							rightLowerLegQuad->TextureCoords,
 							npc.Highlight);
 					}
+
+					// Right arm
+					shipRenderContext.UploadNpcTextureQuad(
+						planeId,
+						rightArmQuad.TopLeftPosition,
+						rightArmQuad.TopRightPosition,
+						rightArmQuad.BottomLeftPosition,
+						rightArmQuad.BottomRightPosition,
+						rightArmQuad.TextureCoords,
+						npc.Highlight);
 				}
 
 				// Head
@@ -2133,15 +2133,6 @@ void Npcs::RenderNpc(
 
 				if (humanNpcState.CurrentFaceDirectionX > 0.0f)
 				{
-					shipRenderContext.UploadNpcTextureQuad(
-						planeId,
-						rightArmQuad.TopLeftPosition,
-						rightArmQuad.TopRightPosition,
-						rightArmQuad.BottomLeftPosition,
-						rightArmQuad.BottomRightPosition,
-						rightArmQuad.TextureCoords,
-						npc.Highlight);
-
 					// Right leg
 					shipRenderContext.UploadNpcTextureQuad(
 						planeId,
@@ -2162,19 +2153,20 @@ void Npcs::RenderNpc(
 							rightLowerLegQuad->TextureCoords,
 							npc.Highlight);
 					}
+
+					// Right arm
+					shipRenderContext.UploadNpcTextureQuad(
+						planeId,
+						rightArmQuad.TopLeftPosition,
+						rightArmQuad.TopRightPosition,
+						rightArmQuad.BottomLeftPosition,
+						rightArmQuad.BottomRightPosition,
+						rightArmQuad.TextureCoords,
+						npc.Highlight);
+
 				}
 				else
 				{
-					// Left arm
-					shipRenderContext.UploadNpcTextureQuad(
-						planeId,
-						leftArmQuad.TopLeftPosition,
-						leftArmQuad.TopRightPosition,
-						leftArmQuad.BottomLeftPosition,
-						leftArmQuad.BottomRightPosition,
-						leftArmQuad.TextureCoords,
-						npc.Highlight);
-
 					// Left leg
 					shipRenderContext.UploadNpcTextureQuad(
 						planeId,
@@ -2195,6 +2187,16 @@ void Npcs::RenderNpc(
 							leftLowerLegQuad->TextureCoords,
 							npc.Highlight);
 					}
+
+					// Left arm
+					shipRenderContext.UploadNpcTextureQuad(
+						planeId,
+						leftArmQuad.TopLeftPosition,
+						leftArmQuad.TopRightPosition,
+						leftArmQuad.BottomLeftPosition,
+						leftArmQuad.BottomRightPosition,
+						leftArmQuad.TextureCoords,
+						npc.Highlight);
 				}
 			}
 
