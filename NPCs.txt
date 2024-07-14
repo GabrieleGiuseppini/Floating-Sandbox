@@ -477,12 +477,14 @@ Arch
 		+ Furniture: anti-alias in image
 		+ TextureCoordinatesQuad: shall we have float for RightX, LeftX, TopY, BottomY?
 		- Human frames: they are out of aspect
-			= Option 1: change human body ratios to match standard frame pixel dimensions (e.g. head square, etc.)
-			- Option2: recalculate standard frame pixel dimensions to match human body ratios
-		- Frame specs:
-			- Furniture: leave 1px border around
-				- So if e.g. you're doing a 32x32 frame, then the drawable area is the central 30x30
-		- MainFrame: switch between views at tool selections (those 3 <-> anything else)
+			= Change human body ratios to match standard frame pixel dimensions (e.g. head square, etc.)
+				- Get rid of difference between XXXWidth and XXXDepth (leave just XXXWidth)
+		! Frame specs:
+			! Furniture: leave 1px border around
+				! So if e.g. you're doing a 32x32 frame, then the drawable area is the central 30x30
+		- MainFrame: 
+			- Pull up NPC tools' menu items (to give V room to its choices)
+			- Switch between views at tool selections (those 3 <-> anything else)
 		- GameController: focus to position at BeingPlaceNpcx2
 			- Also with continuous auto-focus?
 	- Test on Dell:

@@ -484,20 +484,20 @@ struct GameParameters
 
         // All fractions below ar relative to BodyLength
 
-        static float constexpr HeadLengthFraction = 1.0f / 8.0f;
-        static float constexpr HeadWidthFraction = 1.0f / 10.0f;
+        static float constexpr HeadLengthFraction = 1.0f / 5.0f;
+        static float constexpr HeadWidthFraction = 1.0f / 5.0f;
         static float constexpr HeadDepthFraction = HeadWidthFraction;
 
-        static float constexpr TorsoLengthFraction = 1.0f / 2.0f - HeadLengthFraction;
-        static float constexpr TorsoWidthFraction = 1.0f / 7.0f;
-        static float constexpr TorsoDepthFraction = 1.0f / 6.0f;
+        static float constexpr TorsoLengthFraction = 2.0f / 5.0f;
+        static float constexpr TorsoWidthFraction = 2.0f / 5.0f;
+        static float constexpr TorsoDepthFraction = TorsoWidthFraction;
 
-        static float constexpr ArmLengthFraction = 3.0f / 8.0f;
-        static float constexpr ArmWidthFraction = 1.0f / 10.0f;
+        static float constexpr ArmLengthFraction = 2.0f / 5.0f;
+        static float constexpr ArmWidthFraction = 1.0f / 5.0f;
         static float constexpr ArmDepthFraction = ArmWidthFraction;
 
-        static float constexpr LegLengthFraction = 1.0f / 2.0f;
-        static float constexpr LegWidthFraction = 1.0f / 10.0f;
+        static float constexpr LegLengthFraction = 2.0f / 5.0f;
+        static float constexpr LegWidthFraction = 1.0f / 5.0f;
         static float constexpr LegDepthFraction = LegWidthFraction;
 
         static_assert(LegLengthFraction + TorsoLengthFraction + HeadLengthFraction == 1.0f);
