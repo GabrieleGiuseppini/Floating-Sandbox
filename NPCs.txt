@@ -474,13 +474,14 @@ Arch
 		- Night time color
 	- Misc improvements & technical debt:
 		+ When drawing human on side, legs first and arms then (as arms are longer)
-		- Furniture: anti-alias: TODO: shader or image?
+		+ Furniture: anti-alias in image
 		+ TextureCoordinatesQuad: shall we have float for RightX, LeftX, TopY, BottomY?
 		- Human frames: they are out of aspect
-			- Option 1: change human body ratios to match standard frame pixel dimensions (e.g. head square, etc.)
+			= Option 1: change human body ratios to match standard frame pixel dimensions (e.g. head square, etc.)
 			- Option2: recalculate standard frame pixel dimensions to match human body ratios
 		- Frame specs:
-			- Furniture: leave 1px border around - IFF WE END UP DOING ANTI-ALIAS IN IMAGE
+			- Furniture: leave 1px border around
+				- So if e.g. you're doing a 32x32 frame, then the drawable area is the central 30x30
 		- MainFrame: switch between views at tool selections (those 3 <-> anything else)
 		- GameController: focus to position at BeingPlaceNpcx2
 			- Also with continuous auto-focus?
@@ -490,7 +491,8 @@ Arch
 	- Port to BaryLab
 		- Copy NPC files
 		- Create NpcDatabase
-			- TODOHERE: have it without atlas, so maim it
+			- Copy from FS but then maim it:
+				- No TextureAtlas, just use -1.0->1.0 coords
 		- Adapt RenderContext
 
 - Physical Interactions:
