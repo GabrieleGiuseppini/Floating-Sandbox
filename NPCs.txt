@@ -481,6 +481,9 @@ Arch
 			- Option2: recalculate standard frame pixel dimensions to match human body ratios
 		- Frame specs:
 			- Furniture: leave 1px border around - IFF WE END UP DOING ANTI-ALIAS IN IMAGE
+		- MainFrame: switch between views at tool selections (those 3 <-> anything else)
+		- GameController: focus to position at BeingPlaceNpcx2
+			- Also with continuous auto-focus?
 	- Test on Dell:
 		- Max number of textures (we've added 9th!)
 		-
