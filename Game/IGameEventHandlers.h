@@ -586,3 +586,12 @@ struct IGenericGameEventHandler
         // Default-implemented
     }
 };
+
+struct IControlGameEventHandler
+{
+    virtual void OnContinuousAutoFocusToggled(
+        bool /*isEnabled*/)
+    {
+        // Default-implemented
+    }
+};

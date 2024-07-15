@@ -233,6 +233,8 @@ public:
     /*
      * Builds an atlas with the specified database, composed of a power of two number of
      * frames with identical sizes.
+     * Allows for algorithmic generation of texture coordinates (e.g. from within a shader),
+     * without having to rely on a specification.
      */
     template<typename TextureDatabaseTraits>
     static TextureAtlas<TextureGroups> BuildRegularAtlas(

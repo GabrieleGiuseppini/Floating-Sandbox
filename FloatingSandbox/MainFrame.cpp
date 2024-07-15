@@ -328,8 +328,6 @@ MainFrame::MainFrame(
         {
             mToolsMenu = new wxMenu();
 
-            {
-
 #ifdef __WXMSW__
 #define SET_BITMAP(toolMenuItem, img) \
         img.Rescale(16, 16, wxIMAGE_QUALITY_HIGH);\
@@ -340,6 +338,63 @@ MainFrame::MainFrame(
         img.Rescale(16, 16, wxIMAGE_QUALITY_HIGH);\
         (toolMenuItem)->SetBitmap(wxBitmap(img));
 #endif
+
+            //
+            // NPC
+            //
+
+            // Add human
+            {
+                mHumanNpcSubMenu = new wxMenu(_(""));
+
+                // Create menu
+                mAddHumanNpcMenuItem = new wxMenuItem(mToolsMenu, wxID_ANY, _("Add Human NPC..."), wxEmptyString, wxITEM_RADIO, mHumanNpcSubMenu);
+                auto img = wxImage(resourceLocator.GetIconFilePath("add_human_npc_icon").string(), wxBITMAP_TYPE_PNG);
+                SET_BITMAP(mAddHumanNpcMenuItem, img);
+                mToolsMenu->Append(mAddHumanNpcMenuItem);
+                mAddHumanNpcMenuItem->Enable(true); // Note: here we're assuming we _can_ add NPCs; unfortunately the NPCs class is created _before_ we register for events, hence have to guess here
+            }
+
+            // Add furniture
+            {
+                mFurnitureNpcSubMenu = new wxMenu(_(""));
+
+                // Create menu
+                mAddFurnitureNpcMenuItem = new wxMenuItem(mToolsMenu, wxID_ANY, _("Add Furniture NPC..."), wxEmptyString, wxITEM_RADIO, mFurnitureNpcSubMenu);
+                auto img = wxImage(resourceLocator.GetIconFilePath("add_furniture_npc_icon").string(), wxBITMAP_TYPE_PNG);
+                SET_BITMAP(mAddFurnitureNpcMenuItem, img);
+                mToolsMenu->Append(mAddFurnitureNpcMenuItem);
+                mAddFurnitureNpcMenuItem->Enable(true); // Note: here we're assuming we _can_ add NPCs; unfortunately the NPCs class is created _before_ we register for events, hence have to guess here
+            }
+
+            // Move
+            {
+                auto const id = wxNewId();
+                mMoveNpcMenuItem = new wxMenuItem(mToolsMenu, id, _("Move NPC\t3"), wxEmptyString, wxITEM_RADIO);
+                auto img = wxImage(resourceLocator.GetIconFilePath("move_npc_icon").string(), wxBITMAP_TYPE_PNG);
+                SET_BITMAP(mMoveNpcMenuItem, img);
+                mToolsMenu->Append(mMoveNpcMenuItem);
+                Connect(id, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnMoveNpcMenuItemSelected);
+                ADD_PLAIN_ACCELERATOR_KEY('3', mMoveNpcMenuItem);
+                mMoveNpcMenuItem->Enable(false);
+            }
+
+            // Remove
+            {
+                auto const id = wxNewId();
+                mRemoveNpcMenuItem = new wxMenuItem(mToolsMenu, id, _("Remove NPC"), wxEmptyString, wxITEM_RADIO);
+                auto img = wxImage(resourceLocator.GetIconFilePath("remove_npc_icon").string(), wxBITMAP_TYPE_PNG);
+                SET_BITMAP(mRemoveNpcMenuItem, img);
+                mToolsMenu->Append(mRemoveNpcMenuItem);
+                Connect(id, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnRemoveNpcMenuItemSelected);
+                mRemoveNpcMenuItem->Enable(false);
+            }
+
+            //
+            // Others
+            //
+
+            {
 
 #define ADD_TOOL_MENUITEM(label, shortcut, bitmap_path, handler) \
         [&]()\
@@ -486,53 +541,6 @@ MainFrame::MainFrame(
                 }
 
                 ADD_TOOL_MENUITEM(_("Toggle Physics Probe"), wxS(""), "physics_probe_cursor", OnPhysicsProbeMenuItemSelected);
-            }
-
-            // Add human
-            {
-                mHumanNpcSubMenu = new wxMenu(_(""));
-
-                // Create menu
-                mAddHumanNpcMenuItem = new wxMenuItem(mToolsMenu, wxID_ANY, _("Add Human NPC..."), wxEmptyString, wxITEM_RADIO, mHumanNpcSubMenu);
-                auto img = wxImage(resourceLocator.GetIconFilePath("add_human_npc_icon").string(), wxBITMAP_TYPE_PNG);
-                SET_BITMAP(mAddHumanNpcMenuItem, img);
-                mToolsMenu->Append(mAddHumanNpcMenuItem);
-                mAddHumanNpcMenuItem->Enable(true); // Note: here we're assuming we _can_ add NPCs; unfortunately the NPCs class is created _before_ we register for events, hence have to guess here
-            }
-
-            // Add furniture
-            {
-                mFurnitureNpcSubMenu = new wxMenu(_(""));
-
-                // Create menu
-                mAddFurnitureNpcMenuItem = new wxMenuItem(mToolsMenu, wxID_ANY, _("Add Furniture NPC..."), wxEmptyString, wxITEM_RADIO, mFurnitureNpcSubMenu);
-                auto img = wxImage(resourceLocator.GetIconFilePath("add_furniture_npc_icon").string(), wxBITMAP_TYPE_PNG);
-                SET_BITMAP(mAddFurnitureNpcMenuItem, img);
-                mToolsMenu->Append(mAddFurnitureNpcMenuItem);
-                mAddFurnitureNpcMenuItem->Enable(true); // Note: here we're assuming we _can_ add NPCs; unfortunately the NPCs class is created _before_ we register for events, hence have to guess here
-            }
-
-            // Move
-            {
-                auto const id = wxNewId();
-                mMoveNpcMenuItem = new wxMenuItem(mToolsMenu, id, _("Move NPC\t3"), wxEmptyString, wxITEM_RADIO);
-                auto img = wxImage(resourceLocator.GetIconFilePath("move_npc_icon").string(), wxBITMAP_TYPE_PNG);
-                SET_BITMAP(mMoveNpcMenuItem, img);
-                mToolsMenu->Append(mMoveNpcMenuItem);
-                Connect(id, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnMoveNpcMenuItemSelected);
-                ADD_PLAIN_ACCELERATOR_KEY('3', mMoveNpcMenuItem);
-                mMoveNpcMenuItem->Enable(false);
-            }
-
-            // Remove
-            {
-                auto const id = wxNewId();
-                mRemoveNpcMenuItem = new wxMenuItem(mToolsMenu, id, _("Remove NPC"), wxEmptyString, wxITEM_RADIO);
-                auto img = wxImage(resourceLocator.GetIconFilePath("remove_npc_icon").string(), wxBITMAP_TYPE_PNG);
-                SET_BITMAP(mRemoveNpcMenuItem, img);
-                mToolsMenu->Append(mRemoveNpcMenuItem);
-                Connect(id, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnRemoveNpcMenuItemSelected);
-                mRemoveNpcMenuItem->Enable(false);
             }
 
             mToolsMenu->AppendSeparator();

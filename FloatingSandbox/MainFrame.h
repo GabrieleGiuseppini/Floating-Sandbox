@@ -56,6 +56,7 @@ class MainFrame final
     , public IAtmosphereGameEventHandler
     , public INpcGameEventHandler
     , public IGenericGameEventHandler
+    , public IControlGameEventHandler
 {
 public:
 
@@ -381,6 +382,11 @@ private:
         }
 
         mCurrentNpcCount = totalNpcCount;
+    }
+
+    virtual void OnContinuousAutoFocusToggled(bool isEnabled) override
+    {
+        mContinuousAutoFocusMenuItem->Check(isEnabled);
     }
 
 private:

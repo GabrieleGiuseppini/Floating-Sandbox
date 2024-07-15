@@ -27,6 +27,7 @@ class GameEventDispatcher final
     , public IElectricalElementGameEventHandler
     , public INpcGameEventHandler
     , public IGenericGameEventHandler
+    , public IControlGameEventHandler
 {
 public:
 
@@ -844,6 +845,18 @@ public:
         }
     }
 
+    //
+    // Control
+    //
+
+    void OnContinuousAutoFocusToggled(bool isEnabled) override
+    {
+        for (auto sink : mControlSinks)
+        {
+            sink->OnContinuousAutoFocusToggled(isEnabled);
+        }
+    }
+
 public:
 
     /*
@@ -1029,6 +1042,11 @@ public:
         mGenericSinks.push_back(sink);
     }
 
+    void RegisterControlEventHandler(IControlGameEventHandler * sink)
+    {
+        mControlSinks.push_back(sink);
+    }
+
 private:
 
     // The current events being aggregated
@@ -1061,4 +1079,5 @@ private:
     std::vector<IElectricalElementGameEventHandler *> mElectricalElementSinks;
     std::vector<INpcGameEventHandler *> mNpcSinks;
     std::vector<IGenericGameEventHandler *> mGenericSinks;
+    std::vector<IControlGameEventHandler *> mControlSinks;
 };
