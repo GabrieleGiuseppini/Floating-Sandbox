@@ -617,7 +617,7 @@ void WorldRenderContext::InitializeFishTextures(ResourceLocator const & resource
     // Create atlas
     auto fishTextureAtlas = TextureAtlasBuilder<FishTextureGroups>::BuildAtlas(
         fishTextureDatabase,
-        AtlasOptions::None,
+        AtlasOptions::MipMappable,
         [](float, ProgressMessageType) {});
 
     LogMessage("Fish texture atlas size: ", fishTextureAtlas.AtlasData.Size);
@@ -634,7 +634,8 @@ void WorldRenderContext::InitializeFishTextures(ResourceLocator const & resource
     CheckOpenGLError();
 
     // Upload atlas texture
-    GameOpenGL::UploadMipmappedPowerOfTwoTexture(
+    assert(fishTextureAtlas.Metadata.IsSuitableForMipMapping());
+    GameOpenGL::UploadMipmappedAtlasTexture(
         std::move(fishTextureAtlas.AtlasData),
         fishTextureAtlas.Metadata.GetMaxDimension());
 
@@ -2131,7 +2132,6 @@ void WorldRenderContext::RecalculateWorldBorder(RenderParameters const & renderP
         - 1.0f / static_cast<float>(worldBorderTextureSize.width);
     float const textureSpaceHeight = GameParameters::MaxWorldHeight / worldBorderWorldHeight
         - 1.0f / static_cast<float>(worldBorderTextureSize.height);
-
 
     //
     // Check which sides of the border we need to draw

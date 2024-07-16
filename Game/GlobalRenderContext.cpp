@@ -140,7 +140,7 @@ void GlobalRenderContext::InitializeGenericTextures(ResourceLocator const & reso
     // Create atlas
     auto genericMipMappedTextureAtlas = TextureAtlasBuilder<GenericMipMappedTextureGroups>::BuildAtlas(
         genericMipMappedTextureDatabase,
-        AtlasOptions::None,
+        AtlasOptions::MipMappable,
         [](float, ProgressMessageType) {});
 
     LogMessage("Generic mipmapped texture atlas size: ", genericMipMappedTextureAtlas.AtlasData.Size.ToString());
@@ -157,7 +157,8 @@ void GlobalRenderContext::InitializeGenericTextures(ResourceLocator const & reso
     CheckOpenGLError();
 
     // Upload atlas texture
-    GameOpenGL::UploadMipmappedPowerOfTwoTexture(
+    assert(genericMipMappedTextureAtlas.Metadata.IsSuitableForMipMapping());
+    GameOpenGL::UploadMipmappedAtlasTexture(
         std::move(genericMipMappedTextureAtlas.AtlasData),
         genericMipMappedTextureAtlas.Metadata.GetMaxDimension());
 

@@ -116,7 +116,7 @@ View::View(
         // Create atlas
         auto mipmappedTextureAtlas = Render::TextureAtlasBuilder<MipMappedTextureGroups>::BuildAtlas(
             mipmappedTextureDatabase,
-            Render::AtlasOptions::None,
+            Render::AtlasOptions::MipMappable,
             [](float, ProgressMessageType) {});
 
         LogMessage("ShipBuilder mipmapped texture atlas size: ", mipmappedTextureAtlas.AtlasData.Size.ToString());
@@ -134,7 +134,8 @@ View::View(
         CheckOpenGLError();
 
         // Upload atlas texture
-        GameOpenGL::UploadMipmappedPowerOfTwoTexture(
+        assert(mipmappedTextureAtlas.Metadata.IsSuitableForMipMapping());
+        GameOpenGL::UploadMipmappedAtlasTexture(
             std::move(mipmappedTextureAtlas.AtlasData),
             mipmappedTextureAtlas.Metadata.GetMaxDimension());
 

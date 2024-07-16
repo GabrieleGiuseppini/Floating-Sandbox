@@ -248,7 +248,8 @@ public:
         RgbaImageData const & baseTexture, // Non-modifying
         GLint internalFormat = GL_RGBA);
 
-    static void UploadMipmappedPowerOfTwoTexture(
+    // Assumes contains tiles aligned on a power-of-two grid
+    static void UploadMipmappedAtlasTexture(
         RgbaImageData baseTexture,
         int maxDimension);
 

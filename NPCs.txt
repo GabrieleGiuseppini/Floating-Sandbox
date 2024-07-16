@@ -465,14 +465,38 @@ Arch
 		+ Good use case to experiment with the "quad single index buffer" feature
 	= ShipRenderContext:
 		+ TextureCoords upload
-		- Mipmapped!
-			- Rethink:
-				- "UploadMipmappedPowerOfTwoTexture" -> "Atlas"?
+		= Mipmapped!
+			+ Rearc:				
 				+ Comment to BuildRegular: to reason for coords
-				- AtlasOptions to make each tile power-of-two
-					- And then Atlas.IsSuitableForMipMapping() check: all frames are power-of-two
-					- BuildMipMappableAtlas: nuke
-				- Look at all usages now
+				+ AtlasBuilder: AtlasOptions to make each tile power-of-two
+					+ Remove redundant builder methods
+					+ Implement
+						+ TextureInfo, TexturePositions: all in-atlas
+						+ BuildAtlasSpecification()
+						+ BuildAtlas: do offseting here to fill gap between in-atlas position and actual frame position
+					+ AtlasMetadata.IsSuitableForMipMapping() check: atlas has MipMapped option
+					+ UnitTests
+					+ Add UnitTests with Load
+						+ InAtlasSizeMatchingFrameSize
+						+ InAtlasSizeLargerThanFrameSize
+				+ Cleanup all "nuke", including AtlasBuilder::BuildMipMappableAtlas
+				+ GameOpenGL: "UploadMipmappedPowerOfTwoTexture" -> "...Atlas"
+					+ And assert, at each call, that atlas was created with MipMapped option via IsSuitableForMipMapping()
+				+ Look at all usages now
+				+ Tests:
+					+ Clouds
+					+ Fish
+					+ GenericMipMapped (bombs w/fuse, cannon, smoke, probe, pin)
+					+ ShipBuilder's CenterOfMass'es
+			+ Baker tool:
+				+ add -mipmap option
+				+ add -regular option
+				+ Rebuild NPC atlas
+					+ Test
+				+ Rebuild Explosion atlas
+					+ Test
+			- Do MipMapped NPCs
+
 	= Shader ("ship_npcs_texture"):
 		+ We keep existing limb-based shader, just change all its vertex attributes/parameters/etc. to become "texture"
 		+ Sampler

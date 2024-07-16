@@ -372,7 +372,7 @@ void GameOpenGL::UploadMipmappedTexture(
         internalFormat);
 }
 
-void GameOpenGL::UploadMipmappedPowerOfTwoTexture(
+void GameOpenGL::UploadMipmappedAtlasTexture(
     RgbaImageData baseTexture,
     int maxDimension)
 {
