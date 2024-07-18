@@ -376,7 +376,6 @@ MainFrame::MainFrame(
                 mToolsMenu->Append(mMoveNpcMenuItem);
                 Connect(id, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnMoveNpcMenuItemSelected);
                 ADD_PLAIN_ACCELERATOR_KEY('3', mMoveNpcMenuItem);
-                mMoveNpcMenuItem->Enable(false);
             }
 
             // Remove
@@ -387,7 +386,6 @@ MainFrame::MainFrame(
                 SET_BITMAP(mRemoveNpcMenuItem, img);
                 mToolsMenu->Append(mRemoveNpcMenuItem);
                 Connect(id, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnRemoveNpcMenuItemSelected);
-                mRemoveNpcMenuItem->Enable(false);
             }
 
             //
@@ -405,8 +403,14 @@ MainFrame::MainFrame(
                 resourceLocator.GetCursorFilePath((bitmap_path)).string(),\
                 wxBITMAP_TYPE_PNG);\
             SET_BITMAP(toolMenuItem, img)\
+            mToolsMenu->Bind(wxEVT_COMMAND_MENU_SELECTED,\
+                [this](wxCommandEvent & evt)\
+                {\
+                        handler(evt);\
+                        OnToolSelectedWithSwitchToExteriorView();\
+                },\
+                id);\
             mToolsMenu->Append(toolMenuItem);\
-            Connect((id), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::handler);\
             return toolMenuItem;\
         }();
 
@@ -536,7 +540,6 @@ MainFrame::MainFrame(
 
                 {
                     mScareFishMenuItem = ADD_TOOL_MENUITEM(_("Scare/Allure Fishes"), wxS("\tZ"), "megaphone_cursor_up", OnScareFishMenuItemSelected);
-                    mScareFishMenuItem->Enable(false);
                     ADD_PLAIN_ACCELERATOR_KEY('Z', mScareFishMenuItem);
                 }
 
@@ -1089,8 +1092,9 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     // Reconciliate UI
     //
 
-    ReconciliateUIWithUIPreferencesAndSettings();
+    ResetShipUIState();
     RebuildNpcMenus();
+    ReconciliateUIWithUIPreferencesAndSettings();
 
 
     //
@@ -2432,35 +2436,6 @@ void MainFrame::RunGameIteration()
 #endif
 }
 
-void MainFrame::ResetShipUIState()
-{
-    mScareFishMenuItem->Enable(false);
-    mRCBombsDetonateMenuItem->Enable(false);
-    mAntiMatterBombsDetonateMenuItem->Enable(false);
-    mTriggerStormMenuItem->Enable(true);
-}
-
-void MainFrame::UpdateFrameTitle()
-{
-    //
-    // Build title
-    //
-
-    std::ostringstream ss;
-
-    ss.fill('0');
-
-    ss << std::string(APPLICATION_NAME_WITH_SHORT_VERSION);
-
-    if (!mCurrentShipTitles.empty())
-    {
-        ss << " - "
-            << Utils::Join(mCurrentShipTitles, " + ");
-    }
-
-    SetTitle(ss.str());
-}
-
 void MainFrame::OnError(
     wxString const & message,
     bool die)
@@ -2631,6 +2606,37 @@ void MainFrame::StartLowFrequencyTimer()
         false); // Continuous
 }
 
+void MainFrame::ResetShipUIState()
+{
+    mMoveNpcMenuItem->Enable(false);
+    mRemoveNpcMenuItem->Enable(false);
+    mScareFishMenuItem->Enable(false);
+    mRCBombsDetonateMenuItem->Enable(false);
+    mAntiMatterBombsDetonateMenuItem->Enable(false);
+    mTriggerStormMenuItem->Enable(true);
+}
+
+void MainFrame::UpdateFrameTitle()
+{
+    //
+    // Build title
+    //
+
+    std::ostringstream ss;
+
+    ss.fill('0');
+
+    ss << std::string(APPLICATION_NAME_WITH_SHORT_VERSION);
+
+    if (!mCurrentShipTitles.empty())
+    {
+        ss << " - "
+            << Utils::Join(mCurrentShipTitles, " + ");
+    }
+
+    SetTitle(ss.str());
+}
+
 void MainFrame::ReconciliateUIWithUIPreferencesAndSettings()
 {
     assert(mGameController);
@@ -2680,6 +2686,7 @@ void MainFrame::RebuildNpcMenus()
                 [this, subKindId=std::get<0>(subKindInfo)](wxCommandEvent &)
                 {
                     OnAddHumanNpcMenuItemSelected(subKindId);
+                    OnToolSelectedWithSwitchToInteriorView();
                 },
                 commandId);
         }
@@ -2705,6 +2712,7 @@ void MainFrame::RebuildNpcMenus()
                 [this, subKindId = std::get<0>(subKindInfo)](wxCommandEvent &)
                 {
                     OnAddFurnitureNpcMenuItemSelected(subKindId);
+                    OnToolSelectedWithSwitchToInteriorView();
                 },
                 commandId);
         }
@@ -2747,7 +2755,7 @@ void MainFrame::LoadShip(
     assert(mMusicController);
     mMusicController->Reset();
 
-    ResetShipUIState();
+    ResetShipUIState(); // Important: now, before ship load generates events
 
     //
     // Load ship
@@ -2818,6 +2826,28 @@ void MainFrame::OnShipLoaded(ShipLoadSpecifications loadSpecs)
 
     assert(mUIPreferencesManager);
     mUIPreferencesManager->SetLastShipLoadedSpecifications(loadSpecs);
+}
+
+void MainFrame::OnToolSelectedWithSwitchToInteriorView()
+{
+    assert(mGameController);
+    if (mGameController->GetShipViewMode() != ShipViewModeType::Interior)
+    {
+        mGameController->SetShipViewMode(ShipViewModeType::Interior);
+        mShipViewExteriorMenuItem->Check(false);
+        mShipViewInteriorMenuItem->Check(true);
+    }
+}
+
+void MainFrame::OnToolSelectedWithSwitchToExteriorView()
+{
+    assert(mGameController);
+    if (mGameController->GetShipViewMode() != ShipViewModeType::Exterior)
+    {
+        mGameController->SetShipViewMode(ShipViewModeType::Exterior);
+        mShipViewExteriorMenuItem->Check(true);
+        mShipViewInteriorMenuItem->Check(false);
+    }
 }
 
 wxAcceleratorEntry MainFrame::MakePlainAcceleratorKey(int key, wxMenuItem * menuItem)

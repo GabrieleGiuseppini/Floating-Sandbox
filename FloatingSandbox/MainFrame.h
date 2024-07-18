@@ -360,22 +360,12 @@ private:
     {
         if (mCurrentNpcCount == 0 && totalNpcCount > 0)
         {
-            // Switch to interior view
-            mGameController->SetShipViewMode(ShipViewModeType::Interior);
-            mShipViewExteriorMenuItem->Check(false);
-            mShipViewInteriorMenuItem->Check(true);
-
             // Enable Move/Remove menu items
             mMoveNpcMenuItem->Enable(true);
             mRemoveNpcMenuItem->Enable(true);
         }
         else if (mCurrentNpcCount > 0 && totalNpcCount == 0)
         {
-            // Switch to exterior view
-            mGameController->SetShipViewMode(ShipViewModeType::Exterior);
-            mShipViewExteriorMenuItem->Check(true);
-            mShipViewInteriorMenuItem->Check(false);
-
             // Disable Move/Remove menu items
             mMoveNpcMenuItem->Enable(false);
             mRemoveNpcMenuItem->Enable(false);
@@ -425,10 +415,6 @@ private:
         }
     }
 
-    void ResetShipUIState();
-
-    void UpdateFrameTitle();
-
     void OnError(
         wxString const & message,
         bool die);
@@ -445,6 +431,10 @@ private:
 
     void StartLowFrequencyTimer();
 
+    void ResetShipUIState();
+
+    void UpdateFrameTitle();
+
     void ReconciliateUIWithUIPreferencesAndSettings();
 
     void RebuildNpcMenus();
@@ -456,6 +446,10 @@ private:
         bool isFromUser);
 
     void OnShipLoaded(ShipLoadSpecifications loadSpecs); // By val to have own copy vs current/prev
+
+    void OnToolSelectedWithSwitchToInteriorView();
+
+    void OnToolSelectedWithSwitchToExteriorView();
 
     wxAcceleratorEntry MakePlainAcceleratorKey(int key, wxMenuItem * menuItem);
 
