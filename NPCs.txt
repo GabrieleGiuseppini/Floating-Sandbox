@@ -557,19 +557,25 @@ Arch
 				+ FocusOn: lowerZoomThreholdMult, higher...
 					+ Pass 0.5, 2.0 for NPCs and 1.0, 1.0 for rest
 			+ Less magnification
-			- See if can avoid "mouse move"
-				- Pass center to InternalFocusOn (0, 0 when not needed)
-				- Do then math at InternalFocusOn
+			+ See if can avoid "mouse move"
+				+ Pass center to InternalFocusOn (0, 0 when not needed)
+				+ Do then math at InternalFocusOn
+			- Test with replacing ParameterSmoother with a simple t interpolation in a 3D space (camx, camy, 1/zoom)
+			- NpcPlace tool: now mouse moves automagically world positions because view changes and thus constant screen coords result in changing world coords
+				- See if can go away with ParameterSmoother replacement above
 			- Test
 				- Various AutoFocus per-se (on, off, home@on, home@off)
 				- Check AutoFocus menu auto-checking when switches
 				- No-dimensions ship (Thanosized)
 				- No-dimensions NPC (particle)
+
+			- Merge into npcs_v1
 	- Do other atlases (Clouds, GenericLinear, GenericMipMapped)
 		- Clean checkout
 		- Move to Baking
 		- Produce atlases
 		- Change atlas loading code
+		- Check startup mem: was 798MB
 
 	- Test on Dell:
 		- Max number of textures (we've added 9th!)

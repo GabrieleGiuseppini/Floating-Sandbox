@@ -126,7 +126,7 @@ void ViewManager::OnNewShip(std::optional<Geometry::AABB> const & aabb)
         {
             if (aabb.has_value())
             {
-                InternalFocusOn(*aabb, 1.0f, 1.0f, 1.0f, 1.0f);
+                InternalFocusOn(*aabb, 1.0f, 1.0f, 1.0f, 1.0f, false);
             }
         }
         else
@@ -190,7 +190,7 @@ void ViewManager::ResetView(std::optional<Geometry::AABB> const & aabb)
     {
         if (aabb)
         {
-            InternalFocusOn(*aabb, 1.0f, 1.0f, 1.0f, 1.0f);
+            InternalFocusOn(*aabb, 1.0f, 1.0f, 1.0f, 1.0f, false);
         }
     }
     else
@@ -204,7 +204,8 @@ void ViewManager::FocusOn(
     float widthMultiplier,
     float heightMultiplier,
     float zoomToleranceMultiplierMin,
-    float zoomToleranceMultiplierMax)
+    float zoomToleranceMultiplierMax,
+    bool anchorAabbCenterAtCurrentScreenPosition)
 {
     // Turn off auto-focus if it's on
     if (mAutoFocus.has_value())
@@ -213,7 +214,7 @@ void ViewManager::FocusOn(
         mGameEventHandler.OnContinuousAutoFocusToggled(false);
     }
 
-    InternalFocusOn(aabb, widthMultiplier, heightMultiplier, zoomToleranceMultiplierMin, zoomToleranceMultiplierMax);
+    InternalFocusOn(aabb, widthMultiplier, heightMultiplier, zoomToleranceMultiplierMin, zoomToleranceMultiplierMax, anchorAabbCenterAtCurrentScreenPosition);
 }
 
 void ViewManager::Update(std::optional<Geometry::AABB> const & aabb)
@@ -355,7 +356,8 @@ void ViewManager::InternalFocusOn(
     float widthMultiplier,
     float heightMultiplier,
     float zoomToleranceMultiplierMin,
-    float zoomToleranceMultiplierMax)
+    float zoomToleranceMultiplierMax,
+    bool anchorAabbCenterAtCurrentScreenPosition)
 {
     // This is only called when we have no auto-focus
     assert(!mAutoFocus.has_value());
@@ -374,8 +376,26 @@ void ViewManager::InternalFocusOn(
         // Accept this zoom
         mZoomParameterSmoother->SetValue(newAutoFocusZoom);
 
+        //
         // Pan
-        vec2f const newWorldCenter = aabb.CalculateCenter();
+        //
+
+        vec2f const aabbWorldCenter = aabb.CalculateCenter();
+
+        vec2f newWorldCenter;
+        if (anchorAabbCenterAtCurrentScreenPosition)
+        {
+            // Calculate new world center so that NDC coords of AABB's center now matches NDC coords
+            // of it after the zoom change
+            vec2f const aabbCenterNdcOffsetWrtCamera = mRenderContext.WorldToNdc(aabbWorldCenter, currentZoom, mCameraWorldPositionParameterSmoother->GetValue());
+            newWorldCenter = aabbWorldCenter - mRenderContext.NdcOffsetToWorldOffset(aabbCenterNdcOffsetWrtCamera, newAutoFocusZoom);
+        }
+        else
+        {
+            // Center on AABB's center
+            newWorldCenter = aabbWorldCenter;
+        }
+
         mCameraWorldPositionParameterSmoother->SetValue(newWorldCenter);
     }
 }

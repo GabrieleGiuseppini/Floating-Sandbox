@@ -47,7 +47,8 @@ public:
         float widthMultiplier,
         float heightMultiplier,
         float zoomToleranceMultiplierMin,
-        float zoomToleranceMultiplierMax);
+        float zoomToleranceMultiplierMax,
+        bool anchorAabbCenterAtCurrentScreenPosition);
 
     void Update(std::optional<Geometry::AABB> const & aabb);
 
@@ -66,7 +67,8 @@ private:
         float widthMultiplier,
         float heightMultiplier,
         float zoomToleranceMultiplierMin,
-        float zoomToleranceMultiplierMax);
+        float zoomToleranceMultiplierMax,
+        bool anchorAabbCenterAtCurrentScreenPosition);
 
     float InternalCalculateZoom(
         Geometry::AABB const & aabb,

@@ -1495,7 +1495,7 @@ void GameController::FocusOnShips()
         auto const aabb = mWorld->GetAllShipAABBs().MakeUnion();
         if (aabb.has_value())
         {
-            mViewManager.FocusOn(*aabb, 1.0f, 1.0f, 1.0f, 1.0f);
+            mViewManager.FocusOn(*aabb, 1.0f, 1.0f, 1.0f, 1.0f, false);
         }
     }
 }
@@ -1743,7 +1743,7 @@ void GameController::OnBeginPlaceNewNpc(NpcId const & npcId)
 
     assert(!!mWorld);
     auto const aabb = mWorld->GetNpcAABB(npcId);
-    mViewManager.FocusOn(aabb, NpcMagnification, NpcMagnification, 1.0f / 3.5f, 2.0f);
+    mViewManager.FocusOn(aabb, NpcMagnification, NpcMagnification, 1.0f / 3.5f, 2.0f, true);
 }
 
 bool GameController::CalculateAreCloudShadowsEnabled(OceanRenderDetailType oceanRenderDetail)
