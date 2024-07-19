@@ -29,7 +29,7 @@ public:
 		bool isDayLightCycleOn,
 		bool isAutoFocusOn,
 		UnitsSystem displayUnitsSystem,
-		std::shared_ptr<GameEventDispatcher> gameEventDispatcher);
+		GameEventDispatcher & gameEventHandler);
 
 	bool IsStatusTextEnabled() const { return mIsStatusTextEnabled; }
 	void SetStatusTextEnabled(bool isEnabled);
@@ -179,7 +179,7 @@ private:
 
 private:
 
-	std::shared_ptr<GameEventDispatcher> mGameEventDispatcher;
+	GameEventDispatcher & mGameEventHandler;
 
 	//
 	// Status text

@@ -589,6 +589,7 @@ struct IGenericGameEventHandler
 
 struct IControlGameEventHandler
 {
+    // Only published when spontaneous toggle
     virtual void OnContinuousAutoFocusToggled(
         bool /*isEnabled*/)
     {

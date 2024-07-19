@@ -179,6 +179,21 @@ void Npcs::Upload(Render::RenderContext & renderContext)
 
 ///////////////////////////////
 
+Geometry::AABB Npcs::GetAABB(NpcId npcId) const
+{
+	assert(mStateBuffer[npcId].has_value());
+
+	Geometry::AABB aabb;
+	for (auto const & particle : mStateBuffer[npcId]->ParticleMesh.Particles)
+	{
+		aabb.ExtendTo(mParticles.GetPosition(particle.ParticleIndex));
+	}
+
+	return aabb;
+}
+
+///////////////////////////////
+
 void Npcs::OnShipAdded(Ship & ship)
 {
 	size_t const s = static_cast<size_t>(ship.GetId());

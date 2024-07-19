@@ -503,6 +503,7 @@ Arch
 		- Discard when transparent
 			- But only after testing with two connected components - & inverse order of drawing; should bug out when near NPC is drawn before far NPC and they are on top of each other
 				- Requires following their triangle
+		- Highlight: Step(c.alpha, 0.0) as coeff to bright red
 		- Night time color
 	= Misc improvements & technical debt:
 		+ When drawing human on side, legs first and arms then (as arms are longer)
@@ -534,14 +535,36 @@ Arch
 					+ void OnToolSelectedWithSwitchToInteriorView()
 					+ void OnToolSelectedWithSwitchToExteriorView()
 		= GameController: focus to position at BeginPlaceNpcx2
-			- Upon BeginPlaceXXX: GameController tells ViewManager (with position and height as AABB, i.e. GameParams::HeightMean * GemParams::SizeAdjustment)
-				- ViewManager: 
-					- Nuke GameController::FocusOnShip()
-					- ViewManager::OnNewShip() does whole "if (autofocus) ... else ..." from old FocusOnShip
-					- ViewManager::FocusOn() (replaced FocusOnShip):
-						- If AutoFocus on: turn off & publish event
-						- InternalFocus
-				= MainFrame registers and changes menu flag
+			+ Upon BeginPlaceXXX: GameController tells ViewManager (with position and height as AABB, i.e. GameParams::HeightMean * GemParams::SizeAdjustment)
+				+ ViewManager: 
+					+ Nuke GameController::FocusOnShip()
+					+ ViewManager::OnNewShip() does whole "if (autofocus) ... else ..." from old FocusOnShip
+					+ ViewManager::FocusOn() (replaces FocusOnShip):
+						+ If AutoFocus on: turn off & publish event
+						+ InternalFocus
+				+ BeginPlaceXXX:
+					+ OnBeginPlaceNewNpc(npcId)
+						+ World::GetNpcAABB(NpcId) -> AABB
+							+ Npcs::GetAABB(NpcId)
+								+ ViewManager::OnFocus takes dimension multiplier
+									+ And uses AABB::AdjustSize
+						+ ViewManager::FocusOn(aabb)
+				+ MainFrame registers and changes menu flag
+			+ ViewManager: deal with zero W and/or H
+				+ GameController does not does AdjustSize, but passes two floats to ViewManager
+				+ ViewManager: put a lower cap on sizes: 1.0 (i.e. we don't want to go smaller than 1.0), then multiplied
+			+ Do not zoom out (only lower zoom)
+				+ FocusOn: lowerZoomThreholdMult, higher...
+					+ Pass 0.5, 2.0 for NPCs and 1.0, 1.0 for rest
+			+ Less magnification
+			- See if can avoid "mouse move"
+				- Pass center to InternalFocusOn (0, 0 when not needed)
+				- Do then math at InternalFocusOn
+			- Test
+				- Various AutoFocus per-se (on, off, home@on, home@off)
+				- Check AutoFocus menu auto-checking when switches
+				- No-dimensions ship (Thanosized)
+				- No-dimensions NPC (particle)
 	- Do other atlases (Clouds, GenericLinear, GenericMipMapped)
 		- Clean checkout
 		- Move to Baking
@@ -584,7 +607,7 @@ Arch
 		- NpcMaterial::WindReceptivity
 	- Ship-specific explosions: only of that ship, or free regime
 	- Swirl, etc.: all ships, all regimes
-	- Move tool:
+	- Move/Rotate tool:
 		- While MoveAll may be used to move everything, Move (component) only moves mesh, thus subjecting NPCs to apparent forces!
 	- Electric spark:
 		- Electrification must be stored with Points

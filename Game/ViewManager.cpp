@@ -10,13 +10,15 @@
 #include <cassert>
 
 float constexpr NdcFractionZoomTarget = 0.7f; // Fraction of the [0, 2] NDC space that needs to be occupied by AABB
-float constexpr MaxZoom = 2.0f; // Arbitrary max zoom, to avoid getting to atomic scale with e.g. Thanos
+float constexpr AutoFocusMaxZoom = 2.0f; // Arbitrary max zoom, to avoid getting to atomic scale with e.g. Thanos
 
 ViewManager::ViewManager(
     Render::RenderContext & renderContext,
-    NotificationLayer & notificationLayer)
+    NotificationLayer & notificationLayer,
+    GameEventDispatcher & gameEventDispatcher)
     : mRenderContext(renderContext)
     , mNotificationLayer(notificationLayer)
+    , mGameEventHandler(gameEventDispatcher)
     , mZoomParameterSmoother()
     , mCameraWorldPositionParameterSmoother()
     // Defaults
@@ -77,18 +79,18 @@ void ViewManager::SetCameraSpeedAdjustment(float value)
 }
 
 bool ViewManager::GetDoAutoFocusOnShipLoad() const
-{ 
+{
     return mDoAutoFocusOnShipLoad;
 }
 
 void ViewManager::SetDoAutoFocusOnShipLoad(bool value)
-{ 
+{
     mDoAutoFocusOnShipLoad = value;
 }
 
 bool ViewManager::GetDoContinuousAutoFocus() const
-{ 
-    return mAutoFocus.has_value(); 
+{
+    return mAutoFocus.has_value();
 }
 
 void ViewManager::SetDoContinuousAutoFocus(bool value)
@@ -116,11 +118,21 @@ void ViewManager::OnViewModelUpdated()
     mCameraWorldPositionParameterSmoother->ReClamp();
 }
 
-void ViewManager::OnNewShip(Geometry::AABBSet const & allAABBs)
+void ViewManager::OnNewShip(std::optional<Geometry::AABB> const & aabb)
 {
     if (mDoAutoFocusOnShipLoad)
     {
-        FocusOnShip(allAABBs);
+        if (!mAutoFocus.has_value())
+        {
+            if (aabb.has_value())
+            {
+                InternalFocusOn(*aabb, 1.0f, 1.0f, 1.0f, 1.0f);
+            }
+        }
+        else
+        {
+            mAutoFocus->ResetUserOffsets();
+        }
     }
 }
 
@@ -170,38 +182,45 @@ void ViewManager::AdjustZoom(float amount)
     }
 }
 
-void ViewManager::ResetView(Geometry::AABBSet const & allAABBs)
+void ViewManager::ResetView(std::optional<Geometry::AABB> const & aabb)
 {
     // When continuous auto-focus is off, "view reset" focuses on ship;
     // When continuous auto-focus is on, "view reset" zeroes-out user offsets
     if (!mAutoFocus.has_value())
     {
-        InternalFocusOnShip(allAABBs);
+        if (aabb)
+        {
+            InternalFocusOn(*aabb, 1.0f, 1.0f, 1.0f, 1.0f);
+        }
     }
     else
     {
-        mAutoFocus->Reset();
+        mAutoFocus->ResetUserOffsets();
     }
 }
 
-void ViewManager::FocusOnShip(Geometry::AABBSet const & allAABBs)
+void ViewManager::FocusOn(
+    Geometry::AABB const & aabb,
+    float widthMultiplier,
+    float heightMultiplier,
+    float zoomToleranceMultiplierMin,
+    float zoomToleranceMultiplierMax)
 {
-    if (!mAutoFocus.has_value())
+    // Turn off auto-focus if it's on
+    if (mAutoFocus.has_value())
     {
-        InternalFocusOnShip(allAABBs);
+        mAutoFocus.reset();
+        mGameEventHandler.OnContinuousAutoFocusToggled(false);
     }
-    else
-    {
-        mAutoFocus->Reset();
-    }
+
+    InternalFocusOn(aabb, widthMultiplier, heightMultiplier, zoomToleranceMultiplierMin, zoomToleranceMultiplierMax);
 }
 
-void ViewManager::Update(Geometry::AABBSet const & allAABBs)
+void ViewManager::Update(std::optional<Geometry::AABB> const & aabb)
 {
     if (mAutoFocus.has_value())
     {
-        auto const unionAABB = allAABBs.MakeUnion();
-        if (unionAABB.has_value())
+        if (aabb.has_value())
         {
             //
             // Auto-focus algorithm:
@@ -221,14 +240,14 @@ void ViewManager::Update(Geometry::AABBSet const & allAABBs)
             // Zoom
             //
 
-            mAutoFocus->CurrentAutoFocusZoom = InternalCalculateZoom(*unionAABB);
+            mAutoFocus->CurrentAutoFocusZoom = InternalCalculateZoom(*aabb, 1.0f, 1.0f, AutoFocusMaxZoom);
 
             //
             // Pan
             //
 
             // Calculate NDC offset required to center view onto AABB's center (net of user offsets)
-            vec2f const aabbCenterNdc = mRenderContext.WorldToNdc(unionAABB->CalculateCenter(), mAutoFocus->CurrentAutoFocusZoom, mAutoFocus->CurrentAutoFocusCameraWorldPosition);
+            vec2f const aabbCenterNdc = mRenderContext.WorldToNdc(aabb->CalculateCenter(), mAutoFocus->CurrentAutoFocusZoom, mAutoFocus->CurrentAutoFocusCameraWorldPosition);
             vec2f const newAutoFocusCameraPositionNdcOffset = aabbCenterNdc / 2.0f;
 
             // Convert back into world offset
@@ -331,26 +350,49 @@ float ViewManager::CalculateParameterSmootherConvergenceFactor(
     }
 }
 
-void ViewManager::InternalFocusOnShip(Geometry::AABBSet const & allAABBs)
+void ViewManager::InternalFocusOn(
+    Geometry::AABB const & aabb,
+    float widthMultiplier,
+    float heightMultiplier,
+    float zoomToleranceMultiplierMin,
+    float zoomToleranceMultiplierMax)
 {
-    auto const unionAABB = allAABBs.MakeUnion();
-    if (unionAABB.has_value())
+    // This is only called when we have no auto-focus
+    assert(!mAutoFocus.has_value());
+
+    // Calculate required zoom
+    float const newAutoFocusZoom = InternalCalculateZoom(
+        aabb,
+        widthMultiplier,
+        heightMultiplier,
+        8.0f); // No closer than this
+
+    // Check it against tolerance
+    float const currentZoom = mZoomParameterSmoother->GetValue();
+    if (newAutoFocusZoom < currentZoom * zoomToleranceMultiplierMin || newAutoFocusZoom > currentZoom * zoomToleranceMultiplierMax)
     {
-        // Zoom
-        float const newAutoFocusZoom = InternalCalculateZoom(*unionAABB);
+        // Accept this zoom
         mZoomParameterSmoother->SetValue(newAutoFocusZoom);
 
         // Pan
-        vec2f const newWorldCenter = unionAABB->CalculateCenter();
+        vec2f const newWorldCenter = aabb.CalculateCenter();
         mCameraWorldPositionParameterSmoother->SetValue(newWorldCenter);
     }
 }
 
-float ViewManager::InternalCalculateZoom(Geometry::AABB const & aabb)
+float ViewManager::InternalCalculateZoom(
+    Geometry::AABB const & aabb,
+    float widthMultiplier,
+    float heightMultiplier,
+    float maxZoom) const
 {
+    // Clamp dimensions from below to 1.0 (don't want to zoom to smaller than 1m)
+    float const width = std::max(aabb.GetWidth(), 1.0f) * widthMultiplier;
+    float const height = std::max(aabb.GetHeight(), 1.0f) * heightMultiplier;
+
     return std::min(
         std::min(
-            mRenderContext.CalculateZoomForWorldWidth(aabb.GetWidth() / NdcFractionZoomTarget),
-            mRenderContext.CalculateZoomForWorldHeight(aabb.GetHeight() / NdcFractionZoomTarget)),
-        MaxZoom);
+            mRenderContext.CalculateZoomForWorldWidth(width / NdcFractionZoomTarget),
+            mRenderContext.CalculateZoomForWorldHeight(height / NdcFractionZoomTarget)),
+        maxZoom);
 }

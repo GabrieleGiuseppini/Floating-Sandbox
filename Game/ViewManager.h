@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "GameEventDispatcher.h"
 #include "NotificationLayer.h"
 #include "RenderContext.h"
 
@@ -21,7 +22,8 @@ public:
 
     ViewManager(
         Render::RenderContext & renderContext,
-        NotificationLayer & notificationLayer);
+        NotificationLayer & notificationLayer,
+        GameEventDispatcher & gameEventDispatcher);
 
     float GetCameraSpeedAdjustment() const;
     void SetCameraSpeedAdjustment(float value);
@@ -35,14 +37,19 @@ public:
     void SetDoContinuousAutoFocus(bool value);
 
     void OnViewModelUpdated();
-    void OnNewShip(Geometry::AABBSet const & allAABBs);
+    void OnNewShip(std::optional<Geometry::AABB> const & aabb);
     void Pan(vec2f const & worldOffset);
     void PanToWorldX(float worldX);
     void AdjustZoom(float amount);
-    void ResetView(Geometry::AABBSet const & allAABBs);
-    void FocusOnShip(Geometry::AABBSet const & allAABBs);
+    void ResetView(std::optional<Geometry::AABB> const & aabb);
+    void FocusOn(
+        Geometry::AABB const & aabb,
+        float widthMultiplier,
+        float heightMultiplier,
+        float zoomToleranceMultiplierMin,
+        float zoomToleranceMultiplierMax);
 
-    void Update(Geometry::AABBSet const & allAABBs);
+    void Update(std::optional<Geometry::AABB> const & aabb);
 
 private:
 
@@ -54,14 +61,24 @@ private:
         float mid,
         float max);
 
-    void InternalFocusOnShip(Geometry::AABBSet const & allAABBs);
+    void InternalFocusOn(
+        Geometry::AABB const & aabb,
+        float widthMultiplier,
+        float heightMultiplier,
+        float zoomToleranceMultiplierMin,
+        float zoomToleranceMultiplierMax);
 
-    float InternalCalculateZoom(Geometry::AABB const & aabb);
+    float InternalCalculateZoom(
+        Geometry::AABB const & aabb,
+        float widthMultiplier,
+        float heightMultiplier,
+        float maxZoom) const;
 
 private:
 
     Render::RenderContext & mRenderContext;
     NotificationLayer & mNotificationLayer;
+    GameEventDispatcher & mGameEventHandler;
 
     std::unique_ptr<ParameterSmoother<float>> mZoomParameterSmoother;
     std::unique_ptr<ParameterSmoother<vec2f>> mCameraWorldPositionParameterSmoother;
@@ -84,15 +101,15 @@ private:
             : CurrentAutoFocusZoom(currentAutoFocusZoom)
             , CurrentAutoFocusCameraWorldPosition(currentAutoFocusCameraWorldPosition)
         {
-            Reset();
+            ResetUserOffsets();
         }
 
-        void Reset()
-        {            
+        void ResetUserOffsets()
+        {
             UserZoomOffset = 1.0f;
             UserCameraWorldPositionOffset = vec2f::zero();
         }
     };
 
-    std::optional<AutoFocusSessionData> mAutoFocus;
+    std::optional<AutoFocusSessionData> mAutoFocus; // When set, we're doing auto-focus
 };

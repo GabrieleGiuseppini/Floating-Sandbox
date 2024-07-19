@@ -20,8 +20,8 @@ NotificationLayer::NotificationLayer(
 	bool isDayLightCycleOn,
 	bool isAutoFocusOn,
 	UnitsSystem displayUnitsSystem,
-	std::shared_ptr<GameEventDispatcher> gameEventDispatcher)
-    : mGameEventDispatcher(std::move(gameEventDispatcher))
+	GameEventDispatcher & gameEventHandler)
+    : mGameEventHandler(gameEventHandler)
 	// StatusText
 	, mIsStatusTextEnabled(true)
 	, mIsExtendedStatusTextEnabled(false)
@@ -43,7 +43,7 @@ NotificationLayer::NotificationLayer(
 	// Display units system
 	, mDisplayUnitsSystem(displayUnitsSystem)
 {
-	mGameEventDispatcher->RegisterGenericEventHandler(this);
+	mGameEventHandler.RegisterGenericEventHandler(this);
 }
 
 void NotificationLayer::SetStatusTextEnabled(bool isEnabled)
@@ -305,7 +305,7 @@ void NotificationLayer::Update(
 			{
 				// First update for opening...
 				// ...emit event then
-				mGameEventDispatcher->OnPhysicsProbePanelOpened();
+				mGameEventHandler.OnPhysicsProbePanelOpened();
 			}
 
 			// Calculate new open
@@ -329,7 +329,7 @@ void NotificationLayer::Update(
 				mArePhysicsProbeReadingStringsDirty = true;
 
 				// ...emit panel closed event
-				mGameEventDispatcher->OnPhysicsProbePanelClosed();
+				mGameEventHandler.OnPhysicsProbePanelClosed();
 			}
 
 			// Calculate new open

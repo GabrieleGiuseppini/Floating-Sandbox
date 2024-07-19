@@ -15,6 +15,7 @@
 #include <GameCore/BarycentricCoords.h>
 #include <GameCore/ElementIndexRangeIterator.h>
 #include <GameCore/FixedSizeVector.h>
+#include <GameCore/GameGeometry.h>
 #include <GameCore/GameRandomEngine.h>
 #include <GameCore/GameTypes.h>
 #include <GameCore/Log.h>
@@ -651,6 +652,10 @@ public:
 		GameParameters const & gameParameters);
 
 	void Upload(Render::RenderContext & renderContext);
+
+	///////////////////////////////
+
+	Geometry::AABB GetAABB(NpcId npcId) const;
 
 	///////////////////////////////
 

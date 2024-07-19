@@ -41,6 +41,7 @@ struct IGameController
     virtual void RegisterElectricalElementEventHandler(IElectricalElementGameEventHandler * handler) = 0;
     virtual void RegisterNpcEventHandler(INpcGameEventHandler * handler) = 0;
     virtual void RegisterGenericEventHandler(IGenericGameEventHandler * handler) = 0;
+    virtual void RegisterControlEventHandler(IControlGameEventHandler * handler) = 0;
 
     virtual ShipMetadata ResetAndLoadShip(ShipLoadSpecifications const & loadSpecs) = 0;
     virtual ShipMetadata ResetAndReloadShip(ShipLoadSpecifications const & loadSpecs) = 0;
@@ -173,7 +174,7 @@ struct IGameController
     virtual void PanToWorldEnd(int side) = 0;
     virtual void AdjustZoom(float amount) = 0;
     virtual void ResetView() = 0;
-    virtual void FocusOnShip() = 0;
+    virtual void FocusOnShips() = 0;
     virtual vec2f ScreenToWorld(DisplayLogicalCoordinates const & screenCoordinates) const = 0;
     virtual vec2f ScreenOffsetToWorldOffset(DisplayLogicalSize const & screenOffset) const = 0;
 

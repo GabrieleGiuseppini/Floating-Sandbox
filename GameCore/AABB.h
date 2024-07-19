@@ -91,6 +91,20 @@ public:
             BottomLeft.y = other.BottomLeft.y;
     }
 
+    inline AABB AdjustSize(
+        float widthMultiplier,
+        float heightMultiplier) const
+    {
+        float const newWidth = GetWidth() * widthMultiplier;
+        float const newHeight = GetHeight() * heightMultiplier;
+        auto const center = CalculateCenter();
+        return AABB(
+            center.x - newWidth / 2.0f,
+            center.x + newWidth / 2.0f,
+            center.y + newHeight / 2.0f,
+            center.y - newHeight / 2.0f);
+    }
+
     inline bool Contains(vec2f const & point) const noexcept
     {
         return point.x >= BottomLeft.x

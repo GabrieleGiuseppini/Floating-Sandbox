@@ -151,6 +151,12 @@ public:
         mGameEventDispatcher->RegisterGenericEventHandler(handler);
     }
 
+    void RegisterControlEventHandler(IControlGameEventHandler * handler) override
+    {
+        assert(!!mGameEventDispatcher);
+        mGameEventDispatcher->RegisterControlEventHandler(handler);
+    }
+
     void RebindOpenGLContext();
 
     ShipMetadata ResetAndLoadShip(ShipLoadSpecifications const & loadSpecs) override;
@@ -287,7 +293,7 @@ public:
     void PanToWorldEnd(int side) override;
     void AdjustZoom(float amount) override;
     void ResetView() override;
-    void FocusOnShip() override;
+    void FocusOnShips() override;
     vec2f ScreenToWorld(DisplayLogicalCoordinates const & screenCoordinates) const override;
     vec2f ScreenOffsetToWorldOffset(DisplayLogicalSize const & screenOffset) const override;
 
@@ -968,6 +974,8 @@ private:
     void ResetStats();
 
     void PublishStats(std::chrono::steady_clock::time_point nowReal);
+
+    void OnBeginPlaceNewNpc(NpcId const & npcId);
 
     static bool CalculateAreCloudShadowsEnabled(OceanRenderDetailType oceanRenderDetail);
 

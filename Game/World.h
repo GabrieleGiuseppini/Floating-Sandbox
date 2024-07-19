@@ -68,10 +68,12 @@ public:
 
     size_t GetShipPointCount(ShipId shipId) const;
 
-    Geometry::AABBSet GetAllAABBs() const
+    Geometry::AABBSet GetAllShipAABBs() const
     {
-        return mAllAABBs;
+        return mAllShipAABBs;
     }
+
+    Geometry::AABB GetNpcAABB(NpcId npcId) const;
 
     void SetAreCloudShadowsEnabled(bool value)
     {
@@ -423,9 +425,9 @@ private:
     Fishes mFishes;
     std::unique_ptr<Npcs> mNpcs; // Pointer simply because of #include dependencies
 
-    // The set of all AABB's in the world, updated at each
+    // The set of all ship AABB's in the world, updated at each
     // simulation cycle and at each ship addition
-    Geometry::AABBSet mAllAABBs;
+    Geometry::AABBSet mAllShipAABBs;
 };
 
 }

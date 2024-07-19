@@ -112,11 +112,11 @@ GameController::GameController(
         mGameParameters.DoDayLightCycle,
         false /*isAutoFocusOn; loaded value will come later*/,
         mRenderContext->GetDisplayUnitsSystem(),
-        mGameEventDispatcher)
+        *mGameEventDispatcher)
     , mThreadManager(
         mRenderContext->IsRenderingMultiThreaded(),
         8) // We start "zuinig", as we do not want to pay a ThreadPool price for too many threads
-    , mViewManager(*mRenderContext, mNotificationLayer)
+    , mViewManager(*mRenderContext, mNotificationLayer, *mGameEventDispatcher)
     // Smoothing
     , mFloatParameterSmoothers()
     // Stats
@@ -443,7 +443,7 @@ void GameController::RunGameIteration()
         // Update view manager
         // Note: some Upload()'s need to use ViewModel values, which have then to match the
         // ViewModel values used by the subsequent render
-        mViewManager.Update(mWorld->GetAllAABBs());
+        mViewManager.Update(mWorld->GetAllShipAABBs().MakeUnion());
 
         //
         // Upload world
@@ -1273,10 +1273,16 @@ std::optional<PickedObjectId<NpcId>> GameController::BeginPlaceNewFurnitureNpc(
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
     assert(!!mWorld);
-    auto const pickedObjectId = mWorld->BeginPlaceNewFurnitureNpc(
+    auto const pickedNpcId = mWorld->BeginPlaceNewFurnitureNpc(
         subKind,
         worldCoordinates);
-    return pickedObjectId;
+
+    if (pickedNpcId.has_value())
+    {
+        OnBeginPlaceNewNpc(pickedNpcId->ObjectId);
+    }
+
+    return pickedNpcId;
 }
 
 std::optional<PickedObjectId<NpcId>> GameController::BeginPlaceNewHumanNpc(
@@ -1286,10 +1292,16 @@ std::optional<PickedObjectId<NpcId>> GameController::BeginPlaceNewHumanNpc(
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
     assert(!!mWorld);
-    auto const pickedObjectId = mWorld->BeginPlaceNewHumanNpc(
+    auto const pickedNpcId = mWorld->BeginPlaceNewHumanNpc(
         subKind,
         worldCoordinates);
-    return pickedObjectId;
+
+    if (pickedNpcId.has_value())
+    {
+        OnBeginPlaceNewNpc(pickedNpcId->ObjectId);
+    }
+
+    return pickedNpcId;
 }
 
 std::optional<PickedObjectId<NpcId>> GameController::ProbeNpcAt(DisplayLogicalCoordinates const & screenCoordinates) const
@@ -1472,15 +1484,19 @@ void GameController::ResetView()
 {
     if (mWorld)
     {
-        mViewManager.ResetView(mWorld->GetAllAABBs());
+        mViewManager.ResetView(mWorld->GetAllShipAABBs().MakeUnion());
     }
 }
 
-void GameController::FocusOnShip()
+void GameController::FocusOnShips()
 {
     if (mWorld)
     {
-        mViewManager.FocusOnShip(mWorld->GetAllAABBs());
+        auto const aabb = mWorld->GetAllShipAABBs().MakeUnion();
+        if (aabb.has_value())
+        {
+            mViewManager.FocusOn(*aabb, 1.0f, 1.0f, 1.0f, 1.0f);
+        }
     }
 }
 
@@ -1657,7 +1673,7 @@ void GameController::InternalAddShip(
         std::move(interiorViewImage));
 
     // Tell view manager
-    mViewManager.OnNewShip(mWorld->GetAllAABBs());
+    mViewManager.OnNewShip(mWorld->GetAllShipAABBs().MakeUnion());
 
     // Notify ship load
     mGameEventDispatcher->OnShipLoaded(
@@ -1718,6 +1734,16 @@ void GameController::PublishStats(std::chrono::steady_clock::time_point nowReal)
         mRenderContext->GetZoom(),
         mRenderContext->GetCameraWorldPosition(),
         mRenderContext->GetStatistics());
+}
+
+void GameController::OnBeginPlaceNewNpc(NpcId const & npcId)
+{
+    // We want to zoom so that the NPC appears as large as 1/this of screen
+    float constexpr NpcMagnification = 10.0f;
+
+    assert(!!mWorld);
+    auto const aabb = mWorld->GetNpcAABB(npcId);
+    mViewManager.FocusOn(aabb, NpcMagnification, NpcMagnification, 1.0f / 3.5f, 2.0f);
 }
 
 bool GameController::CalculateAreCloudShadowsEnabled(OceanRenderDetailType oceanRenderDetail)

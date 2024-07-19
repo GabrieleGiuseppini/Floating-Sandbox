@@ -281,6 +281,7 @@ private:
         gameController.RegisterAtmosphereEventHandler(this);
         gameController.RegisterNpcEventHandler(this);
         gameController.RegisterGenericEventHandler(this);
+        gameController.RegisterControlEventHandler(this);
     }
 
     virtual void OnGameReset() override

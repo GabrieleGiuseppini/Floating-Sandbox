@@ -35,7 +35,7 @@ World::World(
     , mFishes(fishSpeciesDatabase, mGameEventHandler)
     , mNpcs(std::make_unique<Npcs>(*this, npcDatabase, mGameEventHandler))
     //
-    , mAllAABBs()
+    , mAllShipAABBs()
 {
     // Initialize world pieces that need to be initialized now
     mStars.Update(mCurrentSimulationTime, gameParameters);
@@ -68,7 +68,7 @@ void World::AddShip(std::unique_ptr<Ship> ship)
     // Update AABBSet
     for (auto const & aabb : shipAABBs.GetItems())
     {
-        mAllAABBs.Add(aabb);
+        mAllShipAABBs.Add(aabb);
     }
 }
 
@@ -116,6 +116,12 @@ size_t World::GetShipPointCount(ShipId shipId) const
     assert(shipId >= 0 && shipId < mAllShips.size());
 
     return mAllShips[shipId]->GetPointCount();
+}
+
+Geometry::AABB World::GetNpcAABB(NpcId npcId) const
+{
+    assert(!!mNpcs);
+    return mNpcs->GetAABB(npcId);
 }
 
 bool World::IsUnderwater(ElementId elementId) const
@@ -1101,7 +1107,7 @@ void World::Update(
     mCurrentSimulationTime += GameParameters::SimulationStepTimeDuration<float>;
 
     // Prepare all AABBs
-    mAllAABBs.Clear();
+    mAllShipAABBs.Clear();
 
     //
     // Update all subsystems
@@ -1126,7 +1132,7 @@ void World::Update(
             mStorm.GetParameters(),
             gameParameters,
             stressRenderMode,
-            mAllAABBs,
+            mAllShipAABBs,
             threadManager,
             perfStats);
     }
@@ -1143,7 +1149,7 @@ void World::Update(
     {
         auto const startTime = std::chrono::steady_clock::now();
 
-        mFishes.Update(mCurrentSimulationTime, mOceanSurface, mOceanFloor, gameParameters, visibleWorld, mAllAABBs);
+        mFishes.Update(mCurrentSimulationTime, mOceanSurface, mOceanFloor, gameParameters, visibleWorld, mAllShipAABBs);
 
         perfStats.TotalFishUpdateDuration.Update(std::chrono::steady_clock::now() - startTime);
     }
@@ -1185,15 +1191,15 @@ void World::RenderUpload(
     // AABBs
     if (renderContext.GetShowAABBs())
     {
-        renderContext.UploadAABBsStart(mAllAABBs.GetCount());
+        renderContext.UploadAABBsStart(mAllShipAABBs.GetCount());
 
-        auto constexpr color = rgbaColor(18, 8, 255, 255).toVec4f();
+        auto constexpr ShipAABBColor = rgbaColor(18, 8, 255, 255).toVec4f();
 
-        for (auto const & aabb : mAllAABBs.GetItems())
+        for (auto const & aabb : mAllShipAABBs.GetItems())
         {
             renderContext.UploadAABB(
                 aabb,
-                color);
+                ShipAABBColor);
         }
 
         renderContext.UploadAABBsEnd();
