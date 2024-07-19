@@ -563,7 +563,9 @@ Arch
 			+ Test with replacing ParameterSmoother with a simple t interpolation in a 3D space (camx, camy, 1/zoom)
 				+ Test:
 					+ Clamping
+			- InternalSetAutoFocus: before setting all, clamp each and only go with both params if none was clamped
 			- GameController also must register for AutoFocus toggled, and does NotificationLayer accordingly
+				- But only in this async case
 			- Test
 				- Various AutoFocus per-se (on, off, home@on, home@off)
 				- Check AutoFocus menu auto-checking when switches
@@ -571,6 +573,7 @@ Arch
 				- No-dimensions NPC (particle)
 
 			- Merge into npcs_v1
+
 	- Do other atlases (Clouds, GenericLinear, GenericMipMapped)
 		- Clean checkout
 		- Move to Baking

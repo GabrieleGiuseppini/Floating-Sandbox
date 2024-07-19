@@ -633,7 +633,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
 		// Wide
 		widthMultiplier = 1.0f + std::min(
 			std::abs(GameRandomEngine::GetInstance().GenerateNormalReal(0.0f, GameParameters::HumanNpcGeometry::BodyWidthWideMultiplierStdDev)),
-			3.0f * GameParameters::HumanNpcGeometry::BodyWidthWideMultiplierStdDev);
+			2.7f * GameParameters::HumanNpcGeometry::BodyWidthWideMultiplierStdDev);
 	}
 
 	float const walkingSpeedBase =
