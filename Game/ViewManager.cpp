@@ -12,6 +12,8 @@
 float constexpr NdcFractionZoomTarget = 0.7f; // Fraction of the [0, 2] NDC space that needs to be occupied by AABB
 float constexpr AutoFocusMaxZoom = 2.0f; // Arbitrary max zoom, to avoid getting to atomic scale with e.g. Thanos
 
+float constexpr SmootherTerminationThreshold = 0.00005f; // How close to target we stop smoothing
+
 ViewManager::ViewManager(
     Render::RenderContext & renderContext,
     NotificationLayer & notificationLayer,
@@ -19,35 +21,27 @@ ViewManager::ViewManager(
     : mRenderContext(renderContext)
     , mNotificationLayer(notificationLayer)
     , mGameEventHandler(gameEventDispatcher)
-    , mZoomParameterSmoother()
-    , mCameraWorldPositionParameterSmoother()
-    // Defaults
-    , mCameraSpeedAdjustment(1.0f)
-    , mDoAutoFocusOnShipLoad(true)
-    , mAutoFocus() // Set later
-{
-    mZoomParameterSmoother = std::make_unique<ParameterSmoother<float>>(
-        [this]() -> float const &
+    , mInverseZoomParameterSmoother(
+        [this]() -> float
         {
-            return mRenderContext.GetZoom();
-        },
-        [this](float const & value) -> float const &
-        {
-            return mRenderContext.SetZoom(value);
+            return 1.0f / mRenderContext.GetZoom();
         },
         [this](float const & value) -> float
         {
-            return mRenderContext.ClampZoom(value);
+            return 1.0f / mRenderContext.SetZoom(1.0f / value);
         },
-        CalculateZoomParameterSmootherConvergenceFactor(mCameraSpeedAdjustment),
-        0.0001f);
-
-    mCameraWorldPositionParameterSmoother = std::make_unique<ParameterSmoother<vec2f>>(
-        [this]() -> vec2f const &
+        [this](float const & value) -> float
+        {
+            return 1.0f / mRenderContext.ClampZoom(1.0f / value);
+        },
+        CalculateParameterSmootherConvergenceFactor(mCameraSpeedAdjustment),
+        SmootherTerminationThreshold)
+    , mCameraWorldPositionParameterSmoother(
+        [this]() -> vec2f
         {
             return mRenderContext.GetCameraWorldPosition();
         },
-        [this](vec2f const & value) -> vec2f const &
+        [this](vec2f const & value) -> vec2f
         {
             return mRenderContext.SetCameraWorldPosition(value);
         },
@@ -55,9 +49,13 @@ ViewManager::ViewManager(
         {
             return mRenderContext.ClampCameraWorldPosition(value);
         },
-        CalculateCameraWorldPositionParameterSmootherConvergenceFactor(mCameraSpeedAdjustment),
-        0.001f);
-
+        CalculateParameterSmootherConvergenceFactor(mCameraSpeedAdjustment),
+        SmootherTerminationThreshold)
+    // Defaults
+    , mCameraSpeedAdjustment(1.0f)
+    , mDoAutoFocusOnShipLoad(true)
+    , mAutoFocus() // Set later
+{
     // Default: continuous auto-focus is ON
     SetDoContinuousAutoFocus(true);
 }
@@ -71,11 +69,10 @@ void ViewManager::SetCameraSpeedAdjustment(float value)
 {
     mCameraSpeedAdjustment = value;
 
-    mZoomParameterSmoother->SetConvergenceFactor(
-        CalculateZoomParameterSmootherConvergenceFactor(mCameraSpeedAdjustment));
+    float const convergenceFactor = CalculateParameterSmootherConvergenceFactor(mCameraSpeedAdjustment);
 
-    mCameraWorldPositionParameterSmoother->SetConvergenceFactor(
-        CalculateCameraWorldPositionParameterSmootherConvergenceFactor(mCameraSpeedAdjustment));
+    mInverseZoomParameterSmoother.SetConvergenceFactor(convergenceFactor);
+    mCameraWorldPositionParameterSmoother.SetConvergenceFactor(convergenceFactor);
 }
 
 bool ViewManager::GetDoAutoFocusOnShipLoad() const
@@ -99,8 +96,8 @@ void ViewManager::SetDoContinuousAutoFocus(bool value)
     {
         // Start auto-focus
         mAutoFocus.emplace(
-            mZoomParameterSmoother->GetValue(),
-            mCameraWorldPositionParameterSmoother->GetValue());
+            1.0f / mInverseZoomParameterSmoother.GetValue(),
+            mCameraWorldPositionParameterSmoother.GetValue());
     }
     else
     {
@@ -114,8 +111,8 @@ void ViewManager::SetDoContinuousAutoFocus(bool value)
 void ViewManager::OnViewModelUpdated()
 {
     // Pickup eventual changes to view model constraints
-    mZoomParameterSmoother->ReClamp();
-    mCameraWorldPositionParameterSmoother->ReClamp();
+    mInverseZoomParameterSmoother.ReClamp();
+    mInverseZoomParameterSmoother.ReClamp();
 }
 
 void ViewManager::OnNewShip(std::optional<Geometry::AABB> const & aabb)
@@ -141,10 +138,10 @@ void ViewManager::Pan(vec2f const & worldOffset)
     if (!mAutoFocus.has_value())
     {
         vec2f const newTargetCameraWorldPosition =
-            mCameraWorldPositionParameterSmoother->GetValue()
+            mCameraWorldPositionParameterSmoother.GetValue()
             + worldOffset;
 
-        mCameraWorldPositionParameterSmoother->SetValue(newTargetCameraWorldPosition);
+        mCameraWorldPositionParameterSmoother.SetValue(newTargetCameraWorldPosition);
     }
     else
     {
@@ -158,9 +155,9 @@ void ViewManager::PanToWorldX(float worldX)
     {
         vec2f const newTargetCameraWorldPosition = vec2f(
             worldX,
-            mCameraWorldPositionParameterSmoother->GetValue().y);
+            mCameraWorldPositionParameterSmoother.GetValue().y);
 
-        mCameraWorldPositionParameterSmoother->SetValue(newTargetCameraWorldPosition);
+        mCameraWorldPositionParameterSmoother.SetValue(newTargetCameraWorldPosition);
     }
     else
     {
@@ -172,9 +169,9 @@ void ViewManager::AdjustZoom(float amount)
 {
     if (!mAutoFocus.has_value())
     {
-        float const newTargetZoom = mZoomParameterSmoother->GetValue() * amount;
+        float const newTargetZoom = (1.0f / mInverseZoomParameterSmoother.GetValue()) * amount;
 
-        mZoomParameterSmoother->SetValue(newTargetZoom);
+        mInverseZoomParameterSmoother.SetValue(1.0f / newTargetZoom);
     }
     else
     {
@@ -265,11 +262,11 @@ void ViewManager::Update(std::optional<Geometry::AABB> const & aabb)
         // Set zoom
         //
 
-        mZoomParameterSmoother->SetValue(mAutoFocus->CurrentAutoFocusZoom * mAutoFocus->UserZoomOffset);
+        mInverseZoomParameterSmoother.SetValue(1.0f / (mAutoFocus->CurrentAutoFocusZoom * mAutoFocus->UserZoomOffset));
 
         // If we've clamped the zoom, erode lost zoom from user offset
         {
-            float const impliedUserOffset = mZoomParameterSmoother->GetValue() / mAutoFocus->CurrentAutoFocusZoom;
+            float const impliedUserOffset = (1.0f / mInverseZoomParameterSmoother.GetValue()) / mAutoFocus->CurrentAutoFocusZoom;
 
             mAutoFocus->UserZoomOffset = Clamp(
                 impliedUserOffset,
@@ -285,11 +282,11 @@ void ViewManager::Update(std::optional<Geometry::AABB> const & aabb)
         vec2f const clampedAutoFocusPan = mRenderContext.ClampCameraWorldPosition(mAutoFocus->CurrentAutoFocusCameraWorldPosition);
 
         // Add user offset to clamped
-        mCameraWorldPositionParameterSmoother->SetValue(clampedAutoFocusPan + mAutoFocus->UserCameraWorldPositionOffset);
+        mCameraWorldPositionParameterSmoother.SetValue(clampedAutoFocusPan + mAutoFocus->UserCameraWorldPositionOffset);
 
         // If we've clamped the pan, erode lost panning from user offset
         {
-            vec2f const impliedUserOffset = mCameraWorldPositionParameterSmoother->GetValue() - clampedAutoFocusPan;
+            vec2f const impliedUserOffset = mCameraWorldPositionParameterSmoother.GetValue() - clampedAutoFocusPan;
 
             mAutoFocus->UserCameraWorldPositionOffset = vec2f(
                 Clamp(
@@ -303,50 +300,32 @@ void ViewManager::Update(std::optional<Geometry::AABB> const & aabb)
         }
     }
 
-    mZoomParameterSmoother->Update();
-    mCameraWorldPositionParameterSmoother->Update();
+    mInverseZoomParameterSmoother.Update();
+    mCameraWorldPositionParameterSmoother.Update();
 }
 
-float ViewManager::CalculateZoomParameterSmootherConvergenceFactor(float cameraSpeedAdjustment)
-{
-    return CalculateParameterSmootherConvergenceFactor(
-        cameraSpeedAdjustment,
-        0.005f,
-        0.05f,
-        0.2f);
-}
-
-float ViewManager::CalculateCameraWorldPositionParameterSmootherConvergenceFactor(float cameraSpeedAdjustment)
-{
-    return CalculateParameterSmootherConvergenceFactor(
-        cameraSpeedAdjustment,
-        0.005f,
-        0.1f,
-        0.2f);
-}
-
-float ViewManager::CalculateParameterSmootherConvergenceFactor(
-    float cameraSpeedAdjustment,
-    float min,
-    float mid,
-    float max)
+float ViewManager::CalculateParameterSmootherConvergenceFactor(float cameraSpeedAdjustment)
 {
     // SpeedAdjMin  => Min
     // SpeedAdj 1.0 => Mid
     // SpeedAdjMax  => Max
+
+    float constexpr Min = 0.005f;
+    float constexpr Mid = 0.05f;
+    float constexpr Max = 0.2f;
 
     static_assert(GetMinCameraSpeedAdjustment() < 1.0 && 1.0 < GetMaxCameraSpeedAdjustment());
 
     if (cameraSpeedAdjustment < 1.0f)
     {
         return
-            min
-            + (mid - min) * (cameraSpeedAdjustment - GetMinCameraSpeedAdjustment()) / (1.0f - GetMinCameraSpeedAdjustment());
+            Min
+            + (Mid - Min) * (cameraSpeedAdjustment - GetMinCameraSpeedAdjustment()) / (1.0f - GetMinCameraSpeedAdjustment());
     }
     else
     {
-        return mid
-            + (max - mid) * (cameraSpeedAdjustment - 1.0f) / (GetMaxCameraSpeedAdjustment() - 1.0f);
+        return Mid
+            + (Max - Mid) * (cameraSpeedAdjustment - 1.0f) / (GetMaxCameraSpeedAdjustment() - 1.0f);
 
     }
 }
@@ -370,11 +349,11 @@ void ViewManager::InternalFocusOn(
         8.0f); // No closer than this
 
     // Check it against tolerance
-    float const currentZoom = mZoomParameterSmoother->GetValue();
+    float const currentZoom = 1.0f / mInverseZoomParameterSmoother.GetValue();
     if (newAutoFocusZoom < currentZoom * zoomToleranceMultiplierMin || newAutoFocusZoom > currentZoom * zoomToleranceMultiplierMax)
     {
         // Accept this zoom
-        mZoomParameterSmoother->SetValue(newAutoFocusZoom);
+        mInverseZoomParameterSmoother.SetValue(1.0f / newAutoFocusZoom);
 
         //
         // Pan
@@ -387,8 +366,8 @@ void ViewManager::InternalFocusOn(
         {
             // Calculate new world center so that NDC coords of AABB's center now matches NDC coords
             // of it after the zoom change
-            vec2f const aabbCenterNdcOffsetWrtCamera = mRenderContext.WorldToNdc(aabbWorldCenter, currentZoom, mCameraWorldPositionParameterSmoother->GetValue());
-            newWorldCenter = aabbWorldCenter - mRenderContext.NdcOffsetToWorldOffset(aabbCenterNdcOffsetWrtCamera, newAutoFocusZoom);
+            vec2f const aabbCenterNdcOffsetWrtCamera = mRenderContext.WorldToNdc(aabbWorldCenter, currentZoom, mCameraWorldPositionParameterSmoother.GetValue());
+            newWorldCenter = aabbWorldCenter - mRenderContext.NdcOffsetToWorldOffset(aabbCenterNdcOffsetWrtCamera, 1.0f / mInverseZoomParameterSmoother.GetValue());
         }
         else
         {
@@ -396,7 +375,7 @@ void ViewManager::InternalFocusOn(
             newWorldCenter = aabbWorldCenter;
         }
 
-        mCameraWorldPositionParameterSmoother->SetValue(newWorldCenter);
+        mCameraWorldPositionParameterSmoother.SetValue(newWorldCenter);
     }
 }
 

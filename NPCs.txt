@@ -560,9 +560,10 @@ Arch
 			+ See if can avoid "mouse move"
 				+ Pass center to InternalFocusOn (0, 0 when not needed)
 				+ Do then math at InternalFocusOn
-			- Test with replacing ParameterSmoother with a simple t interpolation in a 3D space (camx, camy, 1/zoom)
-			- NpcPlace tool: now mouse moves automagically world positions because view changes and thus constant screen coords result in changing world coords
-				- See if can go away with ParameterSmoother replacement above
+			+ Test with replacing ParameterSmoother with a simple t interpolation in a 3D space (camx, camy, 1/zoom)
+				+ Test:
+					+ Clamping
+			- GameController also must register for AutoFocus toggled, and does NotificationLayer accordingly
 			- Test
 				- Various AutoFocus per-se (on, off, home@on, home@off)
 				- Check AutoFocus menu auto-checking when switches

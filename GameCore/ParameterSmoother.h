@@ -16,13 +16,13 @@ class ParameterSmoother
 public:
 
     ParameterSmoother(
-        std::function<TValue const &()> getter,
+        std::function<TValue()> getter,
         std::function<void(TValue const &)> setter,
         float convergenceFactor,
         float terminationThreshold)
         : ParameterSmoother(
             getter,
-            [setter](TValue const & value) -> TValue const &
+            [setter](TValue const & value) -> TValue
             {
                 setter(value);
                 return value;
@@ -36,8 +36,8 @@ public:
     {}
 
     ParameterSmoother(
-        std::function<TValue const &()> getter,
-        std::function<TValue const &(TValue const &)> setter,
+        std::function<TValue()> getter,
+        std::function<TValue(TValue const &)> setter,
         std::function<TValue(TValue const &)> clamper,
         float convergenceFactor,
         float terminationThreshold)
@@ -116,8 +116,8 @@ private:
 
 private:
 
-    std::function<TValue const & ()> const mGetter;
-    std::function<TValue const &(TValue const &)> const mSetter;
+    std::function<TValue()> const mGetter;
+    std::function<TValue(TValue const &)> const mSetter;
     std::function<TValue(TValue const &)> const mClamper;
     float mConvergenceFactor;
     float const mTerminationThreshold;

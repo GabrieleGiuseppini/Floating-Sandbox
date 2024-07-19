@@ -13,7 +13,6 @@
 #include <GameCore/ParameterSmoother.h>
 #include <GameCore/Vectors.h>
 
-#include <memory>
 #include <optional>
 
 class ViewManager
@@ -54,13 +53,7 @@ public:
 
 private:
 
-    static float CalculateZoomParameterSmootherConvergenceFactor(float cameraSpeedAdjustment);
-    static float CalculateCameraWorldPositionParameterSmootherConvergenceFactor(float cameraSpeedAdjustment);
-    static float CalculateParameterSmootherConvergenceFactor(
-        float cameraSpeedAdjustment,
-        float min,
-        float mid,
-        float max);
+    static float CalculateParameterSmootherConvergenceFactor(float cameraSpeedAdjustment);
 
     void InternalFocusOn(
         Geometry::AABB const & aabb,
@@ -82,8 +75,8 @@ private:
     NotificationLayer & mNotificationLayer;
     GameEventDispatcher & mGameEventHandler;
 
-    std::unique_ptr<ParameterSmoother<float>> mZoomParameterSmoother;
-    std::unique_ptr<ParameterSmoother<vec2f>> mCameraWorldPositionParameterSmoother;
+    ParameterSmoother<float> mInverseZoomParameterSmoother; // Smooths 1/zoom, which is effectively the Z coord
+    ParameterSmoother<vec2f> mCameraWorldPositionParameterSmoother;
 
     float mCameraSpeedAdjustment; // Storage
 
