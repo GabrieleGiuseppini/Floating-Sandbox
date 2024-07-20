@@ -338,45 +338,76 @@ void ViewManager::InternalFocusOn(
     float zoomToleranceMultiplierMax,
     bool anchorAabbCenterAtCurrentScreenPosition)
 {
+    /*
+     * Focuses on the specified AABB's center, moving the camera smoothly to it.
+     * If anchoring, the movement ensures that the current AABB's center's position
+     * stays at the same screen position as now; in this case, the focus might
+     * be aborted if the movement would require a clamp - and thus a break of the
+     * "anchoring" promise.
+     */
+
     // This is only called when we have no auto-focus
     assert(!mAutoFocus.has_value());
 
-    // Calculate required zoom
+    //
+    // Calculate zoom
+    //
+
     float const newAutoFocusZoom = InternalCalculateZoom(
         aabb,
         widthMultiplier,
         heightMultiplier,
         8.0f); // No closer than this
 
-    // Check it against tolerance
+    // Check zoom against tolerance
     float const currentZoom = 1.0f / mInverseZoomParameterSmoother.GetValue();
-    if (newAutoFocusZoom < currentZoom * zoomToleranceMultiplierMin || newAutoFocusZoom > currentZoom * zoomToleranceMultiplierMax)
+    assert(currentZoom * zoomToleranceMultiplierMin <= currentZoom * zoomToleranceMultiplierMax);
+    if (newAutoFocusZoom >= currentZoom * zoomToleranceMultiplierMin && newAutoFocusZoom <= currentZoom * zoomToleranceMultiplierMax)
     {
-        // Accept this zoom
-        mInverseZoomParameterSmoother.SetValue(1.0f / newAutoFocusZoom);
-
-        //
-        // Pan
-        //
-
-        vec2f const aabbWorldCenter = aabb.CalculateCenter();
-
-        vec2f newWorldCenter;
-        if (anchorAabbCenterAtCurrentScreenPosition)
-        {
-            // Calculate new world center so that NDC coords of AABB's center now matches NDC coords
-            // of it after the zoom change
-            vec2f const aabbCenterNdcOffsetWrtCamera = mRenderContext.WorldToNdc(aabbWorldCenter, currentZoom, mCameraWorldPositionParameterSmoother.GetValue());
-            newWorldCenter = aabbWorldCenter - mRenderContext.NdcOffsetToWorldOffset(aabbCenterNdcOffsetWrtCamera, 1.0f / mInverseZoomParameterSmoother.GetValue());
-        }
-        else
-        {
-            // Center on AABB's center
-            newWorldCenter = aabbWorldCenter;
-        }
-
-        mCameraWorldPositionParameterSmoother.SetValue(newWorldCenter);
+        // Doesn't pass tolerance
+        return;
     }
+
+    // Check if zoom needs to be clamped
+    if (anchorAabbCenterAtCurrentScreenPosition
+        && mRenderContext.ClampZoom(newAutoFocusZoom) != newAutoFocusZoom)
+    {
+        // Was clamped, can't continue
+        return;
+    }
+
+    //
+    // Calculate pan
+    //
+
+    vec2f const aabbWorldCenter = aabb.CalculateCenter();
+    vec2f newWorldCenter;
+    if (anchorAabbCenterAtCurrentScreenPosition)
+    {
+        // Calculate new world center so that NDC coords of AABB's center now matches NDC coords
+        // of it after the zoom change
+        vec2f const aabbCenterNdcOffsetWrtCamera = mRenderContext.WorldToNdc(aabbWorldCenter, currentZoom, mCameraWorldPositionParameterSmoother.GetValue());
+        newWorldCenter = aabbWorldCenter - mRenderContext.NdcOffsetToWorldOffset(aabbCenterNdcOffsetWrtCamera, newAutoFocusZoom);
+
+        // Check if pan needs to be clamped
+        if (mRenderContext.ClampCameraWorldPosition(newWorldCenter) != newWorldCenter)
+        {
+            // Was clamped, can't continue
+            return;
+        }
+    }
+    else
+    {
+        // Center on AABB's center
+        newWorldCenter = aabbWorldCenter;
+    }
+
+    //
+    // Apply zoom and pan
+    //
+
+    mInverseZoomParameterSmoother.SetValue(1.0f / newAutoFocusZoom);
+    mCameraWorldPositionParameterSmoother.SetValue(newWorldCenter);
 }
 
 float ViewManager::InternalCalculateZoom(
