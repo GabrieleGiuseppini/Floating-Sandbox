@@ -513,20 +513,60 @@ Arch
 		+ TextureCoordinatesQuad: shall we have float for RightX, LeftX, TopY, BottomY?
 		+ Human frames: they are out of aspect
 			+ Change human body ratios to match standard frame pixel dimensions (e.g. head square, etc.)
-		- NPC atlas rearc:
+		+ Redo body proportions: some become dynamic, depending on frame dimensions:
+			! Note: all the below are fractions
+			+ TorsoWidthFraction (Height=Length fixed)
+			+ HeadHeightFraction (Width=Width fixed) (to allow for hat)
+				+ But head top is still based on HeadHeightFraction constant (i.e. hat sticks on top)
+			+ Arm, LegWidthFraction (Height=Length fixed)
+			+ Expose as:
+				+ GetHumanGeometry(.) -> NpcDatabase::HumanGeometryType: TorsoHeightToWidthFactor, HeadWidthToHeightFactor, arm/leg...
+				+ GetFurnitureGeometry(.) -> NpcDatabase::FurnitureGeometryType: width, height
+					+ Replaces individual H, W getters
+		- Furniture: carries positions of all particles
+			- Npcs construction: each particle to all others
+			- TODO: but then how do we do texture quad? 
+			- OLD:
+			- Furniture: do frame analysis w/4 quadrants and decide positions of four vertices
+				- -> NpcDatabase::FurnitureGeometryType
+				- Test w/those tables
+		- NPC atlas rearc: frame rules:			
+			- Human:
+				- TODO: rethink: do we really need these <2**N dimensions?
+				- Head: 
+					- Width=14
+						- Not necessarily touching left and right borders, depends on character
+					- Height: by default 14; if with e.g. tall hat, > 14
+						- Same for F/B/S
+						- Touching both bottom and top borders
+				- Torso:
+					- Width: based on the width of the character's body when viewed from F/B; suggested <= 30
+						- F/B: ideally touching left and/or right borders (so to not waste room)
+						- S: not necessarily touching left and right borders, depends on character
+					- Height=30
+						- Touching both bottom and top borders
+				- Arms:
+					- Width: based on the width of the character's limb when viewed from F/B; suggested <= 6
+						- F/B: ideally touching left and/or right borders (so to not waste room)
+						- S: not necessarily touching left and right borders, depends on character
+					- Height: 30
+						- Touching at least top border (but for normal human proportions, should also touch bottom border)
+				- Legs:
+					- Width: based on the width of the character's limb when viewed from F/B; suggested <= 6
+						- F/B: ideally touching left and/or right borders (so to not waste room)
+						- S: not necessarily touching left and right borders, depends on character
+					- Height: 30
+						- Touching both bottom and top borders
+				- Corollaries:
+					- F/B/S for a limb have same dimensions
+			- Furniture:
+				- Width=32, Height=32
+					- Leaving 1 pixel on each of the four borders
+					
+			- TODOOLD: nuke after verifying that contact between limbs looks ok (once we have extra transparent room for anti-aliasing)
 			- All frames are 1-px-border less than power-of-two
 				- Except for "contact directions": size is full in that direction (e.g. humans: all V)
 				- And then atlas-making adds transparent border - which is not drawn!
-		- Redo body proportions: some become dynamic, depending on frame dimensions:
-			! Note: all the below are fractions
-			- TorsoWidthFraction (Height=Length fixed)
-			- HeadHeightFraction (Width=Width fixed) (to allow for hat)
-				- But head top is still based on HeadHeightFraction constant (i.e. hat sticks on top)
-			- Arm, LegWidthFraction (Height=Length fixed)
-			- Expose as:
-				- GetHumanGeometry(.) -> NpcDatabase::HumanGeometryType: TorsoHeightToWidthFactor, HeadWidthToHeightFactor, arm/leg...
-				- GetFurnitureGeometry(.) -> NpcDatabase::FurnitureGeometryType: width, height
-					- Replaces individual H, W getters
 		! Frame specs:
 			! Furniture: leave 1px border around
 				! So if e.g. you're doing a 32x32 frame, then the drawable area is the central 30x30

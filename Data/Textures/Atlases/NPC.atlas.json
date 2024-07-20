@@ -46,11 +46,11 @@
     {
       "frame": {
         "anchor_center": {
-          "x": 8,
+          "x": 3,
           "y": 16
         },
         "anchor_center_world": {
-          "x": 8,
+          "x": 3,
           "y": 16
         },
         "displayName": "dummy_arm_b",
@@ -62,38 +62,38 @@
         },
         "size": {
           "height": 32,
-          "width": 16
+          "width": 6
         },
         "world_size": {
           "height": 32,
-          "width": 16
+          "width": 6
         }
       },
       "frame_coordinates": {
-        "bottom": 32,
-        "left": 64
+        "bottom": 64,
+        "left": 17
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.56640625,
-        "anchorCenterY": 0.37890625,
-        "bottom": 0.25390625,
-        "left": 0.50390625,
-        "right": 0.62109375,
-        "top": 0.49609375
+        "anchorCenterX": 0.16015625,
+        "anchorCenterY": 0.62890625,
+        "bottom": 0.50390625,
+        "left": 0.13671875,
+        "right": 0.17578125,
+        "top": 0.74609375
       },
       "texture_space_size": {
         "height": 0.25,
-        "width": 0.125
+        "width": 0.046875
       }
     },
     {
       "frame": {
         "anchor_center": {
-          "x": 8,
+          "x": 3,
           "y": 16
         },
         "anchor_center_world": {
-          "x": 8,
+          "x": 3,
           "y": 16
         },
         "displayName": "dummy_arm_f",
@@ -105,38 +105,38 @@
         },
         "size": {
           "height": 32,
-          "width": 16
+          "width": 6
         },
         "world_size": {
           "height": 32,
-          "width": 16
+          "width": 6
         }
       },
       "frame_coordinates": {
-        "bottom": 32,
-        "left": 80
+        "bottom": 64,
+        "left": 25
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.69140625,
-        "anchorCenterY": 0.37890625,
-        "bottom": 0.25390625,
-        "left": 0.62890625,
-        "right": 0.74609375,
-        "top": 0.49609375
+        "anchorCenterX": 0.22265625,
+        "anchorCenterY": 0.62890625,
+        "bottom": 0.50390625,
+        "left": 0.19921875,
+        "right": 0.23828125,
+        "top": 0.74609375
       },
       "texture_space_size": {
         "height": 0.25,
-        "width": 0.125
+        "width": 0.046875
       }
     },
     {
       "frame": {
         "anchor_center": {
-          "x": 8,
+          "x": 3,
           "y": 16
         },
         "anchor_center_world": {
-          "x": 8,
+          "x": 3,
           "y": 16
         },
         "displayName": "dummy_arm_s",
@@ -148,28 +148,28 @@
         },
         "size": {
           "height": 32,
-          "width": 16
+          "width": 6
         },
         "world_size": {
           "height": 32,
-          "width": 16
+          "width": 6
         }
       },
       "frame_coordinates": {
-        "bottom": 32,
-        "left": 96
+        "bottom": 64,
+        "left": 33
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.81640625,
-        "anchorCenterY": 0.37890625,
-        "bottom": 0.25390625,
-        "left": 0.75390625,
-        "right": 0.87109375,
-        "top": 0.49609375
+        "anchorCenterX": 0.28515625,
+        "anchorCenterY": 0.62890625,
+        "bottom": 0.50390625,
+        "left": 0.26171875,
+        "right": 0.30078125,
+        "top": 0.74609375
       },
       "texture_space_size": {
         "height": 0.25,
-        "width": 0.125
+        "width": 0.046875
       }
     },
     {
@@ -200,14 +200,14 @@
       },
       "frame_coordinates": {
         "bottom": 64,
-        "left": 32
+        "left": 40
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.31640625,
+        "anchorCenterX": 0.37890625,
         "anchorCenterY": 0.56640625,
         "bottom": 0.50390625,
-        "left": 0.25390625,
-        "right": 0.37109375,
+        "left": 0.31640625,
+        "right": 0.43359375,
         "top": 0.62109375
       },
       "texture_space_size": {
@@ -243,14 +243,14 @@
       },
       "frame_coordinates": {
         "bottom": 64,
-        "left": 48
+        "left": 56
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.44140625,
+        "anchorCenterX": 0.50390625,
         "anchorCenterY": 0.56640625,
         "bottom": 0.50390625,
-        "left": 0.37890625,
-        "right": 0.49609375,
+        "left": 0.44140625,
+        "right": 0.55859375,
         "top": 0.62109375
       },
       "texture_space_size": {
@@ -286,14 +286,14 @@
       },
       "frame_coordinates": {
         "bottom": 64,
-        "left": 64
+        "left": 72
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.56640625,
+        "anchorCenterX": 0.62890625,
         "anchorCenterY": 0.56640625,
         "bottom": 0.50390625,
-        "left": 0.50390625,
-        "right": 0.62109375,
+        "left": 0.56640625,
+        "right": 0.68359375,
         "top": 0.62109375
       },
       "texture_space_size": {
@@ -316,6 +316,49 @@
         "has_own_ambient_light": false,
         "id": {
           "frameIndex": 7,
+          "group": 0
+        },
+        "size": {
+          "height": 32,
+          "width": 16
+        },
+        "world_size": {
+          "height": 32,
+          "width": 16
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 32,
+        "left": 96
+      },
+      "texture_coordinates": {
+        "anchorCenterX": 0.81640625,
+        "anchorCenterY": 0.37890625,
+        "bottom": 0.25390625,
+        "left": 0.75390625,
+        "right": 0.87109375,
+        "top": 0.49609375
+      },
+      "texture_space_size": {
+        "height": 0.25,
+        "width": 0.125
+      }
+    },
+    {
+      "frame": {
+        "anchor_center": {
+          "x": 8,
+          "y": 16
+        },
+        "anchor_center_world": {
+          "x": 8,
+          "y": 16
+        },
+        "displayName": "dummy_leg_f",
+        "filenameStem": "dummy_leg_f",
+        "has_own_ambient_light": false,
+        "id": {
+          "frameIndex": 8,
           "group": 0
         },
         "size": {
@@ -354,11 +397,11 @@
           "x": 8,
           "y": 16
         },
-        "displayName": "dummy_leg_f",
-        "filenameStem": "dummy_leg_f",
+        "displayName": "dummy_leg_s",
+        "filenameStem": "dummy_leg_s",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 8,
+          "frameIndex": 9,
           "group": 0
         },
         "size": {
@@ -390,54 +433,11 @@
     {
       "frame": {
         "anchor_center": {
-          "x": 8,
+          "x": 13,
           "y": 16
         },
         "anchor_center_world": {
-          "x": 8,
-          "y": 16
-        },
-        "displayName": "dummy_leg_s",
-        "filenameStem": "dummy_leg_s",
-        "has_own_ambient_light": false,
-        "id": {
-          "frameIndex": 9,
-          "group": 0
-        },
-        "size": {
-          "height": 32,
-          "width": 16
-        },
-        "world_size": {
-          "height": 32,
-          "width": 16
-        }
-      },
-      "frame_coordinates": {
-        "bottom": 64,
-        "left": 16
-      },
-      "texture_coordinates": {
-        "anchorCenterX": 0.19140625,
-        "anchorCenterY": 0.62890625,
-        "bottom": 0.50390625,
-        "left": 0.12890625,
-        "right": 0.24609375,
-        "top": 0.74609375
-      },
-      "texture_space_size": {
-        "height": 0.25,
-        "width": 0.125
-      }
-    },
-    {
-      "frame": {
-        "anchor_center": {
-          "x": 16,
-          "y": 16
-        },
-        "anchor_center_world": {
-          "x": 16,
+          "x": 13,
           "y": 16
         },
         "displayName": "dummy_torso_b",
@@ -449,38 +449,38 @@
         },
         "size": {
           "height": 32,
-          "width": 32
+          "width": 26
         },
         "world_size": {
           "height": 32,
-          "width": 32
+          "width": 26
         }
       },
       "frame_coordinates": {
         "bottom": 0,
-        "left": 32
+        "left": 35
       },
       "texture_coordinates": {
         "anchorCenterX": 0.37890625,
         "anchorCenterY": 0.12890625,
         "bottom": 0.00390625,
-        "left": 0.25390625,
-        "right": 0.49609375,
+        "left": 0.27734375,
+        "right": 0.47265625,
         "top": 0.24609375
       },
       "texture_space_size": {
         "height": 0.25,
-        "width": 0.25
+        "width": 0.203125
       }
     },
     {
       "frame": {
         "anchor_center": {
-          "x": 16,
+          "x": 13,
           "y": 16
         },
         "anchor_center_world": {
-          "x": 16,
+          "x": 13,
           "y": 16
         },
         "displayName": "dummy_torso_f",
@@ -492,28 +492,71 @@
         },
         "size": {
           "height": 32,
-          "width": 32
+          "width": 26
         },
         "world_size": {
           "height": 32,
-          "width": 32
+          "width": 26
         }
       },
       "frame_coordinates": {
         "bottom": 32,
-        "left": 0
+        "left": 3
       },
       "texture_coordinates": {
         "anchorCenterX": 0.12890625,
         "anchorCenterY": 0.37890625,
         "bottom": 0.25390625,
-        "left": 0.00390625,
-        "right": 0.24609375,
+        "left": 0.02734375,
+        "right": 0.22265625,
         "top": 0.49609375
       },
       "texture_space_size": {
         "height": 0.25,
-        "width": 0.25
+        "width": 0.203125
+      }
+    },
+    {
+      "frame": {
+        "anchor_center": {
+          "x": 13,
+          "y": 16
+        },
+        "anchor_center_world": {
+          "x": 13,
+          "y": 16
+        },
+        "displayName": "dummy_torso_s",
+        "filenameStem": "dummy_torso_s",
+        "has_own_ambient_light": false,
+        "id": {
+          "frameIndex": 12,
+          "group": 0
+        },
+        "size": {
+          "height": 32,
+          "width": 26
+        },
+        "world_size": {
+          "height": 32,
+          "width": 26
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 32,
+        "left": 35
+      },
+      "texture_coordinates": {
+        "anchorCenterX": 0.37890625,
+        "anchorCenterY": 0.37890625,
+        "bottom": 0.25390625,
+        "left": 0.27734375,
+        "right": 0.47265625,
+        "top": 0.49609375
+      },
+      "texture_space_size": {
+        "height": 0.25,
+        "width": 0.203125
       }
     },
     {
@@ -526,11 +569,11 @@
           "x": 16,
           "y": 16
         },
-        "displayName": "dummy_torso_s",
-        "filenameStem": "dummy_torso_s",
+        "displayName": "particle_1",
+        "filenameStem": "particle_1",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 12,
+          "frameIndex": 13,
           "group": 0
         },
         "size": {
@@ -544,14 +587,14 @@
       },
       "frame_coordinates": {
         "bottom": 32,
-        "left": 32
+        "left": 64
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.37890625,
+        "anchorCenterX": 0.62890625,
         "anchorCenterY": 0.37890625,
         "bottom": 0.25390625,
-        "left": 0.25390625,
-        "right": 0.49609375,
+        "left": 0.50390625,
+        "right": 0.74609375,
         "top": 0.49609375
       },
       "texture_space_size": {

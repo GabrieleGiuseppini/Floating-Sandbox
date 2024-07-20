@@ -343,8 +343,8 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 
 			// Create Particles
 
-			float const baseWidth = mNpcDatabase.GetFurnitureWidth(subKind);
-			float const baseHeight = mNpcDatabase.GetFurnitureHeight(subKind);
+			float const baseWidth = mNpcDatabase.GetFurnitureDimensions(subKind).Width;
+			float const baseHeight = mNpcDatabase.GetFurnitureDimensions(subKind).Height;
 
 			float const mass = CalculateParticleMass(
 				furnitureMaterial.GetMass(),
@@ -645,6 +645,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
 		mNpcDatabase.GetHumanRole(subKind),
 		widthMultiplier,
 		walkingSpeedBase,
+		mNpcDatabase.GetHumanDimensions(subKind),
 		mNpcDatabase.GetHumanTextureCoordinatesQuads(subKind),
 		StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::BeingPlaced,
 		currentSimulationTime);
@@ -1716,6 +1717,8 @@ void Npcs::RenderNpc(
 
 			// Geometry:
 			//
+			//  ---  HeadTopHat (might be == HeadTop)
+			//   |
 			//  ---  HeadTop                   ---
 			//   |                              | HeadLengthFraction
 			//  ---  HeadBottom == TorsoTop    ---      ---
@@ -1735,7 +1738,7 @@ void Npcs::RenderNpc(
 			//
 			//
 			// - All based on current dipole length - anchor points are feet - except for
-			//   arms and legs, whose length is based on ideal (NPC) height (incl.adjustment),
+			//   arms, legs, and widths, whose values are based on ideal (NPC) height (incl.adjustment),
 			//   thus unaffected by current dipole length
 			//
 
@@ -1746,29 +1749,33 @@ void Npcs::RenderNpc(
 			vec2f const actualBodyHDir = actualBodyVDir.to_perpendicular(); // Points R (of the screen)
 
 			vec2f const legTop = feetPosition + actualBodyVector * (GameParameters::HumanNpcGeometry::LegLengthFraction * animationState.LowerExtremityLengthMultiplier);
-			vec2f const torsoBottom = legTop - actualBodyVector * (GameParameters::HumanNpcGeometry::LegWidthFraction / 4.0f);
+			vec2f const torsoBottom = legTop - actualBodyVector * (GameParameters::HumanNpcGeometry::LegLengthFraction / 8.0f); // Magic
 			vec2f const torsoTop = legTop + actualBodyVector * GameParameters::HumanNpcGeometry::TorsoLengthFraction;
 			vec2f const headBottom = torsoTop;
-			vec2f const armTop = headBottom - actualBodyVector * (GameParameters::HumanNpcGeometry::ArmWidthFraction / 4.0f);
-			vec2f const headTop = headBottom + actualBodyVector * GameParameters::HumanNpcGeometry::HeadLengthFraction;
+			vec2f const armTop = headBottom - actualBodyVector * (GameParameters::HumanNpcGeometry::ArmLengthFraction / 4.0f); // Magic
+			vec2f const headTop = headBottom + actualBodyVector * (GameParameters::HumanNpcGeometry::HeadWidthFraction * humanNpcState.Dimensions.HeadWidthToHeightFactor);
 
-			// Arm and leg lengths are relative to base height
 			float const adjustedIdealHumanHeight = npc.ParticleMesh.Springs[0].RestLength;
+
+			float const halfHeadW = (adjustedIdealHumanHeight * GameParameters::HumanNpcGeometry::HeadWidthFraction * humanNpcState.WidthMultipier) / 2.0f;
+			float const torsoWidthFraction = GameParameters::HumanNpcGeometry::TorsoLengthFraction * humanNpcState.Dimensions.TorsoHeightToWidthFactor;
+			float const halfTorsoW = (adjustedIdealHumanHeight * torsoWidthFraction * humanNpcState.WidthMultipier) / 2.0f;
+
 			float const leftArmLength = adjustedIdealHumanHeight * GameParameters::HumanNpcGeometry::ArmLengthFraction * animationState.LimbLengthMultipliers.LeftArm;
 			float const rightArmLength = adjustedIdealHumanHeight * GameParameters::HumanNpcGeometry::ArmLengthFraction * animationState.LimbLengthMultipliers.RightArm;
+			float const armWidthFraction = GameParameters::HumanNpcGeometry::ArmLengthFraction * humanNpcState.Dimensions.ArmHeightToWidthFactor;
+			float const halfArmW = (adjustedIdealHumanHeight * armWidthFraction * humanNpcState.WidthMultipier) / 2.0f;
+
 			float const leftLegLength = adjustedIdealHumanHeight * GameParameters::HumanNpcGeometry::LegLengthFraction * animationState.LimbLengthMultipliers.LeftLeg;
 			float const rightLegLength = adjustedIdealHumanHeight * GameParameters::HumanNpcGeometry::LegLengthFraction * animationState.LimbLengthMultipliers.RightLeg;
+			float const legWidthFraction = GameParameters::HumanNpcGeometry::LegLengthFraction * humanNpcState.Dimensions.LegHeightToWidthFactor;
+			float const halfLegW = (adjustedIdealHumanHeight * legWidthFraction * humanNpcState.WidthMultipier) / 2.0f;
 
 			if (humanNpcState.CurrentFaceOrientation != 0.0f)
 			{
 				//
 				// Front-back
 				//
-
-				float const halfHeadW = (adjustedIdealHumanHeight * GameParameters::HumanNpcGeometry::HeadWidthFraction * humanNpcState.WidthMultipier) / 2.0f;
-				float const halfTorsoW = (adjustedIdealHumanHeight * GameParameters::HumanNpcGeometry::TorsoWidthFraction * humanNpcState.WidthMultipier) / 2.0f;
-				float const halfArmW = (adjustedIdealHumanHeight * GameParameters::HumanNpcGeometry::ArmWidthFraction * humanNpcState.WidthMultipier) / 2.0f;
-				float const halfLegW = (adjustedIdealHumanHeight * GameParameters::HumanNpcGeometry::LegWidthFraction * humanNpcState.WidthMultipier) / 2.0f;
 
 				// Head
 
@@ -1929,16 +1936,11 @@ void Npcs::RenderNpc(
 					TextureQuad() = default;
 				};
 
-				float const halfHeadD = (adjustedIdealHumanHeight * GameParameters::HumanNpcGeometry::HeadDepthFraction * humanNpcState.WidthMultipier) / 2.0f;
-				float const halfTorsoD = (adjustedIdealHumanHeight * GameParameters::HumanNpcGeometry::TorsoDepthFraction * humanNpcState.WidthMultipier) / 2.0f;
-				float const halfArmD = (adjustedIdealHumanHeight * GameParameters::HumanNpcGeometry::ArmDepthFraction * humanNpcState.WidthMultipier) / 2.0f;
-				float const halfLegD = (adjustedIdealHumanHeight * GameParameters::HumanNpcGeometry::LegDepthFraction * humanNpcState.WidthMultipier) / 2.0f;
-
 				// Note: angles are with body vertical, regardless of L/R
 
 				vec2f const leftArmDir = actualBodyVDir.rotate(animationState.LimbAnglesCos.LeftArm, animationState.LimbAnglesSin.LeftArm);
 				vec2f const leftArmVector = leftArmDir * leftArmLength;
-				vec2f const leftArmTraverseVector = leftArmDir.to_perpendicular() * halfArmD;
+				vec2f const leftArmTraverseVector = leftArmDir.to_perpendicular() * halfArmW;
 				TextureQuad leftArmQuad{
 					armTop - leftArmTraverseVector,
 					armTop + leftArmTraverseVector,
@@ -1948,7 +1950,7 @@ void Npcs::RenderNpc(
 
 				vec2f const rightArmDir = actualBodyVDir.rotate(animationState.LimbAnglesCos.RightArm, animationState.LimbAnglesSin.RightArm);
 				vec2f const rightArmVector = rightArmDir * rightArmLength;
-				vec2f const rightArmTraverseVector = rightArmDir.to_perpendicular() * halfArmD;
+				vec2f const rightArmTraverseVector = rightArmDir.to_perpendicular() * halfArmW;
 				TextureQuad rightArmQuad{
 					armTop - rightArmTraverseVector,
 					armTop + rightArmTraverseVector,
@@ -2009,11 +2011,11 @@ void Npcs::RenderNpc(
 					vec2f const leftLowerLegVector = leftLowerLegDir * leftLegLength * lowerLegLengthFraction;
 					vec2f const leftLowerLegTraverseDir = leftLowerLegDir.to_perpendicular();
 					vec2f const leftLegResultantNormal = leftUpperLegTraverseDir + leftLowerLegTraverseDir;
-					vec2f const leftLegJ = leftLegResultantNormal / std::max(MinJ, leftUpperLegTraverseDir.dot(leftLegResultantNormal)) * halfLegD;
+					vec2f const leftLegJ = leftLegResultantNormal / std::max(MinJ, leftUpperLegTraverseDir.dot(leftLegResultantNormal)) * halfLegW;
 
 					leftUpperLegQuad = {
-						legTop - leftUpperLegTraverseDir * halfLegD,
-						legTop + leftUpperLegTraverseDir * halfLegD,
+						legTop - leftUpperLegTraverseDir * halfLegW,
+						legTop + leftUpperLegTraverseDir * halfLegW,
 						leftKneeOrFootPosition - leftLegJ,
 						leftKneeOrFootPosition + leftLegJ,
 						upperLegTextureQuad };
@@ -2021,19 +2023,19 @@ void Npcs::RenderNpc(
 					leftLowerLegQuad = {
 						leftKneeOrFootPosition - leftLegJ,
 						leftKneeOrFootPosition + leftLegJ,
-						leftKneeOrFootPosition + leftLowerLegVector - leftLowerLegTraverseDir * halfLegD,
-						leftKneeOrFootPosition + leftLowerLegVector + leftLowerLegTraverseDir * halfLegD,
+						leftKneeOrFootPosition + leftLowerLegVector - leftLowerLegTraverseDir * halfLegW,
+						leftKneeOrFootPosition + leftLowerLegVector + leftLowerLegTraverseDir * halfLegW,
 						lowerLegTextureQuad };
 
 					vec2f const rightLowerLegDir = (feetPosition - rightKneeOrFootPosition).normalise_approx();
 					vec2f const rightLowerLegVector = rightLowerLegDir * rightLegLength * lowerLegLengthFraction;
 					vec2f const rightLowerLegTraverseDir = rightLowerLegDir.to_perpendicular();
 					vec2f const rightLegResultantNormal = rightUpperLegTraverseDir + rightLowerLegTraverseDir;
-					vec2f const rightLegJ = rightLegResultantNormal / std::max(MinJ, rightUpperLegTraverseDir.dot(rightLegResultantNormal)) * halfLegD;
+					vec2f const rightLegJ = rightLegResultantNormal / std::max(MinJ, rightUpperLegTraverseDir.dot(rightLegResultantNormal)) * halfLegW;
 
 					rightUpperLegQuad = {
-						legTop - rightUpperLegTraverseDir * halfLegD,
-						legTop + rightUpperLegTraverseDir * halfLegD,
+						legTop - rightUpperLegTraverseDir * halfLegW,
+						legTop + rightUpperLegTraverseDir * halfLegW,
 						rightKneeOrFootPosition - rightLegJ,
 						rightKneeOrFootPosition + rightLegJ,
 						upperLegTextureQuad };
@@ -2041,8 +2043,8 @@ void Npcs::RenderNpc(
 					rightLowerLegQuad = {
 						rightKneeOrFootPosition - rightLegJ,
 						rightKneeOrFootPosition + rightLegJ,
-						rightKneeOrFootPosition + rightLowerLegVector - rightLowerLegTraverseDir * halfLegD,
-						rightKneeOrFootPosition + rightLowerLegVector + rightLowerLegTraverseDir * halfLegD,
+						rightKneeOrFootPosition + rightLowerLegVector - rightLowerLegTraverseDir * halfLegW,
+						rightKneeOrFootPosition + rightLowerLegVector + rightLowerLegTraverseDir * halfLegW,
 						lowerLegTextureQuad };
 				}
 				else
@@ -2050,17 +2052,17 @@ void Npcs::RenderNpc(
 					// Just upper leg
 
 					leftUpperLegQuad = {
-						legTop - leftUpperLegTraverseDir * halfLegD,
-						legTop + leftUpperLegTraverseDir * halfLegD,
-						leftKneeOrFootPosition - leftUpperLegTraverseDir * halfLegD,
-						leftKneeOrFootPosition + leftUpperLegTraverseDir * halfLegD,
+						legTop - leftUpperLegTraverseDir * halfLegW,
+						legTop + leftUpperLegTraverseDir * halfLegW,
+						leftKneeOrFootPosition - leftUpperLegTraverseDir * halfLegW,
+						leftKneeOrFootPosition + leftUpperLegTraverseDir * halfLegW,
 						humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.LegSide : humanNpcState.TextureFrames.LegSide.FlipH() };
 
 					rightUpperLegQuad = {
-						legTop - rightUpperLegTraverseDir * halfLegD,
-						legTop + rightUpperLegTraverseDir * halfLegD,
-						rightKneeOrFootPosition - rightUpperLegTraverseDir * halfLegD,
-						rightKneeOrFootPosition + rightUpperLegTraverseDir * halfLegD,
+						legTop - rightUpperLegTraverseDir * halfLegW,
+						legTop + rightUpperLegTraverseDir * halfLegW,
+						rightKneeOrFootPosition - rightUpperLegTraverseDir * halfLegW,
+						rightKneeOrFootPosition + rightUpperLegTraverseDir * halfLegW,
 						humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.LegSide : humanNpcState.TextureFrames.LegSide.FlipH() };
 				}
 
@@ -2137,10 +2139,10 @@ void Npcs::RenderNpc(
 
 				shipRenderContext.UploadNpcTextureQuad(
 					planeId,
-					headTop - actualBodyHDir * halfHeadD,
-					headTop + actualBodyHDir * halfHeadD,
-					headBottom - actualBodyHDir * halfHeadD,
-					headBottom + actualBodyHDir * halfHeadD,
+					headTop - actualBodyHDir * halfHeadW,
+					headTop + actualBodyHDir * halfHeadW,
+					headBottom - actualBodyHDir * halfHeadW,
+					headBottom + actualBodyHDir * halfHeadW,
 					humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.HeadSide : humanNpcState.TextureFrames.HeadSide.FlipH(),
 					npc.Highlight);
 
@@ -2148,10 +2150,10 @@ void Npcs::RenderNpc(
 
 				shipRenderContext.UploadNpcTextureQuad(
 					planeId,
-					torsoTop - actualBodyHDir * halfTorsoD,
-					torsoTop + actualBodyHDir * halfTorsoD,
-					torsoBottom - actualBodyHDir * halfTorsoD,
-					torsoBottom + actualBodyHDir * halfTorsoD,
+					torsoTop - actualBodyHDir * halfTorsoW,
+					torsoTop + actualBodyHDir * halfTorsoW,
+					torsoBottom - actualBodyHDir * halfTorsoW,
+					torsoBottom + actualBodyHDir * halfTorsoW,
 					humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.TorsoSide : humanNpcState.TextureFrames.TorsoSide.FlipH(),
 					npc.Highlight);
 

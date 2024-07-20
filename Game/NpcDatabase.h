@@ -31,6 +31,20 @@ public:
         Quad
     };
 
+    struct HumanDimensionsType
+    {
+        float HeadWidthToHeightFactor; // To recover head texture quad height from its physical width
+        float TorsoHeightToWidthFactor; // To recover torso texture quad width from its physical height
+        float ArmHeightToWidthFactor; // To recover arm texture quad width from its physical height
+        float LegHeightToWidthFactor; // To recover leg texture quad width from its physical height
+    };
+
+    struct FurnitureDimensionsType
+    {
+        float Width;
+        float Height;
+    };
+
     struct HumanTextureFramesType
     {
         Render::TextureCoordinatesQuad HeadFront;
@@ -86,6 +100,11 @@ public:
         return mHumanKinds.at(subKindId).SizeMultiplier;
     }
 
+    HumanDimensionsType const & GetHumanDimensions(NpcSubKindIdType subKindId) const
+    {
+        return mHumanKinds.at(subKindId).Dimensions;
+    }
+
     HumanTextureFramesType const & GetHumanTextureCoordinatesQuads(NpcSubKindIdType subKindId) const
     {
         return mHumanKinds.at(subKindId).TextureCoordinatesQuads;
@@ -101,14 +120,9 @@ public:
         return mFurnitureKinds.at(subKindId).ParticleMeshKind;
     }
 
-    float GetFurnitureWidth(NpcSubKindIdType subKindId) const
+    FurnitureDimensionsType const & GetFurnitureDimensions(NpcSubKindIdType subKindId) const
     {
-        return mFurnitureKinds.at(subKindId).Width;
-    }
-
-    float GetFurnitureHeight(NpcSubKindIdType subKindId) const
-    {
-        return mFurnitureKinds.at(subKindId).Height;
+        return mFurnitureKinds.at(subKindId).Dimensions;
     }
 
     Render::TextureCoordinatesQuad const & GetFurnitureTextureCoordinatesQuad(NpcSubKindIdType subKindId) const
@@ -148,6 +162,7 @@ private:
 
         float SizeMultiplier;
 
+        HumanDimensionsType Dimensions;
         HumanTextureFramesType const TextureCoordinatesQuads;
     };
 
@@ -158,8 +173,8 @@ private:
         StructuralMaterial const & Material;
 
         ParticleMeshKindType ParticleMeshKind;
-        float Height;
-        float Width;
+
+        FurnitureDimensionsType Dimensions;
 
         Render::TextureCoordinatesQuad TextureCoordinatesQuad;
     };
@@ -177,6 +192,15 @@ private:
         picojson::object const & kindObject,
         StructuralMaterial const & headMaterial,
         StructuralMaterial const & feetMaterial,
+        Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas);
+
+    static HumanDimensionsType CalculateHumanDimensions(
+        picojson::object const & containerObject,
+        Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas);
+
+    static ImageSize GetFrameSize(
+        picojson::object const & containerObject,
+        std::string const & frameNameMemberName,
         Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas);
 
     static FurnitureKind ParseFurnitureKind(

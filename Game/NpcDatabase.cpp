@@ -10,6 +10,19 @@
 
 #include <cassert>
 
+static char HeadFKeyName[] = "head_f";
+static char HeadBKeyName[] = "head_b";
+static char HeadSKeyName[] = "head_s";
+static char TorsoFKeyName[] = "torso_f";
+static char TorsoBKeyName[] = "torso_b";
+static char TorsoSKeyName[] = "torso_s";
+static char ArmFKeyName[] = "arm_f";
+static char ArmBKeyName[] = "arm_b";
+static char ArmSKeyName[] = "arm_s";
+static char LegFKeyName[] = "leg_f";
+static char LegBKeyName[] = "leg_b";
+static char LegSKeyName[] = "leg_s";
+
 NpcDatabase NpcDatabase::Load(
     ResourceLocator const & resourceLocator,
     MaterialDatabase const & materialDatabase,
@@ -119,19 +132,20 @@ NpcDatabase::HumanKind NpcDatabase::ParseHumanKind(
     float const sizeMultiplier = Utils::GetOptionalJsonMember<float>(kindObject, "size_multiplier", 1.0f);
 
     auto const & textureFilenameStemsObject = Utils::GetMandatoryJsonObject(kindObject, "texture_filename_stems");
+    auto const dimensions = CalculateHumanDimensions(textureFilenameStemsObject, npcTextureAtlas);
     HumanTextureFramesType humanTextureFrames({
-        ParseTextureCoordinatesQuad(textureFilenameStemsObject, "head_f", npcTextureAtlas),
-        ParseTextureCoordinatesQuad(textureFilenameStemsObject, "head_b", npcTextureAtlas),
-        ParseTextureCoordinatesQuad(textureFilenameStemsObject, "head_s", npcTextureAtlas),
-        ParseTextureCoordinatesQuad(textureFilenameStemsObject, "torso_f", npcTextureAtlas),
-        ParseTextureCoordinatesQuad(textureFilenameStemsObject, "torso_b", npcTextureAtlas),
-        ParseTextureCoordinatesQuad(textureFilenameStemsObject, "torso_s", npcTextureAtlas),
-        ParseTextureCoordinatesQuad(textureFilenameStemsObject, "arm_f", npcTextureAtlas),
-        ParseTextureCoordinatesQuad(textureFilenameStemsObject, "arm_b", npcTextureAtlas),
-        ParseTextureCoordinatesQuad(textureFilenameStemsObject, "arm_s", npcTextureAtlas),
-        ParseTextureCoordinatesQuad(textureFilenameStemsObject, "leg_f", npcTextureAtlas),
-        ParseTextureCoordinatesQuad(textureFilenameStemsObject, "leg_b", npcTextureAtlas),
-        ParseTextureCoordinatesQuad(textureFilenameStemsObject, "leg_s", npcTextureAtlas)
+        ParseTextureCoordinatesQuad(textureFilenameStemsObject, HeadFKeyName, npcTextureAtlas),
+        ParseTextureCoordinatesQuad(textureFilenameStemsObject, HeadBKeyName, npcTextureAtlas),
+        ParseTextureCoordinatesQuad(textureFilenameStemsObject, HeadSKeyName, npcTextureAtlas),
+        ParseTextureCoordinatesQuad(textureFilenameStemsObject, TorsoFKeyName, npcTextureAtlas),
+        ParseTextureCoordinatesQuad(textureFilenameStemsObject, TorsoBKeyName, npcTextureAtlas),
+        ParseTextureCoordinatesQuad(textureFilenameStemsObject, TorsoSKeyName, npcTextureAtlas),
+        ParseTextureCoordinatesQuad(textureFilenameStemsObject, ArmFKeyName, npcTextureAtlas),
+        ParseTextureCoordinatesQuad(textureFilenameStemsObject, ArmBKeyName, npcTextureAtlas),
+        ParseTextureCoordinatesQuad(textureFilenameStemsObject, ArmSKeyName, npcTextureAtlas),
+        ParseTextureCoordinatesQuad(textureFilenameStemsObject, LegFKeyName, npcTextureAtlas),
+        ParseTextureCoordinatesQuad(textureFilenameStemsObject, LegBKeyName, npcTextureAtlas),
+        ParseTextureCoordinatesQuad(textureFilenameStemsObject, LegSKeyName, npcTextureAtlas)
         });
 
     return HumanKind({
@@ -140,7 +154,57 @@ NpcDatabase::HumanKind NpcDatabase::ParseHumanKind(
         headMaterial,
         feetMaterial,
         sizeMultiplier,
-        std::move(humanTextureFrames) });
+        dimensions,
+        humanTextureFrames });
+}
+
+NpcDatabase::HumanDimensionsType NpcDatabase::CalculateHumanDimensions(
+    picojson::object const & containerObject,
+    Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas)
+{
+    // Head
+    //
+    // - Fixed width; expected B/F/S to be the same
+
+    auto const headFSize = GetFrameSize(containerObject, HeadFKeyName, npcTextureAtlas);
+    float const headHWRatio = static_cast<float>(headFSize.height) / static_cast<float>(headFSize.width);
+
+    // Torso
+    //
+    // - Fixed height; expected B/F/S to be the same
+
+    auto const torsoFSize = GetFrameSize(containerObject, TorsoFKeyName, npcTextureAtlas);
+    float const torsoWHRatio = static_cast<float>(torsoFSize.width) / static_cast<float>(torsoFSize.height);
+
+    // Arm
+    //
+    // - Fixed height; expected B/F/S to be the same
+
+    auto const armFSize = GetFrameSize(containerObject, ArmFKeyName, npcTextureAtlas);
+    float const armWHRatio = static_cast<float>(armFSize.width) / static_cast<float>(armFSize.height);
+
+    // Leg
+    //
+    // - Fixed height; expected B/F/S to be the same
+
+    auto const legFSize = GetFrameSize(containerObject, LegFKeyName, npcTextureAtlas);
+    float const legWHRatio = static_cast<float>(legFSize.width) / static_cast<float>(legFSize.height);
+
+    return HumanDimensionsType({
+        headHWRatio,
+        torsoWHRatio,
+        armWHRatio,
+        legWHRatio });
+}
+
+ImageSize NpcDatabase::GetFrameSize(
+    picojson::object const & containerObject,
+    std::string const & frameNameMemberName,
+    Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas)
+{
+    std::string const & frameFilenameStem = Utils::GetMandatoryJsonMember<std::string>(containerObject, frameNameMemberName);
+    auto const & atlasFrameMetadata = npcTextureAtlas.Metadata.GetFrameMetadata(frameFilenameStem);
+    return atlasFrameMetadata.FrameMetadata.Size;
 }
 
 NpcDatabase::FurnitureKind NpcDatabase::ParseFurnitureKind(
@@ -160,34 +224,40 @@ NpcDatabase::FurnitureKind NpcDatabase::ParseFurnitureKind(
     ParticleMeshKindType const particleMeshKind = StrToParticleMeshKindType(
         Utils::GetMandatoryJsonMember<std::string>(particleMeshObject, "kind"));
 
-    float height = 0.0f, width = 0.0f;
+    FurnitureDimensionsType dimensions{ 0.0f, 0.0f };
     switch (particleMeshKind)
     {
         case ParticleMeshKindType::Dipole:
         {
-            height = Utils::GetMandatoryJsonMember<float>(particleMeshObject, "height");
-            width = 0;
+            dimensions = FurnitureDimensionsType({
+                0,
+                Utils::GetMandatoryJsonMember<float>(particleMeshObject, "height") });
 
             break;
         }
 
         case ParticleMeshKindType::Particle:
         {
-            height = 0;
-            width = 0;
+            dimensions = FurnitureDimensionsType({
+                0,
+                0 });
 
             break;
         }
 
         case ParticleMeshKindType::Quad:
         {
-            height = Utils::GetMandatoryJsonMember<float>(particleMeshObject, "height");
+            float const height = Utils::GetMandatoryJsonMember<float>(particleMeshObject, "height");
 
             // Calculate width based off texture frame
             float const textureFrameAspectRatio =
                 static_cast<float>(atlasFrameMetadata.FrameMetadata.Size.width)
                 / static_cast<float>(atlasFrameMetadata.FrameMetadata.Size.height);
-            width = height * textureFrameAspectRatio;
+            float const width = height * textureFrameAspectRatio;
+
+            dimensions = FurnitureDimensionsType({
+                width,
+                height });
 
             break;
         }
@@ -203,8 +273,7 @@ NpcDatabase::FurnitureKind NpcDatabase::ParseFurnitureKind(
         std::move(name),
         material,
         particleMeshKind,
-        height,
-        width,
+        dimensions,
         std::move(textureCoordinatesQuad) });
 }
 

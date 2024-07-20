@@ -1169,7 +1169,7 @@ void Npcs::OnHumanImpact(
 	{
 		case StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::Constrained_Rising:
 		{
-			if (npcParticleOrdinal == 1 && normalResponse.length() > 0.1f)
+			if (npcParticleOrdinal == 1 && normalResponse.length() > 0.4f)
 			{
 				// Hit head while rising
 

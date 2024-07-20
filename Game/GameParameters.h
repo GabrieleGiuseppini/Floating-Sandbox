@@ -483,24 +483,12 @@ struct GameParameters
         static float constexpr BodyWidthWideMultiplierStdDev = 0.12f;
 
         // All fractions below ar relative to BodyLength
+        static float constexpr HeadWidthFraction = 1.0f / 5.0f; // Length then depends on texture frame
+        static float constexpr TorsoLengthFraction = 2.0f / 5.0f; // Width then depends on texture frame
+        static float constexpr ArmLengthFraction = 2.0f / 5.0f; // Width then depends on texture frame
+        static float constexpr LegLengthFraction = 2.0f / 5.0f; // Width then depends on texture frame
 
-        static float constexpr HeadLengthFraction = 1.0f / 5.0f;
-        static float constexpr HeadWidthFraction = 1.0f / 5.0f;
-        static float constexpr HeadDepthFraction = HeadWidthFraction;
-
-        static float constexpr TorsoLengthFraction = 2.0f / 5.0f;
-        static float constexpr TorsoWidthFraction = 2.0f / 5.0f;
-        static float constexpr TorsoDepthFraction = TorsoWidthFraction;
-
-        static float constexpr ArmLengthFraction = 2.0f / 5.0f;
-        static float constexpr ArmWidthFraction = 1.0f / 5.0f;
-        static float constexpr ArmDepthFraction = ArmWidthFraction;
-
-        static float constexpr LegLengthFraction = 2.0f / 5.0f;
-        static float constexpr LegWidthFraction = 1.0f / 5.0f;
-        static float constexpr LegDepthFraction = LegWidthFraction;
-
-        static_assert(LegLengthFraction + TorsoLengthFraction + HeadLengthFraction == 1.0f);
+        static_assert(LegLengthFraction + TorsoLengthFraction < 1.0f); // Leaves room for head length
 
         static float constexpr StepLengthFraction = 0.43f; // From foot to foot at longest separation
     };

@@ -256,7 +256,7 @@ public:
 
     void UploadNpcStaticAttributesEnd();
 
-    void UploadNpcTextureQuadsStart(size_t quadCount);
+    void UploadNpcTextureQuadsStart(size_t maxQuadCount);
 
     inline void UploadNpcTextureQuad(
         PlaneId planeId,
