@@ -56,6 +56,7 @@ class GameController final
     , public IGameControllerSettingsOptions
     , public ILifecycleGameEventHandler
     , public IWavePhenomenaGameEventHandler
+    , public IControlGameEventHandler
 {
 public:
 
@@ -200,7 +201,6 @@ public:
     void SetLineGuide(
         DisplayLogicalCoordinates const & start,
         DisplayLogicalCoordinates const & end) override;
-
 
     //
     // World probing
@@ -948,6 +948,8 @@ private:
     virtual void OnTsunami(float x) override;
 
     virtual void OnShipRepaired(ShipId shipId) override;
+
+    virtual void OnContinuousAutoFocusToggled(bool isEnabled) override;
 
 private:
 

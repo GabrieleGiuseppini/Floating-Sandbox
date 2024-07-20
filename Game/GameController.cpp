@@ -145,6 +145,7 @@ GameController::GameController(
     // Register ourselves as event handler for the events we care about
     mGameEventDispatcher->RegisterLifecycleEventHandler(this);
     mGameEventDispatcher->RegisterWavePhenomenaEventHandler(this);
+    mGameEventDispatcher->RegisterControlEventHandler(this);
 
     //
     // Initialize parameter smoothers
@@ -1567,6 +1568,11 @@ void GameController::OnShipRepaired(ShipId /*shipId*/)
     mNotificationLayer.PublishNotificationText("SHIP REPAIRED!");
 
     LogMessage("Ship repaired!");
+}
+
+void GameController::OnContinuousAutoFocusToggled(bool isEnabled)
+{
+    mNotificationLayer.SetAutoFocusIndicator(isEnabled);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
