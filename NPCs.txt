@@ -445,9 +445,9 @@ Arch
 		+ Port to FS
 
 	- Misc possible improvements:
-		- Maintain spring lengths during BeingPlaced (to avoid elongations)
 		- See if can avoid furniture bending
 			- Try that other spring relaxation algo
+		- Maintain spring lengths during BeingPlaced (to avoid elongations)
 		+ fmod improvements
 			+ See https://cboard.cprogramming.com/c-programming/105096-fmod.html
 
@@ -463,9 +463,9 @@ Arch
 		- Dynamics ones: contain things that change at each frame (world vertices, )
 	+ Use indices for quad vertices
 		+ Good use case to experiment with the "quad single index buffer" feature
-	= ShipRenderContext:
+	+ ShipRenderContext:
 		+ TextureCoords upload
-		= Mipmapped!
+		+ Mipmapped!
 			+ Rearc:				
 				+ Comment to BuildRegular: to reason for coords
 				+ AtlasBuilder: AtlasOptions to make each tile power-of-two
@@ -495,7 +495,7 @@ Arch
 					+ Test
 				+ Rebuild Explosion atlas
 					+ Test
-			- Do MipMapped NPCs
+			+ Do MipMapped NPCs
 
 	= Shader ("ship_npcs_texture"):
 		+ We keep existing limb-based shader, just change all its vertex attributes/parameters/etc. to become "texture"
@@ -503,14 +503,20 @@ Arch
 		- Discard when transparent
 			- But only after testing with two connected components - & inverse order of drawing; should bug out when near NPC is drawn before far NPC and they are on top of each other
 				- Requires following their triangle
-		- Highlight: Step(c.alpha, 0.0) as coeff to bright red
-		- Night time color
+		+ Highlight: Step(c.alpha, 0.0) as coeff to bright red
+		- Apply moonlight
+		- Apply ocean depth darkening
+		- Apply ocean shadows
 	= Misc improvements & technical debt:
 		+ When drawing human on side, legs first and arms then (as arms are longer)
 		+ Furniture: anti-alias in image
 		+ TextureCoordinatesQuad: shall we have float for RightX, LeftX, TopY, BottomY?
 		+ Human frames: they are out of aspect
 			+ Change human body ratios to match standard frame pixel dimensions (e.g. head square, etc.)
+		- NPC atlas rearc:
+			- All frames are 1-px-border less than power-of-two
+				- Except for "contact directions": size is full in that direction (e.g. humans: all V)
+				- And then atlas-making adds transparent border - which is not drawn!
 		- Redo body proportions: some become dynamic, depending on frame dimensions:
 			! Note: all the below are fractions
 			- TorsoWidthFraction (Height=Length fixed)

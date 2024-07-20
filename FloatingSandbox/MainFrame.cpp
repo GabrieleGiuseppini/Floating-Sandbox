@@ -138,7 +138,6 @@ MainFrame::MainFrame(
     , mCurrentShipTitles()
     , mCurrentRCBombCount(0u)
     , mCurrentAntiMatterBombCount(0u)
-    , mCurrentNpcCount(0u)
     , mIsShiftKeyDown(false)
     , mIsMouseCapturedByGLCanvas(false)
 {

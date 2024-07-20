@@ -359,20 +359,30 @@ private:
 
     virtual void OnNpcCountsUpdated(size_t totalNpcCount) override
     {
-        if (mCurrentNpcCount == 0 && totalNpcCount > 0)
+        if (totalNpcCount > 0)
         {
             // Enable Move/Remove menu items
-            mMoveNpcMenuItem->Enable(true);
-            mRemoveNpcMenuItem->Enable(true);
+            if (!mMoveNpcMenuItem->IsEnabled())
+            {
+                mMoveNpcMenuItem->Enable(true);
+            }
+            if (!mRemoveNpcMenuItem->IsEnabled())
+            {
+                mRemoveNpcMenuItem->Enable(true);
+            }
         }
-        else if (mCurrentNpcCount > 0 && totalNpcCount == 0)
+        else
         {
             // Disable Move/Remove menu items
-            mMoveNpcMenuItem->Enable(false);
-            mRemoveNpcMenuItem->Enable(false);
+            if (mMoveNpcMenuItem->IsEnabled())
+            {
+                mMoveNpcMenuItem->Enable(false);
+            }
+            if (mRemoveNpcMenuItem->IsEnabled())
+            {
+                mRemoveNpcMenuItem->Enable(false);
+            }
         }
-
-        mCurrentNpcCount = totalNpcCount;
     }
 
     virtual void OnContinuousAutoFocusToggled(bool isEnabled) override
@@ -477,7 +487,6 @@ private:
     std::vector<std::string> mCurrentShipTitles;
     size_t mCurrentRCBombCount;
     size_t mCurrentAntiMatterBombCount;
-    size_t mCurrentNpcCount;
     bool mIsShiftKeyDown;
     bool mIsMouseCapturedByGLCanvas;
 };
