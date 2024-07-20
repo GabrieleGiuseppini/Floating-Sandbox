@@ -242,7 +242,10 @@ void GlobalRenderContext::InitializeNpcTextures(TextureAtlas<NpcTextureGroups> &
     CheckOpenGLError();
 
     // Upload atlas texture
-    GameOpenGL::UploadTexture(std::move(npcTextureAtlas.AtlasData));
+    assert(npcTextureAtlas.Metadata.IsSuitableForMipMapping());
+    GameOpenGL::UploadMipmappedAtlasTexture(
+        std::move(npcTextureAtlas.AtlasData),
+        npcTextureAtlas.Metadata.GetMaxDimension());
 
     // Set repeat mode - we want to clamp, to leverage the fact that
     // all frames are perfectly transparent at the edges
@@ -251,7 +254,7 @@ void GlobalRenderContext::InitializeNpcTextures(TextureAtlas<NpcTextureGroups> &
     CheckOpenGLError();
 
     // Set texture filtering parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     CheckOpenGLError();
 
