@@ -566,14 +566,14 @@ Arch
 			+ InternalSetAutoFocus: before setting all, clamp each and only go with both params if none was clamped
 			+ GameController also must register for AutoFocus toggled, and does NotificationLayer accordingly
 				+ But only in this async case
-			- Test
+			+ Test
 				+ Various AutoFocus per-se (on, off, home@on, home@off)
 				+ Check AutoFocus menu auto-checking when switches
 				+ No-dimensions ship (Thanosized)
-				- No-dimensions NPC (particle)
+				+ No-dimensions NPC (particle)
 					+ npc_database
-					- NPC atlas
-					- Npcs.cpp support
+					+ NPC atlas
+					+ Npcs.cpp support
 
 			- Merge into npcs_v1
 

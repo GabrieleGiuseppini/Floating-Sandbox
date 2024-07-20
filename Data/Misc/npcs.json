@@ -44,6 +44,18 @@
 					"height": 0.5
 				},
 				"texture_filename_stem": "crate_1"
+			},
+
+			{
+				"name": [
+					{ "value": "Particle", "language": "en" },
+					{ "value": "Particella", "language": "it" }
+				],
+				"material": "Stainless Steel",
+				"particle_mesh": {
+					"kind": "Particle"
+				},
+				"texture_filename_stem": "particle_1"
 			}
 		]
 	}

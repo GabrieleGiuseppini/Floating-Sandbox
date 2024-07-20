@@ -2231,8 +2231,6 @@ void Npcs::RenderNpc(
 
 		case NpcKindType::Furniture:
 		{
-			// Futurework
-
 			if (npc.ParticleMesh.Particles.size() == 4)
 			{
 				// Quad
@@ -2247,7 +2245,7 @@ void Npcs::RenderNpc(
 			}
 			else
 			{
-				// Bunch-of-particles (still quads)
+				// Bunch-of-particles (each a quad)
 
 				for (auto const & particle : npc.ParticleMesh.Particles)
 				{
