@@ -534,7 +534,7 @@ Arch
 				+ ShipView: fully managed by MainFrame based on tool:
 					+ void OnToolSelectedWithSwitchToInteriorView()
 					+ void OnToolSelectedWithSwitchToExteriorView()
-		= GameController: focus to position at BeginPlaceNpcx2
+		+ GameController: focus to position at BeginPlaceNpcx2
 			+ Upon BeginPlaceXXX: GameController tells ViewManager (with position and height as AABB, i.e. GameParams::HeightMean * GemParams::SizeAdjustment)
 				+ ViewManager: 
 					+ Nuke GameController::FocusOnShip()
@@ -574,8 +574,7 @@ Arch
 					+ npc_database
 					+ NPC atlas
 					+ Npcs.cpp support
-
-			- Merge into npcs_v1
+			+ Merge into npcs_v1
 
 	- Do other atlases (Clouds, GenericLinear, GenericMipMapped)
 		- Clean checkout
