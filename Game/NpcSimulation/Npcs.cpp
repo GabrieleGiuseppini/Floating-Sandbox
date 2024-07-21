@@ -826,12 +826,10 @@ std::optional<PickedObjectId<NpcId>> Npcs::ProbeNpcAt(
 
 				case NpcKindType::Human:
 				{
-					// Distance between point and human "segment"
 					float const squareDistance = Segment::SquareDistanceToPoint(
 						mParticles.GetPosition(state->ParticleMesh.Particles[0].ParticleIndex),
 						mParticles.GetPosition(state->ParticleMesh.Particles[1].ParticleIndex),
 						position);
-
 					if (squareDistance < squareSearchRadius)
 					{
 						if (std::make_pair(state->CurrentShipId, state->CurrentPlaneId) >= probeDepth)

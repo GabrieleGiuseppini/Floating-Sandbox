@@ -445,15 +445,22 @@ Arch
 		+ Port to FS
 
 	- Misc possible improvements:
-		- See if can avoid furniture bending
-			- Try that other spring relaxation algo
+		= See if can avoid furniture bending
+			= Try that other spring relaxation algo
 				+ Backport to Barylab first
-				- DO:
-					- 1. Prelim forces - withOUT spring forces
-					- 2. Integrate prelim forces -> new_pos buffer
-					- 3. Calc spring forces looking at new_pos buffer -> spring forces (or forces above after clearing it)
-					- 4. @ Update: new_pos + spring force integration
+				= DO:
+					+ 1. Prelim forces - withOUT spring forces
+					+ 2. Integrate prelim forces -> new_pos buffer
+					+ 3. Calc spring forces looking at new_pos buffer -> spring forces (or forces above after clearing it)
+					+ 4. @ Update: new_pos + spring force integration
+						+ Definitive forces: watch out
+				- Cleanups if OK:
+					- Rewrite as "two steps"?
+					- See if can optimize main Update() loop/s
+					- CalculateDefinitiveForces: for Torque we predict where secondary will be; can we use NewPosition now that we have it instead?
+						- Note: current prediction is based on velocity alone, while NewPos also takes forces
 		- Maintain spring lengths during BeingPlaced (to avoid elongations)
+			- Unless taken care by above
 		+ Picking human NPCs: now it's too cumbersome
 		+ fmod improvements
 			+ See https://cboard.cprogramming.com/c-programming/105096-fmod.html
