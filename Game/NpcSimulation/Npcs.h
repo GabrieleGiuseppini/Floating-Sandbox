@@ -721,7 +721,7 @@ public:
 	}
 
 	bool AddHumanNpc(
-		HumanNpcKindType humanKind,
+		NpcSubKindIdType subKind,
 		vec2f const & worldCoordinates,
 		float currentSimulationTime);
 

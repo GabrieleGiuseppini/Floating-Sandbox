@@ -1126,12 +1126,12 @@ void Npcs::SetGeneralizedPanicLevelForAllHumans(float panicLevel)
 #ifdef IN_BARYLAB
 
 bool Npcs::AddHumanNpc(
-	HumanNpcKindType humanKind,
+	NpcSubKindIdType subKind,
 	vec2f const & worldCoordinates,
 	float currentSimulationTime)
 {
 	auto const npcId = BeginPlaceNewHumanNpc(
-		humanKind,
+		subKind,
 		worldCoordinates,
 		currentSimulationTime);
 

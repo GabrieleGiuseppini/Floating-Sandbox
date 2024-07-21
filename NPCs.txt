@@ -447,7 +447,7 @@ Arch
 	- Misc possible improvements:
 		- See if can avoid furniture bending
 			- Try that other spring relaxation algo
-				- Backport to Barylab first
+				+ Backport to Barylab first
 				- DO
 		- Maintain spring lengths during BeingPlaced (to avoid elongations)
 		+ fmod improvements
@@ -644,15 +644,15 @@ Arch
 	- Test on Dell:
 		- Max number of textures (we've added 9th!)
 		-
-	= Port to BaryLab
+	+ Port to BaryLab
 		+ Copy NPC json
 		+ Create NpcDatabase
 			+ Copy from FS but then maim it:
 				+ No TextureAtlas, just use -1.0->1.0 coords
 		+ Npcs
 		+ Adapt RenderContext
-		- Port evt changes to FS
-			- Npcs.h/cpp
+		+ Port evt changes to FS
+			+ Npcs.h/cpp
 
 - Physical Interactions:
 	+ Make NpcDamping subject to other adjustment
