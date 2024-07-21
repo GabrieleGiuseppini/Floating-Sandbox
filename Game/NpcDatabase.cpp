@@ -148,6 +148,8 @@ NpcDatabase::HumanKind NpcDatabase::ParseHumanKind(
         ParseTextureCoordinatesQuad(textureFilenameStemsObject, LegSKeyName, npcTextureAtlas)
         });
 
+    float const bodyWidthRandomizationSensitivity = Utils::GetOptionalJsonMember<float>(kindObject, "body_width_randomization_sensitivity", 1.0f);
+
     return HumanKind({
         std::move(name),
         role,
@@ -155,6 +157,7 @@ NpcDatabase::HumanKind NpcDatabase::ParseHumanKind(
         feetMaterial,
         sizeMultiplier,
         dimensions,
+        bodyWidthRandomizationSensitivity,
         humanTextureFrames });
 }
 

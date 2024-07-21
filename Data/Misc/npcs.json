@@ -12,6 +12,7 @@
 					{ "value": "Dummy", "language": "it" }
 				],
 				"role": "Passenger",
+				"body_width_randomization_sensitivity": 0.0,
 				"texture_filename_stems": {
 					"head_f": "dummy_head_f",
 					"head_b": "dummy_head_b",

@@ -624,16 +624,20 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
 	if (GameRandomEngine::GetInstance().Choose(2) == 0)
 	{
 		// Narrow
-		widthMultiplier = 1.0f - std::min(
-			std::abs(GameRandomEngine::GetInstance().GenerateNormalReal(0.0f, GameParameters::HumanNpcGeometry::BodyWidthNarrowMultiplierStdDev)),
-			2.0f * GameParameters::HumanNpcGeometry::BodyWidthNarrowMultiplierStdDev);
+		widthMultiplier = 1.0f -
+			std::min(
+				std::abs(GameRandomEngine::GetInstance().GenerateNormalReal(0.0f, GameParameters::HumanNpcGeometry::BodyWidthNarrowMultiplierStdDev)),
+				2.0f * GameParameters::HumanNpcGeometry::BodyWidthNarrowMultiplierStdDev)
+			* mNpcDatabase.GetHumanBodyWidthRandomizationSensitivity(subKind);
 	}
 	else
 	{
 		// Wide
-		widthMultiplier = 1.0f + std::min(
-			std::abs(GameRandomEngine::GetInstance().GenerateNormalReal(0.0f, GameParameters::HumanNpcGeometry::BodyWidthWideMultiplierStdDev)),
-			2.7f * GameParameters::HumanNpcGeometry::BodyWidthWideMultiplierStdDev);
+		widthMultiplier = 1.0f +
+			std::min(
+				std::abs(GameRandomEngine::GetInstance().GenerateNormalReal(0.0f, GameParameters::HumanNpcGeometry::BodyWidthWideMultiplierStdDev)),
+				2.7f * GameParameters::HumanNpcGeometry::BodyWidthWideMultiplierStdDev)
+			* mNpcDatabase.GetHumanBodyWidthRandomizationSensitivity(subKind);
 	}
 
 	float const walkingSpeedBase =
@@ -1752,7 +1756,7 @@ void Npcs::RenderNpc(
 			vec2f const torsoBottom = legTop - actualBodyVector * (GameParameters::HumanNpcGeometry::LegLengthFraction / 8.0f); // Magic
 			vec2f const torsoTop = legTop + actualBodyVector * GameParameters::HumanNpcGeometry::TorsoLengthFraction;
 			vec2f const headBottom = torsoTop;
-			vec2f const armTop = headBottom - actualBodyVector * (GameParameters::HumanNpcGeometry::ArmLengthFraction / 4.0f); // Magic
+			vec2f const armTop = headBottom - actualBodyVector * (GameParameters::HumanNpcGeometry::ArmLengthFraction / 8.0f); // Magic
 			vec2f const headTop = headBottom + actualBodyVector * (GameParameters::HumanNpcGeometry::HeadWidthFraction * humanNpcState.Dimensions.HeadWidthToHeightFactor);
 
 			float const adjustedIdealHumanHeight = npc.ParticleMesh.Springs[0].RestLength;

@@ -46,11 +46,11 @@
     {
       "frame": {
         "anchor_center": {
-          "x": 3,
+          "x": 4,
           "y": 16
         },
         "anchor_center_world": {
-          "x": 3,
+          "x": 4,
           "y": 16
         },
         "displayName": "dummy_arm_b",
@@ -62,38 +62,38 @@
         },
         "size": {
           "height": 32,
-          "width": 6
+          "width": 8
         },
         "world_size": {
           "height": 32,
-          "width": 6
+          "width": 8
         }
       },
       "frame_coordinates": {
         "bottom": 64,
-        "left": 17
+        "left": 16
       },
       "texture_coordinates": {
         "anchorCenterX": 0.16015625,
         "anchorCenterY": 0.62890625,
         "bottom": 0.50390625,
-        "left": 0.13671875,
-        "right": 0.17578125,
+        "left": 0.12890625,
+        "right": 0.18359375,
         "top": 0.74609375
       },
       "texture_space_size": {
         "height": 0.25,
-        "width": 0.046875
+        "width": 0.0625
       }
     },
     {
       "frame": {
         "anchor_center": {
-          "x": 3,
+          "x": 4,
           "y": 16
         },
         "anchor_center_world": {
-          "x": 3,
+          "x": 4,
           "y": 16
         },
         "displayName": "dummy_arm_f",
@@ -105,38 +105,38 @@
         },
         "size": {
           "height": 32,
-          "width": 6
+          "width": 8
         },
         "world_size": {
           "height": 32,
-          "width": 6
+          "width": 8
         }
       },
       "frame_coordinates": {
         "bottom": 64,
-        "left": 25
+        "left": 24
       },
       "texture_coordinates": {
         "anchorCenterX": 0.22265625,
         "anchorCenterY": 0.62890625,
         "bottom": 0.50390625,
-        "left": 0.19921875,
-        "right": 0.23828125,
+        "left": 0.19140625,
+        "right": 0.24609375,
         "top": 0.74609375
       },
       "texture_space_size": {
         "height": 0.25,
-        "width": 0.046875
+        "width": 0.0625
       }
     },
     {
       "frame": {
         "anchor_center": {
-          "x": 3,
+          "x": 4,
           "y": 16
         },
         "anchor_center_world": {
-          "x": 3,
+          "x": 4,
           "y": 16
         },
         "displayName": "dummy_arm_s",
@@ -148,28 +148,28 @@
         },
         "size": {
           "height": 32,
-          "width": 6
+          "width": 8
         },
         "world_size": {
           "height": 32,
-          "width": 6
+          "width": 8
         }
       },
       "frame_coordinates": {
         "bottom": 64,
-        "left": 33
+        "left": 32
       },
       "texture_coordinates": {
         "anchorCenterX": 0.28515625,
         "anchorCenterY": 0.62890625,
         "bottom": 0.50390625,
-        "left": 0.26171875,
-        "right": 0.30078125,
+        "left": 0.25390625,
+        "right": 0.30859375,
         "top": 0.74609375
       },
       "texture_space_size": {
         "height": 0.25,
-        "width": 0.046875
+        "width": 0.0625
       }
     },
     {
@@ -433,11 +433,11 @@
     {
       "frame": {
         "anchor_center": {
-          "x": 13,
+          "x": 16,
           "y": 16
         },
         "anchor_center_world": {
-          "x": 13,
+          "x": 16,
           "y": 16
         },
         "displayName": "dummy_torso_b",
@@ -449,38 +449,38 @@
         },
         "size": {
           "height": 32,
-          "width": 26
+          "width": 32
         },
         "world_size": {
           "height": 32,
-          "width": 26
+          "width": 32
         }
       },
       "frame_coordinates": {
         "bottom": 0,
-        "left": 35
+        "left": 32
       },
       "texture_coordinates": {
         "anchorCenterX": 0.37890625,
         "anchorCenterY": 0.12890625,
         "bottom": 0.00390625,
-        "left": 0.27734375,
-        "right": 0.47265625,
+        "left": 0.25390625,
+        "right": 0.49609375,
         "top": 0.24609375
       },
       "texture_space_size": {
         "height": 0.25,
-        "width": 0.203125
+        "width": 0.25
       }
     },
     {
       "frame": {
         "anchor_center": {
-          "x": 13,
+          "x": 16,
           "y": 16
         },
         "anchor_center_world": {
-          "x": 13,
+          "x": 16,
           "y": 16
         },
         "displayName": "dummy_torso_f",
@@ -492,38 +492,38 @@
         },
         "size": {
           "height": 32,
-          "width": 26
+          "width": 32
         },
         "world_size": {
           "height": 32,
-          "width": 26
+          "width": 32
         }
       },
       "frame_coordinates": {
         "bottom": 32,
-        "left": 3
+        "left": 0
       },
       "texture_coordinates": {
         "anchorCenterX": 0.12890625,
         "anchorCenterY": 0.37890625,
         "bottom": 0.25390625,
-        "left": 0.02734375,
-        "right": 0.22265625,
+        "left": 0.00390625,
+        "right": 0.24609375,
         "top": 0.49609375
       },
       "texture_space_size": {
         "height": 0.25,
-        "width": 0.203125
+        "width": 0.25
       }
     },
     {
       "frame": {
         "anchor_center": {
-          "x": 13,
+          "x": 16,
           "y": 16
         },
         "anchor_center_world": {
-          "x": 13,
+          "x": 16,
           "y": 16
         },
         "displayName": "dummy_torso_s",
@@ -535,28 +535,28 @@
         },
         "size": {
           "height": 32,
-          "width": 26
+          "width": 32
         },
         "world_size": {
           "height": 32,
-          "width": 26
+          "width": 32
         }
       },
       "frame_coordinates": {
         "bottom": 32,
-        "left": 35
+        "left": 32
       },
       "texture_coordinates": {
         "anchorCenterX": 0.37890625,
         "anchorCenterY": 0.37890625,
         "bottom": 0.25390625,
-        "left": 0.27734375,
-        "right": 0.47265625,
+        "left": 0.25390625,
+        "right": 0.49609375,
         "top": 0.49609375
       },
       "texture_space_size": {
         "height": 0.25,
-        "width": 0.203125
+        "width": 0.25
       }
     },
     {

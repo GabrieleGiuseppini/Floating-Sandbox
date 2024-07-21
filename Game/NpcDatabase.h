@@ -105,6 +105,11 @@ public:
         return mHumanKinds.at(subKindId).Dimensions;
     }
 
+    float GetHumanBodyWidthRandomizationSensitivity(NpcSubKindIdType subKindId) const
+    {
+        return mHumanKinds.at(subKindId).BodyWidthRandomizationSensitivity;
+    }
+
     HumanTextureFramesType const & GetHumanTextureCoordinatesQuads(NpcSubKindIdType subKindId) const
     {
         return mHumanKinds.at(subKindId).TextureCoordinatesQuads;
@@ -163,6 +168,7 @@ private:
         float SizeMultiplier;
 
         HumanDimensionsType Dimensions;
+        float BodyWidthRandomizationSensitivity;
         HumanTextureFramesType const TextureCoordinatesQuads;
     };
 
