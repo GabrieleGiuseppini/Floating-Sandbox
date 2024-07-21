@@ -482,7 +482,7 @@ struct GameParameters
         static float constexpr BodyWidthNarrowMultiplierStdDev = 0.045f;
         static float constexpr BodyWidthWideMultiplierStdDev = 0.12f;
 
-        // All fractions below ar relative to BodyLength
+        // All fractions below are relative to BodyLength
         static float constexpr HeadWidthFraction = 1.0f / 5.0f; // Length then depends on texture frame
         static float constexpr TorsoLengthFraction = 2.0f / 5.0f; // Width then depends on texture frame
         static float constexpr ArmLengthFraction = 2.0f / 5.0f; // Width then depends on texture frame

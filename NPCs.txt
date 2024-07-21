@@ -644,12 +644,15 @@ Arch
 	- Test on Dell:
 		- Max number of textures (we've added 9th!)
 		-
-	- Port to BaryLab
-		- Copy NPC json
-		- Create NpcDatabase
-			- Copy from FS but then maim it:
-				- No TextureAtlas, just use -1.0->1.0 coords
-		- Adapt RenderContext
+	= Port to BaryLab
+		+ Copy NPC json
+		+ Create NpcDatabase
+			+ Copy from FS but then maim it:
+				+ No TextureAtlas, just use -1.0->1.0 coords
+		+ Npcs
+		+ Adapt RenderContext
+		- Port evt changes to FS
+			- Npcs.h/cpp
 
 - Physical Interactions:
 	+ Make NpcDamping subject to other adjustment
