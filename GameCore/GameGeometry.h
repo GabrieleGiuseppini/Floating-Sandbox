@@ -61,13 +61,28 @@ public:
         vec2f const & segmentP2,
         vec2f const & point)
     {
+        return std::sqrt(
+            SquareDistanceToPoint(
+                segmentP1,
+                segmentP2,
+                point));
+    }
+
+    /*
+     * Returns the distance between a point and a segment.
+     */
+    inline static float SquareDistanceToPoint(
+        vec2f const & segmentP1,
+        vec2f const & segmentP2,
+        vec2f const & point)
+    {
         // From https://stackoverflow.com/questions/849211/shortest-distance-between-a-point-and-a-line-segment
 
         float const segmentSquaredLength = (segmentP2 - segmentP1).squareLength();
         if (segmentSquaredLength == 0.0f)
         {
             // Overlapping endpoints
-            return (segmentP2 - point).length();
+            return (segmentP2 - point).squareLength();
         }
 
         // Consider the line extending the segment, parameterized as P1 + t (P2 - P1).
@@ -76,7 +91,7 @@ public:
         // We clamp t from [0,1] to handle points outside the segment P1-P2.
         const float t = std::max(0.0f, std::min(1.0f, (point - segmentP1).dot(segmentP2 - segmentP1) / segmentSquaredLength));
         vec2f const projection = segmentP1 + (segmentP2 - segmentP1) * t;  // Projection falls on the segment
-        return (projection - point).length();
+        return (projection - point).squareLength();
     }
 };
 

@@ -826,14 +826,31 @@ std::optional<PickedObjectId<NpcId>> Npcs::ProbeNpcAt(
 
 				case NpcKindType::Human:
 				{
-					// Proximity search for Head only
+					// Distance between point and human "segment"
+					float const squareDistance = Segment::SquareDistanceToPoint(
+						mParticles.GetPosition(state->ParticleMesh.Particles[0].ParticleIndex),
+						mParticles.GetPosition(state->ParticleMesh.Particles[1].ParticleIndex),
+						position);
 
-					assert(state->ParticleMesh.Particles.size() == 2);
-
-					particleVisitor(
-						state->ParticleMesh.Particles[1].ParticleIndex,
-						*state,
-						state->CurrentShipId);
+					if (squareDistance < squareSearchRadius)
+					{
+						if (std::make_pair(state->CurrentShipId, state->CurrentPlaneId) >= probeDepth)
+						{
+							// It's on-plane
+							if (squareDistance < nearestOnPlaneNpc.SquareDistance)
+							{
+								nearestOnPlaneNpc = { state->Id, squareDistance };
+							}
+						}
+						else
+						{
+							// It's off-plane
+							if (squareDistance < nearestOffPlaneNpc.SquareDistance)
+							{
+								nearestOffPlaneNpc = { state->Id, squareDistance };
+							}
+						}
+					}
 
 					break;
 				}

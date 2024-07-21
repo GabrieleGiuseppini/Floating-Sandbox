@@ -448,8 +448,13 @@ Arch
 		- See if can avoid furniture bending
 			- Try that other spring relaxation algo
 				+ Backport to Barylab first
-				- DO
+				- DO:
+					- 1. Prelim forces - withOUT spring forces
+					- 2. Integrate prelim forces -> new_pos buffer
+					- 3. Calc spring forces looking at new_pos buffer -> spring forces (or forces above after clearing it)
+					- 4. @ Update: new_pos + spring force integration
 		- Maintain spring lengths during BeingPlaced (to avoid elongations)
+		+ Picking human NPCs: now it's too cumbersome
 		+ fmod improvements
 			+ See https://cboard.cprogramming.com/c-programming/105096-fmod.html
 
@@ -549,7 +554,7 @@ Arch
 					- F/B/S for a limb have same dimensions
 				- Furniture:
 					- Width=32, Height=32
-						- Leaving 1 pixel on each of the four borders
+						- Leaving 1 pixel on each border that the texture is "a lot" against
 			! For me:
 				- Human:
 					- Head: 
@@ -578,7 +583,7 @@ Arch
 					- F/B/S for a limb have same dimensions
 				- Furniture:
 					- Width=32, Height=32
-						- Leaving 1 pixel on each of the four borders
+						- Leaving 1 pixel on each border that the texture is "a lot" against
 		! Frame specs:
 			! Furniture: leave 1px border around
 				! So if e.g. you're doing a 32x32 frame, then the drawable area is the central 30x30
