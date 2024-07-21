@@ -447,11 +447,13 @@ Arch
 	- Misc possible improvements:
 		- See if can avoid furniture bending
 			- Try that other spring relaxation algo
+				- Backport to Barylab first
+				- DO
 		- Maintain spring lengths during BeingPlaced (to avoid elongations)
 		+ fmod improvements
 			+ See https://cboard.cprogramming.com/c-programming/105096-fmod.html
 
-- Rendering:
+= Rendering:
 	! Atlas textures are simply flat frames and all, NpcDatabase groups them together
 		! But we use naming conventions to not go crazy ourselves
 	- NPCs will have two sets of vertex attributes:
@@ -507,7 +509,7 @@ Arch
 		- Apply moonlight
 		- Apply ocean depth darkening
 		- Apply ocean shadows
-	= Misc improvements & technical debt:
+	+ Misc improvements & technical debt:
 		+ When drawing human on side, legs first and arms then (as arms are longer)
 		+ Furniture: anti-alias in image
 		+ TextureCoordinatesQuad: shall we have float for RightX, LeftX, TopY, BottomY?
@@ -525,8 +527,8 @@ Arch
 					+ Replaces individual H, W getters
 		+ Fix junctions
 		+ Add body width randomization sensitivity
-		- NPC atlas rearc: frame rules:
-			- For artist:
+		! NPC atlas rearc: frame rules:
+			! For artist:
 				- Human:
 					- Head: 
 						- Width: 16
@@ -548,8 +550,7 @@ Arch
 				- Furniture:
 					- Width=32, Height=32
 						- Leaving 1 pixel on each of the four borders
-
-			- For me:
+			! For me:
 				- Human:
 					- Head: 
 						- Width: 16
@@ -644,7 +645,7 @@ Arch
 		- Max number of textures (we've added 9th!)
 		-
 	- Port to BaryLab
-		- Copy NPC files
+		- Copy NPC json
 		- Create NpcDatabase
 			- Copy from FS but then maim it:
 				- No TextureAtlas, just use -1.0->1.0 coords
