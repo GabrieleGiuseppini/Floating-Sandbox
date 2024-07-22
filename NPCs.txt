@@ -521,7 +521,7 @@ Arch
 		+ Sampler
 		- Discard when transparent
 			- But only after testing with two connected components - & inverse order of drawing; should bug out when near NPC is drawn before far NPC and they are on top of each other
-				- Test requires NPC following their triangle with move
+				- Test requires NPC following their triangle with move - Move/Rotate work item below
 		+ Highlight: Step(c.alpha, 0.0) as coeff to bright red
 		- Apply ocean depth darkening (iff in water?)
 		- Apply ocean shadows (iff in water)
@@ -680,10 +680,11 @@ Arch
 				- Friction and elasticity: as we do in ship, using both materials
 			- Become free! So we avoid bouncing back and forth
 	- World border
-		- At end of step
-		- If hit:
-			- Move back and bounce perpendicular velocity (see actually what we do in ship)
-			- Become free! So we avoid bouncing back and forth
+		- At end of step: MaintainInWorldBounds()
+		- MaintainInWorldBounds():
+			- If hit:
+				- Move back and bounce perpendicular velocity (see actually what we do in ship)
+				- Become free! So we avoid bouncing back and forth
 	- Triangle destruction: 
 		- Should be enough to check for current triangle being deleted at beginning of UpdateNpc(.), and if so, become free
 	- Swimming humans generate (small) bubbles
@@ -709,9 +710,11 @@ Arch
 	- Swirl, etc.: all ships, all regimes
 		- Controlled by flag, "~force tools on NPCs"
 	- Move/Rotate tool:
-		- While MoveAll may be used to move everything, Move (component) only moves mesh, thus subjecting NPCs to apparent forces!
-			- BUT: if NPC doesn't move, it's a mess as we don't update() while moving, hence at end of move NPC finds itself far away
-			- SO: both tools move also NPCs
+		- Ship: after loop, call ParentWorld::Move/etc/Npcs(shipId, [componentId], ...)
+			- Just need Move/Rotate, opt<ConnectedComponentId>
+				- Only considers constrained particles
+					- And if ConnectedComponentId is specified, only particles in triangle with first endpoint on that ConnectedComponentId
+			- At the end calls MaintainInWorldBounds()
 	- Electric spark:
 		- Electrification must be stored with Points
 		- NPC update looks at own triangle's Points
