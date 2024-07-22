@@ -445,22 +445,27 @@ Arch
 		+ Port to FS
 
 	- Misc possible improvements:
-		= See if can avoid furniture bending
-			= Try that other spring relaxation algo
+		X See if can avoid furniture bending
+			X Try that other spring relaxation algo
 				+ Backport to Barylab first
-				= DO:
+				+ DO:
 					+ 1. Prelim forces - withOUT spring forces
 					+ 2. Integrate prelim forces -> new_pos buffer
 					+ 3. Calc spring forces looking at new_pos buffer -> spring forces (or forces above after clearing it)
 					+ 4. @ Update: new_pos + spring force integration
 						+ Definitive forces: watch out
+				- Compare with previous
+					- Bounce
+					- Breakability with big impact
 				- Cleanups if OK:
 					- Rewrite as "two steps"?
 					- See if can optimize main Update() loop/s
 					- CalculateDefinitiveForces: for Torque we predict where secondary will be; can we use NewPosition now that we have it instead?
 						- Note: current prediction is based on velocity alone, while NewPos also takes forces
+			+ Recheck FS vs BaryLab
 		- Maintain spring lengths during BeingPlaced (to avoid elongations)
 			- Unless taken care by above
+		- If above doesn't work: try more velocity damping during BeingPlaced
 		+ Picking human NPCs: now it's too cumbersome
 		+ fmod improvements
 			+ See https://cboard.cprogramming.com/c-programming/105096-fmod.html
@@ -516,11 +521,10 @@ Arch
 		+ Sampler
 		- Discard when transparent
 			- But only after testing with two connected components - & inverse order of drawing; should bug out when near NPC is drawn before far NPC and they are on top of each other
-				- Requires following their triangle
+				- Test requires NPC following their triangle with move
 		+ Highlight: Step(c.alpha, 0.0) as coeff to bright red
-		- Apply moonlight
-		- Apply ocean depth darkening
-		- Apply ocean shadows
+		- Apply ocean depth darkening (iff in water?)
+		- Apply ocean shadows (iff in water)
 	+ Misc improvements & technical debt:
 		+ When drawing human on side, legs first and arms then (as arms are longer)
 		+ Furniture: anti-alias in image
@@ -671,29 +675,43 @@ Arch
 		+ Npcs class reacts to changes and calculates own mDampingCoefficient == (1.0f - gameParameters.NpcDamping)
 	- Land
 		- Impact (at end of step)
+		- If hit:
+			- Move back and bounce perpendicular velocity
+				- Friction and elasticity: as we do in ship, using both materials
+			- Become free! So we avoid bouncing back and forth
 	- World border
 		- At end of step
-		- If hit, become free! So we avoid bouncing back and forth
+		- If hit:
+			- Move back and bounce perpendicular velocity (see actually what we do in ship)
+			- Become free! So we avoid bouncing back and forth
 	- Triangle destruction: 
 		- Should be enough to check for current triangle being deleted at beginning of UpdateNpc(.), and if so, become free
-	- Swimming humans generate bubbles
+	- Swimming humans generate (small) bubbles
+		- Each aquatic state has a NextBubbleEmissionSimulationTimestamp
+			- Init'd as 0
+			- At each state update: 
+				- If curSimTime > state's:
+					- Emit bubble
+					- Calc next: gaussian
 	- Humans on air-water interface generate small waves
 		- Need to produce as side-effect: swimming humans generate small waves
 		- Do surface displacement proportional to (signed) V velocity
-	- Lights: second pass of lighting algorith with all NPC particles, for each ship
-		- Adding to NPC particles' _light_ buffer
-			- But test it first, as humans are dipoles and dubious result
+			- When head above but feet below - anything better?
 	- Fire:
 		- When <TODO> vertices of triangle are on fire, NPC catches fire as well
 			- Done with "entering new triangle" detection, elsewhere here in plan
+				- Or: done at every step, as we may be standing in triangle that later catches fire
+			- Only if standing?
 			- Rendering: Ship asks Npcs (via World) at RenderUpload time, so that flames are in same buffer
 				- Need count and Npcs::RenderUploadFlames(...), both called by Ship
 	- Wind: all ships, only in free regime
-		- NpcMaterial::WindReceptivity
 	- Ship-specific explosions: only of that ship, or free regime
 	- Swirl, etc.: all ships, all regimes
+		- Controlled by flag, "~force tools on NPCs"
 	- Move/Rotate tool:
 		- While MoveAll may be used to move everything, Move (component) only moves mesh, thus subjecting NPCs to apparent forces!
+			- BUT: if NPC doesn't move, it's a mess as we don't update() while moving, hence at end of move NPC finds itself far away
+			- SO: both tools move also NPCs
 	- Electric spark:
 		- Electrification must be stored with Points
 		- NPC update looks at own triangle's Points
@@ -742,7 +760,10 @@ Arch
 			+ Make sure mCurrentSizeAdjustment is only used in funcs to calc/recalc
 			+ Make sure mCurrentMassAdjustment is only used in funcs to calc/recalc
 		+ Port to FS
-	- Incorporate ship material's elasticity and friction in calculations for bounce and friction
+	- Lights: second pass of lighting algorithm with all NPC particles, for each ship
+		- Adding to NPC particles' _light_ buffer
+			- But test it first, as humans are dipoles and dubious result
+	= Incorporate ship material's elasticity and friction in calculations for bounce and friction
 	- When ship is repaired, all NPCs do a little dance
 		- Sync is simulation clock (so all are in sync)
 		- Signal from outside (OnShipRepaired) sets global flag

@@ -162,6 +162,8 @@ void Npcs::TransitionParticleToConstrainedState(
     auto const oldRegime = npc.CurrentRegime;
     npc.CurrentRegime = CalculateRegime(npc);
     OnMayBeNpcRegimeChanged(oldRegime, npc);
+
+    // We'll update plane ID for constrained NPCs at end of Update()
 }
 
 void Npcs::TransitionParticleToFreeState(
@@ -365,6 +367,7 @@ void Npcs::UpdateNpcs(
     //
     // 6. Update behavioral state machines
     // 7. Update animation
+    // 8. Update NPC's plane ID
     //
 
     LogNpcDebug("----------------------------------");
@@ -393,6 +396,15 @@ void Npcs::UpdateNpcs(
                 *npcState,
                 currentSimulationTime,
                 homeShip);
+
+            // Plane ID - might have changed because of ship's geometry changed (e.g. sliced)
+
+            if (npcState->ParticleMesh.Particles[0].ConstrainedState.has_value())
+            {
+                npcState->CurrentPlaneId = homeShip.GetPoints().GetPlaneId(
+                    homeShip.GetTriangles().GetPointAIndex(
+                        npcState->ParticleMesh.Particles[0].ConstrainedState->CurrentBCoords.TriangleElementIndex));
+            }
         }
     }
 }
