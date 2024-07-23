@@ -6,7 +6,7 @@
 // Inputs
 in vec4 inFish1; // CenterPosition (vec2), VertexOffset (vec2)
 in vec4 inFish2; // TextureSpace L, B, R, T (vec4)
-in vec4 inFish3; // TextureCoordinates (vec2),AngleCw (float), TailX (float)
+in vec4 inFish3; // TextureCoordinates (vec2), AngleCw (float), TailX (float)
 in vec2 inFish4; // TailSwing (float), TailProgress (float)
 
 // Outputs

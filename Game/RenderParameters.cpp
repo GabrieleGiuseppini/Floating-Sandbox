@@ -17,7 +17,7 @@ RenderParameters::RenderParameters(
 	, EffectiveMoonlightColor(0x00, 0x00, 0x00) // Calculated
 	, DoCrepuscularGradient(true)
 	, CrepuscularColor (0xe5, 0xd3, 0xe5)
-	, OceanTransparency(0.8125f)
+	, OceanTransparency(0.594f)
 	, OceanDarkeningRate(0.12795731425285339f)
 	, OceanRenderMode(OceanRenderModeType::Flat)
 	, DepthOceanColorStart(0x4a, 0x84, 0x9f)

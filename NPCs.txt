@@ -516,15 +516,15 @@ Arch
 					+ Test
 			+ Do MipMapped NPCs
 
-	= Shader ("ship_npcs_texture"):
+	+ Shader ("ship_npcs_texture"):
 		+ We keep existing limb-based shader, just change all its vertex attributes/parameters/etc. to become "texture"
 		+ Sampler
 		+ Discard when transparent
 			+ But only after testing with two connected components - & inverse order of drawing; should bug out when near NPC is drawn before far NPC and they are on top of each other
 				+ Test requires NPC following their triangle with move - Move/Rotate work item below
 		+ Highlight: Step(c.alpha, 0.0) as coeff to bright red
-		- Apply ocean depth darkening (iff in water?)
-		- Apply ocean shadows (iff in water)
+		x Apply ocean depth darkening (iff in water?)
+		x Apply ocean shadows (iff in water)
 	+ Misc improvements & technical debt:
 		+ When drawing human on side, legs first and arms then (as arms are longer)
 		+ Furniture: anti-alias in image
