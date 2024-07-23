@@ -26,7 +26,7 @@ class TimerBombGadget final : public Gadget
 public:
 
     TimerBombGadget(
-        GadgetId id,
+        GlobalGadgetId id,
         ElementIndex pointIndex,
         World & parentWorld,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,

@@ -307,7 +307,7 @@ public:
         unsigned int size) override;
 
     void OnEngineMonitorCreated(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
         float thrustMagnitude,
         float rpm,
@@ -315,44 +315,44 @@ public:
         std::optional<ElectricalPanel::ElementMetadata> const & panelElementMetadata) override;
 
     void OnWaterPumpCreated(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
         float normalizedForce,
         ElectricalMaterial const & electricalMaterial,
         std::optional<ElectricalPanel::ElementMetadata> const & panelElementMetadata) override;
 
     void OnSwitchToggled(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         ElectricalState newState) override;
 
     void OnEngineControllerUpdated(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         ElectricalMaterial const & electricalMaterial,
         float oldControllerValue,
         float newControllerValue) override;
 
     void OnEngineMonitorUpdated(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         float thrustMagnitude,
         float rpm) override;
 
     void OnShipSoundUpdated(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         ElectricalMaterial const & electricalMaterial,
         bool isPlaying,
         bool isUnderwater) override;
 
     void OnWaterPumpUpdated(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         float normalizedForce) override;
 
     void OnGadgetPlaced(
-        GadgetId gadgetId,
+        GlobalGadgetId gadgetId,
         GadgetType gadgetType,
         bool isUnderwater) override;
 
     void OnGadgetRemoved(
-        GadgetId gadgetId,
+        GlobalGadgetId gadgetId,
         GadgetType gadgetType,
         std::optional<bool> isUnderwater) override;
 
@@ -366,7 +366,7 @@ public:
         unsigned int size) override;
 
     void OnTimerBombFuse(
-        GadgetId gadgetId,
+        GlobalGadgetId gadgetId,
         std::optional<bool> isFast) override;
 
     void OnTimerBombDefused(
@@ -374,7 +374,7 @@ public:
         unsigned int size) override;
 
     void OnAntiMatterBombContained(
-        GadgetId gadgetId,
+        GlobalGadgetId gadgetId,
         bool isContained) override;
 
     void OnAntiMatterBombPreImploding() override;
@@ -647,9 +647,9 @@ private:
 	ContinuousSingleChoiceSound mRainSound;
     ContinuousSingleChoiceSound mFireBurningSound;
 
-    ContinuousSingleChoiceAggregateSound<GadgetId> mTimerBombSlowFuseSound;
-    ContinuousSingleChoiceAggregateSound<GadgetId> mTimerBombFastFuseSound;
-    ContinuousMultipleChoiceAggregateSound<GadgetId> mAntiMatterBombContainedSounds;
+    ContinuousSingleChoiceAggregateSound<GlobalGadgetId> mTimerBombSlowFuseSound;
+    ContinuousSingleChoiceAggregateSound<GlobalGadgetId> mTimerBombFastFuseSound;
+    ContinuousMultipleChoiceAggregateSound<GlobalGadgetId> mAntiMatterBombContainedSounds;
 
-    MultiInstanceLoopedSounds<ElectricalElementId> mLoopedSounds;
+    MultiInstanceLoopedSounds<GlobalElectricalElementId> mLoopedSounds;
 };

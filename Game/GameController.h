@@ -210,20 +210,20 @@ public:
     void ToggleToFullDayOrNight() override;
     float GetEffectiveAmbientLightIntensity() const override { return mRenderContext->GetEffectiveAmbientLightIntensity(); }
     bool IsUnderwater(DisplayLogicalCoordinates const & screenCoordinates) const override { return mWorld->GetOceanSurface().IsUnderwater(ScreenToWorld(screenCoordinates)); }
-    bool IsUnderwater(ElementId elementId) const override { return mWorld->IsUnderwater(elementId); }
+    bool IsUnderwater(GlobalElementId elementId) const override { return mWorld->IsUnderwater(elementId); }
 
     //
     // Interactions
     //
 
-    void PickObjectToMove(DisplayLogicalCoordinates const & screenCoordinates, std::optional<ElementId> & elementId) override;
+    void PickObjectToMove(DisplayLogicalCoordinates const & screenCoordinates, std::optional<GlobalConnectedComponentId> & connectedComponentId) override;
     void PickObjectToMove(DisplayLogicalCoordinates const & screenCoordinates, std::optional<ShipId> & shipId) override;
-    void MoveBy(ElementId elementId, DisplayLogicalSize const & screenOffset, DisplayLogicalSize const & inertialScreenOffset) override;
+    void MoveBy(GlobalConnectedComponentId const & connectedComponentId, DisplayLogicalSize const & screenOffset, DisplayLogicalSize const & inertialScreenOffset) override;
     void MoveBy(ShipId shipId, DisplayLogicalSize const & screenOffset, DisplayLogicalSize const & inertialScreenOffset) override;
-    void RotateBy(ElementId elementId, float screenDeltaY, DisplayLogicalCoordinates const & screenCenter, float inertialScreenDeltaY) override;
+    void RotateBy(GlobalConnectedComponentId const & connectedComponentId, float screenDeltaY, DisplayLogicalCoordinates const & screenCenter, float inertialScreenDeltaY) override;
     void RotateBy(ShipId shipId, float screenDeltaY, DisplayLogicalCoordinates const & screenCenter, float intertialScreenDeltaY) override;
-    std::optional<ElementId> PickObjectForPickAndPull(DisplayLogicalCoordinates const & screenCoordinates) override;
-    void Pull(ElementId elementId, DisplayLogicalCoordinates const & screenTarget) override;
+    std::optional<GlobalElementId> PickObjectForPickAndPull(DisplayLogicalCoordinates const & screenCoordinates) override;
+    void Pull(GlobalElementId elementId, DisplayLogicalCoordinates const & screenTarget) override;
     void DestroyAt(DisplayLogicalCoordinates const & screenCoordinates, float radiusMultiplier) override;
     void RepairAt(DisplayLogicalCoordinates const & screenCoordinates, float radiusMultiplier, SequenceNumber repairStepId) override;
     bool SawThrough(DisplayLogicalCoordinates const & startScreenCoordinates, DisplayLogicalCoordinates const & endScreenCoordinates, bool isFirstSegment) override;
@@ -263,7 +263,7 @@ public:
     void RemoveNpc(NpcId id) override;
     void AbortNewNpc(NpcId id) override;
     void HighlightNpc(NpcId id, NpcHighlightType highlight) override;
-    std::optional<ElementId> GetNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const override;
+    std::optional<GlobalElementId> GetNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const override;
     void QueryNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const override;
 
     void TriggerTsunami() override;
@@ -271,18 +271,18 @@ public:
     void TriggerStorm() override;
     void TriggerLightning() override;
 
-    void HighlightElectricalElement(ElectricalElementId electricalElementId) override;
+    void HighlightElectricalElement(GlobalElectricalElementId electricalElementId) override;
 
     void SetSwitchState(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         ElectricalState switchState) override;
 
     void SetEngineControllerState(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         float controllerValue) override;
 
-    bool DestroyTriangle(ElementId triangleId) override;
-    bool RestoreTriangle(ElementId triangleId) override;
+    bool DestroyTriangle(GlobalElementId triangleId) override;
+    bool RestoreTriangle(GlobalElementId triangleId) override;
 
     //
     // Render controls

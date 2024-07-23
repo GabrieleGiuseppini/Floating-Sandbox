@@ -90,23 +90,23 @@ static NpcId constexpr NoneNpcId = std::numeric_limits<NpcId>::max();
 /*
  * Various other identifiers.
  */
-using LocalGadgetId = std::uint32_t;
+using GadgetId = std::uint32_t;
 
 /*
  * Object ID's, identifying objects of ships across ships.
  *
- * An ObjectId is unique only in the context in which it's used; for example,
+ * A GlobalObjectId is unique only in the context in which it's used; for example,
  * a gadget might have the same object ID as a switch. That's where the type tag
  * comes from.
  *
  * Not comparable, not ordered.
  */
 template<typename TLocalObjectId, typename TTypeTag>
-struct ObjectId
+struct GlobalObjectId
 {
     using LocalObjectId = TLocalObjectId;
 
-    ObjectId(
+    GlobalObjectId(
         ShipId shipId,
         LocalObjectId localObjectId)
         : mShipId(shipId)
@@ -123,15 +123,15 @@ struct ObjectId
         return mLocalObjectId;
     }
 
-    ObjectId & operator=(ObjectId const & other) = default;
+    GlobalObjectId & operator=(GlobalObjectId const & other) = default;
 
-    inline bool operator==(ObjectId const & other) const
+    inline bool operator==(GlobalObjectId const & other) const
     {
         return this->mShipId == other.mShipId
             && this->mLocalObjectId == other.mLocalObjectId;
     }
 
-    inline bool operator<(ObjectId const & other) const
+    inline bool operator<(GlobalObjectId const & other) const
     {
         return this->mShipId < other.mShipId
             || (this->mShipId == other.mShipId && this->mLocalObjectId < other.mLocalObjectId);
@@ -153,7 +153,7 @@ private:
 };
 
 template<typename TLocalObjectId, typename TTypeTag>
-inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, ObjectId<TLocalObjectId, TTypeTag> const & oid)
+inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, GlobalObjectId<TLocalObjectId, TTypeTag> const & oid)
 {
     os << oid.ToString();
     return os;
@@ -162,25 +162,28 @@ inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, Obje
 namespace std {
 
 template <typename TLocalObjectId, typename TTypeTag>
-struct hash<ObjectId<TLocalObjectId, TTypeTag>>
+struct hash<GlobalObjectId<TLocalObjectId, TTypeTag>>
 {
-    std::size_t operator()(ObjectId<TLocalObjectId, TTypeTag> const & objectId) const
+    std::size_t operator()(GlobalObjectId<TLocalObjectId, TTypeTag> const & objectId) const
     {
         return std::hash<ShipId>()(static_cast<uint16_t>(objectId.GetShipId()))
-            ^ std::hash<typename ObjectId<TLocalObjectId, TTypeTag>::LocalObjectId>()(objectId.GetLocalObjectId());
+            ^ std::hash<typename GlobalObjectId<TLocalObjectId, TTypeTag>::LocalObjectId>()(objectId.GetLocalObjectId());
     }
 };
 
 }
 
 // Generic ID for generic elements (points, springs, etc.)
-using ElementId = ObjectId<ElementIndex, struct ElementTypeTag>;
+using GlobalElementId = GlobalObjectId<ElementIndex, struct ElementTypeTag>;
+
+// ID for a ship's connected component
+using GlobalConnectedComponentId = GlobalObjectId<ConnectedComponentId, struct ConnectedComponentTypeTag>;
 
 // ID for a gadget
-using GadgetId = ObjectId<LocalGadgetId, struct GadgetTypeTag>;
+using GlobalGadgetId = GlobalObjectId<GadgetId, struct GadgetTypeTag>;
 
 // ID for electrical elements (switches, probes, etc.)
-using ElectricalElementId = ObjectId<ElementIndex, struct ElectricalElementTypeTag>;
+using GlobalElectricalElementId = GlobalObjectId<ElementIndex, struct ElectricalElementTypeTag>;
 
 /*
  * A sequence number which is never zero.

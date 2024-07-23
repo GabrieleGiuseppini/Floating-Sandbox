@@ -646,7 +646,7 @@ private:
     wxImage const mRotateDownCursorImage;
 };
 
-class MoveTool final : public BaseMoveTool<ElementId>
+class MoveTool final : public BaseMoveTool<GlobalConnectedComponentId>
 {
 public:
 
@@ -796,14 +796,14 @@ private:
 
     struct EngagementState
     {
-        ElementId PickedParticle;
+        GlobalElementId PickedParticle;
         vec2f CurrentScreenPosition;
         vec2f TargetScreenPosition;
         vec2f LastScreenPosition;
         float CurrentConvergenceSpeed;
 
         EngagementState(
-            ElementId pickedParticle,
+            GlobalElementId pickedParticle,
             vec2f startScreenPosition)
             : PickedParticle(pickedParticle)
             , CurrentScreenPosition(startScreenPosition)

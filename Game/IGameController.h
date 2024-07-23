@@ -91,20 +91,20 @@ struct IGameController
     virtual void ToggleToFullDayOrNight() = 0;
     virtual float GetEffectiveAmbientLightIntensity() const = 0;
     virtual bool IsUnderwater(DisplayLogicalCoordinates const & screenCoordinates) const = 0;
-    virtual bool IsUnderwater(ElementId elementId) const = 0;
+    virtual bool IsUnderwater(GlobalElementId elementId) const = 0;
 
     //
     // Interactions
     //
 
-    virtual void PickObjectToMove(DisplayLogicalCoordinates const & screenCoordinates, std::optional<ElementId> & elementId) = 0;
+    virtual void PickObjectToMove(DisplayLogicalCoordinates const & screenCoordinates, std::optional<GlobalConnectedComponentId> & connectedComponentId) = 0;
     virtual void PickObjectToMove(DisplayLogicalCoordinates const & screenCoordinates, std::optional<ShipId> & shipId) = 0;
-    virtual void MoveBy(ElementId elementId, DisplayLogicalSize const & screenOffset, DisplayLogicalSize const & inertialScreenOffset) = 0;
+    virtual void MoveBy(GlobalConnectedComponentId const & connectedComponentId, DisplayLogicalSize const & screenOffset, DisplayLogicalSize const & inertialScreenOffset) = 0;
     virtual void MoveBy(ShipId shipId, DisplayLogicalSize const & screenOffset, DisplayLogicalSize const & inertialScreenOffset) = 0;
-    virtual void RotateBy(ElementId elementId, float screenDeltaY, DisplayLogicalCoordinates const & screenCenter, float inertialScreenDeltaY) = 0;
+    virtual void RotateBy(GlobalConnectedComponentId const & connectedComponentId, float screenDeltaY, DisplayLogicalCoordinates const & screenCenter, float inertialScreenDeltaY) = 0;
     virtual void RotateBy(ShipId shipId, float screenDeltaY, DisplayLogicalCoordinates const & screenCenter, float intertialScreenDeltaY) = 0;
-    virtual std::optional<ElementId> PickObjectForPickAndPull(DisplayLogicalCoordinates const & screenCoordinates) = 0;
-    virtual void Pull(ElementId elementId, DisplayLogicalCoordinates const & screenTarget) = 0;
+    virtual std::optional<GlobalElementId> PickObjectForPickAndPull(DisplayLogicalCoordinates const & screenCoordinates) = 0;
+    virtual void Pull(GlobalElementId elementId, DisplayLogicalCoordinates const & screenTarget) = 0;
     virtual void DestroyAt(DisplayLogicalCoordinates const & screenCoordinates, float radiusMultiplier) = 0;
     virtual void RepairAt(DisplayLogicalCoordinates const & screenCoordinates, float radiusMultiplier, SequenceNumber repairStepId) = 0;
     virtual bool SawThrough(DisplayLogicalCoordinates const & startScreenCoordinates, DisplayLogicalCoordinates const & endScreenCoordinates, bool isFirstSegment) = 0;
@@ -144,7 +144,7 @@ struct IGameController
     virtual void RemoveNpc(NpcId id) = 0;
     virtual void AbortNewNpc(NpcId id) = 0;
     virtual void HighlightNpc(NpcId id, NpcHighlightType highlight) = 0;
-    virtual std::optional<ElementId> GetNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const = 0;
+    virtual std::optional<GlobalElementId> GetNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const = 0;
     virtual void QueryNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const = 0;
 
     virtual void TriggerTsunami() = 0;
@@ -152,18 +152,18 @@ struct IGameController
     virtual void TriggerStorm() = 0;
     virtual void TriggerLightning() = 0;
 
-    virtual void HighlightElectricalElement(ElectricalElementId electricalElementId) = 0;
+    virtual void HighlightElectricalElement(GlobalElectricalElementId electricalElementId) = 0;
 
     virtual void SetSwitchState(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         ElectricalState switchState) = 0;
 
     virtual void SetEngineControllerState(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         float controllerValue) = 0;
 
-    virtual bool DestroyTriangle(ElementId triangleId) = 0;
-    virtual bool RestoreTriangle(ElementId triangleId) = 0;
+    virtual bool DestroyTriangle(GlobalElementId triangleId) = 0;
+    virtual bool RestoreTriangle(GlobalElementId triangleId) = 0;
 
     //
     // Rendering controls and parameters

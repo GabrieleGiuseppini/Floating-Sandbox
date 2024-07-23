@@ -710,11 +710,23 @@ Arch
 	- Swirl, etc.: all ships, all regimes
 		- Controlled by flag, "~force tools on NPCs"
 	- Move/Rotate tool:
-		- Ship: after loop, call ParentWorld::Move/etc/Npcs(shipId, [componentId], ...)
+		- World: after calling into Ship(), call Npcs.Move/etc/Npcs(shipId, [componentId], ...)
+			+ Test in BaryLab first
+			+ Ship::PickPointToMove: becomes PickConnectedComponentToMove() -> ConnectedComponentId
+				+ Also Tool
 			- Just need Move/Rotate, opt<ConnectedComponentId>
 				- Only considers constrained particles
 					- And if ConnectedComponentId is specified, only particles in triangle with first endpoint on that ConnectedComponentId
+				- Look at Ship::Move/etc for physics (e.g. velocity, force zeroing)
+					- Do @ ~ParticleProcessor(TPoints)
+					- Test without vel zeroing
+					- Test without force zeroing
 			- At the end calls MaintainInWorldBounds()
+		- Tests (verify also old ship behavior):
+			- Move All
+			- Move
+			- Rotate All
+			- Rotate
 	- Electric spark:
 		- Electrification must be stored with Points
 		- NPC update looks at own triangle's Points
@@ -809,9 +821,13 @@ Arch
 ===================
 Next release:
 
-- NPC Rendering:
-	- Knee when rising: flatten it (extra triangle)
-
+- New behaviors:
+	- When human removed, enters "Removal" behavior: rotates with arms 90degree and legs closed, alpha down, then disappears
+		- Requires delayed removal (@UpdateBehavior); via new DestroyNpc() helper for common removal logic
+			- Can't be picked when in this state
+			- Physics update: skipped when in this state (like BeingPlaced, but for whole NPC this time)
+			- Tests:
+				- Stats published
 - Doors:
 	- New "DoorHinge" electrical element (with both ON/OFF types), controls floorness of springs (and thus triangle edges) among neighboring pairs of them
 		- Triangle edge/floors: split "factory" vs. "actual"

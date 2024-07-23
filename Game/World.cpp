@@ -124,7 +124,7 @@ Geometry::AABB World::GetNpcAABB(NpcId npcId) const
     return mNpcs->GetAABB(npcId);
 }
 
-bool World::IsUnderwater(ElementId elementId) const
+bool World::IsUnderwater(GlobalElementId elementId) const
 {
     auto const shipId = elementId.GetShipId();
     assert(shipId >= 0 && shipId < mAllShips.size());
@@ -136,38 +136,45 @@ bool World::IsUnderwater(ElementId elementId) const
 // Interactions
 //////////////////////////////////////////////////////////////////////////////
 
-void World::PickPointToMove(
+void World::PickConnectedComponentToMove(
     vec2f const & pickPosition,
-    std::optional<ElementId> & elementId,
+    std::optional<GlobalConnectedComponentId> & connectedComponentId,
     GameParameters const & gameParameters) const
 {
     for (auto & ship : mAllShips)
     {
-        auto elementIndex = ship->PickPointToMove(
+        auto candidateConnectedComponentId = ship->PickConnectedComponentToMove(
             pickPosition,
             gameParameters);
 
-        if (!!elementIndex)
+        if (!!candidateConnectedComponentId)
         {
-            elementId = ElementId(ship->GetId(), *elementIndex);
+            connectedComponentId = GlobalConnectedComponentId(ship->GetId(), *candidateConnectedComponentId);
             return;
         }
     }
 
-    elementId = std::nullopt;
+    connectedComponentId = std::nullopt;
 }
 
 void World::MoveBy(
-    ElementId elementId,
+    GlobalConnectedComponentId connectedComponentId,
     vec2f const & offset,
     vec2f const & inertialVelocity,
     GameParameters const & gameParameters)
 {
-    auto const shipId = elementId.GetShipId();
+    auto const shipId = connectedComponentId.GetShipId();
     assert(shipId >= 0 && shipId < mAllShips.size());
 
     mAllShips[shipId]->MoveBy(
-        elementId.GetLocalObjectId(),
+        connectedComponentId.GetLocalObjectId(),
+        offset,
+        inertialVelocity,
+        gameParameters);
+
+    mNpcs->MoveBy(
+        shipId,
+        connectedComponentId.GetLocalObjectId(),
         offset,
         inertialVelocity,
         gameParameters);
@@ -185,20 +192,35 @@ void World::MoveBy(
         offset,
         inertialVelocity,
         gameParameters);
+
+    mNpcs->MoveBy(
+        shipId,
+        std::nullopt,
+        offset,
+        inertialVelocity,
+        gameParameters);
 }
 
 void World::RotateBy(
-    ElementId elementId,
+    GlobalConnectedComponentId connectedComponentId,
     float angle,
     vec2f const & center,
     float inertialAngle,
     GameParameters const & gameParameters)
 {
-    auto const shipId = elementId.GetShipId();
+    auto const shipId = connectedComponentId.GetShipId();
     assert(shipId >= 0 && shipId < mAllShips.size());
 
     mAllShips[shipId]->RotateBy(
-        elementId.GetLocalObjectId(),
+        connectedComponentId.GetLocalObjectId(),
+        angle,
+        center,
+        inertialAngle,
+        gameParameters);
+
+    mNpcs->RotateBy(
+        shipId,
+        connectedComponentId.GetLocalObjectId(),
         angle,
         center,
         inertialAngle,
@@ -219,9 +241,17 @@ void World::RotateBy(
         center,
         inertialAngle,
         gameParameters);
+
+    mNpcs->RotateBy(
+        shipId,
+        std::nullopt,
+        angle,
+        center,
+        inertialAngle,
+        gameParameters);
 }
 
-std::optional<ElementId> World::PickObjectForPickAndPull(
+std::optional<GlobalElementId> World::PickObjectForPickAndPull(
     vec2f const & pickPosition,
     GameParameters const & gameParameters)
 {
@@ -233,7 +263,7 @@ std::optional<ElementId> World::PickObjectForPickAndPull(
 
         if (elementIndex.has_value())
         {
-            return ElementId(ship->GetId(), *elementIndex);
+            return GlobalElementId(ship->GetId(), *elementIndex);
         }
     }
 
@@ -242,7 +272,7 @@ std::optional<ElementId> World::PickObjectForPickAndPull(
 }
 
 void World::Pull(
-    ElementId elementId,
+    GlobalElementId elementId,
     vec2f const & target,
     GameParameters const & gameParameters)
 {
@@ -838,11 +868,11 @@ void World::ApplyThanosSnap(
         std::chrono::milliseconds(0));
 }
 
-std::optional<ElementId> World::GetNearestPointAt(
+std::optional<GlobalElementId> World::GetNearestPointAt(
     vec2f const & targetPos,
     float radius) const
 {
-    std::optional<ElementId> bestPointId;
+    std::optional<GlobalElementId> bestPointId;
     float bestSquareDistance = std::numeric_limits<float>::max();
 
     for (auto const & ship : mAllShips)
@@ -853,7 +883,7 @@ std::optional<ElementId> World::GetNearestPointAt(
             float squareDistance = (ship->GetPoints().GetPosition(shipBestPointIndex) - targetPos).squareLength();
             if (squareDistance < bestSquareDistance)
             {
-                bestPointId = ElementId(ship->GetId(), shipBestPointIndex);
+                bestPointId = GlobalElementId(ship->GetId(), shipBestPointIndex);
                 bestSquareDistance = squareDistance;
             }
         }
@@ -929,7 +959,7 @@ void World::TriggerRogueWave()
         mWind);
 }
 
-void World::HighlightElectricalElement(ElectricalElementId electricalElementId)
+void World::HighlightElectricalElement(GlobalElectricalElementId electricalElementId)
 {
     auto const shipId = electricalElementId.GetShipId();
     assert(shipId >= 0 && shipId < mAllShips.size());
@@ -938,7 +968,7 @@ void World::HighlightElectricalElement(ElectricalElementId electricalElementId)
 }
 
 void World::SetSwitchState(
-    ElectricalElementId electricalElementId,
+    GlobalElectricalElementId electricalElementId,
     ElectricalState switchState,
     GameParameters const & gameParameters)
 {
@@ -952,7 +982,7 @@ void World::SetSwitchState(
 }
 
 void World::SetEngineControllerState(
-    ElectricalElementId electricalElementId,
+    GlobalElectricalElementId electricalElementId,
     float controllerValue,
     GameParameters const & gameParameters)
 {
@@ -1076,7 +1106,7 @@ void World::HighlightNpc(
         highlight);
 }
 
-bool World::DestroyTriangle(ElementId triangleId)
+bool World::DestroyTriangle(GlobalElementId triangleId)
 {
     auto const shipId = triangleId.GetShipId();
     assert(shipId >= 0 && shipId < mAllShips.size());
@@ -1084,7 +1114,7 @@ bool World::DestroyTriangle(ElementId triangleId)
     return mAllShips[shipId]->DestroyTriangle(triangleId.GetLocalObjectId());
 }
 
-bool World::RestoreTriangle(ElementId triangleId)
+bool World::RestoreTriangle(GlobalElementId triangleId)
 {
     auto const shipId = triangleId.GetShipId();
     assert(shipId >= 0 && shipId < mAllShips.size());

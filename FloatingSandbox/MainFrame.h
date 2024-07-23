@@ -317,7 +317,7 @@ private:
     }
 
     virtual void OnGadgetPlaced(
-        GadgetId /*gadgetId*/,
+        GlobalGadgetId /*gadgetId*/,
         GadgetType gadgetType,
         bool /*isUnderwater*/) override
     {
@@ -334,7 +334,7 @@ private:
     }
 
     virtual void OnGadgetRemoved(
-        GadgetId /*gadgetId*/,
+        GlobalGadgetId /*gadgetId*/,
         GadgetType gadgetType,
         std::optional<bool> /*isUnderwater*/) override
     {

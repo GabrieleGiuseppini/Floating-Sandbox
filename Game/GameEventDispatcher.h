@@ -333,7 +333,7 @@ public:
     }
 
     void OnSwitchCreated(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
         SwitchType type,
         ElectricalState state,
@@ -349,7 +349,7 @@ public:
     }
 
     void OnPowerProbeCreated(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
         PowerProbeType type,
         ElectricalState state,
@@ -365,7 +365,7 @@ public:
     }
 
     void OnEngineControllerCreated(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
         ElectricalMaterial const & electricalMaterial,
         std::optional<ElectricalPanel::ElementMetadata> const & panelElementMetadata) override
@@ -379,7 +379,7 @@ public:
     }
 
     void OnEngineMonitorCreated(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
         float thrustMagnitude,
         float rpm,
@@ -395,7 +395,7 @@ public:
     }
 
     void OnWaterPumpCreated(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
         float normalizedForce,
         ElectricalMaterial const & electricalMaterial,
@@ -410,7 +410,7 @@ public:
     }
 
     void OnWatertightDoorCreated(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
         bool isOpen,
         ElectricalMaterial const & electricalMaterial,
@@ -433,7 +433,7 @@ public:
     }
 
     void OnSwitchEnabled(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         bool isEnabled) override
     {
         for (auto sink : mElectricalElementSinks)
@@ -443,7 +443,7 @@ public:
     }
 
     void OnSwitchToggled(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         ElectricalState newState) override
     {
         for (auto sink : mElectricalElementSinks)
@@ -453,7 +453,7 @@ public:
     }
 
     void OnPowerProbeToggled(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         ElectricalState newState) override
     {
         for (auto sink : mElectricalElementSinks)
@@ -463,7 +463,7 @@ public:
     }
 
     void OnEngineControllerEnabled(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         bool isEnabled) override
     {
         for (auto sink : mElectricalElementSinks)
@@ -473,7 +473,7 @@ public:
     }
 
     void OnEngineControllerUpdated(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         ElectricalMaterial const & electricalMaterial,
         float oldControllerValue,
         float newControllerValue) override
@@ -485,7 +485,7 @@ public:
     }
 
     void OnEngineMonitorUpdated(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         float thrustMagnitude,
         float rpm) override
     {
@@ -496,7 +496,7 @@ public:
     }
 
     void OnShipSoundUpdated(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         ElectricalMaterial const & electricalMaterial,
         bool isPlaying,
         bool isUnderwater) override
@@ -508,7 +508,7 @@ public:
     }
 
     void OnWaterPumpEnabled(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         bool isEnabled) override
     {
         for (auto sink : mElectricalElementSinks)
@@ -518,7 +518,7 @@ public:
     }
 
     void OnWaterPumpUpdated(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         float normalizedForce) override
     {
         for (auto sink : mElectricalElementSinks)
@@ -528,7 +528,7 @@ public:
     }
 
     void OnWatertightDoorEnabled(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         bool isEnabled) override
     {
         for (auto sink : mElectricalElementSinks)
@@ -538,7 +538,7 @@ public:
     }
 
     void OnWatertightDoorUpdated(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         bool isOpen) override
     {
         for (auto sink : mElectricalElementSinks)
@@ -718,7 +718,7 @@ public:
     }
 
     void OnGadgetPlaced(
-        GadgetId gadgetId,
+        GlobalGadgetId gadgetId,
         GadgetType gadgetType,
         bool isUnderwater) override
     {
@@ -732,7 +732,7 @@ public:
     }
 
     void OnGadgetRemoved(
-        GadgetId gadgetId,
+        GlobalGadgetId gadgetId,
         GadgetType gadgetType,
         std::optional<bool> isUnderwater) override
     {
@@ -761,7 +761,7 @@ public:
     }
 
     void OnTimerBombFuse(
-        GadgetId gadgetId,
+        GlobalGadgetId gadgetId,
         std::optional<bool> isFast) override
     {
         for (auto sink : mGenericSinks)
@@ -780,7 +780,7 @@ public:
     }
 
     void OnAntiMatterBombContained(
-        GadgetId gadgetId,
+        GlobalGadgetId gadgetId,
         bool isContained) override
     {
         for (auto sink : mGenericSinks)

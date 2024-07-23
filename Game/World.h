@@ -101,7 +101,7 @@ public:
         return mOceanSurface;
     }
 
-    bool IsUnderwater(ElementId elementId) const;
+    bool IsUnderwater(GlobalElementId elementId) const;
 
     inline void DisplaceOceanSurfaceAt(
         float x,
@@ -134,13 +134,13 @@ public:
     // Interactions
     //
 
-    void PickPointToMove(
+    void PickConnectedComponentToMove(
         vec2f const & pickPosition,
-        std::optional<ElementId> & elementId,
+        std::optional<GlobalConnectedComponentId> & connectedComponentId,
         GameParameters const & gameParameters) const;
 
     void MoveBy(
-        ElementId elementId,
+        GlobalConnectedComponentId connectedComponentId,
         vec2f const & offset,
         vec2f const & inertialVelocity,
         GameParameters const & gameParameters);
@@ -152,7 +152,7 @@ public:
         GameParameters const & gameParameters);
 
     void RotateBy(
-        ElementId elementId,
+        GlobalConnectedComponentId connectedComponentId,
         float angle,
         vec2f const & center,
         float inertialAngle,
@@ -165,12 +165,12 @@ public:
         float inertialAngle,
         GameParameters const & gameParameters);
 
-    std::optional<ElementId> PickObjectForPickAndPull(
+    std::optional<GlobalElementId> PickObjectForPickAndPull(
         vec2f const & pickPosition,
         GameParameters const & gameParameters);
 
     void Pull(
-        ElementId elementId,
+        GlobalElementId elementId,
         vec2f const & target,
         GameParameters const & gameParameters);
 
@@ -308,7 +308,7 @@ public:
         float currentSimulationTime,
         GameParameters const & gameParameters);
 
-    std::optional<ElementId> GetNearestPointAt(
+    std::optional<GlobalElementId> GetNearestPointAt(
         vec2f const & targetPos,
         float radius) const;
 
@@ -331,15 +331,15 @@ public:
 
     void TriggerLightning(GameParameters const & gameParameters);
 
-    void HighlightElectricalElement(ElectricalElementId electricalElementId);
+    void HighlightElectricalElement(GlobalElectricalElementId electricalElementId);
 
     void SetSwitchState(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         ElectricalState switchState,
         GameParameters const & gameParameters);
 
     void SetEngineControllerState(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         float controllerValue,
         GameParameters const & gameParameters);
 
@@ -386,9 +386,9 @@ public:
         NpcId id,
         NpcHighlightType highlight);
 
-    bool DestroyTriangle(ElementId triangleId);
+    bool DestroyTriangle(GlobalElementId triangleId);
 
-    bool RestoreTriangle(ElementId triangleId);
+    bool RestoreTriangle(GlobalElementId triangleId);
 
 public:
 

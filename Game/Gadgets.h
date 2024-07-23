@@ -126,7 +126,7 @@ private:
         // Create gadget
         std::unique_ptr<Gadget> gadget(
             new TGadget(
-                GadgetId(mShipId, mNextLocalGadgetId++),
+                GlobalGadgetId(mShipId, mNextLocalGadgetId++),
                 pointIndex,
                 mParentWorld,
                 mGameEventHandler,
@@ -302,7 +302,7 @@ private:
     std::unique_ptr<Gadget> mCurrentPhysicsProbeGadget;
 
     // The next gadget ID value
-    LocalGadgetId mNextLocalGadgetId;
+    GadgetId mNextLocalGadgetId;
 };
 
 }

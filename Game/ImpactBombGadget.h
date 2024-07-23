@@ -23,7 +23,7 @@ class ImpactBombGadget final : public Gadget
 public:
 
     ImpactBombGadget(
-        GadgetId id,
+        GlobalGadgetId id,
         ElementIndex pointIndex,
         World & parentWorld,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,

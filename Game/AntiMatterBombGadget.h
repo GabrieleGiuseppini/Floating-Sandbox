@@ -23,7 +23,7 @@ class AntiMatterBombGadget final : public Gadget
 public:
 
     AntiMatterBombGadget(
-        GadgetId id,
+        GlobalGadgetId id,
         ElementIndex pointIndex,
         World & parentWorld,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,

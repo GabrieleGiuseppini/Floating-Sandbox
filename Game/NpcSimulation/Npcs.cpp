@@ -1122,6 +1122,38 @@ void Npcs::HighlightNpc(
 	mStateBuffer[id]->Highlight = highlight;
 }
 
+void Npcs::MoveBy(
+	ShipId shipId,
+	std::optional<ConnectedComponentId> connectedComponent,
+	vec2f const & offset,
+	vec2f const & inertialVelocity,
+	GameParameters const & gameParameters)
+{
+	// TODOHERE
+	(void)shipId;
+	(void)connectedComponent;
+	(void)offset;
+	(void)inertialVelocity;
+	(void)gameParameters;
+}
+
+void Npcs::RotateBy(
+	ShipId shipId,
+	std::optional<ConnectedComponentId> connectedComponent,
+	float angle,
+	vec2f const & center,
+	float inertialAngle,
+	GameParameters const & gameParameters)
+{
+	// TODOHERE
+	(void)shipId;
+	(void)connectedComponent;
+	(void)angle;
+	(void)center;
+	(void)inertialAngle;
+	(void)gameParameters;
+}
+
 void Npcs::SetGeneralizedPanicLevelForAllHumans(float panicLevel)
 {
 	for (auto & npc : mStateBuffer)
@@ -1584,7 +1616,7 @@ ShipId Npcs::GetTopmostShipId() const
 	return 0;
 }
 
-std::optional<ElementId> Npcs::FindTopmostTriangleContaining(vec2f const & position) const
+std::optional<GlobalElementId> Npcs::FindTopmostTriangleContaining(vec2f const & position) const
 {
 	// Visit all ships in reverse ship ID order (i.e. from topmost to bottommost)
 	assert(mShips.size() > 0);
@@ -1621,7 +1653,7 @@ std::optional<ElementId> Npcs::FindTopmostTriangleContaining(vec2f const & posit
 			if (bestTriangleIndex)
 			{
 				// Found a triangle on this ship
-				return ElementId(static_cast<ShipId>(s), *bestTriangleIndex);
+				return GlobalElementId(static_cast<ShipId>(s), *bestTriangleIndex);
 			}
 		}
 

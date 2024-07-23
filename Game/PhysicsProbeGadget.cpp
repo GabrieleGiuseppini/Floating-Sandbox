@@ -10,7 +10,7 @@
 namespace Physics {
 
 PhysicsProbeGadget::PhysicsProbeGadget(
-    GadgetId id,
+    GlobalGadgetId id,
     ElementIndex pointIndex,
     World & parentWorld,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,

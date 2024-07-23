@@ -705,6 +705,21 @@ public:
 		NpcId id,
 		NpcHighlightType highlight);
 
+	void MoveBy(
+		ShipId shipId,
+		std::optional<ConnectedComponentId> connectedComponent,
+		vec2f const & offset,
+		vec2f const & inertialVelocity,
+		GameParameters const & gameParameters);
+
+	void RotateBy(
+		ShipId shipId,
+		std::optional<ConnectedComponentId> connectedComponent,
+		float angle,
+		vec2f const & center,
+		float inertialAngle,
+		GameParameters const & gameParameters);
+
 	void SetGeneralizedPanicLevelForAllHumans(float panicLevel);
 
 public:
@@ -828,7 +843,7 @@ private:
 
 	ShipId GetTopmostShipId() const;
 
-	std::optional<ElementId> FindTopmostTriangleContaining(vec2f const & position) const;
+	std::optional<GlobalElementId> FindTopmostTriangleContaining(vec2f const & position) const;
 
 	static ElementIndex FindTriangleContaining(
 		vec2f const & position,

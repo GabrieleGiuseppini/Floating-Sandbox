@@ -642,19 +642,19 @@ void GameController::ToggleToFullDayOrNight()
 
 void GameController::PickObjectToMove(
     DisplayLogicalCoordinates const & screenCoordinates,
-    std::optional<ElementId> & elementId)
+    std::optional<GlobalConnectedComponentId> & connectedComponentId)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
     // Apply action
     assert(!!mWorld);
-    mWorld->PickPointToMove(
+    mWorld->PickConnectedComponentToMove(
         worldCoordinates,
-        elementId,
+        connectedComponentId,
         mGameParameters);
 }
 
-std::optional<ElementId> GameController::PickObjectForPickAndPull(DisplayLogicalCoordinates const & screenCoordinates)
+std::optional<GlobalElementId> GameController::PickObjectForPickAndPull(DisplayLogicalCoordinates const & screenCoordinates)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
@@ -666,7 +666,7 @@ std::optional<ElementId> GameController::PickObjectForPickAndPull(DisplayLogical
 }
 
 void GameController::Pull(
-    ElementId elementId,
+    GlobalElementId elementId,
     DisplayLogicalCoordinates const & screenTarget)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenTarget);
@@ -695,7 +695,7 @@ void GameController::PickObjectToMove(
 }
 
 void GameController::MoveBy(
-    ElementId elementId,
+    GlobalConnectedComponentId const & connectedComponentId,
     DisplayLogicalSize const & screenOffset,
     DisplayLogicalSize const & inertialScreenOffset)
 {
@@ -705,7 +705,7 @@ void GameController::MoveBy(
     // Apply action
     assert(!!mWorld);
     mWorld->MoveBy(
-        elementId,
+        connectedComponentId,
         worldOffset,
         inertialVelocity,
         mGameParameters);
@@ -729,7 +729,7 @@ void GameController::MoveBy(
 }
 
 void GameController::RotateBy(
-    ElementId elementId,
+    GlobalConnectedComponentId const & connectedComponentId,
     float screenDeltaY,
     DisplayLogicalCoordinates const & screenCenter,
     float inertialScreenDeltaY)
@@ -750,7 +750,7 @@ void GameController::RotateBy(
     // Apply action
     assert(!!mWorld);
     mWorld->RotateBy(
-        elementId,
+        connectedComponentId,
         angle,
         worldCenter,
         inertialAngle,
@@ -1370,7 +1370,7 @@ void GameController::HighlightNpc(
         highlight);
 }
 
-std::optional<ElementId> GameController::GetNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const
+std::optional<GlobalElementId> GameController::GetNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
@@ -1410,14 +1410,14 @@ void GameController::TriggerLightning()
     mWorld->TriggerLightning(mGameParameters);
 }
 
-void GameController::HighlightElectricalElement(ElectricalElementId electricalElementId)
+void GameController::HighlightElectricalElement(GlobalElectricalElementId electricalElementId)
 {
     assert(!!mWorld);
     mWorld->HighlightElectricalElement(electricalElementId);
 }
 
 void GameController::SetSwitchState(
-    ElectricalElementId electricalElementId,
+    GlobalElectricalElementId electricalElementId,
     ElectricalState switchState)
 {
     assert(!!mWorld);
@@ -1428,7 +1428,7 @@ void GameController::SetSwitchState(
 }
 
 void GameController::SetEngineControllerState(
-    ElectricalElementId electricalElementId,
+    GlobalElectricalElementId electricalElementId,
     float controllerValue)
 {
     assert(!!mWorld);
@@ -1438,13 +1438,13 @@ void GameController::SetEngineControllerState(
         mGameParameters);
 }
 
-bool GameController::DestroyTriangle(ElementId triangleId)
+bool GameController::DestroyTriangle(GlobalElementId triangleId)
 {
     assert(!!mWorld);
     return mWorld->DestroyTriangle(triangleId);
 }
 
-bool GameController::RestoreTriangle(ElementId triangleId)
+bool GameController::RestoreTriangle(GlobalElementId triangleId)
 {
     assert(!!mWorld);
     return mWorld->RestoreTriangle(triangleId);

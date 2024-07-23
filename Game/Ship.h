@@ -101,12 +101,12 @@ public:
     // Interactions
     ///////////////////////////////////////////////////////////////
 
-    std::optional<ElementIndex> PickPointToMove(
+    std::optional<ConnectedComponentId> PickConnectedComponentToMove(
         vec2f const & pickPosition,
         GameParameters const & gameParameters) const;
 
     void MoveBy(
-        ElementIndex pointElementIndex,
+        ConnectedComponentId connectedComponentId,
         vec2f const & offset,
         vec2f const & inertialVelocity,
         GameParameters const & gameParameters);
@@ -117,7 +117,7 @@ public:
         GameParameters const & gameParameters);
 
     void RotateBy(
-        ElementIndex pointElementIndex,
+        ConnectedComponentId connectedComponentId,
         float angle,
         vec2f const & center,
         float inertialAngle,
@@ -287,15 +287,15 @@ public:
 		float currentSimulationTime,
 		GameParameters const & gameParameters);
 
-    void HighlightElectricalElement(ElectricalElementId electricalElementId);
+    void HighlightElectricalElement(GlobalElectricalElementId electricalElementId);
 
     void SetSwitchState(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         ElectricalState switchState,
         GameParameters const & gameParameters);
 
     void SetEngineControllerState(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         float controllerValue,
         GameParameters const & gameParameters);
 

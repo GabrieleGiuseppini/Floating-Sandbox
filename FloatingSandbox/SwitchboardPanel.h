@@ -85,7 +85,7 @@ public:
     virtual void OnElectricalElementAnnouncementsBegin() override;
 
     virtual void OnSwitchCreated(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
         SwitchType type,
         ElectricalState state,
@@ -93,7 +93,7 @@ public:
         std::optional<ElectricalPanel::ElementMetadata> const & panelElementMetadata) override;
 
     virtual void OnPowerProbeCreated(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
         PowerProbeType type,
         ElectricalState state,
@@ -101,13 +101,13 @@ public:
         std::optional<ElectricalPanel::ElementMetadata> const & panelElementMetadata) override;
 
     virtual void OnEngineControllerCreated(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
         ElectricalMaterial const & electricalMaterial,
         std::optional<ElectricalPanel::ElementMetadata> const & panelElementMetadata) override;
 
     virtual void OnEngineMonitorCreated(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
         float thrustMagnitude,
         float rpm,
@@ -115,14 +115,14 @@ public:
         std::optional<ElectricalPanel::ElementMetadata> const & panelElementMetadata) override;
 
     virtual void OnWaterPumpCreated(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
         float normalizedForce,
         ElectricalMaterial const & electricalMaterial,
         std::optional<ElectricalPanel::ElementMetadata> const & panelElementMetadata) override;
 
     virtual void OnWatertightDoorCreated(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
         bool isOpen,
         ElectricalMaterial const & electricalMaterial,
@@ -131,46 +131,46 @@ public:
     virtual void OnElectricalElementAnnouncementsEnd() override;
 
     virtual void OnSwitchEnabled(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         bool isEnabled) override;
 
     virtual void OnSwitchToggled(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         ElectricalState newState) override;
 
     virtual void OnPowerProbeToggled(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         ElectricalState newState) override;
 
     virtual void OnEngineControllerEnabled(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         bool isEnabled) override;
 
     virtual void OnEngineControllerUpdated(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         ElectricalMaterial const & electricalMaterial,
         float oldControllerValue,
         float newControllerValue) override;
 
     virtual void OnEngineMonitorUpdated(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         float thrustMagnitude,
         float rpm) override;
 
     virtual void OnWaterPumpEnabled(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         bool isEnabled) override;
 
     virtual void OnWaterPumpUpdated(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         float normalizedForce) override;
 
     virtual void OnWatertightDoorEnabled(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         bool isEnabled) override;
 
     virtual void OnWatertightDoorUpdated(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         bool isOpen) override;
 
 private:
@@ -219,7 +219,7 @@ private:
 
     void OnBackgroundSelectionChanged(wxCommandEvent & event);
 
-    void OnTick(ElectricalElementId electricalElementId);
+    void OnTick(GlobalElectricalElementId electricalElementId);
 
 private:
 
@@ -278,19 +278,19 @@ private:
         {}
     };
 
-    std::unordered_map<ElectricalElementId, ElectricalElementInfo> mElementMap;
+    std::unordered_map<GlobalElectricalElementId, ElectricalElementInfo> mElementMap;
 
     // The electrical elements that need to be updated
     std::vector<IUpdateableElectricalElementControl *> mUpdateableElements;
 
     // Keyboard shortcuts - indexed by key (Ctrl/Alt 1,...,0,-)
-    std::vector<ElectricalElementId> mKeyboardShortcutToElementId;
+    std::vector<GlobalElectricalElementId> mKeyboardShortcutToElementId;
 
     // The electrical element that we last delivered a KeyDown to,
     // so that we know whom to deliver KeyUp.
     // Note that we care only about the first key down in a sequence of key downs,
     // and only about the first key up in a sequence of key ups
-    std::optional<ElectricalElementId> mCurrentKeyDownElementId;
+    std::optional<GlobalElectricalElementId> mCurrentKeyDownElementId;
 
 private:
 

@@ -10,7 +10,7 @@
 namespace Physics {
 
 ImpactBombGadget::ImpactBombGadget(
-    GadgetId id,
+    GlobalGadgetId id,
     ElementIndex pointIndex,
     World & parentWorld,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,

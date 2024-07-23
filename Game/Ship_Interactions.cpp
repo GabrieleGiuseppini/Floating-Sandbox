@@ -30,7 +30,7 @@ namespace Physics {
 // SS   SS  H     H     I     P
 //   SSS    H     H  IIIIIII  P
 
-std::optional<ElementIndex> Ship::PickPointToMove(
+std::optional<ConnectedComponentId> Ship::PickConnectedComponentToMove(
     vec2f const & pickPosition,
     GameParameters const & gameParameters) const
 {
@@ -43,44 +43,47 @@ std::optional<ElementIndex> Ship::PickPointToMove(
     // Separate orphaned and non-orphaned points; we'll choose
     // orphaned when there are no non-orphaned
     float bestNonOrphanedSquareDistance = std::numeric_limits<float>::max();
-    ElementIndex bestNonOrphanedPoint = NoneElementIndex;
+    ConnectedComponentId bestNonOrphanedPointCCId = NoneConnectedComponentId;
     float bestOrphanedSquareDistance = std::numeric_limits<float>::max();
-    ElementIndex bestOrphanedPoint = NoneElementIndex;
+    ConnectedComponentId bestOrphanedPointCCId = NoneConnectedComponentId;
 
     for (auto p : mPoints.RawShipPoints())
     {
         float const squareDistance = (mPoints.GetPosition(p) - pickPosition).squareLength();
         if (squareDistance < squareSearchRadius)
         {
-            if (!mPoints.GetConnectedSprings(p).ConnectedSprings.empty())
+            if (mPoints.GetConnectedComponentId(p) != NoneConnectedComponentId)
             {
-                if (squareDistance < bestNonOrphanedSquareDistance)
+                if (!mPoints.GetConnectedSprings(p).ConnectedSprings.empty())
                 {
-                    bestNonOrphanedSquareDistance = squareDistance;
-                    bestNonOrphanedPoint = p;
+                    if (squareDistance < bestNonOrphanedSquareDistance)
+                    {
+                        bestNonOrphanedSquareDistance = squareDistance;
+                        bestNonOrphanedPointCCId = mPoints.GetConnectedComponentId(p);
+                    }
                 }
-            }
-            else
-            {
-                if (squareDistance < bestOrphanedSquareDistance)
+                else
                 {
-                    bestOrphanedSquareDistance = squareDistance;
-                    bestOrphanedPoint = p;
+                    if (squareDistance < bestOrphanedSquareDistance)
+                    {
+                        bestOrphanedSquareDistance = squareDistance;
+                        bestOrphanedPointCCId = mPoints.GetConnectedComponentId(p);
+                    }
                 }
             }
         }
     }
 
-    if (bestNonOrphanedPoint != NoneElementIndex)
-        return bestNonOrphanedPoint;
-    else if (bestOrphanedPoint != NoneElementIndex)
-        return bestOrphanedPoint;
+    if (bestNonOrphanedPointCCId != NoneConnectedComponentId)
+        return bestNonOrphanedPointCCId;
+    else if (bestOrphanedPointCCId != NoneConnectedComponentId)
+        return bestOrphanedPointCCId;
     else
         return std::nullopt;
 }
 
 void Ship::MoveBy(
-    ElementIndex pointElementIndex,
+    ConnectedComponentId connectedComponentId,
     vec2f const & offset,
     vec2f const & inertialVelocity,
     GameParameters const & gameParameters)
@@ -90,31 +93,26 @@ void Ship::MoveBy(
         * gameParameters.MoveToolInertia
         * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
 
-    // Get connected component ID of the point
-    auto const connectedComponentId = mPoints.GetConnectedComponentId(pointElementIndex);
-    if (connectedComponentId != NoneConnectedComponentId)
+    // Move all points (ephemeral and non-ephemeral) that belong to the same connected component
+    for (auto const p : mPoints)
     {
-        // Move all points (ephemeral and non-ephemeral) that belong to the same connected component
-        for (auto const p : mPoints)
+        if (mPoints.GetConnectedComponentId(p) == connectedComponentId)
         {
-            if (mPoints.GetConnectedComponentId(p) == connectedComponentId)
+            mPoints.SetPosition(p, mPoints.GetPosition(p) + offset);
+
+            if (!mPoints.IsPinned(p))
             {
-                mPoints.SetPosition(p, mPoints.GetPosition(p) + offset);
-
-                if (!mPoints.IsPinned(p))
-                {
-                    mPoints.SetVelocity(p, actualInertialVelocity);
-                    mPoints.SetWaterVelocity(p, -actualInertialVelocity);
-                }
-
-                // Zero-out already-existing forces
-                mPoints.SetStaticForce(p, vec2f::zero());
-                mPoints.SetDynamicForce(p, vec2f::zero());
+                mPoints.SetVelocity(p, actualInertialVelocity);
+                mPoints.SetWaterVelocity(p, -actualInertialVelocity);
             }
-        }
 
-        TrimForWorldBounds(gameParameters);
+            // Zero-out already-existing forces
+            mPoints.SetStaticForce(p, vec2f::zero());
+            mPoints.SetDynamicForce(p, vec2f::zero());
+        }
     }
+
+    TrimForWorldBounds(gameParameters);
 }
 
 void Ship::MoveBy(
@@ -148,7 +146,7 @@ void Ship::MoveBy(
 }
 
 void Ship::RotateBy(
-    ElementIndex pointElementIndex,
+    ConnectedComponentId connectedComponentId,
     float angle,
     vec2f const & center,
     float inertialAngle,
@@ -164,34 +162,29 @@ void Ship::RotateBy(
     vec2f const inertialRotX(cos(inertialAngle), sin(inertialAngle));
     vec2f const inertialRotY(-sin(inertialAngle), cos(inertialAngle));
 
-    // Get connected component ID of the point
-    auto connectedComponentId = mPoints.GetConnectedComponentId(pointElementIndex);
-    if (connectedComponentId != NoneConnectedComponentId)
+    // Rotate all points (ephemeral and non-ephemeral) that belong to the same connected component
+    for (auto const p : mPoints)
     {
-        // Rotate all points (ephemeral and non-ephemeral) that belong to the same connected component
-        for (auto const p : mPoints)
+        if (mPoints.GetConnectedComponentId(p) == connectedComponentId)
         {
-            if (mPoints.GetConnectedComponentId(p) == connectedComponentId)
+            vec2f const centeredPos = mPoints.GetPosition(p) - center;
+            vec2f const newPosition = vec2f(centeredPos.dot(rotX), centeredPos.dot(rotY)) + center;
+            mPoints.SetPosition(p, newPosition);
+
+            if (!mPoints.IsPinned(p))
             {
-                vec2f const centeredPos = mPoints.GetPosition(p) - center;
-                vec2f const newPosition = vec2f(centeredPos.dot(rotX), centeredPos.dot(rotY)) + center;
-                mPoints.SetPosition(p, newPosition);
-
-                if (!mPoints.IsPinned(p))
-                {
-                    vec2f const linearInertialVelocity = (vec2f(centeredPos.dot(inertialRotX), centeredPos.dot(inertialRotY)) - centeredPos) * inertiaMagnitude;
-                    mPoints.SetVelocity(p, linearInertialVelocity);
-                    mPoints.SetWaterVelocity(p, -linearInertialVelocity);
-                }
-
-                // Zero-out already-existing forces
-                mPoints.SetStaticForce(p, vec2f::zero());
-                mPoints.SetDynamicForce(p, vec2f::zero());
+                vec2f const linearInertialVelocity = (vec2f(centeredPos.dot(inertialRotX), centeredPos.dot(inertialRotY)) - centeredPos) * inertiaMagnitude;
+                mPoints.SetVelocity(p, linearInertialVelocity);
+                mPoints.SetWaterVelocity(p, -linearInertialVelocity);
             }
-        }
 
-        TrimForWorldBounds(gameParameters);
+            // Zero-out already-existing forces
+            mPoints.SetStaticForce(p, vec2f::zero());
+            mPoints.SetDynamicForce(p, vec2f::zero());
+        }
     }
+
+    TrimForWorldBounds(gameParameters);
 }
 
 void Ship::RotateBy(
@@ -1679,7 +1672,7 @@ void Ship::ApplyLightning(
     }
 }
 
-void Ship::HighlightElectricalElement(ElectricalElementId electricalElementId)
+void Ship::HighlightElectricalElement(GlobalElectricalElementId electricalElementId)
 {
     assert(electricalElementId.GetShipId() == mId);
 
@@ -1689,7 +1682,7 @@ void Ship::HighlightElectricalElement(ElectricalElementId electricalElementId)
 }
 
 void Ship::SetSwitchState(
-    ElectricalElementId electricalElementId,
+    GlobalElectricalElementId electricalElementId,
     ElectricalState switchState,
     GameParameters const & gameParameters)
 {
@@ -1703,7 +1696,7 @@ void Ship::SetSwitchState(
 }
 
 void Ship::SetEngineControllerState(
-    ElectricalElementId electricalElementId,
+    GlobalElectricalElementId electricalElementId,
     float controllerValue,
     GameParameters const & gameParameters)
 {
