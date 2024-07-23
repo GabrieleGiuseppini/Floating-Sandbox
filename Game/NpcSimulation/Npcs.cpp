@@ -1129,12 +1129,39 @@ void Npcs::MoveBy(
 	vec2f const & inertialVelocity,
 	GameParameters const & gameParameters)
 {
-	// TODOHERE
-	(void)shipId;
-	(void)connectedComponent;
-	(void)offset;
-	(void)inertialVelocity;
-	(void)gameParameters;
+	vec2f const actualInertialVelocity =
+		inertialVelocity
+		* gameParameters.MoveToolInertia
+		* (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
+
+	assert(mShips[shipId].has_value());
+	auto const & homeShip = mShips[shipId]->HomeShip;
+	for (auto npcId : mShips[shipId]->Npcs)
+	{
+		assert(mStateBuffer[npcId].has_value());
+
+		// Check if this NPC is in scope: it is iff:
+		//	- We're moving all, OR
+		//	- The primary is constrained and in this connected component
+		auto const & primaryParticle = mStateBuffer[npcId]->ParticleMesh.Particles[0];
+		if (!connectedComponent
+			|| (primaryParticle.ConstrainedState.has_value()
+				&& homeShip.GetPoints().GetConnectedComponentId(homeShip.GetTriangles().GetPointAIndex(primaryParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex)) == *connectedComponent))
+		{
+			// In scope - move all of its particles
+			for (auto const & particle : mStateBuffer[npcId]->ParticleMesh.Particles)
+			{
+				auto const p = particle.ParticleIndex;
+				mParticles.SetPosition(p, mParticles.GetPosition(p) + offset);
+				mParticles.SetVelocity(p, actualInertialVelocity);
+
+				// Zero-out already-existing forces
+				mParticles.SetExternalForces(p, vec2f::zero());
+			}
+		}
+	}
+
+	MaintainInWorldBounds(gameParameters);
 }
 
 void Npcs::RotateBy(
@@ -1145,13 +1172,47 @@ void Npcs::RotateBy(
 	float inertialAngle,
 	GameParameters const & gameParameters)
 {
-	// TODOHERE
-	(void)shipId;
-	(void)connectedComponent;
-	(void)angle;
-	(void)center;
-	(void)inertialAngle;
-	(void)gameParameters;
+	vec2f const rotX(cos(angle), sin(angle));
+	vec2f const rotY(-sin(angle), cos(angle));
+
+	float const inertiaMagnitude =
+		gameParameters.MoveToolInertia
+		* (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
+
+	vec2f const inertialRotX(cos(inertialAngle), sin(inertialAngle));
+	vec2f const inertialRotY(-sin(inertialAngle), cos(inertialAngle));
+
+	assert(mShips[shipId].has_value());
+	auto const & homeShip = mShips[shipId]->HomeShip;
+	for (auto npcId : mShips[shipId]->Npcs)
+	{
+		assert(mStateBuffer[npcId].has_value());
+
+		// Check if this NPC is in scope: it is iff:
+		//	- We're rotating all, OR
+		//	- The primary is constrained and in this connected component
+		auto const & primaryParticle = mStateBuffer[npcId]->ParticleMesh.Particles[0];
+		if (!connectedComponent
+			|| (primaryParticle.ConstrainedState.has_value()
+				&& homeShip.GetPoints().GetConnectedComponentId(homeShip.GetTriangles().GetPointAIndex(primaryParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex)) == *connectedComponent))
+		{
+			for (auto const & particle : mStateBuffer[npcId]->ParticleMesh.Particles)
+			{
+				auto const p = particle.ParticleIndex;
+				vec2f const centeredPos = mParticles.GetPosition(p) - center;
+				vec2f const newPosition = vec2f(centeredPos.dot(rotX), centeredPos.dot(rotY)) + center;
+				mParticles.SetPosition(p, newPosition);
+
+				vec2f const linearInertialVelocity = (vec2f(centeredPos.dot(inertialRotX), centeredPos.dot(inertialRotY)) - centeredPos) * inertiaMagnitude;
+				mParticles.SetVelocity(p, linearInertialVelocity);
+
+				// Zero-out already-existing forces
+				mParticles.SetExternalForces(p, vec2f::zero());
+			}
+		}
+	}
+
+	MaintainInWorldBounds(gameParameters);
 }
 
 void Npcs::SetGeneralizedPanicLevelForAllHumans(float panicLevel)

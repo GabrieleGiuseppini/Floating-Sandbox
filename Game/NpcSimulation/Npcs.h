@@ -1119,6 +1119,8 @@ private:
 		vec2f const & bounceEdgeNormal,
 		float currentSimulationTime) const;
 
+	void MaintainInWorldBounds(GameParameters const & gameParameters);
+
 	void UpdateNpcAnimation(
 		StateType & npc,
 		float currentSimulationTime,

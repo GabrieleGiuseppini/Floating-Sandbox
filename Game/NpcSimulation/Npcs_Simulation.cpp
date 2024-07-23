@@ -3004,6 +3004,12 @@ void Npcs::OnImpact(
     }
 }
 
+void Npcs::MaintainInWorldBounds(GameParameters const & gameParameters)
+{
+    // TODOHERE
+    (void)gameParameters;
+}
+
 void Npcs::UpdateNpcAnimation(
     StateType & npc,
     float currentSimulationTime,

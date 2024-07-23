@@ -650,6 +650,8 @@ Arch
 					+ Npcs.cpp support
 			+ Merge into npcs_v1
 
+	- See if need smoother for NpcSizeAdjust
+
 	- Do other atlases (Clouds, GenericLinear, GenericMipMapped)
 		- Clean checkout
 		- Move to Baking
@@ -709,24 +711,18 @@ Arch
 	- Ship-specific explosions: only of that ship, or free regime
 	- Swirl, etc.: all ships, all regimes
 		- Controlled by flag, "~force tools on NPCs"
-	- Move/Rotate tool:
-		- World: after calling into Ship(), call Npcs.Move/etc/Npcs(shipId, [componentId], ...)
+		- This one may be done with ParticlePhysics:
+			- Rename Npcs' ExternalForces as StaticForces?
+	+ Move/Rotate tool:
+		+ World: after calling into Ship(), call Npcs.Move/etc/Npcs(shipId, [componentId], ...)
 			+ Test in BaryLab first
 			+ Ship::PickPointToMove: becomes PickConnectedComponentToMove() -> ConnectedComponentId
 				+ Also Tool
-			- Just need Move/Rotate, opt<ConnectedComponentId>
-				- Only considers constrained particles
-					- And if ConnectedComponentId is specified, only particles in triangle with first endpoint on that ConnectedComponentId
-				- Look at Ship::Move/etc for physics (e.g. velocity, force zeroing)
-					- Do @ ~ParticleProcessor(TPoints)
-					- Test without vel zeroing
-					- Test without force zeroing
-			- At the end calls MaintainInWorldBounds()
-		- Tests (verify also old ship behavior):
-			- Move All
-			- Move
-			- Rotate All
-			- Rotate
+			+ Just need Move/Rotate, opt<ConnectedComponentId>
+				+ Only considers constrained particles
+					+ And if ConnectedComponentId is specified, only particles in triangle with first endpoint on that ConnectedComponentId
+				+ Look at Ship::Move/etc for physics (e.g. velocity, force zeroing)
+			+ At the end calls MaintainInWorldBounds()
 	- Electric spark:
 		- Electrification must be stored with Points
 		- NPC update looks at own triangle's Points
