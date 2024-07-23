@@ -519,9 +519,9 @@ Arch
 	= Shader ("ship_npcs_texture"):
 		+ We keep existing limb-based shader, just change all its vertex attributes/parameters/etc. to become "texture"
 		+ Sampler
-		- Discard when transparent
-			- But only after testing with two connected components - & inverse order of drawing; should bug out when near NPC is drawn before far NPC and they are on top of each other
-				- Test requires NPC following their triangle with move - Move/Rotate work item below
+		+ Discard when transparent
+			+ But only after testing with two connected components - & inverse order of drawing; should bug out when near NPC is drawn before far NPC and they are on top of each other
+				+ Test requires NPC following their triangle with move - Move/Rotate work item below
 		+ Highlight: Step(c.alpha, 0.0) as coeff to bright red
 		- Apply ocean depth darkening (iff in water?)
 		- Apply ocean shadows (iff in water)
@@ -651,7 +651,13 @@ Arch
 			+ Merge into npcs_v1
 
 	- See if need smoother for NpcSizeAdjust
-
+	- If particles 2, 3, etc. are on a different component ID than primary's, then make them free
+		- TODO: somewhere at Npc::Update, or where we detect the particle going free (e.g. because folded triangle or triangle destroyed)
+		- TODO: do we want to flag NPC as belonging to a opt<connected component>? 
+			- 1: Set at each place where we set plane ID, including:
+				- At end of Update()
+				- At becoming constrained (where we take plane ID)
+			- 2: Reset when we become free
 	- Do other atlases (Clouds, GenericLinear, GenericMipMapped)
 		- Clean checkout
 		- Move to Baking
@@ -689,6 +695,7 @@ Arch
 				- Become free! So we avoid bouncing back and forth
 	- Triangle destruction: 
 		- Should be enough to check for current triangle being deleted at beginning of UpdateNpc(.), and if so, become free
+			- Just like when we detect secondary, third, etc. are in a different connected component, see above
 	- Swimming humans generate (small) bubbles
 		- Each aquatic state has a NextBubbleEmissionSimulationTimestamp
 			- Init'd as 0

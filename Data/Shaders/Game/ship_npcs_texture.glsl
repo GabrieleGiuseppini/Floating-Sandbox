@@ -42,6 +42,11 @@ void main()
     // Sample texture
     vec4 c = texture2D(paramNpcAtlasTexture, textureCoords);
 
+    // Fragments with alpha lower than this are discarded
+    #define MinAlpha 0.2
+    if (c.a < MinAlpha) // We don't Z-sort NPCs
+        discard;   
+
     // Apply highlight
     c = vec4(
         mix(
