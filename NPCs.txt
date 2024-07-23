@@ -444,7 +444,7 @@ Arch
 		+ Fix in barylab
 		+ Port to FS
 
-	- Misc possible improvements:
+	= Misc possible improvements:
 		X See if can avoid furniture bending
 			X Try that other spring relaxation algo
 				+ Backport to Barylab first
@@ -464,11 +464,30 @@ Arch
 						- Note: current prediction is based on velocity alone, while NewPos also takes forces
 			+ Recheck FS vs BaryLab
 		- Maintain spring lengths during BeingPlaced (to avoid elongations)
-			- Unless taken care by above
-		- If above doesn't work: try more velocity damping during BeingPlaced
+		X If above doesn't work: try more velocity damping during BeingPlaced
 		+ Picking human NPCs: now it's too cumbersome
 		+ fmod improvements
 			+ See https://cboard.cprogramming.com/c-programming/105096-fmod.html
+
+
+	- If particles 2, 3, etc. are on a different component ID than primary's, then make them free
+		- In short: need to add new constraint: non-primary constrained can only live in same connected component as primary's
+			! Not a problem while we navigate, as cannot navigate across different connected components
+			- NPC acquires a new opt<CurrentConnectedComponentId> attribute, identical to CurrentPlaneId (but nullable <-> free)
+			- To enforce at:
+				- Placement (ResetNpcToState)
+					- Based on primary, where we take NPC's plane ID also from its primary
+					- Then we need to constrain non-primary search for triangles to primary's connected component (==NPC's)
+				- Secondary free becoming constrained: consider only triangles belonging to primary's connected component (==NPC's)
+				- Ship connectivity changed
+					- Detected at Npc::Update, where we detect the particle going free (e.g. because folded triangle or triangle destroyed)
+						- Detection: non-primary (constrained) is found in a connected component different than primary's (==NPC's)
+							- And here be become free
+					- At end of Npc::Update, getting primary's and using that for whole NPC (like we do for plane ID)
+				- TODO: any other cases in which secondary might "jump" (not navigate) triangles?
+				- Reset when becoming free
+		- Impl:
+			- Add helper: Triangles::GetConnectedComponentId(triangleID, points)
 
 = Rendering:
 	! Atlas textures are simply flat frames and all, NpcDatabase groups them together
@@ -525,6 +544,7 @@ Arch
 		+ Highlight: Step(c.alpha, 0.0) as coeff to bright red
 		x Apply ocean depth darkening (iff in water?)
 		x Apply ocean shadows (iff in water)
+
 	+ Misc improvements & technical debt:
 		+ When drawing human on side, legs first and arms then (as arms are longer)
 		+ Furniture: anti-alias in image
@@ -648,21 +668,7 @@ Arch
 					+ npc_database
 					+ NPC atlas
 					+ Npcs.cpp support
-			+ Merge into npcs_v1
-
-	- If particles 2, 3, etc. are on a different component ID than primary's, then make them free
-		- TODO: somewhere at Npc::Update, or where we detect the particle going free (e.g. because folded triangle or triangle destroyed)
-		- TODO: do we want to flag NPC as belonging to a opt<connected component>? 
-			- 1: Set at each place where we set plane ID, including:
-				- At end of Update()
-				- At becoming constrained (where we take plane ID)
-			- 2: Reset when we become free
-	- Do other atlases (Clouds, GenericLinear, GenericMipMapped)
-		- Clean checkout
-		- Move to Baking
-		- Produce atlases
-		- Change atlas loading code
-		- Check startup mem: was 798MB
+			+ Merge into npcs_v1				
 
 	- Test on Dell:
 		- Max number of textures (we've added 9th!)
@@ -693,7 +699,7 @@ Arch
 				- Move back and bounce perpendicular velocity (see actually what we do in ship)
 				- Become free! So we avoid bouncing back and forth
 	- Triangle destruction: 
-		- Should be enough to check for current triangle being deleted at beginning of UpdateNpc(.), and if so, become free
+		- Should be enough to check for current triangle being deleted at beginning of UpdateNpc(.), and if so, become free (identical for @ pri and @ non-pri)
 			- Just like when we detect secondary, third, etc. are in a different connected component, see above
 	- Swimming humans generate (small) bubbles
 		- Each aquatic state has a NextBubbleEmissionSimulationTimestamp
