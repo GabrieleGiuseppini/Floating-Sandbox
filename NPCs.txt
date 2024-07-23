@@ -650,7 +650,6 @@ Arch
 					+ Npcs.cpp support
 			+ Merge into npcs_v1
 
-	- See if need smoother for NpcSizeAdjust
 	- If particles 2, 3, etc. are on a different component ID than primary's, then make them free
 		- TODO: somewhere at Npc::Update, or where we detect the particle going free (e.g. because folded triangle or triangle destroyed)
 		- TODO: do we want to flag NPC as belonging to a opt<connected component>? 

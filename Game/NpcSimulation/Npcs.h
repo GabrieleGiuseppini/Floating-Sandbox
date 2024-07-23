@@ -642,7 +642,7 @@ public:
 		// Simulation parameters
 		, mGlobalDampingFactor(0.0f) // Will be calculated
 		, mCurrentGlobalDampingAdjustment(1.0f)
-		, mCurrentSizeAdjustment(1.0f)
+		, mCurrentSizeMultiplier(1.0f)
 		, mCurrentHumanNpcWalkingSpeedAdjustment(1.0f)
 		, mCurrentSpringReductionFractionAdjustment(1.0f)
 		, mCurrentSpringDampingCoefficientAdjustment(1.0f)
@@ -922,7 +922,7 @@ private:
 
 	static float CalculateParticleMass(
 		float baseMass,
-		float sizeAdjustment
+		float sizeMultiplier
 #ifdef IN_BARYLAB
 		, float massAdjustment
 #endif
@@ -930,14 +930,14 @@ private:
 
 	static float CalculateParticleBuoyancyFactor(
 		float baseBuoyancyVolumeFill,
-		float sizeAdjustment
+		float sizeMultiplier
 #ifdef IN_BARYLAB
 		, float buoyancyAdjustment
 #endif
 		);
 
 	static void CalculateSprings(
-		float sizeAdjustment,
+		float sizeMultiplier,
 #ifdef IN_BARYLAB
 		float massAdjustment,
 #endif
@@ -948,7 +948,7 @@ private:
 
 	static float CalculateSpringLength(
 		float baseLength,
-		float sizeAdjustment);
+		float sizeMultiplier);
 
 	void RecalculateGlobalDampingFactor();
 
@@ -1386,7 +1386,7 @@ private:
 
 	// Cached from game parameters
 	float mCurrentGlobalDampingAdjustment;
-	float mCurrentSizeAdjustment;
+	float mCurrentSizeMultiplier;
 	float mCurrentHumanNpcWalkingSpeedAdjustment;
 	float mCurrentSpringReductionFractionAdjustment;
 	float mCurrentSpringDampingCoefficientAdjustment;

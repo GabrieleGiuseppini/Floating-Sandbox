@@ -2870,26 +2870,26 @@ void SettingsDialog::PopulateLightsElectricalFishesNpcsPanel(wxPanel * panel)
         {
             wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
 
-            // Size Adjust
+            // Size Multiplier
             {
-                mNpcSizeAdjustmentSlider = new SliderControl<float>(
+                mNpcSizeMultiplierSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
                     SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
-                    _("Size Adjust"),
-                    _("Adjusts the size of NPCs."),
+                    _("Size Multiplier"),
+                    _("Magnifies or minimizes the physical size of NPCs."),
                     [this](float value)
                     {
-                        this->mLiveSettings.SetValue(GameSettings::NpcSizeAdjustment, value);
+                        this->mLiveSettings.SetValue(GameSettings::NpcSizeMultiplier, value);
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
-                        mGameControllerSettingsOptions.GetMinNpcSizeAdjustment(),
-                        mGameControllerSettingsOptions.GetMaxNpcSizeAdjustment()));
+                        mGameControllerSettingsOptions.GetMinNpcSizeMultiplier(),
+                        mGameControllerSettingsOptions.GetMaxNpcSizeMultiplier()));
 
                 sizer->Add(
-                    mNpcSizeAdjustmentSlider,
+                    mNpcSizeMultiplierSlider,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -5754,7 +5754,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mDoFishShoalingCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoFishShoaling));
     mFishShoalRadiusAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::FishShoalRadiusAdjustment));
     mFishShoalRadiusAdjustmentSlider->Enable(settings.GetValue<bool>(GameSettings::DoFishShoaling));
-    mNpcSizeAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::NpcSizeAdjustment));
+    mNpcSizeMultiplierSlider->SetValue(settings.GetValue<float>(GameSettings::NpcSizeMultiplier));
 
     //
     // Destructive Tools

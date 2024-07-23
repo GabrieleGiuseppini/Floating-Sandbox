@@ -239,8 +239,8 @@ struct IGameControllerSettings
 
     // NPCs
 
-    virtual float GetNpcSizeAdjustment() const = 0;
-    virtual void SetNpcSizeAdjustment(float value) = 0;
+    virtual float GetNpcSizeMultiplier() const = 0;
+    virtual void SetNpcSizeMultiplier(float value) = 0;
 
 
     // Misc

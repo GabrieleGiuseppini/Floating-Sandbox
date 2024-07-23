@@ -258,6 +258,19 @@ GameController::GameController(
         GenericParameterConvergenceFactor,
         GenericParameterTerminationThreshold);
 
+    assert(mFloatParameterSmoothers.size() == NpcSizeMultiplierParameterSmoother);
+    mFloatParameterSmoothers.emplace_back(
+        [this]() -> float const &
+        {
+            return this->mGameParameters.NpcSizeMultiplier;
+        },
+        [this](float const & value)
+        {
+            this->mGameParameters.NpcSizeMultiplier = value;
+        },
+        GenericParameterConvergenceFactor,
+        GenericParameterTerminationThreshold);
+
     //
     // Calibrate game
     //

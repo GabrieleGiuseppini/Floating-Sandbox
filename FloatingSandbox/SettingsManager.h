@@ -90,7 +90,7 @@ enum class GameSettings : size_t
     FishShoalRadiusAdjustment,
 
     // NPCs
-    NpcSizeAdjustment,
+    NpcSizeMultiplier,
 
     // Misc
     OceanFloorTerrain,

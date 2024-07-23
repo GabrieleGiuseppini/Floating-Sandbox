@@ -35,7 +35,7 @@ void Npcs::Update(
 		RecalculateGlobalDampingFactor();
 	}
 
-	if (gameParameters.NpcSizeAdjustment != mCurrentSizeAdjustment
+	if (gameParameters.NpcSizeMultiplier != mCurrentSizeMultiplier
 		|| gameParameters.NpcSpringReductionFractionAdjustment != mCurrentSpringReductionFractionAdjustment
 		|| gameParameters.NpcSpringDampingCoefficientAdjustment != mCurrentSpringDampingCoefficientAdjustment
 #ifdef IN_BARYLAB
@@ -45,7 +45,7 @@ void Npcs::Update(
 #endif
 		)
 	{
-		mCurrentSizeAdjustment = gameParameters.NpcSizeAdjustment;
+		mCurrentSizeMultiplier = gameParameters.NpcSizeMultiplier;
 		mCurrentSpringReductionFractionAdjustment = gameParameters.NpcSpringReductionFractionAdjustment;
 		mCurrentSpringDampingCoefficientAdjustment = gameParameters.NpcSpringDampingCoefficientAdjustment;
 #ifdef IN_BARYLAB
@@ -304,7 +304,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 
 			float const mass = CalculateParticleMass(
 				furnitureMaterial.GetMass(),
-				mCurrentSizeAdjustment
+				mCurrentSizeMultiplier
 #ifdef IN_BARYLAB
 				, mCurrentMassAdjustment
 #endif
@@ -312,7 +312,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 
 			float const buoyancyFactor = CalculateParticleBuoyancyFactor(
 				furnitureMaterial.NpcBuoyancyVolumeFill,
-				mCurrentSizeAdjustment
+				mCurrentSizeMultiplier
 #ifdef IN_BARYLAB
 				, mCurrentBuoyancyAdjustment
 #endif
@@ -348,7 +348,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 
 			float const mass = CalculateParticleMass(
 				furnitureMaterial.GetMass(),
-				mCurrentSizeAdjustment
+				mCurrentSizeMultiplier
 #ifdef IN_BARYLAB
 				, mCurrentMassAdjustment
 #endif
@@ -356,7 +356,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 
 			float const buoyancyFactor = CalculateParticleBuoyancyFactor(
 				furnitureMaterial.NpcBuoyancyVolumeFill,
-				mCurrentSizeAdjustment
+				mCurrentSizeMultiplier
 #ifdef IN_BARYLAB
 				, mCurrentBuoyancyAdjustment
 #endif
@@ -367,8 +367,8 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 			// 0 - 1
 			// |   |
 			// 3 - 2
-			float const width = CalculateSpringLength(baseWidth, mCurrentSizeAdjustment);
-			float const height = CalculateSpringLength(baseHeight, mCurrentSizeAdjustment);
+			float const width = CalculateSpringLength(baseWidth, mCurrentSizeMultiplier);
+			float const height = CalculateSpringLength(baseHeight, mCurrentSizeMultiplier);
 			for (int p = 0; p < 4; ++p)
 			{
 				// CW order
@@ -460,7 +460,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 			}
 
 			CalculateSprings(
-				mCurrentSizeAdjustment,
+				mCurrentSizeMultiplier,
 #ifdef IN_BARYLAB
 				mCurrentMassAdjustment,
 #endif
@@ -541,14 +541,14 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
 			GameParameters::HumanNpcGeometry::BodyLengthStdDev)
 		* mNpcDatabase.GetHumanSizeMultiplier(subKind);
 
-	float const height = CalculateSpringLength(baseHeight, mCurrentSizeAdjustment);
+	float const height = CalculateSpringLength(baseHeight, mCurrentSizeMultiplier);
 
 	// Feet (primary)
 
 	auto const & feetMaterial = mNpcDatabase.GetHumanFeetMaterial(subKind);
 	float const feetMass = CalculateParticleMass(
 		feetMaterial.GetMass(),
-		mCurrentSizeAdjustment
+		mCurrentSizeMultiplier
 #ifdef IN_BARYLAB
 		, mCurrentMassAdjustment
 #endif
@@ -556,7 +556,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
 
 	float const feetBuoyancyFactor = CalculateParticleBuoyancyFactor(
 		feetMaterial.NpcBuoyancyVolumeFill,
-		mCurrentSizeAdjustment
+		mCurrentSizeMultiplier
 #ifdef IN_BARYLAB
 		, mCurrentBuoyancyAdjustment
 #endif
@@ -576,7 +576,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
 	auto const & headMaterial = mNpcDatabase.GetHumanHeadMaterial(subKind);
 	float const headMass = CalculateParticleMass(
 		headMaterial.GetMass(),
-		mCurrentSizeAdjustment
+		mCurrentSizeMultiplier
 #ifdef IN_BARYLAB
 		, mCurrentMassAdjustment
 #endif
@@ -584,7 +584,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
 
 	float const headBuoyancyFactor = CalculateParticleBuoyancyFactor(
 		headMaterial.NpcBuoyancyVolumeFill,
-		mCurrentSizeAdjustment
+		mCurrentSizeMultiplier
 #ifdef IN_BARYLAB
 		, mCurrentBuoyancyAdjustment
 #endif
@@ -609,7 +609,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
 		(headMaterial.NpcSpringDampingCoefficient + feetMaterial.NpcSpringDampingCoefficient) / 2.0f);
 
 	CalculateSprings(
-		mCurrentSizeAdjustment,
+		mCurrentSizeMultiplier,
 #ifdef IN_BARYLAB
 		mCurrentMassAdjustment,
 #endif

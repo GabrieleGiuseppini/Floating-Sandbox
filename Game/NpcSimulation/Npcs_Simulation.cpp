@@ -1533,7 +1533,7 @@ vec2f Npcs::CalculateNpcParticleDefinitiveForces(
         vec2f const equilibriumTorqueForce =
             radialDir
             * (force1Magnitude + force2Magnitude)
-            / mCurrentSizeAdjustment // Note: we divide by size adjustment to maintain torque independent from lever length
+            / mCurrentSizeMultiplier // Note: we divide by size adjustment to maintain torque independent from lever length
             * mParticles.GetMass(npcParticle.ParticleIndex) / (dt * dt);
 
         definitiveForces += equilibriumTorqueForce;
@@ -1557,7 +1557,7 @@ void Npcs::RecalculateSizeAndMassParameters()
                 mParticles.SetMass(particle.ParticleIndex,
                     CalculateParticleMass(
                         mParticles.GetMaterial(particle.ParticleIndex).GetMass(),
-                        mCurrentSizeAdjustment
+                        mCurrentSizeMultiplier
 #ifdef IN_BARYLAB
                         , mCurrentMassAdjustment
 #endif
@@ -1566,7 +1566,7 @@ void Npcs::RecalculateSizeAndMassParameters()
                 mParticles.SetBuoyancyFactor(particle.ParticleIndex,
                     CalculateParticleBuoyancyFactor(
                         mParticles.GetMaterial(particle.ParticleIndex).NpcBuoyancyVolumeFill,
-                        mCurrentSizeAdjustment
+                        mCurrentSizeMultiplier
 #ifdef IN_BARYLAB
                         , mCurrentBuoyancyAdjustment
 #endif
@@ -1578,7 +1578,7 @@ void Npcs::RecalculateSizeAndMassParameters()
             //
 
             CalculateSprings(
-                mCurrentSizeAdjustment,
+                mCurrentSizeMultiplier,
 #ifdef IN_BARYLAB
                 mCurrentMassAdjustment,
 #endif
@@ -1592,7 +1592,7 @@ void Npcs::RecalculateSizeAndMassParameters()
 
 float Npcs::CalculateParticleMass(
     float baseMass,
-    float sizeAdjustment
+    float sizeMultiplier
 #ifdef IN_BARYLAB
     , float massAdjustment
 #endif
@@ -1600,7 +1600,7 @@ float Npcs::CalculateParticleMass(
 {
     float const particleMass =
         baseMass
-        * (sizeAdjustment * sizeAdjustment) // 2D "volume" adjustment
+        * (sizeMultiplier * sizeMultiplier) // 2D "volume" adjustment
 #ifdef IN_BARYLAB
         * massAdjustment
 #endif
@@ -1611,7 +1611,7 @@ float Npcs::CalculateParticleMass(
 
 float Npcs::CalculateParticleBuoyancyFactor(
     float baseBuoyancyVolumeFill,
-    float sizeAdjustment
+    float sizeMultiplier
 #ifdef IN_BARYLAB
     , float buoyancyAdjustment
 #endif
@@ -1619,7 +1619,7 @@ float Npcs::CalculateParticleBuoyancyFactor(
 {
     float const buoyancyFactor =
         GameParameters::GravityMagnitude * 1000.0f
-        * (sizeAdjustment * sizeAdjustment) // 2D "volume" adjustment
+        * (sizeMultiplier * sizeMultiplier) // 2D "volume" adjustment
         * baseBuoyancyVolumeFill
 #ifdef IN_BARYLAB
         * buoyancyAdjustment
@@ -1630,7 +1630,7 @@ float Npcs::CalculateParticleBuoyancyFactor(
 }
 
 void Npcs::CalculateSprings(
-    float sizeAdjustment,
+    float sizeMultiplier,
 #ifdef IN_BARYLAB
     float massAdjustment,
 #endif
@@ -1645,7 +1645,7 @@ void Npcs::CalculateSprings(
     {
         // Spring rest length
 
-        spring.RestLength = CalculateSpringLength(spring.BaseRestLength, sizeAdjustment);
+        spring.RestLength = CalculateSpringLength(spring.BaseRestLength, sizeMultiplier);
 
         // Spring force factors
 
@@ -1663,7 +1663,7 @@ void Npcs::CalculateSprings(
 #ifdef IN_BARYLAB
             * massAdjustment
 #endif
-            * (sizeAdjustment * sizeAdjustment) // 2D
+            * (sizeMultiplier * sizeMultiplier) // 2D
             / (dt * dt);
 
         spring.SpringDampingFactor =
@@ -1673,16 +1673,16 @@ void Npcs::CalculateSprings(
 #ifdef IN_BARYLAB
             * massAdjustment
 #endif
-            * (sizeAdjustment * sizeAdjustment) // 2D
+            * (sizeMultiplier * sizeMultiplier) // 2D
             / dt;
     }
 }
 
 float Npcs::CalculateSpringLength(
     float baseLength,
-    float sizeAdjustment)
+    float sizeMultiplier)
 {
-    return baseLength * sizeAdjustment;
+    return baseLength * sizeMultiplier;
 }
 
 void Npcs::RecalculateGlobalDampingFactor()

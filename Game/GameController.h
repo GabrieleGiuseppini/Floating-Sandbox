@@ -652,10 +652,10 @@ public:
 
     // NPCs
 
-    float GetNpcSizeAdjustment() const override { return mGameParameters.NpcSizeAdjustment; }
-    void SetNpcSizeAdjustment(float value) override { mGameParameters.NpcSizeAdjustment = value; }
-    float GetMinNpcSizeAdjustment() const override { return GameParameters::MinNpcSizeAdjustment; }
-    float GetMaxNpcSizeAdjustment() const override { return GameParameters::MaxNpcSizeAdjustment; }
+    float GetNpcSizeMultiplier() const override { return mFloatParameterSmoothers[NpcSizeMultiplierParameterSmoother].GetValue(); }
+    void SetNpcSizeMultiplier(float value) override { mFloatParameterSmoothers[NpcSizeMultiplierParameterSmoother].SetValue(value); }
+    float GetMinNpcSizeMultiplier() const override { return GameParameters::MinNpcSizeMultiplier; }
+    float GetMaxNpcSizeMultiplier() const override { return GameParameters::MaxNpcSizeMultiplier; }
 
 
     // Misc
@@ -1072,6 +1072,7 @@ private:
     static constexpr size_t FlameSizeAdjustmentParameterSmoother = 5;
     static constexpr size_t BasalWaveHeightAdjustmentParameterSmoother = 6;
     static constexpr size_t FishSizeMultiplierParameterSmoother = 7;
+    static constexpr size_t NpcSizeMultiplierParameterSmoother = 8;
     std::vector<ParameterSmoother<float>> mFloatParameterSmoothers;
 
 

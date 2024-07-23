@@ -117,7 +117,7 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(float, FishShoalRadiusAdjustment);
 
     // NPCs
-    ADD_GC_SETTING(float, NpcSizeAdjustment);
+    ADD_GC_SETTING(float, NpcSizeMultiplier);
 
     // Misc
     ADD_GC_SETTING(OceanFloorTerrain, OceanFloorTerrain);

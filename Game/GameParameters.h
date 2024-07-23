@@ -454,9 +454,9 @@ struct GameParameters
     static float constexpr MinNpcSpringDampingCoefficientAdjustment = 0.0f;
     static float constexpr MaxNpcSpringDampingCoefficientAdjustment = 2.0f;
 
-    float NpcSizeAdjustment;
-    static float constexpr MinNpcSizeAdjustment = 0.2f;
-    static float constexpr MaxNpcSizeAdjustment = 10.0f;
+    float NpcSizeMultiplier;
+    static float constexpr MinNpcSizeMultiplier = 0.2f;
+    static float constexpr MaxNpcSizeMultiplier = 10.0f;
 
     float HumanNpcEquilibriumTorqueStiffnessCoefficient;
     static float constexpr MinHumanNpcEquilibriumTorqueStiffnessCoefficient = 0.0f;
