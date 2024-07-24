@@ -702,9 +702,9 @@ PlaceNpcToolBase::PlaceNpcToolBase(
         gameController,
         soundController)
     , mCurrentEngagementState(std::nullopt)
-    , mClosedCursorImage(WxHelpers::LoadCursorImage("move_npc_cursor_down", 11, 29, resourceLocator))
-    , mOpenCursorImage(WxHelpers::LoadCursorImage("move_npc_cursor_up", 11, 29, resourceLocator))
-    , mErrorCursorImage(WxHelpers::LoadCursorImage("move_npc_cursor_error", 11, 29, resourceLocator))
+    , mClosedCursorImage(WxHelpers::LoadCursorImage("place_npc_cursor_down", 11, 29, resourceLocator))
+    , mOpenCursorImage(WxHelpers::LoadCursorImage("place_npc_cursor_up", 11, 29, resourceLocator))
+    , mErrorCursorImage(WxHelpers::LoadCursorImage("place_npc_cursor_error", 11, 29, resourceLocator))
 {}
 
 PlaceFurnitureNpcTool::PlaceFurnitureNpcTool(

@@ -473,6 +473,9 @@ Arch
 	- If particles 2, 3, etc. are on a different component ID than primary's, then make them free
 		- In short: need to add new constraint: non-primary constrained can only live in same connected component as primary's
 			! Not a problem while we navigate, as cannot navigate across different connected components
+			- Repro first
+				- And to repro, do that "place & move tool lock", also for furniture
+				- Also do temporary "prevent walk"
 			- NPC acquires a new opt<CurrentConnectedComponentId> attribute, identical to CurrentPlaneId (but nullable <-> free)
 			- To enforce at:
 				- Placement (ResetNpcToState)
@@ -481,13 +484,21 @@ Arch
 				- Secondary free becoming constrained: consider only triangles belonging to primary's connected component (==NPC's)
 				- Ship connectivity changed
 					- Detected at Npc::Update, where we detect the particle going free (e.g. because folded triangle or triangle destroyed)
-						- Detection: non-primary (constrained) is found in a connected component different than primary's (==NPC's)
-							- And here be become free
+						- Detection: 
+							- Primary (constrained) is first of all updated (because conn comp ID might have been reassigned) (==NPC's)
+								- Might move PlaneID here as well
+							- Non-primary (constrained) is found in a connected component different than primary's (==NPC's) (now)
+								- And here be become free
 					- At end of Npc::Update, getting primary's and using that for whole NPC (like we do for plane ID)
+						- But read above
 				- TODO: any other cases in which secondary might "jump" (not navigate) triangles?
 				- Reset when becoming free
 		- Impl:
 			- Add helper: Triangles::GetConnectedComponentId(triangleID, points)
+		- Cleanups:
+			- Remove temporary "prevent walk"
+
+	- New arms animation @ Aerial (& falling?)
 
 = Rendering:
 	! Atlas textures are simply flat frames and all, NpcDatabase groups them together
