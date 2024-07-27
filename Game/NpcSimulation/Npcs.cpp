@@ -967,6 +967,11 @@ void Npcs::MoveNpcTo(
 	assert(mStateBuffer[id]->CurrentRegime == StateType::RegimeType::BeingPlaced);
 	assert(mStateBuffer[id]->BeingPlacedState.has_value());
 
+	// Defeat - we cannot make quads move nicely with our current spring length maintenance algorithm :-(
+	doMoveWholeMesh = (mStateBuffer[id]->ParticleMesh.Particles.size() > 2)
+		? true
+		: doMoveWholeMesh;
+
 	// Calculate delta movement for anchor particle
 	ElementIndex anchorParticleIndex = mStateBuffer[id]->ParticleMesh.Particles[mStateBuffer[id]->BeingPlacedState->AnchorParticleOrdinal].ParticleIndex;
 	vec2f const deltaAnchorPosition = (position - offset) - mParticles.GetPosition(anchorParticleIndex);

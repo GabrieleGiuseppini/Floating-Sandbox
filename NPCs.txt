@@ -476,23 +476,32 @@ Arch
 			- Repro first
 				= And to repro, do that "place & move tool lock", also for furniture
 					+ BeingPlacedState: anchor particle index, doMoveWholeMesh
-					- Retain spring lengths during move
-						- TODOHERE
+					= Retain spring lengths during move
 					- Test: {Human, Furniture, Particle} X {Place, Move} X {Shift, NoShift}
+					- Commit
 				- Also do temporary "prevent walk"
+
 			- NPC acquires a new opt<CurrentConnectedComponentId> attribute, identical to CurrentPlaneId (but nullable <-> free)
 			- To enforce at:
 				- Placement (ResetNpcToState)
 					- Based on primary, where we take NPC's plane ID also from its primary
 					- Then we need to constrain non-primary search for triangles to primary's connected component (==NPC's)
+						- FindTopmostTriangleContaining
+							- But not at call from ProbeNpcAt
 				- Secondary free becoming constrained: consider only triangles belonging to primary's connected component (==NPC's)
-				- Ship connectivity changed
-					- Detected at Npc::Update, where we detect the particle going free (e.g. because folded triangle or triangle destroyed)
-						- Detection: 
-							- Primary (constrained) is first of all updated (because conn comp ID might have been reassigned) (==NPC's)
-								- Might move PlaneID here as well
-							- Non-primary (constrained) is found in a connected component different than primary's (==NPC's) (now)
-								- And here be become free
+				- Ship connectivity changed: detected at Npc::Update: in initial loop:
+					- For each particle in constrained state:
+						- Primary: 
+							- If in folded triangle or destroyed triangle:
+								- Transition particle to free
+							- Else:
+								- Store planeID and connected component ID for whole NPC
+									- "Because it might have changed or reassigned"
+						- Others:
+							- If in folded triangle or destroyed triangle:
+								- Transition particle to free
+							- Else if conn component ID != NPC's:
+								- Transition particle to free
 					- At end of Npc::Update, getting primary's and using that for whole NPC (like we do for plane ID)
 						- But read above
 				- TODO: any other cases in which secondary might "jump" (not navigate) triangles?
