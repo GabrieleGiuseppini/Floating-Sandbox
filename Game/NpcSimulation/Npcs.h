@@ -571,8 +571,14 @@ private:
 		// course of their lives.
 		ShipId CurrentShipId;
 
-		// The current plane ID.
+		// The current plane ID. Since NPCs always belong to a ship, they also always
+		// are on a plane.
 		PlaneId CurrentPlaneId;
+
+		// The current connected component of the NPC, when it's constrained; particles
+		// are always constrained to belong to this connected component.
+		// Its presence is correlated with the NPC being contrained.
+		std::optional<ConnectedComponentId> CurrentConnectedComponentId;
 
 		// The current regime.
 		RegimeType CurrentRegime;
@@ -597,6 +603,7 @@ private:
 			NpcKindType kind,
 			ShipId initialShipId,
 			PlaneId initialPlaneId,
+			std::optional<ConnectedComponentId> currentConnectedComponentId,
 			RegimeType initialRegime,
 			ParticleMeshType && particleMesh,
 			KindSpecificStateType && kindSpecificState,
@@ -605,6 +612,7 @@ private:
 			, Kind(kind)
 			, CurrentShipId(initialShipId)
 			, CurrentPlaneId(initialPlaneId)
+			, CurrentConnectedComponentId(currentConnectedComponentId)
 			, CurrentRegime(initialRegime)
 			, ParticleMesh(std::move(particleMesh))
 			, KindSpecificState(std::move(kindSpecificState))
@@ -691,7 +699,8 @@ public:
 
 	std::optional<PickedObjectId<NpcId>> ProbeNpcAt(
 		vec2f const & position,
-		float radius) const;
+		float radius,
+		GameParameters const & gameParameters) const;
 
 	void BeginMoveNpc(
 		NpcId id,
@@ -858,11 +867,12 @@ private:
 
 	ShipId GetTopmostShipId() const;
 
-	std::optional<GlobalElementId> FindTopmostTriangleContaining(vec2f const & position) const;
+	std::optional<GlobalElementId> FindTopmostWorkableTriangleContaining(vec2f const & position) const;
 
-	static ElementIndex FindTriangleContaining(
+	static ElementIndex FindWorkableTriangleContaining(
 		vec2f const & position,
-		Ship const & homeShip);
+		Ship const & homeShip,
+		std::optional<ConnectedComponentId> constrainedConnectedComponentId);
 
 	void TransferNpcToShip(
 		StateType & npc,
@@ -907,7 +917,8 @@ private:
 	static std::optional<StateType::NpcParticleStateType::ConstrainedStateType> CalculateParticleConstrainedState(
 		vec2f const & position,
 		Ship const & homeShip,
-		std::optional<ElementIndex> triangleIndex);
+		std::optional<ElementIndex> triangleIndex,
+		std::optional<ConnectedComponentId> constrainedConnectedComponentId);
 
 	void OnMayBeNpcRegimeChanged(
 		StateType::RegimeType oldRegime,

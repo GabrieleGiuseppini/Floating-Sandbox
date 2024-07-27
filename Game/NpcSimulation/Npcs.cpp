@@ -497,6 +497,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 		NpcKindType::Furniture,
 		shipId, // Topmost ship ID
 		0, // PlaneID: irrelevant as long as BeingPlaced
+		std::nullopt, // Connected component: irrelevant as long as BeingPlaced
 		StateType::RegimeType::BeingPlaced,
 		std::move(particleMesh),
 		StateType::KindSpecificStateType(std::move(furnitureState)),
@@ -676,6 +677,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
 		NpcKindType::Human,
 		shipId, // Topmost ship ID
 		0, // PlaneID: irrelevant as long as BeingPlaced
+		std::nullopt, // Connected component: irrelevant as long as BeingPlaced
 		StateType::RegimeType::BeingPlaced,
 		std::move(particleMesh),
 		StateType::KindSpecificStateType(std::move(humanState)),
@@ -696,9 +698,10 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
 
 std::optional<PickedObjectId<NpcId>> Npcs::ProbeNpcAt(
 	vec2f const & position,
-	float radius) const
+	float radius,
+	GameParameters const & gameParameters) const
 {
-	float const squareSearchRadius = radius * radius;
+	float const squareSearchRadius = radius * radius * gameParameters.NpcSizeMultiplier;
 
 	struct NearestNpcType
 	{
@@ -716,7 +719,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::ProbeNpcAt(
 	std::pair<ShipId, PlaneId> probeDepth;
 
 	// Find topmost triangle containing this position
-	auto const topmostTriangle = FindTopmostTriangleContaining(position);
+	auto const topmostTriangle = FindTopmostWorkableTriangleContaining(position);
 	if (topmostTriangle)
 	{
 		assert(topmostTriangle->GetShipId() < mShips.size());
@@ -737,58 +740,41 @@ std::optional<PickedObjectId<NpcId>> Npcs::ProbeNpcAt(
 	// Visit all NPCs and find winner, if any
 	//
 
-	auto particleVisitor = [&](ElementIndex candidateParticleIndex, StateType const & npc, ShipId const & shipId) -> bool
-		{
-			bool aParticleWasFound = false;
-
-			vec2f const candidateNpcPosition = mParticles.GetPosition(candidateParticleIndex);
-			float const squareDistance = (candidateNpcPosition - position).squareLength();
-			if (squareDistance < squareSearchRadius)
-			{
-				if (std::make_pair(shipId, npc.CurrentPlaneId) >= probeDepth)
-				{
-					// It's on-plane
-					if (squareDistance < nearestOnPlaneNpc.SquareDistance)
-					{
-						nearestOnPlaneNpc = { npc.Id, squareDistance };
-						aParticleWasFound = true;
-					}
-				}
-				else
-				{
-					// It's off-plane
-					if (squareDistance < nearestOffPlaneNpc.SquareDistance)
-					{
-						nearestOffPlaneNpc = { npc.Id, squareDistance };
-						aParticleWasFound = true;
-					}
-				}
-			}
-
-			return aParticleWasFound;
-		};
-
-	for (auto const & state : mStateBuffer)
+	for (auto const & npc : mStateBuffer)
 	{
-		if (state.has_value())
+		if (npc.has_value())
 		{
-			switch (state->Kind)
+			switch (npc->Kind)
 			{
 				case NpcKindType::Furniture:
 				{
 					// Proximity search for all particles
 
 					bool aParticleWasFound = false;
-					for (auto const & particle : state->ParticleMesh.Particles)
+					for (auto const & particle : npc->ParticleMesh.Particles)
 					{
-						bool const r = particleVisitor(
-							particle.ParticleIndex,
-							*state,
-							state->CurrentShipId);
-
-						if (r)
+						vec2f const candidateNpcPosition = mParticles.GetPosition(particle.ParticleIndex);
+						float const squareDistance = (candidateNpcPosition - position).squareLength();
+						if (squareDistance < squareSearchRadius)
 						{
-							aParticleWasFound = true;
+							if (std::make_pair(npc->CurrentShipId, npc->CurrentPlaneId) >= probeDepth)
+							{
+								// It's on-plane
+								if (squareDistance < nearestOnPlaneNpc.SquareDistance)
+								{
+									nearestOnPlaneNpc = { npc->Id, squareDistance };
+									aParticleWasFound = true;
+								}
+							}
+							else
+							{
+								// It's off-plane
+								if (squareDistance < nearestOffPlaneNpc.SquareDistance)
+								{
+									nearestOffPlaneNpc = { npc->Id, squareDistance };
+									aParticleWasFound = true;
+								}
+							}
 						}
 					}
 
@@ -799,10 +785,10 @@ std::optional<PickedObjectId<NpcId>> Npcs::ProbeNpcAt(
 						// From https://wrfranklin.org/Research/Short_Notes/pnpoly.html
 
 						bool isHit = false;
-						for (size_t i = 0, j = state->ParticleMesh.Particles.size() - 1; i < state->ParticleMesh.Particles.size(); j = i++)
+						for (size_t i = 0, j = npc->ParticleMesh.Particles.size() - 1; i < npc->ParticleMesh.Particles.size(); j = i++)
 						{
-							vec2f const & pos_i = mParticles.GetPosition(state->ParticleMesh.Particles[i].ParticleIndex);
-							vec2f const & pos_j = mParticles.GetPosition(state->ParticleMesh.Particles[j].ParticleIndex);
+							vec2f const & pos_i = mParticles.GetPosition(npc->ParticleMesh.Particles[i].ParticleIndex);
+							vec2f const & pos_j = mParticles.GetPosition(npc->ParticleMesh.Particles[j].ParticleIndex);
 							if (((pos_i.y > position.y) != (pos_j.y > position.y)) &&
 								(position.x < (pos_j.x - pos_i.x) * (position.y - pos_i.y) / (pos_j.y - pos_i.y) + pos_i.x))
 							{
@@ -812,15 +798,15 @@ std::optional<PickedObjectId<NpcId>> Npcs::ProbeNpcAt(
 
 						if (isHit)
 						{
-							if (std::make_pair(state->CurrentShipId, state->CurrentPlaneId) >= probeDepth)
+							if (std::make_pair(npc->CurrentShipId, npc->CurrentPlaneId) >= probeDepth)
 							{
 								// It's on-plane
-								nearestOnPlaneNpc = { state->Id, squareSearchRadius };
+								nearestOnPlaneNpc = { npc->Id, squareSearchRadius };
 							}
 							else
 							{
 								// It's off-plane
-								nearestOffPlaneNpc = { state->Id, squareSearchRadius };
+								nearestOffPlaneNpc = { npc->Id, squareSearchRadius };
 							}
 						}
 					}
@@ -831,17 +817,17 @@ std::optional<PickedObjectId<NpcId>> Npcs::ProbeNpcAt(
 				case NpcKindType::Human:
 				{
 					float const squareDistance = Segment::SquareDistanceToPoint(
-						mParticles.GetPosition(state->ParticleMesh.Particles[0].ParticleIndex),
-						mParticles.GetPosition(state->ParticleMesh.Particles[1].ParticleIndex),
+						mParticles.GetPosition(npc->ParticleMesh.Particles[0].ParticleIndex),
+						mParticles.GetPosition(npc->ParticleMesh.Particles[1].ParticleIndex),
 						position);
 					if (squareDistance < squareSearchRadius)
 					{
-						if (std::make_pair(state->CurrentShipId, state->CurrentPlaneId) >= probeDepth)
+						if (std::make_pair(npc->CurrentShipId, npc->CurrentPlaneId) >= probeDepth)
 						{
 							// It's on-plane
 							if (squareDistance < nearestOnPlaneNpc.SquareDistance)
 							{
-								nearestOnPlaneNpc = { state->Id, squareDistance };
+								nearestOnPlaneNpc = { npc->Id, squareDistance };
 							}
 						}
 						else
@@ -849,7 +835,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::ProbeNpcAt(
 							// It's off-plane
 							if (squareDistance < nearestOffPlaneNpc.SquareDistance)
 							{
-								nearestOffPlaneNpc = { state->Id, squareDistance };
+								nearestOffPlaneNpc = { npc->Id, squareDistance };
 							}
 						}
 					}
@@ -1666,7 +1652,7 @@ ShipId Npcs::GetTopmostShipId() const
 	return 0;
 }
 
-std::optional<GlobalElementId> Npcs::FindTopmostTriangleContaining(vec2f const & position) const
+std::optional<GlobalElementId> Npcs::FindTopmostWorkableTriangleContaining(vec2f const & position) const
 {
 	// Visit all ships in reverse ship ID order (i.e. from topmost to bottommost)
 	assert(mShips.size() > 0);
@@ -1686,6 +1672,7 @@ std::optional<GlobalElementId> Npcs::FindTopmostTriangleContaining(vec2f const &
 				{
 					// Arbitrary representative for plane and connected component
 					auto const pointAIndex = homeShip.GetTriangles().GetPointAIndex(triangleIndex);
+
 					vec2f const aPosition = homeShip.GetPoints().GetPosition(pointAIndex);
 					vec2f const bPosition = homeShip.GetPoints().GetPosition(homeShip.GetTriangles().GetPointBIndex(triangleIndex));
 					vec2f const cPosition = homeShip.GetPoints().GetPosition(homeShip.GetTriangles().GetPointCIndex(triangleIndex));
@@ -1716,20 +1703,25 @@ std::optional<GlobalElementId> Npcs::FindTopmostTriangleContaining(vec2f const &
 	return std::nullopt;
 }
 
-ElementIndex Npcs::FindTriangleContaining(
+ElementIndex Npcs::FindWorkableTriangleContaining(
 	vec2f const & position,
-	Ship const & homeShip)
+	Ship const & homeShip,
+	std::optional<ConnectedComponentId> constrainedConnectedComponentId)
 {
 	for (auto const triangleIndex : homeShip.GetTriangles())
 	{
 		if (!homeShip.GetTriangles().IsDeleted(triangleIndex))
 		{
-			vec2f const aPosition = homeShip.GetPoints().GetPosition(homeShip.GetTriangles().GetPointAIndex(triangleIndex));
+			// Arbitrary representative for plane and connected component
+			auto const pointAIndex = homeShip.GetTriangles().GetPointAIndex(triangleIndex);
+
+			vec2f const aPosition = homeShip.GetPoints().GetPosition(pointAIndex);
 			vec2f const bPosition = homeShip.GetPoints().GetPosition(homeShip.GetTriangles().GetPointBIndex(triangleIndex));
 			vec2f const cPosition = homeShip.GetPoints().GetPosition(homeShip.GetTriangles().GetPointCIndex(triangleIndex));
 
 			if (IsPointInTriangle(position, aPosition, bPosition, cPosition)
-				&& !IsTriangleFolded(triangleIndex, homeShip))
+				&& !IsTriangleFolded(triangleIndex, homeShip)
+				&& (!constrainedConnectedComponentId.has_value() || homeShip.GetPoints().GetConnectedComponentId(pointAIndex) == *constrainedConnectedComponentId))
 			{
 				return triangleIndex;
 			}

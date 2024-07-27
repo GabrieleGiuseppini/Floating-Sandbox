@@ -444,7 +444,7 @@ Arch
 		+ Fix in barylab
 		+ Port to FS
 
-	= Misc possible improvements:
+	+ Misc possible improvements:
 		X See if can avoid furniture bending
 			X Try that other spring relaxation algo
 				+ Backport to Barylab first
@@ -463,53 +463,55 @@ Arch
 					- CalculateDefinitiveForces: for Torque we predict where secondary will be; can we use NewPosition now that we have it instead?
 						- Note: current prediction is based on velocity alone, while NewPos also takes forces
 			+ Recheck FS vs BaryLab
-		- Maintain spring lengths during BeingPlaced (to avoid elongations)
+		+ Maintain spring lengths during BeingPlaced (to avoid elongations)
 		X If above doesn't work: try more velocity damping during BeingPlaced
 		+ Picking human NPCs: now it's too cumbersome
 		+ fmod improvements
 			+ See https://cboard.cprogramming.com/c-programming/105096-fmod.html
 
 
-	- If particles 2, 3, etc. are on a different component ID than primary's, then make them free
-		- In short: need to add new constraint: non-primary constrained can only live in same connected component as primary's
+	= If particles 2, 3, etc. are on a different component ID than primary's, then make them free
+		+ In short: need to add new constraint: non-primary constrained can only live in same connected component as primary's
 			! Not a problem while we navigate, as cannot navigate across different connected components
-			- Repro first
-				= And to repro, do that "place & move tool lock", also for furniture
+			+ Repro first
+				+ And to repro, do that "place & move tool lock", also for furniture
 					+ BeingPlacedState: anchor particle index, doMoveWholeMesh
-					= Retain spring lengths during move
-					- Test: {Human, Furniture, Particle} X {Place, Move} X {Shift, NoShift}
-					- Commit
-				- Also do temporary "prevent walk"
+					+ Retain spring lengths during move
+					+ Commit
+				+ Also do temporary "prevent walk"
+				+ Repro
+					- Tall man on right side of ship; cutting around its head
 
-			- NPC acquires a new opt<CurrentConnectedComponentId> attribute, identical to CurrentPlaneId (but nullable <-> free)
-			- To enforce at:
-				- Placement (ResetNpcToState)
-					- Based on primary, where we take NPC's plane ID also from its primary
-					- Then we need to constrain non-primary search for triangles to primary's connected component (==NPC's)
-						- FindTopmostTriangleContaining
-							- But not at call from ProbeNpcAt
-				- Secondary free becoming constrained: consider only triangles belonging to primary's connected component (==NPC's)
-				- Ship connectivity changed: detected at Npc::Update: in initial loop:
-					- For each particle in constrained state:
-						- Primary: 
-							- If in folded triangle or destroyed triangle:
-								- Transition particle to free
-							- Else:
-								- Store planeID and connected component ID for whole NPC
-									- "Because it might have changed or reassigned"
-						- Others:
-							- If in folded triangle or destroyed triangle:
-								- Transition particle to free
-							- Else if conn component ID != NPC's:
-								- Transition particle to free
-					- At end of Npc::Update, getting primary's and using that for whole NPC (like we do for plane ID)
-						- But read above
-				- TODO: any other cases in which secondary might "jump" (not navigate) triangles?
-				- Reset when becoming free
-		- Impl:
-			- Add helper: Triangles::GetConnectedComponentId(triangleID, points)
-		- Cleanups:
-			- Remove temporary "prevent walk"
+			+ NPC acquires a new opt<CurrentConnectedComponentId> attribute, identical to CurrentPlaneId (but nullable <-> free)
+			+ To enforce at:
+				+ Placement (ResetNpcToState)
+					+ Based on primary, where we take NPC's plane ID also from its primary
+					+ Then we need to constrain non-primary search for triangles to primary's connected component (==NPC's)
+						+ FindTopmostTriangleContaining
+							+ But not at call from ProbeNpcAt
+				+ Ship connectivity changed: detected at Npc::Update: in initial loop:
+					+ For each particle in constrained state:
+						+ Primary: 
+							+ If in folded triangle or destroyed triangle:
+								+ Transition particle to free
+							+ Else:
+								+ Store planeID and connected component ID for whole NPC
+									+ "Because it might have changed or reassigned"
+						+ Others:
+							+ If in folded triangle or destroyed triangle:
+								+ Transition particle to free
+							+ Else if conn component ID != NPC's:
+								+ Transition particle to free
+					+ Remove final assignment of plane ID
+					+ Replace Folded/Deleted check at UpdateNpc and make it an assert
+				+ Secondary free becoming constrained: consider only triangles belonging to primary's connected component (==NPC's)
+				+ Reset when becoming free
+		+ Tests:
+			+ Repro
+			+ Secondary free becoming constrained
+		+ Cleanups:
+			+ Remove temporary "prevent walk"
+		- Port to BaryLab
 
 	- New arms animation @ Aerial (& falling?)
 

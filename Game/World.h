@@ -367,7 +367,8 @@ public:
 
     std::optional<PickedObjectId<NpcId>> ProbeNpcAt(
         vec2f const & position,
-        float radius) const;
+        float radius,
+        GameParameters const & gameParameters) const;
 
     void BeginMoveNpc(
         NpcId id,

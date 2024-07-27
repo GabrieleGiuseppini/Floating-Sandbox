@@ -1048,12 +1048,14 @@ std::optional<PickedObjectId<NpcId>> World::BeginPlaceNewHumanNpc(
 
 std::optional<PickedObjectId<NpcId>> World::ProbeNpcAt(
     vec2f const & position,
-    float radius) const
+    float radius,
+    GameParameters const & gameParameters) const
 {
     assert(mNpcs);
     return mNpcs->ProbeNpcAt(
         position,
-        radius);
+        radius,
+        gameParameters);
 }
 
 void World::BeginMoveNpc(

@@ -1330,7 +1330,8 @@ std::optional<PickedObjectId<NpcId>> GameController::ProbeNpcAt(DisplayLogicalCo
     assert(!!mWorld);
     return mWorld->ProbeNpcAt(
         worldCoordinates,
-        npcProbeSearchRadius);
+        npcProbeSearchRadius,
+        mGameParameters);
 }
 
 void GameController::BeginMoveNpc(
