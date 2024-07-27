@@ -1678,24 +1678,24 @@ std::optional<GlobalElementId> Npcs::FindTopmostTriangleContaining(vec2f const &
 
 			auto const & homeShip = mShips[s]->HomeShip;
 
-			// TODO: this might be optimized
-
 			std::optional<ElementIndex> bestTriangleIndex;
 			PlaneId bestPlaneId = std::numeric_limits<PlaneId>::lowest();
 			for (auto const triangleIndex : homeShip.GetTriangles())
 			{
 				if (!homeShip.GetTriangles().IsDeleted(triangleIndex))
 				{
-					vec2f const aPosition = homeShip.GetPoints().GetPosition(homeShip.GetTriangles().GetPointAIndex(triangleIndex));
+					// Arbitrary representative for plane and connected component
+					auto const pointAIndex = homeShip.GetTriangles().GetPointAIndex(triangleIndex);
+					vec2f const aPosition = homeShip.GetPoints().GetPosition(pointAIndex);
 					vec2f const bPosition = homeShip.GetPoints().GetPosition(homeShip.GetTriangles().GetPointBIndex(triangleIndex));
 					vec2f const cPosition = homeShip.GetPoints().GetPosition(homeShip.GetTriangles().GetPointCIndex(triangleIndex));
 
 					if (IsPointInTriangle(position, aPosition, bPosition, cPosition)
-						&& (!bestTriangleIndex || homeShip.GetPoints().GetPlaneId(homeShip.GetTriangles().GetPointAIndex(triangleIndex)) > bestPlaneId)
+						&& (!bestTriangleIndex || homeShip.GetPoints().GetPlaneId(pointAIndex) > bestPlaneId)
 						&& !IsTriangleFolded(triangleIndex, homeShip))
 					{
 						bestTriangleIndex = triangleIndex;
-						bestPlaneId = homeShip.GetPoints().GetPlaneId(homeShip.GetTriangles().GetPointAIndex(triangleIndex));
+						bestPlaneId = homeShip.GetPoints().GetPlaneId(pointAIndex);
 					}
 				}
 			}
