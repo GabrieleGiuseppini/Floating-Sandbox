@@ -1282,14 +1282,16 @@ void GameController::AttractFish(
 
 std::optional<PickedObjectId<NpcId>> GameController::BeginPlaceNewFurnitureNpc(
     NpcSubKindIdType subKind,
-    DisplayLogicalCoordinates const & screenCoordinates)
+    DisplayLogicalCoordinates const & screenCoordinates,
+    bool doMoveWholeMesh)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
     assert(!!mWorld);
     auto const pickedNpcId = mWorld->BeginPlaceNewFurnitureNpc(
         subKind,
-        worldCoordinates);
+        worldCoordinates,
+        doMoveWholeMesh);
 
     if (pickedNpcId.has_value())
     {
@@ -1301,14 +1303,16 @@ std::optional<PickedObjectId<NpcId>> GameController::BeginPlaceNewFurnitureNpc(
 
 std::optional<PickedObjectId<NpcId>> GameController::BeginPlaceNewHumanNpc(
     NpcSubKindIdType subKind,
-    DisplayLogicalCoordinates const & screenCoordinates)
+    DisplayLogicalCoordinates const & screenCoordinates,
+    bool doMoveWholeMesh)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
     assert(!!mWorld);
     auto const pickedNpcId = mWorld->BeginPlaceNewHumanNpc(
         subKind,
-        worldCoordinates);
+        worldCoordinates,
+        doMoveWholeMesh);
 
     if (pickedNpcId.has_value())
     {
@@ -1329,16 +1333,21 @@ std::optional<PickedObjectId<NpcId>> GameController::ProbeNpcAt(DisplayLogicalCo
         npcProbeSearchRadius);
 }
 
-void GameController::BeginMoveNpc(NpcId id)
+void GameController::BeginMoveNpc(
+    NpcId id,
+    bool doMoveWholeMesh)
 {
     assert(!!mWorld);
-    mWorld->BeginMoveNpc(id);
+    mWorld->BeginMoveNpc(
+        id,
+        doMoveWholeMesh);
 }
 
 void GameController::MoveNpcTo(
     NpcId id,
     DisplayLogicalCoordinates const & screenCoordinates,
-    vec2f const & worldOffset)
+    vec2f const & worldOffset,
+    bool doMoveWholeMesh)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
@@ -1346,7 +1355,8 @@ void GameController::MoveNpcTo(
     mWorld->MoveNpcTo(
         id,
         worldCoordinates,
-        worldOffset);
+        worldOffset,
+        doMoveWholeMesh);
 }
 
 void GameController::EndMoveNpc(NpcId id)

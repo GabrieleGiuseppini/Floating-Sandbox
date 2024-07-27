@@ -263,7 +263,8 @@ void Npcs::OnShipRemoved(ShipId shipId)
 std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 	NpcSubKindIdType subKind,
 	vec2f const & worldCoordinates,
-	float /*currentSimulationTime*/)
+	float /*currentSimulationTime*/,
+	bool doMoveWholeMesh)
 {
 	//
 	// Check if there are too many NPCs
@@ -498,7 +499,8 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 		0, // PlaneID: irrelevant as long as BeingPlaced
 		StateType::RegimeType::BeingPlaced,
 		std::move(particleMesh),
-		StateType::KindSpecificStateType(std::move(furnitureState)));
+		StateType::KindSpecificStateType(std::move(furnitureState)),
+		StateType::BeingPlacedStateType({0, doMoveWholeMesh})); // Furniture: anchor is first particle
 
 	assert(mShips[shipId].has_value());
 	mShips[shipId]->Npcs.push_back(npcId);
@@ -516,7 +518,8 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
 	NpcSubKindIdType subKind,
 	vec2f const & worldCoordinates,
-	float currentSimulationTime)
+	float currentSimulationTime,
+	bool doMoveWholeMesh)
 {
 	//
 	// Check if there are enough NPCs and particles
@@ -675,7 +678,8 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
 		0, // PlaneID: irrelevant as long as BeingPlaced
 		StateType::RegimeType::BeingPlaced,
 		std::move(particleMesh),
-		StateType::KindSpecificStateType(std::move(humanState)));
+		StateType::KindSpecificStateType(std::move(humanState)),
+		StateType::BeingPlacedStateType({ 1, doMoveWholeMesh })); // Human: anchor is head (second particle)
 
 	assert(mShips[shipId].has_value());
 	mShips[shipId]->Npcs.push_back(npcId);
@@ -892,7 +896,8 @@ std::optional<PickedObjectId<NpcId>> Npcs::ProbeNpcAt(
 
 void Npcs::BeginMoveNpc(
 	NpcId id,
-	float currentSimulationTime)
+	float currentSimulationTime,
+	bool doMoveWholeMesh)
 {
 	assert(mStateBuffer[id].has_value());
 	auto & npc = *mStateBuffer[id];
@@ -913,6 +918,11 @@ void Npcs::BeginMoveNpc(
 	{
 		particle.ConstrainedState.reset();
 	}
+
+	// Setup being placed state
+	npc.BeingPlacedState = StateType::BeingPlacedStateType({
+		(npc.Kind == NpcKindType::Human) ? 1 : 0,
+		doMoveWholeMesh });
 
 	// Change regime
 	auto const oldRegime = npc.CurrentRegime;
@@ -950,69 +960,41 @@ void Npcs::BeginMoveNpc(
 void Npcs::MoveNpcTo(
 	NpcId id,
 	vec2f const & position,
-	vec2f const & offset)
+	vec2f const & offset,
+	bool doMoveWholeMesh)
 {
 	assert(mStateBuffer[id].has_value());
 	assert(mStateBuffer[id]->CurrentRegime == StateType::RegimeType::BeingPlaced);
+	assert(mStateBuffer[id]->BeingPlacedState.has_value());
 
-	vec2f const newTargetPosition = position - offset;
+	// Calculate delta movement for anchor particle
+	ElementIndex anchorParticleIndex = mStateBuffer[id]->ParticleMesh.Particles[mStateBuffer[id]->BeingPlacedState->AnchorParticleOrdinal].ParticleIndex;
+	vec2f const deltaPosition = (position - offset) - mParticles.GetPosition(anchorParticleIndex);
 
+	// Calculate absolute velocity for this delta movement
 	float constexpr InertialVelocityFactor = 0.5f; // Magic number for how much velocity we impart
+	vec2f const targetAbsoluteVelocity = deltaPosition / GameParameters::SimulationStepTimeDuration<float> * InertialVelocityFactor;
 
-	switch (mStateBuffer[id]->Kind)
+	// Move particles
+	for (int p = 0; p < mStateBuffer[id]->ParticleMesh.Particles.size(); ++p)
 	{
-		case NpcKindType::Furniture:
+		if (doMoveWholeMesh || p == mStateBuffer[id]->BeingPlacedState->AnchorParticleOrdinal)
 		{
-			// Move all particles
+			auto const particleIndex = mStateBuffer[id]->ParticleMesh.Particles[p].ParticleIndex;
+			mParticles.SetPosition(particleIndex, mParticles.GetPosition(particleIndex) + deltaPosition);
+			mParticles.SetVelocity(particleIndex, targetAbsoluteVelocity);
 
-			// Get position of primary as reference
-			assert(mStateBuffer[id]->ParticleMesh.Particles.size() > 0);
-			vec2f const oldPrimaryPosition = mParticles.GetPosition(mStateBuffer[id]->ParticleMesh.Particles[0].ParticleIndex);
-
-			// Calculate new absolute velocity of primary
-			vec2f const newPrimaryAbsoluteVelocity = (newTargetPosition - oldPrimaryPosition) / GameParameters::SimulationStepTimeDuration<float> * InertialVelocityFactor;
-
-			// Move all particles
-			for (auto & particle : mStateBuffer[id]->ParticleMesh.Particles)
-			{
-				auto const particleIndex = particle.ParticleIndex;
-				vec2f const newPosition = newTargetPosition + (mParticles.GetPosition(particleIndex) - oldPrimaryPosition); // Set to new position + offset from reference
-				mParticles.SetPosition(particleIndex, newPosition);
-				mParticles.SetVelocity(particleIndex, newPrimaryAbsoluteVelocity);
-
-				if (particle.ConstrainedState.has_value())
-				{
-					// We can only assume here, and we assume the ship is still and since the user doesn't move with the ship,
-					// all this velocity is also relative to mesh
-					particle.ConstrainedState->MeshRelativeVelocity = newPrimaryAbsoluteVelocity;
-				}
-			}
-
-			break;
-		}
-
-		case NpcKindType::Human:
-		{
-			// Move secondary particle
-
-			assert(mStateBuffer[id]->ParticleMesh.Particles.size() == 2);
-
-			auto const particleIndex = mStateBuffer[id]->ParticleMesh.Particles[1].ParticleIndex;
-			vec2f const oldPosition = mParticles.GetPosition(particleIndex);
-			mParticles.SetPosition(particleIndex, newTargetPosition);
-			vec2f const absoluteVelocity = (newTargetPosition - oldPosition) / GameParameters::SimulationStepTimeDuration<float> * InertialVelocityFactor;
-			mParticles.SetVelocity(particleIndex, absoluteVelocity);
-
-			if (mStateBuffer[id]->ParticleMesh.Particles[1].ConstrainedState.has_value())
+			if (mStateBuffer[id]->ParticleMesh.Particles[p].ConstrainedState.has_value())
 			{
 				// We can only assume here, and we assume the ship is still and since the user doesn't move with the ship,
 				// all this velocity is also relative to mesh
-				mStateBuffer[id]->ParticleMesh.Particles[1].ConstrainedState->MeshRelativeVelocity = absoluteVelocity;
+				mStateBuffer[id]->ParticleMesh.Particles[p].ConstrainedState->MeshRelativeVelocity = targetAbsoluteVelocity;
 			}
-
-			break;
 		}
 	}
+
+	// Update state
+	mStateBuffer[id]->BeingPlacedState->DoMoveWholeMesh = doMoveWholeMesh;
 }
 
 void Npcs::EndMoveNpc(
@@ -1032,6 +1014,8 @@ void Npcs::EndMoveNpc(
 	OnMayBeNpcRegimeChanged(
 		StateType::RegimeType::BeingPlaced,
 		npc);
+
+	npc.BeingPlacedState.reset();
 
 #ifdef IN_BARYLAB
 	// Select NPC's primary particle

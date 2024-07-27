@@ -357,22 +357,27 @@ public:
 
     std::optional<PickedObjectId<NpcId>> BeginPlaceNewFurnitureNpc(
         NpcSubKindIdType subKind,
-        vec2f const & position);
+        vec2f const & position,
+        bool doMoveWholeMesh);
 
     std::optional<PickedObjectId<NpcId>> BeginPlaceNewHumanNpc(
         NpcSubKindIdType subKind,
-        vec2f const & position);
+        vec2f const & position,
+        bool doMoveWholeMesh);
 
     std::optional<PickedObjectId<NpcId>> ProbeNpcAt(
         vec2f const & position,
         float radius) const;
 
-    void BeginMoveNpc(NpcId id);
+    void BeginMoveNpc(
+        NpcId id,
+        bool doMoveWholeMesh);
 
     void MoveNpcTo(
         NpcId id,
         vec2f const & position,
-        vec2f const & offset);
+        vec2f const & offset,
+        bool doMoveWholeMesh);
 
     void EndMoveNpc(NpcId id);
 

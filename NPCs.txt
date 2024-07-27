@@ -474,7 +474,11 @@ Arch
 		- In short: need to add new constraint: non-primary constrained can only live in same connected component as primary's
 			! Not a problem while we navigate, as cannot navigate across different connected components
 			- Repro first
-				- And to repro, do that "place & move tool lock", also for furniture
+				= And to repro, do that "place & move tool lock", also for furniture
+					+ BeingPlacedState: anchor particle index, doMoveWholeMesh
+					- Retain spring lengths during move
+						- TODOHERE
+					- Test: {Human, Furniture, Particle} X {Place, Move} X {Shift, NoShift}
 				- Also do temporary "prevent walk"
 			- NPC acquires a new opt<CurrentConnectedComponentId> attribute, identical to CurrentPlaneId (but nullable <-> free)
 			- To enforce at:

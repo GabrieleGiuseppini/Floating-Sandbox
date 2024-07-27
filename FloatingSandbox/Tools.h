@@ -3718,7 +3718,7 @@ public:
             if (inputState.IsLeftMouseDown)
             {
                 // -> Error or -> Engaged
-                mCurrentEngagementState.emplace(InternalBeginPlaceNewNpc(inputState.MousePosition));
+                mCurrentEngagementState.emplace(InternalBeginPlaceNewNpc(inputState.MousePosition, !inputState.IsShiftKeyDown));
                 SetCurrentCursor();
             }
         }
@@ -3752,7 +3752,8 @@ public:
                 mGameController.MoveNpcTo(
                     mCurrentEngagementState->Npc->ObjectId,
                     inputState.MousePosition,
-                    mCurrentEngagementState->Npc->WorldOffset);
+                    mCurrentEngagementState->Npc->WorldOffset,
+                    !inputState.IsShiftKeyDown);
             }
         }
     }
@@ -3765,7 +3766,9 @@ public:
 
 protected:
 
-    virtual std::optional<PickedObjectId<NpcId>> InternalBeginPlaceNewNpc(DisplayLogicalCoordinates const & screenCoordinates) = 0;
+    virtual std::optional<PickedObjectId<NpcId>> InternalBeginPlaceNewNpc(
+        DisplayLogicalCoordinates const & screenCoordinates,
+        bool doMoveWholeMesh) = 0;
 
 private:
 
@@ -3824,11 +3827,14 @@ public:
 
 protected:
 
-    std::optional<PickedObjectId<NpcId>> InternalBeginPlaceNewNpc(DisplayLogicalCoordinates const & screenCoordinates) override
+    std::optional<PickedObjectId<NpcId>> InternalBeginPlaceNewNpc(
+        DisplayLogicalCoordinates const & screenCoordinates,
+        bool doMoveWholeMesh) override
     {
         return mGameController.BeginPlaceNewFurnitureNpc(
             mKind,
-            screenCoordinates);
+            screenCoordinates,
+            doMoveWholeMesh);
     }
 
 private:
@@ -3853,11 +3859,14 @@ public:
 
 protected:
 
-    std::optional<PickedObjectId<NpcId>> InternalBeginPlaceNewNpc(DisplayLogicalCoordinates const & screenCoordinates) override
+    std::optional<PickedObjectId<NpcId>> InternalBeginPlaceNewNpc(
+        DisplayLogicalCoordinates const & screenCoordinates,
+        bool doMoveWholeMesh) override
     {
         return mGameController.BeginPlaceNewHumanNpc(
             mKind,
-            screenCoordinates);
+            screenCoordinates,
+            doMoveWholeMesh);
     }
 
 private:
@@ -3912,7 +3921,9 @@ public:
                 // If we have an NPC, it becomes the one we're moving
                 if (mNpc.has_value())
                 {
-                    mGameController.BeginMoveNpc(mNpc->ObjectId);
+                    mGameController.BeginMoveNpc(
+                        mNpc->ObjectId,
+                        !inputState.IsShiftKeyDown);
 
                     // Now that it's moving, un-highlight it
                     mGameController.HighlightNpc(
@@ -3932,7 +3943,8 @@ public:
                     mGameController.MoveNpcTo(
                         mNpc->ObjectId,
                         inputState.MousePosition,
-                        mNpc->WorldOffset);
+                        mNpc->WorldOffset,
+                        !inputState.IsShiftKeyDown);
                 }
             }
         }

@@ -1018,26 +1018,30 @@ void World::AttractFish(
 
 std::optional<PickedObjectId<NpcId>> World::BeginPlaceNewFurnitureNpc(
     NpcSubKindIdType subKind,
-    vec2f const & position)
+    vec2f const & position,
+    bool doMoveWholeMesh)
 {
     assert(mNpcs);
     auto const pickedObjectId = mNpcs->BeginPlaceNewFurnitureNpc(
         subKind,
         position,
-        mCurrentSimulationTime);
+        mCurrentSimulationTime,
+        doMoveWholeMesh);
 
     return pickedObjectId;
 }
 
 std::optional<PickedObjectId<NpcId>> World::BeginPlaceNewHumanNpc(
     NpcSubKindIdType subKind,
-    vec2f const & position)
+    vec2f const & position,
+    bool doMoveWholeMesh)
 {
     assert(mNpcs);
     auto const pickedObjectId = mNpcs->BeginPlaceNewHumanNpc(
         subKind,
         position,
-        mCurrentSimulationTime);
+        mCurrentSimulationTime,
+        doMoveWholeMesh);
 
     return pickedObjectId;
 }
@@ -1052,24 +1056,29 @@ std::optional<PickedObjectId<NpcId>> World::ProbeNpcAt(
         radius);
 }
 
-void World::BeginMoveNpc(NpcId id)
+void World::BeginMoveNpc(
+    NpcId id,
+    bool doMoveWholeMesh)
 {
     assert(mNpcs);
     mNpcs->BeginMoveNpc(
         id,
-        mCurrentSimulationTime);
+        mCurrentSimulationTime,
+        doMoveWholeMesh);
 }
 
 void World::MoveNpcTo(
     NpcId id,
     vec2f const & position,
-    vec2f const & offset)
+    vec2f const & offset,
+    bool doMoveWholeMesh)
 {
     assert(mNpcs);
     mNpcs->MoveNpcTo(
         id,
         position,
-        offset);
+        offset,
+        doMoveWholeMesh);
 }
 
 void World::EndMoveNpc(NpcId id)

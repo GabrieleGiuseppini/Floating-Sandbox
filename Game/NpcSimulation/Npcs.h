@@ -550,6 +550,12 @@ private:
 			{}
 		};
 
+		struct BeingPlacedStateType
+		{
+			int AnchorParticleOrdinal; // In NPC's mesh
+			bool DoMoveWholeMesh;
+		};
+
 		//
 		// Members
 		//
@@ -583,6 +589,9 @@ private:
 		// Randomness specific to this NPC.
 		float RandomNormalizedUniformSeed; // [-1.0f ... +1.0f]
 
+		// Info for placing (presence is correlated with regime==BeingPlaced)
+		std::optional<BeingPlacedStateType> BeingPlacedState;
+
 		StateType(
 			NpcId id,
 			NpcKindType kind,
@@ -590,7 +599,8 @@ private:
 			PlaneId initialPlaneId,
 			RegimeType initialRegime,
 			ParticleMeshType && particleMesh,
-			KindSpecificStateType && kindSpecificState)
+			KindSpecificStateType && kindSpecificState,
+			BeingPlacedStateType beingPlacedState)
 			: Id(id)
 			, Kind(kind)
 			, CurrentShipId(initialShipId)
@@ -600,6 +610,7 @@ private:
 			, KindSpecificState(std::move(kindSpecificState))
 			, Highlight(NpcHighlightType::None)
 			, RandomNormalizedUniformSeed(GameRandomEngine::GetInstance().GenerateUniformReal(-1.0f, 1.0f))
+			, BeingPlacedState(beingPlacedState)
 		{}
 	};
 
@@ -669,12 +680,14 @@ public:
 	std::optional<PickedObjectId<NpcId>> BeginPlaceNewFurnitureNpc(
 		NpcSubKindIdType subKind,
 		vec2f const & worldCoordinates,
-		float currentSimulationTime);
+		float currentSimulationTime,
+		bool doMoveWholeMesh);
 
 	std::optional<PickedObjectId<NpcId>> BeginPlaceNewHumanNpc(
 		NpcSubKindIdType subKind,
 		vec2f const & worldCoordinates,
-		float currentSimulationTime);
+		float currentSimulationTime,
+		bool doMoveWholeMesh);
 
 	std::optional<PickedObjectId<NpcId>> ProbeNpcAt(
 		vec2f const & position,
@@ -682,12 +695,14 @@ public:
 
 	void BeginMoveNpc(
 		NpcId id,
-		float currentSimulationTime);
+		float currentSimulationTime,
+		bool doMoveWholeMesh);
 
 	void MoveNpcTo(
 		NpcId id,
 		vec2f const & position,
-		vec2f const & offset);
+		vec2f const & offset,
+		bool doMoveWholeMesh);
 
 	void EndMoveNpc(
 		NpcId id,

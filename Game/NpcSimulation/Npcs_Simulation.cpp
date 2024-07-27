@@ -310,6 +310,10 @@ void Npcs::UpdateNpcs(
             assert(mShips[npcState->CurrentShipId].has_value());
             auto & homeShip = mShips[npcState->CurrentShipId]->HomeShip;
 
+            // Invariant checks
+
+            assert((npcState->CurrentRegime == StateType::RegimeType::BeingPlaced) == npcState->BeingPlacedState.has_value());
+
             // Preliminary forces for primary
 
             assert(npcState->ParticleMesh.Particles.size() > 0);
@@ -459,9 +463,7 @@ void Npcs::UpdateNpcParticlePhysics(
     }
 
     if (npc.CurrentRegime == StateType::RegimeType::BeingPlaced
-        && (
-            (npc.Kind == NpcKindType::Human && npcParticleOrdinal == 1) // We move the head (secondary)
-            || (npc.Kind != NpcKindType::Human))) // We move all
+        && (npc.BeingPlacedState->DoMoveWholeMesh || npcParticleOrdinal == npc.BeingPlacedState->AnchorParticleOrdinal))
     {
         //
         // Particle is being placed - nothing to do
