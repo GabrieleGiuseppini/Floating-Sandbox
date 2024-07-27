@@ -1216,7 +1216,8 @@ bool Npcs::AddHumanNpc(
 	auto const npcId = BeginPlaceNewHumanNpc(
 		subKind,
 		worldCoordinates,
-		currentSimulationTime);
+		currentSimulationTime,
+		false);
 
 	if (npcId.has_value())
 	{

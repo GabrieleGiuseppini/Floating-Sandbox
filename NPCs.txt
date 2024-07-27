@@ -470,7 +470,7 @@ Arch
 			+ See https://cboard.cprogramming.com/c-programming/105096-fmod.html
 
 
-	= If particles 2, 3, etc. are on a different component ID than primary's, then make them free
+	+ If particles 2, 3, etc. are on a different component ID than primary's, then make them free
 		+ In short: need to add new constraint: non-primary constrained can only live in same connected component as primary's
 			! Not a problem while we navigate, as cannot navigate across different connected components
 			+ Repro first
@@ -511,7 +511,9 @@ Arch
 			+ Secondary free becoming constrained
 		+ Cleanups:
 			+ Remove temporary "prevent walk"
-		- Port to BaryLab
+		+ Port to BaryLab
+		+ Profile
+		+ Do japanese test
 
 	- New arms animation @ Aerial (& falling?)
 
