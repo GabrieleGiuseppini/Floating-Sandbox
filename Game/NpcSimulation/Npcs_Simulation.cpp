@@ -483,10 +483,53 @@ void Npcs::UpdateNpcParticlePhysics(
             "velocity=", mParticles.GetVelocity(npcParticle.ParticleIndex), " prelimF=", mParticles.GetPreliminaryForces(npcParticle.ParticleIndex), " physicsDeltaPos=", physicsDeltaPos);
         LogNpcDebug("    StartPosition=", particleStartAbsolutePosition, " StartVelocity=", mParticles.GetVelocity(npcParticle.ParticleIndex));
 
-        // Transition to free if we are not
+        // Transition to free if we are not (i.e. if folded triangle)
         if (npcParticle.ConstrainedState.has_value())
         {
             TransitionParticleToFreeState(npc, npcParticleOrdinal);
+        }
+
+        // Strive to maintain spring lengths if we're being placed
+        if (npc.CurrentRegime == StateType::RegimeType::BeingPlaced
+            && npcParticleOrdinal != npc.BeingPlacedState->AnchorParticleOrdinal
+            && npc.ParticleMesh.Springs.size() > 0)
+        {
+            for (int p = 0; ; )
+            {
+                // Decide next endpoint of spring: previous, unless this is 0,
+                // in which case we go for anchor
+
+                int otherP;
+                if (npcParticleOrdinal == 0)
+                {
+                    assert(npc.BeingPlacedState->AnchorParticleOrdinal > 0);
+                    otherP = npc.BeingPlacedState->AnchorParticleOrdinal;
+                }
+                else
+                {
+                    otherP = p;
+                }
+
+                assert(otherP != npcParticleOrdinal);
+
+                // Adjust physicsDeltaPos to maintain spring length
+
+                int const s = GetSpringAmongEndpoints(npcParticleOrdinal, otherP, npc.ParticleMesh);
+                float const targetSpringLength = npc.ParticleMesh.Springs[s].RestLength;
+                vec2f const & otherPPosition = mParticles.GetPosition(npc.ParticleMesh.Particles[otherP].ParticleIndex);
+                vec2f const particleAdjustedPosition =
+                    otherPPosition
+                    + (particleStartAbsolutePosition + physicsDeltaPos - otherPPosition).normalise() * targetSpringLength;
+                physicsDeltaPos = particleAdjustedPosition - particleStartAbsolutePosition;
+
+                // Advance
+
+                p = otherP + 1;
+                if (p >= npcParticleOrdinal)
+                {
+                    break;
+                }
+            }
         }
 
         UpdateNpcParticle_Free(

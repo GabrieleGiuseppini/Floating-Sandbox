@@ -969,11 +969,11 @@ void Npcs::MoveNpcTo(
 
 	// Calculate delta movement for anchor particle
 	ElementIndex anchorParticleIndex = mStateBuffer[id]->ParticleMesh.Particles[mStateBuffer[id]->BeingPlacedState->AnchorParticleOrdinal].ParticleIndex;
-	vec2f const deltaPosition = (position - offset) - mParticles.GetPosition(anchorParticleIndex);
+	vec2f const deltaAnchorPosition = (position - offset) - mParticles.GetPosition(anchorParticleIndex);
 
 	// Calculate absolute velocity for this delta movement
 	float constexpr InertialVelocityFactor = 0.5f; // Magic number for how much velocity we impart
-	vec2f const targetAbsoluteVelocity = deltaPosition / GameParameters::SimulationStepTimeDuration<float> * InertialVelocityFactor;
+	vec2f const targetAbsoluteVelocity = deltaAnchorPosition / GameParameters::SimulationStepTimeDuration<float> * InertialVelocityFactor;
 
 	// Move particles
 	for (int p = 0; p < mStateBuffer[id]->ParticleMesh.Particles.size(); ++p)
@@ -981,7 +981,7 @@ void Npcs::MoveNpcTo(
 		if (doMoveWholeMesh || p == mStateBuffer[id]->BeingPlacedState->AnchorParticleOrdinal)
 		{
 			auto const particleIndex = mStateBuffer[id]->ParticleMesh.Particles[p].ParticleIndex;
-			mParticles.SetPosition(particleIndex, mParticles.GetPosition(particleIndex) + deltaPosition);
+			mParticles.SetPosition(particleIndex, mParticles.GetPosition(particleIndex) + deltaAnchorPosition);
 			mParticles.SetVelocity(particleIndex, targetAbsoluteVelocity);
 
 			if (mStateBuffer[id]->ParticleMesh.Particles[p].ConstrainedState.has_value())
@@ -2372,5 +2372,28 @@ void Npcs::PublishHumanNpcStats()
 		mConstrainedRegimeHumanNpcCount,
 		mFreeRegimeHumanNpcCount);
 }
+
+int Npcs::GetSpringAmongEndpoints(
+	int particleEndpoint1,
+	int particleEndpoint2,
+	StateType::ParticleMeshType const & particleMesh)
+{
+	assert(particleMesh.Particles.size() >= 2);
+	ElementIndex p1 = particleMesh.Particles[particleEndpoint1].ParticleIndex;
+	ElementIndex p2 = particleMesh.Particles[particleEndpoint2].ParticleIndex;
+	for (int s = 0; s < particleMesh.Springs.size(); ++s)
+	{
+		auto const & spring = particleMesh.Springs[s];
+		if ((spring.EndpointAIndex == p1 && spring.EndpointBIndex == p2)
+			|| (spring.EndpointBIndex == p1 && spring.EndpointAIndex == p2))
+		{
+			return s;
+		}
+	}
+
+	assert(false);
+	return -1;
+}
+
 
 }

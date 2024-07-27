@@ -874,6 +874,11 @@ private:
 
 	void PublishHumanNpcStats();
 
+	static int GetSpringAmongEndpoints(
+		int particleEndpoint1,
+		int particleEndpoint2,
+		StateType::ParticleMeshType const & particleMesh);
+
 private:
 
 	//
