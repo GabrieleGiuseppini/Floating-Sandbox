@@ -190,332 +190,7 @@ Arch
 				- https://members.loria.fr/SLazard/ARC-Visi3D/Pant-project/files/Line_Segment_Triangle.html
 				- 2D: https://www.geogebra.org/m/aRMTsu62
 
-								
-= Integration into FS
-	! Goal: be able to copy folder of files seamlessly across FS and BL
-	+ FixedSizeVector: BaryLab->FS: check diff
-	+ GameTypes: BaryLab->FS: add new types (and changes?)
-	+ Have a working FS here for subsequent tests
-	+ All in one go - GO1: 
-		+ Triangles: BaryLab->FS: add BL features
-			+ Barycentric math (replace FS')
-			+ SurfaceType
-			+ OppositeTriangle
-			+ etc?
-		+ Tessellation @ ShipFactory
-			! Consider that members in BL have different names in FS
-			+ ShipFactory
-			+ Test consequences of new tessellation (i.e. triangle edges in new directions)
-				+ Look
-				+ Frontier
-		+ Floorplan @ ShipFactory
-			! Consider that members in BL have different names in FS
-			+ ShipFactoryTypes
-			+ ShipFloorplanizer
-			+ ShipFactory
-		+ Rendering of floors			
-	+ All in one go - GO2:
-		+ Move Npc simulation source files under NpcSimulation folder
-			+ Not VS GUI, that's still "Physics"
-		+ Port NpcMaterial.* and NpcMaterialDatabase.* (from Material*) into Materials.* and MaterialDatabase.*
-		+ Port GameParameters settings that we need
-		+ Shader: port Limbs
-			+ & ShaderManager
-			+ PlaneID
-		+ (Ship)RenderContext: port Limbs
-			+ No TextureQuad though - we'll have texture coords separate
-			+ Indices work, with ownership as in big, final plan
-			+ Fix: BaryLab tells total NPC quad count to RenderContext, and then goes on to individual Ships; must instead do ship-by-ship
-				+ Keep per-NPCShip stats
-					+ Follow all mFurnitureNpcCount and mHumanNpcCount
-		+ GameParameters: port Static and Kinetic friction adjustments and elasticity as NPC params
-			! We don't want structural materials to have own coeffs, as that would slow down TerrainImpact which is already quite expensive; so for these we are happy
-			  with just Ocean Floor coeffs and happy that an "own elasticity" pops up thanks to stiffness
-		+ Plumb interactions:
-			+ GameController & World
-			+ ToolController & Tools
-				+ Incl. Resources
-			+ MainFrame menu
-				@ Tools menu
-				+ Npc stats event: add totalNpcs (must include BeingPlaced)
-					+ And publish from BeginPlace/Abort/and everywhere it may change
-				+ MainFrame registers for NPC stats
-				+ As soon as NPC count goes from zero to non-zero (including BeingPlaced):
-					+ If current view is "Exterior" MainFrame switches to "Interior"
-					+ Enable Move/Remove
-				+ As soon as NPC count goes from non-zero to zero:
-					+ If current view is "Interior" GameController switches to "Exterior"
-					+ Disable Move/Remove
-		+ See why takes forever to rise
-			+ Cleanup:
-				+ BaryLab
-				+ FS
-			! Problem: feet are often not on edge
-				+ Because of micro-ondulations
-				+ Log:
-					+ Mesh velocity
-					+ Two components of physicsDeltaPos: due to F and due to V
-				+ Cleanup & commit
-			! HA! The problem is that progress falls faster than it rises!
-			+ Possible solution 1:
-				+ Redo PreRising, Falling, KnockedOut, and all the ones looking at feet/headOnFloor: constant fraction progress, up or down
-					+ Undo changes below first
-			+ Faster prerising
-
-	+ Fix: PreRising->KO: angled half-leg becomes long leg, with outcome being "kick"
-
-	+ Backport:
-		+ NpcSimulation folder: FS -> BaryLab 			
-			+ Nuke TextureQuad from GameTypes
-			+ Adapt RenderContext
-			+ GameParameters
-			+ NpcMaterial interface from MaterialDB
-		+ Tests:
-			+ DEBUG
-			+ Large number of NPCs
-			+ Panic
-	
-	+ FIX: Inflatable Balloon: infinite loop
-		+ Figure out if due to folded triangle
-		+ If so:
-			X Plan A: deal with it
-				+ Can not: crossing one edge wil make it go back and forth
-			X Plan B: whenever we move from a triangle with orientation X to a triangle to orientation Y, consider the edge a floor (and evt bounce on it)
-				+ Test normal movement (inertial) and walk in a folder world
-					= Barylab: fold
-						+ On key hit, after NPC has found its own triangle
-						- X
-							- Test:
-								- Constrained falling
-								- Walking
-						- Y
-							- Test:
-								- Constrained falling
-								- Walking
-					+ Isses found:
-						+ Cannot stand up
-						+ Cannot find that NPC belongs to triangle when NPC is being placed
-					
-				X Impl:
-					X Take orientation at beginning, and pass it around down the chain; we want to stick to that orientation for the entire simulation step and never change it
-					X At each place where we climb an edge into a triangle, check if that triangle orientation is different than initial; if so, bounce on edge			
-			+ Plan C:
-				+ 1. At start of step, check orientation: if folded, become free
-				X Option 1: - STASHED
-					+ 2. At each place where we climb an edge into a triangle, check if that triangle is folded; if so, bounce on edge
-						+ 2a. UpdateNpcParticle_ConstrainedInertial
-						+ 2b. NavigateVertex - HumanWalking
-						+ 2c. NavigateVertex - *
-					- 3. Edge should also look like floor for the purposes of:
-						- Detecting non-inertial
-						X HumanSimulation (e.g. to go to KO, or else stays aerial) (doesn't need it, uses VirtualEdge)						
-						X Animation (doesn't need it)
-				+ Option 2:
-					+ At IsEdgeFloorToParticle(.)
-		+ Lower "progress going back" when conditions not met at all 3 places
-			+ Then retest inflatable balloon
-		+ Profile
-			+ Baseline first: 2.4/2.5 (long term)
-			+ Backport
-			+ Profile
-	+ Larger search radius for NPC
-		+ Based on zoom
-	+ See why rendering internal view does not show springs
-
-	+ Material rearc: nuke NpcMaterial and use only StructuralMaterial	
-		+ 1. MaterialDB: index StructuralMaterial also by name
-			+ See if there are any dupe names
-				+ Add to script as check
-					+ Together with is_exempt+palette
-			+ Do indexing
-		+ 2. Port NPCMaterial to StructuralMaterial
-			+ Port GameParameters::OceanFloorElasticity and OceanFloorFriction to all materials as ElasticityCoefficient, StaticFrictionCoefficient, KineticFrictionCoefficient (same values)
-				+ Script: fill-in 
-				+ Material: parse & expose
-				+ Leave OceanFloorElasticity and OceanFloorFriction in GameParameters and SettingsDialog
-				+ GameParameters: add ElasticityAdjustment, FrictionAdjustment X 2 replacing the "NpcMaterial" ones
-					+ IGameControllerSettings, etc.
-					+ SettingsDialog (under "Mechanics" pane)
-				+ Points: new Buffer<OceanFloorCollisionFactors>
-					+ Contains (Ocean+Material) / 2 * Adjustment, and eventually other transformations needed by ocean collision code
-					+ UpdateForGameParameters: recalc upon adjustment changes
-					+ Clamp values?
-						+ Friction: max 1.0 (or else backfires)
-				+ HandleCollisionsWithSeaFloor:
-					+ Use these
-						+ With static/kinetic
-					+ Verify same values:
-						+ Old elasticityFactor: -0.5
-						+ Old frictionFactor: 0.75					
-				+ Tests:
-					+ Functional: compare behavior before & after
-					+ Functional: verify picks up adjustments X 5
-						+ Check ranges
-							+ See min zero for both frictions
-							+ KineticAdj: 40 is too much
-					+ Perf on old Dell:
-						+ Before: 18.2 (17.8->18.2)
-						+ After: 17.7
-				+ Add comment @ ImpactWithOceanFloor() on nature of friction
-				+ Higher threshold for static friction -> kinetic friction
-					+ Figure out first why we can't stop tangential response
-				+ Fix adjust terrain: calculate world end taking into account snap (use helper)
-				+ Check again role of silting in friction test at 30deg
-			+ Add SpringReductionCoeff, SpringDampingCoeff as NpcSpringReductionCoeff, NpcSpringDampingCoeff 
-				+ optional, defaults = <reasonable>
-		+ 3. StructuralMaterial:
-			+ Do not store (& expose) IsExemptFromPalette
-		+ 4. Port NPC materials to structural_materials
-			+ Elast and two frictions: new values so that (new + ocean) / 2 == current in json (ocean because that's the value for ship materials now)
-			+ Hide it from palette
-		+ 5. Nuke NpcMaterial (json and class/es) from Materials/MaterialDatabase
-		+ 6. Use at Npcs
-			+ Structural materials
-				= "Crate": use some wood
-			+ We really want to do average of materials' elasticity and friction
-				+ Elast, frictions: consider both materials - make average and use adjustments
-					+ @ Flattened traj
-						+ Take one of the vertices arbitrarily
-					+ @ Bounce
-						+ Take one of the vertices arbitrarily
-			+ BuoyancyVolumeFill: Crate was 0.05, now 1.0 
-				+ New optional StructuralMaterial property: NpcBuoyancyVolumeFill
-					+ Default: 0.05
-					+ Comment @ Material: in FS, hull has buoyancy_volume_fill=0.0 (as it never gets water yet we want it to sink), and non-hull=1.0 (as it gets water)				    
-				+ Take it in Npcs:: calculation of buoyancy factor
-				+ Adjust Human x 2
-				+ Adjust Crate's NpcBVF 
-					+ Default NpcBuoyancyVolumeFill: calculated
-			+ Tests:
-				+ Human
-					+ Slide (friction)
-					+ Bounce (friction & elasticity)
-					+ Floating
-				+ Crate
-					+ Slide (friction)
-					+ Bounce (friction & elasticity)
-					+ Floating
-						
-			+ Nuke npc json
-		+ 6b. See if may nuke NpcParticles::MaterialProperties in favor of StructuralMaterial &
-		X 7. Material propertygrid @ ShipBuilder
-			X Friction X 2, Elasticity
-			X See if there's room
-		+ Change friction of (to slide on surface and NPCs) (see if can test and calc via Ocean only):
-			+ Steel (down)
-			+ Glass (down)
-			+ Concrete (up) 6.0
-		+ Rewrite NpcDB spec below for material fetching
-		+ Merge material_rearc into npcs_v1
-		+ Backport to BaryLab
-			+ See human sliding on feet
-			+ Profile
-			+ Merge into master
-			+ Code + json
-				+ And nuke npc json
-			+ Commit
-
-		! For reference: this was Crate:
-			{
-			"name": "Crate",
-			"render_color": "#000060", 
-
-			"mass": 34.5,
-			"spring_reduction_fraction": 0.97,
-			"spring_damping_coefficient": 0.5,
-			"static_friction": 0.07,
-			"kinetic_friction": 0.05,
-			"elasticity": 0.6,
-			"buoyancy_volume_fill": 0.05
-			},
-
-	+ Settings:
-		+ List:
-			+ HumanNpcHeight("Size")Adj
-				+ Yeah rename param to "NpcSizeAdjustment"
-					= Apply its effect also to furniture
-		+ SettingsManager
-		+ SettingsDialog
-			+ Lights, Electricals, Fishes, and NPCs
-
-	+ Primary/Secondary edge-separation at floor check: see if can be improved by looking at third vertex of triangle of particle for which we check
-		+ Backport to barylab first
-		+ Repro in BaryLab with a million puppets
-		+ Fix in barylab
-		+ Port to FS
-
-	+ Misc possible improvements:
-		X See if can avoid furniture bending
-			X Try that other spring relaxation algo
-				+ Backport to Barylab first
-				+ DO:
-					+ 1. Prelim forces - withOUT spring forces
-					+ 2. Integrate prelim forces -> new_pos buffer
-					+ 3. Calc spring forces looking at new_pos buffer -> spring forces (or forces above after clearing it)
-					+ 4. @ Update: new_pos + spring force integration
-						+ Definitive forces: watch out
-				- Compare with previous
-					- Bounce
-					- Breakability with big impact
-				- Cleanups if OK:
-					- Rewrite as "two steps"?
-					- See if can optimize main Update() loop/s
-					- CalculateDefinitiveForces: for Torque we predict where secondary will be; can we use NewPosition now that we have it instead?
-						- Note: current prediction is based on velocity alone, while NewPos also takes forces
-			+ Recheck FS vs BaryLab
-		+ Maintain spring lengths during BeingPlaced (to avoid elongations)
-		X If above doesn't work: try more velocity damping during BeingPlaced
-		+ Picking human NPCs: now it's too cumbersome
-		+ fmod improvements
-			+ See https://cboard.cprogramming.com/c-programming/105096-fmod.html
-
-
-	+ If particles 2, 3, etc. are on a different component ID than primary's, then make them free
-		+ In short: need to add new constraint: non-primary constrained can only live in same connected component as primary's
-			! Not a problem while we navigate, as cannot navigate across different connected components
-			+ Repro first
-				+ And to repro, do that "place & move tool lock", also for furniture
-					+ BeingPlacedState: anchor particle index, doMoveWholeMesh
-					+ Retain spring lengths during move
-					+ Commit
-				+ Also do temporary "prevent walk"
-				+ Repro
-					- Tall man on right side of ship; cutting around its head
-
-			+ NPC acquires a new opt<CurrentConnectedComponentId> attribute, identical to CurrentPlaneId (but nullable <-> free)
-			+ To enforce at:
-				+ Placement (ResetNpcToState)
-					+ Based on primary, where we take NPC's plane ID also from its primary
-					+ Then we need to constrain non-primary search for triangles to primary's connected component (==NPC's)
-						+ FindTopmostTriangleContaining
-							+ But not at call from ProbeNpcAt
-				+ Ship connectivity changed: detected at Npc::Update: in initial loop:
-					+ For each particle in constrained state:
-						+ Primary: 
-							+ If in folded triangle or destroyed triangle:
-								+ Transition particle to free
-							+ Else:
-								+ Store planeID and connected component ID for whole NPC
-									+ "Because it might have changed or reassigned"
-						+ Others:
-							+ If in folded triangle or destroyed triangle:
-								+ Transition particle to free
-							+ Else if conn component ID != NPC's:
-								+ Transition particle to free
-					+ Remove final assignment of plane ID
-					+ Replace Folded/Deleted check at UpdateNpc and make it an assert
-				+ Secondary free becoming constrained: consider only triangles belonging to primary's connected component (==NPC's)
-				+ Reset when becoming free
-		+ Tests:
-			+ Repro
-			+ Secondary free becoming constrained
-		+ Cleanups:
-			+ Remove temporary "prevent walk"
-		+ Port to BaryLab
-		+ Profile
-		+ Do japanese test
-
-	- New arms animation @ Aerial (& falling?)
+========================================================								
 
 = Rendering:
 	! Atlas textures are simply flat frames and all, NpcDatabase groups them together
@@ -722,13 +397,20 @@ Arch
 			- Become free! So we avoid bouncing back and forth
 	- World border
 		- At end of step: MaintainInWorldBounds()
+			- TODO: where exactly?
 		- MaintainInWorldBounds():
 			- If hit:
 				- Move back and bounce perpendicular velocity (see actually what we do in ship)
 				- Become free! So we avoid bouncing back and forth
-	- Triangle destruction: 
-		- Should be enough to check for current triangle being deleted at beginning of UpdateNpc(.), and if so, become free (identical for @ pri and @ non-pri)
-			- Just like when we detect secondary, third, etc. are in a different connected component, see above
+	- Points' water effect when particles are constrained
+		! Gist: 
+			! We use both water (which imparts buoyancy) and water velocities (which impart v onto particles proportionally to particles' waterness)
+			! We cache both at NpcParticles @ CalculatePrelimForces - which is where we calc them - and re-use them everywhere, e.g. at HumanBehaviorUpdate
+		- Particle waterness: calculated as W(triangle_t) based on water at triangles' points
+			- W(triangle_t): TODOHERE
+	+ Triangle destruction: 
+		+ Should be enough to check for current triangle being deleted at beginning of UpdateNpc(.), and if so, become free (identical for @ pri and @ non-pri)
+			+ Just like when we detect secondary, third, etc. are in a different connected component, see above
 	- Swimming humans generate (small) bubbles
 		- Each aquatic state has a NextBubbleEmissionSimulationTimestamp
 			- Init'd as 0
@@ -2809,3 +2491,332 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 			+ private RebuildNpcSubmenus()
 				+ From NpcDatabase (indirectly, via GameController)
 				+ Cleans up and rebuilds
+
++ Integration into FS
+	! Goal: be able to copy folder of files seamlessly across FS and BL
+	+ FixedSizeVector: BaryLab->FS: check diff
+	+ GameTypes: BaryLab->FS: add new types (and changes?)
+	+ Have a working FS here for subsequent tests
+	+ All in one go - GO1: 
+		+ Triangles: BaryLab->FS: add BL features
+			+ Barycentric math (replace FS')
+			+ SurfaceType
+			+ OppositeTriangle
+			+ etc?
+		+ Tessellation @ ShipFactory
+			! Consider that members in BL have different names in FS
+			+ ShipFactory
+			+ Test consequences of new tessellation (i.e. triangle edges in new directions)
+				+ Look
+				+ Frontier
+		+ Floorplan @ ShipFactory
+			! Consider that members in BL have different names in FS
+			+ ShipFactoryTypes
+			+ ShipFloorplanizer
+			+ ShipFactory
+		+ Rendering of floors			
+	+ All in one go - GO2:
+		+ Move Npc simulation source files under NpcSimulation folder
+			+ Not VS GUI, that's still "Physics"
+		+ Port NpcMaterial.* and NpcMaterialDatabase.* (from Material*) into Materials.* and MaterialDatabase.*
+		+ Port GameParameters settings that we need
+		+ Shader: port Limbs
+			+ & ShaderManager
+			+ PlaneID
+		+ (Ship)RenderContext: port Limbs
+			+ No TextureQuad though - we'll have texture coords separate
+			+ Indices work, with ownership as in big, final plan
+			+ Fix: BaryLab tells total NPC quad count to RenderContext, and then goes on to individual Ships; must instead do ship-by-ship
+				+ Keep per-NPCShip stats
+					+ Follow all mFurnitureNpcCount and mHumanNpcCount
+		+ GameParameters: port Static and Kinetic friction adjustments and elasticity as NPC params
+			! We don't want structural materials to have own coeffs, as that would slow down TerrainImpact which is already quite expensive; so for these we are happy
+			  with just Ocean Floor coeffs and happy that an "own elasticity" pops up thanks to stiffness
+		+ Plumb interactions:
+			+ GameController & World
+			+ ToolController & Tools
+				+ Incl. Resources
+			+ MainFrame menu
+				@ Tools menu
+				+ Npc stats event: add totalNpcs (must include BeingPlaced)
+					+ And publish from BeginPlace/Abort/and everywhere it may change
+				+ MainFrame registers for NPC stats
+				+ As soon as NPC count goes from zero to non-zero (including BeingPlaced):
+					+ If current view is "Exterior" MainFrame switches to "Interior"
+					+ Enable Move/Remove
+				+ As soon as NPC count goes from non-zero to zero:
+					+ If current view is "Interior" GameController switches to "Exterior"
+					+ Disable Move/Remove
+		+ See why takes forever to rise
+			+ Cleanup:
+				+ BaryLab
+				+ FS
+			! Problem: feet are often not on edge
+				+ Because of micro-ondulations
+				+ Log:
+					+ Mesh velocity
+					+ Two components of physicsDeltaPos: due to F and due to V
+				+ Cleanup & commit
+			! HA! The problem is that progress falls faster than it rises!
+			+ Possible solution 1:
+				+ Redo PreRising, Falling, KnockedOut, and all the ones looking at feet/headOnFloor: constant fraction progress, up or down
+					+ Undo changes below first
+			+ Faster prerising
+
+	+ Fix: PreRising->KO: angled half-leg becomes long leg, with outcome being "kick"
+
+	+ Backport:
+		+ NpcSimulation folder: FS -> BaryLab 			
+			+ Nuke TextureQuad from GameTypes
+			+ Adapt RenderContext
+			+ GameParameters
+			+ NpcMaterial interface from MaterialDB
+		+ Tests:
+			+ DEBUG
+			+ Large number of NPCs
+			+ Panic
+	
+	+ FIX: Inflatable Balloon: infinite loop
+		+ Figure out if due to folded triangle
+		+ If so:
+			X Plan A: deal with it
+				+ Can not: crossing one edge wil make it go back and forth
+			X Plan B: whenever we move from a triangle with orientation X to a triangle to orientation Y, consider the edge a floor (and evt bounce on it)
+				+ Test normal movement (inertial) and walk in a folder world
+					= Barylab: fold
+						+ On key hit, after NPC has found its own triangle
+						- X
+							- Test:
+								- Constrained falling
+								- Walking
+						- Y
+							- Test:
+								- Constrained falling
+								- Walking
+					+ Isses found:
+						+ Cannot stand up
+						+ Cannot find that NPC belongs to triangle when NPC is being placed
+					
+				X Impl:
+					X Take orientation at beginning, and pass it around down the chain; we want to stick to that orientation for the entire simulation step and never change it
+					X At each place where we climb an edge into a triangle, check if that triangle orientation is different than initial; if so, bounce on edge			
+			+ Plan C:
+				+ 1. At start of step, check orientation: if folded, become free
+				X Option 1: - STASHED
+					+ 2. At each place where we climb an edge into a triangle, check if that triangle is folded; if so, bounce on edge
+						+ 2a. UpdateNpcParticle_ConstrainedInertial
+						+ 2b. NavigateVertex - HumanWalking
+						+ 2c. NavigateVertex - *
+					- 3. Edge should also look like floor for the purposes of:
+						- Detecting non-inertial
+						X HumanSimulation (e.g. to go to KO, or else stays aerial) (doesn't need it, uses VirtualEdge)						
+						X Animation (doesn't need it)
+				+ Option 2:
+					+ At IsEdgeFloorToParticle(.)
+		+ Lower "progress going back" when conditions not met at all 3 places
+			+ Then retest inflatable balloon
+		+ Profile
+			+ Baseline first: 2.4/2.5 (long term)
+			+ Backport
+			+ Profile
+	+ Larger search radius for NPC
+		+ Based on zoom
+	+ See why rendering internal view does not show springs
+
+	+ Material rearc: nuke NpcMaterial and use only StructuralMaterial	
+		+ 1. MaterialDB: index StructuralMaterial also by name
+			+ See if there are any dupe names
+				+ Add to script as check
+					+ Together with is_exempt+palette
+			+ Do indexing
+		+ 2. Port NPCMaterial to StructuralMaterial
+			+ Port GameParameters::OceanFloorElasticity and OceanFloorFriction to all materials as ElasticityCoefficient, StaticFrictionCoefficient, KineticFrictionCoefficient (same values)
+				+ Script: fill-in 
+				+ Material: parse & expose
+				+ Leave OceanFloorElasticity and OceanFloorFriction in GameParameters and SettingsDialog
+				+ GameParameters: add ElasticityAdjustment, FrictionAdjustment X 2 replacing the "NpcMaterial" ones
+					+ IGameControllerSettings, etc.
+					+ SettingsDialog (under "Mechanics" pane)
+				+ Points: new Buffer<OceanFloorCollisionFactors>
+					+ Contains (Ocean+Material) / 2 * Adjustment, and eventually other transformations needed by ocean collision code
+					+ UpdateForGameParameters: recalc upon adjustment changes
+					+ Clamp values?
+						+ Friction: max 1.0 (or else backfires)
+				+ HandleCollisionsWithSeaFloor:
+					+ Use these
+						+ With static/kinetic
+					+ Verify same values:
+						+ Old elasticityFactor: -0.5
+						+ Old frictionFactor: 0.75					
+				+ Tests:
+					+ Functional: compare behavior before & after
+					+ Functional: verify picks up adjustments X 5
+						+ Check ranges
+							+ See min zero for both frictions
+							+ KineticAdj: 40 is too much
+					+ Perf on old Dell:
+						+ Before: 18.2 (17.8->18.2)
+						+ After: 17.7
+				+ Add comment @ ImpactWithOceanFloor() on nature of friction
+				+ Higher threshold for static friction -> kinetic friction
+					+ Figure out first why we can't stop tangential response
+				+ Fix adjust terrain: calculate world end taking into account snap (use helper)
+				+ Check again role of silting in friction test at 30deg
+			+ Add SpringReductionCoeff, SpringDampingCoeff as NpcSpringReductionCoeff, NpcSpringDampingCoeff 
+				+ optional, defaults = <reasonable>
+		+ 3. StructuralMaterial:
+			+ Do not store (& expose) IsExemptFromPalette
+		+ 4. Port NPC materials to structural_materials
+			+ Elast and two frictions: new values so that (new + ocean) / 2 == current in json (ocean because that's the value for ship materials now)
+			+ Hide it from palette
+		+ 5. Nuke NpcMaterial (json and class/es) from Materials/MaterialDatabase
+		+ 6. Use at Npcs
+			+ Structural materials
+				= "Crate": use some wood
+			+ We really want to do average of materials' elasticity and friction
+				+ Elast, frictions: consider both materials - make average and use adjustments
+					+ @ Flattened traj
+						+ Take one of the vertices arbitrarily
+					+ @ Bounce
+						+ Take one of the vertices arbitrarily
+			+ BuoyancyVolumeFill: Crate was 0.05, now 1.0 
+				+ New optional StructuralMaterial property: NpcBuoyancyVolumeFill
+					+ Default: 0.05
+					+ Comment @ Material: in FS, hull has buoyancy_volume_fill=0.0 (as it never gets water yet we want it to sink), and non-hull=1.0 (as it gets water)				    
+				+ Take it in Npcs:: calculation of buoyancy factor
+				+ Adjust Human x 2
+				+ Adjust Crate's NpcBVF 
+					+ Default NpcBuoyancyVolumeFill: calculated
+			+ Tests:
+				+ Human
+					+ Slide (friction)
+					+ Bounce (friction & elasticity)
+					+ Floating
+				+ Crate
+					+ Slide (friction)
+					+ Bounce (friction & elasticity)
+					+ Floating
+						
+			+ Nuke npc json
+		+ 6b. See if may nuke NpcParticles::MaterialProperties in favor of StructuralMaterial &
+		X 7. Material propertygrid @ ShipBuilder
+			X Friction X 2, Elasticity
+			X See if there's room
+		+ Change friction of (to slide on surface and NPCs) (see if can test and calc via Ocean only):
+			+ Steel (down)
+			+ Glass (down)
+			+ Concrete (up) 6.0
+		+ Rewrite NpcDB spec below for material fetching
+		+ Merge material_rearc into npcs_v1
+		+ Backport to BaryLab
+			+ See human sliding on feet
+			+ Profile
+			+ Merge into master
+			+ Code + json
+				+ And nuke npc json
+			+ Commit
+
+		! For reference: this was Crate:
+			{
+			"name": "Crate",
+			"render_color": "#000060", 
+
+			"mass": 34.5,
+			"spring_reduction_fraction": 0.97,
+			"spring_damping_coefficient": 0.5,
+			"static_friction": 0.07,
+			"kinetic_friction": 0.05,
+			"elasticity": 0.6,
+			"buoyancy_volume_fill": 0.05
+			},
+
+	+ Settings:
+		+ List:
+			+ HumanNpcHeight("Size")Adj
+				+ Yeah rename param to "NpcSizeAdjustment"
+					= Apply its effect also to furniture
+		+ SettingsManager
+		+ SettingsDialog
+			+ Lights, Electricals, Fishes, and NPCs
+
+	+ Primary/Secondary edge-separation at floor check: see if can be improved by looking at third vertex of triangle of particle for which we check
+		+ Backport to barylab first
+		+ Repro in BaryLab with a million puppets
+		+ Fix in barylab
+		+ Port to FS
+
+	+ Misc possible improvements:
+		X See if can avoid furniture bending
+			X Try that other spring relaxation algo
+				+ Backport to Barylab first
+				+ DO:
+					+ 1. Prelim forces - withOUT spring forces
+					+ 2. Integrate prelim forces -> new_pos buffer
+					+ 3. Calc spring forces looking at new_pos buffer -> spring forces (or forces above after clearing it)
+					+ 4. @ Update: new_pos + spring force integration
+						+ Definitive forces: watch out
+				- Compare with previous
+					- Bounce
+					- Breakability with big impact
+				- Cleanups if OK:
+					- Rewrite as "two steps"?
+					- See if can optimize main Update() loop/s
+					- CalculateDefinitiveForces: for Torque we predict where secondary will be; can we use NewPosition now that we have it instead?
+						- Note: current prediction is based on velocity alone, while NewPos also takes forces
+			+ Recheck FS vs BaryLab
+		+ Maintain spring lengths during BeingPlaced (to avoid elongations)
+		X If above doesn't work: try more velocity damping during BeingPlaced
+		+ Picking human NPCs: now it's too cumbersome
+		+ fmod improvements
+			+ See https://cboard.cprogramming.com/c-programming/105096-fmod.html
+
+
+	+ If particles 2, 3, etc. are on a different component ID than primary's, then make them free
+		+ In short: need to add new constraint: non-primary constrained can only live in same connected component as primary's
+			! Not a problem while we navigate, as cannot navigate across different connected components
+			+ Repro first
+				+ And to repro, do that "place & move tool lock", also for furniture
+					+ BeingPlacedState: anchor particle index, doMoveWholeMesh
+					+ Retain spring lengths during move
+					+ Commit
+				+ Also do temporary "prevent walk"
+				+ Repro
+					- Tall man on right side of ship; cutting around its head
+
+			+ NPC acquires a new opt<CurrentConnectedComponentId> attribute, identical to CurrentPlaneId (but nullable <-> free)
+			+ To enforce at:
+				+ Placement (ResetNpcToState)
+					+ Based on primary, where we take NPC's plane ID also from its primary
+					+ Then we need to constrain non-primary search for triangles to primary's connected component (==NPC's)
+						+ FindTopmostTriangleContaining
+							+ But not at call from ProbeNpcAt
+				+ Ship connectivity changed: detected at Npc::Update: in initial loop:
+					+ For each particle in constrained state:
+						+ Primary: 
+							+ If in folded triangle or destroyed triangle:
+								+ Transition particle to free
+							+ Else:
+								+ Store planeID and connected component ID for whole NPC
+									+ "Because it might have changed or reassigned"
+						+ Others:
+							+ If in folded triangle or destroyed triangle:
+								+ Transition particle to free
+							+ Else if conn component ID != NPC's:
+								+ Transition particle to free
+					+ Remove final assignment of plane ID
+					+ Replace Folded/Deleted check at UpdateNpc and make it an assert
+				+ Secondary free becoming constrained: consider only triangles belonging to primary's connected component (==NPC's)
+				+ Reset when becoming free
+		+ Tests:
+			+ Repro
+			+ Secondary free becoming constrained
+		+ Cleanups:
+			+ Remove temporary "prevent walk"
+		+ Port to BaryLab
+		+ Profile
+		+ Do japanese test
+
+	+ Rethink Constrained_Falling
+	+ Rethink Constrained_Aerial
+	+ Rethink Constrained_KnockedOut - frozen arms look bad
+	+ Backport to FS

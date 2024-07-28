@@ -3101,7 +3101,6 @@ void Npcs::UpdateNpcAnimation(
         ElementIndex const primaryParticleIndex = npc.ParticleMesh.Particles[0].ParticleIndex;
         auto const & primaryContrainedState = npc.ParticleMesh.Particles[0].ConstrainedState;
         ElementIndex const secondaryParticleIndex = npc.ParticleMesh.Particles[1].ParticleIndex;
-        auto const & secondaryConstrainedState = npc.ParticleMesh.Particles[1].ConstrainedState;
 
         //
         // Angles and thigh
@@ -3461,77 +3460,51 @@ void Npcs::UpdateNpcAnimation(
                 vec2f const & headVelocity = npc.ParticleMesh.Particles[1].GetApplicableVelocity(mParticles);
                 vec2f const & feetVelocity = npc.ParticleMesh.Particles[0].GetApplicableVelocity(mParticles);
 
-                float const avgVelocityAlongBodyPerp = (headVelocity + feetVelocity).dot(actualBodyDir.to_perpendicular());
-                float const targetDepth = LinearStep(0.0f, 3.0f, std::abs(avgVelocityAlongBodyPerp));
+                float const avgVelocityAlongBodyPerp = ((headVelocity + feetVelocity) / 2.0f).dot(actualBodyDir.to_perpendicular()); // When positive points to the right of the human vector
+                float const targetDepth = LinearStep(0.0f, 0.8f, std::abs(avgVelocityAlongBodyPerp));
 
                 if (humanNpcState.CurrentFaceDirectionX >= 0.0f)
                 {
-                    // We want to send arms to the right...
-                    // ...but not against face direction
-                    if (humanNpcState.CurrentFaceDirectionX >= 0.0f)
-                    {
-                        targetAngles.RightArm = Pi<float> / 2.0f * targetDepth + 0.09f;
-                        targetAngles.LeftArm = targetAngles.RightArm - 0.18f;
-                    }
-                    else
-                    {
-                        targetAngles.RightArm = 0.0f;
-                        targetAngles.LeftArm = 0.0f;
-                    }
+                    targetAngles.RightArm = Pi<float> / 2.0f * targetDepth + 0.04f;
+                    targetAngles.LeftArm = targetAngles.RightArm - 0.08f;
                 }
                 else
                 {
-                    // We want to send arms to the left...
-                   // ...but not against face direction
-                    if (humanNpcState.CurrentFaceDirectionX <= 0.0f)
-                    {
-                        targetAngles.LeftArm = -Pi<float> / 2.0f * targetDepth - 0.09f;
-                        targetAngles.RightArm = targetAngles.LeftArm + 0.18f;
-                    }
-                    else
-                    {
-                        targetAngles.RightArm = 0.0f;
-                        targetAngles.LeftArm = 0.0f;
-                    }
+                    targetAngles.LeftArm = -Pi<float> / 2.0f * targetDepth - 0.04f;
+                    targetAngles.RightArm = targetAngles.LeftArm + 0.08f;
                 }
 
-                convergenceRate = 0.08f * (0.2f + targetDepth);
-
-                // Close legs
+                // ~Close legs
                 targetAngles.RightLeg = 0.05f;
                 targetAngles.LeftLeg = -0.05f;
+
+                convergenceRate = 0.1f;
 
                 break;
             }
 
             case HumanNpcStateType::BehaviorType::Constrained_KnockedOut:
             {
-                // Check if both head and feet are on a floor
-                bool const isHeadOnEdge = primaryContrainedState.has_value() && primaryContrainedState->CurrentVirtualFloor.has_value();
-                bool const areFootOnEdge = secondaryConstrainedState.has_value() && secondaryConstrainedState->CurrentVirtualFloor.has_value();
-                if (isHeadOnEdge && areFootOnEdge)
+                // Arms: +/- PI or 0, depending on where they are now
+
+                if (animationState.LimbAngles.RightArm >= -Pi<float> / 2.0f
+                    && animationState.LimbAngles.RightArm <= Pi<float> / 2.0f)
                 {
-                    // Arms: +/- PI or 0, depending on where they are now
+                    targetAngles.RightArm = 0.0f;
+                }
+                else
+                {
+                    targetAngles.RightArm = Pi<float>;
+                }
 
-                    if (animationState.LimbAngles.RightArm >= -Pi<float> / 2.0f
-                        && animationState.LimbAngles.RightArm <= Pi<float> / 2.0f)
-                    {
-                        targetAngles.RightArm = 0.0f;
-                    }
-                    else
-                    {
-                        targetAngles.RightArm = Pi<float>;
-                    }
-
-                    if (animationState.LimbAngles.LeftArm >= -Pi<float> / 2.0f
-                        && animationState.LimbAngles.LeftArm <= Pi<float> / 2.0f)
-                    {
-                        targetAngles.LeftArm = 0.0f;
-                    }
-                    else
-                    {
-                        targetAngles.LeftArm = Pi<float>;
-                    }
+                if (animationState.LimbAngles.LeftArm >= -Pi<float> / 2.0f
+                    && animationState.LimbAngles.LeftArm <= Pi<float> / 2.0f)
+                {
+                    targetAngles.LeftArm = 0.0f;
+                }
+                else
+                {
+                    targetAngles.LeftArm = Pi<float>;
                 }
 
                 // Legs: 0
@@ -3539,7 +3512,7 @@ void Npcs::UpdateNpcAnimation(
                 targetAngles.RightLeg = 0.0f;
                 targetAngles.LeftLeg = 0.0f;
 
-                convergenceRate = 0.05f; // Quite slow
+                convergenceRate = 0.2f;
 
                 // Upper length fraction: when we transition from Rising (which has UpperLengthFraction < 1.0) to KnockedOut,
                 // changing UpperLengthFraction immediately to 0.0 causes a "kick" (because leg angles are 90 degrees at that moment);
@@ -3568,33 +3541,33 @@ void Npcs::UpdateNpcAnimation(
                 actualBodyVector = feetPosition - headPosition;
                 actualBodyDir = actualBodyVector.normalise_approx();
 
-                // Arms: always up, unless horizontal or foot on the floor
+                // Arms: always up, unless horizontal or foot on the floor, in which case PI/2
 
                 float const horizontality = std::abs(actualBodyDir.dot(GameParameters::GravityDir));
 
+                float constexpr exceptionAngle = Pi<float> / 1.5f;
                 float const armAngle = (primaryContrainedState.has_value() && primaryContrainedState->CurrentVirtualFloor.has_value())
-                    ? Pi<float> / 2.0f
-                    : Pi<float> - (Pi<float> / 2.0f) / std::exp(horizontality * 2.2f);
+                    ? exceptionAngle
+                    : Pi<float> - (Pi<float> - exceptionAngle) / std::exp(horizontality * 2.2f);
                 targetAngles.RightArm = armAngle;
                 targetAngles.LeftArm = -targetAngles.RightArm;
 
-                if (humanNpcState.CurrentBehavior != HumanNpcStateType::BehaviorType::Constrained_KnockedOut)
+                // Legs: inclined in direction opposite of resvel, by an amount proportional to resvel itself
+
+                vec2f const resultantVelocity = (mParticles.GetVelocity(primaryParticleIndex) + mParticles.GetVelocity(secondaryParticleIndex)) / 2.0f;
+                float const resVelPerpToBody = resultantVelocity.dot(actualBodyDir.to_perpendicular()); // Positive when pointing towards right
+                float const legAngle = SmoothStep(0.0f, 4.0f, std::abs(resVelPerpToBody)) * 0.5f;
+                if (resVelPerpToBody >= 0.0f)
                 {
-                    // Legs: when arms far from rest, tight; when arms close, at fixed angle
-
-                    float constexpr LegRestAngle = HumanNpcStateType::AnimationStateType::InitialLegAngle;
-                    float const legAngle = LegRestAngle;
-
-                    // Legs inclined in direction opposite of relvel, by an amount proportional to relvel itself
-                    vec2f const relativeVelocity = mParticles.GetVelocity(primaryParticleIndex) - mParticles.GetVelocity(secondaryParticleIndex);
-                    float const relVelPerpToBody = relativeVelocity.dot(actualBodyDir.to_perpendicular());
-                    float const legAngleOffset = -SmoothStep(0.0f, 3.0f, std::abs(relVelPerpToBody)) * (LegRestAngle + 0.3f) * (relVelPerpToBody < 0.0f ? -1.0f : 1.0f);
-                    targetAngles.RightLeg = legAngle - legAngleOffset;
-                    targetAngles.LeftLeg = -legAngle - legAngleOffset;
+                    // Res vel to the right - legs to the left
+                    targetAngles.RightLeg = -legAngle;
+                    targetAngles.LeftLeg = targetAngles.RightLeg - 0.6f;
                 }
                 else
                 {
-                    // Leave legs as-is
+                    // Res vel to the left - legs to the right
+                    targetAngles.LeftLeg = legAngle;
+                    targetAngles.RightLeg = targetAngles.LeftLeg + 0.6f;
                 }
 
                 convergenceRate = 0.1f;

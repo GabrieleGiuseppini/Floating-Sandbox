@@ -44,7 +44,7 @@
 #define LogNpcDebug(...)
 #endif
 
-// TODOTEST
+// TEST
 ////#undef LogNpcDebug
 ////#define LogNpcDebug(...) LogMessage(__VA_ARGS__);
 
@@ -269,12 +269,12 @@ private:
 					struct Constrained_FallingStateType
 					{
 						float ProgressToAerial;
-						float ProgressToKnockedOut;
+						float ProgressToPreRising;
 
 						void Reset()
 						{
 							ProgressToAerial = 0.0f;
-							ProgressToKnockedOut = 0.0f;
+							ProgressToPreRising = 0.0f;
 						}
 					} Constrained_Falling;
 

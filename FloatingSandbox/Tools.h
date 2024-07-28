@@ -3718,7 +3718,7 @@ public:
             if (inputState.IsLeftMouseDown)
             {
                 // -> Error or -> Engaged
-                mCurrentEngagementState.emplace(InternalBeginPlaceNewNpc(inputState.MousePosition, !inputState.IsShiftKeyDown));
+                mCurrentEngagementState.emplace(InternalBeginPlaceNewNpc(inputState.MousePosition, inputState.IsShiftKeyDown));
                 SetCurrentCursor();
             }
         }
@@ -3753,7 +3753,7 @@ public:
                     mCurrentEngagementState->Npc->ObjectId,
                     inputState.MousePosition,
                     mCurrentEngagementState->Npc->WorldOffset,
-                    !inputState.IsShiftKeyDown);
+                    inputState.IsShiftKeyDown);
             }
         }
     }
@@ -3923,7 +3923,7 @@ public:
                 {
                     mGameController.BeginMoveNpc(
                         mNpc->ObjectId,
-                        !inputState.IsShiftKeyDown);
+                        inputState.IsShiftKeyDown);
 
                     // Now that it's moving, un-highlight it
                     mGameController.HighlightNpc(
@@ -3944,7 +3944,7 @@ public:
                         mNpc->ObjectId,
                         inputState.MousePosition,
                         mNpc->WorldOffset,
-                        !inputState.IsShiftKeyDown);
+                        inputState.IsShiftKeyDown);
                 }
             }
         }
