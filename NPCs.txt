@@ -413,7 +413,7 @@ Arch
 				- Friction and elasticity: as we do in ship, using both materials
 			- Become free! So we avoid bouncing back and forth
 				- Make sure we call OnMayBeRegimeChanged
-	= World border
+	+ World border
 		+ MaintainInWorldBounds()
 			+ Called after each particle update, on the particle				
 				! We want to leave Update() in order, for eventual user interactions
@@ -426,7 +426,7 @@ Arch
 			+ With ship inertia
 			+ With NPC inertia
 			+ With ship move
-		- Backport to BaryLab and profile
+		+ Backport to BaryLab and profile
 	- Points' water effect when particles are constrained
 		! Gist: 
 			! We use both water (which imparts buoyancy) and water velocities (which impart v onto particles proportionally to particles' waterness)
