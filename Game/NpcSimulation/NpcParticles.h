@@ -112,6 +112,11 @@ public:
         return mPositionBuffer[particleElementIndex];
     }
 
+    vec2f & GetPosition(ElementIndex particleElementIndex) noexcept
+    {
+        return mPositionBuffer[particleElementIndex];
+    }
+
     vec2f const * GetPositionBuffer() const noexcept
     {
         return mPositionBuffer.data();
@@ -130,6 +135,11 @@ public:
     }
 
     vec2f const & GetVelocity(ElementIndex particleElementIndex) const noexcept
+    {
+        return mVelocityBuffer[particleElementIndex];
+    }
+
+    vec2f & GetVelocity(ElementIndex particleElementIndex) noexcept
     {
         return mVelocityBuffer[particleElementIndex];
     }

@@ -1124,19 +1124,23 @@ void Npcs::MoveBy(
 				&& homeShip.GetPoints().GetConnectedComponentId(homeShip.GetTriangles().GetPointAIndex(primaryParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex)) == *connectedComponent))
 		{
 			// In scope - move all of its particles
-			for (auto const & particle : mStateBuffer[npcId]->ParticleMesh.Particles)
+			for (auto particleOrdinal = 0; particleOrdinal < mStateBuffer[npcId]->ParticleMesh.Particles.size(); ++particleOrdinal)
 			{
-				auto const p = particle.ParticleIndex;
-				mParticles.SetPosition(p, mParticles.GetPosition(p) + offset);
-				mParticles.SetVelocity(p, actualInertialVelocity);
+				ElementIndex const particleIndex = mStateBuffer[npcId]->ParticleMesh.Particles[particleOrdinal].ParticleIndex;
+				mParticles.SetPosition(particleIndex, mParticles.GetPosition(particleIndex) + offset);
+				mParticles.SetVelocity(particleIndex, actualInertialVelocity);
 
 				// Zero-out already-existing forces
-				mParticles.SetExternalForces(p, vec2f::zero());
+				mParticles.SetExternalForces(particleIndex, vec2f::zero());
+
+				// Maintain world bounds
+				MaintainInWorldBounds(
+					*mStateBuffer[npcId],
+					particleOrdinal,
+					gameParameters);
 			}
 		}
 	}
-
-	MaintainInWorldBounds(gameParameters);
 }
 
 void Npcs::RotateBy(
@@ -1171,23 +1175,27 @@ void Npcs::RotateBy(
 			|| (primaryParticle.ConstrainedState.has_value()
 				&& homeShip.GetPoints().GetConnectedComponentId(homeShip.GetTriangles().GetPointAIndex(primaryParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex)) == *connectedComponent))
 		{
-			for (auto const & particle : mStateBuffer[npcId]->ParticleMesh.Particles)
+			for (auto particleOrdinal = 0; particleOrdinal < mStateBuffer[npcId]->ParticleMesh.Particles.size(); ++particleOrdinal)
 			{
-				auto const p = particle.ParticleIndex;
-				vec2f const centeredPos = mParticles.GetPosition(p) - center;
+				ElementIndex const particleIndex = mStateBuffer[npcId]->ParticleMesh.Particles[particleOrdinal].ParticleIndex;
+				vec2f const centeredPos = mParticles.GetPosition(particleIndex) - center;
 				vec2f const newPosition = vec2f(centeredPos.dot(rotX), centeredPos.dot(rotY)) + center;
-				mParticles.SetPosition(p, newPosition);
+				mParticles.SetPosition(particleIndex, newPosition);
 
 				vec2f const linearInertialVelocity = (vec2f(centeredPos.dot(inertialRotX), centeredPos.dot(inertialRotY)) - centeredPos) * inertiaMagnitude;
-				mParticles.SetVelocity(p, linearInertialVelocity);
+				mParticles.SetVelocity(particleIndex, linearInertialVelocity);
 
 				// Zero-out already-existing forces
-				mParticles.SetExternalForces(p, vec2f::zero());
+				mParticles.SetExternalForces(particleIndex, vec2f::zero());
+
+				// Maintain world bounds
+				MaintainInWorldBounds(
+					*mStateBuffer[npcId],
+					particleOrdinal,
+					gameParameters);
 			}
 		}
 	}
-
-	MaintainInWorldBounds(gameParameters);
 }
 
 void Npcs::SetGeneralizedPanicLevelForAllHumans(float panicLevel)

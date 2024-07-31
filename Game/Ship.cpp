@@ -1866,7 +1866,7 @@ void Ship::TrimForWorldBounds(GameParameters const & gameParameters)
 
     // Elasticity of the bounce against world boundaries
     //  - We use the ocean floor's elasticity for convenience
-    float const elasticity = gameParameters.OceanFloorElasticityCoefficient;
+    float const elasticity = gameParameters.OceanFloorElasticityCoefficient * gameParameters.ElasticityAdjustment;
 
     // We clamp velocity to damp system instabilities at extreme events
     static constexpr float MaxBounceVelocity = 150.0f; // Magic number

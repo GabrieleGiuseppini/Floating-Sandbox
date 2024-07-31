@@ -318,6 +318,7 @@ void Npcs::UpdateNpcs(
     // 4. Calculate preliminary forces
     // 5. Calculate spring forces
     // 6. Update physical state
+    // 7. Maintain world bounds
     //
 
     for (auto & npcState : mStateBuffer)
@@ -399,7 +400,7 @@ void Npcs::UpdateNpcs(
 
             CalculateNpcParticleSpringForces(*npcState);
 
-            // Update physical state for all particles
+            // Update physical state for all particles and maintain world bounds
 
             for (auto p = 0; p < npcState->ParticleMesh.Particles.size(); ++p)
             {
@@ -409,13 +410,18 @@ void Npcs::UpdateNpcs(
                     homeShip,
                     currentSimulationTime,
                     gameParameters);
+
+                MaintainInWorldBounds(
+                    *npcState,
+                    p,
+                    gameParameters);
             }
         }
     }
 
     //
-    // 7. Update behavioral state machines
-    // 8. Update animation
+    // 8. Update behavioral state machines
+    // 9. Update animation
     //
 
     LogNpcDebug("----------------------------------");
@@ -3077,12 +3083,6 @@ void Npcs::OnImpact(
             bounceEdgeNormal,
             currentSimulationTime);
     }
-}
-
-void Npcs::MaintainInWorldBounds(GameParameters const & gameParameters)
-{
-    // TODOHERE
-    (void)gameParameters;
 }
 
 void Npcs::UpdateNpcAnimation(
