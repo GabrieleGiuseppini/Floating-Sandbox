@@ -388,6 +388,7 @@ Arch
 
 
 - Misc improvements:
+	+ GameController: force moveWholeMesh @ moveNpc when paused
 	- See if can fix moveWholeMesh for furniture, by doing 3rd and 4th wrt 1st and 2nd spring
 	- Better interior texture:
 		- Retry anti-aliasing, with different alpha profile
@@ -427,18 +428,30 @@ Arch
 			+ With NPC inertia
 			+ With ship move
 		+ Backport to BaryLab and profile
-	- Points' water effect when particles are constrained
+	= Points' water effect when particles are constrained
 		! Gist: 
 			! We use both water (which imparts buoyancy) and water velocities (which impart v onto particles proportionally to particles' waterness)
 			! We cache both at NpcParticles @ CalculatePrelimForces - which is where we calc them - and re-use them everywhere, e.g. at HumanBehaviorUpdate
-		- Particle waterness: calculated as W(triangle_t) based on water at triangles' points
-			- W(triangle_t): TODOHERE
-		- Velocity:
-			- Va += Vw - Vr
-				- Vw = (W(P1)*Vw(P1) + .. + W(P3)*Vw(P3)) / 3.0
-					- W(P) = normalized (max 1)
-				- Vr = mesh-relative vel - ok if from previous step
-				- The above is delta_Vr, which is also delta_Va
+		+ Impl:
+			+ NpcParticles::QuantityOfWater (0-1)
+			+ CalculatePrelimForces:
+				+ float quantityOfWater;
+				+ If free:
+					+ Calc w/depth (capped)
+				+ Else:				
+					+ Particle waterness: calculated as W(triangle_t) based on water at triangles' points
+						+ W(triangle_t): (cap(W(1)) + cap(W(2)) + cap(W(3)) / 3.0
+					+ Water velocity:
+						+ Va += Vw - Vr
+							+ Vw = (W(P1)*Vw(P1) + .. + W(P3)*Vw(P3)) / 3.0
+								- W(P) = normalized (max 1)
+							+ Vr = mesh-relative vel - ok if from previous step
+							+ The above is delta_Vr, which is also delta_Va
+							+ Apply as a force
+				+ Store as QuantityOfWater
+				+ Use quantityOfWater for buoyancy
+		- Behavior?
+		- Backport to BaryLab and profile
 	+ Triangle destruction: 
 		+ Should be enough to check for current triangle being deleted at beginning of UpdateNpc(.), and if so, become free (identical for @ pri and @ non-pri)
 			+ Just like when we detect secondary, third, etc. are in a different connected component, see above

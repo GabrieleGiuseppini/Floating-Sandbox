@@ -940,6 +940,7 @@ private:
 	void CalculateNpcParticlePreliminaryForces(
 		StateType const & npc,
 		int npcParticleOrdinal,
+		Ship & homeShip,
 		GameParameters const & gameParameters);
 
 	void CalculateNpcParticleSpringForces(StateType const & npc);

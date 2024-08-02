@@ -30,6 +30,8 @@ ElementIndex NpcParticles::Add(
     mPreliminaryForcesBuffer[p] = vec2f::zero();
     mExternalForcesBuffer[p] = vec2f::zero();
 
+    mWaternessBuffer[p] = 0.0f;
+
     mRenderColorBuffer[p] = color;
 
     ++mParticleInUseCount;

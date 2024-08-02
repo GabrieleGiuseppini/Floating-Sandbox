@@ -879,12 +879,9 @@ void Npcs::UpdateHuman(
 
 			// Check if moved to water
 
-			auto const & headPosition = mParticles.GetPosition(secondaryParticleState.ParticleIndex);
-			auto const & feetPosition = mParticles.GetPosition(primaryParticleState.ParticleIndex);
-
 			// It's in water if at least one in water
-			if (mParentWorld.GetOceanSurface().GetDepth(headPosition) > 0.0f
-				|| mParentWorld.GetOceanSurface().GetDepth(feetPosition) > 0.0f)
+			if (mParticles.GetWaterness(primaryParticleState.ParticleIndex) > 0.0f
+				|| mParticles.GetWaterness(secondaryParticleState.ParticleIndex) > 0.0f)
 			{
 				// Transition
 
@@ -926,12 +923,9 @@ void Npcs::UpdateHuman(
 
 			// Check if moved to air
 
-			auto const & headPosition = mParticles.GetPosition(secondaryParticleState.ParticleIndex);
-			auto const & feetPosition = mParticles.GetPosition(primaryParticleState.ParticleIndex);
-
 			// It's in air if both in air
-			if (mParentWorld.GetOceanSurface().GetDepth(headPosition) <= 0.0f
-				&& mParentWorld.GetOceanSurface().GetDepth(feetPosition) <= 0.0f)
+			if (mParticles.GetWaterness(primaryParticleState.ParticleIndex) == 0.0f
+				&& mParticles.GetWaterness(secondaryParticleState.ParticleIndex) == 0.0f)
 			{
 				// Transition
 
@@ -952,6 +946,9 @@ void Npcs::UpdateHuman(
 			if (humanState.CurrentBehavior == HumanNpcStateType::BehaviorType::Free_InWater)
 			{
 				// Progress to swimming if not rotating and head above feet
+
+				auto const & headPosition = mParticles.GetPosition(secondaryParticleState.ParticleIndex);
+				auto const & feetPosition = mParticles.GetPosition(primaryParticleState.ParticleIndex);
 
 				float const rotationMagnitude = (mParticles.GetVelocity(secondaryParticleState.ParticleIndex) - mParticles.GetVelocity(primaryParticleState.ParticleIndex)).length();
 				float const targetSwim =

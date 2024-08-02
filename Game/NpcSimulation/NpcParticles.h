@@ -41,6 +41,7 @@ public:
         , mVelocityBuffer(maxParticleCount, vec2f::zero())
         , mPreliminaryForcesBuffer(maxParticleCount, vec2f::zero())
         , mExternalForcesBuffer(maxParticleCount, vec2f::zero())
+        , mWaternessBuffer(maxParticleCount, 0.0f)
         // Render
         , mRenderColorBuffer(maxParticleCount, rgbaColor::zero())
         //////////////////////////////////
@@ -195,6 +196,18 @@ public:
         mExternalForcesBuffer[particleElementIndex] = value;
     }
 
+    float const GetWaterness(ElementIndex particleElementIndex) const noexcept
+    {
+        return mWaternessBuffer[particleElementIndex];
+    }
+
+    void SetWaterness(
+        ElementIndex particleElementIndex,
+        float value) noexcept
+    {
+        mWaternessBuffer[particleElementIndex] = value;
+    }
+
     //
     // Render
     //
@@ -242,6 +255,8 @@ private:
     Buffer<vec2f> mVelocityBuffer;
     Buffer<vec2f> mPreliminaryForcesBuffer;
     Buffer<vec2f> mExternalForcesBuffer;
+
+    Buffer<float> mWaternessBuffer; // Mesh water at triangle (when constrained), depth (when free); [0.0, 1.0]
 
     //
     // Render

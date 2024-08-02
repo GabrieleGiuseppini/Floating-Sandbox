@@ -2198,7 +2198,7 @@ private:
     Buffer<float> mMaterialWaterDiffusionSpeedBuffer;
 
     // Height of a 1m2 column of water which provides a pressure equivalent to the pressure at
-    // this point. Quantity of water is max(water, 1.0)
+    // this point. Quantity of water is min(water, 1.0)
     Buffer<float> mWaterBuffer;
 
     // Total velocity of the water at this point

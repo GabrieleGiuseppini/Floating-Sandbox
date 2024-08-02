@@ -1291,7 +1291,7 @@ std::optional<PickedObjectId<NpcId>> GameController::BeginPlaceNewFurnitureNpc(
     auto const pickedNpcId = mWorld->BeginPlaceNewFurnitureNpc(
         subKind,
         worldCoordinates,
-        doMoveWholeMesh);
+        doMoveWholeMesh || mIsPaused);
 
     if (pickedNpcId.has_value())
     {
@@ -1312,7 +1312,7 @@ std::optional<PickedObjectId<NpcId>> GameController::BeginPlaceNewHumanNpc(
     auto const pickedNpcId = mWorld->BeginPlaceNewHumanNpc(
         subKind,
         worldCoordinates,
-        doMoveWholeMesh);
+        doMoveWholeMesh || mIsPaused);
 
     if (pickedNpcId.has_value())
     {
@@ -1341,7 +1341,7 @@ void GameController::BeginMoveNpc(
     assert(!!mWorld);
     mWorld->BeginMoveNpc(
         id,
-        doMoveWholeMesh);
+        doMoveWholeMesh || mIsPaused);
 }
 
 void GameController::MoveNpcTo(
@@ -1357,7 +1357,7 @@ void GameController::MoveNpcTo(
         id,
         worldCoordinates,
         worldOffset,
-        doMoveWholeMesh);
+        doMoveWholeMesh || mIsPaused);
 }
 
 void GameController::EndMoveNpc(NpcId id)

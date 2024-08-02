@@ -393,6 +393,7 @@ void Npcs::UpdateNpcs(
                 CalculateNpcParticlePreliminaryForces(
                     *npcState,
                     p,
+                    homeShip,
                     gameParameters);
             }
 
@@ -1434,6 +1435,7 @@ void Npcs::UpdateNpcParticlePhysics(
 void Npcs::CalculateNpcParticlePreliminaryForces(
     StateType const & npc,
     int npcParticleOrdinal,
+    Ship & homeShip,
     GameParameters const & gameParameters)
 {
     auto & npcParticle = npc.ParticleMesh.Particles[npcParticleOrdinal];
@@ -1453,30 +1455,95 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
 #endif
         * particleMass;
 
-    if (!npcParticle.ConstrainedState.has_value() && npc.CurrentRegime != StateType::RegimeType::BeingPlaced)
+    if (npc.CurrentRegime != StateType::RegimeType::BeingPlaced)
     {
-        // Check whether we are underwater
+        // Calculate waterness of this point: from OceanSurface if we're free, from water in mesh if we're constrained
 
-        float constexpr BuoyancyInterfaceWidth = 0.4f;
-
-        vec2f testParticlePosition = mParticles.GetPosition(npcParticle.ParticleIndex);
-        if (npc.Kind == NpcKindType::Human && npcParticleOrdinal > 0)
+        float waterness;
+        if (npcParticle.ConstrainedState.has_value())
         {
-            // Head - use an offset
-            testParticlePosition += (mParticles.GetPosition(npc.ParticleMesh.Particles[0].ParticleIndex) - testParticlePosition) * BuoyancyInterfaceWidth * 2.0f / 3.0f;
+            // Constrained - use ship points' water
+
+            auto const t = npcParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex;
+
+            // Calculate waterness and water velocity
+
+            float totalWaterness = 0.0f;
+            vec2f totalWaterVelocity = vec2f::zero();
+            float waterablePointCount = 0.0f;
+            for (ElementIndex const p : homeShip.GetTriangles().GetPointIndices(t))
+            {
+                float const w = std::min(homeShip.GetPoints().GetWater(p), 1.0f);
+                totalWaterness += w;
+                totalWaterVelocity += homeShip.GetPoints().GetWaterVelocity(p) * w;
+                if (!homeShip.GetPoints().GetIsHull(p))
+                    waterablePointCount += 1.0f;
+            }
+
+            waterness = totalWaterness / (std::max(waterablePointCount, 1.0f));
+            vec2f const resultantWaterVelocity = totalWaterVelocity / (std::max(waterablePointCount, 1.0f));
+
+            // Converge particle's mesh-relative velocity to resultant water velocity
+            //
+            // Now, our target is that the point's relative velocity ends up like the resultant water velocity;
+            // that is reached by adding (resultantWaterVelocity - pointRelVel) to pointRelVel. This increment
+            // also ends up being the same increment to the *absolute* point velocity, hence we can calculate
+            // the absolute point's velocity delta as (resultantWaterVelocity - pointRelVel).
+            // Note that we use the point's *prior* relative velocity
+
+            float const waterVelocityAlongDir = resultantWaterVelocity.length();
+            vec2f const waterVelocityDir = resultantWaterVelocity.normalise_approx(waterVelocityAlongDir);
+            float const particleRelativeVelocityAlongDir = npcParticle.ConstrainedState->MeshRelativeVelocity.dot(waterVelocityDir);
+            vec2f absoluteVelocityDelta;
+            if (particleRelativeVelocityAlongDir >= 0.0f)
+            {
+                // The particle's relative velocity is in the same direction as the water; fill-in the remaining part
+                // (but don't slow it down)
+                float const relVelIncrement = std::max(waterVelocityAlongDir - particleRelativeVelocityAlongDir, 0.0f);
+                absoluteVelocityDelta = waterVelocityDir * relVelIncrement;
+            }
+            else
+            {
+                // The particle's relative velocity is opposite water; add what it takes to match it
+                absoluteVelocityDelta = waterVelocityDir * (waterVelocityAlongDir - particleRelativeVelocityAlongDir);
+            }
+
+            // Since we do forces here, we apply this as a force
+            preliminaryForces +=
+                absoluteVelocityDelta
+                * particleMass
+                / GameParameters::SimulationStepTimeDuration<float>
+                * waterness; // Mess with velocity only if enough water
+        }
+        else
+        {
+            // Free - check whether we are underwater
+
+            float constexpr BuoyancyInterfaceWidth = 0.4f; // Nature abhorrs discontinuity
+
+            vec2f testParticlePosition = mParticles.GetPosition(npcParticle.ParticleIndex);
+            if (npc.Kind == NpcKindType::Human && npcParticleOrdinal == 1)
+            {
+                // Head - use an offset
+                testParticlePosition.y += (mParticles.GetPosition(npc.ParticleMesh.Particles[0].ParticleIndex).y - testParticlePosition.y) * (BuoyancyInterfaceWidth / 2.0f + GameParameters::HumanNpcGeometry::HeadWidthFraction);
+            }
+
+            float const particleDepth = mParentWorld.GetOceanSurface().GetDepth(testParticlePosition);
+            waterness = Clamp(particleDepth, 0.0f, BuoyancyInterfaceWidth) / BuoyancyInterfaceWidth;
         }
 
-        float const particleDepth = mParentWorld.GetOceanSurface().GetDepth(testParticlePosition);
-        float const uwCoefficient = Clamp(particleDepth, 0.0f, BuoyancyInterfaceWidth) / BuoyancyInterfaceWidth;
-        if (uwCoefficient > 0.0f)
+        // Store it for future use
+        mParticles.SetWaterness(npcParticle.ParticleIndex, waterness);
+
+        if (waterness > 0.0f)
         {
             // Underwater
 
             // 2. World forces - buoyancy
 
             preliminaryForces.y +=
-                mParticles.GetBuoyancyFactor(npcParticle.ParticleIndex)\
-                * uwCoefficient;
+                mParticles.GetBuoyancyFactor(npcParticle.ParticleIndex)
+                * waterness;
 
             // 3. World forces - water drag
 
