@@ -841,7 +841,7 @@ void ShipTexturizer::DrawTriangleFloorInto(
                 // Vertical
                 assert(endpointA.y != endpointB.y);
 
-                DrawEdgeFloorInto(
+                DrawHVEdgeFloorInto(
                     endpointA.x - floorThickness / 2, // xStart
                     endpointA.x + floorThickness / 2 - 1, // xEnd
                     1, // xIncr,
@@ -855,7 +855,7 @@ void ShipTexturizer::DrawTriangleFloorInto(
             {
                 // Horizontal
 
-                DrawEdgeFloorInto(
+                DrawHVEdgeFloorInto(
                     endpointA.x, // xStart
                     endpointB.x, // xEnd
                     (endpointA.x < endpointB.x) ? 1 : -1, // xIncr
@@ -869,9 +869,9 @@ void ShipTexturizer::DrawTriangleFloorInto(
             {
                 // Diagonal
 
-                DrawEdgeFloorInto(
-                    endpointA.x - floorThickness / 2, // xStart
-                    endpointA.x + floorThickness / 2 - 1, // xEnd
+                DrawDEdgeFloorInto(
+                    endpointA.x - floorThickness, // xStart
+                    endpointA.x + floorThickness - 1, // xEnd, included
                     1, // xIncr
                     (endpointA.x < endpointB.x) ? 1 : -1, // xLimitIncr
                     endpointA.y, // yStart
@@ -883,7 +883,7 @@ void ShipTexturizer::DrawTriangleFloorInto(
     }
 }
 
-void ShipTexturizer::DrawEdgeFloorInto(
+void ShipTexturizer::DrawHVEdgeFloorInto(
     int xStart,
     int xEnd, // Included
     int xIncr,
@@ -900,6 +900,44 @@ void ShipTexturizer::DrawEdgeFloorInto(
         for (int x = xStart; ; x += xIncr)
         {
             targetTextureImage[{x, y}] = FloorColor;
+
+            if (x == xEnd)
+            {
+                break;
+            }
+        }
+
+        if (y == yEnd)
+        {
+            break;
+        }
+
+        xStart += xLimitIncr;
+        xEnd += xLimitIncr;
+    }
+}
+
+void ShipTexturizer::DrawDEdgeFloorInto(
+    int xStart,
+    int xEnd, // Included
+    int xIncr,
+    int xLimitIncr,
+    int yStart,
+    int yEnd, // Included
+    int yIncr,
+    RgbaImageData & targetTextureImage) const
+{
+    vec4f constexpr FloorColor = vec4f(0.0f, 0.0f, 0.0f, 1.0f);
+
+    for (int y = yStart; ; y += yIncr)
+    {
+        for (int x = xStart; ; x += xIncr)
+        {
+            targetTextureImage[{x, y}] = rgbaColor(
+                Mix(
+                    targetTextureImage[{x, y}].toVec4f(),
+                    FloorColor,
+                    (x == xStart || x == xEnd) ? 0.27f : 1.0f));
 
             if (x == xEnd)
             {

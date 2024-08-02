@@ -135,7 +135,17 @@ private:
         int const floorThickness,
         RgbaImageData & targetTextureImage) const;
 
-    inline void DrawEdgeFloorInto(
+    inline void DrawHVEdgeFloorInto(
+        int xStart,
+        int xEnd, // Included
+        int xIncr,
+        int xLimitIncr,
+        int yStart,
+        int yEnd, // Included
+        int yIncr,
+        RgbaImageData & targetTextureImage) const;
+
+    inline void DrawDEdgeFloorInto(
         int xStart,
         int xEnd, // Included
         int xIncr,

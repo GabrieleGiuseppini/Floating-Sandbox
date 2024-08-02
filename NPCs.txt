@@ -391,8 +391,8 @@ Arch
 	+ GameController: force moveWholeMesh @ moveNpc when paused
 	- See if can fix moveWholeMesh for furniture, by doing 3rd and 4th wrt 1st and 2nd spring
 	- Better interior texture:
-		- Retry anti-aliasing, with different alpha profile
-		- Try more magnification
+		+ Retry anti-aliasing, with different alpha profile
+		+ Try more magnification
 
 
 - Physical Interactions:
@@ -451,6 +451,11 @@ Arch
 				+ Store as QuantityOfWater
 				+ Use quantityOfWater for buoyancy
 		- Behavior?
+			- Constrained_InWater
+				- Exactly like Free_InWater, but constrained
+				- Double-check animation: current Constrained(_Aerial?) looks quite good
+			- Constrained_Swimming_Style1
+				- Exactly like Free_Swimming_Style1, but constrained
 		- Backport to BaryLab and profile
 	+ Triangle destruction: 
 		+ Should be enough to check for current triangle being deleted at beginning of UpdateNpc(.), and if so, become free (identical for @ pri and @ non-pri)
