@@ -150,6 +150,8 @@ private:
         int xEnd, // Included
         int xIncr,
         int xLimitIncr,
+        int absoluteMinX,
+        int absoluteMaxX,
         int yStart,
         int yEnd, // Included
         int yIncr,

@@ -835,6 +835,12 @@ void ShipTexturizer::DrawTriangleFloorInto(
 
             assert(floorThickness >= 2);
 
+            ImageCoordinates const & endpointBottom = (endpointA.y <= endpointB.y) ? endpointA : endpointB;
+            ImageCoordinates const & endpointTop = (endpointA.y <= endpointB.y) ? endpointB : endpointA;
+
+            int const yStart = endpointBottom.y - floorThickness / 2;
+            int const yEnd = endpointTop.y + floorThickness / 2 - 1; // Included
+
             // Check direction
             if (endpointA.x == endpointB.x)
             {
@@ -846,9 +852,9 @@ void ShipTexturizer::DrawTriangleFloorInto(
                     endpointA.x + floorThickness / 2 - 1, // xEnd
                     1, // xIncr,
                     0, // xLimitIncr
-                    endpointA.y, // yStart
-                    endpointB.y, // yEnd
-                    (endpointA.y < endpointB.y) ? 1 : -1, // yIncr
+                    yStart,
+                    yEnd,
+                    1, // yIncr
                     targetTextureImage);
             }
             else if (endpointA.y == endpointB.y)
@@ -860,8 +866,8 @@ void ShipTexturizer::DrawTriangleFloorInto(
                     endpointB.x, // xEnd
                     (endpointA.x < endpointB.x) ? 1 : -1, // xIncr
                     0, // xLimitIncr
-                    endpointA.y - floorThickness / 2, // yStart
-                    endpointA.y + floorThickness / 2 - 1, // yEnd
+                    yStart,
+                    yEnd,
                     1, // yIncr
                     targetTextureImage);
             }
@@ -870,13 +876,15 @@ void ShipTexturizer::DrawTriangleFloorInto(
                 // Diagonal
 
                 DrawDEdgeFloorInto(
-                    endpointA.x - floorThickness, // xStart
-                    endpointA.x + floorThickness - 1, // xEnd, included
+                    endpointBottom.x - floorThickness / 2 - 1, // xStart
+                    endpointBottom.x + floorThickness / 2 - 1 + 1, // xEnd, included
                     1, // xIncr
-                    (endpointA.x < endpointB.x) ? 1 : -1, // xLimitIncr
-                    endpointA.y, // yStart
-                    endpointB.y, // yEnd
-                    (endpointA.y < endpointB.y) ? 1 : -1, // yIncr
+                    (endpointBottom.x <= endpointTop.x) ? 1 : -1, // xLimitIncr
+                    (endpointBottom.x <= endpointTop.x) ? endpointBottom.x - floorThickness / 2 : endpointTop.x - floorThickness / 2, // absoluteMinX
+                    (endpointBottom.x <= endpointTop.x) ? endpointTop.x + floorThickness / 2 - 1 : endpointBottom.x + floorThickness / 2 - 1, // absoluteMaxX
+                    yStart,
+                    yEnd,
+                    1, // yIncr
                     targetTextureImage);
             }
         }
@@ -922,6 +930,8 @@ void ShipTexturizer::DrawDEdgeFloorInto(
     int xEnd, // Included
     int xIncr,
     int xLimitIncr,
+    int absoluteMinX,
+    int absoluteMaxX,
     int yStart,
     int yEnd, // Included
     int yIncr,
@@ -933,11 +943,14 @@ void ShipTexturizer::DrawDEdgeFloorInto(
     {
         for (int x = xStart; ; x += xIncr)
         {
-            targetTextureImage[{x, y}] = rgbaColor(
-                Mix(
-                    targetTextureImage[{x, y}].toVec4f(),
-                    FloorColor,
-                    (x == xStart || x == xEnd) ? 0.27f : 1.0f));
+            if (x >= absoluteMinX && x <= absoluteMaxX)
+            {
+                targetTextureImage[{x, y}] = rgbaColor(
+                    Mix(
+                        targetTextureImage[{x, y}].toVec4f(),
+                        FloorColor,
+                        (x == xStart || x == xEnd) ? 0.27f : 1.0f));
+            }
 
             if (x == xEnd)
             {
