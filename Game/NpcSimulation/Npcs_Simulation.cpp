@@ -1554,7 +1554,7 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
         }
     }
 
-    // 3. External forces
+    // 4. External forces
 
     preliminaryForces += mParticles.GetExternalForces(npcParticle.ParticleIndex);
 
