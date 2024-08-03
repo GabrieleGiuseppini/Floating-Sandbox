@@ -1511,11 +1511,10 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
             // Since we do forces here, we apply this as a force
             preliminaryForces +=
                 absoluteVelocityDelta
-                * particleMass
                 / GameParameters::SimulationStepTimeDuration<float>
                 * waterness // Mess with velocity only if enough water
                 * (1.0f - SmoothStep(0.0f, 0.9f, waterVelocityDir.y)) // Lower velocity with verticality
-                * 0.25f; // Converge slowly
+                * 35.0f; // Magic number
         }
         else
         {
