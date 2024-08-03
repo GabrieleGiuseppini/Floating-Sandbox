@@ -818,7 +818,31 @@ void ShipTexturizer::DrawTriangleFloorInto(
     int const floorThickness,
     RgbaImageData & targetTextureImage) const
 {
-    // Visit all edges
+    //
+    // 1. Find minima and maxima
+    //
+
+    int minX = std::numeric_limits<int>::max();
+    int maxX = std::numeric_limits<int>::min();
+    int minY = std::numeric_limits<int>::max();
+    int maxY = std::numeric_limits<int>::min();
+
+    for (int v = 0; v < 3; ++v)
+    {
+        ElementIndex const pointIndex = triangles.GetPointIndices(triangleIndex)[v];
+        vec2f const pointTextureCoords = points.GetTextureCoordinates(pointIndex);
+        ImageCoordinates const endpoint = ImageCoordinates::FromFloatRound(pointTextureCoords * textureSizeF);
+
+        minX = std::min(minX, endpoint.x);
+        maxX = std::max(maxX, endpoint.x);
+        minY = std::min(minY, endpoint.y);
+        maxY = std::max(maxY, endpoint.y);
+    }
+
+    //
+    // 2. Visit all edges
+    //
+
     for (int e = 0; e < 3; ++e)
     {
         if (triangles.GetSubSpringNpcFloorKind(triangleIndex, e) != NpcFloorKindType::NotAFloor)
@@ -838,38 +862,80 @@ void ShipTexturizer::DrawTriangleFloorInto(
             ImageCoordinates const & endpointBottom = (endpointA.y <= endpointB.y) ? endpointA : endpointB;
             ImageCoordinates const & endpointTop = (endpointA.y <= endpointB.y) ? endpointB : endpointA;
 
-            int const yStart = endpointBottom.y - floorThickness / 2;
-            int const yEnd = endpointTop.y + floorThickness / 2 - 1; // Included
-
             // Check direction
             if (endpointA.x == endpointB.x)
             {
                 // Vertical
                 assert(endpointA.y != endpointB.y);
 
-                DrawHVEdgeFloorInto(
-                    endpointA.x - floorThickness / 2, // xStart
-                    endpointA.x + floorThickness / 2 - 1, // xEnd
-                    1, // xIncr,
-                    0, // xLimitIncr
-                    yStart,
-                    yEnd,
-                    1, // yIncr
-                    targetTextureImage);
+                int const yStart = endpointBottom.y - floorThickness / 2;
+                int const yEnd = endpointTop.y + floorThickness / 2 - 1; // Included
+
+                if (endpointA.x == minX)
+                {
+                    // Left |
+
+                    DrawHVEdgeFloorInto(
+                        minX - floorThickness / 2, // xStart
+                        minX + floorThickness / 2 - 1, // xEnd, included
+                        1, // xIncr,
+                        0, // xLimitIncr
+                        yStart,
+                        yEnd,
+                        1, // yIncr
+                        targetTextureImage);
+                }
+                else
+                {
+                    // Right |
+
+                    assert(endpointA.x == maxX);
+
+                    DrawHVEdgeFloorInto(
+                        maxX - floorThickness / 2, // xStart
+                        maxX + floorThickness / 2 - 1, // xEnd, included
+                        1, // xIncr,
+                        0, // xLimitIncr
+                        yStart,
+                        yEnd,
+                        1, // yIncr
+                        targetTextureImage);
+                }
             }
             else if (endpointA.y == endpointB.y)
             {
                 // Horizontal
 
-                DrawHVEdgeFloorInto(
-                    endpointA.x, // xStart
-                    endpointB.x, // xEnd
-                    (endpointA.x < endpointB.x) ? 1 : -1, // xIncr
-                    0, // xLimitIncr
-                    yStart,
-                    yEnd,
-                    1, // yIncr
-                    targetTextureImage);
+                if (endpointA.y == minY)
+                {
+                    // Bottom -
+
+                    DrawHVEdgeFloorInto(
+                        minX - floorThickness / 2, // xStart
+                        maxX + floorThickness / 2 - 1, // xEnd, included
+                        1, // xIncr
+                        0, // xLimitIncr
+                        minY - floorThickness / 2, // yStart
+                        minY + floorThickness / 2 - 1, // yEnd, included
+                        1, // yIncr
+                        targetTextureImage);
+                }
+                else
+                {
+                    // Top -
+
+                    assert(endpointA.y == maxY);
+
+                    DrawHVEdgeFloorInto(
+                        minX - floorThickness / 2, // xStart
+                        maxX + floorThickness / 2 - 1, // xEnd, included
+                        1, // xIncr
+                        0, // xLimitIncr
+                        maxY - floorThickness / 2, // yStart
+                        maxY + floorThickness / 2  - 1, // yEnd, included
+                        1, // yIncr
+                        targetTextureImage);
+                }
             }
             else
             {
@@ -877,20 +943,41 @@ void ShipTexturizer::DrawTriangleFloorInto(
 
                 // We draw from bottom to top, and with an extra pixel on either left and right side for anti-aliasing
 
-                ImageCoordinates const & endpointLeft = (endpointBottom.x <= endpointTop.x) ? endpointBottom : endpointTop;
-                ImageCoordinates const & endpointRight = (endpointBottom.x <= endpointTop.x) ? endpointTop : endpointBottom;
+                int const yStart = endpointBottom.y - floorThickness / 2;
+                int const yEnd = endpointTop.y + floorThickness / 2  - 1; // Included
 
-                DrawDEdgeFloorInto(
-                    endpointBottom.x - floorThickness / 2 - 1, // xStart
-                    endpointBottom.x + floorThickness / 2 - 1 + 1, // xEnd, included
-                    1, // xIncr
-                    (endpointBottom.x <= endpointTop.x) ? 1 : -1, // xLimitIncr
-                    endpointLeft.x - floorThickness / 2, // absoluteMinX
-                    endpointRight.x + floorThickness / 2 - 1, // absoluteMaxX
-                    yStart,
-                    yEnd,
-                    1, // yIncr
-                    targetTextureImage);
+                if (endpointBottom.x <= endpointTop.x)
+                {
+                    // Left-Right
+
+                    DrawDEdgeFloorInto(
+                        (minX - floorThickness / 2 - 1) - 1, // xStart
+                        (minX + floorThickness / 2 - 1 + 1) - 1, // xEnd, included
+                        1, // xIncr
+                        1, // xLimitIncr
+                        minX, // absoluteMinX
+                        maxX - 1, // absoluteMaxX
+                        yStart,
+                        yEnd,
+                        1, // yIncr
+                        targetTextureImage);
+                }
+                else
+                {
+                    // Right-Left
+
+                    DrawDEdgeFloorInto(
+                        (maxX - floorThickness / 2 - 1) + 1, // xStart
+                        (maxX + floorThickness / 2 - 1 + 1) + 1, // xEnd, included
+                        1, // xIncr
+                        -1, // xLimitIncr
+                        minX, // absoluteMinX
+                        maxX - 1, // absoluteMaxX
+                        yStart,
+                        yEnd,
+                        1, // yIncr
+                        targetTextureImage);
+                }
             }
         }
     }
