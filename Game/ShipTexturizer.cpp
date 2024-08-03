@@ -875,13 +875,18 @@ void ShipTexturizer::DrawTriangleFloorInto(
             {
                 // Diagonal
 
+                // We draw from bottom to top, and with an extra pixel on either left and right side for anti-aliasing
+
+                ImageCoordinates const & endpointLeft = (endpointBottom.x <= endpointTop.x) ? endpointBottom : endpointTop;
+                ImageCoordinates const & endpointRight = (endpointBottom.x <= endpointTop.x) ? endpointTop : endpointBottom;
+
                 DrawDEdgeFloorInto(
                     endpointBottom.x - floorThickness / 2 - 1, // xStart
                     endpointBottom.x + floorThickness / 2 - 1 + 1, // xEnd, included
                     1, // xIncr
                     (endpointBottom.x <= endpointTop.x) ? 1 : -1, // xLimitIncr
-                    (endpointBottom.x <= endpointTop.x) ? endpointBottom.x - floorThickness / 2 : endpointTop.x - floorThickness / 2, // absoluteMinX
-                    (endpointBottom.x <= endpointTop.x) ? endpointTop.x + floorThickness / 2 - 1 : endpointBottom.x + floorThickness / 2 - 1, // absoluteMaxX
+                    endpointLeft.x - floorThickness / 2, // absoluteMinX
+                    endpointRight.x + floorThickness / 2 - 1, // absoluteMaxX
                     yStart,
                     yEnd,
                     1, // yIncr

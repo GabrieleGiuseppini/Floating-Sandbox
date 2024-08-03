@@ -393,6 +393,10 @@ Arch
 	- Better interior texture:
 		+ Retry anti-aliasing, with different alpha profile
 		+ Try more magnification
+		- Fix boundary conditions for diagonals: joints are not good
+	- Water momentum:
+		- Force should not depend on particle's mass - after all a heavy particle shouldn't be affected
+			- Change mass into constant, i.e. current human NPC mass
 
 
 - Physical Interactions:
