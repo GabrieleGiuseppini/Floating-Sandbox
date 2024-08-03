@@ -955,8 +955,8 @@ void ShipTexturizer::DrawTriangleFloorInto(
                         (minX + floorThickness / 2 - 1 + 1) - 1, // xEnd, included
                         1, // xIncr
                         1, // xLimitIncr
-                        minX, // absoluteMinX
-                        maxX - 1, // absoluteMaxX
+                        minX - floorThickness / 2, // absoluteMinX
+                        maxX + floorThickness / 2 - 1, // absoluteMaxX
                         yStart,
                         yEnd,
                         1, // yIncr
@@ -971,8 +971,8 @@ void ShipTexturizer::DrawTriangleFloorInto(
                         (maxX + floorThickness / 2 - 1 + 1) + 1, // xEnd, included
                         1, // xIncr
                         -1, // xLimitIncr
-                        minX, // absoluteMinX
-                        maxX - 1, // absoluteMaxX
+                        minX - floorThickness / 2, // absoluteMinX
+                        maxX + floorThickness / 2 - 1, // absoluteMaxX
                         yStart,
                         yEnd,
                         1, // yIncr
