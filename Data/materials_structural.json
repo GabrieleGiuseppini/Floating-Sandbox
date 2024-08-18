@@ -3816,7 +3816,7 @@
             "friction_static_coefficient": 1.84,
 
 	    "combustion_type": "Combustion",
-	    "ignition_temperature": 453.0,
+	    "ignition_temperature": 653.0,
 	    "is_hull": true,
 	    "melting_temperature": 1000000.0,
 	    "strength": 1.0,

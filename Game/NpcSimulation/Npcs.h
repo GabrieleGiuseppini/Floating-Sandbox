@@ -589,6 +589,9 @@ private:
 		// The additional state specific to the type of this NPC.
 		KindSpecificStateType KindSpecificState;
 
+		// How much this NPC is on fire
+		float Fireness; // [-1.0f, 1.0f], "on fire" if > 0.0f
+
 		// The current highlight state of this NPC.
 		NpcHighlightType Highlight;
 
@@ -616,6 +619,7 @@ private:
 			, CurrentRegime(initialRegime)
 			, ParticleMesh(std::move(particleMesh))
 			, KindSpecificState(std::move(kindSpecificState))
+			, Fireness(-1.0f)
 			, Highlight(NpcHighlightType::None)
 			, RandomNormalizedUniformSeed(GameRandomEngine::GetInstance().GenerateUniformReal(-1.0f, 1.0f))
 			, BeingPlacedState(beingPlacedState)
@@ -655,6 +659,9 @@ public:
 		, mStateBuffer()
 		, mShips()
 		, mParticles(GameParameters::MaxNpcs * GameParameters::MaxParticlesPerNpc)
+		// State
+		, mCurrentSimulationSequenceNumber()
+		, mCurrentFlameCount(0)
 		// Stats
 		, mFreeRegimeHumanNpcCount(0)
 		, mConstrainedRegimeHumanNpcCount(0)
@@ -940,7 +947,6 @@ private:
 	void CalculateNpcParticlePreliminaryForces(
 		StateType const & npc,
 		int npcParticleOrdinal,
-		Ship & homeShip,
 		GameParameters const & gameParameters);
 
 	void CalculateNpcParticleSpringForces(StateType const & npc);
@@ -1475,6 +1481,14 @@ private:
 
 	// All of the NPC particles.
 	NpcParticles mParticles;
+
+	//
+	// State
+	//
+
+	SequenceNumber mCurrentSimulationSequenceNumber;
+
+	size_t mCurrentFlameCount;
 
 	//
 	// Stats

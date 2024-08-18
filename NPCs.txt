@@ -400,37 +400,35 @@ Arch
 		+ Force should not depend on particle's mass - after all a heavy particle shouldn't be affected
 			+ Change mass into constant, i.e. current human NPC mass
 
-- Summer plan:
-	- @Npcs::Update():
-		- Calc LowFreqCycle (see Ship)
-		- By Ship: By Npc (mod ID for cycle): 
-			- By particle (via helper w/particle idx):
-				- Calc particle's waterness
-			- Calc Fireness for all particles (via helper w/particle idx) and combine (max) into Npc's Fireness
-				- Fireness calculation:
-					- If waterness > Wa: target=-1, rate=0.3
-					- Else:
-						- If Ship.Point.Temperature > NpcMaterial.CombustionTemperature || Ship.Point.Fire: target=1.0, rate=0.3
-						- Else: target=-1. rate=0.1
-				- New Npc state attribute, in [-1, 1] range; on fire if > 0.0
-				- Update count of flames (using Npc's previous)
-	- @Npcs::RenderUpload():
-		- Upload flames, one per NPC
-			- Position:
-				- Human: head
-				- Else: center of all particles
-			- Size: depends on Npc's fireness
-	- @Ship::RenderUpload:
-		- Include own Npcs' flames via World::GetNpcs() const::GetFlameCount(ShipId)
+= Summer plan:
+	+ @Npcs::Update():
+		+ Calc LowFreqCycle (see Ship)
+		+ By Ship: By Npc (mod ID for cycle): 
+			+ By particle (via helper w/particle idx):
+				+ If constrained:
+					+ Calc particle's MeshWater and MeshWaterVelocity
+						+ NpcParticles::MeshWaterBuffer, MeshWaterVelocity
+					+ Calc particle's MeshFire:
+						+ If waterness > Wa: fireTarget=-1, fireConvergeRate=0.3
+						+ Else If any (Ship.Point.Temperature > NpcMaterial.CombustionTemperature || Ship.Point.IsBurning): fireTarget=1.0, fireConvergeRate=0.3
+						+ Else: fireTarget=-1. fireConvergeRate=0.1
+				+ Else:
+					+ fireTarget=-1, fireConvergeRate=0.3
+			+ Calc Fireness for NPC via convergence with current value
+				+ Store in new Npc state attribute, in [-1, 1] range; on fire if > 0.0
+				+ Update count of flames (using Npc's previous)
+				+ Event (for sound)
+	+ Remove old mesh waterness calculation and replace with using buffer iff constrained (incl. velocity)
+	+ Test waterness (incl. velocity)
 	- @Npcs::HumanBehaviorUpdate():
 		- If Npc ID matches cycle:
-			- Calc HasBomb, IsElectrified (locals, default: false)
-				- Both via helper w/particle idx
-		- Panic update:
-			- If Npc is on fire: Npc's OnFirePanic (replaces ShipFire) = 1.0
-			- Decay OnFirePanic, BombPanic
+			- Calc HasBomb, IsElectrified (locals, default: false) (via helpers w/particle idx)
+		- If Npc is on fire (> 0.0f): 
+			- Npc's OnFirePanic (replaces ShipFire) = 1.0
+		- Calc resultant panic
+		- Decay OnFirePanic, BombPanic
 		- @ Eq, Walk:
-			- HasBomb => DirFlip + set Npc::BombPanic to 1.0
+			- HasBomb => DirFlip (iff BombPanic < 0.7) + set Npc::BombPanic to 1.0
 			- IsElectrified => Transition to new Constrained_Electrified behavior
 	- New Constrained_InWater, Constrained_Swimming_Style2:
 		- Constrained_InWater:
@@ -441,11 +439,25 @@ Arch
 				- When no changes for a while (like Free_InWater->Free_Swimming): to Constrained_Swimming_Style1|2 depending on face orientation
 		- Constrained_Swimming_Style1,2:
 			- Copy from Free_Swimming_*, and same out transitions as Constrained_InWater
+	- Constrained_Electrified:
+		- Out: 
+			- Free->Free
+			- When not electrified anymore -> Constrained_KO
 	- @Npcs::AnimationUpdate():
 		- Constrained_Swimming_Style2:
 			- Arms alternating (narrowly) around normal to body (direction of face)
 			- Legs alternating (narrowly) around opposite of feet velocity dir
 		- Constrained_Electrified: TODO
+	- @Npcs::RenderUploadFlames():
+		- Upload flames, one per NPC
+			- Position:
+				- Human: head
+				- Else: center of all particles
+			- Vector and WindRotation: using same formula as Ship, based on NpcParticle's velocity
+				- CalculateIdealFlameVector, CalculateFlameWindRotationAngle(WindField, ...): move it to Formulae
+			- Size: depends on Npc's fireness
+	- @Ship::RenderUpload:
+		- Include own Npcs' flames via World::GetNpcs() const::GetFlameCount(ShipId)
 	
 
 - Physical Interactions:

@@ -1592,15 +1592,25 @@ public:
     }
 
     /*
+     * Checks whether a point is simply burning.
+     */
+    bool IsBurning(ElementIndex pointElementIndex) const
+    {
+        auto const combustionState = mCombustionStateBuffer[pointElementIndex].State;
+
+        return combustionState == CombustionState::StateType::Burning
+            || combustionState == CombustionState::StateType::Developing_1
+            || combustionState == CombustionState::StateType::Developing_2;
+    }
+
+    /*
      * Checks whether a point is eligible for being extinguished by smothering.
      */
     bool IsBurningForSmothering(ElementIndex pointElementIndex) const
     {
         auto const combustionState = mCombustionStateBuffer[pointElementIndex].State;
 
-        return combustionState == CombustionState::StateType::Burning
-            || combustionState == CombustionState::StateType::Developing_1
-            || combustionState == CombustionState::StateType::Developing_2
+        return IsBurning(pointElementIndex)
             || combustionState == CombustionState::StateType::Extinguishing_Consumed;
     }
 
@@ -1611,9 +1621,7 @@ public:
     {
         auto const combustionState = mCombustionStateBuffer[pointElementIndex].State;
 
-        return combustionState == CombustionState::StateType::Developing_1
-            || combustionState == CombustionState::StateType::Developing_2
-            || combustionState == CombustionState::StateType::Burning
+        return IsBurning(pointElementIndex)
             || combustionState == CombustionState::StateType::Extinguishing_Consumed
             || combustionState == CombustionState::StateType::Extinguishing_SmotheredRain
             || combustionState == CombustionState::StateType::Extinguishing_SmotheredWater;

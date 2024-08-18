@@ -313,12 +313,13 @@ void Npcs::UpdateNpcs(
     // Note: no need to reset PreliminaryForces as we'll recalculate all of them
 
     //
-    // 2. Check if constrained states are still coherent (connectivity changes, etc.)
-    // 3. Check if a free secondary particle should become constrained
-    // 4. Calculate preliminary forces
-    // 5. Calculate spring forces
-    // 6. Update physical state
-    // 7. Maintain world bounds
+    // 2. Low-frequency updates of Npc and NpcParticle attributes
+    // 3. Check if constrained states are still coherent (connectivity changes, etc.)
+    // 4. Check if a free secondary particle should become constrained
+    // 5. Calculate preliminary forces
+    // 6. Calculate spring forces
+    // 7. Update physical state
+    // 8. Maintain world bounds
     //
 
     for (auto & npcState : mStateBuffer)
@@ -332,6 +333,95 @@ void Npcs::UpdateNpcs(
 
             assert((npcState->CurrentRegime == StateType::RegimeType::BeingPlaced) == npcState->BeingPlacedState.has_value());
             assert(npcState->ParticleMesh.Particles.size() > 0);
+
+            // Low-frequency updates
+
+            unsigned int constexpr LowFrequencyUpdatePeriod = 4;
+
+            if (mCurrentSimulationSequenceNumber.IsStepOf(npcState->Id % LowFrequencyUpdatePeriod, LowFrequencyUpdatePeriod))
+            {
+                bool atLeastOneNpcParticleOnFire = false;
+
+                for (auto p = 0; p < npcState->ParticleMesh.Particles.size(); ++p)
+                {
+                    auto const & particle = npcState->ParticleMesh.Particles[p];
+
+                    if (particle.ConstrainedState.has_value())
+                    {
+                        auto const t = particle.ConstrainedState->CurrentBCoords.TriangleElementIndex;
+
+                        // Waterness, Water Velocity, ParticleOnFire
+
+                        float totalWaterness = 0.0f;
+                        vec2f totalWaterVelocity = vec2f::zero();
+                        float waterablePointCount = 0.0f;
+                        bool isAtLeastOneMeshPointOnFire = false;
+                        for (int v = 0; v < 3; ++v)
+                        {
+                            ElementIndex const pointElementIndex = homeShip.GetTriangles().GetPointIndices(t)[v];
+
+                            float const w = std::min(homeShip.GetPoints().GetWater(pointElementIndex), 1.0f);
+                            totalWaterness += w;
+
+                            totalWaterVelocity += homeShip.GetPoints().GetWaterVelocity(pointElementIndex);
+
+                            if (!homeShip.GetPoints().GetIsHull(pointElementIndex))
+                                waterablePointCount += 1.0f;
+
+                            if (homeShip.GetPoints().GetTemperature(pointElementIndex) >= mParticles.GetMaterial(particle.ParticleIndex).IgnitionTemperature
+                                || homeShip.GetPoints().IsBurning(pointElementIndex))
+                            {
+                                isAtLeastOneMeshPointOnFire = true;
+                            }
+                        }
+
+                        float const meshWaterness = totalWaterness / (std::max(waterablePointCount, 1.0f));
+                        mParticles.SetMeshWaterness(particle.ParticleIndex, meshWaterness);
+
+                        vec2f const meshWaterVelocity = totalWaterVelocity / (std::max(waterablePointCount, 1.0f));
+                        mParticles.SetMeshWaterVelocity(particle.ParticleIndex, meshWaterVelocity);
+
+                        if (meshWaterness < 0.4f) // Otherwise too much water for fire
+                        {
+                            atLeastOneNpcParticleOnFire = atLeastOneNpcParticleOnFire || isAtLeastOneMeshPointOnFire;
+                        }
+                    }
+                } // For all NPC particles
+
+                // Update NPC's fireness
+                bool const wasOnFire = (npcState->Fireness > 0.0f);
+                if (atLeastOneNpcParticleOnFire)
+                {
+                    // Increase fireness
+                    npcState->Fireness += (1.0f - npcState->Fireness) * 0.3f;
+
+                    // See if we've just ignited
+                    if (npcState->Fireness > 0.0f && !wasOnFire)
+                    {
+                        // Update flame count
+                        ++mCurrentFlameCount;
+
+                        // Emit event
+                        mGameEventHandler->OnPointCombustionBegin();
+                    }
+                }
+                else
+                {
+                    // Decrease fireness
+                    npcState->Fireness += (-1.0f - npcState->Fireness) * 0.1f;
+
+                    // See if we've stopped
+                    if (npcState->Fireness <= 0.0f && wasOnFire)
+                    {
+                        // Update flame count
+                        assert(mCurrentFlameCount > 0);
+                        --mCurrentFlameCount;
+
+                        // Emit event
+                        mGameEventHandler->OnPointCombustionEnd();
+                    }
+                }
+            }
 
             // Enforce constrained state coherence and calculate preliminary forces
 
@@ -393,7 +483,6 @@ void Npcs::UpdateNpcs(
                 CalculateNpcParticlePreliminaryForces(
                     *npcState,
                     p,
-                    homeShip,
                     gameParameters);
             }
 
@@ -421,8 +510,8 @@ void Npcs::UpdateNpcs(
     }
 
     //
-    // 8. Update behavioral state machines
-    // 9. Update animation
+    // 9. Update behavioral state machines
+    // 10. Update animation
     //
 
     LogNpcDebug("----------------------------------");
@@ -1435,7 +1524,6 @@ void Npcs::UpdateNpcParticlePhysics(
 void Npcs::CalculateNpcParticlePreliminaryForces(
     StateType const & npc,
     int npcParticleOrdinal,
-    Ship & homeShip,
     GameParameters const & gameParameters)
 {
     auto & npcParticle = npc.ParticleMesh.Particles[npcParticleOrdinal];
@@ -1457,33 +1545,16 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
 
     if (npc.CurrentRegime != StateType::RegimeType::BeingPlaced)
     {
-        // Calculate waterness of this point: from OceanSurface if we're free, from water in mesh if we're constrained
+        // Calculate waterness of this point: from mesh waterness if we're free, from water in mesh if we're constrained
 
-        float waterness;
+        float anyWaterness;
         if (npcParticle.ConstrainedState.has_value())
         {
             // Constrained - use ship points' water
 
-            auto const t = npcParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex;
+            anyWaterness = mParticles.GetMeshWaterness(npcParticle.ParticleIndex);
 
-            // Calculate waterness and water velocity
-
-            float totalWaterness = 0.0f;
-            vec2f totalWaterVelocity = vec2f::zero();
-            float waterablePointCount = 0.0f;
-            for (ElementIndex const p : homeShip.GetTriangles().GetPointIndices(t))
-            {
-                float const w = std::min(homeShip.GetPoints().GetWater(p), 1.0f);
-                totalWaterness += w;
-                totalWaterVelocity += homeShip.GetPoints().GetWaterVelocity(p) * w;
-                if (!homeShip.GetPoints().GetIsHull(p))
-                    waterablePointCount += 1.0f;
-            }
-
-            waterness = totalWaterness / (std::max(waterablePointCount, 1.0f));
-            vec2f const resultantWaterVelocity = totalWaterVelocity / (std::max(waterablePointCount, 1.0f));
-
-            // Converge particle's mesh-relative velocity to resultant water velocity
+            // Converge particle's mesh-relative velocity to mesh water velocity
             //
             // Now, our target is that the point's relative velocity ends up like the resultant water velocity;
             // that is reached by adding (resultantWaterVelocity - pointRelVel) to pointRelVel. This increment
@@ -1491,8 +1562,9 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
             // the absolute point's velocity delta as (resultantWaterVelocity - pointRelVel).
             // Note that we use the point's *prior* relative velocity
 
-            float const waterVelocityAlongDir = resultantWaterVelocity.length();
-            vec2f const waterVelocityDir = resultantWaterVelocity.normalise_approx(waterVelocityAlongDir);
+            vec2f const meshWaterVelocity = mParticles.GetMeshWaterVelocity(npcParticle.ParticleIndex);
+            float const waterVelocityAlongDir = meshWaterVelocity.length();
+            vec2f const waterVelocityDir = meshWaterVelocity.normalise_approx(waterVelocityAlongDir);
             float const particleRelativeVelocityAlongDir = npcParticle.ConstrainedState->MeshRelativeVelocity.dot(waterVelocityDir);
             vec2f absoluteVelocityDelta;
             if (particleRelativeVelocityAlongDir >= 0.0f)
@@ -1512,7 +1584,7 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
             preliminaryForces +=
                 absoluteVelocityDelta
                 / GameParameters::SimulationStepTimeDuration<float>
-                * waterness // Mess with velocity only if enough water
+                * anyWaterness // Mess with velocity only if enough water
                 * (1.0f - SmoothStep(0.0f, 0.9f, waterVelocityDir.y)) // Lower velocity with verticality
                 * 35.0f; // Magic number
         }
@@ -1530,13 +1602,13 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
             }
 
             float const particleDepth = mParentWorld.GetOceanSurface().GetDepth(testParticlePosition);
-            waterness = Clamp(particleDepth, 0.0f, BuoyancyInterfaceWidth) / BuoyancyInterfaceWidth;
+            anyWaterness = Clamp(particleDepth, 0.0f, BuoyancyInterfaceWidth) / BuoyancyInterfaceWidth;
         }
 
         // Store it for future use
-        mParticles.SetWaterness(npcParticle.ParticleIndex, waterness);
+        mParticles.SetAnyWaterness(npcParticle.ParticleIndex, anyWaterness);
 
-        if (waterness > 0.0f)
+        if (anyWaterness > 0.0f)
         {
             // Underwater
 
@@ -1544,7 +1616,7 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
 
             preliminaryForces.y +=
                 mParticles.GetBuoyancyFactor(npcParticle.ParticleIndex)
-                * waterness;
+                * anyWaterness;
 
             // 3. World forces - water drag
 

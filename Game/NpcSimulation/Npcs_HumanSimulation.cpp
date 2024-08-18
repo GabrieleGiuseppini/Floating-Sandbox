@@ -880,8 +880,8 @@ void Npcs::UpdateHuman(
 			// Check if moved to water
 
 			// It's in water if at least one in water
-			if (mParticles.GetWaterness(primaryParticleState.ParticleIndex) > 0.0f
-				|| mParticles.GetWaterness(secondaryParticleState.ParticleIndex) > 0.0f)
+			if (mParticles.GetAnyWaterness(primaryParticleState.ParticleIndex) > 0.0f
+				|| mParticles.GetAnyWaterness(secondaryParticleState.ParticleIndex) > 0.0f)
 			{
 				// Transition
 
@@ -924,8 +924,8 @@ void Npcs::UpdateHuman(
 			// Check if moved to air
 
 			// It's in air if both in air
-			if (mParticles.GetWaterness(primaryParticleState.ParticleIndex) == 0.0f
-				&& mParticles.GetWaterness(secondaryParticleState.ParticleIndex) == 0.0f)
+			if (mParticles.GetAnyWaterness(primaryParticleState.ParticleIndex) == 0.0f
+				&& mParticles.GetAnyWaterness(secondaryParticleState.ParticleIndex) == 0.0f)
 			{
 				// Transition
 

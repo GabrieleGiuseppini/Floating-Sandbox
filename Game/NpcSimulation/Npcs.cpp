@@ -66,6 +66,9 @@ void Npcs::Update(
 	// Update NPCs' state
 	//
 
+	// Advance the current simulation sequence
+	++mCurrentSimulationSequenceNumber;
+
 	UpdateNpcs(currentSimulationTime, gameParameters);
 }
 

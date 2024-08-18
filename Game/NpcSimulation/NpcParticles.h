@@ -41,7 +41,9 @@ public:
         , mVelocityBuffer(maxParticleCount, vec2f::zero())
         , mPreliminaryForcesBuffer(maxParticleCount, vec2f::zero())
         , mExternalForcesBuffer(maxParticleCount, vec2f::zero())
-        , mWaternessBuffer(maxParticleCount, 0.0f)
+        , mMeshWaternessBuffer(maxParticleCount, 0.0f)
+        , mMeshWaterVelocityBuffer(maxParticleCount, vec2f::zero())
+        , mAnyWaternessBuffer(maxParticleCount, 0.0f)
         // Render
         , mRenderColorBuffer(maxParticleCount, rgbaColor::zero())
         //////////////////////////////////
@@ -196,16 +198,40 @@ public:
         mExternalForcesBuffer[particleElementIndex] = value;
     }
 
-    float const GetWaterness(ElementIndex particleElementIndex) const noexcept
+    float const GetMeshWaterness(ElementIndex particleElementIndex) const noexcept
     {
-        return mWaternessBuffer[particleElementIndex];
+        return mMeshWaternessBuffer[particleElementIndex];
     }
 
-    void SetWaterness(
+    void SetMeshWaterness(
         ElementIndex particleElementIndex,
         float value) noexcept
     {
-        mWaternessBuffer[particleElementIndex] = value;
+        mMeshWaternessBuffer[particleElementIndex] = value;
+    }
+
+    vec2f const & GetMeshWaterVelocity(ElementIndex particleElementIndex) const noexcept
+    {
+        return mMeshWaterVelocityBuffer[particleElementIndex];
+    }
+
+    void SetMeshWaterVelocity(
+        ElementIndex particleElementIndex,
+        vec2f const & value) noexcept
+    {
+        mMeshWaterVelocityBuffer[particleElementIndex] = value;
+    }
+
+    float const GetAnyWaterness(ElementIndex particleElementIndex) const noexcept
+    {
+        return mAnyWaternessBuffer[particleElementIndex];
+    }
+
+    void SetAnyWaterness(
+        ElementIndex particleElementIndex,
+        float value) noexcept
+    {
+        mAnyWaternessBuffer[particleElementIndex] = value;
     }
 
     //
@@ -256,7 +282,9 @@ private:
     Buffer<vec2f> mPreliminaryForcesBuffer;
     Buffer<vec2f> mExternalForcesBuffer;
 
-    Buffer<float> mWaternessBuffer; // Mesh water at triangle (when constrained), depth (when free); [0.0, 1.0]
+    Buffer<float> mMeshWaternessBuffer; // Mesh water at triangle (when constrained)
+    Buffer<vec2f> mMeshWaterVelocityBuffer; // (when constrained)
+    Buffer<float> mAnyWaternessBuffer; // Mesh water at triangle (when constrained), depth (when free); [0.0, 1.0]
 
     //
     // Render
