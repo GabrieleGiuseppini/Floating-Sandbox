@@ -355,13 +355,11 @@ RgbaImageData ShipTexturizer::MakeInteriorViewTexture(
     //
     // Futurework: should incorporate ship's scale, as now we calculate thickness assuming
     // width and height are 1:1 with meters
-    // TODOTEST
-    ////int const floorThickness = std::max(
-    ////    std::max(
-    ////        quadSize.width / 10,
-    ////        quadSize.height / 10),
-    ////    2);
-    int const floorThickness = 2;
+    int const floorThickness = std::max(
+        std::max(
+            quadSize.width / 10,
+            quadSize.height / 10),
+        2);
 
     for (auto const t : triangles)
     {
@@ -954,8 +952,6 @@ void ShipTexturizer::DrawTriangleFloorInto(
                     // Left-Right /
 
                     DrawDEdgeFloorInto(
-                        //(minX - floorThickness / 2 - 1) - 1, // xStart
-                        //(minX + floorThickness / 2 - 1 + 1) - 1, // xEnd, included
                         minX - floorThickness / 2 - 1, // xStart
                         minX + floorThickness / 2 - 1, // xEnd, included
                         1, // xIncr
@@ -972,8 +968,6 @@ void ShipTexturizer::DrawTriangleFloorInto(
                     // Right-Left \
 
                     DrawDEdgeFloorInto(
-                        //(maxX - floorThickness / 2 - 1) + 1, // xStart
-                        //(maxX + floorThickness / 2 - 1 + 1) + 1, // xEnd, included
                         maxX - floorThickness / 2,
                         maxX + floorThickness / 2,
                         1, // xIncr
