@@ -401,6 +401,51 @@ Arch
 			+ Change mass into constant, i.e. current human NPC mass
 
 - Summer plan:
+	- @Npcs::Update():
+		- Calc LowFreqCycle (see Ship)
+		- By Ship: By Npc (mod ID for cycle): 
+			- By particle (via helper w/particle idx):
+				- Calc particle's waterness
+			- Calc Fireness for all particles (via helper w/particle idx) and combine (max) into Npc's Fireness
+				- Fireness calculation:
+					- If waterness > Wa: target=-1, rate=0.3
+					- Else:
+						- If Ship.Point.Temperature > NpcMaterial.CombustionTemperature || Ship.Point.Fire: target=1.0, rate=0.3
+						- Else: target=-1. rate=0.1
+				- New Npc state attribute, in [-1, 1] range; on fire if > 0.0
+				- Update count of flames (using Npc's previous)
+	- @Npcs::RenderUpload():
+		- Upload flames, one per NPC
+			- Position:
+				- Human: head
+				- Else: center of all particles
+			- Size: depends on Npc's fireness
+	- @Ship::RenderUpload:
+		- Include own Npcs' flames via World::GetNpcs() const::GetFlameCount(ShipId)
+	- @Npcs::HumanBehaviorUpdate():
+		- If Npc ID matches cycle:
+			- Calc HasBomb, IsElectrified (locals, default: false)
+				- Both via helper w/particle idx
+		- Panic update:
+			- If Npc is on fire: Npc's OnFirePanic (replaces ShipFire) = 1.0
+			- Decay OnFirePanic, BombPanic
+		- @ Eq, Walk:
+			- HasBomb => DirFlip + set Npc::BombPanic to 1.0
+			- IsElectrified => Transition to new Constrained_Electrified behavior
+	- New Constrained_InWater, Constrained_Swimming_Style2:
+		- Constrained_InWater:
+			- From: Whatever current behavior we find ourselves in when flooded
+				- Lingering here for long though
+			- To:
+				- Same as "current behavior"
+				- When no changes for a while (like Free_InWater->Free_Swimming): to Constrained_Swimming_Style1|2 depending on face orientation
+		- Constrained_Swimming_Style1,2:
+			- Copy from Free_Swimming_*, and same out transitions as Constrained_InWater
+	- @Npcs::AnimationUpdate():
+		- Constrained_Swimming_Style2:
+			- Arms alternating (narrowly) around normal to body (direction of face)
+			- Legs alternating (narrowly) around opposite of feet velocity dir
+		- Constrained_Electrified: TODO
 	
 
 - Physical Interactions:
