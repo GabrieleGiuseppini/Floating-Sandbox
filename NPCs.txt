@@ -390,17 +390,18 @@ Arch
 - Misc improvements:
 	+ GameController: force moveWholeMesh @ moveNpc when paused
 	- See if can fix moveWholeMesh for furniture, by doing 3rd and 4th wrt 1st and 2nd spring
-	- Better interior texture:
+	+ Better interior texture:
 		+ Retry anti-aliasing, with different alpha profile
 		+ Try more magnification
-		= Fix boundary conditions for diagonals: joints are not good
-			- See if there's still anything we may do to improve diagonals
+		+ Fix boundary conditions for diagonals: joints are not good
+			+ See if there's still anything we may do to improve diagonals
 
 	+ Water momentum:
 		+ Force should not depend on particle's mass - after all a heavy particle shouldn't be affected
 			+ Change mass into constant, i.e. current human NPC mass
 
 - Summer plan:
+	
 
 - Physical Interactions:
 
