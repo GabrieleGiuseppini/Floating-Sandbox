@@ -355,11 +355,13 @@ RgbaImageData ShipTexturizer::MakeInteriorViewTexture(
     //
     // Futurework: should incorporate ship's scale, as now we calculate thickness assuming
     // width and height are 1:1 with meters
-    int const floorThickness = std::max(
-        std::max(
-            quadSize.width / 10,
-            quadSize.height / 10),
-        2);
+    // TODOTEST
+    ////int const floorThickness = std::max(
+    ////    std::max(
+    ////        quadSize.width / 10,
+    ////        quadSize.height / 10),
+    ////    2);
+    int const floorThickness = 2;
 
     for (auto const t : triangles)
     {
@@ -943,16 +945,19 @@ void ShipTexturizer::DrawTriangleFloorInto(
 
                 // We draw from bottom to top, and with an extra pixel on either left and right side for anti-aliasing
 
+
                 int const yStart = endpointBottom.y - floorThickness / 2;
                 int const yEnd = endpointTop.y + floorThickness / 2  - 1; // Included
 
                 if (endpointBottom.x <= endpointTop.x)
                 {
-                    // Left-Right
+                    // Left-Right /
 
                     DrawDEdgeFloorInto(
-                        (minX - floorThickness / 2 - 1) - 1, // xStart
-                        (minX + floorThickness / 2 - 1 + 1) - 1, // xEnd, included
+                        //(minX - floorThickness / 2 - 1) - 1, // xStart
+                        //(minX + floorThickness / 2 - 1 + 1) - 1, // xEnd, included
+                        minX - floorThickness / 2 - 1, // xStart
+                        minX + floorThickness / 2 - 1, // xEnd, included
                         1, // xIncr
                         1, // xLimitIncr
                         minX - floorThickness / 2, // absoluteMinX
@@ -964,11 +969,13 @@ void ShipTexturizer::DrawTriangleFloorInto(
                 }
                 else
                 {
-                    // Right-Left
+                    // Right-Left \
 
                     DrawDEdgeFloorInto(
-                        (maxX - floorThickness / 2 - 1) + 1, // xStart
-                        (maxX + floorThickness / 2 - 1 + 1) + 1, // xEnd, included
+                        //(maxX - floorThickness / 2 - 1) + 1, // xStart
+                        //(maxX + floorThickness / 2 - 1 + 1) + 1, // xEnd, included
+                        maxX - floorThickness / 2,
+                        maxX + floorThickness / 2,
                         1, // xIncr
                         -1, // xLimitIncr
                         minX - floorThickness / 2, // absoluteMinX
@@ -1041,7 +1048,9 @@ void ShipTexturizer::DrawDEdgeFloorInto(
                     Mix(
                         targetTextureImage[{x, y}].toVec4f(),
                         FloorColor,
-                        (x == xStart || x == xEnd) ? 0.27f : 1.0f));
+                        // TODOTEST
+                        //(x == xStart || x == xEnd) ? 0.27f : 1.0f));
+                        1.0f));
             }
 
             if (x == xEnd)
