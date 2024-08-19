@@ -420,6 +420,8 @@ Arch
 				+ Event (for sound)
 	+ Remove old mesh waterness calculation and replace with using buffer iff constrained (incl. velocity)
 	+ Test waterness (incl. velocity)
+	+ Ship: render NPCs after generic textures and before explostions
+		+ And correct Z layer
 
 	- Electrification:
 		- Ship::HandleElectricSpark():
@@ -492,8 +494,6 @@ Arch
 			- Size: depends on Npc's fireness
 	- @Ship::RenderUpload:
 		- Include own Npcs' flames via World::GetNpcs() const::GetFlameCount(ShipId)
-	- Ship: render NPCs after generic textures and before explostions
-		- And correct Z layer
 	
 
 	- WaterVelocity: test again multiplying individual point's velocity by w, and NOT total waterness later instead

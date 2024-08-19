@@ -675,7 +675,7 @@ void Npcs::UpdateHuman(
 			if (hasBomb &&
 				( humanState.CurrentBehavior == HumanNpcStateType::BehaviorType::Constrained_Equilibrium || humanState.CurrentBehavior == HumanNpcStateType::BehaviorType::Constrained_Walking))
 			{
-				if (humanState.BombProximityPanicLevel < 0.7)
+				if (humanState.BombProximityPanicLevel < 0.6)
 				{
 					// Time to flip
 					humanState.CurrentFaceDirectionX *= -1.0f;

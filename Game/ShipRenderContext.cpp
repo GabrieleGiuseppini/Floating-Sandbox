@@ -1697,12 +1697,6 @@ void ShipRenderContext::RenderDraw(
     }
 
     //
-    // Render NPCs
-    //
-
-    RenderDrawNpcs(renderParameters);
-
-    //
     // Render electric sparks
     //
 
@@ -1737,6 +1731,12 @@ void ShipRenderContext::RenderDraw(
     //
 
     RenderDrawGenericMipMappedTextures(renderParameters, renderStats);
+
+    //
+    // Render NPCs
+    //
+
+    RenderDrawNpcs(renderParameters);
 
     //
     // Render explosions
@@ -2525,10 +2525,10 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
     //          - Triangles are always drawn temporally before ropes and springs though, to avoid anti-aliasing issues
     //      - 4: Stressed springs, Frontier edges (temporally after)
     //      - 5: Points
-    //      - 6: NPCs
-    //      - 7: Electric sparks, Flames (foreground), Jet engine flames
-    //      - 8: Sparkles
-    //      - 9: Generic textures
+    //      - 6: Electric sparks, Flames (foreground), Jet engine flames
+    //      - 7: Sparkles
+    //      - 8: Generic textures
+    //      - 9: NPCs
     //      - 10: Explosions
     //      - 11: Highlights, Centers
     //      - 12: Vectors, Point-to-Point Arrows
@@ -2684,7 +2684,7 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
         shipOrthoMatrix);
 
     //
-    // Layer 6: NPCs
+    // Layer 6: Electric Sparks, Flames - foreground, Jet engine flames
     //
 
     view.CalculateShipOrthoMatrix(
@@ -2694,24 +2694,6 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
         static_cast<int>(mShipCount),
         static_cast<int>(mMaxMaxPlaneId),
         6,
-        NLayers,
-        shipOrthoMatrix);
-
-    mShaderManager.ActivateProgram<ProgramType::ShipNpcsTexture>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipNpcsTexture, ProgramParameterType::OrthoMatrix>(
-        shipOrthoMatrix);
-
-    //
-    // Layer 7: Electric Sparks, Flames - foreground, Jet engine flames
-    //
-
-    view.CalculateShipOrthoMatrix(
-        ShipRegionZStart,
-        ShipRegionZWidth,
-        static_cast<int>(mShipId),
-        static_cast<int>(mShipCount),
-        static_cast<int>(mMaxMaxPlaneId),
-        7,
         NLayers,
         shipOrthoMatrix);
 
@@ -2728,7 +2710,25 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
         shipOrthoMatrix);
 
     //
-    // Layer 8: Sparkles
+    // Layer 7: Sparkles
+    //
+
+    view.CalculateShipOrthoMatrix(
+        ShipRegionZStart,
+        ShipRegionZWidth,
+        static_cast<int>(mShipId),
+        static_cast<int>(mShipCount),
+        static_cast<int>(mMaxMaxPlaneId),
+        7,
+        NLayers,
+        shipOrthoMatrix);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipSparkles>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipSparkles, ProgramParameterType::OrthoMatrix>(
+        shipOrthoMatrix);
+
+    //
+    // Layer 8: Generic Textures
     //
 
     view.CalculateShipOrthoMatrix(
@@ -2741,12 +2741,12 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
         NLayers,
         shipOrthoMatrix);
 
-    mShaderManager.ActivateProgram<ProgramType::ShipSparkles>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipSparkles, ProgramParameterType::OrthoMatrix>(
+    mShaderManager.ActivateProgram<ProgramType::ShipGenericMipMappedTextures>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipGenericMipMappedTextures, ProgramParameterType::OrthoMatrix>(
         shipOrthoMatrix);
 
     //
-    // Layer 9: Generic Textures
+    // Layer 9: NPCs
     //
 
     view.CalculateShipOrthoMatrix(
@@ -2759,8 +2759,8 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
         NLayers,
         shipOrthoMatrix);
 
-    mShaderManager.ActivateProgram<ProgramType::ShipGenericMipMappedTextures>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipGenericMipMappedTextures, ProgramParameterType::OrthoMatrix>(
+    mShaderManager.ActivateProgram<ProgramType::ShipNpcsTexture>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipNpcsTexture, ProgramParameterType::OrthoMatrix>(
         shipOrthoMatrix);
 
     //
