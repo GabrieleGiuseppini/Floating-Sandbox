@@ -80,7 +80,7 @@ using FrontierId = std::uint32_t;
 static FrontierId constexpr NoneFrontierId = std::numeric_limits<FrontierId>::max();
 
 /*
- * NPC (global) identifiers.
+ * NPC identifiers.
  *
  * Comparable and ordered. Start from 0.
  */
@@ -88,9 +88,10 @@ using NpcId = std::uint32_t;
 static NpcId constexpr NoneNpcId = std::numeric_limits<NpcId>::max();
 
 /*
- * Various other identifiers.
+ * Gadget identifiers.
  */
 using GadgetId = std::uint32_t;
+static GadgetId constexpr NoneGadgetId = std::numeric_limits<GadgetId>::max();
 
 /*
  * Object ID's, identifying objects of ships across ships.

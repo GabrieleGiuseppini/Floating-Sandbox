@@ -313,7 +313,7 @@ void Npcs::UpdateNpcs(
     // Note: no need to reset PreliminaryForces as we'll recalculate all of them
 
     //
-    // 2. Low-frequency updates of Npc and NpcParticle attributes
+    // 2. Low-frequency and high-frequency updates of Npc and NpcParticle attributes
     // 3. Check if constrained states are still coherent (connectivity changes, etc.)
     // 4. Check if a free secondary particle should become constrained
     // 5. Calculate preliminary forces
@@ -337,7 +337,6 @@ void Npcs::UpdateNpcs(
             // Low-frequency updates
 
             unsigned int constexpr LowFrequencyUpdatePeriod = 4;
-
             if (mCurrentSimulationSequenceNumber.IsStepOf(npcState->Id % LowFrequencyUpdatePeriod, LowFrequencyUpdatePeriod))
             {
                 bool atLeastOneNpcParticleOnFire = false;
@@ -388,15 +387,29 @@ void Npcs::UpdateNpcs(
                     }
                 } // For all NPC particles
 
-                // Update NPC's fireness
-                bool const wasOnFire = (npcState->Fireness > 0.0f);
+                // Update NPC's fire progress
+
                 if (atLeastOneNpcParticleOnFire)
                 {
-                    // Increase fireness
-                    npcState->Fireness += (1.0f - npcState->Fireness) * 0.3f;
+                    // Increase
+                    npcState->CombustionProgress += (1.0f - npcState->CombustionProgress) * 0.3f;
+                }
+                else
+                {
+                    // Decrease
+                    npcState->CombustionProgress += (-1.0f - npcState->CombustionProgress) * 0.1f;
+                }
+            }
 
+            // High-frequency updates
+
+            {
+                // Combustion state machine: ignite or smother
+
+                if (npcState->CombustionProgress > 0.0f)
+                {
                     // See if we've just ignited
-                    if (npcState->Fireness > 0.0f && !wasOnFire)
+                    if (!npcState->CombustionState.has_value())
                     {
                         // Update flame count
                         ++mCurrentFlameCount;
@@ -404,15 +417,24 @@ void Npcs::UpdateNpcs(
                         // Emit event
                         mGameEventHandler->OnPointCombustionBegin();
                     }
+
+                    // Update flame progress (eventually igniting)
+
+                    // TODOHERE: use Formulae
+                    vec2f const flameVector = vec2f(0.0f, 1.0f);
+                    float const flameWindRotationAngle = 0.0f;
+                    npcState->CombustionState.emplace(
+                        flameVector,
+                        flameWindRotationAngle);
                 }
                 else
                 {
-                    // Decrease fireness
-                    npcState->Fireness += (-1.0f - npcState->Fireness) * 0.1f;
-
                     // See if we've stopped
-                    if (npcState->Fireness <= 0.0f && wasOnFire)
+                    if (npcState->CombustionState.has_value())
                     {
+                        // Reset combustion state
+                        npcState->CombustionState.reset();
+
                         // Update flame count
                         assert(mCurrentFlameCount > 0);
                         --mCurrentFlameCount;

@@ -50,6 +50,8 @@ public:
     {
     }
 
+    bool AreBombsInProximity(vec2f const & position) const;
+
     void Update(
         GameWallClock::time_point currentWallClockTime,
         float currentSimulationTime,

@@ -76,6 +76,11 @@ public:
         return mParentWorld.GetOceanSurface().IsUnderwater(mPoints.GetPosition(pointElementIndex));
     }
 
+    bool AreBombsInProximity(ElementIndex pointElementIndex) const
+    {
+        return mGadgets.AreBombsInProximity(mPoints.GetPosition(pointElementIndex));
+    }
+
     void SetEventRecorder(EventRecorder * eventRecorder);
 
     bool ReplayRecordedEvent(

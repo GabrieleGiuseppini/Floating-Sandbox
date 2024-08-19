@@ -392,7 +392,8 @@ private:
 				float CurrentFaceDirectionX; // [-1.0f, 0.0f, 1.0f]
 
 				// Panic levels
-				float ShipOnFirePanicLevel; // [0.0f ... +1.0f]
+				float OnFirePanicLevel; // [0.0f ... +1.0f]
+				float BombProximityPanicLevel; // [0.0f ... +1.0f]
 				float GeneralizedPanicLevel; // [0.0f ... +1.0f]
 				float ResultantPanicLevel; // [0.0f ... +INF)
 
@@ -446,7 +447,8 @@ private:
 					, CurrentEquilibriumSoftTerminationDecision(0.0f)
 					, CurrentFaceOrientation(1.0f)
 					, CurrentFaceDirectionX(0.0f)
-					, ShipOnFirePanicLevel(0.0f)
+					, OnFirePanicLevel(0.0f)
+					, BombProximityPanicLevel(0.0f)
 					, GeneralizedPanicLevel(0.0f)
 					, ResultantPanicLevel(0.0f)
 					// Animation
@@ -550,6 +552,19 @@ private:
 			{}
 		};
 
+		struct CombustionStateType
+		{
+			vec2f FlameVector;
+			float FlameWindRotationAngle;
+
+			CombustionStateType(
+				vec2f const & flameVector,
+				float flameWindRotationAngle)
+				: FlameVector(flameVector)
+				, FlameWindRotationAngle(flameWindRotationAngle)
+			{}
+		};
+
 		struct BeingPlacedStateType
 		{
 			int AnchorParticleOrdinal; // In NPC's mesh
@@ -590,7 +605,10 @@ private:
 		KindSpecificStateType KindSpecificState;
 
 		// How much this NPC is on fire
-		float Fireness; // [-1.0f, 1.0f], "on fire" if > 0.0f
+		float CombustionProgress; // [-1.0f, 1.0f], "on fire" if > 0.0f
+
+		// The state of combustion, if this NPC is "on fire"
+		std::optional<CombustionStateType> CombustionState;
 
 		// The current highlight state of this NPC.
 		NpcHighlightType Highlight;
@@ -619,7 +637,8 @@ private:
 			, CurrentRegime(initialRegime)
 			, ParticleMesh(std::move(particleMesh))
 			, KindSpecificState(std::move(kindSpecificState))
-			, Fireness(-1.0f)
+			, CombustionProgress(-1.0f)
+			, CombustionState()
 			, Highlight(NpcHighlightType::None)
 			, RandomNormalizedUniformSeed(GameRandomEngine::GetInstance().GenerateUniformReal(-1.0f, 1.0f))
 			, BeingPlacedState(beingPlacedState)

@@ -72,16 +72,40 @@ void Npcs::UpdateHuman(
 	humanState.EquilibriumTorque = 0.0f;
 
 	//
+	// Probe state
+	//
+
+	bool hasBomb = false; // True if at least one point surrounding a particle has a bomb
+
+	unsigned int constexpr LowFrequencyUpdatePeriod = 4;
+	if (mCurrentSimulationSequenceNumber.IsStepOf(npc.Id % LowFrequencyUpdatePeriod, LowFrequencyUpdatePeriod))
+	{
+		for (auto p = 0; p < npc.ParticleMesh.Particles.size(); ++p)
+		{
+			auto const & particle = npc.ParticleMesh.Particles[p];
+			if (particle.ConstrainedState.has_value())
+			{
+				for (auto pointElementIndex : homeShip.GetTriangles().GetPointIndices(particle.ConstrainedState->CurrentBCoords.TriangleElementIndex))
+				{
+					hasBomb |= homeShip.AreBombsInProximity(pointElementIndex);
+				}
+			}
+		}
+	}
+
+	//
 	// Update panic
 	//
 
 	humanState.ResultantPanicLevel =
-		humanState.ShipOnFirePanicLevel
+		humanState.OnFirePanicLevel
+		+ humanState.BombProximityPanicLevel
 		+ humanState.GeneralizedPanicLevel;
 
 	// Decay
 
-	humanState.ShipOnFirePanicLevel -= humanState.ShipOnFirePanicLevel * 0.01f;
+	humanState.OnFirePanicLevel -= humanState.OnFirePanicLevel * 0.01f;
+	humanState.BombProximityPanicLevel -= humanState.BombProximityPanicLevel * 0.01f;
 
 	//
 	// Process human
@@ -604,6 +628,8 @@ void Npcs::UpdateHuman(
 				break;
 			}
 
+			// Check progress to walking
+
 			bool const areFeetOnFloor = primaryParticleState.ConstrainedState.has_value() && primaryParticleState.ConstrainedState->CurrentVirtualFloor.has_value();
 			if (humanState.CurrentBehavior == HumanNpcStateType::BehaviorType::Constrained_Equilibrium)
 			{
@@ -642,6 +668,21 @@ void Npcs::UpdateHuman(
 						break;
 					}
 				}
+			}
+
+			// Check bomb panic
+
+			if (hasBomb &&
+				( humanState.CurrentBehavior == HumanNpcStateType::BehaviorType::Constrained_Equilibrium || humanState.CurrentBehavior == HumanNpcStateType::BehaviorType::Constrained_Walking))
+			{
+				if (humanState.BombProximityPanicLevel < 0.7)
+				{
+					// Time to flip
+					humanState.CurrentFaceDirectionX *= -1.0f;
+				}
+
+				// Panic
+				humanState.BombProximityPanicLevel = 1.0f;
 			}
 
 			//
