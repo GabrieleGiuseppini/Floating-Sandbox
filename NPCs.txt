@@ -504,13 +504,12 @@ Arch
 					+ Store in new Npc state attribute, in [-1, 1] range; on fire if > 0.0
 					+ Update count of flames (using Npc's previous)
 					+ Event (for sound)
-		- @ Eq, Walk, Rising:
-			- if NPC is on fire: DirFlip (iff OnFirePanic < 0.7) and set Npc::OnFirePanic to 1.0
-		- @Npcs::RenderUploadFlames():
+		+ @ Eq, Walk, Rising:
+			+ if NPC is on fire: DirFlip (iff OnFirePanic < 0.7) and set Npc::OnFirePanic to 1.0
+		= @Npcs::RenderUploadFlames():
 			- Upload flames, one per NPC	
-				- First: store burning NPCs in vector (Npcs::mBurningNpcs) at combustion state update
+				- First: store burning NPCs in vector (Npcs::mBurningNpcs, per-ship) at combustion state update
 					- Remove @ NpcRemoval, ShipRemoval
-					- Replaces Flame count
 				- Second: move CalculateIdealFlameVector, CalculateFlameWindRotationAngle(WindField, ...) to Formulae and use at state update
 					- WindField rearc:
 						- WindField: gets all members currently in Ship::QueuedInteractionArgs
