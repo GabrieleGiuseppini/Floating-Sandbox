@@ -96,6 +96,8 @@ public:
         ThreadManager & threadManager,
         PerfStats & perfStats);
 
+    void UpdateEnd();
+
     void RenderUpload(Render::RenderContext & renderContext);
 
 public:

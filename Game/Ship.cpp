@@ -667,11 +667,10 @@ void Ship::Update(
     VerifyInvariants();
 
 #endif
+}
 
-    ///////////////////////////////////////////////////////////////////
-    // Preparations for next step
-    ///////////////////////////////////////////////////////////////////
-
+void Ship::UpdateEnd()
+{
     // Continue recovering from a repair
     if (mRepairGracePeriodMultiplier != 1.0f)
     {
@@ -681,6 +680,8 @@ void Ship::Update(
             mRepairGracePeriodMultiplier = 1.0f;
         }
     }
+
+    mPoints.ResetIsElectrifiedBuffer();
 
     mWindField.reset();
 }
@@ -4010,6 +4011,12 @@ void Ship::HandleElectricSpark(
     float currentSimulationTime,
     GameParameters const & gameParameters)
 {
+    //
+    // Electrification
+    //
+
+    mPoints.SetIsElectrified(pointElementIndex, (strength > 0.0f));
+
     //
     // Heat
     //

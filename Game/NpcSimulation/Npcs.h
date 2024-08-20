@@ -1396,6 +1396,50 @@ private:
 		return !homeShip.GetTriangles().AreVerticesInCwOrder(triangleElementIndex, homeShip.GetPoints());
 	}
 
+	static bool HasBomb(
+		StateType const & npc,
+		Ship const & homeShip)
+	{
+		for (auto p = 0; p < npc.ParticleMesh.Particles.size(); ++p)
+		{
+			auto const & particle = npc.ParticleMesh.Particles[p];
+			if (particle.ConstrainedState.has_value())
+			{
+				for (auto pointElementIndex : homeShip.GetTriangles().GetPointIndices(particle.ConstrainedState->CurrentBCoords.TriangleElementIndex))
+				{
+					if (homeShip.AreBombsInProximity(pointElementIndex))
+					{
+						return true;
+					}
+				}
+			}
+		}
+
+		return false;
+	}
+
+	static bool IsElectrified(
+		StateType const & npc,
+		Ship const & homeShip)
+	{
+		for (auto p = 0; p < npc.ParticleMesh.Particles.size(); ++p)
+		{
+			auto const & particle = npc.ParticleMesh.Particles[p];
+			if (particle.ConstrainedState.has_value())
+			{
+				for (auto pointElementIndex : homeShip.GetTriangles().GetPointIndices(particle.ConstrainedState->CurrentBCoords.TriangleElementIndex))
+				{
+					if (homeShip.GetPoints().GetIsElectrified(pointElementIndex))
+					{
+						return true;
+					}
+				}
+			}
+		}
+
+		return false;
+	}
+
 	static vec2f CalculateSpringVector(ElementIndex primaryParticleIndex, ElementIndex secondaryParticleIndex, NpcParticles const & particles)
 	{
 		return particles.GetPosition(primaryParticleIndex) - particles.GetPosition(secondaryParticleIndex);

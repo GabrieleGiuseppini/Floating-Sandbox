@@ -58,6 +58,8 @@ void Npcs::UpdateHuman(
 	// Constants
 	//
 
+	unsigned int constexpr LowFrequencyUpdatePeriod = 4;
+
 	float constexpr MaxRelativeVelocityMagnitudeForEquilibrium = 3.0f; // So high because we slip a lot while we try to stand up, and thus need to be immune to ourselves
 
 	//
@@ -72,28 +74,6 @@ void Npcs::UpdateHuman(
 	humanState.EquilibriumTorque = 0.0f;
 
 	//
-	// Probe state
-	//
-
-	bool hasBomb = false; // True if at least one point surrounding a particle has a bomb
-
-	unsigned int constexpr LowFrequencyUpdatePeriod = 4;
-	if (mCurrentSimulationSequenceNumber.IsStepOf(npc.Id % LowFrequencyUpdatePeriod, LowFrequencyUpdatePeriod))
-	{
-		for (auto p = 0; p < npc.ParticleMesh.Particles.size(); ++p)
-		{
-			auto const & particle = npc.ParticleMesh.Particles[p];
-			if (particle.ConstrainedState.has_value())
-			{
-				for (auto pointElementIndex : homeShip.GetTriangles().GetPointIndices(particle.ConstrainedState->CurrentBCoords.TriangleElementIndex))
-				{
-					hasBomb |= homeShip.AreBombsInProximity(pointElementIndex);
-				}
-			}
-		}
-	}
-
-	//
 	// Update panic
 	//
 
@@ -105,7 +85,7 @@ void Npcs::UpdateHuman(
 	// Decay
 
 	humanState.OnFirePanicLevel -= humanState.OnFirePanicLevel * 0.01f;
-	humanState.BombProximityPanicLevel -= humanState.BombProximityPanicLevel * 0.01f;
+	humanState.BombProximityPanicLevel -= humanState.BombProximityPanicLevel * 0.005f;
 
 	//
 	// Process human
@@ -670,19 +650,24 @@ void Npcs::UpdateHuman(
 				}
 			}
 
-			// Check bomb panic
-
-			if (hasBomb &&
-				( humanState.CurrentBehavior == HumanNpcStateType::BehaviorType::Constrained_Equilibrium || humanState.CurrentBehavior == HumanNpcStateType::BehaviorType::Constrained_Walking))
+			if (mCurrentSimulationSequenceNumber.IsStepOf(npc.Id % LowFrequencyUpdatePeriod, LowFrequencyUpdatePeriod))
 			{
-				if (humanState.BombProximityPanicLevel < 0.6)
-				{
-					// Time to flip
-					humanState.CurrentFaceDirectionX *= -1.0f;
-				}
+				// Check bomb panic
 
-				// Panic
-				humanState.BombProximityPanicLevel = 1.0f;
+				if (humanState.CurrentBehavior == HumanNpcStateType::BehaviorType::Constrained_Equilibrium || humanState.CurrentBehavior == HumanNpcStateType::BehaviorType::Constrained_Walking)
+				{
+					if (HasBomb(npc, homeShip))
+					{
+						if (humanState.BombProximityPanicLevel < 0.6)
+						{
+							// Time to flip
+							humanState.CurrentFaceDirectionX *= -1.0f;
+						}
+
+						// Panic
+						humanState.BombProximityPanicLevel = 1.0f;
+					}
+				}
 			}
 
 			//

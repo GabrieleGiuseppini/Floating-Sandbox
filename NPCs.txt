@@ -401,102 +401,16 @@ Arch
 			+ Change mass into constant, i.e. current human NPC mass
 
 = Summer plan:
-	+ @Npcs::Update():
-		+ Calc LowFreqCycle (see Ship)
-		+ By Ship: By Npc (mod ID for cycle): 
-			+ By particle (via helper w/particle idx):
-				+ If constrained:
-					+ Calc particle's MeshWater and MeshWaterVelocity
-						+ NpcParticles::MeshWaterBuffer, MeshWaterVelocity
-					+ Calc particle's MeshFire:
-						+ If waterness > Wa: fireTarget=-1, fireConvergeRate=0.3
-						+ Else If any (Ship.Point.Temperature > NpcMaterial.CombustionTemperature || Ship.Point.IsBurning): fireTarget=1.0, fireConvergeRate=0.3
-						+ Else: fireTarget=-1. fireConvergeRate=0.1
-				+ Else:
-					+ fireTarget=-1, fireConvergeRate=0.3
-			+ Calc Fireness for NPC via convergence with current value
-				+ Store in new Npc state attribute, in [-1, 1] range; on fire if > 0.0
-				+ Update count of flames (using Npc's previous)
-				+ Event (for sound)
 	+ Remove old mesh waterness calculation and replace with using buffer iff constrained (incl. velocity)
 	+ Test waterness (incl. velocity)
 	+ Ship: render NPCs after generic textures and before explostions
 		+ And correct Z layer
 
-	- Electrification:
-		- Ship::HandleElectricSpark():
-			- mParentWorld::ApplyElectricSpark(ShipId, PointElementIndex, strength)
-				- Npcs::ApplyElectricSpark(ShipId, PointElementIndex, strength):
-					- Visit all ship's human NPCs
-						- If any of the constrained NPC particles is in a triangle connected to PointElementIndex:
-							- Set NpcState::ElectrificationStrength to strength
-		- Npcs::Update: at end, zero ElectrificationStrength for each NPC (in the final per-NPC loop)
+	= HasBomb: move to site (switch cases) calling helper func - but low-freq step check done @ site
+		+ Panic/animation: arms down earlier @ decay
+		- Sharper panic drawdawn
 
-	= @Npcs::HumanBehaviorUpdate():
-		+ If Npc ID matches cycle:
-			+ Calc HasBomb (local, default: false)
-				+ True if at least one mesh point of one constrained npc particle is true
-				+ Use Ship::AreBombsInProximity(pos)
-		+ Calc resultant panic
-		+ Decay OnFirePanic, BombProximityPanic
-		- @ Eq, Walk, Rising:
-			- if NPC is on fire: DirFlip (iff OnFirePanic < 0.7) and set Npc::OnFirePanic to 1.0
-		- @ Eq, Walk:
-			+ HasBomb => DirFlip (iff BombProximityPanic < 0.7) and set Npc::BombProximityPanic to 1.0
-			- ElectrificationStrength > 0.5 => Transition to new Constrained_Electrified behavior
-	- New Constrained_InWater, Constrained_Swimming_Style2:
-		- Constrained_InWater:
-			- From: Whatever current behavior we find ourselves in when flooded (2)
-				- Lingering here for long though
-			- To:
-				- Same as "current behavior"
-				- When no changes for a while (like Free_InWater->Free_Swimming): to Constrained_Swimming_Style1|2 depending on face orientation
-		- Constrained_Swimming_Style1,2:
-			- Copy from Free_Swimming_*, and same out transitions as Constrained_InWater
-	- Constrained_Electrified:
-		- Out: 
-			- Free->Free
-			- When ElectrificationStrength == 0.0 -> Constrained_KO
-	- @Npcs::AnimationUpdate():
-		- Constrained_Swimming_Style2:
-			- Arms alternating (narrowly) around normal to body (direction of face)
-			- Legs alternating (narrowly) around opposite of feet velocity dir
-		- Constrained_Electrified: TODO
-	- @Npcs::RenderUploadFlames():
-		- Upload flames, one per NPC	
-			- First: store burning NPCs in vector (Npcs::mBurningNpcs) at combustion state update
-			- Second: move CalculateIdealFlameVector, CalculateFlameWindRotationAngle(WindField, ...) to Formulae and use at state update
-				- WindField rearc:
-					- WindField: gets all members currently in Ship::QueuedInteractionArgs
-					- Wind:
-						- mCurrentWindField, mNextWindField (both opt)
-						- GetWindField() -> mCurrentWindField
-						- SetWindField(windField) -> mNextWindField
-						- Wind::Update:
-							- mCurrentWindField = mNextWindField
-							- mNextWindField.reset()
-					- World::GetWindField()
-					- World::ApplyRadialWindFrom:
-						- Calculate ForceMagnitude and give everything to Wind::SetWindField()
-						- Do nothing on ships
-						- Keep doing on ocean
-					- Ship:
-						- Nuke ApplyRadialWindFrom() and queued interaction
-						- At Update(), in same logical block as applying queued interactions:
-							- Apply forces (code of Ship::ApplyRadialWindFrom(interaction args)) from mParentWorld::GetWindField()
-						- Nuke mWindField and take it from mParentWorld::GetWindField()
-
-			- Visit vector here:
-				- Position:
-					- Human: head
-					- Else: center of all particles
-				- Vector and WindRotation: from CombustionState
-			- Size: depends on Npc's fireness
-	- @Ship::RenderUpload:
-		- Include own Npcs' flames via World::GetNpcs() const::GetFlameCount(ShipId)
-	
-
-	- WaterVelocity: test again multiplying individual point's velocity by w, and NOT total waterness later instead
+	+ WaterVelocity: test again multiplying individual point's velocity by w, and NOT total waterness later instead
 
 - Physical Interactions:
 
@@ -553,12 +467,22 @@ Arch
 							+ Apply as a force
 				+ Store as QuantityOfWater
 				+ Use quantityOfWater for buoyancy
-		- Behavior?
-			- Constrained_InWater
-				- Exactly like Free_InWater, but constrained
-				- Double-check animation: current Constrained(_Aerial?) looks quite good
-			- Constrained_Swimming_Style1
-				- Exactly like Free_Swimming_Style1, but constrained
+		- Behavior:
+			- New Constrained_InWater, Constrained_Swimming_Style2:
+				- Constrained_InWater:
+					- From: Constrained_Aerial
+						- Lingering here for long though
+					- To:
+						- Same as Constrained_Aerial
+						- When no changes for a while (like Free_InWater->Free_Swimming): to Constrained_Swimming_Style1|2 depending on face orientation
+				- Constrained_Swimming_Style1,2:
+					- Copy from Free_Swimming_*, and same out transitions as Constrained_InWater
+			- @Npcs::AnimationUpdate():
+				- Constrained_InWater
+					- Constrained_Aerial looks quite good
+				- Constrained_Swimming_Style2:
+					- Arms alternating (narrowly) around normal to body (direction of face)
+					- Legs alternating (narrowly) around opposite of feet velocity dir
 		- Backport to BaryLab and profile
 	+ Triangle destruction: 
 		+ Should be enough to check for current triangle being deleted at beginning of UpdateNpc(.), and if so, become free (identical for @ pri and @ non-pri)
@@ -575,16 +499,62 @@ Arch
 		- Do surface displacement proportional to (signed) V velocity
 			- When head above but feet below - anything better?
 	- Fire:
-		- When <TODO> vertices of triangle are on fire, NPC catches fire as well
-			- Done with "entering new triangle" detection, elsewhere here in plan
-				- Or: done at every step, as we may be standing in triangle that later catches fire
-			- Only if standing?
-			- Rendering: Ship asks Npcs (via World) at RenderUpload time, so that flames are in same buffer
-				- Need count and Npcs::RenderUploadFlames(...), both called by Ship
+		+ @Npcs::Update():
+			+ Calc LowFreqCycle (see Ship)
+			+ By Ship: By Npc (mod ID for cycle): 
+				+ By particle (via helper w/particle idx):
+					+ If constrained:
+						+ Calc particle's MeshWater and MeshWaterVelocity
+							+ NpcParticles::MeshWaterBuffer, MeshWaterVelocity
+						+ Calc particle's MeshFire:
+							+ If waterness > Wa: fireTarget=-1, fireConvergeRate=0.3
+							+ Else If any (Ship.Point.Temperature > NpcMaterial.CombustionTemperature || Ship.Point.IsBurning): fireTarget=1.0, fireConvergeRate=0.3
+							+ Else: fireTarget=-1. fireConvergeRate=0.1
+					+ Else:
+						+ fireTarget=-1, fireConvergeRate=0.3
+				+ Calc Fireness for NPC via convergence with current value
+					+ Store in new Npc state attribute, in [-1, 1] range; on fire if > 0.0
+					+ Update count of flames (using Npc's previous)
+					+ Event (for sound)
+		- @ Eq, Walk, Rising:
+			- if NPC is on fire: DirFlip (iff OnFirePanic < 0.7) and set Npc::OnFirePanic to 1.0
+		- @Npcs::RenderUploadFlames():
+			- Upload flames, one per NPC	
+				- First: store burning NPCs in vector (Npcs::mBurningNpcs) at combustion state update
+					- Remove @ NpcRemoval, ShipRemoval
+				- Second: move CalculateIdealFlameVector, CalculateFlameWindRotationAngle(WindField, ...) to Formulae and use at state update
+					- WindField rearc:
+						- WindField: gets all members currently in Ship::QueuedInteractionArgs
+						- Wind:
+							- mCurrentWindField (opt)
+							- GetWindField() -> mCurrentWindField
+							- SetWindField(windField) -> mCurrentWindField
+							- Wind::UpdateEnd:
+								- mCurrentWindField.reset()
+						- World::GetWindField()
+						- World::ApplyRadialWindFrom:
+							- Calculate ForceMagnitude and give everything to Wind::SetWindField()
+							- Do nothing on ships
+							- Keep doing on ocean
+						- Ship:
+							- Nuke ApplyRadialWindFrom() and queued interaction
+							- At Update(), in same logical block as applying queued interactions:
+								- Apply forces (code of Ship::ApplyRadialWindFrom(interaction args)) from mParentWorld::GetWindField()
+							- Nuke mWindField and take it from mParentWorld::GetWindField()
+				- Visit mBurningNpcs vector here and:
+					- Position:
+						- Human: head
+						- Else: center of all particles
+					- Vector and WindRotation: from CombustionState
+				- Size: depends on Npc's fireness
+		- @Ship::RenderUpload:
+			- Include own Npcs' flames via World::GetNpcs() const::GetFlameCount(ShipId)
 	- Wind: 
 		- Npc preliminary forces: only free NPC particles 
 	- Wind tool: 
+		- WindField work (*) spec'd for flames 
 		- Npcs::Update: apply mParentWorld::WindField to all particles
+			- 
 	- Ship-specific explosions: only of that ship, or free regime
 	- Swirl, etc.: all ships, all regimes
 		- Controlled by flag, "~force tools on NPCs"
@@ -601,8 +571,21 @@ Arch
 				+ Look at Ship::Move/etc for physics (e.g. velocity, force zeroing)
 			+ At the end calls MaintainInWorldBounds()
 	- Electric spark:
-		- Electrification must be stored with Points
-		- NPC update looks at own triangle's Points
+		+ Ship:
+			+ HandleElectricSpark(): set Points.IsElectrified
+			+ UpdateEnd(): reset it
+		- Constrained_Electrified:
+			- Into:
+				- Eq, Walk: as soon as electrified detected, via helper, with low-freq step check 
+					- Checked once in a while
+					- Become frontal|back (random)
+			- Out: 
+				- Free->Free
+				- When not electrified for a while (own progress) -> Constrained_KO
+		- Animation:
+			- See notebook
+
+
 	+ Mass/forces: these two may be done together:
 			- NPCs add mass to particle
 				- Ship::Update asks NPCs (via ParentWorld) to add themselves to Points' (definitive) masses
@@ -651,7 +634,7 @@ Arch
 	- Lights: second pass of lighting algorithm with all NPC particles, for each ship
 		- Adding to NPC particles' _light_ buffer
 			- But test it first, as humans are dipoles and dubious result
-	= Incorporate ship material's elasticity and friction in calculations for bounce and friction
+	+ Incorporate ship material's elasticity and friction in calculations for bounce and friction
 	- When ship is repaired, all NPCs do a little dance
 		- Sync is simulation clock (so all are in sync)
 		- Signal from outside (OnShipRepaired) sets global flag
@@ -667,8 +650,9 @@ Arch
 		- Damping
 		- Buoyancy
 	- Panic:
-		- Close to bomb
-			- Done with "entering new triangle" detection, elsewhere here in plan
+		= Close to bomb
+			= @ Eq, Walk:
+				= HasBomb => DirFlip (iff BombProximityPanic < 0.7) and set Npc::BombProximityPanic to 1.0	
 		- Close to fire
 			- Ditto
 		- Close to water entering (leaking point w/inflow)

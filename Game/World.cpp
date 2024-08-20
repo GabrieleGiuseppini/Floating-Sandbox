@@ -1194,6 +1194,15 @@ void World::Update(
 
         perfStats.TotalFishUpdateDuration.Update(std::chrono::steady_clock::now() - startTime);
     }
+
+    //
+    // Signal update end (for quantities that need to persist during whole Update cycle)
+    //
+
+    for (auto & ship : mAllShips)
+    {
+        ship->UpdateEnd();
+    }
 }
 
 void World::RenderUpload(

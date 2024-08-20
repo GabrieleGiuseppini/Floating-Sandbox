@@ -639,6 +639,8 @@ public:
         , mMaterialWindReceptivityBuffer(mBufferElementCount, shipPointCount, 0.0f)
         // Rust dynamics
         , mMaterialRustReceptivityBuffer(mBufferElementCount, shipPointCount, 0.0f)
+        // Various interactions
+        , mIsElectrifiedBuffer(mBufferElementCount, shipPointCount, false)
         // Ephemeral particles
         , mEphemeralParticleAttributes1Buffer(mBufferElementCount, shipPointCount, EphemeralParticleAttributes1())
         , mEphemeralParticleAttributes2Buffer(mBufferElementCount, shipPointCount, EphemeralParticleAttributes2())
@@ -1697,6 +1699,27 @@ public:
     }
 
     //
+    // Various interactions
+    //
+
+    bool GetIsElectrified(ElementIndex pointElementIndex) const
+    {
+        return mIsElectrifiedBuffer[pointElementIndex];
+    }
+
+    void SetIsElectrified(
+        ElementIndex pointElementIndex,
+        bool value)
+    {
+        mIsElectrifiedBuffer[pointElementIndex] = value;
+    }
+
+    void ResetIsElectrifiedBuffer()
+    {
+        mIsElectrifiedBuffer.fill(false);
+    }
+
+    //
     // Ephemeral Particles
     //
 
@@ -2266,7 +2289,13 @@ private:
     Buffer<float> mMaterialRustReceptivityBuffer;
 
     //
-    // Ephemeral Particles
+    // Various interactions
+    //
+
+    Buffer<bool> mIsElectrifiedBuffer;
+
+    //
+    // Ephemeral particles attributes
     //
 
     Buffer<EphemeralParticleAttributes1> mEphemeralParticleAttributes1Buffer;

@@ -362,7 +362,7 @@ void Npcs::UpdateNpcs(
                             float const w = std::min(homeShip.GetPoints().GetWater(pointElementIndex), 1.0f);
                             totalWaterness += w;
 
-                            totalWaterVelocity += homeShip.GetPoints().GetWaterVelocity(pointElementIndex);
+                            totalWaterVelocity += homeShip.GetPoints().GetWaterVelocity(pointElementIndex) * w;
 
                             if (!homeShip.GetPoints().GetIsHull(pointElementIndex))
                                 waterablePointCount += 1.0f;
@@ -3547,9 +3547,9 @@ void Npcs::UpdateNpcAnimation(
                 targetAngles.LeftLeg = -legAngle;
 
                 // Arms depend on panic
-                if (humanNpcState.ResultantPanicLevel < 0.0001f)
+                if (humanNpcState.ResultantPanicLevel < 0.1f)
                 {
-                    // Arms aperture depends on speed
+                    // No panic: arms aperture depends on speed
 
                     // At base speed (1m/s): 1.4
                     // Swing more
@@ -3558,7 +3558,7 @@ void Npcs::UpdateNpcAnimation(
                 }
                 else
                 {
-                    // Arms raised up
+                    // Panic: arms raised up
 
                     float const elapsed = currentSimulationTime - humanNpcState.CurrentStateTransitionSimulationTimestamp;
                     float const halfPeriod = 1.0f - 0.6f * std::min(humanNpcState.ResultantPanicLevel, 4.0f) / 4.0f;
@@ -3567,9 +3567,9 @@ void Npcs::UpdateNpcAnimation(
                     float constexpr MaxAngle = Pi<float> / 2.0f;
                     float const angle = std::abs(halfPeriod - inPeriod) / halfPeriod * 2.0f * MaxAngle - MaxAngle;
 
-                    // PanicMultiplier: p=0.0 => 1.0 p=2.0 => 0.4
-                    float const panicMultiplier = 0.4f + 0.6f * (1.0f - std::min(humanNpcState.ResultantPanicLevel, 2.0f) / 2.0f);
-                    targetAngles.RightArm = Pi<float> -angle * panicMultiplier;
+                    // PanicMultiplier: p=0.0 => 0.7 p=2.0 => 0.4
+                    float const panicMultiplier = 0.4f + 0.3f * (1.0f - std::min(humanNpcState.ResultantPanicLevel, 2.0f) / 2.0f);
+                    targetAngles.RightArm = Pi<float> - (angle * panicMultiplier);
                 }
                 targetAngles.LeftArm = -targetAngles.RightArm;
 
