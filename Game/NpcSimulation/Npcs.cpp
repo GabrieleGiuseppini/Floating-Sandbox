@@ -72,7 +72,7 @@ void Npcs::Update(
 	UpdateNpcs(currentSimulationTime, gameParameters);
 }
 
-void Npcs::Upload(Render::RenderContext & renderContext)
+void Npcs::Upload(Render::RenderContext & renderContext) const
 {
 #ifdef IN_BARYLAB
 	if (renderContext.GetNpcRenderMode() == NpcRenderModeType::Physical)
@@ -180,6 +180,50 @@ void Npcs::Upload(Render::RenderContext & renderContext)
 #endif
 }
 
+void Npcs::UploadFlames(
+	ShipId shipId,
+	Render::ShipRenderContext & shipRenderContext) const
+{
+	size_t const s = static_cast<size_t>(shipId);
+
+	// We know about this ship
+	assert(s < mShips.size());
+	assert(mShips[s].has_value());
+
+	for (auto const burningNpcId : mShips[s]->BurningNpcs)
+	{
+		assert(mStateBuffer[burningNpcId].has_value());
+
+		auto const & npc = *mStateBuffer[burningNpcId];
+
+		// It's burning
+		assert(npc.CombustionState.has_value());
+
+		vec2f position;
+		if (npc.Kind == NpcKindType::Human)
+		{
+			// Head
+			assert(npc.ParticleMesh.Particles.size() == 2);
+			position = mParticles.GetPosition(npc.ParticleMesh.Particles[1].ParticleIndex);
+		}
+		else
+		{
+			// Center
+			//TODO
+		}
+
+		LogMessage(npc.CombustionProgress);
+
+		shipRenderContext.UploadForegroundFlame(
+			npc.CurrentPlaneId,
+			position,
+			npc.CombustionState->FlameVector,
+			npc.CombustionState->FlameWindRotationAngle,
+			npc.CombustionProgress * 0.2f, // scale
+			(npc.RandomNormalizedUniformSeed + 1.0f) / 2.0f);
+	}
+}
+
 ///////////////////////////////
 
 Geometry::AABB Npcs::GetAABB(NpcId npcId) const
@@ -232,6 +276,7 @@ void Npcs::OnShipRemoved(ShipId shipId)
 	{
 		assert(mStateBuffer[npcId].has_value());
 
+		// Maintain stats
 		if (mStateBuffer[npcId]->Kind == NpcKindType::Human)
 		{
 			if (mStateBuffer[npcId]->CurrentRegime == StateType::RegimeType::Constrained)
@@ -248,6 +293,14 @@ void Npcs::OnShipRemoved(ShipId shipId)
 			}
 		}
 
+		// Remove from burning set
+		auto npcIt = std::find(mShips[s]->BurningNpcs.begin(), mShips[s]->BurningNpcs.end(), npcId);
+		if (npcIt != mShips[s]->BurningNpcs.end())
+		{
+			mShips[s]->BurningNpcs.erase(npcIt);
+		}
+
+		// Nuke NPC
 		mStateBuffer[npcId].reset();
 	}
 
@@ -1809,7 +1862,7 @@ void Npcs::TransferNpcToShip(
 
 void Npcs::RenderNpc(
 	StateType const & npc,
-	Render::ShipRenderContext & shipRenderContext)
+	Render::ShipRenderContext & shipRenderContext) const
 {
 	assert(mShips[npc.CurrentShipId].has_value());
 

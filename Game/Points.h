@@ -938,9 +938,12 @@ public:
         ShipId shipId,
         Render::RenderContext & renderContext) const;
 
-    void UploadFlames(
-        ShipId shipId,
-        Render::RenderContext & renderContext) const;
+    size_t GetBurningPointCount() const
+    {
+        return mBurningPoints.size();
+    }
+
+    void UploadFlames(Render::ShipRenderContext & shipRenderContext) const;
 
     void UploadVectors(
         ShipId shipId,

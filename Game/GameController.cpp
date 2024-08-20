@@ -1772,7 +1772,7 @@ void GameController::OnBeginPlaceNewNpc(NpcId const & npcId)
     float constexpr NpcMagnification = 10.0f;
 
     assert(!!mWorld);
-    auto const aabb = mWorld->GetNpcAABB(npcId);
+    auto const aabb = mWorld->GetNpcs().GetAABB(npcId);
     mViewManager.FocusOn(aabb, NpcMagnification, NpcMagnification, 1.0f / 3.5f, 2.0f, true);
 }
 

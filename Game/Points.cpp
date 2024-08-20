@@ -1949,9 +1949,7 @@ void Points::UploadNonEphemeralPointElements(
     }
 }
 
-void Points::UploadFlames(
-    ShipId shipId,
-    Render::RenderContext & renderContext) const
+void Points::UploadFlames(Render::ShipRenderContext & shipRenderContext) const
 {
     //
     // Flames are uploaded in this order:
@@ -1962,10 +1960,6 @@ void Points::UploadFlames(
     // We use # of triangles as a heuristic for the point being on a chain,
     // and we use the *factory* ones to avoid sudden depth jumps when triangles are destroyed by fire
     //
-
-    auto & shipRenderContext = renderContext.GetShipRenderContext(shipId);
-
-    shipRenderContext.UploadFlamesStart(mBurningPoints.size());
 
     // Background
     for (auto const pointIndex : mBurningPoints)
@@ -1996,8 +1990,6 @@ void Points::UploadFlames(
                 mRandomNormalizedUniformFloatBuffer[pointIndex]);
         }
     }
-
-    shipRenderContext.UploadFlamesEnd();
 }
 
 void Points::UploadVectors(

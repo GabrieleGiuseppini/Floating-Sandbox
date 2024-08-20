@@ -674,11 +674,14 @@ private:
 		size_t FurnitureNpcCount;
 		size_t HumanNpcCount;
 
+		std::vector<NpcId> BurningNpcs; // Maintained as a set
+
 		ShipNpcsType(Ship & homeShip)
 			: HomeShip(homeShip)
 			, Npcs()
 			, FurnitureNpcCount(0)
 			, HumanNpcCount(0)
+			, BurningNpcs()
 		{}
 	};
 
@@ -697,7 +700,6 @@ public:
 		, mParticles(GameParameters::MaxNpcs * GameParameters::MaxParticlesPerNpc)
 		// State
 		, mCurrentSimulationSequenceNumber()
-		, mCurrentFlameCount(0)
 		// Stats
 		, mFreeRegimeHumanNpcCount(0)
 		, mConstrainedRegimeHumanNpcCount(0)
@@ -716,9 +718,20 @@ public:
 		float currentSimulationTime,
 		GameParameters const & gameParameters);
 
-	void Upload(Render::RenderContext & renderContext);
+	void Upload(Render::RenderContext & renderContext) const;
+
+	void UploadFlames(
+		ShipId shipId,
+		Render::ShipRenderContext & shipRenderContext) const;
 
 	///////////////////////////////
+
+	size_t GetFlameCount(ShipId shipId) const
+	{
+		assert(shipId < mShips.size());
+		assert(mShips[shipId].has_value());
+		return mShips[shipId]->BurningNpcs.size();
+	}
 
 	Geometry::AABB GetAABB(NpcId npcId) const;
 
@@ -923,7 +936,7 @@ private:
 
 	void RenderNpc(
 		StateType const & npc,
-		Render::ShipRenderContext & shipRenderContext);
+		Render::ShipRenderContext & shipRenderContext) const;
 
 	void PublishHumanNpcStats();
 
@@ -1567,8 +1580,6 @@ private:
 	//
 
 	SequenceNumber mCurrentSimulationSequenceNumber;
-
-	size_t mCurrentFlameCount;
 
 	//
 	// Stats

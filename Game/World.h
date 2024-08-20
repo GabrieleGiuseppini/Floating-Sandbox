@@ -73,7 +73,19 @@ public:
         return mAllShipAABBs;
     }
 
-    Geometry::AABB GetNpcAABB(NpcId npcId) const;
+    Npcs const & GetNpcs() const
+    {
+        assert(!!mNpcs);
+
+        return *mNpcs;
+    }
+
+    Npcs & GetNpcs()
+    {
+        assert(!!mNpcs);
+
+        return *mNpcs;
+    }
 
     void SetAreCloudShadowsEnabled(bool value)
     {

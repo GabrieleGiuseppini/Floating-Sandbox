@@ -397,7 +397,7 @@ void Npcs::UpdateNpcs(
                 else
                 {
                     // Decrease
-                    npcState->CombustionProgress += (-1.0f - npcState->CombustionProgress) * 0.1f;
+                    npcState->CombustionProgress += (-1.0f - npcState->CombustionProgress) * 0.005f;
                 }
             }
 
@@ -411,8 +411,10 @@ void Npcs::UpdateNpcs(
                     // See if we've just ignited
                     if (!npcState->CombustionState.has_value())
                     {
-                        // Update flame count
-                        ++mCurrentFlameCount;
+                        // Add to burning set
+                        auto & shipNpcs = *mShips[npcState->CurrentShipId];
+                        assert(std::find(shipNpcs.BurningNpcs.cbegin(), shipNpcs.BurningNpcs.cend(), npcState->Id) == shipNpcs.BurningNpcs.cend());
+                        shipNpcs.BurningNpcs.push_back(npcState->Id);
 
                         // Emit event
                         mGameEventHandler->OnPointCombustionBegin();
@@ -435,9 +437,11 @@ void Npcs::UpdateNpcs(
                         // Reset combustion state
                         npcState->CombustionState.reset();
 
-                        // Update flame count
-                        assert(mCurrentFlameCount > 0);
-                        --mCurrentFlameCount;
+                        // Remove from burning set
+                        auto & shipNpcs = *mShips[npcState->CurrentShipId];
+                        auto npcIt = std::find(shipNpcs.BurningNpcs.begin(), shipNpcs.BurningNpcs.end(), npcState->Id);
+                        assert(npcIt != shipNpcs.BurningNpcs.end());
+                        shipNpcs.BurningNpcs.erase(npcIt);
 
                         // Emit event
                         mGameEventHandler->OnPointCombustionEnd();

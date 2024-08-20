@@ -823,9 +823,13 @@ void Ship::RenderUpload(Render::RenderContext & renderContext)
     // Upload flames
     //
 
-    mPoints.UploadFlames(
-        mId,
-        renderContext);
+    shipRenderContext.UploadFlamesStart(mPoints.GetBurningPointCount() + mParentWorld.GetNpcs().GetFlameCount(mId));
+
+    mPoints.UploadFlames(shipRenderContext);
+    mParentWorld.GetNpcs().UploadFlames(mId, shipRenderContext);
+
+    shipRenderContext.UploadFlamesEnd();
+
 
     //
     // Upload gadgets

@@ -118,12 +118,6 @@ size_t World::GetShipPointCount(ShipId shipId) const
     return mAllShips[shipId]->GetPointCount();
 }
 
-Geometry::AABB World::GetNpcAABB(NpcId npcId) const
-{
-    assert(!!mNpcs);
-    return mNpcs->GetAABB(npcId);
-}
-
 bool World::IsUnderwater(GlobalElementId elementId) const
 {
     auto const shipId = elementId.GetShipId();

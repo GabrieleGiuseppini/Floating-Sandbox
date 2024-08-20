@@ -507,9 +507,9 @@ Arch
 		+ @ Eq, Walk, Rising:
 			+ if NPC is on fire: DirFlip (iff OnFirePanic < 0.7) and set Npc::OnFirePanic to 1.0
 		= @Npcs::RenderUploadFlames():
-			- Upload flames, one per NPC	
-				- First: store burning NPCs in vector (Npcs::mBurningNpcs, per-ship) at combustion state update
-					- Remove @ NpcRemoval, ShipRemoval
+			= Upload flames, one per NPC	
+				+ First: store burning NPCs in vector (Npcs::mBurningNpcs, per-ship) at combustion state update
+					+ Remove @ NpcRemoval, ShipRemoval
 				- Second: move CalculateIdealFlameVector, CalculateFlameWindRotationAngle(WindField, ...) to Formulae and use at state update
 					- WindField rearc:
 						- WindField: gets all members currently in Ship::QueuedInteractionArgs
@@ -529,16 +529,19 @@ Arch
 							- At Update(), in same logical block as applying queued interactions:
 								- Apply forces (code of Ship::ApplyRadialWindFrom(interaction args)) from mParentWorld::GetWindField()
 							- Nuke mWindField and take it from mParentWorld::GetWindField()
-				- Visit mBurningNpcs vector here and:
-					- Position:
-						- Human: head
+				= Visit mBurningNpcs vector here and:
+					= Position:
+						+ Human: head
 						- Else: center of all particles
-					- Vector and WindRotation: from CombustionState
-				- Size: depends on Npc's fireness
-		- @Ship::RenderUpload:
-			- Include own Npcs' flames via World::GetNpcs() const::GetFlameCount(ShipId)
+					+ Vector and WindRotation: from CombustionState
+					+ Size: depends on Npc's fireness
+		+ @Ship::RenderUpload:
+			+ Include own Npcs' flames via World::GetNpcs() -> const::GetFlameCount(ShipId)
+			+ Then call World::GetNpcs() -> UploadFlames(ShipId, ShipRenderContext)
+		- Use CombustionAdjustment
 		- Test:
 			- Burning NPC removal
+			- Depth order
 			- Fire panic tapering down speed
 	- Wind: 
 		- Npc preliminary forces: only free NPC particles 
@@ -546,11 +549,12 @@ Arch
 		- WindField work (*) spec'd for flames 
 		- Npcs::Update: apply mParentWorld::WindField to all particles
 			- 
-	- Ship-specific explosions: only of that ship, or free regime
-	- Swirl, etc.: all ships, all regimes
+	- Ship-specific explosions: only NPCs of that ship, or free regime of any ship
+		- mParentWorld.GetNpcs().ApplyXXXForce(shipId, ...)
+	- Swirl, etc.: NPCs of all ships, all regimes
 		- Controlled by flag, "~force tools on NPCs"
-		- This one may be done with ParticlePhysics:
-			- Rename Npcs' ExternalForces as StaticForces?
+			- SettingsDialog
+		- mParentWorld.GetNpcs().ApplyXXXForce(...)
 	+ Move/Rotate tool:
 		+ World: after calling into Ship(), call Npcs.Move/etc/Npcs(shipId, [componentId], ...)
 			+ Test in BaryLab first
