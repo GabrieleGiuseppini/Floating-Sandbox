@@ -1579,6 +1579,12 @@ void Npcs::Publish() const
 					break;
 				}
 
+				case StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::Constrained_Electrified:
+				{
+					mGameEventHandler->OnHumanNpcBehaviorChanged("Constrained_Electrified");
+					break;
+				}
+
 				case StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::Free_Aerial:
 				{
 					mGameEventHandler->OnHumanNpcBehaviorChanged("Free_Aerial");

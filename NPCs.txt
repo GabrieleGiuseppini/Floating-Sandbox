@@ -400,18 +400,6 @@ Arch
 		+ Force should not depend on particle's mass - after all a heavy particle shouldn't be affected
 			+ Change mass into constant, i.e. current human NPC mass
 
-= Summer plan:
-	+ Remove old mesh waterness calculation and replace with using buffer iff constrained (incl. velocity)
-	+ Test waterness (incl. velocity)
-	+ Ship: render NPCs after generic textures and before explostions
-		+ And correct Z layer
-
-	= HasBomb: move to site (switch cases) calling helper func - but low-freq step check done @ site
-		+ Panic/animation: arms down earlier @ decay
-		- Sharper panic drawdawn
-
-	+ WaterVelocity: test again multiplying individual point's velocity by w, and NOT total waterness later instead
-
 - Physical Interactions:
 
 	- Prelim: blueprint for particle physics:
@@ -522,6 +510,7 @@ Arch
 			- Upload flames, one per NPC	
 				- First: store burning NPCs in vector (Npcs::mBurningNpcs) at combustion state update
 					- Remove @ NpcRemoval, ShipRemoval
+					- Replaces Flame count
 				- Second: move CalculateIdealFlameVector, CalculateFlameWindRotationAngle(WindField, ...) to Formulae and use at state update
 					- WindField rearc:
 						- WindField: gets all members currently in Ship::QueuedInteractionArgs
@@ -549,6 +538,9 @@ Arch
 				- Size: depends on Npc's fireness
 		- @Ship::RenderUpload:
 			- Include own Npcs' flames via World::GetNpcs() const::GetFlameCount(ShipId)
+		- Test:
+			- Burning NPC removal
+			- Fire panic tapering down speed
 	- Wind: 
 		- Npc preliminary forces: only free NPC particles 
 	- Wind tool: 
@@ -570,20 +562,20 @@ Arch
 					+ And if ConnectedComponentId is specified, only particles in triangle with first endpoint on that ConnectedComponentId
 				+ Look at Ship::Move/etc for physics (e.g. velocity, force zeroing)
 			+ At the end calls MaintainInWorldBounds()
-	- Electric spark:
+	+ Electric spark:
 		+ Ship:
 			+ HandleElectricSpark(): set Points.IsElectrified
 			+ UpdateEnd(): reset it
-		- Constrained_Electrified:
-			- Into:
-				- Eq, Walk: as soon as electrified detected, via helper, with low-freq step check 
-					- Checked once in a while
-					- Become frontal|back (random)
-			- Out: 
-				- Free->Free
-				- When not electrified for a while (own progress) -> Constrained_KO
-		- Animation:
-			- See notebook
+		+ Constrained_Electrified:
+			+ Into:
+				+ Eq, Walk: as soon as electrified detected, via helper, with low-freq step check 
+					+ Checked once in a while
+					+ Become frontal|back (random)
+			+ Out: 
+				+ Free->Free
+				+ When not electrified for a while (own progress) -> Constrained_KO
+		+ Animation:
+			+ See notebook
 
 
 	+ Mass/forces: these two may be done together:
@@ -650,9 +642,9 @@ Arch
 		- Damping
 		- Buoyancy
 	- Panic:
-		= Close to bomb
-			= @ Eq, Walk:
-				= HasBomb => DirFlip (iff BombProximityPanic < 0.7) and set Npc::BombProximityPanic to 1.0	
+		+ Close to bomb
+			+ @ Eq, Walk:
+				+ HasBomb => DirFlip (iff BombProximityPanic < 0.7) and set Npc::BombProximityPanic to 1.0	
 		- Close to fire
 			- Ditto
 		- Close to water entering (leaking point w/inflow)

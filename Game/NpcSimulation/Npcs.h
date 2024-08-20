@@ -247,6 +247,7 @@ private:
 					Constrained_Rising, // Tries to stand up (appliying torque)
 					Constrained_Equilibrium, // Stands up; continues to adjust alignment with torque
 					Constrained_Walking, // Walks; continues to adjust alignment with torque
+					Constrained_Electrified, // Doing electrification dance, assuming being vertical
 
 					Free_Aerial, // Does nothing
 					Free_InWater, // Does nothing, but waits to swim
@@ -353,6 +354,16 @@ private:
 							TargetFlipDecision = 0.0f;
 						}
 					} Constrained_Walking;
+
+					struct Constrained_ElectrifiedStateType
+					{
+						float ProgressToLeaving;
+
+						void Reset()
+						{
+							ProgressToLeaving = 0.0f;
+						}
+					} Constrained_Electrified;
 
 					struct Free_AerialStateType
 					{
@@ -513,6 +524,12 @@ private:
 						case BehaviorType::Constrained_Walking:
 						{
 							CurrentBehaviorState.Constrained_Walking.Reset();
+							break;
+						}
+
+						case BehaviorType::Constrained_Electrified:
+						{
+							CurrentBehaviorState.Constrained_Electrified.Reset();
 							break;
 						}
 
@@ -1512,7 +1529,7 @@ private:
 		return std::min(
 			humanState.CurrentBehaviorState.Constrained_Walking.CurrentWalkMagnitude // Note that this is the only one that might be zero
 			* mCurrentHumanNpcWalkingSpeedAdjustment
-			* (1.0f + humanState.ResultantPanicLevel * 3.0f),
+			* (1.0f + SmoothStep(0.0f, 1.0f, humanState.ResultantPanicLevel) * 3.0f),
 			GameParameters::MaxHumanNpcTotalWalkingSpeedAdjustment); // Absolute cap
 	}
 

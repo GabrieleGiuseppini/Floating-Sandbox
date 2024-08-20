@@ -85,7 +85,7 @@ void Npcs::UpdateHuman(
 	// Decay
 
 	humanState.OnFirePanicLevel -= humanState.OnFirePanicLevel * 0.01f;
-	humanState.BombProximityPanicLevel -= humanState.BombProximityPanicLevel * 0.005f;
+	humanState.BombProximityPanicLevel -= humanState.BombProximityPanicLevel * 0.0025f;
 
 	//
 	// Process human
@@ -608,6 +608,55 @@ void Npcs::UpdateHuman(
 				break;
 			}
 
+			// Check progress to electrified, bomb
+
+			if (mCurrentSimulationSequenceNumber.IsStepOf(npc.Id % LowFrequencyUpdatePeriod, LowFrequencyUpdatePeriod))
+			{
+				if (humanState.CurrentBehavior == HumanNpcStateType::BehaviorType::Constrained_Equilibrium || humanState.CurrentBehavior == HumanNpcStateType::BehaviorType::Constrained_Walking)
+				{
+					// Check electrification
+
+					if (IsElectrified(npc, homeShip))
+					{
+						// Transition
+
+						humanState.TransitionToState(HumanNpcStateType::BehaviorType::Constrained_Electrified, currentSimulationTime);
+
+						// Face: rnd/0.0
+						humanState.CurrentFaceOrientation = GameRandomEngine::GetInstance().GenerateUniformBoolean(0.5f) ? +1.0f : -1.0f;
+						humanState.CurrentFaceDirectionX = 0.0f;
+
+						// Keep torque
+						humanState.EquilibriumTorque = 1.0f;
+
+#ifdef BARYLAB_PROBING
+						if (npc.Id == mCurrentlySelectedNpc)
+						{
+							mGameEventHandler->OnHumanNpcBehaviorChanged("Constrained_Electrified");
+						}
+#endif
+
+						break;
+					}
+
+					// Check bomb panic
+
+					if (HasBomb(npc, homeShip))
+					{
+						if (humanState.BombProximityPanicLevel < 0.6)
+						{
+							// Time to flip
+							humanState.CurrentFaceDirectionX *= -1.0f;
+						}
+
+						// Panic
+						humanState.BombProximityPanicLevel = 1.0f;
+
+						// Continue
+					}
+				}
+			}
+
 			// Check progress to walking
 
 			bool const areFeetOnFloor = primaryParticleState.ConstrainedState.has_value() && primaryParticleState.ConstrainedState->CurrentVirtualFloor.has_value();
@@ -646,26 +695,6 @@ void Npcs::UpdateHuman(
 #endif
 
 						break;
-					}
-				}
-			}
-
-			if (mCurrentSimulationSequenceNumber.IsStepOf(npc.Id % LowFrequencyUpdatePeriod, LowFrequencyUpdatePeriod))
-			{
-				// Check bomb panic
-
-				if (humanState.CurrentBehavior == HumanNpcStateType::BehaviorType::Constrained_Equilibrium || humanState.CurrentBehavior == HumanNpcStateType::BehaviorType::Constrained_Walking)
-				{
-					if (HasBomb(npc, homeShip))
-					{
-						if (humanState.BombProximityPanicLevel < 0.6)
-						{
-							// Time to flip
-							humanState.CurrentFaceDirectionX *= -1.0f;
-						}
-
-						// Panic
-						humanState.BombProximityPanicLevel = 1.0f;
 					}
 				}
 			}
@@ -881,6 +910,61 @@ void Npcs::UpdateHuman(
 					publishStateQuantity = std::make_tuple("EquilibriumTermination", std::to_string(humanState.CurrentEquilibriumSoftTerminationDecision));
 #endif
 			}
+
+			break;
+		}
+
+		case HumanNpcStateType::BehaviorType::Constrained_Electrified:
+		{
+			if (isFree)
+			{
+				// Transition
+				TransitionHumanBehaviorToFree(npc, currentSimulationTime);
+
+				break;
+			}
+
+			// Advance towards leaving
+
+			float toLeavingIncrement;
+			if (!IsElectrified(npc, homeShip))
+			{
+				toLeavingIncrement = 1.0f;
+			}
+			else
+			{
+				toLeavingIncrement = -1.0f;
+			}
+
+			humanState.CurrentBehaviorState.Constrained_Electrified.ProgressToLeaving = std::max(
+				humanState.CurrentBehaviorState.Constrained_Electrified.ProgressToLeaving + toLeavingIncrement,
+				0.0f);
+
+			float constexpr ToLeavingTarget = 8.0f;
+
+#ifdef BARYLAB_PROBING
+			publishStateQuantity = std::make_tuple("ProgressToLeaving", std::to_string(humanState.CurrentBehaviorState.Constrained_Electrified.ProgressToLeaving / ToLeavingTarget));
+#endif
+
+			if (humanState.CurrentBehaviorState.Constrained_Electrified.ProgressToLeaving >= ToLeavingTarget)
+			{
+				// Transition
+
+				humanState.TransitionToState(HumanNpcStateType::BehaviorType::Constrained_KnockedOut, currentSimulationTime);
+
+#ifdef BARYLAB_PROBING
+				if (npc.Id == mCurrentlySelectedNpc)
+				{
+					mGameEventHandler->OnHumanNpcBehaviorChanged("Constrained_KnockedOut");
+				}
+#endif
+
+				break;
+			}
+
+			// Maintain state
+
+			humanState.EquilibriumTorque = 1.0f;
 
 			break;
 		}

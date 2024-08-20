@@ -3363,7 +3363,6 @@ void Npcs::UpdateNpcAnimation(
 
                 if (humanNpcState.CurrentBehaviorState.Constrained_Rising.VirtualEdgeRisingAgainst.TriangleElementIndex != NoneElementIndex)
                 {
-
                     vec2f const edgeVector = homeShip.GetTriangles().GetSubSpringVector(
                         humanNpcState.CurrentBehaviorState.Constrained_Rising.VirtualEdgeRisingAgainst.TriangleElementIndex,
                         humanNpcState.CurrentBehaviorState.Constrained_Rising.VirtualEdgeRisingAgainst.EdgeOrdinal,
@@ -3547,7 +3546,7 @@ void Npcs::UpdateNpcAnimation(
                 targetAngles.LeftLeg = -legAngle;
 
                 // Arms depend on panic
-                if (humanNpcState.ResultantPanicLevel < 0.1f)
+                if (humanNpcState.ResultantPanicLevel < 0.32f)
                 {
                     // No panic: arms aperture depends on speed
 
@@ -3604,6 +3603,34 @@ void Npcs::UpdateNpcAnimation(
                     targetAngles.RightLeg *= angleLimitFactor;
                     targetAngles.LeftLeg *= angleLimitFactor;
                 }
+
+                break;
+            }
+
+            case HumanNpcStateType::BehaviorType::Constrained_Electrified:
+            {
+                // Random dance with silly fast movements
+
+                float const elapsed = currentSimulationTime - humanNpcState.CurrentStateTransitionSimulationTimestamp;
+                int absolutePhase = static_cast<int>((elapsed + (2.0f + npc.RandomNormalizedUniformSeed) * 3.0f) / 0.09f);
+
+                // Arms
+
+                static float rArmAngles[5] = { Pi<float> / 2.0f, 3.0f * Pi<float> / 4.0f, Pi<float> / 5.0f, Pi<float> - 0.01f, Pi<float> / 4.0f };
+                static float lArmAngles[5] = { Pi<float> - 0.01f, Pi<float> / 4.0f, Pi<float> / 2.0f, Pi<float> / 5.0f, 3.0f * Pi<float> / 4.0f };
+
+                targetAngles.RightArm = rArmAngles[absolutePhase % 5];
+                targetAngles.LeftArm = -lArmAngles[absolutePhase % 5];
+
+                // Legs
+
+                static float rLegAngles[4] = { Pi<float> / 2.0f, 0.0f, Pi<float> / 4.0f, 0.0f };
+                static float lLegAngles[4] = { 0.0f, Pi<float> / 4.0f, 0.0f, Pi<float> / 2.0f };
+
+                targetAngles.RightLeg = rLegAngles[absolutePhase % 4];
+                targetAngles.LeftLeg = -lLegAngles[absolutePhase % 4];
+
+                convergenceRate = 0.5f;
 
                 break;
             }
@@ -4040,6 +4067,7 @@ void Npcs::UpdateNpcAnimation(
 
             case HumanNpcStateType::BehaviorType::BeingPlaced:
             case HumanNpcStateType::BehaviorType::Constrained_Equilibrium:
+            case HumanNpcStateType::BehaviorType::Constrained_Electrified:
             case HumanNpcStateType::BehaviorType::Constrained_Falling:
             case HumanNpcStateType::BehaviorType::Constrained_KnockedOut:
             case HumanNpcStateType::BehaviorType::Constrained_Aerial:
