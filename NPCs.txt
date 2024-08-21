@@ -398,7 +398,7 @@ Arch
 
 	+ Make NpcDamping subject to other adjustment
 		+ Npcs class reacts to changes and calculates own mDampingCoefficient == (1.0f - gameParameters.NpcDamping)
-	= Land
+	+ Land
 		+ Check at end of step
 		+ If hit:
 			+ Move back and bounce perpendicular velocity
@@ -406,13 +406,13 @@ Arch
 			+ Become free! So we avoid bouncing back and forth
 				+ Make sure we call OnMayBeRegimeChanged
 			+ Only when not BeingPlaced
-		- Behavior: (we don't like it frozen, would be nice if it relaxed down)
-			- @ Free_Aerial: if still for long, go to Free_KnockedOut
-				- Out from Free_KnockedOut:
-					- If !Free: Constrained_KnockedOut
-					- If moving again: Free_Aerial
-				- Free_KnockedOut animation: relax limbs (see if Constrained_KnockedOut does the same)
-		- Tests:
+		+ Behavior: (we don't like it frozen, would be nice if it relaxed down)
+			+ @ Free_Aerial: if still for long, go to Free_KnockedOut
+				+ Out from Free_KnockedOut:
+					+ If !Free: Constrained_KnockedOut
+					+ If moving again: Free_Aerial
+				+ Free_KnockedOut animation: relax limbs (see if Constrained_KnockedOut does the same)
+		+ Tests:
 			+ Place under land
 			+ With ship under land
 	+ World border

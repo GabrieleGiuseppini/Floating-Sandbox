@@ -1600,6 +1600,12 @@ void Npcs::Publish() const
 					break;
 				}
 
+				case StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::Constrained_Electrified:
+				{
+					mGameEventHandler->OnHumanNpcBehaviorChanged("Constrained_Electrified");
+					break;
+				}
+
 				case StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::Constrained_Equilibrium:
 				{
 					mGameEventHandler->OnHumanNpcBehaviorChanged("Constrained_Equilibrium");
@@ -1636,12 +1642,6 @@ void Npcs::Publish() const
 					break;
 				}
 
-				case StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::Constrained_Electrified:
-				{
-					mGameEventHandler->OnHumanNpcBehaviorChanged("Constrained_Electrified");
-					break;
-				}
-
 				case StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::Free_Aerial:
 				{
 					mGameEventHandler->OnHumanNpcBehaviorChanged("Free_Aerial");
@@ -1651,6 +1651,12 @@ void Npcs::Publish() const
 				case StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::Free_InWater:
 				{
 					mGameEventHandler->OnHumanNpcBehaviorChanged("Free_InWater");
+					break;
+				}
+
+				case StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::Free_KnockedOut:
+				{
+					mGameEventHandler->OnHumanNpcBehaviorChanged("Free_KnockedOut");
 					break;
 				}
 
@@ -2871,6 +2877,7 @@ void Npcs::UpdateNpcAnimation(
 			}
 
 			case HumanNpcStateType::BehaviorType::Constrained_KnockedOut:
+			case HumanNpcStateType::BehaviorType::Free_KnockedOut:
 			{
 				// Arms: +/- PI or 0, depending on where they are now
 
@@ -3270,6 +3277,7 @@ void Npcs::UpdateNpcAnimation(
 			case HumanNpcStateType::BehaviorType::Constrained_KnockedOut:
 			case HumanNpcStateType::BehaviorType::Constrained_Aerial:
 			case HumanNpcStateType::BehaviorType::Free_Aerial:
+			case HumanNpcStateType::BehaviorType::Free_KnockedOut:
 			case HumanNpcStateType::BehaviorType::Free_InWater:
 			case HumanNpcStateType::BehaviorType::Free_Swimming_Style1:
 			{

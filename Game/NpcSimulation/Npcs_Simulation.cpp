@@ -3407,16 +3407,11 @@ void Npcs::MaintainOverLand(
             //
 
             // Move point back along its velocity direction (i.e. towards where it was in the previous step,
-            // which is guaranteed to be more towards the outside), but not too much - or else springs
-            // might start oscillating between the point burrowing down and then bouncing up - TODOHERE
-            vec2f deltaPosition = particleVelocity * gameParameters.SimulationStepTimeDuration<float>;
-
-            // TODOTEST
-            //float const deltaPositionLength = deltaPosition.length();
-            //deltaPosition = deltaPosition.normalise_approx(deltaPositionLength) * std::min(deltaPositionLength, 0.01f); // Magic number, empirical
+            // which is guaranteed to be more towards the outside)
+            vec2f deltaPos = particleVelocity * gameParameters.SimulationStepTimeDuration<float>;
             mParticles.SetPosition(
                 p,
-                pos - deltaPosition);
+                pos - deltaPos);
 
             // Set velocity to resultant collision velocity
             mParticles.SetVelocity(

@@ -1023,6 +1023,113 @@ void Npcs::UpdateHuman(
 				break;
 			}
 
+			// Progress to knocked out (when still)
+
+			float knockedOutTarget;
+
+			auto const velocityMagnitude =
+				(primaryParticleState.GetApplicableVelocity(mParticles).length() + secondaryParticleState.GetApplicableVelocity(mParticles).length())
+				/ 2.0f;
+
+			if (velocityMagnitude < 0.1f)
+			{
+				knockedOutTarget = 1.0f;
+			}
+			else
+			{
+				knockedOutTarget = 0.0f;
+			}
+
+			float constexpr ToKnockedOutConvergenceRate = 0.2f;
+
+			humanState.CurrentBehaviorState.Free_Aerial.ProgressToKnockedOut +=
+				(knockedOutTarget - humanState.CurrentBehaviorState.Free_Aerial.ProgressToKnockedOut)
+				* ToKnockedOutConvergenceRate;
+
+#ifdef BARYLAB_PROBING
+			publishStateQuantity = std::make_tuple("ProgressToKnockedOut", std::to_string(humanState.CurrentBehaviorState.Free_Aerial.ProgressToKnockedOut));
+#endif
+
+			if (IsAtTarget(humanState.CurrentBehaviorState.Free_Aerial.ProgressToKnockedOut, 1.0f))
+			{
+				// Transition
+
+				humanState.TransitionToState(HumanNpcStateType::BehaviorType::Free_KnockedOut, currentSimulationTime);
+
+#ifdef BARYLAB_PROBING
+				if (npc.Id == mCurrentlySelectedNpc)
+				{
+					mGameEventHandler->OnHumanNpcBehaviorChanged("Free_KnockedOut");
+				}
+#endif
+
+				break;
+			}
+
+			break;
+		}
+
+		case HumanNpcStateType::BehaviorType::Free_KnockedOut:
+		{
+			if (!isFree)
+			{
+				// Transition
+
+				humanState.TransitionToState(HumanNpcStateType::BehaviorType::Constrained_KnockedOut, currentSimulationTime);
+
+#ifdef BARYLAB_PROBING
+				if (npc.Id == mCurrentlySelectedNpc)
+				{
+					mGameEventHandler->OnHumanNpcBehaviorChanged("Constrained_KnockedOut");
+				}
+#endif
+
+				break;
+			}
+
+			// Progress to aerial (when moving)
+
+			float aerialTarget;
+
+			auto const velocityMagnitude =
+				(primaryParticleState.GetApplicableVelocity(mParticles).length() + secondaryParticleState.GetApplicableVelocity(mParticles).length())
+				/ 2.0f;
+
+			if (velocityMagnitude > 0.5f)
+			{
+				aerialTarget = 1.0f;
+			}
+			else
+			{
+				aerialTarget = 0.0f;
+			}
+
+			float constexpr ToAerialConvergenceRate = 0.2f;
+
+			humanState.CurrentBehaviorState.Free_KnockedOut.ProgressToAerial +=
+				(aerialTarget - humanState.CurrentBehaviorState.Free_KnockedOut.ProgressToAerial)
+				* ToAerialConvergenceRate;
+
+#ifdef BARYLAB_PROBING
+			publishStateQuantity = std::make_tuple("ProgressToAerial", std::to_string(humanState.CurrentBehaviorState.Free_KnockedOut.ProgressToAerial));
+#endif
+
+			if (IsAtTarget(humanState.CurrentBehaviorState.Free_KnockedOut.ProgressToAerial, 1.0f))
+			{
+				// Transition
+
+				humanState.TransitionToState(HumanNpcStateType::BehaviorType::Free_Aerial, currentSimulationTime);
+
+#ifdef BARYLAB_PROBING
+				if (npc.Id == mCurrentlySelectedNpc)
+				{
+					mGameEventHandler->OnHumanNpcBehaviorChanged("Free_Aerial");
+				}
+#endif
+
+				break;
+			}
+
 			break;
 		}
 

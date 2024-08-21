@@ -249,7 +249,8 @@ private:
 					Constrained_Walking, // Walks; continues to adjust alignment with torque
 					Constrained_Electrified, // Doing electrification dance, assuming being vertical
 
-					Free_Aerial, // Does nothing
+					Free_Aerial, // Does nothing, stays here as long as it's moving
+					Free_KnockedOut, // Does nothing, stays here as long as it's still
 					Free_InWater, // Does nothing, but waits to swim
 					Free_Swimming_Style1, // Swims
 					Free_Swimming_Style2, // Swims
@@ -367,10 +368,23 @@ private:
 
 					struct Free_AerialStateType
 					{
+						float ProgressToKnockedOut;
+
 						void Reset()
 						{
+							ProgressToKnockedOut = 0.0f;
 						}
 					} Free_Aerial;
+
+					struct Free_KnockedOutStateType
+					{
+						float ProgressToAerial;
+
+						void Reset()
+						{
+							ProgressToAerial = 0.0f;
+						}
+					} Free_KnockedOut;
 
 					struct Free_InWaterType
 					{
@@ -490,6 +504,12 @@ private:
 							break;
 						}
 
+						case BehaviorType::Constrained_Electrified:
+						{
+							CurrentBehaviorState.Constrained_Electrified.Reset();
+							break;
+						}
+
 						case BehaviorType::Constrained_Equilibrium:
 						{
 							CurrentBehaviorState.Constrained_Equilibrium.Reset();
@@ -527,12 +547,6 @@ private:
 							break;
 						}
 
-						case BehaviorType::Constrained_Electrified:
-						{
-							CurrentBehaviorState.Constrained_Electrified.Reset();
-							break;
-						}
-
 						case BehaviorType::Free_Aerial:
 						{
 							CurrentBehaviorState.Free_Aerial.Reset();
@@ -542,6 +556,12 @@ private:
 						case BehaviorType::Free_InWater:
 						{
 							CurrentBehaviorState.Free_InWater.Reset();
+							break;
+						}
+
+						case BehaviorType::Free_KnockedOut:
+						{
+							CurrentBehaviorState.Free_KnockedOut.Reset();
 							break;
 						}
 
