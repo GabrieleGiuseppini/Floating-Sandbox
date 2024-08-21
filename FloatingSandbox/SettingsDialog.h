@@ -73,7 +73,7 @@ private:
     SliderControl<float> * mMeltingTemperatureAdjustmentSlider;
     SliderControl<float> * mCombustionSpeedAdjustmentSlider;
     SliderControl<float> * mCombustionHeatAdjustmentSlider;
-    SliderControl<unsigned int> * mMaxBurningParticlesSlider;
+    SliderControl<unsigned int> * mMaxBurningParticlesPerShipSlider;
     BitmapToggleButton * mUltraViolentToggleButton;
 
     // Ocean and Water

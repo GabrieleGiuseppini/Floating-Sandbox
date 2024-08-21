@@ -532,23 +532,25 @@ Arch
 				= Visit mBurningNpcs vector here and:
 					= Position:
 						+ Human: head
-						- Else: center of all particles
+						= Else: center of all particles
 					+ Vector and WindRotation: from CombustionState
 					+ Size: depends on Npc's fireness
 		+ @Ship::RenderUpload:
 			+ Include own Npcs' flames via World::GetNpcs() -> const::GetFlameCount(ShipId)
 			+ Then call World::GetNpcs() -> UploadFlames(ShipId, ShipRenderContext)
-		- Use CombustionAdjustment
+		+ ShipRenderContext: new UploadFlameNpc (v Ship) w/ different size and adj
+		+ Combustion adjustment: must smother if NPC particle is free and under real waterness
+		+ Use CombustionAdjustment
+		- Rendering: NPC flames need to go to layer above gadgets
 		- Test:
 			- Burning NPC removal
 			- Depth order
 			- Fire panic tapering down speed
 	- Wind: 
-		- Npc preliminary forces: only free NPC particles 
+		- Npc preliminary forces: apply to free NPC particles only
 	- Wind tool: 
 		- WindField work (*) spec'd for flames 
-		- Npcs::Update: apply mParentWorld::WindField to all particles
-			- 
+		- Npc preliminary forces: apply mParentWorld::WindField to all particles
 	- Ship-specific explosions: only NPCs of that ship, or free regime of any ship
 		- mParentWorld.GetNpcs().ApplyXXXForce(shipId, ...)
 	- Swirl, etc.: NPCs of all ships, all regimes

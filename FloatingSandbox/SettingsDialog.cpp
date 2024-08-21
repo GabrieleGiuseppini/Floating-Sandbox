@@ -862,27 +862,27 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(
                     CellBorderInner);
             }
 
-            // Max Particles
+            // Max Burning Particles Per Ship
             {
-                mMaxBurningParticlesSlider = new SliderControl<unsigned int>(
+                mMaxBurningParticlesPerShipSlider = new SliderControl<unsigned int>(
                     combustionBoxSizer->GetStaticBox(),
                     SliderControl<unsigned int>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Max Burning Particles"),
-                    _("The maximum number of particles that may burn at any given moment in time; together with the combustion heat adjustment, determines the speed with which fire spreads to adjacent particles. Warning: higher values require more computing resources, with the risk of slowing the simulation down!"),
+                    _("The maximum number of particles that may burn at any given moment in time on a ship; together with the combustion heat adjustment, determines the speed with which fire spreads to adjacent particles. Warning: higher values require more computing resources, with the risk of slowing the simulation down!"),
                     [this](unsigned int value)
                     {
-                        this->mLiveSettings.SetValue(GameSettings::MaxBurningParticles, value);
+                        this->mLiveSettings.SetValue(GameSettings::MaxBurningParticlesPerShip, value);
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<IntegralLinearSliderCore<unsigned int>>(
-                        mGameControllerSettingsOptions.GetMinMaxBurningParticles(),
-                        mGameControllerSettingsOptions.GetMaxMaxBurningParticles()),
+                        mGameControllerSettingsOptions.GetMinMaxBurningParticlesPerShip(),
+                        mGameControllerSettingsOptions.GetMaxMaxBurningParticlesPerShip()),
                     mWarningIcon.get());
 
                 combustionSizer->Add(
-                    mMaxBurningParticlesSlider,
+                    mMaxBurningParticlesPerShipSlider,
                     wxGBPosition(0, 4),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -5672,7 +5672,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mMeltingTemperatureAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::MeltingTemperatureAdjustment));
     mCombustionSpeedAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::CombustionSpeedAdjustment));
     mCombustionHeatAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::CombustionHeatAdjustment));
-    mMaxBurningParticlesSlider->SetValue(settings.GetValue<unsigned int>(GameSettings::MaxBurningParticles));
+    mMaxBurningParticlesPerShipSlider->SetValue(settings.GetValue<unsigned int>(GameSettings::MaxBurningParticlesPerShip));
     mUltraViolentToggleButton->SetValue(settings.GetValue<bool>(GameSettings::UltraViolentMode));
 
     //

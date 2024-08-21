@@ -350,9 +350,9 @@ struct GameParameters
     static float constexpr SmotheringDecayLowWatermark = 0.0005f;
     static float constexpr SmotheringDecayHighWatermark = 0.05f;
 
-    unsigned int MaxBurningParticles;
-    static unsigned int constexpr MaxMaxBurningParticles = 1000;
-    static unsigned int constexpr MinMaxBurningParticles = 10;
+    unsigned int MaxBurningParticlesPerShip;
+    static unsigned int constexpr MaxMaxBurningParticlesPerShip = 1000;
+    static unsigned int constexpr MinMaxBurningParticlesPerShip = 10;
 
     float ThermalConductivityAdjustment;
     static float constexpr MinThermalConductivityAdjustment = 0.1f;

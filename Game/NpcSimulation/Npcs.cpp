@@ -209,17 +209,21 @@ void Npcs::UploadFlames(
 		else
 		{
 			// Center
-			//TODO
+			position = vec2f::zero();
+			for (auto const & p : npc.ParticleMesh.Particles)
+			{
+				position += mParticles.GetPosition(p.ParticleIndex);
+			}
+			assert(npc.ParticleMesh.Particles.size() > 0);
+			position /= static_cast<float>(npc.ParticleMesh.Particles.size());
 		}
 
-		LogMessage(npc.CombustionProgress);
-
-		shipRenderContext.UploadForegroundFlame(
+		shipRenderContext.UploadNpcFlame(
 			npc.CurrentPlaneId,
 			position,
 			npc.CombustionState->FlameVector,
 			npc.CombustionState->FlameWindRotationAngle,
-			npc.CombustionProgress * 0.2f, // scale
+			npc.CombustionProgress, // scale
 			(npc.RandomNormalizedUniformSeed + 1.0f) / 2.0f);
 	}
 }

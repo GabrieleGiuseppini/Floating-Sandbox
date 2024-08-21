@@ -154,8 +154,10 @@ ShipRenderContext::ShipRenderContext(
     , mGenericLinearTextureAtlasMetadata(globalRenderContext.GetGenericLinearTextureAtlasMetadata())
     , mGenericMipMappedTextureAtlasMetadata(globalRenderContext.GetGenericMipMappedTextureAtlasMetadata())
     // Non-render parameters - all of these will be calculated later
-    , mHalfFlameQuadWidth(0.0f)
-    , mFlameQuadHeight(0.0f)
+    , mShipFlameHalfQuadWidth(0.0f)
+    , mShipFlameQuadHeight(0.0f)
+    , mNpcFlameHalfQuadWidth(BasisNpcFlameHalfQuadWidth) // No adjustment at the time of writing
+    , mNpcFlameQuadHeight(BasisNpcFlameQuadHeight) // No adjustment at the time of writing
     , mVectorFieldLengthMultiplier(0.0f)
 {
     GLuint tmpGLuint;

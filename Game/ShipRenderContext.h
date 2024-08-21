@@ -39,8 +39,10 @@ class ShipRenderContext
 private:
 
     // Base dimensions of flame quads
-    static float constexpr BasisHalfFlameQuadWidth = 10.5f;
-    static float constexpr BasisFlameQuadHeight = 7.5f;
+    static float constexpr BasisShipFlameHalfQuadWidth = 10.5f;
+    static float constexpr BasisShipFlameQuadHeight = 7.5f;
+    static float constexpr BasisNpcFlameHalfQuadWidth = 10.5f * 0.15f;
+    static float constexpr BasisNpcFlameQuadHeight = 7.5f * 0.15f;
 
 public:
 
@@ -69,8 +71,8 @@ public:
     void SetShipFlameSizeAdjustment(float shipFlameSizeAdjustment)
     {
         // Recalculate quad dimensions
-        mHalfFlameQuadWidth = BasisHalfFlameQuadWidth * shipFlameSizeAdjustment;
-        mFlameQuadHeight = BasisFlameQuadHeight * shipFlameSizeAdjustment;
+        mShipFlameHalfQuadWidth = BasisShipFlameHalfQuadWidth * shipFlameSizeAdjustment;
+        mShipFlameQuadHeight = BasisShipFlameQuadHeight * shipFlameSizeAdjustment;
     }
 
     void SetVectorFieldLengthMultiplier(float vectorFieldLengthMultiplier)
@@ -423,7 +425,7 @@ public:
      *  - upload happens in depth order (for depth sorting)
      *  - all background flames are uploaded before all foreground flames
      */
-    inline void UploadBackgroundFlame(
+    inline void UploadShipBackgroundFlame(
         PlaneId planeId,
         vec2f const & baseCenterPosition,
         vec2f const & flameVector,
@@ -438,6 +440,8 @@ public:
             baseCenterPosition,
             flameVector,
             flameWindRotationAngle,
+            mShipFlameHalfQuadWidth,
+            mShipFlameQuadHeight,
             scale,
             flamePersonalitySeed);
 
@@ -449,7 +453,7 @@ public:
      *  - upload happens in depth order (for depth sorting)
      *  - all background flames are uploaded before all foreground flames
      */
-    inline void UploadForegroundFlame(
+    inline void UploadShipForegroundFlame(
         PlaneId planeId,
         vec2f const & baseCenterPosition,
         vec2f const & flameVector,
@@ -462,6 +466,34 @@ public:
             baseCenterPosition,
             flameVector,
             flameWindRotationAngle,
+            mShipFlameHalfQuadWidth,
+            mShipFlameQuadHeight,
+            scale,
+            flamePersonalitySeed);
+
+        ++mFlameForegroundCount;
+    }
+
+    /*
+     * Assumptions:
+     *  - upload happens in depth order (for depth sorting)
+     *  - all background flames are uploaded before NPC flames
+     */
+    inline void UploadNpcFlame(
+        PlaneId planeId,
+        vec2f const & baseCenterPosition,
+        vec2f const & flameVector,
+        float flameWindRotationAngle,
+        float scale,
+        float flamePersonalitySeed)
+    {
+        StoreFlameQuad(
+            planeId,
+            baseCenterPosition,
+            flameVector,
+            flameWindRotationAngle,
+            mNpcFlameHalfQuadWidth,
+            mNpcFlameQuadHeight,
             scale,
             flamePersonalitySeed);
 
@@ -1167,6 +1199,8 @@ private:
         vec2f const & baseCenterPosition,
         vec2f const & flameVector,
         float flameWindRotationAngle,
+        float flameHalfQuadWidth,
+        float flameQuadHeight,
         float scale,
         float flamePersonalitySeed)
     {
@@ -1196,13 +1230,13 @@ private:
         vec2f const Qnp = Qn.to_perpendicular(); // rotated by PI/2, i.e. oriented to the left (wrt rest vector)
 
         // P' = point P lowered by yOffset
-        vec2f const Pp = baseCenterPosition - Qn * YOffset * mFlameQuadHeight * scale;
+        vec2f const Pp = baseCenterPosition - Qn * YOffset * flameQuadHeight * scale;
         // P'' = opposite of P' on top
-        vec2f const Ppp = Pp + flameVector * mFlameQuadHeight * scale;
+        vec2f const Ppp = Pp + flameVector * flameQuadHeight * scale;
 
         // Qhw = vector delineating one half of the quad width, the one to the left;
         // its length is not affected by velocity, only its direction
-        vec2f const Qhw = Qnp * mHalfFlameQuadWidth * scale * 1.5f;
+        vec2f const Qhw = Qnp * flameHalfQuadWidth * scale * 1.5f;
 
         // A, B = left-bottom, right-bottom
         vec2f const A = Pp + Qhw;
@@ -1884,8 +1918,11 @@ private:
     // render parameters
     //
 
-    float mHalfFlameQuadWidth;
-    float mFlameQuadHeight;
+    float mShipFlameHalfQuadWidth;
+    float mShipFlameQuadHeight;
+    float mNpcFlameHalfQuadWidth;
+    float mNpcFlameQuadHeight;
+
     float mVectorFieldLengthMultiplier;
 };
 

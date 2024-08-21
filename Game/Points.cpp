@@ -936,8 +936,8 @@ void Points::UpdateCombustionLowFrequency(
         size_t const maxIgnitionPoints = std::min(
             std::min(
                 size_t(4) + GameRandomEngine::GetInstance().Choose(size_t(6)), // 4->9
-                mBurningPoints.size() < gameParameters.MaxBurningParticles
-                ? static_cast<size_t>(gameParameters.MaxBurningParticles) - mBurningPoints.size()
+                mBurningPoints.size() < gameParameters.MaxBurningParticlesPerShip
+                ? static_cast<size_t>(gameParameters.MaxBurningParticlesPerShip) - mBurningPoints.size()
                 : size_t(0)),
             mCombustionIgnitionCandidates.size());
 
@@ -1966,7 +1966,7 @@ void Points::UploadFlames(Render::ShipRenderContext & shipRenderContext) const
     {
         if (mFactoryConnectedTrianglesBuffer[pointIndex].ConnectedTriangles.empty())
         {
-            shipRenderContext.UploadBackgroundFlame(
+            shipRenderContext.UploadShipBackgroundFlame(
                 GetPlaneId(pointIndex),
                 GetPosition(pointIndex),
                 mCombustionStateBuffer[pointIndex].FlameVector,
@@ -1981,7 +1981,7 @@ void Points::UploadFlames(Render::ShipRenderContext & shipRenderContext) const
     {
         if (!mFactoryConnectedTrianglesBuffer[pointIndex].ConnectedTriangles.empty())
         {
-            shipRenderContext.UploadForegroundFlame(
+            shipRenderContext.UploadShipForegroundFlame(
                 GetPlaneId(pointIndex),
                 GetPosition(pointIndex),
                 mCombustionStateBuffer[pointIndex].FlameVector,

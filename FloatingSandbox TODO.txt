@@ -59,6 +59,7 @@
 				- Before: upload= render=
 				- After: upload= render=
 		- If works, other candidates:
+			- Flames
 			- Clouds
 			- Generic textures
 			- Text (NotificationContext)

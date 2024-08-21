@@ -64,7 +64,7 @@ enum class GameSettings : size_t
     // Heat
     AirTemperature,
     WaterTemperature,
-    MaxBurningParticles,
+    MaxBurningParticlesPerShip,
     ThermalConductivityAdjustment,
     HeatDissipationAdjustment,
     IgnitionTemperatureAdjustment,

@@ -560,10 +560,10 @@ public:
     float GetMinWaterTemperature() const override { return GameParameters::MinWaterTemperature; }
     float GetMaxWaterTemperature() const override { return GameParameters::MaxWaterTemperature; }
 
-    unsigned int GetMaxBurningParticles() const override { return mGameParameters.MaxBurningParticles; }
-    void SetMaxBurningParticles(unsigned int value) override { mGameParameters.MaxBurningParticles = value; }
-    unsigned int GetMinMaxBurningParticles() const override { return GameParameters::MinMaxBurningParticles; }
-    unsigned int GetMaxMaxBurningParticles() const override { return GameParameters::MaxMaxBurningParticles; }
+    unsigned int GetMaxBurningParticlesPerShip() const override { return mGameParameters.MaxBurningParticlesPerShip; }
+    void SetMaxBurningParticlesPerShip(unsigned int value) override { mGameParameters.MaxBurningParticlesPerShip = value; }
+    unsigned int GetMinMaxBurningParticlesPerShip() const override { return GameParameters::MinMaxBurningParticlesPerShip; }
+    unsigned int GetMaxMaxBurningParticlesPerShip() const override { return GameParameters::MaxMaxBurningParticlesPerShip; }
 
     float GetThermalConductivityAdjustment() const override { return mGameParameters.ThermalConductivityAdjustment; }
     void SetThermalConductivityAdjustment(float value) override { mGameParameters.ThermalConductivityAdjustment = value; }

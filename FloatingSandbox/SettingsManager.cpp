@@ -91,7 +91,7 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     // Heat
     ADD_GC_SETTING(float, AirTemperature);
     ADD_GC_SETTING(float, WaterTemperature);
-    ADD_GC_SETTING(unsigned int, MaxBurningParticles);
+    ADD_GC_SETTING(unsigned int, MaxBurningParticlesPerShip);
     ADD_GC_SETTING(float, ThermalConductivityAdjustment);
     ADD_GC_SETTING(float, HeatDissipationAdjustment);
     ADD_GC_SETTING(float, IgnitionTemperatureAdjustment);

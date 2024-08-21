@@ -339,7 +339,10 @@ void Npcs::UpdateNpcs(
             unsigned int constexpr LowFrequencyUpdatePeriod = 4;
             if (mCurrentSimulationSequenceNumber.IsStepOf(npcState->Id % LowFrequencyUpdatePeriod, LowFrequencyUpdatePeriod))
             {
+                // Waterness, Water Velocity, Combustion
+
                 bool atLeastOneNpcParticleOnFire = false;
+                bool atLeastOneNpcParticleInFreeWater = false;
 
                 for (auto p = 0; p < npcState->ParticleMesh.Particles.size(); ++p)
                 {
@@ -348,8 +351,6 @@ void Npcs::UpdateNpcs(
                     if (particle.ConstrainedState.has_value())
                     {
                         auto const t = particle.ConstrainedState->CurrentBCoords.TriangleElementIndex;
-
-                        // Waterness, Water Velocity, ParticleOnFire
 
                         float totalWaterness = 0.0f;
                         vec2f totalWaterVelocity = vec2f::zero();
@@ -367,7 +368,7 @@ void Npcs::UpdateNpcs(
                             if (!homeShip.GetPoints().GetIsHull(pointElementIndex))
                                 waterablePointCount += 1.0f;
 
-                            if (homeShip.GetPoints().GetTemperature(pointElementIndex) >= mParticles.GetMaterial(particle.ParticleIndex).IgnitionTemperature
+                            if (homeShip.GetPoints().GetTemperature(pointElementIndex) >= mParticles.GetMaterial(particle.ParticleIndex).IgnitionTemperature * gameParameters.IgnitionTemperatureAdjustment
                                 || homeShip.GetPoints().IsBurning(pointElementIndex))
                             {
                                 isAtLeastOneMeshPointOnFire = true;
@@ -385,19 +386,35 @@ void Npcs::UpdateNpcs(
                             atLeastOneNpcParticleOnFire = atLeastOneNpcParticleOnFire || isAtLeastOneMeshPointOnFire;
                         }
                     }
+                    else
+                    {
+                        // Free - check if underwater (using AnyWaterness as proxy)
+                        if (mParticles.GetAnyWaterness(particle.ParticleIndex) > 0.4f)
+                        {
+                            atLeastOneNpcParticleInFreeWater = true;
+                        }
+                    }
                 } // For all NPC particles
 
                 // Update NPC's fire progress
 
-                if (atLeastOneNpcParticleOnFire)
+                if (atLeastOneNpcParticleInFreeWater)
                 {
-                    // Increase
-                    npcState->CombustionProgress += (1.0f - npcState->CombustionProgress) * 0.3f;
+                    // Smother immediately
+                    npcState->CombustionProgress += (-1.0f - npcState->CombustionProgress) * 0.1f;
                 }
                 else
                 {
-                    // Decrease
-                    npcState->CombustionProgress += (-1.0f - npcState->CombustionProgress) * 0.005f;
+                    if (atLeastOneNpcParticleOnFire)
+                    {
+                        // Increase
+                        npcState->CombustionProgress += (1.0f - npcState->CombustionProgress) * 0.3f;
+                    }
+                    else
+                    {
+                        // Decrease
+                        npcState->CombustionProgress += (-1.0f - npcState->CombustionProgress) * 0.01f;
+                    }
                 }
             }
 

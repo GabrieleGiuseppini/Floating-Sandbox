@@ -63,7 +63,7 @@ GameParameters::GameParameters()
     // Heat and combustion
     , AirTemperature(298.15f) // 25C
     , WaterTemperature(288.15f) // 15C
-    , MaxBurningParticles(112)
+    , MaxBurningParticlesPerShip(112)
     , ThermalConductivityAdjustment(1.0f)
     , HeatDissipationAdjustment(1.0f)
     , IgnitionTemperatureAdjustment(1.0f)

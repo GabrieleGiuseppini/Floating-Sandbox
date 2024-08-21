@@ -84,7 +84,7 @@ void Npcs::UpdateHuman(
 
 	// Decay
 
-	humanState.OnFirePanicLevel -= humanState.OnFirePanicLevel * 0.0025f;
+	humanState.OnFirePanicLevel -= humanState.OnFirePanicLevel * 0.01f;
 	humanState.BombProximityPanicLevel -= humanState.BombProximityPanicLevel * 0.0025f;
 
 	//

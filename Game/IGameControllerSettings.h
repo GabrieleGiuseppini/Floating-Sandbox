@@ -173,8 +173,8 @@ struct IGameControllerSettings
     virtual float GetWaterTemperature() const = 0;
     virtual void SetWaterTemperature(float value) = 0;
 
-    virtual unsigned int GetMaxBurningParticles() const = 0;
-    virtual void SetMaxBurningParticles(unsigned int value) = 0;
+    virtual unsigned int GetMaxBurningParticlesPerShip() const = 0;
+    virtual void SetMaxBurningParticlesPerShip(unsigned int value) = 0;
 
     virtual float GetThermalConductivityAdjustment() const = 0;
     virtual void SetThermalConductivityAdjustment(float value) = 0;
