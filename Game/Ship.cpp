@@ -1850,7 +1850,7 @@ void Ship::HandleCollisionsWithSeaFloor(
                 deltaPosition = deltaPosition.normalise_approx(deltaPositionLength) * std::min(deltaPositionLength, 0.01f); // Magic number, empirical
                 mPoints.SetPosition(
                     pointIndex,
-                    mPoints.GetPosition(pointIndex) - deltaPosition);
+                    position - deltaPosition);
 
                 // Set velocity to resultant collision velocity
                 mPoints.SetVelocity(

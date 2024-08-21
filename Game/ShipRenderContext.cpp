@@ -1705,6 +1705,18 @@ void ShipRenderContext::RenderDraw(
     RenderDrawElectricSparks(renderParameters);
 
     //
+    // Render sparkles
+    //
+
+    RenderDrawSparkles(renderParameters);
+
+    //
+    // Render generic textures
+    //
+
+    RenderDrawGenericMipMappedTextures(renderParameters, renderStats);
+
+    //
     // Render foreground flames
     //
 
@@ -1721,18 +1733,6 @@ void ShipRenderContext::RenderDraw(
     //
 
     RenderDrawJetEngineFlames();
-
-    //
-    // Render sparkles
-    //
-
-    RenderDrawSparkles(renderParameters);
-
-    //
-    // Render generic textures
-    //
-
-    RenderDrawGenericMipMappedTextures(renderParameters, renderStats);
 
     //
     // Render NPCs
@@ -2527,9 +2527,9 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
     //          - Triangles are always drawn temporally before ropes and springs though, to avoid anti-aliasing issues
     //      - 4: Stressed springs, Frontier edges (temporally after)
     //      - 5: Points
-    //      - 6: Electric sparks, Flames (foreground), Jet engine flames
-    //      - 7: Sparkles
-    //      - 8: Generic textures
+    //      - 6: Electric sparks, Sparkles
+    //      - 7: Generic textures
+    //      - 8: Flames (foreground), Jet engine flames
     //      - 9: NPCs
     //      - 10: Explosions
     //      - 11: Highlights, Centers
@@ -2686,7 +2686,7 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
         shipOrthoMatrix);
 
     //
-    // Layer 6: Electric Sparks, Flames - foreground, Jet engine flames
+    // Layer 6: Electric Sparks, Sparkles
     //
 
     view.CalculateShipOrthoMatrix(
@@ -2703,16 +2703,12 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
     mShaderManager.SetProgramParameter<ProgramType::ShipElectricSparks, ProgramParameterType::OrthoMatrix>(
         shipOrthoMatrix);
 
-    mShaderManager.ActivateProgram<ProgramType::ShipFlamesForeground>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground, ProgramParameterType::OrthoMatrix>(
-        shipOrthoMatrix);
-
-    mShaderManager.ActivateProgram<ProgramType::ShipJetEngineFlames>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipJetEngineFlames, ProgramParameterType::OrthoMatrix>(
+    mShaderManager.ActivateProgram<ProgramType::ShipSparkles>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipSparkles, ProgramParameterType::OrthoMatrix>(
         shipOrthoMatrix);
 
     //
-    // Layer 7: Sparkles
+    // Layer 7: Generic Textures
     //
 
     view.CalculateShipOrthoMatrix(
@@ -2725,12 +2721,12 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
         NLayers,
         shipOrthoMatrix);
 
-    mShaderManager.ActivateProgram<ProgramType::ShipSparkles>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipSparkles, ProgramParameterType::OrthoMatrix>(
+    mShaderManager.ActivateProgram<ProgramType::ShipGenericMipMappedTextures>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipGenericMipMappedTextures, ProgramParameterType::OrthoMatrix>(
         shipOrthoMatrix);
 
     //
-    // Layer 8: Generic Textures
+    // Layer 8: Flames - foreground, Jet engine flames
     //
 
     view.CalculateShipOrthoMatrix(
@@ -2743,8 +2739,12 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
         NLayers,
         shipOrthoMatrix);
 
-    mShaderManager.ActivateProgram<ProgramType::ShipGenericMipMappedTextures>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipGenericMipMappedTextures, ProgramParameterType::OrthoMatrix>(
+    mShaderManager.ActivateProgram<ProgramType::ShipFlamesForeground>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground, ProgramParameterType::OrthoMatrix>(
+        shipOrthoMatrix);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipJetEngineFlames>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipJetEngineFlames, ProgramParameterType::OrthoMatrix>(
         shipOrthoMatrix);
 
     //

@@ -387,20 +387,7 @@ Arch
 			+ Npcs.h/cpp
 
 
-- Misc improvements:
-	+ GameController: force moveWholeMesh @ moveNpc when paused
-	- See if can fix moveWholeMesh for furniture, by doing 3rd and 4th wrt 1st and 2nd spring
-	+ Better interior texture:
-		+ Retry anti-aliasing, with different alpha profile
-		+ Try more magnification
-		+ Fix boundary conditions for diagonals: joints are not good
-			+ See if there's still anything we may do to improve diagonals
-
-	+ Water momentum:
-		+ Force should not depend on particle's mass - after all a heavy particle shouldn't be affected
-			+ Change mass into constant, i.e. current human NPC mass
-
-- Physical Interactions:
+= Physical Interactions:
 
 	- Prelim: blueprint for particle physics:
 		- Loop for all particles in the used particles range - regardless of their being in-use
@@ -411,14 +398,23 @@ Arch
 
 	+ Make NpcDamping subject to other adjustment
 		+ Npcs class reacts to changes and calculates own mDampingCoefficient == (1.0f - gameParameters.NpcDamping)
-	- Land
-		- Impact (at end of step)
-			- Do same as world border
-		- If hit:
-			- Move back and bounce perpendicular velocity
-				- Friction and elasticity: as we do in ship, using both materials
-			- Become free! So we avoid bouncing back and forth
-				- Make sure we call OnMayBeRegimeChanged
+	= Land
+		+ Check at end of step
+		+ If hit:
+			+ Move back and bounce perpendicular velocity
+				+ Friction and elasticity: as we do in ship, using both materials
+			+ Become free! So we avoid bouncing back and forth
+				+ Make sure we call OnMayBeRegimeChanged
+			+ Only when not BeingPlaced
+		- Behavior: (we don't like it frozen, would be nice if it relaxed down)
+			- @ Free_Aerial: if still for long, go to Free_KnockedOut
+				- Out from Free_KnockedOut:
+					- If !Free: Constrained_KnockedOut
+					- If moving again: Free_Aerial
+				- Free_KnockedOut animation: relax limbs (see if Constrained_KnockedOut does the same)
+		- Tests:
+			+ Place under land
+			+ With ship under land
 	+ World border
 		+ MaintainInWorldBounds()
 			+ Called after each particle update, on the particle				
@@ -463,6 +459,7 @@ Arch
 					- To:
 						- Same as Constrained_Aerial
 						- When no changes for a while (like Free_InWater->Free_Swimming): to Constrained_Swimming_Style1|2 depending on face orientation
+					- Animation:
 				- Constrained_Swimming_Style1,2:
 					- Copy from Free_Swimming_*, and same out transitions as Constrained_InWater
 			- @Npcs::AnimationUpdate():
@@ -529,10 +526,10 @@ Arch
 							- At Update(), in same logical block as applying queued interactions:
 								- Apply forces (code of Ship::ApplyRadialWindFrom(interaction args)) from mParentWorld::GetWindField()
 							- Nuke mWindField and take it from mParentWorld::GetWindField()
-				= Visit mBurningNpcs vector here and:
-					= Position:
+				+ Visit mBurningNpcs vector here and:
+					+ Position:
 						+ Human: head
-						= Else: center of all particles
+						+ Else: center of all particles
 					+ Vector and WindRotation: from CombustionState
 					+ Size: depends on Npc's fireness
 		+ @Ship::RenderUpload:
@@ -541,22 +538,22 @@ Arch
 		+ ShipRenderContext: new UploadFlameNpc (v Ship) w/ different size and adj
 		+ Combustion adjustment: must smother if NPC particle is free and under real waterness
 		+ Use CombustionAdjustment
-		- Rendering: NPC flames need to go to layer above gadgets
+		= Rendering: NPC flames need to go to layer above gadgets
 		- Test:
 			- Burning NPC removal
 			- Depth order
-			- Fire panic tapering down speed
+			+ Fire panic tapering down speed
 	- Wind: 
 		- Npc preliminary forces: apply to free NPC particles only
 	- Wind tool: 
 		- WindField work (*) spec'd for flames 
 		- Npc preliminary forces: apply mParentWorld::WindField to all particles
 	- Ship-specific explosions: only NPCs of that ship, or free regime of any ship
-		- mParentWorld.GetNpcs().ApplyXXXForce(shipId, ...)
+		- mParentWorld.GetNpcs().ApplyXXXForce(shipId, ...) OR mParentWorld.OnExplosion(shipId, ...)
 	- Swirl, etc.: NPCs of all ships, all regimes
 		- Controlled by flag, "~force tools on NPCs"
 			- SettingsDialog
-		- mParentWorld.GetNpcs().ApplyXXXForce(...)
+		- World: Npcs.ApplyXXXForce(...)
 	+ Move/Rotate tool:
 		+ World: after calling into Ship(), call Npcs.Move/etc/Npcs(shipId, [componentId], ...)
 			+ Test in BaryLab first
@@ -650,8 +647,8 @@ Arch
 		+ Close to bomb
 			+ @ Eq, Walk:
 				+ HasBomb => DirFlip (iff BombProximityPanic < 0.7) and set Npc::BombProximityPanic to 1.0	
-		- Close to fire
-			- Ditto
+		+ Close to fire
+			+ Ditto
 		- Close to water entering (leaking point w/inflow)
 			- Ditto
 

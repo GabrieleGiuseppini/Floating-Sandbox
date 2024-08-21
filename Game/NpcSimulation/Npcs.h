@@ -934,16 +934,38 @@ private:
 		StateType & npc,
 		ShipId newShip);
 
+	static inline int GetSpringAmongEndpoints(
+		int particleEndpoint1,
+		int particleEndpoint2,
+		StateType::ParticleMeshType const & particleMesh)
+	{
+		assert(particleMesh.Particles.size() >= 2);
+		ElementIndex p1 = particleMesh.Particles[particleEndpoint1].ParticleIndex;
+		ElementIndex p2 = particleMesh.Particles[particleEndpoint2].ParticleIndex;
+		for (int s = 0; s < particleMesh.Springs.size(); ++s)
+		{
+			auto const & spring = particleMesh.Springs[s];
+			if ((spring.EndpointAIndex == p1 && spring.EndpointBIndex == p2)
+				|| (spring.EndpointBIndex == p1 && spring.EndpointAIndex == p2))
+			{
+				return s;
+			}
+		}
+
+		assert(false);
+		return -1;
+	}
+
+	void PublishHumanNpcStats();
+
 	void RenderNpc(
 		StateType const & npc,
 		Render::ShipRenderContext & shipRenderContext) const;
 
-	void PublishHumanNpcStats();
-
-	static int GetSpringAmongEndpoints(
-		int particleEndpoint1,
-		int particleEndpoint2,
-		StateType::ParticleMeshType const & particleMesh);
+	void UpdateNpcAnimation(
+		StateType & npc,
+		float currentSimulationTime,
+		Ship const & homeShip);
 
 private:
 
@@ -1206,85 +1228,15 @@ private:
 		vec2f const & bounceEdgeNormal,
 		float currentSimulationTime) const;
 
-	void UpdateNpcAnimation(
-		StateType & npc,
-		float currentSimulationTime,
-		Ship const & homeShip);
-
 	inline void MaintainInWorldBounds(
 		StateType & npc,
 		int npcParticleOrdinal,
-		GameParameters const & gameParameters)
-	{
-		float constexpr MaxWorldLeft = -GameParameters::HalfMaxWorldWidth;
-		float constexpr MaxWorldRight = GameParameters::HalfMaxWorldWidth;
+		GameParameters const & gameParameters);
 
-		float constexpr MaxWorldTop = GameParameters::HalfMaxWorldHeight;
-		float constexpr MaxWorldBottom = -GameParameters::HalfMaxWorldHeight;
-
-		// Elasticity of the bounce against world boundaries
-		//  - We use the ocean floor's elasticity for convenience
-		float const elasticity = gameParameters.OceanFloorElasticityCoefficient * gameParameters.ElasticityAdjustment;
-
-		// We clamp velocity to damp system instabilities at extreme events
-		static constexpr float MaxBounceVelocity = 150.0f; // Magic number
-
-		ElementIndex const p = npc.ParticleMesh.Particles[npcParticleOrdinal].ParticleIndex;
-		auto const & pos = mParticles.GetPosition(p);
-		bool hasHit = false;
-		if (pos.x < MaxWorldLeft)
-		{
-			// Simulate bounce, bounded
-			mParticles.GetPosition(p).x = std::min(MaxWorldLeft + elasticity * (MaxWorldLeft - pos.x), 0.0f);
-
-			// Bounce bounded
-			mParticles.GetVelocity(p).x = std::min(-mParticles.GetVelocity(p).x, MaxBounceVelocity);
-
-			hasHit = true;
-		}
-		else if (pos.x > MaxWorldRight)
-		{
-			// Simulate bounce, bounded
-			mParticles.GetPosition(p).x = std::max(MaxWorldRight - elasticity * (pos.x - MaxWorldRight), 0.0f);
-
-			// Bounce bounded
-			mParticles.GetVelocity(p).x = std::max(-mParticles.GetVelocity(p).x, -MaxBounceVelocity);
-
-			hasHit = true;
-		}
-
-		if (pos.y > MaxWorldTop)
-		{
-			// Simulate bounce, bounded
-			mParticles.GetPosition(p).y = std::max(MaxWorldTop - elasticity * (pos.y - MaxWorldTop), 0.0f);
-
-			// Bounce bounded
-			mParticles.GetVelocity(p).y = std::max(-mParticles.GetVelocity(p).y, -MaxBounceVelocity);
-
-			hasHit = true;
-		}
-		else if (pos.y < MaxWorldBottom)
-		{
-			// Simulate bounce, bounded
-			mParticles.GetPosition(p).y = std::min(MaxWorldBottom + elasticity * (MaxWorldBottom - pos.y), 0.0f);
-
-			// Bounce bounded
-			mParticles.GetVelocity(p).y = std::min(-mParticles.GetVelocity(p).y, MaxBounceVelocity);
-
-			hasHit = true;
-		}
-
-		assert(mParticles.GetPosition(p).x >= MaxWorldLeft);
-		assert(mParticles.GetPosition(p).x <= MaxWorldRight);
-		assert(mParticles.GetPosition(p).y >= MaxWorldBottom);
-		assert(mParticles.GetPosition(p).y <= MaxWorldTop);
-
-		if (hasHit)
-		{
-			// Avoid bouncing back and forth
-			TransitionParticleToFreeState(npc, npcParticleOrdinal);
-		}
-	}
+	inline void MaintainOverLand(
+		StateType & npc,
+		int npcParticleOrdinal,
+		GameParameters const & gameParameters);
 
 	static bool IsEdgeFloorToParticle(
 		ElementIndex triangleElementIndex,
