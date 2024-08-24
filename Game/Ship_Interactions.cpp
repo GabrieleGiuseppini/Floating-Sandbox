@@ -660,7 +660,9 @@ void Ship::ApplyBlastAt(
             blastForceMagnitude));
 }
 
-void Ship::ApplyBlastAt(Interaction::ArgumentsUnion::BlastArguments const & args)
+void Ship::ApplyBlastAt(
+    Interaction::ArgumentsUnion::BlastArguments const & args,
+    GameParameters const & gameParameters)
 {
     float const squareRadius = args.Radius * args.Radius;
 
@@ -684,6 +686,13 @@ void Ship::ApplyBlastAt(Interaction::ArgumentsUnion::BlastArguments const & args
                 pointRadius.normalise(pointRadiusLength) * args.Magnitude / std::sqrt(std::max((pointRadiusLength * 0.4f) + 0.6f, 1.0f)));
         }
     }
+
+    // Apply side-effects
+    OnBlast(
+        args.CenterPos,
+        args.Radius,
+        args.Magnitude,
+        gameParameters);
 }
 
 bool Ship::ApplyElectricSparkAt(

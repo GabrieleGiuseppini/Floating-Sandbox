@@ -774,6 +774,8 @@ public:
 		float currentSimulationTime,
 		GameParameters const & gameParameters);
 
+	void UpdateEnd();
+
 	void Upload(Render::RenderContext & renderContext) const;
 
 	void UploadFlames(
@@ -841,6 +843,12 @@ public:
 		NpcId id,
 		NpcHighlightType highlight);
 
+public:
+
+	//
+	// Interactions
+	//
+
 	void MoveBy(
 		ShipId shipId,
 		std::optional<ConnectedComponentId> connectedComponent,
@@ -854,6 +862,13 @@ public:
 		float angle,
 		vec2f const & center,
 		float inertialAngle,
+		GameParameters const & gameParameters);
+
+	void ApplyBlast(
+		ShipId shipId,
+		vec2f const & centerPosition,
+		float blastRadius,
+		float blastForce, // N
 		GameParameters const & gameParameters);
 
 	void SetGeneralizedPanicLevelForAllHumans(float panicLevel);
@@ -1063,6 +1078,8 @@ private:
 	void UpdateNpcs(
 		float currentSimulationTime,
 		GameParameters const & gameParameters);
+
+	void UpdateNpcsEnd();
 
 	void UpdateNpcParticlePhysics(
 		StateType & npc,

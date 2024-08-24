@@ -474,7 +474,7 @@ private:
 
     std::list<Interaction> mQueuedInteractions;
 
-    void ApplyBlastAt(Interaction::ArgumentsUnion::BlastArguments const & args);
+    void ApplyBlastAt(Interaction::ArgumentsUnion::BlastArguments const & args, GameParameters const & gameParameters);
 
     void DrawTo(Interaction::ArgumentsUnion::DrawArguments const & args);
 
@@ -492,7 +492,7 @@ private:
 
     // Mechanical
 
-    void ApplyQueuedInteractionForces();
+    void ApplyQueuedInteractionForces(GameParameters const & gameParameters);
 
     void ApplyWorldForces(
         float effectiveAirDensity,
@@ -648,6 +648,13 @@ private:
         ElementIndex pointBElementIndex);
 
     void AttemptPointRestore(ElementIndex pointElementIndex);
+
+    // Does secondary tasks after a blast has been applied to the ship's points
+    void OnBlast(
+        vec2f const & centerPosition,
+        float blastRadius,
+        float blastForce, // N
+        GameParameters const & gameParameters);
 
     void GenerateAirBubble(
         vec2f const & position,

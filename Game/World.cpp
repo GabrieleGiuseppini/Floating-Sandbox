@@ -1197,6 +1197,8 @@ void World::Update(
     {
         ship->UpdateEnd();
     }
+
+    mNpcs->UpdateEnd();
 }
 
 void World::RenderUpload(

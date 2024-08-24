@@ -338,7 +338,7 @@ void Ship::Update(
     // step
     ///////////////////////////////////////////////////////////////////
 
-    ApplyQueuedInteractionForces();
+    ApplyQueuedInteractionForces(gameParameters);
 
     ///////////////////////////////////////////////////////////////////
     // Apply world forces
@@ -931,7 +931,7 @@ void Ship::Finalize()
 // Mechanical Dynamics
 ///////////////////////////////////////////////////////////////////////////////////
 
-void Ship::ApplyQueuedInteractionForces()
+void Ship::ApplyQueuedInteractionForces(GameParameters const & gameParameters)
 {
     for (auto const & interaction : mQueuedInteractions)
     {
@@ -939,7 +939,7 @@ void Ship::ApplyQueuedInteractionForces()
         {
             case Interaction::InteractionType::Blast:
             {
-                ApplyBlastAt(interaction.Arguments.Blast);
+                ApplyBlastAt(interaction.Arguments.Blast, gameParameters);
 
                 break;
             }
@@ -3216,6 +3216,77 @@ void Ship::AttemptPointRestore(ElementIndex pointElementIndex)
     {
         mPoints.Restore(pointElementIndex);
     }
+}
+
+void Ship::OnBlast(
+    vec2f const & centerPosition,
+    float blastRadius,
+    float blastForce, // N
+    GameParameters const & gameParameters)
+{
+    //
+    // Blast NPCs
+    //
+
+    mParentWorld.GetNpcs().ApplyBlast(
+        mId,
+        centerPosition,
+        blastRadius,
+        blastForce,
+        gameParameters);
+
+    //
+    // Blast ocean surface displacement
+    //
+
+    if (gameParameters.DoDisplaceWater)
+    {
+        // Explosion depth (positive when underwater)
+        float const explosionDepth = mParentWorld.GetOceanSurface().GetDepth(centerPosition);
+        float const absExplosionDepth = std::abs(explosionDepth);
+
+        // No effect when abs depth greater than this
+        float constexpr MaxDepth = 20.0f;
+
+        // Calculate (lateral) radius: depends on depth (abs)
+        //  radius(depth) = ax + b
+        //  radius(0) = maxRadius
+        //  radius(maxDepth) = MinRadius;
+        float constexpr MinRadius = 1.0f;
+        float const maxRadius = 20.0f * blastRadius; // Spectacular, spectacular
+        float const radius = maxRadius + (absExplosionDepth / MaxDepth * (MinRadius - maxRadius));
+
+        // Calculate displacement: depends on depth
+        //  displacement(depth) =  ax^2 + bx + c
+        //  f(MaxDepth) = 0
+        //  f(0) = MaxDisplacement
+        //  f'(MaxDepth) = 0
+        float constexpr MaxDisplacement = 6.0f; // Max displacement
+        float constexpr a = -MaxDisplacement / (MaxDepth * MaxDepth);
+        float constexpr b = 2.0f * MaxDisplacement / MaxDepth;
+        float constexpr c = -MaxDisplacement;
+        float const displacement =
+            (a * absExplosionDepth * absExplosionDepth + b * absExplosionDepth + c)
+            * (absExplosionDepth > MaxDepth ? 0.0f : 1.0f) // Turn off at far-away depths
+            * (explosionDepth <= 0.0f ? 1.0f : -1.0f); // Follow depth sign
+
+        // Displace
+        for (float r = 0.0f; r <= radius; r += 0.5f)
+        {
+            float const d = displacement * (1.0f - r / radius);
+            mParentWorld.DisplaceOceanSurfaceAt(centerPosition.x - r, d);
+            mParentWorld.DisplaceOceanSurfaceAt(centerPosition.x + r, d);
+        }
+    }
+
+    //
+    // Scare fishes
+    //
+
+    mParentWorld.DisturbOceanAt(
+        centerPosition,
+        blastRadius * 125.0f,
+        std::chrono::milliseconds(0));
 }
 
 void Ship::GenerateAirBubble(

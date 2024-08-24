@@ -595,6 +595,12 @@ void Npcs::UpdateNpcs(
     }
 }
 
+void Npcs::UpdateNpcsEnd()
+{
+    // We consume this one
+    mParticles.ResetExternalForces();
+}
+
 void Npcs::UpdateNpcParticlePhysics(
     StateType & npc,
     int npcParticleOrdinal,
@@ -3327,7 +3333,7 @@ void Npcs::MaintainOverLand(
             // Calculate tangential response: Vt' = a*Vt (a = (1.0-friction), [0.0 - 1.0])
             vec2f const tangentialResponse =
                 tangentialVelocity
-                * (1.0f - gameParameters.OceanFloorFrictionCoefficient); // Over-simplification - just ocean floor...lazyness, yes
+                * std::max(0.0f, 1.0f - mParticles.GetMaterial(p).KineticFrictionCoefficient * gameParameters.KineticFrictionAdjustment); // For lazyness
 
             //
             // Impart final position and velocity

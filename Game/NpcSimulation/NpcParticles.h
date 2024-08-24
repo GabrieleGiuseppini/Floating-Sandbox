@@ -198,6 +198,18 @@ public:
         mExternalForcesBuffer[particleElementIndex] = value;
     }
 
+    void AddExternalForce(
+        ElementIndex particleElementIndex,
+        vec2f const & value) noexcept
+    {
+        mExternalForcesBuffer[particleElementIndex] += value;
+    }
+
+    void ResetExternalForces()
+    {
+        mExternalForcesBuffer.fill(vec2f::zero());
+    }
+
     float const GetMeshWaterness(ElementIndex particleElementIndex) const noexcept
     {
         return mMeshWaternessBuffer[particleElementIndex];

@@ -547,8 +547,11 @@ Arch
 	- Wind tool: 
 		- WindField work (*) spec'd for flames 
 		- Npc preliminary forces: apply mParentWorld::WindField to all particles
-	- Ship-specific explosions: only NPCs of that ship, or free regime of any ship
-		- mParentWorld.GetNpcs().ApplyXXXForce(shipId, ...) OR mParentWorld.OnExplosion(shipId, ...)
+	+ Ship-specific explosions: only NPCs of that ship, or free regime of any ship
+		+ mParentWorld.GetNpcs().ApplyXXXForce(shipId, ...)
+		+ Npcs::ApplyBlast()
+	+ Blast tool
+	- Fix: bouncing with water while swimming
 	- Swirl, etc.: NPCs of all ships, all regimes
 		- Controlled by flag, "~force tools on NPCs"
 			- SettingsDialog
