@@ -1614,21 +1614,23 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
             // Note that we use the point's *prior* relative velocity
 
             vec2f const meshWaterVelocity = mParticles.GetMeshWaterVelocity(npcParticle.ParticleIndex);
-            float const waterVelocityAlongDir = meshWaterVelocity.length();
-            vec2f const waterVelocityDir = meshWaterVelocity.normalise_approx(waterVelocityAlongDir);
-            float const particleRelativeVelocityAlongDir = npcParticle.ConstrainedState->MeshRelativeVelocity.dot(waterVelocityDir);
+            float const waterVelocityMagnitude = std::min(
+                meshWaterVelocity.length(),
+                15.0f); // Crudely oppose too violent tides
+            vec2f const waterVelocityDir = meshWaterVelocity.normalise_approx(waterVelocityMagnitude);
+            float const particleRelativeVelocityMagnitude = npcParticle.ConstrainedState->MeshRelativeVelocity.dot(waterVelocityDir);
             vec2f absoluteVelocityDelta;
-            if (particleRelativeVelocityAlongDir >= 0.0f)
+            if (particleRelativeVelocityMagnitude >= 0.0f)
             {
                 // The particle's relative velocity is in the same direction as the water; fill-in the remaining part
                 // (but don't slow it down)
-                float const relVelIncrement = std::max(waterVelocityAlongDir - particleRelativeVelocityAlongDir, 0.0f);
+                float const relVelIncrement = std::max(waterVelocityMagnitude - particleRelativeVelocityMagnitude, 0.0f);
                 absoluteVelocityDelta = waterVelocityDir * relVelIncrement;
             }
             else
             {
                 // The particle's relative velocity is opposite water; add what it takes to match it
-                absoluteVelocityDelta = waterVelocityDir * (waterVelocityAlongDir - particleRelativeVelocityAlongDir);
+                absoluteVelocityDelta = waterVelocityDir * (waterVelocityMagnitude - particleRelativeVelocityMagnitude);
             }
 
             // Since we do forces here, we apply this as a force
@@ -3273,81 +3275,6 @@ void Npcs::OnImpact(
             normalResponse,
             bounceEdgeNormal,
             currentSimulationTime);
-    }
-}
-
-void Npcs::MaintainInWorldBounds(
-    StateType & npc,
-    int npcParticleOrdinal,
-    GameParameters const & gameParameters)
-{
-    float constexpr MaxWorldLeft = -GameParameters::HalfMaxWorldWidth;
-    float constexpr MaxWorldRight = GameParameters::HalfMaxWorldWidth;
-
-    float constexpr MaxWorldTop = GameParameters::HalfMaxWorldHeight;
-    float constexpr MaxWorldBottom = -GameParameters::HalfMaxWorldHeight;
-
-    // Elasticity of the bounce against world boundaries
-    //  - We use the ocean floor's elasticity for convenience
-    float const elasticity = gameParameters.OceanFloorElasticityCoefficient * gameParameters.ElasticityAdjustment;
-
-    // We clamp velocity to damp system instabilities at extreme events
-    static constexpr float MaxBounceVelocity = 150.0f; // Magic number
-
-    ElementIndex const p = npc.ParticleMesh.Particles[npcParticleOrdinal].ParticleIndex;
-    auto const & pos = mParticles.GetPosition(p);
-    bool hasHit = false;
-    if (pos.x < MaxWorldLeft)
-    {
-        // Simulate bounce, bounded
-        mParticles.GetPosition(p).x = std::min(MaxWorldLeft + elasticity * (MaxWorldLeft - pos.x), 0.0f);
-
-        // Bounce bounded
-        mParticles.GetVelocity(p).x = std::min(-mParticles.GetVelocity(p).x, MaxBounceVelocity);
-
-        hasHit = true;
-    }
-    else if (pos.x > MaxWorldRight)
-    {
-        // Simulate bounce, bounded
-        mParticles.GetPosition(p).x = std::max(MaxWorldRight - elasticity * (pos.x - MaxWorldRight), 0.0f);
-
-        // Bounce bounded
-        mParticles.GetVelocity(p).x = std::max(-mParticles.GetVelocity(p).x, -MaxBounceVelocity);
-
-        hasHit = true;
-    }
-
-    if (pos.y > MaxWorldTop)
-    {
-        // Simulate bounce, bounded
-        mParticles.GetPosition(p).y = std::max(MaxWorldTop - elasticity * (pos.y - MaxWorldTop), 0.0f);
-
-        // Bounce bounded
-        mParticles.GetVelocity(p).y = std::max(-mParticles.GetVelocity(p).y, -MaxBounceVelocity);
-
-        hasHit = true;
-    }
-    else if (pos.y < MaxWorldBottom)
-    {
-        // Simulate bounce, bounded
-        mParticles.GetPosition(p).y = std::min(MaxWorldBottom + elasticity * (MaxWorldBottom - pos.y), 0.0f);
-
-        // Bounce bounded
-        mParticles.GetVelocity(p).y = std::min(-mParticles.GetVelocity(p).y, MaxBounceVelocity);
-
-        hasHit = true;
-    }
-
-    assert(mParticles.GetPosition(p).x >= MaxWorldLeft);
-    assert(mParticles.GetPosition(p).x <= MaxWorldRight);
-    assert(mParticles.GetPosition(p).y >= MaxWorldBottom);
-    assert(mParticles.GetPosition(p).y <= MaxWorldTop);
-
-    if (hasHit)
-    {
-        // Avoid bouncing back and forth
-        TransitionParticleToFreeState(npc, npcParticleOrdinal);
     }
 }
 

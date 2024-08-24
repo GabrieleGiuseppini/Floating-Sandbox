@@ -1618,6 +1618,12 @@ void Npcs::Publish() const
 					break;
 				}
 
+				case StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::Constrained_InWater:
+				{
+					mGameEventHandler->OnHumanNpcBehaviorChanged("Constrained_InWater");
+					break;
+				}
+
 				case StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::Constrained_KnockedOut:
 				{
 					mGameEventHandler->OnHumanNpcBehaviorChanged("Constrained_KnockedOut");
@@ -1633,6 +1639,13 @@ void Npcs::Publish() const
 				case StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::Constrained_Rising:
 				{
 					mGameEventHandler->OnHumanNpcBehaviorChanged("Constrained_Rising");
+					break;
+				}
+
+				case StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::Constrained_Swimming_Style1:
+				case StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::Constrained_Swimming_Style2:
+				{
+					mGameEventHandler->OnHumanNpcBehaviorChanged("Constrained_Swimming");
 					break;
 				}
 
@@ -2923,6 +2936,7 @@ void Npcs::UpdateNpcAnimation(
 			}
 
 			case HumanNpcStateType::BehaviorType::Constrained_Aerial:
+			case HumanNpcStateType::BehaviorType::Constrained_InWater:
 			case HumanNpcStateType::BehaviorType::Free_Aerial:
 			case HumanNpcStateType::BehaviorType::Free_InWater:
 			{
@@ -2969,6 +2983,7 @@ void Npcs::UpdateNpcAnimation(
 				break;
 			}
 
+			case HumanNpcStateType::BehaviorType::Constrained_Swimming_Style1:
 			case HumanNpcStateType::BehaviorType::Free_Swimming_Style1:
 			{
 				//
@@ -3037,6 +3052,70 @@ void Npcs::UpdateNpcAnimation(
 				// Convergence rate depends on how long we've been in this state
 				float const MaxConvergenceWait = 3.5f;
 				convergenceRate = 0.01f + Clamp(elapsed, 0.0f, MaxConvergenceWait) / MaxConvergenceWait * (0.25f - 0.01f);
+
+				break;
+			}
+
+			case HumanNpcStateType::BehaviorType::Constrained_Swimming_Style2:
+			{
+				//
+				// Arms alternating (narrowly) around normal to body (direction of face)
+				// Legs alternating (narrowly) around opposite of feet velocity dir
+				//
+				// We are facing left or right
+				//
+
+				float constexpr Period = 3.00f;
+
+				float elapsed = currentSimulationTime - humanNpcState.CurrentStateTransitionSimulationTimestamp;
+
+				float const arg =
+					elapsed * 2.3f
+					+ humanNpcState.TotalDistanceTraveledOffEdgeSinceStateTransition * 0.7f;
+
+				float const inPeriod = FastMod(arg, Period);
+
+				// y: [0.0 ... 1.0]
+				float const y = (inPeriod < Period / 2.0f)
+					? inPeriod / (Period / 2.0f)
+					: 1.0f - (inPeriod - Period / 2.0f) / (Period / 2.0f);
+
+				// Arms
+
+				float const armCenterAngle = humanNpcState.CurrentFaceDirectionX * Pi<float> / 2.0f;
+				float const armAperture = Pi<float> / 2.0f * (y - 0.5f);
+				targetAngles.RightArm = armCenterAngle + armAperture;
+				targetAngles.LeftArm = armCenterAngle - armAperture;
+
+				// Legs
+
+				vec2f const headPosition = mParticles.GetPosition(secondaryParticleIndex);
+				feetPosition = mParticles.GetPosition(primaryParticleIndex);
+				actualBodyVector = feetPosition - headPosition; // From head to feet
+
+				// Angle between velocity and body
+				assert(npc.ParticleMesh.Particles[0].ConstrainedState.has_value());
+				vec2f const & feetVelocity = npc.ParticleMesh.Particles[0].ConstrainedState->MeshRelativeVelocity;
+				float const velocityAngleWrtBody = actualBodyVector.angleCw(feetVelocity);
+
+				// Leg center angle: opposite to velocity, but never too orthogonal
+				float constexpr MaxLegCenterAngle = Pi<float> / 3.0f;
+				float legCenterAngle;
+				if (velocityAngleWrtBody >= 0.0f)
+				{
+					legCenterAngle = std::min(Pi<float> - velocityAngleWrtBody, MaxLegCenterAngle);
+				}
+				else
+				{
+					legCenterAngle = std::max(-Pi<float> -velocityAngleWrtBody, -MaxLegCenterAngle);
+				}
+				legCenterAngle *= LinearStep(0.0f, 3.0f, feetVelocity.length());
+
+				targetAngles.RightLeg = legCenterAngle + armAperture;
+				targetAngles.LeftLeg = legCenterAngle - armAperture;
+
+				float const MaxConvergenceWait = 2.0f;
+				convergenceRate = 0.01f + Clamp(elapsed, 0.0f, MaxConvergenceWait) / MaxConvergenceWait * (0.2f - 0.01f);
 
 				break;
 			}
@@ -3272,10 +3351,13 @@ void Npcs::UpdateNpcAnimation(
 
 			case HumanNpcStateType::BehaviorType::BeingPlaced:
 			case HumanNpcStateType::BehaviorType::Constrained_Equilibrium:
-			case HumanNpcStateType::BehaviorType::Constrained_Electrified:
 			case HumanNpcStateType::BehaviorType::Constrained_Falling:
 			case HumanNpcStateType::BehaviorType::Constrained_KnockedOut:
 			case HumanNpcStateType::BehaviorType::Constrained_Aerial:
+			case HumanNpcStateType::BehaviorType::Constrained_InWater:
+			case HumanNpcStateType::BehaviorType::Constrained_Swimming_Style1:
+			case HumanNpcStateType::BehaviorType::Constrained_Swimming_Style2:
+			case HumanNpcStateType::BehaviorType::Constrained_Electrified:
 			case HumanNpcStateType::BehaviorType::Free_Aerial:
 			case HumanNpcStateType::BehaviorType::Free_KnockedOut:
 			case HumanNpcStateType::BehaviorType::Free_InWater:

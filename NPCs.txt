@@ -429,7 +429,7 @@ Arch
 			+ With NPC inertia
 			+ With ship move
 		+ Backport to BaryLab and profile
-	= Points' water effect when particles are constrained
+	+ Points' water effect when particles are constrained
 		! Gist: 
 			! We use both water (which imparts buoyancy) and water velocities (which impart v onto particles proportionally to particles' waterness)
 			! We cache both at NpcParticles @ CalculatePrelimForces - which is where we calc them - and re-use them everywhere, e.g. at HumanBehaviorUpdate
@@ -451,24 +451,23 @@ Arch
 							+ Apply as a force
 				+ Store as QuantityOfWater
 				+ Use quantityOfWater for buoyancy
-		- Behavior:
-			- New Constrained_InWater, Constrained_Swimming_Style2:
-				- Constrained_InWater:
-					- From: Constrained_Aerial
-						- Lingering here for long though
-					- To:
-						- Same as Constrained_Aerial
-						- When no changes for a while (like Free_InWater->Free_Swimming): to Constrained_Swimming_Style1|2 depending on face orientation
-					- Animation:
-				- Constrained_Swimming_Style1,2:
-					- Copy from Free_Swimming_*, and same out transitions as Constrained_InWater
-			- @Npcs::AnimationUpdate():
-				- Constrained_InWater
-					- Constrained_Aerial looks quite good
-				- Constrained_Swimming_Style2:
-					- Arms alternating (narrowly) around normal to body (direction of face)
-					- Legs alternating (narrowly) around opposite of feet velocity dir
-		- Backport to BaryLab and profile
+		+ Behavior:
+			+ New Constrained_InWater, Constrained_Swimming_Style2:
+				+ Constrained_InWater:
+					+ From: Constrained_Aerial
+						+ Lingering here for long though
+					+ To:
+						+ Same as Constrained_Aerial
+						+ When no changes for a while (like Free_InWater->Free_Swimming): to Constrained_Swimming_Style1|2 depending on face orientation
+				+ Constrained_Swimming_Style1,2:
+					+ Copy from Free_Swimming_*, and same out transitions as Constrained_InWater
+			+ @Npcs::AnimationUpdate():
+				+ Constrained_InWater
+					+ Constrained_Aerial looks quite good - pair labels
+				+ Constrained_Swimming_Style2:
+					+ Arms alternating (narrowly) around normal to body (direction of face)
+					+ Legs alternating (narrowly) around opposite of feet velocity dir
+	- Backport to BaryLab and profile
 	+ Triangle destruction: 
 		+ Should be enough to check for current triangle being deleted at beginning of UpdateNpc(.), and if so, become free (identical for @ pri and @ non-pri)
 			+ Just like when we detect secondary, third, etc. are in a different connected component, see above
@@ -477,7 +476,7 @@ Arch
 			- Init'd as 0
 			- At each state update: 
 				- If curSimTime > state's:
-					- Emit bubble
+					- Emit bubble (via homeShip)
 					- Calc next: gaussian
 	- Humans on air-water interface generate small waves
 		- Need to produce as side-effect: swimming humans generate small waves
@@ -651,6 +650,9 @@ Arch
 			+ Ditto
 		- Close to water entering (leaking point w/inflow)
 			- Ditto
+
+	- Backport to BaryLab
+	- Profile
 
 - NPC stats rendering as RollingText
 

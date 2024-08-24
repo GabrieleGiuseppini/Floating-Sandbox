@@ -247,10 +247,16 @@ private:
 					Constrained_Rising, // Tries to stand up (appliying torque)
 					Constrained_Equilibrium, // Stands up; continues to adjust alignment with torque
 					Constrained_Walking, // Walks; continues to adjust alignment with torque
+
+					Constrained_InWater, // Does nothing (like Constrained_Aerial), but waits to swim
+					Constrained_Swimming_Style1, // Swims
+					Constrained_Swimming_Style2, // Swims
+
 					Constrained_Electrified, // Doing electrification dance, assuming being vertical
 
 					Free_Aerial, // Does nothing, stays here as long as it's moving
 					Free_KnockedOut, // Does nothing, stays here as long as it's still
+
 					Free_InWater, // Does nothing, but waits to swim
 					Free_Swimming_Style1, // Swims
 					Free_Swimming_Style2, // Swims
@@ -355,6 +361,23 @@ private:
 							TargetFlipDecision = 0.0f;
 						}
 					} Constrained_Walking;
+
+					struct Constrained_InWaterType
+					{
+						float ProgressToSwimming;
+
+						void Reset()
+						{
+							ProgressToSwimming = 0.0f;
+						}
+					} Constrained_InWater;
+
+					struct Constrained_SwimmingType
+					{
+						void Reset()
+						{
+						}
+					} Constrained_Swimming;
 
 					struct Constrained_ElectrifiedStateType
 					{
@@ -522,6 +545,12 @@ private:
 							break;
 						}
 
+						case BehaviorType::Constrained_InWater:
+						{
+							CurrentBehaviorState.Constrained_InWater.Reset();
+							break;
+						}
+
 						case BehaviorType::Constrained_KnockedOut:
 						{
 							CurrentBehaviorState.Constrained_KnockedOut.Reset();
@@ -538,6 +567,13 @@ private:
 						{
 							CurrentBehaviorState.Constrained_Rising.Reset();
 							CurrentEquilibriumSoftTerminationDecision = 0.0f; // Start clean
+							break;
+						}
+
+						case BehaviorType::Constrained_Swimming_Style1:
+						case BehaviorType::Constrained_Swimming_Style2:
+						{
+							CurrentBehaviorState.Constrained_Swimming.Reset();
 							break;
 						}
 
@@ -1251,7 +1287,77 @@ private:
 	inline void MaintainInWorldBounds(
 		StateType & npc,
 		int npcParticleOrdinal,
-		GameParameters const & gameParameters);
+		GameParameters const & gameParameters)
+	{
+		float constexpr MaxWorldLeft = -GameParameters::HalfMaxWorldWidth;
+		float constexpr MaxWorldRight = GameParameters::HalfMaxWorldWidth;
+
+		float constexpr MaxWorldTop = GameParameters::HalfMaxWorldHeight;
+		float constexpr MaxWorldBottom = -GameParameters::HalfMaxWorldHeight;
+
+		// Elasticity of the bounce against world boundaries
+		//  - We use the ocean floor's elasticity for convenience
+		float const elasticity = gameParameters.OceanFloorElasticityCoefficient * gameParameters.ElasticityAdjustment;
+
+		// We clamp velocity to damp system instabilities at extreme events
+		static constexpr float MaxBounceVelocity = 150.0f; // Magic number
+
+		ElementIndex const p = npc.ParticleMesh.Particles[npcParticleOrdinal].ParticleIndex;
+		auto const & pos = mParticles.GetPosition(p);
+		bool hasHit = false;
+		if (pos.x < MaxWorldLeft)
+		{
+			// Simulate bounce, bounded
+			mParticles.GetPosition(p).x = std::min(MaxWorldLeft + elasticity * (MaxWorldLeft - pos.x), 0.0f);
+
+			// Bounce bounded
+			mParticles.GetVelocity(p).x = std::min(-mParticles.GetVelocity(p).x, MaxBounceVelocity);
+
+			hasHit = true;
+		}
+		else if (pos.x > MaxWorldRight)
+		{
+			// Simulate bounce, bounded
+			mParticles.GetPosition(p).x = std::max(MaxWorldRight - elasticity * (pos.x - MaxWorldRight), 0.0f);
+
+			// Bounce bounded
+			mParticles.GetVelocity(p).x = std::max(-mParticles.GetVelocity(p).x, -MaxBounceVelocity);
+
+			hasHit = true;
+		}
+
+		if (pos.y > MaxWorldTop)
+		{
+			// Simulate bounce, bounded
+			mParticles.GetPosition(p).y = std::max(MaxWorldTop - elasticity * (pos.y - MaxWorldTop), 0.0f);
+
+			// Bounce bounded
+			mParticles.GetVelocity(p).y = std::max(-mParticles.GetVelocity(p).y, -MaxBounceVelocity);
+
+			hasHit = true;
+		}
+		else if (pos.y < MaxWorldBottom)
+		{
+			// Simulate bounce, bounded
+			mParticles.GetPosition(p).y = std::min(MaxWorldBottom + elasticity * (MaxWorldBottom - pos.y), 0.0f);
+
+			// Bounce bounded
+			mParticles.GetVelocity(p).y = std::min(-mParticles.GetVelocity(p).y, MaxBounceVelocity);
+
+			hasHit = true;
+		}
+
+		assert(mParticles.GetPosition(p).x >= MaxWorldLeft);
+		assert(mParticles.GetPosition(p).x <= MaxWorldRight);
+		assert(mParticles.GetPosition(p).y >= MaxWorldBottom);
+		assert(mParticles.GetPosition(p).y <= MaxWorldTop);
+
+		if (hasHit)
+		{
+			// Avoid bouncing back and forth
+			TransitionParticleToFreeState(npc, npcParticleOrdinal);
+		}
+	}
 
 	inline void MaintainOverLand(
 		StateType & npc,
