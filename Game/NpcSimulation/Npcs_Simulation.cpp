@@ -1660,7 +1660,7 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
 
             // Make it harder for orthogonal directions to change velocity,
             // so to avoid too-quick vortices
-            float const orthoDamper = 0.1f + (std::abs(particlVelocityDirAlongWaterDir) * 0.9f);
+            float const orthoDamper = std::abs(particlVelocityDirAlongWaterDir * particlVelocityDirAlongWaterDir);
 
             vec2f const absoluteVelocityDelta =
                 waterVelocityDir
