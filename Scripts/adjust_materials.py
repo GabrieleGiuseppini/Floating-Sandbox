@@ -15,13 +15,10 @@ def adjust_material(material):
     material["laser_ray_cut_receptivity"] = val
     """
 
-    if "elasticity_coefficient" not in material:
-        material["elasticity_coefficient"] = 0.5;
-
-    if "friction_static_coefficient" not in material:
-        material["friction_static_coefficient"] = 0.25;
-    if "friction_kinetic_coefficient" not in material:
-        material["friction_kinetic_coefficient"] = 0.25;
+    if "friction_static_coefficient" in material and material["friction_static_coefficient"] == 0.25 \
+        and "friction_kinetic_coefficient" in material and material["friction_kinetic_coefficient"] == 0.25:
+        material["friction_static_coefficient"] = 1.25
+        material["friction_kinetic_coefficient"] = 0.69
 
 def main():
     
