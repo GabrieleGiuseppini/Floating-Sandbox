@@ -1672,7 +1672,7 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
                 absoluteVelocityDelta
                 / GameParameters::SimulationStepTimeDuration<float>
                 * anyWaterness // Mess with velocity only if enough water
-                * (1.0f - SmoothStep(0.0f, 0.9f, waterVelocityDir.y)) // Lower acceleration with verticality
+                * (1.0f - SmoothStep(0.0f, 0.9f, waterVelocityDir.y)) // Lower acceleration with verticality - water close to surface pushes up and we don't like that
                 * particleMass;
         }
         else

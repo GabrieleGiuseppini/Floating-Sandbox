@@ -551,18 +551,20 @@ Arch
 		+ mParentWorld.GetNpcs().ApplyXXXForce(shipId, ...)
 		+ Npcs::ApplyBlast()
 	+ Blast tool
-	= Fix: bouncing with water while swimming
-		= See if can prevent sharp changes
+	+ Fix: bouncing with water while swimming
+		+ See if can prevent sharp changes
 	- Fix: when connectivity of ship changes (e.g. because of smash), ship updates plane IDs at RenderUpload, which is
 	  too late for NPCs to pick it up (which happens at Npcs::Update) and thus NPCs disappear for a frame (they might be
 	  on a plane ID which is reassigned)
 		- @ where ships now does conn visit (RenderUpload), call parentWorld.GetNpcs().OnConnectivityChanged
-		- Npcs::OnConnectivityChanged: move here code from UpdateNpcs() which deals with planeId and connectedComponentId	
+		- Npcs::OnConnectivityChanged: move here code from UpdateNpcs() which deals with planeId and connectedComponentId
+		- Also fix bug: free NPCs go behind if ship breaks
+			- So at this moment should also re-assign plane ID of free NPCs to Ship::GetMaxPlaneId()
+
 		- Whatever solution we find, it must work also when the game is paused (and thus no Ship/Npc::Update happens)
 			- Unless we forego of correctness with pause and only do conn component at Update()
 			- Try:
 				- Move: StructureDirtyCheck from Ship::RenderUpload to end of Ship::Update()
-	- Increase static - and less but also kinetic - fiction coefficient of materials that are both 0.25
 	- Swirl, etc.: NPCs of all ships, all regimes
 		- Controlled by flag, "~force tools on NPCs"
 			- SettingsDialog
