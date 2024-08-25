@@ -1769,7 +1769,7 @@ void GameController::PublishStats(std::chrono::steady_clock::time_point nowReal)
 void GameController::OnBeginPlaceNewNpc(NpcId const & npcId)
 {
     // We want to zoom so that the NPC appears as large as 1/this of screen
-    float constexpr NpcMagnification = 10.0f;
+    float constexpr NpcMagnification = 13.0f;
 
     assert(!!mWorld);
     auto const aabb = mWorld->GetNpcs().GetAABB(npcId);

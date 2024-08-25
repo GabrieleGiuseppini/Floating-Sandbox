@@ -1619,33 +1619,61 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
             // the absolute point's velocity delta as (resultantWaterVelocity - pointRelVel).
             // Note that we use the point's *prior* relative velocity
 
-            vec2f const meshWaterVelocity = mParticles.GetMeshWaterVelocity(npcParticle.ParticleIndex);
-            float const waterVelocityMagnitude = std::min(
-                meshWaterVelocity.length(),
-                15.0f); // Crudely oppose too violent tides
-            vec2f const waterVelocityDir = meshWaterVelocity.normalise_approx(waterVelocityMagnitude);
-            float const particleRelativeVelocityMagnitude = npcParticle.ConstrainedState->MeshRelativeVelocity.dot(waterVelocityDir);
-            vec2f absoluteVelocityDelta;
-            if (particleRelativeVelocityMagnitude >= 0.0f)
+            // TODOHERE
+
+            vec2f const & waterVelocity = mParticles.GetMeshWaterVelocity(npcParticle.ParticleIndex);
+            float const waterVelocityMagnitude = waterVelocity.length();
+            vec2f const waterVelocityDir = waterVelocity.normalise_approx(waterVelocityMagnitude);
+            float const dampedWaterVelocityMagnitude = std::min(waterVelocityMagnitude, 4.0f);
+
+            vec2f const & particleVelocity = npcParticle.ConstrainedState->MeshRelativeVelocity;
+            float const particleVelocityMagnitude = particleVelocity.length();
+            vec2f const particleVelocityDir = particleVelocity.normalise_approx(particleVelocityMagnitude);
+
+            float constexpr MaxParticleVelocityForApplyingWaterVelocity = 15.0f;
+
+            float velocityIncrement;
+            float const particlVelocityDirAlongWaterDir = particleVelocityDir.dot(waterVelocityDir);
+            if (particlVelocityDirAlongWaterDir >= 0.0f)
             {
                 // The particle's relative velocity is in the same direction as the water; fill-in the remaining part
                 // (but don't slow it down)
-                float const relVelIncrement = std::max(waterVelocityMagnitude - particleRelativeVelocityMagnitude, 0.0f);
-                absoluteVelocityDelta = waterVelocityDir * relVelIncrement;
+
+                // Water velocity accrual is zero as the particle's velocity (in the water direction) approaches
+                // a maximum - so that we don't accelerate particles to the crazy velocities of the water
+                float const damper = std::max(
+                    (MaxParticleVelocityForApplyingWaterVelocity - particleVelocityMagnitude) / MaxParticleVelocityForApplyingWaterVelocity,
+                    0.0f);
+
+                velocityIncrement =
+                    std::max(dampedWaterVelocityMagnitude - particleVelocityMagnitude * particlVelocityDirAlongWaterDir, 0.0f)
+                    * damper;
             }
             else
             {
-                // The particle's relative velocity is opposite water; add what it takes to match it
-                absoluteVelocityDelta = waterVelocityDir * (waterVelocityMagnitude - particleRelativeVelocityMagnitude);
+                // The particle's relative velocity is opposite water; add what it takes to match it, but converge slowly
+
+                velocityIncrement = std::min(
+                    (dampedWaterVelocityMagnitude - particleVelocityMagnitude * particlVelocityDirAlongWaterDir) * 0.3f,
+                    MaxParticleVelocityForApplyingWaterVelocity);
             }
+
+            // Make it harder for orthogonal directions to change velocity,
+            // so to avoid too-quick vortices
+            float const orthoDamper = 0.1f + (std::abs(particlVelocityDirAlongWaterDir) * 0.9f);
+
+            vec2f const absoluteVelocityDelta =
+                waterVelocityDir
+                * velocityIncrement
+                * orthoDamper;
 
             // Since we do forces here, we apply this as a force
             preliminaryForces +=
                 absoluteVelocityDelta
                 / GameParameters::SimulationStepTimeDuration<float>
                 * anyWaterness // Mess with velocity only if enough water
-                * (1.0f - SmoothStep(0.0f, 0.9f, waterVelocityDir.y)) // Lower velocity with verticality
-                * 35.0f; // Magic number
+                * (1.0f - SmoothStep(0.0f, 0.9f, waterVelocityDir.y)) // Lower acceleration with verticality
+                * particleMass;
         }
         else
         {
