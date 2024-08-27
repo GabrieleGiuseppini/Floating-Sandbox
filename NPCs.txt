@@ -538,6 +538,9 @@ Arch
 		+ Combustion adjustment: must smother if NPC particle is free and under real waterness
 		+ Use CombustionAdjustment
 		+ Rendering: NPC flames need to go to layer above gadgets
+		- Flame size depends on current (adjusted) dimensions
+			- Fix flame size at human creation by using current dimension passed to UploadNpcFlame
+			- Then make flame size at furniture by using width
 		- Test:
 			- Burning NPC removal
 			- Depth order
@@ -554,6 +557,9 @@ Arch
 	- Fix (Verify first): NPC at bottom of ship at bottom of ocean, flooded, touching ocean floor
 		- Rethink constrained NPC becoming free when under land: should we adjust for land only when particle is free?
 			- What about other NPC constrained particles?
+	- Fix: many drums start dancing
+		- See if it's micro-bounce recoils: turn them off and see
+			- But then, ain't that how we do weight?
 	- Swirl, etc.: NPCs of all ships, all regimes
 		- Controlled by flag, "~force tools on NPCs"
 			- SettingsDialog

@@ -153,6 +153,32 @@
 				"texture_filename_stem": "crate_1"
 			},
 
+			{	
+				"name": [
+					{ "value": "Drum 1", "language": "en" },
+					{ "value": "Fusto 1", "language": "it" }
+				],
+				"material": "Iron Hull",
+				"particle_mesh": {
+					"kind": "Quad",
+					"height": 0.5
+				},
+				"texture_filename_stem": "drum_1"
+			},
+
+			{	
+				"name": [
+					{ "value": "Drum 2", "language": "en" },
+					{ "value": "Fusto 2", "language": "it" }
+				],
+				"material": "Iron Hull",
+				"particle_mesh": {
+					"kind": "Quad",
+					"height": 0.5
+				},
+				"texture_filename_stem": "drum_2"
+			},
+
 			{
 				"name": [
 					{ "value": "Particle", "language": "en" },

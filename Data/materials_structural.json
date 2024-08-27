@@ -26,6 +26,7 @@
             },
             "melting_temperature": 1588.15,
             "name": "Iron Hull",
+            "npc_buoyancy_volume_fill": 0.7,
             "palette_coordinates": {
                 "category": "Metals",
                 "sub_category": "Iron Hull",
