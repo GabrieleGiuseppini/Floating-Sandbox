@@ -14,18 +14,18 @@
 				"role": "Passenger",
 				"body_width_randomization_sensitivity": 0.0,
 				"texture_filename_stems": {
-					"head_f": "dummy_head_f",
-					"head_b": "dummy_head_b",
-					"head_s": "dummy_head_s",
-					"torso_f": "dummy_torso_f",
-					"torso_b": "dummy_torso_b",
-					"torso_s": "dummy_torso_s",
-					"arm_f": "dummy_arm_f",
-					"arm_b": "dummy_arm_b",
-					"arm_s": "dummy_arm_s",
-					"leg_f": "dummy_leg_f",
-					"leg_b": "dummy_leg_b",
-					"leg_s": "dummy_leg_s"
+					"head_f": "dummy_head_front",
+					"head_b": "dummy_head_back",
+					"head_s": "dummy_head_side",
+					"torso_f": "dummy_torso_front",
+					"torso_b": "dummy_torso_back",
+					"torso_s": "dummy_torso_side",
+					"arm_f": "dummy_arm_front",
+					"arm_b": "dummy_arm_back",
+					"arm_s": "dummy_arm_side",
+					"leg_f": "dummy_leg_front",
+					"leg_b": "dummy_leg_back",
+					"leg_s": "dummy_leg_side"
 				}
 			}
 		]
@@ -33,6 +33,42 @@
 
 	"furniture": {
 		"kinds": [
+			{	
+				"name": [
+					{ "value": "Barrel", "language": "en" },
+					{ "value": "Barile", "language": "it" }
+				],
+				"material": "Solid Pine Wood I-Beam",
+				"particle_mesh": {
+					"kind": "Quad",
+					"height": 0.4
+				},
+				"texture_filename_stem": "barrel_1"
+			},
+			{	
+				"name": [
+					{ "value": "Cabin Desk", "language": "en" },
+					{ "value": "Tavolo da Cabina", "language": "it" }
+				],
+				"material": "Solid Pine Wood I-Beam",
+				"particle_mesh": {
+					"kind": "Quad",
+					"height": 0.8
+				},
+				"texture_filename_stem": "cabin_desk_1"
+			},
+			{	
+				"name": [
+					{ "value": "Chest", "language": "en" },
+					{ "value": "Scrigno", "language": "it" }
+				],
+				"material": "Solid Pine Wood I-Beam",
+				"particle_mesh": {
+					"kind": "Quad",
+					"height": 0.3
+				},
+				"texture_filename_stem": "chest_1"
+			},
 
 			{
 				"name": [

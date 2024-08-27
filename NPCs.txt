@@ -552,7 +552,8 @@ Arch
 		+ Npcs::ApplyBlast()
 	+ Blast tool
 	- Fix (Verify first): NPC at bottom of ship at bottom of ocean, flooded, touching ocean floor
-		- Rethink constrained NPC becoming free when under land
+		- Rethink constrained NPC becoming free when under land: should we adjust for land only when particle is free?
+			- What about other NPC constrained particles?
 	- Swirl, etc.: NPCs of all ships, all regimes
 		- Controlled by flag, "~force tools on NPCs"
 			- SettingsDialog

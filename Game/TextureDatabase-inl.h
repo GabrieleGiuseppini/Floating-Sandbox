@@ -110,7 +110,7 @@ TextureDatabase<TextureDatabaseTraits> TextureDatabase<TextureDatabaseTraits>::L
 
     std::vector<FileData> allTextureFiles;
 
-    for (auto const & entryIt : std::filesystem::directory_iterator(databaseFolderPath))
+    for (auto const & entryIt : std::filesystem::recursive_directory_iterator(databaseFolderPath))
     {
         if (std::filesystem::is_regular_file(entryIt.path())
             && entryIt.path().extension().string() != ".json")
