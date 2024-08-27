@@ -8,6 +8,52 @@
 
 			{
 				"name": [
+					{ "value": "Civilian Passenger 1 - Female", "language": "en" },
+					{ "value": "Passeggero 1 - Donna", "language": "it" }
+				],
+				"role": "Passenger",
+				"body_width_randomization_sensitivity": 0.0,
+				"texture_filename_stems": {
+					"head_f": "female_civilian_passenger_1_head_front",
+					"head_b": "female_civilian_passenger_1_head_back",
+					"head_s": "female_civilian_passenger_1_head_side",
+					"torso_f": "female_civilian_passenger_1_torso_front",
+					"torso_b": "female_civilian_passenger_1_torso_back",
+					"torso_s": "female_civilian_passenger_1_torso_side",
+					"arm_f": "female_civilian_passenger_1_arm_front",
+					"arm_b": "female_civilian_passenger_1_arm_back",
+					"arm_s": "female_civilian_passenger_1_arm_side",
+					"leg_f": "female_civilian_passenger_1_leg_front",
+					"leg_b": "female_civilian_passenger_1_leg_back",
+					"leg_s": "female_civilian_passenger_1_leg_side"
+				}
+			},
+
+			{
+				"name": [
+					{ "value": "Civilian Passenger 1 - Male", "language": "en" },
+					{ "value": "Passeggero 1 - Uomo", "language": "it" }
+				],
+				"role": "Passenger",
+				"body_width_randomization_sensitivity": 0.0,
+				"texture_filename_stems": {
+					"head_f": "male_civ_1_head_front",
+					"head_b": "male_civ_1_head_back",
+					"head_s": "male_civ_1_head_side",
+					"torso_f": "male_civ_1_torso_front",
+					"torso_b": "male_civ_1_torso_back",
+					"torso_s": "male_civ_1_torso_side",
+					"arm_f": "male_civ_1_arm_front",
+					"arm_b": "male_civ_1_arm_back",
+					"arm_s": "male_civ_1_arm_side",
+					"leg_f": "male_civ_1_leg_front",
+					"leg_b": "male_civ_1_leg_back",
+					"leg_s": "male_civ_1_leg_side"
+				}
+			},
+
+			{
+				"name": [
 					{ "value": "Dummy", "language": "en" },
 					{ "value": "Dummy", "language": "it" }
 				],

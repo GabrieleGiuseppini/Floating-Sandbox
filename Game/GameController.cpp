@@ -1773,7 +1773,7 @@ void GameController::OnBeginPlaceNewNpc(NpcId const & npcId)
 
     assert(!!mWorld);
     auto const aabb = mWorld->GetNpcs().GetAABB(npcId);
-    mViewManager.FocusOn(aabb, NpcMagnification, NpcMagnification, 1.0f / 3.5f, 2.0f, true);
+    mViewManager.FocusOn(aabb, NpcMagnification, NpcMagnification, 1.0f / 8.0f, 2.0f, true);
 }
 
 bool GameController::CalculateAreCloudShadowsEnabled(OceanRenderDetailType oceanRenderDetail)
