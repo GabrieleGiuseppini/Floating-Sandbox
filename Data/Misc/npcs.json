@@ -105,8 +105,8 @@
 			},
 			{	
 				"name": [
-					{ "value": "Chest", "language": "en" },
-					{ "value": "Scrigno", "language": "it" }
+					{ "value": "Chest 1", "language": "en" },
+					{ "value": "Scrigno 1", "language": "it" }
 				],
 				"material": "Solid Pine Wood I-Beam",
 				"particle_mesh": {
@@ -114,6 +114,30 @@
 					"height": 0.3
 				},
 				"texture_filename_stem": "chest_1"
+			},
+			{	
+				"name": [
+					{ "value": "Chest 2", "language": "en" },
+					{ "value": "Scrigno 2", "language": "it" }
+				],
+				"material": "Solid Pine Wood I-Beam",
+				"particle_mesh": {
+					"kind": "Quad",
+					"height": 0.3
+				},
+				"texture_filename_stem": "chest_2"
+			},
+			{	
+				"name": [
+					{ "value": "Chest 3", "language": "en" },
+					{ "value": "Scrigno 3", "language": "it" }
+				],
+				"material": "Solid Pine Wood I-Beam",
+				"particle_mesh": {
+					"kind": "Quad",
+					"height": 0.3
+				},
+				"texture_filename_stem": "chest_3"
 			},
 
 			{
@@ -139,7 +163,47 @@
 					"kind": "Particle"
 				},
 				"texture_filename_stem": "particle_1"
+			},
+
+			{	
+				"name": [
+					{ "value": "Piano", "language": "en" },
+					{ "value": "Pianoforte", "language": "it" }
+				],
+				"material": "Solid Pine Wood I-Beam",
+				"particle_mesh": {
+					"kind": "Quad",
+					"height": 0.8
+				},
+				"texture_filename_stem": "piano_1"
+			},
+
+			{	
+				"name": [
+					{ "value": "Small Table 1", "language": "en" },
+					{ "value": "Tavolino 1", "language": "it" }
+				],
+				"material": "Solid Pine Wood I-Beam",
+				"particle_mesh": {
+					"kind": "Quad",
+					"height": 0.4
+				},
+				"texture_filename_stem": "small_table_1"
+			},
+
+			{	
+				"name": [
+					{ "value": "Small Table 2", "language": "en" },
+					{ "value": "Tavolino 2", "language": "it" }
+				],
+				"material": "Solid Pine Wood I-Beam",
+				"particle_mesh": {
+					"kind": "Quad",
+					"height": 0.4
+				},
+				"texture_filename_stem": "small_table_2"
 			}
+
 		]
 	}
 }
