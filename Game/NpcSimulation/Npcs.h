@@ -799,6 +799,8 @@ public:
 
 	void OnShipRemoved(ShipId shipId);
 
+	void OnShipConnectivityChanged(ShipId shipId);
+
 	std::optional<PickedObjectId<NpcId>> BeginPlaceNewFurnitureNpc(
 		NpcSubKindIdType subKind,
 		vec2f const & worldCoordinates,
@@ -1061,7 +1063,8 @@ private:
 
 	void TransitionParticleToFreeState(
 		StateType & npc,
-		int npcParticleOrdinal);
+		int npcParticleOrdinal,
+		Ship const & homeShip);
 
 	static std::optional<StateType::NpcParticleStateType::ConstrainedStateType> CalculateParticleConstrainedState(
 		vec2f const & position,
@@ -1304,6 +1307,7 @@ private:
 	inline void MaintainInWorldBounds(
 		StateType & npc,
 		int npcParticleOrdinal,
+		Ship const & homeShip,
 		GameParameters const & gameParameters)
 	{
 		float constexpr MaxWorldLeft = -GameParameters::HalfMaxWorldWidth;
@@ -1372,13 +1376,14 @@ private:
 		if (hasHit)
 		{
 			// Avoid bouncing back and forth
-			TransitionParticleToFreeState(npc, npcParticleOrdinal);
+			TransitionParticleToFreeState(npc, npcParticleOrdinal, homeShip);
 		}
 	}
 
 	inline void MaintainOverLand(
 		StateType & npc,
 		int npcParticleOrdinal,
+		Ship const & homeShip,
 		GameParameters const & gameParameters);
 
 	static bool IsEdgeFloorToParticle(

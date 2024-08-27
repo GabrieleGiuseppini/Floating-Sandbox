@@ -705,6 +705,9 @@ void Ship::RenderUpload(Render::RenderContext & renderContext)
 
         // Notify electrical elements
         mElectricalElements.OnPhysicalStructureChanged(mPoints);
+
+        // Notify NPCs
+        mParentWorld.GetNpcs().OnShipConnectivityChanged(mId);
     }
 
     //

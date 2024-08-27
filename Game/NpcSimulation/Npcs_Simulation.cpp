@@ -176,7 +176,8 @@ void Npcs::TransitionParticleToConstrainedState(
 
 void Npcs::TransitionParticleToFreeState(
     StateType & npc,
-    int npcParticleOrdinal)
+    int npcParticleOrdinal,
+    Ship const & homeShip)
 {
     // Transition
     npc.ParticleMesh.Particles[npcParticleOrdinal].ConstrainedState.reset();
@@ -194,6 +195,7 @@ void Npcs::TransitionParticleToFreeState(
             }
         }
 
+        npc.CurrentPlaneId = homeShip.GetMaxPlaneId();
         npc.CurrentConnectedComponentId.reset();
     }
 
@@ -201,9 +203,6 @@ void Npcs::TransitionParticleToFreeState(
     auto const oldRegime = npc.CurrentRegime;
     npc.CurrentRegime = CalculateRegime(npc);
     OnMayBeNpcRegimeChanged(oldRegime, npc);
-
-    // Note: we leave plane ID as-is, it sticks and the NPC will eventually
-    // get covered by other parts of the ship!
 }
 
 std::optional<Npcs::StateType::NpcParticleStateType::ConstrainedStateType> Npcs::CalculateParticleConstrainedState(
@@ -314,7 +313,7 @@ void Npcs::UpdateNpcs(
 
     //
     // 2. Low-frequency and high-frequency updates of Npc and NpcParticle attributes
-    // 3. Check if constrained states are still coherent (connectivity changes, etc.)
+    // 3. Check if a particle's constrained state is still valid (deleted/folded triangles)
     // 4. Check if a free secondary particle should become constrained
     // 5. Calculate preliminary forces
     // 6. Calculate spring forces
@@ -466,39 +465,20 @@ void Npcs::UpdateNpcs(
                 }
             }
 
-            // Enforce constrained state coherence and calculate preliminary forces
+            // Check validity of constrained triangles, and calculate preliminary forces
 
             for (auto p = 0; p < npcState->ParticleMesh.Particles.size(); ++p)
             {
                 auto const & particleConstrainedState = npcState->ParticleMesh.Particles[p].ConstrainedState;
                 if (particleConstrainedState.has_value())
                 {
+                    // Constrained any particle: check if its triangle is still valid
+
                     // If triangle is not workable anymore, become free
                     if (homeShip.GetTriangles().IsDeleted(particleConstrainedState->CurrentBCoords.TriangleElementIndex)
                         || IsTriangleFolded(particleConstrainedState->CurrentBCoords.TriangleElementIndex, homeShip))
                     {
-                        TransitionParticleToFreeState(*npcState, p);
-                    }
-                    else
-                    {
-                        auto const triangleRepresentativePoint = homeShip.GetTriangles().GetPointAIndex(particleConstrainedState->CurrentBCoords.TriangleElementIndex);
-                        if (p == 0)
-                        {
-                            // Primary particle: take its PlaneID and connected component as representatives for the whole NPC;
-                            // we do this here as these might have changed/reassigned in this simulation step
-
-                            npcState->CurrentPlaneId = homeShip.GetPoints().GetPlaneId(triangleRepresentativePoint);
-                            npcState->CurrentConnectedComponentId = homeShip.GetPoints().GetConnectedComponentId(triangleRepresentativePoint);
-                        }
-                        else
-                        {
-                            // Non-primary particle: make sure its connected component ID matches NPC's;
-                            // if not, we've been separated from primary and thus we become free
-                            if (homeShip.GetPoints().GetConnectedComponentId(triangleRepresentativePoint) != npcState->CurrentConnectedComponentId)
-                            {
-                                TransitionParticleToFreeState(*npcState, p);
-                            }
-                        }
+                        TransitionParticleToFreeState(*npcState, p, homeShip);
                     }
                 }
                 else if (p > 0)
@@ -547,6 +527,7 @@ void Npcs::UpdateNpcs(
                 MaintainInWorldBounds(
                     *npcState,
                     p,
+                    homeShip,
                     gameParameters);
 
                 if (npcState->CurrentRegime != StateType::RegimeType::BeingPlaced)
@@ -554,6 +535,7 @@ void Npcs::UpdateNpcs(
                     MaintainOverLand(
                         *npcState,
                         p,
+                        homeShip,
                         gameParameters);
                 }
             }
@@ -916,7 +898,7 @@ void Npcs::UpdateNpcParticlePhysics(
                         {
                             // Transition to free immediately
 
-                            TransitionParticleToFreeState(npc, npcParticleOrdinal);
+                            TransitionParticleToFreeState(npc, npcParticleOrdinal, homeShip);
 
                             UpdateNpcParticle_Free(
                                 npcParticle,
@@ -2187,7 +2169,7 @@ Npcs::ConstrainedNonInertialOutcome Npcs::UpdateNpcParticle_ConstrainedNonInerti
         {
             // Become free
 
-            TransitionParticleToFreeState(npc, npcParticleOrdinal);
+            TransitionParticleToFreeState(npc, npcParticleOrdinal, homeShip);
 
             UpdateNpcParticle_Free(
                 npcParticle,
@@ -2501,7 +2483,7 @@ float Npcs::UpdateNpcParticle_ConstrainedInertial(
             // Move to endpoint and exit, consuming whole quantum
             //
 
-            TransitionParticleToFreeState(npc, npcParticleOrdinal);
+            TransitionParticleToFreeState(npc, npcParticleOrdinal, homeShip);
 
             UpdateNpcParticle_Free(
                 npcParticle,
@@ -3315,6 +3297,7 @@ void Npcs::OnImpact(
 void Npcs::MaintainOverLand(
     StateType & npc,
     int npcParticleOrdinal,
+    Ship const & homeShip,
     GameParameters const & gameParameters)
 {
     ElementIndex const p = npc.ParticleMesh.Particles[npcParticleOrdinal].ParticleIndex;
@@ -3381,7 +3364,7 @@ void Npcs::MaintainOverLand(
         }
 
         // Become free - so to avoid bouncing back and forth
-        TransitionParticleToFreeState(npc, npcParticleOrdinal);
+        TransitionParticleToFreeState(npc, npcParticleOrdinal, homeShip);
     }
 }
 

@@ -325,6 +325,68 @@ void Npcs::OnShipRemoved(ShipId shipId)
     mShips[s].reset();
 }
 
+void Npcs::OnShipConnectivityChanged(ShipId shipId)
+{
+    //
+    // The connected component IDs of the ship have changed; do the following:
+    //  - Re-assign constrained NPCs to the (possibly new) PlaneId and ConnectedComponentID,
+    //    via the primary particle's triangle;
+    //  - Transition to free those constrained non-primaries that are now severed from primary
+    //    (i.e. whose current (real) conn comp ID is different than current (real) conn comp ID of primary);
+    //  - Assign (possibly new) MaxPlaneId/ConnectedComponentID to each free NPC.
+    //
+
+    size_t const s = static_cast<size_t>(shipId);
+
+    // We know about this ship
+    assert(s < mShips.size());
+    assert(mShips[s].has_value());
+
+    auto const & homeShip = mShips[s]->HomeShip;
+
+    for (auto const npcId : mShips[s]->Npcs)
+    {
+        assert(mStateBuffer[npcId].has_value());
+
+        auto & npcState = *mStateBuffer[npcId];
+        assert(npcState.ParticleMesh.Particles.size() > 0);
+        auto const & primaryParticle = npcState.ParticleMesh.Particles[0];
+        if (primaryParticle.ConstrainedState.has_value())
+        {
+            // NPC is constrained
+            assert(npcState.CurrentRegime == StateType::RegimeType::Constrained);
+
+            // Assign NPC's plane/ccid to the primary's
+            auto const primaryTriangleRepresentativePoint = homeShip.GetTriangles().GetPointAIndex(primaryParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex);
+            npcState.CurrentPlaneId = homeShip.GetPoints().GetPlaneId(primaryTriangleRepresentativePoint);
+            npcState.CurrentConnectedComponentId = homeShip.GetPoints().GetConnectedComponentId(primaryTriangleRepresentativePoint);
+
+            // Now visit all constained secondaries and transition to free those that have been severed from primary
+            for (int p = 1; p < npcState.ParticleMesh.Particles.size(); ++p)
+            {
+                auto & secondaryParticle = npcState.ParticleMesh.Particles[p];
+                if (secondaryParticle.ConstrainedState.has_value())
+                {
+                    auto const secondaryTriangleRepresentativePoint = homeShip.GetTriangles().GetPointAIndex(secondaryParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex);
+                    if (homeShip.GetPoints().GetConnectedComponentId(secondaryTriangleRepresentativePoint) != npcState.CurrentConnectedComponentId)
+                    {
+                        TransitionParticleToFreeState(npcState, p, homeShip);
+                    }
+                }
+            }
+        }
+        else
+        {
+            // NPC is free
+            assert(npcState.CurrentRegime == StateType::RegimeType::Free);
+
+            // Re-assign plane ID to this NPC
+            npcState.CurrentPlaneId = homeShip.GetMaxPlaneId();
+            assert(!npcState.CurrentConnectedComponentId.has_value());
+        }
+    }
+}
+
 std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
     NpcSubKindIdType subKind,
     vec2f const & worldCoordinates,
@@ -1202,6 +1264,7 @@ void Npcs::MoveBy(
                 MaintainInWorldBounds(
                     *mStateBuffer[npcId],
                     particleOrdinal,
+                    homeShip,
                     gameParameters);
             }
         }
@@ -1257,6 +1320,7 @@ void Npcs::RotateBy(
                 MaintainInWorldBounds(
                     *mStateBuffer[npcId],
                     particleOrdinal,
+                    homeShip,
                     gameParameters);
             }
         }
