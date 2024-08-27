@@ -558,8 +558,13 @@ Arch
 		- Rethink constrained NPC becoming free when under land: should we adjust for land only when particle is free?
 			- What about other NPC constrained particles?
 	- Fix: many drums start dancing
-		- See if it's micro-bounce recoils: turn them off and see
-			- But then, ain't that how we do weight?
+		! Only due to "dead weight" on triangle edge at end of Constrained_NonInertial; bounce force is fine (and cool)
+		- Try with mass update instead of force
+			- Ship::Points has NpcMass (buffer and all)
+				- Ship/Points uses it when calculating final masses
+				- Reset by Ship at end of Update() (NOT at UpdateEnd) - so that Npcs::Update adds masses for next Ship::Update
+			- Npcs adds (two of them) at same place where we add forces
+	+ Fix: sinking barrel doesn't move - add infinitesimal buoyancy chances to each particle
 	- Swirl, etc.: NPCs of all ships, all regimes
 		- Controlled by flag, "~force tools on NPCs"
 			- SettingsDialog

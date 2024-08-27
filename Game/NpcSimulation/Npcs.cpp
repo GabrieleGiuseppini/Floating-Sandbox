@@ -522,7 +522,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 
                 auto const particleIndex = mParticles.Add(
                     mass,
-                    buoyancyFactor,
+                    buoyancyFactor * GameRandomEngine::GetInstance().GenerateUniformReal(0.99f, 1.01f), // Make sure rotates while floating
                     &furnitureMaterial,
                     particlePosition,
                     furnitureMaterial.RenderColor);
