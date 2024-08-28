@@ -219,7 +219,7 @@
 					{ "value": "Piano", "language": "en" },
 					{ "value": "Pianoforte", "language": "it" }
 				],
-				"material": "Solid Pine Wood I-Beam",
+				"material": "Iron Hull",
 				"particle_mesh": {
 					"kind": "Quad",
 					"height": 0.8

@@ -530,8 +530,9 @@ void Npcs::UpdateNpcs(
                     homeShip,
                     gameParameters);
 
-                if (npcState->CurrentRegime != StateType::RegimeType::BeingPlaced)
+                if (npcState->CurrentRegime == StateType::RegimeType::Free)
                 {
+                    // Only maintain over land if _all_ particles are free
                     MaintainOverLand(
                         *npcState,
                         p,
