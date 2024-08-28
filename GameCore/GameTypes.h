@@ -1073,6 +1073,8 @@ using NpcSubKindIdType = std::uint32_t;
  */
 enum class NpcHumanRoleType
 {
+    Crew,
+    Other,
     Passenger
 };
 

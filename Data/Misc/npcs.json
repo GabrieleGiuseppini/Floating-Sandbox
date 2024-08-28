@@ -54,10 +54,33 @@
 
 			{
 				"name": [
+					{ "value": "Deckhand", "language": "en" },
+					{ "value": "Mozzo", "language": "it" }
+				],
+				"role": "Crew",
+				"body_width_randomization_sensitivity": 0.0,
+				"texture_filename_stems": {
+					"head_f": "deckhand_head_front",
+					"head_b": "deckhand_head_back",
+					"head_s": "deckhand_head_side",
+					"torso_f": "deckhand_torso_front",
+					"torso_b": "deckhand_torso_back",
+					"torso_s": "deckhand_torso_side",
+					"arm_f": "deckhand_arm_front",
+					"arm_b": "deckhand_arm_back",
+					"arm_s": "deckhand_arm_side",
+					"leg_f": "deckhand_leg_front",
+					"leg_b": "deckhand_leg_back",
+					"leg_s": "deckhand_leg_side"
+				}
+			},
+
+			{
+				"name": [
 					{ "value": "Dummy", "language": "en" },
 					{ "value": "Dummy", "language": "it" }
 				],
-				"role": "Passenger",
+				"role": "Other",
 				"body_width_randomization_sensitivity": 0.0,
 				"texture_filename_stems": {
 					"head_f": "dummy_head_front",

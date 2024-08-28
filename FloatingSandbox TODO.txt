@@ -369,6 +369,7 @@
 			- Bright mammooth - ⁵⁵𝐓𝐡𝐞 𝟐𝟒𝐭𝐡_𝐃𝐨𝐜𝐭𝐨𝐫-𝟏𝟗𝟐𝟐⁵⁵#1963
 				+ Asked name: doctor1922
 				- Add to credits
+			- Velouria
 
 - Ubuntu:
 	+ Event polling issue:

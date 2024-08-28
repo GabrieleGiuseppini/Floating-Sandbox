@@ -10,8 +10,8 @@
           "x": 4,
           "y": 16
         },
-        "displayName": "dummy_arm_back",
-        "filenameStem": "dummy_arm_back",
+        "displayName": "deckhand_arm_back",
+        "filenameStem": "deckhand_arm_back",
         "has_own_ambient_light": false,
         "id": {
           "frameIndex": 0,
@@ -27,15 +27,531 @@
         }
       },
       "frame_coordinates": {
-        "bottom": 160,
-        "left": 128
+        "bottom": 192,
+        "left": 32
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.517578125,
+        "anchorCenterX": 0.142578125,
+        "anchorCenterY": 0.814453125,
+        "bottom": 0.751953125,
+        "left": 0.126953125,
+        "right": 0.154296875,
+        "top": 0.873046875
+      },
+      "texture_space_size": {
+        "height": 0.125,
+        "width": 0.03125
+      }
+    },
+    {
+      "frame": {
+        "anchor_center": {
+          "x": 4,
+          "y": 16
+        },
+        "anchor_center_world": {
+          "x": 4,
+          "y": 16
+        },
+        "displayName": "deckhand_arm_front",
+        "filenameStem": "deckhand_arm_front",
+        "has_own_ambient_light": false,
+        "id": {
+          "frameIndex": 1,
+          "group": 0
+        },
+        "size": {
+          "height": 32,
+          "width": 8
+        },
+        "world_size": {
+          "height": 32,
+          "width": 8
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 160,
+        "left": 208
+      },
+      "texture_coordinates": {
+        "anchorCenterX": 0.830078125,
         "anchorCenterY": 0.689453125,
         "bottom": 0.626953125,
-        "left": 0.501953125,
-        "right": 0.529296875,
+        "left": 0.814453125,
+        "right": 0.841796875,
+        "top": 0.748046875
+      },
+      "texture_space_size": {
+        "height": 0.125,
+        "width": 0.03125
+      }
+    },
+    {
+      "frame": {
+        "anchor_center": {
+          "x": 4,
+          "y": 16
+        },
+        "anchor_center_world": {
+          "x": 4,
+          "y": 16
+        },
+        "displayName": "deckhand_arm_side",
+        "filenameStem": "deckhand_arm_side",
+        "has_own_ambient_light": false,
+        "id": {
+          "frameIndex": 2,
+          "group": 0
+        },
+        "size": {
+          "height": 32,
+          "width": 8
+        },
+        "world_size": {
+          "height": 32,
+          "width": 8
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 160,
+        "left": 216
+      },
+      "texture_coordinates": {
+        "anchorCenterX": 0.861328125,
+        "anchorCenterY": 0.689453125,
+        "bottom": 0.626953125,
+        "left": 0.845703125,
+        "right": 0.873046875,
+        "top": 0.748046875
+      },
+      "texture_space_size": {
+        "height": 0.125,
+        "width": 0.03125
+      }
+    },
+    {
+      "frame": {
+        "anchor_center": {
+          "x": 8,
+          "y": 8
+        },
+        "anchor_center_world": {
+          "x": 8,
+          "y": 8
+        },
+        "displayName": "deckhand_head_back",
+        "filenameStem": "deckhand_head_back",
+        "has_own_ambient_light": false,
+        "id": {
+          "frameIndex": 3,
+          "group": 0
+        },
+        "size": {
+          "height": 16,
+          "width": 16
+        },
+        "world_size": {
+          "height": 16,
+          "width": 16
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 192,
+        "left": 192
+      },
+      "texture_coordinates": {
+        "anchorCenterX": 0.783203125,
+        "anchorCenterY": 0.783203125,
+        "bottom": 0.751953125,
+        "left": 0.751953125,
+        "right": 0.810546875,
+        "top": 0.810546875
+      },
+      "texture_space_size": {
+        "height": 0.0625,
+        "width": 0.0625
+      }
+    },
+    {
+      "frame": {
+        "anchor_center": {
+          "x": 8,
+          "y": 8
+        },
+        "anchor_center_world": {
+          "x": 8,
+          "y": 8
+        },
+        "displayName": "deckhand_head_front",
+        "filenameStem": "deckhand_head_front",
+        "has_own_ambient_light": false,
+        "id": {
+          "frameIndex": 4,
+          "group": 0
+        },
+        "size": {
+          "height": 16,
+          "width": 16
+        },
+        "world_size": {
+          "height": 16,
+          "width": 16
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 192,
+        "left": 160
+      },
+      "texture_coordinates": {
+        "anchorCenterX": 0.658203125,
+        "anchorCenterY": 0.783203125,
+        "bottom": 0.751953125,
+        "left": 0.626953125,
+        "right": 0.685546875,
+        "top": 0.810546875
+      },
+      "texture_space_size": {
+        "height": 0.0625,
+        "width": 0.0625
+      }
+    },
+    {
+      "frame": {
+        "anchor_center": {
+          "x": 8,
+          "y": 8
+        },
+        "anchor_center_world": {
+          "x": 8,
+          "y": 8
+        },
+        "displayName": "deckhand_head_side",
+        "filenameStem": "deckhand_head_side",
+        "has_own_ambient_light": false,
+        "id": {
+          "frameIndex": 5,
+          "group": 0
+        },
+        "size": {
+          "height": 16,
+          "width": 16
+        },
+        "world_size": {
+          "height": 16,
+          "width": 16
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 208,
+        "left": 48
+      },
+      "texture_coordinates": {
+        "anchorCenterX": 0.220703125,
+        "anchorCenterY": 0.845703125,
+        "bottom": 0.814453125,
+        "left": 0.189453125,
+        "right": 0.248046875,
+        "top": 0.873046875
+      },
+      "texture_space_size": {
+        "height": 0.0625,
+        "width": 0.0625
+      }
+    },
+    {
+      "frame": {
+        "anchor_center": {
+          "x": 8,
+          "y": 16
+        },
+        "anchor_center_world": {
+          "x": 8,
+          "y": 16
+        },
+        "displayName": "deckhand_leg_back",
+        "filenameStem": "deckhand_leg_back",
+        "has_own_ambient_light": false,
+        "id": {
+          "frameIndex": 6,
+          "group": 0
+        },
+        "size": {
+          "height": 32,
+          "width": 16
+        },
+        "world_size": {
+          "height": 32,
+          "width": 16
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 160,
+        "left": 32
+      },
+      "texture_coordinates": {
+        "anchorCenterX": 0.158203125,
+        "anchorCenterY": 0.689453125,
+        "bottom": 0.626953125,
+        "left": 0.126953125,
+        "right": 0.185546875,
+        "top": 0.748046875
+      },
+      "texture_space_size": {
+        "height": 0.125,
+        "width": 0.0625
+      }
+    },
+    {
+      "frame": {
+        "anchor_center": {
+          "x": 8,
+          "y": 16
+        },
+        "anchor_center_world": {
+          "x": 8,
+          "y": 16
+        },
+        "displayName": "deckhand_leg_front",
+        "filenameStem": "deckhand_leg_front",
+        "has_own_ambient_light": false,
+        "id": {
+          "frameIndex": 7,
+          "group": 0
+        },
+        "size": {
+          "height": 32,
+          "width": 16
+        },
+        "world_size": {
+          "height": 32,
+          "width": 16
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 128,
+        "left": 224
+      },
+      "texture_coordinates": {
+        "anchorCenterX": 0.908203125,
+        "anchorCenterY": 0.564453125,
+        "bottom": 0.501953125,
+        "left": 0.876953125,
+        "right": 0.935546875,
+        "top": 0.623046875
+      },
+      "texture_space_size": {
+        "height": 0.125,
+        "width": 0.0625
+      }
+    },
+    {
+      "frame": {
+        "anchor_center": {
+          "x": 8,
+          "y": 16
+        },
+        "anchor_center_world": {
+          "x": 8,
+          "y": 16
+        },
+        "displayName": "deckhand_leg_side",
+        "filenameStem": "deckhand_leg_side",
+        "has_own_ambient_light": false,
+        "id": {
+          "frameIndex": 8,
+          "group": 0
+        },
+        "size": {
+          "height": 32,
+          "width": 16
+        },
+        "world_size": {
+          "height": 32,
+          "width": 16
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 160,
+        "left": 48
+      },
+      "texture_coordinates": {
+        "anchorCenterX": 0.220703125,
+        "anchorCenterY": 0.689453125,
+        "bottom": 0.626953125,
+        "left": 0.189453125,
+        "right": 0.248046875,
+        "top": 0.748046875
+      },
+      "texture_space_size": {
+        "height": 0.125,
+        "width": 0.0625
+      }
+    },
+    {
+      "frame": {
+        "anchor_center": {
+          "x": 11,
+          "y": 16
+        },
+        "anchor_center_world": {
+          "x": 11,
+          "y": 16
+        },
+        "displayName": "deckhand_torso_back",
+        "filenameStem": "deckhand_torso_back",
+        "has_own_ambient_light": false,
+        "id": {
+          "frameIndex": 9,
+          "group": 0
+        },
+        "size": {
+          "height": 32,
+          "width": 22
+        },
+        "world_size": {
+          "height": 32,
+          "width": 22
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 128,
+        "left": 101
+      },
+      "texture_coordinates": {
+        "anchorCenterX": 0.439453125,
+        "anchorCenterY": 0.564453125,
+        "bottom": 0.501953125,
+        "left": 0.396484375,
+        "right": 0.478515625,
+        "top": 0.623046875
+      },
+      "texture_space_size": {
+        "height": 0.125,
+        "width": 0.0859375
+      }
+    },
+    {
+      "frame": {
+        "anchor_center": {
+          "x": 11,
+          "y": 16
+        },
+        "anchor_center_world": {
+          "x": 11,
+          "y": 16
+        },
+        "displayName": "deckhand_torso_front",
+        "filenameStem": "deckhand_torso_front",
+        "has_own_ambient_light": false,
+        "id": {
+          "frameIndex": 10,
+          "group": 0
+        },
+        "size": {
+          "height": 32,
+          "width": 22
+        },
+        "world_size": {
+          "height": 32,
+          "width": 22
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 128,
+        "left": 133
+      },
+      "texture_coordinates": {
+        "anchorCenterX": 0.564453125,
+        "anchorCenterY": 0.564453125,
+        "bottom": 0.501953125,
+        "left": 0.521484375,
+        "right": 0.603515625,
+        "top": 0.623046875
+      },
+      "texture_space_size": {
+        "height": 0.125,
+        "width": 0.0859375
+      }
+    },
+    {
+      "frame": {
+        "anchor_center": {
+          "x": 11,
+          "y": 16
+        },
+        "anchor_center_world": {
+          "x": 11,
+          "y": 16
+        },
+        "displayName": "deckhand_torso_side",
+        "filenameStem": "deckhand_torso_side",
+        "has_own_ambient_light": false,
+        "id": {
+          "frameIndex": 11,
+          "group": 0
+        },
+        "size": {
+          "height": 32,
+          "width": 22
+        },
+        "world_size": {
+          "height": 32,
+          "width": 22
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 128,
+        "left": 165
+      },
+      "texture_coordinates": {
+        "anchorCenterX": 0.689453125,
+        "anchorCenterY": 0.564453125,
+        "bottom": 0.501953125,
+        "left": 0.646484375,
+        "right": 0.728515625,
+        "top": 0.623046875
+      },
+      "texture_space_size": {
+        "height": 0.125,
+        "width": 0.0859375
+      }
+    },
+    {
+      "frame": {
+        "anchor_center": {
+          "x": 4,
+          "y": 16
+        },
+        "anchor_center_world": {
+          "x": 4,
+          "y": 16
+        },
+        "displayName": "dummy_arm_back",
+        "filenameStem": "dummy_arm_back",
+        "has_own_ambient_light": false,
+        "id": {
+          "frameIndex": 12,
+          "group": 0
+        },
+        "size": {
+          "height": 32,
+          "width": 8
+        },
+        "world_size": {
+          "height": 32,
+          "width": 8
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 160,
+        "left": 224
+      },
+      "texture_coordinates": {
+        "anchorCenterX": 0.892578125,
+        "anchorCenterY": 0.689453125,
+        "bottom": 0.626953125,
+        "left": 0.876953125,
+        "right": 0.904296875,
         "top": 0.748046875
       },
       "texture_space_size": {
@@ -57,7 +573,7 @@
         "filenameStem": "dummy_arm_front",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 1,
+          "frameIndex": 13,
           "group": 0
         },
         "size": {
@@ -71,14 +587,14 @@
       },
       "frame_coordinates": {
         "bottom": 160,
-        "left": 64
+        "left": 232
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.267578125,
+        "anchorCenterX": 0.923828125,
         "anchorCenterY": 0.689453125,
         "bottom": 0.626953125,
-        "left": 0.251953125,
-        "right": 0.279296875,
+        "left": 0.908203125,
+        "right": 0.935546875,
         "top": 0.748046875
       },
       "texture_space_size": {
@@ -100,7 +616,7 @@
         "filenameStem": "dummy_arm_side",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 2,
+          "frameIndex": 14,
           "group": 0
         },
         "size": {
@@ -114,14 +630,14 @@
       },
       "frame_coordinates": {
         "bottom": 160,
-        "left": 72
+        "left": 240
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.298828125,
+        "anchorCenterX": 0.955078125,
         "anchorCenterY": 0.689453125,
         "bottom": 0.626953125,
-        "left": 0.283203125,
-        "right": 0.310546875,
+        "left": 0.939453125,
+        "right": 0.966796875,
         "top": 0.748046875
       },
       "texture_space_size": {
@@ -143,7 +659,7 @@
         "filenameStem": "dummy_head_back",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 3,
+          "frameIndex": 15,
           "group": 0
         },
         "size": {
@@ -156,16 +672,16 @@
         }
       },
       "frame_coordinates": {
-        "bottom": 160,
-        "left": 232
+        "bottom": 192,
+        "left": 240
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.939453125,
-        "anchorCenterY": 0.658203125,
-        "bottom": 0.626953125,
-        "left": 0.908203125,
-        "right": 0.966796875,
-        "top": 0.685546875
+        "anchorCenterX": 0.970703125,
+        "anchorCenterY": 0.783203125,
+        "bottom": 0.751953125,
+        "left": 0.939453125,
+        "right": 0.998046875,
+        "top": 0.810546875
       },
       "texture_space_size": {
         "height": 0.0625,
@@ -186,7 +702,7 @@
         "filenameStem": "dummy_head_front",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 4,
+          "frameIndex": 16,
           "group": 0
         },
         "size": {
@@ -199,16 +715,16 @@
         }
       },
       "frame_coordinates": {
-        "bottom": 176,
-        "left": 136
+        "bottom": 192,
+        "left": 224
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.564453125,
-        "anchorCenterY": 0.720703125,
-        "bottom": 0.689453125,
-        "left": 0.533203125,
-        "right": 0.591796875,
-        "top": 0.748046875
+        "anchorCenterX": 0.908203125,
+        "anchorCenterY": 0.783203125,
+        "bottom": 0.751953125,
+        "left": 0.876953125,
+        "right": 0.935546875,
+        "top": 0.810546875
       },
       "texture_space_size": {
         "height": 0.0625,
@@ -229,7 +745,7 @@
         "filenameStem": "dummy_head_side",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 5,
+          "frameIndex": 17,
           "group": 0
         },
         "size": {
@@ -242,16 +758,16 @@
         }
       },
       "frame_coordinates": {
-        "bottom": 176,
-        "left": 152
+        "bottom": 192,
+        "left": 208
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.626953125,
-        "anchorCenterY": 0.720703125,
-        "bottom": 0.689453125,
-        "left": 0.595703125,
-        "right": 0.654296875,
-        "top": 0.748046875
+        "anchorCenterX": 0.845703125,
+        "anchorCenterY": 0.783203125,
+        "bottom": 0.751953125,
+        "left": 0.814453125,
+        "right": 0.873046875,
+        "top": 0.810546875
       },
       "texture_space_size": {
         "height": 0.0625,
@@ -272,7 +788,7 @@
         "filenameStem": "dummy_leg_back",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 6,
+          "frameIndex": 18,
           "group": 0
         },
         "size": {
@@ -285,16 +801,16 @@
         }
       },
       "frame_coordinates": {
-        "bottom": 128,
-        "left": 128
+        "bottom": 160,
+        "left": 80
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.533203125,
-        "anchorCenterY": 0.564453125,
-        "bottom": 0.501953125,
-        "left": 0.501953125,
-        "right": 0.560546875,
-        "top": 0.623046875
+        "anchorCenterX": 0.345703125,
+        "anchorCenterY": 0.689453125,
+        "bottom": 0.626953125,
+        "left": 0.314453125,
+        "right": 0.373046875,
+        "top": 0.748046875
       },
       "texture_space_size": {
         "height": 0.125,
@@ -315,7 +831,7 @@
         "filenameStem": "dummy_leg_front",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 7,
+          "frameIndex": 19,
           "group": 0
         },
         "size": {
@@ -328,16 +844,16 @@
         }
       },
       "frame_coordinates": {
-        "bottom": 128,
-        "left": 144
+        "bottom": 160,
+        "left": 96
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.595703125,
-        "anchorCenterY": 0.564453125,
-        "bottom": 0.501953125,
-        "left": 0.564453125,
-        "right": 0.623046875,
-        "top": 0.623046875
+        "anchorCenterX": 0.408203125,
+        "anchorCenterY": 0.689453125,
+        "bottom": 0.626953125,
+        "left": 0.376953125,
+        "right": 0.435546875,
+        "top": 0.748046875
       },
       "texture_space_size": {
         "height": 0.125,
@@ -358,7 +874,7 @@
         "filenameStem": "dummy_leg_side",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 8,
+          "frameIndex": 20,
           "group": 0
         },
         "size": {
@@ -371,16 +887,16 @@
         }
       },
       "frame_coordinates": {
-        "bottom": 128,
-        "left": 160
+        "bottom": 160,
+        "left": 0
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.658203125,
-        "anchorCenterY": 0.564453125,
-        "bottom": 0.501953125,
-        "left": 0.626953125,
-        "right": 0.685546875,
-        "top": 0.623046875
+        "anchorCenterX": 0.033203125,
+        "anchorCenterY": 0.689453125,
+        "bottom": 0.626953125,
+        "left": 0.001953125,
+        "right": 0.060546875,
+        "top": 0.748046875
       },
       "texture_space_size": {
         "height": 0.125,
@@ -401,7 +917,7 @@
         "filenameStem": "dummy_torso_back",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 9,
+          "frameIndex": 21,
           "group": 0
         },
         "size": {
@@ -444,7 +960,7 @@
         "filenameStem": "dummy_torso_front",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 10,
+          "frameIndex": 22,
           "group": 0
         },
         "size": {
@@ -458,14 +974,14 @@
       },
       "frame_coordinates": {
         "bottom": 128,
-        "left": 101
+        "left": 197
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.439453125,
+        "anchorCenterX": 0.814453125,
         "anchorCenterY": 0.564453125,
         "bottom": 0.501953125,
-        "left": 0.396484375,
-        "right": 0.478515625,
+        "left": 0.771484375,
+        "right": 0.853515625,
         "top": 0.623046875
       },
       "texture_space_size": {
@@ -487,7 +1003,7 @@
         "filenameStem": "dummy_torso_side",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 11,
+          "frameIndex": 23,
           "group": 0
         },
         "size": {
@@ -500,16 +1016,16 @@
         }
       },
       "frame_coordinates": {
-        "bottom": 64,
-        "left": 197
+        "bottom": 128,
+        "left": 37
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.814453125,
-        "anchorCenterY": 0.314453125,
-        "bottom": 0.251953125,
-        "left": 0.771484375,
-        "right": 0.853515625,
-        "top": 0.373046875
+        "anchorCenterX": 0.189453125,
+        "anchorCenterY": 0.564453125,
+        "bottom": 0.501953125,
+        "left": 0.146484375,
+        "right": 0.228515625,
+        "top": 0.623046875
       },
       "texture_space_size": {
         "height": 0.125,
@@ -530,7 +1046,7 @@
         "filenameStem": "female_civilian_passenger_1_arm_back",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 12,
+          "frameIndex": 24,
           "group": 0
         },
         "size": {
@@ -544,14 +1060,14 @@
       },
       "frame_coordinates": {
         "bottom": 160,
-        "left": 80
+        "left": 248
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.330078125,
+        "anchorCenterX": 0.986328125,
         "anchorCenterY": 0.689453125,
         "bottom": 0.626953125,
-        "left": 0.314453125,
-        "right": 0.341796875,
+        "left": 0.970703125,
+        "right": 0.998046875,
         "top": 0.748046875
       },
       "texture_space_size": {
@@ -573,7 +1089,7 @@
         "filenameStem": "female_civilian_passenger_1_arm_front",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 13,
+          "frameIndex": 25,
           "group": 0
         },
         "size": {
@@ -586,16 +1102,16 @@
         }
       },
       "frame_coordinates": {
-        "bottom": 160,
-        "left": 88
+        "bottom": 192,
+        "left": 0
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.361328125,
-        "anchorCenterY": 0.689453125,
-        "bottom": 0.626953125,
-        "left": 0.345703125,
-        "right": 0.373046875,
-        "top": 0.748046875
+        "anchorCenterX": 0.017578125,
+        "anchorCenterY": 0.814453125,
+        "bottom": 0.751953125,
+        "left": 0.001953125,
+        "right": 0.029296875,
+        "top": 0.873046875
       },
       "texture_space_size": {
         "height": 0.125,
@@ -616,7 +1132,7 @@
         "filenameStem": "female_civilian_passenger_1_arm_side",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 14,
+          "frameIndex": 26,
           "group": 0
         },
         "size": {
@@ -629,16 +1145,16 @@
         }
       },
       "frame_coordinates": {
-        "bottom": 160,
-        "left": 96
+        "bottom": 192,
+        "left": 40
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.392578125,
-        "anchorCenterY": 0.689453125,
-        "bottom": 0.626953125,
-        "left": 0.376953125,
-        "right": 0.404296875,
-        "top": 0.748046875
+        "anchorCenterX": 0.173828125,
+        "anchorCenterY": 0.814453125,
+        "bottom": 0.751953125,
+        "left": 0.158203125,
+        "right": 0.185546875,
+        "top": 0.873046875
       },
       "texture_space_size": {
         "height": 0.125,
@@ -659,7 +1175,7 @@
         "filenameStem": "female_civilian_passenger_1_head_back",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 15,
+          "frameIndex": 27,
           "group": 0
         },
         "size": {
@@ -672,16 +1188,16 @@
         }
       },
       "frame_coordinates": {
-        "bottom": 134,
-        "left": 176
+        "bottom": 166,
+        "left": 192
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.720703125,
-        "anchorCenterY": 0.564453125,
-        "bottom": 0.525390625,
-        "left": 0.689453125,
-        "right": 0.748046875,
-        "top": 0.599609375
+        "anchorCenterX": 0.783203125,
+        "anchorCenterY": 0.689453125,
+        "bottom": 0.650390625,
+        "left": 0.751953125,
+        "right": 0.810546875,
+        "top": 0.724609375
       },
       "texture_space_size": {
         "height": 0.078125,
@@ -702,7 +1218,7 @@
         "filenameStem": "female_civilian_passenger_1_head_front",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 16,
+          "frameIndex": 28,
           "group": 0
         },
         "size": {
@@ -715,16 +1231,16 @@
         }
       },
       "frame_coordinates": {
-        "bottom": 134,
-        "left": 192
+        "bottom": 166,
+        "left": 128
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.783203125,
-        "anchorCenterY": 0.564453125,
-        "bottom": 0.525390625,
-        "left": 0.751953125,
-        "right": 0.810546875,
-        "top": 0.599609375
+        "anchorCenterX": 0.533203125,
+        "anchorCenterY": 0.689453125,
+        "bottom": 0.650390625,
+        "left": 0.501953125,
+        "right": 0.560546875,
+        "top": 0.724609375
       },
       "texture_space_size": {
         "height": 0.078125,
@@ -745,7 +1261,7 @@
         "filenameStem": "female_civilian_passenger_1_head_side",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 17,
+          "frameIndex": 29,
           "group": 0
         },
         "size": {
@@ -759,14 +1275,14 @@
       },
       "frame_coordinates": {
         "bottom": 134,
-        "left": 224
+        "left": 240
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.908203125,
+        "anchorCenterX": 0.970703125,
         "anchorCenterY": 0.564453125,
         "bottom": 0.525390625,
-        "left": 0.876953125,
-        "right": 0.935546875,
+        "left": 0.939453125,
+        "right": 0.998046875,
         "top": 0.599609375
       },
       "texture_space_size": {
@@ -788,7 +1304,7 @@
         "filenameStem": "female_civilian_passenger_1_leg_back",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 18,
+          "frameIndex": 30,
           "group": 0
         },
         "size": {
@@ -802,14 +1318,14 @@
       },
       "frame_coordinates": {
         "bottom": 160,
-        "left": 48
+        "left": 112
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.220703125,
+        "anchorCenterX": 0.470703125,
         "anchorCenterY": 0.689453125,
         "bottom": 0.626953125,
-        "left": 0.189453125,
-        "right": 0.248046875,
+        "left": 0.439453125,
+        "right": 0.498046875,
         "top": 0.748046875
       },
       "texture_space_size": {
@@ -831,7 +1347,7 @@
         "filenameStem": "female_civilian_passenger_1_leg_front",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 19,
+          "frameIndex": 31,
           "group": 0
         },
         "size": {
@@ -844,16 +1360,16 @@
         }
       },
       "frame_coordinates": {
-        "bottom": 128,
-        "left": 208
+        "bottom": 160,
+        "left": 64
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.845703125,
-        "anchorCenterY": 0.564453125,
-        "bottom": 0.501953125,
-        "left": 0.814453125,
-        "right": 0.873046875,
-        "top": 0.623046875
+        "anchorCenterX": 0.283203125,
+        "anchorCenterY": 0.689453125,
+        "bottom": 0.626953125,
+        "left": 0.251953125,
+        "right": 0.310546875,
+        "top": 0.748046875
       },
       "texture_space_size": {
         "height": 0.125,
@@ -874,7 +1390,7 @@
         "filenameStem": "female_civilian_passenger_1_leg_side",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 20,
+          "frameIndex": 32,
           "group": 0
         },
         "size": {
@@ -888,14 +1404,14 @@
       },
       "frame_coordinates": {
         "bottom": 160,
-        "left": 32
+        "left": 16
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.158203125,
+        "anchorCenterX": 0.095703125,
         "anchorCenterY": 0.689453125,
         "bottom": 0.626953125,
-        "left": 0.126953125,
-        "right": 0.185546875,
+        "left": 0.064453125,
+        "right": 0.123046875,
         "top": 0.748046875
       },
       "texture_space_size": {
@@ -917,7 +1433,7 @@
         "filenameStem": "female_civilian_passenger_1_torso_back",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 21,
+          "frameIndex": 33,
           "group": 0
         },
         "size": {
@@ -960,7 +1476,7 @@
         "filenameStem": "female_civilian_passenger_1_torso_front",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 22,
+          "frameIndex": 34,
           "group": 0
         },
         "size": {
@@ -973,16 +1489,16 @@
         }
       },
       "frame_coordinates": {
-        "bottom": 9,
+        "bottom": 73,
         "left": 67
       },
       "texture_coordinates": {
         "anchorCenterX": 0.314453125,
-        "anchorCenterY": 0.126953125,
-        "bottom": 0.037109375,
+        "anchorCenterY": 0.376953125,
+        "bottom": 0.287109375,
         "left": 0.263671875,
         "right": 0.361328125,
-        "top": 0.212890625
+        "top": 0.462890625
       },
       "texture_space_size": {
         "height": 0.1796875,
@@ -1003,7 +1519,7 @@
         "filenameStem": "female_civilian_passenger_1_torso_side",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 23,
+          "frameIndex": 35,
           "group": 0
         },
         "size": {
@@ -1016,16 +1532,16 @@
         }
       },
       "frame_coordinates": {
-        "bottom": 9,
-        "left": 99
+        "bottom": 73,
+        "left": 35
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.439453125,
-        "anchorCenterY": 0.126953125,
-        "bottom": 0.037109375,
-        "left": 0.388671875,
-        "right": 0.486328125,
-        "top": 0.212890625
+        "anchorCenterX": 0.189453125,
+        "anchorCenterY": 0.376953125,
+        "bottom": 0.287109375,
+        "left": 0.138671875,
+        "right": 0.236328125,
+        "top": 0.462890625
       },
       "texture_space_size": {
         "height": 0.1796875,
@@ -1046,7 +1562,7 @@
         "filenameStem": "barrel_1",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 24,
+          "frameIndex": 36,
           "group": 0
         },
         "size": {
@@ -1089,7 +1605,7 @@
         "filenameStem": "cabin_desk_1",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 25,
+          "frameIndex": 37,
           "group": 0
         },
         "size": {
@@ -1132,7 +1648,7 @@
         "filenameStem": "chest_1",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 26,
+          "frameIndex": 38,
           "group": 0
         },
         "size": {
@@ -1145,16 +1661,16 @@
         }
       },
       "frame_coordinates": {
-        "bottom": 160,
-        "left": 141
+        "bottom": 192,
+        "left": 117
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.595703125,
-        "anchorCenterY": 0.658203125,
-        "bottom": 0.626953125,
-        "left": 0.552734375,
-        "right": 0.634765625,
-        "top": 0.685546875
+        "anchorCenterX": 0.501953125,
+        "anchorCenterY": 0.783203125,
+        "bottom": 0.751953125,
+        "left": 0.458984375,
+        "right": 0.541015625,
+        "top": 0.810546875
       },
       "texture_space_size": {
         "height": 0.0625,
@@ -1175,7 +1691,7 @@
         "filenameStem": "chest_2",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 27,
+          "frameIndex": 39,
           "group": 0
         },
         "size": {
@@ -1188,16 +1704,16 @@
         }
       },
       "frame_coordinates": {
-        "bottom": 160,
-        "left": 173
+        "bottom": 192,
+        "left": 53
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.720703125,
-        "anchorCenterY": 0.658203125,
-        "bottom": 0.626953125,
-        "left": 0.677734375,
-        "right": 0.759765625,
-        "top": 0.685546875
+        "anchorCenterX": 0.251953125,
+        "anchorCenterY": 0.783203125,
+        "bottom": 0.751953125,
+        "left": 0.208984375,
+        "right": 0.291015625,
+        "top": 0.810546875
       },
       "texture_space_size": {
         "height": 0.0625,
@@ -1218,7 +1734,7 @@
         "filenameStem": "chest_3",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 28,
+          "frameIndex": 40,
           "group": 0
         },
         "size": {
@@ -1231,16 +1747,16 @@
         }
       },
       "frame_coordinates": {
-        "bottom": 160,
-        "left": 205
+        "bottom": 192,
+        "left": 85
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.845703125,
-        "anchorCenterY": 0.658203125,
-        "bottom": 0.626953125,
-        "left": 0.802734375,
-        "right": 0.884765625,
-        "top": 0.685546875
+        "anchorCenterX": 0.376953125,
+        "anchorCenterY": 0.783203125,
+        "bottom": 0.751953125,
+        "left": 0.333984375,
+        "right": 0.416015625,
+        "top": 0.810546875
       },
       "texture_space_size": {
         "height": 0.0625,
@@ -1261,136 +1777,7 @@
         "filenameStem": "crate_1",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 29,
-          "group": 0
-        },
-        "size": {
-          "height": 32,
-          "width": 32
-        },
-        "world_size": {
-          "height": 32,
-          "width": 32
-        }
-      },
-      "frame_coordinates": {
-        "bottom": 128,
-        "left": 32
-      },
-      "texture_coordinates": {
-        "anchorCenterX": 0.189453125,
-        "anchorCenterY": 0.564453125,
-        "bottom": 0.501953125,
-        "left": 0.126953125,
-        "right": 0.248046875,
-        "top": 0.623046875
-      },
-      "texture_space_size": {
-        "height": 0.125,
-        "width": 0.125
-      }
-    },
-    {
-      "frame": {
-        "anchor_center": {
-          "x": 13,
-          "y": 17
-        },
-        "anchor_center_world": {
-          "x": 13,
-          "y": 17
-        },
-        "displayName": "drum_1",
-        "filenameStem": "drum_1",
-        "has_own_ambient_light": false,
-        "id": {
-          "frameIndex": 30,
-          "group": 0
-        },
-        "size": {
-          "height": 34,
-          "width": 26
-        },
-        "world_size": {
-          "height": 34,
-          "width": 26
-        }
-      },
-      "frame_coordinates": {
-        "bottom": 79,
-        "left": 67
-      },
-      "texture_coordinates": {
-        "anchorCenterX": 0.314453125,
-        "anchorCenterY": 0.376953125,
-        "bottom": 0.310546875,
-        "left": 0.263671875,
-        "right": 0.361328125,
-        "top": 0.439453125
-      },
-      "texture_space_size": {
-        "height": 0.1328125,
-        "width": 0.1015625
-      }
-    },
-    {
-      "frame": {
-        "anchor_center": {
-          "x": 13,
-          "y": 17
-        },
-        "anchor_center_world": {
-          "x": 13,
-          "y": 17
-        },
-        "displayName": "drum_2",
-        "filenameStem": "drum_2",
-        "has_own_ambient_light": false,
-        "id": {
-          "frameIndex": 31,
-          "group": 0
-        },
-        "size": {
-          "height": 34,
-          "width": 26
-        },
-        "world_size": {
-          "height": 34,
-          "width": 26
-        }
-      },
-      "frame_coordinates": {
-        "bottom": 79,
-        "left": 35
-      },
-      "texture_coordinates": {
-        "anchorCenterX": 0.189453125,
-        "anchorCenterY": 0.376953125,
-        "bottom": 0.310546875,
-        "left": 0.138671875,
-        "right": 0.236328125,
-        "top": 0.439453125
-      },
-      "texture_space_size": {
-        "height": 0.1328125,
-        "width": 0.1015625
-      }
-    },
-    {
-      "frame": {
-        "anchor_center": {
-          "x": 16,
-          "y": 16
-        },
-        "anchor_center_world": {
-          "x": 16,
-          "y": 16
-        },
-        "displayName": "particle_1",
-        "filenameStem": "particle_1",
-        "has_own_ambient_light": false,
-        "id": {
-          "frameIndex": 32,
+          "frameIndex": 41,
           "group": 0
         },
         "size": {
@@ -1422,6 +1809,135 @@
     {
       "frame": {
         "anchor_center": {
+          "x": 13,
+          "y": 17
+        },
+        "anchor_center_world": {
+          "x": 13,
+          "y": 17
+        },
+        "displayName": "drum_1",
+        "filenameStem": "drum_1",
+        "has_own_ambient_light": false,
+        "id": {
+          "frameIndex": 42,
+          "group": 0
+        },
+        "size": {
+          "height": 34,
+          "width": 26
+        },
+        "world_size": {
+          "height": 34,
+          "width": 26
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 15,
+        "left": 99
+      },
+      "texture_coordinates": {
+        "anchorCenterX": 0.439453125,
+        "anchorCenterY": 0.126953125,
+        "bottom": 0.060546875,
+        "left": 0.388671875,
+        "right": 0.486328125,
+        "top": 0.189453125
+      },
+      "texture_space_size": {
+        "height": 0.1328125,
+        "width": 0.1015625
+      }
+    },
+    {
+      "frame": {
+        "anchor_center": {
+          "x": 13,
+          "y": 17
+        },
+        "anchor_center_world": {
+          "x": 13,
+          "y": 17
+        },
+        "displayName": "drum_2",
+        "filenameStem": "drum_2",
+        "has_own_ambient_light": false,
+        "id": {
+          "frameIndex": 43,
+          "group": 0
+        },
+        "size": {
+          "height": 34,
+          "width": 26
+        },
+        "world_size": {
+          "height": 34,
+          "width": 26
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 15,
+        "left": 67
+      },
+      "texture_coordinates": {
+        "anchorCenterX": 0.314453125,
+        "anchorCenterY": 0.126953125,
+        "bottom": 0.060546875,
+        "left": 0.263671875,
+        "right": 0.361328125,
+        "top": 0.189453125
+      },
+      "texture_space_size": {
+        "height": 0.1328125,
+        "width": 0.1015625
+      }
+    },
+    {
+      "frame": {
+        "anchor_center": {
+          "x": 16,
+          "y": 16
+        },
+        "anchor_center_world": {
+          "x": 16,
+          "y": 16
+        },
+        "displayName": "particle_1",
+        "filenameStem": "particle_1",
+        "has_own_ambient_light": false,
+        "id": {
+          "frameIndex": 44,
+          "group": 0
+        },
+        "size": {
+          "height": 32,
+          "width": 32
+        },
+        "world_size": {
+          "height": 32,
+          "width": 32
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 96,
+        "left": 128
+      },
+      "texture_coordinates": {
+        "anchorCenterX": 0.564453125,
+        "anchorCenterY": 0.439453125,
+        "bottom": 0.376953125,
+        "left": 0.501953125,
+        "right": 0.623046875,
+        "top": 0.498046875
+      },
+      "texture_space_size": {
+        "height": 0.125,
+        "width": 0.125
+      }
+    },
+    {
+      "frame": {
+        "anchor_center": {
           "x": 25,
           "y": 16
         },
@@ -1433,7 +1949,7 @@
         "filenameStem": "piano_1",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 33,
+          "frameIndex": 45,
           "group": 0
         },
         "size": {
@@ -1476,7 +1992,7 @@
         "filenameStem": "small_table_1",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 34,
+          "frameIndex": 46,
           "group": 0
         },
         "size": {
@@ -1490,14 +2006,14 @@
       },
       "frame_coordinates": {
         "bottom": 97,
-        "left": 128
+        "left": 160
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.564453125,
+        "anchorCenterX": 0.689453125,
         "anchorCenterY": 0.439453125,
         "bottom": 0.380859375,
-        "left": 0.501953125,
-        "right": 0.623046875,
+        "left": 0.626953125,
+        "right": 0.748046875,
         "top": 0.494140625
       },
       "texture_space_size": {
@@ -1519,7 +2035,7 @@
         "filenameStem": "small_table_2",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 35,
+          "frameIndex": 47,
           "group": 0
         },
         "size": {
@@ -1533,14 +2049,14 @@
       },
       "frame_coordinates": {
         "bottom": 96,
-        "left": 160
+        "left": 192
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.689453125,
+        "anchorCenterX": 0.814453125,
         "anchorCenterY": 0.435546875,
         "bottom": 0.376953125,
-        "left": 0.626953125,
-        "right": 0.748046875,
+        "left": 0.751953125,
+        "right": 0.873046875,
         "top": 0.494140625
       },
       "texture_space_size": {
@@ -1562,7 +2078,7 @@
         "filenameStem": "male_civ_1_arm_back",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 36,
+          "frameIndex": 48,
           "group": 0
         },
         "size": {
@@ -1575,16 +2091,16 @@
         }
       },
       "frame_coordinates": {
-        "bottom": 160,
-        "left": 104
+        "bottom": 192,
+        "left": 8
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.423828125,
-        "anchorCenterY": 0.689453125,
-        "bottom": 0.626953125,
-        "left": 0.408203125,
-        "right": 0.435546875,
-        "top": 0.748046875
+        "anchorCenterX": 0.048828125,
+        "anchorCenterY": 0.814453125,
+        "bottom": 0.751953125,
+        "left": 0.033203125,
+        "right": 0.060546875,
+        "top": 0.873046875
       },
       "texture_space_size": {
         "height": 0.125,
@@ -1605,7 +2121,7 @@
         "filenameStem": "male_civ_1_arm_front",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 37,
+          "frameIndex": 49,
           "group": 0
         },
         "size": {
@@ -1618,16 +2134,16 @@
         }
       },
       "frame_coordinates": {
-        "bottom": 160,
-        "left": 112
+        "bottom": 192,
+        "left": 16
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.455078125,
-        "anchorCenterY": 0.689453125,
-        "bottom": 0.626953125,
-        "left": 0.439453125,
-        "right": 0.466796875,
-        "top": 0.748046875
+        "anchorCenterX": 0.080078125,
+        "anchorCenterY": 0.814453125,
+        "bottom": 0.751953125,
+        "left": 0.064453125,
+        "right": 0.091796875,
+        "top": 0.873046875
       },
       "texture_space_size": {
         "height": 0.125,
@@ -1648,7 +2164,7 @@
         "filenameStem": "male_civ_1_arm_side",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 38,
+          "frameIndex": 50,
           "group": 0
         },
         "size": {
@@ -1661,16 +2177,16 @@
         }
       },
       "frame_coordinates": {
-        "bottom": 160,
-        "left": 120
+        "bottom": 192,
+        "left": 24
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.486328125,
-        "anchorCenterY": 0.689453125,
-        "bottom": 0.626953125,
-        "left": 0.470703125,
-        "right": 0.498046875,
-        "top": 0.748046875
+        "anchorCenterX": 0.111328125,
+        "anchorCenterY": 0.814453125,
+        "bottom": 0.751953125,
+        "left": 0.095703125,
+        "right": 0.123046875,
+        "top": 0.873046875
       },
       "texture_space_size": {
         "height": 0.125,
@@ -1691,7 +2207,7 @@
         "filenameStem": "male_civ_1_head_back",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 39,
+          "frameIndex": 51,
           "group": 0
         },
         "size": {
@@ -1704,16 +2220,16 @@
         }
       },
       "frame_coordinates": {
-        "bottom": 176,
-        "left": 168
+        "bottom": 192,
+        "left": 144
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.689453125,
-        "anchorCenterY": 0.720703125,
-        "bottom": 0.689453125,
-        "left": 0.658203125,
-        "right": 0.716796875,
-        "top": 0.748046875
+        "anchorCenterX": 0.595703125,
+        "anchorCenterY": 0.783203125,
+        "bottom": 0.751953125,
+        "left": 0.564453125,
+        "right": 0.623046875,
+        "top": 0.810546875
       },
       "texture_space_size": {
         "height": 0.0625,
@@ -1734,7 +2250,7 @@
         "filenameStem": "male_civ_1_head_front",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 40,
+          "frameIndex": 52,
           "group": 0
         },
         "size": {
@@ -1747,16 +2263,16 @@
         }
       },
       "frame_coordinates": {
-        "bottom": 176,
-        "left": 184
+        "bottom": 208,
+        "left": 64
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.751953125,
-        "anchorCenterY": 0.720703125,
-        "bottom": 0.689453125,
-        "left": 0.720703125,
-        "right": 0.779296875,
-        "top": 0.748046875
+        "anchorCenterX": 0.283203125,
+        "anchorCenterY": 0.845703125,
+        "bottom": 0.814453125,
+        "left": 0.251953125,
+        "right": 0.310546875,
+        "top": 0.873046875
       },
       "texture_space_size": {
         "height": 0.0625,
@@ -1777,7 +2293,7 @@
         "filenameStem": "male_civ_1_head_side",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 41,
+          "frameIndex": 53,
           "group": 0
         },
         "size": {
@@ -1790,16 +2306,16 @@
         }
       },
       "frame_coordinates": {
-        "bottom": 176,
-        "left": 200
+        "bottom": 192,
+        "left": 176
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.814453125,
-        "anchorCenterY": 0.720703125,
-        "bottom": 0.689453125,
-        "left": 0.783203125,
-        "right": 0.841796875,
-        "top": 0.748046875
+        "anchorCenterX": 0.720703125,
+        "anchorCenterY": 0.783203125,
+        "bottom": 0.751953125,
+        "left": 0.689453125,
+        "right": 0.748046875,
+        "top": 0.810546875
       },
       "texture_space_size": {
         "height": 0.0625,
@@ -1820,7 +2336,7 @@
         "filenameStem": "male_civ_1_leg_back",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 42,
+          "frameIndex": 54,
           "group": 0
         },
         "size": {
@@ -1833,16 +2349,16 @@
         }
       },
       "frame_coordinates": {
-        "bottom": 128,
-        "left": 240
+        "bottom": 160,
+        "left": 144
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.970703125,
-        "anchorCenterY": 0.564453125,
-        "bottom": 0.501953125,
-        "left": 0.939453125,
-        "right": 0.998046875,
-        "top": 0.623046875
+        "anchorCenterX": 0.595703125,
+        "anchorCenterY": 0.689453125,
+        "bottom": 0.626953125,
+        "left": 0.564453125,
+        "right": 0.623046875,
+        "top": 0.748046875
       },
       "texture_space_size": {
         "height": 0.125,
@@ -1863,7 +2379,7 @@
         "filenameStem": "male_civ_1_leg_front",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 43,
+          "frameIndex": 55,
           "group": 0
         },
         "size": {
@@ -1877,14 +2393,14 @@
       },
       "frame_coordinates": {
         "bottom": 160,
-        "left": 0
+        "left": 160
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.033203125,
+        "anchorCenterX": 0.658203125,
         "anchorCenterY": 0.689453125,
         "bottom": 0.626953125,
-        "left": 0.001953125,
-        "right": 0.060546875,
+        "left": 0.626953125,
+        "right": 0.685546875,
         "top": 0.748046875
       },
       "texture_space_size": {
@@ -1906,7 +2422,7 @@
         "filenameStem": "male_civ_1_leg_side",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 44,
+          "frameIndex": 56,
           "group": 0
         },
         "size": {
@@ -1920,14 +2436,14 @@
       },
       "frame_coordinates": {
         "bottom": 160,
-        "left": 16
+        "left": 176
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.095703125,
+        "anchorCenterX": 0.720703125,
         "anchorCenterY": 0.689453125,
         "bottom": 0.626953125,
-        "left": 0.064453125,
-        "right": 0.123046875,
+        "left": 0.689453125,
+        "right": 0.748046875,
         "top": 0.748046875
       },
       "texture_space_size": {
@@ -1949,50 +2465,7 @@
         "filenameStem": "male_civ_1_torso_back",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 45,
-          "group": 0
-        },
-        "size": {
-          "height": 32,
-          "width": 22
-        },
-        "world_size": {
-          "height": 32,
-          "width": 22
-        }
-      },
-      "frame_coordinates": {
-        "bottom": 96,
-        "left": 197
-      },
-      "texture_coordinates": {
-        "anchorCenterX": 0.814453125,
-        "anchorCenterY": 0.439453125,
-        "bottom": 0.376953125,
-        "left": 0.771484375,
-        "right": 0.853515625,
-        "top": 0.498046875
-      },
-      "texture_space_size": {
-        "height": 0.125,
-        "width": 0.0859375
-      }
-    },
-    {
-      "frame": {
-        "anchor_center": {
-          "x": 11,
-          "y": 16
-        },
-        "anchor_center_world": {
-          "x": 11,
-          "y": 16
-        },
-        "displayName": "male_civ_1_torso_front",
-        "filenameStem": "male_civ_1_torso_front",
-        "has_own_ambient_light": false,
-        "id": {
-          "frameIndex": 46,
+          "frameIndex": 57,
           "group": 0
         },
         "size": {
@@ -2031,11 +2504,11 @@
           "x": 11,
           "y": 16
         },
-        "displayName": "male_civ_1_torso_side",
-        "filenameStem": "male_civ_1_torso_side",
+        "displayName": "male_civ_1_torso_front",
+        "filenameStem": "male_civ_1_torso_front",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 47,
+          "frameIndex": 58,
           "group": 0
         },
         "size": {
@@ -2058,6 +2531,49 @@
         "left": 0.021484375,
         "right": 0.103515625,
         "top": 0.623046875
+      },
+      "texture_space_size": {
+        "height": 0.125,
+        "width": 0.0859375
+      }
+    },
+    {
+      "frame": {
+        "anchor_center": {
+          "x": 11,
+          "y": 16
+        },
+        "anchor_center_world": {
+          "x": 11,
+          "y": 16
+        },
+        "displayName": "male_civ_1_torso_side",
+        "filenameStem": "male_civ_1_torso_side",
+        "has_own_ambient_light": false,
+        "id": {
+          "frameIndex": 59,
+          "group": 0
+        },
+        "size": {
+          "height": 32,
+          "width": 22
+        },
+        "world_size": {
+          "height": 32,
+          "width": 22
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 64,
+        "left": 197
+      },
+      "texture_coordinates": {
+        "anchorCenterX": 0.814453125,
+        "anchorCenterY": 0.314453125,
+        "bottom": 0.251953125,
+        "left": 0.771484375,
+        "right": 0.853515625,
+        "top": 0.373046875
       },
       "texture_space_size": {
         "height": 0.125,

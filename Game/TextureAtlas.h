@@ -8,6 +8,7 @@
 #include "TextureDatabase.h"
 
 #include <GameCore/EnumFlags.h>
+#include <GameCore/GameException.h>
 #include <GameCore/ImageData.h>
 #include <GameCore/ProgressCallback.h>
 #include <GameCore/Vectors.h>
@@ -130,7 +131,11 @@ public:
 
     inline TextureAtlasFrameMetadata<TextureGroups> const & GetFrameMetadata(std::string const & filenameStem) const
     {
-        assert(mFrameMetadataByFilenameStem.count(filenameStem) == 1);
+        if (mFrameMetadataByFilenameStem.count(filenameStem) != 1)
+        {
+            throw GameException("The requested frame filename stem \"" + filenameStem + "\" could not be found in texture atlas");
+        }
+
         return mFrameMetadata[mFrameMetadataByFilenameStem.at(filenameStem)];
     }
 

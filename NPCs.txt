@@ -555,16 +555,20 @@ Arch
 		+ Npcs::ApplyBlast()
 	+ Blast tool
 	- Fix (Verify first): NPC at bottom of ship at bottom of ocean, flooded, touching ocean floor
-		- Rethink constrained NPC becoming free when under land: should we adjust for land only when particle is free?
-			- What about other NPC constrained particles?
+		- Rethink constrained NPC becoming free when under land
+		- Adjust for land only for free NPCs (i.e. all particles are free)
 	- Fix: many drums start dancing
 		! Only due to "dead weight" on triangle edge at end of Constrained_NonInertial; bounce force is fine (and cool)
 		- Try with mass update instead of force
-			- Ship::Points has NpcMass (buffer and all)
+			- TODO: refactor mass augmentation; single buffer that is reset when we say below, which is added to points' masses at UpdateMasses(), and which is
+			  also added to/subtracted from by Attach/DetachGadget
+			- Ship::Points has NpcMass (buffer and all) - OR: do we already have "AdditionalMass"? If so check lifecycle
 				- Ship/Points uses it when calculating final masses
 				- Reset by Ship at end of Update() (NOT at UpdateEnd) - so that Npcs::Update adds masses for next Ship::Update
 			- Npcs adds (two of them) at same place where we add forces
 	+ Fix: sinking barrel doesn't move - add infinitesimal buoyancy chances to each particle
+	- Make Green drum Light, Blue drum Heavy (current weight, test falling)
+	- Make piano heavier
 	- Swirl, etc.: NPCs of all ships, all regimes
 		- Controlled by flag, "~force tools on NPCs"
 			- SettingsDialog
