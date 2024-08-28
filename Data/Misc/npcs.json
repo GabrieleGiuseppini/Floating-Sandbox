@@ -32,7 +32,7 @@
 			{
 				"name": [
 					{ "value": "Civilian Passenger 1 - Male", "language": "en" },
-					{ "value": "Passeggero 1 - Uomo", "language": "it" }
+					{ "value": "Passeggero Seconda Classe 1 - Uomo", "language": "it" }
 				],
 				"role": "Passenger",
 				"body_width_randomization_sensitivity": 0.0,
@@ -72,6 +72,29 @@
 					"leg_f": "deckhand_leg_front",
 					"leg_b": "deckhand_leg_back",
 					"leg_s": "deckhand_leg_side"
+				}
+			},
+
+			{
+				"name": [
+					{ "value": "Wealthy Passenger 2 - Male", "language": "en" },
+					{ "value": "Passeggero Prima Classe 2 - Uomo", "language": "it" }
+				],
+				"role": "Passenger",
+				"body_width_randomization_sensitivity": 0.0,
+				"texture_filename_stems": {
+					"head_f": "male_wealthy_passenger_2_head_front",
+					"head_b": "male_wealthy_passenger_2_head_back",
+					"head_s": "male_wealthy_passenger_2_head_side",
+					"torso_f": "male_wealthy_passenger_2_torso_front",
+					"torso_b": "male_wealthy_passenger_2_torso_back",
+					"torso_s": "male_wealthy_passenger_2_torso_side",
+					"arm_f": "male_wealthy_passenger_2_arm_front",
+					"arm_b": "male_wealthy_passenger_2_arm_back",
+					"arm_s": "male_wealthy_passenger_2_arm_side",
+					"leg_f": "male_wealthy_passenger_2_leg_front",
+					"leg_b": "male_wealthy_passenger_2_leg_back",
+					"leg_s": "male_wealthy_passenger_2_leg_side"
 				}
 			},
 
