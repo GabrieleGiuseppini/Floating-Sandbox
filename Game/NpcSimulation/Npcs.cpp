@@ -3080,22 +3080,18 @@ void Npcs::UpdateNpcAnimation(
                 targetAngles.LeftArm = -targetAngles.RightArm;
 
                 // Legs: inclined in direction opposite of resvel, by an amount proportional to resvel itself
+                //
+                // Res vel to the right (>0) => legs to the left
+                // Res vel to the left (<0) => legs to the right
 
                 vec2f const resultantVelocity = (mParticles.GetVelocity(primaryParticleIndex) + mParticles.GetVelocity(secondaryParticleIndex)) / 2.0f;
                 float const resVelPerpToBody = resultantVelocity.dot(actualBodyDir.to_perpendicular()); // Positive when pointing towards right
-                float const legAngle = SmoothStep(0.0f, 4.0f, std::abs(resVelPerpToBody)) * 0.5f;
-                if (resVelPerpToBody >= 0.0f)
-                {
-                    // Res vel to the right - legs to the left
-                    targetAngles.RightLeg = -legAngle;
-                    targetAngles.LeftLeg = targetAngles.RightLeg - 0.6f;
-                }
-                else
-                {
-                    // Res vel to the left - legs to the right
-                    targetAngles.LeftLeg = legAngle;
-                    targetAngles.RightLeg = targetAngles.LeftLeg + 0.6f;
-                }
+                float const legAngle =
+                    SmoothStep(0.0f, 4.0f, std::abs(resVelPerpToBody)) * 0.8f
+                    * (resVelPerpToBody >= 0.0f ? -1.0f : 1.0f);
+                float constexpr LegAperture = 0.6f;
+                targetAngles.RightLeg = legAngle + LegAperture / 2.0f;
+                targetAngles.LeftLeg = legAngle - LegAperture / 2.0f;
 
                 convergenceRate = 0.1f;
 

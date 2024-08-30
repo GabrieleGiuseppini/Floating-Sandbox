@@ -571,13 +571,23 @@ Arch
 			+ Recalc based on kinetic energy lost, or dp/dt
 			
 	+ Fix: sinking barrel doesn't move - add infinitesimal buoyancy chances to each particle
-	- Fix: slecht op benen @ human placement
-		- @ behavior Constrained_Aerial, which then goes to Constrained_Falling
+	+ Fix: slecht op benen @ human placement
+		! @ behavior Constrained_Aerial, which then goes to Constrained_Falling
+		! Due to that 0.6 being added alternatively
+		+ Try with left and right legs _centered_ around legAngle
 	+ Fix flat head of wealthy passenger (all 3 orientations)
 	+ Make Green drum Light, Blue drum Heavy (current weight)
 	+ Make piano heavier
-	- Buoyancy volume fill rearc (like soundtype below)
-		- 
+	- Buoyancy volume fill rearc:
+		- Human: optional buoyancy_volume_fill (@ global)
+			- If not present, calc like we do now @ structural
+		- Furniture: optional buoyancy_volume_fill (@ kind)
+			- If not present, calc like we do now @ structural
+		- @ NPC creation:
+			- Use NPC's
+		- jsons:
+			- Move npc_buoyancy_volume_fill's from materials_structural.json to npcs.json
+			- Nuke npc_buoyancy_volume_fill from StructuralMaterial (and code)
 	- See if can continue to figure out how to avoid deformation of quads
 
 	- Swirl, etc.: NPCs of all ships, all regimes
