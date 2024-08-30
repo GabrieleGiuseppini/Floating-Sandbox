@@ -8,8 +8,8 @@
 
 			{
 				"name": [
-					{ "value": "Civilian Passenger 1 - Female", "language": "en" },
-					{ "value": "Passeggero 1 - Donna", "language": "it" }
+					{ "value": "Civilian Passenger 1 (Female)", "language": "en" },
+					{ "value": "Passeggero 1 (Donna)", "language": "it" }
 				],
 				"role": "Passenger",
 				"body_width_randomization_sensitivity": 0.0,
@@ -31,8 +31,8 @@
 
 			{
 				"name": [
-					{ "value": "Civilian Passenger 1 - Male", "language": "en" },
-					{ "value": "Passeggero Seconda Classe 1 - Uomo", "language": "it" }
+					{ "value": "Civilian Passenger 1 (Male)", "language": "en" },
+					{ "value": "Passeggero Seconda Classe 1 (Uomo)", "language": "it" }
 				],
 				"role": "Passenger",
 				"body_width_randomization_sensitivity": 0.0,
@@ -77,8 +77,8 @@
 
 			{
 				"name": [
-					{ "value": "Wealthy Passenger 2 - Male", "language": "en" },
-					{ "value": "Passeggero Prima Classe 2 - Uomo", "language": "it" }
+					{ "value": "Wealthy Passenger 2 (Male)", "language": "en" },
+					{ "value": "Passeggero Prima Classe 2 (Uomo)", "language": "it" }
 				],
 				"role": "Passenger",
 				"body_width_randomization_sensitivity": 0.0,
@@ -201,8 +201,8 @@
 
 			{	
 				"name": [
-					{ "value": "Drum 1", "language": "en" },
-					{ "value": "Fusto 1", "language": "it" }
+					{ "value": "Drum (Heavy)", "language": "en" },
+					{ "value": "Fusto (Pesante)", "language": "it" }
 				],
 				"material": "Iron Hull",
 				"particle_mesh": {
@@ -214,10 +214,10 @@
 
 			{	
 				"name": [
-					{ "value": "Drum 2", "language": "en" },
-					{ "value": "Fusto 2", "language": "it" }
+					{ "value": "Drum (Light)", "language": "en" },
+					{ "value": "Fusto (Leggero)", "language": "it" }
 				],
-				"material": "Iron Hull",
+				"material": "Light Iron Bulkhead",
 				"particle_mesh": {
 					"kind": "Quad",
 					"height": 0.5

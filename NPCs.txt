@@ -573,9 +573,12 @@ Arch
 	+ Fix: sinking barrel doesn't move - add infinitesimal buoyancy chances to each particle
 	- Fix: slecht op benen @ human placement
 		- @ behavior Constrained_Aerial, which then goes to Constrained_Falling
-	- Fix flat head of wealthy passenger (all 3 orientations)
-	- Make Green drum Light, Blue drum Heavy (current weight)
+	+ Fix flat head of wealthy passenger (all 3 orientations)
+	+ Make Green drum Light, Blue drum Heavy (current weight)
 	+ Make piano heavier
+	- Buoyancy volume fill rearc (like soundtype below)
+		- 
+	- See if can continue to figure out how to avoid deformation of quads
 
 	- Swirl, etc.: NPCs of all ships, all regimes
 		- Controlled by flag, "~force tools on NPCs"

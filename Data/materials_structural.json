@@ -111,6 +111,7 @@
             },
             "melting_temperature": 1588.15,
             "name": "Light Iron Bulkhead",
+	    "npc_buoyancy_volume_fill": 0.14,
             "palette_coordinates": {
                 "category": "Metals",
                 "sub_category": "Light Iron Bulkhead",
