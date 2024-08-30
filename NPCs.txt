@@ -559,14 +559,16 @@ Arch
 		! Rethink constrained NPC becoming free when under land
 		+ Adjust for land only for free NPCs (i.e. all particles are free)
 
-	= Fix: many drums start dancing
+	+ Fix: many drums start dancing
 		! Only due to "dead weight" on triangle edge at end of Constrained_NonInertial; bounce force is fine (and cool)
 		+ Try with mass update instead of force
 			+ Add TransientAdditionalMass
 				+ Use at UpdateMasses()
 				+ Reset at end of Update() (NOT at UpdateEnd) - so that Npcs::Update adds masses for next Ship::Update
 			+ Npcs adds (two of them) at same place where we add forces
-		- Now many drums impacting make everything explode - but see if we can keep it
+		+ Now many drums impacting make everything explode - but see if we can keep it
+			+ Rethink impact force, see https://www.geeksforgeeks.org/how-to-calculate-the-impact-force/ and https://www.studysmarter.co.uk/explanations/physics/force/impact-forces/
+			+ Recalc based on kinetic energy lost, or dp/dt
 			
 	+ Fix: sinking barrel doesn't move - add infinitesimal buoyancy chances to each particle
 	- Fix: slecht op benen @ human placement
@@ -700,9 +702,6 @@ Arch
 ===================
 Next release:
 
-- Piano makes piano noise (2-3 random + uw) when hitting
-	- But then we need piano material? Or do we allow NPCs to have own SoundType?
-
 - New behaviors:
 	- When human removed, enters "Removal" behavior: rotates with arms 90degree and legs closed, alpha down, then disappears
 		- Requires delayed removal (@UpdateBehavior); via new DestroyNpc() helper for common removal logic
@@ -762,10 +761,19 @@ Next release:
 	
 
 - Sounds:
-	- Like we do with others: NpcMaterial has (own) SoundType property
-	- Human events:
-		- Hit (@ bounce)
-		- Exclamation (@ loss of equilibrium)
+	- Hit:
+		- Material has SoundType property; NPC can override with own
+			- Furniture overrides for e.g. piano
+			- HumanNPC materials have two different sound types
+		- New IGameEventHandler event, which takes kinetic energy (dissipated)
+			- Aggregated
+			- Invoked @ Npcs bounce
+		- SoundController
+			- Transforms kinetic energy to volume
+		- Sounds:
+			- NPCHead X {2..4}X[non-uw, uw}
+			- NPCFoot X {2..4}X[non-uw, uw}
+			- Piano X {2..4}X[non-uw, uw}
 
 
 - InternalTexture layer from user:

@@ -3163,12 +3163,12 @@ void Npcs::BounceConstrainedNpcParticle(
             bounceEdgeOrdinal,
             homeShip.GetPoints())
         .normalise();
-    vec2f const floorEdgeNormal = floorEdgeDir.to_perpendicular();
+    vec2f const floorEdgeNormal = floorEdgeDir.to_perpendicular(); // Outside of triangle
 
     vec2f const apparentParticleVelocity = hasMovedInStep
         ? trajectory / dt
         : npcParticle.ConstrainedState->MeshRelativeVelocity;
-    float const apparentParticleVelocityAlongNormal = apparentParticleVelocity.dot(floorEdgeNormal);
+    float const apparentParticleVelocityAlongNormal = apparentParticleVelocity.dot(floorEdgeNormal); // Should be positive
 
     LogNpcDebug("      BounceConstrainedNpcParticle: apparentParticleVelocity=", apparentParticleVelocity, " (hasMovedInStep=", hasMovedInStep,
         " meshRelativeVelocity=", npcParticle.ConstrainedState->MeshRelativeVelocity, ")");
@@ -3184,11 +3184,12 @@ void Npcs::BounceConstrainedNpcParticle(
             homeShip.GetTriangles().GetPointIndices(npcParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex)[bounceEdgeOrdinal]);
 
         // Calculate normal reponse: Vn' = -e*Vn (e = elasticity, [0.0 - 1.0])
-        float const materialElasticityCoefficient = (particles.GetMaterial(npcParticle.ParticleIndex).ElasticityCoefficient + meshMaterial.ElasticityCoefficient) / 2.0f;
+        float const elasticityCoefficient = Clamp(
+            (particles.GetMaterial(npcParticle.ParticleIndex).ElasticityCoefficient + meshMaterial.ElasticityCoefficient) / 2.0f * gameParameters.ElasticityAdjustment,
+            0.0f, 1.0f);
         vec2f const normalResponse =
             -normalVelocity
-            * materialElasticityCoefficient
-            * gameParameters.ElasticityAdjustment;
+            * elasticityCoefficient;
 
         // Calculate tangential response: Vt' = a*Vt (a = (1.0-friction), [0.0 - 1.0])
         float const materialFrictionCoefficient = (particles.GetMaterial(npcParticle.ParticleIndex).KineticFrictionCoefficient + meshMaterial.KineticFrictionCoefficient) / 2.0f;
@@ -3221,22 +3222,28 @@ void Npcs::BounceConstrainedNpcParticle(
         // we don't end up in infinite loops bouncing against a soft mesh
         //
 
-        if (apparentParticleVelocityAlongNormal > 2.0f)
+        if (apparentParticleVelocityAlongNormal > 2.0f) // Magic number
         {
+            // Calculate impact force: Dp/Dt
+            //
+            //  Dp = v2*m - v1*m (using _relative_ velocities)
+            //  Dt = duration of impact - and here we are conservative, taking a whole simulation dt
+            //       ...but then it's too much
             vec2f const impartedForce =
-                (normalVelocity - normalResponse)
+                (normalVelocity - normalResponse) // normalVelocity is directed outside of triangle
                 * mParticles.GetMass(npcParticle.ParticleIndex)
-                / dt;
+                / GameParameters::SimulationStepTimeDuration<float>
+                * 0.2f; // Magic damper
 
             // Divide among two vertices
 
-            int edgeVertex1Ordinal = bounceEdgeOrdinal;
-            ElementIndex edgeVertex1PointIndex = homeShip.GetTriangles().GetPointIndices(npcParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex)[edgeVertex1Ordinal];
+            int const edgeVertex1Ordinal = bounceEdgeOrdinal;
+            ElementIndex const edgeVertex1PointIndex = homeShip.GetTriangles().GetPointIndices(npcParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex)[edgeVertex1Ordinal];
             float const vertex1InterpCoeff = npcParticle.ConstrainedState->CurrentBCoords.BCoords[edgeVertex1Ordinal];
             homeShip.GetPoints().AddStaticForce(edgeVertex1PointIndex, impartedForce * vertex1InterpCoeff);
 
-            int edgeVertex2Ordinal = (bounceEdgeOrdinal + 1) % 3;
-            ElementIndex edgeVertex2PointIndex = homeShip.GetTriangles().GetPointIndices(npcParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex)[edgeVertex2Ordinal];
+            int const edgeVertex2Ordinal = (bounceEdgeOrdinal + 1) % 3;
+            ElementIndex const edgeVertex2PointIndex = homeShip.GetTriangles().GetPointIndices(npcParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex)[edgeVertex2Ordinal];
             float const vertex2InterpCoeff = npcParticle.ConstrainedState->CurrentBCoords.BCoords[edgeVertex2Ordinal];
             homeShip.GetPoints().AddStaticForce(edgeVertex2PointIndex, impartedForce * vertex2InterpCoeff);
         }
