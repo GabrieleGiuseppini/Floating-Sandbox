@@ -1595,8 +1595,6 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
             // the absolute point's velocity delta as (resultantWaterVelocity - pointRelVel).
             // Note that we use the point's *prior* relative velocity
 
-            // TODOHERE
-
             vec2f const & waterVelocity = mParticles.GetMeshWaterVelocity(npcParticle.ParticleIndex);
             float const waterVelocityMagnitude = waterVelocity.length();
             vec2f const waterVelocityDir = waterVelocity.normalise_approx(waterVelocityMagnitude);
@@ -1643,13 +1641,14 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
                 * velocityIncrement
                 * orthoDamper;
 
-            // Since we do forces here, we apply this as a force
+            // Since we do forces here, we apply this as a force - but not dependent on the mass of the particle
+            // (because heavy particles should practically not move)
             preliminaryForces +=
                 absoluteVelocityDelta
                 / GameParameters::SimulationStepTimeDuration<float>
                 * anyWaterness // Mess with velocity only if enough water
                 * (1.0f - SmoothStep(0.0f, 0.9f, waterVelocityDir.y)) // Lower acceleration with verticality - water close to surface pushes up and we don't like that
-                * particleMass;
+                * std::min(particleMass, 35.0f); // This magic number is to ensure the numbers above perform OK on the reference human particles
         }
         else
         {
