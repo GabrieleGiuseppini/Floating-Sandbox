@@ -559,24 +559,22 @@ Arch
 		! Rethink constrained NPC becoming free when under land
 		+ Adjust for land only for free NPCs (i.e. all particles are free)
 
-	- Fix: many drums start dancing
+	= Fix: many drums start dancing
 		! Only due to "dead weight" on triangle edge at end of Constrained_NonInertial; bounce force is fine (and cool)
-		- Try with mass update instead of force
-			- Refactor mass augmentation:
-				- Two buffers: PermanentMassAugmentation and TransientMassAugmentation
-					- Permanent:
-						- AttachGadget adds to it
-						- RemoveGadget takes mass and removes from it
-					- Transient:
-						- AddTransientMass(p, mass)
-						- Reset by Ship at end of Update() (NOT at UpdateEnd) - so that Npcs::Update adds masses for next Ship::Update
-				- Points::UpdateMasses(): uses both
-			- Npcs adds (two of them) at same place where we add forces
+		+ Try with mass update instead of force
+			+ Add TransientAdditionalMass
+				+ Use at UpdateMasses()
+				+ Reset at end of Update() (NOT at UpdateEnd) - so that Npcs::Update adds masses for next Ship::Update
+			+ Npcs adds (two of them) at same place where we add forces
+		- Now many drums impacting make everything explode - but see if we can keep it
 			
 	+ Fix: sinking barrel doesn't move - add infinitesimal buoyancy chances to each particle
 	- Fix: slecht op benen @ human placement
-	- Make Green drum Light, Blue drum Heavy (current weight, test falling)
+		- @ behavior Constrained_Aerial, which then goes to Constrained_Falling
+	- Fix flat head of wealthy passenger (all 3 orientations)
+	- Make Green drum Light, Blue drum Heavy (current weight)
 	+ Make piano heavier
+
 	- Swirl, etc.: NPCs of all ships, all regimes
 		- Controlled by flag, "~force tools on NPCs"
 			- SettingsDialog
@@ -701,6 +699,9 @@ Arch
 
 ===================
 Next release:
+
+- Piano makes piano noise (2-3 random + uw) when hitting
+	- But then we need piano material? Or do we allow NPCs to have own SoundType?
 
 - New behaviors:
 	- When human removed, enters "Removal" behavior: rotates with arms 90degree and legs closed, alpha down, then disappears

@@ -41,6 +41,7 @@ void Points::Add(
     mDynamicForceBuffers[0].emplace_back(vec2f::zero());
     mStaticForceBuffer.emplace_back(vec2f::zero());
     mAugmentedMaterialMassBuffer.emplace_back(structuralMaterial.GetMass());
+    mTransientAdditionalMassBuffer.emplace_back(0.0f);
     mMassBuffer.emplace_back(structuralMaterial.GetMass());
     mMaterialBuoyancyVolumeFillBuffer.emplace_back(structuralMaterial.BuoyancyVolumeFill);
     mStrengthBuffer.emplace_back(strength);
@@ -164,6 +165,7 @@ void Points::CreateEphemeralParticleAirBubble(
     assert(mDynamicForceBuffers[0][pointIndex] == vec2f::zero()); // Ephemeral points never participate in dynamic forces (springs + surface pressure)
     mStaticForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
+    mTransientAdditionalMassBuffer[pointIndex] = 0.0f;
     mMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
     mMaterialBuoyancyVolumeFillBuffer[pointIndex] = airBubbleBuoyancyVolumeFill;
     assert(mDecayBuffer[pointIndex] == 1.0f);
@@ -252,6 +254,7 @@ void Points::CreateEphemeralParticleDebris(
     assert(mDynamicForceBuffers[0][pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs + surface pressure
     mStaticForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = structuralMaterial.GetMass();
+    mTransientAdditionalMassBuffer[pointIndex] = 0.0f;
     mMassBuffer[pointIndex] = structuralMaterial.GetMass();
     mMaterialBuoyancyVolumeFillBuffer[pointIndex] = 0.0f; // No buoyancy
     assert(mDecayBuffer[pointIndex] == 1.0f);
@@ -339,6 +342,7 @@ void Points::CreateEphemeralParticleSmoke(
     assert(mDynamicForceBuffers[0][pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs nor surface pressure
     mStaticForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
+    mTransientAdditionalMassBuffer[pointIndex] = 0.0f;
     mMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
     mMaterialBuoyancyVolumeFillBuffer[pointIndex] = airStructuralMaterial.BuoyancyVolumeFill;
     assert(mDecayBuffer[pointIndex] == 1.0f);
@@ -427,6 +431,7 @@ void Points::CreateEphemeralParticleSparkle(
     assert(mDynamicForceBuffers[0][pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs + surface pressure
     mStaticForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = structuralMaterial.GetMass();
+    mTransientAdditionalMassBuffer[pointIndex] = 0.0f;
     mMassBuffer[pointIndex] = structuralMaterial.GetMass();
     mMaterialBuoyancyVolumeFillBuffer[pointIndex] = 0.0f; // No buoyancy
     assert(mDecayBuffer[pointIndex] == 1.0f);
@@ -500,6 +505,7 @@ void Points::CreateEphemeralParticleWakeBubble(
     assert(mDynamicForceBuffers[0][pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs + surface pressure
     mStaticForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = waterStructuralMaterial.GetMass();
+    mTransientAdditionalMassBuffer[pointIndex] = 0.0f;
     mMassBuffer[pointIndex] = waterStructuralMaterial.GetMass();
     mMaterialBuoyancyVolumeFillBuffer[pointIndex] = waterStructuralMaterial.BuoyancyVolumeFill;
     assert(mDecayBuffer[pointIndex] == 1.0f);
@@ -2259,6 +2265,7 @@ void Points::UpdateMasses(GameParameters const & gameParameters)
     float const densityAdjustedWaterMass = Formulae::CalculateWaterDensity(gameParameters.WaterTemperature, gameParameters);
 
     float const * restrict const augmentedMaterialMassBuffer = mAugmentedMaterialMassBuffer.data();
+    float const * restrict const transientAdditionalMassBuffer = mTransientAdditionalMassBuffer.data();
     float const * restrict const waterBuffer = mWaterBuffer.data();
     float const * restrict const materialBuoyancyVolumeFillBuffer = mMaterialBuoyancyVolumeFillBuffer.data();
     float * restrict const massBuffer = mMassBuffer.data();
@@ -2271,6 +2278,7 @@ void Points::UpdateMasses(GameParameters const & gameParameters)
         // The mass we want
         float const targetMass =
             augmentedMaterialMassBuffer[i]
+            + transientAdditionalMassBuffer[i]
             + std::min(waterBuffer[i], materialBuoyancyVolumeFillBuffer[i]) * densityAdjustedWaterMass;
 
         // The mass we get: current mass slowly converging towards the mass we want

@@ -598,6 +598,7 @@ public:
         , mDynamicForceRawBuffers()
         , mStaticForceBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mAugmentedMaterialMassBuffer(mBufferElementCount, shipPointCount, 1.0f)
+        , mTransientAdditionalMassBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mMassBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mMaterialBuoyancyVolumeFillBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mStrengthBuffer(mBufferElementCount, shipPointCount, 0.0f)
@@ -1191,6 +1192,23 @@ public:
     float GetAugmentedMaterialMass(ElementIndex pointElementIndex) const
     {
         return mAugmentedMaterialMassBuffer[pointElementIndex];
+    }
+
+    /*
+     * Adds a transient mass to the specified particle.
+     * The particle's total mass is slowly smoothed to include this one.
+     * Reset at end of Ship::Update().
+     */
+    void AddTransientAdditionalMass(
+        ElementIndex pointElementIndex,
+        float value)
+    {
+        mTransientAdditionalMassBuffer[pointElementIndex] += value;
+    }
+
+    void ResetTransientAdditionalMasses()
+    {
+        mTransientAdditionalMassBuffer.fill(0.0f);
     }
 
     void AugmentMaterialMass(
@@ -2207,7 +2225,8 @@ private:
     std::vector<float *> mDynamicForceRawBuffers;
     Buffer<vec2f> mStaticForceBuffer; // Forces that never change across the multiple mechanical iterations (all other forces)
     Buffer<float> mAugmentedMaterialMassBuffer; // Structural + Offset
-    Buffer<float> mMassBuffer; // Augmented + Water
+    Buffer<float> mTransientAdditionalMassBuffer; // Anything; total mass is slowly updated to include this
+    Buffer<float> mMassBuffer; // Augmented + Transient + Water
     Buffer<float> mMaterialBuoyancyVolumeFillBuffer;
     Buffer<float> mStrengthBuffer; // Immutable
     Buffer<float> mStressBuffer; // -1.0 -> 1.0, only calculated (at springs) if rendering it

@@ -1331,25 +1331,18 @@ void Npcs::UpdateNpcParticlePhysics(
 
                     if (!nonInertialOutcome.HasBounced)
                     {
-                        // We have reached destination, impart force onto mesh
-                        // for the component of the original trajectory that was
-                        // stopped by the edge
+                        // We have reached destination and thus we're lying on this edge;
+                        // impart mass onto mesh, divided among the two vertices
 
-                        vec2f const edgeN = edgeDir.to_perpendicular();
-                        vec2f const trajectoryN = edgeN * (trajectory.dot(edgeN));
-                        vec2f const impartedForce = trajectoryN * particleMass / (dt * dt);
-
-                        // Divide among two vertices
-
-                        int edgeVertex1Ordinal = nonInertialEdgeOrdinal;
-                        ElementIndex edgeVertex1PointIndex = homeShip.GetTriangles().GetPointIndices(edgeTouchPointBCoords.TriangleElementIndex)[edgeVertex1Ordinal];
+                        int const edgeVertex1Ordinal = nonInertialEdgeOrdinal;
+                        ElementIndex const edgeVertex1PointIndex = homeShip.GetTriangles().GetPointIndices(edgeTouchPointBCoords.TriangleElementIndex)[edgeVertex1Ordinal];
                         float const vertex1InterpCoeff = edgeTouchPointBCoords.BCoords[edgeVertex1Ordinal];
-                        homeShip.GetPoints().AddStaticForce(edgeVertex1PointIndex, impartedForce * vertex1InterpCoeff);
+                        homeShip.GetPoints().AddTransientAdditionalMass(edgeVertex1PointIndex, particleMass * vertex1InterpCoeff);
 
-                        int edgeVertex2Ordinal = (nonInertialEdgeOrdinal + 1) % 3;
-                        ElementIndex edgeVertex2PointIndex = homeShip.GetTriangles().GetPointIndices(edgeTouchPointBCoords.TriangleElementIndex)[edgeVertex2Ordinal];
+                        int const edgeVertex2Ordinal = (nonInertialEdgeOrdinal + 1) % 3;
+                        ElementIndex const edgeVertex2PointIndex = homeShip.GetTriangles().GetPointIndices(edgeTouchPointBCoords.TriangleElementIndex)[edgeVertex2Ordinal];
                         float const vertex2InterpCoeff = edgeTouchPointBCoords.BCoords[edgeVertex2Ordinal];
-                        homeShip.GetPoints().AddStaticForce(edgeVertex2PointIndex, impartedForce * vertex2InterpCoeff);
+                        homeShip.GetPoints().AddTransientAdditionalMass(edgeVertex2PointIndex, particleMass * vertex2InterpCoeff);
                     }
                 }
                 else
