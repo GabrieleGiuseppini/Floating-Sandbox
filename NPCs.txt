@@ -613,9 +613,8 @@ Arch
 			+ Use @ NPC creation
 			+ Nuke all NPC props from StructuralMaterial
 			+ Move NPC props from StructuralMaterial to NPCs.json
-
-	= See if can continue to figure out how to avoid deformation of quads
-		= Add (temporary) slider for NPC spring realaxation params
+	+ See if can continue to figure out how to avoid deformation of quads
+		+ Add (temporary) slider for NPC spring realaxation params
 
 	- Swirl, etc.: NPCs of all ships, all regimes
 		- Controlled by flag, "~force tools on NPCs"

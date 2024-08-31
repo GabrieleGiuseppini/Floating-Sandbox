@@ -296,6 +296,24 @@
 				"texture_filename_stem": "chest_3"
 			},
 
+			{	
+				"name": [
+					{ "value": "Coal Cart", "language": "en" },
+					{ "value": "Carriola con Carbone", "language": "it" }
+				],
+				"material": "Iron Hull",
+				"particle_mesh": {
+					"kind": "Quad",
+					"height": 0.65,
+					"particle_attributes_overrides": [
+						{
+							"buoyancy_volume_fill": 0.7
+						}
+					]
+				},
+				"texture_filename_stem": "coal_cart"
+			},
+
 			{
 				"name": [
 					{ "value": "Crate", "language": "en" },
@@ -312,6 +330,78 @@
 					]
 				},
 				"texture_filename_stem": "crate_1"
+			},
+
+			{	
+				"name": [
+					{ "value": "Dining Chair 1", "language": "en" },
+					{ "value": "Sedia da Tavolo 1", "language": "it" }
+				],
+				"material": "Solid Pine Wood I-Beam",
+				"particle_mesh": {
+					"kind": "Quad",
+					"height": 0.8,
+					"particle_attributes_overrides": [
+						{
+							"buoyancy_volume_fill": 0.0847
+						}
+					]
+				},
+				"texture_filename_stem": "dining_chair_1"
+			},
+
+			{	
+				"name": [
+					{ "value": "Dining Chair 2", "language": "en" },
+					{ "value": "Sedia da Tavolo 2", "language": "it" }
+				],
+				"material": "Solid Pine Wood I-Beam",
+				"particle_mesh": {
+					"kind": "Quad",
+					"height": 0.8,
+					"particle_attributes_overrides": [
+						{
+							"buoyancy_volume_fill": 0.0847
+						}
+					]
+				},
+				"texture_filename_stem": "dining_chair_2"
+			},
+
+			{	
+				"name": [
+					{ "value": "Dining Table 1", "language": "en" },
+					{ "value": "Tavolo da Pranzo 1", "language": "it" }
+				],
+				"material": "Solid Pine Wood I-Beam",
+				"particle_mesh": {
+					"kind": "Quad",
+					"height": 0.72,
+					"particle_attributes_overrides": [
+						{
+							"buoyancy_volume_fill": 0.0847
+						}
+					]
+				},
+				"texture_filename_stem": "large_dining_table_1"
+			},
+
+			{	
+				"name": [
+					{ "value": "Dining Table 2", "language": "en" },
+					{ "value": "Tavolo da Pranzo 2", "language": "it" }
+				],
+				"material": "Iron Hull",
+				"particle_mesh": {
+					"kind": "Quad",
+					"height": 0.72,
+					"particle_attributes_overrides": [
+						{
+							"buoyancy_volume_fill": 0.75
+						}
+					]
+				},
+				"texture_filename_stem": "large_dining_table_2"
 			},
 
 			{	
