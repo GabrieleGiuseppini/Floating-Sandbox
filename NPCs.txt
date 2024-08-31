@@ -610,7 +610,6 @@ Arch
 			+ Use @ NPC creation
 			+ Nuke all NPC props from StructuralMaterial
 			+ Move NPC props from StructuralMaterial to NPCs.json
-	- Fish size -1
 
 	- See if can continue to figure out how to avoid deformation of quads
 		- Add (temporary) slider for NPC spring realaxation params
