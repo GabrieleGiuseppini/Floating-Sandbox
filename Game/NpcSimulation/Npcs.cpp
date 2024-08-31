@@ -1355,12 +1355,17 @@ void Npcs::ApplyBlast(
     // Only NPCs of this ship, or free regime of any ship
     //
 
-    // The specified blast is for damage to the ship; here we want
-    // a lower force and a larger radius - as if only caused by air
-    float const actualBlastRadius = blastRadius * 8.0f;
-    float const actualBlastForce = std::min(blastForce / 15.0f, 35000.0f);
-
+    float const actualBlastRadius = blastRadius * 4.0f;
     float const squareRadius = actualBlastRadius * actualBlastRadius;
+
+    // The specified blast is for damage to the ship; here we want a lower
+    // force and a larger radius - as if only caused by air - and thus we
+    // make the force ~proportional to the particle's mass so we have ~constant
+    // runaway speeds
+    //
+    // Anchor points:
+    //   Human: F=35000 == 1000*mass
+    float const blastAcceleration = blastForce / 3750.0f; // This yields a blast force of 35000, i.e. an acceleration of 1000 on a human particle
 
     for (auto const & npc : mStateBuffer)
     {
@@ -1380,13 +1385,12 @@ void Npcs::ApplyBlast(
                         //
                         // Apply blast force
                         //
-                        // (inversely proportional to square root of distance, not second power as one would expect though)
-                        //
+
+                        float const particleBlastForce = blastAcceleration * 6.0f * std::sqrt(mParticles.GetMass(npcParticle.ParticleIndex));
 
                         mParticles.AddExternalForce(
                             npcParticle.ParticleIndex,
-                            //particleRadius.normalise(particleRadiusLength) * actualBlastForce / std::sqrt(particleRadiusLength + 2.0f));
-                            particleRadius.normalise(particleRadiusLength) * actualBlastForce / (particleRadiusLength + 2.0f));
+                            particleRadius.normalise(particleRadiusLength) * particleBlastForce / (particleRadiusLength + 2.0f));
                     }
                 }
             }
