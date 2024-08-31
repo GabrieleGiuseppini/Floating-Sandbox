@@ -100,6 +100,11 @@ public:
         return mSize;
     }
 
+    inline size_t GetFrameCount() const
+    {
+        return mFrameMetadata.size();
+    }
+
     inline bool IsAlphaPremultiplied() const
     {
         return (mOptions & AtlasOptions::AlphaPremultiply) != AtlasOptions::None;

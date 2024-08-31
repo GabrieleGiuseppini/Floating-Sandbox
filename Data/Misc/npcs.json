@@ -190,6 +190,43 @@
 				},
 				"texture_filename_stem": "barrel_1"
 			},
+
+			{	
+				"name": [
+					{ "value": "Bed 1", "language": "en" },
+					{ "value": "Letto 1", "language": "it" }
+				],
+				"material": "Solid Pine Wood I-Beam",
+				"particle_mesh": {
+					"kind": "Quad",
+					"height": 0.8,
+					"particle_attributes_overrides": [
+						{
+							"buoyancy_volume_fill": 0.07
+						}
+					]
+				},
+				"texture_filename_stem": "bed_1"
+			},
+
+			{	
+				"name": [
+					{ "value": "Bed 2", "language": "en" },
+					{ "value": "Letto 2", "language": "it" }
+				],
+				"material": "Iron Hull",
+				"particle_mesh": {
+					"kind": "Quad",
+					"height": 0.8,
+					"particle_attributes_overrides": [
+						{
+							"buoyancy_volume_fill": 0.7
+						}
+					]
+				},
+				"texture_filename_stem": "bed_2"
+			},
+
 			{	
 				"name": [
 					{ "value": "Cabin Desk", "language": "en" },

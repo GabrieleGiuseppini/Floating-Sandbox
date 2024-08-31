@@ -17,7 +17,7 @@ class Baker
 public:
 
     template<typename TextureDatabaseTraits>
-    static void BakeAtlas(
+    static size_t BakeAtlas(
         std::filesystem::path const & databaseRootDirectoryPath,
         std::filesystem::path const & outputDirectoryPath,
         bool doAlphaPremultiply,
@@ -70,5 +70,7 @@ public:
         textureAtlas.Serialize(
             TextureDatabaseTraits::DatabaseName,
             outputDirectoryPath);
+
+        return textureAtlas.Metadata.GetFrameCount();
     }
 };

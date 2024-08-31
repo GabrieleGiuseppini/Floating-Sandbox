@@ -137,9 +137,10 @@ int DoBakeAtlas(int argc, char ** argv)
     std::cout << "  alpha-premultiply       : " << doAlphaPremultiply << std::endl;
     std::cout << "  mip-mapped              : " << doMipMapped << std::endl;
 
+    size_t frameCount;
     if (Utils::CaseInsensitiveEquals(databaseName, "explosion"))
     {
-        Baker::BakeAtlas<Render::ExplosionTextureDatabaseTraits>(
+        frameCount = Baker::BakeAtlas<Render::ExplosionTextureDatabaseTraits>(
             databaseRootDirectoryPath,
             outputDirectoryPath,
             doAlphaPremultiply,
@@ -148,7 +149,7 @@ int DoBakeAtlas(int argc, char ** argv)
     }
     else if (Utils::CaseInsensitiveEquals(databaseName, "npc"))
     {
-        Baker::BakeAtlas<Render::NpcTextureDatabaseTraits>(
+        frameCount = Baker::BakeAtlas<Render::NpcTextureDatabaseTraits>(
             databaseRootDirectoryPath,
             outputDirectoryPath,
             doAlphaPremultiply,
@@ -160,7 +161,7 @@ int DoBakeAtlas(int argc, char ** argv)
         throw std::runtime_error("Unrecognized database name '" + databaseName + "'");
     }
 
-    std::cout << "Baking completed." << std::endl;
+    std::cout << "Baking completed - " << frameCount << " frames." << std::endl;
 
     return 0;
 }
