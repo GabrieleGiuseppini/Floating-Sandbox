@@ -25,8 +25,7 @@
                 "nominal_mass": 7950
             },
             "melting_temperature": 1588.15,
-            "name": "Iron Hull",
-            "npc_buoyancy_volume_fill": 0.7,
+            "name": "Iron Hull",            
             "palette_coordinates": {
                 "category": "Metals",
                 "sub_category": "Iron Hull",
@@ -110,8 +109,7 @@
                 "nominal_mass": 7850.0
             },
             "melting_temperature": 1588.15,
-            "name": "Light Iron Bulkhead",
-	    "npc_buoyancy_volume_fill": 0.14,
+            "name": "Light Iron Bulkhead",	    
             "palette_coordinates": {
                 "category": "Metals",
                 "sub_category": "Light Iron Bulkhead",
@@ -3766,7 +3764,10 @@
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
+
+
         {
+            "buoyancy_volume_fill": 0.05,
             "color_key": "#070780",
             "combustion_type": "Combustion",
             "elasticity_coefficient": 0.34,
@@ -3781,14 +3782,12 @@
             },
             "melting_temperature": 1000000.0,
             "name": "NPC Human Head",
-            "npc_buoyancy_volume_fill": 0.05,
-            "npc_spring_damping_coefficient": 0.5,
-            "npc_spring_reduction_fraction": 0.39,
             "render_color": "#070780",
             "strength": 1.0,
             "wind_receptivity": 0.1
         },
         {
+            "buoyancy_volume_fill": 0.03,
             "color_key": "#070781",
             "combustion_type": "Combustion",
             "elasticity_coefficient": 0.34,
@@ -3802,10 +3801,7 @@
                 "nominal_mass": 985
             },
             "melting_temperature": 1000000.0,
-            "name": "NPC Human Feet",
-            "npc_buoyancy_volume_fill": 0.03,
-            "npc_spring_damping_coefficient": 0.5,
-            "npc_spring_reduction_fraction": 0.39,
+            "name": "NPC Human Feet",            
             "render_color": "#070781",
             "strength": 1.0,
             "wind_receptivity": 0.1

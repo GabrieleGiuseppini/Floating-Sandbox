@@ -1848,7 +1848,7 @@ void Npcs::RecalculateSizeAndMassParameters()
 
                 mParticles.SetBuoyancyFactor(particle.ParticleIndex,
                     CalculateParticleBuoyancyFactor(
-                        mParticles.GetMaterial(particle.ParticleIndex).NpcBuoyancyVolumeFill,
+                        mParticles.GetBuoyancyVolumeFill(particle.ParticleIndex),
                         mCurrentSizeMultiplier
 #ifdef IN_BARYLAB
                         , mCurrentBuoyancyAdjustment

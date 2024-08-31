@@ -94,18 +94,6 @@ StructuralMaterial StructuralMaterial::Create(
         bool isLegacyElectrical = Utils::GetOptionalJsonMember<bool>(structuralMaterialJson, "is_legacy_electrical", false);
         bool isExemptFromPalette = Utils::GetOptionalJsonMember<bool>(structuralMaterialJson, "is_exempt_from_palette", false);
 
-        // NPC-specific
-
-        float const npcSpringReductionFraction = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "npc_spring_reduction_fraction", 0.97f);
-        float const npcSpringDampingCoefficient = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "npc_spring_damping_coefficient", 0.5f);
-
-        // Default buoyancy volume fill: so that particle has a specific upward acceleration
-        float constexpr TargetBuoyancyUpwardAcceleration = 4.4f; // Empirical
-        float const defaultNpcBuoyancyVolumeFill =
-            (nominalMass * density) * (TargetBuoyancyUpwardAcceleration + GameParameters::GravityMagnitude)
-            / (1000.0f * GameParameters::GravityMagnitude);
-        float const npcBuoyancyVolumeFill = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "npc_buoyancy_volume_fill", defaultNpcBuoyancyVolumeFill);
-
         // Palette coordinates
 
         std::optional<MaterialPaletteCoordinatesType> paletteCoordinates;
@@ -156,10 +144,6 @@ StructuralMaterial StructuralMaterial::Create(
             windReceptivity,
             waterReactivity,
             isLegacyElectrical,
-            // NPC-specific
-            npcSpringReductionFraction,
-            npcSpringDampingCoefficient,
-            npcBuoyancyVolumeFill,
             // Palette
             paletteCoordinates);
     }

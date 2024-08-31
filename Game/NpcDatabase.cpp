@@ -8,8 +8,6 @@
 #include <GameCore/GameException.h>
 #include <GameCore/Utils.h>
 
-#include <cassert>
-
 static char HeadFKeyName[] = "head_f";
 static char HeadBKeyName[] = "head_b";
 static char HeadSKeyName[] = "head_s";
@@ -54,6 +52,10 @@ NpcDatabase NpcDatabase::Load(
         StructuralMaterial const & feetMaterial = materialDatabase.GetStructuralMaterial(
             Utils::GetMandatoryJsonMember<std::string>(humansGlobalObject, "feet_material"));
 
+        ParticleAttributesType globalHeadParticleAttributes = MakeParticleAttributes(humansGlobalObject, "head_particle_attributes_overrides", MakeDefaultParticleAttributes(headMaterial));
+
+        ParticleAttributesType globalFeetParticleAttributes = MakeParticleAttributes(humansGlobalObject, "feet_particle_attributes_overrides", MakeDefaultParticleAttributes(feetMaterial));
+
         NpcSubKindIdType nextKindId = 0;
         auto const humanKindsArray = Utils::GetMandatoryJsonArray(humansObject, "kinds");
         for (auto const & humanKindArrayElement : humanKindsArray)
@@ -67,6 +69,8 @@ NpcDatabase NpcDatabase::Load(
                 humanKindArrayElement.get<picojson::object>(),
                 headMaterial,
                 feetMaterial,
+                globalHeadParticleAttributes,
+                globalFeetParticleAttributes,
                 npcTextureAtlas);
 
             humanKinds.try_emplace(nextKindId, std::move(kind));
@@ -125,10 +129,14 @@ NpcDatabase::HumanKind NpcDatabase::ParseHumanKind(
     picojson::object const & kindObject,
     StructuralMaterial const & headMaterial,
     StructuralMaterial const & feetMaterial,
+    ParticleAttributesType const & globalHeadParticleAttributes,
+    ParticleAttributesType const & globalFeetParticleAttributes,
     Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas)
 {
     MultiLingualText name = ParseMultilingualText(kindObject, "name");
     NpcHumanRoleType const role = StrToNpcHumanRoleType(Utils::GetMandatoryJsonMember<std::string>(kindObject, "role"));
+    ParticleAttributesType headParticleAttributes = MakeParticleAttributes(kindObject, "head_particle_attributes_overrides", globalHeadParticleAttributes);
+    ParticleAttributesType feetParticleAttributes = MakeParticleAttributes(kindObject, "feet_particle_attributes_overrides", globalFeetParticleAttributes);
     float const sizeMultiplier = Utils::GetOptionalJsonMember<float>(kindObject, "size_multiplier", 1.0f);
 
     auto const & textureFilenameStemsObject = Utils::GetMandatoryJsonObject(kindObject, "texture_filename_stems");
@@ -155,6 +163,7 @@ NpcDatabase::HumanKind NpcDatabase::ParseHumanKind(
         role,
         headMaterial,
         feetMaterial,
+        {feetParticleAttributes, headParticleAttributes},
         sizeMultiplier,
         dimensions,
         bodyWidthRandomizationSensitivity,
@@ -227,11 +236,14 @@ NpcDatabase::FurnitureKind NpcDatabase::ParseFurnitureKind(
     ParticleMeshKindType const particleMeshKind = StrToParticleMeshKindType(
         Utils::GetMandatoryJsonMember<std::string>(particleMeshObject, "kind"));
 
+    int particleCount = 0;
     FurnitureDimensionsType dimensions{ 0.0f, 0.0f };
     switch (particleMeshKind)
     {
         case ParticleMeshKindType::Dipole:
         {
+            particleCount = 2;
+
             dimensions = FurnitureDimensionsType({
                 0,
                 Utils::GetMandatoryJsonMember<float>(particleMeshObject, "height") });
@@ -241,6 +253,8 @@ NpcDatabase::FurnitureKind NpcDatabase::ParseFurnitureKind(
 
         case ParticleMeshKindType::Particle:
         {
+            particleCount = 1;
+
             dimensions = FurnitureDimensionsType({
                 0,
                 0 });
@@ -250,6 +264,8 @@ NpcDatabase::FurnitureKind NpcDatabase::ParseFurnitureKind(
 
         case ParticleMeshKindType::Quad:
         {
+            particleCount = 4;
+
             float const height = Utils::GetMandatoryJsonMember<float>(particleMeshObject, "height");
 
             // Calculate width based off texture frame
@@ -266,6 +282,44 @@ NpcDatabase::FurnitureKind NpcDatabase::ParseFurnitureKind(
         }
     }
 
+    ParticleAttributesType const defaultParticleAttributes = MakeDefaultParticleAttributes(material);
+    std::vector<ParticleAttributesType> particleAttributes;
+    auto const jsonParticleAttributesOverrides = Utils::GetOptionalJsonArray(particleMeshObject, "particle_attributes_overrides");
+    if (jsonParticleAttributesOverrides.has_value())
+    {
+        if (jsonParticleAttributesOverrides->size() == particleCount)
+        {
+            // As-is
+            for (auto const & bvfV : *jsonParticleAttributesOverrides)
+            {
+                particleAttributes.push_back(
+                    MakeParticleAttributes(
+                        Utils::GetJsonValueAs<picojson::object>(bvfV, "particle_attributes_overrides"),
+                        defaultParticleAttributes));
+            }
+        }
+        else if (jsonParticleAttributesOverrides->size() == 1)
+        {
+            // Repeat
+            particleAttributes = std::vector<ParticleAttributesType>(
+                particleCount,
+                MakeParticleAttributes(
+                    Utils::GetJsonValueAs<picojson::object>((*jsonParticleAttributesOverrides)[0], "particle_attributes_overrides"),
+                    defaultParticleAttributes));
+        }
+        else
+        {
+            throw GameException("Invalid size of particle_attributes_overrides for furniture NPC \"" + name.Get("") + "\"");
+        }
+    }
+    else
+    {
+        // Use material's and defaults for all particles
+        particleAttributes = std::vector<ParticleAttributesType>(
+            particleCount,
+            defaultParticleAttributes);
+    }
+
     Render::TextureCoordinatesQuad textureCoordinatesQuad = Render::TextureCoordinatesQuad({
         atlasFrameMetadata.TextureCoordinatesBottomLeft.x,
         atlasFrameMetadata.TextureCoordinatesTopRight.x,
@@ -275,9 +329,53 @@ NpcDatabase::FurnitureKind NpcDatabase::ParseFurnitureKind(
     return FurnitureKind({
         std::move(name),
         material,
+        std::move(particleAttributes),
         particleMeshKind,
         dimensions,
         std::move(textureCoordinatesQuad) });
+}
+
+NpcDatabase::ParticleAttributesType NpcDatabase::MakeParticleAttributes(
+    picojson::object const & containerObject,
+    std::string const & particleAttributesOverrideMemberName,
+    ParticleAttributesType const & defaultParticleAttributes)
+{
+    auto const overridesJson = Utils::GetOptionalJsonObject(containerObject, particleAttributesOverrideMemberName);
+    if (overridesJson.has_value())
+    {
+        return MakeParticleAttributes(*overridesJson, defaultParticleAttributes);
+    }
+    else
+    {
+        return defaultParticleAttributes;
+    }
+}
+
+NpcDatabase::ParticleAttributesType NpcDatabase::MakeParticleAttributes(
+    picojson::object const & particleAttributesOverrideJsonObject,
+    ParticleAttributesType const & defaultParticleAttributes)
+{
+    float const buoyancyVolumeFill = Utils::GetOptionalJsonMember<float>(particleAttributesOverrideJsonObject, "buoyancy_volume_fill", defaultParticleAttributes.BuoyancyVolumeFill);
+    float const springReductionFraction = Utils::GetOptionalJsonMember<float>(particleAttributesOverrideJsonObject, "spring_reduction_fraction", defaultParticleAttributes.SpringReductionFraction);
+    float const springDampingCoefficient = Utils::GetOptionalJsonMember<float>(particleAttributesOverrideJsonObject, "spring_damping_coefficient", defaultParticleAttributes.SpringDampingCoefficient);
+
+    return ParticleAttributesType{
+        buoyancyVolumeFill,
+        springReductionFraction,
+        springDampingCoefficient
+    };
+}
+
+NpcDatabase::ParticleAttributesType NpcDatabase::MakeDefaultParticleAttributes(StructuralMaterial const & baseMaterial)
+{
+    float constexpr DefaultSpringReductionFraction = 0.97f;
+    float constexpr DefaultSpringDampingCoefficient = 0.5f;
+
+    return ParticleAttributesType{
+        baseMaterial.BuoyancyVolumeFill,
+        DefaultSpringReductionFraction,
+        DefaultSpringDampingCoefficient
+    };
 }
 
 NpcDatabase::MultiLingualText NpcDatabase::ParseMultilingualText(

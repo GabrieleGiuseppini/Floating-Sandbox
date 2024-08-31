@@ -35,6 +35,7 @@ public:
         , mIsInUseBuffer(maxParticleCount, false)
         // Physics
         , mMaterialBuffer(maxParticleCount, nullptr)
+        , mBuoyancyVolumeFillBuffer(maxParticleCount, 0.0f)
         , mMassBuffer(maxParticleCount, 0.0f)
         , mBuoyancyFactorBuffer(maxParticleCount, 0.0f)
         , mPositionBuffer(maxParticleCount, vec2f::zero())
@@ -64,6 +65,7 @@ public:
 
     ElementIndex Add(
         float mass,
+        float buoyancyVolumeFill,
         float buoyancyFactor,
         StructuralMaterial const * material,
         vec2f const & position,
@@ -84,6 +86,11 @@ public:
     {
         assert(mMaterialBuffer[particleElementIndex] != nullptr);
         return *(mMaterialBuffer[particleElementIndex]);
+    }
+
+    float GetBuoyancyVolumeFill(ElementIndex particleElementIndex) const noexcept
+    {
+        return mBuoyancyVolumeFillBuffer[particleElementIndex];
     }
 
     float const GetMass(ElementIndex particleElementIndex) const noexcept
@@ -287,6 +294,7 @@ private:
     //
 
     Buffer<StructuralMaterial const *> mMaterialBuffer;
+    Buffer<float> mBuoyancyVolumeFillBuffer;
     Buffer<float> mMassBuffer; // Adjusted
     Buffer<float> mBuoyancyFactorBuffer; // Adjusted
     Buffer<vec2f> mPositionBuffer;

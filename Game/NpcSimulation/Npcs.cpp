@@ -438,8 +438,10 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 #endif
             );
 
+            float const buoyancyVolumeFill = mNpcDatabase.GetFurnitureParticleAttributes(subKind, 0).BuoyancyVolumeFill;
+
             float const buoyancyFactor = CalculateParticleBuoyancyFactor(
-                furnitureMaterial.NpcBuoyancyVolumeFill,
+                buoyancyVolumeFill,
                 mCurrentSizeMultiplier
 #ifdef IN_BARYLAB
                 , mCurrentBuoyancyAdjustment
@@ -448,6 +450,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 
             auto const primaryParticleIndex = mParticles.Add(
                 mass,
+                buoyancyVolumeFill,
                 buoyancyFactor,
                 &furnitureMaterial,
                 worldCoordinates,
@@ -482,14 +485,6 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 #endif
             );
 
-            float const buoyancyFactor = CalculateParticleBuoyancyFactor(
-                furnitureMaterial.NpcBuoyancyVolumeFill,
-                mCurrentSizeMultiplier
-#ifdef IN_BARYLAB
-                , mCurrentBuoyancyAdjustment
-#endif
-            );
-
             float const baseDiagonal = std::sqrtf(baseWidth * baseWidth + baseHeight * baseHeight);
 
             // 0 - 1
@@ -520,8 +515,19 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
                     particlePosition.y -= height / 2.0f;
                 }
 
+                float const buoyancyVolumeFill = mNpcDatabase.GetFurnitureParticleAttributes(subKind, p).BuoyancyVolumeFill;
+
+                float const buoyancyFactor = CalculateParticleBuoyancyFactor(
+                    buoyancyVolumeFill,
+                    mCurrentSizeMultiplier
+#ifdef IN_BARYLAB
+                    , mCurrentBuoyancyAdjustment
+#endif
+                );
+
                 auto const particleIndex = mParticles.Add(
                     mass,
+                    buoyancyVolumeFill,
                     buoyancyFactor * GameRandomEngine::GetInstance().GenerateUniformReal(0.99f, 1.01f), // Make sure rotates while floating
                     &furnitureMaterial,
                     particlePosition,
@@ -532,59 +538,64 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 
             // Springs
 
-            StateType::NpcSpringStateType baseSpring(
-                NoneElementIndex,
-                NoneElementIndex,
-                0,
-                furnitureMaterial.NpcSpringReductionFraction,
-                furnitureMaterial.NpcSpringDampingCoefficient);
-
             // 0 - 1
             {
-                baseSpring.EndpointAIndex = particleMesh.Particles[0].ParticleIndex;
-                baseSpring.EndpointBIndex = particleMesh.Particles[1].ParticleIndex;
-                baseSpring.BaseRestLength = baseWidth;
-                particleMesh.Springs.emplace_back(baseSpring);
+                particleMesh.Springs.emplace_back(
+                    particleMesh.Particles[0].ParticleIndex,
+                    particleMesh.Particles[1].ParticleIndex,
+                    baseWidth,
+                    (mNpcDatabase.GetFurnitureParticleAttributes(subKind, 0).SpringReductionFraction + mNpcDatabase.GetFurnitureParticleAttributes(subKind, 1).SpringReductionFraction) / 2.0f,
+                    (mNpcDatabase.GetFurnitureParticleAttributes(subKind, 0).SpringDampingCoefficient + mNpcDatabase.GetFurnitureParticleAttributes(subKind, 1).SpringDampingCoefficient) / 2.0f);
             }
 
             // 0 | 3
             {
-                baseSpring.EndpointAIndex = particleMesh.Particles[0].ParticleIndex;
-                baseSpring.EndpointBIndex = particleMesh.Particles[3].ParticleIndex;
-                baseSpring.BaseRestLength = baseHeight;
-                particleMesh.Springs.emplace_back(baseSpring);
+                particleMesh.Springs.emplace_back(
+                    particleMesh.Particles[0].ParticleIndex,
+                    particleMesh.Particles[3].ParticleIndex,
+                    baseHeight,
+                    (mNpcDatabase.GetFurnitureParticleAttributes(subKind, 0).SpringReductionFraction + mNpcDatabase.GetFurnitureParticleAttributes(subKind, 3).SpringReductionFraction) / 2.0f,
+                    (mNpcDatabase.GetFurnitureParticleAttributes(subKind, 0).SpringDampingCoefficient + mNpcDatabase.GetFurnitureParticleAttributes(subKind, 3).SpringDampingCoefficient) / 2.0f);
             }
 
             // 0 \ 2
             {
-                baseSpring.EndpointAIndex = particleMesh.Particles[0].ParticleIndex;
-                baseSpring.EndpointBIndex = particleMesh.Particles[2].ParticleIndex;
-                baseSpring.BaseRestLength = baseDiagonal;
-                particleMesh.Springs.emplace_back(baseSpring);
+                particleMesh.Springs.emplace_back(
+                    particleMesh.Particles[0].ParticleIndex,
+                    particleMesh.Particles[2].ParticleIndex,
+                    baseDiagonal,
+                    (mNpcDatabase.GetFurnitureParticleAttributes(subKind, 0).SpringReductionFraction + mNpcDatabase.GetFurnitureParticleAttributes(subKind, 2).SpringReductionFraction) / 2.0f,
+                    (mNpcDatabase.GetFurnitureParticleAttributes(subKind, 0).SpringDampingCoefficient + mNpcDatabase.GetFurnitureParticleAttributes(subKind, 2).SpringDampingCoefficient) / 2.0f);
             }
 
             // 1 | 2
             {
-                baseSpring.EndpointAIndex = particleMesh.Particles[1].ParticleIndex;
-                baseSpring.EndpointBIndex = particleMesh.Particles[2].ParticleIndex;
-                baseSpring.BaseRestLength = baseHeight;
-                particleMesh.Springs.emplace_back(baseSpring);
+                particleMesh.Springs.emplace_back(
+                    particleMesh.Particles[1].ParticleIndex,
+                    particleMesh.Particles[2].ParticleIndex,
+                    baseHeight,
+                    (mNpcDatabase.GetFurnitureParticleAttributes(subKind, 1).SpringReductionFraction + mNpcDatabase.GetFurnitureParticleAttributes(subKind, 2).SpringReductionFraction) / 2.0f,
+                    (mNpcDatabase.GetFurnitureParticleAttributes(subKind, 1).SpringDampingCoefficient + mNpcDatabase.GetFurnitureParticleAttributes(subKind, 2).SpringDampingCoefficient) / 2.0f);
             }
 
             // 2 - 3
             {
-                baseSpring.EndpointAIndex = particleMesh.Particles[2].ParticleIndex;
-                baseSpring.EndpointBIndex = particleMesh.Particles[3].ParticleIndex;
-                baseSpring.BaseRestLength = baseWidth;
-                particleMesh.Springs.emplace_back(baseSpring);
+                particleMesh.Springs.emplace_back(
+                    particleMesh.Particles[2].ParticleIndex,
+                    particleMesh.Particles[3].ParticleIndex,
+                    baseWidth,
+                    (mNpcDatabase.GetFurnitureParticleAttributes(subKind, 2).SpringReductionFraction + mNpcDatabase.GetFurnitureParticleAttributes(subKind, 3).SpringReductionFraction) / 2.0f,
+                    (mNpcDatabase.GetFurnitureParticleAttributes(subKind, 2).SpringDampingCoefficient + mNpcDatabase.GetFurnitureParticleAttributes(subKind, 3).SpringDampingCoefficient) / 2.0f);
             }
 
             // 1 / 3
             {
-                baseSpring.EndpointAIndex = particleMesh.Particles[1].ParticleIndex;
-                baseSpring.EndpointBIndex = particleMesh.Particles[3].ParticleIndex;
-                baseSpring.BaseRestLength = baseDiagonal;
-                particleMesh.Springs.emplace_back(baseSpring);
+                particleMesh.Springs.emplace_back(
+                    particleMesh.Particles[1].ParticleIndex,
+                    particleMesh.Particles[3].ParticleIndex,
+                    baseDiagonal,
+                    (mNpcDatabase.GetFurnitureParticleAttributes(subKind, 1).SpringReductionFraction + mNpcDatabase.GetFurnitureParticleAttributes(subKind, 3).SpringReductionFraction) / 2.0f,
+                    (mNpcDatabase.GetFurnitureParticleAttributes(subKind, 1).SpringDampingCoefficient + mNpcDatabase.GetFurnitureParticleAttributes(subKind, 3).SpringDampingCoefficient) / 2.0f);
             }
 
             CalculateSprings(
@@ -677,6 +688,8 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
     // Feet (primary)
 
     auto const & feetMaterial = mNpcDatabase.GetHumanFeetMaterial(subKind);
+    auto const & feetParticleAttributes = mNpcDatabase.GetHumanFeetParticleAttributes(subKind);
+
     float const feetMass = CalculateParticleMass(
         feetMaterial.GetMass(),
         mCurrentSizeMultiplier
@@ -686,7 +699,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
     );
 
     float const feetBuoyancyFactor = CalculateParticleBuoyancyFactor(
-        feetMaterial.NpcBuoyancyVolumeFill,
+        feetParticleAttributes.BuoyancyVolumeFill,
         mCurrentSizeMultiplier
 #ifdef IN_BARYLAB
         , mCurrentBuoyancyAdjustment
@@ -695,6 +708,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
 
     auto const primaryParticleIndex = mParticles.Add(
         feetMass,
+        feetParticleAttributes.BuoyancyVolumeFill,
         feetBuoyancyFactor,
         &feetMaterial,
         worldCoordinates - vec2f(0.0f, 1.0f) * height,
@@ -705,6 +719,8 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
     // Head (secondary)
 
     auto const & headMaterial = mNpcDatabase.GetHumanHeadMaterial(subKind);
+    auto const & headParticleAttributes = mNpcDatabase.GetHumanHeadParticleAttributes(subKind);
+
     float const headMass = CalculateParticleMass(
         headMaterial.GetMass(),
         mCurrentSizeMultiplier
@@ -714,7 +730,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
     );
 
     float const headBuoyancyFactor = CalculateParticleBuoyancyFactor(
-        headMaterial.NpcBuoyancyVolumeFill,
+        headParticleAttributes.BuoyancyVolumeFill,
         mCurrentSizeMultiplier
 #ifdef IN_BARYLAB
         , mCurrentBuoyancyAdjustment
@@ -723,6 +739,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
 
     auto const secondaryParticleIndex = mParticles.Add(
         headMass,
+        headParticleAttributes.BuoyancyVolumeFill,
         headBuoyancyFactor,
         &headMaterial,
         worldCoordinates,
@@ -736,8 +753,8 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
         primaryParticleIndex,
         secondaryParticleIndex,
         baseHeight,
-        (headMaterial.NpcSpringReductionFraction + feetMaterial.NpcSpringReductionFraction) / 2.0f,
-        (headMaterial.NpcSpringDampingCoefficient + feetMaterial.NpcSpringDampingCoefficient) / 2.0f);
+        (headParticleAttributes.SpringReductionFraction + feetParticleAttributes.SpringReductionFraction) / 2.0f,
+        (headParticleAttributes.SpringDampingCoefficient + feetParticleAttributes.SpringDampingCoefficient) / 2.0f);
 
     CalculateSprings(
         mCurrentSizeMultiplier,

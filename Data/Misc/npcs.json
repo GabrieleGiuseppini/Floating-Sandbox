@@ -2,7 +2,15 @@
 	"humans": {
 		"global": {
 			"head_material": "NPC Human Head",
-			"feet_material": "NPC Human Feet"
+			"head_particle_attributes_overrides": {
+				"spring_damping_coefficient": 0.5,
+				"spring_reduction_fraction": 0.39
+			},
+			"feet_material": "NPC Human Feet",
+			"feet_particle_attributes_overrides": {
+				"spring_damping_coefficient": 0.5,
+				"spring_reduction_fraction": 0.39
+			}
 		},
 		"kinds": [
 
@@ -129,7 +137,12 @@
 				"material": "Solid Pine Wood I-Beam",
 				"particle_mesh": {
 					"kind": "Quad",
-					"height": 0.4
+					"height": 0.4,
+					"particle_attributes_overrides": [
+						{
+							"buoyancy_volume_fill": 0.0847
+						}
+					]
 				},
 				"texture_filename_stem": "barrel_1"
 			},
@@ -141,7 +154,12 @@
 				"material": "Solid Pine Wood I-Beam",
 				"particle_mesh": {
 					"kind": "Quad",
-					"height": 0.8
+					"height": 0.8,
+					"particle_attributes_overrides": [
+						{
+							"buoyancy_volume_fill": 0.0847
+						}
+					]
 				},
 				"texture_filename_stem": "cabin_desk_1"
 			},
@@ -153,7 +171,12 @@
 				"material": "Solid Pine Wood I-Beam",
 				"particle_mesh": {
 					"kind": "Quad",
-					"height": 0.3
+					"height": 0.3,
+					"particle_attributes_overrides": [
+						{
+							"buoyancy_volume_fill": 0.0847
+						}
+					]
 				},
 				"texture_filename_stem": "chest_1"
 			},
@@ -165,7 +188,12 @@
 				"material": "Solid Pine Wood I-Beam",
 				"particle_mesh": {
 					"kind": "Quad",
-					"height": 0.3
+					"height": 0.3,
+					"particle_attributes_overrides": [
+						{
+							"buoyancy_volume_fill": 0.06
+						}
+					]
 				},
 				"texture_filename_stem": "chest_2"
 			},
@@ -177,7 +205,12 @@
 				"material": "Solid Pine Wood I-Beam",
 				"particle_mesh": {
 					"kind": "Quad",
-					"height": 0.3
+					"height": 0.3,
+					"particle_attributes_overrides": [
+						{
+							"buoyancy_volume_fill": 0.05
+						}
+					]
 				},
 				"texture_filename_stem": "chest_3"
 			},
@@ -190,7 +223,12 @@
 				"material": "Solid Pine Wood I-Beam",
 				"particle_mesh": {
 					"kind": "Quad",
-					"height": 0.5
+					"height": 0.5,
+					"particle_attributes_overrides": [
+						{
+							"buoyancy_volume_fill": 0.0847
+						}
+					]
 				},
 				"texture_filename_stem": "crate_1"
 			},
@@ -203,7 +241,12 @@
 				"material": "Iron Hull",
 				"particle_mesh": {
 					"kind": "Quad",
-					"height": 0.5
+					"height": 0.5,
+					"particle_attributes_overrides": [
+						{
+							"buoyancy_volume_fill": 0.7
+						}
+					]
 				},
 				"texture_filename_stem": "drum_1"
 			},
@@ -216,7 +259,12 @@
 				"material": "Light Iron Bulkhead",
 				"particle_mesh": {
 					"kind": "Quad",
-					"height": 0.5
+					"height": 0.5,
+					"particle_attributes_overrides": [
+						{
+							"buoyancy_volume_fill": 0.14
+						}
+					]
 				},
 				"texture_filename_stem": "drum_2"
 			},
@@ -228,7 +276,12 @@
 				],
 				"material": "Stainless Steel",
 				"particle_mesh": {
-					"kind": "Particle"
+					"kind": "Particle",
+					"particle_attributes_overrides": [
+						{
+							"buoyancy_volume_fill": 0.0847
+						}
+					]
 				},
 				"texture_filename_stem": "particle_1"
 			},
@@ -241,7 +294,12 @@
 				"material": "Iron Hull",
 				"particle_mesh": {
 					"kind": "Quad",
-					"height": 0.8
+					"height": 0.8,
+					"particle_attributes_overrides": [
+						{
+							"buoyancy_volume_fill": 0.7
+						}
+					]
 				},
 				"texture_filename_stem": "piano_1"
 			},
@@ -254,7 +312,12 @@
 				"material": "Solid Pine Wood I-Beam",
 				"particle_mesh": {
 					"kind": "Quad",
-					"height": 0.4
+					"height": 0.4,
+					"particle_attributes_overrides": [
+						{
+							"buoyancy_volume_fill": 0.0847
+						}
+					]
 				},
 				"texture_filename_stem": "small_table_1"
 			},
@@ -267,7 +330,12 @@
 				"material": "Solid Pine Wood I-Beam",
 				"particle_mesh": {
 					"kind": "Quad",
-					"height": 0.4
+					"height": 0.4,
+					"particle_attributes_overrides": [
+						{
+							"buoyancy_volume_fill": 0.0847
+						}
+					]
 				},
 				"texture_filename_stem": "small_table_2"
 			}
