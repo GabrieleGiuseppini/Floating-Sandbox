@@ -578,17 +578,22 @@ Arch
 	+ Fix flat head of wealthy passenger (all 3 orientations)
 	+ Make Green drum Light, Blue drum Heavy (current weight)
 	+ Make piano heavier
-	- Buoyancy volume fill rearc:
-		- Human: optional buoyancy_volume_fill (@ global)
-			- If not present, calc like we do now @ structural
-		- Furniture: optional buoyancy_volume_fill (@ kind)
-			- If not present, calc like we do now @ structural
+	+ Body width randomization sensitivity
+	- Buoyancy volume fill rearc: @ particle level
+		- NpcDatabase:
+			- Human:
+				- Each human can have buoyancy_volume_fill_head/feet - if not present, use materials'
+			- Furniture:
+				- particle_mesh has optional _array_ of buoyancy_volume_fill
+					- size: 1 or N; when 1, copied to N
+				- when not present, use materials'
 		- @ NPC creation:
-			- Use NPC's
+			- Use NPC's, not material's
 		- jsons:
 			- Move npc_buoyancy_volume_fill's from materials_structural.json to npcs.json
 			- Nuke npc_buoyancy_volume_fill from StructuralMaterial (and code)
 	- See if can continue to figure out how to avoid deformation of quads
+		- Add (temporary) slider for NPC spring realaxation params
 
 	- Swirl, etc.: NPCs of all ships, all regimes
 		- Controlled by flag, "~force tools on NPCs"

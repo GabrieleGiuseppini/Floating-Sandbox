@@ -12,7 +12,6 @@
 					{ "value": "Passeggero 1 (Donna)", "language": "it" }
 				],
 				"role": "Passenger",
-				"body_width_randomization_sensitivity": 0.0,
 				"texture_filename_stems": {
 					"head_f": "female_civilian_passenger_1_head_front",
 					"head_b": "female_civilian_passenger_1_head_back",
@@ -35,7 +34,6 @@
 					{ "value": "Passeggero Seconda Classe 1 (Uomo)", "language": "it" }
 				],
 				"role": "Passenger",
-				"body_width_randomization_sensitivity": 0.0,
 				"texture_filename_stems": {
 					"head_f": "male_civ_1_head_front",
 					"head_b": "male_civ_1_head_back",
@@ -58,7 +56,6 @@
 					{ "value": "Mozzo", "language": "it" }
 				],
 				"role": "Crew",
-				"body_width_randomization_sensitivity": 0.0,
 				"texture_filename_stems": {
 					"head_f": "deckhand_head_front",
 					"head_b": "deckhand_head_back",
@@ -81,7 +78,6 @@
 					{ "value": "Passeggero Prima Classe 2 (Uomo)", "language": "it" }
 				],
 				"role": "Passenger",
-				"body_width_randomization_sensitivity": 0.0,
 				"texture_filename_stems": {
 					"head_f": "male_wealthy_passenger_2_head_front",
 					"head_b": "male_wealthy_passenger_2_head_back",
@@ -104,7 +100,7 @@
 					{ "value": "Dummy", "language": "it" }
 				],
 				"role": "Other",
-				"body_width_randomization_sensitivity": 0.0,
+				"body_width_randomization_sensitivity": 0.1,
 				"texture_filename_stems": {
 					"head_f": "dummy_head_front",
 					"head_b": "dummy_head_back",
