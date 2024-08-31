@@ -82,6 +82,28 @@
 
 			{
 				"name": [
+					{ "value": "Civilian Passenger 2 (Male)", "language": "en" },
+					{ "value": "Passeggero Seconda Classe 2 (Uomo)", "language": "it" }
+				],
+				"role": "Passenger",
+				"texture_filename_stems": {
+					"head_f": "male_civ_2_head_front",
+					"head_b": "male_civ_2_head_back",
+					"head_s": "male_civ_2_head_side",
+					"torso_f": "male_civ_2_torso_front",
+					"torso_b": "male_civ_2_torso_back",
+					"torso_s": "male_civ_2_torso_side",
+					"arm_f": "male_civ_2_arm_front",
+					"arm_b": "male_civ_2_arm_back",
+					"arm_s": "male_civ_2_arm_side",
+					"leg_f": "male_civ_2_leg_front",
+					"leg_b": "male_civ_2_leg_back",
+					"leg_s": "male_civ_2_leg_side"
+				}
+			},
+
+			{
+				"name": [
 					{ "value": "Deckhand", "language": "en" },
 					{ "value": "Mozzo", "language": "it" }
 				],
