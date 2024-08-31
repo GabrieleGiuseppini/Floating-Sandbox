@@ -1423,14 +1423,6 @@ void MainFrame::OnGameTimerTrigger(wxTimerEvent & /*event*/)
     ////}
 
     RunGameIteration();
-
-    // TODOTEST
-    static bool TODO = false;
-    if (!TODO)
-    {
-        OnAddHumanNpcMenuItemSelected(0);
-        TODO = true;
-    }
 }
 
 void MainFrame::OnLowFrequencyTimerTrigger(wxTimerEvent & /*event*/)
