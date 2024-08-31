@@ -139,6 +139,8 @@ private:
     wxCheckBox * mDoFishShoalingCheckBox;
     SliderControl<float> * mFishShoalRadiusAdjustmentSlider;
     SliderControl<float> * mNpcSizeMultiplierSlider;
+    SliderControl<float> * mNpcSpringReductionFractionAdjustmentSlider;
+    SliderControl<float> * mNpcSpringDampingCoefficientAdjustmentSlider;
 
     // Destructive Tools
     SliderControl<float> * mDestroyRadiusSlider;

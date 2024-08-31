@@ -657,6 +657,15 @@ public:
     float GetMinNpcSizeMultiplier() const override { return GameParameters::MinNpcSizeMultiplier; }
     float GetMaxNpcSizeMultiplier() const override { return GameParameters::MaxNpcSizeMultiplier; }
 
+    float GetNpcSpringReductionFractionAdjustment() const override { return mGameParameters.NpcSpringReductionFractionAdjustment; }
+    void SetNpcSpringReductionFractionAdjustment(float value) override { mGameParameters.NpcSpringReductionFractionAdjustment = value; }
+    float GetMinNpcSpringReductionFractionAdjustment() const override { return GameParameters::MinNpcSpringReductionFractionAdjustment; }
+    float GetMaxNpcSpringReductionFractionAdjustment() const override { return GameParameters::MaxNpcSpringReductionFractionAdjustment; }
+
+    float GetNpcSpringDampingCoefficientAdjustment() const override { return mGameParameters.NpcSpringDampingCoefficientAdjustment; }
+    void SetNpcSpringDampingCoefficientAdjustment(float value) override { mGameParameters.NpcSpringDampingCoefficientAdjustment = value; }
+    float GetMinNpcSpringDampingCoefficientAdjustment() const override { return GameParameters::MinNpcSpringDampingCoefficientAdjustment; }
+    float GetMaxNpcSpringDampingCoefficientAdjustment() const override { return GameParameters::MaxNpcSpringDampingCoefficientAdjustment; }
 
     // Misc
 

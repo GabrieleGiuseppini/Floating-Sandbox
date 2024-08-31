@@ -118,6 +118,8 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
 
     // NPCs
     ADD_GC_SETTING(float, NpcSizeMultiplier);
+    ADD_GC_SETTING(float, NpcSpringReductionFractionAdjustment);
+    ADD_GC_SETTING(float, NpcSpringDampingCoefficientAdjustment);
 
     // Misc
     ADD_GC_SETTING(OceanFloorTerrain, OceanFloorTerrain);

@@ -91,6 +91,8 @@ enum class GameSettings : size_t
 
     // NPCs
     NpcSizeMultiplier,
+    NpcSpringReductionFractionAdjustment,
+    NpcSpringDampingCoefficientAdjustment,
 
     // Misc
     OceanFloorTerrain,

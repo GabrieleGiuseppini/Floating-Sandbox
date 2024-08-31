@@ -60,6 +60,28 @@
 
 			{
 				"name": [
+					{ "value": "Civilian Passenger 2 (Female)", "language": "en" },
+					{ "value": "Passeggero 2 (Donna)", "language": "it" }
+				],
+				"role": "Passenger",
+				"texture_filename_stems": {
+					"head_f": "female_civilian_passenger_2_head_front",
+					"head_b": "female_civilian_passenger_2_head_back",
+					"head_s": "female_civilian_passenger_2_head_side",
+					"torso_f": "female_civilian_passenger_2_torso_front",
+					"torso_b": "female_civilian_passenger_2_torso_back",
+					"torso_s": "female_civilian_passenger_2_torso_side",
+					"arm_f": "female_civilian_passenger_2_arm_front",
+					"arm_b": "female_civilian_passenger_2_arm_back",
+					"arm_s": "female_civilian_passenger_2_arm_side",
+					"leg_f": "female_civilian_passenger_2_leg_front",
+					"leg_b": "female_civilian_passenger_2_leg_back",
+					"leg_s": "female_civilian_passenger_2_leg_side"
+				}
+			},
+
+			{
+				"name": [
 					{ "value": "Deckhand", "language": "en" },
 					{ "value": "Mozzo", "language": "it" }
 				],
@@ -77,6 +99,28 @@
 					"leg_f": "deckhand_leg_front",
 					"leg_b": "deckhand_leg_back",
 					"leg_s": "deckhand_leg_side"
+				}
+			},
+
+			{
+				"name": [
+					{ "value": "Engineer", "language": "en" },
+					{ "value": "Ingegnere", "language": "it" }
+				],
+				"role": "Crew",
+				"texture_filename_stems": {
+					"head_f": "engineer_head_front",
+					"head_b": "engineer_head_back",
+					"head_s": "engineer_head_side",
+					"torso_f": "engineer_torso_front",
+					"torso_b": "engineer_torso_back",
+					"torso_s": "engineer_torso_side",
+					"arm_f": "engineer_arm_front",
+					"arm_b": "engineer_arm_back",
+					"arm_s": "engineer_arm_side",
+					"leg_f": "engineer_leg_front",
+					"leg_b": "engineer_leg_back",
+					"leg_s": "engineer_leg_side"
 				}
 			},
 

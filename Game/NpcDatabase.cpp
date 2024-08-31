@@ -369,7 +369,7 @@ NpcDatabase::ParticleAttributesType NpcDatabase::MakeParticleAttributes(
 NpcDatabase::ParticleAttributesType NpcDatabase::MakeDefaultParticleAttributes(StructuralMaterial const & baseMaterial)
 {
     float constexpr DefaultSpringReductionFraction = 0.97f;
-    float constexpr DefaultSpringDampingCoefficient = 0.5f;
+    float constexpr DefaultSpringDampingCoefficient = 0.5f * 0.906f;
 
     return ParticleAttributesType{
         baseMaterial.BuoyancyVolumeFill,

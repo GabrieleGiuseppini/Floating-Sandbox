@@ -546,7 +546,10 @@ Arch
 			- Depth order
 			+ Fire panic tapering down speed
 	- Wind: 
+		- Wind receptivity to NPC particle attributes override
 		- Npc preliminary forces: apply to free NPC particles only
+			- Move Ship's WindForce calculation to Formulae
+			- Don't forget to smooth with waterness - which make sure is smooth between 0 and 1
 	- Wind tool: 
 		- WindField work (*) spec'd for flames 
 		- Npc preliminary forces: apply mParentWorld::WindField to all particles
@@ -611,13 +614,13 @@ Arch
 			+ Nuke all NPC props from StructuralMaterial
 			+ Move NPC props from StructuralMaterial to NPCs.json
 
-	- See if can continue to figure out how to avoid deformation of quads
-		- Add (temporary) slider for NPC spring realaxation params
+	= See if can continue to figure out how to avoid deformation of quads
+		= Add (temporary) slider for NPC spring realaxation params
 
 	- Swirl, etc.: NPCs of all ships, all regimes
 		- Controlled by flag, "~force tools on NPCs"
 			- SettingsDialog
-		- World: Npcs.ApplyXXXForce(...)
+		- World calls Npcs.ApplyXXXForce(...)
 	+ Move/Rotate tool:
 		+ World: after calling into Ship(), call Npcs.Move/etc/Npcs(shipId, [componentId], ...)
 			+ Test in BaryLab first

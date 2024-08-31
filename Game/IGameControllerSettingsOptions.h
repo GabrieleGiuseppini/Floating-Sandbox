@@ -221,6 +221,12 @@ struct IGameControllerSettingsOptions
     virtual float GetMinNpcSizeMultiplier() const = 0;
     virtual float GetMaxNpcSizeMultiplier() const = 0;
 
+    virtual float GetMinNpcSpringReductionFractionAdjustment() const = 0;
+    virtual float GetMaxNpcSpringReductionFractionAdjustment() const = 0;
+
+    virtual float GetMinNpcSpringDampingCoefficientAdjustment() const = 0;
+    virtual float GetMaxNpcSpringDampingCoefficientAdjustment() const = 0;
+
     // Misc
 
     virtual float GetMinSeaDepth() const = 0;

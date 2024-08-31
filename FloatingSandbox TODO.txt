@@ -87,6 +87,8 @@
 		- Update GameJolt to say Ubuntu 20.04
 		- Delete my Ubuntu 18 VM way after next release
 
+	- Remove NpcSpringReduction/DampAdjust from SettingsDialog
+
 	- See if can use keys to pan along diagonals
 
 	- Ship engines should not work when not underwater
