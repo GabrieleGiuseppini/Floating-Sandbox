@@ -58,7 +58,7 @@
 		+ Test:
 			+ Hiccup when changing render quality
 		+ Cleanup shader
-		- Commit
+		+ Commit
 		- Extras:
 			- Try it on clouds as well:
 				- Prototype: simply bind to texture @ CloudRender, and update shader

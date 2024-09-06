@@ -1369,7 +1369,6 @@ void WorldRenderContext::RenderDrawOceanFloor(RenderParameters const & renderPar
         assert(!!mLandNoiseTextureOpenGLHandle);
         mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture>();
         glBindTexture(GL_TEXTURE_2D, *mLandNoiseTextureOpenGLHandle);
-
     }
 
     if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Wireframe)
