@@ -45,7 +45,7 @@ void main()
     vec2 worldCoords = worldAndDepth.xy;
 
     // Back-sample 10.0 at top, slowly going to zero
-    float sampleIncrement = -10.0 * (2.0 - 2.0 * smoothstep(-3.0, 3.0, worldAndDepth.z));
+    float sampleIncrement = -10.0 * (2.0 - 2.0 * smoothstep(-2.0, 2.0, worldAndDepth.z));
     vec2 worldCoords2 = vec2(worldCoords.x, -worldCoords.y + sampleIncrement);
     vec4 textureColor = texture2D(paramLandTexture, worldCoords2 * paramTextureScaling);
 

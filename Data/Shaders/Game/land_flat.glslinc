@@ -4,18 +4,18 @@
 #define out varying
 
 // Inputs
-in vec2 inLand; // Position
+in vec3 inLand; // Position (vec2), Depth (float) (0 at top, +X at bottom)
 
 // Parameters
 uniform mat4 paramOrthoMatrix;
 
 // Outputs
-out vec2 world;
+out vec3 worldAndDepth;
 
 void main()
 {
     gl_Position = paramOrthoMatrix * vec4(inLand.xy, -1.0, 1.0);
-    world = inLand;
+    worldAndDepth = inLand;
 }
 
 ###FRAGMENT-120
@@ -25,7 +25,7 @@ void main()
 #define in varying
 
 // Inputs from previous shader
-in vec2 world;
+in vec3 worldAndDepth;
 
 // Textures
 #ifdef DETAILED_LAND
@@ -44,7 +44,7 @@ void main()
 
     vec3 color = ApplyNoise(
         paramLandFlatColor,
-        world,
+        worldAndDepth.xy,
         paramNoiseTexture);
 
 #else
@@ -57,11 +57,14 @@ void main()
     color = ApplyDepthDarkening(
         color,
         vec3(0.),
-        world.y,
+        worldAndDepth.y,
         paramOceanDarkeningRate);
+
+    // Anti-aliasing
+    float alpha = worldAndDepth.z / (0.2 + abs(dFdx(worldAndDepth.z)));
 
     // Apply ambient light
     gl_FragColor = vec4(
         ApplyAmbientLight(color, paramEffectiveMoonlightColor, paramEffectiveAmbientLightIntensity),
-        1.0);
+        alpha);
 } 
