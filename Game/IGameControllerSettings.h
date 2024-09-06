@@ -418,6 +418,9 @@ struct IGameControllerSettings
     virtual rgbColor const & GetFlatLandColor() const = 0;
     virtual void SetFlatLandColor(rgbColor const & color) = 0;
 
+    virtual LandRenderDetailType GetLandRenderDetail() const = 0;
+    virtual void SetLandRenderDetail(LandRenderDetailType landRenderDetail) = 0;
+
     virtual ShipViewModeType GetShipViewMode() const = 0;
     virtual void SetShipViewMode(ShipViewModeType shipViewMode) = 0;
 

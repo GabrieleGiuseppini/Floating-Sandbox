@@ -312,6 +312,9 @@ void RenderContext::Reset()
         {
             // Clear ships
             mShips.clear();
+
+            // Notify other layers
+            mWorldRenderContext->OnReset(mRenderParameters);
         });
 
     // Reset state

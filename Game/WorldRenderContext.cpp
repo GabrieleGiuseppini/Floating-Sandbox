@@ -12,8 +12,10 @@
 #include <GameCore/GameWallClock.h>
 #include <GameCore/ImageTools.h>
 #include <GameCore/Log.h>
+#include <GameCore/Noise.h>
 
 #include <cstring>
+#include <limits>
 
 namespace Render {
 
@@ -93,6 +95,8 @@ WorldRenderContext::WorldRenderContext(
     , mOceanTextureOpenGLHandle()
     , mLandTextureFrameSpecifications()
     , mLandTextureOpenGLHandle()
+    , mLandNoiseTextureOpenGLHandle()
+    , mLandNoiseToUpload()
     , mFishTextureAtlasMetadata()
     , mFishTextureAtlasOpenGLHandle()
     , mGenericLinearTextureAtlasMetadata(globalRenderContext.GetGenericLinearTextureAtlasMetadata())
@@ -249,6 +253,12 @@ WorldRenderContext::WorldRenderContext(
     CheckOpenGLError();
 
     glBindVertexArray(0);
+
+    // Set (noise) texture parameters
+    mShaderManager.ActivateProgram<ProgramType::LandFlatDetailed>();
+    mShaderManager.SetTextureParameters<ProgramType::LandFlatDetailed>();
+    mShaderManager.ActivateProgram<ProgramType::LandTextureDetailed>();
+    mShaderManager.SetTextureParameters<ProgramType::LandTextureDetailed>();
 
 
     //
@@ -475,7 +485,6 @@ WorldRenderContext::WorldRenderContext(
         CheckOpenGLError();
 
         // Set repeat mode
-        //glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         CheckOpenGLError();
 
@@ -657,6 +666,17 @@ void WorldRenderContext::InitializeFishTextures(ResourceLocator const & resource
     mShaderManager.SetTextureParameters<ProgramType::FishesBasic>();
     mShaderManager.ActivateProgram<ProgramType::FishesDetailed>();
     mShaderManager.SetTextureParameters<ProgramType::FishesDetailed>();
+}
+
+void WorldRenderContext::OnReset(RenderParameters const & renderParameters)
+{
+    // Invoked on rendering thread
+
+    if (renderParameters.LandRenderDetail == LandRenderDetailType::Detailed)
+    {
+        // Re-generate noise
+        mLandNoiseToUpload = MakeLandNoise(renderParameters);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -868,6 +888,12 @@ void WorldRenderContext::ProcessParameterChanges(RenderParameters const & render
     if (renderParameters.IsLandTextureIndexDirty)
     {
         ApplyLandTextureIndexChanges(renderParameters);
+    }
+
+    if (renderParameters.IsLandRenderDetailDirty
+        || !!mLandNoiseToUpload)
+    {
+        ApplyLandNoiseChanges(renderParameters);
     }
 }
 
@@ -1298,21 +1324,52 @@ void WorldRenderContext::RenderPrepareOceanFloor(RenderParameters const & /*rend
 
 void WorldRenderContext::RenderDrawOceanFloor(RenderParameters const & renderParameters)
 {
+    bool isHighQuality = false;
+    switch (renderParameters.LandRenderDetail)
+    {
+        case LandRenderDetailType::Basic:
+        {
+            isHighQuality = false;
+            break;
+        }
+
+        case LandRenderDetailType::Detailed:
+        {
+            isHighQuality = true;
+            break;
+        }
+    }
+
     glBindVertexArray(*mLandVAO);
 
     switch (renderParameters.LandRenderMode)
     {
         case LandRenderModeType::Flat:
         {
-            mShaderManager.ActivateProgram<ProgramType::LandFlat>();
+            if (isHighQuality)
+                mShaderManager.ActivateProgram<ProgramType::LandFlatDetailed>();
+            else
+                mShaderManager.ActivateProgram<ProgramType::LandFlatBasic>();
             break;
         }
 
         case LandRenderModeType::Texture:
         {
-            mShaderManager.ActivateProgram<ProgramType::LandTexture>();
+            if (isHighQuality)
+                mShaderManager.ActivateProgram<ProgramType::LandTextureDetailed>();
+            else
+                mShaderManager.ActivateProgram<ProgramType::LandTextureBasic>();
             break;
         }
+    }
+
+    if (isHighQuality)
+    {
+        // Activate noise texture
+        assert(!!mLandNoiseTextureOpenGLHandle);
+        mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture>();
+        glBindTexture(GL_TEXTURE_2D, *mLandNoiseTextureOpenGLHandle);
+
     }
 
     if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Wireframe)
@@ -1614,12 +1671,20 @@ void WorldRenderContext::ApplyViewModelChanges(RenderParameters const & renderPa
     ViewModel::ProjectionMatrix globalOrthoMatrix;
     renderParameters.View.CalculateGlobalOrthoMatrix(ZFar, ZNear, globalOrthoMatrix);
 
-    mShaderManager.ActivateProgram<ProgramType::LandFlat>();
-    mShaderManager.SetProgramParameter<ProgramType::LandFlat, ProgramParameterType::OrthoMatrix>(
+    mShaderManager.ActivateProgram<ProgramType::LandFlatBasic>();
+    mShaderManager.SetProgramParameter<ProgramType::LandFlatBasic, ProgramParameterType::OrthoMatrix>(
         globalOrthoMatrix);
 
-    mShaderManager.ActivateProgram<ProgramType::LandTexture>();
-    mShaderManager.SetProgramParameter<ProgramType::LandTexture, ProgramParameterType::OrthoMatrix>(
+    mShaderManager.ActivateProgram<ProgramType::LandFlatDetailed>();
+    mShaderManager.SetProgramParameter<ProgramType::LandFlatDetailed, ProgramParameterType::OrthoMatrix>(
+        globalOrthoMatrix);
+
+    mShaderManager.ActivateProgram<ProgramType::LandTextureBasic>();
+    mShaderManager.SetProgramParameter<ProgramType::LandTextureBasic, ProgramParameterType::OrthoMatrix>(
+        globalOrthoMatrix);
+
+    mShaderManager.ActivateProgram<ProgramType::LandTextureDetailed>();
+    mShaderManager.SetProgramParameter<ProgramType::LandTextureDetailed, ProgramParameterType::OrthoMatrix>(
         globalOrthoMatrix);
 
     mShaderManager.ActivateProgram<ProgramType::OceanDepthBasic>();
@@ -1735,12 +1800,20 @@ void WorldRenderContext::ApplyEffectiveAmbientLightIntensityChanges(RenderParame
     mShaderManager.SetProgramParameter<ProgramType::Lightning, ProgramParameterType::EffectiveAmbientLightIntensity>(
         renderParameters.EffectiveAmbientLightIntensity);
 
-    mShaderManager.ActivateProgram<ProgramType::LandFlat>();
-    mShaderManager.SetProgramParameter<ProgramType::LandFlat, ProgramParameterType::EffectiveAmbientLightIntensity>(
+    mShaderManager.ActivateProgram<ProgramType::LandFlatBasic>();
+    mShaderManager.SetProgramParameter<ProgramType::LandFlatBasic, ProgramParameterType::EffectiveAmbientLightIntensity>(
         renderParameters.EffectiveAmbientLightIntensity);
 
-    mShaderManager.ActivateProgram<ProgramType::LandTexture>();
-    mShaderManager.SetProgramParameter<ProgramType::LandTexture, ProgramParameterType::EffectiveAmbientLightIntensity>(
+    mShaderManager.ActivateProgram<ProgramType::LandFlatDetailed>();
+    mShaderManager.SetProgramParameter<ProgramType::LandFlatDetailed, ProgramParameterType::EffectiveAmbientLightIntensity>(
+        renderParameters.EffectiveAmbientLightIntensity);
+
+    mShaderManager.ActivateProgram<ProgramType::LandTextureBasic>();
+    mShaderManager.SetProgramParameter<ProgramType::LandTextureBasic, ProgramParameterType::EffectiveAmbientLightIntensity>(
+        renderParameters.EffectiveAmbientLightIntensity);
+
+    mShaderManager.ActivateProgram<ProgramType::LandTextureDetailed>();
+    mShaderManager.SetProgramParameter<ProgramType::LandTextureDetailed, ProgramParameterType::EffectiveAmbientLightIntensity>(
         renderParameters.EffectiveAmbientLightIntensity);
 
     mShaderManager.ActivateProgram<ProgramType::OceanDepthBasic>();
@@ -1858,15 +1931,21 @@ void WorldRenderContext::ApplySkyChanges(RenderParameters const & renderParamete
     mShaderManager.SetProgramParameter<ProgramType::OceanTextureDetailedForeground, ProgramParameterType::EffectiveMoonlightColor>(
         effectiveMoonlightColor);
 
-
-    mShaderManager.ActivateProgram<ProgramType::LandFlat>();
-    mShaderManager.SetProgramParameter<ProgramType::LandFlat, ProgramParameterType::EffectiveMoonlightColor>(
+    mShaderManager.ActivateProgram<ProgramType::LandFlatBasic>();
+    mShaderManager.SetProgramParameter<ProgramType::LandFlatBasic, ProgramParameterType::EffectiveMoonlightColor>(
         effectiveMoonlightColor);
 
-    mShaderManager.ActivateProgram<ProgramType::LandTexture>();
-    mShaderManager.SetProgramParameter<ProgramType::LandTexture, ProgramParameterType::EffectiveMoonlightColor>(
+    mShaderManager.ActivateProgram<ProgramType::LandFlatDetailed>();
+    mShaderManager.SetProgramParameter<ProgramType::LandFlatDetailed, ProgramParameterType::EffectiveMoonlightColor>(
         effectiveMoonlightColor);
 
+    mShaderManager.ActivateProgram<ProgramType::LandTextureBasic>();
+    mShaderManager.SetProgramParameter<ProgramType::LandTextureBasic, ProgramParameterType::EffectiveMoonlightColor>(
+        effectiveMoonlightColor);
+
+    mShaderManager.ActivateProgram<ProgramType::LandTextureDetailed>();
+    mShaderManager.SetProgramParameter<ProgramType::LandTextureDetailed, ProgramParameterType::EffectiveMoonlightColor>(
+        effectiveMoonlightColor);
 
     mShaderManager.ActivateProgram<ProgramType::Rain>();
     mShaderManager.SetProgramParameter<ProgramType::Rain, ProgramParameterType::EffectiveMoonlightColor>(
@@ -1879,12 +1958,20 @@ void WorldRenderContext::ApplyOceanDarkeningRateChanges(RenderParameters const &
 
     float const rate = renderParameters.OceanDarkeningRate / 50.0f;
 
-    mShaderManager.ActivateProgram<ProgramType::LandFlat>();
-    mShaderManager.SetProgramParameter<ProgramType::LandFlat, ProgramParameterType::OceanDarkeningRate>(
+    mShaderManager.ActivateProgram<ProgramType::LandFlatBasic>();
+    mShaderManager.SetProgramParameter<ProgramType::LandFlatBasic, ProgramParameterType::OceanDarkeningRate>(
         rate);
 
-    mShaderManager.ActivateProgram<ProgramType::LandTexture>();
-    mShaderManager.SetProgramParameter<ProgramType::LandTexture, ProgramParameterType::OceanDarkeningRate>(
+    mShaderManager.ActivateProgram<ProgramType::LandFlatDetailed>();
+    mShaderManager.SetProgramParameter<ProgramType::LandFlatDetailed, ProgramParameterType::OceanDarkeningRate>(
+        rate);
+
+    mShaderManager.ActivateProgram<ProgramType::LandTextureBasic>();
+    mShaderManager.SetProgramParameter<ProgramType::LandTextureBasic, ProgramParameterType::OceanDarkeningRate>(
+        rate);
+
+    mShaderManager.ActivateProgram<ProgramType::LandTextureDetailed>();
+    mShaderManager.SetProgramParameter<ProgramType::LandTextureDetailed, ProgramParameterType::OceanDarkeningRate>(
         rate);
 
     mShaderManager.ActivateProgram<ProgramType::OceanDepthBasic>();
@@ -2028,12 +2115,15 @@ void WorldRenderContext::ApplyOceanTextureIndexChanges(RenderParameters const & 
 
 void WorldRenderContext::ApplyLandRenderParametersChanges(RenderParameters const & renderParameters)
 {
-    // Set land parameters in all land programs
+    // Set land parameters in all land flat programs
 
     vec3f const flatColor = renderParameters.FlatLandColor.toVec3f();
 
-    mShaderManager.ActivateProgram<ProgramType::LandFlat>();
-    mShaderManager.SetProgramParameter<ProgramType::LandFlat, ProgramParameterType::LandFlatColor>(flatColor);
+    mShaderManager.ActivateProgram<ProgramType::LandFlatBasic>();
+    mShaderManager.SetProgramParameter<ProgramType::LandFlatBasic, ProgramParameterType::LandFlatColor>(flatColor);
+
+    mShaderManager.ActivateProgram<ProgramType::LandFlatDetailed>();
+    mShaderManager.SetProgramParameter<ProgramType::LandFlatDetailed, ProgramParameterType::LandFlatColor>(flatColor);
 }
 
 void WorldRenderContext::ApplyLandTextureIndexChanges(RenderParameters const & renderParameters)
@@ -2078,12 +2168,83 @@ void WorldRenderContext::ApplyLandTextureIndexChanges(RenderParameters const & r
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     CheckOpenGLError();
 
-    // Set texture and texture parameters in shader
-    mShaderManager.ActivateProgram<ProgramType::LandTexture>();
-    mShaderManager.SetProgramParameter<ProgramType::LandTexture, ProgramParameterType::TextureScaling>(
+    // Set texture and texture parameters in all texture shaders
+
+    mShaderManager.ActivateProgram<ProgramType::LandTextureBasic>();
+    mShaderManager.SetProgramParameter<ProgramType::LandTextureBasic, ProgramParameterType::TextureScaling>(
         1.0f / landTextureFrame.Metadata.WorldWidth,
         1.0f / landTextureFrame.Metadata.WorldHeight);
-    mShaderManager.SetTextureParameters<ProgramType::LandTexture>();
+    mShaderManager.SetTextureParameters<ProgramType::LandTextureBasic>();
+
+    mShaderManager.ActivateProgram<ProgramType::LandTextureDetailed>();
+    mShaderManager.SetProgramParameter<ProgramType::LandTextureDetailed, ProgramParameterType::TextureScaling>(
+        1.0f / landTextureFrame.Metadata.WorldWidth,
+        1.0f / landTextureFrame.Metadata.WorldHeight);
+    mShaderManager.SetTextureParameters<ProgramType::LandTextureDetailed>();
+}
+
+void WorldRenderContext::ApplyLandNoiseChanges(RenderParameters const & renderParameters)
+{
+    // Dealloc noise texture anyway
+    mLandNoiseTextureOpenGLHandle.reset();
+
+    if (renderParameters.LandRenderDetail == LandRenderDetailType::Detailed)
+    {
+        // We do want noise
+        
+        //
+        // Make sure we have a noise
+        //
+
+        if (!mLandNoiseToUpload)
+        {
+            mLandNoiseToUpload = MakeLandNoise(renderParameters); // Only place where we generate noise "inline", only when user has changed detail mode
+        }
+
+        //
+        // Allocate texture
+        //        
+
+        GLuint tmpGLuint;
+        glGenTextures(1, &tmpGLuint);
+        mLandNoiseTextureOpenGLHandle = tmpGLuint;
+
+        // Bind texture
+        mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture>();
+        glBindTexture(GL_TEXTURE_2D, *mLandNoiseTextureOpenGLHandle);
+        CheckOpenGLError();
+
+        // Set repeat mode
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        CheckOpenGLError();
+
+        // Set filtering
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        
+        //
+        // Upload texture
+        //
+
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, mLandNoiseToUpload->Size.width, mLandNoiseToUpload->Size.height, 0, GL_RED, GL_FLOAT, mLandNoiseToUpload->Data.get());
+        CheckOpenGLError();
+
+        // Unbind texture
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        //
+        // We've uploaded the texture, can forget buffer now
+        //
+
+        mLandNoiseToUpload.reset();
+    }
+    else
+    {
+        assert(renderParameters.LandRenderDetail == LandRenderDetailType::Basic);
+
+        // Nothing here
+    }
 }
 
 template <typename TVertexBuffer>
@@ -2223,6 +2384,37 @@ void WorldRenderContext::RecalculateWorldBorder(RenderParameters const & renderP
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
+}
+
+std::unique_ptr<Buffer2D<float, struct IntegralTag>> WorldRenderContext::MakeLandNoise(RenderParameters const & /*renderParameters*/) // Not yet needed
+{
+    auto constexpr NoiseTextureSize = IntegralRectSize(1024, 1024);
+
+    auto buf = std::make_unique<Buffer2D<float, struct IntegralTag>>(
+        Noise::CreateRepeatableFractal2DPerlinNoise(
+            NoiseTextureSize,
+            8,
+            1024, //32,
+            0.73f)); //0.43f));
+
+    //
+    // Scale values to 0, +1
+    //
+
+    float minVal = std::numeric_limits<float>::max();
+    float maxVal = std::numeric_limits<float>::lowest();
+    for (size_t i = 0; i < buf->Size.GetLinearSize(); ++i)
+    {
+        minVal = std::min(minVal, buf->Data[i]);
+        maxVal = std::max(maxVal, buf->Data[i]);
+    }
+
+    for (size_t i = 0; i < buf->Size.GetLinearSize(); ++i)
+    {
+        buf->Data[i] = (buf->Data[i] - minVal) / (maxVal - minVal);
+    }
+
+    return buf;
 }
 
 }

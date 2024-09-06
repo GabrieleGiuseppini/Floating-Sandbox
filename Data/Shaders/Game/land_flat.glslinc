@@ -10,14 +10,12 @@ in vec2 inLand; // Position
 uniform mat4 paramOrthoMatrix;
 
 // Outputs
-out float yWorld;
+out vec2 world;
 
 void main()
 {
-    yWorld = inLand.y;
-
-    // Calculate position
     gl_Position = paramOrthoMatrix * vec4(inLand.xy, -1.0, 1.0);
+    world = inLand;
 }
 
 ###FRAGMENT-120
@@ -27,7 +25,12 @@ void main()
 #define in varying
 
 // Inputs from previous shader
-in float yWorld;
+in vec2 world;
+
+// Textures
+#ifdef DETAILED_LAND
+uniform sampler2D paramNoiseTexture;
+#endif
 
 // Parameters        
 uniform float paramEffectiveAmbientLightIntensity;
@@ -37,11 +40,24 @@ uniform float paramOceanDarkeningRate;
 
 void main()
 {
-    // Apply depth darkening
-    vec3 color = ApplyDepthDarkening(
+#ifdef DETAILED_LAND
+
+    vec3 color = ApplyNoise(
         paramLandFlatColor,
+        world,
+        paramNoiseTexture);
+
+#else
+
+    vec3 color = paramLandFlatColor;
+
+#endif
+
+    // Apply depth darkening
+    color = ApplyDepthDarkening(
+        color,
         vec3(0.),
-        yWorld,
+        world.y,
         paramOceanDarkeningRate);
 
     // Apply ambient light

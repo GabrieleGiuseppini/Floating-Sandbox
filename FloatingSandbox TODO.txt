@@ -8,6 +8,61 @@
 
 	= Npcs - take 1
 
+	- Perlin noise on Land:
+		+ Figure out first if can have single-float 2D texture: RED channel only?
+		+ Figure out current 2 noise textures vs texture unit
+		+ Noise.cpp -> Buffer<float>
+			+ Optimize: 74ms -> 44ms
+				+ 1 cell pos for each cell -> 32ms -> 30/31ms -> 28/30ms
+				+ Linearized 1 -> 24/25ms
+			+ Returns Buffer<float>
+				+ Move image-making into MainFrame, at MakeNoise()
+				+ 15/16ms
+		+ Arch:
+			+ WorldRenderContext:
+				+ Members:
+					+ Owns the Perlin noise OpenGL texture (handle)
+					+ uq_ptr<FloatBuffer> mLandNoiseToUpload
+				+ static uq_ptr<FloatBuffer> MakeLandNoise(RenderParameters)
+					+ Do
+				+ Initialize: nothing; render params will be dirty hence it will call ApplyLandNoiseChanges(renderParameters) which, if in HighQuality mode, will create land noise
+					+ Verify
+				+ New LandRenderDetailType, like OceanRenderDetailType
+					+ SettingsDialog
+					+ Use it to compare perf
+				+ ProcessParameterChanges:
+					+ If affected RenderParameters dirty || mLandNoiseToUpload:
+						+ ApplyLandNoiseChanges()
+				+ ApplyLandNoiseChanges:
+					+ Dealloc mLandNoise (if any)
+					+ If RenderMode is HighQuality:
+						+ If mLandNoiseToUpload is none: mLandNoiseToUpload = MakeLandNoise(RenderParameters) // Only place where we do "inline"
+						+ Alloc new mLandNoise OpenGL buffer and upload
+							+ Texture: one single float (see CloudShadows)
+						+ mLandNoiseToUpload.reset()
+				+ OnReset(RenderParameters)
+					+ Called by RenderContext::Reset() (synchronously but on render thread)
+					+ If HighQuality: mLandNoiseToUpload = MakeLandNoise(RenderParameters)
+				+ RenderDrawOceanFloor:
+					+ Choose which of four programs
+					+ If HighQuality: activate texture unit, bind texture
+				+ Apply view changes et al.
+					+ Apply to all (new) land shaders
+		+ Shader:
+			+ Split Texture and Flat in two (non-detailed, detailed) - unless already done
+			+ Use one or the other depending on HighQuality Rendering mode
+			+ Shader code
+				+ Experiments:
+					+ Only darken dark areas
+					+ Derivatives for fake "bumps"
+		+ Test:
+			+ Hiccup when changing render quality
+		+ Cleanup shader
+		- Commit
+		- Extras:
+			- Try it on clouds as well:
+				- Prototype: simply bind to texture @ CloudRender, and update shader
+
 	- Remove too much logging from ShipLoadDialog
 
 	+ Redo notifications' EphemeralText: RollingText

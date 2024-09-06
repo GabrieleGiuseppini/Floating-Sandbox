@@ -4307,6 +4307,25 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
+            // High-Quality Rendering
+            {
+                mLandRenderDetailModeDetailedCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY, _("High-Quality Rendering"));
+                mLandRenderDetailModeDetailedCheckBox->SetToolTip(_("Renders the ocean floor with additional details. Requires more computational resources."));
+                mLandRenderDetailModeDetailedCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED,
+                    [this](wxCommandEvent & event)
+                    {
+                        mLiveSettings.SetValue(GameSettings::LandRenderDetail, event.IsChecked() ? LandRenderDetailType::Detailed : LandRenderDetailType::Basic);
+                        OnLiveSettingsChanged();
+                    });
+
+                sizer->Add(
+                    mLandRenderDetailModeDetailedCheckBox,
+                    wxGBPosition(1, 0),
+                    wxGBSpan(1, 1),
+                    wxALL,
+                    CellBorderInner);
+            }
+
             boxSizer->Add(sizer, 0, wxALL, StaticBoxInsetMargin);
         }
 
@@ -5910,23 +5929,25 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
 
     switch (settings.GetValue<LandRenderModeType>(GameSettings::LandRenderMode))
     {
-    case LandRenderModeType::Texture:
-    {
-        mTextureLandRenderModeRadioButton->SetValue(true);
-        break;
-    }
+        case LandRenderModeType::Texture:
+        {
+            mTextureLandRenderModeRadioButton->SetValue(true);
+            break;
+        }
 
-    case LandRenderModeType::Flat:
-    {
-        mFlatLandRenderModeRadioButton->SetValue(true);
-        break;
-    }
+        case LandRenderModeType::Flat:
+        {
+            mFlatLandRenderModeRadioButton->SetValue(true);
+            break;
+        }
     }
 
     mTextureLandComboBox->Select(static_cast<int>(settings.GetValue<size_t>(GameSettings::TextureLandTextureIndex)));
 
     auto const flatLandColor = settings.GetValue<rgbColor>(GameSettings::FlatLandColor);
     mFlatLandColorPicker->SetColour(wxColor(flatLandColor.r, flatLandColor.g, flatLandColor.b));
+
+    mLandRenderDetailModeDetailedCheckBox->SetValue(settings.GetValue<LandRenderDetailType>(GameSettings::LandRenderDetail) == LandRenderDetailType::Detailed);
 
     ReconciliateLandRenderModeSettings();
 

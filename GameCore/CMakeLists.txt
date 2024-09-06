@@ -54,6 +54,8 @@ set  (SOURCES
 	Log.h
 	Matrix.h
 	MemoryStreams.h
+	Noise.cpp
+	Noise.h
 	ParameterSmoother.h
 	PortableTimepoint.cpp
 	PortableTimepoint.h

@@ -37,10 +37,14 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::HeatBlasterFlameCool;
     else if (lstr == "heat_blaster_flame_heat")
         return ProgramType::HeatBlasterFlameHeat;
-    else if (lstr == "land_flat")
-        return ProgramType::LandFlat;
-    else if (lstr == "land_texture")
-        return ProgramType::LandTexture;
+    else if (lstr == "land_flat_basic")
+        return ProgramType::LandFlatBasic;
+    else if (lstr == "land_flat_detailed")
+        return ProgramType::LandFlatDetailed;
+    else if (lstr == "land_texture_basic")
+        return ProgramType::LandTextureBasic;
+    else if (lstr == "land_texture_detailed")
+        return ProgramType::LandTextureDetailed;
     else if (lstr == "laser_ray")
         return ProgramType::LaserRay;
     else if (lstr == "lightning")
@@ -227,10 +231,14 @@ std::string ProgramTypeToStr(ProgramType program)
         return "HeatBlasterFlameCool";
     case ProgramType::HeatBlasterFlameHeat:
         return "HeatBlasterFlameHeat";
-    case ProgramType::LandFlat:
-        return "LandFlat";
-    case ProgramType::LandTexture:
-        return "LandTexture";
+    case ProgramType::LandFlatBasic:
+        return "LandFlatBasic";
+    case ProgramType::LandFlatDetailed:
+        return "LandFlatDetailed";
+    case ProgramType::LandTextureBasic:
+        return "LandTextureBasic";
+    case ProgramType::LandTextureDetailed:
+        return "LandTextureDetailed";
     case ProgramType::LaserRay:
         return "LaserRay";
     case ProgramType::Lightning:
@@ -419,6 +427,8 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::LandFlatColor;
     else if (str == "MatteColor")
         return ProgramParameterType::MatteColor;
+    else if (str == "NoiseStrength")
+        return ProgramParameterType::NoiseStrength;
     else if (str == "OceanTransparency")
         return ProgramParameterType::OceanTransparency;
     else if (str == "OceanDarkeningRate")
@@ -512,6 +522,8 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
         return "LandFlatColor";
     case ProgramParameterType::MatteColor:
         return "MatteColor";
+    case ProgramParameterType::NoiseStrength:
+        return "NoiseStrength";
     case ProgramParameterType::OceanTransparency:
         return "OceanTransparency";
     case ProgramParameterType::OceanDarkeningRate:

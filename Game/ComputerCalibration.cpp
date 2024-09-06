@@ -70,11 +70,13 @@ void ComputerCalibrator::TuneGame(
         || score.NormalizedGfxScore < 0.1f)
     {
         renderContext.SetOceanRenderDetail(OceanRenderDetailType::Basic);
+        renderContext.SetLandRenderDetail(LandRenderDetailType::Basic);
         renderContext.SetDoCrepuscularGradient(false);
     }
     else
     {
         renderContext.SetOceanRenderDetail(OceanRenderDetailType::Detailed);
+        renderContext.SetLandRenderDetail(LandRenderDetailType::Detailed);
         renderContext.SetDoCrepuscularGradient(true);
     }
 
@@ -90,6 +92,7 @@ void ComputerCalibrator::TuneGame(
 
     LogMessage("ComputerCalibration:"
         " OceanRenderDetail=", renderContext.GetOceanRenderDetail() == OceanRenderDetailType::Basic ? "Basic" : "Advanced",
+        " LandRenderDetail=", renderContext.GetLandRenderDetail() == LandRenderDetailType::Basic ? "Basic" : "Advanced",
         " HeatRenderMode=", renderContext.GetHeatRenderMode() == HeatRenderModeType::None ? "None" : (renderContext.GetHeatRenderMode() == HeatRenderModeType::HeatOverlay ? "HeatOverlay" : "Incandescence"));
 }
 

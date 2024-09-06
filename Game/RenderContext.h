@@ -415,6 +415,17 @@ public:
         mRenderParameters.IsLandTextureIndexDirty = true;
     }
 
+    LandRenderDetailType GetLandRenderDetail() const
+    {
+        return mRenderParameters.LandRenderDetail;
+    }
+
+    void SetLandRenderDetail(LandRenderDetailType landRenderDetail)
+    {
+        mRenderParameters.LandRenderDetail = landRenderDetail;
+        mRenderParameters.IsLandRenderDetailDirty = true;
+    }
+
     //
     // Ship rendering properties
     //

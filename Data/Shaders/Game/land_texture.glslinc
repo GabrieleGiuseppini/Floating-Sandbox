@@ -10,12 +10,12 @@ in vec3 inLand; // Position (vec2), Depth (float) (0 at top, +X at bottom)
 uniform mat4 paramOrthoMatrix;
 
 // Outputs
-out vec3 textureCoord;
+out vec3 worldAndDepth;
 
 void main()
 {
     gl_Position = paramOrthoMatrix * vec4(inLand.xy, -1.0, 1.0);
-    textureCoord = inLand;
+    worldAndDepth = inLand;
 }
 
 
@@ -26,10 +26,13 @@ void main()
 #define in varying
 
 // Inputs from previous shader
-in vec3 textureCoord;
+in vec3 worldAndDepth;
 
-// The texture
+// Textures
 uniform sampler2D paramLandTexture;
+#ifdef DETAILED_LAND
+uniform sampler2D paramNoiseTexture;
+#endif
 
 // Parameters        
 uniform float paramEffectiveAmbientLightIntensity;
@@ -39,20 +42,31 @@ uniform float paramOceanDarkeningRate;
 
 void main()
 {
+    vec2 worldCoords = worldAndDepth.xy;
+
     // Back-sample 10.0 at top, slowly going to zero
-    float sampleIncrement = -10.0 * (2.0 - 2.0 * smoothstep(-3.0, 3.0, textureCoord.z));
-    vec2 textureCoord2 = vec2(textureCoord.x, -textureCoord.y + sampleIncrement);
-    vec4 textureColor = texture2D(paramLandTexture, textureCoord2 * paramTextureScaling);
+    float sampleIncrement = -10.0 * (2.0 - 2.0 * smoothstep(-3.0, 3.0, worldAndDepth.z));
+    vec2 worldCoords2 = vec2(worldCoords.x, -worldCoords.y + sampleIncrement);
+    vec4 textureColor = texture2D(paramLandTexture, worldCoords2 * paramTextureScaling);
+
+#ifdef DETAILED_LAND
+
+    textureColor.xyz = ApplyNoise(
+        textureColor.xyz,
+        worldCoords,
+        paramNoiseTexture);
+
+#endif
 
     // Apply depth darkening
     textureColor.xyz = ApplyDepthDarkening(
         textureColor.xyz,
         vec3(0.),
-        textureCoord.y,
+        worldCoords.y,
         paramOceanDarkeningRate);
 
     // Anti-aliasing
-    float alpha = textureCoord.z / (0.2 + abs(dFdx(textureCoord.z)));
+    float alpha = worldAndDepth.z / (0.2 + abs(dFdx(worldAndDepth.z)));
 
     // Apply ambient light and blend
     gl_FragColor = vec4(

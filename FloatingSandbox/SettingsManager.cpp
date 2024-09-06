@@ -177,10 +177,11 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(rgbColor, DepthOceanColorStart);
     ADD_GC_SETTING(rgbColor, DepthOceanColorEnd);
     ADD_GC_SETTING(rgbColor, FlatOceanColor);
-    ADD_GC_SETTING(OceanRenderDetailType, OceanRenderDetail);
+    ADD_GC_SETTING(OceanRenderDetailType, OceanRenderDetail);    
     ADD_GC_SETTING(LandRenderModeType, LandRenderMode);
     ADD_GC_SETTING(size_t, TextureLandTextureIndex);
     ADD_GC_SETTING(rgbColor, FlatLandColor);
+    ADD_GC_SETTING(LandRenderDetailType, LandRenderDetail);
     ADD_GC_SETTING(VectorFieldRenderModeType, VectorFieldRenderMode);
     ADD_GC_SETTING(bool, ShowShipStress);
     ADD_GC_SETTING(bool, ShowShipFrontiers);

@@ -20,6 +20,7 @@
 
 #include <GameCore/AABB.h>
 #include <GameCore/BoundedVector.h>
+#include <GameCore/Buffer2D.h>
 #include <GameCore/Colors.h>
 #include <GameCore/GameTypes.h>
 #include <GameCore/ImageData.h>
@@ -50,6 +51,8 @@ public:
     void InitializeWorldTextures(ResourceLocator const & resourceLocator);
 
     void InitializeFishTextures(ResourceLocator const & resourceLocator);
+
+    void OnReset(RenderParameters const & renderParameters);
 
     inline std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureOceanAvailableThumbnails() const
     {
@@ -801,9 +804,11 @@ private:
     void ApplyOceanTextureIndexChanges(RenderParameters const & renderParameters);
     void ApplyLandRenderParametersChanges(RenderParameters const & renderParameters);
     void ApplyLandTextureIndexChanges(RenderParameters const & renderParameters);
+    void ApplyLandNoiseChanges(RenderParameters const & renderParameters);
 
     void RecalculateClearCanvasColor(RenderParameters const & renderParameters);
     void RecalculateWorldBorder(RenderParameters const & renderParameters);
+    static std::unique_ptr<Buffer2D<float, struct IntegralTag>> MakeLandNoise(RenderParameters const & renderParameters);
 
 private:
 
@@ -1148,6 +1153,8 @@ private:
 
     std::vector<TextureFrameSpecification<WorldTextureGroups>> mLandTextureFrameSpecifications;
     GameOpenGLTexture mLandTextureOpenGLHandle;
+    GameOpenGLTexture mLandNoiseTextureOpenGLHandle;
+    std::unique_ptr<Buffer2D<float, struct IntegralTag>> mLandNoiseToUpload;
 
     std::unique_ptr<TextureAtlasMetadata<FishTextureGroups>> mFishTextureAtlasMetadata;
     GameOpenGLTexture mFishTextureAtlasOpenGLHandle;

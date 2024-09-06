@@ -545,6 +545,7 @@ Arch
 			- Burning NPC removal
 			- Depth order
 			+ Fire panic tapering down speed
+	- Test auto zoom w/Cam!=0
 	- Wind: 
 		- Wind receptivity to NPC particle attributes override
 		- Npc preliminary forces: apply to free NPC particles only

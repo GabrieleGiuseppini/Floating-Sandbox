@@ -58,10 +58,7 @@ public:
         , mLinearSize(width * height)
     {
         Data = std::make_unique<TElement[]>(mLinearSize);
-        std::fill(
-            Data.get(),
-            Data.get() + mLinearSize,
-            defaultValue);
+        Fill(defaultValue);
     }
 
     Buffer2D(
@@ -152,6 +149,14 @@ public:
         return Buffer2D(
             regionRect.size,
             std::move(newData));
+    }
+
+    void Fill(TElement const value)
+    {
+        std::fill(
+            Data.get(),
+            Data.get() + mLinearSize,
+            value);
     }
 
     /*

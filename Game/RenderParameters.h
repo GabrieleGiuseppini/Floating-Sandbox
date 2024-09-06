@@ -46,6 +46,7 @@ struct RenderParameters
     LandRenderModeType LandRenderMode;
     rgbColor FlatLandColor;
     size_t LandTextureIndex;
+    LandRenderDetailType LandRenderDetail;
 
     //
     // Ship
@@ -87,6 +88,7 @@ struct RenderParameters
     bool IsOceanTextureIndexDirty;
     bool AreLandRenderParametersDirty; // Tracks various land render parameters as a whole, for convenience
     bool IsLandTextureIndexDirty;
+    bool IsLandRenderDetailDirty;
     // Ship
     bool IsShipViewModeDirty;
     bool IsShipAmbientLightSensitivityDirty;

@@ -1358,6 +1358,15 @@ enum class LandRenderModeType
 };
 
 /*
+ * The different levels of detail with which the land may be rendered.
+ */
+enum class LandRenderDetailType
+{
+    Basic,
+    Detailed
+};
+
+/*
  * The different vector fields that may be rendered.
  */
 enum class VectorFieldRenderModeType

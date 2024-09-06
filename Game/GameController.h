@@ -903,6 +903,9 @@ public:
     rgbColor const & GetFlatLandColor() const override { return mRenderContext->GetFlatLandColor(); }
     void SetFlatLandColor(rgbColor const & color) override { mRenderContext->SetFlatLandColor(color); }
 
+    LandRenderDetailType GetLandRenderDetail() const override { return mRenderContext->GetLandRenderDetail(); }
+    void SetLandRenderDetail(LandRenderDetailType landRenderDetail) override { mRenderContext->SetLandRenderDetail(landRenderDetail); }
+
     ShipViewModeType GetShipViewMode() const override { return mRenderContext->GetShipViewMode(); }
     void SetShipViewMode(ShipViewModeType shipViewMode) override { mRenderContext->SetShipViewMode(shipViewMode); }
 

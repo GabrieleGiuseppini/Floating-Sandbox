@@ -23,3 +23,15 @@ vec3 ApplyAmbientLight(
             vec3(1.), 
             effectiveAmbientLightIntensity);
 }
+
+vec3 ApplyNoise(
+    vec3 baseColor,
+    vec2 worldCoords,
+    sampler2D noiseTexture)
+{
+    vec2 noiseCoords = worldCoords /4096.0;
+    float noiseSample = texture2D(noiseTexture, noiseCoords).x;
+    #define NOISE_AMPL 0.65
+    float m = (1.0 - NOISE_AMPL) + noiseSample * NOISE_AMPL;
+    return baseColor * m;
+}
