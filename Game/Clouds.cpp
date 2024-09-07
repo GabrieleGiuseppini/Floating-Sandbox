@@ -149,10 +149,9 @@ void Clouds::Update(
     // Also, higher winds should make clouds move over-linearly faster.
     //
     // A linear factor of 1.0/8.0 worked fine at low wind speeds.
-    //float const globalCloudSpeed = windSign * 0.03f * std::pow(std::abs(baseAndStormSpeedMagnitude), 1.7f); // 1.17.x
     float const globalCloudSpeed = windSign * 0.005f * std::pow(std::abs(baseAndStormSpeedMagnitude), 2.1f);
 
-    // Convert wint speed into cloud "inner growth" speed.
+    // Convert wind speed into cloud "inner growth" speed.
     float const growthProgressSpeed =
         (1.0f / 45.0f) // Basal velocity
         + std::abs(globalCloudSpeed) / (400.0f);
