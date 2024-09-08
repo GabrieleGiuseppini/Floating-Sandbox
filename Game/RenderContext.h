@@ -852,7 +852,7 @@ public:
         float virtualZ,         // [0.0, +1.0]
         float scale,
         float darkening,        // 0.0:dark, 1.0:light
-        float totalDistanceTraveled)
+        float volumetricGrowthProgress)
     {
         mWorldRenderContext->UploadCloud(
             cloudId,
@@ -861,7 +861,7 @@ public:
             virtualZ,
             scale,
             darkening,
-            totalDistanceTraveled,
+            volumetricGrowthProgress,
             mRenderParameters);
     }
 

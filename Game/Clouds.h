@@ -61,7 +61,7 @@ private:
         float const Z; // 0.0 -> 1.0
         float Scale;
         float Darkening; // 0.0: dark, 1.0: light
-        float TotalDistanceTraveled; // Absolute
+        float VolumetricGrowthProgress; // 0.0 -> +INF; used for "volumetric" growth
 
         Cloud(
             uint32_t id,
@@ -77,17 +77,20 @@ private:
             , Z(z)
             , Scale(scale)
             , Darkening(darkening)
-            , TotalDistanceTraveled(0.0f)
+            , VolumetricGrowthProgress(0.0f)
             , mLinearSpeedX(linearSpeedX)
         {
         }
 
         inline void Update(float globalCloudSpeed)
         {
-            // Update position and total distance traveled
             float const dx = mLinearSpeedX * globalCloudSpeed * GameParameters::SimulationStepTimeDuration<float>;
+
+            // Update position
             X += dx;
-            TotalDistanceTraveled += std::abs(dx);
+
+            // Update progress: mix of time and step
+            VolumetricGrowthProgress += GameParameters::SimulationStepTimeDuration<float> + std::abs(dx);
         }
 
     private:

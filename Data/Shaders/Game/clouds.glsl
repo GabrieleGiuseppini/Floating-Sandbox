@@ -10,14 +10,14 @@
 // Inputs
 in vec4 inCloud1; // Position (NDC) (vec2), TextureCoordinates (vec2)
 in vec4 inCloud2; // TextureCenterCoordinates (vec2), VirtualTextureCoordinates (vec2) 
-in vec2 inCloud3; // Darkening, TotalDistanceTraveled
+in vec2 inCloud3; // Darkening, VolumetricGrowthProgress
 
 // Outputs
 out vec2 texturePos;
 out vec2 textureCenterPos;
 out vec2 virtualTexturePos;
 out float darkness;
-out float totalDistanceTraveled;
+out float volumetricGrowthProgress;
 
 void main()
 {
@@ -25,7 +25,7 @@ void main()
     textureCenterPos = inCloud2.xy;
     virtualTexturePos = inCloud2.zw;
     darkness = inCloud3.x;
-    totalDistanceTraveled = inCloud3.y;
+    volumetricGrowthProgress = inCloud3.y;
 
     gl_Position = vec4(inCloud1.xy, -1.0, 1.0);
 }
@@ -39,7 +39,7 @@ in vec2 texturePos;
 in vec2 textureCenterPos;
 in vec2 virtualTexturePos;
 in float darkness;
-in float totalDistanceTraveled;
+in float volumetricGrowthProgress;
 
 // The texture
 uniform sampler2D paramCloudsAtlasTexture;
@@ -69,11 +69,10 @@ void main()
     vec2 ra = vec2(
         length(virtualTextureCoordsCentered), 
         atan(virtualTextureCoordsCentered.y, virtualTextureCoordsCentered.x));
-    //#define SPEED 1.2
-    #define SPEED 3.2
-    vec2 ra2 = vec2(ra.x - totalDistanceTraveled * SPEED, ra.y / PI);
-    #define MAG .5
-    float n = texture2D(paramNoiseTexture, ra2 * MAG).x;
+    #define SPEED 0.2
+    #define MAG 6.0
+    vec2 ra2 = vec2((ra.x - volumetricGrowthProgress * SPEED) / MAG, ra.y / (2. * PI));
+    float n = texture2D(paramNoiseTexture, ra2).x;
     //float a = 1. - n * n * ra.x * ra.x;
     //float a = 1. - n * ra.x; 
     float a = 1. - abs(n) * smoothstep(0.2, 0.4, ra.x); // Silence towards center

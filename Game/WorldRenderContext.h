@@ -194,7 +194,7 @@ public:
         float virtualZ,         // [0.0, +1.0]
         float scale,
         float darkening,        // 0.0:dark, 1.0:light
-        float totalDistanceTraveled,
+        float volumetricGrowthProgress, // 0.0 -> +INF
         RenderParameters const & renderParameters)
     {
         //
@@ -255,7 +255,7 @@ public:
             cloudAtlasFrameMetadata.TextureCoordinatesAnchorCenter,
             vec2f(minVirtualTexX, maxVirtualTexY),
             darkening,
-            totalDistanceTraveled);
+            volumetricGrowthProgress);
 
         // bottom-left
         mCloudVertexBuffer.emplace_back(
@@ -264,7 +264,7 @@ public:
             cloudAtlasFrameMetadata.TextureCoordinatesAnchorCenter,
             vec2f(minVirtualTexX, minVirtualTexY),
             darkening,
-            totalDistanceTraveled);
+            volumetricGrowthProgress);
 
         // top-right
         mCloudVertexBuffer.emplace_back(
@@ -273,7 +273,7 @@ public:
             cloudAtlasFrameMetadata.TextureCoordinatesAnchorCenter,
             vec2f(maxVirtualTexX, maxVirtualTexY),
             darkening,
-            totalDistanceTraveled);
+            volumetricGrowthProgress);
 
         // bottom-left
         mCloudVertexBuffer.emplace_back(
@@ -282,7 +282,7 @@ public:
             cloudAtlasFrameMetadata.TextureCoordinatesAnchorCenter,
             vec2f(minVirtualTexX, minVirtualTexY),
             darkening,
-            totalDistanceTraveled);
+            volumetricGrowthProgress);
 
         // top-right
         mCloudVertexBuffer.emplace_back(
@@ -291,7 +291,7 @@ public:
             cloudAtlasFrameMetadata.TextureCoordinatesAnchorCenter,
             vec2f(maxVirtualTexX, maxVirtualTexY),
             darkening,
-            totalDistanceTraveled);
+            volumetricGrowthProgress);
 
         // bottom-right
         mCloudVertexBuffer.emplace_back(
@@ -300,7 +300,7 @@ public:
             cloudAtlasFrameMetadata.TextureCoordinatesAnchorCenter,
             vec2f(maxVirtualTexX, minVirtualTexY),
             darkening,
-            totalDistanceTraveled);
+            volumetricGrowthProgress);
     }
 
     void UploadCloudsEnd();
@@ -910,7 +910,7 @@ private:
         vec2f atlasTextureCenter;
         vec2f virtualTexturePos;
         float darkness;
-        float totalDistanceTraveled;
+        float volumetricGrowthProgress;
 
         CloudVertex(
             vec2f _ndcPosition,
@@ -918,13 +918,13 @@ private:
             vec2f _atlasTextureCenter,
             vec2f _virtualTexturePos,
             float _darkness,
-            float _totalDistanceTraveled)
+            float _volumetricGrowthProgress)
             : ndcPosition(_ndcPosition)
             , atlasTexturePos(_atlasTexturePos)
             , atlasTextureCenter(_atlasTextureCenter)
             , virtualTexturePos(_virtualTexturePos)
             , darkness(_darkness)
-            , totalDistanceTraveled(_totalDistanceTraveled)
+            , volumetricGrowthProgress(_volumetricGrowthProgress)
         {}
     };
 

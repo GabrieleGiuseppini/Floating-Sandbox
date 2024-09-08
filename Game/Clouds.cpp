@@ -239,7 +239,7 @@ void Clouds::Upload(Render::RenderContext & renderContext) const
             cloud->Z,
             cloud->Scale,
             cloud->Darkening,
-            cloud->TotalDistanceTraveled);
+            cloud->VolumetricGrowthProgress);
     }
 
     for (auto const & cloud : mStormClouds)
@@ -251,7 +251,7 @@ void Clouds::Upload(Render::RenderContext & renderContext) const
             cloud->Z,
             cloud->Scale,
             cloud->Darkening,
-            cloud->TotalDistanceTraveled);
+            cloud->VolumetricGrowthProgress);
     }
 
     renderContext.UploadCloudsEnd();
