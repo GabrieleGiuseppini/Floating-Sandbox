@@ -230,7 +230,6 @@ public:
         float const topY = bottomY + ndcHeight;
 
         // Calculate virtual texture coords: ensure unity circle is always covered
-        // TODO: redo better
         float minVirtualTexX, maxVirtualTexX;
         float minVirtualTexY, maxVirtualTexY;
         if (ndcWidth >= ndcHeight)
