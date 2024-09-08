@@ -14,11 +14,37 @@
 #include <GameCore/GameWallClock.h>
 #include <GameCore/RunningAverage.h>
 
+#include <optional>
+
 namespace Physics
 {
 
 class Wind
 {
+public:
+
+    struct WindField
+    {
+        vec2f SourcePos;
+        float PreFrontRadius;
+        float PreFrontWindForceMagnitude;
+        float MainFrontRadius;
+        float MainFrontWindForceMagnitude;
+
+        WindField(
+            vec2f sourcePos,
+            float preFrontRadius,
+            float preFrontWindForceMagnitude,
+            float mainFrontRadius,
+            float mainFrontWindForceMagnitude)
+            : SourcePos(sourcePos)
+            , PreFrontRadius(preFrontRadius)
+            , PreFrontWindForceMagnitude(preFrontWindForceMagnitude)
+            , MainFrontRadius(mainFrontRadius)
+            , MainFrontWindForceMagnitude(mainFrontWindForceMagnitude)
+        {}
+    };
+
 public:
 
     Wind(std::shared_ptr<GameEventDispatcher> gameEventDispatcher);
@@ -28,6 +54,8 @@ public:
     void Update(
         Storm::Parameters const & stormParameters,
         GameParameters const & gameParameters);
+
+    void UpdateEnd();
 
     void Upload(Render::RenderContext & renderContext) const;
 
@@ -60,6 +88,23 @@ public:
     vec2f const & GetCurrentWindSpeed() const
     {
         return mCurrentWindSpeed;
+    }
+
+    /*
+     * Returns the current (radial) wind field, if any.
+     */
+    std::optional<WindField> const & GetCurrentWindField() const
+    {
+        return mCurrentWindField;
+    }
+
+    /*
+     * Sets the current (radial) wind field. 
+     * Will be wiped at the end of the update cycle.
+     */
+    void SetWindField(WindField const & windField)
+    {
+        mCurrentWindField = windField;
     }
 
 private:
@@ -147,6 +192,15 @@ private:
 
     // The current wind speed
     vec2f mCurrentWindSpeed;
+
+    //
+    // (Radial) wind field
+    //
+    // Set interactively before an Update cycle, and reset at the
+    // end of the update cycle.
+    //
+
+    std::optional<WindField> mCurrentWindField;
 };
 
 }

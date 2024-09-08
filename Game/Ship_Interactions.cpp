@@ -712,41 +712,6 @@ bool Ship::ApplyElectricSparkAt(
         gameParameters);
 }
 
-void Ship::ApplyRadialWindFrom(
-    vec2f const & sourcePos,
-    float preFrontRadius,
-    float preFrontWindSpeed,
-    float mainFrontRadius,
-    float mainFrontWindSpeed,
-    GameParameters const & gameParameters)
-{
-    float const effectiveAirDensity = Formulae::CalculateAirDensity(
-        gameParameters.AirTemperature,
-        gameParameters);
-
-    // Wind force:
-    //  Km/h -> Newton: F = 1/2 rho v**2 A
-
-    float const preFrontWindForceMagnitude =
-        preFrontWindSpeed * preFrontWindSpeed
-        * 0.5f
-        * effectiveAirDensity;
-
-    float const mainFrontWindForceMagnitude =
-        mainFrontWindSpeed * mainFrontWindSpeed
-        * 0.5f
-        * effectiveAirDensity;
-
-    // Queue interaction
-    mQueuedInteractions.emplace_back(
-        Interaction::ArgumentsUnion::RadialWindArguments(
-            sourcePos,
-            preFrontRadius,
-            preFrontWindForceMagnitude,
-            mainFrontRadius,
-            mainFrontWindForceMagnitude));
-}
-
 bool Ship::ApplyLaserCannonThrough(
     vec2f const & startPos,
     vec2f const & endPos,
@@ -824,44 +789,6 @@ bool Ship::ApplyLaserCannonThrough(
     mGameEventHandler->OnLaserCut(cutCount);
 
     return cutCount > 0;
-}
-
-void Ship::ApplyRadialWindFrom(Interaction::ArgumentsUnion::RadialWindArguments const & args)
-{
-    // Visit all points, including ephemerals
-    for (auto const pointIndex : mPoints)
-    {
-        vec2f const pointPosition = mPoints.GetPosition(pointIndex);
-        if (!mParentWorld.GetOceanSurface().IsUnderwater(pointPosition))
-        {
-            vec2f const displacement = pointPosition - args.SourcePos;
-            float const radius = displacement.length();
-            if (radius < args.PreFrontRadius) // Within sphere
-            {
-                // Calculate force magnitude
-                float windForceMagnitude;
-                if (radius < args.MainFrontRadius)
-                {
-                    windForceMagnitude = args.MainFrontWindForceMagnitude;
-                }
-                else
-                {
-                    windForceMagnitude = args.PreFrontWindForceMagnitude;
-                }
-
-                // Apply force
-                mPoints.AddStaticForce(
-                    pointIndex,
-                    displacement.normalise(radius) * windForceMagnitude * mPoints.GetMaterialWindReceptivity(pointIndex));
-            }
-        }
-    }
-
-    // Remember wind field
-    mWindField.emplace(
-        args.SourcePos,
-        args.PreFrontRadius,
-        args.PreFrontWindForceMagnitude);
 }
 
 void Ship::DrawTo(

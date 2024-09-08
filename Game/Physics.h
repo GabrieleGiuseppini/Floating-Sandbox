@@ -29,12 +29,11 @@ namespace Physics
 
 #include <GameCore/ElementContainer.h>
 
-#include "PhysicsTypes.h"
-
 #include "Formulae.h"
 #include "IShipPhysicsHandler.h"
 
 #include "Storm.h"
+#include "Wind.h"
 
 #include "Points.h"
 #include "Springs.h"
@@ -48,7 +47,6 @@ namespace Physics
 #include "Stars.h"
 #include "OceanFloor.h"
 #include "OceanSurface.h"
-#include "Wind.h"
 #include "World.h"
 
 #include "Gadget.h"

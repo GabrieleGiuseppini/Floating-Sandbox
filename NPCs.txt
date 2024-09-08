@@ -482,7 +482,7 @@ Arch
 		- Need to produce as side-effect: swimming humans generate small waves
 		- Do surface displacement proportional to (signed) V velocity
 			- When head above but feet below - anything better?
-	- Fire:
+	= Fire:
 		+ @Npcs::Update():
 			+ Calc LowFreqCycle (see Ship)
 			+ By Ship: By Npc (mod ID for cycle): 
@@ -506,25 +506,30 @@ Arch
 			= Upload flames, one per NPC	
 				+ First: store burning NPCs in vector (Npcs::mBurningNpcs, per-ship) at combustion state update
 					+ Remove @ NpcRemoval, ShipRemoval
-				- Second: move CalculateIdealFlameVector, CalculateFlameWindRotationAngle(WindField, ...) to Formulae and use at state update
-					- WindField rearc:
-						- WindField: gets all members currently in Ship::QueuedInteractionArgs
-						- Wind:
-							- mCurrentWindField (opt)
-							- GetWindField() -> mCurrentWindField
-							- SetWindField(windField) -> mCurrentWindField
-							- Wind::UpdateEnd:
-								- mCurrentWindField.reset()
-						- World::GetWindField()
-						- World::ApplyRadialWindFrom:
-							- Calculate ForceMagnitude and give everything to Wind::SetWindField()
-							- Do nothing on ships
-							- Keep doing on ocean
-						- Ship:
-							- Nuke ApplyRadialWindFrom() and queued interaction
-							- At Update(), in same logical block as applying queued interactions:
-								- Apply forces (code of Ship::ApplyRadialWindFrom(interaction args)) from mParentWorld::GetWindField()
-							- Nuke mWindField and take it from mParentWorld::GetWindField()
+				= Second: Wind
+					+ WindField rearc:
+						+ WindField: gets all members currently in Ship::QueuedInteractionArgs
+							+ Nuke PhysicsType
+						+ Wind:
+							+ mCurrentWindField (opt)
+							+ GetWindField() -> mCurrentWindField
+							+ SetWindField(windField) -> mCurrentWindField
+							+ Wind::UpdateEnd:
+								+ mCurrentWindField.reset()
+						+ World::GetWindField()
+						+ World::ApplyRadialWindFrom (the existing method):
+							+ Calculate ForceMagnitude and give everything to Wind::SetWindField()
+							+ Do nothing on ships
+							+ Keep doing on ocean
+						+ Ship:
+							+ Nuke ApplyRadialWindFrom() and queued interaction
+							+ At ApplyWorldParticleForces:
+								+ Apply forces (code of Ship::ApplyRadialWindFrom(interaction args)) from mParentWorld::GetWindField()
+							+ Nuke mWindField and take it from mParentWorld::GetWindField()
+							+ Nuke QueuedInteractionArgs struct and type
+					- State Update: update flame vector with wind, both components
+						- Move CalculateIdealFlameVector, CalculateFlameWindRotationAngle(WindField, ...) to Formulae
+							- CalculateFlameWindRotationAngle: "EvolveFlameGeometry" takes two inputs/outputs (FlameVector, FalmeWindRotationAngle) as & 
 				+ Visit mBurningNpcs vector here and:
 					+ Position:
 						+ Human: head

@@ -121,7 +121,6 @@ Ship::Ship(
     , mLastLuminiscenceAdjustmentDiffused(-1.0f)
     , mRepairGracePeriodMultiplier(1.0f)
     , mLastQueriedPointIndex(NoneElementIndex)
-    , mWindField()
     , mAirBubblesCreatedCount(0)
     , mCurrentSimulationParallelism(0) // We'll detect a difference on first run
     // Static pressure
@@ -604,7 +603,7 @@ void Ship::Update(
         currentSimulationTime,
         GameParameters::SimulationStepTimeDuration<float>,
         mParentWorld.GetCurrentWindSpeed(),
-        mWindField,
+        mParentWorld.GetCurrentWindField(),
         gameParameters);
 
     //
@@ -689,9 +688,8 @@ void Ship::UpdateEnd()
         }
     }
 
+    // Reset electrification (was needed by NPCs)
     mPoints.ResetIsElectrifiedBuffer();
-
-    mWindField.reset();
 }
 
 void Ship::RenderUpload(Render::RenderContext & renderContext)
@@ -975,13 +973,6 @@ void Ship::ApplyQueuedInteractionForces(GameParameters const & gameParameters)
 
                 break;
             }
-
-            case Interaction::InteractionType::RadialWind:
-            {
-                ApplyRadialWindFrom(interaction.Arguments.RadialWind);
-
-                break;
-            }
         }
     }
 
@@ -1045,6 +1036,10 @@ void Ship::ApplyWorldParticleForces(
 
     float * const restrict newCachedPointDepthsBuffer = newCachedPointDepths.data();
     vec2f * const restrict staticForcesBuffer = mPoints.GetStaticForceBufferAsVec2();
+
+    //
+    // 1. Various world forces
+    //
 
     for (auto pointIndex : mPoints.BufferElements())
     {
@@ -1114,6 +1109,44 @@ void Ship::ApplyWorldParticleForces(
             * (1.0f - uwCoefficient); // Only above-water
 
         staticForcesBuffer[pointIndex] += staticForce;
+    }
+
+    //
+    // 2. (Radial) Wind field, if any
+    //
+
+    auto const & windField = mParentWorld.GetCurrentWindField();
+    if (windField.has_value())
+    {
+        for (auto pointIndex : mPoints.BufferElements())
+        {
+            // Only above-water points
+            if (newCachedPointDepthsBuffer[pointIndex] <= 0.0f)
+            {
+                vec2f const pointPosition = mPoints.GetPosition(pointIndex);
+                vec2f const displacement = pointPosition - windField->SourcePos;
+                float const radius = displacement.length();
+                if (radius < windField->PreFrontRadius) // Within sphere
+                {
+                    // Calculate force magnitude
+                    float windForceMagnitude;
+                    if (radius < windField->MainFrontRadius)
+                    {
+                        windForceMagnitude = windField->MainFrontWindForceMagnitude;
+                    }
+                    else
+                    {
+                        windForceMagnitude = windField->PreFrontWindForceMagnitude;
+                    }
+
+                    // Calculate force
+                    vec2f const force = displacement.normalise(radius) * windForceMagnitude * mPoints.GetMaterialWindReceptivity(pointIndex);
+
+                    // Apply force
+                    staticForcesBuffer[pointIndex] += force;
+                }
+            }
+        }
     }
 }
 

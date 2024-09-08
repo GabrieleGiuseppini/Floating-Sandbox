@@ -68,6 +68,10 @@
 					+ Remove TextureCenterPos from vertex attribs
 					+ Cleanup shader
 		+ Merge into npcs_v1
+	- Clouds V3:
+		- See shader on shader toy: use cloud texture coords offset based on noise centered around 0.
+			- But solve problem of going to other texture: need more room around textures?
+				- Cannot clamp in shader: would still look awful, and nice to have long flanges
 
 	- Remove too much logging from ShipLoadDialog
 

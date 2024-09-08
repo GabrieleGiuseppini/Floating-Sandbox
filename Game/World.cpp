@@ -462,18 +462,37 @@ void World::ApplyRadialWindFrom(
     float mainFrontWindSpeed,
     GameParameters const & gameParameters)
 {
-    // Apply to ships
-    for (auto & ship : mAllShips)
-    {
-        ship->ApplyRadialWindFrom(
+    //
+    // Store in Wind, after translating
+    //
+    
+    float const effectiveAirDensity = Formulae::CalculateAirDensity(
+        gameParameters.AirTemperature,
+        gameParameters);
+
+    // Wind force:
+    //  Km/h -> Newton: F = 1/2 rho v**2 A
+
+    float const preFrontWindForceMagnitude =
+        preFrontWindSpeed * preFrontWindSpeed
+        * 0.5f
+        * effectiveAirDensity;
+
+    float const mainFrontWindForceMagnitude =
+        mainFrontWindSpeed * mainFrontWindSpeed
+        * 0.5f
+        * effectiveAirDensity;
+
+    // Give to wind
+    mWind.SetWindField(
+        Wind::WindField(
             sourcePos,
             preFrontRadius,
-            preFrontWindSpeed,
+            preFrontWindForceMagnitude,
             mainFrontRadius,
-            mainFrontWindSpeed,
-            gameParameters);
-    }
+            mainFrontWindForceMagnitude));
 
+    //
     // Apply to ocean
     //
     // We displace the ocean surface where the sphere meets the ocean:
@@ -483,6 +502,8 @@ void World::ApplyRadialWindFrom(
     //     /  |
     //     ----
     //      d
+    //
+
     float const squaredHorizontalDistance = preFrontRadius * preFrontRadius - sourcePos.y * sourcePos.y;
     if (squaredHorizontalDistance >= 0.0f)
     {
@@ -1192,6 +1213,8 @@ void World::Update(
     //
     // Signal update end (for quantities that need to persist during whole Update cycle)
     //
+
+    mWind.UpdateEnd();
 
     for (auto & ship : mAllShips)
     {

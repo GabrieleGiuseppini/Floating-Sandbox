@@ -1145,7 +1145,7 @@ void Points::UpdateCombustionHighFrequency(
     float /*currentSimulationTime*/,
     float dt,
     vec2f const & globalWindSpeed,
-    std::optional<WindField> const & windField,
+    std::optional<Wind::WindField> const & windField,
     GameParameters const & gameParameters)
 {
     //
@@ -1441,13 +1441,13 @@ void Points::UpdateCombustionHighFrequency(
 
         if (windField.has_value())
         {
-            vec2f const displacement = pointPosition - windField->FieldCenterPos;
+            vec2f const displacement = pointPosition - windField->SourcePos;
             float const radius = displacement.length();
-            if (radius < windField->FieldRadius)
+            if (radius < windField->PreFrontRadius)
             {
                 resultantWindSpeedVector +=
                     displacement.normalise(radius)
-                    * windField->WindSpeed;
+                    * windField->PreFrontWindForceMagnitude;
             }
         }
 
