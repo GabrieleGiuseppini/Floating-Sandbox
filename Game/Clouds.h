@@ -90,7 +90,7 @@ private:
             X += dx;
 
             // Update progress: mix of time and step
-            VolumetricGrowthProgress += GameParameters::SimulationStepTimeDuration<float> + std::abs(dx);
+            VolumetricGrowthProgress += GameParameters::SimulationStepTimeDuration<float> + std::abs(dx) * 0.5f;
         }
 
     private:

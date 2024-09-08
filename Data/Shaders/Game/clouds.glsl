@@ -64,41 +64,26 @@ void main()
     // Center uv ~[-1., +1.]
     vec2 virtualTextureCoordsCentered = (virtualTexturePos - vec2(0.5, 0.5)) * 2.;
 
+    // Convert to polar coords
     // (r, a) (r=[0.0, 1.0], a=[0.0, 1.0 CCW from W])
     #define PI 3.1415926
     vec2 ra = vec2(
         length(virtualTextureCoordsCentered), 
         atan(virtualTextureCoordsCentered.y, virtualTextureCoordsCentered.x));
-    #define SPEED 0.2
+    // Add growth and magnify to taste
+    #define GROWTH_SPEED 0.15
     #define MAG 6.0
-    vec2 ra2 = vec2((ra.x - volumetricGrowthProgress * SPEED) / MAG, ra.y / (2. * PI));
+    vec2 ra2 = vec2((ra.x - volumetricGrowthProgress * GROWTH_SPEED) / MAG, ra.y / (2. * PI));
     float n = texture2D(paramNoiseTexture, ra2).x;
-    //float a = 1. - n * n * ra.x * ra.x;
-    //float a = 1. - n * ra.x; 
-    float a = 1. - abs(n) * smoothstep(0.2, 0.4, ra.x); // Silence towards center
+
+    // Silence towards center
+    float a = 1.0 - abs(n) * smoothstep(0.2, 0.4, ra.x); 
+    // Modulate to desired incisiveness, and focus constrast to lower range
     #define VAR 0.28
-    a = (1.-VAR) + VAR*smoothstep(0.0, 0.8, a);
+    a = (1.0 - VAR) + VAR * smoothstep(0.0, 0.8, a);
+    
+    // Combine into final color
     gl_FragColor = vec4(
         cloudColor,
         textureColor.a * a);
-        /*
-    gl_FragColor = vec4(
-        a, a, a,
-        1.0);
-*/
-
-    // TODOOLD
-    /*
-    // Sample alpha
-    //vec2 alphaMaskTexturePos = textureCenterPos + (texturePos - textureCenterPos) * growthProgress;
-    //vec4 alphaMaskSample = texture2D(paramCloudsAtlasTexture, alphaMaskTexturePos);
-    vec2 alphaMaskTexturePos = textureCenterPos + (texturePos - textureCenterPos) * growthProgress;
-    float alphaMaskSample = texture2D(paramNoiseTexture, alphaMaskTexturePos * 5.).x;
-    #define NOISE_AMPL .8
-    float m = (1.0 - NOISE_AMPL) + alphaMaskSample * NOISE_AMPL;
-       
-    // Combine into final color
-    float alpha = sqrt(textureColor.w * m);
-    gl_FragColor = vec4(cloudColor, alpha);
-    */
 } 
