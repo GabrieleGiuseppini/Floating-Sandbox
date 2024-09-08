@@ -19,11 +19,16 @@
 namespace Physics
 {
 
+/*
+ * Wind consists of two components:
+ * - A linear (horizontal) wind, whose intensity is modulated by various actors (storm, gusting state machine, etc.)
+ * - A radial wind, when triggered interactively
+ */
 class Wind
 {
 public:
 
-    struct WindField
+    struct RadialWindField
     {
         vec2f SourcePos;
         float PreFrontRadius;
@@ -31,7 +36,7 @@ public:
         float MainFrontRadius;
         float MainFrontWindForceMagnitude;
 
-        WindField(
+        RadialWindField(
             vec2f sourcePos,
             float preFrontRadius,
             float preFrontWindForceMagnitude,
@@ -91,20 +96,20 @@ public:
     }
 
     /*
-     * Returns the current (radial) wind field, if any.
+     * Returns the current radial wind field, if any.
      */
-    std::optional<WindField> const & GetCurrentWindField() const
+    std::optional<RadialWindField> const & GetCurrentRadialWindField() const
     {
-        return mCurrentWindField;
+        return mCurrentRadialWindField;
     }
 
     /*
-     * Sets the current (radial) wind field. 
+     * Sets the current radial wind field. 
      * Will be wiped at the end of the update cycle.
      */
-    void SetWindField(WindField const & windField)
+    void SetRadialWindField(RadialWindField const & radialWindField)
     {
-        mCurrentWindField = windField;
+        mCurrentRadialWindField = radialWindField;
     }
 
 private:
@@ -194,13 +199,13 @@ private:
     vec2f mCurrentWindSpeed;
 
     //
-    // (Radial) wind field
+    // Radial wind field
     //
     // Set interactively before an Update cycle, and reset at the
     // end of the update cycle.
     //
 
-    std::optional<WindField> mCurrentWindField;
+    std::optional<RadialWindField> mCurrentRadialWindField;
 };
 
 }

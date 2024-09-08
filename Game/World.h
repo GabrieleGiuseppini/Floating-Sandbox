@@ -142,9 +142,9 @@ public:
         return mWind.GetCurrentWindSpeed();
     }
 
-    inline std::optional<Wind::WindField> GetCurrentWindField() const
+    inline std::optional<Wind::RadialWindField> GetCurrentRadialWindField() const
     {
-        return mWind.GetCurrentWindField();
+        return mWind.GetCurrentRadialWindField();
     }
 
     //

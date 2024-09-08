@@ -603,7 +603,7 @@ void Ship::Update(
         currentSimulationTime,
         GameParameters::SimulationStepTimeDuration<float>,
         mParentWorld.GetCurrentWindSpeed(),
-        mParentWorld.GetCurrentWindField(),
+        mParentWorld.GetCurrentRadialWindField(),
         gameParameters);
 
     //
@@ -1112,11 +1112,11 @@ void Ship::ApplyWorldParticleForces(
     }
 
     //
-    // 2. (Radial) Wind field, if any
+    // 2. Radial wind field, if any
     //
 
-    auto const & windField = mParentWorld.GetCurrentWindField();
-    if (windField.has_value())
+    auto const & radialWindField = mParentWorld.GetCurrentRadialWindField();
+    if (radialWindField.has_value())
     {
         for (auto pointIndex : mPoints.BufferElements())
         {
@@ -1124,19 +1124,19 @@ void Ship::ApplyWorldParticleForces(
             if (newCachedPointDepthsBuffer[pointIndex] <= 0.0f)
             {
                 vec2f const pointPosition = mPoints.GetPosition(pointIndex);
-                vec2f const displacement = pointPosition - windField->SourcePos;
+                vec2f const displacement = pointPosition - radialWindField->SourcePos;
                 float const radius = displacement.length();
-                if (radius < windField->PreFrontRadius) // Within sphere
+                if (radius < radialWindField->PreFrontRadius) // Within sphere
                 {
                     // Calculate force magnitude
                     float windForceMagnitude;
-                    if (radius < windField->MainFrontRadius)
+                    if (radius < radialWindField->MainFrontRadius)
                     {
-                        windForceMagnitude = windField->MainFrontWindForceMagnitude;
+                        windForceMagnitude = radialWindField->MainFrontWindForceMagnitude;
                     }
                     else
                     {
-                        windForceMagnitude = windField->PreFrontWindForceMagnitude;
+                        windForceMagnitude = radialWindField->PreFrontWindForceMagnitude;
                     }
 
                     // Calculate force

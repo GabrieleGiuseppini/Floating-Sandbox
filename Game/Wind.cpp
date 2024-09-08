@@ -41,8 +41,8 @@ Wind::Wind(std::shared_ptr<GameEventDispatcher> gameEventDispatcher)
     , mCurrentRawWindSpeedMagnitude(0.0f)
     , mCurrentWindSpeedMagnitudeRunningAverage()
     , mCurrentWindSpeed(vec2f::zero())
-    // Wind field
-    , mCurrentWindField()
+    // Radial wind field
+    , mCurrentRadialWindField()
 {
 }
 
@@ -309,7 +309,7 @@ void Wind::Update(
 
 void Wind::UpdateEnd()
 {
-    mCurrentWindField.reset();
+    mCurrentRadialWindField.reset();
 }
 
 void Wind::Upload(Render::RenderContext & renderContext) const

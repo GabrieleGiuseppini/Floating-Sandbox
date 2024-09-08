@@ -1145,7 +1145,7 @@ void Points::UpdateCombustionHighFrequency(
     float /*currentSimulationTime*/,
     float dt,
     vec2f const & globalWindSpeed,
-    std::optional<Wind::WindField> const & windField,
+    std::optional<Wind::RadialWindField> const & radialWindField,
     GameParameters const & gameParameters)
 {
     //
@@ -1429,7 +1429,7 @@ void Points::UpdateCombustionHighFrequency(
         //
         // The wind rotation angle has three components:
         //  - Global wind
-        //  - Interactive wind (i.e. the WindMaker), if any
+        //  - Radial wind field, if any
         //  - Particle's velocity
         //
         // We simulate inertia by converging slowly to the target angle.
@@ -1439,20 +1439,23 @@ void Points::UpdateCombustionHighFrequency(
             globalWindSpeed
             - pointVelocity;
 
-        if (windField.has_value())
+        if (radialWindField.has_value())
         {
-            vec2f const displacement = pointPosition - windField->SourcePos;
+            vec2f const displacement = pointPosition - radialWindField->SourcePos;
             float const radius = displacement.length();
-            if (radius < windField->PreFrontRadius)
+            if (radius < radialWindField->PreFrontRadius)
             {
                 resultantWindSpeedVector +=
-                    displacement.normalise(radius)
-                    * windField->PreFrontWindForceMagnitude;
+                    displacement.normalise_approx(radius)
+                    * radialWindField->PreFrontWindForceMagnitude
+                    * 0.4f; // Magic damper
             }
         }
 
+        // TODOHERE: this smells
+
         // Projection of wind speed vector along flame
-        vec2f const flameDir = pointCombustionState.FlameVector.normalise();
+        vec2f const flameDir = pointCombustionState.FlameVector.normalise_approx();
         float const windSpeedMagnitudeAlongFlame = resultantWindSpeedVector.dot(flameDir);
 
         // Our angle moves opposite to the projection of wind along the flame:

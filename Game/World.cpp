@@ -484,8 +484,8 @@ void World::ApplyRadialWindFrom(
         * effectiveAirDensity;
 
     // Give to wind
-    mWind.SetWindField(
-        Wind::WindField(
+    mWind.SetRadialWindField(
+        Wind::RadialWindField(
             sourcePos,
             preFrontRadius,
             preFrontWindForceMagnitude,

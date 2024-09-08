@@ -897,7 +897,7 @@ public:
         float currentSimulationTime,
         float dt,
         vec2f const & globalWindSpeed,
-        std::optional<Wind::WindField> const & windField,
+        std::optional<Wind::RadialWindField> const & radialWindField,
         GameParameters const & gameParameters);
 
     void ReorderBurningPointsForDepth();

@@ -527,6 +527,7 @@ Arch
 								+ Apply forces (code of Ship::ApplyRadialWindFrom(interaction args)) from mParentWorld::GetWindField()
 							+ Nuke mWindField and take it from mParentWorld::GetWindField()
 							+ Nuke QueuedInteractionArgs struct and type
+					- See small with flame vector
 					- State Update: update flame vector with wind, both components
 						- Move CalculateIdealFlameVector, CalculateFlameWindRotationAngle(WindField, ...) to Formulae
 							- CalculateFlameWindRotationAngle: "EvolveFlameGeometry" takes two inputs/outputs (FlameVector, FalmeWindRotationAngle) as & 
