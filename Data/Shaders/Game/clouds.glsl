@@ -9,12 +9,10 @@
 
 // Inputs
 in vec4 inCloud1; // Position (NDC) (vec2), TextureCoordinates (vec2)
-in vec4 inCloud2; // TextureCenterCoordinates (vec2), VirtualTextureCoordinates (vec2) 
-in vec2 inCloud3; // Darkening, VolumetricGrowthProgress
+in vec4 inCloud2; // VirtualTextureCoordinates (vec2), Darkening, VolumetricGrowthProgress
 
 // Outputs
 out vec2 texturePos;
-out vec2 textureCenterPos;
 out vec2 virtualTexturePos;
 out float darkness;
 out float volumetricGrowthProgress;
@@ -22,10 +20,9 @@ out float volumetricGrowthProgress;
 void main()
 {
     texturePos = inCloud1.zw;
-    textureCenterPos = inCloud2.xy;
-    virtualTexturePos = inCloud2.zw;
-    darkness = inCloud3.x;
-    volumetricGrowthProgress = inCloud3.y;
+    virtualTexturePos = inCloud2.xy;
+    darkness = inCloud2.z;
+    volumetricGrowthProgress = inCloud2.w;
 
     gl_Position = vec4(inCloud1.xy, -1.0, 1.0);
 }
@@ -36,7 +33,6 @@ void main()
 
 // Inputs from previous shader
 in vec2 texturePos;
-in vec2 textureCenterPos;
 in vec2 virtualTexturePos;
 in float darkness;
 in float volumetricGrowthProgress;
@@ -71,7 +67,7 @@ void main()
         length(virtualTextureCoordsCentered), 
         atan(virtualTextureCoordsCentered.y, virtualTextureCoordsCentered.x));
     // Add growth and magnify to taste
-    #define GROWTH_SPEED 0.15
+    #define GROWTH_SPEED 0.14
     #define MAG 6.0
     vec2 ra2 = vec2((ra.x - volumetricGrowthProgress * GROWTH_SPEED) / MAG, ra.y / (2. * PI));
     float n = texture2D(paramNoiseTexture, ra2).x;

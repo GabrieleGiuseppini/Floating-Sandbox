@@ -251,7 +251,6 @@ public:
         mCloudVertexBuffer.emplace_back(
             vec2f(leftX, topY),
             vec2f(cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x, cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y),
-            cloudAtlasFrameMetadata.TextureCoordinatesAnchorCenter,
             vec2f(minVirtualTexX, maxVirtualTexY),
             darkening,
             volumetricGrowthProgress);
@@ -260,7 +259,6 @@ public:
         mCloudVertexBuffer.emplace_back(
             vec2f(leftX, bottomY),
             vec2f(cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x, cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y),
-            cloudAtlasFrameMetadata.TextureCoordinatesAnchorCenter,
             vec2f(minVirtualTexX, minVirtualTexY),
             darkening,
             volumetricGrowthProgress);
@@ -269,7 +267,6 @@ public:
         mCloudVertexBuffer.emplace_back(
             vec2f(rightX, topY),
             vec2f(cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x, cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y),
-            cloudAtlasFrameMetadata.TextureCoordinatesAnchorCenter,
             vec2f(maxVirtualTexX, maxVirtualTexY),
             darkening,
             volumetricGrowthProgress);
@@ -278,7 +275,6 @@ public:
         mCloudVertexBuffer.emplace_back(
             vec2f(leftX, bottomY),
             vec2f(cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x, cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y),
-            cloudAtlasFrameMetadata.TextureCoordinatesAnchorCenter,
             vec2f(minVirtualTexX, minVirtualTexY),
             darkening,
             volumetricGrowthProgress);
@@ -287,7 +283,6 @@ public:
         mCloudVertexBuffer.emplace_back(
             vec2f(rightX, topY),
             vec2f(cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x, cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y),
-            cloudAtlasFrameMetadata.TextureCoordinatesAnchorCenter,
             vec2f(maxVirtualTexX, maxVirtualTexY),
             darkening,
             volumetricGrowthProgress);
@@ -296,7 +291,6 @@ public:
         mCloudVertexBuffer.emplace_back(
             vec2f(rightX, bottomY),
             vec2f(cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x, cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y),
-            cloudAtlasFrameMetadata.TextureCoordinatesAnchorCenter,
             vec2f(maxVirtualTexX, minVirtualTexY),
             darkening,
             volumetricGrowthProgress);
@@ -906,7 +900,6 @@ private:
     {
         vec2f ndcPosition;
         vec2f atlasTexturePos;
-        vec2f atlasTextureCenter;
         vec2f virtualTexturePos;
         float darkness;
         float volumetricGrowthProgress;
@@ -914,13 +907,11 @@ private:
         CloudVertex(
             vec2f _ndcPosition,
             vec2f _atlasTexturePos,
-            vec2f _atlasTextureCenter,
             vec2f _virtualTexturePos,
             float _darkness,
             float _volumetricGrowthProgress)
             : ndcPosition(_ndcPosition)
             , atlasTexturePos(_atlasTexturePos)
-            , atlasTextureCenter(_atlasTextureCenter)
             , virtualTexturePos(_virtualTexturePos)
             , darkness(_darkness)
             , volumetricGrowthProgress(_volumetricGrowthProgress)

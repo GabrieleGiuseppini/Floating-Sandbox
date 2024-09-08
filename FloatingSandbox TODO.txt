@@ -59,9 +59,15 @@
 			+ Hiccup when changing render quality
 		+ Cleanup shader
 		+ Commit
-		- Extras:
-			- Try it on clouds as well:
-				- Prototype: simply bind to texture @ CloudRender, and update shader
+		+ Extras:
+			= Try it on clouds as well:
+				+ Prototype: simply bind to texture @ CloudRender, and update shader
+				+ Adjust growth parameter: use time
+				X Test another noise
+				+ Cleanup code if want to keep it
+					+ Remove TextureCenterPos from vertex attribs
+					+ Cleanup shader
+		- Merge into npcs_v1
 
 	- Remove too much logging from ShipLoadDialog
 

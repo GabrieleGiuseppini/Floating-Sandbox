@@ -225,14 +225,12 @@ WorldRenderContext::WorldRenderContext(
     CheckOpenGLError();
 
     // Describe vertex attributes
-    static_assert(sizeof(CloudVertex) == 10 * sizeof(float));
+    static_assert(sizeof(CloudVertex) == (4 + 4) * sizeof(float));
     glBindBuffer(GL_ARRAY_BUFFER, *mCloudVBO);
     glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Cloud1));
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Cloud1), 4, GL_FLOAT, GL_FALSE, sizeof(CloudVertex), (void *)0);
     glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Cloud2));
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Cloud2), 4, GL_FLOAT, GL_FALSE, sizeof(CloudVertex), (void *)(4 * sizeof(float)));
-    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Cloud3));
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Cloud3), 2, GL_FLOAT, GL_FALSE, sizeof(CloudVertex), (void *)(8 * sizeof(float)));
     CheckOpenGLError();
 
     glBindVertexArray(0);
