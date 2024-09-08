@@ -61,7 +61,7 @@ private:
         float const Z; // 0.0 -> 1.0
         float Scale;
         float Darkening; // 0.0: dark, 1.0: light
-        float GrowthProgress;
+        float TotalDistanceTraveled; // Absolute
 
         Cloud(
             uint32_t id,
@@ -70,39 +70,29 @@ private:
             float z,
             float scale,
             float darkening,
-            float linearSpeedX,
-            float initialGrowthProgressPhase)
+            float linearSpeedX)
             : Id(id)
             , X(initialX)
             , Y(y)
             , Z(z)
             , Scale(scale)
             , Darkening(darkening)
-            , GrowthProgress(0.0f)
+            , TotalDistanceTraveled(0.0f)
             , mLinearSpeedX(linearSpeedX)
-            , mGrowthProgressPhase(initialGrowthProgressPhase)
         {
         }
 
-        inline void Update(
-            float globalCloudSpeed,
-            float growthProgressSpeed)
+        inline void Update(float globalCloudSpeed)
         {
-            // Update position
-
-            X += mLinearSpeedX * globalCloudSpeed * GameParameters::SimulationStepTimeDuration<float>;
-
-            // Update growth progress
-
-            mGrowthProgressPhase += growthProgressSpeed * GameParameters::SimulationStepTimeDuration<float>;
-
-            GrowthProgress = 0.3f + (1.0f + PrecalcLoFreqSin.GetNearestPeriodic(mGrowthProgressPhase)) * 0.7f / 2.0f;
+            // Update position and total distance traveled
+            float const dx = mLinearSpeedX * globalCloudSpeed * GameParameters::SimulationStepTimeDuration<float>;
+            X += dx;
+            TotalDistanceTraveled += std::abs(dx);
         }
 
     private:
 
         float const mLinearSpeedX;
-        float mGrowthProgressPhase;
     };
 
     uint32_t mLastCloudId;
