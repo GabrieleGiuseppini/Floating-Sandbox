@@ -1452,18 +1452,17 @@ void Points::UpdateCombustionHighFrequency(
             }
         }
 
-        // TODOHERE: this smells
-
         // Projection of wind speed vector along flame
         vec2f const flameDir = pointCombustionState.FlameVector.normalise_approx();
         float const windSpeedMagnitudeAlongFlame = resultantWindSpeedVector.dot(flameDir);
 
         // Our angle moves opposite to the projection of wind along the flame:
         //  - Wind aligned with flame: proj=|W|, angle = 0
-        //  - Wind perpendicular to flame: proj=|0|, angle = +/-MAX/2
+        //  - Wind perpendicular to flame: proj=|0|, angle = +/-MAX
         //  - Wind against flame: proj=-|W|, angle = +/-MAX
+        float constexpr MaxAngle = 0.27f;
         float const targetFlameWindRotationAngle =
-            0.45f
+            MaxAngle
             * LinearStep(0.0f, 100.0f, resultantWindSpeedVector.length() - windSpeedMagnitudeAlongFlame)
             * (resultantWindSpeedVector.cross(flameDir) > 0.0f ? -1.0f : 1.0f); // The sign of the angle is positive (CW) when the wind vector is to the right of the flame vector
 
