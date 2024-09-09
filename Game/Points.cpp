@@ -2375,7 +2375,7 @@ vec2f Points::CalculateIdealFlameVector(
     // Magnitude of vector is capped
     float constexpr Qlmax = 1.8f; // Magic number
     float const Ql = Q.length();
-    vec2f const Qn = Q.normalise(Ql);
+    vec2f const Qn = Q.normalise_approx(Ql);
     Q = Qn * std::min(Ql, Qlmax);
 
     return Q;
