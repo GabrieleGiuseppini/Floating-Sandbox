@@ -106,21 +106,39 @@ int DoBakeAtlas(int argc, char ** argv)
     }
 
     std::string const databaseName = argv[2];
-    std::filesystem::path databaseRootDirectoryPath(argv[3]);
+    std::filesystem::path texturesRootDirectoryPath(argv[3]);
     std::filesystem::path outputDirectoryPath(argv[4]);
-    bool doAlphaPremultiply = false;
-    bool doMipMapped = false;
+    Baker::AtlasBakingOptions options({
+        false,
+        false,
+        false
+        });
 
     for (int i = 5; i < argc; ++i)
     {
         std::string option(argv[i]);
         if (option == "-a")
         {
-            doAlphaPremultiply = true;
+            options.AlphaPremultiply = true;
         }
         else if (option == "-m")
         {
-            doMipMapped = true;
+            options.MipMappable = true;
+        }
+        else if (option == "-r")
+        {
+            options.Regular = true;
+        }
+        else if (option == "-o")
+        {
+            if (i == argc - 1)
+            {
+                throw std::runtime_error("Missing options json filepath");
+            }
+
+            options = Baker::AtlasBakingOptions::Deserialize(argv[i + 1]);
+
+            ++i;
         }
         else
         {
@@ -132,29 +150,26 @@ int DoBakeAtlas(int argc, char ** argv)
 
     std::cout << "Running bake_atlas:" << std::endl;
     std::cout << "  database name           : " << databaseName << std::endl;
-    std::cout << "  database root directory : " << databaseRootDirectoryPath << std::endl;
+    std::cout << "  textures root directory : " << texturesRootDirectoryPath << std::endl;
     std::cout << "  output directory        : " << outputDirectoryPath << std::endl;
-    std::cout << "  alpha-premultiply       : " << doAlphaPremultiply << std::endl;
-    std::cout << "  mip-mapped              : " << doMipMapped << std::endl;
+    std::cout << "  alpha-premultiply       : " << options.AlphaPremultiply << std::endl;
+    std::cout << "  mip-mappable            : " << options.MipMappable << std::endl;
+    std::cout << "  regular                 : " << options.Regular << std::endl;
 
     size_t frameCount;
     if (Utils::CaseInsensitiveEquals(databaseName, "explosion"))
     {
         frameCount = Baker::BakeAtlas<Render::ExplosionTextureDatabaseTraits>(
-            databaseRootDirectoryPath,
+            texturesRootDirectoryPath,
             outputDirectoryPath,
-            doAlphaPremultiply,
-            doMipMapped,
-            true); // Regular
+            options);
     }
     else if (Utils::CaseInsensitiveEquals(databaseName, "npc"))
     {
         frameCount = Baker::BakeAtlas<Render::NpcTextureDatabaseTraits>(
-            databaseRootDirectoryPath,
+            texturesRootDirectoryPath,
             outputDirectoryPath,
-            doAlphaPremultiply,
-            doMipMapped,
-            false); // Not Regular
+            options);
     }
     else
     {
@@ -263,7 +278,7 @@ void PrintUsage()
     std::cout << std::endl;
     std::cout << "Usage:" << std::endl;
     std::cout << " analyze <materials_dir> <in_file>" << std::endl;
-    std::cout << " bake_atlas NPC|Explosion <database_dir> <out_dir> [-a] [-m]" << std::endl;
+    std::cout << " bake_atlas NPC|Explosion <textures_root_dir> <out_dir> [[-a] [-m] [-r] | -o <options_json>]" << std::endl;
     std::cout << " quantize <materials_dir> <in_file> <out_png> [-c <target_fixed_color>]" << std::endl;
     std::cout << "          -r, --keep_ropes] [-g, --keep_glass]" << std::endl;
     std::cout << " resize <in_file> <out_png> <width>" << std::endl;

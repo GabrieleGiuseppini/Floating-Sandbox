@@ -142,7 +142,7 @@ NpcDatabase::HumanKind NpcDatabase::ParseHumanKind(
     float const headTextureBaseWidth = Utils::GetOptionalJsonMember<float>(kindObject, "head_texture_base_width", 16.0f);
 
     auto const & textureFilenameStemsObject = Utils::GetMandatoryJsonObject(kindObject, "texture_filename_stems");
-    auto const dimensions = CalculateHumanDimensions(textureFilenameStemsObject, headTextureBaseWidth, npcTextureAtlas);
+    auto const dimensions = CalculateHumanDimensions(textureFilenameStemsObject, headTextureBaseWidth, npcTextureAtlas, name.Get(""));
     HumanTextureFramesType humanTextureFrames({
         ParseTextureCoordinatesQuad(textureFilenameStemsObject, HeadFKeyName, npcTextureAtlas),
         ParseTextureCoordinatesQuad(textureFilenameStemsObject, HeadBKeyName, npcTextureAtlas),
@@ -175,13 +175,20 @@ NpcDatabase::HumanKind NpcDatabase::ParseHumanKind(
 NpcDatabase::HumanDimensionsType NpcDatabase::CalculateHumanDimensions(
     picojson::object const & containerObject,
     float headTextureBaseWidth,
-    Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas)
+    Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas,
+    std::string const & subKindName)
 {
     // Head
     //
     // - Fixed width (wrt headTextureBaseWidth); expected B/F/S to be the same
 
     auto const headFSize = GetFrameSize(containerObject, HeadFKeyName, npcTextureAtlas);
+    if (headFSize != GetFrameSize(containerObject, HeadBKeyName, npcTextureAtlas)
+        || headFSize != GetFrameSize(containerObject, HeadSKeyName, npcTextureAtlas))
+    {
+        throw GameException("Head dimensions are not all equal for " + subKindName);
+    }
+
     float const headWFactor = static_cast<float>(headFSize.width) / headTextureBaseWidth;    
     float const headHWRatio = static_cast<float>(headFSize.height) * headWFactor / static_cast<float>(headFSize.width);
 
@@ -190,6 +197,12 @@ NpcDatabase::HumanDimensionsType NpcDatabase::CalculateHumanDimensions(
     // - Fixed height; expected B/F/S to be the same
 
     auto const torsoFSize = GetFrameSize(containerObject, TorsoFKeyName, npcTextureAtlas);
+    if (torsoFSize != GetFrameSize(containerObject, TorsoBKeyName, npcTextureAtlas)
+        || torsoFSize != GetFrameSize(containerObject, TorsoSKeyName, npcTextureAtlas))
+    {
+        throw GameException("Torso dimensions are not all equal for " + subKindName);
+    }
+
     float const torsoWHRatio = static_cast<float>(torsoFSize.width) / static_cast<float>(torsoFSize.height);
 
     // Arm
@@ -197,6 +210,12 @@ NpcDatabase::HumanDimensionsType NpcDatabase::CalculateHumanDimensions(
     // - Fixed height; expected B/F/S to be the same
 
     auto const armFSize = GetFrameSize(containerObject, ArmFKeyName, npcTextureAtlas);
+    if (armFSize != GetFrameSize(containerObject, ArmBKeyName, npcTextureAtlas)
+        || armFSize != GetFrameSize(containerObject, ArmSKeyName, npcTextureAtlas))
+    {
+        throw GameException("Arm dimensions are not all equal for " + subKindName);
+    }
+
     float const armWHRatio = static_cast<float>(armFSize.width) / static_cast<float>(armFSize.height);
 
     // Leg
@@ -204,6 +223,12 @@ NpcDatabase::HumanDimensionsType NpcDatabase::CalculateHumanDimensions(
     // - Fixed height; expected B/F/S to be the same
 
     auto const legFSize = GetFrameSize(containerObject, LegFKeyName, npcTextureAtlas);
+    if (legFSize != GetFrameSize(containerObject, LegBKeyName, npcTextureAtlas)
+        || legFSize != GetFrameSize(containerObject, LegSKeyName, npcTextureAtlas))
+    {
+        throw GameException("Leg dimensions are not all equal for " + subKindName);
+    }
+
     float const legWHRatio = static_cast<float>(legFSize.width) / static_cast<float>(legFSize.height);
 
     return HumanDimensionsType({

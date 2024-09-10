@@ -237,7 +237,8 @@ private:
     static HumanDimensionsType CalculateHumanDimensions(
         picojson::object const & containerObject,
         float headTextureBaseWidth,
-        Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas);
+        Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas,
+        std::string const & subKindName);
 
     static ImageSize GetFrameSize(
         picojson::object const & containerObject,

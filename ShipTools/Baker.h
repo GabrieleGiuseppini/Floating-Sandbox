@@ -8,6 +8,8 @@
 #include <Game/TextureDatabase.h>
 #include <Game/TextureTypes.h>
 
+#include <GameCore/Utils.h>
+
 #include <filesystem>
 #include <iostream>
 #include <string>
@@ -16,17 +18,38 @@ class Baker
 {
 public:
 
+    struct AtlasBakingOptions
+    {
+        bool AlphaPremultiply;
+        bool MipMappable;
+        bool Regular;
+
+        static AtlasBakingOptions Deserialize(std::filesystem::path const & optionsJsonFilePath)
+        {
+            picojson::object rootJsonObject = Utils::GetJsonValueAs<picojson::object>(Utils::ParseJSONFile(optionsJsonFilePath), "root");
+
+            bool alphaPreMultiply = Utils::GetMandatoryJsonMember<bool>(rootJsonObject, "alphaPreMultiply");
+            bool mipMappable = Utils::GetMandatoryJsonMember<bool>(rootJsonObject, "mipMappable");
+            bool regular = Utils::GetMandatoryJsonMember<bool>(rootJsonObject, "regular");
+
+            return AtlasBakingOptions({
+                alphaPreMultiply,
+                mipMappable,
+                regular });
+        }
+    };
+
+public:
+
     template<typename TextureDatabaseTraits>
     static size_t BakeAtlas(
-        std::filesystem::path const & databaseRootDirectoryPath,
+        std::filesystem::path const & texturesRootDirectoryPath,
         std::filesystem::path const & outputDirectoryPath,
-        bool doAlphaPremultiply,
-        bool doMipMapped,
-        bool doRegular)
+        AtlasBakingOptions const & options)
     {
-        if (!std::filesystem::exists(databaseRootDirectoryPath))
+        if (!std::filesystem::exists(texturesRootDirectoryPath))
         {
-            throw std::runtime_error("Database root directory '" + databaseRootDirectoryPath.string() + "' does not exist");
+            throw std::runtime_error("Textures root directory '" + texturesRootDirectoryPath.string() + "' does not exist");
         }
 
         if (!std::filesystem::exists(outputDirectoryPath))
@@ -36,29 +59,29 @@ public:
 
         // Load database
         auto textureDatabase = Render::TextureDatabase<TextureDatabaseTraits>::Load(
-            databaseRootDirectoryPath);
+            texturesRootDirectoryPath);
 
         // Create atlas
 
-        std::cout << "Creating " << (doRegular ? "regular " : "") << "atlas..";
+        std::cout << "Creating " << (options.Regular ? "regular " : "") << "atlas..";
 
-        Render::AtlasOptions options = Render::AtlasOptions::None;
-        if (doAlphaPremultiply)
-            options = options | Render::AtlasOptions::AlphaPremultiply;
-        if (doMipMapped)
-            options = options | Render::AtlasOptions::MipMappable;
+        Render::AtlasOptions atlasOptions = Render::AtlasOptions::None;
+        if (options.AlphaPremultiply)
+            atlasOptions = atlasOptions | Render::AtlasOptions::AlphaPremultiply;
+        if (options.MipMappable)
+            atlasOptions = atlasOptions | Render::AtlasOptions::MipMappable;
 
-        auto textureAtlas = doRegular
+        auto textureAtlas = options.Regular
             ? Render::TextureAtlasBuilder<typename TextureDatabaseTraits::TextureGroups>::BuildRegularAtlas(
                 textureDatabase,
-                options,
+                atlasOptions,
                 [](float, ProgressMessageType)
                 {
                     std::cout << ".";
                 })
             : Render::TextureAtlasBuilder<typename TextureDatabaseTraits::TextureGroups>::BuildAtlas(
                 textureDatabase,
-                options,
+                atlasOptions,
                 [](float, ProgressMessageType)
                 {
                     std::cout << ".";

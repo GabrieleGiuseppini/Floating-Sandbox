@@ -16,6 +16,28 @@
 
 			{
 				"name": [
+					{ "value": "Baker", "language": "en" },
+					{ "value": "Cuoco", "language": "it" }
+				],
+				"role": "Crew",
+				"texture_filename_stems": {
+					"head_f": "baker_head_front",
+					"head_b": "baker_head_back",
+					"head_s": "baker_head_side",
+					"torso_f": "baker_torso_front",
+					"torso_b": "baker_torso_back",
+					"torso_s": "baker_torso_side",
+					"arm_f": "baker_arm_front",
+					"arm_b": "baker_arm_back",
+					"arm_s": "baker_arm_side",
+					"leg_f": "baker_leg_front",
+					"leg_b": "baker_leg_back",
+					"leg_s": "baker_leg_side"
+				}
+			},
+
+			{
+				"name": [
 					{ "value": "Civilian Passenger 1 (Female)", "language": "en" },
 					{ "value": "Passeggero 1 (Donna)", "language": "it" }
 				],
@@ -104,6 +126,50 @@
 
 			{
 				"name": [
+					{ "value": "Civilian Passenger 3 (Female)", "language": "en" },
+					{ "value": "Passeggero 3 (Donna)", "language": "it" }
+				],
+				"role": "Passenger",
+				"texture_filename_stems": {
+					"head_f": "female_civilian_passenger_3_head_front",
+					"head_b": "female_civilian_passenger_3_head_back",
+					"head_s": "female_civilian_passenger_3_head_side",
+					"torso_f": "female_civilian_passenger_3_torso_front",
+					"torso_b": "female_civilian_passenger_3_torso_back",
+					"torso_s": "female_civilian_passenger_3_torso_side",
+					"arm_f": "female_civilian_passenger_3_arm_front",
+					"arm_b": "female_civilian_passenger_3_arm_back",
+					"arm_s": "female_civilian_passenger_3_arm_side",
+					"leg_f": "female_civilian_passenger_3_leg_front",
+					"leg_b": "female_civilian_passenger_3_leg_back",
+					"leg_s": "female_civilian_passenger_3_leg_side"
+				}
+			},
+
+			{
+				"name": [
+					{ "value": "Civilian Passenger 3 (Male)", "language": "en" },
+					{ "value": "Passeggero Seconda Classe 3 (Uomo)", "language": "it" }
+				],
+				"role": "Passenger",
+				"texture_filename_stems": {
+					"head_f": "male_civ_3_head_front",
+					"head_b": "male_civ_3_head_back",
+					"head_s": "male_civ_3_head_side",
+					"torso_f": "male_civ_3_torso_front",
+					"torso_b": "male_civ_3_torso_back",
+					"torso_s": "male_civ_3_torso_side",
+					"arm_f": "male_civ_3_arm_front",
+					"arm_b": "male_civ_3_arm_back",
+					"arm_s": "male_civ_3_arm_side",
+					"leg_f": "male_civ_3_leg_front",
+					"leg_b": "male_civ_3_leg_back",
+					"leg_s": "male_civ_3_leg_side"
+				}
+			},
+
+			{
+				"name": [
 					{ "value": "Deckhand", "language": "en" },
 					{ "value": "Mozzo", "language": "it" }
 				],
@@ -143,6 +209,50 @@
 					"leg_f": "engineer_leg_front",
 					"leg_b": "engineer_leg_back",
 					"leg_s": "engineer_leg_side"
+				}
+			},
+
+			{
+				"name": [
+					{ "value": "Officer", "language": "en" },
+					{ "value": "Ufficiale", "language": "it" }
+				],
+				"role": "Crew",
+				"texture_filename_stems": {
+					"head_f": "officer_head_front",
+					"head_b": "officer_head_back",
+					"head_s": "officer_head_side",
+					"torso_f": "officer_torso_front",
+					"torso_b": "officer_torso_back",
+					"torso_s": "officer_torso_side",
+					"arm_f": "officer_arm_front",
+					"arm_b": "officer_arm_back",
+					"arm_s": "officer_arm_side",
+					"leg_f": "officer_leg_front",
+					"leg_b": "officer_leg_back",
+					"leg_s": "officer_leg_side"
+				}
+			},
+
+			{
+				"name": [
+					{ "value": "Oiler", "language": "en" },
+					{ "value": "Oliatore", "language": "it" }
+				],
+				"role": "Crew",
+				"texture_filename_stems": {
+					"head_f": "oiler_head_front",
+					"head_b": "oiler_head_back",
+					"head_s": "oiler_head_side",
+					"torso_f": "oiler_torso_front",
+					"torso_b": "oiler_torso_back",
+					"torso_s": "oiler_torso_side",
+					"arm_f": "oiler_arm_front",
+					"arm_b": "oiler_arm_back",
+					"arm_s": "oiler_arm_side",
+					"leg_f": "oiler_leg_front",
+					"leg_b": "oiler_leg_back",
+					"leg_s": "oiler_leg_side"
 				}
 			},
 

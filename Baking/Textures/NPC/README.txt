@@ -1,0 +1,12 @@
+- Head:
+	- Make sure top of head is not flat against border (anti-aliasing); if so, add extra border top
+	- All frames same size
+- Torso:
+	- Make width as small as possible to fit front; others follow
+	- All frames same size
+- Legs:
+	- Normally leave width as full foot requires it
+	- All frames same size
+- Arms:
+	- Normally 8x32, better with 1px borders on sides
+	- All frames same size
