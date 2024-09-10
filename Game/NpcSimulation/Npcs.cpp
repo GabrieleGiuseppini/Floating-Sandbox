@@ -2097,7 +2097,7 @@ void Npcs::RenderNpc(
 
             float const adjustedIdealHumanHeight = npc.ParticleMesh.Springs[0].RestLength;
 
-            float const halfHeadW = (adjustedIdealHumanHeight * GameParameters::HumanNpcGeometry::HeadWidthFraction * humanNpcState.WidthMultipier) / 2.0f;
+            float const halfHeadW = (adjustedIdealHumanHeight * GameParameters::HumanNpcGeometry::HeadWidthFraction * humanNpcState.Dimensions.HeadWFactor * humanNpcState.WidthMultipier) / 2.0f;
             float const torsoWidthFraction = GameParameters::HumanNpcGeometry::TorsoLengthFraction * humanNpcState.Dimensions.TorsoHeightToWidthFactor;
             float const halfTorsoW = (adjustedIdealHumanHeight * torsoWidthFraction * humanNpcState.WidthMultipier) / 2.0f;
 

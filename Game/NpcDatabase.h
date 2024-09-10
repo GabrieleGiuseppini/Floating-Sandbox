@@ -42,6 +42,7 @@ public:
 
     struct HumanDimensionsType
     {
+        float HeadWFactor; // Multiplier of "standard" head width
         float HeadWidthToHeightFactor; // To recover head texture quad height from its physical width
         float TorsoHeightToWidthFactor; // To recover torso texture quad width from its physical height
         float ArmHeightToWidthFactor; // To recover arm texture quad width from its physical height
@@ -235,6 +236,7 @@ private:
 
     static HumanDimensionsType CalculateHumanDimensions(
         picojson::object const & containerObject,
+        float headTextureBaseWidth,
         Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas);
 
     static ImageSize GetFrameSize(

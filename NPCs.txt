@@ -550,18 +550,24 @@ Arch
 			+ Depth order
 			+ Fire panic tapering down speed
 		+ Cleanup auto-smothering of fire (and make slightly slower)
-	- Fix NPCs with large head
+	+ Fix NPCs with large head
+		+ @human/kind json: head_texture_base_width (default=16)
+		+ HumanDimensions: HeadWidthToHeightFactor is now calcd as H * (W/head_texture_base_width) / W
+		+ Test
 	- Wind: 
-		- Wind receptivity to NPC particle attributes override
-			- If needed
 		- Npc preliminary forces: 
-			- TODOHERE: in Ship, we apply to above-water points only
-			- TODOHERE: was "to free NPC particles only"
+			- Only applies to *free* *above-water* particles
 			+ Move Ship's WindForce calculation to Formulae
 			- Don't forget to smooth with waterness - which make sure is smooth between 0 and 1
+		- Wind receptivity to NPC particle attributes override
+			- If needed
 	- Wind tool: 
-		- WindField work (*) spec'd for flames 
-		- Npc preliminary forces: apply mParentWorld::WindField to all particles
+		+ WindField work (*) spec'd for flames 
+		- Npc preliminary forces: 
+			- Only applies to:
+				- Constrained *above-water* particles (i.e. walking in ship but not under ship-water)
+				- Free *above-water* particles
+				- In short: above-any-water
 	+ Ship-specific explosions: only NPCs of that ship, or free regime of any ship
 		+ mParentWorld.GetNpcs().ApplyXXXForce(shipId, ...)
 		+ Npcs::ApplyBlast()

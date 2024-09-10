@@ -139,8 +139,10 @@ NpcDatabase::HumanKind NpcDatabase::ParseHumanKind(
     ParticleAttributesType feetParticleAttributes = MakeParticleAttributes(kindObject, "feet_particle_attributes_overrides", globalFeetParticleAttributes);
     float const sizeMultiplier = Utils::GetOptionalJsonMember<float>(kindObject, "size_multiplier", 1.0f);
 
+    float const headTextureBaseWidth = Utils::GetOptionalJsonMember<float>(kindObject, "head_texture_base_width", 16.0f);
+
     auto const & textureFilenameStemsObject = Utils::GetMandatoryJsonObject(kindObject, "texture_filename_stems");
-    auto const dimensions = CalculateHumanDimensions(textureFilenameStemsObject, npcTextureAtlas);
+    auto const dimensions = CalculateHumanDimensions(textureFilenameStemsObject, headTextureBaseWidth, npcTextureAtlas);
     HumanTextureFramesType humanTextureFrames({
         ParseTextureCoordinatesQuad(textureFilenameStemsObject, HeadFKeyName, npcTextureAtlas),
         ParseTextureCoordinatesQuad(textureFilenameStemsObject, HeadBKeyName, npcTextureAtlas),
@@ -172,14 +174,16 @@ NpcDatabase::HumanKind NpcDatabase::ParseHumanKind(
 
 NpcDatabase::HumanDimensionsType NpcDatabase::CalculateHumanDimensions(
     picojson::object const & containerObject,
+    float headTextureBaseWidth,
     Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas)
 {
     // Head
     //
-    // - Fixed width; expected B/F/S to be the same
+    // - Fixed width (wrt headTextureBaseWidth); expected B/F/S to be the same
 
     auto const headFSize = GetFrameSize(containerObject, HeadFKeyName, npcTextureAtlas);
-    float const headHWRatio = static_cast<float>(headFSize.height) / static_cast<float>(headFSize.width);
+    float const headWFactor = static_cast<float>(headFSize.width) / headTextureBaseWidth;    
+    float const headHWRatio = static_cast<float>(headFSize.height) * headWFactor / static_cast<float>(headFSize.width);
 
     // Torso
     //
@@ -203,6 +207,7 @@ NpcDatabase::HumanDimensionsType NpcDatabase::CalculateHumanDimensions(
     float const legWHRatio = static_cast<float>(legFSize.width) / static_cast<float>(legFSize.height);
 
     return HumanDimensionsType({
+        headWFactor,
         headHWRatio,
         torsoWHRatio,
         armWHRatio,
