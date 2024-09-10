@@ -18,7 +18,7 @@ namespace Physics
 /*
  * Collection of some of the most reused formulae in the simulation.
  */
-class Formulae
+class Formulae final
 {
 public:
 

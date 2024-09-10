@@ -348,7 +348,7 @@ void WaterlineAnalyzerDialog::ReconcileUIWithState()
 
         // Trim
         {
-            int const trimDegrees = static_cast<int>(std::abs(std::round(RadiansCWToDegrees(trim))));
+            int const trimDegrees = static_cast<int>(std::abs(std::round(Conversions::RadiansCWToDegrees(trim))));
 
             wxString trimString;
 

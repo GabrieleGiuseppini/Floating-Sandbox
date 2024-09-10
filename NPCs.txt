@@ -467,7 +467,6 @@ Arch
 				+ Constrained_Swimming_Style2:
 					+ Arms alternating (narrowly) around normal to body (direction of face)
 					+ Legs alternating (narrowly) around opposite of feet velocity dir
-	- Backport to BaryLab and profile
 	+ Triangle destruction: 
 		+ Should be enough to check for current triangle being deleted at beginning of UpdateNpc(.), and if so, become free (identical for @ pri and @ non-pri)
 			+ Just like when we detect secondary, third, etc. are in a different connected component, see above
@@ -554,10 +553,13 @@ Arch
 		+ @human/kind json: head_texture_base_width (default=16)
 		+ HumanDimensions: HeadWidthToHeightFactor is now calcd as H * (W/head_texture_base_width) / W
 		+ Test
+	- Test all new assets
+	- Try without alpha pre-multiply
 	- Wind: 
 		- Npc preliminary forces: 
 			- Only applies to *free* *above-water* particles
 			+ Move Ship's WindForce calculation to Formulae
+			- Since func is invoked per-particle, might want to calc global wind force outside
 			- Don't forget to smooth with waterness - which make sure is smooth between 0 and 1
 		- Wind receptivity to NPC particle attributes override
 			- If needed
@@ -631,6 +633,10 @@ Arch
 	+ See if can continue to figure out how to avoid deformation of quads
 		+ Add (temporary) slider for NPC spring realaxation params
 
+	- Anti-matter bomb force fields:
+		- Pre-Implosion
+		- Implosion
+		- Explosion
 	- Swirl, etc.: NPCs of all ships, all regimes
 		- Controlled by flag, "~force tools on NPCs"
 			- SettingsDialog
@@ -733,8 +739,9 @@ Arch
 		- Close to water entering (leaking point w/inflow)
 			- Ditto
 
-	- Backport to BaryLab
-	- Profile
+	- Backport to BaryLab and profile
+		- Possible perf improv: Prelim forces: separate loop by Npc->Particles
+			- Better code cache and locality (for particles)
 
 - NPC stats rendering as RollingText
 

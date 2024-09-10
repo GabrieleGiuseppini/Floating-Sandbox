@@ -10,6 +10,7 @@
 #include "TextureAtlas.h"
 #include "TextureTypes.h"
 
+#include <GameCore/Conversions.h>
 #include <GameCore/GameMath.h>
 #include <GameCore/Log.h>
 
@@ -970,7 +971,7 @@ void GameController::ApplyRadialWindFrom(
 
     // Calculate wind speed, in m/s
     float const effectiveBaseWindSpeed =
-        mGameParameters.WindMakerToolWindSpeed * 1000.0f / 3600.0f
+        Conversions::KmhToMs(mGameParameters.WindMakerToolWindSpeed)
         * (mGameParameters.IsUltraViolentMode ? 3.5f : 1.0f);
     float const preFrontWindSpeed = effectiveBaseWindSpeed * preFrontIntensityMultiplier;
     float const mainFrontWindSpeed = effectiveBaseWindSpeed * mainFrontIntensityMultiplier;
@@ -1597,6 +1598,15 @@ void GameController::OnShipRepaired(ShipId /*shipId*/)
 void GameController::OnContinuousAutoFocusToggled(bool isEnabled)
 {
     mNotificationLayer.SetAutoFocusIndicator(isEnabled);
+}
+
+void GameController::OnHumanNpcCountsUpdated(
+    size_t insideShipCount,
+    size_t outsideShipCount)
+{
+    std::stringstream ss;
+    ss << insideShipCount << " in/" << outsideShipCount << " out";
+    mNotificationLayer.PublishNotificationText(ss.str());
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

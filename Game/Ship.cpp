@@ -9,6 +9,7 @@
 
 #include <GameCore/AABB.h>
 #include <GameCore/Algorithms.h>
+#include <GameCore/Conversions.h>
 #include <GameCore/GameDebug.h>
 #include <GameCore/GameMath.h>
 #include <GameCore/GameRandomEngine.h>
@@ -1015,7 +1016,7 @@ void Ship::ApplyWorldParticleForces(
 {
     // Global wind force
     vec2f const globalWindForce = Formulae::WindSpeedToForceDensity(
-        mParentWorld.GetCurrentWindSpeed() * 1000.0f / 3600.0f, // Km/h -> m/s
+        Conversions::KmhToMs(mParentWorld.GetCurrentWindSpeed()),
         effectiveAirDensity);
 
     // Abovewater points feel this amount of air drag, due to friction

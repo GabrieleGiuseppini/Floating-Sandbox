@@ -327,7 +327,7 @@ void StatusBar::RefreshCanvasSize()
 
                 case UnitsSystem::USCS:
                 {
-                    ss << std::round(MeterToFoot(worldCoords.x)) << " x " << std::round(MeterToFoot(worldCoords.y))
+                    ss << std::round(Conversions::MeterToFoot(worldCoords.x)) << " x " << std::round(Conversions::MeterToFoot(worldCoords.y))
                         << " ft";
                     break;
                 }
@@ -366,7 +366,7 @@ void StatusBar::RefreshToolCoordinates()
 
                 case UnitsSystem::USCS:
                 {
-                    ss << std::round(MeterToFoot(worldCoords.x)) << ", " << std::round(MeterToFoot(worldCoords.y))
+                    ss << std::round(Conversions::MeterToFoot(worldCoords.x)) << ", " << std::round(Conversions::MeterToFoot(worldCoords.y))
                         << " ft";
                     break;
                 }
@@ -441,14 +441,14 @@ void StatusBar::RefreshShipMass()
         case UnitsSystem::SI_Celsius:
         case UnitsSystem::SI_Kelvin:
         {
-            ss << KilogramToMetricTon(mass)
+            ss << Conversions::KilogramToMetricTon(mass)
                 << " t";
             break;
         }
 
         case UnitsSystem::USCS:
         {
-            ss << KilogramToUscsTon(mass)
+            ss << Conversions::KilogramToUscsTon(mass)
                 << " tn";
             break;
         }
@@ -509,7 +509,7 @@ void StatusBar::RefreshToolOutput()
 
                         case UnitsSystem::USCS:
                         {
-                            ss << std::round(MeterToFoot(*mMeasuredWorldLength))
+                            ss << std::round(Conversions::MeterToFoot(*mMeasuredWorldLength))
                                 << " ft";
                             break;
                         }

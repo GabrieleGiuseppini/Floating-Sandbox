@@ -124,7 +124,7 @@ TextureDatabase<TextureDatabaseTraits> TextureDatabase<TextureDatabaseTraits>::L
                     entryIt.path(),
                     stem);
             }
-            else
+            else if (entryIt.path().extension().string() != ".txt") // txt allowed
             {
                 LogMessage("WARNING: found file \"" + entryIt.path().string() + "\" with unexpected extension while loading a texture database");
             }

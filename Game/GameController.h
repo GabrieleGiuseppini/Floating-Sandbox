@@ -54,9 +54,10 @@ class GameController final
     : public IGameController
     , public IGameControllerSettings
     , public IGameControllerSettingsOptions
-    , public ILifecycleGameEventHandler
-    , public IWavePhenomenaGameEventHandler
     , public IControlGameEventHandler
+    , public ILifecycleGameEventHandler
+    , public INpcGameEventHandler
+    , public IWavePhenomenaGameEventHandler
 {
 public:
 
@@ -957,11 +958,15 @@ private:
     // Event handlers
     //
 
-    virtual void OnTsunami(float x) override;
+    void OnTsunami(float x) override;
 
-    virtual void OnShipRepaired(ShipId shipId) override;
+    void OnShipRepaired(ShipId shipId) override;
 
-    virtual void OnContinuousAutoFocusToggled(bool isEnabled) override;
+    void OnContinuousAutoFocusToggled(bool isEnabled) override;
+
+    void OnHumanNpcCountsUpdated(
+        size_t insideShipCount,
+        size_t outsideShipCount) override;
 
 private:
 
