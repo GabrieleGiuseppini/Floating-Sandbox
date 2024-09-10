@@ -472,13 +472,18 @@ Arch
 			+ Just like when we detect secondary, third, etc. are in a different connected component, see above
 	- Swimming humans generate (small) bubbles
 		- Each aquatic state has a NextBubbleEmissionSimulationTimestamp
-			- Init'd as 0
+			- Init'd as 0 at state enter (Reset)
 			- At each state update: 
 				- If curSimTime > state's:
-					- Emit bubble (via homeShip)
+					- Emit bubble (via homeShip->GenerateAirBubble)
+						- Ship::GenerateAirBubble: becomes public and also takes minScale, maxScale
+							- Points::GenerateAirBubble: store minScale, maxScale in AirBubble state
+							- Points::UpdateEphParticles: use minScale, maxScale from AirBubble state
+						- Call Ship::GenerateAirBubble
 					- Calc next: gaussian
 	- Humans on air-water interface generate small waves
-		- Need to produce as side-effect: swimming humans generate small waves
+		- Needs to produce as side-effect: swimming humans generate small waves
+		- Needs to produce as side-effect: humans falling into water generate small (but larger) waves
 		- Do surface displacement proportional to (signed) V velocity
 			- When head above but feet below - anything better?
 	+ Fire:
@@ -553,8 +558,7 @@ Arch
 		+ @human/kind json: head_texture_base_width (default=16)
 		+ HumanDimensions: HeadWidthToHeightFactor is now calcd as H * (W/head_texture_base_width) / W
 		+ Test
-	- Test all new assets
-	- Try without alpha pre-multiply
+	+ Test all new assets
 	- Wind: 
 		- Npc preliminary forces: 
 			- Only applies to *free* *above-water* particles

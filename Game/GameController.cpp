@@ -144,9 +144,10 @@ GameController::GameController(
         mRenderContext->GetVisibleWorld());
 
     // Register ourselves as event handler for the events we care about
-    mGameEventDispatcher->RegisterLifecycleEventHandler(this);
-    mGameEventDispatcher->RegisterWavePhenomenaEventHandler(this);
     mGameEventDispatcher->RegisterControlEventHandler(this);
+    mGameEventDispatcher->RegisterLifecycleEventHandler(this);
+    mGameEventDispatcher->RegisterNpcEventHandler(this);
+    mGameEventDispatcher->RegisterWavePhenomenaEventHandler(this);
 
     //
     // Initialize parameter smoothers
@@ -1605,7 +1606,7 @@ void GameController::OnHumanNpcCountsUpdated(
     size_t outsideShipCount)
 {
     std::stringstream ss;
-    ss << insideShipCount << " in/" << outsideShipCount << " out";
+    ss << insideShipCount << " IN/" << outsideShipCount << " OUT";
     mNotificationLayer.PublishNotificationText(ss.str());
 }
 
