@@ -29,11 +29,12 @@ namespace Physics
 
 #include <GameCore/ElementContainer.h>
 
-#include "Formulae.h"
 #include "IShipPhysicsHandler.h"
 
 #include "Storm.h"
 #include "Wind.h"
+
+#include "Formulae.h"
 
 #include "Points.h"
 #include "Springs.h"

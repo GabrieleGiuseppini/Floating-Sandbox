@@ -44,10 +44,6 @@
 #define LogNpcDebug(...)
 #endif
 
-// TEST
-////#undef LogNpcDebug
-////#define LogNpcDebug(...) LogMessage(__VA_ARGS__);
-
 namespace Physics {
 
 class Npcs final
@@ -991,6 +987,8 @@ public:
 private:
 
 	NpcId GetNewNpcId();
+
+	bool CommonNpcRemoval(NpcId npcId);
 
 	size_t CalculateTotalNpcCount() const;
 

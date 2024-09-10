@@ -137,6 +137,7 @@ public:
         return mOceanFloor.GetTerrain();
     }
 
+    // Km/h
     inline vec2f const & GetCurrentWindSpeed() const
     {
         return mWind.GetCurrentWindSpeed();
@@ -235,9 +236,9 @@ public:
     void ApplyRadialWindFrom(
         vec2f const & sourcePos,
         float preFrontRadius,
-        float preFrontWindSpeed,
+        float preFrontWindSpeed, // m/s
         float mainFrontRadius,
-        float mainFrontWindSpeed,
+        float mainFrontWindSpeed, // m/s
         GameParameters const & gameParameters);
 
     bool ApplyLaserCannonThrough(

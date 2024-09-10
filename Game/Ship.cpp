@@ -1013,14 +1013,10 @@ void Ship::ApplyWorldParticleForces(
     Buffer<float> & newCachedPointDepths,
     GameParameters const & gameParameters)
 {
-    // Wind force:
-    //  Km/h -> Newton: F = 1/2 rho v**2 A
-    float constexpr WindVelocityConversionFactor = 1000.0f / 3600.0f;
-    vec2f const windForce =
-        mParentWorld.GetCurrentWindSpeed().square()
-        * (WindVelocityConversionFactor * WindVelocityConversionFactor)
-        * 0.5f
-        * effectiveAirDensity;
+    // Global wind force
+    vec2f const globalWindForce = Formulae::WindSpeedToForceDensity(
+        mParentWorld.GetCurrentWindSpeed() * 1000.0f / 3600.0f, // Km/h -> m/s
+        effectiveAirDensity);
 
     // Abovewater points feel this amount of air drag, due to friction
     float const airFrictionDragCoefficient =
@@ -1099,12 +1095,12 @@ void Ship::ApplyWorldParticleForces(
             * Mix(airFrictionDragCoefficient, waterFrictionDragCoefficient, uwCoefficient);
 
         //
-        // Wind force
+        // Global (linear) wind force
         //
 
         // Note: should be based on relative velocity, but we simplify here for performance reasons
         staticForce +=
-            windForce
+            globalWindForce
             * mPoints.GetMaterialWindReceptivity(pointIndex)
             * (1.0f - uwCoefficient); // Only above-water
 

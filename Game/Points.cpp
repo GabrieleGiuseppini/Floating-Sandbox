@@ -984,7 +984,7 @@ void Points::UpdateCombustionLowFrequency(
                 mCombustionStateBuffer[pointIndex].FlameDevelopment);
 
             // Initialize flame vector
-            mCombustionStateBuffer[pointIndex].FlameVector = CalculateIdealFlameVector(
+            mCombustionStateBuffer[pointIndex].FlameVector = Formulae::CalculateIdealFlameVector(
                 GetVelocity(pointIndex),
                 200.0f); // For an initial flame, we want the particle's current velocity to have a smaller impact on the flame vector
 
@@ -1401,76 +1401,13 @@ void Points::UpdateCombustionHighFrequency(
         // Note: the point might not be burning anymore, in case we've just extinguished it
         //
 
-        // Vector Q is the vector describing the ideal, final flame's
-        // direction and length
-        vec2f const & pointVelocity = GetVelocity(pointIndex);
-        vec2f const Q = CalculateIdealFlameVector(
-            pointVelocity,
-            100.0f); // Particle's velocity has a larger impact on the final vector
-
-        // Inertia: converge current flame vector towards target vector Q
-        //
-        // Convergence rate inversely depends on the magnitude of change:
-        // - A big change: little rate (lots of inertia)
-        // - A small change: big rate (immediately responsive)
-        float constexpr MinFlameVectorConvergenceRate = 0.02f;
-        float constexpr MaxFlameVectorConvergenceRate = 0.05f;
-        float const flameVectorChangeMagnitude = std::abs(Q.angleCw(pointCombustionState.FlameVector));
-        float const flameVectorConvergenceRate =
-            MinFlameVectorConvergenceRate
-            + (MaxFlameVectorConvergenceRate - MinFlameVectorConvergenceRate) * (1.0f - LinearStep(0.0f, Pi<float>, flameVectorChangeMagnitude));
-
-        pointCombustionState.FlameVector +=
-            (Q - pointCombustionState.FlameVector)
-            * flameVectorConvergenceRate;
-
-        //
-        // Calculate flame wind rotation angle
-        //
-        // The wind rotation angle has three components:
-        //  - Global wind
-        //  - Radial wind field, if any
-        //  - Particle's velocity
-        //
-        // We simulate inertia by converging slowly to the target angle.
-        //
-
-        vec2f resultantWindSpeedVector =
-            globalWindSpeed
-            - pointVelocity;
-
-        if (radialWindField.has_value())
-        {
-            vec2f const displacement = pointPosition - radialWindField->SourcePos;
-            float const radius = displacement.length();
-            if (radius < radialWindField->PreFrontRadius)
-            {
-                resultantWindSpeedVector +=
-                    displacement.normalise_approx(radius)
-                    * radialWindField->PreFrontWindForceMagnitude
-                    * 0.4f; // Magic damper
-            }
-        }
-
-        // Projection of wind speed vector along flame
-        vec2f const flameDir = pointCombustionState.FlameVector.normalise_approx();
-        float const windSpeedMagnitudeAlongFlame = resultantWindSpeedVector.dot(flameDir);
-
-        // Our angle moves opposite to the projection of wind along the flame:
-        //  - Wind aligned with flame: proj=|W|, angle = 0
-        //  - Wind perpendicular to flame: proj=|0|, angle = +/-MAX
-        //  - Wind against flame: proj=-|W|, angle = +/-MAX
-        float constexpr MaxAngle = 0.27f;
-        float const targetFlameWindRotationAngle =
-            MaxAngle
-            * LinearStep(0.0f, 100.0f, resultantWindSpeedVector.length() - windSpeedMagnitudeAlongFlame)
-            * (resultantWindSpeedVector.cross(flameDir) > 0.0f ? -1.0f : 1.0f); // The sign of the angle is positive (CW) when the wind vector is to the right of the flame vector
-
-        // Converge
-        float constexpr FlameWindRotationAngleConvergenceRate = 0.055f;
-        pointCombustionState.FlameWindRotationAngle +=
-            (targetFlameWindRotationAngle - pointCombustionState.FlameWindRotationAngle)
-            * FlameWindRotationAngleConvergenceRate;
+        Formulae::EvolveFlameGeometry(
+            pointCombustionState.FlameVector,
+            pointCombustionState.FlameWindRotationAngle,
+            pointPosition,
+            GetVelocity(pointIndex),
+            globalWindSpeed,
+            radialWindField);
     }
 
     //
@@ -2348,36 +2285,6 @@ void Points::CalculateCombustionDecayParameters(
     mCombustionDecayAlphaFunctionA = a_num / den;
     mCombustionDecayAlphaFunctionB = b_num / den;
     mCombustionDecayAlphaFunctionC = c_num / den;
-}
-
-vec2f Points::CalculateIdealFlameVector(
-    vec2f const & pointVelocity,
-    float pointVelocityMagnitudeThreshold)
-{
-    // Vector Q is the vector describing the ideal, final flame's
-    // direction and (unscaled) length.
-    //
-    // At rest it's (0, 1) - simply, the flame pointing upwards.
-    // When the particle has velocity V, it is the interpolation of the rest upward
-    // vector (B) with the opposite of the particle's velocity:
-    //      Q = (1-a) * B - a * V
-    // Where 'a' depends on the magnitude of the particle's velocity.
-
-    vec2f constexpr B = vec2f(0.0f, 1.0f);
-
-    // The interpolation factor depends on the magnitude of the particle's velocity,
-    // via a magic formula; the more the particle's velocity, the more the resultant
-    // vector is aligned with the particle's velocity
-    float const interpolationFactor = SmoothStep(0.0f, pointVelocityMagnitudeThreshold, pointVelocity.length());
-    vec2f Q = B * (1.0f - interpolationFactor) - pointVelocity * interpolationFactor;
-
-    // Magnitude of vector is capped
-    float constexpr Qlmax = 1.8f; // Magic number
-    float const Ql = Q.length();
-    vec2f const Qn = Q.normalise_approx(Ql);
-    Q = Qn * std::min(Ql, Qlmax);
-
-    return Q;
 }
 
 ElementIndex Points::FindFreeEphemeralParticle(

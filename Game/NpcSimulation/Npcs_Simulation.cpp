@@ -412,7 +412,7 @@ void Npcs::UpdateNpcs(
                     else
                     {
                         // Decrease
-                        npcState->CombustionProgress += (-1.0f - npcState->CombustionProgress) * 0.01f;
+                        npcState->CombustionProgress += (-1.0f - npcState->CombustionProgress) * 0.007f;
                     }
                 }
             }
@@ -427,6 +427,11 @@ void Npcs::UpdateNpcs(
                     // See if we've just ignited
                     if (!npcState->CombustionState.has_value())
                     {
+                        // Init state (will be evolved right now)
+                        npcState->CombustionState.emplace(
+                            vec2f(0.0f, 1.0f),
+                            0.0f);
+
                         // Add to burning set
                         auto & shipNpcs = *mShips[npcState->CurrentShipId];
                         assert(std::find(shipNpcs.BurningNpcs.cbegin(), shipNpcs.BurningNpcs.cend(), npcState->Id) == shipNpcs.BurningNpcs.cend());
@@ -436,14 +441,18 @@ void Npcs::UpdateNpcs(
                         mGameEventHandler->OnPointCombustionBegin();
                     }
 
-                    // Update flame progress (eventually igniting)
-
-                    // TODOHERE: use Formulae
-                    vec2f const flameVector = vec2f(0.0f, 1.0f);
-                    float const flameWindRotationAngle = 0.0f;
-                    npcState->CombustionState.emplace(
-                        flameVector,
-                        flameWindRotationAngle);
+                    // Update flame progress
+                    ElementIndex reprParticleIndex = npcState->Kind == NpcKindType::Human // Approx
+                        ? npcState->ParticleMesh.Particles[1].ParticleIndex 
+                        : npcState->ParticleMesh.Particles[0].ParticleIndex;
+                    Formulae::EvolveFlameGeometry(
+                        npcState->CombustionState->FlameVector,
+                        npcState->CombustionState->FlameWindRotationAngle,
+                        mParticles.GetPosition(reprParticleIndex),
+                        // Exhaggerate; using absolute V (instead of more correct rel) to be in sync w/Ship
+                        mParticles.GetVelocity(reprParticleIndex) * 4.0f,
+                        mParentWorld.GetCurrentWindSpeed(),
+                        mParentWorld.GetCurrentRadialWindField());
                 }
                 else
                 {

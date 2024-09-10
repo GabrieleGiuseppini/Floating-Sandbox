@@ -2171,10 +2171,6 @@ private:
             cumulatedIntakenWaterThresholdForAirBubbles);
     }
 
-    static inline vec2f CalculateIdealFlameVector(
-        vec2f const & pointVelocity,
-        float pointVelocityMagnitudeThreshold);
-
     inline void SetStructurallyLeaking(ElementIndex pointElementIndex)
     {
         mLeakingCompositeBuffer[pointElementIndex].LeakingSources.StructuralLeak = 1.0f;

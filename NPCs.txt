@@ -482,7 +482,7 @@ Arch
 		- Need to produce as side-effect: swimming humans generate small waves
 		- Do surface displacement proportional to (signed) V velocity
 			- When head above but feet below - anything better?
-	= Fire:
+	+ Fire:
 		+ @Npcs::Update():
 			+ Calc LowFreqCycle (see Ship)
 			+ By Ship: By Npc (mod ID for cycle): 
@@ -502,11 +502,11 @@ Arch
 					+ Event (for sound)
 		+ @ Eq, Walk, Rising:
 			+ if NPC is on fire: DirFlip (iff OnFirePanic < 0.7) and set Npc::OnFirePanic to 1.0
-		= @Npcs::RenderUploadFlames():
-			= Upload flames, one per NPC	
+		+ @Npcs::RenderUploadFlames():
+			+ Upload flames, one per NPC	
 				+ First: store burning NPCs in vector (Npcs::mBurningNpcs, per-ship) at combustion state update
 					+ Remove @ NpcRemoval, ShipRemoval
-				= Second: Wind
+				+ Second: Wind
 					+ WindField rearc:
 						+ WindField: gets all members currently in Ship::QueuedInteractionArgs
 							+ Nuke PhysicsType
@@ -527,10 +527,10 @@ Arch
 								+ Apply forces (code of Ship::ApplyRadialWindFrom(interaction args)) from mParentWorld::GetWindField()
 							+ Nuke mWindField and take it from mParentWorld::GetWindField()
 							+ Nuke QueuedInteractionArgs struct and type
-					- See small with flame vector
-					- State Update: update flame vector with wind, both components
-						- Move CalculateIdealFlameVector, CalculateFlameWindRotationAngle(WindField, ...) to Formulae
-							- CalculateFlameWindRotationAngle: "EvolveFlameGeometry" takes two inputs/outputs (FlameVector, FalmeWindRotationAngle) as & 
+					+ State Update: update flame vector with wind, both components
+						+ Move CalculateIdealFlameVector, CalculateFlameWindRotationAngle(WindField, ...) to Formulae
+							+ CalculateFlameWindRotationAngle: "EvolveFlameGeometry" takes two inputs/outputs (FlameVector, FalmeWindRotationAngle) as & 
+						+ Use @ NPCs, both flame creation and update (if a separate creation exists)
 				+ Visit mBurningNpcs vector here and:
 					+ Position:
 						+ Human: head
@@ -544,18 +544,20 @@ Arch
 		+ Combustion adjustment: must smother if NPC particle is free and under real waterness
 		+ Use CombustionAdjustment
 		+ Rendering: NPC flames need to go to layer above gadgets
-		- Flame size depends on current (adjusted) dimensions
-			- Fix flame size at human creation by using current dimension passed to UploadNpcFlame
-			- Then make flame size at furniture by using width
-		- Test:
-			- Burning NPC removal
-			- Depth order
+		+ Flame size depends on current (adjusted) dimensions
+		+ Test:
+			+ Burning NPC removal
+			+ Depth order
 			+ Fire panic tapering down speed
-	- Test auto zoom w/Cam!=0
+		+ Cleanup auto-smothering of fire (and make slightly slower)
+	- Fix NPCs with large head
 	- Wind: 
 		- Wind receptivity to NPC particle attributes override
-		- Npc preliminary forces: apply to free NPC particles only
-			- Move Ship's WindForce calculation to Formulae
+			- If needed
+		- Npc preliminary forces: 
+			- TODOHERE: in Ship, we apply to above-water points only
+			- TODOHERE: was "to free NPC particles only"
+			+ Move Ship's WindForce calculation to Formulae
 			- Don't forget to smooth with waterness - which make sure is smooth between 0 and 1
 	- Wind tool: 
 		- WindField work (*) spec'd for flames 

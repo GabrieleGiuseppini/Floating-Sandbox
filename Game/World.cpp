@@ -457,9 +457,9 @@ bool World::ApplyElectricSparkAt(
 void World::ApplyRadialWindFrom(
     vec2f const & sourcePos,
     float preFrontRadius,
-    float preFrontWindSpeed,
+    float preFrontWindSpeed, // m/s
     float mainFrontRadius,
-    float mainFrontWindSpeed,
+    float mainFrontWindSpeed, // m/s
     GameParameters const & gameParameters)
 {
     //
@@ -470,18 +470,10 @@ void World::ApplyRadialWindFrom(
         gameParameters.AirTemperature,
         gameParameters);
 
-    // Wind force:
-    //  Km/h -> Newton: F = 1/2 rho v**2 A
+    // Convert to wind forceWind force
 
-    float const preFrontWindForceMagnitude =
-        preFrontWindSpeed * preFrontWindSpeed
-        * 0.5f
-        * effectiveAirDensity;
-
-    float const mainFrontWindForceMagnitude =
-        mainFrontWindSpeed * mainFrontWindSpeed
-        * 0.5f
-        * effectiveAirDensity;
+    float const preFrontWindForceMagnitude = Formulae::WindSpeedToForceDensity(preFrontWindSpeed, effectiveAirDensity);
+    float const mainFrontWindForceMagnitude = Formulae::WindSpeedToForceDensity(mainFrontWindSpeed, effectiveAirDensity);
 
     // Give to wind
     mWind.SetRadialWindField(

@@ -228,7 +228,7 @@ void Npcs::UploadFlames(
             position,
             npc.CombustionState->FlameVector,
             npc.CombustionState->FlameWindRotationAngle,
-            npc.CombustionProgress, // scale
+            npc.CombustionProgress * mCurrentSizeMultiplier, // Scale
             (npc.RandomNormalizedUniformSeed + 1.0f) / 2.0f);
     }
 }
@@ -285,28 +285,9 @@ void Npcs::OnShipRemoved(ShipId shipId)
     {
         assert(mStateBuffer[npcId].has_value());
 
-        // Maintain stats
-        if (mStateBuffer[npcId]->Kind == NpcKindType::Human)
+        if (CommonNpcRemoval(npcId))
         {
-            if (mStateBuffer[npcId]->CurrentRegime == StateType::RegimeType::Constrained)
-            {
-                assert(mConstrainedRegimeHumanNpcCount > 0);
-                --mConstrainedRegimeHumanNpcCount;
-                doPublishHumanNpcStats = true;
-            }
-            else if (mStateBuffer[npcId]->CurrentRegime == StateType::RegimeType::Free)
-            {
-                assert(mFreeRegimeHumanNpcCount > 0);
-                --mFreeRegimeHumanNpcCount;
-                doPublishHumanNpcStats = true;
-            }
-        }
-
-        // Remove from burning set
-        auto npcIt = std::find(mShips[s]->BurningNpcs.begin(), mShips[s]->BurningNpcs.end(), npcId);
-        if (npcIt != mShips[s]->BurningNpcs.end())
-        {
-            mShips[s]->BurningNpcs.erase(npcIt);
+            doPublishHumanNpcStats = true;
         }
 
         // Nuke NPC
@@ -1170,38 +1151,10 @@ void Npcs::RemoveNpc(NpcId id)
     assert(mStateBuffer[id].has_value());
     assert(mShips[mStateBuffer[id]->CurrentShipId].has_value());
 
-    //
-    // Maintain stats
-    //
-
-    switch (mStateBuffer[id]->Kind)
+    bool const humanStatsUpdated = CommonNpcRemoval(id);
+    if (humanStatsUpdated)
     {
-        case NpcKindType::Furniture:
-        {
-            --(mShips[mStateBuffer[id]->CurrentShipId]->FurnitureNpcCount);
-
-            break;
-        }
-
-        case NpcKindType::Human:
-        {
-            --(mShips[mStateBuffer[id]->CurrentShipId]->HumanNpcCount);
-
-            if (mStateBuffer[id]->CurrentRegime == StateType::RegimeType::Constrained)
-            {
-                assert(mConstrainedRegimeHumanNpcCount > 0);
-                --mConstrainedRegimeHumanNpcCount;
-                PublishHumanNpcStats();
-            }
-            else if (mStateBuffer[id]->CurrentRegime == StateType::RegimeType::Free)
-            {
-                assert(mFreeRegimeHumanNpcCount > 0);
-                --mFreeRegimeHumanNpcCount;
-                PublishHumanNpcStats();
-            }
-
-            break;
-        }
+        PublishHumanNpcStats();
     }
 
     mGameEventHandler->OnNpcCountsUpdated(CalculateTotalNpcCount());
@@ -1847,6 +1800,59 @@ NpcId Npcs::GetNewNpcId()
     return newNpcId;
 }
 
+bool Npcs::CommonNpcRemoval(NpcId npcId)
+{    
+    auto const shipId = mStateBuffer[npcId]->CurrentShipId;
+
+    //
+    // Maintain stats
+    //
+
+    bool humanNpcStatsUpdated = false;
+
+    switch (mStateBuffer[npcId]->Kind)
+    {
+        case NpcKindType::Furniture:
+        {
+            --(mShips[shipId]->FurnitureNpcCount);
+
+            break;
+        }
+
+        case NpcKindType::Human:
+        {
+            --(mShips[shipId]->HumanNpcCount);
+
+            if (mStateBuffer[npcId]->CurrentRegime == StateType::RegimeType::Constrained)
+            {
+                assert(mConstrainedRegimeHumanNpcCount > 0);
+                --mConstrainedRegimeHumanNpcCount;
+                humanNpcStatsUpdated = true;
+            }
+            else if (mStateBuffer[npcId]->CurrentRegime == StateType::RegimeType::Free)
+            {
+                assert(mFreeRegimeHumanNpcCount > 0);
+                --mFreeRegimeHumanNpcCount;
+                humanNpcStatsUpdated = true;
+            }
+
+            break;
+        }
+    }
+
+    //
+    // Remove from burning set
+    //
+
+    auto npcIt = std::find(mShips[shipId]->BurningNpcs.begin(), mShips[shipId]->BurningNpcs.end(), npcId);
+    if (npcIt != mShips[shipId]->BurningNpcs.end())
+    {
+        mShips[shipId]->BurningNpcs.erase(npcIt);
+    }
+
+    return humanNpcStatsUpdated;
+}
+
 size_t Npcs::CalculateTotalNpcCount() const
 {
     size_t totalCount = 0;
@@ -2086,7 +2092,7 @@ void Npcs::RenderNpc(
             vec2f const torsoBottom = legTop - actualBodyVector * (GameParameters::HumanNpcGeometry::LegLengthFraction / 8.0f); // Magic
             vec2f const torsoTop = legTop + actualBodyVector * GameParameters::HumanNpcGeometry::TorsoLengthFraction;
             vec2f const headBottom = torsoTop;
-            vec2f const armTop = headBottom - actualBodyVector * (GameParameters::HumanNpcGeometry::ArmLengthFraction / 8.0f); // Magic
+            vec2f const armTop = headBottom - actualBodyVector * (GameParameters::HumanNpcGeometry::ArmLengthFraction / 8.0f); // Magic            
             vec2f const headTop = headBottom + actualBodyVector * (GameParameters::HumanNpcGeometry::HeadWidthFraction * humanNpcState.Dimensions.HeadWidthToHeightFactor);
 
             float const adjustedIdealHumanHeight = npc.ParticleMesh.Springs[0].RestLength;
@@ -2903,6 +2909,7 @@ void Npcs::UpdateNpcAnimation(
                 targetAngles.LeftLeg = -legAngle;
 
                 // Arms depend on panic
+                LogMessage(humanNpcState.ResultantPanicLevel);
                 if (humanNpcState.ResultantPanicLevel < 0.32f)
                 {
                     // No panic: arms aperture depends on speed
@@ -2917,13 +2924,13 @@ void Npcs::UpdateNpcAnimation(
                     // Panic: arms raised up
 
                     float const elapsed = currentSimulationTime - humanNpcState.CurrentStateTransitionSimulationTimestamp;
-                    float const halfPeriod = 1.0f - 0.6f * std::min(humanNpcState.ResultantPanicLevel, 4.0f) / 4.0f;
+                    float const halfPeriod = 1.0f - 0.6f * std::min(humanNpcState.ResultantPanicLevel, 4.0f) / 4.0f; // 1.0 @ no panic, 0.4 @ panic
                     float const inPeriod = FastMod(elapsed, halfPeriod * 2.0f);
 
                     float constexpr MaxAngle = Pi<float> / 2.0f;
                     float const angle = std::abs(halfPeriod - inPeriod) / halfPeriod * 2.0f * MaxAngle - MaxAngle;
 
-                    // PanicMultiplier: p=0.0 => 0.7 p=2.0 => 0.4
+                    // PanicMultiplier: p=0.0 => 0.7; p=2.0 => 0.4
                     float const panicMultiplier = 0.4f + 0.3f * (1.0f - std::min(humanNpcState.ResultantPanicLevel, 2.0f) / 2.0f);
                     targetAngles.RightArm = Pi<float> -(angle * panicMultiplier);
                 }
