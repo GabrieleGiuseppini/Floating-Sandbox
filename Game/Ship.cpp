@@ -1103,7 +1103,7 @@ void Ship::ApplyWorldParticleForces(
         staticForce +=
             globalWindForce
             * mPoints.GetMaterialWindReceptivity(pointIndex)
-            * (1.0f - uwCoefficient); // Only above-water
+            * (1.0f - uwCoefficient); // Only above-water (modulated)
 
         staticForcesBuffer[pointIndex] += staticForce;
     }
