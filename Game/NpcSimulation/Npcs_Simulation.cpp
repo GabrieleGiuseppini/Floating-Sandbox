@@ -1695,6 +1695,13 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
 
             float const particleDepth = mParentWorld.GetOceanSurface().GetDepth(testParticlePosition);
             anyWaterness = Clamp(particleDepth, 0.0f, BuoyancyInterfaceWidth) / BuoyancyInterfaceWidth;
+
+            // 2. World forces - wind: iff free and above-water
+
+            preliminaryForces +=
+                globalWindForce
+                * mParticles.GetMaterial(npcParticle.ParticleIndex).WindReceptivity
+                * (1.0f - anyWaterness); // Only above-water (modulated)
         }
 
         // Store it for future use
@@ -1704,28 +1711,18 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
         {
             // Underwater
 
-            // 2. World forces - buoyancy
+            // 3. World forces - buoyancy
 
             preliminaryForces.y +=
                 mParticles.GetBuoyancyFactor(npcParticle.ParticleIndex)
                 * anyWaterness;
 
-            // 3. World forces - water drag
+            // 4. World forces - water drag
 
             preliminaryForces +=
                 -mParticles.GetVelocity(npcParticle.ParticleIndex)
                 * GameParameters::WaterFrictionDragCoefficient
                 * gameParameters.WaterFrictionDragAdjustment;
-        }
-
-        // 4. World forces - wind: iff free and above-water
-
-        if (!npcParticle.ConstrainedState.has_value())
-        {
-            preliminaryForces +=
-                globalWindForce
-                * mParticles.GetMaterial(npcParticle.ParticleIndex).WindReceptivity
-                * (1.0f - anyWaterness); // Only above-water (modulated)
         }
     }
 

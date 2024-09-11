@@ -1091,7 +1091,7 @@ private:
 		float currentSimulationTime,
 		GameParameters const & gameParameters);
 
-	void CalculateNpcParticlePreliminaryForces(
+	inline void CalculateNpcParticlePreliminaryForces(
 		StateType const & npc,
 		int npcParticleOrdinal,
 		vec2f const & globalWindForce,
