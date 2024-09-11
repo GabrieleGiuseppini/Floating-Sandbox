@@ -5,6 +5,7 @@
  ***************************************************************************************/
 #include "Physics.h"
 
+#include <GameCore/Conversions.h>
 #include <GameCore/GameMath.h>
 
 #include <array>
@@ -299,6 +300,7 @@ Npcs::StateType::RegimeType Npcs::CalculateRegime(StateType const & npc)
 
 void Npcs::UpdateNpcs(
     float currentSimulationTime,
+    Storm::Parameters const & stormParameters,
     GameParameters const & gameParameters)
 {
     LogNpcDebug("----------------------------------");
@@ -320,6 +322,23 @@ void Npcs::UpdateNpcs(
     // 7. Update physical state
     // 8. Maintain world bounds
     //
+
+    // Calculate all physics constants needed for physics update
+
+    float const effectiveAirDensity = Formulae::CalculateAirDensity(
+        gameParameters.AirTemperature + stormParameters.AirTemperatureDelta,
+        gameParameters);
+
+    vec2f const globalWindForce = Formulae::WindSpeedToForceDensity(
+        Conversions::KmhToMs(mParentWorld.GetCurrentWindSpeed()),
+        effectiveAirDensity);
+
+    ////// FUTUREWORK
+    ////float const effectiveWaterDensity = Formulae::CalculateWaterDensity(
+    ////    gameParameters.WaterTemperature,
+    ////    gameParameters);
+
+    // Visit all NPCs
 
     for (auto & npcState : mStateBuffer)
     {
@@ -443,7 +462,7 @@ void Npcs::UpdateNpcs(
 
                     // Update flame progress
                     ElementIndex reprParticleIndex = npcState->Kind == NpcKindType::Human // Approx
-                        ? npcState->ParticleMesh.Particles[1].ParticleIndex 
+                        ? npcState->ParticleMesh.Particles[1].ParticleIndex
                         : npcState->ParticleMesh.Particles[0].ParticleIndex;
                     Formulae::EvolveFlameGeometry(
                         npcState->CombustionState->FlameVector,
@@ -515,6 +534,7 @@ void Npcs::UpdateNpcs(
                 CalculateNpcParticlePreliminaryForces(
                     *npcState,
                     p,
+                    globalWindForce,
                     gameParameters);
             }
 
@@ -1566,6 +1586,7 @@ void Npcs::UpdateNpcParticlePhysics(
 void Npcs::CalculateNpcParticlePreliminaryForces(
     StateType const & npc,
     int npcParticleOrdinal,
+    vec2f const & globalWindForce,
     GameParameters const & gameParameters)
 {
     auto & npcParticle = npc.ParticleMesh.Particles[npcParticleOrdinal];
@@ -1696,9 +1717,19 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
                 * GameParameters::WaterFrictionDragCoefficient
                 * gameParameters.WaterFrictionDragAdjustment;
         }
+
+        // 4. World forces - wind: iff free and above-water
+
+        if (!npcParticle.ConstrainedState.has_value())
+        {
+            preliminaryForces +=
+                globalWindForce
+                * mParticles.GetMaterial(npcParticle.ParticleIndex).WindReceptivity
+                * (1.0f - anyWaterness); // Only above-water (modulated)
+        }
     }
 
-    // 4. External forces
+    // 5. External forces
 
     preliminaryForces += mParticles.GetExternalForces(npcParticle.ParticleIndex);
 

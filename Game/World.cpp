@@ -465,7 +465,7 @@ void World::ApplyRadialWindFrom(
     //
     // Store in Wind, after translating
     //
-    
+
     float const effectiveAirDensity = Formulae::CalculateAirDensity(
         gameParameters.AirTemperature,
         gameParameters);
@@ -1189,7 +1189,7 @@ void World::Update(
         auto const startTime = std::chrono::steady_clock::now();
 
         assert(mNpcs);
-        mNpcs->Update(mCurrentSimulationTime, gameParameters);
+        mNpcs->Update(mCurrentSimulationTime, mStorm.GetParameters(), gameParameters);
 
         perfStats.TotalNpcUpdateDuration.Update(std::chrono::steady_clock::now() - startTime);
     }
@@ -1203,7 +1203,7 @@ void World::Update(
     }
 
     //
-    // Signal update end (for quantities that need to persist during whole Update cycle)
+    // Signal update end (for quantities that needed to persist during whole Update cycle)
     //
 
     mWind.UpdateEnd();

@@ -22,6 +22,7 @@ Main principles:
 
 void Npcs::Update(
     float currentSimulationTime,
+    Storm::Parameters const & stormParameters,
     GameParameters const & gameParameters)
 {
     //
@@ -69,7 +70,7 @@ void Npcs::Update(
     // Advance the current simulation sequence
     ++mCurrentSimulationSequenceNumber;
 
-    UpdateNpcs(currentSimulationTime, gameParameters);
+    UpdateNpcs(currentSimulationTime, stormParameters, gameParameters);
 }
 
 void Npcs::UpdateEnd()
@@ -1801,7 +1802,7 @@ NpcId Npcs::GetNewNpcId()
 }
 
 bool Npcs::CommonNpcRemoval(NpcId npcId)
-{    
+{
     auto const shipId = mStateBuffer[npcId]->CurrentShipId;
 
     //
@@ -2092,7 +2093,7 @@ void Npcs::RenderNpc(
             vec2f const torsoBottom = legTop - actualBodyVector * (GameParameters::HumanNpcGeometry::LegLengthFraction / 8.0f); // Magic
             vec2f const torsoTop = legTop + actualBodyVector * GameParameters::HumanNpcGeometry::TorsoLengthFraction;
             vec2f const headBottom = torsoTop;
-            vec2f const armTop = headBottom - actualBodyVector * (GameParameters::HumanNpcGeometry::ArmLengthFraction / 8.0f); // Magic            
+            vec2f const armTop = headBottom - actualBodyVector * (GameParameters::HumanNpcGeometry::ArmLengthFraction / 8.0f); // Magic
             vec2f const headTop = headBottom + actualBodyVector * (GameParameters::HumanNpcGeometry::HeadWidthFraction * humanNpcState.Dimensions.HeadWidthToHeightFactor);
 
             float const adjustedIdealHumanHeight = npc.ParticleMesh.Springs[0].RestLength;

@@ -768,6 +768,7 @@ public:
 
 	void Update(
 		float currentSimulationTime,
+		Storm::Parameters const & stormParameters,
 		GameParameters const & gameParameters);
 
 	void UpdateEnd();
@@ -1078,6 +1079,7 @@ private:
 
 	void UpdateNpcs(
 		float currentSimulationTime,
+		Storm::Parameters const & stormParameters,
 		GameParameters const & gameParameters);
 
 	void UpdateNpcsEnd();
@@ -1092,6 +1094,7 @@ private:
 	void CalculateNpcParticlePreliminaryForces(
 		StateType const & npc,
 		int npcParticleOrdinal,
+		vec2f const & globalWindForce,
 		GameParameters const & gameParameters);
 
 	void CalculateNpcParticleSpringForces(StateType const & npc);
