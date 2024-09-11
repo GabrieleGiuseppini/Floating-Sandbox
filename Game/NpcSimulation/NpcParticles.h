@@ -217,6 +217,7 @@ public:
         mExternalForcesBuffer.fill(vec2f::zero());
     }
 
+    // [0.0, ~1.0]
     float const GetMeshWaterness(ElementIndex particleElementIndex) const noexcept
     {
         return mMeshWaternessBuffer[particleElementIndex];
@@ -302,7 +303,7 @@ private:
     Buffer<vec2f> mPreliminaryForcesBuffer;
     Buffer<vec2f> mExternalForcesBuffer;
 
-    Buffer<float> mMeshWaternessBuffer; // Mesh water at triangle (when constrained)
+    Buffer<float> mMeshWaternessBuffer; // Mesh water at triangle (when constrained); // [0.0, ~1.0]
     Buffer<vec2f> mMeshWaterVelocityBuffer; // (when constrained)
     Buffer<float> mAnyWaternessBuffer; // Mesh water at triangle (when constrained), depth (when free); [0.0, 1.0]
 
