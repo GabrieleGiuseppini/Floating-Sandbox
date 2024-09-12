@@ -1596,6 +1596,10 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
     //
 
     float const particleMass = mParticles.GetMass(npcParticle.ParticleIndex);
+    vec2f const & particlePosition = mParticles.GetPosition(npcParticle.ParticleIndex);
+    float const effectiveParticleWindReceptivity = std::min(
+        mParticles.GetMaterial(npcParticle.ParticleIndex).WindReceptivity * gameParameters.NpcWindReceptivityAdjustment,
+        1.0f);
 
     // 1. World forces - gravity
 
@@ -1671,6 +1675,8 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
                 * velocityIncrement
                 * orthoDamper;
 
+            // 2. World forces - inside water tide
+
             // Since we do forces here, we apply this as a force - but not dependent on the mass of the particle
             // (because heavy particles should practically not move)
             preliminaryForces +=
@@ -1686,7 +1692,7 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
 
             float constexpr BuoyancyInterfaceWidth = 0.4f; // Nature abhorrs discontinuity
 
-            vec2f testParticlePosition = mParticles.GetPosition(npcParticle.ParticleIndex);
+            vec2f testParticlePosition = particlePosition;
             if (npc.Kind == NpcKindType::Human && npcParticleOrdinal == 1)
             {
                 // Head - use an offset
@@ -1696,11 +1702,11 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
             float const particleDepth = mParentWorld.GetOceanSurface().GetDepth(testParticlePosition);
             anyWaterness = Clamp(particleDepth, 0.0f, BuoyancyInterfaceWidth) / BuoyancyInterfaceWidth;
 
-            // 2. World forces - wind: iff free and above-water
+            // 3. World forces - wind: iff free and above-water
 
             preliminaryForces +=
                 globalWindForce
-                * mParticles.GetMaterial(npcParticle.ParticleIndex).WindReceptivity
+                * effectiveParticleWindReceptivity
                 * (1.0f - anyWaterness); // Only above-water (modulated)
         }
 
@@ -1709,24 +1715,59 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
 
         if (anyWaterness > 0.0f)
         {
-            // Underwater
+            // Underwater (even if partially)
 
-            // 3. World forces - buoyancy
+            // 4. World forces - buoyancy
 
             preliminaryForces.y +=
                 mParticles.GetBuoyancyFactor(npcParticle.ParticleIndex)
                 * anyWaterness;
 
-            // 4. World forces - water drag
+            // 5. World forces - water drag
 
             preliminaryForces +=
                 -mParticles.GetVelocity(npcParticle.ParticleIndex)
                 * GameParameters::WaterFrictionDragCoefficient
                 * gameParameters.WaterFrictionDragAdjustment;
         }
+        else
+        {
+            // Completely above-water
+
+            // 6. World forces - radial wind (if any)
+
+            auto const & radialWindField = mParentWorld.GetCurrentRadialWindField();
+            if (radialWindField.has_value())
+            {
+                vec2f const displacement = particlePosition - radialWindField->SourcePos;
+                float const radius = displacement.length();
+                if (radius < radialWindField->PreFrontRadius) // Within sphere
+                {
+                    // Calculate force magnitude
+                    float windForceMagnitude;
+                    if (radius < radialWindField->MainFrontRadius)
+                    {
+                        windForceMagnitude = radialWindField->MainFrontWindForceMagnitude;
+                    }
+                    else
+                    {
+                        windForceMagnitude = radialWindField->PreFrontWindForceMagnitude;
+                    }
+
+                    // Calculate force
+                    vec2f const force =
+                        displacement.normalise_approx(radius)
+                        * windForceMagnitude
+                        * effectiveParticleWindReceptivity;
+
+                    // Apply force
+                    preliminaryForces += force;
+                }
+            }
+        }
     }
 
-    // 5. External forces
+    // 7. External forces
 
     preliminaryForces += mParticles.GetExternalForces(npcParticle.ParticleIndex);
 

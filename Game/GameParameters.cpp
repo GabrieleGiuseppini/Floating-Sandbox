@@ -6,7 +6,7 @@
 #include "GameParameters.h"
 
 GameParameters::GameParameters()
-    // Dynamics
+// Dynamics
     : NumMechanicalDynamicsIterationsAdjustment(1.0f)
     , SpringStiffnessAdjustment(1.0f)
     , SpringDampingAdjustment(1.0f)
@@ -89,6 +89,7 @@ GameParameters::GameParameters()
     // NPCs
     , NpcSpringReductionFractionAdjustment(1.0f)
     , NpcSpringDampingCoefficientAdjustment(1.0f)
+    , NpcWindReceptivityAdjustment(6.0f)
     , NpcSizeMultiplier(1.0f)
     , HumanNpcEquilibriumTorqueStiffnessCoefficient(0.0035f)
     , HumanNpcEquilibriumTorqueDampingCoefficient(0.0012f)

@@ -1137,7 +1137,10 @@ void Ship::ApplyWorldParticleForces(
                     }
 
                     // Calculate force
-                    vec2f const force = displacement.normalise(radius) * windForceMagnitude * mPoints.GetMaterialWindReceptivity(pointIndex);
+                    vec2f const force =
+                        displacement.normalise_approx(radius)
+                        * windForceMagnitude
+                        * mPoints.GetMaterialWindReceptivity(pointIndex);
 
                     // Apply force
                     staticForcesBuffer[pointIndex] += force;

@@ -454,6 +454,10 @@ struct GameParameters
     static float constexpr MinNpcSpringDampingCoefficientAdjustment = 0.0f;
     static float constexpr MaxNpcSpringDampingCoefficientAdjustment = 2.0f;
 
+    float NpcWindReceptivityAdjustment; // To account for the fact that NPCs are not made of many particles
+    static float constexpr MinNpcWindReceptivityAdjustment = 0.0f;
+    static float constexpr MaxNpcWindReceptivityAdjustment = 5.0f;
+
     float NpcSizeMultiplier;
     static float constexpr MinNpcSizeMultiplier = 0.2f;
     static float constexpr MaxNpcSizeMultiplier = 10.0f;
