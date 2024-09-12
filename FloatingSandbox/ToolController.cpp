@@ -224,6 +224,13 @@ ToolController::ToolController(
             resourceLocator));
 
     mAllTools.emplace_back(
+        std::make_unique<LampTool>(
+            *this,
+            gameController,
+            soundController,
+            resourceLocator));
+
+    mAllTools.emplace_back(
         std::make_unique<PlaceFurnitureNpcTool>(
             *this,
             gameController,

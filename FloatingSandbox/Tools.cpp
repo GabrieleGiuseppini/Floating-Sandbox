@@ -687,6 +687,25 @@ LaserCannonTool::LaserCannonTool(
 }
 
 ////////////////////////////////////////////////////////////////////////
+// LampTool
+////////////////////////////////////////////////////////////////////////
+
+LampTool::LampTool(
+    IToolCursorManager & toolCursorManager,
+    IGameController & gameController,
+    SoundController & soundController,
+    ResourceLocator const & resourceLocator)
+    : Tool(
+        ToolType::LampTool,
+        toolCursorManager,
+        gameController,
+        soundController)
+    , mUpCursorImage(WxHelpers::LoadCursorImage("lamp_cursor_up", 4, 27, resourceLocator))
+    , mDownCursorImage(WxHelpers::LoadCursorImage("lamp_cursor_down", 4, 27, resourceLocator))
+{
+}
+
+////////////////////////////////////////////////////////////////////////
 // NPCs
 ////////////////////////////////////////////////////////////////////////
 

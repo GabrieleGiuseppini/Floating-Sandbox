@@ -20,6 +20,8 @@ void main()
 
 ###FRAGMENT-120
 
+#include "common.glslinc"
+#include "lamp_tool.glslinc"
 #include "land.glslinc"
 
 #define in varying
@@ -42,7 +44,7 @@ void main()
 {
 #ifdef DETAILED_LAND
 
-    vec3 color = ApplyNoise(
+    vec3 color = ApplyLandNoise(
         paramLandFlatColor,
         worldAndDepth.xy,
         paramNoiseTexture);
@@ -53,18 +55,25 @@ void main()
 
 #endif
 
-    // Apply depth darkening
-    color = ApplyDepthDarkening(
-        color,
-        vec3(0.),
+    // Calculate depth darkening
+    float darkeningFactor = CalculateOceanDepthDarkeningFactor(
         worldAndDepth.y,
         paramOceanDarkeningRate);
+
+    // Calculate lamp tool
+    float lampToolFactor = CalculateLampFactor(gl_FragCoord.xy);
+
+    // Apply depth-darkening
+    color = mix(
+        color,
+        vec3(0.),
+        darkeningFactor * (1.0 - lampToolFactor));
 
     // Anti-aliasing
     float alpha = worldAndDepth.z / (0.2 + abs(dFdx(worldAndDepth.z)));
 
     // Apply ambient light
     gl_FragColor = vec4(
-        ApplyAmbientLight(color, paramEffectiveMoonlightColor, paramEffectiveAmbientLightIntensity),
+        ApplyAmbientLight(color, paramEffectiveMoonlightColor, max(paramEffectiveAmbientLightIntensity, lampToolFactor)),
         alpha);
 } 

@@ -277,6 +277,15 @@ public:
         return ndcCoordinates;
     }
 
+    inline DisplayPhysicalCoordinates ScreenToPixel(DisplayLogicalCoordinates const & screenCoordinates) const
+    {
+        DisplayPhysicalCoordinates const pixelCoordinates = DisplayPhysicalCoordinates(
+            screenCoordinates.x * mLogicalToPhysicalDisplayFactor,
+            mCanvasPhysicalSize.height - screenCoordinates.y * mLogicalToPhysicalDisplayFactor);
+
+        return pixelCoordinates;
+    }
+
     inline vec2f NdcOffsetToWorldOffset(
         vec2f const & ndcOffset,
         float zoom) const
@@ -314,6 +323,18 @@ public:
     {
         // Note: width or height is the same
         return static_cast<float>(screenOffset * mLogicalToPhysicalDisplayFactor) / static_cast<float>(mCanvasPhysicalSize.width) * mVisibleWorld.Width;
+    }
+
+    inline float ScreenFractionToWorldOffset(float screenFraction) const
+    {
+        // Use smallest
+        return std::min(mVisibleWorld.Width, mVisibleWorld.Height) * screenFraction;
+    }
+
+    inline float ScreenFractionToPixel(float screenFraction) const
+    {
+        // Use smallest
+        return static_cast<float>(std::min(mCanvasPhysicalSize.width, mCanvasPhysicalSize.height)) * screenFraction;
     }
 
     inline float PixelWidthToWorldWidth(float pixelWidth) const

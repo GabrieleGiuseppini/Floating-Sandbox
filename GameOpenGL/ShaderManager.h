@@ -21,25 +21,16 @@
 #include <unordered_map>
 #include <vector>
 
+/*
+ * Loads all shaders for a specific set identified by traits, and provides API
+ * to manage the shaders.
+ */
 template <typename Traits>
 class ShaderManager
 {
 private:
 
     static constexpr GLint NoParameterLocation = std::numeric_limits<GLint>::min();
-
-    template <typename T>
-    static std::string ToString(T const & v)
-    {
-        return std::to_string(v);
-    }
-
-    std::string ToString(float const & v)
-    {
-        std::stringstream stream;
-        stream << std::fixed << v;
-        return stream.str();
-    }
 
 public:
 
@@ -57,6 +48,10 @@ public:
         return *(mPrograms[programIndex].OpenGLHandle);
     }
 
+    /*
+     * Sets all the texture parameters (identified as such by belonging to our ProgramParameterType's _Texture range)
+     * in the specified (template argument) shader to the corresponding texture unit (identified via the integral value of that ProgramParameterType).
+     */
     template <typename Traits::ProgramType Program>
     inline void SetTextureParameters()
     {
@@ -219,8 +214,34 @@ public:
             mPrograms[programIndex].UniformLocations[ParameterIndex],
             static_cast<GLsizei>(vectorCount),
             reinterpret_cast<GLfloat const *>(array));
-        
+
         CheckUniformError(program, Parameter);
+    }
+
+    /*
+     * Warning: changes currently-active program
+     */
+    template <typename Traits::ProgramParameterType Parameter>
+    inline void SetProgramParameterInAllShaders(vec4f const & val)
+    {
+        constexpr uint32_t parameterIndex = static_cast<uint32_t>(Parameter);
+        assert(parameterIndex < mProgramsByProgramParameter.size());
+        for (typename Traits::ProgramType program : mProgramsByProgramParameter[parameterIndex])
+        {
+            uint32_t const programIndex = static_cast<uint32_t>(program);
+            assert(mPrograms[programIndex].UniformLocations[parameterIndex] != NoParameterLocation);
+
+            ActivateProgram(program);
+
+            glUniform4f(
+                mPrograms[programIndex].UniformLocations[parameterIndex],
+                val.x,
+                val.y,
+                val.z,
+                val.w);
+
+            CheckUniformError(program, Parameter);
+        }
     }
 
     // At any given moment, only one program may be active
@@ -308,6 +329,10 @@ private:
 
     // All programs, indexed by program type
     std::vector<ProgramInfo> mPrograms;
+
+    // For each parameter, all programs including it;
+    // indexed by ProgramParameterType
+    std::vector<std::vector<typename Traits::ProgramType>> mProgramsByProgramParameter;
 
 private:
 

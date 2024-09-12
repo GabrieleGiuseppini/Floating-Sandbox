@@ -423,6 +423,8 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::HeatShift;
     else if (str == "LampLightColor")
         return ProgramParameterType::LampLightColor;
+    else if (str == "LampToolAttributes")
+        return ProgramParameterType::LampToolAttributes;
     else if (str == "LandFlatColor")
         return ProgramParameterType::LandFlatColor;
     else if (str == "MatteColor")
@@ -518,6 +520,8 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
         return "HeatShift";
     case ProgramParameterType::LampLightColor:
         return "LampLightColor";
+    case ProgramParameterType::LampToolAttributes:
+        return "LampToolAttributes";
     case ProgramParameterType::LandFlatColor:
         return "LandFlatColor";
     case ProgramParameterType::MatteColor:

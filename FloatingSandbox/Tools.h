@@ -59,6 +59,7 @@ enum class ToolType
     ElectricSparkTool,
     WindMakerTool,
     LaserCannonTool,
+    LampTool,
     PlaceFurnitureNpc,
     PlaceHumanNpc,
     MoveNpc,
@@ -3658,6 +3659,85 @@ private:
     };
 
     std::optional<EngagementData> mEngagementData;
+
+    // The cursors
+    wxImage const mUpCursorImage;
+    wxImage const mDownCursorImage;
+};
+
+class LampTool final : public Tool
+{
+public:
+
+    LampTool(
+        IToolCursorManager & toolCursorManager,
+        IGameController & gameController,
+        SoundController & soundController,
+        ResourceLocator const & resourceLocator);
+
+public:
+
+    void Initialize(InputState const & /*inputState*/) override
+    {
+        mToolCursorManager.SetToolCursor(mUpCursorImage);
+    }
+
+    void Deinitialize() override
+    {
+        mGameController.ResetLamp(); // Assuming it's idempotent
+    }
+
+    void UpdateSimulation(InputState const & /*inputState*/, float /*currentSimulationTime*/) override
+    {}
+
+    void OnMouseMove(InputState const & inputState) override
+    {
+        if (inputState.IsLeftMouseDown)
+        {
+            SetLamp(inputState);
+        }
+    }
+
+    void OnLeftMouseDown(InputState const & inputState) override
+    {
+        SetLamp(inputState);
+
+        mToolCursorManager.SetToolCursor(mDownCursorImage);
+    }
+
+    void OnLeftMouseUp(InputState const & /*inputState*/) override
+    {
+        mGameController.ResetLamp();
+
+        mToolCursorManager.SetToolCursor(mUpCursorImage);
+    }
+
+    void OnShiftKeyDown(InputState const & inputState) override
+    {
+        if (inputState.IsLeftMouseDown)
+        {
+            SetLamp(inputState);
+        }
+    }
+
+    void OnShiftKeyUp(InputState const & inputState) override
+    {
+        if (inputState.IsLeftMouseDown)
+        {
+            SetLamp(inputState);
+        }
+    }
+
+private:
+
+    void SetLamp(InputState const & inputState)
+    {
+        float const radiusScreenFraction = inputState.IsShiftKeyDown
+            ? 1.0f / 2.5f
+            : 1.0f / 6.0f;
+
+        mGameController.SetLampAt(inputState.MousePosition, radiusScreenFraction);
+    }
 
     // The cursors
     wxImage const mUpCursorImage;

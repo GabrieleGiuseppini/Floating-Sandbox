@@ -1,0 +1,34 @@
+#include "static_parameters.glslinc"
+
+vec3 ApplyDither(
+    vec3 color,
+    vec2 fragCoords,
+    sampler2D noiseTexture)
+{
+    vec2 noiseCoords = fragCoords / vec2(NOISE_2_WIDTH, NOISE_2_HEIGHT);
+    float noise = texture2D(noiseTexture, noiseCoords).x;
+    color.xyz += mix(-0.5/255.0, 0.5/255.0, noise);
+    return color;
+}
+
+vec3 ApplyAmbientLight(
+    vec3 baseColor,
+    vec3 moonlightColor,
+    float effectiveAmbientLightIntensity)
+{
+    return 
+        baseColor 
+        * mix(
+            moonlightColor * 0.5, 
+            vec3(1.), 
+            effectiveAmbientLightIntensity);
+}
+
+float CalculateOceanDepthDarkeningFactor(
+    float yWorld,
+    float darkeningRate)
+{
+    float darkMix = 1.0 - exp(min(0.0, yWorld) * darkeningRate); // Darkening is based on world Y (more negative Y, more dark)
+    return darkMix * darkMix * darkMix;
+}
+

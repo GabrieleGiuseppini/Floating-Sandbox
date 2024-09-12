@@ -131,6 +131,7 @@ enum class ProgramParameterType : uint8_t
     FlatSkyColor,
     HeatShift,
     LampLightColor,
+    LampToolAttributes,
     LandFlatColor,
     MatteColor,
     NoiseStrength,

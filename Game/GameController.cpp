@@ -1282,6 +1282,25 @@ void GameController::AttractFish(
         delay);
 }
 
+void GameController::SetLampAt(
+    DisplayLogicalCoordinates const & screenCoordinates,
+    float radiusScreenFraction)
+{
+    mRenderContext->SetLamp(screenCoordinates, radiusScreenFraction);
+
+     // Scare fish
+    assert(!!mWorld);
+    mWorld->ScareFish(
+        mRenderContext->ScreenToWorld(screenCoordinates),
+        mRenderContext->ScreenFractionToWorldOffset(radiusScreenFraction),
+        std::chrono::milliseconds(75));
+}
+
+void GameController::ResetLamp()
+{
+    mRenderContext->ResetLamp();
+}
+
 std::optional<PickedObjectId<NpcId>> GameController::BeginPlaceNewFurnitureNpc(
     NpcSubKindIdType subKind,
     DisplayLogicalCoordinates const & screenCoordinates,

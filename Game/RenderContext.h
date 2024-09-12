@@ -164,7 +164,7 @@ public:
         return mRenderParameters.View;
     }
 
-    //
+    // Render properties
 
     float GetAmbientLightIntensity() const
     {
@@ -192,6 +192,27 @@ public:
     void SetSunRaysInclination(float value)
     {
         mWorldRenderContext->SetSunRaysInclination(value);
+    }
+
+    void SetLamp(
+        DisplayLogicalCoordinates const & pos,
+        float radiusScreenFraction)
+    {
+        DisplayPhysicalCoordinates const physicalPos = mRenderParameters.View.ScreenToPixel(pos);
+        float physicalRadius = mRenderParameters.View.ScreenFractionToPixel(radiusScreenFraction);
+
+        // Safe as it's copied to thread
+        mLampToolToSet.emplace(
+            static_cast<float>(physicalPos.x),
+            static_cast<float>(physicalPos.y),
+            physicalRadius,
+            1.0f);
+    }
+
+    void ResetLamp()
+    {
+        // Safe as it's copied to thread
+        mLampToolToSet.emplace(vec4f::zero());
     }
 
     //
@@ -700,6 +721,11 @@ public:
     inline float ScreenOffsetToWorldOffset(int screenOffset) const
     {
         return mRenderParameters.View.ScreenOffsetToWorldOffset(screenOffset);
+    }
+
+    inline float ScreenFractionToWorldOffset(float screenFraction) const
+    {
+        return mRenderParameters.View.ScreenFractionToWorldOffset(screenFraction);
     }
 
     //
@@ -1211,6 +1237,11 @@ private:
     VectorFieldRenderModeType mVectorFieldRenderMode;
     float mVectorFieldLengthMultiplier; // Storage
 
+    //
+    // Render state
+    //
+
+    std::optional<vec4f> mLampToolToSet; // When set, we need to give to render thread at Draw
 
     //
     // Rendering externals

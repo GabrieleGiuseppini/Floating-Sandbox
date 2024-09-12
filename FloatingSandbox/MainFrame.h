@@ -242,6 +242,7 @@ private:
     void OnRepairStructureMenuItemSelected(wxCommandEvent & event);
     void OnScrubMenuItemSelected(wxCommandEvent & event);
     void OnScareFishMenuItemSelected(wxCommandEvent & event);
+    void OnLampMenuItemSelected(wxCommandEvent & event);
     void OnAddHumanNpcMenuItemSelected(NpcSubKindIdType kind);
     void OnAddFurnitureNpcMenuItemSelected(NpcSubKindIdType kind);
     void OnMoveNpcMenuItemSelected(wxCommandEvent & event);

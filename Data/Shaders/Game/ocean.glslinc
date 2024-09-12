@@ -156,7 +156,7 @@ float GetShadowFactor(
     float sampleX = (shadowPosNdc.x + CloudSpaceWidthNdc / 2.0) / CloudSpaceWidthNdc + sunRaysInclination * shadowPosNdc.y * .05;
     float shadowSample = texture1D(shadowsBuffer, sampleX).x; // [0.0 ... 2.0]
 
-    // Darken portion > 1.0 with depth, but less so for brigther areas;
+    // Darken portion > 1.0 with depth;
     // add some noise to the depth to create flanges
     vec2 depthNoiseCoords = vec2(sampleX * 5.0 + shadowSample * 0.2, 0);
     float depthNoiseSample = texture2D(noiseTexture, depthNoiseCoords).x;
@@ -166,17 +166,4 @@ float GetShadowFactor(
     shadowSample = 1.0 + (shadowSample - 1.0) * exp(depth * depthBoost * DEPTH_SPEED);
 
     return shadowSample;
-}
-
-vec3 ApplyAmbientLight(
-    vec3 baseColor,
-    vec3 moonlightColor,
-    float effectiveAmbientLightIntensity)
-{
-    return 
-        baseColor 
-        * mix(
-            moonlightColor * 0.5, 
-            vec3(1.), 
-            effectiveAmbientLightIntensity);
 }

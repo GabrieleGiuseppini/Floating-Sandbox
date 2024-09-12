@@ -1,0 +1,16 @@
+
+uniform vec4 paramLampToolAttributes; // Position (vec2 in frag space), Radius (float in frag space), Toggle (float, 0/1)
+
+float CalculateLampFactor(vec2 fragCoords)
+{
+    float r = paramLampToolAttributes.z;
+    float r1 = r / 4.0 * 2.0;
+    float r2 = r / 4.0 * 3.0;
+    float d = length(fragCoords - paramLampToolAttributes.xy);
+
+    float lampFactor = 
+        smoothstep(r1, r, r - d) * 0.5
+        + smoothstep(0.0, r2, r - d) * 0.5;
+
+    return lampFactor * paramLampToolAttributes.w; // Return zero when off
+}

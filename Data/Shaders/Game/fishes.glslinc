@@ -50,6 +50,8 @@ void main()
 
 #define in varying
 
+#include "common.glslinc"
+#include "lamp_tool.glslinc"
 #include "ocean.glslinc"
 
 // Inputs from previous shader
@@ -192,14 +194,22 @@ void main()
 
 #endif
 
-    // Apply depth darkening
-    fishSample.xyz = ApplyDepthDarkening(
-        fishSample.xyz,
-        vec3(0.0),
+    // Calculate depth darkening
+    float darkeningFactor = CalculateOceanDepthDarkeningFactor(
         worldY,
         paramOceanDarkeningRate);
 
-    gl_FragColor = vec4(
-        fishSample.xyz * paramEffectiveAmbientLightIntensity,
-        fishSample.w);
+    // Calculate lamp tool
+    float lampToolFactor = CalculateLampFactor(gl_FragCoord.xy);
+
+    // Apply depth-darkening
+    fishSample.xyz = mix(
+        fishSample.xyz,
+        vec3(0.),
+        darkeningFactor * (1.0 - lampToolFactor));
+
+    // Apply ambient light
+    fishSample.xyz *= max(paramEffectiveAmbientLightIntensity, lampToolFactor);
+
+    gl_FragColor = fishSample;
 } 

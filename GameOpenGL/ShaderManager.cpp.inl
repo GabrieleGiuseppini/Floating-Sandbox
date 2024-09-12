@@ -48,14 +48,13 @@ ShaderManager<Traits>::ShaderManager(std::filesystem::path const & shadersRoot)
         }
     }
 
-
     //
-    // Compile all and only shader files
+    // Compile all and only shader files (not includes)
     //
 
     for (auto const & entryIt : shaderSources)
     {
-        if (entryIt.second.first)
+        if (entryIt.second.first) // Check if an include
         {
             CompileShader(
                 entryIt.first,
@@ -63,7 +62,6 @@ ShaderManager<Traits>::ShaderManager(std::filesystem::path const & shadersRoot)
                 shaderSources);
         }
     }
-
 
     //
     // Verify all expected programs have been loaded
@@ -181,19 +179,35 @@ void ShaderManager<Traits>::CompileShader(
 
         for (auto const & parameterName : parameterNames)
         {
-            auto programParameter = Traits::StrToProgramParameterType(parameterName);
+            typename Traits::ProgramParameterType programParameter = Traits::StrToProgramParameterType(parameterName);
+            size_t programParameterIndex = static_cast<size_t>(programParameter);
+
+            //
+            // Store uniform location
+            //
 
             // Make sure there is room
-            size_t programParameterIndex = static_cast<size_t>(programParameter);
-            while (mPrograms[programIndex].UniformLocations.size() <= programParameterIndex)
+            if (mPrograms[programIndex].UniformLocations.size() <= programParameterIndex)
             {
-                mPrograms[programIndex].UniformLocations.push_back(NoParameterLocation);
+                mPrograms[programIndex].UniformLocations.resize(programParameterIndex + 1, NoParameterLocation);
             }
 
             // Get and store
             mPrograms[programIndex].UniformLocations[programParameterIndex] = GameOpenGL::GetParameterLocation(
                 mPrograms[programIndex].OpenGLHandle,
                 "param" + Traits::ProgramParameterTypeToStr(programParameter));
+
+            //
+            // Store in ProgramParameter->Program index
+            //
+
+            // Make sure there is room
+            if (mProgramsByProgramParameter.size() <= programParameterIndex)
+            {
+                mProgramsByProgramParameter.resize(programParameterIndex + 1);
+            }
+
+            mProgramsByProgramParameter[programParameterIndex].push_back(program);
         }
     }
     catch (GameException const & ex)
@@ -239,18 +253,30 @@ std::string ShaderManager<Traits>::ResolveIncludes(
                     throw GameException("Cannot find include file \"" + includeFilename + "\"");
                 }
 
-                if (resolvedIncludes.count(includeFilename) > 0)
+                // TODOTEST: allowing multiple includes, simulating #pragma once
+                ////if (resolvedIncludes.count(includeFilename) > 0)
+                ////{
+                ////    throw GameException("Detected include file loop at include file \"" + includeFilename + "\"");
+                ////}
+
+                ////// Insert include
+                ////sSubstitutedSource << includeIt->second.second << sSource.widen('\n');
+
+                ////// Remember the files we've included in this path
+                ////resolvedIncludes.insert(includeFilename);
+                //
+                ////hasResolved = true;
+
+                if (resolvedIncludes.count(includeFilename) == 0)
                 {
-                    throw GameException("Detected include file loop at include file \"" + includeFilename + "\"");
+                    // Insert include
+                    sSubstitutedSource << includeIt->second.second << sSource.widen('\n');
+
+                    // Remember the files we've included in this path
+                    resolvedIncludes.insert(includeFilename);
+
+                    hasResolved = true;
                 }
-
-                // Insert include
-                sSubstitutedSource << includeIt->second.second << sSource.widen('\n');
-
-                // Remember the files we've included in this path
-                resolvedIncludes.insert(includeFilename);
-
-                hasResolved = true;
             }
             else
             {

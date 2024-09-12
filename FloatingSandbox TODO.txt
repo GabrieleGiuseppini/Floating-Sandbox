@@ -133,35 +133,92 @@
 	- Remove too much logging from ShipLoadDialog
 	- Merchandise link
 
-	- New tool: lamp
-		- Gist: 
-			- Affects DepthDarkening and AmbientLight shading
-			- Param in all shaders using the above: vec4 paramLampAttributes: position (vec2, frag space), radius (float), toggle (float, 0/1)
-			- Shaders call lamp.glsinc::CalculateLampFactor(frag coords, param) -> float, and then pass float to DepthDarkening and/or AmbientLight funcs/local calculations
-		- Impl:
-			- ShaderManager: SetParameterInAllShaders<Param>(value)
-				- @ ShaderManager initiation: build vector<param #, vector<shaders>>
-			- lamp.glslinc:
-				- param declaration (vec4)
-				- CalculateLampFactor
-				- Test: param declaration in .inc works
-			- Tool:
-				- OnMouseDown / OnMouseMove(w/left down):
-					- Calc radius as function of SHIFT
-					- GameController::SetLamp(worldPos, radius)
-						- -> RenderContext::SetLamp(worldPos, radius)
-							- mLampToSet (opt vec4f) = vec4f(...)
-				- OnMouseUp:
-					- GameController::ResetLamp()
-						- -> RenderContext::ResetLamp()
-							- mLampToSet = vec4f(...off)
-			- RenderContext:
-				- Draw():
-					- Inside render thread:
-						- if mLampToSet:
-							- SetParameterInAllShaders(vec4)
-							- mLampToSet.reset()
+	= New tool: lamp
+		! Gist: 
+			! Affects DepthDarkening and AmbientLight shading
+			! Param in all shaders using the above: vec4 paramLampAttributes: position (vec2 in frag space), radius (float), toggle (float, 0/1)
+			! Shaders call lamp.glsinc::CalculateLampFactor(frag coords, param) -> float, and then pass float to DepthDarkening and/or AmbientLight funcs/local calculations
+		= Impl:
+			+ ShaderManager: SetParameterInAllShaders<Param>(value)
+				+ @ ShaderManager initiation: build vector<param #, vector<shaders>>
+			+ lamp.glslinc:
+				+ param declaration (vec4)
+				+ CalculateLampFactor
+					+ Two smoothsteps				
+			= Depth darkening rearc first:
+				+ Create common.glslinc
+					+ Copy to here CalculateOceanDepthDarkeningFactor from ocean.glslinc, but change to return darkening strength float
+					+ Copy to here Dither from ocean.glslinc
+				- ocean.glslinc:
+					- Lose ApplyDepthDarkening
+					- Lose ApplyDepthDarkeningWithDither
+				+ fishes.glslinc:
+					+ Include common.glslinc
+					+ Use CalculateOceanDepthDarkeningFactor and do color mix explicitly
+				+ land.glslinc:
+					+ Lose ApplyDepthDarkening
+				+ land_flat.glslinc:
+					+ Include common.glslinc
+					+ Use CalculateOceanDepthDarkeningFactor and do color mix explicitly
+				+ land_texture.glslinc:
+					+ Include common.glslinc
+					+ Use CalculateOceanDepthDarkeningFactor and do color mix explicitly
+				- ocean_depth_basic.glsl, ocean_depth_detailed.glslinc:
+					+ Include common.glslinc
+					- Use CalculateOceanDepthDarkeningFactor and do color mix explicitly (doing gradient)
+					- Use ApplyDither
+				- ocean_flat_detailed.glslinc:
+					+ Include common.glslinc
+					- Use CalculateOceanDepthDarkeningFactor and do color mix explicitly
+					- Use ApplyDither
+				- ocean_texture_basic.glsl, ocean_texture_detailed.glsl
+					+ Include common.glslinc
+					- Use CalculateOceanDepthDarkeningFactor and do color mix explicitly
+				- Test
+			- All affected shaders:
+				- Include lamp_tool.glslinc
+				- Call CalculateLampFactor and use lamp factor with:
+					- Result of ApplyOceanDepthDarkening
+					- AmbientLight calculations
+				- Do at:
+					+ Land:
+						+ land_flat.glslinc
+						+ land_texture.glslinc
+					= Fishes:
+						+ fishes.glslinc
+					- Ocean:
+						- TODO: shaders
+					- TODO: others for ambient light
+				- Remove two funcs from coean.glslinc (see above)
+				- Test: 
+					- Call SetParameterInAllShaders(.) with arbitrary val for now
+					- Param declaration in .inc works
+			+ Tool:
+				+ Icon & cursors
+					+ lamp_cursor_up
+					+ Set anchor coords
+				+ MainFrame menu
+				+ OnMouseDown / OnMouseMove(w/left down):
+					+ Calc radius (screen fraction) as function of SHIFT
+					+ GameController::SetLampAt(screen coords, radius screen fraction)
+						+ -> RenderContext::SetLamp(pos in display logical coords, radius in screen fraction)
+							+ Calc both in physical coords (coords: add tx method to ViewModel, LogToPhys; radius: based off canvas physical size)
+							+ mLampToSet (opt vec4f) = vec4f(...)
+						+ -> ScareFishes(world, world) 
+				+ OnMouseUp:
+					+ GameController::ResetLamp()
+						+ -> RenderContext::ResetLamp()
+							+ mLampToSet = vec4f(...off)					
+			+ RenderContext:
+				+ Draw():
+					+ Inside render thread - taking copy of mLampToSet:
+						+ if lampToSet:
+							+ SetParameterInAllShaders(vec4)
+					+ mLampToSet.reset()
+		- Cleanup:
+			+ RenderContext::cctor(): mLampToSet initialization
 		- Test:
+			+ Scare fishes
 			- Test rendering time delta - before-code and after-code
 				- On Dell
 				- On new

@@ -18,6 +18,7 @@ void main()
 
 ###FRAGMENT-120
 
+#include "common.glslinc"
 #include "ocean.glslinc"
 
 #define in varying

@@ -96,6 +96,7 @@ public:
     }
 
 private:
+
     T mValue;
 };
 

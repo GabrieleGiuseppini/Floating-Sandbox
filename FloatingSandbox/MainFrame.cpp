@@ -542,6 +542,8 @@ MainFrame::MainFrame(
                     ADD_PLAIN_ACCELERATOR_KEY('Z', mScareFishMenuItem);
                 }
 
+                ADD_TOOL_MENUITEM(_("Lamp"), wxS(""), "lamp_cursor_up", OnLampMenuItemSelected);
+
                 ADD_TOOL_MENUITEM(_("Toggle Physics Probe"), wxS(""), "physics_probe_cursor", OnPhysicsProbeMenuItemSelected);
             }
 
@@ -1989,6 +1991,12 @@ void MainFrame::OnScareFishMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mToolController);
     mToolController->SetTool(ToolType::ScareFish);
+}
+
+void MainFrame::OnLampMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!!mToolController);
+    mToolController->SetTool(ToolType::LampTool);
 }
 
 void MainFrame::OnAddHumanNpcMenuItemSelected(NpcSubKindIdType kind)

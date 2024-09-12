@@ -32,6 +32,7 @@ void main()
 
 #define in varying
 
+#include "common.glslinc"
 #include "ocean.glslinc"
 
 // Inputs from previous shader

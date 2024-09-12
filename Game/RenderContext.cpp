@@ -81,6 +81,8 @@ RenderContext::RenderContext(
     , mShipDefaultWaterColor(0x00, 0x00, 0xcc)
     , mVectorFieldRenderMode(VectorFieldRenderModeType::None)
     , mVectorFieldLengthMultiplier(1.0f)
+    // Render state
+    , mLampToolToSet(vec4f(0.0f, 0.0f, 0.0f, 0.0f)) // Turned off
     // Rendering externals
     , mMakeRenderContextCurrentFunction(renderDeviceProperties.MakeRenderContextCurrentFunction)
     , mSwapRenderBuffersFunction(renderDeviceProperties.SwapRenderBuffersFunction)
@@ -486,9 +488,9 @@ void RenderContext::Draw()
     // Render asynchronously; we will wait for this render to complete
     // when we want to touch GPU buffers again.
     //
-    // Take a copy of the current render parameters and clean its dirtyness
+    // Take a copy of the current render parameters and clean its dirtyness, and of the current render state
     mLastRenderDrawCompletionIndicator = mRenderThread.QueueTask(
-        [this, renderParameters = mRenderParameters.TakeSnapshotAndClear()]() mutable
+        [this, renderParameters = mRenderParameters.TakeSnapshotAndClear(), lampToolToSet = mLampToolToSet]() mutable
         {
             auto const startTime = GameChronometer::now();
 
@@ -518,6 +520,11 @@ void RenderContext::Draw()
             //
 
             {
+                if (lampToolToSet)
+                {
+                    mShaderManager->SetProgramParameterInAllShaders<ProgramParameterType::LampToolAttributes>(*lampToolToSet);
+                }
+
                 mGlobalRenderContext->RenderPrepare();
 
                 mWorldRenderContext->RenderPrepareStars(renderParameters);
@@ -616,6 +623,12 @@ void RenderContext::Draw()
             mPerfStats.TotalRenderDrawDuration.Update(GameChronometer::now() - startTime);
             mRenderStats.store(renderStats);
         });
+
+    //
+    // Reset render state now that it's copied into render thread
+    //
+
+    mLampToolToSet.reset();
 }
 
 void RenderContext::RenderEnd()
