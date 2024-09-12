@@ -182,7 +182,7 @@ void ViewManager::AdjustZoom(float amount)
 void ViewManager::ResetView(std::optional<Geometry::AABB> const & aabb)
 {
     // When continuous auto-focus is off, "view reset" focuses on ship;
-    // When continuous auto-focus is on, "view reset" zeroes-out user offsets
+    // When continuous auto-focus is on, "view reset" zeroes-out user offsets (so it focuses on ship)
     if (!mAutoFocus.has_value())
     {
         if (aabb)

@@ -565,15 +565,41 @@ Arch
 			+ Simple fixed-angle
 		+ Fix human state machine: Free_KO -> Free_Aerial *OR Free_InWater*
 	- Follow NPC:
+		- State machine/interactions:
+			- Current:
+				- HOME (focus on ship) -> GameController::ResetView() -> ViewManager::ResetView(all ships' AABBs)
+					- If focusing on ship: resets user offsets
+					- Else: focuses on ship (one-off)
+				- TODOHERE
+			- New:
 		- 1. Npcs gets the concept of "CurrentSelectedNpc" (which was of BaryLab)
 			- opt<NpcId> member
 			- API from outside via Select...() / DeSelect...()/Get...() (the BaryLab ones, make them official)
 			- Reset when NpcId is no more - @ CommonRemoval
-		- TODOHERE
-		- Write down focus on NPC tool
-	- Write down torch tool
-		- Gist: affects DepthDarkening and AmbientLight shading
-		- TODO: ShaderManager: SetParameterInAllShaders(.)
+		- 2. ViewManager:
+			- CurrentAutoFocusTarget: opt<ViewManager::AutoFocusTarget>
+				- Only holds it, GameController inspects from outside and calls 
+				- AutoFocusTarget: type (Ship, Npc), NpcId
+				- Setter and getter
+		- 3. GameController:
+			- FollowNpc(opt<npcId>)
+			- Update():
+				- Check ViewManager::CurrentAutoFocusTarget:
+					- If Ship:
+						- Get all Ships' AABBs (or nullopt)
+						- ViewManager->Update(.that.)
+					- If NPC:
+						- Check with Npcs if NpcId still exists
+						- If so:
+							- ViewManager->Update(NPC's AABB)
+						- Else:
+							- TODOHERE
+							- ViewManager->Update(nullopt)
+					- If none:
+						- ViewManager->Update(nullopt)
+			- Reset:
+		- 4. Tool:
+		- 5. MainFrame:
 	+ Wind: 
 		+ Npc preliminary forces: 
 			+ Only applies to *free* *above-water* particles

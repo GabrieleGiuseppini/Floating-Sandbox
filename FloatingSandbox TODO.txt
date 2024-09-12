@@ -133,6 +133,41 @@
 	- Remove too much logging from ShipLoadDialog
 	- Merchandise link
 
+	- New tool: lamp
+		- Gist: 
+			- Affects DepthDarkening and AmbientLight shading
+			- Param in all shaders using the above: vec4 paramLampAttributes: position (vec2, frag space), radius (float), toggle (float, 0/1)
+			- Shaders call lamp.glsinc::CalculateLampFactor(frag coords, param) -> float, and then pass float to DepthDarkening and/or AmbientLight funcs/local calculations
+		- Impl:
+			- ShaderManager: SetParameterInAllShaders<Param>(value)
+				- @ ShaderManager initiation: build vector<param #, vector<shaders>>
+			- lamp.glslinc:
+				- param declaration (vec4)
+				- CalculateLampFactor
+				- Test: param declaration in .inc works
+			- Tool:
+				- OnMouseDown / OnMouseMove(w/left down):
+					- Calc radius as function of SHIFT
+					- GameController::SetLamp(worldPos, radius)
+						- -> RenderContext::SetLamp(worldPos, radius)
+							- mLampToSet (opt vec4f) = vec4f(...)
+				- OnMouseUp:
+					- GameController::ResetLamp()
+						- -> RenderContext::ResetLamp()
+							- mLampToSet = vec4f(...off)
+			- RenderContext:
+				- Draw():
+					- Inside render thread:
+						- if mLampToSet:
+							- SetParameterInAllShaders(vec4)
+							- mLampToSet.reset()
+		- Test:
+			- Test rendering time delta - before-code and after-code
+				- On Dell
+				- On new
+		
+		- Changelist
+
 	+ Redo notifications' EphemeralText: RollingText
 
 	- Do other atlases (Clouds, GenericLinear, GenericMipMapped)
@@ -259,11 +294,11 @@
 				- Only difference: horizontal propagation is subject to "friction"
 
 	- "Random" button to load random ship
-		- At LoadDialog?
+		- At LoadDialog
 
 	- Option to have larger world size
 
-	- New tool 2: Punch (was: wrecking ball tool)
+	- New tool: Punch (was: wrecking ball tool)
 		- Spec:
 			- Like ocean floor collision, against a sphere (which only grows quickly at initial engagement)
 			- OLD: Works only on frontier from outside->in
