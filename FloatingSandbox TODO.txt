@@ -68,7 +68,61 @@
 					+ Remove TextureCenterPos from vertex attribs
 					+ Cleanup shader
 		+ Merge into npcs_v1
-	- Clouds V3:
+	- Clouds V3: with fantastic texture coords offset
+			void mainImage( out vec4 fragColor, in vec2 fragCoord )
+			{
+			    // Normalized pixel coordinates (from 0 to 1)
+			    vec2 uv = fragCoord/iResolution.xy;
+			    #define PI 3.1415926
+			    
+			    // Center uv [-1., +1.]
+			    vec2 textureCoordsCentered = (uv - (0.5, 0.5)) * 2.;
+
+			    // (r, a) (r=[0.0, 1.0], a=[0.0, 1.0 CCW from W])        
+			    vec2 ra = vec2(
+				length(textureCoordsCentered), 
+				atan(textureCoordsCentered.y, textureCoordsCentered.x));
+
+			    vec2 ra2 = vec2((ra.x - iTime * 0.05) / 6., ra.y / (2. * PI));
+
+			/*
+			    vec4 c = texture(iChannel0, uv);
+			    float n = texture(iChannel1, ra2).x;
+			    fragColor = mix(
+				c,
+				vec4(1.),
+				n * n * sqrt(ra.x));
+			*/        
+
+			    vec4 c = texture(iChannel0, uv);
+			    float n = texture(iChannel1, ra2).x;
+			    float a = 1. - abs(n) * smoothstep(0.2, 0.4, ra.x); // Silence towards center
+			    #define VAR 0.28
+			    a = (1.-VAR) + VAR*smoothstep(0.0, 0.8, a);
+			    fragColor = vec4(
+				mix(
+				    vec3(0.0450, 0.800, 0.900),
+				    c.xyz,
+				    c.a * a),
+				1.0);
+			    //fragColor = vec4(a, a, a, 1.0);
+			    //fragColor = vec4(abs(mod(ra2.y / PI, 1.)));
+			    
+			    #define JJ 0.2
+			    //vec2 nc = vec2(uv.x - iTime * 0.05, uv.y);
+			    //n = texture(iChannel1, nc).x;
+			    float foox = dFdx(n) * JJ;
+			    float fooy = dFdy(n) * JJ;
+			    foox = fooy = (n - 0.5) * 0.15 * smoothstep(0.2, 0.4, ra.x);
+			    c = texture(iChannel0, uv + vec2(foox, fooy));
+			    fragColor = vec4(
+				mix(
+				    vec3(0.0450, 0.800, 0.900),
+				    c.xyz,
+				    c.a),
+				1.0);
+			    
+			}
 		- Test AdobeStock clouds
 		- See shader on shader toy: use cloud texture coords offset based on noise centered around 0.
 			- But solve problem of going to other texture: need more room around textures?

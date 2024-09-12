@@ -554,20 +554,25 @@ Arch
 			+ Depth order
 			+ Fire panic tapering down speed
 		+ Cleanup auto-smothering of fire (and make slightly slower)
-	- Smash tool:
-		- GameController->World->NPCs
-		- For each human with at least one particle in range: 
-			- Turn on back or front (rnd)
-			- Transition to ConstrainedOrFree_Smashed
-		- BehaviorUpdate: @ConstrainedOrFree_Smashed:
-			- Unconditional progress; when at target, go to either Constrained_KO or Free_KO
-				- Verify these anim's do not change angles
-		- Animation:
-			- Simple fixed-angle
+	+ Smash tool:
+		+ GameController->World->NPCs
+		+ For each human with at least one particle in range: 
+			+ Turn on back or front (rnd)
+			+ Transition to ConstrainedOrFree_Smashed
+		+ BehaviorUpdate: @ConstrainedOrFree_Smashed:
+			+ Unconditional progress; when at target, go to either Constrained_KO or Free_KO
+		+ Animation:
+			+ Simple fixed-angle
+		+ Fix human state machine: Free_KO -> Free_Aerial *OR Free_InWater*
 	- Follow NPC:
+		- 1. Npcs gets the concept of "CurrentSelectedNpc" (which was of BaryLab)
+			- opt<NpcId> member
+			- API from outside via Select...() / DeSelect...()/Get...() (the BaryLab ones, make them official)
+			- Reset when NpcId is no more - @ CommonRemoval
 		- TODOHERE
 		- Write down focus on NPC tool
 	- Write down torch tool
+		- Gist: affects DepthDarkening and AmbientLight shading
 		- TODO: ShaderManager: SetParameterInAllShaders(.)
 	+ Wind: 
 		+ Npc preliminary forces: 
@@ -654,6 +659,7 @@ Arch
 		- Implosion
 		- Explosion
 	- Swirl, etc.: NPCs of all ships, all regimes
+		- Quantities that are now calculated in Ship become calc'd in World, so we can pass them on to NPCs
 		- Controlled by flag, "~force tools on NPCs"
 			- SettingsDialog
 		- World calls Npcs.ApplyXXXForce(...)

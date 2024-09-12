@@ -1178,7 +1178,47 @@ void Npcs::UpdateHuman(
 				break;
 			}
 
-			// Progress to aerial (when moving)
+			// Progress to in-water (when at least one particle in water)
+
+			float inWaterTarget;
+
+			if (mParticles.GetAnyWaterness(primaryParticleState.ParticleIndex) > 0.0f
+				|| mParticles.GetAnyWaterness(secondaryParticleState.ParticleIndex) > 0.0f)
+			{
+				inWaterTarget = 1.0f;
+			}
+			else
+			{
+				inWaterTarget = 0.0f;
+			}
+
+			float constexpr ToInWaterConvergenceRate = 0.2f;
+
+			humanState.CurrentBehaviorState.Free_KnockedOut.ProgressToInWater +=
+				(inWaterTarget - humanState.CurrentBehaviorState.Free_KnockedOut.ProgressToInWater)
+				* ToInWaterConvergenceRate;
+
+#ifdef BARYLAB_PROBING
+			publishStateQuantity = std::make_tuple("ProgressToInWater", std::to_string(humanState.CurrentBehaviorState.Free_KnockedOut.ProgressToInWater));
+#endif
+
+			if (IsAtTarget(humanState.CurrentBehaviorState.Free_KnockedOut.ProgressToInWater, 1.0f))
+			{
+				// Transition
+
+				humanState.TransitionToState(HumanNpcStateType::BehaviorType::Free_InWater, currentSimulationTime);
+
+#ifdef BARYLAB_PROBING
+				if (npc.Id == mCurrentlySelectedNpc)
+				{
+					mGameEventHandler->OnHumanNpcBehaviorChanged("Free_InWater");
+				}
+#endif
+
+				break;
+			}
+
+			// Progress to aerial (when moving and out-of-water)
 
 			float aerialTarget;
 
@@ -1328,6 +1368,47 @@ void Npcs::UpdateHuman(
 
 					break;
 				}
+			}
+
+			break;
+		}
+
+		case HumanNpcStateType::BehaviorType::ConstrainedOrFree_Smashed:
+		{
+			// Advance towards leaving
+
+			humanState.CurrentBehaviorState.ConstrainedOrFree_Smashed.ProgressToLeaving +=
+				(1.0f - humanState.CurrentBehaviorState.ConstrainedOrFree_Smashed.ProgressToLeaving)
+				* 0.04f;
+
+			if (IsAtTarget(humanState.CurrentBehaviorState.ConstrainedOrFree_Smashed.ProgressToLeaving, 1.0f))
+			{
+				// Transition
+
+				if (isFree)
+				{
+					humanState.TransitionToState(HumanNpcStateType::BehaviorType::Free_KnockedOut, currentSimulationTime);
+
+#ifdef BARYLAB_PROBING
+					if (npc.Id == mCurrentlySelectedNpc)
+					{
+						mGameEventHandler->OnHumanNpcBehaviorChanged("Free_KnockedOut");
+					}
+#endif
+				}
+				else
+				{
+					humanState.TransitionToState(HumanNpcStateType::BehaviorType::Constrained_KnockedOut, currentSimulationTime);
+
+#ifdef BARYLAB_PROBING
+					if (npc.Id == mCurrentlySelectedNpc)
+					{
+						mGameEventHandler->OnHumanNpcBehaviorChanged("Constrained_KnockedOut");
+					}
+#endif
+				}
+
+				break;
 			}
 
 			break;

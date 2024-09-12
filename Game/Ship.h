@@ -147,7 +147,7 @@ public:
 
     bool DestroyAt(
         vec2f const & targetPos,
-        float radiusMultiplier,
+        float radius,
         float currentSimulationTime,
         GameParameters const & gameParameters);
 

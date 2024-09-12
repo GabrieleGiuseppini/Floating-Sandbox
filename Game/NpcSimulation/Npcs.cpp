@@ -1298,6 +1298,59 @@ void Npcs::RotateBy(
     }
 }
 
+void Npcs::SmashAt(
+    vec2f const & targetPos,
+    float radius,
+    float currentSimulationTime)
+{
+    //
+    // Transition all humans in radius which have not transitioned yet
+    //
+
+    float const squareRadius = radius * radius;
+
+    for (auto & npc : mStateBuffer)
+    {
+        if (npc.has_value() && npc->Kind == NpcKindType::Human)
+        {
+             bool hasOneParticleInRadius = false;
+            for (auto const & npcParticle : npc->ParticleMesh.Particles)
+            {
+                float const pointSquareDistance = (mParticles.GetPosition(npcParticle.ParticleIndex) - targetPos).squareLength();
+                if (pointSquareDistance < squareRadius)
+                {
+                    hasOneParticleInRadius = true;
+                    break;
+                }
+            }
+
+            if (hasOneParticleInRadius)
+            {
+                auto & humanState = npc->KindSpecificState.HumanNpcState;
+                if (humanState.CurrentBehavior != StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::ConstrainedOrFree_Smashed)
+                {
+                    // Transition to Smashed
+                    humanState.TransitionToState(StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::ConstrainedOrFree_Smashed, currentSimulationTime);
+
+                    // Turn front/back iff side-looking
+                    if (humanState.CurrentFaceOrientation == 0.0f)
+                    {
+                        humanState.CurrentFaceOrientation = GameRandomEngine::GetInstance().GenerateUniformBoolean(0.5f) ? +1.0f : -1.0f;
+                        humanState.CurrentFaceDirectionX = 0.0f;
+                    }
+
+                    // Futurework: sound
+                }
+                else
+                {
+                    // Prolong stay
+                    humanState.CurrentBehaviorState.ConstrainedOrFree_Smashed.Reset();
+                }
+            }
+        }
+    }
+}
+
 void Npcs::ApplyBlast(
     ShipId shipId,
     vec2f const & centerPosition,
@@ -1772,6 +1825,12 @@ void Npcs::Publish() const
                 case StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::Free_Swimming_Style3:
                 {
                     mGameEventHandler->OnHumanNpcBehaviorChanged("Free_Swimming");
+                    break;
+                }
+
+                case StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::ConstrainedOrFree_Smashed:
+                {
+                    mGameEventHandler->OnHumanNpcBehaviorChanged("ConstrainedOrFree_Smashed");
                     break;
                 }
             }
@@ -2655,6 +2714,8 @@ void Npcs::UpdateNpcAnimation(
         {
             case HumanNpcStateType::BehaviorType::BeingPlaced:
             {
+                // Being-placed dance
+
                 float const arg =
                     (
                         (currentSimulationTime - humanNpcState.CurrentStateTransitionSimulationTimestamp) * 1.0f
@@ -3059,7 +3120,7 @@ void Npcs::UpdateNpcAnimation(
                 }
                 else
                 {
-                    targetAngles.LeftArm = Pi<float>;
+                    targetAngles.LeftArm = -Pi<float>;
                 }
 
                 // Legs: 0
@@ -3345,6 +3406,19 @@ void Npcs::UpdateNpcAnimation(
 
                 break;
             }
+
+            case HumanNpcStateType::BehaviorType::ConstrainedOrFree_Smashed:
+            {
+                // Arms and legs at fixed angles
+                targetAngles.RightArm = 3.0f / 4.0f * Pi<float>;
+                targetAngles.LeftArm = -3.0f / 4.0f * Pi<float>;
+                targetAngles.RightLeg = 1.0f / 4.0f * Pi<float>;
+                targetAngles.LeftLeg = -1.0f / 4.0f * Pi<float>;
+
+                convergenceRate = 0.2f;
+
+                break;
+            }
         }
 
         // Converge
@@ -3506,6 +3580,7 @@ void Npcs::UpdateNpcAnimation(
             case HumanNpcStateType::BehaviorType::Free_KnockedOut:
             case HumanNpcStateType::BehaviorType::Free_InWater:
             case HumanNpcStateType::BehaviorType::Free_Swimming_Style1:
+            case HumanNpcStateType::BehaviorType::ConstrainedOrFree_Smashed:
             {
                 // Nop
                 break;

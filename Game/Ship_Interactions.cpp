@@ -352,7 +352,7 @@ void Ship::Pull(Interaction::ArgumentsUnion::PullArguments const & args)
 
 bool Ship::DestroyAt(
     vec2f const & targetPos,
-    float radiusMultiplier,
+    float radius,
     float currentSimulationTime,
     GameParameters const & gameParameters)
 {
@@ -387,11 +387,6 @@ bool Ship::DestroyAt(
     // Destroy points probabilistically - probability is one at
     // distance = 0 and zero at distance = radius
     //
-
-    float const radius =
-        gameParameters.DestroyRadius
-        * radiusMultiplier
-        * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
     float const squareRadius = radius * radius;
 

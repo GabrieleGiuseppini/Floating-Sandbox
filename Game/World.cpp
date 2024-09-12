@@ -284,20 +284,32 @@ void World::DestroyAt(
     float radiusMultiplier,
     GameParameters const & gameParameters)
 {
+    float const radius =
+        gameParameters.DestroyRadius
+        * radiusMultiplier
+        * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+
+    // Ships
     for (auto & ship : mAllShips)
     {
         ship->DestroyAt(
             targetPos,
-            radiusMultiplier,
+            radius,
             mCurrentSimulationTime,
             gameParameters);
     }
 
-    // Also scare fishes at bit
+    // Scare fishes at bit
     mFishes.DisturbAt(
         targetPos,
         6.5f + radiusMultiplier,
         std::chrono::milliseconds(0));
+
+    // Smash NPCs
+    mNpcs->SmashAt(
+        targetPos,
+        radius,
+        mCurrentSimulationTime);
 }
 
 void World::RepairAt(

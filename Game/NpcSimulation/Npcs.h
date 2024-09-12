@@ -256,7 +256,9 @@ private:
 					Free_InWater, // Does nothing, but waits to swim
 					Free_Swimming_Style1, // Swims
 					Free_Swimming_Style2, // Swims
-					Free_Swimming_Style3  // Swims
+					Free_Swimming_Style3, // Swims
+
+					ConstrainedOrFree_Smashed // Plat
 				};
 
 				BehaviorType CurrentBehavior;
@@ -398,10 +400,12 @@ private:
 					struct Free_KnockedOutStateType
 					{
 						float ProgressToAerial;
+						float ProgressToInWater;
 
 						void Reset()
 						{
 							ProgressToAerial = 0.0f;
+							ProgressToInWater = 0.0f;
 						}
 					} Free_KnockedOut;
 
@@ -421,6 +425,16 @@ private:
 						{
 						}
 					} Free_Swimming;
+
+					struct ConstrainedOrFree_SmashedStateType
+					{
+						float ProgressToLeaving;
+
+						void Reset()
+						{
+							ProgressToLeaving = 0.0f;
+						}
+					} ConstrainedOrFree_Smashed;
 
 				} CurrentBehaviorState;
 
@@ -602,6 +616,12 @@ private:
 						case BehaviorType::Free_Swimming_Style3:
 						{
 							CurrentBehaviorState.Free_Swimming.Reset();
+							break;
+						}
+
+						case BehaviorType::ConstrainedOrFree_Smashed:
+						{
+							CurrentBehaviorState.ConstrainedOrFree_Smashed.Reset();
 							break;
 						}
 					}
@@ -862,6 +882,11 @@ public:
 		vec2f const & center,
 		float inertialAngle,
 		GameParameters const & gameParameters);
+
+	void SmashAt(
+		vec2f const & targetPos,
+		float radius,
+		float currentSimulationTime);
 
 	void ApplyBlast(
 		ShipId shipId,
