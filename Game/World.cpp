@@ -470,7 +470,7 @@ void World::ApplyRadialWindFrom(
         gameParameters.AirTemperature,
         gameParameters);
 
-    // Convert to wind forceWind force
+    // Convert to wind force
 
     float const preFrontWindForceMagnitude = Formulae::WindSpeedToForceDensity(preFrontWindSpeed, effectiveAirDensity);
     float const mainFrontWindForceMagnitude = Formulae::WindSpeedToForceDensity(mainFrontWindSpeed, effectiveAirDensity);
@@ -483,31 +483,6 @@ void World::ApplyRadialWindFrom(
             preFrontWindForceMagnitude,
             mainFrontRadius,
             mainFrontWindForceMagnitude));
-
-    //
-    // Apply to ocean
-    //
-    // We displace the ocean surface where the sphere meets the ocean:
-    //
-    //       /|
-    //     r/ |h
-    //     /  |
-    //     ----
-    //      d
-    //
-
-    float const squaredHorizontalDistance = preFrontRadius * preFrontRadius - sourcePos.y * sourcePos.y;
-    if (squaredHorizontalDistance >= 0.0f)
-    {
-        float const horizontalDistance = std::sqrt(squaredHorizontalDistance);
-
-        float const displacementMagnitude =
-            preFrontWindSpeed / 10.0f // Magic number
-            * SignStep(0.0f, -sourcePos.y);
-
-        mOceanSurface.DisplaceAt(std::max(sourcePos.x - horizontalDistance, -GameParameters::HalfMaxWorldWidth), displacementMagnitude);
-        mOceanSurface.DisplaceAt(std::min(sourcePos.x + horizontalDistance, GameParameters::HalfMaxWorldWidth), displacementMagnitude);
-    }
 }
 
 bool World::ApplyLaserCannonThrough(

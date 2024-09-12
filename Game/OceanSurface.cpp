@@ -188,6 +188,37 @@ void OceanSurface::Update(
     }
 
     //
+    // 2. Radial wind (if any)
+    //
+
+    auto const & radialWindField = wind.GetCurrentRadialWindField();
+    if (radialWindField.has_value())
+    {
+        // We displace the ocean surface where the sphere meets the ocean:
+        //
+        //       /|
+        //     r/ |h
+        //     /  |
+        //     ----
+        //      d
+        //
+
+        float const squaredHorizontalDistance = radialWindField->PreFrontRadius * radialWindField->PreFrontRadius - radialWindField->SourcePos.y * radialWindField->SourcePos.y;
+        if (squaredHorizontalDistance >= 0.0f)
+        {
+            float const horizontalDistance = std::sqrt(squaredHorizontalDistance);
+
+            float const displacementMagnitude =
+                std::sqrtf(radialWindField->PreFrontWindForceMagnitude)
+                / 10.0f // Magic number
+                * SignStep(0.0f, -radialWindField->SourcePos.y);
+
+            DisplaceAt(std::max(radialWindField->SourcePos.x - horizontalDistance, -GameParameters::HalfMaxWorldWidth), displacementMagnitude);
+            DisplaceAt(std::min(radialWindField->SourcePos.x + horizontalDistance, GameParameters::HalfMaxWorldWidth), displacementMagnitude);
+        }
+    }
+
+    //
     // 2. Interactive Waves Update
     //
 
@@ -199,7 +230,7 @@ void OceanSurface::Update(
 
     SmoothDeltaBufferIntoHeightField();
 
-    ApplyDampingBoundaryConditions();    
+    ApplyDampingBoundaryConditions();
 
     UpdateFields(gameParameters);
 
@@ -269,7 +300,7 @@ void OceanSurface::ApplyThanosSnap(
     auto const sweIndexLeft = SWEBufferPrefixSize + ToSampleIndex(std::max(leftFrontX, -GameParameters::HalfMaxWorldWidth));
     auto const sweIndexRight = SWEBufferPrefixSize + ToSampleIndex(std::min(rightFrontX, GameParameters::HalfMaxWorldWidth));
 
-    float constexpr WaterDepression = 
+    float constexpr WaterDepression =
         0.1f // Magic number
         / SWEHeightFieldAmplification;
 
@@ -677,7 +708,7 @@ void OceanSurface::ImpartInteractiveWave(
 {
     //
     // Registers the will to adjust the SWE height field at the specified x to the specified height.
-    // 
+    //
     // Widens the action field horizontally to mitigate the "cuspid problem".
     // Notes on the "cuspid problem": the cuspid we see is the result of setting H and running two field cycles:
     //  - First, the H we set at x = X becomes Dt / Dx * (velocityField[i] - velocityField[i + 1]) smaller;
@@ -685,12 +716,12 @@ void OceanSurface::ImpartInteractiveWave(
     //      - The one at x = X - lower than H;
     //      - The one in the neighborhood, extending to infinite.
     //  - The cuspid itself is our interpolation! It's just that the regime H at x=X is way higher than the regime H at its neighboring cells
-    // 
+    //
 
     auto const centerIndex = ToSampleIndex(x);
     float const targetAbsoluteHeight = targetRelativeHeight + SWEHeightFieldOffset;
 
-    // Calculate radius: in general we want it linear with h so that it's MaxRadius at MaxAbsRelativeHeight, but 
+    // Calculate radius: in general we want it linear with h so that it's MaxRadius at MaxAbsRelativeHeight, but
     // we also want it to start at a certain value - H - at zero delta height. So we add a 1/h factor to the linear dependency.
     // The general formula is:
     //      calcd_radius = MaxRadius * height_fraction + alpha / (height_fraction + beta)
@@ -838,8 +869,8 @@ void OceanSurface::AdvectFields()
 {
     //
     // Semi-Lagrangian method
-    // 
-    // Thew new value (of a field) at position i is obtained by backtracing 
+    //
+    // Thew new value (of a field) at position i is obtained by backtracing
     // that position according to its current velocity.
     //
 
@@ -867,7 +898,7 @@ void OceanSurface::AdvectFields()
             float const prevCellIndexF = prevCellIndex - prevCellIndexI;
             assert(prevCellIndexF >= 0.0f && prevCellIndexF < 1.0f);
 
-            // Move into this height field sample the previous (in time) sample, interpolated according to its fractional nature 
+            // Move into this height field sample the previous (in time) sample, interpolated according to its fractional nature
             newHeightField[i] =
                 (1.0f - prevCellIndexF) * mSWEHeightField[prevCellIndexI]
                 + prevCellIndexF * mSWEHeightField[prevCellIndexI + 1];
