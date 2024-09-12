@@ -163,32 +163,37 @@
 				+ land_texture.glslinc:
 					+ Include common.glslinc
 					+ Use CalculateOceanDepthDarkeningFactor and do color mix explicitly
-				- ocean_depth_basic.glsl, ocean_depth_detailed.glslinc:
+				+ ocean_depth_basic.glsl, ocean_depth_detailed.glslinc:
 					+ Include common.glslinc
-					- Use CalculateOceanDepthDarkeningFactor and do color mix explicitly (doing gradient)
-					- Use ApplyDither
-				- ocean_flat_detailed.glslinc:
+					+ Use CalculateOceanDepthDarkeningFactor and do color mix explicitly (doing gradient)
+					+ Use ApplyDither
+				+ ocean_flat_detailed.glslinc:
 					+ Include common.glslinc
-					- Use CalculateOceanDepthDarkeningFactor and do color mix explicitly
-					- Use ApplyDither
-				- ocean_texture_basic.glsl, ocean_texture_detailed.glsl
+					+ Use CalculateOceanDepthDarkeningFactor and do color mix explicitly
+					+ Use ApplyDither
+				+ ocean_texture_basic.glsl, ocean_texture_detailed.glsl
 					+ Include common.glslinc
-					- Use CalculateOceanDepthDarkeningFactor and do color mix explicitly
-				- Test
+					+ Use CalculateOceanDepthDarkeningFactor and do color mix explicitly
+				+ Test
 			- All affected shaders:
 				- Include lamp_tool.glslinc
 				- Call CalculateLampFactor and use lamp factor with:
 					- Result of ApplyOceanDepthDarkening
 					- AmbientLight calculations
-				- Do at:
+				= Do at:
 					+ Land:
 						+ land_flat.glslinc
 						+ land_texture.glslinc
-					= Fishes:
+					+ Fishes:
 						+ fishes.glslinc
-					- Ocean:
-						- TODO: shaders
+					+ Ocean:
+						+ ocean_depth{basic,detailed}
+						+ ocean_flat_basic
+						+ ocean_flat_detailed
+						+ ocean_texture_basic
+						+ ocean_texture_detailed
 					- TODO: others for ambient light
+						- See if can use common::ApplyAmbientLight
 				- Remove two funcs from coean.glslinc (see above)
 				- Test: 
 					- Call SetParameterInAllShaders(.) with arbitrary val for now

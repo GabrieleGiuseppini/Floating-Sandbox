@@ -199,17 +199,17 @@ void main()
         worldY,
         paramOceanDarkeningRate);
 
-    // Calculate lamp tool
-    float lampToolFactor = CalculateLampFactor(gl_FragCoord.xy);
+    // Calculate lamp tool intensity
+    float lampToolIntensity = CalculateLampToolIntensity(gl_FragCoord.xy);
 
     // Apply depth-darkening
     fishSample.xyz = mix(
         fishSample.xyz,
         vec3(0.),
-        darkeningFactor * (1.0 - lampToolFactor));
+        darkeningFactor * (1.0 - lampToolIntensity));
 
     // Apply ambient light
-    fishSample.xyz *= max(paramEffectiveAmbientLightIntensity, lampToolFactor);
+    fishSample.xyz *= max(paramEffectiveAmbientLightIntensity, lampToolIntensity);
 
     gl_FragColor = fishSample;
 } 

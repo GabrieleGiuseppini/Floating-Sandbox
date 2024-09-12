@@ -33,6 +33,7 @@ void main()
 #define in varying
 
 #include "common.glslinc"
+#include "lamp_tool.glslinc"
 #include "ocean.glslinc"
 
 // Inputs from previous shader
@@ -55,15 +56,26 @@ uniform float paramSunRaysInclination; // 0.0==vertical, 1.0/-1.0==45/-45 degree
 
 void main()
 {
-    // Do depth gradient
-    vec3 depthColor = ApplyDepthDarkeningWithDither(
+    // Calculate depth darkening
+    float darkeningFactor = CalculateOceanDepthDarkeningFactor(
+        yWorld,
+        paramOceanDarkeningRate);
+
+    // Calculate lamp tool intensity
+    float lampToolIntensity = CalculateLampToolIntensity(gl_FragCoord.xy);
+
+    // Apply gradient
+    vec3 depthColor = mix(
         paramOceanDepthColorStart,
         paramOceanDepthColorEnd,
-        yWorld,
-        paramOceanDarkeningRate,
+        darkeningFactor * (1.0 - lampToolIntensity));
+
+    // Apply dither
+    depthColor = ApplyDither(
+        depthColor,
         gl_FragCoord.xy,
         paramNoiseTexture);
-
+    
     // Apply shadows
     float shadowFactor = GetShadowFactor(
         shadowPosNdc,
@@ -79,7 +91,8 @@ void main()
     depthColor = ApplyAmbientLight(
         depthColor, 
         paramEffectiveMoonlightColor, 
-        paramEffectiveAmbientLightIntensity);
+        paramEffectiveAmbientLightIntensity, 
+        lampToolIntensity);
 
     // Apply detail
     gl_FragColor = CalculateDetailedOceanPlaneColor(

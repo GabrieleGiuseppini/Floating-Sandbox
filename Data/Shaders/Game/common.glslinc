@@ -14,14 +14,15 @@ vec3 ApplyDither(
 vec3 ApplyAmbientLight(
     vec3 baseColor,
     vec3 moonlightColor,
-    float effectiveAmbientLightIntensity)
+    float effectiveAmbientLightIntensity,
+    float lampToolIntensity)
 {
     return 
         baseColor 
         * mix(
             moonlightColor * 0.5, 
             vec3(1.), 
-            effectiveAmbientLightIntensity);
+            max(effectiveAmbientLightIntensity, lampToolIntensity));
 }
 
 float CalculateOceanDepthDarkeningFactor(

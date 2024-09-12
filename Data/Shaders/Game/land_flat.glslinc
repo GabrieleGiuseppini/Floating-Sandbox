@@ -60,20 +60,20 @@ void main()
         worldAndDepth.y,
         paramOceanDarkeningRate);
 
-    // Calculate lamp tool
-    float lampToolFactor = CalculateLampFactor(gl_FragCoord.xy);
+    // Calculate lamp tool intensity
+    float lampToolIntensity = CalculateLampToolIntensity(gl_FragCoord.xy);
 
     // Apply depth-darkening
     color = mix(
         color,
         vec3(0.),
-        darkeningFactor * (1.0 - lampToolFactor));
+        darkeningFactor * (1.0 - lampToolIntensity));
 
     // Anti-aliasing
     float alpha = worldAndDepth.z / (0.2 + abs(dFdx(worldAndDepth.z)));
 
     // Apply ambient light
     gl_FragColor = vec4(
-        ApplyAmbientLight(color, paramEffectiveMoonlightColor, max(paramEffectiveAmbientLightIntensity, lampToolFactor)),
+        ApplyAmbientLight(color, paramEffectiveMoonlightColor, paramEffectiveAmbientLightIntensity, lampToolIntensity),
         alpha);
 } 

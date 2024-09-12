@@ -33,6 +33,7 @@ void main()
 #define in varying
 
 #include "common.glslinc"
+#include "lamp_tool.glslinc"
 #include "ocean.glslinc"
 
 // Inputs from previous shader
@@ -70,18 +71,26 @@ void main()
     shadowFactor = 1.3 * shadowFactor - 0.3 * shadowFactor * shadowFactor;
     textureColor = vec4(textureColor.xyz * shadowFactor, textureColor.w * (1.0 - paramOceanTransparency));
 
+    // Calculate lamp tool intensity
+    float lampToolIntensity = CalculateLampToolIntensity(gl_FragCoord.xy);
+
     // Apply ambient light
     textureColor.xyz = ApplyAmbientLight(
         textureColor.xyz, 
         paramEffectiveMoonlightColor, 
-        paramEffectiveAmbientLightIntensity);
+        paramEffectiveAmbientLightIntensity,
+        lampToolIntensity);
 
-    // Apply depth darkening
-    textureColor.xyz = ApplyDepthDarkening(
-        textureColor.xyz,
-        vec3(0.0),
+    // Calculate depth darkening
+    float darkeningFactor = CalculateOceanDepthDarkeningFactor(
         worldCoordsAndYTexture.y,
         paramOceanDarkeningRate);
+
+    // Apply depth darkening
+    textureColor.xyz = mix(
+        textureColor.xyz,
+        vec3(0.0),
+        darkeningFactor * (1.0 - lampToolIntensity));
 
     // Apply detail
     gl_FragColor = CalculateDetailedOceanPlaneColor(

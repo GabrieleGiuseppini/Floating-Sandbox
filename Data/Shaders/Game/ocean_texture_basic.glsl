@@ -24,6 +24,7 @@ void main()
 #define in varying
 
 #include "common.glslinc"
+#include "lamp_tool.glslinc"
 #include "ocean.glslinc"
 
 // Inputs from previous shader
@@ -46,15 +47,26 @@ void main()
     vec2 textureCoord2 = vec2(textureCoord.x, textureCoord.z + sampleIncrement);
     vec4 textureColor = texture2D(paramOceanTexture, textureCoord2 * paramTextureScaling);
 
-    // Apply ambient light
-    textureColor.xyz = ApplyAmbientLight(textureColor.xyz, paramEffectiveMoonlightColor, paramEffectiveAmbientLightIntensity);
+    // Calculate lamp tool intensity
+    float lampToolIntensity = CalculateLampToolIntensity(gl_FragCoord.xy);
 
-    // Apply depth darkening
-    textureColor.xyz = ApplyDepthDarkening(
-        textureColor.xyz,
-        vec3(0.0),
+    // Apply ambient light
+    textureColor.xyz = ApplyAmbientLight(
+        textureColor.xyz, 
+        paramEffectiveMoonlightColor, 
+        paramEffectiveAmbientLightIntensity,
+        lampToolIntensity);
+
+    // Calculate depth darkening
+    float darkeningFactor = CalculateOceanDepthDarkeningFactor(
         textureCoord.y,
         paramOceanDarkeningRate);
+
+    // Apply depth darkening
+    textureColor.xyz = mix(
+        textureColor.xyz,
+        vec3(0.0),
+        darkeningFactor * (1.0 - lampToolIntensity));
 
     // Lighten the top of the water
     textureColor *= 1.0 + (1.0 - smoothstep(0.0, 1.0, textureCoord.z)) * 0.1;
