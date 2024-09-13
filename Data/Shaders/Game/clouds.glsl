@@ -90,7 +90,10 @@ void main()
     #define VAR 0.28
     a = (1.0 - VAR) + VAR * smoothstep(0.0, 0.8, a);
     
+    //
     // Combine into final color
+    //
+
     gl_FragColor = vec4(
         cloudColor,
         textureColor.a * a);
