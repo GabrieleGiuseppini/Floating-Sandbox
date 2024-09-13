@@ -7,7 +7,7 @@ vec3 ApplyDither(
 {
     vec2 noiseCoords = fragCoords / vec2(NOISE_2_WIDTH, NOISE_2_HEIGHT);
     float noise = texture2D(noiseTexture, noiseCoords).x;
-    color.xyz += mix(-0.5/255.0, 0.5/255.0, noise);
+    color += mix(-0.5/255.0, 0.5/255.0, noise);
     return color;
 }
 
