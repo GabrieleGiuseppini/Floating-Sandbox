@@ -211,9 +211,10 @@
 					X world_border
 				- Optim's:
 					- Don't do in Basic
-						- Make clouds basic
-							- SettingsDialog setting
-							- Calibration
+						+ Make clouds basic
+							+ SettingsDialog setting
+							+ Calibration
+						- Test old Dell now
 						- Remove lamp from all basics
 						- Redo old Dell test
 							- Old FS: 13.6 total, 11.10 w/out clouds

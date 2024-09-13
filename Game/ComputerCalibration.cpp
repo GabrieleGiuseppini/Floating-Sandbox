@@ -69,12 +69,14 @@ void ComputerCalibrator::TuneGame(
     if (score.NormalizedCPUScore < 0.65f
         || score.NormalizedGfxScore < 0.1f)
     {
+        renderContext.SetCloudRenderDetail(CloudRenderDetailType::Basic);
         renderContext.SetOceanRenderDetail(OceanRenderDetailType::Basic);
         renderContext.SetLandRenderDetail(LandRenderDetailType::Basic);
         renderContext.SetDoCrepuscularGradient(false);
     }
     else
     {
+        renderContext.SetCloudRenderDetail(CloudRenderDetailType::Detailed);
         renderContext.SetOceanRenderDetail(OceanRenderDetailType::Detailed);
         renderContext.SetLandRenderDetail(LandRenderDetailType::Detailed);
         renderContext.SetDoCrepuscularGradient(true);
@@ -91,6 +93,7 @@ void ComputerCalibrator::TuneGame(
     }
 
     LogMessage("ComputerCalibration:"
+        " CloudRenderDetail=", renderContext.GetCloudRenderDetail() == CloudRenderDetailType::Basic ? "Basic" : "Advanced",
         " OceanRenderDetail=", renderContext.GetOceanRenderDetail() == OceanRenderDetailType::Basic ? "Basic" : "Advanced",
         " LandRenderDetail=", renderContext.GetLandRenderDetail() == LandRenderDetailType::Basic ? "Basic" : "Advanced",
         " HeatRenderMode=", renderContext.GetHeatRenderMode() == HeatRenderModeType::None ? "None" : (renderContext.GetHeatRenderMode() == HeatRenderModeType::HeatOverlay ? "HeatOverlay" : "Incandescence"));

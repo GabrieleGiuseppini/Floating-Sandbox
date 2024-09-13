@@ -565,9 +565,11 @@ void WorldRenderContext::InitializeCloudTextures(ResourceLocator const & resourc
     // Store metadata
     mCloudTextureAtlasMetadata = std::make_unique<TextureAtlasMetadata<CloudTextureGroups>>(cloudTextureAtlas.Metadata);
 
-    // Set texture in shader
-    mShaderManager.ActivateProgram<ProgramType::Clouds>();
-    mShaderManager.SetTextureParameters<ProgramType::Clouds>();
+    // Set textures in shader
+    mShaderManager.ActivateProgram<ProgramType::CloudsBasic>();
+    mShaderManager.SetTextureParameters<ProgramType::CloudsBasic>();
+    mShaderManager.ActivateProgram<ProgramType::CloudsDetailed>();
+    mShaderManager.SetTextureParameters<ProgramType::CloudsDetailed>();
 }
 
 void WorldRenderContext::InitializeWorldTextures(ResourceLocator const & resourceLocator)
@@ -1024,6 +1026,8 @@ void WorldRenderContext::RenderDrawCloudsAndBackgroundLightnings(RenderParameter
     // Draw background clouds, iff there are background lightnings
     ////////////////////////////////////////////////////
 
+    bool const areCloudsHighQuality = (renderParameters.CloudRenderDetail == CloudRenderDetailType::Detailed);
+
     // The number of clouds we want to draw *over* background
     // lightnings
     size_t constexpr CloudsOverLightnings = 5;
@@ -1034,10 +1038,17 @@ void WorldRenderContext::RenderDrawCloudsAndBackgroundLightnings(RenderParameter
     {
         glBindVertexArray(*mCloudVAO);
 
-        mShaderManager.ActivateProgram<ProgramType::Clouds>();
+        if (areCloudsHighQuality)
+        {
+            mShaderManager.ActivateProgram<ProgramType::CloudsDetailed>();
 
-        mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture>();
-        glBindTexture(GL_TEXTURE_2D, *mLandNoiseTextureOpenGLHandle);
+            mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture>();
+            glBindTexture(GL_TEXTURE_2D, *mLandNoiseTextureOpenGLHandle);
+        }
+        else
+        {
+            mShaderManager.ActivateProgram<ProgramType::CloudsBasic>();
+        }
 
         if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Wireframe)
             glLineWidth(0.1f);
@@ -1075,10 +1086,17 @@ void WorldRenderContext::RenderDrawCloudsAndBackgroundLightnings(RenderParameter
     {
         glBindVertexArray(*mCloudVAO);
 
-        mShaderManager.ActivateProgram<ProgramType::Clouds>();
+        if (areCloudsHighQuality)
+        {
+            mShaderManager.ActivateProgram<ProgramType::CloudsDetailed>();
 
-        mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture>();
-        glBindTexture(GL_TEXTURE_2D, *mLandNoiseTextureOpenGLHandle);
+            mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture>();
+            glBindTexture(GL_TEXTURE_2D, *mLandNoiseTextureOpenGLHandle);
+        }
+        else
+        {
+            mShaderManager.ActivateProgram<ProgramType::CloudsBasic>();
+        }
 
         if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Wireframe)
             glLineWidth(0.1f);
@@ -1797,8 +1815,12 @@ void WorldRenderContext::ApplyEffectiveAmbientLightIntensityChanges(RenderParame
     mShaderManager.SetProgramParameter<ProgramType::Stars, ProgramParameterType::StarTransparency>(
         pow(std::max(0.0f, 1.0f - renderParameters.EffectiveAmbientLightIntensity), 3.0f));
 
-    mShaderManager.ActivateProgram<ProgramType::Clouds>();
-    mShaderManager.SetProgramParameter<ProgramType::Clouds, ProgramParameterType::EffectiveAmbientLightIntensity>(
+    mShaderManager.ActivateProgram<ProgramType::CloudsBasic>();
+    mShaderManager.SetProgramParameter<ProgramType::CloudsBasic, ProgramParameterType::EffectiveAmbientLightIntensity>(
+        renderParameters.EffectiveAmbientLightIntensity);
+
+    mShaderManager.ActivateProgram<ProgramType::CloudsDetailed>();
+    mShaderManager.SetProgramParameter<ProgramType::CloudsDetailed, ProgramParameterType::EffectiveAmbientLightIntensity>(
         renderParameters.EffectiveAmbientLightIntensity);
 
     mShaderManager.ActivateProgram<ProgramType::Lightning>();
@@ -1895,10 +1917,13 @@ void WorldRenderContext::ApplySkyChanges(RenderParameters const & renderParamete
         effectiveMoonlightColor);
 
 
-    mShaderManager.ActivateProgram<ProgramType::Clouds>();
-    mShaderManager.SetProgramParameter<ProgramType::Clouds, ProgramParameterType::EffectiveMoonlightColor>(
+    mShaderManager.ActivateProgram<ProgramType::CloudsBasic>();
+    mShaderManager.SetProgramParameter<ProgramType::CloudsBasic, ProgramParameterType::EffectiveMoonlightColor>(
         effectiveMoonlightColor);
 
+    mShaderManager.ActivateProgram<ProgramType::CloudsDetailed>();
+    mShaderManager.SetProgramParameter<ProgramType::CloudsDetailed, ProgramParameterType::EffectiveMoonlightColor>(
+        effectiveMoonlightColor);
 
     mShaderManager.ActivateProgram<ProgramType::OceanFlatBasic>();
     mShaderManager.SetProgramParameter<ProgramType::OceanFlatBasic, ProgramParameterType::EffectiveMoonlightColor>(

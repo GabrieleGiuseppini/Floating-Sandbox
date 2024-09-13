@@ -21,8 +21,10 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::AMBombPreImplosion;
     else if (lstr == "blast_tool_halo")
         return ProgramType::BlastToolHalo;
-    else if (lstr == "clouds")
-        return ProgramType::Clouds;
+    else if (lstr == "clouds_basic")
+        return ProgramType::CloudsBasic;
+    else if (lstr == "clouds_detailed")
+        return ProgramType::CloudsDetailed;
     else if (lstr == "cross_of_light")
         return ProgramType::CrossOfLight;
     else if (lstr == "fire_extinguisher_spray")
@@ -215,8 +217,10 @@ std::string ProgramTypeToStr(ProgramType program)
         return "AMBombPreImplosion";
     case ProgramType::BlastToolHalo:
         return "BlastToolHalo";
-    case ProgramType::Clouds:
-        return "Clouds";
+    case ProgramType::CloudsBasic:
+        return "CloudsBasic";
+    case ProgramType::CloudsDetailed:
+        return "CloudsDetailed";
     case ProgramType::CrossOfLight:
         return "CrossOfLight";
     case ProgramType::FireExtinguisherSpray:

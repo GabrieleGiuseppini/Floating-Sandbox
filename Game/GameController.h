@@ -854,6 +854,9 @@ public:
     rgbColor const & GetCrepuscularColor() const override { return mRenderContext->GetCrepuscularColor(); }
     void SetCrepuscularColor(rgbColor const & color) override { mRenderContext->SetCrepuscularColor(color); }
 
+    CloudRenderDetailType GetCloudRenderDetail() const override { return mRenderContext->GetCloudRenderDetail(); }
+    void SetCloudRenderDetail(CloudRenderDetailType value) override { mRenderContext->SetCloudRenderDetail(value); }
+
     float GetOceanTransparency() const override { return mRenderContext->GetOceanTransparency(); }
     void SetOceanTransparency(float value) override { mRenderContext->SetOceanTransparency(value); }
 
@@ -897,7 +900,7 @@ public:
     void SetFlatOceanColor(rgbColor const & color) override { mRenderContext->SetFlatOceanColor(color); }
 
     OceanRenderDetailType GetOceanRenderDetail() const override { return mRenderContext->GetOceanRenderDetail(); }
-    void SetOceanRenderDetail(OceanRenderDetailType oceanRenderDetail) override;
+    void SetOceanRenderDetail(OceanRenderDetailType value) override;
 
     LandRenderModeType GetLandRenderMode() const override { return mRenderContext->GetLandRenderMode(); }
     void SetLandRenderMode(LandRenderModeType landRenderMode) override { mRenderContext->SetLandRenderMode(landRenderMode); }
@@ -910,7 +913,7 @@ public:
     void SetFlatLandColor(rgbColor const & color) override { mRenderContext->SetFlatLandColor(color); }
 
     LandRenderDetailType GetLandRenderDetail() const override { return mRenderContext->GetLandRenderDetail(); }
-    void SetLandRenderDetail(LandRenderDetailType landRenderDetail) override { mRenderContext->SetLandRenderDetail(landRenderDetail); }
+    void SetLandRenderDetail(LandRenderDetailType value) override { mRenderContext->SetLandRenderDetail(value); }
 
     ShipViewModeType GetShipViewMode() const override { return mRenderContext->GetShipViewMode(); }
     void SetShipViewMode(ShipViewModeType shipViewMode) override { mRenderContext->SetShipViewMode(shipViewMode); }

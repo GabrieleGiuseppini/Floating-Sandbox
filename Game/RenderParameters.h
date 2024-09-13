@@ -33,6 +33,8 @@ struct RenderParameters
     bool DoCrepuscularGradient;
     rgbColor CrepuscularColor;
 
+    CloudRenderDetailType CloudRenderDetail;
+
     float OceanTransparency;
     float OceanDarkeningRate;
     OceanRenderModeType OceanRenderMode;
@@ -83,6 +85,7 @@ struct RenderParameters
     bool IsCanvasSizeDirty;
     bool IsEffectiveAmbientLightIntensityDirty;
     bool IsSkyDirty; // Tracks various sky render parameters as a whole, for convenience
+    bool IsCloudRenderDetailDirty;
     bool IsOceanDarkeningRateDirty;
     bool AreOceanRenderParametersDirty; // Tracks various ocean render parameters as a whole, for convenience
     bool IsOceanTextureIndexDirty;

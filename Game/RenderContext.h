@@ -282,6 +282,17 @@ public:
         mRenderParameters.IsSkyDirty = true;
     }
 
+    CloudRenderDetailType GetCloudRenderDetail() const
+    {
+        return mRenderParameters.CloudRenderDetail;
+    }
+
+    void SetCloudRenderDetail(CloudRenderDetailType cloudRenderDetail)
+    {
+        mRenderParameters.CloudRenderDetail = cloudRenderDetail;
+        // No need to set dirty, this is picked up at each cycle anway
+    }
+
     float GetOceanTransparency() const
     {
         return mRenderParameters.OceanTransparency;

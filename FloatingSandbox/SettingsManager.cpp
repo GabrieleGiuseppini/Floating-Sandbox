@@ -164,6 +164,7 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(rgbColor, MoonlightColor);
     ADD_GC_SETTING(bool, DoCrepuscularGradient);
     ADD_GC_SETTING(rgbColor, CrepuscularColor);
+    ADD_GC_SETTING(CloudRenderDetailType, CloudRenderDetail);
     ADD_GC_SETTING(float, OceanTransparency);
     ADD_GC_SETTING(float, OceanDarkeningRate);
     ADD_GC_SETTING(float, ShipAmbientLightSensitivity);

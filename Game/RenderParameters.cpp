@@ -17,6 +17,7 @@ RenderParameters::RenderParameters(
 	, EffectiveMoonlightColor(0x00, 0x00, 0x00) // Calculated
 	, DoCrepuscularGradient(true)
 	, CrepuscularColor (0xe5, 0xd3, 0xe5)
+	, CloudRenderDetail(CloudRenderDetailType::Detailed)
 	, OceanTransparency(0.594f)
 	, OceanDarkeningRate(0.12795731425285339f)
 	, OceanRenderMode(OceanRenderModeType::Flat)
@@ -81,6 +82,7 @@ RenderParameters RenderParameters::TakeSnapshotAndClear()
 	IsCanvasSizeDirty = false;
 	IsEffectiveAmbientLightIntensityDirty = false;
 	IsSkyDirty = false;
+	IsCloudRenderDetailDirty = false;
 	IsOceanDarkeningRateDirty = false;
 	AreOceanRenderParametersDirty = false;
 	IsOceanTextureIndexDirty = false;

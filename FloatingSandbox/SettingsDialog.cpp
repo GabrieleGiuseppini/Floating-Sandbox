@@ -4253,6 +4253,25 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
+            // Cloud Detail Mode
+            {
+                mCloudRenderDetailModeDetailedCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY, _("High-Quality Clouds"));
+                mCloudRenderDetailModeDetailedCheckBox->SetToolTip(_("Renders clouds with additional details. Requires more computational resources."));
+                mCloudRenderDetailModeDetailedCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED,
+                    [this](wxCommandEvent & event)
+                    {
+                        mLiveSettings.SetValue(GameSettings::CloudRenderDetail, event.IsChecked() ? CloudRenderDetailType::Detailed: CloudRenderDetailType::Basic);
+                        OnLiveSettingsChanged();
+                    });
+
+                sizer->Add(
+                    mCloudRenderDetailModeDetailedCheckBox,
+                    wxGBPosition(2, 0),
+                    wxGBSpan(1, 1),
+                    wxALL | wxALIGN_CENTER_VERTICAL,
+                    CellBorderInner);
+            }
+
             boxSizer->Add(sizer, 0, wxALL, StaticBoxInsetMargin);
         }
 
@@ -5951,10 +5970,12 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     ReconciliateSkyRenderModeSettings();
 
 
-    mDoMoonlightCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoMoonlight));
+    mDoMoonlightCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoMoonlight));    
 
     auto const moonlightColor = settings.GetValue<rgbColor>(GameSettings::MoonlightColor);
     mMoonlightColorPicker->SetColour(wxColor(moonlightColor.r, moonlightColor.g, moonlightColor.b));
+
+    mCloudRenderDetailModeDetailedCheckBox->SetValue(settings.GetValue<CloudRenderDetailType>(GameSettings::CloudRenderDetail) == CloudRenderDetailType::Detailed);
 
     ReconciliateMoonlightSettings();
 

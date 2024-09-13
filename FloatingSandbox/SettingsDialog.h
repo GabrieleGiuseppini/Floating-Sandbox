@@ -180,8 +180,9 @@ private:
     wxColourPickerCtrl * mFlatSkyColorPicker;
     wxRadioButton * mCrepuscularSkyRenderModeRadioButton;
     wxColourPickerCtrl * mCrepuscularColorPicker;
-    wxCheckBox * mDoMoonlightCheckBox;
+    wxCheckBox * mDoMoonlightCheckBox;    
     wxColourPickerCtrl * mMoonlightColorPicker;
+    wxCheckBox * mCloudRenderDetailModeDetailedCheckBox;
     wxRadioButton * mTextureLandRenderModeRadioButton;
     wxBitmapComboBox * mTextureLandComboBox;
     wxRadioButton * mFlatLandRenderModeRadioButton;

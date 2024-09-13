@@ -1330,6 +1330,15 @@ enum class DebugShipRenderModeType
 };
 
 /*
+ * The different levels of detail with which clouds may be rendered.
+ */
+enum class CloudRenderDetailType
+{
+    Basic,
+    Detailed
+};
+
+/*
  * The different ways in which the ocean may be rendered.
  */
 enum class OceanRenderModeType

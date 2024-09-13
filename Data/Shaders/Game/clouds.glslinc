@@ -42,7 +42,9 @@ in float volumetricGrowthProgress;
 
 // The texture
 uniform sampler2D paramCloudsAtlasTexture;
+#ifdef DETAILED_CLOUDS
 uniform sampler2D paramNoiseTexture;
+#endif
 
 // Parameters        
 uniform float paramEffectiveAmbientLightIntensity;
@@ -64,6 +66,8 @@ void main()
             paramEffectiveAmbientLightIntensity,
             lampToolIntensity)
         * darkness;
+
+#ifdef DETAILED_CLOUDS
 
     //
     // Apply noise as growth from center
@@ -97,4 +101,16 @@ void main()
     gl_FragColor = vec4(
         cloudColor,
         textureColor.a * a);
+
+#else
+
+    //
+    // Combine into final color
+    //
+
+    gl_FragColor = vec4(
+        cloudColor,
+        textureColor.a);
+
+#endif
 } 

@@ -1591,10 +1591,10 @@ void GameController::SetDoDayLightCycle(bool value)
     }
 }
 
-void GameController::SetOceanRenderDetail(OceanRenderDetailType oceanRenderDetail)
+void GameController::SetOceanRenderDetail(OceanRenderDetailType value)
 {
-    mRenderContext->SetOceanRenderDetail(oceanRenderDetail);
-    mWorld->SetAreCloudShadowsEnabled(CalculateAreCloudShadowsEnabled(oceanRenderDetail));
+    mRenderContext->SetOceanRenderDetail(value);
+    mWorld->SetAreCloudShadowsEnabled(CalculateAreCloudShadowsEnabled(value));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

@@ -370,6 +370,9 @@ struct IGameControllerSettings
     virtual rgbColor const & GetCrepuscularColor() const = 0;
     virtual void SetCrepuscularColor(rgbColor const & color) = 0;
 
+    virtual CloudRenderDetailType GetCloudRenderDetail() const = 0;
+    virtual void SetCloudRenderDetail(CloudRenderDetailType value) = 0;
+
     virtual float GetOceanTransparency() const = 0;
     virtual void SetOceanTransparency(float value) = 0;
 
@@ -410,7 +413,7 @@ struct IGameControllerSettings
     virtual void SetFlatOceanColor(rgbColor const & color) = 0;
 
     virtual OceanRenderDetailType GetOceanRenderDetail() const = 0;
-    virtual void SetOceanRenderDetail(OceanRenderDetailType oceanRenderDetail) = 0;
+    virtual void SetOceanRenderDetail(OceanRenderDetailType value) = 0;
 
     virtual LandRenderModeType GetLandRenderMode() const = 0;
     virtual void SetLandRenderMode(LandRenderModeType landRenderMode) = 0;
@@ -422,7 +425,7 @@ struct IGameControllerSettings
     virtual void SetFlatLandColor(rgbColor const & color) = 0;
 
     virtual LandRenderDetailType GetLandRenderDetail() const = 0;
-    virtual void SetLandRenderDetail(LandRenderDetailType landRenderDetail) = 0;
+    virtual void SetLandRenderDetail(LandRenderDetailType value) = 0;
 
     virtual ShipViewModeType GetShipViewMode() const = 0;
     virtual void SetShipViewMode(ShipViewModeType shipViewMode) = 0;
