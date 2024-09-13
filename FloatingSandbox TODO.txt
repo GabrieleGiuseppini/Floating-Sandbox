@@ -216,6 +216,8 @@
 							- Calibration
 						- Remove lamp from all basics
 						- Redo old Dell test
+							- Old FS: 13.6 total, 11.10 w/out clouds
+							- New FS before work: 17.8 total, 15.3 w/out clouds
 					- Can save one multiplication by using 0.5 in toggle of uniform
 					- Instead of two smoothsteps, could use this curve:
 						y = -0.00004972662 + 7.573704*x - 41.11177*x^2 + 92.40549*x^3 - 67.15639*x^4

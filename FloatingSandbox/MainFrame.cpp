@@ -542,7 +542,10 @@ MainFrame::MainFrame(
                     ADD_PLAIN_ACCELERATOR_KEY('Z', mScareFishMenuItem);
                 }
 
-                ADD_TOOL_MENUITEM(_("Lamp"), wxS(""), "lamp_cursor_up", OnLampMenuItemSelected);
+                {
+                    auto menuItem = ADD_TOOL_MENUITEM(_("Lamp"), wxS("\t1"), "lamp_cursor_up", OnLampMenuItemSelected);
+                    ADD_PLAIN_ACCELERATOR_KEY('1', menuItem);
+                }
 
                 ADD_TOOL_MENUITEM(_("Toggle Physics Probe"), wxS(""), "physics_probe_cursor", OnPhysicsProbeMenuItemSelected);
             }

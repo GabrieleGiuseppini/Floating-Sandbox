@@ -703,7 +703,7 @@ Arch
 		- Quantities that are now calculated in Ship become calc'd in World, so we can pass them on to NPCs
 		- Controlled by flag, "~force tools on NPCs"
 			- SettingsDialog
-		- World calls Npcs.ApplyXXXForce(...)
+		- World calls Npcs.ApplyXXXForce(...) after check on flag
 	+ Move/Rotate tool:
 		+ World: after calling into Ship(), call Npcs.Move/etc/Npcs(shipId, [componentId], ...)
 			+ Test in BaryLab first
