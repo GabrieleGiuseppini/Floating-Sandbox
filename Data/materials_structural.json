@@ -3787,7 +3787,7 @@
             "wind_receptivity": 0.1
         },
         {
-            "buoyancy_volume_fill": 0.03,
+            "buoyancy_volume_fill": 0.027,
             "color_key": "#070781",
             "combustion_type": "Combustion",
             "elasticity_coefficient": 0.34,
