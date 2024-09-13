@@ -73,7 +73,7 @@ void main()
     // Apply ambient light
     color = ApplyAmbientLight(
         color, 
-        paramEffectiveMoonlightColor, 
+        paramEffectiveMoonlightColor * 0.5, 
         paramEffectiveAmbientLightIntensity,
         lampToolIntensity);
 

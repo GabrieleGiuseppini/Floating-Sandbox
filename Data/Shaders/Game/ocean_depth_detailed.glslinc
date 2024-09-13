@@ -90,7 +90,7 @@ void main()
     // Apply ambient light
     depthColor = ApplyAmbientLight(
         depthColor, 
-        paramEffectiveMoonlightColor, 
+        paramEffectiveMoonlightColor * 0.5, 
         paramEffectiveAmbientLightIntensity, 
         lampToolIntensity);
 

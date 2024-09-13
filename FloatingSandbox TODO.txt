@@ -145,13 +145,13 @@
 				+ param declaration (vec4)
 				+ CalculateLampFactor
 					+ Two smoothsteps				
-			= Depth darkening rearc first:
+			+ Depth darkening rearc first:
 				+ Create common.glslinc
 					+ Copy to here CalculateOceanDepthDarkeningFactor from ocean.glslinc, but change to return darkening strength float
 					+ Copy to here Dither from ocean.glslinc
-				- ocean.glslinc:
-					- Lose ApplyDepthDarkening
-					- Lose ApplyDepthDarkeningWithDither
+				+ ocean.glslinc:
+					+ Lose ApplyDepthDarkening
+					+ Lose ApplyDepthDarkeningWithDither
 				+ fishes.glslinc:
 					+ Include common.glslinc
 					+ Use CalculateOceanDepthDarkeningFactor and do color mix explicitly
@@ -175,11 +175,11 @@
 					+ Include common.glslinc
 					+ Use CalculateOceanDepthDarkeningFactor and do color mix explicitly
 				+ Test
-			- All affected shaders:
-				- Include lamp_tool.glslinc
-				- Call CalculateLampFactor and use lamp factor with:
-					- Result of ApplyOceanDepthDarkening
-					- AmbientLight calculations
+			= All affected shaders:
+				! Include lamp_tool.glslinc
+				! Call CalculateLampFactor and use lamp factor with:
+					! Result of ApplyOceanDepthDarkening
+					! AmbientLight calculations
 				= Do at:
 					+ Land:
 						+ land_flat.glslinc
@@ -192,12 +192,12 @@
 						+ ocean_flat_detailed
 						+ ocean_texture_basic
 						+ ocean_texture_detailed
+					+ clouds
+					- generic_mipmapped_textures_ndc
+					- rain
+						- Might use common?
 					- TODO: others for ambient light
 						- See if can use common::ApplyAmbientLight
-				- Remove two funcs from coean.glslinc (see above)
-				- Test: 
-					- Call SetParameterInAllShaders(.) with arbitrary val for now
-					- Param declaration in .inc works
 			+ Tool:
 				+ Icon & cursors
 					+ lamp_cursor_up

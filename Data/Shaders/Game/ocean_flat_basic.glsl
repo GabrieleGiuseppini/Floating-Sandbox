@@ -36,6 +36,10 @@ void main()
     float lampToolIntensity = CalculateLampToolIntensity(gl_FragCoord.xy);
 
     gl_FragColor = vec4(
-        ApplyAmbientLight(paramOceanFlatColor, paramEffectiveMoonlightColor, paramEffectiveAmbientLightIntensity, lampToolIntensity),
+        ApplyAmbientLight(
+            paramOceanFlatColor, 
+            paramEffectiveMoonlightColor * 0.5, 
+            paramEffectiveAmbientLightIntensity, 
+            lampToolIntensity),
         1.0 - paramOceanTransparency);
 } 

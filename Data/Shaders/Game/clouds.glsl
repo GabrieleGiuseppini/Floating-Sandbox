@@ -31,6 +31,9 @@ void main()
 
 #define in varying
 
+#include "common.glslinc"
+#include "lamp_tool.glslinc"
+
 // Inputs from previous shader
 in vec2 texturePos;
 in vec2 virtualTexturePos;
@@ -50,8 +53,17 @@ void main()
     // Sample texture
     vec4 textureColor = texture2D(paramCloudsAtlasTexture, texturePos);
 
+    // Calculate lamp tool intensity
+    float lampToolIntensity = CalculateLampToolIntensity(gl_FragCoord.xy);
+
     // Adjust for ambient light and mooncolor and (storm) darkness
-    vec3 cloudColor = textureColor.xyz * mix(paramEffectiveMoonlightColor, vec3(1.), paramEffectiveAmbientLightIntensity) * darkness;
+    vec3 cloudColor = 
+        ApplyAmbientLight(
+            textureColor.xyz,
+            paramEffectiveMoonlightColor,
+            paramEffectiveAmbientLightIntensity,
+            lampToolIntensity)
+        * darkness;
 
     //
     // Apply noise as growth from center

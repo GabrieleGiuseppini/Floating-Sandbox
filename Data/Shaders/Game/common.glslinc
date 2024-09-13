@@ -20,7 +20,7 @@ vec3 ApplyAmbientLight(
     return 
         baseColor 
         * mix(
-            moonlightColor * 0.5, 
+            moonlightColor, 
             vec3(1.), 
             max(effectiveAmbientLightIntensity, lampToolIntensity));
 }

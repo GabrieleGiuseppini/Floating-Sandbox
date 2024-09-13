@@ -53,7 +53,7 @@ void main()
     // Apply ambient light
     textureColor.xyz = ApplyAmbientLight(
         textureColor.xyz, 
-        paramEffectiveMoonlightColor, 
+        paramEffectiveMoonlightColor * 0.5, 
         paramEffectiveAmbientLightIntensity,
         lampToolIntensity);
 

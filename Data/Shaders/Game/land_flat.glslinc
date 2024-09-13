@@ -74,6 +74,10 @@ void main()
 
     // Apply ambient light
     gl_FragColor = vec4(
-        ApplyAmbientLight(color, paramEffectiveMoonlightColor, paramEffectiveAmbientLightIntensity, lampToolIntensity),
+        ApplyAmbientLight(
+            color, 
+            paramEffectiveMoonlightColor * 0.5, 
+            paramEffectiveAmbientLightIntensity, 
+            lampToolIntensity),
         alpha);
 } 

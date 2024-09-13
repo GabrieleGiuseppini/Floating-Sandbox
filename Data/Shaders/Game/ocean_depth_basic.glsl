@@ -66,7 +66,7 @@ void main()
     // Apply ambient light
     oceanColor = ApplyAmbientLight(
         oceanColor, 
-        paramEffectiveMoonlightColor, 
+        paramEffectiveMoonlightColor * 0.5, 
         paramEffectiveAmbientLightIntensity,
         lampToolIntensity);
 

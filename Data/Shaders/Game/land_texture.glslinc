@@ -79,6 +79,10 @@ void main()
 
     // Apply ambient light and blend
     gl_FragColor = vec4(
-        ApplyAmbientLight(textureColor.xyz, paramEffectiveMoonlightColor, paramEffectiveAmbientLightIntensity, lampToolIntensity),
+        ApplyAmbientLight(
+            textureColor.xyz, 
+            paramEffectiveMoonlightColor * 0.5, 
+            paramEffectiveAmbientLightIntensity, 
+            lampToolIntensity),
         textureColor.w * alpha);
 } 
