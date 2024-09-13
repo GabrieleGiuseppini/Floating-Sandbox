@@ -24,6 +24,10 @@ void main()
 
 #define in varying
 
+#include "common.glslinc"
+#include "lamp_tool.glslinc"
+
+
 // Inputs
 in vec2 uv;
 
@@ -62,7 +66,7 @@ void main()
     // ---------------------------------------------
     //
 
-   vec2 uvScaled = uv * (paramViewportSize.x / 520.0);
+    vec2 uvScaled = uv * (paramViewportSize.x / 520.0);
     
     #define SPEED .13
     vec2 timeVector = vec2(paramTime * SPEED);
@@ -73,12 +77,16 @@ void main()
     
     float alpha = noise(st) * noise(st * 0.773) * 0.485;
     alpha = clamp(alpha, 0.0, 1.0) * step(1. - (.7 + paramRainDensity * .3), alpha);
-    vec3 col = 
-        vec3(1. - alpha)
-        * mix(
-            paramEffectiveMoonlightColor * 0.75, 
-            vec3(1.), 
-            paramEffectiveAmbientLightIntensity);
+
+    // Calculate lamp tool intensity
+    float lampToolIntensity = CalculateLampToolIntensity(gl_FragCoord.xy);
+
+    // Apply ambient light
+    vec3 col = ApplyAmbientLight(
+        vec3(1. - alpha),
+        paramEffectiveMoonlightColor * 0.75,
+        paramEffectiveAmbientLightIntensity,
+        lampToolIntensity);
 
     //
     // ---------------------------------------------

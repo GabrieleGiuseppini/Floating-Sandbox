@@ -54,7 +54,7 @@ ShaderManager<Traits>::ShaderManager(std::filesystem::path const & shadersRoot)
 
     for (auto const & entryIt : shaderSources)
     {
-        if (entryIt.second.first) // Check if an include
+        if (entryIt.second.first) // Do not compile include files
         {
             CompileShader(
                 entryIt.first,
@@ -103,6 +103,18 @@ void ShaderManager<Traits>::CompileShader(
         std::string preprocessedShaderSource = ResolveIncludes(
             shaderSource,
             allShaderSources);
+
+        // TODOTEST
+        if (programName == "ShipGenericMipMappedTextures")
+        {
+            std::ofstream oss1("C:\\Users\\NEUROD~1\\AppData\\Local\\Temp\\foo1.txt");
+            oss1 << shaderSource;
+            oss1.close();
+
+            std::ofstream oss2("C:\\Users\\NEUROD~1\\AppData\\Local\\Temp\\foo2.txt");
+            oss2 << preprocessedShaderSource;
+            oss2.close();
+        }
 
         // Split the source file
         auto [vertexShaderSource, fragmentShaderSource] = SplitSource(preprocessedShaderSource);
@@ -221,6 +233,13 @@ std::string ShaderManager<Traits>::ResolveIncludes(
     std::string const & shaderSource,
     std::unordered_map<std::string, std::pair<bool, std::string>> const & shaderSources)
 {
+    /*
+     * Strategy:
+     * - We treat each include as if having #pragma once
+     * - We resolve includes depth-first, so that a declaration from a source file included multiple times
+     *   is inserted at the earliest location in the include chain
+     */
+
     static std::regex const IncludeRegex(R"!(^\s*#include\s+\"\s*([_a-zA-Z0-9\.]+)\s*\"\s*$)!");
 
     std::unordered_set<std::string> resolvedIncludes;
@@ -253,20 +272,7 @@ std::string ShaderManager<Traits>::ResolveIncludes(
                     throw GameException("Cannot find include file \"" + includeFilename + "\"");
                 }
 
-                // TODOTEST: allowing multiple includes, simulating #pragma once
-                ////if (resolvedIncludes.count(includeFilename) > 0)
-                ////{
-                ////    throw GameException("Detected include file loop at include file \"" + includeFilename + "\"");
-                ////}
-
-                ////// Insert include
-                ////sSubstitutedSource << includeIt->second.second << sSource.widen('\n');
-
-                ////// Remember the files we've included in this path
-                ////resolvedIncludes.insert(includeFilename);
-                //
-                ////hasResolved = true;
-
+                // Check whether we've included this one already
                 if (resolvedIncludes.count(includeFilename) == 0)
                 {
                     // Insert include
@@ -275,7 +281,17 @@ std::string ShaderManager<Traits>::ResolveIncludes(
                     // Remember the files we've included in this path
                     resolvedIncludes.insert(includeFilename);
 
+                    // Append rest of source file
+                    while (std::getline(sSource, line))
+                    {
+                        sSubstitutedSource << line << sSource.widen('\n');
+                    }
+
+                    // Remember we've included something
                     hasResolved = true;
+
+                    // Restart from scratch (to enforce depth-first)
+                    break;
                 }
             }
             else

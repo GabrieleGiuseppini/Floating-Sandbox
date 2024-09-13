@@ -30,6 +30,9 @@ void main()
 
 #define in varying
 
+#include "common.glslinc"
+#include "lamp_tool.glslinc"
+
 // Inputs from previous shader
 in vec2 vertexTextureCoordinates;
 in float vertexAlpha;
@@ -45,11 +48,15 @@ void main()
 {
     vec4 textureColor = texture2D(paramGenericMipMappedTexturesAtlasTexture, vertexTextureCoordinates);
 
+    // Calculate lamp tool intensity
+    float lampToolIntensity = CalculateLampToolIntensity(gl_FragCoord.xy);
+
     // Apply ambient light
-    textureColor.xyz *= mix(
+    textureColor.xyz = ApplyAmbientLight(
+        textureColor.xyz,
         paramEffectiveMoonlightColor,
-        vec3(1.),
-        vertexEffectiveAmbientLightIntensity);
+        vertexEffectiveAmbientLightIntensity,
+        lampToolIntensity);
 
     // Combine
     gl_FragColor = vec4(

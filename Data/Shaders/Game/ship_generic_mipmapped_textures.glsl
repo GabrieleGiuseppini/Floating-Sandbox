@@ -44,9 +44,11 @@ void main()
 
 ###FRAGMENT-120
 
-#include "static_parameters.glslinc"
-
 #define in varying
+
+#include "common.glslinc"
+#include "lamp_tool.glslinc"
+#include "static_parameters.glslinc"
 
 // Inputs from previous shader
 in float vertexWorldY;
@@ -69,12 +71,16 @@ void main()
     if (textureColor.w < 0.2)
         discard;
 
-    // Apply ambient light
-    textureColor.xyz *= mix(
-        paramEffectiveMoonlightColor * 0.7 * clamp(1.0 + vertexWorldY / SHIP_MOONLIGHT_MAX_DEPTH, 0.0, 1.0),
-        vec3(1.),
-        vertexEffectiveAmbientLightIntensity);
+    // Calculate lamp tool intensity
+    float lampToolIntensity = CalculateLampToolIntensity(gl_FragCoord.xy);
 
+    // Apply ambient light
+    textureColor.xyz = ApplyAmbientLight(
+        textureColor.xyz,
+        paramEffectiveMoonlightColor * 0.7 * clamp(1.0 + vertexWorldY / SHIP_MOONLIGHT_MAX_DEPTH, 0.0, 1.0),
+        vertexEffectiveAmbientLightIntensity,
+        lampToolIntensity);
+    
     // Combine
     gl_FragColor = vec4(
         textureColor.xyz,

@@ -193,11 +193,25 @@
 						+ ocean_texture_basic
 						+ ocean_texture_detailed
 					+ clouds
-					- generic_mipmapped_textures_ndc
-					- rain
-						- Might use common?
-					- TODO: others for ambient light
-						- See if can use common::ApplyAmbientLight
+					+ Address ocean shader slowdown:
+						! Old: 4.62-4.64
+						! New: 5.9-6.05-6.06 (w/out clouds: 5.4-5.5)
+						! Lamp tool off: 5.34
+						+ Try lamp w/d division: 6.1-6.2
+						X Try all inline calls: 5.9-6.0 
+						X glsl optimizer
+					+ generic_mipmapped_textures_ndc
+					+ rain
+					+ ship_decay
+					+ ship_generic_mipmapped_textures
+					- ship_element
+					- ship_internal_pressure
+					- ship_npcs_texture
+					- ship_strength
+					- sky?
+					X world_border
+				- Optim's:
+					- Can save one multiplication by using 0.5 in toggle of uniform
 			+ Tool:
 				+ Icon & cursors
 					+ lamp_cursor_up
