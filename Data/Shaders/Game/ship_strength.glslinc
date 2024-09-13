@@ -27,6 +27,8 @@ void main()
 
 #define in varying
 
+#include "lamp_tool.glslinc"
+
 // Inputs from previous shader        
 in float vertexStrength;
 in vec2 vertexTextureCoords;
@@ -48,6 +50,12 @@ void main()
 
     // Make color based off strength
     float intensity = pow(vertexStrength / 4., 0.3);
-    vec3 color = vec3(intensity * paramEffectiveAmbientLightIntensity);
+
+    // Calculate lamp tool intensity
+    float lampToolIntensity = CalculateLampToolIntensity(gl_FragCoord.xy);
+
+    // Apply ambient light
+    vec3 color = vec3(intensity * max(paramEffectiveAmbientLightIntensity, lampToolIntensity));
+
     gl_FragColor = vec4(color, vertexAlpha);
 } 

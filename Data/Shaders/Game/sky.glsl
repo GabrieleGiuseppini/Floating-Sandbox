@@ -23,8 +23,6 @@ void main()
 ###FRAGMENT-120
 
 #include "common.glslinc"
-#include "lamp_tool.glslinc"
-#include "static_parameters.glslinc"
 
 #define in varying
 

@@ -27,6 +27,8 @@ void main()
 
 #define in varying
 
+#include "lamp_tool.glslinc"
+
 // Inputs from previous shader        
 in float vertexInternalPressure;
 in vec2 vertexTextureCoords;
@@ -54,8 +56,11 @@ void main()
             exp(-.000001 * vertexInternalPressure)),
         1.0);
     
+    // Calculate lamp tool intensity
+    float lampToolIntensity = CalculateLampToolIntensity(gl_FragCoord.xy);
+
     // Apply ambient light
-    fragColour *= paramEffectiveAmbientLightIntensity;
+    fragColour *= max(paramEffectiveAmbientLightIntensity, lampToolIntensity);
     
     gl_FragColor = vec4(fragColour.xyz, vertexAlpha);
 } 

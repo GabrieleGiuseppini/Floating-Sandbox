@@ -204,11 +204,10 @@
 					+ rain
 					+ ship_decay
 					+ ship_generic_mipmapped_textures
+					+ ship_internal_pressure
+					+ ship_strength
 					- ship_element
-					- ship_internal_pressure
 					- ship_npcs_texture
-					- ship_strength
-					- sky?
 					X world_border
 				- Optim's:
 					- Can save one multiplication by using 0.5 in toggle of uniform
