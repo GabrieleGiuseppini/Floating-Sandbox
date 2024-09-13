@@ -8,11 +8,18 @@ float CalculateLampToolIntensity(vec2 fragCoords)
     float d = length(fragCoords - paramLampToolAttributes.xy);
     float x = (r - d) / r;
     
-    // flat from r0 to 1.0, first slope between r1 and r0, second slope between -INF and r1
+    // From far away (x=-INF) to center (x=1):
+    // - 0 until x=0.0
+    // - sloping between 0.0 and r2
+    // - 0.5 between r2 and r1
+    // - sloping between r1 and r0
+    // - 1.0 between r0 and 1.0
     #define r0 0.65
-    #define r1 0.4    
+    #define r1 0.3
+    #define r2 0.2
+    
     float lampIntensity = 
-        (smoothstep(0.0, r1, x) + smoothstep(r1, r0, x)) * 0.5;
+        (smoothstep(0.0, r2, x) + smoothstep(r1, r0, x)) * 0.5;
         ;
 
     return lampIntensity * paramLampToolAttributes.w; // Return zero when off

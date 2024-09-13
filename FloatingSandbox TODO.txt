@@ -180,7 +180,7 @@
 				! Call CalculateLampFactor and use lamp factor with:
 					! Result of ApplyOceanDepthDarkening
 					! AmbientLight calculations
-				= Do at:
+				+ Do at:
 					+ Land:
 						+ land_flat.glslinc
 						+ land_texture.glslinc
@@ -206,8 +206,8 @@
 					+ ship_generic_mipmapped_textures
 					+ ship_internal_pressure
 					+ ship_strength
-					- ship_element
-					- ship_npcs_texture
+					+ ship_element
+					+ ship_npcs_texture
 					X world_border
 				- Optim's:
 					- Can save one multiplication by using 0.5 in toggle of uniform
@@ -233,7 +233,7 @@
 						+ if lampToSet:
 							+ SetParameterInAllShaders(vec4)
 					+ mLampToSet.reset()
-		- Cleanup:
+		+ Cleanup:
 			+ RenderContext::cctor(): mLampToSet initialization
 		- Test:
 			+ Scare fishes

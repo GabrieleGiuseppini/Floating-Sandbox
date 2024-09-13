@@ -27,6 +27,8 @@ void main()
 
 #define in varying
 
+#include "lamp_tool.glslinc"
+
 // Inputs from previous shader        
 in vec2 textureCoords;
 in vec4 vertexOverlayColor;
@@ -54,9 +56,12 @@ void main()
             vertexOverlayColor.rgb,
             vertexOverlayColor.a * c.a * 0.8),
         c.a);
+
+    // Calculate lamp tool intensity
+    float lampToolIntensity = CalculateLampToolIntensity(gl_FragCoord.xy);
     
     // Apply ambient light
-    c.rgb *= paramEffectiveAmbientLightIntensity;        
+    c.rgb *= max(paramEffectiveAmbientLightIntensity, lampToolIntensity);        
 
     gl_FragColor = c;
 } 
