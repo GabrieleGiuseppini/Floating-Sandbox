@@ -462,6 +462,8 @@ struct GameParameters
     static float constexpr MinNpcSizeMultiplier = 0.2f;
     static float constexpr MaxNpcSizeMultiplier = 10.0f;
 
+    bool DoApplyPhysicsToolsToNpcs; // Swirl/Counterwirl, Attract/Repel
+
     float HumanNpcEquilibriumTorqueStiffnessCoefficient;
     static float constexpr MinHumanNpcEquilibriumTorqueStiffnessCoefficient = 0.0f;
     static float constexpr MaxHumanNpcEquilibriumTorqueStiffnessCoefficient = 0.01f;

@@ -1351,6 +1351,62 @@ void Npcs::SmashAt(
     }
 }
 
+void Npcs::DrawTo(
+    vec2f const & targetPos,
+    float strength)
+{
+    //
+    // F = ForceStrength/sqrt(distance), along radius
+    //
+
+    // Recalibrate force for NPCs
+    strength *= 0.2f;
+
+    for (auto const & npc : mStateBuffer)
+    {
+        if (npc.has_value())
+        {
+            for (auto const & npcParticle : npc->ParticleMesh.Particles)
+            {
+                vec2f displacement = (targetPos - mParticles.GetPosition(npcParticle.ParticleIndex));
+                float forceMagnitude = strength / sqrtf(0.1f + displacement.length());
+
+                mParticles.AddExternalForce(
+                    npcParticle.ParticleIndex,
+                    displacement.normalise() * forceMagnitude);
+            }
+        }
+    }
+}
+
+void Npcs::SwirlAt(
+    vec2f const & targetPos,
+    float strength)
+{
+    //
+    // Just some magic mix of radial and centripetal forces
+    //
+
+    float const radialForce = strength;
+    float const centripetalForce = std::abs(strength) * 8.5f; // To
+
+    for (auto const & npc : mStateBuffer)
+    {
+        if (npc.has_value())
+        {
+            for (auto const & npcParticle : npc->ParticleMesh.Particles)
+            {
+                vec2f displacement = (targetPos - mParticles.GetPosition(npcParticle.ParticleIndex));
+                vec2f displacementDir = displacement.normalise_approx();
+
+                mParticles.AddExternalForce(
+                    npcParticle.ParticleIndex,
+                    displacementDir.to_perpendicular() * radialForce + displacementDir * centripetalForce);
+            }
+        }
+    }
+}
+
 void Npcs::ApplyBlast(
     ShipId shipId,
     vec2f const & centerPosition,

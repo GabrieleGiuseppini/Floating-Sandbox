@@ -197,13 +197,11 @@ public:
 
     void DrawTo(
         vec2f const & targetPos,
-        float strengthFraction,
-        GameParameters const & gameParameters);
+        float strength);
 
     void SwirlAt(
         vec2f const & targetPos,
-        float strengthFraction,
-        GameParameters const & gameParameters);
+        float strength);
 
     bool TogglePinAt(
         vec2f const & targetPos,

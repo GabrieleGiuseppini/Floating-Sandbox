@@ -2948,6 +2948,37 @@ void SettingsDialog::PopulateLightsElectricalFishesNpcsPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
+            // Options
+            {
+                wxBoxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
+
+                // Apply Physics Tools to NPCs
+                {
+                    mDoApplyPhysicsToolsToNpcsCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY, _("Physics Tools Affect NPCs"));
+                    mDoApplyPhysicsToolsToNpcsCheckBox->SetToolTip(_("Enables or disables the effect of physics tools - such as Swirl, Attract, or Repel - on NPCs."));
+                    mDoApplyPhysicsToolsToNpcsCheckBox->Bind(
+                        wxEVT_COMMAND_CHECKBOX_CLICKED,
+                        [this](wxCommandEvent & event)
+                        {
+                            mLiveSettings.SetValue<bool>(GameSettings::DoApplyPhysicsToolsToNpcs, event.IsChecked());
+                            OnLiveSettingsChanged();
+                        });
+
+                    vSizer->Add(
+                        mDoApplyPhysicsToolsToNpcsCheckBox,
+                        0,
+                        wxEXPAND, // Use all horizontal space
+                        0);
+                }
+
+                sizer->Add(
+                    vSizer,
+                    wxGBPosition(0, 3),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
             boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
         }
 
@@ -5828,6 +5859,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mNpcSizeMultiplierSlider->SetValue(settings.GetValue<float>(GameSettings::NpcSizeMultiplier));
     mNpcSpringReductionFractionAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::NpcSpringReductionFractionAdjustment));
     mNpcSpringDampingCoefficientAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::NpcSpringDampingCoefficientAdjustment));
+    mDoApplyPhysicsToolsToNpcsCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoApplyPhysicsToolsToNpcs));
 
     //
     // Destructive Tools

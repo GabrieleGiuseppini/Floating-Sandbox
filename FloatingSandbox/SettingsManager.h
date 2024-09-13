@@ -90,9 +90,10 @@ enum class GameSettings : size_t
     FishShoalRadiusAdjustment,
 
     // NPCs
-    NpcSizeMultiplier,
     NpcSpringReductionFractionAdjustment,
     NpcSpringDampingCoefficientAdjustment,
+    NpcSizeMultiplier,
+    DoApplyPhysicsToolsToNpcs,
 
     // Misc
     OceanFloorTerrain,

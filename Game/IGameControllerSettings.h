@@ -239,14 +239,17 @@ struct IGameControllerSettings
 
     // NPCs
 
-    virtual float GetNpcSizeMultiplier() const = 0;
-    virtual void SetNpcSizeMultiplier(float value) = 0;
-
     virtual float GetNpcSpringReductionFractionAdjustment() const = 0;
     virtual void SetNpcSpringReductionFractionAdjustment(float value) = 0;
 
     virtual float GetNpcSpringDampingCoefficientAdjustment() const = 0;
     virtual void SetNpcSpringDampingCoefficientAdjustment(float value) = 0;
+
+    virtual float GetNpcSizeMultiplier() const = 0;
+    virtual void SetNpcSizeMultiplier(float value) = 0;
+
+    virtual bool GetDoApplyPhysicsToolsToNpcs() const = 0;
+    virtual void SetDoApplyPhysicsToolsToNpcs(bool value) = 0;
 
     // Misc
 

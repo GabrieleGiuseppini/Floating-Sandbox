@@ -888,6 +888,14 @@ public:
 		float radius,
 		float currentSimulationTime);
 
+	void DrawTo(
+		vec2f const & targetPos,
+		float strength);
+
+	void SwirlAt(
+		vec2f const & targetPos,
+		float strength);
+
 	void ApplyBlast(
 		ShipId shipId,
 		vec2f const & centerPosition,

@@ -788,15 +788,8 @@ bool Ship::ApplyLaserCannonThrough(
 
 void Ship::DrawTo(
     vec2f const & targetPos,
-    float strengthFraction,
-    GameParameters const & gameParameters)
+    float strength)
 {
-    // Calculate draw force
-    float const strength =
-        GameParameters::DrawForce
-        * strengthFraction
-        * (gameParameters.IsUltraViolentMode ? 20.0f : 1.0f);
-
     // Queue interaction
     mQueuedInteractions.emplace_back(
         Interaction::ArgumentsUnion::DrawArguments(
@@ -823,15 +816,8 @@ void Ship::DrawTo(Interaction::ArgumentsUnion::DrawArguments const & args)
 
 void Ship::SwirlAt(
     vec2f const & targetPos,
-    float strengthFraction,
-    GameParameters const & gameParameters)
+    float strength)
 {
-    // Calculate swirl strength
-    float const strength =
-        GameParameters::SwirlForce
-        * strengthFraction
-        * (gameParameters.IsUltraViolentMode ? 20.0f : 1.0f);
-
     // Queue interaction
     mQueuedInteractions.emplace_back(
         Interaction::ArgumentsUnion::SwirlArguments(
@@ -848,8 +834,7 @@ void Ship::SwirlAt(Interaction::ArgumentsUnion::SwirlArguments const & args)
     for (auto pointIndex : mPoints)
     {
         vec2f displacement = (args.CenterPos - mPoints.GetPosition(pointIndex));
-        float const displacementLength = displacement.length();
-        float forceMagnitude = args.Strength / sqrtf(0.1f + displacementLength);
+        float forceMagnitude = args.Strength / sqrtf(0.1f + displacement.length());
 
         mPoints.AddStaticForce(
             pointIndex,

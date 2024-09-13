@@ -525,12 +525,27 @@ void World::DrawTo(
     float strengthFraction,
     GameParameters const & gameParameters)
 {
+    // Calculate draw force
+    float const strength =
+        GameParameters::DrawForce
+        * strengthFraction
+        * (gameParameters.IsUltraViolentMode ? 20.0f : 1.0f);
+
+    // Apply to ships
     for (auto & ship : mAllShips)
     {
         ship->DrawTo(
             targetPos,
-            strengthFraction,
-            gameParameters);
+            strength);
+    }
+
+    // Apply to NPCs
+    if (gameParameters.DoApplyPhysicsToolsToNpcs)
+    {
+        assert(mNpcs);
+        mNpcs->DrawTo(
+            targetPos,
+            strength);
     }
 }
 
@@ -539,12 +554,26 @@ void World::SwirlAt(
     float strengthFraction,
     GameParameters const & gameParameters)
 {
+    // Calculate swirl strength
+    float const strength =
+        GameParameters::SwirlForce
+        * strengthFraction
+        * (gameParameters.IsUltraViolentMode ? 20.0f : 1.0f);
+
     for (auto & ship : mAllShips)
     {
         ship->SwirlAt(
             targetPos,
-            strengthFraction,
-            gameParameters);
+            strength);
+    }
+
+    // Apply to NPCs
+    if (gameParameters.DoApplyPhysicsToolsToNpcs)
+    {
+        assert(mNpcs);
+        mNpcs->SwirlAt(
+            targetPos,
+            strength);
     }
 }
 

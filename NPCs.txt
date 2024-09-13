@@ -699,11 +699,13 @@ Arch
 		- Pre-Implosion
 		- Implosion
 		- Explosion
-	- Swirl, etc.: NPCs of all ships, all regimes
-		- Quantities that are now calculated in Ship become calc'd in World, so we can pass them on to NPCs
-		- Controlled by flag, "~force tools on NPCs"
-			- SettingsDialog
-		- World calls Npcs.ApplyXXXForce(...) after check on flag
+	+ Swirl, etc.: NPCs of all ships, all regimes		
+		+ Controlled by flag, "~force tools on NPCs"
+			+ SettingsDialog
+		+ World calls Npcs.ApplyXXXForce(...) after check on flag
+			+ Quantities that are now calculated in Ship become calc'd in World, so we can pass them on to NPCs
+			+ Swirl/Counterswirl
+			+ Attract/Repel
 	+ Move/Rotate tool:
 		+ World: after calling into Ship(), call Npcs.Move/etc/Npcs(shipId, [componentId], ...)
 			+ Test in BaryLab first
