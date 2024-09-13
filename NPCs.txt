@@ -565,20 +565,33 @@ Arch
 			+ Simple fixed-angle
 		+ Fix human state machine: Free_KO -> Free_Aerial *OR Free_InWater*
 	- Follow NPC:
+		! Gist:
+			! Menu: Focus On Ship, Focus On Npc (just as FYI, not interactable), Focus On Nothing
 		- State machine/interactions:
-			- Current:
-				- HOME (focus on ship) -> GameController::ResetView() -> ViewManager::ResetView(all ships' AABBs)
-					- If focusing on ship: resets user offsets
-					- Else: focuses on ship (one-off)
+			- User hits HOME (focus on ship) -> GameController::ResetView() -> ViewManager::ResetView(all ships' AABBs):
+				- If focusing on ship: resets user offsets
+				- Else: focuses on ship (one-off)
+				! In short: if there's auto-focus, we re-center; if not, we focus one-off
+			- User enables FocusOnShip:
+				- TODO: disable FocusOnNpc if set
 				- TODOHERE
-			- New:
+			- User enables FocusOnNothing:
+				- TODOHERE
+			- User uses tool to follow specific NPC:
+				- TODOHERE
+			- User uses tool to follow nothing:
+				- TODOHERE
+			- The currently-selected NPC is removed:
+				- TODOHERE
+			- A new ship is loaded/Reset:
+				- TODOHERE
 		- 1. Npcs gets the concept of "CurrentSelectedNpc" (which was of BaryLab)
 			- opt<NpcId> member
 			- API from outside via Select...() / DeSelect...()/Get...() (the BaryLab ones, make them official)
 			- Reset when NpcId is no more - @ CommonRemoval
 		- 2. ViewManager:
 			- CurrentAutoFocusTarget: opt<ViewManager::AutoFocusTarget>
-				- Only holds it, GameController inspects from outside and calls 
+				- Only holds it, GameController inspects from outside and makes calls 
 				- AutoFocusTarget: type (Ship, Npc), NpcId
 				- Setter and getter
 		- 3. GameController:
@@ -597,7 +610,9 @@ Arch
 							- ViewManager->Update(nullopt)
 					- If none:
 						- ViewManager->Update(nullopt)
-			- Reset:
+			- ResetView(): (called when user presses HOME)
+			- On new ship:
+			- Reset():
 		- 4. Tool:
 		- 5. MainFrame:
 	+ Wind: 

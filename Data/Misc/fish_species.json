@@ -90,9 +90,9 @@
 	"world_size_x": 0.4,
 	"world_size_y": 0.2,
 
-	"shoal_size": 1,
+	"shoal_size": 4,
 	"shoal_radius": 3.5,
-	"ocean_depth": 1000.0,
+	"ocean_depth": 800.0,
 	"basal_speed": 0.12,
 	"tail_x": 0.7,
 	"tail_speed": 0.036,

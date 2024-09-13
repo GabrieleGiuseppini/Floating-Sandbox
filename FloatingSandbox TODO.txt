@@ -210,7 +210,15 @@
 					+ ship_npcs_texture
 					X world_border
 				- Optim's:
+					- Don't do in Basic
+						- Make clouds basic
+							- SettingsDialog setting
+							- Calibration
+						- Remove lamp from all basics
+						- Redo old Dell test
 					- Can save one multiplication by using 0.5 in toggle of uniform
+					- Instead of two smoothsteps, could use this curve:
+						y = -0.00004972662 + 7.573704*x - 41.11177*x^2 + 92.40549*x^3 - 67.15639*x^4
 			+ Tool:
 				+ Icon & cursors
 					+ lamp_cursor_up
@@ -235,11 +243,15 @@
 					+ mLampToSet.reset()
 		+ Cleanup:
 			+ RenderContext::cctor(): mLampToSet initialization
-		- Test:
+		= Test:
 			+ Scare fishes
-			- Test rendering time delta - before-code and after-code
-				- On Dell
-				- On new
+			= Test rendering time delta - before-code and after-code
+				- On Dell:
+					- Prev: 14.4
+					- New: 18.1
+				+ On new:
+					+ Prev: 3.20
+					+ New: 3.80-3.90
 		
 		- Changelist
 
