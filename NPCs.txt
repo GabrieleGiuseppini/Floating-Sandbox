@@ -481,20 +481,20 @@ Arch
 							- Points::UpdateEphParticles: use minScale, maxScale from AirBubble state
 						- Call Ship::GenerateAirBubble
 					- Calc next: gaussian
-	= Humans on air-water interface generate small waves
-		- Needs to produce as side-effect: swimming humans generate small waves
-		- Needs to produce as side-effect: humans falling into water generate small (but larger) waves
-		= Do surface displacement proportional to (signed) V velocity
+	+ Humans on air-water interface generate small waves
+		+ Needs to produce as side-effect: swimming humans generate small waves
+		+ Needs to produce as side-effect: humans falling into water generate small (but larger) waves
+		+ Do surface displacement proportional to (signed) V velocity
 			+ Fix: placing human directly in water causes anywaterness change
 				+ Unless we initialize anyWaterness at placement time
-			= Fix: oscillations
+			+ Fix: oscillations
 				! Due to just-entered particles becoming out-of-water at next frame
-				! Possible fix 1: require V sign agreement with delta_waterness
+				X Possible fix 1: require V sign agreement with delta_waterness
 					+ But now it's not continuous
-				- Possible fix 2: do like ship:
-					- Displacement is due to just having velocity in narrow band underwater
-					- FIX: if too quick we don't "see" the particle in the band
-					- If we go for this: nuke work for CalculateFreeParticleWaternessAt and waterness init'n
+				+ Possible fix 2: do like ship:
+					+ Displacement is due to just having velocity in narrow band underwater
+					+ FIX: if too quick we don't "see" the particle in the band
+						+ Possible fix 3: when depth of particle ('s y) *now* and *before* has different sign
 	+ Fire:
 		+ @Npcs::Update():
 			+ Calc LowFreqCycle (see Ship)

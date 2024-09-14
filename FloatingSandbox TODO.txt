@@ -231,6 +231,9 @@
 						+ Do in func
 					
 					- Try with depth darkening: subst exp with approximating quadratic
+						- Orig on fooplot: (1.0 - exp(min(0.0, x) *0.12795)) * (1.0 - exp(min(0.0, x) *0.12795)) * (1.0 - exp(min(0.0, x) *0.12795))
+						- Quadratic: y = -0.08277943 - 0.05445375*x - 0.0006754042*x^2
+							- Valid from 0 until -40
 
 			+ Tool:
 				+ Icon & cursors

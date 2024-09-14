@@ -128,16 +128,6 @@ void Npcs::ResetNpcStateToWorld(
                     npc.CurrentConnectedComponentId); // Constrain this secondary's triangle to NPC's connected component ID
             }
         }
-
-        if (!npc.ParticleMesh.Particles[p].ConstrainedState.has_value())
-        {
-            // This particle begins as free
-
-            // Initialize its waterness via free waterness
-            mParticles.SetAnyWaterness(
-                particleIndex,
-                CalculateFreeParticleWaternessAt(mParticles.GetPosition(particleIndex)));
-        }
     }
 
     // Regime
@@ -211,12 +201,6 @@ void Npcs::TransitionParticleToFreeState(
         npc.CurrentPlaneId = homeShip.GetMaxPlaneId();
         npc.CurrentConnectedComponentId.reset();
     }
-
-    // Initialize its waterness via free waterness
-    ElementIndex const particleIndex = npc.ParticleMesh.Particles[npcParticleOrdinal].ParticleIndex;
-    mParticles.SetAnyWaterness(
-        particleIndex,
-        CalculateFreeParticleWaternessAt(mParticles.GetPosition(particleIndex)));
 
     // Regime
     auto const oldRegime = npc.CurrentRegime;
@@ -1708,16 +1692,20 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
         {
             // Free - there is waterness if we are underwater
 
+            float constexpr BuoyancyInterfaceWidth = 0.4f; // Nature abhorrs discontinuity
+
             vec2f testParticlePosition = particlePosition;
             if (npc.Kind == NpcKindType::Human && npcParticleOrdinal == 1)
             {
                 // Head - use an offset
                 testParticlePosition.y += 
                     (mParticles.GetPosition(npc.ParticleMesh.Particles[0].ParticleIndex).y - testParticlePosition.y) 
-                    * (0.2f + GameParameters::HumanNpcGeometry::HeadWidthFraction);
+                    * (BuoyancyInterfaceWidth / 2.0f + GameParameters::HumanNpcGeometry::HeadWidthFraction);
             }
 
-            anyWaterness = CalculateFreeParticleWaternessAt(testParticlePosition);
+            float const waterHeight = mParentWorld.GetOceanSurface().GetHeightAt(testParticlePosition.x);
+            float const particleDepth = waterHeight - testParticlePosition.y;
+            anyWaterness = Clamp(particleDepth, 0.0f, BuoyancyInterfaceWidth) / BuoyancyInterfaceWidth; // Same as uwCoefficient
 
             // 3. World forces - wind: iff free and above-water
 
@@ -1726,51 +1714,21 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
                 * effectiveParticleWindReceptivity
                 * (1.0f - anyWaterness); // Only above-water (modulated)
 
-
             // Generate waves if on the air-water interface, magnitude
             // proportional to (signed) vertical velocity
             
-            float const waterHeight = mParentWorld.GetOceanSurface().GetHeightAt(particlePosition.x);
             float const verticalVelocity = mParticles.GetVelocity(npcParticle.ParticleIndex).y;
-            float const depthNow = waterHeight - particlePosition.y;
-            float const depthBefore = waterHeight - (particlePosition.y - verticalVelocity * GameParameters::SimulationStepTimeDuration<float>);
-            if (depthNow * depthBefore < 0.0f)
+            float const particleDepthBefore = waterHeight - (particlePosition.y - verticalVelocity * GameParameters::SimulationStepTimeDuration<float>);
+            if (particleDepth * particleDepthBefore < 0.0f) // Check if we've entered
             {
-                // TODOHERE
-                LogMessage("DepthBefore=", depthBefore, " DepthNow=", depthNow);
-
                 float const waveDisplacement =
                     SmoothStep(0.0f, 6.0f, std::abs(verticalVelocity))
                     * SignStep(0.0f, verticalVelocity) // Displacement has same sign as vertical velocity
-                    //* (1.0f - depthNow)
                     * 2.0f / static_cast<float>(npc.ParticleMesh.Particles.size()) // Other particles in this mesh will generate waves
                     * 0.6f; // Magic number
 
                 mParentWorld.DisplaceOceanSurfaceAt(particlePosition.x, waveDisplacement);
             }
-
-            ////// TODOOLD
-            ////// TODOHERE: fix oscillations
-            ////// Generate waves if on the air-water interface, magnitude
-            ////// proportional to (signed) change in waterness:
-            //////  change > 0 => new > old, hence we're going down
-            //////  change < 0 => new < old, hence we're going up
-
-            ////float const deltaWaterness = anyWaterness - mParticles.GetAnyWaterness(npcParticle.ParticleIndex); // Yes, prior could be from internal water, but...yeah
-            ////float const verticalVelocity = mParticles.GetVelocity(npcParticle.ParticleIndex).y;
-            //////if (std::abs(deltaWaterness) >= 0.1f) // No waves if insignificant
-            ////if (deltaWaterness * verticalVelocity < 0.0f) // TODOTEST
-            ////{
-            ////    float const waveDisplacement =
-            ////        -deltaWaterness * 4.0f // Magic number
-            ////        ;
-            ////        //* 2.0f / static_cast<float>(npc.ParticleMesh.Particles.size()); // Other particles in this mesh will generate waves
-            ////    // TODOTEST
-            ////    //(void)waveDisplacement;
-            ////    //mGameEventHandler->OnCustomProbe("DeltaW", deltaWaterness);
-            ////    LogMessage("DeltaW(", npcParticleOrdinal , ")=", deltaWaterness);
-            ////    mParentWorld.DisplaceOceanSurfaceAt(particlePosition.x, waveDisplacement);
-            ////}
         }
 
         // Store it for future use
@@ -3507,14 +3465,6 @@ void Npcs::MaintainOverLand(
         // Become free - so to avoid bouncing back and forth
         TransitionParticleToFreeState(npc, npcParticleOrdinal, homeShip);
     }
-}
-
-float Npcs::CalculateFreeParticleWaternessAt(vec2f const & position) const
-{
-    float constexpr BuoyancyInterfaceWidth = 0.4f; // Nature abhorrs discontinuity
-
-    float const particleDepth = mParentWorld.GetOceanSurface().GetDepth(position);
-    return Clamp(particleDepth, 0.0f, BuoyancyInterfaceWidth) / BuoyancyInterfaceWidth; // Same as uwCoefficient
 }
 
 }

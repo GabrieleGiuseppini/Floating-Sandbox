@@ -1420,8 +1420,6 @@ private:
 		Ship const & homeShip,
 		GameParameters const & gameParameters);
 
-	inline float CalculateFreeParticleWaternessAt(vec2f const & position) const;
-
 	static bool IsEdgeFloorToParticle(
 		ElementIndex triangleElementIndex,
 		int edgeOrdinal,
