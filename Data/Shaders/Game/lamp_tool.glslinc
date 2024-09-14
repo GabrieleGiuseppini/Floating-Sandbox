@@ -4,15 +4,23 @@ uniform vec4 paramLampToolAttributes; // Position (vec2 in frag space), Radius (
 
 float CalculateLampToolIntensity(vec2 fragCoords)
 {
+    //
+    // Feature switch: no lamp factor calculation if lamp is not on
+    //
+    // Note: fine to branch in shader - all pixels will follow the same branching
+    //
+    if (paramLampToolAttributes.w == 0.0)
+        return 0.0;
+
     float r = paramLampToolAttributes.z;
     float d = length(fragCoords - paramLampToolAttributes.xy);
     float x = (r - d) / r;
     
     // From far away (x=-INF) to center (x=1):
     // - 0 until x=0.0
-    // - sloping between 0.0 and r2
+    // - sloping up between 0.0 and r2
     // - 0.5 between r2 and r1
-    // - sloping between r1 and r0
+    // - sloping up between r1 and r0
     // - 1.0 between r0 and 1.0
     #define r0 0.65
     #define r1 0.3
@@ -22,5 +30,5 @@ float CalculateLampToolIntensity(vec2 fragCoords)
         (smoothstep(0.0, r2, x) + smoothstep(r1, r0, x)) * 0.5;
         ;
 
-    return lampIntensity * paramLampToolAttributes.w; // Return zero when off
+    return lampIntensity;
 }
