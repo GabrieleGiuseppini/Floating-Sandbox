@@ -471,9 +471,9 @@ Arch
 		+ Should be enough to check for current triangle being deleted at beginning of UpdateNpc(.), and if so, become free (identical for @ pri and @ non-pri)
 			+ Just like when we detect secondary, third, etc. are in a different connected component, see above
 	- Swimming humans generate (small) bubbles
-		- Each aquatic state has a NextBubbleEmissionSimulationTimestamp
+		- Each free aquatic state has a NextBubbleEmissionSimulationTimestamp
 			- Init'd as 0 at state enter (Reset)
-			- At each state update: 
+			- At each state update at which we remain in state:
 				- If curSimTime > state's:
 					- Emit bubble (via homeShip->GenerateAirBubble)
 						- Ship::GenerateAirBubble: becomes public and also takes minScale, maxScale

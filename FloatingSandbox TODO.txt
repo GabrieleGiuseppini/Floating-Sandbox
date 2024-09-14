@@ -230,10 +230,11 @@
 								+ Result: 3.95 -> 3.6
 						+ Do in func
 					
-					- Try with depth darkening: subst exp with approximating quadratic
-						- Orig on fooplot: (1.0 - exp(min(0.0, x) *0.12795)) * (1.0 - exp(min(0.0, x) *0.12795)) * (1.0 - exp(min(0.0, x) *0.12795))
-						- Quadratic: y = -0.08277943 - 0.05445375*x - 0.0006754042*x^2
+					X Try with depth darkening: subst exp with approximating quadratic
+						- -1/(40 * 40)*x*x - 1/20*x
 							- Valid from 0 until -40
+						- Test w/full ocean:
+							- New dell: 5.5 -> 5.4, but curve is not right
 
 			+ Tool:
 				+ Icon & cursors
