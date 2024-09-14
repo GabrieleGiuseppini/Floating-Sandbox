@@ -125,7 +125,7 @@ public:
 
         // Store - the one with the largest absolute magnitude wins
         float const yDisplacement = yOffset / SWEHeightFieldAmplification;
-        if (std::abs(yDisplacement) > mDeltaHeightBuffer[DeltaHeightBufferPrefixSize + sampleIndexI])
+        if (std::abs(yDisplacement) > std::abs(mDeltaHeightBuffer[DeltaHeightBufferPrefixSize + sampleIndexI]))
         {
             mDeltaHeightBuffer[DeltaHeightBufferPrefixSize + sampleIndexI] = yDisplacement;
         }
@@ -315,7 +315,9 @@ private:
     //
     // Delta height buffer
     //
-    // - Contains surface height delta's that are taken into account during update step
+    // - Contains surface height delta's that are taken into account during update step, being smoothed back
+    //   into height field.
+    //
     // - Geometry:
     //      - Padding for making buffer "body" below aligned (size == DeltaHeightBufferAlignmentPrefixSize)
     //      - Half smoothing window (which will be filled with zeroes, size == DeltaHeightSmoothing / 2)
