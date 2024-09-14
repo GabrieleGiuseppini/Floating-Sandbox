@@ -67,7 +67,7 @@ void Npcs::ResetNpcStateToWorld(
     StateType & npc,
     float currentSimulationTime,
     Ship const & homeShip,
-    std::optional<ElementIndex> primaryParticleTriangleIndex) const
+    std::optional<ElementIndex> primaryParticleTriangleIndex)
 {
     // Plane ID, connected component ID
 
@@ -88,7 +88,7 @@ void Npcs::ResetNpcStateToWorld(
         // fine to stick to this plane so that if new planes come up, they will cover the NPC!
         npc.CurrentPlaneId = homeShip.GetMaxPlaneId();
 
-        // Primary if free, hence this NPC does not belong to any connected components
+        // Primary is free, hence this NPC does not belong to any connected components
         npc.CurrentConnectedComponentId.reset();
     }
 
@@ -96,11 +96,13 @@ void Npcs::ResetNpcStateToWorld(
 
     for (size_t p = 0; p < npc.ParticleMesh.Particles.size(); ++p)
     {
+        ElementIndex const particleIndex = npc.ParticleMesh.Particles[p].ParticleIndex;
+
         if (p == 0)
         {
             // Primary
             npc.ParticleMesh.Particles[p].ConstrainedState = CalculateParticleConstrainedState(
-                mParticles.GetPosition(npc.ParticleMesh.Particles[p].ParticleIndex),
+                mParticles.GetPosition(particleIndex),
                 homeShip,
                 primaryParticleTriangleIndex,
                 std::nullopt); // No need to search
@@ -120,11 +122,21 @@ void Npcs::ResetNpcStateToWorld(
             else
             {
                 npc.ParticleMesh.Particles[p].ConstrainedState = CalculateParticleConstrainedState(
-                    mParticles.GetPosition(npc.ParticleMesh.Particles[p].ParticleIndex),
+                    mParticles.GetPosition(particleIndex),
                     homeShip,
                     std::nullopt,
                     npc.CurrentConnectedComponentId); // Constrain this secondary's triangle to NPC's connected component ID
             }
+        }
+
+        if (!npc.ParticleMesh.Particles[p].ConstrainedState.has_value())
+        {
+            // This particle begins as free
+
+            // Initialize its waterness via free waterness
+            mParticles.SetAnyWaterness(
+                particleIndex,
+                CalculateFreeParticleWaternessAt(mParticles.GetPosition(particleIndex)));
         }
     }
 
@@ -199,6 +211,12 @@ void Npcs::TransitionParticleToFreeState(
         npc.CurrentPlaneId = homeShip.GetMaxPlaneId();
         npc.CurrentConnectedComponentId.reset();
     }
+
+    // Initialize its waterness via free waterness
+    ElementIndex const particleIndex = npc.ParticleMesh.Particles[npcParticleOrdinal].ParticleIndex;
+    mParticles.SetAnyWaterness(
+        particleIndex,
+        CalculateFreeParticleWaternessAt(mParticles.GetPosition(particleIndex)));
 
     // Regime
     auto const oldRegime = npc.CurrentRegime;
@@ -1688,19 +1706,18 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
         }
         else
         {
-            // Free - check whether we are underwater
-
-            float constexpr BuoyancyInterfaceWidth = 0.4f; // Nature abhorrs discontinuity
+            // Free - there is waterness if we are underwater
 
             vec2f testParticlePosition = particlePosition;
             if (npc.Kind == NpcKindType::Human && npcParticleOrdinal == 1)
             {
                 // Head - use an offset
-                testParticlePosition.y += (mParticles.GetPosition(npc.ParticleMesh.Particles[0].ParticleIndex).y - testParticlePosition.y) * (BuoyancyInterfaceWidth / 2.0f + GameParameters::HumanNpcGeometry::HeadWidthFraction);
+                testParticlePosition.y += 
+                    (mParticles.GetPosition(npc.ParticleMesh.Particles[0].ParticleIndex).y - testParticlePosition.y) 
+                    * (0.2f + GameParameters::HumanNpcGeometry::HeadWidthFraction);
             }
 
-            float const particleDepth = mParentWorld.GetOceanSurface().GetDepth(testParticlePosition);
-            anyWaterness = Clamp(particleDepth, 0.0f, BuoyancyInterfaceWidth) / BuoyancyInterfaceWidth;
+            anyWaterness = CalculateFreeParticleWaternessAt(testParticlePosition);
 
             // 3. World forces - wind: iff free and above-water
 
@@ -1708,6 +1725,52 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
                 globalWindForce
                 * effectiveParticleWindReceptivity
                 * (1.0f - anyWaterness); // Only above-water (modulated)
+
+
+            // Generate waves if on the air-water interface, magnitude
+            // proportional to (signed) vertical velocity
+            
+            float const waterHeight = mParentWorld.GetOceanSurface().GetHeightAt(particlePosition.x);
+            float const verticalVelocity = mParticles.GetVelocity(npcParticle.ParticleIndex).y;
+            float const depthNow = waterHeight - particlePosition.y;
+            float const depthBefore = waterHeight - (particlePosition.y - verticalVelocity * GameParameters::SimulationStepTimeDuration<float>);
+            if (depthNow * depthBefore < 0.0f)
+            {
+                // TODOHERE
+                LogMessage("DepthBefore=", depthBefore, " DepthNow=", depthNow);
+
+                float const waveDisplacement =
+                    SmoothStep(0.0f, 6.0f, std::abs(verticalVelocity))
+                    * SignStep(0.0f, verticalVelocity) // Displacement has same sign as vertical velocity
+                    //* (1.0f - depthNow)
+                    * 2.0f / static_cast<float>(npc.ParticleMesh.Particles.size()) // Other particles in this mesh will generate waves
+                    * 0.6f; // Magic number
+
+                mParentWorld.DisplaceOceanSurfaceAt(particlePosition.x, waveDisplacement);
+            }
+
+            ////// TODOOLD
+            ////// TODOHERE: fix oscillations
+            ////// Generate waves if on the air-water interface, magnitude
+            ////// proportional to (signed) change in waterness:
+            //////  change > 0 => new > old, hence we're going down
+            //////  change < 0 => new < old, hence we're going up
+
+            ////float const deltaWaterness = anyWaterness - mParticles.GetAnyWaterness(npcParticle.ParticleIndex); // Yes, prior could be from internal water, but...yeah
+            ////float const verticalVelocity = mParticles.GetVelocity(npcParticle.ParticleIndex).y;
+            //////if (std::abs(deltaWaterness) >= 0.1f) // No waves if insignificant
+            ////if (deltaWaterness * verticalVelocity < 0.0f) // TODOTEST
+            ////{
+            ////    float const waveDisplacement =
+            ////        -deltaWaterness * 4.0f // Magic number
+            ////        ;
+            ////        //* 2.0f / static_cast<float>(npc.ParticleMesh.Particles.size()); // Other particles in this mesh will generate waves
+            ////    // TODOTEST
+            ////    //(void)waveDisplacement;
+            ////    //mGameEventHandler->OnCustomProbe("DeltaW", deltaWaterness);
+            ////    LogMessage("DeltaW(", npcParticleOrdinal , ")=", deltaWaterness);
+            ////    mParentWorld.DisplaceOceanSurfaceAt(particlePosition.x, waveDisplacement);
+            ////}
         }
 
         // Store it for future use
@@ -3444,6 +3507,14 @@ void Npcs::MaintainOverLand(
         // Become free - so to avoid bouncing back and forth
         TransitionParticleToFreeState(npc, npcParticleOrdinal, homeShip);
     }
+}
+
+float Npcs::CalculateFreeParticleWaternessAt(vec2f const & position) const
+{
+    float constexpr BuoyancyInterfaceWidth = 0.4f; // Nature abhorrs discontinuity
+
+    float const particleDepth = mParentWorld.GetOceanSurface().GetDepth(position);
+    return Clamp(particleDepth, 0.0f, BuoyancyInterfaceWidth) / BuoyancyInterfaceWidth; // Same as uwCoefficient
 }
 
 }

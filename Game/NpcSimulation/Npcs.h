@@ -1086,7 +1086,7 @@ private:
 		StateType & npc,
 		float currentSimulationTime,
 		Ship const & homeShip,
-		std::optional<ElementIndex> primaryParticleTriangleIndex) const;
+		std::optional<ElementIndex> primaryParticleTriangleIndex);
 
 	void TransitionParticleToConstrainedState(
 		StateType & npc,
@@ -1419,6 +1419,8 @@ private:
 		int npcParticleOrdinal,
 		Ship const & homeShip,
 		GameParameters const & gameParameters);
+
+	inline float CalculateFreeParticleWaternessAt(vec2f const & position) const;
 
 	static bool IsEdgeFloorToParticle(
 		ElementIndex triangleElementIndex,
