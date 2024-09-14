@@ -231,6 +231,9 @@ struct GameParameters
     static constexpr float MinSparkleParticlesForLightningLifetime = 0.2f;
     static constexpr float MaxSparkleParticlesForLightningLifetime = 0.5f;
 
+    static float constexpr ShipAirBubbleFinalScale = 0.2f;
+    static float constexpr NpcAirBubbleFinalScale = 0.05f;
+
     float AirBubblesDensity;
     static float constexpr MinAirBubblesDensity = 0.0f;
     static float constexpr MaxAirBubblesDensity = 128.0f;
@@ -464,6 +467,8 @@ struct GameParameters
 
     bool DoApplyPhysicsToolsToNpcs; // Swirl/Counterwirl, Attract/Repel
 
+    static float constexpr HumanNpcTemperature = 310.15f; // 37 Celsius
+
     float HumanNpcEquilibriumTorqueStiffnessCoefficient;
     static float constexpr MinHumanNpcEquilibriumTorqueStiffnessCoefficient = 0.0f;
     static float constexpr MaxHumanNpcEquilibriumTorqueStiffnessCoefficient = 0.01f;
@@ -499,7 +504,12 @@ struct GameParameters
         static float constexpr StepLengthFraction = 0.43f; // From foot to foot at longest separation
     };
 
+    //
     // Misc
+    //
+
+    static float constexpr ShipParticleAirWaterInterfaceWidth = 1.0f; // Close to equilibrium
+    static float constexpr AirBubbleParticleAirWaterInterfaceWidth = 0.1f; // So doesn't find equilibrium
 
     float SeaDepth;
     static float constexpr MinSeaDepth = -50.0f;

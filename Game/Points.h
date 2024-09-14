@@ -320,6 +320,8 @@ private:
     {
         struct AirBubbleState
         {
+            float FinalScale;
+
             float VortexAmplitude;
             float NormalizedVortexAngularVelocity;
 
@@ -330,9 +332,11 @@ private:
             {}
 
             AirBubbleState(
+                float finalScale,
                 float vortexAmplitude,
                 float vortexPeriod)
-                : VortexAmplitude(vortexAmplitude)
+                : FinalScale(finalScale)
+                , VortexAmplitude(vortexAmplitude)
                 , NormalizedVortexAngularVelocity(1.0f / vortexPeriod) // (2PI/vortexPeriod)/2PI
                 , CurrentDeltaY(0.0f)
                 , SimulationLifetime(0.0f)
@@ -607,8 +611,9 @@ public:
         , mIsDecayBufferDirty(true)
         , mFrozenCoefficientBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mIntegrationFactorTimeCoefficientBuffer(mBufferElementCount, shipPointCount, 0.0f)
-        , mBuoyancyCoefficientsBuffer(mBufferElementCount, shipPointCount, BuoyancyCoefficients(0.0f, 0.0f))
         , mOceanFloorCollisionFactorsBuffer(mBufferElementCount, shipPointCount, OceanFloorCollisionFactors(0.0f, 0.0f, 0.0f))
+        , mAirWaterInterfaceWidthBuffer(mBufferElementCount, shipPointCount, 1.0f)
+        , mBuoyancyCoefficientsBuffer(mBufferElementCount, shipPointCount, BuoyancyCoefficients(0.0f, 0.0f))
         , mCachedDepthBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mIntegrationFactorBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         // Pressure and water dynamics
@@ -787,6 +792,7 @@ public:
     void CreateEphemeralParticleAirBubble(
         vec2f const & position,
         float depth,
+        float finalScale, 
         float temperature,
         float buoyancyVolumeFillAdjustment,
         float vortexAmplitude,
@@ -1288,14 +1294,19 @@ public:
         Thaw(pointElementIndex); // Recalculates integration coefficient
     }
 
-    BuoyancyCoefficients const & GetBuoyancyCoefficients(ElementIndex pointElementIndex)
-    {
-        return mBuoyancyCoefficientsBuffer[pointElementIndex];
-    }
-
     OceanFloorCollisionFactors const & GetOceanFloorCollisionFactors(ElementIndex pointElementIndex)
     {
         return mOceanFloorCollisionFactorsBuffer[pointElementIndex];
+    }
+
+    float GetAirWaterInterfaceWidth(ElementIndex pointElementIndex)
+    {
+        return mAirWaterInterfaceWidthBuffer[pointElementIndex];
+    }
+
+    BuoyancyCoefficients const & GetBuoyancyCoefficients(ElementIndex pointElementIndex)
+    {
+        return mBuoyancyCoefficientsBuffer[pointElementIndex];
     }
 
     /*
@@ -2231,6 +2242,7 @@ private:
     Buffer<float> mFrozenCoefficientBuffer; // 1.0: not frozen; 0.0f: frozen
     Buffer<float> mIntegrationFactorTimeCoefficientBuffer; // dt^2 or zero when the point is frozen
     Buffer<OceanFloorCollisionFactors> mOceanFloorCollisionFactorsBuffer;
+    Buffer<float> mAirWaterInterfaceWidthBuffer; // The width of the air-water interface, to control the damping we perform against buoyancy oscillations
     Buffer<BuoyancyCoefficients> mBuoyancyCoefficientsBuffer;
     Buffer<float> mCachedDepthBuffer; // Positive when underwater
 

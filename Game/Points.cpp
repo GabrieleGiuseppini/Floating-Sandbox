@@ -49,9 +49,6 @@ void Points::Add(
     mDecayBuffer.emplace_back(1.0f);
     mFrozenCoefficientBuffer.emplace_back(1.0f);
     mIntegrationFactorTimeCoefficientBuffer.emplace_back(CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f));
-    mBuoyancyCoefficientsBuffer.emplace_back(CalculateBuoyancyCoefficients(
-        structuralMaterial.BuoyancyVolumeFill,
-        structuralMaterial.ThermalExpansionCoefficient));
     mOceanFloorCollisionFactorsBuffer.emplace_back(CalculateOceanFloorCollisionFactors(
         mCurrentElasticityAdjustment,
         mCurrentStaticFrictionAdjustment,
@@ -61,6 +58,10 @@ void Points::Add(
         structuralMaterial.ElasticityCoefficient,
         structuralMaterial.StaticFrictionCoefficient,
         structuralMaterial.KineticFrictionCoefficient));
+    mAirWaterInterfaceWidthBuffer.emplace_back(GameParameters::ShipParticleAirWaterInterfaceWidth);
+    mBuoyancyCoefficientsBuffer.emplace_back(CalculateBuoyancyCoefficients(
+        structuralMaterial.BuoyancyVolumeFill,
+        structuralMaterial.ThermalExpansionCoefficient));
     mCachedDepthBuffer.emplace_back(mParentWorld.GetOceanSurface().GetDepth(position));
 
     mIntegrationFactorBuffer.emplace_back(vec2f::zero());
@@ -136,6 +137,7 @@ void Points::Add(
 void Points::CreateEphemeralParticleAirBubble(
     vec2f const & position,
     float depth,
+    float finalScale,
     float temperature,
     float buoyancyVolumeFillAdjustment,
     float vortexAmplitude,
@@ -172,9 +174,6 @@ void Points::CreateEphemeralParticleAirBubble(
     //mDecayBuffer[pointIndex] = 1.0f;
     mFrozenCoefficientBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
-    mBuoyancyCoefficientsBuffer[pointIndex] = CalculateBuoyancyCoefficients(
-        airBubbleBuoyancyVolumeFill,
-        airStructuralMaterial.ThermalExpansionCoefficient);
     mOceanFloorCollisionFactorsBuffer[pointIndex] = CalculateOceanFloorCollisionFactors(
         mCurrentElasticityAdjustment,
         mCurrentStaticFrictionAdjustment,
@@ -184,6 +183,10 @@ void Points::CreateEphemeralParticleAirBubble(
         airStructuralMaterial.ElasticityCoefficient,
         airStructuralMaterial.StaticFrictionCoefficient,
         airStructuralMaterial.KineticFrictionCoefficient);
+    mAirWaterInterfaceWidthBuffer[pointIndex] = GameParameters::AirBubbleParticleAirWaterInterfaceWidth;
+    mBuoyancyCoefficientsBuffer[pointIndex] = CalculateBuoyancyCoefficients(
+        airBubbleBuoyancyVolumeFill,
+        airStructuralMaterial.ThermalExpansionCoefficient);
     mCachedDepthBuffer[pointIndex] = depth;
 
     //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
@@ -216,6 +219,7 @@ void Points::CreateEphemeralParticleAirBubble(
     mEphemeralParticleAttributes1Buffer[pointIndex].StartSimulationTime = currentSimulationTime;
     mEphemeralParticleAttributes2Buffer[pointIndex].MaxSimulationLifetime = std::numeric_limits<float>::max();
     mEphemeralParticleAttributes2Buffer[pointIndex].State = EphemeralState::AirBubbleState(
+        finalScale,
         vortexAmplitude,
         vortexPeriod);
 
@@ -261,6 +265,7 @@ void Points::CreateEphemeralParticleDebris(
     //mDecayBuffer[pointIndex] = 1.0f;
     mFrozenCoefficientBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
+    mAirWaterInterfaceWidthBuffer[pointIndex] = GameParameters::ShipParticleAirWaterInterfaceWidth;
     mBuoyancyCoefficientsBuffer[pointIndex] = BuoyancyCoefficients(0.0f, 0.0f); // No buoyancy
     mCachedDepthBuffer[pointIndex] = depth;
 
@@ -349,9 +354,6 @@ void Points::CreateEphemeralParticleSmoke(
     //mDecayBuffer[pointIndex] = 1.0f;
     mFrozenCoefficientBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
-    mBuoyancyCoefficientsBuffer[pointIndex] = CalculateBuoyancyCoefficients(
-        airStructuralMaterial.BuoyancyVolumeFill,
-        airStructuralMaterial.ThermalExpansionCoefficient);
     mOceanFloorCollisionFactorsBuffer[pointIndex] = CalculateOceanFloorCollisionFactors(
         mCurrentElasticityAdjustment,
         mCurrentStaticFrictionAdjustment,
@@ -361,6 +363,10 @@ void Points::CreateEphemeralParticleSmoke(
         airStructuralMaterial.ElasticityCoefficient,
         airStructuralMaterial.StaticFrictionCoefficient,
         airStructuralMaterial.KineticFrictionCoefficient);
+    mAirWaterInterfaceWidthBuffer[pointIndex] = GameParameters::ShipParticleAirWaterInterfaceWidth;
+    mBuoyancyCoefficientsBuffer[pointIndex] = CalculateBuoyancyCoefficients(
+        airStructuralMaterial.BuoyancyVolumeFill,
+        airStructuralMaterial.ThermalExpansionCoefficient);
     mCachedDepthBuffer[pointIndex] = depth;
 
     //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
@@ -438,6 +444,7 @@ void Points::CreateEphemeralParticleSparkle(
     //mDecayBuffer[pointIndex] = 1.0f;
     mFrozenCoefficientBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
+    mAirWaterInterfaceWidthBuffer[pointIndex] = GameParameters::ShipParticleAirWaterInterfaceWidth;
     mBuoyancyCoefficientsBuffer[pointIndex] = BuoyancyCoefficients(0.0f, 0.0f); // No buoyancy
     mCachedDepthBuffer[pointIndex] = depth;
 
@@ -512,9 +519,6 @@ void Points::CreateEphemeralParticleWakeBubble(
     //mDecayBuffer[pointIndex] = 1.0f;
     mFrozenCoefficientBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
-    mBuoyancyCoefficientsBuffer[pointIndex] = CalculateBuoyancyCoefficients(
-        waterStructuralMaterial.BuoyancyVolumeFill,
-        waterStructuralMaterial.ThermalExpansionCoefficient);
     mOceanFloorCollisionFactorsBuffer[pointIndex] = CalculateOceanFloorCollisionFactors(
         mCurrentElasticityAdjustment,
         mCurrentStaticFrictionAdjustment,
@@ -524,6 +528,10 @@ void Points::CreateEphemeralParticleWakeBubble(
         waterStructuralMaterial.ElasticityCoefficient,
         waterStructuralMaterial.StaticFrictionCoefficient,
         waterStructuralMaterial.KineticFrictionCoefficient);
+    mAirWaterInterfaceWidthBuffer[pointIndex] = GameParameters::ShipParticleAirWaterInterfaceWidth;
+    mBuoyancyCoefficientsBuffer[pointIndex] = CalculateBuoyancyCoefficients(
+        waterStructuralMaterial.BuoyancyVolumeFill,
+        waterStructuralMaterial.ThermalExpansionCoefficient);
     mCachedDepthBuffer[pointIndex] = depth;
 
     //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
@@ -1524,7 +1532,8 @@ void Points::UpdateEphemeralParticles(
                             {
                                 mParentWorld.DisplaceOceanSurfaceAt(
                                     GetPosition(pointIndex).x,
-                                    (oceanFloorDisplacementAtAirBubbleSurfacingSurfaceOffset - depth) * 0.75f);  // Magic number
+                                    // Magnitude is lower with depth and higher with scale
+                                    (oceanFloorDisplacementAtAirBubbleSurfacingSurfaceOffset - depth) * state.FinalScale * 0.375f); // Magic number
 
                                 mGameEventHandler->OnAirBubbleSurfaced(1);
                             }
@@ -2052,10 +2061,10 @@ void Points::UploadEphemeralParticles(
                 auto const & state = mEphemeralParticleAttributes2Buffer[pointIndex].State.AirBubble;
 
                 // Calculate scale based on lifetime
-                float constexpr ScaleMax = 0.2f;
-                float constexpr ScaleMin = 0.04f;
+                float const scaleMax = state.FinalScale;
+                float const scaleMin = state.FinalScale / 5.0f;
                 float const scale =
-                    ScaleMin + (ScaleMax - ScaleMin) * SmoothStep(0.0f, 2.0f, state.SimulationLifetime);
+                    scaleMin + (scaleMax - scaleMin) * SmoothStep(0.0f, 2.0f, state.SimulationLifetime);
 
                 shipRenderContext.UploadAirBubble(
                     GetPlaneId(pointIndex),

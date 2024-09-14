@@ -43,7 +43,7 @@ Npcs::StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType Npcs::Ca
 void Npcs::UpdateHuman(
 	StateType & npc,
 	float currentSimulationTime,
-	Ship const & homeShip,
+	Ship & homeShip,
 	GameParameters const & gameParameters)
 {
 	assert(npc.ParticleMesh.Particles.size() == 2);
@@ -1331,24 +1331,23 @@ void Npcs::UpdateHuman(
 					// Transition
 
 					StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType swimStyle;
-					switch (GameRandomEngine::GetInstance().Choose(4))
+					switch (GameRandomEngine::GetInstance().Choose(5))
 					{
 						case 0:
-						case 1:
-						{
-							swimStyle = HumanNpcStateType::BehaviorType::Free_Swimming_Style1;
-							break;
-						}
-
-						case 2:
 						{
 							swimStyle = HumanNpcStateType::BehaviorType::Free_Swimming_Style2;
 							break;
 						}
 
-						default:
+						case 1:
 						{
 							swimStyle = HumanNpcStateType::BehaviorType::Free_Swimming_Style3;
+							break;
+						}
+
+						default:
+						{
+							swimStyle = HumanNpcStateType::BehaviorType::Free_Swimming_Style1;
 							break;
 						}
 					}
@@ -1356,7 +1355,7 @@ void Npcs::UpdateHuman(
 					humanState.TransitionToState(swimStyle, currentSimulationTime);
 
 					// Face: FvB/0
-					humanState.CurrentFaceOrientation = 1.0f; // TODO: random: back
+					humanState.CurrentFaceOrientation = (GameRandomEngine::GetInstance().Choose(3) == 0) ? -1.0f : 1.0f;
 					humanState.CurrentFaceDirectionX = 0.0f;
 
 #ifdef BARYLAB_PROBING
@@ -1368,6 +1367,32 @@ void Npcs::UpdateHuman(
 
 					break;
 				}
+			}
+
+			// We are staying at this state...
+			// ...update this state then
+
+			// See if time to emit a bubble
+
+			float & nextBubbleSimulationTime = (humanState.CurrentBehavior == HumanNpcStateType::BehaviorType::Free_InWater)
+				? humanState.CurrentBehaviorState.Free_InWater.NextBubbleEmissionSimulationTimestamp
+				: humanState.CurrentBehaviorState.Free_Swimming.NextBubbleEmissionSimulationTimestamp;
+
+			if (currentSimulationTime > nextBubbleSimulationTime)
+			{
+				homeShip.SpawnAirBubble(
+					mParticles.GetPosition(secondaryParticleState.ParticleIndex),
+					GameParameters::NpcAirBubbleFinalScale,
+					GameParameters::HumanNpcTemperature,
+					currentSimulationTime,
+					npc.CurrentPlaneId,
+					gameParameters);
+
+				// Calculate next emission timestamp
+				nextBubbleSimulationTime =
+					currentSimulationTime
+					+ 1.0f // Min delay
+					+ std::min(GameRandomEngine::GetInstance().GenerateExponentialReal(0.5f), 2.0f);
 			}
 
 			break;

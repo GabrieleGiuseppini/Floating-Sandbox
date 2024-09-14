@@ -411,18 +411,23 @@ private:
 
 					struct Free_InWaterType
 					{
+						float NextBubbleEmissionSimulationTimestamp;
 						float ProgressToSwimming;
 
 						void Reset()
 						{
+							NextBubbleEmissionSimulationTimestamp = 0.0f;
 							ProgressToSwimming = 0.0f;
 						}
 					} Free_InWater;
 
 					struct Free_SwimmingType
 					{
+						float NextBubbleEmissionSimulationTimestamp;
+
 						void Reset()
 						{
+							NextBubbleEmissionSimulationTimestamp = 0.0f;
 						}
 					} Free_Swimming;
 
@@ -1628,7 +1633,7 @@ private:
 	void UpdateHuman(
 		StateType & npc,
 		float currentSimulationTime,
-		Ship const & homeShip,
+		Ship & homeShip,
 		GameParameters const & gameParameters);
 
 	inline bool CheckAndMaintainHumanEquilibrium(

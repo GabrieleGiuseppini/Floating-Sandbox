@@ -586,7 +586,7 @@ void Npcs::UpdateNpcs(
         if (npcState.has_value())
         {
             assert(mShips[npcState->CurrentShipId].has_value());
-            auto const & homeShip = mShips[npcState->CurrentShipId]->HomeShip;
+            auto & homeShip = mShips[npcState->CurrentShipId]->HomeShip;
 
             // Behavior
 

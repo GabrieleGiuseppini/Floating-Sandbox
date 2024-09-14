@@ -50,10 +50,10 @@ public:
 
     void Announce();
 
-    inline ShipId GetId() const { return mId; }
+    ShipId GetId() const { return mId; }
 
-    inline World const & GetParentWorld() const { return mParentWorld; }
-    inline World & GetParentWorld() { return mParentWorld; }
+    World const & GetParentWorld() const { return mParentWorld; }
+    World & GetParentWorld() { return mParentWorld; }
 
     Geometry::AABBSet CalculateAABBs() const;
 
@@ -62,14 +62,14 @@ public:
         return mMaxMaxPlaneId;
     }
 
-    inline size_t GetPointCount() const { return mPoints.GetElementCount(); }
+    size_t GetPointCount() const { return mPoints.GetElementCount(); }
 
-    inline Points const & GetPoints() const { return mPoints; }
-    inline Points & GetPoints() { return mPoints; }
+    Points const & GetPoints() const { return mPoints; }
+    Points & GetPoints() { return mPoints; }
 
-    inline Springs const & GetSprings() const { return mSprings; }
+    Springs const & GetSprings() const { return mSprings; }
 
-    inline Triangles const & GetTriangles() const { return mTriangles; }
+    Triangles const & GetTriangles() const { return mTriangles; }
 
     bool IsUnderwater(ElementIndex pointElementIndex) const
     {
@@ -294,6 +294,14 @@ public:
     void SetEngineControllerState(
         GlobalElectricalElementId electricalElementId,
         float controllerValue,
+        GameParameters const & gameParameters);
+
+    void SpawnAirBubble(
+        vec2f const & position,
+        float finalScale, // Relative to texture's world dimensions
+        float temperature,
+        float currentSimulationTime,
+        PlaneId planeId,
         GameParameters const & gameParameters);
 
     bool DestroyTriangle(ElementIndex triangleIndex);
@@ -609,28 +617,29 @@ private:
         float blastForce, // N
         GameParameters const & gameParameters);
 
-    void GenerateAirBubble(
-        vec2f const & position,
+    void InternalSpawnAirBubble(
+        vec2f const & position,        
         float depth,
+        float finalScale, // Relative to texture's world dimensions
         float temperature,
         float currentSimulationTime,
         PlaneId planeId,
         GameParameters const & gameParameters);
 
-    void GenerateDebris(
+    void InternalSpawnDebris(
         ElementIndex sourcePointElementIndex,
         StructuralMaterial const & debrisStructuralMaterial,
         float currentSimulationTime,
         GameParameters const & gameParameters);
 
-    void GenerateSparklesForCut(
+    void InternalSpawnSparklesForCut(
         ElementIndex springElementIndex,
         vec2f const & cutDirectionStartPos,
         vec2f const & cutDirectionEndPos,
         float currentSimulationTime,
         GameParameters const & gameParameters);
 
-	void GenerateSparklesForLightning(
+	void InternalSpawnSparklesForLightning(
 		ElementIndex pointElementIndex,
 		float currentSimulationTime,
 		GameParameters const & gameParameters);

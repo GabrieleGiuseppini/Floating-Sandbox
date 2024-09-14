@@ -503,7 +503,7 @@ bool Ship::SawThrough(
                 if (isMetal)
                 {
                     // Emit sparkles
-                    GenerateSparklesForCut(
+                    InternalSpawnSparklesForCut(
                         springIndex,
                         adjustedStartPos,
                         endPos,
@@ -868,9 +868,10 @@ std::optional<ToolApplicationLocus> Ship::InjectBubblesAt(
     if (float const depth = mParentWorld.GetOceanSurface().GetDepth(position);
         depth > 0.0f)
     {
-        GenerateAirBubble(
+        InternalSpawnAirBubble(
             position,
             depth,
+            GameParameters::ShipAirBubbleFinalScale,
             GameParameters::Temperature0,
             currentSimulationTime,
             mMaxMaxPlaneId,
@@ -1549,7 +1550,7 @@ void Ship::ApplyLightning(
                     gameParameters);
 
                 // Generate sparkles
-                GenerateSparklesForLightning(
+                InternalSpawnSparklesForLightning(
                     pointIndex,
                     currentSimulationTime,
                     gameParameters);
@@ -1621,6 +1622,24 @@ void Ship::SetEngineControllerState(
     mElectricalElements.SetEngineControllerState(
         electricalElementId,
         controllerValue,
+        gameParameters);
+}
+
+void Ship::SpawnAirBubble(
+    vec2f const & position,
+    float finalScale, // Relative to texture's world dimensions
+    float temperature,
+    float currentSimulationTime,
+    PlaneId planeId,
+    GameParameters const & gameParameters)
+{
+    InternalSpawnAirBubble(
+        position,
+        mParentWorld.GetOceanSurface().GetDepth(position),
+        finalScale,
+        temperature,
+        currentSimulationTime,
+        planeId,
         gameParameters);
 }
 

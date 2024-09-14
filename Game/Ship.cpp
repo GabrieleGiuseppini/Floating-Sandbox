@@ -1056,7 +1056,8 @@ void Ship::ApplyWorldParticleForces(
         // in-between: smooth air-water interface (nature abhors discontinuities)
         //
 
-        float const uwCoefficient = Clamp(newCachedPointDepthsBuffer[pointIndex], 0.0f, 1.0f);
+        float const airWaterInterfaceWidth = mPoints.GetAirWaterInterfaceWidth(pointIndex);
+        float const uwCoefficient = Clamp(newCachedPointDepthsBuffer[pointIndex], 0.0f, airWaterInterfaceWidth) / airWaterInterfaceWidth;
 
         //
         // Apply gravity
@@ -2184,9 +2185,10 @@ void Ship::UpdatePressureAndWaterInflow(
                 if (doGenerateAirBubbles
                     && !mPoints.IsRope(pointIndex))
                 {
-                    GenerateAirBubble(
+                    InternalSpawnAirBubble(
                         mPoints.GetPosition(pointIndex),
                         pointDepth,
+                        GameParameters::ShipAirBubbleFinalScale,
                         mPoints.GetTemperature(pointIndex),
                         currentSimulationTime,
                         mPoints.GetPlaneId(pointIndex),
@@ -3333,9 +3335,10 @@ void Ship::OnBlast(
         std::chrono::milliseconds(0));
 }
 
-void Ship::GenerateAirBubble(
-    vec2f const & position,
+void Ship::InternalSpawnAirBubble(
+    vec2f const & position,    
     float depth,
+    float finalScale, // Relative to texture's world dimensions
     float temperature,
     float currentSimulationTime,
     PlaneId planeId,
@@ -3344,10 +3347,10 @@ void Ship::GenerateAirBubble(
     std::uint64_t constexpr PhasePeriod = 10;
     float const phase = static_cast<float>((mAirBubblesCreatedCount++) % PhasePeriod) / static_cast<float>(PhasePeriod);
 
-    float constexpr StartVortexAmplitude = 0.1f;
-    float constexpr EndVortexAmplitude = 4.0f;
+    float const endVortexAmplitude = 4.0f * finalScale / GameParameters::ShipAirBubbleFinalScale; // We want 4 for ship
+    float const startVortexAmplitude = endVortexAmplitude / 40.0f;
     float const vortexAmplitude =
-        (StartVortexAmplitude + (EndVortexAmplitude - StartVortexAmplitude) * phase)
+        (startVortexAmplitude + (endVortexAmplitude - startVortexAmplitude) * phase)
         * (GameRandomEngine::GetInstance().Choose(2) == 1 ? 1.0f : -1.0f);
 
     float const vortexPeriod = GameRandomEngine::GetInstance().GenerateUniformReal(
@@ -3362,6 +3365,7 @@ void Ship::GenerateAirBubble(
     mPoints.CreateEphemeralParticleAirBubble(
         position,
         depth,
+        finalScale,
         temperature,
         buoyancyVolumeFillAdjustment,
         vortexAmplitude,
@@ -3370,7 +3374,7 @@ void Ship::GenerateAirBubble(
         planeId);
 }
 
-void Ship::GenerateDebris(
+void Ship::InternalSpawnDebris(
     ElementIndex sourcePointElementIndex,
     StructuralMaterial const & debrisStructuralMaterial,
     float currentSimulationTime,
@@ -3411,7 +3415,7 @@ void Ship::GenerateDebris(
     }
 }
 
-void Ship::GenerateSparklesForCut(
+void Ship::InternalSpawnSparklesForCut(
     ElementIndex springElementIndex,
     vec2f const & cutDirectionStartPos,
     vec2f const & cutDirectionEndPos,
@@ -3449,7 +3453,7 @@ void Ship::GenerateSparklesForCut(
     }
 }
 
-void Ship::GenerateSparklesForLightning(
+void Ship::InternalSpawnSparklesForLightning(
     ElementIndex pointElementIndex,
     float currentSimulationTime,
     GameParameters const & /*gameParameters*/)
@@ -3571,7 +3575,7 @@ void Ship::HandlePointDetach(
         if (generateDebris)
         {
             // Emit debris
-            GenerateDebris(
+            InternalSpawnDebris(
                 pointElementIndex,
                 mPoints.GetStructuralMaterial(pointElementIndex),
                 currentSimulationTime,
@@ -3942,7 +3946,7 @@ void Ship::HandleElectricalElementDestroy(
 
         case ElectricalElementDestroySpecializationType::LampExplosion:
         {
-            GenerateDebris(
+            InternalSpawnDebris(
                 pointElementIndex,
                 mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Glass),
                 currentSimulationTime,

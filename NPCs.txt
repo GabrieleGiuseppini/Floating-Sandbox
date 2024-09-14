@@ -470,17 +470,20 @@ Arch
 	+ Triangle destruction: 
 		+ Should be enough to check for current triangle being deleted at beginning of UpdateNpc(.), and if so, become free (identical for @ pri and @ non-pri)
 			+ Just like when we detect secondary, third, etc. are in a different connected component, see above
-	- Swimming humans generate (small) bubbles
-		- Each free aquatic state has a NextBubbleEmissionSimulationTimestamp
-			- Init'd as 0 at state enter (Reset)
-			- At each state update at which we remain in state:
-				- If curSimTime > state's:
-					- Emit bubble (via homeShip->GenerateAirBubble)
-						- Ship::GenerateAirBubble: becomes public and also takes minScale, maxScale
-							- Points::GenerateAirBubble: store minScale, maxScale in AirBubble state
-							- Points::UpdateEphParticles: use minScale, maxScale from AirBubble state
-						- Call Ship::GenerateAirBubble
-					- Calc next: gaussian
+	+ Swimming humans generate (small) bubbles
+		! Free_InWater
+		! Free_SwimimingX
+		+ Each free aquatic state has a NextBubbleEmissionSimulationTimestamp
+			+ Init'd as 0 at state enter (Reset)
+			+ At each state update at which we remain in state:
+				+ If curSimTime > state's:
+					+ Emit bubble (via homeShip->GenerateAirBubble)
+						+ Ship::GenerateAirBubble: becomes public and also takes minScale, maxScale
+							+ @ normal interactions
+							+ Points::GenerateAirBubble: store minScale, maxScale in AirBubble state
+							+ Points::UpdateEphParticles: use minScale, maxScale from AirBubble state
+						+ Call Ship::GenerateAirBubble
+					+ Calc next: gaussian
 	+ Humans on air-water interface generate small waves
 		+ Needs to produce as side-effect: swimming humans generate small waves
 		+ Needs to produce as side-effect: humans falling into water generate small (but larger) waves
@@ -801,6 +804,35 @@ Arch
 		- Adding to NPC particles' _light_ buffer
 			- But test it first, as humans are dipoles and dubious result
 	+ Incorporate ship material's elasticity and friction in calculations for bounce and friction
+	+ Panic:
+		+ Close to bomb
+			+ @ Eq, Walk:
+				+ HasBomb => DirFlip (iff BombProximityPanic < 0.7) and set Npc::BombProximityPanic to 1.0	
+		+ Close to fire
+			+ Ditto
+
+	- Backport to BaryLab and profile
+		- Possible perf improv: Prelim forces: separate loop by Npc->Particles
+			- Better code cache and locality (for particles)		
+
+===================
+Next release:
+
+- Explosive NPCs
+	- Explode at hit
+	- Need mechanism for dynamic removal of NPCs
+		- Will be useful also for human removal animation (*)
+		- Option 1: set of NpcId's to remove, scavenged at end of Update()
+			- TODOHERE: will we need a way to keep the NPC "out of the loop" for the rest of the simulation step?
+
+- New human behaviors:
+	- Panic when water entering
+	- When human removed, enters "Removal" behavior: rotates with arms 90degree and legs closed, alpha down, then disappears
+		- Requires delayed removal (@UpdateBehavior); via new DestroyNpc() helper for common removal logic
+			- Can't be picked when in this state
+			- Physics update: skipped when in this state (like BeingPlaced, but for whole NPC this time)
+			- Tests:
+				- Stats published
 	- When ship is repaired, all NPCs do a little dance
 		- Sync is simulation clock (so all are in sync)
 		- Signal from outside (OnShipRepaired) sets global flag
@@ -812,54 +844,12 @@ Arch
 					- Transitions out with same out transitions as Equilibrium
 			- At UpdateSimulation:
 				- Do dance
-	- Air & water density effect on:
-		- Damping
-		- Buoyancy
-	- Panic:
-		+ Close to bomb
-			+ @ Eq, Walk:
-				+ HasBomb => DirFlip (iff BombProximityPanic < 0.7) and set Npc::BombProximityPanic to 1.0	
-		+ Close to fire
-			+ Ditto
-		- Close to water entering (leaking point w/inflow)
-			- Ditto
-
-	- Backport to BaryLab and profile
-		- Possible perf improv: Prelim forces: separate loop by Npc->Particles
-			- Better code cache and locality (for particles)
-
-- NPC stats rendering as RollingText
-
-- Walk planning:
-	- First off: WalkingBehaviorState remembers CurrentTriangleElementIndex (of primary)
-		- Init'd to None at each transition into Walking
-	- @ UpdateBehavior while walking (or at WalkingUpdate):
-		- If current primary triangle != current:
-			- First off: immediate things, such as:
-				- Check fire at location
-				- Check bomb presence at location
-			- Then, planning:
-				- TODO: walk along triangle and check where we end up at end - what about alternatives?
-				- Find next floor in cur triangle along walking direction
-					- CanProceedInDirection(TriangleEdge, xDir) -> bool
-						- xDir translated into CCW or CW, then proceeds with analytical vertex finding until floor
-		
-
-===================
-Next release:
-
-- New behaviors:
-	- When human removed, enters "Removal" behavior: rotates with arms 90degree and legs closed, alpha down, then disappears
-		- Requires delayed removal (@UpdateBehavior); via new DestroyNpc() helper for common removal logic
-			- Can't be picked when in this state
-			- Physics update: skipped when in this state (like BeingPlaced, but for whole NPC this time)
-			- Tests:
-				- Stats published
 	- Engineers repair ship
 		- Ship exposes simplified "Repair" functionality, which simply detaches needed particles from where they are and brings them close
 		- New human NPC behavior ("Constrained_Repairing") with associated animation
 			- Entered when wanting to cross a triangle that on the other side is free because it's damaged
 		- Might also have "Underwater Engineers" with zero buoyancy, unaffected by internal water, who can thus repair when the ship is flooded
+
 - Doors:
 	- New "DoorHinge" electrical element (with both ON/OFF types), controls floorness of springs (and thus triangle edges) among neighboring pairs of them
 		- Triangle edge/floors: split "factory" vs. "actual"
@@ -940,6 +930,18 @@ Next release:
 - Floorplan layer from user:
 	- ShipFactory: when a floorplan layer is present, it needs to inform tessellation (i.e. triangle selection) which needs
 	  to use floor information (ipv hull springs) to decide between covering triangles
+
+- Walk planning:
+	- First off: WalkingBehaviorState remembers CurrentTriangleElementIndex (of primary)
+		- Init'd to None at each transition into Walking
+	- @ UpdateBehavior while walking (or at WalkingUpdate):
+		- If current primary triangle != current:
+			- Planning:
+				- Find next floor in cur triangle along walking direction
+					- CanProceedInDirection(TriangleEdge, xDir) -> bool
+						- xDir translated into CCW or CW, then proceeds with analytical vertex finding until floor
+						- Can not proceed if doesn't find any alternatives
+			- current = current primary triangle
 
 - NPC packs:
 	- NpcDatabase:
