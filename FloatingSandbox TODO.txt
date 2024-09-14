@@ -209,19 +209,29 @@
 					+ ship_element
 					+ ship_npcs_texture
 					X world_border
-				- Optim's:
-					- Don't do in Basic
-						+ Make clouds basic
-							+ SettingsDialog setting
-							+ Calibration
-						- Test old Dell now
-						- Remove lamp from all basics
-						- Redo old Dell test
-							- Old FS: 13.6 total, 11.10 w/out clouds
-							- New FS before work: 17.8 total, 15.3 w/out clouds
-					- Can save one multiplication by using 0.5 in toggle of uniform
-					- Instead of two smoothsteps, could use this curve:
-						y = -0.00004972662 + 7.573704*x - 41.11177*x^2 + 92.40549*x^3 - 67.15639*x^4
+				+ Make clouds basic
+					+ SettingsDialog setting
+					+ Calibration
+					+ Redo old Dell test
+						+ Old FS: 13.6
+						+ New FS before work: 17.8
+						+ New FS after work: 16.5/16.6
+
+				- Test with depth darkening also @ ship
+					- If ok: do at all ship shaders (incl. generic_mipmapped, and everything else)
+						- TODO: how to control perf loss on old Dell? feature switch on depth darkening? Or on another flag (set at calibration)?
+
+				= Optim's:
+					+ Switch on toggle
+						+ Test first: 
+							+ 1. Hack test on old Dell
+								+ Result: 16.5 -> 14.2
+							+ 2. Hack test on new Dell
+								+ Result: 3.95 -> 3.6
+						+ Do in func
+					
+					- Try with depth darkening: subst exp with approximating quadratic
+
 			+ Tool:
 				+ Icon & cursors
 					+ lamp_cursor_up
@@ -246,12 +256,13 @@
 					+ mLampToSet.reset()
 		+ Cleanup:
 			+ RenderContext::cctor(): mLampToSet initialization
-		= Test:
+		+ Test:
 			+ Scare fishes
-			= Test rendering time delta - before-code and after-code
-				- On Dell:
-					- Prev: 14.4
-					- New: 18.1
+			+ Test rendering time delta - before-code and after-code
+				! NOTE: NUMBERS BELOW ARE OBSOLETE - WE NOW SHORT_CIRCUIT LAMP
+				+ On Dell:
+					+ Prev: 14.4
+					+ New: 18.1
 				+ On new:
 					+ Prev: 3.20
 					+ New: 3.80-3.90

@@ -481,11 +481,20 @@ Arch
 							- Points::UpdateEphParticles: use minScale, maxScale from AirBubble state
 						- Call Ship::GenerateAirBubble
 					- Calc next: gaussian
-	- Humans on air-water interface generate small waves
+	= Humans on air-water interface generate small waves
 		- Needs to produce as side-effect: swimming humans generate small waves
 		- Needs to produce as side-effect: humans falling into water generate small (but larger) waves
-		- Do surface displacement proportional to (signed) V velocity
-			- When head above but feet below - anything better?
+		= Do surface displacement proportional to (signed) V velocity
+			+ Fix: placing human directly in water causes anywaterness change
+				+ Unless we initialize anyWaterness at placement time
+			= Fix: oscillations
+				! Due to just-entered particles becoming out-of-water at next frame
+				! Possible fix 1: require V sign agreement with delta_waterness
+					+ But now it's not continuous
+				- Possible fix 2: do like ship:
+					- Displacement is due to just having velocity in narrow band underwater
+					- FIX: if too quick we don't "see" the particle in the band
+					- If we go for this: nuke work for CalculateFreeParticleWaternessAt and waterness init'n
 	+ Fire:
 		+ @Npcs::Update():
 			+ Calc LowFreqCycle (see Ship)
@@ -566,14 +575,20 @@ Arch
 		+ Fix human state machine: Free_KO -> Free_Aerial *OR Free_InWater*
 	- Follow NPC:
 		! Gist:
-			! Menu: Focus On Ship, Focus On Npc (just as FYI, not interactable), Focus On Nothing
-		- State machine/interactions:
+			! Menu: 
+				- Focus On Ship, Focus On Npc, Focus On Nothing
+				- Focus On Next NPC
+		- Spec of state machine/interactions:
 			- User hits HOME (focus on ship) -> GameController::ResetView() -> ViewManager::ResetView(all ships' AABBs):
-				- If focusing on ship: resets user offsets
-				- Else: focuses on ship (one-off)
+				- If focusing on ship: reset user offsets
+				- Else: focus on ship (one-off)
 				! In short: if there's auto-focus, we re-center; if not, we focus one-off
 			- User enables FocusOnShip:
 				- TODO: disable FocusOnNpc if set
+				- TODOHERE
+			- User enables FocusOnNoc:
+				- TODOHERE: pick first automatically
+			- User clicks "Next NPC":
 				- TODOHERE
 			- User enables FocusOnNothing:
 				- TODOHERE
@@ -582,9 +597,14 @@ Arch
 			- User uses tool to follow nothing:
 				- TODOHERE
 			- The currently-selected NPC is removed:
-				- TODOHERE
+				- If it was the object of auto-focus:
+					- TODOHERE: off, or next?
+					- Auto-focus switches off
+						- UI 3 menus reconciliate
 			- A new ship is loaded/Reset:
-				- TODOHERE
+				- If AutoFocusOnShipLoad is ON:
+					- If focusing on ship: reset user offsets
+					- Else: focus on ship (one-off)
 		- 1. Npcs gets the concept of "CurrentSelectedNpc" (which was of BaryLab)
 			- opt<NpcId> member
 			- API from outside via Select...() / DeSelect...()/Get...() (the BaryLab ones, make them official)
@@ -835,6 +855,11 @@ Next release:
 			- Physics update: skipped when in this state (like BeingPlaced, but for whole NPC this time)
 			- Tests:
 				- Stats published
+	- Engineers repair ship
+		- Ship exposes simplified "Repair" functionality, which simply detaches needed particles from where they are and brings them close
+		- New human NPC behavior ("Constrained_Repairing") with associated animation
+			- Entered when wanting to cross a triangle that on the other side is free because it's damaged
+		- Might also have "Underwater Engineers" with zero buoyancy, unaffected by internal water, who can thus repair when the ship is flooded
 - Doors:
 	- New "DoorHinge" electrical element (with both ON/OFF types), controls floorness of springs (and thus triangle edges) among neighboring pairs of them
 		- Triangle edge/floors: split "factory" vs. "actual"
