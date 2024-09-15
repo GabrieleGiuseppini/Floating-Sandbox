@@ -1056,8 +1056,8 @@ void Ship::ApplyWorldParticleForces(
         // in-between: smooth air-water interface (nature abhors discontinuities)
         //
 
-        float const airWaterInterfaceWidth = mPoints.GetAirWaterInterfaceWidth(pointIndex);
-        float const uwCoefficient = Clamp(newCachedPointDepthsBuffer[pointIndex], 0.0f, airWaterInterfaceWidth) / airWaterInterfaceWidth;
+        float const airWaterInterfaceInverseWidth = mPoints.GetAirWaterInterfaceInverseWidth(pointIndex);
+        float const uwCoefficient = Clamp(newCachedPointDepthsBuffer[pointIndex] * airWaterInterfaceInverseWidth, 0.0f, 1.0f);
 
         //
         // Apply gravity

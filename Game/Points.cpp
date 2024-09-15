@@ -58,7 +58,7 @@ void Points::Add(
         structuralMaterial.ElasticityCoefficient,
         structuralMaterial.StaticFrictionCoefficient,
         structuralMaterial.KineticFrictionCoefficient));
-    mAirWaterInterfaceWidthBuffer.emplace_back(GameParameters::ShipParticleAirWaterInterfaceWidth);
+    mAirWaterInterfaceInverseWidthBuffer.emplace_back(1.0f / GameParameters::ShipParticleAirWaterInterfaceWidth);
     mBuoyancyCoefficientsBuffer.emplace_back(CalculateBuoyancyCoefficients(
         structuralMaterial.BuoyancyVolumeFill,
         structuralMaterial.ThermalExpansionCoefficient));
@@ -183,7 +183,7 @@ void Points::CreateEphemeralParticleAirBubble(
         airStructuralMaterial.ElasticityCoefficient,
         airStructuralMaterial.StaticFrictionCoefficient,
         airStructuralMaterial.KineticFrictionCoefficient);
-    mAirWaterInterfaceWidthBuffer[pointIndex] = GameParameters::AirBubbleParticleAirWaterInterfaceWidth;
+    mAirWaterInterfaceInverseWidthBuffer[pointIndex] = 1.0f / GameParameters::AirBubbleParticleAirWaterInterfaceWidth;
     mBuoyancyCoefficientsBuffer[pointIndex] = CalculateBuoyancyCoefficients(
         airBubbleBuoyancyVolumeFill,
         airStructuralMaterial.ThermalExpansionCoefficient);
@@ -265,7 +265,7 @@ void Points::CreateEphemeralParticleDebris(
     //mDecayBuffer[pointIndex] = 1.0f;
     mFrozenCoefficientBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
-    mAirWaterInterfaceWidthBuffer[pointIndex] = GameParameters::ShipParticleAirWaterInterfaceWidth;
+    mAirWaterInterfaceInverseWidthBuffer[pointIndex] = 1.0f / GameParameters::ShipParticleAirWaterInterfaceWidth;
     mBuoyancyCoefficientsBuffer[pointIndex] = BuoyancyCoefficients(0.0f, 0.0f); // No buoyancy
     mCachedDepthBuffer[pointIndex] = depth;
 
@@ -363,7 +363,7 @@ void Points::CreateEphemeralParticleSmoke(
         airStructuralMaterial.ElasticityCoefficient,
         airStructuralMaterial.StaticFrictionCoefficient,
         airStructuralMaterial.KineticFrictionCoefficient);
-    mAirWaterInterfaceWidthBuffer[pointIndex] = GameParameters::ShipParticleAirWaterInterfaceWidth;
+    mAirWaterInterfaceInverseWidthBuffer[pointIndex] = 1.0f / GameParameters::ShipParticleAirWaterInterfaceWidth;
     mBuoyancyCoefficientsBuffer[pointIndex] = CalculateBuoyancyCoefficients(
         airStructuralMaterial.BuoyancyVolumeFill,
         airStructuralMaterial.ThermalExpansionCoefficient);
@@ -444,7 +444,7 @@ void Points::CreateEphemeralParticleSparkle(
     //mDecayBuffer[pointIndex] = 1.0f;
     mFrozenCoefficientBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
-    mAirWaterInterfaceWidthBuffer[pointIndex] = GameParameters::ShipParticleAirWaterInterfaceWidth;
+    mAirWaterInterfaceInverseWidthBuffer[pointIndex] = 1.0f / GameParameters::ShipParticleAirWaterInterfaceWidth;
     mBuoyancyCoefficientsBuffer[pointIndex] = BuoyancyCoefficients(0.0f, 0.0f); // No buoyancy
     mCachedDepthBuffer[pointIndex] = depth;
 
@@ -528,7 +528,7 @@ void Points::CreateEphemeralParticleWakeBubble(
         waterStructuralMaterial.ElasticityCoefficient,
         waterStructuralMaterial.StaticFrictionCoefficient,
         waterStructuralMaterial.KineticFrictionCoefficient);
-    mAirWaterInterfaceWidthBuffer[pointIndex] = GameParameters::ShipParticleAirWaterInterfaceWidth;
+    mAirWaterInterfaceInverseWidthBuffer[pointIndex] = 1.0f / GameParameters::ShipParticleAirWaterInterfaceWidth;
     mBuoyancyCoefficientsBuffer[pointIndex] = CalculateBuoyancyCoefficients(
         waterStructuralMaterial.BuoyancyVolumeFill,
         waterStructuralMaterial.ThermalExpansionCoefficient);

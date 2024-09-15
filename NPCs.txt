@@ -576,7 +576,6 @@ Arch
 		+ Animation:
 			+ Simple fixed-angle
 		+ Fix human state machine: Free_KO -> Free_Aerial *OR Free_InWater*
-	- New code for UW interface width: avoid division by storing 1/width and Clamp(0, depth * 1/width, 1)
 	- Follow NPC:
 		! Gist:
 			- TODO:

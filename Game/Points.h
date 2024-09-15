@@ -612,7 +612,7 @@ public:
         , mFrozenCoefficientBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mIntegrationFactorTimeCoefficientBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mOceanFloorCollisionFactorsBuffer(mBufferElementCount, shipPointCount, OceanFloorCollisionFactors(0.0f, 0.0f, 0.0f))
-        , mAirWaterInterfaceWidthBuffer(mBufferElementCount, shipPointCount, 1.0f)
+        , mAirWaterInterfaceInverseWidthBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mBuoyancyCoefficientsBuffer(mBufferElementCount, shipPointCount, BuoyancyCoefficients(0.0f, 0.0f))
         , mCachedDepthBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mIntegrationFactorBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
@@ -1299,9 +1299,9 @@ public:
         return mOceanFloorCollisionFactorsBuffer[pointElementIndex];
     }
 
-    float GetAirWaterInterfaceWidth(ElementIndex pointElementIndex)
+    float GetAirWaterInterfaceInverseWidth(ElementIndex pointElementIndex)
     {
-        return mAirWaterInterfaceWidthBuffer[pointElementIndex];
+        return mAirWaterInterfaceInverseWidthBuffer[pointElementIndex];
     }
 
     BuoyancyCoefficients const & GetBuoyancyCoefficients(ElementIndex pointElementIndex)
@@ -2242,7 +2242,7 @@ private:
     Buffer<float> mFrozenCoefficientBuffer; // 1.0: not frozen; 0.0f: frozen
     Buffer<float> mIntegrationFactorTimeCoefficientBuffer; // dt^2 or zero when the point is frozen
     Buffer<OceanFloorCollisionFactors> mOceanFloorCollisionFactorsBuffer;
-    Buffer<float> mAirWaterInterfaceWidthBuffer; // The width of the air-water interface, to control the damping we perform against buoyancy oscillations
+    Buffer<float> mAirWaterInterfaceInverseWidthBuffer; // The reciprocal of the air-water interface, to control the damping we perform against buoyancy oscillations
     Buffer<BuoyancyCoefficients> mBuoyancyCoefficientsBuffer;
     Buffer<float> mCachedDepthBuffer; // Positive when underwater
 
