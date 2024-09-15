@@ -166,8 +166,9 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(rgbColor, CrepuscularColor);
     ADD_GC_SETTING(CloudRenderDetailType, CloudRenderDetail);
     ADD_GC_SETTING(float, OceanTransparency);
-    ADD_GC_SETTING(float, OceanDarkeningRate);
+    ADD_GC_SETTING(float, OceanDepthDarkeningRate);
     ADD_GC_SETTING(float, ShipAmbientLightSensitivity);
+    ADD_GC_SETTING(float, ShipDepthDarkeningSensitivity);
     ADD_GC_SETTING(rgbColor, FlatLampLightColor);
     ADD_GC_SETTING(rgbColor, DefaultWaterColor);
     ADD_GC_SETTING(float, WaterContrast);

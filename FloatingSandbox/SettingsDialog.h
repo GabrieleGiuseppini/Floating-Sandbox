@@ -175,7 +175,7 @@ private:
     wxCheckBox * mOceanRenderDetailModeDetailedCheckBox;
     wxCheckBox * mSeeShipThroughOceanCheckBox;
     SliderControl<float> * mOceanTransparencySlider;
-    SliderControl<float> * mOceanDarkeningRateSlider;
+    SliderControl<float> * mOceanDepthDarkeningRateSlider;
     wxRadioButton * mFlatSkyRenderModeRadioButton;
     wxColourPickerCtrl * mFlatSkyColorPicker;
     wxRadioButton * mCrepuscularSkyRenderModeRadioButton;
@@ -194,6 +194,7 @@ private:
     wxRadioBox * mStressRenderModeRadioBox;
     SliderControl<float> * mShipFlameSizeAdjustmentSlider;
     SliderControl<float> * mShipAmbientLightSensitivitySlider;
+    SliderControl<float> * mShipDepthDarkeningSensitivitySlider;
     wxColourPickerCtrl * mDefaultWaterColorPicker;
     SliderControl<float> * mWaterContrastSlider;
     SliderControl<float> * mWaterLevelOfDetailSlider;

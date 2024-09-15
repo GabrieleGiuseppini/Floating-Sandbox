@@ -654,6 +654,7 @@ ShipRenderContext::ShipRenderContext(
     ApplyShipStructureRenderModeChanges(renderParameters);
     ApplyViewModelChanges(renderParameters);
     ApplyEffectiveAmbientLightIntensityChanges(renderParameters);
+    ApplyDepthDarkeningSensitivityChanges(renderParameters);
     ApplySkyChanges(renderParameters);
     ApplyFlatLampLightColorChanges(renderParameters);
     ApplyWaterColorChanges(renderParameters);
@@ -1159,6 +1160,11 @@ void ShipRenderContext::ProcessParameterChanges(RenderParameters const & renderP
         || renderParameters.AreShipStructureRenderModeSelectorsDirty)
     {
         ApplyEffectiveAmbientLightIntensityChanges(renderParameters);
+    }
+
+    if (renderParameters.IsShipDepthDarkeningSensitivityDirty)
+    {
+        ApplyDepthDarkeningSensitivityChanges(renderParameters);
     }
 
     if (renderParameters.IsSkyDirty
@@ -2896,6 +2902,11 @@ void ShipRenderContext::ApplyEffectiveAmbientLightIntensityChanges(RenderParamet
     mShaderManager.ActivateProgram<ProgramType::ShipGenericMipMappedTextures>();
     mShaderManager.SetProgramParameter<ProgramType::ShipGenericMipMappedTextures, ProgramParameterType::EffectiveAmbientLightIntensity>(
         effectiveAmbientLightIntensityParamValue);
+}
+
+void ShipRenderContext::ApplyDepthDarkeningSensitivityChanges(RenderParameters const & renderParameters)
+{
+    mShaderManager.SetProgramParameterInAllShaders<ProgramParameterType::ShipDepthDarkeningSensitivity>(renderParameters.ShipDepthDarkeningSensitivity);
 }
 
 void ShipRenderContext::ApplySkyChanges(RenderParameters const & renderParameters)

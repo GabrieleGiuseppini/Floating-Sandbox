@@ -217,9 +217,18 @@
 						+ New FS before work: 17.8
 						+ New FS after work: 16.5/16.6
 
-				- Test with depth darkening also @ ship
-					- If ok: do at all ship shaders (incl. generic_mipmapped, and everything else)
-						- TODO: how to control perf loss on old Dell? feature switch on depth darkening? Or on another flag (set at calibration)?
+				= Test with depth darkening also @ ship
+					+ Add ship sensitivity
+						+ Both params SetinAllShaders
+						+ SettingsDialog
+					+ Use it as feature switch to control perf loss
+						= Calibration sets it off
+					+ Shaders:
+						+ ship_element
+						+ ship_generic_mipmapped_textures
+							+ Make sure works on air bubbles
+						+ ship_npcs
+					- old dell
 
 				= Optim's:
 					+ Switch on toggle

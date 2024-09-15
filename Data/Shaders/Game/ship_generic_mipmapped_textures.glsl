@@ -13,9 +13,11 @@ out float vertexWorldY;
 out vec2 vertexTextureCoordinates;
 out float vertexAlpha;
 out float vertexEffectiveAmbientLightIntensity;
+out float vertexEffectiveDepthDarkeningSensitivity;
 
 // Params
 uniform float paramEffectiveAmbientLightIntensity;
+uniform float paramShipDepthDarkeningSensitivity;
 uniform mat4 paramOrthoMatrix;
 
 void main()
@@ -25,6 +27,8 @@ void main()
     vertexEffectiveAmbientLightIntensity = 
         (1.0 - inShipGenericMipMappedTexture3.z)
 	    + inShipGenericMipMappedTexture3.z * paramEffectiveAmbientLightIntensity;
+    vertexEffectiveDepthDarkeningSensitivity =
+	    inShipGenericMipMappedTexture3.z * paramShipDepthDarkeningSensitivity;
 
     float scale = inShipGenericMipMappedTexture2.w;
     float angle = inShipGenericMipMappedTexture3.x;
@@ -55,12 +59,15 @@ in float vertexWorldY;
 in vec2 vertexTextureCoordinates;
 in float vertexAlpha;
 in float vertexEffectiveAmbientLightIntensity;
+in float vertexEffectiveDepthDarkeningSensitivity;
 
 // The texture
 uniform sampler2D paramGenericMipMappedTexturesAtlasTexture;
 
 // Parameters        
 uniform vec3 paramEffectiveMoonlightColor;
+uniform float paramOceanDepthDarkeningRate;
+
 
 void main()
 {
@@ -73,6 +80,20 @@ void main()
 
     // Calculate lamp tool intensity
     float lampToolIntensity = CalculateLampToolIntensity(gl_FragCoord.xy);
+
+    if (vertexEffectiveDepthDarkeningSensitivity > 0.0) // Fine to branch - all pixels will follow the same branching
+    {
+        // Calculate depth darkening
+        float darkeningFactor = CalculateOceanDepthDarkeningFactor(
+            vertexWorldY,
+            paramOceanDepthDarkeningRate);
+
+        // Apply depth darkening
+        textureColor.xyz = mix(
+            textureColor.xyz,
+            vec3(0.),
+            darkeningFactor * (1.0 - lampToolIntensity) * vertexEffectiveDepthDarkeningSensitivity);
+    }
 
     // Apply ambient light
     textureColor.xyz = ApplyAmbientLight(

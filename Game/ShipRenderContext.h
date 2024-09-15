@@ -1462,6 +1462,7 @@ private:
     void ApplyShipStructureRenderModeChanges(RenderParameters const & renderParameters);
     void ApplyViewModelChanges(RenderParameters const & renderParameters);
     void ApplyEffectiveAmbientLightIntensityChanges(RenderParameters const & renderParameters);
+    void ApplyDepthDarkeningSensitivityChanges(RenderParameters const & renderParameters);
     void ApplySkyChanges(RenderParameters const & renderParameters);
     void ApplyFlatLampLightColorChanges(RenderParameters const & renderParameters);
     void ApplyWaterColorChanges(RenderParameters const & renderParameters);

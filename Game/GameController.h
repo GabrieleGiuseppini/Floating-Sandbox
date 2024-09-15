@@ -860,11 +860,14 @@ public:
     float GetOceanTransparency() const override { return mRenderContext->GetOceanTransparency(); }
     void SetOceanTransparency(float value) override { mRenderContext->SetOceanTransparency(value); }
 
-    float GetOceanDarkeningRate() const override { return mRenderContext->GetOceanDarkeningRate(); }
-    void SetOceanDarkeningRate(float value) override { mRenderContext->SetOceanDarkeningRate(value); }
+    float GetOceanDepthDarkeningRate() const override { return mRenderContext->GetOceanDepthDarkeningRate(); }
+    void SetOceanDepthDarkeningRate(float value) override { mRenderContext->SetOceanDepthDarkeningRate(value); }
 
     float GetShipAmbientLightSensitivity() const override { return mRenderContext->GetShipAmbientLightSensitivity(); }
     void SetShipAmbientLightSensitivity(float value) override { mRenderContext->SetShipAmbientLightSensitivity(value); }
+
+    float GetShipDepthDarkeningSensitivity() const override { return mRenderContext->GetShipDepthDarkeningSensitivity(); }
+    void SetShipDepthDarkeningSensitivity(float value) override { mRenderContext->SetShipDepthDarkeningSensitivity(value); }
 
     rgbColor const & GetFlatLampLightColor() const override { return mRenderContext->GetFlatLampLightColor(); }
     void SetFlatLampLightColor(rgbColor const & color) override { mRenderContext->SetFlatLampLightColor(color); }

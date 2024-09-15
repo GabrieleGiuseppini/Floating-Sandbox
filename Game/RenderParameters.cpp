@@ -19,7 +19,7 @@ RenderParameters::RenderParameters(
 	, CrepuscularColor (0xe5, 0xd3, 0xe5)
 	, CloudRenderDetail(CloudRenderDetailType::Detailed)
 	, OceanTransparency(0.594f)
-	, OceanDarkeningRate(0.12795731425285339f)
+	, OceanDepthDarkeningRate(0.12795731425285339f)
 	, OceanRenderMode(OceanRenderModeType::Flat)
 	, DepthOceanColorStart(0x4a, 0x84, 0x9f)
 	, DepthOceanColorEnd(0x00, 0x00, 0x00)
@@ -34,6 +34,7 @@ RenderParameters::RenderParameters(
 	// Ship
 	, ShipViewMode(ShipViewModeType::Exterior)
 	, ShipAmbientLightSensitivity(1.0f)
+	, ShipDepthDarkeningSensitivity(0.906f)
 	, FlatLampLightColor(0xff, 0xff, 0xbf)
 	, DrawExplosions(true)
 	, DrawFlames(true)
@@ -54,7 +55,8 @@ RenderParameters::RenderParameters(
 	, IsCanvasSizeDirty(true)
 	, IsEffectiveAmbientLightIntensityDirty(true)
 	, IsSkyDirty(true)
-	, IsOceanDarkeningRateDirty(true)
+	, IsCloudRenderDetailDirty(true)
+	, IsOceanDepthDarkeningRateDirty(true)
 	, AreOceanRenderParametersDirty(true)
 	, IsOceanTextureIndexDirty(true)
 	, AreLandRenderParametersDirty(true)
@@ -62,6 +64,7 @@ RenderParameters::RenderParameters(
 	, IsLandRenderDetailDirty(true)
 	, IsShipViewModeDirty(true)
 	, IsShipAmbientLightSensitivityDirty(true)
+	, IsShipDepthDarkeningSensitivityDirty(true)
 	, IsFlatLampLightColorDirty(true)
 	, IsShipWaterColorDirty(true)
 	, IsShipWaterContrastDirty(true)
@@ -83,7 +86,7 @@ RenderParameters RenderParameters::TakeSnapshotAndClear()
 	IsEffectiveAmbientLightIntensityDirty = false;
 	IsSkyDirty = false;
 	IsCloudRenderDetailDirty = false;
-	IsOceanDarkeningRateDirty = false;
+	IsOceanDepthDarkeningRateDirty = false;
 	AreOceanRenderParametersDirty = false;
 	IsOceanTextureIndexDirty = false;
 	AreLandRenderParametersDirty = false;
@@ -92,6 +95,7 @@ RenderParameters RenderParameters::TakeSnapshotAndClear()
 	//
 	IsShipViewModeDirty = false;
 	IsShipAmbientLightSensitivityDirty = false;
+	IsShipDepthDarkeningSensitivityDirty = false;
 	IsFlatLampLightColorDirty = false;
 	IsShipWaterColorDirty = false;
 	IsShipWaterContrastDirty = false;

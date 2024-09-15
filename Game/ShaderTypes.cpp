@@ -437,12 +437,12 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::NoiseStrength;
     else if (str == "OceanTransparency")
         return ProgramParameterType::OceanTransparency;
-    else if (str == "OceanDarkeningRate")
-        return ProgramParameterType::OceanDarkeningRate;
     else if (str == "OceanDepthColorStart")
         return ProgramParameterType::OceanDepthColorStart;
     else if (str == "OceanDepthColorEnd")
         return ProgramParameterType::OceanDepthColorEnd;
+    else if (str == "OceanDepthDarkeningRate")
+        return ProgramParameterType::OceanDepthDarkeningRate;
     else if (str == "OceanFlatColor")
         return ProgramParameterType::OceanFlatColor;
     else if (str == "OrthoMatrix")
@@ -451,6 +451,8 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::RainAngle;
     else if (str == "RainDensity")
         return ProgramParameterType::RainDensity;
+    else if (str == "ShipDepthDarkeningSensitivity")
+        return ProgramParameterType::ShipDepthDarkeningSensitivity;
     else if (str == "StarTransparency")
         return ProgramParameterType::StarTransparency;
     else if (str == "StressColorMap")
@@ -532,22 +534,24 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
         return "MatteColor";
     case ProgramParameterType::NoiseStrength:
         return "NoiseStrength";
-    case ProgramParameterType::OceanTransparency:
-        return "OceanTransparency";
-    case ProgramParameterType::OceanDarkeningRate:
-        return "OceanDarkeningRate";
     case ProgramParameterType::OceanDepthColorStart:
         return "OceanDepthColorStart";
     case ProgramParameterType::OceanDepthColorEnd:
         return "OceanDepthColorEnd";
+    case ProgramParameterType::OceanDepthDarkeningRate:
+        return "OceanDepthDarkeningRate";
     case ProgramParameterType::OceanFlatColor:
         return "OceanFlatColor";
+    case ProgramParameterType::OceanTransparency:
+        return "OceanTransparency";
     case ProgramParameterType::OrthoMatrix:
         return "OrthoMatrix";
     case ProgramParameterType::RainAngle:
         return "RainAngle";
     case ProgramParameterType::RainDensity:
         return "RainDensity";
+    case ProgramParameterType::ShipDepthDarkeningSensitivity:
+        return "ShipDepthDarkeningSensitivity";
     case ProgramParameterType::StarTransparency:
         return "StarTransparency";
     case ProgramParameterType::StressColorMap:

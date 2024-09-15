@@ -867,9 +867,9 @@ void WorldRenderContext::ProcessParameterChanges(RenderParameters const & render
         ApplySkyChanges(renderParameters);
     }
 
-    if (renderParameters.IsOceanDarkeningRateDirty)
+    if (renderParameters.IsOceanDepthDarkeningRateDirty)
     {
-        ApplyOceanDarkeningRateChanges(renderParameters);
+        ApplyOceanDepthDarkeningRateChanges(renderParameters);
     }
 
     if (renderParameters.AreOceanRenderParametersDirty)
@@ -1982,67 +1982,13 @@ void WorldRenderContext::ApplySkyChanges(RenderParameters const & renderParamete
         effectiveMoonlightColor);
 }
 
-void WorldRenderContext::ApplyOceanDarkeningRateChanges(RenderParameters const & renderParameters)
+void WorldRenderContext::ApplyOceanDepthDarkeningRateChanges(RenderParameters const & renderParameters)
 {
     // Set parameter in all programs
 
-    float const rate = renderParameters.OceanDarkeningRate / 50.0f;
+    float const rate = renderParameters.OceanDepthDarkeningRate / 50.0f;
 
-    mShaderManager.ActivateProgram<ProgramType::LandFlatBasic>();
-    mShaderManager.SetProgramParameter<ProgramType::LandFlatBasic, ProgramParameterType::OceanDarkeningRate>(
-        rate);
-
-    mShaderManager.ActivateProgram<ProgramType::LandFlatDetailed>();
-    mShaderManager.SetProgramParameter<ProgramType::LandFlatDetailed, ProgramParameterType::OceanDarkeningRate>(
-        rate);
-
-    mShaderManager.ActivateProgram<ProgramType::LandTextureBasic>();
-    mShaderManager.SetProgramParameter<ProgramType::LandTextureBasic, ProgramParameterType::OceanDarkeningRate>(
-        rate);
-
-    mShaderManager.ActivateProgram<ProgramType::LandTextureDetailed>();
-    mShaderManager.SetProgramParameter<ProgramType::LandTextureDetailed, ProgramParameterType::OceanDarkeningRate>(
-        rate);
-
-    mShaderManager.ActivateProgram<ProgramType::OceanDepthBasic>();
-    mShaderManager.SetProgramParameter<ProgramType::OceanDepthBasic, ProgramParameterType::OceanDarkeningRate>(
-        rate);
-
-    mShaderManager.ActivateProgram<ProgramType::OceanDepthDetailedBackground>();
-    mShaderManager.SetProgramParameter<ProgramType::OceanDepthDetailedBackground, ProgramParameterType::OceanDarkeningRate>(
-        rate);
-
-    mShaderManager.ActivateProgram<ProgramType::OceanDepthDetailedForeground>();
-    mShaderManager.SetProgramParameter<ProgramType::OceanDepthDetailedForeground, ProgramParameterType::OceanDarkeningRate>(
-        rate);
-
-    mShaderManager.ActivateProgram<ProgramType::OceanFlatDetailedBackground>();
-    mShaderManager.SetProgramParameter<ProgramType::OceanFlatDetailedBackground, ProgramParameterType::OceanDarkeningRate>(
-        rate);
-
-    mShaderManager.ActivateProgram<ProgramType::OceanFlatDetailedForeground>();
-    mShaderManager.SetProgramParameter<ProgramType::OceanFlatDetailedForeground, ProgramParameterType::OceanDarkeningRate>(
-        rate);
-
-    mShaderManager.ActivateProgram<ProgramType::OceanTextureBasic>();
-    mShaderManager.SetProgramParameter<ProgramType::OceanTextureBasic, ProgramParameterType::OceanDarkeningRate>(
-        rate);
-
-    mShaderManager.ActivateProgram<ProgramType::OceanTextureDetailedBackground>();
-    mShaderManager.SetProgramParameter<ProgramType::OceanTextureDetailedBackground, ProgramParameterType::OceanDarkeningRate>(
-        rate);
-
-    mShaderManager.ActivateProgram<ProgramType::OceanTextureDetailedForeground>();
-    mShaderManager.SetProgramParameter<ProgramType::OceanTextureDetailedForeground, ProgramParameterType::OceanDarkeningRate>(
-        rate);
-
-    mShaderManager.ActivateProgram<ProgramType::FishesBasic>();
-    mShaderManager.SetProgramParameter<ProgramType::FishesBasic, ProgramParameterType::OceanDarkeningRate>(
-        rate);
-
-    mShaderManager.ActivateProgram<ProgramType::FishesDetailed>();
-    mShaderManager.SetProgramParameter<ProgramType::FishesDetailed, ProgramParameterType::OceanDarkeningRate>(
-        rate);
+    mShaderManager.SetProgramParameterInAllShaders<ProgramParameterType::OceanDepthDarkeningRate>(rate);
 }
 
 void WorldRenderContext::ApplyOceanRenderParametersChanges(RenderParameters const & renderParameters)

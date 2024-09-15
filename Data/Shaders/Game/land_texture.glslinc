@@ -40,7 +40,7 @@ uniform sampler2D paramNoiseTexture;
 uniform float paramEffectiveAmbientLightIntensity;
 uniform vec3 paramEffectiveMoonlightColor;
 uniform vec2 paramTextureScaling;
-uniform float paramOceanDarkeningRate;
+uniform float paramOceanDepthDarkeningRate;
 
 void main()
 {
@@ -63,7 +63,7 @@ void main()
     // Calculate depth darkening
     float darkeningFactor = CalculateOceanDepthDarkeningFactor(
         worldCoords.y,
-        paramOceanDarkeningRate);
+        paramOceanDepthDarkeningRate);
 
     // Calculate lamp tool intensity
     float lampToolIntensity = CalculateLampToolIntensity(gl_FragCoord.xy);

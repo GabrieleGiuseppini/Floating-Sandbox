@@ -820,7 +820,7 @@ private:
     void ApplyCanvasSizeChanges(RenderParameters const & renderParameters);
     void ApplyEffectiveAmbientLightIntensityChanges(RenderParameters const & renderParameters);
     void ApplySkyChanges(RenderParameters const & renderParameters);
-    void ApplyOceanDarkeningRateChanges(RenderParameters const & renderParameters);
+    void ApplyOceanDepthDarkeningRateChanges(RenderParameters const & renderParameters);
     void ApplyOceanRenderParametersChanges(RenderParameters const & renderParameters);
     void ApplyOceanTextureIndexChanges(RenderParameters const & renderParameters);
     void ApplyLandRenderParametersChanges(RenderParameters const & renderParameters);

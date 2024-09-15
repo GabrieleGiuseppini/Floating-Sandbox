@@ -72,7 +72,7 @@ uniform sampler1D paramSharedTexture;
 
 // Parameters        
 uniform float paramEffectiveAmbientLightIntensity;
-uniform float paramOceanDarkeningRate;
+uniform float paramOceanDepthDarkeningRate;
 #ifdef DETAILED_FISHES
 uniform float paramSunRaysInclination;
 #endif
@@ -197,7 +197,7 @@ void main()
     // Calculate depth darkening
     float darkeningFactor = CalculateOceanDepthDarkeningFactor(
         worldY,
-        paramOceanDarkeningRate);
+        paramOceanDepthDarkeningRate);
 
     // Calculate lamp tool intensity
     float lampToolIntensity = CalculateLampToolIntensity(gl_FragCoord.xy);

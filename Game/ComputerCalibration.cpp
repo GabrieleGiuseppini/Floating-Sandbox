@@ -69,34 +69,25 @@ void ComputerCalibrator::TuneGame(
     if (score.NormalizedCPUScore < 0.65f
         || score.NormalizedGfxScore < 0.1f)
     {
-        renderContext.SetCloudRenderDetail(CloudRenderDetailType::Basic);
+        // Ocean detail requires CPU as well as GPU
         renderContext.SetOceanRenderDetail(OceanRenderDetailType::Basic);
+    }
+
+    if (score.NormalizedGfxScore < 0.1f)
+    {
+        // These all require GPU
+        renderContext.SetCloudRenderDetail(CloudRenderDetailType::Basic);
         renderContext.SetLandRenderDetail(LandRenderDetailType::Basic);
         renderContext.SetDoCrepuscularGradient(false);
-    }
-    else
-    {
-        renderContext.SetCloudRenderDetail(CloudRenderDetailType::Detailed);
-        renderContext.SetOceanRenderDetail(OceanRenderDetailType::Detailed);
-        renderContext.SetLandRenderDetail(LandRenderDetailType::Detailed);
-        renderContext.SetDoCrepuscularGradient(true);
+        renderContext.SetShipDepthDarkeningSensitivity(0.0f);
     }
 
     if (score.NormalizedGfxScore < 0.1f
         || ThreadManager::GetNumberOfProcessors() == 1)
     {
+        // These require huge vertex attribute uploads, hence best when rendering is multi-threaded
         renderContext.SetHeatRenderMode(HeatRenderModeType::None);
     }
-    else
-    {
-        renderContext.SetHeatRenderMode(HeatRenderModeType::Incandescence);
-    }
-
-    LogMessage("ComputerCalibration:"
-        " CloudRenderDetail=", renderContext.GetCloudRenderDetail() == CloudRenderDetailType::Basic ? "Basic" : "Advanced",
-        " OceanRenderDetail=", renderContext.GetOceanRenderDetail() == OceanRenderDetailType::Basic ? "Basic" : "Advanced",
-        " LandRenderDetail=", renderContext.GetLandRenderDetail() == LandRenderDetailType::Basic ? "Basic" : "Advanced",
-        " HeatRenderMode=", renderContext.GetHeatRenderMode() == HeatRenderModeType::None ? "None" : (renderContext.GetHeatRenderMode() == HeatRenderModeType::HeatOverlay ? "HeatOverlay" : "Incandescence"));
 }
 
 float ComputerCalibrator::RunComputation()

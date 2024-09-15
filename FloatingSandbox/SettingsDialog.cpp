@@ -30,7 +30,7 @@
 #include "Resources/ShipBBB.xpm"
 #endif
 
-static int constexpr SliderWidth = 82; // Min
+static int constexpr SliderWidth = 72; // Min
 static int constexpr SliderHeight = 140;
 
 static int constexpr IconInStaticBorderMargin = 4;
@@ -4092,9 +4092,9 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            // Ocean Darkening Rate
+            // Ocean Depth Darkening Rate
             {
-                mOceanDarkeningRateSlider = new SliderControl<float>(
+                mOceanDepthDarkeningRateSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
                     SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
@@ -4103,7 +4103,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     _("Adjusts the rate at which the ocean darkens with depth."),
                     [this](float value)
                     {
-                        this->mLiveSettings.SetValue(GameSettings::OceanDarkeningRate, value);
+                        this->mLiveSettings.SetValue(GameSettings::OceanDepthDarkeningRate, value);
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<ExponentialSliderCore>(
@@ -4112,7 +4112,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                         1.0f));
 
                 sizer->Add(
-                    mOceanDarkeningRateSlider,
+                    mOceanDepthDarkeningRateSlider,
                     wxGBPosition(0, 2),
                     wxGBSpan(3, 1),
                     wxALL,
@@ -4490,6 +4490,32 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
+            // Depth Darkening Sensitivity
+            {
+                mShipDepthDarkeningSensitivitySlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Depth Darkening"),
+                    _("Controls the sensitivity of the ship to depth darkening; lower values allow the ship to be visible also at depth."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::ShipDepthDarkeningSensitivity, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        0.0f,
+                        1.0f));
+
+                sizer->Add(
+                    mShipDepthDarkeningSensitivitySlider,
+                    wxGBPosition(0, 3),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
             // Flame size adjustment
             {
                 mShipFlameSizeAdjustmentSlider = new SliderControl<float>(
@@ -4510,7 +4536,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
                 sizer->Add(
                     mShipFlameSizeAdjustmentSlider,
-                    wxGBPosition(0, 3),
+                    wxGBPosition(0, 4),
                     wxGBSpan(1, 1),
                     wxALL,
                     CellBorderInner);
@@ -4552,7 +4578,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
                 sizer->Add(
                     mStressRenderModeRadioBox,
-                    wxGBPosition(0, 4),
+                    wxGBPosition(0, 5),
                     wxGBSpan(1, 1),
                     wxALL,
                     CellBorderInner);
@@ -5947,7 +5973,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mOceanRenderDetailModeDetailedCheckBox->SetValue(settings.GetValue<OceanRenderDetailType>(GameSettings::OceanRenderDetail) == OceanRenderDetailType::Detailed);
     mSeeShipThroughOceanCheckBox->SetValue(settings.GetValue<bool>(GameSettings::ShowShipThroughOcean));
     mOceanTransparencySlider->SetValue(settings.GetValue<float>(GameSettings::OceanTransparency));
-    mOceanDarkeningRateSlider->SetValue(settings.GetValue<float>(GameSettings::OceanDarkeningRate));
+    mOceanDepthDarkeningRateSlider->SetValue(settings.GetValue<float>(GameSettings::OceanDepthDarkeningRate));
 
     ReconciliateOceanRenderModeSettings();
 
@@ -6057,6 +6083,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
 
     mShipFlameSizeAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::ShipFlameSizeAdjustment));
     mShipAmbientLightSensitivitySlider->SetValue(settings.GetValue<float>(GameSettings::ShipAmbientLightSensitivity));
+    mShipDepthDarkeningSensitivitySlider->SetValue(settings.GetValue<float>(GameSettings::ShipDepthDarkeningSensitivity));
 
     auto const defaultWaterColor = settings.GetValue<rgbColor>(GameSettings::DefaultWaterColor);
     mDefaultWaterColorPicker->SetColour(wxColor(defaultWaterColor.r, defaultWaterColor.g, defaultWaterColor.b));

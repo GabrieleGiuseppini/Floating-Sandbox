@@ -36,7 +36,7 @@ struct RenderParameters
     CloudRenderDetailType CloudRenderDetail;
 
     float OceanTransparency;
-    float OceanDarkeningRate;
+    float OceanDepthDarkeningRate;
     OceanRenderModeType OceanRenderMode;
     rgbColor DepthOceanColorStart;
     rgbColor DepthOceanColorEnd;
@@ -56,6 +56,7 @@ struct RenderParameters
 
     ShipViewModeType ShipViewMode;
     float ShipAmbientLightSensitivity;
+    float ShipDepthDarkeningSensitivity;
     rgbColor FlatLampLightColor;
     bool DrawExplosions;
     bool DrawFlames;
@@ -86,7 +87,7 @@ struct RenderParameters
     bool IsEffectiveAmbientLightIntensityDirty;
     bool IsSkyDirty; // Tracks various sky render parameters as a whole, for convenience
     bool IsCloudRenderDetailDirty;
-    bool IsOceanDarkeningRateDirty;
+    bool IsOceanDepthDarkeningRateDirty;
     bool AreOceanRenderParametersDirty; // Tracks various ocean render parameters as a whole, for convenience
     bool IsOceanTextureIndexDirty;
     bool AreLandRenderParametersDirty; // Tracks various land render parameters as a whole, for convenience
@@ -95,6 +96,7 @@ struct RenderParameters
     // Ship
     bool IsShipViewModeDirty;
     bool IsShipAmbientLightSensitivityDirty;
+    bool IsShipDepthDarkeningSensitivityDirty;
     bool IsFlatLampLightColorDirty;
     bool IsShipWaterColorDirty;
     bool IsShipWaterContrastDirty;

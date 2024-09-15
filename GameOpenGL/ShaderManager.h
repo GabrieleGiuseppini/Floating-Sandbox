@@ -109,6 +109,29 @@ public:
         CheckUniformError(program, Parameter);
     }
 
+    /*
+     * Warning: changes currently-active program
+     */
+    template <typename Traits::ProgramParameterType Parameter>
+    inline void SetProgramParameterInAllShaders(float value)
+    {
+        constexpr uint32_t parameterIndex = static_cast<uint32_t>(Parameter);
+        assert(parameterIndex < mProgramsByProgramParameter.size());
+        for (typename Traits::ProgramType program : mProgramsByProgramParameter[parameterIndex])
+        {
+            uint32_t const programIndex = static_cast<uint32_t>(program);
+            assert(mPrograms[programIndex].UniformLocations[parameterIndex] != NoParameterLocation);
+
+            ActivateProgram(program);
+
+            glUniform1f(
+                mPrograms[programIndex].UniformLocations[parameterIndex],
+                value);
+
+            CheckUniformError(program, Parameter);
+        }
+    }
+
     template <typename Traits::ProgramType Program, typename Traits::ProgramParameterType Parameter>
     inline void SetProgramParameter(vec2f const & val)
     {
@@ -174,6 +197,32 @@ public:
         CheckUniformError<Program, Parameter>();
     }
 
+    /*
+     * Warning: changes currently-active program
+     */
+    template <typename Traits::ProgramParameterType Parameter>
+    inline void SetProgramParameterInAllShaders(vec4f const & val)
+    {
+        constexpr uint32_t parameterIndex = static_cast<uint32_t>(Parameter);
+        assert(parameterIndex < mProgramsByProgramParameter.size());
+        for (typename Traits::ProgramType program : mProgramsByProgramParameter[parameterIndex])
+        {
+            uint32_t const programIndex = static_cast<uint32_t>(program);
+            assert(mPrograms[programIndex].UniformLocations[parameterIndex] != NoParameterLocation);
+
+            ActivateProgram(program);
+
+            glUniform4f(
+                mPrograms[programIndex].UniformLocations[parameterIndex],
+                val.x,
+                val.y,
+                val.z,
+                val.w);
+
+            CheckUniformError(program, Parameter);
+        }
+    }
+
     template <typename Traits::ProgramType Program, typename Traits::ProgramParameterType Parameter>
     inline void SetProgramParameter(float const (*value)[4])
     {
@@ -216,32 +265,6 @@ public:
             reinterpret_cast<GLfloat const *>(array));
 
         CheckUniformError(program, Parameter);
-    }
-
-    /*
-     * Warning: changes currently-active program
-     */
-    template <typename Traits::ProgramParameterType Parameter>
-    inline void SetProgramParameterInAllShaders(vec4f const & val)
-    {
-        constexpr uint32_t parameterIndex = static_cast<uint32_t>(Parameter);
-        assert(parameterIndex < mProgramsByProgramParameter.size());
-        for (typename Traits::ProgramType program : mProgramsByProgramParameter[parameterIndex])
-        {
-            uint32_t const programIndex = static_cast<uint32_t>(program);
-            assert(mPrograms[programIndex].UniformLocations[parameterIndex] != NoParameterLocation);
-
-            ActivateProgram(program);
-
-            glUniform4f(
-                mPrograms[programIndex].UniformLocations[parameterIndex],
-                val.x,
-                val.y,
-                val.z,
-                val.w);
-
-            CheckUniformError(program, Parameter);
-        }
     }
 
     // At any given moment, only one program may be active

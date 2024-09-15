@@ -51,7 +51,7 @@ uniform vec3 paramEffectiveMoonlightColor;
 uniform float paramOceanTransparency;
 uniform vec3 paramOceanDepthColorStart;
 uniform vec3 paramOceanDepthColorEnd;
-uniform float paramOceanDarkeningRate;
+uniform float paramOceanDepthDarkeningRate;
 uniform float paramSunRaysInclination; // 0.0==vertical, 1.0/-1.0==45/-45 degrees
 
 void main()
@@ -59,7 +59,7 @@ void main()
     // Calculate depth darkening
     float darkeningFactor = CalculateOceanDepthDarkeningFactor(
         yWorld,
-        paramOceanDarkeningRate);
+        paramOceanDepthDarkeningRate);
 
     // Calculate lamp tool intensity
     float lampToolIntensity = CalculateLampToolIntensity(gl_FragCoord.xy);

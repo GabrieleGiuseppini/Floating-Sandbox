@@ -304,15 +304,15 @@ public:
         // No need to set dirty, this is picked up at each cycle anway
     }
 
-    float GetOceanDarkeningRate() const
+    float GetOceanDepthDarkeningRate() const
     {
-        return mRenderParameters.OceanDarkeningRate;
+        return mRenderParameters.OceanDepthDarkeningRate;
     }
 
-    void SetOceanDarkeningRate(float darkeningRate)
+    void SetOceanDepthDarkeningRate(float darkeningRate)
     {
-        mRenderParameters.OceanDarkeningRate = darkeningRate;
-        mRenderParameters.IsOceanDarkeningRateDirty = true;
+        mRenderParameters.OceanDepthDarkeningRate = darkeningRate;
+        mRenderParameters.IsOceanDepthDarkeningRateDirty = true;
     }
 
     OceanRenderModeType GetOceanRenderMode() const
@@ -482,6 +482,17 @@ public:
     {
         mRenderParameters.ShipAmbientLightSensitivity = shipAmbientLightSensitivity;
         mRenderParameters.IsShipAmbientLightSensitivityDirty = true;
+    }
+
+    float GetShipDepthDarkeningSensitivity() const
+    {
+        return mRenderParameters.ShipDepthDarkeningSensitivity;
+    }
+
+    void SetShipDepthDarkeningSensitivity(float shipDepthDarkeningSensitivity)
+    {
+        mRenderParameters.ShipDepthDarkeningSensitivity = shipDepthDarkeningSensitivity;
+        mRenderParameters.IsShipDepthDarkeningSensitivityDirty = true;
     }
 
     rgbColor const & GetFlatLampLightColor() const

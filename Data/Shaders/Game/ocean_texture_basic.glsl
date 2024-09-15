@@ -38,7 +38,7 @@ uniform float paramEffectiveAmbientLightIntensity;
 uniform vec3 paramEffectiveMoonlightColor;
 uniform float paramOceanTransparency;
 uniform vec2 paramTextureScaling;
-uniform float paramOceanDarkeningRate;
+uniform float paramOceanDepthDarkeningRate;
 
 void main()
 {
@@ -60,7 +60,7 @@ void main()
     // Calculate depth darkening
     float darkeningFactor = CalculateOceanDepthDarkeningFactor(
         textureCoord.y,
-        paramOceanDarkeningRate);
+        paramOceanDepthDarkeningRate);
 
     // Apply depth darkening
     textureColor.xyz = mix(
