@@ -66,16 +66,19 @@ void main()
     // Calculate lamp tool intensity
     float lampToolIntensity = CalculateLampToolIntensity(gl_FragCoord.xy);
 
-    // Calculate depth darkening
-    float darkeningFactor = CalculateOceanDepthDarkeningFactor(
-        vertexWorldY,
-        paramOceanDepthDarkeningRate);
-    
-    // Apply depth darkening
-    c.rgb = mix(
-        c.rgb,
-        vec3(0.),
-        darkeningFactor * (1.0 - lampToolIntensity) * paramShipDepthDarkeningSensitivity);
+    if (paramShipDepthDarkeningSensitivity > 0.0) // Fine to branch - all pixels will follow the same branching
+    {
+        // Calculate depth darkening
+        float darkeningFactor = CalculateOceanDepthDarkeningFactor(
+            vertexWorldY,
+            paramOceanDepthDarkeningRate);
+
+        // Apply depth darkening
+        c.rgb = mix(
+            c.rgb,
+            vec3(0.),
+            darkeningFactor * (1.0 - lampToolIntensity) * paramShipDepthDarkeningSensitivity);
+    }
     
     // Apply ambient light
     c.rgb *= max(paramEffectiveAmbientLightIntensity, lampToolIntensity);        
