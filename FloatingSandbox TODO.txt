@@ -68,6 +68,7 @@
 					+ Remove TextureCenterPos from vertex attribs
 					+ Cleanup shader
 		+ Merge into npcs_v1
+
 	- Clouds V3: with fantastic texture coords offset
 			void mainImage( out vec4 fragColor, in vec2 fragCoord )
 			{
@@ -1602,6 +1603,7 @@
 			- Reuse shader's temperature buffer: when negative, clamp by personality seed
 				- And personality seed is also needed by shader for color saturation
 				- Add personality seed to set of immutable attributes, uploaded @ beginning
+			- Another idea: use this: https://www.shadertoy.com/view/XXXyRr
 
 	- Stars with database
 		- python script to generate binary maps for N and S emispheres
