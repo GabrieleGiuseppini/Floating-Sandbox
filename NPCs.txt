@@ -576,8 +576,22 @@ Arch
 		+ Animation:
 			+ Simple fixed-angle
 		+ Fix human state machine: Free_KO -> Free_Aerial *OR Free_InWater*
+	- New code for UW interface width: avoid division by storing 1/width and Clamp(0, depth * 1/width, 1)
 	- Follow NPC:
 		! Gist:
+			- TODO:
+				- A: do we really need tool? 
+					- Option 1: yes, we call it "Follow NPC" in UI but it's implemented as "Select NPC" for future use
+						- And, if we go for this: new selection must change target
+				- B: do we really need two menu items (Focus On Npc, Focus On Next Npc)?
+					- Depends on whether we can select the same selected menu (Focus On NPC) multiple times; if we can, re-selecting menu means "follow next"
+						- GameController::FocusOnNpcMagic()
+							- If current auto-focus is on NPC:
+								- Select next NPC (evt same)
+							- Else:
+								- If no NPC is selected: select first
+								- If an NPC is selected: set auto-focus on that NPC
+						- TODO: do we want the above to be done by MainFrame (i.e. expose selection logic)?
 			! Menu: 
 				- Focus On Ship, Focus On Npc, Focus On Nothing
 				- Focus On Next NPC
@@ -589,7 +603,7 @@ Arch
 			- User enables FocusOnShip:
 				- TODO: disable FocusOnNpc if set
 				- TODOHERE
-			- User enables FocusOnNoc:
+			- User enables FocusOnNpc:
 				- TODOHERE: pick first automatically
 			- User clicks "Next NPC":
 				- TODOHERE
@@ -605,6 +619,9 @@ Arch
 					- Auto-focus switches off
 						- UI 3 menus reconciliate
 			- A new ship is loaded/Reset:
+				- If focusing on NPC:
+					- Reset focus target
+						- Send signal to reconciliate menu items
 				- If AutoFocusOnShipLoad is ON:
 					- If focusing on ship: reset user offsets
 					- Else: focus on ship (one-off)
@@ -612,13 +629,15 @@ Arch
 			- opt<NpcId> member
 			- API from outside via Select...() / DeSelect...()/Get...() (the BaryLab ones, make them official)
 			- Reset when NpcId is no more - @ CommonRemoval
+				- No need to publish anything, GameController will figure out @ Update()
 		- 2. ViewManager:
 			- CurrentAutoFocusTarget: opt<ViewManager::AutoFocusTarget>
 				- Only holds it, GameController inspects from outside and makes calls 
-				- AutoFocusTarget: type (Ship, Npc), NpcId
+				- AutoFocusTarget: type (Ship, Npc), NpcId (evt None)
 				- Setter and getter
+			- Update(...) becomes Update(opt<FocusAABB>)
 		- 3. GameController:
-			- FollowNpc(opt<npcId>)
+			- FollowNpc(opt<npcId>):
 			- Update():
 				- Check ViewManager::CurrentAutoFocusTarget:
 					- If Ship:
