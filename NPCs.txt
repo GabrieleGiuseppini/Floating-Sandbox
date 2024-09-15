@@ -578,11 +578,9 @@ Arch
 		+ Fix human state machine: Free_KO -> Free_Aerial *OR Free_InWater*
 	- Follow NPC:
 		! Gist:
+			! We implement a "Select NPC" feature (tool + Npcs state) for generic usage, but in this release the UI calls it "Follow NPC"
 			- TODO:
-				- A: do we really need tool? 
-					- Option 1: yes, we call it "Follow NPC" in UI but it's implemented as "Select NPC" for future use
-						- And, if we go for this: new selection must change target
-				- B: do we really need two menu items (Focus On Npc, Focus On Next Npc)?
+				- Do we really need two menu items (Focus On Npc, Focus On Next Npc)?
 					- Depends on whether we can select the same selected menu (Focus On NPC) multiple times; if we can, re-selecting menu means "follow next"
 						- GameController::FocusOnNpcMagic()
 							- If current auto-focus is on NPC:
@@ -593,7 +591,7 @@ Arch
 						- TODO: do we want the above to be done by MainFrame (i.e. expose selection logic)?
 			! Menu: 
 				- Focus On Ship, Focus On Npc, Focus On Nothing
-				- Focus On Next NPC
+				- Focus On Next NPC (but see above)
 		- Spec of state machine/interactions:
 			- User hits HOME (focus on ship) -> GameController::ResetView() -> ViewManager::ResetView(all ships' AABBs):
 				- If focusing on ship: reset user offsets
@@ -609,6 +607,7 @@ Arch
 			- User enables FocusOnNothing:
 				- TODOHERE
 			- User uses tool to follow specific NPC:
+				- TODO: if we were following another, we change
 				- TODOHERE
 			- User uses tool to follow nothing:
 				- TODOHERE
@@ -656,6 +655,9 @@ Arch
 			- Reset():
 		- 4. Tool:
 		- 5. MainFrame:
+
+	- Interrupt swim with great velocities
+		- And transition to "rag doll" aquatic state
 	+ Wind: 
 		+ Npc preliminary forces: 
 			+ Only applies to *free* *above-water* particles
