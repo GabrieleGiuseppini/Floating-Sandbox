@@ -700,7 +700,12 @@ Arch
 				- Auto-focus notification layer icon toggle each time auto-focus is changed
 					- By using self-listening handler for OnAutoFocusTargetKindChanged
 			- ViewManager:
-				- Update(...) becomes Update(opt<FocusAABB>)
+				! Becomes fully slave, just high-level operations on ViewModel
+				- Update(...) splits into:
+					- UpdateAutoFocus(opt<FocusAABB>)
+						Invoked by GC iff auto-focus on
+					- Update()
+						- Invoked by GC always
 				- ResetAutoFocusAlterations() // Reset user offsets
 				- Nuke notification layer member
 				----

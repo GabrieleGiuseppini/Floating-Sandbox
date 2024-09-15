@@ -125,6 +125,7 @@
 			    
 			}
 		- Test AdobeStock clouds
+			 - Test alpha pre-multiply first with our current clouds; if they're not OK, we might have troubles with Adobe's as they are black
 		- See shader on shader toy: use cloud texture coords offset based on noise centered around 0.
 			- But solve problem of going to other texture: need more room around textures?
 				- Cannot clamp in shader: would still look awful, and nice to have long flanges
@@ -133,6 +134,9 @@
 
 	- Remove too much logging from ShipLoadDialog
 	- Merchandise link
+	- Version on splash screen
+	- Fix all 2022 copyright years (big #define?), and add g2-labs to:
+		- Credits
 
 	+ New tool: lamp
 		! Gist: 
@@ -337,9 +341,6 @@
 			- Text (NotificationContext)
 			- Fishes
 
-
-	- Fix all 2022 copyright years (big #define?), and add g2-labs to:
-		- Credits
 
 	- Try to lower global damping - seems quite slow
 
