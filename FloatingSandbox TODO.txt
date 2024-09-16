@@ -132,6 +132,8 @@
 		- Do clouds as baked atlas
 		- Do index-based rendering
 
+		- Test clouds distributed over Z layers/depth
+
 	- Remove too much logging from ShipLoadDialog
 	- Merchandise link
 	- Version on splash screen

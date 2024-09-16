@@ -577,7 +577,225 @@ Arch
 			+ Simple fixed-angle
 		+ Fix human state machine: Free_KO -> Free_Aerial *OR Free_InWater*
 
-	- Follow NPC:
+	= Follow NPC:
+		! Gist:
+			! Npcs has a concept of "Selected NPC"
+				! Holds opt<NpcId>
+				! When NPC is removed, selection is reset to nullopt
+				! OnNpcSelectionChanged(opt<>) event, fired by Npcs class at all selection changes
+			! Menu: 
+				! FocusOnNothing, FocusOnShip, FocusOnSelectedNpc ("Auto-" for all) (Radio type; all mutex)
+					- FocusOnSelectedNpc: enabled iff NPCs exist
+					- May also be enabled if no NPC is selected; toggling this ON causes automatic selection of "first" NPC
+				! SelectNextNPC (@ Tools, but at bottom, among simple action menus like TriggerTsunami)
+					- Enabled iff NPCs exist
+				! MainFrame menu reconciliation:
+					- Event announcing change of focus target (which carries focus info), always emitted: OnAutoFocusTargetChanged
+						- Does Mutex between FocusOnNothing, FocusOnShip, FocusOnSelectedNpc, but it could be already done
+					- Event announcing presence of at least one NPC (this is the OnNpcCountsUpdated which already exists), always emitted
+			! "FocusOnNpc" tool: in this version does Select+FocusOnNpc
+				! In the future we'll also have "SelectNpc" tool which does Select only
+
+		- Spec of state machine/interactions:
+			- User hits HOME (focus on ship): (B*)
+				- If focusing on ship: reset user offsets
+				- Else: 
+					- If focusing on SelectedNPC: 
+						- Target change to <>
+						- Emit OnAutoFocusTargetChanged
+						- Turn off notification @ NotificationLayer
+					- Focus on ship (one-off)
+				! In short: if there's auto-focus on ship, we re-center; if not, we focus one-off
+			- User enables FocusOnShip: (C*)
+				- Target change to <Ship>
+				- Emit OnAutoFocusTargetChanged
+				- Turn on notification @ NotificationLayer
+				- UI:
+					- Menu mutex comes for free, but also via OnAutoFocusTargetChanged
+			- User enables FocusOnSelectedNpc: (C*)
+				- Assuming:
+					- At least one NPC exists (or else menu would have been disabled)
+				- If no NPC is selected: 
+					- Select first
+					- Emit OnNpcSelectionChanged
+				- Target change to <SelectedNPC>
+				- Emit OnAutoFocusTargetChanged
+				- Turn on notification @ NotificationLayer
+				- UI:
+					- Menu mutex comes for free, but also via OnAutoFocusTargetChanged
+			- User enables FocusOnNothing: (C*)
+				- Target change to <>
+				- Emit OnAutoFocusTargetChanged
+				- Turn off notification @ NotificationLayer
+				- UI:
+					- Menu mutex comes for free, but also via OnAutoFocusTargetChanged
+			- User clicks "SelectNextNPC": (E*)
+				- Assuming:
+					- At least one NPC exists (or else menu would have been disabled)
+				- Select next NPC
+					- GameController::Update() will pick this up if focusing on CurrentlySelectedNpc, and start focusing on it	
+				- Emit OnNpcSelectionChanged
+			- User uses tool to select+follow specific NPC: (F*)
+				- Select NpcId
+					- Emit OnNpcSelectionChanged
+				- If current target != SelectedNPC:
+					- Target change to <SelectedNPC> 
+					- Emit OnAutoFocusTargetChanged
+					- Turn on notification @ NotificationLayer
+				- UI: 
+					- Menu mutex driven by OnAutoFocusTargetChanged
+			- User uses tool to select+follow nothing: (F*)
+				- Select nullopt NpcId
+					- Emit OnNpcSelectionChanged
+				- If current target == SelectedNpc:
+					- Target change to <>
+					- Emit OnAutoFocusTargetChanged
+					- Turn off notification @ NotificationLayer
+				- UI: 
+					- Menu mutex driven by OnAutoFocusTargetChanged
+			- The currently-selected NPC is removed: (A*)
+				- Assumption the NPC removed is the selected one
+				- Select nullopt NpcId (@ Npcs)
+					- Emit OnNpcSelectionChanged
+				- If current target == SelectedNpc (A*)
+					- Target change to <>
+					- Emit OnAutoFocusTargetChanged
+					- Turn off notification @ NotificationLayer
+				- UI: 
+					- Menu mutex driven by OnAutoFocusTargetChanged
+					- "Normal" NPC-quantity-driven enabling/disabling of other menu items applies here as well, simply because of NPC removal
+			- A new ship is loaded/Reset: (D*)
+				- If focusing on SelectedNPC:
+					- Target change to <>
+					- Emit OnAutoFocusTargetChanged
+					- Turn off notification @ NotificationLayer
+					- If AutoFocusOnShipLoad is ON:
+						- Focus on ship (one-off)
+				- Else if focusing on Ship:
+					- If AutoFocusOnShipLoad is ON:
+						- Reset user offsets
+				- Else if focusing on nothing:
+					- If AutoFocusOnShipLoad is ON:
+						- Focus on ship (one-off)
+				- UI: 
+					- Menu mutex driven by OnAutoFocusTargetChanged
+			- User begins placing new NPC:
+				- NOTE: here we assume we do NOT select this NPC by default
+				- If current target != Nothing:
+					- Target change to <>
+					- Emit OnAutoFocusTargetChanged
+					- Turn off notification @ NotificationLayer 
+				- Focus on this NPC's AABB (one-off)
+			- We transition to having at least one NPC
+				- Assuming: FocusOnSelectedNPC not selected (it's disabled)
+				- UI: 
+					- Enable FocusOnSelectedNpc
+					- Enable FocusOnNpc tool (& RemoveNpc)
+					- Enable SelectNextNpc
+					- "Normal" NPC-quantity-driven enabling/disabling of other menu items applies here as well, simply because of NPC addition
+			- We transition to having zero NPCs
+				- If we were following SelectedNPC, we've gone through removal of currently-selected NPC
+				- UI: 
+					- Disable FocusOnSelectedNpc
+					- Disable FocusOnNpc tool (& RemoveNpc)
+					- Disable SelectNextNpc
+					- "Normal" NPC-quantity-driven enabling/disabling of other menu items applies here as well, simply because of NPC removal
+		= Impl:
+			= Npcs gets the concept of "CurrentSelectedNpc" (which was of BaryLab)
+				+ opt<NpcId> member
+				+ API from outside via Select...(opt) / Get...() (the BaryLab ones, make them official)
+				+ Reset when NpcId is no more - @ CommonRemoval
+				- All changes emit OnNpcSelectionChanged (@ NPC event handlers)
+					- @ Setter
+			= GameType: AutoFocusTargetKindType: Ship, SelectedNpc
+			= Event handler: OnAutoFocusTargetChanged(std::opt<AutoFocusTargetKindType>) (@ Control event handlers)
+			- ViewManager:
+				! Becomes fully slave, just high-level operations on ViewModel
+				- opt<AutoFocusTargetKindType> mCurrentAutoFocusTarget
+					! Here so it's consistent, and can use target type to fine tune focus
+					- Getter and Setter
+				- Update(...) splits into:
+					- UpdateAutoFocus(opt<FocusAABB>)
+						Invoked by GC iff auto-focus on
+					- Update()
+						- Invoked by GC always
+				- ResetAutoFocusAlterations() // Reset user offsets
+				- Nuke notification layer member
+				----
+				- Nuke other public methods (for now)
+			= GameController:
+				- Remove mCurrentAutoFocusTarget and struct which we've just added
+				- Update():
+					- Check ViewManager::CurrentAutoFocusTarget:
+						- If Ship:
+							- Get all Ships' AABBs (or nullopt)
+							- ViewManager->Update(.that.)
+						- If SelectedNpc:
+							- Check with Npcs if there is still a selected NPC 
+								- Nuke HasNpc as it's not needed anymore
+							- If so:
+								- ViewManager->Update(NPC's AABB)
+									- Assert NPC exists
+							- Else: 
+								- (A*):
+									- Target change to <>
+									- Emit OnAutoFocusTargetChanged
+									- Turn off notification @ NotificationLayer
+								- ViewManager->Update(nullopt)
+						- If none:
+							- ViewManager->Update(nullopt)
+				- ResetView() (aka HOME: one-off focus on ship) 
+					- See above (B*)
+						- Move all logic out of ViewManager and into this GameController method
+							- Use ViewManager::ResetAutoFocusAlterations()
+				- SetAutoFocus(opt<target type>)
+					- See above (C*) (part of F*)
+				- ShipLoad/Reset
+					- See above (D*)
+				- SelectNpc(opt<NpcId>)
+					- See above (part of F*)
+				- SelectNextNpc()
+					- See above (E*)
+
+			- Tool: "SelectNpcTool"
+				+ Icon: like Move, Remove but with auto-focus frame - autofocus_on_npc_icon.png
+				+ Cursor: autofocus_on_npc_cursor.png
+				- RemoveNpc tool becomes base+derivates, used for Remove & FocusOnNpc (and in the future: SelectNpc)
+				- Change (for both Remove & FocusOn, i.e. base): make it so we don't have to store candidate, but probe right away at each move+down
+					! So that we don't run the risk of referencing a dead NPC
+					- Just react to move+down (& up, but just for cursor)
+				- FocusOnNpc: calls SelectNpc() + SetAutoFocus(SelectedNpc)
+				- Tool only enabled if exists at least one NPC (at OnNpcCountsUpdated)
+
+			- MainFrame:
+				- Handler for focus changes calls ReconciliateUIWithAutoFocusTarget()
+				- Handler for NPC presence (OnNpcCountsUpdated) calls ReconciliateUIWithNpcPresence(bool)
+					- Both inspect GameController for other state as needed
+
+			- Shader/Highlight
+				- See if can do border with fwidth
+					- float borderDepth = clamp(fwidth(col.a) * 20., 0., 1.);
+				- If so: use alpha of highlight (make vec4 if needed) to decide between two types of highlight
+
+			- Watch-out's:
+				- Default auto-focus values currently in ViewManager: move to GameController
+
+			- Cleanups:
+				- IGameEventHandlers::OnContinuousAutoFocusToggled() may go
+				- IGameController::Get/SetDoContinuousAutoFocus
+
+		- Barylab:
+			- Port
+			- Nuke most of "publishing for currently-selected NPC", and let GameController use selection @ end of Update() to pull off data and give to ProbeToolbar
+
+
+
+
+
+
+
+
+		- TODO: below is without focus on NPC selection
 		! Gist:
 			! We implement a "Select NPC" feature (tool + Npcs state) for generic usage, but in this release the UI calls it "Follow NPC"
 			! Menu: 
@@ -585,6 +803,7 @@ Arch
 					- Focus On Npc: enabled iff NPCs exist
 				! Focus On Next NPC (just simple action menu)
 					- Enabled iff FocusOnNpc is selected
+				- TODOHERE:  event is only for Forced transition; MainFrame does the three-way mutex
 				! MainFrame menu reconciliation is driven by:
 					- Event announcing change of focus target (plus state interrogation method)
 					- Event announcing presence of at least one NPC (this is the OnNpcCountsUpdated which already exists) (plus state interrogation method)
@@ -649,6 +868,7 @@ Arch
 					- If AutoFocusOnShipLoad is ON:
 						- Focus on ship (one-off)
 				- UI: full reconciliation
+			- TODOHERE: user places NPC
 			- We transition to having at least one NPC
 				- Assuming: AutoFocusOnNPC not selected (disabled)
 				- UI: 
@@ -659,24 +879,27 @@ Arch
 				- UI: full reconciliation
 					- Disable FocusOnNPC
 
-		- Impl:
-			- Npcs gets the concept of "CurrentSelectedNpc" (which was of BaryLab)
-				- opt<NpcId> member
-				- API from outside via Select...() / DeSelect...()/Get...() (the BaryLab ones, make them official)
-				- Reset when NpcId is no more - @ CommonRemoval
-					- No need to publish anything, GameController will figure out @ Update()
-			- GameType: AutoFocusTargetKindType: Ship, Npc
-			- Event handler: OnAutoFocusTargetKindChanged(std::opt<AutoFocusTargetKindType>)
-			- GameController:
-				- mCurrentAutoFocusTarget: opt<AutoFocusTarget>
-					- AutoFocusTarget: AutoFocusTargetKindType, opt<NpcId>
+		= Impl:
+			+ Npcs gets the concept of "CurrentSelectedNpc" (which was of BaryLab)
+				+ opt<NpcId> member
+				+ API from outside via Select...(opt) / Get...() (the BaryLab ones, make them official)
+				+ Reset when NpcId is no more - @ CommonRemoval
+					+ No need to publish anything, GameController will figure out @ Update()
+			- TODO: redo: struct is in ViewManager's FocusSession, so that it's consistent
+				- And can use target type to fine tune focus
+				- Struct _declared_ by ViewManager
+			+ GameType: AutoFocusTargetKindType: Ship, Npc
+			+ Event handler: OnAutoFocusTargetKindChanged(std::opt<AutoFocusTargetKindType>)
+			= GameController:
+				+ mCurrentAutoFocusTarget: opt<AutoFocusTarget>
+					+ AutoFocusTarget: AutoFocusTargetKindType, opt<NpcId>
 				- Update():
 					- Check ViewManager::CurrentAutoFocusTarget:
 						- If Ship:
 							- Get all Ships' AABBs (or nullopt)
 							- ViewManager->Update(.that.)
 						- If NPC:
-							- Check with Npcs if NpcId still exists
+							- Check with Npcs if NpcId still exists (HasNpc())
 							- If so:
 								- ViewManager->Update(NPC's AABB)
 							- Else: (F*)
@@ -698,7 +921,7 @@ Arch
 				- ShipLoad/Reset
 					- See above (G*)
 				- Auto-focus notification layer icon toggle each time auto-focus is changed
-					- By using self-listening handler for OnAutoFocusTargetKindChanged
+					- TODOHERE: do @ each place
 			- ViewManager:
 				! Becomes fully slave, just high-level operations on ViewModel
 				- Update(...) splits into:
@@ -711,14 +934,39 @@ Arch
 				----
 				- Nuke other public methods (for now)
 			- Tool: "SelectNpcTool"
-				- Icon: like Move, Remove but with auto-focus frame
-				- Cursor: 
-				- OnMouseDown:
+				+ Icon: like Move, Remove but with auto-focus frame - autofocus_on_npc_icon.png
+				+ Cursor: autofocus_on_npc_cursor.png
+				- Tool itself: exactly like RemoveNpc, but selects instead of removing
+					- BUT: change both: make it so we don't have to store candidate, but probe right away at each move+down
+						! So that we don't run the risk of referencing a dead NPC
+						- Just react to move+down (& up, but just for cursor)
 				- Tool only enabled if exists at least one NPC (at OnNpcCountsUpdated)
 			- MainFrame:
 				- Handler for focus changes calls ReconciliateUIWithAutoFocusTarget()
 				- Handler for NPC presence (OnNpcCountsUpdated) calls ReconciliateUIWithNpcPresence(bool)
 					- Both inspect GameController for other state as needed
+
+			- Watch-out's:
+				- Default auto-focus values currently in ViewManager: move to GameController
+
+			- Cleanups:
+				- IGameEventHandlers::OnContinuousAutoFocusToggled() may go
+				- IGameController::Get/SetDoContinuousAutoFocus
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 	- Interrupt swim with great velocities
 		- And transition to "rag doll" aquatic state
