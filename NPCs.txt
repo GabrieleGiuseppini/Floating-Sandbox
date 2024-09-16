@@ -590,7 +590,7 @@ Arch
 				! SelectNextNPC (@ Tools, but at bottom, among simple action menus like TriggerTsunami)
 					- Enabled iff NPCs exist
 				! MainFrame menu reconciliation:
-					- Event announcing change of focus target (which carries focus info), always emitted: OnAutoFocusTargetChanged
+					- Event announcing change of focus target (which carries focus info), always emitted: OnAutoFocusTargetKindChanged
 						- Does Mutex between FocusOnNothing, FocusOnShip, FocusOnSelectedNpc, but it could be already done
 					- Event announcing presence of at least one NPC (this is the OnNpcCountsUpdated which already exists), always emitted
 			! "FocusOnNpc" tool: in this version does Select+FocusOnNpc
@@ -707,8 +707,8 @@ Arch
 				+ Reset when NpcId is no more - @ CommonRemoval
 				- All changes emit OnNpcSelectionChanged (@ NPC event handlers)
 					- @ Setter
-			= GameType: AutoFocusTargetKindType: Ship, SelectedNpc
-			= Event handler: OnAutoFocusTargetChanged(std::opt<AutoFocusTargetKindType>) (@ Control event handlers)
+			+ GameType: AutoFocusTargetKindType: Ship, SelectedNpc
+			+ Event handler: OnAutoFocusTargetKindChanged(std::opt<AutoFocusTargetKindType>) (@ Control event handlers)
 			- ViewManager:
 				! Becomes fully slave, just high-level operations on ViewModel
 				- opt<AutoFocusTargetKindType> mCurrentAutoFocusTarget
@@ -724,8 +724,16 @@ Arch
 				----
 				- Nuke other public methods (for now)
 			= GameController:
-				- Remove mCurrentAutoFocusTarget and struct which we've just added
-				- Update():
+				+ Remove mCurrentAutoFocusTarget and struct which we've just added
+				- Private helpers:
+					- SwitchAutoFocusTarget(.) helper for:
+						- Target change to *
+						- Emit OnAutoFocusTargetChanged
+						- Turn off/on notification @ NotificationLayer
+					- UpdateAutoFocus()
+					- ...?
+				- Update() calls UpdateAutoFocus()
+				- UpdateAutoFocus():
 					- Check ViewManager::CurrentAutoFocusTarget:
 						- If Ship:
 							- Get all Ships' AABBs (or nullopt)
@@ -739,7 +747,7 @@ Arch
 							- Else: 
 								- (A*):
 									- Target change to <>
-									- Emit OnAutoFocusTargetChanged
+									- Emit OnAutoFocusTargetKindChanged
 									- Turn off notification @ NotificationLayer
 								- ViewManager->Update(nullopt)
 						- If none:
