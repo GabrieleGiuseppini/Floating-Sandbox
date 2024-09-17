@@ -236,7 +236,23 @@ void Npcs::UploadFlames(
 
 ///////////////////////////////
 
-Geometry::AABB Npcs::GetAABB(NpcId npcId) const
+bool Npcs::HasNpcs() const
+{
+    return std::any_of(
+        mStateBuffer.cbegin(),
+        mStateBuffer.cend(),
+        [](auto const & npcState)
+        {
+            return npcState.has_value();
+        });
+}
+
+bool Npcs::HasNpc(NpcId npcId) const
+{
+    return mStateBuffer[npcId].has_value();
+}
+
+Geometry::AABB Npcs::GetNpcAABB(NpcId npcId) const
 {
     assert(mStateBuffer[npcId].has_value());
 
@@ -1195,6 +1211,72 @@ void Npcs::HighlightNpc(
     mStateBuffer[id]->Highlight = highlight;
 }
 
+std::optional<NpcId> Npcs::GetCurrentlySelectedNpc() const
+{
+    return mCurrentlySelectedNpc;
+}
+
+void Npcs::SelectFirstNpc()
+{
+    // Assuming an NPC exists
+    assert(HasNpcs());
+
+    for (auto const & npc : mStateBuffer)
+    {
+        if (npc.has_value())
+        {
+            // Found!
+            SelectNpc(npc->Id);
+
+            return;
+        }
+    }
+    
+    assert(false);
+}
+
+void Npcs::SelectNextNpc()
+{
+    // Assuming an NPC exists
+    assert(HasNpcs());
+
+    // If we don't have any selected, select first
+    if (!mCurrentlySelectedNpc.has_value())
+    {
+        SelectNextNpc();
+        return;
+    }
+
+    // Start searching for an NPC from next
+    for (NpcId newId = *mCurrentlySelectedNpc + 1; ; ++newId)
+    {
+        if (static_cast<size_t>(newId) == mStateBuffer.size())
+        {
+            newId = 0;
+        }
+
+        if (mStateBuffer[newId].has_value())
+        {
+            // Found!
+            SelectNpc(newId);
+
+            return;
+        }
+    }
+}
+
+void Npcs::SelectNpc(std::optional<NpcId> id)
+{
+    assert(!id.has_value() || mStateBuffer[*id].has_value());
+
+    mCurrentlySelectedNpc = id;
+    mGameEventHandler->OnNpcSelectionChanged(mCurrentlySelectedNpc);
+
+#ifdef IN_BARYLAB
+    Publish();
+#endif
+}
+
 void Npcs::MoveBy(
     ShipId shipId,
     std::optional<ConnectedComponentId> connectedComponent,
@@ -1964,6 +2046,17 @@ bool Npcs::CommonNpcRemoval(NpcId npcId)
     if (npcIt != mShips[shipId]->BurningNpcs.end())
     {
         mShips[shipId]->BurningNpcs.erase(npcIt);
+    }
+
+    //
+    // Deselect if selected
+    //
+
+    if (mCurrentlySelectedNpc == npcId)
+    {
+        mCurrentlySelectedNpc.reset();
+
+        // No need to publish anything, GameController will figure out @ Update()
     }
 
     return humanNpcStatsUpdated;

@@ -551,6 +551,15 @@ public:
     // NPC
     //
 
+    void OnNpcSelectionChanged(
+        std::optional<NpcId> selectedNpc) override
+    {
+        for (auto sink : mNpcSinks)
+        {
+            sink->OnNpcSelectionChanged(selectedNpc);
+        }
+    }
+
     void OnNpcCountsUpdated(
         size_t totalNpcCount) override
     {
@@ -848,6 +857,15 @@ public:
     //
     // Control
     //
+
+    void OnAutoFocusTargetChanged(
+        std::optional<AutoFocusTargetKindType> autoFocusTarget) override
+    {
+        for (auto sink : mControlSinks)
+        {
+            sink->OnAutoFocusTargetChanged(autoFocusTarget);
+        }
+    }
 
     void OnContinuousAutoFocusToggled(bool isEnabled) override
     {

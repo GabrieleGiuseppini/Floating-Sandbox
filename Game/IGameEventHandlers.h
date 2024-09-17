@@ -369,6 +369,12 @@ struct IElectricalElementGameEventHandler
 
 struct INpcGameEventHandler
 {
+    virtual void OnNpcSelectionChanged(
+        std::optional<NpcId> /*selectedNpc*/)
+    {
+        // Default-implemented
+    }
+
     virtual void OnNpcCountsUpdated(
         size_t /*totalNpcCount*/)
     {
@@ -589,6 +595,14 @@ struct IGenericGameEventHandler
 
 struct IControlGameEventHandler
 {
+    // Published at each change of auto-focus target
+    virtual void OnAutoFocusTargetChanged(
+        std::optional<AutoFocusTargetKindType> /*autoFocusTarget*/)
+    {
+        // Default-implemented
+    }
+
+    // TODONUKE
     // Only published when spontaneous toggle
     virtual void OnContinuousAutoFocusToggled(
         bool /*isEnabled*/)

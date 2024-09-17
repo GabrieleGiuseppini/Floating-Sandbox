@@ -117,7 +117,7 @@ GameController::GameController(
     , mThreadManager(
         mRenderContext->IsRenderingMultiThreaded(),
         8) // We start "zuinig", as we do not want to pay a ThreadPool price for too many threads
-    , mViewManager(*mRenderContext, mNotificationLayer, *mGameEventDispatcher)
+    , mViewManager(*mRenderContext, *mGameEventDispatcher)
     // Smoothing
     , mFloatParameterSmoothers()
     // Stats
@@ -459,7 +459,8 @@ void GameController::RunGameIteration()
         // Update view manager
         // Note: some Upload()'s need to use ViewModel values, which have then to match the
         // ViewModel values used by the subsequent render
-        mViewManager.Update(mWorld->GetAllShipAABBs().MakeUnion());
+        UpdateAutoFocus();
+        mViewManager.Update();
 
         //
         // Upload world
@@ -1405,6 +1406,18 @@ void GameController::AbortNewNpc(NpcId id)
     mWorld->AbortNewNpc(id);
 }
 
+void GameController::SelectNpc(std::optional<NpcId> id)
+{
+    assert(!!mWorld);
+    mWorld->GetNpcs().SelectNpc(id);
+}
+
+void GameController::SelectNextNpc()
+{
+    assert(!!mWorld);
+    mWorld->GetNpcs().SelectNextNpc(); // We'll pick this up later at UpdateAutoFocus() if we're focusing on it
+}
+
 void GameController::HighlightNpc(
     NpcId id,
     NpcHighlightType highlight)
@@ -1528,9 +1541,33 @@ void GameController::AdjustZoom(float amount)
 
 void GameController::ResetView()
 {
-    if (mWorld)
+    //
+    // If there's auto-focus on ship, we re-center; if not, we focus one-off
+    //
+    //  - If focusing on Ship: reset user offsets
+    //  - Else :
+    //      - If focusing on SelectedNPC:
+    //          - Target change to <>
+    //          - Emit OnAutoFocusTargetChanged
+    //          - Turn off notification @ NotificationLayer
+    //      - Focus on ships (one-off)
+    //
+
+    if (mViewManager.GetAutoFocusTarget() == AutoFocusTargetKindType::Ship)
     {
-        mViewManager.ResetView(mWorld->GetAllShipAABBs().MakeUnion());
+        // Re-center
+        mViewManager.ResetAutoFocusAlterations();
+    }
+    else
+    {
+        if (mViewManager.GetAutoFocusTarget() == AutoFocusTargetKindType::SelectedNpc)
+        {
+            // Turn off auto-focus
+            InternalSwitchAutoFocusTarget(std::nullopt);
+        }
+
+        // Focus on ships (one-off)
+        FocusOnShips();
     }
 }
 
@@ -1554,6 +1591,30 @@ vec2f GameController::ScreenToWorld(DisplayLogicalCoordinates const & screenCoor
 vec2f GameController::ScreenOffsetToWorldOffset(DisplayLogicalSize const & screenOffset) const
 {
     return mRenderContext->ScreenOffsetToWorldOffset(screenOffset);
+}
+
+std::optional<AutoFocusTargetKindType> GameController::GetAutoFocusTarget() const
+{
+    return mViewManager.GetAutoFocusTarget();
+}
+
+void GameController::SetAutoFocusTarget(std::optional<AutoFocusTargetKindType> const & autoFocusTarget)
+{
+    if (autoFocusTarget == AutoFocusTargetKindType::SelectedNpc)
+    {
+        // Assumed to be invoked when at least an NPC exists
+        // (thanks to UI constraints)
+        assert(mWorld->GetNpcs().HasNpcs());
+
+        // Select first NPC as a courtesy
+        if (!mWorld->GetNpcs().GetCurrentlySelectedNpc().has_value())
+        {
+            mWorld->GetNpcs().SelectFirstNpc();
+        }
+    }
+
+    // Switch
+    InternalSwitchAutoFocusTarget(autoFocusTarget);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -1733,7 +1794,7 @@ void GameController::InternalAddShip(
         std::move(interiorViewImage));
 
     // Tell view manager
-    mViewManager.OnNewShip(mWorld->GetAllShipAABBs().MakeUnion());
+    UpdateViewOnShipLoad();
 
     // Notify ship load
     mGameEventDispatcher->OnShipLoaded(
@@ -1802,7 +1863,7 @@ void GameController::OnBeginPlaceNewNpc(NpcId const & npcId)
     float constexpr NpcMagnification = 13.0f;
 
     assert(!!mWorld);
-    auto const aabb = mWorld->GetNpcs().GetAABB(npcId);
+    auto const aabb = mWorld->GetNpcs().GetNpcAABB(npcId);
     mViewManager.FocusOn(aabb, NpcMagnification, NpcMagnification, 1.0f / 8.0f, 2.0f, true);
 }
 
@@ -1810,4 +1871,88 @@ bool GameController::CalculateAreCloudShadowsEnabled(OceanRenderDetailType ocean
 {
     // Note: also RenderContext infers applicability of shadows via detail, independently
     return (oceanRenderDetail == OceanRenderDetailType::Detailed);
+}
+
+void GameController::UpdateViewOnShipLoad()
+{
+    auto const currentAutoFocusTarget = mViewManager.GetAutoFocusTarget();
+
+    if (currentAutoFocusTarget == AutoFocusTargetKindType::Ship)
+    {
+        // Honor auto-focus on ship load
+        if (mViewManager.GetDoAutoFocusOnShipLoad())
+        {
+            // Reset user offsets
+            mViewManager.ResetAutoFocusAlterations();
+        }
+
+        return;
+    }
+
+    if (currentAutoFocusTarget == AutoFocusTargetKindType::SelectedNpc)
+    {
+        // Check whether we still have a selected NPC after the load
+        if (!mWorld->GetNpcs().GetCurrentlySelectedNpc().has_value())
+        {
+            // Disable auto-focus
+            InternalSwitchAutoFocusTarget(std::nullopt);
+        }
+    }
+
+    // Honor auto-focus on ship load
+    if (mViewManager.GetDoAutoFocusOnShipLoad())
+    {
+        // Focus on ships (one-off)
+        FocusOnShips();
+    }
+}
+
+void GameController::UpdateAutoFocus()
+{
+    assert(!!mWorld);
+
+    auto const currentAutoFocusTarget = mViewManager.GetAutoFocusTarget();
+    if (currentAutoFocusTarget == AutoFocusTargetKindType::Ship)
+    {
+        // Auto-focus on ship
+        mViewManager.UpdateAutoFocus(mWorld->GetAllShipAABBs().MakeUnion());
+    }
+    else if (currentAutoFocusTarget == AutoFocusTargetKindType::SelectedNpc)
+    {
+        // Check whether we have a selected NPC
+        auto const selectedNpc = mWorld->GetNpcs().GetCurrentlySelectedNpc();
+        if (selectedNpc.has_value())
+        {
+            assert(mWorld->GetNpcs().HasNpc(*selectedNpc)); // Still exists if selected
+
+            // Auto-focus on NPC
+            auto const aabb = mWorld->GetNpcs().GetNpcAABB(*selectedNpc);
+            mViewManager.UpdateAutoFocus(aabb);
+        }
+        else
+        {
+            // Disable auto-focus
+            InternalSwitchAutoFocusTarget(std::nullopt);
+        }
+    }
+    else
+    {
+        assert(!currentAutoFocusTarget.has_value());
+
+        // Nop
+    }
+}
+
+void GameController::InternalSwitchAutoFocusTarget(std::optional<AutoFocusTargetKindType> const & autoFocusTarget)
+{
+    assert(mViewManager.GetAutoFocusTarget() != autoFocusTarget);
+
+    // Switch target
+    mViewManager.SetAutoFocusTarget(autoFocusTarget);
+
+    // Tell the world
+    mGameEventDispatcher->OnAutoFocusTargetChanged(autoFocusTarget);
+
+    // Reconciliate notification
+    mNotificationLayer.SetAutoFocusIndicator(autoFocusTarget.has_value());
 }

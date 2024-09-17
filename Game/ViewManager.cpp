@@ -16,10 +16,8 @@ float constexpr SmootherTerminationThreshold = 0.00005f; // How close to target 
 
 ViewManager::ViewManager(
     Render::RenderContext & renderContext,
-    NotificationLayer & notificationLayer,
     GameEventDispatcher & gameEventDispatcher)
     : mRenderContext(renderContext)
-    , mNotificationLayer(notificationLayer)
     , mGameEventHandler(gameEventDispatcher)
     , mInverseZoomParameterSmoother(
         [this]() -> float
@@ -85,17 +83,21 @@ void ViewManager::SetDoAutoFocusOnShipLoad(bool value)
     mDoAutoFocusOnShipLoad = value;
 }
 
-bool ViewManager::GetDoContinuousAutoFocus() const
+std::optional<AutoFocusTargetKindType> ViewManager::GetAutoFocusTarget() const
 {
-    return mAutoFocus.has_value();
+    if (!mAutoFocus.has_value())
+        return std::nullopt;
+    else
+        return mAutoFocus->AutoFocusTarget;
 }
 
-void ViewManager::SetDoContinuousAutoFocus(bool value)
+void ViewManager::SetAutoFocusTarget(std::optional<AutoFocusTargetKindType> const & target)
 {
-    if (value)
+    if (target.has_value())
     {
-        // Start auto-focus
+        // Start / Reset auto-focus
         mAutoFocus.emplace(
+            target,
             1.0f / mInverseZoomParameterSmoother.GetValue(),
             mCameraWorldPositionParameterSmoother.GetValue());
     }
@@ -104,8 +106,6 @@ void ViewManager::SetDoContinuousAutoFocus(bool value)
         // Stop auto-focus
         mAutoFocus.reset();
     }
-
-    mNotificationLayer.SetAutoFocusIndicator(mAutoFocus.has_value());
 }
 
 void ViewManager::OnViewModelUpdated()
@@ -113,24 +113,6 @@ void ViewManager::OnViewModelUpdated()
     // Pickup eventual changes to view model constraints
     mInverseZoomParameterSmoother.ReClamp();
     mInverseZoomParameterSmoother.ReClamp();
-}
-
-void ViewManager::OnNewShip(std::optional<Geometry::AABB> const & aabb)
-{
-    if (mDoAutoFocusOnShipLoad)
-    {
-        if (!mAutoFocus.has_value())
-        {
-            if (aabb.has_value())
-            {
-                InternalFocusOn(*aabb, 1.0f, 1.0f, 1.0f, 1.0f, false);
-            }
-        }
-        else
-        {
-            mAutoFocus->ResetUserOffsets();
-        }
-    }
 }
 
 void ViewManager::Pan(vec2f const & worldOffset)
@@ -179,6 +161,238 @@ void ViewManager::AdjustZoom(float amount)
     }
 }
 
+void ViewManager::FocusOn(
+    Geometry::AABB const & aabb,
+    float widthMultiplier,
+    float heightMultiplier,
+    float zoomToleranceMultiplierMin,
+    float zoomToleranceMultiplierMax,
+    bool anchorAabbCenterAtCurrentScreenPosition)
+{
+    // Invoked when there's no auto-focus
+    assert(!mAutoFocus.has_value());
+
+    InternalFocusOn(aabb, widthMultiplier, heightMultiplier, zoomToleranceMultiplierMin, zoomToleranceMultiplierMax, anchorAabbCenterAtCurrentScreenPosition);
+}
+
+void ViewManager::UpdateAutoFocus(std::optional<Geometry::AABB> const & aabb)
+{
+    // Invoked when auto-focus is enabled
+    assert(mAutoFocus.has_value());
+
+    if (aabb.has_value())
+    {
+        //
+        // Auto-focus algorithm:
+        // - Zoom:
+        //      - Auto-focus zoom is the zoom required to ensure that the AABB's width and height
+        //        fall in a specific sub-window of the physical display window
+        //      - User zoom is the zoom offset exherted by the user
+        //      - The final zoom is the sum of the two zooms
+        // - Pan:
+        //      - Auto-focus pan is the pan required to ensure that the center of the AABB is at
+        //        the center of the physical display window, after auto-focus zoom is applied
+        //      - User pan is the pan offset exherted by the user
+        //      - The final pan is the sum of the two pans
+        //
+
+        //
+        // Zoom
+        //
+
+        mAutoFocus->CurrentAutoFocusZoom = InternalCalculateZoom(*aabb, 1.0f, 1.0f, AutoFocusMaxZoom);
+
+        //
+        // Pan
+        //
+
+        // Calculate NDC offset required to center view onto AABB's center (net of user offsets)
+        vec2f const aabbCenterNdc = mRenderContext.WorldToNdc(aabb->CalculateCenter(), mAutoFocus->CurrentAutoFocusZoom, mAutoFocus->CurrentAutoFocusCameraWorldPosition);
+        vec2f const newAutoFocusCameraPositionNdcOffset = aabbCenterNdc / 2.0f;
+
+        // Convert back into world offset
+        vec2f const newAutoFocusCameraWorldPositionOffset = mRenderContext.NdcOffsetToWorldOffset(
+            vec2f(
+                newAutoFocusCameraPositionNdcOffset.x * SmoothStep(0.04f, 0.1f, std::abs(newAutoFocusCameraPositionNdcOffset.x)),    // Compress X displacement to reduce small oscillations
+                newAutoFocusCameraPositionNdcOffset.y * SmoothStep(0.04f, 0.4f, std::abs(newAutoFocusCameraPositionNdcOffset.y))),   // Compress Y displacement to reduce effect of waves
+            mAutoFocus->CurrentAutoFocusZoom);
+
+        mAutoFocus->CurrentAutoFocusCameraWorldPosition = mAutoFocus->CurrentAutoFocusCameraWorldPosition + newAutoFocusCameraWorldPositionOffset;
+    }
+
+    //
+    // Set zoom
+    //
+
+    mInverseZoomParameterSmoother.SetValue(1.0f / (mAutoFocus->CurrentAutoFocusZoom * mAutoFocus->UserZoomOffset));
+
+    // If we've clamped the zoom, erode lost zoom from user offset
+    {
+        float const impliedUserOffset = (1.0f / mInverseZoomParameterSmoother.GetValue()) / mAutoFocus->CurrentAutoFocusZoom;
+
+        mAutoFocus->UserZoomOffset = Clamp(
+            impliedUserOffset,
+            std::min(mAutoFocus->UserZoomOffset, 1.0f),
+            std::max(mAutoFocus->UserZoomOffset, 1.0f));
+    }
+
+    //
+    // Set pan
+    //
+
+    // Clamp auto-focus pan
+    vec2f const clampedAutoFocusPan = mRenderContext.ClampCameraWorldPosition(mAutoFocus->CurrentAutoFocusCameraWorldPosition);
+
+    // Add user offset to clamped
+    mCameraWorldPositionParameterSmoother.SetValue(clampedAutoFocusPan + mAutoFocus->UserCameraWorldPositionOffset);
+
+    // If we've clamped the pan, erode lost panning from user offset
+    {
+        vec2f const impliedUserOffset = mCameraWorldPositionParameterSmoother.GetValue() - clampedAutoFocusPan;
+
+        mAutoFocus->UserCameraWorldPositionOffset = vec2f(
+            Clamp(
+                impliedUserOffset.x,
+                std::min(0.0f, mAutoFocus->UserCameraWorldPositionOffset.x),
+                std::max(0.0f, mAutoFocus->UserCameraWorldPositionOffset.x)),
+            Clamp(
+                impliedUserOffset.y,
+                std::min(0.0f, mAutoFocus->UserCameraWorldPositionOffset.y),
+                std::max(0.0f, mAutoFocus->UserCameraWorldPositionOffset.y)));
+    }
+}
+
+void ViewManager::Update()
+{
+    // Invoked at each step
+    mInverseZoomParameterSmoother.Update();
+    mCameraWorldPositionParameterSmoother.Update();
+}
+
+// TODOOLD
+////void ViewManager::Update(std::optional<Geometry::AABB> const & aabb)
+////{
+////    if (mAutoFocus.has_value())
+////    {
+////        if (aabb.has_value())
+////        {
+////            //
+////            // Auto-focus algorithm:
+////            // - Zoom:
+////            //      - Auto-focus zoom is the zoom required to ensure that the AABB's width and height
+////            //        fall in a specific sub-window of the physical display window
+////            //      - User zoom is the zoom offset exherted by the user
+////            //      - The final zoom is the sum of the two zooms
+////            // - Pan:
+////            //      - Auto-focus pan is the pan required to ensure that the center of the AABB is at
+////            //        the center of the physical display window, after auto-focus zoom is applied
+////            //      - User pan is the pan offset exherted by the user
+////            //      - The final pan is the sum of the two pans
+////            //
+////
+////            //
+////            // Zoom
+////            //
+////
+////            mAutoFocus->CurrentAutoFocusZoom = InternalCalculateZoom(*aabb, 1.0f, 1.0f, AutoFocusMaxZoom);
+////
+////            //
+////            // Pan
+////            //
+////
+////            // Calculate NDC offset required to center view onto AABB's center (net of user offsets)
+////            vec2f const aabbCenterNdc = mRenderContext.WorldToNdc(aabb->CalculateCenter(), mAutoFocus->CurrentAutoFocusZoom, mAutoFocus->CurrentAutoFocusCameraWorldPosition);
+////            vec2f const newAutoFocusCameraPositionNdcOffset = aabbCenterNdc / 2.0f;
+////
+////            // Convert back into world offset
+////            vec2f const newAutoFocusCameraWorldPositionOffset = mRenderContext.NdcOffsetToWorldOffset(
+////                vec2f(
+////                    newAutoFocusCameraPositionNdcOffset.x * SmoothStep(0.04f, 0.1f, std::abs(newAutoFocusCameraPositionNdcOffset.x)),    // Compress X displacement to reduce small oscillations
+////                    newAutoFocusCameraPositionNdcOffset.y * SmoothStep(0.04f, 0.4f, std::abs(newAutoFocusCameraPositionNdcOffset.y))),   // Compress Y displacement to reduce effect of waves
+////                mAutoFocus->CurrentAutoFocusZoom);
+////
+////            mAutoFocus->CurrentAutoFocusCameraWorldPosition = mAutoFocus->CurrentAutoFocusCameraWorldPosition + newAutoFocusCameraWorldPositionOffset;
+////        }
+////
+////        //
+////        // Set zoom
+////        //
+////
+////        mInverseZoomParameterSmoother.SetValue(1.0f / (mAutoFocus->CurrentAutoFocusZoom * mAutoFocus->UserZoomOffset));
+////
+////        // If we've clamped the zoom, erode lost zoom from user offset
+////        {
+////            float const impliedUserOffset = (1.0f / mInverseZoomParameterSmoother.GetValue()) / mAutoFocus->CurrentAutoFocusZoom;
+////
+////            mAutoFocus->UserZoomOffset = Clamp(
+////                impliedUserOffset,
+////                std::min(mAutoFocus->UserZoomOffset, 1.0f),
+////                std::max(mAutoFocus->UserZoomOffset, 1.0f));
+////        }
+////
+////        //
+////        // Set pan
+////        //
+////
+////        // Clamp auto-focus pan
+////        vec2f const clampedAutoFocusPan = mRenderContext.ClampCameraWorldPosition(mAutoFocus->CurrentAutoFocusCameraWorldPosition);
+////
+////        // Add user offset to clamped
+////        mCameraWorldPositionParameterSmoother.SetValue(clampedAutoFocusPan + mAutoFocus->UserCameraWorldPositionOffset);
+////
+////        // If we've clamped the pan, erode lost panning from user offset
+////        {
+////            vec2f const impliedUserOffset = mCameraWorldPositionParameterSmoother.GetValue() - clampedAutoFocusPan;
+////
+////            mAutoFocus->UserCameraWorldPositionOffset = vec2f(
+////                Clamp(
+////                    impliedUserOffset.x,
+////                    std::min(0.0f, mAutoFocus->UserCameraWorldPositionOffset.x),
+////                    std::max(0.0f, mAutoFocus->UserCameraWorldPositionOffset.x)),
+////                Clamp(
+////                    impliedUserOffset.y,
+////                    std::min(0.0f, mAutoFocus->UserCameraWorldPositionOffset.y),
+////                    std::max(0.0f, mAutoFocus->UserCameraWorldPositionOffset.y)));
+////        }
+////    }
+////
+////    mInverseZoomParameterSmoother.Update();
+////    mCameraWorldPositionParameterSmoother.Update();
+////}
+
+void ViewManager::ResetAutoFocusAlterations()
+{
+    assert(mAutoFocus.has_value());
+    mAutoFocus->ResetUserOffsets();
+}
+
+// TODONUKE
+bool ViewManager::GetDoContinuousAutoFocus() const
+{
+    return mAutoFocus.has_value();
+}
+
+// TODONUKE
+void ViewManager::SetDoContinuousAutoFocus(bool value)
+{
+    if (value)
+    {
+        // Start auto-focus
+        mAutoFocus.emplace(
+            // TODOTEST
+            std::nullopt,
+            1.0f / mInverseZoomParameterSmoother.GetValue(),
+            mCameraWorldPositionParameterSmoother.GetValue());
+    }
+    else
+    {
+        // Stop auto-focus
+        mAutoFocus.reset();
+    }
+
+    //mNotificationLayer.SetAutoFocusIndicator(mAutoFocus.has_value());
+}
+
 void ViewManager::ResetView(std::optional<Geometry::AABB> const & aabb)
 {
     // When continuous auto-focus is off, "view reset" focuses on ship;
@@ -196,113 +410,25 @@ void ViewManager::ResetView(std::optional<Geometry::AABB> const & aabb)
     }
 }
 
-void ViewManager::FocusOn(
-    Geometry::AABB const & aabb,
-    float widthMultiplier,
-    float heightMultiplier,
-    float zoomToleranceMultiplierMin,
-    float zoomToleranceMultiplierMax,
-    bool anchorAabbCenterAtCurrentScreenPosition)
+void ViewManager::OnNewShip(std::optional<Geometry::AABB> const & aabb)
 {
-    // Turn off auto-focus if it's on
-    if (mAutoFocus.has_value())
+    if (mDoAutoFocusOnShipLoad)
     {
-        mAutoFocus.reset();
-        mGameEventHandler.OnContinuousAutoFocusToggled(false);
-    }
-
-    InternalFocusOn(aabb, widthMultiplier, heightMultiplier, zoomToleranceMultiplierMin, zoomToleranceMultiplierMax, anchorAabbCenterAtCurrentScreenPosition);
-}
-
-void ViewManager::Update(std::optional<Geometry::AABB> const & aabb)
-{
-    if (mAutoFocus.has_value())
-    {
-        if (aabb.has_value())
+        if (!mAutoFocus.has_value())
         {
-            //
-            // Auto-focus algorithm:
-            // - Zoom:
-            //      - Auto-focus zoom is the zoom required to ensure that the AABB's width and height
-            //        fall in a specific sub-window of the physical display window
-            //      - User zoom is the zoom offset exherted by the user
-            //      - The final zoom is the sum of the two zooms
-            // - Pan:
-            //      - Auto-focus pan is the pan required to ensure that the center of the AABB is at
-            //        the center of the physical display window, after auto-focus zoom is applied
-            //      - User pan is the pan offset exherted by the user
-            //      - The final pan is the sum of the two pans
-            //
-
-            //
-            // Zoom
-            //
-
-            mAutoFocus->CurrentAutoFocusZoom = InternalCalculateZoom(*aabb, 1.0f, 1.0f, AutoFocusMaxZoom);
-
-            //
-            // Pan
-            //
-
-            // Calculate NDC offset required to center view onto AABB's center (net of user offsets)
-            vec2f const aabbCenterNdc = mRenderContext.WorldToNdc(aabb->CalculateCenter(), mAutoFocus->CurrentAutoFocusZoom, mAutoFocus->CurrentAutoFocusCameraWorldPosition);
-            vec2f const newAutoFocusCameraPositionNdcOffset = aabbCenterNdc / 2.0f;
-
-            // Convert back into world offset
-            vec2f const newAutoFocusCameraWorldPositionOffset = mRenderContext.NdcOffsetToWorldOffset(
-                vec2f(
-                    newAutoFocusCameraPositionNdcOffset.x * SmoothStep(0.04f, 0.1f, std::abs(newAutoFocusCameraPositionNdcOffset.x)),    // Compress X displacement to reduce small oscillations
-                    newAutoFocusCameraPositionNdcOffset.y * SmoothStep(0.04f, 0.4f, std::abs(newAutoFocusCameraPositionNdcOffset.y))),   // Compress Y displacement to reduce effect of waves
-                mAutoFocus->CurrentAutoFocusZoom);
-
-            mAutoFocus->CurrentAutoFocusCameraWorldPosition = mAutoFocus->CurrentAutoFocusCameraWorldPosition + newAutoFocusCameraWorldPositionOffset;
+            if (aabb.has_value())
+            {
+                InternalFocusOn(*aabb, 1.0f, 1.0f, 1.0f, 1.0f, false);
+            }
         }
-
-        //
-        // Set zoom
-        //
-
-        mInverseZoomParameterSmoother.SetValue(1.0f / (mAutoFocus->CurrentAutoFocusZoom * mAutoFocus->UserZoomOffset));
-
-        // If we've clamped the zoom, erode lost zoom from user offset
+        else
         {
-            float const impliedUserOffset = (1.0f / mInverseZoomParameterSmoother.GetValue()) / mAutoFocus->CurrentAutoFocusZoom;
-
-            mAutoFocus->UserZoomOffset = Clamp(
-                impliedUserOffset,
-                std::min(mAutoFocus->UserZoomOffset, 1.0f),
-                std::max(mAutoFocus->UserZoomOffset, 1.0f));
-        }
-
-        //
-        // Set pan
-        //
-
-        // Clamp auto-focus pan
-        vec2f const clampedAutoFocusPan = mRenderContext.ClampCameraWorldPosition(mAutoFocus->CurrentAutoFocusCameraWorldPosition);
-
-        // Add user offset to clamped
-        mCameraWorldPositionParameterSmoother.SetValue(clampedAutoFocusPan + mAutoFocus->UserCameraWorldPositionOffset);
-
-        // If we've clamped the pan, erode lost panning from user offset
-        {
-            vec2f const impliedUserOffset = mCameraWorldPositionParameterSmoother.GetValue() - clampedAutoFocusPan;
-
-            mAutoFocus->UserCameraWorldPositionOffset = vec2f(
-                Clamp(
-                    impliedUserOffset.x,
-                    std::min(0.0f, mAutoFocus->UserCameraWorldPositionOffset.x),
-                    std::max(0.0f, mAutoFocus->UserCameraWorldPositionOffset.x)),
-                Clamp(
-                    impliedUserOffset.y,
-                    std::min(0.0f, mAutoFocus->UserCameraWorldPositionOffset.y),
-                    std::max(0.0f, mAutoFocus->UserCameraWorldPositionOffset.y)));
+            mAutoFocus->ResetUserOffsets();
         }
     }
-
-    mInverseZoomParameterSmoother.Update();
-    mCameraWorldPositionParameterSmoother.Update();
 }
+
+///////////////////////////////////////////////////////////
 
 float ViewManager::CalculateParameterSmootherConvergenceFactor(float cameraSpeedAdjustment)
 {

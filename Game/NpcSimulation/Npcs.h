@@ -777,6 +777,7 @@ public:
 		, mParticles(GameParameters::MaxNpcs * GameParameters::MaxParticlesPerNpc)
 		// State
 		, mCurrentSimulationSequenceNumber()
+		, mCurrentlySelectedNpc()
 		// Stats
 		, mFreeRegimeHumanNpcCount(0)
 		, mConstrainedRegimeHumanNpcCount(0)
@@ -806,14 +807,18 @@ public:
 
 	///////////////////////////////
 
+	bool HasNpcs() const;
+
+	bool HasNpc(NpcId npcId) const;
+
+	Geometry::AABB GetNpcAABB(NpcId npcId) const;
+
 	size_t GetFlameCount(ShipId shipId) const
 	{
 		assert(shipId < mShips.size());
 		assert(mShips[shipId].has_value());
 		return mShips[shipId]->BurningNpcs.size();
 	}
-
-	Geometry::AABB GetAABB(NpcId npcId) const;
 
 	///////////////////////////////
 
@@ -866,6 +871,14 @@ public:
 	void HighlightNpc(
 		NpcId id,
 		NpcHighlightType highlight);
+
+	std::optional<NpcId> GetCurrentlySelectedNpc() const;
+
+	void SelectFirstNpc();
+
+	void SelectNextNpc();
+
+	void SelectNpc(std::optional<NpcId> id);
 
 public:
 
@@ -954,23 +967,6 @@ public:
 	//
 	// Probing
 	//
-
-	void SelectNpc(NpcId npcId)
-	{
-		mCurrentlySelectedNpc = npcId;
-		Publish();
-	}
-
-	std::optional<NpcId> GetCurrentlySelectedNpc() const
-	{
-		return mCurrentlySelectedNpc;
-	}
-
-	void DeselectNpc()
-	{
-		mCurrentlySelectedNpc.reset();
-		Publish();
-	}
 
 	void SelectParticle(ElementIndex particleIndex)
 	{
@@ -1720,6 +1716,8 @@ private:
 
 	SequenceNumber mCurrentSimulationSequenceNumber;
 
+	std::optional<NpcId> mCurrentlySelectedNpc;
+
 	//
 	// Stats
 	//
@@ -1755,7 +1753,6 @@ private:
 	// Probing
 	//
 
-	std::optional<NpcId> mCurrentlySelectedNpc;
 	std::optional<ElementIndex> mCurrentlySelectedParticle;
 	std::optional<ElementIndex> mCurrentOriginTriangle;
 

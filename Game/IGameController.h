@@ -145,6 +145,8 @@ struct IGameController
     virtual void CompleteNewNpc(NpcId id) = 0;
     virtual void RemoveNpc(NpcId id) = 0;
     virtual void AbortNewNpc(NpcId id) = 0;
+    virtual void SelectNpc(std::optional<NpcId> id) = 0;
+    virtual void SelectNextNpc() = 0;
     virtual void HighlightNpc(NpcId id, NpcHighlightType highlight) = 0;
     virtual std::optional<GlobalElementId> GetNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const = 0;
     virtual void QueryNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const = 0;
@@ -188,8 +190,8 @@ struct IGameController
     virtual bool GetDoAutoFocusOnShipLoad() const = 0;
     virtual void SetDoAutoFocusOnShipLoad(bool value) = 0;
 
-    virtual bool GetDoContinuousAutoFocus() const = 0;
-    virtual void SetDoContinuousAutoFocus(bool value) = 0;
+    virtual std::optional<AutoFocusTargetKindType> GetAutoFocusTarget() const = 0;
+    virtual void SetAutoFocusTarget(std::optional<AutoFocusTargetKindType> const & autoFocusTarget) = 0;
 
     //
     // UI parameters

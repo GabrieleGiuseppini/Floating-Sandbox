@@ -701,96 +701,123 @@ Arch
 					- Disable SelectNextNpc
 					- "Normal" NPC-quantity-driven enabling/disabling of other menu items applies here as well, simply because of NPC removal
 		= Impl:
-			= Npcs gets the concept of "CurrentSelectedNpc" (which was of BaryLab)
+			+ Npcs gets the concept of "CurrentSelectedNpc" (which was of BaryLab)
 				+ opt<NpcId> member
 				+ API from outside via Select...(opt) / Get...() (the BaryLab ones, make them official)
 				+ Reset when NpcId is no more - @ CommonRemoval
-				- All changes emit OnNpcSelectionChanged (@ NPC event handlers)
-					- @ Setter
+				+ All changes emit OnNpcSelectionChanged (@ NPC event handlers)
+					+ @ Setter
 			+ GameType: AutoFocusTargetKindType: Ship, SelectedNpc
 			+ Event handler: OnAutoFocusTargetKindChanged(std::opt<AutoFocusTargetKindType>) (@ Control event handlers)
-			- ViewManager:
+			= ViewManager:
 				! Becomes fully slave, just high-level operations on ViewModel
-				- opt<AutoFocusTargetKindType> mCurrentAutoFocusTarget
+				+ opt<AutoFocusTargetKindType> mCurrentAutoFocusTarget @ AutoFocusSessionData
 					! Here so it's consistent, and can use target type to fine tune focus
-					- Getter and Setter
-				- Update(...) splits into:
-					- UpdateAutoFocus(opt<FocusAABB>)
-						Invoked by GC iff auto-focus on
-					- Update()
-						- Invoked by GC always
-				- ResetAutoFocusAlterations() // Reset user offsets
-				- Nuke notification layer member
+					+ Getter and Setter
+				+ Update(...) splits into:
+					+ UpdateAutoFocus(opt<FocusAABB>)
+						+ Invoked by GC iff auto-focus on
+							+ Can assert
+					+ Update()
+						+ Invoked by GC always
+				+ ResetAutoFocusAlterations() // Reset user offsets
+				+ Nuke notification layer member
 				----
 				- Nuke other public methods (for now)
-			= GameController:
+			+ GameController:
 				+ Remove mCurrentAutoFocusTarget and struct which we've just added
-				- Private helpers:
-					- SwitchAutoFocusTarget(.) helper for:
-						- Target change to *
-						- Emit OnAutoFocusTargetChanged
-						- Turn off/on notification @ NotificationLayer
-					- UpdateAutoFocus()
-					- ...?
-				- Update() calls UpdateAutoFocus()
-				- UpdateAutoFocus():
+				+ Public View methods:
+					+ ResetView() (aka HOME: one-off focus on ship) 
+						+ See above (B*)
+							+ Move all logic out of ViewManager and into this GameController method
+								+ Use ViewManager::ResetAutoFocusAlterations()
+					+ SetAutoFocusTarget(opt<target type>)
+						+ See above (C*) (part of F*)
+				+ Private View helpers:
+					+ SwitchAutoFocusTarget(.) helper for:
+						+ Target change to *
+						+ Emit OnAutoFocusTargetChanged
+						+ Turn off/on notification @ NotificationLayer
+					+ UpdateAutoFocus()
+				+ Update() calls UpdateAutoFocus()
+				+ UpdateAutoFocus():
 					- Check ViewManager::CurrentAutoFocusTarget:
-						- If Ship:
-							- Get all Ships' AABBs (or nullopt)
-							- ViewManager->Update(.that.)
-						- If SelectedNpc:
-							- Check with Npcs if there is still a selected NPC 
-								- Nuke HasNpc as it's not needed anymore
-							- If so:
-								- ViewManager->Update(NPC's AABB)
-									- Assert NPC exists
-							- Else: 
-								- (A*):
-									- Target change to <>
-									- Emit OnAutoFocusTargetKindChanged
-									- Turn off notification @ NotificationLayer
-								- ViewManager->Update(nullopt)
-						- If none:
-							- ViewManager->Update(nullopt)
-				- ResetView() (aka HOME: one-off focus on ship) 
-					- See above (B*)
-						- Move all logic out of ViewManager and into this GameController method
-							- Use ViewManager::ResetAutoFocusAlterations()
-				- SetAutoFocus(opt<target type>)
-					- See above (C*) (part of F*)
-				- ShipLoad/Reset
-					- See above (D*)
-				- SelectNpc(opt<NpcId>)
-					- See above (part of F*)
-				- SelectNextNpc()
-					- See above (E*)
+						+ If Ship:
+							+ Get all Ships' AABBs (or nullopt)
+							+ ViewManager->Update(.that.)
+						+ If SelectedNpc:
+							+ Check with Npcs if there is still a selected NPC 
+								+ Nuke HasNpc as it's not needed anymore
+							+ If so:
+								+ Assert NPC exists
+								+ ViewManager->Update(NPC's AABB)
+									
+							+ Else: 
+								+ (A*):
+									+ Target change to <>
+									+ Emit OnAutoFocusTargetKindChanged
+									+ Turn off notification @ NotificationLayer
+						+ If none:
+							+ Nop
+				+ ShipLoad/Reset
+					+ See above (D*)
+				+ SelectNpc(opt<NpcId>)
+					+ See above (part of F*)
+				+ SelectNextNpc()
+					+ See above (E*)
+			+ Npcs:
+				+ SelectFirstNpc
+				+ SelectNextNpc
 
-			- Tool: "SelectNpcTool"
+			- Tool: "FollowNpcTool"
 				+ Icon: like Move, Remove but with auto-focus frame - autofocus_on_npc_icon.png
 				+ Cursor: autofocus_on_npc_cursor.png
-				- RemoveNpc tool becomes base+derivates, used for Remove & FocusOnNpc (and in the future: SelectNpc)
-				- Change (for both Remove & FocusOn, i.e. base): make it so we don't have to store candidate, but probe right away at each move+down
+				- RemoveNpc tool becomes base+derivates, used for Remove & Follow (and in the future: SelectNpc)
+				- Change (for both Remove & Follow, i.e. base): make it so we don't have to store candidate, but probe right away at each move+down
 					! So that we don't run the risk of referencing a dead NPC
 					- Just react to move+down (& up, but just for cursor)
-				- FocusOnNpc: calls SelectNpc() + SetAutoFocus(SelectedNpc)
+				- Follow: calls SelectNpc() + SetAutoFocus(SelectedNpc)
 				- Tool only enabled if exists at least one NPC (at OnNpcCountsUpdated)
 
 			- MainFrame:
+				- Do menu entries:
+					- 3 for continuous auto-focus
+						- All members
+					- FollowNPC tool
+						- Member, like Move/RemoveNpc
+					- SelectNextNPC - w/key shortcut (can do anything with TAB? If not, '>')
+						- Member
 				- Handler for focus changes calls ReconciliateUIWithAutoFocusTarget()
+					- Ensure right of 3 auto-focus menu items is checked
 				- Handler for NPC presence (OnNpcCountsUpdated) calls ReconciliateUIWithNpcPresence(bool)
-					- Both inspect GameController for other state as needed
+					- Do current code (Move/RemoveNpc tools only?)
+					- FollowNPC tool
+					- SelectNextNPC
 
 			- Shader/Highlight
-				- See if can do border with fwidth
+				- Highlight rearc:
+					- Move Highlight out of NPC and into opt<NpcId>
+						- Member: next to Selected
+					- Public API:
+						- HighlightNpc(opt<NpcId>)
+					- Alpha (make rgba if needed): 1.0 if selected, 0.0 if not selected
+				- Do border with fwidth
 					- float borderDepth = clamp(fwidth(col.a) * 20., 0., 1.);
-				- If so: use alpha of highlight (make vec4 if needed) to decide between two types of highlight
-
+					- ...depending on alpha
+				- Do non-border highglight with Overlay blend
+					(Target > 0.5) * (1 – (1-2*(Target-0.5)) * (1-Blend)) +
+					(Target <= 0.5) * ((2*Target) * Blend)
 			- Watch-out's:
 				- Default auto-focus values currently in ViewManager: move to GameController
 
 			- Cleanups:
 				- IGameEventHandlers::OnContinuousAutoFocusToggled() may go
 				- IGameController::Get/SetDoContinuousAutoFocus
+
+		- Tests:
+			- All state transitions above
+
+		- Merge into npcs_v1
 
 		- Barylab:
 			- Port
@@ -1160,6 +1187,7 @@ Next release:
 
 - Explosive NPCs
 	- Explode at hit
+		- Just inject explosion state machine @ Ship, should take care of physics _and_ rendering!
 	- Need mechanism for dynamic removal of NPCs
 		- Will be useful also for human removal animation (*)
 		- Option 1: set of NpcId's to remove, scavenged at end of Update()

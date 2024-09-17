@@ -1389,6 +1389,15 @@ enum class VectorFieldRenderModeType
 };
 
 /*
+ * The possible targets of auto-focus.
+ */
+enum class AutoFocusTargetKindType
+{
+    Ship,
+    SelectedNpc
+};
+
+/*
  * The index of a single texture frame in a group of textures.
  */
 using TextureFrameIndex = std::uint16_t;

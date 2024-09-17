@@ -265,6 +265,8 @@ public:
     void CompleteNewNpc(NpcId id) override;
     void RemoveNpc(NpcId id) override;
     void AbortNewNpc(NpcId id) override;
+    void SelectNpc(std::optional<NpcId> id) override;
+    void SelectNextNpc() override;
     void HighlightNpc(NpcId id, NpcHighlightType highlight) override;
     std::optional<GlobalElementId> GetNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const override;
     void QueryNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const override;
@@ -308,8 +310,8 @@ public:
     bool GetDoAutoFocusOnShipLoad() const override { return mViewManager.GetDoAutoFocusOnShipLoad(); }
     void SetDoAutoFocusOnShipLoad(bool value) override { mViewManager.SetDoAutoFocusOnShipLoad(value); }
 
-    bool GetDoContinuousAutoFocus() const override { return mViewManager.GetDoContinuousAutoFocus(); }
-    void SetDoContinuousAutoFocus(bool value) override { mViewManager.SetDoContinuousAutoFocus(value); }
+    std::optional<AutoFocusTargetKindType> GetAutoFocusTarget() const override;
+    void SetAutoFocusTarget(std::optional<AutoFocusTargetKindType> const & autoFocusTarget) override;
 
     //
     // UI parameters
@@ -1009,6 +1011,14 @@ private:
 
     static bool CalculateAreCloudShadowsEnabled(OceanRenderDetailType oceanRenderDetail);
 
+    // Auto-focus
+
+    void UpdateViewOnShipLoad();
+
+    void UpdateAutoFocus();
+
+    void InternalSwitchAutoFocusTarget(std::optional<AutoFocusTargetKindType> const & autoFocusTarget);
+
 private:
 
     //
@@ -1031,7 +1041,6 @@ private:
     std::unique_ptr<DayLightCycleStateMachine, DayLightCycleStateMachineDeleter> mDayLightCycleStateMachine;
     void StartDayLightCycleStateMachine();
     void StopDayLightCycleStateMachine();
-    bool UpdateDayLightCycleStateMachine(DayLightCycleStateMachine & stateMachine, float currentSimulationTime);
 
     void ResetAllStateMachines();
     void UpdateAllStateMachines(float currentSimulationTime);
