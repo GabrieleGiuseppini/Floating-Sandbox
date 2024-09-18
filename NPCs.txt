@@ -810,14 +810,11 @@ Arch
 				- Do highlight with Overlay blend
 					(Target > 0.5) * (1 – (1-2*(Target-0.5)) * (1-Blend)) +
 					(Target <= 0.5) * ((2*Target) * Blend)
-				- Do selection via ad-hoc "RectSelection" primitive
+				- Do selection via ad-hoc "RectSelection" primitive @ NotificationRenderContext
 					- Geometry: enclosing rect, calc'd by Npcs::RenderNpc
-						- max plane - but see below
-					- ShipRenderContext: new primitive, kinda like Highlight 
-						- Without Start and End
+					- NotificationRenderContext: new one-time primitive, exactly like HeatBlaster
 						- Drawn on top of everything
-							- TODOHERE: but then covered by other ships? what if primitive is instead above-all (i.e. at NotificationRenderContext)?
-					- Shader: ship_rectselection
+					- Shader
 
 			+ Cleanups:
 				+ IGameEventHandlers::OnContinuousAutoFocusToggled() may go
