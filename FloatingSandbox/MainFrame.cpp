@@ -58,7 +58,9 @@ long const ID_QUIT_MENUITEM = wxNewId();
 long const ID_ZOOM_IN_MENUITEM = wxNewId();
 long const ID_ZOOM_OUT_MENUITEM = wxNewId();
 long const ID_AUTO_FOCUS_AT_SHIP_LOAD_MENUITEM = wxNewId();
-long const ID_CONTINUOUS_AUTO_FOCUS_MENUITEM = wxNewId();
+long const ID_AUTO_FOCUS_ON_SHIP_MENUITEM = wxNewId();
+long const ID_AUTO_FOCUS_ON_SELECTED_NPC_MENUITEM = wxNewId();
+long const ID_AUTO_FOCUS_ON_NOTHING_MENUITEM = wxNewId();
 long const ID_RESET_VIEW_MENUITEM = wxNewId();
 long const ID_CHANGE_SHIP_VIEW_EXTERIOR_MENUITEM = wxNewId();
 long const ID_CHANGE_SHIP_VIEW_INTERIOR_MENUITEM = wxNewId();
@@ -268,18 +270,43 @@ MainFrame::MainFrame(
             ADD_PLAIN_ACCELERATOR_KEY('-', zoomOutMenuItem);
             ADD_PLAIN_ACCELERATOR_KEY(WXK_NUMPAD_SUBTRACT, zoomOutMenuItem);
 
-            mAutoFocusAtShipLoadMenuItem = new wxMenuItem(controlsMenu, ID_AUTO_FOCUS_AT_SHIP_LOAD_MENUITEM, _("Auto-Focus at Ship Load"), _("Enable or disable auto-focus when a ship is loaded."), wxITEM_CHECK);
-            controlsMenu->Append(mAutoFocusAtShipLoadMenuItem);
-            Connect(ID_AUTO_FOCUS_AT_SHIP_LOAD_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAutoFocusAtShipLoadMenuItemSelected);
-
-            mContinuousAutoFocusMenuItem = new wxMenuItem(controlsMenu, ID_CONTINUOUS_AUTO_FOCUS_MENUITEM, _("Continuous Auto-Focus") + wxS("\tCtrl+HOME"), _("Enable or disable continuous auto-focus."), wxITEM_CHECK);
-            controlsMenu->Append(mContinuousAutoFocusMenuItem);
-            Connect(ID_CONTINUOUS_AUTO_FOCUS_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnContinuousAutoFocusMenuItemSelected);
-
             wxMenuItem * resetViewMenuItem = new wxMenuItem(controlsMenu, ID_RESET_VIEW_MENUITEM, _("Reset View") + wxS("\tHOME"), wxEmptyString, wxITEM_NORMAL);
             controlsMenu->Append(resetViewMenuItem);
             Connect(ID_RESET_VIEW_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnResetViewMenuItemSelected);
             ADD_PLAIN_ACCELERATOR_KEY(WXK_HOME, resetViewMenuItem);
+
+            mAutoFocusAtShipLoadMenuItem = new wxMenuItem(controlsMenu, ID_AUTO_FOCUS_AT_SHIP_LOAD_MENUITEM, _("Auto-Focus at Ship Load"), _("Enable or disable auto-focus when a ship is loaded."), wxITEM_CHECK);
+            controlsMenu->Append(mAutoFocusAtShipLoadMenuItem);
+            Connect(ID_AUTO_FOCUS_AT_SHIP_LOAD_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAutoFocusAtShipLoadMenuItemSelected);
+
+            controlsMenu->AppendSeparator();
+
+            mContinuousAutoFocusOnShipMenuItem = new wxMenuItem(controlsMenu, ID_AUTO_FOCUS_ON_SHIP_MENUITEM, _("Continuous Auto-Focus on Ship") + wxS("\tCtrl+HOME"), _("Enable continuous auto-focus on ships."), wxITEM_RADIO);
+            controlsMenu->Append(mContinuousAutoFocusOnShipMenuItem);
+            controlsMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [this](wxCommandEvent &)
+                { 
+                    assert(!!mUIPreferencesManager);
+                    mUIPreferencesManager->SetAutoFocusTarget(AutoFocusTargetKindType::Ship);
+                }, 
+                ID_AUTO_FOCUS_ON_SHIP_MENUITEM);
+
+            mContinuousAutoFocusOnSelectedNpcMenuItem = new wxMenuItem(controlsMenu, ID_AUTO_FOCUS_ON_SELECTED_NPC_MENUITEM, _("Continuous Auto-Focus on NPC") + wxS("\tCtrl+PgUp"), _("Enable continuous auto-focus on selected NPCs."), wxITEM_RADIO);
+            controlsMenu->Append(mContinuousAutoFocusOnSelectedNpcMenuItem);
+            controlsMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [this](wxCommandEvent &)
+                {
+                    assert(!!mUIPreferencesManager);
+                    mUIPreferencesManager->SetAutoFocusTarget(AutoFocusTargetKindType::SelectedNpc);
+                },
+                ID_AUTO_FOCUS_ON_SELECTED_NPC_MENUITEM);
+
+            mContinuousAutoFocusOnNothingMenuItem = new wxMenuItem(controlsMenu, ID_AUTO_FOCUS_ON_NOTHING_MENUITEM, _("No Auto-Focus") + wxS("\tCtrl+End"), _("Disable continuous auto-focus."), wxITEM_RADIO);
+            controlsMenu->Append(mContinuousAutoFocusOnNothingMenuItem);
+            controlsMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [this](wxCommandEvent &)
+                {
+                    assert(!!mUIPreferencesManager);
+                    mUIPreferencesManager->SetAutoFocusTarget(std::nullopt);
+                },
+                ID_AUTO_FOCUS_ON_NOTHING_MENUITEM);
 
             controlsMenu->AppendSeparator();
 
@@ -380,11 +407,21 @@ MainFrame::MainFrame(
             // Remove
             {
                 auto const id = wxNewId();
-                mRemoveNpcMenuItem = new wxMenuItem(mToolsMenu, id, _("Remove NPC"), wxEmptyString, wxITEM_RADIO);
+                mRemoveNpcMenuItem = new wxMenuItem(mToolsMenu, id, _("Remove NPC\tDEL"), wxEmptyString, wxITEM_RADIO);
                 auto img = wxImage(resourceLocator.GetIconFilePath("remove_npc_icon").string(), wxBITMAP_TYPE_PNG);
                 SET_BITMAP(mRemoveNpcMenuItem, img);
                 mToolsMenu->Append(mRemoveNpcMenuItem);
                 Connect(id, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnRemoveNpcMenuItemSelected);
+            }
+
+            // Follow
+            {
+                auto const id = wxNewId();
+                mFollowNpcMenuItem = new wxMenuItem(mToolsMenu, id, _("Follow NPC"), wxEmptyString, wxITEM_RADIO);
+                auto img = wxImage(resourceLocator.GetIconFilePath("autofocus_on_npc_icon").string(), wxBITMAP_TYPE_PNG);
+                SET_BITMAP(mFollowNpcMenuItem, img);
+                mToolsMenu->Append(mFollowNpcMenuItem);
+                Connect(id, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnFollowNpcMenuItemSelected);
             }
 
             //
@@ -584,6 +621,10 @@ MainFrame::MainFrame(
             wxMenuItem * triggerLightningMenuItem = new wxMenuItem(mToolsMenu, ID_TRIGGERLIGHTNING_MENUITEM, _("Trigger Lightning") + wxS("\tALT+L"), wxEmptyString, wxITEM_NORMAL);
             mToolsMenu->Append(triggerLightningMenuItem);
             Connect(ID_TRIGGERLIGHTNING_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnTriggerLightningMenuItemSelected);
+
+            mSelectNextNpcMenuItem = new wxMenuItem(mToolsMenu, wxNewId(), _("Select Next NPC") + wxS("\t>"), wxEmptyString, wxITEM_NORMAL);
+            mToolsMenu->Append(mSelectNextNpcMenuItem);
+            Connect(mSelectNextNpcMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnSelectNextNpcMenuItemSelected);
 
             mainMenuBar->Append(mToolsMenu, _("&Tools"));
         }
@@ -1099,6 +1140,8 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     ResetShipUIState();
     RebuildNpcMenus();
     ReconciliateUIWithUIPreferencesAndSettings();
+    ReconciliateUIWithNpcPresence(mGameController->HasNpcs());
+    ReconciliateUIWithAutoFocusTarget(mGameController->GetAutoFocusTarget());
 
 
     //
@@ -1785,12 +1828,6 @@ void MainFrame::OnAutoFocusAtShipLoadMenuItemSelected(wxCommandEvent & /*event*/
     mUIPreferencesManager->SetDoAutoFocusAtShipLoad(mAutoFocusAtShipLoadMenuItem->IsChecked());
 }
 
-void MainFrame::OnContinuousAutoFocusMenuItemSelected(wxCommandEvent & /*event*/)
-{
-    assert(!!mUIPreferencesManager);
-    mUIPreferencesManager->SetDoContinuousAutoFocus(mContinuousAutoFocusMenuItem->IsChecked());
-}
-
 void MainFrame::OnResetViewMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mGameController);
@@ -2028,6 +2065,18 @@ void MainFrame::OnRemoveNpcMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mToolController);
     mToolController->SetTool(ToolType::RemoveNpc);
+}
+
+void MainFrame::OnFollowNpcMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!!mToolController);
+    mToolController->SetTool(ToolType::FollowNpc);
+}
+
+void MainFrame::OnSelectNextNpcMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!!mGameController);
+    mGameController->SelectNextNpc();
 }
 
 void MainFrame::OnTriggerLightningMenuItemSelected(wxCommandEvent & /*event*/)
@@ -2654,7 +2703,9 @@ void MainFrame::ReconciliateUIWithUIPreferencesAndSettings()
 
     mAutoFocusAtShipLoadMenuItem->Check(mUIPreferencesManager->GetDoAutoFocusAtShipLoad());
 
-    mContinuousAutoFocusMenuItem->Check(mUIPreferencesManager->GetDoContinuousAutoFocus());
+    mContinuousAutoFocusOnShipMenuItem->Check(mUIPreferencesManager->GetAutoFocusTarget() == AutoFocusTargetKindType::Ship);
+    mContinuousAutoFocusOnSelectedNpcMenuItem->Check(mUIPreferencesManager->GetAutoFocusTarget() == AutoFocusTargetKindType::SelectedNpc);
+    mContinuousAutoFocusOnNothingMenuItem->Check(mUIPreferencesManager->GetAutoFocusTarget() == std::nullopt);
 
     mShipViewExteriorMenuItem->Check(mGameController->GetShipViewMode() == ShipViewModeType::Exterior);
     mShipViewInteriorMenuItem->Check(mGameController->GetShipViewMode() == ShipViewModeType::Interior);
@@ -2668,6 +2719,95 @@ void MainFrame::ReconciliateUIWithUIPreferencesAndSettings()
     mShowStatusTextMenuItem->Check(mUIPreferencesManager->GetShowStatusText());
     mShowExtendedStatusTextMenuItem->Check(mUIPreferencesManager->GetShowExtendedStatusText());
     mMuteMenuItem->Check(mUIPreferencesManager->GetGlobalMute());
+}
+
+void MainFrame::ReconciliateUIWithNpcPresence(bool areNpcsPresent)
+{
+    if (areNpcsPresent)
+    {
+        // Enable NPC menu items
+
+        if (!mContinuousAutoFocusOnSelectedNpcMenuItem->IsEnabled())
+        {
+            mContinuousAutoFocusOnSelectedNpcMenuItem->Enable(true);
+        }
+
+        if (!mMoveNpcMenuItem->IsEnabled())
+        {
+            mMoveNpcMenuItem->Enable(true);
+        }
+
+        if (!mRemoveNpcMenuItem->IsEnabled())
+        {
+            mRemoveNpcMenuItem->Enable(true);
+        }
+
+        if (!mFollowNpcMenuItem->IsEnabled())
+        {
+            mFollowNpcMenuItem->Enable(true);
+        }
+
+        if (!mSelectNextNpcMenuItem->IsEnabled())
+        {
+            mSelectNextNpcMenuItem->Enable(true);
+        }
+    }
+    else
+    {
+        // Disable NPC menu items
+
+        if (mContinuousAutoFocusOnSelectedNpcMenuItem->IsEnabled())
+        {
+            mContinuousAutoFocusOnSelectedNpcMenuItem->Enable(false);
+        }
+
+        if (mMoveNpcMenuItem->IsEnabled())
+        {
+            mMoveNpcMenuItem->Enable(false);
+        }
+
+        if (mRemoveNpcMenuItem->IsEnabled())
+        {
+            mRemoveNpcMenuItem->Enable(false);
+        }
+
+        if (mFollowNpcMenuItem->IsEnabled())
+        {
+            mFollowNpcMenuItem->Enable(false);
+        }
+
+        if (mSelectNextNpcMenuItem->IsEnabled())
+        {
+            mSelectNextNpcMenuItem->Enable(false);
+        }
+    }
+}
+
+void MainFrame::ReconciliateUIWithAutoFocusTarget(std::optional<AutoFocusTargetKindType> target)
+{
+    if (target == AutoFocusTargetKindType::Ship)
+    {
+        if (!mContinuousAutoFocusOnShipMenuItem->IsChecked())
+        {
+            mContinuousAutoFocusOnShipMenuItem->Check(true);
+        }
+    }
+    else if (target == AutoFocusTargetKindType::SelectedNpc)
+    {
+        if (!mContinuousAutoFocusOnSelectedNpcMenuItem->IsChecked())
+        {
+            mContinuousAutoFocusOnSelectedNpcMenuItem->Check(true);
+        }
+    }
+    else
+    {
+        assert(!target.has_value());
+
+        if (!mContinuousAutoFocusOnNothingMenuItem->IsChecked())
+        {
+            mContinuousAutoFocusOnNothingMenuItem->Check(true);
+        }
+    }
 }
 
 void MainFrame::RebuildNpcMenus()
@@ -2844,7 +2984,8 @@ void MainFrame::OnToolSelectedWithSwitchToInteriorView()
     if (mGameController->GetShipViewMode() != ShipViewModeType::Interior)
     {
         mGameController->SetShipViewMode(ShipViewModeType::Interior);
-        mShipViewExteriorMenuItem->Check(false);
+        // TODOTEST
+        //mShipViewExteriorMenuItem->Check(false);
         mShipViewInteriorMenuItem->Check(true);
     }
 }
@@ -2856,7 +2997,8 @@ void MainFrame::OnToolSelectedWithSwitchToExteriorView()
     {
         mGameController->SetShipViewMode(ShipViewModeType::Exterior);
         mShipViewExteriorMenuItem->Check(true);
-        mShipViewInteriorMenuItem->Check(false);
+        // TODOTEST
+        //mShipViewInteriorMenuItem->Check(false);
     }
 }
 

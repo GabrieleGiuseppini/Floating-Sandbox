@@ -704,9 +704,6 @@ private:
 		// The state of combustion, if this NPC is "on fire"
 		std::optional<CombustionStateType> CombustionState;
 
-		// The current highlight state of this NPC.
-		NpcHighlightType Highlight;
-
 		// Randomness specific to this NPC.
 		float RandomNormalizedUniformSeed; // [-1.0f ... +1.0f]
 
@@ -733,7 +730,6 @@ private:
 			, KindSpecificState(std::move(kindSpecificState))
 			, CombustionProgress(-1.0f)
 			, CombustionState()
-			, Highlight(NpcHighlightType::None)
 			, RandomNormalizedUniformSeed(GameRandomEngine::GetInstance().GenerateUniformReal(-1.0f, 1.0f))
 			, BeingPlacedState(beingPlacedState)
 		{}
@@ -778,6 +774,7 @@ public:
 		// State
 		, mCurrentSimulationSequenceNumber()
 		, mCurrentlySelectedNpc()
+		, mCurrentlyHighlightedNpc()
 		// Stats
 		, mFreeRegimeHumanNpcCount(0)
 		, mConstrainedRegimeHumanNpcCount(0)
@@ -868,10 +865,6 @@ public:
 
 	void AbortNewNpc(NpcId id);
 
-	void HighlightNpc(
-		NpcId id,
-		NpcHighlightType highlight);
-
 	std::optional<NpcId> GetCurrentlySelectedNpc() const;
 
 	void SelectFirstNpc();
@@ -879,6 +872,8 @@ public:
 	void SelectNextNpc();
 
 	void SelectNpc(std::optional<NpcId> id);
+
+	void HighlightNpc(std::optional<NpcId> id);
 
 public:
 
@@ -1717,6 +1712,7 @@ private:
 	SequenceNumber mCurrentSimulationSequenceNumber;
 
 	std::optional<NpcId> mCurrentlySelectedNpc;
+	std::optional<NpcId> mCurrentlyHighlightedNpc;
 
 	//
 	// Stats

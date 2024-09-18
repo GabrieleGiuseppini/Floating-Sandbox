@@ -601,12 +601,4 @@ struct IControlGameEventHandler
     {
         // Default-implemented
     }
-
-    // TODONUKE
-    // Only published when spontaneous toggle
-    virtual void OnContinuousAutoFocusToggled(
-        bool /*isEnabled*/)
-    {
-        // Default-implemented
-    }
 };

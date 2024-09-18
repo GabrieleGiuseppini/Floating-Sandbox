@@ -92,6 +92,7 @@ struct IGameController
     virtual float GetEffectiveAmbientLightIntensity() const = 0;
     virtual bool IsUnderwater(DisplayLogicalCoordinates const & screenCoordinates) const = 0;
     virtual bool IsUnderwater(GlobalElementId elementId) const = 0;
+    virtual bool HasNpcs() const = 0;
 
     //
     // Interactions
@@ -147,7 +148,7 @@ struct IGameController
     virtual void AbortNewNpc(NpcId id) = 0;
     virtual void SelectNpc(std::optional<NpcId> id) = 0;
     virtual void SelectNextNpc() = 0;
-    virtual void HighlightNpc(NpcId id, NpcHighlightType highlight) = 0;
+    virtual void HighlightNpc(std::optional<NpcId> id) = 0;
     virtual std::optional<GlobalElementId> GetNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const = 0;
     virtual void QueryNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const = 0;
 

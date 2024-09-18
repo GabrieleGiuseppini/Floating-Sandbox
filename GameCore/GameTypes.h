@@ -1131,15 +1131,6 @@ inline NpcFloorGeometryDepthType NpcFloorGeometryDepth(NpcFloorGeometryType geom
 }
 
 /*
- * Types of hightlight for NPCs.
- */
-enum class NpcHighlightType
-{
-    None,
-    Candidate
-};
-
-/*
  * Types of frontiers (duh).
  */
 enum class FrontierType

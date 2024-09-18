@@ -51,15 +51,11 @@ public:
     // Removes user offsets and returns to "pure autofocus"
     void ResetAutoFocusAlterations();
 
-    // TODONUKE
-    bool GetDoContinuousAutoFocus() const;
-    void SetDoContinuousAutoFocus(bool value);
-    void ResetView(std::optional<Geometry::AABB> const & aabb);
-    void OnNewShip(std::optional<Geometry::AABB> const & aabb);
-
 private:
 
     static float CalculateParameterSmootherConvergenceFactor(float cameraSpeedAdjustment);
+
+    static inline float CalculateAutoFocusMaxZoom(std::optional<AutoFocusTargetKindType> targetKind);
 
     void InternalFocusOn(
         Geometry::AABB const & aabb,
@@ -73,7 +69,7 @@ private:
         Geometry::AABB const & aabb,
         float widthMultiplier,
         float heightMultiplier,
-        float maxZoom) const;
+        std::optional<AutoFocusTargetKindType> targetKind) const;
 
 private:
 
@@ -84,7 +80,6 @@ private:
     ParameterSmoother<vec2f> mCameraWorldPositionParameterSmoother;
 
     float mCameraSpeedAdjustment; // Storage
-    
 
     bool mDoAutoFocusOnShipLoad; // Storage
 

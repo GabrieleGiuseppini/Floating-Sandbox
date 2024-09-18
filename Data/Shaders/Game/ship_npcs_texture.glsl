@@ -56,12 +56,17 @@ void main()
         discard;   
 
     // Apply highlight
-    c = vec4(
-        mix(
-            c.rgb,
-            vertexOverlayColor.rgb,
-            vertexOverlayColor.a * c.a * 0.8),
-        c.a);
+    c.rgb = mix(
+        c.rgb,
+        vertexOverlayColor.rgb,
+        step(0.0001, length(vertexOverlayColor.rgb)) * c.a * 0.8);
+
+    // Apply border
+    float borderDepth = clamp(fwidth(c.a) * 20., 0., 1.);
+    c.rgb = mix(
+        c.rgb,
+        vec3(0.8, 0.0, 0.0),
+        borderDepth * vertexOverlayColor.a);
 
     // Calculate lamp tool intensity
     float lampToolIntensity = CalculateLampToolIntensity(gl_FragCoord.xy);

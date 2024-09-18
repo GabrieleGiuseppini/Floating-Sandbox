@@ -54,7 +54,6 @@ class GameController final
     : public IGameController
     , public IGameControllerSettings
     , public IGameControllerSettingsOptions
-    , public IControlGameEventHandler
     , public ILifecycleGameEventHandler
     , public INpcGameEventHandler
     , public IWavePhenomenaGameEventHandler
@@ -212,6 +211,7 @@ public:
     float GetEffectiveAmbientLightIntensity() const override { return mRenderContext->GetEffectiveAmbientLightIntensity(); }
     bool IsUnderwater(DisplayLogicalCoordinates const & screenCoordinates) const override { return mWorld->GetOceanSurface().IsUnderwater(ScreenToWorld(screenCoordinates)); }
     bool IsUnderwater(GlobalElementId elementId) const override { return mWorld->IsUnderwater(elementId); }
+    bool HasNpcs() const override { return mWorld->GetNpcs().HasNpcs(); }
 
     //
     // Interactions
@@ -267,7 +267,7 @@ public:
     void AbortNewNpc(NpcId id) override;
     void SelectNpc(std::optional<NpcId> id) override;
     void SelectNextNpc() override;
-    void HighlightNpc(NpcId id, NpcHighlightType highlight) override;
+    void HighlightNpc(std::optional<NpcId> id) override;
     std::optional<GlobalElementId> GetNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const override;
     void QueryNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const override;
 
@@ -974,8 +974,6 @@ private:
     void OnTsunami(float x) override;
 
     void OnShipRepaired(ShipId shipId) override;
-
-    void OnContinuousAutoFocusToggled(bool isEnabled) override;
 
     void OnHumanNpcCountsUpdated(
         size_t insideShipCount,

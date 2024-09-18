@@ -275,9 +275,10 @@ void PreferencesDialog::OnShowShipDescriptionAtShipLoadCheckBoxClicked(wxCommand
     mOnChangeCallback();
 }
 
-void PreferencesDialog::OnContinuousAutoFocusCheckBoxClicked(wxCommandEvent & /*event*/)
+void PreferencesDialog::OnContinuousAutoFocusOnShipCheckBoxClicked(wxCommandEvent & /*event*/)
 {
-    mUIPreferencesManager.SetDoContinuousAutoFocus(mContinuousAutoFocusCheckBox->GetValue());
+    bool const value = mContinuousAutoFocusOnShipCheckBox->GetValue();
+    mUIPreferencesManager.SetAutoFocusTarget(value ? std::optional<AutoFocusTargetKindType>(AutoFocusTargetKindType::Ship) : std::nullopt);
 
     mOnChangeCallback();
 }
@@ -931,15 +932,15 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            // Continous Auto-Focus
+            // Continous Auto-Focus on Ship
             {
-                mContinuousAutoFocusCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY,
+                mContinuousAutoFocusOnShipCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY,
                     _("Continuous Auto-Focus"), wxDefaultPosition, wxDefaultSize, 0);
-                mContinuousAutoFocusCheckBox->SetToolTip(_("Enables or disables automatic focus on the ship."));
-                mContinuousAutoFocusCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnContinuousAutoFocusCheckBoxClicked, this);
+                mContinuousAutoFocusOnShipCheckBox->SetToolTip(_("Enables or disables automatic focus on the ship."));
+                mContinuousAutoFocusOnShipCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnContinuousAutoFocusOnShipCheckBoxClicked, this);
 
                 sizer->Add(
-                    mContinuousAutoFocusCheckBox,
+                    mContinuousAutoFocusOnShipCheckBox,
                     wxGBPosition(2, 0),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -1216,7 +1217,7 @@ void PreferencesDialog::ReadSettings()
 
     mReloadLastLoadedShipOnStartupCheckBox->SetValue(mUIPreferencesManager.GetReloadLastLoadedShipOnStartup());
     mShowShipDescriptionAtShipLoadCheckBox->SetValue(mUIPreferencesManager.GetShowShipDescriptionsAtShipLoad());
-    mContinuousAutoFocusCheckBox->SetValue(mUIPreferencesManager.GetDoContinuousAutoFocus());
+    mContinuousAutoFocusOnShipCheckBox->SetValue(mUIPreferencesManager.GetAutoFocusTarget() == AutoFocusTargetKindType::Ship);
     mAutoFocusAtShipLoadCheckBox->SetValue(mUIPreferencesManager.GetDoAutoFocusAtShipLoad());
     mAutoShowSwitchboardCheckBox->SetValue(mUIPreferencesManager.GetAutoShowSwitchboard());
     mShowElectricalNotificationsCheckBox->SetValue(mUIPreferencesManager.GetDoShowElectricalNotifications());

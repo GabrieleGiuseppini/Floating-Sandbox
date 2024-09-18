@@ -406,10 +406,6 @@ public:
 
     void AbortNewNpc(NpcId id);
 
-    void HighlightNpc(
-        NpcId id,
-        NpcHighlightType highlight);
-
     bool DestroyTriangle(GlobalElementId triangleId);
 
     bool RestoreTriangle(GlobalElementId triangleId);

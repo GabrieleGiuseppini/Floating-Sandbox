@@ -329,13 +329,16 @@ void UIPreferencesManager::LoadPreferences()
         }
 
         //
-        // Continuous auto-focus
+        // Continuous auto-focus on ships
+        //
+        // If set: ships; else: none (we don't save SelectedNpc)
         //
 
         if (auto continuousAutoFocusIt = preferencesRootObject->find("continuous_auto_focus");
             continuousAutoFocusIt != preferencesRootObject->end() && continuousAutoFocusIt->second.is<bool>())
         {
-            mGameController.SetDoContinuousAutoFocus(continuousAutoFocusIt->second.get<bool>());
+            bool const value = continuousAutoFocusIt->second.get<bool>();
+            mGameController.SetAutoFocusTarget(value ? std::optional<AutoFocusTargetKindType>(AutoFocusTargetKindType::Ship) : std::nullopt);
         }
 
         //
@@ -538,7 +541,7 @@ void UIPreferencesManager::SavePreferences() const
     preferencesRootObject["auto_zoom_at_ship_load"] = picojson::value(mGameController.GetDoAutoFocusOnShipLoad());
 
     // Add continuous auto focus
-    preferencesRootObject["continuous_auto_focus"] = picojson::value(mGameController.GetDoContinuousAutoFocus());
+    preferencesRootObject["continuous_auto_focus"] = picojson::value(mGameController.GetAutoFocusTarget() == AutoFocusTargetKindType::Ship);
 
     // Add auto show switchboard
     preferencesRootObject["auto_show_switchboard"] = picojson::value(mAutoShowSwitchboard);

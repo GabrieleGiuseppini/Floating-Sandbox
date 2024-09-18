@@ -1130,16 +1130,6 @@ void World::AbortNewNpc(NpcId id)
     mNpcs->AbortNewNpc(id);
 }
 
-void World::HighlightNpc(
-    NpcId id,
-    NpcHighlightType highlight)
-{
-    assert(mNpcs);
-    mNpcs->HighlightNpc(
-        id,
-        highlight);
-}
-
 bool World::DestroyTriangle(GlobalElementId triangleId)
 {
     auto const shipId = triangleId.GetShipId();

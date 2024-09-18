@@ -225,14 +225,14 @@ public:
         mGameController.SetDoAutoFocusOnShipLoad(value);
     }
 
-    bool GetDoContinuousAutoFocus() const
+    std::optional<AutoFocusTargetKindType> GetAutoFocusTarget() const
     {
-        return mGameController.GetDoContinuousAutoFocus();
+        return mGameController.GetAutoFocusTarget();
     }
 
-    void SetDoContinuousAutoFocus(bool value)
+    void SetAutoFocusTarget(std::optional<AutoFocusTargetKindType> value)
     {
-        mGameController.SetDoContinuousAutoFocus(value);
+        mGameController.SetAutoFocusTarget(value);
     }
 
     bool GetDoShowTsunamiNotifications() const

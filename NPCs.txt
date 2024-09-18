@@ -599,13 +599,17 @@ Arch
 		- Spec of state machine/interactions:
 			- User hits HOME (focus on ship): (B*)
 				- If focusing on ship: reset user offsets
-				- Else: 
-					- If focusing on SelectedNPC: 
-						- Target change to <>
-						- Emit OnAutoFocusTargetChanged
-						- Turn off notification @ NotificationLayer
+				- If focusing on selected NPC:
+					- If there is an NPC selection: reset user offsets
+					- Else: 
+						- Switch target to <>
+							- Target change to <>
+							- Emit OnAutoFocusTargetChanged
+							- Turn off notification @ NotificationLayer
+						- Focus on ship (one-off)
+				- Else:
 					- Focus on ship (one-off)
-				! In short: if there's auto-focus on ship, we re-center; if not, we focus one-off
+				! In short: if there's auto-focus on <X>, we re-center; if not, we focus one-off on ship
 			- User enables FocusOnShip: (C*)
 				- Target change to <Ship>
 				- Emit OnAutoFocusTargetChanged
@@ -679,7 +683,7 @@ Arch
 						- Focus on ship (one-off)
 				- UI: 
 					- Menu mutex driven by OnAutoFocusTargetChanged
-			- User begins placing new NPC:
+			- User begins placing new NPC: (G*)
 				- NOTE: here we assume we do NOT select this NPC by default
 				- If current target != Nothing:
 					- Target change to <>
@@ -722,6 +726,7 @@ Arch
 						+ Invoked by GC always
 				+ ResetAutoFocusAlterations() // Reset user offsets
 				+ Nuke notification layer member
+				+ Default auto-focus target in ViewManager: Ship
 				----
 				- Nuke other public methods (for now)
 			+ GameController:
@@ -765,56 +770,63 @@ Arch
 					+ See above (part of F*)
 				+ SelectNextNpc()
 					+ See above (E*)
+				+ BeginPlaceNewNpc
+					+ See above (G*)
 			+ Npcs:
 				+ SelectFirstNpc
 				+ SelectNextNpc
-
-			- Tool: "FollowNpcTool"
+				+ Highlight rearc:
+					+ Move Highlight out of NPC and into opt<NpcId>
+						+ Member: next to Selected
+					+ Public API:
+						+ HighlightNpc(opt<NpcId>)
+			+ Tool: "FollowNpcTool"
 				+ Icon: like Move, Remove but with auto-focus frame - autofocus_on_npc_icon.png
 				+ Cursor: autofocus_on_npc_cursor.png
-				- RemoveNpc tool becomes base+derivates, used for Remove & Follow (and in the future: SelectNpc)
-				- Change (for both Remove & Follow, i.e. base): make it so we don't have to store candidate, but probe right away at each move+down
+				+ RemoveNpc tool becomes base+derivates, used for Remove & Follow (and in the future: SelectNpc)
+				+ Change (for both Remove & Follow, i.e. base): make it so we don't have to store candidate, but probe right away at each move+down
 					! So that we don't run the risk of referencing a dead NPC
-					- Just react to move+down (& up, but just for cursor)
-				- Follow: calls SelectNpc() + SetAutoFocus(SelectedNpc)
-				- Tool only enabled if exists at least one NPC (at OnNpcCountsUpdated)
+					+ Just react to move+down (& up, but just for cursor)
+				+ Follow: calls SelectNpc() + SetAutoFocus(SelectedNpc)
 
-			- MainFrame:
-				- Do menu entries:
-					- 3 for continuous auto-focus
-						- All members
-					- FollowNPC tool
-						- Member, like Move/RemoveNpc
-					- SelectNextNPC - w/key shortcut (can do anything with TAB? If not, '>')
-						- Member
-				- Handler for focus changes calls ReconciliateUIWithAutoFocusTarget()
-					- Ensure right of 3 auto-focus menu items is checked
-				- Handler for NPC presence (OnNpcCountsUpdated) calls ReconciliateUIWithNpcPresence(bool)
-					- Do current code (Move/RemoveNpc tools only?)
-					- FollowNPC tool
-					- SelectNextNPC
+			+ MainFrame:
+				+ Do menu entries:
+					+ 3 for continuous auto-focus
+						+ All members
+						+ Nicely separated/reorder
+					+ FollowNPC tool
+						+ Member, like Move/RemoveNpc
+					+ SelectNextNPC - w/key shortcut (can do anything with TAB? If not, '>')
+						+ Member
+				+ Handler for focus changes calls ReconciliateUIWithAutoFocusTarget()
+					+ Ensure right of 3 auto-focus menu items is checked
+					+ Test if only checking the "true" one is enough
+				+ Handler for NPC presence (OnNpcCountsUpdated) calls ReconciliateUIWithNpcPresence(bool)
+					+ Do current code (Move/RemoveNpc tools only?)
+					+ FollowNPC tool
+					+ SelectNextNPC
+			+ UI preferences
 
 			- Shader/Highlight
-				- Highlight rearc:
-					- Move Highlight out of NPC and into opt<NpcId>
-						- Member: next to Selected
-					- Public API:
-						- HighlightNpc(opt<NpcId>)
-					- Alpha (make rgba if needed): 1.0 if selected, 0.0 if not selected
-				- Do border with fwidth
-					- float borderDepth = clamp(fwidth(col.a) * 20., 0., 1.);
-					- ...depending on alpha
-				- Do non-border highglight with Overlay blend
+				- Do highlight with Overlay blend
 					(Target > 0.5) * (1 – (1-2*(Target-0.5)) * (1-Blend)) +
 					(Target <= 0.5) * ((2*Target) * Blend)
-			- Watch-out's:
-				- Default auto-focus values currently in ViewManager: move to GameController
+				- Do selection via ad-hoc "RectSelection" primitive
+					- Geometry: enclosing rect, calc'd by Npcs::RenderNpc
+						- max plane - but see below
+					- ShipRenderContext: new primitive, kinda like Highlight 
+						- Without Start and End
+						- Drawn on top of everything
+							- TODOHERE: but then covered by other ships? what if primitive is instead above-all (i.e. at NotificationRenderContext)?
+					- Shader: ship_rectselection
 
 			- Cleanups:
-				- IGameEventHandlers::OnContinuousAutoFocusToggled() may go
+				+ IGameEventHandlers::OnContinuousAutoFocusToggled() may go
 				- IGameController::Get/SetDoContinuousAutoFocus
 
 		- Tests:
+			- Move tool (regressions)
+			- Remove tool (regressions)
 			- All state transitions above
 
 		- Merge into npcs_v1

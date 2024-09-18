@@ -144,7 +144,6 @@ GameController::GameController(
         mRenderContext->GetVisibleWorld());
 
     // Register ourselves as event handler for the events we care about
-    mGameEventDispatcher->RegisterControlEventHandler(this);
     mGameEventDispatcher->RegisterLifecycleEventHandler(this);
     mGameEventDispatcher->RegisterNpcEventHandler(this);
     mGameEventDispatcher->RegisterWavePhenomenaEventHandler(this);
@@ -1418,14 +1417,10 @@ void GameController::SelectNextNpc()
     mWorld->GetNpcs().SelectNextNpc(); // We'll pick this up later at UpdateAutoFocus() if we're focusing on it
 }
 
-void GameController::HighlightNpc(
-    NpcId id,
-    NpcHighlightType highlight)
+void GameController::HighlightNpc(std::optional<NpcId> id)
 {
     assert(!!mWorld);
-    mWorld->HighlightNpc(
-        id,
-        highlight);
+    mWorld->GetNpcs().HighlightNpc(id);
 }
 
 std::optional<GlobalElementId> GameController::GetNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const
@@ -1542,30 +1537,15 @@ void GameController::AdjustZoom(float amount)
 void GameController::ResetView()
 {
     //
-    // If there's auto-focus on ship, we re-center; if not, we focus one-off
-    //
-    //  - If focusing on Ship: reset user offsets
-    //  - Else :
-    //      - If focusing on SelectedNPC:
-    //          - Target change to <>
-    //          - Emit OnAutoFocusTargetChanged
-    //          - Turn off notification @ NotificationLayer
-    //      - Focus on ships (one-off)
+    // If there's auto-focus on <X>, we re-center; if not, we focus one-off on ships
     //
 
-    if (mViewManager.GetAutoFocusTarget() == AutoFocusTargetKindType::Ship)
+    if (mViewManager.GetAutoFocusTarget().has_value())
     {
-        // Re-center
         mViewManager.ResetAutoFocusAlterations();
     }
     else
     {
-        if (mViewManager.GetAutoFocusTarget() == AutoFocusTargetKindType::SelectedNpc)
-        {
-            // Turn off auto-focus
-            InternalSwitchAutoFocusTarget(std::nullopt);
-        }
-
         // Focus on ships (one-off)
         FocusOnShips();
     }
@@ -1674,11 +1654,6 @@ void GameController::OnShipRepaired(ShipId /*shipId*/)
     mNotificationLayer.PublishNotificationText("SHIP REPAIRED!");
 
     LogMessage("Ship repaired!");
-}
-
-void GameController::OnContinuousAutoFocusToggled(bool isEnabled)
-{
-    mNotificationLayer.SetAutoFocusIndicator(isEnabled);
 }
 
 void GameController::OnHumanNpcCountsUpdated(
@@ -1859,6 +1834,14 @@ void GameController::PublishStats(std::chrono::steady_clock::time_point nowReal)
 
 void GameController::OnBeginPlaceNewNpc(NpcId const & npcId)
 {
+    // Turn off auto-focus if we have it
+    if (mViewManager.GetAutoFocusTarget().has_value())
+    {
+        InternalSwitchAutoFocusTarget(std::nullopt);
+    }
+
+    // Focus on this NPC (one-off)
+
     // We want to zoom so that the NPC appears as large as 1/this of screen
     float constexpr NpcMagnification = 13.0f;
 
@@ -1945,14 +1928,15 @@ void GameController::UpdateAutoFocus()
 
 void GameController::InternalSwitchAutoFocusTarget(std::optional<AutoFocusTargetKindType> const & autoFocusTarget)
 {
-    assert(mViewManager.GetAutoFocusTarget() != autoFocusTarget);
+    if (mViewManager.GetAutoFocusTarget() != autoFocusTarget)
+    {
+        // Switch target
+        mViewManager.SetAutoFocusTarget(autoFocusTarget);
 
-    // Switch target
-    mViewManager.SetAutoFocusTarget(autoFocusTarget);
+        // Tell the world
+        mGameEventDispatcher->OnAutoFocusTargetChanged(autoFocusTarget);
 
-    // Tell the world
-    mGameEventDispatcher->OnAutoFocusTargetChanged(autoFocusTarget);
-
-    // Reconciliate notification
-    mNotificationLayer.SetAutoFocusIndicator(autoFocusTarget.has_value());
+        // Reconciliate notification
+        mNotificationLayer.SetAutoFocusIndicator(autoFocusTarget.has_value());
+    }
 }

@@ -10,7 +10,6 @@
 #include <cassert>
 
 float constexpr NdcFractionZoomTarget = 0.7f; // Fraction of the [0, 2] NDC space that needs to be occupied by AABB
-float constexpr AutoFocusMaxZoom = 2.0f; // Arbitrary max zoom, to avoid getting to atomic scale with e.g. Thanos
 
 float constexpr SmootherTerminationThreshold = 0.00005f; // How close to target we stop smoothing
 
@@ -54,8 +53,8 @@ ViewManager::ViewManager(
     , mDoAutoFocusOnShipLoad(true)
     , mAutoFocus() // Set later
 {
-    // Default: continuous auto-focus is ON
-    SetDoContinuousAutoFocus(true);
+    // Default: continuous auto-focus is ON on ships
+    SetAutoFocusTarget(AutoFocusTargetKindType::Ship);
 }
 
 float ViewManager::GetCameraSpeedAdjustment() const
@@ -169,6 +168,8 @@ void ViewManager::FocusOn(
     float zoomToleranceMultiplierMax,
     bool anchorAabbCenterAtCurrentScreenPosition)
 {
+    // One-shot
+
     // Invoked when there's no auto-focus
     assert(!mAutoFocus.has_value());
 
@@ -200,7 +201,7 @@ void ViewManager::UpdateAutoFocus(std::optional<Geometry::AABB> const & aabb)
         // Zoom
         //
 
-        mAutoFocus->CurrentAutoFocusZoom = InternalCalculateZoom(*aabb, 1.0f, 1.0f, AutoFocusMaxZoom);
+        mAutoFocus->CurrentAutoFocusZoom = InternalCalculateZoom(*aabb, 1.0f, 1.0f, mAutoFocus->AutoFocusTarget);
 
         //
         // Pan
@@ -366,67 +367,67 @@ void ViewManager::ResetAutoFocusAlterations()
     mAutoFocus->ResetUserOffsets();
 }
 
-// TODONUKE
-bool ViewManager::GetDoContinuousAutoFocus() const
-{
-    return mAutoFocus.has_value();
-}
-
-// TODONUKE
-void ViewManager::SetDoContinuousAutoFocus(bool value)
-{
-    if (value)
-    {
-        // Start auto-focus
-        mAutoFocus.emplace(
-            // TODOTEST
-            std::nullopt,
-            1.0f / mInverseZoomParameterSmoother.GetValue(),
-            mCameraWorldPositionParameterSmoother.GetValue());
-    }
-    else
-    {
-        // Stop auto-focus
-        mAutoFocus.reset();
-    }
-
-    //mNotificationLayer.SetAutoFocusIndicator(mAutoFocus.has_value());
-}
-
-void ViewManager::ResetView(std::optional<Geometry::AABB> const & aabb)
-{
-    // When continuous auto-focus is off, "view reset" focuses on ship;
-    // When continuous auto-focus is on, "view reset" zeroes-out user offsets (so it focuses on ship)
-    if (!mAutoFocus.has_value())
-    {
-        if (aabb)
-        {
-            InternalFocusOn(*aabb, 1.0f, 1.0f, 1.0f, 1.0f, false);
-        }
-    }
-    else
-    {
-        mAutoFocus->ResetUserOffsets();
-    }
-}
-
-void ViewManager::OnNewShip(std::optional<Geometry::AABB> const & aabb)
-{
-    if (mDoAutoFocusOnShipLoad)
-    {
-        if (!mAutoFocus.has_value())
-        {
-            if (aabb.has_value())
-            {
-                InternalFocusOn(*aabb, 1.0f, 1.0f, 1.0f, 1.0f, false);
-            }
-        }
-        else
-        {
-            mAutoFocus->ResetUserOffsets();
-        }
-    }
-}
+////// TODONUKE
+////bool ViewManager::GetDoContinuousAutoFocus() const
+////{
+////    return mAutoFocus.has_value();
+////}
+////
+////// TODONUKE
+////void ViewManager::SetDoContinuousAutoFocus(bool value)
+////{
+////    if (value)
+////    {
+////        // Start auto-focus
+////        mAutoFocus.emplace(
+////            // TODOTEST
+////            std::nullopt,
+////            1.0f / mInverseZoomParameterSmoother.GetValue(),
+////            mCameraWorldPositionParameterSmoother.GetValue());
+////    }
+////    else
+////    {
+////        // Stop auto-focus
+////        mAutoFocus.reset();
+////    }
+////
+////    //mNotificationLayer.SetAutoFocusIndicator(mAutoFocus.has_value());
+////}
+////
+////void ViewManager::ResetView(std::optional<Geometry::AABB> const & aabb)
+////{
+////    // When continuous auto-focus is off, "view reset" focuses on ship;
+////    // When continuous auto-focus is on, "view reset" zeroes-out user offsets (so it focuses on ship)
+////    if (!mAutoFocus.has_value())
+////    {
+////        if (aabb)
+////        {
+////            InternalFocusOn(*aabb, 1.0f, 1.0f, 1.0f, 1.0f, false);
+////        }
+////    }
+////    else
+////    {
+////        mAutoFocus->ResetUserOffsets();
+////    }
+////}
+////
+////void ViewManager::OnNewShip(std::optional<Geometry::AABB> const & aabb)
+////{
+////    if (mDoAutoFocusOnShipLoad)
+////    {
+////        if (!mAutoFocus.has_value())
+////        {
+////            if (aabb.has_value())
+////            {
+////                InternalFocusOn(*aabb, 1.0f, 1.0f, 1.0f, 1.0f, false);
+////            }
+////        }
+////        else
+////        {
+////            mAutoFocus->ResetUserOffsets();
+////        }
+////    }
+////}
 
 ///////////////////////////////////////////////////////////
 
@@ -456,6 +457,23 @@ float ViewManager::CalculateParameterSmootherConvergenceFactor(float cameraSpeed
     }
 }
 
+float ViewManager::CalculateAutoFocusMaxZoom(std::optional<AutoFocusTargetKindType> targetKind)
+{
+    if (targetKind == AutoFocusTargetKindType::Ship)
+    {
+        return 2.0f; // Arbitrary max zoom, to avoid getting to atomic scale with e.g. Thanos
+    }
+    else if (targetKind == AutoFocusTargetKindType::SelectedNpc)
+    {
+        return 8.0f; // Arbitrary max zoom
+    }
+    else
+    {
+        assert(!targetKind.has_value());
+        return 8.0f; // Arbitrary
+    }
+}
+
 void ViewManager::InternalFocusOn(
     Geometry::AABB const & aabb,
     float widthMultiplier,
@@ -464,6 +482,8 @@ void ViewManager::InternalFocusOn(
     float zoomToleranceMultiplierMax,
     bool anchorAabbCenterAtCurrentScreenPosition)
 {
+    // One-shot
+
     /*
      * Focuses on the specified AABB's center, moving the camera smoothly to it.
      * If anchoring, the movement ensures that the current AABB's center's position
@@ -483,7 +503,7 @@ void ViewManager::InternalFocusOn(
         aabb,
         widthMultiplier,
         heightMultiplier,
-        8.0f); // No closer than this
+        std::nullopt); // No closer than this
 
     // Check zoom against tolerance
     float const currentZoom = 1.0f / mInverseZoomParameterSmoother.GetValue();
@@ -540,11 +560,14 @@ float ViewManager::InternalCalculateZoom(
     Geometry::AABB const & aabb,
     float widthMultiplier,
     float heightMultiplier,
-    float maxZoom) const
+    std::optional<AutoFocusTargetKindType> targetKind) const
 {
     // Clamp dimensions from below to 1.0 (don't want to zoom to smaller than 1m)
     float const width = std::max(aabb.GetWidth(), 1.0f) * widthMultiplier;
     float const height = std::max(aabb.GetHeight(), 1.0f) * heightMultiplier;
+
+    // Calculate max zoom
+    float const maxZoom = CalculateAutoFocusMaxZoom(targetKind);
 
     return std::min(
         std::min(

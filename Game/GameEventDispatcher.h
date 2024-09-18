@@ -867,14 +867,6 @@ public:
         }
     }
 
-    void OnContinuousAutoFocusToggled(bool isEnabled) override
-    {
-        for (auto sink : mControlSinks)
-        {
-            sink->OnContinuousAutoFocusToggled(isEnabled);
-        }
-    }
-
 public:
 
     /*

@@ -756,20 +756,36 @@ PlaceHumanNpcTool::PlaceHumanNpcTool(
 {
 }
 
+BaseSelectNpcTool::BaseSelectNpcTool(
+    ToolType toolType,
+    IToolCursorManager & toolCursorManager,
+    IGameController & gameController,
+    SoundController & soundController,
+    wxImage && downCursorImage,
+    wxImage && upCursorImage)
+    : Tool(
+        toolType,
+        toolCursorManager,
+        gameController,
+        soundController)
+    , mDownCursorImage(std::move(downCursorImage))
+    , mUpCursorImage(std::move(upCursorImage))
+{
+}
+
 MoveNpcTool::MoveNpcTool(
     IToolCursorManager & toolCursorManager,
     IGameController & gameController,
     SoundController & soundController,
     ResourceLocator const & resourceLocator)
-    : Tool(
+    : BaseSelectNpcTool(
         ToolType::MoveNpc,
         toolCursorManager,
         gameController,
-        soundController)
-    , mNpc()
-    , mIsMouseDown(false) // Will use actual mouse state at Init()
-    , mClosedCursorImage(WxHelpers::LoadCursorImage("move_npc_cursor_down", 11, 29, resourceLocator))
-    , mOpenCursorImage(WxHelpers::LoadCursorImage("move_npc_cursor_up", 11, 29, resourceLocator))
+        soundController,
+        WxHelpers::LoadCursorImage("move_npc_cursor_down", 11, 29, resourceLocator),
+        WxHelpers::LoadCursorImage("move_npc_cursor_up", 11, 29, resourceLocator))
+    , mBeingMovedNpc()
 {
 }
 
@@ -778,14 +794,27 @@ RemoveNpcTool::RemoveNpcTool(
     IGameController & gameController,
     SoundController & soundController,
     ResourceLocator const & resourceLocator)
-    : Tool(
+    : BaseSelectNpcTool(
         ToolType::RemoveNpc,
         toolCursorManager,
         gameController,
-        soundController)
-    , mNpc()
-    , mIsMouseDown(false) // Will use actual mouse state at Init()
-    , mClosedCursorImage(WxHelpers::LoadCursorImage("remove_npc_cursor_down", 20, 29, resourceLocator))
-    , mOpenCursorImage(WxHelpers::LoadCursorImage("remove_npc_cursor_up", 20, 29, resourceLocator))
+        soundController,
+        WxHelpers::LoadCursorImage("remove_npc_cursor_down", 20, 29, resourceLocator),
+        WxHelpers::LoadCursorImage("remove_npc_cursor_up", 20, 29, resourceLocator))
+{
+}
+
+FollowNpcTool::FollowNpcTool(
+    IToolCursorManager & toolCursorManager,
+    IGameController & gameController,
+    SoundController & soundController,
+    ResourceLocator const & resourceLocator)
+    : BaseSelectNpcTool(
+        ToolType::FollowNpc,
+        toolCursorManager,
+        gameController,
+        soundController,
+        WxHelpers::LoadCursorImage("autofocus_on_npc_cursor", 16, 16, resourceLocator),
+        WxHelpers::LoadCursorImage("autofocus_on_npc_cursor", 16, 16, resourceLocator))
 {
 }

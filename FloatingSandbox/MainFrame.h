@@ -120,7 +120,9 @@ private:
     wxBoxSizer * mMainPanelSizer;
     wxMenuItem * mReloadPreviousShipMenuItem;
     wxMenuItem * mAutoFocusAtShipLoadMenuItem;
-    wxMenuItem * mContinuousAutoFocusMenuItem;
+    wxMenuItem * mContinuousAutoFocusOnShipMenuItem;
+    wxMenuItem * mContinuousAutoFocusOnSelectedNpcMenuItem;
+    wxMenuItem * mContinuousAutoFocusOnNothingMenuItem;
     wxMenuItem * mShipViewExteriorMenuItem;
     wxMenuItem * mShipViewInteriorMenuItem;
     wxMenuItem * mPauseMenuItem;
@@ -137,6 +139,8 @@ private:
     wxMenuItem * mAddFurnitureNpcMenuItem;
     wxMenuItem * mMoveNpcMenuItem;
     wxMenuItem * mRemoveNpcMenuItem;
+    wxMenuItem * mFollowNpcMenuItem;
+    wxMenuItem * mSelectNextNpcMenuItem;
     wxMenuItem * mReloadLastModifiedSettingsMenuItem;
     wxMenuItem * mShowEventTickerMenuItem;
     wxMenuItem * mShowProbePanelMenuItem;
@@ -203,7 +207,6 @@ private:
     void OnZoomInMenuItemSelected(wxCommandEvent & event);
     void OnZoomOutMenuItemSelected(wxCommandEvent & event);
     void OnAutoFocusAtShipLoadMenuItemSelected(wxCommandEvent & event);
-    void OnContinuousAutoFocusMenuItemSelected(wxCommandEvent & event);
     void OnResetViewMenuItemSelected(wxCommandEvent & event);
     void OnShipViewMenuItemSelected(wxCommandEvent & event);
     void OnTimeOfDayUpMenuItemSelected(wxCommandEvent & event);
@@ -247,6 +250,8 @@ private:
     void OnAddFurnitureNpcMenuItemSelected(NpcSubKindIdType kind);
     void OnMoveNpcMenuItemSelected(wxCommandEvent & event);
     void OnRemoveNpcMenuItemSelected(wxCommandEvent & event);
+    void OnFollowNpcMenuItemSelected(wxCommandEvent & event);
+    void OnSelectNextNpcMenuItemSelected(wxCommandEvent & event);
     void OnTriggerLightningMenuItemSelected(wxCommandEvent & event);
     void OnRCBombDetonateMenuItemSelected(wxCommandEvent & event);
     void OnAntiMatterBombDetonateMenuItemSelected(wxCommandEvent & event);
@@ -285,14 +290,14 @@ private:
         gameController.RegisterControlEventHandler(this);
     }
 
-    virtual void OnGameReset() override
+    void OnGameReset() override
     {
         // Refresh title bar
         mCurrentShipTitles.clear();
         UpdateFrameTitle();
     }
 
-    virtual void OnShipLoaded(
+    void OnShipLoaded(
         unsigned int /*id*/,
         ShipMetadata const & shipMetadata) override
     {
@@ -307,17 +312,17 @@ private:
         UpdateFrameTitle();
     }
 
-    virtual void OnStormBegin() override
+    void OnStormBegin() override
     {
         mTriggerStormMenuItem->Enable(false);
     }
 
-    virtual void OnStormEnd() override
+    void OnStormEnd() override
     {
         mTriggerStormMenuItem->Enable(true);
     }
 
-    virtual void OnGadgetPlaced(
+    void OnGadgetPlaced(
         GlobalGadgetId /*gadgetId*/,
         GadgetType gadgetType,
         bool /*isUnderwater*/) override
@@ -334,7 +339,7 @@ private:
         }
     }
 
-    virtual void OnGadgetRemoved(
+    void OnGadgetRemoved(
         GlobalGadgetId /*gadgetId*/,
         GadgetType gadgetType,
         std::optional<bool> /*isUnderwater*/) override
@@ -353,42 +358,19 @@ private:
         }
     }
 
-    virtual void OnFishCountUpdated(size_t count) override
+    void OnFishCountUpdated(size_t count) override
     {
         mScareFishMenuItem->Enable(count > 0);
     }
 
-    virtual void OnNpcCountsUpdated(size_t totalNpcCount) override
+    void OnNpcCountsUpdated(size_t totalNpcCount) override
     {
-        if (totalNpcCount > 0)
-        {
-            // Enable Move/Remove menu items
-            if (!mMoveNpcMenuItem->IsEnabled())
-            {
-                mMoveNpcMenuItem->Enable(true);
-            }
-            if (!mRemoveNpcMenuItem->IsEnabled())
-            {
-                mRemoveNpcMenuItem->Enable(true);
-            }
-        }
-        else
-        {
-            // Disable Move/Remove menu items
-            if (mMoveNpcMenuItem->IsEnabled())
-            {
-                mMoveNpcMenuItem->Enable(false);
-            }
-            if (mRemoveNpcMenuItem->IsEnabled())
-            {
-                mRemoveNpcMenuItem->Enable(false);
-            }
-        }
+        ReconciliateUIWithNpcPresence(totalNpcCount > 0);
     }
 
-    virtual void OnContinuousAutoFocusToggled(bool isEnabled) override
+    void OnAutoFocusTargetChanged(std::optional<AutoFocusTargetKindType> target) override
     {
-        mContinuousAutoFocusMenuItem->Check(isEnabled);
+        ReconciliateUIWithAutoFocusTarget(target);
     }
 
 private:
@@ -448,6 +430,8 @@ private:
     void UpdateFrameTitle();
 
     void ReconciliateUIWithUIPreferencesAndSettings();
+    void ReconciliateUIWithNpcPresence(bool areNpcsPresent);
+    void ReconciliateUIWithAutoFocusTarget(std::optional<AutoFocusTargetKindType> target);
 
     void RebuildNpcMenus();
 

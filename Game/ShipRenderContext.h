@@ -267,10 +267,10 @@ public:
         vec2f bottomLeftPosition,
         vec2f bottomRightPosition,
         TextureCoordinatesQuad const & textureCoords,
-        NpcHighlightType highlight)
+        rgbaColor const & modifierColor)
     {
         float const fPlaneId = static_cast<float>(planeId);
-        vec4f const overlayColor = NpcHighlightToOverlayColor(highlight);
+        vec4f const overlayColor = modifierColor.toVec4f();
 
         // TopLeft
         mNpcTextureQuadVertexBuffer.emplace_back(
@@ -1398,25 +1398,6 @@ private:
             -angleCw,
             alpha,
             ambientLightSensitivity);
-    }
-
-    vec4f NpcHighlightToOverlayColor(NpcHighlightType highlight)
-    {
-        switch (highlight)
-        {
-            case NpcHighlightType::None:
-            {
-                return vec4f::zero();
-            }
-
-            case NpcHighlightType::Candidate:
-            {
-                return vec4f(1.0f, 0.208f, 0.08f, 1.0f);
-            }
-        }
-
-        assert(false);
-        return vec4f::zero();
     }
 
 private:
