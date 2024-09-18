@@ -713,7 +713,7 @@ Arch
 					+ @ Setter
 			+ GameType: AutoFocusTargetKindType: Ship, SelectedNpc
 			+ Event handler: OnAutoFocusTargetKindChanged(std::opt<AutoFocusTargetKindType>) (@ Control event handlers)
-			= ViewManager:
+			+ ViewManager:
 				! Becomes fully slave, just high-level operations on ViewModel
 				+ opt<AutoFocusTargetKindType> mCurrentAutoFocusTarget @ AutoFocusSessionData
 					! Here so it's consistent, and can use target type to fine tune focus
@@ -727,8 +727,7 @@ Arch
 				+ ResetAutoFocusAlterations() // Reset user offsets
 				+ Nuke notification layer member
 				+ Default auto-focus target in ViewManager: Ship
-				----
-				- Nuke other public methods (for now)
+				+ Nuke other public methods
 			+ GameController:
 				+ Remove mCurrentAutoFocusTarget and struct which we've just added
 				+ Public View methods:
@@ -820,9 +819,9 @@ Arch
 							- TODOHERE: but then covered by other ships? what if primitive is instead above-all (i.e. at NotificationRenderContext)?
 					- Shader: ship_rectselection
 
-			- Cleanups:
+			+ Cleanups:
 				+ IGameEventHandlers::OnContinuousAutoFocusToggled() may go
-				- IGameController::Get/SetDoContinuousAutoFocus
+				+ IGameController::Get/SetDoContinuousAutoFocus
 
 		- Tests:
 			- Move tool (regressions)
