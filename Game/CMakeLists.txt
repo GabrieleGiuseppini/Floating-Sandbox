@@ -153,6 +153,7 @@ set  (RENDER_SOURCES
 	ShaderTypes.h
 	ShipRenderContext.cpp
 	ShipRenderContext.h
+	StockColors.h
 	TextureTypes.h
 	TextureAtlas-inl.h
 	TextureAtlas.h

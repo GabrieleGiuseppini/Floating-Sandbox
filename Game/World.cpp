@@ -1130,6 +1130,30 @@ void World::AbortNewNpc(NpcId id)
     mNpcs->AbortNewNpc(id);
 }
 
+void World::SelectFirstNpc()
+{
+    assert(mNpcs);
+    mNpcs->SelectFirstNpc(mCurrentSimulationTime);
+}
+
+void World::SelectNextNpc()
+{
+    assert(mNpcs);
+    mNpcs->SelectNextNpc(mCurrentSimulationTime);
+}
+
+void World::SelectNpc(std::optional<NpcId> id)
+{
+    assert(mNpcs);
+    mNpcs->SelectNpc(id, mCurrentSimulationTime);
+}
+
+void World::HighlightNpc(std::optional<NpcId> id)
+{
+    assert(mNpcs);
+    mNpcs->HighlightNpc(id);
+}
+
 bool World::DestroyTriangle(GlobalElementId triangleId)
 {
     auto const shipId = triangleId.GetShipId();
@@ -1253,7 +1277,7 @@ void World::RenderUpload(
     }
 
     assert(mNpcs);
-    mNpcs->Upload(renderContext);
+    mNpcs->Upload(mCurrentSimulationTime, renderContext);
 
     // AABBs
     if (renderContext.GetShowAABBs())

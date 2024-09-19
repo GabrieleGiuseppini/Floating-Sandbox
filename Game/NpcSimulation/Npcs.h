@@ -774,6 +774,7 @@ public:
 		// State
 		, mCurrentSimulationSequenceNumber()
 		, mCurrentlySelectedNpc()
+		, mCurrentlySelectedNpcSimulationTimestamp(0.0f)
 		, mCurrentlyHighlightedNpc()
 		// Stats
 		, mFreeRegimeHumanNpcCount(0)
@@ -796,7 +797,9 @@ public:
 
 	void UpdateEnd();
 
-	void Upload(Render::RenderContext & renderContext) const;
+	void Upload(
+		float currentSimulationTime,
+		Render::RenderContext & renderContext) const;
 
 	void UploadFlames(
 		ShipId shipId,
@@ -867,11 +870,13 @@ public:
 
 	std::optional<NpcId> GetCurrentlySelectedNpc() const;
 
-	void SelectFirstNpc();
+	void SelectFirstNpc(float currentSimulationTime);
 
-	void SelectNextNpc();
+	void SelectNextNpc(float currentSimulationTime);
 
-	void SelectNpc(std::optional<NpcId> id);
+	void SelectNpc(
+		std::optional<NpcId> id,
+		float currentSimulationTime);
 
 	void HighlightNpc(std::optional<NpcId> id);
 
@@ -1061,6 +1066,8 @@ private:
 
 	void RenderNpc(
 		StateType const & npc,
+		float currentSimulationTime,
+		Render::RenderContext & renderContext,
 		Render::ShipRenderContext & shipRenderContext) const;
 
 	void UpdateNpcAnimation(
@@ -1712,6 +1719,7 @@ private:
 	SequenceNumber mCurrentSimulationSequenceNumber;
 
 	std::optional<NpcId> mCurrentlySelectedNpc;
+	float mCurrentlySelectedNpcSimulationTimestamp;
 	std::optional<NpcId> mCurrentlyHighlightedNpc;
 
 	//

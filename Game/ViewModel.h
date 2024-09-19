@@ -339,19 +339,19 @@ public:
 
     inline float PixelWidthToWorldWidth(float pixelWidth) const
     {
-        // Width between 0 and 1.0
+        // Width between 0.0 and 1.0
         float const ndcW = pixelWidth / static_cast<float>(mCanvasPhysicalSize.width);
 
-        // A width of 1 is the entire visible world width
+        // A width of 1.0 is the entire visible world width
         return ndcW * mVisibleWorld.Width;
     }
 
     inline float PixelHeightToWorldHeight(float pixelHeight) const
     {
-        // Height between 0 and 1.0
+        // Height between 0.0 and 1.0
         float const ndcH = pixelHeight / static_cast<float>(mCanvasPhysicalSize.height);
 
-        // An NDC height of 1 is the entire visible world height
+        // An NDC height of 1.0 is the entire visible world height
         return ndcH * mVisibleWorld.Height;
     }
 

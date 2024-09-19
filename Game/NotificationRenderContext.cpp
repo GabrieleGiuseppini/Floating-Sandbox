@@ -62,6 +62,8 @@ NotificationRenderContext::NotificationRenderContext(
     , mLaserCannonVBO()
     , mLaserRayVAO()
     , mLaserRayVBO()
+    , mRectSelectionVAO()
+    , mRectSelectionVBO()
     , mLineGuideVAO()
     , mLineGuideVBO()
 {
@@ -487,6 +489,32 @@ NotificationRenderContext::NotificationRenderContext(
     }
 
     //
+    // Initialize Rect Selection Ray
+    //
+
+    {
+        glGenVertexArrays(1, &tmpGLuint);
+        mRectSelectionVAO = tmpGLuint;
+
+        glBindVertexArray(*mRectSelectionVAO);
+        CheckOpenGLError();
+
+        glGenBuffers(1, &tmpGLuint);
+        mRectSelectionVBO = tmpGLuint;
+
+        // Describe vertex attributes
+        static_assert(sizeof(RectSelectionVertex) == (4) * sizeof(float));
+        glBindBuffer(GL_ARRAY_BUFFER, *mRectSelectionVBO);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::RectSelection1));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::RectSelection1), 4, GL_FLOAT, GL_FALSE, sizeof(RectSelectionVertex), (void *)0);
+        ////glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::RectSelection2));
+        ////glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::RectSelection2), 1, GL_FLOAT, GL_FALSE, sizeof(RectSelectionVertex), (void *)(4 * sizeof(float)));
+        CheckOpenGLError();
+
+        glBindVertexArray(0);
+    }
+
+    //
     // Initialize Line Guide
     //
 
@@ -535,6 +563,9 @@ void NotificationRenderContext::UploadStart()
 
     // Reset laser ray, it's uploaded as needed
     mLaserRayVertexBuffer.clear();
+
+    // Reset rect selection, it's uploaded as needed
+    mRectSelectionVertexBuffer.clear();
 
     // Reset LineGuide, it's uploaded as needed
     mLineGuideVertexBuffer.clear();
@@ -775,6 +806,8 @@ void NotificationRenderContext::RenderPrepare()
 
     RenderPrepareLaserRay();
 
+    RenderPrepareRectSelection();
+
     RenderPrepareLineGuide();
 }
 
@@ -811,6 +844,8 @@ void NotificationRenderContext::RenderDraw()
     RenderDrawPressureInjectionHalo();
 
     RenderDrawWindSphere();
+
+    RenderDrawRectSelection();
 
     RenderDrawLineGuide();
 }
@@ -1479,6 +1514,38 @@ void NotificationRenderContext::RenderDrawLaserRay()
         // Draw
         assert((mLaserRayVertexBuffer.size() % 6) == 0);
         glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mLaserRayVertexBuffer.size()));
+
+        glBindVertexArray(0);
+    }
+}
+
+void NotificationRenderContext::RenderPrepareRectSelection()
+{
+    if (!mRectSelectionVertexBuffer.empty())
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, *mRectSelectionVBO);
+
+        glBufferData(GL_ARRAY_BUFFER,
+            sizeof(RectSelectionVertex) * mRectSelectionVertexBuffer.size(),
+            mRectSelectionVertexBuffer.data(),
+            GL_DYNAMIC_DRAW);
+        CheckOpenGLError();
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+}
+
+void NotificationRenderContext::RenderDrawRectSelection()
+{
+    if (!mRectSelectionVertexBuffer.empty())
+    {
+        glBindVertexArray(*mRectSelectionVAO);
+
+        mShaderManager.ActivateProgram<ProgramType::RectSelection>();
+
+        // Draw
+        assert((mRectSelectionVertexBuffer.size() % 6) == 0);
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mRectSelectionVertexBuffer.size()));
 
         glBindVertexArray(0);
     }

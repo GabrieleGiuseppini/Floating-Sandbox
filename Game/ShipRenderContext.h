@@ -267,38 +267,38 @@ public:
         vec2f bottomLeftPosition,
         vec2f bottomRightPosition,
         TextureCoordinatesQuad const & textureCoords,
-        rgbaColor const & modifierColor)
+        rgbaColor const & overlayColor)
     {
         float const fPlaneId = static_cast<float>(planeId);
-        vec4f const overlayColor = modifierColor.toVec4f();
+        vec4f const overlayColorf = overlayColor.toVec4f();
 
         // TopLeft
         mNpcTextureQuadVertexBuffer.emplace_back(
             topLeftPosition,
             vec2f(textureCoords.LeftX, textureCoords.TopY),
             fPlaneId,
-            overlayColor);
+            overlayColorf);
 
         // BottomLeft
         mNpcTextureQuadVertexBuffer.emplace_back(
             bottomLeftPosition,
             vec2f(textureCoords.LeftX, textureCoords.BottomY),
             fPlaneId,
-            overlayColor);
+            overlayColorf);
 
         // TopRight
         mNpcTextureQuadVertexBuffer.emplace_back(
             topRightPosition,
             vec2f(textureCoords.RightX, textureCoords.TopY),
             fPlaneId,
-            overlayColor);
+            overlayColorf);
 
         // BottomRight
         mNpcTextureQuadVertexBuffer.emplace_back(
             bottomRightPosition,
             vec2f(textureCoords.RightX, textureCoords.BottomY),
             fPlaneId,
-            overlayColor);
+            overlayColorf);
     }
 
     void UploadNpcTextureQuadsEnd();

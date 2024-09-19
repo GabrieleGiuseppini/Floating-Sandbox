@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #include "Physics.h"
 
+#include "StockColors.h"
+
 #include <GameCore/Colors.h>
 #include <GameCore/GameGeometry.h>
 
@@ -78,7 +80,9 @@ void Npcs::UpdateEnd()
     UpdateNpcsEnd();
 }
 
-void Npcs::Upload(Render::RenderContext & renderContext) const
+void Npcs::Upload(
+    float currentSimulationTime,
+    Render::RenderContext & renderContext) const
 {
 #ifdef IN_BARYLAB
     if (renderContext.GetNpcRenderMode() == NpcRenderModeType::Physical)
@@ -150,7 +154,11 @@ void Npcs::Upload(Render::RenderContext & renderContext) const
                 assert(mStateBuffer[npcId].has_value());
                 auto const & state = *mStateBuffer[npcId];
 
-                RenderNpc(state, shipRenderContext);
+                RenderNpc(
+                    state, 
+                    currentSimulationTime, 
+                    renderContext,
+                    shipRenderContext);
             }
 
             shipRenderContext.UploadNpcTextureQuadsEnd();
@@ -1208,7 +1216,7 @@ std::optional<NpcId> Npcs::GetCurrentlySelectedNpc() const
     return mCurrentlySelectedNpc;
 }
 
-void Npcs::SelectFirstNpc()
+void Npcs::SelectFirstNpc(float currentSimulationTime)
 {
     // Assuming an NPC exists
     assert(HasNpcs());
@@ -1218,7 +1226,7 @@ void Npcs::SelectFirstNpc()
         if (npc.has_value())
         {
             // Found!
-            SelectNpc(npc->Id);
+            SelectNpc(npc->Id, currentSimulationTime);
 
             return;
         }
@@ -1227,7 +1235,7 @@ void Npcs::SelectFirstNpc()
     assert(false);
 }
 
-void Npcs::SelectNextNpc()
+void Npcs::SelectNextNpc(float currentSimulationTime)
 {
     // Assuming an NPC exists
     assert(HasNpcs());
@@ -1235,7 +1243,7 @@ void Npcs::SelectNextNpc()
     // If we don't have any selected, select first
     if (!mCurrentlySelectedNpc.has_value())
     {
-        SelectNextNpc();
+        SelectFirstNpc(currentSimulationTime);
         return;
     }
 
@@ -1250,18 +1258,20 @@ void Npcs::SelectNextNpc()
         if (mStateBuffer[newId].has_value())
         {
             // Found!
-            SelectNpc(newId);
-
+            SelectNpc(newId, currentSimulationTime);
             return;
         }
     }
 }
 
-void Npcs::SelectNpc(std::optional<NpcId> id)
+void Npcs::SelectNpc(
+    std::optional<NpcId> id,
+    float currentSimulationTime)
 {
     assert(!id.has_value() || mStateBuffer[*id].has_value());
 
     mCurrentlySelectedNpc = id;
+    mCurrentlySelectedNpcSimulationTimestamp = currentSimulationTime;
     mGameEventHandler->OnNpcSelectionChanged(mCurrentlySelectedNpc);
 
 #ifdef IN_BARYLAB
@@ -2246,6 +2256,8 @@ void Npcs::PublishHumanNpcStats()
 
 void Npcs::RenderNpc(
     StateType const & npc,
+    float currentSimulationTime,
+    Render::RenderContext & renderContext,
     Render::ShipRenderContext & shipRenderContext) const
 {
     assert(mShips[npc.CurrentShipId].has_value());
@@ -2254,10 +2266,9 @@ void Npcs::RenderNpc(
         ? mShips[npc.CurrentShipId]->HomeShip.GetMaxPlaneId()
         : npc.CurrentPlaneId;
 
-    rgbaColor::data_type const modifierAlpha = mCurrentlySelectedNpc == npc.Id ? 255 : 0;
-    rgbaColor const modifierColor = (mCurrentlyHighlightedNpc == npc.Id)
-        ? rgbaColor(255, 53, 20, modifierAlpha)
-        : rgbaColor(0, 0, 0, modifierAlpha);
+    rgbaColor const overlayColor = (mCurrentlyHighlightedNpc == npc.Id)
+        ? rgbaColor(255, 53, 20, 255)
+        : rgbaColor(0, 0, 0, 0);
 
     switch (npc.Kind)
     {
@@ -2296,9 +2307,11 @@ void Npcs::RenderNpc(
             //
 
             vec2f const feetPosition = mParticles.GetPosition(npc.ParticleMesh.Particles[0].ParticleIndex);
+            vec2f const headPosition = mParticles.GetPosition(npc.ParticleMesh.Particles[1].ParticleIndex);
 
-            vec2f const actualBodyVector = mParticles.GetPosition(npc.ParticleMesh.Particles[1].ParticleIndex) - feetPosition; // From feet to head
-            vec2f const actualBodyVDir = -actualBodyVector.normalise_approx(); // From head to feet - facilitates arm and length angle-making
+            vec2f const actualBodyVector = headPosition - feetPosition; // From feet to head
+            float const actualBodyLength = actualBodyVector.length();
+            vec2f const actualBodyVDir = -actualBodyVector.normalise_approx(actualBodyLength); // From head to feet - facilitates arm and length angle-making
             vec2f const actualBodyHDir = actualBodyVDir.to_perpendicular(); // Points R (of the screen)
 
             vec2f const legTop = feetPosition + actualBodyVector * (GameParameters::HumanNpcGeometry::LegLengthFraction * animationState.LowerExtremityLengthMultiplier);
@@ -2339,7 +2352,7 @@ void Npcs::RenderNpc(
                     headBottom - actualBodyHDir * halfHeadW,
                     headBottom + actualBodyHDir * halfHeadW,
                     humanNpcState.CurrentFaceOrientation > 0.0f ? humanNpcState.TextureFrames.HeadFront : humanNpcState.TextureFrames.HeadBack,
-                    modifierColor);
+                    overlayColor);
 
                 // Arms and legs
 
@@ -2363,7 +2376,7 @@ void Npcs::RenderNpc(
                         leftArmJointPosition + leftArmVector - leftArmTraverseVector,
                         leftArmJointPosition + leftArmVector + leftArmTraverseVector,
                         humanNpcState.TextureFrames.ArmFront,
-                        modifierColor);
+                        overlayColor);
 
                     // Right arm (on right side of the screen)
                     vec2f const rightArmDir = actualBodyVDir.rotate(animationState.LimbAnglesCos.RightArm, animationState.LimbAnglesSin.RightArm);
@@ -2376,7 +2389,7 @@ void Npcs::RenderNpc(
                         rightArmJointPosition + rightArmVector - rightArmTraverseVector,
                         rightArmJointPosition + rightArmVector + rightArmTraverseVector,
                         humanNpcState.TextureFrames.ArmFront.FlipH(),
-                        modifierColor);
+                        overlayColor);
 
                     // Left leg (on left side of the screen)
                     vec2f const leftLegDir = actualBodyVDir.rotate(animationState.LimbAnglesCos.LeftLeg, animationState.LimbAnglesSin.LeftLeg);
@@ -2389,7 +2402,7 @@ void Npcs::RenderNpc(
                         leftLegJointPosition + leftLegVector - leftLegTraverseVector,
                         leftLegJointPosition + leftLegVector + leftLegTraverseVector,
                         humanNpcState.TextureFrames.LegFront,
-                        modifierColor);
+                        overlayColor);
 
                     // Right leg (on right side of the screen)
                     vec2f const rightLegDir = actualBodyVDir.rotate(animationState.LimbAnglesCos.RightLeg, animationState.LimbAnglesSin.RightLeg);
@@ -2402,7 +2415,7 @@ void Npcs::RenderNpc(
                         rightLegJointPosition + rightLegVector - rightLegTraverseVector,
                         rightLegJointPosition + rightLegVector + rightLegTraverseVector,
                         humanNpcState.TextureFrames.LegFront.FlipH(),
-                        modifierColor);
+                        overlayColor);
                 }
                 else
                 {
@@ -2419,7 +2432,7 @@ void Npcs::RenderNpc(
                         rightArmJointPosition + leftArmVector - leftArmTraverseVector,
                         rightArmJointPosition + leftArmVector + leftArmTraverseVector,
                         humanNpcState.TextureFrames.ArmBack,
-                        modifierColor);
+                        overlayColor);
 
                     // Right arm (on left side of the screen)
                     vec2f const rightArmDir = actualBodyVDir.rotate(animationState.LimbAnglesCos.RightArm, -animationState.LimbAnglesSin.RightArm);
@@ -2432,7 +2445,7 @@ void Npcs::RenderNpc(
                         leftArmJointPosition + rightArmVector - rightArmTraverseVector,
                         leftArmJointPosition + rightArmVector + rightArmTraverseVector,
                         humanNpcState.TextureFrames.ArmBack.FlipH(),
-                        modifierColor);
+                        overlayColor);
 
                     // Left leg (on right side of the screen)
                     vec2f const leftLegDir = actualBodyVDir.rotate(animationState.LimbAnglesCos.LeftLeg, -animationState.LimbAnglesSin.LeftLeg);
@@ -2445,7 +2458,7 @@ void Npcs::RenderNpc(
                         rightLegJointPosition + leftLegVector - leftLegTraverseVector,
                         rightLegJointPosition + leftLegVector + leftLegTraverseVector,
                         humanNpcState.TextureFrames.LegBack,
-                        modifierColor);
+                        overlayColor);
 
                     // Right leg (on left side of the screen)
                     vec2f const rightLegDir = actualBodyVDir.rotate(animationState.LimbAnglesCos.RightLeg, -animationState.LimbAnglesSin.RightLeg);
@@ -2458,7 +2471,7 @@ void Npcs::RenderNpc(
                         leftLegJointPosition + rightLegVector - rightLegTraverseVector,
                         leftLegJointPosition + rightLegVector + rightLegTraverseVector,
                         humanNpcState.TextureFrames.LegBack.FlipH(),
-                        modifierColor);
+                        overlayColor);
                 }
 
                 // Torso
@@ -2470,7 +2483,7 @@ void Npcs::RenderNpc(
                     torsoBottom - actualBodyHDir * halfTorsoW,
                     torsoBottom + actualBodyHDir * halfTorsoW,
                     humanNpcState.CurrentFaceOrientation > 0.0f ? humanNpcState.TextureFrames.TorsoFront : humanNpcState.TextureFrames.TorsoBack,
-                    modifierColor);
+                    overlayColor);
             }
             else
             {
@@ -2631,7 +2644,7 @@ void Npcs::RenderNpc(
                         leftUpperLegQuad.BottomLeftPosition,
                         leftUpperLegQuad.BottomRightPosition,
                         leftUpperLegQuad.TextureCoords,
-                        modifierColor);
+                        overlayColor);
                     if (leftLowerLegQuad.has_value())
                     {
                         shipRenderContext.UploadNpcTextureQuad(
@@ -2641,7 +2654,7 @@ void Npcs::RenderNpc(
                             leftLowerLegQuad->BottomLeftPosition,
                             leftLowerLegQuad->BottomRightPosition,
                             leftLowerLegQuad->TextureCoords,
-                            modifierColor);
+                            overlayColor);
                     }
 
                     // Left arm
@@ -2652,7 +2665,7 @@ void Npcs::RenderNpc(
                         leftArmQuad.BottomLeftPosition,
                         leftArmQuad.BottomRightPosition,
                         leftArmQuad.TextureCoords,
-                        modifierColor);
+                        overlayColor);
                 }
                 else
                 {
@@ -2664,7 +2677,7 @@ void Npcs::RenderNpc(
                         rightUpperLegQuad.BottomLeftPosition,
                         rightUpperLegQuad.BottomRightPosition,
                         rightUpperLegQuad.TextureCoords,
-                        modifierColor);
+                        overlayColor);
                     if (rightLowerLegQuad.has_value())
                     {
                         shipRenderContext.UploadNpcTextureQuad(
@@ -2674,7 +2687,7 @@ void Npcs::RenderNpc(
                             rightLowerLegQuad->BottomLeftPosition,
                             rightLowerLegQuad->BottomRightPosition,
                             rightLowerLegQuad->TextureCoords,
-                            modifierColor);
+                            overlayColor);
                     }
 
                     // Right arm
@@ -2685,7 +2698,7 @@ void Npcs::RenderNpc(
                         rightArmQuad.BottomLeftPosition,
                         rightArmQuad.BottomRightPosition,
                         rightArmQuad.TextureCoords,
-                        modifierColor);
+                        overlayColor);
                 }
 
                 // Head
@@ -2697,7 +2710,7 @@ void Npcs::RenderNpc(
                     headBottom - actualBodyHDir * halfHeadW,
                     headBottom + actualBodyHDir * halfHeadW,
                     humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.HeadSide : humanNpcState.TextureFrames.HeadSide.FlipH(),
-                    modifierColor);
+                    overlayColor);
 
                 // Torso
 
@@ -2708,7 +2721,7 @@ void Npcs::RenderNpc(
                     torsoBottom - actualBodyHDir * halfTorsoW,
                     torsoBottom + actualBodyHDir * halfTorsoW,
                     humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.TorsoSide : humanNpcState.TextureFrames.TorsoSide.FlipH(),
-                    modifierColor);
+                    overlayColor);
 
                 // Arm and leg near
 
@@ -2722,7 +2735,7 @@ void Npcs::RenderNpc(
                         rightUpperLegQuad.BottomLeftPosition,
                         rightUpperLegQuad.BottomRightPosition,
                         rightUpperLegQuad.TextureCoords,
-                        modifierColor);
+                        overlayColor);
                     if (rightLowerLegQuad.has_value())
                     {
                         shipRenderContext.UploadNpcTextureQuad(
@@ -2732,7 +2745,7 @@ void Npcs::RenderNpc(
                             rightLowerLegQuad->BottomLeftPosition,
                             rightLowerLegQuad->BottomRightPosition,
                             rightLowerLegQuad->TextureCoords,
-                            modifierColor);
+                            overlayColor);
                     }
 
                     // Right arm
@@ -2743,7 +2756,7 @@ void Npcs::RenderNpc(
                         rightArmQuad.BottomLeftPosition,
                         rightArmQuad.BottomRightPosition,
                         rightArmQuad.TextureCoords,
-                        modifierColor);
+                        overlayColor);
 
                 }
                 else
@@ -2756,7 +2769,7 @@ void Npcs::RenderNpc(
                         leftUpperLegQuad.BottomLeftPosition,
                         leftUpperLegQuad.BottomRightPosition,
                         leftUpperLegQuad.TextureCoords,
-                        modifierColor);
+                        overlayColor);
                     if (leftLowerLegQuad.has_value())
                     {
                         shipRenderContext.UploadNpcTextureQuad(
@@ -2766,7 +2779,7 @@ void Npcs::RenderNpc(
                             leftLowerLegQuad->BottomLeftPosition,
                             leftLowerLegQuad->BottomRightPosition,
                             leftLowerLegQuad->TextureCoords,
-                            modifierColor);
+                            overlayColor);
                     }
 
                     // Left arm
@@ -2777,8 +2790,21 @@ void Npcs::RenderNpc(
                         leftArmQuad.BottomLeftPosition,
                         leftArmQuad.BottomRightPosition,
                         leftArmQuad.TextureCoords,
-                        modifierColor);
+                        overlayColor);
                 }
+            }
+
+            if (npc.Id == mCurrentlySelectedNpc)
+            {
+                vec2f const centerPosition = (headPosition + feetPosition) / 2.0f;
+
+                renderContext.UploadRectSelection(
+                    centerPosition,
+                    actualBodyVDir,
+                    halfTorsoW * 2.0f,
+                    actualBodyLength,
+                    Render::StockColors::Red1,
+                    currentSimulationTime - mCurrentlySelectedNpcSimulationTimestamp);
             }
 
             break;
@@ -2796,7 +2822,12 @@ void Npcs::RenderNpc(
                     mParticles.GetPosition(npc.ParticleMesh.Particles[3].ParticleIndex),
                     mParticles.GetPosition(npc.ParticleMesh.Particles[2].ParticleIndex),
                     npc.KindSpecificState.FurnitureNpcState.TextureCoordinatesQuad,
-                    modifierColor);
+                    overlayColor);
+
+                if (npc.Id == mCurrentlySelectedNpc)
+                {
+                    // TODOHERE
+                }
             }
             else
             {
@@ -2814,7 +2845,12 @@ void Npcs::RenderNpc(
                         vec2f(position.x - ParticleHalfWidth, position.y - ParticleHalfWidth),
                         vec2f(position.x + ParticleHalfWidth, position.y - ParticleHalfWidth),
                         npc.KindSpecificState.FurnitureNpcState.TextureCoordinatesQuad,
-                        modifierColor);
+                        overlayColor);
+                }
+
+                if (npc.Id == mCurrentlySelectedNpc)
+                {
+                    // TODOHERE
                 }
             }
 

@@ -496,6 +496,33 @@ public:
 		std::optional<float> strength,
 		ViewModel const & viewModel);
 
+	void UploadRectSelection(
+		vec2f const & centerPosition,
+		vec2f const & verticalDir,
+		float width,
+		float height,
+		rgbColor const & color,
+		float elapsedSimulationTime,
+		ViewModel const & viewModel)
+	{
+		vec2f const centerPositionNdc = viewModel.WorldToNdc(centerPosition);
+
+		// TODOTEST
+		auto const w = viewModel.PixelWidthToWorldWidth(10);
+		auto const h = viewModel.PixelHeightToWorldHeight(10);
+		(void)w;
+		(void)h;
+		// TODOHERE
+
+		// TODOOLD
+		(void)centerPositionNdc;
+		(void)verticalDir;
+		(void)width;
+		(void)height;
+		(void)color;
+		(void)elapsedSimulationTime;
+	}
+
 	void UploadLineGuide(
 		DisplayLogicalCoordinates const & screenStart,
 		DisplayLogicalCoordinates const & screenEnd,
@@ -545,6 +572,9 @@ private:
 
 	inline void RenderPrepareLaserRay();
 	inline void RenderDrawLaserRay();
+
+	inline void RenderPrepareRectSelection();
+	inline void RenderDrawRectSelection();
 
 	inline void RenderPrepareLineGuide();
 	inline void RenderDrawLineGuide();
@@ -756,6 +786,20 @@ private:
 		{}
 	};
 
+	struct RectSelectionVertex
+	{
+		vec2f vertexPositionNDC;
+		vec2f vertexSpacePosition;
+		// TODOHERE
+
+		RectSelectionVertex(
+			vec2f const & _vertexPositionNDC,
+			vec2f const & _vertexSpacePosition)
+			: vertexPositionNDC(_vertexPositionNDC)
+			, vertexSpacePosition(_vertexSpacePosition)
+		{}
+	};
+
 	struct LineGuideVertex
 	{
 		vec2f ndcPosition;
@@ -947,6 +991,10 @@ private:
 	GameOpenGLVAO mLaserRayVAO;
 	std::vector<LaserRayVertex> mLaserRayVertexBuffer;
 	GameOpenGLVBO mLaserRayVBO;
+
+	GameOpenGLVAO mRectSelectionVAO;
+	std::vector<RectSelectionVertex> mRectSelectionVertexBuffer;
+	GameOpenGLVBO mRectSelectionVBO;
 
 	GameOpenGLVAO mLineGuideVAO;
 	std::vector<LineGuideVertex> mLineGuideVertexBuffer;

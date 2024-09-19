@@ -406,6 +406,14 @@ public:
 
     void AbortNewNpc(NpcId id);
 
+    void SelectFirstNpc();
+
+    void SelectNextNpc();
+
+    void SelectNpc(std::optional<NpcId> id);    
+
+    void HighlightNpc(std::optional<NpcId> id);
+
     bool DestroyTriangle(GlobalElementId triangleId);
 
     bool RestoreTriangle(GlobalElementId triangleId);

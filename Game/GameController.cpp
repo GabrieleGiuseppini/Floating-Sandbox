@@ -1408,19 +1408,19 @@ void GameController::AbortNewNpc(NpcId id)
 void GameController::SelectNpc(std::optional<NpcId> id)
 {
     assert(!!mWorld);
-    mWorld->GetNpcs().SelectNpc(id);
+    mWorld->SelectNpc(id);
 }
 
 void GameController::SelectNextNpc()
 {
     assert(!!mWorld);
-    mWorld->GetNpcs().SelectNextNpc(); // We'll pick this up later at UpdateAutoFocus() if we're focusing on it
+    mWorld->SelectNextNpc(); // We'll pick this up later at UpdateAutoFocus() if we're focusing on it
 }
 
 void GameController::HighlightNpc(std::optional<NpcId> id)
 {
     assert(!!mWorld);
-    mWorld->GetNpcs().HighlightNpc(id);
+    mWorld->HighlightNpc(id);
 }
 
 std::optional<GlobalElementId> GameController::GetNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const
@@ -1589,7 +1589,7 @@ void GameController::SetAutoFocusTarget(std::optional<AutoFocusTargetKindType> c
         // Select first NPC as a courtesy
         if (!mWorld->GetNpcs().GetCurrentlySelectedNpc().has_value())
         {
-            mWorld->GetNpcs().SelectFirstNpc();
+            mWorld->SelectFirstNpc();
         }
     }
 

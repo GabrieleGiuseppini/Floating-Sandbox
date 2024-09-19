@@ -1177,6 +1177,24 @@ public:
             });
     }
 
+    void UploadRectSelection(
+        vec2f const & centerPosition,
+        vec2f const & verticalDir,
+        float width,
+        float height,
+        rgbColor const & color,
+        float elapsedSimulationTime)
+    {
+        mNotificationRenderContext->UploadRectSelection(
+            centerPosition,
+            verticalDir,
+            width,
+            height,
+            color,
+            elapsedSimulationTime,
+            mRenderParameters.View);
+    }
+
     inline void UploadShipsEnd()
     {
         // Nop

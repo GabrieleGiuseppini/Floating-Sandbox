@@ -77,6 +77,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::PressureInjectionHalo;
     else if (lstr == "rain")
         return ProgramType::Rain;
+    else if (lstr == "rect_selection")
+        return ProgramType::RectSelection;
     else if (lstr == "ship_centers")
         return ProgramType::ShipCenters;
     else if (lstr == "ship_circle_highlights")
@@ -273,6 +275,8 @@ std::string ProgramTypeToStr(ProgramType program)
         return "PressureInjectionHalo";
     case ProgramType::Rain:
         return "Rain";
+    case ProgramType::RectSelection:
+        return "RectSelection";
     case ProgramType::ShipCenters:
         return "ShipCenters";
     case ProgramType::ShipCircleHighlights:
@@ -614,8 +618,6 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::Lightning1;
     else if (Utils::CaseInsensitiveEquals(str, "Lightning2"))
         return VertexAttributeType::Lightning2;
-    else if (Utils::CaseInsensitiveEquals(str, "LineGuide1"))
-        return VertexAttributeType::LineGuide1;
     else if (Utils::CaseInsensitiveEquals(str, "Cloud1"))
         return VertexAttributeType::Cloud1;
     else if (Utils::CaseInsensitiveEquals(str, "Cloud2"))
@@ -750,6 +752,12 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::LaserRay1;
     else if (Utils::CaseInsensitiveEquals(str, "LaserRay2"))
         return VertexAttributeType::LaserRay2;
+    else if (Utils::CaseInsensitiveEquals(str, "RectSelection1"))
+        return VertexAttributeType::RectSelection1;
+    else if (Utils::CaseInsensitiveEquals(str, "RectSelection2"))
+        return VertexAttributeType::RectSelection2;
+    else if (Utils::CaseInsensitiveEquals(str, "LineGuide1"))
+        return VertexAttributeType::LineGuide1;
     // Global
     else if (Utils::CaseInsensitiveEquals(str, "GenericMipMappedTextureNdc1"))
         return VertexAttributeType::GenericMipMappedTextureNdc1;

@@ -49,6 +49,7 @@ enum class ProgramType
     PhysicsProbePanel,
     PressureInjectionHalo,
     Rain,
+    RectSelection,
     ShipCenters,
     ShipCircleHighlights,
     ShipElectricalElementHighlights,
@@ -298,6 +299,9 @@ enum class VertexAttributeType : GLuint
 
     LaserRay1 = 0,
     LaserRay2 = 1,
+
+    RectSelection1 = 0,
+    RectSelection2 = 1,
 
     LineGuide1 = 0,
 
