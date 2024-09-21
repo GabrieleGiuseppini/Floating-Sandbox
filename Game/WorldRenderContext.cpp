@@ -2259,8 +2259,8 @@ void WorldRenderContext::RecalculateWorldBorder(RenderParameters const & renderP
 
     // Calculate width and height, in world coordinates, of the world border, under the constraint
     // that we want to ensure that the texture is rendered with half of its original pixel size
-    float const worldBorderWorldWidth = viewModel.PixelWidthToWorldWidth(static_cast<float>(worldBorderTextureSize.width)) / 2.0f;
-    float const worldBorderWorldHeight = viewModel.PixelHeightToWorldHeight(static_cast<float>(worldBorderTextureSize.height)) / 2.0f;
+    float const worldBorderWorldWidth = viewModel.PhysicalDisplayOffsetToWorldOffset(static_cast<float>(worldBorderTextureSize.width)) / 2.0f;
+    float const worldBorderWorldHeight = viewModel.PhysicalDisplayOffsetToWorldOffset(static_cast<float>(worldBorderTextureSize.height)) / 2.0f;
 
     // Max coordinates in texture space (e.g. 3.0 means three frames); note that the texture bottom-left origin
     // already starts at a dead pixel (0.5/size)

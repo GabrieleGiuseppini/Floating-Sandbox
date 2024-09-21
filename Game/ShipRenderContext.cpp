@@ -1548,7 +1548,7 @@ void ShipRenderContext::RenderDraw(
         // Set line width, for ropes and springs
         //
 
-        glLineWidth(0.1f * 2.0f * renderParameters.View.GetCanvasToVisibleWorldHeightRatio());
+        glLineWidth(renderParameters.View.WorldOffsetToPhysicalDisplayOffset(0.1f * 2.0f));
 
         //
         // Draw ropes, unless it's a debug mode that doesn't want them
@@ -1687,7 +1687,7 @@ void ShipRenderContext::RenderDraw(
             {
                 mShaderManager.ActivateProgram(mShipPointsProgram);
 
-                glPointSize(0.3f * renderParameters.View.GetCanvasToVisibleWorldHeightRatio());
+                glPointSize(renderParameters.View.WorldOffsetToPhysicalDisplayOffset(0.3f));
 
                 glDrawElements(
                     GL_POINTS,

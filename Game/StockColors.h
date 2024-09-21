@@ -14,7 +14,7 @@ class StockColors final
 public:
 
 	// NpcSelection
-	static rgbColor constexpr Red1 = rgbColor(219, 7, 0);
+	static rgbColor constexpr Red1 = rgbColor(224, 18, 18);
 };
 
 }

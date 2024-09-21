@@ -198,8 +198,8 @@ public:
         DisplayLogicalCoordinates const & pos,
         float radiusScreenFraction)
     {
-        DisplayPhysicalCoordinates const physicalPos = mRenderParameters.View.ScreenToPixel(pos);
-        float physicalRadius = mRenderParameters.View.ScreenFractionToPixel(radiusScreenFraction);
+        DisplayPhysicalCoordinates const physicalPos = mRenderParameters.View.ScreenToPhysicalDisplay(pos);
+        float physicalRadius = mRenderParameters.View.ScreenFractionToPhysicalDisplay(radiusScreenFraction);
 
         // Safe as it's copied to thread
         mLampToolToSet.emplace(

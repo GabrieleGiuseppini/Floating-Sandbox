@@ -756,6 +756,8 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::RectSelection1;
     else if (Utils::CaseInsensitiveEquals(str, "RectSelection2"))
         return VertexAttributeType::RectSelection2;
+    else if (Utils::CaseInsensitiveEquals(str, "RectSelection3"))
+        return VertexAttributeType::RectSelection3;
     else if (Utils::CaseInsensitiveEquals(str, "LineGuide1"))
         return VertexAttributeType::LineGuide1;
     // Global

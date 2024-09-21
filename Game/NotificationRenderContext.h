@@ -505,22 +505,120 @@ public:
 		float elapsedSimulationTime,
 		ViewModel const & viewModel)
 	{
-		vec2f const centerPositionNdc = viewModel.WorldToNdc(centerPosition);
+		float const smallestDimension = std::min(width, height);
 
-		// TODOTEST
-		auto const w = viewModel.PixelWidthToWorldWidth(10);
-		auto const h = viewModel.PixelHeightToWorldHeight(10);
-		(void)w;
-		(void)h;
-		// TODOHERE
+		// Offset around quad is calc'd as a percentage of smallest dimension
+		float const worldOffset = smallestDimension * 8.0f;
 
-		// TODOOLD
-		(void)centerPositionNdc;
-		(void)verticalDir;
-		(void)width;
-		(void)height;
-		(void)color;
-		(void)elapsedSimulationTime;
+		//
+		// Calculate world dimension multiplier so that the smallest dimension _plus_ 
+		// a world offset is at least a desired number of pixels
+		//
+
+		// Desired number of pixels is calc'd as a fraction of the smallest canvas physical dimension size
+		float const desiredNumberOfPixels =
+			static_cast<float>(std::min(viewModel.GetCanvasPhysicalSize().width, viewModel.GetCanvasPhysicalSize().height))
+			/ 30.0f;
+
+		// Multiplier for dimensions
+		float const wDimMultiplier = std::max(
+			viewModel.PhysicalDisplayOffsetToWorldOffset(desiredNumberOfPixels) / (smallestDimension + worldOffset),
+			1.0f);
+
+		//
+		// Calculate quad
+		//
+
+		float const halfActualW = (width + worldOffset) / 2.0f * wDimMultiplier;
+		float const halfActualH = (height + worldOffset) / 2.0f * wDimMultiplier;
+
+		vec2f const centerTop = centerPosition + verticalDir * halfActualH;
+		vec2f const leftTop = centerTop + verticalDir.to_perpendicular() * halfActualW;
+		vec2f const rightTop = centerTop - verticalDir.to_perpendicular() * halfActualW;
+
+		vec2f const centerBottom = centerPosition - verticalDir * halfActualH;
+		vec2f const leftBottom = centerBottom + verticalDir.to_perpendicular() * halfActualW;
+		vec2f const rightBottom = centerBottom - verticalDir.to_perpendicular() * halfActualW;
+
+		//
+		// Calculate the fraction of the quad's dimensions occupied by one pixel
+		//
+
+		float const onePixelWorldSize = viewModel.PhysicalDisplayOffsetToWorldOffset(1.0f);
+
+		// VrtxSpaceSize = 2; pixelSizeInVertexSpace = VrtxSpaceSize * (onePixelWorldSize/WidthWorld)
+		vec2f const pixelSizeInVertexSpace = vec2f(
+			onePixelWorldSize / halfActualW,
+			onePixelWorldSize / halfActualH);
+
+		//
+		// Calculate border size in vertex space
+		//
+
+		float constexpr BorderSizeWorld = 0.4f;
+		vec2f const borderSizeInVertexSpace = vec2f(
+			BorderSizeWorld * wDimMultiplier / halfActualW,
+			BorderSizeWorld * wDimMultiplier / halfActualH);
+
+		//
+		// Create vertices
+		//
+
+		vec3f const colorF = color.toVec3f();
+
+		// Left, top
+		mRectSelectionVertexBuffer.emplace_back(
+			leftTop,
+			vec2f(-1.0f, 1.0f),
+			pixelSizeInVertexSpace,
+			borderSizeInVertexSpace,
+			colorF,
+			elapsedSimulationTime);
+
+		// Left, bottom
+		mRectSelectionVertexBuffer.emplace_back(
+			leftBottom,
+			vec2f(-1.0f, -1.0f),
+			pixelSizeInVertexSpace,
+			borderSizeInVertexSpace,
+			colorF,
+			elapsedSimulationTime);
+
+		// Right, top
+		mRectSelectionVertexBuffer.emplace_back(
+			rightTop,
+			vec2f(1.0f, 1.0f),
+			pixelSizeInVertexSpace,
+			borderSizeInVertexSpace,
+			colorF,
+			elapsedSimulationTime);
+
+		// Left, bottom
+		mRectSelectionVertexBuffer.emplace_back(
+			leftBottom,
+			vec2f(-1.0f, -1.0f),
+			pixelSizeInVertexSpace,
+			borderSizeInVertexSpace,
+			colorF,
+			elapsedSimulationTime);
+
+		// Right, top
+		mRectSelectionVertexBuffer.emplace_back(
+			rightTop,
+			vec2f(1.0f, 1.0f),
+			pixelSizeInVertexSpace,
+			borderSizeInVertexSpace,
+			colorF,
+			elapsedSimulationTime);
+
+		// Right, bottom
+		mRectSelectionVertexBuffer.emplace_back(
+			rightBottom,
+			vec2f(1.0f, -1.0f),
+			pixelSizeInVertexSpace,
+			borderSizeInVertexSpace,
+			colorF,
+			elapsedSimulationTime);
 	}
 
 	void UploadLineGuide(
@@ -790,13 +888,24 @@ private:
 	{
 		vec2f vertexPositionNDC;
 		vec2f vertexSpacePosition;
-		// TODOHERE
+		vec2f pixelSizeInVertexSpace;
+		vec2f borderSizeInVertexSpace;
+		vec3f rectColor;
+		float elapsed;
 
 		RectSelectionVertex(
 			vec2f const & _vertexPositionNDC,
-			vec2f const & _vertexSpacePosition)
+			vec2f const & _vertexSpacePosition,
+			vec2f const & _pixelSizeInVertexSpace,
+			vec2f const & _borderSizeInVertexSpace,
+			vec3f const & _rectColor,
+			float _elapsed)
 			: vertexPositionNDC(_vertexPositionNDC)
 			, vertexSpacePosition(_vertexSpacePosition)
+			, pixelSizeInVertexSpace(_pixelSizeInVertexSpace)
+			, borderSizeInVertexSpace(_borderSizeInVertexSpace)
+			, rectColor(_rectColor)
+			, elapsed(_elapsed)
 		{}
 	};
 

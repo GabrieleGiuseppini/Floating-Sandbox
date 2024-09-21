@@ -56,10 +56,27 @@ void main()
         discard;   
 
     // Apply highlight
+    /*
     c.rgb = mix(
         c.rgb,
         vertexOverlayColor.rgb,
         vertexOverlayColor.a * c.a * 0.8);
+    */
+    // (Target > 0.5) * (1 – (1-2*(Target-0.5)) * (1-Blend)) +
+    // (Target <= 0.5) * ((2*Target) * Blend)
+    
+    vec3 IsTargetLarge = step(vec3(0.5), c.rgb);
+    vec3 TargetHigh = 1. - (1. - (c.rgb - .5) * 2.) * (1. - vertexOverlayColor.rgb);
+    vec3 TargetLow = c.rgb * 2. * vertexOverlayColor.rgb;
+    
+    vec3 ovCol =
+        IsTargetLarge * TargetHigh
+        + (1. - IsTargetLarge) * TargetLow;
+
+    c.rgb = mix(
+        c.rgb,
+        ovCol,
+        vertexOverlayColor.a * c.a);
 
     // Calculate lamp tool intensity
     float lampToolIntensity = CalculateLampToolIntensity(gl_FragCoord.xy);

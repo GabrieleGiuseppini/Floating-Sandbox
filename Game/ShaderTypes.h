@@ -302,6 +302,7 @@ enum class VertexAttributeType : GLuint
 
     RectSelection1 = 0,
     RectSelection2 = 1,
+    RectSelection3 = 2,
 
     LineGuide1 = 0,
 

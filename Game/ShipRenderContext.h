@@ -1093,7 +1093,7 @@ public:
 
         // Append vertices - two triangles
 
-        float const halfQuadWorldSize = viewModel.PixelWidthToWorldWidth(18.0f); // We want the quad size to be independent from zoom
+        float const halfQuadWorldSize = viewModel.PhysicalDisplayOffsetToWorldOffset(18.0f); // We want the quad size to be independent from zoom
         float const leftX = position.x - halfQuadWorldSize;
         float const rightX = position.x + halfQuadWorldSize;
         float const topY = position.y - halfQuadWorldSize;
