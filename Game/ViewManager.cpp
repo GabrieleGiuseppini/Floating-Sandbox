@@ -276,7 +276,6 @@ void ViewManager::ResetAutoFocusAlterations()
     mAutoFocus->ResetUserOffsets();
 }
 
-
 ///////////////////////////////////////////////////////////
 
 float ViewManager::CalculateParameterSmootherConvergenceFactor(float cameraSpeedAdjustment)
