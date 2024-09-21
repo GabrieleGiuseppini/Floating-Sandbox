@@ -342,6 +342,7 @@
 			- Generic textures
 			- Text (NotificationContext)
 			- Fishes
+			- RectSelection (NotificationContext)
 
 
 	- Try to lower global damping - seems quite slow
