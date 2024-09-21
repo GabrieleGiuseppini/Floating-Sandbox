@@ -516,13 +516,13 @@ public:
 		//
 
 		// Desired number of pixels is calc'd as a fraction of the smallest canvas physical dimension size
-		float const desiredNumberOfPixels =
+		float const minDesiredNumberOfPixels =
 			static_cast<float>(std::min(viewModel.GetCanvasPhysicalSize().width, viewModel.GetCanvasPhysicalSize().height))
 			/ 30.0f;
 
-		// Multiplier for dimensions
+		// Multiplier for world dimensions
 		float const wDimMultiplier = std::max(
-			viewModel.PhysicalDisplayOffsetToWorldOffset(desiredNumberOfPixels) / (smallestDimension + worldOffset),
+			viewModel.PhysicalDisplayOffsetToWorldOffset(minDesiredNumberOfPixels) / (smallestDimension + worldOffset),
 			1.0f);
 
 		//
@@ -554,11 +554,18 @@ public:
 		//
 		// Calculate border size in vertex space
 		//
+		// We want the border to be a fixed number of pixels
+		//
 
-		float const borderSizeWorld = smallestDimension; // Arbitrarily
+		float const borderSizePixels = minDesiredNumberOfPixels / 5.0f;
+
+		// Convert to world size
+		float const borderSizeWorld = viewModel.PhysicalDisplayOffsetToWorldOffset(borderSizePixels);
+
+		// Convert to vertex space
 		vec2f const borderSizeInVertexSpace = vec2f(
-			borderSizeWorld * wDimMultiplier / halfActualW,
-			borderSizeWorld * wDimMultiplier / halfActualH);
+			borderSizeWorld / halfActualW,
+			borderSizeWorld / halfActualH);
 
 		//
 		// Create vertices
