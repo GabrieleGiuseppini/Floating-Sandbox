@@ -1409,12 +1409,22 @@ void GameController::SelectNpc(std::optional<NpcId> id)
 {
     assert(!!mWorld);
     mWorld->SelectNpc(id);
+
+    if (mViewManager.GetAutoFocusTarget() == AutoFocusTargetKindType::SelectedNpc)
+    {
+        mViewManager.ResetAutoFocusAlterations();
+    }
 }
 
 void GameController::SelectNextNpc()
 {
     assert(!!mWorld);
     mWorld->SelectNextNpc(); // We'll pick this up later at UpdateAutoFocus() if we're focusing on it
+
+    if (mViewManager.GetAutoFocusTarget() == AutoFocusTargetKindType::SelectedNpc)
+    {
+        mViewManager.ResetAutoFocusAlterations();
+    }
 }
 
 void GameController::HighlightNpc(std::optional<NpcId> id)
@@ -1586,7 +1596,7 @@ void GameController::SetAutoFocusTarget(std::optional<AutoFocusTargetKindType> c
         // (thanks to UI constraints)
         assert(mWorld->GetNpcs().HasNpcs());
 
-        // Select first NPC as a courtesy
+        // Select first NPC as a courtesy if none is selected
         if (!mWorld->GetNpcs().GetCurrentlySelectedNpc().has_value())
         {
             mWorld->SelectFirstNpc();
@@ -1595,6 +1605,9 @@ void GameController::SetAutoFocusTarget(std::optional<AutoFocusTargetKindType> c
 
     // Switch
     InternalSwitchAutoFocusTarget(autoFocusTarget);
+
+    // Reset user offsets
+    mViewManager.ResetAutoFocusAlterations();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
