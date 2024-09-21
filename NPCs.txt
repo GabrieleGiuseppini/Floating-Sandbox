@@ -611,9 +611,10 @@ Arch
 					- Focus on ship (one-off)
 				! In short: if there's auto-focus on <X>, we re-center; if not, we focus one-off on ship
 			- User enables FocusOnShip: (C*)
-				- Target change to <Ship>
-				- Emit OnAutoFocusTargetChanged
-				- Turn on notification @ NotificationLayer
+				- Target change to <Ship>				
+					- Emit OnAutoFocusTargetChanged
+					- Turn on notification @ NotificationLayer
+				- Reset user offset
 				- UI:
 					- Menu mutex comes for free, but also via OnAutoFocusTargetChanged
 			- User enables FocusOnSelectedNpc: (C*)
@@ -623,21 +624,30 @@ Arch
 					- Select first
 					- Emit OnNpcSelectionChanged
 				- Target change to <SelectedNPC>
-				- Emit OnAutoFocusTargetChanged
-				- Turn on notification @ NotificationLayer
+					- Emit OnAutoFocusTargetChanged
+					- Turn on notification @ NotificationLayer
+				- Reset user offsets
 				- UI:
 					- Menu mutex comes for free, but also via OnAutoFocusTargetChanged
 			- User enables FocusOnNothing: (C*)
 				- Target change to <>
-				- Emit OnAutoFocusTargetChanged
-				- Turn off notification @ NotificationLayer
+					- Emit OnAutoFocusTargetChanged
+					- Turn off notification @ NotificationLayer
 				- UI:
 					- Menu mutex comes for free, but also via OnAutoFocusTargetChanged
 			- User clicks "SelectNextNPC": (E*)
 				- Assuming:
 					- At least one NPC exists (or else menu would have been disabled)
 				- Select next NPC
-					- GameController::Update() will pick this up if focusing on CurrentlySelectedNpc, and start focusing on it	
+					- GameController::Update() will pick this up if focusing on CurrentlySelectedNpc, and start focusing on it
+				- If focusing on NPC:
+					- Reset user offsets
+				- Emit OnNpcSelectionChanged
+			- User selects another NPC:
+				- Select NPC
+					- GameController::Update() will pick this up if focusing on CurrentlySelectedNpc, and start focusing on it
+				- If focusing on NPC:
+					- Reset user offsets
 				- Emit OnNpcSelectionChanged
 			- User uses tool to select+follow specific NPC: (F*)
 				- Select NpcId
@@ -646,6 +656,7 @@ Arch
 					- Target change to <SelectedNPC> 
 					- Emit OnAutoFocusTargetChanged
 					- Turn on notification @ NotificationLayer
+				- Reset user offsets
 				- UI: 
 					- Menu mutex driven by OnAutoFocusTargetChanged
 			- User uses tool to select+follow nothing: (F*)
@@ -824,10 +835,11 @@ Arch
 					= Shader ("rect_selection")
 						+ Anti-aliasing 1-px border
 							+ Needs how wide - in vertex space - a pixel is, for both x and y (separately)
-						+ Border
+						= Border
 							+ Needs above, and uses own # of pixels
-							+ FIX: border thickness gets smaller with the size of the NPC
+							= FIX: border thickness gets smaller with the size of the NPC
 								+ Should it actually be a percentage of one of the dimensions, rather than fixed?
+								= Try with fixed # of pixels
 						= Time pulse (in wallclock time)
 							+ Requires NPCs to remember selection wallclock timestamp
 							- TODO: which clock?
@@ -868,8 +880,7 @@ Arch
 		- Need a different randomization
 
 	- Rethink Attract force field (use mass)
-		- NPCs: less at max
-		- Ship: less on air bubbles
+		- Ship: less on air bubbles (in any case, less on things with mass 25)
 	- Better electrical highlight 
 	- Interrupt swim with great velocities
 		- Repro: using attract/repel or swirl

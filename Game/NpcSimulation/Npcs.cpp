@@ -3198,7 +3198,6 @@ void Npcs::UpdateNpcAnimation(
                 targetAngles.LeftLeg = -legAngle;
 
                 // Arms depend on panic
-                LogMessage(humanNpcState.ResultantPanicLevel);
                 if (humanNpcState.ResultantPanicLevel < 0.32f)
                 {
                     // No panic: arms aperture depends on speed
