@@ -17,6 +17,8 @@
 
 namespace Physics {
 
+float constexpr ParticleSize = 0.30f; // For rendering, mostly - given that particles have zero dimensions
+
 /*
 Main principles:
     - Global damping: when constrained, we only apply it to velocity *relative* to the mesh ("air moves with the ship")
@@ -2823,11 +2825,6 @@ void Npcs::RenderNpc(
                     mParticles.GetPosition(npc.ParticleMesh.Particles[2].ParticleIndex),
                     npc.KindSpecificState.FurnitureNpcState.TextureCoordinatesQuad,
                     overlayColor);
-
-                if (npc.Id == mCurrentlySelectedNpc)
-                {
-                    // TODOHERE
-                }
             }
             else
             {
@@ -2835,7 +2832,7 @@ void Npcs::RenderNpc(
 
                 for (auto const & particle : npc.ParticleMesh.Particles)
                 {
-                    float constexpr ParticleHalfWidth = 0.15f;
+                    float constexpr ParticleHalfWidth  = ParticleSize / 2.0f;
                     vec2f const position = mParticles.GetPosition(particle.ParticleIndex);
 
                     shipRenderContext.UploadNpcTextureQuad(
@@ -2847,11 +2844,52 @@ void Npcs::RenderNpc(
                         npc.KindSpecificState.FurnitureNpcState.TextureCoordinatesQuad,
                         overlayColor);
                 }
+            }
 
-                if (npc.Id == mCurrentlySelectedNpc)
+            if (npc.Id == mCurrentlySelectedNpc)
+            {
+                // Calculate center position
+                vec2f centerPosition = vec2f::zero();
+                for (auto const & particle : npc.ParticleMesh.Particles)
                 {
-                    // TODOHERE
+                    centerPosition += mParticles.GetPosition(particle.ParticleIndex);
                 }
+                centerPosition /= static_cast<float>(npc.ParticleMesh.Particles.size());
+
+                // Calculate vertical dir
+                vec2f verticalDir;
+                if (npc.ParticleMesh.Particles.size() > 1)
+                {
+                    // Take arbitrarily normal to first two particles' positions
+                    vec2f const firstVector =
+                        mParticles.GetPosition(npc.ParticleMesh.Particles[1].ParticleIndex)
+                        - mParticles.GetPosition(npc.ParticleMesh.Particles[0].ParticleIndex);
+                    verticalDir = firstVector.normalise_approx().to_perpendicular();
+                }
+                else
+                {
+                    verticalDir = vec2f(0.0f, -1.0f);
+                }
+
+                // Calculate dimensions
+                float const width = std::max(
+                    CalculateSpringLength(
+                        mNpcDatabase.GetFurnitureDimensions(npc.KindSpecificState.FurnitureNpcState.SubKindId).Width,
+                        mCurrentSizeMultiplier),
+                    ParticleSize);
+                float const height = std::max(
+                    CalculateSpringLength(
+                        mNpcDatabase.GetFurnitureDimensions(npc.KindSpecificState.FurnitureNpcState.SubKindId).Height,
+                        mCurrentSizeMultiplier),
+                    ParticleSize);
+
+                renderContext.UploadRectSelection(
+                    centerPosition,
+                    verticalDir,
+                    width,
+                    height,
+                    Render::StockColors::Red1,
+                    currentSimulationTime - mCurrentlySelectedNpcSimulationTimestamp);
             }
 
             break;

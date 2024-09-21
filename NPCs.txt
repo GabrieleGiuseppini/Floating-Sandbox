@@ -811,11 +811,11 @@ Arch
 					(Target > 0.5) * (1 – (1-2*(Target-0.5)) * (1-Blend)) +
 					(Target <= 0.5) * ((2*Target) * Blend)
 				= Do selection via ad-hoc "RectSelection" primitive @ NotificationRenderContext
-					= Geometry: enclosing rect, calc'd by Npcs::RenderNpc
+					+ Geometry: enclosing rect, calc'd by Npcs::RenderNpc
 						+ Humans
-						- Furniture
-							- Quad
-							- Bunch-of-Particles
+						+ Furniture
+							+ Quad
+							+ Bunch-of-Particles
 					+ NotificationRenderContext: new one-time (non-sticky) primitive, exactly like HeatBlaster
 						+ Drawn on top of everything
 						+ Doesn't get smaller than fraction of NDC
@@ -826,6 +826,8 @@ Arch
 							+ Needs how wide - in vertex space - a pixel is, for both x and y (separately)
 						+ Border
 							+ Needs above, and uses own # of pixels
+							+ FIX: border thickness gets smaller with the size of the NPC
+								+ Should it actually be a percentage of one of the dimensions, rather than fixed?
 						= Time pulse (in wallclock time)
 							+ Requires NPCs to remember selection wallclock timestamp
 							- TODO: which clock?
@@ -834,8 +836,11 @@ Arch
 				+ IGameEventHandlers::OnContinuousAutoFocusToggled() may go
 				+ IGameController::Get/SetDoContinuousAutoFocus
 
-		- With a falling NPC, focus is near bottom of screen
-			- Use different speed iff focusing on NPC?
+		= With a falling NPC, focus is near bottom of screen
+			+ Use different speed iff focusing on NPC?
+			- Test
+				- Might have been a bad idea - the whole zooming/panning is different speed now
+					- Decide and eventually undo
 
 		- Tests:
 			- Move tool (regressions)
@@ -857,7 +862,11 @@ Arch
 
 
 	- When NPC falls from hgh up, it does not rotate
-		- Use a particle-specific randomization for air drag
+		X Use a particle-specific randomization for air drag
+			+ Might not help - a dipole will find a direction (vertical obviously)
+				+ Decide and eventually undo
+		- Need a different randomization
+
 	- Rethink Attract force field (use mass)
 		- NPCs: less at max
 		- Ship: less on air bubbles

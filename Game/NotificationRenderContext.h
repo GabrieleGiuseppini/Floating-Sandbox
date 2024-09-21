@@ -555,10 +555,10 @@ public:
 		// Calculate border size in vertex space
 		//
 
-		float constexpr BorderSizeWorld = 0.4f;
+		float const borderSizeWorld = smallestDimension; // Arbitrarily
 		vec2f const borderSizeInVertexSpace = vec2f(
-			BorderSizeWorld * wDimMultiplier / halfActualW,
-			BorderSizeWorld * wDimMultiplier / halfActualH);
+			borderSizeWorld * wDimMultiplier / halfActualW,
+			borderSizeWorld * wDimMultiplier / halfActualH);
 
 		//
 		// Create vertices
