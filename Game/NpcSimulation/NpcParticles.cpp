@@ -6,6 +6,7 @@
 #include "Physics.h"
 
 #include <GameCore/GameException.h>
+#include <GameCore/GameRandomEngine.h>
 #include <GameCore/Log.h>
 
 namespace Physics {
@@ -35,6 +36,7 @@ ElementIndex NpcParticles::Add(
     mMeshWaternessBuffer[p] = 0.0f;
     mMeshWaterVelocityBuffer[p] = vec2f::zero();
     mAnyWaternessBuffer[p] = 0.0f;
+    mRandomNormalizedUniformFloatBuffer[p] = GameRandomEngine::GetInstance().GenerateNormalizedUniformReal();
 
     mRenderColorBuffer[p] = color;
 

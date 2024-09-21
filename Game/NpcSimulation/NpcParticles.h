@@ -45,6 +45,7 @@ public:
         , mMeshWaternessBuffer(maxParticleCount, 0.0f)
         , mMeshWaterVelocityBuffer(maxParticleCount, vec2f::zero())
         , mAnyWaternessBuffer(maxParticleCount, 0.0f)
+        , mRandomNormalizedUniformFloatBuffer(maxParticleCount, 0.0f)
         // Render
         , mRenderColorBuffer(maxParticleCount, rgbaColor::zero())
         //////////////////////////////////
@@ -254,6 +255,11 @@ public:
         mAnyWaternessBuffer[particleElementIndex] = value;
     }
 
+    float GetRandomNormalizedUniformPersonalitySeed(ElementIndex pointElementIndex) const
+    {
+        return mRandomNormalizedUniformFloatBuffer[pointElementIndex];
+    }
+
     //
     // Render
     //
@@ -306,6 +312,8 @@ private:
     Buffer<float> mMeshWaternessBuffer; // Mesh water at triangle (when constrained); // [0.0, ~1.0]
     Buffer<vec2f> mMeshWaterVelocityBuffer; // (when constrained)
     Buffer<float> mAnyWaternessBuffer; // Mesh water at triangle (when constrained), depth (when free); [0.0, 1.0]
+
+    Buffer<float> mRandomNormalizedUniformFloatBuffer;
 
     //
     // Render
