@@ -1133,19 +1133,19 @@ void World::AbortNewNpc(NpcId id)
 void World::SelectFirstNpc()
 {
     assert(mNpcs);
-    mNpcs->SelectFirstNpc(mCurrentSimulationTime);
+    mNpcs->SelectFirstNpc();
 }
 
 void World::SelectNextNpc()
 {
     assert(mNpcs);
-    mNpcs->SelectNextNpc(mCurrentSimulationTime);
+    mNpcs->SelectNextNpc();
 }
 
 void World::SelectNpc(std::optional<NpcId> id)
 {
     assert(mNpcs);
-    mNpcs->SelectNpc(id, mCurrentSimulationTime);
+    mNpcs->SelectNpc(id);
 }
 
 void World::HighlightNpc(std::optional<NpcId> id)
@@ -1277,7 +1277,7 @@ void World::RenderUpload(
     }
 
     assert(mNpcs);
-    mNpcs->Upload(mCurrentSimulationTime, renderContext);
+    mNpcs->Upload(renderContext);
 
     // AABBs
     if (renderContext.GetShowAABBs())

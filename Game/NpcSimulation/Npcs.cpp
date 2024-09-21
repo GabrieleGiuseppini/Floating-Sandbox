@@ -82,9 +82,7 @@ void Npcs::UpdateEnd()
     UpdateNpcsEnd();
 }
 
-void Npcs::Upload(
-    float currentSimulationTime,
-    Render::RenderContext & renderContext) const
+void Npcs::Upload(Render::RenderContext & renderContext) const
 {
 #ifdef IN_BARYLAB
     if (renderContext.GetNpcRenderMode() == NpcRenderModeType::Physical)
@@ -158,7 +156,6 @@ void Npcs::Upload(
 
                 RenderNpc(
                     state, 
-                    currentSimulationTime, 
                     renderContext,
                     shipRenderContext);
             }
@@ -1218,7 +1215,7 @@ std::optional<NpcId> Npcs::GetCurrentlySelectedNpc() const
     return mCurrentlySelectedNpc;
 }
 
-void Npcs::SelectFirstNpc(float currentSimulationTime)
+void Npcs::SelectFirstNpc()
 {
     // Assuming an NPC exists
     assert(HasNpcs());
@@ -1228,7 +1225,7 @@ void Npcs::SelectFirstNpc(float currentSimulationTime)
         if (npc.has_value())
         {
             // Found!
-            SelectNpc(npc->Id, currentSimulationTime);
+            SelectNpc(npc->Id);
 
             return;
         }
@@ -1237,7 +1234,7 @@ void Npcs::SelectFirstNpc(float currentSimulationTime)
     assert(false);
 }
 
-void Npcs::SelectNextNpc(float currentSimulationTime)
+void Npcs::SelectNextNpc()
 {
     // Assuming an NPC exists
     assert(HasNpcs());
@@ -1245,7 +1242,7 @@ void Npcs::SelectNextNpc(float currentSimulationTime)
     // If we don't have any selected, select first
     if (!mCurrentlySelectedNpc.has_value())
     {
-        SelectFirstNpc(currentSimulationTime);
+        SelectFirstNpc();
         return;
     }
 
@@ -1260,20 +1257,18 @@ void Npcs::SelectNextNpc(float currentSimulationTime)
         if (mStateBuffer[newId].has_value())
         {
             // Found!
-            SelectNpc(newId, currentSimulationTime);
+            SelectNpc(newId);
             return;
         }
     }
 }
 
-void Npcs::SelectNpc(
-    std::optional<NpcId> id,
-    float currentSimulationTime)
+void Npcs::SelectNpc(std::optional<NpcId> id)
 {
     assert(!id.has_value() || mStateBuffer[*id].has_value());
 
     mCurrentlySelectedNpc = id;
-    mCurrentlySelectedNpcSimulationTimestamp = currentSimulationTime;
+    mCurrentlySelectedNpcWallClockTimestamp = GameWallClock::GetInstance().Now();
     mGameEventHandler->OnNpcSelectionChanged(mCurrentlySelectedNpc);
 
 #ifdef IN_BARYLAB
@@ -2258,7 +2253,6 @@ void Npcs::PublishHumanNpcStats()
 
 void Npcs::RenderNpc(
     StateType const & npc,
-    float currentSimulationTime,
     Render::RenderContext & renderContext,
     Render::ShipRenderContext & shipRenderContext) const
 {
@@ -2806,7 +2800,7 @@ void Npcs::RenderNpc(
                     halfTorsoW * 2.0f,
                     actualBodyLength,
                     Render::StockColors::Red1,
-                    currentSimulationTime - mCurrentlySelectedNpcSimulationTimestamp);
+                    GameWallClock::GetInstance().ElapsedAsFloat(mCurrentlySelectedNpcWallClockTimestamp));
             }
 
             break;
@@ -2889,7 +2883,7 @@ void Npcs::RenderNpc(
                     width,
                     height,
                     Render::StockColors::Red1,
-                    currentSimulationTime - mCurrentlySelectedNpcSimulationTimestamp);
+                    GameWallClock::GetInstance().ElapsedAsFloat(mCurrentlySelectedNpcWallClockTimestamp));
             }
 
             break;

@@ -18,6 +18,7 @@
 #include <GameCore/GameGeometry.h>
 #include <GameCore/GameRandomEngine.h>
 #include <GameCore/GameTypes.h>
+#include <GameCore/GameWallClock.h>
 #include <GameCore/Log.h>
 #include <GameCore/StrongTypeDef.h>
 #include <GameCore/SysSpecifics.h>
@@ -774,7 +775,7 @@ public:
 		// State
 		, mCurrentSimulationSequenceNumber()
 		, mCurrentlySelectedNpc()
-		, mCurrentlySelectedNpcSimulationTimestamp(0.0f)
+		, mCurrentlySelectedNpcWallClockTimestamp()
 		, mCurrentlyHighlightedNpc()
 		// Stats
 		, mFreeRegimeHumanNpcCount(0)
@@ -797,9 +798,7 @@ public:
 
 	void UpdateEnd();
 
-	void Upload(
-		float currentSimulationTime,
-		Render::RenderContext & renderContext) const;
+	void Upload(Render::RenderContext & renderContext) const;
 
 	void UploadFlames(
 		ShipId shipId,
@@ -870,13 +869,11 @@ public:
 
 	std::optional<NpcId> GetCurrentlySelectedNpc() const;
 
-	void SelectFirstNpc(float currentSimulationTime);
+	void SelectFirstNpc();
 
-	void SelectNextNpc(float currentSimulationTime);
+	void SelectNextNpc();
 
-	void SelectNpc(
-		std::optional<NpcId> id,
-		float currentSimulationTime);
+	void SelectNpc(std::optional<NpcId> id);
 
 	void HighlightNpc(std::optional<NpcId> id);
 
@@ -1066,7 +1063,6 @@ private:
 
 	void RenderNpc(
 		StateType const & npc,
-		float currentSimulationTime,
 		Render::RenderContext & renderContext,
 		Render::ShipRenderContext & shipRenderContext) const;
 
@@ -1719,7 +1715,7 @@ private:
 	SequenceNumber mCurrentSimulationSequenceNumber;
 
 	std::optional<NpcId> mCurrentlySelectedNpc;
-	float mCurrentlySelectedNpcSimulationTimestamp;
+	GameWallClock::time_point mCurrentlySelectedNpcWallClockTimestamp;
 	std::optional<NpcId> mCurrentlyHighlightedNpc;
 
 	//

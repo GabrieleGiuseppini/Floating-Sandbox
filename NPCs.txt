@@ -715,7 +715,7 @@ Arch
 					- Disable FocusOnNpc tool (& RemoveNpc)
 					- Disable SelectNextNpc
 					- "Normal" NPC-quantity-driven enabling/disabling of other menu items applies here as well, simply because of NPC removal
-		= Impl:
+		+ Impl:
 			+ Npcs gets the concept of "CurrentSelectedNpc" (which was of BaryLab)
 				+ opt<NpcId> member
 				+ API from outside via Select...(opt) / Get...() (the BaryLab ones, make them official)
@@ -817,11 +817,11 @@ Arch
 					+ SelectNextNPC
 			+ UI preferences
 
-			= Shader/Highlight
+			+ Shader/Highlight
 				+ Do highlight with Overlay blend
 					(Target > 0.5) * (1 – (1-2*(Target-0.5)) * (1-Blend)) +
 					(Target <= 0.5) * ((2*Target) * Blend)
-				= Do selection via ad-hoc "RectSelection" primitive @ NotificationRenderContext
+				+ Do selection via ad-hoc "RectSelection" primitive @ NotificationRenderContext
 					+ Geometry: enclosing rect, calc'd by Npcs::RenderNpc
 						+ Humans
 						+ Furniture
@@ -832,31 +832,33 @@ Arch
 						+ Doesn't get smaller than fraction of NDC
 							+ Verify world offset foo is the same # of pixels V and H
 						+ Border W: must be fixed percentage of world width (not fixed pixel width)
-					= Shader ("rect_selection")
+					+ Shader ("rect_selection")
 						+ Anti-aliasing 1-px border
 							+ Needs how wide - in vertex space - a pixel is, for both x and y (separately)
-						= Border
+						+ Border
 							+ Needs above, and uses own # of pixels
-							= FIX: border thickness gets smaller with the size of the NPC
+							+ FIX: border thickness gets smaller with the size of the NPC
 								+ Should it actually be a percentage of one of the dimensions, rather than fixed?
-								= Try with fixed # of pixels
-						= Time pulse (in wallclock time)
+								+ Try with fixed # of pixels
+						+ Time pulse (in wallclock time)
 							+ Requires NPCs to remember selection wallclock timestamp
-							- TODO: which clock?
+							+ Try wallclock
 
 			+ Cleanups:
 				+ IGameEventHandlers::OnContinuousAutoFocusToggled() may go
 				+ IGameController::Get/SetDoContinuousAutoFocus
 
 		= With a falling NPC, focus is near bottom of screen
-			+ Use different speed iff focusing on NPC?
-			- Test
-				- Might have been a bad idea - the whole zooming/panning is different speed now
-					- Decide and eventually undo
+			X Use different speed iff focusing on NPC?
+				+ Test
+				+ Might have been a bad idea - the whole zooming/panning is different speed now
+			- At UpdateAutoFocus: if NDC offset "large": bump up speed
+				- ParamSmoother::Update() takes multiplier and applies it only there
+				- UpdateAutoFocus() cals multiplier based off NDC camera offset and sets it for one-time use
 
 		- Tests:
-			- Move tool (regressions)
-			- Remove tool (regressions)
+			+ Move tool (regressions)
+			+ Remove tool (regressions)
 			- All state transitions above
 
 		- Merge into npcs_v1
