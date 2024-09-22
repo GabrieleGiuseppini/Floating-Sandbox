@@ -56,18 +56,13 @@ void main()
         discard;   
 
     // Apply highlight
-    /*
-    c.rgb = mix(
-        c.rgb,
-        vertexOverlayColor.rgb,
-        vertexOverlayColor.a * c.a * 0.8);
-    */
+    //
     // (Target > 0.5) * (1 – (1-2*(Target-0.5)) * (1-Blend)) +
-    // (Target <= 0.5) * ((2*Target) * Blend)
+    // (Target <= 0.5) * lerp(Target, Blend, alphaMagic)
     
     vec3 IsTargetLarge = step(vec3(0.5), c.rgb);
     vec3 TargetHigh = 1. - (1. - (c.rgb - .5) * 2.) * (1. - vertexOverlayColor.rgb);
-    vec3 TargetLow = c.rgb * 2. * vertexOverlayColor.rgb;
+    vec3 TargetLow = mix(c.rgb, vertexOverlayColor.rgb, 0.6);
     
     vec3 ovCol =
         IsTargetLarge * TargetHigh
