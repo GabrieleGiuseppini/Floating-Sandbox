@@ -596,17 +596,9 @@ Arch
 			! "FocusOnNpc" tool: in this version does Select+FocusOnNpc
 				! In the future we'll also have "SelectNpc" tool which does Select only
 
-		- Spec of state machine/interactions:
+		! Spec of state machine/interactions:
 			- User hits HOME (focus on ship): (B*)
-				- If focusing on ship: reset user offsets
-				- If focusing on selected NPC:
-					- If there is an NPC selection: reset user offsets
-					- Else: 
-						- Switch target to <>
-							- Target change to <>
-							- Emit OnAutoFocusTargetChanged
-							- Turn off notification @ NotificationLayer
-						- Focus on ship (one-off)
+				- If focusing on ship or selected NPC: reset user offsets
 				- Else:
 					- Focus on ship (one-off)
 				! In short: if there's auto-focus on <X>, we re-center; if not, we focus one-off on ship
@@ -696,6 +688,9 @@ Arch
 					- Menu mutex driven by OnAutoFocusTargetChanged
 			- User begins placing new NPC: (G*)
 				- NOTE: here we assume we do NOT select this NPC by default
+				- If current target == Nothing:
+					- Focus on this NPC's AABB (one-off)
+				- TODOOLD
 				- If current target != Nothing:
 					- Target change to <>
 					- Emit OnAutoFocusTargetChanged
@@ -843,23 +838,21 @@ Arch
 						+ Time pulse (in wallclock time)
 							+ Requires NPCs to remember selection wallclock timestamp
 							+ Try wallclock
-
 			+ Cleanups:
 				+ IGameEventHandlers::OnContinuousAutoFocusToggled() may go
 				+ IGameController::Get/SetDoContinuousAutoFocus
-
-		= With a falling NPC, focus is near bottom of screen
+		+ With a falling NPC, focus is near bottom of screen
 			X Use different speed iff focusing on NPC?
 				+ Test
 				+ Might have been a bad idea - the whole zooming/panning is different speed now
-			- At UpdateAutoFocus: if NDC offset "large": bump up speed
-				- ParamSmoother::Update() takes multiplier and applies it only there
-				- UpdateAutoFocus() cals multiplier based off NDC camera offset and sets it for one-time use
-
-		- Tests:
+			+ At UpdateAutoFocus: if NDC offset "large": bump up speed
+				+ ParamSmoother::Update() takes multiplier and applies it only there
+				+ UpdateAutoFocus() cals multiplier based off NDC camera offset and sets it for one-time use
+				+ ParameterSmoother unit tests
+		+ Tests:
 			+ Move tool (regressions)
 			+ Remove tool (regressions)
-			- All state transitions above
+			+ All state transitions above
 
 		- Merge into npcs_v1
 
@@ -875,15 +868,13 @@ Arch
 
 
 
-	- When NPC falls from hgh up, it does not rotate
+	- When NPC falls from high up, it does not rotate
 		X Use a particle-specific randomization for air drag
 			+ Might not help - a dipole will find a direction (vertical obviously)
 				+ Decide and eventually undo
 		- Need a different randomization
-
 	- Rethink Attract force field (use mass)
 		- Ship: less on air bubbles (in any case, less on things with mass 25)
-	- Better electrical highlight 
 	- Interrupt swim with great velocities
 		- Repro: using attract/repel or swirl
 		- And transition to "rag doll" aquatic state

@@ -1847,20 +1847,17 @@ void GameController::PublishStats(std::chrono::steady_clock::time_point nowReal)
 
 void GameController::OnBeginPlaceNewNpc(NpcId const & npcId)
 {
-    // Turn off auto-focus if we have it
-    if (mViewManager.GetAutoFocusTarget().has_value())
+    if (!mViewManager.GetAutoFocusTarget().has_value())
     {
-        InternalSwitchAutoFocusTarget(std::nullopt);
+        // Focus on this NPC (one-off)
+
+        // We want to zoom so that the NPC appears as large as 1/this of screen
+        float constexpr NpcMagnification = 13.0f;
+
+        assert(!!mWorld);
+        auto const aabb = mWorld->GetNpcs().GetNpcAABB(npcId);
+        mViewManager.FocusOn(aabb, NpcMagnification, NpcMagnification, 1.0f / 8.0f, 2.0f, true);
     }
-
-    // Focus on this NPC (one-off)
-
-    // We want to zoom so that the NPC appears as large as 1/this of screen
-    float constexpr NpcMagnification = 13.0f;
-
-    assert(!!mWorld);
-    auto const aabb = mWorld->GetNpcs().GetNpcAABB(npcId);
-    mViewManager.FocusOn(aabb, NpcMagnification, NpcMagnification, 1.0f / 8.0f, 2.0f, true);
 }
 
 bool GameController::CalculateAreCloudShadowsEnabled(OceanRenderDetailType oceanRenderDetail)

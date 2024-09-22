@@ -48,6 +48,7 @@ ViewManager::ViewManager(
         },
         CalculateParameterSmootherConvergenceFactor(mCameraSpeedAdjustment),
         SmootherTerminationThreshold)
+    , mCameraWorldPositionParameterSmootherContingentMultiplier(1.0f)
     // Defaults
     , mCameraSpeedAdjustment(1.0f)
     , mDoAutoFocusOnShipLoad(true)
@@ -209,7 +210,7 @@ void ViewManager::UpdateAutoFocus(std::optional<Geometry::AABB> const & aabb)
 
         // Calculate NDC offset required to center view onto AABB's center (net of user offsets)
         vec2f const aabbCenterNdc = mRenderContext.WorldToNdc(aabb->CalculateCenter(), mAutoFocus->CurrentAutoFocusZoom, mAutoFocus->CurrentAutoFocusCameraWorldPosition);
-        vec2f const newAutoFocusCameraPositionNdcOffset = aabbCenterNdc / 2.0f;
+        vec2f const newAutoFocusCameraPositionNdcOffset = aabbCenterNdc;
 
         // Convert back into world offset
         vec2f const newAutoFocusCameraWorldPositionOffset = mRenderContext.NdcOffsetToWorldOffset(
@@ -219,6 +220,11 @@ void ViewManager::UpdateAutoFocus(std::optional<Geometry::AABB> const & aabb)
             mAutoFocus->CurrentAutoFocusZoom);
 
         mAutoFocus->CurrentAutoFocusCameraWorldPosition = mAutoFocus->CurrentAutoFocusCameraWorldPosition + newAutoFocusCameraWorldPositionOffset;
+
+        // Calc speed multiplier:
+        // |ndcOffset|=0 -> 1.0
+        // |ndcOffset|=sqrt(2) -> 3.0
+        mCameraWorldPositionParameterSmootherContingentMultiplier = 1.0f + 2.0f * std::min(newAutoFocusCameraPositionNdcOffset.length() / 1.4142f, 1.0f);
     }
 
     //
@@ -267,7 +273,8 @@ void ViewManager::Update()
 {
     // Invoked at each step
     mInverseZoomParameterSmoother.Update();
-    mCameraWorldPositionParameterSmoother.Update();
+    mCameraWorldPositionParameterSmoother.Update(mCameraWorldPositionParameterSmootherContingentMultiplier);
+    mCameraWorldPositionParameterSmootherContingentMultiplier = 1.0f; // Reset contingent multiplier
 }
 
 void ViewManager::ResetAutoFocusAlterations()
