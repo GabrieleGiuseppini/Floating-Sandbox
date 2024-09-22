@@ -281,6 +281,12 @@ GameController::GameController(
     auto const & score = ComputerCalibrator::Calibrate();
 
     ComputerCalibrator::TuneGame(score, mGameParameters, *mRenderContext);
+
+    //
+    // Reconcialiate notifications with startup parameters
+    //
+
+    mNotificationLayer.SetAutoFocusIndicator(mViewManager.GetAutoFocusTarget().has_value());
 }
 
 GameController::~GameController()
