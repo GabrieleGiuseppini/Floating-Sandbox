@@ -576,8 +576,7 @@ Arch
 		+ Animation:
 			+ Simple fixed-angle
 		+ Fix human state machine: Free_KO -> Free_Aerial *OR Free_InWater*
-
-	= Follow NPC:
+	+ Follow NPC:
 		! Gist:
 			! Npcs has a concept of "Selected NPC"
 				! Holds opt<NpcId>
@@ -854,19 +853,7 @@ Arch
 			+ Remove tool (regressions)
 			+ All state transitions above
 
-		- Merge into npcs_v1
-
-		- Barylab:
-			- Port
-			- Nuke most of "publishing for currently-selected NPC", and let GameController use selection @ end of Update() to pull off data and give to ProbeToolbar
-
-
-
-
-
-
-
-
+		+ Merge into npcs_v1
 
 	- When NPC falls from high up, it does not rotate
 		X Use a particle-specific randomization for air drag
@@ -1052,9 +1039,12 @@ Arch
 		+ Close to fire
 			+ Ditto
 
-	- Backport to BaryLab and profile
-		- Possible perf improv: Prelim forces: separate loop by Npc->Particles
-			- Better code cache and locality (for particles)		
+	- Barylab:
+		- Port
+		- Nuke most of "publishing for currently-selected NPC", and let GameController use selection @ end of Update() to pull off data and give to ProbeToolbar
+		- Profile
+			- Possible perf improv: Prelim forces: separate loop by Npc->Particles
+				- Better code cache and locality (for particles)		
 
 ===================
 Next release:
