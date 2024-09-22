@@ -76,10 +76,15 @@ public:
 
     void Update()
     {
+        Update(1.0f);
+    }
+
+    void Update(float convergenceRateMultiplier)
+    {
         if (mCurrentValue != mTargetValue)
         {
             // Converge
-            mCurrentValue += (mTargetValue - mCurrentValue) * mConvergenceFactor;
+            mCurrentValue += (mTargetValue - mCurrentValue) * mConvergenceFactor * convergenceRateMultiplier;
 
             // See if close enough
             if (Distance(mCurrentValue, mTargetValue) < mTerminationThreshold)

@@ -60,6 +60,39 @@ TEST(ParameterSmootherTests, SmoothsFromStartToTarget)
     EXPECT_TRUE(ApproxEquals(parameterValue, 1.0f + 0.9f + 0.81f, 0.1f));
 }
 
+TEST(ParameterSmootherTests, SmoothsFromStartToTargetWithRateMultiplier)
+{
+    float parameterValue = 0.0f;
+    bool hasSetterBeenInvoked = false;
+
+    ParameterSmoother<float> smoother(
+        [&parameterValue]() -> float const &
+        {
+            return parameterValue;
+        },
+        [&parameterValue, &hasSetterBeenInvoked](float const & value)
+        {
+            parameterValue = value;
+            hasSetterBeenInvoked = true;
+        },
+        0.1f,
+        0.0005f);
+
+    smoother.SetValue(10.0f);
+
+    EXPECT_FALSE(hasSetterBeenInvoked);
+
+    smoother.Update(2.0);
+    EXPECT_TRUE(hasSetterBeenInvoked);
+    EXPECT_TRUE(ApproxEquals(parameterValue, 2.0f, 0.1f));
+
+    smoother.Update(1);
+    EXPECT_TRUE(ApproxEquals(parameterValue, 2.0f + 0.8f, 0.1f));
+
+    smoother.Update(4.0);
+    EXPECT_TRUE(ApproxEquals(parameterValue, 2.0f + 0.9f + 2.84f, 0.1f));
+}
+
 TEST(ParameterSmootherTests, TargetsClampedTarget)
 {
     float parameterValue = 0.0f;
