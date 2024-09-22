@@ -111,7 +111,6 @@ set  (PHYSICS_SOURCES
 	RCBombGadget.cpp
 	RCBombGadget.h
 	Ship.cpp
-	Ship_ForceFields.cpp
 	Ship_Interactions.cpp
 	Ship_Interactions_Repair.cpp
 	Ship_SpringRelaxation.cpp

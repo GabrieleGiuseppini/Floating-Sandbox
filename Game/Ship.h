@@ -568,24 +568,6 @@ private:
 
 private:
 
-    /////////////////////////////////////////////////////////////////////////
-    // Force Fields
-    /////////////////////////////////////////////////////////////////////////
-
-    void ApplyRadialSpaceWarpForceField(
-        vec2f const & centerPosition,
-        float radius,
-        float radiusThickness,
-        float strength);
-
-    void ApplyImplosionForceField(
-        vec2f const & centerPosition,
-        float strength);
-
-    void ApplyRadialExplosionForceField(
-        vec2f const & centerPosition,
-        float strength);
-
 private:
 
     /////////////////////////////////////////////////////////////////////////

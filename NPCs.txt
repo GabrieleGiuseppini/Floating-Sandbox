@@ -389,13 +389,6 @@ Arch
 
 = Physical Interactions:
 
-	- Prelim: blueprint for particle physics:
-		- Loop for all particles in the used particles range - regardless of their being in-use
-			! This is going to be the pattern for most particle-based physics interations
-			- Maintain EndUsedParticleRange @ Add() (& @ Remove() if it's the current index)
-				- End is excluded
-				- Verify that adding and removing uses particle indices as expected
-
 	+ Make NpcDamping subject to other adjustment
 		+ Npcs class reacts to changes and calculates own mDampingCoefficient == (1.0f - gameParameters.NpcDamping)
 	+ Land
@@ -946,11 +939,11 @@ Arch
 			+ Move NPC props from StructuralMaterial to NPCs.json
 	+ See if can continue to figure out how to avoid deformation of quads
 		+ Add (temporary) slider for NPC spring realaxation params
-	= Anti-matter bomb force fields:
+	+ Anti-matter bomb force fields:
 		+ Pre-Implosion
 		+ Implosion
 		+ Explosion
-		- Nuke Ship::ForceFields
+		+ Nuke Ship::ForceFields
 	+ Swirl, etc.: NPCs of all ships, all regimes		
 		+ Controlled by flag, "~force tools on NPCs"
 			+ SettingsDialog
@@ -982,8 +975,6 @@ Arch
 				+ When not electrified for a while (own progress) -> Constrained_KO
 		+ Animation:
 			+ See notebook
-
-
 	+ Mass/forces: these two may be done together:
 			- NPCs add mass to particle
 				- Ship::Update asks NPCs (via ParentWorld) to add themselves to Points' (definitive) masses

@@ -4039,11 +4039,22 @@ void Ship::DoAntiMatterBombPreimplosion(
             130000.0f // Magic number
             * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
 
-        ApplyRadialSpaceWarpForceField(
-            centerPosition,
-            radius,
-            RadiusThickness,
-            strength);
+        for (auto pointIndex : mPoints)
+        {
+            vec2f const pointRadius = mPoints.GetPosition(pointIndex) - centerPosition;
+            float const pointDistanceFromRadius = pointRadius.length() - radius;
+            float const absolutePointDistanceFromRadius = std::abs(pointDistanceFromRadius);
+            if (absolutePointDistanceFromRadius <= RadiusThickness)
+            {
+                float const forceDirection = pointDistanceFromRadius >= 0.0f ? 1.0f : -1.0f;
+
+                float const forceStrength = strength * (1.0f - absolutePointDistanceFromRadius / RadiusThickness);
+
+                mPoints.AddStaticForce(
+                    pointIndex,
+                    pointRadius.normalise() * forceStrength * forceDirection);
+            }
+        }
     }
 
     // Also apply to NPCs
@@ -4074,9 +4085,32 @@ void Ship::DoAntiMatterBombImplosion(
             * 10000.0f // Magic number
             * (gameParameters.IsUltraViolentMode ? 50.0f : 1.0f);
 
-        ApplyImplosionForceField(
-            centerPosition,
-            strength);
+        for (auto pointIndex : mPoints)
+        {
+            vec2f displacement = centerPosition - mPoints.GetPosition(pointIndex);
+            float const displacementLength = displacement.length();
+            vec2f normalizedDisplacement = displacement.normalise(displacementLength);
+
+            // Make final acceleration somewhat independent from mass
+            float const massNormalization = mPoints.GetMass(pointIndex) / 50.0f;
+
+            // Angular (constant)
+            mPoints.AddStaticForce(
+                pointIndex,
+                vec2f(-normalizedDisplacement.y, normalizedDisplacement.x)
+                * strength
+                * massNormalization
+                / 10.0f); // Magic number
+
+            // Radial (stronger when closer)
+            mPoints.AddStaticForce(
+                pointIndex,
+                normalizedDisplacement
+                * strength
+                / (0.2f + 0.5f * sqrt(displacementLength))
+                * massNormalization
+                * 10.0f); // Magic number
+        }
     }
 
     // Also apply to NPCs
@@ -4100,13 +4134,23 @@ void Ship::DoAntiMatterBombExplosion(
     {
         // Apply the force field
         {
+            //
+            // F = ForceStrength/sqrt(distance), along radius
+            //
+
             float const strength =
                 30000.0f // Magic number
                 * (gameParameters.IsUltraViolentMode ? 50.0f : 1.0f);
 
-            ApplyRadialExplosionForceField(
-                centerPosition,
-                strength);
+            for (auto pointIndex : mPoints)
+            {
+                vec2f displacement = mPoints.GetPosition(pointIndex) - centerPosition;
+                float forceMagnitude = strength / sqrtf(0.1f + displacement.length());
+
+                mPoints.AddStaticForce(
+                    pointIndex,
+                    displacement.normalise() * forceMagnitude);
+            }
         }
 
         // Also apply to NPCs
