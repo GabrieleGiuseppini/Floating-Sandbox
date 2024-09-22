@@ -425,10 +425,12 @@ private:
 					struct Free_SwimmingType
 					{
 						float NextBubbleEmissionSimulationTimestamp;
+						float ProgressToLeavingSwimming;
 
 						void Reset()
 						{
 							NextBubbleEmissionSimulationTimestamp = 0.0f;
+							ProgressToLeavingSwimming = 0.0f;
 						}
 					} Free_Swimming;
 

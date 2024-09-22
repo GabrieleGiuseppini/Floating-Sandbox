@@ -857,9 +857,18 @@ Arch
 
 	+ Rethink Attract force field (use mass)
 		+ Ship: less on air bubbles (in any case, less on things with mass 25)
-	- Interrupt swim with great velocities
-		- Repro: using attract/repel or swirl
-		- And transition to "rag doll" aquatic state
+	+ Interrupt swim with great velocities
+		+ Repro: using attract/repel or swirl
+		+ And transition to "rag doll" aquatic state (i.e. "Free_InWater")
+			+ Also, do not transition from Free_InWater to Free_SwimmingX if velocity is still there
+		+ Actual condition: abs and rotation vels
+		+ Impl:			
+			+ Magic constants:
+				+ Max rotation: 2.0
+				+ Max vel: 4.0
+			+ Swimming state: progress to ~LeavingSwimming 
+			+ Free_InWater -> Free_SwimmingX: not if: rotation or vel1 or vel2
+			+ Free_SwimmingX -> Free_InWater: progress ~LeavingSwimming if rotation ok and vel1 ok and vel2 ok
 	- When NPC falls from high up, it does not rotate
 		X Use a particle-specific randomization for air drag
 			+ Might not help - a dipole will find a direction (vertical obviously)

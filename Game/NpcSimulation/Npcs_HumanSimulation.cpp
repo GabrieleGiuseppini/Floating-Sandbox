@@ -1307,16 +1307,23 @@ void Npcs::UpdateHuman(
 
 			// Advance state machine
 
+			vec2f const feetVelocity = mParticles.GetVelocity(primaryParticleState.ParticleIndex);
+			vec2f const headVelocity = mParticles.GetVelocity(secondaryParticleState.ParticleIndex);
+			float constexpr MaxRelativeVelocityForSwimming = 2.0f;
+			float const isRelativeVelocityOk = Step((headVelocity - feetVelocity).length(), MaxRelativeVelocityForSwimming); // Also rotation
+			float constexpr MaxVelocityForSwimming = 4.0f;
+			float const isAbsoluteVelocityOk = Step(feetVelocity.length(), MaxVelocityForSwimming) * Step(headVelocity.length(), MaxVelocityForSwimming);
+
 			if (humanState.CurrentBehavior == HumanNpcStateType::BehaviorType::Free_InWater)
 			{
-				// Progress to swimming if not rotating and head above feet
+				// Progress to swimming if velocities ok, and head above feet
 
 				auto const & headPosition = mParticles.GetPosition(secondaryParticleState.ParticleIndex);
 				auto const & feetPosition = mParticles.GetPosition(primaryParticleState.ParticleIndex);
 
-				float const rotationMagnitude = (mParticles.GetVelocity(secondaryParticleState.ParticleIndex) - mParticles.GetVelocity(primaryParticleState.ParticleIndex)).length();
 				float const targetSwim =
-					(1.0f - Step(2.0f, rotationMagnitude))
+					isRelativeVelocityOk
+					* isAbsoluteVelocityOk
 					* Step(feetPosition.y, headPosition.y);
 
 				float constexpr ToSwimmingConvergenceRate = 0.12f;
@@ -1362,6 +1369,37 @@ void Npcs::UpdateHuman(
 					if (npc.Id == mCurrentlySelectedNpc)
 					{
 						mGameEventHandler->OnHumanNpcBehaviorChanged("Free_Swimming");
+					}
+#endif
+
+					break;
+				}
+			}
+			else
+			{
+				// Leave swimming if velocities not ok
+
+				float const targetLeavingSwimming = 1.0f -
+					isRelativeVelocityOk
+					* isAbsoluteVelocityOk;
+
+				float constexpr ToLeavingSwimmingConvergenceRate = 0.12f;
+				humanState.CurrentBehaviorState.Free_Swimming.ProgressToLeavingSwimming += (targetLeavingSwimming - humanState.CurrentBehaviorState.Free_Swimming.ProgressToLeavingSwimming) * ToLeavingSwimmingConvergenceRate;
+
+#ifdef BARYLAB_PROBING
+				publishStateQuantity = std::make_tuple("ProgressToLeavingSwimming", std::to_string(humanState.CurrentBehaviorState.Free_Swimming.ProgressToLeavingSwimming));
+#endif
+
+				if (IsAtTarget(humanState.CurrentBehaviorState.Free_Swimming.ProgressToLeavingSwimming, 1.0f))
+				{
+					// Transition
+
+					humanState.TransitionToState(HumanNpcStateType::BehaviorType::Free_InWater, currentSimulationTime);
+
+#ifdef BARYLAB_PROBING
+					if (npc.Id == mCurrentlySelectedNpc)
+					{
+						mGameEventHandler->OnHumanNpcBehaviorChanged("Free_InWater");
 					}
 #endif
 
