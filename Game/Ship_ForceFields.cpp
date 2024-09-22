@@ -41,7 +41,7 @@ void Ship::ApplyImplosionForceField(
 {
     for (auto pointIndex : mPoints)
     {
-        vec2f displacement = (centerPosition - mPoints.GetPosition(pointIndex));
+        vec2f displacement = centerPosition - mPoints.GetPosition(pointIndex);
         float const displacementLength = displacement.length();
         vec2f normalizedDisplacement = displacement.normalise(displacementLength);
 
@@ -77,7 +77,7 @@ void Ship::ApplyRadialExplosionForceField(
 
     for (auto pointIndex : mPoints)
     {
-        vec2f displacement = (mPoints.GetPosition(pointIndex) - centerPosition);
+        vec2f displacement = mPoints.GetPosition(pointIndex) - centerPosition;
         float forceMagnitude = strength / sqrtf(0.1f + displacement.length());
 
         mPoints.AddStaticForce(

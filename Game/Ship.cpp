@@ -4031,16 +4031,28 @@ void Ship::DoAntiMatterBombPreimplosion(
     float radius,
     GameParameters const & gameParameters)
 {
-    float const strength =
-        130000.0f // Magic number
-        * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
+    float constexpr RadiusThickness = 10.0f; // Thickness of radius, magic number
 
     // Apply the force field
-    ApplyRadialSpaceWarpForceField(
+    {
+        float const strength =
+            130000.0f // Magic number
+            * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
+
+        ApplyRadialSpaceWarpForceField(
+            centerPosition,
+            radius,
+            RadiusThickness,
+            strength);
+    }
+
+    // Also apply to NPCs
+    mParentWorld.GetNpcs().ApplyAntiMatterBombPreimplosion(
+        mId,
         centerPosition,
         radius,
-        10.0f, // Thickness of radius, magic number
-        strength);
+        RadiusThickness,
+        gameParameters);
 
     // Scare fishes
     mParentWorld.DisturbOceanAt(
@@ -4054,16 +4066,25 @@ void Ship::DoAntiMatterBombImplosion(
     float sequenceProgress,
     GameParameters const & gameParameters)
 {
-    float const strength =
-        (sequenceProgress * sequenceProgress)
-        * gameParameters.AntiMatterBombImplosionStrength
-        * 10000.0f
-        * (gameParameters.IsUltraViolentMode ? 50.0f : 1.0f);
-
     // Apply the force field
-    ApplyImplosionForceField(
+    {
+        float const strength =
+            (sequenceProgress * sequenceProgress)
+            * gameParameters.AntiMatterBombImplosionStrength
+            * 10000.0f // Magic number
+            * (gameParameters.IsUltraViolentMode ? 50.0f : 1.0f);
+
+        ApplyImplosionForceField(
+            centerPosition,
+            strength);
+    }
+
+    // Also apply to NPCs
+    mParentWorld.GetNpcs().ApplyAntiMatterBombImplosion(
+        mId,
         centerPosition,
-        strength);
+        sequenceProgress,
+        gameParameters);
 }
 
 void Ship::DoAntiMatterBombExplosion(
@@ -4078,12 +4099,21 @@ void Ship::DoAntiMatterBombExplosion(
     if (0.0f == sequenceProgress)
     {
         // Apply the force field
-        float const strength =
-            30000.0f
-            * (gameParameters.IsUltraViolentMode ? 50.0f : 1.0f);
-        ApplyRadialExplosionForceField(
+        {
+            float const strength =
+                30000.0f // Magic number
+                * (gameParameters.IsUltraViolentMode ? 50.0f : 1.0f);
+
+            ApplyRadialExplosionForceField(
+                centerPosition,
+                strength);
+        }
+
+        // Also apply to NPCs
+        mParentWorld.GetNpcs().ApplyAntiMatterBombExplosion(
+            mId,
             centerPosition,
-            strength);
+            gameParameters);
 
         // Scare fishes
         mParentWorld.DisturbOceanAt(

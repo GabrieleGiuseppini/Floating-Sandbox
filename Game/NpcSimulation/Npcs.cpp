@@ -1549,6 +1549,137 @@ void Npcs::ApplyBlast(
     }
 }
 
+void Npcs::ApplyAntiMatterBombPreimplosion(
+    ShipId shipId,
+    vec2f const & centerPosition,
+    float radius,
+    float radiusThickness,
+    GameParameters const & gameParameters)
+{
+    //
+    // Only NPCs of this ship, or free regime of any ship
+    //
+
+    float const strength =
+        5000.0f // Magic number
+        * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
+
+    for (auto const & npc : mStateBuffer)
+    {
+        if (npc.has_value())
+        {
+            for (auto const & npcParticle : npc->ParticleMesh.Particles)
+            {
+                if (!npcParticle.ConstrainedState.has_value()
+                    || npc->CurrentShipId == shipId)
+                {
+                    vec2f const particleRadius = mParticles.GetPosition(npcParticle.ParticleIndex) - centerPosition;
+                    float const particleDistanceFromRadius = particleRadius.length() - radius;
+                    float const absoluteParticleDistanceFromRadius = std::abs(particleDistanceFromRadius);
+                    if (absoluteParticleDistanceFromRadius <= radiusThickness)
+                    {
+                        float const forceDirection = particleDistanceFromRadius >= 0.0f ? 1.0f : -1.0f;
+
+                        float const forceStrength = strength * (1.0f - absoluteParticleDistanceFromRadius / radiusThickness);
+
+                        mParticles.AddExternalForce(
+                            npcParticle.ParticleIndex,
+                            particleRadius.normalise() * forceStrength * forceDirection);
+                    }
+                }
+            }
+        }
+    }
+}
+
+void Npcs::ApplyAntiMatterBombImplosion(
+    ShipId shipId,
+    vec2f const & centerPosition,
+    float sequenceProgress,
+    GameParameters const & gameParameters)
+{
+    //
+    // Only NPCs of this ship, or free regime of any ship
+    //
+
+    float const strength =
+        (sequenceProgress * sequenceProgress)
+        * gameParameters.AntiMatterBombImplosionStrength
+        * 3000.0f // Magic number
+        * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
+
+    for (auto const & npc : mStateBuffer)
+    {
+        if (npc.has_value())
+        {
+            for (auto const & npcParticle : npc->ParticleMesh.Particles)
+            {
+                if (!npcParticle.ConstrainedState.has_value()
+                    || npc->CurrentShipId == shipId)
+                {
+                    vec2f displacement = centerPosition - mParticles.GetPosition(npcParticle.ParticleIndex);
+                    float const displacementLength = displacement.length();
+                    vec2f normalizedDisplacement = displacement.normalise(displacementLength);
+
+                    // Make final acceleration somewhat independent from mass
+                    float const massNormalization = mParticles.GetMass(npcParticle.ParticleIndex) / 50.0f;
+
+                    // Angular (constant)
+                    mParticles.AddExternalForce(
+                        npcParticle.ParticleIndex,
+                        vec2f(-normalizedDisplacement.y, normalizedDisplacement.x)
+                        * strength
+                        * massNormalization
+                        / 10.0f); // Magic number
+
+                    // Radial (stronger when closer)
+                    mParticles.AddExternalForce(
+                        npcParticle.ParticleIndex,
+                        normalizedDisplacement
+                        * strength
+                        / (0.2f + 0.5f * sqrt(displacementLength))
+                        * massNormalization
+                        * 10.0f); // Magic number
+                }
+            }
+        }
+    }
+}
+
+void Npcs::ApplyAntiMatterBombExplosion(
+    ShipId shipId,
+    vec2f const & centerPosition,
+    GameParameters const & gameParameters)
+{
+    //
+    // Only NPCs of this ship, or free regime of any ship
+    //
+
+    float const strength =
+        30000.0f // Magic number
+        * (gameParameters.IsUltraViolentMode ? 50.0f : 1.0f);
+
+    for (auto const & npc : mStateBuffer)
+    {
+        if (npc.has_value())
+        {
+            for (auto const & npcParticle : npc->ParticleMesh.Particles)
+            {
+                if (!npcParticle.ConstrainedState.has_value()
+                    || npc->CurrentShipId == shipId)
+                {
+                    vec2f displacement = mParticles.GetPosition(npcParticle.ParticleIndex) - centerPosition;
+                    float forceMagnitude = strength / sqrtf(0.1f + displacement.length());
+
+                    mParticles.AddExternalForce(
+                        npcParticle.ParticleIndex,
+                        displacement.normalise() * forceMagnitude);
+                }
+            }
+        }
+    }
+}
+
 void Npcs::SetGeneralizedPanicLevelForAllHumans(float panicLevel)
 {
     for (auto & npc : mStateBuffer)

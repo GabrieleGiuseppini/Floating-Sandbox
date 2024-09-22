@@ -920,6 +920,24 @@ public:
 		float blastForce, // N
 		GameParameters const & gameParameters);
 
+	void ApplyAntiMatterBombPreimplosion(
+		ShipId shipId,
+		vec2f const & centerPosition,
+		float radius,
+		float radiusThickness,
+		GameParameters const & gameParameters);
+
+	void ApplyAntiMatterBombImplosion(
+		ShipId shipId,
+		vec2f const & centerPosition,
+		float sequenceProgress,
+		GameParameters const & gameParameters);
+
+	void ApplyAntiMatterBombExplosion(
+		ShipId shipId,
+		vec2f const & centerPosition,
+		GameParameters const & gameParameters);
+
 	void SetGeneralizedPanicLevelForAllHumans(float panicLevel);
 
 public:

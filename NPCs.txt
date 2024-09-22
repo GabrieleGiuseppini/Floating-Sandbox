@@ -852,9 +852,7 @@ Arch
 			+ Move tool (regressions)
 			+ Remove tool (regressions)
 			+ All state transitions above
-
 		+ Merge into npcs_v1
-
 	+ Rethink Attract force field (use mass)
 		+ Ship: less on air bubbles (in any case, less on things with mass 25)
 	+ Interrupt swim with great velocities
@@ -869,12 +867,6 @@ Arch
 			+ Swimming state: progress to ~LeavingSwimming 
 			+ Free_InWater -> Free_SwimmingX: not if: rotation or vel1 or vel2
 			+ Free_SwimmingX -> Free_InWater: progress ~LeavingSwimming if rotation ok and vel1 ok and vel2 ok
-	- When NPC falls from high up, it does not rotate
-		X Use a particle-specific randomization for air drag
-			+ Might not help - a dipole will find a direction (vertical obviously)
-				+ Decide and eventually undo
-		- Need a different randomization
-
 	+ Wind: 
 		+ Npc preliminary forces: 
 			+ Only applies to *free* *above-water* particles
@@ -954,11 +946,11 @@ Arch
 			+ Move NPC props from StructuralMaterial to NPCs.json
 	+ See if can continue to figure out how to avoid deformation of quads
 		+ Add (temporary) slider for NPC spring realaxation params
-
-	- Anti-matter bomb force fields:
-		- Pre-Implosion
-		- Implosion
-		- Explosion
+	= Anti-matter bomb force fields:
+		+ Pre-Implosion
+		+ Implosion
+		+ Explosion
+		- Nuke Ship::ForceFields
 	+ Swirl, etc.: NPCs of all ships, all regimes		
 		+ Controlled by flag, "~force tools on NPCs"
 			+ SettingsDialog
