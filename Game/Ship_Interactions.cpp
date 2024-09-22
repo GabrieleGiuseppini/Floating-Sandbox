@@ -808,6 +808,12 @@ void Ship::DrawTo(Interaction::ArgumentsUnion::DrawArguments const & args)
         vec2f displacement = (args.CenterPos - mPoints.GetPosition(pointIndex));
         float forceMagnitude = args.Strength / sqrtf(0.1f + displacement.length());
 
+        // Scale back force if mass is small
+        // 0  -> 0
+        // 50 -> 1
+        // +INF -> 1
+        forceMagnitude *= std::min(mPoints.GetMass(pointIndex) / 50.0f, 1.0f);
+
         mPoints.AddStaticForce(
             pointIndex,
             displacement.normalise() * forceMagnitude);

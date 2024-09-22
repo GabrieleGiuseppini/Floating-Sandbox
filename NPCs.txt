@@ -855,16 +855,16 @@ Arch
 
 		+ Merge into npcs_v1
 
+	+ Rethink Attract force field (use mass)
+		+ Ship: less on air bubbles (in any case, less on things with mass 25)
+	- Interrupt swim with great velocities
+		- Repro: using attract/repel or swirl
+		- And transition to "rag doll" aquatic state
 	- When NPC falls from high up, it does not rotate
 		X Use a particle-specific randomization for air drag
 			+ Might not help - a dipole will find a direction (vertical obviously)
 				+ Decide and eventually undo
 		- Need a different randomization
-	- Rethink Attract force field (use mass)
-		- Ship: less on air bubbles (in any case, less on things with mass 25)
-	- Interrupt swim with great velocities
-		- Repro: using attract/repel or swirl
-		- And transition to "rag doll" aquatic state
 
 	+ Wind: 
 		+ Npc preliminary forces: 
@@ -1028,9 +1028,6 @@ Arch
 			+ Make sure mCurrentSizeAdjustment is only used in funcs to calc/recalc
 			+ Make sure mCurrentMassAdjustment is only used in funcs to calc/recalc
 		+ Port to FS
-	- Lights: second pass of lighting algorithm with all NPC particles, for each ship
-		- Adding to NPC particles' _light_ buffer
-			- But test it first, as humans are dipoles and dubious result
 	+ Incorporate ship material's elasticity and friction in calculations for bounce and friction
 	+ Panic:
 		+ Close to bomb
@@ -1081,6 +1078,10 @@ Next release:
 		- New human NPC behavior ("Constrained_Repairing") with associated animation
 			- Entered when wanting to cross a triangle that on the other side is free because it's damaged
 		- Might also have "Underwater Engineers" with zero buoyancy, unaffected by internal water, who can thus repair when the ship is flooded
+
+- Lights: second pass of lighting algorithm with all NPC particles, for each ship
+	- Adding to NPC particles' _light_ buffer
+		- But test it first, as humans are dipoles and dubious result
 
 - Doors:
 	- New "DoorHinge" electrical element (with both ON/OFF types), controls floorness of springs (and thus triangle edges) among neighboring pairs of them
