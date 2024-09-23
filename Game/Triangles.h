@@ -479,7 +479,7 @@ public:
 private:
 
     template<unsigned int anchorVertex, unsigned int vertex1, unsigned int vertex2>
-    vec2f InternalToBarycentricCoordinates(
+    inline vec2f InternalToBarycentricCoordinates(
         vec2f const & position,
         ElementIndex triangleElementIndex,
         Points const & points) const noexcept

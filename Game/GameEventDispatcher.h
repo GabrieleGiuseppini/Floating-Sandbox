@@ -569,7 +569,6 @@ public:
         }
     }
 
-
     void OnHumanNpcCountsUpdated(
         size_t insideShipCount,
         size_t outsideShipCount) override
