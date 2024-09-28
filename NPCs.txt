@@ -199,6 +199,8 @@ V1 TODO:
 - Add crowd
 - Add Flip NPC H
 
+- Finish assets
+
 - FIX:
 	- AutoFocus on NPC: very fast NPCs are not in focus
 		- Repro: AntiMatter bomb

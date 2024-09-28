@@ -170,6 +170,50 @@
 
 			{
 				"name": [
+					{ "value": "Civilian Passenger 4 (Female)", "language": "en" },
+					{ "value": "Passeggero 4 (Donna)", "language": "it" }
+				],
+				"role": "Passenger",
+				"texture_filename_stems": {
+					"head_f": "female_civilian_passenger_4_head_front",
+					"head_b": "female_civilian_passenger_4_head_back",
+					"head_s": "female_civilian_passenger_4_head_side",
+					"torso_f": "female_civilian_passenger_4_torso_front",
+					"torso_b": "female_civilian_passenger_4_torso_back",
+					"torso_s": "female_civilian_passenger_4_torso_side",
+					"arm_f": "female_civilian_passenger_4_arm_front",
+					"arm_b": "female_civilian_passenger_4_arm_back",
+					"arm_s": "female_civilian_passenger_4_arm_side",
+					"leg_f": "female_civilian_passenger_4_leg_front",
+					"leg_b": "female_civilian_passenger_4_leg_back",
+					"leg_s": "female_civilian_passenger_4_leg_side"
+				}
+			},
+
+			{
+				"name": [
+					{ "value": "Civilian Passenger 4 (Male)", "language": "en" },
+					{ "value": "Passeggero Seconda Classe 4 (Uomo)", "language": "it" }
+				],
+				"role": "Passenger",
+				"texture_filename_stems": {
+					"head_f": "male_civ_4_head_front",
+					"head_b": "male_civ_4_head_back",
+					"head_s": "male_civ_4_head_side",
+					"torso_f": "male_civ_4_torso_front",
+					"torso_b": "male_civ_4_torso_back",
+					"torso_s": "male_civ_4_torso_side",
+					"arm_f": "male_civ_4_arm_front",
+					"arm_b": "male_civ_4_arm_back",
+					"arm_s": "male_civ_4_arm_side",
+					"leg_f": "male_civ_4_leg_front",
+					"leg_b": "male_civ_4_leg_back",
+					"leg_s": "male_civ_4_leg_side"
+				}
+			},
+
+			{
+				"name": [
 					{ "value": "Deckhand", "language": "en" },
 					{ "value": "Mozzo", "language": "it" }
 				],
@@ -253,6 +297,28 @@
 					"leg_f": "oiler_leg_front",
 					"leg_b": "oiler_leg_back",
 					"leg_s": "oiler_leg_side"
+				}
+			},
+
+			{
+				"name": [
+					{ "value": "Wealthy Passenger 1 (Male)", "language": "en" },
+					{ "value": "Passeggero Prima Classe 1 (Uomo)", "language": "it" }
+				],
+				"role": "Passenger",
+				"texture_filename_stems": {
+					"head_f": "wealthy_passenger_1_head_front",
+					"head_b": "wealthy_passenger_1_head_back",
+					"head_s": "wealthy_passenger_1_head_side",
+					"torso_f": "wealthy_passenger_1_torso_front",
+					"torso_b": "wealthy_passenger_1_torso_back",
+					"torso_s": "wealthy_passenger_1_torso_side",
+					"arm_f": "wealthy_passenger_1_arm_front",
+					"arm_b": "wealthy_passenger_1_arm_back",
+					"arm_s": "wealthy_passenger_1_arm_side",
+					"leg_f": "wealthy_passenger_1_leg_front",
+					"leg_b": "wealthy_passenger_1_leg_back",
+					"leg_s": "wealthy_passenger_1_leg_side"
 				}
 			},
 
