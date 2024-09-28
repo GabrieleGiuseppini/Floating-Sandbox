@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #pragma once
 
+#include "SysSpecifics.h"
+
 #include <algorithm>
 #include <cassert>
 #include <cstdlib>
