@@ -302,6 +302,28 @@
 
 			{
 				"name": [
+					{ "value": "Quartermaster", "language": "en" },
+					{ "value": "Quartiermastro", "language": "it" }
+				],
+				"role": "Crew",
+				"texture_filename_stems": {
+					"head_f": "quartermaster_head_front",
+					"head_b": "quartermaster_head_back",
+					"head_s": "quartermaster_head_side",
+					"torso_f": "quartermaster_torso_front",
+					"torso_b": "quartermaster_torso_back",
+					"torso_s": "quartermaster_torso_side",
+					"arm_f": "quartermaster_arm_front",
+					"arm_b": "quartermaster_arm_back",
+					"arm_s": "quartermaster_arm_side",
+					"leg_f": "quartermaster_leg_front",
+					"leg_b": "quartermaster_leg_back",
+					"leg_s": "quartermaster_leg_side"
+				}
+			},
+
+			{
+				"name": [
 					{ "value": "Wealthy Passenger 1 (Male)", "language": "en" },
 					{ "value": "Passeggero Prima Classe 1 (Uomo)", "language": "it" }
 				],
