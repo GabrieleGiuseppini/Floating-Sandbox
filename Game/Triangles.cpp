@@ -82,7 +82,7 @@ ElementIndex Triangles::FindContaining(
         vec2f const bPosition = points.GetPosition(GetPointBIndex(t));
         vec2f const cPosition = points.GetPosition(GetPointCIndex(t));
 
-        if (IsPointInTriangle(position, aPosition, bPosition, cPosition))
+        if (Geometry::IsPointInTriangle(position, aPosition, bPosition, cPosition))
         {
             return t;
         }

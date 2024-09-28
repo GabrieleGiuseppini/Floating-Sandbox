@@ -1643,8 +1643,8 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
             float constexpr MaxParticleVelocityForApplyingWaterVelocity = 15.0f;
 
             float velocityIncrement;
-            float const particlVelocityDirAlongWaterDir = particleVelocityDir.dot(waterVelocityDir);
-            if (particlVelocityDirAlongWaterDir >= 0.0f)
+            float const particleVelocityDirAlongWaterDir = particleVelocityDir.dot(waterVelocityDir);
+            if (particleVelocityDirAlongWaterDir >= 0.0f)
             {
                 // The particle's relative velocity is in the same direction as the water; fill-in the remaining part
                 // (but don't slow it down)
@@ -1656,7 +1656,7 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
                     0.0f);
 
                 velocityIncrement =
-                    std::max(dampedWaterVelocityMagnitude - particleVelocityMagnitude * particlVelocityDirAlongWaterDir, 0.0f)
+                    std::max(dampedWaterVelocityMagnitude - particleVelocityMagnitude * particleVelocityDirAlongWaterDir, 0.0f)
                     * damper;
             }
             else
@@ -1664,13 +1664,13 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
                 // The particle's relative velocity is opposite water; add what it takes to match it, but converge slowly
 
                 velocityIncrement = std::min(
-                    (dampedWaterVelocityMagnitude - particleVelocityMagnitude * particlVelocityDirAlongWaterDir) * 0.3f,
+                    (dampedWaterVelocityMagnitude - particleVelocityMagnitude * particleVelocityDirAlongWaterDir) * 0.3f,
                     MaxParticleVelocityForApplyingWaterVelocity);
             }
 
             // Make it harder for orthogonal directions to change velocity,
             // so to avoid too-quick vortices
-            float const orthoDamper = std::abs(particlVelocityDirAlongWaterDir * particlVelocityDirAlongWaterDir);
+            float const orthoDamper = particleVelocityDirAlongWaterDir * particleVelocityDirAlongWaterDir;
 
             vec2f const absoluteVelocityDelta =
                 waterVelocityDir

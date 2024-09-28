@@ -426,7 +426,7 @@ public:
         ElementIndex triangleElementIndex,
         Points const & points) const noexcept
     {
-        assert(IsPointInTriangle(
+        assert(Geometry::IsPointInTriangle(
             position,
             points.GetPosition(GetPointAIndex(triangleElementIndex)),
             points.GetPosition(GetPointBIndex(triangleElementIndex)),

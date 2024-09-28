@@ -1353,7 +1353,7 @@ void ElectricalElements::UpdateEngineConductivity(
                                         // Calculate angle : CW angle between engine direction and engine->reference_point vector
                                         float engineCWAngle =
                                             (2.0f * Pi<float> - engineState.CCWDirection)
-                                            - OctantToCWAngle(OppositeOctant(incomingOctant));
+                                            - Geometry::OctantToCWAngle(Geometry::OppositeOctant(incomingOctant));
 
                                         // Normalize
                                         if (engineCWAngle < 0.0f)

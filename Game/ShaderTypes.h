@@ -235,10 +235,9 @@ enum class VertexAttributeType : GLuint
     ShipPointAuxiliaryData = 5,
     ShipPointFrontierColor = 6,
 
-    NpcTextureStaticAttributeGroup1 = 0,
-    NpcTextureAttributeGroup1 = 0,
-    NpcTextureAttributeGroup2 = 1,
-    NpcTextureAttributeGroup3 = 2,
+    NpcTextureQuadAttributeGroup1 = 0,
+    NpcTextureQuadAttributeGroup2 = 1,
+    NpcTextureQuadAttributeGroup3 = 2,
 
     ElectricSpark1 = 0,
 

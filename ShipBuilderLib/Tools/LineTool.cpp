@@ -481,11 +481,11 @@ void LineTool<TLayer>::DoLine(
     // Generate line
     if (TLayer == LayerType::Structural && mController.GetWorkbenchState().GetStructuralLineToolIsHullMode())
     {
-        GenerateIntegralLinePath<IntegralLineType::WithAdjacentSteps>(startPoint, actualEndPoint, std::forward<TVisitor>(visitor));
+        Geometry::GenerateIntegralLinePath<Geometry::IntegralLineType::WithAdjacentSteps>(startPoint, actualEndPoint, std::forward<TVisitor>(visitor));
     }
     else
     {
-        GenerateIntegralLinePath<IntegralLineType::Minimal>(startPoint, actualEndPoint, std::forward<TVisitor>(visitor));
+        Geometry::GenerateIntegralLinePath<Geometry::IntegralLineType::Minimal>(startPoint, actualEndPoint, std::forward<TVisitor>(visitor));
     }
 }
 

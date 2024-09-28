@@ -262,7 +262,7 @@ void TextureEraserTool<TLayerType>::DoEdit(ImageCoordinates const & mouseCoordin
     ImageCoordinates const endPoint = actualMouseCoordinates;
 
     // Generate line
-    GenerateIntegralLinePath<IntegralLineType::Minimal>(
+    Geometry::GenerateIntegralLinePath<Geometry::IntegralLineType::Minimal>(
         startPoint,
         endPoint,
         [&](ImageCoordinates const & pos)

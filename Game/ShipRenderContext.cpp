@@ -56,14 +56,12 @@ ShipRenderContext::ShipRenderContext(
     , mFrontierEdgeElementVBO()
     , mFrontierEdgeElementVBOAllocatedElementSize(0u)
     //
-    , mNpcStaticAttributeVertexBuffer()
-    , mIsNpcStaticAttributeVertexBufferDirty(true)
-    , mNpcStaticAttributeVBO()
-    , mNpcStaticAttributeVBOAllocatedVertexSize(0u)
-    //
-    , mNpcTextureQuadVertexBuffer()
-    , mNpcTextureQuadVBO()
-    , mNpcTextureQuadVBOAllocatedVertexSize(0u)
+    , mNpcTextureQuadQuadBuffer()
+    , mNpcTextureQuadQuadVBO()
+    , mNpcTextureQuadQuadVBOAllocatedVertexSize(0)
+    , mNpcTextureQuadAttributesVertexBuffer()
+    , mNpcTextureQuadAttributesVertexVBO()
+    , mNpcTextureQuadAttributesVertexVBOAllocatedVertexSize()
     //
     , mElectricSparkVertexBuffer()
     , mElectricSparkVBO()
@@ -217,9 +215,8 @@ ShipRenderContext::ShipRenderContext(
 
     mFrontierEdgeElementVBO = vbos[8];
 
-    mNpcStaticAttributeVBO = vbos[9];
-
-    mNpcTextureQuadVBO = vbos[10];
+    mNpcTextureQuadQuadVBO = vbos[9];
+    mNpcTextureQuadAttributesVertexVBO = vbos[10];
 
     mElectricSparkVBO = vbos[11];
 
@@ -331,22 +328,19 @@ ShipRenderContext::ShipRenderContext(
         glBindVertexArray(*mNpcTextureQuadVAO);
         CheckOpenGLError();
 
-        // Describe static attributes vertex attributes
-        glBindBuffer(GL_ARRAY_BUFFER, *mNpcStaticAttributeVBO);
-        static_assert(sizeof(NpcStaticAttributeVertex) == (4) * sizeof(float));
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::NpcTextureStaticAttributeGroup1));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::NpcTextureStaticAttributeGroup1), 4, GL_FLOAT, GL_FALSE, sizeof(NpcStaticAttributeVertex), (void *)(0));
+        glBindBuffer(GL_ARRAY_BUFFER, *mNpcTextureQuadQuadVBO);
+        static_assert(sizeof(Quad::V.TopLeft) == (2) * sizeof(float));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::NpcTextureQuadAttributeGroup1));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::NpcTextureQuadAttributeGroup1), 2, GL_FLOAT, GL_FALSE, sizeof(Quad::V.TopLeft), (void *)(0));
         CheckOpenGLError();
 
-        // Describe quad vertex attributes
-        glBindBuffer(GL_ARRAY_BUFFER, *mNpcTextureQuadVBO);
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::NpcTextureAttributeGroup1));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::NpcTextureAttributeGroup1), 4, GL_FLOAT, GL_FALSE, sizeof(NpcTextureQuadVertex), (void *)0);
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::NpcTextureAttributeGroup2));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::NpcTextureAttributeGroup2), 1, GL_FLOAT, GL_FALSE, sizeof(NpcTextureQuadVertex), (void *)(4 * sizeof(float)));
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::NpcTextureAttributeGroup3));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::NpcTextureAttributeGroup3), 4, GL_FLOAT, GL_FALSE, sizeof(NpcTextureQuadVertex), (void *)((4 + 1) * sizeof(float)));
-        static_assert(sizeof(NpcTextureQuadVertex) == (4 + 1 + 4) * sizeof(float));
+        glBindBuffer(GL_ARRAY_BUFFER, *mNpcTextureQuadAttributesVertexVBO);
+        static_assert(sizeof(NpcTextureQuadAttributesVertex) == (4 + 2) * sizeof(float));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::NpcTextureQuadAttributeGroup2));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::NpcTextureQuadAttributeGroup2), 4, GL_FLOAT, GL_FALSE, sizeof(NpcTextureQuadAttributesVertex), (void *)(0));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::NpcTextureQuadAttributeGroup3));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::NpcTextureQuadAttributeGroup3), 2, GL_FLOAT, GL_FALSE, sizeof(NpcTextureQuadAttributesVertex), (void *)(4 * sizeof(float)));
+        CheckOpenGLError();
 
         // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
         // in the VAO. So we won't associate the element VBO here, but rather before each drawing call.
@@ -354,7 +348,6 @@ ShipRenderContext::ShipRenderContext(
 
         glBindVertexArray(0);
     }
-
 
     //
     // Initialize Electric Spark VAO
@@ -975,23 +968,6 @@ void ShipRenderContext::UploadElementFrontierEdgesEnd()
     // Nop
 }
 
-void ShipRenderContext::UploadNpcStaticAttributesStart(size_t count)
-{
-    //
-    // NPC static attributes are sticky: we upload them once in a while and reuse
-    // them as needed
-    //
-
-    // No need to clear, we'll repopulate everything
-    mNpcStaticAttributeVertexBuffer.reset(count * 6);
-    mIsNpcStaticAttributeVertexBufferDirty = true;
-}
-
-void ShipRenderContext::UploadNpcStaticAttributesEnd()
-{
-    // Nop
-}
-
 void ShipRenderContext::UploadNpcTextureQuadsStart(size_t maxQuadCount)
 {
     //
@@ -1002,7 +978,12 @@ void ShipRenderContext::UploadNpcTextureQuadsStart(size_t maxQuadCount)
     // Prepare buffer and indices
     //
 
-    mNpcTextureQuadVertexBuffer.reset(maxQuadCount * 4);
+    //
+    // Prepare buffer and indices
+    //
+
+    mNpcTextureQuadQuadBuffer.reset(maxQuadCount);
+    mNpcTextureQuadAttributesVertexBuffer.reset(maxQuadCount * 4);
 
     mGlobalRenderContext.GetElementIndices().EnsureSize(maxQuadCount);
 }
@@ -1790,48 +1771,43 @@ void ShipRenderContext::RenderDraw(
 
 void ShipRenderContext::RenderPrepareNpcs(RenderParameters const & /*renderParameters*/)
 {
-    // TODO: to refactor this once we start really using it
-    if (mIsNpcStaticAttributeVertexBufferDirty)
-    {
-        glBindBuffer(GL_ARRAY_BUFFER, *mNpcStaticAttributeVBO);
+    //
+    // Upload buffers, if needed
+    //
 
-        if (mNpcStaticAttributeVertexBuffer.size() > mNpcStaticAttributeVBOAllocatedVertexSize)
+    assert(mNpcTextureQuadQuadBuffer.size() * 4 == mNpcTextureQuadAttributesVertexBuffer.size());
+
+    if (!mNpcTextureQuadQuadBuffer.empty())
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, *mNpcTextureQuadQuadVBO);
+        if (mNpcTextureQuadQuadBuffer.size() > mNpcTextureQuadQuadVBOAllocatedVertexSize)
         {
             // Re-allocate VBO buffer and upload
-            glBufferData(GL_ARRAY_BUFFER, mNpcStaticAttributeVertexBuffer.size() * sizeof(NpcStaticAttributeVertex), mNpcStaticAttributeVertexBuffer.data(), GL_STATIC_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, sizeof(Quad) * mNpcTextureQuadQuadBuffer.size(), mNpcTextureQuadQuadBuffer.data(), GL_STREAM_DRAW);
             CheckOpenGLError();
 
-            mNpcStaticAttributeVBOAllocatedVertexSize = mNpcStaticAttributeVertexBuffer.size();
+            mNpcTextureQuadQuadVBOAllocatedVertexSize = mNpcTextureQuadQuadBuffer.size();
         }
         else
         {
             // No size change, just upload VBO buffer
-            glBufferSubData(GL_ARRAY_BUFFER, 0, mNpcStaticAttributeVertexBuffer.size() * sizeof(NpcStaticAttributeVertex), mNpcStaticAttributeVertexBuffer.data());
+            glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Quad) * mNpcTextureQuadQuadBuffer.size(), mNpcTextureQuadQuadBuffer.data());
             CheckOpenGLError();
         }
 
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-        mIsNpcStaticAttributeVertexBufferDirty = false;
-    }
-
-    // TODOHERE: this is ok
-    if (!mNpcTextureQuadVertexBuffer.empty())
-    {
-        glBindBuffer(GL_ARRAY_BUFFER, *mNpcTextureQuadVBO);
-
-        if (mNpcTextureQuadVertexBuffer.size() > mNpcTextureQuadVBOAllocatedVertexSize)
+        glBindBuffer(GL_ARRAY_BUFFER, *mNpcTextureQuadAttributesVertexVBO);
+        if (mNpcTextureQuadAttributesVertexBuffer.size() > mNpcTextureQuadAttributesVertexVBOAllocatedVertexSize)
         {
             // Re-allocate VBO buffer and upload
-            glBufferData(GL_ARRAY_BUFFER, mNpcTextureQuadVertexBuffer.size() * sizeof(NpcTextureQuadVertex), mNpcTextureQuadVertexBuffer.data(), GL_DYNAMIC_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, sizeof(NpcTextureQuadAttributesVertex) * mNpcTextureQuadAttributesVertexBuffer.size(), mNpcTextureQuadAttributesVertexBuffer.data(), GL_STREAM_DRAW);
             CheckOpenGLError();
 
-            mNpcTextureQuadVBOAllocatedVertexSize = mNpcTextureQuadVertexBuffer.size();
+            mNpcTextureQuadAttributesVertexVBOAllocatedVertexSize = mNpcTextureQuadAttributesVertexBuffer.size();
         }
         else
         {
             // No size change, just upload VBO buffer
-            glBufferSubData(GL_ARRAY_BUFFER, 0, mNpcTextureQuadVertexBuffer.size() * sizeof(NpcTextureQuadVertex), mNpcTextureQuadVertexBuffer.data());
+            glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(NpcTextureQuadAttributesVertex) * mNpcTextureQuadAttributesVertexBuffer.size(), mNpcTextureQuadAttributesVertexBuffer.data());
             CheckOpenGLError();
         }
 
@@ -1841,7 +1817,7 @@ void ShipRenderContext::RenderPrepareNpcs(RenderParameters const & /*renderParam
 
 void ShipRenderContext::RenderDrawNpcs(RenderParameters const & renderParameters)
 {
-    if (!mNpcTextureQuadVertexBuffer.empty())
+    if (!mNpcTextureQuadQuadBuffer.empty())
     {
         glBindVertexArray(*mNpcTextureQuadVAO);
 
@@ -1853,11 +1829,9 @@ void ShipRenderContext::RenderDrawNpcs(RenderParameters const & renderParameters
         if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Wireframe)
             glLineWidth(0.1f);
 
-        assert(0 == (mNpcTextureQuadVertexBuffer.size() % 4));
-
         glDrawElements(
             GL_TRIANGLES,
-            static_cast<GLsizei>(mNpcTextureQuadVertexBuffer.size() / 4 * 6),
+            static_cast<GLsizei>(mNpcTextureQuadQuadBuffer.size() * 6),
             GL_UNSIGNED_INT,
             (GLvoid *)0);
 

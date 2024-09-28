@@ -7,10 +7,13 @@
 
 #include "GameMath.h"
 #include "GameTypes.h"
+#include "SysSpecifics.h"
 #include "Vectors.h"
 
 #include <cassert>
 #include <cmath>
+
+namespace Geometry {
 
 class Segment
 {
@@ -265,4 +268,57 @@ inline void GenerateIntegralLinePath(
             break;
         }
     }
+}
+
+inline void MakeQuadInto(
+    vec2f const & centerTop,
+    vec2f const & centerBottom,
+    vec2f const & hDir,
+    float halfWidth,
+    Quad & quad)
+{
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
+
+    __m128d vd = _mm_shuffle_pd(
+        _mm_load_pd(reinterpret_cast<double const *>(&centerTop)),
+        _mm_load_pd(reinterpret_cast<double const *>(&centerBottom)),
+        0);
+
+    __m128d hd0 = _mm_load_pd(reinterpret_cast<double const *>(&hDir));
+    __m128 hd = _mm_movelh_ps(_mm_castpd_ps(hd0), _mm_castpd_ps(hd0));
+
+    __m128 h = _mm_mul_ps(hd, _mm_load1_ps(&halfWidth));
+
+    __m128 left = _mm_sub_ps(_mm_castpd_ps(vd), h);
+    __m128 right = _mm_add_ps(_mm_castpd_ps(vd), h);
+    _mm_store_ps(&(quad.fptr[0]), left);
+    _mm_store_ps(&(quad.fptr[4]), right);
+
+#else
+
+    quad.V.TopLeft = vec2f(centerTop - hDir * halfWidth);
+    quad.V.BottomLeft = vec2f(centerBottom - hDir * halfWidth);
+    quad.V.TopRight = vec2f(centerTop + hDir * halfWidth);
+    quad.V.BottomRight = vec2f(centerBottom + hDir * halfWidth);
+
+#endif
+}
+
+inline Quad MakeQuad(
+    vec2f const & centerTop,
+    vec2f const & centerBottom,
+    vec2f const & hDir,
+    float halfWidth)
+{
+    Quad quad;
+    MakeQuadInto(
+        centerTop,
+        centerBottom,
+        hDir,
+        halfWidth,
+        quad);
+
+    return quad;
+}
+
 }

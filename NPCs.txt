@@ -1165,17 +1165,15 @@ Arch
 							X Goes to 2.4/2.6!!!!
 				+ See if still need two quad-building functions
 
-		- Port back
+		+ Port back into FS
 			+ vec2f default cctor
-			- BoundedVector
-			- Buffer operator=(&&)
-			- Quad
-			- GameGeometry: namespace & MakeQuad
-			- NPCs
-			- RenderContext (to ShipRenderContext)
-			- Did we want this which we did in FS? Or was it a mistake?
-				-float constexpr ParticleSize = 0.30f; // For rendering, mostly - given that particles have zero dimensions
-				+float constexpr ParticleSize = 0.10f; // For rendering, mostly - given that particles have zero dimensions
+			+ BoundedVector
+			+ Quad
+			+ GameGeometry: namespace & MakeQuad
+			+ NPCs
+			+ RenderContext (to ShipRenderContext)
+			+ Shader
+		- Port back into BaryLab
 
 - Npc menu, and move all tools to it
 	- Requires two vectors of wxMenuItem's to cross-synchronize

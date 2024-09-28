@@ -483,7 +483,7 @@ bool Ship::SawThrough(
     {
         if (!mSprings.IsDeleted(springIndex))
         {
-            if (Segment::ProperIntersectionTest(
+            if (Geometry::Segment::ProperIntersectionTest(
                 adjustedStartPos,
                 endPos,
                 mSprings.GetEndpointAPosition(springIndex, mPoints),
@@ -724,7 +724,7 @@ bool Ship::ApplyLaserCannonThrough(
         if (!mSprings.IsDeleted(springIndex)
             && GameRandomEngine::GetInstance().GenerateUniformBoolean(10.0f * strength / mSprings.GetBaseStructuralMaterial(springIndex).GetMass()))
         {
-            if (Segment::ProperIntersectionTest(
+            if (Geometry::Segment::ProperIntersectionTest(
                 startPos,
                 endPos,
                 mSprings.GetEndpointAPosition(springIndex, mPoints),
@@ -761,7 +761,7 @@ bool Ship::ApplyLaserCannonThrough(
 
     for (auto p : mPoints)
     {
-        float const distance = Segment::DistanceToPoint(startPos, endPos, mPoints.GetPosition(p));
+        float const distance = Geometry::Segment::DistanceToPoint(startPos, endPos, mPoints.GetPosition(p));
         if (distance < SearchRadius)
         {
             //
@@ -942,7 +942,7 @@ std::optional<ToolApplicationLocus> Ship::InjectPressureAt(
                 auto const pointBPosition = mPoints.GetPosition(pointBIndex);
                 auto const pointCPosition = mPoints.GetPosition(pointCIndex);
 
-                if (IsPointInTriangle(
+                if (Geometry::IsPointInTriangle(
                     targetPos,
                     pointAPosition,
                     pointBPosition,

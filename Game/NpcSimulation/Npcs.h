@@ -53,7 +53,7 @@ private:
 
 #pragma pack(push)
 
-	struct LimbVector
+	struct LimbVector final
 	{
 		float RightLeg;
 		float LeftLeg;
@@ -1149,9 +1149,9 @@ private:
 		vec2f const & globalWindForce,
 		GameParameters const & gameParameters);
 
-	void CalculateNpcParticleSpringForces(StateType const & npc);
+	inline void CalculateNpcParticleSpringForces(StateType const & npc);
 
-	vec2f CalculateNpcParticleDefinitiveForces(
+	inline vec2f CalculateNpcParticleDefinitiveForces(
 		StateType const & npc,
 		int npcParticleOrdinal,
 		GameParameters const & gameParameters) const;
@@ -1695,7 +1695,7 @@ private:
 		return std::min(
 			humanState.CurrentBehaviorState.Constrained_Walking.CurrentWalkMagnitude // Note that this is the only one that might be zero
 			* mCurrentHumanNpcWalkingSpeedAdjustment
-			* (1.0f + SmoothStep(0.0f, 1.0f, humanState.ResultantPanicLevel) * 3.0f),
+			* (1.0f + std::min(humanState.ResultantPanicLevel, 1.0f) * 3.0f),
 			GameParameters::MaxHumanNpcTotalWalkingSpeedAdjustment); // Absolute cap
 	}
 

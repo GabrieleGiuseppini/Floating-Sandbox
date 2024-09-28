@@ -223,82 +223,32 @@ public:
     // NPCs
     //
 
-    void UploadNpcStaticAttributesStart(size_t count);
-
-    inline void UploadNpcStaticAttributes(vec4f const & highlightColor)
-    {
-        //
-        // Append vertices - two triangles
-        //
-
-        // Top-left
-        mNpcStaticAttributeVertexBuffer.emplace_back(
-            highlightColor);
-
-        // Top-Right
-        mNpcStaticAttributeVertexBuffer.emplace_back(
-            highlightColor);
-
-        // Bottom-left
-        mNpcStaticAttributeVertexBuffer.emplace_back(
-            highlightColor);
-
-        // Top-Right
-        mNpcStaticAttributeVertexBuffer.emplace_back(
-            highlightColor);
-
-        // Bottom-left
-        mNpcStaticAttributeVertexBuffer.emplace_back(
-            highlightColor);
-
-        // Bottom-right
-        mNpcStaticAttributeVertexBuffer.emplace_back(
-            highlightColor);
-    }
-
-    void UploadNpcStaticAttributesEnd();
-
     void UploadNpcTextureQuadsStart(size_t maxQuadCount);
 
-    inline void UploadNpcTextureQuad(
-        PlaneId planeId,
-        vec2f topLeftPosition,
-        vec2f topRightPosition,
-        vec2f bottomLeftPosition,
-        vec2f bottomRightPosition,
-        TextureCoordinatesQuad const & textureCoords,
-        rgbaColor const & overlayColor)
+    Quad [[nodiscard]] & UploadNpcTextureQuadPosition()
     {
-        float const fPlaneId = static_cast<float>(planeId);
-        vec4f const overlayColorf = overlayColor.toVec4f();
+        return mNpcTextureQuadQuadBuffer.emplace_back_ghost();
+    }
 
-        // TopLeft
-        mNpcTextureQuadVertexBuffer.emplace_back(
-            topLeftPosition,
-            vec2f(textureCoords.LeftX, textureCoords.TopY),
-            fPlaneId,
-            overlayColorf);
+#pragma pack(push)
 
-        // BottomLeft
-        mNpcTextureQuadVertexBuffer.emplace_back(
-            bottomLeftPosition,
-            vec2f(textureCoords.LeftX, textureCoords.BottomY),
-            fPlaneId,
-            overlayColorf);
+    struct NpcTextureQuadStaticAttribs
+    {
+        float PlaneId;
+        vec3f OverlayColor;
+    };
 
-        // TopRight
-        mNpcTextureQuadVertexBuffer.emplace_back(
-            topRightPosition,
-            vec2f(textureCoords.RightX, textureCoords.TopY),
-            fPlaneId,
-            overlayColorf);
+#pragma pack(pop)
 
-        // BottomRight
-        mNpcTextureQuadVertexBuffer.emplace_back(
-            bottomRightPosition,
-            vec2f(textureCoords.RightX, textureCoords.BottomY),
-            fPlaneId,
-            overlayColorf);
+    void UploadNpcTextureQuadAttributes(
+        TextureCoordinatesQuad const & textureCoords,
+        NpcTextureQuadStaticAttribs const & staticAttributes)
+    {
+        auto * buf = &(mNpcTextureQuadAttributesVertexBuffer.emplace_back_ghost(4));
+        buf[0] = { staticAttributes, vec2f(textureCoords.LeftX, textureCoords.TopY) };
+        buf[1] = { staticAttributes, vec2f(textureCoords.LeftX, textureCoords.BottomY) };
+        buf[2] = { staticAttributes, vec2f(textureCoords.RightX, textureCoords.TopY) };
+        buf[3] = { staticAttributes, vec2f(textureCoords.RightX, textureCoords.BottomY) };
     }
 
     void UploadNpcTextureQuadsEnd();
@@ -1504,31 +1454,16 @@ private:
         int pointIndex3;
     };
 
-    struct NpcStaticAttributeVertex
+    struct NpcTextureQuadAttributesVertex
     {
-        vec4f highlightColor;
+        NpcTextureQuadStaticAttribs staticAttribs;
+        vec2f textureCoordinates;
 
-        NpcStaticAttributeVertex(vec4f _highlightColor)
-            : highlightColor(_highlightColor)
-        {}
-    };
-
-    struct NpcTextureQuadVertex
-    {
-        vec2f vertexPosition;
-        vec2f textureCoords;
-        float planeId;
-        vec4f overlayColor;
-
-        NpcTextureQuadVertex(
-            vec2f const & _vertexPosition,
-            vec2f _textureCoords,
-            float _planeId,
-            vec4f _overlayColor)
-            : vertexPosition(_vertexPosition)
-            , textureCoords(_textureCoords)
-            , planeId(_planeId)
-            , overlayColor(_overlayColor)
+        NpcTextureQuadAttributesVertex(
+            NpcTextureQuadStaticAttribs const & _staticAttribs,
+            vec2f const & _textureCoordinates)
+            : staticAttribs(_staticAttribs)
+            , textureCoordinates(_textureCoordinates)
         {}
     };
 
@@ -1769,14 +1704,13 @@ private:
     GameOpenGLVBO mFrontierEdgeElementVBO;
     size_t mFrontierEdgeElementVBOAllocatedElementSize;
 
-    BoundedVector<NpcStaticAttributeVertex> mNpcStaticAttributeVertexBuffer;
-    bool mIsNpcStaticAttributeVertexBufferDirty;
-    GameOpenGLVBO mNpcStaticAttributeVBO;
-    size_t mNpcStaticAttributeVBOAllocatedVertexSize;
+    BoundedVector<Quad> mNpcTextureQuadQuadBuffer; // 4 vertices
+    GameOpenGLVBO mNpcTextureQuadQuadVBO;
+    size_t mNpcTextureQuadQuadVBOAllocatedVertexSize;
 
-    BoundedVector<NpcTextureQuadVertex> mNpcTextureQuadVertexBuffer;
-    GameOpenGLVBO mNpcTextureQuadVBO;
-    size_t mNpcTextureQuadVBOAllocatedVertexSize;
+    BoundedVector<NpcTextureQuadAttributesVertex> mNpcTextureQuadAttributesVertexBuffer;
+    GameOpenGLVBO mNpcTextureQuadAttributesVertexVBO;
+    size_t mNpcTextureQuadAttributesVertexVBOAllocatedVertexSize;
 
     BoundedVector<ElectricSparkVertex> mElectricSparkVertexBuffer;
     GameOpenGLVBO mElectricSparkVBO;

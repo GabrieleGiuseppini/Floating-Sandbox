@@ -357,7 +357,7 @@ void PencilTool<TLayer, IsEraser>::DoEdit(ShipSpaceCoordinates const & mouseCoor
     ShipSpaceCoordinates const endPoint = actualMouseCoordinates;
 
     // Generate line
-    GenerateIntegralLinePath<IntegralLineType::Minimal>(
+    Geometry::GenerateIntegralLinePath<Geometry::IntegralLineType::Minimal>(
         startPoint,
         endPoint,
         [&](ShipSpaceCoordinates const & pos)

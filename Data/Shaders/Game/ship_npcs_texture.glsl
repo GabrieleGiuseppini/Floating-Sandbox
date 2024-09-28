@@ -4,25 +4,25 @@
 #define out varying
 
 // Inputs
-in vec4 inNpcTextureAttributeGroup1; // Position, TextureCoords
-in vec3 inNpcTextureAttributeGroup2; // PlaneId
-in vec4 inNpcTextureAttributeGroup3; // OverlayColor
+in vec2 inNpcTextureQuadAttributeGroup1; // Position
+in vec4 inNpcTextureQuadAttributeGroup2; // PlaneId, OverlayColor
+in vec2 inNpcTextureQuadAttributeGroup3; // VertexSpacePosition
 
 // Outputs
 out float vertexWorldY;
 out vec2 textureCoords;
-out vec4 vertexOverlayColor;
+out vec3 vertexOverlayColor;
 
 // Params
 uniform mat4 paramOrthoMatrix;
 
 void main()
 {
-    vertexWorldY = inNpcTextureAttributeGroup1.y;
-    textureCoords = inNpcTextureAttributeGroup1.zw;
-    vertexOverlayColor = inNpcTextureAttributeGroup3;
+    vertexWorldY = inNpcTextureQuadAttributeGroup1.y;
+    textureCoords = inNpcTextureQuadAttributeGroup3;
+    vertexOverlayColor = inNpcTextureQuadAttributeGroup2.yzw;
 
-    gl_Position = paramOrthoMatrix * vec4(inNpcTextureAttributeGroup1.xy, inNpcTextureAttributeGroup2.x, 1.0);
+    gl_Position = paramOrthoMatrix * vec4(inNpcTextureQuadAttributeGroup1.xy, inNpcTextureQuadAttributeGroup2.x, 1.0);
 }
 
 ###FRAGMENT-120
@@ -35,7 +35,7 @@ void main()
 // Inputs from previous shader
 in float vertexWorldY;
 in vec2 textureCoords;
-in vec4 vertexOverlayColor;
+in vec3 vertexOverlayColor;
 
 // The texture
 uniform sampler2D paramNpcAtlasTexture;
@@ -71,7 +71,7 @@ void main()
     c.rgb = mix(
         c.rgb,
         ovCol,
-        vertexOverlayColor.a * c.a);
+        step(0.0001, vertexOverlayColor.r + vertexOverlayColor.g + vertexOverlayColor.b) * c.a);
 
     // Calculate lamp tool intensity
     float lampToolIntensity = CalculateLampToolIntensity(gl_FragCoord.xy);

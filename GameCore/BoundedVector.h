@@ -25,14 +25,14 @@ class BoundedVector
 public:
 
     BoundedVector()
-        : mBuffer(nullptr, &std::free)
+        : mBuffer()
         , mAllocatedSize(0u)
         , mSize(0u)
     {
     }
 
     BoundedVector(size_t maxSize)
-        : mBuffer(static_cast<TElement *>(std::malloc(sizeof(TElement) * maxSize)), &std::free)
+        : mBuffer(make_unique_buffer_aligned_to_vectorization_word<TElement>(maxSize))
         , mAllocatedSize(maxSize)
         , mSize(0u)
     {
@@ -127,6 +127,20 @@ public:
         }
     }
 
+    inline TElement [[nodiscard]] & emplace_back_ghost()
+    {
+        assert(mSize < mAllocatedSize);
+        return mBuffer[mSize++];
+    }
+
+    inline TElement [[nodiscard]] & emplace_back_ghost(size_t elementCount)
+    {
+        assert(mSize + elementCount <= mAllocatedSize);
+        auto & res = mBuffer[mSize];
+        mSize += elementCount;
+        return res;
+    }
+
     template<typename... TArgs>
     inline TElement & emplace_back(TArgs &&... args)
     {
@@ -158,21 +172,21 @@ private:
     {
         if (maxSize > mAllocatedSize)
         {
-            mBuffer.reset(static_cast<TElement *>(std::malloc(sizeof(TElement) * maxSize)));
+            mBuffer = make_unique_buffer_aligned_to_vectorization_word<TElement>(maxSize);
             mAllocatedSize = maxSize;
         }
     }
 
     inline void internal_enlarge_and_copy(size_t maxSize)
     {
-        TElement * newBuffer = static_cast<TElement *>(std::malloc(sizeof(TElement) * maxSize));
-        memcpy(newBuffer, mBuffer.get(), mSize * sizeof(TElement));
-        mBuffer.reset(newBuffer);
+        auto newBuffer = make_unique_buffer_aligned_to_vectorization_word<TElement>(maxSize);
+        memcpy(newBuffer.get(), mBuffer.get(), mSize * sizeof(TElement));
+        mBuffer = std::move(newBuffer);
 
         mAllocatedSize = maxSize;
     }
 
-    std::unique_ptr<TElement[], decltype(&std::free)> mBuffer;
+    unique_aligned_buffer<TElement> mBuffer;
     size_t mAllocatedSize;
     size_t mSize;
 };

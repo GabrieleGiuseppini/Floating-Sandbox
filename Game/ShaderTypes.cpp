@@ -669,14 +669,12 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::ShipPointAuxiliaryData;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointFrontierColor"))
         return VertexAttributeType::ShipPointFrontierColor;
-    else if (Utils::CaseInsensitiveEquals(str, "NpcTextureStaticAttributeGroup1"))
-        return VertexAttributeType::NpcTextureStaticAttributeGroup1;
-    else if (Utils::CaseInsensitiveEquals(str, "NpcTextureAttributeGroup1"))
-        return VertexAttributeType::NpcTextureAttributeGroup1;
-    else if (Utils::CaseInsensitiveEquals(str, "NpcTextureAttributeGroup2"))
-        return VertexAttributeType::NpcTextureAttributeGroup2;
-    else if (Utils::CaseInsensitiveEquals(str, "NpcTextureAttributeGroup3"))
-        return VertexAttributeType::NpcTextureAttributeGroup3;
+    else if (Utils::CaseInsensitiveEquals(str, "NpcTextureQuadAttributeGroup1"))
+        return VertexAttributeType::NpcTextureQuadAttributeGroup1;
+    else if (Utils::CaseInsensitiveEquals(str, "NpcTextureQuadAttributeGroup2"))
+        return VertexAttributeType::NpcTextureQuadAttributeGroup2;
+    else if (Utils::CaseInsensitiveEquals(str, "NpcTextureQuadAttributeGroup3"))
+        return VertexAttributeType::NpcTextureQuadAttributeGroup3;
     else if (Utils::CaseInsensitiveEquals(str, "ElectricSpark1"))
         return VertexAttributeType::ElectricSpark1;
     else if (Utils::CaseInsensitiveEquals(str, "Explosion1"))

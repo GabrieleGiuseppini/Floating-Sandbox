@@ -839,7 +839,6 @@ inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, _Int
     return os;
 }
 
-
 using IntegralRect = _IntegralRect<struct IntegralTag>;
 using ImageRect = _IntegralRect<struct ImageTag>;
 using ShipSpaceRect = _IntegralRect<struct ShipSpaceTag>;
@@ -871,6 +870,29 @@ struct _IntegralCoordsRatio
 };
 
 using ShipSpaceToWorldSpaceCoordsRatio = _IntegralCoordsRatio<struct ShipSpaceTag>;
+
+/*
+ * Generic quad (not necessarily square), intrinsics-friendly
+ */
+
+#pragma pack(push, 1)
+
+union Quad final
+{
+    struct
+    {
+        vec2f TopLeft;
+        vec2f BottomLeft;
+        vec2f TopRight;
+        vec2f BottomRight;
+    } V;
+
+    float fptr[8];
+
+    Quad & operator=(Quad const & other) = default;
+};
+
+#pragma pack(pop)
 
 /*
  * Float rectangle.

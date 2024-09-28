@@ -39,11 +39,7 @@ public:
             -magnitude * std::sinf(angle)); // Angle is CW and our positive points up
     }
 
-    inline constexpr vec2f()
-        : x(0.0f)
-        , y(0.0f)
-    {
-    }
+    vec2f() = default; // To allow vectors in unions
 
     inline constexpr vec2f(
         float _x,

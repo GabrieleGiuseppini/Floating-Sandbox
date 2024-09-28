@@ -1612,8 +1612,11 @@ void GameController::SetAutoFocusTarget(std::optional<AutoFocusTargetKindType> c
     // Switch
     InternalSwitchAutoFocusTarget(autoFocusTarget);
 
-    // Reset user offsets
-    mViewManager.ResetAutoFocusAlterations();
+    // Reset user offsets if we're switching to an actual auto-focus
+    if (autoFocusTarget.has_value())
+    {
+        mViewManager.ResetAutoFocusAlterations();
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
