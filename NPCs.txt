@@ -192,988 +192,7 @@ Arch
 
 ========================================================								
 
-= Rendering:
-	! Atlas textures are simply flat frames and all, NpcDatabase groups them together
-		! But we use naming conventions to not go crazy ourselves
-	- NPCs will have two sets of vertex attributes:
-		- Static ones: contain static properties (colors - incl. highlight, texture coords)
-			- Only reloaded at e.g. NPC insertion/removal, or when face direction of at least one NPC changes, or when highlight of at least one NPC changes
-				- Face direction changes done via single helper, which also marks "static render attributes dirty" (a single Npcs-wide boolean)
-			- TODO: face directions may change too often, and we don't want to re-upload all the time
-				- Could load surgically (when one change only) or whole (when > 1 change)?
-		- Dynamics ones: contain things that change at each frame (world vertices, )
-	+ Use indices for quad vertices
-		+ Good use case to experiment with the "quad single index buffer" feature
-	+ ShipRenderContext:
-		+ TextureCoords upload
-		+ Mipmapped!
-			+ Rearc:				
-				+ Comment to BuildRegular: to reason for coords
-				+ AtlasBuilder: AtlasOptions to make each tile power-of-two
-					+ Remove redundant builder methods
-					+ Implement
-						+ TextureInfo, TexturePositions: all in-atlas
-						+ BuildAtlasSpecification()
-						+ BuildAtlas: do offseting here to fill gap between in-atlas position and actual frame position
-					+ AtlasMetadata.IsSuitableForMipMapping() check: atlas has MipMapped option
-					+ UnitTests
-					+ Add UnitTests with Load
-						+ InAtlasSizeMatchingFrameSize
-						+ InAtlasSizeLargerThanFrameSize
-				+ Cleanup all "nuke", including AtlasBuilder::BuildMipMappableAtlas
-				+ GameOpenGL: "UploadMipmappedPowerOfTwoTexture" -> "...Atlas"
-					+ And assert, at each call, that atlas was created with MipMapped option via IsSuitableForMipMapping()
-				+ Look at all usages now
-				+ Tests:
-					+ Clouds
-					+ Fish
-					+ GenericMipMapped (bombs w/fuse, cannon, smoke, probe, pin)
-					+ ShipBuilder's CenterOfMass'es
-			+ Baker tool:
-				+ add -mipmap option
-				+ add -regular option
-				+ Rebuild NPC atlas
-					+ Test
-				+ Rebuild Explosion atlas
-					+ Test
-			+ Do MipMapped NPCs
-
-	+ Shader ("ship_npcs_texture"):
-		+ We keep existing limb-based shader, just change all its vertex attributes/parameters/etc. to become "texture"
-		+ Sampler
-		+ Discard when transparent
-			+ But only after testing with two connected components - & inverse order of drawing; should bug out when near NPC is drawn before far NPC and they are on top of each other
-				+ Test requires NPC following their triangle with move - Move/Rotate work item below
-		+ Highlight: Step(c.alpha, 0.0) as coeff to bright red
-		x Apply ocean depth darkening (iff in water?)
-		x Apply ocean shadows (iff in water)
-
-	+ Misc improvements & technical debt:
-		+ When drawing human on side, legs first and arms then (as arms are longer)
-		+ Furniture: anti-alias in image
-		+ TextureCoordinatesQuad: shall we have float for RightX, LeftX, TopY, BottomY?
-		+ Human frames: they are out of aspect
-			+ Change human body ratios to match standard frame pixel dimensions (e.g. head square, etc.)
-		+ Redo body proportions: some become dynamic, depending on frame dimensions:
-			! Note: all the below are fractions
-			+ TorsoWidthFraction (Height=Length fixed)
-			+ HeadHeightFraction (Width=Width fixed) (to allow for hat)
-				+ But head top is still based on HeadHeightFraction constant (i.e. hat sticks on top)
-			+ Arm, LegWidthFraction (Height=Length fixed)
-			+ Expose as:
-				+ GetHumanGeometry(.) -> NpcDatabase::HumanGeometryType: TorsoHeightToWidthFactor, HeadWidthToHeightFactor, arm/leg...
-				+ GetFurnitureGeometry(.) -> NpcDatabase::FurnitureGeometryType: width, height
-					+ Replaces individual H, W getters
-		+ Fix junctions
-		+ Add body width randomization sensitivity
-		! NPC atlas rearc: frame rules:
-			! For artist:
-				- Human:
-					- Head: 
-						- Width: 16
-						- Height: by default 16; if with e.g. tall hat, > 16
-						- Touching at least bottom border
-					- Torso:
-						- Width: 32
-						- Height: 32
-						- Touching both bottom and top borders
-					- Arms:
-						- Width: based on the width of the character's limb when viewed from F/B; suggested <= 8
-						- Height: 32
-						- Touching at least top border (but for normal human proportions, should also touch bottom border)
-					- Legs:
-						- Width: based on the width of the character's limb when viewed from F/B; suggested <= 8
-						- Height: 32
-						- Touching both bottom and top borders
-					- F/B/S for a limb have same dimensions
-				- Furniture:
-					- Width=32, Height=32
-						- Leaving 1 pixel on each border that the texture is "a lot" against
-			! For me:
-				- Human:
-					- Head: 
-						- Width: 16
-							- Not necessarily touching left and right borders, depends on character
-						- Height: by default 16; if with e.g. tall hat, > 16
-							- Touching at least bottom border
-					- Torso:
-						- Width: 32
-							- F/B: ideally touching left and/or right borders (so to not waste room)
-							- S: not necessarily touching left and right borders, depends on character
-						- Height: 32
-							- Touching both bottom and top borders
-					- Arms:
-						- Width: based on the width of the character's limb when viewed from F/B; suggested <= 8
-							- F/B: ideally touching left and/or right borders (so to not waste room)
-							- S: not necessarily touching left and right borders, depends on character
-						- Height: 32
-							- Touching at least top border (but for normal human proportions, should also touch bottom border)
-					- Legs:
-						- Width: based on the width of the character's limb when viewed from F/B; suggested <= 8
-							- F/B: ideally touching left and/or right borders (so to not waste room)
-							- S: not necessarily touching left and right borders, depends on character
-						- Height: 32
-							- Touching both bottom and top borders
-					- F/B/S for a limb have same dimensions
-				- Furniture:
-					- Width=32, Height=32
-						- Leaving 1 pixel on each border that the texture is "a lot" against
-		! Frame specs:
-			! Furniture: leave 1px border around
-				! So if e.g. you're doing a 32x32 frame, then the drawable area is the central 30x30
-		+ MainFrame: 
-			+ Pull up NPC tools' menu items (to give V room to its choices)	
-			+ NPC stats handling, but only for Move/Remove menu items
-				+ ResetUIState()
-					+ Also does NPC menus
-			+ Tools & view:
-				+ Do that Bind thing
-				+ ShipView: fully managed by MainFrame based on tool:
-					+ void OnToolSelectedWithSwitchToInteriorView()
-					+ void OnToolSelectedWithSwitchToExteriorView()
-		+ GameController: focus to position at BeginPlaceNpcx2
-			+ Upon BeginPlaceXXX: GameController tells ViewManager (with position and height as AABB, i.e. GameParams::HeightMean * GemParams::SizeAdjustment)
-				+ ViewManager: 
-					+ Nuke GameController::FocusOnShip()
-					+ ViewManager::OnNewShip() does whole "if (autofocus) ... else ..." from old FocusOnShip
-					+ ViewManager::FocusOn() (replaces FocusOnShip):
-						+ If AutoFocus on: turn off & publish event
-						+ InternalFocus
-				+ BeginPlaceXXX:
-					+ OnBeginPlaceNewNpc(npcId)
-						+ World::GetNpcAABB(NpcId) -> AABB
-							+ Npcs::GetAABB(NpcId)
-								+ ViewManager::OnFocus takes dimension multiplier
-									+ And uses AABB::AdjustSize
-						+ ViewManager::FocusOn(aabb)
-				+ MainFrame registers and changes menu flag
-			+ ViewManager: deal with zero W and/or H
-				+ GameController does not does AdjustSize, but passes two floats to ViewManager
-				+ ViewManager: put a lower cap on sizes: 1.0 (i.e. we don't want to go smaller than 1.0), then multiplied
-			+ Do not zoom out (only lower zoom)
-				+ FocusOn: lowerZoomThreholdMult, higher...
-					+ Pass 0.5, 2.0 for NPCs and 1.0, 1.0 for rest
-			+ Less magnification
-			+ See if can avoid "mouse move"
-				+ Pass center to InternalFocusOn (0, 0 when not needed)
-				+ Do then math at InternalFocusOn
-			+ Test with replacing ParameterSmoother with a simple t interpolation in a 3D space (camx, camy, 1/zoom)
-				+ Test:
-					+ Clamping
-			+ InternalSetAutoFocus: before setting all, clamp each and only go with both params if none was clamped
-			+ GameController also must register for AutoFocus toggled, and does NotificationLayer accordingly
-				+ But only in this async case
-			+ Test
-				+ Various AutoFocus per-se (on, off, home@on, home@off)
-				+ Check AutoFocus menu auto-checking when switches
-				+ No-dimensions ship (Thanosized)
-				+ No-dimensions NPC (particle)
-					+ npc_database
-					+ NPC atlas
-					+ Npcs.cpp support
-			+ Merge into npcs_v1				
-
-	- Test on Dell:
-		- Max number of textures (we've added 9th!)
-		-
-	+ Port to BaryLab
-		+ Copy NPC json
-		+ Create NpcDatabase
-			+ Copy from FS but then maim it:
-				+ No TextureAtlas, just use -1.0->1.0 coords
-		+ Npcs
-		+ Adapt RenderContext
-		+ Port evt changes to FS
-			+ Npcs.h/cpp
-
-
-= Physical Interactions:
-
-	+ Make NpcDamping subject to other adjustment
-		+ Npcs class reacts to changes and calculates own mDampingCoefficient == (1.0f - gameParameters.NpcDamping)
-	+ Land
-		+ Check at end of step
-		+ If hit:
-			+ Move back and bounce perpendicular velocity
-				+ Friction and elasticity: as we do in ship, using both materials
-			+ Become free! So we avoid bouncing back and forth
-				+ Make sure we call OnMayBeRegimeChanged
-			+ Only when not BeingPlaced
-		+ Behavior: (we don't like it frozen, would be nice if it relaxed down)
-			+ @ Free_Aerial: if still for long, go to Free_KnockedOut
-				+ Out from Free_KnockedOut:
-					+ If !Free: Constrained_KnockedOut
-					+ If moving again: Free_Aerial
-				+ Free_KnockedOut animation: relax limbs (see if Constrained_KnockedOut does the same)
-		+ Tests:
-			+ Place under land
-			+ With ship under land
-	+ World border
-		+ MaintainInWorldBounds()
-			+ Called after each particle update, on the particle				
-				! We want to leave Update() in order, for eventual user interactions
-				+ Make it inline
-			+ If hit:
-				+ Move back and bounce perpendicular velocity (see actually what we do in ship)
-				+ Become free! So we avoid bouncing back and forth
-					+ Make sure we call OnMayBeRegimeChanged
-		+ Test:
-			+ With ship inertia
-			+ With NPC inertia
-			+ With ship move
-		+ Backport to BaryLab and profile
-	+ Points' water effect when particles are constrained
-		! Gist: 
-			! We use both water (which imparts buoyancy) and water velocities (which impart v onto particles proportionally to particles' waterness)
-			! We cache both at NpcParticles @ CalculatePrelimForces - which is where we calc them - and re-use them everywhere, e.g. at HumanBehaviorUpdate
-		+ Impl:
-			+ NpcParticles::QuantityOfWater (0-1)
-			+ CalculatePrelimForces:
-				+ float quantityOfWater;
-				+ If free:
-					+ Calc w/depth (capped)
-				+ Else:				
-					+ Particle waterness: calculated as W(triangle_t) based on water at triangles' points
-						+ W(triangle_t): (cap(W(1)) + cap(W(2)) + cap(W(3)) / 3.0
-					+ Water velocity:
-						+ Va += Vw - Vr
-							+ Vw = (W(P1)*Vw(P1) + .. + W(P3)*Vw(P3)) / 3.0
-								- W(P) = normalized (max 1)
-							+ Vr = mesh-relative vel - ok if from previous step
-							+ The above is delta_Vr, which is also delta_Va
-							+ Apply as a force
-				+ Store as QuantityOfWater
-				+ Use quantityOfWater for buoyancy
-		+ Behavior:
-			+ New Constrained_InWater, Constrained_Swimming_Style2:
-				+ Constrained_InWater:
-					+ From: Constrained_Aerial
-						+ Lingering here for long though
-					+ To:
-						+ Same as Constrained_Aerial
-						+ When no changes for a while (like Free_InWater->Free_Swimming): to Constrained_Swimming_Style1|2 depending on face orientation
-				+ Constrained_Swimming_Style1,2:
-					+ Copy from Free_Swimming_*, and same out transitions as Constrained_InWater
-			+ @Npcs::AnimationUpdate():
-				+ Constrained_InWater
-					+ Constrained_Aerial looks quite good - pair labels
-				+ Constrained_Swimming_Style2:
-					+ Arms alternating (narrowly) around normal to body (direction of face)
-					+ Legs alternating (narrowly) around opposite of feet velocity dir
-	+ Triangle destruction: 
-		+ Should be enough to check for current triangle being deleted at beginning of UpdateNpc(.), and if so, become free (identical for @ pri and @ non-pri)
-			+ Just like when we detect secondary, third, etc. are in a different connected component, see above
-	+ Swimming humans generate (small) bubbles
-		! Free_InWater
-		! Free_SwimimingX
-		+ Each free aquatic state has a NextBubbleEmissionSimulationTimestamp
-			+ Init'd as 0 at state enter (Reset)
-			+ At each state update at which we remain in state:
-				+ If curSimTime > state's:
-					+ Emit bubble (via homeShip->GenerateAirBubble)
-						+ Ship::GenerateAirBubble: becomes public and also takes minScale, maxScale
-							+ @ normal interactions
-							+ Points::GenerateAirBubble: store minScale, maxScale in AirBubble state
-							+ Points::UpdateEphParticles: use minScale, maxScale from AirBubble state
-						+ Call Ship::GenerateAirBubble
-					+ Calc next: gaussian
-	+ Humans on air-water interface generate small waves
-		+ Needs to produce as side-effect: swimming humans generate small waves
-		+ Needs to produce as side-effect: humans falling into water generate small (but larger) waves
-		+ Do surface displacement proportional to (signed) V velocity
-			+ Fix: placing human directly in water causes anywaterness change
-				+ Unless we initialize anyWaterness at placement time
-			+ Fix: oscillations
-				! Due to just-entered particles becoming out-of-water at next frame
-				X Possible fix 1: require V sign agreement with delta_waterness
-					+ But now it's not continuous
-				+ Possible fix 2: do like ship:
-					+ Displacement is due to just having velocity in narrow band underwater
-					+ FIX: if too quick we don't "see" the particle in the band
-						+ Possible fix 3: when depth of particle ('s y) *now* and *before* has different sign
-	+ Fire:
-		+ @Npcs::Update():
-			+ Calc LowFreqCycle (see Ship)
-			+ By Ship: By Npc (mod ID for cycle): 
-				+ By particle (via helper w/particle idx):
-					+ If constrained:
-						+ Calc particle's MeshWater and MeshWaterVelocity
-							+ NpcParticles::MeshWaterBuffer, MeshWaterVelocity
-						+ Calc particle's MeshFire:
-							+ If waterness > Wa: fireTarget=-1, fireConvergeRate=0.3
-							+ Else If any (Ship.Point.Temperature > NpcMaterial.CombustionTemperature || Ship.Point.IsBurning): fireTarget=1.0, fireConvergeRate=0.3
-							+ Else: fireTarget=-1. fireConvergeRate=0.1
-					+ Else:
-						+ fireTarget=-1, fireConvergeRate=0.3
-				+ Calc Fireness for NPC via convergence with current value
-					+ Store in new Npc state attribute, in [-1, 1] range; on fire if > 0.0
-					+ Update count of flames (using Npc's previous)
-					+ Event (for sound)
-		+ @ Eq, Walk, Rising:
-			+ if NPC is on fire: DirFlip (iff OnFirePanic < 0.7) and set Npc::OnFirePanic to 1.0
-		+ @Npcs::RenderUploadFlames():
-			+ Upload flames, one per NPC	
-				+ First: store burning NPCs in vector (Npcs::mBurningNpcs, per-ship) at combustion state update
-					+ Remove @ NpcRemoval, ShipRemoval
-				+ Second: Wind
-					+ WindField rearc:
-						+ WindField: gets all members currently in Ship::QueuedInteractionArgs
-							+ Nuke PhysicsType
-						+ Wind:
-							+ mCurrentWindField (opt)
-							+ GetWindField() -> mCurrentWindField
-							+ SetWindField(windField) -> mCurrentWindField
-							+ Wind::UpdateEnd:
-								+ mCurrentWindField.reset()
-						+ World::GetWindField()
-						+ World::ApplyRadialWindFrom (the existing method):
-							+ Calculate ForceMagnitude and give everything to Wind::SetWindField()
-							+ Do nothing on ships
-							+ Keep doing on ocean
-						+ Ship:
-							+ Nuke ApplyRadialWindFrom() and queued interaction
-							+ At ApplyWorldParticleForces:
-								+ Apply forces (code of Ship::ApplyRadialWindFrom(interaction args)) from mParentWorld::GetWindField()
-							+ Nuke mWindField and take it from mParentWorld::GetWindField()
-							+ Nuke QueuedInteractionArgs struct and type
-					+ State Update: update flame vector with wind, both components
-						+ Move CalculateIdealFlameVector, CalculateFlameWindRotationAngle(WindField, ...) to Formulae
-							+ CalculateFlameWindRotationAngle: "EvolveFlameGeometry" takes two inputs/outputs (FlameVector, FalmeWindRotationAngle) as & 
-						+ Use @ NPCs, both flame creation and update (if a separate creation exists)
-				+ Visit mBurningNpcs vector here and:
-					+ Position:
-						+ Human: head
-						+ Else: center of all particles
-					+ Vector and WindRotation: from CombustionState
-					+ Size: depends on Npc's fireness
-		+ @Ship::RenderUpload:
-			+ Include own Npcs' flames via World::GetNpcs() -> const::GetFlameCount(ShipId)
-			+ Then call World::GetNpcs() -> UploadFlames(ShipId, ShipRenderContext)
-		+ ShipRenderContext: new UploadFlameNpc (v Ship) w/ different size and adj
-		+ Combustion adjustment: must smother if NPC particle is free and under real waterness
-		+ Use CombustionAdjustment
-		+ Rendering: NPC flames need to go to layer above gadgets
-		+ Flame size depends on current (adjusted) dimensions
-		+ Test:
-			+ Burning NPC removal
-			+ Depth order
-			+ Fire panic tapering down speed
-		+ Cleanup auto-smothering of fire (and make slightly slower)
-	+ Smash tool:
-		+ GameController->World->NPCs
-		+ For each human with at least one particle in range: 
-			+ Turn on back or front (rnd)
-			+ Transition to ConstrainedOrFree_Smashed
-		+ BehaviorUpdate: @ConstrainedOrFree_Smashed:
-			+ Unconditional progress; when at target, go to either Constrained_KO or Free_KO
-		+ Animation:
-			+ Simple fixed-angle
-		+ Fix human state machine: Free_KO -> Free_Aerial *OR Free_InWater*
-	+ Follow NPC:
-		! Gist:
-			! Npcs has a concept of "Selected NPC"
-				! Holds opt<NpcId>
-				! When NPC is removed, selection is reset to nullopt
-				! OnNpcSelectionChanged(opt<>) event, fired by Npcs class at all selection changes
-			! Menu: 
-				! FocusOnNothing, FocusOnShip, FocusOnSelectedNpc ("Auto-" for all) (Radio type; all mutex)
-					- FocusOnSelectedNpc: enabled iff NPCs exist
-					- May also be enabled if no NPC is selected; toggling this ON causes automatic selection of "first" NPC
-				! SelectNextNPC (@ Tools, but at bottom, among simple action menus like TriggerTsunami)
-					- Enabled iff NPCs exist
-				! MainFrame menu reconciliation:
-					- Event announcing change of focus target (which carries focus info), always emitted: OnAutoFocusTargetKindChanged
-						- Does Mutex between FocusOnNothing, FocusOnShip, FocusOnSelectedNpc, but it could be already done
-					- Event announcing presence of at least one NPC (this is the OnNpcCountsUpdated which already exists), always emitted
-			! "FocusOnNpc" tool: in this version does Select+FocusOnNpc
-				! In the future we'll also have "SelectNpc" tool which does Select only
-
-		! Spec of state machine/interactions:
-			- User hits HOME (focus on ship): (B*)
-				- If focusing on ship or selected NPC: reset user offsets
-				- Else:
-					- Focus on ship (one-off)
-				! In short: if there's auto-focus on <X>, we re-center; if not, we focus one-off on ship
-			- User enables FocusOnShip: (C*)
-				- Target change to <Ship>				
-					- Emit OnAutoFocusTargetChanged
-					- Turn on notification @ NotificationLayer
-				- Reset user offset
-				- UI:
-					- Menu mutex comes for free, but also via OnAutoFocusTargetChanged
-			- User enables FocusOnSelectedNpc: (C*)
-				- Assuming:
-					- At least one NPC exists (or else menu would have been disabled)
-				- If no NPC is selected: 
-					- Select first
-					- Emit OnNpcSelectionChanged
-				- Target change to <SelectedNPC>
-					- Emit OnAutoFocusTargetChanged
-					- Turn on notification @ NotificationLayer
-				- Reset user offsets
-				- UI:
-					- Menu mutex comes for free, but also via OnAutoFocusTargetChanged
-			- User enables FocusOnNothing: (C*)
-				- Target change to <>
-					- Emit OnAutoFocusTargetChanged
-					- Turn off notification @ NotificationLayer
-				- UI:
-					- Menu mutex comes for free, but also via OnAutoFocusTargetChanged
-			- User clicks "SelectNextNPC": (E*)
-				- Assuming:
-					- At least one NPC exists (or else menu would have been disabled)
-				- Select next NPC
-					- GameController::Update() will pick this up if focusing on CurrentlySelectedNpc, and start focusing on it
-				- If focusing on NPC:
-					- Reset user offsets
-				- Emit OnNpcSelectionChanged
-			- User selects another NPC:
-				- Select NPC
-					- GameController::Update() will pick this up if focusing on CurrentlySelectedNpc, and start focusing on it
-				- If focusing on NPC:
-					- Reset user offsets
-				- Emit OnNpcSelectionChanged
-			- User uses tool to select+follow specific NPC: (F*)
-				- Select NpcId
-					- Emit OnNpcSelectionChanged
-				- If current target != SelectedNPC:
-					- Target change to <SelectedNPC> 
-					- Emit OnAutoFocusTargetChanged
-					- Turn on notification @ NotificationLayer
-				- Reset user offsets
-				- UI: 
-					- Menu mutex driven by OnAutoFocusTargetChanged
-			- User uses tool to select+follow nothing: (F*)
-				- Select nullopt NpcId
-					- Emit OnNpcSelectionChanged
-				- If current target == SelectedNpc:
-					- Target change to <>
-					- Emit OnAutoFocusTargetChanged
-					- Turn off notification @ NotificationLayer
-				- UI: 
-					- Menu mutex driven by OnAutoFocusTargetChanged
-			- The currently-selected NPC is removed: (A*)
-				- Assumption the NPC removed is the selected one
-				- Select nullopt NpcId (@ Npcs)
-					- Emit OnNpcSelectionChanged
-				- If current target == SelectedNpc (A*)
-					- Target change to <>
-					- Emit OnAutoFocusTargetChanged
-					- Turn off notification @ NotificationLayer
-				- UI: 
-					- Menu mutex driven by OnAutoFocusTargetChanged
-					- "Normal" NPC-quantity-driven enabling/disabling of other menu items applies here as well, simply because of NPC removal
-			- A new ship is loaded/Reset: (D*)
-				- If focusing on SelectedNPC:
-					- Target change to <>
-					- Emit OnAutoFocusTargetChanged
-					- Turn off notification @ NotificationLayer
-					- If AutoFocusOnShipLoad is ON:
-						- Focus on ship (one-off)
-				- Else if focusing on Ship:
-					- If AutoFocusOnShipLoad is ON:
-						- Reset user offsets
-				- Else if focusing on nothing:
-					- If AutoFocusOnShipLoad is ON:
-						- Focus on ship (one-off)
-				- UI: 
-					- Menu mutex driven by OnAutoFocusTargetChanged
-			- User begins placing new NPC: (G*)
-				- NOTE: here we assume we do NOT select this NPC by default
-				- If current target == Nothing:
-					- Focus on this NPC's AABB (one-off)
-				- TODOOLD
-				- If current target != Nothing:
-					- Target change to <>
-					- Emit OnAutoFocusTargetChanged
-					- Turn off notification @ NotificationLayer 
-				- Focus on this NPC's AABB (one-off)
-			- We transition to having at least one NPC
-				- Assuming: FocusOnSelectedNPC not selected (it's disabled)
-				- UI: 
-					- Enable FocusOnSelectedNpc
-					- Enable FocusOnNpc tool (& RemoveNpc)
-					- Enable SelectNextNpc
-					- "Normal" NPC-quantity-driven enabling/disabling of other menu items applies here as well, simply because of NPC addition
-			- We transition to having zero NPCs
-				- If we were following SelectedNPC, we've gone through removal of currently-selected NPC
-				- UI: 
-					- Disable FocusOnSelectedNpc
-					- Disable FocusOnNpc tool (& RemoveNpc)
-					- Disable SelectNextNpc
-					- "Normal" NPC-quantity-driven enabling/disabling of other menu items applies here as well, simply because of NPC removal
-		+ Impl:
-			+ Npcs gets the concept of "CurrentSelectedNpc" (which was of BaryLab)
-				+ opt<NpcId> member
-				+ API from outside via Select...(opt) / Get...() (the BaryLab ones, make them official)
-				+ Reset when NpcId is no more - @ CommonRemoval
-				+ All changes emit OnNpcSelectionChanged (@ NPC event handlers)
-					+ @ Setter
-			+ GameType: AutoFocusTargetKindType: Ship, SelectedNpc
-			+ Event handler: OnAutoFocusTargetKindChanged(std::opt<AutoFocusTargetKindType>) (@ Control event handlers)
-			+ ViewManager:
-				! Becomes fully slave, just high-level operations on ViewModel
-				+ opt<AutoFocusTargetKindType> mCurrentAutoFocusTarget @ AutoFocusSessionData
-					! Here so it's consistent, and can use target type to fine tune focus
-					+ Getter and Setter
-				+ Update(...) splits into:
-					+ UpdateAutoFocus(opt<FocusAABB>)
-						+ Invoked by GC iff auto-focus on
-							+ Can assert
-					+ Update()
-						+ Invoked by GC always
-				+ ResetAutoFocusAlterations() // Reset user offsets
-				+ Nuke notification layer member
-				+ Default auto-focus target in ViewManager: Ship
-				+ Nuke other public methods
-			+ GameController:
-				+ Remove mCurrentAutoFocusTarget and struct which we've just added
-				+ Public View methods:
-					+ ResetView() (aka HOME: one-off focus on ship) 
-						+ See above (B*)
-							+ Move all logic out of ViewManager and into this GameController method
-								+ Use ViewManager::ResetAutoFocusAlterations()
-					+ SetAutoFocusTarget(opt<target type>)
-						+ See above (C*) (part of F*)
-				+ Private View helpers:
-					+ SwitchAutoFocusTarget(.) helper for:
-						+ Target change to *
-						+ Emit OnAutoFocusTargetChanged
-						+ Turn off/on notification @ NotificationLayer
-					+ UpdateAutoFocus()
-				+ Update() calls UpdateAutoFocus()
-				+ UpdateAutoFocus():
-					- Check ViewManager::CurrentAutoFocusTarget:
-						+ If Ship:
-							+ Get all Ships' AABBs (or nullopt)
-							+ ViewManager->Update(.that.)
-						+ If SelectedNpc:
-							+ Check with Npcs if there is still a selected NPC 
-								+ Nuke HasNpc as it's not needed anymore
-							+ If so:
-								+ Assert NPC exists
-								+ ViewManager->Update(NPC's AABB)
-									
-							+ Else: 
-								+ (A*):
-									+ Target change to <>
-									+ Emit OnAutoFocusTargetKindChanged
-									+ Turn off notification @ NotificationLayer
-						+ If none:
-							+ Nop
-				+ ShipLoad/Reset
-					+ See above (D*)
-				+ SelectNpc(opt<NpcId>)
-					+ See above (part of F*)
-				+ SelectNextNpc()
-					+ See above (E*)
-				+ BeginPlaceNewNpc
-					+ See above (G*)
-			+ Npcs:
-				+ SelectFirstNpc
-				+ SelectNextNpc
-				+ Highlight rearc:
-					+ Move Highlight out of NPC and into opt<NpcId>
-						+ Member: next to Selected
-					+ Public API:
-						+ HighlightNpc(opt<NpcId>)
-			+ Tool: "FollowNpcTool"
-				+ Icon: like Move, Remove but with auto-focus frame - autofocus_on_npc_icon.png
-				+ Cursor: autofocus_on_npc_cursor.png
-				+ RemoveNpc tool becomes base+derivates, used for Remove & Follow (and in the future: SelectNpc)
-				+ Change (for both Remove & Follow, i.e. base): make it so we don't have to store candidate, but probe right away at each move+down
-					! So that we don't run the risk of referencing a dead NPC
-					+ Just react to move+down (& up, but just for cursor)
-				+ Follow: calls SelectNpc() + SetAutoFocus(SelectedNpc)
-
-			+ MainFrame:
-				+ Do menu entries:
-					+ 3 for continuous auto-focus
-						+ All members
-						+ Nicely separated/reorder
-					+ FollowNPC tool
-						+ Member, like Move/RemoveNpc
-					+ SelectNextNPC - w/key shortcut (can do anything with TAB? If not, '>')
-						+ Member
-				+ Handler for focus changes calls ReconciliateUIWithAutoFocusTarget()
-					+ Ensure right of 3 auto-focus menu items is checked
-					+ Test if only checking the "true" one is enough
-				+ Handler for NPC presence (OnNpcCountsUpdated) calls ReconciliateUIWithNpcPresence(bool)
-					+ Do current code (Move/RemoveNpc tools only?)
-					+ FollowNPC tool
-					+ SelectNextNPC
-			+ UI preferences
-
-			+ Shader/Highlight
-				+ Do highlight with Overlay blend
-					(Target > 0.5) * (1 – (1-2*(Target-0.5)) * (1-Blend)) +
-					(Target <= 0.5) * ((2*Target) * Blend)
-				+ Do selection via ad-hoc "RectSelection" primitive @ NotificationRenderContext
-					+ Geometry: enclosing rect, calc'd by Npcs::RenderNpc
-						+ Humans
-						+ Furniture
-							+ Quad
-							+ Bunch-of-Particles
-					+ NotificationRenderContext: new one-time (non-sticky) primitive, exactly like HeatBlaster
-						+ Drawn on top of everything
-						+ Doesn't get smaller than fraction of NDC
-							+ Verify world offset foo is the same # of pixels V and H
-						+ Border W: must be fixed percentage of world width (not fixed pixel width)
-					+ Shader ("rect_selection")
-						+ Anti-aliasing 1-px border
-							+ Needs how wide - in vertex space - a pixel is, for both x and y (separately)
-						+ Border
-							+ Needs above, and uses own # of pixels
-							+ FIX: border thickness gets smaller with the size of the NPC
-								+ Should it actually be a percentage of one of the dimensions, rather than fixed?
-								+ Try with fixed # of pixels
-						+ Time pulse (in wallclock time)
-							+ Requires NPCs to remember selection wallclock timestamp
-							+ Try wallclock
-			+ Cleanups:
-				+ IGameEventHandlers::OnContinuousAutoFocusToggled() may go
-				+ IGameController::Get/SetDoContinuousAutoFocus
-		+ With a falling NPC, focus is near bottom of screen
-			X Use different speed iff focusing on NPC?
-				+ Test
-				+ Might have been a bad idea - the whole zooming/panning is different speed now
-			+ At UpdateAutoFocus: if NDC offset "large": bump up speed
-				+ ParamSmoother::Update() takes multiplier and applies it only there
-				+ UpdateAutoFocus() cals multiplier based off NDC camera offset and sets it for one-time use
-				+ ParameterSmoother unit tests
-		+ Tests:
-			+ Move tool (regressions)
-			+ Remove tool (regressions)
-			+ All state transitions above
-		+ Merge into npcs_v1
-	+ Rethink Attract force field (use mass)
-		+ Ship: less on air bubbles (in any case, less on things with mass 25)
-	+ Interrupt swim with great velocities
-		+ Repro: using attract/repel or swirl
-		+ And transition to "rag doll" aquatic state (i.e. "Free_InWater")
-			+ Also, do not transition from Free_InWater to Free_SwimmingX if velocity is still there
-		+ Actual condition: abs and rotation vels
-		+ Impl:			
-			+ Magic constants:
-				+ Max rotation: 2.0
-				+ Max vel: 4.0
-			+ Swimming state: progress to ~LeavingSwimming 
-			+ Free_InWater -> Free_SwimmingX: not if: rotation or vel1 or vel2
-			+ Free_SwimmingX -> Free_InWater: progress ~LeavingSwimming if rotation ok and vel1 ok and vel2 ok
-	+ Wind: 
-		+ Npc preliminary forces: 
-			+ Only applies to *free* *above-water* particles
-			+ Move Ship's WindForce calculation to Formulae
-			+ Since func is invoked per-particle, might want to calc global wind force outside
-			+ Don't forget to smooth with waterness - which make sure is smooth between 0 and 1
-	+ Wind tool: 
-		+ WindField work (*) spec'd for flames 
-		+ Npc preliminary forces: 
-			+ Only applies to:
-				+ Constrained *above-water* particles (i.e. walking in ship but not under ship-water)
-				+ Free *above-water* particles
-				+ In short: above-any-water
-		+ Use magic number for a NPC's wind receptivity adjustment
-			+ From GameParameters (but not in SettingsDialog)
-				+ To account for the smaller number of particles than a ship
-			+ Apply to both winds
-	+ Ship-specific explosions: only NPCs of that ship, or free regime of any ship
-		+ mParentWorld.GetNpcs().ApplyXXXForce(shipId, ...)
-		+ Npcs::ApplyBlast()
-	+ Blast tool
-
-	+ Fix: NPC at bottom of ship at bottom of ocean, flooded, touching ocean floor
-		! Rethink constrained NPC becoming free when under land
-		+ Adjust for land only for free NPCs (i.e. all particles are free)
-
-	+ Fix: many drums start dancing
-		! Only due to "dead weight" on triangle edge at end of Constrained_NonInertial; bounce force is fine (and cool)
-		+ Try with mass update instead of force
-			+ Add TransientAdditionalMass
-				+ Use at UpdateMasses()
-				+ Reset at end of Update() (NOT at UpdateEnd) - so that Npcs::Update adds masses for next Ship::Update
-			+ Npcs adds (two of them) at same place where we add forces
-		+ Now many drums impacting make everything explode - but see if we can keep it
-			+ Rethink impact force, see https://www.geeksforgeeks.org/how-to-calculate-the-impact-force/ and https://www.studysmarter.co.uk/explanations/physics/force/impact-forces/
-			+ Recalc based on kinetic energy lost, or dp/dt
-			
-	+ Fix: sinking barrel doesn't move - add infinitesimal buoyancy chances to each particle
-	+ Fix: slecht op benen @ human placement
-		! @ behavior Constrained_Aerial, which then goes to Constrained_Falling
-		! Due to that 0.6 being added alternatively
-		+ Try with left and right legs _centered_ around legAngle
-	+ Fix flat head of wealthy passenger (all 3 orientations)
-	+ Make Green drum Light, Blue drum Heavy (current weight)
-	+ Make piano heavier
-	+ Body width randomization sensitivity
-	+ Buoyancy volume fill rearc: @ particle level
-		+ NpcDatabase:
-			+ Human:
-				+ Each human can have buoyancy_volume_fill_head/feet - if not present, use materials'
-			+ Furniture:
-				+ particle_mesh has optional _array_ of buoyancy_volume_fill
-					+ size: 1 or N; when 1, copied to N
-				+ When not present, use materials'
-		+ @ NPC creation:
-			+ Use NPC's, not material's
-			+ Store with NPC particle
-		+ jsons:
-			+ Move npc_buoyancy_volume_fill's from materials_structural.json to npcs.json
-			+ Nuke npc_buoyancy_volume_fill from StructuralMaterial (and code)
-		+ Redo also for NPC spring coeffs? i.e. move them from StructuralMaterial to Npc?
-			+ NpcDatabase: new struct NpcParticleAttributesType
-				+ BuoyancyVolumeFill
-				+ Spring 1 & 2
-			+ HumanKindType has two fully-populated "override", Furniture has "override" vector fully-populated
-			+ ParseHuman:
-				+ Everything optional (container & members)
-				+ If anything missing: take from StructuralMaterial
-					+ Look @ defaults for Spring 1 & 2
-			+ ParseFurniture:
-				+ Everything optional (array & element members)
-				+ If anything missing: take from StructuralMaterial
-					+ Look @ defaults for Spring 1 & 2
-			+ Humans: also from global
-			+ Use @ NPC creation
-			+ Nuke all NPC props from StructuralMaterial
-			+ Move NPC props from StructuralMaterial to NPCs.json
-	+ See if can continue to figure out how to avoid deformation of quads
-		+ Add (temporary) slider for NPC spring realaxation params
-	+ Anti-matter bomb force fields:
-		+ Pre-Implosion
-		+ Implosion
-		+ Explosion
-		+ Nuke Ship::ForceFields
-	+ Swirl, etc.: NPCs of all ships, all regimes		
-		+ Controlled by flag, "~force tools on NPCs"
-			+ SettingsDialog
-		+ World calls Npcs.ApplyXXXForce(...) after check on flag
-			+ Quantities that are now calculated in Ship become calc'd in World, so we can pass them on to NPCs
-			+ Swirl/Counterswirl
-			+ Attract/Repel
-	+ Move/Rotate tool:
-		+ World: after calling into Ship(), call Npcs.Move/etc/Npcs(shipId, [componentId], ...)
-			+ Test in BaryLab first
-			+ Ship::PickPointToMove: becomes PickConnectedComponentToMove() -> ConnectedComponentId
-				+ Also Tool
-			+ Just need Move/Rotate, opt<ConnectedComponentId>
-				+ Only considers constrained particles
-					+ And if ConnectedComponentId is specified, only particles in triangle with first endpoint on that ConnectedComponentId
-				+ Look at Ship::Move/etc for physics (e.g. velocity, force zeroing)
-			+ At the end calls MaintainInWorldBounds()
-	+ Electric spark:
-		+ Ship:
-			+ HandleElectricSpark(): set Points.IsElectrified
-			+ UpdateEnd(): reset it
-		+ Constrained_Electrified:
-			+ Into:
-				+ Eq, Walk: as soon as electrified detected, via helper, with low-freq step check 
-					+ Checked once in a while
-					+ Become frontal|back (random)
-			+ Out: 
-				+ Free->Free
-				+ When not electrified for a while (own progress) -> Constrained_KO
-		+ Animation:
-			+ See notebook
-	+ Mass/forces: these two may be done together:
-			- NPCs add mass to particle
-				- Ship::Update asks NPCs (via ParentWorld) to add themselves to Points' (definitive) masses
-			- NPC bounces transfer impact forces to ship's particles
-		+ ...By adding StaticForce's to ship's particles at these places:
-			+ At return from NonInertial, using the last "flattened out" displacement to calc force (*m/dt2)
-			+ At bounce, using the bounced displacement
-				+ Need to make sure that a bounce at non-inertial is not followed by the force in the previous bullet
-				+ BounceConstrained...() needs to take bounceEdgeTriangle, bounceEdgeBCoords, bounceEdgeOrdinal, and Ship - but can lose bounceEdgeNormal
-			+ Requires Ship in NPC to not be const
-				+ And see if can get rid of naming member "ShipMesh" - may be "HomeShip"?
-	+ Mass is proportional to body length adjustment (square, we're 2D)
-		! And so is buoyancy
-		+ Port to BL
-		+ NPCParticle attributes (changeable from outside)
-			+ PhysicalProperties->MaterialProperties
-			+ MaterialProperties.Mass
-			+ Mass // Adjusted 
-				+ Use wherever we use mass - which should also be always adjusted with MassAdjustment
-			+ BuoyancyFactor
-				+ Use @ Bouyancy
-		+ Springs attributes:
-			+ BaseRestLength, RestLength (was DipoleLength)
-				+ Use for humans whever we take height*adjust
-		+ @ Npcs::Add (x2):
-			+ Calculate Mass via static float CalculateParticleMass(base mass, dimensions adjustment, mass adj (iff BaryLab))
-			+ Calculate BuoyancyFactor via static float CalculateParticleBuoyancy(base mass, dimensions adjustment, buoyancy adj (iff BaryLab) , mass adj?)
-			+ Calculate spring lengths and force coeffs via static float CalculateSprings(..., mesh in/out)
-				+ Spring lengths used for:
-					+ Hooke force (as dipoleLength)
-					+ Particles' positions at Add() (as height*adjust)
-					+ Render (as height*adjust)
-					+ Equilibrium Torque (as height*adjust)
-					+ Animation (walking) (as height*adjust)
-		+ @ Npcs::Update:
-			+ At size adjustment detected: (and mass & buoyancy iff barylab)
-				+ RecalculateSizeAndMassParameters:
-					+ Recalculate all NpcParticles::Mass via static float CalculateParticleMass(base mass, dimensions adjustment, mass adj (iff BaryLab))
-					+ Recalculate all NpcParticles::BuoyancyFactor via static float CalculateParticleBuoyancy(base mass, dimensions adjustment, buoyancy adj (iff BaryLab) , mass adj?)
-					+ Recalculate all spring lengths and force coeffs via static float CalculateSprings(..., mesh in/out)
-						- Replaces CalculateHumanNpcDipoleLength(.)
-		+ Finals:
-			+ Make sure mCurrentSizeAdjustment is only used in funcs to calc/recalc
-			+ Make sure mCurrentMassAdjustment is only used in funcs to calc/recalc
-		+ Port to FS
-	+ Incorporate ship material's elasticity and friction in calculations for bounce and friction
-	+ Panic:
-		+ Close to bomb
-			+ @ Eq, Walk:
-				+ HasBomb => DirFlip (iff BombProximityPanic < 0.7) and set Npc::BombProximityPanic to 1.0	
-		+ Close to fire
-			+ Ditto
-
-	= Barylab:
-		+ Port
-		+ Profile
-			+ Was: 2.5/2.6/2.7
-			+ Now: 3.3/3.4
-			X Possible perf improv: Prelim forces: separate loop by Npc->Particles
-				! Better code cache and locality (for particles)
-			+ Profile 1:
-				! Npcs::UpdateNpcs: 53.73, self=12.46  -> 53.02, self=15.40
-					! UpdateNpcParticlePhysics: 18.75 -> 19.77
-					! UpdateNpcAnimation: 9.36%
-					! CalculateNpcParticlePreliminaryForces	4.52% -> 4.20
-				! Npcs::RenderNpc:: self=13.35
-			+ Profile water (-> WAY LESS)
-			+ inline CalculateNpcParticlePreliminaryForces
-			+ inline CalculateNpcParticleDefinitiveForces
-			+ inline Triangles::InternalToBaryCoords
-			+ Profile 2: 3.0/3.1
-		+ Perf attempts:
-			+ CalculateActualHumanWalkingAbsoluteSpeed and chain:
-				+ Too much work on resultant panic level:
-					+ Try with just clamp
-				! Mostly 3.0
-			+ Walking anim: edge dir calculation doesn't need springs
-				+ Test if leg slope ok
-			X FindTriangle: try with boundary conditions first
-				! Profile first: 1.0s
-			+ Quad-building with intrinsics
-				! Profile first: Physics::Npcs::RenderNpc	893 (24.74%)	515 (14.27%)
-				+ 1. Add profiling code to measure Upload time & print it
-					+ 1.7/1.8
-				+ 2. Quad structure
-					+ Move to GameTypes
-				+ 3. Quad bulding with plain C++
-					+ Returns struct for the time being
-				+ 4. RenderNpc: use quad building for one
-				+ 5. RenderContext overload taking quad
-				+ 6. RenderNpc: use quad building everywhere 
-				+ 7. Quad building with intrinsics
-					+ Notes:
-						- To load into high/low: loadh/l
-						- To copy perp into all 4 parts of register: shuffle_pd(p, p, 0)
-						- To replicate halfW into all four slots: setp
-					+ Improv that TODO
-				+ 8. Perf measurements
-					+ 1.6/1.7
-					+ 1.6
-					+ Physics::Npcs::RenderNpc	803 (23.17%)	475 (13.71%)
-					  Render::RenderContext::UploadNpcTextureQuadsEnd	435 (12.55%)	0 (0.00%)
-				+ 9. RenderContext: two buffers, one with vertices and other with everything else
-					+ Phase 1: two plain buffers, quad in-place
-						+ RenderContext:
-							+ Two vertex buffers (std::vector): 
-								- NpcQuadVertexPositions: of Quad
-								- NpcQuadVertexAttributes: of own public NpcQuadVertexAttributes
-									- Remove BackDepth, OtherDepth
-								- Two VBOs
-							+ UploadNpcStart: do math and reserve() both vectors
-							+ Two "upload" functions: UploadNpcQuadVertexPositions and UploadNpcQuadVertexAttributes
-							+ Init: VBOs vertex description
-							+ RenderPrepare: upload both buffers
-							+ Shader
-								- Do bottom+left using texture coords (which we know are -1->1, i.e. -1)
-						+ Npcs::RenderNpc: 
-							+ Do quad building in-place
-								+ Quad-building function: "Into"
-					+ Test
-						+ Furniture
-						+ Particle
-						+ Perf: 
-							+ 1.4/1.5
-							+ Physics::Npcs::RenderNpc	767 (22.29%)	478 (13.89%)
-							  Render::RenderContext::UploadNpcTextureQuadsEnd	356 (10.35%)	0 (0.00%)
-					+ See if can optimize attributes
-						+ Pass plane and color as float and vec directly from RenderNpc
-							+ Check assembly
-							+ 1.4/1.5 (but mostly 1.4)
-						X Better pack attributes so "constants" are together (planeid, color)
-							+ Use padding
-							+ Check assembly
-					X Phase 2: try single buffer (all in RenderContext)
-						+ Members:
-							+ A Buffer of uint8_t - mNpcTextureQuadsVertexBuffer
-							+ size_t mNpcTextureQuadsVertexBufferSize // byte size
-							+ A Quad* pointer and a Attributes* pointer
-							+ size_t mNpcTextureQuadCount
-							+ size_t mNpcTextureQuadMaxCount
-							+ size_t mNpcTextureQuadMDescribedMaxCount
-							+ One single VBO
-						+ UploadNpcStart:							
-							+ If != mNpcTextureQuadsVertexSize:
-								+ Calc required byte size
-								+ Realloc buf
-								+ Re-store Quad* and Attributes* pointers
-						+ Upload:
-							+ Quad: return ptr
-							+ Attributes: store and increment mNpcTextureQuadCount
-						+ UploadEnd:
-							+ Upload VBO
-								+ If mNpcTextureQuadMDescribedMaxCount != mNpcTextureQuadMaxCount:
-									+ Describe
-										+ Move here from Init
-						+ Profile: 2.4
-					X Phase 3: try to go back to one single Upload func to see if QuadInPlace really does much
-						+ Upload takes Quad & rest and stores in various buffers
-						X If ok:
-							X Redo MakeQuad (one func)
-					+ Phase 4: see how to optimize attributes
-						+ Test 1: further split attributes into texture quads et al
-							! This is to store texture quad also once (like positions) and only repeat attributes
-							+ Add third buffer
-							! Physics::Npcs::RenderNpc	1209 (21.32%)	1019 (17.97%)
-							  Render::RenderContext::UploadNpcTextureQuadsEnd	556 (9.80%)	0 (0.00%)
-							! We lost because of third buffer upload (commenting it out goes back to 1.4)
-						+ Align buffers
-							+ Just via BoundedVector						
-						+ Test 2: get rid of one component of overlayColor							
-						+ Now we are at 1.4; go ahead with all this work and cleanup
-							+ Shader
-							+ Nuke vertex attrib afterwards
-						+ Test 3: test back to two buffers (texture coords in attribs)
-							+ "a" first
-							! Perf: 1.1, occasionally 1.2
-						+ Test 4: check if can pack "static" attributes (planeId & overlayColor) from caller once
-							! Given that they don't change across all quads of the same NPC
-							+ OverlayColor & planeID, using public struct exposed by RenderContext
-							! Perf: 1.1
-					X Phase 5:
-						X Try aligned buffer (position and possibly others)
-							+ Buffer(s) are/is aligned
-							+ Intrinsics change
-								+ Assert aligned
-									+ Re-check implementation
-								+ Use stream_pd (to avoid cache pollution)
-							X Goes to 2.4/2.6!!!!
-				+ See if still need two quad-building functions
-
-		+ Port back into FS
-			+ vec2f default cctor
-			+ BoundedVector
-			+ Quad
-			+ GameGeometry: namespace & MakeQuad
-			+ NPCs
-			+ RenderContext (to ShipRenderContext)
-			+ Shader
-		- Port back into BaryLab
+V1 TODO:
 
 - Npc menu, and move all tools to it
 	- Requires two vectors of wxMenuItem's to cross-synchronize
@@ -1183,7 +202,7 @@ Arch
 - FIX:
 	- AutoFocus on NPC: very fast NPCs are not in focus
 		- Repro: AntiMatter bomb
-		- TRy: ViewManager: if focus on NPC => greater speed multiplier for camera
+		- Try: ViewManager: if focus on NPC => greater (one-time) speed multiplier for camera
 
 ===================
 Next release:
@@ -3520,3 +2539,977 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 	+ Rethink Constrained_Aerial
 	+ Rethink Constrained_KnockedOut - frozen arms look bad
 	+ Backport to FS
+
+==== September 2024
+
++ Rendering:
+	! Atlas textures are simply flat frames and all, NpcDatabase groups them together
+		! But we use naming conventions to not go crazy ourselves
+	+ Use indices for quad vertices
+		+ Good use case to experiment with the "quad single index buffer" feature
+	+ ShipRenderContext:
+		+ TextureCoords upload
+		+ Mipmapped!
+			+ Rearc:				
+				+ Comment to BuildRegular: to reason for coords
+				+ AtlasBuilder: AtlasOptions to make each tile power-of-two
+					+ Remove redundant builder methods
+					+ Implement
+						+ TextureInfo, TexturePositions: all in-atlas
+						+ BuildAtlasSpecification()
+						+ BuildAtlas: do offseting here to fill gap between in-atlas position and actual frame position
+					+ AtlasMetadata.IsSuitableForMipMapping() check: atlas has MipMapped option
+					+ UnitTests
+					+ Add UnitTests with Load
+						+ InAtlasSizeMatchingFrameSize
+						+ InAtlasSizeLargerThanFrameSize
+				+ Cleanup all "nuke", including AtlasBuilder::BuildMipMappableAtlas
+				+ GameOpenGL: "UploadMipmappedPowerOfTwoTexture" -> "...Atlas"
+					+ And assert, at each call, that atlas was created with MipMapped option via IsSuitableForMipMapping()
+				+ Look at all usages now
+				+ Tests:
+					+ Clouds
+					+ Fish
+					+ GenericMipMapped (bombs w/fuse, cannon, smoke, probe, pin)
+					+ ShipBuilder's CenterOfMass'es
+			+ Baker tool:
+				+ add -mipmap option
+				+ add -regular option
+				+ Rebuild NPC atlas
+					+ Test
+				+ Rebuild Explosion atlas
+					+ Test
+			+ Do MipMapped NPCs
+
+	+ Shader ("ship_npcs_texture"):
+		+ We keep existing limb-based shader, just change all its vertex attributes/parameters/etc. to become "texture"
+		+ Sampler
+		+ Discard when transparent
+			+ But only after testing with two connected components - & inverse order of drawing; should bug out when near NPC is drawn before far NPC and they are on top of each other
+				+ Test requires NPC following their triangle with move - Move/Rotate work item below
+		+ Highlight: Step(c.alpha, 0.0) as coeff to bright red
+		x Apply ocean depth darkening (iff in water?)
+		x Apply ocean shadows (iff in water)
+
+	+ Misc improvements & technical debt:
+		+ When drawing human on side, legs first and arms then (as arms are longer)
+		+ Furniture: anti-alias in image
+		+ TextureCoordinatesQuad: shall we have float for RightX, LeftX, TopY, BottomY?
+		+ Human frames: they are out of aspect
+			+ Change human body ratios to match standard frame pixel dimensions (e.g. head square, etc.)
+		+ Redo body proportions: some become dynamic, depending on frame dimensions:
+			! Note: all the below are fractions
+			+ TorsoWidthFraction (Height=Length fixed)
+			+ HeadHeightFraction (Width=Width fixed) (to allow for hat)
+				+ But head top is still based on HeadHeightFraction constant (i.e. hat sticks on top)
+			+ Arm, LegWidthFraction (Height=Length fixed)
+			+ Expose as:
+				+ GetHumanGeometry(.) -> NpcDatabase::HumanGeometryType: TorsoHeightToWidthFactor, HeadWidthToHeightFactor, arm/leg...
+				+ GetFurnitureGeometry(.) -> NpcDatabase::FurnitureGeometryType: width, height
+					+ Replaces individual H, W getters
+		+ Fix junctions
+		+ Add body width randomization sensitivity
+		! NPC atlas rearc: frame rules:
+			! For artist:
+				- Human:
+					- Head: 
+						- Width: 16
+						- Height: by default 16; if with e.g. tall hat, > 16
+						- Touching at least bottom border
+					- Torso:
+						- Width: 32
+						- Height: 32
+						- Touching both bottom and top borders
+					- Arms:
+						- Width: based on the width of the character's limb when viewed from F/B; suggested <= 8
+						- Height: 32
+						- Touching at least top border (but for normal human proportions, should also touch bottom border)
+					- Legs:
+						- Width: based on the width of the character's limb when viewed from F/B; suggested <= 8
+						- Height: 32
+						- Touching both bottom and top borders
+					- F/B/S for a limb have same dimensions
+				- Furniture:
+					- Width=32, Height=32
+						- Leaving 1 pixel on each border that the texture is "a lot" against
+			! For me:
+				- Human:
+					- Head: 
+						- Width: 16
+							- Not necessarily touching left and right borders, depends on character
+						- Height: by default 16; if with e.g. tall hat, > 16
+							- Touching at least bottom border
+					- Torso:
+						- Width: 32
+							- F/B: ideally touching left and/or right borders (so to not waste room)
+							- S: not necessarily touching left and right borders, depends on character
+						- Height: 32
+							- Touching both bottom and top borders
+					- Arms:
+						- Width: based on the width of the character's limb when viewed from F/B; suggested <= 8
+							- F/B: ideally touching left and/or right borders (so to not waste room)
+							- S: not necessarily touching left and right borders, depends on character
+						- Height: 32
+							- Touching at least top border (but for normal human proportions, should also touch bottom border)
+					- Legs:
+						- Width: based on the width of the character's limb when viewed from F/B; suggested <= 8
+							- F/B: ideally touching left and/or right borders (so to not waste room)
+							- S: not necessarily touching left and right borders, depends on character
+						- Height: 32
+							- Touching both bottom and top borders
+					- F/B/S for a limb have same dimensions
+				- Furniture:
+					- Width=32, Height=32
+						- Leaving 1 pixel on each border that the texture is "a lot" against
+		! Frame specs:
+			! Furniture: leave 1px border around
+				! So if e.g. you're doing a 32x32 frame, then the drawable area is the central 30x30
+		+ MainFrame: 
+			+ Pull up NPC tools' menu items (to give V room to its choices)	
+			+ NPC stats handling, but only for Move/Remove menu items
+				+ ResetUIState()
+					+ Also does NPC menus
+			+ Tools & view:
+				+ Do that Bind thing
+				+ ShipView: fully managed by MainFrame based on tool:
+					+ void OnToolSelectedWithSwitchToInteriorView()
+					+ void OnToolSelectedWithSwitchToExteriorView()
+		+ GameController: focus to position at BeginPlaceNpcx2
+			+ Upon BeginPlaceXXX: GameController tells ViewManager (with position and height as AABB, i.e. GameParams::HeightMean * GemParams::SizeAdjustment)
+				+ ViewManager: 
+					+ Nuke GameController::FocusOnShip()
+					+ ViewManager::OnNewShip() does whole "if (autofocus) ... else ..." from old FocusOnShip
+					+ ViewManager::FocusOn() (replaces FocusOnShip):
+						+ If AutoFocus on: turn off & publish event
+						+ InternalFocus
+				+ BeginPlaceXXX:
+					+ OnBeginPlaceNewNpc(npcId)
+						+ World::GetNpcAABB(NpcId) -> AABB
+							+ Npcs::GetAABB(NpcId)
+								+ ViewManager::OnFocus takes dimension multiplier
+									+ And uses AABB::AdjustSize
+						+ ViewManager::FocusOn(aabb)
+				+ MainFrame registers and changes menu flag
+			+ ViewManager: deal with zero W and/or H
+				+ GameController does not does AdjustSize, but passes two floats to ViewManager
+				+ ViewManager: put a lower cap on sizes: 1.0 (i.e. we don't want to go smaller than 1.0), then multiplied
+			+ Do not zoom out (only lower zoom)
+				+ FocusOn: lowerZoomThreholdMult, higher...
+					+ Pass 0.5, 2.0 for NPCs and 1.0, 1.0 for rest
+			+ Less magnification
+			+ See if can avoid "mouse move"
+				+ Pass center to InternalFocusOn (0, 0 when not needed)
+				+ Do then math at InternalFocusOn
+			+ Test with replacing ParameterSmoother with a simple t interpolation in a 3D space (camx, camy, 1/zoom)
+				+ Test:
+					+ Clamping
+			+ InternalSetAutoFocus: before setting all, clamp each and only go with both params if none was clamped
+			+ GameController also must register for AutoFocus toggled, and does NotificationLayer accordingly
+				+ But only in this async case
+			+ Test
+				+ Various AutoFocus per-se (on, off, home@on, home@off)
+				+ Check AutoFocus menu auto-checking when switches
+				+ No-dimensions ship (Thanosized)
+				+ No-dimensions NPC (particle)
+					+ npc_database
+					+ NPC atlas
+					+ Npcs.cpp support
+			+ Merge into npcs_v1				
+	+ Port to BaryLab
+		+ Copy NPC json
+		+ Create NpcDatabase
+			+ Copy from FS but then maim it:
+				+ No TextureAtlas, just use -1.0->1.0 coords
+		+ Npcs
+		+ Adapt RenderContext
+		+ Port evt changes to FS
+			+ Npcs.h/cpp
+
+
++ Physical Interactions:
+
+	+ Make NpcDamping subject to other adjustment
+		+ Npcs class reacts to changes and calculates own mDampingCoefficient == (1.0f - gameParameters.NpcDamping)
+	+ Land
+		+ Check at end of step
+		+ If hit:
+			+ Move back and bounce perpendicular velocity
+				+ Friction and elasticity: as we do in ship, using both materials
+			+ Become free! So we avoid bouncing back and forth
+				+ Make sure we call OnMayBeRegimeChanged
+			+ Only when not BeingPlaced
+		+ Behavior: (we don't like it frozen, would be nice if it relaxed down)
+			+ @ Free_Aerial: if still for long, go to Free_KnockedOut
+				+ Out from Free_KnockedOut:
+					+ If !Free: Constrained_KnockedOut
+					+ If moving again: Free_Aerial
+				+ Free_KnockedOut animation: relax limbs (see if Constrained_KnockedOut does the same)
+		+ Tests:
+			+ Place under land
+			+ With ship under land
+	+ World border
+		+ MaintainInWorldBounds()
+			+ Called after each particle update, on the particle				
+				! We want to leave Update() in order, for eventual user interactions
+				+ Make it inline
+			+ If hit:
+				+ Move back and bounce perpendicular velocity (see actually what we do in ship)
+				+ Become free! So we avoid bouncing back and forth
+					+ Make sure we call OnMayBeRegimeChanged
+		+ Test:
+			+ With ship inertia
+			+ With NPC inertia
+			+ With ship move
+		+ Backport to BaryLab and profile
+	+ Points' water effect when particles are constrained
+		! Gist: 
+			! We use both water (which imparts buoyancy) and water velocities (which impart v onto particles proportionally to particles' waterness)
+			! We cache both at NpcParticles @ CalculatePrelimForces - which is where we calc them - and re-use them everywhere, e.g. at HumanBehaviorUpdate
+		+ Impl:
+			+ NpcParticles::QuantityOfWater (0-1)
+			+ CalculatePrelimForces:
+				+ float quantityOfWater;
+				+ If free:
+					+ Calc w/depth (capped)
+				+ Else:				
+					+ Particle waterness: calculated as W(triangle_t) based on water at triangles' points
+						+ W(triangle_t): (cap(W(1)) + cap(W(2)) + cap(W(3)) / 3.0
+					+ Water velocity:
+						+ Va += Vw - Vr
+							+ Vw = (W(P1)*Vw(P1) + .. + W(P3)*Vw(P3)) / 3.0
+								- W(P) = normalized (max 1)
+							+ Vr = mesh-relative vel - ok if from previous step
+							+ The above is delta_Vr, which is also delta_Va
+							+ Apply as a force
+				+ Store as QuantityOfWater
+				+ Use quantityOfWater for buoyancy
+		+ Behavior:
+			+ New Constrained_InWater, Constrained_Swimming_Style2:
+				+ Constrained_InWater:
+					+ From: Constrained_Aerial
+						+ Lingering here for long though
+					+ To:
+						+ Same as Constrained_Aerial
+						+ When no changes for a while (like Free_InWater->Free_Swimming): to Constrained_Swimming_Style1|2 depending on face orientation
+				+ Constrained_Swimming_Style1,2:
+					+ Copy from Free_Swimming_*, and same out transitions as Constrained_InWater
+			+ @Npcs::AnimationUpdate():
+				+ Constrained_InWater
+					+ Constrained_Aerial looks quite good - pair labels
+				+ Constrained_Swimming_Style2:
+					+ Arms alternating (narrowly) around normal to body (direction of face)
+					+ Legs alternating (narrowly) around opposite of feet velocity dir
+	+ Triangle destruction: 
+		+ Should be enough to check for current triangle being deleted at beginning of UpdateNpc(.), and if so, become free (identical for @ pri and @ non-pri)
+			+ Just like when we detect secondary, third, etc. are in a different connected component, see above
+	+ Swimming humans generate (small) bubbles
+		! Free_InWater
+		! Free_SwimimingX
+		+ Each free aquatic state has a NextBubbleEmissionSimulationTimestamp
+			+ Init'd as 0 at state enter (Reset)
+			+ At each state update at which we remain in state:
+				+ If curSimTime > state's:
+					+ Emit bubble (via homeShip->GenerateAirBubble)
+						+ Ship::GenerateAirBubble: becomes public and also takes minScale, maxScale
+							+ @ normal interactions
+							+ Points::GenerateAirBubble: store minScale, maxScale in AirBubble state
+							+ Points::UpdateEphParticles: use minScale, maxScale from AirBubble state
+						+ Call Ship::GenerateAirBubble
+					+ Calc next: gaussian
+	+ Humans on air-water interface generate small waves
+		+ Needs to produce as side-effect: swimming humans generate small waves
+		+ Needs to produce as side-effect: humans falling into water generate small (but larger) waves
+		+ Do surface displacement proportional to (signed) V velocity
+			+ Fix: placing human directly in water causes anywaterness change
+				+ Unless we initialize anyWaterness at placement time
+			+ Fix: oscillations
+				! Due to just-entered particles becoming out-of-water at next frame
+				X Possible fix 1: require V sign agreement with delta_waterness
+					+ But now it's not continuous
+				+ Possible fix 2: do like ship:
+					+ Displacement is due to just having velocity in narrow band underwater
+					+ FIX: if too quick we don't "see" the particle in the band
+						+ Possible fix 3: when depth of particle ('s y) *now* and *before* has different sign
+	+ Fire:
+		+ @Npcs::Update():
+			+ Calc LowFreqCycle (see Ship)
+			+ By Ship: By Npc (mod ID for cycle): 
+				+ By particle (via helper w/particle idx):
+					+ If constrained:
+						+ Calc particle's MeshWater and MeshWaterVelocity
+							+ NpcParticles::MeshWaterBuffer, MeshWaterVelocity
+						+ Calc particle's MeshFire:
+							+ If waterness > Wa: fireTarget=-1, fireConvergeRate=0.3
+							+ Else If any (Ship.Point.Temperature > NpcMaterial.CombustionTemperature || Ship.Point.IsBurning): fireTarget=1.0, fireConvergeRate=0.3
+							+ Else: fireTarget=-1. fireConvergeRate=0.1
+					+ Else:
+						+ fireTarget=-1, fireConvergeRate=0.3
+				+ Calc Fireness for NPC via convergence with current value
+					+ Store in new Npc state attribute, in [-1, 1] range; on fire if > 0.0
+					+ Update count of flames (using Npc's previous)
+					+ Event (for sound)
+		+ @ Eq, Walk, Rising:
+			+ if NPC is on fire: DirFlip (iff OnFirePanic < 0.7) and set Npc::OnFirePanic to 1.0
+		+ @Npcs::RenderUploadFlames():
+			+ Upload flames, one per NPC	
+				+ First: store burning NPCs in vector (Npcs::mBurningNpcs, per-ship) at combustion state update
+					+ Remove @ NpcRemoval, ShipRemoval
+				+ Second: Wind
+					+ WindField rearc:
+						+ WindField: gets all members currently in Ship::QueuedInteractionArgs
+							+ Nuke PhysicsType
+						+ Wind:
+							+ mCurrentWindField (opt)
+							+ GetWindField() -> mCurrentWindField
+							+ SetWindField(windField) -> mCurrentWindField
+							+ Wind::UpdateEnd:
+								+ mCurrentWindField.reset()
+						+ World::GetWindField()
+						+ World::ApplyRadialWindFrom (the existing method):
+							+ Calculate ForceMagnitude and give everything to Wind::SetWindField()
+							+ Do nothing on ships
+							+ Keep doing on ocean
+						+ Ship:
+							+ Nuke ApplyRadialWindFrom() and queued interaction
+							+ At ApplyWorldParticleForces:
+								+ Apply forces (code of Ship::ApplyRadialWindFrom(interaction args)) from mParentWorld::GetWindField()
+							+ Nuke mWindField and take it from mParentWorld::GetWindField()
+							+ Nuke QueuedInteractionArgs struct and type
+					+ State Update: update flame vector with wind, both components
+						+ Move CalculateIdealFlameVector, CalculateFlameWindRotationAngle(WindField, ...) to Formulae
+							+ CalculateFlameWindRotationAngle: "EvolveFlameGeometry" takes two inputs/outputs (FlameVector, FalmeWindRotationAngle) as & 
+						+ Use @ NPCs, both flame creation and update (if a separate creation exists)
+				+ Visit mBurningNpcs vector here and:
+					+ Position:
+						+ Human: head
+						+ Else: center of all particles
+					+ Vector and WindRotation: from CombustionState
+					+ Size: depends on Npc's fireness
+		+ @Ship::RenderUpload:
+			+ Include own Npcs' flames via World::GetNpcs() -> const::GetFlameCount(ShipId)
+			+ Then call World::GetNpcs() -> UploadFlames(ShipId, ShipRenderContext)
+		+ ShipRenderContext: new UploadFlameNpc (v Ship) w/ different size and adj
+		+ Combustion adjustment: must smother if NPC particle is free and under real waterness
+		+ Use CombustionAdjustment
+		+ Rendering: NPC flames need to go to layer above gadgets
+		+ Flame size depends on current (adjusted) dimensions
+		+ Test:
+			+ Burning NPC removal
+			+ Depth order
+			+ Fire panic tapering down speed
+		+ Cleanup auto-smothering of fire (and make slightly slower)
+	+ Smash tool:
+		+ GameController->World->NPCs
+		+ For each human with at least one particle in range: 
+			+ Turn on back or front (rnd)
+			+ Transition to ConstrainedOrFree_Smashed
+		+ BehaviorUpdate: @ConstrainedOrFree_Smashed:
+			+ Unconditional progress; when at target, go to either Constrained_KO or Free_KO
+		+ Animation:
+			+ Simple fixed-angle
+		+ Fix human state machine: Free_KO -> Free_Aerial *OR Free_InWater*
+	+ Follow NPC:
+		! Gist:
+			! Npcs has a concept of "Selected NPC"
+				! Holds opt<NpcId>
+				! When NPC is removed, selection is reset to nullopt
+				! OnNpcSelectionChanged(opt<>) event, fired by Npcs class at all selection changes
+			! Menu: 
+				! FocusOnNothing, FocusOnShip, FocusOnSelectedNpc ("Auto-" for all) (Radio type; all mutex)
+					- FocusOnSelectedNpc: enabled iff NPCs exist
+					- May also be enabled if no NPC is selected; toggling this ON causes automatic selection of "first" NPC
+				! SelectNextNPC (@ Tools, but at bottom, among simple action menus like TriggerTsunami)
+					- Enabled iff NPCs exist
+				! MainFrame menu reconciliation:
+					- Event announcing change of focus target (which carries focus info), always emitted: OnAutoFocusTargetKindChanged
+						- Does Mutex between FocusOnNothing, FocusOnShip, FocusOnSelectedNpc, but it could be already done
+					- Event announcing presence of at least one NPC (this is the OnNpcCountsUpdated which already exists), always emitted
+			! "FocusOnNpc" tool: in this version does Select+FocusOnNpc
+				! In the future we'll also have "SelectNpc" tool which does Select only
+
+		! Spec of state machine/interactions:
+			- User hits HOME (focus on ship): (B*)
+				- If focusing on ship or selected NPC: reset user offsets
+				- Else:
+					- Focus on ship (one-off)
+				! In short: if there's auto-focus on <X>, we re-center; if not, we focus one-off on ship
+			- User enables FocusOnShip: (C*)
+				- Target change to <Ship>				
+					- Emit OnAutoFocusTargetChanged
+					- Turn on notification @ NotificationLayer
+				- Reset user offset
+				- UI:
+					- Menu mutex comes for free, but also via OnAutoFocusTargetChanged
+			- User enables FocusOnSelectedNpc: (C*)
+				- Assuming:
+					- At least one NPC exists (or else menu would have been disabled)
+				- If no NPC is selected: 
+					- Select first
+					- Emit OnNpcSelectionChanged
+				- Target change to <SelectedNPC>
+					- Emit OnAutoFocusTargetChanged
+					- Turn on notification @ NotificationLayer
+				- Reset user offsets
+				- UI:
+					- Menu mutex comes for free, but also via OnAutoFocusTargetChanged
+			- User enables FocusOnNothing: (C*)
+				- Target change to <>
+					- Emit OnAutoFocusTargetChanged
+					- Turn off notification @ NotificationLayer
+				- UI:
+					- Menu mutex comes for free, but also via OnAutoFocusTargetChanged
+			- User clicks "SelectNextNPC": (E*)
+				- Assuming:
+					- At least one NPC exists (or else menu would have been disabled)
+				- Select next NPC
+					- GameController::Update() will pick this up if focusing on CurrentlySelectedNpc, and start focusing on it
+				- If focusing on NPC:
+					- Reset user offsets
+				- Emit OnNpcSelectionChanged
+			- User selects another NPC:
+				- Select NPC
+					- GameController::Update() will pick this up if focusing on CurrentlySelectedNpc, and start focusing on it
+				- If focusing on NPC:
+					- Reset user offsets
+				- Emit OnNpcSelectionChanged
+			- User uses tool to select+follow specific NPC: (F*)
+				- Select NpcId
+					- Emit OnNpcSelectionChanged
+				- If current target != SelectedNPC:
+					- Target change to <SelectedNPC> 
+					- Emit OnAutoFocusTargetChanged
+					- Turn on notification @ NotificationLayer
+				- Reset user offsets
+				- UI: 
+					- Menu mutex driven by OnAutoFocusTargetChanged
+			- User uses tool to select+follow nothing: (F*)
+				- Select nullopt NpcId
+					- Emit OnNpcSelectionChanged
+				- If current target == SelectedNpc:
+					- Target change to <>
+					- Emit OnAutoFocusTargetChanged
+					- Turn off notification @ NotificationLayer
+				- UI: 
+					- Menu mutex driven by OnAutoFocusTargetChanged
+			- The currently-selected NPC is removed: (A*)
+				- Assumption the NPC removed is the selected one
+				- Select nullopt NpcId (@ Npcs)
+					- Emit OnNpcSelectionChanged
+				- If current target == SelectedNpc (A*)
+					- Target change to <>
+					- Emit OnAutoFocusTargetChanged
+					- Turn off notification @ NotificationLayer
+				- UI: 
+					- Menu mutex driven by OnAutoFocusTargetChanged
+					- "Normal" NPC-quantity-driven enabling/disabling of other menu items applies here as well, simply because of NPC removal
+			- A new ship is loaded/Reset: (D*)
+				- If focusing on SelectedNPC:
+					- Target change to <>
+					- Emit OnAutoFocusTargetChanged
+					- Turn off notification @ NotificationLayer
+					- If AutoFocusOnShipLoad is ON:
+						- Focus on ship (one-off)
+				- Else if focusing on Ship:
+					- If AutoFocusOnShipLoad is ON:
+						- Reset user offsets
+				- Else if focusing on nothing:
+					- If AutoFocusOnShipLoad is ON:
+						- Focus on ship (one-off)
+				- UI: 
+					- Menu mutex driven by OnAutoFocusTargetChanged
+			- User begins placing new NPC: (G*)
+				- NOTE: here we assume we do NOT select this NPC by default
+				- If current target == Nothing:
+					- Focus on this NPC's AABB (one-off)
+				- TODOOLD
+				- If current target != Nothing:
+					- Target change to <>
+					- Emit OnAutoFocusTargetChanged
+					- Turn off notification @ NotificationLayer 
+				- Focus on this NPC's AABB (one-off)
+			- We transition to having at least one NPC
+				- Assuming: FocusOnSelectedNPC not selected (it's disabled)
+				- UI: 
+					- Enable FocusOnSelectedNpc
+					- Enable FocusOnNpc tool (& RemoveNpc)
+					- Enable SelectNextNpc
+					- "Normal" NPC-quantity-driven enabling/disabling of other menu items applies here as well, simply because of NPC addition
+			- We transition to having zero NPCs
+				- If we were following SelectedNPC, we've gone through removal of currently-selected NPC
+				- UI: 
+					- Disable FocusOnSelectedNpc
+					- Disable FocusOnNpc tool (& RemoveNpc)
+					- Disable SelectNextNpc
+					- "Normal" NPC-quantity-driven enabling/disabling of other menu items applies here as well, simply because of NPC removal
+		+ Impl:
+			+ Npcs gets the concept of "CurrentSelectedNpc" (which was of BaryLab)
+				+ opt<NpcId> member
+				+ API from outside via Select...(opt) / Get...() (the BaryLab ones, make them official)
+				+ Reset when NpcId is no more - @ CommonRemoval
+				+ All changes emit OnNpcSelectionChanged (@ NPC event handlers)
+					+ @ Setter
+			+ GameType: AutoFocusTargetKindType: Ship, SelectedNpc
+			+ Event handler: OnAutoFocusTargetKindChanged(std::opt<AutoFocusTargetKindType>) (@ Control event handlers)
+			+ ViewManager:
+				! Becomes fully slave, just high-level operations on ViewModel
+				+ opt<AutoFocusTargetKindType> mCurrentAutoFocusTarget @ AutoFocusSessionData
+					! Here so it's consistent, and can use target type to fine tune focus
+					+ Getter and Setter
+				+ Update(...) splits into:
+					+ UpdateAutoFocus(opt<FocusAABB>)
+						+ Invoked by GC iff auto-focus on
+							+ Can assert
+					+ Update()
+						+ Invoked by GC always
+				+ ResetAutoFocusAlterations() // Reset user offsets
+				+ Nuke notification layer member
+				+ Default auto-focus target in ViewManager: Ship
+				+ Nuke other public methods
+			+ GameController:
+				+ Remove mCurrentAutoFocusTarget and struct which we've just added
+				+ Public View methods:
+					+ ResetView() (aka HOME: one-off focus on ship) 
+						+ See above (B*)
+							+ Move all logic out of ViewManager and into this GameController method
+								+ Use ViewManager::ResetAutoFocusAlterations()
+					+ SetAutoFocusTarget(opt<target type>)
+						+ See above (C*) (part of F*)
+				+ Private View helpers:
+					+ SwitchAutoFocusTarget(.) helper for:
+						+ Target change to *
+						+ Emit OnAutoFocusTargetChanged
+						+ Turn off/on notification @ NotificationLayer
+					+ UpdateAutoFocus()
+				+ Update() calls UpdateAutoFocus()
+				+ UpdateAutoFocus():
+					- Check ViewManager::CurrentAutoFocusTarget:
+						+ If Ship:
+							+ Get all Ships' AABBs (or nullopt)
+							+ ViewManager->Update(.that.)
+						+ If SelectedNpc:
+							+ Check with Npcs if there is still a selected NPC 
+								+ Nuke HasNpc as it's not needed anymore
+							+ If so:
+								+ Assert NPC exists
+								+ ViewManager->Update(NPC's AABB)
+									
+							+ Else: 
+								+ (A*):
+									+ Target change to <>
+									+ Emit OnAutoFocusTargetKindChanged
+									+ Turn off notification @ NotificationLayer
+						+ If none:
+							+ Nop
+				+ ShipLoad/Reset
+					+ See above (D*)
+				+ SelectNpc(opt<NpcId>)
+					+ See above (part of F*)
+				+ SelectNextNpc()
+					+ See above (E*)
+				+ BeginPlaceNewNpc
+					+ See above (G*)
+			+ Npcs:
+				+ SelectFirstNpc
+				+ SelectNextNpc
+				+ Highlight rearc:
+					+ Move Highlight out of NPC and into opt<NpcId>
+						+ Member: next to Selected
+					+ Public API:
+						+ HighlightNpc(opt<NpcId>)
+			+ Tool: "FollowNpcTool"
+				+ Icon: like Move, Remove but with auto-focus frame - autofocus_on_npc_icon.png
+				+ Cursor: autofocus_on_npc_cursor.png
+				+ RemoveNpc tool becomes base+derivates, used for Remove & Follow (and in the future: SelectNpc)
+				+ Change (for both Remove & Follow, i.e. base): make it so we don't have to store candidate, but probe right away at each move+down
+					! So that we don't run the risk of referencing a dead NPC
+					+ Just react to move+down (& up, but just for cursor)
+				+ Follow: calls SelectNpc() + SetAutoFocus(SelectedNpc)
+
+			+ MainFrame:
+				+ Do menu entries:
+					+ 3 for continuous auto-focus
+						+ All members
+						+ Nicely separated/reorder
+					+ FollowNPC tool
+						+ Member, like Move/RemoveNpc
+					+ SelectNextNPC - w/key shortcut (can do anything with TAB? If not, '>')
+						+ Member
+				+ Handler for focus changes calls ReconciliateUIWithAutoFocusTarget()
+					+ Ensure right of 3 auto-focus menu items is checked
+					+ Test if only checking the "true" one is enough
+				+ Handler for NPC presence (OnNpcCountsUpdated) calls ReconciliateUIWithNpcPresence(bool)
+					+ Do current code (Move/RemoveNpc tools only?)
+					+ FollowNPC tool
+					+ SelectNextNPC
+			+ UI preferences
+
+			+ Shader/Highlight
+				+ Do highlight with Overlay blend
+					(Target > 0.5) * (1 – (1-2*(Target-0.5)) * (1-Blend)) +
+					(Target <= 0.5) * ((2*Target) * Blend)
+				+ Do selection via ad-hoc "RectSelection" primitive @ NotificationRenderContext
+					+ Geometry: enclosing rect, calc'd by Npcs::RenderNpc
+						+ Humans
+						+ Furniture
+							+ Quad
+							+ Bunch-of-Particles
+					+ NotificationRenderContext: new one-time (non-sticky) primitive, exactly like HeatBlaster
+						+ Drawn on top of everything
+						+ Doesn't get smaller than fraction of NDC
+							+ Verify world offset foo is the same # of pixels V and H
+						+ Border W: must be fixed percentage of world width (not fixed pixel width)
+					+ Shader ("rect_selection")
+						+ Anti-aliasing 1-px border
+							+ Needs how wide - in vertex space - a pixel is, for both x and y (separately)
+						+ Border
+							+ Needs above, and uses own # of pixels
+							+ FIX: border thickness gets smaller with the size of the NPC
+								+ Should it actually be a percentage of one of the dimensions, rather than fixed?
+								+ Try with fixed # of pixels
+						+ Time pulse (in wallclock time)
+							+ Requires NPCs to remember selection wallclock timestamp
+							+ Try wallclock
+			+ Cleanups:
+				+ IGameEventHandlers::OnContinuousAutoFocusToggled() may go
+				+ IGameController::Get/SetDoContinuousAutoFocus
+		+ With a falling NPC, focus is near bottom of screen
+			X Use different speed iff focusing on NPC?
+				+ Test
+				+ Might have been a bad idea - the whole zooming/panning is different speed now
+			+ At UpdateAutoFocus: if NDC offset "large": bump up speed
+				+ ParamSmoother::Update() takes multiplier and applies it only there
+				+ UpdateAutoFocus() cals multiplier based off NDC camera offset and sets it for one-time use
+				+ ParameterSmoother unit tests
+		+ Tests:
+			+ Move tool (regressions)
+			+ Remove tool (regressions)
+			+ All state transitions above
+		+ Merge into npcs_v1
+	+ Rethink Attract force field (use mass)
+		+ Ship: less on air bubbles (in any case, less on things with mass 25)
+	+ Interrupt swim with great velocities
+		+ Repro: using attract/repel or swirl
+		+ And transition to "rag doll" aquatic state (i.e. "Free_InWater")
+			+ Also, do not transition from Free_InWater to Free_SwimmingX if velocity is still there
+		+ Actual condition: abs and rotation vels
+		+ Impl:			
+			+ Magic constants:
+				+ Max rotation: 2.0
+				+ Max vel: 4.0
+			+ Swimming state: progress to ~LeavingSwimming 
+			+ Free_InWater -> Free_SwimmingX: not if: rotation or vel1 or vel2
+			+ Free_SwimmingX -> Free_InWater: progress ~LeavingSwimming if rotation ok and vel1 ok and vel2 ok
+	+ Wind: 
+		+ Npc preliminary forces: 
+			+ Only applies to *free* *above-water* particles
+			+ Move Ship's WindForce calculation to Formulae
+			+ Since func is invoked per-particle, might want to calc global wind force outside
+			+ Don't forget to smooth with waterness - which make sure is smooth between 0 and 1
+	+ Wind tool: 
+		+ WindField work (*) spec'd for flames 
+		+ Npc preliminary forces: 
+			+ Only applies to:
+				+ Constrained *above-water* particles (i.e. walking in ship but not under ship-water)
+				+ Free *above-water* particles
+				+ In short: above-any-water
+		+ Use magic number for a NPC's wind receptivity adjustment
+			+ From GameParameters (but not in SettingsDialog)
+				+ To account for the smaller number of particles than a ship
+			+ Apply to both winds
+	+ Ship-specific explosions: only NPCs of that ship, or free regime of any ship
+		+ mParentWorld.GetNpcs().ApplyXXXForce(shipId, ...)
+		+ Npcs::ApplyBlast()
+	+ Blast tool
+
+	+ Fix: NPC at bottom of ship at bottom of ocean, flooded, touching ocean floor
+		! Rethink constrained NPC becoming free when under land
+		+ Adjust for land only for free NPCs (i.e. all particles are free)
+
+	+ Fix: many drums start dancing
+		! Only due to "dead weight" on triangle edge at end of Constrained_NonInertial; bounce force is fine (and cool)
+		+ Try with mass update instead of force
+			+ Add TransientAdditionalMass
+				+ Use at UpdateMasses()
+				+ Reset at end of Update() (NOT at UpdateEnd) - so that Npcs::Update adds masses for next Ship::Update
+			+ Npcs adds (two of them) at same place where we add forces
+		+ Now many drums impacting make everything explode - but see if we can keep it
+			+ Rethink impact force, see https://www.geeksforgeeks.org/how-to-calculate-the-impact-force/ and https://www.studysmarter.co.uk/explanations/physics/force/impact-forces/
+			+ Recalc based on kinetic energy lost, or dp/dt
+			
+	+ Fix: sinking barrel doesn't move - add infinitesimal buoyancy chances to each particle
+	+ Fix: slecht op benen @ human placement
+		! @ behavior Constrained_Aerial, which then goes to Constrained_Falling
+		! Due to that 0.6 being added alternatively
+		+ Try with left and right legs _centered_ around legAngle
+	+ Fix flat head of wealthy passenger (all 3 orientations)
+	+ Make Green drum Light, Blue drum Heavy (current weight)
+	+ Make piano heavier
+	+ Body width randomization sensitivity
+	+ Buoyancy volume fill rearc: @ particle level
+		+ NpcDatabase:
+			+ Human:
+				+ Each human can have buoyancy_volume_fill_head/feet - if not present, use materials'
+			+ Furniture:
+				+ particle_mesh has optional _array_ of buoyancy_volume_fill
+					+ size: 1 or N; when 1, copied to N
+				+ When not present, use materials'
+		+ @ NPC creation:
+			+ Use NPC's, not material's
+			+ Store with NPC particle
+		+ jsons:
+			+ Move npc_buoyancy_volume_fill's from materials_structural.json to npcs.json
+			+ Nuke npc_buoyancy_volume_fill from StructuralMaterial (and code)
+		+ Redo also for NPC spring coeffs? i.e. move them from StructuralMaterial to Npc?
+			+ NpcDatabase: new struct NpcParticleAttributesType
+				+ BuoyancyVolumeFill
+				+ Spring 1 & 2
+			+ HumanKindType has two fully-populated "override", Furniture has "override" vector fully-populated
+			+ ParseHuman:
+				+ Everything optional (container & members)
+				+ If anything missing: take from StructuralMaterial
+					+ Look @ defaults for Spring 1 & 2
+			+ ParseFurniture:
+				+ Everything optional (array & element members)
+				+ If anything missing: take from StructuralMaterial
+					+ Look @ defaults for Spring 1 & 2
+			+ Humans: also from global
+			+ Use @ NPC creation
+			+ Nuke all NPC props from StructuralMaterial
+			+ Move NPC props from StructuralMaterial to NPCs.json
+	+ See if can continue to figure out how to avoid deformation of quads
+		+ Add (temporary) slider for NPC spring realaxation params
+	+ Anti-matter bomb force fields:
+		+ Pre-Implosion
+		+ Implosion
+		+ Explosion
+		+ Nuke Ship::ForceFields
+	+ Swirl, etc.: NPCs of all ships, all regimes		
+		+ Controlled by flag, "~force tools on NPCs"
+			+ SettingsDialog
+		+ World calls Npcs.ApplyXXXForce(...) after check on flag
+			+ Quantities that are now calculated in Ship become calc'd in World, so we can pass them on to NPCs
+			+ Swirl/Counterswirl
+			+ Attract/Repel
+	+ Move/Rotate tool:
+		+ World: after calling into Ship(), call Npcs.Move/etc/Npcs(shipId, [componentId], ...)
+			+ Test in BaryLab first
+			+ Ship::PickPointToMove: becomes PickConnectedComponentToMove() -> ConnectedComponentId
+				+ Also Tool
+			+ Just need Move/Rotate, opt<ConnectedComponentId>
+				+ Only considers constrained particles
+					+ And if ConnectedComponentId is specified, only particles in triangle with first endpoint on that ConnectedComponentId
+				+ Look at Ship::Move/etc for physics (e.g. velocity, force zeroing)
+			+ At the end calls MaintainInWorldBounds()
+	+ Electric spark:
+		+ Ship:
+			+ HandleElectricSpark(): set Points.IsElectrified
+			+ UpdateEnd(): reset it
+		+ Constrained_Electrified:
+			+ Into:
+				+ Eq, Walk: as soon as electrified detected, via helper, with low-freq step check 
+					+ Checked once in a while
+					+ Become frontal|back (random)
+			+ Out: 
+				+ Free->Free
+				+ When not electrified for a while (own progress) -> Constrained_KO
+		+ Animation:
+			+ See notebook
+	+ Mass/forces: these two may be done together:
+			- NPCs add mass to particle
+				- Ship::Update asks NPCs (via ParentWorld) to add themselves to Points' (definitive) masses
+			- NPC bounces transfer impact forces to ship's particles
+		+ ...By adding StaticForce's to ship's particles at these places:
+			+ At return from NonInertial, using the last "flattened out" displacement to calc force (*m/dt2)
+			+ At bounce, using the bounced displacement
+				+ Need to make sure that a bounce at non-inertial is not followed by the force in the previous bullet
+				+ BounceConstrained...() needs to take bounceEdgeTriangle, bounceEdgeBCoords, bounceEdgeOrdinal, and Ship - but can lose bounceEdgeNormal
+			+ Requires Ship in NPC to not be const
+				+ And see if can get rid of naming member "ShipMesh" - may be "HomeShip"?
+	+ Mass is proportional to body length adjustment (square, we're 2D)
+		! And so is buoyancy
+		+ Port to BL
+		+ NPCParticle attributes (changeable from outside)
+			+ PhysicalProperties->MaterialProperties
+			+ MaterialProperties.Mass
+			+ Mass // Adjusted 
+				+ Use wherever we use mass - which should also be always adjusted with MassAdjustment
+			+ BuoyancyFactor
+				+ Use @ Bouyancy
+		+ Springs attributes:
+			+ BaseRestLength, RestLength (was DipoleLength)
+				+ Use for humans whever we take height*adjust
+		+ @ Npcs::Add (x2):
+			+ Calculate Mass via static float CalculateParticleMass(base mass, dimensions adjustment, mass adj (iff BaryLab))
+			+ Calculate BuoyancyFactor via static float CalculateParticleBuoyancy(base mass, dimensions adjustment, buoyancy adj (iff BaryLab) , mass adj?)
+			+ Calculate spring lengths and force coeffs via static float CalculateSprings(..., mesh in/out)
+				+ Spring lengths used for:
+					+ Hooke force (as dipoleLength)
+					+ Particles' positions at Add() (as height*adjust)
+					+ Render (as height*adjust)
+					+ Equilibrium Torque (as height*adjust)
+					+ Animation (walking) (as height*adjust)
+		+ @ Npcs::Update:
+			+ At size adjustment detected: (and mass & buoyancy iff barylab)
+				+ RecalculateSizeAndMassParameters:
+					+ Recalculate all NpcParticles::Mass via static float CalculateParticleMass(base mass, dimensions adjustment, mass adj (iff BaryLab))
+					+ Recalculate all NpcParticles::BuoyancyFactor via static float CalculateParticleBuoyancy(base mass, dimensions adjustment, buoyancy adj (iff BaryLab) , mass adj?)
+					+ Recalculate all spring lengths and force coeffs via static float CalculateSprings(..., mesh in/out)
+						- Replaces CalculateHumanNpcDipoleLength(.)
+		+ Finals:
+			+ Make sure mCurrentSizeAdjustment is only used in funcs to calc/recalc
+			+ Make sure mCurrentMassAdjustment is only used in funcs to calc/recalc
+		+ Port to FS
+	+ Incorporate ship material's elasticity and friction in calculations for bounce and friction
+	+ Panic:
+		+ Close to bomb
+			+ @ Eq, Walk:
+				+ HasBomb => DirFlip (iff BombProximityPanic < 0.7) and set Npc::BombProximityPanic to 1.0	
+		+ Close to fire
+			+ Ditto
+
+	+ Barylab:
+		+ Port
+		+ Profile
+			+ Was: 2.5/2.6/2.7
+			+ Now: 3.3/3.4
+			X Possible perf improv: Prelim forces: separate loop by Npc->Particles
+				! Better code cache and locality (for particles)
+			+ Profile 1:
+				! Npcs::UpdateNpcs: 53.73, self=12.46  -> 53.02, self=15.40
+					! UpdateNpcParticlePhysics: 18.75 -> 19.77
+					! UpdateNpcAnimation: 9.36%
+					! CalculateNpcParticlePreliminaryForces	4.52% -> 4.20
+				! Npcs::RenderNpc:: self=13.35
+			+ Profile water (-> WAY LESS)
+			+ inline CalculateNpcParticlePreliminaryForces
+			+ inline CalculateNpcParticleDefinitiveForces
+			+ inline Triangles::InternalToBaryCoords
+			+ Profile 2: 3.0/3.1
+		+ Perf attempts:
+			+ CalculateActualHumanWalkingAbsoluteSpeed and chain:
+				+ Too much work on resultant panic level:
+					+ Try with just clamp
+				! Mostly 3.0
+			+ Walking anim: edge dir calculation doesn't need springs
+				+ Test if leg slope ok
+			X FindTriangle: try with boundary conditions first
+				! Profile first: 1.0s
+			+ Quad-building with intrinsics
+				! Profile first: Physics::Npcs::RenderNpc	893 (24.74%)	515 (14.27%)
+				+ 1. Add profiling code to measure Upload time & print it
+					+ 1.7/1.8
+				+ 2. Quad structure
+					+ Move to GameTypes
+				+ 3. Quad bulding with plain C++
+					+ Returns struct for the time being
+				+ 4. RenderNpc: use quad building for one
+				+ 5. RenderContext overload taking quad
+				+ 6. RenderNpc: use quad building everywhere 
+				+ 7. Quad building with intrinsics
+					+ Notes:
+						- To load into high/low: loadh/l
+						- To copy perp into all 4 parts of register: shuffle_pd(p, p, 0)
+						- To replicate halfW into all four slots: setp
+					+ Improv that TODO
+				+ 8. Perf measurements
+					+ 1.6/1.7
+					+ 1.6
+					+ Physics::Npcs::RenderNpc	803 (23.17%)	475 (13.71%)
+					  Render::RenderContext::UploadNpcTextureQuadsEnd	435 (12.55%)	0 (0.00%)
+				+ 9. RenderContext: two buffers, one with vertices and other with everything else
+					+ Phase 1: two plain buffers, quad in-place
+						+ RenderContext:
+							+ Two vertex buffers (std::vector): 
+								- NpcQuadVertexPositions: of Quad
+								- NpcQuadVertexAttributes: of own public NpcQuadVertexAttributes
+									- Remove BackDepth, OtherDepth
+								- Two VBOs
+							+ UploadNpcStart: do math and reserve() both vectors
+							+ Two "upload" functions: UploadNpcQuadVertexPositions and UploadNpcQuadVertexAttributes
+							+ Init: VBOs vertex description
+							+ RenderPrepare: upload both buffers
+							+ Shader
+								- Do bottom+left using texture coords (which we know are -1->1, i.e. -1)
+						+ Npcs::RenderNpc: 
+							+ Do quad building in-place
+								+ Quad-building function: "Into"
+					+ Test
+						+ Furniture
+						+ Particle
+						+ Perf: 
+							+ 1.4/1.5
+							+ Physics::Npcs::RenderNpc	767 (22.29%)	478 (13.89%)
+							  Render::RenderContext::UploadNpcTextureQuadsEnd	356 (10.35%)	0 (0.00%)
+					+ See if can optimize attributes
+						+ Pass plane and color as float and vec directly from RenderNpc
+							+ Check assembly
+							+ 1.4/1.5 (but mostly 1.4)
+						X Better pack attributes so "constants" are together (planeid, color)
+							+ Use padding
+							+ Check assembly
+					X Phase 2: try single buffer (all in RenderContext)
+						+ Members:
+							+ A Buffer of uint8_t - mNpcTextureQuadsVertexBuffer
+							+ size_t mNpcTextureQuadsVertexBufferSize // byte size
+							+ A Quad* pointer and a Attributes* pointer
+							+ size_t mNpcTextureQuadCount
+							+ size_t mNpcTextureQuadMaxCount
+							+ size_t mNpcTextureQuadMDescribedMaxCount
+							+ One single VBO
+						+ UploadNpcStart:							
+							+ If != mNpcTextureQuadsVertexSize:
+								+ Calc required byte size
+								+ Realloc buf
+								+ Re-store Quad* and Attributes* pointers
+						+ Upload:
+							+ Quad: return ptr
+							+ Attributes: store and increment mNpcTextureQuadCount
+						+ UploadEnd:
+							+ Upload VBO
+								+ If mNpcTextureQuadMDescribedMaxCount != mNpcTextureQuadMaxCount:
+									+ Describe
+										+ Move here from Init
+						+ Profile: 2.4
+					X Phase 3: try to go back to one single Upload func to see if QuadInPlace really does much
+						+ Upload takes Quad & rest and stores in various buffers
+						X If ok:
+							X Redo MakeQuad (one func)
+					+ Phase 4: see how to optimize attributes
+						+ Test 1: further split attributes into texture quads et al
+							! This is to store texture quad also once (like positions) and only repeat attributes
+							+ Add third buffer
+							! Physics::Npcs::RenderNpc	1209 (21.32%)	1019 (17.97%)
+							  Render::RenderContext::UploadNpcTextureQuadsEnd	556 (9.80%)	0 (0.00%)
+							! We lost because of third buffer upload (commenting it out goes back to 1.4)
+						+ Align buffers
+							+ Just via BoundedVector						
+						+ Test 2: get rid of one component of overlayColor							
+						+ Now we are at 1.4; go ahead with all this work and cleanup
+							+ Shader
+							+ Nuke vertex attrib afterwards
+						+ Test 3: test back to two buffers (texture coords in attribs)
+							+ "a" first
+							! Perf: 1.1, occasionally 1.2
+						+ Test 4: check if can pack "static" attributes (planeId & overlayColor) from caller once
+							! Given that they don't change across all quads of the same NPC
+							+ OverlayColor & planeID, using public struct exposed by RenderContext
+							! Perf: 1.1
+					X Phase 5:
+						X Try aligned buffer (position and possibly others)
+							+ Buffer(s) are/is aligned
+							+ Intrinsics change
+								+ Assert aligned
+									+ Re-check implementation
+								+ Use stream_pd (to avoid cache pollution)
+							X Goes to 2.4/2.6!!!!
+				+ See if still need two quad-building functions
+
+		+ Port back into FS
+			+ vec2f default cctor
+			+ BoundedVector
+			+ Quad
+			+ GameGeometry: namespace & MakeQuad
+			+ NPCs
+			+ RenderContext (to ShipRenderContext)
+			+ Shader
+		+ Port back into BaryLab
