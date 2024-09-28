@@ -1028,12 +1028,164 @@ Arch
 		+ Close to fire
 			+ Ditto
 
-	- Barylab:
-		- Port
-		- Nuke most of "publishing for currently-selected NPC", and let GameController use selection @ end of Update() to pull off data and give to ProbeToolbar
-		- Profile
-			- Possible perf improv: Prelim forces: separate loop by Npc->Particles
-				- Better code cache and locality (for particles)		
+	= Barylab:
+		+ Port
+		+ Profile
+			+ Was: 2.5/2.6/2.7
+			+ Now: 3.3/3.4
+			X Possible perf improv: Prelim forces: separate loop by Npc->Particles
+				! Better code cache and locality (for particles)
+			+ Profile 1:
+				! Npcs::UpdateNpcs: 53.73, self=12.46  -> 53.02, self=15.40
+					! UpdateNpcParticlePhysics: 18.75 -> 19.77
+					! UpdateNpcAnimation: 9.36%
+					! CalculateNpcParticlePreliminaryForces	4.52% -> 4.20
+				! Npcs::RenderNpc:: self=13.35
+			+ Profile water (-> WAY LESS)
+			+ inline CalculateNpcParticlePreliminaryForces
+			+ inline CalculateNpcParticleDefinitiveForces
+			+ inline Triangles::InternalToBaryCoords
+			+ Profile 2: 3.0/3.1
+		+ Perf attempts:
+			+ CalculateActualHumanWalkingAbsoluteSpeed and chain:
+				+ Too much work on resultant panic level:
+					+ Try with just clamp
+				! Mostly 3.0
+			+ Walking anim: edge dir calculation doesn't need springs
+				+ Test if leg slope ok
+			X FindTriangle: try with boundary conditions first
+				! Profile first: 1.0s
+			+ Quad-building with intrinsics
+				! Profile first: Physics::Npcs::RenderNpc	893 (24.74%)	515 (14.27%)
+				+ 1. Add profiling code to measure Upload time & print it
+					+ 1.7/1.8
+				+ 2. Quad structure
+					+ Move to GameTypes
+				+ 3. Quad bulding with plain C++
+					+ Returns struct for the time being
+				+ 4. RenderNpc: use quad building for one
+				+ 5. RenderContext overload taking quad
+				+ 6. RenderNpc: use quad building everywhere 
+				+ 7. Quad building with intrinsics
+					+ Notes:
+						- To load into high/low: loadh/l
+						- To copy perp into all 4 parts of register: shuffle_pd(p, p, 0)
+						- To replicate halfW into all four slots: setp
+					+ Improv that TODO
+				+ 8. Perf measurements
+					+ 1.6/1.7
+					+ 1.6
+					+ Physics::Npcs::RenderNpc	803 (23.17%)	475 (13.71%)
+					  Render::RenderContext::UploadNpcTextureQuadsEnd	435 (12.55%)	0 (0.00%)
+				+ 9. RenderContext: two buffers, one with vertices and other with everything else
+					+ Phase 1: two plain buffers, quad in-place
+						+ RenderContext:
+							+ Two vertex buffers (std::vector): 
+								- NpcQuadVertexPositions: of Quad
+								- NpcQuadVertexAttributes: of own public NpcQuadVertexAttributes
+									- Remove BackDepth, OtherDepth
+								- Two VBOs
+							+ UploadNpcStart: do math and reserve() both vectors
+							+ Two "upload" functions: UploadNpcQuadVertexPositions and UploadNpcQuadVertexAttributes
+							+ Init: VBOs vertex description
+							+ RenderPrepare: upload both buffers
+							+ Shader
+								- Do bottom+left using texture coords (which we know are -1->1, i.e. -1)
+						+ Npcs::RenderNpc: 
+							+ Do quad building in-place
+								+ Quad-building function: "Into"
+					+ Test
+						+ Furniture
+						+ Particle
+						+ Perf: 
+							+ 1.4/1.5
+							+ Physics::Npcs::RenderNpc	767 (22.29%)	478 (13.89%)
+							  Render::RenderContext::UploadNpcTextureQuadsEnd	356 (10.35%)	0 (0.00%)
+					+ See if can optimize attributes
+						+ Pass plane and color as float and vec directly from RenderNpc
+							+ Check assembly
+							+ 1.4/1.5 (but mostly 1.4)
+						X Better pack attributes so "constants" are together (planeid, color)
+							+ Use padding
+							+ Check assembly
+					X Phase 2: try single buffer (all in RenderContext)
+						+ Members:
+							+ A Buffer of uint8_t - mNpcTextureQuadsVertexBuffer
+							+ size_t mNpcTextureQuadsVertexBufferSize // byte size
+							+ A Quad* pointer and a Attributes* pointer
+							+ size_t mNpcTextureQuadCount
+							+ size_t mNpcTextureQuadMaxCount
+							+ size_t mNpcTextureQuadMDescribedMaxCount
+							+ One single VBO
+						+ UploadNpcStart:							
+							+ If != mNpcTextureQuadsVertexSize:
+								+ Calc required byte size
+								+ Realloc buf
+								+ Re-store Quad* and Attributes* pointers
+						+ Upload:
+							+ Quad: return ptr
+							+ Attributes: store and increment mNpcTextureQuadCount
+						+ UploadEnd:
+							+ Upload VBO
+								+ If mNpcTextureQuadMDescribedMaxCount != mNpcTextureQuadMaxCount:
+									+ Describe
+										+ Move here from Init
+						+ Profile: 2.4
+					X Phase 3: try to go back to one single Upload func to see if QuadInPlace really does much
+						+ Upload takes Quad & rest and stores in various buffers
+						X If ok:
+							X Redo MakeQuad (one func)
+					+ Phase 4: see how to optimize attributes
+						+ Test 1: further split attributes into texture quads et al
+							! This is to store texture quad also once (like positions) and only repeat attributes
+							+ Add third buffer
+							! Physics::Npcs::RenderNpc	1209 (21.32%)	1019 (17.97%)
+							  Render::RenderContext::UploadNpcTextureQuadsEnd	556 (9.80%)	0 (0.00%)
+							! We lost because of third buffer upload (commenting it out goes back to 1.4)
+						+ Align buffers
+							+ Just via BoundedVector						
+						+ Test 2: get rid of one component of overlayColor							
+						+ Now we are at 1.4; go ahead with all this work and cleanup
+							+ Shader
+							+ Nuke vertex attrib afterwards
+						+ Test 3: test back to two buffers (texture coords in attribs)
+							+ "a" first
+							! Perf: 1.1, occasionally 1.2
+						+ Test 4: check if can pack "static" attributes (planeId & overlayColor) from caller once
+							! Given that they don't change across all quads of the same NPC
+							+ OverlayColor & planeID, using public struct exposed by RenderContext
+							! Perf: 1.1
+					X Phase 5:
+						X Try aligned buffer (position and possibly others)
+							+ Buffer(s) are/is aligned
+							+ Intrinsics change
+								+ Assert aligned
+									+ Re-check implementation
+								+ Use stream_pd (to avoid cache pollution)
+							X Goes to 2.4/2.6!!!!
+				+ See if still need two quad-building functions
+
+		- Port back
+			+ vec2f default cctor
+			- BoundedVector
+			- Buffer operator=(&&)
+			- Quad
+			- GameGeometry: namespace & MakeQuad
+			- NPCs
+			- RenderContext (to ShipRenderContext)
+			- Did we want this which we did in FS? Or was it a mistake?
+				-float constexpr ParticleSize = 0.30f; // For rendering, mostly - given that particles have zero dimensions
+				+float constexpr ParticleSize = 0.10f; // For rendering, mostly - given that particles have zero dimensions
+
+- Npc menu, and move all tools to it
+	- Requires two vectors of wxMenuItem's to cross-synchronize
+- Add crowd
+- Add Flip NPC H
+
+- FIX:
+	- AutoFocus on NPC: very fast NPCs are not in focus
+		- Repro: AntiMatter bomb
+		- TRy: ViewManager: if focus on NPC => greater speed multiplier for camera
 
 ===================
 Next release:
