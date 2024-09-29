@@ -336,7 +336,7 @@ private:
 
     void OnFishCountUpdated(size_t count) override
     {
-        mScareFishMenuItem->Enable(count > 0);
+        ReconciliateUIWithFishPresence(count > 0);
     }
 
     void OnNpcCountsUpdated(size_t totalNpcCount) override
@@ -410,6 +410,7 @@ private:
     void OnNpcToolSelected(ToolType toolType);
 
     void ReconciliateUIWithUIPreferencesAndSettings();
+    void ReconciliateUIWithFishPresence(bool areFishPresent);
     void ReconciliateUIWithNpcPresence(bool areNpcsPresent);
     void ReconciliateUIWithAutoFocusTarget(std::optional<AutoFocusTargetKindType> target);
 

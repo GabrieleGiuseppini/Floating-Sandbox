@@ -2594,10 +2594,32 @@ void MainFrame::ReconciliateUIWithUIPreferencesAndSettings()
     mMuteMenuItem->Check(mUIPreferencesManager->GetGlobalMute());
 }
 
+void MainFrame::ReconciliateUIWithFishPresence(bool areFishPresent)
+{
+    if (areFishPresent)
+    {
+        if (!mScareFishMenuItem->IsEnabled())
+        {
+            mScareFishMenuItem->Enable(true);
+        }
+    }
+    else
+    {
+        if (mScareFishMenuItem->IsEnabled())
+        {
+            mScareFishMenuItem->Enable(false);
+        }
+
+        assert(!!mToolController);
+        if (mToolController->GetCurrentTool() == ToolType::ScareFish)
+        {
+            SelectTool(InitialNonNpcToolType, false);
+        }
+    }
+}
+
 void MainFrame::ReconciliateUIWithNpcPresence(bool areNpcsPresent)
 {
-    assert(!!mToolController);
-
     if (areNpcsPresent)
     {
         // Enable NPC menu items
