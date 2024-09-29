@@ -7,6 +7,8 @@
 - Roadmap:
 
 	= Npcs - take 1
+		- Merge into master
+		- Changelist
 
 	+ Perlin noise on Land:
 		+ Figure out first if can have single-float 2D texture: RED channel only?

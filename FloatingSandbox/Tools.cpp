@@ -610,7 +610,7 @@ BlastTool::BlastTool(
     SoundController & soundController,
     ResourceLocator const & resourceLocator)
     : Tool(
-        ToolType::BlastTool,
+        ToolType::Blast,
         toolCursorManager,
         gameController,
         soundController)
@@ -631,7 +631,7 @@ ElectricSparkTool::ElectricSparkTool(
     SoundController & soundController,
     ResourceLocator const & resourceLocator)
     : Tool(
-        ToolType::ElectricSparkTool,
+        ToolType::ElectricSpark,
         toolCursorManager,
         gameController,
         soundController)
@@ -651,7 +651,7 @@ WindMakerTool::WindMakerTool(
     SoundController & soundController,
     ResourceLocator const & resourceLocator)
     : Tool(
-        ToolType::WindMakerTool,
+        ToolType::WindMaker,
         toolCursorManager,
         gameController,
         soundController)
@@ -676,7 +676,7 @@ LaserCannonTool::LaserCannonTool(
     SoundController & soundController,
     ResourceLocator const & resourceLocator)
     : Tool(
-        ToolType::LaserCannonTool,
+        ToolType::LaserCannon,
         toolCursorManager,
         gameController,
         soundController)
@@ -696,7 +696,7 @@ LampTool::LampTool(
     SoundController & soundController,
     ResourceLocator const & resourceLocator)
     : Tool(
-        ToolType::LampTool,
+        ToolType::Lamp,
         toolCursorManager,
         gameController,
         soundController)

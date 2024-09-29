@@ -194,12 +194,48 @@ Arch
 
 V1 TODO:
 
-- Npc menu, and move all tools to it
-	- Requires two vectors of wxMenuItem's to cross-synchronize
+= Npc menu, and move all tools to it
+	+ Requires two vectors of wxMenuItem's to cross-synchronize
+	+ AddToolMenu macro:
+		+ Takes ToolType
+			+ If ToolType == InitialToolType: check
+	+ OnNpc/NonNpcToolSelected:
+		+ Do not set tool
+		+ Reconciliate menu items
+		+ Do Exterior/InteriorViewSwitch
+	+ PlaceNpc(x2) menu is NORMAL and we do checking ourselves
+	+ Tests:
+		+ Smash is selected
+		+ All tools
+			+ Selects appropriate tool, unselects other
+		+ Cross-menu jumps
+		+ Switch to exterior/interior
+		+ Conditionally-enabled
+			+ ScareFish
+			+ Move, Remove, Follow , SelectNext NPC
+
+	- PlaceNpc sub-menu's: make Radio
+		- But now can't re-select an already-checked one
+
+
+- GameController @ (ResetAnd)LoadShip calls Npcs::PublishStats()
+	- Remove zeroing from MainFrame::ResetUIShipState
+	- @ NpcCount reconciliation: if current tool is one of those that must go, auto-switch to InitialTool
+
+- Just FS:
+	- Align "big" render buffers, e.g.:
+		- Ship: generic mip mapped
+			- Perf of bubbles:
+				- Before:
+				- After:
+		- static ship attribs
+		- ocean, land
+
 - Add crowd
 - Add Flip NPC H
 
 - Finish assets
+	- Tungsten material
 
 - FIX:
 	- AutoFocus on NPC: very fast NPCs are not in focus

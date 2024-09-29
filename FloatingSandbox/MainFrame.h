@@ -127,20 +127,26 @@ private:
     wxMenuItem * mShipViewInteriorMenuItem;
     wxMenuItem * mPauseMenuItem;
     wxMenuItem * mStepMenuItem;
-    wxMenu * mToolsMenu;
-    wxMenuItem * mSmashMenuItem;
+
+    wxMenu * mNonNpcToolsMenu;
     wxMenuItem * mScareFishMenuItem;
-    wxMenu * mHumanNpcSubMenu;
-    wxMenu * mFurnitureNpcSubMenu;
     wxMenuItem * mRCBombsDetonateMenuItem;
     wxMenuItem * mAntiMatterBombsDetonateMenuItem;
     wxMenuItem * mTriggerStormMenuItem;
+    wxMenu * mNpcToolsMenu;
+    wxMenu * mHumanNpcSubMenu;
+    wxMenu * mFurnitureNpcSubMenu;
+    wxBitmap mAddHumanNpcUncheckedIcon;
+    wxBitmap mAddHumanNpcCheckedIcon;
+    wxBitmap mAddFurnitureNpcUncheckedIcon;
+    wxBitmap mAddFurnitureNpcCheckedIcon;
     wxMenuItem * mAddHumanNpcMenuItem;
     wxMenuItem * mAddFurnitureNpcMenuItem;
     wxMenuItem * mMoveNpcMenuItem;
     wxMenuItem * mRemoveNpcMenuItem;
     wxMenuItem * mFollowNpcMenuItem;
     wxMenuItem * mSelectNextNpcMenuItem;
+
     wxMenuItem * mReloadLastModifiedSettingsMenuItem;
     wxMenuItem * mShowEventTickerMenuItem;
     wxMenuItem * mShowProbePanelMenuItem;
@@ -152,6 +158,9 @@ private:
     ProbePanel * mProbePanel;
     EventTickerPanel * mEventTickerPanel;
     SwitchboardPanel * mElectricalPanel;
+
+    std::vector<std::tuple<ToolType, wxMenuItem *>> mNonNpcToolMenuItems;
+    std::vector<std::tuple<ToolType, wxMenuItem *>> mNpcToolMenuItems;
 
     //
     // Dialogs
@@ -218,47 +227,14 @@ private:
     void OnReloadCurrentShipMenuItemSelected(wxCommandEvent & event);
     void OnReloadPreviousShipMenuItemSelected(wxCommandEvent & event);
     void OnSaveScreenshotMenuItemSelected(wxCommandEvent & event);
-
-    void OnMoveMenuItemSelected(wxCommandEvent & event);
-    void OnMoveAllMenuItemSelected(wxCommandEvent & event);
-    void OnPickAndPullMenuItemSelected(wxCommandEvent & event);
-    void OnSmashMenuItemSelected(wxCommandEvent & event);
-    void OnSliceMenuItemSelected(wxCommandEvent & event);
-    void OnHeatBlasterMenuItemSelected(wxCommandEvent & event);
-    void OnFireExtinguisherMenuItemSelected(wxCommandEvent & event);
-    void OnBlastToolMenuItemSelected(wxCommandEvent & event);
-    void OnElectricSparkToolMenuItemSelected(wxCommandEvent & event);
-    void OnGrabMenuItemSelected(wxCommandEvent & event);
-    void OnSwirlMenuItemSelected(wxCommandEvent & event);
-    void OnPinMenuItemSelected(wxCommandEvent & event);
-    void OnInjectPressureMenuItemSelected(wxCommandEvent & event);
-    void OnFloodHoseMenuItemSelected(wxCommandEvent & event);
-    void OnTimerBombMenuItemSelected(wxCommandEvent & event);
-    void OnRCBombMenuItemSelected(wxCommandEvent & event);
-    void OnImpactBombMenuItemSelected(wxCommandEvent & event);
-    void OnAntiMatterBombMenuItemSelected(wxCommandEvent & event);
-    void OnThanosSnapMenuItemSelected(wxCommandEvent & event);
-    void OnWaveMakerMenuItemSelected(wxCommandEvent & event);
-    void OnWindMakerMenuItemSelected(wxCommandEvent & event);
-    void OnLaserCannonMenuItemSelected(wxCommandEvent & event);
-    void OnAdjustTerrainMenuItemSelected(wxCommandEvent & event);
-    void OnRepairStructureMenuItemSelected(wxCommandEvent & event);
-    void OnScrubMenuItemSelected(wxCommandEvent & event);
-    void OnScareFishMenuItemSelected(wxCommandEvent & event);
-    void OnLampMenuItemSelected(wxCommandEvent & event);
-    void OnAddHumanNpcMenuItemSelected(NpcSubKindIdType kind);
-    void OnAddFurnitureNpcMenuItemSelected(NpcSubKindIdType kind);
-    void OnMoveNpcMenuItemSelected(wxCommandEvent & event);
-    void OnRemoveNpcMenuItemSelected(wxCommandEvent & event);
-    void OnFollowNpcMenuItemSelected(wxCommandEvent & event);
-    void OnSelectNextNpcMenuItemSelected(wxCommandEvent & event);
+    
     void OnTriggerLightningMenuItemSelected(wxCommandEvent & event);
     void OnRCBombDetonateMenuItemSelected(wxCommandEvent & event);
     void OnAntiMatterBombDetonateMenuItemSelected(wxCommandEvent & event);
     void OnTriggerTsunamiMenuItemSelected(wxCommandEvent & event);
     void OnTriggerRogueWaveMenuItemSelected(wxCommandEvent & event);
     void OnTriggerStormMenuItemSelected(wxCommandEvent & event);
-    void OnPhysicsProbeMenuItemSelected(wxCommandEvent & event);
+    void OnSelectNextNpcMenuItemSelected(wxCommandEvent & event);
 
     void OnOpenSettingsWindowMenuItemSelected(wxCommandEvent & event);
     void OnReloadLastModifiedSettingsMenuItem(wxCommandEvent & event);
@@ -429,6 +405,9 @@ private:
 
     void UpdateFrameTitle();
 
+    void OnNonNpcToolSelected(ToolType toolType);
+    void OnNpcToolSelected(ToolType toolType);
+
     void ReconciliateUIWithUIPreferencesAndSettings();
     void ReconciliateUIWithNpcPresence(bool areNpcsPresent);
     void ReconciliateUIWithAutoFocusTarget(std::optional<AutoFocusTargetKindType> target);
@@ -443,10 +422,6 @@ private:
 
     void OnShipLoaded(ShipLoadSpecifications loadSpecs); // By val to have own copy vs current/prev
 
-    void OnToolSelectedWithSwitchToInteriorView();
-
-    void OnToolSelectedWithSwitchToExteriorView();
-
     wxAcceleratorEntry MakePlainAcceleratorKey(int key, wxMenuItem * menuItem);
 
     void SwitchToShipBuilderForNewShip();
@@ -454,6 +429,10 @@ private:
     void SwitchToShipBuilderForCurrentShip();
 
     void SwitchFromShipBuilder(std::optional<std::filesystem::path> shipFilePath);
+
+    std::tuple<wxBitmap, wxBitmap> MakeMenuBitmaps(std::string const & iconName) const;
+
+    void SetMenuItemChecked(wxMenuItem * menuItem, wxBitmap & uncheckedBitmap, wxBitmap & checkedBitmap, bool isChecked);
 
 private:
 
