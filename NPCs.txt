@@ -218,9 +218,14 @@ V1 TODO:
 		- But now can't re-select an already-checked one
 
 
-- GameController @ (ResetAnd)LoadShip calls Npcs::PublishStats()
-	- Remove zeroing from MainFrame::ResetUIShipState
-	- @ NpcCount reconciliation: if current tool is one of those that must go, auto-switch to InitialTool
++ GameController @ (ResetAnd)LoadShip calls Npcs::PublishStats()
+	+ Remove zeroing from MainFrame::ResetUIShipState
+	+ @ NpcCount reconciliation: if current tool is one of those that must go, auto-switch to InitialTool
+
+- Add crowd
+	- TODOHERE
+
+- Add Flip NPC H
 
 - Just FS:
 	- Align "big" render buffers, e.g.:
@@ -230,9 +235,6 @@ V1 TODO:
 				- After:
 		- static ship attribs
 		- ocean, land
-
-- Add crowd
-- Add Flip NPC H
 
 - Finish assets
 	- Tungsten material

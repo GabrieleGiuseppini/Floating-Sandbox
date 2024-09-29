@@ -74,12 +74,12 @@ void World::AddShip(std::unique_ptr<Ship> ship)
 
 void World::Announce()
 {
-    // Nothing to announce in non-ship stuff...
-    // ...ask all ships to announce
     for (auto & ship : mAllShips)
     {
         ship->Announce();
     }
+
+    mNpcs->PublishCount();
 }
 
 void World::SetEventRecorder(EventRecorder * eventRecorder)

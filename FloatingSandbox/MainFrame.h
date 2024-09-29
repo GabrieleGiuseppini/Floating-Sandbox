@@ -405,6 +405,7 @@ private:
 
     void UpdateFrameTitle();
 
+    void SelectTool(ToolType toolType, bool isNpcTool);
     void OnNonNpcToolSelected(ToolType toolType);
     void OnNpcToolSelected(ToolType toolType);
 

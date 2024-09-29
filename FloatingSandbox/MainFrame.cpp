@@ -45,7 +45,7 @@
 #include "Resources/ShipBBB.xpm"
 #endif
 
-ToolType constexpr InitialToolType = ToolType::Smash;
+ToolType constexpr InitialNonNpcToolType = ToolType::Smash;
 
 long const ID_MAIN_CANVAS = wxNewId();
 
@@ -211,16 +211,7 @@ MainFrame::MainFrame(
             parentMenu->Bind(wxEVT_COMMAND_MENU_SELECTED,\
                 [this](wxCommandEvent &)\
                 {\
-                    assert(!!mToolController);\
-                    mToolController->SetTool((toolType));\
-                    if ((isNpc))\
-                    {\
-                        OnNpcToolSelected((toolType));\
-                    }\
-                    else\
-                    {\
-                        OnNonNpcToolSelected((toolType));\
-                    }\
+                    SelectTool((toolType), (isNpc));\
                 },\
                 id);\
             parentMenu->Append(toolMenuItem);\
@@ -232,7 +223,7 @@ MainFrame::MainFrame(
             {\
                 mNonNpcToolMenuItems.push_back({(toolType), toolMenuItem});\
             }\
-            if ((toolType) == InitialToolType)\
+            if ((toolType) == InitialNonNpcToolType)\
             {\
                 toolMenuItem->Check();\
             }\
@@ -594,7 +585,7 @@ MainFrame::MainFrame(
                 mNpcToolsMenu->Append(mAddHumanNpcMenuItem);
                 mAddHumanNpcMenuItem->Enable(true); // Note: here we're assuming we _can_ add NPCs; unfortunately the NPCs class is created _before_ we register for events, hence have to guess here
                 std::tie(mAddHumanNpcUncheckedIcon, mAddHumanNpcCheckedIcon) = MakeMenuBitmaps("add_human_npc_icon");
-                SetMenuItemChecked(mAddHumanNpcMenuItem, mAddHumanNpcUncheckedIcon, mAddHumanNpcCheckedIcon, InitialToolType == ToolType::PlaceHumanNpc);
+                SetMenuItemChecked(mAddHumanNpcMenuItem, mAddHumanNpcUncheckedIcon, mAddHumanNpcCheckedIcon, InitialNonNpcToolType == ToolType::PlaceHumanNpc);
                 mNpcToolMenuItems.push_back({ ToolType::PlaceHumanNpc, mAddHumanNpcMenuItem });
             }
 
@@ -607,7 +598,7 @@ MainFrame::MainFrame(
                 mNpcToolsMenu->Append(mAddFurnitureNpcMenuItem);
                 mAddFurnitureNpcMenuItem->Enable(true); // Note: here we're assuming we _can_ add NPCs; unfortunately the NPCs class is created _before_ we register for events, hence have to guess here
                 std::tie(mAddFurnitureNpcUncheckedIcon, mAddFurnitureNpcCheckedIcon) = MakeMenuBitmaps("add_furniture_npc_icon");
-                SetMenuItemChecked(mAddFurnitureNpcMenuItem, mAddFurnitureNpcUncheckedIcon, mAddFurnitureNpcCheckedIcon, InitialToolType == ToolType::PlaceFurnitureNpc);
+                SetMenuItemChecked(mAddFurnitureNpcMenuItem, mAddFurnitureNpcUncheckedIcon, mAddFurnitureNpcCheckedIcon, InitialNonNpcToolType == ToolType::PlaceFurnitureNpc);
                 mNpcToolMenuItems.push_back({ ToolType::PlaceFurnitureNpc, mAddFurnitureNpcMenuItem });
             }
 
@@ -1149,7 +1140,6 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     ResetShipUIState();
     RebuildNpcMenus();
     ReconciliateUIWithUIPreferencesAndSettings();
-    ReconciliateUIWithNpcPresence(mGameController->HasNpcs());
     ReconciliateUIWithAutoFocusTarget(mGameController->GetAutoFocusTarget());
 
 
@@ -1187,7 +1177,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     try
     {
         mToolController = std::make_unique<ToolController>(
-            InitialToolType,
+            InitialNonNpcToolType,
             mGameController->GetEffectiveAmbientLightIntensity(),
             mMainGLCanvas,
             *mGameController,
@@ -2475,10 +2465,6 @@ void MainFrame::ResetShipUIState()
     mRCBombsDetonateMenuItem->Enable(false);
     mAntiMatterBombsDetonateMenuItem->Enable(false);
     mTriggerStormMenuItem->Enable(true);
-    mMoveNpcMenuItem->Enable(false);
-    mRemoveNpcMenuItem->Enable(false);
-    mFollowNpcMenuItem->Enable(false);
-    mSelectNextNpcMenuItem->Enable(false);
 }
 
 void MainFrame::UpdateFrameTitle()
@@ -2500,6 +2486,21 @@ void MainFrame::UpdateFrameTitle()
     }
 
     SetTitle(ss.str());
+}
+
+void MainFrame::SelectTool(ToolType toolType, bool isNpcTool)
+{
+    assert(!!mToolController);
+    mToolController->SetTool((toolType));
+
+    if (isNpcTool)
+    {
+        OnNpcToolSelected(toolType);
+    }
+    else
+    {
+        OnNonNpcToolSelected(toolType);
+    }
 }
 
 void MainFrame::OnNonNpcToolSelected(ToolType toolType)
@@ -2595,6 +2596,8 @@ void MainFrame::ReconciliateUIWithUIPreferencesAndSettings()
 
 void MainFrame::ReconciliateUIWithNpcPresence(bool areNpcsPresent)
 {
+    assert(!!mToolController);
+
     if (areNpcsPresent)
     {
         // Enable NPC menu items
@@ -2626,7 +2629,7 @@ void MainFrame::ReconciliateUIWithNpcPresence(bool areNpcsPresent)
     }
     else
     {
-        // Disable NPC menu items
+        // Disable NPC menu items, resetting tool in case it's not allowed anymore
 
         if (mContinuousAutoFocusOnSelectedNpcMenuItem->IsEnabled())
         {
@@ -2651,6 +2654,13 @@ void MainFrame::ReconciliateUIWithNpcPresence(bool areNpcsPresent)
         if (mSelectNextNpcMenuItem->IsEnabled())
         {
             mSelectNextNpcMenuItem->Enable(false);
+        }
+
+        assert(!!mToolController);
+        auto const currentTool = mToolController->GetCurrentTool();
+        if (currentTool == ToolType::MoveNpc || currentTool == ToolType::RemoveNpc || currentTool == ToolType::FollowNpc)
+        {
+            SelectTool(InitialNonNpcToolType, false);
         }
     }
 }

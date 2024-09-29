@@ -33,6 +33,18 @@ public:
         SoundController & soundController,
         ResourceLocator const & resourceLocator);
 
+    std::optional<ToolType> GetCurrentTool() const
+    {
+        if (mCurrentTool != nullptr)
+        {
+            return mCurrentTool->GetToolType();
+        }
+        else
+        {
+            return std::nullopt;
+        }
+    }
+
     void SetTool(ToolType toolType)
     {
         assert(static_cast<size_t>(toolType) < mAllTools.size());

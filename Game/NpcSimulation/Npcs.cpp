@@ -654,7 +654,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
     //
 
     ++(mShips[shipId]->FurnitureNpcCount);
-    mGameEventHandler->OnNpcCountsUpdated(CalculateTotalNpcCount());
+    PublishCount();    
 
     return PickedObjectId<NpcId>(npcId, pickAnchorOffset);
 }
@@ -840,7 +840,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
     //
 
     ++(mShips[shipId]->HumanNpcCount);
-    mGameEventHandler->OnNpcCountsUpdated(CalculateTotalNpcCount());
+    PublishCount();
 
     return PickedObjectId<NpcId>(npcId, vec2f::zero());
 }
@@ -1181,7 +1181,7 @@ void Npcs::RemoveNpc(NpcId id)
         PublishHumanNpcStats();
     }
 
-    mGameEventHandler->OnNpcCountsUpdated(CalculateTotalNpcCount());
+    PublishCount();
 
     //
     // Update ship indices
@@ -1282,6 +1282,13 @@ void Npcs::HighlightNpc(std::optional<NpcId> id)
 
     mCurrentlyHighlightedNpc = id;
 }
+
+void Npcs::PublishCount()
+{
+    mGameEventHandler->OnNpcCountsUpdated(CalculateTotalNpcCount());
+}
+
+/////////////////////////////////////////
 
 void Npcs::MoveBy(
     ShipId shipId,

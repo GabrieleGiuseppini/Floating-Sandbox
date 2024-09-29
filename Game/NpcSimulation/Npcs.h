@@ -879,6 +879,8 @@ public:
 
 	void HighlightNpc(std::optional<NpcId> id);
 
+	void PublishCount();
+
 public:
 
 	//
