@@ -194,36 +194,38 @@ Arch
 
 V1 TODO:
 
-= Npc menu, and move all tools to it
-	+ Requires two vectors of wxMenuItem's to cross-synchronize
-	+ AddToolMenu macro:
-		+ Takes ToolType
-			+ If ToolType == InitialToolType: check
-	+ OnNpc/NonNpcToolSelected:
-		+ Do not set tool
-		+ Reconciliate menu items
-		+ Do Exterior/InteriorViewSwitch
-	+ PlaceNpc(x2) menu is NORMAL and we do checking ourselves
-	+ Tests:
-		+ Smash is selected
-		+ All tools
-			+ Selects appropriate tool, unselects other
-		+ Cross-menu jumps
-		+ Switch to exterior/interior
-		+ Conditionally-enabled
-			+ ScareFish
-			+ Move, Remove, Follow , SelectNext NPC
-
-	- PlaceNpc sub-menu's: make Radio
-		- But now can't re-select an already-checked one
-
-
-+ GameController @ (ResetAnd)LoadShip calls Npcs::PublishStats()
-	+ Remove zeroing from MainFrame::ResetUIShipState
-	+ @ NpcCount reconciliation: if current tool is one of those that must go, auto-switch to InitialTool
-
 - Add crowd
-	- TODOHERE
+	- First off, "error message" work:
+		- Npcs::BeginPlace() returns tuple: <whatever now, NpcCreationFailureReasonType>
+			- failureReason enum: TooManyNpcs, TooManyCaptains
+		- GameController::BeginPlace: if none, tell reason to notification manager
+		= Tool: sound
+	- GameController -> Npcs -> AddNpcGroup->optional<NpcCreationFailureReasonType>
+		- GameController notifies
+	- Npcs::AddNpcGroup()
+		+ GameParameters: NpcCrowdSize (default is 32)
+		- Make sure we don't go beyond limits
+		- Choose role first, then use NpcDatabase "tree structure" to choose elements
+			- Add Captain role
+			- Npcs has new stat member: bool HasCaptain
+				- Keep it consistent @
+					- Add
+					- InternalRemove
+		- Choose triangle
+			- First random unit
+			- Then walk until find conditions:
+				- One that has floor below
+			- If none with floor found but one without floor found: that one
+			- If really nothing:
+				- Return; error iff no npcs at all
+		- Before loop: if !HasCaptain, choose a captain (and lower # of loop iterations we have to do)
+			- Role choice does not need to include captain then
+	- Test:
+		- Lower limit and test hitting it
+			- Square
+			- Strided
+	- Cleanup:
+		- Reinstate MaxNpcs
 
 - Add Flip NPC H
 
@@ -365,7 +367,11 @@ Next release:
 	- ShipFactory: when a floorplan layer is present, it needs to inform tessellation (i.e. triangle selection) which needs
 	  to use floor information (ipv hull springs) to decide between covering triangles
 
-- Walk planning:
+- Area walk planning:
+	- TODO: floor types (normal, assembly, lifeboats, etc.)
+	- TODO: states (random walk, to assembly, to lifeboats, etc.)
+
+- Forward-looking walk planning:
 	- First off: WalkingBehaviorState remembers CurrentTriangleElementIndex (of primary)
 		- Init'd to None at each transition into Walking
 	- @ UpdateBehavior while walking (or at WalkingUpdate):
@@ -3553,3 +3559,45 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 			+ RenderContext (to ShipRenderContext)
 			+ Shader
 		+ Port back into BaryLab
+
++ Npc menu, and move all tools to it
+	+ Requires two vectors of wxMenuItem's to cross-synchronize
+	+ AddToolMenu macro:
+		+ Takes ToolType
+			+ If ToolType == InitialToolType: check
+	+ OnNpc/NonNpcToolSelected:
+		+ Do not set tool
+		+ Reconciliate menu items
+		+ Do Exterior/InteriorViewSwitch
+	+ PlaceNpc(x2) menu is NORMAL and we do checking ourselves
+	+ Tests:
+		+ Smash is selected
+		+ All tools
+			+ Selects appropriate tool, unselects other
+		+ Cross-menu jumps
+		+ Switch to exterior/interior
+		+ Conditionally-enabled
+			+ ScareFish
+			+ Move, Remove, Follow , SelectNext NPC
+	+ PlaceNpc sub-menu's: make checked
+		+ Items are CHECK
+			+ Stored into two vectors @ Rebuild
+		+ Maintain reconciliation of check with human & furniture sub kind id
+			+ ToolController::GetterX2 -> opt<SubKindId>
+			+ ReconciliateAddNpcSubItems()
+				+ Visit vectors and check/uncheck according to ToolController
+			+ Call ReconciliateAddNpcSubItems() at:
+				+ OnToolSelected() X 2, unconditionally (because we need to reco also when a random tool is selected)
+					! This should cover both selecting the actual one and unselecting because selecting another tool
+					! And thus should also cover unselecting it because AddXYZ being disabled (since now we change tool when this happens)
+		+ Test:
+			+ Make sure all unchecked at init
+			+ Reselect same
+			+ Select another in same NpcKind
+			+ Select another in another NpcKind
+			+ Select NonNpc tool
+			+ ResetShip()
+
++ GameController @ (ResetAnd)LoadShip calls Npcs::PublishStats()
+	+ Remove zeroing from MainFrame::ResetUIShipState
+	+ @ NpcCount reconciliation: if current tool is one of those that must go, auto-switch to InitialTool

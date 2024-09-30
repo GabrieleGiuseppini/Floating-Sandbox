@@ -45,6 +45,28 @@ public:
         }
     }
 
+    std::optional<NpcSubKindIdType> GetCurrentAddFurnitureNpcSubKind() const
+    {
+        if (mCurrentTool == nullptr
+            || mCurrentTool->GetToolType() != ToolType::PlaceFurnitureNpc)
+        {
+            return std::nullopt;
+        }
+
+        return dynamic_cast<PlaceFurnitureNpcTool const *>(mCurrentTool)->GetKind();
+    }
+
+    std::optional<NpcSubKindIdType> GetCurrentAddHumanNpcSubKind() const
+    {
+        if (mCurrentTool == nullptr
+            || mCurrentTool->GetToolType() != ToolType::PlaceHumanNpc)
+        {
+            return std::nullopt;
+        }
+
+        return dynamic_cast<PlaceHumanNpcTool const *>(mCurrentTool)->GetKind();
+    }
+
     void SetTool(ToolType toolType)
     {
         assert(static_cast<size_t>(toolType) < mAllTools.size());

@@ -2527,6 +2527,9 @@ void MainFrame::OnNonNpcToolSelected(ToolType toolType)
         }
     }
 
+    // Reconciliate AddNpc sub-menu items
+    ReconciliateAddNpcSubItems();
+
     // Switch to exterior view
     assert(!!mGameController);
     if (mGameController->GetShipViewMode() != ShipViewModeType::Exterior)
@@ -2559,6 +2562,9 @@ void MainFrame::OnNpcToolSelected(ToolType toolType)
             std::get<1>(entry)->Check(menuToolType == toolType);
         }
     }
+
+    // Reconciliate AddNpc sub-menu items
+    ReconciliateAddNpcSubItems();
 
     // Switch to interior view
     assert(!!mGameController);
@@ -2687,6 +2693,23 @@ void MainFrame::ReconciliateUIWithNpcPresence(bool areNpcsPresent)
     }
 }
 
+void MainFrame::ReconciliateAddNpcSubItems()
+{
+    assert(!!mToolController);
+
+    auto const selectedHumanSubKind = mToolController->GetCurrentAddHumanNpcSubKind();
+    for (auto & entry : mAddHumanNpcSubMenuItems)
+    {
+        std::get<1>(entry)->Check(std::get<0>(entry) == selectedHumanSubKind);
+    }
+
+    auto const selectedFurnitureSubKind = mToolController->GetCurrentAddFurnitureNpcSubKind();
+    for (auto & entry : mAddFurnitureNpcSubMenuItems)
+    {
+        std::get<1>(entry)->Check(std::get<0>(entry) == selectedFurnitureSubKind);
+    }
+}
+
 void MainFrame::ReconciliateUIWithAutoFocusTarget(std::optional<AutoFocusTargetKindType> target)
 {
     if (target == AutoFocusTargetKindType::Ship)
@@ -2723,6 +2746,7 @@ void MainFrame::RebuildNpcMenus()
     // Humans
     {
         // Clear first
+
         auto const menuItems = mHumanNpcSubMenu->GetMenuItems();
         for (auto const & item : menuItems)
         {
@@ -2730,14 +2754,20 @@ void MainFrame::RebuildNpcMenus()
             delete removedItem;
         }
 
+        mAddHumanNpcSubMenuItems.clear();
+
         // Add all
+
         for (auto const & subKindInfo : mGameController->GetHumanNpcSubKinds(language))
         {
+            auto const subKindId = std::get<0>(subKindInfo);
+
             auto const commandId = wxNewId();
-            mHumanNpcSubMenu->Append(new wxMenuItem(nullptr, commandId, std::get<1>(subKindInfo), wxEmptyString, wxITEM_NORMAL));
+            auto * subMenuItem = new wxMenuItem(nullptr, commandId, std::get<1>(subKindInfo), wxEmptyString, wxITEM_CHECK);
+            mHumanNpcSubMenu->Append(subMenuItem);
             mHumanNpcSubMenu->Bind(
                 wxEVT_COMMAND_MENU_SELECTED,
-                [this, subKindId=std::get<0>(subKindInfo)](wxCommandEvent &)
+                [this, subKindId](wxCommandEvent &)
                 {
                     // Set tool
                     assert(!!mToolController);
@@ -2747,12 +2777,15 @@ void MainFrame::RebuildNpcMenus()
                     OnNpcToolSelected(ToolType::PlaceHumanNpc);
                 },
                 commandId);
+
+            mAddHumanNpcSubMenuItems.push_back({ subKindId , subMenuItem});
         }
     }
 
     // Furniture
     {
         // Clear first
+
         auto const menuItems = mFurnitureNpcSubMenu->GetMenuItems();
         for (auto const & item : menuItems)
         {
@@ -2760,14 +2793,20 @@ void MainFrame::RebuildNpcMenus()
             delete removedItem;
         }
 
+        mAddFurnitureNpcSubMenuItems.clear();
+
         // Add all
+
         for (auto const & subKindInfo : mGameController->GetFurnitureNpcSubKinds(language))
         {
+            auto const subKindId = std::get<0>(subKindInfo);
+
             auto const commandId = wxNewId();
-            mFurnitureNpcSubMenu->Append(new wxMenuItem(nullptr, commandId, std::get<1>(subKindInfo), wxEmptyString, wxITEM_NORMAL));
+            auto * subMenuItem = new wxMenuItem(nullptr, commandId, std::get<1>(subKindInfo), wxEmptyString, wxITEM_CHECK);
+            mFurnitureNpcSubMenu->Append(subMenuItem);
             mFurnitureNpcSubMenu->Bind(
                 wxEVT_COMMAND_MENU_SELECTED,
-                [this, subKindId = std::get<0>(subKindInfo)](wxCommandEvent &)
+                [this, subKindId](wxCommandEvent &)
                 {
                     // Set tool
                     assert(!!mToolController);
@@ -2777,6 +2816,8 @@ void MainFrame::RebuildNpcMenus()
                     OnNpcToolSelected(ToolType::PlaceFurnitureNpc);
                 },
                 commandId);
+
+            mAddFurnitureNpcSubMenuItems.push_back({ subKindId , subMenuItem });
         }
     }
 }

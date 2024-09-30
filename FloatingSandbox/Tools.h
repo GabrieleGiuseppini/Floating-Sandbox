@@ -3799,8 +3799,15 @@ public:
             if (inputState.IsLeftMouseDown)
             {
                 // -> Error or -> Engaged
-                mCurrentEngagementState.emplace(InternalBeginPlaceNewNpc(inputState.MousePosition, inputState.IsShiftKeyDown));
+                auto result = InternalBeginPlaceNewNpc(inputState.MousePosition, inputState.IsShiftKeyDown);
+                mCurrentEngagementState.emplace(result);
                 SetCurrentCursor();
+
+                // Notify error
+                if (!result.has_value())
+                {
+                    mSoundController.PlayErrorSound();
+                }
             }
         }
         else if (!mCurrentEngagementState->Npc.has_value())
@@ -3820,7 +3827,7 @@ public:
 
             if (!inputState.IsLeftMouseDown)
             {
-                // Confirm;
+                // Confirm
                 mGameController.CompleteNewNpc(mCurrentEngagementState->Npc->ObjectId);
 
                 // -> Clean
@@ -3829,7 +3836,7 @@ public:
             }
             else
             {
-                // Move;
+                // Move
                 mGameController.MoveNpcTo(
                     mCurrentEngagementState->Npc->ObjectId,
                     inputState.MousePosition,
@@ -3901,6 +3908,11 @@ public:
         SoundController & soundController,
         ResourceLocator const & resourceLocator);
 
+    NpcSubKindIdType GetKind() const
+    {
+        return mKind;
+    }
+
     void SetKind(NpcSubKindIdType kind)
     {
         mKind = kind;
@@ -3932,6 +3944,11 @@ public:
         IGameController & gameController,
         SoundController & soundController,
         ResourceLocator const & resourceLocator);
+
+    NpcSubKindIdType GetKind() const
+    {
+        return mKind;
+    }
 
     void SetKind(NpcSubKindIdType kind)
     {

@@ -161,6 +161,8 @@ private:
 
     std::vector<std::tuple<ToolType, wxMenuItem *>> mNonNpcToolMenuItems;
     std::vector<std::tuple<ToolType, wxMenuItem *>> mNpcToolMenuItems;
+    std::vector<std::tuple<NpcSubKindIdType, wxMenuItem *>> mAddHumanNpcSubMenuItems;
+    std::vector<std::tuple<NpcSubKindIdType, wxMenuItem *>> mAddFurnitureNpcSubMenuItems;
 
     //
     // Dialogs
@@ -412,6 +414,7 @@ private:
     void ReconciliateUIWithUIPreferencesAndSettings();
     void ReconciliateUIWithFishPresence(bool areFishPresent);
     void ReconciliateUIWithNpcPresence(bool areNpcsPresent);
+    void ReconciliateAddNpcSubItems();
     void ReconciliateUIWithAutoFocusTarget(std::optional<AutoFocusTargetKindType> target);
 
     void RebuildNpcMenus();
