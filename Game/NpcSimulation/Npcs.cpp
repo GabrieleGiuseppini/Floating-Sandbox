@@ -716,7 +716,7 @@ std::tuple<std::optional<PickedObjectId<NpcId>>, NpcCreationFailureReasonType> N
         feetParticleAttributes.BuoyancyVolumeFill,
         feetBuoyancyFactor,
         &feetMaterial,
-        worldCoordinates - vec2f(0.0f, 1.0f) * height,
+        worldCoordinates - vec2f(0.0f, height),
         feetMaterial.RenderColor);
 
     particleMesh.Particles.emplace_back(primaryParticleIndex, std::nullopt);
@@ -1210,11 +1210,211 @@ void Npcs::AbortNewNpc(NpcId id)
     RemoveNpc(id);
 }
 
-std::optional<NpcCreationFailureReasonType> Npcs::AddNpcGroup(NpcKindType kind)
+NpcCreationFailureReasonType Npcs::AddNpcGroup(
+    NpcKindType kind,
+    float currentSimulationTime)
 {
+    float const groupSize = GameParameters::NpcsPerGroup;
+
+    //
+    // Choose a ship
+    //
+
     // TODOHERE
-    (void)kind;
-    return std::nullopt;
+    ShipId shipId = 0;
+
+    Points const & points = mShips[shipId]->HomeShip.GetPoints();
+    Triangles const & triangles = mShips[shipId]->HomeShip.GetTriangles();
+
+    //
+    // Create group
+    //
+
+    // We reduce this when we determine an index at and after which there are no more viable triangles;
+    // index is excluded
+    ElementCount minimallyViableTriangleUpperBound = triangles.GetElementCount();
+
+    size_t nNpcsAdded = 0;
+    for (; nNpcsAdded < groupSize; ++nNpcsAdded)
+    {
+        //
+        // Check if we have room for yet another NPC
+        //
+
+        // TODO: might not needed if we use BeginPlace() to tell if we can't
+        if (CalculateTotalNpcCount() >= GameParameters::MaxNpcs)
+        {
+            break;
+        }
+
+        //
+        // Decide sub-kind
+        //
+
+        NpcSubKindIdType subKind = 0;
+        switch (kind)
+        {
+            case NpcKindType::Furniture:
+            {
+                // TODOHERE: choose subkindid
+                subKind = 0;
+                break;
+            }
+
+            case NpcKindType::Human:
+            {
+                // TODOHERE: captain, choose role, choose subkindid
+                subKind = 0;
+                break;
+            }
+        }
+
+        //
+        // Find triangle - if none, we'll go free
+        //
+
+        ElementIndex firstMinimallyViableTriangle = NoneElementIndex; // We'll use this one if a better one is not found        
+        ElementIndex lastMinimallyViableTriangle = NoneElementIndex;
+        ElementIndex fullyViableTriangle = NoneElementIndex;
+
+        // Decide where to start the search from
+        ElementIndex const searchStartTriangle = GameRandomEngine::GetInstance().Choose(minimallyViableTriangleUpperBound);
+
+        LogMessage("    Triangle choice: ", searchStartTriangle, " capped to ", minimallyViableTriangleUpperBound);
+
+        // Visit all triangles starting from this one, eventually looping around
+        for (ElementIndex t = searchStartTriangle; ; )
+        {
+            // Check triangle viability
+            if (!triangles.IsDeleted(t))
+            {
+                // TODO: see if we needed this after all
+                vec2f const aPosition = points.GetPosition(triangles.GetPointAIndex(t));
+                vec2f const bPosition = points.GetPosition(triangles.GetPointBIndex(t));
+                vec2f const cPosition = points.GetPosition(triangles.GetPointCIndex(t));
+
+                if (!IsTriangleFolded(aPosition, bPosition, cPosition))
+                {
+                    // Minimally viable
+
+                    if (firstMinimallyViableTriangle == NoneElementIndex)
+                    {
+                        firstMinimallyViableTriangle = t;
+                    }
+
+                    lastMinimallyViableTriangle = t;
+
+                    // Check whether fully viable
+                    // TODOHERE
+                }
+            }
+
+            // No luck
+            assert(fullyViableTriangle == NoneElementIndex);
+
+            // Advance
+            ++t;
+            if (t >= minimallyViableTriangleUpperBound)
+            {
+                // Loop around
+                t = 0;
+
+                // Reduce the limit
+                if (lastMinimallyViableTriangle != NoneElementIndex)
+                {
+                    assert(lastMinimallyViableTriangle + 1 <= minimallyViableTriangleUpperBound);
+                    minimallyViableTriangleUpperBound = lastMinimallyViableTriangle + 1;
+                }
+            }
+
+            // Check completion
+            if (t == searchStartTriangle)
+            {
+                break;
+            }
+        }
+
+        LogMessage("    firstMinimallyViableTriangle=", firstMinimallyViableTriangle, " lastMinimallyViableTriangle=", lastMinimallyViableTriangle,
+            " fullyViableTriangle=", fullyViableTriangle);
+
+        ElementIndex const triangle = (fullyViableTriangle != NoneElementIndex) ? fullyViableTriangle : firstMinimallyViableTriangle;
+
+        //
+        // Choose position
+        //
+
+        vec2f npcPosition;
+        if (triangle != NoneElementIndex)
+        {
+            // Center
+            vec2f const aPosition = points.GetPosition(triangles.GetPointAIndex(triangle));
+            vec2f const bPosition = points.GetPosition(triangles.GetPointBIndex(triangle));
+            vec2f const cPosition = points.GetPosition(triangles.GetPointCIndex(triangle));
+            npcPosition = (aPosition + bPosition + cPosition) / 3.0f;
+
+            LogMessage("  NPC ", nNpcsAdded, ": tri=", triangle, " pos_tri=", npcPosition);
+        }
+        else
+        {
+            // Choose freely
+            npcPosition = vec2f(
+                GameRandomEngine::GetInstance().GenerateUniformReal(-100.0f, 100.0f),
+                GameRandomEngine::GetInstance().GenerateUniformReal(0.0f, 100.0f));
+
+            LogMessage("  NPC ", nNpcsAdded, ": pos_free=", npcPosition);
+        }
+
+        //
+        // Create NPC
+        //
+
+        std::tuple<std::optional<PickedObjectId<NpcId>>, NpcCreationFailureReasonType> placementOutcome;
+
+        switch (kind)
+        {
+            case NpcKindType::Furniture:
+            {
+                // Position is of bottom
+
+                float const height = mNpcDatabase.GetFurnitureDimensions(subKind).Height;
+
+                placementOutcome = BeginPlaceNewFurnitureNpc(
+                    subKind,
+                    npcPosition + vec2f(0.0, height), // Primary
+                    currentSimulationTime,
+                    false);
+
+                break;
+            }
+
+            case NpcKindType::Human:
+            {
+                // Position is of feet
+
+                float const height = CalculateSpringLength(
+                    GameParameters::HumanNpcGeometry::BodyLengthMean * mNpcDatabase.GetHumanSizeMultiplier(subKind),
+                    mCurrentSizeMultiplier);
+
+                placementOutcome = BeginPlaceNewHumanNpc(
+                    subKind,
+                    npcPosition + vec2f(0.0, height), // Head
+                    currentSimulationTime,
+                    false);
+
+                break;
+            }
+        }
+
+        if (!std::get<0>(placementOutcome).has_value())
+        {
+            // We're done
+            break;
+        }
+
+        CompleteNewNpc(std::get<0>(placementOutcome)->ObjectId, currentSimulationTime);
+    }
+
+    return (nNpcsAdded > 0) ? NpcCreationFailureReasonType::Success : NpcCreationFailureReasonType::TooManyNpcs;
 }
 
 std::optional<NpcId> Npcs::GetCurrentlySelectedNpc() const
@@ -2279,7 +2479,7 @@ std::optional<GlobalElementId> Npcs::FindTopmostWorkableTriangleContaining(vec2f
 
                     if (Geometry::IsPointInTriangle(position, aPosition, bPosition, cPosition)
                         && (!bestTriangleIndex || homeShip.GetPoints().GetPlaneId(pointAIndex) > bestPlaneId)
-                        && !IsTriangleFolded(triangleIndex, homeShip))
+                        && !IsTriangleFolded(aPosition, bPosition, cPosition))
                     {
                         bestTriangleIndex = triangleIndex;
                         bestPlaneId = homeShip.GetPoints().GetPlaneId(pointAIndex);
@@ -2320,7 +2520,7 @@ ElementIndex Npcs::FindWorkableTriangleContaining(
             vec2f const cPosition = homeShip.GetPoints().GetPosition(homeShip.GetTriangles().GetPointCIndex(triangleIndex));
 
             if (Geometry::IsPointInTriangle(position, aPosition, bPosition, cPosition)
-                && !IsTriangleFolded(triangleIndex, homeShip)
+                && !IsTriangleFolded(aPosition, bPosition, cPosition)
                 && (!constrainedConnectedComponentId.has_value() || homeShip.GetPoints().GetConnectedComponentId(pointAIndex) == *constrainedConnectedComponentId))
             {
                 return triangleIndex;

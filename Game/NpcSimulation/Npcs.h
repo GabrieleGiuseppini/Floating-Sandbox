@@ -869,7 +869,9 @@ public:
 
 	void AbortNewNpc(NpcId id);
 
-	std::optional<NpcCreationFailureReasonType> AddNpcGroup(NpcKindType kind);
+	NpcCreationFailureReasonType AddNpcGroup(
+		NpcKindType kind,
+		float currentSimulationTime);
 
 	std::optional<NpcId> GetCurrentlySelectedNpc() const;
 
@@ -1129,7 +1131,7 @@ private:
 
 	void OnMayBeNpcRegimeChanged(
 		StateType::RegimeType oldRegime,
-		StateType & npc);
+		StateType const & npc);
 
 	static StateType::RegimeType CalculateRegime(StateType const & npc);
 
@@ -1580,7 +1582,18 @@ private:
 		ElementIndex triangleElementIndex,
 		Ship const & homeShip)
 	{
-		return !homeShip.GetTriangles().AreVerticesInCwOrder(triangleElementIndex, homeShip.GetPoints());
+		return IsTriangleFolded(
+			homeShip.GetPoints().GetPosition(homeShip.GetTriangles().GetPointAIndex(triangleElementIndex)),
+			homeShip.GetPoints().GetPosition(homeShip.GetTriangles().GetPointBIndex(triangleElementIndex)),
+			homeShip.GetPoints().GetPosition(homeShip.GetTriangles().GetPointCIndex(triangleElementIndex)));
+	}
+
+	static bool IsTriangleFolded(
+		vec2f const & aPosition,
+		vec2f const & bPosition,
+		vec2f const & cPosition)
+	{
+		return !Geometry::AreVerticesInCwOrder(aPosition, bPosition, cPosition);
 	}
 
 	static bool HasBomb(

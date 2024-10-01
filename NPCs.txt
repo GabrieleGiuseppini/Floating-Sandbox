@@ -200,9 +200,9 @@ V1 TODO:
 			+ failureReason enum: TooManyNpcs, TooManyCaptains
 		+ GameController::BeginPlace: if none, tell reason to notification manager
 		+ Tool: sound
-	- GameController -> Npcs -> AddNpcGroup->optional<NpcCreationFailureReasonType>
-		- GameController notifies
-	- Npcs::AddNpcGroup()
+	= GameController -> Npcs -> AddNpcGroup->optional<NpcCreationFailureReasonType>
+		= GameController notifies
+	= Npcs::AddNpcGroup()
 		+ GameParameters: NpcCrowdSize (default is 32)
 		- Make sure we don't go beyond limits
 		- Choose role first, then use NpcDatabase "tree structure" to choose elements
@@ -223,6 +223,10 @@ V1 TODO:
 					- Return; error iff no npcs at all
 		- Before loop: if !HasCaptain, choose a captain (and lower # of loop iterations we have to do)
 			- Role choice does not need to include captain then
+		- Should we give the NPC the velocity of its triangle?			
+			- If so:
+				- See if should do it all the time
+				- If not, do InternalCompleteNpc(bool initializeWithMeshVelocity) -> InternalEndMove(bool initializeWithMeshVelocity)
 	- Test:
 		- Lower limit and test hitting it
 			- Square

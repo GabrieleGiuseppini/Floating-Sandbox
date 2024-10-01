@@ -147,6 +147,14 @@ inline bool IsPointInTriangle(
         && (pPosition - cPosition).cross(aPosition - cPosition) >= 0.0f;
 }
 
+inline bool AreVerticesInCwOrder(
+    vec2f const & aPosition,
+    vec2f const & bPosition,
+    vec2f const & cPosition)
+{
+    return (bPosition.x - aPosition.x) * (cPosition.y - aPosition.y) - (cPosition.x - aPosition.x) * (bPosition.y - aPosition.y) < 0;
+}
+
 /*
  * Calculates a line path between (and including) the specified endpoints, going
  * through integral coordinates.

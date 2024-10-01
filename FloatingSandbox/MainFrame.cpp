@@ -1897,12 +1897,28 @@ void MainFrame::OnAddHumanNpcGroupMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mGameController);
     mGameController->AddNpcGroup(NpcKindType::Human);
+
+    // Switch to interior view
+    assert(!!mGameController);
+    if (mGameController->GetShipViewMode() != ShipViewModeType::Interior)
+    {
+        mGameController->SetShipViewMode(ShipViewModeType::Interior);
+        mShipViewInteriorMenuItem->Check(true);
+    }
 }
 
 void MainFrame::OnAddFurnitureNpcGroupMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mGameController);
     mGameController->AddNpcGroup(NpcKindType::Furniture);
+
+    // Switch to interior view
+    assert(!!mGameController);
+    if (mGameController->GetShipViewMode() != ShipViewModeType::Interior)
+    {
+        mGameController->SetShipViewMode(ShipViewModeType::Interior);
+        mShipViewInteriorMenuItem->Check(true);
+    }
 }
 
 void MainFrame::OnSelectNextNpcMenuItemSelected(wxCommandEvent & /*event*/)

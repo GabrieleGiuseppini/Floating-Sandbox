@@ -406,7 +406,7 @@ public:
 
     void AbortNewNpc(NpcId id);
 
-    std::optional<NpcCreationFailureReasonType> AddNpcGroup(NpcKindType kind);
+    NpcCreationFailureReasonType AddNpcGroup(NpcKindType kind);
 
     void SelectFirstNpc();
 

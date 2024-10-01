@@ -1425,10 +1425,10 @@ void GameController::AddNpcGroup(NpcKindType kind)
 {
     assert(!!mWorld);
     auto const result = mWorld->AddNpcGroup(kind);
-    if (result.has_value())
+    if (result != NpcCreationFailureReasonType::Success)
     {
         // Error
-        NotifyNpcPlacementError(*result);
+        NotifyNpcPlacementError(result);
     }
 }
 

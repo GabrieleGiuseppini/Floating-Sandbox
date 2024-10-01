@@ -147,7 +147,7 @@ void Npcs::ResetNpcStateToWorld(
 
         case NpcKindType::Human:
         {
-            // Change behavior
+            // Init behavior
             npc.KindSpecificState.HumanNpcState.TransitionToState(
                 CalculateHumanBehavior(npc),
                 currentSimulationTime);
@@ -244,7 +244,7 @@ std::optional<Npcs::StateType::NpcParticleStateType::ConstrainedStateType> Npcs:
 
 void Npcs::OnMayBeNpcRegimeChanged(
     StateType::RegimeType oldRegime,
-    StateType & npc)
+    StateType const & npc)
 {
     if (oldRegime == npc.CurrentRegime)
     {

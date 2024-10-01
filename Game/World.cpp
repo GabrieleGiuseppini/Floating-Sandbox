@@ -1130,10 +1130,10 @@ void World::AbortNewNpc(NpcId id)
     mNpcs->AbortNewNpc(id);
 }
 
-std::optional<NpcCreationFailureReasonType> World::AddNpcGroup(NpcKindType kind)
+NpcCreationFailureReasonType World::AddNpcGroup(NpcKindType kind)
 {
     assert(mNpcs);
-    return mNpcs->AddNpcGroup(kind);
+    return mNpcs->AddNpcGroup(kind, mCurrentSimulationTime);
 }
 
 void World::SelectFirstNpc()

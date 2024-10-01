@@ -50,6 +50,8 @@ public:
         , mTimerBombDefusedEvents()
         , mWatertightDoorOpenedEvents()
         , mWatertightDoorClosedEvents()
+        , mLastNpcCountsUpdated()
+        , mLastHumanNpcCountsUpdated()
         // Sinks
         , mLifecycleSinks()
         , mStructuralSinks()
@@ -563,20 +565,14 @@ public:
     void OnNpcCountsUpdated(
         size_t totalNpcCount) override
     {
-        for (auto sink : mNpcSinks)
-        {
-            sink->OnNpcCountsUpdated(totalNpcCount);
-        }
+        mLastNpcCountsUpdated = totalNpcCount;
     }
 
     void OnHumanNpcCountsUpdated(
         size_t insideShipCount,
         size_t outsideShipCount) override
     {
-        for (auto sink : mNpcSinks)
-        {
-            sink->OnHumanNpcCountsUpdated(insideShipCount, outsideShipCount);
-        }
+        mLastHumanNpcCountsUpdated = { insideShipCount, outsideShipCount };
     }
 
     //
@@ -994,6 +990,21 @@ public:
             }
         }
 
+        for (auto * sink : mNpcSinks)
+        {
+            if (mLastNpcCountsUpdated.has_value())
+            {
+                sink->OnNpcCountsUpdated(*mLastNpcCountsUpdated);
+            }
+
+            if (mLastHumanNpcCountsUpdated.has_value())
+            {
+                sink->OnHumanNpcCountsUpdated(
+                    std::get<0>(*mLastHumanNpcCountsUpdated),
+                    std::get<1>(*mLastHumanNpcCountsUpdated));
+            }
+        }
+
         mSpringRepairedEvents.clear();
         mTriangleRepairedEvents.clear();
         mPinToggledEvents.clear();
@@ -1004,6 +1015,8 @@ public:
         mTimerBombDefusedEvents.clear();
         mWatertightDoorOpenedEvents.clear();
         mWatertightDoorClosedEvents.clear();
+        mLastNpcCountsUpdated.reset();
+        mLastHumanNpcCountsUpdated.reset();
     }
 
     void RegisterLifecycleEventHandler(ILifecycleGameEventHandler * sink)
@@ -1077,6 +1090,8 @@ private:
     unordered_tuple_map<std::tuple<bool>, unsigned int> mTimerBombDefusedEvents;
     unordered_tuple_map<std::tuple<bool>, unsigned int> mWatertightDoorOpenedEvents;
     unordered_tuple_map<std::tuple<bool>, unsigned int> mWatertightDoorClosedEvents;
+    std::optional<size_t> mLastNpcCountsUpdated;
+    std::optional<std::tuple<size_t, size_t>> mLastHumanNpcCountsUpdated;
 
     // The registered sinks
     std::vector<ILifecycleGameEventHandler *> mLifecycleSinks;

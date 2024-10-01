@@ -473,7 +473,7 @@ public:
         auto const pb = points.GetPosition(GetPointBIndex(triangleElementIndex));
         auto const pc = points.GetPosition(GetPointCIndex(triangleElementIndex));
 
-        return (pb.x - pa.x) * (pc.y - pa.y) - (pc.x - pa.x) * (pb.y - pa.y) < 0;
+        return Geometry::AreVerticesInCwOrder(pa, pb, pc);
     }
 
 private:
