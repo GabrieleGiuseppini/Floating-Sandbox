@@ -1238,16 +1238,6 @@ NpcCreationFailureReasonType Npcs::AddNpcGroup(
     for (; nNpcsAdded < groupSize; ++nNpcsAdded)
     {
         //
-        // Check if we have room for yet another NPC
-        //
-
-        // TODO: might not needed if we use BeginPlace() to tell if we can't
-        if (CalculateTotalNpcCount() >= GameParameters::MaxNpcs)
-        {
-            break;
-        }
-
-        //
         // Decide sub-kind
         //
 
@@ -1407,7 +1397,7 @@ NpcCreationFailureReasonType Npcs::AddNpcGroup(
 
         if (!std::get<0>(placementOutcome).has_value())
         {
-            // We're done
+            // Couldn't add NPC, so we're done
             break;
         }
 
