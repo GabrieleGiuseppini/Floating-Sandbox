@@ -620,6 +620,21 @@ MainFrame::MainFrame(
 
             mNpcToolsMenu->AppendSeparator();
 
+            // Add Human NPC Group
+            {
+                auto * menuItem = new wxMenuItem(mNpcToolsMenu, wxNewId(), _("Add Human NPC Group"), wxEmptyString, wxITEM_NORMAL);
+                mNpcToolsMenu->Append(menuItem);
+                Connect(menuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAddHumanNpcGroupMenuItemSelected);
+            }
+
+            // Add Furniture NPC Group
+            {
+                auto * menuItem = new wxMenuItem(mNpcToolsMenu, wxNewId(), _("Add Furniture NPC Group"), wxEmptyString, wxITEM_NORMAL);
+                mNpcToolsMenu->Append(menuItem);
+                Connect(menuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAddFurnitureNpcGroupMenuItemSelected);
+            }
+
+            // Select
             {
                 mSelectNextNpcMenuItem = new wxMenuItem(mNpcToolsMenu, wxNewId(), _("Select Next NPC") + wxS("\t>"), wxEmptyString, wxITEM_NORMAL);
                 mNpcToolsMenu->Append(mSelectNextNpcMenuItem);
@@ -1876,6 +1891,18 @@ void MainFrame::OnStepMenuItemSelected(wxCommandEvent & /*event*/)
     assert(!!mGameController);
 
     mGameController->PulseUpdateAtNextGameIteration();
+}
+
+void MainFrame::OnAddHumanNpcGroupMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!!mGameController);
+    mGameController->AddNpcGroup(NpcKindType::Human);
+}
+
+void MainFrame::OnAddFurnitureNpcGroupMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!!mGameController);
+    mGameController->AddNpcGroup(NpcKindType::Furniture);
 }
 
 void MainFrame::OnSelectNextNpcMenuItemSelected(wxCommandEvent & /*event*/)

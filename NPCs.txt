@@ -194,12 +194,12 @@ Arch
 
 V1 TODO:
 
-- Add crowd
-	- First off, "error message" work:
-		- Npcs::BeginPlace() returns tuple: <whatever now, NpcCreationFailureReasonType>
-			- failureReason enum: TooManyNpcs, TooManyCaptains
-		- GameController::BeginPlace: if none, tell reason to notification manager
-		= Tool: sound
+= Add crowd
+	+ First off, "error message" work:
+		+ Npcs::BeginPlace() returns tuple: <whatever now, NpcCreationFailureReasonType>
+			+ failureReason enum: TooManyNpcs, TooManyCaptains
+		+ GameController::BeginPlace: if none, tell reason to notification manager
+		+ Tool: sound
 	- GameController -> Npcs -> AddNpcGroup->optional<NpcCreationFailureReasonType>
 		- GameController notifies
 	- Npcs::AddNpcGroup()
@@ -211,13 +211,16 @@ V1 TODO:
 				- Keep it consistent @
 					- Add
 					- InternalRemove
-		- Choose triangle
-			- First random unit
-			- Then walk until find conditions:
-				- One that has floor below
-			- If none with floor found but one without floor found: that one
-			- If really nothing:
-				- Return; error iff no npcs at all
+		- Choose triangle:
+			- MaxTri = size() - 1
+			- For N npcs:
+				- Choose a random triangle, between 0 and MaxTri
+				- Then walk t from choice (around) until find conditions:
+					- One that has floor below
+				- If at MaxTri: MaxTri=start walk, t = 0
+				- If none with floor found but one without floor found: that one
+				- If really nothing:
+					- Return; error iff no npcs at all
 		- Before loop: if !HasCaptain, choose a captain (and lower # of loop iterations we have to do)
 			- Role choice does not need to include captain then
 	- Test:

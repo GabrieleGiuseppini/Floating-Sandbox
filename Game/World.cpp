@@ -1039,7 +1039,7 @@ void World::AttractFish(
     mFishes.AttractAt(position, radius, delay);
 }
 
-std::optional<PickedObjectId<NpcId>> World::BeginPlaceNewFurnitureNpc(
+std::tuple<std::optional<PickedObjectId<NpcId>>, NpcCreationFailureReasonType> World::BeginPlaceNewFurnitureNpc(
     NpcSubKindIdType subKind,
     vec2f const & position,
     bool doMoveWholeMesh)
@@ -1054,7 +1054,7 @@ std::optional<PickedObjectId<NpcId>> World::BeginPlaceNewFurnitureNpc(
     return pickedObjectId;
 }
 
-std::optional<PickedObjectId<NpcId>> World::BeginPlaceNewHumanNpc(
+std::tuple<std::optional<PickedObjectId<NpcId>>, NpcCreationFailureReasonType> World::BeginPlaceNewHumanNpc(
     NpcSubKindIdType subKind,
     vec2f const & position,
     bool doMoveWholeMesh)
@@ -1128,6 +1128,12 @@ void World::AbortNewNpc(NpcId id)
 {
     assert(mNpcs);
     mNpcs->AbortNewNpc(id);
+}
+
+std::optional<NpcCreationFailureReasonType> World::AddNpcGroup(NpcKindType kind)
+{
+    assert(mNpcs);
+    return mNpcs->AddNpcGroup(kind);
 }
 
 void World::SelectFirstNpc()

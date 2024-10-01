@@ -373,12 +373,12 @@ public:
         float radius,
         std::chrono::milliseconds delay);
 
-    std::optional<PickedObjectId<NpcId>> BeginPlaceNewFurnitureNpc(
+    std::tuple<std::optional<PickedObjectId<NpcId>>, NpcCreationFailureReasonType> BeginPlaceNewFurnitureNpc(
         NpcSubKindIdType subKind,
         vec2f const & position,
         bool doMoveWholeMesh);
 
-    std::optional<PickedObjectId<NpcId>> BeginPlaceNewHumanNpc(
+    std::tuple<std::optional<PickedObjectId<NpcId>>, NpcCreationFailureReasonType> BeginPlaceNewHumanNpc(
         NpcSubKindIdType subKind,
         vec2f const & position,
         bool doMoveWholeMesh);
@@ -405,6 +405,8 @@ public:
     void RemoveNpc(NpcId id);
 
     void AbortNewNpc(NpcId id);
+
+    std::optional<NpcCreationFailureReasonType> AddNpcGroup(NpcKindType kind);
 
     void SelectFirstNpc();
 

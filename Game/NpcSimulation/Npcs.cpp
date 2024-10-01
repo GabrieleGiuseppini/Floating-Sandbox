@@ -392,7 +392,7 @@ void Npcs::OnShipConnectivityChanged(ShipId shipId)
     }
 }
 
-std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
+std::tuple<std::optional<PickedObjectId<NpcId>>, NpcCreationFailureReasonType> Npcs::BeginPlaceNewFurnitureNpc(
     NpcSubKindIdType subKind,
     vec2f const & worldCoordinates,
     float /*currentSimulationTime*/,
@@ -404,7 +404,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 
     if (CalculateTotalNpcCount() >= GameParameters::MaxNpcs)
     {
-        return std::nullopt;
+        return { std::nullopt, NpcCreationFailureReasonType::TooManyNpcs };
     }
 
     //
@@ -430,7 +430,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 
             if (mParticles.GetRemainingParticlesCount() < 1)
             {
-                return std::nullopt;
+                return { std::nullopt, NpcCreationFailureReasonType::TooManyNpcs };
             }
 
             // Primary
@@ -474,7 +474,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 
             if (mParticles.GetRemainingParticlesCount() < 4)
             {
-                return std::nullopt;
+                return { std::nullopt, NpcCreationFailureReasonType::TooManyNpcs };
             }
 
             // Create Particles
@@ -656,10 +656,10 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
     ++(mShips[shipId]->FurnitureNpcCount);
     PublishCount();    
 
-    return PickedObjectId<NpcId>(npcId, pickAnchorOffset);
+    return { PickedObjectId<NpcId>(npcId, pickAnchorOffset), NpcCreationFailureReasonType::Success };
 }
 
-std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
+std::tuple<std::optional<PickedObjectId<NpcId>>, NpcCreationFailureReasonType> Npcs::BeginPlaceNewHumanNpc(
     NpcSubKindIdType subKind,
     vec2f const & worldCoordinates,
     float currentSimulationTime,
@@ -671,7 +671,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
 
     if (CalculateTotalNpcCount() >= GameParameters::MaxNpcs || mParticles.GetRemainingParticlesCount() < 2)
     {
-        return std::nullopt;
+        return { std::nullopt, NpcCreationFailureReasonType::TooManyNpcs };
     }
 
     //
@@ -842,7 +842,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
     ++(mShips[shipId]->HumanNpcCount);
     PublishCount();
 
-    return PickedObjectId<NpcId>(npcId, vec2f::zero());
+    return { PickedObjectId<NpcId>(npcId, vec2f::zero()), NpcCreationFailureReasonType::Success };
 }
 
 std::optional<PickedObjectId<NpcId>> Npcs::ProbeNpcAt(
@@ -1208,6 +1208,13 @@ void Npcs::RemoveNpc(NpcId id)
 void Npcs::AbortNewNpc(NpcId id)
 {
     RemoveNpc(id);
+}
+
+std::optional<NpcCreationFailureReasonType> Npcs::AddNpcGroup(NpcKindType kind)
+{
+    // TODOHERE
+    (void)kind;
+    return std::nullopt;
 }
 
 std::optional<NpcId> Npcs::GetCurrentlySelectedNpc() const

@@ -1315,17 +1315,22 @@ std::optional<PickedObjectId<NpcId>> GameController::BeginPlaceNewFurnitureNpc(
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
     assert(!!mWorld);
-    auto const pickedNpcId = mWorld->BeginPlaceNewFurnitureNpc(
+    auto const result = mWorld->BeginPlaceNewFurnitureNpc(
         subKind,
         worldCoordinates,
         doMoveWholeMesh || mIsPaused);
 
+    auto const & pickedNpcId = std::get<0>(result);
     if (pickedNpcId.has_value())
     {
         OnBeginPlaceNewNpc(pickedNpcId->ObjectId);
+        return pickedNpcId;
     }
-
-    return pickedNpcId;
+    else
+    {
+        NotifyNpcPlacementError(std::get<1>(result));
+        return std::nullopt;
+    }    
 }
 
 std::optional<PickedObjectId<NpcId>> GameController::BeginPlaceNewHumanNpc(
@@ -1336,17 +1341,22 @@ std::optional<PickedObjectId<NpcId>> GameController::BeginPlaceNewHumanNpc(
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
     assert(!!mWorld);
-    auto const pickedNpcId = mWorld->BeginPlaceNewHumanNpc(
+    auto const result = mWorld->BeginPlaceNewHumanNpc(
         subKind,
         worldCoordinates,
         doMoveWholeMesh || mIsPaused);
 
+    auto const & pickedNpcId = std::get<0>(result);
     if (pickedNpcId.has_value())
     {
         OnBeginPlaceNewNpc(pickedNpcId->ObjectId);
+        return pickedNpcId;
     }
-
-    return pickedNpcId;
+    else
+    {
+        NotifyNpcPlacementError(std::get<1>(result));
+        return std::nullopt;
+    }
 }
 
 std::optional<PickedObjectId<NpcId>> GameController::ProbeNpcAt(DisplayLogicalCoordinates const & screenCoordinates) const
@@ -1409,6 +1419,17 @@ void GameController::AbortNewNpc(NpcId id)
 {
     assert(!!mWorld);
     mWorld->AbortNewNpc(id);
+}
+
+void GameController::AddNpcGroup(NpcKindType kind)
+{
+    assert(!!mWorld);
+    auto const result = mWorld->AddNpcGroup(kind);
+    if (result.has_value())
+    {
+        // Error
+        NotifyNpcPlacementError(*result);
+    }
 }
 
 void GameController::SelectNpc(std::optional<NpcId> id)
@@ -1866,6 +1887,30 @@ void GameController::OnBeginPlaceNewNpc(NpcId const & npcId)
         assert(!!mWorld);
         auto const aabb = mWorld->GetNpcs().GetNpcAABB(npcId);
         mViewManager.FocusOn(aabb, NpcMagnification, NpcMagnification, 1.0f / 8.0f, 2.0f, true);
+    }
+}
+
+void GameController::NotifyNpcPlacementError(NpcCreationFailureReasonType reason)
+{
+    switch (reason)
+    {
+        case NpcCreationFailureReasonType::Success:
+        {
+            assert(false);
+            break;
+        }
+
+        case NpcCreationFailureReasonType::TooManyNpcs:
+        {
+            mNotificationLayer.PublishNotificationText("TOO MANY NPCS!");
+            break;
+        }
+
+        case NpcCreationFailureReasonType::TooManyCaptains:
+        {
+            mNotificationLayer.PublishNotificationText("TOO MANY CAPTAINS!");
+            break;
+        }
     }
 }
 

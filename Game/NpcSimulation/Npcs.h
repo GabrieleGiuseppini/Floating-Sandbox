@@ -829,13 +829,13 @@ public:
 
 	void OnShipConnectivityChanged(ShipId shipId);
 
-	std::optional<PickedObjectId<NpcId>> BeginPlaceNewFurnitureNpc(
+	std::tuple<std::optional<PickedObjectId<NpcId>>, NpcCreationFailureReasonType> BeginPlaceNewFurnitureNpc(
 		NpcSubKindIdType subKind,
 		vec2f const & worldCoordinates,
 		float currentSimulationTime,
 		bool doMoveWholeMesh);
 
-	std::optional<PickedObjectId<NpcId>> BeginPlaceNewHumanNpc(
+	std::tuple<std::optional<PickedObjectId<NpcId>>, NpcCreationFailureReasonType> BeginPlaceNewHumanNpc(
 		NpcSubKindIdType subKind,
 		vec2f const & worldCoordinates,
 		float currentSimulationTime,
@@ -868,6 +868,8 @@ public:
 	void RemoveNpc(NpcId id);
 
 	void AbortNewNpc(NpcId id);
+
+	std::optional<NpcCreationFailureReasonType> AddNpcGroup(NpcKindType kind);
 
 	std::optional<NpcId> GetCurrentlySelectedNpc() const;
 

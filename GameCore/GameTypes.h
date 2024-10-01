@@ -1102,6 +1102,13 @@ enum class NpcHumanRoleType
 
 NpcHumanRoleType StrToNpcHumanRoleType(std::string const & str);
 
+enum class NpcCreationFailureReasonType
+{
+    Success,
+    TooManyNpcs,
+    TooManyCaptains
+};
+
 enum class NpcFloorKindType
 {
     NotAFloor,

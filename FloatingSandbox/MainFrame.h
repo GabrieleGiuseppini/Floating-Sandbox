@@ -236,6 +236,8 @@ private:
     void OnTriggerTsunamiMenuItemSelected(wxCommandEvent & event);
     void OnTriggerRogueWaveMenuItemSelected(wxCommandEvent & event);
     void OnTriggerStormMenuItemSelected(wxCommandEvent & event);
+    void OnAddHumanNpcGroupMenuItemSelected(wxCommandEvent & event);
+    void OnAddFurnitureNpcGroupMenuItemSelected(wxCommandEvent & event);
     void OnSelectNextNpcMenuItemSelected(wxCommandEvent & event);
 
     void OnOpenSettingsWindowMenuItemSelected(wxCommandEvent & event);

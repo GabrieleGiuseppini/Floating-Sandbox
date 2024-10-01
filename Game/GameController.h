@@ -265,7 +265,8 @@ public:
     void CompleteNewNpc(NpcId id) override;
     void RemoveNpc(NpcId id) override;
     void AbortNewNpc(NpcId id) override;
-    void SelectNpc(std::optional<NpcId> id) override;
+    void AddNpcGroup(NpcKindType kind) override;
+    void SelectNpc(std::optional<NpcId> id) override;    
     void SelectNextNpc() override;
     void HighlightNpc(std::optional<NpcId> id) override;
     std::optional<GlobalElementId> GetNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const override;
@@ -1006,6 +1007,8 @@ private:
     void PublishStats(std::chrono::steady_clock::time_point nowReal);
 
     void OnBeginPlaceNewNpc(NpcId const & npcId);
+
+    void NotifyNpcPlacementError(NpcCreationFailureReasonType reason);
 
     static bool CalculateAreCloudShadowsEnabled(OceanRenderDetailType oceanRenderDetail);
 
