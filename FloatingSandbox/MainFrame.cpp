@@ -2727,6 +2727,7 @@ void MainFrame::ReconciliateUIWithNpcPresence(bool areNpcsPresent)
             mSelectNextNpcMenuItem->Enable(false);
         }
 
+        // If current tool is a tool that requires NPCs, toggle it out
         assert(!!mToolController);
         auto const currentTool = mToolController->GetCurrentTool();
         if (currentTool == ToolType::MoveNpc || currentTool == ToolType::RemoveNpc || currentTool == ToolType::FollowNpc)
