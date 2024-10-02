@@ -38,6 +38,28 @@
 
 			{
 				"name": [
+					{ "value": "Captain 1", "language": "en" },
+					{ "value": "Capitano 1", "language": "it" }
+				],
+				"role": "Captain",
+				"texture_filename_stems": {
+					"head_f": "captain_1_head_front",
+					"head_b": "captain_1_head_back",
+					"head_s": "captain_1_head_side",
+					"torso_f": "captain_1_torso_front",
+					"torso_b": "captain_1_torso_back",
+					"torso_s": "captain_1_torso_side",
+					"arm_f": "captain_1_arm_front",
+					"arm_b": "captain_1_arm_back",
+					"arm_s": "captain_1_arm_side",
+					"leg_f": "captain_1_leg_front",
+					"leg_b": "captain_1_leg_back",
+					"leg_s": "captain_1_leg_side"
+				}
+			},
+
+			{
+				"name": [
 					{ "value": "Civilian Passenger 1 (Female)", "language": "en" },
 					{ "value": "Passeggero 1 (Donna)", "language": "it" }
 				],

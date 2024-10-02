@@ -747,17 +747,21 @@ private:
 		Ship & HomeShip; // Non-const as we forward interactions to ships
 		std::vector<NpcId> Npcs;
 
+		std::vector<NpcId> BurningNpcs; // Maintained as a set
+
+		// Stats
 		size_t FurnitureNpcCount;
 		size_t HumanNpcCount;
-
-		std::vector<NpcId> BurningNpcs; // Maintained as a set
+		size_t HumanNpcCaptainCount;
 
 		ShipNpcsType(Ship & homeShip)
 			: HomeShip(homeShip)
 			, Npcs()
+			, BurningNpcs()
+			//
 			, FurnitureNpcCount(0)
 			, HumanNpcCount(0)
-			, BurningNpcs()
+			, HumanNpcCaptainCount(0)
 		{}
 	};
 

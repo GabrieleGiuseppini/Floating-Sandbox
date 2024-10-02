@@ -840,6 +840,10 @@ std::tuple<std::optional<PickedObjectId<NpcId>>, NpcCreationFailureReasonType> N
     //
 
     ++(mShips[shipId]->HumanNpcCount);
+    if (mNpcDatabase.GetHumanRole(subKind) == NpcHumanRoleType::Captain)
+    {
+        ++(mShips[shipId]->HumanNpcCaptainCount);
+    }
     PublishCount();
 
     return { PickedObjectId<NpcId>(npcId, vec2f::zero()), NpcCreationFailureReasonType::Success };
@@ -1214,14 +1218,34 @@ NpcCreationFailureReasonType Npcs::AddNpcGroup(
     NpcKindType kind,
     float currentSimulationTime)
 {
-    float const groupSize = GameParameters::NpcsPerGroup;
+    size_t const groupSize = GameParameters::NpcsPerGroup;
 
     //
     // Choose a ship
     //
 
-    // TODOHERE
+    assert(mShips.size() > 0);
+    size_t const shipSearchStart = GameRandomEngine::GetInstance().Choose(mShips.size());
+
     ShipId shipId = 0;
+    for (size_t s = shipSearchStart; ;)
+    {
+        if (mShips[s].has_value())
+        {
+            // Found!
+            shipId = static_cast<ShipId>(s);
+            break;
+        }
+
+        // Advance
+        ++s;
+        if (s >= mShips.size())
+        {
+            s = 0;
+        }
+
+        assert(s != shipSearchStart); // There's always at least one ship
+    }
 
     Points const & points = mShips[shipId]->HomeShip.GetPoints();
     Triangles const & triangles = mShips[shipId]->HomeShip.GetTriangles();
@@ -1233,6 +1257,10 @@ NpcCreationFailureReasonType Npcs::AddNpcGroup(
     // We reduce this when we determine an index at and after which there are no more viable triangles;
     // index is excluded
     ElementCount minimallyViableTriangleUpperBound = triangles.GetElementCount();
+
+    // Triangles already chosen - we'll try to avoid cramming multiple NPCs in the same triangle
+    std::vector<ElementIndex> alreadyChosenTriangles;
+    alreadyChosenTriangles.reserve(groupSize);
 
     size_t nNpcsAdded = 0;
     for (; nNpcsAdded < groupSize; ++nNpcsAdded)
@@ -1246,15 +1274,42 @@ NpcCreationFailureReasonType Npcs::AddNpcGroup(
         {
             case NpcKindType::Furniture:
             {
+                // Trivial choice
                 size_t iSubKind = GameRandomEngine::GetInstance().Choose(mNpcDatabase.GetFurnitureSubKinds().size());
                 subKind = mNpcDatabase.GetFurnitureSubKinds()[iSubKind];
+
                 break;
             }
 
             case NpcKindType::Human:
             {
-                // TODOHERE: captain, choose role, choose subkindid
-                subKind = 0;
+                // Check whether ship already has a captain
+                if (mShips[shipId]->HumanNpcCaptainCount == 0)
+                {
+                    // Choose a captain
+                    auto const & captainRoles = mNpcDatabase.GetHumanSubKindsByRole()[static_cast<size_t>(NpcHumanRoleType::Captain)];
+                    size_t iSubKind = GameRandomEngine::GetInstance().Choose(captainRoles.size());
+                    subKind = captainRoles[iSubKind];
+                }
+                else
+                {
+                    // Choose a role first
+                    if (GameRandomEngine::GetInstance().GenerateUniformBoolean(0.333f))
+                    {
+                        // Crew
+                        auto const & crewRoles = mNpcDatabase.GetHumanSubKindsByRole()[static_cast<size_t>(NpcHumanRoleType::Crew)];
+                        size_t iSubKind = GameRandomEngine::GetInstance().Choose(crewRoles.size());
+                        subKind = crewRoles[iSubKind];
+                    }
+                    else
+                    {
+                        // Passengers
+                        auto const & passengerRoles = mNpcDatabase.GetHumanSubKindsByRole()[static_cast<size_t>(NpcHumanRoleType::Passenger)];
+                        size_t iSubKind = GameRandomEngine::GetInstance().Choose(passengerRoles.size());
+                        subKind = passengerRoles[iSubKind];
+                    }
+                }
+                
                 break;
             }
         }
@@ -1341,6 +1396,15 @@ NpcCreationFailureReasonType Npcs::AddNpcGroup(
                         }
                     }
 
+                    // Not chosen earlier
+                    {
+                        if (auto const searchIt = std::find(alreadyChosenTriangles.cbegin(), alreadyChosenTriangles.cend(), t);
+                            searchIt == alreadyChosenTriangles.cend())
+                        {
+                            ++score;
+                        }
+                    }
+
                     //
                     // Check if best score
                     //
@@ -1350,7 +1414,8 @@ NpcCreationFailureReasonType Npcs::AddNpcGroup(
                         + 1     // No water
                         + 1     // No Fire
                         + 3     // Surrounding triangles
-                        + 1;    // Has floor
+                        + 1     // Has floor
+                        + 1;    // Not chosen earlier
 
                     if (score > bestCandidateTriangleScore)
                     {
@@ -1405,6 +1470,9 @@ NpcCreationFailureReasonType Npcs::AddNpcGroup(
             npcPosition = (aPosition + bPosition + cPosition) / 3.0f;
 
             LogMessage("  NPC ", nNpcsAdded, ": tri=", bestCandidateTriangle, " pos_tri=", npcPosition);
+
+            // Remember this was chosen
+            alreadyChosenTriangles.push_back(bestCandidateTriangle);
         }
         else
         {
@@ -1426,13 +1494,34 @@ NpcCreationFailureReasonType Npcs::AddNpcGroup(
         {
             case NpcKindType::Furniture:
             {
-                // Position is of bottom
+                vec2f position;
+                switch (mNpcDatabase.GetFurnitureParticleMeshKindType(subKind))
+                {
+                    case NpcDatabase::ParticleMeshKindType::Dipole:
+                    {
+                        // TODO
+                        throw GameException("Dipoles not yet supported!");
+                    }
 
-                float const height = mNpcDatabase.GetFurnitureDimensions(subKind).Height;
+                    case NpcDatabase::ParticleMeshKindType::Particle:
+                    {
+                        position = npcPosition;
+                        break;
+                    }
+
+                    case NpcDatabase::ParticleMeshKindType::Quad:
+                    {
+                        // Position we give is of center, but we want bottom (left, arbitrarily) to be here
+                        float const width = mNpcDatabase.GetFurnitureDimensions(subKind).Width;
+                        float const height = mNpcDatabase.GetFurnitureDimensions(subKind).Height;
+                        position = npcPosition + vec2f(width / 2.0f, height / 2.0f);
+                        break;
+                    }
+                }
 
                 placementOutcome = BeginPlaceNewFurnitureNpc(
                     subKind,
-                    npcPosition + vec2f(0.0, height), // Primary
+                    position,
                     currentSimulationTime,
                     false);
 
@@ -2423,6 +2512,12 @@ bool Npcs::CommonNpcRemoval(NpcId npcId)
         case NpcKindType::Human:
         {
             --(mShips[shipId]->HumanNpcCount);
+
+            if (mStateBuffer[npcId]->KindSpecificState.HumanNpcState.Role == NpcHumanRoleType::Captain)
+            {
+                assert(mShips[shipId]->HumanNpcCaptainCount > 0);
+                --(mShips[shipId]->HumanNpcCaptainCount);
+            }
 
             if (mStateBuffer[npcId]->CurrentRegime == StateType::RegimeType::Constrained)
             {

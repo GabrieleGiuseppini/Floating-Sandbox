@@ -204,31 +204,29 @@ V1 TODO:
 		= GameController notifies
 	= Npcs::AddNpcGroup()
 		+ GameParameters: NpcCrowdSize (default is 32)
-		- Make sure we don't go beyond limits
-		- Choose role first, then use NpcDatabase "tree structure" to choose elements
-			- Add Captain role
-			- Npcs has new stat member: bool HasCaptain
-				- Keep it consistent @
-					- Add
-					- InternalRemove
-		- Choose triangle:
-			- MaxTri = size() - 1
-			- For N npcs:
-				- Choose a random triangle, between 0 and MaxTri
-				- Then walk t from choice (around) until find conditions:
-					- One that has floor below
-				- If at MaxTri: MaxTri=start walk, t = 0
-				- If none with floor found but one without floor found: that one
-				- If really nothing:
-					- Return; error iff no npcs at all
-		- Before loop: if !HasCaptain, choose a captain (and lower # of loop iterations we have to do)
-			- Role choice does not need to include captain then
-		- Should we give the NPC the velocity of its triangle?			
-			- If so:
-				- See if should do it all the time
-				- If not, do InternalCompleteNpc(bool initializeWithMeshVelocity) -> InternalEndMove(bool initializeWithMeshVelocity)
+		+ Make sure we don't go beyond limits
+		+ Choose role first, then use NpcDatabase "tree structure" to choose elements
+			+ Add Captain role
+			+ Npcs has new stat member: bool HasCaptain
+				+ Keep it consistent @
+					+ Add
+					+ InternalRemove
+		+ Choose triangle:
+			+ MaxTri = size() - 1
+			+ Scoring system
+				+ Floor below
+			+ FIX: choise is too concentrated
+		= Should we give the NPC the velocity of its triangle?			
+			= See if should do it all the time
+			- If not, do InternalCompleteNpc(bool initializeWithMeshVelocity) -> InternalEndMove(bool initializeWithMeshVelocity)
+	- GameController: focus one-shot (iff conditions, like adding manually) following add group
+		- Npcs & World must return an ID (say, first - so it's also captain!)
+	+ FIX: UI:
+		+ ResetUIShipState should revert to external view if current tool is not an NPC tool
+			+ ReconciliateViewWithCurrentTool(), also called by OnNon/NpcToolSelected (replaces inline code)
+				! Fine to leave explicit switch to interior view when adding group
 	- Test:
-		- Lower limit and test hitting it
+		- Hitting max Npcs limits @:
 			- Square
 			- Strided
 	- Cleanup:
