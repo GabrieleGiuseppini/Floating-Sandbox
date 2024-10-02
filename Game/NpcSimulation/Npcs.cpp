@@ -1263,12 +1263,14 @@ NpcCreationFailureReasonType Npcs::AddNpcGroup(
         // Find triangle - if none, we'll go free
         //
 
-        ElementIndex firstMinimallyViableTriangle = NoneElementIndex; // We'll use this one if a better one is not found        
-        ElementIndex lastMinimallyViableTriangle = NoneElementIndex;
-        ElementIndex fullyViableTriangle = NoneElementIndex;
+        ElementIndex bestCandidateTriangle = NoneElementIndex;
+        size_t bestCandidateTriangleScore = 0;
 
         // Decide where to start the search from
         ElementIndex const searchStartTriangle = GameRandomEngine::GetInstance().Choose(minimallyViableTriangleUpperBound);
+
+        // To keep track of the upper bound
+        ElementIndex lastMinimallyViableTriangle = NoneElementIndex;
 
         LogMessage("    Triangle choice: ", searchStartTriangle, " capped to ", minimallyViableTriangleUpperBound);
 
@@ -1278,29 +1280,82 @@ NpcCreationFailureReasonType Npcs::AddNpcGroup(
             // Check triangle viability
             if (!triangles.IsDeleted(t))
             {
+                ElementIndex const pA = triangles.GetPointAIndex(t);
+                ElementIndex const pB = triangles.GetPointBIndex(t);
+                ElementIndex const pC = triangles.GetPointCIndex(t);
+
                 // TODO: see if we needed this after all
-                vec2f const aPosition = points.GetPosition(triangles.GetPointAIndex(t));
-                vec2f const bPosition = points.GetPosition(triangles.GetPointBIndex(t));
-                vec2f const cPosition = points.GetPosition(triangles.GetPointCIndex(t));
+                vec2f const aPosition = points.GetPosition(pA);
+                vec2f const bPosition = points.GetPosition(pB);
+                vec2f const cPosition = points.GetPosition(pC);
 
                 if (!IsTriangleFolded(aPosition, bPosition, cPosition))
                 {
                     // Minimally viable
 
-                    if (firstMinimallyViableTriangle == NoneElementIndex)
-                    {
-                        firstMinimallyViableTriangle = t;
-                    }
-
+                    // Update for upper bound
                     lastMinimallyViableTriangle = t;
 
-                    // Check whether fully viable
+                    //
+                    // Calculate score
+                    //
+
+                    size_t score = 1;
+
+                    // Water
+                    float constexpr MaxWater = 0.05f; // Arbitrary
+                    if (points.GetWater(pA) < MaxWater && points.GetWater(pB) < MaxWater && points.GetWater(pC) < MaxWater)
+                    {
+                        ++score;
+                    }
+
+                    // Fire
+                    if (!points.IsBurning(pA) && !points.IsBurning(pB) && !points.IsBurning(pC))
+                    {
+                        ++score;
+                    }
+
+                    // Surrounded by triangles
+                    for (int e = 0; e < 3; ++e)
+                    {
+                        auto const & oppositeTriangleInfo = triangles.GetOppositeTriangle(t, e);
+                        if (oppositeTriangleInfo.TriangleElementIndex != NoneElementIndex && !triangles.IsDeleted(oppositeTriangleInfo.TriangleElementIndex))
+                        {
+                            ++score;
+                        }
+                    }
+
+                    // Floor down
                     // TODOHERE
+
+                    LogMessage("  Candidate ", t, ": score=", score);
+
+                    //
+                    // Check if best score
+                    //
+
+                    size_t constexpr MaxScore = 
+                        1       // Is minimally viable
+                        + 1     // No water
+                        + 1     // No Fire
+                        + 3;    // Surrounding triangles
+
+                    if (score > bestCandidateTriangleScore)
+                    {
+                        bestCandidateTriangle = t;
+                        bestCandidateTriangleScore = score;
+
+                        assert(score <= MaxScore);
+                        if (score == MaxScore)
+                        {
+                            // Can't get any better!
+                            break;
+                        }
+                    }
                 }
             }
 
-            // No luck
-            assert(fullyViableTriangle == NoneElementIndex);
+            // Haven't found a best one yet
 
             // Advance
             ++t;
@@ -1324,25 +1379,20 @@ NpcCreationFailureReasonType Npcs::AddNpcGroup(
             }
         }
 
-        LogMessage("    firstMinimallyViableTriangle=", firstMinimallyViableTriangle, " lastMinimallyViableTriangle=", lastMinimallyViableTriangle,
-            " fullyViableTriangle=", fullyViableTriangle);
-
-        ElementIndex const triangle = (fullyViableTriangle != NoneElementIndex) ? fullyViableTriangle : firstMinimallyViableTriangle;
-
         //
         // Choose position
         //
 
         vec2f npcPosition;
-        if (triangle != NoneElementIndex)
+        if (bestCandidateTriangle != NoneElementIndex)
         {
             // Center
-            vec2f const aPosition = points.GetPosition(triangles.GetPointAIndex(triangle));
-            vec2f const bPosition = points.GetPosition(triangles.GetPointBIndex(triangle));
-            vec2f const cPosition = points.GetPosition(triangles.GetPointCIndex(triangle));
+            vec2f const aPosition = points.GetPosition(triangles.GetPointAIndex(bestCandidateTriangle));
+            vec2f const bPosition = points.GetPosition(triangles.GetPointBIndex(bestCandidateTriangle));
+            vec2f const cPosition = points.GetPosition(triangles.GetPointCIndex(bestCandidateTriangle));
             npcPosition = (aPosition + bPosition + cPosition) / 3.0f;
 
-            LogMessage("  NPC ", nNpcsAdded, ": tri=", triangle, " pos_tri=", npcPosition);
+            LogMessage("  NPC ", nNpcsAdded, ": tri=", bestCandidateTriangle, " pos_tri=", npcPosition);
         }
         else
         {
