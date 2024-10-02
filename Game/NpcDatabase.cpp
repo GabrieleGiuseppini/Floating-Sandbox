@@ -125,6 +125,26 @@ std::vector<std::tuple<NpcSubKindIdType, std::string>> NpcDatabase::GetFurniture
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
+NpcDatabase::NpcDatabase(
+    std::map<NpcSubKindIdType, HumanKind> && humanKinds,
+    std::map<NpcSubKindIdType, FurnitureKind> && furnitureKinds)
+    : mHumanKinds(std::move(humanKinds))
+    , mFurnitureKinds(std::move(furnitureKinds))
+{
+    // Build lookup tables
+
+    mHumanSubKindsByRole.resize(static_cast<size_t>(NpcHumanRoleType::_Last) + 1);
+    for (auto const & entry : mHumanKinds)
+    {
+        mHumanSubKindsByRole[static_cast<uint32_t>(entry.second.Role)].push_back(entry.first);
+    }
+
+    for (auto const & entry : mFurnitureKinds)
+    {
+        mFurnitureSubKinds.push_back(entry.first);
+    }
+}
+
 NpcDatabase::HumanKind NpcDatabase::ParseHumanKind(
     picojson::object const & kindObject,
     StructuralMaterial const & headMaterial,

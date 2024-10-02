@@ -88,7 +88,18 @@ public:
         Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas);
 
     std::vector<std::tuple<NpcSubKindIdType, std::string>> GetHumanSubKinds(std::string const & language) const;
+
+    std::vector<std::vector<NpcSubKindIdType>> const & GetHumanSubKindsByRole() const
+    {
+        return mHumanSubKindsByRole;
+    }
+
     std::vector<std::tuple<NpcSubKindIdType, std::string>> GetFurnitureSubKinds(std::string const & language) const;
+
+    std::vector<NpcSubKindIdType> const & GetFurnitureSubKinds() const
+    {
+        return mFurnitureSubKinds;
+    }
 
     NpcHumanRoleType GetHumanRole(NpcSubKindIdType subKindId) const
     {
@@ -221,10 +232,7 @@ private:
 
     NpcDatabase(
         std::map<NpcSubKindIdType, HumanKind> && humanKinds,
-        std::map<NpcSubKindIdType, FurnitureKind> && furnitureKinds)
-        : mHumanKinds(std::move(humanKinds))
-        , mFurnitureKinds(std::move(furnitureKinds))
-    {}
+        std::map<NpcSubKindIdType, FurnitureKind> && furnitureKinds);
 
     static HumanKind ParseHumanKind(
         picojson::object const & kindObject,
@@ -281,4 +289,7 @@ private:
 
     std::map<NpcSubKindIdType, HumanKind> mHumanKinds;
     std::map<NpcSubKindIdType, FurnitureKind> mFurnitureKinds;
+
+    std::vector<std::vector<NpcSubKindIdType>> mHumanSubKindsByRole;
+    std::vector<NpcSubKindIdType> mFurnitureSubKinds;
 };

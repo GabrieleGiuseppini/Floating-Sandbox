@@ -1246,8 +1246,8 @@ NpcCreationFailureReasonType Npcs::AddNpcGroup(
         {
             case NpcKindType::Furniture:
             {
-                // TODOHERE: choose subkindid
-                subKind = 0;
+                size_t iSubKind = GameRandomEngine::GetInstance().Choose(mNpcDatabase.GetFurnitureSubKinds().size());
+                subKind = mNpcDatabase.GetFurnitureSubKinds()[iSubKind];
                 break;
             }
 
@@ -1325,20 +1325,32 @@ NpcCreationFailureReasonType Npcs::AddNpcGroup(
                         }
                     }
 
-                    // Floor down
-                    // TODOHERE
+                    // Floor underneath
+                    {
+                        vec2f const centerPosition = (aPosition + bPosition + cPosition) / 3.0f;
+                        bcoords3f underneathBCoords = triangles.ToBarycentricCoordinates(centerPosition + vec2f(0.0f, -2.0f), t, points);
 
-                    LogMessage("  Candidate ", t, ": score=", score);
+                        // Heuristic: we consider as "it's gonna be our floor" any edge that has its corresponding bcoord < 0
+                        for (int v = 0; v < 3; ++v)
+                        {
+                            if (underneathBCoords[v] < 0.0f && triangles.GetSubSpringNpcFloorKind(t, (v+1) % 3) != NpcFloorKindType::NotAFloor)
+                            {
+                                ++score;
+                                break;
+                            }
+                        }
+                    }
 
                     //
                     // Check if best score
                     //
 
-                    size_t constexpr MaxScore = 
+                    size_t constexpr MaxScore =
                         1       // Is minimally viable
                         + 1     // No water
                         + 1     // No Fire
-                        + 3;    // Surrounding triangles
+                        + 3     // Surrounding triangles
+                        + 1;    // Has floor
 
                     if (score > bestCandidateTriangleScore)
                     {

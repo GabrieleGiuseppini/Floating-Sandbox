@@ -1093,11 +1093,14 @@ using NpcSubKindIdType = std::uint32_t;
 /*
  * Roles for humans.
  */
-enum class NpcHumanRoleType
+enum class NpcHumanRoleType : std::uint32_t
 {
-    Crew,
-    Other,
-    Passenger
+    Captain = 0,
+    Crew = 1,
+    Passenger = 2,
+    Other = 3,
+
+    _Last = Other
 };
 
 NpcHumanRoleType StrToNpcHumanRoleType(std::string const & str);
