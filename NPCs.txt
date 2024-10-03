@@ -194,58 +194,12 @@ Arch
 
 V1 TODO:
 
-= Add crowd
-	+ First off, "error message" work:
-		+ Npcs::BeginPlace() returns tuple: <whatever now, NpcCreationFailureReasonType>
-			+ failureReason enum: TooManyNpcs, TooManyCaptains
-		+ GameController::BeginPlace: if none, tell reason to notification manager
-		+ Tool: sound
-	+ GameController -> Npcs -> AddNpcGroup->optional<NpcCreationFailureReasonType>
-		+ GameController notifies
-	= Npcs::AddNpcGroup()
-		+ GameParameters: NpcCrowdSize (default is 32)
-		+ Make sure we don't go beyond limits
-		+ Choose role first, then use NpcDatabase "tree structure" to choose elements
-			+ Add Captain role
-			+ Npcs has new stat member: bool HasCaptain
-				+ Keep it consistent @
-					+ Add
-					+ InternalRemove
-			+ Furniture role
-				+ json
-				+ NpcDatabase
-				+ NpcStateType
-				+ Role choice
-		+ Choose triangle:
-			+ MaxTri = size() - 1
-			+ Scoring system
-				+ Floor below
-					+ And no floors when not below
-			+ FIX: choise is too concentrated
-		= Should we give the NPC the velocity of its triangle?			
-			+ See if should do it all the time
-			+ Give all particles the primary's velocity
-			- If not, do InternalCompleteNpc(bool initializeWithMeshVelocity) -> InternalEndMove(bool initializeWithMeshVelocity)
-				-> ResetToWorldState
-			- Cleanup code
-	+ GameController: focus one-shot (iff conditions, like adding manually) following add group
-		+ Npcs & World must return an ID (say, first - so it's also captain!)
-	+ FIX: UI:
-		+ ResetUIShipState should revert to external view if current tool is not an NPC tool
-			+ ReconciliateViewWithCurrentTool(), also called by OnNon/NpcToolSelected (replaces inline code)
-				! Fine to leave explicit switch to interior view when adding group
-	- Test:
-		- Hitting max Npcs limits @:
-			- Square
-			+ Strided
-		- Other ships
-		- Perf with actual MaxNpcs
-	- Cleanup:
-		- Reinstate MaxNpcs
-
 - NpcDatabase: string table
 
 - Add Flip NPC H
+	- Human only?
+	- If also furniture:
+		- NpcState::FurnitureState gains orientation
 
 - Just FS:
 	- See if all that mem is sounds
@@ -277,13 +231,16 @@ Next release:
 			- TODOHERE: will we need a way to keep the NPC "out of the loop" for the rest of the simulation step?
 
 - New human behaviors:
+
 	- Panic when water entering
+
 	- When human removed, enters "Removal" behavior: rotates with arms 90degree and legs closed, alpha down, then disappears
-		- Requires delayed removal (@UpdateBehavior); via new DestroyNpc() helper for common removal logic
+		- Requires delayed removal (@UpdateBehavior), see (*) above
 			- Can't be picked when in this state
 			- Physics update: skipped when in this state (like BeingPlaced, but for whole NPC this time)
 			- Tests:
 				- Stats published
+
 	- When ship is repaired, all NPCs do a little dance
 		- Sync is simulation clock (so all are in sync)
 		- Signal from outside (OnShipRepaired) sets global flag
@@ -3621,3 +3578,52 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 + GameController @ (ResetAnd)LoadShip calls Npcs::PublishStats()
 	+ Remove zeroing from MainFrame::ResetUIShipState
 	+ @ NpcCount reconciliation: if current tool is one of those that must go, auto-switch to InitialTool
+
++ Add crowd
+	+ First off, "error message" work:
+		+ Npcs::BeginPlace() returns tuple: <whatever now, NpcCreationFailureReasonType>
+			+ failureReason enum: TooManyNpcs, TooManyCaptains
+		+ GameController::BeginPlace: if none, tell reason to notification manager
+		+ Tool: sound
+	+ GameController -> Npcs -> AddNpcGroup->optional<NpcCreationFailureReasonType>
+		+ GameController notifies
+	+ Npcs::AddNpcGroup()
+		+ GameParameters: NpcCrowdSize (default is 32)
+		+ Make sure we don't go beyond limits
+		+ Choose role first, then use NpcDatabase "tree structure" to choose elements
+			+ Add Captain role
+			+ Npcs has new stat member: bool HasCaptain
+				+ Keep it consistent @
+					+ Add
+					+ InternalRemove
+			+ Furniture role
+				+ json
+				+ NpcDatabase
+				+ NpcStateType
+				+ Role choice
+		+ Choose triangle:
+			+ MaxTri = size() - 1
+			+ Scoring system
+				+ Floor below
+					+ And no floors when not below
+			+ FIX: choise is too concentrated
+		+ Should we give the NPC the velocity of its triangle?			
+			+ See if should do it all the time
+			+ Give all particles the primary's velocity
+			+ If not, do InternalCompleteNpc(bool initializeWithMeshVelocity) -> InternalEndMove(bool initializeWithMeshVelocity)
+				-> ResetToWorldState
+			+ Cleanup code
+	+ GameController: focus one-shot (iff conditions, like adding manually) following add group
+		+ Npcs & World must return an ID (say, first - so it's also captain!)
+	+ FIX: UI:
+		+ ResetUIShipState should revert to external view if current tool is not an NPC tool
+			+ ReconciliateViewWithCurrentTool(), also called by OnNon/NpcToolSelected (replaces inline code)
+				! Fine to leave explicit switch to interior view when adding group
+	+ Test:
+		+ Hitting max Npcs limits @:
+			+ Square
+			+ Strided
+		+ Other ships
+		+ Perf with actual MaxNpcs
+	+ Cleanup:
+		+ Reinstate MaxNpcs

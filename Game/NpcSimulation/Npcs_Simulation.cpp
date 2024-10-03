@@ -15,9 +15,46 @@
 
 namespace Physics {
 
+void Npcs::InternalEndMoveNpc(
+    NpcId id,
+    float currentSimulationTime,
+    NpcInitializationOptions options)
+{
+    assert(mStateBuffer[id].has_value());
+
+    auto & npc = *mStateBuffer[id];
+
+    assert(npc.CurrentRegime == StateType::RegimeType::BeingPlaced);
+
+    ResetNpcStateToWorld(
+        npc,
+        currentSimulationTime,
+        options);
+
+    OnMayBeNpcRegimeChanged(
+        StateType::RegimeType::BeingPlaced,
+        npc);
+
+    npc.BeingPlacedState.reset();
+
+#ifdef IN_BARYLAB
+    // Select NPC's primary particle
+    SelectParticle(npc.ParticleMesh.Particles[0].ParticleIndex);
+#endif
+}
+
+void Npcs::InternalCompleteNewNpc(
+    NpcId id,
+    float currentSimulationTime,
+    NpcInitializationOptions options)
+{
+    InternalEndMoveNpc(id, currentSimulationTime, options);
+}
+
 void Npcs::ResetNpcStateToWorld(
     StateType & npc,
-    float currentSimulationTime)
+    float currentSimulationTime,
+    NpcInitializationOptions options)
 {
     //
     // Find topmost triangle - among all ships - which contains this NPC
@@ -41,7 +78,8 @@ void Npcs::ResetNpcStateToWorld(
             npc,
             currentSimulationTime,
             mShips[topmostTriangle->GetShipId()]->HomeShip,
-            topmostTriangle->GetLocalObjectId());
+            topmostTriangle->GetLocalObjectId(),
+            options);
     }
     else
     {
@@ -59,7 +97,8 @@ void Npcs::ResetNpcStateToWorld(
             npc,
             currentSimulationTime,
             mShips[GetTopmostShipId()]->HomeShip,
-            std::nullopt);
+            std::nullopt,
+            options);
     }
 }
 
@@ -67,7 +106,8 @@ void Npcs::ResetNpcStateToWorld(
     StateType & npc,
     float currentSimulationTime,
     Ship const & homeShip,
-    std::optional<ElementIndex> primaryParticleTriangleIndex)
+    std::optional<ElementIndex> primaryParticleTriangleIndex,
+    NpcInitializationOptions options)
 {
     // Plane ID, connected component ID
 
@@ -128,17 +168,24 @@ void Npcs::ResetNpcStateToWorld(
                     npc.CurrentConnectedComponentId); // Constrain this secondary's triangle to NPC's connected component ID
             }
         }
+    }
 
+    if ((options & NpcInitializationOptions::GainMeshVelocity) != NpcInitializationOptions::None)
+    {
         // Give all particles the velocity of the primary's mesh
-        if (npc.ParticleMesh.Particles[0].ConstrainedState.has_value()
-            && npc.ParticleMesh.Particles[p].ConstrainedState.has_value())
+
+        if (npc.ParticleMesh.Particles[0].ConstrainedState.has_value())
         {
             vec2f const primaryMeshVelocity = homeShip.GetPoints().GetVelocity(
                 homeShip.GetTriangles().GetPointAIndex(
                     npc.ParticleMesh.Particles[0].ConstrainedState->CurrentBCoords.TriangleElementIndex));
-            mParticles.SetVelocity(
-                npc.ParticleMesh.Particles[p].ParticleIndex,
-                primaryMeshVelocity);
+
+            for (size_t p = 1; p < npc.ParticleMesh.Particles.size(); ++p)
+            {
+                mParticles.SetVelocity(
+                    npc.ParticleMesh.Particles[p].ParticleIndex,
+                    primaryMeshVelocity);
+            }
         }
     }
 

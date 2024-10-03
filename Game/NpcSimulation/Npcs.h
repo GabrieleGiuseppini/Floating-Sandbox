@@ -14,6 +14,7 @@
 
 #include <GameCore/BarycentricCoords.h>
 #include <GameCore/ElementIndexRangeIterator.h>
+#include <GameCore/EnumFlags.h>
 #include <GameCore/FixedSizeVector.h>
 #include <GameCore/GameGeometry.h>
 #include <GameCore/GameRandomEngine.h>
@@ -1110,15 +1111,33 @@ private:
 	// Simulation
 	//
 
+	enum class NpcInitializationOptions
+	{
+		None = 0,
+		GainMeshVelocity = 1
+	};
+
+	void InternalEndMoveNpc(
+		NpcId id,
+		float currentSimulationTime,
+		NpcInitializationOptions options);
+
+	void InternalCompleteNewNpc(
+		NpcId id,
+		float currentSimulationTime,
+		NpcInitializationOptions options);
+
 	void ResetNpcStateToWorld(
 		StateType & npc,
-		float currentSimulationTime);
+		float currentSimulationTime,
+		NpcInitializationOptions options);
 
 	void ResetNpcStateToWorld(
 		StateType & npc,
 		float currentSimulationTime,
 		Ship const & homeShip,
-		std::optional<ElementIndex> primaryParticleTriangleIndex);
+		std::optional<ElementIndex> primaryParticleTriangleIndex,
+		NpcInitializationOptions options);
 
 	void TransitionParticleToConstrainedState(
 		StateType & npc,
@@ -1805,5 +1824,7 @@ private:
 
 #endif
 };
+
+template <> struct is_flag<Npcs::NpcInitializationOptions> : std::true_type {};
 
 }

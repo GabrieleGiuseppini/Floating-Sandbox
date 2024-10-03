@@ -1146,33 +1146,14 @@ void Npcs::EndMoveNpc(
     NpcId id,
     float currentSimulationTime)
 {
-    assert(mStateBuffer[id].has_value());
-
-    auto & npc = *mStateBuffer[id];
-
-    assert(npc.CurrentRegime == StateType::RegimeType::BeingPlaced);
-
-    ResetNpcStateToWorld(
-        npc,
-        currentSimulationTime);
-
-    OnMayBeNpcRegimeChanged(
-        StateType::RegimeType::BeingPlaced,
-        npc);
-
-    npc.BeingPlacedState.reset();
-
-#ifdef IN_BARYLAB
-    // Select NPC's primary particle
-    SelectParticle(npc.ParticleMesh.Particles[0].ParticleIndex);
-#endif
+    InternalEndMoveNpc(id, currentSimulationTime, NpcInitializationOptions::None);
 }
 
 void Npcs::CompleteNewNpc(
     NpcId id,
     float currentSimulationTime)
 {
-    EndMoveNpc(id, currentSimulationTime);
+    InternalCompleteNewNpc(id, currentSimulationTime, NpcInitializationOptions::None);
 }
 
 void Npcs::RemoveNpc(NpcId id)
@@ -1340,7 +1321,6 @@ std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> Npcs::AddNpcGroup
                 ElementIndex const pB = triangles.GetPointBIndex(t);
                 ElementIndex const pC = triangles.GetPointCIndex(t);
 
-                // TODO: see if we needed this after all
                 vec2f const aPosition = points.GetPosition(pA);
                 vec2f const bPosition = points.GetPosition(pB);
                 vec2f const cPosition = points.GetPosition(pC);
@@ -1564,7 +1544,10 @@ std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> Npcs::AddNpcGroup
             break;
         }
 
-        CompleteNewNpc(std::get<0>(placementOutcome)->ObjectId, currentSimulationTime);
+        InternalCompleteNewNpc(
+            std::get<0>(placementOutcome)->ObjectId, 
+            currentSimulationTime, 
+            NpcInitializationOptions::GainMeshVelocity);
 
         if (nNpcsAdded == 0)
         {
