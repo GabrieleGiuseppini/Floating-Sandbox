@@ -211,13 +211,16 @@ private:
 			struct FurnitureNpcStateType final
 			{
 				NpcSubKindIdType const SubKindId;
+				NpcFurnitureRoleType const Role;
 
 				Render::TextureCoordinatesQuad const TextureCoordinatesQuad;
 
 				FurnitureNpcStateType(
 					NpcSubKindIdType subKindId,
+					NpcFurnitureRoleType role,
 					Render::TextureCoordinatesQuad const & textureCoordinatesQuad)
 					: SubKindId(subKindId)
+					, Role(role)
 					, TextureCoordinatesQuad(textureCoordinatesQuad)
 				{}
 			} FurnitureNpcState;
@@ -873,7 +876,7 @@ public:
 
 	void AbortNewNpc(NpcId id);
 
-	NpcCreationFailureReasonType AddNpcGroup(
+	std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> AddNpcGroup(
 		NpcKindType kind,
 		float currentSimulationTime);
 

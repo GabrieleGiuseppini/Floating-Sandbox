@@ -504,6 +504,8 @@ struct GameParameters
         static float constexpr StepLengthFraction = 0.43f; // From foot to foot at longest separation
     };
 
+    static size_t constexpr NpcsPerGroup = 32; // The number of NPCs we add when we "add NPC group"
+
     //
     // Misc
     //
@@ -645,10 +647,9 @@ struct GameParameters
     static size_t constexpr MaxSpringsPerPoint = 8u + 1u; // 8 neighbours and 1 rope spring, when this is a rope endpoint
     static size_t constexpr MaxTrianglesPerPoint = 8u;
 
-    static size_t constexpr MaxNpcs = 33u; // TODOHERE 1024u;
+    static size_t constexpr MaxNpcs = 1024u;
     static size_t constexpr MaxParticlesPerNpc = 4u;
-    static size_t constexpr MaxSpringsPerNpc = 6u;
-    static size_t constexpr NpcsPerGroup = 32;
+    static size_t constexpr MaxSpringsPerNpc = 6u;    
 
     static size_t constexpr MaxGadgets = 64u;
     static size_t constexpr MaxPinnedPoints = 64u;

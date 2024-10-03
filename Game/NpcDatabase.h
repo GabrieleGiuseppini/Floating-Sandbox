@@ -94,13 +94,6 @@ public:
         return mHumanSubKindsByRole;
     }
 
-    std::vector<std::tuple<NpcSubKindIdType, std::string>> GetFurnitureSubKinds(std::string const & language) const;
-
-    std::vector<NpcSubKindIdType> const & GetFurnitureSubKinds() const
-    {
-        return mFurnitureSubKinds;
-    }
-
     NpcHumanRoleType GetHumanRole(NpcSubKindIdType subKindId) const
     {
         return mHumanKinds.at(subKindId).Role;
@@ -146,6 +139,18 @@ public:
     HumanTextureFramesType const & GetHumanTextureCoordinatesQuads(NpcSubKindIdType subKindId) const
     {
         return mHumanKinds.at(subKindId).TextureCoordinatesQuads;
+    }
+
+    std::vector<std::tuple<NpcSubKindIdType, std::string>> GetFurnitureSubKinds(std::string const & language) const;
+
+    std::vector<std::vector<NpcSubKindIdType>> const & GetFurnitureSubKindsByRole() const
+    {
+        return mFurnitureSubKindsByRole;
+    }
+
+    NpcFurnitureRoleType GetFurnitureRole(NpcSubKindIdType subKindId) const
+    {
+        return mFurnitureKinds.at(subKindId).Role;
     }
 
     StructuralMaterial const & GetFurnitureMaterial(NpcSubKindIdType subKindId) const
@@ -216,6 +221,7 @@ private:
     struct FurnitureKind
     {
         MultiLingualText Name;
+        NpcFurnitureRoleType Role;
 
         StructuralMaterial const & Material;
 
@@ -291,5 +297,5 @@ private:
     std::map<NpcSubKindIdType, FurnitureKind> mFurnitureKinds;
 
     std::vector<std::vector<NpcSubKindIdType>> mHumanSubKindsByRole;
-    std::vector<NpcSubKindIdType> mFurnitureSubKinds;
+    std::vector<std::vector<NpcSubKindIdType>> mFurnitureSubKindsByRole;
 };

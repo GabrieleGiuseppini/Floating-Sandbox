@@ -200,8 +200,8 @@ V1 TODO:
 			+ failureReason enum: TooManyNpcs, TooManyCaptains
 		+ GameController::BeginPlace: if none, tell reason to notification manager
 		+ Tool: sound
-	= GameController -> Npcs -> AddNpcGroup->optional<NpcCreationFailureReasonType>
-		= GameController notifies
+	+ GameController -> Npcs -> AddNpcGroup->optional<NpcCreationFailureReasonType>
+		+ GameController notifies
 	= Npcs::AddNpcGroup()
 		+ GameParameters: NpcCrowdSize (default is 32)
 		+ Make sure we don't go beyond limits
@@ -211,16 +211,25 @@ V1 TODO:
 				+ Keep it consistent @
 					+ Add
 					+ InternalRemove
+			+ Furniture role
+				+ json
+				+ NpcDatabase
+				+ NpcStateType
+				+ Role choice
 		+ Choose triangle:
 			+ MaxTri = size() - 1
 			+ Scoring system
 				+ Floor below
+					+ And no floors when not below
 			+ FIX: choise is too concentrated
 		= Should we give the NPC the velocity of its triangle?			
-			= See if should do it all the time
+			+ See if should do it all the time
+			+ Give all particles the primary's velocity
 			- If not, do InternalCompleteNpc(bool initializeWithMeshVelocity) -> InternalEndMove(bool initializeWithMeshVelocity)
-	- GameController: focus one-shot (iff conditions, like adding manually) following add group
-		- Npcs & World must return an ID (say, first - so it's also captain!)
+				-> ResetToWorldState
+			- Cleanup code
+	+ GameController: focus one-shot (iff conditions, like adding manually) following add group
+		+ Npcs & World must return an ID (say, first - so it's also captain!)
 	+ FIX: UI:
 		+ ResetUIShipState should revert to external view if current tool is not an NPC tool
 			+ ReconciliateViewWithCurrentTool(), also called by OnNon/NpcToolSelected (replaces inline code)
@@ -228,13 +237,18 @@ V1 TODO:
 	- Test:
 		- Hitting max Npcs limits @:
 			- Square
-			- Strided
+			+ Strided
+		- Other ships
+		- Perf with actual MaxNpcs
 	- Cleanup:
 		- Reinstate MaxNpcs
+
+- NpcDatabase: string table
 
 - Add Flip NPC H
 
 - Just FS:
+	- See if all that mem is sounds
 	- Align "big" render buffers, e.g.:
 		- Ship: generic mip mapped
 			- Perf of bubbles:
@@ -375,6 +389,7 @@ Next release:
 - Area walk planning:
 	- TODO: floor types (normal, assembly, lifeboats, etc.)
 	- TODO: states (random walk, to assembly, to lifeboats, etc.)
+	- Separate thread calcs <floor_point>->[distance to each floor area connected component]
 
 - Forward-looking walk planning:
 	- First off: WalkingBehaviorState remembers CurrentTriangleElementIndex (of primary)

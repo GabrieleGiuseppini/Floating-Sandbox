@@ -1148,15 +1148,6 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
         *mMusicController,
         mLocalizationManager);
 
-    //
-    // Reconciliate UI
-    //
-
-    ResetShipUIState();
-    RebuildNpcMenus();
-    ReconciliateUIWithUIPreferencesAndSettings();
-    ReconciliateUIWithAutoFocusTarget(mGameController->GetAutoFocusTarget());
-
 
     //
     // Create Electrical Panel
@@ -1209,6 +1200,16 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     }
 
     this->mMainApp->Yield();
+
+
+    //
+    // Reconciliate UI
+    //
+
+    ResetShipUIState();
+    RebuildNpcMenus();
+    ReconciliateUIWithUIPreferencesAndSettings();
+    ReconciliateUIWithAutoFocusTarget(mGameController->GetAutoFocusTarget());
 
 
     //
@@ -2508,6 +2509,8 @@ void MainFrame::ResetShipUIState()
     mRCBombsDetonateMenuItem->Enable(false);
     mAntiMatterBombsDetonateMenuItem->Enable(false);
     mTriggerStormMenuItem->Enable(true);
+
+    ReconciliateShipViewModeWithCurrentTool(); // We might be on Interior view without having an NPC tool (e.g. because of a recent AddGroup)
 }
 
 void MainFrame::UpdateFrameTitle()
@@ -2573,13 +2576,8 @@ void MainFrame::OnNonNpcToolSelected(ToolType toolType)
     // Reconciliate AddNpc sub-menu items
     ReconciliateAddNpcSubItems();
 
-    // Switch to exterior view
-    assert(!!mGameController);
-    if (mGameController->GetShipViewMode() != ShipViewModeType::Exterior)
-    {
-        mGameController->SetShipViewMode(ShipViewModeType::Exterior);
-        mShipViewExteriorMenuItem->Check(true);
-    }
+    // Reconciliate ship view mode
+    ReconciliateShipViewModeWithCurrentTool();
 }
 
 void MainFrame::OnNpcToolSelected(ToolType toolType)
@@ -2609,13 +2607,8 @@ void MainFrame::OnNpcToolSelected(ToolType toolType)
     // Reconciliate AddNpc sub-menu items
     ReconciliateAddNpcSubItems();
 
-    // Switch to interior view
-    assert(!!mGameController);
-    if (mGameController->GetShipViewMode() != ShipViewModeType::Interior)
-    {
-        mGameController->SetShipViewMode(ShipViewModeType::Interior);
-        mShipViewInteriorMenuItem->Check(true);
-    }
+    // Reconciliate ship view mode
+    ReconciliateShipViewModeWithCurrentTool();
 }
 
 void MainFrame::ReconciliateUIWithUIPreferencesAndSettings()
@@ -2777,6 +2770,36 @@ void MainFrame::ReconciliateUIWithAutoFocusTarget(std::optional<AutoFocusTargetK
         if (!mContinuousAutoFocusOnNothingMenuItem->IsChecked())
         {
             mContinuousAutoFocusOnNothingMenuItem->Check(true);
+        }
+    }
+}
+
+void MainFrame::ReconciliateShipViewModeWithCurrentTool()
+{
+    assert(!!mToolController);
+    auto const currentTool = mToolController->GetCurrentTool();
+    if (currentTool.has_value())
+    {
+        bool const isNpcTool = static_cast<std::uint32_t>(*currentTool) >= static_cast<std::uint32_t>(ToolType::_FirstNpcTool);
+
+        assert(!!mGameController);
+        if (isNpcTool)
+        {
+            // Switch to interior view
+            if (mGameController->GetShipViewMode() != ShipViewModeType::Interior)
+            {
+                mGameController->SetShipViewMode(ShipViewModeType::Interior);
+                mShipViewInteriorMenuItem->Check(true);
+            }
+        }
+        else
+        {
+            // Switch to exterior view
+            if (mGameController->GetShipViewMode() != ShipViewModeType::Exterior)
+            {
+                mGameController->SetShipViewMode(ShipViewModeType::Exterior);
+                mShipViewExteriorMenuItem->Check(true);
+            }
         }
     }
 }

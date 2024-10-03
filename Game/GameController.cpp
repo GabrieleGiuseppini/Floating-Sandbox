@@ -1323,7 +1323,7 @@ std::optional<PickedObjectId<NpcId>> GameController::BeginPlaceNewFurnitureNpc(
     auto const & pickedNpcId = std::get<0>(result);
     if (pickedNpcId.has_value())
     {
-        OnBeginPlaceNewNpc(pickedNpcId->ObjectId);
+        OnBeginPlaceNewNpc(pickedNpcId->ObjectId, true);
         return pickedNpcId;
     }
     else
@@ -1349,7 +1349,7 @@ std::optional<PickedObjectId<NpcId>> GameController::BeginPlaceNewHumanNpc(
     auto const & pickedNpcId = std::get<0>(result);
     if (pickedNpcId.has_value())
     {
-        OnBeginPlaceNewNpc(pickedNpcId->ObjectId);
+        OnBeginPlaceNewNpc(pickedNpcId->ObjectId, true);
         return pickedNpcId;
     }
     else
@@ -1425,10 +1425,18 @@ void GameController::AddNpcGroup(NpcKindType kind)
 {
     assert(!!mWorld);
     auto const result = mWorld->AddNpcGroup(kind);
-    if (result != NpcCreationFailureReasonType::Success)
+
+    auto const & pickedNpcId = std::get<0>(result);
+    if (pickedNpcId.has_value())
     {
-        // Error
-        NotifyNpcPlacementError(result);
+        if (kind == NpcKindType::Human)
+        {
+            OnBeginPlaceNewNpc(*pickedNpcId, false);
+        }
+    }
+    else
+    {
+        NotifyNpcPlacementError(std::get<1>(result));
     }
 }
 
@@ -1875,7 +1883,9 @@ void GameController::PublishStats(std::chrono::steady_clock::time_point nowReal)
         mRenderContext->GetStatistics());
 }
 
-void GameController::OnBeginPlaceNewNpc(NpcId const & npcId)
+void GameController::OnBeginPlaceNewNpc(
+    NpcId const & npcId,
+    bool doAnchorToScreen)
 {
     if (!mViewManager.GetAutoFocusTarget().has_value())
     {
@@ -1886,7 +1896,7 @@ void GameController::OnBeginPlaceNewNpc(NpcId const & npcId)
 
         assert(!!mWorld);
         auto const aabb = mWorld->GetNpcs().GetNpcAABB(npcId);
-        mViewManager.FocusOn(aabb, NpcMagnification, NpcMagnification, 1.0f / 8.0f, 2.0f, true);
+        mViewManager.FocusOn(aabb, NpcMagnification, NpcMagnification, 1.0f / 8.0f, 2.0f, doAnchorToScreen);
     }
 }
 

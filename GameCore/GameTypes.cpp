@@ -33,6 +33,16 @@ NpcHumanRoleType StrToNpcHumanRoleType(std::string const & str)
         throw GameException("Unrecognized NpcHumanRoleType \"" + str + "\"");
 }
 
+NpcFurnitureRoleType StrToNpcFurnitureRoleType(std::string const & str)
+{
+    if (Utils::CaseInsensitiveEquals(str, "Furniture"))
+        return NpcFurnitureRoleType::Furniture;
+    else if (Utils::CaseInsensitiveEquals(str, "Other"))
+        return NpcFurnitureRoleType::Other;
+    else
+        throw GameException("Unrecognized NpcFurnitureRoleType \"" + str + "\"");
+}
+
 DurationShortLongType StrToDurationShortLongType(std::string const & str)
 {
     if (Utils::CaseInsensitiveEquals(str, "Short"))

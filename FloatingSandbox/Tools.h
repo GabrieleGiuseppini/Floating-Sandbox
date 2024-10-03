@@ -20,6 +20,7 @@
 #include <cassert>
 #include <chrono>
 #include <cmath>
+#include <cstdint>
 #include <memory>
 #include <optional>
 #include <sstream>
@@ -30,7 +31,7 @@ struct IToolCursorManager
     virtual void SetToolCursor(wxImage const & basisImage, float strength = 0.0f) = 0;
 };
 
-enum class ToolType
+enum class ToolType : std::uint32_t
 {
     Move = 0,
     MoveAll,
@@ -60,11 +61,14 @@ enum class ToolType
     WindMaker,
     LaserCannon,
     Lamp,
+    // NPC tools below
     PlaceFurnitureNpc,
     PlaceHumanNpc,
     MoveNpc,
     RemoveNpc,
-    FollowNpc
+    FollowNpc,
+
+    _FirstNpcTool = PlaceFurnitureNpc
 };
 
 struct InputState

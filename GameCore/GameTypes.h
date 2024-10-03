@@ -1105,6 +1105,22 @@ enum class NpcHumanRoleType : std::uint32_t
 
 NpcHumanRoleType StrToNpcHumanRoleType(std::string const & str);
 
+/*
+ * Roles for furniture.
+ */
+enum class NpcFurnitureRoleType : std::uint32_t
+{
+    Furniture = 0,
+    Other = 3,
+
+    _Last = Other
+};
+
+NpcFurnitureRoleType StrToNpcFurnitureRoleType(std::string const & str);
+
+/*
+ * Reasons for NPC placement failure.
+ */
 enum class NpcCreationFailureReasonType
 {
     Success,

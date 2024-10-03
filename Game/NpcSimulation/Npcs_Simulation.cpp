@@ -128,6 +128,18 @@ void Npcs::ResetNpcStateToWorld(
                     npc.CurrentConnectedComponentId); // Constrain this secondary's triangle to NPC's connected component ID
             }
         }
+
+        // Give all particles the velocity of the primary's mesh
+        if (npc.ParticleMesh.Particles[0].ConstrainedState.has_value()
+            && npc.ParticleMesh.Particles[p].ConstrainedState.has_value())
+        {
+            vec2f const primaryMeshVelocity = homeShip.GetPoints().GetVelocity(
+                homeShip.GetTriangles().GetPointAIndex(
+                    npc.ParticleMesh.Particles[0].ConstrainedState->CurrentBCoords.TriangleElementIndex));
+            mParticles.SetVelocity(
+                npc.ParticleMesh.Particles[p].ParticleIndex,
+                primaryMeshVelocity);
+        }
     }
 
     // Regime

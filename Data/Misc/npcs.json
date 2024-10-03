@@ -420,6 +420,7 @@
 					{ "value": "Barrel", "language": "en" },
 					{ "value": "Barile", "language": "it" }
 				],
+				"role": "Furniture",
 				"material": "Solid Pine Wood I-Beam",
 				"particle_mesh": {
 					"kind": "Quad",
@@ -438,6 +439,7 @@
 					{ "value": "Bed 1", "language": "en" },
 					{ "value": "Letto 1", "language": "it" }
 				],
+				"role": "Furniture",
 				"material": "Solid Pine Wood I-Beam",
 				"particle_mesh": {
 					"kind": "Quad",
@@ -456,6 +458,7 @@
 					{ "value": "Bed 2", "language": "en" },
 					{ "value": "Letto 2", "language": "it" }
 				],
+				"role": "Furniture",
 				"material": "Iron Hull",
 				"particle_mesh": {
 					"kind": "Quad",
@@ -474,6 +477,7 @@
 					{ "value": "Cabin Desk", "language": "en" },
 					{ "value": "Tavolo da Cabina", "language": "it" }
 				],
+				"role": "Furniture",
 				"material": "Solid Pine Wood I-Beam",
 				"particle_mesh": {
 					"kind": "Quad",
@@ -491,6 +495,7 @@
 					{ "value": "Chest 1", "language": "en" },
 					{ "value": "Scrigno 1", "language": "it" }
 				],
+				"role": "Furniture",
 				"material": "Solid Pine Wood I-Beam",
 				"particle_mesh": {
 					"kind": "Quad",
@@ -508,6 +513,7 @@
 					{ "value": "Chest 2", "language": "en" },
 					{ "value": "Scrigno 2", "language": "it" }
 				],
+				"role": "Furniture",
 				"material": "Solid Pine Wood I-Beam",
 				"particle_mesh": {
 					"kind": "Quad",
@@ -525,6 +531,7 @@
 					{ "value": "Chest 3", "language": "en" },
 					{ "value": "Scrigno 3", "language": "it" }
 				],
+				"role": "Furniture",
 				"material": "Solid Pine Wood I-Beam",
 				"particle_mesh": {
 					"kind": "Quad",
@@ -543,6 +550,7 @@
 					{ "value": "Coal Cart", "language": "en" },
 					{ "value": "Carriola con Carbone", "language": "it" }
 				],
+				"role": "Furniture",
 				"material": "Iron Hull",
 				"particle_mesh": {
 					"kind": "Quad",
@@ -561,6 +569,7 @@
 					{ "value": "Crate", "language": "en" },
 					{ "value": "Cassa", "language": "it" }
 				],
+				"role": "Furniture",
 				"material": "Solid Pine Wood I-Beam",
 				"particle_mesh": {
 					"kind": "Quad",
@@ -579,6 +588,7 @@
 					{ "value": "Dining Chair 1", "language": "en" },
 					{ "value": "Sedia da Tavolo 1", "language": "it" }
 				],
+				"role": "Furniture",
 				"material": "Solid Pine Wood I-Beam",
 				"particle_mesh": {
 					"kind": "Quad",
@@ -597,6 +607,7 @@
 					{ "value": "Dining Chair 2", "language": "en" },
 					{ "value": "Sedia da Tavolo 2", "language": "it" }
 				],
+				"role": "Furniture",
 				"material": "Solid Pine Wood I-Beam",
 				"particle_mesh": {
 					"kind": "Quad",
@@ -615,6 +626,7 @@
 					{ "value": "Dining Table 1", "language": "en" },
 					{ "value": "Tavolo da Pranzo 1", "language": "it" }
 				],
+				"role": "Furniture",
 				"material": "Solid Pine Wood I-Beam",
 				"particle_mesh": {
 					"kind": "Quad",
@@ -633,6 +645,7 @@
 					{ "value": "Dining Table 2", "language": "en" },
 					{ "value": "Tavolo da Pranzo 2", "language": "it" }
 				],
+				"role": "Furniture",
 				"material": "Iron Hull",
 				"particle_mesh": {
 					"kind": "Quad",
@@ -651,6 +664,7 @@
 					{ "value": "Drum (Heavy)", "language": "en" },
 					{ "value": "Fusto (Pesante)", "language": "it" }
 				],
+				"role": "Furniture",
 				"material": "Iron Hull",
 				"particle_mesh": {
 					"kind": "Quad",
@@ -669,6 +683,7 @@
 					{ "value": "Drum (Light)", "language": "en" },
 					{ "value": "Fusto (Leggero)", "language": "it" }
 				],
+				"role": "Furniture",
 				"material": "Light Iron Bulkhead",
 				"particle_mesh": {
 					"kind": "Quad",
@@ -680,30 +695,14 @@
 					]
 				},
 				"texture_filename_stem": "drum_2"
-			},
-
-			{
-				"name": [
-					{ "value": "Particle", "language": "en" },
-					{ "value": "Particella", "language": "it" }
-				],
-				"material": "Stainless Steel",
-				"particle_mesh": {
-					"kind": "Particle",
-					"particle_attributes_overrides": [
-						{
-							"buoyancy_volume_fill": 0.0847
-						}
-					]
-				},
-				"texture_filename_stem": "particle_1"
-			},
+			},			
 
 			{	
 				"name": [
 					{ "value": "Piano", "language": "en" },
 					{ "value": "Pianoforte", "language": "it" }
 				],
+				"role": "Furniture",
 				"material": "Iron Hull",
 				"particle_mesh": {
 					"kind": "Quad",
@@ -722,6 +721,7 @@
 					{ "value": "Small Table 1", "language": "en" },
 					{ "value": "Tavolino 1", "language": "it" }
 				],
+				"role": "Furniture",
 				"material": "Solid Pine Wood I-Beam",
 				"particle_mesh": {
 					"kind": "Quad",
@@ -740,6 +740,7 @@
 					{ "value": "Small Table 2", "language": "en" },
 					{ "value": "Tavolino 2", "language": "it" }
 				],
+				"role": "Furniture",
 				"material": "Solid Pine Wood I-Beam",
 				"particle_mesh": {
 					"kind": "Quad",
@@ -751,8 +752,25 @@
 					]
 				},
 				"texture_filename_stem": "small_table_2"
-			}
+			},
 
+			{
+				"name": [
+					{ "value": "Particle", "language": "en" },
+					{ "value": "Particella", "language": "it" }
+				],
+				"role": "Other",
+				"material": "Stainless Steel",
+				"particle_mesh": {
+					"kind": "Particle",
+					"particle_attributes_overrides": [
+						{
+							"buoyancy_volume_fill": 0.0847
+						}
+					]
+				},
+				"texture_filename_stem": "particle_1"
+			}
 		]
 	}
 }

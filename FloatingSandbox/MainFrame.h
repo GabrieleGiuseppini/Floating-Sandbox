@@ -418,6 +418,7 @@ private:
     void ReconciliateUIWithNpcPresence(bool areNpcsPresent);
     void ReconciliateAddNpcSubItems();
     void ReconciliateUIWithAutoFocusTarget(std::optional<AutoFocusTargetKindType> target);
+    void ReconciliateShipViewModeWithCurrentTool();
 
     void RebuildNpcMenus();
 

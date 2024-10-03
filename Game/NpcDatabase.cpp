@@ -139,9 +139,10 @@ NpcDatabase::NpcDatabase(
         mHumanSubKindsByRole[static_cast<uint32_t>(entry.second.Role)].push_back(entry.first);
     }
 
+    mFurnitureSubKindsByRole.resize(static_cast<size_t>(NpcFurnitureRoleType::_Last) + 1);
     for (auto const & entry : mFurnitureKinds)
     {
-        mFurnitureSubKinds.push_back(entry.first);
+        mFurnitureSubKindsByRole[static_cast<uint32_t>(entry.second.Role)].push_back(entry.first);
     }
 }
 
@@ -155,8 +156,10 @@ NpcDatabase::HumanKind NpcDatabase::ParseHumanKind(
 {
     MultiLingualText name = ParseMultilingualText(kindObject, "name");
     NpcHumanRoleType const role = StrToNpcHumanRoleType(Utils::GetMandatoryJsonMember<std::string>(kindObject, "role"));
+
     ParticleAttributesType headParticleAttributes = MakeParticleAttributes(kindObject, "head_particle_attributes_overrides", globalHeadParticleAttributes);
     ParticleAttributesType feetParticleAttributes = MakeParticleAttributes(kindObject, "feet_particle_attributes_overrides", globalFeetParticleAttributes);
+
     float const sizeMultiplier = Utils::GetOptionalJsonMember<float>(kindObject, "size_multiplier", 1.0f);
 
     float const headTextureBaseWidth = Utils::GetOptionalJsonMember<float>(kindObject, "head_texture_base_width", 16.0f);
@@ -275,6 +278,7 @@ NpcDatabase::FurnitureKind NpcDatabase::ParseFurnitureKind(
     Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas)
 {
     MultiLingualText name = ParseMultilingualText(kindObject, "name");
+    NpcFurnitureRoleType const role = StrToNpcFurnitureRoleType(Utils::GetMandatoryJsonMember<std::string>(kindObject, "role"));
 
     StructuralMaterial const & material = materialDatabase.GetStructuralMaterial(
         Utils::GetMandatoryJsonMember<std::string>(kindObject, "material"));
@@ -378,6 +382,7 @@ NpcDatabase::FurnitureKind NpcDatabase::ParseFurnitureKind(
 
     return FurnitureKind({
         std::move(name),
+        role,
         material,
         std::move(particleAttributes),
         particleMeshKind,

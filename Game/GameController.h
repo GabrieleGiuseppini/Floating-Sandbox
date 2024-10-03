@@ -1006,7 +1006,9 @@ private:
 
     void PublishStats(std::chrono::steady_clock::time_point nowReal);
 
-    void OnBeginPlaceNewNpc(NpcId const & npcId);
+    void OnBeginPlaceNewNpc(
+        NpcId const & npcId,
+        bool doAnchorToScreen);
 
     void NotifyNpcPlacementError(NpcCreationFailureReasonType reason);
 

@@ -623,6 +623,7 @@ std::tuple<std::optional<PickedObjectId<NpcId>>, NpcCreationFailureReasonType> N
 
     StateType::KindSpecificStateType::FurnitureNpcStateType furnitureState = StateType::KindSpecificStateType::FurnitureNpcStateType(
         subKind,
+        mNpcDatabase.GetFurnitureRole(subKind),
         mNpcDatabase.GetFurnitureTextureCoordinatesQuad(subKind));
 
     //
@@ -1214,7 +1215,7 @@ void Npcs::AbortNewNpc(NpcId id)
     RemoveNpc(id);
 }
 
-NpcCreationFailureReasonType Npcs::AddNpcGroup(
+std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> Npcs::AddNpcGroup(
     NpcKindType kind,
     float currentSimulationTime)
 {
@@ -1263,6 +1264,7 @@ NpcCreationFailureReasonType Npcs::AddNpcGroup(
     alreadyChosenTriangles.reserve(groupSize);
 
     size_t nNpcsAdded = 0;
+    NpcId firstNpcId;
     for (; nNpcsAdded < groupSize; ++nNpcsAdded)
     {
         //
@@ -1275,8 +1277,9 @@ NpcCreationFailureReasonType Npcs::AddNpcGroup(
             case NpcKindType::Furniture:
             {
                 // Trivial choice
-                size_t iSubKind = GameRandomEngine::GetInstance().Choose(mNpcDatabase.GetFurnitureSubKinds().size());
-                subKind = mNpcDatabase.GetFurnitureSubKinds()[iSubKind];
+                auto const & furnitureRoles = mNpcDatabase.GetFurnitureSubKindsByRole()[static_cast<size_t>(NpcFurnitureRoleType::Furniture)];
+                size_t iSubKind = GameRandomEngine::GetInstance().Choose(furnitureRoles.size());
+                subKind = furnitureRoles[iSubKind];
 
                 break;
             }
@@ -1294,7 +1297,7 @@ NpcCreationFailureReasonType Npcs::AddNpcGroup(
                 else
                 {
                     // Choose a role first
-                    if (GameRandomEngine::GetInstance().GenerateUniformBoolean(0.333f))
+                    if (GameRandomEngine::GetInstance().GenerateUniformBoolean(0.3f)) // ~1/3 is crew
                     {
                         // Crew
                         auto const & crewRoles = mNpcDatabase.GetHumanSubKindsByRole()[static_cast<size_t>(NpcHumanRoleType::Crew)];
@@ -1326,8 +1329,6 @@ NpcCreationFailureReasonType Npcs::AddNpcGroup(
 
         // To keep track of the upper bound
         ElementIndex lastMinimallyViableTriangle = NoneElementIndex;
-
-        LogMessage("    Triangle choice: ", searchStartTriangle, " capped to ", minimallyViableTriangleUpperBound);
 
         // Visit all triangles starting from this one, eventually looping around
         for (ElementIndex t = searchStartTriangle; ; )
@@ -1380,19 +1381,34 @@ NpcCreationFailureReasonType Npcs::AddNpcGroup(
                         }
                     }
 
-                    // Floor underneath
+                    // Floor underneath and no floors above
                     {
                         vec2f const centerPosition = (aPosition + bPosition + cPosition) / 3.0f;
                         bcoords3f underneathBCoords = triangles.ToBarycentricCoordinates(centerPosition + vec2f(0.0f, -2.0f), t, points);
 
-                        // Heuristic: we consider as "it's gonna be our floor" any edge that has its corresponding bcoord < 0
+                        // Heuristic: we consider as "it's gonna be our floor" any edge that has its corresponding bcoord < 0, and viceversa
+                        bool hasRightFloorUnderneath = false;
+                        bool hasRightFloorAbove = false;
                         for (int v = 0; v < 3; ++v)
                         {
                             if (underneathBCoords[v] < 0.0f && triangles.GetSubSpringNpcFloorKind(t, (v+1) % 3) != NpcFloorKindType::NotAFloor)
                             {
-                                ++score;
-                                break;
+                                hasRightFloorUnderneath = true;
                             }
+                            else if (underneathBCoords[v] > 0.0f && triangles.GetSubSpringNpcFloorKind(t, (v + 1) % 3) == NpcFloorKindType::NotAFloor)
+                            {
+                                hasRightFloorAbove = true;
+                            }
+                        }
+
+                        if (hasRightFloorUnderneath)
+                        {
+                            ++score;
+                        }
+
+                        if (hasRightFloorAbove)
+                        {
+                            ++score;
                         }
                     }
 
@@ -1414,7 +1430,7 @@ NpcCreationFailureReasonType Npcs::AddNpcGroup(
                         + 1     // No water
                         + 1     // No Fire
                         + 3     // Surrounding triangles
-                        + 1     // Has floor
+                        + 2     // Has right floors
                         + 1;    // Not chosen earlier
 
                     if (score > bestCandidateTriangleScore)
@@ -1469,8 +1485,6 @@ NpcCreationFailureReasonType Npcs::AddNpcGroup(
             vec2f const cPosition = points.GetPosition(triangles.GetPointCIndex(bestCandidateTriangle));
             npcPosition = (aPosition + bPosition + cPosition) / 3.0f;
 
-            LogMessage("  NPC ", nNpcsAdded, ": tri=", bestCandidateTriangle, " pos_tri=", npcPosition);
-
             // Remember this was chosen
             alreadyChosenTriangles.push_back(bestCandidateTriangle);
         }
@@ -1480,8 +1494,6 @@ NpcCreationFailureReasonType Npcs::AddNpcGroup(
             npcPosition = vec2f(
                 GameRandomEngine::GetInstance().GenerateUniformReal(-100.0f, 100.0f),
                 GameRandomEngine::GetInstance().GenerateUniformReal(0.0f, 100.0f));
-
-            LogMessage("  NPC ", nNpcsAdded, ": pos_free=", npcPosition);
         }
 
         //
@@ -1553,9 +1565,16 @@ NpcCreationFailureReasonType Npcs::AddNpcGroup(
         }
 
         CompleteNewNpc(std::get<0>(placementOutcome)->ObjectId, currentSimulationTime);
+
+        if (nNpcsAdded == 0)
+        {
+            firstNpcId = std::get<0>(placementOutcome)->ObjectId;
+        }
     }
 
-    return (nNpcsAdded > 0) ? NpcCreationFailureReasonType::Success : NpcCreationFailureReasonType::TooManyNpcs;
+    return (nNpcsAdded > 0) 
+        ? std::make_tuple(firstNpcId, NpcCreationFailureReasonType::Success) 
+        : std::make_tuple(std::optional<NpcId>(), NpcCreationFailureReasonType::TooManyNpcs);
 }
 
 std::optional<NpcId> Npcs::GetCurrentlySelectedNpc() const
