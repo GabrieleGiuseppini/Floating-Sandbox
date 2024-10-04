@@ -10,7 +10,7 @@ The simulator is _crammed_ with physics; every conceivable aspect of the gamepla
 
 In coding this game I've been trying hard to stay true to my mission of avoiding "visual tricks", striving instead to obtain behaviors by means of careful, detailed, and honest simulations. The end result has been very rewarding for me, as I'm constantly surprised by the natural feeling and unexpected side-effects that spring out of the game. For example, round objects rotate when sliding downhill - which is completely due to friction, without a single line of code imposing some "magical" rotational forces - and different shapes sink with different velocities and trajectories - a side-effect of fluid dynamics acting on surfaces.
 
-<img src="https://i.imgur.com/kovxCty.png">
+<img src="https://i.imgur.com/Rl9K9w1.png">
 <img src="https://i.imgur.com/XHw3Jrl.png">
 
 The world of Floating Sandbox is rich with interactions, and new ones are being continuously added. To make a few examples, you can:
