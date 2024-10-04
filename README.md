@@ -8,18 +8,19 @@ Floating Sandbox is a realistic 2D physics simulator. It is essentially a partic
 
 The simulator is _crammed_ with physics; every conceivable aspect of the gameplay is governed exclusively by classical mechanics (e.g. friction and elasticity, conservation of momentum, Hooke's spring forces, impacts), thermodynamics (e.g. heat transfer, dissipation, combustion and melting), fluid dynamics (e.g. buoyancy, drag, hydrostatic and atmospheric pressure, wind), and so on, while the extensive material system has been put together using real physical characteristics specific to each of the materials - ranging from density, mass, and friction coefficients, up to elasticity and thermal expansion coefficients.
 
-In coding this game I've been trying hard to stay true to my mission of avoiding "visual tricks", striving instead to obtain behaviors by means of careful, detailed, and honest simulations. The end result has been very rewarding for me, as I'm constantly surprised by the natural feeling and unexpected side-effects that spring up from the game. For example, round objects begin rotating when sliding downhill - which is completely due to friction, without a single line of code imposing some "magical" rotational forces - and different shapes sink with different velocities and trajectories - a side-effect of fluid dynamics acting on surfaces.
+In coding this game I've been trying hard to stay true to my mission of avoiding "visual tricks", striving instead to obtain behaviors by means of careful, detailed, and honest simulations. The end result has been very rewarding for me, as I'm constantly surprised by the natural feeling and unexpected side-effects that spring out of the game. For example, round objects rotate when sliding downhill - which is completely due to friction, without a single line of code imposing some "magical" rotational forces - and different shapes sink with different velocities and trajectories - a side-effect of fluid dynamics acting on surfaces.
 
 <img src="https://i.imgur.com/kovxCty.png">
 <img src="https://i.imgur.com/XHw3Jrl.png">
 
-The world of Floating Sandbox is rich with interactions, and new ones are being added almost constantly. To make a few examples, you can:
+The world of Floating Sandbox is rich with interactions, and new ones are being continuously added. To make a few examples, you can:
 * Detonate different kinds of bombs with different behaviors
 * Trigger storms with rain, hurricane winds, and lightnings - all interacting with the ship in a way or the other
+* Overheat materials and reach either their combustion point or melting point
 * Use tools to damage the ship by e.g. hitting, pulling parts, overheating, and inflating
 * Use tools to impart tremendous radial or rotational force fields
 * Control waves on the surface of the sea, creating monster waves and triggering tsunami's
-* Spawn NPCs and furniture, and see them walking about the ship and loosing their equlibrium with large waves
+* Spawn NPCs walking about the ship and being subject to what's happening around them
 
 The simulator comes with a built-in ShipBuilder that allows you to create ships by drawing individual particles choosing materials out of the game's library. Each material has its own physical properties, such as mass, strength, stiffness, water permeability, specific heat, sound properties, and so on. You can also create electrical layers with electrical materials (lamps, engines, generators, switches, etc.), layers with ropes, and texture layers for a final, high-definition look'n'feel of the ship.
 
@@ -36,8 +37,10 @@ Some nerdy facts here.
 * The physical state of particles and springs is maintained in memory-aligned buffers, grouping quantities together as a function of the main algorithms operating on them - thus improving locality and reducing cache misses
 * The spring relaxation algorithm (aka rigidity simulation) is at the core of the simulation, consuming about 60% of the time spent for the simulation of each single frame. At each frame we solve 40 micro-iterations, each distributed on as many cores as possible and implemented with finely-optimized routines written with x86 intrinsics; you may read more about these optimizations on [my technical blog](https://gabrielegiuseppini.wordpress.com/2023/04/01/adventures-with-2d-mass-spring-networks-part-i/)
 * As the topology of the ship's mesh changes during the game due to destruction and wrecking, the simulator constantly re-calculates the external boundaries of each connected component via an algorithm that only operates on the neighborhood of topology changes
-* The ocean surface is implemented via modified Shallow Water Equations (SWE's), which are coupled with rigid bodies to generate surface perturbations
-* Rendering is implemented with OpenGL (target a very low 2.1) and happens on a separate thread, allowing the game to update the next simulation step while rendering the previous one. All of the final shading is implemented in _glsl_, with many renderings being completely procedural (e.g. flames, lightnings, rain)
+* The ocean surface is implemented via modified Shallow Water Equations (SWE's), coupled with rigid bodies to generate surface perturbations
+* Rendering is implemented with OpenGL (targeting a very old but widely-adopted 2.1) and happens on a separate thread, allowing the game to update the next simulation step while rendering the previous one. All of the final shading is implemented in _glsl_, with many renderings being completely procedural (e.g. flames, lightnings, rain)
+
+And even with all of this, the simulator still adapts itself to the characteristics of the machine it's running on, obtaining perfectly reasonable FPS rates on old computers - even on single-core laptops!
 
 # System Requirements
 - Windows:
