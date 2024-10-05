@@ -205,6 +205,44 @@
 			},
 
 			{
+				"name": "Civilian Passenger 5 (Female)",
+				"role": "Passenger",
+				"texture_filename_stems": {
+					"head_f": "female_civilian_passenger_5_head_front",
+					"head_b": "female_civilian_passenger_5_head_back",
+					"head_s": "female_civilian_passenger_5_head_side",
+					"torso_f": "female_civilian_passenger_5_torso_front",
+					"torso_b": "female_civilian_passenger_5_torso_back",
+					"torso_s": "female_civilian_passenger_5_torso_side",
+					"arm_f": "female_civilian_passenger_5_arm_front",
+					"arm_b": "female_civilian_passenger_5_arm_back",
+					"arm_s": "female_civilian_passenger_5_arm_side",
+					"leg_f": "female_civilian_passenger_5_leg_front",
+					"leg_b": "female_civilian_passenger_5_leg_back",
+					"leg_s": "female_civilian_passenger_5_leg_side"
+				}
+			},
+
+			{
+				"name": "Civilian Passenger 5 (Male)",
+				"role": "Passenger",
+				"texture_filename_stems": {
+					"head_f": "male_civ_5_head_front",
+					"head_b": "male_civ_5_head_back",
+					"head_s": "male_civ_5_head_side",
+					"torso_f": "male_civ_5_torso_front",
+					"torso_b": "male_civ_5_torso_back",
+					"torso_s": "male_civ_5_torso_side",
+					"arm_f": "male_civ_5_arm_front",
+					"arm_b": "male_civ_5_arm_back",
+					"arm_s": "male_civ_5_arm_side",
+					"leg_f": "male_civ_5_leg_front",
+					"leg_b": "male_civ_5_leg_back",
+					"leg_s": "male_civ_5_leg_side"
+				}
+			},
+
+			{
 				"name": "Deckhand",
 				"role": "Crew",
 				"texture_filename_stems": {
@@ -674,7 +712,9 @@
 			"Civilian Passenger 3 (Female)": "Passeggero 3 (Donna)",
 			"Civilian Passenger 3 (Male)": "Passeggero 3 (Uomo)",
 			"Civilian Passenger 4 (Female)": "Passeggero 4 (Donna)",
-			"Civilian Passenger 4 (Male)": "Passeggero 5 (Uomo)",
+			"Civilian Passenger 4 (Male)": "Passeggero 4 (Uomo)",
+			"Civilian Passenger 5 (Female)": "Passeggero 5 (Donna)",
+			"Civilian Passenger 5 (Male)": "Passeggero 5 (Uomo)",
 			"Deckhand": "Mozzo",
 			"Engineer": "Ingegnere",
 			"Officer": "Ufficiale",

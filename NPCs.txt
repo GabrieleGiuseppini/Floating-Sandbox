@@ -197,13 +197,17 @@ V1 TODO:
 - TimCan
 - Tizia Vegas
 
+- LowerExtremeityMultiplier: rename
+- Readme: NPC/bary coords
+
+
 + Bump up wind receptivity
 + NpcDatabase: string table
 
-- Add Flip NPC H
-	- Human only?
-	- If also furniture:
-		- NpcState::FurnitureState gains orientation
+- "Spawn" NPC
+- Add Flip NPC H ("Turn Human NPC Over")
+	- Human only
+	- Also F/B
 
 - Finish assets
 	- Tungsten material
@@ -341,6 +345,11 @@ Next release:
 	- TODO: floor types (normal, assembly, lifeboats, etc.)
 	- TODO: states (random walk, to assembly, to lifeboats, etc.)
 	- Separate thread calcs <floor_point>->[distance to each floor area connected component]
+		- Step 1: visit graph with flooding and store all pointsVedges in N queues, one for each floor type are we want to track
+		- Step 2: for each queue Qn:
+			- Breadth first visit of elements in the queue (all elements first, all reachable from those next, etc.), storing distance in n's slot
+			- Do not revisit a pointVedge if it has been already visited at this full run
+				- Guaranteed to stop mid-way
 
 - Forward-looking walk planning:
 	- First off: WalkingBehaviorState remembers CurrentTriangleElementIndex (of primary)
