@@ -194,17 +194,16 @@ Arch
 
 V1 TODO:
 
-- TimCan
-- Tizia Vegas
-
 + LowerExtremeityMultiplier: rename
-- Readme: NPC/bary coords
++ Readme: NPC/bary coords
 
 
 + Bump up wind receptivity
 + NpcDatabase: string table
 
-- "Spawn" NPC
++ "Spawn" NPC
++ SelectNpc tool: select none if nothing at probe
+
 - Add Flip NPC H ("Turn Human NPC Over")
 	- Human only
 	- Also F/B

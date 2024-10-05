@@ -4109,7 +4109,7 @@ public:
 
 public:
 
-    void OnLeftMouseDown(InputState const & inputState) override 
+    void OnLeftMouseDown(InputState const & inputState) override
     {
         auto const probeOutcome = mGameController.ProbeNpcAt(inputState.MousePosition);
         if (probeOutcome)
@@ -4149,6 +4149,11 @@ public:
         {
             mGameController.SelectNpc(probeOutcome->ObjectId);
             mGameController.SetAutoFocusTarget(AutoFocusTargetKindType::SelectedNpc);
+        }
+        else
+        {
+            // Remove selection
+            mGameController.SelectNpc(std::nullopt);
         }
 
         SetCurrentCursor(true);

@@ -323,10 +323,10 @@ MainFrame::MainFrame(
             mContinuousAutoFocusOnShipMenuItem = new wxMenuItem(controlsMenu, ID_AUTO_FOCUS_ON_SHIP_MENUITEM, _("Continuous Auto-Focus on Ship") + wxS("\tCtrl+HOME"), _("Enable continuous auto-focus on ships."), wxITEM_RADIO);
             controlsMenu->Append(mContinuousAutoFocusOnShipMenuItem);
             controlsMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [this](wxCommandEvent &)
-                { 
+                {
                     assert(!!mUIPreferencesManager);
                     mUIPreferencesManager->SetAutoFocusTarget(AutoFocusTargetKindType::Ship);
-                }, 
+                },
                 ID_AUTO_FOCUS_ON_SHIP_MENUITEM);
 
             mContinuousAutoFocusOnSelectedNpcMenuItem = new wxMenuItem(controlsMenu, ID_AUTO_FOCUS_ON_SELECTED_NPC_MENUITEM, _("Continuous Auto-Focus on NPC") + wxS("\tCtrl+PgUp"), _("Enable continuous auto-focus on selected NPCs."), wxITEM_RADIO);
@@ -581,7 +581,7 @@ MainFrame::MainFrame(
                 mHumanNpcSubMenu = new wxMenu(_(""));
 
                 // Create menu
-                mAddHumanNpcMenuItem = new wxMenuItem(mNpcToolsMenu, wxID_ANY, _("Add Human NPC..."), wxEmptyString, wxITEM_NORMAL, mHumanNpcSubMenu);                
+                mAddHumanNpcMenuItem = new wxMenuItem(mNpcToolsMenu, wxID_ANY, _("Spawn Human NPC..."), wxEmptyString, wxITEM_NORMAL, mHumanNpcSubMenu);
                 mNpcToolsMenu->Append(mAddHumanNpcMenuItem);
                 mAddHumanNpcMenuItem->Enable(true); // Note: here we're assuming we _can_ add NPCs; unfortunately the NPCs class is created _before_ we register for events, hence have to guess here
                 std::tie(mAddHumanNpcUncheckedIcon, mAddHumanNpcCheckedIcon) = MakeMenuBitmaps("add_human_npc_icon");
@@ -594,7 +594,7 @@ MainFrame::MainFrame(
                 mFurnitureNpcSubMenu = new wxMenu(_(""));
 
                 // Create menu
-                mAddFurnitureNpcMenuItem = new wxMenuItem(mNpcToolsMenu, wxID_ANY, _("Add Furniture NPC..."), wxEmptyString, wxITEM_NORMAL, mFurnitureNpcSubMenu);
+                mAddFurnitureNpcMenuItem = new wxMenuItem(mNpcToolsMenu, wxID_ANY, _("Spawn Furniture NPC..."), wxEmptyString, wxITEM_NORMAL, mFurnitureNpcSubMenu);
                 mNpcToolsMenu->Append(mAddFurnitureNpcMenuItem);
                 mAddFurnitureNpcMenuItem->Enable(true); // Note: here we're assuming we _can_ add NPCs; unfortunately the NPCs class is created _before_ we register for events, hence have to guess here
                 std::tie(mAddFurnitureNpcUncheckedIcon, mAddFurnitureNpcCheckedIcon) = MakeMenuBitmaps("add_furniture_npc_icon");
