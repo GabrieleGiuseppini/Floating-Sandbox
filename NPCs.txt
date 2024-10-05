@@ -208,6 +208,9 @@ V1 TODO:
 	+ Human only
 	+ Also F/B
 
+- Add alternative shading (stick men)
+	- TODOHERE
+
 - Finish assets
 	= Tungsten material
 
