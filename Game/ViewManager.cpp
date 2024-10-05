@@ -221,10 +221,11 @@ void ViewManager::UpdateAutoFocus(std::optional<Geometry::AABB> const & aabb)
 
         mAutoFocus->CurrentAutoFocusCameraWorldPosition = mAutoFocus->CurrentAutoFocusCameraWorldPosition + newAutoFocusCameraWorldPositionOffset;
 
-        // Calc speed multiplier:
-        // |ndcOffset|=0 -> 1.0
-        // |ndcOffset|=sqrt(2) -> 3.0
-        mCameraWorldPositionParameterSmootherContingentMultiplier = 1.0f + 2.0f * std::min(newAutoFocusCameraPositionNdcOffset.length() / 1.4142f, 1.0f);
+        // MayBeFuturework: turned off as it generates non-linear moves
+        //// Calc speed multiplier:
+        //// |ndcOffset|=0 -> 1.0
+        //// |ndcOffset|=sqrt(2) -> 3.0
+        ////mCameraWorldPositionParameterSmootherContingentMultiplier = 1.0f + 2.0f * std::min(newAutoFocusCameraPositionNdcOffset.length() / 1.4142f, 1.0f);
     }
 
     //
