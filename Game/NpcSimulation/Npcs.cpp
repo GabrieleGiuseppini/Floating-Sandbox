@@ -2786,7 +2786,7 @@ void Npcs::RenderNpc(
             //  ---  LegTop                    ---      ---
             //   |                              |        |   Crotch offset (magic)
             //  -|-  TorsoBottom                |       ---
-            //   |                              | LegLengthFraction * LowerExtremityLengthMultiplier
+            //   |                              | LegLengthFraction * CrotchHeightMultiplier
             //   |                              |
             //   |                              |
             //  ---  Feet                      ---
@@ -2805,7 +2805,7 @@ void Npcs::RenderNpc(
             vec2f const actualBodyVDir = -actualBodyVector.normalise_approx(actualBodyLength); // From head to feet - facilitates arm and length angle-making
             vec2f const actualBodyHDir = actualBodyVDir.to_perpendicular(); // Points R (of the screen)
 
-            vec2f const legTop = feetPosition + actualBodyVector * (GameParameters::HumanNpcGeometry::LegLengthFraction * animationState.LowerExtremityLengthMultiplier);
+            vec2f const legTop = feetPosition + actualBodyVector * (GameParameters::HumanNpcGeometry::LegLengthFraction * animationState.CrotchHeightMultiplier);
             vec2f const torsoBottom = legTop - actualBodyVector * (GameParameters::HumanNpcGeometry::LegLengthFraction / 8.0f); // Magic
             vec2f const torsoTop = legTop + actualBodyVector * GameParameters::HumanNpcGeometry::TorsoLengthFraction;
             vec2f const headBottom = torsoTop;
@@ -4169,7 +4169,7 @@ void Npcs::UpdateNpcAnimation(
         FS_ALIGN16_BEG LimbVector targetLengthMultipliers({ 1.0f, 1.0f, 1.0f, 1.0f }) FS_ALIGN16_END;
         float limbLengthConvergenceRate = convergenceRate;
 
-        float targetLowerExtremityLengthMultiplier = 1.0f;
+        float targetCrotchHeightMultiplier = 1.0f;
 
         float constexpr MinPrerisingArmLengthMultiplier = 0.35f;
 
@@ -4210,8 +4210,8 @@ void Npcs::UpdateNpcAnimation(
 
             case HumanNpcStateType::BehaviorType::Constrained_Walking:
             {
-                // Take into account that crotch is lower
-                targetLowerExtremityLengthMultiplier = animationState.LimbAnglesCos.RightLeg;
+                // Lower crotch with gait
+                targetCrotchHeightMultiplier = animationState.LimbAnglesCos.RightLeg;
 
                 if (primaryContrainedState.has_value() && primaryContrainedState->CurrentVirtualFloor.has_value())
                 {
@@ -4236,7 +4236,7 @@ void Npcs::UpdateNpcAnimation(
                     float constexpr MaxLengthMultiplier = 1.4f;
 
                     float const adjustedStandardLegLength = GameParameters::HumanNpcGeometry::LegLengthFraction * adjustedStandardHumanHeight;
-                    vec2f const crotchPosition = feetPosition - actualBodyVector * (GameParameters::HumanNpcGeometry::LegLengthFraction * targetLowerExtremityLengthMultiplier);
+                    vec2f const crotchPosition = feetPosition - actualBodyVector * (GameParameters::HumanNpcGeometry::LegLengthFraction * targetCrotchHeightMultiplier);
 
                     // leg*1 is crotchPosition
                     float const numerator = (edgp1.y - crotchPosition.y) * (edgp2.x - edgp1.x) + (crotchPosition.x - edgp1.x) * (edgp2.y - edgp1.y);
@@ -4323,7 +4323,7 @@ void Npcs::UpdateNpcAnimation(
 
         // Converge
         animationState.LimbLengthMultipliers.ConvergeTo(targetLengthMultipliers, limbLengthConvergenceRate);
-        animationState.LowerExtremityLengthMultiplier += (targetLowerExtremityLengthMultiplier - animationState.LowerExtremityLengthMultiplier) * convergenceRate;
+        animationState.CrotchHeightMultiplier += (targetCrotchHeightMultiplier - animationState.CrotchHeightMultiplier) * convergenceRate;
     }
 }
 

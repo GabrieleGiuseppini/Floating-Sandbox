@@ -243,6 +243,25 @@
 			},
 
 			{
+				"name": "Civilian Passenger 6 (Male)",
+				"role": "Passenger",
+				"texture_filename_stems": {
+					"head_f": "male_civ_6_head_front",
+					"head_b": "male_civ_6_head_back",
+					"head_s": "male_civ_6_head_side",
+					"torso_f": "male_civ_6_torso_front",
+					"torso_b": "male_civ_6_torso_back",
+					"torso_s": "male_civ_6_torso_side",
+					"arm_f": "male_civ_6_arm_front",
+					"arm_b": "male_civ_6_arm_back",
+					"arm_s": "male_civ_6_arm_side",
+					"leg_f": "male_civ_6_leg_front",
+					"leg_b": "male_civ_6_leg_back",
+					"leg_s": "male_civ_6_leg_side"
+				}
+			},
+
+			{
 				"name": "Deckhand",
 				"role": "Crew",
 				"texture_filename_stems": {
@@ -715,6 +734,7 @@
 			"Civilian Passenger 4 (Male)": "Passeggero 4 (Uomo)",
 			"Civilian Passenger 5 (Female)": "Passeggero 5 (Donna)",
 			"Civilian Passenger 5 (Male)": "Passeggero 5 (Uomo)",
+			"Civilian Passenger 6 (Male)": "Passeggero 6 (Uomo)",
 			"Deckhand": "Mozzo",
 			"Engineer": "Ingegnere",
 			"Officer": "Ufficiale",

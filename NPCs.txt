@@ -197,7 +197,7 @@ V1 TODO:
 - TimCan
 - Tizia Vegas
 
-- LowerExtremeityMultiplier: rename
++ LowerExtremeityMultiplier: rename
 - Readme: NPC/bary coords
 
 
@@ -211,6 +211,9 @@ V1 TODO:
 
 - Finish assets
 	- Tungsten material
+
+- About:
+	- NPC assets: TimCan
 
 - FIX:
 	- AutoFocus on NPC: very fast NPCs are not in focus
