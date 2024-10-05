@@ -478,10 +478,24 @@ def main():
             sys.exit(-1)
         verify(sys.argv[2])
     elif verb == 'add_color':
-        if len(sys.argv) < 8:
+        if len(sys.argv) < 7:
             print_usage()
             sys.exit(-1)
-        base_colors = sys.argv[7:]
+        if len(sys.argv) >= 8:
+            base_colors = sys.argv[7:]
+        else:
+            # Based off 404050 base_reference_color
+            base_colors = [
+                "#840E00",
+                "#DBCF4D",
+                "#806200",
+                "#467B00",
+                "#006A76",
+                "#1B3261",
+                "#860080",
+                "#A84F00",
+                "#111111"
+            ]
         add_color(material_name=sys.argv[2], input_filename=sys.argv[3], output_filename=sys.argv[4], base_reference_color=sys.argv[5], target_reference_color=sys.argv[6], base_colors=base_colors)
     elif verb == 'add_variants':
         if len(sys.argv) != 5:

@@ -25,7 +25,7 @@
                 "nominal_mass": 7950
             },
             "melting_temperature": 1588.15,
-            "name": "Iron Hull",            
+            "name": "Iron Hull",
             "palette_coordinates": {
                 "category": "Metals",
                 "sub_category": "Iron Hull",
@@ -109,7 +109,7 @@
                 "nominal_mass": 7850.0
             },
             "melting_temperature": 1588.15,
-            "name": "Light Iron Bulkhead",	    
+            "name": "Light Iron Bulkhead",
             "palette_coordinates": {
                 "category": "Metals",
                 "sub_category": "Light Iron Bulkhead",
@@ -1934,13 +1934,19 @@
             "water_retention": 0.05,
             "wind_receptivity": 0.2
         },
-
-	
-	
         {
             "buoyancy_volume_fill": 0.0,
             "color_key": [
-                "#b4b4b4"
+                "#b4b4b4",
+                "#F88264",
+                "#FFFFB1",
+                "#F4D664",
+                "#BAEF64",
+                "#74DEDA",
+                "#8FA6C5",
+                "#FA74E4",
+                "#FFC364",
+                "#858575"
             ],
             "combustion_type": "Combustion",
             "elasticity_coefficient": 0.5,
@@ -1949,7 +1955,7 @@
             "ignition_temperature": 1000000.0,
             "is_hull": true,
             "mass": {
-                "density": 0.01045,
+                "density": 0.1,
                 "nominal_mass": 19250
             },
             "melting_temperature": 3695.0,
@@ -1973,7 +1979,16 @@
         {
             "buoyancy_volume_fill": 1.0,
             "color_key": [
-                "#D6D6D6"
+                "#D6D6D6",
+                "#FFA486",
+                "#FFFFD3",
+                "#FFF886",
+                "#DCFF86",
+                "#96FFFC",
+                "#B1C8E7",
+                "#FF96FF",
+                "#FFE586",
+                "#A7A797"
             ],
             "combustion_type": "Combustion",
             "elasticity_coefficient": 0.5,
@@ -1982,7 +1997,7 @@
             "ignition_temperature": 1000000.0,
             "is_hull": false,
             "mass": {
-                "density": 0.001045,
+                "density": 0.01,
                 "nominal_mass": 19250
             },
             "melting_temperature": 3695.0,
@@ -2003,12 +2018,7 @@
             "water_retention": 0.05,
             "wind_receptivity": 0.2
         },
-	
-	
-	
-	
-	
-	{
+        {
             "buoyancy_volume_fill": 0.0,
             "color_key": [
                 "#5e5d5e",
@@ -3838,8 +3848,6 @@
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
-
-
         {
             "buoyancy_volume_fill": 0.05,
             "color_key": "#070780",
@@ -3875,7 +3883,7 @@
                 "nominal_mass": 985
             },
             "melting_temperature": 1000000.0,
-            "name": "NPC Human Feet",            
+            "name": "NPC Human Feet",
             "render_color": "#070781",
             "strength": 1.0,
             "wind_receptivity": 0.14
@@ -3993,7 +4001,7 @@
                             "Tungsten"
                         ]
                     },
-		    {
+                    {
                         "name": "Misc",
                         "sub_categories": [
                             "Nails"
