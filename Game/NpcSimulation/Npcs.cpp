@@ -155,7 +155,7 @@ void Npcs::Upload(Render::RenderContext & renderContext) const
                 auto const & state = *mStateBuffer[npcId];
 
                 RenderNpc(
-                    state, 
+                    state,
                     renderContext,
                     shipRenderContext);
             }
@@ -655,7 +655,7 @@ std::tuple<std::optional<PickedObjectId<NpcId>>, NpcCreationFailureReasonType> N
     //
 
     ++(mShips[shipId]->FurnitureNpcCount);
-    PublishCount();    
+    PublishCount();
 
     return { PickedObjectId<NpcId>(npcId, pickAnchorOffset), NpcCreationFailureReasonType::Success };
 }
@@ -1293,7 +1293,7 @@ std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> Npcs::AddNpcGroup
                         subKind = passengerRoles[iSubKind];
                     }
                 }
-                
+
                 break;
             }
         }
@@ -1545,8 +1545,8 @@ std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> Npcs::AddNpcGroup
         }
 
         InternalCompleteNewNpc(
-            std::get<0>(placementOutcome)->ObjectId, 
-            currentSimulationTime, 
+            std::get<0>(placementOutcome)->ObjectId,
+            currentSimulationTime,
             NpcInitializationOptions::GainMeshVelocity);
 
         if (nNpcsAdded == 0)
@@ -1555,8 +1555,8 @@ std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> Npcs::AddNpcGroup
         }
     }
 
-    return (nNpcsAdded > 0) 
-        ? std::make_tuple(firstNpcId, NpcCreationFailureReasonType::Success) 
+    return (nNpcsAdded > 0)
+        ? std::make_tuple(firstNpcId, NpcCreationFailureReasonType::Success)
         : std::make_tuple(std::optional<NpcId>(), NpcCreationFailureReasonType::TooManyNpcs);
 }
 
@@ -1580,7 +1580,7 @@ void Npcs::SelectFirstNpc()
             return;
         }
     }
-    
+
     assert(false);
 }
 
@@ -3327,7 +3327,7 @@ void Npcs::RenderNpc(
                 quad.V.TopLeft = mParticles.GetPosition(npc.ParticleMesh.Particles[0].ParticleIndex);
                 quad.V.TopRight = mParticles.GetPosition(npc.ParticleMesh.Particles[1].ParticleIndex);
                 quad.V.BottomRight = mParticles.GetPosition(npc.ParticleMesh.Particles[2].ParticleIndex),
-                quad.V.BottomLeft = mParticles.GetPosition(npc.ParticleMesh.Particles[3].ParticleIndex);                
+                quad.V.BottomLeft = mParticles.GetPosition(npc.ParticleMesh.Particles[3].ParticleIndex);
                 shipRenderContext.UploadNpcTextureQuadAttributes(
                     npc.KindSpecificState.FurnitureNpcState.TextureCoordinatesQuad,
                     staticAttribs);
