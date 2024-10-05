@@ -4080,18 +4080,38 @@ public:
     {
         if (mBeingMovedNpc.has_value())
         {
-            mGameController.MoveNpcTo(
-                mBeingMovedNpc->ObjectId,
-                inputState.MousePosition,
-                mBeingMovedNpc->WorldOffset,
-                inputState.IsShiftKeyDown);
+            MoveNpc(inputState);
         }
     }
 
-    void OnShiftKeyDown(InputState const & /*inputState*/) override {}
-    void OnShiftKeyUp(InputState const & /*inputState*/) override {}
+    void OnShiftKeyDown(InputState const & inputState) override
+    {
+        // Refresh shift state
+        if (mBeingMovedNpc.has_value())
+        {
+            MoveNpc(inputState);
+        }
+    }
+
+    void OnShiftKeyUp(InputState const & inputState) override
+    {
+        // Refresh shift state
+        if (mBeingMovedNpc.has_value())
+        {
+            MoveNpc(inputState);
+        }
+    }
 
 private:
+
+    void MoveNpc(InputState const & inputState)
+    {
+        mGameController.MoveNpcTo(
+            mBeingMovedNpc->ObjectId,
+            inputState.MousePosition,
+            mBeingMovedNpc->WorldOffset,
+            inputState.IsShiftKeyDown);
+    }
 
     // Our state
     std::optional<PickedObjectId<NpcId>> mBeingMovedNpc;
