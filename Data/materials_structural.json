@@ -1934,7 +1934,81 @@
             "water_retention": 0.05,
             "wind_receptivity": 0.2
         },
+
+	
+	
         {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": [
+                "#b4b4b4"
+            ],
+            "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.69,
+            "friction_static_coefficient": 1.25,
+            "ignition_temperature": 1000000.0,
+            "is_hull": true,
+            "mass": {
+                "density": 0.01045,
+                "nominal_mass": 19250
+            },
+            "melting_temperature": 3695.0,
+            "name": "Tungsten Hull",
+            "palette_coordinates": {
+                "category": "Metals",
+                "sub_category": "Tungsten Hull",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Metal",
+            "specific_heat": 134.0,
+            "stiffness": 1.0,
+            "strength": 0.055,
+            "texture_name": "carbon_1",
+            "thermal_conductivity": 173.0,
+            "thermal_expansion_coefficient": 4.42e-06,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.2
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": [
+                "#D6D6D6"
+            ],
+            "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.69,
+            "friction_static_coefficient": 1.25,
+            "ignition_temperature": 1000000.0,
+            "is_hull": false,
+            "mass": {
+                "density": 0.001045,
+                "nominal_mass": 19250
+            },
+            "melting_temperature": 3695.0,
+            "name": "Tungsten",
+            "palette_coordinates": {
+                "category": "Metals",
+                "sub_category": "Tungsten",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Metal",
+            "specific_heat": 134.0,
+            "stiffness": 1.0,
+            "strength": 0.051,
+            "texture_name": "carbon_1",
+            "thermal_conductivity": 173.0,
+            "thermal_expansion_coefficient": 4.42e-06,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.2
+        },
+	
+	
+	
+	
+	
+	{
             "buoyancy_volume_fill": 0.0,
             "color_key": [
                 "#5e5d5e",
@@ -3913,6 +3987,13 @@
                         ]
                     },
                     {
+                        "name": "Tungsten",
+                        "sub_categories": [
+                            "Tungsten Hull",
+                            "Tungsten"
+                        ]
+                    },
+		    {
                         "name": "Misc",
                         "sub_categories": [
                             "Nails"
