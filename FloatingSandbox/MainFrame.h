@@ -144,6 +144,7 @@ private:
     wxMenuItem * mAddFurnitureNpcMenuItem;
     wxMenuItem * mMoveNpcMenuItem;
     wxMenuItem * mRemoveNpcMenuItem;
+    wxMenuItem * mTurnaroundHumanNpcMenuItem;
     wxMenuItem * mFollowNpcMenuItem;
     wxMenuItem * mSelectNextNpcMenuItem;
 
@@ -229,7 +230,7 @@ private:
     void OnReloadCurrentShipMenuItemSelected(wxCommandEvent & event);
     void OnReloadPreviousShipMenuItemSelected(wxCommandEvent & event);
     void OnSaveScreenshotMenuItemSelected(wxCommandEvent & event);
-    
+
     void OnTriggerLightningMenuItemSelected(wxCommandEvent & event);
     void OnRCBombDetonateMenuItemSelected(wxCommandEvent & event);
     void OnAntiMatterBombDetonateMenuItemSelected(wxCommandEvent & event);

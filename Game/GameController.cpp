@@ -1307,6 +1307,12 @@ void GameController::ResetLamp()
     mRenderContext->ResetLamp();
 }
 
+NpcKindType GameController::GetNpcKind(NpcId id)
+{
+    assert(!!mWorld);
+    return mWorld->GetNpcKind(id);
+}
+
 std::optional<PickedObjectId<NpcId>> GameController::BeginPlaceNewFurnitureNpc(
     NpcSubKindIdType subKind,
     DisplayLogicalCoordinates const & screenCoordinates,
@@ -1330,7 +1336,7 @@ std::optional<PickedObjectId<NpcId>> GameController::BeginPlaceNewFurnitureNpc(
     {
         NotifyNpcPlacementError(std::get<1>(result));
         return std::nullopt;
-    }    
+    }
 }
 
 std::optional<PickedObjectId<NpcId>> GameController::BeginPlaceNewHumanNpc(
@@ -1439,6 +1445,12 @@ void GameController::AddNpcGroup(NpcKindType kind)
     {
         NotifyNpcPlacementError(std::get<1>(result));
     }
+}
+
+void GameController::TurnaroundHumanNpc(NpcId id)
+{
+    assert(!!mWorld);
+    mWorld->TurnaroundHumanNpc(id);
 }
 
 void GameController::SelectNpc(std::optional<NpcId> id)

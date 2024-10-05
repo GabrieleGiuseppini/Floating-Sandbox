@@ -256,6 +256,7 @@ public:
     void AttractFish(DisplayLogicalCoordinates const & screenCoordinates, float radius, std::chrono::milliseconds delay) override;
     void SetLampAt(DisplayLogicalCoordinates const & screenCoordinates, float radiusScreenFraction) override;
     void ResetLamp() override;
+    NpcKindType GetNpcKind(NpcId id) override;
     std::optional<PickedObjectId<NpcId>> BeginPlaceNewFurnitureNpc(NpcSubKindIdType subKind, DisplayLogicalCoordinates const & screenCoordinates, bool doMoveWholeMesh) override;
     std::optional<PickedObjectId<NpcId>> BeginPlaceNewHumanNpc(NpcSubKindIdType subKind, DisplayLogicalCoordinates const & screenCoordinates, bool doMoveWholeMesh) override;
     std::optional<PickedObjectId<NpcId>> ProbeNpcAt(DisplayLogicalCoordinates const & screenCoordinates) const override;
@@ -266,7 +267,8 @@ public:
     void RemoveNpc(NpcId id) override;
     void AbortNewNpc(NpcId id) override;
     void AddNpcGroup(NpcKindType kind) override;
-    void SelectNpc(std::optional<NpcId> id) override;    
+    void TurnaroundHumanNpc(NpcId id) override;
+    void SelectNpc(std::optional<NpcId> id) override;
     void SelectNextNpc() override;
     void HighlightNpc(std::optional<NpcId> id) override;
     std::optional<GlobalElementId> GetNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const override;

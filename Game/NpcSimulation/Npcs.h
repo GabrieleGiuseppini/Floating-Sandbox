@@ -837,6 +837,8 @@ public:
 
 	void OnShipConnectivityChanged(ShipId shipId);
 
+	NpcKindType GetNpcKind(NpcId id);
+
 	std::tuple<std::optional<PickedObjectId<NpcId>>, NpcCreationFailureReasonType> BeginPlaceNewFurnitureNpc(
 		NpcSubKindIdType subKind,
 		vec2f const & worldCoordinates,
@@ -880,6 +882,8 @@ public:
 	std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> AddNpcGroup(
 		NpcKindType kind,
 		float currentSimulationTime);
+
+	void TurnaroundHumanNpc(NpcId id);
 
 	std::optional<NpcId> GetCurrentlySelectedNpc() const;
 

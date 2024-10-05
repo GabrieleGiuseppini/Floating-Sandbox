@@ -761,6 +761,7 @@ BaseSelectNpcTool::BaseSelectNpcTool(
     IToolCursorManager & toolCursorManager,
     IGameController & gameController,
     SoundController & soundController,
+    std::optional<NpcKindType> applicableKind,
     wxImage && downCursorImage,
     wxImage && upCursorImage)
     : Tool(
@@ -768,6 +769,7 @@ BaseSelectNpcTool::BaseSelectNpcTool(
         toolCursorManager,
         gameController,
         soundController)
+    , mApplicableKind(applicableKind)
     , mDownCursorImage(std::move(downCursorImage))
     , mUpCursorImage(std::move(upCursorImage))
 {
@@ -783,6 +785,7 @@ MoveNpcTool::MoveNpcTool(
         toolCursorManager,
         gameController,
         soundController,
+        std::nullopt, // All kinds
         WxHelpers::LoadCursorImage("move_npc_cursor_down", 11, 29, resourceLocator),
         WxHelpers::LoadCursorImage("move_npc_cursor_up", 11, 29, resourceLocator))
     , mBeingMovedNpc()
@@ -799,8 +802,25 @@ RemoveNpcTool::RemoveNpcTool(
         toolCursorManager,
         gameController,
         soundController,
+        std::nullopt, // All kinds
         WxHelpers::LoadCursorImage("remove_npc_cursor_down", 20, 29, resourceLocator),
         WxHelpers::LoadCursorImage("remove_npc_cursor_up", 20, 29, resourceLocator))
+{
+}
+
+TurnaroundHumanNpcTool::TurnaroundHumanNpcTool(
+    IToolCursorManager & toolCursorManager,
+    IGameController & gameController,
+    SoundController & soundController,
+    ResourceLocator const & resourceLocator)
+    : BaseSelectNpcTool(
+        ToolType::TurnaroundHumanNpc,
+        toolCursorManager,
+        gameController,
+        soundController,
+        NpcKindType::Human,
+        WxHelpers::LoadCursorImage("turnaround_cursor_down", 16, 16, resourceLocator),
+        WxHelpers::LoadCursorImage("turnaround_cursor_up", 16, 16, resourceLocator))
 {
 }
 
@@ -814,6 +834,7 @@ FollowNpcTool::FollowNpcTool(
         toolCursorManager,
         gameController,
         soundController,
+        std::nullopt, // All kinds
         WxHelpers::LoadCursorImage("autofocus_on_npc_cursor", 16, 16, resourceLocator),
         WxHelpers::LoadCursorImage("autofocus_on_npc_cursor", 16, 16, resourceLocator))
 {

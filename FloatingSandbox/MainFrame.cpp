@@ -613,6 +613,11 @@ MainFrame::MainFrame(
                 mRemoveNpcMenuItem = ADD_TOOL_MENUITEM(_("Remove NPC"), wxS("\tDEL"), "remove_npc_icon", ToolType::RemoveNpc, true);
             }
 
+            // Turnaround Human
+            {
+                mTurnaroundHumanNpcMenuItem = ADD_TOOL_MENUITEM(_("Turnaround HumanNPC"), wxS(""), "turnaround_human_npc_icon", ToolType::TurnaroundHumanNpc, true);
+            }
+
             // Follow
             {
                 mFollowNpcMenuItem = ADD_TOOL_MENUITEM(_("Follow NPC"), wxS(""), "autofocus_on_npc_icon", ToolType::FollowNpc, true);
@@ -2681,6 +2686,11 @@ void MainFrame::ReconciliateUIWithNpcPresence(bool areNpcsPresent)
             mRemoveNpcMenuItem->Enable(true);
         }
 
+        if (!mTurnaroundHumanNpcMenuItem->IsEnabled())
+        {
+            mTurnaroundHumanNpcMenuItem->Enable(true);
+        }
+
         if (!mFollowNpcMenuItem->IsEnabled())
         {
             mFollowNpcMenuItem->Enable(true);
@@ -2710,6 +2720,11 @@ void MainFrame::ReconciliateUIWithNpcPresence(bool areNpcsPresent)
             mRemoveNpcMenuItem->Enable(false);
         }
 
+        if (mTurnaroundHumanNpcMenuItem->IsEnabled())
+        {
+            mTurnaroundHumanNpcMenuItem->Enable(false);
+        }
+
         if (mFollowNpcMenuItem->IsEnabled())
         {
             mFollowNpcMenuItem->Enable(false);
@@ -2723,7 +2738,7 @@ void MainFrame::ReconciliateUIWithNpcPresence(bool areNpcsPresent)
         // If current tool is a tool that requires NPCs, toggle it out
         assert(!!mToolController);
         auto const currentTool = mToolController->GetCurrentTool();
-        if (currentTool == ToolType::MoveNpc || currentTool == ToolType::RemoveNpc || currentTool == ToolType::FollowNpc)
+        if (currentTool == ToolType::MoveNpc || currentTool == ToolType::RemoveNpc || currentTool == ToolType::TurnaroundHumanNpc || currentTool == ToolType::FollowNpc)
         {
             SelectTool(InitialNonNpcToolType, false);
         }

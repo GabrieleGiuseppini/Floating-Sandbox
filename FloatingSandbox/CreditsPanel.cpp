@@ -58,6 +58,7 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
 {
     int constexpr VMargin = 30;
     int constexpr VMargin3 = VMargin * 3;
+    int constexpr VMargin5 = VMargin * 5;
 
     //
     // Titles
@@ -68,13 +69,22 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
         {0, std::string(APPLICATION_NAME_WITH_LONG_VERSION), 0},
         {1, BuildInfo::GetBuildInfo().ToString(), panelSize.GetHeight() / 2},
 
-        {1, _("(c) Gabriele Giuseppini 2018-2022"), 0},
+        {1, _("(c) Gabriele Giuseppini (G2-Labs) 2018-2024"), 0},
         {2, _("Original concept (c) Luke Wren, Francis Racicot (Pac0master) 2013"), VMargin},
 
         {1, _("This software is licensed to Mattia, Elia, and all the others kids in the world!"), panelSize.GetHeight() / 2},
 
         {0, _("PROGRAMMING"), 0},
         {1, wxS("Gabriele Giuseppini"), VMargin3},
+
+        {0, _("NPC ASSETS"), 0},
+        {1, wxS("Officer TimCan"), VMargin3},
+
+        {0, _("TRANSLATION"), 0},
+        {1, wxS("Gabriele Giuseppini (Italian)"), 0},
+        {1, wxS("Ilya Voloshin (https://vk.com/1lvol) (Russian)"), 0},
+        {1, wxS("Roman Shavernew (DioxCode) (Russian, Ukrainian)"), 0},
+        {1, wxS("Joaquin Olivera (Joadix100) (Spanish)"), VMargin3},
 
         {0, _("TESTING"), 0},
         {1, wxS("Pac0master"), 0},
@@ -94,12 +104,6 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
         {1, wxS("minch"), 0},
         {1, wxS("Rpr5704"), 0},
         {1, wxS("Pocketwatch"), VMargin3},
-
-        {0, _("TRANSLATION"), 0},
-        {1, wxS("Gabriele Giuseppini (Italian)"), 0},
-        {1, wxS("Ilya Voloshin (https://vk.com/1lvol) (Russian)"), 0},
-        {1, wxS("Roman Shavernew (DioxCode) (Russian, Ukrainian)"), 0},
-        {1, wxS("Joaquin Olivera (Joadix100) (Spanish)"), VMargin3},
 
         {0, _("BUILD ENGINEERING"), 0},
         {1, wxS("The_SamminAter (macOS)"), 0},
@@ -183,7 +187,9 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
         { 1, wxS("Mathias Garbe"), 0 },
         { 1, wxS("Walther Zwart"), 0 },
         { 1, wxS("Wyatt Rosenberry"), 0 },
-        { 1, wxS("Daniel Gasperment"), VMargin3 },
+        { 1, wxS("Daniel Gasperment"), VMargin5 },
+
+        { 1, _("A G2-Labs Production"), VMargin5 },
 
         { 1, _("Programmed in Amsterdam, the Netherlands"), 0 }
     };

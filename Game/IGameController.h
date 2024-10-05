@@ -137,6 +137,7 @@ struct IGameController
     virtual void AttractFish(DisplayLogicalCoordinates const & screenCoordinates, float radius, std::chrono::milliseconds delay) = 0;
     virtual void SetLampAt(DisplayLogicalCoordinates const & screenCoordinates, float radiusScreenFraction) = 0;
     virtual void ResetLamp() = 0;
+    virtual NpcKindType GetNpcKind(NpcId id) = 0;
     virtual std::optional<PickedObjectId<NpcId>> BeginPlaceNewFurnitureNpc(NpcSubKindIdType subKind, DisplayLogicalCoordinates const & screenCoordinates, bool doMoveWholeMesh) = 0;
     virtual std::optional<PickedObjectId<NpcId>> BeginPlaceNewHumanNpc(NpcSubKindIdType subKind, DisplayLogicalCoordinates const & screenCoordinates, bool doMoveWholeMesh) = 0;
     virtual std::optional<PickedObjectId<NpcId>> ProbeNpcAt(DisplayLogicalCoordinates const & screenCoordinates) const = 0;
@@ -147,6 +148,7 @@ struct IGameController
     virtual void RemoveNpc(NpcId id) = 0;
     virtual void AbortNewNpc(NpcId id) = 0;
     virtual void AddNpcGroup(NpcKindType kind) = 0;
+    virtual void TurnaroundHumanNpc(NpcId id) = 0;
     virtual void SelectNpc(std::optional<NpcId> id) = 0;
     virtual void SelectNextNpc() = 0;
     virtual void HighlightNpc(std::optional<NpcId> id) = 0;

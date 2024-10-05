@@ -66,6 +66,7 @@ enum class ToolType : std::uint32_t
     PlaceHumanNpc,
     MoveNpc,
     RemoveNpc,
+    TurnaroundHumanNpc,
     FollowNpc,
 
     _FirstNpcTool = PlaceFurnitureNpc
@@ -3985,6 +3986,7 @@ public:
         IToolCursorManager & toolCursorManager,
         IGameController & gameController,
         SoundController & soundController,
+        std::optional<NpcKindType> applicableKind,
         wxImage && downCursorImage,
         wxImage && upCursorImage);
 
@@ -4005,7 +4007,8 @@ public:
         mGameController.HighlightNpc(std::nullopt);
 
         auto const probeOutcome = mGameController.ProbeNpcAt(inputState.MousePosition);
-        if (probeOutcome)
+        if (probeOutcome
+            && (!mApplicableKind.has_value() || mGameController.GetNpcKind(probeOutcome->ObjectId) == *mApplicableKind))
         {
             mGameController.HighlightNpc(probeOutcome->ObjectId);
         }
@@ -4026,6 +4029,9 @@ protected:
     }
 
 private:
+
+    // The kind we apply to (if any)
+    std::optional<NpcKindType> const mApplicableKind;
 
     // The cursors
     wxImage const mDownCursorImage;
@@ -4135,6 +4141,39 @@ public:
         if (probeOutcome)
         {
             mGameController.RemoveNpc(probeOutcome->ObjectId);
+        }
+
+        SetCurrentCursor(true);
+    }
+
+    void OnLeftMouseUp(InputState const & /*inputState*/) override
+    {
+        SetCurrentCursor(false);
+    }
+
+    void OnMouseMove(InputState const & /*inputState*/) override {}
+    void OnShiftKeyDown(InputState const & /*inputState*/) override {}
+    void OnShiftKeyUp(InputState const & /*inputState*/) override {}
+};
+
+class TurnaroundHumanNpcTool final : public BaseSelectNpcTool
+{
+public:
+
+    TurnaroundHumanNpcTool(
+        IToolCursorManager & toolCursorManager,
+        IGameController & gameController,
+        SoundController & soundController,
+        ResourceLocator const & resourceLocator);
+
+public:
+
+    void OnLeftMouseDown(InputState const & inputState) override
+    {
+        auto const probeOutcome = mGameController.ProbeNpcAt(inputState.MousePosition);
+        if (probeOutcome && mGameController.GetNpcKind(probeOutcome->ObjectId) == NpcKindType::Human)
+        {
+            mGameController.TurnaroundHumanNpc(probeOutcome->ObjectId);
         }
 
         SetCurrentCursor(true);

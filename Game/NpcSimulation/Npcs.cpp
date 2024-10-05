@@ -392,6 +392,12 @@ void Npcs::OnShipConnectivityChanged(ShipId shipId)
     }
 }
 
+NpcKindType Npcs::GetNpcKind(NpcId id)
+{
+    assert(mStateBuffer[id].has_value());
+    return mStateBuffer[id]->Kind;
+}
+
 std::tuple<std::optional<PickedObjectId<NpcId>>, NpcCreationFailureReasonType> Npcs::BeginPlaceNewFurnitureNpc(
     NpcSubKindIdType subKind,
     vec2f const & worldCoordinates,
@@ -1558,6 +1564,30 @@ std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> Npcs::AddNpcGroup
     return (nNpcsAdded > 0)
         ? std::make_tuple(firstNpcId, NpcCreationFailureReasonType::Success)
         : std::make_tuple(std::optional<NpcId>(), NpcCreationFailureReasonType::TooManyNpcs);
+}
+
+void Npcs::TurnaroundHumanNpc(NpcId id)
+{
+    assert(mStateBuffer[npcIndex].has_value());
+    assert(mStateBuffer[npcIndex]->Kind == NpcKindType::Human);
+
+    if (mStateBuffer[id]->KindSpecificState.HumanNpcState.CurrentBehavior == StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::Constrained_Walking)
+    {
+        // Flip walk
+        FlipHumanWalk(mStateBuffer[id]->KindSpecificState.HumanNpcState, StrongTypedTrue<_DoImmediate>);
+    }
+    else
+    {
+        // Just change orientation/direction
+        if (mStateBuffer[id]->KindSpecificState.HumanNpcState.CurrentFaceDirectionX != 0.0f)
+        {
+            mStateBuffer[id]->KindSpecificState.HumanNpcState.CurrentFaceDirectionX *= -1.0f;
+        }
+        else
+        {
+            mStateBuffer[id]->KindSpecificState.HumanNpcState.CurrentFaceOrientation *= -1.0f;
+        }
+    }
 }
 
 std::optional<NpcId> Npcs::GetCurrentlySelectedNpc() const

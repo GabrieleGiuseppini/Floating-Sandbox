@@ -139,8 +139,9 @@
 	- Remove too much logging from ShipLoadDialog
 	- Merchandise link
 	- Version on splash screen
-	- Fix all 2022 copyright years (big #define?), and add g2-labs to:
-		- Credits
+	+ Fix all 2022 copyright years (big #define?), and add g2-labs to:
+		+ Credits
+		+ Resource files x 2
 
 	+ New tool: lamp
 		! Gist: 

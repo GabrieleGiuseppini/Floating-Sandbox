@@ -259,6 +259,13 @@ ToolController::ToolController(
             resourceLocator));
 
     mAllTools.emplace_back(
+        std::make_unique<TurnaroundHumanNpcTool>(
+            *this,
+            gameController,
+            soundController,
+            resourceLocator));
+
+    mAllTools.emplace_back(
         std::make_unique<FollowNpcTool>(
             *this,
             gameController,

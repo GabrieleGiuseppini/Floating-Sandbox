@@ -373,6 +373,8 @@ public:
         float radius,
         std::chrono::milliseconds delay);
 
+    NpcKindType GetNpcKind(NpcId id);
+
     std::tuple<std::optional<PickedObjectId<NpcId>>, NpcCreationFailureReasonType> BeginPlaceNewFurnitureNpc(
         NpcSubKindIdType subKind,
         vec2f const & position,
@@ -408,11 +410,13 @@ public:
 
     std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> AddNpcGroup(NpcKindType kind);
 
+    void TurnaroundHumanNpc(NpcId id);
+
     void SelectFirstNpc();
 
     void SelectNextNpc();
 
-    void SelectNpc(std::optional<NpcId> id);    
+    void SelectNpc(std::optional<NpcId> id);
 
     void HighlightNpc(std::optional<NpcId> id);
 

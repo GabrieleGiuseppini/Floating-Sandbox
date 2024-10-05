@@ -1039,6 +1039,12 @@ void World::AttractFish(
     mFishes.AttractAt(position, radius, delay);
 }
 
+NpcKindType World::GetNpcKind(NpcId id)
+{
+    assert(mNpcs);
+    return mNpcs->GetNpcKind(id);
+}
+
 std::tuple<std::optional<PickedObjectId<NpcId>>, NpcCreationFailureReasonType> World::BeginPlaceNewFurnitureNpc(
     NpcSubKindIdType subKind,
     vec2f const & position,
@@ -1134,6 +1140,12 @@ std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> World::AddNpcGrou
 {
     assert(mNpcs);
     return mNpcs->AddNpcGroup(kind, mCurrentSimulationTime);
+}
+
+void World::TurnaroundHumanNpc(NpcId id)
+{
+    assert(mNpcs);
+    mNpcs->TurnaroundHumanNpc(id);
 }
 
 void World::SelectFirstNpc()
