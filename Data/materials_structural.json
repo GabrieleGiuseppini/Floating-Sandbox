@@ -3784,7 +3784,7 @@
             "name": "NPC Human Head",
             "render_color": "#070780",
             "strength": 1.0,
-            "wind_receptivity": 0.1
+            "wind_receptivity": 0.14
         },
         {
             "buoyancy_volume_fill": 0.028,
@@ -3804,7 +3804,7 @@
             "name": "NPC Human Feet",            
             "render_color": "#070781",
             "strength": 1.0,
-            "wind_receptivity": 0.1
+            "wind_receptivity": 0.14
         }
     ],
     "palettes": {
