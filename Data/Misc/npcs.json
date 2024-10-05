@@ -15,10 +15,7 @@
 		"kinds": [
 
 			{
-				"name": [
-					{ "value": "Baker", "language": "en" },
-					{ "value": "Cuoco", "language": "it" }
-				],
+				"name": "Baker",
 				"role": "Crew",
 				"texture_filename_stems": {
 					"head_f": "baker_head_front",
@@ -37,10 +34,7 @@
 			},
 
 			{
-				"name": [
-					{ "value": "Captain 1", "language": "en" },
-					{ "value": "Capitano 1", "language": "it" }
-				],
+				"name": "Captain 1",
 				"role": "Captain",
 				"texture_filename_stems": {
 					"head_f": "captain_1_head_front",
@@ -59,10 +53,7 @@
 			},
 
 			{
-				"name": [
-					{ "value": "Civilian Passenger 1 (Female)", "language": "en" },
-					{ "value": "Passeggero 1 (Donna)", "language": "it" }
-				],
+				"name": "Civilian Passenger 1 (Female)",
 				"role": "Passenger",
 				"texture_filename_stems": {
 					"head_f": "female_civilian_passenger_1_head_front",
@@ -81,10 +72,7 @@
 			},
 
 			{
-				"name": [
-					{ "value": "Civilian Passenger 1 (Male)", "language": "en" },
-					{ "value": "Passeggero Seconda Classe 1 (Uomo)", "language": "it" }
-				],
+				"name": "Civilian Passenger 1 (Male)",
 				"role": "Passenger",
 				"texture_filename_stems": {
 					"head_f": "male_civ_1_head_front",
@@ -103,10 +91,7 @@
 			},
 
 			{
-				"name": [
-					{ "value": "Civilian Passenger 2 (Female)", "language": "en" },
-					{ "value": "Passeggero 2 (Donna)", "language": "it" }
-				],
+				"name": "Civilian Passenger 2 (Female)",
 				"role": "Passenger",
 				"texture_filename_stems": {
 					"head_f": "female_civilian_passenger_2_head_front",
@@ -125,10 +110,7 @@
 			},
 
 			{
-				"name": [
-					{ "value": "Civilian Passenger 2 (Male)", "language": "en" },
-					{ "value": "Passeggero Seconda Classe 2 (Uomo)", "language": "it" }
-				],
+				"name": "Civilian Passenger 2 (Male)",
 				"role": "Passenger",
 				"texture_filename_stems": {
 					"head_f": "male_civ_2_head_front",
@@ -147,10 +129,7 @@
 			},
 
 			{
-				"name": [
-					{ "value": "Civilian Passenger 3 (Female)", "language": "en" },
-					{ "value": "Passeggero 3 (Donna)", "language": "it" }
-				],
+				"name": "Civilian Passenger 3 (Female)",
 				"role": "Passenger",
 				"texture_filename_stems": {
 					"head_f": "female_civilian_passenger_3_head_front",
@@ -169,10 +148,7 @@
 			},
 
 			{
-				"name": [
-					{ "value": "Civilian Passenger 3 (Male)", "language": "en" },
-					{ "value": "Passeggero Seconda Classe 3 (Uomo)", "language": "it" }
-				],
+				"name": "Civilian Passenger 3 (Male)",
 				"role": "Passenger",
 				"texture_filename_stems": {
 					"head_f": "male_civ_3_head_front",
@@ -191,10 +167,7 @@
 			},
 
 			{
-				"name": [
-					{ "value": "Civilian Passenger 4 (Female)", "language": "en" },
-					{ "value": "Passeggero 4 (Donna)", "language": "it" }
-				],
+				"name": "Civilian Passenger 4 (Female)",
 				"role": "Passenger",
 				"texture_filename_stems": {
 					"head_f": "female_civilian_passenger_4_head_front",
@@ -213,10 +186,7 @@
 			},
 
 			{
-				"name": [
-					{ "value": "Civilian Passenger 4 (Male)", "language": "en" },
-					{ "value": "Passeggero Seconda Classe 4 (Uomo)", "language": "it" }
-				],
+				"name": "Civilian Passenger 4 (Male)",
 				"role": "Passenger",
 				"texture_filename_stems": {
 					"head_f": "male_civ_4_head_front",
@@ -235,10 +205,7 @@
 			},
 
 			{
-				"name": [
-					{ "value": "Deckhand", "language": "en" },
-					{ "value": "Mozzo", "language": "it" }
-				],
+				"name": "Deckhand",
 				"role": "Crew",
 				"texture_filename_stems": {
 					"head_f": "deckhand_head_front",
@@ -257,10 +224,7 @@
 			},
 
 			{
-				"name": [
-					{ "value": "Engineer", "language": "en" },
-					{ "value": "Ingegnere", "language": "it" }
-				],
+				"name": "Engineer",
 				"role": "Crew",
 				"texture_filename_stems": {
 					"head_f": "engineer_head_front",
@@ -279,10 +243,7 @@
 			},
 
 			{
-				"name": [
-					{ "value": "Officer", "language": "en" },
-					{ "value": "Ufficiale", "language": "it" }
-				],
+				"name": "Officer",
 				"role": "Crew",
 				"texture_filename_stems": {
 					"head_f": "officer_head_front",
@@ -301,10 +262,7 @@
 			},
 
 			{
-				"name": [
-					{ "value": "Oiler", "language": "en" },
-					{ "value": "Oliatore", "language": "it" }
-				],
+				"name": "Oiler",
 				"role": "Crew",
 				"texture_filename_stems": {
 					"head_f": "oiler_head_front",
@@ -323,10 +281,7 @@
 			},
 
 			{
-				"name": [
-					{ "value": "Quartermaster", "language": "en" },
-					{ "value": "Quartiermastro", "language": "it" }
-				],
+				"name": "Quartermaster",
 				"role": "Crew",
 				"texture_filename_stems": {
 					"head_f": "quartermaster_head_front",
@@ -345,10 +300,7 @@
 			},
 
 			{
-				"name": [
-					{ "value": "Wealthy Passenger 1 (Male)", "language": "en" },
-					{ "value": "Passeggero Prima Classe 1 (Uomo)", "language": "it" }
-				],
+				"name": "Wealthy Passenger 1 (Male)",
 				"role": "Passenger",
 				"texture_filename_stems": {
 					"head_f": "wealthy_passenger_1_head_front",
@@ -367,10 +319,7 @@
 			},
 
 			{
-				"name": [
-					{ "value": "Wealthy Passenger 2 (Male)", "language": "en" },
-					{ "value": "Passeggero Prima Classe 2 (Uomo)", "language": "it" }
-				],
+				"name": "Wealthy Passenger 2 (Male)",
 				"role": "Passenger",
 				"texture_filename_stems": {
 					"head_f": "male_wealthy_passenger_2_head_front",
@@ -389,10 +338,7 @@
 			},
 
 			{
-				"name": [
-					{ "value": "Dummy", "language": "en" },
-					{ "value": "Dummy", "language": "it" }
-				],
+				"name": "Dummy",
 				"role": "Other",
 				"body_width_randomization_sensitivity": 0.1,
 				"texture_filename_stems": {
@@ -416,10 +362,7 @@
 	"furniture": {
 		"kinds": [
 			{	
-				"name": [
-					{ "value": "Barrel", "language": "en" },
-					{ "value": "Barile", "language": "it" }
-				],
+				"name": "Barrel",
 				"role": "Furniture",
 				"material": "Solid Pine Wood I-Beam",
 				"particle_mesh": {
@@ -435,10 +378,7 @@
 			},
 
 			{	
-				"name": [
-					{ "value": "Bed 1", "language": "en" },
-					{ "value": "Letto 1", "language": "it" }
-				],
+				"name": "Bed 1",
 				"role": "Furniture",
 				"material": "Solid Pine Wood I-Beam",
 				"particle_mesh": {
@@ -454,10 +394,7 @@
 			},
 
 			{	
-				"name": [
-					{ "value": "Bed 2", "language": "en" },
-					{ "value": "Letto 2", "language": "it" }
-				],
+				"name": "Bed 2",
 				"role": "Furniture",
 				"material": "Iron Hull",
 				"particle_mesh": {
@@ -473,10 +410,7 @@
 			},
 
 			{	
-				"name": [
-					{ "value": "Cabin Desk", "language": "en" },
-					{ "value": "Tavolo da Cabina", "language": "it" }
-				],
+				"name": "Cabin Desk",
 				"role": "Furniture",
 				"material": "Solid Pine Wood I-Beam",
 				"particle_mesh": {
@@ -491,10 +425,7 @@
 				"texture_filename_stem": "cabin_desk_1"
 			},
 			{	
-				"name": [
-					{ "value": "Chest 1", "language": "en" },
-					{ "value": "Scrigno 1", "language": "it" }
-				],
+				"name": "Chest 1",
 				"role": "Furniture",
 				"material": "Solid Pine Wood I-Beam",
 				"particle_mesh": {
@@ -509,10 +440,7 @@
 				"texture_filename_stem": "chest_1"
 			},
 			{	
-				"name": [
-					{ "value": "Chest 2", "language": "en" },
-					{ "value": "Scrigno 2", "language": "it" }
-				],
+				"name": "Chest 2",
 				"role": "Furniture",
 				"material": "Solid Pine Wood I-Beam",
 				"particle_mesh": {
@@ -527,10 +455,7 @@
 				"texture_filename_stem": "chest_2"
 			},
 			{	
-				"name": [
-					{ "value": "Chest 3", "language": "en" },
-					{ "value": "Scrigno 3", "language": "it" }
-				],
+				"name": "Chest 3",
 				"role": "Furniture",
 				"material": "Solid Pine Wood I-Beam",
 				"particle_mesh": {
@@ -546,10 +471,7 @@
 			},
 
 			{	
-				"name": [
-					{ "value": "Coal Cart", "language": "en" },
-					{ "value": "Carriola con Carbone", "language": "it" }
-				],
+				"name": "Coal Cart",
 				"role": "Furniture",
 				"material": "Iron Hull",
 				"particle_mesh": {
@@ -565,10 +487,7 @@
 			},
 
 			{
-				"name": [
-					{ "value": "Crate", "language": "en" },
-					{ "value": "Cassa", "language": "it" }
-				],
+				"name": "Crate",
 				"role": "Furniture",
 				"material": "Solid Pine Wood I-Beam",
 				"particle_mesh": {
@@ -584,10 +503,7 @@
 			},
 
 			{	
-				"name": [
-					{ "value": "Dining Chair 1", "language": "en" },
-					{ "value": "Sedia da Tavolo 1", "language": "it" }
-				],
+				"name": "Dining Chair 1",
 				"role": "Furniture",
 				"material": "Solid Pine Wood I-Beam",
 				"particle_mesh": {
@@ -603,10 +519,7 @@
 			},
 
 			{	
-				"name": [
-					{ "value": "Dining Chair 2", "language": "en" },
-					{ "value": "Sedia da Tavolo 2", "language": "it" }
-				],
+				"name": "Dining Chair 2",
 				"role": "Furniture",
 				"material": "Solid Pine Wood I-Beam",
 				"particle_mesh": {
@@ -622,10 +535,7 @@
 			},
 
 			{	
-				"name": [
-					{ "value": "Dining Table 1", "language": "en" },
-					{ "value": "Tavolo da Pranzo 1", "language": "it" }
-				],
+				"name": "Dining Table 1",
 				"role": "Furniture",
 				"material": "Solid Pine Wood I-Beam",
 				"particle_mesh": {
@@ -641,10 +551,7 @@
 			},
 
 			{	
-				"name": [
-					{ "value": "Dining Table 2", "language": "en" },
-					{ "value": "Tavolo da Pranzo 2", "language": "it" }
-				],
+				"name": "Dining Table 2",
 				"role": "Furniture",
 				"material": "Iron Hull",
 				"particle_mesh": {
@@ -660,10 +567,7 @@
 			},
 
 			{	
-				"name": [
-					{ "value": "Drum (Heavy)", "language": "en" },
-					{ "value": "Fusto (Pesante)", "language": "it" }
-				],
+				"name": "Drum (Heavy)",
 				"role": "Furniture",
 				"material": "Iron Hull",
 				"particle_mesh": {
@@ -679,10 +583,7 @@
 			},
 
 			{	
-				"name": [
-					{ "value": "Drum (Light)", "language": "en" },
-					{ "value": "Fusto (Leggero)", "language": "it" }
-				],
+				"name": "Drum (Light)",
 				"role": "Furniture",
 				"material": "Light Iron Bulkhead",
 				"particle_mesh": {
@@ -698,10 +599,7 @@
 			},			
 
 			{	
-				"name": [
-					{ "value": "Piano", "language": "en" },
-					{ "value": "Pianoforte", "language": "it" }
-				],
+				"name": "Piano",
 				"role": "Furniture",
 				"material": "Iron Hull",
 				"particle_mesh": {
@@ -717,10 +615,7 @@
 			},
 
 			{	
-				"name": [
-					{ "value": "Small Table 1", "language": "en" },
-					{ "value": "Tavolino 1", "language": "it" }
-				],
+				"name": "Small Table 1",
 				"role": "Furniture",
 				"material": "Solid Pine Wood I-Beam",
 				"particle_mesh": {
@@ -736,10 +631,7 @@
 			},
 
 			{	
-				"name": [
-					{ "value": "Small Table 2", "language": "en" },
-					{ "value": "Tavolino 2", "language": "it" }
-				],
+				"name": "Small Table 2",
 				"role": "Furniture",
 				"material": "Solid Pine Wood I-Beam",
 				"particle_mesh": {
@@ -755,10 +647,7 @@
 			},
 
 			{
-				"name": [
-					{ "value": "Particle", "language": "en" },
-					{ "value": "Particella", "language": "it" }
-				],
+				"name": "Particle",
 				"role": "Other",
 				"material": "Stainless Steel",
 				"particle_mesh": {
@@ -772,5 +661,48 @@
 				"texture_filename_stem": "particle_1"
 			}
 		]
+	},
+
+	"string_table": {
+		"it": {
+			"Baker": "Cuoco",
+			"Captain 1": "Capitano 1",
+			"Civilian Passenger 1 (Female)": "Passeggero 1 (Donna)",
+			"Civilian Passenger 1 (Male)": "Passeggero 1 (Uomo)",
+			"Civilian Passenger 2 (Female)": "Passeggero 2 (Donna)",
+			"Civilian Passenger 2 (Male)": "Passeggero 2 (Uomo)",
+			"Civilian Passenger 3 (Female)": "Passeggero 3 (Donna)",
+			"Civilian Passenger 3 (Male)": "Passeggero 3 (Uomo)",
+			"Civilian Passenger 4 (Female)": "Passeggero 4 (Donna)",
+			"Civilian Passenger 4 (Male)": "Passeggero 5 (Uomo)",
+			"Deckhand": "Mozzo",
+			"Engineer": "Ingegnere",
+			"Officer": "Ufficiale",
+			"Oiler": "Oliatore",
+			"Quartermaster": "Quartiermastro",
+			"Wealthy Passenger 1 (Male)": "Passeggero Prima Classe 1 (Uomo)",
+			"Wealthy Passenger 2 (Male)": "Passeggero Prima Classe 2 (Uomo)",
+			"Dummy": "Dummy",
+
+			"Barrel": "Barile",
+			"Bed 1": "Letto 1",
+			"Bed 2": "Letto 2",
+			"Cabin Desk": "Tavolo da Cabina",
+			"Chest 1": "Scrigno 1",
+			"Chest 2": "Scrigno 2",
+			"Chest 3": "Scrigno 3",
+			"Coal Cart": "Carriola per Carbone",
+			"Crate": "Cassa",
+			"Dining Chair 1": "Sedia da Tavolo 1",
+			"Dining Chair 2": "Sedia da Tavolo 2",
+			"Dining Table 1": "Tavolo da Pranzo 1",
+			"Dining Table 2": "Tavolo da Pranzo 2",
+			"Drum (Heavy)": "Fusto (Pesante)",
+			"Drum (Light)": "Fusto (Leggero)",
+			"Piano": "Pianoforte",
+			"Small Table 1": "Tavolino 1",
+			"Small Table 2": "Tavolino 2",
+			"Particle": "Particella"
+		}
 	}
 }

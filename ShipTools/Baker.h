@@ -26,7 +26,7 @@ public:
 
         static AtlasBakingOptions Deserialize(std::filesystem::path const & optionsJsonFilePath)
         {
-            picojson::object rootJsonObject = Utils::GetJsonValueAs<picojson::object>(Utils::ParseJSONFile(optionsJsonFilePath), "root");
+            picojson::object rootJsonObject = Utils::GetJsonValueAsObject(Utils::ParseJSONFile(optionsJsonFilePath), "root");
 
             bool alphaPreMultiply = Utils::GetMandatoryJsonMember<bool>(rootJsonObject, "alphaPreMultiply");
             bool mipMappable = Utils::GetMandatoryJsonMember<bool>(rootJsonObject, "mipMappable");

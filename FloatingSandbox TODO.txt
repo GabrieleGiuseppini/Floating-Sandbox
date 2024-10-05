@@ -346,6 +346,14 @@
 			- Fishes
 			- RectSelection (NotificationContext)
 
+	- Align "big" render buffers, e.g.:
+		- Ship: generic mip mapped
+			- Perf of bubbles:
+				- Before:
+				- After:
+		- static ship attribs
+		- ocean, land
+
 
 	- Try to lower global damping - seems quite slow
 

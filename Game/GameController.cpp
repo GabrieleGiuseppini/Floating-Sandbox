@@ -1429,7 +1429,7 @@ void GameController::AddNpcGroup(NpcKindType kind)
     auto const & pickedNpcId = std::get<0>(result);
     if (pickedNpcId.has_value())
     {
-        // Futurework: it's not so nice to focus on (first) NPC when placing group
+        // Mey-be-futurework: it's not so nice to focus on (first) NPC when placing group
         ////if (kind == NpcKindType::Human)
         ////{
         ////    OnBeginPlaceNewNpc(*pickedNpcId, false);

@@ -241,7 +241,7 @@ ShipLegacyFormatDeSerializer::JsonDefinition ShipLegacyFormatDeSerializer::LoadL
             if (!Utils::LexicalCast(it.first, &instanceIndex))
                 throw GameException("Key of electrical panel element '" + it.first + "' is not a valid integer");
 
-            picojson::object const & elementMetadataObject = Utils::GetJsonValueAs<picojson::object>(it.second, it.first);
+            picojson::object const & elementMetadataObject = Utils::GetJsonValueAsObject(it.second, it.first);
             auto const panelX = Utils::GetOptionalJsonMember<std::int64_t>(elementMetadataObject, "panel_x");
             auto const panelY = Utils::GetOptionalJsonMember<std::int64_t>(elementMetadataObject, "panel_y");
             if (panelX.has_value() != panelY.has_value())

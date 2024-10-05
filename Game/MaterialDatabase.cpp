@@ -373,12 +373,12 @@ MaterialDatabase::Palette<TMaterial> MaterialDatabase::Palette<TMaterial>::Parse
     picojson::array const & paletteCategoriesJson = Utils::GetMandatoryJsonMember<picojson::array>(palettesRoot, paletteName);
     for (auto const & categoryJson : paletteCategoriesJson)
     {
-        picojson::object const & categoryObj = Utils::GetJsonValueAs<picojson::object>(categoryJson, "palette_category");
+        picojson::object const & categoryObj = Utils::GetJsonValueAsObject(categoryJson, "palette_category");
 
         Category category(Utils::GetMandatoryJsonMember<std::string>(categoryObj, "category"));
         for (auto const & groupJson : Utils::GetMandatoryJsonArray(categoryObj, "groups"))
         {
-            picojson::object const & groupObj = Utils::GetJsonValueAs<picojson::object>(groupJson, "group");
+            picojson::object const & groupObj = Utils::GetJsonValueAsObject(groupJson, "group");
 
             typename Category::SubCategory::Group const parentGroup(
                 Utils::GetMandatoryJsonMember<std::string>(groupObj, "name"),

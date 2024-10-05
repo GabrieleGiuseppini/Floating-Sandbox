@@ -181,29 +181,9 @@ public:
 
 private:
 
-    struct MultiLingualText
-    {
-        std::map<std::string, std::string> ValuesByLanguage;
-
-        explicit MultiLingualText(std::map<std::string, std::string> && valuesByLanguage)
-            : ValuesByLanguage(std::move(valuesByLanguage))
-        {}
-
-        std::string Get(std::string const & language) const
-        {
-            auto searchIt = ValuesByLanguage.find(language);
-            if (searchIt != ValuesByLanguage.end())
-                return searchIt->second;
-
-            searchIt = ValuesByLanguage.find("");
-            assert(searchIt != ValuesByLanguage.end());
-            return searchIt->second;
-        }
-    };
-
     struct HumanKind
     {
-        MultiLingualText Name;
+        std::string Name;
         NpcHumanRoleType Role;
 
         StructuralMaterial const & HeadMaterial;
@@ -220,7 +200,7 @@ private:
 
     struct FurnitureKind
     {
-        MultiLingualText Name;
+        std::string Name;
         NpcFurnitureRoleType Role;
 
         StructuralMaterial const & Material;
@@ -236,9 +216,26 @@ private:
 
 private:
 
+    struct StringEntry
+    {
+        std::string Language;
+        std::string Value;
+
+        StringEntry(
+            std::string const & language,
+            std::string const & value)
+            : Language(language)
+            , Value(value)
+        {}
+    };
+
+    // Keyed by name
+    using StringTable = std::unordered_map<std::string, std::vector<StringEntry>>;
+
     NpcDatabase(
         std::map<NpcSubKindIdType, HumanKind> && humanKinds,
-        std::map<NpcSubKindIdType, FurnitureKind> && furnitureKinds);
+        std::map<NpcSubKindIdType, FurnitureKind> && furnitureKinds,
+        StringTable && stringTable);
 
     static HumanKind ParseHumanKind(
         picojson::object const & kindObject,
@@ -273,11 +270,7 @@ private:
         picojson::object const & particleAttributesOverrideJsonObject,
         ParticleAttributesType const & defaultParticleAttributes);
 
-    static ParticleAttributesType MakeDefaultParticleAttributes(StructuralMaterial const & baseMaterial);
-
-    static MultiLingualText ParseMultilingualText(
-        picojson::object const & containerObject,
-        std::string const & textName);
+    static ParticleAttributesType MakeDefaultParticleAttributes(StructuralMaterial const & baseMaterial);    
 
     static Render::TextureCoordinatesQuad ParseTextureCoordinatesQuad(
         picojson::object const & containerObject,
@@ -287,14 +280,21 @@ private:
     template<typename TNpcSubKindContainer>
     static std::vector<std::tuple<NpcSubKindIdType, std::string>> GetSubKinds(
         TNpcSubKindContainer const & container,
+        StringTable const & stringTable,
         std::string const & language);
 
     static ParticleMeshKindType StrToParticleMeshKindType(std::string const & str);
+
+    static StringTable ParseStringTable(
+        picojson::object const & containerObject,
+        std::map<NpcSubKindIdType, HumanKind> const & humanKinds,
+        std::map<NpcSubKindIdType, FurnitureKind> const & furnitureKinds);
 
 private:
 
     std::map<NpcSubKindIdType, HumanKind> mHumanKinds;
     std::map<NpcSubKindIdType, FurnitureKind> mFurnitureKinds;
+    StringTable mStringTable;
 
     std::vector<std::vector<NpcSubKindIdType>> mHumanSubKindsByRole;
     std::vector<std::vector<NpcSubKindIdType>> mFurnitureSubKindsByRole;

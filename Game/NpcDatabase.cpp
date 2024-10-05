@@ -105,31 +105,42 @@ NpcDatabase NpcDatabase::Load(
     }
 
     //
+    // StringTable
+
+    StringTable stringTable = ParseStringTable(
+        rootObject,
+        humanKinds,
+        furnitureKinds);
+
+    //
     // Wrap it up
     //
 
     return NpcDatabase(
         std::move(humanKinds),
-        std::move(furnitureKinds));
+        std::move(furnitureKinds),
+        std::move(stringTable));
 }
 
 std::vector<std::tuple<NpcSubKindIdType, std::string>> NpcDatabase::GetHumanSubKinds(std::string const & language) const
 {
-    return GetSubKinds(mHumanKinds, language);
+    return GetSubKinds(mHumanKinds, mStringTable, language);
 }
 
 std::vector<std::tuple<NpcSubKindIdType, std::string>> NpcDatabase::GetFurnitureSubKinds(std::string const & language) const
 {
-    return GetSubKinds(mFurnitureKinds, language);
+    return GetSubKinds(mFurnitureKinds, mStringTable, language);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 NpcDatabase::NpcDatabase(
     std::map<NpcSubKindIdType, HumanKind> && humanKinds,
-    std::map<NpcSubKindIdType, FurnitureKind> && furnitureKinds)
+    std::map<NpcSubKindIdType, FurnitureKind> && furnitureKinds,
+    StringTable && stringTable)
     : mHumanKinds(std::move(humanKinds))
     , mFurnitureKinds(std::move(furnitureKinds))
+    , mStringTable(std::move(stringTable))
 {
     // Build lookup tables
 
@@ -154,7 +165,7 @@ NpcDatabase::HumanKind NpcDatabase::ParseHumanKind(
     ParticleAttributesType const & globalFeetParticleAttributes,
     Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas)
 {
-    MultiLingualText name = ParseMultilingualText(kindObject, "name");
+    std::string const name = Utils::GetMandatoryJsonMember<std::string>(kindObject, "name");
     NpcHumanRoleType const role = StrToNpcHumanRoleType(Utils::GetMandatoryJsonMember<std::string>(kindObject, "role"));
 
     ParticleAttributesType headParticleAttributes = MakeParticleAttributes(kindObject, "head_particle_attributes_overrides", globalHeadParticleAttributes);
@@ -165,7 +176,7 @@ NpcDatabase::HumanKind NpcDatabase::ParseHumanKind(
     float const headTextureBaseWidth = Utils::GetOptionalJsonMember<float>(kindObject, "head_texture_base_width", 16.0f);
 
     auto const & textureFilenameStemsObject = Utils::GetMandatoryJsonObject(kindObject, "texture_filename_stems");
-    auto const dimensions = CalculateHumanDimensions(textureFilenameStemsObject, headTextureBaseWidth, npcTextureAtlas, name.Get(""));
+    auto const dimensions = CalculateHumanDimensions(textureFilenameStemsObject, headTextureBaseWidth, npcTextureAtlas, name);
     HumanTextureFramesType humanTextureFrames({
         ParseTextureCoordinatesQuad(textureFilenameStemsObject, HeadFKeyName, npcTextureAtlas),
         ParseTextureCoordinatesQuad(textureFilenameStemsObject, HeadBKeyName, npcTextureAtlas),
@@ -277,7 +288,7 @@ NpcDatabase::FurnitureKind NpcDatabase::ParseFurnitureKind(
     MaterialDatabase const & materialDatabase,
     Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas)
 {
-    MultiLingualText name = ParseMultilingualText(kindObject, "name");
+    std::string const name = Utils::GetMandatoryJsonMember<std::string>(kindObject, "name");
     NpcFurnitureRoleType const role = StrToNpcFurnitureRoleType(Utils::GetMandatoryJsonMember<std::string>(kindObject, "role"));
 
     StructuralMaterial const & material = materialDatabase.GetStructuralMaterial(
@@ -348,7 +359,7 @@ NpcDatabase::FurnitureKind NpcDatabase::ParseFurnitureKind(
             {
                 particleAttributes.push_back(
                     MakeParticleAttributes(
-                        Utils::GetJsonValueAs<picojson::object>(bvfV, "particle_attributes_overrides"),
+                        Utils::GetJsonValueAsObject(bvfV, "particle_attributes_overrides"),
                         defaultParticleAttributes));
             }
         }
@@ -358,12 +369,12 @@ NpcDatabase::FurnitureKind NpcDatabase::ParseFurnitureKind(
             particleAttributes = std::vector<ParticleAttributesType>(
                 particleCount,
                 MakeParticleAttributes(
-                    Utils::GetJsonValueAs<picojson::object>((*jsonParticleAttributesOverrides)[0], "particle_attributes_overrides"),
+                    Utils::GetJsonValueAsObject((*jsonParticleAttributesOverrides)[0], "particle_attributes_overrides"),
                     defaultParticleAttributes));
         }
         else
         {
-            throw GameException("Invalid size of particle_attributes_overrides for furniture NPC \"" + name.Get("") + "\"");
+            throw GameException("Invalid size of particle_attributes_overrides for furniture NPC \"" + name + "\"");
         }
     }
     else
@@ -433,69 +444,6 @@ NpcDatabase::ParticleAttributesType NpcDatabase::MakeDefaultParticleAttributes(S
     };
 }
 
-NpcDatabase::MultiLingualText NpcDatabase::ParseMultilingualText(
-    picojson::object const & containerObject,
-    std::string const & textName)
-{
-    std::map<std::string, std::string> valuesByLanguageMap;
-
-    std::string defaultValue;
-
-    auto const entriesArray = Utils::GetMandatoryJsonArray(containerObject, textName);
-    for (auto const & entryElement : entriesArray)
-    {
-        if (!entryElement.is<picojson::object>())
-        {
-            throw GameException("Multi-lingual text element for text \"" + textName + "\" in NPC database is not a JSON object");
-        }
-
-        auto const & entry = entryElement.get<picojson::object>();
-
-        std::string const & language = Utils::GetMandatoryJsonMember<std::string>(entry, "language");
-        std::string const & value = Utils::GetMandatoryJsonMember<std::string>(entry, "value");
-
-        if (language.empty())
-        {
-            throw GameException("Language \"" + language + "\" is invalid for text \"" + textName + "\" in NPC database");
-        }
-
-        if (value.empty())
-        {
-            throw GameException("Value \"" + value + "\" is invalid for text \"" + textName + "\" in NPC database");
-        }
-
-        auto const [_, isInserted] = valuesByLanguageMap.try_emplace(Utils::ToLower(language), value);
-        if (!isInserted)
-        {
-            throw GameException("Language \"" + language + "\" is duplicated for text \"" + textName + "\" in NPC database");
-        }
-
-        // Check if this could be a default
-        if (Utils::ToLower(language) == "en")
-            defaultValue = value;
-    }
-
-    if (valuesByLanguageMap.size() == 0)
-    {
-        throw GameException("Multi-lingual text element for text \"" + textName + "\" in NPC database is empty");
-    }
-
-    // Ensure we have a default
-
-    if (defaultValue.empty())
-    {
-        // Take first one arbitrarily
-        defaultValue = valuesByLanguageMap.begin()->second;
-    }
-
-    auto const [_, isInserted] = valuesByLanguageMap.try_emplace("", defaultValue);
-    assert(isInserted);
-
-    // Wrap it up
-
-    return MultiLingualText(std::move(valuesByLanguageMap));
-}
-
 Render::TextureCoordinatesQuad NpcDatabase::ParseTextureCoordinatesQuad(
     picojson::object const & containerObject,
     std::string const & memberName,
@@ -513,13 +461,34 @@ Render::TextureCoordinatesQuad NpcDatabase::ParseTextureCoordinatesQuad(
 template<typename TNpcSubKindContainer>
 std::vector<std::tuple<NpcSubKindIdType, std::string>> NpcDatabase::GetSubKinds(
     TNpcSubKindContainer const & container,
+    StringTable const & stringTable,
     std::string const & language)
 {
     std::vector<std::tuple<NpcSubKindIdType, std::string>> kinds;
 
     for (auto const & it : container)
     {
-        kinds.emplace_back(it.first, it.second.Name.Get(language));
+        std::string name = it.second.Name;
+
+        // Try to localize it
+        auto const itName = stringTable.find(it.second.Name);
+        if (itName != stringTable.cend())
+        {
+            auto const itLang = std::find_if(
+                itName->second.cbegin(),
+                itName->second.cend(),
+                [&language](auto const & entry)
+                {
+                    return entry.Language == language;
+                });
+
+            if (itLang != itName->second.cend())
+            {
+                name = itLang->Value;
+            }
+        }
+
+        kinds.emplace_back(it.first, name);
     }
 
     return kinds;
@@ -535,4 +504,67 @@ NpcDatabase::ParticleMeshKindType NpcDatabase::StrToParticleMeshKindType(std::st
         return ParticleMeshKindType::Quad;
     else
         throw GameException("Unrecognized ParticleMeshKindType \"" + str + "\"");
+}
+
+NpcDatabase::StringTable NpcDatabase::ParseStringTable(
+    picojson::object const & containerObject,
+    std::map<NpcSubKindIdType, HumanKind> const & humanKinds,
+    std::map<NpcSubKindIdType, FurnitureKind> const & furnitureKinds)
+{
+    StringTable stringTable;
+
+    //
+    // 1 - Prepare keys (en)
+    //
+
+    for (auto const & entry : humanKinds)
+    {
+        // Ignore dupes
+        stringTable.try_emplace(entry.second.Name, std::vector<StringEntry>({ StringEntry("en", entry.second.Name) }));
+    }
+
+    for (auto const & entry : furnitureKinds)
+    {
+        // Ignore dupes
+        stringTable.try_emplace(entry.second.Name, std::vector<StringEntry>({ StringEntry("en", entry.second.Name) }));
+    }
+
+    //
+    // 2 - Parse
+    //
+
+    picojson::object const & stringTableJsonObject = Utils::GetMandatoryJsonObject(containerObject, "string_table");
+    for (auto const & langEntry : stringTableJsonObject)
+    {
+        std::string const & language = langEntry.first;
+
+        picojson::object const & nameMappingsJsonObject = Utils::GetJsonValueAsObject(langEntry.second, language);
+        for (auto const & nameMapping : nameMappingsJsonObject)
+        {
+            // Name must be in keys
+            auto itNameKey = stringTable.find(nameMapping.first);
+            if (itNameKey == stringTable.cend())
+            {
+                throw GameException("Name key \"" + nameMapping.first + "\" in string table for language \"" + language + "\" is not known");
+            }
+
+            // Lang must not be there
+            auto const itLang = std::find_if(
+                itNameKey->second.cbegin(),
+                itNameKey->second.cend(),
+                [&language](StringEntry const & entry)
+                {
+                    return entry.Language == language;
+                });
+            if (itLang != itNameKey->second.cend())
+            {
+                throw GameException("Language \"" + language + "\" appears more than once in string table for name \"" + nameMapping.first + "\"");
+            }
+
+            // Store
+            itNameKey->second.push_back({ language, Utils::GetJsonValueAs<std::string>(nameMapping.second, nameMapping.first) });
+        }
+    }
+
+    return stringTable;
 }

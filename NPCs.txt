@@ -194,22 +194,16 @@ Arch
 
 V1 TODO:
 
-- NpcDatabase: string table
+- TimCan
+- Tizia Vegas
+
++ Bump up wind receptivity
++ NpcDatabase: string table
 
 - Add Flip NPC H
 	- Human only?
 	- If also furniture:
 		- NpcState::FurnitureState gains orientation
-
-- Just FS:
-	- See if all that mem is sounds
-	- Align "big" render buffers, e.g.:
-		- Ship: generic mip mapped
-			- Perf of bubbles:
-				- Before:
-				- After:
-		- static ship attribs
-		- ocean, land
 
 - Finish assets
 	- Tungsten material

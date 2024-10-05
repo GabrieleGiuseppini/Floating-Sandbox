@@ -70,6 +70,18 @@ namespace Utils
         return static_cast<float>(value.get<double>());
     }
 
+    inline picojson::object const & GetJsonValueAsObject(
+        picojson::value const & value,
+        std::string const & memberName)
+    {
+        if (!value.is<picojson::object>())
+        {
+            throw GameException("Error parsing JSON: member \"" + memberName + "\" is not of the object type");
+        }
+
+        return value.get<picojson::object>();
+    }
+
     template<typename T>
     inline T GetOptionalJsonMember(
         picojson::object const & obj,
