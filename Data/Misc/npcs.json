@@ -53,6 +53,44 @@
 			},
 
 			{
+				"name": "Captain 2",
+				"role": "Captain",
+				"texture_filename_stems": {
+					"head_f": "captain_2_head_front",
+					"head_b": "captain_2_head_back",
+					"head_s": "captain_2_head_side",
+					"torso_f": "captain_2_torso_front",
+					"torso_b": "captain_2_torso_back",
+					"torso_s": "captain_2_torso_side",
+					"arm_f": "captain_2_arm_front",
+					"arm_b": "captain_2_arm_back",
+					"arm_s": "captain_2_arm_side",
+					"leg_f": "captain_2_leg_front",
+					"leg_b": "captain_2_leg_back",
+					"leg_s": "captain_2_leg_side"
+				}
+			},
+
+			{
+				"name": "Captain 3",
+				"role": "Captain",
+				"texture_filename_stems": {
+					"head_f": "captain_3_head_front",
+					"head_b": "captain_3_head_back",
+					"head_s": "captain_3_head_side",
+					"torso_f": "captain_3_torso_front",
+					"torso_b": "captain_3_torso_back",
+					"torso_s": "captain_3_torso_side",
+					"arm_f": "captain_3_arm_front",
+					"arm_b": "captain_3_arm_back",
+					"arm_s": "captain_3_arm_side",
+					"leg_f": "captain_3_leg_front",
+					"leg_b": "captain_3_leg_back",
+					"leg_s": "captain_3_leg_side"
+				}
+			},
+
+			{
 				"name": "Civilian Passenger 1 (Female)",
 				"role": "Passenger",
 				"texture_filename_stems": {
@@ -724,6 +762,8 @@
 		"it": {
 			"Baker": "Cuoco",
 			"Captain 1": "Capitano 1",
+			"Captain 2": "Capitano 2",
+			"Captain 3": "Capitano 3",
 			"Civilian Passenger 1 (Female)": "Passeggero 1 (Donna)",
 			"Civilian Passenger 1 (Male)": "Passeggero 1 (Uomo)",
 			"Civilian Passenger 2 (Female)": "Passeggero 2 (Donna)",
