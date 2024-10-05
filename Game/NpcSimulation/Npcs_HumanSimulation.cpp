@@ -429,7 +429,7 @@ void Npcs::UpdateHuman(
 
 				if (areFeetOnFloor
 					&& !isHeadOnFloor
-					&& humanDir.y < -0.7f) // ~45deg
+					&& humanDir.y < -0.6f) // ~53deg
 				{
 					// Free the feet
 					assert(primaryParticleState.ConstrainedState.has_value()); // Otherwise we'd have become free
