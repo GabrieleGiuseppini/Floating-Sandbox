@@ -622,14 +622,14 @@ MainFrame::MainFrame(
 
             // Add Human NPC Group
             {
-                auto * menuItem = new wxMenuItem(mNpcToolsMenu, wxNewId(), _("Add Human NPC Group"), wxEmptyString, wxITEM_NORMAL);
+                auto * menuItem = new wxMenuItem(mNpcToolsMenu, wxNewId(), _("Spawn Human NPC Group"), wxEmptyString, wxITEM_NORMAL);
                 mNpcToolsMenu->Append(menuItem);
                 Connect(menuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAddHumanNpcGroupMenuItemSelected);
             }
 
             // Add Furniture NPC Group
             {
-                auto * menuItem = new wxMenuItem(mNpcToolsMenu, wxNewId(), _("Add Furniture NPC Group"), wxEmptyString, wxITEM_NORMAL);
+                auto * menuItem = new wxMenuItem(mNpcToolsMenu, wxNewId(), _("Spawn Furniture NPC Group"), wxEmptyString, wxITEM_NORMAL);
                 mNpcToolsMenu->Append(menuItem);
                 Connect(menuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAddFurnitureNpcGroupMenuItemSelected);
             }
