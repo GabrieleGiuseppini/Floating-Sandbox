@@ -741,6 +741,38 @@
 				"texture_filename_stem": "small_table_2"
 			},
 
+			{	
+				"name": "Stone Ballast",
+				"role": "Furniture",
+				"material": "Concrete Hull",
+				"particle_mesh": {
+					"kind": "Quad",
+					"height": 0.5,
+					"particle_attributes_overrides": [
+						{
+							"buoyancy_volume_fill": 0.0847
+						}
+					]
+				},
+				"texture_filename_stem": "stone_ballast"
+			},
+
+			{	
+				"name": "Tungsten Block",
+				"role": "Furniture",
+				"material": "Tungsten Hull",
+				"particle_mesh": {
+					"kind": "Quad",
+					"height": 0.7,
+					"particle_attributes_overrides": [
+						{
+							"buoyancy_volume_fill": 0.0847
+						}
+					]
+				},
+				"texture_filename_stem": "tungsten_block"
+			},
+
 			{
 				"name": "Particle",
 				"role": "Other",
@@ -802,6 +834,8 @@
 			"Piano": "Pianoforte",
 			"Small Table 1": "Tavolino 1",
 			"Small Table 2": "Tavolino 2",
+			"Stone Ballast": "Zavorra di Pietra",
+			"Tungsten Block": "Blocco di Tungsteno",
 			"Particle": "Particella"
 		}
 	}

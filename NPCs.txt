@@ -208,11 +208,33 @@ V1 TODO:
 	+ Human only
 	+ Also F/B
 
-- Add alternative shading (stick men)
-	- TODOHERE
+- Vegas:
+	- Screenshots:
+		- Wreck at night w/wout lamp
+		- Twilight
+		- Temperature overlay
+		- Stress overlay
 
 - Finish assets
-	= Tungsten material
+	+ Tungsten material
+	+ Ballast and heavy block
+
+
+- Add alternative shading (stick men)
+	! Gist:
+		! New VertexAttrib array, used exclusively by stickmen shader, containing rgb(a for alignment) color (which depends on role)
+		! The array is uploaded by Npcs::Upload() when own internal "dirtyForRendering" boolean is set
+			! Flag set whenever TODOHERE: the role (color) for a given NPC ordinal is changed
+
+	- GameTypes & RenderParameters: NpcRenderMode {Skinned, StickMenWithRoles, StickMenAnonymous}
+		- SettingsDialog and IGameControllerSettings chain
+	- ShipRenderContext:		
+		- TODOHERE
+	- Npcs::Upload:
+		- TODOHERE
+
+- Turnover tool:
+	- Also Furniture
 
 ===================
 Next release:

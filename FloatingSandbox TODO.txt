@@ -651,7 +651,9 @@
 			+ Meta: The package includes 11 ships. The name of this pack is: The Mateusz's Small Steamship ShipPack. Author: "The Mateusz"
 	- New ships:
 		- Discord:
+			- https://discord.com/channels/@me/1128107472129896568/1259012624524247098
 			- All these: https://discord.com/channels/559822257275404307/562030667198758913/1124472062308778184
+			- And these: https://discord.com/channels/559822257275404307/561385586355732503/1272069465244176424
 		- _TO_TEST:
 			- Saturn V (Ur local brazilian#0842, aka Transportation Fan - already in credits)
 			- "Hellooping"

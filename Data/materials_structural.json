@@ -1955,7 +1955,7 @@
             "ignition_temperature": 1000000.0,
             "is_hull": true,
             "mass": {
-                "density": 0.1,
+                "density": 1.0,
                 "nominal_mass": 19250
             },
             "melting_temperature": 3695.0,
@@ -1997,7 +1997,7 @@
             "ignition_temperature": 1000000.0,
             "is_hull": false,
             "mass": {
-                "density": 0.01,
+                "density": 0.1,
                 "nominal_mass": 19250
             },
             "melting_temperature": 3695.0,
