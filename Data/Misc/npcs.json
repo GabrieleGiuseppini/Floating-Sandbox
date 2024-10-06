@@ -433,6 +433,25 @@
 			},
 
 			{
+				"name": "Stoker 1",
+				"role": "Crew",
+				"texture_filename_stems": {
+					"head_f": "stoker_1_head_front",
+					"head_b": "stoker_1_head_back",
+					"head_s": "stoker_1_head_side",
+					"torso_f": "stoker_1_torso_front",
+					"torso_b": "stoker_1_torso_back",
+					"torso_s": "stoker_1_torso_side",
+					"arm_f": "stoker_1_arm_front",
+					"arm_b": "stoker_1_arm_back",
+					"arm_s": "stoker_1_arm_side",
+					"leg_f": "stoker_1_leg_front",
+					"leg_b": "stoker_1_leg_back",
+					"leg_s": "stoker_1_leg_side"
+				}
+			},
+
+			{
 				"name": "Wealthy Passenger 1 (Male)",
 				"role": "Passenger",
 				"texture_filename_stems": {
@@ -852,6 +871,7 @@
 			"Quartermaster": "Quartiermastro",
 			"Steward 1": "Cameriere 1",
 			"Stewardess 1": "Cameriera 1",
+			"Stoker 1": "Fuochista 1",
 			"Wealthy Passenger 1 (Male)": "Passeggero Prima Classe 1 (Uomo)",
 			"Wealthy Passenger 2 (Male)": "Passeggero Prima Classe 2 (Uomo)",
 			"Dummy": "Dummy",
