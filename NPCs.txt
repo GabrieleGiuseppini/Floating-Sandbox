@@ -215,10 +215,15 @@ V1 TODO:
 		- Temperature overlay
 		- Stress overlay
 
-- Move:
+- Movie:
 	- Titanic, exterior view, plenty of NPCs
 	- Then interior view
 	- TODOHERE
+
+
+- Issue of GL_LINEAR artifacts:
+	- Try with doing step @ baking where alpha=0 pixels take the color of their neighbors
+
 
 - Finish assets
 	+ Tungsten material
@@ -239,11 +244,16 @@ V1 TODO:
 		  which would be wasteful when mode is "Texture"
 		- So, see if can have dual drawing conditionally
 			- After all, furniture can stay in current buffer
-		- This is how it would look like with two buffers:
-			- TODOHERE
-		- TODO: rewrite all the below knowing that:
-			- It's humans only
-			- Two buffers in ShipRenderContext
+		- Also, users want different options for humans and for furniture :-(
+		- This is how it would look like with two buffers and different settings:
+			- ShipRenderContext has two buffers - one for NpcTextureQuads, one for NpcMatteQuads
+				- At this moment we don't need a separate vertex attrib only for Matte; the vertex type can be different altogether
+			- We make uploads to the two with runtime decisions based on the two render modes and on whether we're uploading furniture or humans
+				- @ NpcUpload, so we can make -1 -> 1.0 quad @ upload method
+				- TODO: how would it look like in C++ without iffing everywhere?
+			- At prepare and render time, we upload and draw each based on their current cardinality
+
+		- TODO: rewrite gist and all the below
 
 	+ Fixup shader in BaryLab
 		+ Commit
@@ -262,19 +272,19 @@ V1 TODO:
 			- Removal (including ship removal)
 		- Upload():
 			- If dirty: start, upload color for each NPC, end, clear dirty
+			- If render mode needs it: all texture coords are replaced with pre-calcd single quad, using Dir+Orientation for signs
 	- ShipRenderContext:
 		- React to RenderParameters::mode changes:
 			- Set param in stick men shader for enabling/disabling colors
 				- This has to happen also @ init, so RenderParameters has it dirty by default
-		- Static attributes vertex attributes @ ShaderTypes
-		- Param to enable color @ ShaderTypes
-		- Static attributes description @ other descriptions
-		- Vertex type, buffer of it, and mIsDirty (false)		
+		- ShaderTypes:
+			- Static attributes vertex attributes
+			- Param to enable color
+		- Static attributes vertex attrib description @ other descriptions
+		- Static attribs vertex type, buffer of it, and mIsDirty (false)		
 		- UploadStart: size buffer and reset its size
 			- Comment on being sticky
 		- Upload:
-			- Check mode and do artificial texture coords
-				! Can do here as these are always uploaded
 			- Store into buffer
 		- Upload end: nop
 		- RenderPrepare:
