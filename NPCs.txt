@@ -298,6 +298,12 @@ V1 TODO:
 			- param for enabling colors
 			- Port FS features (lamp, etc.)
 
+- Work with TimCan for improvements
+	- Chest
+	- Square heads
+	- Wide legs
+	- Detail (e.g. ears) with shades
+
 + Turnover tool:
 	+ Also Furniture
 
