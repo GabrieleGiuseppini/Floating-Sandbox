@@ -144,7 +144,7 @@ private:
     wxMenuItem * mAddFurnitureNpcMenuItem;
     wxMenuItem * mMoveNpcMenuItem;
     wxMenuItem * mRemoveNpcMenuItem;
-    wxMenuItem * mTurnaroundHumanNpcMenuItem;
+    wxMenuItem * mTurnaroundNpcMenuItem;
     wxMenuItem * mFollowNpcMenuItem;
     wxMenuItem * mSelectNextNpcMenuItem;
 

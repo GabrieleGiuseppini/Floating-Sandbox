@@ -1142,10 +1142,10 @@ std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> World::AddNpcGrou
     return mNpcs->AddNpcGroup(kind, mCurrentSimulationTime);
 }
 
-void World::TurnaroundHumanNpc(NpcId id)
+void World::TurnaroundNpc(NpcId id)
 {
     assert(mNpcs);
-    mNpcs->TurnaroundHumanNpc(id);
+    mNpcs->TurnaroundNpc(id);
 }
 
 void World::SelectFirstNpc()

@@ -215,6 +215,7 @@ private:
 				NpcFurnitureRoleType const Role;
 
 				Render::TextureCoordinatesQuad const TextureCoordinatesQuad;
+				float CurrentFaceDirectionX; // [-1.0f, 0.0f, 1.0f]
 
 				FurnitureNpcStateType(
 					NpcSubKindIdType subKindId,
@@ -223,6 +224,7 @@ private:
 					: SubKindId(subKindId)
 					, Role(role)
 					, TextureCoordinatesQuad(textureCoordinatesQuad)
+					, CurrentFaceDirectionX(1.0f)
 				{}
 			} FurnitureNpcState;
 
@@ -883,7 +885,7 @@ public:
 		NpcKindType kind,
 		float currentSimulationTime);
 
-	void TurnaroundHumanNpc(NpcId id);
+	void TurnaroundNpc(NpcId id);
 
 	std::optional<NpcId> GetCurrentlySelectedNpc() const;
 

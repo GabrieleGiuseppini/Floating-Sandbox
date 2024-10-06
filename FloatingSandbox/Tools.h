@@ -66,7 +66,7 @@ enum class ToolType : std::uint32_t
     PlaceHumanNpc,
     MoveNpc,
     RemoveNpc,
-    TurnaroundHumanNpc,
+    TurnaroundNpc,
     FollowNpc,
 
     _FirstNpcTool = PlaceFurnitureNpc
@@ -4156,11 +4156,11 @@ public:
     void OnShiftKeyUp(InputState const & /*inputState*/) override {}
 };
 
-class TurnaroundHumanNpcTool final : public BaseSelectNpcTool
+class TurnaroundNpcTool final : public BaseSelectNpcTool
 {
 public:
 
-    TurnaroundHumanNpcTool(
+    TurnaroundNpcTool(
         IToolCursorManager & toolCursorManager,
         IGameController & gameController,
         SoundController & soundController,
@@ -4171,9 +4171,9 @@ public:
     void OnLeftMouseDown(InputState const & inputState) override
     {
         auto const probeOutcome = mGameController.ProbeNpcAt(inputState.MousePosition);
-        if (probeOutcome && mGameController.GetNpcKind(probeOutcome->ObjectId) == NpcKindType::Human)
+        if (probeOutcome.has_value())
         {
-            mGameController.TurnaroundHumanNpc(probeOutcome->ObjectId);
+            mGameController.TurnaroundNpc(probeOutcome->ObjectId);
         }
 
         SetCurrentCursor(true);

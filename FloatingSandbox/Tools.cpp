@@ -808,17 +808,17 @@ RemoveNpcTool::RemoveNpcTool(
 {
 }
 
-TurnaroundHumanNpcTool::TurnaroundHumanNpcTool(
+TurnaroundNpcTool::TurnaroundNpcTool(
     IToolCursorManager & toolCursorManager,
     IGameController & gameController,
     SoundController & soundController,
     ResourceLocator const & resourceLocator)
     : BaseSelectNpcTool(
-        ToolType::TurnaroundHumanNpc,
+        ToolType::TurnaroundNpc,
         toolCursorManager,
         gameController,
         soundController,
-        NpcKindType::Human,
+        std::nullopt, // All kinds
         WxHelpers::LoadCursorImage("turnaround_cursor_down", 16, 16, resourceLocator),
         WxHelpers::LoadCursorImage("turnaround_cursor_up", 16, 16, resourceLocator))
 {

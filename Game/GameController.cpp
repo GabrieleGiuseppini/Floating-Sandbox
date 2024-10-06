@@ -1447,10 +1447,10 @@ void GameController::AddNpcGroup(NpcKindType kind)
     }
 }
 
-void GameController::TurnaroundHumanNpc(NpcId id)
+void GameController::TurnaroundNpc(NpcId id)
 {
     assert(!!mWorld);
-    mWorld->TurnaroundHumanNpc(id);
+    mWorld->TurnaroundNpc(id);
 }
 
 void GameController::SelectNpc(std::optional<NpcId> id)

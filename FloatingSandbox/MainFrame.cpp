@@ -613,9 +613,9 @@ MainFrame::MainFrame(
                 mRemoveNpcMenuItem = ADD_TOOL_MENUITEM(_("Remove NPC"), wxS("\tDEL"), "remove_npc_icon", ToolType::RemoveNpc, true);
             }
 
-            // Turnaround Human
+            // Turnaround
             {
-                mTurnaroundHumanNpcMenuItem = ADD_TOOL_MENUITEM(_("Turnaround HumanNPC"), wxS(""), "turnaround_human_npc_icon", ToolType::TurnaroundHumanNpc, true);
+                mTurnaroundNpcMenuItem = ADD_TOOL_MENUITEM(_("Turnaround NPC"), wxS(""), "turnaround_npc_icon", ToolType::TurnaroundNpc, true);
             }
 
             // Follow
@@ -2686,9 +2686,9 @@ void MainFrame::ReconciliateUIWithNpcPresence(bool areNpcsPresent)
             mRemoveNpcMenuItem->Enable(true);
         }
 
-        if (!mTurnaroundHumanNpcMenuItem->IsEnabled())
+        if (!mTurnaroundNpcMenuItem->IsEnabled())
         {
-            mTurnaroundHumanNpcMenuItem->Enable(true);
+            mTurnaroundNpcMenuItem->Enable(true);
         }
 
         if (!mFollowNpcMenuItem->IsEnabled())
@@ -2720,9 +2720,9 @@ void MainFrame::ReconciliateUIWithNpcPresence(bool areNpcsPresent)
             mRemoveNpcMenuItem->Enable(false);
         }
 
-        if (mTurnaroundHumanNpcMenuItem->IsEnabled())
+        if (mTurnaroundNpcMenuItem->IsEnabled())
         {
-            mTurnaroundHumanNpcMenuItem->Enable(false);
+            mTurnaroundNpcMenuItem->Enable(false);
         }
 
         if (mFollowNpcMenuItem->IsEnabled())
@@ -2738,7 +2738,7 @@ void MainFrame::ReconciliateUIWithNpcPresence(bool areNpcsPresent)
         // If current tool is a tool that requires NPCs, toggle it out
         assert(!!mToolController);
         auto const currentTool = mToolController->GetCurrentTool();
-        if (currentTool == ToolType::MoveNpc || currentTool == ToolType::RemoveNpc || currentTool == ToolType::TurnaroundHumanNpc || currentTool == ToolType::FollowNpc)
+        if (currentTool == ToolType::MoveNpc || currentTool == ToolType::RemoveNpc || currentTool == ToolType::TurnaroundNpc || currentTool == ToolType::FollowNpc)
         {
             SelectTool(InitialNonNpcToolType, false);
         }

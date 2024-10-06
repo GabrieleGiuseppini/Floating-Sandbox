@@ -1566,26 +1566,40 @@ std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> Npcs::AddNpcGroup
         : std::make_tuple(std::optional<NpcId>(), NpcCreationFailureReasonType::TooManyNpcs);
 }
 
-void Npcs::TurnaroundHumanNpc(NpcId id)
+void Npcs::TurnaroundNpc(NpcId id)
 {
-    assert(mStateBuffer[npcIndex].has_value());
-    assert(mStateBuffer[npcIndex]->Kind == NpcKindType::Human);
+    assert(mStateBuffer[id].has_value());
 
-    if (mStateBuffer[id]->KindSpecificState.HumanNpcState.CurrentBehavior == StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::Constrained_Walking)
+    switch (mStateBuffer[id]->Kind)
     {
-        // Flip walk
-        FlipHumanWalk(mStateBuffer[id]->KindSpecificState.HumanNpcState, StrongTypedTrue<_DoImmediate>);
-    }
-    else
-    {
-        // Just change orientation/direction
-        if (mStateBuffer[id]->KindSpecificState.HumanNpcState.CurrentFaceDirectionX != 0.0f)
+        case NpcKindType::Human:
         {
-            mStateBuffer[id]->KindSpecificState.HumanNpcState.CurrentFaceDirectionX *= -1.0f;
+            if (mStateBuffer[id]->KindSpecificState.HumanNpcState.CurrentBehavior == StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::Constrained_Walking)
+            {
+                // Flip walk
+                FlipHumanWalk(mStateBuffer[id]->KindSpecificState.HumanNpcState, StrongTypedTrue<_DoImmediate>);
+            }
+            else
+            {
+                // Just change orientation/direction
+                if (mStateBuffer[id]->KindSpecificState.HumanNpcState.CurrentFaceDirectionX != 0.0f)
+                {
+                    mStateBuffer[id]->KindSpecificState.HumanNpcState.CurrentFaceDirectionX *= -1.0f;
+                }
+                else
+                {
+                    mStateBuffer[id]->KindSpecificState.HumanNpcState.CurrentFaceOrientation *= -1.0f;
+                }
+            }
+
+            break;
         }
-        else
+
+        case NpcKindType::Furniture:
         {
-            mStateBuffer[id]->KindSpecificState.HumanNpcState.CurrentFaceOrientation *= -1.0f;
+            mStateBuffer[id]->KindSpecificState.FurnitureNpcState.CurrentFaceDirectionX *= -1.0f;
+
+            break;
         }
     }
 }
@@ -3350,6 +3364,10 @@ void Npcs::RenderNpc(
 
         case NpcKindType::Furniture:
         {
+            Render::TextureCoordinatesQuad textureCoords = npc.KindSpecificState.FurnitureNpcState.CurrentFaceDirectionX > 0.0f ?
+                npc.KindSpecificState.FurnitureNpcState.TextureCoordinatesQuad
+                : npc.KindSpecificState.FurnitureNpcState.TextureCoordinatesQuad.FlipH();
+
             if (npc.ParticleMesh.Particles.size() == 4)
             {
                 // Just one quad
@@ -3359,7 +3377,7 @@ void Npcs::RenderNpc(
                 quad.V.BottomRight = mParticles.GetPosition(npc.ParticleMesh.Particles[2].ParticleIndex),
                 quad.V.BottomLeft = mParticles.GetPosition(npc.ParticleMesh.Particles[3].ParticleIndex);
                 shipRenderContext.UploadNpcTextureQuadAttributes(
-                    npc.KindSpecificState.FurnitureNpcState.TextureCoordinatesQuad,
+                    textureCoords,
                     staticAttribs);
             }
             else
@@ -3377,7 +3395,7 @@ void Npcs::RenderNpc(
                     quad.V.BottomLeft = vec2f(position.x - ParticleHalfWidth, position.y - ParticleHalfWidth);
                     quad.V.BottomRight = vec2f(position.x + ParticleHalfWidth, position.y - ParticleHalfWidth);
                     shipRenderContext.UploadNpcTextureQuadAttributes(
-                        npc.KindSpecificState.FurnitureNpcState.TextureCoordinatesQuad,
+                        textureCoords,
                         staticAttribs);
                 }
             }

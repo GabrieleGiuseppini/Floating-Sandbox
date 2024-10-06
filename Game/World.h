@@ -410,7 +410,7 @@ public:
 
     std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> AddNpcGroup(NpcKindType kind);
 
-    void TurnaroundHumanNpc(NpcId id);
+    void TurnaroundNpc(NpcId id);
 
     void SelectFirstNpc();
 

@@ -259,7 +259,7 @@ ToolController::ToolController(
             resourceLocator));
 
     mAllTools.emplace_back(
-        std::make_unique<TurnaroundHumanNpcTool>(
+        std::make_unique<TurnaroundNpcTool>(
             *this,
             gameController,
             soundController,

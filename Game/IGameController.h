@@ -148,7 +148,7 @@ struct IGameController
     virtual void RemoveNpc(NpcId id) = 0;
     virtual void AbortNewNpc(NpcId id) = 0;
     virtual void AddNpcGroup(NpcKindType kind) = 0;
-    virtual void TurnaroundHumanNpc(NpcId id) = 0;
+    virtual void TurnaroundNpc(NpcId id) = 0;
     virtual void SelectNpc(std::optional<NpcId> id) = 0;
     virtual void SelectNextNpc() = 0;
     virtual void HighlightNpc(std::optional<NpcId> id) = 0;

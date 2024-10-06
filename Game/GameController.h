@@ -267,7 +267,7 @@ public:
     void RemoveNpc(NpcId id) override;
     void AbortNewNpc(NpcId id) override;
     void AddNpcGroup(NpcKindType kind) override;
-    void TurnaroundHumanNpc(NpcId id) override;
+    void TurnaroundNpc(NpcId id) override;
     void SelectNpc(std::optional<NpcId> id) override;
     void SelectNextNpc() override;
     void HighlightNpc(std::optional<NpcId> id) override;
