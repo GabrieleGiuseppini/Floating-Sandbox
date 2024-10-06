@@ -395,6 +395,44 @@
 			},
 
 			{
+				"name": "Steward 1",
+				"role": "Crew",
+				"texture_filename_stems": {
+					"head_f": "steward_1_head_front",
+					"head_b": "steward_1_head_back",
+					"head_s": "steward_1_head_side",
+					"torso_f": "steward_1_torso_front",
+					"torso_b": "steward_1_torso_back",
+					"torso_s": "steward_1_torso_side",
+					"arm_f": "steward_1_arm_front",
+					"arm_b": "steward_1_arm_back",
+					"arm_s": "steward_1_arm_side",
+					"leg_f": "steward_1_leg_front",
+					"leg_b": "steward_1_leg_back",
+					"leg_s": "steward_1_leg_side"
+				}
+			},
+
+			{
+				"name": "Stewardess 1",
+				"role": "Crew",
+				"texture_filename_stems": {
+					"head_f": "stewardess_1_head_front",
+					"head_b": "stewardess_1_head_back",
+					"head_s": "stewardess_1_head_side",
+					"torso_f": "stewardess_1_torso_front",
+					"torso_b": "stewardess_1_torso_back",
+					"torso_s": "stewardess_1_torso_side",
+					"arm_f": "stewardess_1_arm_front",
+					"arm_b": "stewardess_1_arm_back",
+					"arm_s": "stewardess_1_arm_side",
+					"leg_f": "stewardess_1_leg_front",
+					"leg_b": "stewardess_1_leg_back",
+					"leg_s": "stewardess_1_leg_side"
+				}
+			},
+
+			{
 				"name": "Wealthy Passenger 1 (Male)",
 				"role": "Passenger",
 				"texture_filename_stems": {
@@ -812,6 +850,8 @@
 			"Officer": "Ufficiale",
 			"Oiler": "Oliatore",
 			"Quartermaster": "Quartiermastro",
+			"Steward 1": "Cameriere 1",
+			"Stewardess 1": "Cameriera 1",
 			"Wealthy Passenger 1 (Male)": "Passeggero Prima Classe 1 (Uomo)",
 			"Wealthy Passenger 2 (Male)": "Passeggero Prima Classe 2 (Uomo)",
 			"Dummy": "Dummy",
