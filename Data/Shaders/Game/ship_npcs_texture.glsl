@@ -55,7 +55,7 @@ void main()
     if (c.a < MinAlpha) // We don't Z-sort NPCs
         discard;   
 
-    // Apply highlight
+    // Apply highlight (overlay blending mode)
     //
     // (Target > 0.5) * (1 – (1-2*(Target-0.5)) * (1-Blend)) +
     // (Target <= 0.5) * lerp(Target, Blend, alphaMagic)

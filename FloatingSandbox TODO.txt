@@ -139,6 +139,24 @@
 	- Remove too much logging from ShipLoadDialog
 	- Merchandise link
 	- Version on splash screen
+
+	
+	- FIX: background flames carry backdrop with them
+		! Was like this also before
+		! Because background flames are drawn *before* triangles, hence Z depth makes them carry sky
+			! They are drawn *before* triangles because ropes *are* before triangles (order is: rope, BG flame, triangle)
+		! Happens when rope/particle has planeID > background ship; this is what we draw then:
+			! Ropes:
+				- plane 0 (irrelevant)
+				- plane 1 (piece)
+			! BG flame:
+				- plane 0 (irrelevant)
+				- plane 1 (piece of rope) -- here background is still sky
+			! Triangle:
+				- plane 0 -- depth is < BG flames on plane 1 and hence they lose depth test when drawn above BG flames plane 1
+		- Attempt 1: BG flames shader has higher threshold for alpha-discard
+	
+	
 	+ Fix all 2022 copyright years (big #define?), and add g2-labs to:
 		+ Credits
 		+ Resource files x 2

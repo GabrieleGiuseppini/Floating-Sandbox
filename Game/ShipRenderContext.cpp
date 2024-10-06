@@ -2501,7 +2501,7 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
     //
     // Each plane Z segment is divided into a number of layers, one for each type of rendering we do for a ship:
     //      - 0: Ropes (always behind)
-    //      - 1: Flames (background, i.e. flames that are on ropes)
+    //      - 1: Flames (background, i.e. flames that are on ropes, so these are drawn *behind* triangles on same plane, like ropes are)
     //      - 2: Springs
     //      - 3: Triangles
     //          - Triangles are always drawn temporally before ropes and springs though, to avoid anti-aliasing issues

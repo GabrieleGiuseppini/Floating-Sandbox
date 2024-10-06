@@ -215,6 +215,11 @@ V1 TODO:
 		- Temperature overlay
 		- Stress overlay
 
+- Move:
+	- Titanic, exterior view, plenty of NPCs
+	- Then interior view
+	- TODOHERE
+
 - Finish assets
 	+ Tungsten material
 	+ Ballast and heavy block
@@ -222,16 +227,66 @@ V1 TODO:
 
 - Add alternative shading (stick men)
 	! Gist:
-		! New VertexAttrib array, used exclusively by stickmen shader, containing rgb(a for alignment) color (which depends on role)
-		! The array is uploaded by Npcs::Upload() when own internal "dirtyForRendering" boolean is set
-			! Flag set whenever TODOHERE: the role (color) for a given NPC ordinal is changed
+		! New VertexAttrib array ("static attribs"), used exclusively by stickmen shader, containing rgb(a for alignment) color (which depends on role)
+		! The array is uploaded by Npcs::Upload() when own internal "dirtyForRendering" boolean is set, irrespective of npc render mode
+			! Flag set whenever the role for a given NPC ordinal is changed *in the upload sequence*, i.e. at each NPC removal and addition
+			! Sticky
+		! ShipRenderContext always keeps the last uploaded static attribs in own buffer, and only uploads them at RenderPrepare() if render mode requires it
+		! One shader for both StickMen modes, with param for enabling colors
 
-	- GameTypes & RenderParameters: NpcRenderMode {Skinned, StickMenWithRoles, StickMenAnonymous}
+	- TODO: human only, or also furniture?
+		- How to do it for humans only? need to tell kind @ ShipRenderContext::Upload, but also need different shaders! Would need then two different upload types and batches,
+		  which would be wasteful when mode is "Texture"
+		- So, see if can have dual drawing conditionally
+			- After all, furniture can stay in current buffer
+		- This is how it would look like with two buffers:
+			- TODOHERE
+		- TODO: rewrite all the below knowing that:
+			- It's humans only
+			- Two buffers in ShipRenderContext
+
+	+ Fixup shader in BaryLab
+		+ Commit
+
+	- GameTypes & RenderParameters: NpcRenderMode {Texture, StickMenWithRoles, StickMenAnonymous}
 		- SettingsDialog and IGameControllerSettings chain
-	- ShipRenderContext:		
-		- TODOHERE
-	- Npcs::Upload:
-		- TODOHERE
+	- NpcDatabase:
+		- json: renderColor, @ Human TODOHERE and Furniture?
+		- Parse @ kind parsing
+		- Expose getter(s)
+	- Npcs:
+		- mAreRenderStaticAttributesDirtyForRendering (default false)
+			- Comment: set whenever the role for a given NPC ordinal is changed *in the upload sequence*
+		- Set at:
+			- Creation (follow: single, group)
+			- Removal (including ship removal)
+		- Upload():
+			- If dirty: start, upload color for each NPC, end, clear dirty
+	- ShipRenderContext:
+		- React to RenderParameters::mode changes:
+			- Set param in stick men shader for enabling/disabling colors
+				- This has to happen also @ init, so RenderParameters has it dirty by default
+		- Static attributes vertex attributes @ ShaderTypes
+		- Param to enable color @ ShaderTypes
+		- Static attributes description @ other descriptions
+		- Vertex type, buffer of it, and mIsDirty (false)		
+		- UploadStart: size buffer and reset its size
+			- Comment on being sticky
+		- Upload:
+			- Check mode and do artificial texture coords
+				! Can do here as these are always uploaded
+			- Store into buffer
+		- Upload end: nop
+		- RenderPrepare:
+			- If dirty and mode requires:
+				- assert sizes match
+				- If not empty: upload (w/alloc)
+				- Clear dirty flag
+		- RenderDraw:
+			- Stickmen shader if mode requires
+		- Shader:
+			- param for enabling colors
+			- Port FS features (lamp, etc.)
 
 + Turnover tool:
 	+ Also Furniture
