@@ -221,7 +221,7 @@ V1 TODO:
 	- TODOHERE
 
 
-= Issue of GL_LINEAR artifacts:
++ Issue of GL_LINEAR artifacts:
 	+ Try with doing step @ baking where alpha=0 pixels take the color of their neighbors
 	+ Yes it works!
 	+ New option @ Atlas builder - "BinaryTransparencySmoothing"
@@ -232,15 +232,16 @@ V1 TODO:
 	+ New option at baker's options			
 	+ New option @ NPC options json
 		+ And no alpha-premultiply
-	- Commit
-	- Test explosions
-		- Re-bake them and check atlas
+	+ Commit
+	+ Test explosions
+		+ Re-bake them and check atlas
 
 
 - Finish assets
 	+ Tungsten material
 	+ Ballast and heavy block
 	- Last humans
+	- Send to TimCan
 
 - Add alternative shading (stick men)
 	! Gist:
