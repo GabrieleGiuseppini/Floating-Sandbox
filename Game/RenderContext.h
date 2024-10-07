@@ -686,6 +686,28 @@ public:
         mRenderParameters.AreShipStructureRenderModeSelectorsDirty = true;
     }
 
+    NpcRenderModeType GetNpcRenderMode() const
+    {
+        return mRenderParameters.NpcRenderMode;
+    }
+
+    void SetNpcRenderMode(NpcRenderModeType npcRenderMode)
+    {
+        mRenderParameters.NpcRenderMode = npcRenderMode;
+        mRenderParameters.AreNpcRenderParametersDirty = true;
+    }
+
+    rgbColor const & GetNpcQuadFlatColor() const
+    {
+        return mRenderParameters.NpcQuadFlatColor;
+    }
+
+    void SetNpcQuadFlatColor(rgbColor const & color)
+    {
+        mRenderParameters.NpcQuadFlatColor = color;
+        mRenderParameters.AreNpcRenderParametersDirty = true;
+    }
+
     //
     // Misc rendering properties
     //

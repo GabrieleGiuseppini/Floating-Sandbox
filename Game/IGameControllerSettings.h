@@ -436,6 +436,12 @@ struct IGameControllerSettings
     virtual DebugShipRenderModeType GetDebugShipRenderMode() const = 0;
     virtual void SetDebugShipRenderMode(DebugShipRenderModeType debugShipRenderMode) = 0;
 
+    virtual NpcRenderModeType GetNpcRenderMode() const = 0;
+    virtual void SetNpcRenderMode(NpcRenderModeType npcRenderMode) = 0;
+
+    virtual rgbColor const & GetNpcQuadFlatColor() const = 0;
+    virtual void SetNpcQuadFlatColor(rgbColor const & color) = 0;
+
     virtual VectorFieldRenderModeType GetVectorFieldRenderMode() const = 0;
     virtual void SetVectorFieldRenderMode(VectorFieldRenderModeType VectorFieldRenderMode) = 0;
 

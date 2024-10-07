@@ -408,6 +408,27 @@ void SettingsDialog::OnLandRenderModeRadioButtonClick(wxCommandEvent & /*event*/
     OnLiveSettingsChanged();
 }
 
+void SettingsDialog::OnNpcRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
+{
+    if (mTextureNpcRenderModeRadioButton->GetValue())
+    {
+        mLiveSettings.SetValue(GameSettings::NpcRenderMode, NpcRenderModeType::Texture);
+    }
+    else if (mQuadWithRolesNpcRenderModeRadioButton->GetValue())
+    {
+        mLiveSettings.SetValue(GameSettings::NpcRenderMode, NpcRenderModeType::QuadWithRoles);
+    }
+    else
+    {
+        assert(mQuadFlatNpcRenderModeRadioButton->GetValue());
+        mLiveSettings.SetValue(GameSettings::NpcRenderMode, NpcRenderModeType::QuadFlat);
+    }
+
+    ReconciliateNpcRenderModeSettings();
+
+    OnLiveSettingsChanged();
+}
+
 void SettingsDialog::OnRevertToDefaultsButton(wxCommandEvent & /*event*/)
 {
     //
@@ -1364,8 +1385,6 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
-
-
 
     //
     // Ocean Floor
@@ -3922,6 +3941,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
                 {
                     wxGridBagSizer * oceanRenderModeSizer = new wxGridBagSizer(3, 3);
+                    oceanRenderModeSizer->SetFlexibleDirection(wxHORIZONTAL); // All rows same height
 
                     mTextureOceanRenderModeRadioButton = new wxRadioButton(oceanRenderModeBoxSizer->GetStaticBox(), wxID_ANY, _("Texture"),
                         wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
@@ -3947,7 +3967,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                             OnLiveSettingsChanged();
                         });
 
-                    oceanRenderModeSizer->Add(mTextureOceanComboBox, wxGBPosition(0, 1), wxGBSpan(1, 2), wxEXPAND, 0);
+                    oceanRenderModeSizer->Add(mTextureOceanComboBox, wxGBPosition(0, 1), wxGBSpan(1, 2), wxEXPAND | wxALIGN_CENTER_VERTICAL, 0);
 
                     //
 
@@ -3972,7 +3992,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                             OnLiveSettingsChanged();
                         });
 
-                    oceanRenderModeSizer->Add(mDepthOceanColorStartPicker, wxGBPosition(1, 1), wxGBSpan(1, 1), 0, 0);
+                    oceanRenderModeSizer->Add(mDepthOceanColorStartPicker, wxGBPosition(1, 1), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL, 0);
 
                     mDepthOceanColorEndPicker = new wxColourPickerCtrl(oceanRenderModeBoxSizer->GetStaticBox(), wxID_ANY, wxColour("WHITE"));
                     mDepthOceanColorEndPicker->SetToolTip(_("Sets the ending (bottom) color of the gradient."));
@@ -3989,7 +4009,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                             OnLiveSettingsChanged();
                         });
 
-                    oceanRenderModeSizer->Add(mDepthOceanColorEndPicker, wxGBPosition(1, 2), wxGBSpan(1, 1), 0, 0);
+                    oceanRenderModeSizer->Add(mDepthOceanColorEndPicker, wxGBPosition(1, 2), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL, 0);
 
                     //
 
@@ -4015,7 +4035,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                             OnLiveSettingsChanged();
                         });
 
-                    oceanRenderModeSizer->Add(mFlatOceanColorPicker, wxGBPosition(2, 1), wxGBSpan(1, 1), 0, 0);
+                    oceanRenderModeSizer->Add(mFlatOceanColorPicker, wxGBPosition(2, 1), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL, 0);
 
                     oceanRenderModeBoxSizer->Add(oceanRenderModeSizer, 1, wxALL, StaticBoxInsetMargin2);
                 }
@@ -4125,7 +4145,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
         gridSizer->Add(
             boxSizer,
             wxGBPosition(0, 0),
-            wxGBSpan(1, 4),
+            wxGBSpan(2, 3),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderInner);
     }
@@ -4277,8 +4297,8 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(0, 4),
-            wxGBSpan(1, 3),
+            wxGBPosition(0, 3),
+            wxGBSpan(2, 2),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderInner);
     }
@@ -4381,8 +4401,51 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(0, 7),
-            wxGBSpan(1, 3),
+            wxGBPosition(0, 5),
+            wxGBSpan(1, 1),
+            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            CellBorderInner);
+    }
+
+    // Lamp Light
+    {
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Lamp Light"));
+
+        {
+            wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
+
+            // Lamp Light color
+            {
+                mFlatLampLightColorPicker = new wxColourPickerCtrl(boxSizer->GetStaticBox(), wxID_ANY);
+                mFlatLampLightColorPicker->SetToolTip(_("Sets the color of lamp lights."));
+                mFlatLampLightColorPicker->Bind(
+                    wxEVT_COLOURPICKER_CHANGED,
+                    [this](wxColourPickerEvent & event)
+                    {
+                        auto color = event.GetColour();
+
+                        mLiveSettings.SetValue(
+                            GameSettings::FlatLampLightColor,
+                            rgbColor(color.Red(), color.Green(), color.Blue()));
+
+                        OnLiveSettingsChanged();
+                    });
+
+                sizer->Add(
+                    mFlatLampLightColorPicker,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxALL,
+                    CellBorderInner);
+            }
+
+            boxSizer->Add(sizer, 0, wxALL, StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            boxSizer,
+            wxGBPosition(1, 5),
+            wxGBSpan(1, 1),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderInner);
     }
@@ -4438,110 +4501,6 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            // Heat sensitivity
-            {
-                mHeatSensitivitySlider = new SliderControl<float>(
-                    boxSizer->GetStaticBox(),
-                    SliderControl<float>::DirectionType::Vertical,
-                    SliderWidth,
-                    SliderHeight,
-                    _("Heat Boost"),
-                    _("Lowers the temperature at which materials start emitting red radiation, hence making incandescence more visible at lower temperatures."),
-                    [this](float value)
-                    {
-                        this->mLiveSettings.SetValue(GameSettings::HeatSensitivity, value);
-                        this->OnLiveSettingsChanged();
-                    },
-                    std::make_unique<LinearSliderCore>(
-                        0.0f,
-                        1.0f));
-
-                sizer->Add(
-                    mHeatSensitivitySlider,
-                    wxGBPosition(0, 1),
-                    wxGBSpan(1, 1),
-                    wxEXPAND | wxALL,
-                    CellBorderInner);
-            }
-
-            // Ambient Light Sensitivity
-            {
-                mShipAmbientLightSensitivitySlider = new SliderControl<float>(
-                    boxSizer->GetStaticBox(),
-                    SliderControl<float>::DirectionType::Vertical,
-                    SliderWidth,
-                    SliderHeight,
-                    _("Night Vision"),
-                    _("Controls the sensitivity of the ship to ambient light; lower values allow the ship to be visible also at night."),
-                    [this](float value)
-                    {
-                        this->mLiveSettings.SetValue(GameSettings::ShipAmbientLightSensitivity, value);
-                        this->OnLiveSettingsChanged();
-                    },
-                    std::make_unique<LinearSliderCore>(
-                        0.0f,
-                        1.0f));
-
-                sizer->Add(
-                    mShipAmbientLightSensitivitySlider,
-                    wxGBPosition(0, 2),
-                    wxGBSpan(1, 1),
-                    wxEXPAND | wxALL,
-                    CellBorderInner);
-            }
-
-            // Depth Darkening Sensitivity
-            {
-                mShipDepthDarkeningSensitivitySlider = new SliderControl<float>(
-                    boxSizer->GetStaticBox(),
-                    SliderControl<float>::DirectionType::Vertical,
-                    SliderWidth,
-                    SliderHeight,
-                    _("Depth Darkening"),
-                    _("Controls the sensitivity of the ship to depth darkening; lower values allow the ship to be visible also at depth."),
-                    [this](float value)
-                    {
-                        this->mLiveSettings.SetValue(GameSettings::ShipDepthDarkeningSensitivity, value);
-                        this->OnLiveSettingsChanged();
-                    },
-                    std::make_unique<LinearSliderCore>(
-                        0.0f,
-                        1.0f));
-
-                sizer->Add(
-                    mShipDepthDarkeningSensitivitySlider,
-                    wxGBPosition(0, 3),
-                    wxGBSpan(1, 1),
-                    wxEXPAND | wxALL,
-                    CellBorderInner);
-            }
-
-            // Flame size adjustment
-            {
-                mShipFlameSizeAdjustmentSlider = new SliderControl<float>(
-                    boxSizer->GetStaticBox(),
-                    SliderControl<float>::DirectionType::Vertical,
-                    SliderWidth,
-                    SliderHeight,
-                    _("Flame Size Adjust"),
-                    _("Adjusts the size of flames."),
-                    [this](float value)
-                    {
-                        this->mLiveSettings.SetValue(GameSettings::ShipFlameSizeAdjustment, value);
-                        this->OnLiveSettingsChanged();
-                    },
-                    std::make_unique<LinearSliderCore>(
-                        mGameControllerSettingsOptions.GetMinShipFlameSizeAdjustment(),
-                        mGameControllerSettingsOptions.GetMaxShipFlameSizeAdjustment()));
-
-                sizer->Add(
-                    mShipFlameSizeAdjustmentSlider,
-                    wxGBPosition(0, 4),
-                    wxGBSpan(1, 1),
-                    wxALL,
-                    CellBorderInner);
-            }
-
             // Stress render mode
             {
                 wxString stressRenderModeChoices[] =
@@ -4578,8 +4537,112 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
                 sizer->Add(
                     mStressRenderModeRadioBox,
-                    wxGBPosition(0, 5),
+                    wxGBPosition(1, 0),
                     wxGBSpan(1, 1),
+                    wxALL,
+                    CellBorderInner);
+            }
+
+            // Heat sensitivity
+            {
+                mHeatSensitivitySlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Heat Boost"),
+                    _("Lowers the temperature at which materials start emitting red radiation, hence making incandescence more visible at lower temperatures."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::HeatSensitivity, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        0.0f,
+                        1.0f));
+
+                sizer->Add(
+                    mHeatSensitivitySlider,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(2, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Ambient Light Sensitivity
+            {
+                mShipAmbientLightSensitivitySlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Night Vision"),
+                    _("Controls the sensitivity of the ship to ambient light; lower values allow the ship to be visible also at night."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::ShipAmbientLightSensitivity, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        0.0f,
+                        1.0f));
+
+                sizer->Add(
+                    mShipAmbientLightSensitivitySlider,
+                    wxGBPosition(0, 2),
+                    wxGBSpan(2, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Depth Darkening Sensitivity
+            {
+                mShipDepthDarkeningSensitivitySlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Depth Darkening"),
+                    _("Controls the sensitivity of the ship to depth darkening; lower values allow the ship to be visible also at depth."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::ShipDepthDarkeningSensitivity, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        0.0f,
+                        1.0f));
+
+                sizer->Add(
+                    mShipDepthDarkeningSensitivitySlider,
+                    wxGBPosition(0, 3),
+                    wxGBSpan(2, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Flame size adjustment
+            {
+                mShipFlameSizeAdjustmentSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Flame Size Adjust"),
+                    _("Adjusts the size of flames."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::ShipFlameSizeAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions.GetMinShipFlameSizeAdjustment(),
+                        mGameControllerSettingsOptions.GetMaxShipFlameSizeAdjustment()));
+
+                sizer->Add(
+                    mShipFlameSizeAdjustmentSlider,
+                    wxGBPosition(0, 4),
+                    wxGBSpan(2, 1),
                     wxALL,
                     CellBorderInner);
             }
@@ -4589,8 +4652,8 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(1, 0),
-            wxGBSpan(2, 6),
+            wxGBPosition(2, 0),
+            wxGBSpan(2, 4),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderInner);
     }
@@ -4684,38 +4747,74 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(1, 6),
-            wxGBSpan(2, 2),
+            wxGBPosition(2, 4),
+            wxGBSpan(2, 1),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderInner);
     }
 
-    // Lamp Light
+    // NPC
     {
-        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Lamp Light"));
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("NPC"));
 
         {
             wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
 
-            // Lamp Light color
+            // Render Mode
             {
-                mFlatLampLightColorPicker = new wxColourPickerCtrl(boxSizer->GetStaticBox(), wxID_ANY);
-                mFlatLampLightColorPicker->SetToolTip(_("Sets the color of lamp lights."));
-                mFlatLampLightColorPicker->Bind(
-                    wxEVT_COLOURPICKER_CHANGED,
-                    [this](wxColourPickerEvent & event)
-                    {
-                        auto color = event.GetColour();
+                wxStaticBoxSizer * npcRenderModeBoxSizer = new wxStaticBoxSizer(wxVERTICAL, boxSizer->GetStaticBox(), _("Draw Mode"));
 
-                mLiveSettings.SetValue(
-                    GameSettings::FlatLampLightColor,
-                    rgbColor(color.Red(), color.Green(), color.Blue()));
+                {
+                    wxGridBagSizer * npcRenderModeSizer = new wxGridBagSizer(5, 5);
+                    npcRenderModeSizer->SetFlexibleDirection(wxHORIZONTAL); // All rows same height
 
-                OnLiveSettingsChanged();
-                    });
+                    // Texture
+
+                    mTextureNpcRenderModeRadioButton = new wxRadioButton(npcRenderModeBoxSizer->GetStaticBox(), wxID_ANY, _("Texture"),
+                        wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+                    mTextureNpcRenderModeRadioButton->SetToolTip(_("Draws NPCs with skins."));
+                    mTextureNpcRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnNpcRenderModeRadioButtonClick, this);
+
+                    npcRenderModeSizer->Add(mTextureNpcRenderModeRadioButton, wxGBPosition(0, 0), wxGBSpan(1, 2), wxALIGN_CENTER_VERTICAL, 0);
+
+                    // Quad with Roles
+
+                    mQuadWithRolesNpcRenderModeRadioButton = new wxRadioButton(npcRenderModeBoxSizer->GetStaticBox(), wxID_ANY, _("Stickmen With Roles"));
+                    mQuadWithRolesNpcRenderModeRadioButton->SetToolTip(_("Draws NPCs as stick-men, color-coded according to their roles."));
+                    mQuadWithRolesNpcRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnNpcRenderModeRadioButtonClick, this);
+
+                    npcRenderModeSizer->Add(mQuadWithRolesNpcRenderModeRadioButton, wxGBPosition(1, 0), wxGBSpan(1, 2), wxALIGN_CENTER_VERTICAL, 0);
+
+                    // Quad flat
+
+                    mQuadFlatNpcRenderModeRadioButton = new wxRadioButton(npcRenderModeBoxSizer->GetStaticBox(), wxID_ANY, _("Anonymous Stickmen"));
+                    mQuadFlatNpcRenderModeRadioButton->SetToolTip(_("Draws NPCs as uniformly-colored stick-men, with no distinctions among roles."));
+                    mQuadFlatNpcRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnNpcRenderModeRadioButtonClick, this);
+
+                    npcRenderModeSizer->Add(mQuadFlatNpcRenderModeRadioButton, wxGBPosition(2, 0), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL, 0);
+
+                    mQuadFlatNpcColorPicker = new wxColourPickerCtrl(npcRenderModeBoxSizer->GetStaticBox(), wxID_ANY);
+                    mQuadFlatNpcColorPicker->SetToolTip(_("Sets the color of anonymous NPCs."));
+                    mQuadFlatNpcColorPicker->Bind(
+                        wxEVT_COLOURPICKER_CHANGED,
+                        [this](wxColourPickerEvent & event)
+                        {
+                            auto color = event.GetColour();
+
+                            mLiveSettings.SetValue(
+                                GameSettings::NpcQuadFlatColor,
+                                rgbColor(color.Red(), color.Green(), color.Blue()));
+
+                            OnLiveSettingsChanged();
+                        });
+
+                    npcRenderModeSizer->Add(mQuadFlatNpcColorPicker, wxGBPosition(2, 1), wxGBSpan(1, 1), 0, 0);
+
+                    npcRenderModeBoxSizer->Add(npcRenderModeSizer, 1, wxALL, StaticBoxInsetMargin2);
+                }
 
                 sizer->Add(
-                    mFlatLampLightColorPicker,
+                    npcRenderModeBoxSizer,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
                     wxALL,
@@ -4727,7 +4826,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(1, 8),
+            wxGBPosition(2, 5),
             wxGBSpan(1, 1),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderInner);
@@ -5996,7 +6095,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     ReconciliateSkyRenderModeSettings();
 
 
-    mDoMoonlightCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoMoonlight));    
+    mDoMoonlightCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoMoonlight));
 
     auto const moonlightColor = settings.GetValue<rgbColor>(GameSettings::MoonlightColor);
     mMoonlightColorPicker->SetColour(wxColor(moonlightColor.r, moonlightColor.g, moonlightColor.b));
@@ -6090,6 +6189,32 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
 
     mWaterContrastSlider->SetValue(settings.GetValue<float>(GameSettings::WaterContrast));
     mWaterLevelOfDetailSlider->SetValue(settings.GetValue<float>(GameSettings::WaterLevelOfDetail));
+
+    switch (settings.GetValue<NpcRenderModeType>(GameSettings::NpcRenderMode))
+    {
+        case NpcRenderModeType::Texture:
+        {
+            mTextureNpcRenderModeRadioButton->SetValue(true);
+            break;
+        }
+
+        case NpcRenderModeType::QuadWithRoles:
+        {
+            mQuadWithRolesNpcRenderModeRadioButton->SetValue(true);
+            break;
+        }
+
+        case NpcRenderModeType::QuadFlat:
+        {
+            mQuadFlatNpcRenderModeRadioButton->SetValue(true);
+            break;
+        }
+    }
+
+    auto const npcQuadFlatColor = settings.GetValue<rgbColor>(GameSettings::NpcQuadFlatColor);
+    mQuadFlatNpcColorPicker->SetColour(wxColor(npcQuadFlatColor.r, npcQuadFlatColor.g, npcQuadFlatColor.b));
+
+    ReconciliateNpcRenderModeSettings();
 
     //
     // Sound and Advanced Settings
@@ -6240,6 +6365,11 @@ void SettingsDialog::ReconciliateSkyRenderModeSettings()
 void SettingsDialog::ReconciliateMoonlightSettings()
 {
     mMoonlightColorPicker->Enable(mDoMoonlightCheckBox->IsChecked());
+}
+
+void SettingsDialog::ReconciliateNpcRenderModeSettings()
+{
+    mQuadFlatNpcColorPicker->Enable(mQuadFlatNpcRenderModeRadioButton->GetValue());
 }
 
 void SettingsDialog::OnLiveSettingsChanged()

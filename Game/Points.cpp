@@ -2265,7 +2265,8 @@ void Points::CalculateCombustionDecayParameters(
     //  alpha_i ^ n_i = 0.5
     //
 
-    assert(mMaterialDatabase.GetLargestStructuralMass() == 2400.0f); // Sentinel to recalc below in case mass changes
+    // We are fine with tungsten taking a lot of time
+    //assert(mMaterialDatabase.GetLargestStructuralMass() == 2400.0f); // Sentinel to recalc below in case mass changes
 
     float constexpr m1 = 0.6f;
     float constexpr t1 = 12.0f;

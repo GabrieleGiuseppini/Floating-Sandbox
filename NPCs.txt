@@ -243,38 +243,25 @@ V1 TODO:
 	- Last humans
 	- Send to TimCan
 
-- Add alternative shading (stick men)
+= Add alternative shading (stick men, aka quad)
+
 	! Gist:
 		! New VertexAttrib array ("static attribs"), used exclusively by stickmen shader, containing rgb(a for alignment) color (which depends on role)
 		! The array is uploaded by Npcs::Upload() when own internal "dirtyForRendering" boolean is set, irrespective of npc render mode
 			! Flag set whenever the role for a given NPC ordinal is changed *in the upload sequence*, i.e. at each NPC removal and addition
 			! Sticky
 		! ShipRenderContext always keeps the last uploaded static attribs in own buffer, and only uploads them at RenderPrepare() if render mode requires it
-		! One shader for both StickMen modes, with param for enabling colors
+		! One shader for both Quad modes, with param for enabling colors
 
-	- TODO: human only, or also furniture?
-		- How to do it for humans only? need to tell kind @ ShipRenderContext::Upload, but also need different shaders! Would need then two different upload types and batches,
-		  which would be wasteful when mode is "Texture"
-		- So, see if can have dual drawing conditionally
-			- After all, furniture can stay in current buffer
-		- Also, users want different options for humans and for furniture :-(
-		- This is how it would look like with two buffers and different settings:
-			- ShipRenderContext has two buffers - one for NpcTextureQuads, one for NpcMatteQuads
-				- At this moment we don't need a separate vertex attrib only for Matte; the vertex type can be different altogether
-			- We make uploads to the two with runtime decisions based on the two render modes and on whether we're uploading furniture or humans
-				- @ NpcUpload, so we can make -1 -> 1.0 quad @ upload method
-				- Looks like an _if_ before calling, using precalcd -1/+1 quad
-			- At prepare and render time, we upload and draw each based on their current cardinality
-
-		- TODO: rewrite gist and all the below
 
 	+ Fixup shader in BaryLab
 		+ Commit
 
-	- GameTypes & RenderParameters: NpcRenderMode {Texture, StickMenWithRoles, StickMenAnonymous}
-		- SettingsDialog and IGameControllerSettings chain
+	= GameTypes & RenderParameters: NpcRenderMode {Texture, QuadWithRoles, QuadFlat}, rgbColor QuadFlatColor (both with common dirty flag)
+		+ IGameControllerSettings chain
+		= SettingsDialog
 	- NpcDatabase:
-		- json: renderColor, @ Human TODOHERE and Furniture?
+		- json: renderColor, @ Human and Furniture
 		- Parse @ kind parsing
 		- Expose getter(s)
 	- Npcs:
@@ -287,10 +274,73 @@ V1 TODO:
 			- If dirty: start, upload color for each NPC, end, clear dirty
 			- If render mode needs it: all texture coords are replaced with pre-calcd single quad, using Dir+Orientation for signs
 	- ShipRenderContext:
+		- React to RenderParameters::mode & color changes:
+			- Set param in NPC quad shader for enabling/disabling colors
+				- This has to happen also @ init, so RenderParameters has it dirty by default
+			- Set param in NPC quad shader for color
+		- ShaderTypes:
+			- Static attributes vertex attributes
+			- Param to enable color
+			- Param for flat color
+		- Static attributes vertex attrib description @ other descriptions
+		- Static attribs vertex type, buffer of it, and mIsDirty (false)		
+		- Static attributes upload:
+			- UploadStart: size buffer and reset its size
+				- Comment on being sticky
+			- Upload:
+				- Store into buffer
+			- Upload end: nop
+		- NPCs upload:
+			- Rename so it's "both" texture and quad
+			- Switches inside? Any need to switch behavior? Hopefully not
+		- RenderPrepare:
+			- If dirty and mode requires:
+				- assert sizes match
+				- If not empty: upload (w/alloc)
+				- Clear dirty flag
+		- RenderDraw:
+			- Stickmen shader if mode requires
+		- Shader:
+			- param for enabling colors
+			- Port FS features (lamp, etc.)
+
+
+	ALTERNATIVE VERSION, WITH HUMANS AND FURNITURE SEPARATE
+	! Gist:
+		! ShipRenderContext has two buffers - one for NpcTextureQuads, one for NpcMatteQuads
+			! TODOHERE: really? No static attribs? At this moment we don't need a separate vertex attrib only for Matte; the vertex type can be different altogether
+		! We make uploads to the two with runtime decisions based on the two render modes and on whether we're uploading furniture or humans
+			! @ NpcUpload, so we can make -1 -> 1.0 quad @ upload method
+			! Looks like an _if_ before calling, using precalcd -1/+1 quad
+		! At prepare and render time, we upload and draw each based on their current cardinality
+
+	+ Fixup shader in BaryLab
+		+ Commit
+
+	+ GameTypes & RenderParameters: HumanNpcRenderMode {Texture, StickMenWithRoles, StickMenAnonymous}, FurnitureNpcRenderMode {Texture, Blocks}
+		+ SettingsDialog and IGameControllerSettings chain
+
+	- NpcDatabase:
+		- json: renderColor, @ Human and Furniture
+		- Parse @ kind parsing
+		- Expose getter(s)
+	- Npcs:
+		- TODOHERE: see above
+		- mAreRenderStaticAttributesDirtyForRendering (default false)
+			- Comment: set whenever the role for a given NPC ordinal is changed *in the upload sequence*
+		- Set at:
+			- Creation (follow: single, group)
+			- Removal (including ship removal)
+		- Upload():
+			- If dirty: start, upload color for each NPC, end, clear dirty
+			- If render mode needs it: all texture coords are replaced with pre-calcd single quad, using Dir+Orientation for signs
+	- ShipRenderContext:
+		- Rename ShipRenderContext::UploadNpcTextureQuadPosition as UploadNpcQuadPosition, as it's good for both
 		- React to RenderParameters::mode changes:
 			- Set param in stick men shader for enabling/disabling colors
 				- This has to happen also @ init, so RenderParameters has it dirty by default
-		- ShaderTypes:
+		- TODOHERE: see above
+		- ShaderTypes:			
 			- Static attributes vertex attributes
 			- Param to enable color
 		- Static attributes vertex attrib description @ other descriptions
@@ -310,6 +360,11 @@ V1 TODO:
 		- Shader:
 			- param for enabling colors
 			- Port FS features (lamp, etc.)
+
+
+- 
+
+- See if NPC settings for springs make them explode; if so, nuke them
 
 - Work with TimCan for improvements
 	- Chest

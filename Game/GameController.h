@@ -929,6 +929,12 @@ public:
     DebugShipRenderModeType GetDebugShipRenderMode() const override { return mRenderContext->GetDebugShipRenderMode(); }
     void SetDebugShipRenderMode(DebugShipRenderModeType debugShipRenderMode) override { mRenderContext->SetDebugShipRenderMode(debugShipRenderMode); }
 
+    NpcRenderModeType GetNpcRenderMode() const override { return mRenderContext->GetNpcRenderMode(); }
+    void SetNpcRenderMode(NpcRenderModeType npcRenderMode) override { mRenderContext->SetNpcRenderMode(npcRenderMode); }
+
+    rgbColor const & GetNpcQuadFlatColor() const override { return mRenderContext->GetNpcQuadFlatColor(); }
+    void SetNpcQuadFlatColor(rgbColor const & color) override { mRenderContext->SetNpcQuadFlatColor(color); }
+
     VectorFieldRenderModeType GetVectorFieldRenderMode() const override { return mRenderContext->GetVectorFieldRenderMode(); }
     void SetVectorFieldRenderMode(VectorFieldRenderModeType VectorFieldRenderMode) override { mRenderContext->SetVectorFieldRenderMode(VectorFieldRenderMode); }
 

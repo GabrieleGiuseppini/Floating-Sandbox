@@ -1415,6 +1415,16 @@ enum class LandRenderDetailType
 };
 
 /*
+ * The different types in which NPCs (humans and furniture) may be rendered.
+ */
+enum class NpcRenderModeType
+{
+    Texture,
+    QuadWithRoles,
+    QuadFlat
+};
+
+/*
  * The different vector fields that may be rendered.
  */
 enum class VectorFieldRenderModeType

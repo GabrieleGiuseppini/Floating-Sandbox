@@ -46,6 +46,7 @@ private:
     void OnOceanRenderModeRadioButtonClick(wxCommandEvent & event);
     void OnSkyRenderModeRadioButtonClick(wxCommandEvent & event);
     void OnLandRenderModeRadioButtonClick(wxCommandEvent & event);
+    void OnNpcRenderModeRadioButtonClick(wxCommandEvent & event);
 
     void OnRevertToDefaultsButton(wxCommandEvent & event);
     void OnOkButton(wxCommandEvent & event);
@@ -180,7 +181,7 @@ private:
     wxColourPickerCtrl * mFlatSkyColorPicker;
     wxRadioButton * mCrepuscularSkyRenderModeRadioButton;
     wxColourPickerCtrl * mCrepuscularColorPicker;
-    wxCheckBox * mDoMoonlightCheckBox;    
+    wxCheckBox * mDoMoonlightCheckBox;
     wxColourPickerCtrl * mMoonlightColorPicker;
     wxCheckBox * mCloudRenderDetailModeDetailedCheckBox;
     wxRadioButton * mTextureLandRenderModeRadioButton;
@@ -198,6 +199,10 @@ private:
     wxColourPickerCtrl * mDefaultWaterColorPicker;
     SliderControl<float> * mWaterContrastSlider;
     SliderControl<float> * mWaterLevelOfDetailSlider;
+    wxRadioButton * mTextureNpcRenderModeRadioButton;
+    wxRadioButton * mQuadWithRolesNpcRenderModeRadioButton;
+    wxRadioButton * mQuadFlatNpcRenderModeRadioButton;
+    wxColourPickerCtrl * mQuadFlatNpcColorPicker;
 
     // Sound and Advanced Settings
     SliderControl<float> * mEffectsVolumeSlider;
@@ -266,6 +271,7 @@ private:
     void ReconciliateLandRenderModeSettings();
     void ReconciliateSkyRenderModeSettings();
     void ReconciliateMoonlightSettings();
+    void ReconciliateNpcRenderModeSettings();
     void OnLiveSettingsChanged();
     void ReconcileDirtyState();
 

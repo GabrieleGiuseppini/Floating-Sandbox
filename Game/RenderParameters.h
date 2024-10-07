@@ -70,6 +70,8 @@ struct RenderParameters
     float HeatSensitivity;
     StressRenderModeType StressRenderMode;
     DebugShipRenderModeType DebugShipRenderMode;
+    NpcRenderModeType NpcRenderMode;
+    rgbColor NpcQuadFlatColor;
 
     //
     // Misc
@@ -103,6 +105,7 @@ struct RenderParameters
     bool IsShipWaterLevelOfDetailDirty;
     bool IsHeatSensitivityDirty;
     bool AreShipStructureRenderModeSelectorsDirty; // For all those parameters that require changing ship shaders
+    bool AreNpcRenderParametersDirty;
     // Misc
     bool IsDisplayUnitsSystemDirty;
 
