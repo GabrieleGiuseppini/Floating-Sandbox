@@ -34,6 +34,12 @@ public:
      */
     static void AlphaPreMultiply(RgbaImageData & imageData);
 
+    /*
+     * Sets the rgb components of fully-transparent pixels to the average of neighboring
+     * fully-opaque pixels, to improve bleeding around transparency.
+     */
+    static void ApplyBinaryTransparencySmoothing(RgbaImageData & imageData);
+
     static inline vec4f SamplePixel(
         RgbaImageData const & imageData,
         float x,

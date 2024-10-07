@@ -33,7 +33,8 @@ enum class AtlasOptions
 {
     None = 0,
     AlphaPremultiply = 1,
-    MipMappable = 2
+    MipMappable = 2,
+    BinaryTransparencySmoothing = 4
 };
 
 template <> struct is_flag<AtlasOptions> : std::true_type {};
@@ -389,8 +390,7 @@ private:
         ProgressCallback const & progressCallback);
 
     static void CopyImage(
-        std::unique_ptr<rgbaColor const []> sourceImage,
-        ImageSize sourceImageSize,
+        ImageData<rgbaColor> && sourceImage,
         rgbaColor * destImage,
         ImageSize destImageSize,
         vec2i const & destinationBottomLeftPosition);

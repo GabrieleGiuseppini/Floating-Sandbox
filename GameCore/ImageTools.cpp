@@ -51,6 +51,48 @@ void ImageTools::AlphaPreMultiply(RgbaImageData & imageData)
     }
 }
 
+void ImageTools::ApplyBinaryTransparencySmoothing(RgbaImageData & imageData)
+{
+    rgbaColor * imageDataPtr = imageData.Data.get();
+
+    for (int y = 0; y < imageData.Size.height; ++y)
+    {
+        size_t const rowIndex = y * imageData.Size.width;
+
+        for (int x = 0; x < imageData.Size.width; ++x)
+        {
+            if (imageDataPtr[rowIndex + x].a == 0)
+            {
+                // Pixel is fully transparent...
+                // ...calculate avg of opaque neighbors, if any exist
+
+                vec4f srcColorF = vec4f::zero();
+                float cnt = 0.0f;
+
+                for (int y2 = std::max(y - 1, 0); y2 < std::min(y + 1, imageData.Size.height); ++y2)
+                {
+                    for (int x2 = std::max(x - 1, 0); x2 < std::min(x + 1, imageData.Size.width); ++x2)
+                    {
+                        auto const & neighborColor = imageDataPtr[y2 * imageData.Size.width + x2];
+                        if (neighborColor.a != 0)
+                        {
+                            srcColorF += neighborColor.toVec4f();
+                            cnt += 1.0f;
+                        }
+                    }
+                }
+
+                if (cnt != 0.0f)
+                {
+                    srcColorF /= cnt;
+                    srcColorF.w = 0.0f;
+                    imageDataPtr[rowIndex + x] = rgbaColor(srcColorF);
+                }
+            }
+        }
+    }
+}
+
 RgbaImageData ImageTools::Truncate(
     RgbaImageData imageData,
     ImageSize imageSize)

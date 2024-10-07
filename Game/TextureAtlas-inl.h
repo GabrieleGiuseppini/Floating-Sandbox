@@ -453,6 +453,21 @@ TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::InternalBuildAtl
 
         // Load frame
         TextureFrame<TextureGroups> textureFrame = frameLoader(textureLocationInfo.FrameId);
+        ImageData<rgbaColor> textureImageData = ImageData<rgbaColor>(
+            textureFrame.TextureData.Size,
+            std::move(textureFrame.TextureData.Data));
+
+        // Pre-multiply alpha, if requested
+        if (!!(options & AtlasOptions::AlphaPremultiply))
+        {
+            ImageTools::AlphaPreMultiply(textureImageData);
+        }
+
+        // Apply binary transparency smoothing, if requested
+        if (!!(options & AtlasOptions::BinaryTransparencySmoothing))
+        {
+            ImageTools::ApplyBinaryTransparencySmoothing(textureImageData);
+        }
 
         // Calculate offset for frame into in-atlas frame
         assert(textureFrame.TextureData.Size.width <= textureLocationInfo.InAtlasSize.width);
@@ -466,8 +481,7 @@ TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::InternalBuildAtl
 
         // Copy frame
         CopyImage(
-            std::move(textureFrame.TextureData.Data),
-            textureFrame.TextureData.Size,
+            std::move(textureImageData),
             atlasImage.get(),
             specification.AtlasSize,
             frameActualPosition);
@@ -501,12 +515,6 @@ TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::InternalBuildAtl
         specification.AtlasSize,
         std::move(atlasImage));
 
-    // Pre-multiply alpha, if requested
-    if (!!(options & AtlasOptions::AlphaPremultiply))
-    {
-        ImageTools::AlphaPreMultiply(atlasImageData);
-    }
-
     progressCallback(1.0f, ProgressMessageType::None);
 
     // Return atlas
@@ -520,21 +528,20 @@ TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::InternalBuildAtl
 
 template <typename TextureGroups>
 void TextureAtlasBuilder<TextureGroups>::CopyImage(
-    std::unique_ptr<rgbaColor const []> sourceImage,
-    ImageSize sourceImageSize,
+    ImageData<rgbaColor> && sourceImage,
     rgbaColor * destImage,
     ImageSize destImageSize,
     vec2i const & destinationBottomLeftPosition)
 {
     // From bottom to top
-    for (int y = 0; y < sourceImageSize.height; ++y)
+    for (int y = 0; y < sourceImage.Size.height; ++y)
     {
         // From left to right
-        size_t const srcIndex = y * sourceImageSize.width;
+        size_t const srcIndex = y * sourceImage.Size.width;
         size_t const dstIndex = (destinationBottomLeftPosition.y + y) * destImageSize.width + destinationBottomLeftPosition.x;
         std::copy_n(
-            &(sourceImage[srcIndex]),
-            sourceImageSize.width,
+            &(sourceImage.Data[srcIndex]),
+            sourceImage.Size.width,
             &(destImage[dstIndex]));
     }
 }

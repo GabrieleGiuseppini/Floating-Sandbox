@@ -21,6 +21,7 @@ public:
     struct AtlasBakingOptions
     {
         bool AlphaPremultiply;
+        bool BinaryTransparencySmoothing;
         bool MipMappable;
         bool Regular;
 
@@ -30,10 +31,12 @@ public:
 
             bool alphaPreMultiply = Utils::GetMandatoryJsonMember<bool>(rootJsonObject, "alphaPreMultiply");
             bool mipMappable = Utils::GetMandatoryJsonMember<bool>(rootJsonObject, "mipMappable");
+            bool binaryTransparencySmoothing = Utils::GetMandatoryJsonMember<bool>(rootJsonObject, "binaryTransparencySmoothing");
             bool regular = Utils::GetMandatoryJsonMember<bool>(rootJsonObject, "regular");
 
             return AtlasBakingOptions({
                 alphaPreMultiply,
+                binaryTransparencySmoothing,
                 mipMappable,
                 regular });
         }
@@ -68,6 +71,8 @@ public:
         Render::AtlasOptions atlasOptions = Render::AtlasOptions::None;
         if (options.AlphaPremultiply)
             atlasOptions = atlasOptions | Render::AtlasOptions::AlphaPremultiply;
+        if (options.BinaryTransparencySmoothing)
+            atlasOptions = atlasOptions | Render::AtlasOptions::BinaryTransparencySmoothing;
         if (options.MipMappable)
             atlasOptions = atlasOptions | Render::AtlasOptions::MipMappable;
 

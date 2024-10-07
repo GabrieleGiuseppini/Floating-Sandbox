@@ -111,6 +111,7 @@ int DoBakeAtlas(int argc, char ** argv)
     Baker::AtlasBakingOptions options({
         false,
         false,
+        false,
         false
         });
 
@@ -120,6 +121,10 @@ int DoBakeAtlas(int argc, char ** argv)
         if (option == "-a")
         {
             options.AlphaPremultiply = true;
+        }
+        else if (option == "-b")
+        {
+            options.BinaryTransparencySmoothing = true;
         }
         else if (option == "-m")
         {
@@ -149,12 +154,13 @@ int DoBakeAtlas(int argc, char ** argv)
     std::cout << SEPARATOR << std::endl;
 
     std::cout << "Running bake_atlas:" << std::endl;
-    std::cout << "  database name           : " << databaseName << std::endl;
-    std::cout << "  textures root directory : " << texturesRootDirectoryPath << std::endl;
-    std::cout << "  output directory        : " << outputDirectoryPath << std::endl;
-    std::cout << "  alpha-premultiply       : " << options.AlphaPremultiply << std::endl;
-    std::cout << "  mip-mappable            : " << options.MipMappable << std::endl;
-    std::cout << "  regular                 : " << options.Regular << std::endl;
+    std::cout << "  database name                 : " << databaseName << std::endl;
+    std::cout << "  textures root directory       : " << texturesRootDirectoryPath << std::endl;
+    std::cout << "  output directory              : " << outputDirectoryPath << std::endl;
+    std::cout << "  alpha-premultiply             : " << options.AlphaPremultiply << std::endl;
+    std::cout << "  binary transparency smoothing : " << options.BinaryTransparencySmoothing << std::endl;
+    std::cout << "  mip-mappable                  : " << options.MipMappable << std::endl;
+    std::cout << "  regular                       : " << options.Regular << std::endl;
 
     size_t frameCount;
     if (Utils::CaseInsensitiveEquals(databaseName, "explosion"))
@@ -278,7 +284,7 @@ void PrintUsage()
     std::cout << std::endl;
     std::cout << "Usage:" << std::endl;
     std::cout << " analyze <materials_dir> <in_file>" << std::endl;
-    std::cout << " bake_atlas NPC|Explosion <textures_root_dir> <out_dir> [[-a] [-m] [-r] | -o <options_json>]" << std::endl;
+    std::cout << " bake_atlas NPC|Explosion <textures_root_dir> <out_dir> [[-a] [-b] [-m] [-r] | -o <options_json>]" << std::endl;
     std::cout << " quantize <materials_dir> <in_file> <out_png> [-c <target_fixed_color>]" << std::endl;
     std::cout << "          -r, --keep_ropes] [-g, --keep_glass]" << std::endl;
     std::cout << " resize <in_file> <out_png> <width>" << std::endl;

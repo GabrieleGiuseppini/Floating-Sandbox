@@ -221,8 +221,20 @@ V1 TODO:
 	- TODOHERE
 
 
-- Issue of GL_LINEAR artifacts:
-	- Try with doing step @ baking where alpha=0 pixels take the color of their neighbors
+= Issue of GL_LINEAR artifacts:
+	+ Try with doing step @ baking where alpha=0 pixels take the color of their neighbors
+	+ Yes it works!
+	+ New option @ Atlas builder - "BinaryTransparencySmoothing"
+		+ Implement at ImageTools
+		+ AtlasBuilder: call func on each sub-image if option set
+			! So we stay in boundaries
+			+ And move alpha pre-multiply also on sub-images, but before new one				
+	+ New option at baker's options			
+	+ New option @ NPC options json
+		+ And no alpha-premultiply
+	- Commit
+	- Test explosions
+		- Re-bake them and check atlas
 
 
 - Finish assets
@@ -250,7 +262,7 @@ V1 TODO:
 				- At this moment we don't need a separate vertex attrib only for Matte; the vertex type can be different altogether
 			- We make uploads to the two with runtime decisions based on the two render modes and on whether we're uploading furniture or humans
 				- @ NpcUpload, so we can make -1 -> 1.0 quad @ upload method
-				- TODO: how would it look like in C++ without iffing everywhere?
+				- Looks like an _if_ before calling, using precalcd -1/+1 quad
 			- At prepare and render time, we upload and draw each based on their current cardinality
 
 		- TODO: rewrite gist and all the below
