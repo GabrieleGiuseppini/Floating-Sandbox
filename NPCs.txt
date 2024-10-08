@@ -294,26 +294,26 @@ V1 TODO:
 				+ WITH_ROLES takes vertex attrib array
 				+ else takes parameter for matte color
 			- Port FS features (lamp, etc.)
-	- Npcs:
-		- RenderNpc checks RenderMode and calls templated RenderNpc
+	= Npcs:
+		+ RenderNpc checks RenderMode and calls templated RenderNpc
 		- RenderNpc<Mode>, using if constexpr's:
 			- Pre-calc quad texturecoords for Quad modes, using Dir+Orientation for signs, and roleColor
-			- Upload positions as normal
+			+ Upload positions as normal
 			- If mode==Texture:
 				- Upload as now
 			- Else:
 				- Upload ShipRenderContext::UploadNpcQuadAttributes<NpcRenderModeType> giving precalcd quad texturecoords, and roleColor (even if might not be needed)
-	- NpcDatabase:
-		- json: render_color, @ Human and Furniture
-			- Try python script:
-				- https://pillow.readthedocs.io/en/stable/index.html
-				- Takes npcs json and root to (baked) assets
-				- Load npcs json
-				- For each {human,furniture}:
-					- Calc average with all frames
-					- Store render_color
-		- Parse @ kind parsing
-		- Expose getter(s)
+	+ NpcDatabase:
+		+ json: render_color, @ Human and Furniture
+			+ Try python script:
+				+ https://pillow.readthedocs.io/en/stable/index.html
+				+ Takes npcs json and root to (baked) assets
+				+ Load npcs json
+				+ For each {human,furniture}:
+					+ Calc average with all frames
+					+ Store render_color
+		+ Parse @ kind parsing
+		+ Expose getter(s)
 
 	- Test:
 		- Matte color

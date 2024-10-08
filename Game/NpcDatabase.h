@@ -99,6 +99,11 @@ public:
         return mHumanKinds.at(subKindId).Role;
     }
 
+    rgbColor GetHumanRenderColor(NpcSubKindIdType subKindId) const
+    {
+        return mHumanKinds.at(subKindId).RenderColor;
+    }
+
     StructuralMaterial const & GetHumanHeadMaterial(NpcSubKindIdType subKindId) const
     {
         return mHumanKinds.at(subKindId).HeadMaterial;
@@ -153,6 +158,11 @@ public:
         return mFurnitureKinds.at(subKindId).Role;
     }
 
+    rgbColor GetFurnitureRenderColor(NpcSubKindIdType subKindId) const
+    {
+        return mFurnitureKinds.at(subKindId).RenderColor;
+    }
+
     StructuralMaterial const & GetFurnitureMaterial(NpcSubKindIdType subKindId) const
     {
         return mFurnitureKinds.at(subKindId).Material;
@@ -185,6 +195,7 @@ private:
     {
         std::string Name;
         NpcHumanRoleType Role;
+        rgbColor RenderColor;
 
         StructuralMaterial const & HeadMaterial;
         StructuralMaterial const & FeetMaterial;
@@ -202,6 +213,7 @@ private:
     {
         std::string Name;
         NpcFurnitureRoleType Role;
+        rgbColor RenderColor;
 
         StructuralMaterial const & Material;
 
@@ -270,7 +282,7 @@ private:
         picojson::object const & particleAttributesOverrideJsonObject,
         ParticleAttributesType const & defaultParticleAttributes);
 
-    static ParticleAttributesType MakeDefaultParticleAttributes(StructuralMaterial const & baseMaterial);    
+    static ParticleAttributesType MakeDefaultParticleAttributes(StructuralMaterial const & baseMaterial);
 
     static Render::TextureCoordinatesQuad ParseTextureCoordinatesQuad(
         picojson::object const & containerObject,

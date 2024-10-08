@@ -1,1003 +1,1003 @@
 {
-	"humans": {
-		"global": {
-			"head_material": "NPC Human Head",
-			"head_particle_attributes_overrides": {
-				"spring_damping_coefficient": 0.5,
-				"spring_reduction_fraction": 0.39
-			},
-			"feet_material": "NPC Human Feet",
-			"feet_particle_attributes_overrides": {
-				"spring_damping_coefficient": 0.5,
-				"spring_reduction_fraction": 0.39
-			}
-		},
-		"kinds": [
-
-			{
-				"name": "Baker",
-				"role": "Crew",
-				"texture_filename_stems": {
-					"head_f": "baker_head_front",
-					"head_b": "baker_head_back",
-					"head_s": "baker_head_side",
-					"torso_f": "baker_torso_front",
-					"torso_b": "baker_torso_back",
-					"torso_s": "baker_torso_side",
-					"arm_f": "baker_arm_front",
-					"arm_b": "baker_arm_back",
-					"arm_s": "baker_arm_side",
-					"leg_f": "baker_leg_front",
-					"leg_b": "baker_leg_back",
-					"leg_s": "baker_leg_side"
-				}
-			},
-
-			{
-				"name": "Captain 1",
-				"role": "Captain",
-				"texture_filename_stems": {
-					"head_f": "captain_1_head_front",
-					"head_b": "captain_1_head_back",
-					"head_s": "captain_1_head_side",
-					"torso_f": "captain_1_torso_front",
-					"torso_b": "captain_1_torso_back",
-					"torso_s": "captain_1_torso_side",
-					"arm_f": "captain_1_arm_front",
-					"arm_b": "captain_1_arm_back",
-					"arm_s": "captain_1_arm_side",
-					"leg_f": "captain_1_leg_front",
-					"leg_b": "captain_1_leg_back",
-					"leg_s": "captain_1_leg_side"
-				}
-			},
-
-			{
-				"name": "Captain 2",
-				"role": "Captain",
-				"texture_filename_stems": {
-					"head_f": "captain_2_head_front",
-					"head_b": "captain_2_head_back",
-					"head_s": "captain_2_head_side",
-					"torso_f": "captain_2_torso_front",
-					"torso_b": "captain_2_torso_back",
-					"torso_s": "captain_2_torso_side",
-					"arm_f": "captain_2_arm_front",
-					"arm_b": "captain_2_arm_back",
-					"arm_s": "captain_2_arm_side",
-					"leg_f": "captain_2_leg_front",
-					"leg_b": "captain_2_leg_back",
-					"leg_s": "captain_2_leg_side"
-				}
-			},
-
-			{
-				"name": "Captain 3",
-				"role": "Captain",
-				"texture_filename_stems": {
-					"head_f": "captain_3_head_front",
-					"head_b": "captain_3_head_back",
-					"head_s": "captain_3_head_side",
-					"torso_f": "captain_3_torso_front",
-					"torso_b": "captain_3_torso_back",
-					"torso_s": "captain_3_torso_side",
-					"arm_f": "captain_3_arm_front",
-					"arm_b": "captain_3_arm_back",
-					"arm_s": "captain_3_arm_side",
-					"leg_f": "captain_3_leg_front",
-					"leg_b": "captain_3_leg_back",
-					"leg_s": "captain_3_leg_side"
-				}
-			},
-
-			{
-				"name": "Civilian Passenger 1 (Female)",
-				"role": "Passenger",
-				"texture_filename_stems": {
-					"head_f": "female_civilian_passenger_1_head_front",
-					"head_b": "female_civilian_passenger_1_head_back",
-					"head_s": "female_civilian_passenger_1_head_side",
-					"torso_f": "female_civilian_passenger_1_torso_front",
-					"torso_b": "female_civilian_passenger_1_torso_back",
-					"torso_s": "female_civilian_passenger_1_torso_side",
-					"arm_f": "female_civilian_passenger_1_arm_front",
-					"arm_b": "female_civilian_passenger_1_arm_back",
-					"arm_s": "female_civilian_passenger_1_arm_side",
-					"leg_f": "female_civilian_passenger_1_leg_front",
-					"leg_b": "female_civilian_passenger_1_leg_back",
-					"leg_s": "female_civilian_passenger_1_leg_side"
-				}
-			},
-
-			{
-				"name": "Civilian Passenger 1 (Male)",
-				"role": "Passenger",
-				"texture_filename_stems": {
-					"head_f": "male_civ_1_head_front",
-					"head_b": "male_civ_1_head_back",
-					"head_s": "male_civ_1_head_side",
-					"torso_f": "male_civ_1_torso_front",
-					"torso_b": "male_civ_1_torso_back",
-					"torso_s": "male_civ_1_torso_side",
-					"arm_f": "male_civ_1_arm_front",
-					"arm_b": "male_civ_1_arm_back",
-					"arm_s": "male_civ_1_arm_side",
-					"leg_f": "male_civ_1_leg_front",
-					"leg_b": "male_civ_1_leg_back",
-					"leg_s": "male_civ_1_leg_side"
-				}
-			},
-
-			{
-				"name": "Civilian Passenger 2 (Female)",
-				"role": "Passenger",
-				"texture_filename_stems": {
-					"head_f": "female_civilian_passenger_2_head_front",
-					"head_b": "female_civilian_passenger_2_head_back",
-					"head_s": "female_civilian_passenger_2_head_side",
-					"torso_f": "female_civilian_passenger_2_torso_front",
-					"torso_b": "female_civilian_passenger_2_torso_back",
-					"torso_s": "female_civilian_passenger_2_torso_side",
-					"arm_f": "female_civilian_passenger_2_arm_front",
-					"arm_b": "female_civilian_passenger_2_arm_back",
-					"arm_s": "female_civilian_passenger_2_arm_side",
-					"leg_f": "female_civilian_passenger_2_leg_front",
-					"leg_b": "female_civilian_passenger_2_leg_back",
-					"leg_s": "female_civilian_passenger_2_leg_side"
-				}
-			},
-
-			{
-				"name": "Civilian Passenger 2 (Male)",
-				"role": "Passenger",
-				"texture_filename_stems": {
-					"head_f": "male_civ_2_head_front",
-					"head_b": "male_civ_2_head_back",
-					"head_s": "male_civ_2_head_side",
-					"torso_f": "male_civ_2_torso_front",
-					"torso_b": "male_civ_2_torso_back",
-					"torso_s": "male_civ_2_torso_side",
-					"arm_f": "male_civ_2_arm_front",
-					"arm_b": "male_civ_2_arm_back",
-					"arm_s": "male_civ_2_arm_side",
-					"leg_f": "male_civ_2_leg_front",
-					"leg_b": "male_civ_2_leg_back",
-					"leg_s": "male_civ_2_leg_side"
-				}
-			},
-
-			{
-				"name": "Civilian Passenger 3 (Female)",
-				"role": "Passenger",
-				"texture_filename_stems": {
-					"head_f": "female_civilian_passenger_3_head_front",
-					"head_b": "female_civilian_passenger_3_head_back",
-					"head_s": "female_civilian_passenger_3_head_side",
-					"torso_f": "female_civilian_passenger_3_torso_front",
-					"torso_b": "female_civilian_passenger_3_torso_back",
-					"torso_s": "female_civilian_passenger_3_torso_side",
-					"arm_f": "female_civilian_passenger_3_arm_front",
-					"arm_b": "female_civilian_passenger_3_arm_back",
-					"arm_s": "female_civilian_passenger_3_arm_side",
-					"leg_f": "female_civilian_passenger_3_leg_front",
-					"leg_b": "female_civilian_passenger_3_leg_back",
-					"leg_s": "female_civilian_passenger_3_leg_side"
-				}
-			},
-
-			{
-				"name": "Civilian Passenger 3 (Male)",
-				"role": "Passenger",
-				"texture_filename_stems": {
-					"head_f": "male_civ_3_head_front",
-					"head_b": "male_civ_3_head_back",
-					"head_s": "male_civ_3_head_side",
-					"torso_f": "male_civ_3_torso_front",
-					"torso_b": "male_civ_3_torso_back",
-					"torso_s": "male_civ_3_torso_side",
-					"arm_f": "male_civ_3_arm_front",
-					"arm_b": "male_civ_3_arm_back",
-					"arm_s": "male_civ_3_arm_side",
-					"leg_f": "male_civ_3_leg_front",
-					"leg_b": "male_civ_3_leg_back",
-					"leg_s": "male_civ_3_leg_side"
-				}
-			},
-
-			{
-				"name": "Civilian Passenger 4 (Female)",
-				"role": "Passenger",
-				"texture_filename_stems": {
-					"head_f": "female_civilian_passenger_4_head_front",
-					"head_b": "female_civilian_passenger_4_head_back",
-					"head_s": "female_civilian_passenger_4_head_side",
-					"torso_f": "female_civilian_passenger_4_torso_front",
-					"torso_b": "female_civilian_passenger_4_torso_back",
-					"torso_s": "female_civilian_passenger_4_torso_side",
-					"arm_f": "female_civilian_passenger_4_arm_front",
-					"arm_b": "female_civilian_passenger_4_arm_back",
-					"arm_s": "female_civilian_passenger_4_arm_side",
-					"leg_f": "female_civilian_passenger_4_leg_front",
-					"leg_b": "female_civilian_passenger_4_leg_back",
-					"leg_s": "female_civilian_passenger_4_leg_side"
-				}
-			},
-
-			{
-				"name": "Civilian Passenger 4 (Male)",
-				"role": "Passenger",
-				"texture_filename_stems": {
-					"head_f": "male_civ_4_head_front",
-					"head_b": "male_civ_4_head_back",
-					"head_s": "male_civ_4_head_side",
-					"torso_f": "male_civ_4_torso_front",
-					"torso_b": "male_civ_4_torso_back",
-					"torso_s": "male_civ_4_torso_side",
-					"arm_f": "male_civ_4_arm_front",
-					"arm_b": "male_civ_4_arm_back",
-					"arm_s": "male_civ_4_arm_side",
-					"leg_f": "male_civ_4_leg_front",
-					"leg_b": "male_civ_4_leg_back",
-					"leg_s": "male_civ_4_leg_side"
-				}
-			},
-
-			{
-				"name": "Civilian Passenger 5 (Female)",
-				"role": "Passenger",
-				"texture_filename_stems": {
-					"head_f": "female_civilian_passenger_5_head_front",
-					"head_b": "female_civilian_passenger_5_head_back",
-					"head_s": "female_civilian_passenger_5_head_side",
-					"torso_f": "female_civilian_passenger_5_torso_front",
-					"torso_b": "female_civilian_passenger_5_torso_back",
-					"torso_s": "female_civilian_passenger_5_torso_side",
-					"arm_f": "female_civilian_passenger_5_arm_front",
-					"arm_b": "female_civilian_passenger_5_arm_back",
-					"arm_s": "female_civilian_passenger_5_arm_side",
-					"leg_f": "female_civilian_passenger_5_leg_front",
-					"leg_b": "female_civilian_passenger_5_leg_back",
-					"leg_s": "female_civilian_passenger_5_leg_side"
-				}
-			},
-
-			{
-				"name": "Civilian Passenger 5 (Male)",
-				"role": "Passenger",
-				"texture_filename_stems": {
-					"head_f": "male_civ_5_head_front",
-					"head_b": "male_civ_5_head_back",
-					"head_s": "male_civ_5_head_side",
-					"torso_f": "male_civ_5_torso_front",
-					"torso_b": "male_civ_5_torso_back",
-					"torso_s": "male_civ_5_torso_side",
-					"arm_f": "male_civ_5_arm_front",
-					"arm_b": "male_civ_5_arm_back",
-					"arm_s": "male_civ_5_arm_side",
-					"leg_f": "male_civ_5_leg_front",
-					"leg_b": "male_civ_5_leg_back",
-					"leg_s": "male_civ_5_leg_side"
-				}
-			},
-
-			{
-				"name": "Civilian Passenger 6 (Male)",
-				"role": "Passenger",
-				"texture_filename_stems": {
-					"head_f": "male_civ_6_head_front",
-					"head_b": "male_civ_6_head_back",
-					"head_s": "male_civ_6_head_side",
-					"torso_f": "male_civ_6_torso_front",
-					"torso_b": "male_civ_6_torso_back",
-					"torso_s": "male_civ_6_torso_side",
-					"arm_f": "male_civ_6_arm_front",
-					"arm_b": "male_civ_6_arm_back",
-					"arm_s": "male_civ_6_arm_side",
-					"leg_f": "male_civ_6_leg_front",
-					"leg_b": "male_civ_6_leg_back",
-					"leg_s": "male_civ_6_leg_side"
-				}
-			},
-
-			{
-				"name": "Deckhand",
-				"role": "Crew",
-				"texture_filename_stems": {
-					"head_f": "deckhand_head_front",
-					"head_b": "deckhand_head_back",
-					"head_s": "deckhand_head_side",
-					"torso_f": "deckhand_torso_front",
-					"torso_b": "deckhand_torso_back",
-					"torso_s": "deckhand_torso_side",
-					"arm_f": "deckhand_arm_front",
-					"arm_b": "deckhand_arm_back",
-					"arm_s": "deckhand_arm_side",
-					"leg_f": "deckhand_leg_front",
-					"leg_b": "deckhand_leg_back",
-					"leg_s": "deckhand_leg_side"
-				}
-			},
-
-			{
-				"name": "Engineer",
-				"role": "Crew",
-				"texture_filename_stems": {
-					"head_f": "engineer_head_front",
-					"head_b": "engineer_head_back",
-					"head_s": "engineer_head_side",
-					"torso_f": "engineer_torso_front",
-					"torso_b": "engineer_torso_back",
-					"torso_s": "engineer_torso_side",
-					"arm_f": "engineer_arm_front",
-					"arm_b": "engineer_arm_back",
-					"arm_s": "engineer_arm_side",
-					"leg_f": "engineer_leg_front",
-					"leg_b": "engineer_leg_back",
-					"leg_s": "engineer_leg_side"
-				}
-			},
-
-			{
-				"name": "Officer",
-				"role": "Crew",
-				"texture_filename_stems": {
-					"head_f": "officer_head_front",
-					"head_b": "officer_head_back",
-					"head_s": "officer_head_side",
-					"torso_f": "officer_torso_front",
-					"torso_b": "officer_torso_back",
-					"torso_s": "officer_torso_side",
-					"arm_f": "officer_arm_front",
-					"arm_b": "officer_arm_back",
-					"arm_s": "officer_arm_side",
-					"leg_f": "officer_leg_front",
-					"leg_b": "officer_leg_back",
-					"leg_s": "officer_leg_side"
-				}
-			},
-
-			{
-				"name": "Oiler",
-				"role": "Crew",
-				"texture_filename_stems": {
-					"head_f": "oiler_head_front",
-					"head_b": "oiler_head_back",
-					"head_s": "oiler_head_side",
-					"torso_f": "oiler_torso_front",
-					"torso_b": "oiler_torso_back",
-					"torso_s": "oiler_torso_side",
-					"arm_f": "oiler_arm_front",
-					"arm_b": "oiler_arm_back",
-					"arm_s": "oiler_arm_side",
-					"leg_f": "oiler_leg_front",
-					"leg_b": "oiler_leg_back",
-					"leg_s": "oiler_leg_side"
-				}
-			},
-
-			{
-				"name": "Quartermaster",
-				"role": "Crew",
-				"texture_filename_stems": {
-					"head_f": "quartermaster_head_front",
-					"head_b": "quartermaster_head_back",
-					"head_s": "quartermaster_head_side",
-					"torso_f": "quartermaster_torso_front",
-					"torso_b": "quartermaster_torso_back",
-					"torso_s": "quartermaster_torso_side",
-					"arm_f": "quartermaster_arm_front",
-					"arm_b": "quartermaster_arm_back",
-					"arm_s": "quartermaster_arm_side",
-					"leg_f": "quartermaster_leg_front",
-					"leg_b": "quartermaster_leg_back",
-					"leg_s": "quartermaster_leg_side"
-				}
-			},
-
-			{
-				"name": "Steward 1",
-				"role": "Crew",
-				"texture_filename_stems": {
-					"head_f": "steward_1_head_front",
-					"head_b": "steward_1_head_back",
-					"head_s": "steward_1_head_side",
-					"torso_f": "steward_1_torso_front",
-					"torso_b": "steward_1_torso_back",
-					"torso_s": "steward_1_torso_side",
-					"arm_f": "steward_1_arm_front",
-					"arm_b": "steward_1_arm_back",
-					"arm_s": "steward_1_arm_side",
-					"leg_f": "steward_1_leg_front",
-					"leg_b": "steward_1_leg_back",
-					"leg_s": "steward_1_leg_side"
-				}
-			},
-
-			{
-				"name": "Stewardess 1",
-				"role": "Crew",
-				"texture_filename_stems": {
-					"head_f": "stewardess_1_head_front",
-					"head_b": "stewardess_1_head_back",
-					"head_s": "stewardess_1_head_side",
-					"torso_f": "stewardess_1_torso_front",
-					"torso_b": "stewardess_1_torso_back",
-					"torso_s": "stewardess_1_torso_side",
-					"arm_f": "stewardess_1_arm_front",
-					"arm_b": "stewardess_1_arm_back",
-					"arm_s": "stewardess_1_arm_side",
-					"leg_f": "stewardess_1_leg_front",
-					"leg_b": "stewardess_1_leg_back",
-					"leg_s": "stewardess_1_leg_side"
-				}
-			},
-
-			{
-				"name": "Steward 2",
-				"role": "Crew",
-				"texture_filename_stems": {
-					"head_f": "steward_2_head_front",
-					"head_b": "steward_2_head_back",
-					"head_s": "steward_2_head_side",
-					"torso_f": "steward_2_torso_front",
-					"torso_b": "steward_2_torso_back",
-					"torso_s": "steward_2_torso_side",
-					"arm_f": "steward_2_arm_front",
-					"arm_b": "steward_2_arm_back",
-					"arm_s": "steward_2_arm_side",
-					"leg_f": "steward_2_leg_front",
-					"leg_b": "steward_2_leg_back",
-					"leg_s": "steward_2_leg_side"
-				}
-			},
-
-			{
-				"name": "Stewardess 2",
-				"role": "Crew",
-				"texture_filename_stems": {
-					"head_f": "stewardess_2_head_front",
-					"head_b": "stewardess_2_head_back",
-					"head_s": "stewardess_2_head_side",
-					"torso_f": "stewardess_2_torso_front",
-					"torso_b": "stewardess_2_torso_back",
-					"torso_s": "stewardess_2_torso_side",
-					"arm_f": "stewardess_2_arm_front",
-					"arm_b": "stewardess_2_arm_back",
-					"arm_s": "stewardess_2_arm_side",
-					"leg_f": "stewardess_2_leg_front",
-					"leg_b": "stewardess_2_leg_back",
-					"leg_s": "stewardess_2_leg_side"
-				}
-			},
-
-
-			{
-				"name": "Stoker 1",
-				"role": "Crew",
-				"texture_filename_stems": {
-					"head_f": "stoker_1_head_front",
-					"head_b": "stoker_1_head_back",
-					"head_s": "stoker_1_head_side",
-					"torso_f": "stoker_1_torso_front",
-					"torso_b": "stoker_1_torso_back",
-					"torso_s": "stoker_1_torso_side",
-					"arm_f": "stoker_1_arm_front",
-					"arm_b": "stoker_1_arm_back",
-					"arm_s": "stoker_1_arm_side",
-					"leg_f": "stoker_1_leg_front",
-					"leg_b": "stoker_1_leg_back",
-					"leg_s": "stoker_1_leg_side"
-				}
-			},
-
-			{
-				"name": "Stoker 2",
-				"role": "Crew",
-				"texture_filename_stems": {
-					"head_f": "stoker_2_head_front",
-					"head_b": "stoker_2_head_back",
-					"head_s": "stoker_2_head_side",
-					"torso_f": "stoker_2_torso_front",
-					"torso_b": "stoker_2_torso_back",
-					"torso_s": "stoker_2_torso_side",
-					"arm_f": "stoker_2_arm_front",
-					"arm_b": "stoker_2_arm_back",
-					"arm_s": "stoker_2_arm_side",
-					"leg_f": "stoker_2_leg_front",
-					"leg_b": "stoker_2_leg_back",
-					"leg_s": "stoker_2_leg_side"
-				}
-			},
-
-			{
-				"name": "Stoker 3",
-				"role": "Crew",
-				"texture_filename_stems": {
-					"head_f": "stoker_3_head_front",
-					"head_b": "stoker_3_head_back",
-					"head_s": "stoker_3_head_side",
-					"torso_f": "stoker_3_torso_front",
-					"torso_b": "stoker_3_torso_back",
-					"torso_s": "stoker_3_torso_side",
-					"arm_f": "stoker_3_arm_front",
-					"arm_b": "stoker_3_arm_back",
-					"arm_s": "stoker_3_arm_side",
-					"leg_f": "stoker_3_leg_front",
-					"leg_b": "stoker_3_leg_back",
-					"leg_s": "stoker_3_leg_side"
-				}
-			},
-
-			{
-				"name": "Stoker 4",
-				"role": "Crew",
-				"texture_filename_stems": {
-					"head_f": "stoker_4_head_front",
-					"head_b": "stoker_4_head_back",
-					"head_s": "stoker_4_head_side",
-					"torso_f": "stoker_4_torso_front",
-					"torso_b": "stoker_4_torso_back",
-					"torso_s": "stoker_4_torso_side",
-					"arm_f": "stoker_4_arm_front",
-					"arm_b": "stoker_4_arm_back",
-					"arm_s": "stoker_4_arm_side",
-					"leg_f": "stoker_4_leg_front",
-					"leg_b": "stoker_4_leg_back",
-					"leg_s": "stoker_4_leg_side"
-				}
-			},
-
-			{
-				"name": "Wealthy Passenger 1 (Male)",
-				"role": "Passenger",
-				"texture_filename_stems": {
-					"head_f": "wealthy_passenger_1_head_front",
-					"head_b": "wealthy_passenger_1_head_back",
-					"head_s": "wealthy_passenger_1_head_side",
-					"torso_f": "wealthy_passenger_1_torso_front",
-					"torso_b": "wealthy_passenger_1_torso_back",
-					"torso_s": "wealthy_passenger_1_torso_side",
-					"arm_f": "wealthy_passenger_1_arm_front",
-					"arm_b": "wealthy_passenger_1_arm_back",
-					"arm_s": "wealthy_passenger_1_arm_side",
-					"leg_f": "wealthy_passenger_1_leg_front",
-					"leg_b": "wealthy_passenger_1_leg_back",
-					"leg_s": "wealthy_passenger_1_leg_side"
-				}
-			},
-
-			{
-				"name": "Wealthy Passenger 2 (Male)",
-				"role": "Passenger",
-				"texture_filename_stems": {
-					"head_f": "male_wealthy_passenger_2_head_front",
-					"head_b": "male_wealthy_passenger_2_head_back",
-					"head_s": "male_wealthy_passenger_2_head_side",
-					"torso_f": "male_wealthy_passenger_2_torso_front",
-					"torso_b": "male_wealthy_passenger_2_torso_back",
-					"torso_s": "male_wealthy_passenger_2_torso_side",
-					"arm_f": "male_wealthy_passenger_2_arm_front",
-					"arm_b": "male_wealthy_passenger_2_arm_back",
-					"arm_s": "male_wealthy_passenger_2_arm_side",
-					"leg_f": "male_wealthy_passenger_2_leg_front",
-					"leg_b": "male_wealthy_passenger_2_leg_back",
-					"leg_s": "male_wealthy_passenger_2_leg_side"
-				}
-			},
-
-			{
-				"name": "Dummy",
-				"role": "Other",
-				"body_width_randomization_sensitivity": 0.1,
-				"texture_filename_stems": {
-					"head_f": "dummy_head_front",
-					"head_b": "dummy_head_back",
-					"head_s": "dummy_head_side",
-					"torso_f": "dummy_torso_front",
-					"torso_b": "dummy_torso_back",
-					"torso_s": "dummy_torso_side",
-					"arm_f": "dummy_arm_front",
-					"arm_b": "dummy_arm_back",
-					"arm_s": "dummy_arm_side",
-					"leg_f": "dummy_leg_front",
-					"leg_b": "dummy_leg_back",
-					"leg_s": "dummy_leg_side"
-				}
-			}
-		]
-	},
-
-	"furniture": {
-		"kinds": [
-			{	
-				"name": "Barrel",
-				"role": "Furniture",
-				"material": "Solid Pine Wood I-Beam",
-				"particle_mesh": {
-					"kind": "Quad",
-					"height": 0.4,
-					"particle_attributes_overrides": [
-						{
-							"buoyancy_volume_fill": 0.0847
-						}
-					]
-				},
-				"texture_filename_stem": "barrel_1"
-			},
-
-			{	
-				"name": "Bed 1",
-				"role": "Furniture",
-				"material": "Solid Pine Wood I-Beam",
-				"particle_mesh": {
-					"kind": "Quad",
-					"height": 0.8,
-					"particle_attributes_overrides": [
-						{
-							"buoyancy_volume_fill": 0.07
-						}
-					]
-				},
-				"texture_filename_stem": "bed_1"
-			},
-
-			{	
-				"name": "Bed 2",
-				"role": "Furniture",
-				"material": "Iron Hull",
-				"particle_mesh": {
-					"kind": "Quad",
-					"height": 0.8,
-					"particle_attributes_overrides": [
-						{
-							"buoyancy_volume_fill": 0.7
-						}
-					]
-				},
-				"texture_filename_stem": "bed_2"
-			},
-
-			{	
-				"name": "Cabin Desk",
-				"role": "Furniture",
-				"material": "Solid Pine Wood I-Beam",
-				"particle_mesh": {
-					"kind": "Quad",
-					"height": 0.8,
-					"particle_attributes_overrides": [
-						{
-							"buoyancy_volume_fill": 0.0847
-						}
-					]
-				},
-				"texture_filename_stem": "cabin_desk_1"
-			},
-			{	
-				"name": "Chest 1",
-				"role": "Furniture",
-				"material": "Solid Pine Wood I-Beam",
-				"particle_mesh": {
-					"kind": "Quad",
-					"height": 0.3,
-					"particle_attributes_overrides": [
-						{
-							"buoyancy_volume_fill": 0.0847
-						}
-					]
-				},
-				"texture_filename_stem": "chest_1"
-			},
-			{	
-				"name": "Chest 2",
-				"role": "Furniture",
-				"material": "Solid Pine Wood I-Beam",
-				"particle_mesh": {
-					"kind": "Quad",
-					"height": 0.3,
-					"particle_attributes_overrides": [
-						{
-							"buoyancy_volume_fill": 0.06
-						}
-					]
-				},
-				"texture_filename_stem": "chest_2"
-			},
-			{	
-				"name": "Chest 3",
-				"role": "Furniture",
-				"material": "Solid Pine Wood I-Beam",
-				"particle_mesh": {
-					"kind": "Quad",
-					"height": 0.3,
-					"particle_attributes_overrides": [
-						{
-							"buoyancy_volume_fill": 0.05
-						}
-					]
-				},
-				"texture_filename_stem": "chest_3"
-			},
-
-			{	
-				"name": "Coal Cart",
-				"role": "Furniture",
-				"material": "Iron Hull",
-				"particle_mesh": {
-					"kind": "Quad",
-					"height": 0.65,
-					"particle_attributes_overrides": [
-						{
-							"buoyancy_volume_fill": 0.7
-						}
-					]
-				},
-				"texture_filename_stem": "coal_cart"
-			},
-
-			{
-				"name": "Crate",
-				"role": "Furniture",
-				"material": "Solid Pine Wood I-Beam",
-				"particle_mesh": {
-					"kind": "Quad",
-					"height": 0.5,
-					"particle_attributes_overrides": [
-						{
-							"buoyancy_volume_fill": 0.0847
-						}
-					]
-				},
-				"texture_filename_stem": "crate_1"
-			},
-
-			{	
-				"name": "Dining Chair 1",
-				"role": "Furniture",
-				"material": "Solid Pine Wood I-Beam",
-				"particle_mesh": {
-					"kind": "Quad",
-					"height": 0.8,
-					"particle_attributes_overrides": [
-						{
-							"buoyancy_volume_fill": 0.0847
-						}
-					]
-				},
-				"texture_filename_stem": "dining_chair_1"
-			},
-
-			{	
-				"name": "Dining Chair 2",
-				"role": "Furniture",
-				"material": "Solid Pine Wood I-Beam",
-				"particle_mesh": {
-					"kind": "Quad",
-					"height": 0.8,
-					"particle_attributes_overrides": [
-						{
-							"buoyancy_volume_fill": 0.0847
-						}
-					]
-				},
-				"texture_filename_stem": "dining_chair_2"
-			},
-
-			{	
-				"name": "Dining Table 1",
-				"role": "Furniture",
-				"material": "Solid Pine Wood I-Beam",
-				"particle_mesh": {
-					"kind": "Quad",
-					"height": 0.72,
-					"particle_attributes_overrides": [
-						{
-							"buoyancy_volume_fill": 0.0847
-						}
-					]
-				},
-				"texture_filename_stem": "large_dining_table_1"
-			},
-
-			{	
-				"name": "Dining Table 2",
-				"role": "Furniture",
-				"material": "Iron Hull",
-				"particle_mesh": {
-					"kind": "Quad",
-					"height": 0.72,
-					"particle_attributes_overrides": [
-						{
-							"buoyancy_volume_fill": 0.75
-						}
-					]
-				},
-				"texture_filename_stem": "large_dining_table_2"
-			},
-
-			{	
-				"name": "Drum (Heavy)",
-				"role": "Furniture",
-				"material": "Iron Hull",
-				"particle_mesh": {
-					"kind": "Quad",
-					"height": 0.5,
-					"particle_attributes_overrides": [
-						{
-							"buoyancy_volume_fill": 0.7
-						}
-					]
-				},
-				"texture_filename_stem": "drum_1"
-			},
-
-			{	
-				"name": "Drum (Light)",
-				"role": "Furniture",
-				"material": "Light Iron Bulkhead",
-				"particle_mesh": {
-					"kind": "Quad",
-					"height": 0.5,
-					"particle_attributes_overrides": [
-						{
-							"buoyancy_volume_fill": 0.14
-						}
-					]
-				},
-				"texture_filename_stem": "drum_2"
-			},			
-
-			{	
-				"name": "Piano",
-				"role": "Furniture",
-				"material": "Iron Hull",
-				"particle_mesh": {
-					"kind": "Quad",
-					"height": 0.8,
-					"particle_attributes_overrides": [
-						{
-							"buoyancy_volume_fill": 0.7
-						}
-					]
-				},
-				"texture_filename_stem": "piano_1"
-			},
-
-			{	
-				"name": "Small Table 1",
-				"role": "Furniture",
-				"material": "Solid Pine Wood I-Beam",
-				"particle_mesh": {
-					"kind": "Quad",
-					"height": 0.4,
-					"particle_attributes_overrides": [
-						{
-							"buoyancy_volume_fill": 0.0847
-						}
-					]
-				},
-				"texture_filename_stem": "small_table_1"
-			},
-
-			{	
-				"name": "Small Table 2",
-				"role": "Furniture",
-				"material": "Solid Pine Wood I-Beam",
-				"particle_mesh": {
-					"kind": "Quad",
-					"height": 0.4,
-					"particle_attributes_overrides": [
-						{
-							"buoyancy_volume_fill": 0.0847
-						}
-					]
-				},
-				"texture_filename_stem": "small_table_2"
-			},
-
-			{	
-				"name": "Stone Ballast",
-				"role": "Furniture",
-				"material": "Concrete Hull",
-				"particle_mesh": {
-					"kind": "Quad",
-					"height": 0.5,
-					"particle_attributes_overrides": [
-						{
-							"buoyancy_volume_fill": 0.0847
-						}
-					]
-				},
-				"texture_filename_stem": "stone_ballast"
-			},
-
-			{	
-				"name": "Tungsten Block",
-				"role": "Furniture",
-				"material": "Tungsten Hull",
-				"particle_mesh": {
-					"kind": "Quad",
-					"height": 0.7,
-					"particle_attributes_overrides": [
-						{
-							"buoyancy_volume_fill": 0.0847
-						}
-					]
-				},
-				"texture_filename_stem": "tungsten_block"
-			},
-
-			{
-				"name": "Particle",
-				"role": "Other",
-				"material": "Stainless Steel",
-				"particle_mesh": {
-					"kind": "Particle",
-					"particle_attributes_overrides": [
-						{
-							"buoyancy_volume_fill": 0.0847
-						}
-					]
-				},
-				"texture_filename_stem": "particle_1"
-			}
-		]
-	},
-
-	"string_table": {
-		"it": {
-			"Baker": "Cuoco",
-			"Captain 1": "Capitano 1",
-			"Captain 2": "Capitano 2",
-			"Captain 3": "Capitano 3",
-			"Civilian Passenger 1 (Female)": "Passeggero 1 (Donna)",
-			"Civilian Passenger 1 (Male)": "Passeggero 1 (Uomo)",
-			"Civilian Passenger 2 (Female)": "Passeggero 2 (Donna)",
-			"Civilian Passenger 2 (Male)": "Passeggero 2 (Uomo)",
-			"Civilian Passenger 3 (Female)": "Passeggero 3 (Donna)",
-			"Civilian Passenger 3 (Male)": "Passeggero 3 (Uomo)",
-			"Civilian Passenger 4 (Female)": "Passeggero 4 (Donna)",
-			"Civilian Passenger 4 (Male)": "Passeggero 4 (Uomo)",
-			"Civilian Passenger 5 (Female)": "Passeggero 5 (Donna)",
-			"Civilian Passenger 5 (Male)": "Passeggero 5 (Uomo)",
-			"Civilian Passenger 6 (Male)": "Passeggero 6 (Uomo)",
-			"Deckhand": "Mozzo",
-			"Engineer": "Ingegnere",
-			"Officer": "Ufficiale",
-			"Oiler": "Oliatore",
-			"Quartermaster": "Quartiermastro",
-			"Steward 1": "Cameriere 1",
-			"Stewardess 1": "Cameriera 1",
-			"Steward 2": "Cameriere 2",
-			"Stewardess 2": "Cameriera 2",
-			"Stoker 1": "Fuochista 1",
-			"Stoker 2": "Fuochista 2",
-			"Stoker 3": "Fuochista 3",
-			"Stoker 4": "Fuochista 4",
-			"Wealthy Passenger 1 (Male)": "Passeggero Prima Classe 1 (Uomo)",
-			"Wealthy Passenger 2 (Male)": "Passeggero Prima Classe 2 (Uomo)",
-			"Dummy": "Dummy",
-
-			"Barrel": "Barile",
-			"Bed 1": "Letto 1",
-			"Bed 2": "Letto 2",
-			"Cabin Desk": "Tavolo da Cabina",
-			"Chest 1": "Scrigno 1",
-			"Chest 2": "Scrigno 2",
-			"Chest 3": "Scrigno 3",
-			"Coal Cart": "Carriola per Carbone",
-			"Crate": "Cassa",
-			"Dining Chair 1": "Sedia da Tavolo 1",
-			"Dining Chair 2": "Sedia da Tavolo 2",
-			"Dining Table 1": "Tavolo da Pranzo 1",
-			"Dining Table 2": "Tavolo da Pranzo 2",
-			"Drum (Heavy)": "Fusto (Pesante)",
-			"Drum (Light)": "Fusto (Leggero)",
-			"Piano": "Pianoforte",
-			"Small Table 1": "Tavolino 1",
-			"Small Table 2": "Tavolino 2",
-			"Stone Ballast": "Zavorra di Pietra",
-			"Tungsten Block": "Blocco di Tungsteno",
-			"Particle": "Particella"
-		}
-	}
+    "humans": {
+        "global": {
+            "head_material": "NPC Human Head",
+            "head_particle_attributes_overrides": {
+                "spring_damping_coefficient": 0.5,
+                "spring_reduction_fraction": 0.39
+            },
+            "feet_material": "NPC Human Feet",
+            "feet_particle_attributes_overrides": {
+                "spring_damping_coefficient": 0.5,
+                "spring_reduction_fraction": 0.39
+            }
+        },
+        "kinds": [
+            {
+                "name": "Baker",
+                "role": "Crew",
+                "texture_filename_stems": {
+                    "head_f": "baker_head_front",
+                    "head_b": "baker_head_back",
+                    "head_s": "baker_head_side",
+                    "torso_f": "baker_torso_front",
+                    "torso_b": "baker_torso_back",
+                    "torso_s": "baker_torso_side",
+                    "arm_f": "baker_arm_front",
+                    "arm_b": "baker_arm_back",
+                    "arm_s": "baker_arm_side",
+                    "leg_f": "baker_leg_front",
+                    "leg_b": "baker_leg_back",
+                    "leg_s": "baker_leg_side"
+                },
+                "render_color": "#8B8F90"
+            },
+            {
+                "name": "Captain 1",
+                "role": "Captain",
+                "texture_filename_stems": {
+                    "head_f": "captain_1_head_front",
+                    "head_b": "captain_1_head_back",
+                    "head_s": "captain_1_head_side",
+                    "torso_f": "captain_1_torso_front",
+                    "torso_b": "captain_1_torso_back",
+                    "torso_s": "captain_1_torso_side",
+                    "arm_f": "captain_1_arm_front",
+                    "arm_b": "captain_1_arm_back",
+                    "arm_s": "captain_1_arm_side",
+                    "leg_f": "captain_1_leg_front",
+                    "leg_b": "captain_1_leg_back",
+                    "leg_s": "captain_1_leg_side"
+                },
+                "render_color": "#273E55"
+            },
+            {
+                "name": "Captain 2",
+                "role": "Captain",
+                "texture_filename_stems": {
+                    "head_f": "captain_2_head_front",
+                    "head_b": "captain_2_head_back",
+                    "head_s": "captain_2_head_side",
+                    "torso_f": "captain_2_torso_front",
+                    "torso_b": "captain_2_torso_back",
+                    "torso_s": "captain_2_torso_side",
+                    "arm_f": "captain_2_arm_front",
+                    "arm_b": "captain_2_arm_back",
+                    "arm_s": "captain_2_arm_side",
+                    "leg_f": "captain_2_leg_front",
+                    "leg_b": "captain_2_leg_back",
+                    "leg_s": "captain_2_leg_side"
+                },
+                "render_color": "#273E55"
+            },
+            {
+                "name": "Captain 3",
+                "role": "Captain",
+                "texture_filename_stems": {
+                    "head_f": "captain_3_head_front",
+                    "head_b": "captain_3_head_back",
+                    "head_s": "captain_3_head_side",
+                    "torso_f": "captain_3_torso_front",
+                    "torso_b": "captain_3_torso_back",
+                    "torso_s": "captain_3_torso_side",
+                    "arm_f": "captain_3_arm_front",
+                    "arm_b": "captain_3_arm_back",
+                    "arm_s": "captain_3_arm_side",
+                    "leg_f": "captain_3_leg_front",
+                    "leg_b": "captain_3_leg_back",
+                    "leg_s": "captain_3_leg_side"
+                },
+                "render_color": "#A3A6A6"
+            },
+            {
+                "name": "Civilian Passenger 1 (Female)",
+                "role": "Passenger",
+                "texture_filename_stems": {
+                    "head_f": "female_civilian_passenger_1_head_front",
+                    "head_b": "female_civilian_passenger_1_head_back",
+                    "head_s": "female_civilian_passenger_1_head_side",
+                    "torso_f": "female_civilian_passenger_1_torso_front",
+                    "torso_b": "female_civilian_passenger_1_torso_back",
+                    "torso_s": "female_civilian_passenger_1_torso_side",
+                    "arm_f": "female_civilian_passenger_1_arm_front",
+                    "arm_b": "female_civilian_passenger_1_arm_back",
+                    "arm_s": "female_civilian_passenger_1_arm_side",
+                    "leg_f": "female_civilian_passenger_1_leg_front",
+                    "leg_b": "female_civilian_passenger_1_leg_back",
+                    "leg_s": "female_civilian_passenger_1_leg_side"
+                },
+                "render_color": "#D8C18A"
+            },
+            {
+                "name": "Civilian Passenger 1 (Male)",
+                "role": "Passenger",
+                "texture_filename_stems": {
+                    "head_f": "male_civ_1_head_front",
+                    "head_b": "male_civ_1_head_back",
+                    "head_s": "male_civ_1_head_side",
+                    "torso_f": "male_civ_1_torso_front",
+                    "torso_b": "male_civ_1_torso_back",
+                    "torso_s": "male_civ_1_torso_side",
+                    "arm_f": "male_civ_1_arm_front",
+                    "arm_b": "male_civ_1_arm_back",
+                    "arm_s": "male_civ_1_arm_side",
+                    "leg_f": "male_civ_1_leg_front",
+                    "leg_b": "male_civ_1_leg_back",
+                    "leg_s": "male_civ_1_leg_side"
+                },
+                "render_color": "#814F29"
+            },
+            {
+                "name": "Civilian Passenger 2 (Female)",
+                "role": "Passenger",
+                "texture_filename_stems": {
+                    "head_f": "female_civilian_passenger_2_head_front",
+                    "head_b": "female_civilian_passenger_2_head_back",
+                    "head_s": "female_civilian_passenger_2_head_side",
+                    "torso_f": "female_civilian_passenger_2_torso_front",
+                    "torso_b": "female_civilian_passenger_2_torso_back",
+                    "torso_s": "female_civilian_passenger_2_torso_side",
+                    "arm_f": "female_civilian_passenger_2_arm_front",
+                    "arm_b": "female_civilian_passenger_2_arm_back",
+                    "arm_s": "female_civilian_passenger_2_arm_side",
+                    "leg_f": "female_civilian_passenger_2_leg_front",
+                    "leg_b": "female_civilian_passenger_2_leg_back",
+                    "leg_s": "female_civilian_passenger_2_leg_side"
+                },
+                "render_color": "#BBBACF"
+            },
+            {
+                "name": "Civilian Passenger 2 (Male)",
+                "role": "Passenger",
+                "texture_filename_stems": {
+                    "head_f": "male_civ_2_head_front",
+                    "head_b": "male_civ_2_head_back",
+                    "head_s": "male_civ_2_head_side",
+                    "torso_f": "male_civ_2_torso_front",
+                    "torso_b": "male_civ_2_torso_back",
+                    "torso_s": "male_civ_2_torso_side",
+                    "arm_f": "male_civ_2_arm_front",
+                    "arm_b": "male_civ_2_arm_back",
+                    "arm_s": "male_civ_2_arm_side",
+                    "leg_f": "male_civ_2_leg_front",
+                    "leg_b": "male_civ_2_leg_back",
+                    "leg_s": "male_civ_2_leg_side"
+                },
+                "render_color": "#514D1C"
+            },
+            {
+                "name": "Civilian Passenger 3 (Female)",
+                "role": "Passenger",
+                "texture_filename_stems": {
+                    "head_f": "female_civilian_passenger_3_head_front",
+                    "head_b": "female_civilian_passenger_3_head_back",
+                    "head_s": "female_civilian_passenger_3_head_side",
+                    "torso_f": "female_civilian_passenger_3_torso_front",
+                    "torso_b": "female_civilian_passenger_3_torso_back",
+                    "torso_s": "female_civilian_passenger_3_torso_side",
+                    "arm_f": "female_civilian_passenger_3_arm_front",
+                    "arm_b": "female_civilian_passenger_3_arm_back",
+                    "arm_s": "female_civilian_passenger_3_arm_side",
+                    "leg_f": "female_civilian_passenger_3_leg_front",
+                    "leg_b": "female_civilian_passenger_3_leg_back",
+                    "leg_s": "female_civilian_passenger_3_leg_side"
+                },
+                "render_color": "#B8AFBF"
+            },
+            {
+                "name": "Civilian Passenger 3 (Male)",
+                "role": "Passenger",
+                "texture_filename_stems": {
+                    "head_f": "male_civ_3_head_front",
+                    "head_b": "male_civ_3_head_back",
+                    "head_s": "male_civ_3_head_side",
+                    "torso_f": "male_civ_3_torso_front",
+                    "torso_b": "male_civ_3_torso_back",
+                    "torso_s": "male_civ_3_torso_side",
+                    "arm_f": "male_civ_3_arm_front",
+                    "arm_b": "male_civ_3_arm_back",
+                    "arm_s": "male_civ_3_arm_side",
+                    "leg_f": "male_civ_3_leg_front",
+                    "leg_b": "male_civ_3_leg_back",
+                    "leg_s": "male_civ_3_leg_side"
+                },
+                "render_color": "#39342E"
+            },
+            {
+                "name": "Civilian Passenger 4 (Female)",
+                "role": "Passenger",
+                "texture_filename_stems": {
+                    "head_f": "female_civilian_passenger_4_head_front",
+                    "head_b": "female_civilian_passenger_4_head_back",
+                    "head_s": "female_civilian_passenger_4_head_side",
+                    "torso_f": "female_civilian_passenger_4_torso_front",
+                    "torso_b": "female_civilian_passenger_4_torso_back",
+                    "torso_s": "female_civilian_passenger_4_torso_side",
+                    "arm_f": "female_civilian_passenger_4_arm_front",
+                    "arm_b": "female_civilian_passenger_4_arm_back",
+                    "arm_s": "female_civilian_passenger_4_arm_side",
+                    "leg_f": "female_civilian_passenger_4_leg_front",
+                    "leg_b": "female_civilian_passenger_4_leg_back",
+                    "leg_s": "female_civilian_passenger_4_leg_side"
+                },
+                "render_color": "#5A131D"
+            },
+            {
+                "name": "Civilian Passenger 4 (Male)",
+                "role": "Passenger",
+                "texture_filename_stems": {
+                    "head_f": "male_civ_4_head_front",
+                    "head_b": "male_civ_4_head_back",
+                    "head_s": "male_civ_4_head_side",
+                    "torso_f": "male_civ_4_torso_front",
+                    "torso_b": "male_civ_4_torso_back",
+                    "torso_s": "male_civ_4_torso_side",
+                    "arm_f": "male_civ_4_arm_front",
+                    "arm_b": "male_civ_4_arm_back",
+                    "arm_s": "male_civ_4_arm_side",
+                    "leg_f": "male_civ_4_leg_front",
+                    "leg_b": "male_civ_4_leg_back",
+                    "leg_s": "male_civ_4_leg_side"
+                },
+                "render_color": "#59504C"
+            },
+            {
+                "name": "Civilian Passenger 5 (Female)",
+                "role": "Passenger",
+                "texture_filename_stems": {
+                    "head_f": "female_civilian_passenger_5_head_front",
+                    "head_b": "female_civilian_passenger_5_head_back",
+                    "head_s": "female_civilian_passenger_5_head_side",
+                    "torso_f": "female_civilian_passenger_5_torso_front",
+                    "torso_b": "female_civilian_passenger_5_torso_back",
+                    "torso_s": "female_civilian_passenger_5_torso_side",
+                    "arm_f": "female_civilian_passenger_5_arm_front",
+                    "arm_b": "female_civilian_passenger_5_arm_back",
+                    "arm_s": "female_civilian_passenger_5_arm_side",
+                    "leg_f": "female_civilian_passenger_5_leg_front",
+                    "leg_b": "female_civilian_passenger_5_leg_back",
+                    "leg_s": "female_civilian_passenger_5_leg_side"
+                },
+                "render_color": "#9DBFC7"
+            },
+            {
+                "name": "Civilian Passenger 5 (Male)",
+                "role": "Passenger",
+                "texture_filename_stems": {
+                    "head_f": "male_civ_5_head_front",
+                    "head_b": "male_civ_5_head_back",
+                    "head_s": "male_civ_5_head_side",
+                    "torso_f": "male_civ_5_torso_front",
+                    "torso_b": "male_civ_5_torso_back",
+                    "torso_s": "male_civ_5_torso_side",
+                    "arm_f": "male_civ_5_arm_front",
+                    "arm_b": "male_civ_5_arm_back",
+                    "arm_s": "male_civ_5_arm_side",
+                    "leg_f": "male_civ_5_leg_front",
+                    "leg_b": "male_civ_5_leg_back",
+                    "leg_s": "male_civ_5_leg_side"
+                },
+                "render_color": "#76684B"
+            },
+            {
+                "name": "Civilian Passenger 6 (Male)",
+                "role": "Passenger",
+                "texture_filename_stems": {
+                    "head_f": "male_civ_6_head_front",
+                    "head_b": "male_civ_6_head_back",
+                    "head_s": "male_civ_6_head_side",
+                    "torso_f": "male_civ_6_torso_front",
+                    "torso_b": "male_civ_6_torso_back",
+                    "torso_s": "male_civ_6_torso_side",
+                    "arm_f": "male_civ_6_arm_front",
+                    "arm_b": "male_civ_6_arm_back",
+                    "arm_s": "male_civ_6_arm_side",
+                    "leg_f": "male_civ_6_leg_front",
+                    "leg_b": "male_civ_6_leg_back",
+                    "leg_s": "male_civ_6_leg_side"
+                },
+                "render_color": "#703A38"
+            },
+            {
+                "name": "Deckhand",
+                "role": "Crew",
+                "texture_filename_stems": {
+                    "head_f": "deckhand_head_front",
+                    "head_b": "deckhand_head_back",
+                    "head_s": "deckhand_head_side",
+                    "torso_f": "deckhand_torso_front",
+                    "torso_b": "deckhand_torso_back",
+                    "torso_s": "deckhand_torso_side",
+                    "arm_f": "deckhand_arm_front",
+                    "arm_b": "deckhand_arm_back",
+                    "arm_s": "deckhand_arm_side",
+                    "leg_f": "deckhand_leg_front",
+                    "leg_b": "deckhand_leg_back",
+                    "leg_s": "deckhand_leg_side"
+                },
+                "render_color": "#273E55"
+            },
+            {
+                "name": "Engineer",
+                "role": "Crew",
+                "texture_filename_stems": {
+                    "head_f": "engineer_head_front",
+                    "head_b": "engineer_head_back",
+                    "head_s": "engineer_head_side",
+                    "torso_f": "engineer_torso_front",
+                    "torso_b": "engineer_torso_back",
+                    "torso_s": "engineer_torso_side",
+                    "arm_f": "engineer_arm_front",
+                    "arm_b": "engineer_arm_back",
+                    "arm_s": "engineer_arm_side",
+                    "leg_f": "engineer_leg_front",
+                    "leg_b": "engineer_leg_back",
+                    "leg_s": "engineer_leg_side"
+                },
+                "render_color": "#24384D"
+            },
+            {
+                "name": "Officer",
+                "role": "Crew",
+                "texture_filename_stems": {
+                    "head_f": "officer_head_front",
+                    "head_b": "officer_head_back",
+                    "head_s": "officer_head_side",
+                    "torso_f": "officer_torso_front",
+                    "torso_b": "officer_torso_back",
+                    "torso_s": "officer_torso_side",
+                    "arm_f": "officer_arm_front",
+                    "arm_b": "officer_arm_back",
+                    "arm_s": "officer_arm_side",
+                    "leg_f": "officer_leg_front",
+                    "leg_b": "officer_leg_back",
+                    "leg_s": "officer_leg_side"
+                },
+                "render_color": "#273E55"
+            },
+            {
+                "name": "Oiler",
+                "role": "Crew",
+                "texture_filename_stems": {
+                    "head_f": "oiler_head_front",
+                    "head_b": "oiler_head_back",
+                    "head_s": "oiler_head_side",
+                    "torso_f": "oiler_torso_front",
+                    "torso_b": "oiler_torso_back",
+                    "torso_s": "oiler_torso_side",
+                    "arm_f": "oiler_arm_front",
+                    "arm_b": "oiler_arm_back",
+                    "arm_s": "oiler_arm_side",
+                    "leg_f": "oiler_leg_front",
+                    "leg_b": "oiler_leg_back",
+                    "leg_s": "oiler_leg_side"
+                },
+                "render_color": "#45587A"
+            },
+            {
+                "name": "Quartermaster",
+                "role": "Crew",
+                "texture_filename_stems": {
+                    "head_f": "quartermaster_head_front",
+                    "head_b": "quartermaster_head_back",
+                    "head_s": "quartermaster_head_side",
+                    "torso_f": "quartermaster_torso_front",
+                    "torso_b": "quartermaster_torso_back",
+                    "torso_s": "quartermaster_torso_side",
+                    "arm_f": "quartermaster_arm_front",
+                    "arm_b": "quartermaster_arm_back",
+                    "arm_s": "quartermaster_arm_side",
+                    "leg_f": "quartermaster_leg_front",
+                    "leg_b": "quartermaster_leg_back",
+                    "leg_s": "quartermaster_leg_side"
+                },
+                "render_color": "#273E55"
+            },
+            {
+                "name": "Steward 1",
+                "role": "Crew",
+                "texture_filename_stems": {
+                    "head_f": "steward_1_head_front",
+                    "head_b": "steward_1_head_back",
+                    "head_s": "steward_1_head_side",
+                    "torso_f": "steward_1_torso_front",
+                    "torso_b": "steward_1_torso_back",
+                    "torso_s": "steward_1_torso_side",
+                    "arm_f": "steward_1_arm_front",
+                    "arm_b": "steward_1_arm_back",
+                    "arm_s": "steward_1_arm_side",
+                    "leg_f": "steward_1_leg_front",
+                    "leg_b": "steward_1_leg_back",
+                    "leg_s": "steward_1_leg_side"
+                },
+                "render_color": "#314250"
+            },
+            {
+                "name": "Stewardess 1",
+                "role": "Crew",
+                "texture_filename_stems": {
+                    "head_f": "stewardess_1_head_front",
+                    "head_b": "stewardess_1_head_back",
+                    "head_s": "stewardess_1_head_side",
+                    "torso_f": "stewardess_1_torso_front",
+                    "torso_b": "stewardess_1_torso_back",
+                    "torso_s": "stewardess_1_torso_side",
+                    "arm_f": "stewardess_1_arm_front",
+                    "arm_b": "stewardess_1_arm_back",
+                    "arm_s": "stewardess_1_arm_side",
+                    "leg_f": "stewardess_1_leg_front",
+                    "leg_b": "stewardess_1_leg_back",
+                    "leg_s": "stewardess_1_leg_side"
+                },
+                "render_color": "#314250"
+            },
+            {
+                "name": "Steward 2",
+                "role": "Crew",
+                "texture_filename_stems": {
+                    "head_f": "steward_2_head_front",
+                    "head_b": "steward_2_head_back",
+                    "head_s": "steward_2_head_side",
+                    "torso_f": "steward_2_torso_front",
+                    "torso_b": "steward_2_torso_back",
+                    "torso_s": "steward_2_torso_side",
+                    "arm_f": "steward_2_arm_front",
+                    "arm_b": "steward_2_arm_back",
+                    "arm_s": "steward_2_arm_side",
+                    "leg_f": "steward_2_leg_front",
+                    "leg_b": "steward_2_leg_back",
+                    "leg_s": "steward_2_leg_side"
+                },
+                "render_color": "#314250"
+            },
+            {
+                "name": "Stewardess 2",
+                "role": "Crew",
+                "texture_filename_stems": {
+                    "head_f": "stewardess_2_head_front",
+                    "head_b": "stewardess_2_head_back",
+                    "head_s": "stewardess_2_head_side",
+                    "torso_f": "stewardess_2_torso_front",
+                    "torso_b": "stewardess_2_torso_back",
+                    "torso_s": "stewardess_2_torso_side",
+                    "arm_f": "stewardess_2_arm_front",
+                    "arm_b": "stewardess_2_arm_back",
+                    "arm_s": "stewardess_2_arm_side",
+                    "leg_f": "stewardess_2_leg_front",
+                    "leg_b": "stewardess_2_leg_back",
+                    "leg_s": "stewardess_2_leg_side"
+                },
+                "render_color": "#314250"
+            },
+            {
+                "name": "Stoker 1",
+                "role": "Crew",
+                "texture_filename_stems": {
+                    "head_f": "stoker_1_head_front",
+                    "head_b": "stoker_1_head_back",
+                    "head_s": "stoker_1_head_side",
+                    "torso_f": "stoker_1_torso_front",
+                    "torso_b": "stoker_1_torso_back",
+                    "torso_s": "stoker_1_torso_side",
+                    "arm_f": "stoker_1_arm_front",
+                    "arm_b": "stoker_1_arm_back",
+                    "arm_s": "stoker_1_arm_side",
+                    "leg_f": "stoker_1_leg_front",
+                    "leg_b": "stoker_1_leg_back",
+                    "leg_s": "stoker_1_leg_side"
+                },
+                "render_color": "#44563D"
+            },
+            {
+                "name": "Stoker 2",
+                "role": "Crew",
+                "texture_filename_stems": {
+                    "head_f": "stoker_2_head_front",
+                    "head_b": "stoker_2_head_back",
+                    "head_s": "stoker_2_head_side",
+                    "torso_f": "stoker_2_torso_front",
+                    "torso_b": "stoker_2_torso_back",
+                    "torso_s": "stoker_2_torso_side",
+                    "arm_f": "stoker_2_arm_front",
+                    "arm_b": "stoker_2_arm_back",
+                    "arm_s": "stoker_2_arm_side",
+                    "leg_f": "stoker_2_leg_front",
+                    "leg_b": "stoker_2_leg_back",
+                    "leg_s": "stoker_2_leg_side"
+                },
+                "render_color": "#4A697B"
+            },
+            {
+                "name": "Stoker 3",
+                "role": "Crew",
+                "texture_filename_stems": {
+                    "head_f": "stoker_3_head_front",
+                    "head_b": "stoker_3_head_back",
+                    "head_s": "stoker_3_head_side",
+                    "torso_f": "stoker_3_torso_front",
+                    "torso_b": "stoker_3_torso_back",
+                    "torso_s": "stoker_3_torso_side",
+                    "arm_f": "stoker_3_arm_front",
+                    "arm_b": "stoker_3_arm_back",
+                    "arm_s": "stoker_3_arm_side",
+                    "leg_f": "stoker_3_leg_front",
+                    "leg_b": "stoker_3_leg_back",
+                    "leg_s": "stoker_3_leg_side"
+                },
+                "render_color": "#675C3F"
+            },
+            {
+                "name": "Stoker 4",
+                "role": "Crew",
+                "texture_filename_stems": {
+                    "head_f": "stoker_4_head_front",
+                    "head_b": "stoker_4_head_back",
+                    "head_s": "stoker_4_head_side",
+                    "torso_f": "stoker_4_torso_front",
+                    "torso_b": "stoker_4_torso_back",
+                    "torso_s": "stoker_4_torso_side",
+                    "arm_f": "stoker_4_arm_front",
+                    "arm_b": "stoker_4_arm_back",
+                    "arm_s": "stoker_4_arm_side",
+                    "leg_f": "stoker_4_leg_front",
+                    "leg_b": "stoker_4_leg_back",
+                    "leg_s": "stoker_4_leg_side"
+                },
+                "render_color": "#487777"
+            },
+            {
+                "name": "Wealthy Passenger 1 (Male)",
+                "role": "Passenger",
+                "texture_filename_stems": {
+                    "head_f": "wealthy_passenger_1_head_front",
+                    "head_b": "wealthy_passenger_1_head_back",
+                    "head_s": "wealthy_passenger_1_head_side",
+                    "torso_f": "wealthy_passenger_1_torso_front",
+                    "torso_b": "wealthy_passenger_1_torso_back",
+                    "torso_s": "wealthy_passenger_1_torso_side",
+                    "arm_f": "wealthy_passenger_1_arm_front",
+                    "arm_b": "wealthy_passenger_1_arm_back",
+                    "arm_s": "wealthy_passenger_1_arm_side",
+                    "leg_f": "wealthy_passenger_1_leg_front",
+                    "leg_b": "wealthy_passenger_1_leg_back",
+                    "leg_s": "wealthy_passenger_1_leg_side"
+                },
+                "render_color": "#64342B"
+            },
+            {
+                "name": "Wealthy Passenger 2 (Male)",
+                "role": "Passenger",
+                "texture_filename_stems": {
+                    "head_f": "male_wealthy_passenger_2_head_front",
+                    "head_b": "male_wealthy_passenger_2_head_back",
+                    "head_s": "male_wealthy_passenger_2_head_side",
+                    "torso_f": "male_wealthy_passenger_2_torso_front",
+                    "torso_b": "male_wealthy_passenger_2_torso_back",
+                    "torso_s": "male_wealthy_passenger_2_torso_side",
+                    "arm_f": "male_wealthy_passenger_2_arm_front",
+                    "arm_b": "male_wealthy_passenger_2_arm_back",
+                    "arm_s": "male_wealthy_passenger_2_arm_side",
+                    "leg_f": "male_wealthy_passenger_2_leg_front",
+                    "leg_b": "male_wealthy_passenger_2_leg_back",
+                    "leg_s": "male_wealthy_passenger_2_leg_side"
+                },
+                "render_color": "#2A2F31"
+            },
+            {
+                "name": "Dummy",
+                "role": "Other",
+                "body_width_randomization_sensitivity": 0.1,
+                "texture_filename_stems": {
+                    "head_f": "dummy_head_front",
+                    "head_b": "dummy_head_back",
+                    "head_s": "dummy_head_side",
+                    "torso_f": "dummy_torso_front",
+                    "torso_b": "dummy_torso_back",
+                    "torso_s": "dummy_torso_side",
+                    "arm_f": "dummy_arm_front",
+                    "arm_b": "dummy_arm_back",
+                    "arm_s": "dummy_arm_side",
+                    "leg_f": "dummy_leg_front",
+                    "leg_b": "dummy_leg_back",
+                    "leg_s": "dummy_leg_side"
+                },
+                "render_color": "#A4A4A3"
+            }
+        ]
+    },
+    "furniture": {
+        "kinds": [
+            {
+                "name": "Barrel",
+                "role": "Furniture",
+                "material": "Solid Pine Wood I-Beam",
+                "particle_mesh": {
+                    "kind": "Quad",
+                    "height": 0.4,
+                    "particle_attributes_overrides": [
+                        {
+                            "buoyancy_volume_fill": 0.0847
+                        }
+                    ]
+                },
+                "texture_filename_stem": "barrel_1",
+                "render_color": "#A07444"
+            },
+            {
+                "name": "Bed 1",
+                "role": "Furniture",
+                "material": "Solid Pine Wood I-Beam",
+                "particle_mesh": {
+                    "kind": "Quad",
+                    "height": 0.8,
+                    "particle_attributes_overrides": [
+                        {
+                            "buoyancy_volume_fill": 0.07
+                        }
+                    ]
+                },
+                "texture_filename_stem": "bed_1",
+                "render_color": "#A8A76C"
+            },
+            {
+                "name": "Bed 2",
+                "role": "Furniture",
+                "material": "Iron Hull",
+                "particle_mesh": {
+                    "kind": "Quad",
+                    "height": 0.8,
+                    "particle_attributes_overrides": [
+                        {
+                            "buoyancy_volume_fill": 0.7
+                        }
+                    ]
+                },
+                "texture_filename_stem": "bed_2",
+                "render_color": "#5B4B49"
+            },
+            {
+                "name": "Cabin Desk",
+                "role": "Furniture",
+                "material": "Solid Pine Wood I-Beam",
+                "particle_mesh": {
+                    "kind": "Quad",
+                    "height": 0.8,
+                    "particle_attributes_overrides": [
+                        {
+                            "buoyancy_volume_fill": 0.0847
+                        }
+                    ]
+                },
+                "texture_filename_stem": "cabin_desk_1",
+                "render_color": "#945D38"
+            },
+            {
+                "name": "Chest 1",
+                "role": "Furniture",
+                "material": "Solid Pine Wood I-Beam",
+                "particle_mesh": {
+                    "kind": "Quad",
+                    "height": 0.3,
+                    "particle_attributes_overrides": [
+                        {
+                            "buoyancy_volume_fill": 0.0847
+                        }
+                    ]
+                },
+                "texture_filename_stem": "chest_1",
+                "render_color": "#8B6138"
+            },
+            {
+                "name": "Chest 2",
+                "role": "Furniture",
+                "material": "Solid Pine Wood I-Beam",
+                "particle_mesh": {
+                    "kind": "Quad",
+                    "height": 0.3,
+                    "particle_attributes_overrides": [
+                        {
+                            "buoyancy_volume_fill": 0.06
+                        }
+                    ]
+                },
+                "texture_filename_stem": "chest_2",
+                "render_color": "#3D5438"
+            },
+            {
+                "name": "Chest 3",
+                "role": "Furniture",
+                "material": "Solid Pine Wood I-Beam",
+                "particle_mesh": {
+                    "kind": "Quad",
+                    "height": 0.3,
+                    "particle_attributes_overrides": [
+                        {
+                            "buoyancy_volume_fill": 0.05
+                        }
+                    ]
+                },
+                "texture_filename_stem": "chest_3",
+                "render_color": "#8A1B26"
+            },
+            {
+                "name": "Coal Cart",
+                "role": "Furniture",
+                "material": "Iron Hull",
+                "particle_mesh": {
+                    "kind": "Quad",
+                    "height": 0.65,
+                    "particle_attributes_overrides": [
+                        {
+                            "buoyancy_volume_fill": 0.7
+                        }
+                    ]
+                },
+                "texture_filename_stem": "coal_cart",
+                "render_color": "#50684A"
+            },
+            {
+                "name": "Crate",
+                "role": "Furniture",
+                "material": "Solid Pine Wood I-Beam",
+                "particle_mesh": {
+                    "kind": "Quad",
+                    "height": 0.5,
+                    "particle_attributes_overrides": [
+                        {
+                            "buoyancy_volume_fill": 0.0847
+                        }
+                    ]
+                },
+                "texture_filename_stem": "crate_1",
+                "render_color": "#9E682B"
+            },
+            {
+                "name": "Dining Chair 1",
+                "role": "Furniture",
+                "material": "Solid Pine Wood I-Beam",
+                "particle_mesh": {
+                    "kind": "Quad",
+                    "height": 0.8,
+                    "particle_attributes_overrides": [
+                        {
+                            "buoyancy_volume_fill": 0.0847
+                        }
+                    ]
+                },
+                "texture_filename_stem": "dining_chair_1",
+                "render_color": "#534B46"
+            },
+            {
+                "name": "Dining Chair 2",
+                "role": "Furniture",
+                "material": "Solid Pine Wood I-Beam",
+                "particle_mesh": {
+                    "kind": "Quad",
+                    "height": 0.8,
+                    "particle_attributes_overrides": [
+                        {
+                            "buoyancy_volume_fill": 0.0847
+                        }
+                    ]
+                },
+                "texture_filename_stem": "dining_chair_2",
+                "render_color": "#7476B1"
+            },
+            {
+                "name": "Dining Table 1",
+                "role": "Furniture",
+                "material": "Solid Pine Wood I-Beam",
+                "particle_mesh": {
+                    "kind": "Quad",
+                    "height": 0.72,
+                    "particle_attributes_overrides": [
+                        {
+                            "buoyancy_volume_fill": 0.0847
+                        }
+                    ]
+                },
+                "texture_filename_stem": "large_dining_table_1",
+                "render_color": "#743B3B"
+            },
+            {
+                "name": "Dining Table 2",
+                "role": "Furniture",
+                "material": "Iron Hull",
+                "particle_mesh": {
+                    "kind": "Quad",
+                    "height": 0.72,
+                    "particle_attributes_overrides": [
+                        {
+                            "buoyancy_volume_fill": 0.75
+                        }
+                    ]
+                },
+                "texture_filename_stem": "large_dining_table_2",
+                "render_color": "#938A90"
+            },
+            {
+                "name": "Drum (Heavy)",
+                "role": "Furniture",
+                "material": "Iron Hull",
+                "particle_mesh": {
+                    "kind": "Quad",
+                    "height": 0.5,
+                    "particle_attributes_overrides": [
+                        {
+                            "buoyancy_volume_fill": 0.7
+                        }
+                    ]
+                },
+                "texture_filename_stem": "drum_1",
+                "render_color": "#3A6C4A"
+            },
+            {
+                "name": "Drum (Light)",
+                "role": "Furniture",
+                "material": "Light Iron Bulkhead",
+                "particle_mesh": {
+                    "kind": "Quad",
+                    "height": 0.5,
+                    "particle_attributes_overrides": [
+                        {
+                            "buoyancy_volume_fill": 0.14
+                        }
+                    ]
+                },
+                "texture_filename_stem": "drum_2",
+                "render_color": "#3A4F6E"
+            },
+            {
+                "name": "Piano",
+                "role": "Furniture",
+                "material": "Iron Hull",
+                "particle_mesh": {
+                    "kind": "Quad",
+                    "height": 0.8,
+                    "particle_attributes_overrides": [
+                        {
+                            "buoyancy_volume_fill": 0.7
+                        }
+                    ]
+                },
+                "texture_filename_stem": "piano_1",
+                "render_color": "#AB7737"
+            },
+            {
+                "name": "Small Table 1",
+                "role": "Furniture",
+                "material": "Solid Pine Wood I-Beam",
+                "particle_mesh": {
+                    "kind": "Quad",
+                    "height": 0.4,
+                    "particle_attributes_overrides": [
+                        {
+                            "buoyancy_volume_fill": 0.0847
+                        }
+                    ]
+                },
+                "texture_filename_stem": "small_table_1",
+                "render_color": "#9F6747"
+            },
+            {
+                "name": "Small Table 2",
+                "role": "Furniture",
+                "material": "Solid Pine Wood I-Beam",
+                "particle_mesh": {
+                    "kind": "Quad",
+                    "height": 0.4,
+                    "particle_attributes_overrides": [
+                        {
+                            "buoyancy_volume_fill": 0.0847
+                        }
+                    ]
+                },
+                "texture_filename_stem": "small_table_2",
+                "render_color": "#E9DB98"
+            },
+            {
+                "name": "Stone Ballast",
+                "role": "Furniture",
+                "material": "Concrete Hull",
+                "particle_mesh": {
+                    "kind": "Quad",
+                    "height": 0.5,
+                    "particle_attributes_overrides": [
+                        {
+                            "buoyancy_volume_fill": 0.0847
+                        }
+                    ]
+                },
+                "texture_filename_stem": "stone_ballast",
+                "render_color": "#A5988C"
+            },
+            {
+                "name": "Tungsten Block",
+                "role": "Furniture",
+                "material": "Tungsten Hull",
+                "particle_mesh": {
+                    "kind": "Quad",
+                    "height": 0.7,
+                    "particle_attributes_overrides": [
+                        {
+                            "buoyancy_volume_fill": 0.0847
+                        }
+                    ]
+                },
+                "texture_filename_stem": "tungsten_block",
+                "render_color": "#9AA6B1"
+            },
+            {
+                "name": "Particle",
+                "role": "Other",
+                "material": "Stainless Steel",
+                "particle_mesh": {
+                    "kind": "Particle",
+                    "particle_attributes_overrides": [
+                        {
+                            "buoyancy_volume_fill": 0.0847
+                        }
+                    ]
+                },
+                "texture_filename_stem": "particle_1",
+                "render_color": "#030303"
+            }
+        ]
+    },
+    "string_table": {
+        "it": {
+            "Baker": "Cuoco",
+            "Captain 1": "Capitano 1",
+            "Captain 2": "Capitano 2",
+            "Captain 3": "Capitano 3",
+            "Civilian Passenger 1 (Female)": "Passeggero 1 (Donna)",
+            "Civilian Passenger 1 (Male)": "Passeggero 1 (Uomo)",
+            "Civilian Passenger 2 (Female)": "Passeggero 2 (Donna)",
+            "Civilian Passenger 2 (Male)": "Passeggero 2 (Uomo)",
+            "Civilian Passenger 3 (Female)": "Passeggero 3 (Donna)",
+            "Civilian Passenger 3 (Male)": "Passeggero 3 (Uomo)",
+            "Civilian Passenger 4 (Female)": "Passeggero 4 (Donna)",
+            "Civilian Passenger 4 (Male)": "Passeggero 4 (Uomo)",
+            "Civilian Passenger 5 (Female)": "Passeggero 5 (Donna)",
+            "Civilian Passenger 5 (Male)": "Passeggero 5 (Uomo)",
+            "Civilian Passenger 6 (Male)": "Passeggero 6 (Uomo)",
+            "Deckhand": "Mozzo",
+            "Engineer": "Ingegnere",
+            "Officer": "Ufficiale",
+            "Oiler": "Oliatore",
+            "Quartermaster": "Quartiermastro",
+            "Steward 1": "Cameriere 1",
+            "Stewardess 1": "Cameriera 1",
+            "Steward 2": "Cameriere 2",
+            "Stewardess 2": "Cameriera 2",
+            "Stoker 1": "Fuochista 1",
+            "Stoker 2": "Fuochista 2",
+            "Stoker 3": "Fuochista 3",
+            "Stoker 4": "Fuochista 4",
+            "Wealthy Passenger 1 (Male)": "Passeggero Prima Classe 1 (Uomo)",
+            "Wealthy Passenger 2 (Male)": "Passeggero Prima Classe 2 (Uomo)",
+            "Dummy": "Dummy",
+            "Barrel": "Barile",
+            "Bed 1": "Letto 1",
+            "Bed 2": "Letto 2",
+            "Cabin Desk": "Tavolo da Cabina",
+            "Chest 1": "Scrigno 1",
+            "Chest 2": "Scrigno 2",
+            "Chest 3": "Scrigno 3",
+            "Coal Cart": "Carriola per Carbone",
+            "Crate": "Cassa",
+            "Dining Chair 1": "Sedia da Tavolo 1",
+            "Dining Chair 2": "Sedia da Tavolo 2",
+            "Dining Table 1": "Tavolo da Pranzo 1",
+            "Dining Table 2": "Tavolo da Pranzo 2",
+            "Drum (Heavy)": "Fusto (Pesante)",
+            "Drum (Light)": "Fusto (Leggero)",
+            "Piano": "Pianoforte",
+            "Small Table 1": "Tavolino 1",
+            "Small Table 2": "Tavolino 2",
+            "Stone Ballast": "Zavorra di Pietra",
+            "Tungsten Block": "Blocco di Tungsteno",
+            "Particle": "Particella"
+        }
+    }
 }

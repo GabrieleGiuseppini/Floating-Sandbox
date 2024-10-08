@@ -223,7 +223,7 @@ public:
     // NPCs
     //
 
-    void UploadNpcTextureQuadsStart(size_t maxQuadCount);
+    void UploadNpcsStart(size_t maxQuadCount);
 
     Quad [[nodiscard]] & UploadNpcPosition()
     {
@@ -240,8 +240,19 @@ public:
 
 #pragma pack(pop)
 
+    void UploadNpcTextureAttributes(
+        TextureCoordinatesQuad const & textureCoords,
+        NpcStaticAttributes const & staticAttributes)
+    {
+        auto * buf = &(mNpcAttributesVertexBuffer.emplace_back_ghost(4));
+        buf[0] = { staticAttributes, vec2f(textureCoords.LeftX, textureCoords.TopY) };
+        buf[1] = { staticAttributes, vec2f(textureCoords.LeftX, textureCoords.BottomY) };
+        buf[2] = { staticAttributes, vec2f(textureCoords.RightX, textureCoords.TopY) };
+        buf[3] = { staticAttributes, vec2f(textureCoords.RightX, textureCoords.BottomY) };
+    }
+
     template<NpcRenderModeType NpcRenderMode>
-    void UploadNpcAttributes(
+    void UploadNpcQuadAttributes(
         TextureCoordinatesQuad const & textureCoords,
         NpcStaticAttributes const & staticAttributes,
         vec3f const & roleColor)
@@ -262,7 +273,7 @@ public:
         }
     }
 
-    void UploadNpcTextureQuadsEnd();
+    void UploadNpcsEnd();
 
     //
     // Electric sparks

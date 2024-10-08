@@ -1,6 +1,4 @@
-###VERTEX
-
-#version 120
+###VERTEX-120
 
 #define in attribute
 #define out varying
@@ -25,18 +23,16 @@ uniform mat4 paramOrthoMatrix;
 
 void main()
 {
-    vertexSpacePosition = inNpcQuadAttributeGroup3;
-    vertexOverlayColor = inNpcQuadAttributeGroup2.yzw;
+    vertexSpacePosition = inNpcAttributeGroup3;
+    vertexOverlayColor = inNpcAttributeGroup2.yzw;
 #ifdef WITH_ROLES
     vertexRoleColor = inNpcAttributeGroup4;
 #endif
 
-    gl_Position = paramOrthoMatrix * vec4(inNpcQuadAttributeGroup1.xy, -1.0, 1.0);
+    gl_Position = paramOrthoMatrix * vec4(inNpcAttributeGroup1, inNpcAttributeGroup2.x, 1.0);
 }
 
-###FRAGMENT
-
-#version 120
+###FRAGMENT-120
 
 #define in varying
 
@@ -67,7 +63,7 @@ void main()
 #ifdef WITH_ROLES
     vec3 cInner = vertexRoleColor;
 #else
-    vec3 cinner = paramNpcQuadFlatColor;
+    vec3 cInner = paramNpcQuadFlatColor;
 #endif
     vec3 cBorder = vec3(0.10, 0.10, 0.10);
     vec4 c = vec4(

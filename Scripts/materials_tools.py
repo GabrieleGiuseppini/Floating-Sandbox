@@ -66,7 +66,6 @@ def hex_to_rgb(hex_value):
 
 
 def rgb_to_hex(rgb_tuple):
-    #print(str(rgb_tuple) + ": " + ("%02x %02x %02x" % rgb_tuple))
     return ("#%02x%02x%02x" % rgb_tuple).upper()
 
 

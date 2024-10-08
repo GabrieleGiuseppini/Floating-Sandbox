@@ -979,7 +979,7 @@ void ShipRenderContext::UploadElementFrontierEdgesEnd()
     // Nop
 }
 
-void ShipRenderContext::UploadNpcTextureQuadsStart(size_t maxQuadCount)
+void ShipRenderContext::UploadNpcsStart(size_t maxQuadCount)
 {
     //
     // NPC quads are not sticky: we upload them at each frame
@@ -996,7 +996,7 @@ void ShipRenderContext::UploadNpcTextureQuadsStart(size_t maxQuadCount)
     mGlobalRenderContext.GetElementIndices().EnsureSize(maxQuadCount);
 }
 
-void ShipRenderContext::UploadNpcTextureQuadsEnd()
+void ShipRenderContext::UploadNpcsEnd()
 {
     // Nop
 }

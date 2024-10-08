@@ -1106,6 +1106,12 @@ private:
 		Render::RenderContext & renderContext,
 		Render::ShipRenderContext & shipRenderContext) const;
 
+	template<NpcRenderModeType RenderMode>
+	void RenderNpc(
+		StateType const & npc,
+		Render::RenderContext & renderContext,
+		Render::ShipRenderContext & shipRenderContext) const;
+
 	void UpdateNpcAnimation(
 		StateType & npc,
 		float currentSimulationTime,
