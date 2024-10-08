@@ -246,6 +246,16 @@ V1 TODO:
 = Add alternative shading (stick men, aka quad)
 
 	! Gist:
+		! Two shaders for quads, with #define WITH_ROLES and glslinc
+			! WITH_ROLES takes vertex attrib array
+			! else takes parameter for matte color
+		! NpcQuad local vertex buffers are:
+			! ~Attributes (current, common to both anon and with_roles)
+			! ~RolesColors (only for with_roles)
+		! Npcs::RenderNpc() calls <NpcRenderModeType> templated func which, after uploading positions via UploadNpcPosition(), calls either into (old) ShipRenderContext::UploadNpcTextureAttributes 
+		  or into (new) ShipRenderContext::UploadNpcQuadAttributes<NpcRenderModeType> templated func 
+		! UploadNpcQuadAttributes<NpcRenderModeType> populates ~RolesColors or not
+		TODOOLD
 		! New VertexAttrib array ("static attribs"), used exclusively by stickmen shader, containing rgb(a for alignment) color (which depends on role)
 		! The array is uploaded by Npcs::Upload() when own internal "dirtyForRendering" boolean is set, irrespective of npc render mode
 			! Flag set whenever the role for a given NPC ordinal is changed *in the upload sequence*, i.e. at each NPC removal and addition
@@ -257,13 +267,48 @@ V1 TODO:
 	+ Fixup shader in BaryLab
 		+ Commit
 
-	= GameTypes & RenderParameters: NpcRenderMode {Texture, QuadWithRoles, QuadFlat}, rgbColor QuadFlatColor (both with common dirty flag)
+	+ GameTypes & RenderParameters: NpcRenderMode {Texture, QuadWithRoles, QuadFlat}, rgbColor QuadFlatColor (both with common dirty flag)
 		+ IGameControllerSettings chain
-		= SettingsDialog
+		+ SettingsDialog
+
 	- NpcDatabase:
 		- json: renderColor, @ Human and Furniture
+			- Consider tool that calcs avg color of all frames
 		- Parse @ kind parsing
 		- Expose getter(s)
+	- Npcs:
+		- RenderNpc checks RenderMode and calls templated RenderNpc
+		- RenderNpc<Mode>, using if constexpr's:
+			- Pre-calc quad texturecoords for Quad modes, using Dir+Orientation for signs, and roleColor
+			- Upload positions as normal
+			- If mode==Texture:
+				- Upload as now
+			- Else:
+				- Upload ShipRenderContext::UploadNpcQuadAttributes<NpcRenderModeType> giving precalcd quad texturecoords, and roleColor (even if might not be needed)
+	- ShaderTypes:
+		- New vertex attrib for roles (use name)
+		- Param for flat color
+	- ShipRenderContext:
+		- Members:
+			- Roles vertex type and buffer of it
+		- Roles vertex description
+		- UploadStart: always make room in Roles buffer
+		- UploadNpcQuadAttributes<NpcRenderModeType>(add roleColor arg)
+			- if constexpr with roles: store into roleColor buffer, all times necessary
+		- React to RenderParameters::mode & color changes (ApplyNpcRenderTODOChanges)
+			- Set param in NPC quad matte shader for color
+		- RenderPrepare: iff with roles:
+			- assert size of Roles buffer
+			- Upload Roles buffer
+		- RenderDraw:
+			- Right shader depending on mode
+		- Shader:
+			- Two shaders for quads, with glslinc with #define WITH_ROLES
+				- WITH_ROLES takes vertex attrib array
+				- else takes parameter for matte color
+			- Port FS features (lamp, etc.)
+
+	OLD VERSION, WITH STATIC ATTRIBUTES
 	- Npcs:
 		- mAreRenderStaticAttributesDirtyForRendering (default false)
 			- Comment: set whenever the role for a given NPC ordinal is changed *in the upload sequence*
@@ -317,8 +362,8 @@ V1 TODO:
 	+ Fixup shader in BaryLab
 		+ Commit
 
-	+ GameTypes & RenderParameters: HumanNpcRenderMode {Texture, StickMenWithRoles, StickMenAnonymous}, FurnitureNpcRenderMode {Texture, Blocks}
-		+ SettingsDialog and IGameControllerSettings chain
+	- GameTypes & RenderParameters: HumanNpcRenderMode {Texture, StickMenWithRoles, StickMenAnonymous}, FurnitureNpcRenderMode {Texture, Blocks}
+		- SettingsDialog and IGameControllerSettings chain
 
 	- NpcDatabase:
 		- json: renderColor, @ Human and Furniture
@@ -362,7 +407,7 @@ V1 TODO:
 			- Port FS features (lamp, etc.)
 
 
-- 
+- See if can fix placement of furniture so to topple it
 
 - See if NPC settings for springs make them explode; if so, nuke them
 
