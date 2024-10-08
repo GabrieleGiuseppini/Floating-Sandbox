@@ -510,6 +510,44 @@
 			},
 
 			{
+				"name": "Stoker 3",
+				"role": "Crew",
+				"texture_filename_stems": {
+					"head_f": "stoker_3_head_front",
+					"head_b": "stoker_3_head_back",
+					"head_s": "stoker_3_head_side",
+					"torso_f": "stoker_3_torso_front",
+					"torso_b": "stoker_3_torso_back",
+					"torso_s": "stoker_3_torso_side",
+					"arm_f": "stoker_3_arm_front",
+					"arm_b": "stoker_3_arm_back",
+					"arm_s": "stoker_3_arm_side",
+					"leg_f": "stoker_3_leg_front",
+					"leg_b": "stoker_3_leg_back",
+					"leg_s": "stoker_3_leg_side"
+				}
+			},
+
+			{
+				"name": "Stoker 4",
+				"role": "Crew",
+				"texture_filename_stems": {
+					"head_f": "stoker_4_head_front",
+					"head_b": "stoker_4_head_back",
+					"head_s": "stoker_4_head_side",
+					"torso_f": "stoker_4_torso_front",
+					"torso_b": "stoker_4_torso_back",
+					"torso_s": "stoker_4_torso_side",
+					"arm_f": "stoker_4_arm_front",
+					"arm_b": "stoker_4_arm_back",
+					"arm_s": "stoker_4_arm_side",
+					"leg_f": "stoker_4_leg_front",
+					"leg_b": "stoker_4_leg_back",
+					"leg_s": "stoker_4_leg_side"
+				}
+			},
+
+			{
 				"name": "Wealthy Passenger 1 (Male)",
 				"role": "Passenger",
 				"texture_filename_stems": {
@@ -932,6 +970,9 @@
 			"Steward 2": "Cameriere 2",
 			"Stewardess 2": "Cameriera 2",
 			"Stoker 1": "Fuochista 1",
+			"Stoker 2": "Fuochista 2",
+			"Stoker 3": "Fuochista 3",
+			"Stoker 4": "Fuochista 4",
 			"Wealthy Passenger 1 (Male)": "Passeggero Prima Classe 1 (Uomo)",
 			"Wealthy Passenger 2 (Male)": "Passeggero Prima Classe 2 (Uomo)",
 			"Dummy": "Dummy",

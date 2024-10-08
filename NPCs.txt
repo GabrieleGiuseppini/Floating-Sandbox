@@ -271,26 +271,13 @@ V1 TODO:
 		+ IGameControllerSettings chain
 		+ SettingsDialog
 
-	- NpcDatabase:
-		- json: renderColor, @ Human and Furniture
-			- Consider tool that calcs avg color of all frames
-		- Parse @ kind parsing
-		- Expose getter(s)
-	- Npcs:
-		- RenderNpc checks RenderMode and calls templated RenderNpc
-		- RenderNpc<Mode>, using if constexpr's:
-			- Pre-calc quad texturecoords for Quad modes, using Dir+Orientation for signs, and roleColor
-			- Upload positions as normal
-			- If mode==Texture:
-				- Upload as now
-			- Else:
-				- Upload ShipRenderContext::UploadNpcQuadAttributes<NpcRenderModeType> giving precalcd quad texturecoords, and roleColor (even if might not be needed)
-	- ShaderTypes:
-		- New vertex attrib for roles (use name)
-		- Param for flat color
 	- ShipRenderContext:
 		- Members:
 			- Roles vertex type and buffer of it
+		- ShaderTypes:
+			- New vertex attrib for roles (use name)
+			- Param for flat color
+
 		- Roles vertex description
 		- UploadStart: always make room in Roles buffer
 		- UploadNpcQuadAttributes<NpcRenderModeType>(add roleColor arg)
@@ -307,6 +294,21 @@ V1 TODO:
 				- WITH_ROLES takes vertex attrib array
 				- else takes parameter for matte color
 			- Port FS features (lamp, etc.)
+	- Npcs:
+		- RenderNpc checks RenderMode and calls templated RenderNpc
+		- RenderNpc<Mode>, using if constexpr's:
+			- Pre-calc quad texturecoords for Quad modes, using Dir+Orientation for signs, and roleColor
+			- Upload positions as normal
+			- If mode==Texture:
+				- Upload as now
+			- Else:
+				- Upload ShipRenderContext::UploadNpcQuadAttributes<NpcRenderModeType> giving precalcd quad texturecoords, and roleColor (even if might not be needed)
+	- NpcDatabase:
+		- json: renderColor, @ Human and Furniture
+			- Consider tool that calcs avg color of all frames
+		- Parse @ kind parsing
+		- Expose getter(s)
+
 
 	OLD VERSION, WITH STATIC ATTRIBUTES
 	- Npcs:
