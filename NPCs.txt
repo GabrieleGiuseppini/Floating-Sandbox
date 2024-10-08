@@ -271,28 +271,28 @@ V1 TODO:
 		+ IGameControllerSettings chain
 		+ SettingsDialog
 
-	- ShipRenderContext:
-		- Members:
-			- Roles vertex type and buffer of it
-		- ShaderTypes:
-			- New vertex attrib for roles (use name)
-			- Param for flat color
-
-		- Roles vertex description
-		- UploadStart: always make room in Roles buffer
-		- UploadNpcQuadAttributes<NpcRenderModeType>(add roleColor arg)
-			- if constexpr with roles: store into roleColor buffer, all times necessary
-		- React to RenderParameters::mode & color changes (ApplyNpcRenderTODOChanges)
-			- Set param in NPC quad matte shader for color
-		- RenderPrepare: iff with roles:
-			- assert size of Roles buffer
-			- Upload Roles buffer
-		- RenderDraw:
-			- Right shader depending on mode
-		- Shader:
-			- Two shaders for quads, with glslinc with #define WITH_ROLES
-				- WITH_ROLES takes vertex attrib array
-				- else takes parameter for matte color
+	= ShipRenderContext:
+		+ Members:
+			+ Roles vertex type and buffer of it
+		+ ShaderTypes:
+			+ New vertex attrib for roles (use name)
+			+ Param for flat color
+		+ Roles vertex description
+		+ UploadStart: always make room in Roles buffer
+		+ UploadNpcQuadAttributes<NpcRenderModeType>(add roleColor arg)
+			+ if constexpr with roles: store into roleColor buffer, all times necessary
+		+ React to RenderParameters::mode & color changes (ApplyNpcRenderTODOChanges)
+			+ Set param in NPC quad matte shader for color
+		+ RenderPrepare: iff with roles:
+			+ assert size of Roles buffer
+			+ Upload Roles buffer
+		+ RenderDraw:
+			+ Right shader depending on mode
+		= Shader:
+			+ Fix attrib names in current shader
+			+ Two shaders for quads, with glslinc with #define WITH_ROLES
+				+ WITH_ROLES takes vertex attrib array
+				+ else takes parameter for matte color
 			- Port FS features (lamp, etc.)
 	- Npcs:
 		- RenderNpc checks RenderMode and calls templated RenderNpc
@@ -304,10 +304,19 @@ V1 TODO:
 			- Else:
 				- Upload ShipRenderContext::UploadNpcQuadAttributes<NpcRenderModeType> giving precalcd quad texturecoords, and roleColor (even if might not be needed)
 	- NpcDatabase:
-		- json: renderColor, @ Human and Furniture
-			- Consider tool that calcs avg color of all frames
+		- json: render_color, @ Human and Furniture
+			- Try python script:
+				- https://pillow.readthedocs.io/en/stable/index.html
+				- Takes npcs json and root to (baked) assets
+				- Load npcs json
+				- For each {human,furniture}:
+					- Calc average with all frames
+					- Store render_color
 		- Parse @ kind parsing
 		- Expose getter(s)
+
+	- Test:
+		- Matte color
 
 
 	OLD VERSION, WITH STATIC ATTRIBUTES

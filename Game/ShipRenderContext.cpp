@@ -56,12 +56,15 @@ ShipRenderContext::ShipRenderContext(
     , mFrontierEdgeElementVBO()
     , mFrontierEdgeElementVBOAllocatedElementSize(0u)
     //
-    , mNpcTextureQuadQuadBuffer()
-    , mNpcTextureQuadQuadVBO()
-    , mNpcTextureQuadQuadVBOAllocatedVertexSize(0)
-    , mNpcTextureQuadAttributesVertexBuffer()
-    , mNpcTextureQuadAttributesVertexVBO()
-    , mNpcTextureQuadAttributesVertexVBOAllocatedVertexSize()
+    , mNpcPositionBuffer()
+    , mNpcPositionVBO()
+    , mNpcPositionVBOAllocatedVertexSize(0)
+    , mNpcAttributesVertexBuffer()
+    , mNpcAttributesVertexVBO()
+    , mNpcAttributesVertexVBOAllocatedVertexSize(0)
+    , mNpcQuadRoleVertexBuffer()
+    , mNpcQuadRoleVertexVBO()
+    , mNpcQuadRoleVertexVBOAllocatedVertexSize(0)
     //
     , mElectricSparkVertexBuffer()
     , mElectricSparkVBO()
@@ -168,8 +171,8 @@ ShipRenderContext::ShipRenderContext(
     // Initialize buffers
     //
 
-    GLuint vbos[21];
-    glGenBuffers(21, vbos);
+    GLuint vbos[22];
+    glGenBuffers(22, vbos);
     CheckOpenGLError();
 
     mPointAttributeGroup1VBO = vbos[0];
@@ -215,29 +218,30 @@ ShipRenderContext::ShipRenderContext(
 
     mFrontierEdgeElementVBO = vbos[8];
 
-    mNpcTextureQuadQuadVBO = vbos[9];
-    mNpcTextureQuadAttributesVertexVBO = vbos[10];
+    mNpcPositionVBO = vbos[9];
+    mNpcAttributesVertexVBO = vbos[10];
+    mNpcQuadRoleVertexVBO = vbos[11];
 
-    mElectricSparkVBO = vbos[11];
+    mElectricSparkVBO = vbos[12];
 
-    mFlameVBO = vbos[12];
+    mFlameVBO = vbos[13];
 
-    mJetEngineFlameVBO = vbos[13];
+    mJetEngineFlameVBO = vbos[14];
 
-    mExplosionVBO = vbos[14];
+    mExplosionVBO = vbos[15];
 
-    mSparkleVBO = vbos[15];
+    mSparkleVBO = vbos[16];
     mSparkleVertexBuffer.reserve(256); // Arbitrary
 
-    mGenericMipMappedTextureVBO = vbos[16];
+    mGenericMipMappedTextureVBO = vbos[17];
 
-    mHighlightVBO = vbos[17];
+    mHighlightVBO = vbos[18];
 
-    mVectorArrowVBO = vbos[18];
+    mVectorArrowVBO = vbos[19];
 
-    mCenterVBO = vbos[19];
+    mCenterVBO = vbos[20];
 
-    mPointToPointArrowVBO = vbos[20];
+    mPointToPointArrowVBO = vbos[21];
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -328,18 +332,24 @@ ShipRenderContext::ShipRenderContext(
         glBindVertexArray(*mNpcTextureQuadVAO);
         CheckOpenGLError();
 
-        glBindBuffer(GL_ARRAY_BUFFER, *mNpcTextureQuadQuadVBO);
+        glBindBuffer(GL_ARRAY_BUFFER, *mNpcPositionVBO);
         static_assert(sizeof(Quad::V.TopLeft) == (2) * sizeof(float));
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::NpcTextureQuadAttributeGroup1));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::NpcTextureQuadAttributeGroup1), 2, GL_FLOAT, GL_FALSE, sizeof(Quad::V.TopLeft), (void *)(0));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::NpcAttributeGroup1));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::NpcAttributeGroup1), 2, GL_FLOAT, GL_FALSE, sizeof(Quad::V.TopLeft), (void *)(0));
         CheckOpenGLError();
 
-        glBindBuffer(GL_ARRAY_BUFFER, *mNpcTextureQuadAttributesVertexVBO);
-        static_assert(sizeof(NpcTextureQuadAttributesVertex) == (4 + 2) * sizeof(float));
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::NpcTextureQuadAttributeGroup2));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::NpcTextureQuadAttributeGroup2), 4, GL_FLOAT, GL_FALSE, sizeof(NpcTextureQuadAttributesVertex), (void *)(0));
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::NpcTextureQuadAttributeGroup3));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::NpcTextureQuadAttributeGroup3), 2, GL_FLOAT, GL_FALSE, sizeof(NpcTextureQuadAttributesVertex), (void *)(4 * sizeof(float)));
+        glBindBuffer(GL_ARRAY_BUFFER, *mNpcAttributesVertexVBO);
+        static_assert(sizeof(NpcAttributesVertex) == (4 + 2) * sizeof(float));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::NpcAttributeGroup2));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::NpcAttributeGroup2), 4, GL_FLOAT, GL_FALSE, sizeof(NpcAttributesVertex), (void *)(0));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::NpcAttributeGroup3));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::NpcAttributeGroup3), 2, GL_FLOAT, GL_FALSE, sizeof(NpcAttributesVertex), (void *)(4 * sizeof(float)));
+        CheckOpenGLError();
+
+        glBindBuffer(GL_ARRAY_BUFFER, *mNpcQuadRoleVertexVBO);
+        static_assert(sizeof(NpcQuadRoleVertex) == (3) * sizeof(float));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::NpcAttributeGroup4));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::NpcAttributeGroup4), 3, GL_FLOAT, GL_FALSE, sizeof(NpcQuadRoleVertex), (void *)(0));
         CheckOpenGLError();
 
         // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
@@ -655,6 +665,7 @@ ShipRenderContext::ShipRenderContext(
     ApplyWaterLevelOfDetailChanges(renderParameters);
     ApplyHeatSensitivityChanges(renderParameters);
     ApplyStressRenderModeChanges(renderParameters);
+    ApplyNpcRenderModeChanges(renderParameters);
 }
 
 ShipRenderContext::~ShipRenderContext()
@@ -975,15 +986,12 @@ void ShipRenderContext::UploadNpcTextureQuadsStart(size_t maxQuadCount)
     //
 
     //
-    // Prepare buffer and indices
+    // Prepare buffers and indices
     //
 
-    //
-    // Prepare buffer and indices
-    //
-
-    mNpcTextureQuadQuadBuffer.reset(maxQuadCount);
-    mNpcTextureQuadAttributesVertexBuffer.reset(maxQuadCount * 4);
+    mNpcPositionBuffer.reset(maxQuadCount);
+    mNpcAttributesVertexBuffer.reset(maxQuadCount * 4);
+    mNpcQuadRoleVertexBuffer.reset(maxQuadCount * 4);
 
     mGlobalRenderContext.GetElementIndices().EnsureSize(maxQuadCount);
 }
@@ -1187,6 +1195,11 @@ void ShipRenderContext::ProcessParameterChanges(RenderParameters const & renderP
     if (renderParameters.AreShipStructureRenderModeSelectorsDirty)
     {
         ApplyStressRenderModeChanges(renderParameters);
+    }
+
+    if (renderParameters.AreNpcRenderParametersDirty)
+    {
+        ApplyNpcRenderModeChanges(renderParameters);
     }
 }
 
@@ -1769,46 +1782,67 @@ void ShipRenderContext::RenderDraw(
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-void ShipRenderContext::RenderPrepareNpcs(RenderParameters const & /*renderParameters*/)
+void ShipRenderContext::RenderPrepareNpcs(RenderParameters const & renderParameters)
 {
     //
     // Upload buffers, if needed
     //
 
-    assert(mNpcTextureQuadQuadBuffer.size() * 4 == mNpcTextureQuadAttributesVertexBuffer.size());
+    assert(mNpcPositionBuffer.size() * 4 == mNpcAttributesVertexBuffer.size());
+    assert((renderParameters.NpcRenderMode != NpcRenderModeType::QuadWithRoles && mNpcQuadRoleVertexBuffer.size() == 0)
+        || (renderParameters.NpcRenderMode == NpcRenderModeType::QuadWithRoles && mNpcQuadRoleVertexBuffer.size() == mNpcAttributesVertexBuffer.size()));
 
-    if (!mNpcTextureQuadQuadBuffer.empty())
+    if (!mNpcPositionBuffer.empty())
     {
-        glBindBuffer(GL_ARRAY_BUFFER, *mNpcTextureQuadQuadVBO);
-        if (mNpcTextureQuadQuadBuffer.size() > mNpcTextureQuadQuadVBOAllocatedVertexSize)
+        glBindBuffer(GL_ARRAY_BUFFER, *mNpcPositionVBO);
+        if (mNpcPositionBuffer.size() > mNpcPositionVBOAllocatedVertexSize)
         {
             // Re-allocate VBO buffer and upload
-            glBufferData(GL_ARRAY_BUFFER, sizeof(Quad) * mNpcTextureQuadQuadBuffer.size(), mNpcTextureQuadQuadBuffer.data(), GL_STREAM_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, sizeof(Quad) * mNpcPositionBuffer.size(), mNpcPositionBuffer.data(), GL_STREAM_DRAW);
             CheckOpenGLError();
 
-            mNpcTextureQuadQuadVBOAllocatedVertexSize = mNpcTextureQuadQuadBuffer.size();
+            mNpcPositionVBOAllocatedVertexSize = mNpcPositionBuffer.size();
         }
         else
         {
             // No size change, just upload VBO buffer
-            glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Quad) * mNpcTextureQuadQuadBuffer.size(), mNpcTextureQuadQuadBuffer.data());
+            glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Quad) * mNpcPositionBuffer.size(), mNpcPositionBuffer.data());
             CheckOpenGLError();
         }
 
-        glBindBuffer(GL_ARRAY_BUFFER, *mNpcTextureQuadAttributesVertexVBO);
-        if (mNpcTextureQuadAttributesVertexBuffer.size() > mNpcTextureQuadAttributesVertexVBOAllocatedVertexSize)
+        glBindBuffer(GL_ARRAY_BUFFER, *mNpcAttributesVertexVBO);
+        if (mNpcAttributesVertexBuffer.size() > mNpcAttributesVertexVBOAllocatedVertexSize)
         {
             // Re-allocate VBO buffer and upload
-            glBufferData(GL_ARRAY_BUFFER, sizeof(NpcTextureQuadAttributesVertex) * mNpcTextureQuadAttributesVertexBuffer.size(), mNpcTextureQuadAttributesVertexBuffer.data(), GL_STREAM_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, sizeof(NpcAttributesVertex) * mNpcAttributesVertexBuffer.size(), mNpcAttributesVertexBuffer.data(), GL_STREAM_DRAW);
             CheckOpenGLError();
 
-            mNpcTextureQuadAttributesVertexVBOAllocatedVertexSize = mNpcTextureQuadAttributesVertexBuffer.size();
+            mNpcAttributesVertexVBOAllocatedVertexSize = mNpcAttributesVertexBuffer.size();
         }
         else
         {
             // No size change, just upload VBO buffer
-            glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(NpcTextureQuadAttributesVertex) * mNpcTextureQuadAttributesVertexBuffer.size(), mNpcTextureQuadAttributesVertexBuffer.data());
+            glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(NpcAttributesVertex) * mNpcAttributesVertexBuffer.size(), mNpcAttributesVertexBuffer.data());
             CheckOpenGLError();
+        }
+
+        if (renderParameters.NpcRenderMode == NpcRenderModeType::QuadWithRoles)
+        {
+            glBindBuffer(GL_ARRAY_BUFFER, *mNpcQuadRoleVertexVBO);
+            if (mNpcQuadRoleVertexBuffer.size() > mNpcQuadRoleVertexVBOAllocatedVertexSize)
+            {
+                // Re-allocate VBO buffer and upload
+                glBufferData(GL_ARRAY_BUFFER, sizeof(NpcQuadRoleVertex) * mNpcQuadRoleVertexBuffer.size(), mNpcQuadRoleVertexBuffer.data(), GL_STREAM_DRAW);
+                CheckOpenGLError();
+
+                mNpcQuadRoleVertexVBOAllocatedVertexSize = mNpcQuadRoleVertexBuffer.size();
+            }
+            else
+            {
+                // No size change, just upload VBO buffer
+                glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(NpcQuadRoleVertex) * mNpcQuadRoleVertexBuffer.size(), mNpcQuadRoleVertexBuffer.data());
+                CheckOpenGLError();
+            }
         }
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -1817,21 +1851,40 @@ void ShipRenderContext::RenderPrepareNpcs(RenderParameters const & /*renderParam
 
 void ShipRenderContext::RenderDrawNpcs(RenderParameters const & renderParameters)
 {
-    if (!mNpcTextureQuadQuadBuffer.empty())
+    if (!mNpcPositionBuffer.empty())
     {
         glBindVertexArray(*mNpcTextureQuadVAO);
 
         // Intel bug: cannot associate with VAO
         mGlobalRenderContext.GetElementIndices().Bind();
 
-        mShaderManager.ActivateProgram<ProgramType::ShipNpcsTexture>();
+        switch (renderParameters.NpcRenderMode)
+        {
+            case NpcRenderModeType::Texture:
+            {
+                mShaderManager.ActivateProgram<ProgramType::ShipNpcsTexture>();
+                break;
+            }
+
+            case NpcRenderModeType::QuadWithRoles:
+            {
+                mShaderManager.ActivateProgram<ProgramType::ShipNpcsQuadWithRoles>();
+                break;
+            }
+
+            case NpcRenderModeType::QuadFlat:
+            {
+                mShaderManager.ActivateProgram<ProgramType::ShipNpcsQuadFlat>();
+                break;
+            }
+        }
 
         if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Wireframe)
             glLineWidth(0.1f);
 
         glDrawElements(
             GL_TRIANGLES,
-            static_cast<GLsizei>(mNpcTextureQuadQuadBuffer.size() * 6),
+            static_cast<GLsizei>(mNpcPositionBuffer.size() * 6),
             GL_UNSIGNED_INT,
             (GLvoid *)0);
 
@@ -2745,6 +2798,14 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
     mShaderManager.SetProgramParameter<ProgramType::ShipNpcsTexture, ProgramParameterType::OrthoMatrix>(
         shipOrthoMatrix);
 
+    mShaderManager.ActivateProgram<ProgramType::ShipNpcsQuadWithRoles>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipNpcsQuadWithRoles, ProgramParameterType::OrthoMatrix>(
+        shipOrthoMatrix);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipNpcsQuadFlat>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipNpcsQuadFlat, ProgramParameterType::OrthoMatrix>(
+        shipOrthoMatrix);
+
     //
     // Layer 10: Explosions
     //
@@ -3171,6 +3232,14 @@ void ShipRenderContext::ApplyStressRenderModeChanges(RenderParameters const & re
             stressColorMap,
             12);
     }
+}
+
+void ShipRenderContext::ApplyNpcRenderModeChanges(RenderParameters const & renderParameters)
+{
+    // Set parameter in program
+    mShaderManager.ActivateProgram<ProgramType::ShipNpcsQuadFlat>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipNpcsQuadFlat, ProgramParameterType::NpcQuadFlatColor>(
+        renderParameters.NpcQuadFlatColor.toVec3f());
 }
 
 void ShipRenderContext::SelectShipPrograms(RenderParameters const & renderParameters)

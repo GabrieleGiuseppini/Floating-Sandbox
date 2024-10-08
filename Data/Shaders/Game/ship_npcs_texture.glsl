@@ -4,9 +4,9 @@
 #define out varying
 
 // Inputs
-in vec2 inNpcTextureQuadAttributeGroup1; // Position
-in vec4 inNpcTextureQuadAttributeGroup2; // PlaneId, OverlayColor
-in vec2 inNpcTextureQuadAttributeGroup3; // VertexSpacePosition
+in vec2 inNpcAttributeGroup1; // Position
+in vec4 inNpcAttributeGroup2; // PlaneId, OverlayColor
+in vec2 inNpcAttributeGroup3; // VertexSpacePosition
 
 // Outputs
 out float vertexWorldY;
@@ -18,11 +18,11 @@ uniform mat4 paramOrthoMatrix;
 
 void main()
 {
-    vertexWorldY = inNpcTextureQuadAttributeGroup1.y;
-    textureCoords = inNpcTextureQuadAttributeGroup3;
-    vertexOverlayColor = inNpcTextureQuadAttributeGroup2.yzw;
+    vertexWorldY = inNpcAttributeGroup1.y;
+    textureCoords = inNpcAttributeGroup3;
+    vertexOverlayColor = inNpcAttributeGroup2.yzw;
 
-    gl_Position = paramOrthoMatrix * vec4(inNpcTextureQuadAttributeGroup1.xy, inNpcTextureQuadAttributeGroup2.x, 1.0);
+    gl_Position = paramOrthoMatrix * vec4(inNpcAttributeGroup1.xy, inNpcAttributeGroup2.x, 1.0);
 }
 
 ###FRAGMENT-120

@@ -225,14 +225,14 @@ public:
 
     void UploadNpcTextureQuadsStart(size_t maxQuadCount);
 
-    Quad [[nodiscard]] & UploadNpcTextureQuadPosition()
+    Quad [[nodiscard]] & UploadNpcPosition()
     {
-        return mNpcTextureQuadQuadBuffer.emplace_back_ghost();
+        return mNpcPositionBuffer.emplace_back_ghost();
     }
 
 #pragma pack(push)
 
-    struct NpcTextureQuadStaticAttribs
+    struct NpcStaticAttributes
     {
         float PlaneId;
         vec3f OverlayColor;
@@ -240,15 +240,26 @@ public:
 
 #pragma pack(pop)
 
-    void UploadNpcTextureQuadAttributes(
+    template<NpcRenderModeType NpcRenderMode>
+    void UploadNpcAttributes(
         TextureCoordinatesQuad const & textureCoords,
-        NpcTextureQuadStaticAttribs const & staticAttributes)
+        NpcStaticAttributes const & staticAttributes,
+        vec3f const & roleColor)
     {
-        auto * buf = &(mNpcTextureQuadAttributesVertexBuffer.emplace_back_ghost(4));
+        auto * buf = &(mNpcAttributesVertexBuffer.emplace_back_ghost(4));
         buf[0] = { staticAttributes, vec2f(textureCoords.LeftX, textureCoords.TopY) };
         buf[1] = { staticAttributes, vec2f(textureCoords.LeftX, textureCoords.BottomY) };
         buf[2] = { staticAttributes, vec2f(textureCoords.RightX, textureCoords.TopY) };
         buf[3] = { staticAttributes, vec2f(textureCoords.RightX, textureCoords.BottomY) };
+
+        if constexpr (NpcRenderMode == NpcRenderModeType::QuadWithRoles)
+        {
+            auto * roleColorBuf = &(mNpcQuadRoleVertexBuffer.emplace_back_ghost(4));
+            roleColorBuf[0].roleColor = roleColor;
+            roleColorBuf[1].roleColor = roleColor;
+            roleColorBuf[2].roleColor = roleColor;
+            roleColorBuf[3].roleColor = roleColor;
+        }
     }
 
     void UploadNpcTextureQuadsEnd();
@@ -1401,6 +1412,7 @@ private:
     void ApplyWaterLevelOfDetailChanges(RenderParameters const & renderParameters);
     void ApplyHeatSensitivityChanges(RenderParameters const & renderParameters);
     void ApplyStressRenderModeChanges(RenderParameters const & renderParameters);
+    void ApplyNpcRenderModeChanges(RenderParameters const & renderParameters);
 
     void SelectShipPrograms(RenderParameters const & renderParameters);
 
@@ -1454,16 +1466,26 @@ private:
         int pointIndex3;
     };
 
-    struct NpcTextureQuadAttributesVertex
+    struct NpcAttributesVertex
     {
-        NpcTextureQuadStaticAttribs staticAttribs;
+        NpcStaticAttributes staticAttributes;
         vec2f textureCoordinates;
 
-        NpcTextureQuadAttributesVertex(
-            NpcTextureQuadStaticAttribs const & _staticAttribs,
+        NpcAttributesVertex(
+            NpcStaticAttributes const & _staticAttributes,
             vec2f const & _textureCoordinates)
-            : staticAttribs(_staticAttribs)
+            : staticAttributes(_staticAttributes)
             , textureCoordinates(_textureCoordinates)
+        {}
+    };
+
+    struct NpcQuadRoleVertex
+    {
+        vec3f roleColor;
+
+        NpcQuadRoleVertex(
+            vec3f const & _roleColor)
+            : roleColor(_roleColor)
         {}
     };
 
@@ -1704,13 +1726,17 @@ private:
     GameOpenGLVBO mFrontierEdgeElementVBO;
     size_t mFrontierEdgeElementVBOAllocatedElementSize;
 
-    BoundedVector<Quad> mNpcTextureQuadQuadBuffer; // 4 vertices
-    GameOpenGLVBO mNpcTextureQuadQuadVBO;
-    size_t mNpcTextureQuadQuadVBOAllocatedVertexSize;
+    BoundedVector<Quad> mNpcPositionBuffer; // 4 vertices
+    GameOpenGLVBO mNpcPositionVBO;
+    size_t mNpcPositionVBOAllocatedVertexSize;
 
-    BoundedVector<NpcTextureQuadAttributesVertex> mNpcTextureQuadAttributesVertexBuffer;
-    GameOpenGLVBO mNpcTextureQuadAttributesVertexVBO;
-    size_t mNpcTextureQuadAttributesVertexVBOAllocatedVertexSize;
+    BoundedVector<NpcAttributesVertex> mNpcAttributesVertexBuffer;
+    GameOpenGLVBO mNpcAttributesVertexVBO;
+    size_t mNpcAttributesVertexVBOAllocatedVertexSize;
+
+    BoundedVector<NpcQuadRoleVertex> mNpcQuadRoleVertexBuffer;
+    GameOpenGLVBO mNpcQuadRoleVertexVBO;
+    size_t mNpcQuadRoleVertexVBOAllocatedVertexSize;
 
     BoundedVector<ElectricSparkVertex> mElectricSparkVertexBuffer;
     GameOpenGLVBO mElectricSparkVBO;

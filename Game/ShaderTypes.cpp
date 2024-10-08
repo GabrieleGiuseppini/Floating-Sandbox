@@ -99,6 +99,10 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::ShipGenericMipMappedTextures;
     else if (lstr == "ship_jet_engine_flames")
         return ProgramType::ShipJetEngineFlames;
+    else if (lstr == "ship_npcs_quad_flat")
+        return ProgramType::ShipNpcsQuadFlat;
+    else if (lstr == "ship_npcs_quad_with_roles")
+        return ProgramType::ShipNpcsQuadWithRoles;
     else if (lstr == "ship_npcs_texture")
         return ProgramType::ShipNpcsTexture;
     else if (lstr == "ship_point_to_point_arrows")
@@ -297,6 +301,10 @@ std::string ProgramTypeToStr(ProgramType program)
         return "ShipGenericMipMappedTextures";
     case ProgramType::ShipJetEngineFlames:
         return "ShipJetEngineFlames";
+    case ProgramType::ShipNpcsQuadFlat:
+        return "ShipNpcsQuadFlat";
+    case ProgramType::ShipNpcsQuadWithRoles:
+        return "ShipNpcsQuadWithRoles";
     case ProgramType::ShipNpcsTexture:
         return "ShipNpcsTexture";
     case ProgramType::ShipPointToPointArrows:
@@ -439,6 +447,8 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::MatteColor;
     else if (str == "NoiseStrength")
         return ProgramParameterType::NoiseStrength;
+    else if (str == "NpcQuadFlatColor")
+        return ProgramParameterType::NpcQuadFlatColor;
     else if (str == "OceanTransparency")
         return ProgramParameterType::OceanTransparency;
     else if (str == "OceanDepthColorStart")
@@ -538,6 +548,8 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
         return "MatteColor";
     case ProgramParameterType::NoiseStrength:
         return "NoiseStrength";
+    case ProgramParameterType::NpcQuadFlatColor:
+        return "NpcQuadFlatColor";
     case ProgramParameterType::OceanDepthColorStart:
         return "OceanDepthColorStart";
     case ProgramParameterType::OceanDepthColorEnd:
@@ -669,12 +681,14 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::ShipPointAuxiliaryData;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointFrontierColor"))
         return VertexAttributeType::ShipPointFrontierColor;
-    else if (Utils::CaseInsensitiveEquals(str, "NpcTextureQuadAttributeGroup1"))
-        return VertexAttributeType::NpcTextureQuadAttributeGroup1;
-    else if (Utils::CaseInsensitiveEquals(str, "NpcTextureQuadAttributeGroup2"))
-        return VertexAttributeType::NpcTextureQuadAttributeGroup2;
-    else if (Utils::CaseInsensitiveEquals(str, "NpcTextureQuadAttributeGroup3"))
-        return VertexAttributeType::NpcTextureQuadAttributeGroup3;
+    else if (Utils::CaseInsensitiveEquals(str, "NpcAttributeGroup1"))
+        return VertexAttributeType::NpcAttributeGroup1;
+    else if (Utils::CaseInsensitiveEquals(str, "NpcAttributeGroup2"))
+        return VertexAttributeType::NpcAttributeGroup2;
+    else if (Utils::CaseInsensitiveEquals(str, "NpcAttributeGroup3"))
+        return VertexAttributeType::NpcAttributeGroup3;
+    else if (Utils::CaseInsensitiveEquals(str, "NpcAttributeGroup4"))
+        return VertexAttributeType::NpcAttributeGroup4;
     else if (Utils::CaseInsensitiveEquals(str, "ElectricSpark1"))
         return VertexAttributeType::ElectricSpark1;
     else if (Utils::CaseInsensitiveEquals(str, "Explosion1"))

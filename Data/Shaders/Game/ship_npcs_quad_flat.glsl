@@ -1,0 +1,1 @@
+#include "ship_npcs_quad.glslinc"
