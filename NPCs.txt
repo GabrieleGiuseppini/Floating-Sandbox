@@ -237,13 +237,13 @@ V1 TODO:
 		+ Re-bake them and check atlas
 
 
-- Finish assets
++ Finish assets
 	+ Tungsten material
 	+ Ballast and heavy block
 	+ Last humans
 	+ Re-generate render colors
-	- Test
-	- Send to TimCan
+	+ Test
+	+ Send to TimCan
 
 = Add alternative shading (stick men, aka quad)
 

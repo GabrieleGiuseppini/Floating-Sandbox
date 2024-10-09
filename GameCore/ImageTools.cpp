@@ -69,9 +69,9 @@ void ImageTools::ApplyBinaryTransparencySmoothing(RgbaImageData & imageData)
                 vec4f srcColorF = vec4f::zero();
                 float cnt = 0.0f;
 
-                for (int y2 = std::max(y - 1, 0); y2 < std::min(y + 1, imageData.Size.height); ++y2)
+                for (int y2 = std::max(y - 1, 0); y2 <= std::min(y + 1, imageData.Size.height - 1); ++y2)
                 {
-                    for (int x2 = std::max(x - 1, 0); x2 < std::min(x + 1, imageData.Size.width); ++x2)
+                    for (int x2 = std::max(x - 1, 0); x2 <= std::min(x + 1, imageData.Size.width - 1); ++x2)
                     {
                         auto const & neighborColor = imageDataPtr[y2 * imageData.Size.width + x2];
                         if (neighborColor.a != 0)
