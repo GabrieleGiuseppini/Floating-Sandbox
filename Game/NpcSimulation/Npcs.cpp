@@ -3393,9 +3393,24 @@ void Npcs::RenderNpc(
 
         case NpcKindType::Furniture:
         {
-            Render::TextureCoordinatesQuad textureCoords = npc.KindSpecificState.FurnitureNpcState.CurrentFaceDirectionX > 0.0f ?
-                npc.KindSpecificState.FurnitureNpcState.TextureCoordinatesQuad
-                : npc.KindSpecificState.FurnitureNpcState.TextureCoordinatesQuad.FlipH();
+            Render::TextureCoordinatesQuad textureCoords;
+            vec3f roleColor;
+            if constexpr (RenderMode == NpcRenderModeType::Texture)
+            {
+                textureCoords = npc.KindSpecificState.FurnitureNpcState.CurrentFaceDirectionX > 0.0f ?
+                    npc.KindSpecificState.FurnitureNpcState.TextureCoordinatesQuad
+                    : npc.KindSpecificState.FurnitureNpcState.TextureCoordinatesQuad.FlipH();
+            }
+            else
+            {
+                textureCoords = {
+                    -npc.KindSpecificState.FurnitureNpcState.CurrentFaceDirectionX, npc.KindSpecificState.FurnitureNpcState.CurrentFaceDirectionX,
+                    -1.0f, 1.0f
+                };
+
+                // TODO: store in state
+                roleColor = mNpcDatabase.GetFurnitureRenderColor(npc.KindSpecificState.FurnitureNpcState.SubKindId).toVec3f();
+            }
 
             if (npc.ParticleMesh.Particles.size() == 4)
             {
@@ -3405,9 +3420,15 @@ void Npcs::RenderNpc(
                 quad.V.TopRight = mParticles.GetPosition(npc.ParticleMesh.Particles[1].ParticleIndex);
                 quad.V.BottomRight = mParticles.GetPosition(npc.ParticleMesh.Particles[2].ParticleIndex),
                 quad.V.BottomLeft = mParticles.GetPosition(npc.ParticleMesh.Particles[3].ParticleIndex);
-                shipRenderContext.UploadNpcTextureAttributes(
-                    textureCoords,
-                    staticAttribs);
+                if constexpr (RenderMode == NpcRenderModeType::Texture)
+                    shipRenderContext.UploadNpcTextureAttributes(
+                        textureCoords,
+                        staticAttribs);
+                else
+                    shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
+                        textureCoords,
+                        staticAttribs,
+                        roleColor);
             }
             else
             {
@@ -3423,9 +3444,15 @@ void Npcs::RenderNpc(
                     quad.V.TopRight = vec2f(position.x + ParticleHalfWidth, position.y + ParticleHalfWidth);
                     quad.V.BottomLeft = vec2f(position.x - ParticleHalfWidth, position.y - ParticleHalfWidth);
                     quad.V.BottomRight = vec2f(position.x + ParticleHalfWidth, position.y - ParticleHalfWidth);
-                    shipRenderContext.UploadNpcTextureAttributes(
-                        textureCoords,
-                        staticAttribs);
+                    if constexpr (RenderMode == NpcRenderModeType::Texture)
+                        shipRenderContext.UploadNpcTextureAttributes(
+                            textureCoords,
+                            staticAttribs);
+                    else
+                        shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
+                            textureCoords,
+                            staticAttribs,
+                            roleColor);
                 }
             }
 

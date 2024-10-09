@@ -240,7 +240,9 @@ V1 TODO:
 - Finish assets
 	+ Tungsten material
 	+ Ballast and heavy block
-	- Last humans
+	+ Last humans
+	+ Re-generate render colors
+	- Test
 	- Send to TimCan
 
 = Add alternative shading (stick men, aka quad)
@@ -296,6 +298,7 @@ V1 TODO:
 			- Port FS features (lamp, etc.)
 	= Npcs:
 		+ RenderNpc checks RenderMode and calls templated RenderNpc
+		- Store renderColor in state (Humans, Furniture) as vec3f
 		- RenderNpc<Mode>, using if constexpr's:
 			- Pre-calc quad texturecoords for Quad modes, using Dir+Orientation for signs, and roleColor
 			+ Upload positions as normal
@@ -469,6 +472,7 @@ Next release:
 		- New human NPC behavior ("Constrained_Repairing") with associated animation
 			- Entered when wanting to cross a triangle that on the other side is free because it's damaged
 		- Might also have "Underwater Engineers" with zero buoyancy, unaffected by internal water, who can thus repair when the ship is flooded
+			- This guys has speed multiplier, applies to walk speed and all other movements on a period
 
 - Lights: second pass of lighting algorithm with all NPC particles, for each ship
 	- Adding to NPC particles' _light_ buffer

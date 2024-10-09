@@ -584,6 +584,44 @@
                 "render_color": "#2A2F31"
             },
             {
+                "name": "Wealthy Passenger 3 (Male)",
+                "role": "Passenger",
+                "texture_filename_stems": {
+                    "head_f": "wealthy_passenger_3_head_front",
+                    "head_b": "wealthy_passenger_3_head_back",
+                    "head_s": "wealthy_passenger_3_head_side",
+                    "torso_f": "wealthy_passenger_3_torso_front",
+                    "torso_b": "wealthy_passenger_3_torso_back",
+                    "torso_s": "wealthy_passenger_3_torso_side",
+                    "arm_f": "wealthy_passenger_3_arm_front",
+                    "arm_b": "wealthy_passenger_3_arm_back",
+                    "arm_s": "wealthy_passenger_3_arm_side",
+                    "leg_f": "wealthy_passenger_3_leg_front",
+                    "leg_b": "wealthy_passenger_3_leg_back",
+                    "leg_s": "wealthy_passenger_3_leg_side"
+                },
+                "render_color": "#2A2F31"
+            },
+            {
+                "name": "Wealthy Passenger 4 (Male)",
+                "role": "Passenger",
+                "texture_filename_stems": {
+                    "head_f": "wealthy_passenger_4_head_front",
+                    "head_b": "wealthy_passenger_4_head_back",
+                    "head_s": "wealthy_passenger_4_head_side",
+                    "torso_f": "wealthy_passenger_4_torso_front",
+                    "torso_b": "wealthy_passenger_4_torso_back",
+                    "torso_s": "wealthy_passenger_4_torso_side",
+                    "arm_f": "wealthy_passenger_4_arm_front",
+                    "arm_b": "wealthy_passenger_4_arm_back",
+                    "arm_s": "wealthy_passenger_4_arm_side",
+                    "leg_f": "wealthy_passenger_4_leg_front",
+                    "leg_b": "wealthy_passenger_4_leg_back",
+                    "leg_s": "wealthy_passenger_4_leg_side"
+                },
+                "render_color": "#5F6B60"
+            },
+            {
                 "name": "Dummy",
                 "role": "Other",
                 "body_width_randomization_sensitivity": 0.1,
@@ -976,6 +1014,8 @@
             "Stoker 4": "Fuochista 4",
             "Wealthy Passenger 1 (Male)": "Passeggero Prima Classe 1 (Uomo)",
             "Wealthy Passenger 2 (Male)": "Passeggero Prima Classe 2 (Uomo)",
+            "Wealthy Passenger 3 (Male)": "Passeggero Prima Classe 3 (Uomo)",
+            "Wealthy Passenger 4 (Male)": "Passeggero Prima Classe 4 (Uomo)",
             "Dummy": "Dummy",
             "Barrel": "Barile",
             "Bed 1": "Letto 1",
