@@ -324,8 +324,11 @@ V1 TODO:
 	- Review geometry in both modes
 		- Test 1: single system (for both Texture and Quad modes), from Vitruvian man:
 			- Legs: 1/2   w=1/10
+				- Ideal texture then: 6.4x32   real: Xx32 with X=16 (but graphically 5)
 			- Torso: 1/2-1/8  w=1/7
+				- Ideal texture then: 12x32   real: Xx32 with X~=22-24
 			- Head: 1/8   w=1/10
+				- Ideal texture then: 12.8x16  real:Xx16 with X~=16 (but graphically 14)
 
 	- Test:
 		- Buoyancy head offsets in both modes
