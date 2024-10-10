@@ -89,109 +89,109 @@ public:
 
     std::vector<std::tuple<NpcSubKindIdType, std::string>> GetHumanSubKinds(std::string const & language) const;
 
-    std::vector<std::vector<NpcSubKindIdType>> const & GetHumanSubKindsByRole() const
+    std::vector<std::vector<NpcSubKindIdType>> const & GetHumanSubKindIdsByRole() const
     {
-        return mHumanSubKindsByRole;
+        return mHumanSubKindIdsByRole;
     }
 
     NpcHumanRoleType GetHumanRole(NpcSubKindIdType subKindId) const
     {
-        return mHumanKinds.at(subKindId).Role;
+        return mHumanSubKinds.at(subKindId).Role;
     }
 
     rgbColor GetHumanRenderColor(NpcSubKindIdType subKindId) const
     {
-        return mHumanKinds.at(subKindId).RenderColor;
+        return mHumanSubKinds.at(subKindId).RenderColor;
     }
 
     StructuralMaterial const & GetHumanHeadMaterial(NpcSubKindIdType subKindId) const
     {
-        return mHumanKinds.at(subKindId).HeadMaterial;
+        return mHumanSubKinds.at(subKindId).HeadMaterial;
     }
 
     StructuralMaterial const & GetHumanFeetMaterial(NpcSubKindIdType subKindId) const
     {
-        return mHumanKinds.at(subKindId).FeetMaterial;
+        return mHumanSubKinds.at(subKindId).FeetMaterial;
     }
 
     ParticleAttributesType const & GetHumanHeadParticleAttributes(NpcSubKindIdType subKindId) const
     {
-        assert(mHumanKinds.at(subKindId).ParticleAttributes.size() == 2);
-        return mHumanKinds.at(subKindId).ParticleAttributes[1];
+        assert(mHumanSubKinds.at(subKindId).ParticleAttributes.size() == 2);
+        return mHumanSubKinds.at(subKindId).ParticleAttributes[1];
     }
 
     ParticleAttributesType const & GetHumanFeetParticleAttributes(NpcSubKindIdType subKindId) const
     {
-        assert(mHumanKinds.at(subKindId).ParticleAttributes.size() == 2);
-        return mHumanKinds.at(subKindId).ParticleAttributes[0];
+        assert(mHumanSubKinds.at(subKindId).ParticleAttributes.size() == 2);
+        return mHumanSubKinds.at(subKindId).ParticleAttributes[0];
     }
 
     float GetHumanSizeMultiplier(NpcSubKindIdType subKindId) const
     {
-        return mHumanKinds.at(subKindId).SizeMultiplier;
+        return mHumanSubKinds.at(subKindId).SizeMultiplier;
     }
 
     HumanDimensionsType const & GetHumanDimensions(NpcSubKindIdType subKindId) const
     {
-        return mHumanKinds.at(subKindId).Dimensions;
+        return mHumanSubKinds.at(subKindId).Dimensions;
     }
 
     float GetHumanBodyWidthRandomizationSensitivity(NpcSubKindIdType subKindId) const
     {
-        return mHumanKinds.at(subKindId).BodyWidthRandomizationSensitivity;
+        return mHumanSubKinds.at(subKindId).BodyWidthRandomizationSensitivity;
     }
 
     HumanTextureFramesType const & GetHumanTextureCoordinatesQuads(NpcSubKindIdType subKindId) const
     {
-        return mHumanKinds.at(subKindId).TextureCoordinatesQuads;
+        return mHumanSubKinds.at(subKindId).TextureCoordinatesQuads;
     }
 
     std::vector<std::tuple<NpcSubKindIdType, std::string>> GetFurnitureSubKinds(std::string const & language) const;
 
-    std::vector<std::vector<NpcSubKindIdType>> const & GetFurnitureSubKindsByRole() const
+    std::vector<std::vector<NpcSubKindIdType>> const & GetFurnitureSubKindIdsByRole() const
     {
-        return mFurnitureSubKindsByRole;
+        return mFurnitureSubKindIdsByRole;
     }
 
     NpcFurnitureRoleType GetFurnitureRole(NpcSubKindIdType subKindId) const
     {
-        return mFurnitureKinds.at(subKindId).Role;
+        return mFurnitureSubKinds.at(subKindId).Role;
     }
 
     rgbColor GetFurnitureRenderColor(NpcSubKindIdType subKindId) const
     {
-        return mFurnitureKinds.at(subKindId).RenderColor;
+        return mFurnitureSubKinds.at(subKindId).RenderColor;
     }
 
     StructuralMaterial const & GetFurnitureMaterial(NpcSubKindIdType subKindId) const
     {
-        return mFurnitureKinds.at(subKindId).Material;
+        return mFurnitureSubKinds.at(subKindId).Material;
     }
 
     ParticleAttributesType const & GetFurnitureParticleAttributes(NpcSubKindIdType subKindId, int particleOrdinal) const
     {
-        assert(particleOrdinal < mFurnitureKinds.at(subKindId).ParticleAttributes.size());
-        return mFurnitureKinds.at(subKindId).ParticleAttributes[particleOrdinal];
+        assert(particleOrdinal < mFurnitureSubKinds.at(subKindId).ParticleAttributes.size());
+        return mFurnitureSubKinds.at(subKindId).ParticleAttributes[particleOrdinal];
     }
 
     ParticleMeshKindType const & GetFurnitureParticleMeshKindType(NpcSubKindIdType subKindId) const
     {
-        return mFurnitureKinds.at(subKindId).ParticleMeshKind;
+        return mFurnitureSubKinds.at(subKindId).ParticleMeshKind;
     }
 
     FurnitureDimensionsType const & GetFurnitureDimensions(NpcSubKindIdType subKindId) const
     {
-        return mFurnitureKinds.at(subKindId).Dimensions;
+        return mFurnitureSubKinds.at(subKindId).Dimensions;
     }
 
     Render::TextureCoordinatesQuad const & GetFurnitureTextureCoordinatesQuad(NpcSubKindIdType subKindId) const
     {
-        return mFurnitureKinds.at(subKindId).TextureCoordinatesQuad;
+        return mFurnitureSubKinds.at(subKindId).TextureCoordinatesQuad;
     }
 
 private:
 
-    struct HumanKind
+    struct HumanSubKind
     {
         std::string Name;
         NpcHumanRoleType Role;
@@ -209,7 +209,7 @@ private:
         HumanTextureFramesType const TextureCoordinatesQuads;
     };
 
-    struct FurnitureKind
+    struct FurnitureSubKind
     {
         std::string Name;
         NpcFurnitureRoleType Role;
@@ -245,12 +245,12 @@ private:
     using StringTable = std::unordered_map<std::string, std::vector<StringEntry>>;
 
     NpcDatabase(
-        std::map<NpcSubKindIdType, HumanKind> && humanKinds,
-        std::map<NpcSubKindIdType, FurnitureKind> && furnitureKinds,
+        std::map<NpcSubKindIdType, HumanSubKind> && humanSubKinds,
+        std::map<NpcSubKindIdType, FurnitureSubKind> && furnitureSubKinds,
         StringTable && stringTable);
 
-    static HumanKind ParseHumanKind(
-        picojson::object const & kindObject,
+    static HumanSubKind ParseHumanSubKind(
+        picojson::object const & subKindObject,
         StructuralMaterial const & headMaterial,
         StructuralMaterial const & feetMaterial,
         ParticleAttributesType const & globalHeadParticleAttributes,
@@ -268,8 +268,8 @@ private:
         std::string const & frameNameMemberName,
         Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas);
 
-    static FurnitureKind ParseFurnitureKind(
-        picojson::object const & kindObject,
+    static FurnitureSubKind ParseFurnitureSubKind(
+        picojson::object const & subKindObject,
         MaterialDatabase const & materialDatabase,
         Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas);
 
@@ -299,15 +299,15 @@ private:
 
     static StringTable ParseStringTable(
         picojson::object const & containerObject,
-        std::map<NpcSubKindIdType, HumanKind> const & humanKinds,
-        std::map<NpcSubKindIdType, FurnitureKind> const & furnitureKinds);
+        std::map<NpcSubKindIdType, HumanSubKind> const & humanSubKinds,
+        std::map<NpcSubKindIdType, FurnitureSubKind> const & furnitureSubKinds);
 
 private:
 
-    std::map<NpcSubKindIdType, HumanKind> mHumanKinds;
-    std::map<NpcSubKindIdType, FurnitureKind> mFurnitureKinds;
+    std::map<NpcSubKindIdType, HumanSubKind> mHumanSubKinds;
+    std::map<NpcSubKindIdType, FurnitureSubKind> mFurnitureSubKinds;
     StringTable mStringTable;
 
-    std::vector<std::vector<NpcSubKindIdType>> mHumanSubKindsByRole;
-    std::vector<std::vector<NpcSubKindIdType>> mFurnitureSubKindsByRole;
+    std::vector<std::vector<NpcSubKindIdType>> mHumanSubKindIdsByRole;
+    std::vector<std::vector<NpcSubKindIdType>> mFurnitureSubKindIdsByRole;
 };

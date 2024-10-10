@@ -296,16 +296,19 @@ V1 TODO:
 				+ WITH_ROLES takes vertex attrib array
 				+ else takes parameter for matte color
 			- Port FS features (lamp, etc.)
-	= Npcs:
+	+ Npcs:
 		+ RenderNpc checks RenderMode and calls templated RenderNpc
-		- Store renderColor in state (Humans, Furniture) as vec3f
-		- RenderNpc<Mode>, using if constexpr's:
-			- Pre-calc quad texturecoords for Quad modes, using Dir+Orientation for signs, and roleColor
+		+ Store renderColor in state (Humans, Furniture) as vec3f
+		+ RenderNpc<Mode>, using if constexpr's:
+			+ Pre-calc quad texturecoords for Quad modes, using Dir+Orientation for signs, and roleColor
+			+ If not in texture mode, do not use database's dimension ratios when calculating limb dimensions, but use constants instead
+				+ Use same from BaryLab, ported (again) into GameParameters - with comments for use in "Quad" mode only
+				+ Redo: need less multiplications in quad modes
 			+ Upload positions as normal
-			- If mode==Texture:
-				- Upload as now
-			- Else:
-				- Upload ShipRenderContext::UploadNpcQuadAttributes<NpcRenderModeType> giving precalcd quad texturecoords, and roleColor (even if might not be needed)
+			+ If mode==Texture:
+				+ Upload as now
+			+ Else:
+				+ Upload ShipRenderContext::UploadNpcQuadAttributes<NpcRenderModeType> giving precalcd quad texturecoords, and roleColor (even if might not be needed)
 	+ NpcDatabase:
 		+ json: render_color, @ Human and Furniture
 			+ Try python script:
@@ -318,7 +321,17 @@ V1 TODO:
 		+ Parse @ kind parsing
 		+ Expose getter(s)
 
+	- Review geometry in both modes
+		- Test 1: single system (for both Texture and Quad modes), from Vitruvian man:
+			- Legs: 1/2   w=1/10
+			- Torso: 1/2-1/8  w=1/7
+			- Head: 1/8   w=1/10
+
 	- Test:
+		- Buoyancy head offsets in both modes
+		- Check proportions in quad mode
+		- Knee bend
+		- All orientations, for human & furniture
 		- Matte color
 
 
@@ -363,65 +376,14 @@ V1 TODO:
 			- param for enabling colors
 			- Port FS features (lamp, etc.)
 
+	- Port to BaryLab
+		- Profile
 
-	ALTERNATIVE VERSION, WITH HUMANS AND FURNITURE SEPARATE
-	! Gist:
-		! ShipRenderContext has two buffers - one for NpcTextureQuads, one for NpcMatteQuads
-			! TODOHERE: really? No static attribs? At this moment we don't need a separate vertex attrib only for Matte; the vertex type can be different altogether
-		! We make uploads to the two with runtime decisions based on the two render modes and on whether we're uploading furniture or humans
-			! @ NpcUpload, so we can make -1 -> 1.0 quad @ upload method
-			! Looks like an _if_ before calling, using precalcd -1/+1 quad
-		! At prepare and render time, we upload and draw each based on their current cardinality
-
-	+ Fixup shader in BaryLab
-		+ Commit
-
-	- GameTypes & RenderParameters: HumanNpcRenderMode {Texture, StickMenWithRoles, StickMenAnonymous}, FurnitureNpcRenderMode {Texture, Blocks}
-		- SettingsDialog and IGameControllerSettings chain
-
-	- NpcDatabase:
-		- json: renderColor, @ Human and Furniture
-		- Parse @ kind parsing
-		- Expose getter(s)
-	- Npcs:
-		- TODOHERE: see above
-		- mAreRenderStaticAttributesDirtyForRendering (default false)
-			- Comment: set whenever the role for a given NPC ordinal is changed *in the upload sequence*
-		- Set at:
-			- Creation (follow: single, group)
-			- Removal (including ship removal)
-		- Upload():
-			- If dirty: start, upload color for each NPC, end, clear dirty
-			- If render mode needs it: all texture coords are replaced with pre-calcd single quad, using Dir+Orientation for signs
-	- ShipRenderContext:
-		- Rename ShipRenderContext::UploadNpcTextureQuadPosition as UploadNpcQuadPosition, as it's good for both
-		- React to RenderParameters::mode changes:
-			- Set param in stick men shader for enabling/disabling colors
-				- This has to happen also @ init, so RenderParameters has it dirty by default
-		- TODOHERE: see above
-		- ShaderTypes:			
-			- Static attributes vertex attributes
-			- Param to enable color
-		- Static attributes vertex attrib description @ other descriptions
-		- Static attribs vertex type, buffer of it, and mIsDirty (false)		
-		- UploadStart: size buffer and reset its size
-			- Comment on being sticky
-		- Upload:
-			- Store into buffer
-		- Upload end: nop
-		- RenderPrepare:
-			- If dirty and mode requires:
-				- assert sizes match
-				- If not empty: upload (w/alloc)
-				- Clear dirty flag
-		- RenderDraw:
-			- Stickmen shader if mode requires
-		- Shader:
-			- param for enabling colors
-			- Port FS features (lamp, etc.)
-
+- Test anti-matter bomb, settle, and search for NPCs
 
 - See if can fix placement of furniture so to topple it
+
+- UI Preferences for NPC notifications
 
 - See if NPC settings for springs make them explode; if so, nuke them
 

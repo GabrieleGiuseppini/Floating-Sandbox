@@ -494,10 +494,15 @@ struct GameParameters
         static float constexpr BodyWidthWideMultiplierStdDev = 0.12f;
 
         // All fractions below are relative to BodyLength
-        static float constexpr HeadWidthFraction = 1.0f / 5.0f; // Length then depends on texture frame
+        static float constexpr TextureModeHeadWidthFraction = 1.0f / 5.0f; // Length then depends on texture frame
+        static float constexpr QuadModeHeadWidthFraction = 1.0f / 8.0f; // Length then depends on texture frame
+        static float constexpr QuadModeHeadLengthFraction = 1.0f / 5.0f; // For Quad modes
         static float constexpr TorsoLengthFraction = 2.0f / 5.0f; // Width then depends on texture frame
+        static float constexpr QuadModeTorsoWidthFraction = 1.0f / 7.0f; // For Quad modes
         static float constexpr ArmLengthFraction = 2.0f / 5.0f; // Width then depends on texture frame
+        static float constexpr QuadModeArmWidthFraction = 1.0f / 10.0f; // For Quad modes
         static float constexpr LegLengthFraction = 2.0f / 5.0f; // Width then depends on texture frame
+        static float constexpr QuadModeLegWidthFraction = 1.0f / 10.0f; // For Quad modes
 
         static_assert(LegLengthFraction + TorsoLengthFraction < 1.0f); // Leaves room for head length
 
@@ -649,7 +654,7 @@ struct GameParameters
 
     static size_t constexpr MaxNpcs = 1024u;
     static size_t constexpr MaxParticlesPerNpc = 4u;
-    static size_t constexpr MaxSpringsPerNpc = 6u;    
+    static size_t constexpr MaxSpringsPerNpc = 6u;
 
     static size_t constexpr MaxGadgets = 64u;
     static size_t constexpr MaxPinnedPoints = 64u;

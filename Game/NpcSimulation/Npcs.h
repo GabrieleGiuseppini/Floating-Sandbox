@@ -684,6 +684,9 @@ private:
 		// The type of this NPC.
 		NpcKindType const Kind;
 
+		// The render color for this NPC.
+		vec3f const RenderColor;
+
 		// The current ship that this NPC belongs to.
 		// NPCs always belong to a ship, and can change ships during the
 		// course of their lives.
@@ -722,6 +725,7 @@ private:
 		StateType(
 			NpcId id,
 			NpcKindType kind,
+			vec3f const & renderColor,
 			ShipId initialShipId,
 			PlaneId initialPlaneId,
 			std::optional<ConnectedComponentId> currentConnectedComponentId,
@@ -731,6 +735,7 @@ private:
 			BeingPlacedStateType beingPlacedState)
 			: Id(id)
 			, Kind(kind)
+			, RenderColor(renderColor)
 			, CurrentShipId(initialShipId)
 			, CurrentPlaneId(initialPlaneId)
 			, CurrentConnectedComponentId(currentConnectedComponentId)

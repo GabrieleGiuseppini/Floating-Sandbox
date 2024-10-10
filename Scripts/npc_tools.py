@@ -57,35 +57,35 @@ def add_render_colors(json_filepath, npc_asset_root_directory_path):
 
     # Humans
 
-    for kind in root_obj["humans"]["kinds"]:
+    for sub_kind in root_obj["humans"]["sub_kinds"]:
 
         visited_cnt += 1
 
-        kind_avg_color = None
-        kind_cnt = 0
-        for _, v in kind["texture_filename_stems"].items():
+        sub_kind_avg_color = None
+        sub_kind_cnt = 0
+        for _, v in sub_kind["texture_filename_stems"].items():
             texture_avg_color = get_average_color(Path(npc_asset_root_directory_path), v)
             if texture_avg_color is not None:
-                if kind_avg_color is None:
-                    kind_avg_color = texture_avg_color
+                if sub_kind_avg_color is None:
+                    sub_kind_avg_color = texture_avg_color
                 else:
-                    kind_avg_color = (texture_avg_color[0] + kind_avg_color[0], texture_avg_color[1] + kind_avg_color[1], texture_avg_color[2] + kind_avg_color[2])
-                kind_cnt += 1
+                    sub_kind_avg_color = (texture_avg_color[0] + sub_kind_avg_color[0], texture_avg_color[1] + sub_kind_avg_color[1], texture_avg_color[2] + sub_kind_avg_color[2])
+                sub_kind_cnt += 1
 
         if texture_avg_color is not None:
-            kind["render_color"] = rgb_to_hex(texture_avg_color)
+            sub_kind["render_color"] = rgb_to_hex(texture_avg_color)
             updated_cnt += 1
 
     # Furniture
     
-    for kind in root_obj["furniture"]["kinds"]:
+    for sub_kind in root_obj["furniture"]["sub_kinds"]:
         
         visited_cnt += 1
 
-        texture_avg_color = get_average_color(Path(npc_asset_root_directory_path), kind["texture_filename_stem"])
+        texture_avg_color = get_average_color(Path(npc_asset_root_directory_path), sub_kind["texture_filename_stem"])
 
         if texture_avg_color is not None:
-            kind["render_color"] = rgb_to_hex(texture_avg_color)
+            sub_kind["render_color"] = rgb_to_hex(texture_avg_color)
             updated_cnt += 1
 
     # Save

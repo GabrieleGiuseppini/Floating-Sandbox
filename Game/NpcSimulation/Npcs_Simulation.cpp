@@ -1757,9 +1757,9 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
             if (npc.Kind == NpcKindType::Human && npcParticleOrdinal == 1)
             {
                 // Head - use an offset
-                testParticlePosition.y += 
-                    (mParticles.GetPosition(npc.ParticleMesh.Particles[0].ParticleIndex).y - testParticlePosition.y) 
-                    * (BuoyancyInterfaceWidth / 2.0f + GameParameters::HumanNpcGeometry::HeadWidthFraction);
+                testParticlePosition.y +=
+                    (mParticles.GetPosition(npc.ParticleMesh.Particles[0].ParticleIndex).y - testParticlePosition.y)
+                    * (BuoyancyInterfaceWidth / 2.0f + GameParameters::HumanNpcGeometry::QuadModeHeadLengthFraction);
             }
 
             float const waterHeight = mParentWorld.GetOceanSurface().GetHeightAt(testParticlePosition.x);
@@ -1775,7 +1775,7 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
 
             // Generate waves if on the air-water interface, magnitude
             // proportional to (signed) vertical velocity
-            
+
             float const verticalVelocity = mParticles.GetVelocity(npcParticle.ParticleIndex).y;
             float const particleDepthBefore = waterHeight - (particlePosition.y - verticalVelocity * GameParameters::SimulationStepTimeDuration<float>);
             if (particleDepth * particleDepthBefore < 0.0f) // Check if we've just entered/left the air-water interface

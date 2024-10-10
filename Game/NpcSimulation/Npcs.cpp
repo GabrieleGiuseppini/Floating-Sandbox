@@ -645,6 +645,7 @@ std::tuple<std::optional<PickedObjectId<NpcId>>, NpcCreationFailureReasonType> N
     mStateBuffer[npcId].emplace(
         npcId,
         NpcKindType::Furniture,
+        mNpcDatabase.GetFurnitureRenderColor(subKind).toVec3f(),
         shipId, // Topmost ship ID
         0, // PlaneID: irrelevant as long as BeingPlaced
         std::nullopt, // Connected component: irrelevant as long as BeingPlaced
@@ -831,6 +832,7 @@ std::tuple<std::optional<PickedObjectId<NpcId>>, NpcCreationFailureReasonType> N
     mStateBuffer[npcId].emplace(
         npcId,
         NpcKindType::Human,
+        mNpcDatabase.GetHumanRenderColor(subKind).toVec3f(),
         shipId, // Topmost ship ID
         0, // PlaneID: irrelevant as long as BeingPlaced
         std::nullopt, // Connected component: irrelevant as long as BeingPlaced
@@ -1264,7 +1266,7 @@ std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> Npcs::AddNpcGroup
             case NpcKindType::Furniture:
             {
                 // Trivial choice
-                auto const & furnitureRoles = mNpcDatabase.GetFurnitureSubKindsByRole()[static_cast<size_t>(NpcFurnitureRoleType::Furniture)];
+                auto const & furnitureRoles = mNpcDatabase.GetFurnitureSubKindIdsByRole()[static_cast<size_t>(NpcFurnitureRoleType::Furniture)];
                 size_t iSubKind = GameRandomEngine::GetInstance().Choose(furnitureRoles.size());
                 subKind = furnitureRoles[iSubKind];
 
@@ -1277,7 +1279,7 @@ std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> Npcs::AddNpcGroup
                 if (mShips[shipId]->HumanNpcCaptainCount == 0)
                 {
                     // Choose a captain
-                    auto const & captainRoles = mNpcDatabase.GetHumanSubKindsByRole()[static_cast<size_t>(NpcHumanRoleType::Captain)];
+                    auto const & captainRoles = mNpcDatabase.GetHumanSubKindIdsByRole()[static_cast<size_t>(NpcHumanRoleType::Captain)];
                     size_t iSubKind = GameRandomEngine::GetInstance().Choose(captainRoles.size());
                     subKind = captainRoles[iSubKind];
                 }
@@ -1287,14 +1289,14 @@ std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> Npcs::AddNpcGroup
                     if (GameRandomEngine::GetInstance().GenerateUniformBoolean(0.3f)) // ~1/3 is crew
                     {
                         // Crew
-                        auto const & crewRoles = mNpcDatabase.GetHumanSubKindsByRole()[static_cast<size_t>(NpcHumanRoleType::Crew)];
+                        auto const & crewRoles = mNpcDatabase.GetHumanSubKindIdsByRole()[static_cast<size_t>(NpcHumanRoleType::Crew)];
                         size_t iSubKind = GameRandomEngine::GetInstance().Choose(crewRoles.size());
                         subKind = crewRoles[iSubKind];
                     }
                     else
                     {
                         // Passengers
-                        auto const & passengerRoles = mNpcDatabase.GetHumanSubKindsByRole()[static_cast<size_t>(NpcHumanRoleType::Passenger)];
+                        auto const & passengerRoles = mNpcDatabase.GetHumanSubKindIdsByRole()[static_cast<size_t>(NpcHumanRoleType::Passenger)];
                         size_t iSubKind = GameRandomEngine::GetInstance().Choose(passengerRoles.size());
                         subKind = passengerRoles[iSubKind];
                     }
@@ -2825,6 +2827,9 @@ void Npcs::RenderNpc(
 {
     assert(mShips[npc.CurrentShipId].has_value());
 
+    bool constexpr IsTextureMode = (RenderMode == NpcRenderModeType::Texture);
+
+    // Prepare static attributes
     Render::ShipRenderContext::NpcStaticAttributes staticAttribs{
         (npc.CurrentRegime == StateType::RegimeType::BeingPlaced)
             ? static_cast<float>(mShips[npc.CurrentShipId]->HomeShip.GetMaxPlaneId())
@@ -2883,23 +2888,51 @@ void Npcs::RenderNpc(
             vec2f const torsoTop = legTop + actualBodyVector * GameParameters::HumanNpcGeometry::TorsoLengthFraction;
             vec2f const headBottom = torsoTop;
             vec2f const armTop = headBottom - actualBodyVector * (GameParameters::HumanNpcGeometry::ArmLengthFraction / 8.0f); // Magic
-            vec2f const headTop = headBottom + actualBodyVector * (GameParameters::HumanNpcGeometry::HeadWidthFraction * humanNpcState.Dimensions.HeadWidthToHeightFactor);
+            vec2f const headTop =
+                headBottom
+                + actualBodyVector * (IsTextureMode
+                    ? (GameParameters::HumanNpcGeometry::TextureModeHeadWidthFraction * humanNpcState.Dimensions.HeadWidthToHeightFactor)
+                    : GameParameters::HumanNpcGeometry::QuadModeHeadLengthFraction
+                    );
 
             float const adjustedIdealHumanHeight = npc.ParticleMesh.Springs[0].RestLength;
 
-            float const halfHeadW = (adjustedIdealHumanHeight * GameParameters::HumanNpcGeometry::HeadWidthFraction * humanNpcState.Dimensions.HeadWFactor * humanNpcState.WidthMultipier) / 2.0f;
-            float const torsoWidthFraction = GameParameters::HumanNpcGeometry::TorsoLengthFraction * humanNpcState.Dimensions.TorsoHeightToWidthFactor;
+            float const halfHeadW =
+                adjustedIdealHumanHeight
+                * (IsTextureMode
+                    ? GameParameters::HumanNpcGeometry::TextureModeHeadWidthFraction * humanNpcState.Dimensions.HeadWFactor
+                    : GameParameters::HumanNpcGeometry::QuadModeHeadWidthFraction)
+                * humanNpcState.WidthMultipier
+                / 2.0f;
+
+            float const torsoWidthFraction = IsTextureMode
+                ? GameParameters::HumanNpcGeometry::TorsoLengthFraction * humanNpcState.Dimensions.TorsoHeightToWidthFactor
+                : GameParameters::HumanNpcGeometry::QuadModeTorsoWidthFraction;
             float const halfTorsoW = (adjustedIdealHumanHeight * torsoWidthFraction * humanNpcState.WidthMultipier) / 2.0f;
 
             float const leftArmLength = adjustedIdealHumanHeight * GameParameters::HumanNpcGeometry::ArmLengthFraction * animationState.LimbLengthMultipliers.LeftArm;
             float const rightArmLength = adjustedIdealHumanHeight * GameParameters::HumanNpcGeometry::ArmLengthFraction * animationState.LimbLengthMultipliers.RightArm;
-            float const armWidthFraction = GameParameters::HumanNpcGeometry::ArmLengthFraction * humanNpcState.Dimensions.ArmHeightToWidthFactor;
+
+            float const armWidthFraction = IsTextureMode
+                ? GameParameters::HumanNpcGeometry::ArmLengthFraction * humanNpcState.Dimensions.ArmHeightToWidthFactor
+                : GameParameters::HumanNpcGeometry::QuadModeArmWidthFraction;
             float const halfArmW = (adjustedIdealHumanHeight * armWidthFraction * humanNpcState.WidthMultipier) / 2.0f;
 
             float const leftLegLength = adjustedIdealHumanHeight * GameParameters::HumanNpcGeometry::LegLengthFraction * animationState.LimbLengthMultipliers.LeftLeg;
             float const rightLegLength = adjustedIdealHumanHeight * GameParameters::HumanNpcGeometry::LegLengthFraction * animationState.LimbLengthMultipliers.RightLeg;
-            float const legWidthFraction = GameParameters::HumanNpcGeometry::LegLengthFraction * humanNpcState.Dimensions.LegHeightToWidthFactor;
+
+            float const legWidthFraction = IsTextureMode
+                ? GameParameters::HumanNpcGeometry::LegLengthFraction * humanNpcState.Dimensions.LegHeightToWidthFactor
+                : GameParameters::HumanNpcGeometry::QuadModeLegWidthFraction;
             float const halfLegW = (adjustedIdealHumanHeight * legWidthFraction * humanNpcState.WidthMultipier) / 2.0f;
+
+            // Prepare texture coords for quad mode
+            float const x = humanNpcState.CurrentFaceDirectionX + humanNpcState.CurrentFaceOrientation;
+            assert(x == -1.0f || x == 1.0f);
+            Render::TextureCoordinatesQuad quadModeTextureCoordinates = {
+                -x, x,
+                -1.0f, 1.0f
+            };
 
             if (humanNpcState.CurrentFaceOrientation != 0.0f)
             {
@@ -2916,9 +2949,15 @@ void Npcs::RenderNpc(
                         actualBodyHDir,
                         halfHeadW,
                         quad);
-                    shipRenderContext.UploadNpcTextureAttributes(
-                        humanNpcState.CurrentFaceOrientation > 0.0f ? humanNpcState.TextureFrames.HeadFront : humanNpcState.TextureFrames.HeadBack,
-                        staticAttribs);
+                    if constexpr (IsTextureMode)
+                        shipRenderContext.UploadNpcTextureAttributes(
+                            humanNpcState.CurrentFaceOrientation > 0.0f ? humanNpcState.TextureFrames.HeadFront : humanNpcState.TextureFrames.HeadBack,
+                            staticAttribs);
+                    else
+                        shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
+                            quadModeTextureCoordinates,
+                            staticAttribs,
+                            npc.RenderColor);
                 }
 
                 // Arms and legs
@@ -2942,9 +2981,15 @@ void Npcs::RenderNpc(
                             leftArmDir.to_perpendicular(),
                             halfArmW,
                             quad);
-                        shipRenderContext.UploadNpcTextureAttributes(
-                            humanNpcState.TextureFrames.ArmFront,
-                            staticAttribs);
+                        if constexpr (IsTextureMode)
+                            shipRenderContext.UploadNpcTextureAttributes(
+                                humanNpcState.TextureFrames.ArmFront,
+                                staticAttribs);
+                        else
+                            shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
+                                quadModeTextureCoordinates,
+                                staticAttribs,
+                                npc.RenderColor);
                     }
 
                     // Right arm (on right side of the screen)
@@ -2957,9 +3002,15 @@ void Npcs::RenderNpc(
                             rightArmDir.to_perpendicular(),
                             halfArmW,
                             quad);
-                        shipRenderContext.UploadNpcTextureAttributes(
-                            humanNpcState.TextureFrames.ArmFront.FlipH(),
-                            staticAttribs);
+                        if constexpr (IsTextureMode)
+                            shipRenderContext.UploadNpcTextureAttributes(
+                                humanNpcState.TextureFrames.ArmFront.FlipH(),
+                                staticAttribs);
+                        else
+                            shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
+                                quadModeTextureCoordinates,
+                                staticAttribs,
+                                npc.RenderColor);
                     }
 
                     // Left leg (on left side of the screen)
@@ -2972,9 +3023,15 @@ void Npcs::RenderNpc(
                             leftLegDir.to_perpendicular(),
                             halfLegW,
                             quad);
-                        shipRenderContext.UploadNpcTextureAttributes(
-                            humanNpcState.TextureFrames.LegFront,
-                            staticAttribs);
+                        if constexpr (IsTextureMode)
+                            shipRenderContext.UploadNpcTextureAttributes(
+                                humanNpcState.TextureFrames.LegFront,
+                                staticAttribs);
+                        else
+                            shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
+                                quadModeTextureCoordinates,
+                                staticAttribs,
+                                npc.RenderColor);
                     }
 
                     // Right leg (on right side of the screen)
@@ -2987,9 +3044,15 @@ void Npcs::RenderNpc(
                             rightLegDir.to_perpendicular(),
                             halfLegW,
                             quad);
-                        shipRenderContext.UploadNpcTextureAttributes(
-                            humanNpcState.TextureFrames.LegFront.FlipH(),
-                            staticAttribs);
+                        if constexpr (IsTextureMode)
+                            shipRenderContext.UploadNpcTextureAttributes(
+                                humanNpcState.TextureFrames.LegFront.FlipH(),
+                                staticAttribs);
+                        else
+                            shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
+                                quadModeTextureCoordinates,
+                                staticAttribs,
+                                npc.RenderColor);
                     }
                 }
                 else
@@ -3006,9 +3069,15 @@ void Npcs::RenderNpc(
                             leftArmDir.to_perpendicular(),
                             halfArmW,
                             quad);
-                        shipRenderContext.UploadNpcTextureAttributes(
-                            humanNpcState.TextureFrames.ArmBack,
-                            staticAttribs);
+                        if constexpr (IsTextureMode)
+                            shipRenderContext.UploadNpcTextureAttributes(
+                                humanNpcState.TextureFrames.ArmBack,
+                                staticAttribs);
+                        else
+                            shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
+                                quadModeTextureCoordinates,
+                                staticAttribs,
+                                npc.RenderColor);
                     }
 
                     // Right arm (on left side of the screen)
@@ -3021,9 +3090,15 @@ void Npcs::RenderNpc(
                             rightArmDir.to_perpendicular(),
                             halfArmW,
                             quad);
-                        shipRenderContext.UploadNpcTextureAttributes(
-                            humanNpcState.TextureFrames.ArmBack.FlipH(),
-                            staticAttribs);
+                        if constexpr (IsTextureMode)
+                            shipRenderContext.UploadNpcTextureAttributes(
+                                humanNpcState.TextureFrames.ArmBack.FlipH(),
+                                staticAttribs);
+                        else
+                            shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
+                                quadModeTextureCoordinates,
+                                staticAttribs,
+                                npc.RenderColor);
                     }
 
                     // Left leg (on right side of the screen)
@@ -3036,9 +3111,15 @@ void Npcs::RenderNpc(
                             leftLegDir.to_perpendicular(),
                             halfLegW,
                             quad);
-                        shipRenderContext.UploadNpcTextureAttributes(
-                            humanNpcState.TextureFrames.LegBack,
-                            staticAttribs);
+                        if constexpr (IsTextureMode)
+                            shipRenderContext.UploadNpcTextureAttributes(
+                                humanNpcState.TextureFrames.LegBack,
+                                staticAttribs);
+                        else
+                            shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
+                                quadModeTextureCoordinates,
+                                staticAttribs,
+                                npc.RenderColor);
                     }
 
                     // Right leg (on left side of the screen)
@@ -3051,9 +3132,15 @@ void Npcs::RenderNpc(
                             rightLegDir.to_perpendicular(),
                             halfLegW,
                             quad);
-                        shipRenderContext.UploadNpcTextureAttributes(
-                            humanNpcState.TextureFrames.LegBack.FlipH(),
-                            staticAttribs);
+                        if constexpr (IsTextureMode)
+                            shipRenderContext.UploadNpcTextureAttributes(
+                                humanNpcState.TextureFrames.LegBack.FlipH(),
+                                staticAttribs);
+                        else
+                            shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
+                                quadModeTextureCoordinates,
+                                staticAttribs,
+                                npc.RenderColor);
                     }
                 }
 
@@ -3066,9 +3153,15 @@ void Npcs::RenderNpc(
                         actualBodyHDir,
                         halfTorsoW,
                         quad);
-                    shipRenderContext.UploadNpcTextureAttributes(
-                        humanNpcState.CurrentFaceOrientation > 0.0f ? humanNpcState.TextureFrames.TorsoFront : humanNpcState.TextureFrames.TorsoBack,
-                        staticAttribs);
+                    if constexpr (IsTextureMode)
+                        shipRenderContext.UploadNpcTextureAttributes(
+                            humanNpcState.CurrentFaceOrientation > 0.0f ? humanNpcState.TextureFrames.TorsoFront : humanNpcState.TextureFrames.TorsoBack,
+                            staticAttribs);
+                    else
+                        shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
+                            quadModeTextureCoordinates,
+                            staticAttribs,
+                            npc.RenderColor);
                 }
             }
             else
@@ -3113,21 +3206,34 @@ void Npcs::RenderNpc(
 
                     // When UpperLegLengthFraction=1 (i.e. whole leg), kneeTextureY is bottom;
                     // otherwise, it's in-between top and bottom
-                    float const kneeTextureY =
-                        humanNpcState.TextureFrames.LegSide.TopY
-                        - animationState.UpperLegLengthFraction * (humanNpcState.TextureFrames.LegSide.TopY - humanNpcState.TextureFrames.LegSide.BottomY);
+                    float const kneeTextureY = IsTextureMode
+                        ? (humanNpcState.TextureFrames.LegSide.TopY - animationState.UpperLegLengthFraction * (humanNpcState.TextureFrames.LegSide.TopY - humanNpcState.TextureFrames.LegSide.BottomY))
+                        : 1.0f - animationState.UpperLegLengthFraction * 2.0f;
 
-                    Render::TextureCoordinatesQuad const upperLegTextureQuad = Render::TextureCoordinatesQuad({
-                        humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.LegSide.LeftX : humanNpcState.TextureFrames.LegSide.RightX,
-                        humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.LegSide.RightX : humanNpcState.TextureFrames.LegSide.LeftX,
-                        kneeTextureY,
-                        humanNpcState.TextureFrames.LegSide.TopY });
+                    Render::TextureCoordinatesQuad const upperLegTextureQuad = IsTextureMode
+                        ? Render::TextureCoordinatesQuad({
+                            humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.LegSide.LeftX : humanNpcState.TextureFrames.LegSide.RightX,
+                            humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.LegSide.RightX : humanNpcState.TextureFrames.LegSide.LeftX,
+                            kneeTextureY,
+                            humanNpcState.TextureFrames.LegSide.TopY })
+                        : Render::TextureCoordinatesQuad({
+                            quadModeTextureCoordinates.LeftX,
+                            quadModeTextureCoordinates.RightX,
+                            kneeTextureY,
+                            1.0f });
 
-                    Render::TextureCoordinatesQuad const lowerLegTextureQuad = Render::TextureCoordinatesQuad({
-                        humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.LegSide.LeftX : humanNpcState.TextureFrames.LegSide.RightX,
-                        humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.LegSide.RightX : humanNpcState.TextureFrames.LegSide.LeftX,
-                        humanNpcState.TextureFrames.LegSide.BottomY,
-                        kneeTextureY });
+
+                    Render::TextureCoordinatesQuad const lowerLegTextureQuad = IsTextureMode
+                        ? Render::TextureCoordinatesQuad({
+                            humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.LegSide.LeftX : humanNpcState.TextureFrames.LegSide.RightX,
+                            humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.LegSide.RightX : humanNpcState.TextureFrames.LegSide.LeftX,
+                            humanNpcState.TextureFrames.LegSide.BottomY,
+                            kneeTextureY })
+                        : Render::TextureCoordinatesQuad({
+                            quadModeTextureCoordinates.LeftX,
+                            quadModeTextureCoordinates.RightX,
+                            -1.0f,
+                            kneeTextureY });
 
                     // We extrude the corners to make them join nicely to the previous
                     // and next segments. The calculation of the extrusion (J) between two
@@ -3189,7 +3295,7 @@ void Npcs::RenderNpc(
                 }
                 else
                 {
-                    // Just upper leg
+                    // Just upper leg, which is leg in its entirety
 
                     leftUpperLegQuad = {
                         Geometry::MakeQuad(
@@ -3197,7 +3303,10 @@ void Npcs::RenderNpc(
                             leftKneeOrFootPosition,
                             leftUpperLegTraverseDir,
                             halfLegW),
-                        humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.LegSide : humanNpcState.TextureFrames.LegSide.FlipH() };
+                        IsTextureMode
+                            ? humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.LegSide : humanNpcState.TextureFrames.LegSide.FlipH()
+                            : quadModeTextureCoordinates
+                    };
 
                     rightUpperLegQuad = {
                         Geometry::MakeQuad(
@@ -3205,7 +3314,10 @@ void Npcs::RenderNpc(
                             rightKneeOrFootPosition,
                             rightUpperLegTraverseDir,
                             halfLegW),
-                        humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.LegSide : humanNpcState.TextureFrames.LegSide.FlipH() };
+                        IsTextureMode
+                            ? humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.LegSide : humanNpcState.TextureFrames.LegSide.FlipH()
+                            : quadModeTextureCoordinates
+                    };
                 }
 
                 // Arm and leg far
@@ -3216,17 +3328,29 @@ void Npcs::RenderNpc(
                     {
                         auto & quad = shipRenderContext.UploadNpcPosition();
                         quad = leftUpperLegQuad.Position;
-                        shipRenderContext.UploadNpcTextureAttributes(
-                            leftUpperLegQuad.TextureCoords,
-                            staticAttribs);
+                        if constexpr (IsTextureMode)
+                            shipRenderContext.UploadNpcTextureAttributes(
+                                leftUpperLegQuad.TextureCoords,
+                                staticAttribs);
+                        else
+                            shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
+                                leftUpperLegQuad.TextureCoords,
+                                staticAttribs,
+                                npc.RenderColor);
                     }
                     if (leftLowerLegQuad.has_value())
                     {
                         auto & quad = shipRenderContext.UploadNpcPosition();
                         quad = leftLowerLegQuad->Position;
-                        shipRenderContext.UploadNpcTextureAttributes(
-                            leftLowerLegQuad->TextureCoords,
-                            staticAttribs);
+                        if constexpr (IsTextureMode)
+                            shipRenderContext.UploadNpcTextureAttributes(
+                                leftLowerLegQuad->TextureCoords,
+                                staticAttribs);
+                        else
+                            shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
+                                leftLowerLegQuad->TextureCoords,
+                                staticAttribs,
+                                npc.RenderColor);
                     }
 
                     // Left arm
@@ -3238,9 +3362,15 @@ void Npcs::RenderNpc(
                             leftArmDir.to_perpendicular(),
                             halfArmW,
                             quad);
-                        shipRenderContext.UploadNpcTextureAttributes(
-                            humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.ArmSide : humanNpcState.TextureFrames.ArmSide.FlipH(),
-                            staticAttribs);
+                        if constexpr (IsTextureMode)
+                            shipRenderContext.UploadNpcTextureAttributes(
+                                humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.ArmSide : humanNpcState.TextureFrames.ArmSide.FlipH(),
+                                staticAttribs);
+                        else
+                            shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
+                                quadModeTextureCoordinates,
+                                staticAttribs,
+                                npc.RenderColor);
                     }
                 }
                 else
@@ -3249,17 +3379,29 @@ void Npcs::RenderNpc(
                     {
                         auto & quad = shipRenderContext.UploadNpcPosition();
                         quad = rightUpperLegQuad.Position;
-                        shipRenderContext.UploadNpcTextureAttributes(
-                            rightUpperLegQuad.TextureCoords,
-                            staticAttribs);
+                        if constexpr (IsTextureMode)
+                            shipRenderContext.UploadNpcTextureAttributes(
+                                rightUpperLegQuad.TextureCoords,
+                                staticAttribs);
+                        else
+                            shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
+                                rightUpperLegQuad.TextureCoords,
+                                staticAttribs,
+                                npc.RenderColor);
                     }
                     if (rightLowerLegQuad.has_value())
                     {
                         auto & quad = shipRenderContext.UploadNpcPosition();
                         quad = rightLowerLegQuad->Position;
-                        shipRenderContext.UploadNpcTextureAttributes(
-                            rightLowerLegQuad->TextureCoords,
-                            staticAttribs);
+                        if constexpr (IsTextureMode)
+                            shipRenderContext.UploadNpcTextureAttributes(
+                                rightLowerLegQuad->TextureCoords,
+                                staticAttribs);
+                        else
+                            shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
+                                rightLowerLegQuad->TextureCoords,
+                                staticAttribs,
+                                npc.RenderColor);
                     }
 
                     // Right arm
@@ -3271,9 +3413,15 @@ void Npcs::RenderNpc(
                             rightArmDir.to_perpendicular(),
                             halfArmW,
                             quad);
-                        shipRenderContext.UploadNpcTextureAttributes(
-                            humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.ArmSide : humanNpcState.TextureFrames.ArmSide.FlipH(),
-                            staticAttribs);
+                        if constexpr (IsTextureMode)
+                            shipRenderContext.UploadNpcTextureAttributes(
+                                humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.ArmSide : humanNpcState.TextureFrames.ArmSide.FlipH(),
+                                staticAttribs);
+                        else
+                            shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
+                                quadModeTextureCoordinates,
+                                staticAttribs,
+                                npc.RenderColor);
                     }
                 }
 
@@ -3286,9 +3434,15 @@ void Npcs::RenderNpc(
                         actualBodyHDir,
                         halfHeadW,
                         quad);
-                    shipRenderContext.UploadNpcTextureAttributes(
-                        humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.HeadSide : humanNpcState.TextureFrames.HeadSide.FlipH(),
-                        staticAttribs);
+                    if constexpr (IsTextureMode)
+                        shipRenderContext.UploadNpcTextureAttributes(
+                            humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.HeadSide : humanNpcState.TextureFrames.HeadSide.FlipH(),
+                            staticAttribs);
+                    else
+                        shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
+                            quadModeTextureCoordinates,
+                            staticAttribs,
+                            npc.RenderColor);
                 }
 
                 // Torso
@@ -3300,9 +3454,15 @@ void Npcs::RenderNpc(
                         actualBodyHDir,
                         halfTorsoW,
                         quad);
-                    shipRenderContext.UploadNpcTextureAttributes(
-                        humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.TorsoSide : humanNpcState.TextureFrames.TorsoSide.FlipH(),
-                        staticAttribs);
+                    if constexpr (IsTextureMode)
+                        shipRenderContext.UploadNpcTextureAttributes(
+                            humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.TorsoSide : humanNpcState.TextureFrames.TorsoSide.FlipH(),
+                            staticAttribs);
+                    else
+                        shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
+                            quadModeTextureCoordinates,
+                            staticAttribs,
+                            npc.RenderColor);
                 }
 
                 // Arm and leg near
@@ -3313,17 +3473,29 @@ void Npcs::RenderNpc(
                     {
                         auto & quad = shipRenderContext.UploadNpcPosition();
                         quad = rightUpperLegQuad.Position;
-                        shipRenderContext.UploadNpcTextureAttributes(
-                            rightUpperLegQuad.TextureCoords,
-                            staticAttribs);
+                        if constexpr (IsTextureMode)
+                            shipRenderContext.UploadNpcTextureAttributes(
+                                rightUpperLegQuad.TextureCoords,
+                                staticAttribs);
+                        else
+                            shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
+                                rightUpperLegQuad.TextureCoords,
+                                staticAttribs,
+                                npc.RenderColor);
                     }
                     if (rightLowerLegQuad.has_value())
                     {
                         auto & quad = shipRenderContext.UploadNpcPosition();
                         quad = rightLowerLegQuad->Position;
-                        shipRenderContext.UploadNpcTextureAttributes(
-                            rightLowerLegQuad->TextureCoords,
-                            staticAttribs);
+                        if constexpr (IsTextureMode)
+                            shipRenderContext.UploadNpcTextureAttributes(
+                                rightLowerLegQuad->TextureCoords,
+                                staticAttribs);
+                        else
+                            shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
+                                rightLowerLegQuad->TextureCoords,
+                                staticAttribs,
+                                npc.RenderColor);
                     }
 
                     // Right arm
@@ -3335,9 +3507,15 @@ void Npcs::RenderNpc(
                             rightArmDir.to_perpendicular(),
                             halfArmW,
                             quad);
-                        shipRenderContext.UploadNpcTextureAttributes(
-                            humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.ArmSide : humanNpcState.TextureFrames.ArmSide.FlipH(),
-                            staticAttribs);
+                        if constexpr (IsTextureMode)
+                            shipRenderContext.UploadNpcTextureAttributes(
+                                humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.ArmSide : humanNpcState.TextureFrames.ArmSide.FlipH(),
+                                staticAttribs);
+                        else
+                            shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
+                                quadModeTextureCoordinates,
+                                staticAttribs,
+                                npc.RenderColor);
                     }
                 }
                 else
@@ -3346,17 +3524,29 @@ void Npcs::RenderNpc(
                     {
                         auto & quad = shipRenderContext.UploadNpcPosition();
                         quad = leftUpperLegQuad.Position;
-                        shipRenderContext.UploadNpcTextureAttributes(
-                            leftUpperLegQuad.TextureCoords,
-                            staticAttribs);
+                        if constexpr (IsTextureMode)
+                            shipRenderContext.UploadNpcTextureAttributes(
+                                leftUpperLegQuad.TextureCoords,
+                                staticAttribs);
+                        else
+                            shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
+                                leftUpperLegQuad.TextureCoords,
+                                staticAttribs,
+                                npc.RenderColor);
                     }
                     if (leftLowerLegQuad.has_value())
                     {
                         auto & quad = shipRenderContext.UploadNpcPosition();
                         quad = leftLowerLegQuad->Position;
-                        shipRenderContext.UploadNpcTextureAttributes(
-                            leftLowerLegQuad->TextureCoords,
-                            staticAttribs);
+                        if constexpr (IsTextureMode)
+                            shipRenderContext.UploadNpcTextureAttributes(
+                                leftLowerLegQuad->TextureCoords,
+                                staticAttribs);
+                        else
+                            shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
+                                leftLowerLegQuad->TextureCoords,
+                                staticAttribs,
+                                npc.RenderColor);
                     }
 
                     // Left arm
@@ -3368,9 +3558,15 @@ void Npcs::RenderNpc(
                             leftArmDir.to_perpendicular(),
                             halfArmW,
                             quad);
-                        shipRenderContext.UploadNpcTextureAttributes(
-                            humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.ArmSide : humanNpcState.TextureFrames.ArmSide.FlipH(),
-                            staticAttribs);
+                        if constexpr (IsTextureMode)
+                            shipRenderContext.UploadNpcTextureAttributes(
+                                humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.ArmSide : humanNpcState.TextureFrames.ArmSide.FlipH(),
+                                staticAttribs);
+                        else
+                            shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
+                                quadModeTextureCoordinates,
+                                staticAttribs,
+                                npc.RenderColor);
                     }
                 }
             }
@@ -3394,7 +3590,6 @@ void Npcs::RenderNpc(
         case NpcKindType::Furniture:
         {
             Render::TextureCoordinatesQuad textureCoords;
-            vec3f roleColor;
             if constexpr (RenderMode == NpcRenderModeType::Texture)
             {
                 textureCoords = npc.KindSpecificState.FurnitureNpcState.CurrentFaceDirectionX > 0.0f ?
@@ -3407,9 +3602,6 @@ void Npcs::RenderNpc(
                     -npc.KindSpecificState.FurnitureNpcState.CurrentFaceDirectionX, npc.KindSpecificState.FurnitureNpcState.CurrentFaceDirectionX,
                     -1.0f, 1.0f
                 };
-
-                // TODO: store in state
-                roleColor = mNpcDatabase.GetFurnitureRenderColor(npc.KindSpecificState.FurnitureNpcState.SubKindId).toVec3f();
             }
 
             if (npc.ParticleMesh.Particles.size() == 4)
@@ -3428,7 +3620,7 @@ void Npcs::RenderNpc(
                     shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
                         textureCoords,
                         staticAttribs,
-                        roleColor);
+                        npc.RenderColor);
             }
             else
             {
@@ -3452,7 +3644,7 @@ void Npcs::RenderNpc(
                         shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
                             textureCoords,
                             staticAttribs,
-                            roleColor);
+                            npc.RenderColor);
                 }
             }
 

@@ -15,28 +15,6 @@
 namespace Render {
 
 //
-// Texture
-//
-
-struct TextureCoordinatesQuad
-{
-    float LeftX;
-    float RightX;
-    float BottomY;
-    float TopY;
-
-    TextureCoordinatesQuad FlipH() const
-    {
-        return TextureCoordinatesQuad({
-            RightX,
-            LeftX,
-            BottomY,
-            TopY });
-    }
-};
-
-
-//
 // Texture databases
 //
 

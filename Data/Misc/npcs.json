@@ -12,7 +12,7 @@
                 "spring_reduction_fraction": 0.39
             }
         },
-        "kinds": [
+        "sub_kinds": [
             {
                 "name": "Baker",
                 "role": "Crew",
@@ -644,7 +644,7 @@
         ]
     },
     "furniture": {
-        "kinds": [
+        "sub_kinds": [
             {
                 "name": "Barrel",
                 "role": "Furniture",
