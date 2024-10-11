@@ -70,9 +70,9 @@ void main()
         mix(cInner, cBorder, borderAlpha) * darkeningScalar,
         alpha);
 
-    // Fragments with alpha lower than this are discarded
-    #define MinAlpha 0.2
-    if (c.a < MinAlpha) // We don't Z-sort NPCs
+    // Fragments with alpha lower than this are discarded, as we don't Z-sort NPCs
+    #define MinAlpha 0.15
+    if (c.a < MinAlpha)
         discard;
 
     // Apply highlight (overlay blending mode)

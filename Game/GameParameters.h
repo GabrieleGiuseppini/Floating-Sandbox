@@ -507,21 +507,6 @@ struct GameParameters
 
         static_assert(LegLengthFraction + TorsoLengthFraction + HeadLengthFraction == 1.0f);
 
-        // TODOOLD
-        /*
-        static float constexpr TextureModeHeadWidthFraction = 1.0f / 5.0f; // Length then depends on texture frame
-        static float constexpr QuadModeHeadWidthFraction = 1.0f / 8.0f; // Length then depends on texture frame
-        static float constexpr QuadModeHeadLengthFraction = 1.0f / 5.0f; // For Quad modes
-        static float constexpr TorsoLengthFraction = 2.0f / 5.0f; // Width then depends on texture frame
-        static float constexpr QuadModeTorsoWidthFraction = 1.0f / 7.0f; // For Quad modes
-        static float constexpr ArmLengthFraction = 2.0f / 5.0f; // Width then depends on texture frame
-        static float constexpr QuadModeArmWidthFraction = 1.0f / 10.0f; // For Quad modes
-        static float constexpr LegLengthFraction = 2.0f / 5.0f; // Width then depends on texture frame
-        static float constexpr QuadModeLegWidthFraction = 1.0f / 10.0f; // For Quad modes
-
-        static_assert(LegLengthFraction + TorsoLengthFraction < 1.0f); // Leaves room for head length
-        */
-
         static float constexpr StepLengthFraction = 0.43f; // From foot to foot at longest separation
     };
 

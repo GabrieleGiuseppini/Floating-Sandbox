@@ -322,12 +322,16 @@ V1 TODO:
 		+ Expose getter(s)
 
 	= Review geometry in both modes
-		= Test 1: single system (for both Texture and Quad modes), from Vitruvian man:
+		+ Test 1: single system (for both Texture and Quad modes), from Vitruvian man:
 			! Legs: 1/2   w=1/10
 			! Torso: 1/2-1/8  w=1/7
 			! Head: 1/8   w=1/10
-			+ Quad mode: ok
-			- Texture mode: TODOHERE
+			+ Quad mode: OK		
+			X Texture mode: NOT OK
+		- Test 2: make all current GameParameters geometry measurements "quad", and database carries own
+			- Lengths are fractions of (ideal) height
+				- TODO: head with hat?
+			- Widths are simple multipliers of length (e.g. 1.0 for square, 0.25 for quarter, etc.)
 
 	- Test:
 		- Buoyancy head offsets in both modes
@@ -339,6 +343,9 @@ V1 TODO:
 	- Re-instate human H and W randomization!
 
 	- See if can improve stickmen anti-aliasing
+		- fwidth on x-distance?
+
+
 
 	OLD VERSION, WITH STATIC ATTRIBUTES
 	- Npcs:
@@ -383,8 +390,6 @@ V1 TODO:
 
 	- Port to BaryLab
 		- Profile
-
-- Optimize shader loading
 
 - Test anti-matter bomb, settle, and search for NPCs
 
