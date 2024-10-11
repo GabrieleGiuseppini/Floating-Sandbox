@@ -42,11 +42,11 @@ public:
 
     struct HumanDimensionsType
     {
-        float HeadWFactor; // Multiplier of "standard" head width
-        float HeadWidthToHeightFactor; // To recover head texture quad height from its physical width
-        float TorsoHeightToWidthFactor; // To recover torso texture quad width from its physical height
-        float ArmHeightToWidthFactor; // To recover arm texture quad width from its physical height
-        float LegHeightToWidthFactor; // To recover leg texture quad width from its physical height
+        float HeadHeightMultiplier; // Multiplier of "standard" head height
+        float HeadHeightToWidthFactor; // To recover head texture quad width from its physical width (aspect ratio)
+        float TorsoHeightToWidthFactor; // To recover torso texture quad width from its physical height (aspect ratio)
+        float ArmHeightToWidthFactor; // To recover arm texture quad width from its physical height (aspect ratio)
+        float LegHeightToWidthFactor; // To recover leg texture quad width from its physical height (aspect ratio)
     };
 
     struct FurnitureDimensionsType
@@ -259,7 +259,6 @@ private:
 
     static HumanDimensionsType CalculateHumanDimensions(
         picojson::object const & containerObject,
-        float headTextureBaseWidth,
         Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas,
         std::string const & subKindName);
 

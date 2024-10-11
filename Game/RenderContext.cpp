@@ -150,7 +150,11 @@ RenderContext::RenderContext(
             // Load shader manager
             //
 
+            LogMessage("Initializing shaders...");
+
             mShaderManager = ShaderManager<ShaderManagerTraits>::CreateInstance(resourceLocator.GetGameShadersRootPath());
+
+            LogMessage("...shaders initialized.");
         });
 
     progressCallback(0.1f, ProgressMessageType::InitializingNoise);

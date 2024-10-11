@@ -1759,7 +1759,7 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
                 // Head - use an offset
                 testParticlePosition.y +=
                     (mParticles.GetPosition(npc.ParticleMesh.Particles[0].ParticleIndex).y - testParticlePosition.y)
-                    * (BuoyancyInterfaceWidth / 2.0f + GameParameters::HumanNpcGeometry::QuadModeHeadLengthFraction);
+                    * (BuoyancyInterfaceWidth / 2.0f + GameParameters::HumanNpcGeometry::HeadLengthFraction);
             }
 
             float const waterHeight = mParentWorld.GetOceanSurface().GetHeightAt(testParticlePosition.x);

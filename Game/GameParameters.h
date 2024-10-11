@@ -494,6 +494,21 @@ struct GameParameters
         static float constexpr BodyWidthWideMultiplierStdDev = 0.12f;
 
         // All fractions below are relative to BodyLength
+        //
+        // Lengths are from Leonardo's Vitruvian man
+        static float constexpr HeadLengthFraction = 1.0f / 8.0f;
+        static float constexpr QuadModeHeadWidthFraction = 1.0f / 8.0f; // In texture mode we honor the texture's aspect ratio
+        static float constexpr TorsoLengthFraction = 1.0f / 2.0f - HeadLengthFraction;
+        static float constexpr QuadModeTorsoWidthFraction = 1.0f / 7.0f; // In texture mode we honor the texture's aspect ratio
+        static float constexpr ArmLengthFraction = 3.0f / 8.0f;
+        static float constexpr QuadModeArmWidthFraction = 1.0f / 10.0f; // In texture mode we honor the texture's aspect ratio
+        static float constexpr LegLengthFraction = 1.0f / 2.0f;
+        static float constexpr QuadModeLegWidthFraction = 1.0f / 10.0f; // In texture mode we honor the texture's aspect ratio
+
+        static_assert(LegLengthFraction + TorsoLengthFraction + HeadLengthFraction == 1.0f);
+
+        // TODOOLD
+        /*
         static float constexpr TextureModeHeadWidthFraction = 1.0f / 5.0f; // Length then depends on texture frame
         static float constexpr QuadModeHeadWidthFraction = 1.0f / 8.0f; // Length then depends on texture frame
         static float constexpr QuadModeHeadLengthFraction = 1.0f / 5.0f; // For Quad modes
@@ -505,6 +520,7 @@ struct GameParameters
         static float constexpr QuadModeLegWidthFraction = 1.0f / 10.0f; // For Quad modes
 
         static_assert(LegLengthFraction + TorsoLengthFraction < 1.0f); // Leaves room for head length
+        */
 
         static float constexpr StepLengthFraction = 0.43f; // From foot to foot at longest separation
     };

@@ -174,10 +174,8 @@ NpcDatabase::HumanSubKind NpcDatabase::ParseHumanSubKind(
 
     float const sizeMultiplier = Utils::GetOptionalJsonMember<float>(subKindObject, "size_multiplier", 1.0f);
 
-    float const headTextureBaseWidth = Utils::GetOptionalJsonMember<float>(subKindObject, "head_texture_base_width", 16.0f);
-
     auto const & textureFilenameStemsObject = Utils::GetMandatoryJsonObject(subKindObject, "texture_filename_stems");
-    auto const dimensions = CalculateHumanDimensions(textureFilenameStemsObject, headTextureBaseWidth, npcTextureAtlas, name);
+    auto const dimensions = CalculateHumanDimensions(textureFilenameStemsObject, npcTextureAtlas, name);
     HumanTextureFramesType humanTextureFrames({
         ParseTextureCoordinatesQuad(textureFilenameStemsObject, HeadFKeyName, npcTextureAtlas),
         ParseTextureCoordinatesQuad(textureFilenameStemsObject, HeadBKeyName, npcTextureAtlas),
@@ -210,13 +208,17 @@ NpcDatabase::HumanSubKind NpcDatabase::ParseHumanSubKind(
 
 NpcDatabase::HumanDimensionsType NpcDatabase::CalculateHumanDimensions(
     picojson::object const & containerObject,
-    float headTextureBaseWidth,
     Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas,
     std::string const & subKindName)
 {
     // Head
     //
-    // - Fixed width (wrt headTextureBaseWidth); expected B/F/S to be the same
+    // - Fixed height; expected B/F/S to be the same
+    //
+    // - Also expecting it square; if H > W, then we assume there's a hat,
+    //   and will increase texture height accordingly;
+    //   otherwise, if H < W, we stretch the texture so that the H fits
+    //   the physical height
 
     auto const headFSize = GetFrameSize(containerObject, HeadFKeyName, npcTextureAtlas);
     if (headFSize != GetFrameSize(containerObject, HeadBKeyName, npcTextureAtlas)
@@ -225,8 +227,8 @@ NpcDatabase::HumanDimensionsType NpcDatabase::CalculateHumanDimensions(
         throw GameException("Head dimensions are not all equal for " + subKindName);
     }
 
-    float const headWFactor = static_cast<float>(headFSize.width) / headTextureBaseWidth;
-    float const headHWRatio = static_cast<float>(headFSize.height) * headWFactor / static_cast<float>(headFSize.width);
+    float const headHeightMultiplier = std::max(static_cast<float>(headFSize.height) / static_cast<float>(headFSize.width), 1.0f);
+    float const headWHRatio = static_cast<float>(headFSize.width) / static_cast<float>(headFSize.height);
 
     // Torso
     //
@@ -268,8 +270,8 @@ NpcDatabase::HumanDimensionsType NpcDatabase::CalculateHumanDimensions(
     float const legWHRatio = static_cast<float>(legFSize.width) / static_cast<float>(legFSize.height);
 
     return HumanDimensionsType({
-        headWFactor,
-        headHWRatio,
+        headHeightMultiplier,
+        headWHRatio,
         torsoWHRatio,
         armWHRatio,
         legWHRatio });

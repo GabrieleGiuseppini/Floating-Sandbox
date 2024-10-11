@@ -691,10 +691,12 @@ std::tuple<std::optional<PickedObjectId<NpcId>>, NpcCreationFailureReasonType> N
     // Calculate height
 
     float const baseHeight =
+        // TODOTEST
+        /*
         GameRandomEngine::GetInstance().GenerateNormalReal(
             GameParameters::HumanNpcGeometry::BodyLengthMean,
             GameParameters::HumanNpcGeometry::BodyLengthStdDev)
-        * mNpcDatabase.GetHumanSizeMultiplier(subKind);
+        * */ mNpcDatabase.GetHumanSizeMultiplier(subKind);
 
     float const height = CalculateSpringLength(baseHeight, mCurrentSizeMultiplier);
 
@@ -800,6 +802,9 @@ std::tuple<std::optional<PickedObjectId<NpcId>>, NpcCreationFailureReasonType> N
                 2.3f * GameParameters::HumanNpcGeometry::BodyWidthWideMultiplierStdDev)
             * mNpcDatabase.GetHumanBodyWidthRandomizationSensitivity(subKind);
     }
+
+    // TODOTEST
+    widthMultiplier = 1.0f;
 
     float const walkingSpeedBase =
         1.0f
@@ -2871,7 +2876,7 @@ void Npcs::RenderNpc(
             //
             //
             // - All based on current dipole length - anchor points are feet - except for
-            //   arms, legs, and widths, whose values are based on ideal (NPC) height (incl.adjustment),
+            //   arm lengths, leg lengths, and all widths, whose values are based on ideal (NPC) height (incl.adjustment),
             //   thus unaffected by current dipole length
             //
 
@@ -2890,20 +2895,18 @@ void Npcs::RenderNpc(
             vec2f const armTop = headBottom - actualBodyVector * (GameParameters::HumanNpcGeometry::ArmLengthFraction / 8.0f); // Magic
             vec2f const headTop =
                 headBottom
-                + actualBodyVector * (IsTextureMode
-                    ? (GameParameters::HumanNpcGeometry::TextureModeHeadWidthFraction * humanNpcState.Dimensions.HeadWidthToHeightFactor)
-                    : GameParameters::HumanNpcGeometry::QuadModeHeadLengthFraction
+                + actualBodyVector * GameParameters::HumanNpcGeometry::HeadLengthFraction * (IsTextureMode
+                    ? humanNpcState.Dimensions.HeadHeightMultiplier // Make room for hat
+                    : 1.0f
                     );
 
             float const adjustedIdealHumanHeight = npc.ParticleMesh.Springs[0].RestLength;
 
-            float const halfHeadW =
-                adjustedIdealHumanHeight
-                * (IsTextureMode
-                    ? GameParameters::HumanNpcGeometry::TextureModeHeadWidthFraction * humanNpcState.Dimensions.HeadWFactor
-                    : GameParameters::HumanNpcGeometry::QuadModeHeadWidthFraction)
-                * humanNpcState.WidthMultipier
-                / 2.0f;
+            float const headWidthFraction = IsTextureMode
+                ? (GameParameters::HumanNpcGeometry::HeadLengthFraction * humanNpcState.Dimensions.HeadHeightMultiplier) // Texture head length
+                * humanNpcState.Dimensions.HeadHeightToWidthFactor // Maintain aspect ratio
+                : GameParameters::HumanNpcGeometry::QuadModeHeadWidthFraction;
+            float const halfHeadW = (adjustedIdealHumanHeight * headWidthFraction * humanNpcState.WidthMultipier) / 2.0f;
 
             float const torsoWidthFraction = IsTextureMode
                 ? GameParameters::HumanNpcGeometry::TorsoLengthFraction * humanNpcState.Dimensions.TorsoHeightToWidthFactor
