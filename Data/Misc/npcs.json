@@ -11,9 +11,15 @@
                 "spring_damping_coefficient": 0.5,
                 "spring_reduction_fraction": 0.39
             },
+	    "texture_geometry_comments": [
+		"Head length fraction: we want it 0.2 * textureH/16, and then alpha_reduction=0.76",
+		"Torso W/H ratio: we want it textureW/textureH, and then alpha_reduction=0.79",
+		"Here we address most common dimensions: head=16x17, torso=22x32"
+	    ],
 	    "default_texture_geometry": {
-		"head_length_fraction": 0.2125,
+		"head_length_fraction": 0.1615,
 		"torso_length_fraction": 0.4,
+		"torso_wh_ratio": 0.54,
 		"arm_length_fraction": 0.4,
 		"leg_length_fraction": 0.4
 	    }
@@ -36,6 +42,12 @@
                     "leg_b": "baker_leg_back",
                     "leg_s": "baker_leg_side"
                 },
+		"texture_geometry_comments": [
+			"Head: 16x21"
+		],
+		"texture_geometry_overrides": {
+			"head_length_fraction": 0.2
+		},
                 "render_color": "#8B8F90"
             },
             {
@@ -112,6 +124,16 @@
                     "leg_b": "female_civilian_passenger_1_leg_back",
                     "leg_s": "female_civilian_passenger_1_leg_side"
                 },
+		"texture_geometry_comments": [
+			"Head: 16x20",
+			"Torso: 26x46",
+			"Legs too fluffy"
+		],
+		"texture_geometry_overrides": {
+			"head_length_fraction": 0.19,
+			"torso_wh_ratio": 0.47,
+			"leg_wh_ratio": 0.4
+		},
                 "render_color": "#D8C18A"
             },
             {
@@ -150,6 +172,16 @@
                     "leg_b": "female_civilian_passenger_2_leg_back",
                     "leg_s": "female_civilian_passenger_2_leg_side"
                 },
+		"texture_geometry_comments": [
+			"Head: 24x20",
+			"Torso: 22x47",
+			"Legs too fluffy"
+		],
+		"texture_geometry_overrides": {
+			"head_length_fraction": 0.19,
+			"torso_wh_ratio": 0.37,
+			"leg_wh_ratio": 0.4
+		},
                 "render_color": "#BBBACF"
             },
             {
@@ -188,6 +220,16 @@
                     "leg_b": "female_civilian_passenger_3_leg_back",
                     "leg_s": "female_civilian_passenger_3_leg_side"
                 },
+		"texture_geometry_comments": [
+			"Head: 24x21",
+			"Torso: 26x48",
+			"Legs too fluffy"
+		],
+		"texture_geometry_overrides": {
+			"head_length_fraction": 0.20,
+			"torso_wh_ratio": 0.43,
+			"leg_wh_ratio": 0.4
+		},
                 "render_color": "#B8AFBF"
             },
             {
@@ -226,6 +268,16 @@
                     "leg_b": "female_civilian_passenger_4_leg_back",
                     "leg_s": "female_civilian_passenger_4_leg_side"
                 },
+		"texture_geometry_comments": [
+			"Head: 24x21",
+			"Torso: 26x47",
+			"Legs too fluffy"
+		],
+		"texture_geometry_overrides": {
+			"head_length_fraction": 0.20,
+			"torso_wh_ratio": 0.437,
+			"leg_wh_ratio": 0.4
+		},
                 "render_color": "#5A131D"
             },
             {
@@ -264,6 +316,16 @@
                     "leg_b": "female_civilian_passenger_5_leg_back",
                     "leg_s": "female_civilian_passenger_5_leg_side"
                 },
+		"texture_geometry_comments": [
+			"Head: 16x21",
+			"Torso: 26x46",
+			"Legs too fluffy"
+		],
+		"texture_geometry_overrides": {
+			"head_length_fraction": 0.20,
+			"torso_wh_ratio": 0.447,
+			"leg_wh_ratio": 0.4
+		},
                 "render_color": "#9DBFC7"
             },
             {
@@ -397,6 +459,12 @@
                     "leg_b": "quartermaster_leg_back",
                     "leg_s": "quartermaster_leg_side"
                 },
+		"texture_geometry_comments": [
+			"Head: 16x16"
+		],
+		"texture_geometry_overrides": {
+			"head_length_fraction": 0.152
+		},
                 "render_color": "#273E55"
             },
             {
@@ -435,6 +503,12 @@
                     "leg_b": "stewardess_1_leg_back",
                     "leg_s": "stewardess_1_leg_side"
                 },
+		"texture_geometry_comments": [
+			"Torso: 26x46"
+		],
+		"texture_geometry_overrides": {
+			"torso_wh_ratio": 0.447
+		},
                 "render_color": "#314250"
             },
             {
@@ -454,6 +528,12 @@
                     "leg_b": "steward_2_leg_back",
                     "leg_s": "steward_2_leg_side"
                 },
+		"texture_geometry_comments": [
+			"Head: 16x16"
+		],
+		"texture_geometry_overrides": {
+			"head_length_fraction": 0.152
+		},
                 "render_color": "#314250"
             },
             {
@@ -473,6 +553,12 @@
                     "leg_b": "stewardess_2_leg_back",
                     "leg_s": "stewardess_2_leg_side"
                 },
+		"texture_geometry_comments": [
+			"Torso: 26x46"
+		],
+		"texture_geometry_overrides": {
+			"torso_wh_ratio": 0.447
+		},
                 "render_color": "#314250"
             },
             {
@@ -587,6 +673,12 @@
                     "leg_b": "male_wealthy_passenger_2_leg_back",
                     "leg_s": "male_wealthy_passenger_2_leg_side"
                 },
+		"texture_geometry_comments": [
+			"Head: 18x23"
+		],
+		"texture_geometry_overrides": {
+			"head_length_fraction": 0.2185
+		},
                 "render_color": "#2A2F31"
             },
             {
@@ -625,6 +717,12 @@
                     "leg_b": "wealthy_passenger_4_leg_back",
                     "leg_s": "wealthy_passenger_4_leg_side"
                 },
+		"texture_geometry_comments": [
+			"Head: 18x23"
+		],
+		"texture_geometry_overrides": {
+			"head_length_fraction": 0.2185
+		},
                 "render_color": "#5F6B60"
             },
             {
@@ -645,6 +743,12 @@
                     "leg_b": "dummy_leg_back",
                     "leg_s": "dummy_leg_side"
                 },
+		"texture_geometry_comments": [
+			"Head: 16x16"
+		],
+		"texture_geometry_overrides": {
+			"head_length_fraction": 0.152
+		},
                 "render_color": "#A4A4A3"
             }
         ]

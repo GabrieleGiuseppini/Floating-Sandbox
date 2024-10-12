@@ -321,7 +321,7 @@ V1 TODO:
 		+ Parse @ kind parsing
 		+ Expose getter(s)
 
-	= Review geometry in both modes
+	+ Review geometry in both modes
 		+ Test 1: single system (for both Texture and Quad modes), from Vitruvian man:
 			! Legs: 1/2   w=1/10
 			! Torso: 1/2-1/8  w=1/7
@@ -345,7 +345,7 @@ V1 TODO:
 					- Nail down defaults
 					- Do overrides where needed in json
 						- Check if TimCan has emailed first
-		= Test 3: fully json-driven proportions
+		+ Test 3: fully json-driven proportions
 			+ NpcDatabase: 4 length fractions @ defaults and @ dimensions
 				+ Defaults: use QuadXXX from GameParameters
 			+ RenderNpc: use correct ones
@@ -353,12 +353,21 @@ V1 TODO:
 			+ Populate json defaults with original
 				+ Head: here assume 16x17
 			+ Verify texture mode matches before-work (original)
-			- Adjust defaults to new taste
-			- Do geometry overrides for each NPC that needsit
-				- Attention: heads
-				- TODOHERE
-				
-
+			+ Do geometry overrides for each NPC that needs it
+				! heads (L), torso (W/H)
+				- Check both resulting widths
+				+ As we go: move very repeated values to defaults
+				+ Baker
+				+ Captains -> Engineer, Dummy
+				+ 5x Fem Civ Pass
+					+ Reduce legs
+				+ 6x Male Civ Pass
+				+ 4x Male Wealthy Pass
+				+ Officer, Oiler, Steward 1
+				+ QuarterMaster, Steward 2, Stewardess 1+2
+				+ Stoker 1+2
+				+ Stoker 3+4
+	- Re-instate human H and W randomization!
 
 	- Test:
 		- Buoyancy head offsets in both modes
@@ -366,8 +375,6 @@ V1 TODO:
 		- Knee bend
 		- All orientations, for human & furniture
 		- Matte color
-
-	- Re-instate human H and W randomization!
 
 	- See if can improve stickmen anti-aliasing
 		- fwidth on x-distance?

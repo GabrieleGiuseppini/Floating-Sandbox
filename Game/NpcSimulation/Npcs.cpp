@@ -691,12 +691,10 @@ std::tuple<std::optional<PickedObjectId<NpcId>>, NpcCreationFailureReasonType> N
     // Calculate height
 
     float const baseHeight =
-        // TODOTEST
-        /*
         GameRandomEngine::GetInstance().GenerateNormalReal(
             GameParameters::HumanNpcGeometry::BodyLengthMean,
             GameParameters::HumanNpcGeometry::BodyLengthStdDev)
-        * */ mNpcDatabase.GetHumanSizeMultiplier(subKind);
+        * mNpcDatabase.GetHumanSizeMultiplier(subKind);
 
     float const height = CalculateSpringLength(baseHeight, mCurrentSizeMultiplier);
 
@@ -802,9 +800,6 @@ std::tuple<std::optional<PickedObjectId<NpcId>>, NpcCreationFailureReasonType> N
                 2.3f * GameParameters::HumanNpcGeometry::BodyWidthWideMultiplierStdDev)
             * mNpcDatabase.GetHumanBodyWidthRandomizationSensitivity(subKind);
     }
-
-    // TODOTEST
-    widthMultiplier = 1.0f;
 
     float const walkingSpeedBase =
         1.0f
@@ -2892,12 +2887,12 @@ void Npcs::RenderNpc(
                 + actualBodyVector
                     * (IsTextureMode ? humanNpcState.TextureGeometry.LegLengthFraction : GameParameters::HumanNpcGeometry::LegLengthFraction)
                     * animationState.CrotchHeightMultiplier;
-            vec2f const torsoBottom = legTop - actualBodyVector * (GameParameters::HumanNpcGeometry::LegLengthFraction / 8.0f); // Magic
+            vec2f const torsoBottom = legTop - actualBodyVector * (GameParameters::HumanNpcGeometry::LegLengthFraction / 20.0f); // Magic hip
             vec2f const torsoTop = legTop
                 + actualBodyVector
                     * (IsTextureMode ? humanNpcState.TextureGeometry.TorsoLengthFraction : GameParameters::HumanNpcGeometry::TorsoLengthFraction);
             vec2f const headBottom = torsoTop;
-            vec2f const armTop = headBottom - actualBodyVector * (GameParameters::HumanNpcGeometry::ArmLengthFraction / 8.0f); // Magic
+            vec2f const armTop = headBottom - actualBodyVector * (GameParameters::HumanNpcGeometry::ArmLengthFraction / 8.0f); // Magic shoulder
             vec2f const headTop = headBottom
                 + actualBodyVector
                     * (IsTextureMode ? humanNpcState.TextureGeometry.HeadLengthFraction : GameParameters::HumanNpcGeometry::HeadLengthFraction);
