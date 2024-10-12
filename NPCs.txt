@@ -273,7 +273,7 @@ V1 TODO:
 		+ IGameControllerSettings chain
 		+ SettingsDialog
 
-	= ShipRenderContext:
+	+ ShipRenderContext:
 		+ Members:
 			+ Roles vertex type and buffer of it
 		+ ShaderTypes:
@@ -290,12 +290,12 @@ V1 TODO:
 			+ Upload Roles buffer
 		+ RenderDraw:
 			+ Right shader depending on mode
-		= Shader:
+		+ Shader:
 			+ Fix attrib names in current shader
 			+ Two shaders for quads, with glslinc with #define WITH_ROLES
 				+ WITH_ROLES takes vertex attrib array
 				+ else takes parameter for matte color
-			- Port FS features (lamp, etc.)
+			+ Port FS features (lamp, etc.)
 	+ Npcs:
 		+ RenderNpc checks RenderMode and calls templated RenderNpc
 		+ Store renderColor in state (Humans, Furniture) as vec3f
@@ -367,65 +367,17 @@ V1 TODO:
 				+ QuarterMaster, Steward 2, Stewardess 1+2
 				+ Stoker 1+2
 				+ Stoker 3+4
-	- Re-instate human H and W randomization!
+	+ Re-instate human H and W randomization!
 
-	- Test:
+	= Test:
 		- Buoyancy head offsets in both modes
-		- Check proportions in quad mode
-		- Knee bend
-		- All orientations, for human & furniture
-		- Matte color
+		+ Check proportions in quad mode
+		+ Knee bend
+		+ All orientations, for human & furniture
+		+ Matte color
 
-	- See if can improve stickmen anti-aliasing
-		- fwidth on x-distance?
-
-
-
-	OLD VERSION, WITH STATIC ATTRIBUTES
-	- Npcs:
-		- mAreRenderStaticAttributesDirtyForRendering (default false)
-			- Comment: set whenever the role for a given NPC ordinal is changed *in the upload sequence*
-		- Set at:
-			- Creation (follow: single, group)
-			- Removal (including ship removal)
-		- Upload():
-			- If dirty: start, upload color for each NPC, end, clear dirty
-			- If render mode needs it: all texture coords are replaced with pre-calcd single quad, using Dir+Orientation for signs
-	- ShipRenderContext:
-		- React to RenderParameters::mode & color changes:
-			- Set param in NPC quad shader for enabling/disabling colors
-				- This has to happen also @ init, so RenderParameters has it dirty by default
-			- Set param in NPC quad shader for color
-		- ShaderTypes:
-			- Static attributes vertex attributes
-			- Param to enable color
-			- Param for flat color
-		- Static attributes vertex attrib description @ other descriptions
-		- Static attribs vertex type, buffer of it, and mIsDirty (false)		
-		- Static attributes upload:
-			- UploadStart: size buffer and reset its size
-				- Comment on being sticky
-			- Upload:
-				- Store into buffer
-			- Upload end: nop
-		- NPCs upload:
-			- Rename so it's "both" texture and quad
-			- Switches inside? Any need to switch behavior? Hopefully not
-		- RenderPrepare:
-			- If dirty and mode requires:
-				- assert sizes match
-				- If not empty: upload (w/alloc)
-				- Clear dirty flag
-		- RenderDraw:
-			- Stickmen shader if mode requires
-		- Shader:
-			- param for enabling colors
-			- Port FS features (lamp, etc.)
-
-	- Port to BaryLab
-		- Profile
-
-- Test anti-matter bomb, settle, and search for NPCs
+- Port to BaryLab
+	- Profile
 
 - See if can fix placement of furniture so to topple it
 
@@ -434,9 +386,8 @@ V1 TODO:
 - See if NPC settings for springs make them explode; if so, nuke them
 
 - Work with TimCan for improvements
-	- Chest
+	- Chests
 	- Square heads
-	- Wide legs
 	- Detail (e.g. ears) with shades
 
 + Turnover tool:

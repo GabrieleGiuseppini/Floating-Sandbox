@@ -2930,6 +2930,14 @@ void ShipRenderContext::ApplyEffectiveAmbientLightIntensityChanges(RenderParamet
     mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesStrength, ProgramParameterType::EffectiveAmbientLightIntensity>(
         effectiveAmbientLightIntensityParamValue);
 
+    mShaderManager.ActivateProgram<ProgramType::ShipNpcsQuadFlat>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipNpcsQuadFlat, ProgramParameterType::EffectiveAmbientLightIntensity>(
+        effectiveAmbientLightIntensityParamValue);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipNpcsQuadWithRoles>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipNpcsQuadWithRoles, ProgramParameterType::EffectiveAmbientLightIntensity>(
+        effectiveAmbientLightIntensityParamValue);
+
     mShaderManager.ActivateProgram<ProgramType::ShipNpcsTexture>();
     mShaderManager.SetProgramParameter<ProgramType::ShipNpcsTexture, ProgramParameterType::EffectiveAmbientLightIntensity>(
         effectiveAmbientLightIntensityParamValue);
