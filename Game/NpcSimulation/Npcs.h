@@ -236,7 +236,7 @@ private:
 				float const WalkingSpeedBase;
 
 				NpcDatabase::HumanTextureFramesType const & TextureFrames;
-				NpcDatabase::HumanTextureDimensionsType const & TextureDimensions;
+				NpcDatabase::HumanTextureGeometryType const & TextureGeometry;
 
 				enum class BehaviorType
 				{
@@ -506,7 +506,7 @@ private:
 					float widthMultipier,
 					float walkingSpeedBase,
 					NpcDatabase::HumanTextureFramesType const & textureFrames,
-					NpcDatabase::HumanTextureDimensionsType const & textureDimensions,
+					NpcDatabase::HumanTextureGeometryType const & textureGeometry,
 					BehaviorType initialBehavior,
 					float currentSimulationTime)
 					: SubKindId(subKindId)
@@ -514,7 +514,7 @@ private:
 					, WidthMultipier(widthMultipier)
 					, WalkingSpeedBase(walkingSpeedBase)
 					, TextureFrames(textureFrames)
-					, TextureDimensions(textureDimensions)
+					, TextureGeometry(textureGeometry)
 					, EquilibriumTorque(0.0f)
 					, CurrentEquilibriumSoftTerminationDecision(0.0f)
 					, CurrentFaceOrientation(1.0f)

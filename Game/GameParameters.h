@@ -495,15 +495,15 @@ struct GameParameters
 
         // All fractions below are relative to BodyLength
         //
-        // Lengths are from Leonardo's Vitruvian man
+        // Lengths are from Leonardo's Vitruvian man; subkinds may override
         static float constexpr HeadLengthFraction = 1.0f / 7.0f;
-        static float constexpr QuadModeHeadWidthFraction = 1.0f / 8.0f; // In texture mode we honor the texture's aspect ratio
+        static float constexpr QuadModeHeadWidthFraction = 1.0f / 8.0f;
         static float constexpr TorsoLengthFraction = 1.0f / 2.0f - HeadLengthFraction;
-        static float constexpr QuadModeTorsoWidthFraction = 1.0f / 7.0f; // In texture mode we honor the texture's aspect ratio
+        static float constexpr QuadModeTorsoWidthFraction = 1.0f / 7.0f;
         static float constexpr ArmLengthFraction = 3.0f / 8.0f;
-        static float constexpr QuadModeArmWidthFraction = 1.0f / 10.0f; // In texture mode we honor the texture's aspect ratio
+        static float constexpr QuadModeArmWidthFraction = 1.0f / 10.0f;
         static float constexpr LegLengthFraction = 1.0f / 2.0f;
-        static float constexpr QuadModeLegWidthFraction = 1.0f / 10.0f; // In texture mode we honor the texture's aspect ratio
+        static float constexpr QuadModeLegWidthFraction = 1.0f / 10.0f;
 
         static_assert(LegLengthFraction + TorsoLengthFraction + HeadLengthFraction == 1.0f);
 

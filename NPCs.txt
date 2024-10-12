@@ -328,7 +328,7 @@ V1 TODO:
 			! Head: 1/8   w=1/10
 			+ Quad mode: OK		
 			X Texture mode: NOT OK
-		= Test 2: json-driven proportions
+		+ Test 2: partially json-driven proportions
 			! Gist:
 				! Legs, Arms, Torso, Head lengths stay from Vitruvian
 				! DB carries:
@@ -336,15 +336,29 @@ V1 TODO:
 						! Defaults: from texture
 					! HeadHMultiplier: factor to multiply with Vitruvian head length for actual texture H
 						! And then Head WHRatio gives width
-			= Impl:
+			+ Impl:
 				= NpcDatabase:
 					+ Rewrite HumanDimensions struct to hold above
 					+ Read from json
-					- Have defaults in a "global" section
-						- The others are named "override"
+					+ Have defaults in a "global" section
+						+ The others are named "override"
 					- Nail down defaults
 					- Do overrides where needed in json
 						- Check if TimCan has emailed first
+		= Test 3: fully json-driven proportions
+			+ NpcDatabase: 4 length fractions @ defaults and @ dimensions
+				+ Defaults: use QuadXXX from GameParameters
+			+ RenderNpc: use correct ones
+			+ Verify quad mode ok
+			+ Populate json defaults with original
+				+ Head: here assume 16x17
+			+ Verify texture mode matches before-work (original)
+			- Adjust defaults to new taste
+			- Do geometry overrides for each NPC that needsit
+				- Attention: heads
+				- TODOHERE
+				
+
 
 	- Test:
 		- Buoyancy head offsets in both modes

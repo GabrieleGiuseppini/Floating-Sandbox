@@ -11,12 +11,11 @@
                 "spring_damping_coefficient": 0.5,
                 "spring_reduction_fraction": 0.39
             },
-	    "default_texture_dimensions": {
-		"head_height_multiplier": 1.0625,
-		"head_wh_ratio": 1.0,
-		"torso_wh_ratio": 0.55,
-		"arm_wh_ratio": 0.2,
-		"leg_wh_ratio": 0.37
+	    "default_texture_geometry": {
+		"head_length_fraction": 0.2125,
+		"torso_length_fraction": 0.4,
+		"arm_length_fraction": 0.4,
+		"leg_length_fraction": 0.4
 	    }
         },
         "sub_kinds": [

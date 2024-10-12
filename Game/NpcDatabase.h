@@ -40,16 +40,19 @@ public:
         float SpringDampingCoefficient;
     };
 
-    struct HumanTextureDimensionsType
+    struct HumanTextureGeometryType
     {
-        float HeadHeightMultiplier; // Multiplier of "standard" (i.e. Vitruvian) head height; different than 1.0 for e.g. hats
-        float HeadWHRatio; // To recover head quad width from Vitruvian height
-        float TorsoWHRatio; // To recover torso quad width from Vitruvian height
-        float ArmWHRatio; // To recover arm quad width from Vitruvian height
-        float LegWHRatio; // To recover leg quad width from Vitruvian height
+        float HeadLengthFraction; // Fraction of dipole length; can overshoot 1.0 - leg+torso for e.g. hats
+        float HeadWHRatio; // To recover head quad width from height
+        float TorsoLengthFraction; // Fraction of dipole length
+        float TorsoWHRatio; // To recover torso quad width from height
+        float ArmLengthFraction; // Fraction of dipole length
+        float ArmWHRatio; // To recover arm quad width from height
+        float LegLengthFraction; // Fraction of dipole length
+        float LegWHRatio; // To recover leg quad width from height
     };
 
-    struct FurnitureDimensionsType
+    struct FurnitureGeometryType
     {
         float Width;
         float Height;
@@ -143,9 +146,9 @@ public:
         return mHumanSubKinds.at(subKindId).TextureCoordinatesQuads;
     }
 
-    HumanTextureDimensionsType const & GetHumanTextureDimensions(NpcSubKindIdType subKindId) const
+    HumanTextureGeometryType const & GetHumanTextureGeometry(NpcSubKindIdType subKindId) const
     {
-        return mHumanSubKinds.at(subKindId).TextureDimensions;
+        return mHumanSubKinds.at(subKindId).TextureGeometry;
     }
 
     // Furniture
@@ -183,9 +186,9 @@ public:
         return mFurnitureSubKinds.at(subKindId).ParticleMeshKind;
     }
 
-    FurnitureDimensionsType const & GetFurnitureDimensions(NpcSubKindIdType subKindId) const
+    FurnitureGeometryType const & GetFurnitureGeometry(NpcSubKindIdType subKindId) const
     {
-        return mFurnitureSubKinds.at(subKindId).Dimensions;
+        return mFurnitureSubKinds.at(subKindId).Geometry;
     }
 
     Render::TextureCoordinatesQuad const & GetFurnitureTextureCoordinatesQuad(NpcSubKindIdType subKindId) const
@@ -210,7 +213,7 @@ private:
         float BodyWidthRandomizationSensitivity;
 
         HumanTextureFramesType const TextureCoordinatesQuads;
-        HumanTextureDimensionsType TextureDimensions;
+        HumanTextureGeometryType TextureGeometry;
     };
 
     struct FurnitureSubKind
@@ -225,20 +228,23 @@ private:
 
         ParticleMeshKindType ParticleMeshKind;
 
-        FurnitureDimensionsType Dimensions;
+        FurnitureGeometryType Geometry;
 
         Render::TextureCoordinatesQuad TextureCoordinatesQuad;
     };
 
 private:
 
-    struct DefaultHumanTextureDimensionsType
+    struct DefaultHumanTextureGeometryType
     {
-        std::optional<float> HeadHeightMultiplier; // How much longer we want head to be than Vitruvian's
-        std::optional<float> HeadWHRatio; // Wrt Vitruvian's
-        std::optional<float> TorsoWHRatio; // Wrt Vitruvian's
-        std::optional<float> ArmWHRatio; // Wrt Vitruvian's
-        std::optional<float> LegWHRatio; // Wrt Vitruvian's
+        float HeadLengthFraction;
+        std::optional<float> HeadWHRatio;
+        float TorsoLengthFraction;
+        std::optional<float> TorsoWHRatio;
+        float ArmLengthFraction;
+        std::optional<float> ArmWHRatio;
+        float LegLengthFraction;
+        std::optional<float> LegWHRatio;
     };
 
     struct StringEntry
@@ -268,15 +274,15 @@ private:
         StructuralMaterial const & feetMaterial,
         ParticleAttributesType const & globalHeadParticleAttributes,
         ParticleAttributesType const & globalFeetParticleAttributes,
-        DefaultHumanTextureDimensionsType const & defaultTextureDimensions,
+        DefaultHumanTextureGeometryType const & defaultTextureGeometry,
         Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas);
 
-    static DefaultHumanTextureDimensionsType ParseDefaultHumanTextureDimensions(
+    static DefaultHumanTextureGeometryType ParseDefaultHumanTextureGeometry(
         picojson::object const & containerObject);
 
-    static HumanTextureDimensionsType ParseHumanTextureDimensions(
+    static HumanTextureGeometryType ParseHumanTextureGeometry(
         picojson::object const & containerObject,
-        DefaultHumanTextureDimensionsType const & defaults,
+        DefaultHumanTextureGeometryType const & defaults,
         picojson::object const & textureFilenameStemsContainerObject,
         Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas,
         std::string const & subKindName);

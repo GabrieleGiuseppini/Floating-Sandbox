@@ -485,8 +485,8 @@ std::tuple<std::optional<PickedObjectId<NpcId>>, NpcCreationFailureReasonType> N
 
             // Create Particles
 
-            float const baseWidth = mNpcDatabase.GetFurnitureDimensions(subKind).Width;
-            float const baseHeight = mNpcDatabase.GetFurnitureDimensions(subKind).Height;
+            float const baseWidth = mNpcDatabase.GetFurnitureGeometry(subKind).Width;
+            float const baseHeight = mNpcDatabase.GetFurnitureGeometry(subKind).Height;
 
             float const mass = CalculateParticleMass(
                 furnitureMaterial.GetMass(),
@@ -816,7 +816,7 @@ std::tuple<std::optional<PickedObjectId<NpcId>>, NpcCreationFailureReasonType> N
         widthMultiplier,
         walkingSpeedBase,
         mNpcDatabase.GetHumanTextureCoordinatesQuads(subKind),
-        mNpcDatabase.GetHumanTextureDimensions(subKind),
+        mNpcDatabase.GetHumanTextureGeometry(subKind),
         StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::BeingPlaced,
         currentSimulationTime);
 
@@ -1517,8 +1517,8 @@ std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> Npcs::AddNpcGroup
                     case NpcDatabase::ParticleMeshKindType::Quad:
                     {
                         // Position we give is of center, but we want bottom (left, arbitrarily) to be here
-                        float const width = mNpcDatabase.GetFurnitureDimensions(subKind).Width;
-                        float const height = mNpcDatabase.GetFurnitureDimensions(subKind).Height;
+                        float const width = mNpcDatabase.GetFurnitureGeometry(subKind).Width;
+                        float const height = mNpcDatabase.GetFurnitureGeometry(subKind).Height;
                         position = npcPosition + vec2f(width / 2.0f, height / 2.0f);
                         break;
                     }
@@ -2888,43 +2888,57 @@ void Npcs::RenderNpc(
             vec2f const actualBodyVDir = -actualBodyVector.normalise_approx(actualBodyLength); // From head to feet - facilitates arm and length angle-making
             vec2f const actualBodyHDir = actualBodyVDir.to_perpendicular(); // Points R (of the screen)
 
-            vec2f const legTop = feetPosition + actualBodyVector * (GameParameters::HumanNpcGeometry::LegLengthFraction * animationState.CrotchHeightMultiplier);
+            vec2f const legTop = feetPosition
+                + actualBodyVector
+                    * (IsTextureMode ? humanNpcState.TextureGeometry.LegLengthFraction : GameParameters::HumanNpcGeometry::LegLengthFraction)
+                    * animationState.CrotchHeightMultiplier;
             vec2f const torsoBottom = legTop - actualBodyVector * (GameParameters::HumanNpcGeometry::LegLengthFraction / 8.0f); // Magic
-            vec2f const torsoTop = legTop + actualBodyVector * GameParameters::HumanNpcGeometry::TorsoLengthFraction;
+            vec2f const torsoTop = legTop
+                + actualBodyVector
+                    * (IsTextureMode ? humanNpcState.TextureGeometry.TorsoLengthFraction : GameParameters::HumanNpcGeometry::TorsoLengthFraction);
             vec2f const headBottom = torsoTop;
             vec2f const armTop = headBottom - actualBodyVector * (GameParameters::HumanNpcGeometry::ArmLengthFraction / 8.0f); // Magic
-            vec2f const headTop =
-                headBottom
-                + actualBodyVector * GameParameters::HumanNpcGeometry::HeadLengthFraction * (IsTextureMode
-                    ? humanNpcState.TextureDimensions.HeadHeightMultiplier // Make room for hat
-                    : 1.0f
-                    );
+            vec2f const headTop = headBottom
+                + actualBodyVector
+                    * (IsTextureMode ? humanNpcState.TextureGeometry.HeadLengthFraction : GameParameters::HumanNpcGeometry::HeadLengthFraction);
 
             float const adjustedIdealHumanHeight = npc.ParticleMesh.Springs[0].RestLength;
 
             float const headWidthFraction = IsTextureMode
-                ? GameParameters::HumanNpcGeometry::HeadLengthFraction * humanNpcState.TextureDimensions.HeadWHRatio
+                ? humanNpcState.TextureGeometry.HeadLengthFraction * humanNpcState.TextureGeometry.HeadWHRatio
                 : GameParameters::HumanNpcGeometry::QuadModeHeadWidthFraction;
             float const halfHeadW = (adjustedIdealHumanHeight * headWidthFraction * humanNpcState.WidthMultipier) / 2.0f;
 
             float const torsoWidthFraction = IsTextureMode
-                ? GameParameters::HumanNpcGeometry::TorsoLengthFraction * humanNpcState.TextureDimensions.TorsoWHRatio
+                ? humanNpcState.TextureGeometry.TorsoLengthFraction * humanNpcState.TextureGeometry.TorsoWHRatio
                 : GameParameters::HumanNpcGeometry::QuadModeTorsoWidthFraction;
             float const halfTorsoW = (adjustedIdealHumanHeight * torsoWidthFraction * humanNpcState.WidthMultipier) / 2.0f;
 
-            float const leftArmLength = adjustedIdealHumanHeight * GameParameters::HumanNpcGeometry::ArmLengthFraction * animationState.LimbLengthMultipliers.LeftArm;
-            float const rightArmLength = adjustedIdealHumanHeight * GameParameters::HumanNpcGeometry::ArmLengthFraction * animationState.LimbLengthMultipliers.RightArm;
+            float const leftArmLength =
+                adjustedIdealHumanHeight
+                * (IsTextureMode ? humanNpcState.TextureGeometry.ArmLengthFraction : GameParameters::HumanNpcGeometry::ArmLengthFraction)
+                * animationState.LimbLengthMultipliers.LeftArm;
+            float const rightArmLength =
+                adjustedIdealHumanHeight
+                * (IsTextureMode ? humanNpcState.TextureGeometry.ArmLengthFraction : GameParameters::HumanNpcGeometry::ArmLengthFraction)
+                * animationState.LimbLengthMultipliers.RightArm;
 
             float const armWidthFraction = IsTextureMode
-                ? GameParameters::HumanNpcGeometry::ArmLengthFraction * humanNpcState.TextureDimensions.ArmWHRatio
+                ? humanNpcState.TextureGeometry.ArmLengthFraction * humanNpcState.TextureGeometry.ArmWHRatio
                 : GameParameters::HumanNpcGeometry::QuadModeArmWidthFraction;
             float const halfArmW = (adjustedIdealHumanHeight * armWidthFraction * humanNpcState.WidthMultipier) / 2.0f;
 
-            float const leftLegLength = adjustedIdealHumanHeight * GameParameters::HumanNpcGeometry::LegLengthFraction * animationState.LimbLengthMultipliers.LeftLeg;
-            float const rightLegLength = adjustedIdealHumanHeight * GameParameters::HumanNpcGeometry::LegLengthFraction * animationState.LimbLengthMultipliers.RightLeg;
+            float const leftLegLength =
+                adjustedIdealHumanHeight
+                * (IsTextureMode ? humanNpcState.TextureGeometry.LegLengthFraction : GameParameters::HumanNpcGeometry::LegLengthFraction)
+                * animationState.LimbLengthMultipliers.LeftLeg;
+            float const rightLegLength =
+                adjustedIdealHumanHeight
+                * (IsTextureMode ? humanNpcState.TextureGeometry.LegLengthFraction : GameParameters::HumanNpcGeometry::LegLengthFraction)
+                * animationState.LimbLengthMultipliers.RightLeg;
 
             float const legWidthFraction = IsTextureMode
-                ? GameParameters::HumanNpcGeometry::LegLengthFraction * humanNpcState.TextureDimensions.LegWHRatio
+                ? humanNpcState.TextureGeometry.LegLengthFraction * humanNpcState.TextureGeometry.LegWHRatio
                 : GameParameters::HumanNpcGeometry::QuadModeLegWidthFraction;
             float const halfLegW = (adjustedIdealHumanHeight * legWidthFraction * humanNpcState.WidthMultipier) / 2.0f;
 
@@ -3678,12 +3692,12 @@ void Npcs::RenderNpc(
                 // Calculate dimensions
                 float const width = std::max(
                     CalculateSpringLength(
-                        mNpcDatabase.GetFurnitureDimensions(npc.KindSpecificState.FurnitureNpcState.SubKindId).Width,
+                        mNpcDatabase.GetFurnitureGeometry(npc.KindSpecificState.FurnitureNpcState.SubKindId).Width,
                         mCurrentSizeMultiplier),
                     ParticleSize);
                 float const height = std::max(
                     CalculateSpringLength(
-                        mNpcDatabase.GetFurnitureDimensions(npc.KindSpecificState.FurnitureNpcState.SubKindId).Height,
+                        mNpcDatabase.GetFurnitureGeometry(npc.KindSpecificState.FurnitureNpcState.SubKindId).Height,
                         mCurrentSizeMultiplier),
                     ParticleSize);
 

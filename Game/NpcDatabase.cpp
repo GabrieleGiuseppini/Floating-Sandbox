@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #include "NpcDatabase.h"
 
+#include "GameParameters.h"
+
 #include <GameCore/GameException.h>
 #include <GameCore/Utils.h>
 
@@ -56,7 +58,7 @@ NpcDatabase NpcDatabase::Load(
 
         ParticleAttributesType globalFeetParticleAttributes = MakeParticleAttributes(humansGlobalObject, "feet_particle_attributes_overrides", MakeDefaultParticleAttributes(feetMaterial));
 
-        DefaultHumanTextureDimensionsType defaultTextureDimensions = ParseDefaultHumanTextureDimensions(humansGlobalObject);
+        DefaultHumanTextureGeometryType defaultTextureGeometry = ParseDefaultHumanTextureGeometry(humansGlobalObject);
 
         NpcSubKindIdType nextSubKindId = 0;
         auto const humanSubKindsArray = Utils::GetMandatoryJsonArray(humansObject, "sub_kinds");
@@ -73,7 +75,7 @@ NpcDatabase NpcDatabase::Load(
                 feetMaterial,
                 globalHeadParticleAttributes,
                 globalFeetParticleAttributes,
-                defaultTextureDimensions,
+                defaultTextureGeometry,
                 npcTextureAtlas);
 
             humanSubKinds.try_emplace(nextSubKindId, std::move(subKind));
@@ -166,7 +168,7 @@ NpcDatabase::HumanSubKind NpcDatabase::ParseHumanSubKind(
     StructuralMaterial const & feetMaterial,
     ParticleAttributesType const & globalHeadParticleAttributes,
     ParticleAttributesType const & globalFeetParticleAttributes,
-    DefaultHumanTextureDimensionsType const & defaultTextureDimensions,
+    DefaultHumanTextureGeometryType const & defaultTextureGeometry,
     Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas)
 {
     std::string const name = Utils::GetMandatoryJsonMember<std::string>(subKindObject, "name");
@@ -180,7 +182,7 @@ NpcDatabase::HumanSubKind NpcDatabase::ParseHumanSubKind(
     float const bodyWidthRandomizationSensitivity = Utils::GetOptionalJsonMember<float>(subKindObject, "body_width_randomization_sensitivity", 1.0f);
 
     auto const & textureFilenameStemsObject = Utils::GetMandatoryJsonObject(subKindObject, "texture_filename_stems");
-    HumanTextureFramesType humanTextureFrames({
+    HumanTextureFramesType textureFrames({
         ParseTextureCoordinatesQuad(textureFilenameStemsObject, HeadFKeyName, npcTextureAtlas),
         ParseTextureCoordinatesQuad(textureFilenameStemsObject, HeadBKeyName, npcTextureAtlas),
         ParseTextureCoordinatesQuad(textureFilenameStemsObject, HeadSKeyName, npcTextureAtlas),
@@ -195,9 +197,9 @@ NpcDatabase::HumanSubKind NpcDatabase::ParseHumanSubKind(
         ParseTextureCoordinatesQuad(textureFilenameStemsObject, LegSKeyName, npcTextureAtlas)
         });
 
-    auto const textureDimensions = ParseHumanTextureDimensions(
+    auto const textureGeometry = ParseHumanTextureGeometry(
         subKindObject,
-        defaultTextureDimensions,
+        defaultTextureGeometry,
         textureFilenameStemsObject,
         npcTextureAtlas,
         name);
@@ -211,36 +213,58 @@ NpcDatabase::HumanSubKind NpcDatabase::ParseHumanSubKind(
         {feetParticleAttributes, headParticleAttributes},
         sizeMultiplier,
         bodyWidthRandomizationSensitivity,
-        humanTextureFrames,
-        textureDimensions });
+        textureFrames,
+        textureGeometry });
 }
 
-NpcDatabase::DefaultHumanTextureDimensionsType NpcDatabase::ParseDefaultHumanTextureDimensions(
+NpcDatabase::DefaultHumanTextureGeometryType NpcDatabase::ParseDefaultHumanTextureGeometry(
     picojson::object const & containerObject)
 {
-    DefaultHumanTextureDimensionsType defaults;
+    // Lengths default to human geometry
+    float headLengthFraction = GameParameters::HumanNpcGeometry::HeadLengthFraction;
+    float torsoLengthFraction = GameParameters::HumanNpcGeometry::TorsoLengthFraction;
+    float armLengthFraction = GameParameters::HumanNpcGeometry::ArmLengthFraction;
+    float legLengthFraction = GameParameters::HumanNpcGeometry::LegLengthFraction;
 
-    auto const defaultTextureDimensionsContainerObject = Utils::GetOptionalJsonObject(containerObject, "default_texture_dimensions");
-    if (defaultTextureDimensionsContainerObject.has_value())
+    // When these are not specified, will default to texture's ratios (unless subkind overrides)
+    std::optional<float> headWHRatio;
+    std::optional<float> torsoWHRatio;
+    std::optional<float> armWHRatio;
+    std::optional<float> legWHRatio;
+
+    auto const defaultTextureGeometryContainerObject = Utils::GetOptionalJsonObject(containerObject, "default_texture_geometry");
+    if (defaultTextureGeometryContainerObject.has_value())
     {
-        defaults.HeadHeightMultiplier = Utils::GetOptionalJsonMember<float>(*defaultTextureDimensionsContainerObject, "head_height_multiplier");
-        defaults.HeadWHRatio = Utils::GetOptionalJsonMember<float>(*defaultTextureDimensionsContainerObject, "head_wh_ratio");
-        defaults.TorsoWHRatio = Utils::GetOptionalJsonMember<float>(*defaultTextureDimensionsContainerObject, "torso_wh_ratio");
-        defaults.ArmWHRatio = Utils::GetOptionalJsonMember<float>(*defaultTextureDimensionsContainerObject, "arm_wh_ratio");
-        defaults.LegWHRatio = Utils::GetOptionalJsonMember<float>(*defaultTextureDimensionsContainerObject, "leg_wh_ratio");
+        headLengthFraction = Utils::GetOptionalJsonMember<float>(*defaultTextureGeometryContainerObject, "head_length_fraction", GameParameters::HumanNpcGeometry::HeadLengthFraction);
+        headWHRatio = Utils::GetOptionalJsonMember<float>(*defaultTextureGeometryContainerObject, "head_wh_ratio");
+        torsoLengthFraction = Utils::GetOptionalJsonMember<float>(*defaultTextureGeometryContainerObject, "torso_length_fraction", GameParameters::HumanNpcGeometry::TorsoLengthFraction);
+        torsoWHRatio = Utils::GetOptionalJsonMember<float>(*defaultTextureGeometryContainerObject, "torso_wh_ratio");
+        armLengthFraction = Utils::GetOptionalJsonMember<float>(*defaultTextureGeometryContainerObject, "arm_length_fraction", GameParameters::HumanNpcGeometry::ArmLengthFraction);
+        armWHRatio = Utils::GetOptionalJsonMember<float>(*defaultTextureGeometryContainerObject, "arm_wh_ratio");
+        legLengthFraction = Utils::GetOptionalJsonMember<float>(*defaultTextureGeometryContainerObject, "leg_length_fraction", GameParameters::HumanNpcGeometry::LegLengthFraction);
+        legWHRatio = Utils::GetOptionalJsonMember<float>(*defaultTextureGeometryContainerObject, "leg_wh_ratio");
     }
 
-    return defaults;
+    return DefaultHumanTextureGeometryType{
+        headLengthFraction,
+        headWHRatio,
+        torsoLengthFraction,
+        torsoWHRatio,
+        armLengthFraction,
+        armWHRatio,
+        legLengthFraction,
+        legWHRatio
+    };
 }
 
-NpcDatabase::HumanTextureDimensionsType NpcDatabase::ParseHumanTextureDimensions(
+NpcDatabase::HumanTextureGeometryType NpcDatabase::ParseHumanTextureGeometry(
     picojson::object const & containerObject,
-    DefaultHumanTextureDimensionsType const & defaults,
+    DefaultHumanTextureGeometryType const & defaults,
     picojson::object const & textureFilenameStemsContainerObject,
     Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas,
     std::string const & subKindName)
 {
-    auto const textureDimensionsContainerObject = Utils::GetOptionalJsonObject(containerObject, "texture_dimensions_overrides");
+    auto const textureGeometryContainerObject = Utils::GetOptionalJsonObject(containerObject, "texture_geometry_overrides");
 
     //
     // HeadHMultiplier: factor to multiply with Vitruvian head length for actual texture H;
@@ -252,10 +276,9 @@ NpcDatabase::HumanTextureDimensionsType NpcDatabase::ParseHumanTextureDimensions
 
     // Head
 
-    float const _defaultHeadHeightMultiplier = defaults.HeadHeightMultiplier.value_or(1.0f);
-    float const headHeightMultiplier = textureDimensionsContainerObject.has_value()
-        ? Utils::GetOptionalJsonMember<float>(*textureDimensionsContainerObject, "head_height_multiplier", _defaultHeadHeightMultiplier)
-        : _defaultHeadHeightMultiplier;
+    float const headLengthFraction = textureGeometryContainerObject.has_value()
+        ? Utils::GetOptionalJsonMember<float>(*textureGeometryContainerObject, "head_length_fraction", defaults.HeadLengthFraction)
+        : defaults.HeadLengthFraction;
 
     auto const headFSize = GetFrameSize(textureFilenameStemsContainerObject, HeadFKeyName, npcTextureAtlas);
     if (headFSize != GetFrameSize(textureFilenameStemsContainerObject, HeadBKeyName, npcTextureAtlas)
@@ -265,11 +288,15 @@ NpcDatabase::HumanTextureDimensionsType NpcDatabase::ParseHumanTextureDimensions
     }
 
     float const _defaultHeadWHRatio = defaults.HeadWHRatio.value_or(static_cast<float>(headFSize.width) / static_cast<float>(headFSize.height));
-    float const headWHRatio = textureDimensionsContainerObject.has_value()
-        ? Utils::GetOptionalJsonMember<float>(*textureDimensionsContainerObject, "head_wh_ratio", _defaultHeadWHRatio)
+    float const headWHRatio = textureGeometryContainerObject.has_value()
+        ? Utils::GetOptionalJsonMember<float>(*textureGeometryContainerObject, "head_wh_ratio", _defaultHeadWHRatio)
         : _defaultHeadWHRatio;
 
     // Torso
+
+    float const torsoLengthFraction = textureGeometryContainerObject.has_value()
+        ? Utils::GetOptionalJsonMember<float>(*textureGeometryContainerObject, "torso_length_fraction", defaults.TorsoLengthFraction)
+        : defaults.TorsoLengthFraction;
 
     auto const torsoFSize = GetFrameSize(textureFilenameStemsContainerObject, TorsoFKeyName, npcTextureAtlas);
     if (torsoFSize != GetFrameSize(textureFilenameStemsContainerObject, TorsoBKeyName, npcTextureAtlas)
@@ -279,11 +306,15 @@ NpcDatabase::HumanTextureDimensionsType NpcDatabase::ParseHumanTextureDimensions
     }
 
     float const _defaultTorsoWHRatio = defaults.TorsoWHRatio.value_or(static_cast<float>(torsoFSize.width) / static_cast<float>(torsoFSize.height));
-    float const torsoWHRatio = textureDimensionsContainerObject.has_value()
-        ? Utils::GetOptionalJsonMember<float>(*textureDimensionsContainerObject, "torso_wh_ratio", _defaultTorsoWHRatio)
+    float const torsoWHRatio = textureGeometryContainerObject.has_value()
+        ? Utils::GetOptionalJsonMember<float>(*textureGeometryContainerObject, "torso_wh_ratio", _defaultTorsoWHRatio)
         : _defaultTorsoWHRatio;
 
     // Arm
+
+    float const armLengthFraction = textureGeometryContainerObject.has_value()
+        ? Utils::GetOptionalJsonMember<float>(*textureGeometryContainerObject, "arm_length_fraction", defaults.ArmLengthFraction)
+        : defaults.ArmLengthFraction;
 
     auto const armFSize = GetFrameSize(textureFilenameStemsContainerObject, ArmFKeyName, npcTextureAtlas);
     if (armFSize != GetFrameSize(textureFilenameStemsContainerObject, ArmBKeyName, npcTextureAtlas)
@@ -293,11 +324,15 @@ NpcDatabase::HumanTextureDimensionsType NpcDatabase::ParseHumanTextureDimensions
     }
 
     float const _defaultArmWHRatio = defaults.ArmWHRatio.value_or(static_cast<float>(armFSize.width) / static_cast<float>(armFSize.height));
-    float const armWHRatio = textureDimensionsContainerObject.has_value()
-        ? Utils::GetOptionalJsonMember<float>(*textureDimensionsContainerObject, "arm_wh_ratio", _defaultArmWHRatio)
+    float const armWHRatio = textureGeometryContainerObject.has_value()
+        ? Utils::GetOptionalJsonMember<float>(*textureGeometryContainerObject, "arm_wh_ratio", _defaultArmWHRatio)
         : _defaultArmWHRatio;
 
     // Leg
+
+    float const legLengthFraction = textureGeometryContainerObject.has_value()
+        ? Utils::GetOptionalJsonMember<float>(*textureGeometryContainerObject, "leg_length_fraction", defaults.LegLengthFraction)
+        : defaults.LegLengthFraction;
 
     auto const legFSize = GetFrameSize(textureFilenameStemsContainerObject, LegFKeyName, npcTextureAtlas);
     if (legFSize != GetFrameSize(textureFilenameStemsContainerObject, LegBKeyName, npcTextureAtlas)
@@ -307,15 +342,18 @@ NpcDatabase::HumanTextureDimensionsType NpcDatabase::ParseHumanTextureDimensions
     }
 
     float const _defaultLegWHRatio = defaults.LegWHRatio.value_or(static_cast<float>(legFSize.width) / static_cast<float>(legFSize.height));
-    float const legWHRatio = textureDimensionsContainerObject.has_value()
-        ? Utils::GetOptionalJsonMember<float>(*textureDimensionsContainerObject, "leg_wh_ratio", _defaultLegWHRatio)
+    float const legWHRatio = textureGeometryContainerObject.has_value()
+        ? Utils::GetOptionalJsonMember<float>(*textureGeometryContainerObject, "leg_wh_ratio", _defaultLegWHRatio)
         : _defaultLegWHRatio;
 
-    return HumanTextureDimensionsType({
-        headHeightMultiplier,
+    return HumanTextureGeometryType({
+        headLengthFraction,
         headWHRatio,
+        torsoLengthFraction,
         torsoWHRatio,
+        armLengthFraction,
         armWHRatio,
+        legLengthFraction,
         legWHRatio });
 }
 
@@ -349,14 +387,14 @@ NpcDatabase::FurnitureSubKind NpcDatabase::ParseFurnitureSubKind(
         Utils::GetMandatoryJsonMember<std::string>(particleMeshObject, "kind"));
 
     int particleCount = 0;
-    FurnitureDimensionsType dimensions{ 0.0f, 0.0f };
+    FurnitureGeometryType geometry{ 0.0f, 0.0f };
     switch (particleMeshKind)
     {
         case ParticleMeshKindType::Dipole:
         {
             particleCount = 2;
 
-            dimensions = FurnitureDimensionsType({
+            geometry = FurnitureGeometryType({
                 0,
                 Utils::GetMandatoryJsonMember<float>(particleMeshObject, "height") });
 
@@ -367,7 +405,7 @@ NpcDatabase::FurnitureSubKind NpcDatabase::ParseFurnitureSubKind(
         {
             particleCount = 1;
 
-            dimensions = FurnitureDimensionsType({
+            geometry = FurnitureGeometryType({
                 0,
                 0 });
 
@@ -386,7 +424,7 @@ NpcDatabase::FurnitureSubKind NpcDatabase::ParseFurnitureSubKind(
                 / static_cast<float>(atlasFrameMetadata.FrameMetadata.Size.height);
             float const width = height * textureFrameAspectRatio;
 
-            dimensions = FurnitureDimensionsType({
+            geometry = FurnitureGeometryType({
                 width,
                 height });
 
@@ -445,7 +483,7 @@ NpcDatabase::FurnitureSubKind NpcDatabase::ParseFurnitureSubKind(
         material,
         std::move(particleAttributes),
         particleMeshKind,
-        dimensions,
+        geometry,
         std::move(textureCoordinatesQuad) });
 }
 
