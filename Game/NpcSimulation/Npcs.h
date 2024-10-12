@@ -235,8 +235,8 @@ private:
 				float const WidthMultipier; // Randomization
 				float const WalkingSpeedBase;
 
-				NpcDatabase::HumanDimensionsType const & Dimensions;
 				NpcDatabase::HumanTextureFramesType const & TextureFrames;
+				NpcDatabase::HumanTextureDimensionsType const & TextureDimensions;
 
 				enum class BehaviorType
 				{
@@ -505,16 +505,16 @@ private:
 					NpcHumanRoleType role,
 					float widthMultipier,
 					float walkingSpeedBase,
-					NpcDatabase::HumanDimensionsType const & dimensions,
 					NpcDatabase::HumanTextureFramesType const & textureFrames,
+					NpcDatabase::HumanTextureDimensionsType const & textureDimensions,
 					BehaviorType initialBehavior,
 					float currentSimulationTime)
 					: SubKindId(subKindId)
 					, Role(role)
 					, WidthMultipier(widthMultipier)
 					, WalkingSpeedBase(walkingSpeedBase)
-					, Dimensions(dimensions)
 					, TextureFrames(textureFrames)
+					, TextureDimensions(textureDimensions)
 					, EquilibriumTorque(0.0f)
 					, CurrentEquilibriumSoftTerminationDecision(0.0f)
 					, CurrentFaceOrientation(1.0f)

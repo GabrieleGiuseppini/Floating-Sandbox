@@ -30,6 +30,9 @@
                     "leg_b": "baker_leg_back",
                     "leg_s": "baker_leg_side"
                 },
+		"texture_dimensions": {
+			
+		},
                 "render_color": "#8B8F90"
             },
             {

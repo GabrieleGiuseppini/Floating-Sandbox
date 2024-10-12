@@ -40,13 +40,13 @@ public:
         float SpringDampingCoefficient;
     };
 
-    struct HumanDimensionsType
+    struct HumanTextureDimensionsType
     {
-        float HeadHeightMultiplier; // Multiplier of "standard" head height
-        float HeadHeightToWidthFactor; // To recover head texture quad width from its physical width (aspect ratio)
-        float TorsoHeightToWidthFactor; // To recover torso texture quad width from its physical height (aspect ratio)
-        float ArmHeightToWidthFactor; // To recover arm texture quad width from its physical height (aspect ratio)
-        float LegHeightToWidthFactor; // To recover leg texture quad width from its physical height (aspect ratio)
+        float HeadHeightMultiplier; // Multiplier of "standard" (i.e. Vitruvian) head height; different than 1.0 for e.g. hats
+        float HeadWHRatio; // To recover head quad width from its physical height
+        float TorsoWHRatio; // To recover torso quad width from its physical height
+        float ArmWHRatio; // To recover arm quad width from its physical height
+        float LegWHRatio; // To recover leg quad width from its physical height
     };
 
     struct FurnitureDimensionsType
@@ -86,6 +86,8 @@ public:
         ResourceLocator const & resourceLocator,
         MaterialDatabase const & materialDatabase,
         Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas);
+
+    // Humans
 
     std::vector<std::tuple<NpcSubKindIdType, std::string>> GetHumanSubKinds(std::string const & language) const;
 
@@ -131,11 +133,6 @@ public:
         return mHumanSubKinds.at(subKindId).SizeMultiplier;
     }
 
-    HumanDimensionsType const & GetHumanDimensions(NpcSubKindIdType subKindId) const
-    {
-        return mHumanSubKinds.at(subKindId).Dimensions;
-    }
-
     float GetHumanBodyWidthRandomizationSensitivity(NpcSubKindIdType subKindId) const
     {
         return mHumanSubKinds.at(subKindId).BodyWidthRandomizationSensitivity;
@@ -145,6 +142,13 @@ public:
     {
         return mHumanSubKinds.at(subKindId).TextureCoordinatesQuads;
     }
+
+    HumanTextureDimensionsType const & GetHumanTextureDimensions(NpcSubKindIdType subKindId) const
+    {
+        return mHumanSubKinds.at(subKindId).TextureDimensions;
+    }
+
+    // Furniture
 
     std::vector<std::tuple<NpcSubKindIdType, std::string>> GetFurnitureSubKinds(std::string const & language) const;
 
@@ -203,10 +207,10 @@ private:
         std::array<ParticleAttributesType, 2> ParticleAttributes;
 
         float SizeMultiplier;
-
-        HumanDimensionsType Dimensions;
         float BodyWidthRandomizationSensitivity;
+
         HumanTextureFramesType const TextureCoordinatesQuads;
+        HumanTextureDimensionsType TextureDimensions;
     };
 
     struct FurnitureSubKind
@@ -257,8 +261,9 @@ private:
         ParticleAttributesType const & globalFeetParticleAttributes,
         Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas);
 
-    static HumanDimensionsType CalculateHumanDimensions(
+    static HumanTextureDimensionsType ParseHumanTextureDimensions(
         picojson::object const & containerObject,
+        picojson::object const & textureFilenameStemsContainerObject,
         Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas,
         std::string const & subKindName);
 

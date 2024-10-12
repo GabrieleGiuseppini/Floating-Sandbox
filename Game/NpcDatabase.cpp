@@ -173,9 +173,9 @@ NpcDatabase::HumanSubKind NpcDatabase::ParseHumanSubKind(
     ParticleAttributesType feetParticleAttributes = MakeParticleAttributes(subKindObject, "feet_particle_attributes_overrides", globalFeetParticleAttributes);
 
     float const sizeMultiplier = Utils::GetOptionalJsonMember<float>(subKindObject, "size_multiplier", 1.0f);
+    float const bodyWidthRandomizationSensitivity = Utils::GetOptionalJsonMember<float>(subKindObject, "body_width_randomization_sensitivity", 1.0f);
 
     auto const & textureFilenameStemsObject = Utils::GetMandatoryJsonObject(subKindObject, "texture_filename_stems");
-    auto const dimensions = CalculateHumanDimensions(textureFilenameStemsObject, npcTextureAtlas, name);
     HumanTextureFramesType humanTextureFrames({
         ParseTextureCoordinatesQuad(textureFilenameStemsObject, HeadFKeyName, npcTextureAtlas),
         ParseTextureCoordinatesQuad(textureFilenameStemsObject, HeadBKeyName, npcTextureAtlas),
@@ -191,7 +191,11 @@ NpcDatabase::HumanSubKind NpcDatabase::ParseHumanSubKind(
         ParseTextureCoordinatesQuad(textureFilenameStemsObject, LegSKeyName, npcTextureAtlas)
         });
 
-    float const bodyWidthRandomizationSensitivity = Utils::GetOptionalJsonMember<float>(subKindObject, "body_width_randomization_sensitivity", 1.0f);
+    auto const textureDimensions = ParseHumanTextureDimensions(
+        subKindObject,
+        textureFilenameStemsObject,
+        npcTextureAtlas,
+        name);
 
     return HumanSubKind({
         std::move(name),
@@ -201,75 +205,88 @@ NpcDatabase::HumanSubKind NpcDatabase::ParseHumanSubKind(
         feetMaterial,
         {feetParticleAttributes, headParticleAttributes},
         sizeMultiplier,
-        dimensions,
         bodyWidthRandomizationSensitivity,
-        humanTextureFrames });
+        humanTextureFrames,
+        textureDimensions });
 }
 
-NpcDatabase::HumanDimensionsType NpcDatabase::CalculateHumanDimensions(
+NpcDatabase::HumanTextureDimensionsType NpcDatabase::ParseHumanTextureDimensions(
     picojson::object const & containerObject,
+    picojson::object const & textureFilenameStemsContainerObject,
     Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas,
     std::string const & subKindName)
 {
-    // Head
-    //
-    // - Fixed height; expected B/F/S to be the same
-    //
-    // - Also expecting it square; if H > W, then we assume there's a hat,
-    //   and will increase texture height accordingly;
-    //   otherwise, if H < W, we stretch the texture so that the H fits
-    //   the physical height
+    auto const textureDimensionsContainerObject = Utils::GetOptionalJsonObject(containerObject, "texture_dimensions");
 
-    auto const headFSize = GetFrameSize(containerObject, HeadFKeyName, npcTextureAtlas);
-    if (headFSize != GetFrameSize(containerObject, HeadBKeyName, npcTextureAtlas)
-        || headFSize != GetFrameSize(containerObject, HeadSKeyName, npcTextureAtlas))
+    //
+    // HeadHMultiplier: factor to multiply with Vitruvian head length for actual texture H;
+    //                  expected > 1.0 for e.g. hats. Width is then given, like everything
+    //                  else, by WHRatio
+    //
+    // Legs, Arms, Torso, Head WHRatio's: defaults from texture, but can be overridden
+    //
+
+    // Head
+
+    float const headHeightMultiplier = textureDimensionsContainerObject.has_value()
+        ? Utils::GetOptionalJsonMember<float>(*textureDimensionsContainerObject, "head_height_multiplier", 1.0f)
+        : 1.0f;
+
+    auto const headFSize = GetFrameSize(textureFilenameStemsContainerObject, HeadFKeyName, npcTextureAtlas);
+    if (headFSize != GetFrameSize(textureFilenameStemsContainerObject, HeadBKeyName, npcTextureAtlas)
+        || headFSize != GetFrameSize(textureFilenameStemsContainerObject, HeadSKeyName, npcTextureAtlas))
     {
         throw GameException("Head dimensions are not all equal for " + subKindName);
     }
 
-    float const headHeightMultiplier = std::max(static_cast<float>(headFSize.height) / static_cast<float>(headFSize.width), 1.0f);
-    float const headWHRatio = static_cast<float>(headFSize.width) / static_cast<float>(headFSize.height);
+    float const _defaultHeadWHRatio = static_cast<float>(headFSize.width) / static_cast<float>(headFSize.height);
+    float const headWHRatio = (textureDimensionsContainerObject.has_value())
+        ? Utils::GetOptionalJsonMember<float>(*textureDimensionsContainerObject, "head_wh_ratio", _defaultHeadWHRatio)
+        : _defaultHeadWHRatio;
 
     // Torso
-    //
-    // - Fixed height; expected B/F/S to be the same
 
-    auto const torsoFSize = GetFrameSize(containerObject, TorsoFKeyName, npcTextureAtlas);
-    if (torsoFSize != GetFrameSize(containerObject, TorsoBKeyName, npcTextureAtlas)
-        || torsoFSize != GetFrameSize(containerObject, TorsoSKeyName, npcTextureAtlas))
+    auto const torsoFSize = GetFrameSize(textureFilenameStemsContainerObject, TorsoFKeyName, npcTextureAtlas);
+    if (torsoFSize != GetFrameSize(textureFilenameStemsContainerObject, TorsoBKeyName, npcTextureAtlas)
+        || torsoFSize != GetFrameSize(textureFilenameStemsContainerObject, TorsoSKeyName, npcTextureAtlas))
     {
         throw GameException("Torso dimensions are not all equal for " + subKindName);
     }
 
-    float const torsoWHRatio = static_cast<float>(torsoFSize.width) / static_cast<float>(torsoFSize.height);
+    float const _defaultTorsoWHRatio = static_cast<float>(torsoFSize.width) / static_cast<float>(torsoFSize.height);
+    float const torsoWHRatio = (textureDimensionsContainerObject.has_value())
+        ? Utils::GetOptionalJsonMember<float>(*textureDimensionsContainerObject, "torso_wh_ratio", _defaultTorsoWHRatio)
+        : _defaultTorsoWHRatio;
 
     // Arm
-    //
-    // - Fixed height; expected B/F/S to be the same
 
-    auto const armFSize = GetFrameSize(containerObject, ArmFKeyName, npcTextureAtlas);
-    if (armFSize != GetFrameSize(containerObject, ArmBKeyName, npcTextureAtlas)
-        || armFSize != GetFrameSize(containerObject, ArmSKeyName, npcTextureAtlas))
+    auto const armFSize = GetFrameSize(textureFilenameStemsContainerObject, ArmFKeyName, npcTextureAtlas);
+    if (armFSize != GetFrameSize(textureFilenameStemsContainerObject, ArmBKeyName, npcTextureAtlas)
+        || armFSize != GetFrameSize(textureFilenameStemsContainerObject, ArmSKeyName, npcTextureAtlas))
     {
         throw GameException("Arm dimensions are not all equal for " + subKindName);
     }
 
-    float const armWHRatio = static_cast<float>(armFSize.width) / static_cast<float>(armFSize.height);
+    float const _defaultArmWHRatio = static_cast<float>(armFSize.width) / static_cast<float>(armFSize.height);
+    float const armWHRatio = (textureDimensionsContainerObject.has_value())
+        ? Utils::GetOptionalJsonMember<float>(*textureDimensionsContainerObject, "arm_wh_ratio", _defaultArmWHRatio)
+        : _defaultArmWHRatio;
 
     // Leg
-    //
-    // - Fixed height; expected B/F/S to be the same
 
-    auto const legFSize = GetFrameSize(containerObject, LegFKeyName, npcTextureAtlas);
-    if (legFSize != GetFrameSize(containerObject, LegBKeyName, npcTextureAtlas)
-        || legFSize != GetFrameSize(containerObject, LegSKeyName, npcTextureAtlas))
+    auto const legFSize = GetFrameSize(textureFilenameStemsContainerObject, LegFKeyName, npcTextureAtlas);
+    if (legFSize != GetFrameSize(textureFilenameStemsContainerObject, LegBKeyName, npcTextureAtlas)
+        || legFSize != GetFrameSize(textureFilenameStemsContainerObject, LegSKeyName, npcTextureAtlas))
     {
         throw GameException("Leg dimensions are not all equal for " + subKindName);
     }
 
-    float const legWHRatio = static_cast<float>(legFSize.width) / static_cast<float>(legFSize.height);
+    float const _defaultLegWHRatio = static_cast<float>(legFSize.width) / static_cast<float>(legFSize.height);
+    float const legWHRatio = (textureDimensionsContainerObject.has_value())
+        ? Utils::GetOptionalJsonMember<float>(*textureDimensionsContainerObject, "leg_wh_ratio", _defaultLegWHRatio)
+        : _defaultLegWHRatio;
 
-    return HumanDimensionsType({
+    return HumanTextureDimensionsType({
         headHeightMultiplier,
         headWHRatio,
         torsoWHRatio,

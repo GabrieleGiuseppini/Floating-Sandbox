@@ -815,8 +815,8 @@ std::tuple<std::optional<PickedObjectId<NpcId>>, NpcCreationFailureReasonType> N
         mNpcDatabase.GetHumanRole(subKind),
         widthMultiplier,
         walkingSpeedBase,
-        mNpcDatabase.GetHumanDimensions(subKind),
         mNpcDatabase.GetHumanTextureCoordinatesQuads(subKind),
+        mNpcDatabase.GetHumanTextureDimensions(subKind),
         StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::BeingPlaced,
         currentSimulationTime);
 
@@ -2896,20 +2896,20 @@ void Npcs::RenderNpc(
             vec2f const headTop =
                 headBottom
                 + actualBodyVector * GameParameters::HumanNpcGeometry::HeadLengthFraction * (IsTextureMode
-                    ? humanNpcState.Dimensions.HeadHeightMultiplier // Make room for hat
+                    ? humanNpcState.TextureDimensions.HeadHeightMultiplier // Make room for hat
                     : 1.0f
                     );
 
             float const adjustedIdealHumanHeight = npc.ParticleMesh.Springs[0].RestLength;
 
             float const headWidthFraction = IsTextureMode
-                ? (GameParameters::HumanNpcGeometry::HeadLengthFraction * humanNpcState.Dimensions.HeadHeightMultiplier) // Texture head length
-                * humanNpcState.Dimensions.HeadHeightToWidthFactor // Maintain aspect ratio
+                ? (GameParameters::HumanNpcGeometry::HeadLengthFraction * humanNpcState.TextureDimensions.HeadHeightMultiplier) // Texture head length
+                    * humanNpcState.TextureDimensions.HeadWHRatio
                 : GameParameters::HumanNpcGeometry::QuadModeHeadWidthFraction;
             float const halfHeadW = (adjustedIdealHumanHeight * headWidthFraction * humanNpcState.WidthMultipier) / 2.0f;
 
             float const torsoWidthFraction = IsTextureMode
-                ? GameParameters::HumanNpcGeometry::TorsoLengthFraction * humanNpcState.Dimensions.TorsoHeightToWidthFactor
+                ? GameParameters::HumanNpcGeometry::TorsoLengthFraction * humanNpcState.TextureDimensions.TorsoWHRatio
                 : GameParameters::HumanNpcGeometry::QuadModeTorsoWidthFraction;
             float const halfTorsoW = (adjustedIdealHumanHeight * torsoWidthFraction * humanNpcState.WidthMultipier) / 2.0f;
 
@@ -2917,7 +2917,7 @@ void Npcs::RenderNpc(
             float const rightArmLength = adjustedIdealHumanHeight * GameParameters::HumanNpcGeometry::ArmLengthFraction * animationState.LimbLengthMultipliers.RightArm;
 
             float const armWidthFraction = IsTextureMode
-                ? GameParameters::HumanNpcGeometry::ArmLengthFraction * humanNpcState.Dimensions.ArmHeightToWidthFactor
+                ? GameParameters::HumanNpcGeometry::ArmLengthFraction * humanNpcState.TextureDimensions.ArmWHRatio
                 : GameParameters::HumanNpcGeometry::QuadModeArmWidthFraction;
             float const halfArmW = (adjustedIdealHumanHeight * armWidthFraction * humanNpcState.WidthMultipier) / 2.0f;
 
@@ -2925,7 +2925,7 @@ void Npcs::RenderNpc(
             float const rightLegLength = adjustedIdealHumanHeight * GameParameters::HumanNpcGeometry::LegLengthFraction * animationState.LimbLengthMultipliers.RightLeg;
 
             float const legWidthFraction = IsTextureMode
-                ? GameParameters::HumanNpcGeometry::LegLengthFraction * humanNpcState.Dimensions.LegHeightToWidthFactor
+                ? GameParameters::HumanNpcGeometry::LegLengthFraction * humanNpcState.TextureDimensions.LegWHRatio
                 : GameParameters::HumanNpcGeometry::QuadModeLegWidthFraction;
             float const halfLegW = (adjustedIdealHumanHeight * legWidthFraction * humanNpcState.WidthMultipier) / 2.0f;
 

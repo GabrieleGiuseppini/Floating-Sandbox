@@ -328,10 +328,20 @@ V1 TODO:
 			! Head: 1/8   w=1/10
 			+ Quad mode: OK		
 			X Texture mode: NOT OK
-		- Test 2: make all current GameParameters geometry measurements "quad", and database carries own
-			- Lengths are fractions of (ideal) height
-				- TODO: head with hat?
-			- Widths are simple multipliers of length (e.g. 1.0 for square, 0.25 for quarter, etc.)
+		= Test 2: json-driven proportions
+			! Gist:
+				! Legs, Arms, Torso, Head lengths stay from Vitruvian
+				! DB carries:
+					! Legs, Arms, Torso, Head WHRatio's
+						! Defaults: from texture
+					! HeadHMultiplier: factor to multiply with Vitruvian head length for actual texture H
+						! And then Head WHRatio gives width
+			= Impl:
+				= NpcDatabase:
+					+ Rewrite HumanDimensions struct to hold above
+					+ Read from json
+					- Do where needed in json
+						- Check if TimCan has emailed first
 
 	- Test:
 		- Buoyancy head offsets in both modes
