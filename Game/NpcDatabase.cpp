@@ -56,6 +56,8 @@ NpcDatabase NpcDatabase::Load(
 
         ParticleAttributesType globalFeetParticleAttributes = MakeParticleAttributes(humansGlobalObject, "feet_particle_attributes_overrides", MakeDefaultParticleAttributes(feetMaterial));
 
+        DefaultHumanTextureDimensionsType defaultTextureDimensions = ParseDefaultHumanTextureDimensions(humansGlobalObject);
+
         NpcSubKindIdType nextSubKindId = 0;
         auto const humanSubKindsArray = Utils::GetMandatoryJsonArray(humansObject, "sub_kinds");
         for (auto const & humanSubKindArrayElement : humanSubKindsArray)
@@ -71,6 +73,7 @@ NpcDatabase NpcDatabase::Load(
                 feetMaterial,
                 globalHeadParticleAttributes,
                 globalFeetParticleAttributes,
+                defaultTextureDimensions,
                 npcTextureAtlas);
 
             humanSubKinds.try_emplace(nextSubKindId, std::move(subKind));
@@ -163,6 +166,7 @@ NpcDatabase::HumanSubKind NpcDatabase::ParseHumanSubKind(
     StructuralMaterial const & feetMaterial,
     ParticleAttributesType const & globalHeadParticleAttributes,
     ParticleAttributesType const & globalFeetParticleAttributes,
+    DefaultHumanTextureDimensionsType const & defaultTextureDimensions,
     Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas)
 {
     std::string const name = Utils::GetMandatoryJsonMember<std::string>(subKindObject, "name");
@@ -193,6 +197,7 @@ NpcDatabase::HumanSubKind NpcDatabase::ParseHumanSubKind(
 
     auto const textureDimensions = ParseHumanTextureDimensions(
         subKindObject,
+        defaultTextureDimensions,
         textureFilenameStemsObject,
         npcTextureAtlas,
         name);
@@ -210,13 +215,32 @@ NpcDatabase::HumanSubKind NpcDatabase::ParseHumanSubKind(
         textureDimensions });
 }
 
+NpcDatabase::DefaultHumanTextureDimensionsType NpcDatabase::ParseDefaultHumanTextureDimensions(
+    picojson::object const & containerObject)
+{
+    DefaultHumanTextureDimensionsType defaults;
+
+    auto const defaultTextureDimensionsContainerObject = Utils::GetOptionalJsonObject(containerObject, "default_texture_dimensions");
+    if (defaultTextureDimensionsContainerObject.has_value())
+    {
+        defaults.HeadHeightMultiplier = Utils::GetOptionalJsonMember<float>(*defaultTextureDimensionsContainerObject, "head_height_multiplier");
+        defaults.HeadWHRatio = Utils::GetOptionalJsonMember<float>(*defaultTextureDimensionsContainerObject, "head_wh_ratio");
+        defaults.TorsoWHRatio = Utils::GetOptionalJsonMember<float>(*defaultTextureDimensionsContainerObject, "torso_wh_ratio");
+        defaults.ArmWHRatio = Utils::GetOptionalJsonMember<float>(*defaultTextureDimensionsContainerObject, "arm_wh_ratio");
+        defaults.LegWHRatio = Utils::GetOptionalJsonMember<float>(*defaultTextureDimensionsContainerObject, "leg_wh_ratio");
+    }
+
+    return defaults;
+}
+
 NpcDatabase::HumanTextureDimensionsType NpcDatabase::ParseHumanTextureDimensions(
     picojson::object const & containerObject,
+    DefaultHumanTextureDimensionsType const & defaults,
     picojson::object const & textureFilenameStemsContainerObject,
     Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas,
     std::string const & subKindName)
 {
-    auto const textureDimensionsContainerObject = Utils::GetOptionalJsonObject(containerObject, "texture_dimensions");
+    auto const textureDimensionsContainerObject = Utils::GetOptionalJsonObject(containerObject, "texture_dimensions_overrides");
 
     //
     // HeadHMultiplier: factor to multiply with Vitruvian head length for actual texture H;
@@ -228,9 +252,10 @@ NpcDatabase::HumanTextureDimensionsType NpcDatabase::ParseHumanTextureDimensions
 
     // Head
 
+    float const _defaultHeadHeightMultiplier = defaults.HeadHeightMultiplier.value_or(1.0f);
     float const headHeightMultiplier = textureDimensionsContainerObject.has_value()
-        ? Utils::GetOptionalJsonMember<float>(*textureDimensionsContainerObject, "head_height_multiplier", 1.0f)
-        : 1.0f;
+        ? Utils::GetOptionalJsonMember<float>(*textureDimensionsContainerObject, "head_height_multiplier", _defaultHeadHeightMultiplier)
+        : _defaultHeadHeightMultiplier;
 
     auto const headFSize = GetFrameSize(textureFilenameStemsContainerObject, HeadFKeyName, npcTextureAtlas);
     if (headFSize != GetFrameSize(textureFilenameStemsContainerObject, HeadBKeyName, npcTextureAtlas)
@@ -239,8 +264,8 @@ NpcDatabase::HumanTextureDimensionsType NpcDatabase::ParseHumanTextureDimensions
         throw GameException("Head dimensions are not all equal for " + subKindName);
     }
 
-    float const _defaultHeadWHRatio = static_cast<float>(headFSize.width) / static_cast<float>(headFSize.height);
-    float const headWHRatio = (textureDimensionsContainerObject.has_value())
+    float const _defaultHeadWHRatio = defaults.HeadWHRatio.value_or(static_cast<float>(headFSize.width) / static_cast<float>(headFSize.height));
+    float const headWHRatio = textureDimensionsContainerObject.has_value()
         ? Utils::GetOptionalJsonMember<float>(*textureDimensionsContainerObject, "head_wh_ratio", _defaultHeadWHRatio)
         : _defaultHeadWHRatio;
 
@@ -253,8 +278,8 @@ NpcDatabase::HumanTextureDimensionsType NpcDatabase::ParseHumanTextureDimensions
         throw GameException("Torso dimensions are not all equal for " + subKindName);
     }
 
-    float const _defaultTorsoWHRatio = static_cast<float>(torsoFSize.width) / static_cast<float>(torsoFSize.height);
-    float const torsoWHRatio = (textureDimensionsContainerObject.has_value())
+    float const _defaultTorsoWHRatio = defaults.TorsoWHRatio.value_or(static_cast<float>(torsoFSize.width) / static_cast<float>(torsoFSize.height));
+    float const torsoWHRatio = textureDimensionsContainerObject.has_value()
         ? Utils::GetOptionalJsonMember<float>(*textureDimensionsContainerObject, "torso_wh_ratio", _defaultTorsoWHRatio)
         : _defaultTorsoWHRatio;
 
@@ -267,8 +292,8 @@ NpcDatabase::HumanTextureDimensionsType NpcDatabase::ParseHumanTextureDimensions
         throw GameException("Arm dimensions are not all equal for " + subKindName);
     }
 
-    float const _defaultArmWHRatio = static_cast<float>(armFSize.width) / static_cast<float>(armFSize.height);
-    float const armWHRatio = (textureDimensionsContainerObject.has_value())
+    float const _defaultArmWHRatio = defaults.ArmWHRatio.value_or(static_cast<float>(armFSize.width) / static_cast<float>(armFSize.height));
+    float const armWHRatio = textureDimensionsContainerObject.has_value()
         ? Utils::GetOptionalJsonMember<float>(*textureDimensionsContainerObject, "arm_wh_ratio", _defaultArmWHRatio)
         : _defaultArmWHRatio;
 
@@ -281,8 +306,8 @@ NpcDatabase::HumanTextureDimensionsType NpcDatabase::ParseHumanTextureDimensions
         throw GameException("Leg dimensions are not all equal for " + subKindName);
     }
 
-    float const _defaultLegWHRatio = static_cast<float>(legFSize.width) / static_cast<float>(legFSize.height);
-    float const legWHRatio = (textureDimensionsContainerObject.has_value())
+    float const _defaultLegWHRatio = defaults.LegWHRatio.value_or(static_cast<float>(legFSize.width) / static_cast<float>(legFSize.height));
+    float const legWHRatio = textureDimensionsContainerObject.has_value()
         ? Utils::GetOptionalJsonMember<float>(*textureDimensionsContainerObject, "leg_wh_ratio", _defaultLegWHRatio)
         : _defaultLegWHRatio;
 

@@ -43,10 +43,10 @@ public:
     struct HumanTextureDimensionsType
     {
         float HeadHeightMultiplier; // Multiplier of "standard" (i.e. Vitruvian) head height; different than 1.0 for e.g. hats
-        float HeadWHRatio; // To recover head quad width from its physical height
-        float TorsoWHRatio; // To recover torso quad width from its physical height
-        float ArmWHRatio; // To recover arm quad width from its physical height
-        float LegWHRatio; // To recover leg quad width from its physical height
+        float HeadWHRatio; // To recover head quad width from Vitruvian height
+        float TorsoWHRatio; // To recover torso quad width from Vitruvian height
+        float ArmWHRatio; // To recover arm quad width from Vitruvian height
+        float LegWHRatio; // To recover leg quad width from Vitruvian height
     };
 
     struct FurnitureDimensionsType
@@ -232,6 +232,15 @@ private:
 
 private:
 
+    struct DefaultHumanTextureDimensionsType
+    {
+        std::optional<float> HeadHeightMultiplier; // How much longer we want head to be than Vitruvian's
+        std::optional<float> HeadWHRatio; // Wrt Vitruvian's
+        std::optional<float> TorsoWHRatio; // Wrt Vitruvian's
+        std::optional<float> ArmWHRatio; // Wrt Vitruvian's
+        std::optional<float> LegWHRatio; // Wrt Vitruvian's
+    };
+
     struct StringEntry
     {
         std::string Language;
@@ -259,10 +268,15 @@ private:
         StructuralMaterial const & feetMaterial,
         ParticleAttributesType const & globalHeadParticleAttributes,
         ParticleAttributesType const & globalFeetParticleAttributes,
+        DefaultHumanTextureDimensionsType const & defaultTextureDimensions,
         Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas);
+
+    static DefaultHumanTextureDimensionsType ParseDefaultHumanTextureDimensions(
+        picojson::object const & containerObject);
 
     static HumanTextureDimensionsType ParseHumanTextureDimensions(
         picojson::object const & containerObject,
+        DefaultHumanTextureDimensionsType const & defaults,
         picojson::object const & textureFilenameStemsContainerObject,
         Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas,
         std::string const & subKindName);

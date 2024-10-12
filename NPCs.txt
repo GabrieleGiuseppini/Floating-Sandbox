@@ -340,7 +340,10 @@ V1 TODO:
 				= NpcDatabase:
 					+ Rewrite HumanDimensions struct to hold above
 					+ Read from json
-					- Do where needed in json
+					- Have defaults in a "global" section
+						- The others are named "override"
+					- Nail down defaults
+					- Do overrides where needed in json
 						- Check if TimCan has emailed first
 
 	- Test:

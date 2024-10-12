@@ -2903,8 +2903,7 @@ void Npcs::RenderNpc(
             float const adjustedIdealHumanHeight = npc.ParticleMesh.Springs[0].RestLength;
 
             float const headWidthFraction = IsTextureMode
-                ? (GameParameters::HumanNpcGeometry::HeadLengthFraction * humanNpcState.TextureDimensions.HeadHeightMultiplier) // Texture head length
-                    * humanNpcState.TextureDimensions.HeadWHRatio
+                ? GameParameters::HumanNpcGeometry::HeadLengthFraction * humanNpcState.TextureDimensions.HeadWHRatio
                 : GameParameters::HumanNpcGeometry::QuadModeHeadWidthFraction;
             float const halfHeadW = (adjustedIdealHumanHeight * headWidthFraction * humanNpcState.WidthMultipier) / 2.0f;
 
