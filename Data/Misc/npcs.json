@@ -13,15 +13,16 @@
             },
 	    "texture_geometry_comments": [
 		"Head length fraction: we want it 0.2 * textureH/16, and then alpha_reduction=0.76",
+		"From this come torso and leg length fractions, as each simply half of the remaining with a head of 16x16",
 		"Torso W/H ratio: we want it textureW/textureH, and then alpha_reduction=0.79",
 		"Here we address most common dimensions: head=16x17, torso=22x32"
 	    ],
 	    "default_texture_geometry": {
 		"head_length_fraction": 0.1615,
-		"torso_length_fraction": 0.4,
+		"torso_length_fraction": 0.424,
 		"torso_wh_ratio": 0.54,
 		"arm_length_fraction": 0.4,
-		"leg_length_fraction": 0.4
+		"leg_length_fraction": 0.424
 	    }
         },
         "sub_kinds": [
