@@ -370,25 +370,35 @@ V1 TODO:
 	+ Re-instate human H and W randomization!
 
 	= Test:
-		- Buoyancy head offsets in both modes
+		= Buoyancy head offsets in both modes
+			= Could be fixed as a side-effect of rescaling human proportions to reach 1.0 if < 1.0
+				+ Which could be done directly in NpcDatabase
+				+ Also sounds...sound in itself
+			- Re-instante randomization
 		+ Check proportions in quad mode
-		+ Knee bend
+		- Knee bend
+			- See what's going on
+			- Remove TODOTEST logging when done
 		+ All orientations, for human & furniture
 		+ Matte color
 
 - Port to BaryLab
 	- Profile
 
+- See if can improve anti-aliasing
+	- fwidth?
+
 - See if can fix placement of furniture so to topple it
 
-- UI Preferences for NPC notifications
++ UI Preferences for NPC notifications
+	+ Test persistence
 
 - See if NPC settings for springs make them explode; if so, nuke them
 
-- Work with TimCan for improvements
-	- Chests
-	- Square heads
-	- Detail (e.g. ears) with shades
+= Work with TimCan for improvements
+	= Chests
+	= Square heads
+	= Detail (e.g. ears) with shades
 
 + Turnover tool:
 	+ Also Furniture

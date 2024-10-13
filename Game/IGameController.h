@@ -207,6 +207,9 @@ struct IGameController
     virtual bool GetDoShowElectricalNotifications() const = 0;
     virtual void SetDoShowElectricalNotifications(bool value) = 0;
 
+    virtual bool GetDoShowNpcNotifications() const = 0;
+    virtual void SetDoShowNpcNotifications(bool value) = 0;
+
     virtual UnitsSystem GetDisplayUnitsSystem() const = 0;
     virtual void SetDisplayUnitsSystem(UnitsSystem value) = 0;
 

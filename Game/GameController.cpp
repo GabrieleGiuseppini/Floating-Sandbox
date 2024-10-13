@@ -103,6 +103,7 @@ GameController::GameController(
     // Parameters that we own
     , mTimeOfDay(0.0f) // We'll set it later
     , mDoShowTsunamiNotifications(true)
+    , mDoShowNpcNotifications(true)
     , mDoDrawHeatBlasterFlame(true)
     // Doers
     , mRenderContext(std::move(renderContext))
@@ -1724,9 +1725,12 @@ void GameController::OnHumanNpcCountsUpdated(
     size_t insideShipCount,
     size_t outsideShipCount)
 {
-    std::stringstream ss;
-    ss << insideShipCount << " IN/" << outsideShipCount << " OUT";
-    mNotificationLayer.PublishNotificationText(ss.str());
+    if (mDoShowNpcNotifications)
+    {
+        std::stringstream ss;
+        ss << insideShipCount << " IN/" << outsideShipCount << " OUT";
+        mNotificationLayer.PublishNotificationText(ss.str());
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

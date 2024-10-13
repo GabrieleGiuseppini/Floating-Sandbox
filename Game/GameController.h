@@ -326,6 +326,9 @@ public:
     bool GetDoShowElectricalNotifications() const override { return mGameParameters.DoShowElectricalNotifications; }
     void SetDoShowElectricalNotifications(bool value) override { mGameParameters.DoShowElectricalNotifications = value; }
 
+    bool GetDoShowNpcNotifications() const override { return mDoShowNpcNotifications; }
+    void SetDoShowNpcNotifications(bool value) override { mDoShowNpcNotifications = value; }
+
     UnitsSystem GetDisplayUnitsSystem() const override { return mRenderContext->GetDisplayUnitsSystem(); }
     void SetDisplayUnitsSystem(UnitsSystem value) override { mRenderContext->SetDisplayUnitsSystem(value); mNotificationLayer.SetDisplayUnitsSystem(value); }
 
@@ -1093,6 +1096,7 @@ private:
 
     float mTimeOfDay;
     bool mDoShowTsunamiNotifications;
+    bool mDoShowNpcNotifications;
     bool mDoDrawHeatBlasterFlame;
 
 

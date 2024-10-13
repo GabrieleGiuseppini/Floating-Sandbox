@@ -189,6 +189,13 @@ void PreferencesDialog::OnShowTsunamiNotificationsCheckBoxClicked(wxCommandEvent
     mOnChangeCallback();
 }
 
+void PreferencesDialog::OnShowNpcNotificationsCheckBoxClicked(wxCommandEvent & /*event*/)
+{
+    mUIPreferencesManager.SetDoShowNpcNotifications(mShowNpcNotificationsCheckBox->GetValue());
+
+    mOnChangeCallback();
+}
+
 void PreferencesDialog::OnZoomIncrementSpinCtrl(wxSpinEvent & event)
 {
     mUIPreferencesManager.SetZoomIncrement(ZoomIncrementSpinToZoomIncrement(event.GetPosition()));
@@ -494,7 +501,7 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
                 mCameraSpeedAdjustmentSpinCtrl = new wxSpinCtrl(boxSizer->GetStaticBox(), wxID_ANY, _("Camera Speed"), wxDefaultPosition, wxSize(75, -1),
                     wxSP_ARROW_KEYS | wxALIGN_CENTRE_HORIZONTAL);
                 mCameraSpeedAdjustmentSpinCtrl->SetRange(
-                    CameraSpeedAdjustmentToCameraSpeedAdjustmentSpin(mUIPreferencesManager.GetMinCameraSpeedAdjustment()), 
+                    CameraSpeedAdjustmentToCameraSpeedAdjustmentSpin(mUIPreferencesManager.GetMinCameraSpeedAdjustment()),
                     CameraSpeedAdjustmentToCameraSpeedAdjustmentSpin(mUIPreferencesManager.GetMaxCameraSpeedAdjustment()));
                 mCameraSpeedAdjustmentSpinCtrl->SetToolTip(_("Adjusts the speed of the camera movements."));
                 mCameraSpeedAdjustmentSpinCtrl->Bind(wxEVT_SPINCTRL, &PreferencesDialog::OnCameraSpeedAdjustmentSpinCtrl, this);
@@ -588,12 +595,26 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
             //
 
             {
+                mShowNpcNotificationsCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY,
+                    _("Show NPC Notifications"), wxDefaultPosition, wxDefaultSize, 0);
+                mShowNpcNotificationsCheckBox->SetToolTip(_("Enables or disables notifications about NPCs."));
+                mShowNpcNotificationsCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowNpcNotificationsCheckBoxClicked, this);
+
+                sizer->Add(
+                    mShowNpcNotificationsCheckBox,
+                    wxGBPosition(5, 0),
+                    wxGBSpan(1, 1),
+                    wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxLEFT | wxBOTTOM,
+                    UserInterfaceBorder);
+            }
+
+            {
                 wxStaticText * displayUnitsSystemStaticText = new wxStaticText(boxSizer->GetStaticBox(), wxID_ANY, _("Units system:"));
 
                 sizer->Add(
                     displayUnitsSystemStaticText,
-                    wxGBPosition(5, 0),
-                    wxGBSpan(1, 4),
+                    wxGBPosition(5, 2),
+                    wxGBSpan(1, 2),
                     wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT,
                     UserInterfaceBorder);
             }
@@ -661,8 +682,8 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
 
                 sizer->Add(
                     mDisplayUnitsSettingsComboBox,
-                    wxGBPosition(6, 0),
-                    wxGBSpan(1, 4),
+                    wxGBPosition(6, 2),
+                    wxGBSpan(1, 2),
                     wxALIGN_LEFT | wxLEFT | wxBOTTOM | wxRIGHT,
                     UserInterfaceBorder);
             }
@@ -1188,6 +1209,7 @@ void PreferencesDialog::ReadSettings()
     mCheckForUpdatesAtStartupCheckBox->SetValue(mUIPreferencesManager.GetCheckUpdatesAtStartup());
     mSaveSettingsOnExitCheckBox->SetValue(mUIPreferencesManager.GetSaveSettingsOnExit());
     mShowTsunamiNotificationsCheckBox->SetValue(mUIPreferencesManager.GetDoShowTsunamiNotifications());
+    mShowNpcNotificationsCheckBox->SetValue(mUIPreferencesManager.GetDoShowNpcNotifications());
     mZoomIncrementSpinCtrl->SetValue(ZoomIncrementToZoomIncrementSpin(mUIPreferencesManager.GetZoomIncrement()));
     mPanIncrementSpinCtrl->SetValue(PanIncrementToPanIncrementSpin(mUIPreferencesManager.GetPanIncrement()));
     mCameraSpeedAdjustmentSpinCtrl->SetValue(CameraSpeedAdjustmentToCameraSpeedAdjustmentSpin(mUIPreferencesManager.GetCameraSpeedAdjustment()));

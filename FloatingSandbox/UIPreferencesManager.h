@@ -245,6 +245,16 @@ public:
         mGameController.SetDoShowTsunamiNotifications(value);
     }
 
+    bool GetDoShowNpcNotifications() const
+    {
+        return mGameController.GetDoShowNpcNotifications();
+    }
+
+    void SetDoShowNpcNotifications(bool value)
+    {
+        mGameController.SetDoShowNpcNotifications(value);
+    }
+
     UnitsSystem GetDisplayUnitsSystem() const
     {
         return mGameController.GetDisplayUnitsSystem();
@@ -417,7 +427,7 @@ private:
     // The owners/storage of our properties
     IGameController & mGameController;
     MusicController & mMusicController;
-    LocalizationManager & mLocalizationManager;   
+    LocalizationManager & mLocalizationManager;
 
     //
     // The preferences for which we are the owners/storage
