@@ -1756,9 +1756,10 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
             vec2f testParticlePosition = particlePosition;
             if (npc.Kind == NpcKindType::Human && npcParticleOrdinal == 1)
             {
-                // Head - use an offset
+                // Head - a little bit of a hack to make them float with the head above water,
+                // use an empirical offset (real calculation involves masses)
                 testParticlePosition.y +=
-                    (mParticles.GetPosition(npc.ParticleMesh.Particles[0].ParticleIndex).y - testParticlePosition.y)
+                    (mParticles.GetPosition(npc.ParticleMesh.Particles[0].ParticleIndex).y - particlePosition.y)
                     * (BuoyancyInterfaceWidth / 2.0f + GameParameters::HumanNpcGeometry::HeadLengthFraction);
             }
 

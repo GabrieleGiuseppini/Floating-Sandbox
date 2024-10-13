@@ -367,20 +367,22 @@ V1 TODO:
 				+ QuarterMaster, Steward 2, Stewardess 1+2
 				+ Stoker 1+2
 				+ Stoker 3+4
-	+ Re-instate human H and W randomization!
+
+	+ Something more: we don't want baker to end up at one (rescaling=1.0) matching no-hat NPC (rescaling=1.04004)
+		+ Get rid of rescaling and scale leg and torso in json
 
 	= Test:
 		= Buoyancy head offsets in both modes
-			= Could be fixed as a side-effect of rescaling human proportions to reach 1.0 if < 1.0
-				+ Which could be done directly in NpcDatabase
-				+ Also sounds...sound in itself
-			- Re-instante randomization
+			- Now it's ok; why depends on height however?
 		+ Check proportions in quad mode
 		- Knee bend
 			- See what's going on
+				- Seems to be a problem with texture coords, not geometry
 			- Remove TODOTEST logging when done
 		+ All orientations, for human & furniture
 		+ Matte color
+		- Size multiplier
+			- And test buoyancy head offset (changes offset as buoyancy changes)
 
 - Port to BaryLab
 	- Profile
