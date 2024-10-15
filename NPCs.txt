@@ -372,11 +372,10 @@ V1 TODO:
 		+ Get rid of rescaling and scale leg and torso in json
 
 	= Test:
-		= Buoyancy head offsets in both modes
-			- Now it's ok; why depends on height however?
+		+ Buoyancy head offsets in both modes
 		+ Check proportions in quad mode
-		- Knee bend
-			- See what's going on
+		= Knee bend
+			= See what's going on
 				- Seems to be a problem with texture coords, not geometry
 			- Remove TODOTEST logging when done
 		+ All orientations, for human & furniture

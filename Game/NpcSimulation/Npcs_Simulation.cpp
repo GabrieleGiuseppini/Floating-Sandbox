@@ -1751,16 +1751,22 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
         {
             // Free - there is waterness if we are underwater
 
-            float constexpr BuoyancyInterfaceWidth = 0.4f; // Nature abhorrs discontinuity
+            float constexpr BuoyancyInterfaceWidth = 0.4f; // Nature abhorrs discontinuities
 
             vec2f testParticlePosition = particlePosition;
             if (npc.Kind == NpcKindType::Human && npcParticleOrdinal == 1)
             {
                 // Head - a little bit of a hack to make them float with the head above water,
-                // use an empirical offset (real calculation involves masses)
+                // use an empirical offset - a fixed one to account for the equilibrium waterness
+                // (where the head particle is in equilibrium) plus the chin offset
+                //
+                // The actual waterness that sets the system in equilibrium is 0.81,
+                // calculated by means of masses and buoyancy factors. Here we target defaults
                 testParticlePosition.y +=
+                    - BuoyancyInterfaceWidth * 0.81f
+                    +
                     (mParticles.GetPosition(npc.ParticleMesh.Particles[0].ParticleIndex).y - particlePosition.y)
-                    * (BuoyancyInterfaceWidth / 2.0f + GameParameters::HumanNpcGeometry::HeadLengthFraction);
+                    * GameParameters::HumanNpcGeometry::HeadLengthFraction;
             }
 
             float const waterHeight = mParentWorld.GetOceanSurface().GetHeightAt(testParticlePosition.x);
