@@ -3259,7 +3259,7 @@ void Npcs::RenderNpc(
                     vec2f const leftLowerLegDir = (feetPosition - leftKneeOrFootPosition).normalise_approx();
                     vec2f const leftLowerLegVector = leftLowerLegDir * leftLegLength * lowerLegLengthFraction;
                     vec2f const leftLowerLegTraverseDir = leftLowerLegDir.to_perpendicular();
-                    vec2f const leftLegResultantNormal = leftUpperLegTraverseDir + leftLowerLegTraverseDir;
+                    vec2f const leftLegResultantNormal = (leftUpperLegTraverseDir + leftLowerLegTraverseDir).normalise_approx();
                     vec2f const leftLegJ = leftLegResultantNormal / std::max(MinJ, leftUpperLegTraverseDir.dot(leftLegResultantNormal)) * halfLegW;
 
                     leftUpperLegQuad = {
@@ -3283,7 +3283,7 @@ void Npcs::RenderNpc(
                     vec2f const rightLowerLegDir = (feetPosition - rightKneeOrFootPosition).normalise_approx();
                     vec2f const rightLowerLegVector = rightLowerLegDir * rightLegLength * lowerLegLengthFraction;
                     vec2f const rightLowerLegTraverseDir = rightLowerLegDir.to_perpendicular();
-                    vec2f const rightLegResultantNormal = rightUpperLegTraverseDir + rightLowerLegTraverseDir;
+                    vec2f const rightLegResultantNormal = (rightUpperLegTraverseDir + rightLowerLegTraverseDir).normalise_approx();
                     vec2f const rightLegJ = rightLegResultantNormal / std::max(MinJ, rightUpperLegTraverseDir.dot(rightLegResultantNormal)) * halfLegW;
 
                     rightUpperLegQuad = {
