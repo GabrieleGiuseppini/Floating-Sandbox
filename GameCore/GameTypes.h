@@ -1111,7 +1111,7 @@ NpcHumanRoleType StrToNpcHumanRoleType(std::string const & str);
 enum class NpcFurnitureRoleType : std::uint32_t
 {
     Furniture = 0,
-    Other = 3,
+    Other = 1,
 
     _Last = Other
 };

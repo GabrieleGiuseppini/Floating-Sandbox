@@ -135,7 +135,7 @@ void Npcs::Upload(Render::RenderContext & renderContext) const
         return;
     }
 
-    assert(renderContext.GetNpcRenderMode() == NpcRenderModeType::Limbs);
+    assert(renderContext.GetNpcRenderMode() != NpcRenderModeType::Physical);
 
 #endif
 
@@ -2106,16 +2106,16 @@ bool Npcs::AddHumanNpc(
     vec2f const & worldCoordinates,
     float currentSimulationTime)
 {
-    auto const npcId = BeginPlaceNewHumanNpc(
+    auto const result = BeginPlaceNewHumanNpc(
         subKind,
         worldCoordinates,
         currentSimulationTime,
         false);
 
-    if (npcId.has_value())
+    if (std::get<0>(result).has_value())
     {
         CompleteNewNpc(
-            npcId->ObjectId,
+            std::get<0>(result)->ObjectId,
             currentSimulationTime);
 
         return true;
@@ -2185,7 +2185,7 @@ void Npcs::MoveParticleBy(
             {
                 auto const oldRegime = state->CurrentRegime;
 
-                ResetNpcStateToWorld(*state, currentSimulationTime);
+                ResetNpcStateToWorld(*state, currentSimulationTime, NpcInitializationOptions::None);
 
                 OnMayBeNpcRegimeChanged(oldRegime, *state);
 
@@ -2285,7 +2285,7 @@ void Npcs::OnPointMoved(float currentSimulationTime)
         {
             auto const oldRegime = state->CurrentRegime;
 
-            ResetNpcStateToWorld(*state, currentSimulationTime);
+            ResetNpcStateToWorld(*state, currentSimulationTime, NpcInitializationOptions::None);
 
             OnMayBeNpcRegimeChanged(oldRegime, *state);
         }
@@ -2816,6 +2816,14 @@ void Npcs::RenderNpc(
             break;
         }
 
+#ifdef IN_BARYLAB
+        case NpcRenderModeType::Physical:
+        {
+            // Taken care of elsewhere
+            assert(false);
+            break;
+        }
+#endif
     }
 }
 
@@ -3254,7 +3262,7 @@ void Npcs::RenderNpc(
                     //  * The magnitude of the extrusion is (W/2) / cos(alpha), where alpha is
                     //    the angle between a normal and the direction of the extrusion
 
-                    float constexpr MinJ = 0.9f;
+                    float constexpr MinJ = 0.8f; // Prevents too pointy angles
 
                     vec2f const leftLowerLegDir = (feetPosition - leftKneeOrFootPosition).normalise_approx();
                     vec2f const leftLowerLegVector = leftLowerLegDir * leftLegLength * lowerLegLengthFraction;
@@ -3806,7 +3814,9 @@ void Npcs::UpdateNpcAnimation(
                     }
                 }
 
-                // Legs stay
+                // Legs at zero
+                targetAngles.LeftLeg = 0.0f;
+                targetAngles.RightLeg = 0.0f;
 
                 convergenceRate = 0.09f;
 
@@ -3828,6 +3838,7 @@ void Npcs::UpdateNpcAnimation(
 
                 if (humanNpcState.CurrentBehaviorState.Constrained_Rising.VirtualEdgeRisingAgainst.TriangleElementIndex != NoneElementIndex)
                 {
+                    // Calculate edge vector
                     vec2f const edgeVector = homeShip.GetTriangles().GetSubSpringVector(
                         humanNpcState.CurrentBehaviorState.Constrained_Rising.VirtualEdgeRisingAgainst.TriangleElementIndex,
                         humanNpcState.CurrentBehaviorState.Constrained_Rising.VirtualEdgeRisingAgainst.EdgeOrdinal,
@@ -3881,63 +3892,84 @@ void Npcs::UpdateNpcAnimation(
                     float constexpr OtherArmDeltaAngle = 0.3f;
 
                     // AngleMultiplier of other leg when closing knees
-                    float constexpr OtherLegAlphaAngle = 0.7f;
-
-                    // Shortening of angle path for legs becoming straight when closing knees
-                    float const AnglePathShorteningForLegsInLateStage = 0.9f;
-
-                    //
+                    float constexpr OtherLegAlphaAngle = 0.87f;
 
                     //  *  0 --> maxHumanEdgeAngle (which is PI/2 when edge is flat)
                     //   \
                     //   |\
                     // -----
 
+                    //
                     // Arm: at MaxArmAngle until MaxHumanEdgeAngleForArms, then goes down to rest
+                    //
 
                     float targetArm;
-                    float targetLeg = 0.0f; // Start with legs closed - we'll change if we're in the early stage of rising and we're L/R
-
                     if (humanEdgeAngle <= MaxHumanEdgeAngleForArms)
                     {
                         // Early stage
 
                         // Arms: leave them where they are (MaxArmAngle)
                         targetArm = MaxArmAngle;
-
-                        // Legs: we want a knee (iff we're facing L/R)
-
-                        if (humanNpcState.CurrentFaceOrientation == 0.0f)
-                        {
-                            targetLeg = MaxArmAngle;
-                            targetUpperLegLengthFraction = humanEdgeAngle / MaxHumanEdgeAngleForArms * 0.5f; // 0.0 @ 0.0 -> 0.5 @ MaxHumanEdgeAngleForArms
-                        }
                     }
                     else
                     {
                         // Late stage: -> towards maxHumanEdgeAngle
 
                         // Arms: MaxArmAngle -> RestArmAngle
-
                         targetArm = MaxArmAngle + (MaxHumanEdgeAngleForArms - humanEdgeAngle) / (MaxHumanEdgeAngleForArms - maxHumanEdgeAngle) * (RestArmAngle - MaxArmAngle); // MaxArmAngle @ MaxHumanEdgeAngleForArms -> RestArmAngle @ maxHumanEdgeAngle
+                    }
 
-                        // Legs: towards zero
+                    //
+                    // Legs: various phases: knee bending, then straightening
+                    //
+                    // Note: we only do legs if we're facing L/R
+                    //
 
-                        if (humanNpcState.CurrentFaceOrientation == 0.0f)
+                    float targetLeg = 0.0f; // Start with legs closed - we'll change (if we're L/R)
+                    if (humanNpcState.CurrentFaceOrientation == 0.0f)
+                    {
+                        float constexpr angle1 = MaxHumanEdgeAngleForArms * 0.9f; // Leg towards LegAngle0 until here
+                        float constexpr LegAngle0 = Pi<float> * 0.37f;
+                        float constexpr angle2 = MaxHumanEdgeAngleForArms * 1.5f; // Rest until here
+                        float const angle3 = angle2 + (maxHumanEdgeAngle - angle2) * 5.0f / 6.0f; // Leg shrinking to zero until here; rest afterwards
+
+                        if (humanEdgeAngle < angle1)
                         {
-                            targetLeg = std::max(
-                                MaxArmAngle - (MaxHumanEdgeAngleForArms - humanEdgeAngle) / (MaxHumanEdgeAngleForArms - maxHumanEdgeAngle * AnglePathShorteningForLegsInLateStage) * MaxArmAngle, // MaxArmAngle @ MaxHumanEdgeAngleForArms -> 0 @ maxHumanEdgeAngle-e
-                                0.0f);
+                            // Rise
+                            targetLeg = humanEdgeAngle / angle1 * LegAngle0;
                             targetUpperLegLengthFraction = 0.5f;
+                        }
+                        else if (humanEdgeAngle < angle2)
+                        {
+                            // Rest
+                            targetLeg = LegAngle0;
+                            targetUpperLegLengthFraction = 0.5f;
+                        }
+                        else if (humanEdgeAngle < angle3)
+                        {
+                            // Decrease
+                            targetLeg = LegAngle0 * (1.0f - (humanEdgeAngle - angle2) / (angle3 - angle2));
+                            targetUpperLegLengthFraction = 0.5f;
+                        }
+                        else
+                        {
+                            // Zero
+                            targetLeg = 0.0f;
+                            targetUpperLegLengthFraction = 0.0f;
+                        }
+
+                        // Knees cannot bend backwards!
+                        if ((humanNpcState.CurrentFaceDirectionX > 0.0f && isOnLeftSide)
+                            || (humanNpcState.CurrentFaceDirectionX < 0.0f && !isOnLeftSide))
+                        {
+                            // Less angle on the opposite side
+                            targetLeg *= -0.8f;
                         }
                     }
 
-                    // Knees cannot bend backwards!
-                    if ((humanNpcState.CurrentFaceDirectionX > 0.0f && isOnLeftSide)
-                        || (humanNpcState.CurrentFaceDirectionX < 0.0f && !isOnLeftSide))
-                    {
-                        targetLeg *= -1.0f;
-                    }
+                    //
+                    // Finalize angles
+                    //
 
                     if (isOnLeftSide)
                     {
@@ -4171,16 +4203,17 @@ void Npcs::UpdateNpcAnimation(
 
                 convergenceRate = 0.2f;
 
+                // TODO: nuke when we decide it's useless, now that we don't have non-mid-leg fraction
                 // Upper length fraction: when we transition from Rising (which has UpperLengthFraction < 1.0) to KnockedOut,
                 // changing UpperLengthFraction immediately to 0.0 causes a "kick" (because leg angles are 90 degrees at that moment);
                 // smooth that kick here
-                targetUpperLegLengthFraction = animationState.UpperLegLengthFraction + (1.0f - animationState.UpperLegLengthFraction) * 0.3f;
+                ////targetUpperLegLengthFraction = animationState.UpperLegLengthFraction + (1.0f - animationState.UpperLegLengthFraction) * 0.3f;
 
-                // But converge to one definitely
-                if (targetUpperLegLengthFraction >= 0.98f)
-                {
-                    targetUpperLegLengthFraction = 1.0f;
-                }
+                ////// But converge to one definitely
+                ////if (targetUpperLegLengthFraction >= 0.98f)
+                ////{
+                ////    targetUpperLegLengthFraction = 1.0f;
+                ////}
 
                 break;
             }

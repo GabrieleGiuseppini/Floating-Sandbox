@@ -192,7 +192,12 @@ Arch
 
 ========================================================								
 
+Current perf:
+	- Update: 3.0/3.1
+	- RenderUpload: 1.1
+
 V1 TODO:
+
 
 + LowerExtremeityMultiplier: rename
 + Readme: NPC/bary coords
@@ -245,8 +250,7 @@ V1 TODO:
 	+ Test
 	+ Send to TimCan
 
-= Add alternative shading (stick men, aka quad)
-
++ Add alternative shading (stick men, aka quad)
 	! Gist:
 		! Two shaders for quads, with #define WITH_ROLES and glslinc
 			! WITH_ROLES takes vertex attrib array
@@ -371,30 +375,32 @@ V1 TODO:
 	+ Something more: we don't want baker to end up at one (rescaling=1.0) matching no-hat NPC (rescaling=1.04004)
 		+ Get rid of rescaling and scale leg and torso in json
 
-	= Test:
+	+ Test:
 		+ Buoyancy head offsets in both modes
 		+ Check proportions in quad mode
-		= Knee bend
-			= See what's going on
-				- Seems to be a problem with texture coords, not geometry
-			- Remove TODOTEST logging when done
+		+ Knee bend
+			+ Fix problem with (render) triangle fold
+				+ Option 1: knee always at center, angle up and down
 		+ All orientations, for human & furniture
 		+ Matte color
-		- Size multiplier
-			- And test buoyancy head offset (changes offset as buoyancy changes)
+		+ Size multiplier
+			+ And test buoyancy head offset (changes offset as buoyancy changes)
 
-- Port to BaryLab
-	- Profile
++ Port to BaryLab
+	+ Port
+	+ Do knee bend work
+	+ Profile
+	+ Port back to FS
 
-- See if can improve anti-aliasing
+- Remove NPC settings for springs
+
+- See if can improve anti-aliasing in stickmen mode
 	- fwidth?
 
 - See if can fix placement of furniture so to topple it
 
 + UI Preferences for NPC notifications
 	+ Test persistence
-
-- See if NPC settings for springs make them explode; if so, nuke them
 
 = Work with TimCan for improvements
 	= Chests
