@@ -19,6 +19,7 @@
 #include <GameCore/AABBSet.h>
 #include <GameCore/Buffer.h>
 #include <GameCore/GameTypes.h>
+#include <GameCore/ImageData.h>
 #include <GameCore/RunningAverage.h>
 #include <GameCore/ThreadManager.h>
 #include <GameCore/Vectors.h>
@@ -44,25 +45,40 @@ public:
         Springs && springs,
         Triangles && triangles,
         ElectricalElements && electricalElements,
-        Frontiers && frontiers);
+        Frontiers && frontiers,
+        RgbaImageData && interiorTextureImage);
 
     void Announce();
 
-    inline ShipId GetId() const { return mId; }
+    ShipId GetId() const { return mId; }
 
-    inline World const & GetParentWorld() const { return mParentWorld; }
-    inline World & GetParentWorld() { return mParentWorld; }
+    World const & GetParentWorld() const { return mParentWorld; }
+    World & GetParentWorld() { return mParentWorld; }
 
     Geometry::AABBSet CalculateAABBs() const;
 
-    inline size_t GetPointCount() const { return mPoints.GetElementCount(); }
+    PlaneId GetMaxPlaneId() const
+    {
+        return mMaxMaxPlaneId;
+    }
 
-    inline auto const & GetPoints() const { return mPoints; }
-    inline auto & GetPoints() { return mPoints; }
+    size_t GetPointCount() const { return mPoints.GetElementCount(); }
+
+    Points const & GetPoints() const { return mPoints; }
+    Points & GetPoints() { return mPoints; }
+
+    Springs const & GetSprings() const { return mSprings; }
+
+    Triangles const & GetTriangles() const { return mTriangles; }
 
     bool IsUnderwater(ElementIndex pointElementIndex) const
     {
         return mParentWorld.GetOceanSurface().IsUnderwater(mPoints.GetPosition(pointElementIndex));
+    }
+
+    bool AreBombsInProximity(ElementIndex pointElementIndex) const
+    {
+        return mGadgets.AreBombsInProximity(mPoints.GetPosition(pointElementIndex));
     }
 
     void SetEventRecorder(EventRecorder * eventRecorder);
@@ -80,6 +96,8 @@ public:
         ThreadManager & threadManager,
         PerfStats & perfStats);
 
+    void UpdateEnd();
+
     void RenderUpload(Render::RenderContext & renderContext);
 
 public:
@@ -90,12 +108,12 @@ public:
     // Interactions
     ///////////////////////////////////////////////////////////////
 
-    std::optional<ElementIndex> PickPointToMove(
+    std::optional<ConnectedComponentId> PickConnectedComponentToMove(
         vec2f const & pickPosition,
         GameParameters const & gameParameters) const;
 
     void MoveBy(
-        ElementIndex pointElementIndex,
+        ConnectedComponentId connectedComponentId,
         vec2f const & offset,
         vec2f const & inertialVelocity,
         GameParameters const & gameParameters);
@@ -106,7 +124,7 @@ public:
         GameParameters const & gameParameters);
 
     void RotateBy(
-        ElementIndex pointElementIndex,
+        ConnectedComponentId connectedComponentId,
         float angle,
         vec2f const & center,
         float inertialAngle,
@@ -129,7 +147,7 @@ public:
 
     bool DestroyAt(
         vec2f const & targetPos,
-        float radiusMultiplier,
+        float radius,
         float currentSimulationTime,
         GameParameters const & gameParameters);
 
@@ -171,14 +189,6 @@ public:
         float currentSimulationTime,
         GameParameters const & gameParameters);
 
-    void ApplyRadialWindFrom(
-        vec2f const & sourcePos,
-        float preFrontRadius,
-        float preFrontWindSpeed,
-        float mainFrontRadius,
-        float mainFrontWindSpeed,
-        GameParameters const & gameParameters);
-
     bool ApplyLaserCannonThrough(
         vec2f const & startPos,
         vec2f const & endPos,
@@ -187,13 +197,11 @@ public:
 
     void DrawTo(
         vec2f const & targetPos,
-        float strengthFraction,
-        GameParameters const & gameParameters);
+        float strength);
 
     void SwirlAt(
         vec2f const & targetPos,
-        float strengthFraction,
-        GameParameters const & gameParameters);
+        float strength);
 
     bool TogglePinAt(
         vec2f const & targetPos,
@@ -276,16 +284,24 @@ public:
 		float currentSimulationTime,
 		GameParameters const & gameParameters);
 
-    void HighlightElectricalElement(ElectricalElementId electricalElementId);
+    void HighlightElectricalElement(GlobalElectricalElementId electricalElementId);
 
     void SetSwitchState(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         ElectricalState switchState,
         GameParameters const & gameParameters);
 
     void SetEngineControllerState(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         float controllerValue,
+        GameParameters const & gameParameters);
+
+    void SpawnAirBubble(
+        vec2f const & position,
+        float finalScale, // Relative to texture's world dimensions
+        float temperature,
+        float currentSimulationTime,
+        PlaneId planeId,
         GameParameters const & gameParameters);
 
     bool DestroyTriangle(ElementIndex triangleIndex);
@@ -303,8 +319,7 @@ private:
             Blast,
             Draw,
             Pull,
-            Swirl,
-            RadialWind
+            Swirl
         };
 
         InteractionType Type;
@@ -377,30 +392,6 @@ private:
 
             SwirlArguments Swirl;
 
-            struct RadialWindArguments
-            {
-                vec2f SourcePos;
-                float PreFrontRadius;
-                float PreFrontWindForceMagnitude;
-                float MainFrontRadius;
-                float MainFrontWindForceMagnitude;
-
-                RadialWindArguments(
-                    vec2f sourcePos,
-                    float preFrontRadius,
-                    float preFrontWindForceMagnitude,
-                    float mainFrontRadius,
-                    float mainFrontWindForceMagnitude)
-                    : SourcePos(sourcePos)
-                    , PreFrontRadius(preFrontRadius)
-                    , PreFrontWindForceMagnitude(preFrontWindForceMagnitude)
-                    , MainFrontRadius(mainFrontRadius)
-                    , MainFrontWindForceMagnitude(mainFrontWindForceMagnitude)
-                {}
-            };
-
-            RadialWindArguments RadialWind;
-
             ArgumentsUnion(BlastArguments blast)
                 : Blast(blast)
             {}
@@ -415,10 +406,6 @@ private:
 
             ArgumentsUnion(SwirlArguments swirl)
                 : Swirl(swirl)
-            {}
-
-            ArgumentsUnion(RadialWindArguments radialWind)
-                : RadialWind(radialWind)
             {}
 
         } Arguments;
@@ -446,25 +433,17 @@ private:
             , Arguments(swirl)
         {
         }
-
-        Interaction(ArgumentsUnion::RadialWindArguments radialWind)
-            : Type(InteractionType::RadialWind)
-            , Arguments(radialWind)
-        {
-        }
     };
 
     std::list<Interaction> mQueuedInteractions;
 
-    void ApplyBlastAt(Interaction::ArgumentsUnion::BlastArguments const & args);
+    void ApplyBlastAt(Interaction::ArgumentsUnion::BlastArguments const & args, GameParameters const & gameParameters);
 
     void DrawTo(Interaction::ArgumentsUnion::DrawArguments const & args);
 
     void Pull(Interaction::ArgumentsUnion::PullArguments const & args);
 
     void SwirlAt(Interaction::ArgumentsUnion::SwirlArguments const & args);
-
-    void ApplyRadialWindFrom(Interaction::ArgumentsUnion::RadialWindArguments const & args);
 
 private:
 
@@ -474,7 +453,7 @@ private:
 
     // Mechanical
 
-    void ApplyQueuedInteractionForces();
+    void ApplyQueuedInteractionForces(GameParameters const & gameParameters);
 
     void ApplyWorldForces(
         float effectiveAirDensity,
@@ -589,24 +568,6 @@ private:
 
 private:
 
-    /////////////////////////////////////////////////////////////////////////
-    // Force Fields
-    /////////////////////////////////////////////////////////////////////////
-
-    void ApplyRadialSpaceWarpForceField(
-        vec2f const & centerPosition,
-        float radius,
-        float radiusThickness,
-        float strength);
-
-    void ApplyImplosionForceField(
-        vec2f const & centerPosition,
-        float strength);
-
-    void ApplyRadialExplosionForceField(
-        vec2f const & centerPosition,
-        float strength);
-
 private:
 
     /////////////////////////////////////////////////////////////////////////
@@ -631,28 +592,36 @@ private:
 
     void AttemptPointRestore(ElementIndex pointElementIndex);
 
-    void GenerateAirBubble(
-        vec2f const & position,
+    // Does secondary tasks after a blast has been applied to the ship's points
+    void OnBlast(
+        vec2f const & centerPosition,
+        float blastRadius,
+        float blastForce, // N
+        GameParameters const & gameParameters);
+
+    void InternalSpawnAirBubble(
+        vec2f const & position,        
         float depth,
+        float finalScale, // Relative to texture's world dimensions
         float temperature,
         float currentSimulationTime,
         PlaneId planeId,
         GameParameters const & gameParameters);
 
-    void GenerateDebris(
+    void InternalSpawnDebris(
         ElementIndex sourcePointElementIndex,
         StructuralMaterial const & debrisStructuralMaterial,
         float currentSimulationTime,
         GameParameters const & gameParameters);
 
-    void GenerateSparklesForCut(
+    void InternalSpawnSparklesForCut(
         ElementIndex springElementIndex,
         vec2f const & cutDirectionStartPos,
         vec2f const & cutDirectionEndPos,
         float currentSimulationTime,
         GameParameters const & gameParameters);
 
-	void GenerateSparklesForLightning(
+	void InternalSpawnSparklesForLightning(
 		ElementIndex pointElementIndex,
 		float currentSimulationTime,
 		GameParameters const & gameParameters);
@@ -840,6 +809,7 @@ private:
     Triangles mTriangles;
     ElectricalElements mElectricalElements;
     Frontiers mFrontiers;
+    RgbaImageData mInteriorTextureImage;
 
     // Pinned points
     PinnedPoints mPinnedPoints;
@@ -897,9 +867,6 @@ private:
 
     // Index of last-queried point - used as an aid to debugging
     ElementIndex mutable mLastQueriedPointIndex;
-
-    // Last-applied (interactive) wind field
-    std::optional<WindField> mWindField;
 
     // Counter of created bubble ephemeral particles
     std::uint64_t mAirBubblesCreatedCount;

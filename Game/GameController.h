@@ -14,6 +14,7 @@
 #include "IGameEventHandlers.h"
 #include "MaterialDatabase.h"
 #include "NotificationLayer.h"
+#include "NpcDatabase.h"
 #include "PerfStats.h"
 #include "Physics.h"
 #include "RenderContext.h"
@@ -22,6 +23,7 @@
 #include "ShipFactory.h"
 #include "ShipLoadSpecifications.h"
 #include "ShipMetadata.h"
+#include "ShipTexturizer.h"
 #include "ViewManager.h"
 
 #include <GameCore/Colors.h>
@@ -53,6 +55,7 @@ class GameController final
     , public IGameControllerSettings
     , public IGameControllerSettingsOptions
     , public ILifecycleGameEventHandler
+    , public INpcGameEventHandler
     , public IWavePhenomenaGameEventHandler
 {
 public:
@@ -79,6 +82,16 @@ public:
     ShipStrengthRandomizer const & GetShipStrengthRandomizer() const
     {
         return mShipStrengthRandomizer;
+    }
+
+    auto GetHumanNpcSubKinds(std::string const & language) const
+    {
+        return mNpcDatabase.GetHumanSubKinds(language);
+    }
+
+    auto GetFurnitureNpcSubKinds(std::string const & language) const
+    {
+        return mNpcDatabase.GetFurnitureSubKinds(language);
     }
 
     /////////////////////////////////////////////////////////
@@ -127,10 +140,22 @@ public:
         mGameEventDispatcher->RegisterElectricalElementEventHandler(handler);
     }
 
+    void RegisterNpcEventHandler(INpcGameEventHandler * handler) override
+    {
+        assert(!!mGameEventDispatcher);
+        mGameEventDispatcher->RegisterNpcEventHandler(handler);
+    }
+
     void RegisterGenericEventHandler(IGenericGameEventHandler * handler) override
     {
         assert(!!mGameEventDispatcher);
         mGameEventDispatcher->RegisterGenericEventHandler(handler);
+    }
+
+    void RegisterControlEventHandler(IControlGameEventHandler * handler) override
+    {
+        assert(!!mGameEventDispatcher);
+        mGameEventDispatcher->RegisterControlEventHandler(handler);
     }
 
     void RebindOpenGLContext();
@@ -168,7 +193,14 @@ public:
     bool GetShowExtendedStatusText() const override;
     void SetShowExtendedStatusText(bool value) override;
 
+    void DisplayEphemeralTextLine(std::string const & text) override;
+
     void NotifySoundMuted(bool isSoundMuted) override;
+
+    // Not sticky
+    void SetLineGuide(
+        DisplayLogicalCoordinates const & start,
+        DisplayLogicalCoordinates const & end) override;
 
     //
     // World probing
@@ -178,23 +210,21 @@ public:
     void ToggleToFullDayOrNight() override;
     float GetEffectiveAmbientLightIntensity() const override { return mRenderContext->GetEffectiveAmbientLightIntensity(); }
     bool IsUnderwater(DisplayLogicalCoordinates const & screenCoordinates) const override { return mWorld->GetOceanSurface().IsUnderwater(ScreenToWorld(screenCoordinates)); }
-    bool IsUnderwater(ElementId elementId) const override { return mWorld->IsUnderwater(elementId); }
+    bool IsUnderwater(GlobalElementId elementId) const override { return mWorld->IsUnderwater(elementId); }
+    bool HasNpcs() const override { return mWorld->GetNpcs().HasNpcs(); }
 
     //
     // Interactions
     //
 
-    void ScareFish(DisplayLogicalCoordinates const & screenCoordinates, float radius, std::chrono::milliseconds delay) override;
-    void AttractFish(DisplayLogicalCoordinates const & screenCoordinates, float radius, std::chrono::milliseconds delay) override;
-
-    void PickObjectToMove(DisplayLogicalCoordinates const & screenCoordinates, std::optional<ElementId> & elementId) override;
+    void PickObjectToMove(DisplayLogicalCoordinates const & screenCoordinates, std::optional<GlobalConnectedComponentId> & connectedComponentId) override;
     void PickObjectToMove(DisplayLogicalCoordinates const & screenCoordinates, std::optional<ShipId> & shipId) override;
-    void MoveBy(ElementId elementId, DisplayLogicalSize const & screenOffset, DisplayLogicalSize const & inertialScreenOffset) override;
+    void MoveBy(GlobalConnectedComponentId const & connectedComponentId, DisplayLogicalSize const & screenOffset, DisplayLogicalSize const & inertialScreenOffset) override;
     void MoveBy(ShipId shipId, DisplayLogicalSize const & screenOffset, DisplayLogicalSize const & inertialScreenOffset) override;
-    void RotateBy(ElementId elementId, float screenDeltaY, DisplayLogicalCoordinates const & screenCenter, float inertialScreenDeltaY) override;
+    void RotateBy(GlobalConnectedComponentId const & connectedComponentId, float screenDeltaY, DisplayLogicalCoordinates const & screenCenter, float inertialScreenDeltaY) override;
     void RotateBy(ShipId shipId, float screenDeltaY, DisplayLogicalCoordinates const & screenCenter, float intertialScreenDeltaY) override;
-    std::optional<ElementId> PickObjectForPickAndPull(DisplayLogicalCoordinates const & screenCoordinates) override;
-    void Pull(ElementId elementId, DisplayLogicalCoordinates const & screenTarget) override;
+    std::optional<GlobalElementId> PickObjectForPickAndPull(DisplayLogicalCoordinates const & screenCoordinates) override;
+    void Pull(GlobalElementId elementId, DisplayLogicalCoordinates const & screenTarget) override;
     void DestroyAt(DisplayLogicalCoordinates const & screenCoordinates, float radiusMultiplier) override;
     void RepairAt(DisplayLogicalCoordinates const & screenCoordinates, float radiusMultiplier, SequenceNumber repairStepId) override;
     bool SawThrough(DisplayLogicalCoordinates const & startScreenCoordinates, DisplayLogicalCoordinates const & endScreenCoordinates, bool isFirstSegment) override;
@@ -222,7 +252,26 @@ public:
     bool ScrubThrough(DisplayLogicalCoordinates const & startScreenCoordinates, DisplayLogicalCoordinates const & endScreenCoordinates) override;
     bool RotThrough(DisplayLogicalCoordinates const & startScreenCoordinates, DisplayLogicalCoordinates const & endScreenCoordinates) override;
     void ApplyThanosSnapAt(DisplayLogicalCoordinates const & screenCoordinates, bool isSparseMode) override;
-    std::optional<ElementId> GetNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const override;
+    void ScareFish(DisplayLogicalCoordinates const & screenCoordinates, float radius, std::chrono::milliseconds delay) override;
+    void AttractFish(DisplayLogicalCoordinates const & screenCoordinates, float radius, std::chrono::milliseconds delay) override;
+    void SetLampAt(DisplayLogicalCoordinates const & screenCoordinates, float radiusScreenFraction) override;
+    void ResetLamp() override;
+    NpcKindType GetNpcKind(NpcId id) override;
+    std::optional<PickedNpc> BeginPlaceNewFurnitureNpc(NpcSubKindIdType subKind, DisplayLogicalCoordinates const & screenCoordinates, bool doMoveWholeMesh) override;
+    std::optional<PickedNpc> BeginPlaceNewHumanNpc(NpcSubKindIdType subKind, DisplayLogicalCoordinates const & screenCoordinates, bool doMoveWholeMesh) override;
+    std::optional<PickedNpc> ProbeNpcAt(DisplayLogicalCoordinates const & screenCoordinates) const override;
+    void BeginMoveNpc(NpcId id, int particleOrdinal, bool doMoveWholeMesh) override;
+    void MoveNpcTo(NpcId id, DisplayLogicalCoordinates const & screenCoordinates, vec2f const & worldOffset, bool doMoveWholeMesh) override;
+    void EndMoveNpc(NpcId id) override;
+    void CompleteNewNpc(NpcId id) override;
+    void RemoveNpc(NpcId id) override;
+    void AbortNewNpc(NpcId id) override;
+    void AddNpcGroup(NpcKindType kind) override;
+    void TurnaroundNpc(NpcId id) override;
+    void SelectNpc(std::optional<NpcId> id) override;
+    void SelectNextNpc() override;
+    void HighlightNpc(std::optional<NpcId> id) override;
+    std::optional<GlobalElementId> GetNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const override;
     void QueryNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const override;
 
     void TriggerTsunami() override;
@@ -230,18 +279,18 @@ public:
     void TriggerStorm() override;
     void TriggerLightning() override;
 
-    void HighlightElectricalElement(ElectricalElementId electricalElementId) override;
+    void HighlightElectricalElement(GlobalElectricalElementId electricalElementId) override;
 
     void SetSwitchState(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         ElectricalState switchState) override;
 
     void SetEngineControllerState(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         float controllerValue) override;
 
-    bool DestroyTriangle(ElementId triangleId) override;
-    bool RestoreTriangle(ElementId triangleId) override;
+    bool DestroyTriangle(GlobalElementId triangleId) override;
+    bool RestoreTriangle(GlobalElementId triangleId) override;
 
     //
     // Render controls
@@ -252,7 +301,7 @@ public:
     void PanToWorldEnd(int side) override;
     void AdjustZoom(float amount) override;
     void ResetView() override;
-    void FocusOnShip() override;
+    void FocusOnShips() override;
     vec2f ScreenToWorld(DisplayLogicalCoordinates const & screenCoordinates) const override;
     vec2f ScreenOffsetToWorldOffset(DisplayLogicalSize const & screenOffset) const override;
 
@@ -264,8 +313,8 @@ public:
     bool GetDoAutoFocusOnShipLoad() const override { return mViewManager.GetDoAutoFocusOnShipLoad(); }
     void SetDoAutoFocusOnShipLoad(bool value) override { mViewManager.SetDoAutoFocusOnShipLoad(value); }
 
-    bool GetDoContinuousAutoFocus() const override { return mViewManager.GetDoContinuousAutoFocus(); }
-    void SetDoContinuousAutoFocus(bool value) override { mViewManager.SetDoContinuousAutoFocus(value); }
+    std::optional<AutoFocusTargetKindType> GetAutoFocusTarget() const override;
+    void SetAutoFocusTarget(std::optional<AutoFocusTargetKindType> const & autoFocusTarget) override;
 
     //
     // UI parameters
@@ -276,6 +325,9 @@ public:
 
     bool GetDoShowElectricalNotifications() const override { return mGameParameters.DoShowElectricalNotifications; }
     void SetDoShowElectricalNotifications(bool value) override { mGameParameters.DoShowElectricalNotifications = value; }
+
+    bool GetDoShowNpcNotifications() const override { return mDoShowNpcNotifications; }
+    void SetDoShowNpcNotifications(bool value) override { mDoShowNpcNotifications = value; }
 
     UnitsSystem GetDisplayUnitsSystem() const override { return mRenderContext->GetDisplayUnitsSystem(); }
     void SetDisplayUnitsSystem(UnitsSystem value) override { mRenderContext->SetDisplayUnitsSystem(value); mNotificationLayer.SetDisplayUnitsSystem(value); }
@@ -330,6 +382,21 @@ public:
     void SetGlobalDampingAdjustment(float value) override { mGameParameters.GlobalDampingAdjustment = value; }
     float GetMinGlobalDampingAdjustment() const override { return GameParameters::MinGlobalDampingAdjustment; }
     float GetMaxGlobalDampingAdjustment() const override { return GameParameters::MaxGlobalDampingAdjustment; }
+
+    float GetElasticityAdjustment() const override { return mGameParameters.ElasticityAdjustment; }
+    void SetElasticityAdjustment(float value) override { mGameParameters.ElasticityAdjustment = value; }
+    float GetMinElasticityAdjustment() const override { return GameParameters::MinElasticityAdjustment; }
+    float GetMaxElasticityAdjustment() const override { return GameParameters::MaxElasticityAdjustment; }
+
+    float GetStaticFrictionAdjustment() const override { return mGameParameters.StaticFrictionAdjustment; }
+    void SetStaticFrictionAdjustment(float value) override { mGameParameters.StaticFrictionAdjustment = value; }
+    float GetMinStaticFrictionAdjustment() const override { return GameParameters::MinStaticFrictionAdjustment; }
+    float GetMaxStaticFrictionAdjustment() const override { return GameParameters::MaxStaticFrictionAdjustment; }
+
+    float GetKineticFrictionAdjustment() const override { return mGameParameters.KineticFrictionAdjustment; }
+    void SetKineticFrictionAdjustment(float value) override { mGameParameters.KineticFrictionAdjustment = value; }
+    float GetMinKineticFrictionAdjustment() const override { return GameParameters::MinKineticFrictionAdjustment; }
+    float GetMaxKineticFrictionAdjustment() const override { return GameParameters::MaxKineticFrictionAdjustment; }
 
     float GetRotAcceler8r() const override { return mGameParameters.RotAcceler8r; }
     void SetRotAcceler8r(float value) override { mGameParameters.RotAcceler8r = value; }
@@ -504,10 +571,10 @@ public:
     float GetMinWaterTemperature() const override { return GameParameters::MinWaterTemperature; }
     float GetMaxWaterTemperature() const override { return GameParameters::MaxWaterTemperature; }
 
-    unsigned int GetMaxBurningParticles() const override { return mGameParameters.MaxBurningParticles; }
-    void SetMaxBurningParticles(unsigned int value) override { mGameParameters.MaxBurningParticles = value; }
-    unsigned int GetMinMaxBurningParticles() const override { return GameParameters::MinMaxBurningParticles; }
-    unsigned int GetMaxMaxBurningParticles() const override { return GameParameters::MaxMaxBurningParticles; }
+    unsigned int GetMaxBurningParticlesPerShip() const override { return mGameParameters.MaxBurningParticlesPerShip; }
+    void SetMaxBurningParticlesPerShip(unsigned int value) override { mGameParameters.MaxBurningParticlesPerShip = value; }
+    unsigned int GetMinMaxBurningParticlesPerShip() const override { return GameParameters::MinMaxBurningParticlesPerShip; }
+    unsigned int GetMaxMaxBurningParticlesPerShip() const override { return GameParameters::MaxMaxBurningParticlesPerShip; }
 
     float GetThermalConductivityAdjustment() const override { return mGameParameters.ThermalConductivityAdjustment; }
     void SetThermalConductivityAdjustment(float value) override { mGameParameters.ThermalConductivityAdjustment = value; }
@@ -594,6 +661,26 @@ public:
     float GetMinFishShoalRadiusAdjustment() const override { return GameParameters::MinFishShoalRadiusAdjustment; }
     float GetMaxFishShoalRadiusAdjustment() const override { return GameParameters::MaxFishShoalRadiusAdjustment; }
 
+    // NPCs
+
+    float GetNpcSpringReductionFractionAdjustment() const override { return mGameParameters.NpcSpringReductionFractionAdjustment; }
+    void SetNpcSpringReductionFractionAdjustment(float value) override { mGameParameters.NpcSpringReductionFractionAdjustment = value; }
+    float GetMinNpcSpringReductionFractionAdjustment() const override { return GameParameters::MinNpcSpringReductionFractionAdjustment; }
+    float GetMaxNpcSpringReductionFractionAdjustment() const override { return GameParameters::MaxNpcSpringReductionFractionAdjustment; }
+
+    bool GetDoApplyPhysicsToolsToNpcs() const override { return mGameParameters.DoApplyPhysicsToolsToNpcs; }
+    void SetDoApplyPhysicsToolsToNpcs(bool value) override { mGameParameters.DoApplyPhysicsToolsToNpcs = value; }
+
+    float GetNpcSpringDampingCoefficientAdjustment() const override { return mGameParameters.NpcSpringDampingCoefficientAdjustment; }
+    void SetNpcSpringDampingCoefficientAdjustment(float value) override { mGameParameters.NpcSpringDampingCoefficientAdjustment = value; }
+    float GetMinNpcSpringDampingCoefficientAdjustment() const override { return GameParameters::MinNpcSpringDampingCoefficientAdjustment; }
+    float GetMaxNpcSpringDampingCoefficientAdjustment() const override { return GameParameters::MaxNpcSpringDampingCoefficientAdjustment; }
+
+    float GetNpcSizeMultiplier() const override { return mFloatParameterSmoothers[NpcSizeMultiplierParameterSmoother].GetValue(); }
+    void SetNpcSizeMultiplier(float value) override { mFloatParameterSmoothers[NpcSizeMultiplierParameterSmoother].SetValue(value); }
+    float GetMinNpcSizeMultiplier() const override { return GameParameters::MinNpcSizeMultiplier; }
+    float GetMaxNpcSizeMultiplier() const override { return GameParameters::MaxNpcSizeMultiplier; }
+
     // Misc
 
     OceanFloorTerrain const & GetOceanFloorTerrain() const override { return mWorld->GetOceanFloorTerrain(); }
@@ -616,15 +703,15 @@ public:
     float GetMinOceanFloorDetailAmplification() const override { return GameParameters::MinOceanFloorDetailAmplification; }
     float GetMaxOceanFloorDetailAmplification() const override { return GameParameters::MaxOceanFloorDetailAmplification; }
 
-    float GetOceanFloorElasticity() const override { return mGameParameters.OceanFloorElasticity; }
-    void SetOceanFloorElasticity(float value) override { mGameParameters.OceanFloorElasticity = value; }
-    float GetMinOceanFloorElasticity() const override { return GameParameters::MinOceanFloorElasticity; }
-    float GetMaxOceanFloorElasticity() const override { return GameParameters::MaxOceanFloorElasticity; }
+    float GetOceanFloorElasticityCoefficient() const override { return mGameParameters.OceanFloorElasticityCoefficient; }
+    void SetOceanFloorElasticityCoefficient(float value) override { mGameParameters.OceanFloorElasticityCoefficient = value; }
+    float GetMinOceanFloorElasticityCoefficient() const override { return GameParameters::MinOceanFloorElasticityCoefficient; }
+    float GetMaxOceanFloorElasticityCoefficient() const override { return GameParameters::MaxOceanFloorElasticityCoefficient; }
 
-    float GetOceanFloorFriction() const override { return mGameParameters.OceanFloorFriction; }
-    void SetOceanFloorFriction(float value) override { mGameParameters.OceanFloorFriction = value; }
-    float GetMinOceanFloorFriction() const override { return GameParameters::MinOceanFloorFriction; }
-    float GetMaxOceanFloorFriction() const override { return GameParameters::MaxOceanFloorFriction; }
+    float GetOceanFloorFrictionCoefficient() const override { return mGameParameters.OceanFloorFrictionCoefficient; }
+    void SetOceanFloorFrictionCoefficient(float value) override { mGameParameters.OceanFloorFrictionCoefficient = value; }
+    float GetMinOceanFloorFrictionCoefficient() const override { return GameParameters::MinOceanFloorFrictionCoefficient; }
+    float GetMaxOceanFloorFrictionCoefficient() const override { return GameParameters::MaxOceanFloorFrictionCoefficient; }
 
     float GetOceanFloorSiltHardness() const override { return mGameParameters.OceanFloorSiltHardness; }
     void SetOceanFloorSiltHardness(float value) override { mGameParameters.OceanFloorSiltHardness = value; }
@@ -775,14 +862,20 @@ public:
     rgbColor const & GetCrepuscularColor() const override { return mRenderContext->GetCrepuscularColor(); }
     void SetCrepuscularColor(rgbColor const & color) override { mRenderContext->SetCrepuscularColor(color); }
 
+    CloudRenderDetailType GetCloudRenderDetail() const override { return mRenderContext->GetCloudRenderDetail(); }
+    void SetCloudRenderDetail(CloudRenderDetailType value) override { mRenderContext->SetCloudRenderDetail(value); }
+
     float GetOceanTransparency() const override { return mRenderContext->GetOceanTransparency(); }
     void SetOceanTransparency(float value) override { mRenderContext->SetOceanTransparency(value); }
 
-    float GetOceanDarkeningRate() const override { return mRenderContext->GetOceanDarkeningRate(); }
-    void SetOceanDarkeningRate(float value) override { mRenderContext->SetOceanDarkeningRate(value); }
+    float GetOceanDepthDarkeningRate() const override { return mRenderContext->GetOceanDepthDarkeningRate(); }
+    void SetOceanDepthDarkeningRate(float value) override { mRenderContext->SetOceanDepthDarkeningRate(value); }
 
     float GetShipAmbientLightSensitivity() const override { return mRenderContext->GetShipAmbientLightSensitivity(); }
     void SetShipAmbientLightSensitivity(float value) override { mRenderContext->SetShipAmbientLightSensitivity(value); }
+
+    float GetShipDepthDarkeningSensitivity() const override { return mRenderContext->GetShipDepthDarkeningSensitivity(); }
+    void SetShipDepthDarkeningSensitivity(float value) override { mRenderContext->SetShipDepthDarkeningSensitivity(value); }
 
     rgbColor const & GetFlatLampLightColor() const override { return mRenderContext->GetFlatLampLightColor(); }
     void SetFlatLampLightColor(rgbColor const & color) override { mRenderContext->SetFlatLampLightColor(color); }
@@ -801,9 +894,6 @@ public:
     bool GetShowShipThroughOcean() const override { return mRenderContext->GetShowShipThroughOcean(); }
     void SetShowShipThroughOcean(bool value) override { mRenderContext->SetShowShipThroughOcean(value); }
 
-    DebugShipRenderModeType GetDebugShipRenderMode() const override { return mRenderContext->GetDebugShipRenderMode(); }
-    void SetDebugShipRenderMode(DebugShipRenderModeType debugShipRenderMode) override { mRenderContext->SetDebugShipRenderMode(debugShipRenderMode); }
-
     OceanRenderModeType GetOceanRenderMode() const override { return mRenderContext->GetOceanRenderMode(); }
     void SetOceanRenderMode(OceanRenderModeType oceanRenderMode) override { mRenderContext->SetOceanRenderMode(oceanRenderMode); }
 
@@ -821,7 +911,7 @@ public:
     void SetFlatOceanColor(rgbColor const & color) override { mRenderContext->SetFlatOceanColor(color); }
 
     OceanRenderDetailType GetOceanRenderDetail() const override { return mRenderContext->GetOceanRenderDetail(); }
-    void SetOceanRenderDetail(OceanRenderDetailType oceanRenderDetail) override;
+    void SetOceanRenderDetail(OceanRenderDetailType value) override;
 
     LandRenderModeType GetLandRenderMode() const override { return mRenderContext->GetLandRenderMode(); }
     void SetLandRenderMode(LandRenderModeType landRenderMode) override { mRenderContext->SetLandRenderMode(landRenderMode); }
@@ -832,6 +922,21 @@ public:
 
     rgbColor const & GetFlatLandColor() const override { return mRenderContext->GetFlatLandColor(); }
     void SetFlatLandColor(rgbColor const & color) override { mRenderContext->SetFlatLandColor(color); }
+
+    LandRenderDetailType GetLandRenderDetail() const override { return mRenderContext->GetLandRenderDetail(); }
+    void SetLandRenderDetail(LandRenderDetailType value) override { mRenderContext->SetLandRenderDetail(value); }
+
+    ShipViewModeType GetShipViewMode() const override { return mRenderContext->GetShipViewMode(); }
+    void SetShipViewMode(ShipViewModeType shipViewMode) override { mRenderContext->SetShipViewMode(shipViewMode); }
+
+    DebugShipRenderModeType GetDebugShipRenderMode() const override { return mRenderContext->GetDebugShipRenderMode(); }
+    void SetDebugShipRenderMode(DebugShipRenderModeType debugShipRenderMode) override { mRenderContext->SetDebugShipRenderMode(debugShipRenderMode); }
+
+    NpcRenderModeType GetNpcRenderMode() const override { return mRenderContext->GetNpcRenderMode(); }
+    void SetNpcRenderMode(NpcRenderModeType npcRenderMode) override { mRenderContext->SetNpcRenderMode(npcRenderMode); }
+
+    rgbColor const & GetNpcQuadFlatColor() const override { return mRenderContext->GetNpcQuadFlatColor(); }
+    void SetNpcQuadFlatColor(rgbColor const & color) override { mRenderContext->SetNpcQuadFlatColor(color); }
 
     VectorFieldRenderModeType GetVectorFieldRenderMode() const override { return mRenderContext->GetVectorFieldRenderMode(); }
     void SetVectorFieldRenderMode(VectorFieldRenderModeType VectorFieldRenderMode) override { mRenderContext->SetVectorFieldRenderMode(VectorFieldRenderMode); }
@@ -878,9 +983,13 @@ private:
     // Event handlers
     //
 
-    virtual void OnTsunami(float x) override;
+    void OnTsunami(float x) override;
 
-    virtual void OnShipRepaired(ShipId shipId) override;
+    void OnShipRepaired(ShipId shipId) override;
+
+    void OnHumanNpcCountsUpdated(
+        size_t insideShipCount,
+        size_t outsideShipCount) override;
 
 private:
 
@@ -889,6 +998,7 @@ private:
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         std::unique_ptr<PerfStats> perfStats,
         FishSpeciesDatabase && fishSpeciesDatabase,
+        NpcDatabase && npcDatabase,
         MaterialDatabase && materialDatabase,
         ResourceLocator const & resourceLocator,
         ProgressCallback const & progressCallback);
@@ -899,14 +1009,29 @@ private:
 
     void InternalAddShip(
         std::unique_ptr<Physics::Ship> ship,
-        RgbaImageData && textureImage,
+        RgbaImageData && exteriorTextureImage,
+        RgbaImageData && interiorViewImage,
         ShipMetadata const & shipMetadata);
 
     void ResetStats();
 
     void PublishStats(std::chrono::steady_clock::time_point nowReal);
 
+    void OnBeginPlaceNewNpc(
+        NpcId const & npcId,
+        bool doAnchorToScreen);
+
+    void NotifyNpcPlacementError(NpcCreationFailureReasonType reason);
+
     static bool CalculateAreCloudShadowsEnabled(OceanRenderDetailType oceanRenderDetail);
+
+    // Auto-focus
+
+    void UpdateViewOnShipLoad();
+
+    void UpdateAutoFocus();
+
+    void InternalSwitchAutoFocusTarget(std::optional<AutoFocusTargetKindType> const & autoFocusTarget);
 
 private:
 
@@ -930,7 +1055,6 @@ private:
     std::unique_ptr<DayLightCycleStateMachine, DayLightCycleStateMachineDeleter> mDayLightCycleStateMachine;
     void StartDayLightCycleStateMachine();
     void StopDayLightCycleStateMachine();
-    bool UpdateDayLightCycleStateMachine(DayLightCycleStateMachine & stateMachine, float currentSimulationTime);
 
     void ResetAllStateMachines();
     void UpdateAllStateMachines(float currentSimulationTime);
@@ -944,14 +1068,12 @@ private:
     std::unique_ptr<Physics::World> mWorld;
 
     FishSpeciesDatabase mFishSpeciesDatabase;
+    NpcDatabase mNpcDatabase;
     MaterialDatabase mMaterialDatabase;
-
 
     //
     // Ship factory
     //
-
-
 
     ShipStrengthRandomizer mShipStrengthRandomizer;
     ShipTexturizer mShipTexturizer;
@@ -974,19 +1096,20 @@ private:
 
     float mTimeOfDay;
     bool mDoShowTsunamiNotifications;
+    bool mDoShowNpcNotifications;
     bool mDoDrawHeatBlasterFlame;
 
 
     //
     // The doers
     //
-    
+
     std::shared_ptr<Render::RenderContext> mRenderContext;
     std::shared_ptr<GameEventDispatcher> mGameEventDispatcher;
     NotificationLayer mNotificationLayer;
     ThreadManager mThreadManager;
     ViewManager mViewManager;
-    std::unique_ptr<EventRecorder> mEventRecorder;    
+    std::unique_ptr<EventRecorder> mEventRecorder;
 
 
     //
@@ -1001,6 +1124,7 @@ private:
     static constexpr size_t FlameSizeAdjustmentParameterSmoother = 5;
     static constexpr size_t BasalWaveHeightAdjustmentParameterSmoother = 6;
     static constexpr size_t FishSizeMultiplierParameterSmoother = 7;
+    static constexpr size_t NpcSizeMultiplierParameterSmoother = 8;
     std::vector<ParameterSmoother<float>> mFloatParameterSmoothers;
 
 

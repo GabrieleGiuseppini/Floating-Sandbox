@@ -51,7 +51,7 @@ static void AutoTexturization_AutoTexturizeInto(benchmark::State& state)
     }
 
     // Create target texture
-    int const magnificationFactor = ShipTexturizer::CalculateHighDefinitionTextureMagnificationFactor(StructureSize);
+    int const magnificationFactor = ShipTexturizer::CalculateHighDefinitionTextureMagnificationFactor(StructureSize, 4096);
     ImageSize const textureSize = ImageSize(
         StructureSize.width * magnificationFactor,
         StructureSize.height * magnificationFactor);
@@ -120,7 +120,7 @@ static void AutoTexturization_RenderShipInto(benchmark::State & state)
     RgbaImageData sourceTextureImage = RgbaImageData(sourceTextureSize);
 
     // Create target texture
-    int const magnificationFactor = ShipTexturizer::CalculateHighDefinitionTextureMagnificationFactor(StructureSize);
+    int const magnificationFactor = ShipTexturizer::CalculateHighDefinitionTextureMagnificationFactor(StructureSize, 4096);
     ImageSize const targetTextureSize = ImageSize(
         StructureSize.width * magnificationFactor,
         StructureSize.height * magnificationFactor);

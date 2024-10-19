@@ -20,6 +20,7 @@ Model::Model(
         MakeNewEmptyStructuralLayer(shipSize),
         nullptr,
         nullptr,
+        nullptr,
         nullptr)
     , mDirtyState()
 {
@@ -42,7 +43,8 @@ ShipDefinition Model::MakeShipDefinition() const
             CloneStructuralLayer(),
             CloneElectricalLayer(),
             CloneRopesLayer(),
-            CloneTextureLayer()),
+            CloneExteriorTextureLayer(),
+            CloneInteriorTextureLayer()),
         GetShipMetadata(),
         GetShipPhysicsData(),
         GetShipAutoTexturizationSettings());
@@ -136,34 +138,64 @@ void Model::RestoreRopesLayer(std::unique_ptr<RopesLayerData> ropesLayer)
     mLayers.RopesLayer = std::move(ropesLayer);
 }
 
-void Model::SetTextureLayer(TextureLayerData && textureLayer)
+void Model::SetExteriorTextureLayer(TextureLayerData && exteriorTextureLayer)
 {
     // Update layer
-    mLayers.TextureLayer.reset(new TextureLayerData(std::move(textureLayer)));
+    mLayers.ExteriorTextureLayer.reset(new TextureLayerData(std::move(exteriorTextureLayer)));
 }
 
-void Model::RemoveTextureLayer()
+void Model::RemoveExteriorTextureLayer()
 {
     // Remove layer
-    mLayers.TextureLayer.reset();
+    mLayers.ExteriorTextureLayer.reset();
 }
 
-std::unique_ptr<TextureLayerData> Model::CloneTextureLayer() const
+std::unique_ptr<TextureLayerData> Model::CloneExteriorTextureLayer() const
 {
     std::unique_ptr<TextureLayerData> clonedLayer;
 
-    if (mLayers.TextureLayer)
+    if (mLayers.ExteriorTextureLayer)
     {
-        clonedLayer.reset(new TextureLayerData(mLayers.TextureLayer->Clone()));
+        clonedLayer.reset(new TextureLayerData(mLayers.ExteriorTextureLayer->Clone()));
     }
 
     return clonedLayer;
 }
 
-void Model::RestoreTextureLayer(std::unique_ptr<TextureLayerData> textureLayer)
+void Model::RestoreExteriorTextureLayer(std::unique_ptr<TextureLayerData> exteriorTextureLayer)
 {
     // Replace layer
-    mLayers.TextureLayer = std::move(textureLayer);
+    mLayers.ExteriorTextureLayer = std::move(exteriorTextureLayer);
+}
+
+void Model::SetInteriorTextureLayer(TextureLayerData && interiorTextureLayer)
+{
+    // Update layer
+    mLayers.InteriorTextureLayer.reset(new TextureLayerData(std::move(interiorTextureLayer)));
+}
+
+void Model::RemoveInteriorTextureLayer()
+{
+    // Remove layer
+    mLayers.InteriorTextureLayer.reset();
+}
+
+std::unique_ptr<TextureLayerData> Model::CloneInteriorTextureLayer() const
+{
+    std::unique_ptr<TextureLayerData> clonedLayer;
+
+    if (mLayers.InteriorTextureLayer)
+    {
+        clonedLayer.reset(new TextureLayerData(mLayers.InteriorTextureLayer->Clone()));
+    }
+
+    return clonedLayer;
+}
+
+void Model::RestoreInteriorTextureLayer(std::unique_ptr<TextureLayerData> interiorTextureLayer)
+{
+    // Replace layer
+    mLayers.InteriorTextureLayer = std::move(interiorTextureLayer);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

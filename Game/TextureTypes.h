@@ -7,6 +7,7 @@
 
 #include <GameCore/GameException.h>
 #include <GameCore/Utils.h>
+#include <GameCore/Vectors.h>
 
 #include <cstdint>
 #include <string>
@@ -256,6 +257,31 @@ struct FishTextureDatabaseTraits
             throw GameException("Unrecognized Fish texture group \"" + str + "\"");
     }
 };
+
+// NPC
+
+enum class NpcTextureGroups : uint16_t
+{
+    Npc = 0,
+
+    _Last = Npc
+};
+
+struct NpcTextureDatabaseTraits
+{
+    static inline std::string DatabaseName = "NPC";
+
+    using TextureGroups = NpcTextureGroups;
+
+    static TextureGroups StrToTextureGroup(std::string const & str)
+    {
+        if (Utils::CaseInsensitiveEquals(str, "NPC"))
+            return TextureGroups::Npc;
+        else
+            throw GameException("Unrecognized NPC texture group \"" + str + "\"");
+    }
+};
+
 
 // Font
 

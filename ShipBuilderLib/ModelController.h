@@ -123,7 +123,8 @@ public:
         return mIsStructuralLayerInEphemeralVisualization
             || mIsElectricalLayerInEphemeralVisualization
             || mIsRopesLayerInEphemeralVisualization
-            || mIsTextureLayerInEphemeralVisualization;
+            || mIsExteriorTextureLayerInEphemeralVisualization
+            || mIsInteriorTextureLayerInEphemeralVisualization;
     }
 #endif
 
@@ -200,11 +201,18 @@ public:
                 break;
             }
 
-            case LayerType::Texture:
+            case LayerType::ExteriorTexture:
             {
-                assert(!mIsTextureLayerInEphemeralVisualization);
+                assert(!mIsExteriorTextureLayerInEphemeralVisualization);
                 break;
             }
+
+            case LayerType::InteriorTexture:
+            {
+                assert(!mIsInteriorTextureLayerInEphemeralVisualization);
+                break;
+            }
+
         }
 
         return mModel.CloneExistingLayer<TLayer>();
@@ -368,19 +376,19 @@ public:
     void RestoreRopesLayerEphemeralVisualization(typename LayerTypeTraits<LayerType::Ropes>::buffer_type const & backupBuffer);
 
     //
-    // Texture
+    // Exterior Texture
     //
 
-    TextureLayerData const & GetTextureLayer() const;
+    TextureLayerData const & GetExteriorTextureLayer() const;
 
-    ImageSize const & GetTextureSize() const
+    ImageSize const & GetExteriorTextureSize() const
     {
-        assert(mModel.HasLayer(LayerType::Texture));
+        assert(mModel.HasLayer(LayerType::ExteriorTexture));
 
-        return mModel.GetTextureLayer().Buffer.Size;
+        return mModel.GetExteriorTextureLayer().Buffer.Size;
     }
 
-    static vec2f GetShipSpaceToTextureSpaceFactor(
+    static vec2f GetShipSpaceToExteriorTextureSpaceFactor(
         ShipSpaceSize const & shipSize,
         ImageSize const & textureSize)
     {
@@ -389,7 +397,7 @@ public:
             static_cast<float>(textureSize.height) / static_cast<float>(shipSize.height));
     }
 
-    static vec2f GetTextureSpaceToShipSpaceFactor(
+    static vec2f GetExteriorTextureSpaceToShipSpaceFactor(
         ImageSize const & textureSize,
         ShipSpaceSize const & shipSize)
     {
@@ -398,51 +406,126 @@ public:
             static_cast<float>(shipSize.height) / static_cast<float>(textureSize.height));
     }
 
-    ImageCoordinates ShipSpaceToTextureSpace(ShipSpaceCoordinates const & shipCoordinates) const
+    ImageCoordinates ShipSpaceToExteriorTextureSpace(ShipSpaceCoordinates const & shipCoordinates) const
     {
-        vec2f const shipToTexture = GetShipSpaceToTextureSpaceFactor(GetShipSize(), GetTextureSize());
+        vec2f const shipToTexture = GetShipSpaceToExteriorTextureSpaceFactor(GetShipSize(), GetExteriorTextureSize());
 
         return ImageCoordinates::FromFloatFloor(shipCoordinates.ToFloat().scale(shipToTexture));
     }
 
-    ImageRect ShipSpaceToTextureSpace(ShipSpaceRect const & shipRect) const
+    ImageRect ShipSpaceToExteriorTextureSpace(ShipSpaceRect const & shipRect) const
     {
-        vec2f const shipToTexture = GetShipSpaceToTextureSpaceFactor(GetShipSize(), GetTextureSize());
+        vec2f const shipToTexture = GetShipSpaceToExteriorTextureSpaceFactor(GetShipSize(), GetExteriorTextureSize());
 
         return ImageRect(
             ImageCoordinates::FromFloatFloor(shipRect.origin.ToFloat().scale(shipToTexture)),
             ImageSize::FromFloatFloor(shipRect.size.ToFloat().scale(shipToTexture)));
     }
 
-    ShipSpaceRect ImageRectToContainingShipSpaceRect(ImageRect const & imageRect) const;
+    ShipSpaceRect ExteriorImageRectToContainingShipSpaceRect(ImageRect const & imageRect) const;
 
-    void SetTextureLayer(
-        TextureLayerData && textureLayer,
+    void SetExteriorTextureLayer(
+        TextureLayerData && exteriorTextureLayer,
         std::optional<std::string> originalTextureArtCredits);
-    void RemoveTextureLayer();
+    void RemoveExteriorTextureLayer();
 
-    std::unique_ptr<TextureLayerData> CloneTextureLayer() const;
+    std::unique_ptr<TextureLayerData> CloneExteriorTextureLayer() const;
 
-    void EraseTextureRegion(ImageRect const & region);
+    void EraseExteriorTextureRegion(ImageRect const & region);
 
-    std::optional<ImageRect> TextureMagicWandEraseBackground(
+    std::optional<ImageRect> ExteriorTextureMagicWandEraseBackground(
         ImageCoordinates const & start,
         unsigned int tolerance,
         bool isAntiAlias,
         bool doContiguousOnly);
 
-    void RestoreTextureLayerRegionBackup(
+    void RestoreExteriorTextureLayerRegionBackup(
         TextureLayerData && sourceLayerRegionBackup,
         ImageCoordinates const & targetOrigin);
 
-    void RestoreTextureLayer(
-        std::unique_ptr<TextureLayerData> textureLayer,
+    void RestoreExteriorTextureLayer(
+        std::unique_ptr<TextureLayerData> exteriorTextureLayer,
         std::optional<std::string> originalTextureArtCredits);
 
-    void TextureRegionEraseForEphemeralVisualization(ImageRect const & region);
+    void ExteriorTextureRegionEraseForEphemeralVisualization(ImageRect const & region);
 
-    void RestoreTextureLayerRegionEphemeralVisualization(
-        typename LayerTypeTraits<LayerType::Texture>::buffer_type const & backupBuffer,
+    void RestoreExteriorTextureLayerRegionEphemeralVisualization(
+        typename LayerTypeTraits<LayerType::ExteriorTexture>::buffer_type const & backupBuffer,
+        ImageRect const & backupBufferRegion,
+        ImageCoordinates const & targetOrigin);
+
+    //
+    // Interior Texture
+    //
+
+    TextureLayerData const & GetInteriorTextureLayer() const;
+
+    ImageSize const & GetInteriorTextureSize() const
+    {
+        assert(mModel.HasLayer(LayerType::InteriorTexture));
+
+        return mModel.GetInteriorTextureLayer().Buffer.Size;
+    }
+
+    static vec2f GetShipSpaceToInteriorTextureSpaceFactor(
+        ShipSpaceSize const & shipSize,
+        ImageSize const & textureSize)
+    {
+        return vec2f(
+            static_cast<float>(textureSize.width) / static_cast<float>(shipSize.width),
+            static_cast<float>(textureSize.height) / static_cast<float>(shipSize.height));
+    }
+
+    static vec2f GetInteriorTextureSpaceToShipSpaceFactor(
+        ImageSize const & textureSize,
+        ShipSpaceSize const & shipSize)
+    {
+        return vec2f(
+            static_cast<float>(shipSize.width) / static_cast<float>(textureSize.width),
+            static_cast<float>(shipSize.height) / static_cast<float>(textureSize.height));
+    }
+
+    ImageCoordinates ShipSpaceToInteriorTextureSpace(ShipSpaceCoordinates const & shipCoordinates) const
+    {
+        vec2f const shipToTexture = GetShipSpaceToInteriorTextureSpaceFactor(GetShipSize(), GetInteriorTextureSize());
+
+        return ImageCoordinates::FromFloatFloor(shipCoordinates.ToFloat().scale(shipToTexture));
+    }
+
+    ImageRect ShipSpaceToInteriorTextureSpace(ShipSpaceRect const & shipRect) const
+    {
+        vec2f const shipToTexture = GetShipSpaceToInteriorTextureSpaceFactor(GetShipSize(), GetInteriorTextureSize());
+
+        return ImageRect(
+            ImageCoordinates::FromFloatFloor(shipRect.origin.ToFloat().scale(shipToTexture)),
+            ImageSize::FromFloatFloor(shipRect.size.ToFloat().scale(shipToTexture)));
+    }
+
+    ShipSpaceRect InteriorImageRectToContainingShipSpaceRect(ImageRect const & imageRect) const;
+
+    void SetInteriorTextureLayer(TextureLayerData && interiorTextureLayer);
+    void RemoveInteriorTextureLayer();
+
+    std::unique_ptr<TextureLayerData> CloneInteriorTextureLayer() const;
+
+    void EraseInteriorTextureRegion(ImageRect const & region);
+
+    std::optional<ImageRect> InteriorTextureMagicWandEraseBackground(
+        ImageCoordinates const & start,
+        unsigned int tolerance,
+        bool isAntiAlias,
+        bool doContiguousOnly);
+
+    void RestoreInteriorTextureLayerRegionBackup(
+        TextureLayerData && sourceLayerRegionBackup,
+        ImageCoordinates const & targetOrigin);
+
+    void RestoreInteriorTextureLayer(std::unique_ptr<TextureLayerData> interiorTextureLayer);
+
+    void InteriorTextureRegionEraseForEphemeralVisualization(ImageRect const & region);
+
+    void RestoreInteriorTextureLayerRegionEphemeralVisualization(
+        typename LayerTypeTraits<LayerType::InteriorTexture>::buffer_type const & backupBuffer,
         ImageRect const & backupBufferRegion,
         ImageCoordinates const & targetOrigin);
 
@@ -459,7 +542,9 @@ public:
 
     void SetRopesLayerVisualizationMode(RopesLayerVisualizationModeType mode);
 
-    void SetTextureLayerVisualizationMode(TextureLayerVisualizationModeType mode);
+    void SetExteriorTextureLayerVisualizationMode(ExteriorTextureLayerVisualizationModeType mode);
+
+    void SetInteriorTextureLayerVisualizationMode(InteriorTextureLayerVisualizationModeType mode);
 
     void UpdateVisualizations(View & view);
 
@@ -474,11 +559,18 @@ private:
         return ShipSpaceRect(mModel.GetShipSize());
     }
 
-    inline ImageRect GetWholeTextureRect() const
+    inline ImageRect GetWholeExteriorTextureRect() const
     {
-        assert(mModel.HasLayer(LayerType::Texture));
+        assert(mModel.HasLayer(LayerType::ExteriorTexture));
 
-        return ImageRect(GetTextureSize());
+        return ImageRect(GetExteriorTextureSize());
+    }
+
+    inline ImageRect GetWholeInteriorTextureRect() const
+    {
+        assert(mModel.HasLayer(LayerType::InteriorTexture));
+
+        return ImageRect(GetInteriorTextureSize());
     }
 
     void InitializeStructuralLayerAnalysis();
@@ -533,14 +625,16 @@ private:
         bool doStructuralLayer,
         bool doElectricalLayer,
         bool doRopesLayer,
-        bool doTextureLayer) const;
+        bool doExteriorTextureLayer,
+        bool doInteriorTextureLayer) const;
 
     GenericEphemeralVisualizationRestorePayload MakeGenericEphemeralVisualizationRestorePayload(
         ShipSpaceRect const & region,
         bool doStructuralLayer,
         bool doElectricalLayer,
         bool doRopesLayer,
-        bool doTextureLayer) const;
+        bool doExteriorTextureLayer,
+        bool doInteriorTextureLayer) const;
 
     bool CheckLayerSelectionApplicability(
         std::optional<LayerType> layerSelection,
@@ -568,8 +662,15 @@ private:
         ShipSpaceCoordinates const & targetCoordinates,
         bool isTransparent);
 
-    void DoTextureRegionBufferPaste(
-        typename LayerTypeTraits<LayerType::Texture>::buffer_type const & sourceBuffer,
+    void DoExteriorTextureRegionBufferPaste(
+        typename LayerTypeTraits<LayerType::ExteriorTexture>::buffer_type const & sourceBuffer,
+        ImageRect const & sourceRegion,
+        ImageRect const & targetRegion,
+        ImageCoordinates const & targetCoordinates,
+        bool isTransparent);
+
+    void DoInteriorTextureRegionBufferPaste(
+        typename LayerTypeTraits<LayerType::InteriorTexture>::buffer_type const & sourceBuffer,
         ImageRect const & sourceRegion,
         ImageRect const & targetRegion,
         ImageCoordinates const & targetCoordinates,
@@ -592,7 +693,9 @@ private:
 
     void UpdateRopesLayerVisualization();
 
-    void UpdateTextureLayerVisualization();
+    void UpdateExteriorTextureLayerVisualization();
+
+    void UpdateInteriorTextureLayerVisualization();
 
 private:
 
@@ -628,14 +731,17 @@ private:
 
     RopesLayerVisualizationModeType mRopesLayerVisualizationMode;
 
-    TextureLayerVisualizationModeType mTextureLayerVisualizationMode;
+    ExteriorTextureLayerVisualizationModeType mExteriorTextureLayerVisualizationMode;
+
+    InteriorTextureLayerVisualizationModeType mInteriorTextureLayerVisualizationMode;
 
     // Regions whose visualization needs to be *updated* and *uploaded*
     std::optional<ShipSpaceRect> mDirtyGameVisualizationRegion;
     std::optional<ShipSpaceRect> mDirtyStructuralLayerVisualizationRegion;
     std::optional<ShipSpaceRect> mDirtyElectricalLayerVisualizationRegion;
     std::optional<ShipSpaceRect> mDirtyRopesLayerVisualizationRegion;
-    std::optional<ImageRect> mDirtyTextureLayerVisualizationRegion;
+    std::optional<ImageRect> mDirtyExteriorTextureLayerVisualizationRegion;
+    std::optional<ImageRect> mDirtyInteriorTextureLayerVisualizationRegion;
 
     //
     // Debugging
@@ -644,7 +750,8 @@ private:
     bool mIsStructuralLayerInEphemeralVisualization;
     bool mIsElectricalLayerInEphemeralVisualization;
     bool mIsRopesLayerInEphemeralVisualization;
-    bool mIsTextureLayerInEphemeralVisualization;
+    bool mIsExteriorTextureLayerInEphemeralVisualization;
+    bool mIsInteriorTextureLayerInEphemeralVisualization;
 };
 
 }

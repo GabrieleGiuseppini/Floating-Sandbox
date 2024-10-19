@@ -8,6 +8,8 @@
 #include <Game/TextureDatabase.h>
 #include <Game/TextureTypes.h>
 
+#include <GameCore/Utils.h>
+
 #include <filesystem>
 #include <iostream>
 #include <string>
@@ -16,15 +18,41 @@ class Baker
 {
 public:
 
-    template <typename TextureDatabaseTraits>
-    static void BakeRegularAtlas(
-        std::filesystem::path const & databaseRootDirectoryPath,
-        std::filesystem::path const & outputDirectoryPath,
-        bool doAlphaPremultiply)
+    struct AtlasBakingOptions
     {
-        if (!std::filesystem::exists(databaseRootDirectoryPath))
+        bool AlphaPremultiply;
+        bool BinaryTransparencySmoothing;
+        bool MipMappable;
+        bool Regular;
+
+        static AtlasBakingOptions Deserialize(std::filesystem::path const & optionsJsonFilePath)
         {
-            throw std::runtime_error("Database root directory '" + databaseRootDirectoryPath.string() + "' does not exist");
+            picojson::object rootJsonObject = Utils::GetJsonValueAsObject(Utils::ParseJSONFile(optionsJsonFilePath), "root");
+
+            bool alphaPreMultiply = Utils::GetMandatoryJsonMember<bool>(rootJsonObject, "alphaPreMultiply");
+            bool mipMappable = Utils::GetMandatoryJsonMember<bool>(rootJsonObject, "mipMappable");
+            bool binaryTransparencySmoothing = Utils::GetMandatoryJsonMember<bool>(rootJsonObject, "binaryTransparencySmoothing");
+            bool regular = Utils::GetMandatoryJsonMember<bool>(rootJsonObject, "regular");
+
+            return AtlasBakingOptions({
+                alphaPreMultiply,
+                binaryTransparencySmoothing,
+                mipMappable,
+                regular });
+        }
+    };
+
+public:
+
+    template<typename TextureDatabaseTraits>
+    static size_t BakeAtlas(
+        std::filesystem::path const & texturesRootDirectoryPath,
+        std::filesystem::path const & outputDirectoryPath,
+        AtlasBakingOptions const & options)
+    {
+        if (!std::filesystem::exists(texturesRootDirectoryPath))
+        {
+            throw std::runtime_error("Textures root directory '" + texturesRootDirectoryPath.string() + "' does not exist");
         }
 
         if (!std::filesystem::exists(outputDirectoryPath))
@@ -34,20 +62,35 @@ public:
 
         // Load database
         auto textureDatabase = Render::TextureDatabase<TextureDatabaseTraits>::Load(
-            databaseRootDirectoryPath);
-
+            texturesRootDirectoryPath);
 
         // Create atlas
 
-        std::cout << "Creating atlas..";
+        std::cout << "Creating " << (options.Regular ? "regular " : "") << "atlas..";
 
-        auto textureAtlas = Render::TextureAtlasBuilder<typename TextureDatabaseTraits::TextureGroups>::BuildRegularAtlas(
-            textureDatabase,
-            doAlphaPremultiply ? Render::AtlasOptions::AlphaPremultiply : Render::AtlasOptions::None,
-            [](float, ProgressMessageType)
-            {
-                std::cout << ".";
-            });
+        Render::AtlasOptions atlasOptions = Render::AtlasOptions::None;
+        if (options.AlphaPremultiply)
+            atlasOptions = atlasOptions | Render::AtlasOptions::AlphaPremultiply;
+        if (options.BinaryTransparencySmoothing)
+            atlasOptions = atlasOptions | Render::AtlasOptions::BinaryTransparencySmoothing;
+        if (options.MipMappable)
+            atlasOptions = atlasOptions | Render::AtlasOptions::MipMappable;
+
+        auto textureAtlas = options.Regular
+            ? Render::TextureAtlasBuilder<typename TextureDatabaseTraits::TextureGroups>::BuildRegularAtlas(
+                textureDatabase,
+                atlasOptions,
+                [](float, ProgressMessageType)
+                {
+                    std::cout << ".";
+                })
+            : Render::TextureAtlasBuilder<typename TextureDatabaseTraits::TextureGroups>::BuildAtlas(
+                textureDatabase,
+                atlasOptions,
+                [](float, ProgressMessageType)
+                {
+                    std::cout << ".";
+                });
 
         std::cout << std::endl;
 
@@ -55,5 +98,7 @@ public:
         textureAtlas.Serialize(
             TextureDatabaseTraits::DatabaseName,
             outputDirectoryPath);
+
+        return textureAtlas.Metadata.GetFrameCount();
     }
 };

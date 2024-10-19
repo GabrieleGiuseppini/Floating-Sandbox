@@ -17,7 +17,7 @@ UIPreferencesManager::UIPreferencesManager(
     LocalizationManager & localizationManager)
     : mGameController(gameController)
     , mMusicController(musicController)
-    , mLocalizationManager(localizationManager)    
+    , mLocalizationManager(localizationManager)
 {
     //
     // Set defaults for our preferences
@@ -277,6 +277,16 @@ void UIPreferencesManager::LoadPreferences()
         }
 
         //
+        // Show npc notifications
+        //
+
+        if (auto showNpcNotificationsIt = preferencesRootObject->find("show_npc_notifications");
+            showNpcNotificationsIt != preferencesRootObject->end() && showNpcNotificationsIt->second.is<bool>())
+        {
+            mGameController.SetDoShowNpcNotifications(showNpcNotificationsIt->second.get<bool>());
+        }
+
+        //
         // Display units system
         //
 
@@ -329,13 +339,16 @@ void UIPreferencesManager::LoadPreferences()
         }
 
         //
-        // Continuous auto-focus
+        // Continuous auto-focus on ships
+        //
+        // If set: ships; else: none (we don't save SelectedNpc)
         //
 
         if (auto continuousAutoFocusIt = preferencesRootObject->find("continuous_auto_focus");
             continuousAutoFocusIt != preferencesRootObject->end() && continuousAutoFocusIt->second.is<bool>())
         {
-            mGameController.SetDoContinuousAutoFocus(continuousAutoFocusIt->second.get<bool>());
+            bool const value = continuousAutoFocusIt->second.get<bool>();
+            mGameController.SetAutoFocusTarget(value ? std::optional<AutoFocusTargetKindType>(AutoFocusTargetKindType::Ship) : std::nullopt);
         }
 
         //
@@ -521,6 +534,9 @@ void UIPreferencesManager::SavePreferences() const
     // Add show tsunami notification
     preferencesRootObject["show_tsunami_notifications"] = picojson::value(mGameController.GetDoShowTsunamiNotifications());
 
+    // Add show npc notification
+    preferencesRootObject["show_npc_notifications"] = picojson::value(mGameController.GetDoShowNpcNotifications());
+
     // Add display units system
     preferencesRootObject["display_units_system"] = picojson::value(static_cast<std::int64_t>(mGameController.GetDisplayUnitsSystem()));
 
@@ -538,7 +554,7 @@ void UIPreferencesManager::SavePreferences() const
     preferencesRootObject["auto_zoom_at_ship_load"] = picojson::value(mGameController.GetDoAutoFocusOnShipLoad());
 
     // Add continuous auto focus
-    preferencesRootObject["continuous_auto_focus"] = picojson::value(mGameController.GetDoContinuousAutoFocus());
+    preferencesRootObject["continuous_auto_focus"] = picojson::value(mGameController.GetAutoFocusTarget() == AutoFocusTargetKindType::Ship);
 
     // Add auto show switchboard
     preferencesRootObject["auto_show_switchboard"] = picojson::value(mAutoShowSwitchboard);

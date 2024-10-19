@@ -6,7 +6,7 @@
 // Inputs
 in vec4 inFish1; // CenterPosition (vec2), VertexOffset (vec2)
 in vec4 inFish2; // TextureSpace L, B, R, T (vec4)
-in vec4 inFish3; // TextureCoordinates (vec2),AngleCw (float), TailX (float)
+in vec4 inFish3; // TextureCoordinates (vec2), AngleCw (float), TailX (float)
 in vec2 inFish4; // TailSwing (float), TailProgress (float)
 
 // Outputs
@@ -50,6 +50,8 @@ void main()
 
 #define in varying
 
+#include "common.glslinc"
+#include "lamp_tool.glslinc"
 #include "ocean.glslinc"
 
 // Inputs from previous shader
@@ -61,7 +63,7 @@ in float tailSwing;
 in float tailProgress;
 in vec2 shadowPosNdc;
 
-// The texture
+// Textures
 uniform sampler2D paramFishesAtlasTexture;
 uniform sampler2D paramNoiseTexture;
 #ifdef DETAILED_FISHES
@@ -70,7 +72,7 @@ uniform sampler1D paramSharedTexture;
 
 // Parameters        
 uniform float paramEffectiveAmbientLightIntensity;
-uniform float paramOceanDarkeningRate;
+uniform float paramOceanDepthDarkeningRate;
 #ifdef DETAILED_FISHES
 uniform float paramSunRaysInclination;
 #endif
@@ -192,14 +194,22 @@ void main()
 
 #endif
 
-    // Apply depth darkening
-    fishSample.xyz = ApplyDepthDarkening(
-        fishSample.xyz,
-        vec3(0.0),
+    // Calculate depth darkening
+    float darkeningFactor = CalculateOceanDepthDarkeningFactor(
         worldY,
-        paramOceanDarkeningRate);
+        paramOceanDepthDarkeningRate);
 
-    gl_FragColor = vec4(
-        fishSample.xyz * paramEffectiveAmbientLightIntensity,
-        fishSample.w);
+    // Calculate lamp tool intensity
+    float lampToolIntensity = CalculateLampToolIntensity(gl_FragCoord.xy);
+
+    // Apply depth-darkening
+    fishSample.xyz = mix(
+        fishSample.xyz,
+        vec3(0.),
+        darkeningFactor * (1.0 - lampToolIntensity));
+
+    // Apply ambient light
+    fishSample.xyz *= max(paramEffectiveAmbientLightIntensity, lampToolIntensity);
+
+    gl_FragColor = fishSample;
 } 

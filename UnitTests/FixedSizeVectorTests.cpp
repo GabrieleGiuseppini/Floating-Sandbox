@@ -84,15 +84,17 @@ TEST(FixedSizeVectorTests, EmplaceBack)
 
     FixedSizeVector<Elem, 6> vec;
 
-    vec.emplace_back(4, 8.0f);
+    auto const & newElem1 = vec.emplace_back(4, 8.0f);
 
     EXPECT_EQ(1u, vec.size());
     EXPECT_FALSE(vec.empty());
+    EXPECT_EQ(4, newElem1.val1);
 
-    vec.emplace_back(6, 12.0f);
+    auto & newElem2 = vec.emplace_back(6, 12.0f);
 
     EXPECT_EQ(2u, vec.size());
     EXPECT_FALSE(vec.empty());
+    EXPECT_EQ(6, newElem2.val1);
 
     EXPECT_EQ(4, vec[0].val1);
     EXPECT_EQ(8.0f, vec[0].val2);

@@ -7,7 +7,7 @@
 		{	
 			"worldWidth": 1.0,
 			"worldHeight": 1.0,
-			"filename": "autofocus_notification_\\d+"
+			"filenamePattern": "autofocus_notification_\\d+"
 		}
 	]
 },
@@ -19,7 +19,7 @@
 		{	
 			"worldWidth": 1.0,
 			"worldHeight": 1.0,
-			"filename": "daylight_cycle_notification_\\d+"
+			"filenamePattern": "daylight_cycle_notification_\\d+"
 		}
 	]
 },
@@ -31,7 +31,7 @@
 		{	
 			"worldWidth": 1.0,
 			"worldHeight": 1.0,
-			"filename": "fire_\\d+"
+			"filenamePattern": "fire_\\d+"
 		}
 	]
 },
@@ -43,7 +43,7 @@
 		{	
 			"worldWidth": 1.0,
 			"worldHeight": 1.0,
-			"filename": "physics_probe_panel_\\d+"
+			"filenamePattern": "physics_probe_panel_\\d+"
 		}
 	]
 },
@@ -55,7 +55,7 @@
 		{	
 			"worldWidth": 1.0,
 			"worldHeight": 1.0,
-			"filename": "sound_mute_notification_\\d+"
+			"filenamePattern": "sound_mute_notification_\\d+"
 		}
 	]
 },
@@ -67,7 +67,7 @@
 		{	
 			"worldWidth": 1.0,
 			"worldHeight": 1.0,
-			"filename": "uv_mode_notification_\\d+"
+			"filenamePattern": "uv_mode_notification_\\d+"
 		}
 	]
 },
@@ -81,7 +81,7 @@
 			"worldHeight": 1.0,
 			"anchorOffsetX": 0,
 			"anchorOffsetY": 0,
-			"filename": "world_border_\\d+"
+			"filenamePattern": "world_border_\\d+"
 		}
 	]
 }

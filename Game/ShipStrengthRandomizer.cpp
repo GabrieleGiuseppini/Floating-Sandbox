@@ -5,8 +5,10 @@
 ***************************************************************************************/
 #include "ShipStrengthRandomizer.h"
 
+#include <GameCore/GameChronometer.h>
 #include <GameCore/Log.h>
 
+#include <chrono>
 #include <random>
 
 static vec2i const OctantDirections[8] = {
@@ -148,7 +150,7 @@ void ShipStrengthRandomizer::RandomizeStrength_Batik(
     //  - A crack should propagate as fast as possible to the nearest feature (i.e.earlier crack or frontier)
     //
 
-    auto const startTime = std::chrono::steady_clock::now();
+    auto const startTime = GameChronometer::now();
 
     // Setup deterministic randomness
 
@@ -327,7 +329,7 @@ void ShipStrengthRandomizer::RandomizeStrength_Batik(
     //
 
     // Do first pass: weaken and calculating total weakening
-    
+
     size_t nonWeakenedParticlesCount = 0;
     float totalStrengthRemoved = 0.0f;
     for (int x = 0; x < distanceMatrix.width; ++x)
@@ -383,7 +385,7 @@ void ShipStrengthRandomizer::RandomizeStrength_Batik(
 
     LogMessage("ShipStrengthRandomizer: completed randomization:",
         " numberOfCracks=", numberOfCracks,
-        " time=", std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - startTime).count(), "us");
+        " time=", std::chrono::duration_cast<std::chrono::microseconds>(GameChronometer::now() - startTime).count(), "us");
 }
 
 template<typename TRandomEngine>

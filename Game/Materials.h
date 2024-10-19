@@ -38,6 +38,7 @@ public:
     {
         Air = 0,
         Glass,
+        Human,
         Rope,
         Water,
 
@@ -69,9 +70,12 @@ public:
     float Strength;
     float NominalMass;
     float Density;
-    float BuoyancyVolumeFill;
+    float BuoyancyVolumeFill; // Hull has usually 0.0 (as it never gets water yet we want it to sink), and non-hull usually \1.0 (as it gets water)
     float Stiffness;
     float StrainThresholdFraction;
+    float ElasticityCoefficient;
+    float KineticFrictionCoefficient;
+    float StaticFrictionCoefficient;
 
     std::optional<MaterialUniqueType> UniqueType;
 
@@ -150,6 +154,9 @@ public:
         float buoyancyVolumeFill,
         float stiffness,
         float strainThresholdFraction,
+        float elasticityCoefficient,
+        float kineticFrictionCoefficient,
+        float staticFrictionCoefficient,
         std::optional<MaterialUniqueType> uniqueType,
         std::optional<MaterialSoundType> materialSound,
         std::optional<std::string> materialTextureName,
@@ -184,6 +191,9 @@ public:
         , BuoyancyVolumeFill(buoyancyVolumeFill)
         , Stiffness(stiffness)
         , StrainThresholdFraction(strainThresholdFraction)
+        , ElasticityCoefficient(elasticityCoefficient)
+        , KineticFrictionCoefficient(kineticFrictionCoefficient)
+        , StaticFrictionCoefficient(staticFrictionCoefficient)
         , UniqueType(uniqueType)
         , MaterialSound(materialSound)
         , MaterialTextureName(materialTextureName)
@@ -278,7 +288,7 @@ public:
     };
 
     enum class EngineControllerElementType
-    {        
+    {
         Telegraph,
         JetThrottle,
         JetThrust

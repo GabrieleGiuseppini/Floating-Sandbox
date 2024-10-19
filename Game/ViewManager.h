@@ -5,14 +5,13 @@
 ***************************************************************************************/
 #pragma once
 
-#include "NotificationLayer.h"
+#include "GameEventDispatcher.h"
 #include "RenderContext.h"
 
 #include <GameCore/AABBSet.h>
 #include <GameCore/ParameterSmoother.h>
 #include <GameCore/Vectors.h>
 
-#include <memory>
 #include <optional>
 
 class ViewManager
@@ -21,7 +20,7 @@ public:
 
     ViewManager(
         Render::RenderContext & renderContext,
-        NotificationLayer & notificationLayer);
+        GameEventDispatcher & gameEventDispatcher);
 
     float GetCameraSpeedAdjustment() const;
     void SetCameraSpeedAdjustment(float value);
@@ -31,40 +30,55 @@ public:
     bool GetDoAutoFocusOnShipLoad() const;
     void SetDoAutoFocusOnShipLoad(bool value);
 
-    bool GetDoContinuousAutoFocus() const;
-    void SetDoContinuousAutoFocus(bool value);
+    std::optional<AutoFocusTargetKindType> GetAutoFocusTarget() const;
+    void SetAutoFocusTarget(std::optional<AutoFocusTargetKindType> const & target);
 
-    void OnViewModelUpdated();
-    void OnNewShip(Geometry::AABBSet const & allAABBs);
+    void OnViewModelUpdated();    
     void Pan(vec2f const & worldOffset);
     void PanToWorldX(float worldX);
     void AdjustZoom(float amount);
-    void ResetView(Geometry::AABBSet const & allAABBs);
-    void FocusOnShip(Geometry::AABBSet const & allAABBs);
+    void FocusOn(
+        Geometry::AABB const & aabb,
+        float widthMultiplier,
+        float heightMultiplier,
+        float zoomToleranceMultiplierMin,
+        float zoomToleranceMultiplierMax,
+        bool anchorAabbCenterAtCurrentScreenPosition);
 
-    void Update(Geometry::AABBSet const & allAABBs);
+    void UpdateAutoFocus(std::optional<Geometry::AABB> const & aabb);
+    void Update();
+
+    // Removes user offsets and returns to "pure autofocus"
+    void ResetAutoFocusAlterations();
 
 private:
 
-    static float CalculateZoomParameterSmootherConvergenceFactor(float cameraSpeedAdjustment);
-    static float CalculateCameraWorldPositionParameterSmootherConvergenceFactor(float cameraSpeedAdjustment);
-    static float CalculateParameterSmootherConvergenceFactor(
-        float cameraSpeedAdjustment,
-        float min,
-        float mid,
-        float max);
+    static float CalculateParameterSmootherConvergenceFactor(float cameraSpeedAdjustment);
 
-    void InternalFocusOnShip(Geometry::AABBSet const & allAABBs);
+    static inline float CalculateAutoFocusMaxZoom(std::optional<AutoFocusTargetKindType> targetKind);
 
-    float InternalCalculateZoom(Geometry::AABB const & aabb);
+    void InternalFocusOn(
+        Geometry::AABB const & aabb,
+        float widthMultiplier,
+        float heightMultiplier,
+        float zoomToleranceMultiplierMin,
+        float zoomToleranceMultiplierMax,
+        bool anchorAabbCenterAtCurrentScreenPosition);
+
+    float InternalCalculateZoom(
+        Geometry::AABB const & aabb,
+        float widthMultiplier,
+        float heightMultiplier,
+        std::optional<AutoFocusTargetKindType> targetKind) const;
 
 private:
 
     Render::RenderContext & mRenderContext;
-    NotificationLayer & mNotificationLayer;
+    GameEventDispatcher & mGameEventHandler;
 
-    std::unique_ptr<ParameterSmoother<float>> mZoomParameterSmoother;
-    std::unique_ptr<ParameterSmoother<vec2f>> mCameraWorldPositionParameterSmoother;
+    ParameterSmoother<float> mInverseZoomParameterSmoother; // Smooths 1/zoom, which is effectively the Z coord
+    ParameterSmoother<vec2f> mCameraWorldPositionParameterSmoother;
+    float mCameraWorldPositionParameterSmootherContingentMultiplier; // One shot, always reset to 1.0 after use
 
     float mCameraSpeedAdjustment; // Storage
 
@@ -72,6 +86,8 @@ private:
 
     struct AutoFocusSessionData
     {
+        std::optional<AutoFocusTargetKindType> AutoFocusTarget; // Here so it's consistent, and can use target type to fine tune focus
+
         float CurrentAutoFocusZoom;
         vec2f CurrentAutoFocusCameraWorldPosition;
 
@@ -79,20 +95,22 @@ private:
         vec2f UserCameraWorldPositionOffset;
 
         AutoFocusSessionData(
+            std::optional<AutoFocusTargetKindType> const & autoFocusTarget,
             float currentAutoFocusZoom,
             vec2f const & currentAutoFocusCameraWorldPosition)
-            : CurrentAutoFocusZoom(currentAutoFocusZoom)
+            : AutoFocusTarget(autoFocusTarget)
+            , CurrentAutoFocusZoom(currentAutoFocusZoom)
             , CurrentAutoFocusCameraWorldPosition(currentAutoFocusCameraWorldPosition)
         {
-            Reset();
+            ResetUserOffsets();
         }
 
-        void Reset()
-        {            
+        void ResetUserOffsets()
+        {
             UserZoomOffset = 1.0f;
             UserCameraWorldPositionOffset = vec2f::zero();
         }
     };
 
-    std::optional<AutoFocusSessionData> mAutoFocus;
+    std::optional<AutoFocusSessionData> mAutoFocus; // When set, we're doing auto-focus
 };

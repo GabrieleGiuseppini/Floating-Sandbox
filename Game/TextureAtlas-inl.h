@@ -52,6 +52,24 @@ TextureAtlasMetadata<TextureGroups>::TextureAtlasMetadata(
         assert(static_cast<size_t>(mFrameMetadata[frameIndex].FrameMetadata.FrameId.FrameIndex) == mFrameMetadataIndices.back().size());
         mFrameMetadataIndices.back().emplace_back(frameIndex);
     }
+
+    //
+    // Build index by filename stem
+    //
+
+    for (size_t i = 0; i < mFrameMetadata.size(); ++i)
+    {
+        auto const [_, isInserted] = mFrameMetadataByFilenameStem.try_emplace(
+            mFrameMetadata[i].FrameMetadata.FilenameStem,
+            i);
+
+        if (!isInserted)
+        {
+            // Note: this may happen if the same file is, for example, used with different world sizes; in such cases,
+            // one cannot use an Atlas
+            throw GameException("Atlas metadata frame filename \"" + mFrameMetadata[i].FrameMetadata.FilenameStem + "\" is duplicated");
+        }
+    }
 }
 
 template <typename TextureGroups>
@@ -125,7 +143,7 @@ TextureAtlasFrameMetadata<TextureGroups> TextureAtlasFrameMetadata<TextureGroups
         textureSpaceWidth,
         textureSpaceHeight,
         textureCoordinatesBottomLeft,
-        textureCoordinatesAnchorCenter,        
+        textureCoordinatesAnchorCenter,
         textureCoordinatesTopRight,
         frameLeftX,
         frameBottomY,
@@ -247,10 +265,9 @@ typename TextureAtlasBuilder<TextureGroups>::AtlasSpecification TextureAtlasBuil
         sortedTextureInfos.end(),
         [](TextureInfo const & a, TextureInfo const & b)
         {
-            return a.Size.height > b.Size.height
-                || (a.Size.height == b.Size.height && a.Size.width > b.Size.width);
+            return a.InAtlasSize.height > b.InAtlasSize.height
+                || (a.InAtlasSize.height == b.InAtlasSize.height && a.InAtlasSize.width > b.InAtlasSize.width);
         });
-
 
     //
     // Calculate size of atlas
@@ -259,7 +276,7 @@ typename TextureAtlasBuilder<TextureGroups>::AtlasSpecification TextureAtlasBuil
     uint64_t totalArea = 0;
     for (auto const & ti : sortedTextureInfos)
     {
-        totalArea += static_cast<uint64_t>(ti.Size.width * ti.Size.height);
+        totalArea += static_cast<uint64_t>(ti.InAtlasSize.width * ti.InAtlasSize.height);
     }
 
     // Square root of area, floor'd to next power of two, minimized
@@ -267,67 +284,53 @@ typename TextureAtlasBuilder<TextureGroups>::AtlasSpecification TextureAtlasBuil
     int atlasWidth = atlasSide;
     int atlasHeight = atlasSide;
 
-
     //
     // Place tiles
     //
 
-    std::vector<typename AtlasSpecification::TexturePosition> texturePositions;
-    texturePositions.reserve(inputTextureInfos.size());
+    std::vector<typename AtlasSpecification::TextureLocationInfo> textureLocationInfos;
+    textureLocationInfos.reserve(inputTextureInfos.size());
 
-    struct Position
-    {
-        int x;
-        int y;
-
-        Position(
-            int _x,
-            int _y)
-            : x(_x)
-            , y(_y)
-        {}
-    };
-
-    std::vector<Position> positionStack;
-    positionStack.emplace_back(0, 0);
+    std::vector<vec2i> positionStack;
+    positionStack.emplace_back(vec2i(0, 0));
 
     for (TextureInfo const & t : sortedTextureInfos)
     {
         while (true)
         {
-            Position const currentPosition = positionStack.back();
+            vec2i const currentPosition = positionStack.back();
 
-            if (currentPosition.x + t.Size.width < atlasWidth   // Fits at current position
-                || positionStack.size() == 1                    // We can't backtrack
-                || (ceil_power_of_two(currentPosition.x + t.Size.width) - atlasWidth) <= (ceil_power_of_two(positionStack.front().y + t.Size.height) - atlasHeight)) // Extra W <= Extra H
+            if (currentPosition.x + t.InAtlasSize.width < atlasWidth   // Fits at current position
+                || positionStack.size() == 1 // We can't backtrack
+                || (ceil_power_of_two(currentPosition.x + t.InAtlasSize.width) - atlasWidth) <= (ceil_power_of_two(positionStack.front().y + t.InAtlasSize.height) - atlasHeight)) // Extra W <= Extra H
             {
                 // Put it at the current location
-                texturePositions.emplace_back(
+                textureLocationInfos.emplace_back(
                     t.FrameId,
-                    currentPosition.x,
-                    currentPosition.y);
+                    currentPosition,
+                    t.InAtlasSize);
 
                 if (positionStack.size() == 1
-                    || currentPosition.y + t.Size.height < std::next(positionStack.rbegin())->y)
+                    || currentPosition.y + t.InAtlasSize.height < std::next(positionStack.rbegin())->y)
                 {
                     // Move current location up to top
-                    positionStack.back().y += t.Size.height;
+                    positionStack.back().y += t.InAtlasSize.height;
                 }
                 else
                 {
                     // Current location is completed
-                    assert(currentPosition.y + t.Size.height == std::next(positionStack.rbegin())->y);
+                    assert(currentPosition.y + t.InAtlasSize.height == std::next(positionStack.rbegin())->y);
 
                     // Pop it from stack
                     positionStack.pop_back();
                 }
 
                 // Add new location to the right of this tile
-                positionStack.emplace_back(currentPosition.x + t.Size.width, currentPosition.y);
+                positionStack.emplace_back(currentPosition.x + t.InAtlasSize.width, currentPosition.y);
 
                 // Adjust atlas dimensions
-                atlasWidth = ceil_power_of_two(std::max(atlasWidth, currentPosition.x + t.Size.width));
-                atlasHeight = ceil_power_of_two(std::max(atlasHeight, currentPosition.y + t.Size.height));
+                atlasWidth = ceil_power_of_two(std::max(atlasWidth, currentPosition.x + t.InAtlasSize.width));
+                atlasHeight = ceil_power_of_two(std::max(atlasHeight, currentPosition.y + t.InAtlasSize.height));
 
                 // We are done with this tile
                 break;
@@ -341,7 +344,6 @@ typename TextureAtlasBuilder<TextureGroups>::AtlasSpecification TextureAtlasBuil
         }
     }
 
-
     //
     // Round final size
     //
@@ -349,145 +351,12 @@ typename TextureAtlasBuilder<TextureGroups>::AtlasSpecification TextureAtlasBuil
     atlasWidth = ceil_power_of_two(atlasWidth);
     atlasHeight = ceil_power_of_two(atlasHeight);
 
-
     //
     // Return atlas
     //
 
     return AtlasSpecification(
-        std::move(texturePositions),
-        ImageSize(atlasWidth, atlasHeight));
-}
-
-template <typename TextureGroups>
-typename TextureAtlasBuilder<TextureGroups>::AtlasSpecification TextureAtlasBuilder<TextureGroups>::BuildMipMappableAtlasSpecification(std::vector<TextureInfo> const & inputTextureInfos)
-{
-    //
-    // Sort input texture info's by height, from tallest to shortest
-    //
-
-    std::vector<TextureInfo> sortedTextureInfos = inputTextureInfos;
-    std::sort(
-        sortedTextureInfos.begin(),
-        sortedTextureInfos.end(),
-        [](TextureInfo const & a, TextureInfo const & b)
-        {
-            return a.Size.height > b.Size.height
-                || (a.Size.height == b.Size.height && a.Size.width > b.Size.width);
-        });
-
-
-    //
-    // Calculate size of atlas
-    //
-
-    uint64_t totalArea = 0;
-    for (auto const & ti : sortedTextureInfos)
-    {
-        // Verify tile dimensions are powers of two
-        if (ti.Size.width != ceil_power_of_two(ti.Size.width)
-            || ti.Size.height != ceil_power_of_two(ti.Size.height))
-        {
-            throw GameException("Dimensions of texture frame \"" + ti.FrameId.ToString() + "\" are not a power of two");
-        }
-
-        totalArea += static_cast<uint64_t>(ti.Size.width * ti.Size.height);
-    }
-
-    // Square root of area, floor'd to next power of two, minimized
-    int const atlasSide = ceil_power_of_two(static_cast<int>(std::floor(std::sqrt(static_cast<float>(totalArea))))) / 2;
-    int atlasWidth = atlasSide;
-    int atlasHeight = atlasSide;
-
-
-    //
-    // Place tiles
-    //
-
-    std::vector<typename AtlasSpecification::TexturePosition> texturePositions;
-    texturePositions.reserve(inputTextureInfos.size());
-
-    struct Position
-    {
-        int x;
-        int y;
-
-        Position(
-            int _x,
-            int _y)
-            : x(_x)
-            , y(_y)
-        {}
-    };
-
-    std::vector<Position> positionStack;
-    positionStack.emplace_back(0, 0);
-
-    for (TextureInfo const & t : sortedTextureInfos)
-    {
-        while (true)
-        {
-            Position const currentPosition = positionStack.back();
-
-            if (currentPosition.x + t.Size.width < atlasWidth   // Fits at current position
-                || positionStack.size() == 1                    // We can't backtrack
-                || (ceil_power_of_two(currentPosition.x + t.Size.width) - atlasWidth) <= (ceil_power_of_two(positionStack.front().y + t.Size.height) - atlasHeight)) // Extra W <= Extra H
-            {
-                // Put it at the current location
-                texturePositions.emplace_back(
-                    t.FrameId,
-                    currentPosition.x,
-                    currentPosition.y);
-
-                if (positionStack.size() == 1
-                    || currentPosition.y + t.Size.height < std::next(positionStack.rbegin())->y)
-                {
-                    // Move current location up to top
-                    positionStack.back().y += t.Size.height;
-                }
-                else
-                {
-                    // Current location is completed
-                    assert(currentPosition.y + t.Size.height == std::next(positionStack.rbegin())->y);
-
-                    // Pop it from stack
-                    positionStack.pop_back();
-                }
-
-                // Add new location to the right of this tile
-                positionStack.emplace_back(currentPosition.x + t.Size.width, currentPosition.y);
-
-                // Adjust atlas dimensions
-                atlasWidth = ceil_power_of_two(std::max(atlasWidth, currentPosition.x + t.Size.width));
-                atlasHeight = ceil_power_of_two(std::max(atlasHeight, currentPosition.y + t.Size.height));
-
-                // We are done with this tile
-                break;
-            }
-            else
-            {
-                // Backtrack
-                positionStack.pop_back();
-                assert(!positionStack.empty());
-            }
-        }
-    }
-
-
-    //
-    // Round final size
-    //
-
-    atlasWidth = ceil_power_of_two(atlasWidth);
-    atlasHeight = ceil_power_of_two(atlasHeight);
-
-
-    //
-    // Return atlas
-    //
-
-    return AtlasSpecification(
-        std::move(texturePositions),
+        std::move(textureLocationInfos),
         ImageSize(atlasWidth, atlasHeight));
 }
 
@@ -503,10 +372,10 @@ typename TextureAtlasBuilder<TextureGroups>::AtlasSpecification TextureAtlasBuil
         throw GameException("Regular texture atlas cannot consist of an empty set of texture frames");
     }
 
-    int const frameWidth = inputTextureInfos[0].Size.width;
-    int const frameHeight = inputTextureInfos[0].Size.height;
-    if (frameWidth != ceil_power_of_two(frameWidth)
-        || frameHeight != ceil_power_of_two(frameHeight))
+    int const frameInAtlasWidth = inputTextureInfos[0].InAtlasSize.width;
+    int const frameInAtlasHeight = inputTextureInfos[0].InAtlasSize.height;
+    if (frameInAtlasWidth != ceil_power_of_two(frameInAtlasWidth)
+        || frameInAtlasHeight != ceil_power_of_two(frameInAtlasHeight))
     {
         throw GameException("Dimensions of texture frame \"" + inputTextureInfos[0].FrameId.ToString() + "\" are not a power of two");
     }
@@ -514,13 +383,12 @@ typename TextureAtlasBuilder<TextureGroups>::AtlasSpecification TextureAtlasBuil
     for (auto const & ti : inputTextureInfos)
     {
         // Verify tile dimensions are powers of two
-        if (ti.Size.width != frameWidth
-            || ti.Size.height != frameHeight)
+        if (ti.InAtlasSize.width != frameInAtlasWidth
+            || ti.InAtlasSize.height != frameInAtlasHeight)
         {
             throw GameException("Dimensions of texture frame \"" + ti.FrameId.ToString() + "\" differ from the dimensions of the other frames");
         }
     }
-
 
     //
     // Place tiles
@@ -531,21 +399,21 @@ typename TextureAtlasBuilder<TextureGroups>::AtlasSpecification TextureAtlasBuil
 
     int const numberOfFramesPerSide = static_cast<int>(std::floor(std::sqrt(static_cast<float>(virtualNumberOfFrames))));
     assert(numberOfFramesPerSide > 0);
-    int const atlasWidth = numberOfFramesPerSide * frameWidth;
-    int const atlasHeight = numberOfFramesPerSide * frameHeight;
+    int const atlasWidth = numberOfFramesPerSide * frameInAtlasWidth;
+    int const atlasHeight = numberOfFramesPerSide * frameInAtlasHeight;
 
-    std::vector<typename AtlasSpecification::TexturePosition> texturePositions;
-    texturePositions.reserve(virtualNumberOfFrames);
+    std::vector<typename AtlasSpecification::TextureLocationInfo> textureLocationInfos;
+    textureLocationInfos.reserve(virtualNumberOfFrames);
 
     for (int i = 0; i < static_cast<int>(inputTextureInfos.size()); ++i)
     {
         int const c = i % numberOfFramesPerSide;
         int const r = i / numberOfFramesPerSide;
 
-        texturePositions.emplace_back(
+        textureLocationInfos.emplace_back(
             inputTextureInfos[i].FrameId,
-            c * frameWidth,
-            r * frameHeight);
+            vec2i(c * frameInAtlasWidth, r * frameInAtlasHeight),
+            inputTextureInfos[i].InAtlasSize);
     }
 
     //
@@ -553,17 +421,18 @@ typename TextureAtlasBuilder<TextureGroups>::AtlasSpecification TextureAtlasBuil
     //
 
     return AtlasSpecification(
-        std::move(texturePositions),
+        std::move(textureLocationInfos),
         ImageSize(atlasWidth, atlasHeight));
 }
 
 template <typename TextureGroups>
-TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::BuildAtlas(
+TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::InternalBuildAtlas(
     AtlasSpecification const & specification,
     AtlasOptions options,
     std::function<TextureFrame<TextureGroups>(TextureFrameId<TextureGroups> const &)> frameLoader,
     ProgressCallback const & progressCallback)
 {
+    // The DX's to sample pixels in their dead center
     float const dx = 0.5f / static_cast<float>(specification.AtlasSize.width);
     float const dy = 0.5f / static_cast<float>(specification.AtlasSize.height);
 
@@ -576,23 +445,46 @@ TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::BuildAtlas(
 
     // Copy all textures into image, building metadata at the same time
     std::vector<TextureAtlasFrameMetadata<TextureGroups>> frameMetadata;
-    for (auto const & texturePosition : specification.TexturePositions)
+    for (auto const & textureLocationInfo : specification.TextureLocationInfos)
     {
         progressCallback(
-            static_cast<float>(frameMetadata.size()) / static_cast<float>(specification.TexturePositions.size()),
+            static_cast<float>(frameMetadata.size()) / static_cast<float>(specification.TextureLocationInfos.size()),
             ProgressMessageType::None);
 
         // Load frame
-        TextureFrame<TextureGroups> textureFrame = frameLoader(texturePosition.FrameId);
+        TextureFrame<TextureGroups> textureFrame = frameLoader(textureLocationInfo.FrameId);
+        ImageData<rgbaColor> textureImageData = ImageData<rgbaColor>(
+            textureFrame.TextureData.Size,
+            std::move(textureFrame.TextureData.Data));
+
+        // Pre-multiply alpha, if requested
+        if (!!(options & AtlasOptions::AlphaPremultiply))
+        {
+            ImageTools::AlphaPreMultiply(textureImageData);
+        }
+
+        // Apply binary transparency smoothing, if requested
+        if (!!(options & AtlasOptions::BinaryTransparencySmoothing))
+        {
+            ImageTools::ApplyBinaryTransparencySmoothing(textureImageData);
+        }
+
+        // Calculate offset for frame into in-atlas frame
+        assert(textureFrame.TextureData.Size.width <= textureLocationInfo.InAtlasSize.width);
+        assert(textureFrame.TextureData.Size.height <= textureLocationInfo.InAtlasSize.height);
+        vec2i framePositionOffset = vec2i(
+            (textureLocationInfo.InAtlasSize.width - textureFrame.TextureData.Size.width) / 2,
+            (textureLocationInfo.InAtlasSize.height - textureFrame.TextureData.Size.height) / 2);
+
+        // Calculate actual position of frame in atlas
+        vec2i frameActualPosition = textureLocationInfo.InAtlasBottomLeft + framePositionOffset;
 
         // Copy frame
         CopyImage(
-            std::move(textureFrame.TextureData.Data),
-            textureFrame.TextureData.Size,
+            std::move(textureImageData),
             atlasImage.get(),
             specification.AtlasSize,
-            texturePosition.FrameLeftX,
-            texturePosition.FrameBottomY);
+            frameActualPosition);
 
         // Calculate frame dimensions in texture space - the whole thing, ignoring dx/dy
         float const textureSpaceFrameWidth = static_cast<float>(textureFrame.TextureData.Size.width) / static_cast<float>(specification.AtlasSize.width);
@@ -604,30 +496,24 @@ TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::BuildAtlas(
             textureSpaceFrameHeight,
             // Bottom-left
             vec2f(
-                dx + static_cast<float>(texturePosition.FrameLeftX) / static_cast<float>(specification.AtlasSize.width),
-                dy + static_cast<float>(texturePosition.FrameBottomY) / static_cast<float>(specification.AtlasSize.height)),
+                dx + static_cast<float>(frameActualPosition.x) / static_cast<float>(specification.AtlasSize.width),
+                dy + static_cast<float>(frameActualPosition.y) / static_cast<float>(specification.AtlasSize.height)),
             // Anchor center
             vec2f(
-                dx + static_cast<float>(texturePosition.FrameLeftX + textureFrame.Metadata.AnchorCenter.x) / static_cast<float>(specification.AtlasSize.width),
-                dy + static_cast<float>(texturePosition.FrameBottomY + textureFrame.Metadata.AnchorCenter.y) / static_cast<float>(specification.AtlasSize.height)),
+                dx + static_cast<float>(frameActualPosition.x + textureFrame.Metadata.AnchorCenter.x) / static_cast<float>(specification.AtlasSize.width),
+                dy + static_cast<float>(frameActualPosition.y + textureFrame.Metadata.AnchorCenter.y) / static_cast<float>(specification.AtlasSize.height)),
             // Top-right
             vec2f(
-                static_cast<float>(texturePosition.FrameLeftX + textureFrame.TextureData.Size.width) / static_cast<float>(specification.AtlasSize.width) - dx,
-                static_cast<float>(texturePosition.FrameBottomY + textureFrame.TextureData.Size.height) / static_cast<float>(specification.AtlasSize.height) - dy),
-            texturePosition.FrameLeftX,
-            texturePosition.FrameBottomY,
+                static_cast<float>(frameActualPosition.x + textureFrame.TextureData.Size.width) / static_cast<float>(specification.AtlasSize.width) - dx,
+                static_cast<float>(frameActualPosition.y + textureFrame.TextureData.Size.height) / static_cast<float>(specification.AtlasSize.height) - dy),
+            frameActualPosition.x,
+            frameActualPosition.y,
             textureFrame.Metadata);
     }
 
     RgbaImageData atlasImageData(
         specification.AtlasSize,
         std::move(atlasImage));
-
-    // Pre-multiply alpha, if requested
-    if (!!(options & AtlasOptions::AlphaPremultiply))
-    {
-        ImageTools::AlphaPreMultiply(atlasImageData);
-    }
 
     progressCallback(1.0f, ProgressMessageType::None);
 
@@ -642,22 +528,20 @@ TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::BuildAtlas(
 
 template <typename TextureGroups>
 void TextureAtlasBuilder<TextureGroups>::CopyImage(
-    std::unique_ptr<rgbaColor const []> sourceImage,
-    ImageSize sourceImageSize,
+    ImageData<rgbaColor> && sourceImage,
     rgbaColor * destImage,
     ImageSize destImageSize,
-    int destinationLeftX,
-    int destinationBottomY)
+    vec2i const & destinationBottomLeftPosition)
 {
     // From bottom to top
-    for (int y = 0; y < sourceImageSize.height; ++y)
+    for (int y = 0; y < sourceImage.Size.height; ++y)
     {
         // From left to right
-        size_t const srcIndex = y * sourceImageSize.width;
-        size_t const dstIndex = (destinationBottomY + y) * destImageSize.width + destinationLeftX;
+        size_t const srcIndex = y * sourceImage.Size.width;
+        size_t const dstIndex = (destinationBottomLeftPosition.y + y) * destImageSize.width + destinationBottomLeftPosition.x;
         std::copy_n(
-            &(sourceImage[srcIndex]),
-            sourceImageSize.width,
+            &(sourceImage.Data[srcIndex]),
+            sourceImage.Size.width,
             &(destImage[dstIndex]));
     }
 }

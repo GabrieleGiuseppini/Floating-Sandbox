@@ -8,7 +8,9 @@
 #include "ShipFactory.h"
 
 #include "Formulae.h"
+#include "ShipFloorplanizer.h"
 
+#include <GameCore/GameChronometer.h>
 #include <GameCore/GameDebug.h>
 #include <GameCore/GameMath.h>
 #include <GameCore/ImageTools.h>
@@ -26,22 +28,7 @@ using namespace Physics;
 
 //////////////////////////////////////////////////////////////////////////////
 
-// This is our local circular order (clockwise, starting from E)
-// Note: cardinal directions are labeled according to y growing upwards
-static int const TessellationCircularOrderDirections[8][2] = {
-    {  1,  0 },  // 0: E
-    {  1, -1 },  // 1: SE
-    {  0, -1 },  // 2: S
-    { -1, -1 },  // 3: SW
-    { -1,  0 },  // 4: W
-    { -1,  1 },  // 5: NW
-    {  0,  1 },  // 6: N
-    {  1,  1 }   // 7: NE
-};
-
-//////////////////////////////////////////////////////////////////////////////
-
-std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
+std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData, RgbaImageData> ShipFactory::Create(
     ShipId shipId,
     World & parentWorld,
     ShipDefinition && shipDefinition,
@@ -52,7 +39,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     GameParameters const & gameParameters)
 {
-    auto const totalStartTime = std::chrono::steady_clock::now();
+    auto const totalStartTime = GameChronometer::now();
 
     //
     // Process load options
@@ -228,7 +215,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
 
     std::vector<ShipFactorySpring> springInfos1;
 
-    PointPairToIndexMap pointPairToSpringIndex1Map;
+    ShipFactoryPointPairToIndexMap pointPairToSpringIndex1Map;
 
     if (shipDefinition.Layers.RopesLayer)
     {
@@ -311,8 +298,6 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
     // Create frontiers
     //
 
-    auto const frontiersStartTime = std::chrono::steady_clock::now();
-
     std::vector<ShipFactoryFrontier> shipFactoryFrontiers = CreateShipFrontiers(
         pointIndexMatrix,
         pointIndexRemap,
@@ -320,8 +305,6 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
         springInfos2,
         pointPairToSpringIndex1Map,
         springIndexRemap);
-
-    auto const frontiersEndTime = std::chrono::steady_clock::now();
 
     //
     // Randomize strength
@@ -336,6 +319,18 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
         springInfos2,
         triangleInfos,
         shipFactoryFrontiers);
+
+    //
+    // Create floorplan
+    //
+
+    ShipFloorplanizer shipFloorplanizer;
+
+    ShipFactoryFloorPlan floorPlan2 = shipFloorplanizer.BuildFloorplan(
+        pointIndexMatrix,
+        pointInfos2,
+        pointIndexRemap,
+        springInfos2);
 
     //
     // Visit all ShipFactoryPoint's and create Points, i.e. the entire set of points
@@ -370,7 +365,9 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
     Triangles triangles = CreateTriangles(
         triangleInfos,
         points,
-        pointIndexRemap);
+        pointIndexRemap,
+        springInfos2,
+        floorPlan2);
 
     //
     // Create Electrical Elements
@@ -400,14 +397,44 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
         springs);
 
     //
-    // Create texture, if needed
+    // Create exterior texture
     //
 
-    RgbaImageData textureImage = shipDefinition.Layers.TextureLayer
-        ? std::move(shipDefinition.Layers.TextureLayer->Buffer) // Use provided texture
+    RgbaImageData exteriorTextureImage = shipDefinition.Layers.ExteriorTextureLayer
+        ? std::move(shipDefinition.Layers.ExteriorTextureLayer->Buffer) // Use provided texture
         : shipTexturizer.MakeAutoTexture(
             *shipDefinition.Layers.StructuralLayer,
-            shipDefinition.AutoTexturizationSettings); // Auto-texturize
+            shipDefinition.AutoTexturizationSettings, // Auto-texturize
+            ShipTexturizer::MaxHighDefinitionTextureSize);
+
+    //
+    // Create interior texture
+    //
+
+    RgbaImageData interiorTextureImage = shipDefinition.Layers.InteriorTextureLayer
+        ? std::move(shipDefinition.Layers.InteriorTextureLayer->Buffer) // Use provided texture
+        : shipTexturizer.MakeAutoTexture(
+            *shipDefinition.Layers.StructuralLayer,
+            ShipAutoTexturizationSettings( // Custom
+                ShipAutoTexturizationModeType::MaterialTextures,
+                0.15f,
+                0.65f),
+            ShipTexturizer::MaxHighDefinitionTextureSize);
+
+    ImageTools::BlendWithColor(
+        interiorTextureImage,
+        rgbColor(rgbColor::data_type_max, rgbColor::data_type_max, rgbColor::data_type_max),
+        0.5f);
+
+    //
+    // Create interior view
+    //
+
+    RgbaImageData interiorViewImage = shipTexturizer.MakeInteriorViewTexture(
+        triangles,
+        points,
+        shipSize,
+        interiorTextureImage);
 
     //
     // We're done!
@@ -421,7 +448,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
 #endif
 
     LogMessage("ShipFactory: Created ship: W=", shipSize.width, ", H=", shipSize.height, ", ",
-        points.GetRawShipPointCount(), "raw/", points.GetBufferElementCount(), "buf points, ",        
+        points.GetRawShipPointCount(), "raw/", points.GetBufferElementCount(), "buf points, ",
         springs.GetElementCount(), " springs (", perfectSquareCount, " perfect squares, ", perfectSquareCount * 4 * 100 / std::max(1u, springs.GetElementCount()), "%), ",
         triangles.GetElementCount(), " triangles, ",
         electricalElements.GetElementCount(), " electrical elements, ",
@@ -436,15 +463,16 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
         std::move(springs),
         std::move(triangles),
         std::move(electricalElements),
-        std::move(frontiers));
+        std::move(frontiers),
+        std::move(interiorTextureImage));
 
     LogMessage("ShipFactory: Create() took ",
-        std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - totalStartTime).count(),
-        " us (frontiers: ", std::chrono::duration_cast<std::chrono::microseconds>(frontiersEndTime - frontiersStartTime).count(), " us)");
+        std::chrono::duration_cast<std::chrono::microseconds>(GameChronometer::now() - totalStartTime).count(), "us");
 
     return std::make_tuple(
         std::move(ship),
-        std::move(textureImage));
+        std::move(exteriorTextureImage),
+        std::move(interiorViewImage));
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -457,7 +485,7 @@ void ShipFactory::AppendRopes(
     ShipFactoryPointIndexMatrix const & pointIndexMatrix,
     std::vector<ShipFactoryPoint> & pointInfos1,
     std::vector<ShipFactorySpring> & springInfos1,
-    PointPairToIndexMap & pointPairToSpringIndex1Map)
+    ShipFactoryPointPairToIndexMap & pointPairToSpringIndex1Map)
 {
     //
     // - Fill-in points between each pair of endpoints, creating additional ShipFactoryPoint's for them
@@ -673,7 +701,7 @@ void ShipFactory::CreateShipElementInfos(
     ShipFactoryPointIndexMatrix const & pointIndexMatrix,
     std::vector<ShipFactoryPoint> & pointInfos1,
     std::vector<ShipFactorySpring> & springInfos1,
-    PointPairToIndexMap & pointPairToSpringIndex1Map,
+    ShipFactoryPointPairToIndexMap & pointPairToSpringIndex1Map,
     std::vector<ShipFactoryTriangle> & triangleInfos1,
     size_t & leakingPointsCount)
 {
@@ -691,7 +719,7 @@ void ShipFactory::CreateShipElementInfos(
     for (int y = 1; y < pointIndexMatrix.height - 1; ++y)
     {
         // We're starting a new row, so we're not in a ship now
-        bool isInShip = false;
+        bool isRowInShip = false;
 
         // From left to right - excluding extras at boundaries
         for (int x = 1; x < pointIndexMatrix.width - 1; ++x)
@@ -721,7 +749,7 @@ void ShipFactory::CreateShipElementInfos(
                 }
 
                 //
-                // Check if a spring exists
+                // Springs
                 //
 
                 // First four directions out of 8: from 0 deg (+x) through to 225 deg (-x -y),
@@ -759,22 +787,216 @@ void ShipFactory::CreateShipElementInfos(
                         // Add the spring to its endpoints
                         pointInfos1[pointIndex1].AddConnectedSpring1(springIndex1);
                         pointInfos1[otherEndpointIndex1].AddConnectedSpring1(springIndex1);
+                    }
+                }
 
+                //
+                // Triangles
+                //
 
-                        //
-                        // Check if a triangle exists
-                        // - If this is the first point that is in a ship, we check all the way up to W;
-                        // - Else, we check only up to S, so to avoid covering areas already covered by the triangulation
-                        //   at the previous point
-                        //
+                //              P
+                //  W (4) o --- * --- o  E (0)
+                //            / | \
+                //           /  |  \
+                //          /   |   \
+                //  SW (3) o    o    o SE (1)
+                //             S (2)
+                //
 
-                        // Check adjacent point in next CW direction
-                        int adjx2 = x + TessellationCircularOrderDirections[i + 1][0];
-                        int adjy2 = y + TessellationCircularOrderDirections[i + 1][1];
-                        if ((!isInShip || i < 2)
-                            && !!pointIndexMatrix[{adjx2, adjy2}])
+                // - If this is the first point in the row that is in a ship, we check from E CW all the way up to SW;
+                // - Else, we check only up to S, so to avoid covering areas already covered by the triangulation
+                //   at the previous point
+                //
+
+                //
+                // Quad: P - E - SE - S
+                //
+
+                auto const pointECoordinates = vec2i(x + TessellationCircularOrderDirections[0][0], y + TessellationCircularOrderDirections[0][1]);
+                auto const & pointE = pointIndexMatrix[pointECoordinates];
+                auto const pointSECoordinates = vec2i(x + TessellationCircularOrderDirections[1][0], y + TessellationCircularOrderDirections[1][1]);
+                auto const & pointSE = pointIndexMatrix[pointSECoordinates];
+                auto const pointSCoordinates = vec2i(x + TessellationCircularOrderDirections[2][0], y + TessellationCircularOrderDirections[2][1]);
+                auto const & pointS = pointIndexMatrix[pointSCoordinates];
+
+                if (pointE.has_value())
+                {
+                    if (pointSE.has_value())
+                    {
+                        if (pointS.has_value())
                         {
-                            // This point is adjacent to the first point at one of SE, S, SW, W
+                            //
+                            // We can choose if two triangles along P-SE diagonal, or two triangles along S-E diagonal;
+                            // we prioritize the one that is hull, so we honor hull edges for NPC floors (since floors
+                            // may only exist on hull springs)
+                            //
+
+                            bool const isP_SE_hull = pointInfos1[pointIndex1].StructuralMtl.IsHull && pointInfos1[*pointSE].StructuralMtl.IsHull;
+                            bool const isS_E_hull = pointInfos1[*pointS].StructuralMtl.IsHull && pointInfos1[*pointE].StructuralMtl.IsHull;
+
+                            if (isS_E_hull)
+                            {
+                                if (isP_SE_hull)
+                                {
+                                    // Both are hull - the one with the most "continuations" wins
+
+                                    // S-E
+                                    int seCount = 0;
+                                    // S.SW
+                                    auto contCoord = vec2i(pointSCoordinates.x + TessellationCircularOrderDirections[3][0], pointSCoordinates.y + TessellationCircularOrderDirections[3][1]);
+                                    if (pointIndexMatrix[contCoord].has_value()
+                                        && pointInfos1[*pointIndexMatrix[contCoord]].StructuralMtl.IsHull)
+                                        ++seCount;
+                                    // E.NE
+                                    contCoord = vec2i(pointECoordinates.x + TessellationCircularOrderDirections[7][0], pointECoordinates.y + TessellationCircularOrderDirections[7][1]);
+                                    if (pointIndexMatrix[contCoord].has_value()
+                                        && pointInfos1[*pointIndexMatrix[contCoord]].StructuralMtl.IsHull)
+                                        ++seCount;
+
+                                    // P-SE
+                                    int pseCount = 0;
+                                    // P.NW
+                                    contCoord = vec2i(x + TessellationCircularOrderDirections[5][0], y + TessellationCircularOrderDirections[5][1]);
+                                    if (pointIndexMatrix[contCoord].has_value()
+                                        && pointInfos1[*pointIndexMatrix[contCoord]].StructuralMtl.IsHull)
+                                        ++pseCount;
+                                    // SE.SE
+                                    contCoord = vec2i(pointSECoordinates.x + TessellationCircularOrderDirections[1][0], pointSECoordinates.y + TessellationCircularOrderDirections[1][1]);
+                                    if (pointIndexMatrix[contCoord].has_value()
+                                        && pointInfos1[*pointIndexMatrix[contCoord]].StructuralMtl.IsHull)
+                                        ++pseCount;
+
+                                    if (pseCount >= seCount)
+                                    {
+                                        // P - E - SE
+
+                                        //
+                                        // Create ShipFactoryTriangle
+                                        //
+
+                                        triangleInfos1.emplace_back(
+                                            std::array<ElementIndex, 3>( // Points are in CW order
+                                                {
+                                                    pointIndex1,
+                                                    *pointE,
+                                                    *pointSE
+                                                }));
+
+                                        // P - SE - S
+
+                                        //
+                                        // Create ShipFactoryTriangle
+                                        //
+
+                                        triangleInfos1.emplace_back(
+                                            std::array<ElementIndex, 3>( // Points are in CW order
+                                                {
+                                                    pointIndex1,
+                                                    *pointSE,
+                                                    *pointS
+                                                }));
+
+                                    }
+                                    else
+                                    {
+                                        // P - E - S
+
+                                        //
+                                        // Create ShipFactoryTriangle
+                                        //
+
+                                        triangleInfos1.emplace_back(
+                                            std::array<ElementIndex, 3>( // Points are in CW order
+                                                {
+                                                    pointIndex1,
+                                                    *pointE,
+                                                    *pointS
+                                                }));
+
+                                        // S - E - SE
+
+                                        //
+                                        // Create ShipFactoryTriangle
+                                        //
+
+                                        triangleInfos1.emplace_back(
+                                            std::array<ElementIndex, 3>( // Points are in CW order
+                                                {
+                                                    *pointS,
+                                                    *pointE,
+                                                    *pointSE
+                                                }));
+                                    }
+                                }
+                                else
+                                {
+                                    // Only S-E is hull
+
+                                    // P - E - S
+
+                                    //
+                                    // Create ShipFactoryTriangle
+                                    //
+
+                                    triangleInfos1.emplace_back(
+                                        std::array<ElementIndex, 3>( // Points are in CW order
+                                            {
+                                                pointIndex1,
+                                                *pointE,
+                                                *pointS
+                                            }));
+
+                                    // S - E - SE
+
+                                    //
+                                    // Create ShipFactoryTriangle
+                                    //
+
+                                    triangleInfos1.emplace_back(
+                                        std::array<ElementIndex, 3>( // Points are in CW order
+                                            {
+                                                *pointS,
+                                                *pointE,
+                                                *pointSE
+                                            }));
+                                }
+                            }
+                            else
+                            {
+                                // Only P-SE is hull or neither is hull; in the last case P-SE wins arbitrarily
+
+                                // P - E - SE
+
+                                //
+                                // Create ShipFactoryTriangle
+                                //
+
+                                triangleInfos1.emplace_back(
+                                    std::array<ElementIndex, 3>( // Points are in CW order
+                                        {
+                                            pointIndex1,
+                                            *pointE,
+                                            *pointSE
+                                        }));
+
+                                // P - SE - S
+
+                                //
+                                // Create ShipFactoryTriangle
+                                //
+
+                                triangleInfos1.emplace_back(
+                                    std::array<ElementIndex, 3>( // Points are in CW order
+                                        {
+                                            pointIndex1,
+                                            *pointSE,
+                                            *pointS
+                                        }));
+                            }
+                        }
+                        else
+                        {
+                            // P - E - SE
 
                             //
                             // Create ShipFactoryTriangle
@@ -784,40 +1006,71 @@ void ShipFactory::CreateShipElementInfos(
                                 std::array<ElementIndex, 3>( // Points are in CW order
                                     {
                                         pointIndex1,
-                                        otherEndpointIndex1,
-                                        *pointIndexMatrix[{adjx2, adjy2}]
+                                        *pointE,
+                                        *pointSE
                                     }));
                         }
+                    }
+                    else if (pointS.has_value())
+                    {
+                        // P - E - S
 
-                        // Now, we also want to check whether the single "irregular" triangle from this point exists,
-                        // i.e. the triangle between this point, the point at its E, and the point at its
-                        // S, in case there is no point at SE.
-                        // We do this so that we can forget the entire W side for inner points and yet ensure
-                        // full coverage of the area
-                        if (i == 0
-                            && !pointIndexMatrix[{x + TessellationCircularOrderDirections[1][0], y + TessellationCircularOrderDirections[1][1]}]
-                            && !!pointIndexMatrix[{x + TessellationCircularOrderDirections[2][0], y + TessellationCircularOrderDirections[2][1]}])
-                        {
-                            // If we're here, the point at E exists
-                            assert(!!pointIndexMatrix[vec2i(x + TessellationCircularOrderDirections[0][0], y + TessellationCircularOrderDirections[0][1])]);
+                        //
+                        // Create ShipFactoryTriangle
+                        //
 
-                            //
-                            // Create ShipFactoryTriangle
-                            //
+                        triangleInfos1.emplace_back(
+                            std::array<ElementIndex, 3>( // Points are in CW order
+                                {
+                                    pointIndex1,
+                                    *pointE,
+                                    *pointS
+                                }));
+                    }
+                }
+                else if (pointSE.has_value() && pointS.has_value())
+                {
+                    // P - SE - S
 
-                            triangleInfos1.emplace_back(
-                                std::array<ElementIndex, 3>( // Points are in CW order
-                                    {
-                                        pointIndex1,
-                                        * pointIndexMatrix[{x + TessellationCircularOrderDirections[0][0], y + TessellationCircularOrderDirections[0][1]}],
-                                        * pointIndexMatrix[{x + TessellationCircularOrderDirections[2][0], y + TessellationCircularOrderDirections[2][1]}]
-                                    }));
-                        }
+                    //
+                    // Create ShipFactoryTriangle
+                    //
+
+                    triangleInfos1.emplace_back(
+                        std::array<ElementIndex, 3>( // Points are in CW order
+                            {
+                                pointIndex1,
+                                *pointSE,
+                                *pointS
+                            }));
+                }
+
+                //
+                // Triangle: P - S - SW
+                //
+
+                if (!isRowInShip)
+                {
+                    auto const & pointSW = pointIndexMatrix[{x + TessellationCircularOrderDirections[3][0], y + TessellationCircularOrderDirections[3][1]}];
+
+                    if (pointS.has_value() && pointSW.has_value())
+                    {
+                        //
+                        // Create ShipFactoryTriangle
+                        //
+
+                        triangleInfos1.emplace_back(
+                            std::array<ElementIndex, 3>( // Points are in CW order
+                                {
+                                    pointIndex1,
+                                    *pointS,
+                                    *pointSW
+                                }));
                     }
                 }
 
                 // Remember now that we're in a ship
-                isInShip = true;
+                isRowInShip = true;
             }
             else
             {
@@ -826,7 +1079,7 @@ void ShipFactory::CreateShipElementInfos(
                 //
 
                 // From now on we're not in a ship anymore
-                isInShip = false;
+                isRowInShip = false;
             }
         }
     }
@@ -893,7 +1146,7 @@ ShipFactory::LayoutOptimizationResults ShipFactory::OptimizeLayout(
     std::vector<bool> springFlipMask(springInfos1.size(), false);
 
     // Build Point Pair (Old) -> Spring Index (Old) table
-    PointPairToIndexMap pointPair1ToSpringIndex1Map;
+    ShipFactoryPointPairToIndexMap pointPair1ToSpringIndex1Map;
     for (ElementIndex s = 0; s < springInfos1.size(); ++s)
     {
         pointPair1ToSpringIndex1Map.emplace(
@@ -906,24 +1159,24 @@ ShipFactory::LayoutOptimizationResults ShipFactory::OptimizeLayout(
     // 1. Find all "complete squares" from left-bottom
     //
     // A complete square looks like:
-    // 
+    //
     //  If A is "even":
-    // 
+    //
     //  D  C
     //  |\/|
     //  |/\|
     //  A  B
-    // 
+    //
     // Else (A is "odd"):
-    // 
+    //
     //  D--C
     //   \/
     //   /\
     //  A--B
-    // 
+    //
     // For each perfect square, we re-order springs and their endpoints of each spring so that:
     //  - The first two springs of the perfect square are the cross springs
-    //  - The endpoints A's of the cross springs are to be connected, and likewise 
+    //  - The endpoints A's of the cross springs are to be connected, and likewise
     //    the endpoint B's
     //
 
@@ -1204,7 +1457,7 @@ void ShipFactory::ConnectSpringsAndTriangles(
     // 1. Build Point Pair (Old) -> Spring (New) table
     //
 
-    PointPairToIndexMap pointPair1ToSpring2Map;
+    ShipFactoryPointPairToIndexMap pointPair1ToSpring2Map;
 
     for (ElementIndex s = 0; s < springInfos2.size(); ++s)
     {
@@ -1235,15 +1488,15 @@ void ShipFactory::ConnectSpringsAndTriangles(
 
             ElementIndex const springIndex2 = springIt->second;
 
-            // Tell this spring that it has this additional super triangle
-            springInfos2[springIndex2].SuperTriangles.push_back(t);
-            assert(springInfos2[springIndex2].SuperTriangles.size() <= 2);
+            // Tell this spring that it has this additional triangle
+            springInfos2[springIndex2].Triangles.push_back(t);
+            assert(springInfos2[springIndex2].Triangles.size() <= 2);
             ++(springInfos2[springIndex2].CoveringTrianglesCount);
             assert(springInfos2[springIndex2].CoveringTrianglesCount <= 2);
 
             // Tell the triangle about this sub spring
-            assert(!triangleInfos2[t].SubSprings2.contains(springIndex2));
-            triangleInfos2[t].SubSprings2.push_back(springIndex2);
+            assert(!triangleInfos2[t].Springs2.contains(springIndex2));
+            triangleInfos2[t].Springs2.push_back(springIndex2);
         }
     }
 
@@ -1266,7 +1519,7 @@ void ShipFactory::ConnectSpringsAndTriangles(
 
     for (ElementIndex s = 0; s < springInfos2.size(); ++s)
     {
-        if (2 == springInfos2[s].SuperTriangles.size())
+        if (2 == springInfos2[s].Triangles.size())
         {
             // This spring is the common edge between two triangles
             // (A-D above)
@@ -1276,7 +1529,7 @@ void ShipFactory::ConnectSpringsAndTriangles(
             //
 
             ElementIndex endpoint1Index = NoneElementIndex;
-            ShipFactoryTriangle & triangle1 = triangleInfos2[springInfos2[s].SuperTriangles[0]];
+            ShipFactoryTriangle & triangle1 = triangleInfos2[springInfos2[s].Triangles[0]];
             for (ElementIndex triangleVertex1 : triangle1.PointIndices1)
             {
                 if (triangleVertex1 != pointIndexRemap.NewToOld(springInfos2[s].PointAIndex)
@@ -1290,7 +1543,7 @@ void ShipFactory::ConnectSpringsAndTriangles(
             assert(NoneElementIndex != endpoint1Index);
 
             ElementIndex endpoint2Index = NoneElementIndex;
-            ShipFactoryTriangle & triangle2 = triangleInfos2[springInfos2[s].SuperTriangles[1]];
+            ShipFactoryTriangle & triangle2 = triangleInfos2[springInfos2[s].Triangles[1]];
             for (ElementIndex triangleVertex1 : triangle2.PointIndices1)
             {
                 if (triangleVertex1 != pointIndexRemap.NewToOld(springInfos2[s].PointAIndex)
@@ -1313,7 +1566,7 @@ void ShipFactory::ConnectSpringsAndTriangles(
             {
                 // We have a traverse spring
 
-                assert(0 == springInfos2[traverseSpringIt->second].SuperTriangles.size());
+                assert(0 == springInfos2[traverseSpringIt->second].Triangles.size());
 
                 // Tell the traverse spring that it has these 2 covering triangles
                 springInfos2[traverseSpringIt->second].CoveringTrianglesCount += 2;
@@ -1334,9 +1587,11 @@ std::vector<ShipFactoryFrontier> ShipFactory::CreateShipFrontiers(
     IndexRemap const & pointIndexRemap,
     std::vector<ShipFactoryPoint> const & pointInfos2,
     std::vector<ShipFactorySpring> const & springInfos2,
-    PointPairToIndexMap const & pointPairToSpringIndex1Map,
+    ShipFactoryPointPairToIndexMap const & pointPairToSpringIndex1Map,
     IndexRemap const & springIndexRemap)
 {
+    auto const startTime = GameChronometer::now();
+
     //
     // Detect and create frontiers
     //
@@ -1385,7 +1640,7 @@ std::vector<ShipFactoryFrontier> ShipFactory::CreateShipFrontiers(
                     else
                     {
                         ElementIndex const springIndex2 = springIndexRemap.OldToNew(springIndex1It->second);
-                        if (springInfos2[springIndex2].SuperTriangles.empty())
+                        if (springInfos2[springIndex2].Triangles.empty())
                         {
                             // No triangles along this spring
                             isInFrontierablePointsRegion = false;
@@ -1469,6 +1724,9 @@ std::vector<ShipFactoryFrontier> ShipFactory::CreateShipFrontiers(
         }
     }
 
+    LogMessage("ShipFactory: completed frontiers:",
+        " time=", std::chrono::duration_cast<std::chrono::microseconds>(GameChronometer::now() - startTime).count(), "us");
+
     return shipFactoryFrontiers;
 }
 
@@ -1479,7 +1737,7 @@ std::vector<ElementIndex> ShipFactory::PropagateFrontier(
     ShipFactoryPointIndexMatrix const & pointIndexMatrix,
     std::set<ElementIndex> & frontierEdges2,
     std::vector<ShipFactorySpring> const & springInfos2,
-    PointPairToIndexMap const & pointPairToSpringIndex1Map,
+    ShipFactoryPointPairToIndexMap const & pointPairToSpringIndex1Map,
     IndexRemap const & springIndexRemap)
 {
     std::vector<ElementIndex> edgeIndices;
@@ -1550,7 +1808,7 @@ std::vector<ElementIndex> ShipFactory::PropagateFrontier(
             }
 
             springIndex2 = springIndexRemap.OldToNew(springIndex1It->second);
-            if (springInfos2[springIndex2].SuperTriangles.size() != 1)
+            if (springInfos2[springIndex2].Triangles.size() != 1)
             {
                 // No triangles along this spring, or two triangles along it
                 continue;
@@ -1697,7 +1955,7 @@ Physics::Springs ShipFactory::CreateSprings(
             springInfos2[s].PointBIndex,
             springInfos2[s].PointAAngle,
             springInfos2[s].PointBAngle,
-            springInfos2[s].SuperTriangles,
+            springInfos2[s].Triangles,
             springInfos2[s].CoveringTrianglesCount,
             points);
 
@@ -1718,22 +1976,114 @@ Physics::Springs ShipFactory::CreateSprings(
 Physics::Triangles ShipFactory::CreateTriangles(
     std::vector<ShipFactoryTriangle> const & triangleInfos2,
     Physics::Points & points,
-    IndexRemap const & pointIndexRemap)
+    IndexRemap const & pointIndexRemap,
+    std::vector<ShipFactorySpring> const & springInfos2,
+    ShipFactoryFloorPlan const & floorPlan2)
 {
     Physics::Triangles triangles(static_cast<ElementIndex>(triangleInfos2.size()));
 
     for (ElementIndex t = 0; t < triangleInfos2.size(); ++t)
     {
-        assert(triangleInfos2[t].SubSprings2.size() == 3);
+        assert(triangleInfos2[t].Springs2.size() == 3);
+
+        // Derive whether this is a sealed triangle
+        bool isSealedTriangle = true;
+        for (int iEdge = 0; iEdge < 3; ++iEdge)
+        {
+            ElementIndex const springIndex2 = triangleInfos2[t].Springs2[iEdge];
+
+            ElementIndex const edgePointAIndex2 = springInfos2[springIndex2].PointAIndex;
+            ElementIndex const edgePointBIndex2 = springInfos2[springIndex2].PointBIndex;
+
+            isSealedTriangle = isSealedTriangle && (floorPlan2.find({ edgePointAIndex2, edgePointBIndex2 }) != floorPlan2.end());
+        }
+
+        // Calculate opposite triangles and floor types
+        std::array<std::pair<ElementIndex, int>, 3> subSpringsOppositeTriangle;
+        std::array<NpcFloorKindType, 3> subSpringsFloorKind;
+        std::array<NpcFloorGeometryType, 3> subSpringsFloorGeometry;
+        for (int iEdge = 0; iEdge < 3; ++iEdge)
+        {
+            ElementIndex const springIndex2 = triangleInfos2[t].Springs2[iEdge];
+            assert(springInfos2[springIndex2].Triangles.size() >= 1 && springInfos2[springIndex2].Triangles.size() <= 2);
+
+            if (springInfos2[springIndex2].Triangles[0] == t)
+            {
+                if (springInfos2[springIndex2].Triangles.size() >= 2)
+                {
+                    assert(springInfos2[springIndex2].Triangles.size() == 2);
+                    subSpringsOppositeTriangle[iEdge].first = springInfos2[springIndex2].Triangles[1];
+                }
+                else
+                {
+                    subSpringsOppositeTriangle[iEdge].first = NoneElementIndex;
+                }
+            }
+            else if (springInfos2[springIndex2].Triangles.size() >= 2)
+            {
+                assert(springInfos2[springIndex2].Triangles.size() == 2);
+                assert(springInfos2[springIndex2].Triangles[1] == t);
+                subSpringsOppositeTriangle[iEdge].first = springInfos2[springIndex2].Triangles[0];
+            }
+            else
+            {
+                subSpringsOppositeTriangle[iEdge].first = NoneElementIndex;
+            }
+
+            if (subSpringsOppositeTriangle[iEdge].first != NoneElementIndex)
+            {
+                if (triangleInfos2[subSpringsOppositeTriangle[iEdge].first].Springs2[0] == triangleInfos2[t].Springs2[iEdge])
+                {
+                    subSpringsOppositeTriangle[iEdge].second = 0;
+                }
+                else if (triangleInfos2[subSpringsOppositeTriangle[iEdge].first].Springs2[1] == triangleInfos2[t].Springs2[iEdge])
+                {
+                    subSpringsOppositeTriangle[iEdge].second = 1;
+                }
+                else
+                {
+                    assert(triangleInfos2[subSpringsOppositeTriangle[iEdge].first].Springs2[2] == triangleInfos2[t].Springs2[iEdge]);
+                    subSpringsOppositeTriangle[iEdge].second = 2;
+                }
+            }
+
+            //
+            // Triangle's subedge is floor if:
+            //  - Spring is floor, AND
+            //  - NOT is sealed, OR (is sealed and) there's no triangle on the other side of this subedge
+            //
+
+            ElementIndex const edgePointAIndex2 = springInfos2[springIndex2].PointAIndex;
+            ElementIndex const edgePointBIndex2 = springInfos2[springIndex2].PointBIndex;
+
+            if (const auto floorIt = floorPlan2.find({ edgePointAIndex2, edgePointBIndex2 });
+                floorIt != floorPlan2.cend()
+                && (!isSealedTriangle || subSpringsOppositeTriangle[iEdge].first == NoneElementIndex))
+            {
+                subSpringsFloorKind[iEdge] = floorIt->second.FloorKind;
+                subSpringsFloorGeometry[iEdge] = floorIt->second.FloorGeometry;
+            }
+            else
+            {
+                subSpringsFloorKind[iEdge] = NpcFloorKindType::NotAFloor;
+                subSpringsFloorGeometry[iEdge] = NpcFloorGeometryType::NotAFloor;
+            }
+        }
 
         // Create triangle
         triangles.Add(
             pointIndexRemap.OldToNew(triangleInfos2[t].PointIndices1[0]),
             pointIndexRemap.OldToNew(triangleInfos2[t].PointIndices1[1]),
             pointIndexRemap.OldToNew(triangleInfos2[t].PointIndices1[2]),
-            triangleInfos2[t].SubSprings2[0],
-            triangleInfos2[t].SubSprings2[1],
-            triangleInfos2[t].SubSprings2[2],
+            triangleInfos2[t].Springs2[0],
+            triangleInfos2[t].Springs2[1],
+            triangleInfos2[t].Springs2[2],
+            { subSpringsOppositeTriangle[0].first, subSpringsOppositeTriangle[0].second },
+            { subSpringsOppositeTriangle[1].first, subSpringsOppositeTriangle[1].second },
+            { subSpringsOppositeTriangle[2].first, subSpringsOppositeTriangle[2].second },
+            { subSpringsFloorKind[0], subSpringsFloorGeometry[0] },
+            { subSpringsFloorKind[1], subSpringsFloorGeometry[1] },
+            { subSpringsFloorKind[2], subSpringsFloorGeometry[2] },
             triangleInfos2[t].CoveredTraverseSpringIndex2);
 
         // Add triangle to its endpoints
@@ -1917,11 +2267,7 @@ void ShipFactory::VerifyShipInvariants(
 
     for (auto t : triangles)
     {
-        auto const pa = points.GetPosition(triangles.GetPointAIndex(t));
-        auto const pb = points.GetPosition(triangles.GetPointBIndex(t));
-        auto const pc = points.GetPosition(triangles.GetPointCIndex(t));
-
-        Verify((pb.x - pa.x) * (pc.y - pa.y) - (pc.x - pa.x) * (pb.y - pa.y) < 0);
+        Verify(triangles.AreVerticesInCwOrder(t, points));
     }
 }
 #endif

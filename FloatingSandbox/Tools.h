@@ -20,8 +20,10 @@
 #include <cassert>
 #include <chrono>
 #include <cmath>
+#include <cstdint>
 #include <memory>
 #include <optional>
+#include <sstream>
 #include <vector>
 
 struct IToolCursorManager
@@ -29,7 +31,7 @@ struct IToolCursorManager
     virtual void SetToolCursor(wxImage const & basisImage, float strength = 0.0f) = 0;
 };
 
-enum class ToolType
+enum class ToolType : std::uint32_t
 {
     Move = 0,
     MoveAll,
@@ -54,10 +56,20 @@ enum class ToolType
     ThanosSnap,
     ScareFish,
     PhysicsProbe,
-    BlastTool,
-    ElectricSparkTool,
-    WindMakerTool,
-    LaserCannonTool
+    Blast,
+    ElectricSpark,
+    WindMaker,
+    LaserCannon,
+    Lamp,
+    // NPC tools below
+    PlaceFurnitureNpc,
+    PlaceHumanNpc,
+    MoveNpc,
+    RemoveNpc,
+    TurnaroundNpc,
+    FollowNpc,
+
+    _FirstNpcTool = PlaceFurnitureNpc
 };
 
 struct InputState
@@ -85,7 +97,7 @@ class Tool
 {
 public:
 
-    virtual ~Tool() {}
+    virtual ~Tool() = default;
 
     ToolType GetToolType() const { return mToolType; }
 
@@ -641,7 +653,7 @@ private:
     wxImage const mRotateDownCursorImage;
 };
 
-class MoveTool final : public BaseMoveTool<ElementId>
+class MoveTool final : public BaseMoveTool<GlobalConnectedComponentId>
 {
 public:
 
@@ -791,14 +803,14 @@ private:
 
     struct EngagementState
     {
-        ElementId PickedParticle;
+        GlobalElementId PickedParticle;
         vec2f CurrentScreenPosition;
         vec2f TargetScreenPosition;
         vec2f LastScreenPosition;
         float CurrentConvergenceSpeed;
 
         EngagementState(
-            ElementId pickedParticle,
+            GlobalElementId pickedParticle,
             vec2f startScreenPosition)
             : PickedParticle(pickedParticle)
             , CurrentScreenPosition(startScreenPosition)
@@ -1900,7 +1912,7 @@ public:
 
 public:
 
-    void Initialize(InputState const & inputState) override 
+    void Initialize(InputState const & inputState) override
     {
         mIsEngaged = false;
         SetCurrentCursor(inputState);
@@ -1915,7 +1927,7 @@ public:
     }
 
     void UpdateSimulation(
-        InputState const & inputState, 
+        InputState const & inputState,
         float /*currentSimulationTime*/) override
     {
         int constexpr PointerRadius = 0; // On PC we do not simulate a pointer size
@@ -1988,20 +2000,13 @@ public:
 
 public:
 
-    void Initialize(InputState const & inputState) override
+    void Initialize(InputState const & /*inputState*/) override
     {
         mCurrentCursor = nullptr;
 
-        if (inputState.IsLeftMouseDown)
-        {
-            mCurrentTrajectoryPreviousWorldPosition = mGameController.ScreenToWorld(inputState.MousePosition);
-            SetCurrentCursor(&mDownCursorImage);
-        }
-        else
-        {
-            mCurrentTrajectoryPreviousWorldPosition.reset();
-            SetCurrentCursor(&mUpCursorImage);
-        }
+        mEngagementData.reset();
+
+        SetCurrentCursor(&mUpCursorImage);
     }
 
     void Deinitialize() override
@@ -2012,46 +2017,146 @@ public:
     {
         if (inputState.IsLeftMouseDown)
         {
-            vec2f const mouseWorldPosition = mGameController.ScreenToWorld(inputState.MousePosition);
-
-            if (!mCurrentTrajectoryPreviousWorldPosition)
+            if (!mEngagementData)
             {
-                mCurrentTrajectoryPreviousWorldPosition = mouseWorldPosition;
+                // Init engagement
+
+                if (inputState.IsShiftKeyDown)
+                {
+                    mEngagementData.emplace(
+                        EngagementData::ToolModeType::LineGuide,
+                        EngagementData::ToolModeSpecificStateType(
+                            EngagementData::ToolModeSpecificStateType::LineGuideStateType(
+                                inputState.MousePosition)));
+                }
+                else
+                {
+                    mEngagementData.emplace(
+                        EngagementData::ToolModeType::Immediate,
+                        EngagementData::ToolModeSpecificStateType(
+                            EngagementData::ToolModeSpecificStateType::ImmediateStateType(
+                                mGameController.ScreenToWorld(inputState.MousePosition))));
+                }
             }
 
-            vec2f const targetPosition = inputState.IsShiftKeyDown
-                ? vec2f(mouseWorldPosition.x, mCurrentTrajectoryPreviousWorldPosition->y)
-                : mouseWorldPosition;
+            assert(mEngagementData);
 
-            auto const isAdjusted = mGameController.AdjustOceanFloorTo(
-                *mCurrentTrajectoryPreviousWorldPosition,
-                targetPosition);
-
-            if (isAdjusted.has_value())
+            switch (mEngagementData->ToolMode)
             {
-                // Adjusted, eventually idempotent
-                if (*isAdjusted)
+                case EngagementData::ToolModeType::Immediate:
                 {
-                    mSoundController.PlayTerrainAdjustSound();
+                    vec2f const mouseWorldPosition = mGameController.ScreenToWorld(inputState.MousePosition);
+
+                    vec2f const targetPosition = inputState.IsShiftKeyDown
+                        ? vec2f(mouseWorldPosition.x, mEngagementData->State.ImmediateState.CurrentTrajectoryPreviousWorldPosition.y)
+                        : mouseWorldPosition;
+
+                    auto const isAdjusted = mGameController.AdjustOceanFloorTo(
+                        mEngagementData->State.ImmediateState.CurrentTrajectoryPreviousWorldPosition,
+                        targetPosition);
+
+                    if (isAdjusted.has_value())
+                    {
+                        // Adjusted, eventually idempotent
+                        if (*isAdjusted)
+                        {
+                            mSoundController.PlayTerrainAdjustSound();
+                        }
+
+                        SetCurrentCursor(&mDownCursorImage);
+                    }
+                    else
+                    {
+                        // No adjustment
+                        mSoundController.PlayErrorSound();
+                        SetCurrentCursor(&mErrorCursorImage);
+                    }
+
+                    // Remember this coordinate as the starting point of the
+                    // next stride
+                    mEngagementData->State.ImmediateState.CurrentTrajectoryPreviousWorldPosition = targetPosition;
+
+                    break;
                 }
 
-                SetCurrentCursor(&mDownCursorImage);
-            }
-            else
-            {
-                // No adjustment
-                mSoundController.PlayErrorSound();
-                SetCurrentCursor(&mErrorCursorImage);
-            }
+                case EngagementData::ToolModeType::LineGuide:
+                {
+                    DisplayLogicalCoordinates const & start = mEngagementData->State.LineGuideState.Start;
+                    DisplayLogicalCoordinates end = CalculateEndMousePosition(
+                        start,
+                        inputState);
 
-            // Remember this coordinate as the starting point of the
-            // next stride
-            mCurrentTrajectoryPreviousWorldPosition = targetPosition;
+                    // Draw guide
+                    mGameController.SetLineGuide(
+                        start,
+                        end);
+
+                    // Display angle
+
+                    int lineAngle = static_cast<int>(std::roundf((end - start).ToFloat().angleCw() / (2.0f * Pi<float>) * 360.0f));
+                    if (lineAngle > 90)
+                    {
+                        lineAngle = 180 - lineAngle;
+                    }
+                    else if (lineAngle < -90)
+                    {
+                        lineAngle = -180 - lineAngle;
+                    }
+
+                    if (lineAngle != mEngagementData->State.LineGuideState.LastDisplayedAngle)
+                    {
+                        std::ostringstream ss;
+                        ss << lineAngle << "'";
+                        mGameController.DisplayEphemeralTextLine(ss.str());
+
+                        mEngagementData->State.LineGuideState.LastDisplayedAngle = lineAngle;
+                    }
+
+                    SetCurrentCursor(&mDownCursorImage);
+
+                    break;
+                }
+            }
         }
         else
         {
-            mCurrentTrajectoryPreviousWorldPosition.reset();
-            SetCurrentCursor(&mUpCursorImage);
+            if (mEngagementData)
+            {
+                if (mEngagementData->ToolMode == EngagementData::ToolModeType::LineGuide)
+                {
+                    // Finalize
+
+                    vec2f const worldStart = mGameController.ScreenToWorld(mEngagementData->State.LineGuideState.Start);
+                    vec2f const worldEnd = mGameController.ScreenToWorld(
+                        CalculateEndMousePosition(
+                            mEngagementData->State.LineGuideState.Start,
+                            inputState));
+
+                    auto const isAdjusted = mGameController.AdjustOceanFloorTo(worldStart, worldEnd);
+                    if (isAdjusted.has_value())
+                    {
+                        // Adjusted, eventually idempotent
+                        if (*isAdjusted)
+                        {
+                            mSoundController.PlayTerrainAdjustSound();
+                        }
+
+                        SetCurrentCursor(&mUpCursorImage);
+                    }
+                    else
+                    {
+                        // No adjustment
+                        mSoundController.PlayErrorSound();
+                        SetCurrentCursor(&mErrorCursorImage);
+                    }
+                }
+
+                mEngagementData.reset();
+            }
+            else
+            {
+                SetCurrentCursor(&mUpCursorImage);
+            }
         }
     }
 
@@ -2072,8 +2177,76 @@ private:
         }
     }
 
+    DisplayLogicalCoordinates CalculateEndMousePosition(
+        DisplayLogicalCoordinates const & startPosition,
+        InputState const & inputState) const
+    {
+        DisplayLogicalCoordinates end = inputState.MousePosition;
+        if (inputState.IsShiftKeyDown)
+        {
+            // Snap to horizontal if angle small enough
+            if (std::abs(end.y - startPosition.y) < 20)
+            {
+                end.y = startPosition.y;
+            }
+        }
+
+        return end;
+    }
+
+    struct EngagementData
+    {
+        enum class ToolModeType
+        {
+            Immediate,
+            LineGuide
+        };
+
+        ToolModeType ToolMode;
+
+        union ToolModeSpecificStateType
+        {
+            struct ImmediateStateType final
+            {
+                vec2f CurrentTrajectoryPreviousWorldPosition;
+
+                explicit ImmediateStateType(vec2f const & currentTrajectoryPreviousWorldPosition)
+                    : CurrentTrajectoryPreviousWorldPosition(currentTrajectoryPreviousWorldPosition)
+                {}
+            } ImmediateState;
+
+            struct LineGuideStateType final
+            {
+                DisplayLogicalCoordinates const Start;
+                std::optional<int> LastDisplayedAngle;
+
+                explicit LineGuideStateType(DisplayLogicalCoordinates const & start)
+                    : Start(start)
+                    , LastDisplayedAngle()
+                {}
+            } LineGuideState;
+
+            explicit ToolModeSpecificStateType(ImmediateStateType && state)
+                : ImmediateState(state)
+            {}
+
+            explicit ToolModeSpecificStateType(LineGuideStateType && state)
+                : LineGuideState(state)
+            {}
+        };
+
+        ToolModeSpecificStateType State;
+
+        EngagementData(
+            ToolModeType toolMode,
+            ToolModeSpecificStateType state)
+            : ToolMode(toolMode)
+            , State(state)
+        { }
+    };
+
     // Our state
-    std::optional<vec2f> mCurrentTrajectoryPreviousWorldPosition; // When set, indicates it's engaged
+    std::optional<EngagementData> mEngagementData;
 
     // The cursors
     wxImage const * mCurrentCursor; // To track cursor changes
@@ -3265,7 +3438,7 @@ public:
 
     void OnLeftMouseUp(InputState const & /*inputState*/) override {}
 
-    void OnShiftKeyDown(InputState const & /*inputState*/) override 
+    void OnShiftKeyDown(InputState const & /*inputState*/) override
     {
         if (mEngagementData.has_value()
             && mEngagementData->CurrentState != EngagementData::StateType::TearDown)
@@ -3497,3 +3670,562 @@ private:
     wxImage const mUpCursorImage;
     wxImage const mDownCursorImage;
 };
+
+class LampTool final : public Tool
+{
+public:
+
+    LampTool(
+        IToolCursorManager & toolCursorManager,
+        IGameController & gameController,
+        SoundController & soundController,
+        ResourceLocator const & resourceLocator);
+
+public:
+
+    void Initialize(InputState const & /*inputState*/) override
+    {
+        mToolCursorManager.SetToolCursor(mUpCursorImage);
+    }
+
+    void Deinitialize() override
+    {
+        mGameController.ResetLamp(); // Assuming it's idempotent
+    }
+
+    void UpdateSimulation(InputState const & /*inputState*/, float /*currentSimulationTime*/) override
+    {}
+
+    void OnMouseMove(InputState const & inputState) override
+    {
+        if (inputState.IsLeftMouseDown)
+        {
+            SetLamp(inputState);
+        }
+    }
+
+    void OnLeftMouseDown(InputState const & inputState) override
+    {
+        SetLamp(inputState);
+
+        mToolCursorManager.SetToolCursor(mDownCursorImage);
+    }
+
+    void OnLeftMouseUp(InputState const & /*inputState*/) override
+    {
+        mGameController.ResetLamp();
+
+        mToolCursorManager.SetToolCursor(mUpCursorImage);
+    }
+
+    void OnShiftKeyDown(InputState const & inputState) override
+    {
+        if (inputState.IsLeftMouseDown)
+        {
+            SetLamp(inputState);
+        }
+    }
+
+    void OnShiftKeyUp(InputState const & inputState) override
+    {
+        if (inputState.IsLeftMouseDown)
+        {
+            SetLamp(inputState);
+        }
+    }
+
+private:
+
+    void SetLamp(InputState const & inputState)
+    {
+        float const radiusScreenFraction = inputState.IsShiftKeyDown
+            ? 1.0f / 2.5f
+            : 1.0f / 6.0f;
+
+        mGameController.SetLampAt(inputState.MousePosition, radiusScreenFraction);
+    }
+
+    // The cursors
+    wxImage const mUpCursorImage;
+    wxImage const mDownCursorImage;
+};
+
+/////////////////////////////////////////////
+
+class PlaceNpcToolBase : public Tool
+{
+    //
+    // State machine:
+    //  - Clean:
+    //      - ButtonDown: BeginPlaceNewHumanNpc; -> Error or -> Engaged
+    //  - Error:
+    //      - ButtonUp: -> Clean
+    //  - Engaged:
+    //      - MouseMove: Move;
+    //      - ButtonUp: Confirm; -> Clean
+    //      - Reset: Abort;
+    //
+
+public:
+
+    PlaceNpcToolBase(
+        ToolType toolType,
+        IToolCursorManager & toolCursorManager,
+        IGameController & gameController,
+        SoundController & soundController,
+        ResourceLocator const & resourceLocator);
+
+public:
+
+    virtual void Initialize(InputState const & /*inputState*/) override
+    {
+        mCurrentEngagementState.reset();
+
+        // Set cursor
+        SetCurrentCursor();
+    }
+
+    virtual void Deinitialize() override
+    {
+        if (mCurrentEngagementState.has_value()
+            && mCurrentEngagementState->Npc.has_value())
+        {
+            // Abort
+            mGameController.AbortNewNpc(mCurrentEngagementState->Npc->Id);
+        }
+    }
+
+    void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
+    {
+        if (!mCurrentEngagementState.has_value())
+        {
+            // Clean
+
+            if (inputState.IsLeftMouseDown)
+            {
+                // -> Error or -> Engaged
+                auto result = InternalBeginPlaceNewNpc(inputState.MousePosition, inputState.IsShiftKeyDown);
+                mCurrentEngagementState.emplace(result);
+                SetCurrentCursor();
+
+                // Notify error
+                if (!result.has_value())
+                {
+                    mSoundController.PlayErrorSound();
+                }
+            }
+        }
+        else if (!mCurrentEngagementState->Npc.has_value())
+        {
+            // Error
+
+            if (!inputState.IsLeftMouseDown)
+            {
+                // -> Clean
+                mCurrentEngagementState.reset();
+                SetCurrentCursor();
+            }
+        }
+        else
+        {
+            // Engaged
+
+            if (!inputState.IsLeftMouseDown)
+            {
+                // Confirm
+                mGameController.CompleteNewNpc(mCurrentEngagementState->Npc->Id);
+
+                // -> Clean
+                mCurrentEngagementState.reset();
+                SetCurrentCursor();
+            }
+            else
+            {
+                // Move
+                mGameController.MoveNpcTo(
+                    mCurrentEngagementState->Npc->Id,
+                    inputState.MousePosition,
+                    mCurrentEngagementState->Npc->WorldOffset,
+                    inputState.IsShiftKeyDown);
+            }
+        }
+    }
+
+    void OnMouseMove(InputState const & /*inputState*/) override {}
+    void OnLeftMouseDown(InputState const & /*inputState*/) override {}
+    void OnLeftMouseUp(InputState const & /*inputState*/) override {}
+    void OnShiftKeyDown(InputState const & /*inputState*/) override {}
+    void OnShiftKeyUp(InputState const & /*inputState*/) override {}
+
+protected:
+
+    virtual std::optional<PickedNpc> InternalBeginPlaceNewNpc(
+        DisplayLogicalCoordinates const & screenCoordinates,
+        bool doMoveWholeMesh) = 0;
+
+private:
+
+    void SetCurrentCursor()
+    {
+        if (mCurrentEngagementState.has_value())
+        {
+            if (mCurrentEngagementState->Npc.has_value())
+            {
+                mToolCursorManager.SetToolCursor(mClosedCursorImage);
+            }
+            else
+            {
+                mToolCursorManager.SetToolCursor(mErrorCursorImage);
+            }
+        }
+        else
+        {
+            mToolCursorManager.SetToolCursor(mOpenCursorImage);
+        }
+    }
+
+    // Our state
+
+    struct EngagementState
+    {
+        std::optional<PickedNpc> Npc; // When not set, we're in error mode
+
+        explicit EngagementState(std::optional<PickedNpc> npc)
+            : Npc(npc)
+        {}
+    };
+
+    std::optional<EngagementState> mCurrentEngagementState; // When set, indicates it's engaged
+
+    // The cursors
+    wxImage const mClosedCursorImage;
+    wxImage const mOpenCursorImage;
+    wxImage const mErrorCursorImage;
+};
+
+class PlaceFurnitureNpcTool final : public PlaceNpcToolBase
+{
+public:
+
+    PlaceFurnitureNpcTool(
+        IToolCursorManager & toolCursorManager,
+        IGameController & gameController,
+        SoundController & soundController,
+        ResourceLocator const & resourceLocator);
+
+    NpcSubKindIdType GetKind() const
+    {
+        return mKind;
+    }
+
+    void SetKind(NpcSubKindIdType kind)
+    {
+        mKind = kind;
+    }
+
+protected:
+
+    std::optional<PickedNpc> InternalBeginPlaceNewNpc(
+        DisplayLogicalCoordinates const & screenCoordinates,
+        bool doMoveWholeMesh) override
+    {
+        return mGameController.BeginPlaceNewFurnitureNpc(
+            mKind,
+            screenCoordinates,
+            doMoveWholeMesh);
+    }
+
+private:
+
+    NpcSubKindIdType mKind;
+};
+
+class PlaceHumanNpcTool final : public PlaceNpcToolBase
+{
+public:
+
+    PlaceHumanNpcTool(
+        IToolCursorManager & toolCursorManager,
+        IGameController & gameController,
+        SoundController & soundController,
+        ResourceLocator const & resourceLocator);
+
+    NpcSubKindIdType GetKind() const
+    {
+        return mKind;
+    }
+
+    void SetKind(NpcSubKindIdType kind)
+    {
+        mKind = kind;
+    }
+
+protected:
+
+    std::optional<PickedNpc> InternalBeginPlaceNewNpc(
+        DisplayLogicalCoordinates const & screenCoordinates,
+        bool doMoveWholeMesh) override
+    {
+        return mGameController.BeginPlaceNewHumanNpc(
+            mKind,
+            screenCoordinates,
+            doMoveWholeMesh);
+    }
+
+private:
+
+    NpcSubKindIdType mKind;
+};
+
+class BaseSelectNpcTool : public Tool
+{
+public:
+
+    BaseSelectNpcTool(
+        ToolType toolType,
+        IToolCursorManager & toolCursorManager,
+        IGameController & gameController,
+        SoundController & soundController,
+        std::optional<NpcKindType> applicableKind,
+        wxImage && downCursorImage,
+        wxImage && upCursorImage);
+
+public:
+
+    virtual void Initialize(InputState const & inputState) override
+    {
+        SetCurrentCursor(inputState.IsLeftMouseDown);
+    }
+
+    virtual void Deinitialize() override
+    {
+        mGameController.HighlightNpc(std::nullopt);
+    }
+
+    virtual void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
+    {
+        mGameController.HighlightNpc(std::nullopt);
+
+        auto const probeOutcome = mGameController.ProbeNpcAt(inputState.MousePosition);
+        if (probeOutcome
+            && (!mApplicableKind.has_value() || mGameController.GetNpcKind(probeOutcome->Id) == *mApplicableKind))
+        {
+            mGameController.HighlightNpc(probeOutcome->Id);
+        }
+    }
+
+protected:
+
+    void SetCurrentCursor(bool isMouseDown)
+    {
+        if (isMouseDown)
+        {
+            mToolCursorManager.SetToolCursor(mDownCursorImage);
+        }
+        else
+        {
+            mToolCursorManager.SetToolCursor(mUpCursorImage);
+        }
+    }
+
+private:
+
+    // The kind we apply to (if any)
+    std::optional<NpcKindType> const mApplicableKind;
+
+    // The cursors
+    wxImage const mDownCursorImage;
+    wxImage const mUpCursorImage;
+};
+
+class MoveNpcTool final : public BaseSelectNpcTool
+{
+public:
+
+    MoveNpcTool(
+        IToolCursorManager & toolCursorManager,
+        IGameController & gameController,
+        SoundController & soundController,
+        ResourceLocator const & resourceLocator);
+
+public:
+
+    virtual void Initialize(InputState const & inputState) override
+    {
+        mBeingMovedNpc.reset();
+
+        BaseSelectNpcTool::Initialize(inputState);
+    }
+
+    void OnLeftMouseDown(InputState const & inputState) override
+    {
+        auto const probeOutcome = mGameController.ProbeNpcAt(inputState.MousePosition);
+        if (probeOutcome)
+        {
+            mBeingMovedNpc = probeOutcome;
+            mGameController.BeginMoveNpc(
+                mBeingMovedNpc->Id,
+                mBeingMovedNpc->ParticleOrdinal,
+                inputState.IsShiftKeyDown);
+        }
+
+        SetCurrentCursor(true);
+    }
+
+    void OnLeftMouseUp(InputState const & /*inputState*/) override
+    {
+        if (mBeingMovedNpc.has_value())
+        {
+            mGameController.EndMoveNpc(mBeingMovedNpc->Id);
+            mBeingMovedNpc.reset();
+        }
+
+        SetCurrentCursor(false);
+    }
+
+    void OnMouseMove(InputState const & inputState) override
+    {
+        if (mBeingMovedNpc.has_value())
+        {
+            MoveNpc(inputState);
+        }
+    }
+
+    void OnShiftKeyDown(InputState const & inputState) override
+    {
+        // Refresh shift state
+        if (mBeingMovedNpc.has_value())
+        {
+            MoveNpc(inputState);
+        }
+    }
+
+    void OnShiftKeyUp(InputState const & inputState) override
+    {
+        // Refresh shift state
+        if (mBeingMovedNpc.has_value())
+        {
+            MoveNpc(inputState);
+        }
+    }
+
+private:
+
+    void MoveNpc(InputState const & inputState)
+    {
+        mGameController.MoveNpcTo(
+            mBeingMovedNpc->Id,
+            inputState.MousePosition,
+            mBeingMovedNpc->WorldOffset,
+            inputState.IsShiftKeyDown);
+    }
+
+    // Our state
+    std::optional<PickedNpc> mBeingMovedNpc;
+};
+
+class RemoveNpcTool final : public BaseSelectNpcTool
+{
+public:
+
+    RemoveNpcTool(
+        IToolCursorManager & toolCursorManager,
+        IGameController & gameController,
+        SoundController & soundController,
+        ResourceLocator const & resourceLocator);
+
+public:
+
+    void OnLeftMouseDown(InputState const & inputState) override
+    {
+        auto const probeOutcome = mGameController.ProbeNpcAt(inputState.MousePosition);
+        if (probeOutcome)
+        {
+            mGameController.RemoveNpc(probeOutcome->Id);
+        }
+
+        SetCurrentCursor(true);
+    }
+
+    void OnLeftMouseUp(InputState const & /*inputState*/) override
+    {
+        SetCurrentCursor(false);
+    }
+
+    void OnMouseMove(InputState const & /*inputState*/) override {}
+    void OnShiftKeyDown(InputState const & /*inputState*/) override {}
+    void OnShiftKeyUp(InputState const & /*inputState*/) override {}
+};
+
+class TurnaroundNpcTool final : public BaseSelectNpcTool
+{
+public:
+
+    TurnaroundNpcTool(
+        IToolCursorManager & toolCursorManager,
+        IGameController & gameController,
+        SoundController & soundController,
+        ResourceLocator const & resourceLocator);
+
+public:
+
+    void OnLeftMouseDown(InputState const & inputState) override
+    {
+        auto const probeOutcome = mGameController.ProbeNpcAt(inputState.MousePosition);
+        if (probeOutcome.has_value())
+        {
+            mGameController.TurnaroundNpc(probeOutcome->Id);
+        }
+
+        SetCurrentCursor(true);
+    }
+
+    void OnLeftMouseUp(InputState const & /*inputState*/) override
+    {
+        SetCurrentCursor(false);
+    }
+
+    void OnMouseMove(InputState const & /*inputState*/) override {}
+    void OnShiftKeyDown(InputState const & /*inputState*/) override {}
+    void OnShiftKeyUp(InputState const & /*inputState*/) override {}
+};
+
+class FollowNpcTool final : public BaseSelectNpcTool
+{
+public:
+
+    FollowNpcTool(
+        IToolCursorManager & toolCursorManager,
+        IGameController & gameController,
+        SoundController & soundController,
+        ResourceLocator const & resourceLocator);
+
+public:
+
+    void OnLeftMouseDown(InputState const & inputState) override
+    {
+        auto const probeOutcome = mGameController.ProbeNpcAt(inputState.MousePosition);
+        if (probeOutcome)
+        {
+            mGameController.SelectNpc(probeOutcome->Id);
+            mGameController.SetAutoFocusTarget(AutoFocusTargetKindType::SelectedNpc);
+        }
+        else
+        {
+            // Remove selection
+            mGameController.SelectNpc(std::nullopt);
+        }
+
+        SetCurrentCursor(true);
+    }
+
+    void OnLeftMouseUp(InputState const & /*inputState*/) override
+    {
+        SetCurrentCursor(false);
+    }
+
+    void OnMouseMove(InputState const & /*inputState*/) override {}
+    void OnShiftKeyDown(InputState const & /*inputState*/) override {}
+    void OnShiftKeyUp(InputState const & /*inputState*/) override {}
+};
+

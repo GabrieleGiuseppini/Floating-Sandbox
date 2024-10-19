@@ -5,6 +5,8 @@
  ***************************************************************************************/
 #include "Materials.h"
 
+#include "GameParameters.h"
+
 #include <GameCore/Utils.h>
 
 #include <sstream>
@@ -38,9 +40,12 @@ StructuralMaterial StructuralMaterial::Create(
         picojson::object massJson = Utils::GetMandatoryJsonObject(structuralMaterialJson, "mass");
         float const nominalMass = Utils::GetMandatoryJsonMember<float>(massJson, "nominal_mass");
         float const density = Utils::GetMandatoryJsonMember<float>(massJson, "density");
-        float const buoyancyVolumeFill = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "buoyancy_volume_fill");
+        float const buoyancyVolumeFill = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "buoyancy_volume_fill", 1.0f);
         float const stiffness = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "stiffness", 1.0);
         float const strainThresholdFraction = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "strain_threshold_fraction", 0.5f);
+        float const elasticityCoefficient = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "elasticity_coefficient", 0.5f);
+        float const kineticFrictionCoefficient = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "friction_kinetic_coefficient", 0.25f);
+        float const staticFrictionCoefficient = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "friction_static_coefficient", 0.25f);
 
         std::optional<MaterialUniqueType> uniqueType;
         {
@@ -67,17 +72,17 @@ StructuralMaterial StructuralMaterial::Create(
 
         bool const isHull = Utils::GetMandatoryJsonMember<bool>(structuralMaterialJson, "is_hull");
         float const waterIntake = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "water_intake", 1.0);
-        float const waterDiffusionSpeed = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "water_diffusion_speed");
-        float const waterRetention = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "water_retention");
+        float const waterDiffusionSpeed = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "water_diffusion_speed", 0.5f);
+        float const waterRetention = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "water_retention", 0.05f);
         float const rustReceptivity = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "rust_receptivity", 1.0);
 
         // Heat
 
         float const ignitionTemperature = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "ignition_temperature");
         float const meltingTemperature = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "melting_temperature");
-        float const thermalConductivity = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "thermal_conductivity");
+        float const thermalConductivity = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "thermal_conductivity", 50.0f);
         float const thermalExpansionCoefficient = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "thermal_expansion_coefficient", 0.0);
-        float const specificHeat = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "specific_heat");
+        float const specificHeat = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "specific_heat", 100.0f);
         MaterialCombustionType const combustionType = StrToMaterialCombustionType(Utils::GetMandatoryJsonMember<std::string>(structuralMaterialJson, "combustion_type"));
         float const explosiveCombustionRadius = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "explosive_combustion_radius", 0.0);
         float const explosiveCombustionStrength = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "explosive_combustion_strength", 1.0);
@@ -87,16 +92,17 @@ StructuralMaterial StructuralMaterial::Create(
         float const windReceptivity = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "wind_receptivity");
         float const waterReactivity = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "water_reactivity", 0.0f);
         bool isLegacyElectrical = Utils::GetOptionalJsonMember<bool>(structuralMaterialJson, "is_legacy_electrical", false);
+        bool isExemptFromPalette = Utils::GetOptionalJsonMember<bool>(structuralMaterialJson, "is_exempt_from_palette", false);
 
         // Palette coordinates
 
         std::optional<MaterialPaletteCoordinatesType> paletteCoordinates;
         auto const & paletteCoordinatesJson = Utils::GetOptionalJsonObject(structuralMaterialJson, "palette_coordinates");
-        if (!isLegacyElectrical)
+        if (!isExemptFromPalette)
         {
             if (!paletteCoordinatesJson.has_value())
             {
-                throw GameException(std::string("Non-legacy-electrical material \"") + name + "\" doesn't have palette_coordinates member");
+                throw GameException(std::string("Non-exempt structural material \"") + name + "\" doesn't have palette_coordinates member");
             }
 
             paletteCoordinates = DeserializePaletteCoordinates(*paletteCoordinatesJson);
@@ -113,6 +119,9 @@ StructuralMaterial StructuralMaterial::Create(
             buoyancyVolumeFill,
             stiffness,
             strainThresholdFraction,
+            elasticityCoefficient,
+            kineticFrictionCoefficient,
+            staticFrictionCoefficient,
             uniqueType,
             materialSound,
             materialTextureName,
@@ -160,6 +169,8 @@ StructuralMaterial::MaterialUniqueType StructuralMaterial::StrToMaterialUniqueTy
         return MaterialUniqueType::Air;
     if (Utils::CaseInsensitiveEquals(str, "Glass"))
         return MaterialUniqueType::Glass;
+    if (Utils::CaseInsensitiveEquals(str, "Human"))
+        return MaterialUniqueType::Human;
     else if (Utils::CaseInsensitiveEquals(str, "Rope"))
         return MaterialUniqueType::Rope;
     else if (Utils::CaseInsensitiveEquals(str, "Water"))

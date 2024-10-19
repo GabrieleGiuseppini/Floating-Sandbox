@@ -55,6 +55,6 @@
   <PropertyGroup>
     <PostBuildEvent>ren "!(TargetPath)" "$(TargetName)-$(PlatformName)$(TargetExt)"
 set PATH=%PATH%;$(FrameworkSdkPath)
-cmd.exe /c start /wait C:\Users\Neurodancer\source\SignBinary.bat "Floating Sandbox" "https://www.floatingsandbox.com/" "$(TargetDir)$(TargetName)-$(PlatformName)$(TargetExt)"</PostBuildEvent>
+cmd.exe /c start /wait C:\Users\Neurodancer\source\SignBinary.bat "$(TargetDir)$(TargetName)-$(PlatformName)$(TargetExt)"</PostBuildEvent>
   </PropertyGroup>
 </Project>

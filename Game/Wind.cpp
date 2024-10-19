@@ -32,7 +32,7 @@ Wind::Wind(std::shared_ptr<GameEventDispatcher> gameEventDispatcher)
     , mCurrentSpeedMaxFactorParameter(std::numeric_limits<float>::lowest())
     , mCurrentGustFrequencyAdjustmentParameter(std::numeric_limits<float>::lowest())
     , mCurrentStormWindSpeedParameter(std::numeric_limits<float>::lowest())
-    // State
+    // Wind state machine
     , mCurrentState(State::Initial)
     , mNextStateTransitionTimestamp()
     , mNextPoissonSampleTimestamp()
@@ -41,6 +41,8 @@ Wind::Wind(std::shared_ptr<GameEventDispatcher> gameEventDispatcher)
     , mCurrentRawWindSpeedMagnitude(0.0f)
     , mCurrentWindSpeedMagnitudeRunningAverage()
     , mCurrentWindSpeed(vec2f::zero())
+    // Radial wind field
+    , mCurrentRadialWindField()
 {
 }
 
@@ -303,6 +305,11 @@ void Wind::Update(
         mPreMaxSpeedMagnitude,
         mMaxSpeedMagnitude,
         mCurrentWindSpeed);
+}
+
+void Wind::UpdateEnd()
+{
+    mCurrentRadialWindField.reset();
 }
 
 void Wind::Upload(Render::RenderContext & renderContext) const

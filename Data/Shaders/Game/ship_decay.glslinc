@@ -26,6 +26,8 @@ void main()
 
 #define in varying
 
+#include "lamp_tool.glslinc"
+
 // Inputs from previous shader        
 in float vertexDecay;
 in vec2 vertexTextureCoords;
@@ -45,7 +47,10 @@ void main()
     if (vertexAlpha < 0.2)
         discard;
 
+    // Calculate lamp tool intensity
+    float lampToolIntensity = CalculateLampToolIntensity(gl_FragCoord.xy);
+
     // Make color based off decay
-    vec3 color = vec3(vertexDecay * paramEffectiveAmbientLightIntensity);
+    vec3 color = vec3(vertexDecay * max(paramEffectiveAmbientLightIntensity, lampToolIntensity));
     gl_FragColor = vec4(color, vertexAlpha);
 } 

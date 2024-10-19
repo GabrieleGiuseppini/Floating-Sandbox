@@ -15,13 +15,33 @@
 
 namespace ShipBuilder {
 
-TextureEraserTool::TextureEraserTool(
+ExteriorTextureEraserTool::ExteriorTextureEraserTool(
+    Controller & controller,
+    ResourceLocator const & resourceLocator)
+    : TextureEraserTool(
+        ToolType::ExteriorTextureEraser,
+        controller,
+        resourceLocator)
+{}
+
+InteriorTextureEraserTool::InteriorTextureEraserTool(
+    Controller & controller,
+    ResourceLocator const & resourceLocator)
+    : TextureEraserTool(
+        ToolType::InteriorTextureEraser,
+        controller,
+        resourceLocator)
+{}
+
+template<LayerType TLayerType>
+TextureEraserTool<TLayerType>::TextureEraserTool(
+    ToolType toolType,
     Controller & controller,
     ResourceLocator const & resourceLocator)
     : Tool(
-        ToolType::TextureEraser,
+        toolType,
         controller)
-    , mOriginalLayerClone(mController.GetModelController().CloneExistingLayer<LayerType::Texture>())
+    , mOriginalLayerClone(mController.GetModelController().CloneExistingLayer<TLayerType>())
     , mTempVisualizationDirtyTextureRegion()
     , mEngagementData()
     , mIsShiftDown(false)
@@ -33,7 +53,7 @@ TextureEraserTool::TextureEraserTool(
     //
 
     // Calculate affected rect
-    std::optional<ImageRect> const affectedRect = CalculateApplicableRect(ScreenToTextureSpace(GetCurrentMouseCoordinates()));
+    std::optional<ImageRect> const affectedRect = CalculateApplicableRect(ScreenToTextureSpace(TLayerType, GetCurrentMouseCoordinates()));
 
     // Apply (temporary) change
     if (affectedRect)
@@ -46,16 +66,18 @@ TextureEraserTool::TextureEraserTool(
     }
 }
 
-TextureEraserTool::~TextureEraserTool()
+template<LayerType TLayerType>
+TextureEraserTool<TLayerType>::~TextureEraserTool()
 {
     Leave();
 }
 
-void TextureEraserTool::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates)
+template<LayerType TLayerType>
+void TextureEraserTool<TLayerType>::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates)
 {
     // Assuming L/R button transitions already communicated
 
-    auto const mouseCoordinatesInTextureSpace = ScreenToTextureSpace(mouseCoordinates);
+    auto const mouseCoordinatesInTextureSpace = ScreenToTextureSpace(TLayerType, mouseCoordinates);
 
     if (!mEngagementData)
     {
@@ -93,9 +115,10 @@ void TextureEraserTool::OnMouseMove(DisplayLogicalCoordinates const & mouseCoord
     }
 }
 
-void TextureEraserTool::OnLeftMouseDown()
+template<LayerType TLayerType>
+void TextureEraserTool<TLayerType>::OnLeftMouseDown()
 {
-    auto const mouseCoordinatesInTextureSpace = ScreenToTextureSpace(GetCurrentMouseCoordinates());
+    auto const mouseCoordinatesInTextureSpace = ScreenToTextureSpace(TLayerType, GetCurrentMouseCoordinates());
 
     // Restore temp visualization
     if (mTempVisualizationDirtyTextureRegion)
@@ -115,7 +138,8 @@ void TextureEraserTool::OnLeftMouseDown()
     DoEdit(mouseCoordinatesInTextureSpace);
 }
 
-void TextureEraserTool::OnLeftMouseUp()
+template<LayerType TLayerType>
+void TextureEraserTool<TLayerType>::OnLeftMouseUp()
 {
     if (mEngagementData)
     {
@@ -128,7 +152,8 @@ void TextureEraserTool::OnLeftMouseUp()
     // already has the edit (as permanent)
 }
 
-void TextureEraserTool::OnShiftKeyDown()
+template<LayerType TLayerType>
+void TextureEraserTool<TLayerType>::OnShiftKeyDown()
 {
     mIsShiftDown = true;
 
@@ -136,11 +161,12 @@ void TextureEraserTool::OnShiftKeyDown()
     {
         // Remember initial engagement
         assert(!mEngagementData->ShiftLockInitialPosition.has_value());
-        mEngagementData->ShiftLockInitialPosition = ScreenToTextureSpace(GetCurrentMouseCoordinates());
+        mEngagementData->ShiftLockInitialPosition = ScreenToTextureSpace(TLayerType, GetCurrentMouseCoordinates());
     }
 }
 
-void TextureEraserTool::OnShiftKeyUp()
+template<LayerType TLayerType>
+void TextureEraserTool<TLayerType>::OnShiftKeyUp()
 {
     mIsShiftDown = false;
 
@@ -153,14 +179,16 @@ void TextureEraserTool::OnShiftKeyUp()
     }
 }
 
-void TextureEraserTool::OnMouseLeft()
+template<LayerType TLayerType>
+void TextureEraserTool<TLayerType>::OnMouseLeft()
 {
     Leave();
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-void TextureEraserTool::Leave()
+template<LayerType TLayerType>
+void TextureEraserTool<TLayerType>::Leave()
 {
     // Mend our temporary visualization, if any
     if (mTempVisualizationDirtyTextureRegion)
@@ -173,7 +201,8 @@ void TextureEraserTool::Leave()
     }
 }
 
-void TextureEraserTool::StartEngagement(ImageCoordinates const & mouseCoordinates)
+template<LayerType TLayerType>
+void TextureEraserTool<TLayerType>::StartEngagement(ImageCoordinates const & mouseCoordinates)
 {
     assert(!mEngagementData);
 
@@ -182,7 +211,8 @@ void TextureEraserTool::StartEngagement(ImageCoordinates const & mouseCoordinate
         mIsShiftDown ? mouseCoordinates : std::optional<ImageCoordinates>());
 }
 
-void TextureEraserTool::DoEdit(ImageCoordinates const & mouseCoordinates)
+template<LayerType TLayerType>
+void TextureEraserTool<TLayerType>::DoEdit(ImageCoordinates const & mouseCoordinates)
 {
     assert(mEngagementData);
 
@@ -232,7 +262,7 @@ void TextureEraserTool::DoEdit(ImageCoordinates const & mouseCoordinates)
     ImageCoordinates const endPoint = actualMouseCoordinates;
 
     // Generate line
-    GenerateIntegralLinePath<IntegralLineType::Minimal>(
+    Geometry::GenerateIntegralLinePath<Geometry::IntegralLineType::Minimal>(
         startPoint,
         endPoint,
         [&](ImageCoordinates const & pos)
@@ -241,7 +271,16 @@ void TextureEraserTool::DoEdit(ImageCoordinates const & mouseCoordinates)
             auto const applicableRect = CalculateApplicableRect(pos);
             if (applicableRect)
             {
-                mController.GetModelController().EraseTextureRegion(*applicableRect);
+                if constexpr (TLayerType == LayerType::ExteriorTexture)
+                {
+                    mController.GetModelController().EraseExteriorTextureRegion(*applicableRect);
+                }
+                else
+                {
+                    static_assert(TLayerType == LayerType::InteriorTexture);
+
+                    mController.GetModelController().EraseInteriorTextureRegion(*applicableRect);
+                }
 
                 // Update edit region
                 if (!mEngagementData->EditRegion)
@@ -261,10 +300,11 @@ void TextureEraserTool::DoEdit(ImageCoordinates const & mouseCoordinates)
     mEngagementData->PreviousEngagementPosition = endPoint;
 
     // Epilog
-    mController.LayerChangeEpilog({ LayerType::Texture });
+    mController.LayerChangeEpilog({ TLayerType });
 }
 
-void TextureEraserTool::EndEngagement()
+template<LayerType TLayerType>
+void TextureEraserTool<TLayerType>::EndEngagement()
 {
     assert(mEngagementData);
 
@@ -277,14 +317,30 @@ void TextureEraserTool::EndEngagement()
         auto clippedLayerBackup = mOriginalLayerClone.MakeRegionBackup(*mEngagementData->EditRegion);
         auto const clipByteSize = clippedLayerBackup.Buffer.GetByteSize();
 
-        mController.StoreUndoAction(
-            _("Eraser Texture"),
-            clipByteSize,
-            mEngagementData->OriginalDirtyState,
-            [clippedLayerBackup = std::move(clippedLayerBackup), origin = mEngagementData->EditRegion->origin](Controller & controller) mutable
-            {
-                controller.RestoreTextureLayerRegionBackupForUndo(std::move(clippedLayerBackup), origin);
-            });
+        if constexpr (TLayerType == LayerType::ExteriorTexture)
+        {
+            mController.StoreUndoAction(
+                _("Eraser Exterior"),
+                clipByteSize,
+                mEngagementData->OriginalDirtyState,
+                [clippedLayerBackup = std::move(clippedLayerBackup), origin = mEngagementData->EditRegion->origin](Controller & controller) mutable
+                {
+                    controller.RestoreExteriorTextureLayerRegionBackupForUndo(std::move(clippedLayerBackup), origin);
+                });
+        }
+        else
+        {
+            static_assert(TLayerType == LayerType::InteriorTexture);
+
+            mController.StoreUndoAction(
+                _("Eraser Interior"),
+                clipByteSize,
+                mEngagementData->OriginalDirtyState,
+                [clippedLayerBackup = std::move(clippedLayerBackup), origin = mEngagementData->EditRegion->origin](Controller & controller) mutable
+                {
+                    controller.RestoreInteriorTextureLayerRegionBackupForUndo(std::move(clippedLayerBackup), origin);
+                });
+        }
     }
 
     //
@@ -300,35 +356,63 @@ void TextureEraserTool::EndEngagement()
     assert(!mTempVisualizationDirtyTextureRegion);
 
     // Re-take original layer clone
-    mOriginalLayerClone = mController.GetModelController().CloneExistingLayer<LayerType::Texture>();
+    mOriginalLayerClone = mController.GetModelController().CloneExistingLayer<TLayerType>();
 }
 
-void TextureEraserTool::DoTempVisualization(ImageRect const & affectedRect)
+template<LayerType TLayerType>
+void TextureEraserTool<TLayerType>::DoTempVisualization(ImageRect const & affectedRect)
 {
-    mController.GetModelController().TextureRegionEraseForEphemeralVisualization(affectedRect);
+    if constexpr (TLayerType == LayerType::ExteriorTexture)
+    {
+        mController.GetModelController().ExteriorTextureRegionEraseForEphemeralVisualization(affectedRect);
 
-    mController.GetView().UploadRectOverlay(
-        affectedRect,
-        View::OverlayMode::Default);
+        mController.GetView().UploadRectOverlayExteriorTexture(
+            affectedRect,
+            View::OverlayMode::Default);
+    }
+    else
+    {
+        static_assert(TLayerType == LayerType::InteriorTexture);
+
+        mController.GetModelController().InteriorTextureRegionEraseForEphemeralVisualization(affectedRect);
+
+        mController.GetView().UploadRectOverlayInteriorTexture(
+            affectedRect,
+            View::OverlayMode::Default);
+    }
 
     mTempVisualizationDirtyTextureRegion = affectedRect;
 }
 
-void TextureEraserTool::MendTempVisualization()
+template<LayerType TLayerType>
+void TextureEraserTool<TLayerType>::MendTempVisualization()
 {
     assert(mTempVisualizationDirtyTextureRegion);
 
-    mController.GetModelController().RestoreTextureLayerRegionEphemeralVisualization(
-        mOriginalLayerClone.Buffer,
-        *mTempVisualizationDirtyTextureRegion,
-        mTempVisualizationDirtyTextureRegion->origin);
+    if constexpr (TLayerType == LayerType::ExteriorTexture)
+    {
+        mController.GetModelController().RestoreExteriorTextureLayerRegionEphemeralVisualization(
+            mOriginalLayerClone.Buffer,
+            *mTempVisualizationDirtyTextureRegion,
+            mTempVisualizationDirtyTextureRegion->origin);
+    }
+    else
+    {
+        static_assert(TLayerType == LayerType::InteriorTexture);
+
+        mController.GetModelController().RestoreInteriorTextureLayerRegionEphemeralVisualization(
+            mOriginalLayerClone.Buffer,
+            *mTempVisualizationDirtyTextureRegion,
+            mTempVisualizationDirtyTextureRegion->origin);
+    }
 
     mController.GetView().RemoveRectOverlay();
 
     mTempVisualizationDirtyTextureRegion.reset();
 }
 
-std::optional<ImageRect> TextureEraserTool::CalculateApplicableRect(ImageCoordinates const & coords) const
+template<LayerType TLayerType>
+std::optional<ImageRect> TextureEraserTool<TLayerType>::CalculateApplicableRect(ImageCoordinates const & coords) const
 {
     // Anchor in the middle, and vertically from top
 
@@ -337,8 +421,20 @@ std::optional<ImageRect> TextureEraserTool::CalculateApplicableRect(ImageCoordin
 
     ImageCoordinates const origin = ImageCoordinates(coords.x, coords.y - (pencilSize - 1));
 
+    ImageRect  textureRect;
+    if constexpr (TLayerType == LayerType::ExteriorTexture)
+    {
+        textureRect = { { 0, 0}, mController.GetModelController().GetExteriorTextureSize() };
+    }
+    else
+    {
+        static_assert(TLayerType == LayerType::InteriorTexture);
+
+        textureRect = { { 0, 0}, mController.GetModelController().GetInteriorTextureSize() };
+    }
+
     return ImageRect(origin - ImageSize(topLeftPencilSize, -topLeftPencilSize), ImageSize(pencilSize, pencilSize))
-        .MakeIntersectionWith({ { 0, 0 }, mController.GetModelController().GetTextureSize()});
+        .MakeIntersectionWith(textureRect);
 }
 
 }

@@ -214,7 +214,7 @@ struct IElectricalElementGameEventHandler
     }
 
     virtual void OnSwitchCreated(
-        ElectricalElementId /*electricalElementId*/,
+        GlobalElectricalElementId /*electricalElementId*/,
         ElectricalElementInstanceIndex /*instanceIndex*/,
         SwitchType /*type*/,
         ElectricalState /*state*/,
@@ -225,7 +225,7 @@ struct IElectricalElementGameEventHandler
     }
 
     virtual void OnPowerProbeCreated(
-        ElectricalElementId /*electricalElementId*/,
+        GlobalElectricalElementId /*electricalElementId*/,
         ElectricalElementInstanceIndex /*instanceIndex*/,
         PowerProbeType /*type*/,
         ElectricalState /*state*/,
@@ -236,7 +236,7 @@ struct IElectricalElementGameEventHandler
     }
 
     virtual void OnEngineControllerCreated(
-        ElectricalElementId /*electricalElementId*/,
+        GlobalElectricalElementId /*electricalElementId*/,
         ElectricalElementInstanceIndex /*instanceIndex*/,
         ElectricalMaterial const & /*electricalMaterial*/,
         std::optional<ElectricalPanel::ElementMetadata> const & /*panelElementMetadata*/)
@@ -245,7 +245,7 @@ struct IElectricalElementGameEventHandler
     }
 
     virtual void OnEngineMonitorCreated(
-        ElectricalElementId /*electricalElementId*/,
+        GlobalElectricalElementId /*electricalElementId*/,
         ElectricalElementInstanceIndex /*instanceIndex*/,
         float /*thrustMagnitude*/,
         float /*rpm*/,
@@ -256,7 +256,7 @@ struct IElectricalElementGameEventHandler
     }
 
     virtual void OnWaterPumpCreated(
-        ElectricalElementId /*electricalElementId*/,
+        GlobalElectricalElementId /*electricalElementId*/,
         ElectricalElementInstanceIndex /*instanceIndex*/,
         float /*normalizedForce*/,
         ElectricalMaterial const & /*electricalMaterial*/,
@@ -266,7 +266,7 @@ struct IElectricalElementGameEventHandler
     }
 
     virtual void OnWatertightDoorCreated(
-        ElectricalElementId /*electricalElementId*/,
+        GlobalElectricalElementId /*electricalElementId*/,
         ElectricalElementInstanceIndex /*instanceIndex*/,
         bool /*isOpen*/,
         ElectricalMaterial const & /*electricalMaterial*/,
@@ -285,35 +285,35 @@ struct IElectricalElementGameEventHandler
     //
 
     virtual void OnSwitchEnabled(
-        ElectricalElementId /*electricalElementId*/,
+        GlobalElectricalElementId /*electricalElementId*/,
         bool /*isEnabled*/)
     {
         // Default-implemented
     }
 
     virtual void OnSwitchToggled(
-        ElectricalElementId /*electricalElementId*/,
+        GlobalElectricalElementId /*electricalElementId*/,
         ElectricalState /*newState*/)
     {
         // Default-implemented
     }
 
     virtual void OnPowerProbeToggled(
-        ElectricalElementId /*electricalElementId*/,
+        GlobalElectricalElementId /*electricalElementId*/,
         ElectricalState /*newState*/)
     {
         // Default-implemented
     }
 
     virtual void OnEngineControllerEnabled(
-        ElectricalElementId /*electricalElementId*/,
+        GlobalElectricalElementId /*electricalElementId*/,
         bool /*isEnabled*/)
     {
         // Default-implemented
     }
 
     virtual void OnEngineControllerUpdated(
-        ElectricalElementId /*electricalElementId*/,
+        GlobalElectricalElementId /*electricalElementId*/,
         ElectricalMaterial const & /*electricalMaterial*/,
         float /*oldControllerValue*/,
         float /*newControllerValue*/)
@@ -322,7 +322,7 @@ struct IElectricalElementGameEventHandler
     }
 
     virtual void OnEngineMonitorUpdated(
-        ElectricalElementId /*electricalElementId*/,
+        GlobalElectricalElementId /*electricalElementId*/,
         float /*thrustMagnitude*/,
         float /*rpm*/)
     {
@@ -330,7 +330,7 @@ struct IElectricalElementGameEventHandler
     }
 
     virtual void OnShipSoundUpdated(
-        ElectricalElementId /*electricalElementId*/,
+        GlobalElectricalElementId /*electricalElementId*/,
         ElectricalMaterial const & /*electricalMaterial*/,
         bool /*isPlaying*/,
         bool /*isUnderwater*/)
@@ -339,29 +339,51 @@ struct IElectricalElementGameEventHandler
     }
 
     virtual void OnWaterPumpEnabled(
-        ElectricalElementId /*electricalElementId*/,
+        GlobalElectricalElementId /*electricalElementId*/,
         bool /*isEnabled*/)
     {
         // Default-implemented
     }
 
     virtual void OnWaterPumpUpdated(
-        ElectricalElementId /*electricalElementId*/,
+        GlobalElectricalElementId /*electricalElementId*/,
         float /*normalizedForce*/)
     {
         // Default-implemented
     }
 
     virtual void OnWatertightDoorEnabled(
-        ElectricalElementId /*electricalElementId*/,
+        GlobalElectricalElementId /*electricalElementId*/,
         bool /*isEnabled*/)
     {
         // Default-implemented
     }
 
     virtual void OnWatertightDoorUpdated(
-        ElectricalElementId /*electricalElementId*/,
+        GlobalElectricalElementId /*electricalElementId*/,
         bool /*isOpen*/)
+    {
+        // Default-implemented
+    }
+};
+
+struct INpcGameEventHandler
+{
+    virtual void OnNpcSelectionChanged(
+        std::optional<NpcId> /*selectedNpc*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnNpcCountsUpdated(
+        size_t /*totalNpcCount*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnHumanNpcCountsUpdated(
+        size_t /*insideShipCount*/,
+        size_t /*outsideShipCount*/)
     {
         // Default-implemented
     }
@@ -478,7 +500,7 @@ struct IGenericGameEventHandler
     //
 
     virtual void OnGadgetPlaced(
-        GadgetId /*gadgetId*/,
+        GlobalGadgetId /*gadgetId*/,
         GadgetType /*gadgetType*/,
         bool /*isUnderwater*/)
     {
@@ -486,7 +508,7 @@ struct IGenericGameEventHandler
     }
 
     virtual void OnGadgetRemoved(
-        GadgetId /*gadgetId*/,
+        GlobalGadgetId /*gadgetId*/,
         GadgetType /*gadgetType*/,
         std::optional<bool> /*isUnderwater*/)
     {
@@ -509,7 +531,7 @@ struct IGenericGameEventHandler
     }
 
     virtual void OnTimerBombFuse(
-        GadgetId /*gadgetId*/,
+        GlobalGadgetId /*gadgetId*/,
         std::optional<bool> /*isFast*/)
     {
         // Default-implemented
@@ -523,7 +545,7 @@ struct IGenericGameEventHandler
     }
 
     virtual void OnAntiMatterBombContained(
-        GadgetId /*gadgetId*/,
+        GlobalGadgetId /*gadgetId*/,
         bool /*isContained*/)
     {
         // Default-implemented
@@ -566,6 +588,16 @@ struct IGenericGameEventHandler
     }
 
     virtual void OnPhysicsProbePanelClosed()
+    {
+        // Default-implemented
+    }
+};
+
+struct IControlGameEventHandler
+{
+    // Published at each change of auto-focus target
+    virtual void OnAutoFocusTargetChanged(
+        std::optional<AutoFocusTargetKindType> /*autoFocusTarget*/)
     {
         // Default-implemented
     }

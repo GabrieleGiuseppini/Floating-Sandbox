@@ -6,12 +6,15 @@
 #include "GameParameters.h"
 
 GameParameters::GameParameters()
-    // Dynamics
+// Dynamics
     : NumMechanicalDynamicsIterationsAdjustment(1.0f)
     , SpringStiffnessAdjustment(1.0f)
     , SpringDampingAdjustment(1.0f)
     , SpringStrengthAdjustment(1.0f)
     , GlobalDampingAdjustment(1.0f)
+    , ElasticityAdjustment(1.0f)
+    , StaticFrictionAdjustment(1.0f)
+    , KineticFrictionAdjustment(1.0f)
     , RotAcceler8r(1.0f)
     , StaticPressureForceAdjustment(1.0f)
     // Air
@@ -60,7 +63,7 @@ GameParameters::GameParameters()
     // Heat and combustion
     , AirTemperature(298.15f) // 25C
     , WaterTemperature(288.15f) // 15C
-    , MaxBurningParticles(112)
+    , MaxBurningParticlesPerShip(112)
     , ThermalConductivityAdjustment(1.0f)
     , HeatDissipationAdjustment(1.0f)
     , IgnitionTemperatureAdjustment(1.0f)
@@ -79,16 +82,25 @@ GameParameters::GameParameters()
     , WaterPumpPowerAdjustment(1.0f)
     // Fishes
     , NumberOfFishes(76)
-    , FishSizeMultiplier(25.0f)
+    , FishSizeMultiplier(20.0f)
     , FishSpeedAdjustment(1.0f)
     , DoFishShoaling(true)
     , FishShoalRadiusAdjustment(1.0f)
+    // NPCs
+    , NpcSpringReductionFractionAdjustment(1.0f)
+    , NpcSpringDampingCoefficientAdjustment(1.0f)
+    , NpcWindReceptivityAdjustment(6.0f)
+    , NpcSizeMultiplier(1.0f)
+    , DoApplyPhysicsToolsToNpcs(true)
+    , HumanNpcEquilibriumTorqueStiffnessCoefficient(0.0035f)
+    , HumanNpcEquilibriumTorqueDampingCoefficient(0.0012f)
+    , HumanNpcWalkingSpeedAdjustment(1.0f)
     // Misc
     , SeaDepth(1000.0f)
     , OceanFloorBumpiness(1.0f)
     , OceanFloorDetailAmplification(10.0f)
-    , OceanFloorElasticity(0.5f)
-    , OceanFloorFriction(0.25f)
+    , OceanFloorElasticityCoefficient(0.5f)
+    , OceanFloorFrictionCoefficient(0.25f)
     , OceanFloorSiltHardness(0.25f)
     , NumberOfStars(1536)
     , NumberOfClouds(24)

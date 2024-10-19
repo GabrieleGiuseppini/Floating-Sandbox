@@ -1628,7 +1628,7 @@ void Frontiers::VerifyInvariants(
 
                 // This edge is CW in the triangle
                 Verify(
-                    triangles.ArePointsInCwOrder(
+                    triangles.IsVertexSequenceInCwOrder(
                         triangleIndex,
                         mFrontierEdges[edgeIndex].PointAIndex,
                         mFrontierEdges[mFrontierEdges[edgeIndex].NextEdgeIndex].PointAIndex));

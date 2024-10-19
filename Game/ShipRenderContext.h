@@ -39,8 +39,10 @@ class ShipRenderContext
 private:
 
     // Base dimensions of flame quads
-    static float constexpr BasisHalfFlameQuadWidth = 10.5f;
-    static float constexpr BasisFlameQuadHeight = 7.5f;
+    static float constexpr BasisShipFlameHalfQuadWidth = 10.5f;
+    static float constexpr BasisShipFlameQuadHeight = 7.5f;
+    static float constexpr BasisNpcFlameHalfQuadWidth = 10.5f * 0.15f;
+    static float constexpr BasisNpcFlameQuadHeight = 7.5f * 0.15f;
 
 public:
 
@@ -48,9 +50,10 @@ public:
         ShipId shipId,
         size_t pointCount,
         size_t shipCount,
-        RgbaImageData shipTexture,
+        RgbaImageData exteriorViewImage,
+        RgbaImageData interiorViewImage,
         ShaderManager<ShaderManagerTraits> & shaderManager,
-        GlobalRenderContext const & globalRenderContext,
+        GlobalRenderContext & globalRenderContext,
         RenderParameters const & renderParameters,
         float shipFlameSizeAdjustment,
         float vectorFieldLengthMultiplier);
@@ -68,8 +71,8 @@ public:
     void SetShipFlameSizeAdjustment(float shipFlameSizeAdjustment)
     {
         // Recalculate quad dimensions
-        mHalfFlameQuadWidth = BasisHalfFlameQuadWidth * shipFlameSizeAdjustment;
-        mFlameQuadHeight = BasisFlameQuadHeight * shipFlameSizeAdjustment;
+        mShipFlameHalfQuadWidth = BasisShipFlameHalfQuadWidth * shipFlameSizeAdjustment;
+        mShipFlameQuadHeight = BasisShipFlameQuadHeight * shipFlameSizeAdjustment;
     }
 
     void SetVectorFieldLengthMultiplier(float vectorFieldLengthMultiplier)
@@ -217,6 +220,62 @@ public:
     void UploadElementFrontierEdgesEnd();
 
     //
+    // NPCs
+    //
+
+    void UploadNpcsStart(size_t maxQuadCount);
+
+    Quad [[nodiscard]] & UploadNpcPosition()
+    {
+        return mNpcPositionBuffer.emplace_back_ghost();
+    }
+
+#pragma pack(push)
+
+    struct NpcStaticAttributes
+    {
+        float PlaneId;
+        vec3f OverlayColor;
+    };
+
+#pragma pack(pop)
+
+    void UploadNpcTextureAttributes(
+        TextureCoordinatesQuad const & textureCoords,
+        NpcStaticAttributes const & staticAttributes)
+    {
+        auto * buf = &(mNpcAttributesVertexBuffer.emplace_back_ghost(4));
+        buf[0] = { staticAttributes, vec2f(textureCoords.LeftX, textureCoords.TopY) };
+        buf[1] = { staticAttributes, vec2f(textureCoords.LeftX, textureCoords.BottomY) };
+        buf[2] = { staticAttributes, vec2f(textureCoords.RightX, textureCoords.TopY) };
+        buf[3] = { staticAttributes, vec2f(textureCoords.RightX, textureCoords.BottomY) };
+    }
+
+    template<NpcRenderModeType NpcRenderMode>
+    void UploadNpcQuadAttributes(
+        TextureCoordinatesQuad const & textureCoords,
+        NpcStaticAttributes const & staticAttributes,
+        vec3f const & roleColor)
+    {
+        auto * buf = &(mNpcAttributesVertexBuffer.emplace_back_ghost(4));
+        buf[0] = { staticAttributes, vec2f(textureCoords.LeftX, textureCoords.TopY) };
+        buf[1] = { staticAttributes, vec2f(textureCoords.LeftX, textureCoords.BottomY) };
+        buf[2] = { staticAttributes, vec2f(textureCoords.RightX, textureCoords.TopY) };
+        buf[3] = { staticAttributes, vec2f(textureCoords.RightX, textureCoords.BottomY) };
+
+        if constexpr (NpcRenderMode == NpcRenderModeType::QuadWithRoles)
+        {
+            auto * roleColorBuf = &(mNpcQuadRoleVertexBuffer.emplace_back_ghost(4));
+            roleColorBuf[0].roleColor = roleColor;
+            roleColorBuf[1].roleColor = roleColor;
+            roleColorBuf[2].roleColor = roleColor;
+            roleColorBuf[3].roleColor = roleColor;
+        }
+    }
+
+    void UploadNpcsEnd();
+
+    //
     // Electric sparks
     //
 
@@ -338,7 +397,7 @@ public:
      *  - upload happens in depth order (for depth sorting)
      *  - all background flames are uploaded before all foreground flames
      */
-    inline void UploadBackgroundFlame(
+    inline void UploadShipBackgroundFlame(
         PlaneId planeId,
         vec2f const & baseCenterPosition,
         vec2f const & flameVector,
@@ -353,6 +412,8 @@ public:
             baseCenterPosition,
             flameVector,
             flameWindRotationAngle,
+            mShipFlameHalfQuadWidth,
+            mShipFlameQuadHeight,
             scale,
             flamePersonalitySeed);
 
@@ -364,7 +425,7 @@ public:
      *  - upload happens in depth order (for depth sorting)
      *  - all background flames are uploaded before all foreground flames
      */
-    inline void UploadForegroundFlame(
+    inline void UploadShipForegroundFlame(
         PlaneId planeId,
         vec2f const & baseCenterPosition,
         vec2f const & flameVector,
@@ -377,6 +438,34 @@ public:
             baseCenterPosition,
             flameVector,
             flameWindRotationAngle,
+            mShipFlameHalfQuadWidth,
+            mShipFlameQuadHeight,
+            scale,
+            flamePersonalitySeed);
+
+        ++mFlameForegroundCount;
+    }
+
+    /*
+     * Assumptions:
+     *  - upload happens in depth order (for depth sorting)
+     *  - all background flames are uploaded before NPC flames
+     */
+    inline void UploadNpcFlame(
+        PlaneId planeId,
+        vec2f const & baseCenterPosition,
+        vec2f const & flameVector,
+        float flameWindRotationAngle,
+        float scale,
+        float flamePersonalitySeed)
+    {
+        StoreFlameQuad(
+            planeId,
+            baseCenterPosition,
+            flameVector,
+            flameWindRotationAngle,
+            mNpcFlameHalfQuadWidth,
+            mNpcFlameQuadHeight,
             scale,
             flamePersonalitySeed);
 
@@ -493,7 +582,6 @@ public:
     }
 
     void UploadJetEngineFlamesEnd();
-
 
     //
     // Explosions
@@ -654,7 +742,7 @@ public:
         // Calculate quad coordinates
         vec2f const velocityDir = velocity.normalise();
         vec2f const top = position + velocityDir * sparkleLength;
-        
+
         vec2f const velocityDirPerp = velocityDir.to_perpendicular();
         vec2f const topLeft = top - velocityDirPerp * sparkleWidth / 2.0f;
         vec2f const toRight = top + velocityDirPerp * sparkleWidth / 2.0f;
@@ -977,7 +1065,7 @@ public:
 
         // Append vertices - two triangles
 
-        float const halfQuadWorldSize = viewModel.PixelWidthToWorldWidth(18.0f); // We want the quad size to be independent from zoom
+        float const halfQuadWorldSize = viewModel.PhysicalDisplayOffsetToWorldOffset(18.0f); // We want the quad size to be independent from zoom
         float const leftX = position.x - halfQuadWorldSize;
         float const rightX = position.x + halfQuadWorldSize;
         float const topY = position.y - halfQuadWorldSize;
@@ -1083,6 +1171,8 @@ private:
         vec2f const & baseCenterPosition,
         vec2f const & flameVector,
         float flameWindRotationAngle,
+        float flameHalfQuadWidth,
+        float flameQuadHeight,
         float scale,
         float flamePersonalitySeed)
     {
@@ -1112,13 +1202,13 @@ private:
         vec2f const Qnp = Qn.to_perpendicular(); // rotated by PI/2, i.e. oriented to the left (wrt rest vector)
 
         // P' = point P lowered by yOffset
-        vec2f const Pp = baseCenterPosition - Qn * YOffset * mFlameQuadHeight * scale;
+        vec2f const Pp = baseCenterPosition - Qn * YOffset * flameQuadHeight * scale;
         // P'' = opposite of P' on top
-        vec2f const Ppp = Pp + flameVector * mFlameQuadHeight * scale;
+        vec2f const Ppp = Pp + flameVector * flameQuadHeight * scale;
 
         // Qhw = vector delineating one half of the quad width, the one to the left;
         // its length is not affected by velocity, only its direction
-        vec2f const Qhw = Qnp * mHalfFlameQuadWidth * scale * 1.5f;
+        vec2f const Qhw = Qnp * flameHalfQuadWidth * scale * 1.5f;
 
         // A, B = left-bottom, right-bottom
         vec2f const A = Pp + Qhw;
@@ -1284,6 +1374,9 @@ private:
 
 private:
 
+    void RenderPrepareNpcs(RenderParameters const & renderParameters);
+    void RenderDrawNpcs(RenderParameters const & renderParameters);
+
     void RenderPrepareElectricSparks(RenderParameters const & renderParameters);
     void RenderDrawElectricSparks(RenderParameters const & renderParameters);
 
@@ -1318,9 +1411,11 @@ private:
     void RenderPreparePointToPointArrows(RenderParameters const & renderParameters);
     void RenderDrawPointToPointArrows(RenderParameters const & renderParameters);
 
+    void ApplyShipViewModeChanges(RenderParameters const & renderParameters);
     void ApplyShipStructureRenderModeChanges(RenderParameters const & renderParameters);
     void ApplyViewModelChanges(RenderParameters const & renderParameters);
     void ApplyEffectiveAmbientLightIntensityChanges(RenderParameters const & renderParameters);
+    void ApplyDepthDarkeningSensitivityChanges(RenderParameters const & renderParameters);
     void ApplySkyChanges(RenderParameters const & renderParameters);
     void ApplyFlatLampLightColorChanges(RenderParameters const & renderParameters);
     void ApplyWaterColorChanges(RenderParameters const & renderParameters);
@@ -1328,12 +1423,13 @@ private:
     void ApplyWaterLevelOfDetailChanges(RenderParameters const & renderParameters);
     void ApplyHeatSensitivityChanges(RenderParameters const & renderParameters);
     void ApplyStressRenderModeChanges(RenderParameters const & renderParameters);
+    void ApplyNpcRenderModeChanges(RenderParameters const & renderParameters);
 
     void SelectShipPrograms(RenderParameters const & renderParameters);
 
 private:
 
-    GlobalRenderContext const & mGlobalRenderContext;
+    GlobalRenderContext & mGlobalRenderContext;
 
     ShaderManager<ShaderManagerTraits> & mShaderManager;
 
@@ -1379,6 +1475,29 @@ private:
         int pointIndex1;
         int pointIndex2;
         int pointIndex3;
+    };
+
+    struct NpcAttributesVertex
+    {
+        NpcStaticAttributes staticAttributes;
+        vec2f textureCoordinates;
+
+        NpcAttributesVertex(
+            NpcStaticAttributes const & _staticAttributes,
+            vec2f const & _textureCoordinates)
+            : staticAttributes(_staticAttributes)
+            , textureCoordinates(_textureCoordinates)
+        {}
+    };
+
+    struct NpcQuadRoleVertex
+    {
+        vec3f roleColor;
+
+        NpcQuadRoleVertex(
+            vec3f const & _roleColor)
+            : roleColor(_roleColor)
+        {}
     };
 
     struct ElectricSparkVertex
@@ -1618,6 +1737,18 @@ private:
     GameOpenGLVBO mFrontierEdgeElementVBO;
     size_t mFrontierEdgeElementVBOAllocatedElementSize;
 
+    BoundedVector<Quad> mNpcPositionBuffer; // 4 vertices
+    GameOpenGLVBO mNpcPositionVBO;
+    size_t mNpcPositionVBOAllocatedVertexSize;
+
+    BoundedVector<NpcAttributesVertex> mNpcAttributesVertexBuffer;
+    GameOpenGLVBO mNpcAttributesVertexVBO;
+    size_t mNpcAttributesVertexVBOAllocatedVertexSize;
+
+    BoundedVector<NpcQuadRoleVertex> mNpcQuadRoleVertexBuffer;
+    GameOpenGLVBO mNpcQuadRoleVertexVBO;
+    size_t mNpcQuadRoleVertexVBOAllocatedVertexSize;
+
     BoundedVector<ElectricSparkVertex> mElectricSparkVertexBuffer;
     GameOpenGLVBO mElectricSparkVBO;
     size_t mElectricSparkVBOAllocatedVertexSize;
@@ -1695,6 +1826,7 @@ private:
     //
 
     GameOpenGLVAO mShipVAO;
+    GameOpenGLVAO mNpcTextureQuadVAO;
     GameOpenGLVAO mElectricSparkVAO;
     GameOpenGLVAO mFlameVAO;
     GameOpenGLVAO mJetEngineFlameVAO;
@@ -1719,6 +1851,10 @@ private:
     // Textures
     //
 
+    RgbaImageData mExteriorViewImage;
+    RgbaImageData mInteriorViewImage;
+    ShipViewModeType mShipViewModeType;
+
     GameOpenGLTexture mShipTextureOpenGLHandle;
     GameOpenGLTexture mStressedSpringTextureOpenGLHandle;
 
@@ -1728,15 +1864,18 @@ private:
     TextureAtlasMetadata<GenericMipMappedTextureGroups> const & mGenericMipMappedTextureAtlasMetadata;
 
 private:
- 
+
     //
     // Externally-controlled parameters that only affect Upload (i.e. that do
     // not affect rendering directly) or that purely serve as input to calculated
     // render parameters
     //
 
-    float mHalfFlameQuadWidth;
-    float mFlameQuadHeight;
+    float mShipFlameHalfQuadWidth;
+    float mShipFlameQuadHeight;
+    float mNpcFlameHalfQuadWidth;
+    float mNpcFlameQuadHeight;
+
     float mVectorFieldLengthMultiplier;
 };
 

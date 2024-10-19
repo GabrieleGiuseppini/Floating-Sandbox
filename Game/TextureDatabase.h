@@ -59,8 +59,11 @@ struct TextureFrameMetadata
     // The ID of this frame
     TextureFrameId<TextureGroups> FrameId;
 
+    // The filename (stem) of this frame's texture
+    std::string FilenameStem;
+
     // The optional name of the frame
-    std::string FrameName;
+    std::string DisplayName;
 
     TextureFrameMetadata(
         ImageSize size,
@@ -70,7 +73,8 @@ struct TextureFrameMetadata
         ImageCoordinates const & anchorCenter,
         vec2f const & anchorCenterWorld,
         TextureFrameId<TextureGroups> frameId,
-        std::string const & frameName)
+        std::string const & filenameStem,
+        std::string const & displayName)
         : Size(size)
         , WorldWidth(worldWidth)
         , WorldHeight(worldHeight)
@@ -78,7 +82,8 @@ struct TextureFrameMetadata
         , AnchorCenter(anchorCenter)
         , AnchorCenterWorld(anchorCenterWorld)
         , FrameId(frameId)
-        , FrameName(frameName)
+        , FilenameStem(filenameStem)
+        , DisplayName(displayName)
     {}
 
     void Serialize(picojson::object & root) const;

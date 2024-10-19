@@ -21,7 +21,7 @@
 
 namespace ShipBuilder {
 
-template<LayerType TLayer>
+template<LayerType TLayerType>
 class FloodTool : public Tool
 {
 public:
@@ -46,7 +46,7 @@ protected:
 
 private:
 
-    using LayerMaterialType = typename LayerTypeTraits<TLayer>::material_type;
+    using LayerMaterialType = typename LayerTypeTraits<TLayerType>::material_type;
 
 private:
 

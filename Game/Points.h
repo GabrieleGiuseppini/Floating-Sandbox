@@ -18,6 +18,7 @@
 #include <GameCore/ElementIndexRangeIterator.h>
 #include <GameCore/EnumFlags.h>
 #include <GameCore/FixedSizeVector.h>
+#include <GameCore/GameMath.h>
 #include <GameCore/GameRandomEngine.h>
 #include <GameCore/GameTypes.h>
 #include <GameCore/GameWallClock.h>
@@ -184,8 +185,6 @@ public:
         {}
     };
 
-private:
-
     /*
      * Packed precalculated buoyancy coefficients.
      */
@@ -201,6 +200,27 @@ private:
             , Coefficient2(coefficient2)
         {}
     };
+
+    /*
+     * Packed ocean floor collision factors.
+     */
+    struct OceanFloorCollisionFactors
+    {
+        float ElasticityFactor;
+        float StaticFrictionFactor;
+        float KineticFrictionFactor;
+
+        OceanFloorCollisionFactors(
+            float elasticityFactor,
+            float staticFrictionFactor,
+            float kineticFrictionFactor)
+            : ElasticityFactor(elasticityFactor)
+            , StaticFrictionFactor(staticFrictionFactor)
+            , KineticFrictionFactor(kineticFrictionFactor)
+        {}
+    };
+
+private:
 
     /*
      * The combustion state.
@@ -300,6 +320,8 @@ private:
     {
         struct AirBubbleState
         {
+            float FinalScale;
+
             float VortexAmplitude;
             float NormalizedVortexAngularVelocity;
 
@@ -310,9 +332,11 @@ private:
             {}
 
             AirBubbleState(
+                float finalScale,
                 float vortexAmplitude,
                 float vortexPeriod)
-                : VortexAmplitude(vortexAmplitude)
+                : FinalScale(finalScale)
+                , VortexAmplitude(vortexAmplitude)
                 , NormalizedVortexAngularVelocity(1.0f / vortexPeriod) // (2PI/vortexPeriod)/2PI
                 , CurrentDeltaY(0.0f)
                 , SimulationLifetime(0.0f)
@@ -578,6 +602,7 @@ public:
         , mDynamicForceRawBuffers()
         , mStaticForceBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mAugmentedMaterialMassBuffer(mBufferElementCount, shipPointCount, 1.0f)
+        , mTransientAdditionalMassBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mMassBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mMaterialBuoyancyVolumeFillBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mStrengthBuffer(mBufferElementCount, shipPointCount, 0.0f)
@@ -586,6 +611,8 @@ public:
         , mIsDecayBufferDirty(true)
         , mFrozenCoefficientBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mIntegrationFactorTimeCoefficientBuffer(mBufferElementCount, shipPointCount, 0.0f)
+        , mOceanFloorCollisionFactorsBuffer(mBufferElementCount, shipPointCount, OceanFloorCollisionFactors(0.0f, 0.0f, 0.0f))
+        , mAirWaterInterfaceInverseWidthBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mBuoyancyCoefficientsBuffer(mBufferElementCount, shipPointCount, BuoyancyCoefficients(0.0f, 0.0f))
         , mCachedDepthBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mIntegrationFactorBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
@@ -618,6 +645,8 @@ public:
         , mMaterialWindReceptivityBuffer(mBufferElementCount, shipPointCount, 0.0f)
         // Rust dynamics
         , mMaterialRustReceptivityBuffer(mBufferElementCount, shipPointCount, 0.0f)
+        // Various interactions
+        , mIsElectrifiedBuffer(mBufferElementCount, shipPointCount, false)
         // Ephemeral particles
         , mEphemeralParticleAttributes1Buffer(mBufferElementCount, shipPointCount, EphemeralParticleAttributes1())
         , mEphemeralParticleAttributes2Buffer(mBufferElementCount, shipPointCount, EphemeralParticleAttributes2())
@@ -662,6 +691,11 @@ public:
         , mShipPhysicsHandler(nullptr)
         , mHaveWholeBuffersBeenUploadedOnce(false)
         , mCurrentNumMechanicalDynamicsIterations(gameParameters.NumMechanicalDynamicsIterations<float>())
+        , mCurrentElasticityAdjustment(gameParameters.ElasticityAdjustment)
+        , mCurrentStaticFrictionAdjustment(gameParameters.StaticFrictionAdjustment)
+        , mCurrentKineticFrictionAdjustment(gameParameters.KineticFrictionAdjustment)
+        , mCurrentOceanFloorElasticityCoefficient(gameParameters.OceanFloorElasticityCoefficient)
+        , mCurrentOceanFloorFrictionCoefficient(gameParameters.OceanFloorFrictionCoefficient)
         , mCurrentCumulatedIntakenWaterThresholdForAirBubbles(GameParameters::AirBubblesDensityToCumulatedIntakenWater(gameParameters.AirBubblesDensity))
         , mCurrentCombustionSpeedAdjustment(gameParameters.CombustionSpeedAdjustment)
         , mFloatBufferAllocator(mBufferElementCount)
@@ -758,6 +792,7 @@ public:
     void CreateEphemeralParticleAirBubble(
         vec2f const & position,
         float depth,
+        float finalScale, 
         float temperature,
         float buoyancyVolumeFillAdjustment,
         float vortexAmplitude,
@@ -868,7 +903,7 @@ public:
         float currentSimulationTime,
         float dt,
         vec2f const & globalWindSpeed,
-        std::optional<WindField> const & windField,
+        std::optional<Wind::RadialWindField> const & radialWindField,
         GameParameters const & gameParameters);
 
     void ReorderBurningPointsForDepth();
@@ -910,9 +945,12 @@ public:
         ShipId shipId,
         Render::RenderContext & renderContext) const;
 
-    void UploadFlames(
-        ShipId shipId,
-        Render::RenderContext & renderContext) const;
+    size_t GetBurningPointCount() const
+    {
+        return mBurningPoints.size();
+    }
+
+    void UploadFlames(Render::ShipRenderContext & shipRenderContext) const;
 
     void UploadVectors(
         ShipId shipId,
@@ -966,6 +1004,11 @@ public:
     vec2f const & GetPosition(ElementIndex pointElementIndex) const noexcept
     {
         return mPositionBuffer[pointElementIndex];
+    }
+
+    Buffer<vec2f> const & GetPositionBuffer() const
+    {
+        return mPositionBuffer;
     }
 
     vec2f * GetPositionBufferAsVec2()
@@ -1157,6 +1200,23 @@ public:
         return mAugmentedMaterialMassBuffer[pointElementIndex];
     }
 
+    /*
+     * Adds a transient mass to the specified particle.
+     * The particle's total mass is slowly smoothed to include this one.
+     * Reset at end of Ship::Update().
+     */
+    void AddTransientAdditionalMass(
+        ElementIndex pointElementIndex,
+        float value)
+    {
+        mTransientAdditionalMassBuffer[pointElementIndex] += value;
+    }
+
+    void ResetTransientAdditionalMasses()
+    {
+        mTransientAdditionalMassBuffer.fill(0.0f);
+    }
+
     void AugmentMaterialMass(
         ElementIndex pointElementIndex,
         float offset,
@@ -1234,6 +1294,16 @@ public:
         Thaw(pointElementIndex); // Recalculates integration coefficient
     }
 
+    OceanFloorCollisionFactors const & GetOceanFloorCollisionFactors(ElementIndex pointElementIndex)
+    {
+        return mOceanFloorCollisionFactorsBuffer[pointElementIndex];
+    }
+
+    float GetAirWaterInterfaceInverseWidth(ElementIndex pointElementIndex)
+    {
+        return mAirWaterInterfaceInverseWidthBuffer[pointElementIndex];
+    }
+
     BuoyancyCoefficients const & GetBuoyancyCoefficients(ElementIndex pointElementIndex)
     {
         return mBuoyancyCoefficientsBuffer[pointElementIndex];
@@ -1278,7 +1348,7 @@ public:
      * Only valid after a call to UpdateMasses() and when
      * neither water quantities nor masses have changed since then.
      */
-    
+
     float * GetIntegrationFactorBufferAsFloat()
     {
         return reinterpret_cast<float *>(mIntegrationFactorBuffer.data());
@@ -1556,15 +1626,25 @@ public:
     }
 
     /*
+     * Checks whether a point is simply burning.
+     */
+    bool IsBurning(ElementIndex pointElementIndex) const
+    {
+        auto const combustionState = mCombustionStateBuffer[pointElementIndex].State;
+
+        return combustionState == CombustionState::StateType::Burning
+            || combustionState == CombustionState::StateType::Developing_1
+            || combustionState == CombustionState::StateType::Developing_2;
+    }
+
+    /*
      * Checks whether a point is eligible for being extinguished by smothering.
      */
     bool IsBurningForSmothering(ElementIndex pointElementIndex) const
     {
         auto const combustionState = mCombustionStateBuffer[pointElementIndex].State;
 
-        return combustionState == CombustionState::StateType::Burning
-            || combustionState == CombustionState::StateType::Developing_1
-            || combustionState == CombustionState::StateType::Developing_2
+        return IsBurning(pointElementIndex)
             || combustionState == CombustionState::StateType::Extinguishing_Consumed;
     }
 
@@ -1575,9 +1655,7 @@ public:
     {
         auto const combustionState = mCombustionStateBuffer[pointElementIndex].State;
 
-        return combustionState == CombustionState::StateType::Developing_1
-            || combustionState == CombustionState::StateType::Developing_2
-            || combustionState == CombustionState::StateType::Burning
+        return IsBurning(pointElementIndex)
             || combustionState == CombustionState::StateType::Extinguishing_Consumed
             || combustionState == CombustionState::StateType::Extinguishing_SmotheredRain
             || combustionState == CombustionState::StateType::Extinguishing_SmotheredWater;
@@ -1650,6 +1728,27 @@ public:
     float GetMaterialRustReceptivity(ElementIndex pointElementIndex) const
     {
         return mMaterialRustReceptivityBuffer[pointElementIndex];
+    }
+
+    //
+    // Various interactions
+    //
+
+    bool GetIsElectrified(ElementIndex pointElementIndex) const
+    {
+        return mIsElectrifiedBuffer[pointElementIndex];
+    }
+
+    void SetIsElectrified(
+        ElementIndex pointElementIndex,
+        bool value)
+    {
+        mIsElectrifiedBuffer[pointElementIndex] = value;
+    }
+
+    void ResetIsElectrifiedBuffer()
+    {
+        mIsElectrifiedBuffer.fill(false);
     }
 
     //
@@ -1740,6 +1839,12 @@ public:
         bool isAtOwner)
     {
         assert(mFactoryConnectedTrianglesBuffer[pointElementIndex].ConnectedTriangles.contains(
+            [triangleElementIndex](auto const & ct)
+            {
+                return ct == triangleElementIndex;
+            }));
+
+        assert(!mConnectedTrianglesBuffer[pointElementIndex].ConnectedTriangles.contains(
             [triangleElementIndex](auto const & ct)
             {
                 return ct == triangleElementIndex;
@@ -1968,6 +2073,11 @@ public:
         return mColorBuffer[pointElementIndex];
     }
 
+    vec2f const & GetTextureCoordinates(ElementIndex pointElementIndex) const
+    {
+        return mTextureCoordinatesBuffer[pointElementIndex];
+    }
+
     // Mostly for debugging
     void MarkColorBufferAsDirty()
     {
@@ -2045,16 +2155,32 @@ private:
             coefficient2);
     }
 
+    static inline OceanFloorCollisionFactors CalculateOceanFloorCollisionFactors(
+        float elasticityAdjustment,
+        float staticFrictionAdjustment,
+        float kineticFrictionAdjustment,
+        float oceanFloorElasticityCoefficient,
+        float oceanFloorFrictionCoefficient,
+        float materialElasticityCoefficient,
+        float materialStaticFrictionCoefficient,
+        float materialKineticFrictionCoefficient)
+    {
+        //
+        // Somewhat arbitrarily, we use the average of the ocean's and material's coefficients
+        //
+
+        return OceanFloorCollisionFactors(
+            Clamp(-(materialElasticityCoefficient + oceanFloorElasticityCoefficient) / 2.0f * elasticityAdjustment, -1.0f, 0.0f),
+            Clamp(1.0f - (materialStaticFrictionCoefficient + oceanFloorFrictionCoefficient) / 2.0f * staticFrictionAdjustment, 0.0f, 1.0f),
+            Clamp(1.0f - (materialKineticFrictionCoefficient + oceanFloorFrictionCoefficient) / 2.0f * kineticFrictionAdjustment, 0.0f, 1.0f));
+    }
+
     static inline float RandomizeCumulatedIntakenWater(float cumulatedIntakenWaterThresholdForAirBubbles)
     {
         return GameRandomEngine::GetInstance().GenerateUniformReal(
             0.0f,
             cumulatedIntakenWaterThresholdForAirBubbles);
     }
-
-    static inline vec2f CalculateIdealFlameVector(
-        vec2f const & pointVelocity,
-        float pointVelocityMagnitudeThreshold);
 
     inline void SetStructurallyLeaking(ElementIndex pointElementIndex)
     {
@@ -2106,7 +2232,8 @@ private:
     std::vector<float *> mDynamicForceRawBuffers;
     Buffer<vec2f> mStaticForceBuffer; // Forces that never change across the multiple mechanical iterations (all other forces)
     Buffer<float> mAugmentedMaterialMassBuffer; // Structural + Offset
-    Buffer<float> mMassBuffer; // Augmented + Water
+    Buffer<float> mTransientAdditionalMassBuffer; // Anything; total mass is slowly updated to include this
+    Buffer<float> mMassBuffer; // Augmented + Transient + Water
     Buffer<float> mMaterialBuoyancyVolumeFillBuffer;
     Buffer<float> mStrengthBuffer; // Immutable
     Buffer<float> mStressBuffer; // -1.0 -> 1.0, only calculated (at springs) if rendering it
@@ -2114,6 +2241,8 @@ private:
     bool mutable mIsDecayBufferDirty; // Only tracks non-ephemerals
     Buffer<float> mFrozenCoefficientBuffer; // 1.0: not frozen; 0.0f: frozen
     Buffer<float> mIntegrationFactorTimeCoefficientBuffer; // dt^2 or zero when the point is frozen
+    Buffer<OceanFloorCollisionFactors> mOceanFloorCollisionFactorsBuffer;
+    Buffer<float> mAirWaterInterfaceInverseWidthBuffer; // The reciprocal of the air-water interface, to control the damping we perform against buoyancy oscillations
     Buffer<BuoyancyCoefficients> mBuoyancyCoefficientsBuffer;
     Buffer<float> mCachedDepthBuffer; // Positive when underwater
 
@@ -2130,7 +2259,7 @@ private:
     Buffer<float> mMaterialWaterDiffusionSpeedBuffer;
 
     // Height of a 1m2 column of water which provides a pressure equivalent to the pressure at
-    // this point. Quantity of water is max(water, 1.0)
+    // this point. Quantity of water is min(water, 1.0)
     Buffer<float> mWaterBuffer;
 
     // Total velocity of the water at this point
@@ -2190,7 +2319,13 @@ private:
     Buffer<float> mMaterialRustReceptivityBuffer;
 
     //
-    // Ephemeral Particles
+    // Various interactions
+    //
+
+    Buffer<bool> mIsElectrifiedBuffer;
+
+    //
+    // Ephemeral particles attributes
     //
 
     Buffer<EphemeralParticleAttributes1> mEphemeralParticleAttributes1Buffer;
@@ -2279,6 +2414,11 @@ private:
     // in the values of these parameters will trigger a re-calculation
     // of pre-calculated coefficients
     float mCurrentNumMechanicalDynamicsIterations;
+    float mCurrentElasticityAdjustment;
+    float mCurrentStaticFrictionAdjustment;
+    float mCurrentKineticFrictionAdjustment;
+    float mCurrentOceanFloorElasticityCoefficient;
+    float mCurrentOceanFloorFrictionCoefficient;
     float mCurrentCumulatedIntakenWaterThresholdForAirBubbles;
     float mCurrentCombustionSpeedAdjustment;
 

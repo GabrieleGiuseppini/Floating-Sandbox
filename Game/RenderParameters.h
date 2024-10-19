@@ -33,8 +33,10 @@ struct RenderParameters
     bool DoCrepuscularGradient;
     rgbColor CrepuscularColor;
 
+    CloudRenderDetailType CloudRenderDetail;
+
     float OceanTransparency;
-    float OceanDarkeningRate;
+    float OceanDepthDarkeningRate;
     OceanRenderModeType OceanRenderMode;
     rgbColor DepthOceanColorStart;
     rgbColor DepthOceanColorEnd;
@@ -46,12 +48,15 @@ struct RenderParameters
     LandRenderModeType LandRenderMode;
     rgbColor FlatLandColor;
     size_t LandTextureIndex;
+    LandRenderDetailType LandRenderDetail;
 
     //
     // Ship
     //
 
+    ShipViewModeType ShipViewMode;
     float ShipAmbientLightSensitivity;
+    float ShipDepthDarkeningSensitivity;
     rgbColor FlatLampLightColor;
     bool DrawExplosions;
     bool DrawFlames;
@@ -65,6 +70,8 @@ struct RenderParameters
     float HeatSensitivity;
     StressRenderModeType StressRenderMode;
     DebugShipRenderModeType DebugShipRenderMode;
+    NpcRenderModeType NpcRenderMode;
+    rgbColor NpcQuadFlatColor;
 
     //
     // Misc
@@ -81,19 +88,24 @@ struct RenderParameters
     bool IsCanvasSizeDirty;
     bool IsEffectiveAmbientLightIntensityDirty;
     bool IsSkyDirty; // Tracks various sky render parameters as a whole, for convenience
-    bool IsOceanDarkeningRateDirty;
+    bool IsCloudRenderDetailDirty;
+    bool IsOceanDepthDarkeningRateDirty;
     bool AreOceanRenderParametersDirty; // Tracks various ocean render parameters as a whole, for convenience
     bool IsOceanTextureIndexDirty;
     bool AreLandRenderParametersDirty; // Tracks various land render parameters as a whole, for convenience
     bool IsLandTextureIndexDirty;
+    bool IsLandRenderDetailDirty;
     // Ship
+    bool IsShipViewModeDirty;
     bool IsShipAmbientLightSensitivityDirty;
+    bool IsShipDepthDarkeningSensitivityDirty;
     bool IsFlatLampLightColorDirty;
     bool IsShipWaterColorDirty;
     bool IsShipWaterContrastDirty;
     bool IsShipWaterLevelOfDetailDirty;
     bool IsHeatSensitivityDirty;
     bool AreShipStructureRenderModeSelectorsDirty; // For all those parameters that require changing ship shaders
+    bool AreNpcRenderParametersDirty;
     // Misc
     bool IsDisplayUnitsSystemDirty;
 

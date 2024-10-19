@@ -7,6 +7,7 @@
 
 #include "Layers.h"
 #include "MaterialDatabase.h"
+#include "Physics.h"
 #include "ResourceLocator.h"
 #include "ShipAutoTexturizationSettings.h"
 
@@ -23,15 +24,22 @@ class ShipTexturizer
 {
 public:
 
+    static int constexpr MaxHighDefinitionTextureSize = 4096; // Max texture size for low-end gfx cards
+
+public:
+
     ShipTexturizer(
         MaterialDatabase const & materialDatabase,
         ResourceLocator const & resourceLocator);
 
-    static int CalculateHighDefinitionTextureMagnificationFactor(ShipSpaceSize const & shipSize);
+    static int CalculateHighDefinitionTextureMagnificationFactor(
+        ShipSpaceSize const & shipSize,
+        int maxTextureSize);
 
     RgbaImageData MakeAutoTexture(
         StructuralLayerData const & structuralLayer,
-        std::optional<ShipAutoTexturizationSettings> const & settings) const;
+        std::optional<ShipAutoTexturizationSettings> const & settings,
+        int maxTextureSize) const;
 
     void AutoTexturizeInto(
         StructuralLayerData const & structuralLayer,
@@ -39,6 +47,12 @@ public:
         RgbaImageData & targetTextureImage,
         int magnificationFactor,
         ShipAutoTexturizationSettings const & settings) const;
+
+    RgbaImageData MakeInteriorViewTexture(
+        Physics::Triangles const & triangles,
+        Physics::Points const & points,
+        ShipSpaceSize const & shipSize,
+        RgbaImageData const & backgroundTexture) const;
 
     void RenderShipInto(
         StructuralLayerData const & structuralLayer,
@@ -48,12 +62,12 @@ public:
         int magnificationFactor) const;
 
     template<typename TMaterial>
-    RgbaImageData MakeTextureSample(
+    RgbaImageData MakeMaterialTextureSample(
         std::optional<ShipAutoTexturizationSettings> const & settings,
         ImageSize const & sampleSize,
         TMaterial const & material) const
     {
-        return MakeTextureSample(
+        return MakeMaterialTextureSample(
             settings,
             sampleSize,
             material.RenderColor,
@@ -101,7 +115,7 @@ private:
 
     static float MaterialTextureMagnificationToPixelConversionFactor(float magnification);
 
-    RgbaImageData MakeTextureSample(
+    RgbaImageData MakeMaterialTextureSample(
         std::optional<ShipAutoTexturizationSettings> const & settings,
         ImageSize const & sampleSize,
         rgbaColor const & renderColor,
@@ -112,6 +126,36 @@ private:
     void ResetMaterialTextureCacheUseCounts() const;
 
     void PurgeMaterialTextureCache(size_t maxSize) const;
+
+    inline void DrawTriangleFloorInto(
+        ElementIndex triangleIndex,
+        Physics::Points const & points,
+        Physics::Triangles const & triangles,
+        vec2f const & textureSizeF,
+        int const floorThickness,
+        RgbaImageData & targetTextureImage) const;
+
+    inline void DrawHVEdgeFloorInto(
+        int xStart,
+        int xEnd, // Included
+        int xIncr,
+        int xLimitIncr,
+        int yStart,
+        int yEnd, // Included
+        int yIncr,
+        RgbaImageData & targetTextureImage) const;
+
+    inline void DrawDEdgeFloorInto(
+        int xStart,
+        int xEnd, // Included
+        int xIncr,
+        int xLimitIncr,
+        int absoluteMinX,
+        int absoluteMaxX,
+        int yStart,
+        int yEnd, // Included
+        int yIncr,
+        RgbaImageData & targetTextureImage) const;
 
     inline rgbaColor SampleTextureBilinearConstrained(
         RgbaImageData const & texture,

@@ -46,6 +46,9 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(float, SpringDampingAdjustment);
     ADD_GC_SETTING(float, SpringStrengthAdjustment);
     ADD_GC_SETTING(float, GlobalDampingAdjustment);
+    ADD_GC_SETTING(float, ElasticityAdjustment);
+    ADD_GC_SETTING(float, StaticFrictionAdjustment);
+    ADD_GC_SETTING(float, KineticFrictionAdjustment);
     ADD_GC_SETTING(float, RotAcceler8r);
     ADD_GC_SETTING(float, StaticPressureForceAdjustment);
 
@@ -88,7 +91,7 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     // Heat
     ADD_GC_SETTING(float, AirTemperature);
     ADD_GC_SETTING(float, WaterTemperature);
-    ADD_GC_SETTING(unsigned int, MaxBurningParticles);
+    ADD_GC_SETTING(unsigned int, MaxBurningParticlesPerShip);
     ADD_GC_SETTING(float, ThermalConductivityAdjustment);
     ADD_GC_SETTING(float, HeatDissipationAdjustment);
     ADD_GC_SETTING(float, IgnitionTemperatureAdjustment);
@@ -113,13 +116,19 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(bool, DoFishShoaling);
     ADD_GC_SETTING(float, FishShoalRadiusAdjustment);
 
+    // NPCs
+    ADD_GC_SETTING(float, NpcSpringReductionFractionAdjustment);
+    ADD_GC_SETTING(float, NpcSpringDampingCoefficientAdjustment);
+    ADD_GC_SETTING(float, NpcSizeMultiplier);
+    ADD_GC_SETTING(bool, DoApplyPhysicsToolsToNpcs);
+
     // Misc
     ADD_GC_SETTING(OceanFloorTerrain, OceanFloorTerrain);
     ADD_GC_SETTING_WITH_IMMEDIATE(float, SeaDepth);
     ADD_GC_SETTING(float, OceanFloorBumpiness);
     ADD_GC_SETTING_WITH_IMMEDIATE(float, OceanFloorDetailAmplification);
-    ADD_GC_SETTING(float, OceanFloorElasticity);
-    ADD_GC_SETTING(float, OceanFloorFriction);
+    ADD_GC_SETTING(float, OceanFloorElasticityCoefficient);
+    ADD_GC_SETTING(float, OceanFloorFrictionCoefficient);
     ADD_GC_SETTING(float, OceanFloorSiltHardness);
     ADD_GC_SETTING(float, DestroyRadius);
     ADD_GC_SETTING(float, RepairRadius);
@@ -155,9 +164,11 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(rgbColor, MoonlightColor);
     ADD_GC_SETTING(bool, DoCrepuscularGradient);
     ADD_GC_SETTING(rgbColor, CrepuscularColor);
+    ADD_GC_SETTING(CloudRenderDetailType, CloudRenderDetail);
     ADD_GC_SETTING(float, OceanTransparency);
-    ADD_GC_SETTING(float, OceanDarkeningRate);
+    ADD_GC_SETTING(float, OceanDepthDarkeningRate);
     ADD_GC_SETTING(float, ShipAmbientLightSensitivity);
+    ADD_GC_SETTING(float, ShipDepthDarkeningSensitivity);
     ADD_GC_SETTING(rgbColor, FlatLampLightColor);
     ADD_GC_SETTING(rgbColor, DefaultWaterColor);
     ADD_GC_SETTING(float, WaterContrast);
@@ -173,6 +184,9 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(LandRenderModeType, LandRenderMode);
     ADD_GC_SETTING(size_t, TextureLandTextureIndex);
     ADD_GC_SETTING(rgbColor, FlatLandColor);
+    ADD_GC_SETTING(LandRenderDetailType, LandRenderDetail);
+    ADD_GC_SETTING(NpcRenderModeType, NpcRenderMode);
+    ADD_GC_SETTING(rgbColor, NpcQuadFlatColor);
     ADD_GC_SETTING(VectorFieldRenderModeType, VectorFieldRenderMode);
     ADD_GC_SETTING(bool, ShowShipStress);
     ADD_GC_SETTING(bool, ShowShipFrontiers);

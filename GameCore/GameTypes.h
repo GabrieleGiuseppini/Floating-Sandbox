@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "BarycentricCoords.h"
 #include "Colors.h"
 #include "EnumFlags.h"
 #include "GameMath.h"
@@ -79,25 +80,34 @@ using FrontierId = std::uint32_t;
 static FrontierId constexpr NoneFrontierId = std::numeric_limits<FrontierId>::max();
 
 /*
- * Various other identifiers.
+ * NPC identifiers.
+ *
+ * Comparable and ordered. Start from 0.
  */
-using LocalGadgetId = std::uint32_t;
+using NpcId = std::uint32_t;
+static NpcId constexpr NoneNpcId = std::numeric_limits<NpcId>::max();
+
+/*
+ * Gadget identifiers.
+ */
+using GadgetId = std::uint32_t;
+static GadgetId constexpr NoneGadgetId = std::numeric_limits<GadgetId>::max();
 
 /*
  * Object ID's, identifying objects of ships across ships.
  *
- * An ObjectId is unique only in the context in which it's used; for example,
+ * A GlobalObjectId is unique only in the context in which it's used; for example,
  * a gadget might have the same object ID as a switch. That's where the type tag
  * comes from.
  *
  * Not comparable, not ordered.
  */
 template<typename TLocalObjectId, typename TTypeTag>
-struct ObjectId
+struct GlobalObjectId
 {
     using LocalObjectId = TLocalObjectId;
 
-    ObjectId(
+    GlobalObjectId(
         ShipId shipId,
         LocalObjectId localObjectId)
         : mShipId(shipId)
@@ -114,15 +124,15 @@ struct ObjectId
         return mLocalObjectId;
     }
 
-    ObjectId & operator=(ObjectId const & other) = default;
+    GlobalObjectId & operator=(GlobalObjectId const & other) = default;
 
-    inline bool operator==(ObjectId const & other) const
+    inline bool operator==(GlobalObjectId const & other) const
     {
         return this->mShipId == other.mShipId
             && this->mLocalObjectId == other.mLocalObjectId;
     }
 
-    inline bool operator<(ObjectId const & other) const
+    inline bool operator<(GlobalObjectId const & other) const
     {
         return this->mShipId < other.mShipId
             || (this->mShipId == other.mShipId && this->mLocalObjectId < other.mLocalObjectId);
@@ -144,7 +154,7 @@ private:
 };
 
 template<typename TLocalObjectId, typename TTypeTag>
-inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, ObjectId<TLocalObjectId, TTypeTag> const & oid)
+inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, GlobalObjectId<TLocalObjectId, TTypeTag> const & oid)
 {
     os << oid.ToString();
     return os;
@@ -153,25 +163,28 @@ inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, Obje
 namespace std {
 
 template <typename TLocalObjectId, typename TTypeTag>
-struct hash<ObjectId<TLocalObjectId, TTypeTag>>
+struct hash<GlobalObjectId<TLocalObjectId, TTypeTag>>
 {
-    std::size_t operator()(ObjectId<TLocalObjectId, TTypeTag> const & objectId) const
+    std::size_t operator()(GlobalObjectId<TLocalObjectId, TTypeTag> const & objectId) const
     {
         return std::hash<ShipId>()(static_cast<uint16_t>(objectId.GetShipId()))
-            ^ std::hash<typename ObjectId<TLocalObjectId, TTypeTag>::LocalObjectId>()(objectId.GetLocalObjectId());
+            ^ std::hash<typename GlobalObjectId<TLocalObjectId, TTypeTag>::LocalObjectId>()(objectId.GetLocalObjectId());
     }
 };
 
 }
 
 // Generic ID for generic elements (points, springs, etc.)
-using ElementId = ObjectId<ElementIndex, struct ElementTypeTag>;
+using GlobalElementId = GlobalObjectId<ElementIndex, struct ElementTypeTag>;
+
+// ID for a ship's connected component
+using GlobalConnectedComponentId = GlobalObjectId<ConnectedComponentId, struct ConnectedComponentTypeTag>;
 
 // ID for a gadget
-using GadgetId = ObjectId<LocalGadgetId, struct GadgetTypeTag>;
+using GlobalGadgetId = GlobalObjectId<GadgetId, struct GadgetTypeTag>;
 
 // ID for electrical elements (switches, probes, etc.)
-using ElectricalElementId = ObjectId<ElementIndex, struct ElectricalElementTypeTag>;
+using GlobalElectricalElementId = GlobalObjectId<ElementIndex, struct ElectricalElementTypeTag>;
 
 /*
  * A sequence number which is never zero.
@@ -285,6 +298,25 @@ namespace std {
     };
 }
 
+/*
+ * Return type of picking an NPC.
+ */
+struct PickedNpc
+{
+    NpcId Id;
+    int ParticleOrdinal;
+    vec2f WorldOffset;
+
+    PickedNpc(
+        NpcId id,
+        int particleOrdinal,
+        vec2f const & worldOffset)
+        : Id(id)
+        , ParticleOrdinal(particleOrdinal)
+        , WorldOffset(worldOffset)
+    {}
+};
+
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // Geometry
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -295,6 +327,12 @@ namespace std {
  * Octant 0 is E, octant 1 is SE, ..., Octant 7 is NE.
  */
 using Octant = std::int32_t;
+
+/*
+ * Our local circular order (clockwise, starting from E), indexes by Octant.
+ * Note: cardinal directions are labeled according to x growing to the right and y growing upwards
+ */
+extern int const TessellationCircularOrderDirections[8][2];
 
 /*
  * Generic directions.
@@ -803,7 +841,6 @@ inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, _Int
     return os;
 }
 
-
 using IntegralRect = _IntegralRect<struct IntegralTag>;
 using ImageRect = _IntegralRect<struct ImageTag>;
 using ShipSpaceRect = _IntegralRect<struct ShipSpaceTag>;
@@ -835,6 +872,29 @@ struct _IntegralCoordsRatio
 };
 
 using ShipSpaceToWorldSpaceCoordsRatio = _IntegralCoordsRatio<struct ShipSpaceTag>;
+
+/*
+ * Generic quad (not necessarily square), intrinsics-friendly
+ */
+
+#pragma pack(push, 1)
+
+union Quad final
+{
+    struct
+    {
+        vec2f TopLeft;
+        vec2f BottomLeft;
+        vec2f TopRight;
+        vec2f BottomRight;
+    } V;
+
+    float fptr[8];
+
+    Quad & operator=(Quad const & other) = default;
+};
+
+#pragma pack(pop)
 
 /*
  * Float rectangle.
@@ -921,6 +981,66 @@ struct FloatRect
 
 #pragma pack(pop)
 
+/*
+ * Identifies the edge of a triangle among all edges on a ship.
+ */
+struct TriangleAndEdge
+{
+    ElementIndex TriangleElementIndex;
+    int EdgeOrdinal;
+
+    TriangleAndEdge() = default;
+
+    TriangleAndEdge(
+        ElementIndex triangleElementIndex,
+        int edgeOrdinal)
+        : TriangleElementIndex(triangleElementIndex)
+        , EdgeOrdinal(edgeOrdinal)
+    {
+        assert(triangleElementIndex != NoneElementIndex);
+        assert(edgeOrdinal >= 0 && edgeOrdinal < 3);
+    }
+};
+
+/*
+ * Barycentric coordinates in a specific triangle.
+ */
+struct AbsoluteTriangleBCoords
+{
+    ElementIndex TriangleElementIndex;
+    bcoords3f BCoords;
+
+    AbsoluteTriangleBCoords() = default;
+
+    AbsoluteTriangleBCoords(
+        ElementIndex triangleElementIndex,
+        bcoords3f bCoords)
+        : TriangleElementIndex(triangleElementIndex)
+        , BCoords(bCoords)
+    {
+        assert(triangleElementIndex != NoneElementIndex);
+    }
+
+    bool operator==(AbsoluteTriangleBCoords const & other) const
+    {
+        return this->TriangleElementIndex == other.TriangleElementIndex
+            && this->BCoords == other.BCoords;
+    }
+
+    std::string ToString() const
+    {
+        std::stringstream ss;
+        ss << TriangleElementIndex << ":" << BCoords;
+        return ss.str();
+    }
+};
+
+inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, AbsoluteTriangleBCoords const & is)
+{
+    os << is.ToString();
+    return os;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // Game
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -940,7 +1060,8 @@ enum class LayerType : std::uint32_t
     Structural = 0,
     Electrical = 1,
     Ropes = 2,
-    Texture = 3
+    ExteriorTexture = 3,
+    InteriorTexture = 4
 };
 
 /*
@@ -951,6 +1072,113 @@ enum class MaterialLayerType
     Structural,
     Electrical
 };
+
+/*
+ * Top level of NPC type hierarchy.
+ */
+enum class NpcKindType
+{
+    Furniture,
+    Human
+};
+
+/*
+ * Second level of NPC type hierarchy; domain is open
+ * as it may be expanded after compile time, via NPC packs.
+ * The unique identifier of an NPC kind is the whole
+ * <NpcKindType,NpcSubKindIdType> tuple; so, for example,
+ * NpcSubKindIdType=X means one thing for Humans and another
+ * thing for Furniture.
+ */
+using NpcSubKindIdType = std::uint32_t;
+
+/*
+ * Roles for humans.
+ */
+enum class NpcHumanRoleType : std::uint32_t
+{
+    Captain = 0,
+    Crew = 1,
+    Passenger = 2,
+    Other = 3,
+
+    _Last = Other
+};
+
+NpcHumanRoleType StrToNpcHumanRoleType(std::string const & str);
+
+/*
+ * Roles for furniture.
+ */
+enum class NpcFurnitureRoleType : std::uint32_t
+{
+    Furniture = 0,
+    Other = 1,
+
+    _Last = Other
+};
+
+NpcFurnitureRoleType StrToNpcFurnitureRoleType(std::string const & str);
+
+/*
+ * Reasons for NPC placement failure.
+ */
+enum class NpcCreationFailureReasonType
+{
+    Success,
+    TooManyNpcs,
+    TooManyCaptains
+};
+
+enum class NpcFloorKindType
+{
+    NotAFloor,
+    DefaultFloor // Futurework: areas, etc.
+};
+
+enum class NpcFloorGeometryDepthType
+{
+    NotAFloor,
+    Depth1, // Main depth: H-V
+    Depth2 // Staircases: S-S
+};
+
+enum class NpcFloorGeometryType
+{
+    NotAFloor,
+    // Depth 1: main depth
+    Depth1H,
+    Depth1V,
+    // Depth 2: staircases
+    Depth2S1,
+    Depth2S2
+};
+
+inline NpcFloorGeometryDepthType NpcFloorGeometryDepth(NpcFloorGeometryType geometry)
+{
+    switch (geometry)
+    {
+        case NpcFloorGeometryType::NotAFloor:
+        {
+            return NpcFloorGeometryDepthType::NotAFloor;
+        }
+
+        case NpcFloorGeometryType::Depth1H:
+        case NpcFloorGeometryType::Depth1V:
+        {
+            return NpcFloorGeometryDepthType::Depth1;
+        }
+
+        case NpcFloorGeometryType::Depth2S1:
+        case NpcFloorGeometryType::Depth2S2:
+        {
+            return NpcFloorGeometryDepthType::Depth2;
+        }
+    }
+
+    assert(false);
+    return NpcFloorGeometryDepthType::NotAFloor;
+}
 
 /*
  * Types of frontiers (duh).
@@ -1076,6 +1304,15 @@ template <> struct is_flag<ToolApplicationLocus> : std::true_type {};
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 /*
+ * The different ship views.
+ */
+enum class ShipViewModeType
+{
+    Exterior,
+    Interior
+};
+
+/*
  * The different auto-texturization modes for ships that don't have a texture layer.
  *
  * Note: enum value are serialized in ship files, do not change.
@@ -1134,6 +1371,15 @@ enum class DebugShipRenderModeType
 };
 
 /*
+ * The different levels of detail with which clouds may be rendered.
+ */
+enum class CloudRenderDetailType
+{
+    Basic,
+    Detailed
+};
+
+/*
  * The different ways in which the ocean may be rendered.
  */
 enum class OceanRenderModeType
@@ -1162,6 +1408,25 @@ enum class LandRenderModeType
 };
 
 /*
+ * The different levels of detail with which the land may be rendered.
+ */
+enum class LandRenderDetailType
+{
+    Basic,
+    Detailed
+};
+
+/*
+ * The different types in which NPCs (humans and furniture) may be rendered.
+ */
+enum class NpcRenderModeType
+{
+    Texture,
+    QuadWithRoles,
+    QuadFlat
+};
+
+/*
  * The different vector fields that may be rendered.
  */
 enum class VectorFieldRenderModeType
@@ -1172,6 +1437,15 @@ enum class VectorFieldRenderModeType
     PointDynamicForce,
     PointWaterVelocity,
     PointWaterMomentum
+};
+
+/*
+ * The possible targets of auto-focus.
+ */
+enum class AutoFocusTargetKindType
+{
+    Ship,
+    SelectedNpc
 };
 
 /*

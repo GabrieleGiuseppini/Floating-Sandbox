@@ -20,6 +20,7 @@
 
 #include <GameCore/AABB.h>
 #include <GameCore/BoundedVector.h>
+#include <GameCore/Buffer2D.h>
 #include <GameCore/Colors.h>
 #include <GameCore/GameTypes.h>
 #include <GameCore/ImageData.h>
@@ -50,6 +51,8 @@ public:
     void InitializeWorldTextures(ResourceLocator const & resourceLocator);
 
     void InitializeFishTextures(ResourceLocator const & resourceLocator);
+
+    void OnReset(RenderParameters const & renderParameters);
 
     inline std::vector<std::pair<std::string, RgbaImageData>> const & GetTextureOceanAvailableThumbnails() const
     {
@@ -191,7 +194,7 @@ public:
         float virtualZ,         // [0.0, +1.0]
         float scale,
         float darkening,        // 0.0:dark, 1.0:light
-        float growthProgress,   // [0.0, +1.0]
+        float volumetricGrowthProgress, // 0.0 -> +INF
         RenderParameters const & renderParameters)
     {
         //
@@ -210,7 +213,7 @@ public:
         // Populate quad in buffer
         //
 
-        size_t const cloudTextureIndex = static_cast<size_t>(cloudId) % mCloudTextureAtlasMetadata->GetFrameMetadata().size();
+        size_t const cloudTextureIndex = static_cast<size_t>(cloudId) % mCloudTextureAtlasMetadata->GetAllFramesMetadata().size();
 
         auto const & cloudAtlasFrameMetadata = mCloudTextureAtlasMetadata->GetFrameMetadata(
             CloudTextureGroups::Cloud,
@@ -218,58 +221,79 @@ public:
 
         float const aspectRatio = renderParameters.View.GetAspectRatio();
 
+        float const ndcWidth = scale * cloudAtlasFrameMetadata.FrameMetadata.WorldWidth;
+        float const ndcHeight = scale * cloudAtlasFrameMetadata.FrameMetadata.WorldHeight * aspectRatio;
+
         float const leftX = ndcX - scale * cloudAtlasFrameMetadata.FrameMetadata.AnchorCenterWorld.x;
-        float const rightX = ndcX + scale * (cloudAtlasFrameMetadata.FrameMetadata.WorldWidth - cloudAtlasFrameMetadata.FrameMetadata.AnchorCenterWorld.x);
-        float const topY = ndcY + scale * (cloudAtlasFrameMetadata.FrameMetadata.WorldHeight - cloudAtlasFrameMetadata.FrameMetadata.AnchorCenterWorld.y) * aspectRatio;
+        float const rightX = leftX + ndcWidth;
         float const bottomY = ndcY - scale * cloudAtlasFrameMetadata.FrameMetadata.AnchorCenterWorld.y * aspectRatio;
+        float const topY = bottomY + ndcHeight;
+
+        // Calculate virtual texture coords: ensure unity circle is always covered
+        float minVirtualTexX, maxVirtualTexX;
+        float minVirtualTexY, maxVirtualTexY;
+        if (ndcWidth >= ndcHeight)
+        {
+            minVirtualTexX = 0.5f - ndcWidth / ndcHeight * 0.5f;
+            maxVirtualTexX = 0.5f + ndcWidth / ndcHeight * 0.5f;
+            minVirtualTexY = 0.0f;
+            maxVirtualTexY = 1.0f;
+        }
+        else
+        {
+            minVirtualTexX = 0.0f;
+            maxVirtualTexX = 1.0f;
+            minVirtualTexY = 0.5f - ndcHeight / ndcWidth * 0.5f;
+            maxVirtualTexY = 0.5f + ndcHeight / ndcWidth * 0.5f;
+        }
 
         // top-left
         mCloudVertexBuffer.emplace_back(
             vec2f(leftX, topY),
             vec2f(cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x, cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y),
-            cloudAtlasFrameMetadata.TextureCoordinatesAnchorCenter,
+            vec2f(minVirtualTexX, maxVirtualTexY),
             darkening,
-            growthProgress);
+            volumetricGrowthProgress);
 
         // bottom-left
         mCloudVertexBuffer.emplace_back(
             vec2f(leftX, bottomY),
             vec2f(cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x, cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y),
-            cloudAtlasFrameMetadata.TextureCoordinatesAnchorCenter,
+            vec2f(minVirtualTexX, minVirtualTexY),
             darkening,
-            growthProgress);
+            volumetricGrowthProgress);
 
         // top-right
         mCloudVertexBuffer.emplace_back(
             vec2f(rightX, topY),
             vec2f(cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x, cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y),
-            cloudAtlasFrameMetadata.TextureCoordinatesAnchorCenter,
+            vec2f(maxVirtualTexX, maxVirtualTexY),
             darkening,
-            growthProgress);
+            volumetricGrowthProgress);
 
         // bottom-left
         mCloudVertexBuffer.emplace_back(
             vec2f(leftX, bottomY),
             vec2f(cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x, cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y),
-            cloudAtlasFrameMetadata.TextureCoordinatesAnchorCenter,
+            vec2f(minVirtualTexX, minVirtualTexY),
             darkening,
-            growthProgress);
+            volumetricGrowthProgress);
 
         // top-right
         mCloudVertexBuffer.emplace_back(
             vec2f(rightX, topY),
             vec2f(cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x, cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y),
-            cloudAtlasFrameMetadata.TextureCoordinatesAnchorCenter,
+            vec2f(maxVirtualTexX, maxVirtualTexY),
             darkening,
-            growthProgress);
+            volumetricGrowthProgress);
 
         // bottom-right
         mCloudVertexBuffer.emplace_back(
             vec2f(rightX, bottomY),
             vec2f(cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x, cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y),
-            cloudAtlasFrameMetadata.TextureCoordinatesAnchorCenter,
+            vec2f(maxVirtualTexX, minVirtualTexY),
             darkening,
-            growthProgress);
+            volumetricGrowthProgress);
     }
 
     void UploadCloudsEnd();
@@ -404,7 +428,7 @@ public:
             case OceanRenderModeType::Texture:
             {
                 // We squash the top a little towards the rest position, to give a slight ondulation
-                oceanSegment.yTexture1 = yTop * 0.75f; 
+                oceanSegment.yTexture1 = yTop * 0.75f;
                 oceanSegment.yTexture2 = yVisibleWorldBottom;
 
                 break;
@@ -796,14 +820,16 @@ private:
     void ApplyCanvasSizeChanges(RenderParameters const & renderParameters);
     void ApplyEffectiveAmbientLightIntensityChanges(RenderParameters const & renderParameters);
     void ApplySkyChanges(RenderParameters const & renderParameters);
-    void ApplyOceanDarkeningRateChanges(RenderParameters const & renderParameters);
+    void ApplyOceanDepthDarkeningRateChanges(RenderParameters const & renderParameters);
     void ApplyOceanRenderParametersChanges(RenderParameters const & renderParameters);
     void ApplyOceanTextureIndexChanges(RenderParameters const & renderParameters);
     void ApplyLandRenderParametersChanges(RenderParameters const & renderParameters);
     void ApplyLandTextureIndexChanges(RenderParameters const & renderParameters);
+    void ApplyLandNoiseChanges(RenderParameters const & renderParameters);
 
     void RecalculateClearCanvasColor(RenderParameters const & renderParameters);
     void RecalculateWorldBorder(RenderParameters const & renderParameters);
+    static std::unique_ptr<Buffer2D<float, struct IntegralTag>> MakeLandNoise(RenderParameters const & renderParameters);
 
 private:
 
@@ -873,22 +899,22 @@ private:
     struct CloudVertex
     {
         vec2f ndcPosition;
-        vec2f texturePos;
-        vec2f textureCenter;
+        vec2f atlasTexturePos;
+        vec2f virtualTexturePos;
         float darkness;
-        float growthProgress;
+        float volumetricGrowthProgress;
 
         CloudVertex(
             vec2f _ndcPosition,
-            vec2f _texturePos,
-            vec2f _textureCenter,
+            vec2f _atlasTexturePos,
+            vec2f _virtualTexturePos,
             float _darkness,
-            float _growthProgress)
+            float _volumetricGrowthProgress)
             : ndcPosition(_ndcPosition)
-            , texturePos(_texturePos)
-            , textureCenter(_textureCenter)
+            , atlasTexturePos(_atlasTexturePos)
+            , virtualTexturePos(_virtualTexturePos)
             , darkness(_darkness)
-            , growthProgress(_growthProgress)
+            , volumetricGrowthProgress(_volumetricGrowthProgress)
         {}
     };
 
@@ -1148,6 +1174,8 @@ private:
 
     std::vector<TextureFrameSpecification<WorldTextureGroups>> mLandTextureFrameSpecifications;
     GameOpenGLTexture mLandTextureOpenGLHandle;
+    GameOpenGLTexture mLandNoiseTextureOpenGLHandle;
+    std::unique_ptr<Buffer2D<float, struct IntegralTag>> mLandNoiseToUpload;
 
     std::unique_ptr<TextureAtlasMetadata<FishTextureGroups>> mFishTextureAtlasMetadata;
     GameOpenGLTexture mFishTextureAtlasOpenGLHandle;

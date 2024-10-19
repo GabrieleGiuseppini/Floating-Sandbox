@@ -1,0 +1,83 @@
+###VERTEX-120
+
+#define in attribute
+#define out varying
+
+// Inputs
+in vec3 inLand; // Position (vec2), Depth (float) (0 at top, +X at bottom)
+
+// Parameters
+uniform mat4 paramOrthoMatrix;
+
+// Outputs
+out vec3 worldAndDepth;
+
+void main()
+{
+    gl_Position = paramOrthoMatrix * vec4(inLand.xy, -1.0, 1.0);
+    worldAndDepth = inLand;
+}
+
+###FRAGMENT-120
+
+#include "common.glslinc"
+#include "lamp_tool.glslinc"
+#include "land.glslinc"
+
+#define in varying
+
+// Inputs from previous shader
+in vec3 worldAndDepth;
+
+// Textures
+#ifdef DETAILED_LAND
+uniform sampler2D paramNoiseTexture;
+#endif
+
+// Parameters        
+uniform float paramEffectiveAmbientLightIntensity;
+uniform vec3 paramEffectiveMoonlightColor;
+uniform vec3 paramLandFlatColor;
+uniform float paramOceanDepthDarkeningRate;
+
+void main()
+{
+#ifdef DETAILED_LAND
+
+    vec3 color = ApplyLandNoise(
+        paramLandFlatColor,
+        worldAndDepth.xy,
+        paramNoiseTexture);
+
+#else
+
+    vec3 color = paramLandFlatColor;
+
+#endif
+
+    // Calculate depth darkening
+    float darkeningFactor = CalculateOceanDepthDarkeningFactor(
+        worldAndDepth.y,
+        paramOceanDepthDarkeningRate);
+
+    // Calculate lamp tool intensity
+    float lampToolIntensity = CalculateLampToolIntensity(gl_FragCoord.xy);
+
+    // Apply depth darkening
+    color = mix(
+        color,
+        vec3(0.),
+        darkeningFactor * (1.0 - lampToolIntensity));
+
+    // Anti-aliasing
+    float alpha = worldAndDepth.z / (0.2 + abs(dFdx(worldAndDepth.z)));
+
+    // Apply ambient light
+    gl_FragColor = vec4(
+        ApplyAmbientLight(
+            color, 
+            paramEffectiveMoonlightColor * 0.5, 
+            paramEffectiveAmbientLightIntensity, 
+            lampToolIntensity),
+        alpha);
+} 

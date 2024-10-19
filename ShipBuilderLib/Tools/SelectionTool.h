@@ -115,11 +115,21 @@ public:
         ResourceLocator const & resourceLocator);
 };
 
-class TextureSelectionTool final : public SelectionTool
+class ExteriorTextureSelectionTool final : public SelectionTool
 {
 public:
 
-    TextureSelectionTool(
+    ExteriorTextureSelectionTool(
+        Controller & controller,
+        SelectionManager & selectionManager,
+        ResourceLocator const & resourceLocator);
+};
+
+class InteriorTextureSelectionTool final : public SelectionTool
+{
+public:
+
+    InteriorTextureSelectionTool(
         Controller & controller,
         SelectionManager & selectionManager,
         ResourceLocator const & resourceLocator);

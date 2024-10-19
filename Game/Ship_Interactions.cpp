@@ -30,7 +30,7 @@ namespace Physics {
 // SS   SS  H     H     I     P
 //   SSS    H     H  IIIIIII  P
 
-std::optional<ElementIndex> Ship::PickPointToMove(
+std::optional<ConnectedComponentId> Ship::PickConnectedComponentToMove(
     vec2f const & pickPosition,
     GameParameters const & gameParameters) const
 {
@@ -43,44 +43,47 @@ std::optional<ElementIndex> Ship::PickPointToMove(
     // Separate orphaned and non-orphaned points; we'll choose
     // orphaned when there are no non-orphaned
     float bestNonOrphanedSquareDistance = std::numeric_limits<float>::max();
-    ElementIndex bestNonOrphanedPoint = NoneElementIndex;
+    ConnectedComponentId bestNonOrphanedPointCCId = NoneConnectedComponentId;
     float bestOrphanedSquareDistance = std::numeric_limits<float>::max();
-    ElementIndex bestOrphanedPoint = NoneElementIndex;
+    ConnectedComponentId bestOrphanedPointCCId = NoneConnectedComponentId;
 
     for (auto p : mPoints.RawShipPoints())
     {
         float const squareDistance = (mPoints.GetPosition(p) - pickPosition).squareLength();
         if (squareDistance < squareSearchRadius)
         {
-            if (!mPoints.GetConnectedSprings(p).ConnectedSprings.empty())
+            if (mPoints.GetConnectedComponentId(p) != NoneConnectedComponentId)
             {
-                if (squareDistance < bestNonOrphanedSquareDistance)
+                if (!mPoints.GetConnectedSprings(p).ConnectedSprings.empty())
                 {
-                    bestNonOrphanedSquareDistance = squareDistance;
-                    bestNonOrphanedPoint = p;
+                    if (squareDistance < bestNonOrphanedSquareDistance)
+                    {
+                        bestNonOrphanedSquareDistance = squareDistance;
+                        bestNonOrphanedPointCCId = mPoints.GetConnectedComponentId(p);
+                    }
                 }
-            }
-            else
-            {
-                if (squareDistance < bestOrphanedSquareDistance)
+                else
                 {
-                    bestOrphanedSquareDistance = squareDistance;
-                    bestOrphanedPoint = p;
+                    if (squareDistance < bestOrphanedSquareDistance)
+                    {
+                        bestOrphanedSquareDistance = squareDistance;
+                        bestOrphanedPointCCId = mPoints.GetConnectedComponentId(p);
+                    }
                 }
             }
         }
     }
 
-    if (bestNonOrphanedPoint != NoneElementIndex)
-        return bestNonOrphanedPoint;
-    else if (bestOrphanedPoint != NoneElementIndex)
-        return bestOrphanedPoint;
+    if (bestNonOrphanedPointCCId != NoneConnectedComponentId)
+        return bestNonOrphanedPointCCId;
+    else if (bestOrphanedPointCCId != NoneConnectedComponentId)
+        return bestOrphanedPointCCId;
     else
         return std::nullopt;
 }
 
 void Ship::MoveBy(
-    ElementIndex pointElementIndex,
+    ConnectedComponentId connectedComponentId,
     vec2f const & offset,
     vec2f const & inertialVelocity,
     GameParameters const & gameParameters)
@@ -90,31 +93,26 @@ void Ship::MoveBy(
         * gameParameters.MoveToolInertia
         * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
 
-    // Get connected component ID of the point
-    auto const connectedComponentId = mPoints.GetConnectedComponentId(pointElementIndex);
-    if (connectedComponentId != NoneConnectedComponentId)
+    // Move all points (ephemeral and non-ephemeral) that belong to the same connected component
+    for (auto const p : mPoints)
     {
-        // Move all points (ephemeral and non-ephemeral) that belong to the same connected component
-        for (auto const p : mPoints)
+        if (mPoints.GetConnectedComponentId(p) == connectedComponentId)
         {
-            if (mPoints.GetConnectedComponentId(p) == connectedComponentId)
+            mPoints.SetPosition(p, mPoints.GetPosition(p) + offset);
+
+            if (!mPoints.IsPinned(p))
             {
-                mPoints.SetPosition(p, mPoints.GetPosition(p) + offset);
-
-                if (!mPoints.IsPinned(p))
-                {
-                    mPoints.SetVelocity(p, actualInertialVelocity);
-                    mPoints.SetWaterVelocity(p, -actualInertialVelocity);
-                }
-
-                // Zero-out already-existing forces
-                mPoints.SetStaticForce(p, vec2f::zero());
-                mPoints.SetDynamicForce(p, vec2f::zero());
+                mPoints.SetVelocity(p, actualInertialVelocity);
+                mPoints.SetWaterVelocity(p, -actualInertialVelocity);
             }
-        }
 
-        TrimForWorldBounds(gameParameters);
+            // Zero-out already-existing forces
+            mPoints.SetStaticForce(p, vec2f::zero());
+            mPoints.SetDynamicForce(p, vec2f::zero());
+        }
     }
+
+    TrimForWorldBounds(gameParameters);
 }
 
 void Ship::MoveBy(
@@ -148,7 +146,7 @@ void Ship::MoveBy(
 }
 
 void Ship::RotateBy(
-    ElementIndex pointElementIndex,
+    ConnectedComponentId connectedComponentId,
     float angle,
     vec2f const & center,
     float inertialAngle,
@@ -164,34 +162,29 @@ void Ship::RotateBy(
     vec2f const inertialRotX(cos(inertialAngle), sin(inertialAngle));
     vec2f const inertialRotY(-sin(inertialAngle), cos(inertialAngle));
 
-    // Get connected component ID of the point
-    auto connectedComponentId = mPoints.GetConnectedComponentId(pointElementIndex);
-    if (connectedComponentId != NoneConnectedComponentId)
+    // Rotate all points (ephemeral and non-ephemeral) that belong to the same connected component
+    for (auto const p : mPoints)
     {
-        // Rotate all points (ephemeral and non-ephemeral) that belong to the same connected component
-        for (auto const p : mPoints)
+        if (mPoints.GetConnectedComponentId(p) == connectedComponentId)
         {
-            if (mPoints.GetConnectedComponentId(p) == connectedComponentId)
+            vec2f const centeredPos = mPoints.GetPosition(p) - center;
+            vec2f const newPosition = vec2f(centeredPos.dot(rotX), centeredPos.dot(rotY)) + center;
+            mPoints.SetPosition(p, newPosition);
+
+            if (!mPoints.IsPinned(p))
             {
-                vec2f const centeredPos = mPoints.GetPosition(p) - center;
-                vec2f const newPosition = vec2f(centeredPos.dot(rotX), centeredPos.dot(rotY)) + center;
-                mPoints.SetPosition(p, newPosition);
-
-                if (!mPoints.IsPinned(p))
-                {
-                    vec2f const linearInertialVelocity = (vec2f(centeredPos.dot(inertialRotX), centeredPos.dot(inertialRotY)) - centeredPos) * inertiaMagnitude;
-                    mPoints.SetVelocity(p, linearInertialVelocity);
-                    mPoints.SetWaterVelocity(p, -linearInertialVelocity);
-                }
-
-                // Zero-out already-existing forces
-                mPoints.SetStaticForce(p, vec2f::zero());
-                mPoints.SetDynamicForce(p, vec2f::zero());
+                vec2f const linearInertialVelocity = (vec2f(centeredPos.dot(inertialRotX), centeredPos.dot(inertialRotY)) - centeredPos) * inertiaMagnitude;
+                mPoints.SetVelocity(p, linearInertialVelocity);
+                mPoints.SetWaterVelocity(p, -linearInertialVelocity);
             }
-        }
 
-        TrimForWorldBounds(gameParameters);
+            // Zero-out already-existing forces
+            mPoints.SetStaticForce(p, vec2f::zero());
+            mPoints.SetDynamicForce(p, vec2f::zero());
+        }
     }
+
+    TrimForWorldBounds(gameParameters);
 }
 
 void Ship::RotateBy(
@@ -359,7 +352,7 @@ void Ship::Pull(Interaction::ArgumentsUnion::PullArguments const & args)
 
 bool Ship::DestroyAt(
     vec2f const & targetPos,
-    float radiusMultiplier,
+    float radius,
     float currentSimulationTime,
     GameParameters const & gameParameters)
 {
@@ -394,11 +387,6 @@ bool Ship::DestroyAt(
     // Destroy points probabilistically - probability is one at
     // distance = 0 and zero at distance = radius
     //
-
-    float const radius =
-        gameParameters.DestroyRadius
-        * radiusMultiplier
-        * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
     float const squareRadius = radius * radius;
 
@@ -495,7 +483,7 @@ bool Ship::SawThrough(
     {
         if (!mSprings.IsDeleted(springIndex))
         {
-            if (Segment::ProperIntersectionTest(
+            if (Geometry::Segment::ProperIntersectionTest(
                 adjustedStartPos,
                 endPos,
                 mSprings.GetEndpointAPosition(springIndex, mPoints),
@@ -515,7 +503,7 @@ bool Ship::SawThrough(
                 if (isMetal)
                 {
                     // Emit sparkles
-                    GenerateSparklesForCut(
+                    InternalSpawnSparklesForCut(
                         springIndex,
                         adjustedStartPos,
                         endPos,
@@ -667,7 +655,9 @@ void Ship::ApplyBlastAt(
             blastForceMagnitude));
 }
 
-void Ship::ApplyBlastAt(Interaction::ArgumentsUnion::BlastArguments const & args)
+void Ship::ApplyBlastAt(
+    Interaction::ArgumentsUnion::BlastArguments const & args,
+    GameParameters const & gameParameters)
 {
     float const squareRadius = args.Radius * args.Radius;
 
@@ -691,6 +681,13 @@ void Ship::ApplyBlastAt(Interaction::ArgumentsUnion::BlastArguments const & args
                 pointRadius.normalise(pointRadiusLength) * args.Magnitude / std::sqrt(std::max((pointRadiusLength * 0.4f) + 0.6f, 1.0f)));
         }
     }
+
+    // Apply side-effects
+    OnBlast(
+        args.CenterPos,
+        args.Radius,
+        args.Magnitude,
+        gameParameters);
 }
 
 bool Ship::ApplyElectricSparkAt(
@@ -710,41 +707,6 @@ bool Ship::ApplyElectricSparkAt(
         gameParameters);
 }
 
-void Ship::ApplyRadialWindFrom(
-    vec2f const & sourcePos,
-    float preFrontRadius,
-    float preFrontWindSpeed,
-    float mainFrontRadius,
-    float mainFrontWindSpeed,
-    GameParameters const & gameParameters)
-{
-    float const effectiveAirDensity = Formulae::CalculateAirDensity(
-        gameParameters.AirTemperature,
-        gameParameters);
-
-    // Wind force:
-    //  Km/h -> Newton: F = 1/2 rho v**2 A
-
-    float const preFrontWindForceMagnitude =
-        preFrontWindSpeed * preFrontWindSpeed
-        * 0.5f
-        * effectiveAirDensity;
-
-    float const mainFrontWindForceMagnitude =
-        mainFrontWindSpeed * mainFrontWindSpeed
-        * 0.5f
-        * effectiveAirDensity;
-
-    // Queue interaction
-    mQueuedInteractions.emplace_back(
-        Interaction::ArgumentsUnion::RadialWindArguments(
-            sourcePos,
-            preFrontRadius,
-            preFrontWindForceMagnitude,
-            mainFrontRadius,
-            mainFrontWindForceMagnitude));
-}
-
 bool Ship::ApplyLaserCannonThrough(
     vec2f const & startPos,
     vec2f const & endPos,
@@ -756,13 +718,13 @@ bool Ship::ApplyLaserCannonThrough(
     //
 
     int cutCount = 0;
-    
+
     for (auto springIndex : mSprings)
     {
         if (!mSprings.IsDeleted(springIndex)
             && GameRandomEngine::GetInstance().GenerateUniformBoolean(10.0f * strength / mSprings.GetBaseStructuralMaterial(springIndex).GetMass()))
         {
-            if (Segment::ProperIntersectionTest(
+            if (Geometry::Segment::ProperIntersectionTest(
                 startPos,
                 endPos,
                 mSprings.GetEndpointAPosition(springIndex, mPoints),
@@ -799,7 +761,7 @@ bool Ship::ApplyLaserCannonThrough(
 
     for (auto p : mPoints)
     {
-        float const distance = Segment::DistanceToPoint(startPos, endPos, mPoints.GetPosition(p));
+        float const distance = Geometry::Segment::DistanceToPoint(startPos, endPos, mPoints.GetPosition(p));
         if (distance < SearchRadius)
         {
             //
@@ -824,55 +786,10 @@ bool Ship::ApplyLaserCannonThrough(
     return cutCount > 0;
 }
 
-void Ship::ApplyRadialWindFrom(Interaction::ArgumentsUnion::RadialWindArguments const & args)
-{
-    // Visit all points, including ephemerals
-    for (auto const pointIndex : mPoints)
-    {
-        vec2f const pointPosition = mPoints.GetPosition(pointIndex);
-        if (!mParentWorld.GetOceanSurface().IsUnderwater(pointPosition))
-        {
-            vec2f const displacement = pointPosition - args.SourcePos;
-            float const radius = displacement.length();
-            if (radius < args.PreFrontRadius) // Within sphere
-            {
-                // Calculate force magnitude
-                float windForceMagnitude;
-                if (radius < args.MainFrontRadius)
-                {
-                    windForceMagnitude = args.MainFrontWindForceMagnitude;
-                }
-                else
-                {
-                    windForceMagnitude = args.PreFrontWindForceMagnitude;
-                }
-
-                // Apply force
-                mPoints.AddStaticForce(
-                    pointIndex,
-                    displacement.normalise(radius) * windForceMagnitude * mPoints.GetMaterialWindReceptivity(pointIndex));
-            }
-        }
-    }
-
-    // Remember wind field
-    mWindField.emplace(
-        args.SourcePos,
-        args.PreFrontRadius,
-        args.PreFrontWindForceMagnitude);
-}
-
 void Ship::DrawTo(
     vec2f const & targetPos,
-    float strengthFraction,
-    GameParameters const & gameParameters)
+    float strength)
 {
-    // Calculate draw force
-    float const strength =
-        GameParameters::DrawForce
-        * strengthFraction
-        * (gameParameters.IsUltraViolentMode ? 20.0f : 1.0f);
-
     // Queue interaction
     mQueuedInteractions.emplace_back(
         Interaction::ArgumentsUnion::DrawArguments(
@@ -891,6 +808,12 @@ void Ship::DrawTo(Interaction::ArgumentsUnion::DrawArguments const & args)
         vec2f displacement = (args.CenterPos - mPoints.GetPosition(pointIndex));
         float forceMagnitude = args.Strength / sqrtf(0.1f + displacement.length());
 
+        // Scale back force if mass is small
+        // 0  -> 0
+        // 50 -> 1
+        // +INF -> 1
+        forceMagnitude *= std::min(mPoints.GetMass(pointIndex) / 50.0f, 1.0f);
+
         mPoints.AddStaticForce(
             pointIndex,
             displacement.normalise() * forceMagnitude);
@@ -899,15 +822,8 @@ void Ship::DrawTo(Interaction::ArgumentsUnion::DrawArguments const & args)
 
 void Ship::SwirlAt(
     vec2f const & targetPos,
-    float strengthFraction,
-    GameParameters const & gameParameters)
+    float strength)
 {
-    // Calculate swirl strength
-    float const strength =
-        GameParameters::SwirlForce
-        * strengthFraction
-        * (gameParameters.IsUltraViolentMode ? 20.0f : 1.0f);
-
     // Queue interaction
     mQueuedInteractions.emplace_back(
         Interaction::ArgumentsUnion::SwirlArguments(
@@ -924,8 +840,7 @@ void Ship::SwirlAt(Interaction::ArgumentsUnion::SwirlArguments const & args)
     for (auto pointIndex : mPoints)
     {
         vec2f displacement = (args.CenterPos - mPoints.GetPosition(pointIndex));
-        float const displacementLength = displacement.length();
-        float forceMagnitude = args.Strength / sqrtf(0.1f + displacementLength);
+        float forceMagnitude = args.Strength / sqrtf(0.1f + displacement.length());
 
         mPoints.AddStaticForce(
             pointIndex,
@@ -959,9 +874,10 @@ std::optional<ToolApplicationLocus> Ship::InjectBubblesAt(
     if (float const depth = mParentWorld.GetOceanSurface().GetDepth(position);
         depth > 0.0f)
     {
-        GenerateAirBubble(
+        InternalSpawnAirBubble(
             position,
             depth,
+            GameParameters::ShipAirBubbleFinalScale,
             GameParameters::Temperature0,
             currentSimulationTime,
             mMaxMaxPlaneId,
@@ -1016,49 +932,52 @@ std::optional<ToolApplicationLocus> Ship::InjectPressureAt(
         // So if the point is inside a triangle, inject at the closest non-hull endpoint
         for (auto const & t : mTriangles)
         {
-            auto const pointAIndex = mTriangles.GetPointAIndex(t);
-            auto const pointBIndex = mTriangles.GetPointBIndex(t);
-            auto const pointCIndex = mTriangles.GetPointCIndex(t);
-
-            auto const pointAPosition = mPoints.GetPosition(pointAIndex);
-            auto const pointBPosition = mPoints.GetPosition(pointBIndex);
-            auto const pointCPosition = mPoints.GetPosition(pointCIndex);
-
-            if (IsPointInTriangle(
-                targetPos,
-                pointAPosition,
-                pointBPosition,
-                pointCPosition))
+            if (!mTriangles.IsDeleted(t))
             {
-                if ((targetPos - pointAPosition).length() < (targetPos - pointBPosition).length()
-                    && !mPoints.GetIsHull(pointAIndex))
+                auto const pointAIndex = mTriangles.GetPointAIndex(t);
+                auto const pointBIndex = mTriangles.GetPointBIndex(t);
+                auto const pointCIndex = mTriangles.GetPointCIndex(t);
+
+                auto const pointAPosition = mPoints.GetPosition(pointAIndex);
+                auto const pointBPosition = mPoints.GetPosition(pointBIndex);
+                auto const pointCPosition = mPoints.GetPosition(pointCIndex);
+
+                if (Geometry::IsPointInTriangle(
+                    targetPos,
+                    pointAPosition,
+                    pointBPosition,
+                    pointCPosition))
                 {
-                    // Closer to A than B
-                    if ((targetPos - pointAPosition).length() < (targetPos - pointCPosition).length()
-                        || mPoints.GetIsHull(pointCIndex))
+                    if ((targetPos - pointAPosition).length() < (targetPos - pointBPosition).length()
+                        && !mPoints.GetIsHull(pointAIndex))
                     {
-                        bestPointIndex = pointAIndex;
+                        // Closer to A than B
+                        if ((targetPos - pointAPosition).length() < (targetPos - pointCPosition).length()
+                            || mPoints.GetIsHull(pointCIndex))
+                        {
+                            bestPointIndex = pointAIndex;
+                        }
+                        else
+                        {
+                            bestPointIndex = pointCIndex;
+                        }
                     }
                     else
                     {
-                        bestPointIndex = pointCIndex;
+                        // Closer to B than A
+                        if (((targetPos - pointBPosition).length() < (targetPos - pointCPosition).length() || mPoints.GetIsHull(pointCIndex))
+                            && !mPoints.GetIsHull(pointBIndex))
+                        {
+                            bestPointIndex = pointBIndex;
+                        }
+                        else if (!mPoints.GetIsHull(pointCIndex))
+                        {
+                            bestPointIndex = pointCIndex;
+                        }
                     }
-                }
-                else
-                {
-                    // Closer to B than A
-                    if (((targetPos - pointBPosition).length() < (targetPos - pointCPosition).length() || mPoints.GetIsHull(pointCIndex))
-                        && !mPoints.GetIsHull(pointBIndex))
-                    {
-                        bestPointIndex = pointBIndex;
-                    }
-                    else if (!mPoints.GetIsHull(pointCIndex))
-                    {
-                        bestPointIndex = pointCIndex;
-                    }
-                }
 
-                break;
+                    break;
+                }
             }
         }
     }
@@ -1637,7 +1556,7 @@ void Ship::ApplyLightning(
                     gameParameters);
 
                 // Generate sparkles
-                GenerateSparklesForLightning(
+                InternalSpawnSparklesForLightning(
                     pointIndex,
                     currentSimulationTime,
                     gameParameters);
@@ -1676,7 +1595,7 @@ void Ship::ApplyLightning(
     }
 }
 
-void Ship::HighlightElectricalElement(ElectricalElementId electricalElementId)
+void Ship::HighlightElectricalElement(GlobalElectricalElementId electricalElementId)
 {
     assert(electricalElementId.GetShipId() == mId);
 
@@ -1686,7 +1605,7 @@ void Ship::HighlightElectricalElement(ElectricalElementId electricalElementId)
 }
 
 void Ship::SetSwitchState(
-    ElectricalElementId electricalElementId,
+    GlobalElectricalElementId electricalElementId,
     ElectricalState switchState,
     GameParameters const & gameParameters)
 {
@@ -1700,7 +1619,7 @@ void Ship::SetSwitchState(
 }
 
 void Ship::SetEngineControllerState(
-    ElectricalElementId electricalElementId,
+    GlobalElectricalElementId electricalElementId,
     float controllerValue,
     GameParameters const & gameParameters)
 {
@@ -1709,6 +1628,24 @@ void Ship::SetEngineControllerState(
     mElectricalElements.SetEngineControllerState(
         electricalElementId,
         controllerValue,
+        gameParameters);
+}
+
+void Ship::SpawnAirBubble(
+    vec2f const & position,
+    float finalScale, // Relative to texture's world dimensions
+    float temperature,
+    float currentSimulationTime,
+    PlaneId planeId,
+    GameParameters const & gameParameters)
+{
+    InternalSpawnAirBubble(
+        position,
+        mParentWorld.GetOceanSurface().GetDepth(position),
+        finalScale,
+        temperature,
+        currentSimulationTime,
+        planeId,
         gameParameters);
 }
 

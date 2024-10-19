@@ -17,6 +17,7 @@
 #include <cassert>
 #include <memory>
 #include <optional>
+#include <unordered_map>
 #include <vector>
 
 /*
@@ -95,7 +96,7 @@ struct ShipFactorySpring
     ElementIndex PointBIndex;
     uint32_t PointBAngle;
 
-    FixedSizeVector<ElementIndex, 2> SuperTriangles; // Triangles that have this spring as an edge
+    FixedSizeVector<ElementIndex, 2> Triangles; // Triangles that have this spring as an edge
 
     ElementCount CoveringTrianglesCount; // Triangles that cover this spring, not necessarily having it as an edge
 
@@ -108,7 +109,7 @@ struct ShipFactorySpring
         , PointAAngle(pointAAngle)
         , PointBIndex(pointBIndex)
         , PointBAngle(pointBAngle)
-        , SuperTriangles()
+        , Triangles()
         , CoveringTrianglesCount(0)
     {
     }
@@ -124,14 +125,14 @@ struct ShipFactoryTriangle
 {
     std::array<ElementIndex, 3> PointIndices1;
 
-    FixedSizeVector<ElementIndex, 3> SubSprings2;
+    FixedSizeVector<ElementIndex, 3> Springs2;
 
     std::optional<ElementIndex> CoveredTraverseSpringIndex2;
 
     ShipFactoryTriangle(
         std::array<ElementIndex, 3> const & pointIndices1)
         : PointIndices1(pointIndices1)
-        , SubSprings2()
+        , Springs2()
         , CoveredTraverseSpringIndex2()
     {
     }
@@ -149,3 +150,51 @@ struct ShipFactoryFrontier
         , EdgeIndices2(std::move(edgeIndices2))
     {}
 };
+
+struct ShipFactoryPointPair
+{
+    ElementIndex Endpoint1Index;
+    ElementIndex Endpoint2Index;
+
+    ShipFactoryPointPair(
+        ElementIndex endpoint1Index,
+        ElementIndex endpoint2Index)
+        : Endpoint1Index(std::min(endpoint1Index, endpoint2Index))
+        , Endpoint2Index(std::max(endpoint1Index, endpoint2Index))
+    {}
+
+    bool operator==(ShipFactoryPointPair const & other) const
+    {
+        return this->Endpoint1Index == other.Endpoint1Index
+            && this->Endpoint2Index == other.Endpoint2Index;
+    }
+
+    struct Hasher
+    {
+        size_t operator()(ShipFactoryPointPair const & p) const
+        {
+            return p.Endpoint1Index * 23
+                + p.Endpoint2Index;
+        }
+    };
+};
+
+using ShipFactoryPointPairToIndexMap = std::unordered_map<ShipFactoryPointPair, ElementIndex, ShipFactoryPointPair::Hasher>;
+
+struct ShipFactoryFloorInfo
+{
+    NpcFloorKindType FloorKind;
+    NpcFloorGeometryType FloorGeometry;
+    ElementIndex SpringIndex;
+
+    ShipFactoryFloorInfo(
+        NpcFloorKindType floorKind,
+        NpcFloorGeometryType floorGeometry,
+        ElementIndex springIndex)
+        : FloorKind(floorKind)
+        , FloorGeometry(floorGeometry)
+        , SpringIndex(springIndex)
+    {}
+};
+
+using ShipFactoryFloorPlan = std::unordered_map<ShipFactoryPointPair, ShipFactoryFloorInfo, ShipFactoryPointPair::Hasher>;

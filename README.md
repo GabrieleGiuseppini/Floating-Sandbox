@@ -4,39 +4,44 @@ A two-dimensional physics simulation written in C++.
 # Overview
 Floating Sandbox is a realistic 2D physics simulator. It is essentially a particle system that uses mass-spring networks to simulate rigid bodies, with added thermodynamics, fluid dynamics, and basic electrotechnics. The simulation is mostly focused around ships floating on water, but you can build any kind of object using the integrated ShipBuilder and a database of over 1,000 different materials. Once you build an object you can punch holes into it, slice it, apply forces and heat, set it on fire, smash it with bomb explosions - anything you want. And when it starts sinking, you can watch it slowly dive its way into the abyss, where it will rot for eternity!
 
-<img src="https://i.imgur.com/c8fTsgY.png">
+<img src="https://i.imgur.com/Rl9K9w1.png">
 
-The game is really a generic physics simulator that can be used to simulate just about any 2D floating rigid body under stress.
+The simulator is _crammed_ with physics; every conceivable aspect of the gameplay is governed exclusively by classical mechanics (e.g. friction and elasticity, conservation of momentum, Hooke's spring forces, impacts), thermodynamics (e.g. heat transfer, dissipation, combustion and melting), fluid dynamics (e.g. buoyancy, drag, hydrostatic and atmospheric pressure, wind), and so on, while the extensive material system has been put together using real physical characteristics specific to each of the materials - ranging from density, mass, and friction coefficients, up to elasticity and thermal expansion coefficients.
 
-As of now the simulator implements the following aspects of physics:
-- Classical mechanics - Hooke's law of springs, impacts with rigid surfaces, thrust from engines
-- Thermodynamics - heat transfer, dissipation, combustion, melting
-- Fluid dynamics - buoyancy, drag, hydrostatic and atmospheric pressure, wind
-- Basic electrotechnics - conductivity
+In coding this game I've been trying hard to stay true to my mission of avoiding "visual tricks", striving instead to obtain behaviors by means of careful, detailed, and honest simulations. The end result has been very rewarding for me, as I'm constantly surprised by the natural feeling and unexpected side-effects that spring out of the game. For example, round objects rotate when sliding downhill - which is completely due to friction, without a single line of code imposing some "magical" rotational forces - and different shapes sink with different velocities and trajectories - a side-effect of fluid dynamics acting on surfaces.
 
 <img src="https://i.imgur.com/kovxCty.png">
 <img src="https://i.imgur.com/XHw3Jrl.png">
+
+The world of Floating Sandbox is rich with interactions, and new ones are being continuously added. To make a few examples, you can:
+* Detonate different kinds of bombs with different behaviors
+* Trigger storms with rain, hurricane winds, and lightnings - all interacting with the ship in a way or the other
+* Overheat materials and reach either their combustion point or melting point
+* Use tools to damage the ship by e.g. hitting, pulling parts, overheating, and inflating
+* Use tools to impart tremendous radial or rotational force fields
+* Control waves on the surface of the sea, creating monster waves and triggering tsunami's
+* Spawn NPCs walking about the ship and being subject to what's happening around them
 
 The simulator comes with a built-in ShipBuilder that allows you to create ships by drawing individual particles choosing materials out of the game's library. Each material has its own physical properties, such as mass, strength, stiffness, water permeability, specific heat, sound properties, and so on. You can also create electrical layers with electrical materials (lamps, engines, generators, switches, etc.), layers with ropes, and texture layers for a final, high-definition look'n'feel of the ship.
 
 <img src="https://i.imgur.com/lSUj90c.png">
 <img src="https://imgur.com/E0X3n93.png">
 
-In coding this game I'm trying to avoid as much as possible tricks that just please the eye; every bit of the simulation is instead grounded as close as possible into real physics. For example, the material system has been put together using actual physical attributes of real-world materials, and all of the interactions are constructed according to the laws of physics. This makes it sometimes hard to build structures that sustain their own weight or float easily - as it is in reality, after all - but the reward is a realistic world-in-a-sandbox where every action and corresponding reaction are not pre-programmed, but rather are evolved naturally by the physics simulation engine.
-
 The game currently comes with a few example objects - mostly ships - and I'm always busy making new ships and objects. Anyone is encouraged to make their own objects, and if you'd like them to be included in the game, just get in touch with me - you'll get proper recognition in the About dialog, of course. Also have a look at [the official Floating Sandbox web site](https://floatingsandbox.com/), where you can find plenty of Ship Packs!
 
-There are lots of improvements that I'm currently working on; some of these are:
-- Improved rigid body simulation algorithm
-- Splashes originating from collisions with water
-- Smoke from fire
-- Multiple ships and collision detection among parts of the ships
-- Ocean floor getting dents upon impact
-- NPC's that move freely within ships
+Floating Sandbox is featured at [GameJolt](https://gamejolt.com/games/floating-sandbox/353572), and plenty of videos may be found on any major social media platforms.
 
-These and other ideas will come out with frequent releases.
+# Implementation Details
+Some nerdy facts here.
+* The most CPU-hungry algorithms are implemented with x86 instrinsics (targeting SSE-2) to take advantage of vectorized operations; for example, the newtonian integration step operates on 4 floats at a time
+* The physical state of particles and springs is maintained in memory-aligned buffers, grouping quantities together as a function of the main algorithms operating on them - thus improving locality and reducing cache misses
+* The spring relaxation algorithm (aka rigidity simulation) is at the core of the simulation, consuming about 60% of the time spent for the simulation of each single frame. At each frame we solve 40 micro-iterations, each distributed on as many cores as possible and implemented with finely-optimized routines written with x86 intrinsics; you may read more about these optimizations on [my technical blog](https://gabrielegiuseppini.wordpress.com/2023/04/01/adventures-with-2d-mass-spring-networks-part-i/)
+* As the topology of the ship's mesh changes during the game due to destruction and wrecking, the simulator constantly re-calculates the external boundaries of each connected component via an algorithm that only operates on the neighborhood of topology changes
+* The ocean surface is simulated with modified (Shallow Water Equations)[https://en.wikipedia.org/wiki/Shallow_water_equations] (SWE's), coupled with rigid bodies to generate surface perturbations
+* The physics of NPC's takes place in a [barycentric coordinate system](https://en.wikipedia.org/wiki/Barycentric_coordinate_system), tracing NPC's particles' trajectories within the triangular ship mesh
+* Rendering is implemented with OpenGL (targeting a very old but widely-adopted 2.1) and happens on a separate thread, allowing the game to update the next simulation step while rendering the previous one. All of the final shading is implemented in _glsl_, with many renderings being completely procedural (e.g. flames, lightnings, rain)
 
-The game is also featured at [GameJolt](https://gamejolt.com/games/floating-sandbox/353572), and plenty of videos may be found on any major social media. 
+And even with all of this, the simulator still adapts itself to the characteristics of the machine it's running on, obtaining perfectly reasonable FPS rates on old computers - even on single-core laptops!
 
 # System Requirements
 - Windows:
@@ -49,16 +54,12 @@ The game is also featured at [GameJolt](https://gamejolt.com/games/floating-sand
 	- X11 and GTK3
 	- OpenGL 2.1 or later, MESA drivers are fine
 	- OpenAL, Vorbis and FLAC
+		- Many Linux distributions now use Wayland for their desktop environments, and Floating Sandbox will encounter an error when launching. To rectify this, set the environment variable "GDK_BACKEND" to "x11"
 
 <img src="https://i.imgur.com/6LOVsqX.jpg">
 
 # History
-I started coding this game after stumbling upon Luke Wren's and Francis Racicot's (Pac0master) [Ship Sandbox](https://github.com/Wren6991/Ship-Sandbox). After becoming fascinated by it, I [forked](https://github.com/GabrieleGiuseppini/Ship-Sandbox) Luke's GitHub repo and started playing with the source code. After less than a year I realized I had rewritten all of the original code, while improving the game's FPS rate from 7 to 30 (on my 2009 laptop!). At this moment I decided that my new project was worthy of a new name and a new source code repository, the one you are looking at now.
-
-# Performance Characteristics
-The bottleneck at the moment is the spring relaxation algorithm (aka rigidity simulation), which requires about 60% of the time spent for the simulation of each single frame. This algorithm has been heavily optimized as of version 1.18.0 (you may read about these optimizations on [my technical blog](https://gabrielegiuseppini.wordpress.com/2023/04/01/adventures-with-2d-mass-spring-networks-part-i/)), and the entire simulation can now make use of multiple threads; nonetheless, rigidity simulation is still the bottleneck. 
-
-Rendering is a different story. At some point I've moved all the rendering code to a separate thread, allowing simulation updates and rendering to run in parallel. Obviously, only multi-core boxes benefit from parallel rendering, and boxes with very slow or emulated graphics hardware benefit the most. In any case, at this moment rendering requires a fraction of the time needed for updating the simulation, so CPU speed still dominates the performance you get, compared to GPU speed.
+I started coding this game after stumbling upon Luke Wren's and Francis Racicot's (Pac0master) [Ship Sandbox](https://github.com/Wren6991/Ship-Sandbox). After becoming fascinated by it, I [forked](https://github.com/GabrieleGiuseppini/Ship-Sandbox) Luke's GitHub repo and started playing with the source code. After less than a year I realized I had rewritten all of the original code, while improving the game's FPS rate from 7 to 30 (on my old 2009 laptop!). At that moment I decided that my new project was worthy of a new name and a new source code repository, the one you are looking at now.
 
 # Building the Game
 I build this game with Visual Studio 2022 (thus with full C++ 17 support) on Windows. From time to time I also build on Ubuntu to ensure the codebase is still portable.
@@ -81,6 +82,6 @@ Over the years I've been writing down OS-specific build steps:
 # Contributing
 At this moment I'm looking for volunteers for two specific tasks: creating new ships, and building the game on non-Windows platforms.
 
-If you like building ships and you are making nice models, I'd like to collect your ships - and whatever other bodies you can imagine floating and sinking in water! Just send your ships to me and you'll get a proper *thank you* in the About dialog!
+If you like building ships and you are making nice models, I'd like to collect your ships - and whatever other bodies you can imagine floating and sinking in water! Just send your ships to me and you'll get a proper *thank you* in the _About_ window!
 
 Also, I'm looking for builders for non-Windows platforms. I'll also gladly accept any code contributions that may be necessary to ensure the project builds on multiple platforms.

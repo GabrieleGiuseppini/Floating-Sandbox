@@ -61,7 +61,7 @@ private:
         float const Z; // 0.0 -> 1.0
         float Scale;
         float Darkening; // 0.0: dark, 1.0: light
-        float GrowthProgress;
+        float VolumetricGrowthProgress; // 0.0 -> +INF; used for "volumetric" growth
 
         Cloud(
             uint32_t id,
@@ -70,39 +70,32 @@ private:
             float z,
             float scale,
             float darkening,
-            float linearSpeedX,
-            float initialGrowthProgressPhase)
+            float linearSpeedX)
             : Id(id)
             , X(initialX)
             , Y(y)
             , Z(z)
             , Scale(scale)
             , Darkening(darkening)
-            , GrowthProgress(0.0f)
+            , VolumetricGrowthProgress(0.0f)
             , mLinearSpeedX(linearSpeedX)
-            , mGrowthProgressPhase(initialGrowthProgressPhase)
         {
         }
 
-        inline void Update(
-            float globalCloudSpeed,
-            float growthProgressSpeed)
+        inline void Update(float globalCloudSpeed)
         {
+            float const dx = mLinearSpeedX * globalCloudSpeed * GameParameters::SimulationStepTimeDuration<float>;
+
             // Update position
+            X += dx;
 
-            X += mLinearSpeedX * globalCloudSpeed * GameParameters::SimulationStepTimeDuration<float>;
-
-            // Update growth progress
-
-            mGrowthProgressPhase += growthProgressSpeed * GameParameters::SimulationStepTimeDuration<float>;
-
-            GrowthProgress = 0.3f + (1.0f + PrecalcLoFreqSin.GetNearestPeriodic(mGrowthProgressPhase)) * 0.7f / 2.0f;
+            // Update progress: mix of time and step
+            VolumetricGrowthProgress += GameParameters::SimulationStepTimeDuration<float> + std::abs(dx) * 0.5f;
         }
 
     private:
 
         float const mLinearSpeedX;
-        float mGrowthProgressPhase;
     };
 
     uint32_t mLastCloudId;

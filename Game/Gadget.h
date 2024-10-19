@@ -36,7 +36,7 @@ public:
     /*
      * Returns the ID of this gadget.
      */
-    GadgetId GetId() const
+    GlobalGadgetId GetId() const
     {
         return mId;
     }
@@ -131,7 +131,7 @@ public:
 protected:
 
     Gadget(
-        GadgetId id,
+        GlobalGadgetId id,
         GadgetType type,
         ElementIndex pointIndex,
         World & parentWorld,
@@ -208,7 +208,7 @@ protected:
 protected:
 
     // Our ID
-    GadgetId const mId;
+    GlobalGadgetId const mId;
 
     // The type of this gadget
     GadgetType const mType;

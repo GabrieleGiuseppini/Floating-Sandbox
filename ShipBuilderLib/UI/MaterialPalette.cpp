@@ -487,7 +487,7 @@ wxToggleButton * MaterialPalette<TLayer>::CreateMaterialButton(
 
         categoryButton->SetBitmap(
             WxHelpers::MakeBitmap(
-                shipTexturizer.MakeTextureSample(
+                shipTexturizer.MakeMaterialTextureSample(
                     texturizationSettings,
                     size,
                     material)));
@@ -600,7 +600,7 @@ std::array<wxPropertyGrid *, 2> MaterialPalette<TLayer>::CreateStructuralMateria
     AddFloatProperty(pgs[1], "MeltingTemperature", _("Melting Temperature (K)"));
     AddFloatProperty(pgs[1], "SpecificHeat", _("Specific Heat (J/(Kg*K))"));
     AddFloatProperty(pgs[1], "ThermalConductivity", _("Thermal Conductivity (W/(m*K))"));
-    AddFloatProperty(pgs[1], "ThermalExpansionCoefficient", _("Thermal Expansion Coefficient (1/K)"));
+    AddFloatProperty(pgs[1], "ThermalExpansionCoefficient", _("Thermal Expansion Coefficient (1/MK)"));
 
     pgs[1]->FitColumns();
 
@@ -675,7 +675,7 @@ void MaterialPalette<TLayer>::PopulateMaterialProperties(TMaterial const * mater
             mStructuralMaterialPropertyGrids[1]->SetPropertyValue("MeltingTemperature", material->MeltingTemperature);
             mStructuralMaterialPropertyGrids[1]->SetPropertyValue("SpecificHeat", material->SpecificHeat);
             mStructuralMaterialPropertyGrids[1]->SetPropertyValue("ThermalConductivity", material->ThermalConductivity);
-            mStructuralMaterialPropertyGrids[1]->SetPropertyValue("ThermalExpansionCoefficient", material->ThermalExpansionCoefficient);
+            mStructuralMaterialPropertyGrids[1]->SetPropertyValue("ThermalExpansionCoefficient", material->ThermalExpansionCoefficient * 1000'000.0f);
         }
 
         mStructuralMaterialPropertyGrids[0]->Thaw();

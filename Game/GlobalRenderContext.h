@@ -14,6 +14,7 @@
 
 #include <GameOpenGL/GameOpenGL.h>
 #include <GameOpenGL/ShaderManager.h>
+#include <GameOpenGL/TriangleQuadElementArrayVBO.h>
 
 #include <cassert>
 #include <memory>
@@ -34,9 +35,19 @@ public:
 
     void InitializeExplosionTextures(ResourceLocator const & resourceLocator);
 
+    void InitializeNpcTextures(TextureAtlas<NpcTextureGroups> && npcTextureAtlas);
+
     void ProcessParameterChanges(RenderParameters const & renderParameters);
 
+    void RenderPrepare();
+
 public:
+
+    inline TriangleQuadElementArrayVBO & GetElementIndices()
+    {
+        assert(!!mElementIndices);
+        return *mElementIndices;
+    }
 
     inline TextureAtlasMetadata<GenericLinearTextureGroups> const & GetGenericLinearTextureAtlasMetadata() const
     {
@@ -72,6 +83,12 @@ private:
     ShaderManager<ShaderManagerTraits> & mShaderManager;
 
     //
+    // Element indices
+    //
+
+    std::unique_ptr<TriangleQuadElementArrayVBO> mElementIndices;
+
+    //
     // Textures
     //
 
@@ -83,6 +100,8 @@ private:
 
     GameOpenGLTexture mExplosionTextureAtlasOpenGLHandle;
     std::unique_ptr<TextureAtlasMetadata<ExplosionTextureGroups>> mExplosionTextureAtlasMetadata;
+
+    GameOpenGLTexture mNpcTextureAtlasOpenGLHandle;
 
     UploadedTextureManager<NoiseTextureGroups> mUploadedNoiseTexturesManager;
 };

@@ -11,6 +11,7 @@ namespace Render {
 
 GlobalRenderContext::GlobalRenderContext(ShaderManager<ShaderManagerTraits> & shaderManager)
     : mShaderManager(shaderManager)
+    , mElementIndices(TriangleQuadElementArrayVBO::Create())
     // Textures
     , mGenericLinearTextureAtlasOpenGLHandle()
     , mGenericLinearTextureAtlasMetadata()
@@ -18,6 +19,7 @@ GlobalRenderContext::GlobalRenderContext(ShaderManager<ShaderManagerTraits> & sh
     , mGenericMipMappedTextureAtlasMetadata()
     , mExplosionTextureAtlasOpenGLHandle()
     , mExplosionTextureAtlasMetadata()
+    , mNpcTextureAtlasOpenGLHandle()
     , mUploadedNoiseTexturesManager()
 {
 }
@@ -138,7 +140,7 @@ void GlobalRenderContext::InitializeGenericTextures(ResourceLocator const & reso
     // Create atlas
     auto genericMipMappedTextureAtlas = TextureAtlasBuilder<GenericMipMappedTextureGroups>::BuildAtlas(
         genericMipMappedTextureDatabase,
-        AtlasOptions::None,
+        AtlasOptions::MipMappable,
         [](float, ProgressMessageType) {});
 
     LogMessage("Generic mipmapped texture atlas size: ", genericMipMappedTextureAtlas.AtlasData.Size.ToString());
@@ -155,7 +157,8 @@ void GlobalRenderContext::InitializeGenericTextures(ResourceLocator const & reso
     CheckOpenGLError();
 
     // Upload atlas texture
-    GameOpenGL::UploadMipmappedPowerOfTwoTexture(
+    assert(genericMipMappedTextureAtlas.Metadata.IsSuitableForMipMapping());
+    GameOpenGL::UploadMipmappedAtlasTexture(
         std::move(genericMipMappedTextureAtlas.AtlasData),
         genericMipMappedTextureAtlas.Metadata.GetMaxDimension());
 
@@ -222,6 +225,44 @@ void GlobalRenderContext::InitializeExplosionTextures(ResourceLocator const & re
     mShaderManager.SetTextureParameters<ProgramType::ShipExplosions>();
 }
 
+void GlobalRenderContext::InitializeNpcTextures(TextureAtlas<NpcTextureGroups> && npcTextureAtlas)
+{
+    LogMessage("NPC texture atlas size: ", npcTextureAtlas.AtlasData.Size.ToString());
+
+    // Activate texture
+    mShaderManager.ActivateTexture<ProgramParameterType::NpcAtlasTexture>();
+
+    // Create OpenGL handle
+    GLuint tmpGLuint;
+    glGenTextures(1, &tmpGLuint);
+    mNpcTextureAtlasOpenGLHandle = tmpGLuint;
+
+    // Bind texture atlas
+    glBindTexture(GL_TEXTURE_2D, *mNpcTextureAtlasOpenGLHandle);
+    CheckOpenGLError();
+
+    // Upload atlas texture
+    assert(npcTextureAtlas.Metadata.IsSuitableForMipMapping());
+    GameOpenGL::UploadMipmappedAtlasTexture(
+        std::move(npcTextureAtlas.AtlasData),
+        npcTextureAtlas.Metadata.GetMaxDimension());
+
+    // Set repeat mode - we want to clamp, to leverage the fact that
+    // all frames are perfectly transparent at the edges
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    CheckOpenGLError();
+
+    // Set texture filtering parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    CheckOpenGLError();
+
+    // Set texture in ship shaders
+    mShaderManager.ActivateProgram<ProgramType::ShipNpcsTexture>();
+    mShaderManager.SetTextureParameters<ProgramType::ShipNpcsTexture>();
+}
+
 void GlobalRenderContext::ProcessParameterChanges(RenderParameters const & renderParameters)
 {
     if (renderParameters.IsEffectiveAmbientLightIntensityDirty)
@@ -241,5 +282,12 @@ void GlobalRenderContext::ProcessParameterChanges(RenderParameters const & rende
     }
 }
 
+void GlobalRenderContext::RenderPrepare()
+{
+    if (mElementIndices->IsDirty())
+    {
+        mElementIndices->Upload();
+    }
+}
 
 }

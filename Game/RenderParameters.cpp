@@ -17,8 +17,9 @@ RenderParameters::RenderParameters(
 	, EffectiveMoonlightColor(0x00, 0x00, 0x00) // Calculated
 	, DoCrepuscularGradient(true)
 	, CrepuscularColor (0xe5, 0xd3, 0xe5)
-	, OceanTransparency(0.8125f)
-	, OceanDarkeningRate(0.12795731425285339f)
+	, CloudRenderDetail(CloudRenderDetailType::Detailed)
+	, OceanTransparency(0.594f)
+	, OceanDepthDarkeningRate(0.12795731425285339f)
 	, OceanRenderMode(OceanRenderModeType::Flat)
 	, DepthOceanColorStart(0x4a, 0x84, 0x9f)
 	, DepthOceanColorEnd(0x00, 0x00, 0x00)
@@ -29,8 +30,11 @@ RenderParameters::RenderParameters(
 	, LandRenderMode(LandRenderModeType::Texture)
 	, FlatLandColor(0x72, 0x46, 0x05)
 	, LandTextureIndex(3) // Rock Coarse 3
+	, LandRenderDetail(LandRenderDetailType::Detailed)
 	// Ship
+	, ShipViewMode(ShipViewModeType::Exterior)
 	, ShipAmbientLightSensitivity(1.0f)
+	, ShipDepthDarkeningSensitivity(0.906f)
 	, FlatLampLightColor(0xff, 0xff, 0xbf)
 	, DrawExplosions(true)
 	, DrawFlames(true)
@@ -44,6 +48,8 @@ RenderParameters::RenderParameters(
 	, HeatSensitivity(0.0f)
 	, StressRenderMode(StressRenderModeType::None)
 	, DebugShipRenderMode(DebugShipRenderModeType::None)
+	, NpcRenderMode(NpcRenderModeType::Texture)
+	, NpcQuadFlatColor(143, 201, 242)
 	// Misc
 	, DisplayUnitsSystem(UnitsSystem::SI_Kelvin)
 	// Flags
@@ -51,18 +57,23 @@ RenderParameters::RenderParameters(
 	, IsCanvasSizeDirty(true)
 	, IsEffectiveAmbientLightIntensityDirty(true)
 	, IsSkyDirty(true)
-	, IsOceanDarkeningRateDirty(true)
+	, IsCloudRenderDetailDirty(true)
+	, IsOceanDepthDarkeningRateDirty(true)
 	, AreOceanRenderParametersDirty(true)
 	, IsOceanTextureIndexDirty(true)
 	, AreLandRenderParametersDirty(true)
 	, IsLandTextureIndexDirty(true)
+	, IsLandRenderDetailDirty(true)
+	, IsShipViewModeDirty(true)
 	, IsShipAmbientLightSensitivityDirty(true)
+	, IsShipDepthDarkeningSensitivityDirty(true)
 	, IsFlatLampLightColorDirty(true)
 	, IsShipWaterColorDirty(true)
 	, IsShipWaterContrastDirty(true)
 	, IsShipWaterLevelOfDetailDirty(true)
 	, IsHeatSensitivityDirty(true)
 	, AreShipStructureRenderModeSelectorsDirty(true)
+	, AreNpcRenderParametersDirty(true)
 	, IsDisplayUnitsSystemDirty(true)
 {
 }
@@ -77,19 +88,24 @@ RenderParameters RenderParameters::TakeSnapshotAndClear()
 	IsCanvasSizeDirty = false;
 	IsEffectiveAmbientLightIntensityDirty = false;
 	IsSkyDirty = false;
-	IsOceanDarkeningRateDirty = false;
+	IsCloudRenderDetailDirty = false;
+	IsOceanDepthDarkeningRateDirty = false;
 	AreOceanRenderParametersDirty = false;
 	IsOceanTextureIndexDirty = false;
 	AreLandRenderParametersDirty = false;
 	IsLandTextureIndexDirty = false;
+	IsLandRenderDetailDirty = false;
 	//
+	IsShipViewModeDirty = false;
 	IsShipAmbientLightSensitivityDirty = false;
+	IsShipDepthDarkeningSensitivityDirty = false;
 	IsFlatLampLightColorDirty = false;
 	IsShipWaterColorDirty = false;
 	IsShipWaterContrastDirty = false;
 	IsShipWaterLevelOfDetailDirty = false;
 	IsHeatSensitivityDirty = false;
 	AreShipStructureRenderModeSelectorsDirty = false;
+	AreNpcRenderParametersDirty = false;
 	//
 	IsDisplayUnitsSystemDirty = false;
 

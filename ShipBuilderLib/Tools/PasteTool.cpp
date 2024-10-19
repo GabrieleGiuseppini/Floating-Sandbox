@@ -52,7 +52,7 @@ RopePasteTool::RopePasteTool(
         resourceLocator)
 {}
 
-TexturePasteTool::TexturePasteTool(
+ExteriorTexturePasteTool::ExteriorTexturePasteTool(
     ShipLayers && pasteRegion,
     bool isTransparent,
     Controller & controller,
@@ -60,7 +60,20 @@ TexturePasteTool::TexturePasteTool(
     : PasteTool(
         std::move(pasteRegion),
         isTransparent,
-        ToolType::TexturePaste,
+        ToolType::ExteriorTexturePaste,
+        controller,
+        resourceLocator)
+{}
+
+InteriorTexturePasteTool::InteriorTexturePasteTool(
+    ShipLayers && pasteRegion,
+    bool isTransparent,
+    Controller & controller,
+    ResourceLocator const & resourceLocator)
+    : PasteTool(
+        std::move(pasteRegion),
+        isTransparent,
+        ToolType::InteriorTexturePaste,
         controller,
         resourceLocator)
 {}

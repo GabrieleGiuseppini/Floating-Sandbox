@@ -46,6 +46,7 @@ private:
     void OnOceanRenderModeRadioButtonClick(wxCommandEvent & event);
     void OnSkyRenderModeRadioButtonClick(wxCommandEvent & event);
     void OnLandRenderModeRadioButtonClick(wxCommandEvent & event);
+    void OnNpcRenderModeRadioButtonClick(wxCommandEvent & event);
 
     void OnRevertToDefaultsButton(wxCommandEvent & event);
     void OnOkButton(wxCommandEvent & event);
@@ -60,9 +61,12 @@ private:
     // Control tabs
     //////////////////////////////////////////////////////
 
-    // Mechanics and Thermodynamics    
+    // Mechanics and Thermodynamics
     SliderControl<float> * mStrengthSlider;
     SliderControl<float> * mGlobalDampingAdjustmentSlider;
+    SliderControl<float> * mElasticityAdjustmentSlider;
+    SliderControl<float> * mStaticFrictionAdjustmentSlider;
+    SliderControl<float> * mKineticFrictionAdjustmentSlider;
     SliderControl<float> * mStaticPressureForceAdjustmentSlider;
     SliderControl<float> * mThermalConductivityAdjustmentSlider;
     SliderControl<float> * mHeatDissipationAdjustmentSlider;
@@ -70,10 +74,8 @@ private:
     SliderControl<float> * mMeltingTemperatureAdjustmentSlider;
     SliderControl<float> * mCombustionSpeedAdjustmentSlider;
     SliderControl<float> * mCombustionHeatAdjustmentSlider;
-    SliderControl<unsigned int> * mMaxBurningParticlesSlider;
+    SliderControl<unsigned int> * mMaxBurningParticlesPerShipSlider;
     BitmapToggleButton * mUltraViolentToggleButton;
-    SliderControl<unsigned int> * mMaxNumSimulationThreadsSlider;
-    SliderControl<float> * mNumMechanicalIterationsAdjustmentSlider;
 
     // Ocean and Water
     SliderControl<float> * mWaterDensityAdjustmentSlider;
@@ -88,8 +90,8 @@ private:
     SliderControl<float> * mOceanDepthSlider;
     SliderControl<float> * mOceanFloorBumpinessSlider;
     SliderControl<float> * mOceanFloorDetailAmplificationSlider;
-    SliderControl<float> * mOceanFloorElasticitySlider;
-    SliderControl<float> * mOceanFloorFrictionSlider;
+    SliderControl<float> * mOceanFloorElasticityCoefficientSlider;
+    SliderControl<float> * mOceanFloorFrictionCoefficientSlider;
     SliderControl<float> * mOceanFloorSiltHardnessSlider;
     SliderControl<float> * mRotAcceler8rSlider;
 
@@ -125,7 +127,7 @@ private:
     wxCheckBox * mDoDayLightCycleCheckBox;
     SliderControl<std::chrono::minutes::rep> * mDayLightCycleDurationSlider;
 
-    // Lights, Electricals, and Fishes
+    // Lights, Electricals, Fishes, NPCs
     SliderControl<float> * mLuminiscenceSlider;
     SliderControl<float> * mLightSpreadSlider;
     wxCheckBox * mGenerateEngineWakeCheckBox;
@@ -137,6 +139,8 @@ private:
     SliderControl<float> * mFishSpeedAdjustmentSlider;
     wxCheckBox * mDoFishShoalingCheckBox;
     SliderControl<float> * mFishShoalRadiusAdjustmentSlider;
+    SliderControl<float> * mNpcSizeMultiplierSlider;
+    wxCheckBox * mDoApplyPhysicsToolsToNpcsCheckBox;
 
     // Destructive Tools
     SliderControl<float> * mDestroyRadiusSlider;
@@ -170,26 +174,33 @@ private:
     wxCheckBox * mOceanRenderDetailModeDetailedCheckBox;
     wxCheckBox * mSeeShipThroughOceanCheckBox;
     SliderControl<float> * mOceanTransparencySlider;
-    SliderControl<float> * mOceanDarkeningRateSlider;
+    SliderControl<float> * mOceanDepthDarkeningRateSlider;
     wxRadioButton * mFlatSkyRenderModeRadioButton;
     wxColourPickerCtrl * mFlatSkyColorPicker;
     wxRadioButton * mCrepuscularSkyRenderModeRadioButton;
     wxColourPickerCtrl * mCrepuscularColorPicker;
     wxCheckBox * mDoMoonlightCheckBox;
     wxColourPickerCtrl * mMoonlightColorPicker;
+    wxCheckBox * mCloudRenderDetailModeDetailedCheckBox;
     wxRadioButton * mTextureLandRenderModeRadioButton;
     wxBitmapComboBox * mTextureLandComboBox;
     wxRadioButton * mFlatLandRenderModeRadioButton;
     wxColourPickerCtrl * mFlatLandColorPicker;
+    wxCheckBox * mLandRenderDetailModeDetailedCheckBox;
     wxColourPickerCtrl * mFlatLampLightColorPicker;
     wxRadioBox * mHeatRenderModeRadioBox;
     SliderControl<float> * mHeatSensitivitySlider;
     wxRadioBox * mStressRenderModeRadioBox;
     SliderControl<float> * mShipFlameSizeAdjustmentSlider;
     SliderControl<float> * mShipAmbientLightSensitivitySlider;
+    SliderControl<float> * mShipDepthDarkeningSensitivitySlider;
     wxColourPickerCtrl * mDefaultWaterColorPicker;
     SliderControl<float> * mWaterContrastSlider;
     SliderControl<float> * mWaterLevelOfDetailSlider;
+    wxRadioButton * mTextureNpcRenderModeRadioButton;
+    wxRadioButton * mQuadWithRolesNpcRenderModeRadioButton;
+    wxRadioButton * mQuadFlatNpcRenderModeRadioButton;
+    wxColourPickerCtrl * mQuadFlatNpcColorPicker;
 
     // Sound and Advanced Settings
     SliderControl<float> * mEffectsVolumeSlider;
@@ -212,6 +223,8 @@ private:
     wxRadioBox * mVectorFieldRenderModeRadioBox;
     wxCheckBox * mGenerateDebrisCheckBox;
     wxCheckBox * mGenerateSparklesForCutsCheckBox;
+    SliderControl<unsigned int> * mMaxNumSimulationThreadsSlider;
+    SliderControl<float> * mNumMechanicalIterationsAdjustmentSlider;
 
     // Settings Management
     wxListCtrl * mPersistedSettingsListCtrl;
@@ -244,7 +257,7 @@ private:
     void PopulateWaterAndOceanPanel(wxPanel * panel);
     void PopulateWindAndWavesPanel(wxPanel * panel);
     void PopulateAirAndSkyPanel(wxPanel * panel);
-    void PopulateLightsElectricalAndFishesPanel(wxPanel * panel);
+    void PopulateLightsElectricalFishesNpcsPanel(wxPanel * panel);
     void PopulateDestructiveToolsPanel(wxPanel * panel, ResourceLocator const & resourceLocator);
     void PopulateOtherToolsPanel(wxPanel * panel, ResourceLocator const & resourceLocator);
     void PopulateRenderingPanel(wxPanel * panel);
@@ -256,6 +269,7 @@ private:
     void ReconciliateLandRenderModeSettings();
     void ReconciliateSkyRenderModeSettings();
     void ReconciliateMoonlightSettings();
+    void ReconciliateNpcRenderModeSettings();
     void OnLiveSettingsChanged();
     void ReconcileDirtyState();
 

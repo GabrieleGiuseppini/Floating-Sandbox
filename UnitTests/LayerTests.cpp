@@ -1108,14 +1108,27 @@ TEST(LayerTests, ShipLayers_FlipH)
             rgbaColor(1, 2, 3, 4));
     }
 
-    Buffer2D<rgbaColor, struct ImageTag> sourceTextureLayerBuffer(80, 60);
+    Buffer2D<rgbaColor, struct ImageTag> sourceExteriorTextureLayerBuffer(80, 60);
 
     iVal = 0;
-    for (int y = 0; y < sourceTextureLayerBuffer.Size.height; ++y)
+    for (int y = 0; y < sourceExteriorTextureLayerBuffer.Size.height; ++y)
     {
-        for (int x = 0; x < sourceTextureLayerBuffer.Size.width; ++x)
+        for (int x = 0; x < sourceExteriorTextureLayerBuffer.Size.width; ++x)
         {
-            sourceTextureLayerBuffer[ImageCoordinates(x, y)] = rgbaColor(iVal, iVal, iVal, iVal);
+            sourceExteriorTextureLayerBuffer[ImageCoordinates(x, y)] = rgbaColor(iVal, iVal, iVal, iVal);
+
+            ++iVal;
+        }
+    }
+
+    Buffer2D<rgbaColor, struct ImageTag> sourceInteriorTextureLayerBuffer(180, 160);
+
+    iVal = 100;
+    for (int y = 0; y < sourceInteriorTextureLayerBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceInteriorTextureLayerBuffer.Size.width; ++x)
+        {
+            sourceInteriorTextureLayerBuffer[ImageCoordinates(x, y)] = rgbaColor(iVal, iVal, iVal, iVal);
 
             ++iVal;
         }
@@ -1126,7 +1139,8 @@ TEST(LayerTests, ShipLayers_FlipH)
         std::make_unique<StructuralLayerData>(std::move(sourceStructuralLayerBuffer)),
         std::make_unique<ElectricalLayerData>(std::move(sourceElectricalLayerBuffer), std::move(sourcePanel)),
         std::make_unique<RopesLayerData>(std::move(sourceRopesLayerBuffer)),
-        std::make_unique<TextureLayerData>(std::move(sourceTextureLayerBuffer)));
+        std::make_unique<TextureLayerData>(std::move(sourceExteriorTextureLayerBuffer)),
+        std::make_unique<TextureLayerData>(std::move(sourceInteriorTextureLayerBuffer)));
 
     //
     // Flip
@@ -1180,16 +1194,31 @@ TEST(LayerTests, ShipLayers_FlipH)
     EXPECT_EQ(layers.RopesLayer->Buffer[1].EndCoords, ShipSpaceCoordinates(5, 2));
 
 
-    ASSERT_TRUE(layers.TextureLayer);
-    ASSERT_EQ(layers.TextureLayer->Buffer.Size, ImageSize(80, 60));
+    ASSERT_TRUE(layers.ExteriorTextureLayer);
+    ASSERT_EQ(layers.ExteriorTextureLayer->Buffer.Size, ImageSize(80, 60));
 
     iVal = 0;
-    for (int y = 0; y < layers.TextureLayer->Buffer.Size.height; ++y)
+    for (int y = 0; y < layers.ExteriorTextureLayer->Buffer.Size.height; ++y)
     {
-        for (int x = layers.TextureLayer->Buffer.Size.width - 1; x >= 0; --x)
+        for (int x = layers.ExteriorTextureLayer->Buffer.Size.width - 1; x >= 0; --x)
         {
             auto const coords = ImageCoordinates(x, y);
-            EXPECT_EQ(layers.TextureLayer->Buffer[coords], rgbaColor(iVal, iVal, iVal, iVal));
+            EXPECT_EQ(layers.ExteriorTextureLayer->Buffer[coords], rgbaColor(iVal, iVal, iVal, iVal));
+
+            ++iVal;
+        }
+    }
+
+    ASSERT_TRUE(layers.InteriorTextureLayer);
+    ASSERT_EQ(layers.InteriorTextureLayer->Buffer.Size, ImageSize(180, 160));
+
+    iVal = 100;
+    for (int y = 0; y < layers.InteriorTextureLayer->Buffer.Size.height; ++y)
+    {
+        for (int x = layers.InteriorTextureLayer->Buffer.Size.width - 1; x >= 0; --x)
+        {
+            auto const coords = ImageCoordinates(x, y);
+            EXPECT_EQ(layers.InteriorTextureLayer->Buffer[coords], rgbaColor(iVal, iVal, iVal, iVal));
 
             ++iVal;
         }
@@ -1251,14 +1280,27 @@ TEST(LayerTests, ShipLayers_Rotate)
             rgbaColor(1, 2, 3, 4));
     }
 
-    Buffer2D<rgbaColor, struct ImageTag> sourceTextureLayerBuffer(80, 60);
+    Buffer2D<rgbaColor, struct ImageTag> sourceExteriorTextureLayerBuffer(80, 60);
 
     iVal = 0;
-    for (int y = 0; y < sourceTextureLayerBuffer.Size.height; ++y)
+    for (int y = 0; y < sourceExteriorTextureLayerBuffer.Size.height; ++y)
     {
-        for (int x = 0; x < sourceTextureLayerBuffer.Size.width; ++x)
+        for (int x = 0; x < sourceExteriorTextureLayerBuffer.Size.width; ++x)
         {
-            sourceTextureLayerBuffer[ImageCoordinates(x, y)] = rgbaColor(iVal, iVal, iVal, iVal);
+            sourceExteriorTextureLayerBuffer[ImageCoordinates(x, y)] = rgbaColor(iVal, iVal, iVal, iVal);
+
+            ++iVal;
+        }
+    }
+
+    Buffer2D<rgbaColor, struct ImageTag> sourceInteriorTextureLayerBuffer(180, 160);
+
+    iVal = 100;
+    for (int y = 0; y < sourceInteriorTextureLayerBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceInteriorTextureLayerBuffer.Size.width; ++x)
+        {
+            sourceInteriorTextureLayerBuffer[ImageCoordinates(x, y)] = rgbaColor(iVal, iVal, iVal, iVal);
 
             ++iVal;
         }
@@ -1269,7 +1311,8 @@ TEST(LayerTests, ShipLayers_Rotate)
         std::make_unique<StructuralLayerData>(std::move(sourceStructuralLayerBuffer)),
         std::make_unique<ElectricalLayerData>(std::move(sourceElectricalLayerBuffer), std::move(sourcePanel)),
         std::make_unique<RopesLayerData>(std::move(sourceRopesLayerBuffer)),
-        std::make_unique<TextureLayerData>(std::move(sourceTextureLayerBuffer)));
+        std::make_unique<TextureLayerData>(std::move(sourceExteriorTextureLayerBuffer)),
+        std::make_unique<TextureLayerData>(std::move(sourceInteriorTextureLayerBuffer)));
 
     //
     // Flip
@@ -1323,16 +1366,31 @@ TEST(LayerTests, ShipLayers_Rotate)
     EXPECT_EQ(layers.RopesLayer->Buffer[1].EndCoords, ShipSpaceCoordinates(2, 5));
 
 
-    ASSERT_TRUE(layers.TextureLayer);
-    ASSERT_EQ(layers.TextureLayer->Buffer.Size, ImageSize(60, 80));
+    ASSERT_TRUE(layers.ExteriorTextureLayer);
+    ASSERT_EQ(layers.ExteriorTextureLayer->Buffer.Size, ImageSize(60, 80));
 
     iVal = 0;
-    for (int x = 0; x < layers.TextureLayer->Buffer.Size.width; ++x)
+    for (int x = 0; x < layers.ExteriorTextureLayer->Buffer.Size.width; ++x)
     {
-        for (int y = layers.TextureLayer->Buffer.Size.height - 1; y >= 0; --y)
+        for (int y = layers.ExteriorTextureLayer->Buffer.Size.height - 1; y >= 0; --y)
         {
             auto const coords = ImageCoordinates(x, y);
-            EXPECT_EQ(layers.TextureLayer->Buffer[coords], rgbaColor(iVal, iVal, iVal, iVal));
+            EXPECT_EQ(layers.ExteriorTextureLayer->Buffer[coords], rgbaColor(iVal, iVal, iVal, iVal));
+
+            ++iVal;
+        }
+    }
+
+    ASSERT_TRUE(layers.InteriorTextureLayer);
+    ASSERT_EQ(layers.InteriorTextureLayer->Buffer.Size, ImageSize(160, 180));
+
+    iVal = 100;
+    for (int x = 0; x < layers.InteriorTextureLayer->Buffer.Size.width; ++x)
+    {
+        for (int y = layers.InteriorTextureLayer->Buffer.Size.height - 1; y >= 0; --y)
+        {
+            auto const coords = ImageCoordinates(x, y);
+            EXPECT_EQ(layers.InteriorTextureLayer->Buffer[coords], rgbaColor(iVal, iVal, iVal, iVal));
 
             ++iVal;
         }
@@ -1372,14 +1430,17 @@ TEST(LayerTests, ShipLayers_Clone_Full)
             rgbaColor(1, 2, 3, 4));
     }
 
-    Buffer2D<rgbaColor, struct ImageTag> sourceTextureLayerBuffer(80, 60);
+    Buffer2D<rgbaColor, struct ImageTag> sourceExteriorTextureLayerBuffer(80, 60);
+
+    Buffer2D<rgbaColor, struct ImageTag> sourceInteriorTextureLayerBuffer(180, 160);
 
     ShipLayers layers(
         shipSize,
         std::make_unique<StructuralLayerData>(std::move(sourceStructuralLayerBuffer)),
         std::make_unique<ElectricalLayerData>(std::move(sourceElectricalLayerBuffer), std::move(sourcePanel)),
         std::make_unique<RopesLayerData>(std::move(sourceRopesLayerBuffer)),
-        std::make_unique<TextureLayerData>(std::move(sourceTextureLayerBuffer)));
+        std::make_unique<TextureLayerData>(std::move(sourceExteriorTextureLayerBuffer)),
+        std::make_unique<TextureLayerData>(std::move(sourceInteriorTextureLayerBuffer)));
 
     //
     // Clone
@@ -1404,8 +1465,11 @@ TEST(LayerTests, ShipLayers_Clone_Full)
     ASSERT_EQ(layerClone.RopesLayer->Buffer.GetSize(), shipSize);
     ASSERT_EQ(layerClone.RopesLayer->Buffer.GetElementCount(), 2u);
 
-    ASSERT_TRUE(layerClone.TextureLayer);
-    ASSERT_EQ(layerClone.TextureLayer->Buffer.Size, ImageSize(80, 60));
+    ASSERT_TRUE(layerClone.ExteriorTextureLayer);
+    ASSERT_EQ(layerClone.ExteriorTextureLayer->Buffer.Size, ImageSize(80, 60));
+
+    ASSERT_TRUE(layerClone.InteriorTextureLayer);
+    ASSERT_EQ(layerClone.InteriorTextureLayer->Buffer.Size, ImageSize(180, 160));
 }
 
 TEST(LayerTests, ShipLayers_Clone_Empty)
@@ -1418,6 +1482,7 @@ TEST(LayerTests, ShipLayers_Clone_Empty)
 
     ShipLayers layers(
         shipSize,
+        nullptr,
         nullptr,
         nullptr,
         nullptr,
@@ -1441,5 +1506,7 @@ TEST(LayerTests, ShipLayers_Clone_Empty)
 
     ASSERT_FALSE(layerClone.RopesLayer);
 
-    ASSERT_FALSE(layerClone.TextureLayer);
+    ASSERT_FALSE(layerClone.ExteriorTextureLayer);
+
+    ASSERT_FALSE(layerClone.InteriorTextureLayer);
 }

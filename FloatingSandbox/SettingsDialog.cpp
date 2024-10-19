@@ -30,7 +30,7 @@
 #include "Resources/ShipBBB.xpm"
 #endif
 
-static int constexpr SliderWidth = 82; // Min
+static int constexpr SliderWidth = 72; // Min
 static int constexpr SliderHeight = 140;
 
 static int constexpr IconInStaticBorderMargin = 4;
@@ -187,15 +187,15 @@ SettingsDialog::SettingsDialog(
     }
 
     //
-    // Lights, Electricals, and Fishes
+    // Lights, Electricals, Fishes, NPCs
     //
 
     {
         wxPanel * panel = new wxPanel(notebook);
 
-        PopulateLightsElectricalAndFishesPanel(panel);
+        PopulateLightsElectricalFishesNpcsPanel(panel);
 
-        notebook->AddPage(panel, _("Lights, Electricals, and Fishes"));
+        notebook->AddPage(panel, _("Lights, Electricals, Fishes, NPCs"));
     }
 
     //
@@ -408,6 +408,27 @@ void SettingsDialog::OnLandRenderModeRadioButtonClick(wxCommandEvent & /*event*/
     OnLiveSettingsChanged();
 }
 
+void SettingsDialog::OnNpcRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
+{
+    if (mTextureNpcRenderModeRadioButton->GetValue())
+    {
+        mLiveSettings.SetValue(GameSettings::NpcRenderMode, NpcRenderModeType::Texture);
+    }
+    else if (mQuadWithRolesNpcRenderModeRadioButton->GetValue())
+    {
+        mLiveSettings.SetValue(GameSettings::NpcRenderMode, NpcRenderModeType::QuadWithRoles);
+    }
+    else
+    {
+        assert(mQuadFlatNpcRenderModeRadioButton->GetValue());
+        mLiveSettings.SetValue(GameSettings::NpcRenderMode, NpcRenderModeType::QuadFlat);
+    }
+
+    ReconciliateNpcRenderModeSettings();
+
+    OnLiveSettingsChanged();
+}
+
 void SettingsDialog::OnRevertToDefaultsButton(wxCommandEvent & /*event*/)
 {
     //
@@ -580,6 +601,87 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(
                     CellBorderInner);
             }
 
+            // Elasticity Adjust
+            {
+                mElasticityAdjustmentSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Elasticity Adjust"),
+                    _("Adjusts the elasticity of collisions between materials."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::ElasticityAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions.GetMinElasticityAdjustment(),
+                        1.0f,
+                        mGameControllerSettingsOptions.GetMaxElasticityAdjustment()));
+
+                sizer->Add(
+                    mElasticityAdjustmentSlider,
+                    wxGBPosition(0, 2),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Static Friction Adjust
+            {
+                mStaticFrictionAdjustmentSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Static Friction Adjust"),
+                    _("Adjusts the static friction coefficient."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::StaticFrictionAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions.GetMinStaticFrictionAdjustment(),
+                        1.0f,
+                        mGameControllerSettingsOptions.GetMaxStaticFrictionAdjustment()));
+
+                sizer->Add(
+                    mStaticFrictionAdjustmentSlider,
+                    wxGBPosition(0, 3),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Kinetic Friction Adjust
+            {
+                mKineticFrictionAdjustmentSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Kinetic Friction Adjust"),
+                    _("Adjusts the kinetic friction coefficient."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::KineticFrictionAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions.GetMinKineticFrictionAdjustment(),
+                        1.0f,
+                        mGameControllerSettingsOptions.GetMaxKineticFrictionAdjustment()));
+
+                sizer->Add(
+                    mKineticFrictionAdjustmentSlider,
+                    wxGBPosition(0, 4),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
             // Static pressure force adjustment
             {
                 mStaticPressureForceAdjustmentSlider = new SliderControl<float>(
@@ -601,7 +703,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(
 
                 sizer->Add(
                     mStaticPressureForceAdjustmentSlider,
-                    wxGBPosition(0, 2),
+                    wxGBPosition(0, 5),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
@@ -613,82 +715,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(
         gridSizer->Add(
             boxSizer,
             wxGBPosition(0, 0),
-            wxGBSpan(1, 1),
-            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
-            CellBorderOuter);
-    }
-
-    //
-    // Thermodynamics
-    //
-
-    {
-        wxStaticBoxSizer * thermodynamicsBoxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Thermodynamics"));
-
-        {
-            wxGridBagSizer * thermodynamicsSizer = new wxGridBagSizer(0, 0);
-
-            // Thermal Conductivity Adjustment
-            {
-                mThermalConductivityAdjustmentSlider = new SliderControl<float>(
-                    thermodynamicsBoxSizer->GetStaticBox(),
-                    SliderControl<float>::DirectionType::Vertical,
-                    SliderWidth,
-                    SliderHeight,
-                    _("Thermal Conductivity Adjust"),
-                    _("Adjusts the speed with which heat propagates along materials."),
-                    [this](float value)
-                    {
-                        this->mLiveSettings.SetValue(GameSettings::ThermalConductivityAdjustment, value);
-                        this->OnLiveSettingsChanged();
-                    },
-                    std::make_unique<ExponentialSliderCore>(
-                        mGameControllerSettingsOptions.GetMinThermalConductivityAdjustment(),
-                        1.0f,
-                        mGameControllerSettingsOptions.GetMaxThermalConductivityAdjustment()));
-
-                thermodynamicsSizer->Add(
-                    mThermalConductivityAdjustmentSlider,
-                    wxGBPosition(0, 0),
-                    wxGBSpan(1, 1),
-                    wxEXPAND | wxALL,
-                    CellBorderInner);
-            }
-
-            // Heat Dissipation Adjustment
-            {
-                mHeatDissipationAdjustmentSlider = new SliderControl<float>(
-                    thermodynamicsBoxSizer->GetStaticBox(),
-                    SliderControl<float>::DirectionType::Vertical,
-                    SliderWidth,
-                    SliderHeight,
-                    _("Heat Dissipation Adjust"),
-                    _("Adjusts the speed with which materials dissipate or accumulate heat to or from air and water."),
-                    [this](float value)
-                    {
-                        this->mLiveSettings.SetValue(GameSettings::HeatDissipationAdjustment, value);
-                        this->OnLiveSettingsChanged();
-                    },
-                    std::make_unique<ExponentialSliderCore>(
-                        mGameControllerSettingsOptions.GetMinHeatDissipationAdjustment(),
-                        1.0f,
-                        mGameControllerSettingsOptions.GetMaxHeatDissipationAdjustment()));
-
-                thermodynamicsSizer->Add(
-                    mHeatDissipationAdjustmentSlider,
-                    wxGBPosition(0, 1),
-                    wxGBSpan(1, 1),
-                    wxEXPAND | wxALL,
-                    CellBorderInner);
-            }
-
-            thermodynamicsBoxSizer->Add(thermodynamicsSizer, 1, wxALL, StaticBoxInsetMargin);
-        }
-
-        gridSizer->Add(
-            thermodynamicsBoxSizer,
-            wxGBPosition(0, 1),
-            wxGBSpan(1, 1),
+            wxGBSpan(1, 2),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
@@ -856,27 +883,27 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(
                     CellBorderInner);
             }
 
-            // Max Particles
+            // Max Burning Particles Per Ship
             {
-                mMaxBurningParticlesSlider = new SliderControl<unsigned int>(
+                mMaxBurningParticlesPerShipSlider = new SliderControl<unsigned int>(
                     combustionBoxSizer->GetStaticBox(),
                     SliderControl<unsigned int>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Max Burning Particles"),
-                    _("The maximum number of particles that may burn at any given moment in time; together with the combustion heat adjustment, determines the speed with which fire spreads to adjacent particles. Warning: higher values require more computing resources, with the risk of slowing the simulation down!"),
+                    _("The maximum number of particles that may burn at any given moment in time on a ship; together with the combustion heat adjustment, determines the speed with which fire spreads to adjacent particles. Warning: higher values require more computing resources, with the risk of slowing the simulation down!"),
                     [this](unsigned int value)
                     {
-                        this->mLiveSettings.SetValue(GameSettings::MaxBurningParticles, value);
+                        this->mLiveSettings.SetValue(GameSettings::MaxBurningParticlesPerShip, value);
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<IntegralLinearSliderCore<unsigned int>>(
-                        mGameControllerSettingsOptions.GetMinMaxBurningParticles(),
-                        mGameControllerSettingsOptions.GetMaxMaxBurningParticles()),
+                        mGameControllerSettingsOptions.GetMinMaxBurningParticlesPerShip(),
+                        mGameControllerSettingsOptions.GetMaxMaxBurningParticlesPerShip()),
                     mWarningIcon.get());
 
                 combustionSizer->Add(
-                    mMaxBurningParticlesSlider,
+                    mMaxBurningParticlesPerShipSlider,
                     wxGBPosition(0, 4),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -895,74 +922,74 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(
     }
 
     //
-    // Performance
+    // Thermodynamics
     //
 
     {
-        wxStaticBoxSizer * performanceBoxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Performance"));
+        wxStaticBoxSizer * thermodynamicsBoxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Thermodynamics"));
 
         {
-            wxGridBagSizer * performanceSizer = new wxGridBagSizer(0, 0);
+            wxGridBagSizer * thermodynamicsSizer = new wxGridBagSizer(0, 0);
 
-            // Spring Iterations
+            // Thermal Conductivity Adjustment
             {
-                mNumMechanicalIterationsAdjustmentSlider = new SliderControl<float>(
-                    performanceBoxSizer->GetStaticBox(),
+                mThermalConductivityAdjustmentSlider = new SliderControl<float>(
+                    thermodynamicsBoxSizer->GetStaticBox(),
                     SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
-                    _("Spring Algo Adjust"),
-                    _("Higher values improve the rigidity of simulated structures, at the expense of longer computation times and decreased fragility."),
+                    _("Thermal Conductivity Adjust"),
+                    _("Adjusts the speed with which heat propagates along materials."),
                     [this](float value)
                     {
-                        this->mLiveSettings.SetValue(GameSettings::NumMechanicalDynamicsIterationsAdjustment, value);
+                        this->mLiveSettings.SetValue(GameSettings::ThermalConductivityAdjustment, value);
                         this->OnLiveSettingsChanged();
                     },
-                    std::make_unique<FixedTickSliderCore>(
-                        0.5f,
-                        mGameControllerSettingsOptions.GetMinNumMechanicalDynamicsIterationsAdjustment(),
-                        mGameControllerSettingsOptions.GetMaxNumMechanicalDynamicsIterationsAdjustment()),
-                    mWarningIcon.get());
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions.GetMinThermalConductivityAdjustment(),
+                        1.0f,
+                        mGameControllerSettingsOptions.GetMaxThermalConductivityAdjustment()));
 
-                performanceSizer->Add(
-                    mNumMechanicalIterationsAdjustmentSlider,
+                thermodynamicsSizer->Add(
+                    mThermalConductivityAdjustmentSlider,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
             }
 
-            // Max Simulation Threads
+            // Heat Dissipation Adjustment
             {
-                mMaxNumSimulationThreadsSlider = new SliderControl<unsigned int>(
-                    performanceBoxSizer->GetStaticBox(),
-                    SliderControl<unsigned int>::DirectionType::Vertical,
+                mHeatDissipationAdjustmentSlider = new SliderControl<float>(
+                    thermodynamicsBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
-                    _("Max Threads"),
-                    _("Sets a cap to the maximum number of threads used for the simulation."),
-                    [this](unsigned int value)
+                    _("Heat Dissipation Adjust"),
+                    _("Adjusts the speed with which materials dissipate or accumulate heat to or from air and water."),
+                    [this](float value)
                     {
-                        this->mLiveSettings.SetValue(GameSettings::MaxNumSimulationThreads, value);
+                        this->mLiveSettings.SetValue(GameSettings::HeatDissipationAdjustment, value);
                         this->OnLiveSettingsChanged();
                     },
-                    std::make_unique<IntegralLinearSliderCore<unsigned int>>(
-                        mGameControllerSettingsOptions.GetMinMaxNumSimulationThreads(),
-                        mGameControllerSettingsOptions.GetMaxMaxNumSimulationThreads()));
-                
-                performanceSizer->Add(
-                    mMaxNumSimulationThreadsSlider,
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions.GetMinHeatDissipationAdjustment(),
+                        1.0f,
+                        mGameControllerSettingsOptions.GetMaxHeatDissipationAdjustment()));
+
+                thermodynamicsSizer->Add(
+                    mHeatDissipationAdjustmentSlider,
                     wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
             }
 
-            performanceBoxSizer->Add(performanceSizer, 1, wxALL, StaticBoxInsetMargin);
+            thermodynamicsBoxSizer->Add(thermodynamicsSizer, 1, wxALL, StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
-            performanceBoxSizer,
+            thermodynamicsBoxSizer,
             wxGBPosition(1, 2),
             wxGBSpan(1, 1),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
@@ -1359,8 +1386,6 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
             CellBorderOuter);
     }
 
-
-
     //
     // Ocean Floor
     //
@@ -1451,9 +1476,9 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            // Ocean Floor Elasticity
+            // Ocean Floor Elasticity Coefficient
             {
-                mOceanFloorElasticitySlider = new SliderControl<float>(
+                mOceanFloorElasticityCoefficientSlider = new SliderControl<float>(
                     oceanFloorBoxSizer->GetStaticBox(),
                     SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
@@ -1462,24 +1487,24 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
                     _("Adjusts the elasticity of collisions with the ocean floor."),
                     [this](float value)
                     {
-                        this->mLiveSettings.SetValue(GameSettings::OceanFloorElasticity, value);
+                        this->mLiveSettings.SetValue(GameSettings::OceanFloorElasticityCoefficient, value);
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
-                        mGameControllerSettingsOptions.GetMinOceanFloorElasticity(),
-                        mGameControllerSettingsOptions.GetMaxOceanFloorElasticity()));
+                        mGameControllerSettingsOptions.GetMinOceanFloorElasticityCoefficient(),
+                        mGameControllerSettingsOptions.GetMaxOceanFloorElasticityCoefficient()));
 
                 oceanFloorSizer->Add(
-                    mOceanFloorElasticitySlider,
+                    mOceanFloorElasticityCoefficientSlider,
                     wxGBPosition(0, 2),
                     wxGBSpan(2, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
             }
 
-            // Ocean Floor Friction
+            // Ocean Floor Friction Coefficient
             {
-                mOceanFloorFrictionSlider = new SliderControl<float>(
+                mOceanFloorFrictionCoefficientSlider = new SliderControl<float>(
                     oceanFloorBoxSizer->GetStaticBox(),
                     SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
@@ -1488,15 +1513,15 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
                     _("Adjusts the friction exherted by the ocean floor."),
                     [this](float value)
                     {
-                        this->mLiveSettings.SetValue(GameSettings::OceanFloorFriction, value);
+                        this->mLiveSettings.SetValue(GameSettings::OceanFloorFrictionCoefficient, value);
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<LinearSliderCore>(
-                        mGameControllerSettingsOptions.GetMinOceanFloorFriction(),
-                        mGameControllerSettingsOptions.GetMaxOceanFloorFriction()));
+                        mGameControllerSettingsOptions.GetMinOceanFloorFrictionCoefficient(),
+                        mGameControllerSettingsOptions.GetMaxOceanFloorFrictionCoefficient()));
 
                 oceanFloorSizer->Add(
-                    mOceanFloorFrictionSlider,
+                    mOceanFloorFrictionCoefficientSlider,
                     wxGBPosition(0, 3),
                     wxGBSpan(2, 1),
                     wxEXPAND | wxALL,
@@ -2502,7 +2527,7 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
     panel->SetSizer(gridSizer);
 }
 
-void SettingsDialog::PopulateLightsElectricalAndFishesPanel(wxPanel * panel)
+void SettingsDialog::PopulateLightsElectricalFishesNpcsPanel(wxPanel * panel)
 {
     wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
 
@@ -2849,7 +2874,85 @@ void SettingsDialog::PopulateLightsElectricalAndFishesPanel(wxPanel * panel)
         gridSizer->Add(
             boxSizer,
             wxGBPosition(1, 0),
-            wxGBSpan(1, 2),
+            wxGBSpan(1, 1),
+            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            CellBorderOuter);
+    }
+
+    //
+    // NPCs
+    //
+
+    {
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("NPCs"));
+
+        {
+            wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
+
+            // Size Multiplier
+            {
+                mNpcSizeMultiplierSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Size Multiplier"),
+                    _("Magnifies or minimizes the physical size of NPCs."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::NpcSizeMultiplier, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions.GetMinNpcSizeMultiplier(),
+                        mGameControllerSettingsOptions.GetMaxNpcSizeMultiplier()));
+
+                sizer->Add(
+                    mNpcSizeMultiplierSlider,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Options
+            {
+                wxBoxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
+
+                // Apply Physics Tools to NPCs
+                {
+                    mDoApplyPhysicsToolsToNpcsCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY, _("Physics Tools Affect NPCs"));
+                    mDoApplyPhysicsToolsToNpcsCheckBox->SetToolTip(_("Enables or disables the effect of physics tools - such as Swirl, Attract, or Repel - on NPCs."));
+                    mDoApplyPhysicsToolsToNpcsCheckBox->Bind(
+                        wxEVT_COMMAND_CHECKBOX_CLICKED,
+                        [this](wxCommandEvent & event)
+                        {
+                            mLiveSettings.SetValue<bool>(GameSettings::DoApplyPhysicsToolsToNpcs, event.IsChecked());
+                            OnLiveSettingsChanged();
+                        });
+
+                    vSizer->Add(
+                        mDoApplyPhysicsToolsToNpcsCheckBox,
+                        0,
+                        wxEXPAND, // Use all horizontal space
+                        0);
+                }
+
+                sizer->Add(
+                    vSizer,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            boxSizer,
+            wxGBPosition(1, 1),
+            wxGBSpan(1, 1),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
@@ -3786,6 +3889,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
                 {
                     wxGridBagSizer * oceanRenderModeSizer = new wxGridBagSizer(3, 3);
+                    oceanRenderModeSizer->SetFlexibleDirection(wxHORIZONTAL); // All rows same height
 
                     mTextureOceanRenderModeRadioButton = new wxRadioButton(oceanRenderModeBoxSizer->GetStaticBox(), wxID_ANY, _("Texture"),
                         wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
@@ -3811,7 +3915,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                             OnLiveSettingsChanged();
                         });
 
-                    oceanRenderModeSizer->Add(mTextureOceanComboBox, wxGBPosition(0, 1), wxGBSpan(1, 2), wxEXPAND, 0);
+                    oceanRenderModeSizer->Add(mTextureOceanComboBox, wxGBPosition(0, 1), wxGBSpan(1, 2), wxEXPAND | wxALIGN_CENTER_VERTICAL, 0);
 
                     //
 
@@ -3836,7 +3940,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                             OnLiveSettingsChanged();
                         });
 
-                    oceanRenderModeSizer->Add(mDepthOceanColorStartPicker, wxGBPosition(1, 1), wxGBSpan(1, 1), 0, 0);
+                    oceanRenderModeSizer->Add(mDepthOceanColorStartPicker, wxGBPosition(1, 1), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL, 0);
 
                     mDepthOceanColorEndPicker = new wxColourPickerCtrl(oceanRenderModeBoxSizer->GetStaticBox(), wxID_ANY, wxColour("WHITE"));
                     mDepthOceanColorEndPicker->SetToolTip(_("Sets the ending (bottom) color of the gradient."));
@@ -3853,7 +3957,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                             OnLiveSettingsChanged();
                         });
 
-                    oceanRenderModeSizer->Add(mDepthOceanColorEndPicker, wxGBPosition(1, 2), wxGBSpan(1, 1), 0, 0);
+                    oceanRenderModeSizer->Add(mDepthOceanColorEndPicker, wxGBPosition(1, 2), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL, 0);
 
                     //
 
@@ -3879,7 +3983,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                             OnLiveSettingsChanged();
                         });
 
-                    oceanRenderModeSizer->Add(mFlatOceanColorPicker, wxGBPosition(2, 1), wxGBSpan(1, 1), 0, 0);
+                    oceanRenderModeSizer->Add(mFlatOceanColorPicker, wxGBPosition(2, 1), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL, 0);
 
                     oceanRenderModeBoxSizer->Add(oceanRenderModeSizer, 1, wxALL, StaticBoxInsetMargin2);
                 }
@@ -3956,9 +4060,9 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            // Ocean Darkening Rate
+            // Ocean Depth Darkening Rate
             {
-                mOceanDarkeningRateSlider = new SliderControl<float>(
+                mOceanDepthDarkeningRateSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
                     SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
@@ -3967,7 +4071,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     _("Adjusts the rate at which the ocean darkens with depth."),
                     [this](float value)
                     {
-                        this->mLiveSettings.SetValue(GameSettings::OceanDarkeningRate, value);
+                        this->mLiveSettings.SetValue(GameSettings::OceanDepthDarkeningRate, value);
                         this->OnLiveSettingsChanged();
                     },
                     std::make_unique<ExponentialSliderCore>(
@@ -3976,7 +4080,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                         1.0f));
 
                 sizer->Add(
-                    mOceanDarkeningRateSlider,
+                    mOceanDepthDarkeningRateSlider,
                     wxGBPosition(0, 2),
                     wxGBSpan(3, 1),
                     wxALL,
@@ -3989,7 +4093,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
         gridSizer->Add(
             boxSizer,
             wxGBPosition(0, 0),
-            wxGBSpan(1, 4),
+            wxGBSpan(2, 3),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderInner);
     }
@@ -4116,14 +4220,33 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     wxALL | wxALIGN_CENTER_VERTICAL,
                     CellBorderInner);
             }
-            
+
+            // Cloud Detail Mode
+            {
+                mCloudRenderDetailModeDetailedCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY, _("High-Quality Clouds"));
+                mCloudRenderDetailModeDetailedCheckBox->SetToolTip(_("Renders clouds with additional details. Requires more computational resources."));
+                mCloudRenderDetailModeDetailedCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED,
+                    [this](wxCommandEvent & event)
+                    {
+                        mLiveSettings.SetValue(GameSettings::CloudRenderDetail, event.IsChecked() ? CloudRenderDetailType::Detailed: CloudRenderDetailType::Basic);
+                        OnLiveSettingsChanged();
+                    });
+
+                sizer->Add(
+                    mCloudRenderDetailModeDetailedCheckBox,
+                    wxGBPosition(2, 0),
+                    wxGBSpan(1, 1),
+                    wxALL | wxALIGN_CENTER_VERTICAL,
+                    CellBorderInner);
+            }
+
             boxSizer->Add(sizer, 0, wxALL, StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(0, 4),
-            wxGBSpan(1, 3),
+            wxGBPosition(0, 3),
+            wxGBSpan(2, 2),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderInner);
     }
@@ -4202,13 +4325,75 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
+            // High-Quality Rendering
+            {
+                mLandRenderDetailModeDetailedCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY, _("High-Quality Rendering"));
+                mLandRenderDetailModeDetailedCheckBox->SetToolTip(_("Renders the ocean floor with additional details. Requires more computational resources."));
+                mLandRenderDetailModeDetailedCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED,
+                    [this](wxCommandEvent & event)
+                    {
+                        mLiveSettings.SetValue(GameSettings::LandRenderDetail, event.IsChecked() ? LandRenderDetailType::Detailed : LandRenderDetailType::Basic);
+                        OnLiveSettingsChanged();
+                    });
+
+                sizer->Add(
+                    mLandRenderDetailModeDetailedCheckBox,
+                    wxGBPosition(1, 0),
+                    wxGBSpan(1, 1),
+                    wxALL,
+                    CellBorderInner);
+            }
+
             boxSizer->Add(sizer, 0, wxALL, StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(0, 7),
-            wxGBSpan(1, 3),
+            wxGBPosition(0, 5),
+            wxGBSpan(1, 1),
+            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            CellBorderInner);
+    }
+
+    // Lamp Light
+    {
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Lamp Light"));
+
+        {
+            wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
+
+            // Lamp Light color
+            {
+                mFlatLampLightColorPicker = new wxColourPickerCtrl(boxSizer->GetStaticBox(), wxID_ANY);
+                mFlatLampLightColorPicker->SetToolTip(_("Sets the color of lamp lights."));
+                mFlatLampLightColorPicker->Bind(
+                    wxEVT_COLOURPICKER_CHANGED,
+                    [this](wxColourPickerEvent & event)
+                    {
+                        auto color = event.GetColour();
+
+                        mLiveSettings.SetValue(
+                            GameSettings::FlatLampLightColor,
+                            rgbColor(color.Red(), color.Green(), color.Blue()));
+
+                        OnLiveSettingsChanged();
+                    });
+
+                sizer->Add(
+                    mFlatLampLightColorPicker,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxALL,
+                    CellBorderInner);
+            }
+
+            boxSizer->Add(sizer, 0, wxALL, StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            boxSizer,
+            wxGBPosition(1, 5),
+            wxGBSpan(1, 1),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderInner);
     }
@@ -4264,84 +4449,6 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            // Heat sensitivity
-            {
-                mHeatSensitivitySlider = new SliderControl<float>(
-                    boxSizer->GetStaticBox(),
-                    SliderControl<float>::DirectionType::Vertical,
-                    SliderWidth,
-                    SliderHeight,
-                    _("Heat Boost"),
-                    _("Lowers the temperature at which materials start emitting red radiation, hence making incandescence more visible at lower temperatures."),
-                    [this](float value)
-                    {
-                        this->mLiveSettings.SetValue(GameSettings::HeatSensitivity, value);
-                        this->OnLiveSettingsChanged();
-                    },
-                    std::make_unique<LinearSliderCore>(
-                        0.0f,
-                        1.0f));
-
-                sizer->Add(
-                    mHeatSensitivitySlider,
-                    wxGBPosition(0, 1),
-                    wxGBSpan(1, 1),
-                    wxEXPAND | wxALL,
-                    CellBorderInner);
-            }
-
-            // Ambient Light Sensitivity
-            {
-                mShipAmbientLightSensitivitySlider = new SliderControl<float>(
-                    boxSizer->GetStaticBox(),
-                    SliderControl<float>::DirectionType::Vertical,
-                    SliderWidth,
-                    SliderHeight,
-                    _("Night Vision"),
-                    _("Controls the sensitivity of the ship to ambient light; lower values allow the ship to be visible also at night."),
-                    [this](float value)
-                    {
-                        this->mLiveSettings.SetValue(GameSettings::ShipAmbientLightSensitivity, value);
-                        this->OnLiveSettingsChanged();
-                    },
-                    std::make_unique<LinearSliderCore>(
-                        0.0f,
-                        1.0f));
-
-                sizer->Add(
-                    mShipAmbientLightSensitivitySlider,
-                    wxGBPosition(0, 2),
-                    wxGBSpan(1, 1),
-                    wxEXPAND | wxALL,
-                    CellBorderInner);
-            }
-
-            // Flame size adjustment
-            {
-                mShipFlameSizeAdjustmentSlider = new SliderControl<float>(
-                    boxSizer->GetStaticBox(),
-                    SliderControl<float>::DirectionType::Vertical,
-                    SliderWidth,
-                    SliderHeight,
-                    _("Flame Size Adjust"),
-                    _("Adjusts the size of flames."),
-                    [this](float value)
-                    {
-                        this->mLiveSettings.SetValue(GameSettings::ShipFlameSizeAdjustment, value);
-                        this->OnLiveSettingsChanged();
-                    },
-                    std::make_unique<LinearSliderCore>(
-                        mGameControllerSettingsOptions.GetMinShipFlameSizeAdjustment(),
-                        mGameControllerSettingsOptions.GetMaxShipFlameSizeAdjustment()));
-
-                sizer->Add(
-                    mShipFlameSizeAdjustmentSlider,
-                    wxGBPosition(0, 3),
-                    wxGBSpan(1, 1),
-                    wxALL,
-                    CellBorderInner);
-            }
-
             // Stress render mode
             {
                 wxString stressRenderModeChoices[] =
@@ -4378,8 +4485,112 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
                 sizer->Add(
                     mStressRenderModeRadioBox,
-                    wxGBPosition(0, 4),
+                    wxGBPosition(1, 0),
                     wxGBSpan(1, 1),
+                    wxALL,
+                    CellBorderInner);
+            }
+
+            // Heat sensitivity
+            {
+                mHeatSensitivitySlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Heat Boost"),
+                    _("Lowers the temperature at which materials start emitting red radiation, hence making incandescence more visible at lower temperatures."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::HeatSensitivity, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        0.0f,
+                        1.0f));
+
+                sizer->Add(
+                    mHeatSensitivitySlider,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(2, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Ambient Light Sensitivity
+            {
+                mShipAmbientLightSensitivitySlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Night Vision"),
+                    _("Controls the sensitivity of the ship to ambient light; lower values allow the ship to be visible also at night."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::ShipAmbientLightSensitivity, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        0.0f,
+                        1.0f));
+
+                sizer->Add(
+                    mShipAmbientLightSensitivitySlider,
+                    wxGBPosition(0, 2),
+                    wxGBSpan(2, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Depth Darkening Sensitivity
+            {
+                mShipDepthDarkeningSensitivitySlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Depth Darkening"),
+                    _("Controls the sensitivity of the ship to depth darkening; lower values allow the ship to be visible also at depth."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::ShipDepthDarkeningSensitivity, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        0.0f,
+                        1.0f));
+
+                sizer->Add(
+                    mShipDepthDarkeningSensitivitySlider,
+                    wxGBPosition(0, 3),
+                    wxGBSpan(2, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Flame size adjustment
+            {
+                mShipFlameSizeAdjustmentSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Flame Size Adjust"),
+                    _("Adjusts the size of flames."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::ShipFlameSizeAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions.GetMinShipFlameSizeAdjustment(),
+                        mGameControllerSettingsOptions.GetMaxShipFlameSizeAdjustment()));
+
+                sizer->Add(
+                    mShipFlameSizeAdjustmentSlider,
+                    wxGBPosition(0, 4),
+                    wxGBSpan(2, 1),
                     wxALL,
                     CellBorderInner);
             }
@@ -4389,8 +4600,8 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(1, 0),
-            wxGBSpan(2, 6),
+            wxGBPosition(2, 0),
+            wxGBSpan(2, 4),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderInner);
     }
@@ -4484,38 +4695,74 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(1, 6),
-            wxGBSpan(2, 2),
+            wxGBPosition(2, 4),
+            wxGBSpan(2, 1),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderInner);
     }
 
-    // Lamp Light
+    // NPC
     {
-        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Lamp Light"));
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("NPC"));
 
         {
             wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
 
-            // Lamp Light color
+            // Render Mode
             {
-                mFlatLampLightColorPicker = new wxColourPickerCtrl(boxSizer->GetStaticBox(), wxID_ANY);
-                mFlatLampLightColorPicker->SetToolTip(_("Sets the color of lamp lights."));
-                mFlatLampLightColorPicker->Bind(
-                    wxEVT_COLOURPICKER_CHANGED,
-                    [this](wxColourPickerEvent & event)
-                    {
-                        auto color = event.GetColour();
+                wxStaticBoxSizer * npcRenderModeBoxSizer = new wxStaticBoxSizer(wxVERTICAL, boxSizer->GetStaticBox(), _("Draw Mode"));
 
-                mLiveSettings.SetValue(
-                    GameSettings::FlatLampLightColor,
-                    rgbColor(color.Red(), color.Green(), color.Blue()));
+                {
+                    wxGridBagSizer * npcRenderModeSizer = new wxGridBagSizer(5, 5);
+                    npcRenderModeSizer->SetFlexibleDirection(wxHORIZONTAL); // All rows same height
 
-                OnLiveSettingsChanged();
-                    });
+                    // Texture
+
+                    mTextureNpcRenderModeRadioButton = new wxRadioButton(npcRenderModeBoxSizer->GetStaticBox(), wxID_ANY, _("Texture"),
+                        wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+                    mTextureNpcRenderModeRadioButton->SetToolTip(_("Draws NPCs with skins."));
+                    mTextureNpcRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnNpcRenderModeRadioButtonClick, this);
+
+                    npcRenderModeSizer->Add(mTextureNpcRenderModeRadioButton, wxGBPosition(0, 0), wxGBSpan(1, 2), wxALIGN_CENTER_VERTICAL, 0);
+
+                    // Quad with Roles
+
+                    mQuadWithRolesNpcRenderModeRadioButton = new wxRadioButton(npcRenderModeBoxSizer->GetStaticBox(), wxID_ANY, _("Stickmen With Roles"));
+                    mQuadWithRolesNpcRenderModeRadioButton->SetToolTip(_("Draws NPCs as stick-men, color-coded according to their roles."));
+                    mQuadWithRolesNpcRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnNpcRenderModeRadioButtonClick, this);
+
+                    npcRenderModeSizer->Add(mQuadWithRolesNpcRenderModeRadioButton, wxGBPosition(1, 0), wxGBSpan(1, 2), wxALIGN_CENTER_VERTICAL, 0);
+
+                    // Quad flat
+
+                    mQuadFlatNpcRenderModeRadioButton = new wxRadioButton(npcRenderModeBoxSizer->GetStaticBox(), wxID_ANY, _("Anonymous Stickmen"));
+                    mQuadFlatNpcRenderModeRadioButton->SetToolTip(_("Draws NPCs as uniformly-colored stick-men, with no distinctions among roles."));
+                    mQuadFlatNpcRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnNpcRenderModeRadioButtonClick, this);
+
+                    npcRenderModeSizer->Add(mQuadFlatNpcRenderModeRadioButton, wxGBPosition(2, 0), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL, 0);
+
+                    mQuadFlatNpcColorPicker = new wxColourPickerCtrl(npcRenderModeBoxSizer->GetStaticBox(), wxID_ANY);
+                    mQuadFlatNpcColorPicker->SetToolTip(_("Sets the color of anonymous NPCs."));
+                    mQuadFlatNpcColorPicker->Bind(
+                        wxEVT_COLOURPICKER_CHANGED,
+                        [this](wxColourPickerEvent & event)
+                        {
+                            auto color = event.GetColour();
+
+                            mLiveSettings.SetValue(
+                                GameSettings::NpcQuadFlatColor,
+                                rgbColor(color.Red(), color.Green(), color.Blue()));
+
+                            OnLiveSettingsChanged();
+                        });
+
+                    npcRenderModeSizer->Add(mQuadFlatNpcColorPicker, wxGBPosition(2, 1), wxGBSpan(1, 1), 0, 0);
+
+                    npcRenderModeBoxSizer->Add(npcRenderModeSizer, 1, wxALL, StaticBoxInsetMargin2);
+                }
 
                 sizer->Add(
-                    mFlatLampLightColorPicker,
+                    npcRenderModeBoxSizer,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
                     wxALL,
@@ -4527,7 +4774,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(1, 8),
+            wxGBPosition(2, 5),
             wxGBSpan(1, 1),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderInner);
@@ -4678,7 +4925,7 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
         gridSizer->Add(
             boxSizer,
             wxGBPosition(0, 0),
-            wxGBSpan(1, 2),
+            wxGBSpan(1, 3),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderInner);
     }
@@ -4748,7 +4995,7 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(0, 2),
+            wxGBPosition(0, 3),
             wxGBSpan(1, 1),
             wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderInner);
@@ -4822,7 +5069,7 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(0, 3),
+            wxGBPosition(0, 4),
             wxGBSpan(1, 1),
             wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderInner);
@@ -5104,6 +5351,81 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
             wxGBSpan(1, 1),
             wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderInner);
+    }
+
+    //
+    // Performance
+    //
+
+    {
+        wxStaticBoxSizer * performanceBoxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Performance"));
+
+        {
+            wxGridBagSizer * performanceSizer = new wxGridBagSizer(0, 0);
+
+            // Spring Iterations
+            {
+                mNumMechanicalIterationsAdjustmentSlider = new SliderControl<float>(
+                    performanceBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Spring Algo Adjust"),
+                    _("Higher values improve the rigidity of simulated structures, at the expense of longer computation times and decreased fragility."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::NumMechanicalDynamicsIterationsAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<FixedTickSliderCore>(
+                        0.5f,
+                        mGameControllerSettingsOptions.GetMinNumMechanicalDynamicsIterationsAdjustment(),
+                        mGameControllerSettingsOptions.GetMaxNumMechanicalDynamicsIterationsAdjustment()),
+                    mWarningIcon.get());
+
+                performanceSizer->Add(
+                    mNumMechanicalIterationsAdjustmentSlider,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Max Simulation Threads
+            {
+                mMaxNumSimulationThreadsSlider = new SliderControl<unsigned int>(
+                    performanceBoxSizer->GetStaticBox(),
+                    SliderControl<unsigned int>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Max Threads"),
+                    _("Sets a cap to the maximum number of threads used for the simulation."),
+                    [this](unsigned int value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::MaxNumSimulationThreads, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<IntegralLinearSliderCore<unsigned int>>(
+                        mGameControllerSettingsOptions.GetMinMaxNumSimulationThreads(),
+                        mGameControllerSettingsOptions.GetMaxMaxNumSimulationThreads()));
+
+                performanceSizer->Add(
+                    mMaxNumSimulationThreadsSlider,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            performanceBoxSizer->Add(performanceSizer, 1, wxALL, StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            performanceBoxSizer,
+            wxGBPosition(1, 4),
+            wxGBSpan(1, 1),
+            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            CellBorderOuter);
     }
 
     // Finalize panel
@@ -5531,9 +5853,12 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     //
     // Mechanics and Thermodynamics
     //
-    
+
     mStrengthSlider->SetValue(settings.GetValue<float>(GameSettings::SpringStrengthAdjustment));
     mGlobalDampingAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::GlobalDampingAdjustment));
+    mElasticityAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::ElasticityAdjustment));
+    mStaticFrictionAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::StaticFrictionAdjustment));
+    mKineticFrictionAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::KineticFrictionAdjustment));
     mStaticPressureForceAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::StaticPressureForceAdjustment));
     mThermalConductivityAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::ThermalConductivityAdjustment));
     mHeatDissipationAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::HeatDissipationAdjustment));
@@ -5541,10 +5866,8 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mMeltingTemperatureAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::MeltingTemperatureAdjustment));
     mCombustionSpeedAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::CombustionSpeedAdjustment));
     mCombustionHeatAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::CombustionHeatAdjustment));
-    mMaxBurningParticlesSlider->SetValue(settings.GetValue<unsigned int>(GameSettings::MaxBurningParticles));
+    mMaxBurningParticlesPerShipSlider->SetValue(settings.GetValue<unsigned int>(GameSettings::MaxBurningParticlesPerShip));
     mUltraViolentToggleButton->SetValue(settings.GetValue<bool>(GameSettings::UltraViolentMode));
-    mMaxNumSimulationThreadsSlider->SetValue(settings.GetValue<unsigned int>(GameSettings::MaxNumSimulationThreads));
-    mNumMechanicalIterationsAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::NumMechanicalDynamicsIterationsAdjustment));
 
     //
     // Water and Ocean
@@ -5562,8 +5885,8 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mOceanDepthSlider->SetValue(settings.GetValue<float>(GameSettings::SeaDepth));
     mOceanFloorBumpinessSlider->SetValue(settings.GetValue<float>(GameSettings::OceanFloorBumpiness));
     mOceanFloorDetailAmplificationSlider->SetValue(settings.GetValue<float>(GameSettings::OceanFloorDetailAmplification));
-    mOceanFloorElasticitySlider->SetValue(settings.GetValue<float>(GameSettings::OceanFloorElasticity));
-    mOceanFloorFrictionSlider->SetValue(settings.GetValue<float>(GameSettings::OceanFloorFriction));
+    mOceanFloorElasticityCoefficientSlider->SetValue(settings.GetValue<float>(GameSettings::OceanFloorElasticityCoefficient));
+    mOceanFloorFrictionCoefficientSlider->SetValue(settings.GetValue<float>(GameSettings::OceanFloorFrictionCoefficient));
     mOceanFloorSiltHardnessSlider->SetValue(settings.GetValue<float>(GameSettings::OceanFloorSiltHardness));
     mRotAcceler8rSlider->SetValue(settings.GetValue<float>(GameSettings::RotAcceler8r));
 
@@ -5610,7 +5933,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mDayLightCycleDurationSlider->Enable(settings.GetValue<bool>(GameSettings::DoDayLightCycle));
 
     //
-    // Lights, Electricals, and Fishes
+    // Lights, Electricals, Fishes, NPCs
     //
 
     mLuminiscenceSlider->SetValue(settings.GetValue<float>(GameSettings::LuminiscenceAdjustment));
@@ -5625,6 +5948,8 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mDoFishShoalingCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoFishShoaling));
     mFishShoalRadiusAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::FishShoalRadiusAdjustment));
     mFishShoalRadiusAdjustmentSlider->Enable(settings.GetValue<bool>(GameSettings::DoFishShoaling));
+    mNpcSizeMultiplierSlider->SetValue(settings.GetValue<float>(GameSettings::NpcSizeMultiplier));
+    mDoApplyPhysicsToolsToNpcsCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoApplyPhysicsToolsToNpcs));
 
     //
     // Destructive Tools
@@ -5642,7 +5967,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     //
     // Other Tools
     //
-    
+
     mFloodRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::FloodRadius));
     mFloodQuantitySlider->SetValue(settings.GetValue<float>(GameSettings::FloodQuantity));
     mHeatBlasterRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::HeatBlasterRadius));
@@ -5693,7 +6018,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mOceanRenderDetailModeDetailedCheckBox->SetValue(settings.GetValue<OceanRenderDetailType>(GameSettings::OceanRenderDetail) == OceanRenderDetailType::Detailed);
     mSeeShipThroughOceanCheckBox->SetValue(settings.GetValue<bool>(GameSettings::ShowShipThroughOcean));
     mOceanTransparencySlider->SetValue(settings.GetValue<float>(GameSettings::OceanTransparency));
-    mOceanDarkeningRateSlider->SetValue(settings.GetValue<float>(GameSettings::OceanDarkeningRate));
+    mOceanDepthDarkeningRateSlider->SetValue(settings.GetValue<float>(GameSettings::OceanDepthDarkeningRate));
 
     ReconciliateOceanRenderModeSettings();
 
@@ -5721,28 +6046,32 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     auto const moonlightColor = settings.GetValue<rgbColor>(GameSettings::MoonlightColor);
     mMoonlightColorPicker->SetColour(wxColor(moonlightColor.r, moonlightColor.g, moonlightColor.b));
 
+    mCloudRenderDetailModeDetailedCheckBox->SetValue(settings.GetValue<CloudRenderDetailType>(GameSettings::CloudRenderDetail) == CloudRenderDetailType::Detailed);
+
     ReconciliateMoonlightSettings();
 
 
     switch (settings.GetValue<LandRenderModeType>(GameSettings::LandRenderMode))
     {
-    case LandRenderModeType::Texture:
-    {
-        mTextureLandRenderModeRadioButton->SetValue(true);
-        break;
-    }
+        case LandRenderModeType::Texture:
+        {
+            mTextureLandRenderModeRadioButton->SetValue(true);
+            break;
+        }
 
-    case LandRenderModeType::Flat:
-    {
-        mFlatLandRenderModeRadioButton->SetValue(true);
-        break;
-    }
+        case LandRenderModeType::Flat:
+        {
+            mFlatLandRenderModeRadioButton->SetValue(true);
+            break;
+        }
     }
 
     mTextureLandComboBox->Select(static_cast<int>(settings.GetValue<size_t>(GameSettings::TextureLandTextureIndex)));
 
     auto const flatLandColor = settings.GetValue<rgbColor>(GameSettings::FlatLandColor);
     mFlatLandColorPicker->SetColour(wxColor(flatLandColor.r, flatLandColor.g, flatLandColor.b));
+
+    mLandRenderDetailModeDetailedCheckBox->SetValue(settings.GetValue<LandRenderDetailType>(GameSettings::LandRenderDetail) == LandRenderDetailType::Detailed);
 
     ReconciliateLandRenderModeSettings();
 
@@ -5799,12 +6128,39 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
 
     mShipFlameSizeAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::ShipFlameSizeAdjustment));
     mShipAmbientLightSensitivitySlider->SetValue(settings.GetValue<float>(GameSettings::ShipAmbientLightSensitivity));
+    mShipDepthDarkeningSensitivitySlider->SetValue(settings.GetValue<float>(GameSettings::ShipDepthDarkeningSensitivity));
 
     auto const defaultWaterColor = settings.GetValue<rgbColor>(GameSettings::DefaultWaterColor);
     mDefaultWaterColorPicker->SetColour(wxColor(defaultWaterColor.r, defaultWaterColor.g, defaultWaterColor.b));
 
     mWaterContrastSlider->SetValue(settings.GetValue<float>(GameSettings::WaterContrast));
     mWaterLevelOfDetailSlider->SetValue(settings.GetValue<float>(GameSettings::WaterLevelOfDetail));
+
+    switch (settings.GetValue<NpcRenderModeType>(GameSettings::NpcRenderMode))
+    {
+        case NpcRenderModeType::Texture:
+        {
+            mTextureNpcRenderModeRadioButton->SetValue(true);
+            break;
+        }
+
+        case NpcRenderModeType::QuadWithRoles:
+        {
+            mQuadWithRolesNpcRenderModeRadioButton->SetValue(true);
+            break;
+        }
+
+        case NpcRenderModeType::QuadFlat:
+        {
+            mQuadFlatNpcRenderModeRadioButton->SetValue(true);
+            break;
+        }
+    }
+
+    auto const npcQuadFlatColor = settings.GetValue<rgbColor>(GameSettings::NpcQuadFlatColor);
+    mQuadFlatNpcColorPicker->SetColour(wxColor(npcQuadFlatColor.r, npcQuadFlatColor.g, npcQuadFlatColor.b));
+
+    ReconciliateNpcRenderModeSettings();
 
     //
     // Sound and Advanced Settings
@@ -5927,6 +6283,9 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
 
     mGenerateDebrisCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoGenerateDebris));
     mGenerateSparklesForCutsCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoGenerateSparklesForCuts));
+
+    mMaxNumSimulationThreadsSlider->SetValue(settings.GetValue<unsigned int>(GameSettings::MaxNumSimulationThreads));
+    mNumMechanicalIterationsAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::NumMechanicalDynamicsIterationsAdjustment));
 }
 
 void SettingsDialog::ReconciliateOceanRenderModeSettings()
@@ -5952,6 +6311,11 @@ void SettingsDialog::ReconciliateSkyRenderModeSettings()
 void SettingsDialog::ReconciliateMoonlightSettings()
 {
     mMoonlightColorPicker->Enable(mDoMoonlightCheckBox->IsChecked());
+}
+
+void SettingsDialog::ReconciliateNpcRenderModeSettings()
+{
+    mQuadFlatNpcColorPicker->Enable(mQuadFlatNpcRenderModeRadioButton->GetValue());
 }
 
 void SettingsDialog::OnLiveSettingsChanged()

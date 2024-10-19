@@ -21,8 +21,10 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::AMBombPreImplosion;
     else if (lstr == "blast_tool_halo")
         return ProgramType::BlastToolHalo;
-    else if (lstr == "clouds")
-        return ProgramType::Clouds;
+    else if (lstr == "clouds_basic")
+        return ProgramType::CloudsBasic;
+    else if (lstr == "clouds_detailed")
+        return ProgramType::CloudsDetailed;
     else if (lstr == "cross_of_light")
         return ProgramType::CrossOfLight;
     else if (lstr == "fire_extinguisher_spray")
@@ -37,14 +39,20 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::HeatBlasterFlameCool;
     else if (lstr == "heat_blaster_flame_heat")
         return ProgramType::HeatBlasterFlameHeat;
-    else if (lstr == "land_flat")
-        return ProgramType::LandFlat;
-    else if (lstr == "land_texture")
-        return ProgramType::LandTexture;
+    else if (lstr == "land_flat_basic")
+        return ProgramType::LandFlatBasic;
+    else if (lstr == "land_flat_detailed")
+        return ProgramType::LandFlatDetailed;
+    else if (lstr == "land_texture_basic")
+        return ProgramType::LandTextureBasic;
+    else if (lstr == "land_texture_detailed")
+        return ProgramType::LandTextureDetailed;
     else if (lstr == "laser_ray")
         return ProgramType::LaserRay;
     else if (lstr == "lightning")
         return ProgramType::Lightning;
+    else if (lstr == "line_guide")
+        return ProgramType::LineGuide;
     else if (lstr == "ocean_depth_basic")
         return ProgramType::OceanDepthBasic;
     else if (lstr == "ocean_depth_detailed_background")
@@ -69,6 +77,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::PressureInjectionHalo;
     else if (lstr == "rain")
         return ProgramType::Rain;
+    else if (lstr == "rect_selection")
+        return ProgramType::RectSelection;
     else if (lstr == "ship_centers")
         return ProgramType::ShipCenters;
     else if (lstr == "ship_circle_highlights")
@@ -89,6 +99,12 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::ShipGenericMipMappedTextures;
     else if (lstr == "ship_jet_engine_flames")
         return ProgramType::ShipJetEngineFlames;
+    else if (lstr == "ship_npcs_quad_flat")
+        return ProgramType::ShipNpcsQuadFlat;
+    else if (lstr == "ship_npcs_quad_with_roles")
+        return ProgramType::ShipNpcsQuadWithRoles;
+    else if (lstr == "ship_npcs_texture")
+        return ProgramType::ShipNpcsTexture;
     else if (lstr == "ship_point_to_point_arrows")
         return ProgramType::ShipPointToPointArrows;
     else if (lstr == "ship_points_color")
@@ -207,8 +223,10 @@ std::string ProgramTypeToStr(ProgramType program)
         return "AMBombPreImplosion";
     case ProgramType::BlastToolHalo:
         return "BlastToolHalo";
-    case ProgramType::Clouds:
-        return "Clouds";
+    case ProgramType::CloudsBasic:
+        return "CloudsBasic";
+    case ProgramType::CloudsDetailed:
+        return "CloudsDetailed";
     case ProgramType::CrossOfLight:
         return "CrossOfLight";
     case ProgramType::FireExtinguisherSpray:
@@ -223,14 +241,20 @@ std::string ProgramTypeToStr(ProgramType program)
         return "HeatBlasterFlameCool";
     case ProgramType::HeatBlasterFlameHeat:
         return "HeatBlasterFlameHeat";
-    case ProgramType::LandFlat:
-        return "LandFlat";
-    case ProgramType::LandTexture:
-        return "LandTexture";
+    case ProgramType::LandFlatBasic:
+        return "LandFlatBasic";
+    case ProgramType::LandFlatDetailed:
+        return "LandFlatDetailed";
+    case ProgramType::LandTextureBasic:
+        return "LandTextureBasic";
+    case ProgramType::LandTextureDetailed:
+        return "LandTextureDetailed";
     case ProgramType::LaserRay:
         return "LaserRay";
     case ProgramType::Lightning:
         return "Lightning";
+    case ProgramType::LineGuide:
+        return "LineGuide";
     case ProgramType::OceanDepthBasic:
         return "OceanDepthBasic";
     case ProgramType::OceanDepthDetailedBackground:
@@ -255,6 +279,8 @@ std::string ProgramTypeToStr(ProgramType program)
         return "PressureInjectionHalo";
     case ProgramType::Rain:
         return "Rain";
+    case ProgramType::RectSelection:
+        return "RectSelection";
     case ProgramType::ShipCenters:
         return "ShipCenters";
     case ProgramType::ShipCircleHighlights:
@@ -275,6 +301,12 @@ std::string ProgramTypeToStr(ProgramType program)
         return "ShipGenericMipMappedTextures";
     case ProgramType::ShipJetEngineFlames:
         return "ShipJetEngineFlames";
+    case ProgramType::ShipNpcsQuadFlat:
+        return "ShipNpcsQuadFlat";
+    case ProgramType::ShipNpcsQuadWithRoles:
+        return "ShipNpcsQuadWithRoles";
+    case ProgramType::ShipNpcsTexture:
+        return "ShipNpcsTexture";
     case ProgramType::ShipPointToPointArrows:
         return "ShipPointToPointArrows";
     case ProgramType::ShipPointsColor:
@@ -407,18 +439,24 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::HeatShift;
     else if (str == "LampLightColor")
         return ProgramParameterType::LampLightColor;
+    else if (str == "LampToolAttributes")
+        return ProgramParameterType::LampToolAttributes;
     else if (str == "LandFlatColor")
         return ProgramParameterType::LandFlatColor;
     else if (str == "MatteColor")
         return ProgramParameterType::MatteColor;
+    else if (str == "NoiseStrength")
+        return ProgramParameterType::NoiseStrength;
+    else if (str == "NpcQuadFlatColor")
+        return ProgramParameterType::NpcQuadFlatColor;
     else if (str == "OceanTransparency")
         return ProgramParameterType::OceanTransparency;
-    else if (str == "OceanDarkeningRate")
-        return ProgramParameterType::OceanDarkeningRate;
     else if (str == "OceanDepthColorStart")
         return ProgramParameterType::OceanDepthColorStart;
     else if (str == "OceanDepthColorEnd")
         return ProgramParameterType::OceanDepthColorEnd;
+    else if (str == "OceanDepthDarkeningRate")
+        return ProgramParameterType::OceanDepthDarkeningRate;
     else if (str == "OceanFlatColor")
         return ProgramParameterType::OceanFlatColor;
     else if (str == "OrthoMatrix")
@@ -427,6 +465,8 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::RainAngle;
     else if (str == "RainDensity")
         return ProgramParameterType::RainDensity;
+    else if (str == "ShipDepthDarkeningSensitivity")
+        return ProgramParameterType::ShipDepthDarkeningSensitivity;
     else if (str == "StarTransparency")
         return ProgramParameterType::StarTransparency;
     else if (str == "StressColorMap")
@@ -468,6 +508,8 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::LandTexture;
     else if (str == "NoiseTexture")
         return ProgramParameterType::NoiseTexture;
+    else if (str == "NpcAtlasTexture")
+        return ProgramParameterType::NpcAtlasTexture;
     else if (str == "OceanTexture")
         return ProgramParameterType::OceanTexture;
     else
@@ -498,26 +540,34 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
         return "HeatShift";
     case ProgramParameterType::LampLightColor:
         return "LampLightColor";
+    case ProgramParameterType::LampToolAttributes:
+        return "LampToolAttributes";
     case ProgramParameterType::LandFlatColor:
         return "LandFlatColor";
     case ProgramParameterType::MatteColor:
         return "MatteColor";
-    case ProgramParameterType::OceanTransparency:
-        return "OceanTransparency";
-    case ProgramParameterType::OceanDarkeningRate:
-        return "OceanDarkeningRate";
+    case ProgramParameterType::NoiseStrength:
+        return "NoiseStrength";
+    case ProgramParameterType::NpcQuadFlatColor:
+        return "NpcQuadFlatColor";
     case ProgramParameterType::OceanDepthColorStart:
         return "OceanDepthColorStart";
     case ProgramParameterType::OceanDepthColorEnd:
         return "OceanDepthColorEnd";
+    case ProgramParameterType::OceanDepthDarkeningRate:
+        return "OceanDepthDarkeningRate";
     case ProgramParameterType::OceanFlatColor:
         return "OceanFlatColor";
+    case ProgramParameterType::OceanTransparency:
+        return "OceanTransparency";
     case ProgramParameterType::OrthoMatrix:
         return "OrthoMatrix";
     case ProgramParameterType::RainAngle:
         return "RainAngle";
     case ProgramParameterType::RainDensity:
         return "RainDensity";
+    case ProgramParameterType::ShipDepthDarkeningSensitivity:
+        return "ShipDepthDarkeningSensitivity";
     case ProgramParameterType::StarTransparency:
         return "StarTransparency";
     case ProgramParameterType::StressColorMap:
@@ -559,6 +609,8 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
         return "LandTexture";
     case ProgramParameterType::NoiseTexture:
         return "NoiseTexture";
+    case ProgramParameterType::NpcAtlasTexture:
+        return "NpcAtlasTexture";
     case ProgramParameterType::OceanTexture:
         return "OceanTexture";
     }
@@ -629,6 +681,14 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::ShipPointAuxiliaryData;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointFrontierColor"))
         return VertexAttributeType::ShipPointFrontierColor;
+    else if (Utils::CaseInsensitiveEquals(str, "NpcAttributeGroup1"))
+        return VertexAttributeType::NpcAttributeGroup1;
+    else if (Utils::CaseInsensitiveEquals(str, "NpcAttributeGroup2"))
+        return VertexAttributeType::NpcAttributeGroup2;
+    else if (Utils::CaseInsensitiveEquals(str, "NpcAttributeGroup3"))
+        return VertexAttributeType::NpcAttributeGroup3;
+    else if (Utils::CaseInsensitiveEquals(str, "NpcAttributeGroup4"))
+        return VertexAttributeType::NpcAttributeGroup4;
     else if (Utils::CaseInsensitiveEquals(str, "ElectricSpark1"))
         return VertexAttributeType::ElectricSpark1;
     else if (Utils::CaseInsensitiveEquals(str, "Explosion1"))
@@ -704,6 +764,14 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::LaserRay1;
     else if (Utils::CaseInsensitiveEquals(str, "LaserRay2"))
         return VertexAttributeType::LaserRay2;
+    else if (Utils::CaseInsensitiveEquals(str, "RectSelection1"))
+        return VertexAttributeType::RectSelection1;
+    else if (Utils::CaseInsensitiveEquals(str, "RectSelection2"))
+        return VertexAttributeType::RectSelection2;
+    else if (Utils::CaseInsensitiveEquals(str, "RectSelection3"))
+        return VertexAttributeType::RectSelection3;
+    else if (Utils::CaseInsensitiveEquals(str, "LineGuide1"))
+        return VertexAttributeType::LineGuide1;
     // Global
     else if (Utils::CaseInsensitiveEquals(str, "GenericMipMappedTextureNdc1"))
         return VertexAttributeType::GenericMipMappedTextureNdc1;

@@ -33,6 +33,8 @@ void main()
 
 #define in varying
 
+#include "common.glslinc"
+#include "lamp_tool.glslinc"
 #include "ocean.glslinc"
 
 // Inputs from previous shader
@@ -47,7 +49,7 @@ uniform sampler1D paramSharedTexture;
 // Parameters
 uniform float paramEffectiveAmbientLightIntensity;
 uniform vec3 paramEffectiveMoonlightColor;
-uniform float paramOceanDarkeningRate;
+uniform float paramOceanDepthDarkeningRate;
 uniform vec3 paramOceanFlatColor;
 uniform float paramOceanTransparency;
 uniform float paramSunRaysInclination; // 0.0==vertical, 1.0/-1.0==45/-45 degrees
@@ -65,18 +67,30 @@ void main()
     shadowFactor = 1.3 * shadowFactor - 0.3 * shadowFactor * shadowFactor;
     vec3 color = paramOceanFlatColor * shadowFactor;
 
+    // Calculate lamp tool intensity
+    float lampToolIntensity = CalculateLampToolIntensity(gl_FragCoord.xy);
+
     // Apply ambient light
     color = ApplyAmbientLight(
         color, 
-        paramEffectiveMoonlightColor, 
-        paramEffectiveAmbientLightIntensity);
+        paramEffectiveMoonlightColor * 0.5, 
+        paramEffectiveAmbientLightIntensity,
+        lampToolIntensity);
+
+    // Calculate depth darkening
+    float darkeningFactor = CalculateOceanDepthDarkeningFactor(
+        yWorld,
+        paramOceanDepthDarkeningRate);
 
     // Apply depth darkening
-    color = ApplyDepthDarkeningWithDither(
+    color = mix(
         color,
         vec3(0.0),
-        yWorld,
-        paramOceanDarkeningRate,
+        darkeningFactor * (1.0 - lampToolIntensity));
+
+    // Apply dither
+    color = ApplyDither(
+        color,
         gl_FragCoord.xy,
         paramNoiseTexture);
 

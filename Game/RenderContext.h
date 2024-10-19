@@ -61,6 +61,7 @@ public:
 
     RenderContext(
         RenderDeviceProperties const & renderDeviceProperties,
+        Render::TextureAtlas<Render::NpcTextureGroups> && npcTextureAtlas,
         PerfStats & perfStats,
         ResourceLocator const & resourceLocator,
         ProgressCallback const & progressCallback);
@@ -163,7 +164,7 @@ public:
         return mRenderParameters.View;
     }
 
-    //
+    // Render properties
 
     float GetAmbientLightIntensity() const
     {
@@ -191,6 +192,27 @@ public:
     void SetSunRaysInclination(float value)
     {
         mWorldRenderContext->SetSunRaysInclination(value);
+    }
+
+    void SetLamp(
+        DisplayLogicalCoordinates const & pos,
+        float radiusScreenFraction)
+    {
+        DisplayPhysicalCoordinates const physicalPos = mRenderParameters.View.ScreenToPhysicalDisplay(pos);
+        float physicalRadius = mRenderParameters.View.ScreenFractionToPhysicalDisplay(radiusScreenFraction);
+
+        // Safe as it's copied to thread
+        mLampToolToSet.emplace(
+            static_cast<float>(physicalPos.x),
+            static_cast<float>(physicalPos.y),
+            physicalRadius,
+            1.0f);
+    }
+
+    void ResetLamp()
+    {
+        // Safe as it's copied to thread
+        mLampToolToSet.emplace(vec4f::zero());
     }
 
     //
@@ -260,6 +282,17 @@ public:
         mRenderParameters.IsSkyDirty = true;
     }
 
+    CloudRenderDetailType GetCloudRenderDetail() const
+    {
+        return mRenderParameters.CloudRenderDetail;
+    }
+
+    void SetCloudRenderDetail(CloudRenderDetailType cloudRenderDetail)
+    {
+        mRenderParameters.CloudRenderDetail = cloudRenderDetail;
+        // No need to set dirty, this is picked up at each cycle anway
+    }
+
     float GetOceanTransparency() const
     {
         return mRenderParameters.OceanTransparency;
@@ -271,15 +304,15 @@ public:
         // No need to set dirty, this is picked up at each cycle anway
     }
 
-    float GetOceanDarkeningRate() const
+    float GetOceanDepthDarkeningRate() const
     {
-        return mRenderParameters.OceanDarkeningRate;
+        return mRenderParameters.OceanDepthDarkeningRate;
     }
 
-    void SetOceanDarkeningRate(float darkeningRate)
+    void SetOceanDepthDarkeningRate(float darkeningRate)
     {
-        mRenderParameters.OceanDarkeningRate = darkeningRate;
-        mRenderParameters.IsOceanDarkeningRateDirty = true;
+        mRenderParameters.OceanDepthDarkeningRate = darkeningRate;
+        mRenderParameters.IsOceanDepthDarkeningRateDirty = true;
     }
 
     OceanRenderModeType GetOceanRenderMode() const
@@ -414,9 +447,31 @@ public:
         mRenderParameters.IsLandTextureIndexDirty = true;
     }
 
+    LandRenderDetailType GetLandRenderDetail() const
+    {
+        return mRenderParameters.LandRenderDetail;
+    }
+
+    void SetLandRenderDetail(LandRenderDetailType landRenderDetail)
+    {
+        mRenderParameters.LandRenderDetail = landRenderDetail;
+        mRenderParameters.IsLandRenderDetailDirty = true;
+    }
+
     //
     // Ship rendering properties
     //
+
+    ShipViewModeType GetShipViewMode() const
+    {
+        return mRenderParameters.ShipViewMode;
+    }
+
+    void SetShipViewMode(ShipViewModeType shipViewMode)
+    {
+        mRenderParameters.ShipViewMode = shipViewMode;
+        mRenderParameters.IsShipViewModeDirty = true;
+    }
 
     float GetShipAmbientLightSensitivity() const
     {
@@ -427,6 +482,17 @@ public:
     {
         mRenderParameters.ShipAmbientLightSensitivity = shipAmbientLightSensitivity;
         mRenderParameters.IsShipAmbientLightSensitivityDirty = true;
+    }
+
+    float GetShipDepthDarkeningSensitivity() const
+    {
+        return mRenderParameters.ShipDepthDarkeningSensitivity;
+    }
+
+    void SetShipDepthDarkeningSensitivity(float shipDepthDarkeningSensitivity)
+    {
+        mRenderParameters.ShipDepthDarkeningSensitivity = shipDepthDarkeningSensitivity;
+        mRenderParameters.IsShipDepthDarkeningSensitivityDirty = true;
     }
 
     rgbColor const & GetFlatLampLightColor() const
@@ -620,6 +686,28 @@ public:
         mRenderParameters.AreShipStructureRenderModeSelectorsDirty = true;
     }
 
+    NpcRenderModeType GetNpcRenderMode() const
+    {
+        return mRenderParameters.NpcRenderMode;
+    }
+
+    void SetNpcRenderMode(NpcRenderModeType npcRenderMode)
+    {
+        mRenderParameters.NpcRenderMode = npcRenderMode;
+        mRenderParameters.AreNpcRenderParametersDirty = true;
+    }
+
+    rgbColor const & GetNpcQuadFlatColor() const
+    {
+        return mRenderParameters.NpcQuadFlatColor;
+    }
+
+    void SetNpcQuadFlatColor(rgbColor const & color)
+    {
+        mRenderParameters.NpcQuadFlatColor = color;
+        mRenderParameters.AreNpcRenderParametersDirty = true;
+    }
+
     //
     // Misc rendering properties
     //
@@ -679,6 +767,11 @@ public:
         return mRenderParameters.View.ScreenOffsetToWorldOffset(screenOffset);
     }
 
+    inline float ScreenFractionToWorldOffset(float screenFraction) const
+    {
+        return mRenderParameters.View.ScreenFractionToWorldOffset(screenFraction);
+    }
+
     //
     // Statistics
     //
@@ -699,7 +792,8 @@ public:
     void AddShip(
         ShipId shipId,
         size_t pointCount,
-        RgbaImageData texture);
+        RgbaImageData exteriorTextureImage,
+        RgbaImageData interiorViewImage);
 
     inline ShipRenderContext & GetShipRenderContext(ShipId shipId) const
     {
@@ -828,7 +922,7 @@ public:
         float virtualZ,         // [0.0, +1.0]
         float scale,
         float darkening,        // 0.0:dark, 1.0:light
-        float growthProgress)   // [0.0, +1.0]
+        float volumetricGrowthProgress)
     {
         mWorldRenderContext->UploadCloud(
             cloudId,
@@ -837,7 +931,7 @@ public:
             virtualZ,
             scale,
             darkening,
-            growthProgress,
+            volumetricGrowthProgress,
             mRenderParameters);
     }
 
@@ -1105,6 +1199,24 @@ public:
             });
     }
 
+    void UploadRectSelection(
+        vec2f const & centerPosition,
+        vec2f const & verticalDir,
+        float width,
+        float height,
+        rgbColor const & color,
+        float elapsedSimulationTime)
+    {
+        mNotificationRenderContext->UploadRectSelection(
+            centerPosition,
+            verticalDir,
+            width,
+            height,
+            color,
+            elapsedSimulationTime,
+            mRenderParameters.View);
+    }
+
     inline void UploadShipsEnd()
     {
         // Nop
@@ -1187,6 +1299,11 @@ private:
     VectorFieldRenderModeType mVectorFieldRenderMode;
     float mVectorFieldLengthMultiplier; // Storage
 
+    //
+    // Render state
+    //
+
+    std::optional<vec4f> mLampToolToSet; // When set, we need to give to render thread at Draw
 
     //
     // Rendering externals

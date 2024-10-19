@@ -45,7 +45,7 @@ namespace Utils
         std::filesystem::path const & filepath);
 
     template<typename T>
-    inline T const & GetJsonValueAs(
+    inline T GetJsonValueAs(
         picojson::value const & value,
         std::string const & memberName)
     {
@@ -55,6 +55,31 @@ namespace Utils
         }
 
         return value.get<T>();
+    }
+
+    template<>
+    inline float GetJsonValueAs<float>(
+        picojson::value const & value,
+        std::string const & memberName)
+    {
+        if (!value.is<double>())
+        {
+            throw GameException("Error parsing JSON: member \"" + memberName + "\" is not of the expected type");
+        }
+
+        return static_cast<float>(value.get<double>());
+    }
+
+    inline picojson::object const & GetJsonValueAsObject(
+        picojson::value const & value,
+        std::string const & memberName)
+    {
+        if (!value.is<picojson::object>())
+        {
+            throw GameException("Error parsing JSON: member \"" + memberName + "\" is not of the object type");
+        }
+
+        return value.get<picojson::object>();
     }
 
     template<typename T>
@@ -166,6 +191,24 @@ namespace Utils
         }
 
         return memberIt->second.get<picojson::object>();
+    }
+
+    inline std::optional<picojson::array> GetOptionalJsonArray(
+        picojson::object const & obj,
+        std::string const & memberName)
+    {
+        auto const & memberIt = obj.find(memberName);
+        if (obj.end() == memberIt)
+        {
+            return std::nullopt;
+        }
+
+        if (!memberIt->second.is<picojson::array>())
+        {
+            throw GameException("Error parsing JSON: member \"" + memberName + "\" is not of type 'array'");
+        }
+
+        return memberIt->second.get<picojson::array>();
     }
 
     template<typename T>

@@ -25,7 +25,9 @@ class GameEventDispatcher final
     , public IStatisticsGameEventHandler
     , public IAtmosphereGameEventHandler
     , public IElectricalElementGameEventHandler
+    , public INpcGameEventHandler
     , public IGenericGameEventHandler
+    , public IControlGameEventHandler
 {
 public:
 
@@ -48,6 +50,8 @@ public:
         , mTimerBombDefusedEvents()
         , mWatertightDoorOpenedEvents()
         , mWatertightDoorClosedEvents()
+        , mLastNpcCountsUpdated()
+        , mLastHumanNpcCountsUpdated()
         // Sinks
         , mLifecycleSinks()
         , mStructuralSinks()
@@ -56,6 +60,7 @@ public:
         , mStatisticsSinks()
         , mAtmosphereSinks()
         , mElectricalElementSinks()
+        , mNpcSinks()
         , mGenericSinks()
     {
     }
@@ -330,7 +335,7 @@ public:
     }
 
     void OnSwitchCreated(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
         SwitchType type,
         ElectricalState state,
@@ -346,7 +351,7 @@ public:
     }
 
     void OnPowerProbeCreated(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
         PowerProbeType type,
         ElectricalState state,
@@ -362,7 +367,7 @@ public:
     }
 
     void OnEngineControllerCreated(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
         ElectricalMaterial const & electricalMaterial,
         std::optional<ElectricalPanel::ElementMetadata> const & panelElementMetadata) override
@@ -376,7 +381,7 @@ public:
     }
 
     void OnEngineMonitorCreated(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
         float thrustMagnitude,
         float rpm,
@@ -392,7 +397,7 @@ public:
     }
 
     void OnWaterPumpCreated(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
         float normalizedForce,
         ElectricalMaterial const & electricalMaterial,
@@ -407,7 +412,7 @@ public:
     }
 
     void OnWatertightDoorCreated(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
         bool isOpen,
         ElectricalMaterial const & electricalMaterial,
@@ -430,7 +435,7 @@ public:
     }
 
     void OnSwitchEnabled(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         bool isEnabled) override
     {
         for (auto sink : mElectricalElementSinks)
@@ -440,7 +445,7 @@ public:
     }
 
     void OnSwitchToggled(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         ElectricalState newState) override
     {
         for (auto sink : mElectricalElementSinks)
@@ -450,7 +455,7 @@ public:
     }
 
     void OnPowerProbeToggled(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         ElectricalState newState) override
     {
         for (auto sink : mElectricalElementSinks)
@@ -460,7 +465,7 @@ public:
     }
 
     void OnEngineControllerEnabled(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         bool isEnabled) override
     {
         for (auto sink : mElectricalElementSinks)
@@ -470,7 +475,7 @@ public:
     }
 
     void OnEngineControllerUpdated(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         ElectricalMaterial const & electricalMaterial,
         float oldControllerValue,
         float newControllerValue) override
@@ -482,7 +487,7 @@ public:
     }
 
     void OnEngineMonitorUpdated(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         float thrustMagnitude,
         float rpm) override
     {
@@ -493,7 +498,7 @@ public:
     }
 
     void OnShipSoundUpdated(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         ElectricalMaterial const & electricalMaterial,
         bool isPlaying,
         bool isUnderwater) override
@@ -505,7 +510,7 @@ public:
     }
 
     void OnWaterPumpEnabled(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         bool isEnabled) override
     {
         for (auto sink : mElectricalElementSinks)
@@ -515,7 +520,7 @@ public:
     }
 
     void OnWaterPumpUpdated(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         float normalizedForce) override
     {
         for (auto sink : mElectricalElementSinks)
@@ -525,7 +530,7 @@ public:
     }
 
     void OnWatertightDoorEnabled(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         bool isEnabled) override
     {
         for (auto sink : mElectricalElementSinks)
@@ -535,13 +540,39 @@ public:
     }
 
     void OnWatertightDoorUpdated(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         bool isOpen) override
     {
         for (auto sink : mElectricalElementSinks)
         {
             sink->OnWatertightDoorUpdated(electricalElementId, isOpen);
         }
+    }
+
+    //
+    // NPC
+    //
+
+    void OnNpcSelectionChanged(
+        std::optional<NpcId> selectedNpc) override
+    {
+        for (auto sink : mNpcSinks)
+        {
+            sink->OnNpcSelectionChanged(selectedNpc);
+        }
+    }
+
+    void OnNpcCountsUpdated(
+        size_t totalNpcCount) override
+    {
+        mLastNpcCountsUpdated = totalNpcCount;
+    }
+
+    void OnHumanNpcCountsUpdated(
+        size_t insideShipCount,
+        size_t outsideShipCount) override
+    {
+        mLastHumanNpcCountsUpdated = { insideShipCount, outsideShipCount };
     }
 
     //
@@ -691,7 +722,7 @@ public:
     }
 
     void OnGadgetPlaced(
-        GadgetId gadgetId,
+        GlobalGadgetId gadgetId,
         GadgetType gadgetType,
         bool isUnderwater) override
     {
@@ -705,7 +736,7 @@ public:
     }
 
     void OnGadgetRemoved(
-        GadgetId gadgetId,
+        GlobalGadgetId gadgetId,
         GadgetType gadgetType,
         std::optional<bool> isUnderwater) override
     {
@@ -734,7 +765,7 @@ public:
     }
 
     void OnTimerBombFuse(
-        GadgetId gadgetId,
+        GlobalGadgetId gadgetId,
         std::optional<bool> isFast) override
     {
         for (auto sink : mGenericSinks)
@@ -753,7 +784,7 @@ public:
     }
 
     void OnAntiMatterBombContained(
-        GadgetId gadgetId,
+        GlobalGadgetId gadgetId,
         bool isContained) override
     {
         for (auto sink : mGenericSinks)
@@ -815,6 +846,19 @@ public:
         for (auto sink : mGenericSinks)
         {
             sink->OnPhysicsProbePanelClosed();
+        }
+    }
+
+    //
+    // Control
+    //
+
+    void OnAutoFocusTargetChanged(
+        std::optional<AutoFocusTargetKindType> autoFocusTarget) override
+    {
+        for (auto sink : mControlSinks)
+        {
+            sink->OnAutoFocusTargetChanged(autoFocusTarget);
         }
     }
 
@@ -946,6 +990,21 @@ public:
             }
         }
 
+        for (auto * sink : mNpcSinks)
+        {
+            if (mLastNpcCountsUpdated.has_value())
+            {
+                sink->OnNpcCountsUpdated(*mLastNpcCountsUpdated);
+            }
+
+            if (mLastHumanNpcCountsUpdated.has_value())
+            {
+                sink->OnHumanNpcCountsUpdated(
+                    std::get<0>(*mLastHumanNpcCountsUpdated),
+                    std::get<1>(*mLastHumanNpcCountsUpdated));
+            }
+        }
+
         mSpringRepairedEvents.clear();
         mTriangleRepairedEvents.clear();
         mPinToggledEvents.clear();
@@ -956,6 +1015,8 @@ public:
         mTimerBombDefusedEvents.clear();
         mWatertightDoorOpenedEvents.clear();
         mWatertightDoorClosedEvents.clear();
+        mLastNpcCountsUpdated.reset();
+        mLastHumanNpcCountsUpdated.reset();
     }
 
     void RegisterLifecycleEventHandler(ILifecycleGameEventHandler * sink)
@@ -993,9 +1054,19 @@ public:
         mElectricalElementSinks.push_back(sink);
     }
 
+    void RegisterNpcEventHandler(INpcGameEventHandler * sink)
+    {
+        mNpcSinks.push_back(sink);
+    }
+
     void RegisterGenericEventHandler(IGenericGameEventHandler * sink)
     {
         mGenericSinks.push_back(sink);
+    }
+
+    void RegisterControlEventHandler(IControlGameEventHandler * sink)
+    {
+        mControlSinks.push_back(sink);
     }
 
 private:
@@ -1019,6 +1090,8 @@ private:
     unordered_tuple_map<std::tuple<bool>, unsigned int> mTimerBombDefusedEvents;
     unordered_tuple_map<std::tuple<bool>, unsigned int> mWatertightDoorOpenedEvents;
     unordered_tuple_map<std::tuple<bool>, unsigned int> mWatertightDoorClosedEvents;
+    std::optional<size_t> mLastNpcCountsUpdated;
+    std::optional<std::tuple<size_t, size_t>> mLastHumanNpcCountsUpdated;
 
     // The registered sinks
     std::vector<ILifecycleGameEventHandler *> mLifecycleSinks;
@@ -1028,5 +1101,7 @@ private:
     std::vector<IStatisticsGameEventHandler *> mStatisticsSinks;
     std::vector<IAtmosphereGameEventHandler *> mAtmosphereSinks;
     std::vector<IElectricalElementGameEventHandler *> mElectricalElementSinks;
+    std::vector<INpcGameEventHandler *> mNpcSinks;
     std::vector<IGenericGameEventHandler *> mGenericSinks;
+    std::vector<IControlGameEventHandler *> mControlSinks;
 };

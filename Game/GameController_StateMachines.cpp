@@ -101,7 +101,7 @@ bool GameController::TsunamiNotificationStateMachine::Update()
             if (progress >= 1.0f)
             {
 				// Send warning
-				mNotificationLayer.AddEphemeralTextLine("TSUNAMI WARNING!", 5s);
+				mNotificationLayer.PublishNotificationText("TSUNAMI WARNING!", 5s);
 
 				// Transition
                 mCurrentState = StateType::Rumbling2;

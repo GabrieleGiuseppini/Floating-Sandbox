@@ -12,6 +12,8 @@ namespace Physics
     class Fishes;
     class Frontiers;
     class Gadgets;
+    class Npcs;
+    class NpcParticles;
     class OceanFloor;
     class OceanSurface;
     class PinnedPoints;
@@ -27,25 +29,25 @@ namespace Physics
 
 #include <GameCore/ElementContainer.h>
 
-#include "PhysicsTypes.h"
-
-#include "Formulae.h"
 #include "IShipPhysicsHandler.h"
 
 #include "Storm.h"
+#include "Wind.h"
+
+#include "Formulae.h"
 
 #include "Points.h"
 #include "Springs.h"
 #include "Triangles.h"
 #include "ElectricalElements.h"
 #include "Frontiers.h"
+#include "NpcSimulation/NpcParticles.h"
 
 #include "Clouds.h"
 #include "Fishes.h"
 #include "Stars.h"
 #include "OceanFloor.h"
 #include "OceanSurface.h"
-#include "Wind.h"
 #include "World.h"
 
 #include "Gadget.h"
@@ -55,7 +57,7 @@ namespace Physics
 #include "RCBombGadget.h"
 #include "TimerBombGadget.h"
 #include "Gadgets.h"
-
 #include "PinnedPoints.h"
-
 #include "Ship.h"
+
+#include "NpcSimulation/Npcs.h"

@@ -22,7 +22,7 @@ void main()
 
 ###FRAGMENT-120
 
-#include "static_parameters.glslinc"
+#include "common.glslinc"
 
 #define in varying
 
@@ -54,9 +54,10 @@ void main()
     vec3 color = mix(lowerColor, upperColor, max(ndcY - 0.4, 0.0) * (1.0/0.6));
 
     // Dither
-    vec2 noiseCoords = gl_FragCoord.xy / vec2(NOISE_2_WIDTH, NOISE_2_HEIGHT);
-    float noise = texture2D(paramNoiseTexture, noiseCoords).x;
-    color += mix(-0.5/255.0, 0.5/255.0, noise);
+    color = ApplyDither(
+        color,
+        gl_FragCoord.xy,
+        paramNoiseTexture);
        
     // Output color
     gl_FragColor = vec4(color, 1.0);

@@ -16,6 +16,7 @@ World::World(
     OceanFloorTerrain && oceanFloorTerrain,
     bool areCloudShadowsEnabled,
     FishSpeciesDatabase const & fishSpeciesDatabase,
+    NpcDatabase const & npcDatabase,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     GameParameters const & gameParameters,
     VisibleWorld const & /*visibleWorld*/)
@@ -32,8 +33,9 @@ World::World(
     , mOceanSurface(*this, mGameEventHandler)
     , mOceanFloor(std::move(oceanFloorTerrain))
     , mFishes(fishSpeciesDatabase, mGameEventHandler)
+    , mNpcs(std::make_unique<Npcs>(*this, npcDatabase, mGameEventHandler))
     //
-    , mAllAABBs()
+    , mAllShipAABBs()
 {
     // Initialize world pieces that need to be initialized now
     mStars.Update(mCurrentSimulationTime, gameParameters);
@@ -46,6 +48,8 @@ World::World(
 
 ShipId World::GetNextShipId() const
 {
+    // FUTUREWORK: for now this is OK as we do not remove ships; when we do, however,
+    // this could re-use an existing ID, hence the algo here will need to change
     return static_cast<ShipId>(mAllShips.size());
 }
 
@@ -53,24 +57,29 @@ void World::AddShip(std::unique_ptr<Ship> ship)
 {
     auto const shipAABBs = ship->CalculateAABBs();
 
+    // Store ship
     assert(ship->GetId() == static_cast<ShipId>(mAllShips.size()));
     mAllShips.push_back(std::move(ship));
+
+    // Tell NPCs
+    assert(mNpcs);
+    mNpcs->OnShipAdded(*mAllShips.back());
 
     // Update AABBSet
     for (auto const & aabb : shipAABBs.GetItems())
     {
-        mAllAABBs.Add(aabb);
+        mAllShipAABBs.Add(aabb);
     }
 }
 
 void World::Announce()
 {
-    // Nothing to announce in non-ship stuff...
-    // ...ask all ships to announce
     for (auto & ship : mAllShips)
     {
         ship->Announce();
     }
+
+    mNpcs->PublishCount();
 }
 
 void World::SetEventRecorder(EventRecorder * eventRecorder)
@@ -109,7 +118,7 @@ size_t World::GetShipPointCount(ShipId shipId) const
     return mAllShips[shipId]->GetPointCount();
 }
 
-bool World::IsUnderwater(ElementId elementId) const
+bool World::IsUnderwater(GlobalElementId elementId) const
 {
     auto const shipId = elementId.GetShipId();
     assert(shipId >= 0 && shipId < mAllShips.size());
@@ -121,54 +130,45 @@ bool World::IsUnderwater(ElementId elementId) const
 // Interactions
 //////////////////////////////////////////////////////////////////////////////
 
-void World::ScareFish(
-    vec2f const & position,
-    float radius,
-    std::chrono::milliseconds delay)
-{
-    mFishes.DisturbAt(position, radius, delay);
-}
-
-void World::AttractFish(
-    vec2f const & position,
-    float radius,
-    std::chrono::milliseconds delay)
-{
-    mFishes.AttractAt(position, radius, delay);
-}
-
-void World::PickPointToMove(
+void World::PickConnectedComponentToMove(
     vec2f const & pickPosition,
-    std::optional<ElementId> & elementId,
+    std::optional<GlobalConnectedComponentId> & connectedComponentId,
     GameParameters const & gameParameters) const
 {
     for (auto & ship : mAllShips)
     {
-        auto elementIndex = ship->PickPointToMove(
+        auto candidateConnectedComponentId = ship->PickConnectedComponentToMove(
             pickPosition,
             gameParameters);
 
-        if (!!elementIndex)
+        if (!!candidateConnectedComponentId)
         {
-            elementId = ElementId(ship->GetId(), *elementIndex);
+            connectedComponentId = GlobalConnectedComponentId(ship->GetId(), *candidateConnectedComponentId);
             return;
         }
     }
 
-    elementId = std::nullopt;
+    connectedComponentId = std::nullopt;
 }
 
 void World::MoveBy(
-    ElementId elementId,
+    GlobalConnectedComponentId connectedComponentId,
     vec2f const & offset,
     vec2f const & inertialVelocity,
     GameParameters const & gameParameters)
 {
-    auto const shipId = elementId.GetShipId();
+    auto const shipId = connectedComponentId.GetShipId();
     assert(shipId >= 0 && shipId < mAllShips.size());
 
     mAllShips[shipId]->MoveBy(
-        elementId.GetLocalObjectId(),
+        connectedComponentId.GetLocalObjectId(),
+        offset,
+        inertialVelocity,
+        gameParameters);
+
+    mNpcs->MoveBy(
+        shipId,
+        connectedComponentId.GetLocalObjectId(),
         offset,
         inertialVelocity,
         gameParameters);
@@ -186,20 +186,35 @@ void World::MoveBy(
         offset,
         inertialVelocity,
         gameParameters);
+
+    mNpcs->MoveBy(
+        shipId,
+        std::nullopt,
+        offset,
+        inertialVelocity,
+        gameParameters);
 }
 
 void World::RotateBy(
-    ElementId elementId,
+    GlobalConnectedComponentId connectedComponentId,
     float angle,
     vec2f const & center,
     float inertialAngle,
     GameParameters const & gameParameters)
 {
-    auto const shipId = elementId.GetShipId();
+    auto const shipId = connectedComponentId.GetShipId();
     assert(shipId >= 0 && shipId < mAllShips.size());
 
     mAllShips[shipId]->RotateBy(
-        elementId.GetLocalObjectId(),
+        connectedComponentId.GetLocalObjectId(),
+        angle,
+        center,
+        inertialAngle,
+        gameParameters);
+
+    mNpcs->RotateBy(
+        shipId,
+        connectedComponentId.GetLocalObjectId(),
         angle,
         center,
         inertialAngle,
@@ -220,9 +235,17 @@ void World::RotateBy(
         center,
         inertialAngle,
         gameParameters);
+
+    mNpcs->RotateBy(
+        shipId,
+        std::nullopt,
+        angle,
+        center,
+        inertialAngle,
+        gameParameters);
 }
 
-std::optional<ElementId> World::PickObjectForPickAndPull(
+std::optional<GlobalElementId> World::PickObjectForPickAndPull(
     vec2f const & pickPosition,
     GameParameters const & gameParameters)
 {
@@ -234,7 +257,7 @@ std::optional<ElementId> World::PickObjectForPickAndPull(
 
         if (elementIndex.has_value())
         {
-            return ElementId(ship->GetId(), *elementIndex);
+            return GlobalElementId(ship->GetId(), *elementIndex);
         }
     }
 
@@ -243,7 +266,7 @@ std::optional<ElementId> World::PickObjectForPickAndPull(
 }
 
 void World::Pull(
-    ElementId elementId,
+    GlobalElementId elementId,
     vec2f const & target,
     GameParameters const & gameParameters)
 {
@@ -261,20 +284,32 @@ void World::DestroyAt(
     float radiusMultiplier,
     GameParameters const & gameParameters)
 {
+    float const radius =
+        gameParameters.DestroyRadius
+        * radiusMultiplier
+        * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+
+    // Ships
     for (auto & ship : mAllShips)
     {
         ship->DestroyAt(
             targetPos,
-            radiusMultiplier,
+            radius,
             mCurrentSimulationTime,
             gameParameters);
     }
 
-    // Also scare fishes at bit
+    // Scare fishes at bit
     mFishes.DisturbAt(
         targetPos,
         6.5f + radiusMultiplier,
         std::chrono::milliseconds(0));
+
+    // Smash NPCs
+    mNpcs->SmashAt(
+        targetPos,
+        radius,
+        mCurrentSimulationTime);
 }
 
 void World::RepairAt(
@@ -434,44 +469,32 @@ bool World::ApplyElectricSparkAt(
 void World::ApplyRadialWindFrom(
     vec2f const & sourcePos,
     float preFrontRadius,
-    float preFrontWindSpeed,
+    float preFrontWindSpeed, // m/s
     float mainFrontRadius,
-    float mainFrontWindSpeed,
+    float mainFrontWindSpeed, // m/s
     GameParameters const & gameParameters)
 {
-    // Apply to ships
-    for (auto & ship : mAllShips)
-    {
-        ship->ApplyRadialWindFrom(
+    //
+    // Store in Wind, after translating
+    //
+
+    float const effectiveAirDensity = Formulae::CalculateAirDensity(
+        gameParameters.AirTemperature,
+        gameParameters);
+
+    // Convert to wind force
+
+    float const preFrontWindForceMagnitude = Formulae::WindSpeedToForceDensity(preFrontWindSpeed, effectiveAirDensity);
+    float const mainFrontWindForceMagnitude = Formulae::WindSpeedToForceDensity(mainFrontWindSpeed, effectiveAirDensity);
+
+    // Give to wind
+    mWind.SetRadialWindField(
+        Wind::RadialWindField(
             sourcePos,
             preFrontRadius,
-            preFrontWindSpeed,
+            preFrontWindForceMagnitude,
             mainFrontRadius,
-            mainFrontWindSpeed,
-            gameParameters);
-    }
-
-    // Apply to ocean
-    //
-    // We displace the ocean surface where the sphere meets the ocean:
-    //
-    //       /|
-    //     r/ |h
-    //     /  |
-    //     ----
-    //      d
-    float const squaredHorizontalDistance = preFrontRadius * preFrontRadius - sourcePos.y * sourcePos.y;
-    if (squaredHorizontalDistance >= 0.0f)
-    {
-        float const horizontalDistance = std::sqrt(squaredHorizontalDistance);
-
-        float const displacementMagnitude =
-            preFrontWindSpeed / 10.0f // Magic number
-            * SignStep(0.0f, -sourcePos.y);
-
-        mOceanSurface.DisplaceAt(std::max(sourcePos.x - horizontalDistance, -GameParameters::HalfMaxWorldWidth), displacementMagnitude);
-        mOceanSurface.DisplaceAt(std::min(sourcePos.x + horizontalDistance, GameParameters::HalfMaxWorldWidth), displacementMagnitude);
-    }
+            mainFrontWindForceMagnitude));
 }
 
 bool World::ApplyLaserCannonThrough(
@@ -502,12 +525,27 @@ void World::DrawTo(
     float strengthFraction,
     GameParameters const & gameParameters)
 {
+    // Calculate draw force
+    float const strength =
+        GameParameters::DrawForce
+        * strengthFraction
+        * (gameParameters.IsUltraViolentMode ? 20.0f : 1.0f);
+
+    // Apply to ships
     for (auto & ship : mAllShips)
     {
         ship->DrawTo(
             targetPos,
-            strengthFraction,
-            gameParameters);
+            strength);
+    }
+
+    // Apply to NPCs
+    if (gameParameters.DoApplyPhysicsToolsToNpcs)
+    {
+        assert(mNpcs);
+        mNpcs->DrawTo(
+            targetPos,
+            strength);
     }
 }
 
@@ -516,12 +554,26 @@ void World::SwirlAt(
     float strengthFraction,
     GameParameters const & gameParameters)
 {
+    // Calculate swirl strength
+    float const strength =
+        GameParameters::SwirlForce
+        * strengthFraction
+        * (gameParameters.IsUltraViolentMode ? 20.0f : 1.0f);
+
     for (auto & ship : mAllShips)
     {
         ship->SwirlAt(
             targetPos,
-            strengthFraction,
-            gameParameters);
+            strength);
+    }
+
+    // Apply to NPCs
+    if (gameParameters.DoApplyPhysicsToolsToNpcs)
+    {
+        assert(mNpcs);
+        mNpcs->SwirlAt(
+            targetPos,
+            strength);
     }
 }
 
@@ -839,11 +891,11 @@ void World::ApplyThanosSnap(
         std::chrono::milliseconds(0));
 }
 
-std::optional<ElementId> World::GetNearestPointAt(
+std::optional<GlobalElementId> World::GetNearestPointAt(
     vec2f const & targetPos,
     float radius) const
 {
-    std::optional<ElementId> bestPointId;
+    std::optional<GlobalElementId> bestPointId;
     float bestSquareDistance = std::numeric_limits<float>::max();
 
     for (auto const & ship : mAllShips)
@@ -854,7 +906,7 @@ std::optional<ElementId> World::GetNearestPointAt(
             float squareDistance = (ship->GetPoints().GetPosition(shipBestPointIndex) - targetPos).squareLength();
             if (squareDistance < bestSquareDistance)
             {
-                bestPointId = ElementId(ship->GetId(), shipBestPointIndex);
+                bestPointId = GlobalElementId(ship->GetId(), shipBestPointIndex);
                 bestSquareDistance = squareDistance;
             }
         }
@@ -930,7 +982,7 @@ void World::TriggerRogueWave()
         mWind);
 }
 
-void World::HighlightElectricalElement(ElectricalElementId electricalElementId)
+void World::HighlightElectricalElement(GlobalElectricalElementId electricalElementId)
 {
     auto const shipId = electricalElementId.GetShipId();
     assert(shipId >= 0 && shipId < mAllShips.size());
@@ -939,7 +991,7 @@ void World::HighlightElectricalElement(ElectricalElementId electricalElementId)
 }
 
 void World::SetSwitchState(
-    ElectricalElementId electricalElementId,
+    GlobalElectricalElementId electricalElementId,
     ElectricalState switchState,
     GameParameters const & gameParameters)
 {
@@ -953,7 +1005,7 @@ void World::SetSwitchState(
 }
 
 void World::SetEngineControllerState(
-    ElectricalElementId electricalElementId,
+    GlobalElectricalElementId electricalElementId,
     float controllerValue,
     GameParameters const & gameParameters)
 {
@@ -971,7 +1023,154 @@ void World::SetSilence(float silenceAmount)
     mWind.SetSilence(silenceAmount);
 }
 
-bool World::DestroyTriangle(ElementId triangleId)
+void World::ScareFish(
+    vec2f const & position,
+    float radius,
+    std::chrono::milliseconds delay)
+{
+    mFishes.DisturbAt(position, radius, delay);
+}
+
+void World::AttractFish(
+    vec2f const & position,
+    float radius,
+    std::chrono::milliseconds delay)
+{
+    mFishes.AttractAt(position, radius, delay);
+}
+
+NpcKindType World::GetNpcKind(NpcId id)
+{
+    assert(mNpcs);
+    return mNpcs->GetNpcKind(id);
+}
+
+std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> World::BeginPlaceNewFurnitureNpc(
+    NpcSubKindIdType subKind,
+    vec2f const & position,
+    bool doMoveWholeMesh)
+{
+    assert(mNpcs);
+    return mNpcs->BeginPlaceNewFurnitureNpc(
+        subKind,
+        position,
+        mCurrentSimulationTime,
+        doMoveWholeMesh);
+}
+
+std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> World::BeginPlaceNewHumanNpc(
+    NpcSubKindIdType subKind,
+    vec2f const & position,
+    bool doMoveWholeMesh)
+{
+    assert(mNpcs);
+    return mNpcs->BeginPlaceNewHumanNpc(
+        subKind,
+        position,
+        mCurrentSimulationTime,
+        doMoveWholeMesh);
+}
+
+std::optional<PickedNpc> World::ProbeNpcAt(
+    vec2f const & position,
+    float radius,
+    GameParameters const & gameParameters) const
+{
+    assert(mNpcs);
+    return mNpcs->ProbeNpcAt(
+        position,
+        radius,
+        gameParameters);
+}
+
+void World::BeginMoveNpc(
+    NpcId id,
+    int particleOrdinal,
+    bool doMoveWholeMesh)
+{
+    assert(mNpcs);
+    mNpcs->BeginMoveNpc(
+        id,
+        particleOrdinal,
+        mCurrentSimulationTime,
+        doMoveWholeMesh);
+}
+
+void World::MoveNpcTo(
+    NpcId id,
+    vec2f const & position,
+    vec2f const & offset,
+    bool doMoveWholeMesh)
+{
+    assert(mNpcs);
+    mNpcs->MoveNpcTo(
+        id,
+        position,
+        offset,
+        doMoveWholeMesh);
+}
+
+void World::EndMoveNpc(NpcId id)
+{
+    assert(mNpcs);
+    mNpcs->EndMoveNpc(id, mCurrentSimulationTime);
+}
+
+void World::CompleteNewNpc(NpcId id)
+{
+    assert(mNpcs);
+    mNpcs->CompleteNewNpc(id, mCurrentSimulationTime);
+}
+
+void World::RemoveNpc(NpcId id)
+{
+    assert(mNpcs);
+    mNpcs->RemoveNpc(id);
+}
+
+void World::AbortNewNpc(NpcId id)
+{
+    assert(mNpcs);
+    mNpcs->AbortNewNpc(id);
+}
+
+std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> World::AddNpcGroup(NpcKindType kind)
+{
+    assert(mNpcs);
+    return mNpcs->AddNpcGroup(kind, mCurrentSimulationTime);
+}
+
+void World::TurnaroundNpc(NpcId id)
+{
+    assert(mNpcs);
+    mNpcs->TurnaroundNpc(id);
+}
+
+void World::SelectFirstNpc()
+{
+    assert(mNpcs);
+    mNpcs->SelectFirstNpc();
+}
+
+void World::SelectNextNpc()
+{
+    assert(mNpcs);
+    mNpcs->SelectNextNpc();
+}
+
+void World::SelectNpc(std::optional<NpcId> id)
+{
+    assert(mNpcs);
+    mNpcs->SelectNpc(id);
+}
+
+void World::HighlightNpc(std::optional<NpcId> id)
+{
+    assert(mNpcs);
+    mNpcs->HighlightNpc(id);
+}
+
+bool World::DestroyTriangle(GlobalElementId triangleId)
 {
     auto const shipId = triangleId.GetShipId();
     assert(shipId >= 0 && shipId < mAllShips.size());
@@ -979,7 +1178,7 @@ bool World::DestroyTriangle(ElementId triangleId)
     return mAllShips[shipId]->DestroyTriangle(triangleId.GetLocalObjectId());
 }
 
-bool World::RestoreTriangle(ElementId triangleId)
+bool World::RestoreTriangle(GlobalElementId triangleId)
 {
     auto const shipId = triangleId.GetShipId();
     assert(shipId >= 0 && shipId < mAllShips.size());
@@ -1002,7 +1201,7 @@ void World::Update(
     mCurrentSimulationTime += GameParameters::SimulationStepTimeDuration<float>;
 
     // Prepare all AABBs
-    mAllAABBs.Clear();
+    mAllShipAABBs.Clear();
 
     //
     // Update all subsystems
@@ -1027,7 +1226,7 @@ void World::Update(
             mStorm.GetParameters(),
             gameParameters,
             stressRenderMode,
-            mAllAABBs,
+            mAllShipAABBs,
             threadManager,
             perfStats);
     }
@@ -1035,16 +1234,37 @@ void World::Update(
     {
         auto const startTime = std::chrono::steady_clock::now();
 
-        mFishes.Update(mCurrentSimulationTime, mOceanSurface, mOceanFloor, gameParameters, visibleWorld, mAllAABBs);
+        assert(mNpcs);
+        mNpcs->Update(mCurrentSimulationTime, mStorm.GetParameters(), gameParameters);
+
+        perfStats.TotalNpcUpdateDuration.Update(std::chrono::steady_clock::now() - startTime);
+    }
+
+    {
+        auto const startTime = std::chrono::steady_clock::now();
+
+        mFishes.Update(mCurrentSimulationTime, mOceanSurface, mOceanFloor, gameParameters, visibleWorld, mAllShipAABBs);
 
         perfStats.TotalFishUpdateDuration.Update(std::chrono::steady_clock::now() - startTime);
     }
+
+    //
+    // Signal update end (for quantities that needed to persist during whole Update cycle)
+    //
+
+    mWind.UpdateEnd();
+
+    for (auto & ship : mAllShips)
+    {
+        ship->UpdateEnd();
+    }
+
+    mNpcs->UpdateEnd();
 }
 
 void World::RenderUpload(
     GameParameters const & gameParameters,
-    Render::RenderContext & renderContext,
-    PerfStats & /*perfStats*/)
+    Render::RenderContext & renderContext)
 {
     mStars.Upload(renderContext);
 
@@ -1072,18 +1292,21 @@ void World::RenderUpload(
         renderContext.UploadShipsEnd();
     }
 
+    assert(mNpcs);
+    mNpcs->Upload(renderContext);
+
     // AABBs
     if (renderContext.GetShowAABBs())
     {
-        renderContext.UploadAABBsStart(mAllAABBs.GetCount());
+        renderContext.UploadAABBsStart(mAllShipAABBs.GetCount());
 
-        auto constexpr color = rgbaColor(18, 8, 255, 255).toVec4f();
+        auto constexpr ShipAABBColor = rgbaColor(18, 8, 255, 255).toVec4f();
 
-        for (auto const & aabb : mAllAABBs.GetItems())
+        for (auto const & aabb : mAllShipAABBs.GetItems())
         {
             renderContext.UploadAABB(
                 aabb,
-                color);
+                ShipAABBColor);
         }
 
         renderContext.UploadAABBsEnd();

@@ -229,14 +229,9 @@ public:
         RecalculateAttributes();
     }
 
-    float GetCanvasToVisibleWorldHeightRatio() const
-    {
-        return mCanvasToVisibleWorldHeightRatio;
-    }
-
     float GetCanvasWidthToHeightRatio() const
     {
-        return mCanvasWidthToHeightRatio;
+        return mAspectRatio;
     }
 
     //
@@ -268,13 +263,30 @@ public:
             (worldCoordinates.y - cameraWorldPosition.y) * 2.0f / visibleWorldHeight);
     }
 
+    /*
+     * Returns the pixels in the specified world offset. Identical in any direction.
+     */
+    inline float WorldOffsetToPhysicalDisplayOffset(float worldOffset) const
+    {
+        return worldOffset * mWorldToPhysicalDisplayFactor;
+    }
+
     inline vec2f ScreenToNdc(DisplayLogicalCoordinates const & screenCoordinates) const
     {
         vec2f const ndcCoordinates = vec2f(
             static_cast<float>(screenCoordinates.x * mLogicalToPhysicalDisplayFactor) / static_cast<float>(mCanvasPhysicalSize.width) * 2.0f - 1.0f,
             -static_cast<float>(screenCoordinates.y * mLogicalToPhysicalDisplayFactor) / static_cast<float>(mCanvasPhysicalSize.height) * 2.0f + 1.0f);
-        
+
         return ndcCoordinates;
+    }
+
+    inline DisplayPhysicalCoordinates ScreenToPhysicalDisplay(DisplayLogicalCoordinates const & screenCoordinates) const
+    {
+        DisplayPhysicalCoordinates const pixelCoordinates = DisplayPhysicalCoordinates(
+            screenCoordinates.x * mLogicalToPhysicalDisplayFactor,
+            mCanvasPhysicalSize.height - screenCoordinates.y * mLogicalToPhysicalDisplayFactor);
+
+        return pixelCoordinates;
     }
 
     inline vec2f NdcOffsetToWorldOffset(
@@ -316,22 +328,21 @@ public:
         return static_cast<float>(screenOffset * mLogicalToPhysicalDisplayFactor) / static_cast<float>(mCanvasPhysicalSize.width) * mVisibleWorld.Width;
     }
 
-    inline float PixelWidthToWorldWidth(float pixelWidth) const
+    inline float ScreenFractionToWorldOffset(float screenFraction) const
     {
-        // Width between 0 and 1.0
-        float const ndcW = pixelWidth / static_cast<float>(mCanvasPhysicalSize.width);
-
-        // A width of 1 is the entire visible world width
-        return ndcW * mVisibleWorld.Width;
+        // Use smallest
+        return std::min(mVisibleWorld.Width, mVisibleWorld.Height) * screenFraction;
     }
 
-    inline float PixelHeightToWorldHeight(float pixelHeight) const
+    inline float ScreenFractionToPhysicalDisplay(float screenFraction) const
     {
-        // Height between 0 and 1.0
-        float const ndcH = pixelHeight / static_cast<float>(mCanvasPhysicalSize.height);
+        // Use smallest
+        return static_cast<float>(std::min(mCanvasPhysicalSize.width, mCanvasPhysicalSize.height)) * screenFraction;
+    }
 
-        // An NDC height of 1 is the entire visible world height
-        return ndcH * mVisibleWorld.Height;
+    inline float PhysicalDisplayOffsetToWorldOffset(float pixelOffset) const
+    {
+        return pixelOffset / mWorldToPhysicalDisplayFactor;
     }
 
     /*
@@ -456,8 +467,7 @@ private:
             mCam.x + (mVisibleWorld.Width /2.0f),
             mCam.y - (mVisibleWorld.Height / 2.0f));
 
-        mCanvasToVisibleWorldHeightRatio = static_cast<float>(mCanvasPhysicalSize.height) / mVisibleWorld.Height;
-        mCanvasWidthToHeightRatio = static_cast<float>(mCanvasPhysicalSize.width) / static_cast<float>(mCanvasPhysicalSize.height);
+        mWorldToPhysicalDisplayFactor = static_cast<float>(mCanvasPhysicalSize.height) / mVisibleWorld.Height;
 
         // Ortho Matrix: transforms world into NDC (-1, ..., +1)
         //
@@ -469,8 +479,8 @@ private:
         // Recalculate kernel Ortho Matrix cells
         mKernelOrthoMatrix[0][0] = 2.0f / mVisibleWorld.Width;
         mKernelOrthoMatrix[1][1] = 2.0f / mVisibleWorld.Height;
-        mKernelOrthoMatrix[3][0] = -2.0f * (mCam.x + PixelWidthToWorldWidth(mPixelOffsetX)) / mVisibleWorld.Width;
-        mKernelOrthoMatrix[3][1] = -2.0f * (mCam.y + PixelHeightToWorldHeight(mPixelOffsetY)) / mVisibleWorld.Height;
+        mKernelOrthoMatrix[3][0] = -2.0f * (mCam.x + (mPixelOffsetX / mWorldToPhysicalDisplayFactor)) / mVisibleWorld.Width;
+        mKernelOrthoMatrix[3][1] = -2.0f * (mCam.y + (mPixelOffsetY / mWorldToPhysicalDisplayFactor)) / mVisibleWorld.Height;
     }
 
     void RecalculateAspectRatio()
@@ -488,7 +498,7 @@ private:
     float mZoom;
     vec2f mCam; // World coordinates
     DisplayLogicalSize mCanvasLogicalSize;
-    DisplayPhysicalSize mCanvasPhysicalSize;    
+    DisplayPhysicalSize mCanvasPhysicalSize;
     int mLogicalToPhysicalDisplayFactor;
     float mPixelOffsetX;
     float mPixelOffsetY;
@@ -496,8 +506,7 @@ private:
     // Calculated attributes
     float mAspectRatio;
     VisibleWorld mVisibleWorld;
-    float mCanvasToVisibleWorldHeightRatio;
-    float mCanvasWidthToHeightRatio;
+    float mWorldToPhysicalDisplayFactor;
     ProjectionMatrix mKernelOrthoMatrix; // Common subset of all ortho matrices
 };
 

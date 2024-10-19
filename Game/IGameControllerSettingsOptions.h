@@ -42,6 +42,15 @@ struct IGameControllerSettingsOptions
     virtual float GetMinGlobalDampingAdjustment() const = 0;
     virtual float GetMaxGlobalDampingAdjustment() const = 0;
 
+    virtual float GetMinElasticityAdjustment() const = 0;
+    virtual float GetMaxElasticityAdjustment() const = 0;
+
+    virtual float GetMinStaticFrictionAdjustment() const = 0;
+    virtual float GetMaxStaticFrictionAdjustment() const = 0;
+
+    virtual float GetMinKineticFrictionAdjustment() const = 0;
+    virtual float GetMaxKineticFrictionAdjustment() const = 0;
+
     virtual float GetMinRotAcceler8r() const = 0;
     virtual float GetMaxRotAcceler8r() const = 0;
 
@@ -146,8 +155,8 @@ struct IGameControllerSettingsOptions
     virtual float GetMinWaterTemperature() const = 0;
     virtual float GetMaxWaterTemperature() const = 0;
 
-    virtual unsigned int GetMinMaxBurningParticles() const = 0;
-    virtual unsigned int GetMaxMaxBurningParticles() const = 0;
+    virtual unsigned int GetMinMaxBurningParticlesPerShip() const = 0;
+    virtual unsigned int GetMaxMaxBurningParticlesPerShip() const = 0;
 
     virtual float GetMinThermalConductivityAdjustment() const = 0;
     virtual float GetMaxThermalConductivityAdjustment() const = 0;
@@ -207,6 +216,17 @@ struct IGameControllerSettingsOptions
     virtual float GetMinFishShoalRadiusAdjustment() const = 0;
     virtual float GetMaxFishShoalRadiusAdjustment() const = 0;
 
+    // NPCs
+
+    virtual float GetMinNpcSizeMultiplier() const = 0;
+    virtual float GetMaxNpcSizeMultiplier() const = 0;
+
+    virtual float GetMinNpcSpringReductionFractionAdjustment() const = 0;
+    virtual float GetMaxNpcSpringReductionFractionAdjustment() const = 0;
+
+    virtual float GetMinNpcSpringDampingCoefficientAdjustment() const = 0;
+    virtual float GetMaxNpcSpringDampingCoefficientAdjustment() const = 0;
+
     // Misc
 
     virtual float GetMinSeaDepth() const = 0;
@@ -218,11 +238,11 @@ struct IGameControllerSettingsOptions
     virtual float GetMinOceanFloorDetailAmplification() const = 0;
     virtual float GetMaxOceanFloorDetailAmplification() const = 0;
 
-    virtual float GetMinOceanFloorElasticity() const = 0;
-    virtual float GetMaxOceanFloorElasticity() const = 0;
+    virtual float GetMinOceanFloorElasticityCoefficient() const = 0;
+    virtual float GetMaxOceanFloorElasticityCoefficient() const = 0;
 
-    virtual float GetMinOceanFloorFriction() const = 0;
-    virtual float GetMaxOceanFloorFriction() const = 0;
+    virtual float GetMinOceanFloorFrictionCoefficient() const = 0;
+    virtual float GetMaxOceanFloorFrictionCoefficient() const = 0;
 
     virtual float GetMinOceanFloorSiltHardness() const = 0;
     virtual float GetMaxOceanFloorSiltHardness() const = 0;

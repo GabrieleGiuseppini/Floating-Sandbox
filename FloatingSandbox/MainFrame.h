@@ -54,7 +54,9 @@ class MainFrame final
     : public wxFrame
     , public ILifecycleGameEventHandler
     , public IAtmosphereGameEventHandler
+    , public INpcGameEventHandler
     , public IGenericGameEventHandler
+    , public IControlGameEventHandler
 {
 public:
 
@@ -118,15 +120,34 @@ private:
     wxBoxSizer * mMainPanelSizer;
     wxMenuItem * mReloadPreviousShipMenuItem;
     wxMenuItem * mAutoFocusAtShipLoadMenuItem;
-    wxMenuItem * mContinuousAutoFocusMenuItem;
+    wxMenuItem * mContinuousAutoFocusOnShipMenuItem;
+    wxMenuItem * mContinuousAutoFocusOnSelectedNpcMenuItem;
+    wxMenuItem * mContinuousAutoFocusOnNothingMenuItem;
+    wxMenuItem * mShipViewExteriorMenuItem;
+    wxMenuItem * mShipViewInteriorMenuItem;
     wxMenuItem * mPauseMenuItem;
     wxMenuItem * mStepMenuItem;
-    wxMenu * mToolsMenu;
-    wxMenuItem * mSmashMenuItem;
+
+    wxMenu * mNonNpcToolsMenu;
     wxMenuItem * mScareFishMenuItem;
     wxMenuItem * mRCBombsDetonateMenuItem;
     wxMenuItem * mAntiMatterBombsDetonateMenuItem;
     wxMenuItem * mTriggerStormMenuItem;
+    wxMenu * mNpcToolsMenu;
+    wxMenu * mHumanNpcSubMenu;
+    wxMenu * mFurnitureNpcSubMenu;
+    wxBitmap mAddHumanNpcUncheckedIcon;
+    wxBitmap mAddHumanNpcCheckedIcon;
+    wxBitmap mAddFurnitureNpcUncheckedIcon;
+    wxBitmap mAddFurnitureNpcCheckedIcon;
+    wxMenuItem * mAddHumanNpcMenuItem;
+    wxMenuItem * mAddFurnitureNpcMenuItem;
+    wxMenuItem * mMoveNpcMenuItem;
+    wxMenuItem * mRemoveNpcMenuItem;
+    wxMenuItem * mTurnaroundNpcMenuItem;
+    wxMenuItem * mFollowNpcMenuItem;
+    wxMenuItem * mSelectNextNpcMenuItem;
+
     wxMenuItem * mReloadLastModifiedSettingsMenuItem;
     wxMenuItem * mShowEventTickerMenuItem;
     wxMenuItem * mShowProbePanelMenuItem;
@@ -138,6 +159,11 @@ private:
     ProbePanel * mProbePanel;
     EventTickerPanel * mEventTickerPanel;
     SwitchboardPanel * mElectricalPanel;
+
+    std::vector<std::tuple<ToolType, wxMenuItem *>> mNonNpcToolMenuItems;
+    std::vector<std::tuple<ToolType, wxMenuItem *>> mNpcToolMenuItems;
+    std::vector<std::tuple<NpcSubKindIdType, wxMenuItem *>> mAddHumanNpcSubMenuItems;
+    std::vector<std::tuple<NpcSubKindIdType, wxMenuItem *>> mAddFurnitureNpcSubMenuItems;
 
     //
     // Dialogs
@@ -193,8 +219,8 @@ private:
     void OnZoomInMenuItemSelected(wxCommandEvent & event);
     void OnZoomOutMenuItemSelected(wxCommandEvent & event);
     void OnAutoFocusAtShipLoadMenuItemSelected(wxCommandEvent & event);
-    void OnContinuousAutoFocusMenuItemSelected(wxCommandEvent & event);
     void OnResetViewMenuItemSelected(wxCommandEvent & event);
+    void OnShipViewMenuItemSelected(wxCommandEvent & event);
     void OnTimeOfDayUpMenuItemSelected(wxCommandEvent & event);
     void OnTimeOfDayDownMenuItemSelected(wxCommandEvent & event);
     void OnFullTimeOfDayMenuItemSelected(wxCommandEvent & event);
@@ -205,39 +231,15 @@ private:
     void OnReloadPreviousShipMenuItemSelected(wxCommandEvent & event);
     void OnSaveScreenshotMenuItemSelected(wxCommandEvent & event);
 
-    void OnMoveMenuItemSelected(wxCommandEvent & event);
-    void OnMoveAllMenuItemSelected(wxCommandEvent & event);
-    void OnPickAndPullMenuItemSelected(wxCommandEvent & event);
-    void OnSmashMenuItemSelected(wxCommandEvent & event);
-    void OnSliceMenuItemSelected(wxCommandEvent & event);
-    void OnHeatBlasterMenuItemSelected(wxCommandEvent & event);
-    void OnFireExtinguisherMenuItemSelected(wxCommandEvent & event);
-    void OnBlastToolMenuItemSelected(wxCommandEvent & event);
-    void OnElectricSparkToolMenuItemSelected(wxCommandEvent & event);
-    void OnGrabMenuItemSelected(wxCommandEvent & event);
-    void OnSwirlMenuItemSelected(wxCommandEvent & event);
-    void OnPinMenuItemSelected(wxCommandEvent & event);
-    void OnInjectPressureMenuItemSelected(wxCommandEvent & event);
-    void OnFloodHoseMenuItemSelected(wxCommandEvent & event);
-    void OnTimerBombMenuItemSelected(wxCommandEvent & event);
-    void OnRCBombMenuItemSelected(wxCommandEvent & event);
-    void OnImpactBombMenuItemSelected(wxCommandEvent & event);
-    void OnAntiMatterBombMenuItemSelected(wxCommandEvent & event);
-    void OnThanosSnapMenuItemSelected(wxCommandEvent & event);
-    void OnWaveMakerMenuItemSelected(wxCommandEvent & event);
-    void OnWindMakerMenuItemSelected(wxCommandEvent & event);
-    void OnLaserCannonMenuItemSelected(wxCommandEvent & event);
-    void OnAdjustTerrainMenuItemSelected(wxCommandEvent & event);
-    void OnRepairStructureMenuItemSelected(wxCommandEvent & event);
-    void OnScrubMenuItemSelected(wxCommandEvent & event);
-    void OnScareFishMenuItemSelected(wxCommandEvent & event);
     void OnTriggerLightningMenuItemSelected(wxCommandEvent & event);
     void OnRCBombDetonateMenuItemSelected(wxCommandEvent & event);
     void OnAntiMatterBombDetonateMenuItemSelected(wxCommandEvent & event);
     void OnTriggerTsunamiMenuItemSelected(wxCommandEvent & event);
     void OnTriggerRogueWaveMenuItemSelected(wxCommandEvent & event);
     void OnTriggerStormMenuItemSelected(wxCommandEvent & event);
-    void OnPhysicsProbeMenuItemSelected(wxCommandEvent & event);
+    void OnAddHumanNpcGroupMenuItemSelected(wxCommandEvent & event);
+    void OnAddFurnitureNpcGroupMenuItemSelected(wxCommandEvent & event);
+    void OnSelectNextNpcMenuItemSelected(wxCommandEvent & event);
 
     void OnOpenSettingsWindowMenuItemSelected(wxCommandEvent & event);
     void OnReloadLastModifiedSettingsMenuItem(wxCommandEvent & event);
@@ -264,17 +266,19 @@ private:
     {
         gameController.RegisterLifecycleEventHandler(this);
         gameController.RegisterAtmosphereEventHandler(this);
+        gameController.RegisterNpcEventHandler(this);
         gameController.RegisterGenericEventHandler(this);
+        gameController.RegisterControlEventHandler(this);
     }
 
-    virtual void OnGameReset() override
+    void OnGameReset() override
     {
         // Refresh title bar
         mCurrentShipTitles.clear();
         UpdateFrameTitle();
     }
 
-    virtual void OnShipLoaded(
+    void OnShipLoaded(
         unsigned int /*id*/,
         ShipMetadata const & shipMetadata) override
     {
@@ -289,18 +293,18 @@ private:
         UpdateFrameTitle();
     }
 
-    virtual void OnStormBegin() override
+    void OnStormBegin() override
     {
         mTriggerStormMenuItem->Enable(false);
     }
 
-    virtual void OnStormEnd() override
+    void OnStormEnd() override
     {
         mTriggerStormMenuItem->Enable(true);
     }
 
-    virtual void OnGadgetPlaced(
-        GadgetId /*gadgetId*/,
+    void OnGadgetPlaced(
+        GlobalGadgetId /*gadgetId*/,
         GadgetType gadgetType,
         bool /*isUnderwater*/) override
     {
@@ -316,8 +320,8 @@ private:
         }
     }
 
-    virtual void OnGadgetRemoved(
-        GadgetId /*gadgetId*/,
+    void OnGadgetRemoved(
+        GlobalGadgetId /*gadgetId*/,
         GadgetType gadgetType,
         std::optional<bool> /*isUnderwater*/) override
     {
@@ -335,9 +339,19 @@ private:
         }
     }
 
-    virtual void OnFishCountUpdated(size_t count) override
+    void OnFishCountUpdated(size_t count) override
     {
-        mScareFishMenuItem->Enable(count > 0);
+        ReconciliateUIWithFishPresence(count > 0);
+    }
+
+    void OnNpcCountsUpdated(size_t totalNpcCount) override
+    {
+        ReconciliateUIWithNpcPresence(totalNpcCount > 0);
+    }
+
+    void OnAutoFocusTargetChanged(std::optional<AutoFocusTargetKindType> target) override
+    {
+        ReconciliateUIWithAutoFocusTarget(target);
     }
 
 private:
@@ -376,10 +390,6 @@ private:
         }
     }
 
-    void ResetShipUIState();
-
-    void UpdateFrameTitle();
-
     void OnError(
         wxString const & message,
         bool die);
@@ -396,7 +406,22 @@ private:
 
     void StartLowFrequencyTimer();
 
-    void ReconciliateUIWithUIPreferences();
+    void ResetShipUIState();
+
+    void UpdateFrameTitle();
+
+    void SelectTool(ToolType toolType, bool isNpcTool);
+    void OnNonNpcToolSelected(ToolType toolType);
+    void OnNpcToolSelected(ToolType toolType);
+
+    void ReconciliateUIWithUIPreferencesAndSettings();
+    void ReconciliateUIWithFishPresence(bool areFishPresent);
+    void ReconciliateUIWithNpcPresence(bool areNpcsPresent);
+    void ReconciliateAddNpcSubItems();
+    void ReconciliateUIWithAutoFocusTarget(std::optional<AutoFocusTargetKindType> target);
+    void ReconciliateShipViewModeWithCurrentTool();
+
+    void RebuildNpcMenus();
 
     static std::filesystem::path ChooseDefaultShip(ResourceLocator const & resourceLocator);
 
@@ -413,6 +438,10 @@ private:
     void SwitchToShipBuilderForCurrentShip();
 
     void SwitchFromShipBuilder(std::optional<std::filesystem::path> shipFilePath);
+
+    std::tuple<wxBitmap, wxBitmap> MakeMenuBitmaps(std::string const & iconName) const;
+
+    void SetMenuItemChecked(wxMenuItem * menuItem, wxBitmap & uncheckedBitmap, wxBitmap & checkedBitmap, bool isChecked);
 
 private:
 

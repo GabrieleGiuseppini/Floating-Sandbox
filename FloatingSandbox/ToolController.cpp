@@ -218,10 +218,59 @@ ToolController::ToolController(
 
     mAllTools.emplace_back(
         std::make_unique<LaserCannonTool>(
-        *this,
-        gameController,
-        soundController,
-        resourceLocator));
+            *this,
+            gameController,
+            soundController,
+            resourceLocator));
+
+    mAllTools.emplace_back(
+        std::make_unique<LampTool>(
+            *this,
+            gameController,
+            soundController,
+            resourceLocator));
+
+    mAllTools.emplace_back(
+        std::make_unique<PlaceFurnitureNpcTool>(
+            *this,
+            gameController,
+            soundController,
+            resourceLocator));
+
+    mAllTools.emplace_back(
+        std::make_unique<PlaceHumanNpcTool>(
+            *this,
+            gameController,
+            soundController,
+            resourceLocator));
+
+    mAllTools.emplace_back(
+        std::make_unique<MoveNpcTool>(
+            *this,
+            gameController,
+            soundController,
+            resourceLocator));
+
+    mAllTools.emplace_back(
+        std::make_unique<RemoveNpcTool>(
+            *this,
+            gameController,
+            soundController,
+            resourceLocator));
+
+    mAllTools.emplace_back(
+        std::make_unique<TurnaroundNpcTool>(
+            *this,
+            gameController,
+            soundController,
+            resourceLocator));
+
+    mAllTools.emplace_back(
+        std::make_unique<FollowNpcTool>(
+            *this,
+            gameController,
+            soundController,
+            resourceLocator));
 
     // Prepare own cursor(s)
     mPanCursor = WxHelpers::LoadCursor("pan_cursor", 15, 15, resourceLocator);

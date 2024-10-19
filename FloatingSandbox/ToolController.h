@@ -33,6 +33,40 @@ public:
         SoundController & soundController,
         ResourceLocator const & resourceLocator);
 
+    std::optional<ToolType> GetCurrentTool() const
+    {
+        if (mCurrentTool != nullptr)
+        {
+            return mCurrentTool->GetToolType();
+        }
+        else
+        {
+            return std::nullopt;
+        }
+    }
+
+    std::optional<NpcSubKindIdType> GetCurrentAddFurnitureNpcSubKind() const
+    {
+        if (mCurrentTool == nullptr
+            || mCurrentTool->GetToolType() != ToolType::PlaceFurnitureNpc)
+        {
+            return std::nullopt;
+        }
+
+        return dynamic_cast<PlaceFurnitureNpcTool const *>(mCurrentTool)->GetKind();
+    }
+
+    std::optional<NpcSubKindIdType> GetCurrentAddHumanNpcSubKind() const
+    {
+        if (mCurrentTool == nullptr
+            || mCurrentTool->GetToolType() != ToolType::PlaceHumanNpc)
+        {
+            return std::nullopt;
+        }
+
+        return dynamic_cast<PlaceHumanNpcTool const *>(mCurrentTool)->GetKind();
+    }
+
     void SetTool(ToolType toolType)
     {
         assert(static_cast<size_t>(toolType) < mAllTools.size());
@@ -47,6 +81,20 @@ public:
 
         // Show its cursor
         InternalSetCurrentToolCursor();
+    }
+
+    void SetPlaceFurnitureNpcTool(NpcSubKindIdType npcSubKindId)
+    {
+        PlaceFurnitureNpcTool * tool = dynamic_cast<PlaceFurnitureNpcTool *>(mAllTools[static_cast<size_t>(ToolType::PlaceFurnitureNpc)].get());
+        tool->SetKind(npcSubKindId);
+        SetTool(ToolType::PlaceFurnitureNpc);
+    }
+
+    void SetPlaceHumanNpcTool(NpcSubKindIdType npcSubKindId)
+    {
+        PlaceHumanNpcTool * tool = dynamic_cast<PlaceHumanNpcTool *>(mAllTools[static_cast<size_t>(ToolType::PlaceHumanNpc)].get());
+        tool->SetKind(npcSubKindId);
+        SetTool(ToolType::PlaceHumanNpc);
     }
 
     void UnsetTool()
@@ -76,11 +124,18 @@ public:
         }
     }
 
-    void Reset()
+    void ResetStart()
     {
         if (nullptr != mCurrentTool)
         {
             mCurrentTool->Deinitialize();
+        }
+    }
+
+    void ResetEnd()
+    {
+        if (nullptr != mCurrentTool)
+        {
             mCurrentTool->Initialize(mInputState);
 
             InternalSetCurrentToolCursor();

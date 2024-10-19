@@ -94,14 +94,13 @@ void Clouds::Update(
 
             mClouds.emplace_back(
                 new Cloud(
-                cloudId,
-                GameRandomEngine::GetInstance().GenerateUniformReal(-MaxCloudSpaceX, MaxCloudSpaceX), // Initial X
-                y,
-                z2,
-                scale,
-                1.0f, // Darkening
-                linearSpeedX,
-                GameRandomEngine::GetInstance().GenerateNormalizedUniformReal())); // Initial growth phase
+                    cloudId,
+                    GameRandomEngine::GetInstance().GenerateUniformReal(-MaxCloudSpaceX, MaxCloudSpaceX), // Initial X
+                    y,
+                    z2,
+                    scale,
+                    1.0f, // Darkening
+                    linearSpeedX));
         }
 
         // Sort by Z, so that we upload the furthest clouds first
@@ -133,8 +132,7 @@ void Clouds::Update(
                     0.0f, // Z
                     stormParameters.CloudsSize,
                     stormParameters.CloudDarkening, // Darkening
-                    GameRandomEngine::GetInstance().GenerateUniformReal(0.003f, 0.007f), // Linear speed X
-                    GameRandomEngine::GetInstance().GenerateNormalizedUniformReal())); // Initial growth phase
+                    GameRandomEngine::GetInstance().GenerateUniformReal(0.003f, 0.007f))); // Linear speed X
         }
     }
 
@@ -149,17 +147,11 @@ void Clouds::Update(
     // Also, higher winds should make clouds move over-linearly faster.
     //
     // A linear factor of 1.0/8.0 worked fine at low wind speeds.
-    //float const globalCloudSpeed = windSign * 0.03f * std::pow(std::abs(baseAndStormSpeedMagnitude), 1.7f); // 1.17.x
     float const globalCloudSpeed = windSign * 0.005f * std::pow(std::abs(baseAndStormSpeedMagnitude), 2.1f);
-
-    // Convert wint speed into cloud "inner growth" speed.
-    float const growthProgressSpeed =
-        (1.0f / 45.0f) // Basal velocity
-        + std::abs(globalCloudSpeed) / (400.0f);
 
     for (auto & cloud : mClouds)
     {
-        cloud->Update(globalCloudSpeed, growthProgressSpeed);
+        cloud->Update(globalCloudSpeed);
 
         // Manage clouds leaving space: rollover and update darkening when crossing border
         if (baseAndStormSpeedMagnitude >= 0.0f && cloud->X > MaxCloudSpaceX)
@@ -176,7 +168,7 @@ void Clouds::Update(
 
     for (auto it = mStormClouds.begin(); it != mStormClouds.end();)
     {
-        (*it)->Update(globalCloudSpeed, growthProgressSpeed);
+        (*it)->Update(globalCloudSpeed);
 
         // Manage clouds leaving space: retire when cross border if too many, else rollover
         if (baseAndStormSpeedMagnitude >= 0.0f && (*it)->X > MaxCloudSpaceX)
@@ -247,7 +239,7 @@ void Clouds::Upload(Render::RenderContext & renderContext) const
             cloud->Z,
             cloud->Scale,
             cloud->Darkening,
-            cloud->GrowthProgress);
+            cloud->VolumetricGrowthProgress);
     }
 
     for (auto const & cloud : mStormClouds)
@@ -259,7 +251,7 @@ void Clouds::Upload(Render::RenderContext & renderContext) const
             cloud->Z,
             cloud->Scale,
             cloud->Darkening,
-            cloud->GrowthProgress);
+            cloud->VolumetricGrowthProgress);
     }
 
     renderContext.UploadCloudsEnd();

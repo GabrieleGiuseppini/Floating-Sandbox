@@ -18,6 +18,8 @@ void main()
 
 ###FRAGMENT-120
 
+#include "common.glslinc"
+#include "lamp_tool.glslinc"
 #include "ocean.glslinc"
 
 #define in varying
@@ -30,7 +32,14 @@ uniform vec3 paramOceanFlatColor;
 
 void main()
 {
+    // Calculate lamp tool intensity
+    float lampToolIntensity = CalculateLampToolIntensity(gl_FragCoord.xy);
+
     gl_FragColor = vec4(
-        ApplyAmbientLight(paramOceanFlatColor, paramEffectiveMoonlightColor, paramEffectiveAmbientLightIntensity),
+        ApplyAmbientLight(
+            paramOceanFlatColor, 
+            paramEffectiveMoonlightColor * 0.5, 
+            paramEffectiveAmbientLightIntensity, 
+            lampToolIntensity),
         1.0 - paramOceanTransparency);
 } 

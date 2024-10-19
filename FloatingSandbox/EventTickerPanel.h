@@ -82,24 +82,24 @@ public:
         unsigned int size) override;
 
     virtual void OnSwitchEnabled(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         bool isEnabled) override;
 
     virtual void OnSwitchToggled(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         ElectricalState newState) override;
 
     virtual void OnPowerProbeToggled(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         ElectricalState newState) override;
 
     virtual void OnGadgetPlaced(
-        GadgetId gadgetId,
+        GlobalGadgetId gadgetId,
         GadgetType gadgetType,
         bool isUnderwater) override;
 
     virtual void OnGadgetRemoved(
-        GadgetId gadgetId,
+        GlobalGadgetId gadgetId,
         GadgetType gadgetType,
         std::optional<bool> isUnderwater) override;
 

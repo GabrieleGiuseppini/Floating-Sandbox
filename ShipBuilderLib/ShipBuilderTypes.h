@@ -33,16 +33,20 @@ enum class ToolType : std::uint32_t
     RopePencil,
     RopeEraser,
     RopeSampler,
-    TextureMagicWand,
-    TextureEraser,
+    ExteriorTextureMagicWand,
+    ExteriorTextureEraser,
+    InteriorTextureMagicWand,
+    InteriorTextureEraser,
     StructuralSelection,
     ElectricalSelection,
     RopeSelection,
-    TextureSelection,
+    ExteriorTextureSelection,
+    InteriorTextureSelection,
     StructuralPaste,
     ElectricalPaste,
     RopePaste,
-    TexturePaste,
+    ExteriorTexturePaste,
+    InteriorTexturePaste,
     StructuralRectangle,
 
     _Last = StructuralRectangle
@@ -55,7 +59,7 @@ enum class ToolClass
     Other
 };
 
-size_t constexpr LayerCount = static_cast<size_t>(LayerType::Texture) + 1;
+size_t constexpr LayerCount = static_cast<size_t>(LayerType::InteriorTexture) + 1;
 
 enum class MaterialPlaneType
 {
@@ -80,10 +84,11 @@ enum class VisualizationType : std::uint32_t
     StructuralLayer,
     ElectricalLayer,
     RopesLayer,
-    TextureLayer
+    ExteriorTextureLayer,
+    InteriorTextureLayer
 };
 
-size_t constexpr VisualizationCount = static_cast<size_t>(VisualizationType::TextureLayer) + 1;
+size_t constexpr VisualizationCount = static_cast<size_t>(VisualizationType::InteriorTextureLayer) + 1;
 
 inline LayerType VisualizationToLayer(VisualizationType visualization)
 {
@@ -105,9 +110,14 @@ inline LayerType VisualizationToLayer(VisualizationType visualization)
             return LayerType::Ropes;
         }
 
-        case VisualizationType::TextureLayer:
+        case VisualizationType::ExteriorTextureLayer:
         {
-            return LayerType::Texture;
+            return LayerType::ExteriorTexture;
+        }
+
+        case VisualizationType::InteriorTextureLayer:
+        {
+            return LayerType::InteriorTexture;
         }
     }
 
@@ -119,7 +129,7 @@ enum class GameVisualizationModeType
 {
     None,
     AutoTexturizationMode,
-    TextureMode
+    ExteriorTextureMode
 };
 
 enum class StructuralLayerVisualizationModeType
@@ -142,7 +152,13 @@ enum class RopesLayerVisualizationModeType
     LinesMode
 };
 
-enum class TextureLayerVisualizationModeType
+enum class InteriorTextureLayerVisualizationModeType
+{
+    None,
+    MatteMode
+};
+
+enum class ExteriorTextureLayerVisualizationModeType
 {
     None,
     MatteMode

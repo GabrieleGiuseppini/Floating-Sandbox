@@ -9,7 +9,7 @@
 #include "FishSpeciesDatabase.h"
 #include "GameEventDispatcher.h"
 #include "GameParameters.h"
-#include "MaterialDatabase.h"
+#include "NpcDatabase.h"
 #include "PerfStats.h"
 #include "Physics.h"
 #include "RenderContext.h"
@@ -42,6 +42,7 @@ public:
         OceanFloorTerrain && oceanFloorTerrain,
         bool areCloudShadowsEnabled,
         FishSpeciesDatabase const & fishSpeciesDatabase,
+        NpcDatabase const & npcDatabase,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         GameParameters const & gameParameters,
         VisibleWorld const & visibleWorld);
@@ -67,9 +68,23 @@ public:
 
     size_t GetShipPointCount(ShipId shipId) const;
 
-    Geometry::AABBSet GetAllAABBs() const
+    Geometry::AABBSet GetAllShipAABBs() const
     {
-        return mAllAABBs;
+        return mAllShipAABBs;
+    }
+
+    Npcs const & GetNpcs() const
+    {
+        assert(!!mNpcs);
+
+        return *mNpcs;
+    }
+
+    Npcs & GetNpcs()
+    {
+        assert(!!mNpcs);
+
+        return *mNpcs;
     }
 
     void SetAreCloudShadowsEnabled(bool value)
@@ -98,7 +113,7 @@ public:
         return mOceanSurface;
     }
 
-    bool IsUnderwater(ElementId elementId) const;
+    bool IsUnderwater(GlobalElementId elementId) const;
 
     inline void DisplaceOceanSurfaceAt(
         float x,
@@ -122,32 +137,28 @@ public:
         return mOceanFloor.GetTerrain();
     }
 
+    // Km/h
     inline vec2f const & GetCurrentWindSpeed() const
     {
         return mWind.GetCurrentWindSpeed();
+    }
+
+    inline std::optional<Wind::RadialWindField> GetCurrentRadialWindField() const
+    {
+        return mWind.GetCurrentRadialWindField();
     }
 
     //
     // Interactions
     //
 
-    void ScareFish(
-        vec2f const & position,
-        float radius,
-        std::chrono::milliseconds delay);
-
-    void AttractFish(
-        vec2f const & position,
-        float radius,
-        std::chrono::milliseconds delay);
-
-    void PickPointToMove(
+    void PickConnectedComponentToMove(
         vec2f const & pickPosition,
-        std::optional<ElementId> & elementId,
+        std::optional<GlobalConnectedComponentId> & connectedComponentId,
         GameParameters const & gameParameters) const;
 
     void MoveBy(
-        ElementId elementId,
+        GlobalConnectedComponentId connectedComponentId,
         vec2f const & offset,
         vec2f const & inertialVelocity,
         GameParameters const & gameParameters);
@@ -159,7 +170,7 @@ public:
         GameParameters const & gameParameters);
 
     void RotateBy(
-        ElementId elementId,
+        GlobalConnectedComponentId connectedComponentId,
         float angle,
         vec2f const & center,
         float inertialAngle,
@@ -172,12 +183,12 @@ public:
         float inertialAngle,
         GameParameters const & gameParameters);
 
-    std::optional<ElementId> PickObjectForPickAndPull(
+    std::optional<GlobalElementId> PickObjectForPickAndPull(
         vec2f const & pickPosition,
         GameParameters const & gameParameters);
 
     void Pull(
-        ElementId elementId,
+        GlobalElementId elementId,
         vec2f const & target,
         GameParameters const & gameParameters);
 
@@ -225,9 +236,9 @@ public:
     void ApplyRadialWindFrom(
         vec2f const & sourcePos,
         float preFrontRadius,
-        float preFrontWindSpeed,
+        float preFrontWindSpeed, // m/s
         float mainFrontRadius,
-        float mainFrontWindSpeed,
+        float mainFrontWindSpeed, // m/s
         GameParameters const & gameParameters);
 
     bool ApplyLaserCannonThrough(
@@ -315,7 +326,7 @@ public:
         float currentSimulationTime,
         GameParameters const & gameParameters);
 
-    std::optional<ElementId> GetNearestPointAt(
+    std::optional<GlobalElementId> GetNearestPointAt(
         vec2f const & targetPos,
         float radius) const;
 
@@ -338,23 +349,81 @@ public:
 
     void TriggerLightning(GameParameters const & gameParameters);
 
-    void HighlightElectricalElement(ElectricalElementId electricalElementId);
+    void HighlightElectricalElement(GlobalElectricalElementId electricalElementId);
 
     void SetSwitchState(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         ElectricalState switchState,
         GameParameters const & gameParameters);
 
     void SetEngineControllerState(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         float controllerValue,
         GameParameters const & gameParameters);
 
     void SetSilence(float silenceAmount);
 
-    bool DestroyTriangle(ElementId triangleId);
+    void ScareFish(
+        vec2f const & position,
+        float radius,
+        std::chrono::milliseconds delay);
 
-    bool RestoreTriangle(ElementId triangleId);
+    void AttractFish(
+        vec2f const & position,
+        float radius,
+        std::chrono::milliseconds delay);
+
+    NpcKindType GetNpcKind(NpcId id);
+
+    std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> BeginPlaceNewFurnitureNpc(
+        NpcSubKindIdType subKind,
+        vec2f const & position,
+        bool doMoveWholeMesh);
+
+    std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> BeginPlaceNewHumanNpc(
+        NpcSubKindIdType subKind,
+        vec2f const & position,
+        bool doMoveWholeMesh);
+
+    std::optional<PickedNpc> ProbeNpcAt(
+        vec2f const & position,
+        float radius,
+        GameParameters const & gameParameters) const;
+
+    void BeginMoveNpc(
+        NpcId id,
+        int particleOrdinal,
+        bool doMoveWholeMesh);
+
+    void MoveNpcTo(
+        NpcId id,
+        vec2f const & position,
+        vec2f const & offset,
+        bool doMoveWholeMesh);
+
+    void EndMoveNpc(NpcId id);
+
+    void CompleteNewNpc(NpcId id);
+
+    void RemoveNpc(NpcId id);
+
+    void AbortNewNpc(NpcId id);
+
+    std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> AddNpcGroup(NpcKindType kind);
+
+    void TurnaroundNpc(NpcId id);
+
+    void SelectFirstNpc();
+
+    void SelectNextNpc();
+
+    void SelectNpc(std::optional<NpcId> id);
+
+    void HighlightNpc(std::optional<NpcId> id);
+
+    bool DestroyTriangle(GlobalElementId triangleId);
+
+    bool RestoreTriangle(GlobalElementId triangleId);
 
 public:
 
@@ -367,8 +436,7 @@ public:
 
     void RenderUpload(
         GameParameters const & gameParameters,
-        Render::RenderContext & renderContext,
-        PerfStats & perfStats);
+        Render::RenderContext & renderContext);
 
 private:
 
@@ -390,10 +458,11 @@ private:
     OceanSurface mOceanSurface;
     OceanFloor mOceanFloor;
     Fishes mFishes;
+    std::unique_ptr<Npcs> mNpcs; // Pointer simply because of #include dependencies
 
-    // The set of all AABB's in the world, updated at each
+    // The set of all ship AABB's in the world, updated at each
     // simulation cycle and at each ship addition
-    Geometry::AABBSet mAllAABBs;
+    Geometry::AABBSet mAllShipAABBs;
 };
 
 }

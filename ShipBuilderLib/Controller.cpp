@@ -86,7 +86,7 @@ Controller::Controller(
     , mResourceLocator(resourceLocator)
     // State
     , mCurrentTool()
-    , mCurrentToolTypePerLayer({ToolType::StructuralPencil, ToolType::ElectricalPencil, ToolType::RopePencil, ToolType::TextureEraser})
+    , mCurrentToolTypePerLayer({ToolType::StructuralPencil, ToolType::ElectricalPencil, ToolType::RopePencil, ToolType::ExteriorTextureEraser, ToolType::InteriorTextureEraser})
 {
     //
     // Create view
@@ -139,7 +139,7 @@ Controller::Controller(
     }
 
     // Initialize layer visualizations
-    InternalReconciliateTextureVisualizationMode();
+    InternalReconciliateExteriorTextureVisualizationMode();
     InternalUpdateModelControllerVisualizationModes();
 
     // Upload layers' visualizations
@@ -562,29 +562,29 @@ void Controller::RestoreRopesLayerForUndo(std::unique_ptr<RopesLayerData> ropesL
     mUserInterface.RefreshView();
 }
 
-void Controller::SetTextureLayer(
+void Controller::SetExteriorTextureLayer(
     wxString actionTitle,
-    TextureLayerData && textureLayer,
+    TextureLayerData && exteriorTextureLayer,
     std::optional<std::string> textureArtCredits)
 {
-    InternalSetLayer<LayerType::Texture>(
+    InternalSetLayer<LayerType::ExteriorTexture>(
         actionTitle,
-        std::move(textureLayer),
+        std::move(exteriorTextureLayer),
         std::move(textureArtCredits));
 }
 
-void Controller::RemoveTextureLayer()
+void Controller::RemoveExteriorTextureLayer()
 {
-    InternalRemoveLayer<LayerType::Texture>();
+    InternalRemoveLayer<LayerType::ExteriorTexture>();
 }
 
-void Controller::RestoreTextureLayerRegionBackupForUndo(
+void Controller::RestoreExteriorTextureLayerRegionBackupForUndo(
     TextureLayerData && layerRegionBackup,
     ImageCoordinates const & origin)
 {
     auto const scopedToolResumeState = SuspendTool();
 
-    mModelController->RestoreTextureLayerRegionBackup(
+    mModelController->RestoreExteriorTextureLayerRegionBackup(
         std::move(layerRegionBackup),
         origin);
 
@@ -598,18 +598,72 @@ void Controller::RestoreTextureLayerRegionBackupForUndo(
     mUserInterface.RefreshView();
 }
 
-void Controller::RestoreTextureLayerForUndo(
-    std::unique_ptr<TextureLayerData> textureLayer,
+void Controller::RestoreExteriorTextureLayerForUndo(
+    std::unique_ptr<TextureLayerData> exteriorTextureLayer,
     std::optional<std::string> originalTextureArtCredits)
 {
     auto const scopedToolResumeState = SuspendTool();
 
-    WrapLikelyLayerPresenceChangingOperation<LayerType::Texture>(
-        [this, textureLayer = std::move(textureLayer), originalTextureArtCredits = std::move(originalTextureArtCredits)]() mutable
+    WrapLikelyLayerPresenceChangingOperation<LayerType::ExteriorTexture>(
+        [this, exteriorTextureLayer = std::move(exteriorTextureLayer), originalTextureArtCredits = std::move(originalTextureArtCredits)]() mutable
         {
-            mModelController->RestoreTextureLayer(
-                std::move(textureLayer),
+            mModelController->RestoreExteriorTextureLayer(
+                std::move(exteriorTextureLayer),
                 std::move(originalTextureArtCredits));
+        });
+
+    // No need to update dirtyness, this is for undo
+
+    // Update visualization modes
+    InternalUpdateModelControllerVisualizationModes();
+
+    // Refresh model visualizations
+    mModelController->UpdateVisualizations(*mView);
+    mUserInterface.RefreshView();
+}
+
+void Controller::SetInteriorTextureLayer(
+    wxString actionTitle,
+    TextureLayerData && interiorTextureLayer)
+{
+    InternalSetLayer<LayerType::InteriorTexture>(
+        actionTitle,
+        std::move(interiorTextureLayer));
+}
+
+void Controller::RemoveInteriorTextureLayer()
+{
+    InternalRemoveLayer<LayerType::InteriorTexture>();
+}
+
+void Controller::RestoreInteriorTextureLayerRegionBackupForUndo(
+    TextureLayerData && layerRegionBackup,
+    ImageCoordinates const & origin)
+{
+    auto const scopedToolResumeState = SuspendTool();
+
+    mModelController->RestoreInteriorTextureLayerRegionBackup(
+        std::move(layerRegionBackup),
+        origin);
+
+    // No need to update dirtyness, this is for undo
+
+    // Notify macro properties
+    NotifyModelMacroPropertiesUpdated();
+
+    // Refresh model visualizations
+    mModelController->UpdateVisualizations(*mView);
+    mUserInterface.RefreshView();
+}
+
+void Controller::RestoreInteriorTextureLayerForUndo(std::unique_ptr<TextureLayerData> interiorTextureLayer)
+{
+    auto const scopedToolResumeState = SuspendTool();
+
+    WrapLikelyLayerPresenceChangingOperation<LayerType::InteriorTexture>(
+        [this, interiorTextureLayer = std::move(interiorTextureLayer)]() mutable
+        {
+            mModelController->RestoreInteriorTextureLayer(std::move(interiorTextureLayer));
         });
 
     // No need to update dirtyness, this is for undo
@@ -627,8 +681,9 @@ void Controller::RestoreAllLayersForUndo(
     std::unique_ptr<StructuralLayerData> structuralLayer,
     std::unique_ptr<ElectricalLayerData> electricalLayer,
     std::unique_ptr<RopesLayerData> ropesLayer,
-    std::unique_ptr<TextureLayerData> textureLayer,
-    std::optional<std::string> originalTextureArtCredits)
+    std::unique_ptr<TextureLayerData> exteriorTextureLayer,
+    std::optional<std::string> originalTextureArtCredits,
+    std::unique_ptr<TextureLayerData> interiorTextureLayer)
 {
     auto const scopedToolResumeState = SuspendTool();
 
@@ -656,12 +711,18 @@ void Controller::RestoreAllLayersForUndo(
             mModelController->RestoreRopesLayer(std::move(ropesLayer));
         });
 
-    WrapLikelyLayerPresenceChangingOperation<LayerType::Texture>(
-        [this, textureLayer = std::move(textureLayer), originalTextureArtCredits = std::move(originalTextureArtCredits)]() mutable
+    WrapLikelyLayerPresenceChangingOperation<LayerType::ExteriorTexture>(
+        [this, exteriorTextureLayer = std::move(exteriorTextureLayer), originalTextureArtCredits = std::move(originalTextureArtCredits)]() mutable
         {
-            mModelController->RestoreTextureLayer(
-                std::move(textureLayer),
+            mModelController->RestoreExteriorTextureLayer(
+                std::move(exteriorTextureLayer),
                 std::move(originalTextureArtCredits));
+        });
+
+    WrapLikelyLayerPresenceChangingOperation<LayerType::InteriorTexture>(
+        [this, interiorTextureLayer = std::move(interiorTextureLayer)]() mutable
+        {
+            mModelController->RestoreInteriorTextureLayer(std::move(interiorTextureLayer));
         });
 
     //
@@ -799,11 +860,19 @@ void Controller::Paste()
         }
     }
 
-    if (clipboardClone.TextureLayer)
+    if (clipboardClone.ExteriorTextureLayer)
     {
-        if (!bestLayer || currentVizLayer == LayerType::Texture)
+        if (!bestLayer || currentVizLayer == LayerType::ExteriorTexture)
         {
-            bestLayer = LayerType::Texture;
+            bestLayer = LayerType::ExteriorTexture;
+        }
+    }
+
+    if (clipboardClone.InteriorTextureLayer)
+    {
+        if (!bestLayer || currentVizLayer == LayerType::InteriorTexture)
+        {
+            bestLayer = LayerType::InteriorTexture;
         }
     }
 
@@ -835,9 +904,15 @@ void Controller::Paste()
                 break;
             }
 
-            case LayerType::Texture:
+            case LayerType::ExteriorTexture:
             {
-                InternalSelectPrimaryVisualization(VisualizationType::TextureLayer);
+                InternalSelectPrimaryVisualization(VisualizationType::ExteriorTextureLayer);
+                break;
+            }
+
+            case LayerType::InteriorTexture:
+            {
+                InternalSelectPrimaryVisualization(VisualizationType::InteriorTextureLayer);
                 break;
             }
         }
@@ -883,9 +958,20 @@ void Controller::Paste()
             break;
         }
 
-        case LayerType::Texture:
+        case LayerType::ExteriorTexture:
         {
-            mCurrentTool = std::make_unique<TexturePasteTool>(
+            mCurrentTool = std::make_unique<ExteriorTexturePasteTool>(
+                std::move(clipboardClone),
+                mWorkbenchState.GetPasteIsTransparent(),
+                *this,
+                mResourceLocator);
+
+            break;
+        }
+
+        case LayerType::InteriorTexture:
+        {
+            mCurrentTool = std::make_unique<InteriorTexturePasteTool>(
                 std::move(clipboardClone),
                 mWorkbenchState.GetPasteIsTransparent(),
                 *this,
@@ -1070,9 +1156,15 @@ void Controller::SelectAll()
                 break;
             }
 
-            case LayerType::Texture:
+            case LayerType::ExteriorTexture:
             {
-                toolType = ToolType::TextureSelection;
+                toolType = ToolType::ExteriorTextureSelection;
+                break;
+            }
+
+            case LayerType::InteriorTexture:
+            {
+                toolType = ToolType::InteriorTextureSelection;
                 break;
             }
 
@@ -1170,12 +1262,27 @@ void Controller::SetRopesLayerVisualizationMode(RopesLayerVisualizationModeType 
     mUserInterface.RefreshView();
 }
 
-void Controller::SetTextureLayerVisualizationMode(TextureLayerVisualizationModeType mode)
+void Controller::SetExteriorTextureLayerVisualizationMode(ExteriorTextureLayerVisualizationModeType mode)
 {
-    mWorkbenchState.SetTextureLayerVisualizationMode(mode);
+    mWorkbenchState.SetExteriorTextureLayerVisualizationMode(mode);
 
     // Notify
-    mUserInterface.OnTextureLayerVisualizationModeChanged(mode);
+    mUserInterface.OnExteriorTextureLayerVisualizationModeChanged(mode);
+
+    // Update visualization modes
+    InternalUpdateModelControllerVisualizationModes();
+
+    // Refresh model visualizations
+    mModelController->UpdateVisualizations(*mView);
+    mUserInterface.RefreshView();
+}
+
+void Controller::SetInteriorTextureLayerVisualizationMode(InteriorTextureLayerVisualizationModeType mode)
+{
+    mWorkbenchState.SetInteriorTextureLayerVisualizationMode(mode);
+
+    // Notify
+    mUserInterface.OnInteriorTextureLayerVisualizationModeChanged(mode);
 
     // Update visualization modes
     InternalUpdateModelControllerVisualizationModes();
@@ -1560,17 +1667,15 @@ void Controller::InternalSetLayer(wxString actionTitle, TArgs&& ... args)
                     std::move(args));
             });
     }
-    else
+    else if constexpr (TLayerType == LayerType::ExteriorTexture)
     {
-        static_assert(TLayerType == LayerType::Texture);
-
         // Create undo action
-        InternalPushUndoForWholeLayer<LayerType::Texture>(actionTitle);
+        InternalPushUndoForWholeLayer<LayerType::ExteriorTexture>(actionTitle);
 
         // Switch visualization mode to this new one, if needed
-        if (mWorkbenchState.GetPrimaryVisualization() != VisualizationType::TextureLayer)
+        if (mWorkbenchState.GetPrimaryVisualization() != VisualizationType::ExteriorTextureLayer)
         {
-            newVisualizationType = VisualizationType::TextureLayer;
+            newVisualizationType = VisualizationType::ExteriorTextureLayer;
         }
 
         // Set layer
@@ -1580,7 +1685,32 @@ void Controller::InternalSetLayer(wxString actionTitle, TArgs&& ... args)
                 std::apply(
                     [this](auto&& ... args)
                     {
-                        mModelController->SetTextureLayer(std::forward<TArgs>(args)...);
+                        mModelController->SetExteriorTextureLayer(std::forward<TArgs>(args)...);
+                    },
+                    std::move(args));
+            });
+    }
+    else
+    {
+        static_assert(TLayerType == LayerType::InteriorTexture);
+
+        // Create undo action
+        InternalPushUndoForWholeLayer<LayerType::InteriorTexture>(actionTitle);
+
+        // Switch visualization mode to this new one, if needed
+        if (mWorkbenchState.GetPrimaryVisualization() != VisualizationType::InteriorTextureLayer)
+        {
+            newVisualizationType = VisualizationType::InteriorTextureLayer;
+        }
+
+        // Set layer
+        WrapLikelyLayerPresenceChangingOperation<TLayerType>(
+            [this, args = std::make_tuple(std::forward<TArgs>(args)...)]() mutable
+            {
+                std::apply(
+                    [this](auto&& ... args)
+                    {
+                        mModelController->SetInteriorTextureLayer(std::forward<TArgs>(args)...);
                     },
                     std::move(args));
             });
@@ -1631,18 +1761,30 @@ void Controller::InternalRemoveLayer()
                 mModelController->RemoveRopesLayer();
             });
     }
-    else
+    else if constexpr (TLayerType == LayerType::ExteriorTexture)
     {
-        static_assert(TLayerType == LayerType::Texture); // No "remove" layer for structural
-
         // Create undo action
-        InternalPushUndoForWholeLayer<LayerType::Texture>(_("Remove Texture Layer"));
+        InternalPushUndoForWholeLayer<LayerType::ExteriorTexture>(_("Remove Exterior Layer"));
 
         // Remove layer
         WrapLikelyLayerPresenceChangingOperation<TLayerType>(
             [this]()
             {
-                mModelController->RemoveTextureLayer();
+                mModelController->RemoveExteriorTextureLayer();
+            });
+    }
+    else
+    {
+        static_assert(TLayerType == LayerType::InteriorTexture); // No "remove" layer for structural
+
+        // Create undo action
+        InternalPushUndoForWholeLayer<LayerType::InteriorTexture>(_("Remove Interior Layer"));
+
+        // Remove layer
+        WrapLikelyLayerPresenceChangingOperation<TLayerType>(
+            [this]()
+            {
+                mModelController->RemoveInteriorTextureLayer();
             });
     }
 
@@ -1705,9 +1847,9 @@ void Controller::InternalPushUndoForWholeLayer(wxString const & title)
                 controller.RestoreStructuralLayerForUndo(std::move(originalLayerClone));
             });
     }
-    else
+    else if constexpr (TLayerType == LayerType::ExteriorTexture)
     {
-        auto originalLayerClone = mModelController->CloneTextureLayer();
+        auto originalLayerClone = mModelController->CloneExteriorTextureLayer();
         auto const cloneByteSize = originalLayerClone ? originalLayerClone->Buffer.GetByteSize() : 0;
         auto originalTextureArtCredits = mModelController->GetShipMetadata().ArtCredits;
 
@@ -1718,9 +1860,26 @@ void Controller::InternalPushUndoForWholeLayer(wxString const & title)
             originalDirtyStateClone,
             [originalLayerClone = std::move(originalLayerClone), originalTextureArtCredits = std::move(originalTextureArtCredits)](Controller & controller) mutable
             {
-                controller.RestoreTextureLayerForUndo(
+                controller.RestoreExteriorTextureLayerForUndo(
                     std::move(originalLayerClone),
                     std::move(originalTextureArtCredits));
+            });
+    }
+    else
+    {
+        static_assert(TLayerType == LayerType::InteriorTexture);
+
+        auto originalLayerClone = mModelController->CloneInteriorTextureLayer();
+        auto const cloneByteSize = originalLayerClone ? originalLayerClone->Buffer.GetByteSize() : 0;
+
+        // Create undo action
+        mUndoStack.Push(
+            title,
+            cloneByteSize,
+            originalDirtyStateClone,
+            [originalLayerClone = std::move(originalLayerClone)](Controller & controller) mutable
+            {
+                controller.RestoreInteriorTextureLayerForUndo(std::move(originalLayerClone));
             });
     }
 
@@ -1744,10 +1903,10 @@ void Controller::WrapLikelyLayerPresenceChangingOperation(TFunctor operation)
         // Notify layer presence changed
         mUserInterface.OnLayerPresenceChanged(*mModelController);
 
-        if constexpr (TLayerType == LayerType::Texture)
+        if constexpr (TLayerType == LayerType::ExteriorTexture)
         {
             // Make sure current game viz mode is consistent with presence of texture layer
-            InternalReconciliateTextureVisualizationMode();
+            InternalReconciliateExteriorTextureVisualizationMode();
         }
 
         if (!newIsLayerPresent)
@@ -1762,14 +1921,24 @@ void Controller::WrapLikelyLayerPresenceChangingOperation(TFunctor operation)
                 InternalSelectPrimaryVisualization(WorkbenchState::GetDefaultPrimaryVisualization());
             }
 
-            if constexpr (TLayerType == LayerType::Texture)
+            if constexpr (TLayerType == LayerType::ExteriorTexture)
             {
                 // Change texture visualization mode if it's currently "None", so that next time a texture
                 // layer is present, we don't start in "none" mode
-                if (mWorkbenchState.GetTextureLayerVisualizationMode() == TextureLayerVisualizationModeType::None)
+                if (mWorkbenchState.GetExteriorTextureLayerVisualizationMode() == ExteriorTextureLayerVisualizationModeType::None)
                 {
-                    mWorkbenchState.SetTextureLayerVisualizationMode(TextureLayerVisualizationModeType::MatteMode); // New default for next layer
-                    mUserInterface.OnTextureLayerVisualizationModeChanged(TextureLayerVisualizationModeType::MatteMode);
+                    mWorkbenchState.SetExteriorTextureLayerVisualizationMode(ExteriorTextureLayerVisualizationModeType::MatteMode); // New default for next layer
+                    mUserInterface.OnExteriorTextureLayerVisualizationModeChanged(ExteriorTextureLayerVisualizationModeType::MatteMode);
+                }
+            }
+            else if constexpr (TLayerType == LayerType::InteriorTexture)
+            {
+                // Change texture visualization mode if it's currently "None", so that next time a texture
+                // layer is present, we don't start in "none" mode
+                if (mWorkbenchState.GetInteriorTextureLayerVisualizationMode() == InteriorTextureLayerVisualizationModeType::None)
+                {
+                    mWorkbenchState.SetInteriorTextureLayerVisualizationMode(InteriorTextureLayerVisualizationModeType::MatteMode); // New default for next layer
+                    mUserInterface.OnInteriorTextureLayerVisualizationModeChanged(InteriorTextureLayerVisualizationModeType::MatteMode);
                 }
             }
         }
@@ -1857,13 +2026,13 @@ void Controller::InternalSelectPrimaryVisualization(VisualizationType primaryVis
     mView->SetPrimaryVisualization(primaryVisualization);
 }
 
-void Controller::InternalReconciliateTextureVisualizationMode()
+void Controller::InternalReconciliateExteriorTextureVisualizationMode()
 {
-    if (!mModelController->HasLayer(LayerType::Texture))
+    if (!mModelController->HasLayer(LayerType::ExteriorTexture))
     {
         // If game visualization mode is the one only allowed with texture,
         // change it to auto-texturization
-        if (mWorkbenchState.GetGameVisualizationMode() == GameVisualizationModeType::TextureMode)
+        if (mWorkbenchState.GetGameVisualizationMode() == GameVisualizationModeType::ExteriorTextureMode)
         {
             mWorkbenchState.SetGameVisualizationMode(GameVisualizationModeType::AutoTexturizationMode);
             mUserInterface.OnGameVisualizationModeChanged(GameVisualizationModeType::AutoTexturizationMode);
@@ -1875,8 +2044,8 @@ void Controller::InternalReconciliateTextureVisualizationMode()
         // change it to texture
         if (mWorkbenchState.GetGameVisualizationMode() == GameVisualizationModeType::AutoTexturizationMode)
         {
-            mWorkbenchState.SetGameVisualizationMode(GameVisualizationModeType::TextureMode);
-            mUserInterface.OnGameVisualizationModeChanged(GameVisualizationModeType::TextureMode);
+            mWorkbenchState.SetGameVisualizationMode(GameVisualizationModeType::ExteriorTextureMode);
+            mUserInterface.OnGameVisualizationModeChanged(GameVisualizationModeType::ExteriorTextureMode);
         }
     }
 }
@@ -1924,15 +2093,26 @@ void Controller::InternalUpdateModelControllerVisualizationModes()
         mModelController->SetRopesLayerVisualizationMode(RopesLayerVisualizationModeType::None);
     }
 
-    // Texture
+    // Exterior Texture
 
-    if (mModelController->HasLayer(LayerType::Texture))
+    if (mModelController->HasLayer(LayerType::ExteriorTexture))
     {
-        mModelController->SetTextureLayerVisualizationMode(mWorkbenchState.GetTextureLayerVisualizationMode());
+        mModelController->SetExteriorTextureLayerVisualizationMode(mWorkbenchState.GetExteriorTextureLayerVisualizationMode());
     }
     else
     {
-        mModelController->SetTextureLayerVisualizationMode(TextureLayerVisualizationModeType::None);
+        mModelController->SetExteriorTextureLayerVisualizationMode(ExteriorTextureLayerVisualizationModeType::None);
+    }
+
+    // Interior Texture
+
+    if (mModelController->HasLayer(LayerType::InteriorTexture))
+    {
+        mModelController->SetInteriorTextureLayerVisualizationMode(mWorkbenchState.GetInteriorTextureLayerVisualizationMode());
+    }
+    else
+    {
+        mModelController->SetInteriorTextureLayerVisualizationMode(InteriorTextureLayerVisualizationModeType::None);
     }
 }
 
@@ -2104,16 +2284,30 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
                 mResourceLocator);
         }
 
-        case ToolType::TextureEraser:
+        case ToolType::ExteriorTextureEraser:
         {
-            return std::make_unique<TextureEraserTool>(
+            return std::make_unique<ExteriorTextureEraserTool>(
                 *this,
                 mResourceLocator);
         }
 
-        case ToolType::TextureMagicWand:
+        case ToolType::ExteriorTextureMagicWand:
         {
-            return std::make_unique<TextureMagicWandTool>(
+            return std::make_unique<ExteriorTextureMagicWandTool>(
+                *this,
+                mResourceLocator);
+        }
+
+        case ToolType::InteriorTextureEraser:
+        {
+            return std::make_unique<InteriorTextureEraserTool>(
+                *this,
+                mResourceLocator);
+        }
+
+        case ToolType::InteriorTextureMagicWand:
+        {
+            return std::make_unique<InteriorTextureMagicWandTool>(
                 *this,
                 mResourceLocator);
         }
@@ -2142,9 +2336,17 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
                 mResourceLocator);
         }
 
-        case ToolType::TextureSelection:
+        case ToolType::ExteriorTextureSelection:
         {
-            return std::make_unique<TextureSelectionTool>(
+            return std::make_unique<ExteriorTextureSelectionTool>(
+                *this,
+                mSelectionManager,
+                mResourceLocator);
+        }
+
+        case ToolType::InteriorTextureSelection:
+        {
+            return std::make_unique<InteriorTextureSelectionTool>(
                 *this,
                 mSelectionManager,
                 mResourceLocator);
@@ -2153,7 +2355,8 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
         case ToolType::StructuralPaste:
         case ToolType::ElectricalPaste:
         case ToolType::RopePaste:
-        case ToolType::TexturePaste:
+        case ToolType::ExteriorTexturePaste:
+        case ToolType::InteriorTexturePaste:
         {
             // We should never be invoked for this tool
             assert(false);
@@ -2195,15 +2398,17 @@ void Controller::InternalResizeShip(
         auto structuralLayerClone = mModelController->CloneStructuralLayer();
         auto electricalLayerClone = mModelController->CloneElectricalLayer();
         auto ropesLayerClone = mModelController->CloneRopesLayer();
-        auto textureLayerClone = mModelController->CloneTextureLayer();
+        auto exteriorTextureLayerClone = mModelController->CloneExteriorTextureLayer();
         auto textureArtCreditsClone = mModelController->GetShipMetadata().ArtCredits;
+        auto interiorTextureLayerClone = mModelController->CloneInteriorTextureLayer();
 
         // Calculate cost
         size_t const totalCost =
             (structuralLayerClone ? structuralLayerClone->Buffer.GetByteSize() : 0)
             + (electricalLayerClone ? electricalLayerClone->Buffer.GetByteSize() : 0)
             + (ropesLayerClone ? ropesLayerClone->Buffer.GetByteSize() : 0)
-            + (textureLayerClone ? textureLayerClone->Buffer.GetByteSize() : 0);
+            + (exteriorTextureLayerClone ? exteriorTextureLayerClone->Buffer.GetByteSize() : 0)
+            + (interiorTextureLayerClone ? interiorTextureLayerClone->Buffer.GetByteSize() : 0);
 
         // Create undo
 
@@ -2215,16 +2420,18 @@ void Controller::InternalResizeShip(
             , structuralLayerClone = std::move(structuralLayerClone)
             , electricalLayerClone = std::move(electricalLayerClone)
             , ropesLayerClone = std::move(ropesLayerClone)
-            , textureLayerClone = std::move(textureLayerClone)
-            , textureArtCreditsClone = std::move(textureArtCreditsClone)](Controller & controller) mutable
+            , exteriorTextureLayerClone = std::move(exteriorTextureLayerClone)
+            , textureArtCreditsClone = std::move(textureArtCreditsClone)
+            , interiorTextureLayerClone = std::move(interiorTextureLayerClone)](Controller & controller) mutable
             {
                 controller.RestoreAllLayersForUndo(
                     shipSize,
                     std::move(structuralLayerClone),
                     std::move(electricalLayerClone),
                     std::move(ropesLayerClone),
-                    std::move(textureLayerClone),
-                    std::move(textureArtCreditsClone));
+                    std::move(exteriorTextureLayerClone),
+                    std::move(textureArtCreditsClone),
+                    std::move(interiorTextureLayerClone));
             });
 
         mUserInterface.OnUndoStackStateChanged(mUndoStack);

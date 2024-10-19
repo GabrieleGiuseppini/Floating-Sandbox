@@ -1,0 +1,88 @@
+###VERTEX-120
+
+#define in attribute
+#define out varying
+
+// Inputs
+in vec3 inLand; // Position (vec2), Depth (float) (0 at top, +X at bottom)
+
+// Parameters
+uniform mat4 paramOrthoMatrix;
+
+// Outputs
+out vec3 worldAndDepth;
+
+void main()
+{
+    gl_Position = paramOrthoMatrix * vec4(inLand.xy, -1.0, 1.0);
+    worldAndDepth = inLand;
+}
+
+
+###FRAGMENT-120
+
+#include "common.glslinc"
+#include "lamp_tool.glslinc"
+#include "land.glslinc"
+
+#define in varying
+
+// Inputs from previous shader
+in vec3 worldAndDepth;
+
+// Textures
+uniform sampler2D paramLandTexture;
+#ifdef DETAILED_LAND
+uniform sampler2D paramNoiseTexture;
+#endif
+
+// Parameters        
+uniform float paramEffectiveAmbientLightIntensity;
+uniform vec3 paramEffectiveMoonlightColor;
+uniform vec2 paramTextureScaling;
+uniform float paramOceanDepthDarkeningRate;
+
+void main()
+{
+    vec2 worldCoords = worldAndDepth.xy;
+
+    // Back-sample 10.0 at top, slowly going to zero
+    float sampleIncrement = -10.0 * (2.0 - 2.0 * smoothstep(-2.0, 2.0, worldAndDepth.z));
+    vec2 worldCoords2 = vec2(worldCoords.x, -worldCoords.y + sampleIncrement);
+    vec4 textureColor = texture2D(paramLandTexture, worldCoords2 * paramTextureScaling);
+
+#ifdef DETAILED_LAND
+
+    textureColor.xyz = ApplyLandNoise(
+        textureColor.xyz,
+        worldCoords,
+        paramNoiseTexture);
+
+#endif
+
+    // Calculate depth darkening
+    float darkeningFactor = CalculateOceanDepthDarkeningFactor(
+        worldCoords.y,
+        paramOceanDepthDarkeningRate);
+
+    // Calculate lamp tool intensity
+    float lampToolIntensity = CalculateLampToolIntensity(gl_FragCoord.xy);
+
+    // Apply depth-darkening
+    textureColor.xyz = mix(
+        textureColor.xyz,
+        vec3(0.),
+        darkeningFactor * (1.0 - lampToolIntensity));
+
+    // Anti-aliasing
+    float alpha = worldAndDepth.z / (0.2 + abs(fwidth(worldAndDepth.z)));
+
+    // Apply ambient light and blend
+    gl_FragColor = vec4(
+        ApplyAmbientLight(
+            textureColor.xyz, 
+            paramEffectiveMoonlightColor * 0.5, 
+            paramEffectiveAmbientLightIntensity, 
+            lampToolIntensity),
+        textureColor.w * alpha);
+} 

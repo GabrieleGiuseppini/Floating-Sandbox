@@ -39,7 +39,9 @@ struct IGameController
     virtual void RegisterStatisticsEventHandler(IStatisticsGameEventHandler * handler) = 0;
     virtual void RegisterAtmosphereEventHandler(IAtmosphereGameEventHandler * handler) = 0;
     virtual void RegisterElectricalElementEventHandler(IElectricalElementGameEventHandler * handler) = 0;
+    virtual void RegisterNpcEventHandler(INpcGameEventHandler * handler) = 0;
     virtual void RegisterGenericEventHandler(IGenericGameEventHandler * handler) = 0;
+    virtual void RegisterControlEventHandler(IControlGameEventHandler * handler) = 0;
 
     virtual ShipMetadata ResetAndLoadShip(ShipLoadSpecifications const & loadSpecs) = 0;
     virtual ShipMetadata ResetAndReloadShip(ShipLoadSpecifications const & loadSpecs) = 0;
@@ -72,7 +74,14 @@ struct IGameController
     virtual bool GetShowExtendedStatusText() const = 0;
     virtual void SetShowExtendedStatusText(bool value) = 0;
 
+    virtual void DisplayEphemeralTextLine(std::string const & text) = 0;
+
     virtual void NotifySoundMuted(bool isSoundMuted) = 0;
+
+    // Not sticky
+    virtual void SetLineGuide(
+        DisplayLogicalCoordinates const & start,
+        DisplayLogicalCoordinates const & end) = 0;
 
     //
     // World
@@ -82,23 +91,21 @@ struct IGameController
     virtual void ToggleToFullDayOrNight() = 0;
     virtual float GetEffectiveAmbientLightIntensity() const = 0;
     virtual bool IsUnderwater(DisplayLogicalCoordinates const & screenCoordinates) const = 0;
-    virtual bool IsUnderwater(ElementId elementId) const = 0;
+    virtual bool IsUnderwater(GlobalElementId elementId) const = 0;
+    virtual bool HasNpcs() const = 0;
 
     //
     // Interactions
     //
 
-    virtual void ScareFish(DisplayLogicalCoordinates const & screenCoordinates, float radius, std::chrono::milliseconds delay) = 0;
-    virtual void AttractFish(DisplayLogicalCoordinates const & screenCoordinates, float radius, std::chrono::milliseconds delay) = 0;
-
-    virtual void PickObjectToMove(DisplayLogicalCoordinates const & screenCoordinates, std::optional<ElementId> & elementId) = 0;
+    virtual void PickObjectToMove(DisplayLogicalCoordinates const & screenCoordinates, std::optional<GlobalConnectedComponentId> & connectedComponentId) = 0;
     virtual void PickObjectToMove(DisplayLogicalCoordinates const & screenCoordinates, std::optional<ShipId> & shipId) = 0;
-    virtual void MoveBy(ElementId elementId, DisplayLogicalSize const & screenOffset, DisplayLogicalSize const & inertialScreenOffset) = 0;
+    virtual void MoveBy(GlobalConnectedComponentId const & connectedComponentId, DisplayLogicalSize const & screenOffset, DisplayLogicalSize const & inertialScreenOffset) = 0;
     virtual void MoveBy(ShipId shipId, DisplayLogicalSize const & screenOffset, DisplayLogicalSize const & inertialScreenOffset) = 0;
-    virtual void RotateBy(ElementId elementId, float screenDeltaY, DisplayLogicalCoordinates const & screenCenter, float inertialScreenDeltaY) = 0;
+    virtual void RotateBy(GlobalConnectedComponentId const & connectedComponentId, float screenDeltaY, DisplayLogicalCoordinates const & screenCenter, float inertialScreenDeltaY) = 0;
     virtual void RotateBy(ShipId shipId, float screenDeltaY, DisplayLogicalCoordinates const & screenCenter, float intertialScreenDeltaY) = 0;
-    virtual std::optional<ElementId> PickObjectForPickAndPull(DisplayLogicalCoordinates const & screenCoordinates) = 0;
-    virtual void Pull(ElementId elementId, DisplayLogicalCoordinates const & screenTarget) = 0;
+    virtual std::optional<GlobalElementId> PickObjectForPickAndPull(DisplayLogicalCoordinates const & screenCoordinates) = 0;
+    virtual void Pull(GlobalElementId elementId, DisplayLogicalCoordinates const & screenTarget) = 0;
     virtual void DestroyAt(DisplayLogicalCoordinates const & screenCoordinates, float radiusMultiplier) = 0;
     virtual void RepairAt(DisplayLogicalCoordinates const & screenCoordinates, float radiusMultiplier, SequenceNumber repairStepId) = 0;
     virtual bool SawThrough(DisplayLogicalCoordinates const & startScreenCoordinates, DisplayLogicalCoordinates const & endScreenCoordinates, bool isFirstSegment) = 0;
@@ -126,7 +133,26 @@ struct IGameController
     virtual bool ScrubThrough(DisplayLogicalCoordinates const & startScreenCoordinates, DisplayLogicalCoordinates const & endScreenCoordinates) = 0;
     virtual bool RotThrough(DisplayLogicalCoordinates const & startScreenCoordinates, DisplayLogicalCoordinates const & endScreenCoordinates) = 0;
     virtual void ApplyThanosSnapAt(DisplayLogicalCoordinates const & screenCoordinates, bool isSparseMode) = 0;
-    virtual std::optional<ElementId> GetNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const = 0;
+    virtual void ScareFish(DisplayLogicalCoordinates const & screenCoordinates, float radius, std::chrono::milliseconds delay) = 0;
+    virtual void AttractFish(DisplayLogicalCoordinates const & screenCoordinates, float radius, std::chrono::milliseconds delay) = 0;
+    virtual void SetLampAt(DisplayLogicalCoordinates const & screenCoordinates, float radiusScreenFraction) = 0;
+    virtual void ResetLamp() = 0;
+    virtual NpcKindType GetNpcKind(NpcId id) = 0;
+    virtual std::optional<PickedNpc> BeginPlaceNewFurnitureNpc(NpcSubKindIdType subKind, DisplayLogicalCoordinates const & screenCoordinates, bool doMoveWholeMesh) = 0;
+    virtual std::optional<PickedNpc> BeginPlaceNewHumanNpc(NpcSubKindIdType subKind, DisplayLogicalCoordinates const & screenCoordinates, bool doMoveWholeMesh) = 0;
+    virtual std::optional<PickedNpc> ProbeNpcAt(DisplayLogicalCoordinates const & screenCoordinates) const = 0;
+    virtual void BeginMoveNpc(NpcId id, int particleOrdinal, bool doMoveWholeMesh) = 0;
+    virtual void MoveNpcTo(NpcId id, DisplayLogicalCoordinates const & screenCoordinates, vec2f const & worldOffset, bool doMoveWholeMesh) = 0;
+    virtual void EndMoveNpc(NpcId id) = 0;
+    virtual void CompleteNewNpc(NpcId id) = 0;
+    virtual void RemoveNpc(NpcId id) = 0;
+    virtual void AbortNewNpc(NpcId id) = 0;
+    virtual void AddNpcGroup(NpcKindType kind) = 0;
+    virtual void TurnaroundNpc(NpcId id) = 0;
+    virtual void SelectNpc(std::optional<NpcId> id) = 0;
+    virtual void SelectNextNpc() = 0;
+    virtual void HighlightNpc(std::optional<NpcId> id) = 0;
+    virtual std::optional<GlobalElementId> GetNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const = 0;
     virtual void QueryNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const = 0;
 
     virtual void TriggerTsunami() = 0;
@@ -134,18 +160,18 @@ struct IGameController
     virtual void TriggerStorm() = 0;
     virtual void TriggerLightning() = 0;
 
-    virtual void HighlightElectricalElement(ElectricalElementId electricalElementId) = 0;
+    virtual void HighlightElectricalElement(GlobalElectricalElementId electricalElementId) = 0;
 
     virtual void SetSwitchState(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         ElectricalState switchState) = 0;
 
     virtual void SetEngineControllerState(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         float controllerValue) = 0;
 
-    virtual bool DestroyTriangle(ElementId triangleId) = 0;
-    virtual bool RestoreTriangle(ElementId triangleId) = 0;
+    virtual bool DestroyTriangle(GlobalElementId triangleId) = 0;
+    virtual bool RestoreTriangle(GlobalElementId triangleId) = 0;
 
     //
     // Rendering controls and parameters
@@ -156,7 +182,7 @@ struct IGameController
     virtual void PanToWorldEnd(int side) = 0;
     virtual void AdjustZoom(float amount) = 0;
     virtual void ResetView() = 0;
-    virtual void FocusOnShip() = 0;
+    virtual void FocusOnShips() = 0;
     virtual vec2f ScreenToWorld(DisplayLogicalCoordinates const & screenCoordinates) const = 0;
     virtual vec2f ScreenOffsetToWorldOffset(DisplayLogicalSize const & screenOffset) const = 0;
 
@@ -165,12 +191,11 @@ struct IGameController
     virtual float GetMinCameraSpeedAdjustment() const = 0;
     virtual float GetMaxCameraSpeedAdjustment() const = 0;
 
-
     virtual bool GetDoAutoFocusOnShipLoad() const = 0;
     virtual void SetDoAutoFocusOnShipLoad(bool value) = 0;
 
-    virtual bool GetDoContinuousAutoFocus() const = 0;
-    virtual void SetDoContinuousAutoFocus(bool value) = 0;
+    virtual std::optional<AutoFocusTargetKindType> GetAutoFocusTarget() const = 0;
+    virtual void SetAutoFocusTarget(std::optional<AutoFocusTargetKindType> const & autoFocusTarget) = 0;
 
     //
     // UI parameters
@@ -181,6 +206,9 @@ struct IGameController
 
     virtual bool GetDoShowElectricalNotifications() const = 0;
     virtual void SetDoShowElectricalNotifications(bool value) = 0;
+
+    virtual bool GetDoShowNpcNotifications() const = 0;
+    virtual void SetDoShowNpcNotifications(bool value) = 0;
 
     virtual UnitsSystem GetDisplayUnitsSystem() const = 0;
     virtual void SetDisplayUnitsSystem(UnitsSystem value) = 0;

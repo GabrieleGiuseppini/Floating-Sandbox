@@ -59,7 +59,7 @@ public:
 
     /*
      * Gets the identifier of the language currently enforced.
-     * Not guaranteed to be one of the "available languages" list.
+     * Not guaranteed to be in the "available languages" list.
      */
     std::string const & GetEnforcedLanguageIdentifier() const
     {

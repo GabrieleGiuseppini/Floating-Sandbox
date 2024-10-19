@@ -45,6 +45,15 @@ struct IGameControllerSettings
     virtual float GetGlobalDampingAdjustment() const = 0;
     virtual void SetGlobalDampingAdjustment(float value) = 0;
 
+    virtual float GetElasticityAdjustment() const = 0;
+    virtual void SetElasticityAdjustment(float value) = 0;
+
+    virtual float GetStaticFrictionAdjustment() const = 0;
+    virtual void SetStaticFrictionAdjustment(float value) = 0;
+
+    virtual float GetKineticFrictionAdjustment() const = 0;
+    virtual void SetKineticFrictionAdjustment(float value) = 0;
+
     virtual float GetRotAcceler8r() const = 0;
     virtual void SetRotAcceler8r(float value) = 0;
 
@@ -164,8 +173,8 @@ struct IGameControllerSettings
     virtual float GetWaterTemperature() const = 0;
     virtual void SetWaterTemperature(float value) = 0;
 
-    virtual unsigned int GetMaxBurningParticles() const = 0;
-    virtual void SetMaxBurningParticles(unsigned int value) = 0;
+    virtual unsigned int GetMaxBurningParticlesPerShip() const = 0;
+    virtual void SetMaxBurningParticlesPerShip(unsigned int value) = 0;
 
     virtual float GetThermalConductivityAdjustment() const = 0;
     virtual void SetThermalConductivityAdjustment(float value) = 0;
@@ -228,6 +237,20 @@ struct IGameControllerSettings
     virtual float GetFishShoalRadiusAdjustment() const = 0;
     virtual void SetFishShoalRadiusAdjustment(float value) = 0;
 
+    // NPCs
+
+    virtual float GetNpcSpringReductionFractionAdjustment() const = 0;
+    virtual void SetNpcSpringReductionFractionAdjustment(float value) = 0;
+
+    virtual float GetNpcSpringDampingCoefficientAdjustment() const = 0;
+    virtual void SetNpcSpringDampingCoefficientAdjustment(float value) = 0;
+
+    virtual float GetNpcSizeMultiplier() const = 0;
+    virtual void SetNpcSizeMultiplier(float value) = 0;
+
+    virtual bool GetDoApplyPhysicsToolsToNpcs() const = 0;
+    virtual void SetDoApplyPhysicsToolsToNpcs(bool value) = 0;
+
     // Misc
 
     virtual OceanFloorTerrain const & GetOceanFloorTerrain() const = 0;
@@ -244,11 +267,11 @@ struct IGameControllerSettings
     virtual void SetOceanFloorDetailAmplification(float value) = 0;
     virtual void SetOceanFloorDetailAmplificationImmediate(float value) = 0;
 
-    virtual float GetOceanFloorElasticity() const = 0;
-    virtual void SetOceanFloorElasticity(float value) = 0;
+    virtual float GetOceanFloorElasticityCoefficient() const = 0;
+    virtual void SetOceanFloorElasticityCoefficient(float value) = 0;
 
-    virtual float GetOceanFloorFriction() const = 0;
-    virtual void SetOceanFloorFriction(float value) = 0;
+    virtual float GetOceanFloorFrictionCoefficient() const = 0;
+    virtual void SetOceanFloorFrictionCoefficient(float value) = 0;
 
     virtual float GetOceanFloorSiltHardness() const = 0;
     virtual void SetOceanFloorSiltHardness(float value) = 0;
@@ -347,14 +370,20 @@ struct IGameControllerSettings
     virtual rgbColor const & GetCrepuscularColor() const = 0;
     virtual void SetCrepuscularColor(rgbColor const & color) = 0;
 
+    virtual CloudRenderDetailType GetCloudRenderDetail() const = 0;
+    virtual void SetCloudRenderDetail(CloudRenderDetailType value) = 0;
+
     virtual float GetOceanTransparency() const = 0;
     virtual void SetOceanTransparency(float value) = 0;
 
-    virtual float GetOceanDarkeningRate() const = 0;
-    virtual void SetOceanDarkeningRate(float value) = 0;
+    virtual float GetOceanDepthDarkeningRate() const = 0;
+    virtual void SetOceanDepthDarkeningRate(float value) = 0;
 
     virtual float GetShipAmbientLightSensitivity() const = 0;
     virtual void SetShipAmbientLightSensitivity(float value) = 0;
+
+    virtual float GetShipDepthDarkeningSensitivity() const = 0;
+    virtual void SetShipDepthDarkeningSensitivity(float value) = 0;
 
     virtual rgbColor const & GetFlatLampLightColor() const = 0;
     virtual void SetFlatLampLightColor(rgbColor const & color) = 0;
@@ -370,9 +399,6 @@ struct IGameControllerSettings
 
     virtual bool GetShowShipThroughOcean() const = 0;
     virtual void SetShowShipThroughOcean(bool value) = 0;
-
-    virtual DebugShipRenderModeType GetDebugShipRenderMode() const = 0;
-    virtual void SetDebugShipRenderMode(DebugShipRenderModeType debugShipRenderMode) = 0;
 
     virtual OceanRenderModeType GetOceanRenderMode() const = 0;
     virtual void SetOceanRenderMode(OceanRenderModeType oceanRenderMode) = 0;
@@ -390,7 +416,7 @@ struct IGameControllerSettings
     virtual void SetFlatOceanColor(rgbColor const & color) = 0;
 
     virtual OceanRenderDetailType GetOceanRenderDetail() const = 0;
-    virtual void SetOceanRenderDetail(OceanRenderDetailType oceanRenderDetail) = 0;
+    virtual void SetOceanRenderDetail(OceanRenderDetailType value) = 0;
 
     virtual LandRenderModeType GetLandRenderMode() const = 0;
     virtual void SetLandRenderMode(LandRenderModeType landRenderMode) = 0;
@@ -400,6 +426,21 @@ struct IGameControllerSettings
 
     virtual rgbColor const & GetFlatLandColor() const = 0;
     virtual void SetFlatLandColor(rgbColor const & color) = 0;
+
+    virtual LandRenderDetailType GetLandRenderDetail() const = 0;
+    virtual void SetLandRenderDetail(LandRenderDetailType value) = 0;
+
+    virtual ShipViewModeType GetShipViewMode() const = 0;
+    virtual void SetShipViewMode(ShipViewModeType shipViewMode) = 0;
+
+    virtual DebugShipRenderModeType GetDebugShipRenderMode() const = 0;
+    virtual void SetDebugShipRenderMode(DebugShipRenderModeType debugShipRenderMode) = 0;
+
+    virtual NpcRenderModeType GetNpcRenderMode() const = 0;
+    virtual void SetNpcRenderMode(NpcRenderModeType npcRenderMode) = 0;
+
+    virtual rgbColor const & GetNpcQuadFlatColor() const = 0;
+    virtual void SetNpcQuadFlatColor(rgbColor const & color) = 0;
 
     virtual VectorFieldRenderModeType GetVectorFieldRenderMode() const = 0;
     virtual void SetVectorFieldRenderMode(VectorFieldRenderModeType VectorFieldRenderMode) = 0;

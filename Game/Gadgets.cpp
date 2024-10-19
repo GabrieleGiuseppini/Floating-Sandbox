@@ -7,6 +7,30 @@
 
 namespace Physics {
 
+bool Gadgets::AreBombsInProximity(vec2f const & position) const
+{
+    float constexpr SquareNeighborhoodRadius = NeighborhoodRadius * NeighborhoodRadius;
+
+    for (auto & gadget : mCurrentGadgets)
+    {
+        auto const gadgetType = gadget->GetType();
+        if (gadgetType == GadgetType::AntiMatterBomb
+            || gadgetType == GadgetType::ImpactBomb
+            || gadgetType == GadgetType::RCBomb
+            || gadgetType == GadgetType::TimerBomb)
+        {
+            // Check if the gadget is within the neighborhood of the disturbed point
+            float const squareGadgetDistance = (gadget->GetPosition() - position).squareLength();
+            if (squareGadgetDistance < SquareNeighborhoodRadius)
+            {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
 void Gadgets::Update(
     GameWallClock::time_point currentWallClockTime,
     float currentSimulationTime,

@@ -179,7 +179,7 @@ void EventTickerPanel::OnTriangleRepaired(
 }
 
 void EventTickerPanel::OnSwitchEnabled(
-    ElectricalElementId electricalElementId,
+    GlobalElectricalElementId electricalElementId,
     bool isEnabled)
 {
     std::stringstream ss;
@@ -190,7 +190,7 @@ void EventTickerPanel::OnSwitchEnabled(
 }
 
 void EventTickerPanel::OnSwitchToggled(
-    ElectricalElementId electricalElementId,
+    GlobalElectricalElementId electricalElementId,
     ElectricalState newState)
 {
     std::stringstream ss;
@@ -199,7 +199,7 @@ void EventTickerPanel::OnSwitchToggled(
 }
 
 void EventTickerPanel::OnPowerProbeToggled(
-    ElectricalElementId electricalElementId,
+    GlobalElectricalElementId electricalElementId,
     ElectricalState newState)
 {
     std::stringstream ss;
@@ -208,7 +208,7 @@ void EventTickerPanel::OnPowerProbeToggled(
 }
 
 void EventTickerPanel::OnGadgetPlaced(
-    GadgetId /*gadgetId*/,
+    GlobalGadgetId /*gadgetId*/,
     GadgetType gadgetType,
     bool /*isUnderwater*/)
 {
@@ -252,7 +252,7 @@ void EventTickerPanel::OnGadgetPlaced(
 }
 
 void EventTickerPanel::OnGadgetRemoved(
-    GadgetId /*gadgetId*/,
+    GlobalGadgetId /*gadgetId*/,
     GadgetType gadgetType,
     std::optional<bool> /*isUnderwater*/)
 {

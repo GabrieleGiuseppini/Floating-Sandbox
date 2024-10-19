@@ -66,7 +66,6 @@ def hex_to_rgb(hex_value):
 
 
 def rgb_to_hex(rgb_tuple):
-    #print(str(rgb_tuple) + ": " + ("%02x %02x %02x" % rgb_tuple))
     return ("#%02x%02x%02x" % rgb_tuple).upper()
 
 
@@ -84,6 +83,20 @@ def make_color_set(json_obj):
             else:
                 colors.add(color)
     return colors
+
+
+def make_name_set(json_obj):
+    names = set()
+    for material in json_obj["materials"]:
+        if 'name' not in material:
+            print("ERROR: missing 'name' field")
+            continue
+        name = material['name']
+        if name in names:
+            print("ERROR: material name '{}' is duplicate".format(name))
+        else:
+            names.add(name)
+    return names
 
 
 def find_palette_group(json_obj, material_group_name):
@@ -105,11 +118,12 @@ def verify(filename):
     # Verify colors
     make_color_set(json_obj)
 
-    for material in json_obj["materials"]:
-        if not 'name' in material:
-            print("ERROR: missing 'name' field")
-            continue
+    # Verify names
+    names = make_name_set(json_obj)
 
+    for material in json_obj["materials"]:
+        
+        assert 'name' in material
         material_name = material['name']
 
         # Verify mandatory fields
@@ -124,6 +138,11 @@ def verify(filename):
             rgb = hex_to_rgb(hex_color)
             if (not "unique_type" in material or material["unique_type"] != "Rope") and rgb[0] == 0 and rgb[1] < 16:
                 print("ERROR: {}: color key clashes with legacy ropes's color keys".format(material_name))
+
+        # Verify palette
+        if not 'palette_coordinates' in material:
+            if not 'is_exempt_from_palette' in material or material['is_exempt_from_palette'] == False:
+                print("ERROR: {}: has no 'palette_coordinates' but is not exempt from palette".format(material_name))
 
 
 def add_variant_material(material, variant_key, variants):
@@ -458,10 +477,24 @@ def main():
             sys.exit(-1)
         verify(sys.argv[2])
     elif verb == 'add_color':
-        if len(sys.argv) < 8:
+        if len(sys.argv) < 7:
             print_usage()
             sys.exit(-1)
-        base_colors = sys.argv[7:]
+        if len(sys.argv) >= 8:
+            base_colors = sys.argv[7:]
+        else:
+            # Based off 404050 base_reference_color
+            base_colors = [
+                "#840E00",
+                "#DBCF4D",
+                "#806200",
+                "#467B00",
+                "#006A76",
+                "#1B3261",
+                "#860080",
+                "#A84F00",
+                "#111111"
+            ]
         add_color(material_name=sys.argv[2], input_filename=sys.argv[3], output_filename=sys.argv[4], base_reference_color=sys.argv[5], target_reference_color=sys.argv[6], base_colors=base_colors)
     elif verb == 'add_variants':
         if len(sys.argv) != 5:

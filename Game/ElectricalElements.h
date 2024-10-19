@@ -538,7 +538,7 @@ public:
         ElementIndex pointElementIndex,
         ElectricalElementInstanceIndex instanceIndex,
         std::optional<ElectricalPanel::ElementMetadata> const & panelElementMetadata,
-        ElectricalMaterial const & electricalMaterial,        
+        ElectricalMaterial const & electricalMaterial,
         bool flipH,
         bool flipV,
         bool rotate90CW,
@@ -547,7 +547,7 @@ public:
     void AnnounceInstancedElements();
 
     void HighlightElectricalElement(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         Points & points)
     {
         assert(electricalElementId.GetShipId() == mShipId);
@@ -564,13 +564,13 @@ public:
     void Query(ElementIndex electricalElementIndex) const;
 
     void SetSwitchState(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         ElectricalState switchState,
         Points & points,
         GameParameters const & gameParameters);
 
     void SetEngineControllerState(
-        ElectricalElementId electricalElementId,
+        GlobalElectricalElementId electricalElementId,
         float controllerValue,
         GameParameters const & gameParameters);
 
@@ -626,7 +626,7 @@ public:
         return mPointIndexBuffer[electricalElementIndex];
     }
 
-    inline ElementIndex GetPointIndex(ElectricalElementId electricalElementId) const
+    inline ElementIndex GetPointIndex(GlobalElectricalElementId electricalElementId) const
     {
         return mPointIndexBuffer[electricalElementId.GetLocalObjectId()];
     }

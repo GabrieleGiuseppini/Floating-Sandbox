@@ -7,6 +7,7 @@
 
 #include "ImageFileTools.h"
 
+#include <GameCore/GameChronometer.h>
 #include <GameCore/GameException.h>
 #include <GameCore/GameMath.h>
 #include <GameCore/Log.h>
@@ -53,34 +54,37 @@ ShipTexturizer::ShipTexturizer(
 {
 }
 
-int ShipTexturizer::CalculateHighDefinitionTextureMagnificationFactor(ShipSpaceSize const & shipSize)
+int ShipTexturizer::CalculateHighDefinitionTextureMagnificationFactor(
+    ShipSpaceSize const & shipSize,
+    int maxTextureSize)
 {
     //
     // Calculate target texture size: integral multiple of structure size, but without
-    // exceeding 4096 (magic number, also max texture size for low-end gfx cards),
+    // exceeding maxTextureSize (magic number, also max texture size for low-end gfx cards),
     // and no more than 32 times the original size
     //
 
     int const maxDimension = std::max(shipSize.width, shipSize.height);
     assert(maxDimension > 0);
 
-    int const magnificationFactor = std::min(32, std::max(1, 4096 / maxDimension));
+    int const magnificationFactor = std::min(32, std::max(1, maxTextureSize / maxDimension));
 
     return magnificationFactor;
 }
 
 RgbaImageData ShipTexturizer::MakeAutoTexture(
     StructuralLayerData const & structuralLayer,
-    std::optional<ShipAutoTexturizationSettings> const & settings) const
+    std::optional<ShipAutoTexturizationSettings> const & settings,
+    int maxTextureSize) const
 {
-    auto const startTime = std::chrono::steady_clock::now();
+    auto const startTime = GameChronometer::now();
 
     // Zero-out cache usage counts
     ResetMaterialTextureCacheUseCounts();
 
     // Calculate texture size
     ShipSpaceSize const shipSize = structuralLayer.Buffer.Size;
-    int magnificationFactor = CalculateHighDefinitionTextureMagnificationFactor(shipSize);
+    int magnificationFactor = CalculateHighDefinitionTextureMagnificationFactor(shipSize, maxTextureSize);
     ImageSize const textureSize = ImageSize(
         shipSize.width * magnificationFactor,
         shipSize.height * magnificationFactor);
@@ -103,7 +107,7 @@ RgbaImageData ShipTexturizer::MakeAutoTexture(
 
     LogMessage("ShipTexturizer: completed auto-texturization:",
         " shipSize=", shipSize, " textureSize=", textureSize,
-        " time=", std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - startTime).count(), "us");
+        " time=", std::chrono::duration_cast<std::chrono::microseconds>(GameChronometer::now() - startTime).count(), "us");
 
     return texture;
 }
@@ -320,6 +324,59 @@ void ShipTexturizer::AutoTexturizeInto(
             }
         }
     }
+}
+
+RgbaImageData ShipTexturizer::MakeInteriorViewTexture(
+    Physics::Triangles const & triangles,
+    Physics::Points const & points,
+    ShipSpaceSize const & shipSize,
+    RgbaImageData const & backgroundTexture) const
+{
+    auto const startTime = GameChronometer::now();
+
+    //
+    // Start with a copy of the background
+    //
+
+    RgbaImageData interiorView = backgroundTexture.Clone();
+
+    //
+    // Visit all triangles and render their floors
+    //
+
+    vec2f const shipSizeF = shipSize.ToFloat();
+    vec2f const textureSizeF = interiorView.Size.ToFloat();
+
+    // Size of the quad occupied by two triangles adjoined along
+    // their diagonals, in pixels
+    ImageSize const quadSize = ImageSize::FromFloatFloor(textureSizeF / shipSizeF);
+
+    // Thickness of a floor, in pixels
+    //
+    // Futurework: should incorporate ship's scale, as now we calculate thickness assuming
+    // width and height are 1:1 with meters
+    int const floorThickness = std::max(
+        std::max(
+            quadSize.width / 10,
+            quadSize.height / 10),
+        2);
+
+    for (auto const t : triangles)
+    {
+        DrawTriangleFloorInto(
+            t,
+            points,
+            triangles,
+            textureSizeF,
+            floorThickness,
+            interiorView);
+    }
+
+    LogMessage("ShipTexturizer: completed interior view:",
+        " shipSize=", shipSize, " textureSize=", interiorView.Size,
+        " time=", std::chrono::duration_cast<std::chrono::microseconds>(GameChronometer::now() - startTime).count(), "us");
+
+    return interiorView;
 }
 
 void ShipTexturizer::RenderShipInto(
@@ -604,7 +661,7 @@ float ShipTexturizer::MaterialTextureMagnificationToPixelConversionFactor(float 
     return 1.0f / (0.08f * magnification);
 }
 
-RgbaImageData ShipTexturizer::MakeTextureSample(
+RgbaImageData ShipTexturizer::MakeMaterialTextureSample(
     std::optional<ShipAutoTexturizationSettings> const & settings,
     ImageSize const & sampleSize,
     rgbaColor const & renderColor,
@@ -750,6 +807,257 @@ void ShipTexturizer::PurgeMaterialTextureCache(size_t maxSize) const
     for (size_t i = 0; i < maxSize && i < keyUsages.size(); ++i)
     {
         mMaterialTextureCache.erase(keyUsages[i].first);
+    }
+}
+
+void ShipTexturizer::DrawTriangleFloorInto(
+    ElementIndex triangleIndex,
+    Physics::Points const & points,
+    Physics::Triangles const & triangles,
+    vec2f const & textureSizeF,
+    int const floorThickness,
+    RgbaImageData & targetTextureImage) const
+{
+    //
+    // 1. Find minima and maxima
+    //
+
+    int minX = std::numeric_limits<int>::max();
+    int maxX = std::numeric_limits<int>::min();
+    int minY = std::numeric_limits<int>::max();
+    int maxY = std::numeric_limits<int>::min();
+
+    for (int v = 0; v < 3; ++v)
+    {
+        ElementIndex const pointIndex = triangles.GetPointIndices(triangleIndex)[v];
+        vec2f const pointTextureCoords = points.GetTextureCoordinates(pointIndex);
+        ImageCoordinates const endpoint = ImageCoordinates::FromFloatRound(pointTextureCoords * textureSizeF);
+
+        minX = std::min(minX, endpoint.x);
+        maxX = std::max(maxX, endpoint.x);
+        minY = std::min(minY, endpoint.y);
+        maxY = std::max(maxY, endpoint.y);
+    }
+
+    //
+    // 2. Visit all edges
+    //
+
+    for (int e = 0; e < 3; ++e)
+    {
+        if (triangles.GetSubSpringNpcFloorKind(triangleIndex, e) != NpcFloorKindType::NotAFloor)
+        {
+            // Map edge's endpoints to pixels in texture
+
+            ElementIndex const pointAIndex = triangles.GetPointIndices(triangleIndex)[e];
+            vec2f const pointATextureCoords = points.GetTextureCoordinates(pointAIndex);
+            ImageCoordinates const endpointA = ImageCoordinates::FromFloatRound(pointATextureCoords * textureSizeF);
+
+            ElementIndex const pointBIndex = triangles.GetPointIndices(triangleIndex)[(e + 1) % 3];
+            vec2f const pointBTextureCoords = points.GetTextureCoordinates(pointBIndex);
+            ImageCoordinates const endpointB = ImageCoordinates::FromFloatRound(pointBTextureCoords * textureSizeF);
+
+            assert(floorThickness >= 2);
+
+            ImageCoordinates const & endpointBottom = (endpointA.y <= endpointB.y) ? endpointA : endpointB;
+            ImageCoordinates const & endpointTop = (endpointA.y <= endpointB.y) ? endpointB : endpointA;
+
+            // Check direction
+            if (endpointA.x == endpointB.x)
+            {
+                // Vertical
+                assert(endpointA.y != endpointB.y);
+
+                int const yStart = endpointBottom.y - floorThickness / 2;
+                int const yEnd = endpointTop.y + floorThickness / 2 - 1; // Included
+
+                if (endpointA.x == minX)
+                {
+                    // Left |
+
+                    DrawHVEdgeFloorInto(
+                        minX - floorThickness / 2, // xStart
+                        minX + floorThickness / 2 - 1, // xEnd, included
+                        1, // xIncr,
+                        0, // xLimitIncr
+                        yStart,
+                        yEnd,
+                        1, // yIncr
+                        targetTextureImage);
+                }
+                else
+                {
+                    // Right |
+
+                    assert(endpointA.x == maxX);
+
+                    DrawHVEdgeFloorInto(
+                        maxX - floorThickness / 2, // xStart
+                        maxX + floorThickness / 2 - 1, // xEnd, included
+                        1, // xIncr,
+                        0, // xLimitIncr
+                        yStart,
+                        yEnd,
+                        1, // yIncr
+                        targetTextureImage);
+                }
+            }
+            else if (endpointA.y == endpointB.y)
+            {
+                // Horizontal
+
+                if (endpointA.y == minY)
+                {
+                    // Bottom -
+
+                    DrawHVEdgeFloorInto(
+                        minX - floorThickness / 2, // xStart
+                        maxX + floorThickness / 2 - 1, // xEnd, included
+                        1, // xIncr
+                        0, // xLimitIncr
+                        minY - floorThickness / 2, // yStart
+                        minY + floorThickness / 2 - 1, // yEnd, included
+                        1, // yIncr
+                        targetTextureImage);
+                }
+                else
+                {
+                    // Top -
+
+                    assert(endpointA.y == maxY);
+
+                    DrawHVEdgeFloorInto(
+                        minX - floorThickness / 2, // xStart
+                        maxX + floorThickness / 2 - 1, // xEnd, included
+                        1, // xIncr
+                        0, // xLimitIncr
+                        maxY - floorThickness / 2, // yStart
+                        maxY + floorThickness / 2  - 1, // yEnd, included
+                        1, // yIncr
+                        targetTextureImage);
+                }
+            }
+            else
+            {
+                // Diagonal
+
+                // We draw from bottom to top, and with an extra pixel on either left and right side for anti-aliasing
+
+
+                int const yStart = endpointBottom.y - floorThickness / 2;
+                int const yEnd = endpointTop.y + floorThickness / 2  - 1; // Included
+
+                if (endpointBottom.x <= endpointTop.x)
+                {
+                    // Left-Right /
+
+                    DrawDEdgeFloorInto(
+                        (minX - floorThickness / 2 - 1) - 1, // xStart
+                        (minX + floorThickness / 2 - 1) + 1, // xEnd, included
+                        1, // xIncr
+                        1, // xLimitIncr
+                        minX - floorThickness / 2, // absoluteMinX
+                        maxX + floorThickness / 2 - 1, // absoluteMaxX
+                        yStart,
+                        yEnd,
+                        1, // yIncr
+                        targetTextureImage);
+                }
+                else
+                {
+                    // Right-Left \
+
+                    DrawDEdgeFloorInto(
+                        (maxX - floorThickness / 2) - 1,
+                        (maxX + floorThickness / 2) + 1,
+                        1, // xIncr
+                        -1, // xLimitIncr
+                        minX - floorThickness / 2, // absoluteMinX
+                        maxX + floorThickness / 2 - 1, // absoluteMaxX
+                        yStart,
+                        yEnd,
+                        1, // yIncr
+                        targetTextureImage);
+                }
+            }
+        }
+    }
+}
+
+void ShipTexturizer::DrawHVEdgeFloorInto(
+    int xStart,
+    int xEnd, // Included
+    int xIncr,
+    int xLimitIncr,
+    int yStart,
+    int yEnd, // Included
+    int yIncr,
+    RgbaImageData & targetTextureImage) const
+{
+    rgbaColor constexpr FloorColor = rgbaColor(0, 0, 0, rgbaColor::data_type_max);
+
+    for (int y = yStart; ; y += yIncr)
+    {
+        for (int x = xStart; ; x += xIncr)
+        {
+            targetTextureImage[{x, y}] = FloorColor;
+
+            if (x == xEnd)
+            {
+                break;
+            }
+        }
+
+        if (y == yEnd)
+        {
+            break;
+        }
+
+        xStart += xLimitIncr;
+        xEnd += xLimitIncr;
+    }
+}
+
+void ShipTexturizer::DrawDEdgeFloorInto(
+    int xStart,
+    int xEnd, // Included
+    int xIncr,
+    int xLimitIncr,
+    int absoluteMinX,
+    int absoluteMaxX,
+    int yStart,
+    int yEnd, // Included
+    int yIncr,
+    RgbaImageData & targetTextureImage) const
+{
+    vec4f constexpr FloorColor = vec4f(0.0f, 0.0f, 0.0f, 1.0f);
+
+    for (int y = yStart; ; y += yIncr)
+    {
+        for (int x = xStart; ; x += xIncr)
+        {
+            if (x >= absoluteMinX && x <= absoluteMaxX)
+            {
+                targetTextureImage[{x, y}] = rgbaColor(
+                    Mix(
+                        targetTextureImage[{x, y}].toVec4f(),
+                        FloorColor,
+                        (x == xStart || x == xEnd) ? 0.20f : 1.0f));
+            }
+
+            if (x == xEnd)
+            {
+                break;
+            }
+        }
+
+        if (y == yEnd)
+        {
+            break;
+        }
+
+        xStart += xLimitIncr;
+        xEnd += xLimitIncr;
     }
 }
 

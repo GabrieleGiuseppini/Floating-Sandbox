@@ -56,6 +56,7 @@ namespace /*anonymous*/ {
 
 RenderContext::RenderContext(
     RenderDeviceProperties const & renderDeviceProperties,
+    Render::TextureAtlas<Render::NpcTextureGroups> && npcTextureAtlas,
     PerfStats & perfStats,
     ResourceLocator const & resourceLocator,
     ProgressCallback const & progressCallback)
@@ -80,6 +81,8 @@ RenderContext::RenderContext(
     , mShipDefaultWaterColor(0x00, 0x00, 0xcc)
     , mVectorFieldRenderMode(VectorFieldRenderModeType::None)
     , mVectorFieldLengthMultiplier(1.0f)
+    // Render state
+    , mLampToolToSet(vec4f(0.0f, 0.0f, 0.0f, 0.0f)) // Turned off
     // Rendering externals
     , mMakeRenderContextCurrentFunction(renderDeviceProperties.MakeRenderContextCurrentFunction)
     , mSwapRenderBuffersFunction(renderDeviceProperties.SwapRenderBuffersFunction)
@@ -147,7 +150,11 @@ RenderContext::RenderContext(
             // Load shader manager
             //
 
+            LogMessage("Initializing shaders...");
+
             mShaderManager = ShaderManager<ShaderManagerTraits>::CreateInstance(resourceLocator.GetGameShadersRootPath());
+
+            LogMessage("...shaders initialized.");
         });
 
     progressCallback(0.1f, ProgressMessageType::InitializingNoise);
@@ -174,6 +181,12 @@ RenderContext::RenderContext(
         [&]()
         {
             mGlobalRenderContext->InitializeExplosionTextures(resourceLocator);
+        });
+
+    mRenderThread.RunSynchronously(
+        [&]()
+        {
+            mGlobalRenderContext->InitializeNpcTextures(std::move(npcTextureAtlas)); // Safe as it's synchronous
         });
 
     mRenderThread.RunSynchronously(
@@ -305,6 +318,9 @@ void RenderContext::Reset()
         {
             // Clear ships
             mShips.clear();
+
+            // Notify other layers
+            mWorldRenderContext->OnReset(mRenderParameters);
         });
 
     // Reset state
@@ -317,20 +333,23 @@ void RenderContext::ValidateShipTexture(RgbaImageData const & texture) const
     if (texture.Size.width > GameOpenGL::MaxTextureSize
         || texture.Size.height > GameOpenGL::MaxTextureSize)
     {
-        throw GameException("We are sorry, but this ship's texture image is too large for your graphics card.");
+        throw GameException("We are sorry, but this ship's texture image is too large for your graphics card. The texture size is " +
+            texture.Size.ToString() + " while the maximum supported by your graphics cards is " + ImageSize(GameOpenGL::MaxTextureSize, GameOpenGL::MaxTextureSize).ToString());
     }
 }
 
 void RenderContext::AddShip(
     ShipId shipId,
     size_t pointCount,
-    RgbaImageData texture)
+    RgbaImageData exteriorTextureImage,
+    RgbaImageData interiorViewImage)
 {
     //
     // Validate ship
     //
 
-    ValidateShipTexture(texture);
+    ValidateShipTexture(exteriorTextureImage);
+    ValidateShipTexture(interiorViewImage);
 
     //
     // Add ship
@@ -355,7 +374,8 @@ void RenderContext::AddShip(
                     shipId,
                     pointCount,
                     newShipCount,
-                    std::move(texture),
+                    std::move(exteriorTextureImage),
+                    std::move(interiorViewImage),
                     *mShaderManager,
                     *mGlobalRenderContext,
                     mRenderParameters,
@@ -472,9 +492,9 @@ void RenderContext::Draw()
     // Render asynchronously; we will wait for this render to complete
     // when we want to touch GPU buffers again.
     //
-    // Take a copy of the current render parameters and clean its dirtyness
+    // Take a copy of the current render parameters and clean its dirtyness, and of the current render state
     mLastRenderDrawCompletionIndicator = mRenderThread.QueueTask(
-        [this, renderParameters = mRenderParameters.TakeSnapshotAndClear()]() mutable
+        [this, renderParameters = mRenderParameters.TakeSnapshotAndClear(), lampToolToSet = mLampToolToSet]() mutable
         {
             auto const startTime = GameChronometer::now();
 
@@ -504,6 +524,13 @@ void RenderContext::Draw()
             //
 
             {
+                if (lampToolToSet)
+                {
+                    mShaderManager->SetProgramParameterInAllShaders<ProgramParameterType::LampToolAttributes>(*lampToolToSet);
+                }
+
+                mGlobalRenderContext->RenderPrepare();
+
                 mWorldRenderContext->RenderPrepareStars(renderParameters);
 
                 mWorldRenderContext->RenderPrepareLightnings(renderParameters);
@@ -600,6 +627,12 @@ void RenderContext::Draw()
             mPerfStats.TotalRenderDrawDuration.Update(GameChronometer::now() - startTime);
             mRenderStats.store(renderStats);
         });
+
+    //
+    // Reset render state now that it's copied into render thread
+    //
+
+    mLampToolToSet.reset();
 }
 
 void RenderContext::RenderEnd()

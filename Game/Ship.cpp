@@ -9,6 +9,7 @@
 
 #include <GameCore/AABB.h>
 #include <GameCore/Algorithms.h>
+#include <GameCore/Conversions.h>
 #include <GameCore/GameDebug.h>
 #include <GameCore/GameMath.h>
 #include <GameCore/GameRandomEngine.h>
@@ -78,7 +79,8 @@ Ship::Ship(
     Springs && springs,
     Triangles && triangles,
     ElectricalElements && electricalElements,
-    Frontiers && frontiers)
+    Frontiers && frontiers,
+    RgbaImageData && interiorTextureImage)
     : mId(id)
     , mParentWorld(parentWorld)
     , mMaterialDatabase(materialDatabase)
@@ -89,6 +91,7 @@ Ship::Ship(
     , mTriangles(std::move(triangles))
     , mElectricalElements(std::move(electricalElements))
     , mFrontiers(std::move(frontiers))
+    , mInteriorTextureImage(std::move(interiorTextureImage))
     , mPinnedPoints(
         mParentWorld,
         mGameEventHandler,
@@ -119,7 +122,6 @@ Ship::Ship(
     , mLastLuminiscenceAdjustmentDiffused(-1.0f)
     , mRepairGracePeriodMultiplier(1.0f)
     , mLastQueriedPointIndex(NoneElementIndex)
-    , mWindField()
     , mAirBubblesCreatedCount(0)
     , mCurrentSimulationParallelism(0) // We'll detect a difference on first run
     // Static pressure
@@ -336,7 +338,7 @@ void Ship::Update(
     // step
     ///////////////////////////////////////////////////////////////////
 
-    ApplyQueuedInteractionForces();
+    ApplyQueuedInteractionForces(gameParameters);
 
     ///////////////////////////////////////////////////////////////////
     // Apply world forces
@@ -546,7 +548,7 @@ void Ship::Update(
     //      - EL.AvailableLight depends on electricals which depend on water
     // - Outputs: P.Light
     DiffuseLight(
-        gameParameters, 
+        gameParameters,
         threadManager);
 
     //
@@ -602,7 +604,7 @@ void Ship::Update(
         currentSimulationTime,
         GameParameters::SimulationStepTimeDuration<float>,
         mParentWorld.GetCurrentWindSpeed(),
-        mWindField,
+        mParentWorld.GetCurrentRadialWindField(),
         gameParameters);
 
     //
@@ -655,6 +657,14 @@ void Ship::Update(
         gameParameters);
 
     ///////////////////////////////////////////////////////////////////
+    // Update cleanup
+    ///////////////////////////////////////////////////////////////////
+
+    // This one we clear here, so the NPC update - which comes next - populates
+    // it for use in the next simulation step
+    mPoints.ResetTransientAdditionalMasses();
+
+    ///////////////////////////////////////////////////////////////////
     // Diagnostics
     ///////////////////////////////////////////////////////////////////
 
@@ -665,11 +675,10 @@ void Ship::Update(
     VerifyInvariants();
 
 #endif
+}
 
-    ///////////////////////////////////////////////////////////////////
-    // Preparations for next step
-    ///////////////////////////////////////////////////////////////////
-
+void Ship::UpdateEnd()
+{
     // Continue recovering from a repair
     if (mRepairGracePeriodMultiplier != 1.0f)
     {
@@ -680,7 +689,8 @@ void Ship::Update(
         }
     }
 
-    mWindField.reset();
+    // Reset electrification (was needed by NPCs)
+    mPoints.ResetIsElectrifiedBuffer();
 }
 
 void Ship::RenderUpload(Render::RenderContext & renderContext)
@@ -702,6 +712,9 @@ void Ship::RenderUpload(Render::RenderContext & renderContext)
 
         // Notify electrical elements
         mElectricalElements.OnPhysicalStructureChanged(mPoints);
+
+        // Notify NPCs
+        mParentWorld.GetNpcs().OnShipConnectivityChanged(mId);
     }
 
     //
@@ -820,9 +833,13 @@ void Ship::RenderUpload(Render::RenderContext & renderContext)
     // Upload flames
     //
 
-    mPoints.UploadFlames(
-        mId,
-        renderContext);
+    shipRenderContext.UploadFlamesStart(mPoints.GetBurningPointCount() + mParentWorld.GetNpcs().GetFlameCount(mId));
+
+    mPoints.UploadFlames(shipRenderContext);
+    mParentWorld.GetNpcs().UploadFlames(mId, shipRenderContext);
+
+    shipRenderContext.UploadFlamesEnd();
+
 
     //
     // Upload gadgets
@@ -924,7 +941,7 @@ void Ship::Finalize()
 // Mechanical Dynamics
 ///////////////////////////////////////////////////////////////////////////////////
 
-void Ship::ApplyQueuedInteractionForces()
+void Ship::ApplyQueuedInteractionForces(GameParameters const & gameParameters)
 {
     for (auto const & interaction : mQueuedInteractions)
     {
@@ -932,7 +949,7 @@ void Ship::ApplyQueuedInteractionForces()
         {
             case Interaction::InteractionType::Blast:
             {
-                ApplyBlastAt(interaction.Arguments.Blast);
+                ApplyBlastAt(interaction.Arguments.Blast, gameParameters);
 
                 break;
             }
@@ -954,13 +971,6 @@ void Ship::ApplyQueuedInteractionForces()
             case Interaction::InteractionType::Swirl:
             {
                 SwirlAt(interaction.Arguments.Swirl);
-
-                break;
-            }
-
-            case Interaction::InteractionType::RadialWind:
-            {
-                ApplyRadialWindFrom(interaction.Arguments.RadialWind);
 
                 break;
             }
@@ -1004,14 +1014,10 @@ void Ship::ApplyWorldParticleForces(
     Buffer<float> & newCachedPointDepths,
     GameParameters const & gameParameters)
 {
-    // Wind force:
-    //  Km/h -> Newton: F = 1/2 rho v**2 A
-    float constexpr WindVelocityConversionFactor = 1000.0f / 3600.0f;
-    vec2f const windForce =
-        mParentWorld.GetCurrentWindSpeed().square()
-        * (WindVelocityConversionFactor * WindVelocityConversionFactor)
-        * 0.5f
-        * effectiveAirDensity;
+    // Global wind force
+    vec2f const globalWindForce = Formulae::WindSpeedToForceDensity(
+        Conversions::KmhToMs(mParentWorld.GetCurrentWindSpeed()),
+        effectiveAirDensity);
 
     // Abovewater points feel this amount of air drag, due to friction
     float const airFrictionDragCoefficient =
@@ -1027,6 +1033,10 @@ void Ship::ApplyWorldParticleForces(
 
     float * const restrict newCachedPointDepthsBuffer = newCachedPointDepths.data();
     vec2f * const restrict staticForcesBuffer = mPoints.GetStaticForceBufferAsVec2();
+
+    //
+    // 1. Various world forces
+    //
 
     for (auto pointIndex : mPoints.BufferElements())
     {
@@ -1046,7 +1056,8 @@ void Ship::ApplyWorldParticleForces(
         // in-between: smooth air-water interface (nature abhors discontinuities)
         //
 
-        float const uwCoefficient = Clamp(newCachedPointDepthsBuffer[pointIndex], 0.0f, 1.0f);
+        float const airWaterInterfaceInverseWidth = mPoints.GetAirWaterInterfaceInverseWidth(pointIndex);
+        float const uwCoefficient = Clamp(newCachedPointDepthsBuffer[pointIndex] * airWaterInterfaceInverseWidth, 0.0f, 1.0f);
 
         //
         // Apply gravity
@@ -1086,16 +1097,57 @@ void Ship::ApplyWorldParticleForces(
             * Mix(airFrictionDragCoefficient, waterFrictionDragCoefficient, uwCoefficient);
 
         //
-        // Wind force
+        // Global (linear) wind force
         //
 
         // Note: should be based on relative velocity, but we simplify here for performance reasons
         staticForce +=
-            windForce
+            globalWindForce
             * mPoints.GetMaterialWindReceptivity(pointIndex)
-            * (1.0f - uwCoefficient); // Only above-water
+            * (1.0f - uwCoefficient); // Only above-water (modulated)
 
         staticForcesBuffer[pointIndex] += staticForce;
+    }
+
+    //
+    // 2. Radial wind field, if any
+    //
+
+    auto const & radialWindField = mParentWorld.GetCurrentRadialWindField();
+    if (radialWindField.has_value())
+    {
+        for (auto pointIndex : mPoints.BufferElements())
+        {
+            // Only above-water points
+            if (newCachedPointDepthsBuffer[pointIndex] <= 0.0f)
+            {
+                vec2f const pointPosition = mPoints.GetPosition(pointIndex);
+                vec2f const displacement = pointPosition - radialWindField->SourcePos;
+                float const radius = displacement.length();
+                if (radius < radialWindField->PreFrontRadius) // Within sphere
+                {
+                    // Calculate force magnitude
+                    float windForceMagnitude;
+                    if (radius < radialWindField->MainFrontRadius)
+                    {
+                        windForceMagnitude = radialWindField->MainFrontWindForceMagnitude;
+                    }
+                    else
+                    {
+                        windForceMagnitude = radialWindField->PreFrontWindForceMagnitude;
+                    }
+
+                    // Calculate force
+                    vec2f const force =
+                        displacement.normalise_approx(radius)
+                        * windForceMagnitude
+                        * mPoints.GetMaterialWindReceptivity(pointIndex);
+
+                    // Apply force
+                    staticForcesBuffer[pointIndex] += force;
+                }
+            }
+        }
     }
 }
 
@@ -1754,12 +1806,15 @@ void Ship::HandleCollisionsWithSeaFloor(
     ElementIndex endPointIndex,
     GameParameters const & gameParameters)
 {
+    //
+    // Note: this implementation of friction imparts directly displacement and velocity,
+    // rather than imparting forces, and is an approximation of real friction in that it's
+    // independent from the force against the surface
+    //
+
     float const dt = gameParameters.MechanicalSimulationStepTimeDuration<float>();
 
     OceanFloor const & oceanFloor = mParentWorld.GetOceanFloor();
-
-    float const elasticityFactor = -gameParameters.OceanFloorElasticity;
-    float const inverseFriction = 1.0f - gameParameters.OceanFloorFriction;
 
     float const siltingFactor1 = gameParameters.OceanFloorSiltHardness;
     float const siltingFactor2 = 1.0f - gameParameters.OceanFloorSiltHardness;
@@ -1800,24 +1855,33 @@ void Ship::HandleCollisionsWithSeaFloor(
                 vec2f const tangentialVelocity = pointVelocity - normalVelocity;
 
                 // Calculate normal reponse: Vn' = -e*Vn (e = elasticity, [0.0 - 1.0])
+                float const elasticityFactor = mPoints.GetOceanFloorCollisionFactors(pointIndex).ElasticityFactor;
                 vec2f const normalResponse =
                     normalVelocity
                     * elasticityFactor; // Already negative
 
                 // Calculate tangential response: Vt' = a*Vt (a = (1.0-friction), [0.0 - 1.0])
+                float constexpr KineticThreshold = 2.0f;
+                float const frictionFactor = (std::abs(tangentialVelocity.x) > KineticThreshold || std::abs(tangentialVelocity.y) > KineticThreshold)
+                    ? mPoints.GetOceanFloorCollisionFactors(pointIndex).KineticFrictionFactor
+                    : mPoints.GetOceanFloorCollisionFactors(pointIndex).StaticFrictionFactor;
                 vec2f const tangentialResponse =
                     tangentialVelocity
-                    * inverseFriction;
+                    * frictionFactor;
 
-                // Calculate silting coefficient:
-                //  0.0: freefall - with zero accumulation of velocity though
-                //  1.0: bounce
+                // Calculate floor hardness:
+                //  0.0: full silting - i.e. burrowing into floor; also zero accumulation of velocity
+                //  1.0: full restore of before-impact position; also full impact response velocity
+                // As follows:
+                //  Changes from current param (e.g. 0.5) to 1.0 linearly with magnitude of velocity, up to a maximum velocity at which
+                //  moment hardness is max/1.0 (simulating mud where you borrow when still and stay still if move)
                 float const velocitySquared = pointVelocity.squareLength();
-                float const siltingCoeff = (oceanFloorHeight - position.y < 40.f) // Just make sure won't ever get buried too deep
-                    ? siltingFactor1 + siltingFactor2 * LinearStep(0.0f, 10.0f, velocitySquared)
+                float constexpr MaxVelocityForSilting = 2.0f; // Empirical - was 10.0 < 1.19
+                float const floorHardness = (oceanFloorHeight - position.y < 40.f) // Just make sure won't ever get buried too deep
+                    ? siltingFactor1 + siltingFactor2 * LinearStep(0.0f, MaxVelocityForSilting, velocitySquared) // The faster, the less silting
                     : 1.0f;
 
-                assert(siltingCoeff <= 1.0f);
+                assert(floorHardness <= 1.0f);
 
                 //
                 // Impart final position and velocity
@@ -1825,18 +1889,18 @@ void Ship::HandleCollisionsWithSeaFloor(
 
                 // Move point back along its velocity direction (i.e. towards where it was in the previous step,
                 // which is guaranteed to be more towards the outside), but not too much - or else springs
-                // might start oscillating between the point  burrowing down and then bouncing up
-                vec2f deltaPosition = pointVelocity * dt * siltingCoeff;
+                // might start oscillating between the point burrowing down and then bouncing up
+                vec2f deltaPosition = pointVelocity * dt * floorHardness;
                 float const deltaPositionLength = deltaPosition.length();
                 deltaPosition = deltaPosition.normalise_approx(deltaPositionLength) * std::min(deltaPositionLength, 0.01f); // Magic number, empirical
                 mPoints.SetPosition(
                     pointIndex,
-                    mPoints.GetPosition(pointIndex) - deltaPosition);
+                    position - deltaPosition);
 
                 // Set velocity to resultant collision velocity
                 mPoints.SetVelocity(
                     pointIndex,
-                    (normalResponse + tangentialResponse) * siltingCoeff);
+                    (normalResponse + tangentialResponse) * floorHardness);
             }
         }
     }
@@ -1852,7 +1916,7 @@ void Ship::TrimForWorldBounds(GameParameters const & gameParameters)
 
     // Elasticity of the bounce against world boundaries
     //  - We use the ocean floor's elasticity for convenience
-    float const elasticity = gameParameters.OceanFloorElasticity;
+    float const elasticity = gameParameters.OceanFloorElasticityCoefficient * gameParameters.ElasticityAdjustment;
 
     // We clamp velocity to damp system instabilities at extreme events
     static constexpr float MaxBounceVelocity = 150.0f; // Magic number
@@ -2121,9 +2185,10 @@ void Ship::UpdatePressureAndWaterInflow(
                 if (doGenerateAirBubbles
                     && !mPoints.IsRope(pointIndex))
                 {
-                    GenerateAirBubble(
+                    InternalSpawnAirBubble(
                         mPoints.GetPosition(pointIndex),
                         pointDepth,
+                        GameParameters::ShipAirBubbleFinalScale,
                         mPoints.GetTemperature(pointIndex),
                         currentSimulationTime,
                         mPoints.GetPlaneId(pointIndex),
@@ -2583,7 +2648,7 @@ void Ship::RecalculateLightDiffusionParallelism(size_t simulationParallelism)
     mLightDiffusionTasks.clear();
 
     //
-    // Given the available simulation parallelism as a constraint (max), calculate 
+    // Given the available simulation parallelism as a constraint (max), calculate
     // the best parallelism for the light diffusion algorithm
     //
 
@@ -2602,7 +2667,6 @@ void Ship::RecalculateLightDiffusionParallelism(size_t simulationParallelism)
     // We want each thread to work on a multiple of our vectorization word size
     //
 
-    assert((numberOfPoints % (static_cast<ElementCount>(lightDiffusionParallelism) * vectorization_float_count<ElementCount>)) == 0);
     assert(numberOfPoints >= static_cast<ElementCount>(lightDiffusionParallelism) * vectorization_float_count<ElementCount>);
     ElementCount const numberOfVecPointsPerThread = numberOfPoints / (static_cast<ElementCount>(lightDiffusionParallelism) * vectorization_float_count<ElementCount>);
 
@@ -3200,9 +3264,81 @@ void Ship::AttemptPointRestore(ElementIndex pointElementIndex)
     }
 }
 
-void Ship::GenerateAirBubble(
+void Ship::OnBlast(
+    vec2f const & centerPosition,
+    float blastRadius,
+    float blastForce, // N
+    GameParameters const & gameParameters)
+{
+    //
+    // Blast NPCs
+    //
+
+    mParentWorld.GetNpcs().ApplyBlast(
+        mId,
+        centerPosition,
+        blastRadius,
+        blastForce,
+        gameParameters);
+
+    //
+    // Blast ocean surface displacement
+    //
+
+    if (gameParameters.DoDisplaceWater)
+    {
+        // Explosion depth (positive when underwater)
+        float const explosionDepth = mParentWorld.GetOceanSurface().GetDepth(centerPosition);
+        float const absExplosionDepth = std::abs(explosionDepth);
+
+        // No effect when abs depth greater than this
+        float constexpr MaxDepth = 20.0f;
+
+        // Calculate (lateral) radius: depends on depth (abs)
+        //  radius(depth) = ax + b
+        //  radius(0) = maxRadius
+        //  radius(maxDepth) = MinRadius;
+        float constexpr MinRadius = 1.0f;
+        float const maxRadius = 20.0f * blastRadius; // Spectacular, spectacular
+        float const radius = maxRadius + (absExplosionDepth / MaxDepth * (MinRadius - maxRadius));
+
+        // Calculate displacement: depends on depth
+        //  displacement(depth) =  ax^2 + bx + c
+        //  f(MaxDepth) = 0
+        //  f(0) = MaxDisplacement
+        //  f'(MaxDepth) = 0
+        float constexpr MaxDisplacement = 6.0f; // Max displacement
+        float constexpr a = -MaxDisplacement / (MaxDepth * MaxDepth);
+        float constexpr b = 2.0f * MaxDisplacement / MaxDepth;
+        float constexpr c = -MaxDisplacement;
+        float const displacement =
+            (a * absExplosionDepth * absExplosionDepth + b * absExplosionDepth + c)
+            * (absExplosionDepth > MaxDepth ? 0.0f : 1.0f) // Turn off at far-away depths
+            * (explosionDepth <= 0.0f ? 1.0f : -1.0f); // Follow depth sign
+
+        // Displace
+        for (float r = 0.0f; r <= radius; r += 0.5f)
+        {
+            float const d = displacement * (1.0f - r / radius);
+            mParentWorld.DisplaceOceanSurfaceAt(centerPosition.x - r, d);
+            mParentWorld.DisplaceOceanSurfaceAt(centerPosition.x + r, d);
+        }
+    }
+
+    //
+    // Scare fishes
+    //
+
+    mParentWorld.DisturbOceanAt(
+        centerPosition,
+        blastRadius * 125.0f,
+        std::chrono::milliseconds(0));
+}
+
+void Ship::InternalSpawnAirBubble(
     vec2f const & position,
     float depth,
+    float finalScale, // Relative to texture's world dimensions
     float temperature,
     float currentSimulationTime,
     PlaneId planeId,
@@ -3211,16 +3347,16 @@ void Ship::GenerateAirBubble(
     std::uint64_t constexpr PhasePeriod = 10;
     float const phase = static_cast<float>((mAirBubblesCreatedCount++) % PhasePeriod) / static_cast<float>(PhasePeriod);
 
-    float constexpr StartVortexAmplitude = 0.1f;
-    float constexpr EndVortexAmplitude = 4.0f;
+    float const endVortexAmplitude = 4.0f * finalScale / GameParameters::ShipAirBubbleFinalScale; // We want 4 for ship
+    float const startVortexAmplitude = endVortexAmplitude / 40.0f;
     float const vortexAmplitude =
-        (StartVortexAmplitude + (EndVortexAmplitude - StartVortexAmplitude) * phase)
+        (startVortexAmplitude + (endVortexAmplitude - startVortexAmplitude) * phase)
         * (GameRandomEngine::GetInstance().Choose(2) == 1 ? 1.0f : -1.0f);
 
     float const vortexPeriod = GameRandomEngine::GetInstance().GenerateUniformReal(
         1.5f,  // seconds
         4.5f); // seconds
-    
+
     float constexpr StartBuoyancyVolumeFillAdjustment = 1.25f;
     float constexpr EndBuoyancyVolumeFillAdjustment = 0.75f;
     float const buoyancyVolumeFillAdjustment =
@@ -3229,6 +3365,7 @@ void Ship::GenerateAirBubble(
     mPoints.CreateEphemeralParticleAirBubble(
         position,
         depth,
+        finalScale,
         temperature,
         buoyancyVolumeFillAdjustment,
         vortexAmplitude,
@@ -3237,7 +3374,7 @@ void Ship::GenerateAirBubble(
         planeId);
 }
 
-void Ship::GenerateDebris(
+void Ship::InternalSpawnDebris(
     ElementIndex sourcePointElementIndex,
     StructuralMaterial const & debrisStructuralMaterial,
     float currentSimulationTime,
@@ -3278,7 +3415,7 @@ void Ship::GenerateDebris(
     }
 }
 
-void Ship::GenerateSparklesForCut(
+void Ship::InternalSpawnSparklesForCut(
     ElementIndex springElementIndex,
     vec2f const & cutDirectionStartPos,
     vec2f const & cutDirectionEndPos,
@@ -3316,7 +3453,7 @@ void Ship::GenerateSparklesForCut(
     }
 }
 
-void Ship::GenerateSparklesForLightning(
+void Ship::InternalSpawnSparklesForLightning(
     ElementIndex pointElementIndex,
     float currentSimulationTime,
     GameParameters const & /*gameParameters*/)
@@ -3421,7 +3558,7 @@ void Ship::HandlePointDetach(
             assert(mElectricalElements.GetConductingConnectedElectricalElements(electricalElementIndex).empty());
 
             mElectricalElements.Destroy(
-                electricalElementIndex, 
+                electricalElementIndex,
                 fireDestroyEvent ? ElectricalElements::DestroyReason::Other : ElectricalElements::DestroyReason::SilentRemoval,
                 currentSimulationTime,
                 gameParameters);
@@ -3438,7 +3575,7 @@ void Ship::HandlePointDetach(
         if (generateDebris)
         {
             // Emit debris
-            GenerateDebris(
+            InternalSpawnDebris(
                 pointElementIndex,
                 mPoints.GetStructuralMaterial(pointElementIndex),
                 currentSimulationTime,
@@ -3552,14 +3689,14 @@ void Ship::HandleSpringDestroy(
 
 
     //
-    // If endpoints are electrical elements connected to each other, then 
-    // disconnect them from each other - i.e. remove them from each other's 
+    // If endpoints are electrical elements connected to each other, then
+    // disconnect them from each other - i.e. remove them from each other's
     // set of connected electrical elements
     //
-    
+
     if (auto const electricalElementAIndex = mPoints.GetElectricalElement(pointAIndex);
         NoneElementIndex != electricalElementAIndex)
-    {        
+    {
         if (auto electricalElementBIndex = mPoints.GetElectricalElement(pointBIndex);
             NoneElementIndex != electricalElementBIndex)
         {
@@ -3700,6 +3837,11 @@ void Ship::HandleTriangleDestroy(ElementIndex triangleElementIndex)
 
     /////////////////////////////////////////////////////////
 
+    // Notify NPCs
+    mParentWorld.GetNpcs().OnTriangleDestroyed(
+        mId,
+        triangleElementIndex);
+
     // Remember our structure is now dirty
     mIsStructureDirty = true;
 
@@ -3809,7 +3951,7 @@ void Ship::HandleElectricalElementDestroy(
 
         case ElectricalElementDestroySpecializationType::LampExplosion:
         {
-            GenerateDebris(
+            InternalSpawnDebris(
                 pointElementIndex,
                 mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Glass),
                 currentSimulationTime,
@@ -3894,16 +4036,39 @@ void Ship::DoAntiMatterBombPreimplosion(
     float radius,
     GameParameters const & gameParameters)
 {
-    float const strength =
-        130000.0f // Magic number
-        * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
+    float constexpr RadiusThickness = 10.0f; // Thickness of radius, magic number
 
     // Apply the force field
-    ApplyRadialSpaceWarpForceField(
+    {
+        float const strength =
+            130000.0f // Magic number
+            * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
+
+        for (auto pointIndex : mPoints)
+        {
+            vec2f const pointRadius = mPoints.GetPosition(pointIndex) - centerPosition;
+            float const pointDistanceFromRadius = pointRadius.length() - radius;
+            float const absolutePointDistanceFromRadius = std::abs(pointDistanceFromRadius);
+            if (absolutePointDistanceFromRadius <= RadiusThickness)
+            {
+                float const forceDirection = pointDistanceFromRadius >= 0.0f ? 1.0f : -1.0f;
+
+                float const forceStrength = strength * (1.0f - absolutePointDistanceFromRadius / RadiusThickness);
+
+                mPoints.AddStaticForce(
+                    pointIndex,
+                    pointRadius.normalise() * forceStrength * forceDirection);
+            }
+        }
+    }
+
+    // Also apply to NPCs
+    mParentWorld.GetNpcs().ApplyAntiMatterBombPreimplosion(
+        mId,
         centerPosition,
         radius,
-        10.0f, // Thickness of radius, magic number
-        strength);
+        RadiusThickness,
+        gameParameters);
 
     // Scare fishes
     mParentWorld.DisturbOceanAt(
@@ -3917,16 +4082,48 @@ void Ship::DoAntiMatterBombImplosion(
     float sequenceProgress,
     GameParameters const & gameParameters)
 {
-    float const strength =
-        (sequenceProgress * sequenceProgress)
-        * gameParameters.AntiMatterBombImplosionStrength
-        * 10000.0f
-        * (gameParameters.IsUltraViolentMode ? 50.0f : 1.0f);
-
     // Apply the force field
-    ApplyImplosionForceField(
+    {
+        float const strength =
+            (sequenceProgress * sequenceProgress)
+            * gameParameters.AntiMatterBombImplosionStrength
+            * 10000.0f // Magic number
+            * (gameParameters.IsUltraViolentMode ? 50.0f : 1.0f);
+
+        for (auto pointIndex : mPoints)
+        {
+            vec2f displacement = centerPosition - mPoints.GetPosition(pointIndex);
+            float const displacementLength = displacement.length();
+            vec2f normalizedDisplacement = displacement.normalise(displacementLength);
+
+            // Make final acceleration somewhat independent from mass
+            float const massNormalization = mPoints.GetMass(pointIndex) / 50.0f;
+
+            // Angular (constant)
+            mPoints.AddStaticForce(
+                pointIndex,
+                vec2f(-normalizedDisplacement.y, normalizedDisplacement.x)
+                * strength
+                * massNormalization
+                / 10.0f); // Magic number
+
+            // Radial (stronger when closer)
+            mPoints.AddStaticForce(
+                pointIndex,
+                normalizedDisplacement
+                * strength
+                / (0.2f + 0.5f * sqrt(displacementLength))
+                * massNormalization
+                * 10.0f); // Magic number
+        }
+    }
+
+    // Also apply to NPCs
+    mParentWorld.GetNpcs().ApplyAntiMatterBombImplosion(
+        mId,
         centerPosition,
-        strength);
+        sequenceProgress,
+        gameParameters);
 }
 
 void Ship::DoAntiMatterBombExplosion(
@@ -3941,12 +4138,31 @@ void Ship::DoAntiMatterBombExplosion(
     if (0.0f == sequenceProgress)
     {
         // Apply the force field
-        float const strength =
-            30000.0f
-            * (gameParameters.IsUltraViolentMode ? 50.0f : 1.0f);
-        ApplyRadialExplosionForceField(
+        {
+            //
+            // F = ForceStrength/sqrt(distance), along radius
+            //
+
+            float const strength =
+                30000.0f // Magic number
+                * (gameParameters.IsUltraViolentMode ? 50.0f : 1.0f);
+
+            for (auto pointIndex : mPoints)
+            {
+                vec2f displacement = mPoints.GetPosition(pointIndex) - centerPosition;
+                float forceMagnitude = strength / sqrtf(0.1f + displacement.length());
+
+                mPoints.AddStaticForce(
+                    pointIndex,
+                    displacement.normalise() * forceMagnitude);
+            }
+        }
+
+        // Also apply to NPCs
+        mParentWorld.GetNpcs().ApplyAntiMatterBombExplosion(
+            mId,
             centerPosition,
-            strength);
+            gameParameters);
 
         // Scare fishes
         mParentWorld.DisturbOceanAt(
@@ -3997,6 +4213,12 @@ void Ship::HandleElectricSpark(
     float currentSimulationTime,
     GameParameters const & gameParameters)
 {
+    //
+    // Electrification
+    //
+
+    mPoints.SetIsElectrified(pointElementIndex, (strength > 0.0f));
+
     //
     // Heat
     //

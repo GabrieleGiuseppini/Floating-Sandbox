@@ -2079,7 +2079,7 @@ void SoundController::OnLightFlicker(
 }
 
 void SoundController::OnEngineMonitorCreated(
-    ElectricalElementId electricalElementId,
+    GlobalElectricalElementId electricalElementId,
     ElectricalElementInstanceIndex /*instanceIndex*/,
     float /*thrustMagnitude*/,
     float /*rpm*/,
@@ -2124,7 +2124,7 @@ void SoundController::OnEngineMonitorCreated(
 }
 
 void SoundController::OnWaterPumpCreated(
-    ElectricalElementId electricalElementId,
+    GlobalElectricalElementId electricalElementId,
     ElectricalElementInstanceIndex /*instanceIndex*/,
     float /*normalizedForce*/,
     ElectricalMaterial const & /*electricalMaterial*/,
@@ -2135,7 +2135,7 @@ void SoundController::OnWaterPumpCreated(
 }
 
 void SoundController::OnSwitchToggled(
-    ElectricalElementId /*electricalElementId*/,
+    GlobalElectricalElementId /*electricalElementId*/,
     ElectricalState newState)
 {
     PlayOneShotMultipleChoiceSound(
@@ -2146,7 +2146,7 @@ void SoundController::OnSwitchToggled(
 }
 
 void SoundController::OnEngineControllerUpdated(
-    ElectricalElementId /*electricalElementId*/,
+    GlobalElectricalElementId /*electricalElementId*/,
     ElectricalMaterial const & electricalMaterial,
     float oldControllerValue,
     float newControllerValue)
@@ -2193,7 +2193,7 @@ void SoundController::OnEngineControllerUpdated(
 }
 
 void SoundController::OnEngineMonitorUpdated(
-    ElectricalElementId electricalElementId,
+    GlobalElectricalElementId electricalElementId,
     float /*thrustMagnitude*/,
     float rpm)
 {
@@ -2266,7 +2266,7 @@ void SoundController::OnEngineMonitorUpdated(
 }
 
 void SoundController::OnShipSoundUpdated(
-    ElectricalElementId electricalElementId,
+    GlobalElectricalElementId electricalElementId,
     ElectricalMaterial const & electricalMaterial,
     bool isPlaying,
     bool isUnderwater)
@@ -2374,7 +2374,7 @@ void SoundController::OnShipSoundUpdated(
 }
 
 void SoundController::OnWaterPumpUpdated(
-    ElectricalElementId electricalElementId,
+    GlobalElectricalElementId electricalElementId,
     float normalizedForce)
 {
     if (normalizedForce != 0.0f)
@@ -2396,7 +2396,7 @@ void SoundController::OnWaterPumpUpdated(
 }
 
 void SoundController::OnGadgetPlaced(
-    GadgetId /*gadgetId*/,
+    GlobalGadgetId /*gadgetId*/,
     GadgetType gadgetType,
     bool isUnderwater)
 {
@@ -2432,7 +2432,7 @@ void SoundController::OnGadgetPlaced(
 }
 
 void SoundController::OnGadgetRemoved(
-    GadgetId /*gadgetId*/,
+    GlobalGadgetId /*gadgetId*/,
     GadgetType gadgetType,
     std::optional<bool> isUnderwater)
 {
@@ -2533,7 +2533,7 @@ void SoundController::OnRCBombPing(
 }
 
 void SoundController::OnTimerBombFuse(
-    GadgetId gadgetId,
+    GlobalGadgetId gadgetId,
     std::optional<bool> isFast)
 {
     if (!!isFast)
@@ -2584,7 +2584,7 @@ void SoundController::OnTimerBombDefused(
 }
 
 void SoundController::OnAntiMatterBombContained(
-    GadgetId gadgetId,
+    GlobalGadgetId gadgetId,
     bool isContained)
 {
     if (isContained)

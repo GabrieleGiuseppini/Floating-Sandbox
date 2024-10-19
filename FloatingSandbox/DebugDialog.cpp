@@ -129,7 +129,7 @@ void DebugDialog::PopulateTrianglesPanel(wxPanel * panel)
                 [this](wxCommandEvent &)
                 {
                     bool bRes = mGameController.DestroyTriangle(
-                        ElementId(
+                        GlobalElementId(
                             0, // TODO: ship ID
                             static_cast<ElementIndex>(mDestroyTriangleIndexSpinCtrl->GetValue())));
 
@@ -187,7 +187,7 @@ void DebugDialog::PopulateTrianglesPanel(wxPanel * panel)
                 [this](wxCommandEvent &)
                 {
                     bool bRes = mGameController.RestoreTriangle(
-                        ElementId(
+                        GlobalElementId(
                             0, // TODO: ship ID
                             static_cast<ElementIndex>(mRestoreTriangleIndexSpinCtrl->GetValue())));
 

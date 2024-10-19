@@ -8,7 +8,6 @@
 #include "TextValidators.h"
 
 #include <GameCore/ISliderCore.h>
-#include <GameCore/Log.h>
 #include <GameCore/Utils.h>
 
 #include <wx/bitmap.h>

@@ -23,7 +23,7 @@ class PhysicsProbeGadget final : public Gadget
 public:
 
     PhysicsProbeGadget(
-        GadgetId id,
+        GlobalGadgetId id,
         ElementIndex pointIndex,
         World & parentWorld,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,

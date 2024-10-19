@@ -161,6 +161,14 @@ static constexpr T vectorization_float_count = 4; // A.k.a. the vectorization wo
 template <typename T>
 static constexpr T vectorization_byte_count = vectorization_float_count<T> * sizeof(float);
 
+#ifdef _MSC_VER
+# define FS_ALIGN16_BEG __declspec(align(vectorization_byte_count<int>))
+# define FS_ALIGN16_END
+#else
+# define FS_ALIGN16_BEG
+# define FS_ALIGN16_END __attribute__((aligned(vectorization_byte_count<int>)))
+#endif
+
 /*
  * Checks whether the specified pointer is aligned to the vectorization
  * float count.

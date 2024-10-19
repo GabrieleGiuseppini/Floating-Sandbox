@@ -21,7 +21,8 @@ enum class ProgramType
     AABBs = 0,
     AMBombPreImplosion,
     BlastToolHalo,
-    Clouds,
+    CloudsBasic,
+    CloudsDetailed,
     CrossOfLight,
     FireExtinguisherSpray,
     FishesBasic,
@@ -29,10 +30,13 @@ enum class ProgramType
     GenericMipMappedTexturesNdc,
     HeatBlasterFlameCool,
     HeatBlasterFlameHeat,
-    LandFlat,
-    LandTexture,
+    LandFlatBasic,
+    LandFlatDetailed,
+    LandTextureBasic,
+    LandTextureDetailed,
     LaserRay,
     Lightning,
+    LineGuide,
     OceanDepthBasic,
     OceanDepthDetailedBackground,
     OceanDepthDetailedForeground,
@@ -45,6 +49,7 @@ enum class ProgramType
     PhysicsProbePanel,
     PressureInjectionHalo,
     Rain,
+    RectSelection,
     ShipCenters,
     ShipCircleHighlights,
     ShipElectricalElementHighlights,
@@ -55,6 +60,9 @@ enum class ProgramType
     ShipFrontierEdges,
     ShipGenericMipMappedTextures,
     ShipJetEngineFlames,
+    ShipNpcsQuadFlat,
+    ShipNpcsQuadWithRoles,
+    ShipNpcsTexture,
     ShipPointToPointArrows,
     ShipPointsColor,
     ShipPointsColorStress,
@@ -127,16 +135,20 @@ enum class ProgramParameterType : uint8_t
     FlatSkyColor,
     HeatShift,
     LampLightColor,
+    LampToolAttributes,
     LandFlatColor,
-    MatteColor,    
-    OceanTransparency,
-    OceanDarkeningRate,
+    MatteColor,
+    NoiseStrength,
+    NpcQuadFlatColor,
     OceanDepthColorStart,
     OceanDepthColorEnd,
+    OceanDepthDarkeningRate,
     OceanFlatColor,
+    OceanTransparency,
     OrthoMatrix,
     RainAngle,
     RainDensity,
+    ShipDepthDarkeningSensitivity,
     StarTransparency,
     StressColorMap,
     SunRaysInclination,
@@ -160,9 +172,10 @@ enum class ProgramParameterType : uint8_t
     LandTexture,                            // 6
     NoiseTexture,                           // 7
     OceanTexture,                           // 8
+    NpcAtlasTexture,                        // 9
 
     _FirstTexture = SharedTexture,
-    _LastTexture = OceanTexture
+    _LastTexture = NpcAtlasTexture
 };
 
 ProgramParameterType StrToProgramParameterType(std::string const & str);
@@ -225,6 +238,11 @@ enum class VertexAttributeType : GLuint
     ShipPointAuxiliaryData = 5,
     ShipPointFrontierColor = 6,
 
+    NpcAttributeGroup1 = 0,
+    NpcAttributeGroup2 = 1,
+    NpcAttributeGroup3 = 2,
+    NpcAttributeGroup4 = 3,
+
     ElectricSpark1 = 0,
 
     Explosion1 = 0,
@@ -284,6 +302,12 @@ enum class VertexAttributeType : GLuint
 
     LaserRay1 = 0,
     LaserRay2 = 1,
+
+    RectSelection1 = 0,
+    RectSelection2 = 1,
+    RectSelection3 = 2,
+
+    LineGuide1 = 0,
 
     //
     // Global

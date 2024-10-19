@@ -189,6 +189,13 @@ void PreferencesDialog::OnShowTsunamiNotificationsCheckBoxClicked(wxCommandEvent
     mOnChangeCallback();
 }
 
+void PreferencesDialog::OnShowNpcNotificationsCheckBoxClicked(wxCommandEvent & /*event*/)
+{
+    mUIPreferencesManager.SetDoShowNpcNotifications(mShowNpcNotificationsCheckBox->GetValue());
+
+    mOnChangeCallback();
+}
+
 void PreferencesDialog::OnZoomIncrementSpinCtrl(wxSpinEvent & event)
 {
     mUIPreferencesManager.SetZoomIncrement(ZoomIncrementSpinToZoomIncrement(event.GetPosition()));
@@ -275,9 +282,10 @@ void PreferencesDialog::OnShowShipDescriptionAtShipLoadCheckBoxClicked(wxCommand
     mOnChangeCallback();
 }
 
-void PreferencesDialog::OnContinuousAutoFocusCheckBoxClicked(wxCommandEvent & /*event*/)
+void PreferencesDialog::OnContinuousAutoFocusOnShipCheckBoxClicked(wxCommandEvent & /*event*/)
 {
-    mUIPreferencesManager.SetDoContinuousAutoFocus(mContinuousAutoFocusCheckBox->GetValue());
+    bool const value = mContinuousAutoFocusOnShipCheckBox->GetValue();
+    mUIPreferencesManager.SetAutoFocusTarget(value ? std::optional<AutoFocusTargetKindType>(AutoFocusTargetKindType::Ship) : std::nullopt);
 
     mOnChangeCallback();
 }
@@ -493,7 +501,7 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
                 mCameraSpeedAdjustmentSpinCtrl = new wxSpinCtrl(boxSizer->GetStaticBox(), wxID_ANY, _("Camera Speed"), wxDefaultPosition, wxSize(75, -1),
                     wxSP_ARROW_KEYS | wxALIGN_CENTRE_HORIZONTAL);
                 mCameraSpeedAdjustmentSpinCtrl->SetRange(
-                    CameraSpeedAdjustmentToCameraSpeedAdjustmentSpin(mUIPreferencesManager.GetMinCameraSpeedAdjustment()), 
+                    CameraSpeedAdjustmentToCameraSpeedAdjustmentSpin(mUIPreferencesManager.GetMinCameraSpeedAdjustment()),
                     CameraSpeedAdjustmentToCameraSpeedAdjustmentSpin(mUIPreferencesManager.GetMaxCameraSpeedAdjustment()));
                 mCameraSpeedAdjustmentSpinCtrl->SetToolTip(_("Adjusts the speed of the camera movements."));
                 mCameraSpeedAdjustmentSpinCtrl->Bind(wxEVT_SPINCTRL, &PreferencesDialog::OnCameraSpeedAdjustmentSpinCtrl, this);
@@ -587,12 +595,26 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
             //
 
             {
+                mShowNpcNotificationsCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY,
+                    _("Show NPC Notifications"), wxDefaultPosition, wxDefaultSize, 0);
+                mShowNpcNotificationsCheckBox->SetToolTip(_("Enables or disables notifications about NPCs."));
+                mShowNpcNotificationsCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowNpcNotificationsCheckBoxClicked, this);
+
+                sizer->Add(
+                    mShowNpcNotificationsCheckBox,
+                    wxGBPosition(5, 0),
+                    wxGBSpan(1, 1),
+                    wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxLEFT | wxBOTTOM,
+                    UserInterfaceBorder);
+            }
+
+            {
                 wxStaticText * displayUnitsSystemStaticText = new wxStaticText(boxSizer->GetStaticBox(), wxID_ANY, _("Units system:"));
 
                 sizer->Add(
                     displayUnitsSystemStaticText,
-                    wxGBPosition(5, 0),
-                    wxGBSpan(1, 4),
+                    wxGBPosition(5, 2),
+                    wxGBSpan(1, 2),
                     wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT,
                     UserInterfaceBorder);
             }
@@ -660,8 +682,8 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
 
                 sizer->Add(
                     mDisplayUnitsSettingsComboBox,
-                    wxGBPosition(6, 0),
-                    wxGBSpan(1, 4),
+                    wxGBPosition(6, 2),
+                    wxGBSpan(1, 2),
                     wxALIGN_LEFT | wxLEFT | wxBOTTOM | wxRIGHT,
                     UserInterfaceBorder);
             }
@@ -931,15 +953,15 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            // Continous Auto-Focus
+            // Continous Auto-Focus on Ship
             {
-                mContinuousAutoFocusCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY,
+                mContinuousAutoFocusOnShipCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY,
                     _("Continuous Auto-Focus"), wxDefaultPosition, wxDefaultSize, 0);
-                mContinuousAutoFocusCheckBox->SetToolTip(_("Enables or disables automatic focus on the ship."));
-                mContinuousAutoFocusCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnContinuousAutoFocusCheckBoxClicked, this);
+                mContinuousAutoFocusOnShipCheckBox->SetToolTip(_("Enables or disables automatic focus on the ship."));
+                mContinuousAutoFocusOnShipCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnContinuousAutoFocusOnShipCheckBoxClicked, this);
 
                 sizer->Add(
-                    mContinuousAutoFocusCheckBox,
+                    mContinuousAutoFocusOnShipCheckBox,
                     wxGBPosition(2, 0),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -1187,6 +1209,7 @@ void PreferencesDialog::ReadSettings()
     mCheckForUpdatesAtStartupCheckBox->SetValue(mUIPreferencesManager.GetCheckUpdatesAtStartup());
     mSaveSettingsOnExitCheckBox->SetValue(mUIPreferencesManager.GetSaveSettingsOnExit());
     mShowTsunamiNotificationsCheckBox->SetValue(mUIPreferencesManager.GetDoShowTsunamiNotifications());
+    mShowNpcNotificationsCheckBox->SetValue(mUIPreferencesManager.GetDoShowNpcNotifications());
     mZoomIncrementSpinCtrl->SetValue(ZoomIncrementToZoomIncrementSpin(mUIPreferencesManager.GetZoomIncrement()));
     mPanIncrementSpinCtrl->SetValue(PanIncrementToPanIncrementSpin(mUIPreferencesManager.GetPanIncrement()));
     mCameraSpeedAdjustmentSpinCtrl->SetValue(CameraSpeedAdjustmentToCameraSpeedAdjustmentSpin(mUIPreferencesManager.GetCameraSpeedAdjustment()));
@@ -1216,7 +1239,7 @@ void PreferencesDialog::ReadSettings()
 
     mReloadLastLoadedShipOnStartupCheckBox->SetValue(mUIPreferencesManager.GetReloadLastLoadedShipOnStartup());
     mShowShipDescriptionAtShipLoadCheckBox->SetValue(mUIPreferencesManager.GetShowShipDescriptionsAtShipLoad());
-    mContinuousAutoFocusCheckBox->SetValue(mUIPreferencesManager.GetDoContinuousAutoFocus());
+    mContinuousAutoFocusOnShipCheckBox->SetValue(mUIPreferencesManager.GetAutoFocusTarget() == AutoFocusTargetKindType::Ship);
     mAutoFocusAtShipLoadCheckBox->SetValue(mUIPreferencesManager.GetDoAutoFocusAtShipLoad());
     mAutoShowSwitchboardCheckBox->SetValue(mUIPreferencesManager.GetAutoShowSwitchboard());
     mShowElectricalNotificationsCheckBox->SetValue(mUIPreferencesManager.GetDoShowElectricalNotifications());

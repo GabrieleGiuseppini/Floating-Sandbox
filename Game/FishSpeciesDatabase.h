@@ -10,6 +10,8 @@
 #include <GameCore/GameTypes.h>
 #include <GameCore/Vectors.h>
 
+#include <picojson.h>
+
 #include <algorithm>
 #include <cassert>
 #include <string>

@@ -477,7 +477,7 @@ TerrainAdjustTool::TerrainAdjustTool(
         toolCursorManager,
         gameController,
         soundController)
-    , mCurrentTrajectoryPreviousWorldPosition()
+    , mEngagementData()
     , mCurrentCursor(nullptr)
     , mUpCursorImage(WxHelpers::LoadCursorImage("terrain_adjust_cursor_up", 15, 15, resourceLocator))
     , mDownCursorImage(WxHelpers::LoadCursorImage("terrain_adjust_cursor_down", 15, 15, resourceLocator))
@@ -610,7 +610,7 @@ BlastTool::BlastTool(
     SoundController & soundController,
     ResourceLocator const & resourceLocator)
     : Tool(
-        ToolType::BlastTool,
+        ToolType::Blast,
         toolCursorManager,
         gameController,
         soundController)
@@ -631,7 +631,7 @@ ElectricSparkTool::ElectricSparkTool(
     SoundController & soundController,
     ResourceLocator const & resourceLocator)
     : Tool(
-        ToolType::ElectricSparkTool,
+        ToolType::ElectricSpark,
         toolCursorManager,
         gameController,
         soundController)
@@ -651,7 +651,7 @@ WindMakerTool::WindMakerTool(
     SoundController & soundController,
     ResourceLocator const & resourceLocator)
     : Tool(
-        ToolType::WindMakerTool,
+        ToolType::WindMaker,
         toolCursorManager,
         gameController,
         soundController)
@@ -676,12 +676,166 @@ LaserCannonTool::LaserCannonTool(
     SoundController & soundController,
     ResourceLocator const & resourceLocator)
     : Tool(
-        ToolType::LaserCannonTool,
+        ToolType::LaserCannon,
         toolCursorManager,
         gameController,
         soundController)
     , mEngagementData()
     , mUpCursorImage(WxHelpers::LoadCursorImage("crosshair_cursor_up", 15, 15, resourceLocator))
     , mDownCursorImage(WxHelpers::LoadCursorImage("crosshair_cursor_down", 15, 15, resourceLocator))
+{
+}
+
+////////////////////////////////////////////////////////////////////////
+// LampTool
+////////////////////////////////////////////////////////////////////////
+
+LampTool::LampTool(
+    IToolCursorManager & toolCursorManager,
+    IGameController & gameController,
+    SoundController & soundController,
+    ResourceLocator const & resourceLocator)
+    : Tool(
+        ToolType::Lamp,
+        toolCursorManager,
+        gameController,
+        soundController)
+    , mUpCursorImage(WxHelpers::LoadCursorImage("lamp_cursor_up", 4, 27, resourceLocator))
+    , mDownCursorImage(WxHelpers::LoadCursorImage("lamp_cursor_down", 4, 27, resourceLocator))
+{
+}
+
+////////////////////////////////////////////////////////////////////////
+// NPCs
+////////////////////////////////////////////////////////////////////////
+
+PlaceNpcToolBase::PlaceNpcToolBase(
+    ToolType toolType,
+    IToolCursorManager & toolCursorManager,
+    IGameController & gameController,
+    SoundController & soundController,
+    ResourceLocator const & resourceLocator)
+    : Tool(
+        toolType,
+        toolCursorManager,
+        gameController,
+        soundController)
+    , mCurrentEngagementState(std::nullopt)
+    , mClosedCursorImage(WxHelpers::LoadCursorImage("place_npc_cursor_down", 11, 29, resourceLocator))
+    , mOpenCursorImage(WxHelpers::LoadCursorImage("place_npc_cursor_up", 11, 29, resourceLocator))
+    , mErrorCursorImage(WxHelpers::LoadCursorImage("place_npc_cursor_error", 11, 29, resourceLocator))
+{}
+
+PlaceFurnitureNpcTool::PlaceFurnitureNpcTool(
+    IToolCursorManager & toolCursorManager,
+    IGameController & gameController,
+    SoundController & soundController,
+    ResourceLocator const & resourceLocator)
+    : PlaceNpcToolBase(
+        ToolType::PlaceFurnitureNpc,
+        toolCursorManager,
+        gameController,
+        soundController,
+        resourceLocator)
+    , mKind(0) // Will be set later
+{
+}
+
+PlaceHumanNpcTool::PlaceHumanNpcTool(
+    IToolCursorManager & toolCursorManager,
+    IGameController & gameController,
+    SoundController & soundController,
+    ResourceLocator const & resourceLocator)
+    : PlaceNpcToolBase(
+        ToolType::PlaceHumanNpc,
+        toolCursorManager,
+        gameController,
+        soundController,
+        resourceLocator)
+    , mKind(0) // Will be set later
+{
+}
+
+BaseSelectNpcTool::BaseSelectNpcTool(
+    ToolType toolType,
+    IToolCursorManager & toolCursorManager,
+    IGameController & gameController,
+    SoundController & soundController,
+    std::optional<NpcKindType> applicableKind,
+    wxImage && downCursorImage,
+    wxImage && upCursorImage)
+    : Tool(
+        toolType,
+        toolCursorManager,
+        gameController,
+        soundController)
+    , mApplicableKind(applicableKind)
+    , mDownCursorImage(std::move(downCursorImage))
+    , mUpCursorImage(std::move(upCursorImage))
+{
+}
+
+MoveNpcTool::MoveNpcTool(
+    IToolCursorManager & toolCursorManager,
+    IGameController & gameController,
+    SoundController & soundController,
+    ResourceLocator const & resourceLocator)
+    : BaseSelectNpcTool(
+        ToolType::MoveNpc,
+        toolCursorManager,
+        gameController,
+        soundController,
+        std::nullopt, // All kinds
+        WxHelpers::LoadCursorImage("move_npc_cursor_down", 11, 29, resourceLocator),
+        WxHelpers::LoadCursorImage("move_npc_cursor_up", 11, 29, resourceLocator))
+    , mBeingMovedNpc()
+{
+}
+
+RemoveNpcTool::RemoveNpcTool(
+    IToolCursorManager & toolCursorManager,
+    IGameController & gameController,
+    SoundController & soundController,
+    ResourceLocator const & resourceLocator)
+    : BaseSelectNpcTool(
+        ToolType::RemoveNpc,
+        toolCursorManager,
+        gameController,
+        soundController,
+        std::nullopt, // All kinds
+        WxHelpers::LoadCursorImage("remove_npc_cursor_down", 20, 29, resourceLocator),
+        WxHelpers::LoadCursorImage("remove_npc_cursor_up", 20, 29, resourceLocator))
+{
+}
+
+TurnaroundNpcTool::TurnaroundNpcTool(
+    IToolCursorManager & toolCursorManager,
+    IGameController & gameController,
+    SoundController & soundController,
+    ResourceLocator const & resourceLocator)
+    : BaseSelectNpcTool(
+        ToolType::TurnaroundNpc,
+        toolCursorManager,
+        gameController,
+        soundController,
+        std::nullopt, // All kinds
+        WxHelpers::LoadCursorImage("turnaround_cursor_down", 16, 16, resourceLocator),
+        WxHelpers::LoadCursorImage("turnaround_cursor_up", 16, 16, resourceLocator))
+{
+}
+
+FollowNpcTool::FollowNpcTool(
+    IToolCursorManager & toolCursorManager,
+    IGameController & gameController,
+    SoundController & soundController,
+    ResourceLocator const & resourceLocator)
+    : BaseSelectNpcTool(
+        ToolType::FollowNpc,
+        toolCursorManager,
+        gameController,
+        soundController,
+        std::nullopt, // All kinds
+        WxHelpers::LoadCursorImage("autofocus_on_npc_cursor", 16, 16, resourceLocator),
+        WxHelpers::LoadCursorImage("autofocus_on_npc_cursor", 16, 16, resourceLocator))
 {
 }

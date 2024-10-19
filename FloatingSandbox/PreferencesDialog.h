@@ -40,6 +40,7 @@ private:
     void OnCheckForUpdatesAtStartupCheckBoxClicked(wxCommandEvent & event);
     void OnSaveSettingsOnExitCheckBoxClicked(wxCommandEvent & event);
     void OnShowTsunamiNotificationsCheckBoxClicked(wxCommandEvent & event);
+    void OnShowNpcNotificationsCheckBoxClicked(wxCommandEvent & event);
     void OnZoomIncrementSpinCtrl(wxSpinEvent & event);
     void OnPanIncrementSpinCtrl(wxSpinEvent & event);
     void OnCameraSpeedAdjustmentSpinCtrl(wxSpinEvent & event);
@@ -49,7 +50,7 @@ private:
 
     void OnReloadLastLoadedShipOnStartupCheckBoxClicked(wxCommandEvent & event);
     void OnShowShipDescriptionAtShipLoadCheckBoxClicked(wxCommandEvent & event);
-    void OnContinuousAutoFocusCheckBoxClicked(wxCommandEvent & event);    
+    void OnContinuousAutoFocusOnShipCheckBoxClicked(wxCommandEvent & event);
     void OnAutoFocusAtShipLoadCheckBoxClicked(wxCommandEvent & event);
     void OnAutoShowSwitchboardCheckBoxClicked(wxCommandEvent & event);
     void OnShowElectricalNotificationsCheckBoxClicked(wxCommandEvent & event);
@@ -93,6 +94,7 @@ private:
     wxCheckBox * mCheckForUpdatesAtStartupCheckBox;
     wxCheckBox * mSaveSettingsOnExitCheckBox;
     wxCheckBox * mShowTsunamiNotificationsCheckBox;
+    wxCheckBox * mShowNpcNotificationsCheckBox;
     wxSpinCtrl * mZoomIncrementSpinCtrl;
     wxSpinCtrl * mPanIncrementSpinCtrl;
     wxSpinCtrl * mCameraSpeedAdjustmentSpinCtrl;
@@ -104,7 +106,7 @@ private:
     // Ships panel
     wxCheckBox * mReloadLastLoadedShipOnStartupCheckBox;
     wxCheckBox * mShowShipDescriptionAtShipLoadCheckBox;
-    wxCheckBox * mContinuousAutoFocusCheckBox;
+    wxCheckBox * mContinuousAutoFocusOnShipCheckBox;
     wxCheckBox * mAutoFocusAtShipLoadCheckBox;
     wxCheckBox * mAutoShowSwitchboardCheckBox;
     wxCheckBox * mShowElectricalNotificationsCheckBox;

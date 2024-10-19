@@ -277,7 +277,7 @@ void GameOpenGL::UploadTextureRegion(
 }
 
 void GameOpenGL::UploadMipmappedTexture(
-    RgbaImageData baseTexture,
+    RgbaImageData && baseTexture,
     GLint internalFormat)
 {
     //
@@ -290,7 +290,6 @@ void GameOpenGL::UploadMipmappedTexture(
     {
         throw GameException("Error uploading texture onto GPU: " + std::to_string(glError));
     }
-
 
     //
     // Create minified textures
@@ -364,7 +363,16 @@ void GameOpenGL::UploadMipmappedTexture(
     }
 }
 
-void GameOpenGL::UploadMipmappedPowerOfTwoTexture(
+void GameOpenGL::UploadMipmappedTexture(
+    RgbaImageData const & baseTexture,
+    GLint internalFormat)
+{
+    UploadMipmappedTexture(
+        baseTexture.Clone(), // Make a copy that will also serve as a temp buffer
+        internalFormat);
+}
+
+void GameOpenGL::UploadMipmappedAtlasTexture(
     RgbaImageData baseTexture,
     int maxDimension)
 {
@@ -388,7 +396,6 @@ void GameOpenGL::UploadMipmappedPowerOfTwoTexture(
         baseTexture.Data.get());
 
     CheckOpenGLError();
-
 
     //
     // Create minified textures

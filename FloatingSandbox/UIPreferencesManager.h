@@ -225,14 +225,14 @@ public:
         mGameController.SetDoAutoFocusOnShipLoad(value);
     }
 
-    bool GetDoContinuousAutoFocus() const
+    std::optional<AutoFocusTargetKindType> GetAutoFocusTarget() const
     {
-        return mGameController.GetDoContinuousAutoFocus();
+        return mGameController.GetAutoFocusTarget();
     }
 
-    void SetDoContinuousAutoFocus(bool value)
+    void SetAutoFocusTarget(std::optional<AutoFocusTargetKindType> value)
     {
-        mGameController.SetDoContinuousAutoFocus(value);
+        mGameController.SetAutoFocusTarget(value);
     }
 
     bool GetDoShowTsunamiNotifications() const
@@ -243,6 +243,16 @@ public:
     void SetDoShowTsunamiNotifications(bool value)
     {
         mGameController.SetDoShowTsunamiNotifications(value);
+    }
+
+    bool GetDoShowNpcNotifications() const
+    {
+        return mGameController.GetDoShowNpcNotifications();
+    }
+
+    void SetDoShowNpcNotifications(bool value)
+    {
+        mGameController.SetDoShowNpcNotifications(value);
     }
 
     UnitsSystem GetDisplayUnitsSystem() const
@@ -417,7 +427,7 @@ private:
     // The owners/storage of our properties
     IGameController & mGameController;
     MusicController & mMusicController;
-    LocalizationManager & mLocalizationManager;   
+    LocalizationManager & mLocalizationManager;
 
     //
     // The preferences for which we are the owners/storage

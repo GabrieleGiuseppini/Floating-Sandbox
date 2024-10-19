@@ -9,6 +9,41 @@
 
 static constexpr size_t Size = 10000000;
 
+static void FastMod_Mod(benchmark::State & state)
+{
+    auto values = MakeFloats(Size);
+    auto divisors = MakeFloats(Size);
+    std::vector<float> results(Size);
+    for (auto _ : state)
+    {
+        for (size_t i = 0; i < Size; ++i)
+        {
+            results[i] = std::fmod(values[i], divisors[i]);
+        }
+    }
+
+    benchmark::DoNotOptimize(results);
+}
+BENCHMARK(FastMod_Mod);
+
+static void FastMod_FastMod(benchmark::State & state)
+{
+    auto values = MakeFloats(Size);
+    auto divisors = MakeFloats(Size);
+    std::vector<float> results(Size);
+    for (auto _ : state)
+    {
+        for (size_t i = 0; i < Size; ++i)
+        {
+            results[i] = FastMod(values[i], divisors[i]);
+        }
+    }
+
+    benchmark::DoNotOptimize(results);
+}
+BENCHMARK(FastMod_FastMod);
+
+
 static void FastPow_Pow(benchmark::State& state)
 {
     auto bases = MakeFloats(Size);
@@ -18,7 +53,7 @@ static void FastPow_Pow(benchmark::State& state)
     {
         for (size_t i = 0; i < Size; ++i)
         {
-            results.push_back(pow(bases[i], exponents[i]));
+            results[i] = pow(bases[i], exponents[i]);
         }
     }
 
@@ -35,7 +70,7 @@ static void FastPow_FastPow(benchmark::State& state)
     {
         for (size_t i = 0; i < Size; ++i)
         {
-            results.push_back(FastPow(bases[i], exponents[i]));
+            results[i] = FastPow(bases[i], exponents[i]);
         }
     }
 
@@ -51,7 +86,7 @@ static void FastExp_Exp(benchmark::State& state)
     {
         for (size_t i = 0; i < Size; ++i)
         {
-            results.push_back(exp(exponents[i]));
+            results[i] = exp(exponents[i]);
         }
     }
 
@@ -67,7 +102,7 @@ static void FastExp_FastExp(benchmark::State& state)
     {
         for (size_t i = 0; i < Size; ++i)
         {
-            results.push_back(FastExp(exponents[i]));
+            results[i] = FastExp(exponents[i]);
         }
     }
 
@@ -110,7 +145,7 @@ static void Smoothstep1(benchmark::State& state)
     {
         for (size_t i = 0; i < Size - 2; ++i)
         {
-            results.push_back(SmoothStep1(vals[i], vals[i + 1], vals[i + 3]));
+            results[i] = SmoothStep1(vals[i], vals[i + 1], vals[i + 3]);
         }
     }
 
@@ -146,10 +181,54 @@ static void Smoothstep2(benchmark::State& state)
     {
         for (size_t i = 0; i < Size - 2; ++i)
         {
-            results.push_back(SmoothStep2(vals[i], vals[i + 1], vals[i + 3]));
+            results[i] = SmoothStep2(vals[i], vals[i + 1], vals[i + 3]);
         }
     }
 
     benchmark::DoNotOptimize(results);
 }
 BENCHMARK(Smoothstep2);
+
+static void SinCos4_Base(benchmark::State & state)
+{
+    auto x = MakeFloats(Size * 4);
+    std::vector<float> s(Size * 4);
+    std::vector<float> c(Size * 4);
+    for (auto _ : state)
+    {
+        for (size_t i = 0; i < Size; ++i)
+        {
+            s[i * 4 + 0] = std::sinf(x[i * 4 + 0]);
+            s[i * 4 + 1] = std::sinf(x[i * 4 + 1]);
+            s[i * 4 + 2] = std::sinf(x[i * 4 + 2]);
+            s[i * 4 + 3] = std::sinf(x[i * 4 + 3]);
+
+            c[i * 4 + 0] = std::cosf(x[i * 4 + 0]);
+            c[i * 4 + 1] = std::cosf(x[i * 4 + 1]);
+            c[i * 4 + 2] = std::cosf(x[i * 4 + 2]);
+            c[i * 4 + 3] = std::cosf(x[i * 4 + 3]);
+        }
+    }
+
+    benchmark::DoNotOptimize(s);
+    benchmark::DoNotOptimize(c);
+}
+BENCHMARK(SinCos4_Base);
+
+static void SinCos4(benchmark::State & state)
+{
+    auto x = MakeFloats(Size * 4);
+    std::vector<float> s(Size * 4);
+    std::vector<float> c(Size * 4);
+    for (auto _ : state)
+    {
+        for (size_t i = 0; i < Size; ++i)
+        {
+            SinCos4(&(x[i * 4]), &(s[i * 4]), &(c[i * 4]));
+        }
+    }
+
+    benchmark::DoNotOptimize(s);
+    benchmark::DoNotOptimize(c);
+}
+BENCHMARK(SinCos4);

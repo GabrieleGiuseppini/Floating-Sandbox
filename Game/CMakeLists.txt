@@ -31,6 +31,8 @@ set  (GAME_SOURCES
 	MaterialDatabase.h
 	NotificationLayer.cpp
 	NotificationLayer.h
+	NpcDatabase.cpp
+	NpcDatabase.h
 	OceanFloorTerrain.cpp
 	OceanFloorTerrain.h
 	PerfStats.h
@@ -38,8 +40,11 @@ set  (GAME_SOURCES
 	ResourceLocator.cpp
 	ResourceLocator.h
 	RopeBuffer.h
+	RollingText.cpp
+	RollingText.h
 	ShipAutoTexturizationSettings.cpp
 	ShipAutoTexturizationSettings.h
+	ShipDefinition.h
 	ShipDefinitionFormatDeSerializer.cpp
 	ShipDefinitionFormatDeSerializer.h
 	ShipDeSerializer.cpp
@@ -47,7 +52,8 @@ set  (GAME_SOURCES
 	ShipFactory.cpp
 	ShipFactory.h
 	ShipFactoryTypes.h
-	ShipDefinition.h
+	ShipFloorplanizer.cpp
+	ShipFloorplanizer.h
 	ShipLegacyFormatDeSerializer.cpp
 	ShipLegacyFormatDeSerializer.h
 	ShipLoadOptions.h
@@ -85,6 +91,12 @@ set  (PHYSICS_SOURCES
 	ImpactBombGadget.cpp
 	ImpactBombGadget.h
 	IShipPhysicsHandler.h
+	NpcSimulation/NpcParticles.cpp
+	NpcSimulation/NpcParticles.h
+	NpcSimulation/Npcs.cpp
+	NpcSimulation/Npcs.h
+	NpcSimulation/Npcs_HumanSimulation.cpp
+	NpcSimulation/Npcs_Simulation.cpp
 	OceanFloor.cpp
 	OceanFloor.h
 	OceanSurface.cpp
@@ -92,7 +104,6 @@ set  (PHYSICS_SOURCES
 	Physics.h
 	PhysicsProbeGadget.cpp
 	PhysicsProbeGadget.h
-	PhysicsTypes.h
 	PinnedPoints.cpp
 	PinnedPoints.h
 	Points.cpp
@@ -100,7 +111,6 @@ set  (PHYSICS_SOURCES
 	RCBombGadget.cpp
 	RCBombGadget.h
 	Ship.cpp
-	Ship_ForceFields.cpp
 	Ship_Interactions.cpp
 	Ship_Interactions_Repair.cpp
 	Ship_SpringRelaxation.cpp
@@ -142,6 +152,7 @@ set  (RENDER_SOURCES
 	ShaderTypes.h
 	ShipRenderContext.cpp
 	ShipRenderContext.h
+	StockColors.h
 	TextureTypes.h
 	TextureAtlas-inl.h
 	TextureAtlas.h
@@ -160,6 +171,7 @@ source_group("Render" FILES ${RENDER_SOURCES})
 add_library (GameLib ${GAME_SOURCES} ${PHYSICS_SOURCES} ${RENDER_SOURCES})
 
 target_include_directories(GameLib PRIVATE ${IL_INCLUDE_DIR})
+target_include_directories(GameLib PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(GameLib PUBLIC ${LIBSIMDPP_INCLUDE_DIRS})
 target_include_directories(GameLib PUBLIC ${PICOJSON_INCLUDE_DIRS})
 target_include_directories(GameLib INTERFACE ..)

@@ -67,8 +67,11 @@ Frame rules:
 Details
 ===========
 
+Arch
+===========
+
 - Type hierarchy:
-	- NpcKindType:
+	- NpcType:
 		- Human
 			- HumanNpcRoleType:
 				- Passenger
@@ -77,6 +80,44 @@ Details
 			- FurnitureNpcType:
 				- Table
 				- ...
+
+- One single NPCs container class owned and managed by World
+- Render dispatched to individual ShipRenderContext's, as each ship has own Z world
+	X Though we could have a NpcRenderContext which passes ship's Z in vertex buffers, but then there's the order/alpha problem; best if rendered by each ship individually
+
+- NPCs class:
+	- Container of NPCs
+	- Owned by World; accessed - when needed - by Ships via ParentWorld
+	- Contains all NPCs from all ships
+		- Organized internally by ship, so that updates - which require ship triangles, etc. - are optimized, and ships may easy access all their NPCs easily e.g. when doing interactions
+			- For each ship there is a vector (e.g. std::vector<NPCState>), kept compact during removals and additions of NPCs
+			- The vector of ships is also itself kept compact during removals and additions of ships
+			- Separately, a "ship index" vector and a "NPC index" vector for each ship form a two-tier "index" for mapping stable ShipIDs and NPCIDs to elements in these buffers
+				- Index also kept up-to-date at Ship and NPC addition/removal
+				- The pair of these indices is the NPC's stable, globally-unique ID, unrelated to the position it occupies in NPC buffers
+		- One single buffer per-physical quantity though, across all ships and NPCs, so that we do physics updates with one single pass
+			- Buffer is pre-sized to max # of NPCs
+			- Need same tricks as other physics buffers wrt additions/removals, e.g. zeroing coeffs so that update steps are essentially nop's
+		- NPC struct:
+			- Type: NpcKindType
+			- Union of all kind-specific attributes
+				- Note: many attributes will be common, hence we'll be saving room
+			- type: NpcParticleState
+				- ElementIndex ParticleIndex (index in NpcParticles)
+				- opt<ConstrainedStateType> ConstrainedState
+					- TriangleElementIndex
+					- BaryCoords
+					- opt<OnFloorStateType> OnFloorState
+						- EdgeOrdinal
+						- SimulationTime startTime - TODO: dynamics of when reset
+			- NpcParticleStateType PrimaryParticleState (i.e. feet)
+			- opt<NpcParticleStateType> SecondaryParticleState (i.e. head)
+	- Update(Ship const &)
+	- Upload(Ship const &, ShipRenderContext)
+		- Invoked by World for each ship separately
+		- Invokes ShipRenderContext::UploadNPC:
+			- A TextureGroup enum - declared in RenderTypes like AntiMatterBomb is for example - is used to identify the "movement types" for rendering. An additional index provides the sub-frame. The whole coordinate is a TextureFrameId<NPC group>.
+				- TODO: actually the enum might not have to be in RenderTypes; we could use a generic "state" enum in GameTypes which *also* serves as a groups enum
 
 - In the constrained regime:
 	- A particle always belongs to a triangle
@@ -101,32 +142,44 @@ Details
 						- So that we correctly apply it also when NPC is upside-down
 				- Forces acting on NPC (gravity, etc.)
 		- Algo for physics update of one NPC:
-			- 0. If current triangle (guaranteed to be set) has been deleted, transition to free regime
-				- Note: triangle deleted <=> spring deleted, so this is regardless of whether NPC is on spring or not
-			- 1. F = {g, ext forces}
-			- 2. If NPC on spring:
-				- Calculate Fa == apparent force due to difference between (current) world position of NPC (SW) and current position of triangle's pos (World(SR))
-				- F' = opposite of component of (F+Fa) perpendicular to spring (from inside of triangle)
-				- F' += (non-linear) friction due to normal component of (F+Fa) above, tangential to spring
-			- 3. Integrate (F + F') and of course NPC's velocity, calculating EW
-			- 4. Perform ray tracing; if collision, move NPC and update velocity as usual (i.e. with normal and tangential velocity responses)
-		- Details on ray tracing: 
-			- Perform ray tracing from SR to EW, in order to:
-				- Determine exit & entry through all triangles in path
-				- Eventually stop at a floor
-			- Details:
-				- Start in SR triangle == ST
-				- Loop:
-					- Calculate relative coords of EW in ST == E'R
-					- If E'R is *within* ST:
-						- We're done
-					- Else:
-						- Determine side of ST that SR->E'R path crossed
-							- It's gotta be one and only one
-						- Check if that side is floor; if it is: apply "collision" logic and stop
-						- (if not floor) Find next triangle (triangle opposite that side)
-						- If there's no triangle: enter "free regime" and stop
-						- ST = this new triangle; continue loop
+			- Done at BaryLab
+				- 0. If current triangle (guaranteed to be set) has been deleted, transition to free regime
+					- Note: triangle deleted <=> spring deleted, so this is regardless of whether NPC is on spring or not
+				- 1. F = {g & world forces, ext forces}
+				- 2. Note: the below is apparently not needed if we take care of impact response when on edge (below); verify that we can take care of friction well in the edge code,
+				     when we have no idea of relative movements
+				     - If NPC on spring:
+					- And: allow when in floor to move like ghost, so if NPC on spring _and_ not all springs of triangle are floor
+					- Calculate Fa == apparent force due to difference between (current) world position of NPC (SW) and current position of triangle's pos (World(SR))
+					- F' = opposite of component of (F+Fa) perpendicular to spring (from inside of triangle)
+						- Note: only if normal is right direction wrt trajectory
+					- F' += (non-linear) friction due to normal component of (F+Fa) above, tangential to spring
+						- Static and kynetic friction:
+							- http://www.epi-eng.com/mechanical_engineering_basics/force_and_friction.htm
+							- https://www.motioncontroltips.com/why-is-static-friction-greater-than-kinetic-friction/#:~:text=Static%20friction%20is%20what%20keeps,once%20they%27re%20in%20motion.
+							- https://openstax.org/books/university-physics-volume-1/pages/6-2-friction
+								- The direction of friction is always opposite that of motion, parallel to the surface between objects, and perpendicular to the normal force.
+				- 3. Integrate (F + F') and of course NPC's velocity, calculating EW
+				- 3b. Reset ext forces
+				- 4. Perform ray tracing; if collision, move NPC and update velocity (bounce) as usual (i.e. with normal and tangential velocity responses)
+					- Impact forces: https://www.studysmarter.co.uk/explanations/physics/force/impact-forces/
+				- Details on ray tracing: 
+					- Perform ray tracing from SR to EW, in order to:
+						- Determine exit & entry through all triangles in path
+						- Eventually stop at a floor
+					- Details:
+						- Start in SR triangle == ST
+						- Loop:
+							- Calculate relative coords of EW in ST == E'R
+							- If E'R is *within* ST:
+								- We're done
+							- Else:
+								- Determine side of ST that SR->E'R path crossed
+									- It's gotta be one and only one
+								- Check if that side is floor; if it is: apply "collision" logic and stop
+								- (if not floor) Find next triangle (triangle opposite that side)
+								- If there's no triangle: enter "free regime" and stop
+								- ST = this new triangle; continue loop
 		- Details:
 			- Barycentric coords, and intersection of segment with triangle:
 				- https://math.stackexchange.com/questions/2382016/determine-if-a-line-segment-passes-through-a-triangle
@@ -137,119 +190,3649 @@ Details
 				- https://members.loria.fr/SLazard/ARC-Visi3D/Pant-project/files/Line_Segment_Triangle.html
 				- 2D: https://www.geogebra.org/m/aRMTsu62
 
-- Rendering:
-	- NPCs will have two sets of vertex attributes:
-		- Static ones: contain static properties (colors, )
-			- Only reloaded at e.g. NPC insertion/removal
-		- Dynamics ones: contain world vertices, texture coords
-Code
-===========
-Arch:
-- One single NPCs container class owned and managed by World
-- Render dispatched to individual ShipRenderContext's, as each ship has own Z world
-	X Though we could have a NpcRenderContext which passes ship's Z in vertex buffers, but then there's the order/alpha problem; best if rendered by each ship individually
+========================================================								
 
-Details:
-- NPCs class:
-	- Container of NPCs
-	- Owned by World; accessed - when needed - by Ships via ParentWorld
-	- Contains all NPCs from all ships
-		- Organized internally by ship, so that ships may easy access all their NPCs easily e.g. when doing interactions
-			- N buffers of buffer<NPC>: <ShipId; -> local ordinal (unstable and not visible from outside)>
-				- Innermost buffer kept compact during removals and additions to Ship's specific buffer, hence the reason why the ordinal in that buffer is not stable
-		- One single buffer per-physical quantity though, across all ships, so that we do physics updates with one single pass
-			- Buffer is pre-sized to max # of NPCs
-			- Need same tricks as other physics buffers wrt additions/removals, e.g. zeroing coeffs so that update steps are essentially nop's
-		- Identification:
-			- Each NPC contains a stable, globally unique single-integer ID, unrelated to the position it occupies in NPC buffers, but
-			  equal to the position it occupies in the physics buffer(s)
-		- NPC struct:
-			- Index: ElementIndex (ordinal in physics buffer)
-			- Type: NpcKindType
-			- Union of all kind-specific attributes
-				- Note: many attributes will be common, hence we're saving room
-	- World::AddHumanNPC(..) -> ID
-		- World finds ship by inverse Z order, using Ship.GetTriangles().GetTriangleContaining(.)
-			- If not found, pick last by default
-		- Then World calls NPCs::AddHumanNPC(.., ship const &, triangle index)
-	- Update()
-	- Upload(iShip, ShipRenderContext)
-		- Invoked by World for each ship separately
-		- Invokes ShipRenderContext::UploadNPC:
-			- A TextureGroup enum - declared in RenderTypes like AntiMatterBomb is for example - is used to identify the "movement types" for rendering. An additional index provides the sub-frame. The whole coordinate is a TextureFrameId<NPC group>.
-				- TODO: actually the enum might not have to be in RenderTypes; we could use a generic "state" enum in GameTypes which *also* serves as a groups enum
-- Placing an NPC:
-	- The user selects the "place NPC" tool at the same time as choosing the type and sub-type via menus
-	- Once the tool is selected, ToolController is notified via a dedicated API (which takes type/subtype)
-		- With this call the tool is switched to the NPC-placing tool, but the old one is remembered so that once an NPC is placed, we can go back to the previous tool (unless SHIFT is pressed)
-	- Initialization of the tool makes a call into NPCs::AddHumanNPC(..) stating its state is "being placed" and gets the ID
-		- At this moment GameController starts skipping updated of everything but NPCs - calling a special UpdateXXX() function to only update the rendering state of being-placed NPCs
-	- Placement check: either not in a triangle, or in a triangle with at least one side NON-floor
-	- When placed, tool calls NPCs::ResetNPC(ID) which starts the NPC's state machine
-		- And GameController returns to normal
+Current perf:
+	- Update: 3.0/3.1
+	- RenderUpload: 1.1
+
+V1 TODO:
+
+
+- Vegas:
+	- Screenshots:
+		- Wreck at night w/wout lamp
+		- Twilight
+		- Temperature overlay
+		- Stress overlay
+
+- Movie:
+	- Titanic, exterior view, plenty of NPCs
+	- Then interior view
+	- TODOHERE
 
 
 
+= Work with TimCan for improvements
+	= Chests
+	= Square heads
+	= Detail (e.g. ears) with shades
+
+
+===================
+Next release:
+
+- Explosive NPCs
+	- Explode at hit
+		- Just inject explosion state machine @ Ship, should take care of physics _and_ rendering!
+	- Need mechanism for dynamic removal of NPCs
+		- Will be useful also for human removal animation (*)
+		- Option 1: set of NpcId's to remove, scavenged at end of Update()
+			- TODOHERE: will we need a way to keep the NPC "out of the loop" for the rest of the simulation step?
+
+- New human behaviors:
+
+	- Panic when water entering
+
+	- When human removed, enters "Removal" behavior: rotates with arms 90degree and legs closed, alpha down, then disappears
+		- Requires delayed removal (@UpdateBehavior), see (*) above
+			- Can't be picked when in this state
+			- Physics update: skipped when in this state (like BeingPlaced, but for whole NPC this time)
+			- Tests:
+				- Stats published
+
+	- When ship is repaired, all NPCs do a little dance
+		- Sync is simulation clock (so all are in sync)
+		- Signal from outside (OnShipRepaired) sets global flag
+			- Global flag is decayed to false
+			- At HumanUpdate:
+				- If state is Equilibrium|Walking: if global flag is set: transition to Dancing
+				- Elif state is Dancing: if global flag is not set: transition to Equlibrium
+				- Dancing:
+					- Transitions out with same out transitions as Equilibrium
+			- At UpdateSimulation:
+				- Do dance
+	- Engineers repair ship
+		- Ship exposes simplified "Repair" functionality, which simply detaches needed particles from where they are and brings them close
+		- New human NPC behavior ("Constrained_Repairing") with associated animation
+			- Entered when wanting to cross a triangle that on the other side is free because it's damaged
+		- Might also have "Underwater Engineers" with zero buoyancy, unaffected by internal water, who can thus repair when the ship is flooded
+			- This guys has speed multiplier, applies to walk speed and all other movements on a period
+
+- Lights: second pass of lighting algorithm with all NPC particles, for each ship
+	- Adding to NPC particles' _light_ buffer
+		- But test it first, as humans are dipoles and dubious result
+
+- Doors:
+	- New "DoorHinge" electrical element (with both ON/OFF types), controls floorness of springs (and thus triangle edges) among neighboring pairs of them
+		- Triangle edge/floors: split "factory" vs. "actual"
+			- Iff we end up having H1,V1,S2,etc. floor types, as resetting door would need to know that
+			- Otherwise, if we only have Floor+Open, can live without factory
+			- However, now we need to set Floor_Geometry_ for every triangle edge, also not floor ones
+				- And thus NPC code should only look at FloorGeometry when edge is Floor
+		- Element is conductive, so two neighboring hinges are electrically connected
+	- Dynamics of door-induced floorplan changes
+		- Ship has InteriorTexture, so it can re-build parts of InteriorView upon floor state changes
+		- @ ElectricalElement update:
+			- For all (one) spring that have another DoorHinge at an endpoint:
+				- Note: here we don't care whether the spring is deleted or not
+				- Calculate spring's newFloorness as:
+					- If at least one open: open; else: floor				
+				- Invoke IShipPhysicsHandler::UpdateNpcFloor(springElementIndex, newFloorness)
+				- If spring is NOT deleted:
+					- Sound
+					- Highlight
+		- @ IShipPhysicsHandler::UpdateNpcFloor(springElementIndex, newFloorness): 
+			- Find all triangles (0, 1, or 2) that have this spring as an edge
+			- Change their floorness
+			- // Need to make sure that two adjacent triangles are done together
+				- It's a must iff joined by a diagonal spring
+				- It's a nice-to-have (for perf) iff joined by a H or V spring
+			- Invoke ShipTexturizer() method (on ShipTexturizer& member) -> new InteriorView texture quad:
+					- First triangle as TriangleElementIndex (never None)
+					- Second triangle as TriangleElementIndex (evt. None) // Joined to first
+					- InteriorView
+				- Calcs rectangle, creates buffer (copied from rect of InteriorView)
+					- Quads used for buffer (i.e. workspace):
+						- // Because drawing an edge goes out to other quads
+						- One triangle:
+							- For a diag edge: need L and R quads
+							- For a vert edge: need either L (if V edge is left) or R (if V edge is right) quads
+							- For a horiz edge: need either T (if H edge is top) or B (if H edge is bottom) quads
+						- Two triangles:
+							- Same as above, and do union
+				- Proceeds with already-existing internal helper, for each triangle
+				- Returns also origin of new InteriorView texture quad within InteriorView pixel space
+			- Store new InteriorView texture quad to a (temporary) list member of Ship, together with origin
+		- @ Ship::RenderUpload(): gives (std::move) the list to ShipRenderContext which will a) upload to texture as subtextures (on thread!), and b) apply to own Interior view texture (so that it's also
+		  persistent across view switches)
+	- Initialize door states at ship initialization
+		- So that floors are the ones in agreement with hinges' operation
+		- Like we do with Watertight doors and others
+	- Sounds
+
+	- See what we do with Watertight doors and whether they can also act as doors, in which case we can put them in the same category (Watertight door == door but also controlling WaterPermeability)
+	
+
+- Sounds:
+	- Hit:
+		- Material has SoundType property; NPC can override with own
+			- Furniture overrides for e.g. piano
+			- HumanNPC materials have two different sound types
+		- New IGameEventHandler event, which takes kinetic energy (dissipated)
+			- Aggregated
+			- Invoked @ Npcs bounce
+		- SoundController
+			- Transforms kinetic energy to volume
+		- Sounds:
+			- NPCHead X {2..4}X[non-uw, uw}
+			- NPCFoot X {2..4}X[non-uw, uw}
+			- Piano X {2..4}X[non-uw, uw}
+
+
+- InternalTexture layer from user:
+	- ShipDe/Serialization
+		- Make sure that:
+			- Old FS can read new ship with layer
+			- New FS can read old ship (without layer obviously)
+	- ShipBuilder
+		- Re-enable/take care of various "TODOHERE"'s for not-yet implemented things
+		- Ability to auto-generate InteriorTexture from structure
+			- via ShipTexturizer
+
+- Floorplan layer from user:
+	- ShipFactory: when a floorplan layer is present, it needs to inform tessellation (i.e. triangle selection) which needs
+	  to use floor information (ipv hull springs) to decide between covering triangles
+
+- Area walk planning:
+	- TODO: floor types (normal, assembly, lifeboats, etc.)
+	- TODO: states (random walk, to assembly, to lifeboats, etc.)
+	- Separate thread calcs <floor_point>->[distance to each floor area connected component]
+		- Step 1: visit graph with flooding and store all pointsVedges in N queues, one for each floor type are we want to track
+		- Step 2: for each queue Qn:
+			- Breadth first visit of elements in the queue (all elements first, all reachable from those next, etc.), storing distance in n's slot
+			- Do not revisit a pointVedge if it has been already visited at this full run
+				- Guaranteed to stop mid-way
+
+- Forward-looking walk planning:
+	- First off: WalkingBehaviorState remembers CurrentTriangleElementIndex (of primary)
+		- Init'd to None at each transition into Walking
+	- @ UpdateBehavior while walking (or at WalkingUpdate):
+		- If current primary triangle != current:
+			- Planning:
+				- Find next floor in cur triangle along walking direction
+					- CanProceedInDirection(TriangleEdge, xDir) -> bool
+						- xDir translated into CCW or CW, then proceeds with analytical vertex finding until floor
+						- Can not proceed if doesn't find any alternatives
+			- current = current primary triangle
+
+- NPC packs:
+	- NpcDatabase:
+		- AddDatabase(NpcDatabase const &, TextureAtlas(Metadata?) const &, MaterialDB const &) // (this might be old)
+
+
+===================
+===================
+COMPLETED
+===================
+===================
+
++ Human behavioral state machine(s):
+	! Principles:
+		! Most transitions happen with "convergence" of some quantity
+			! Only the convergence rate is a state-specific parameter; the threshold for reaching a target is not (i.e. it's a global constant)
+				! So that there's only one param per state controlling timing
+	+ States:
+		+ State:KnockedOut
+			! Does nothing
+			+ Transitions out: 
+				+ When whole NPC becomes free: transition to FreeKnockedOut
+				+ When the following applies for at least Tx: transition to Rising
+					+ P particle:
+						+ On (at least one) floor edge (& in constrained state)
+						+ Zero relative velocity
+					+ S particle:
+						+ On (at least one) floor edge (& in constrained state)
+						+ Zero relative velocity
+		+ State:Rising
+			! Tries to stand up (applying torque)
+			+ Transitions out:
+				+ When whole NPC becomes free: transition to FreeKnockedOut
+				+ When the following stops applying: transition to KnockedOut
+					+ P particle:
+						+ On (at least one) floor edge (& in constrained state)
+						+ Zero relative velocity
+				+ When MaintainAndCheckEquilibrium() returns false: transition to KnockedOut				
+				+ When line from S to P is aligned with GravityDir: transition to Equilibrium
+			+ External out transitions:
+				+ Impact: transition to KnockedOut
+					+ UpdateStep() takes NpcState as well, and calls Npcs::OnHumanNpcImpact(NpcState, impact quantities) upon impact
+						+ OnHumanNpcImpact: switches on state
+		+ MaintainAndCheckEquilibrium() -> bool:
+			+ Does torque calculation and reaches/maintains equilibrium, but also checks if conditions to stay in equlibrium  apply; stops equlibrium (and returns false) if:
+				+ HumanVector is outside of -alpha->alpha sector around vertical, with rotation velocity towards outside of sector
+		+ Impart torque:
+			+ With Particles::VoluntaryForces
+				= Reset at state transitions
+			+ Formula:
+				+ Force perpendicular to human vector; magnitude depends on angle
+				+ See why primary moves: is it because of spring being compressed?
+					+ It's because at beginning each step stretches it, then the spring recoils to the point that the other endpoint needs to move
+				+ Force can't be directional - or else it cancels gravity - not that it's important, but highlights un-soundness of approach
+					+ Go full rotational spring
+				+ See if can raise faster with less overshooting
+		+ State:Equilibrium
+			! Stands up; continues to adjust alignment with torque
+			+ Transitions out:
+				+ When whole NPC becomes free: transition to FreeKnockedOut
+				+ When the following stops applying: transition to KnockedOut
+					+ P particle:
+						+ On (at least one) floor edge (& in constrained state)
+						+ Zero relative velocity
+				+ When MaintainAndCheckEquilibrium() returns false: transition to KnockedOut
+				+ When enough time has passed in this state: transition to Walking
+			+ External out transitions:
+				+ Impact: transition to KnockedOut
+		+ State:Walking
+			! Walks; continues to adjust alignment with torque
+			+ Transitions out:				
+				+ When whole NPC becomes free: transition to FreeKnockedOut
+				+ When the following stops applying: transition to KnockedOut
+					+ P particle:
+						+ On (at least one) floor edge (& in constrained state)
+						+ Zero relative velocity (excld. walking)
+				+ When MaintainAndCheckEquilibrium() returns false: transition to KnockedOut
+			X External out transitions:
+				X Impact: transition to KnockedOut
+			+ Walking state machine:
+				+ Impart displacement
+					+ First, allow traj calculation to also pre-calculate final (absolute) velocity
+						+ Traj calc state keeps it, "TargetAbsoluteVelocity"
+						+ UpdateTrajState() returns it when completing w/out impact
+							+ finalParticleState has velocity not as optional but as mandatory
+								+ No more automatic vel calc'n at end of UpdateTrajState()
+							+ Always provide target vel from within UpdateTrajState()
+								+ Assert it matches a calculated one - when no impact has happened						
+					+ Then: at traj calculation, superimpose raw walking displacement (calcd at HumanUpdate and stored in VoluntarySuperimposedDisplacement) to traj, without affecting velocity
+					+ FIX: secondary trails primary
+						+ @ TrajCalculation: when we incorporate walking displacement, if it's primary we save same vector as displacement of secondary
+						+ At HumanNpcStateUpdate: clear also secondary displacement on transitions out
+				
+
+		+ Problem: while walking, difference in slope is giving us troubles:
+			+ When moving from edge floor to edge floor with lower slope, we lose contact with edge
+				+ And this happens because once we climb to other triangle, the trajectory end in bary coords does not lie anymore on edge
+			+ When moving from edge floor to edge floor with higher slope, primary has impact and gains bounce velocity (because we check traj)
+			+ Solution: might need to change how impact works, if walking reaching slope that it should try to climb causes noticeable impact
+				+ We can solve it @ impact detection by checking slope first, and not causing impact bounce when slope is gentle - but still climbing over edge in order to "land" on slope
+				+ Do rearc 
+
+		+ RETHINK: do we really want primary non-inertial to gain physical velocity when walking? Example: climbing up, gains however down velocity until this one overpasses walking
+				- May be it's OK after all...
+			! Also: BUG: impact of secondary when discounting walk vector results in anti-impact
+			X Algo 1 for fix:
+				! If result is opposite sign of phys, shouldn't gain phys but zero instead
+					! If result is opposite sign of zero, should gain zero (this is now)
+					! In other words: velocity gain should never be opposite of result (actual)
+				! Generalization: velocity gain max should be:
+					! Result > 0: max(phys, 0) // e.g. climbing up on \* : only gains > 0
+					! Result < 0: min(phys, 0) // e.g. climbing up on */ : only gains < 0
+				X Do:
+					X Do new velocity calculation at 3 places (TODOHEREx):
+						= 1: NonConstrained move-to-place: here we do with edgeDir
+						= 2: Constrained move-to-place: here we do with absolute positions; velocity is:
+							- Direction: of result (i.e. result_dir)
+							- Magnitude: as above, with phys projected onto result_dir
+							- TODOHERE: conflicts with torque!
+						- 3: Bounce when calculating incident velocity - incident velocity must be same as in 1 and/or 2
+					- Double-check passed walked total/planned vs primary/secondary
+						- Primary: totalEdgeWalkedActual starts from zero and grows step-by-step
+						- Secondary: totalEdgeWalkedActual is resultant from primary since the beginning, and immutable
+			+ Algo 2 for fix:
+				! Add walk *displacement* calculated to *fill-in* (desired) walk vector
+					! If (planned) physics is already more, then displacement is zero
+					! The displacement then takes part in normal velocity calculations
+					! This displacement is the one which, summed up, goes to secondary
+				+ Plan:
+					+ Undo other changes (surgically)
+					+ Main loop:
+						+ Primary: new plannedWalk calculation
+							+ if walk in same direction as edgeDir:
+								- plannedWalkVector = edgeDir * max(walk desired along edge - planned phys along edge, 0)
+								OR - so that we don't walk on too steep:
+								- plannedWalkVector = edgeDir * min(max(walk desired along edge - planned phys along edge, 0), walk desired along edge)
+							+ else:
+								- ...
+							+ actualWalk is then added to total (as now)
+							+ plannedWalk is added to plannedPhys to make plannedTotal (as now)
+						+ Secondary:
+							+ actualWalk taken from primary (as now)
+					+ All three velocity calculations:
+						+ Back to basics: just take whole, real displacement - hear nothing of "walked"
+							+ Remove "walked" and "phys/total" args
+								+ Unless phys/total is used for assert - keep "total" for that
+					+ Problem fix
+						+ Disable storing equilibrium torque
+						+ Disable secondary displacement
+						X At phys force calc: if NPC is walking and this is secondary, calc additional force - on top of calcd - needed to bring sec'ry on top of primary
+							X Do in "distance" space
+						+ Do normal torque here
+				+ Things to fix:
+					+ Bump with vertical wall: going back (when floor is sloped down-right) is not constrained anymore because of |\*| <--
+						! Which means we do another bump (albeit negligible but still against direction, dot is 0.06) and thus another flip
+						+ Option 1: at main loop: if we are at a cuspid, we shouldn't be too hasty in deciding non-inertial vs inertial; should move out of cuspid first
+							+ Almost same loop as in NonInertial: until in triangle or becomes free or hits floor
+					+ Walks on too steep of a wall
+						+ Happens because friction zeroes out G
+						X This should be fixed with less friction
+						+ Two-sided fix:
+							+ Clip and squash dot product at actual walk plan calculation ("apply G resistance")
+							+ MaintainWalk: flip if too long at V opposite of W
+								+ 1: Check condition (V opposite of W); if true: TargetFlipDecision=1.0; else: Target&CurrentFlipDecision=0.0
+								+ 2: Advance CurrentFlipDecision towards TargetFlipDecision
+								+ 3: If CurrentFlipDecision > 0.95: flip, & set Target&CurrentFlipDecision=0.0
+								+ Replaces having to flip at well detection? Verify it can, both sides
+									+ Turn off first for test
+									+ Verify it replaces it
+								+ Set FlipDecisions to zero at bounce flip
+								+ HumanFlip(isImmediate)
+									+ Called by both places at which we flip
+								+ Later: test with a margin above @ 1 so that we also flip when yes V in same direction as W but not quite there
+									+ FIX: looping around 0.0/~-0.0
+					+ See if can lose equilibrium when secondary too skewed but not too much relative opposite vel because of secondary being blocked
+						+ In equilibrium only, CheckEq breaks Eq at lower threshold - even when relative V is same sign but quite low
+					+ Slow when walking downhill: because of "gravity resistance", which shouldn't apply when downhill (only uphill)
+						+ Do better curve w/Smoothstep
+						+ "GravityAllowance"
+				+ Higher static and kinetic friction
+					X Google V for change from S to K
+				+ Lower walking speed
+				+ Fix torque w/mesh velocity
+					+ Is it that at torque calc we see primary already moved - by a lot - while secondary hasn't moved yet?
+				+ Video
+					+ Code for script
+					+ Fix little jump
+						+ Add tolerance
+						+ Don't invoke walk update when not on edge - w/comment on not needing to silence walk mag as we don't apply walking when inertial (i.e. when not on edge)
+						+ Test flying off
+				+ "Jump tolerance" also for other two states
+					+ 1. Thus regardless of state
+						+ HumanState.CurrentEquilibriumSoftTerminationDecision
+							+ Reset also at transitions to Rising & Equilibrium
+						+ Do not start walking if not on edge
+					+ Test w/walk & ball
+					+ Commit before next one
+					+ 2. Do not apply torque while not on edge
+						+ Go back to having NpcParticle float buffer (w/1.0 or 0.0) for torque
+						+ reset() buffer before NPC loop
+							+ w/note for prelim forces
+						+ Set it from CheckAndMaintainEq(...isOnEdge...)
+							+ Simply iff on edge
+						X Make sure we zero it when leaving any of the states
+						+ Use at torque calculation
+				+ Flip also when *secondary* bounces
+				+ Sea level:
+					+ Param, UI
+					+ World forces: if free
+						+ Find sweet spot for thickness of interface/buoying at shoulders
+							+ Offset for sea level to account for head
+						+ Forces rearc:
+							+ NpcParticle has PreliminaryForces
+								+ All those we can calc @ beginning
+							+ Npcs::CalculatePreliminaryForces()
+								+ Takes care or cleaning - if needed
+							+ Npcs::CalculateDefinitiveForces()
+					+ Material buoyancy
+					+ Rendering
+				+ Cleanups if ok:
+					+ CalculatePhysForces
+					+ Old torque 
+						+ And "voluntary" buffer for torque force?
+					+ Do we still need "voluntary" displacement of secondary?
+					+ Make triangle-finding (rotate through vertices/cuspids) a function ("NavigateVertex")
+						+ Return: <do_stop> (note: no need to return traveled - it never moves)
+						+ Issues found along the way:
+							! With this func we bounce when we normally didn't
+								! e.g. in main loop: old: when detecting floor while navigating, we'd stop, and then yada yada (flatten -> move to target as it's in triangle);
+								  new: we bounce instead
+							+ Fix: return indication of bounce but not bounce
+								+ FloorEncounteredOutcome/intervening
+								+ ~became free
+								+ ~completed navigation
+						+ Integrate with NonConstrained loop
+						+ Test
+						+ Cleanup old code
+					+ "TODO: get rid of this" (local triangle index)
+					+ @BlabTypes: baryCoords // copy vec3f parts we need
+						+ TryGetVertexOrdinal() -> opt<int>
+				+ When finding triangles (e.g. opposite triangle, but also initializations), check if triangle is deleted
+				+ Test:
+					+ Flying off
+						+ Primary into inertial
+						+ Secondary into inertial
+						+ Primary into free
+						+ Secondary into free
+					+ Starting at vertex
+					+ With mesh moving
+
+		+ Video
+
+		+ Animation:
+			+ Store current edge
+				! Needed for foot points
+				+ ConstrainedState::CurrentVirtualEdge // not really valid when at cuspids
+				+ Set after call to NonInertial
+				+ Render it (dark red)
+				X FIX: when trying to walk up, virt edge is the vertical one
+					! see below, at walking points-along-edge - see how it goes - WELL
+			+ Move behavior update: update behavior before animation, after physics
+				+ FIX: it's broken
+					+ Because we lose EquilibriumTorque, move reset afterwards
+				+ Test
+			+ Shader
+				+ Basic
+				+ Do ellipses
+			+ Store total travelled (displaced)
+				+ New HumanState member: float TotalEdgeTraveledWhileWalking
+				+ Reset it when entering Walking state
+				+ Also in inertial mode, as we now might be walking
+					+ Do it now and see if it looks weird
+			+ Decide where to put human body proportion constants
+				+ LabParameters
+			+ Move points (new Human members) @ Update
+				! Each state is responsible for it
+				+ Walking:
+					+ 1. Formula calculating angle, as rotation of legs
+						+ Angle members, and points as well (points will be useful for more calc's later, see below)
+							! We want angles so that we can smooth-merge sequences
+							+ CurrentLegRightAngle, no need for Target
+							+ AnimationUpdate calc's targets and smooths currents to it
+						+ Formula:
+							+ A: atan-based along horiz (horiz because human is vertical)
+						+ Calc points: trivial
+						+ Adjust step size
+					+ 2. Constrain points to be along current edge's direction
+						+ Direction dictated by angle, it's only *length* of leg that changes to stop at current edge
+						+ Option 1: https://math.stackexchange.com/questions/406864/intersection-of-two-lines-in-vector-form
+						- Option 2: by calculating from a "virtual crotch" perpendicular to edge
+					+ 3. Limit leg angles based on slope
+					+ Smooth out transition between current virtual edge presence & slope:
+						+ First off: if and when smoothing points, we don't smooth absolute positions (as limbs would elongate/shrink with fast moves) but rather angle & length, 
+						  or position relative to shoulder/crotch
+							! Same is for angles, but that comes by itself: angle gives position only after taking current absolute positions into account
+						+ New plan:
+							+ Each switch case calcs target angle and target length
+							+ Function then smooths those and calcs vectors - relative to shoulder (F/B), crotch (F/B)
+						+ Finish target leg length calculation
+						+ Lengths:
+							+ head, neck, shoulder, crotch, feet: based on current dipole length
+							+ arms, legs: based on ideal * adjustment
+					+ Make human walk up slope faster
+						+ Change formula
+			+ Add arms
+				+ Redo whole body, make proportion constants at top of file
+			+ Fix "running away" issue:
+				! Repro: start at vec2f const position = vec2f(-0.634f, -2.0f);
+				! At second iteration of main loop, dt is very small but trajectory is still original:
+				+ 0: Build repro with ball & velocity first
+
+				+ Attempt 1: budget-based:
+					+ 1: first flattening stores "budget" == length (abs) of flattened traj
+						! "budget" is the maximum *total* distance that we are allowed to travel in current time quantum
+					+ 2: "budget" is reduced after each iteration by (abs) scalar amount traveled (capped to zero - though shouldn't be needed)
+					+ 3a: any subsequent non-inertial flattening adjusts flattened trajectory to ensure its abs length is not over budget
+						X Adjust how we calc dt consumed - no need as long as we update edge total planned
+						X Adjust physical planned - no need as it's not used anymore
+						+ Adjust walk planned, which is used 
+					X 3b: any subsequent inertial travel adjusts trajectory to ensure its abs length is not over budget
+						! Not needed: velocity here is calc'd from total trajectory in step divided by theoretical (whole) dt, so it's really physical
+					+ Then:
+						X a: Fn calculation (for friction) must take dt into account
+							! Actually, is not needed - N and FT would both be smaller - as smaller as T is
+						X b: Also bounce response must take dt into account?
+							! Actually, is not needed - bounce response is calc'd based on (flattened) trajectory and (remaining) dt
+						+ c: Impact continuation must also calc velocity as it might be last
+							! Next step might have 0 to travel after we shorten up traj
+							+ Test assert on non-inertial always leaving a crumble of distance to travel wrt budget
+								+ Seems to hold
+
+				+ Finalize, Cleanup, Merge
+
+			+ Fix "neverending navigation" issue:
+				+ Build repro 
+				~ Do dual-side (0.0 and 1.0) clamping for each coord
+
+Opposite Tr 46 oppositeTriangleCrossedEdgeOrdinal=0 newBCoords={_Elems=0x00000017b298da68 {1.00000000, 0.00000000, 0.00000000} }
+vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.00169372594, -3.49245965e-10} }
+preV=2 nexV=1 => crossedEdgeOrdinal=0
+
+Opposite Tr=81, oppositeTriangleCrossedEdgeOrdinal=1 newBCoords={_Elems=0x00000017b298da68 {0.00000000, 0.00000000, 1.00000000} }
+vertexOrdinal=2 TrajEndBCoords={_Elems=0x00000017b298ddd0 {-1.61526414e-09, 0.00169372361, 0.998306274} }
+prevV=1 nextV=2 => crossedEdgeOrdinal=1
+
+Opposite Tr 46 oppositeTriangleCrossedEdgeOrdinal=0 newBCoords={_Elems=0x00000017b298da68 {1.00000000, 0.00000000, 0.00000000} }
+vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.00169372594, -3.49245965e-10} }
+
+81:
+|\
+| \
+|  \
+----
+\  |
+ \ |
+  \| 46
+				+ Now that we clamp, we have the issue of bouncing once reached the edge - because of walk velocity going up
+					! Repro: vel=1.8, slightly rotated CCW
+					X Attempt 1: do not gain y velocity from walk
+						! But does it make sense? If we run up, we have velocity up...no?
+						X Attempt 2: limit y velocity from walk
+					+ Attempt 3: better bounce tolerance and equilibrium termination
+						+ Bounce tolerance to slope vs walking dir
+							! Repro: max speed & mesh rotated CW (1xV)
+						+ Equilibrium termination: provided we're reasonably vertical, if we lose it because of non-edge, be more tolerant
+						+ But now we have relative velocity kicking in
+							! Rethink relative velocity - after all we have walking velocity now!
+							+ If not walking: like now
+							+ Else:
+								X If against walk dir by limit1: break
+									! We do not need this - after all we flip - and also generates issue below (slamming against wall)
+								+ If more than walk velocity by limit2: break
+								+ Only consider component of MRV along walk dir
+							+ FIX: when we slam hard against a wall, we flip but still have old V => it looks like a lot of opposite
+								+ Attempt 1: see above: removing "Walking state abandonment" when too much opposite vel fixed this
+
+				+ Sfarfallio when we reach slope 
+					! Repro: speed=1.75, rotated cw a bit (6 x -3.1f * 12.0f)
+					! We do impact continuation & try go up slope, but too much friction/nowalk/etc. and no move and go down
+					! We end up in a well, alternating last edge: 14-17-14-17 - detected well; 17-14-17-14 - detected well; 14-17-14-17...
+					+ Should detect well at second 14
+					+ New issue: freezing along wall:
+						! Repro: like for bounces above: vel=1.75, slightly rotated CCW (4 rotations of 3.1f * 3.0f)
+						! We are at 102
+						! We navigate to 137 (returning EncounteredFloor)
+						! Queue: 137 137 137
+						! We do non-inertial step: 102
+						! We don't see 102 in queue
+						! Loop
+						+ Fix: 
+							+ Initialize with first before machinery
+							+ Update _after_ non-inertial step
+						+ Verify both well issues are fixed
+
+			+ Video
+				+ Put back temporarily orig values
+
+			+ Per-human PanicLevel [0.0f, +inf)
+				+ Walking anim: when !=0 -> arms still flipping but up
+				+ Adds to walking speed
+					+ Npcs::CalculateActualHumanWalkingAbsoluteSpeed(humanState, labParams)
+						+ Panic, Magnitude, labParams
+					+ Use it wherever magnitude is used
+					+ Test with max walking speed
+				+ Adds (marginally) to equilibrium torque
+				+ Increases converge rates for start rising
+				+ Lowers time to start walking
+				+ GUI slider
+					+ Npcs::SetPanicLevelForAll(panicLevel)
+
+			+ Play
+
+			+ RenderUpload: implement
+				+ F/B vs L/R geometry
+					+ Front
+					+ Back
+					+ Left
+					+ Right
+					+ Test flip
+				+ API calls take L/R/F/B info
+				+ API also takes *quads* rather than vector+width, for perf
+				+ Rendering honors L/R/F/B with shader hints
+					+ depth
+					+ L/R
+
+			+ Animation improvements:
+				+ Shading also at F: centered 
+					+ direction basically shifts, can use it verbatim
+				+ Panic arms: now they look like it's flying :-) 
+					+ Try: simply flap them around vertical _up_ rather than down
+				+ Panic arms at slope: npc is slow and arms also - should use time for arms
+				+ Swimming
+					+ Flight down should be faster
+						+ Do poor man's "mod" with asymmetric interval (ifs)
+					+ Also bottom angle should become more "flat" (around pi/2) when at surface
+					+ Don't start until rotation is small
+				+ Free_Aerial and Free_InWater - where we do "arms pointing downward": also move legs somehow
+					+ When arms are at highest, legs are 100% tight; when arms are at lowest, they are X apart (same X as now, initial)
+					+ Around center angle that is opposite to relvel component against perp to humanDir, with magnitude depending on that relval component magnitude
+				+ Swimming: speed affected by panic
+				+ Constrained_KnockedOut rearc:
+					+ Double-check all transitions _to_ Constrained_KnockedOut
+					+ Falling: constrain arm angles to the half-plane in the face direction
+					+ Try to progress aerial to falling (rather than immediately)
+						+ Also gets rid of becoming falling when hitting head
+					+ Try to aerial->falling also for head 
+					 @ Falling: arms should not extend perp...
+						a) in air when still on the back, and 
+						b) against floor when on belly
+						+ Scale target by abs magnitude of head rel/abs vel along perp
+						 + Fight bounces
+					X Anim @ Falling: move arms towards zero depending on progress to knockout
+					X Avoid arms going up when we become Falling when we're basically still
+				+ Less walking in the air
+					+ Could have two "distance traveled" members: one on_edge, one not on edge (exclusive)
+						+ on_edge only updated with NonInertial
+						+ animation for C_Walking uses linear combo of both
+						+ animation for swimming uses not-on-edge
+				+ Less "dead body" when KO
+					+ Transition to aerial
+
+				+ Rising improvements: 
+					+ Go to "rest legs"
+					+ Convergence rate = 0.2 + depth
+					+ Go to "rest legs", but leg against floor does less angle
+					+ Arm against floor helps body come up
+					+ Arm should open w/body rising up
+					+ Rethink other arm
+						+ Helps first
+					+ Rethink legs
+					+ Try quadratic arms raise
+
+				+ C_Aerial -> C_Falling: at this moment it makes for an ugly start, as we touch the floor and flip immediately
+					+ Do transition to falling only if there's some movement of H or F
+						+ Use only applicable velocity's *component along edge|H*			
+					+ Need a transition to (somewhat) rising or else we'll never start walking
+						+ Go to knocked out if H|F on floor but no velocity?
+
+				+ @ Animation: check constrained-ness when we touch it
+
+			+ * Make UpdateNpcParticle_ConstrainedNonInertial return <opt?totalEdgeWalked, doContinue> as tuple
+			+ Fix mesh rendering: do not render all edges but just triangles'
+				! With repetitions is fine...
+			+ Do state transitions via func: TransitionState(newState, currentSimTime); func switch'es
+				+ Npcs::Update takes float currentSimulationTime
+				+ Uses union-structs internally for resetting & setting up (** below)
+				+ Resets TotalWhateverSinceWalking and StateStartSimulationTimestamp
+
+			+ HumanState."TotalWhateverSinceWalking" -> "TotalDistanceTraveledSinceStateStart"
+				! For swimming et al
+				+ Also for Free state (for swimming)
+					X @ transitions (i.e. "becoming") is kinda pointless, but try to do anyway
+				+ Also timestamp of state start
+				+ Reset at state transitions
+					+ Do state trans via func: TransitionState(newState, currentSimTime); func switch'es
+						+ Uses union-structs internally for resetting & setting up (** below)
+
+		+ Floor @ triangles
+
+		+ Code rearcs & integration - 1 (BL only):
+			! Goal: be able to copy folder of files seamlessly across FS and BL
+			+ LogMessage/LogDebug -> LogNpcDebug (w/local #ifdef)
+			+ Make Barylab branch
+			+ Renames (files and classes)
+				+ Mesh->Ship
+					+ And put in Physics namespace
+				+ Redo OppositeTriangles @ Triangles (array of 3)
+					+ ShipBuilder
+					+ Use it instead of other call: replace all calls to Edges::GetOppositeTriangle
+						+ And cleanup edge element indices if we don't need them
+							+ We need them to get opposite edge - store alsi this in OppositeTriangles
+				+ Edges->Springs
+					+ And put in Physics namespace
+				+ Vertices->Points
+					+ And put in Physics namespace
+				+ Fuse StructuralMaterial/Database into FS
+					+ Rename both to FS: Materials and MaterialDatabase
+					+ Split current StructuralMaterial into:
+						+ StructuralMaterial
+						+ NpcMaterial
+							+ Enum with all materials, as we'll be picking them in code based on NpcType
+						+ MaterialDatabase:
+							+ Loads two jsons (materials_structural.json and materials_npc.json)
+								- Split current json
+							+ MaterialDatabase: expose getters for both
+								+ The getters for StructuralMaterial will stay private to BaryLab
+								+ The getters for NpcMaterial will be copied to FS 
+						+ NPCs takes DB
+				+ "EventDispatcher" -> "GameEventDispatcher"
+				+ All "BLab" -> "Game"	
+				+ LabParameters
+			+ Rearc source files in NpcSimulation folder
+				! No namespace: some types are in GameTypes anyway...
+				! Not VS GUI
+				+ Npcs, Npcs_*, NpcParticles
+
+			+ Move what used to be GameCore files to GameCore lib
+				+ Then rearc all #include's for dual "section"
+
+			+ Merge NpcParticles: FS + BL => BL
+				+ Copy NpcParticles' "reservation" system from FS
+					+ Integrate into Npcs::Add(...)
+				+ See anything else in FS that is not in BL
+				+ Finalize NpcParticles:
+					+ Getter for # of free particles remaining (replaces current getter for # of particles)
+
+			+ ~Merge Npcs: FS + BL => BL
+				+ Kind hierarchy (@GameType):
+					+ NpcKind (Furniture, Human)
+					+ HumanNpcKind, FurnitureNpcKind
+						+ Reflected into union of state structs in Npc::StateType
+						! Independent from NpcMaterial::KindType
+				+ NPCs container from FS (main + index, ship &, etc.)
+					! Use cases:
+						! 1. Reaching all NPCs of a specific ship (e.g. because of ship-wide interactions, such as electrical tool, alarm, deleting ship, etc.)
+						! 2. Allow an NPC to move ships (e.g. the one "being placed")
+						! 3. Reaching an NPC by its ID
+					+ Design:
+						+ Single vector of (opt) StateType - null'ed when removed
+							+ Stable index
+						+ NpcId is shipless, and an index in the above
+						+ Separate vector (shipID-indexed) of opt containing vectors (indices in single vector of StateType)
+							+ Also contains ShipMesh at head
+						! When an NPC is moved to a different ship, its ShipId member is changed, and the ShipID "index" is updated
+						+ void OnShipAdded(Ship const & ship) (from FS)
+						+ void OnShipRemoved(ShipId shipId) (from FS)
+					+ Decisions:
+						+ Physical rendering: it is only in Barylab mode
+						+ Rendering:
+							+ Move NpcRenderingMode into RenderContext
+							+ Probe from NPCs in BaryLab mode for Physical mode
+							+ Else, upload NpcQuads (Limbs->Quads)
+								- But in BaryLab's RenderContext, if Limbs vs Texture, use Limbs shader instead of Texture shader
+
+					+ TODOs:
+						+ Npcs::Update does not take Ship anymore
+						+ Finish changing code for new container
+						+ "Materialization" of NPC state, at:
+							+ MoveParticleBy
+							+ OnPointMoved
+						+ "Initialization" of human, at:
+							+ "Materialization" of NPC state
+						+ "TODO's" in code:
+							+ Npcs.h: possibly superfluous methods
+							+ Publishing of behavior change at human initialization
+								+ Need CurrentlySelectedNpcId, opt
+									+ Auto-select from LabController at BeginPlacement, and reset at Abort
+
+
+		+ Placement:
+			! Spec:
+				! Add: Click @ pos (w/eventual error if no room for new NPCs) -> Move -> Abort|Confirm
+				- Move: Hover around (w/highlight) -> Click (picking last hovered) -> Move -> Finish
+				- Remove: Hover around (w/highlight) -> Click (picking last hovered) && immediately removed
+
+			+ Prep work:
+				+ LabController start: no NPC
+				+ OnShipAdded: called with Ship (we need this so that Npcs has all ships)
+
+			+ API:
+				+ opt<PickedObjectId<NpcId>> BeginPlaceNewHumanNpc(HumanKind, pos)
+					+ Returns nullopt if there's no room anymore for humans
+					+ Creates NPC at topmost ship in "BeingPlaced mode"
+					+ Redo materialization using FindTopmostTriangle
+				+ opt<PickedObjectId<NpcId>> ProbeNpcAt(pos)
+					+ Returns nullopt if no NPC at position
+					+ Resuscitate FindTopmostContainingTriangle
+						+ Need to have PlaneId at Points
+				+ void BeginMoveNpc(NpcId)
+					+ Move to topmost ship - via TransferNpcToShip(..., see below)
+					+ Set to BeingPlaced X 2
+					+ Maintain stats & publish
+				+ void MoveNpcTo(NpcId id, vec2f const & position, vec2f const & offset)
+					+ Remember to calculate velocity(-ies) for particle
+				+ void EndMoveNpc(NpcId)
+					+ Ship finding:
+						+ ResetNpcStateToWorld is responsible for finding ship
+							+ Doesn't take ship anymore
+							+ Callers don't need per-ship loop
+					+ Update stats
+						+ See OnNewNpc vs what we would be doing here
+				+ void CompleteNewNpc(NpcId id)
+					+ Call EndMoveNpc
+				+ void RemoveNpc(NpcId)
+					+Update ship indices
+					+ Update stats
+						+ Regime, w/publish
+						+ Count
+					+ Remember for LabController to ask Npcs to DeselectNpc() if it's that one
+				+ void AbortNewNpc(NpcId id)
+					+ Call RemoveNpc
+					X Test with MainFrame key changing tool
+				+ void HighlightNpc(NpcId, HighlightType)
+					+ Rendering
+
+			+ "Upload" -> "RenderUpload"
+
+			+ PlaneId rearc
+				+ Go back to Ship instead of ShipMesh, so we have GetHighestPlaneId
+					+ Copy method name from FS
+				+ StateType:
+					- opt<PlaneId>, not set for topmost
+				+ Do TransferNpc()
+				+ @ ResetNpcStateToWorld: (primary's) triangle's (ship ID and) plane ID, or (topmost ship ID and) its highest plane ID
+				+ @ creation/begin move: topmost ship ID and its highest plane ID
+					+ PlaneId *not* taken care of by TransferNpc()
+				+ @ end move: triangle's ship ID and plane ID, or topmost ship ID and its highest plane ID
+					+ Taken care of by ResetNpcStateToWorld
+				+ Upload PlaneId @ Render
+					+ Pick topmost if nullopt
+					+ Though our RenderContext doesn't use it
+
+			+ Tools:
+				+ NewNpc: polymorphic hierarchy, Human and Furniture which just differ in tiny protected method for starting					
+					+ Better error cursor
+				+ MoveNpc
+					+ States:
+						+ Hovering
+							+ CandidateNpc: as long as set, it's highlighted
+						+ Moving
+							+ PickedObject
+					+ Deinitialize: un-highlight
+					+ Fix: mouse move after npc picked does not update offset
+				+ RemoveNpc
+
+			+ Follow-up NPC work:
+				+ @BeginPlacement: regime is BeingPlaced
+				+ Physics update: if regime==BeingPlaced: no physics steps if Human && Secondary, or !Human
+					! MoveTo calculates velocity(-ies) though
+				+ New "BeingPlaced" BehaviorType for humans
+					+ Implicitly matches flag for secondary
+				+ No stats update at begin placement & at abort
+					+ Based on regime
+				+ @ NPC materialization: when we decide ship, make sure we move the NPC to it
+					+ ResetNpcStateToWorld() - the one that finds ship - calls TransferNpcToShip(npc &, from, to)
+					+ TransferNpcToShip(npc &, from, to)
+						+ Sets ship ID in NPC
+						+ Maintains indices of ships
+						! Does *not* worry about plane ID
+
+				+ Stats rearc:
+					+ First off, display stats @ panel
+					+ Stats: remove NpcCount from stats; just do Inside/OutsideShips *but only for humans*
+						+ Go through the following, updating stats and removing now superflous calls to PublishStats:
+							+ All calls to PublishNpcStats
+							+ BeginPlaceNewHumanNpc
+								+ Just ++npccount
+							+ BeginMoveNpc
+								+ Stats update iff human & starting from those regimes
+							+ EndMoveNpc
+								+ Assert old regime
+								+ Stats update iff human & falling in those regimes
+							+ CompleteNewNpc
+								+ Assert old regime
+								+ Stats update iff human & falling in those regimes
+							+ RemoveNpc
+								+ Stats update iff human & starting from those regimes
+							X AbortNewNpc
+							+ Ship removal
+								+ Stats update iff human & starting from those regimes
+								+ Publish once
+
+					+ Stats update at constrained<->free
+						+ OnMayBeNpcRegimeChanged(old_regime, npc)
+							+ Invoked each time after ResetToWorldState, even when we know old is BeingPlaced
+						+ TransitionParticleToConstrained/Free(...)
+							+ Which does it, then recalcs regime and invokes the above
+					+ Avoid publishing stats for each NPC at ShipDestroy
+						+ Nuke UpdateStatsOnXXX(); skeleton implemented as needed:
+							! Update Free/Constrained count
+							! Update count
+							! Publish
+
+
+				+ Animation @ BeingPlaced:
+					+ Init dir=1.0/0.0 (front/-)
+					+ Arms & legs: flipping between 1/4 PI to 3/4 PI with both time and distance
+						+ Offset between arms and legs is random
+
+		+ PanicLevel rearc
+			+ Multiple vals
+			+ HumanBehavior update: @ end:
+				+ Calc resultant
+				+ Decay others
+			+ Use resultant where needed
+
+		+ Merge back into master
+
+		+ When moving head across floors, feet get stuck
+			+ Isn't it enough to make both particles free?
+
+		+ Other animation improvements:
+			+ See if we can change NPC's first state after placement from KO'd to Aerial
+			+ Aerial: 
+				+ Try 1: arms are always "up" in direction of head, but a bit less so when NPC is horizontal
+				+ Transitions out:
+					+ If enough time (very short, 2-3 frames) constantly with:
+						+ a: foot on edge
+						X b: reasonably vertical
+						+ Then: go to rising
+					+ If enough time (quite short, > 7 frames) constantly with:
+						+ a: foot on edge
+						+ b: relvel "falling down" (away from vertical)
+						+ Then: go to falling
+			+ Aerial: arms are up too soon - make them go there slower
+			+ Falling->Aerial (i.e. when on the floor and bouncing up): faster
+			+ FIX: ending move makes arms start from scratch; need continuation of human state
+			+ Aerial: lower arms when foot on the floor
+			+ Walking: arms aperture depends on walking speed (when not in panic mode)
+			X Aerial: upon impact, rotate face direction by one
+				X If looks good, use somehow also at swimming
+			+ Transition between Free_InWater and Free_Swimming should be smoother
+				+ NPC starts swimming too quickly
+			+ Walking: 
+				+ Realize earlier than we're falling - but don't confuse with little bump
+					! Acceptable down V: -6.12
+					= Can relax: if we're walking at normal speed, our tolerance to vert V could be very small					
+				X Fix: when very fast and up a slope, we do little bump (which is OK) but then when we land we bounce and thus flip
+					! OnImpact(0.0341793, (-0.606217503548, -0.795298933983)); velocity=(-3.19136810303, 2.45355224609)
+				+ Fix: when very fast, we lose equilibrium too much because feet start fast and head not => StaticDisplacementAngleCW becomes large
+					+ More tolerance
+			+ Swimming:
+				+ Initial pause while gathering limbs
+				+ Multiple styles:
+					! This one
+					+ Trappelen (leg lengths) together with arms
+					+ Trappelen (leg lengths) with one arm above
+			+ Try crotch offset updated while walking
+				! Completely animation-based
+				+ UpdateAnimation has new member: ~"crotch height adjustment"
+					+ Updated based on locally-calcuated leg angle
+				+ RenderUpload calcs human points taking ~"crotch height adjustment" into account
+			+ Fix: when in Free_Aerial and floating, it never goes to swimming
+
+		+ HumanNpcLengthAdjustment
+			+ Use @ spring force calc'ns
+				+ At adjustment change detection: update all humans' DipoleLength's
+			+ SettingsDialog
+			+ Initial dipole state
+			+ Fix: torque calculation currently hiddenly depends on dipole length; needs to become independent from it
+				+ Symptoms: small man always flips, small human never rises once KO'd
+		+ Randomize human height
+			+ HumanState::Height member init'd with gaussian - see real distribution params
+			+ Replace all accesses to GameParameters::HumanNpcGeometry::BodyLength with this member
+			+ Influences also walking speed
+				+ GameParameters: "base" + "adjustment"
+					+ SettingsDialog
+				+ HumanState::WalkingSpeedBase (const) member init'd here
+				+ Replace all accesses to GameParameters::HumanWalkingSpeed with this member
+				+ Check high and low speed
+				+ Check tall and short adjust
+
+		+ Stop "hanging head" issue
+			! We want to allow feet (primary) constrained and head (secondary) free, as secondary is allowed to become constrained
+			+ Rearc:
+				+ 0. Test pri/sec free and other not				
+				+ 1. When pri becomes free, sec becomes also free
+					+ @ TransitionParticleToFreeState
+					+ Test:
+						+ Head flying off while feet on ship: stays in-ship
+						+ Feet flying off while head on ship: whole becomes free
+				+ 2. IsEdgeToFloor: taken care of by tessellation, including "sealed but crossing makes free"
+					+ Make test mesh and check current behavior
+					+ 2a. Reduce IsEdgeToFloor to just check surface type; verify broken
+					+ 2b. Do at tessellation
+						+ Triangle's subedge is floor if:
+							+ Edge is floor, and
+							+ Not is sealed, or (is sealed and) there's no triangle on the other side of this subedge
+					+ 2c. Test:
+						+ Temporarily remove call to other function
+						+ Head/feet in sealed triangle, internal
+						+ Head/feet in sealed triangle, on border to free
+				+ 3. Other func: verify is broken now w/sleeping giant; fix w/TODO
+					+ Separation + human vertical
+				+ 4. Rewrite floor check
+						+ Nuke & replace with direct check for surface type
+				! Plan B: ray-trace from sec'ry to pri'ry, if no more edges found (other than the edge that the sec'ry is on): not a floor
+			+ Cleanup
+
+		+ Test with single particle ("furniture")
+
+		X See if can get rid of floor type @ Springs
+
+		+ Leg length also should be adjusted w/crotch
+			+ After all: crotch is down, hence leg is also down now
+		+ No buoyancy while being placed
+
+		+ Video
+			+ Things to show:
+				- Placement
+				- Walking
+				- Rag doll
+				- Many humans
+				- With ship movements
+				[]
+				- Panic
+				[]
+				- Swimming - when many, so we show different styles
+
+	+ Prepare for optimizations
+		+ IN_BARYLAB defines BARYLAB_PROBING
+		+ Use BARYLAB_PROBING around various publishing code
+			+ Test compiling w/out IN_BARYLAB
+		+ Add PerfStats
+			+ NpcSimulation time (take naming from FS)
+			+ Display
+		+ Add RenderUpload to PerfStats
+			+ Separate measurement, separate output
+		+ Add mechanism for jumpstarting with 100's of human NPCs
+			+ Npcs::Add (== BeingPlace+EndMove)
+			+ Call from LabController @ initialization
+		+ Initial measurement: 
+			+ 1024 human NPCs, all walking:
+				- Update: 0.34ms
+				- RenderUpload: 0.25ms
+			+ 8192 human NPCs, all walking:
+				- Update: 2.7ms
+				- RenderUpload:  1.9ms
+				
+	+ Optimizations:
+		+ Run perf analysis
+
+			++++++ Initial
+			+ Npcs::UpdateNpcs: 41.33%
+				- Npcs::UpdateNpcParticlePhysics: 19.08%
+					- Npcs::CalculateNpcParticleDefinitiveForces: 5.29%
+						- atan2f: 2.36%
+				- Npcs::UpdateNpcAnimation: 9.84%
+				- Npcs::UpdateHuman: 5.55%
+				- Npcs::CalculateNpcParticlePreliminaryForces: 2.53% => 2.41%
+			+ Npcs::RenderUpload: 45.22%
+				- Npcs::RenderNpc: 30.63%
+					- RenderContext::UploadNpcQuad: 21.31% => 18.04%->18.25%
+			++
+			+ sin: 5.39%
+			+ atan2f: 4.34%
+
+			++++++ Interim 1
+			+ Npcs::UpdateNpcs: 38.86%
+				- Npcs::UpdateNpcParticlePhysics: 18.90%
+					- Npcs::CalculateNpcParticleDefinitiveForces: 5.24%
+						- atan2f: 2.25%
+				- Npcs::UpdateNpcAnimation: 8.38%
+					- atanf: 1.02%
+				- Npcs::UpdateHuman: 5.19%
+				- Npcs::CalculateNpcParticlePreliminaryForces: 1.83%
+			+ Npcs::RenderUpload: 41.76%
+				- Npcs::RenderNpc: 28.27%
+					- RenderContext::UploadNpcQuad: 20.18%
+			++
+			+ atan2f: 4.75%
+			+ atanf: 1.02%
+			++
+			+ Measurements 2.5/2.6, 1.2
+
+			++++++ Interim 2 (equilibrium torque)
+			+ Measurements 2.4, 1.2
+
+			++++++ Interim 3 (equilibrium maintenance, last atan)
+			+ Npcs::UpdateNpcs: 42.22%
+				- Npcs::UpdateNpcParticlePhysics: 20.98%
+					- Npcs::CalculateNpcParticleDefinitiveForces: 3.52%
+					- ToBarycentricCoords: 2.10%
+				- Npcs::UpdateNpcAnimation: 10.23%
+					- atanf: 1.01%
+				- Npcs::UpdateHuman: 2.93%
+				- Npcs::CalculateNpcParticlePreliminaryForces: 2.28%
+			+ Npcs::RenderUpload: 33.77%
+				- Npcs::RenderNpc: 22.69%
+					- RenderContext::UploadNpcQuad: 14.66%
+			++
+			+ atanf: 1.01%
+			++
+			+ Measurements 2.3, 1.1/1.2
+
+			++++++ Interim 4
+			+ Measurements 2.1/2.16, 1.1/1.2
+
+		+ Update:
+			+ CalculateNpcParticlePreliminaryForces:
+				+ Precalc most spring force factors
+					+ Figure out what to do with BaryLab's specific parameters (gravity adj/gate, mass adj)
+						+ 1. Npcs own the BaryLab-specific params (GravityAdj/Gate, MassAdj)
+							+ Out of GameParameters, and LabController sets them in Npcs
+							+ Members are in #IN_BARYLAB
+						+ 2. Npcs: upon getting changes, stores in members and calls RecalculateSpringForceParameters()
+						+ 3. Npcs::RecalculateSpringForceParameters:
+							+ Calcs with common params first
+								+ See if in FS we take these as args or use the mCurrent values
+							+ Then if #IN_BARYLAB multiplies by adjustments
+						+ 4. Update: upon detecting param changes, calls RecalculateSpringForceParameters
+						+ Test:
+							+ Mass
+							+ Gravity
+							+ Spring 1
+							+ Spring 2
+			+ UpdateNpcAnimation:
+				+ Try with calculating cos & sin once there (after target angle calc'n) and reusing those @ multiplier calculation _after_ target angle
+					+ Count first
+					+ New sub-struct: AnimationState
+					+ UpdateAnimation()
+						+ Use cos/sin @ Walking/LegMult
+					+ RenderUpload()
+				+ Those "TODO" optimization while walking
+				+ Fix edge/cross thing
+					X Option 1: NavigateVertex after bounce @ NonInertial, if on a vertex
+						! Too complex, requires calc'n of new traj end which itself depends on bounce response velocity
+					X Option 2: no adjustment if negative
+					+ Option 3: limit lambda
+				+ Vectorize target progress
+				+ Traverse dir's do redundant normalization
+					+ F/B
+					+ L/R
+			+ Own sincos_p4 from http://gruntthepeon.free.fr/ssemath/sse_mathfun.h
+				+ 1. Merge GameMath
+				+ 2. FS: UnitTests
+				+ 3. FS: Benchmark
+				+ 4. Impl
+					+ Verify assembly for those constant loads
+					+ See if can use 4f constants elsewhere
+				+ 5. Use in BaryLab
+					+ Make AnimationState members as vectors4
+			X Own atan2
+				+ Merge vectors
+			+ See if can do without atan2
+				+ CalculateNpcParticleDefinitiveForces: radial rearc: similar to springs:
+					+ Torque force is radial, and resultant of two components:
+						+ 1: Hookean force proportional to length of arc to destination, directed towards the ideal head position
+							- But we approximate the arc with the chord, i.e. the distance between source and destination
+								- Source is *predicted* source
+						+ 2: Damp force proportional to component of relative velocity that is orthogonal to human vector, opposite that velocity
+					+ If ok:
+						+ Cleanup/Optimize
+						+ Test:
+							+ Panic
+							+ Different human height
+				+ CheckAndMaintainHumanEquilibrium: work with cos (i.e. dot) and cross
+					+ Angle wrt vertical: use y component of normalized vector (+1.0 if fully vertical, i.e. cos); we're out if y < cos(MaxAngle)
+					+ Angle rel vel: 
+						+ We're out (diverging) if RV dot perp(humanDir) < or > 0 depending on whether H is left or right of IH
+							+ => out iff RV dot perp(humanDir) * (IH.x - H.x) > 0
+					+ Also calc RV only if needed
+			X See SSE load immediate
+			+ Make limb vectors aligned 
+				+ Change loadu/storeu back to a - Algorithms and GameMath
+			+ RenderUpload: should not need any normalization()
+			+ Various normalize() -> approx
+				+ RenderUpload Quads
+				+ Equilibrium torque
+				+ Walking: limb-on-edge constrains (angle+length)
+				+ Falling limbs
+				+ Rag-doll limbs
+				+ Equilibrium maintenance
+				+ 2.2/1.2
+			+ See if there are any ray-tracing bcoord conversions that are redundant if we have abs positions
+			+ Fix walking speed adj changes not picked up
+				+ Test panic
+			+ The TODO:perf at walking
+			+ See why flipping walk when on slope and mesh rotates
+			+ Inline various simulation funcs
+				+ NavigateVertex
+				+ Bary coords
+				+ 2.1/1.2
+			+ See if can do without atan @ UpdateAnimation - Constrained_Walking
+				+ 2.1/1.2
+			+ Fix: going through wall - repro: all humans, slight inclination
+			+ Fix: getting stuck - repro: all humans, slight inclination
+				! Definitely due to epsilon too small: got a case with -1.00127444e-07/-1.45286322e-07
+				+ Algo for "other side of edge":
+					+ InternalCalc takes vertex ordinal "anchor" and two other vertex ordinals (as non-anchors)
+					+ Calc coords using any of not-edge as anchors (=> edge is one of the two coords calc'd)
+					+ Then clamp edge and calc 3rd coeff via 1-...
+				+ Cleanup
+			+ See if can get rid of IsOnFloorEdge - by using CurrentVirtualEdge
+				! IsOnFloorEdge() is currently used for:
+					- Human behavior update: transitions depend on whether feet/head are on edge
+					- Human animation update: rag doll, etc.
+				! As long as CurrentVirtualEdge is only and always set when we know we're on an edge (ConstrainedNonInertial)
+					- At this moment it's set _before_; we need to set it _after_, reflecting actual situation _after_
+						! Current impl seems broken when we bounce
+						- Initialization - as "free"
+						- After ConstrainedNonInertial, where we may be:
+							- Still non-inertial, (but might be on a different triangle and thus different edge, but definitely on an edge)
+							- Have become inertial (so not on an edge)
+							- Have become free (so not even constrained)
+							- SO: just use edge if at exit we're constrained *and* on an edge
+								- TODO: no this is broken, 1) when we're at a vertex
+								- TODO: see solution on notebook
+						- After ConstrainedInertial:
+							- Always "free" (-1), as we only decide we become on an edge @ ConstrainedNonInertial
+						- Free: assert it's -1 (actually, does it even exist?)
+					- While we're here: see if ConstrainedNonInertial can rollback current tri/coords at bounce, so we can get rid of "vertical edge" issue
+						- But then see effect of this change on gravity well
+				+ Impl:
+					+ Undo cur changes - diff first!
+					+ GameTypes: TriangleEdge (TriangleElementIndex, EdgeOrdinal)
+						+ Never "None" indices/ordinals
+						X Also replace in well detection machinery
+							! That one has bary coords
+					+ CurrentVirtualFloor: opt<TriangleEdge>
+					+ Do code changes
+						+ Mostly cosmetic, with the only change being the triangle being correct now
+					+ Verify walk-bounce animation behavior now (legs angles & lengths)
+					+ Try with older (higher) convergence rate now
+					+ IsOnFloorEdge: see if may nuke it & replace with check for CurrentVirtualFloor
+						+ Do parallel+check first, with logging
+						+ Some dynamics have changed, see if for better or worse
+							+ Set current_virtual_floor at *inertial* bounce - after all it's a floor edge we're on at that (infinitesimal, frame) moment
+				+ Tests:
+					+ Constrained_Aerial -> Falling (feet or head have V)
+					+ Constrained_Aerial -> Rising (no V)
+					+ Animation of rising: helping leg/arm
+					+ Animation of walking: leg lengths and leg angle limits
+				+ Cleanups:
+					+ Nuke IsOnFloorEdge
+		+ Bary coords:
+			+ Check assembly
+			X Can do two coords in parallel via SIMD?
+				X Move to Algorithms, then add unit tests (all of this in FS first)
+			= Read https://fgiesen.wordpress.com/2013/02/10/optimizing-the-basic-rasterizer/
+		+ RenderUpload:
+			+ Pre-alloc quad buffer
+			X UploadNpcQuad force-inlined
+				! Didn't change anything
+			+ Analyze asm
+				+ Lots of things seem optimizable, make sure compiler has optimized them
+			x Vectorized rotation
+				! Broadcast first actualBodyVDir.x to __m128 x and actualBodyVDir.y to __m128 y
+				! Sin and Cos are already vectors
+				! xx[0] = x[0]*c[0] - y[0]*s[0]
+				! yy[0] = x[0]*s[0] + y[0]*c[0]
+				! L Arm is (xx[0], yy[0])
+				! ...
+				X Do at:
+					X F/B
+					X R/L
+			X BoundedVector: find way to reserve+take_pointer+advance pointer; see if improves
+				X Doesn't change anything
+			+ Index work to lower # of vertices per quad
+				+ Use at RenderContext
+
+		+ Profile swimming (free regime)
+
+	+ normalize_approx
+	+ Some more randomization of behaviors
+		+ -1...+1
+		+ BeingPlaced
+		+ KnockedOut->PreRising
+		+ PreRising->Rising
+		+ See with 8K NPCs
+	+ shorter time to converge walking magnitude to 1.0
+	X Problem with running up a slope (messy stumbling): it's due to the human angle becoming too low, after feet bounce on floor
+		+ There isn't much to do here?
+	+ Better rising animation
+		+ New arm
+			+ Try to move arms earlier
+			+ Accept and cleanup 
+		+ Try both legs bent
+			+ ThighLegLengthFraction member
+			+ ThighFraction: "nothing" is 1.0, and RenderUpload does UpperLeg always with that length
+				+ @ member
+			+ AnimationUpdate:
+				+ At beginning: set to 0
+				+ At walking: <see notebook>
+				+ ThighFraction default is 1.0
+				+ New ThighFraction values dynamics
+				+ Do ThighFraction and leg angles only if L/R
+			+ RenderUpload:
+				+ Carve room in ShipRenderContext for thighs
+					+ Decide whether we want to precisely calc or overshoot instead
+						+ Though that would cause more churn in BoundedVector
+						+ Decided: overshoot
+				+ Do legs with if depending on ThighLegLengthFraction
+				+ Only when sideways
+				+ Do UpperLeg always (preliminary quad), using ThighFraction
+					+ And lower leg (opt) iff 1.0-ThighFraction > 0.0
+				+ Calc traverse vector for lower leg
+			+ Straight legs earlier
+			+ More separation between two legs - until when we zero angles out
+			+ Increase arms angle
+			+ Introduce Constrained_PreRising state:
+				+ HumanBehavior state update: 
+					+ Conditions to stay: same as KnockedOut
+					+ Conditions to go to Rising: same as KnockedOut
+				+ Go to PreRising instead of Rising
+					+ Only from KnockedOut
+						! Aerial->Rising is not suitable
+						X Others?
+				+ AnimationUpdate:
+					+ Arms: angle towards PI/2 and length multiplier towards 0.0
+				+ Rising animation:
+					+ Arms: 
+						+ Early stage: length multiplier towards 1.0, and angle fixed ad where it is (PI/2)
+						+ Late stage: no length multiplier, and angle like now
+					! Legs: unchanged
+				+ Replace angle-taking at PreRising with alignment with floor (dot><0)
+				+ Replace PI for HumanAngle at Rising with negative
+					+ Basis
+					+ Optimized
+					+ And complete arm length multipliers @ Rising
+				+ Improve arm length recoil at rising
+					+ Make it touch floor - use pseudo tan
+				+ See how Constrained_Aerial->Rising transition looks like
+			+ Animation knees: do case where we're facing away from floor
+				+ Facing away from floor: iff face_dirx <> left case or right case
+				+ Simply opposite angle for legs?
+		+ Reduce rising speed
+			X 1. More damp: >= 0025
+			X 2. Torque relationship wrt head-idealhead distance: sub-linear (less when distance high - so rises slow - and more when small - so converges earlier)
+				- Use a quadratic relationship anchored to current force we get at say PI/4
+			+ 3. Less stiffnes: 0.0044 -> 0.004
+	X See if slow growth of thigh is really needed - can do 0.5 right away (and thus constant the whole time)?
+	+ Pass texture coords @ RenderUpload (as stand-in of future real textures, but improving knees with current shader)
+		+ Do special for knee - calc based on upper/lower lengths
+		+ Try with quad joint
+	+ Fix issue with first frame of Rising on sloped floor
+	+ Test rising on slope
+		+ Fix: not human-edge angle but wrt vertical
+		+ Fix: rising on high slope causes microbursts of ConstrainedInertial during Rising and thus animation goes bananas
+			+ Still problem of discontinuity; can be solved by remembering current virtual edge that we're rising on - as an "animation" member
+				+ As optional, as we're not guaranteed to be on the edge initially
+				+ We store it at animation update when we're against the edge
+					+ So we also update it
+				+ We use it when we're not against the edge in that small burst, if we have it
+					+ Otherwise we go through "remain" codepath
+	+ Test mesh spikes (head/feet)
+	+ Lower max speed
+	+ Lower human elast
+	+ Add velocity damp
+		+ When free
+		+ When constrained (*)
+			! Problem 1: needs to be only relative velocity part to be damped, not mesh velocity
+			! Problem 2: only secondary has torque velocity, so we'd always apply damping to primary (feet)
+				- Can solve with check on human behavior (one of those three behavior types)
+			+ Rearc:				
+				+ 1: replace NpcParticles' Torque buffer with HumanState::EquilibriumTorque (float)
+					+ Reset at UpdateHumanBehavior
+					+ Set when we currently set it
+				+ 2: apply torque conditionally at CalculateDefinitiveForces():
+					+ If Human && EquilibriumTorque != 0.0 && is secondary
+				+ Test & commit
+				+ 3: apply damp:
+					! General principle: damp should only apply to relative velocity (relative to mesh)
+					+ At all velocity calculations (both pri+sec), but only if NOT (Human && EquilibriumTorque != 0.0) 
+						! Because damp kills equilibrium, as secondary doesn't gain enough velocity from walk
+						+ Apply to non-mesh portion of absolute velocity
+					+ Include bounce velocity (because it's calculated from new absolute) 
+						+ But only to relative velocity part (same trick - removing mesh velocity?)
+					+ Except gravity well velocity (because mesh velocity is not to be damped)
+				+ Tests:
+					+ Jumping while ship is in motion: damp should NOT apply (as relative velocity is zero)
+		+ Add slider
+	+ See if now recovers from hanging on feet
+		+ Requires velocity damp work above (*)
+		+ Also has new problem: head hitting floor when rising up
+			! Because indeed angle is not "quite vertical", so we consider it a floor
+				! y is actually 0.6: even opposite sign of what we consider "quite vertical" for the purposes of "hanging head (w/head on top)"
+			+ Fix: HumanBehaviorUpdate-@KnockedOut: when we decide time is ripe to transition to Rising:
+				+ Before doing the transition to Rising, check condition to detect hanging-by-feet: 
+					+ Feet on floor, head not on floor, and reasonably vertical heads down
+				+ If condition met: set primary's "GhostParticlePulse" to true
+					+ Else: go to rising, as before
+				+ GhostParticlePulse:
+					+ Init'd as False @ beginning of HumanBehaviorUpdate (just like EquilibriumTorque)
+					+ Check it @ IsFloorToParticle()
 
 
 
+	+ Random width
+		+ Skew: thin stddev 0.05, fat 0.15
+			+ And cap for safety
+	+ Randomize to-rising convergence rates
+	+ Wave simulation
+
+	+ Note: LogDebug/NpcDebug evals args - have Log.h defined as macro
+		+ Do
+		+ Integrate into FS - and test build
+
+	+ Remaining state machines:
+		+ See above for "Impact" responses at the various states 
+			+ There is remaining (=) work above for this!
+		+ State::Free_Aerial: (was: FreeKnockedOut)
+			+ We transition here at UpdateBehavior, NOT at BecomingFree!
+			+ Becomes InWater if both points in water
+		+ State::Free_InWater:
+			+ Converges towards Free_Swimming by going to target==head_vel.normalize().dot(human_vector.normalize())
+			+ Becomes Aerial if no points in water
+		+ @ Becoming free: decide between Free_Aerial vs Free_InWater depending on OceanSurface
+		+ State::Free_Swimming:
+			+ Becomes Aerial if no points in water
+			+ Animation
+		+ Impacts:
+			+ At each impact, call OnImpact(...particle..., ...impact quantities...)
+			+ OnImpact: if human, check state machine and do following transitions:
+				+ If walking and impact V (velocity of particle along normal) is in direction of walking:
+					+ Flip direction
+
++ Walk paths/manholes/stairs:
+	! Concerns to be addressed by design:
+		- 1. NPC needs to be able to choose among multiple options when walking at an intersection, e.g. between a staircase going up, a staircase going down, and continuing flat beyond the staircase
+			- 1a: But NPC cannot choose to "go free" if there's a floor that separates it from free region
+		- 2. When walking up a slope (e.g. staircase, but also V or H wall when ship is rotated) NPC should not bang their head 
+	+ Overall design:
+		! When *in walking state* and arriving at a vertex at which there are more than two *viable* floors there (incl. incoming, so >= 2+1), choose which one to take
+				! It's like "not seeing" certain floors
+			! Note: *viable* == with right slope for walking on it
+				! We only consider those floors that are in a sector centered around walk (face) dir, up amplitude equal to =/-MaxSlopeForWalking, and down amplitude slightly less than vertical
+					! This allows us to take a down "stair" that is almost vertical
+				! We only choose in our direction because the simulation is still very much physical, i.e. informed by trajectory
+		! Floors have a new "depth" attribute: say 1 and 2, with 1 being those floors that are H or V at factory time, and 2 being those floors that are diagonal at factory time
+			- If we're walking on depth X (primary on X) we only bang (secondary) on X
+			- Moreover, we further break down depth 1 (H/V), so we have three floor types:
+				- Depth 1 H
+				- Depth 1 V
+				- Depth 2 S
+			- When on H (V) an NPC can never go through a V (H)
+				- But when on S can always go through any S, even orthogonal ones
+			- Smart because: S can become H/V and viceversa - they are just two planes
+		! Q1: Does a non-viable floor (=>outside sector) stop search/availability of floors behind it?
+			- A1: Only if same depth (i.e. HonV or VonH, but also HonH/VonV, though it might hardly happen)
+				- We want to allow e.g. H or V to walk under an acute S (e.g. stair:  * -> _\ -> )
+					- An acute staircase (i.e. non-viable and of other depth) does NOT stop search/availability of floors behind it, so that we can e.g. walk under a stair: -->__\__
+				- A "vertical" wall instead (i.e. non-viable and of same depth) *DOES* stop search/availability of floors behind it, so that vertical walls are never penetrated
+					- And we bounce against them
+		! Q2: does a free region stop search?
+			- A2: yes - mostly because it's physical
+		! Q3: when do we make the choice?
+			- A3: We adopt a "making a choice upon arrival" principle, hence we make this choice @ ConstrainedNonInertial's NavigateVertex site, since the 1st NavigateVertex site is 
+			  either for "initial state" (e.g. after a bounce) or for after we've already encountered a vertex in ConstrainedNonInertial and decided to continue; technically we do this 
+			  first NavigateVertex just to see the floor triangle after a bounce (instead of the vertical wall triangle)
+			
+		+ Impl:
+			! Gist: ConstrainedNonInertial: when primary+walking and reached a vertex and following direction to find next floor, we navigate around the vertex - according to the walk direction, i.e. CW/CCW - and
+			  collect all floors (viable and not viable) that we encounter
+			  ! If not primary or not walking: simple NavigateVertex as with old code
+			! If we find a floor - viable or not - which is either HonV or VonH:
+				- If there are no candidates: either bounce on it (if not viable) or force-choose it (if viable)
+				- Else: stop search now and choose one of the candidates found so far
+			! Rules for floors as they are found:
+				- Viable or not: 
+					- HonV or VonH: stop and: 
+						- If there are no candidates: bounce (if ! viable) or move onto it (if viable)
+						- Else: choose one of the candidates found so far
+				- Not viable:
+					- Same depth as we are now: stop and bounce (basically: HonH or VonV or SonS but not viable)
+					- Different depth: store it (first one that we find) and keep searching; if later we find that there are no candidates, we'll bounce on it
+			+ Make branch
+			+ 1. Expand floor enum: depth 1 has H and V
+				+ Enum and assignment
+			+ 2. ConstrainedNonInertial: after realizing that we are *not* going into triangle:
+				+ If human && current state is walking && this is primary:
+					+ NavigateVertex_Walking();
+				+ Else:
+					+ NavigateVertex(); // current code
+				
+			+ 3. NavigateVertex_Walking:
+				+ Make sure we have a local that allows us to get floor type of original floor (floor we're coming from)
+				+ NpcTypes: triangle+bcoords ("AbsoluteTriangleBCoords")
+					+ Also @ Npc StateType
+				+ Algo
+					+ Viability
+					+ Choice
+						+ If can choose between walking and falling, don't go for falling
+							+ Currently happens at this (right-hand side of fulltest):
+									|
+								      --|
+								       /|
+							+ Possible fix 1: gist: take "very vertical" only if it's the only choice
+									- Edge is viable (edgeDir=(-0.00516510521993, -0.99998664856))  !!! Very vertical
+								- Very vertical may come at any time, hence we'd better skip at choice making
+									- Even more important then that we make the choice once
+					+ Bump
+					+ HonV/VonH should enter candidates if it's viable
+						+ Problem with not choosing edge; fix:
+							+ If at vertex:
+								+ NavigateVertex
+								+ Outcome:
+									+ EncounteredFloor: use that floor
+									+ CompletedNavigation: this is for when we realize we're toward the interior - or edges: 
+										+ Assume inertial = after all we're not _against_ the floor
+											+ Assert dot-with-normal is practically <= 0
+									+ ConvertedToFree: here we stop
+							+ Else:
+								+ Find the (0|1) floor as usual
+							+ If found edge: ...non-inertial...
+							+ Else: ...inertial...
+							! It's basically a problem when we are at a vertex with multiple floors
+						+ Cleanup old code
+
+					+ Problem: we might find ourselves without having found interior of triangle (because of numerical slack), and possibly no candidates
+						+ Fix:
+							+ Use again "from edge" variant for calculating trajectoryEndBarycentricCoords
+							+ Only calculate trajectoryEndBarycentricCoords if we don't have interior triangle
+					+ Problem: when going around, we add self floor to candidates!
+						+ Problem with isViable when going CCW && edgeDirWrtMovement==(-1, 0)
+					+ Problem: we bounce on self floor - because it's not viable and we remember it
+						+ We shouldn't consider as bounceable (and obviously also viable) those floors that are not aligned w/our direction 
+							+ We need a better algo for finding when we've gone out of alignment with trajectory - see ALTERNATIVE ALGO below
+
+			+ ALTERNATIVE ALGO for NavigateVertex_Walking viability & walls:
+				+ // Can assume we haven't gotten around (check for having gone too far stays)
+				+ If edge is floor:
+					+ Add following !'s to comments
+					! Gist: it's bounceable only if we hit it with direction
+						! In direction: synthetic_dir.dot(edge.to_perpendicular) > 0.0 == trajectory.dot(edge.to_perpendicular) > 0.0
+							! But also: !interiorTriangle.has_value()
+					! Candidate (viability) and impenetrability are orthogonal:
+						! An impenetrable wall might be a candidate (and thus it's the last candidate)
+						! A candidate might be an impenetrable wall
+					! // Why depth-trumping? Why should we not bounce on S when HonS if there's HonV later? Or not bounce on V when SonV if there's a SonS later?
+						! Argument was: An acute staircase (i.e. non-viable and of other depth) does NOT stop search/availability of floors behind it, so that we can e.g. walk under a stair: -->__\__
+						! But we can still allow bump on S if there's also HonV immediately afterwards - though bounce direction would be odd
+						! So: keep depth-trumping, reason: _\|_ and we want to bounce on vertical -- also "semi-hidden" nature of S
+					! // Impenetrable: iff HonV or VonH
+						! We allow SonS to be penetrable, so that while we go down ladder and encounter ladder going up, we may go beyond it if there's a floor/wall
+					+ Calculate viability:
+						+ Not too steep (if going up) and at most vertical (if going down)
+							+ The sector thing, exactly
+						+ Math:
+							+ If CCW: if edgeDir.x < 0 && -edgeDir.y <= MaxSlope
+							+ If CW: if edgeDir.x < 0 && edgeDir.y <= MaxSlope
+					+ If viable: 
+						+ Add to candidates
+					! Else:
+						+ If in direction (i.e. if !interiorTriangle.has_value()):
+							+ Store first_bounceable if this is first/with trumping
+								! Trumping reason: 
+									! If no other walls - nor candidates - exist, we're ok with bouncing on S at --> _\
+									! But when given a choice with vertical - e.g. --> _\| - we prefer bouncing on vertical, for better physics
+										! Honoring semi-invisible nature of S
+					+ If impenetrable: stop
+						+ // If this was viable, we'll choose it; if it was not viable, we'll bounce on it if it was in direction
+							+ Note: if it's not in direction (i.e. if we have an interior), and if we have no candidates and no bounceable - we will take the interior
+
+		+ Secondary must not hit head on different depth
+			+ Add 2S1 and 2S2 depth
+			+ If we're a human walking on depth X (i.e. primary is on X) we only bang (secondary) on depth X, and other rules from notebook
+				+ Test: try to use CurrentVirtualEdge to figure out depth of where we're walking on
+
+		+ Problems:
+			+ ShipFloorplanizer: why removes diag in VideoMesh?
+				+ It's pattern 5, for sealed_triangles_test mesh
+			+ Fix tessellation: the "arbitrary" choice between two S hurts in some cases
+				+ Test 1: wins the spring that has the highest count of "continuations"?
+			+ Bouncing on floor when coming from below and having wall
+				+ Second depth 1 trumps first depth 1 when we're on S
+					! We want to enter depth 1 space from depth 2
+			+ Bouncing on wall (normally) and skipping choice (of stair below):
+				= Fix with merging NavigateVertex:
+					! If (walking et al...): NavigateVertex_Walking
+					! Else: NavigateVertex_NotWalking
+						! Determination of bounce based on slope done all here, also NavigateVertex_NotWalking
+						! Returns bounce only if really has to do bounce, else returns whatever we return now from NavigateVertex_NotWalking when slop is OK for taking it
+					! Called by both places
+					! Bounce still handled by caller though
+						! And for the below: only by Constrained_NonInertial caller
+					+ Details:
+						+ NavigateVertex()
+							+ Walking
+							+ Not Walking
+								+ Do viability "old way"
+						+ Callers:
+							+ ConstrainedNonInertial:
+								+ Check outcome and:
+									+ Do bounce:
+										    vec2f const floorEdgeDir =
+											shipMesh.GetTriangles().GetSubSpringVector(
+											    firstBounceableFloor->TriangleElementIndex,
+											    firstBounceableFloor->EdgeOrdinal,
+											    shipMesh.GetPoints())
+											.normalise();
+										    vec2f const floorEdgeNormal = floorEdgeDir.to_perpendicular();
+
+										    LogNpcDebug("    floorEdgeDir=", floorEdgeDir, " floorEdgeNormal=", floorEdgeNormal);
+
+										    vec2f const bounceAbsolutePosition = shipMesh.GetTriangles().FromBarycentricCoordinates(
+											currentAbsoluteBCoords.BCoords, // Same as initial - in absolute coords
+											currentAbsoluteBCoords.TriangleElementIndex,
+											shipMesh.GetPoints());
+
+										    BounceConstrainedNpcParticle(
+											npc,
+											true,
+											trajectory,
+											bounceAbsolutePosition,
+											floorEdgeNormal,
+											meshVelocity,
+											dt,
+											particles,
+											currentSimulationTime,
+											gameParameters);
+
+										   + TODO: move to coords of vertex in triangle that we started with (initial?)
+
+									+ Do free:
+										    TransitionParticleToFreeState(npc, true);
+
+										    UpdateNpcParticle_Free(
+											npcParticle,
+											particleStartAbsolutePosition,
+											trajectoryEndAbsolutePosition,
+											particles,
+											gameParameters);
+									+ Translate outcome
+							+ Loop at beginning
+								+ Comment on conditions leading here - initial or bounce 
+								+ Check outcome and:
+									+ Bounce, Free: continue ("handled by ConstrainedNonInertial")
+									+ Translate outcome
+
+					+ FIX: at bounce going up on S we restart from lower tri
+						+ Plan Z: move current bcoords to bounce point (like it used to be), we'll re-navigate and then choose
+					+ FIX: Now we do double choice 
+						+ Remember choice from ConstrainedNonInertial (i.e. from its NavigateVertex):
+							+ ConstrainedNonInertial: also returns opt<edge>
+							+ We store that in local loop member (which is init'd as nullopt)
+							+ We bypass NavigateVertex when the member is set
+							+ ConstrainedNonInertial determines the next value of the member based on decision tree above
+								+ i.e. we make sure the member is always renewed after the ConstrainedNonInertial call
+							+ We lose the member when we go ConstrainedInertial
+
+
+					+ Tests:
+						+ Becoming free: check velocity imparted
+
+		+ Do secondary S/H check also during Rising
+		+ Cleanups:
+			+ Old code
+			+ Clean NpcFloorType/Depth
+				+ NpcFloorType == NotAFloor, DefaultFloor
+				+ NpcFloorGeometryType == NotAFloor, H1,...
+
+	+ FIX: secondary doesn't gain bounce velocity
+
+	+ See moving faster on 0.87 slope
+		+ And then see if can adjust slope to walk on higher slopes
+	+ See shy secondary bump doesn't invert motion
+	+ Test with mesh velocity
+	+ FIX: flying off constrained inertial does not make NPC fly
+		+ Verify CW/CCW determination is wrong
+		+ Add comment on it
+		+ Fix by setting curEdge to -1 at Interior outcome from UpdateNpcParticle_ConstrainedNonInertial
+
+	+ FIX: slowdown
+
+	+ FIX: if we slide nicely into new triangle over its edge, CNI says "no edge" because traj end is "inside" triangle (because of numerics)
+		! And thus we follow with CI, and generate a bounce (because of trajectory taking gravity with it)
+		! Repro: particle sliding along floor - little bumps (YES, the old little bumps problem! It's back!)
+		! Happens at both CNI and NavigateVertex
+		! IS THE CAUSE OF HUMANS EXPLODING
+			- Due to bounce, but how? Are diagonals involved?
+			- Investigation tips:
+				- Try to repro on long diagonal
+				- Try to repro with particles only
+				- Publish max bounce magnitude and see if we can catch that in debugger
+		! Due to the earlier fix for NPC falling from edge and taking new floor: we are saying -1 but we do want to determine new edge based off adjusted/flattened trajectory
+			- But when we restart loop, we are at a vertex and need to determine edge
+		+ Possible fix: if NavigateVertex1 or previous NavigateVertex2/CNI returned ContinueToInterior, we decide floor with old-style floor-normal decision, even if we are
+		  at a vertex
+			+ So, possible states for currentNonInertialFloorEdgeOrdinal:
+				+ Empty: we have to determine, either w/vertex style or w/floor-normal style
+					+ But vertex style might send to floor-normal style if it detects ContinueToInterior
+				+ Set to -1: we decide floor-normal style
+					+ And CNI returns this when itself or its NavigateVertex2 detects ContinueToInterior
+				+ Set to X: nothing to detect
+		+ Do best floor				
+		+ Add comments
+
+	+ FIX: stuck on top of (quite) sloped S  /-  (aka Infinite Bounce problem)
+		! Only repro's at vertex, not at edge
+		! Cause: at beginning of loop we don't know we're walking, hence trajectory is "fall" and choose floor itself;
+		  then we move but hit the ceiling, do a small bounce, and stay
+		  ! Should be the age-old problem of starting iter at a vertex
+			+ Verify repro's with particle starting in a V - both at vertex and at floor
+		+ Note: any solution should also involve ConstrainedInertial
+		+ Gist option 1:
+			! This happens because even if the particle has zero relative velocity (hasn't moved), we calculate its bounce velocity based on *projected*
+			  trjectory (which includes gravity), which we have not traveled at all
+				- And so the particle gains velocity which in turn generates a non-zero trajectory and the problem compounds
+			+ Fix attempt:
+				+ When calculating bounce response, we calculate apparent particle velocity as:
+					+ If we have moved at all during whole dt: 
+						+ apparentParticleVelocity=trajectory/dt
+						! Here we take into account new forces that sprung up just before this iteration
+					+ Else:
+						! Here we want to account for the case where the previous iteration stopped just short at the bounce
+						! We assume new forces that sprung up just before this iteration have no effect on bounce as particle is already on floor, hence:
+						+ apparentParticleVelocity=meshRelativeVelocity
+				+ Add comments with above thoughts
+				+ Cleanups:
+					+ Might avoid calling together Bounce() if no reason
+		! Plan B: MinRelativeVelocityAgreementToAcceptWalk = 0.04f; // Max velocity we gain if we start still and hit ceiling
+
+	+ FIX: floors become ghost
+		! Repro: zero stiffness, head under stair, feet over stair
+			! Then, Rising->Falling and head ghosts floor
+		! It's rule 1 (after revising rule 2): "other depth is never floor"
+			! So e.g. walking up a stair doesn't make us bang our head on the floor above
+		+ Test option 1: when rising, do not ghost edge that head is resting on (CurrentVirtualEdge)
+		X Test option 2: try to apply rules at all behaviors
+		X Test option 3:
+			- NPC has a "LastEnteredFloorDepth" (NpcFloorDepth):
+				- None: all floors are floors
+				- Depth1: only depth1 are floors
+				- Depth2: TODOHERE all depth2 are floors and for depth 1:
+					- If Walking|Rising: none is floor
+					- Else: other geometry only OR like now
+			+ Init: NoFloor (both furniture and human)
+			- Set at (by primary only, both furniture and human):
+				+ Any bump
+				+ NavigateVertex1
+				+ CNI return
+				- Becoming free - via TransitionParticleToFreeState
+
+	+ Profile
+	+ Merge back into master
+
+	+ Video
+
++ Automatic Floorplan Generation:
+	X Naive algorithm: use hull springs, but ignore "join" hull springs
+		+ Put back definition coords (opt unfortunately...) in ShipFactoryPoint
+		+ Do cases
+		+ Algo structure:
+			+ Visit springs that have "structural" endpoints (coords not nullopt)
+				+ Verify in FS that the optionality of definition_coords really reflects this
+			+ For each spring, check its connected triangles
+				+ Make sure we do this _after_ factory points are connected to springs
+			+ Given the triangle we want to check, get def coords of its vertices and use PointIndexMatrix to check for "extensions"
+		+ TessellationDirections @ GameTypes
+		+ using ShipFactoryFloorPlan...
+		+ FindNextHullOctant(..., directionOctants=1|7)
+			+ Cleanup 
+		+ Do two-pass algo
+			+ ShipFactoryFloorPlan: not of ShipPointPair but of ShipFactoryFloor
+				+ Which constains ElementIndex spring
+			+ Use FloorPlan to determine hullness of springs, rather than ship itself
+	X Algo 2:
+		X Remove springs that are:
+			+ a: Long one (nothing on their exact elongaments x 2), and
+			+ b: Incident on "long" lines (TODOHERE: multiple incident long ones? And, must this be just "first" spring?)
+		- TODO:
+			+ Should "a" not consider "internal" (in sealed-triangle) springs? CHECK: should remove trivial diagonals in upper-left corner of video_mesh
+			+ Should we avoid interior springs - CHECK: should remove interior springs from video_mesh
+			- All the above cause first H segment of each floor in test_floorplan to disappear, as it's internal
+				- Note: it's not viable, so we should not check for "internal" when checking incidence on long floor, as that internal might become a floor
+					- Do not check for internal at first loop
+					- Do not check for internal at IsFloorIncidentOnLongFloors, but check all (half-viable) springs
+	X Algo 3: floor walk-mapping:
+		- For each line, from bottom:
+			- IsInside=False
+			- For x=0 to last:
+				- If encounter a hull point that has at least one triangle (i.e. which belongs to an edge) (if !IsInside) or encounter a non-floor point (if IsInside)
+				  and the point doesn't have a floor assigned
+						- TODO: what about *face*? Can we encounter same point twice for two different floors? YES (e.g. point between two separate floors)
+						- TODO: develop this "floor assignment/marking" thing
+					- Start walk from here
+						- Enter algo with point & direction
+							- Direction depends on IsInside
+						- Algo keeps looking for hull-springs-that-are-triangle-sides
+						- Algo builds:
+							- Floor springs (map)
+								- Note: might add same spring multiple times, e.g. both sides of it
+							- Set of removed springs (set)
+								- Mostly to faciliate algo
+								- Note: should not add same spring multiple times, as we make sure we don't consider removed springs
+						- Walk termination: first spring that might be removed is next, and so we stop when we are trying to re-check from here
+					- Flip IsInside
+	+ Algo 4: vertex-pattern based
 
 
 
++ Furniture:
+	+ Would be nice to re-architect as follows:
+		+ Primary and Dipole are fused into NPCParticleMesh, which contains:
+			+ Up to 4 ParticleState, each having own ConstrainedState (like now)
+			+ Up to 6 SpringProperties, each containing:
+				- ParticleIndex of endpoints
+				- Length
+				- MassFactor
+				- Stiffness & Damping coefficients
+		+ All "isPrimary" become "npcParticleOrdinal"
+		+ Fix: shaking a lot - also humans - goes beyond max iters in ConstrainedInertial
+			+ First off, see if it happens on master: YES
+			+ Could very well be legit, due to long trajectory - check with humongous iter limit
+		+ Fix: PickNPC
+			+ Need function 
+			+ Picking strategy for quad
+				+ Offset is off primary
+			+ And when moving, move all particles together
+				+ Calc pos diff wrt primary, and apply to all
+		+ Fix: need 0.81 spring stiffness coeff
+			+ From materials
+			+ And then global adjustments
+				+ SettingsDialog
+		+ Add tool for placing quads
+			+ "Crate" Kind -> "Quad"
+		+ Fix: still want a better strategy for picking quads
+		+ Tests:
+			+ Quad furniture
+				+ Check springs: flexibility _and_ stiffness
+			+ Secondary free becoming constrained (primary must be constrained)
+				+ Human
+				+ Quad
+		+ Profile
+			! Old:
+				Npcs::UpdateNpcs: 44.99 (self: 6.71) -> 52.41 (self: 14.50)
+					UpdateNpcParticlePhysics: 20.50 -> 19.13
+						Def: 2.92
+						CI: 1.82
+						Bary: 1.49
+						CNI: 1.10
+					UpdateNpcAnimation: 11.17 -> 10.42
+					CalcPrelim: 2.68 -> 3.31
+					UpdateHuman: 2.38 -> 3.96
+					CalcPartConstrState: 1.52 -> 1.07
+				Npcs::RenderUpload: 40.32
+		+ Optimize:
+			+ Spring forces calculated over all springs
 
-- OLD:
-- "Walkability"
-	- A particle is either "walkable" or not
-	- A spring is "walkable" only if both endpoints are "walkable"
-		- "Walkabaility" of springs is maintained at destroy and repair
-	- A specific "Paths" (or "FloorPlan") layer provides a bitmask indicating which particles are walkable and which are not
-		- When the layer is absent, the bitmask is created automatically with the hullness of particles
+	+ See if can get rid of CurrentPlaneId being optional-and-thus-standing-for-topmost, so that we
+	  can get NPCs on a ship covered by debris
+		+ When BeingPlaced, it's "implicit topmost" 
+			+ Check BeingPlaced at RenderUpload time
+		+ When starting as free, can take max from ship at that moment, and fine to stick with it
+		+ When becoming free, leave as-is
+		+ Make sure it's reset to right depth once we become constrained again
 
-- Walking:
-	- A given walkable spring has effectively two sides, and thus we need to remember on which side we are
-		- Example: we're walking on a spring, and then ship is rotated by 180 degrees: we need now to fall, rather than continue walking on the other side of the spring
-	- An NPC then remembers:
-		- Which spring it's walking on, and
-		- Which of the two endpoints is at its *right* when the NPC is staring at us
+	+ Merge to master
 
-- State machine(s):
-	- Constrained regime:
-		- Freefall state:
-			! In this state an NPC is falling down a non-walkable spring
-			- Do hole check to check for transition to Free regime
-			- When mid-spring: slide along spring in the direction that is most aligned with gravity
-			- When the NPC reaches an endpoint of the spring:
-				- If the point is non-walkable:
-					- Choose the next spring (by definition: non-walkable): 
-						- The one most aligned with gravity
-					- Keep falling (stay in this state)
-				- Else (the point is walkable):
-					- Transition to Landed state
-		- Landed state:
-			! Temporary state, exists for animation
-			- Do hole check to check for transition to Free regime
-			- TODOHERE: incorporate "remembering *right* endpoint of spring we're walking on" from here on
-			- From here, after some time: choose a walking direction: "left" or "right", then transition to Walking_MakeNextChoice
-				- TODO: see below if we actually can find next spring without having an incoming spring
-		- Walking:
-			! When an NPC is walking, it follows a predefined direction, either "left" or "right"
-			- Do hole check to check for transition to Free regime
-			- When mid-spring:
-				- Calculate velocity:
-					- TODO: resultant of constant WalkingVelocity in the direction of the walk with gravity (projected along spring) + friction
-					- TODO: incorporate "remembering *right* endpoint of spring we're walking on" from here on
-				- Move by velocity
-			- When the NPC reaches an endpoint of the walkable spring: transition to Walking_MakeNextChoice state
-		- Walking_MakeNextChoice:
-			- Do hole check to check for transition to Free regime
-			- Choose the next spring:
-				! Could be the same as the incoming in case we're sliding
-				- The first non-deleted walkable spring (first in CW direction if going R, else CCW if going L, from the incoming spring)
-					- TODO: see if can do without having to remember incoming spring: redefine how we choose next spring knowing only the wanted direction
-				- If it is in the walking direction, and if it is not too steep
-					- Steepness check uses friction of walkabaility
-			- If a choice can't be made: invert direction
-				- Stay in this state so we still need to make a choice
 
-	- Free regime:
-		-
+
++ Layers:
+	! Spec:
+		- Floorplan layer:
+			- A specific "FloorPlan" layer provides list of *pairs* of Points and the FloorType enum
+				+ Then, @ShipFactory, we assign FloorDepth based on H/V/Diag
+					+ The current NpcFloorType enum becomes NpcFloorDepth, and NpcFloorType only retains "Floor" and "Open"
+					+ Triangles' edges also remember both (type and depth) - actually store struct with two members
+							
+			- When the layer is absent, the layer is created automatically (@ new ShipFloorplanizer) with the hullness of particles
+				- Algo for creation should take care of following aspects:
+					- Make sure walls not too crowded
+					- Make sure there are stairs (evt. creating them)
+		- InteriorTexture layer
+			- A new texture layer (for graphical purposes only)
+			- When the layer is absent, it is created automatically (@ShipFactory) from the structural layer
+			- Owned by ship (for re-creating doors)
+		- Both layers make up the "Interior view"
+		- User can choose between "Exterior" view and "Interior" view, via menu
+			- As soon as NPC count goes from zero to non-zero (including BeingPlaced), if current view is "Exterior" GameController switches to "Interior", regardless of current setting
+				- Tells MainFrame via event, which changes current menu
+			- As soon as NPC count goes from non-zero to zero, if current view is "Interior" GameController switches to "Exterior" view, regardless of current setting
+				- Tells MainFrame via event, which changes current menu
+	! Impl gist:
+		- The below requires keeping the folloring textures data in memory - see if can save anything:
+			- Interior texture (in Ship, for re-creating InteriorView texture as doors change)
+			- InteriorView texture (in ShipRenderContext, to upload it as needed) 
+			- Exterior texture (in ShipRenderContext, to upload it as needed)
+		- TextureData ShipTexturizer::MakeInteriorViewLayer( // Stateless, basically static
+			- Triangles const &, 
+			- Points const &, // Point for texture coords
+			- const interiorTexture, // Created/loaded as above
+			- Just visits triangles and uses Points' texture coords
+		- Another overload that does it for a single triangle and returns its quad (w/origin (ImageCoordinates), as new SubImageData type at ImageData.h)
+		- Dynamics of floorplan changes (doors)
+			- IShipPhysicsHandler::HandleNpcFloorUpdated(Triangle, ordinal) -> invoke ShipTexturizer() method (on ShipTexturizer& member) to generate new Interior view texture quad, 
+			  which it then stores in a (temporary) list member of Ship
+			- At Ship::RenderUpload time, it gives (std::move) the list to ShipRenderContext which will a) upload to texture as subtextures, and b) apply to own Interior view texture
+			- This implies that Ship must hold:
+				- interior texture
+		- ShipRenderContext:
+			- Keeps ahold of both Exterior and Interior view textures
+			- Upon change of the view type (Exterior<->Interior), ShipRenderContext uploads right one of the two to OpenGL
+				- So we save an OpenGL texture
+			- The Interior view texture might change (from outside) - either entirely or a quad only; in which case ShipRenderContext does the right thing (wrt threading) to store it and eventually
+			  re-upload it (eventually a portion of it) if current view type is Interior
+				- ShipRenderContext:: two uq_ptr for InteriorView texture - one set from outside, the other used by thread
+				- When a change happens, the caller ends up setting the "outside uq_ptr"
+				- At <don't remember where exactly, when it's safe to swipe main thread things>, we move/blit outside to inside and remember that we have to upload it, and what portion of it
+	+ Impl:		
+		+ Add InteriorTexture layer to everything (and change old to ExteriorTexture)
+			+ Game
+			+ ShipBuilder
+				+ Controller, ModelController, Model
+				+ MainFrame
+				+ View:
+					+ Duplicate Texture viz's
+						+ ViewModel: duplicate all "texture space" as "external" and "internal"
+							+ Requires two texture sizes
+				+ Tests:
+					+ TextureEraser
+					+ TextureMagicWand
+					+ Texture C&P&X
+						+ Texture selection
+					+ Run unit tests
+		+ InteriorTexture goes to Ship		
+		+ ShipFactory: invoke ShipTexturizer to create InteriorViewImage
+		+ GameTypes: ShipViewModeType == {Exterior, Interior}
+		+ RenderContext (actually, RenderParameters) owns the param, exactly like e.g. DebugShipRenderModeType
+			+ Hook param set/get up to IGameController
+			+ Initialization: store both textures and do NOT upload them
+			+ Upon change detected:
+				+ UploadMipmapped right view image
+					+ RenderContext keeps hold of both textures
+			+ Trigger a fake change at initialization, so we start with default view
+		+ MainFrame:
+			+ view/control menu: add two mutex menus, "Exterior View" and "Interior View"
+			+ For now MainFrame just reacts and invokes GameController
+			+ Reconciliate
+		+ ShipTexturizer:
+			+ Doesn't take alpha (remove that), but ShipFactory does the right thing here in creating InteriorTexture background
+				+ Use Transform()?
+			+ 1. Create image by Clone() of background
+			+ Take ship size for floor thickness (pixels) and quad size (pixels)
+				+ Add comment on ScaleFactor needed here in future
+			+ 2. Visit all triangles			
+			+ 3. Internal Helper: works on a single triangle
+				+ For each floor edge: ...
+				+ Internal helper for drawing EdgeFloor
+		+ Add timings to ShipFactory
+			+ Use GameChronometer
+		+ See if can lower the resolution of the auto-generated InteriorTexture (and thus also of view)
+			+ e.g., cap by 2048 instead of 4096
+		X See if should use (mipmapped) nearest neghbor for interior view
+		+ Think of fix for double-edges meeting at 90 deg
+			+ Center floor over edge
+				+ Changes everything for quad selection @ doors, rewrite spec
+		+ ShipRenderContext: draw edge springs only if Exterior view
+			+ New member for view type, set at ApplyViewModeChanges
+		+ See if coords really match
+			+ Test:
+				+ Disable edge springs
+				+ Rotate triangle and verify all edges
+			+ Thickness always 2n, half in and half out of triangle
+		+ See why some diagonal lines seem jagged (Aegis Mark 2)
+		+ Tests:
+			+ Single-particle ship
+			+ Single-triangle ship
+			+ Fix texture issue with old Dell
+			+ Test performance (also with old Dell) and decide whether mipmapping on-demand is really feasible
+			+ Full ShipBuilder test, up to saving
+		+ Port ShipFloorplanizer back into Barylab
+
++ NpcDatabase:
+	! Spec:
+		! cctor takes MaterialDatabase (for taking Materials referenced to by name in json) and NPC Texture Atlas(for taking TextureCoords)
+		! Provides info on humans (e.g. role colors, frame IDs) and furniture (height, frame IDs, material)
+			! Furniture height: used to calculate width based off texture frame
+			! Human: only SizeMultiplier
+				! We don't want to repeat H for each human
+			! Furniture and human materials: json references structural materials by name
+				! Human references both (head & feet)
+		! Two sections, each own schema:
+			! Humans
+				! Global
+					! Material X 2
+				! Per-kind
+					! Role, Name
+					! SizeMultiplier
+					! TextureFilenameStem's
+			! Furniture
+				! Per-kind
+					! Name
+					! Material
+					! Mesh
+						! Type (@ NpcDatabase)
+						! Dimension
+					! TextureFilenameStem
+		! json refers to frames (in NPC texture DB) by name, but cctor - which also takes texture DB - stores references (or even directly coords!) by numeric ID
+			! json tells all frame names for all applicable variants, including limbs together with orientation variants
+				! Yes, the json for humans will list all frames for variants and all
+					! Might have a new type (at NpcDatabase or as as new GameType) that holds together all texture info's for a human (e.g. "head front", "head side", etc.) and the json basically fills this
+		- Allow for merging of multiple "packs"
+			- So SubKind domain is expandable at runtime
+		! Also affects UI (for menu with list of subkind names, which might have multiple languages)
+	+ Details:
+		+ NpcSubKindIdType: alias for uint 
+			+ @ GameTypes
+				+ Nuke old FurnitureNpcKindType, NpcKindType
+			+ No different aliases for the two different NpcKind's - we will have a 2D coord for a specific subkind (NpcKindType, NpcSubKindIdType)
+				+ So NpcSubKindIdType=X means one thing for Humans and another thing for Furniture
+		+ Humans:
+			+ (NpcSubKindIdType) -> Material X 2 (GetHeadMaterial, GetFeetMaterial)
+			+ (NpcSubKindIdType) -> SizeMultiplier
+			+ (NpcSubKindIdType) -> TextureCoords (or that new GameType we talk about above which holds together all texture info's for all variants), colors
+				- Initialization gets texture DB to populate this
+			+ (NpcSubKindIdType, Language) -> Name
+		+ Furniture:
+			+ (NpcSubKindIdType) -> Material
+			+ (NpcSubKindIdType) -> TextureCoords
+			+ (NpcSubKindIdType) -> NpcParticleMesh info
+			+ (NpcSubKindIdType, Language) -> Name
+	+ Impl:
+		+ NPC Texture Database:
+			+ json changes:
+				+ "name" -> "displayName"
+				+ "filename" -> "filenamePattern"
+			+ Add 'filenameStem' to frame metadata, and have TextureAtlasMetadata build an index off it
+					+ Verify unique when loading/deserializing			
+			+ Run texture atlas/DB unit tests
+			+ Assign frame index when not present
+				+ First off, nuke frameIndex
+					+ World json
+					+ Code
+				+ @ group reading: "autoAssignFrameIndices" bool, default=false
+				+ Complain if auto-assign & specified (if we haven't nuked code)
+				+ Test land/ocean textures
+			+ Make actual NPC atlas
+				+ BakingTool: add "build-atlas" (sibling of "build-regular-atlas")
+				+ Dummy
+				+ Crate
+		+ NpcDatabase:
+			+ static NpcDatabase Load(ResourceLocator const & resourceLocator, TextureAtlas(Metadata?) const &, MaterialDB const &)
+				+ Invoked right after we build MaterialDB
+		+ GameController:
+			+ Loads NpcTextureAtlas
+			+ Loads NpcDatabase
+			+ Passes (moves) NpcTextureAtlas to RenderContext
+		+ RenderContext:
+			+ cctor takes NpcTextureAtlas and passes it to Global::InitializeNpcTextures(.)
+			+ Global::InitializeNpcTextures(.): upload texture
+		+ Npcs:
+			+ NpcDatabase replaces MaterialDatabase that is passed over to Npcs class
+			+ State:
+				+ Human: store Role
+				+ Texture quad/s
+			+ Npcs::AddXYZ
+				+ Adapt
+				+ Store texture quads (as const &) in kind-specific
+		+ MainFrame:
+			+ private RebuildNpcSubmenus()
+				+ From NpcDatabase (indirectly, via GameController)
+				+ Cleans up and rebuilds
+
++ Integration into FS
+	! Goal: be able to copy folder of files seamlessly across FS and BL
+	+ FixedSizeVector: BaryLab->FS: check diff
+	+ GameTypes: BaryLab->FS: add new types (and changes?)
+	+ Have a working FS here for subsequent tests
+	+ All in one go - GO1: 
+		+ Triangles: BaryLab->FS: add BL features
+			+ Barycentric math (replace FS')
+			+ SurfaceType
+			+ OppositeTriangle
+			+ etc?
+		+ Tessellation @ ShipFactory
+			! Consider that members in BL have different names in FS
+			+ ShipFactory
+			+ Test consequences of new tessellation (i.e. triangle edges in new directions)
+				+ Look
+				+ Frontier
+		+ Floorplan @ ShipFactory
+			! Consider that members in BL have different names in FS
+			+ ShipFactoryTypes
+			+ ShipFloorplanizer
+			+ ShipFactory
+		+ Rendering of floors			
+	+ All in one go - GO2:
+		+ Move Npc simulation source files under NpcSimulation folder
+			+ Not VS GUI, that's still "Physics"
+		+ Port NpcMaterial.* and NpcMaterialDatabase.* (from Material*) into Materials.* and MaterialDatabase.*
+		+ Port GameParameters settings that we need
+		+ Shader: port Limbs
+			+ & ShaderManager
+			+ PlaneID
+		+ (Ship)RenderContext: port Limbs
+			+ No TextureQuad though - we'll have texture coords separate
+			+ Indices work, with ownership as in big, final plan
+			+ Fix: BaryLab tells total NPC quad count to RenderContext, and then goes on to individual Ships; must instead do ship-by-ship
+				+ Keep per-NPCShip stats
+					+ Follow all mFurnitureNpcCount and mHumanNpcCount
+		+ GameParameters: port Static and Kinetic friction adjustments and elasticity as NPC params
+			! We don't want structural materials to have own coeffs, as that would slow down TerrainImpact which is already quite expensive; so for these we are happy
+			  with just Ocean Floor coeffs and happy that an "own elasticity" pops up thanks to stiffness
+		+ Plumb interactions:
+			+ GameController & World
+			+ ToolController & Tools
+				+ Incl. Resources
+			+ MainFrame menu
+				@ Tools menu
+				+ Npc stats event: add totalNpcs (must include BeingPlaced)
+					+ And publish from BeginPlace/Abort/and everywhere it may change
+				+ MainFrame registers for NPC stats
+				+ As soon as NPC count goes from zero to non-zero (including BeingPlaced):
+					+ If current view is "Exterior" MainFrame switches to "Interior"
+					+ Enable Move/Remove
+				+ As soon as NPC count goes from non-zero to zero:
+					+ If current view is "Interior" GameController switches to "Exterior"
+					+ Disable Move/Remove
+		+ See why takes forever to rise
+			+ Cleanup:
+				+ BaryLab
+				+ FS
+			! Problem: feet are often not on edge
+				+ Because of micro-ondulations
+				+ Log:
+					+ Mesh velocity
+					+ Two components of physicsDeltaPos: due to F and due to V
+				+ Cleanup & commit
+			! HA! The problem is that progress falls faster than it rises!
+			+ Possible solution 1:
+				+ Redo PreRising, Falling, KnockedOut, and all the ones looking at feet/headOnFloor: constant fraction progress, up or down
+					+ Undo changes below first
+			+ Faster prerising
+
+	+ Fix: PreRising->KO: angled half-leg becomes long leg, with outcome being "kick"
+
+	+ Backport:
+		+ NpcSimulation folder: FS -> BaryLab 			
+			+ Nuke TextureQuad from GameTypes
+			+ Adapt RenderContext
+			+ GameParameters
+			+ NpcMaterial interface from MaterialDB
+		+ Tests:
+			+ DEBUG
+			+ Large number of NPCs
+			+ Panic
+	
+	+ FIX: Inflatable Balloon: infinite loop
+		+ Figure out if due to folded triangle
+		+ If so:
+			X Plan A: deal with it
+				+ Can not: crossing one edge wil make it go back and forth
+			X Plan B: whenever we move from a triangle with orientation X to a triangle to orientation Y, consider the edge a floor (and evt bounce on it)
+				+ Test normal movement (inertial) and walk in a folder world
+					= Barylab: fold
+						+ On key hit, after NPC has found its own triangle
+						- X
+							- Test:
+								- Constrained falling
+								- Walking
+						- Y
+							- Test:
+								- Constrained falling
+								- Walking
+					+ Isses found:
+						+ Cannot stand up
+						+ Cannot find that NPC belongs to triangle when NPC is being placed
+					
+				X Impl:
+					X Take orientation at beginning, and pass it around down the chain; we want to stick to that orientation for the entire simulation step and never change it
+					X At each place where we climb an edge into a triangle, check if that triangle orientation is different than initial; if so, bounce on edge			
+			+ Plan C:
+				+ 1. At start of step, check orientation: if folded, become free
+				X Option 1: - STASHED
+					+ 2. At each place where we climb an edge into a triangle, check if that triangle is folded; if so, bounce on edge
+						+ 2a. UpdateNpcParticle_ConstrainedInertial
+						+ 2b. NavigateVertex - HumanWalking
+						+ 2c. NavigateVertex - *
+					- 3. Edge should also look like floor for the purposes of:
+						- Detecting non-inertial
+						X HumanSimulation (e.g. to go to KO, or else stays aerial) (doesn't need it, uses VirtualEdge)						
+						X Animation (doesn't need it)
+				+ Option 2:
+					+ At IsEdgeFloorToParticle(.)
+		+ Lower "progress going back" when conditions not met at all 3 places
+			+ Then retest inflatable balloon
+		+ Profile
+			+ Baseline first: 2.4/2.5 (long term)
+			+ Backport
+			+ Profile
+	+ Larger search radius for NPC
+		+ Based on zoom
+	+ See why rendering internal view does not show springs
+
+	+ Material rearc: nuke NpcMaterial and use only StructuralMaterial	
+		+ 1. MaterialDB: index StructuralMaterial also by name
+			+ See if there are any dupe names
+				+ Add to script as check
+					+ Together with is_exempt+palette
+			+ Do indexing
+		+ 2. Port NPCMaterial to StructuralMaterial
+			+ Port GameParameters::OceanFloorElasticity and OceanFloorFriction to all materials as ElasticityCoefficient, StaticFrictionCoefficient, KineticFrictionCoefficient (same values)
+				+ Script: fill-in 
+				+ Material: parse & expose
+				+ Leave OceanFloorElasticity and OceanFloorFriction in GameParameters and SettingsDialog
+				+ GameParameters: add ElasticityAdjustment, FrictionAdjustment X 2 replacing the "NpcMaterial" ones
+					+ IGameControllerSettings, etc.
+					+ SettingsDialog (under "Mechanics" pane)
+				+ Points: new Buffer<OceanFloorCollisionFactors>
+					+ Contains (Ocean+Material) / 2 * Adjustment, and eventually other transformations needed by ocean collision code
+					+ UpdateForGameParameters: recalc upon adjustment changes
+					+ Clamp values?
+						+ Friction: max 1.0 (or else backfires)
+				+ HandleCollisionsWithSeaFloor:
+					+ Use these
+						+ With static/kinetic
+					+ Verify same values:
+						+ Old elasticityFactor: -0.5
+						+ Old frictionFactor: 0.75					
+				+ Tests:
+					+ Functional: compare behavior before & after
+					+ Functional: verify picks up adjustments X 5
+						+ Check ranges
+							+ See min zero for both frictions
+							+ KineticAdj: 40 is too much
+					+ Perf on old Dell:
+						+ Before: 18.2 (17.8->18.2)
+						+ After: 17.7
+				+ Add comment @ ImpactWithOceanFloor() on nature of friction
+				+ Higher threshold for static friction -> kinetic friction
+					+ Figure out first why we can't stop tangential response
+				+ Fix adjust terrain: calculate world end taking into account snap (use helper)
+				+ Check again role of silting in friction test at 30deg
+			+ Add SpringReductionCoeff, SpringDampingCoeff as NpcSpringReductionCoeff, NpcSpringDampingCoeff 
+				+ optional, defaults = <reasonable>
+		+ 3. StructuralMaterial:
+			+ Do not store (& expose) IsExemptFromPalette
+		+ 4. Port NPC materials to structural_materials
+			+ Elast and two frictions: new values so that (new + ocean) / 2 == current in json (ocean because that's the value for ship materials now)
+			+ Hide it from palette
+		+ 5. Nuke NpcMaterial (json and class/es) from Materials/MaterialDatabase
+		+ 6. Use at Npcs
+			+ Structural materials
+				= "Crate": use some wood
+			+ We really want to do average of materials' elasticity and friction
+				+ Elast, frictions: consider both materials - make average and use adjustments
+					+ @ Flattened traj
+						+ Take one of the vertices arbitrarily
+					+ @ Bounce
+						+ Take one of the vertices arbitrarily
+			+ BuoyancyVolumeFill: Crate was 0.05, now 1.0 
+				+ New optional StructuralMaterial property: NpcBuoyancyVolumeFill
+					+ Default: 0.05
+					+ Comment @ Material: in FS, hull has buoyancy_volume_fill=0.0 (as it never gets water yet we want it to sink), and non-hull=1.0 (as it gets water)				    
+				+ Take it in Npcs:: calculation of buoyancy factor
+				+ Adjust Human x 2
+				+ Adjust Crate's NpcBVF 
+					+ Default NpcBuoyancyVolumeFill: calculated
+			+ Tests:
+				+ Human
+					+ Slide (friction)
+					+ Bounce (friction & elasticity)
+					+ Floating
+				+ Crate
+					+ Slide (friction)
+					+ Bounce (friction & elasticity)
+					+ Floating
+						
+			+ Nuke npc json
+		+ 6b. See if may nuke NpcParticles::MaterialProperties in favor of StructuralMaterial &
+		X 7. Material propertygrid @ ShipBuilder
+			X Friction X 2, Elasticity
+			X See if there's room
+		+ Change friction of (to slide on surface and NPCs) (see if can test and calc via Ocean only):
+			+ Steel (down)
+			+ Glass (down)
+			+ Concrete (up) 6.0
+		+ Rewrite NpcDB spec below for material fetching
+		+ Merge material_rearc into npcs_v1
+		+ Backport to BaryLab
+			+ See human sliding on feet
+			+ Profile
+			+ Merge into master
+			+ Code + json
+				+ And nuke npc json
+			+ Commit
+
+		! For reference: this was Crate:
+			{
+			"name": "Crate",
+			"render_color": "#000060", 
+
+			"mass": 34.5,
+			"spring_reduction_fraction": 0.97,
+			"spring_damping_coefficient": 0.5,
+			"static_friction": 0.07,
+			"kinetic_friction": 0.05,
+			"elasticity": 0.6,
+			"buoyancy_volume_fill": 0.05
+			},
+
+	+ Settings:
+		+ List:
+			+ HumanNpcHeight("Size")Adj
+				+ Yeah rename param to "NpcSizeAdjustment"
+					= Apply its effect also to furniture
+		+ SettingsManager
+		+ SettingsDialog
+			+ Lights, Electricals, Fishes, and NPCs
+
+	+ Primary/Secondary edge-separation at floor check: see if can be improved by looking at third vertex of triangle of particle for which we check
+		+ Backport to barylab first
+		+ Repro in BaryLab with a million puppets
+		+ Fix in barylab
+		+ Port to FS
+
+	+ Misc possible improvements:
+		X See if can avoid furniture bending
+			X Try that other spring relaxation algo
+				+ Backport to Barylab first
+				+ DO:
+					+ 1. Prelim forces - withOUT spring forces
+					+ 2. Integrate prelim forces -> new_pos buffer
+					+ 3. Calc spring forces looking at new_pos buffer -> spring forces (or forces above after clearing it)
+					+ 4. @ Update: new_pos + spring force integration
+						+ Definitive forces: watch out
+				- Compare with previous
+					- Bounce
+					- Breakability with big impact
+				- Cleanups if OK:
+					- Rewrite as "two steps"?
+					- See if can optimize main Update() loop/s
+					- CalculateDefinitiveForces: for Torque we predict where secondary will be; can we use NewPosition now that we have it instead?
+						- Note: current prediction is based on velocity alone, while NewPos also takes forces
+			+ Recheck FS vs BaryLab
+		+ Maintain spring lengths during BeingPlaced (to avoid elongations)
+		X If above doesn't work: try more velocity damping during BeingPlaced
+		+ Picking human NPCs: now it's too cumbersome
+		+ fmod improvements
+			+ See https://cboard.cprogramming.com/c-programming/105096-fmod.html
+
+
+	+ If particles 2, 3, etc. are on a different component ID than primary's, then make them free
+		+ In short: need to add new constraint: non-primary constrained can only live in same connected component as primary's
+			! Not a problem while we navigate, as cannot navigate across different connected components
+			+ Repro first
+				+ And to repro, do that "place & move tool lock", also for furniture
+					+ BeingPlacedState: anchor particle index, doMoveWholeMesh
+					+ Retain spring lengths during move
+					+ Commit
+				+ Also do temporary "prevent walk"
+				+ Repro
+					- Tall man on right side of ship; cutting around its head
+
+			+ NPC acquires a new opt<CurrentConnectedComponentId> attribute, identical to CurrentPlaneId (but nullable <-> free)
+			+ To enforce at:
+				+ Placement (ResetNpcToState)
+					+ Based on primary, where we take NPC's plane ID also from its primary
+					+ Then we need to constrain non-primary search for triangles to primary's connected component (==NPC's)
+						+ FindTopmostTriangleContaining
+							+ But not at call from ProbeNpcAt
+				+ Ship connectivity changed: detected at Npc::Update: in initial loop:
+					+ For each particle in constrained state:
+						+ Primary: 
+							+ If in folded triangle or destroyed triangle:
+								+ Transition particle to free
+							+ Else:
+								+ Store planeID and connected component ID for whole NPC
+									+ "Because it might have changed or reassigned"
+						+ Others:
+							+ If in folded triangle or destroyed triangle:
+								+ Transition particle to free
+							+ Else if conn component ID != NPC's:
+								+ Transition particle to free
+					+ Remove final assignment of plane ID
+					+ Replace Folded/Deleted check at UpdateNpc and make it an assert
+				+ Secondary free becoming constrained: consider only triangles belonging to primary's connected component (==NPC's)
+				+ Reset when becoming free
+		+ Tests:
+			+ Repro
+			+ Secondary free becoming constrained
+		+ Cleanups:
+			+ Remove temporary "prevent walk"
+		+ Port to BaryLab
+		+ Profile
+		+ Do japanese test
+
+	+ Rethink Constrained_Falling
+	+ Rethink Constrained_Aerial
+	+ Rethink Constrained_KnockedOut - frozen arms look bad
+	+ Backport to FS
+
+==== September 2024
+
++ Rendering:
+	! Atlas textures are simply flat frames and all, NpcDatabase groups them together
+		! But we use naming conventions to not go crazy ourselves
+	+ Use indices for quad vertices
+		+ Good use case to experiment with the "quad single index buffer" feature
+	+ ShipRenderContext:
+		+ TextureCoords upload
+		+ Mipmapped!
+			+ Rearc:				
+				+ Comment to BuildRegular: to reason for coords
+				+ AtlasBuilder: AtlasOptions to make each tile power-of-two
+					+ Remove redundant builder methods
+					+ Implement
+						+ TextureInfo, TexturePositions: all in-atlas
+						+ BuildAtlasSpecification()
+						+ BuildAtlas: do offseting here to fill gap between in-atlas position and actual frame position
+					+ AtlasMetadata.IsSuitableForMipMapping() check: atlas has MipMapped option
+					+ UnitTests
+					+ Add UnitTests with Load
+						+ InAtlasSizeMatchingFrameSize
+						+ InAtlasSizeLargerThanFrameSize
+				+ Cleanup all "nuke", including AtlasBuilder::BuildMipMappableAtlas
+				+ GameOpenGL: "UploadMipmappedPowerOfTwoTexture" -> "...Atlas"
+					+ And assert, at each call, that atlas was created with MipMapped option via IsSuitableForMipMapping()
+				+ Look at all usages now
+				+ Tests:
+					+ Clouds
+					+ Fish
+					+ GenericMipMapped (bombs w/fuse, cannon, smoke, probe, pin)
+					+ ShipBuilder's CenterOfMass'es
+			+ Baker tool:
+				+ add -mipmap option
+				+ add -regular option
+				+ Rebuild NPC atlas
+					+ Test
+				+ Rebuild Explosion atlas
+					+ Test
+			+ Do MipMapped NPCs
+
+	+ Shader ("ship_npcs_texture"):
+		+ We keep existing limb-based shader, just change all its vertex attributes/parameters/etc. to become "texture"
+		+ Sampler
+		+ Discard when transparent
+			+ But only after testing with two connected components - & inverse order of drawing; should bug out when near NPC is drawn before far NPC and they are on top of each other
+				+ Test requires NPC following their triangle with move - Move/Rotate work item below
+		+ Highlight: Step(c.alpha, 0.0) as coeff to bright red
+		x Apply ocean depth darkening (iff in water?)
+		x Apply ocean shadows (iff in water)
+
+	+ Misc improvements & technical debt:
+		+ When drawing human on side, legs first and arms then (as arms are longer)
+		+ Furniture: anti-alias in image
+		+ TextureCoordinatesQuad: shall we have float for RightX, LeftX, TopY, BottomY?
+		+ Human frames: they are out of aspect
+			+ Change human body ratios to match standard frame pixel dimensions (e.g. head square, etc.)
+		+ Redo body proportions: some become dynamic, depending on frame dimensions:
+			! Note: all the below are fractions
+			+ TorsoWidthFraction (Height=Length fixed)
+			+ HeadHeightFraction (Width=Width fixed) (to allow for hat)
+				+ But head top is still based on HeadHeightFraction constant (i.e. hat sticks on top)
+			+ Arm, LegWidthFraction (Height=Length fixed)
+			+ Expose as:
+				+ GetHumanGeometry(.) -> NpcDatabase::HumanGeometryType: TorsoHeightToWidthFactor, HeadWidthToHeightFactor, arm/leg...
+				+ GetFurnitureGeometry(.) -> NpcDatabase::FurnitureGeometryType: width, height
+					+ Replaces individual H, W getters
+		+ Fix junctions
+		+ Add body width randomization sensitivity
+		! NPC atlas rearc: frame rules:
+			! For artist:
+				- Human:
+					- Head: 
+						- Width: 16
+						- Height: by default 16; if with e.g. tall hat, > 16
+						- Touching at least bottom border
+					- Torso:
+						- Width: 32
+						- Height: 32
+						- Touching both bottom and top borders
+					- Arms:
+						- Width: based on the width of the character's limb when viewed from F/B; suggested <= 8
+						- Height: 32
+						- Touching at least top border (but for normal human proportions, should also touch bottom border)
+					- Legs:
+						- Width: based on the width of the character's limb when viewed from F/B; suggested <= 8
+						- Height: 32
+						- Touching both bottom and top borders
+					- F/B/S for a limb have same dimensions
+				- Furniture:
+					- Width=32, Height=32
+						- Leaving 1 pixel on each border that the texture is "a lot" against
+			! For me:
+				- Human:
+					- Head: 
+						- Width: 16
+							- Not necessarily touching left and right borders, depends on character
+						- Height: by default 16; if with e.g. tall hat, > 16
+							- Touching at least bottom border
+					- Torso:
+						- Width: 32
+							- F/B: ideally touching left and/or right borders (so to not waste room)
+							- S: not necessarily touching left and right borders, depends on character
+						- Height: 32
+							- Touching both bottom and top borders
+					- Arms:
+						- Width: based on the width of the character's limb when viewed from F/B; suggested <= 8
+							- F/B: ideally touching left and/or right borders (so to not waste room)
+							- S: not necessarily touching left and right borders, depends on character
+						- Height: 32
+							- Touching at least top border (but for normal human proportions, should also touch bottom border)
+					- Legs:
+						- Width: based on the width of the character's limb when viewed from F/B; suggested <= 8
+							- F/B: ideally touching left and/or right borders (so to not waste room)
+							- S: not necessarily touching left and right borders, depends on character
+						- Height: 32
+							- Touching both bottom and top borders
+					- F/B/S for a limb have same dimensions
+				- Furniture:
+					- Width=32, Height=32
+						- Leaving 1 pixel on each border that the texture is "a lot" against
+		! Frame specs:
+			! Furniture: leave 1px border around
+				! So if e.g. you're doing a 32x32 frame, then the drawable area is the central 30x30
+		+ MainFrame: 
+			+ Pull up NPC tools' menu items (to give V room to its choices)	
+			+ NPC stats handling, but only for Move/Remove menu items
+				+ ResetUIState()
+					+ Also does NPC menus
+			+ Tools & view:
+				+ Do that Bind thing
+				+ ShipView: fully managed by MainFrame based on tool:
+					+ void OnToolSelectedWithSwitchToInteriorView()
+					+ void OnToolSelectedWithSwitchToExteriorView()
+		+ GameController: focus to position at BeginPlaceNpcx2
+			+ Upon BeginPlaceXXX: GameController tells ViewManager (with position and height as AABB, i.e. GameParams::HeightMean * GemParams::SizeAdjustment)
+				+ ViewManager: 
+					+ Nuke GameController::FocusOnShip()
+					+ ViewManager::OnNewShip() does whole "if (autofocus) ... else ..." from old FocusOnShip
+					+ ViewManager::FocusOn() (replaces FocusOnShip):
+						+ If AutoFocus on: turn off & publish event
+						+ InternalFocus
+				+ BeginPlaceXXX:
+					+ OnBeginPlaceNewNpc(npcId)
+						+ World::GetNpcAABB(NpcId) -> AABB
+							+ Npcs::GetAABB(NpcId)
+								+ ViewManager::OnFocus takes dimension multiplier
+									+ And uses AABB::AdjustSize
+						+ ViewManager::FocusOn(aabb)
+				+ MainFrame registers and changes menu flag
+			+ ViewManager: deal with zero W and/or H
+				+ GameController does not does AdjustSize, but passes two floats to ViewManager
+				+ ViewManager: put a lower cap on sizes: 1.0 (i.e. we don't want to go smaller than 1.0), then multiplied
+			+ Do not zoom out (only lower zoom)
+				+ FocusOn: lowerZoomThreholdMult, higher...
+					+ Pass 0.5, 2.0 for NPCs and 1.0, 1.0 for rest
+			+ Less magnification
+			+ See if can avoid "mouse move"
+				+ Pass center to InternalFocusOn (0, 0 when not needed)
+				+ Do then math at InternalFocusOn
+			+ Test with replacing ParameterSmoother with a simple t interpolation in a 3D space (camx, camy, 1/zoom)
+				+ Test:
+					+ Clamping
+			+ InternalSetAutoFocus: before setting all, clamp each and only go with both params if none was clamped
+			+ GameController also must register for AutoFocus toggled, and does NotificationLayer accordingly
+				+ But only in this async case
+			+ Test
+				+ Various AutoFocus per-se (on, off, home@on, home@off)
+				+ Check AutoFocus menu auto-checking when switches
+				+ No-dimensions ship (Thanosized)
+				+ No-dimensions NPC (particle)
+					+ npc_database
+					+ NPC atlas
+					+ Npcs.cpp support
+			+ Merge into npcs_v1				
+	+ Port to BaryLab
+		+ Copy NPC json
+		+ Create NpcDatabase
+			+ Copy from FS but then maim it:
+				+ No TextureAtlas, just use -1.0->1.0 coords
+		+ Npcs
+		+ Adapt RenderContext
+		+ Port evt changes to FS
+			+ Npcs.h/cpp
+
+
++ Physical Interactions:
+
+	+ Make NpcDamping subject to other adjustment
+		+ Npcs class reacts to changes and calculates own mDampingCoefficient == (1.0f - gameParameters.NpcDamping)
+	+ Land
+		+ Check at end of step
+		+ If hit:
+			+ Move back and bounce perpendicular velocity
+				+ Friction and elasticity: as we do in ship, using both materials
+			+ Become free! So we avoid bouncing back and forth
+				+ Make sure we call OnMayBeRegimeChanged
+			+ Only when not BeingPlaced
+		+ Behavior: (we don't like it frozen, would be nice if it relaxed down)
+			+ @ Free_Aerial: if still for long, go to Free_KnockedOut
+				+ Out from Free_KnockedOut:
+					+ If !Free: Constrained_KnockedOut
+					+ If moving again: Free_Aerial
+				+ Free_KnockedOut animation: relax limbs (see if Constrained_KnockedOut does the same)
+		+ Tests:
+			+ Place under land
+			+ With ship under land
+	+ World border
+		+ MaintainInWorldBounds()
+			+ Called after each particle update, on the particle				
+				! We want to leave Update() in order, for eventual user interactions
+				+ Make it inline
+			+ If hit:
+				+ Move back and bounce perpendicular velocity (see actually what we do in ship)
+				+ Become free! So we avoid bouncing back and forth
+					+ Make sure we call OnMayBeRegimeChanged
+		+ Test:
+			+ With ship inertia
+			+ With NPC inertia
+			+ With ship move
+		+ Backport to BaryLab and profile
+	+ Points' water effect when particles are constrained
+		! Gist: 
+			! We use both water (which imparts buoyancy) and water velocities (which impart v onto particles proportionally to particles' waterness)
+			! We cache both at NpcParticles @ CalculatePrelimForces - which is where we calc them - and re-use them everywhere, e.g. at HumanBehaviorUpdate
+		+ Impl:
+			+ NpcParticles::QuantityOfWater (0-1)
+			+ CalculatePrelimForces:
+				+ float quantityOfWater;
+				+ If free:
+					+ Calc w/depth (capped)
+				+ Else:				
+					+ Particle waterness: calculated as W(triangle_t) based on water at triangles' points
+						+ W(triangle_t): (cap(W(1)) + cap(W(2)) + cap(W(3)) / 3.0
+					+ Water velocity:
+						+ Va += Vw - Vr
+							+ Vw = (W(P1)*Vw(P1) + .. + W(P3)*Vw(P3)) / 3.0
+								- W(P) = normalized (max 1)
+							+ Vr = mesh-relative vel - ok if from previous step
+							+ The above is delta_Vr, which is also delta_Va
+							+ Apply as a force
+				+ Store as QuantityOfWater
+				+ Use quantityOfWater for buoyancy
+		+ Behavior:
+			+ New Constrained_InWater, Constrained_Swimming_Style2:
+				+ Constrained_InWater:
+					+ From: Constrained_Aerial
+						+ Lingering here for long though
+					+ To:
+						+ Same as Constrained_Aerial
+						+ When no changes for a while (like Free_InWater->Free_Swimming): to Constrained_Swimming_Style1|2 depending on face orientation
+				+ Constrained_Swimming_Style1,2:
+					+ Copy from Free_Swimming_*, and same out transitions as Constrained_InWater
+			+ @Npcs::AnimationUpdate():
+				+ Constrained_InWater
+					+ Constrained_Aerial looks quite good - pair labels
+				+ Constrained_Swimming_Style2:
+					+ Arms alternating (narrowly) around normal to body (direction of face)
+					+ Legs alternating (narrowly) around opposite of feet velocity dir
+	+ Triangle destruction: 
+		+ Should be enough to check for current triangle being deleted at beginning of UpdateNpc(.), and if so, become free (identical for @ pri and @ non-pri)
+			+ Just like when we detect secondary, third, etc. are in a different connected component, see above
+	+ Swimming humans generate (small) bubbles
+		! Free_InWater
+		! Free_SwimimingX
+		+ Each free aquatic state has a NextBubbleEmissionSimulationTimestamp
+			+ Init'd as 0 at state enter (Reset)
+			+ At each state update at which we remain in state:
+				+ If curSimTime > state's:
+					+ Emit bubble (via homeShip->GenerateAirBubble)
+						+ Ship::GenerateAirBubble: becomes public and also takes minScale, maxScale
+							+ @ normal interactions
+							+ Points::GenerateAirBubble: store minScale, maxScale in AirBubble state
+							+ Points::UpdateEphParticles: use minScale, maxScale from AirBubble state
+						+ Call Ship::GenerateAirBubble
+					+ Calc next: gaussian
+	+ Humans on air-water interface generate small waves
+		+ Needs to produce as side-effect: swimming humans generate small waves
+		+ Needs to produce as side-effect: humans falling into water generate small (but larger) waves
+		+ Do surface displacement proportional to (signed) V velocity
+			+ Fix: placing human directly in water causes anywaterness change
+				+ Unless we initialize anyWaterness at placement time
+			+ Fix: oscillations
+				! Due to just-entered particles becoming out-of-water at next frame
+				X Possible fix 1: require V sign agreement with delta_waterness
+					+ But now it's not continuous
+				+ Possible fix 2: do like ship:
+					+ Displacement is due to just having velocity in narrow band underwater
+					+ FIX: if too quick we don't "see" the particle in the band
+						+ Possible fix 3: when depth of particle ('s y) *now* and *before* has different sign
+	+ Fire:
+		+ @Npcs::Update():
+			+ Calc LowFreqCycle (see Ship)
+			+ By Ship: By Npc (mod ID for cycle): 
+				+ By particle (via helper w/particle idx):
+					+ If constrained:
+						+ Calc particle's MeshWater and MeshWaterVelocity
+							+ NpcParticles::MeshWaterBuffer, MeshWaterVelocity
+						+ Calc particle's MeshFire:
+							+ If waterness > Wa: fireTarget=-1, fireConvergeRate=0.3
+							+ Else If any (Ship.Point.Temperature > NpcMaterial.CombustionTemperature || Ship.Point.IsBurning): fireTarget=1.0, fireConvergeRate=0.3
+							+ Else: fireTarget=-1. fireConvergeRate=0.1
+					+ Else:
+						+ fireTarget=-1, fireConvergeRate=0.3
+				+ Calc Fireness for NPC via convergence with current value
+					+ Store in new Npc state attribute, in [-1, 1] range; on fire if > 0.0
+					+ Update count of flames (using Npc's previous)
+					+ Event (for sound)
+		+ @ Eq, Walk, Rising:
+			+ if NPC is on fire: DirFlip (iff OnFirePanic < 0.7) and set Npc::OnFirePanic to 1.0
+		+ @Npcs::RenderUploadFlames():
+			+ Upload flames, one per NPC	
+				+ First: store burning NPCs in vector (Npcs::mBurningNpcs, per-ship) at combustion state update
+					+ Remove @ NpcRemoval, ShipRemoval
+				+ Second: Wind
+					+ WindField rearc:
+						+ WindField: gets all members currently in Ship::QueuedInteractionArgs
+							+ Nuke PhysicsType
+						+ Wind:
+							+ mCurrentWindField (opt)
+							+ GetWindField() -> mCurrentWindField
+							+ SetWindField(windField) -> mCurrentWindField
+							+ Wind::UpdateEnd:
+								+ mCurrentWindField.reset()
+						+ World::GetWindField()
+						+ World::ApplyRadialWindFrom (the existing method):
+							+ Calculate ForceMagnitude and give everything to Wind::SetWindField()
+							+ Do nothing on ships
+							+ Keep doing on ocean
+						+ Ship:
+							+ Nuke ApplyRadialWindFrom() and queued interaction
+							+ At ApplyWorldParticleForces:
+								+ Apply forces (code of Ship::ApplyRadialWindFrom(interaction args)) from mParentWorld::GetWindField()
+							+ Nuke mWindField and take it from mParentWorld::GetWindField()
+							+ Nuke QueuedInteractionArgs struct and type
+					+ State Update: update flame vector with wind, both components
+						+ Move CalculateIdealFlameVector, CalculateFlameWindRotationAngle(WindField, ...) to Formulae
+							+ CalculateFlameWindRotationAngle: "EvolveFlameGeometry" takes two inputs/outputs (FlameVector, FalmeWindRotationAngle) as & 
+						+ Use @ NPCs, both flame creation and update (if a separate creation exists)
+				+ Visit mBurningNpcs vector here and:
+					+ Position:
+						+ Human: head
+						+ Else: center of all particles
+					+ Vector and WindRotation: from CombustionState
+					+ Size: depends on Npc's fireness
+		+ @Ship::RenderUpload:
+			+ Include own Npcs' flames via World::GetNpcs() -> const::GetFlameCount(ShipId)
+			+ Then call World::GetNpcs() -> UploadFlames(ShipId, ShipRenderContext)
+		+ ShipRenderContext: new UploadFlameNpc (v Ship) w/ different size and adj
+		+ Combustion adjustment: must smother if NPC particle is free and under real waterness
+		+ Use CombustionAdjustment
+		+ Rendering: NPC flames need to go to layer above gadgets
+		+ Flame size depends on current (adjusted) dimensions
+		+ Test:
+			+ Burning NPC removal
+			+ Depth order
+			+ Fire panic tapering down speed
+		+ Cleanup auto-smothering of fire (and make slightly slower)
+	+ Smash tool:
+		+ GameController->World->NPCs
+		+ For each human with at least one particle in range: 
+			+ Turn on back or front (rnd)
+			+ Transition to ConstrainedOrFree_Smashed
+		+ BehaviorUpdate: @ConstrainedOrFree_Smashed:
+			+ Unconditional progress; when at target, go to either Constrained_KO or Free_KO
+		+ Animation:
+			+ Simple fixed-angle
+		+ Fix human state machine: Free_KO -> Free_Aerial *OR Free_InWater*
+	+ Follow NPC:
+		! Gist:
+			! Npcs has a concept of "Selected NPC"
+				! Holds opt<NpcId>
+				! When NPC is removed, selection is reset to nullopt
+				! OnNpcSelectionChanged(opt<>) event, fired by Npcs class at all selection changes
+			! Menu: 
+				! FocusOnNothing, FocusOnShip, FocusOnSelectedNpc ("Auto-" for all) (Radio type; all mutex)
+					- FocusOnSelectedNpc: enabled iff NPCs exist
+					- May also be enabled if no NPC is selected; toggling this ON causes automatic selection of "first" NPC
+				! SelectNextNPC (@ Tools, but at bottom, among simple action menus like TriggerTsunami)
+					- Enabled iff NPCs exist
+				! MainFrame menu reconciliation:
+					- Event announcing change of focus target (which carries focus info), always emitted: OnAutoFocusTargetKindChanged
+						- Does Mutex between FocusOnNothing, FocusOnShip, FocusOnSelectedNpc, but it could be already done
+					- Event announcing presence of at least one NPC (this is the OnNpcCountsUpdated which already exists), always emitted
+			! "FocusOnNpc" tool: in this version does Select+FocusOnNpc
+				! In the future we'll also have "SelectNpc" tool which does Select only
+
+		! Spec of state machine/interactions:
+			- User hits HOME (focus on ship): (B*)
+				- If focusing on ship or selected NPC: reset user offsets
+				- Else:
+					- Focus on ship (one-off)
+				! In short: if there's auto-focus on <X>, we re-center; if not, we focus one-off on ship
+			- User enables FocusOnShip: (C*)
+				- Target change to <Ship>				
+					- Emit OnAutoFocusTargetChanged
+					- Turn on notification @ NotificationLayer
+				- Reset user offset
+				- UI:
+					- Menu mutex comes for free, but also via OnAutoFocusTargetChanged
+			- User enables FocusOnSelectedNpc: (C*)
+				- Assuming:
+					- At least one NPC exists (or else menu would have been disabled)
+				- If no NPC is selected: 
+					- Select first
+					- Emit OnNpcSelectionChanged
+				- Target change to <SelectedNPC>
+					- Emit OnAutoFocusTargetChanged
+					- Turn on notification @ NotificationLayer
+				- Reset user offsets
+				- UI:
+					- Menu mutex comes for free, but also via OnAutoFocusTargetChanged
+			- User enables FocusOnNothing: (C*)
+				- Target change to <>
+					- Emit OnAutoFocusTargetChanged
+					- Turn off notification @ NotificationLayer
+				- UI:
+					- Menu mutex comes for free, but also via OnAutoFocusTargetChanged
+			- User clicks "SelectNextNPC": (E*)
+				- Assuming:
+					- At least one NPC exists (or else menu would have been disabled)
+				- Select next NPC
+					- GameController::Update() will pick this up if focusing on CurrentlySelectedNpc, and start focusing on it
+				- If focusing on NPC:
+					- Reset user offsets
+				- Emit OnNpcSelectionChanged
+			- User selects another NPC:
+				- Select NPC
+					- GameController::Update() will pick this up if focusing on CurrentlySelectedNpc, and start focusing on it
+				- If focusing on NPC:
+					- Reset user offsets
+				- Emit OnNpcSelectionChanged
+			- User uses tool to select+follow specific NPC: (F*)
+				- Select NpcId
+					- Emit OnNpcSelectionChanged
+				- If current target != SelectedNPC:
+					- Target change to <SelectedNPC> 
+					- Emit OnAutoFocusTargetChanged
+					- Turn on notification @ NotificationLayer
+				- Reset user offsets
+				- UI: 
+					- Menu mutex driven by OnAutoFocusTargetChanged
+			- User uses tool to select+follow nothing: (F*)
+				- Select nullopt NpcId
+					- Emit OnNpcSelectionChanged
+				- If current target == SelectedNpc:
+					- Target change to <>
+					- Emit OnAutoFocusTargetChanged
+					- Turn off notification @ NotificationLayer
+				- UI: 
+					- Menu mutex driven by OnAutoFocusTargetChanged
+			- The currently-selected NPC is removed: (A*)
+				- Assumption the NPC removed is the selected one
+				- Select nullopt NpcId (@ Npcs)
+					- Emit OnNpcSelectionChanged
+				- If current target == SelectedNpc (A*)
+					- Target change to <>
+					- Emit OnAutoFocusTargetChanged
+					- Turn off notification @ NotificationLayer
+				- UI: 
+					- Menu mutex driven by OnAutoFocusTargetChanged
+					- "Normal" NPC-quantity-driven enabling/disabling of other menu items applies here as well, simply because of NPC removal
+			- A new ship is loaded/Reset: (D*)
+				- If focusing on SelectedNPC:
+					- Target change to <>
+					- Emit OnAutoFocusTargetChanged
+					- Turn off notification @ NotificationLayer
+					- If AutoFocusOnShipLoad is ON:
+						- Focus on ship (one-off)
+				- Else if focusing on Ship:
+					- If AutoFocusOnShipLoad is ON:
+						- Reset user offsets
+				- Else if focusing on nothing:
+					- If AutoFocusOnShipLoad is ON:
+						- Focus on ship (one-off)
+				- UI: 
+					- Menu mutex driven by OnAutoFocusTargetChanged
+			- User begins placing new NPC: (G*)
+				- NOTE: here we assume we do NOT select this NPC by default
+				- If current target == Nothing:
+					- Focus on this NPC's AABB (one-off)
+				- TODOOLD
+				- If current target != Nothing:
+					- Target change to <>
+					- Emit OnAutoFocusTargetChanged
+					- Turn off notification @ NotificationLayer 
+				- Focus on this NPC's AABB (one-off)
+			- We transition to having at least one NPC
+				- Assuming: FocusOnSelectedNPC not selected (it's disabled)
+				- UI: 
+					- Enable FocusOnSelectedNpc
+					- Enable FocusOnNpc tool (& RemoveNpc)
+					- Enable SelectNextNpc
+					- "Normal" NPC-quantity-driven enabling/disabling of other menu items applies here as well, simply because of NPC addition
+			- We transition to having zero NPCs
+				- If we were following SelectedNPC, we've gone through removal of currently-selected NPC
+				- UI: 
+					- Disable FocusOnSelectedNpc
+					- Disable FocusOnNpc tool (& RemoveNpc)
+					- Disable SelectNextNpc
+					- "Normal" NPC-quantity-driven enabling/disabling of other menu items applies here as well, simply because of NPC removal
+		+ Impl:
+			+ Npcs gets the concept of "CurrentSelectedNpc" (which was of BaryLab)
+				+ opt<NpcId> member
+				+ API from outside via Select...(opt) / Get...() (the BaryLab ones, make them official)
+				+ Reset when NpcId is no more - @ CommonRemoval
+				+ All changes emit OnNpcSelectionChanged (@ NPC event handlers)
+					+ @ Setter
+			+ GameType: AutoFocusTargetKindType: Ship, SelectedNpc
+			+ Event handler: OnAutoFocusTargetKindChanged(std::opt<AutoFocusTargetKindType>) (@ Control event handlers)
+			+ ViewManager:
+				! Becomes fully slave, just high-level operations on ViewModel
+				+ opt<AutoFocusTargetKindType> mCurrentAutoFocusTarget @ AutoFocusSessionData
+					! Here so it's consistent, and can use target type to fine tune focus
+					+ Getter and Setter
+				+ Update(...) splits into:
+					+ UpdateAutoFocus(opt<FocusAABB>)
+						+ Invoked by GC iff auto-focus on
+							+ Can assert
+					+ Update()
+						+ Invoked by GC always
+				+ ResetAutoFocusAlterations() // Reset user offsets
+				+ Nuke notification layer member
+				+ Default auto-focus target in ViewManager: Ship
+				+ Nuke other public methods
+			+ GameController:
+				+ Remove mCurrentAutoFocusTarget and struct which we've just added
+				+ Public View methods:
+					+ ResetView() (aka HOME: one-off focus on ship) 
+						+ See above (B*)
+							+ Move all logic out of ViewManager and into this GameController method
+								+ Use ViewManager::ResetAutoFocusAlterations()
+					+ SetAutoFocusTarget(opt<target type>)
+						+ See above (C*) (part of F*)
+				+ Private View helpers:
+					+ SwitchAutoFocusTarget(.) helper for:
+						+ Target change to *
+						+ Emit OnAutoFocusTargetChanged
+						+ Turn off/on notification @ NotificationLayer
+					+ UpdateAutoFocus()
+				+ Update() calls UpdateAutoFocus()
+				+ UpdateAutoFocus():
+					- Check ViewManager::CurrentAutoFocusTarget:
+						+ If Ship:
+							+ Get all Ships' AABBs (or nullopt)
+							+ ViewManager->Update(.that.)
+						+ If SelectedNpc:
+							+ Check with Npcs if there is still a selected NPC 
+								+ Nuke HasNpc as it's not needed anymore
+							+ If so:
+								+ Assert NPC exists
+								+ ViewManager->Update(NPC's AABB)
+									
+							+ Else: 
+								+ (A*):
+									+ Target change to <>
+									+ Emit OnAutoFocusTargetKindChanged
+									+ Turn off notification @ NotificationLayer
+						+ If none:
+							+ Nop
+				+ ShipLoad/Reset
+					+ See above (D*)
+				+ SelectNpc(opt<NpcId>)
+					+ See above (part of F*)
+				+ SelectNextNpc()
+					+ See above (E*)
+				+ BeginPlaceNewNpc
+					+ See above (G*)
+			+ Npcs:
+				+ SelectFirstNpc
+				+ SelectNextNpc
+				+ Highlight rearc:
+					+ Move Highlight out of NPC and into opt<NpcId>
+						+ Member: next to Selected
+					+ Public API:
+						+ HighlightNpc(opt<NpcId>)
+			+ Tool: "FollowNpcTool"
+				+ Icon: like Move, Remove but with auto-focus frame - autofocus_on_npc_icon.png
+				+ Cursor: autofocus_on_npc_cursor.png
+				+ RemoveNpc tool becomes base+derivates, used for Remove & Follow (and in the future: SelectNpc)
+				+ Change (for both Remove & Follow, i.e. base): make it so we don't have to store candidate, but probe right away at each move+down
+					! So that we don't run the risk of referencing a dead NPC
+					+ Just react to move+down (& up, but just for cursor)
+				+ Follow: calls SelectNpc() + SetAutoFocus(SelectedNpc)
+
+			+ MainFrame:
+				+ Do menu entries:
+					+ 3 for continuous auto-focus
+						+ All members
+						+ Nicely separated/reorder
+					+ FollowNPC tool
+						+ Member, like Move/RemoveNpc
+					+ SelectNextNPC - w/key shortcut (can do anything with TAB? If not, '>')
+						+ Member
+				+ Handler for focus changes calls ReconciliateUIWithAutoFocusTarget()
+					+ Ensure right of 3 auto-focus menu items is checked
+					+ Test if only checking the "true" one is enough
+				+ Handler for NPC presence (OnNpcCountsUpdated) calls ReconciliateUIWithNpcPresence(bool)
+					+ Do current code (Move/RemoveNpc tools only?)
+					+ FollowNPC tool
+					+ SelectNextNPC
+			+ UI preferences
+
+			+ Shader/Highlight
+				+ Do highlight with Overlay blend
+					(Target > 0.5) * (1 – (1-2*(Target-0.5)) * (1-Blend)) +
+					(Target <= 0.5) * ((2*Target) * Blend)
+				+ Do selection via ad-hoc "RectSelection" primitive @ NotificationRenderContext
+					+ Geometry: enclosing rect, calc'd by Npcs::RenderNpc
+						+ Humans
+						+ Furniture
+							+ Quad
+							+ Bunch-of-Particles
+					+ NotificationRenderContext: new one-time (non-sticky) primitive, exactly like HeatBlaster
+						+ Drawn on top of everything
+						+ Doesn't get smaller than fraction of NDC
+							+ Verify world offset foo is the same # of pixels V and H
+						+ Border W: must be fixed percentage of world width (not fixed pixel width)
+					+ Shader ("rect_selection")
+						+ Anti-aliasing 1-px border
+							+ Needs how wide - in vertex space - a pixel is, for both x and y (separately)
+						+ Border
+							+ Needs above, and uses own # of pixels
+							+ FIX: border thickness gets smaller with the size of the NPC
+								+ Should it actually be a percentage of one of the dimensions, rather than fixed?
+								+ Try with fixed # of pixels
+						+ Time pulse (in wallclock time)
+							+ Requires NPCs to remember selection wallclock timestamp
+							+ Try wallclock
+			+ Cleanups:
+				+ IGameEventHandlers::OnContinuousAutoFocusToggled() may go
+				+ IGameController::Get/SetDoContinuousAutoFocus
+		+ With a falling NPC, focus is near bottom of screen
+			X Use different speed iff focusing on NPC?
+				+ Test
+				+ Might have been a bad idea - the whole zooming/panning is different speed now
+			+ At UpdateAutoFocus: if NDC offset "large": bump up speed
+				+ ParamSmoother::Update() takes multiplier and applies it only there
+				+ UpdateAutoFocus() cals multiplier based off NDC camera offset and sets it for one-time use
+				+ ParameterSmoother unit tests
+		+ Tests:
+			+ Move tool (regressions)
+			+ Remove tool (regressions)
+			+ All state transitions above
+		+ Merge into npcs_v1
+	+ Rethink Attract force field (use mass)
+		+ Ship: less on air bubbles (in any case, less on things with mass 25)
+	+ Interrupt swim with great velocities
+		+ Repro: using attract/repel or swirl
+		+ And transition to "rag doll" aquatic state (i.e. "Free_InWater")
+			+ Also, do not transition from Free_InWater to Free_SwimmingX if velocity is still there
+		+ Actual condition: abs and rotation vels
+		+ Impl:			
+			+ Magic constants:
+				+ Max rotation: 2.0
+				+ Max vel: 4.0
+			+ Swimming state: progress to ~LeavingSwimming 
+			+ Free_InWater -> Free_SwimmingX: not if: rotation or vel1 or vel2
+			+ Free_SwimmingX -> Free_InWater: progress ~LeavingSwimming if rotation ok and vel1 ok and vel2 ok
+	+ Wind: 
+		+ Npc preliminary forces: 
+			+ Only applies to *free* *above-water* particles
+			+ Move Ship's WindForce calculation to Formulae
+			+ Since func is invoked per-particle, might want to calc global wind force outside
+			+ Don't forget to smooth with waterness - which make sure is smooth between 0 and 1
+	+ Wind tool: 
+		+ WindField work (*) spec'd for flames 
+		+ Npc preliminary forces: 
+			+ Only applies to:
+				+ Constrained *above-water* particles (i.e. walking in ship but not under ship-water)
+				+ Free *above-water* particles
+				+ In short: above-any-water
+		+ Use magic number for a NPC's wind receptivity adjustment
+			+ From GameParameters (but not in SettingsDialog)
+				+ To account for the smaller number of particles than a ship
+			+ Apply to both winds
+	+ Ship-specific explosions: only NPCs of that ship, or free regime of any ship
+		+ mParentWorld.GetNpcs().ApplyXXXForce(shipId, ...)
+		+ Npcs::ApplyBlast()
+	+ Blast tool
+
+	+ Fix: NPC at bottom of ship at bottom of ocean, flooded, touching ocean floor
+		! Rethink constrained NPC becoming free when under land
+		+ Adjust for land only for free NPCs (i.e. all particles are free)
+
+	+ Fix: many drums start dancing
+		! Only due to "dead weight" on triangle edge at end of Constrained_NonInertial; bounce force is fine (and cool)
+		+ Try with mass update instead of force
+			+ Add TransientAdditionalMass
+				+ Use at UpdateMasses()
+				+ Reset at end of Update() (NOT at UpdateEnd) - so that Npcs::Update adds masses for next Ship::Update
+			+ Npcs adds (two of them) at same place where we add forces
+		+ Now many drums impacting make everything explode - but see if we can keep it
+			+ Rethink impact force, see https://www.geeksforgeeks.org/how-to-calculate-the-impact-force/ and https://www.studysmarter.co.uk/explanations/physics/force/impact-forces/
+			+ Recalc based on kinetic energy lost, or dp/dt
+			
+	+ Fix: sinking barrel doesn't move - add infinitesimal buoyancy chances to each particle
+	+ Fix: slecht op benen @ human placement
+		! @ behavior Constrained_Aerial, which then goes to Constrained_Falling
+		! Due to that 0.6 being added alternatively
+		+ Try with left and right legs _centered_ around legAngle
+	+ Fix flat head of wealthy passenger (all 3 orientations)
+	+ Make Green drum Light, Blue drum Heavy (current weight)
+	+ Make piano heavier
+	+ Body width randomization sensitivity
+	+ Buoyancy volume fill rearc: @ particle level
+		+ NpcDatabase:
+			+ Human:
+				+ Each human can have buoyancy_volume_fill_head/feet - if not present, use materials'
+			+ Furniture:
+				+ particle_mesh has optional _array_ of buoyancy_volume_fill
+					+ size: 1 or N; when 1, copied to N
+				+ When not present, use materials'
+		+ @ NPC creation:
+			+ Use NPC's, not material's
+			+ Store with NPC particle
+		+ jsons:
+			+ Move npc_buoyancy_volume_fill's from materials_structural.json to npcs.json
+			+ Nuke npc_buoyancy_volume_fill from StructuralMaterial (and code)
+		+ Redo also for NPC spring coeffs? i.e. move them from StructuralMaterial to Npc?
+			+ NpcDatabase: new struct NpcParticleAttributesType
+				+ BuoyancyVolumeFill
+				+ Spring 1 & 2
+			+ HumanKindType has two fully-populated "override", Furniture has "override" vector fully-populated
+			+ ParseHuman:
+				+ Everything optional (container & members)
+				+ If anything missing: take from StructuralMaterial
+					+ Look @ defaults for Spring 1 & 2
+			+ ParseFurniture:
+				+ Everything optional (array & element members)
+				+ If anything missing: take from StructuralMaterial
+					+ Look @ defaults for Spring 1 & 2
+			+ Humans: also from global
+			+ Use @ NPC creation
+			+ Nuke all NPC props from StructuralMaterial
+			+ Move NPC props from StructuralMaterial to NPCs.json
+	+ See if can continue to figure out how to avoid deformation of quads
+		+ Add (temporary) slider for NPC spring realaxation params
+	+ Anti-matter bomb force fields:
+		+ Pre-Implosion
+		+ Implosion
+		+ Explosion
+		+ Nuke Ship::ForceFields
+	+ Swirl, etc.: NPCs of all ships, all regimes		
+		+ Controlled by flag, "~force tools on NPCs"
+			+ SettingsDialog
+		+ World calls Npcs.ApplyXXXForce(...) after check on flag
+			+ Quantities that are now calculated in Ship become calc'd in World, so we can pass them on to NPCs
+			+ Swirl/Counterswirl
+			+ Attract/Repel
+	+ Move/Rotate tool:
+		+ World: after calling into Ship(), call Npcs.Move/etc/Npcs(shipId, [componentId], ...)
+			+ Test in BaryLab first
+			+ Ship::PickPointToMove: becomes PickConnectedComponentToMove() -> ConnectedComponentId
+				+ Also Tool
+			+ Just need Move/Rotate, opt<ConnectedComponentId>
+				+ Only considers constrained particles
+					+ And if ConnectedComponentId is specified, only particles in triangle with first endpoint on that ConnectedComponentId
+				+ Look at Ship::Move/etc for physics (e.g. velocity, force zeroing)
+			+ At the end calls MaintainInWorldBounds()
+	+ Electric spark:
+		+ Ship:
+			+ HandleElectricSpark(): set Points.IsElectrified
+			+ UpdateEnd(): reset it
+		+ Constrained_Electrified:
+			+ Into:
+				+ Eq, Walk: as soon as electrified detected, via helper, with low-freq step check 
+					+ Checked once in a while
+					+ Become frontal|back (random)
+			+ Out: 
+				+ Free->Free
+				+ When not electrified for a while (own progress) -> Constrained_KO
+		+ Animation:
+			+ See notebook
+	+ Mass/forces: these two may be done together:
+			- NPCs add mass to particle
+				- Ship::Update asks NPCs (via ParentWorld) to add themselves to Points' (definitive) masses
+			- NPC bounces transfer impact forces to ship's particles
+		+ ...By adding StaticForce's to ship's particles at these places:
+			+ At return from NonInertial, using the last "flattened out" displacement to calc force (*m/dt2)
+			+ At bounce, using the bounced displacement
+				+ Need to make sure that a bounce at non-inertial is not followed by the force in the previous bullet
+				+ BounceConstrained...() needs to take bounceEdgeTriangle, bounceEdgeBCoords, bounceEdgeOrdinal, and Ship - but can lose bounceEdgeNormal
+			+ Requires Ship in NPC to not be const
+				+ And see if can get rid of naming member "ShipMesh" - may be "HomeShip"?
+	+ Mass is proportional to body length adjustment (square, we're 2D)
+		! And so is buoyancy
+		+ Port to BL
+		+ NPCParticle attributes (changeable from outside)
+			+ PhysicalProperties->MaterialProperties
+			+ MaterialProperties.Mass
+			+ Mass // Adjusted 
+				+ Use wherever we use mass - which should also be always adjusted with MassAdjustment
+			+ BuoyancyFactor
+				+ Use @ Bouyancy
+		+ Springs attributes:
+			+ BaseRestLength, RestLength (was DipoleLength)
+				+ Use for humans whever we take height*adjust
+		+ @ Npcs::Add (x2):
+			+ Calculate Mass via static float CalculateParticleMass(base mass, dimensions adjustment, mass adj (iff BaryLab))
+			+ Calculate BuoyancyFactor via static float CalculateParticleBuoyancy(base mass, dimensions adjustment, buoyancy adj (iff BaryLab) , mass adj?)
+			+ Calculate spring lengths and force coeffs via static float CalculateSprings(..., mesh in/out)
+				+ Spring lengths used for:
+					+ Hooke force (as dipoleLength)
+					+ Particles' positions at Add() (as height*adjust)
+					+ Render (as height*adjust)
+					+ Equilibrium Torque (as height*adjust)
+					+ Animation (walking) (as height*adjust)
+		+ @ Npcs::Update:
+			+ At size adjustment detected: (and mass & buoyancy iff barylab)
+				+ RecalculateSizeAndMassParameters:
+					+ Recalculate all NpcParticles::Mass via static float CalculateParticleMass(base mass, dimensions adjustment, mass adj (iff BaryLab))
+					+ Recalculate all NpcParticles::BuoyancyFactor via static float CalculateParticleBuoyancy(base mass, dimensions adjustment, buoyancy adj (iff BaryLab) , mass adj?)
+					+ Recalculate all spring lengths and force coeffs via static float CalculateSprings(..., mesh in/out)
+						- Replaces CalculateHumanNpcDipoleLength(.)
+		+ Finals:
+			+ Make sure mCurrentSizeAdjustment is only used in funcs to calc/recalc
+			+ Make sure mCurrentMassAdjustment is only used in funcs to calc/recalc
+		+ Port to FS
+	+ Incorporate ship material's elasticity and friction in calculations for bounce and friction
+	+ Panic:
+		+ Close to bomb
+			+ @ Eq, Walk:
+				+ HasBomb => DirFlip (iff BombProximityPanic < 0.7) and set Npc::BombProximityPanic to 1.0	
+		+ Close to fire
+			+ Ditto
+
+	+ Barylab:
+		+ Port
+		+ Profile
+			+ Was: 2.5/2.6/2.7
+			+ Now: 3.3/3.4
+			X Possible perf improv: Prelim forces: separate loop by Npc->Particles
+				! Better code cache and locality (for particles)
+			+ Profile 1:
+				! Npcs::UpdateNpcs: 53.73, self=12.46  -> 53.02, self=15.40
+					! UpdateNpcParticlePhysics: 18.75 -> 19.77
+					! UpdateNpcAnimation: 9.36%
+					! CalculateNpcParticlePreliminaryForces	4.52% -> 4.20
+				! Npcs::RenderNpc:: self=13.35
+			+ Profile water (-> WAY LESS)
+			+ inline CalculateNpcParticlePreliminaryForces
+			+ inline CalculateNpcParticleDefinitiveForces
+			+ inline Triangles::InternalToBaryCoords
+			+ Profile 2: 3.0/3.1
+		+ Perf attempts:
+			+ CalculateActualHumanWalkingAbsoluteSpeed and chain:
+				+ Too much work on resultant panic level:
+					+ Try with just clamp
+				! Mostly 3.0
+			+ Walking anim: edge dir calculation doesn't need springs
+				+ Test if leg slope ok
+			X FindTriangle: try with boundary conditions first
+				! Profile first: 1.0s
+			+ Quad-building with intrinsics
+				! Profile first: Physics::Npcs::RenderNpc	893 (24.74%)	515 (14.27%)
+				+ 1. Add profiling code to measure Upload time & print it
+					+ 1.7/1.8
+				+ 2. Quad structure
+					+ Move to GameTypes
+				+ 3. Quad bulding with plain C++
+					+ Returns struct for the time being
+				+ 4. RenderNpc: use quad building for one
+				+ 5. RenderContext overload taking quad
+				+ 6. RenderNpc: use quad building everywhere 
+				+ 7. Quad building with intrinsics
+					+ Notes:
+						- To load into high/low: loadh/l
+						- To copy perp into all 4 parts of register: shuffle_pd(p, p, 0)
+						- To replicate halfW into all four slots: setp
+					+ Improv that TODO
+				+ 8. Perf measurements
+					+ 1.6/1.7
+					+ 1.6
+					+ Physics::Npcs::RenderNpc	803 (23.17%)	475 (13.71%)
+					  Render::RenderContext::UploadNpcTextureQuadsEnd	435 (12.55%)	0 (0.00%)
+				+ 9. RenderContext: two buffers, one with vertices and other with everything else
+					+ Phase 1: two plain buffers, quad in-place
+						+ RenderContext:
+							+ Two vertex buffers (std::vector): 
+								- NpcQuadVertexPositions: of Quad
+								- NpcQuadVertexAttributes: of own public NpcQuadVertexAttributes
+									- Remove BackDepth, OtherDepth
+								- Two VBOs
+							+ UploadNpcStart: do math and reserve() both vectors
+							+ Two "upload" functions: UploadNpcQuadVertexPositions and UploadNpcQuadVertexAttributes
+							+ Init: VBOs vertex description
+							+ RenderPrepare: upload both buffers
+							+ Shader
+								- Do bottom+left using texture coords (which we know are -1->1, i.e. -1)
+						+ Npcs::RenderNpc: 
+							+ Do quad building in-place
+								+ Quad-building function: "Into"
+					+ Test
+						+ Furniture
+						+ Particle
+						+ Perf: 
+							+ 1.4/1.5
+							+ Physics::Npcs::RenderNpc	767 (22.29%)	478 (13.89%)
+							  Render::RenderContext::UploadNpcTextureQuadsEnd	356 (10.35%)	0 (0.00%)
+					+ See if can optimize attributes
+						+ Pass plane and color as float and vec directly from RenderNpc
+							+ Check assembly
+							+ 1.4/1.5 (but mostly 1.4)
+						X Better pack attributes so "constants" are together (planeid, color)
+							+ Use padding
+							+ Check assembly
+					X Phase 2: try single buffer (all in RenderContext)
+						+ Members:
+							+ A Buffer of uint8_t - mNpcTextureQuadsVertexBuffer
+							+ size_t mNpcTextureQuadsVertexBufferSize // byte size
+							+ A Quad* pointer and a Attributes* pointer
+							+ size_t mNpcTextureQuadCount
+							+ size_t mNpcTextureQuadMaxCount
+							+ size_t mNpcTextureQuadMDescribedMaxCount
+							+ One single VBO
+						+ UploadNpcStart:							
+							+ If != mNpcTextureQuadsVertexSize:
+								+ Calc required byte size
+								+ Realloc buf
+								+ Re-store Quad* and Attributes* pointers
+						+ Upload:
+							+ Quad: return ptr
+							+ Attributes: store and increment mNpcTextureQuadCount
+						+ UploadEnd:
+							+ Upload VBO
+								+ If mNpcTextureQuadMDescribedMaxCount != mNpcTextureQuadMaxCount:
+									+ Describe
+										+ Move here from Init
+						+ Profile: 2.4
+					X Phase 3: try to go back to one single Upload func to see if QuadInPlace really does much
+						+ Upload takes Quad & rest and stores in various buffers
+						X If ok:
+							X Redo MakeQuad (one func)
+					+ Phase 4: see how to optimize attributes
+						+ Test 1: further split attributes into texture quads et al
+							! This is to store texture quad also once (like positions) and only repeat attributes
+							+ Add third buffer
+							! Physics::Npcs::RenderNpc	1209 (21.32%)	1019 (17.97%)
+							  Render::RenderContext::UploadNpcTextureQuadsEnd	556 (9.80%)	0 (0.00%)
+							! We lost because of third buffer upload (commenting it out goes back to 1.4)
+						+ Align buffers
+							+ Just via BoundedVector						
+						+ Test 2: get rid of one component of overlayColor							
+						+ Now we are at 1.4; go ahead with all this work and cleanup
+							+ Shader
+							+ Nuke vertex attrib afterwards
+						+ Test 3: test back to two buffers (texture coords in attribs)
+							+ "a" first
+							! Perf: 1.1, occasionally 1.2
+						+ Test 4: check if can pack "static" attributes (planeId & overlayColor) from caller once
+							! Given that they don't change across all quads of the same NPC
+							+ OverlayColor & planeID, using public struct exposed by RenderContext
+							! Perf: 1.1
+					X Phase 5:
+						X Try aligned buffer (position and possibly others)
+							+ Buffer(s) are/is aligned
+							+ Intrinsics change
+								+ Assert aligned
+									+ Re-check implementation
+								+ Use stream_pd (to avoid cache pollution)
+							X Goes to 2.4/2.6!!!!
+				+ See if still need two quad-building functions
+
+		+ Port back into FS
+			+ vec2f default cctor
+			+ BoundedVector
+			+ Quad
+			+ GameGeometry: namespace & MakeQuad
+			+ NPCs
+			+ RenderContext (to ShipRenderContext)
+			+ Shader
+		+ Port back into BaryLab
+
++ Npc menu, and move all tools to it
+	+ Requires two vectors of wxMenuItem's to cross-synchronize
+	+ AddToolMenu macro:
+		+ Takes ToolType
+			+ If ToolType == InitialToolType: check
+	+ OnNpc/NonNpcToolSelected:
+		+ Do not set tool
+		+ Reconciliate menu items
+		+ Do Exterior/InteriorViewSwitch
+	+ PlaceNpc(x2) menu is NORMAL and we do checking ourselves
+	+ Tests:
+		+ Smash is selected
+		+ All tools
+			+ Selects appropriate tool, unselects other
+		+ Cross-menu jumps
+		+ Switch to exterior/interior
+		+ Conditionally-enabled
+			+ ScareFish
+			+ Move, Remove, Follow , SelectNext NPC
+	+ PlaceNpc sub-menu's: make checked
+		+ Items are CHECK
+			+ Stored into two vectors @ Rebuild
+		+ Maintain reconciliation of check with human & furniture sub kind id
+			+ ToolController::GetterX2 -> opt<SubKindId>
+			+ ReconciliateAddNpcSubItems()
+				+ Visit vectors and check/uncheck according to ToolController
+			+ Call ReconciliateAddNpcSubItems() at:
+				+ OnToolSelected() X 2, unconditionally (because we need to reco also when a random tool is selected)
+					! This should cover both selecting the actual one and unselecting because selecting another tool
+					! And thus should also cover unselecting it because AddXYZ being disabled (since now we change tool when this happens)
+		+ Test:
+			+ Make sure all unchecked at init
+			+ Reselect same
+			+ Select another in same NpcKind
+			+ Select another in another NpcKind
+			+ Select NonNpc tool
+			+ ResetShip()
+
++ GameController @ (ResetAnd)LoadShip calls Npcs::PublishStats()
+	+ Remove zeroing from MainFrame::ResetUIShipState
+	+ @ NpcCount reconciliation: if current tool is one of those that must go, auto-switch to InitialTool
+
++ Add crowd
+	+ First off, "error message" work:
+		+ Npcs::BeginPlace() returns tuple: <whatever now, NpcCreationFailureReasonType>
+			+ failureReason enum: TooManyNpcs, TooManyCaptains
+		+ GameController::BeginPlace: if none, tell reason to notification manager
+		+ Tool: sound
+	+ GameController -> Npcs -> AddNpcGroup->optional<NpcCreationFailureReasonType>
+		+ GameController notifies
+	+ Npcs::AddNpcGroup()
+		+ GameParameters: NpcCrowdSize (default is 32)
+		+ Make sure we don't go beyond limits
+		+ Choose role first, then use NpcDatabase "tree structure" to choose elements
+			+ Add Captain role
+			+ Npcs has new stat member: bool HasCaptain
+				+ Keep it consistent @
+					+ Add
+					+ InternalRemove
+			+ Furniture role
+				+ json
+				+ NpcDatabase
+				+ NpcStateType
+				+ Role choice
+		+ Choose triangle:
+			+ MaxTri = size() - 1
+			+ Scoring system
+				+ Floor below
+					+ And no floors when not below
+			+ FIX: choise is too concentrated
+		+ Should we give the NPC the velocity of its triangle?			
+			+ See if should do it all the time
+			+ Give all particles the primary's velocity
+			+ If not, do InternalCompleteNpc(bool initializeWithMeshVelocity) -> InternalEndMove(bool initializeWithMeshVelocity)
+				-> ResetToWorldState
+			+ Cleanup code
+	+ GameController: focus one-shot (iff conditions, like adding manually) following add group
+		+ Npcs & World must return an ID (say, first - so it's also captain!)
+	+ FIX: UI:
+		+ ResetUIShipState should revert to external view if current tool is not an NPC tool
+			+ ReconciliateViewWithCurrentTool(), also called by OnNon/NpcToolSelected (replaces inline code)
+				! Fine to leave explicit switch to interior view when adding group
+	+ Test:
+		+ Hitting max Npcs limits @:
+			+ Square
+			+ Strided
+		+ Other ships
+		+ Perf with actual MaxNpcs
+	+ Cleanup:
+		+ Reinstate MaxNpcs
+
++ LowerExtremeityMultiplier: rename
++ Readme: NPC/bary coords
++ Bump up wind receptivity
++ NpcDatabase: string table
+
++ "Spawn" NPC
++ SelectNpc tool: select none if nothing at probe
+
++ Add Flip NPC H ("Turn Human NPC Over")
+	+ Human only
+	+ Also F/B
+
++ Issue of GL_LINEAR artifacts:
+	+ Try with doing step @ baking where alpha=0 pixels take the color of their neighbors
+	+ Yes it works!
+	+ New option @ Atlas builder - "BinaryTransparencySmoothing"
+		+ Implement at ImageTools
+		+ AtlasBuilder: call func on each sub-image if option set
+			! So we stay in boundaries
+			+ And move alpha pre-multiply also on sub-images, but before new one				
+	+ New option at baker's options			
+	+ New option @ NPC options json
+		+ And no alpha-premultiply
+	+ Commit
+	+ Test explosions
+		+ Re-bake them and check atlas
+
+
++ Finish assets
+	+ Tungsten material
+	+ Ballast and heavy block
+	+ Last humans
+	+ Re-generate render colors
+	+ Test
+	+ Send to TimCan
+
++ Add alternative shading (stick men, aka quad)
+	! Gist:
+		! Two shaders for quads, with #define WITH_ROLES and glslinc
+			! WITH_ROLES takes vertex attrib array
+			! else takes parameter for matte color
+		! NpcQuad local vertex buffers are:
+			! ~Attributes (current, common to both anon and with_roles)
+			! ~RolesColors (only for with_roles)
+		! Npcs::RenderNpc() calls <NpcRenderModeType> templated func which, after uploading positions via UploadNpcPosition(), calls either into (old) ShipRenderContext::UploadNpcTextureAttributes 
+		  or into (new) ShipRenderContext::UploadNpcQuadAttributes<NpcRenderModeType> templated func 
+		! UploadNpcQuadAttributes<NpcRenderModeType> populates ~RolesColors or not
+		TODOOLD
+		! New VertexAttrib array ("static attribs"), used exclusively by stickmen shader, containing rgb(a for alignment) color (which depends on role)
+		! The array is uploaded by Npcs::Upload() when own internal "dirtyForRendering" boolean is set, irrespective of npc render mode
+			! Flag set whenever the role for a given NPC ordinal is changed *in the upload sequence*, i.e. at each NPC removal and addition
+			! Sticky
+		! ShipRenderContext always keeps the last uploaded static attribs in own buffer, and only uploads them at RenderPrepare() if render mode requires it
+		! One shader for both Quad modes, with param for enabling colors
+
+
+	+ Fixup shader in BaryLab
+		+ Commit
+
+	+ GameTypes & RenderParameters: NpcRenderMode {Texture, QuadWithRoles, QuadFlat}, rgbColor QuadFlatColor (both with common dirty flag)
+		+ IGameControllerSettings chain
+		+ SettingsDialog
+
+	+ ShipRenderContext:
+		+ Members:
+			+ Roles vertex type and buffer of it
+		+ ShaderTypes:
+			+ New vertex attrib for roles (use name)
+			+ Param for flat color
+		+ Roles vertex description
+		+ UploadStart: always make room in Roles buffer
+		+ UploadNpcQuadAttributes<NpcRenderModeType>(add roleColor arg)
+			+ if constexpr with roles: store into roleColor buffer, all times necessary
+		+ React to RenderParameters::mode & color changes (ApplyNpcRenderTODOChanges)
+			+ Set param in NPC quad matte shader for color
+		+ RenderPrepare: iff with roles:
+			+ assert size of Roles buffer
+			+ Upload Roles buffer
+		+ RenderDraw:
+			+ Right shader depending on mode
+		+ Shader:
+			+ Fix attrib names in current shader
+			+ Two shaders for quads, with glslinc with #define WITH_ROLES
+				+ WITH_ROLES takes vertex attrib array
+				+ else takes parameter for matte color
+			+ Port FS features (lamp, etc.)
+	+ Npcs:
+		+ RenderNpc checks RenderMode and calls templated RenderNpc
+		+ Store renderColor in state (Humans, Furniture) as vec3f
+		+ RenderNpc<Mode>, using if constexpr's:
+			+ Pre-calc quad texturecoords for Quad modes, using Dir+Orientation for signs, and roleColor
+			+ If not in texture mode, do not use database's dimension ratios when calculating limb dimensions, but use constants instead
+				+ Use same from BaryLab, ported (again) into GameParameters - with comments for use in "Quad" mode only
+				+ Redo: need less multiplications in quad modes
+			+ Upload positions as normal
+			+ If mode==Texture:
+				+ Upload as now
+			+ Else:
+				+ Upload ShipRenderContext::UploadNpcQuadAttributes<NpcRenderModeType> giving precalcd quad texturecoords, and roleColor (even if might not be needed)
+	+ NpcDatabase:
+		+ json: render_color, @ Human and Furniture
+			+ Try python script:
+				+ https://pillow.readthedocs.io/en/stable/index.html
+				+ Takes npcs json and root to (baked) assets
+				+ Load npcs json
+				+ For each {human,furniture}:
+					+ Calc average with all frames
+					+ Store render_color
+		+ Parse @ kind parsing
+		+ Expose getter(s)
+
+	+ Review geometry in both modes
+		+ Test 1: single system (for both Texture and Quad modes), from Vitruvian man:
+			! Legs: 1/2   w=1/10
+			! Torso: 1/2-1/8  w=1/7
+			! Head: 1/8   w=1/10
+			+ Quad mode: OK		
+			X Texture mode: NOT OK
+		+ Test 2: partially json-driven proportions
+			! Gist:
+				! Legs, Arms, Torso, Head lengths stay from Vitruvian
+				! DB carries:
+					! Legs, Arms, Torso, Head WHRatio's
+						! Defaults: from texture
+					! HeadHMultiplier: factor to multiply with Vitruvian head length for actual texture H
+						! And then Head WHRatio gives width
+			+ Impl:
+				= NpcDatabase:
+					+ Rewrite HumanDimensions struct to hold above
+					+ Read from json
+					+ Have defaults in a "global" section
+						+ The others are named "override"
+					- Nail down defaults
+					- Do overrides where needed in json
+						- Check if TimCan has emailed first
+		+ Test 3: fully json-driven proportions
+			+ NpcDatabase: 4 length fractions @ defaults and @ dimensions
+				+ Defaults: use QuadXXX from GameParameters
+			+ RenderNpc: use correct ones
+			+ Verify quad mode ok
+			+ Populate json defaults with original
+				+ Head: here assume 16x17
+			+ Verify texture mode matches before-work (original)
+			+ Do geometry overrides for each NPC that needs it
+				! heads (L), torso (W/H)
+				- Check both resulting widths
+				+ As we go: move very repeated values to defaults
+				+ Baker
+				+ Captains -> Engineer, Dummy
+				+ 5x Fem Civ Pass
+					+ Reduce legs
+				+ 6x Male Civ Pass
+				+ 4x Male Wealthy Pass
+				+ Officer, Oiler, Steward 1
+				+ QuarterMaster, Steward 2, Stewardess 1+2
+				+ Stoker 1+2
+				+ Stoker 3+4
+
+	+ Something more: we don't want baker to end up at one (rescaling=1.0) matching no-hat NPC (rescaling=1.04004)
+		+ Get rid of rescaling and scale leg and torso in json
+
+	+ Test:
+		+ Buoyancy head offsets in both modes
+		+ Check proportions in quad mode
+		+ Knee bend
+			+ Fix problem with (render) triangle fold
+				+ Option 1: knee always at center, angle up and down
+		+ All orientations, for human & furniture
+		+ Matte color
+		+ Size multiplier
+			+ And test buoyancy head offset (changes offset as buoyancy changes)
+
++ Port to BaryLab
+	+ Port
+	+ Do knee bend work
+	+ Profile
+	+ Port back to FS
+
++ Remove NPC settings for springs
+
++ Panic @ triangle break
+	+ Conn component
+	+ Walking humans only
+	+ Only if triangle has no deleted neighbors
+	+ Flip direction wrt break pos
+
++ Fix notifications @ placing
+	+ BeingPlacedStateType contains previous regime
+
++ See if can fix placement of furniture so to topple it
+	+ Rethink furniture placement:
+		+ Anchor:
+			+ Place: it's primary, and we do position the primary @ mouse
+				+ So fix particle mesh positions
+			+ Move: it's nearest
+				+ So store anchor particle index in BeingPlaced state, and offset in offset
+
++ UI Preferences for NPC notifications
+	+ Test persistence
+
++ Turnover tool:
+	+ Also Furniture

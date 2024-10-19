@@ -1,4 +1,13 @@
-1.8.0
+1.19.0
+- Added new "Lamp" tool, allowing you to peer at wrecks into the darkness
+	- Revisited darkness of wrecks in the process: ships now fade into darkness as they sink deeper and deeper
+		- This new behavior may be controlled via "Settings"->"Rendering"->"Ship"->"Depth Darkening"
+- Revisited ocean floor friction and silting
+	- ...mostly spurred from a lot of development in this area due to NPC work
+- Added "Guide Mode" to Terrain Adjust tool: keep SHIFT pressed and you'll be able to draw terrain along straight lines
+- Musical theme for this release: Carbon Based Lifeforms, entire discography
+
+1.18.0
 - Significant performance improvements, especially on multi-core CPU's - where frame rates have improved by at least 2x
 	- Parallelized integration, spring relaxation, and ocean floor collision detection
 	- Vectorized spring relaxation
@@ -9,13 +18,13 @@
 	- Added lighting effects of clouds onto ocean
 		- Thanks to Denis Nesterenco for the fantastic idea!
 		- Note: disabled by default on lower-end computers
-	- Changed defaults for a more moving experience
+	- Changed some defaults for a more moving experience
 	- Fixed depth gradients (which were suffering from color banding)
 - Re-designed night ambient
 	- Added moon lighting
 		- Thanks to Joadix for the fantastic idea!
 		- Note: can be controlled in the "Rendering" section of the Settings window		
-	- Added crepuscolar gradient
+	- Added crepuscular gradient
 		- Note: can be controlled in the "Rendering" section of the Settings window
 		- Note: disabled by default on lower-end computers
 	- Added menu entry to suddenly switch to full day or full night

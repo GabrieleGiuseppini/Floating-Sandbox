@@ -7,10 +7,13 @@
 
 #include "GameMath.h"
 #include "GameTypes.h"
+#include "SysSpecifics.h"
 #include "Vectors.h"
 
 #include <cassert>
 #include <cmath>
+
+namespace Geometry {
 
 class Segment
 {
@@ -61,22 +64,37 @@ public:
         vec2f const & segmentP2,
         vec2f const & point)
     {
+        return std::sqrt(
+            SquareDistanceToPoint(
+                segmentP1,
+                segmentP2,
+                point));
+    }
+
+    /*
+     * Returns the distance between a point and a segment.
+     */
+    inline static float SquareDistanceToPoint(
+        vec2f const & segmentP1,
+        vec2f const & segmentP2,
+        vec2f const & point)
+    {
         // From https://stackoverflow.com/questions/849211/shortest-distance-between-a-point-and-a-line-segment
 
         float const segmentSquaredLength = (segmentP2 - segmentP1).squareLength();
-        if (segmentSquaredLength == 0.0f) 
+        if (segmentSquaredLength == 0.0f)
         {
             // Overlapping endpoints
-            return (segmentP2 - point).length();
+            return (segmentP2 - point).squareLength();
         }
 
         // Consider the line extending the segment, parameterized as P1 + t (P2 - P1).
-        // We find projection of point P onto the line. 
+        // We find projection of point P onto the line.
         // It falls where t = [(P-P1) . (P2-P)] / |P2-P1|^2
         // We clamp t from [0,1] to handle points outside the segment P1-P2.
         const float t = std::max(0.0f, std::min(1.0f, (point - segmentP1).dot(segmentP2 - segmentP1) / segmentSquaredLength));
         vec2f const projection = segmentP1 + (segmentP2 - segmentP1) * t;  // Projection falls on the segment
-        return (projection - point).length();
+        return (projection - point).squareLength();
     }
 };
 
@@ -127,6 +145,14 @@ inline bool IsPointInTriangle(
     return (pPosition - aPosition).cross(bPosition - aPosition) >= 0.0f
         && (pPosition - bPosition).cross(cPosition - bPosition) >= 0.0f
         && (pPosition - cPosition).cross(aPosition - cPosition) >= 0.0f;
+}
+
+inline bool AreVerticesInCwOrder(
+    vec2f const & aPosition,
+    vec2f const & bPosition,
+    vec2f const & cPosition)
+{
+    return (bPosition.x - aPosition.x) * (cPosition.y - aPosition.y) - (cPosition.x - aPosition.x) * (bPosition.y - aPosition.y) < 0;
 }
 
 /*
@@ -250,4 +276,57 @@ inline void GenerateIntegralLinePath(
             break;
         }
     }
+}
+
+inline void MakeQuadInto(
+    vec2f const & centerTop,
+    vec2f const & centerBottom,
+    vec2f const & hDir,
+    float halfWidth,
+    Quad & quad)
+{
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
+
+    __m128d vd = _mm_shuffle_pd(
+        _mm_load_pd(reinterpret_cast<double const *>(&centerTop)),
+        _mm_load_pd(reinterpret_cast<double const *>(&centerBottom)),
+        0);
+
+    __m128d hd0 = _mm_load_pd(reinterpret_cast<double const *>(&hDir));
+    __m128 hd = _mm_movelh_ps(_mm_castpd_ps(hd0), _mm_castpd_ps(hd0));
+
+    __m128 h = _mm_mul_ps(hd, _mm_load1_ps(&halfWidth));
+
+    __m128 left = _mm_sub_ps(_mm_castpd_ps(vd), h);
+    __m128 right = _mm_add_ps(_mm_castpd_ps(vd), h);
+    _mm_store_ps(&(quad.fptr[0]), left);
+    _mm_store_ps(&(quad.fptr[4]), right);
+
+#else
+
+    quad.V.TopLeft = vec2f(centerTop - hDir * halfWidth);
+    quad.V.BottomLeft = vec2f(centerBottom - hDir * halfWidth);
+    quad.V.TopRight = vec2f(centerTop + hDir * halfWidth);
+    quad.V.BottomRight = vec2f(centerBottom + hDir * halfWidth);
+
+#endif
+}
+
+inline Quad MakeQuad(
+    vec2f const & centerTop,
+    vec2f const & centerBottom,
+    vec2f const & hDir,
+    float halfWidth)
+{
+    Quad quad;
+    MakeQuadInto(
+        centerTop,
+        centerBottom,
+        hDir,
+        halfWidth,
+        quad);
+
+    return quad;
+}
+
 }

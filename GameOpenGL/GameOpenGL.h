@@ -96,6 +96,7 @@ public:
     }
 
 private:
+
     T mValue;
 };
 
@@ -241,10 +242,15 @@ public:
         int height);
 
     static void UploadMipmappedTexture(
-        RgbaImageData baseTexture,
+        RgbaImageData && baseTexture, // In-place
         GLint internalFormat = GL_RGBA);
 
-    static void UploadMipmappedPowerOfTwoTexture(
+    static void UploadMipmappedTexture(
+        RgbaImageData const & baseTexture, // Non-modifying
+        GLint internalFormat = GL_RGBA);
+
+    // Assumes contains tiles aligned on a power-of-two grid
+    static void UploadMipmappedAtlasTexture(
         RgbaImageData baseTexture,
         int maxDimension);
 

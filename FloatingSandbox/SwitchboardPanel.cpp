@@ -394,7 +394,7 @@ bool SwitchboardPanel::ProcessKeyDown(
 
     if (keyIndex < mKeyboardShortcutToElementId.size())
     {
-        ElectricalElementId const elementId = mKeyboardShortcutToElementId[keyIndex];
+        GlobalElectricalElementId const elementId = mKeyboardShortcutToElementId[keyIndex];
         ElectricalElementInfo & elementInfo = mElementMap.at(elementId);
         if (nullptr == elementInfo.DisablableControl
             || elementInfo.DisablableControl->IsEnabled())
@@ -472,7 +472,7 @@ void SwitchboardPanel::OnElectricalElementAnnouncementsBegin()
 }
 
 void SwitchboardPanel::OnSwitchCreated(
-    ElectricalElementId electricalElementId,
+    GlobalElectricalElementId electricalElementId,
     ElectricalElementInstanceIndex instanceIndex,
     SwitchType type,
     ElectricalState state,
@@ -612,7 +612,7 @@ void SwitchboardPanel::OnSwitchCreated(
 }
 
 void SwitchboardPanel::OnPowerProbeCreated(
-    ElectricalElementId electricalElementId,
+    GlobalElectricalElementId electricalElementId,
     ElectricalElementInstanceIndex instanceIndex,
     PowerProbeType type,
     ElectricalState state,
@@ -713,7 +713,7 @@ void SwitchboardPanel::OnPowerProbeCreated(
 }
 
 void SwitchboardPanel::OnEngineControllerCreated(
-    ElectricalElementId electricalElementId,
+    GlobalElectricalElementId electricalElementId,
     ElectricalElementInstanceIndex instanceIndex,
     ElectricalMaterial const & electricalMaterial,
     std::optional<ElectricalPanel::ElementMetadata> const & panelElementMetadata)
@@ -827,7 +827,7 @@ void SwitchboardPanel::OnEngineControllerCreated(
 }
 
 void SwitchboardPanel::OnEngineMonitorCreated(
-    ElectricalElementId electricalElementId,
+    GlobalElectricalElementId electricalElementId,
     ElectricalElementInstanceIndex instanceIndex,
     float /*thrustMagnitude*/,
     float rpm,
@@ -919,7 +919,7 @@ void SwitchboardPanel::OnEngineMonitorCreated(
 }
 
 void SwitchboardPanel::OnWaterPumpCreated(
-    ElectricalElementId electricalElementId,
+    GlobalElectricalElementId electricalElementId,
     ElectricalElementInstanceIndex instanceIndex,
     float normalizedForce,
     ElectricalMaterial const & electricalMaterial,
@@ -982,7 +982,7 @@ void SwitchboardPanel::OnWaterPumpCreated(
 }
 
 void SwitchboardPanel::OnWatertightDoorCreated(
-    ElectricalElementId electricalElementId,
+    GlobalElectricalElementId electricalElementId,
     ElectricalElementInstanceIndex instanceIndex,
     bool isOpen,
     ElectricalMaterial const & electricalMaterial,
@@ -1047,7 +1047,7 @@ void SwitchboardPanel::OnElectricalElementAnnouncementsEnd()
     //
 
     // Prepare elements for layout helper
-    std::vector<LayoutHelper::LayoutElement<ElectricalElementId>> layoutElements;
+    std::vector<LayoutHelper::LayoutElement<GlobalElectricalElementId>> layoutElements;
     for (auto const & entry : mElementMap)
     {
         // Ignore if hidden
@@ -1078,7 +1078,7 @@ void SwitchboardPanel::OnElectricalElementAnnouncementsEnd()
         });
 
     // Layout
-    LayoutHelper::Layout<ElectricalElementId>(
+    LayoutHelper::Layout<GlobalElectricalElementId>(
         layoutElements,
         MaxElementsPerRow,
         [this](int nCols, int nRows)
@@ -1086,7 +1086,7 @@ void SwitchboardPanel::OnElectricalElementAnnouncementsEnd()
             mSwitchPanelElementSizer->SetCols(nCols);
             mSwitchPanelElementSizer->SetRows(nRows);
         },
-        [this](std::optional<ElectricalElementId> elementId, IntegralCoordinates const & coords)
+        [this](std::optional<GlobalElectricalElementId> elementId, IntegralCoordinates const & coords)
         {
             if (!!elementId)
             {
@@ -1181,7 +1181,7 @@ void SwitchboardPanel::OnElectricalElementAnnouncementsEnd()
 }
 
 void SwitchboardPanel::OnSwitchEnabled(
-    ElectricalElementId electricalElementId,
+    GlobalElectricalElementId electricalElementId,
     bool isEnabled)
 {
     //
@@ -1199,7 +1199,7 @@ void SwitchboardPanel::OnSwitchEnabled(
 }
 
 void SwitchboardPanel::OnSwitchToggled(
-    ElectricalElementId electricalElementId,
+    GlobalElectricalElementId electricalElementId,
     ElectricalState newState)
 {
     //
@@ -1217,7 +1217,7 @@ void SwitchboardPanel::OnSwitchToggled(
 }
 
 void SwitchboardPanel::OnPowerProbeToggled(
-    ElectricalElementId electricalElementId,
+    GlobalElectricalElementId electricalElementId,
     ElectricalState newState)
 {
     //
@@ -1247,7 +1247,7 @@ void SwitchboardPanel::OnPowerProbeToggled(
 }
 
 void SwitchboardPanel::OnEngineControllerEnabled(
-    ElectricalElementId electricalElementId,
+    GlobalElectricalElementId electricalElementId,
     bool isEnabled)
 {
     //
@@ -1265,7 +1265,7 @@ void SwitchboardPanel::OnEngineControllerEnabled(
 }
 
 void SwitchboardPanel::OnEngineControllerUpdated(
-    ElectricalElementId electricalElementId,
+    GlobalElectricalElementId electricalElementId,
     ElectricalMaterial const & /*electricalMaterial*/,
     float /*oldControllerValue*/,
     float newControllerValue)
@@ -1285,7 +1285,7 @@ void SwitchboardPanel::OnEngineControllerUpdated(
 }
 
 void SwitchboardPanel::OnEngineMonitorUpdated(
-    ElectricalElementId electricalElementId,
+    GlobalElectricalElementId electricalElementId,
     float /*thrustMagnitude*/,
     float rpm)
 {
@@ -1304,7 +1304,7 @@ void SwitchboardPanel::OnEngineMonitorUpdated(
 }
 
 void SwitchboardPanel::OnWaterPumpEnabled(
-    ElectricalElementId /*electricalElementId*/,
+    GlobalElectricalElementId /*electricalElementId*/,
     bool /*isEnabled*/)
 {
     // Ignored, simply because at the moment we don't have
@@ -1312,7 +1312,7 @@ void SwitchboardPanel::OnWaterPumpEnabled(
 }
 
 void SwitchboardPanel::OnWaterPumpUpdated(
-    ElectricalElementId electricalElementId,
+    GlobalElectricalElementId electricalElementId,
     float normalizedForce)
 {
     //
@@ -1330,7 +1330,7 @@ void SwitchboardPanel::OnWaterPumpUpdated(
 }
 
 void SwitchboardPanel::OnWatertightDoorEnabled(
-    ElectricalElementId electricalElementId,
+    GlobalElectricalElementId electricalElementId,
     bool isEnabled)
 {
     //
@@ -1348,7 +1348,7 @@ void SwitchboardPanel::OnWatertightDoorEnabled(
 }
 
 void SwitchboardPanel::OnWatertightDoorUpdated(
-    ElectricalElementId electricalElementId,
+    GlobalElectricalElementId electricalElementId,
     bool isOpen)
 {
     //
@@ -1600,7 +1600,7 @@ void SwitchboardPanel::OnBackgroundSelectionChanged(wxCommandEvent & /*event*/)
     mUIPreferencesManager.SetSwitchboardBackgroundBitmapIndex(selection);
 }
 
-void SwitchboardPanel::OnTick(ElectricalElementId electricalElementId)
+void SwitchboardPanel::OnTick(GlobalElectricalElementId electricalElementId)
 {
     mGameController.HighlightElectricalElement(electricalElementId);
     mSoundController.PlayTickSound();

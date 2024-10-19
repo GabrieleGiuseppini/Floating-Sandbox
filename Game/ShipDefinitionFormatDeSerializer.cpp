@@ -96,7 +96,7 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
                     ReadStructuralLayer(
                         buffer,
                         *shipAttributes,
-                        materialDatabase.GetStructuralMaterialMap(),
+                        materialDatabase.GetStructuralMaterialColorMap(),
                         structuralLayer);
 
                     break;
@@ -114,7 +114,7 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
                     ReadElectricalLayer(
                         buffer,
                         *shipAttributes,
-                        materialDatabase.GetElectricalMaterialMap(),
+                        materialDatabase.GetElectricalMaterialColorMap(),
                         electricalLayer);
 
                     break;
@@ -132,7 +132,7 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
                     ReadRopesLayer(
                         buffer,
                         *shipAttributes,
-                        materialDatabase.GetStructuralMaterialMap(),
+                        materialDatabase.GetStructuralMaterialColorMap(),
                         ropesLayer);
 
                     break;
@@ -195,7 +195,8 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
             std::move(structuralLayer),
             std::move(electricalLayer),
             std::move(ropesLayer),
-            std::move(textureLayer)),
+            std::move(textureLayer),
+            nullptr), // TODO: InteriorLayer
         *shipMetadata,
         shipPhysicsData,
         shipAutoTexturizationSettings);
@@ -348,7 +349,7 @@ void ShipDefinitionFormatDeSerializer::Save(
     ShipAttributes const shipAttributes = ShipAttributes(
         Version::CurrentVersion(),
         shipDefinition.Layers.Size,
-        (bool)shipDefinition.Layers.TextureLayer,
+        (bool)shipDefinition.Layers.ExteriorTextureLayer,
         (bool)shipDefinition.Layers.ElectricalLayer,
         PortableTimepoint::Now());
 
@@ -368,7 +369,7 @@ void ShipDefinitionFormatDeSerializer::Save(
         [&]() { return AppendMetadata(shipDefinition.Metadata, buffer); },
         buffer);
 
-    if (shipDefinition.Layers.TextureLayer)
+    if (shipDefinition.Layers.ExteriorTextureLayer)
     {
         //
         // Write texture
@@ -377,7 +378,7 @@ void ShipDefinitionFormatDeSerializer::Save(
         AppendSection(
             outputFile,
             static_cast<std::uint32_t>(MainSectionTagType::TextureLayer_PNG),
-            [&]() { return AppendPngImage(shipDefinition.Layers.TextureLayer->Buffer, buffer); },
+            [&]() { return AppendPngImage(shipDefinition.Layers.ExteriorTextureLayer->Buffer, buffer); },
             buffer);
     }
     else if (shipDefinition.Layers.StructuralLayer)
@@ -1802,7 +1803,7 @@ ShipAutoTexturizationSettings ShipDefinitionFormatDeSerializer::ReadAutoTexturiz
 void ShipDefinitionFormatDeSerializer::ReadStructuralLayer(
     DeSerializationBuffer<BigEndianess> const & buffer,
     ShipAttributes const & shipAttributes,
-    MaterialDatabase::MaterialMap<StructuralMaterial> const & materialMap,
+    MaterialDatabase::MaterialColorMap<StructuralMaterial> const & materialColorMap,
     std::unique_ptr<StructuralLayerData> & structuralLayer)
 {
     size_t readOffset = 0;
@@ -1841,8 +1842,8 @@ void ShipDefinitionFormatDeSerializer::ReadStructuralLayer(
                     }
                     else
                     {
-                        auto const materialIt = materialMap.find(colorKey);
-                        if (materialIt == materialMap.cend())
+                        auto const materialIt = materialColorMap.find(colorKey);
+                        if (materialIt == materialColorMap.cend())
                         {
                             ThrowMaterialNotFound(shipAttributes);
                         }
@@ -1892,7 +1893,7 @@ void ShipDefinitionFormatDeSerializer::ReadStructuralLayer(
 void ShipDefinitionFormatDeSerializer::ReadElectricalLayer(
     DeSerializationBuffer<BigEndianess> const & buffer,
     ShipAttributes const & shipAttributes,
-    MaterialDatabase::MaterialMap<ElectricalMaterial> const & materialMap,
+    MaterialDatabase::MaterialColorMap<ElectricalMaterial> const & materialColorMap,
     std::unique_ptr<ElectricalLayerData> & electricalLayer)
 {
     size_t readOffset = 0;
@@ -1931,8 +1932,8 @@ void ShipDefinitionFormatDeSerializer::ReadElectricalLayer(
                     }
                     else
                     {
-                        auto const materialIt = materialMap.find(colorKey);
-                        if (materialIt == materialMap.cend())
+                        auto const materialIt = materialColorMap.find(colorKey);
+                        if (materialIt == materialColorMap.cend())
                         {
                             ThrowMaterialNotFound(shipAttributes);
                         }
@@ -2054,7 +2055,7 @@ void ShipDefinitionFormatDeSerializer::ReadElectricalLayer(
 void ShipDefinitionFormatDeSerializer::ReadRopesLayer(
     DeSerializationBuffer<BigEndianess> const & buffer,
     ShipAttributes const & shipAttributes,
-    MaterialDatabase::MaterialMap<StructuralMaterial> const & materialMap,
+    MaterialDatabase::MaterialColorMap<StructuralMaterial> const & materialColorMap,
     std::unique_ptr<RopesLayerData> & ropesLayer)
 {
     size_t readOffset = 0;
@@ -2098,8 +2099,8 @@ void ShipDefinitionFormatDeSerializer::ReadRopesLayer(
                     bufferReadOffset += buffer.ReadAt(bufferReadOffset, reinterpret_cast<unsigned char *>(&colorKey), sizeof(colorKey));
 
                     // Lookup material
-                    auto const materialIt = materialMap.find(colorKey);
-                    if (materialIt == materialMap.cend())
+                    auto const materialIt = materialColorMap.find(colorKey);
+                    if (materialIt == materialColorMap.cend())
                     {
                         ThrowMaterialNotFound(shipAttributes);
                     }

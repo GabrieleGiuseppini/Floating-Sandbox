@@ -64,7 +64,7 @@ INSTANTIATE_TEST_SUITE_P(
 
 TEST_P(SegmentIntersectionTest, ProperIntersectionTest)
 {
-    bool result = Segment::ProperIntersectionTest(
+    bool result = Geometry::Segment::ProperIntersectionTest(
         std::get<0>(GetParam()),
         std::get<1>(GetParam()),
         std::get<2>(GetParam()),
@@ -72,7 +72,7 @@ TEST_P(SegmentIntersectionTest, ProperIntersectionTest)
 
     EXPECT_EQ(result, std::get<4>(GetParam()));
 
-    result = Segment::ProperIntersectionTest(
+    result = Geometry::Segment::ProperIntersectionTest(
         std::get<1>(GetParam()),
         std::get<0>(GetParam()),
         std::get<2>(GetParam()),
@@ -80,7 +80,7 @@ TEST_P(SegmentIntersectionTest, ProperIntersectionTest)
 
     EXPECT_EQ(result, std::get<4>(GetParam()));
 
-    result = Segment::ProperIntersectionTest(
+    result = Geometry::Segment::ProperIntersectionTest(
         std::get<0>(GetParam()),
         std::get<1>(GetParam()),
         std::get<3>(GetParam()),
@@ -88,7 +88,7 @@ TEST_P(SegmentIntersectionTest, ProperIntersectionTest)
 
     EXPECT_EQ(result, std::get<4>(GetParam()));
 
-    result = Segment::ProperIntersectionTest(
+    result = Geometry::Segment::ProperIntersectionTest(
         std::get<1>(GetParam()),
         std::get<0>(GetParam()),
         std::get<3>(GetParam()),
@@ -118,7 +118,7 @@ INSTANTIATE_TEST_SUITE_P(
 
 TEST_P(IsPointInTriangleTest, PositiveAndNegativeTests)
 {
-    bool result = IsPointInTriangle(
+    bool result = Geometry::IsPointInTriangle(
         std::get<0>(GetParam()),
         std::get<1>(GetParam()),
         std::get<2>(GetParam()),
@@ -163,7 +163,7 @@ INSTANTIATE_TEST_SUITE_P(
 
 TEST_P(Segment_DistanceToPointTest, Segment_DistanceToPointTests)
 {
-    float result = Segment::DistanceToPoint(
+    float result = Geometry::Segment::DistanceToPoint(
         std::get<0>(GetParam()),
         std::get<1>(GetParam()),
         std::get<2>(GetParam()));
@@ -177,7 +177,7 @@ TEST(GeometryTests, GenerateLinePath_Minimal_Distance0)
 {
     std::vector<IntegralCoordinates> generatedCoordinates;
 
-    GenerateIntegralLinePath<IntegralLineType::Minimal>(
+    Geometry::GenerateIntegralLinePath<Geometry::IntegralLineType::Minimal>(
         IntegralCoordinates(3, 5),
         IntegralCoordinates(3, 5),
         [&generatedCoordinates](IntegralCoordinates const & pt)
@@ -193,7 +193,7 @@ TEST(GeometryTests, GenerateLinePath_Minimal_Distance1)
 {
     std::vector<IntegralCoordinates> generatedCoordinates;
 
-    GenerateIntegralLinePath<IntegralLineType::Minimal>(
+    Geometry::GenerateIntegralLinePath<Geometry::IntegralLineType::Minimal>(
         IntegralCoordinates(3, 5),
         IntegralCoordinates(4, 6),
         [&generatedCoordinates](IntegralCoordinates const & pt)
@@ -210,7 +210,7 @@ TEST(GeometryTests, GenerateLinePath_Minimal_Distance2_Diagonal)
 {
     std::vector<IntegralCoordinates> generatedCoordinates;
 
-    GenerateIntegralLinePath<IntegralLineType::Minimal>(
+    Geometry::GenerateIntegralLinePath<Geometry::IntegralLineType::Minimal>(
         IntegralCoordinates(3, 5),
         IntegralCoordinates(5, 7),
         [&generatedCoordinates](IntegralCoordinates const & pt)
@@ -228,7 +228,7 @@ TEST(GeometryTests, GenerateLinePath_Minimal_Distance2_VerticalDown)
 {
     std::vector<IntegralCoordinates> generatedCoordinates;
 
-    GenerateIntegralLinePath<IntegralLineType::Minimal>(
+    Geometry::GenerateIntegralLinePath<Geometry::IntegralLineType::Minimal>(
         IntegralCoordinates(3, 5),
         IntegralCoordinates(3, 7),
         [&generatedCoordinates](IntegralCoordinates const & pt)
@@ -246,7 +246,7 @@ TEST(GeometryTests, GenerateLinePath_Minimal_Distance2_VerticalUp)
 {
     std::vector<IntegralCoordinates> generatedCoordinates;
 
-    GenerateIntegralLinePath<IntegralLineType::Minimal>(
+    Geometry::GenerateIntegralLinePath<Geometry::IntegralLineType::Minimal>(
         IntegralCoordinates(3, 5),
         IntegralCoordinates(3, 3),
         [&generatedCoordinates](IntegralCoordinates const & pt)
@@ -264,7 +264,7 @@ TEST(GeometryTests, GenerateLinePath_Minimal_Distance2_HorizontalLeft)
 {
     std::vector<IntegralCoordinates> generatedCoordinates;
 
-    GenerateIntegralLinePath<IntegralLineType::Minimal>(
+    Geometry::GenerateIntegralLinePath<Geometry::IntegralLineType::Minimal>(
         IntegralCoordinates(3, 5),
         IntegralCoordinates(1, 5),
         [&generatedCoordinates](IntegralCoordinates const & pt)
@@ -282,7 +282,7 @@ TEST(GeometryTests, GenerateLinePath_Minimal_Distance2_HorizontalRight)
 {
     std::vector<IntegralCoordinates> generatedCoordinates;
 
-    GenerateIntegralLinePath<IntegralLineType::Minimal>(
+    Geometry::GenerateIntegralLinePath<Geometry::IntegralLineType::Minimal>(
         IntegralCoordinates(3, 5),
         IntegralCoordinates(5, 5),
         [&generatedCoordinates](IntegralCoordinates const & pt)
@@ -300,7 +300,7 @@ TEST(GeometryTests, GenerateLinePath_WithAdjacentSteps_Distance0)
 {
     std::vector<IntegralCoordinates> generatedCoordinates;
 
-    GenerateIntegralLinePath<IntegralLineType::WithAdjacentSteps>(
+    Geometry::GenerateIntegralLinePath<Geometry::IntegralLineType::WithAdjacentSteps>(
         IntegralCoordinates(3, 5),
         IntegralCoordinates(3, 5),
         [&generatedCoordinates](IntegralCoordinates const & pt)
@@ -316,7 +316,7 @@ TEST(GeometryTests, GenerateLinePath_WithAdjacentSteps_Distance1)
 {
     std::vector<IntegralCoordinates> generatedCoordinates;
 
-    GenerateIntegralLinePath<IntegralLineType::WithAdjacentSteps>(
+    Geometry::GenerateIntegralLinePath<Geometry::IntegralLineType::WithAdjacentSteps>(
         IntegralCoordinates(3, 5),
         IntegralCoordinates(4, 6),
         [&generatedCoordinates](IntegralCoordinates const & pt)
@@ -334,7 +334,7 @@ TEST(GeometryTests, GenerateLinePath_WithAdjacentSteps_Distance2_Diagonal_Equal)
 {
     std::vector<IntegralCoordinates> generatedCoordinates;
 
-    GenerateIntegralLinePath<IntegralLineType::WithAdjacentSteps>(
+    Geometry::GenerateIntegralLinePath<Geometry::IntegralLineType::WithAdjacentSteps>(
         IntegralCoordinates(3, 5),
         IntegralCoordinates(5, 7),
         [&generatedCoordinates](IntegralCoordinates const & pt)
@@ -354,7 +354,7 @@ TEST(GeometryTests, GenerateLinePath_WithAdjacentSteps_Distance2_Diagonal_MoreX)
 {
     std::vector<IntegralCoordinates> generatedCoordinates;
 
-    GenerateIntegralLinePath<IntegralLineType::WithAdjacentSteps>(
+    Geometry::GenerateIntegralLinePath<Geometry::IntegralLineType::WithAdjacentSteps>(
         IntegralCoordinates(3, 5),
         IntegralCoordinates(5, 6),
         [&generatedCoordinates](IntegralCoordinates const & pt)
@@ -373,7 +373,7 @@ TEST(GeometryTests, GenerateLinePath_WithAdjacentSteps_Distance2_Diagonal_MoreY)
 {
     std::vector<IntegralCoordinates> generatedCoordinates;
 
-    GenerateIntegralLinePath<IntegralLineType::WithAdjacentSteps>(
+    Geometry::GenerateIntegralLinePath<Geometry::IntegralLineType::WithAdjacentSteps>(
         IntegralCoordinates(3, 5),
         IntegralCoordinates(4, 7),
         [&generatedCoordinates](IntegralCoordinates const & pt)
@@ -392,7 +392,7 @@ TEST(GeometryTests, GenerateLinePath_WithAdjacentSteps_Distance2_VerticalDown)
 {
     std::vector<IntegralCoordinates> generatedCoordinates;
 
-    GenerateIntegralLinePath<IntegralLineType::WithAdjacentSteps>(
+    Geometry::GenerateIntegralLinePath<Geometry::IntegralLineType::WithAdjacentSteps>(
         IntegralCoordinates(3, 5),
         IntegralCoordinates(3, 7),
         [&generatedCoordinates](IntegralCoordinates const & pt)
@@ -410,7 +410,7 @@ TEST(GeometryTests, GenerateLinePath_WithAdjacentSteps_Distance2_VerticalUp)
 {
     std::vector<IntegralCoordinates> generatedCoordinates;
 
-    GenerateIntegralLinePath<IntegralLineType::WithAdjacentSteps>(
+    Geometry::GenerateIntegralLinePath<Geometry::IntegralLineType::WithAdjacentSteps>(
         IntegralCoordinates(3, 5),
         IntegralCoordinates(3, 3),
         [&generatedCoordinates](IntegralCoordinates const & pt)
@@ -428,7 +428,7 @@ TEST(GeometryTests, GenerateLinePath_WithAdjacentSteps_Distance2_HorizontalLeft)
 {
     std::vector<IntegralCoordinates> generatedCoordinates;
 
-    GenerateIntegralLinePath<IntegralLineType::WithAdjacentSteps>(
+    Geometry::GenerateIntegralLinePath<Geometry::IntegralLineType::WithAdjacentSteps>(
         IntegralCoordinates(3, 5),
         IntegralCoordinates(1, 5),
         [&generatedCoordinates](IntegralCoordinates const & pt)
@@ -446,7 +446,7 @@ TEST(GeometryTests, GenerateLinePath_WithAdjacentSteps_Distance2_HorizontalRight
 {
     std::vector<IntegralCoordinates> generatedCoordinates;
 
-    GenerateIntegralLinePath<IntegralLineType::WithAdjacentSteps>(
+    Geometry::GenerateIntegralLinePath<Geometry::IntegralLineType::WithAdjacentSteps>(
         IntegralCoordinates(3, 5),
         IntegralCoordinates(5, 5),
         [&generatedCoordinates](IntegralCoordinates const & pt)

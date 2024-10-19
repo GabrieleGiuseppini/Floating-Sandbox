@@ -7,7 +7,10 @@
 
 #include "ComputerCalibration.h"
 #include "ShipDeSerializer.h"
+#include "TextureAtlas.h"
+#include "TextureTypes.h"
 
+#include <GameCore/Conversions.h>
 #include <GameCore/GameMath.h>
 #include <GameCore/Log.h>
 
@@ -20,11 +23,22 @@ std::unique_ptr<GameController> GameController::Create(
     ResourceLocator const & resourceLocator,
     ProgressCallback const & progressCallback)
 {
-    // Load fish species
+    // Load material database
+    MaterialDatabase materialDatabase = MaterialDatabase::Load(resourceLocator);
+
+    // Load fish species database
     FishSpeciesDatabase fishSpeciesDatabase = FishSpeciesDatabase::Load(resourceLocator);
 
-    // Load materials
-    MaterialDatabase materialDatabase = MaterialDatabase::Load(resourceLocator);
+    // Load NPC teture atlas
+    auto npcTextureAtlas = Render::TextureAtlas<Render::NpcTextureGroups>::Deserialize(
+        Render::NpcTextureDatabaseTraits::DatabaseName,
+        resourceLocator.GetTexturesRootFolderPath());
+
+    // Load NPC database
+    NpcDatabase npcDatabase = NpcDatabase::Load(
+        resourceLocator,
+        materialDatabase,
+        npcTextureAtlas);
 
     // Create game event dispatcher
     auto gameEventDispatcher = std::make_shared<GameEventDispatcher>();
@@ -35,6 +49,7 @@ std::unique_ptr<GameController> GameController::Create(
     // Create render context
     std::unique_ptr<Render::RenderContext> renderContext = std::make_unique<Render::RenderContext>(
         renderDeviceProperties,
+        std::move(npcTextureAtlas),
         *perfStats,
         resourceLocator,
         [&progressCallback](float progress, ProgressMessageType message)
@@ -52,6 +67,7 @@ std::unique_ptr<GameController> GameController::Create(
             std::move(gameEventDispatcher),
             std::move(perfStats),
             std::move(fishSpeciesDatabase),
+            std::move(npcDatabase),
             std::move(materialDatabase),
             resourceLocator,
             progressCallback));
@@ -62,6 +78,7 @@ GameController::GameController(
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     std::unique_ptr<PerfStats> perfStats,
     FishSpeciesDatabase && fishSpeciesDatabase,
+    NpcDatabase && npcDatabase,
     MaterialDatabase && materialDatabase,
     ResourceLocator const & resourceLocator,
     ProgressCallback const & progressCallback)
@@ -72,6 +89,7 @@ GameController::GameController(
     // World
     , mWorld()
     , mFishSpeciesDatabase(std::move(fishSpeciesDatabase))
+    , mNpcDatabase(std::move(npcDatabase))
     , mMaterialDatabase(std::move(materialDatabase))
     // Ship factory
     , mShipStrengthRandomizer()
@@ -85,7 +103,8 @@ GameController::GameController(
     // Parameters that we own
     , mTimeOfDay(0.0f) // We'll set it later
     , mDoShowTsunamiNotifications(true)
-    , mDoDrawHeatBlasterFlame(true)    
+    , mDoShowNpcNotifications(true)
+    , mDoDrawHeatBlasterFlame(true)
     // Doers
     , mRenderContext(std::move(renderContext))
     , mGameEventDispatcher(std::move(gameEventDispatcher))
@@ -95,11 +114,11 @@ GameController::GameController(
         mGameParameters.DoDayLightCycle,
         false /*isAutoFocusOn; loaded value will come later*/,
         mRenderContext->GetDisplayUnitsSystem(),
-        mGameEventDispatcher)
+        *mGameEventDispatcher)
     , mThreadManager(
         mRenderContext->IsRenderingMultiThreaded(),
         8) // We start "zuinig", as we do not want to pay a ThreadPool price for too many threads
-    , mViewManager(*mRenderContext, mNotificationLayer)
+    , mViewManager(*mRenderContext, *mGameEventDispatcher)
     // Smoothing
     , mFloatParameterSmoothers()
     // Stats
@@ -120,12 +139,14 @@ GameController::GameController(
         OceanFloorTerrain::LoadFromImage(resourceLocator.GetDefaultOceanFloorTerrainFilePath()),
         CalculateAreCloudShadowsEnabled(mRenderContext->GetOceanRenderDetail()),
         mFishSpeciesDatabase,
+        mNpcDatabase,
         mGameEventDispatcher,
         mGameParameters,
         mRenderContext->GetVisibleWorld());
 
     // Register ourselves as event handler for the events we care about
     mGameEventDispatcher->RegisterLifecycleEventHandler(this);
+    mGameEventDispatcher->RegisterNpcEventHandler(this);
     mGameEventDispatcher->RegisterWavePhenomenaEventHandler(this);
 
     //
@@ -239,6 +260,19 @@ GameController::GameController(
         GenericParameterConvergenceFactor,
         GenericParameterTerminationThreshold);
 
+    assert(mFloatParameterSmoothers.size() == NpcSizeMultiplierParameterSmoother);
+    mFloatParameterSmoothers.emplace_back(
+        [this]() -> float const &
+        {
+            return this->mGameParameters.NpcSizeMultiplier;
+        },
+        [this](float const & value)
+        {
+            this->mGameParameters.NpcSizeMultiplier = value;
+        },
+        GenericParameterConvergenceFactor,
+        GenericParameterTerminationThreshold);
+
     //
     // Calibrate game
     //
@@ -248,6 +282,12 @@ GameController::GameController(
     auto const & score = ComputerCalibrator::Calibrate();
 
     ComputerCalibrator::TuneGame(score, mGameParameters, *mRenderContext);
+
+    //
+    // Reconcialiate notifications with startup parameters
+    //
+
+    mNotificationLayer.SetAutoFocusIndicator(mViewManager.GetAutoFocusTarget().has_value());
 }
 
 GameController::~GameController()
@@ -276,9 +316,11 @@ ShipMetadata GameController::AddShip(ShipLoadSpecifications const & loadSpecs)
     // Load ship definition
     auto shipDefinition = ShipDeSerializer::LoadShip(loadSpecs.DefinitionFilepath, mMaterialDatabase);
 
-    // Pre-validate ship's texture, if any
-    if (shipDefinition.Layers.TextureLayer)
-        mRenderContext->ValidateShipTexture(shipDefinition.Layers.TextureLayer->Buffer);
+    // Pre-validate ship's textures, if any
+    if (shipDefinition.Layers.ExteriorTextureLayer)
+        mRenderContext->ValidateShipTexture(shipDefinition.Layers.ExteriorTextureLayer->Buffer);
+    if (shipDefinition.Layers.InteriorTextureLayer)
+        mRenderContext->ValidateShipTexture(shipDefinition.Layers.InteriorTextureLayer->Buffer);
 
     // Remember metadata
     ShipMetadata shipMetadata(shipDefinition.Metadata);
@@ -289,7 +331,7 @@ ShipMetadata GameController::AddShip(ShipLoadSpecifications const & loadSpecs)
 
     auto const shipId = mWorld->GetNextShipId();
 
-    auto [ship, textureImage] = ShipFactory::Create(
+    auto [ship, exteriorTextureImage, interiorViewImage] = ShipFactory::Create(
         shipId,
         *mWorld,
         std::move(shipDefinition),
@@ -306,7 +348,8 @@ ShipMetadata GameController::AddShip(ShipLoadSpecifications const & loadSpecs)
 
     InternalAddShip(
         std::move(ship),
-        std::move(textureImage),
+        std::move(exteriorTextureImage),
+        std::move(interiorViewImage),
         shipMetadata);
 
     return shipMetadata;
@@ -398,7 +441,7 @@ void GameController::RunGameIteration()
         UpdateAllStateMachines(mWorld->GetCurrentSimulationTime());
 
         // Update notification layer
-        mNotificationLayer.Update(nowGame);
+        mNotificationLayer.Update(nowGame, mWorld->GetCurrentSimulationTime());
 
         // Tell RenderContext we've finished an update
         mRenderContext->UpdateEnd();
@@ -422,7 +465,8 @@ void GameController::RunGameIteration()
         // Update view manager
         // Note: some Upload()'s need to use ViewModel values, which have then to match the
         // ViewModel values used by the subsequent render
-        mViewManager.Update(mWorld->GetAllAABBs());
+        UpdateAutoFocus();
+        mViewManager.Update();
 
         //
         // Upload world
@@ -431,8 +475,7 @@ void GameController::RunGameIteration()
         assert(!!mWorld);
         mWorld->RenderUpload(
             mGameParameters,
-            *mRenderContext,
-            *mTotalPerfStats);
+            *mRenderContext);
 
         //
         // Upload notification layer
@@ -571,7 +614,7 @@ void GameController::SetMoveToolEngaged(bool isEngaged)
 
 void GameController::DisplaySettingsLoadedNotification()
 {
-    mNotificationLayer.AddEphemeralTextLine("SETTINGS LOADED");
+    mNotificationLayer.PublishNotificationText("SETTINGS LOADED");
 }
 
 bool GameController::GetShowStatusText() const
@@ -594,9 +637,21 @@ void GameController::SetShowExtendedStatusText(bool value)
     mNotificationLayer.SetExtendedStatusTextEnabled(value);
 }
 
+void GameController::DisplayEphemeralTextLine(std::string const & text)
+{
+    mNotificationLayer.PublishNotificationText(text);
+}
+
 void GameController::NotifySoundMuted(bool isSoundMuted)
 {
     mNotificationLayer.SetSoundMuteIndicator(isSoundMuted);
+}
+
+void GameController::SetLineGuide(
+    DisplayLogicalCoordinates const & start,
+    DisplayLogicalCoordinates const & end)
+{
+    mNotificationLayer.SetLineGuide(start, end);
 }
 
 void GameController::ToggleToFullDayOrNight()
@@ -607,51 +662,21 @@ void GameController::ToggleToFullDayOrNight()
         SetTimeOfDay(1.0f);
 }
 
-void GameController::ScareFish(
-    DisplayLogicalCoordinates const & screenCoordinates,
-    float radius,
-    std::chrono::milliseconds delay)
-{
-    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
-
-    // Apply action
-    assert(!!mWorld);
-    mWorld->ScareFish(
-        worldCoordinates,
-        radius,
-        delay);
-}
-
-void GameController::AttractFish(
-    DisplayLogicalCoordinates const & screenCoordinates,
-    float radius,
-    std::chrono::milliseconds delay)
-{
-    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
-
-    // Apply action
-    assert(!!mWorld);
-    mWorld->AttractFish(
-        worldCoordinates,
-        radius,
-        delay);
-}
-
 void GameController::PickObjectToMove(
     DisplayLogicalCoordinates const & screenCoordinates,
-    std::optional<ElementId> & elementId)
+    std::optional<GlobalConnectedComponentId> & connectedComponentId)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
     // Apply action
     assert(!!mWorld);
-    mWorld->PickPointToMove(
+    mWorld->PickConnectedComponentToMove(
         worldCoordinates,
-        elementId,
+        connectedComponentId,
         mGameParameters);
 }
 
-std::optional<ElementId> GameController::PickObjectForPickAndPull(DisplayLogicalCoordinates const & screenCoordinates)
+std::optional<GlobalElementId> GameController::PickObjectForPickAndPull(DisplayLogicalCoordinates const & screenCoordinates)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
@@ -663,7 +688,7 @@ std::optional<ElementId> GameController::PickObjectForPickAndPull(DisplayLogical
 }
 
 void GameController::Pull(
-    ElementId elementId,
+    GlobalElementId elementId,
     DisplayLogicalCoordinates const & screenTarget)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenTarget);
@@ -692,7 +717,7 @@ void GameController::PickObjectToMove(
 }
 
 void GameController::MoveBy(
-    ElementId elementId,
+    GlobalConnectedComponentId const & connectedComponentId,
     DisplayLogicalSize const & screenOffset,
     DisplayLogicalSize const & inertialScreenOffset)
 {
@@ -702,7 +727,7 @@ void GameController::MoveBy(
     // Apply action
     assert(!!mWorld);
     mWorld->MoveBy(
-        elementId,
+        connectedComponentId,
         worldOffset,
         inertialVelocity,
         mGameParameters);
@@ -726,7 +751,7 @@ void GameController::MoveBy(
 }
 
 void GameController::RotateBy(
-    ElementId elementId,
+    GlobalConnectedComponentId const & connectedComponentId,
     float screenDeltaY,
     DisplayLogicalCoordinates const & screenCenter,
     float inertialScreenDeltaY)
@@ -747,7 +772,7 @@ void GameController::RotateBy(
     // Apply action
     assert(!!mWorld);
     mWorld->RotateBy(
-        elementId,
+        connectedComponentId,
         angle,
         worldCenter,
         inertialAngle,
@@ -954,7 +979,7 @@ void GameController::ApplyRadialWindFrom(
 
     // Calculate wind speed, in m/s
     float const effectiveBaseWindSpeed =
-        mGameParameters.WindMakerToolWindSpeed * 1000.0f / 3600.0f
+        Conversions::KmhToMs(mGameParameters.WindMakerToolWindSpeed)
         * (mGameParameters.IsUltraViolentMode ? 3.5f : 1.0f);
     float const preFrontWindSpeed = effectiveBaseWindSpeed * preFrontIntensityMultiplier;
     float const mainFrontWindSpeed = effectiveBaseWindSpeed * mainFrontIntensityMultiplier;
@@ -983,7 +1008,7 @@ void GameController::ApplyRadialWindFrom(
 }
 
 bool GameController::ApplyLaserCannonThrough(
-    DisplayLogicalCoordinates const & startScreenCoordinates, 
+    DisplayLogicalCoordinates const & startScreenCoordinates,
     DisplayLogicalCoordinates const & endScreenCoordinates,
     std::optional<float> strength)
 {
@@ -1172,7 +1197,7 @@ void GameController::DetonateAntiMatterBombs()
 }
 
 void GameController::AdjustOceanSurfaceTo(
-    DisplayLogicalCoordinates const & screenCoordinates, 
+    DisplayLogicalCoordinates const & screenCoordinates,
     int screenRadius)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
@@ -1184,7 +1209,7 @@ void GameController::AdjustOceanSurfaceTo(
 }
 
 std::optional<bool> GameController::AdjustOceanFloorTo(
-    vec2f const & startWorldPosition, 
+    vec2f const & startWorldPosition,
     vec2f const & endWorldPosition)
 {
     assert(!!mWorld);
@@ -1226,7 +1251,7 @@ bool GameController::RotThrough(
 }
 
 void GameController::ApplyThanosSnapAt(
-    DisplayLogicalCoordinates const & screenCoordinates, 
+    DisplayLogicalCoordinates const & screenCoordinates,
     bool isSparseMode)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
@@ -1234,7 +1259,232 @@ void GameController::ApplyThanosSnapAt(
     StartThanosSnapStateMachine(worldCoordinates.x, isSparseMode, mWorld->GetCurrentSimulationTime());
 }
 
-std::optional<ElementId> GameController::GetNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const
+void GameController::ScareFish(
+    DisplayLogicalCoordinates const & screenCoordinates,
+    float radius,
+    std::chrono::milliseconds delay)
+{
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+
+    // Apply action
+    assert(!!mWorld);
+    mWorld->ScareFish(
+        worldCoordinates,
+        radius,
+        delay);
+}
+
+void GameController::AttractFish(
+    DisplayLogicalCoordinates const & screenCoordinates,
+    float radius,
+    std::chrono::milliseconds delay)
+{
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+
+    // Apply action
+    assert(!!mWorld);
+    mWorld->AttractFish(
+        worldCoordinates,
+        radius,
+        delay);
+}
+
+void GameController::SetLampAt(
+    DisplayLogicalCoordinates const & screenCoordinates,
+    float radiusScreenFraction)
+{
+    mRenderContext->SetLamp(screenCoordinates, radiusScreenFraction);
+
+     // Scare fish
+    assert(!!mWorld);
+    mWorld->ScareFish(
+        mRenderContext->ScreenToWorld(screenCoordinates),
+        mRenderContext->ScreenFractionToWorldOffset(radiusScreenFraction),
+        std::chrono::milliseconds(75));
+}
+
+void GameController::ResetLamp()
+{
+    mRenderContext->ResetLamp();
+}
+
+NpcKindType GameController::GetNpcKind(NpcId id)
+{
+    assert(!!mWorld);
+    return mWorld->GetNpcKind(id);
+}
+
+std::optional<PickedNpc> GameController::BeginPlaceNewFurnitureNpc(
+    NpcSubKindIdType subKind,
+    DisplayLogicalCoordinates const & screenCoordinates,
+    bool doMoveWholeMesh)
+{
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+
+    assert(!!mWorld);
+    auto const result = mWorld->BeginPlaceNewFurnitureNpc(
+        subKind,
+        worldCoordinates,
+        doMoveWholeMesh || mIsPaused);
+
+    auto const & pickedNpcId = std::get<0>(result);
+    if (pickedNpcId.has_value())
+    {
+        OnBeginPlaceNewNpc(pickedNpcId->Id, true);
+        return pickedNpcId;
+    }
+    else
+    {
+        NotifyNpcPlacementError(std::get<1>(result));
+        return std::nullopt;
+    }
+}
+
+std::optional<PickedNpc> GameController::BeginPlaceNewHumanNpc(
+    NpcSubKindIdType subKind,
+    DisplayLogicalCoordinates const & screenCoordinates,
+    bool doMoveWholeMesh)
+{
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+
+    assert(!!mWorld);
+    auto const result = mWorld->BeginPlaceNewHumanNpc(
+        subKind,
+        worldCoordinates,
+        doMoveWholeMesh || mIsPaused);
+
+    auto const & pickedNpcId = std::get<0>(result);
+    if (pickedNpcId.has_value())
+    {
+        OnBeginPlaceNewNpc(pickedNpcId->Id, true);
+        return pickedNpcId;
+    }
+    else
+    {
+        NotifyNpcPlacementError(std::get<1>(result));
+        return std::nullopt;
+    }
+}
+
+std::optional<PickedNpc> GameController::ProbeNpcAt(DisplayLogicalCoordinates const & screenCoordinates) const
+{
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+    float const npcProbeSearchRadius = 1.0f / std::sqrtf(mRenderContext->GetZoom());
+
+    assert(!!mWorld);
+    return mWorld->ProbeNpcAt(
+        worldCoordinates,
+        npcProbeSearchRadius,
+        mGameParameters);
+}
+
+void GameController::BeginMoveNpc(
+    NpcId id,
+    int particleOrdinal,
+    bool doMoveWholeMesh)
+{
+    assert(!!mWorld);
+    mWorld->BeginMoveNpc(
+        id,
+        particleOrdinal,
+        doMoveWholeMesh || mIsPaused);
+}
+
+void GameController::MoveNpcTo(
+    NpcId id,
+    DisplayLogicalCoordinates const & screenCoordinates,
+    vec2f const & worldOffset,
+    bool doMoveWholeMesh)
+{
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+
+    assert(!!mWorld);
+    mWorld->MoveNpcTo(
+        id,
+        worldCoordinates,
+        worldOffset,
+        doMoveWholeMesh || mIsPaused);
+}
+
+void GameController::EndMoveNpc(NpcId id)
+{
+    assert(!!mWorld);
+    mWorld->EndMoveNpc(id);
+}
+
+void GameController::CompleteNewNpc(NpcId id)
+{
+    assert(!!mWorld);
+    mWorld->CompleteNewNpc(id);
+}
+
+void GameController::RemoveNpc(NpcId id)
+{
+    assert(!!mWorld);
+    mWorld->RemoveNpc(id);
+}
+
+void GameController::AbortNewNpc(NpcId id)
+{
+    assert(!!mWorld);
+    mWorld->AbortNewNpc(id);
+}
+
+void GameController::AddNpcGroup(NpcKindType kind)
+{
+    assert(!!mWorld);
+    auto const result = mWorld->AddNpcGroup(kind);
+
+    auto const & pickedNpcId = std::get<0>(result);
+    if (pickedNpcId.has_value())
+    {
+        // Mey-be-futurework: it's not so nice to focus on (first) NPC when placing group
+        ////if (kind == NpcKindType::Human)
+        ////{
+        ////    OnBeginPlaceNewNpc(*pickedNpcId, false);
+        ////}
+    }
+    else
+    {
+        NotifyNpcPlacementError(std::get<1>(result));
+    }
+}
+
+void GameController::TurnaroundNpc(NpcId id)
+{
+    assert(!!mWorld);
+    mWorld->TurnaroundNpc(id);
+}
+
+void GameController::SelectNpc(std::optional<NpcId> id)
+{
+    assert(!!mWorld);
+    mWorld->SelectNpc(id);
+
+    if (mViewManager.GetAutoFocusTarget() == AutoFocusTargetKindType::SelectedNpc)
+    {
+        mViewManager.ResetAutoFocusAlterations();
+    }
+}
+
+void GameController::SelectNextNpc()
+{
+    assert(!!mWorld);
+    mWorld->SelectNextNpc(); // We'll pick this up later at UpdateAutoFocus() if we're focusing on it
+
+    if (mViewManager.GetAutoFocusTarget() == AutoFocusTargetKindType::SelectedNpc)
+    {
+        mViewManager.ResetAutoFocusAlterations();
+    }
+}
+
+void GameController::HighlightNpc(std::optional<NpcId> id)
+{
+    assert(!!mWorld);
+    mWorld->HighlightNpc(id);
+}
+
+std::optional<GlobalElementId> GameController::GetNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
@@ -1274,14 +1524,14 @@ void GameController::TriggerLightning()
     mWorld->TriggerLightning(mGameParameters);
 }
 
-void GameController::HighlightElectricalElement(ElectricalElementId electricalElementId)
+void GameController::HighlightElectricalElement(GlobalElectricalElementId electricalElementId)
 {
     assert(!!mWorld);
     mWorld->HighlightElectricalElement(electricalElementId);
 }
 
 void GameController::SetSwitchState(
-    ElectricalElementId electricalElementId,
+    GlobalElectricalElementId electricalElementId,
     ElectricalState switchState)
 {
     assert(!!mWorld);
@@ -1292,7 +1542,7 @@ void GameController::SetSwitchState(
 }
 
 void GameController::SetEngineControllerState(
-    ElectricalElementId electricalElementId,
+    GlobalElectricalElementId electricalElementId,
     float controllerValue)
 {
     assert(!!mWorld);
@@ -1302,13 +1552,13 @@ void GameController::SetEngineControllerState(
         mGameParameters);
 }
 
-bool GameController::DestroyTriangle(ElementId triangleId)
+bool GameController::DestroyTriangle(GlobalElementId triangleId)
 {
     assert(!!mWorld);
     return mWorld->DestroyTriangle(triangleId);
 }
 
-bool GameController::RestoreTriangle(ElementId triangleId)
+bool GameController::RestoreTriangle(GlobalElementId triangleId)
 {
     assert(!!mWorld);
     return mWorld->RestoreTriangle(triangleId);
@@ -1347,17 +1597,30 @@ void GameController::AdjustZoom(float amount)
 
 void GameController::ResetView()
 {
-    if (mWorld)
+    //
+    // If there's auto-focus on <X>, we re-center; if not, we focus one-off on ships
+    //
+
+    if (mViewManager.GetAutoFocusTarget().has_value())
     {
-        mViewManager.ResetView(mWorld->GetAllAABBs());
+        mViewManager.ResetAutoFocusAlterations();
+    }
+    else
+    {
+        // Focus on ships (one-off)
+        FocusOnShips();
     }
 }
 
-void GameController::FocusOnShip()
+void GameController::FocusOnShips()
 {
     if (mWorld)
     {
-        mViewManager.FocusOnShip(mWorld->GetAllAABBs());
+        auto const aabb = mWorld->GetAllShipAABBs().MakeUnion();
+        if (aabb.has_value())
+        {
+            mViewManager.FocusOn(*aabb, 1.0f, 1.0f, 1.0f, 1.0f, false);
+        }
     }
 }
 
@@ -1369,6 +1632,36 @@ vec2f GameController::ScreenToWorld(DisplayLogicalCoordinates const & screenCoor
 vec2f GameController::ScreenOffsetToWorldOffset(DisplayLogicalSize const & screenOffset) const
 {
     return mRenderContext->ScreenOffsetToWorldOffset(screenOffset);
+}
+
+std::optional<AutoFocusTargetKindType> GameController::GetAutoFocusTarget() const
+{
+    return mViewManager.GetAutoFocusTarget();
+}
+
+void GameController::SetAutoFocusTarget(std::optional<AutoFocusTargetKindType> const & autoFocusTarget)
+{
+    if (autoFocusTarget == AutoFocusTargetKindType::SelectedNpc)
+    {
+        // Assumed to be invoked when at least an NPC exists
+        // (thanks to UI constraints)
+        assert(mWorld->GetNpcs().HasNpcs());
+
+        // Select first NPC as a courtesy if none is selected
+        if (!mWorld->GetNpcs().GetCurrentlySelectedNpc().has_value())
+        {
+            mWorld->SelectFirstNpc();
+        }
+    }
+
+    // Switch
+    InternalSwitchAutoFocusTarget(autoFocusTarget);
+
+    // Reset user offsets if we're switching to an actual auto-focus
+    if (autoFocusTarget.has_value())
+    {
+        mViewManager.ResetAutoFocusAlterations();
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -1406,10 +1699,10 @@ void GameController::SetDoDayLightCycle(bool value)
     }
 }
 
-void GameController::SetOceanRenderDetail(OceanRenderDetailType oceanRenderDetail)
-{ 
-    mRenderContext->SetOceanRenderDetail(oceanRenderDetail); 
-    mWorld->SetAreCloudShadowsEnabled(CalculateAreCloudShadowsEnabled(oceanRenderDetail));
+void GameController::SetOceanRenderDetail(OceanRenderDetailType value)
+{
+    mRenderContext->SetOceanRenderDetail(value);
+    mWorld->SetAreCloudShadowsEnabled(CalculateAreCloudShadowsEnabled(value));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -1425,9 +1718,21 @@ void GameController::OnTsunami(float x)
 
 void GameController::OnShipRepaired(ShipId /*shipId*/)
 {
-    mNotificationLayer.AddEphemeralTextLine("SHIP REPAIRED!");
+    mNotificationLayer.PublishNotificationText("SHIP REPAIRED!");
 
     LogMessage("Ship repaired!");
+}
+
+void GameController::OnHumanNpcCountsUpdated(
+    size_t insideShipCount,
+    size_t outsideShipCount)
+{
+    if (mDoShowNpcNotifications)
+    {
+        std::stringstream ss;
+        ss << insideShipCount << " IN/" << outsideShipCount << " OUT";
+        mNotificationLayer.PublishNotificationText(ss.str());
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -1439,9 +1744,11 @@ ShipMetadata GameController::InternalResetAndLoadShip(ShipLoadSpecifications con
     // Load ship definition
     auto shipDefinition = ShipDeSerializer::LoadShip(loadSpecs.DefinitionFilepath, mMaterialDatabase);
 
-    // Pre-validate ship's texture
-    if (shipDefinition.Layers.TextureLayer)
-        mRenderContext->ValidateShipTexture(shipDefinition.Layers.TextureLayer->Buffer);
+    // Pre-validate ship's textures, if any
+    if (shipDefinition.Layers.ExteriorTextureLayer)
+        mRenderContext->ValidateShipTexture(shipDefinition.Layers.ExteriorTextureLayer->Buffer);
+    if (shipDefinition.Layers.InteriorTextureLayer)
+        mRenderContext->ValidateShipTexture(shipDefinition.Layers.InteriorTextureLayer->Buffer);
 
     // Save metadata
     ShipMetadata shipMetadata(shipDefinition.Metadata);
@@ -1451,13 +1758,14 @@ ShipMetadata GameController::InternalResetAndLoadShip(ShipLoadSpecifications con
         OceanFloorTerrain(mWorld->GetOceanFloorTerrain()),
         CalculateAreCloudShadowsEnabled(mRenderContext->GetOceanRenderDetail()),
         mFishSpeciesDatabase,
+        mNpcDatabase,
         mGameEventDispatcher,
         mGameParameters,
         mRenderContext->GetVisibleWorld());
 
     // Produce ship
     auto const shipId = newWorld->GetNextShipId();
-    auto [ship, textureImage] = ShipFactory::Create(
+    auto [ship, exteriorTextureImage, interiorViewImage] = ShipFactory::Create(
         shipId,
         *newWorld,
         std::move(shipDefinition),
@@ -1476,7 +1784,8 @@ ShipMetadata GameController::InternalResetAndLoadShip(ShipLoadSpecifications con
 
     InternalAddShip(
         std::move(ship),
-        std::move(textureImage),
+        std::move(exteriorTextureImage),
+        std::move(interiorViewImage),
         shipMetadata);
 
     return shipMetadata;
@@ -1510,7 +1819,8 @@ void GameController::Reset(std::unique_ptr<Physics::World> newWorld)
 
 void GameController::InternalAddShip(
     std::unique_ptr<Physics::Ship> ship,
-    RgbaImageData && textureImage,
+    RgbaImageData && exteriorTextureImage,
+    RgbaImageData && interiorViewImage,
     ShipMetadata const & shipMetadata)
 {
     ShipId const shipId = ship->GetId();
@@ -1525,10 +1835,11 @@ void GameController::InternalAddShip(
     mRenderContext->AddShip(
         shipId,
         mWorld->GetShipPointCount(shipId),
-        std::move(textureImage));
+        std::move(exteriorTextureImage),
+        std::move(interiorViewImage));
 
     // Tell view manager
-    mViewManager.OnNewShip(mWorld->GetAllAABBs());
+    UpdateViewOnShipLoad();
 
     // Notify ship load
     mGameEventDispatcher->OnShipLoaded(
@@ -1591,8 +1902,134 @@ void GameController::PublishStats(std::chrono::steady_clock::time_point nowReal)
         mRenderContext->GetStatistics());
 }
 
+void GameController::OnBeginPlaceNewNpc(
+    NpcId const & npcId,
+    bool doAnchorToScreen)
+{
+    if (!mViewManager.GetAutoFocusTarget().has_value())
+    {
+        // Focus on this NPC (one-off)
+
+        // We want to zoom so that the NPC appears as large as 1/this of screen
+        float constexpr NpcMagnification = 13.0f;
+
+        assert(!!mWorld);
+        auto const aabb = mWorld->GetNpcs().GetNpcAABB(npcId);
+        mViewManager.FocusOn(aabb, NpcMagnification, NpcMagnification, 1.0f / 8.0f, 2.0f, doAnchorToScreen);
+    }
+}
+
+void GameController::NotifyNpcPlacementError(NpcCreationFailureReasonType reason)
+{
+    switch (reason)
+    {
+        case NpcCreationFailureReasonType::Success:
+        {
+            assert(false);
+            break;
+        }
+
+        case NpcCreationFailureReasonType::TooManyNpcs:
+        {
+            mNotificationLayer.PublishNotificationText("TOO MANY NPCS!");
+            break;
+        }
+
+        case NpcCreationFailureReasonType::TooManyCaptains:
+        {
+            mNotificationLayer.PublishNotificationText("TOO MANY CAPTAINS!");
+            break;
+        }
+    }
+}
+
 bool GameController::CalculateAreCloudShadowsEnabled(OceanRenderDetailType oceanRenderDetail)
 {
     // Note: also RenderContext infers applicability of shadows via detail, independently
     return (oceanRenderDetail == OceanRenderDetailType::Detailed);
+}
+
+void GameController::UpdateViewOnShipLoad()
+{
+    auto const currentAutoFocusTarget = mViewManager.GetAutoFocusTarget();
+
+    if (currentAutoFocusTarget == AutoFocusTargetKindType::Ship)
+    {
+        // Honor auto-focus on ship load
+        if (mViewManager.GetDoAutoFocusOnShipLoad())
+        {
+            // Reset user offsets
+            mViewManager.ResetAutoFocusAlterations();
+        }
+
+        return;
+    }
+
+    if (currentAutoFocusTarget == AutoFocusTargetKindType::SelectedNpc)
+    {
+        // Check whether we still have a selected NPC after the load
+        if (!mWorld->GetNpcs().GetCurrentlySelectedNpc().has_value())
+        {
+            // Disable auto-focus
+            InternalSwitchAutoFocusTarget(std::nullopt);
+        }
+    }
+
+    // Honor auto-focus on ship load
+    if (mViewManager.GetDoAutoFocusOnShipLoad())
+    {
+        // Focus on ships (one-off)
+        FocusOnShips();
+    }
+}
+
+void GameController::UpdateAutoFocus()
+{
+    assert(!!mWorld);
+
+    auto const currentAutoFocusTarget = mViewManager.GetAutoFocusTarget();
+    if (currentAutoFocusTarget == AutoFocusTargetKindType::Ship)
+    {
+        // Auto-focus on ship
+        mViewManager.UpdateAutoFocus(mWorld->GetAllShipAABBs().MakeUnion());
+    }
+    else if (currentAutoFocusTarget == AutoFocusTargetKindType::SelectedNpc)
+    {
+        // Check whether we have a selected NPC
+        auto const selectedNpc = mWorld->GetNpcs().GetCurrentlySelectedNpc();
+        if (selectedNpc.has_value())
+        {
+            assert(mWorld->GetNpcs().HasNpc(*selectedNpc)); // Still exists if selected
+
+            // Auto-focus on NPC
+            auto const aabb = mWorld->GetNpcs().GetNpcAABB(*selectedNpc);
+            mViewManager.UpdateAutoFocus(aabb);
+        }
+        else
+        {
+            // Disable auto-focus
+            InternalSwitchAutoFocusTarget(std::nullopt);
+        }
+    }
+    else
+    {
+        assert(!currentAutoFocusTarget.has_value());
+
+        // Nop
+    }
+}
+
+void GameController::InternalSwitchAutoFocusTarget(std::optional<AutoFocusTargetKindType> const & autoFocusTarget)
+{
+    if (mViewManager.GetAutoFocusTarget() != autoFocusTarget)
+    {
+        // Switch target
+        mViewManager.SetAutoFocusTarget(autoFocusTarget);
+
+        // Tell the world
+        mGameEventDispatcher->OnAutoFocusTargetChanged(autoFocusTarget);
+
+        // Reconciliate notification
+        mNotificationLayer.SetAutoFocusIndicator(autoFocusTarget.has_value());
+    }
 }

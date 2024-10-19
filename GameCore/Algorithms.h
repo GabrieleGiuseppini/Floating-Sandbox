@@ -5,6 +5,7 @@
  ***************************************************************************************/
 #pragma once
 
+#include "GameMath.h"
 #include "GameTypes.h"
 #include "SysSpecifics.h"
 
@@ -14,118 +15,6 @@
 #include <iterator>
 
 namespace Algorithms {
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////
-// Vector normalization
-///////////////////////////////////////////////////////////////////////////////////////////////////////
-
-#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
-template<typename TVector>
-inline TVector NormalizeVector2_SSE(TVector const & v) noexcept
-{
-    __m128 const Zero = _mm_setzero_ps();
-    __m128 const One = _mm_set_ss(1.0f);
-
-    __m128 x = _mm_load_ss(&(v.x));
-    __m128 y = _mm_load_ss(&(v.y));
-
-    __m128 len = _mm_sqrt_ss(
-        _mm_add_ss(
-            _mm_mul_ss(x, x),
-            _mm_mul_ss(y, y)));
-
-    __m128 invLen = _mm_div_ss(One, len);
-    __m128 validMask = _mm_cmpneq_ss(invLen, Zero);
-    invLen = _mm_and_ps(invLen, validMask);
-
-    x = _mm_mul_ss(x, invLen);
-    y = _mm_mul_ss(y, invLen);
-
-    return TVector(_mm_cvtss_f32(x), _mm_cvtss_f32(y));
-}
-#endif
-
-#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
-template<typename TVector>
-inline TVector NormalizeVector2_SSE(TVector const & v, float length) noexcept
-{
-    __m128 const Zero = _mm_setzero_ps();
-    __m128 const One = _mm_set_ss(1.0f);
-
-    __m128 _l = _mm_set_ss(length);
-    __m128 _revl = _mm_div_ss(One, _l);
-    __m128 validMask = _mm_cmpneq_ss(_l, Zero);
-    _revl = _mm_and_ps(_revl, validMask);
-
-    __m128 _x = _mm_mul_ss(_mm_load_ss(&(v.x)), _revl);
-    __m128 _y = _mm_mul_ss(_mm_load_ss(&(v.y)), _revl);
-
-    return TVector(_mm_cvtss_f32(_x), _mm_cvtss_f32(_y));
-}
-#endif
-
-#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
-template<typename EndpointStruct, typename TVector>
-inline void CalculateVectorDirsAndReciprocalLengths_SSE(
-    TVector const * pointPositions,
-    EndpointStruct const * endpoints,
-    TVector * restrict outDirs,
-    float * restrict outReciprocalLengths,
-    size_t const elementCount)
-{
-    assert((elementCount % 4) == 0); // Element counts are aligned
-
-    __m128 const Zero = _mm_setzero_ps();
-
-    for (size_t s = 0; s < elementCount; s += 4)
-    {
-        __m128 const vecA0 = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double const * restrict>(pointPositions + endpoints[s + 0].PointAIndex)));
-        __m128 const vecB0 = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double const * restrict>(pointPositions + endpoints[s + 0].PointBIndex)));
-        __m128 const vecD0 = _mm_sub_ps(vecB0, vecA0);
-
-        __m128 const vecA1 = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double const * restrict>(pointPositions + endpoints[s + 1].PointAIndex)));
-        __m128 const vecB1 = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double const * restrict>(pointPositions + endpoints[s + 1].PointBIndex)));
-        __m128 const vecD1 = _mm_sub_ps(vecB1, vecA1);
-
-        __m128 const vecD01 = _mm_movelh_ps(vecD0, vecD1); //x0,y0,x1,y1
-
-        __m128 const vecA2 = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double const * restrict>(pointPositions + endpoints[s + 2].PointAIndex)));
-        __m128 const vecB2 = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double const * restrict>(pointPositions + endpoints[s + 2].PointBIndex)));
-        __m128 const vecD2 = _mm_sub_ps(vecB2, vecA2);
-
-        __m128 const vecA3 = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double const * restrict>(pointPositions + endpoints[s + 3].PointAIndex)));
-        __m128 const vecB3 = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double const * restrict>(pointPositions + endpoints[s + 3].PointBIndex)));
-        __m128 const vecD3 = _mm_sub_ps(vecB3, vecA3);
-
-        __m128 const vecD23 = _mm_movelh_ps(vecD2, vecD3); //x2,y2,x3,y3
-
-        __m128 displacementX = _mm_shuffle_ps(vecD01, vecD23, 0x88); // x0,x1,x2,x3
-        __m128 displacementY = _mm_shuffle_ps(vecD01, vecD23, 0xDD); // y0,y1,y2,y3
-
-        __m128 const displacementX2 = _mm_mul_ps(displacementX, displacementX);
-        __m128 const displacementY2 = _mm_mul_ps(displacementY, displacementY);
-
-        __m128 const displacementXY = _mm_add_ps(displacementX2, displacementY2); // x^2 + y^2
-
-        __m128 const validMask = _mm_cmpneq_ps(displacementXY, Zero);
-        __m128 rspringLength = _mm_rsqrt_ps(displacementXY);
-
-        // L==0 => 1/L == 0, to maintain normal == (0, 0) from vec2f
-        rspringLength = _mm_and_ps(rspringLength, validMask);
-
-        displacementX = _mm_mul_ps(displacementX, rspringLength);
-        displacementY = _mm_mul_ps(displacementY, rspringLength);
-
-        _mm_store_ps(outReciprocalLengths + s, rspringLength);
-
-        __m128 s01 = _mm_unpacklo_ps(displacementX, displacementY);
-        __m128 s23 = _mm_unpackhi_ps(displacementX, displacementY);
-
-        _mm_store_ps(reinterpret_cast<float * restrict>(outDirs + s), s01);
-        _mm_store_ps(reinterpret_cast<float * restrict>(outDirs + s + 2), s23);
-    }
-}
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 // DiffuseLight
@@ -465,7 +354,7 @@ inline void DiffuseLight_SSEVectorized(
         // Store the 4 point lights, capping them to 1.0
         //
 
-        pointLight_4 = _mm_min_ps(pointLight_4, _mm_set1_ps(1.0f));
+        pointLight_4 = _mm_min_ps(pointLight_4, *(__m128*)One4f);
         _mm_store_ps(outLightBuffer + p, pointLight_4);
     }
 }

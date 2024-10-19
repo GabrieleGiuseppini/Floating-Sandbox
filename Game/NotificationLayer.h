@@ -8,6 +8,7 @@
 #include "GameEventDispatcher.h"
 #include "PerfStats.h"
 #include "RenderContext.h"
+#include "RollingText.h"
 
 #include <GameCore/GameTypes.h>
 
@@ -28,7 +29,7 @@ public:
 		bool isDayLightCycleOn,
 		bool isAutoFocusOn,
 		UnitsSystem displayUnitsSystem,
-		std::shared_ptr<GameEventDispatcher> gameEventDispatcher);
+		GameEventDispatcher & gameEventHandler);
 
 	bool IsStatusTextEnabled() const { return mIsStatusTextEnabled; }
 	void SetStatusTextEnabled(bool isEnabled);
@@ -47,7 +48,7 @@ public:
         vec2f const & camera,
         Render::RenderStatistics renderStats);
 
-	void AddEphemeralTextLine(
+	void PublishNotificationText(
 		std::string const & text,
 		std::chrono::duration<float> lifetime = std::chrono::duration<float>(1.0f));
 
@@ -136,9 +137,21 @@ public:
 			strength);
 	}
 
+	// One frame only; after Update() it's gone
+	inline void SetLineGuide(
+		DisplayLogicalCoordinates const & start,
+		DisplayLogicalCoordinates const & end)
+	{
+		mLineGuideToRender1.emplace(
+			start,
+			end);
+	}
+
 	void Reset();
 
-    void Update(float now);
+    void Update(
+		float now,
+		float currentSimulationTime);
 
 	void RenderUpload(Render::RenderContext & renderContext);
 
@@ -166,7 +179,7 @@ private:
 
 private:
 
-	std::shared_ptr<GameEventDispatcher> mGameEventDispatcher;
+	GameEventDispatcher & mGameEventHandler;
 
 	//
 	// Status text
@@ -178,47 +191,10 @@ private:
 	bool mIsStatusTextDirty;
 
 	//
-	// Notification text
+	// Notifications
 	//
 
-	struct EphemeralTextLine
-	{
-		std::string Text;
-		std::chrono::duration<float> Lifetime;
-
-		enum class StateType
-		{
-			Initial,
-			FadingIn,
-			Displaying,
-			FadingOut,
-			Disappearing
-		};
-
-		StateType State;
-		float CurrentStateStartTimestamp;
-		float CurrentStateProgress;
-
-		EphemeralTextLine(
-			std::string const & text,
-			std::chrono::duration<float> const lifetime)
-			: Text(text)
-			, Lifetime(lifetime)
-			, State(StateType::Initial)
-			, CurrentStateStartTimestamp(0.0f)
-			, CurrentStateProgress(0.0f)
-		{}
-
-		EphemeralTextLine(EphemeralTextLine && other) = default;
-		EphemeralTextLine & operator=(EphemeralTextLine && other) = default;
-	};
-
-	std::deque<EphemeralTextLine> mEphemeralTextLines; // Ordered from top to bottom
-	bool mIsNotificationTextDirty;
-
-	//
-	// Texture notifications
-	//
+	RollingText mRollingText;
 
 	bool mIsUltraViolentModeIndicatorOn;
 	bool mIsSoundMuteIndicatorOn;
@@ -411,4 +387,20 @@ private:
 
 	std::optional<LaserCannon> mLaserCannonToRender1;
 	std::optional<LaserCannon> mLaserCannonToRender2;
+
+	struct LineGuide
+	{
+		DisplayLogicalCoordinates Start;
+		DisplayLogicalCoordinates End;
+
+		LineGuide(
+			DisplayLogicalCoordinates const & start,
+			DisplayLogicalCoordinates const & end)
+			: Start(start)
+			, End(end)
+		{}
+	};
+
+	std::optional<LineGuide> mLineGuideToRender1;
+	std::optional<LineGuide> mLineGuideToRender2;
 };

@@ -22,7 +22,7 @@ struct GameParameters
     //
 
     template <typename T>
-    static constexpr T SimulationStepTimeDuration = 1.0f / 64.0f; // 64 frames/sec == 1 second, matches Windows' timer resolution
+    static T constexpr SimulationStepTimeDuration = 1.0f / 64.0f; // 64 frames/sec == 1 second, matches Windows' timer resolution
 
     template <typename T>
     inline T MechanicalSimulationStepTimeDuration() const
@@ -41,10 +41,10 @@ struct GameParameters
     // Low-frequency updates
     //
 
-    static constexpr int ParticleUpdateLowFrequencyPeriod = 36; // Number of simulation steps for low-frequency particle updates
+    static int constexpr ParticleUpdateLowFrequencyPeriod = 36; // Number of simulation steps for low-frequency particle updates
 
     template <typename T>
-    static constexpr T ParticleUpdateLowFrequencyStepTimeDuration = SimulationStepTimeDuration<T> * static_cast<T>(ParticleUpdateLowFrequencyPeriod);
+    static T constexpr ParticleUpdateLowFrequencyStepTimeDuration = SimulationStepTimeDuration<T> * static_cast<T>(ParticleUpdateLowFrequencyPeriod);
 
 
     //
@@ -52,8 +52,8 @@ struct GameParameters
     //
 
     // Gravity
-    static constexpr vec2f Gravity = vec2f(0.0f, -9.80f);
-    static constexpr vec2f GravityNormalized = vec2f(0.0f, -1.0f);
+    static vec2f constexpr Gravity = vec2f(0.0f, -9.80f);
+    static vec2f constexpr GravityDir = vec2f(0.0f, -1.0f);
     static float constexpr GravityMagnitude = 9.80f; // m/s
 
     // Air
@@ -120,6 +120,18 @@ struct GameParameters
     float GlobalDampingAdjustment;
     static float constexpr MinGlobalDampingAdjustment = 0.0f;
     static float constexpr MaxGlobalDampingAdjustment = 10.0f;
+
+    float ElasticityAdjustment;
+    static float constexpr MinElasticityAdjustment = 0.0f;
+    static float constexpr MaxElasticityAdjustment = 10.0f;
+
+    float StaticFrictionAdjustment;
+    static float constexpr MinStaticFrictionAdjustment = 0.0f;
+    static float constexpr MaxStaticFrictionAdjustment = 10.0f;
+
+    float KineticFrictionAdjustment;
+    static float constexpr MinKineticFrictionAdjustment = 0.0f;
+    static float constexpr MaxKineticFrictionAdjustment = 10.0f;
 
     float RotAcceler8r;
     static float constexpr MinRotAcceler8r = 0.0f;
@@ -218,6 +230,9 @@ struct GameParameters
     static float constexpr MaxSparkleParticlesForLightningVelocity = 150.0f;
     static constexpr float MinSparkleParticlesForLightningLifetime = 0.2f;
     static constexpr float MaxSparkleParticlesForLightningLifetime = 0.5f;
+
+    static float constexpr ShipAirBubbleFinalScale = 0.2f;
+    static float constexpr NpcAirBubbleFinalScale = 0.05f;
 
     float AirBubblesDensity;
     static float constexpr MinAirBubblesDensity = 0.0f;
@@ -338,9 +353,9 @@ struct GameParameters
     static float constexpr SmotheringDecayLowWatermark = 0.0005f;
     static float constexpr SmotheringDecayHighWatermark = 0.05f;
 
-    unsigned int MaxBurningParticles;
-    static unsigned int constexpr MaxMaxBurningParticles = 1000;
-    static unsigned int constexpr MinMaxBurningParticles = 10;
+    unsigned int MaxBurningParticlesPerShip;
+    static unsigned int constexpr MaxMaxBurningParticlesPerShip = 1000;
+    static unsigned int constexpr MinMaxBurningParticlesPerShip = 10;
 
     float ThermalConductivityAdjustment;
     static float constexpr MinThermalConductivityAdjustment = 0.1f;
@@ -428,7 +443,81 @@ struct GameParameters
     static float constexpr MinFishShoalRadiusAdjustment = 0.1f;
     static float constexpr MaxFishShoalRadiusAdjustment = 100.0f;
 
+    //
+    // NPCs
+    //
+
+    static float constexpr NpcDamping = 0.0078f; // NPCs have their own as the "physics" one is applied over multiple sub-steps, while the NPCs' one is applied in one step
+
+    float NpcSpringReductionFractionAdjustment;
+    static float constexpr MinNpcSpringReductionFractionAdjustment = 0.0f;
+    static float constexpr MaxNpcSpringReductionFractionAdjustment = 5.0f;
+
+    float NpcSpringDampingCoefficientAdjustment;
+    static float constexpr MinNpcSpringDampingCoefficientAdjustment = 0.0f;
+    static float constexpr MaxNpcSpringDampingCoefficientAdjustment = 2.0f;
+
+    float NpcWindReceptivityAdjustment; // To account for the fact that NPCs are not made of many particles
+    static float constexpr MinNpcWindReceptivityAdjustment = 0.0f;
+    static float constexpr MaxNpcWindReceptivityAdjustment = 5.0f;
+
+    float NpcSizeMultiplier;
+    static float constexpr MinNpcSizeMultiplier = 0.2f;
+    static float constexpr MaxNpcSizeMultiplier = 10.0f;
+
+    bool DoApplyPhysicsToolsToNpcs; // Swirl/Counterwirl, Attract/Repel
+
+    static float constexpr HumanNpcTemperature = 310.15f; // 37 Celsius
+
+    float HumanNpcEquilibriumTorqueStiffnessCoefficient;
+    static float constexpr MinHumanNpcEquilibriumTorqueStiffnessCoefficient = 0.0f;
+    static float constexpr MaxHumanNpcEquilibriumTorqueStiffnessCoefficient = 0.01f;
+
+    float HumanNpcEquilibriumTorqueDampingCoefficient;
+    static float constexpr MinHumanNpcEquilibriumTorqueDampingCoefficient = 0.0f;
+    static float constexpr MaxHumanNpcEquilibriumTorqueDampingCoefficient = 0.01f;
+
+    static float constexpr HumanNpcWalkingSpeedBase = 1.0f; // m/s
+    float HumanNpcWalkingSpeedAdjustment;
+    static float constexpr MinHumanNpcWalkingSpeedAdjustment = 0.5f;
+    static float constexpr MaxHumanNpcWalkingSpeedAdjustment = 2.5f;
+
+    static float constexpr MaxHumanNpcTotalWalkingSpeedAdjustment = 3.5f; // Absolute cap
+
+    static float constexpr MaxHumanNpcWalkSinSlope = 0.87f; // Max sin of slope we're willing to climb up: ___*\___<W---  (60.5 degrees)
+
+    struct HumanNpcGeometry
+    {
+        static float constexpr BodyLengthMean = 1.65f;
+        static float constexpr BodyLengthStdDev = 0.065f;
+        static float constexpr BodyWidthNarrowMultiplierStdDev = 0.045f;
+        static float constexpr BodyWidthWideMultiplierStdDev = 0.12f;
+
+        // All fractions below are relative to BodyLength
+        //
+        // Lengths are from Leonardo's Vitruvian man; subkinds may override
+        static float constexpr HeadLengthFraction = 1.0f / 7.0f;
+        static float constexpr QuadModeHeadWidthFraction = 1.0f / 8.0f;
+        static float constexpr TorsoLengthFraction = 1.0f / 2.0f - HeadLengthFraction;
+        static float constexpr QuadModeTorsoWidthFraction = 1.0f / 7.0f;
+        static float constexpr ArmLengthFraction = 3.0f / 8.0f;
+        static float constexpr QuadModeArmWidthFraction = 1.0f / 10.0f;
+        static float constexpr LegLengthFraction = 1.0f / 2.0f;
+        static float constexpr QuadModeLegWidthFraction = 1.0f / 10.0f;
+
+        static_assert(LegLengthFraction + TorsoLengthFraction + HeadLengthFraction == 1.0f);
+
+        static float constexpr StepLengthFraction = 0.43f; // From foot to foot at longest separation
+    };
+
+    static size_t constexpr NpcsPerGroup = 32; // The number of NPCs we add when we "add NPC group"
+
+    //
     // Misc
+    //
+
+    static float constexpr ShipParticleAirWaterInterfaceWidth = 1.0f; // Close to equilibrium
+    static float constexpr AirBubbleParticleAirWaterInterfaceWidth = 0.1f; // So doesn't find equilibrium
 
     float SeaDepth;
     static float constexpr MinSeaDepth = -50.0f;
@@ -447,13 +536,13 @@ struct GameParameters
     static float constexpr MinOceanFloorDetailAmplification = 0.0f;
     static float constexpr MaxOceanFloorDetailAmplification = 200.0f;
 
-    float OceanFloorElasticity;
-    static float constexpr MinOceanFloorElasticity = 0.0f;
-    static float constexpr MaxOceanFloorElasticity = 1.0f;
+    float OceanFloorElasticityCoefficient;
+    static float constexpr MinOceanFloorElasticityCoefficient = 0.0f;
+    static float constexpr MaxOceanFloorElasticityCoefficient = 1.0f;
 
-    float OceanFloorFriction;
-    static float constexpr MinOceanFloorFriction = 0.05f; // Keeps some sanity at lower end
-    static float constexpr MaxOceanFloorFriction = 1.0f;
+    float OceanFloorFrictionCoefficient;
+    static float constexpr MinOceanFloorFrictionCoefficient = 0.05f; // Keeps some sanity at lower end
+    static float constexpr MaxOceanFloorFrictionCoefficient = 1.0f;
 
     float OceanFloorSiltHardness;
     static float constexpr MinOceanFloorSiltHardness = 0.0f;
@@ -561,13 +650,16 @@ struct GameParameters
 
     static_assert(HalfMaxWorldHeight >= MaxSeaDepth); // Make sure deepest bottom of the ocean is visible
 
+    static size_t constexpr MaxSpringsPerPoint = 8u + 1u; // 8 neighbours and 1 rope spring, when this is a rope endpoint
+    static size_t constexpr MaxTrianglesPerPoint = 8u;
+
+    static size_t constexpr MaxNpcs = 1024u;
+    static size_t constexpr MaxParticlesPerNpc = 4u;
+    static size_t constexpr MaxSpringsPerNpc = 6u;
 
     static size_t constexpr MaxGadgets = 64u;
     static size_t constexpr MaxPinnedPoints = 64u;
     static size_t constexpr MaxThanosSnaps = 8u;
-
-    static size_t constexpr MaxSpringsPerPoint = 8u + 1u; // 8 neighbours and 1 rope spring, when this is a rope endpoint
-    static size_t constexpr MaxTrianglesPerPoint = 8u;
 
     static unsigned int constexpr EngineControllerTelegraphDegreesOfFreedom = 11;
     static_assert((EngineControllerTelegraphDegreesOfFreedom % 2) != 0); // Make sure there's room for central position, and it's symmetric

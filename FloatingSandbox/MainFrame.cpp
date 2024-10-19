@@ -45,6 +45,8 @@
 #include "Resources/ShipBBB.xpm"
 #endif
 
+ToolType constexpr InitialNonNpcToolType = ToolType::Smash;
+
 long const ID_MAIN_CANVAS = wxNewId();
 
 long const ID_LOAD_SHIP_MENUITEM = wxNewId();
@@ -58,8 +60,12 @@ long const ID_QUIT_MENUITEM = wxNewId();
 long const ID_ZOOM_IN_MENUITEM = wxNewId();
 long const ID_ZOOM_OUT_MENUITEM = wxNewId();
 long const ID_AUTO_FOCUS_AT_SHIP_LOAD_MENUITEM = wxNewId();
-long const ID_CONTINUOUS_AUTO_FOCUS_MENUITEM = wxNewId();
+long const ID_AUTO_FOCUS_ON_SHIP_MENUITEM = wxNewId();
+long const ID_AUTO_FOCUS_ON_SELECTED_NPC_MENUITEM = wxNewId();
+long const ID_AUTO_FOCUS_ON_NOTHING_MENUITEM = wxNewId();
 long const ID_RESET_VIEW_MENUITEM = wxNewId();
+long const ID_CHANGE_SHIP_VIEW_EXTERIOR_MENUITEM = wxNewId();
+long const ID_CHANGE_SHIP_VIEW_INTERIOR_MENUITEM = wxNewId();
 long const ID_TIME_OF_DAY_UP_MENUITEM = wxNewId();
 long const ID_TIME_OF_DAY_DOWN_MENUITEM = wxNewId();
 long const ID_FULL_TIME_OF_DAY_MENUITEM = wxNewId();
@@ -68,7 +74,6 @@ long const ID_STEP_MENUITEM = wxNewId();
 
 long const ID_RCBOMBDETONATE_MENUITEM = wxNewId();
 long const ID_ANTIMATTERBOMBDETONATE_MENUITEM = wxNewId();
-long const ID_PHYSICSPROBE_MENUITEM = wxNewId();
 long const ID_TRIGGERTSUNAMI_MENUITEM = wxNewId();
 long const ID_TRIGGERROGUEWAVE_MENUITEM = wxNewId();
 long const ID_TRIGGERSTORM_MENUITEM = wxNewId();
@@ -121,6 +126,10 @@ MainFrame::MainFrame(
     , mMainGLCanvas(nullptr)
     , mMainGLCanvasContext()
     , mCurrentOpenGLCanvas(nullptr)
+    // UI members checked for existance
+    , mProbePanel(nullptr)
+    , mEventTickerPanel(nullptr)
+    , mElectricalPanel(nullptr)
     // State
     , mInitialShipFilePath(initialShipFilePath)
     , mCurrentShipLoadSpecs()
@@ -191,6 +200,36 @@ MainFrame::MainFrame(
     {
         wxMenuBar * mainMenuBar = new wxMenuBar();
 
+#define ADD_TOOL_MENUITEM(label, shortcut, bitmap_path, toolType, isNpc)\
+        [&]()\
+        {\
+            wxMenu * const parentMenu = (isNpc) ? mNpcToolsMenu : mNonNpcToolsMenu;\
+            auto const id = wxNewId();\
+            wxMenuItem * toolMenuItem = new wxMenuItem(parentMenu, (id), (label) + (shortcut), wxEmptyString, wxITEM_CHECK);\
+            auto const [uncheckedBmp, checkedBmp] = MakeMenuBitmaps((bitmap_path));\
+            SET_BITMAPS(toolMenuItem, uncheckedBmp, checkedBmp)\
+            parentMenu->Bind(wxEVT_COMMAND_MENU_SELECTED,\
+                [this](wxCommandEvent &)\
+                {\
+                    SelectTool((toolType), (isNpc));\
+                },\
+                id);\
+            parentMenu->Append(toolMenuItem);\
+            if (isNpc)\
+            {\
+                mNpcToolMenuItems.push_back({(toolType), toolMenuItem});\
+            }\
+            else\
+            {\
+                mNonNpcToolMenuItems.push_back({(toolType), toolMenuItem});\
+            }\
+            if ((toolType) == InitialNonNpcToolType)\
+            {\
+                toolMenuItem->Check();\
+            }\
+            return toolMenuItem;\
+        }();
+
 #ifdef __WXGTK__
         // Note: on GTK we build an accelerator table for plain keys because of https://trac.wxwidgets.org/ticket/17611
         std::vector<wxAcceleratorEntry> acceleratorEntries;
@@ -199,6 +238,14 @@ MainFrame::MainFrame(
 #else
 #define ADD_PLAIN_ACCELERATOR_KEY(key, menuItem) \
         (void)menuItem;
+#endif
+
+#ifdef __WXMSW__
+#define SET_BITMAPS(toolMenuItem, uncheckedBmp, checkedBmp) \
+        (toolMenuItem)->SetBitmaps(checkedBmp, uncheckedBmp);
+#else
+#define SET_BITMAPS(toolMenuItem, uncheckedBmp, checkedBmp) \
+        (toolMenuItem)->SetBitmap(uncheckedBmp);
 #endif
 
         // File
@@ -219,13 +266,13 @@ MainFrame::MainFrame(
             Connect(ID_RELOAD_PREVIOUS_SHIP_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnReloadPreviousShipMenuItemSelected);
             mReloadPreviousShipMenuItem->Enable(false);
 
-            fileMenu->Append(new wxMenuItem(fileMenu, wxID_SEPARATOR));
+            fileMenu->AppendSeparator();
 
             wxMenuItem * reloadShipsMenuItem = new wxMenuItem(fileMenu, ID_MORE_SHIPS_MENUITEM, _("Get More Ships..."));
             fileMenu->Append(reloadShipsMenuItem);
             fileMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [](wxCommandEvent &) { wxLaunchDefaultBrowser("https://floatingsandbox.com/ship-packs/"); }, ID_MORE_SHIPS_MENUITEM);
 
-            fileMenu->Append(new wxMenuItem(fileMenu, wxID_SEPARATOR));
+            fileMenu->AppendSeparator();
 
             wxMenuItem * saveScreenshotMenuItem = new wxMenuItem(fileMenu, ID_SAVE_SCREENSHOT_MENUITEM, _("Save Screenshot") + wxS("\tCtrl+C"), wxEmptyString, wxITEM_NORMAL);
             fileMenu->Append(saveScreenshotMenuItem);
@@ -235,7 +282,7 @@ MainFrame::MainFrame(
             fileMenu->Append(openScreenshotFolderMenuItem);
             fileMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [this](wxCommandEvent &) { wxLaunchDefaultBrowser(mUIPreferencesManager->GetScreenshotsFolderPath().string()); }, ID_OPEN_SCREENSHOT_FOLDER_MENUITEM);
 
-            fileMenu->Append(new wxMenuItem(fileMenu, wxID_SEPARATOR));
+            fileMenu->AppendSeparator();
 
             wxMenuItem * quitMenuItem = new wxMenuItem(fileMenu, ID_QUIT_MENUITEM, _("Quit") + wxS("\tAlt+F4"), _("Quit the game"), wxITEM_NORMAL);
             fileMenu->Append(quitMenuItem);
@@ -262,20 +309,55 @@ MainFrame::MainFrame(
             ADD_PLAIN_ACCELERATOR_KEY('-', zoomOutMenuItem);
             ADD_PLAIN_ACCELERATOR_KEY(WXK_NUMPAD_SUBTRACT, zoomOutMenuItem);
 
-            mAutoFocusAtShipLoadMenuItem = new wxMenuItem(controlsMenu, ID_AUTO_FOCUS_AT_SHIP_LOAD_MENUITEM, _("Auto-Focus at Ship Load"), _("Enable or disable auto-focus when a ship is loaded."), wxITEM_CHECK);
-            controlsMenu->Append(mAutoFocusAtShipLoadMenuItem);
-            Connect(ID_AUTO_FOCUS_AT_SHIP_LOAD_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAutoFocusAtShipLoadMenuItemSelected);
-
-            mContinuousAutoFocusMenuItem = new wxMenuItem(controlsMenu, ID_CONTINUOUS_AUTO_FOCUS_MENUITEM, _("Continuous Auto-Focus") + wxS("\tCtrl+HOME"), _("Enable or disable continuous auto-focus."), wxITEM_CHECK);
-            controlsMenu->Append(mContinuousAutoFocusMenuItem);
-            Connect(ID_CONTINUOUS_AUTO_FOCUS_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnContinuousAutoFocusMenuItemSelected);
-
             wxMenuItem * resetViewMenuItem = new wxMenuItem(controlsMenu, ID_RESET_VIEW_MENUITEM, _("Reset View") + wxS("\tHOME"), wxEmptyString, wxITEM_NORMAL);
             controlsMenu->Append(resetViewMenuItem);
             Connect(ID_RESET_VIEW_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnResetViewMenuItemSelected);
             ADD_PLAIN_ACCELERATOR_KEY(WXK_HOME, resetViewMenuItem);
 
-            controlsMenu->Append(new wxMenuItem(controlsMenu, wxID_SEPARATOR));
+            mAutoFocusAtShipLoadMenuItem = new wxMenuItem(controlsMenu, ID_AUTO_FOCUS_AT_SHIP_LOAD_MENUITEM, _("Auto-Focus at Ship Load"), _("Enable or disable auto-focus when a ship is loaded."), wxITEM_CHECK);
+            controlsMenu->Append(mAutoFocusAtShipLoadMenuItem);
+            Connect(ID_AUTO_FOCUS_AT_SHIP_LOAD_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAutoFocusAtShipLoadMenuItemSelected);
+
+            controlsMenu->AppendSeparator();
+
+            mContinuousAutoFocusOnShipMenuItem = new wxMenuItem(controlsMenu, ID_AUTO_FOCUS_ON_SHIP_MENUITEM, _("Continuous Auto-Focus on Ship") + wxS("\tCtrl+HOME"), _("Enable continuous auto-focus on ships."), wxITEM_RADIO);
+            controlsMenu->Append(mContinuousAutoFocusOnShipMenuItem);
+            controlsMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [this](wxCommandEvent &)
+                {
+                    assert(!!mUIPreferencesManager);
+                    mUIPreferencesManager->SetAutoFocusTarget(AutoFocusTargetKindType::Ship);
+                },
+                ID_AUTO_FOCUS_ON_SHIP_MENUITEM);
+
+            mContinuousAutoFocusOnSelectedNpcMenuItem = new wxMenuItem(controlsMenu, ID_AUTO_FOCUS_ON_SELECTED_NPC_MENUITEM, _("Continuous Auto-Focus on NPC") + wxS("\tCtrl+PgUp"), _("Enable continuous auto-focus on selected NPCs."), wxITEM_RADIO);
+            controlsMenu->Append(mContinuousAutoFocusOnSelectedNpcMenuItem);
+            controlsMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [this](wxCommandEvent &)
+                {
+                    assert(!!mUIPreferencesManager);
+                    mUIPreferencesManager->SetAutoFocusTarget(AutoFocusTargetKindType::SelectedNpc);
+                },
+                ID_AUTO_FOCUS_ON_SELECTED_NPC_MENUITEM);
+
+            mContinuousAutoFocusOnNothingMenuItem = new wxMenuItem(controlsMenu, ID_AUTO_FOCUS_ON_NOTHING_MENUITEM, _("No Auto-Focus") + wxS("\tCtrl+End"), _("Disable continuous auto-focus."), wxITEM_RADIO);
+            controlsMenu->Append(mContinuousAutoFocusOnNothingMenuItem);
+            controlsMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [this](wxCommandEvent &)
+                {
+                    assert(!!mUIPreferencesManager);
+                    mUIPreferencesManager->SetAutoFocusTarget(std::nullopt);
+                },
+                ID_AUTO_FOCUS_ON_NOTHING_MENUITEM);
+
+            controlsMenu->AppendSeparator();
+
+            mShipViewExteriorMenuItem = new wxMenuItem(controlsMenu, ID_CHANGE_SHIP_VIEW_EXTERIOR_MENUITEM, _("Exterior View"), wxEmptyString, wxITEM_RADIO);
+            controlsMenu->Append(mShipViewExteriorMenuItem);
+            Connect(ID_CHANGE_SHIP_VIEW_EXTERIOR_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnShipViewMenuItemSelected);
+
+            mShipViewInteriorMenuItem = new wxMenuItem(controlsMenu, ID_CHANGE_SHIP_VIEW_INTERIOR_MENUITEM, _("Interior View"), wxEmptyString, wxITEM_RADIO);
+            controlsMenu->Append(mShipViewInteriorMenuItem);
+            Connect(ID_CHANGE_SHIP_VIEW_INTERIOR_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnShipViewMenuItemSelected);
+
+            controlsMenu->AppendSeparator();
 
             wxMenuItem * timeOfDayUpMenuItem = new wxMenuItem(controlsMenu, ID_TIME_OF_DAY_UP_MENUITEM, _("Bright Ambient Light") + wxS("\tPgUp"), wxEmptyString, wxITEM_NORMAL);
             controlsMenu->Append(timeOfDayUpMenuItem);
@@ -289,7 +371,7 @@ MainFrame::MainFrame(
             controlsMenu->Append(fullTimeOfDayMenuItem);
             Connect(ID_FULL_TIME_OF_DAY_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnFullTimeOfDayMenuItemSelected);
 
-            controlsMenu->Append(new wxMenuItem(controlsMenu, wxID_SEPARATOR));
+            controlsMenu->AppendSeparator();
 
             mPauseMenuItem = new wxMenuItem(controlsMenu, ID_PAUSE_MENUITEM, _("Pause") + wxS("\tSpace"), _("Pause the game"), wxITEM_CHECK);
             controlsMenu->Append(mPauseMenuItem);
@@ -306,208 +388,266 @@ MainFrame::MainFrame(
         }
 
 
-        // Tools
+        // Non-NPC Tools
 
         {
-            mToolsMenu = new wxMenu();
+            mNonNpcToolsMenu = new wxMenu();
 
             {
-
-#ifdef __WXMSW__
-#define SET_BITMAP(img) \
-        auto img2 = WxHelpers::RetintCursorImage(img, rgbColor(0x00, 0x90, 0x00));\
-        toolMenuItem->SetBitmaps(wxBitmap(img2), wxBitmap(img));
-#else
-#define SET_BITMAP(img) \
-        toolMenuItem->SetBitmap(wxBitmap(img));
-#endif
-
-#define ADD_TOOL_MENUITEM(label, shortcut, bitmap_path, handler) \
-        [&]()\
-        {\
-            auto const id = wxNewId();\
-            wxMenuItem * toolMenuItem = new wxMenuItem(mToolsMenu, (id), (label) + (shortcut), wxEmptyString, wxITEM_RADIO);\
-            auto img1 = wxImage(\
-                resourceLocator.GetCursorFilePath((bitmap_path)).string(),\
-                wxBITMAP_TYPE_PNG);\
-            img1.Rescale(16, 16, wxIMAGE_QUALITY_HIGH);\
-            SET_BITMAP(img1)\
-            mToolsMenu->Append(toolMenuItem);\
-            Connect((id), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::handler);\
-            return toolMenuItem;\
-        }();
-
-                {
-                    auto menuItem = ADD_TOOL_MENUITEM(_("Move/Rotate"), wxS("\tM"), "move_cursor_up", OnMoveMenuItemSelected);
-                    ADD_PLAIN_ACCELERATOR_KEY('M', menuItem);
-                }
-
-                {
-                    ADD_TOOL_MENUITEM(_("Move All/Rotate All"), wxS("\tALT+M"), "move_all_cursor_up", OnMoveAllMenuItemSelected);
-                }
-
-                {
-                    auto menuItem = ADD_TOOL_MENUITEM(_("Pick-n-Pull"), wxS("\tK"), "pliers_cursor_up", OnPickAndPullMenuItemSelected);
-                    ADD_PLAIN_ACCELERATOR_KEY('K', menuItem);
-                }
-
-                {
-                    mSmashMenuItem = ADD_TOOL_MENUITEM(_("Smash"), wxS("\tS"), "smash_cursor_up", OnSmashMenuItemSelected);
-                    ADD_PLAIN_ACCELERATOR_KEY('S', mSmashMenuItem);
-                }
-
-                {
-                    auto menuItem = ADD_TOOL_MENUITEM(_("Slice"), wxS("\tL"), "chainsaw_cursor_up", OnSliceMenuItemSelected);
-                    ADD_PLAIN_ACCELERATOR_KEY('L', menuItem);
-                }
-
-                {
-                    auto menuItem = ADD_TOOL_MENUITEM(_("HeatBlaster/CoolBlaster"), wxS("\tH"), "heat_blaster_heat_cursor_up", OnHeatBlasterMenuItemSelected);
-                    ADD_PLAIN_ACCELERATOR_KEY('H', menuItem);
-                }
-
-                {
-                    auto menuItem = ADD_TOOL_MENUITEM(_("Fire Extinguisher"), wxS("\tX"), "fire_extinguisher_cursor_up", OnFireExtinguisherMenuItemSelected);
-                    ADD_PLAIN_ACCELERATOR_KEY('X', menuItem);
-                }
-
-                {
-                    auto menuItem = ADD_TOOL_MENUITEM(_("Blast"), wxS("\t8"), "blast_cursor_up_1", OnBlastToolMenuItemSelected);
-                    ADD_PLAIN_ACCELERATOR_KEY('8', menuItem);
-                }
-
-                {
-                    auto menuItem = ADD_TOOL_MENUITEM(_("Electric Spark"), wxS("\t7"), "electric_spark_cursor_up", OnElectricSparkToolMenuItemSelected);
-                    ADD_PLAIN_ACCELERATOR_KEY('7', menuItem);
-                }
-
-                {
-                    auto menuItem = ADD_TOOL_MENUITEM(_("Attract/Repel"), wxS("\tG"), "drag_cursor_up_plus", OnGrabMenuItemSelected);
-                    ADD_PLAIN_ACCELERATOR_KEY('G', menuItem);
-                }
-
-                {
-                    auto menuItem = ADD_TOOL_MENUITEM(_("Swirl/Counterswirl"), wxS("\tW"), "swirl_cursor_up_cw", OnSwirlMenuItemSelected);
-                    ADD_PLAIN_ACCELERATOR_KEY('W', menuItem);
-                }
-
-                {
-                    auto menuItem = ADD_TOOL_MENUITEM(_("Toggle Pin"), wxS("\tP"), "pin_cursor", OnPinMenuItemSelected);
-                    ADD_PLAIN_ACCELERATOR_KEY('P', menuItem);
-                }
-
-                {
-                    auto menuItem = ADD_TOOL_MENUITEM(_("Inject/Remove Pressure"), wxS("\tB"), "air_tank_cursor_up", OnInjectPressureMenuItemSelected);
-                    ADD_PLAIN_ACCELERATOR_KEY('B', menuItem);
-                }
-
-                {
-                    auto menuItem = ADD_TOOL_MENUITEM(_("Flood/Dry"), wxS("\tF"), "flood_cursor_up", OnFloodHoseMenuItemSelected);
-                    ADD_PLAIN_ACCELERATOR_KEY('F', menuItem);
-                }
-
-                {
-                    auto menuItem = ADD_TOOL_MENUITEM(_("Toggle Timer Bomb"), wxS("\tT"), "timer_bomb_cursor", OnTimerBombMenuItemSelected);
-                    ADD_PLAIN_ACCELERATOR_KEY('T', menuItem);
-                }
-
-                {
-                    auto menuItem = ADD_TOOL_MENUITEM(_("Toggle RC Bomb"), wxS("\tR"), "rc_bomb_cursor", OnRCBombMenuItemSelected);
-                    ADD_PLAIN_ACCELERATOR_KEY('R', menuItem);
-                }
-
-                {
-                    auto menuItem = ADD_TOOL_MENUITEM(_("Toggle Impact Bomb"), wxS("\tI"), "impact_bomb_cursor", OnImpactBombMenuItemSelected);
-                    ADD_PLAIN_ACCELERATOR_KEY('I', menuItem);
-                }
-
-                {
-                    auto menuItem = ADD_TOOL_MENUITEM(_("Toggle Anti-Matter Bomb"), wxS("\tA"), "am_bomb_cursor", OnAntiMatterBombMenuItemSelected);
-                    ADD_PLAIN_ACCELERATOR_KEY('A', menuItem);
-                }
-
-                {
-                    auto menuItem = ADD_TOOL_MENUITEM(_("Thanos' Snap"), wxS("\tQ"), "thanos_snap_cursor_up", OnThanosSnapMenuItemSelected);
-                    ADD_PLAIN_ACCELERATOR_KEY('Q', menuItem);
-                }
-
-                {
-                    auto menuItem = ADD_TOOL_MENUITEM(_("WaveMaker"), wxS("\tV"), "wave_maker_cursor_up", OnWaveMakerMenuItemSelected);
-                    ADD_PLAIN_ACCELERATOR_KEY('V', menuItem);
-                }
-
-                {
-                    auto menuItem = ADD_TOOL_MENUITEM(_("WindMaker"), wxS("\t9"), "wind_cursor_up", OnWindMakerMenuItemSelected);
-                    ADD_PLAIN_ACCELERATOR_KEY('9', menuItem);
-                }
-
-                {
-                    auto menuItem = ADD_TOOL_MENUITEM(_("LaserCannon"), wxS("\t2"), "laser_cannon_icon", OnLaserCannonMenuItemSelected);
-                    ADD_PLAIN_ACCELERATOR_KEY('2', menuItem);
-                }
-
-                {
-                    auto menuItem = ADD_TOOL_MENUITEM(_("Adjust Terrain"), wxS("\tJ"), "terrain_adjust_cursor_up", OnAdjustTerrainMenuItemSelected);
-                    ADD_PLAIN_ACCELERATOR_KEY('J', menuItem);
-                }
-
-                {
-                    auto menuItem = ADD_TOOL_MENUITEM(_("Repair"), wxS("\tE"), "repair_structure_cursor_up", OnRepairStructureMenuItemSelected);
-                    ADD_PLAIN_ACCELERATOR_KEY('E', menuItem);
-                }
-
-                {
-                    auto menuItem = ADD_TOOL_MENUITEM(_("Scrub/Rot"), wxS("\tU"), "scrub_cursor_up", OnScrubMenuItemSelected);
-                    ADD_PLAIN_ACCELERATOR_KEY('U', menuItem);
-                }
-
-                {
-                    mScareFishMenuItem = ADD_TOOL_MENUITEM(_("Scare/Allure Fishes"), wxS("\tZ"), "megaphone_cursor_up", OnScareFishMenuItemSelected);
-                    mScareFishMenuItem->Enable(false);
-                    ADD_PLAIN_ACCELERATOR_KEY('Z', mScareFishMenuItem);
-                }
-
-                ADD_TOOL_MENUITEM(_("Toggle Physics Probe"), wxS(""), "physics_probe_cursor", OnPhysicsProbeMenuItemSelected);
+                auto menuItem = ADD_TOOL_MENUITEM(_("Move/Rotate"), wxS("\tM"), "move_cursor_up", ToolType::Move, false);
+                ADD_PLAIN_ACCELERATOR_KEY('M', menuItem);
             }
 
-            mToolsMenu->Append(new wxMenuItem(mToolsMenu, wxID_SEPARATOR));
+            {
+                ADD_TOOL_MENUITEM(_("Move All/Rotate All"), wxS("\tALT+M"), "move_all_cursor_up", ToolType::MoveAll, false);
+            }
 
             {
-                mRCBombsDetonateMenuItem = new wxMenuItem(mToolsMenu, ID_RCBOMBDETONATE_MENUITEM, _("Detonate RC Bombs") + wxS("\tD"), wxEmptyString, wxITEM_NORMAL);
-                mToolsMenu->Append(mRCBombsDetonateMenuItem);
+                auto menuItem = ADD_TOOL_MENUITEM(_("Pick-n-Pull"), wxS("\tK"), "pliers_cursor_up", ToolType::PickAndPull, false);
+                ADD_PLAIN_ACCELERATOR_KEY('K', menuItem);
+            }
+
+            {
+                auto menuItem = ADD_TOOL_MENUITEM(_("Smash"), wxS("\tS"), "smash_cursor_up", ToolType::Smash, false);
+                ADD_PLAIN_ACCELERATOR_KEY('S', menuItem);
+            }
+
+            {
+                auto menuItem = ADD_TOOL_MENUITEM(_("Slice"), wxS("\tL"), "chainsaw_cursor_up", ToolType::Saw, false);
+                ADD_PLAIN_ACCELERATOR_KEY('L', menuItem);
+            }
+
+            {
+                auto menuItem = ADD_TOOL_MENUITEM(_("HeatBlaster/CoolBlaster"), wxS("\tH"), "heat_blaster_heat_cursor_up", ToolType::HeatBlaster, false);
+                ADD_PLAIN_ACCELERATOR_KEY('H', menuItem);
+            }
+
+            {
+                auto menuItem = ADD_TOOL_MENUITEM(_("Fire Extinguisher"), wxS("\tX"), "fire_extinguisher_cursor_up", ToolType::FireExtinguisher, false);
+                ADD_PLAIN_ACCELERATOR_KEY('X', menuItem);
+            }
+
+            {
+                auto menuItem = ADD_TOOL_MENUITEM(_("Blast"), wxS("\t8"), "blast_cursor_up_1", ToolType::Blast, false);
+                ADD_PLAIN_ACCELERATOR_KEY('8', menuItem);
+            }
+
+            {
+                auto menuItem = ADD_TOOL_MENUITEM(_("Electric Spark"), wxS("\t7"), "electric_spark_cursor_up", ToolType::ElectricSpark, false);
+                ADD_PLAIN_ACCELERATOR_KEY('7', menuItem);
+            }
+
+            {
+                auto menuItem = ADD_TOOL_MENUITEM(_("Attract/Repel"), wxS("\tG"), "drag_cursor_up_plus", ToolType::Grab, false);
+                ADD_PLAIN_ACCELERATOR_KEY('G', menuItem);
+            }
+
+            {
+                auto menuItem = ADD_TOOL_MENUITEM(_("Swirl/Counterswirl"), wxS("\tW"), "swirl_cursor_up_cw", ToolType::Swirl, false);
+                ADD_PLAIN_ACCELERATOR_KEY('W', menuItem);
+            }
+
+            {
+                auto menuItem = ADD_TOOL_MENUITEM(_("Toggle Pin"), wxS("\tP"), "pin_cursor", ToolType::Pin, false);
+                ADD_PLAIN_ACCELERATOR_KEY('P', menuItem);
+            }
+
+            {
+                auto menuItem = ADD_TOOL_MENUITEM(_("Inject/Remove Pressure"), wxS("\tB"), "air_tank_cursor_up", ToolType::InjectPressure, false);
+                ADD_PLAIN_ACCELERATOR_KEY('B', menuItem);
+            }
+
+            {
+                auto menuItem = ADD_TOOL_MENUITEM(_("Flood/Dry"), wxS("\tF"), "flood_cursor_up", ToolType::FloodHose, false);
+                ADD_PLAIN_ACCELERATOR_KEY('F', menuItem);
+            }
+
+            {
+                auto menuItem = ADD_TOOL_MENUITEM(_("Toggle Timer Bomb"), wxS("\tT"), "timer_bomb_cursor", ToolType::TimerBomb, false);
+                ADD_PLAIN_ACCELERATOR_KEY('T', menuItem);
+            }
+
+            {
+                auto menuItem = ADD_TOOL_MENUITEM(_("Toggle RC Bomb"), wxS("\tR"), "rc_bomb_cursor", ToolType::RCBomb, false);
+                ADD_PLAIN_ACCELERATOR_KEY('R', menuItem);
+            }
+
+            {
+                auto menuItem = ADD_TOOL_MENUITEM(_("Toggle Impact Bomb"), wxS("\tI"), "impact_bomb_cursor", ToolType::ImpactBomb, false);
+                ADD_PLAIN_ACCELERATOR_KEY('I', menuItem);
+            }
+
+            {
+                auto menuItem = ADD_TOOL_MENUITEM(_("Toggle Anti-Matter Bomb"), wxS("\tA"), "am_bomb_cursor", ToolType::AntiMatterBomb, false);
+                ADD_PLAIN_ACCELERATOR_KEY('A', menuItem);
+            }
+
+            {
+                auto menuItem = ADD_TOOL_MENUITEM(_("Thanos' Snap"), wxS("\tQ"), "thanos_snap_cursor_up", ToolType::ThanosSnap, false);
+                ADD_PLAIN_ACCELERATOR_KEY('Q', menuItem);
+            }
+
+            {
+                auto menuItem = ADD_TOOL_MENUITEM(_("WaveMaker"), wxS("\tV"), "wave_maker_cursor_up", ToolType::WaveMaker, false);
+                ADD_PLAIN_ACCELERATOR_KEY('V', menuItem);
+            }
+
+            {
+                auto menuItem = ADD_TOOL_MENUITEM(_("WindMaker"), wxS("\t9"), "wind_cursor_up", ToolType::WindMaker, false);
+                ADD_PLAIN_ACCELERATOR_KEY('9', menuItem);
+            }
+
+            {
+                auto menuItem = ADD_TOOL_MENUITEM(_("LaserCannon"), wxS("\t2"), "laser_cannon_icon", ToolType::LaserCannon, false);
+                ADD_PLAIN_ACCELERATOR_KEY('2', menuItem);
+            }
+
+            {
+                auto menuItem = ADD_TOOL_MENUITEM(_("Adjust Terrain"), wxS("\tJ"), "terrain_adjust_cursor_up", ToolType::TerrainAdjust, false);
+                ADD_PLAIN_ACCELERATOR_KEY('J', menuItem);
+            }
+
+            {
+                auto menuItem = ADD_TOOL_MENUITEM(_("Repair"), wxS("\tE"), "repair_structure_cursor_up", ToolType::RepairStructure, false);
+                ADD_PLAIN_ACCELERATOR_KEY('E', menuItem);
+            }
+
+            {
+                auto menuItem = ADD_TOOL_MENUITEM(_("Scrub/Rot"), wxS("\tU"), "scrub_cursor_up", ToolType::Scrub, false);
+                ADD_PLAIN_ACCELERATOR_KEY('U', menuItem);
+            }
+
+            {
+                mScareFishMenuItem = ADD_TOOL_MENUITEM(_("Scare/Allure Fishes"), wxS("\tZ"), "megaphone_cursor_up", ToolType::ScareFish, false);
+                ADD_PLAIN_ACCELERATOR_KEY('Z', mScareFishMenuItem);
+            }
+
+            {
+                auto menuItem = ADD_TOOL_MENUITEM(_("Lamp"), wxS("\t1"), "lamp_cursor_up", ToolType::Lamp, false);
+                ADD_PLAIN_ACCELERATOR_KEY('1', menuItem);
+            }
+
+            ADD_TOOL_MENUITEM(_("Toggle Physics Probe"), wxS(""), "physics_probe_cursor", ToolType::PhysicsProbe, false);
+
+            mNonNpcToolsMenu->AppendSeparator();
+
+            {
+                mRCBombsDetonateMenuItem = new wxMenuItem(mNonNpcToolsMenu, ID_RCBOMBDETONATE_MENUITEM, _("Detonate RC Bombs") + wxS("\tD"), wxEmptyString, wxITEM_NORMAL);
+                mNonNpcToolsMenu->Append(mRCBombsDetonateMenuItem);
                 Connect(ID_RCBOMBDETONATE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnRCBombDetonateMenuItemSelected);
                 mRCBombsDetonateMenuItem->Enable(false);
                 ADD_PLAIN_ACCELERATOR_KEY('D', mRCBombsDetonateMenuItem);
             }
 
             {
-                mAntiMatterBombsDetonateMenuItem = new wxMenuItem(mToolsMenu, ID_ANTIMATTERBOMBDETONATE_MENUITEM, _("Detonate Anti-Matter Bombs") + wxS("\tN"), wxEmptyString, wxITEM_NORMAL);
-                mToolsMenu->Append(mAntiMatterBombsDetonateMenuItem);
+                mAntiMatterBombsDetonateMenuItem = new wxMenuItem(mNonNpcToolsMenu, ID_ANTIMATTERBOMBDETONATE_MENUITEM, _("Detonate Anti-Matter Bombs") + wxS("\tN"), wxEmptyString, wxITEM_NORMAL);
+                mNonNpcToolsMenu->Append(mAntiMatterBombsDetonateMenuItem);
                 Connect(ID_ANTIMATTERBOMBDETONATE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAntiMatterBombDetonateMenuItemSelected);
                 mAntiMatterBombsDetonateMenuItem->Enable(false);
                 ADD_PLAIN_ACCELERATOR_KEY('N', mAntiMatterBombsDetonateMenuItem);
             }
 
-            wxMenuItem * triggerTsunamiMenuItem = new wxMenuItem(mToolsMenu, ID_TRIGGERTSUNAMI_MENUITEM, _("Trigger Tsunami"), wxEmptyString, wxITEM_NORMAL);
-            mToolsMenu->Append(triggerTsunamiMenuItem);
+            wxMenuItem * triggerTsunamiMenuItem = new wxMenuItem(mNonNpcToolsMenu, ID_TRIGGERTSUNAMI_MENUITEM, _("Trigger Tsunami"), wxEmptyString, wxITEM_NORMAL);
+            mNonNpcToolsMenu->Append(triggerTsunamiMenuItem);
             Connect(ID_TRIGGERTSUNAMI_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnTriggerTsunamiMenuItemSelected);
 
-            wxMenuItem * triggerRogueWaveMenuItem = new wxMenuItem(mToolsMenu, ID_TRIGGERROGUEWAVE_MENUITEM, _("Trigger Rogue Wave"), wxEmptyString, wxITEM_NORMAL);
-            mToolsMenu->Append(triggerRogueWaveMenuItem);
+            wxMenuItem * triggerRogueWaveMenuItem = new wxMenuItem(mNonNpcToolsMenu, ID_TRIGGERROGUEWAVE_MENUITEM, _("Trigger Rogue Wave"), wxEmptyString, wxITEM_NORMAL);
+            mNonNpcToolsMenu->Append(triggerRogueWaveMenuItem);
             Connect(ID_TRIGGERROGUEWAVE_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnTriggerRogueWaveMenuItemSelected);
 
-            mTriggerStormMenuItem = new wxMenuItem(mToolsMenu, ID_TRIGGERSTORM_MENUITEM, _("Trigger Storm"), wxEmptyString, wxITEM_NORMAL);
-            mToolsMenu->Append(mTriggerStormMenuItem);
+            mTriggerStormMenuItem = new wxMenuItem(mNonNpcToolsMenu, ID_TRIGGERSTORM_MENUITEM, _("Trigger Storm"), wxEmptyString, wxITEM_NORMAL);
+            mNonNpcToolsMenu->Append(mTriggerStormMenuItem);
             Connect(ID_TRIGGERSTORM_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnTriggerStormMenuItemSelected);
             mTriggerStormMenuItem->Enable(true);
 
-            wxMenuItem * triggerLightningMenuItem = new wxMenuItem(mToolsMenu, ID_TRIGGERLIGHTNING_MENUITEM, _("Trigger Lightning") + wxS("\tALT+L"), wxEmptyString, wxITEM_NORMAL);
-            mToolsMenu->Append(triggerLightningMenuItem);
+            wxMenuItem * triggerLightningMenuItem = new wxMenuItem(mNonNpcToolsMenu, ID_TRIGGERLIGHTNING_MENUITEM, _("Trigger Lightning") + wxS("\tALT+L"), wxEmptyString, wxITEM_NORMAL);
+            mNonNpcToolsMenu->Append(triggerLightningMenuItem);
             Connect(ID_TRIGGERLIGHTNING_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnTriggerLightningMenuItemSelected);
 
-            mainMenuBar->Append(mToolsMenu, _("&Tools"));
+            mainMenuBar->Append(mNonNpcToolsMenu, _("&Tools"));
         }
 
+        // NPC Tools
+
+        {
+            mNpcToolsMenu = new wxMenu();
+
+            //
+            // NPC
+            //
+
+            // Add human
+            {
+                mHumanNpcSubMenu = new wxMenu(_(""));
+
+                // Create menu
+                mAddHumanNpcMenuItem = new wxMenuItem(mNpcToolsMenu, wxID_ANY, _("Spawn Human NPC..."), wxEmptyString, wxITEM_NORMAL, mHumanNpcSubMenu);
+                mNpcToolsMenu->Append(mAddHumanNpcMenuItem);
+                mAddHumanNpcMenuItem->Enable(true); // Note: here we're assuming we _can_ add NPCs; unfortunately the NPCs class is created _before_ we register for events, hence have to guess here
+                std::tie(mAddHumanNpcUncheckedIcon, mAddHumanNpcCheckedIcon) = MakeMenuBitmaps("add_human_npc_icon");
+                SetMenuItemChecked(mAddHumanNpcMenuItem, mAddHumanNpcUncheckedIcon, mAddHumanNpcCheckedIcon, InitialNonNpcToolType == ToolType::PlaceHumanNpc);
+                mNpcToolMenuItems.push_back({ ToolType::PlaceHumanNpc, mAddHumanNpcMenuItem });
+            }
+
+            // Add furniture
+            {
+                mFurnitureNpcSubMenu = new wxMenu(_(""));
+
+                // Create menu
+                mAddFurnitureNpcMenuItem = new wxMenuItem(mNpcToolsMenu, wxID_ANY, _("Spawn Furniture NPC..."), wxEmptyString, wxITEM_NORMAL, mFurnitureNpcSubMenu);
+                mNpcToolsMenu->Append(mAddFurnitureNpcMenuItem);
+                mAddFurnitureNpcMenuItem->Enable(true); // Note: here we're assuming we _can_ add NPCs; unfortunately the NPCs class is created _before_ we register for events, hence have to guess here
+                std::tie(mAddFurnitureNpcUncheckedIcon, mAddFurnitureNpcCheckedIcon) = MakeMenuBitmaps("add_furniture_npc_icon");
+                SetMenuItemChecked(mAddFurnitureNpcMenuItem, mAddFurnitureNpcUncheckedIcon, mAddFurnitureNpcCheckedIcon, InitialNonNpcToolType == ToolType::PlaceFurnitureNpc);
+                mNpcToolMenuItems.push_back({ ToolType::PlaceFurnitureNpc, mAddFurnitureNpcMenuItem });
+            }
+
+            // Move
+            {
+                mMoveNpcMenuItem = ADD_TOOL_MENUITEM(_("Move NPC"), wxS("\t3"), "move_npc_icon", ToolType::MoveNpc, true);
+                ADD_PLAIN_ACCELERATOR_KEY('3', mMoveNpcMenuItem);
+            }
+
+            // Remove
+            {
+                mRemoveNpcMenuItem = ADD_TOOL_MENUITEM(_("Remove NPC"), wxS("\tDEL"), "remove_npc_icon", ToolType::RemoveNpc, true);
+            }
+
+            // Turnaround
+            {
+                mTurnaroundNpcMenuItem = ADD_TOOL_MENUITEM(_("Turnaround NPC"), wxS(""), "turnaround_npc_icon", ToolType::TurnaroundNpc, true);
+            }
+
+            // Follow
+            {
+                mFollowNpcMenuItem = ADD_TOOL_MENUITEM(_("Follow NPC"), wxS(""), "autofocus_on_npc_icon", ToolType::FollowNpc, true);
+            }
+
+            mNpcToolsMenu->AppendSeparator();
+
+            // Add Human NPC Group
+            {
+                auto * menuItem = new wxMenuItem(mNpcToolsMenu, wxNewId(), _("Spawn Human NPC Group"), wxEmptyString, wxITEM_NORMAL);
+                mNpcToolsMenu->Append(menuItem);
+                Connect(menuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAddHumanNpcGroupMenuItemSelected);
+            }
+
+            // Add Furniture NPC Group
+            {
+                auto * menuItem = new wxMenuItem(mNpcToolsMenu, wxNewId(), _("Spawn Furniture NPC Group"), wxEmptyString, wxITEM_NORMAL);
+                mNpcToolsMenu->Append(menuItem);
+                Connect(menuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAddFurnitureNpcGroupMenuItemSelected);
+            }
+
+            // Select
+            {
+                mSelectNextNpcMenuItem = new wxMenuItem(mNpcToolsMenu, wxNewId(), _("Select Next NPC") + wxS("\t>"), wxEmptyString, wxITEM_NORMAL);
+                mNpcToolsMenu->Append(mSelectNextNpcMenuItem);
+                Connect(mSelectNextNpcMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnSelectNextNpcMenuItemSelected);
+            }
+
+            mainMenuBar->Append(mNpcToolsMenu, _("&NPCs"));
+        }
 
         // Options
 
@@ -526,7 +666,7 @@ MainFrame::MainFrame(
             optionsMenu->Append(openPreferencesWindowMenuItem);
             Connect(ID_OPEN_PREFERENCES_WINDOW_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnOpenPreferencesWindowMenuItemSelected);
 
-            optionsMenu->Append(new wxMenuItem(optionsMenu, wxID_SEPARATOR));
+            optionsMenu->AppendSeparator();
 
             wxMenuItem * openLogWindowMenuItem = new wxMenuItem(optionsMenu, ID_OPEN_LOG_WINDOW_MENUITEM, _("Open Log Window") + wxS("\tCtrl+L"), wxEmptyString, wxITEM_NORMAL);
             optionsMenu->Append(openLogWindowMenuItem);
@@ -550,7 +690,7 @@ MainFrame::MainFrame(
             optionsMenu->Append(mShowExtendedStatusTextMenuItem);
             Connect(ID_SHOW_EXTENDED_STATUS_TEXT_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnShowExtendedStatusTextMenuItemSelected);
 
-            optionsMenu->Append(new wxMenuItem(optionsMenu, wxID_SEPARATOR));
+            optionsMenu->AppendSeparator();
 
             mFullScreenMenuItem = new wxMenuItem(optionsMenu, ID_FULL_SCREEN_MENUITEM, _("Full Screen") + wxS("\tF11"), wxEmptyString, wxITEM_NORMAL);
             optionsMenu->Append(mFullScreenMenuItem);
@@ -560,7 +700,7 @@ MainFrame::MainFrame(
             optionsMenu->Append(mNormalScreenMenuItem);
             Connect(ID_NORMAL_SCREEN_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnNormalScreenMenuItemSelected);
 
-            optionsMenu->Append(new wxMenuItem(optionsMenu, wxID_SEPARATOR));
+            optionsMenu->AppendSeparator();
 
             mMuteMenuItem = new wxMenuItem(optionsMenu, ID_MUTE_MENUITEM, _("Mute") + wxS("\tCtrl+M"), wxEmptyString, wxITEM_CHECK);
             optionsMenu->Append(mMuteMenuItem);
@@ -599,7 +739,7 @@ MainFrame::MainFrame(
             helpMenu->Append(aboutMenuItem);
             Connect(ID_ABOUT_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAboutMenuItemSelected);
 
-            helpMenu->Append(new wxMenuItem(helpMenu, wxID_SEPARATOR));
+            helpMenu->AppendSeparator();
 
             wxMenuItem * checkForUpdatesMenuItem = new wxMenuItem(helpMenu, ID_CHECK_FOR_UPDATES_MENUITEM, _("Check for Updates..."), wxEmptyString, wxITEM_NORMAL);
             helpMenu->Append(checkForUpdatesMenuItem);
@@ -609,7 +749,7 @@ MainFrame::MainFrame(
             helpMenu->Append(donateMenuItem);
             helpMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [](wxCommandEvent &) { wxLaunchDefaultBrowser("https://floatingsandbox.com/donate/"); }, ID_DONATE_MENUITEM);
 
-            helpMenu->Append(new wxMenuItem(helpMenu, wxID_SEPARATOR));
+            helpMenu->AppendSeparator();
 
             wxMenuItem * openHomePageMenuItem = new wxMenuItem(helpMenu, ID_OPEN_HOME_PAGE_MENUITEM, _("Open Home Page"));
             helpMenu->Append(openHomePageMenuItem);
@@ -1013,8 +1153,6 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
         *mMusicController,
         mLocalizationManager);
 
-    ReconciliateUIWithUIPreferences();
-
 
     //
     // Create Electrical Panel
@@ -1047,14 +1185,10 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     // Create Tool Controller
     //
 
-    // Set initial tool
-    ToolType initialToolType = ToolType::Smash;
-    mSmashMenuItem->Check();
-
     try
     {
         mToolController = std::make_unique<ToolController>(
-            initialToolType,
+            InitialNonNpcToolType,
             mGameController->GetEffectiveAmbientLightIntensity(),
             mMainGLCanvas,
             *mGameController,
@@ -1074,6 +1208,16 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 
 
     //
+    // Reconciliate UI
+    //
+
+    ResetShipUIState();
+    RebuildNpcMenus();
+    ReconciliateUIWithUIPreferencesAndSettings();
+    ReconciliateUIWithAutoFocusTarget(mGameController->GetAutoFocusTarget());
+
+
+    //
     // Create ShipBuilder frame
     //
 
@@ -1086,7 +1230,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
                 mResourceLocator,
                 mLocalizationManager,
                 mGameController->GetMaterialDatabase(),
-                mGameController->GetShipTexturizer(),                
+                mGameController->GetShipTexturizer(),
                 [this](std::optional<std::filesystem::path> shipFilePath)
                 {
                     this->SwitchFromShipBuilder(shipFilePath);
@@ -1378,7 +1522,7 @@ void MainFrame::OnCheckUpdatesTimerTrigger(wxTimerEvent & /*event*/)
 
 void MainFrame::OnIdle(wxIdleEvent & /*event*/)
 {
-    if (mHasStartupTipBeenChecked 
+    if (mHasStartupTipBeenChecked
         && (mGameTimer != nullptr && !mGameTimer->IsRunning())
         && !mIsGameFrozen)
     {
@@ -1395,7 +1539,7 @@ void MainFrame::OnMainGLCanvasPaint(wxPaintEvent & event)
     if (mSplashScreenDialog)
     {
         //
-        // Now that the glCanvas is visible, we may transfer the 
+        // Now that the glCanvas is visible, we may transfer the
         // OpenGL context to the canvas and close the splash screen
         //
 
@@ -1700,16 +1844,25 @@ void MainFrame::OnAutoFocusAtShipLoadMenuItemSelected(wxCommandEvent & /*event*/
     mUIPreferencesManager->SetDoAutoFocusAtShipLoad(mAutoFocusAtShipLoadMenuItem->IsChecked());
 }
 
-void MainFrame::OnContinuousAutoFocusMenuItemSelected(wxCommandEvent & /*event*/)
-{
-    assert(!!mUIPreferencesManager);
-    mUIPreferencesManager->SetDoContinuousAutoFocus(mContinuousAutoFocusMenuItem->IsChecked());
-}
-
 void MainFrame::OnResetViewMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mGameController);
     mGameController->ResetView();
+}
+
+void MainFrame::OnShipViewMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!!mGameController);
+    if (mShipViewExteriorMenuItem->IsChecked())
+    {
+        assert(!mShipViewInteriorMenuItem->IsChecked());
+        mGameController->SetShipViewMode(ShipViewModeType::Exterior);
+    }
+    else
+    {
+        assert(mShipViewInteriorMenuItem->IsChecked());
+        mGameController->SetShipViewMode(ShipViewModeType::Interior);
+    }
 }
 
 static float constexpr TimeOfDayStep = 0.01f;
@@ -1746,154 +1899,38 @@ void MainFrame::OnStepMenuItemSelected(wxCommandEvent & /*event*/)
     mGameController->PulseUpdateAtNextGameIteration();
 }
 
-void MainFrame::OnMoveMenuItemSelected(wxCommandEvent & /*event*/)
-{
-    assert(!!mToolController);
-    mToolController->SetTool(ToolType::Move);
-}
-
-void MainFrame::OnMoveAllMenuItemSelected(wxCommandEvent & /*event*/)
-{
-    assert(!!mToolController);
-    mToolController->SetTool(ToolType::MoveAll);
-}
-
-void MainFrame::OnPickAndPullMenuItemSelected(wxCommandEvent & /*event*/)
-{
-    assert(!!mToolController);
-    mToolController->SetTool(ToolType::PickAndPull);
-}
-
-void MainFrame::OnSmashMenuItemSelected(wxCommandEvent & /*event*/)
-{
-    assert(!!mToolController);
-    mToolController->SetTool(ToolType::Smash);
-}
-
-void MainFrame::OnSliceMenuItemSelected(wxCommandEvent & /*event*/)
-{
-    assert(!!mToolController);
-    mToolController->SetTool(ToolType::Saw);
-}
-
-void MainFrame::OnHeatBlasterMenuItemSelected(wxCommandEvent & /*event*/)
-{
-    assert(!!mToolController);
-    mToolController->SetTool(ToolType::HeatBlaster);
-}
-
-void MainFrame::OnFireExtinguisherMenuItemSelected(wxCommandEvent & /*event*/)
-{
-    assert(!!mToolController);
-    mToolController->SetTool(ToolType::FireExtinguisher);
-}
-
-void MainFrame::OnBlastToolMenuItemSelected(wxCommandEvent & /*event*/)
-{
-    assert(!!mToolController);
-    mToolController->SetTool(ToolType::BlastTool);
-}
-
-void MainFrame::OnElectricSparkToolMenuItemSelected(wxCommandEvent & /*event*/)
-{
-    assert(!!mToolController);
-    mToolController->SetTool(ToolType::ElectricSparkTool);
-}
-
-void MainFrame::OnGrabMenuItemSelected(wxCommandEvent & /*event*/)
-{
-    assert(!!mToolController);
-    mToolController->SetTool(ToolType::Grab);
-}
-
-void MainFrame::OnSwirlMenuItemSelected(wxCommandEvent & /*event*/)
-{
-    assert(!!mToolController);
-    mToolController->SetTool(ToolType::Swirl);
-}
-
-void MainFrame::OnPinMenuItemSelected(wxCommandEvent & /*event*/)
-{
-    assert(!!mToolController);
-    mToolController->SetTool(ToolType::Pin);
-}
-
-void MainFrame::OnInjectPressureMenuItemSelected(wxCommandEvent & /*event*/)
-{
-    assert(!!mToolController);
-    mToolController->SetTool(ToolType::InjectPressure);
-}
-
-void MainFrame::OnFloodHoseMenuItemSelected(wxCommandEvent & /*event*/)
-{
-    assert(!!mToolController);
-    mToolController->SetTool(ToolType::FloodHose);
-}
-
-void MainFrame::OnTimerBombMenuItemSelected(wxCommandEvent & /*event*/)
-{
-    assert(!!mToolController);
-    mToolController->SetTool(ToolType::TimerBomb);
-}
-
-void MainFrame::OnRCBombMenuItemSelected(wxCommandEvent & /*event*/)
-{
-    assert(!!mToolController);
-    mToolController->SetTool(ToolType::RCBomb);
-}
-
-void MainFrame::OnImpactBombMenuItemSelected(wxCommandEvent & /*event*/)
-{
-    assert(!!mToolController);
-    mToolController->SetTool(ToolType::ImpactBomb);
-}
-
-void MainFrame::OnAntiMatterBombDetonateMenuItemSelected(wxCommandEvent & /*event*/)
+void MainFrame::OnAddHumanNpcGroupMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mGameController);
-    mGameController->DetonateAntiMatterBombs();
+    mGameController->AddNpcGroup(NpcKindType::Human);
+
+    // Switch to interior view
+    assert(!!mGameController);
+    if (mGameController->GetShipViewMode() != ShipViewModeType::Interior)
+    {
+        mGameController->SetShipViewMode(ShipViewModeType::Interior);
+        mShipViewInteriorMenuItem->Check(true);
+    }
 }
 
-void MainFrame::OnWaveMakerMenuItemSelected(wxCommandEvent & /*event*/)
+void MainFrame::OnAddFurnitureNpcGroupMenuItemSelected(wxCommandEvent & /*event*/)
 {
-    assert(!!mToolController);
-    mToolController->SetTool(ToolType::WaveMaker);
+    assert(!!mGameController);
+    mGameController->AddNpcGroup(NpcKindType::Furniture);
+
+    // Switch to interior view
+    assert(!!mGameController);
+    if (mGameController->GetShipViewMode() != ShipViewModeType::Interior)
+    {
+        mGameController->SetShipViewMode(ShipViewModeType::Interior);
+        mShipViewInteriorMenuItem->Check(true);
+    }
 }
 
-void MainFrame::OnWindMakerMenuItemSelected(wxCommandEvent & /*event*/)
+void MainFrame::OnSelectNextNpcMenuItemSelected(wxCommandEvent & /*event*/)
 {
-    assert(!!mToolController);
-    mToolController->SetTool(ToolType::WindMakerTool);
-}
-
-void MainFrame::OnLaserCannonMenuItemSelected(wxCommandEvent & /*event*/)
-{
-    assert(!!mToolController);
-    mToolController->SetTool(ToolType::LaserCannonTool);
-}
-
-void MainFrame::OnAdjustTerrainMenuItemSelected(wxCommandEvent & /*event*/)
-{
-    assert(!!mToolController);
-    mToolController->SetTool(ToolType::TerrainAdjust);
-}
-
-void MainFrame::OnRepairStructureMenuItemSelected(wxCommandEvent & /*event*/)
-{
-    assert(!!mToolController);
-    mToolController->SetTool(ToolType::RepairStructure);
-}
-
-void MainFrame::OnScrubMenuItemSelected(wxCommandEvent & /*event*/)
-{
-    assert(!!mToolController);
-    mToolController->SetTool(ToolType::Scrub);
-}
-
-void MainFrame::OnScareFishMenuItemSelected(wxCommandEvent & /*event*/)
-{
-    assert(!!mToolController);
-    mToolController->SetTool(ToolType::ScareFish);
+    assert(!!mGameController);
+    mGameController->SelectNextNpc();
 }
 
 void MainFrame::OnTriggerLightningMenuItemSelected(wxCommandEvent & /*event*/)
@@ -1908,16 +1945,10 @@ void MainFrame::OnRCBombDetonateMenuItemSelected(wxCommandEvent & /*event*/)
     mGameController->DetonateRCBombs();
 }
 
-void MainFrame::OnAntiMatterBombMenuItemSelected(wxCommandEvent & /*event*/)
+void MainFrame::OnAntiMatterBombDetonateMenuItemSelected(wxCommandEvent & /*event*/)
 {
-    assert(!!mToolController);
-    mToolController->SetTool(ToolType::AntiMatterBomb);
-}
-
-void MainFrame::OnThanosSnapMenuItemSelected(wxCommandEvent & /*event*/)
-{
-    assert(!!mToolController);
-    mToolController->SetTool(ToolType::ThanosSnap);
+    assert(!!mGameController);
+    mGameController->DetonateAntiMatterBombs();
 }
 
 void MainFrame::OnTriggerTsunamiMenuItemSelected(wxCommandEvent & /*event*/)
@@ -1936,12 +1967,6 @@ void MainFrame::OnTriggerStormMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mGameController);
     mGameController->TriggerStorm();
-}
-
-void MainFrame::OnPhysicsProbeMenuItemSelected(wxCommandEvent & /*event*/)
-{
-    assert(!!mToolController);
-    mToolController->SetTool(ToolType::PhysicsProbe);
 }
 
 //////////
@@ -1994,7 +2019,7 @@ void MainFrame::OnOpenPreferencesWindowMenuItemSelected(wxCommandEvent & /*event
             *mUIPreferencesManager,
             [this]()
             {
-                this->ReconciliateUIWithUIPreferences();
+                this->ReconciliateUIWithUIPreferencesAndSettings();
             });
     }
 
@@ -2312,35 +2337,6 @@ void MainFrame::RunGameIteration()
 #endif
 }
 
-void MainFrame::ResetShipUIState()
-{
-    mScareFishMenuItem->Enable(false);
-    mRCBombsDetonateMenuItem->Enable(false);
-    mAntiMatterBombsDetonateMenuItem->Enable(false);
-    mTriggerStormMenuItem->Enable(true);
-}
-
-void MainFrame::UpdateFrameTitle()
-{
-    //
-    // Build title
-    //
-
-    std::ostringstream ss;
-
-    ss.fill('0');
-
-    ss << std::string(APPLICATION_NAME_WITH_SHORT_VERSION);
-
-    if (!mCurrentShipTitles.empty())
-    {
-        ss << " - "
-            << Utils::Join(mCurrentShipTitles, " + ");
-    }
-
-    SetTitle(ss.str());
-}
-
 void MainFrame::OnError(
     wxString const & message,
     bool die)
@@ -2511,13 +2507,128 @@ void MainFrame::StartLowFrequencyTimer()
         false); // Continuous
 }
 
-void MainFrame::ReconciliateUIWithUIPreferences()
+void MainFrame::ResetShipUIState()
 {
+    // Reset conditional state, waiting for (eventual) communication
+    mScareFishMenuItem->Enable(false);
+    mRCBombsDetonateMenuItem->Enable(false);
+    mAntiMatterBombsDetonateMenuItem->Enable(false);
+    mTriggerStormMenuItem->Enable(true);
+
+    ReconciliateShipViewModeWithCurrentTool(); // We might be on Interior view without having an NPC tool (e.g. because of a recent AddGroup)
+}
+
+void MainFrame::UpdateFrameTitle()
+{
+    //
+    // Build title
+    //
+
+    std::ostringstream ss;
+
+    ss.fill('0');
+
+    ss << std::string(APPLICATION_NAME_WITH_SHORT_VERSION);
+
+    if (!mCurrentShipTitles.empty())
+    {
+        ss << " - "
+            << Utils::Join(mCurrentShipTitles, " + ");
+    }
+
+    SetTitle(ss.str());
+}
+
+void MainFrame::SelectTool(ToolType toolType, bool isNpcTool)
+{
+    assert(!!mToolController);
+    mToolController->SetTool((toolType));
+
+    if (isNpcTool)
+    {
+        OnNpcToolSelected(toolType);
+    }
+    else
+    {
+        OnNonNpcToolSelected(toolType);
+    }
+}
+
+void MainFrame::OnNonNpcToolSelected(ToolType toolType)
+{
+    // Reconciliate menu items
+    for (auto & entry : mNonNpcToolMenuItems)
+    {
+        std::get<1>(entry)->Check(std::get<0>(entry) == toolType);
+    }
+    for (auto & entry : mNpcToolMenuItems)
+    {
+        auto const menuToolType = std::get<0>(entry);
+        if (menuToolType == ToolType::PlaceHumanNpc)
+        {
+            SetMenuItemChecked(mAddHumanNpcMenuItem, mAddHumanNpcUncheckedIcon, mAddHumanNpcCheckedIcon, false);
+        }
+        else if (menuToolType == ToolType::PlaceFurnitureNpc)
+        {
+            SetMenuItemChecked(mAddFurnitureNpcMenuItem, mAddFurnitureNpcUncheckedIcon, mAddFurnitureNpcCheckedIcon, false);
+        }
+        else
+        {
+            std::get<1>(entry)->Check(false);
+        }
+    }
+
+    // Reconciliate AddNpc sub-menu items
+    ReconciliateAddNpcSubItems();
+
+    // Reconciliate ship view mode
+    ReconciliateShipViewModeWithCurrentTool();
+}
+
+void MainFrame::OnNpcToolSelected(ToolType toolType)
+{
+    // Reconciliate menu items
+    for (auto & entry : mNonNpcToolMenuItems)
+    {
+        std::get<1>(entry)->Check(false);
+    }
+    for (auto & entry : mNpcToolMenuItems)
+    {
+        auto const menuToolType = std::get<0>(entry);
+        if (menuToolType == ToolType::PlaceHumanNpc)
+        {
+            SetMenuItemChecked(mAddHumanNpcMenuItem, mAddHumanNpcUncheckedIcon, mAddHumanNpcCheckedIcon, menuToolType == toolType);
+        }
+        else if (menuToolType == ToolType::PlaceFurnitureNpc)
+        {
+            SetMenuItemChecked(mAddFurnitureNpcMenuItem, mAddFurnitureNpcUncheckedIcon, mAddFurnitureNpcCheckedIcon, menuToolType == toolType);
+        }
+        else
+        {
+            std::get<1>(entry)->Check(menuToolType == toolType);
+        }
+    }
+
+    // Reconciliate AddNpc sub-menu items
+    ReconciliateAddNpcSubItems();
+
+    // Reconciliate ship view mode
+    ReconciliateShipViewModeWithCurrentTool();
+}
+
+void MainFrame::ReconciliateUIWithUIPreferencesAndSettings()
+{
+    assert(mGameController);
     assert(mUIPreferencesManager);
 
     mAutoFocusAtShipLoadMenuItem->Check(mUIPreferencesManager->GetDoAutoFocusAtShipLoad());
 
-    mContinuousAutoFocusMenuItem->Check(mUIPreferencesManager->GetDoContinuousAutoFocus());
+    mContinuousAutoFocusOnShipMenuItem->Check(mUIPreferencesManager->GetAutoFocusTarget() == AutoFocusTargetKindType::Ship);
+    mContinuousAutoFocusOnSelectedNpcMenuItem->Check(mUIPreferencesManager->GetAutoFocusTarget() == AutoFocusTargetKindType::SelectedNpc);
+    mContinuousAutoFocusOnNothingMenuItem->Check(mUIPreferencesManager->GetAutoFocusTarget() == std::nullopt);
+
+    mShipViewExteriorMenuItem->Check(mGameController->GetShipViewMode() == ShipViewModeType::Exterior);
+    mShipViewInteriorMenuItem->Check(mGameController->GetShipViewMode() == ShipViewModeType::Interior);
 
     mFullScreenMenuItem->Enable(!mUIPreferencesManager->GetStartInFullScreen());
     mNormalScreenMenuItem->Enable(mUIPreferencesManager->GetStartInFullScreen());
@@ -2528,6 +2639,269 @@ void MainFrame::ReconciliateUIWithUIPreferences()
     mShowStatusTextMenuItem->Check(mUIPreferencesManager->GetShowStatusText());
     mShowExtendedStatusTextMenuItem->Check(mUIPreferencesManager->GetShowExtendedStatusText());
     mMuteMenuItem->Check(mUIPreferencesManager->GetGlobalMute());
+}
+
+void MainFrame::ReconciliateUIWithFishPresence(bool areFishPresent)
+{
+    if (areFishPresent)
+    {
+        if (!mScareFishMenuItem->IsEnabled())
+        {
+            mScareFishMenuItem->Enable(true);
+        }
+    }
+    else
+    {
+        if (mScareFishMenuItem->IsEnabled())
+        {
+            mScareFishMenuItem->Enable(false);
+        }
+
+        assert(!!mToolController);
+        if (mToolController->GetCurrentTool() == ToolType::ScareFish)
+        {
+            SelectTool(InitialNonNpcToolType, false);
+        }
+    }
+}
+
+void MainFrame::ReconciliateUIWithNpcPresence(bool areNpcsPresent)
+{
+    if (areNpcsPresent)
+    {
+        // Enable NPC menu items
+
+        if (!mContinuousAutoFocusOnSelectedNpcMenuItem->IsEnabled())
+        {
+            mContinuousAutoFocusOnSelectedNpcMenuItem->Enable(true);
+        }
+
+        if (!mMoveNpcMenuItem->IsEnabled())
+        {
+            mMoveNpcMenuItem->Enable(true);
+        }
+
+        if (!mRemoveNpcMenuItem->IsEnabled())
+        {
+            mRemoveNpcMenuItem->Enable(true);
+        }
+
+        if (!mTurnaroundNpcMenuItem->IsEnabled())
+        {
+            mTurnaroundNpcMenuItem->Enable(true);
+        }
+
+        if (!mFollowNpcMenuItem->IsEnabled())
+        {
+            mFollowNpcMenuItem->Enable(true);
+        }
+
+        if (!mSelectNextNpcMenuItem->IsEnabled())
+        {
+            mSelectNextNpcMenuItem->Enable(true);
+        }
+    }
+    else
+    {
+        // Disable NPC menu items, resetting tool in case it's not allowed anymore
+
+        if (mContinuousAutoFocusOnSelectedNpcMenuItem->IsEnabled())
+        {
+            mContinuousAutoFocusOnSelectedNpcMenuItem->Enable(false);
+        }
+
+        if (mMoveNpcMenuItem->IsEnabled())
+        {
+            mMoveNpcMenuItem->Enable(false);
+        }
+
+        if (mRemoveNpcMenuItem->IsEnabled())
+        {
+            mRemoveNpcMenuItem->Enable(false);
+        }
+
+        if (mTurnaroundNpcMenuItem->IsEnabled())
+        {
+            mTurnaroundNpcMenuItem->Enable(false);
+        }
+
+        if (mFollowNpcMenuItem->IsEnabled())
+        {
+            mFollowNpcMenuItem->Enable(false);
+        }
+
+        if (mSelectNextNpcMenuItem->IsEnabled())
+        {
+            mSelectNextNpcMenuItem->Enable(false);
+        }
+
+        // If current tool is a tool that requires NPCs, toggle it out
+        assert(!!mToolController);
+        auto const currentTool = mToolController->GetCurrentTool();
+        if (currentTool == ToolType::MoveNpc || currentTool == ToolType::RemoveNpc || currentTool == ToolType::TurnaroundNpc || currentTool == ToolType::FollowNpc)
+        {
+            SelectTool(InitialNonNpcToolType, false);
+        }
+    }
+}
+
+void MainFrame::ReconciliateAddNpcSubItems()
+{
+    assert(!!mToolController);
+
+    auto const selectedHumanSubKind = mToolController->GetCurrentAddHumanNpcSubKind();
+    for (auto & entry : mAddHumanNpcSubMenuItems)
+    {
+        std::get<1>(entry)->Check(std::get<0>(entry) == selectedHumanSubKind);
+    }
+
+    auto const selectedFurnitureSubKind = mToolController->GetCurrentAddFurnitureNpcSubKind();
+    for (auto & entry : mAddFurnitureNpcSubMenuItems)
+    {
+        std::get<1>(entry)->Check(std::get<0>(entry) == selectedFurnitureSubKind);
+    }
+}
+
+void MainFrame::ReconciliateUIWithAutoFocusTarget(std::optional<AutoFocusTargetKindType> target)
+{
+    if (target == AutoFocusTargetKindType::Ship)
+    {
+        if (!mContinuousAutoFocusOnShipMenuItem->IsChecked())
+        {
+            mContinuousAutoFocusOnShipMenuItem->Check(true);
+        }
+    }
+    else if (target == AutoFocusTargetKindType::SelectedNpc)
+    {
+        if (!mContinuousAutoFocusOnSelectedNpcMenuItem->IsChecked())
+        {
+            mContinuousAutoFocusOnSelectedNpcMenuItem->Check(true);
+        }
+    }
+    else
+    {
+        assert(!target.has_value());
+
+        if (!mContinuousAutoFocusOnNothingMenuItem->IsChecked())
+        {
+            mContinuousAutoFocusOnNothingMenuItem->Check(true);
+        }
+    }
+}
+
+void MainFrame::ReconciliateShipViewModeWithCurrentTool()
+{
+    assert(!!mToolController);
+    auto const currentTool = mToolController->GetCurrentTool();
+    if (currentTool.has_value())
+    {
+        bool const isNpcTool = static_cast<std::uint32_t>(*currentTool) >= static_cast<std::uint32_t>(ToolType::_FirstNpcTool);
+
+        assert(!!mGameController);
+        if (isNpcTool)
+        {
+            // Switch to interior view
+            if (mGameController->GetShipViewMode() != ShipViewModeType::Interior)
+            {
+                mGameController->SetShipViewMode(ShipViewModeType::Interior);
+                mShipViewInteriorMenuItem->Check(true);
+            }
+        }
+        else
+        {
+            // Switch to exterior view
+            if (mGameController->GetShipViewMode() != ShipViewModeType::Exterior)
+            {
+                mGameController->SetShipViewMode(ShipViewModeType::Exterior);
+                mShipViewExteriorMenuItem->Check(true);
+            }
+        }
+    }
+}
+
+void MainFrame::RebuildNpcMenus()
+{
+    assert(mGameController);
+
+    auto const language = mLocalizationManager.GetEnforcedLanguageIdentifier();
+
+    // Humans
+    {
+        // Clear first
+
+        auto const menuItems = mHumanNpcSubMenu->GetMenuItems();
+        for (auto const & item : menuItems)
+        {
+            wxMenuItem * removedItem = mHumanNpcSubMenu->Remove(item);
+            delete removedItem;
+        }
+
+        mAddHumanNpcSubMenuItems.clear();
+
+        // Add all
+
+        for (auto const & subKindInfo : mGameController->GetHumanNpcSubKinds(language))
+        {
+            auto const subKindId = std::get<0>(subKindInfo);
+
+            auto const commandId = wxNewId();
+            auto * subMenuItem = new wxMenuItem(nullptr, commandId, std::get<1>(subKindInfo), wxEmptyString, wxITEM_CHECK);
+            mHumanNpcSubMenu->Append(subMenuItem);
+            mHumanNpcSubMenu->Bind(
+                wxEVT_COMMAND_MENU_SELECTED,
+                [this, subKindId](wxCommandEvent &)
+                {
+                    // Set tool
+                    assert(!!mToolController);
+                    mToolController->SetPlaceHumanNpcTool(subKindId);
+
+                    // Reconciliate
+                    OnNpcToolSelected(ToolType::PlaceHumanNpc);
+                },
+                commandId);
+
+            mAddHumanNpcSubMenuItems.push_back({ subKindId , subMenuItem});
+        }
+    }
+
+    // Furniture
+    {
+        // Clear first
+
+        auto const menuItems = mFurnitureNpcSubMenu->GetMenuItems();
+        for (auto const & item : menuItems)
+        {
+            wxMenuItem * removedItem = mFurnitureNpcSubMenu->Remove(item);
+            delete removedItem;
+        }
+
+        mAddFurnitureNpcSubMenuItems.clear();
+
+        // Add all
+
+        for (auto const & subKindInfo : mGameController->GetFurnitureNpcSubKinds(language))
+        {
+            auto const subKindId = std::get<0>(subKindInfo);
+
+            auto const commandId = wxNewId();
+            auto * subMenuItem = new wxMenuItem(nullptr, commandId, std::get<1>(subKindInfo), wxEmptyString, wxITEM_CHECK);
+            mFurnitureNpcSubMenu->Append(subMenuItem);
+            mFurnitureNpcSubMenu->Bind(
+                wxEVT_COMMAND_MENU_SELECTED,
+                [this, subKindId](wxCommandEvent &)
+                {
+                    // Set tool
+                    assert(!!mToolController);
+                    mToolController->SetPlaceFurnitureNpcTool(subKindId);
+
+                    // Reconciliate
+                    OnNpcToolSelected(ToolType::PlaceFurnitureNpc);
+                },
+                commandId);
+
+            mAddFurnitureNpcSubMenuItems.push_back({ subKindId , subMenuItem });
+        }
+    }
 }
 
 std::filesystem::path MainFrame::ChooseDefaultShip(ResourceLocator const & resourceLocator)
@@ -2558,7 +2932,7 @@ void MainFrame::LoadShip(
     //
 
     assert(mToolController);
-    mToolController->Reset();
+    mToolController->ResetStart();
 
     assert(mSoundController);
     mSoundController->Reset();
@@ -2566,8 +2940,8 @@ void MainFrame::LoadShip(
     assert(mMusicController);
     mMusicController->Reset();
 
-    ResetShipUIState();
-    
+    ResetShipUIState(); // Important: now, before ship load generates events
+
     //
     // Load ship
     //
@@ -2610,6 +2984,9 @@ void MainFrame::LoadShip(
     {
         OnError(ex.what(), false);
     }
+
+    assert(mToolController);
+    mToolController->ResetEnd();
 }
 
 void MainFrame::OnShipLoaded(ShipLoadSpecifications loadSpecs)
@@ -2720,4 +3097,24 @@ void MainFrame::SwitchFromShipBuilder(std::optional<std::filesystem::path> shipF
 
     // Restart
     ThawGame();
+}
+
+std::tuple<wxBitmap, wxBitmap> MainFrame::MakeMenuBitmaps(std::string const & iconName) const
+{
+    auto img = wxImage(
+        mResourceLocator.GetIconFilePath(iconName).string(),
+        wxBITMAP_TYPE_PNG);
+    img.Rescale(16, 16, wxIMAGE_QUALITY_HIGH);
+    auto img2 = WxHelpers::RetintCursorImage(img, rgbColor(0x00, 0x90, 0x00));
+
+    return { wxBitmap(img), wxBitmap(img2) };
+}
+
+void MainFrame::SetMenuItemChecked(
+    wxMenuItem * menuItem,
+    wxBitmap & uncheckedBitmap,
+    wxBitmap & checkedBitmap,
+    bool isChecked)
+{
+    menuItem->SetBitmap(isChecked ? checkedBitmap : uncheckedBitmap);
 }
