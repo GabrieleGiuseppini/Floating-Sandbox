@@ -1061,6 +1061,8 @@ void Npcs::BeginMoveNpc(
     // Move NPC to BeingPlaced
     //
 
+    auto const oldRegime = npc.CurrentRegime;
+
     // All particles become free
     for (auto & particle : npc.ParticleMesh.Particles)
     {
@@ -1070,10 +1072,11 @@ void Npcs::BeginMoveNpc(
     // Setup being placed state
     npc.BeingPlacedState = StateType::BeingPlacedStateType({
         (npc.Kind == NpcKindType::Human) ? 1 : 0,
-        doMoveWholeMesh });
+        doMoveWholeMesh,
+        oldRegime
+    });
 
     // Change regime
-    auto const oldRegime = npc.CurrentRegime;
     npc.CurrentRegime = StateType::RegimeType::BeingPlaced;
 
     if (npc.Kind == NpcKindType::Human)
@@ -1082,26 +1085,6 @@ void Npcs::BeginMoveNpc(
         npc.KindSpecificState.HumanNpcState.TransitionToState(
             StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::BeingPlaced,
             currentSimulationTime);
-    }
-
-    //
-    // Maintain stats
-    //
-
-    if (npc.Kind == NpcKindType::Human)
-    {
-        if (oldRegime == StateType::RegimeType::Constrained)
-        {
-            assert(mConstrainedRegimeHumanNpcCount > 0);
-            --mConstrainedRegimeHumanNpcCount;
-            PublishHumanNpcStats();
-        }
-        else if (oldRegime == StateType::RegimeType::Free)
-        {
-            assert(mFreeRegimeHumanNpcCount > 0);
-            --mFreeRegimeHumanNpcCount;
-            PublishHumanNpcStats();
-        }
     }
 }
 

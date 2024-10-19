@@ -400,13 +400,13 @@ V1 TODO:
 	+ Only if triangle has no deleted neighbors
 	+ Flip direction wrt break pos
 
-- Fix notifications @ placing
-	- BeingPlacedStateType contains previous regime
++ Fix notifications @ placing
+	+ BeingPlacedStateType contains previous regime
+
+- See if can fix placement of furniture so to topple it
 
 - See if can improve anti-aliasing in stickmen mode
 	- fwidth?
-
-- See if can fix placement of furniture so to topple it
 
 + UI Preferences for NPC notifications
 	+ Test persistence

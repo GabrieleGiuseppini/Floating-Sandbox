@@ -674,6 +674,7 @@ private:
 		{
 			int AnchorParticleOrdinal; // In NPC's mesh
 			bool DoMoveWholeMesh;
+			std::optional<RegimeType> PreviousRegime; // If any (i.e. if this is not an initial placement)
 		};
 
 		//

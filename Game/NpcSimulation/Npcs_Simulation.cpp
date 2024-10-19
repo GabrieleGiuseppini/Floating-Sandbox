@@ -305,6 +305,12 @@ void Npcs::OnMayBeNpcRegimeChanged(
     StateType::RegimeType oldRegime,
     StateType const & npc)
 {
+    assert(oldRegime != StateType::RegimeType::BeingPlaced || npc.BeingPlacedState.has_value());
+    if (oldRegime == StateType::RegimeType::BeingPlaced && npc.BeingPlacedState->PreviousRegime.has_value())
+    {
+        oldRegime = *(npc.BeingPlacedState->PreviousRegime);
+    }
+
     if (oldRegime == npc.CurrentRegime)
     {
         // Nothing to do
@@ -318,7 +324,6 @@ void Npcs::OnMayBeNpcRegimeChanged(
         //
 
         bool doPublishStats = false;
-
         if (oldRegime == StateType::RegimeType::Constrained)
         {
             assert(mConstrainedRegimeHumanNpcCount > 0);
