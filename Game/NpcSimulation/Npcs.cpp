@@ -2145,7 +2145,7 @@ bool Npcs::AddHumanNpc(
     if (std::get<0>(result).has_value())
     {
         CompleteNewNpc(
-            std::get<0>(result)->ObjectId,
+            std::get<0>(result)->Id,
             currentSimulationTime);
 
         return true;

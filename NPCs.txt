@@ -199,20 +199,6 @@ Current perf:
 V1 TODO:
 
 
-+ LowerExtremeityMultiplier: rename
-+ Readme: NPC/bary coords
-
-
-+ Bump up wind receptivity
-+ NpcDatabase: string table
-
-+ "Spawn" NPC
-+ SelectNpc tool: select none if nothing at probe
-
-+ Add Flip NPC H ("Turn Human NPC Over")
-	+ Human only
-	+ Also F/B
-
 - Vegas:
 	- Screenshots:
 		- Wreck at night w/wout lamp
@@ -226,205 +212,12 @@ V1 TODO:
 	- TODOHERE
 
 
-+ Issue of GL_LINEAR artifacts:
-	+ Try with doing step @ baking where alpha=0 pixels take the color of their neighbors
-	+ Yes it works!
-	+ New option @ Atlas builder - "BinaryTransparencySmoothing"
-		+ Implement at ImageTools
-		+ AtlasBuilder: call func on each sub-image if option set
-			! So we stay in boundaries
-			+ And move alpha pre-multiply also on sub-images, but before new one				
-	+ New option at baker's options			
-	+ New option @ NPC options json
-		+ And no alpha-premultiply
-	+ Commit
-	+ Test explosions
-		+ Re-bake them and check atlas
-
-
-+ Finish assets
-	+ Tungsten material
-	+ Ballast and heavy block
-	+ Last humans
-	+ Re-generate render colors
-	+ Test
-	+ Send to TimCan
-
-+ Add alternative shading (stick men, aka quad)
-	! Gist:
-		! Two shaders for quads, with #define WITH_ROLES and glslinc
-			! WITH_ROLES takes vertex attrib array
-			! else takes parameter for matte color
-		! NpcQuad local vertex buffers are:
-			! ~Attributes (current, common to both anon and with_roles)
-			! ~RolesColors (only for with_roles)
-		! Npcs::RenderNpc() calls <NpcRenderModeType> templated func which, after uploading positions via UploadNpcPosition(), calls either into (old) ShipRenderContext::UploadNpcTextureAttributes 
-		  or into (new) ShipRenderContext::UploadNpcQuadAttributes<NpcRenderModeType> templated func 
-		! UploadNpcQuadAttributes<NpcRenderModeType> populates ~RolesColors or not
-		TODOOLD
-		! New VertexAttrib array ("static attribs"), used exclusively by stickmen shader, containing rgb(a for alignment) color (which depends on role)
-		! The array is uploaded by Npcs::Upload() when own internal "dirtyForRendering" boolean is set, irrespective of npc render mode
-			! Flag set whenever the role for a given NPC ordinal is changed *in the upload sequence*, i.e. at each NPC removal and addition
-			! Sticky
-		! ShipRenderContext always keeps the last uploaded static attribs in own buffer, and only uploads them at RenderPrepare() if render mode requires it
-		! One shader for both Quad modes, with param for enabling colors
-
-
-	+ Fixup shader in BaryLab
-		+ Commit
-
-	+ GameTypes & RenderParameters: NpcRenderMode {Texture, QuadWithRoles, QuadFlat}, rgbColor QuadFlatColor (both with common dirty flag)
-		+ IGameControllerSettings chain
-		+ SettingsDialog
-
-	+ ShipRenderContext:
-		+ Members:
-			+ Roles vertex type and buffer of it
-		+ ShaderTypes:
-			+ New vertex attrib for roles (use name)
-			+ Param for flat color
-		+ Roles vertex description
-		+ UploadStart: always make room in Roles buffer
-		+ UploadNpcQuadAttributes<NpcRenderModeType>(add roleColor arg)
-			+ if constexpr with roles: store into roleColor buffer, all times necessary
-		+ React to RenderParameters::mode & color changes (ApplyNpcRenderTODOChanges)
-			+ Set param in NPC quad matte shader for color
-		+ RenderPrepare: iff with roles:
-			+ assert size of Roles buffer
-			+ Upload Roles buffer
-		+ RenderDraw:
-			+ Right shader depending on mode
-		+ Shader:
-			+ Fix attrib names in current shader
-			+ Two shaders for quads, with glslinc with #define WITH_ROLES
-				+ WITH_ROLES takes vertex attrib array
-				+ else takes parameter for matte color
-			+ Port FS features (lamp, etc.)
-	+ Npcs:
-		+ RenderNpc checks RenderMode and calls templated RenderNpc
-		+ Store renderColor in state (Humans, Furniture) as vec3f
-		+ RenderNpc<Mode>, using if constexpr's:
-			+ Pre-calc quad texturecoords for Quad modes, using Dir+Orientation for signs, and roleColor
-			+ If not in texture mode, do not use database's dimension ratios when calculating limb dimensions, but use constants instead
-				+ Use same from BaryLab, ported (again) into GameParameters - with comments for use in "Quad" mode only
-				+ Redo: need less multiplications in quad modes
-			+ Upload positions as normal
-			+ If mode==Texture:
-				+ Upload as now
-			+ Else:
-				+ Upload ShipRenderContext::UploadNpcQuadAttributes<NpcRenderModeType> giving precalcd quad texturecoords, and roleColor (even if might not be needed)
-	+ NpcDatabase:
-		+ json: render_color, @ Human and Furniture
-			+ Try python script:
-				+ https://pillow.readthedocs.io/en/stable/index.html
-				+ Takes npcs json and root to (baked) assets
-				+ Load npcs json
-				+ For each {human,furniture}:
-					+ Calc average with all frames
-					+ Store render_color
-		+ Parse @ kind parsing
-		+ Expose getter(s)
-
-	+ Review geometry in both modes
-		+ Test 1: single system (for both Texture and Quad modes), from Vitruvian man:
-			! Legs: 1/2   w=1/10
-			! Torso: 1/2-1/8  w=1/7
-			! Head: 1/8   w=1/10
-			+ Quad mode: OK		
-			X Texture mode: NOT OK
-		+ Test 2: partially json-driven proportions
-			! Gist:
-				! Legs, Arms, Torso, Head lengths stay from Vitruvian
-				! DB carries:
-					! Legs, Arms, Torso, Head WHRatio's
-						! Defaults: from texture
-					! HeadHMultiplier: factor to multiply with Vitruvian head length for actual texture H
-						! And then Head WHRatio gives width
-			+ Impl:
-				= NpcDatabase:
-					+ Rewrite HumanDimensions struct to hold above
-					+ Read from json
-					+ Have defaults in a "global" section
-						+ The others are named "override"
-					- Nail down defaults
-					- Do overrides where needed in json
-						- Check if TimCan has emailed first
-		+ Test 3: fully json-driven proportions
-			+ NpcDatabase: 4 length fractions @ defaults and @ dimensions
-				+ Defaults: use QuadXXX from GameParameters
-			+ RenderNpc: use correct ones
-			+ Verify quad mode ok
-			+ Populate json defaults with original
-				+ Head: here assume 16x17
-			+ Verify texture mode matches before-work (original)
-			+ Do geometry overrides for each NPC that needs it
-				! heads (L), torso (W/H)
-				- Check both resulting widths
-				+ As we go: move very repeated values to defaults
-				+ Baker
-				+ Captains -> Engineer, Dummy
-				+ 5x Fem Civ Pass
-					+ Reduce legs
-				+ 6x Male Civ Pass
-				+ 4x Male Wealthy Pass
-				+ Officer, Oiler, Steward 1
-				+ QuarterMaster, Steward 2, Stewardess 1+2
-				+ Stoker 1+2
-				+ Stoker 3+4
-
-	+ Something more: we don't want baker to end up at one (rescaling=1.0) matching no-hat NPC (rescaling=1.04004)
-		+ Get rid of rescaling and scale leg and torso in json
-
-	+ Test:
-		+ Buoyancy head offsets in both modes
-		+ Check proportions in quad mode
-		+ Knee bend
-			+ Fix problem with (render) triangle fold
-				+ Option 1: knee always at center, angle up and down
-		+ All orientations, for human & furniture
-		+ Matte color
-		+ Size multiplier
-			+ And test buoyancy head offset (changes offset as buoyancy changes)
-
-+ Port to BaryLab
-	+ Port
-	+ Do knee bend work
-	+ Profile
-	+ Port back to FS
-
-+ Remove NPC settings for springs
-
-+ Panic @ triangle break
-	+ Conn component
-	+ Walking humans only
-	+ Only if triangle has no deleted neighbors
-	+ Flip direction wrt break pos
-
-+ Fix notifications @ placing
-	+ BeingPlacedStateType contains previous regime
-
-+ See if can fix placement of furniture so to topple it
-	+ Rethink furniture placement:
-		+ Anchor:
-			+ Place: it's primary, and we do position the primary @ mouse
-				+ So fix particle mesh positions
-			+ Move: it's nearest
-				+ So store anchor particle index in BeingPlaced state, and offset in offset
-
-- See if can improve anti-aliasing in stickmen mode
-	- port to barylab first
-	- fwidth?
-
-+ UI Preferences for NPC notifications
-	+ Test persistence
 
 = Work with TimCan for improvements
 	= Chests
 	= Square heads
 	= Detail (e.g. ears) with shades
 
-+ Turnover tool:
-	+ Also Furniture
 
 ===================
 Next release:
@@ -3840,3 +3633,206 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 		+ Perf with actual MaxNpcs
 	+ Cleanup:
 		+ Reinstate MaxNpcs
+
++ LowerExtremeityMultiplier: rename
++ Readme: NPC/bary coords
++ Bump up wind receptivity
++ NpcDatabase: string table
+
++ "Spawn" NPC
++ SelectNpc tool: select none if nothing at probe
+
++ Add Flip NPC H ("Turn Human NPC Over")
+	+ Human only
+	+ Also F/B
+
++ Issue of GL_LINEAR artifacts:
+	+ Try with doing step @ baking where alpha=0 pixels take the color of their neighbors
+	+ Yes it works!
+	+ New option @ Atlas builder - "BinaryTransparencySmoothing"
+		+ Implement at ImageTools
+		+ AtlasBuilder: call func on each sub-image if option set
+			! So we stay in boundaries
+			+ And move alpha pre-multiply also on sub-images, but before new one				
+	+ New option at baker's options			
+	+ New option @ NPC options json
+		+ And no alpha-premultiply
+	+ Commit
+	+ Test explosions
+		+ Re-bake them and check atlas
+
+
++ Finish assets
+	+ Tungsten material
+	+ Ballast and heavy block
+	+ Last humans
+	+ Re-generate render colors
+	+ Test
+	+ Send to TimCan
+
++ Add alternative shading (stick men, aka quad)
+	! Gist:
+		! Two shaders for quads, with #define WITH_ROLES and glslinc
+			! WITH_ROLES takes vertex attrib array
+			! else takes parameter for matte color
+		! NpcQuad local vertex buffers are:
+			! ~Attributes (current, common to both anon and with_roles)
+			! ~RolesColors (only for with_roles)
+		! Npcs::RenderNpc() calls <NpcRenderModeType> templated func which, after uploading positions via UploadNpcPosition(), calls either into (old) ShipRenderContext::UploadNpcTextureAttributes 
+		  or into (new) ShipRenderContext::UploadNpcQuadAttributes<NpcRenderModeType> templated func 
+		! UploadNpcQuadAttributes<NpcRenderModeType> populates ~RolesColors or not
+		TODOOLD
+		! New VertexAttrib array ("static attribs"), used exclusively by stickmen shader, containing rgb(a for alignment) color (which depends on role)
+		! The array is uploaded by Npcs::Upload() when own internal "dirtyForRendering" boolean is set, irrespective of npc render mode
+			! Flag set whenever the role for a given NPC ordinal is changed *in the upload sequence*, i.e. at each NPC removal and addition
+			! Sticky
+		! ShipRenderContext always keeps the last uploaded static attribs in own buffer, and only uploads them at RenderPrepare() if render mode requires it
+		! One shader for both Quad modes, with param for enabling colors
+
+
+	+ Fixup shader in BaryLab
+		+ Commit
+
+	+ GameTypes & RenderParameters: NpcRenderMode {Texture, QuadWithRoles, QuadFlat}, rgbColor QuadFlatColor (both with common dirty flag)
+		+ IGameControllerSettings chain
+		+ SettingsDialog
+
+	+ ShipRenderContext:
+		+ Members:
+			+ Roles vertex type and buffer of it
+		+ ShaderTypes:
+			+ New vertex attrib for roles (use name)
+			+ Param for flat color
+		+ Roles vertex description
+		+ UploadStart: always make room in Roles buffer
+		+ UploadNpcQuadAttributes<NpcRenderModeType>(add roleColor arg)
+			+ if constexpr with roles: store into roleColor buffer, all times necessary
+		+ React to RenderParameters::mode & color changes (ApplyNpcRenderTODOChanges)
+			+ Set param in NPC quad matte shader for color
+		+ RenderPrepare: iff with roles:
+			+ assert size of Roles buffer
+			+ Upload Roles buffer
+		+ RenderDraw:
+			+ Right shader depending on mode
+		+ Shader:
+			+ Fix attrib names in current shader
+			+ Two shaders for quads, with glslinc with #define WITH_ROLES
+				+ WITH_ROLES takes vertex attrib array
+				+ else takes parameter for matte color
+			+ Port FS features (lamp, etc.)
+	+ Npcs:
+		+ RenderNpc checks RenderMode and calls templated RenderNpc
+		+ Store renderColor in state (Humans, Furniture) as vec3f
+		+ RenderNpc<Mode>, using if constexpr's:
+			+ Pre-calc quad texturecoords for Quad modes, using Dir+Orientation for signs, and roleColor
+			+ If not in texture mode, do not use database's dimension ratios when calculating limb dimensions, but use constants instead
+				+ Use same from BaryLab, ported (again) into GameParameters - with comments for use in "Quad" mode only
+				+ Redo: need less multiplications in quad modes
+			+ Upload positions as normal
+			+ If mode==Texture:
+				+ Upload as now
+			+ Else:
+				+ Upload ShipRenderContext::UploadNpcQuadAttributes<NpcRenderModeType> giving precalcd quad texturecoords, and roleColor (even if might not be needed)
+	+ NpcDatabase:
+		+ json: render_color, @ Human and Furniture
+			+ Try python script:
+				+ https://pillow.readthedocs.io/en/stable/index.html
+				+ Takes npcs json and root to (baked) assets
+				+ Load npcs json
+				+ For each {human,furniture}:
+					+ Calc average with all frames
+					+ Store render_color
+		+ Parse @ kind parsing
+		+ Expose getter(s)
+
+	+ Review geometry in both modes
+		+ Test 1: single system (for both Texture and Quad modes), from Vitruvian man:
+			! Legs: 1/2   w=1/10
+			! Torso: 1/2-1/8  w=1/7
+			! Head: 1/8   w=1/10
+			+ Quad mode: OK		
+			X Texture mode: NOT OK
+		+ Test 2: partially json-driven proportions
+			! Gist:
+				! Legs, Arms, Torso, Head lengths stay from Vitruvian
+				! DB carries:
+					! Legs, Arms, Torso, Head WHRatio's
+						! Defaults: from texture
+					! HeadHMultiplier: factor to multiply with Vitruvian head length for actual texture H
+						! And then Head WHRatio gives width
+			+ Impl:
+				= NpcDatabase:
+					+ Rewrite HumanDimensions struct to hold above
+					+ Read from json
+					+ Have defaults in a "global" section
+						+ The others are named "override"
+					- Nail down defaults
+					- Do overrides where needed in json
+						- Check if TimCan has emailed first
+		+ Test 3: fully json-driven proportions
+			+ NpcDatabase: 4 length fractions @ defaults and @ dimensions
+				+ Defaults: use QuadXXX from GameParameters
+			+ RenderNpc: use correct ones
+			+ Verify quad mode ok
+			+ Populate json defaults with original
+				+ Head: here assume 16x17
+			+ Verify texture mode matches before-work (original)
+			+ Do geometry overrides for each NPC that needs it
+				! heads (L), torso (W/H)
+				- Check both resulting widths
+				+ As we go: move very repeated values to defaults
+				+ Baker
+				+ Captains -> Engineer, Dummy
+				+ 5x Fem Civ Pass
+					+ Reduce legs
+				+ 6x Male Civ Pass
+				+ 4x Male Wealthy Pass
+				+ Officer, Oiler, Steward 1
+				+ QuarterMaster, Steward 2, Stewardess 1+2
+				+ Stoker 1+2
+				+ Stoker 3+4
+
+	+ Something more: we don't want baker to end up at one (rescaling=1.0) matching no-hat NPC (rescaling=1.04004)
+		+ Get rid of rescaling and scale leg and torso in json
+
+	+ Test:
+		+ Buoyancy head offsets in both modes
+		+ Check proportions in quad mode
+		+ Knee bend
+			+ Fix problem with (render) triangle fold
+				+ Option 1: knee always at center, angle up and down
+		+ All orientations, for human & furniture
+		+ Matte color
+		+ Size multiplier
+			+ And test buoyancy head offset (changes offset as buoyancy changes)
+
++ Port to BaryLab
+	+ Port
+	+ Do knee bend work
+	+ Profile
+	+ Port back to FS
+
++ Remove NPC settings for springs
+
++ Panic @ triangle break
+	+ Conn component
+	+ Walking humans only
+	+ Only if triangle has no deleted neighbors
+	+ Flip direction wrt break pos
+
++ Fix notifications @ placing
+	+ BeingPlacedStateType contains previous regime
+
++ See if can fix placement of furniture so to topple it
+	+ Rethink furniture placement:
+		+ Anchor:
+			+ Place: it's primary, and we do position the primary @ mouse
+				+ So fix particle mesh positions
+			+ Move: it's nearest
+				+ So store anchor particle index in BeingPlaced state, and offset in offset
+
++ UI Preferences for NPC notifications
+	+ Test persistence
+
++ Turnover tool:
+	+ Also Furniture
