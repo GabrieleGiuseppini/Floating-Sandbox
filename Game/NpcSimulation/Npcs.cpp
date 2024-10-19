@@ -2127,20 +2127,6 @@ void Npcs::OnTriangleDestroyed(
     }
 }
 
-void Npcs::SetGeneralizedPanicLevelForAllHumans(float panicLevel)
-{
-    for (auto & npc : mStateBuffer)
-    {
-        if (npc.has_value())
-        {
-            if (npc->Kind == NpcKindType::Human)
-            {
-                npc->KindSpecificState.HumanNpcState.GeneralizedPanicLevel = panicLevel;
-            }
-        }
-    }
-}
-
 /////////////////////////////// Barylab-specific
 
 #ifdef IN_BARYLAB

@@ -81,7 +81,7 @@ void Npcs::UpdateHuman(
 		humanState.OnFirePanicLevel
 		+ humanState.BombProximityPanicLevel
 		+ humanState.MiscPanicLevel
-		+ humanState.GeneralizedPanicLevel;
+		+ mGeneralizedPanicLevel;
 
 	// Decay
 

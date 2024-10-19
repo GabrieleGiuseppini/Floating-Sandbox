@@ -412,6 +412,7 @@ V1 TODO:
 				+ So store anchor particle index in BeingPlaced state, and offset in offset
 
 - See if can improve anti-aliasing in stickmen mode
+	- port to barylab first
 	- fwidth?
 
 + UI Preferences for NPC notifications

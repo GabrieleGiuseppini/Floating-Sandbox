@@ -467,7 +467,6 @@ private:
 				float OnFirePanicLevel; // [0.0f ... +1.0f], auto-decayed
 				float BombProximityPanicLevel; // [0.0f ... +1.0f], auto-decayed
 				float MiscPanicLevel; // [0.0f ... +1.0f], auto-decayed; includes triangle break
-				float GeneralizedPanicLevel; // [0.0f ... +1.0f], manually decayed
 				float ResultantPanicLevel; // [0.0f ... +INF)
 
 				// Animation
@@ -523,7 +522,6 @@ private:
 					, OnFirePanicLevel(0.0f)
 					, BombProximityPanicLevel(0.0f)
 					, MiscPanicLevel(0.0f)
-					, GeneralizedPanicLevel(0.0f)
 					, ResultantPanicLevel(0.0f)
 					// Animation
 					, AnimationState()
@@ -797,6 +795,7 @@ public:
 		, mCurrentlySelectedNpc()
 		, mCurrentlySelectedNpcWallClockTimestamp()
 		, mCurrentlyHighlightedNpc()
+		, mGeneralizedPanicLevel(0.0f)
 		// Stats
 		, mFreeRegimeHumanNpcCount(0)
 		, mConstrainedRegimeHumanNpcCount(0)
@@ -971,7 +970,10 @@ public:
 		ShipId shipId,
 		ElementIndex triangleElementIndex);
 
-	void SetGeneralizedPanicLevelForAllHumans(float panicLevel);
+	void SetGeneralizedPanicLevel(float panicLevel)
+	{
+		mGeneralizedPanicLevel = panicLevel;
+	}
 
 public:
 
@@ -1806,6 +1808,8 @@ private:
 	GameWallClock::time_point mCurrentlySelectedNpcWallClockTimestamp;
 	std::optional<NpcId> mCurrentlyHighlightedNpc;
 
+	float mGeneralizedPanicLevel; // [0.0f ... +1.0f], manually decayed
+
 	//
 	// Stats
 	//
@@ -1817,7 +1821,7 @@ private:
 	// Simulation parameters
 	//
 
-	float mGlobalDampingFactor;
+	float mGlobalDampingFactor; // Calculated
 
 	// Cached from game parameters
 	float mCurrentGlobalDampingAdjustment;
