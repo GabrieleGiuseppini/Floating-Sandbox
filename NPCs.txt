@@ -392,7 +392,16 @@ V1 TODO:
 	+ Profile
 	+ Port back to FS
 
-- Remove NPC settings for springs
++ Remove NPC settings for springs
+
++ Panic @ triangle break
+	+ Conn component
+	+ Walking humans only
+	+ Only if triangle has no deleted neighbors
+	+ Flip direction wrt break pos
+
+- Fix notifications @ placing
+	- BeingPlacedStateType contains previous regime
 
 - See if can improve anti-aliasing in stickmen mode
 	- fwidth?

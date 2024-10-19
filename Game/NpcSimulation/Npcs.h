@@ -464,9 +464,10 @@ private:
 				float CurrentFaceDirectionX; // [-1.0f, 0.0f, 1.0f]
 
 				// Panic levels
-				float OnFirePanicLevel; // [0.0f ... +1.0f]
-				float BombProximityPanicLevel; // [0.0f ... +1.0f]
-				float GeneralizedPanicLevel; // [0.0f ... +1.0f]
+				float OnFirePanicLevel; // [0.0f ... +1.0f], auto-decayed
+				float BombProximityPanicLevel; // [0.0f ... +1.0f], auto-decayed
+				float MiscPanicLevel; // [0.0f ... +1.0f], auto-decayed; includes triangle break
+				float GeneralizedPanicLevel; // [0.0f ... +1.0f], manually decayed
 				float ResultantPanicLevel; // [0.0f ... +INF)
 
 				// Animation
@@ -521,6 +522,7 @@ private:
 					, CurrentFaceDirectionX(0.0f)
 					, OnFirePanicLevel(0.0f)
 					, BombProximityPanicLevel(0.0f)
+					, MiscPanicLevel(0.0f)
 					, GeneralizedPanicLevel(0.0f)
 					, ResultantPanicLevel(0.0f)
 					// Animation
@@ -962,6 +964,10 @@ public:
 		ShipId shipId,
 		vec2f const & centerPosition,
 		GameParameters const & gameParameters);
+
+	void OnTriangleDestroyed(
+		ShipId shipId,
+		ElementIndex triangleElementIndex);
 
 	void SetGeneralizedPanicLevelForAllHumans(float panicLevel);
 

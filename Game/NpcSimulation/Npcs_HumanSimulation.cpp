@@ -80,12 +80,14 @@ void Npcs::UpdateHuman(
 	humanState.ResultantPanicLevel =
 		humanState.OnFirePanicLevel
 		+ humanState.BombProximityPanicLevel
+		+ humanState.MiscPanicLevel
 		+ humanState.GeneralizedPanicLevel;
 
 	// Decay
 
 	humanState.OnFirePanicLevel -= humanState.OnFirePanicLevel * 0.01f;
 	humanState.BombProximityPanicLevel -= humanState.BombProximityPanicLevel * 0.0025f;
+	humanState.MiscPanicLevel -= humanState.MiscPanicLevel * 0.009f;
 
 	//
 	// Process human

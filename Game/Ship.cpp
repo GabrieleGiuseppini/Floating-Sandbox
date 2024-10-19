@@ -3336,7 +3336,7 @@ void Ship::OnBlast(
 }
 
 void Ship::InternalSpawnAirBubble(
-    vec2f const & position,    
+    vec2f const & position,
     float depth,
     float finalScale, // Relative to texture's world dimensions
     float temperature,
@@ -3836,6 +3836,11 @@ void Ship::HandleTriangleDestroy(ElementIndex triangleElementIndex)
         mTriangles);
 
     /////////////////////////////////////////////////////////
+
+    // Notify NPCs
+    mParentWorld.GetNpcs().OnTriangleDestroyed(
+        mId,
+        triangleElementIndex);
 
     // Remember our structure is now dirty
     mIsStructureDirty = true;

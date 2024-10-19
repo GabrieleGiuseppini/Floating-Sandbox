@@ -2083,6 +2083,74 @@ void Npcs::ApplyAntiMatterBombExplosion(
     }
 }
 
+void Npcs::OnTriangleDestroyed(
+    ShipId shipId,
+    ElementIndex triangleElementIndex)
+{
+
+    assert(shipId < mShips.size());
+    assert(mShips[shipId].has_value());
+
+    Ship const & homeShip = mShips[shipId]->HomeShip;
+
+    // Check pre-conditions
+    //
+    // Since this loop might be taxing - especially under widespread destruction - we
+    // want to run only on "first break" of an area
+
+    for (int e = 0; e < 3; ++e)
+    {
+        auto const oppositeTriangleIndex = homeShip.GetTriangles().GetOppositeTriangle(triangleElementIndex, e).TriangleElementIndex;
+        if (oppositeTriangleIndex != NoneElementIndex && homeShip.GetTriangles().IsDeleted(oppositeTriangleIndex))
+        {
+            return;
+        }
+    }
+
+    //
+    // Visit all NPCs on this ship and scare the close ones that are walking
+    //
+
+    ElementIndex trianglePointElementIndex = homeShip.GetTriangles().GetPointAIndex(triangleElementIndex); // Representative
+    ConnectedComponentId const triangleConnectedComponentId = homeShip.GetPoints().GetConnectedComponentId(trianglePointElementIndex);
+    vec2f const & trianglePosition = homeShip.GetPoints().GetPosition(trianglePointElementIndex);
+
+    float constexpr Radius = 10.0f;
+    float constexpr SquareRadius = Radius * Radius;
+
+    for (auto const npcId : mShips[shipId]->Npcs)
+    {
+        assert(mStateBuffer[npcId].has_value());
+
+        auto & npc = *mStateBuffer[npcId];
+        if (npc.CurrentConnectedComponentId == triangleConnectedComponentId
+            && npc.Kind == NpcKindType::Human
+            && npc.KindSpecificState.HumanNpcState.CurrentBehavior == StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::Constrained_Walking)
+        {
+            auto & humanNpcState = npc.KindSpecificState.HumanNpcState;
+
+            assert(npc.ParticleMesh.Particles.size() >= 2);
+            vec2f const & npcPosition = mParticles.GetPosition(npc.ParticleMesh.Particles[1].ParticleIndex); // Head, arbitrarily
+            float const squareDistance = (npcPosition - trianglePosition).squareLength();
+            if (squareDistance <= SquareRadius)
+            {
+                // Scare this NPC, unless we've just scared it
+                if (humanNpcState.MiscPanicLevel < 0.6)
+                {
+                    // Time to flip if we're going towards it
+                    if ((trianglePosition.x - npcPosition.x) * humanNpcState.CurrentFaceDirectionX >= 0.0f)
+                    {
+                        humanNpcState.CurrentFaceDirectionX *= -1.0f;
+                    }
+                }
+
+                // Panic
+                humanNpcState.MiscPanicLevel = 1.0f;
+            }
+        }
+    }
+}
+
 void Npcs::SetGeneralizedPanicLevelForAllHumans(float panicLevel)
 {
     for (auto & npc : mStateBuffer)
