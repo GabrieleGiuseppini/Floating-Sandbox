@@ -1,4 +1,7 @@
 1.19.0
+- Initial implementation of NPCs!
+	- This release contains the foundation of the new NPC sub-system of the simulator
+		- Additional functionality will come out with future releases
 - Added new "Lamp" tool, allowing you to peer at wrecks into the darkness
 	- Revisited darkness of wrecks in the process: ships now fade into darkness as they sink deeper and deeper
 		- This new behavior may be controlled via "Settings"->"Rendering"->"Ship"->"Depth Darkening"

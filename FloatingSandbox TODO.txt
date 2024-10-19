@@ -6,9 +6,25 @@
 
 - Roadmap:
 
+	- Vegas:
+		- Screenshots:
+			- Wreck at night w/wout lamp
+			- Twilight
+			- Temperature overlay
+			- Stress overlay
+
+	- Movie:
+		- Titanic, exterior view, plenty of NPCs
+		- Then interior view
+		- TODOHERE
+
 	= Npcs - take 1
-		- Merge into master
-		- Changelist
+		+ Merge into master
+		+ Changelist
+		= Work with TimCan for improvements
+			= Chests
+			= Square heads
+			= Detail (e.g. ears) with shades
 
 	+ Perlin noise on Land:
 		+ Figure out first if can have single-float 2D texture: RED channel only?

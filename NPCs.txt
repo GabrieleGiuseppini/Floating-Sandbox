@@ -196,28 +196,6 @@ Current perf:
 	- Update: 3.0/3.1
 	- RenderUpload: 1.1
 
-V1 TODO:
-
-
-- Vegas:
-	- Screenshots:
-		- Wreck at night w/wout lamp
-		- Twilight
-		- Temperature overlay
-		- Stress overlay
-
-- Movie:
-	- Titanic, exterior view, plenty of NPCs
-	- Then interior view
-	- TODOHERE
-
-
-
-= Work with TimCan for improvements
-	= Chests
-	= Square heads
-	= Detail (e.g. ears) with shades
-
 
 ===================
 Next release:
