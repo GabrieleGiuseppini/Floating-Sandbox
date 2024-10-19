@@ -1045,37 +1045,33 @@ NpcKindType World::GetNpcKind(NpcId id)
     return mNpcs->GetNpcKind(id);
 }
 
-std::tuple<std::optional<PickedObjectId<NpcId>>, NpcCreationFailureReasonType> World::BeginPlaceNewFurnitureNpc(
+std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> World::BeginPlaceNewFurnitureNpc(
     NpcSubKindIdType subKind,
     vec2f const & position,
     bool doMoveWholeMesh)
 {
     assert(mNpcs);
-    auto const pickedObjectId = mNpcs->BeginPlaceNewFurnitureNpc(
+    return mNpcs->BeginPlaceNewFurnitureNpc(
         subKind,
         position,
         mCurrentSimulationTime,
         doMoveWholeMesh);
-
-    return pickedObjectId;
 }
 
-std::tuple<std::optional<PickedObjectId<NpcId>>, NpcCreationFailureReasonType> World::BeginPlaceNewHumanNpc(
+std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> World::BeginPlaceNewHumanNpc(
     NpcSubKindIdType subKind,
     vec2f const & position,
     bool doMoveWholeMesh)
 {
     assert(mNpcs);
-    auto const pickedObjectId = mNpcs->BeginPlaceNewHumanNpc(
+    return mNpcs->BeginPlaceNewHumanNpc(
         subKind,
         position,
         mCurrentSimulationTime,
         doMoveWholeMesh);
-
-    return pickedObjectId;
 }
 
-std::optional<PickedObjectId<NpcId>> World::ProbeNpcAt(
+std::optional<PickedNpc> World::ProbeNpcAt(
     vec2f const & position,
     float radius,
     GameParameters const & gameParameters) const
@@ -1089,11 +1085,13 @@ std::optional<PickedObjectId<NpcId>> World::ProbeNpcAt(
 
 void World::BeginMoveNpc(
     NpcId id,
+    int particleOrdinal,
     bool doMoveWholeMesh)
 {
     assert(mNpcs);
     mNpcs->BeginMoveNpc(
         id,
+        particleOrdinal,
         mCurrentSimulationTime,
         doMoveWholeMesh);
 }

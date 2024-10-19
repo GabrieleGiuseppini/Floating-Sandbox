@@ -849,25 +849,26 @@ public:
 
 	NpcKindType GetNpcKind(NpcId id);
 
-	std::tuple<std::optional<PickedObjectId<NpcId>>, NpcCreationFailureReasonType> BeginPlaceNewFurnitureNpc(
+	std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> BeginPlaceNewFurnitureNpc(
 		NpcSubKindIdType subKind,
 		vec2f const & worldCoordinates,
 		float currentSimulationTime,
 		bool doMoveWholeMesh);
 
-	std::tuple<std::optional<PickedObjectId<NpcId>>, NpcCreationFailureReasonType> BeginPlaceNewHumanNpc(
+	std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> BeginPlaceNewHumanNpc(
 		NpcSubKindIdType subKind,
 		vec2f const & worldCoordinates,
 		float currentSimulationTime,
 		bool doMoveWholeMesh);
 
-	std::optional<PickedObjectId<NpcId>> ProbeNpcAt(
+	std::optional<PickedNpc> ProbeNpcAt(
 		vec2f const & position,
 		float radius,
 		GameParameters const & gameParameters) const;
 
 	void BeginMoveNpc(
 		NpcId id,
+		int particleOrdinal,
 		float currentSimulationTime,
 		bool doMoveWholeMesh);
 

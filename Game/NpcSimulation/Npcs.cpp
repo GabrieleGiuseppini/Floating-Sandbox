@@ -398,12 +398,14 @@ NpcKindType Npcs::GetNpcKind(NpcId id)
     return mStateBuffer[id]->Kind;
 }
 
-std::tuple<std::optional<PickedObjectId<NpcId>>, NpcCreationFailureReasonType> Npcs::BeginPlaceNewFurnitureNpc(
+std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> Npcs::BeginPlaceNewFurnitureNpc(
     NpcSubKindIdType subKind,
     vec2f const & worldCoordinates,
     float /*currentSimulationTime*/,
     bool doMoveWholeMesh)
 {
+    int constexpr ParticleOrdinal = 0; // We use primary for furniture
+
     //
     // Check if there are too many NPCs
     //
@@ -420,7 +422,6 @@ std::tuple<std::optional<PickedObjectId<NpcId>>, NpcCreationFailureReasonType> N
     auto const & furnitureMaterial = mNpcDatabase.GetFurnitureMaterial(subKind);
 
     StateType::ParticleMeshType particleMesh;
-    vec2f pickAnchorOffset;
 
     switch (mNpcDatabase.GetFurnitureParticleMeshKindType(subKind))
     {
@@ -469,8 +470,6 @@ std::tuple<std::optional<PickedObjectId<NpcId>>, NpcCreationFailureReasonType> N
 
             particleMesh.Particles.emplace_back(primaryParticleIndex, std::nullopt);
 
-            pickAnchorOffset = vec2f(0.0f, 0.0f);
-
             break;
         }
 
@@ -498,9 +497,12 @@ std::tuple<std::optional<PickedObjectId<NpcId>>, NpcCreationFailureReasonType> N
 
             float const baseDiagonal = std::sqrtf(baseWidth * baseWidth + baseHeight * baseHeight);
 
+            // Positions: primary @ placing position, others following
+            //
             // 0 - 1
             // |   |
             // 3 - 2
+
             float const width = CalculateSpringLength(baseWidth, mCurrentSizeMultiplier);
             float const height = CalculateSpringLength(baseHeight, mCurrentSizeMultiplier);
             for (int p = 0; p < 4; ++p)
@@ -508,22 +510,14 @@ std::tuple<std::optional<PickedObjectId<NpcId>>, NpcCreationFailureReasonType> N
                 // CW order
                 vec2f particlePosition = worldCoordinates;
 
-                if (p == 0 || p == 3)
+                if (p == 1 || p == 2)
                 {
-                    particlePosition.x -= width / 2.0f;
-                }
-                else
-                {
-                    particlePosition.x += width / 2.0f;
+                    particlePosition.x += width;
                 }
 
-                if (p == 0 || p == 1)
+                if (p == 2 || p == 3)
                 {
-                    particlePosition.y += height / 2.0f;
-                }
-                else
-                {
-                    particlePosition.y -= height / 2.0f;
+                    particlePosition.y -= height;
                 }
 
                 float const buoyancyVolumeFill = mNpcDatabase.GetFurnitureParticleAttributes(subKind, p).BuoyancyVolumeFill;
@@ -619,8 +613,6 @@ std::tuple<std::optional<PickedObjectId<NpcId>>, NpcCreationFailureReasonType> N
                 mParticles,
                 particleMesh);
 
-            pickAnchorOffset = vec2f(width / 2.0f, -height / 2.0f);
-
             break;
         }
     }
@@ -652,7 +644,7 @@ std::tuple<std::optional<PickedObjectId<NpcId>>, NpcCreationFailureReasonType> N
         StateType::RegimeType::BeingPlaced,
         std::move(particleMesh),
         StateType::KindSpecificStateType(std::move(furnitureState)),
-        StateType::BeingPlacedStateType({0, doMoveWholeMesh})); // Furniture: anchor is first particle
+        StateType::BeingPlacedStateType({ ParticleOrdinal, doMoveWholeMesh}));
 
     assert(mShips[shipId].has_value());
     mShips[shipId]->Npcs.push_back(npcId);
@@ -664,15 +656,17 @@ std::tuple<std::optional<PickedObjectId<NpcId>>, NpcCreationFailureReasonType> N
     ++(mShips[shipId]->FurnitureNpcCount);
     PublishCount();
 
-    return { PickedObjectId<NpcId>(npcId, pickAnchorOffset), NpcCreationFailureReasonType::Success };
+    return { PickedNpc(npcId, ParticleOrdinal, vec2f::zero()), NpcCreationFailureReasonType::Success };
 }
 
-std::tuple<std::optional<PickedObjectId<NpcId>>, NpcCreationFailureReasonType> Npcs::BeginPlaceNewHumanNpc(
+std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> Npcs::BeginPlaceNewHumanNpc(
     NpcSubKindIdType subKind,
     vec2f const & worldCoordinates,
     float currentSimulationTime,
     bool doMoveWholeMesh)
 {
+    int constexpr ParticleOrdinal = 1; // We use head for humans
+
     //
     // Check if there are enough NPCs and particles
     //
@@ -839,7 +833,7 @@ std::tuple<std::optional<PickedObjectId<NpcId>>, NpcCreationFailureReasonType> N
         StateType::RegimeType::BeingPlaced,
         std::move(particleMesh),
         StateType::KindSpecificStateType(std::move(humanState)),
-        StateType::BeingPlacedStateType({ 1, doMoveWholeMesh })); // Human: anchor is head (second particle)
+        StateType::BeingPlacedStateType({ ParticleOrdinal, doMoveWholeMesh })); // Human: anchor is head (second particle)
 
     assert(mShips[shipId].has_value());
     mShips[shipId]->Npcs.push_back(npcId);
@@ -855,10 +849,10 @@ std::tuple<std::optional<PickedObjectId<NpcId>>, NpcCreationFailureReasonType> N
     }
     PublishCount();
 
-    return { PickedObjectId<NpcId>(npcId, vec2f::zero()), NpcCreationFailureReasonType::Success };
+    return { PickedNpc(npcId, ParticleOrdinal, vec2f::zero()), NpcCreationFailureReasonType::Success };
 }
 
-std::optional<PickedObjectId<NpcId>> Npcs::ProbeNpcAt(
+std::optional<PickedNpc> Npcs::ProbeNpcAt(
     vec2f const & position,
     float radius,
     GameParameters const & gameParameters) const
@@ -868,6 +862,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::ProbeNpcAt(
     struct NearestNpcType
     {
         NpcId Id{ NoneNpcId };
+        int ParticleOrdinal{ 0 };
         float SquareDistance{ std::numeric_limits<float>::max() };
     };
 
@@ -913,8 +908,10 @@ std::optional<PickedObjectId<NpcId>> Npcs::ProbeNpcAt(
                     // Proximity search for all particles
 
                     bool aParticleWasFound = false;
-                    for (auto const & particle : npc->ParticleMesh.Particles)
+                    for (int p = 0; p < npc->ParticleMesh.Particles.size(); ++p)
                     {
+                        auto const & particle = npc->ParticleMesh.Particles[p];
+
                         vec2f const candidateNpcPosition = mParticles.GetPosition(particle.ParticleIndex);
                         float const squareDistance = (candidateNpcPosition - position).squareLength();
                         if (squareDistance < squareSearchRadius)
@@ -924,7 +921,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::ProbeNpcAt(
                                 // It's on-plane
                                 if (squareDistance < nearestOnPlaneNpc.SquareDistance)
                                 {
-                                    nearestOnPlaneNpc = { npc->Id, squareDistance };
+                                    nearestOnPlaneNpc = { npc->Id, p, squareDistance };
                                     aParticleWasFound = true;
                                 }
                             }
@@ -933,7 +930,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::ProbeNpcAt(
                                 // It's off-plane
                                 if (squareDistance < nearestOffPlaneNpc.SquareDistance)
                                 {
-                                    nearestOffPlaneNpc = { npc->Id, squareDistance };
+                                    nearestOffPlaneNpc = { npc->Id, p, squareDistance };
                                     aParticleWasFound = true;
                                 }
                             }
@@ -963,12 +960,12 @@ std::optional<PickedObjectId<NpcId>> Npcs::ProbeNpcAt(
                             if (std::make_pair(npc->CurrentShipId, npc->CurrentPlaneId) >= probeDepth)
                             {
                                 // It's on-plane
-                                nearestOnPlaneNpc = { npc->Id, squareSearchRadius };
+                                nearestOnPlaneNpc = { npc->Id, 0, squareSearchRadius };
                             }
                             else
                             {
                                 // It's off-plane
-                                nearestOffPlaneNpc = { npc->Id, squareSearchRadius };
+                                nearestOffPlaneNpc = { npc->Id, 0, squareSearchRadius };
                             }
                         }
                     }
@@ -989,7 +986,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::ProbeNpcAt(
                             // It's on-plane
                             if (squareDistance < nearestOnPlaneNpc.SquareDistance)
                             {
-                                nearestOnPlaneNpc = { npc->Id, squareDistance };
+                                nearestOnPlaneNpc = { npc->Id, 1, squareDistance };
                             }
                         }
                         else
@@ -997,7 +994,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::ProbeNpcAt(
                             // It's off-plane
                             if (squareDistance < nearestOffPlaneNpc.SquareDistance)
                             {
-                                nearestOffPlaneNpc = { npc->Id, squareDistance };
+                                nearestOffPlaneNpc = { npc->Id, 1, squareDistance };
                             }
                         }
                     }
@@ -1013,27 +1010,27 @@ std::optional<PickedObjectId<NpcId>> Npcs::ProbeNpcAt(
     //
 
     NpcId foundId = NoneNpcId;
+    int foundParticleOrdinal = 0;
     if (nearestOnPlaneNpc.Id != NoneNpcId)
     {
         foundId = nearestOnPlaneNpc.Id;
+        foundParticleOrdinal = nearestOnPlaneNpc.ParticleOrdinal;
     }
     else if (nearestOffPlaneNpc.Id != NoneNpcId)
     {
         foundId = nearestOffPlaneNpc.Id;
+        foundParticleOrdinal = nearestOffPlaneNpc.ParticleOrdinal;
     }
 
     if (foundId != NoneNpcId)
     {
         assert(mStateBuffer[foundId].has_value());
 
-        int referenceParticleOrdinal = mStateBuffer[foundId]->Kind == NpcKindType::Furniture
-            ? 0
-            : 1;
+        ElementIndex referenceParticleIndex = mStateBuffer[foundId]->ParticleMesh.Particles[foundParticleOrdinal].ParticleIndex;
 
-        ElementIndex referenceParticleIndex = mStateBuffer[foundId]->ParticleMesh.Particles[referenceParticleOrdinal].ParticleIndex;
-
-        return PickedObjectId<NpcId>(
+        return PickedNpc(
             foundId,
+            foundParticleOrdinal,
             position - mParticles.GetPosition(referenceParticleIndex));
     }
     else
@@ -1044,6 +1041,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::ProbeNpcAt(
 
 void Npcs::BeginMoveNpc(
     NpcId id,
+    int particleOrdinal,
     float currentSimulationTime,
     bool doMoveWholeMesh)
 {
@@ -1071,7 +1069,7 @@ void Npcs::BeginMoveNpc(
 
     // Setup being placed state
     npc.BeingPlacedState = StateType::BeingPlacedStateType({
-        (npc.Kind == NpcKindType::Human) ? 1 : 0,
+        particleOrdinal,
         doMoveWholeMesh,
         oldRegime
     });
@@ -1098,17 +1096,12 @@ void Npcs::MoveNpcTo(
     assert(mStateBuffer[id]->CurrentRegime == StateType::RegimeType::BeingPlaced);
     assert(mStateBuffer[id]->BeingPlacedState.has_value());
 
-    // Defeat - we cannot make quads move nicely with our current spring length maintenance algorithm :-(
-    doMoveWholeMesh = (mStateBuffer[id]->ParticleMesh.Particles.size() > 2)
-        ? true
-        : doMoveWholeMesh;
-
     // Calculate delta movement for anchor particle
     ElementIndex anchorParticleIndex = mStateBuffer[id]->ParticleMesh.Particles[mStateBuffer[id]->BeingPlacedState->AnchorParticleOrdinal].ParticleIndex;
     vec2f const deltaAnchorPosition = (position - offset) - mParticles.GetPosition(anchorParticleIndex);
 
     // Calculate absolute velocity for this delta movement
-    float constexpr InertialVelocityFactor = 0.5f; // Magic number for how much velocity we impart
+    float constexpr InertialVelocityFactor = 0.4f; // Magic number for how much velocity we impart
     vec2f const targetAbsoluteVelocity = deltaAnchorPosition / GameParameters::SimulationStepTimeDuration<float> * InertialVelocityFactor;
 
     // Move particles
@@ -1471,7 +1464,7 @@ std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> Npcs::AddNpcGroup
         // Create NPC
         //
 
-        std::tuple<std::optional<PickedObjectId<NpcId>>, NpcCreationFailureReasonType> placementOutcome;
+        std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> placementOutcome;
 
         switch (kind)
         {
@@ -1536,13 +1529,13 @@ std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> Npcs::AddNpcGroup
         }
 
         InternalCompleteNewNpc(
-            std::get<0>(placementOutcome)->ObjectId,
+            std::get<0>(placementOutcome)->Id,
             currentSimulationTime,
             NpcInitializationOptions::GainMeshVelocity);
 
         if (nNpcsAdded == 0)
         {
-            firstNpcId = std::get<0>(placementOutcome)->ObjectId;
+            firstNpcId = std::get<0>(placementOutcome)->Id;
         }
     }
 

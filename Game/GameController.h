@@ -257,10 +257,10 @@ public:
     void SetLampAt(DisplayLogicalCoordinates const & screenCoordinates, float radiusScreenFraction) override;
     void ResetLamp() override;
     NpcKindType GetNpcKind(NpcId id) override;
-    std::optional<PickedObjectId<NpcId>> BeginPlaceNewFurnitureNpc(NpcSubKindIdType subKind, DisplayLogicalCoordinates const & screenCoordinates, bool doMoveWholeMesh) override;
-    std::optional<PickedObjectId<NpcId>> BeginPlaceNewHumanNpc(NpcSubKindIdType subKind, DisplayLogicalCoordinates const & screenCoordinates, bool doMoveWholeMesh) override;
-    std::optional<PickedObjectId<NpcId>> ProbeNpcAt(DisplayLogicalCoordinates const & screenCoordinates) const override;
-    void BeginMoveNpc(NpcId id, bool doMoveWholeMesh) override;
+    std::optional<PickedNpc> BeginPlaceNewFurnitureNpc(NpcSubKindIdType subKind, DisplayLogicalCoordinates const & screenCoordinates, bool doMoveWholeMesh) override;
+    std::optional<PickedNpc> BeginPlaceNewHumanNpc(NpcSubKindIdType subKind, DisplayLogicalCoordinates const & screenCoordinates, bool doMoveWholeMesh) override;
+    std::optional<PickedNpc> ProbeNpcAt(DisplayLogicalCoordinates const & screenCoordinates) const override;
+    void BeginMoveNpc(NpcId id, int particleOrdinal, bool doMoveWholeMesh) override;
     void MoveNpcTo(NpcId id, DisplayLogicalCoordinates const & screenCoordinates, vec2f const & worldOffset, bool doMoveWholeMesh) override;
     void EndMoveNpc(NpcId id) override;
     void CompleteNewNpc(NpcId id) override;

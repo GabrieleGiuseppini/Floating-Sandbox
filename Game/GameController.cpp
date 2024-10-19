@@ -1314,7 +1314,7 @@ NpcKindType GameController::GetNpcKind(NpcId id)
     return mWorld->GetNpcKind(id);
 }
 
-std::optional<PickedObjectId<NpcId>> GameController::BeginPlaceNewFurnitureNpc(
+std::optional<PickedNpc> GameController::BeginPlaceNewFurnitureNpc(
     NpcSubKindIdType subKind,
     DisplayLogicalCoordinates const & screenCoordinates,
     bool doMoveWholeMesh)
@@ -1330,7 +1330,7 @@ std::optional<PickedObjectId<NpcId>> GameController::BeginPlaceNewFurnitureNpc(
     auto const & pickedNpcId = std::get<0>(result);
     if (pickedNpcId.has_value())
     {
-        OnBeginPlaceNewNpc(pickedNpcId->ObjectId, true);
+        OnBeginPlaceNewNpc(pickedNpcId->Id, true);
         return pickedNpcId;
     }
     else
@@ -1340,7 +1340,7 @@ std::optional<PickedObjectId<NpcId>> GameController::BeginPlaceNewFurnitureNpc(
     }
 }
 
-std::optional<PickedObjectId<NpcId>> GameController::BeginPlaceNewHumanNpc(
+std::optional<PickedNpc> GameController::BeginPlaceNewHumanNpc(
     NpcSubKindIdType subKind,
     DisplayLogicalCoordinates const & screenCoordinates,
     bool doMoveWholeMesh)
@@ -1356,7 +1356,7 @@ std::optional<PickedObjectId<NpcId>> GameController::BeginPlaceNewHumanNpc(
     auto const & pickedNpcId = std::get<0>(result);
     if (pickedNpcId.has_value())
     {
-        OnBeginPlaceNewNpc(pickedNpcId->ObjectId, true);
+        OnBeginPlaceNewNpc(pickedNpcId->Id, true);
         return pickedNpcId;
     }
     else
@@ -1366,7 +1366,7 @@ std::optional<PickedObjectId<NpcId>> GameController::BeginPlaceNewHumanNpc(
     }
 }
 
-std::optional<PickedObjectId<NpcId>> GameController::ProbeNpcAt(DisplayLogicalCoordinates const & screenCoordinates) const
+std::optional<PickedNpc> GameController::ProbeNpcAt(DisplayLogicalCoordinates const & screenCoordinates) const
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
     float const npcProbeSearchRadius = 1.0f / std::sqrtf(mRenderContext->GetZoom());
@@ -1380,11 +1380,13 @@ std::optional<PickedObjectId<NpcId>> GameController::ProbeNpcAt(DisplayLogicalCo
 
 void GameController::BeginMoveNpc(
     NpcId id,
+    int particleOrdinal,
     bool doMoveWholeMesh)
 {
     assert(!!mWorld);
     mWorld->BeginMoveNpc(
         id,
+        particleOrdinal,
         doMoveWholeMesh || mIsPaused);
 }
 

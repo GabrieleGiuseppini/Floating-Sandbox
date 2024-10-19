@@ -403,7 +403,13 @@ V1 TODO:
 + Fix notifications @ placing
 	+ BeingPlacedStateType contains previous regime
 
-- See if can fix placement of furniture so to topple it
++ See if can fix placement of furniture so to topple it
+	+ Rethink furniture placement:
+		+ Anchor:
+			+ Place: it's primary, and we do position the primary @ mouse
+				+ So fix particle mesh positions
+			+ Move: it's nearest
+				+ So store anchor particle index in BeingPlaced state, and offset in offset
 
 - See if can improve anti-aliasing in stickmen mode
 	- fwidth?

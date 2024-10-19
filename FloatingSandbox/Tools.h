@@ -3791,7 +3791,7 @@ public:
             && mCurrentEngagementState->Npc.has_value())
         {
             // Abort
-            mGameController.AbortNewNpc(mCurrentEngagementState->Npc->ObjectId);
+            mGameController.AbortNewNpc(mCurrentEngagementState->Npc->Id);
         }
     }
 
@@ -3833,7 +3833,7 @@ public:
             if (!inputState.IsLeftMouseDown)
             {
                 // Confirm
-                mGameController.CompleteNewNpc(mCurrentEngagementState->Npc->ObjectId);
+                mGameController.CompleteNewNpc(mCurrentEngagementState->Npc->Id);
 
                 // -> Clean
                 mCurrentEngagementState.reset();
@@ -3843,7 +3843,7 @@ public:
             {
                 // Move
                 mGameController.MoveNpcTo(
-                    mCurrentEngagementState->Npc->ObjectId,
+                    mCurrentEngagementState->Npc->Id,
                     inputState.MousePosition,
                     mCurrentEngagementState->Npc->WorldOffset,
                     inputState.IsShiftKeyDown);
@@ -3859,7 +3859,7 @@ public:
 
 protected:
 
-    virtual std::optional<PickedObjectId<NpcId>> InternalBeginPlaceNewNpc(
+    virtual std::optional<PickedNpc> InternalBeginPlaceNewNpc(
         DisplayLogicalCoordinates const & screenCoordinates,
         bool doMoveWholeMesh) = 0;
 
@@ -3888,9 +3888,9 @@ private:
 
     struct EngagementState
     {
-        std::optional<PickedObjectId<NpcId>> Npc; // When not set, we're in error mode
+        std::optional<PickedNpc> Npc; // When not set, we're in error mode
 
-        explicit EngagementState(std::optional<PickedObjectId<NpcId>> npc)
+        explicit EngagementState(std::optional<PickedNpc> npc)
             : Npc(npc)
         {}
     };
@@ -3925,7 +3925,7 @@ public:
 
 protected:
 
-    std::optional<PickedObjectId<NpcId>> InternalBeginPlaceNewNpc(
+    std::optional<PickedNpc> InternalBeginPlaceNewNpc(
         DisplayLogicalCoordinates const & screenCoordinates,
         bool doMoveWholeMesh) override
     {
@@ -3962,7 +3962,7 @@ public:
 
 protected:
 
-    std::optional<PickedObjectId<NpcId>> InternalBeginPlaceNewNpc(
+    std::optional<PickedNpc> InternalBeginPlaceNewNpc(
         DisplayLogicalCoordinates const & screenCoordinates,
         bool doMoveWholeMesh) override
     {
@@ -4008,9 +4008,9 @@ public:
 
         auto const probeOutcome = mGameController.ProbeNpcAt(inputState.MousePosition);
         if (probeOutcome
-            && (!mApplicableKind.has_value() || mGameController.GetNpcKind(probeOutcome->ObjectId) == *mApplicableKind))
+            && (!mApplicableKind.has_value() || mGameController.GetNpcKind(probeOutcome->Id) == *mApplicableKind))
         {
-            mGameController.HighlightNpc(probeOutcome->ObjectId);
+            mGameController.HighlightNpc(probeOutcome->Id);
         }
     }
 
@@ -4064,7 +4064,8 @@ public:
         {
             mBeingMovedNpc = probeOutcome;
             mGameController.BeginMoveNpc(
-                mBeingMovedNpc->ObjectId,
+                mBeingMovedNpc->Id,
+                mBeingMovedNpc->ParticleOrdinal,
                 inputState.IsShiftKeyDown);
         }
 
@@ -4075,7 +4076,7 @@ public:
     {
         if (mBeingMovedNpc.has_value())
         {
-            mGameController.EndMoveNpc(mBeingMovedNpc->ObjectId);
+            mGameController.EndMoveNpc(mBeingMovedNpc->Id);
             mBeingMovedNpc.reset();
         }
 
@@ -4113,14 +4114,14 @@ private:
     void MoveNpc(InputState const & inputState)
     {
         mGameController.MoveNpcTo(
-            mBeingMovedNpc->ObjectId,
+            mBeingMovedNpc->Id,
             inputState.MousePosition,
             mBeingMovedNpc->WorldOffset,
             inputState.IsShiftKeyDown);
     }
 
     // Our state
-    std::optional<PickedObjectId<NpcId>> mBeingMovedNpc;
+    std::optional<PickedNpc> mBeingMovedNpc;
 };
 
 class RemoveNpcTool final : public BaseSelectNpcTool
@@ -4140,7 +4141,7 @@ public:
         auto const probeOutcome = mGameController.ProbeNpcAt(inputState.MousePosition);
         if (probeOutcome)
         {
-            mGameController.RemoveNpc(probeOutcome->ObjectId);
+            mGameController.RemoveNpc(probeOutcome->Id);
         }
 
         SetCurrentCursor(true);
@@ -4173,7 +4174,7 @@ public:
         auto const probeOutcome = mGameController.ProbeNpcAt(inputState.MousePosition);
         if (probeOutcome.has_value())
         {
-            mGameController.TurnaroundNpc(probeOutcome->ObjectId);
+            mGameController.TurnaroundNpc(probeOutcome->Id);
         }
 
         SetCurrentCursor(true);
@@ -4206,7 +4207,7 @@ public:
         auto const probeOutcome = mGameController.ProbeNpcAt(inputState.MousePosition);
         if (probeOutcome)
         {
-            mGameController.SelectNpc(probeOutcome->ObjectId);
+            mGameController.SelectNpc(probeOutcome->Id);
             mGameController.SetAutoFocusTarget(AutoFocusTargetKindType::SelectedNpc);
         }
         else

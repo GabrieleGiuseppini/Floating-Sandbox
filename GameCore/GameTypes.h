@@ -299,18 +299,20 @@ namespace std {
 }
 
 /*
- * Return type of picking an object.
+ * Return type of picking an NPC.
  */
-template<typename TObjectId>
-struct PickedObjectId
+struct PickedNpc
 {
-    TObjectId ObjectId;
+    NpcId Id;
+    int ParticleOrdinal;
     vec2f WorldOffset;
 
-    PickedObjectId(
-        TObjectId objectId,
+    PickedNpc(
+        NpcId id,
+        int particleOrdinal,
         vec2f const & worldOffset)
-        : ObjectId(objectId)
+        : Id(id)
+        , ParticleOrdinal(particleOrdinal)
         , WorldOffset(worldOffset)
     {}
 };
