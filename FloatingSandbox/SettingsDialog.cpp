@@ -2915,58 +2915,6 @@ void SettingsDialog::PopulateLightsElectricalFishesNpcsPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            // Spring Reduction Adjust
-            {
-                mNpcSpringReductionFractionAdjustmentSlider = new SliderControl<float>(
-                    boxSizer->GetStaticBox(),
-                    SliderControl<float>::DirectionType::Vertical,
-                    SliderWidth,
-                    SliderHeight,
-                    _("Spring Reduction Adjust"),
-                    _("Adjusts the NPC spring reduction coefficient."),
-                    [this](float value)
-                    {
-                        this->mLiveSettings.SetValue(GameSettings::NpcSpringReductionFractionAdjustment, value);
-                        this->OnLiveSettingsChanged();
-                    },
-                    std::make_unique<LinearSliderCore>(
-                        mGameControllerSettingsOptions.GetMinNpcSpringReductionFractionAdjustment(),
-                        mGameControllerSettingsOptions.GetMaxNpcSpringReductionFractionAdjustment()));
-
-                sizer->Add(
-                    mNpcSpringReductionFractionAdjustmentSlider,
-                    wxGBPosition(0, 1),
-                    wxGBSpan(1, 1),
-                    wxEXPAND | wxALL,
-                    CellBorderInner);
-            }
-
-            // Spring Damping Adjust
-            {
-                mNpcSpringDampingCoefficientAdjustmentSlider = new SliderControl<float>(
-                    boxSizer->GetStaticBox(),
-                    SliderControl<float>::DirectionType::Vertical,
-                    SliderWidth,
-                    SliderHeight,
-                    _("Spring Damping Adjust"),
-                    _("Adjusts the NPC spring damping coefficient."),
-                    [this](float value)
-                    {
-                        this->mLiveSettings.SetValue(GameSettings::NpcSpringDampingCoefficientAdjustment, value);
-                        this->OnLiveSettingsChanged();
-                    },
-                    std::make_unique<LinearSliderCore>(
-                        mGameControllerSettingsOptions.GetMinNpcSpringDampingCoefficientAdjustment(),
-                        mGameControllerSettingsOptions.GetMaxNpcSpringDampingCoefficientAdjustment()));
-
-                sizer->Add(
-                    mNpcSpringDampingCoefficientAdjustmentSlider,
-                    wxGBPosition(0, 2),
-                    wxGBSpan(1, 1),
-                    wxEXPAND | wxALL,
-                    CellBorderInner);
-            }
-
             // Options
             {
                 wxBoxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
@@ -2992,7 +2940,7 @@ void SettingsDialog::PopulateLightsElectricalFishesNpcsPanel(wxPanel * panel)
 
                 sizer->Add(
                     vSizer,
-                    wxGBPosition(0, 3),
+                    wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
@@ -6001,8 +5949,6 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mFishShoalRadiusAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::FishShoalRadiusAdjustment));
     mFishShoalRadiusAdjustmentSlider->Enable(settings.GetValue<bool>(GameSettings::DoFishShoaling));
     mNpcSizeMultiplierSlider->SetValue(settings.GetValue<float>(GameSettings::NpcSizeMultiplier));
-    mNpcSpringReductionFractionAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::NpcSpringReductionFractionAdjustment));
-    mNpcSpringDampingCoefficientAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::NpcSpringDampingCoefficientAdjustment));
     mDoApplyPhysicsToolsToNpcsCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoApplyPhysicsToolsToNpcs));
 
     //
