@@ -19,7 +19,7 @@
 	- Movie:
 		- Carnival Dream Video, exterior view, plenty of NPCs
 		- Then interior view
-		- Scene 2: zero waves, furniture all setup and NPCs, then wave from afar
+		- Scene 2: zero waves, no fish, furniture all setup and NPCs, then wave from afar
 		- TODOHERE
 
 

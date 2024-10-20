@@ -82,7 +82,7 @@ GameParameters::GameParameters()
     , WaterPumpPowerAdjustment(1.0f)
     // Fishes
     , NumberOfFishes(76)
-    , FishSizeMultiplier(20.0f)
+    , FishSizeMultiplier(15.0f)
     , FishSpeedAdjustment(1.0f)
     , DoFishShoaling(true)
     , FishShoalRadiusAdjustment(1.0f)
