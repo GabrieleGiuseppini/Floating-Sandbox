@@ -7,6 +7,7 @@
 
 #include <GameCore/GameException.h>
 #include <GameCore/Log.h>
+#include <GameCore/Version.h>
 
 #include <wx/generic/statbmpg.h>
 #include <wx/settings.h>
@@ -27,9 +28,9 @@ SplashScreenDialog::SplashScreenDialog(ResourceLocator const & resourceLocator)
 
 	SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
 
-    Connect(wxEVT_PAINT, (wxObjectEventFunction)&SplashScreenDialog::OnPaint, 0, this);
+    Bind(wxEVT_PAINT, &SplashScreenDialog::OnPaint, this);
 
-    wxBoxSizer * mainSizer = new wxBoxSizer(wxVERTICAL);
+    wxBoxSizer * mainVSizer = new wxBoxSizer(wxVERTICAL);
 
 
     //
@@ -52,10 +53,10 @@ SplashScreenDialog::SplashScreenDialog(ResourceLocator const & resourceLocator)
             wxID_ANY,
             *bmp);
 
-        mainSizer->Add(stBmp, 0, wxALIGN_CENTER);
+        mainVSizer->Add(stBmp, 0, wxALIGN_CENTER);
     }
 
-    mainSizer->AddSpacer(4);
+    mainVSizer->AddSpacer(4);
 
     //
     // Create OpenGL canvas
@@ -64,7 +65,7 @@ SplashScreenDialog::SplashScreenDialog(ResourceLocator const & resourceLocator)
     {
         mGLCanvas = new GLCanvas(this, wxID_ANY);
 
-        mainSizer->Add(mGLCanvas);
+        mainVSizer->Add(mGLCanvas);
     }
 
     //
@@ -80,28 +81,55 @@ SplashScreenDialog::SplashScreenDialog(ResourceLocator const & resourceLocator)
             wxSize(bmp->GetWidth() - 20, 30),
             wxGA_HORIZONTAL | wxGA_PROGRESS);
 
-        mainSizer->Add(mGauge, 1, wxALIGN_CENTER_HORIZONTAL);
+        mainVSizer->Add(mGauge, 1, wxALIGN_CENTER_HORIZONTAL);
     }
 
-    mainSizer->AddSpacer(2);
+    mainVSizer->AddSpacer(2);
 
-	//
-	// Create Text control
-	//
+    //
+    // Bottom row
+    //
 
     {
-        mProgressText = new wxStaticText(
-            this,
-            wxID_ANY,
-            wxEmptyString,
-            wxDefaultPosition,
-            wxSize(400, 20),
-            wxALIGN_CENTER | wxBORDER_NONE);
+        int constexpr WingWidth = 80;
 
-        wxFont font(10, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
-        mProgressText->SetFont(font);
+        wxBoxSizer * hSizer = new wxBoxSizer(wxHORIZONTAL);
 
-        mainSizer->Add(mProgressText, 0, wxALIGN_CENTER);
+        {
+            hSizer->AddSpacer(WingWidth);
+        }
+
+        {
+            mProgressText = new wxStaticText(
+                this,
+                wxID_ANY,
+                wxEmptyString,
+                wxDefaultPosition,
+                wxSize(400, 20),
+                wxALIGN_CENTER | wxBORDER_NONE);
+
+            wxFont font(10, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
+            mProgressText->SetFont(font);
+
+            hSizer->Add(mProgressText, 1, wxALIGN_CENTER);
+        }
+
+        {
+            auto * versionText = new wxStaticText(
+                this,
+                wxID_ANY,
+                APPLICATION_VERSION_LONG_STR,
+                wxDefaultPosition,
+                wxSize(WingWidth, -1),
+                wxALIGN_RIGHT | wxBORDER_NONE);
+
+            wxFont font(7, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
+            versionText->SetFont(font);
+
+            hSizer->Add(versionText, 0, wxALIGN_BOTTOM);
+        }
+
+        mainVSizer->Add(hSizer, 0, wxALIGN_CENTER);
     }
 
     //
@@ -135,7 +163,7 @@ SplashScreenDialog::SplashScreenDialog(ResourceLocator const & resourceLocator)
     // Finalize dialog
     //
 
-    SetSizerAndFit(mainSizer);
+    SetSizerAndFit(mainVSizer);
 
     Centre(wxCENTER_ON_SCREEN | wxBOTH);
 
@@ -161,7 +189,5 @@ void SplashScreenDialog::UpdateProgress(
 
 void SplashScreenDialog::OnPaint(wxPaintEvent & event)
 {
-    //// LogMessage("SplashScreenDialog::OnPaint()");
-
     event.Skip();
 }

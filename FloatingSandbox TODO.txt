@@ -21,6 +21,9 @@
 		- Then interior view
 		- TODOHERE
 
+
+
+
 	= Npcs - take 1
 		+ Merge into master
 		+ Changelist
@@ -33,6 +36,8 @@
 		- Thinness: reduce
 			- Force both extremes synthetically
 		- Humans and furniture spinning too much around mouse
+
+	- See optimization for OrthoMatrix @ ShipRenderContext
 
 	+ Perlin noise on Land:
 		+ Figure out first if can have single-float 2D texture: RED channel only?
@@ -165,8 +170,7 @@
 	
 	+ Remove too much logging from ShipLoadDialog
 	+ Merchandise link
-	- Version on splash screen
-
+	+ Version on splash screen
 	
 	- FIX: background flames carry backdrop with them
 		! Was like this also before
