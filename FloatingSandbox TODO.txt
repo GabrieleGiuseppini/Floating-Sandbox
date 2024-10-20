@@ -6,6 +6,9 @@
 
 - Roadmap:
 
+	- Post:
+		- 445 commits
+
 	- Vegas:
 		- Screenshots:
 			- Wreck at night w/wout lamp
@@ -25,6 +28,11 @@
 			= Chests
 			= Square heads
 			= Detail (e.g. ears) with shades
+
+	- Npcs:
+		- Thinness: reduce
+			- Force both extremes synthetically
+		- Humans and furniture spinning too much around mouse
 
 	+ Perlin noise on Land:
 		+ Figure out first if can have single-float 2D texture: RED channel only?
@@ -88,6 +96,11 @@
 		+ Merge into npcs_v1
 
 	- Clouds V3: with fantastic texture coords offset
+		- First off, technical debt:
+			- Do clouds as baked atlas
+			- Do index-based rendering
+		- Magic work:
+
 			void mainImage( out vec4 fragColor, in vec2 fragCoord )
 			{
 			    // Normalized pixel coordinates (from 0 to 1)
@@ -147,13 +160,11 @@
 		- See shader on shader toy: use cloud texture coords offset based on noise centered around 0.
 			- But solve problem of going to other texture: need more room around textures?
 				- Cannot clamp in shader: would still look awful, and nice to have long flanges
-		- Do clouds as baked atlas
-		- Do index-based rendering
 
 		- Test clouds distributed over Z layers/depth
-
-	- Remove too much logging from ShipLoadDialog
-	- Merchandise link
+	
+	+ Remove too much logging from ShipLoadDialog
+	+ Merchandise link
 	- Version on splash screen
 
 	
@@ -692,6 +703,7 @@
 			- Saturn V (Ur local brazilian#0842, aka Transportation Fan - already in credits)
 			- "Hellooping"
 				+ Guy is already credited
+			- Sean (in gmail)
 		= _TO_TAKE:
 			- Bright mammooth - ⁵⁵𝐓𝐡𝐞 𝟐𝟒𝐭𝐡_𝐃𝐨𝐜𝐭𝐨𝐫-𝟏𝟗𝟐𝟐⁵⁵#1963
 				+ Asked name: doctor1922

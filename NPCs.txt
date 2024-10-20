@@ -212,6 +212,8 @@ Next release:
 
 	- Panic when water entering
 
+	- Walk away from water
+
 	- When human removed, enters "Removal" behavior: rotates with arms 90degree and legs closed, alpha down, then disappears
 		- Requires delayed removal (@UpdateBehavior), see (*) above
 			- Can't be picked when in this state
@@ -236,6 +238,10 @@ Next release:
 			- Entered when wanting to cross a triangle that on the other side is free because it's damaged
 		- Might also have "Underwater Engineers" with zero buoyancy, unaffected by internal water, who can thus repair when the ship is flooded
 			- This guys has speed multiplier, applies to walk speed and all other movements on a period
+
+- New furniture behaviors:
+	- Exploding
+	- Depth charges
 
 - Lights: second pass of lighting algorithm with all NPC particles, for each ship
 	- Adding to NPC particles' _light_ buffer

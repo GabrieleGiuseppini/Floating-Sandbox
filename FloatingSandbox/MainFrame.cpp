@@ -97,7 +97,6 @@ long const ID_SHIPBUILDER_EDITSHIP_MENUITEM = wxNewId();
 long const ID_HELP_MENUITEM = wxNewId();
 long const ID_ABOUT_MENUITEM = wxNewId();
 long const ID_CHECK_FOR_UPDATES_MENUITEM = wxNewId();
-long const ID_DONATE_MENUITEM = wxNewId();
 long const ID_OPEN_HOME_PAGE_MENUITEM = wxNewId();
 long const ID_OPEN_DOWNLOAD_PAGE_MENUITEM = wxNewId();
 
@@ -745,9 +744,17 @@ MainFrame::MainFrame(
             helpMenu->Append(checkForUpdatesMenuItem);
             Connect(ID_CHECK_FOR_UPDATES_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnCheckForUpdatesMenuItemSelected);
 
-            wxMenuItem * donateMenuItem = new wxMenuItem(helpMenu, ID_DONATE_MENUITEM, _("Donate..."));
-            helpMenu->Append(donateMenuItem);
-            helpMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [](wxCommandEvent &) { wxLaunchDefaultBrowser("https://floatingsandbox.com/donate/"); }, ID_DONATE_MENUITEM);
+            {
+                wxMenuItem * menuItem = new wxMenuItem(helpMenu, wxID_ANY, _("Donate..."));
+                helpMenu->Append(menuItem);
+                helpMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [](wxCommandEvent &) { wxLaunchDefaultBrowser("https://floatingsandbox.com/donate/"); }, menuItem->GetId());
+            }
+
+            {
+                wxMenuItem * menuItem = new wxMenuItem(helpMenu, wxID_ANY, _("Buy Merchandise..."));
+                helpMenu->Append(menuItem);
+                helpMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [](wxCommandEvent &) { wxLaunchDefaultBrowser("https://shop.floatingsandbox.com/"); }, menuItem->GetId());
+            }
 
             helpMenu->AppendSeparator();
 
