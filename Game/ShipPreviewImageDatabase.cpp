@@ -417,7 +417,7 @@ bool NewShipPreviewImageDatabase::Commit(
             if (oldDbIt->first == newDbIt->first    // Entry is for same preview file in both DBs
                 && !(newDbIt->second.PreviewImage)) // New DB has no new info for this entry
             {
-                LogMessage("NewShipPreviewImageDatabase::Commit(): copying old preview image data for '", oldDbIt->first.string(), "' (coalescing)...");
+                // LogMessage("NewShipPreviewImageDatabase::Commit(): copying old preview image data for '", oldDbIt->first.string(), "' (coalescing)...");
 
                 // Extend copy
                 copyOldDbEndOffset += oldDbIt->second.Size;

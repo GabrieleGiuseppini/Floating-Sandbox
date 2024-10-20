@@ -74,8 +74,6 @@ ShipLoadDialog<TUsageType>::ShipLoadDialog(
 
         // Directory tree
         {
-            LogMessage("ShipLoadDialog::cctor(): creating wxGenericDirCtrl...");
-
             auto const minSize = wxSize(MinDirCtrlWidth, 680);
 
             mDirCtrl = new wxGenericDirCtrl(
@@ -85,8 +83,6 @@ ShipLoadDialog<TUsageType>::ShipLoadDialog(
                 wxDefaultPosition,
                 minSize,
                 wxDIRCTRL_DIR_ONLY);
-
-            LogMessage("ShipLoadDialog::cctor(): ...wxGenericDirCtrl created.");
 
             mDirCtrl->ShowHidden(true); // When installing per-user, the Ships folder is under AppData, which is hidden
             mDirCtrl->SetMinSize(minSize);
@@ -101,7 +97,7 @@ ShipLoadDialog<TUsageType>::ShipLoadDialog(
             vSizer1->AddSpacer(5);
 
             // Toolbar
-            {   
+            {
                 int constexpr SmallMargin = 4;
 
                 wxBoxSizer * hToolbarSizer = new wxBoxSizer(wxHORIZONTAL);
@@ -300,12 +296,12 @@ ShipLoadDialog<TUsageType>::ShipLoadDialog(
                         wxALIGN_BOTTOM,
                         0);
                 }
-                
+
                 hToolbarSizer->AddSpacer(SmallMargin);
 
                 vSizer1->Add(
-                    hToolbarSizer, 
-                    0, 
+                    hToolbarSizer,
+                    0,
                     wxEXPAND, // Expand to occupy all available H space
                     0);
             }
@@ -321,7 +317,7 @@ ShipLoadDialog<TUsageType>::ShipLoadDialog(
                 mShipPreviewWindow->Bind(fsEVT_SHIP_FILE_CHOSEN, &ShipLoadDialog::OnShipFileChosen, this);
 
                 vSizer1->Add(
-                    mShipPreviewWindow, 
+                    mShipPreviewWindow,
                     1,  // Use all V space
                     wxEXPAND, // Expand to occupy all available H space
                     0);
@@ -809,8 +805,6 @@ void ShipLoadDialog<TUsageType>::OnShipFileChosen(std::filesystem::path shipFile
 template<ShipLoadDialogUsageType TUsageType>
 void ShipLoadDialog<TUsageType>::EndModal(int retCode)
 {
-    LogMessage("ShipLoadDialog::EndModal(", retCode, ")");
-
     mShipPreviewWindow->OnClose();
 
     wxDialog::EndModal(retCode);
