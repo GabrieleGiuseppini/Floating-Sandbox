@@ -19,6 +19,7 @@
 	- Movie:
 		- Carnival Dream Video, exterior view, plenty of NPCs
 		- Then interior view
+		- Scene 2: zero waves, furniture all setup and NPCs, then wave from afar
 		- TODOHERE
 
 
@@ -28,14 +29,16 @@
 		+ Merge into master
 		+ Changelist
 
-	- Npcs:
+	= Npcs post-work:
 		= Work with TimCan for improvements
 			= Chests
 			= Square heads
 			= Detail (e.g. ears) with shades
-		- Thinness: reduce
-			- Force both extremes synthetically
+		+ Thinness: reduce
+			+ Force both extremes synthetically
+			+ Do something for head
 		- Humans and furniture spinning too much around mouse
+		- Count breakage
 
 	- See optimization for OrthoMatrix @ ShipRenderContext
 

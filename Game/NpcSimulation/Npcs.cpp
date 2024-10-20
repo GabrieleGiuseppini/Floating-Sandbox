@@ -2937,10 +2937,11 @@ void Npcs::RenderNpc(
 
             float const adjustedIdealHumanHeight = npc.ParticleMesh.Springs[0].RestLength;
 
+            float const headWidthMultiplier = 1.0f + (humanNpcState.WidthMultipier - 1.0f) * 0.5f; // Head doesn'w widen/narrow like body does
             float const headWidthFraction = IsTextureMode
                 ? humanNpcState.TextureGeometry.HeadLengthFraction * humanNpcState.TextureGeometry.HeadWHRatio
                 : GameParameters::HumanNpcGeometry::QuadModeHeadWidthFraction;
-            float const halfHeadW = (adjustedIdealHumanHeight * headWidthFraction * humanNpcState.WidthMultipier) / 2.0f;
+            float const halfHeadW = (adjustedIdealHumanHeight * headWidthFraction * headWidthMultiplier) / 2.0f;
 
             float const torsoWidthFraction = IsTextureMode
                 ? humanNpcState.TextureGeometry.TorsoLengthFraction * humanNpcState.TextureGeometry.TorsoWHRatio
