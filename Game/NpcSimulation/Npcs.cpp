@@ -2059,11 +2059,10 @@ void Npcs::ApplyAntiMatterBombExplosion(
     }
 }
 
-void Npcs::OnTriangleDestroyed(
+void Npcs::OnShipTriangleDestroyed(
     ShipId shipId,
     ElementIndex triangleElementIndex)
 {
-
     assert(shipId < mShips.size());
     assert(mShips[shipId].has_value());
 

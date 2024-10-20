@@ -38,7 +38,6 @@
 			+ Force both extremes synthetically
 			+ Do something for head
 		- Humans and furniture spinning too much around mouse
-		- Count breakage
 
 	- See optimization for OrthoMatrix @ ShipRenderContext
 

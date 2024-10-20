@@ -3838,7 +3838,7 @@ void Ship::HandleTriangleDestroy(ElementIndex triangleElementIndex)
     /////////////////////////////////////////////////////////
 
     // Notify NPCs
-    mParentWorld.GetNpcs().OnTriangleDestroyed(
+    mParentWorld.GetNpcs().OnShipTriangleDestroyed(
         mId,
         triangleElementIndex);
 

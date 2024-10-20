@@ -966,7 +966,7 @@ public:
 		vec2f const & centerPosition,
 		GameParameters const & gameParameters);
 
-	void OnTriangleDestroyed(
+	void OnShipTriangleDestroyed(
 		ShipId shipId,
 		ElementIndex triangleElementIndex);
 
