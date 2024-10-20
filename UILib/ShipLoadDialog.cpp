@@ -426,7 +426,15 @@ ShipLoadDialog<TUsageType>::ShipLoadDialog(
             mLoadButton->Bind(wxEVT_BUTTON, &ShipLoadDialog::OnLoadButton, this);
             buttonsSizer->Add(mLoadButton, 0);
 
-            buttonsSizer->AddSpacer(20);
+            buttonsSizer->AddSpacer(10);
+
+            mLoadRandomButton = new wxBitmapButton(this, wxID_ANY,
+                WxHelpers::LoadBitmap("load_random_ship_icon", resourceLocator), wxDefaultPosition, wxDefaultSize);
+            mLoadRandomButton->SetToolTip(_("Load a random ship"));
+            mLoadRandomButton->Bind(wxEVT_BUTTON, &ShipLoadDialog::OnLoadRandomButton, this);
+            buttonsSizer->Add(mLoadRandomButton, 0);
+
+            buttonsSizer->AddSpacer(10);
 
             wxButton * cancelButton = new wxButton(this, wxID_ANY, _("Cancel"));
             cancelButton->Bind(wxEVT_BUTTON, &ShipLoadDialog::OnCancelButton, this);
@@ -749,6 +757,19 @@ void ShipLoadDialog<TUsageType>::OnLoadButton(wxCommandEvent & /*event*/)
 
     // Process
     OnShipFileChosen(*mSelectedShipFilepath);
+}
+
+template<ShipLoadDialogUsageType TUsageType>
+void ShipLoadDialog<TUsageType>::OnLoadRandomButton(wxCommandEvent & /*event*/)
+{
+    auto const selectedShipFilePath = mShipPreviewWindow->ChooseShipRandomly(mSelectedShipFilepath);
+    if (!!selectedShipFilePath)
+    {
+        mSelectedShipFilepath = selectedShipFilePath;
+
+        // Process
+        OnShipFileChosen(*mSelectedShipFilepath);
+    }
 }
 
 template<ShipLoadDialogUsageType TUsageType>

@@ -220,13 +220,15 @@ public:
     }
 
     void SetSortMethod(SortMethod sortMethod);
-    
+
     bool GetCurrentIsSortDescending() const
     {
         return mIsSortDescending;
     }
 
     void SetIsSortDescending(bool isSortDescending);
+
+    std::optional<std::filesystem::path> ChooseShipRandomly(std::optional<std::filesystem::path> currentShip) const;
 
     void ChooseSelectedIfAny();
 
@@ -401,7 +403,7 @@ private:
     int mColumnWidth;
     int mExpandedHorizontalMargin;
 
-    wxPen mSelectionPen;    
+    wxPen mSelectionPen;
     wxFont mDescriptionFont;
     wxColor mDescriptionColor;
     wxFont mFilenameFont;

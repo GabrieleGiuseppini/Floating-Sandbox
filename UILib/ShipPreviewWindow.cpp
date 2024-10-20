@@ -8,6 +8,7 @@
 #include <UILib/WxHelpers.h>
 
 #include <GameCore/Conversions.h>
+#include <GameCore/GameRandomEngine.h>
 #include <Game/ImageFileTools.h>
 #include <Game/ShipDeSerializer.h>
 #include <Game/ShipPreviewDirectoryManager.h>
@@ -282,6 +283,25 @@ void ShipPreviewWindow::SetIsSortDescending(bool isSortDescending)
     Refresh();
 }
 
+std::optional<std::filesystem::path> ShipPreviewWindow::ChooseShipRandomly(std::optional<std::filesystem::path> currentShip) const
+{
+    if (mInfoTiles.size() > 0 && (!currentShip.has_value() || mInfoTiles.size() > 1))
+    {
+        for (int t = 0; t < 5; ++t) // Safety
+        {
+            size_t chosen = GameRandomEngine::GetInstance().Choose(mInfoTiles.size());
+            auto const shipFilepath = mInfoTiles[chosen].ShipFilepath;
+            if (!currentShip.has_value() || *currentShip != shipFilepath)
+            {
+                return shipFilepath;
+            }
+        }
+    }
+
+    // No luck - return current ship if just one exists
+    return currentShip;
+}
+
 void ShipPreviewWindow::ChooseSelectedIfAny()
 {
     if (mSelectedShipFileId.has_value())
@@ -502,7 +522,7 @@ void ShipPreviewWindow::OnPollQueueTimer(wxTimerEvent & /*event*/)
 
                 size_t const infoTileIndex = ShipFileIdToInfoTileIndex(message->GetShipFileId());
                 assert(infoTileIndex < mInfoTiles.size());
-                
+
                 mInfoTiles[infoTileIndex].Bitmap = mErrorBitmap;
                 mInfoTiles[infoTileIndex].OriginalDescription1 = message->GetErrorMessage();
                 mInfoTiles[infoTileIndex].DescriptionLabel1Size.reset();
@@ -752,7 +772,7 @@ std::function<bool(ShipPreviewWindow::InfoTile const &, ShipPreviewWindow::InfoT
             {
                 assert(l.Metadata.has_value() && r.Metadata.has_value());
 
-                if (l.Metadata->YearBuilt.has_value() 
+                if (l.Metadata->YearBuilt.has_value()
                     && r.Metadata->YearBuilt.has_value()
                     && *(l.Metadata->YearBuilt) != *(r.Metadata->YearBuilt))
                 {
@@ -926,7 +946,7 @@ void ShipPreviewWindow::EnsureInfoTileIsVisible(size_t infoTileIndex)
 
     assert(infoTileIndex < mInfoTiles.size());
     wxRect const infoTileRectVirtual = InfoTileIndexToRectVirtual(infoTileIndex);
-    
+
     if (!visibleRectVirtual.Contains(infoTileRectVirtual))
     {
         int xUnit, yUnit;

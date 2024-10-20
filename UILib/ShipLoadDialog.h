@@ -52,7 +52,7 @@ public:
             assert(mFlipHButton);
             assert(mFlipVButton);
             assert(mRotate90CWButton);
-            
+
             return ShipLoadSpecifications(
                 *mChosenShipFilepath,
                 ShipLoadOptions(
@@ -83,6 +83,7 @@ private:
     void OnSortDirectionChanged(bool isSortDescending);
     void OnInfoButtonClicked(wxCommandEvent & event);
     void OnLoadButton(wxCommandEvent & event);
+    void OnLoadRandomButton(wxCommandEvent & event);
     void OnCancelButton(wxCommandEvent & event);
     void OnCloseWindow(wxCloseEvent & event);
 
@@ -123,6 +124,7 @@ private:
     ShipPreviewWindow * mShipPreviewWindow;
     wxComboBox * mRecentDirectoriesComboBox;
     wxButton * mLoadButton;
+    wxBitmapButton * mLoadRandomButton;
     wxBitmapButton * mSearchNextButton;
 
     wxDialog * mPasswordProtectionInfoDialog;
