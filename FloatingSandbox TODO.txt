@@ -17,22 +17,22 @@
 			- Stress overlay
 
 	- Movie:
-		- Titanic, exterior view, plenty of NPCs
+		- Carnival Dream Video, exterior view, plenty of NPCs
 		- Then interior view
 		- TODOHERE
 
 
 
 
-	= Npcs - take 1
+	+ Npcs - take 1
 		+ Merge into master
 		+ Changelist
+
+	- Npcs:
 		= Work with TimCan for improvements
 			= Chests
 			= Square heads
 			= Detail (e.g. ears) with shades
-
-	- Npcs:
 		- Thinness: reduce
 			- Force both extremes synthetically
 		- Humans and furniture spinning too much around mouse
@@ -471,8 +471,8 @@
 			- UpdateWaterMomenta: double calculations in existing loops
 				- Only difference: horizontal propagation is subject to "friction"
 
-	- "Random" button to load random ship
-		- At LoadDialog
+	+ "Random" button to load random ship
+		+ At LoadDialog
 
 	- Option to have larger world size
 

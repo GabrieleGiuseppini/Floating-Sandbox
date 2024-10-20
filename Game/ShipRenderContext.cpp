@@ -2601,7 +2601,7 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
     // Layer 1: Flames - background
     //
 
-    view.CalculateShipOrthoMatrix(
+    view.UpdateShipOrthoMatrixForLayer(
         ShipRegionZStart,
         ShipRegionZWidth,
         static_cast<int>(mShipId),
@@ -2619,7 +2619,7 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
     // Layer 2: Springs
     //
 
-    view.CalculateShipOrthoMatrix(
+    view.UpdateShipOrthoMatrixForLayer(
         ShipRegionZStart,
         ShipRegionZWidth,
         static_cast<int>(mShipId),
@@ -2650,7 +2650,7 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
     // Layer 3: Triangles
     //
 
-    view.CalculateShipOrthoMatrix(
+    view.UpdateShipOrthoMatrixForLayer(
         ShipRegionZStart,
         ShipRegionZWidth,
         static_cast<int>(mShipId),
@@ -2681,7 +2681,7 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
     // Layer 4: Stressed Springs, Frontier Edges
     //
 
-    view.CalculateShipOrthoMatrix(
+    view.UpdateShipOrthoMatrixForLayer(
         ShipRegionZStart,
         ShipRegionZWidth,
         static_cast<int>(mShipId),
@@ -2703,7 +2703,7 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
     // Layer 5: Points
     //
 
-    view.CalculateShipOrthoMatrix(
+    view.UpdateShipOrthoMatrixForLayer(
         ShipRegionZStart,
         ShipRegionZWidth,
         static_cast<int>(mShipId),
@@ -2722,7 +2722,7 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
     // Layer 6: Electric Sparks, Sparkles
     //
 
-    view.CalculateShipOrthoMatrix(
+    view.UpdateShipOrthoMatrixForLayer(
         ShipRegionZStart,
         ShipRegionZWidth,
         static_cast<int>(mShipId),
@@ -2744,7 +2744,7 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
     // Layer 7: Generic Textures
     //
 
-    view.CalculateShipOrthoMatrix(
+    view.UpdateShipOrthoMatrixForLayer(
         ShipRegionZStart,
         ShipRegionZWidth,
         static_cast<int>(mShipId),
@@ -2762,7 +2762,7 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
     // Layer 8: Flames - foreground, Jet engine flames
     //
 
-    view.CalculateShipOrthoMatrix(
+    view.UpdateShipOrthoMatrixForLayer(
         ShipRegionZStart,
         ShipRegionZWidth,
         static_cast<int>(mShipId),
@@ -2784,7 +2784,7 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
     // Layer 9: NPCs
     //
 
-    view.CalculateShipOrthoMatrix(
+    view.UpdateShipOrthoMatrixForLayer(
         ShipRegionZStart,
         ShipRegionZWidth,
         static_cast<int>(mShipId),
@@ -2810,7 +2810,7 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
     // Layer 10: Explosions
     //
 
-    view.CalculateShipOrthoMatrix(
+    view.UpdateShipOrthoMatrixForLayer(
         ShipRegionZStart,
         ShipRegionZWidth,
         static_cast<int>(mShipId),
@@ -2828,7 +2828,7 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
     // Layer 11: Highlights, Centers
     //
 
-    view.CalculateShipOrthoMatrix(
+    view.UpdateShipOrthoMatrixForLayer(
         ShipRegionZStart,
         ShipRegionZWidth,
         static_cast<int>(mShipId),
@@ -2854,7 +2854,7 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
     // Layer 12: Vectors, Point-to-Point Arrows
     //
 
-    view.CalculateShipOrthoMatrix(
+    view.UpdateShipOrthoMatrixForLayer(
         ShipRegionZStart,
         ShipRegionZWidth,
         static_cast<int>(mShipId),

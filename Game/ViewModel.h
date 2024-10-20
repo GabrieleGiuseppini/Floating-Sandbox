@@ -440,6 +440,30 @@ public:
         matrix[3][2] = shipZStart + layerZFraction;
     }
 
+    inline void UpdateShipOrthoMatrixForLayer(
+        float shipZRegionStart,
+        float shipZRegionWidth,
+        int iShip,
+        int nShips,
+        int maxMaxPlaneId,
+        int iLayer,
+        int nLayers,
+        ProjectionMatrix & matrix) const
+    {
+        // Beginning of Z range for this ship
+        float const shipZStart =
+            shipZRegionStart
+            + shipZRegionWidth * static_cast<float>(iShip) / static_cast<float>(nShips);
+
+        // Fractional Z value for this plane, to account for layer
+        float const layerZFraction =
+            shipZRegionWidth / static_cast<float>(nShips)
+            * static_cast<float>(iLayer)
+            / static_cast<float>(nLayers * (maxMaxPlaneId + 1));
+
+        matrix[3][2] = shipZStart + layerZFraction;
+    }
+
 private:
 
     float CalculateVisibleWorldWidth(float zoom) const
