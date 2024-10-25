@@ -1078,6 +1078,10 @@ private:
 
 	NpcId GetNewNpcId();
 
+	NpcSubKindIdType ChooseSubKind(
+		ShipId shipId,
+		NpcKindType kind) const;
+
 	bool CommonNpcRemoval(NpcId npcId);
 
 	size_t CalculateTotalNpcCount() const;

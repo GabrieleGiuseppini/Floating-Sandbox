@@ -62,10 +62,10 @@
 				+ Cart: per-particle, wheels very low and rest very high
 			+ Test human values
 		+ Exclude tungsten block from group
-		- Add random NPC
+		= Add random NPC
 			- Menu: "Random" as first entry to both Human and Furniture
-			- Npcs: refactor choice into function
-				- Call from AddGroup
+			+ Npcs: refactor choice into function
+				+ Call from AddGroup
 			- Tool and GameController --> Npcs::BeginAdd: SubKindId optional
 
 	+ See optimization for OrthoMatrix @ ShipRenderContext

@@ -1303,51 +1303,7 @@ std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> Npcs::AddNpcGroup
         // Decide sub-kind
         //
 
-        NpcSubKindIdType subKind = 0;
-        switch (kind)
-        {
-            case NpcKindType::Furniture:
-            {
-                // Furniture
-                auto const & furnitureRoles = mNpcDatabase.GetFurnitureSubKindIdsByRole()[static_cast<size_t>(NpcFurnitureRoleType::Furniture)];
-                size_t iSubKind = GameRandomEngine::GetInstance().Choose(furnitureRoles.size());
-                subKind = furnitureRoles[iSubKind];
-
-                break;
-            }
-
-            case NpcKindType::Human:
-            {
-                // Check whether ship already has a captain
-                if (mShips[shipId]->HumanNpcCaptainCount == 0)
-                {
-                    // Choose a captain
-                    auto const & captainRoles = mNpcDatabase.GetHumanSubKindIdsByRole()[static_cast<size_t>(NpcHumanRoleType::Captain)];
-                    size_t iSubKind = GameRandomEngine::GetInstance().Choose(captainRoles.size());
-                    subKind = captainRoles[iSubKind];
-                }
-                else
-                {
-                    // Choose a role first
-                    if (GameRandomEngine::GetInstance().GenerateUniformBoolean(0.3f)) // ~1/3 is crew
-                    {
-                        // Crew
-                        auto const & crewRoles = mNpcDatabase.GetHumanSubKindIdsByRole()[static_cast<size_t>(NpcHumanRoleType::Crew)];
-                        size_t iSubKind = GameRandomEngine::GetInstance().Choose(crewRoles.size());
-                        subKind = crewRoles[iSubKind];
-                    }
-                    else
-                    {
-                        // Passengers
-                        auto const & passengerRoles = mNpcDatabase.GetHumanSubKindIdsByRole()[static_cast<size_t>(NpcHumanRoleType::Passenger)];
-                        size_t iSubKind = GameRandomEngine::GetInstance().Choose(passengerRoles.size());
-                        subKind = passengerRoles[iSubKind];
-                    }
-                }
-
-                break;
-            }
-        }
+        NpcSubKindIdType const subKind = ChooseSubKind(shipId, kind);
 
         //
         // Find triangle - if none, we'll go free
@@ -2632,6 +2588,55 @@ NpcId Npcs::GetNewNpcId()
     NpcId const newNpcId = static_cast<NpcId>(mStateBuffer.size());
     mStateBuffer.emplace_back(std::nullopt);
     return newNpcId;
+}
+
+NpcSubKindIdType Npcs::ChooseSubKind(
+    ShipId shipId,
+    NpcKindType kind) const
+{
+    switch (kind)
+    {
+        case NpcKindType::Furniture:
+        {
+            // Furniture
+            auto const & furnitureRoles = mNpcDatabase.GetFurnitureSubKindIdsByRole()[static_cast<size_t>(NpcFurnitureRoleType::Furniture)];
+            size_t iSubKind = GameRandomEngine::GetInstance().Choose(furnitureRoles.size());
+            return furnitureRoles[iSubKind];
+        }
+
+        case NpcKindType::Human:
+        {
+            // Check whether ship already has a captain
+            if (mShips[shipId]->HumanNpcCaptainCount == 0)
+            {
+                // Choose a captain
+                auto const & captainRoles = mNpcDatabase.GetHumanSubKindIdsByRole()[static_cast<size_t>(NpcHumanRoleType::Captain)];
+                size_t iSubKind = GameRandomEngine::GetInstance().Choose(captainRoles.size());
+                return captainRoles[iSubKind];
+            }
+            else
+            {
+                // Choose a role first
+                if (GameRandomEngine::GetInstance().GenerateUniformBoolean(0.3f)) // ~1/3 is crew
+                {
+                    // Crew
+                    auto const & crewRoles = mNpcDatabase.GetHumanSubKindIdsByRole()[static_cast<size_t>(NpcHumanRoleType::Crew)];
+                    size_t iSubKind = GameRandomEngine::GetInstance().Choose(crewRoles.size());
+                    return crewRoles[iSubKind];
+                }
+                else
+                {
+                    // Passengers
+                    auto const & passengerRoles = mNpcDatabase.GetHumanSubKindIdsByRole()[static_cast<size_t>(NpcHumanRoleType::Passenger)];
+                    size_t iSubKind = GameRandomEngine::GetInstance().Choose(passengerRoles.size());
+                    return passengerRoles[iSubKind];
+                }
+            }
+        }
+    }
+
+    assert(false);
+    return 0;
 }
 
 bool Npcs::CommonNpcRemoval(NpcId npcId)
