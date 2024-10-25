@@ -63,10 +63,11 @@
 			+ Test human values
 		+ Exclude tungsten block from group
 		= Add random NPC
-			- Menu: "Random" as first entry to both Human and Furniture
+			+ Menu: "Random" as first entry to both Human and Furniture
 			+ Npcs: refactor choice into function
 				+ Call from AddGroup
-			- Tool and GameController --> Npcs::BeginAdd: SubKindId optional
+			+ Tool and GameController --> Npcs::BeginAdd: SubKindId optional
+		- Check again placement
 
 	+ See optimization for OrthoMatrix @ ShipRenderContext
 

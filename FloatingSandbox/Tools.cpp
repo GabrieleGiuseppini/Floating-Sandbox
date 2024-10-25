@@ -737,7 +737,7 @@ PlaceFurnitureNpcTool::PlaceFurnitureNpcTool(
         gameController,
         soundController,
         resourceLocator)
-    , mKind(0) // Will be set later
+    , mKind() // Will be set later
 {
 }
 
@@ -752,7 +752,7 @@ PlaceHumanNpcTool::PlaceHumanNpcTool(
         gameController,
         soundController,
         resourceLocator)
-    , mKind(0) // Will be set later
+    , mKind() // Will be set later
 {
 }
 

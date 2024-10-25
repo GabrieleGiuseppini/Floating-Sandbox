@@ -2847,27 +2847,34 @@ void MainFrame::RebuildNpcMenus()
 
         // Add all
 
+        auto addMenu = [this](std::optional<NpcSubKindIdType> subKindId, wxString const & label)
+            {
+                auto const commandId = wxNewId();
+                auto * subMenuItem = new wxMenuItem(nullptr, commandId, label, wxEmptyString, wxITEM_CHECK);
+                mHumanNpcSubMenu->Append(subMenuItem);
+                mHumanNpcSubMenu->Bind(
+                    wxEVT_COMMAND_MENU_SELECTED,
+                    [this, subKindId](wxCommandEvent &)
+                    {
+                        // Set tool
+                        assert(!!mToolController);
+                        mToolController->SetPlaceHumanNpcTool(subKindId);
+
+                        // Reconciliate
+                        OnNpcToolSelected(ToolType::PlaceHumanNpc);
+                    },
+                    commandId);
+
+                mAddHumanNpcSubMenuItems.push_back({ subKindId , subMenuItem });
+            };
+
+        addMenu(std::nullopt, _("Random"));
+
+        mHumanNpcSubMenu->AppendSeparator();
+
         for (auto const & subKindInfo : mGameController->GetHumanNpcSubKinds(language))
         {
-            auto const subKindId = std::get<0>(subKindInfo);
-
-            auto const commandId = wxNewId();
-            auto * subMenuItem = new wxMenuItem(nullptr, commandId, std::get<1>(subKindInfo), wxEmptyString, wxITEM_CHECK);
-            mHumanNpcSubMenu->Append(subMenuItem);
-            mHumanNpcSubMenu->Bind(
-                wxEVT_COMMAND_MENU_SELECTED,
-                [this, subKindId](wxCommandEvent &)
-                {
-                    // Set tool
-                    assert(!!mToolController);
-                    mToolController->SetPlaceHumanNpcTool(subKindId);
-
-                    // Reconciliate
-                    OnNpcToolSelected(ToolType::PlaceHumanNpc);
-                },
-                commandId);
-
-            mAddHumanNpcSubMenuItems.push_back({ subKindId , subMenuItem});
+            addMenu(std::get<0>(subKindInfo), std::get<1>(subKindInfo));
         }
     }
 
@@ -2886,27 +2893,34 @@ void MainFrame::RebuildNpcMenus()
 
         // Add all
 
+        auto addMenu = [this](std::optional<NpcSubKindIdType> subKindId, wxString const & label)
+            {
+                auto const commandId = wxNewId();
+                auto * subMenuItem = new wxMenuItem(nullptr, commandId, label, wxEmptyString, wxITEM_CHECK);
+                mFurnitureNpcSubMenu->Append(subMenuItem);
+                mFurnitureNpcSubMenu->Bind(
+                    wxEVT_COMMAND_MENU_SELECTED,
+                    [this, subKindId](wxCommandEvent &)
+                    {
+                        // Set tool
+                        assert(!!mToolController);
+                        mToolController->SetPlaceFurnitureNpcTool(subKindId);
+
+                        // Reconciliate
+                        OnNpcToolSelected(ToolType::PlaceFurnitureNpc);
+                    },
+                    commandId);
+
+                mAddFurnitureNpcSubMenuItems.push_back({ subKindId , subMenuItem });
+            };
+
+        addMenu(std::nullopt, _("Random"));
+
+        mFurnitureNpcSubMenu->AppendSeparator();
+
         for (auto const & subKindInfo : mGameController->GetFurnitureNpcSubKinds(language))
         {
-            auto const subKindId = std::get<0>(subKindInfo);
-
-            auto const commandId = wxNewId();
-            auto * subMenuItem = new wxMenuItem(nullptr, commandId, std::get<1>(subKindInfo), wxEmptyString, wxITEM_CHECK);
-            mFurnitureNpcSubMenu->Append(subMenuItem);
-            mFurnitureNpcSubMenu->Bind(
-                wxEVT_COMMAND_MENU_SELECTED,
-                [this, subKindId](wxCommandEvent &)
-                {
-                    // Set tool
-                    assert(!!mToolController);
-                    mToolController->SetPlaceFurnitureNpcTool(subKindId);
-
-                    // Reconciliate
-                    OnNpcToolSelected(ToolType::PlaceFurnitureNpc);
-                },
-                commandId);
-
-            mAddFurnitureNpcSubMenuItems.push_back({ subKindId , subMenuItem });
+            addMenu(std::get<0>(subKindInfo), std::get<1>(subKindInfo));
         }
     }
 }

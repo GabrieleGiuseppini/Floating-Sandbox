@@ -138,8 +138,8 @@ struct IGameController
     virtual void SetLampAt(DisplayLogicalCoordinates const & screenCoordinates, float radiusScreenFraction) = 0;
     virtual void ResetLamp() = 0;
     virtual NpcKindType GetNpcKind(NpcId id) = 0;
-    virtual std::optional<PickedNpc> BeginPlaceNewFurnitureNpc(NpcSubKindIdType subKind, DisplayLogicalCoordinates const & screenCoordinates, bool doMoveWholeMesh) = 0;
-    virtual std::optional<PickedNpc> BeginPlaceNewHumanNpc(NpcSubKindIdType subKind, DisplayLogicalCoordinates const & screenCoordinates, bool doMoveWholeMesh) = 0;
+    virtual std::optional<PickedNpc> BeginPlaceNewFurnitureNpc(std::optional<NpcSubKindIdType> subKind, DisplayLogicalCoordinates const & screenCoordinates, bool doMoveWholeMesh) = 0;
+    virtual std::optional<PickedNpc> BeginPlaceNewHumanNpc(std::optional<NpcSubKindIdType> subKind, DisplayLogicalCoordinates const & screenCoordinates, bool doMoveWholeMesh) = 0;
     virtual std::optional<PickedNpc> ProbeNpcAt(DisplayLogicalCoordinates const & screenCoordinates) const = 0;
     virtual void BeginMoveNpc(NpcId id, int particleOrdinal, bool doMoveWholeMesh) = 0;
     virtual void MoveNpcTo(NpcId id, DisplayLogicalCoordinates const & screenCoordinates, vec2f const & worldOffset, bool doMoveWholeMesh) = 0;

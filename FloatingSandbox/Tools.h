@@ -3913,12 +3913,12 @@ public:
         SoundController & soundController,
         ResourceLocator const & resourceLocator);
 
-    NpcSubKindIdType GetKind() const
+    std::optional<NpcSubKindIdType> GetKind() const
     {
         return mKind;
     }
 
-    void SetKind(NpcSubKindIdType kind)
+    void SetKind(std::optional<NpcSubKindIdType> kind)
     {
         mKind = kind;
     }
@@ -3937,7 +3937,7 @@ protected:
 
 private:
 
-    NpcSubKindIdType mKind;
+    std::optional<NpcSubKindIdType> mKind;
 };
 
 class PlaceHumanNpcTool final : public PlaceNpcToolBase
@@ -3950,12 +3950,12 @@ public:
         SoundController & soundController,
         ResourceLocator const & resourceLocator);
 
-    NpcSubKindIdType GetKind() const
+    std::optional<NpcSubKindIdType> GetKind() const
     {
         return mKind;
     }
 
-    void SetKind(NpcSubKindIdType kind)
+    void SetKind(std::optional<NpcSubKindIdType> kind)
     {
         mKind = kind;
     }
@@ -3974,7 +3974,7 @@ protected:
 
 private:
 
-    NpcSubKindIdType mKind;
+    std::optional<NpcSubKindIdType> mKind;
 };
 
 class BaseSelectNpcTool : public Tool

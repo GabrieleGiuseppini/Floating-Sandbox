@@ -162,8 +162,8 @@ private:
 
     std::vector<std::tuple<ToolType, wxMenuItem *>> mNonNpcToolMenuItems;
     std::vector<std::tuple<ToolType, wxMenuItem *>> mNpcToolMenuItems;
-    std::vector<std::tuple<NpcSubKindIdType, wxMenuItem *>> mAddHumanNpcSubMenuItems;
-    std::vector<std::tuple<NpcSubKindIdType, wxMenuItem *>> mAddFurnitureNpcSubMenuItems;
+    std::vector<std::tuple<std::optional<NpcSubKindIdType>, wxMenuItem *>> mAddHumanNpcSubMenuItems;
+    std::vector<std::tuple<std::optional<NpcSubKindIdType>, wxMenuItem *>> mAddFurnitureNpcSubMenuItems;
 
     //
     // Dialogs

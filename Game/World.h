@@ -376,12 +376,12 @@ public:
     NpcKindType GetNpcKind(NpcId id);
 
     std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> BeginPlaceNewFurnitureNpc(
-        NpcSubKindIdType subKind,
+        std::optional<NpcSubKindIdType> subKind,
         vec2f const & position,
         bool doMoveWholeMesh);
 
     std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> BeginPlaceNewHumanNpc(
-        NpcSubKindIdType subKind,
+        std::optional<NpcSubKindIdType> subKind,
         vec2f const & position,
         bool doMoveWholeMesh);
 

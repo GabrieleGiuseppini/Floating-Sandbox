@@ -1046,7 +1046,7 @@ NpcKindType World::GetNpcKind(NpcId id)
 }
 
 std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> World::BeginPlaceNewFurnitureNpc(
-    NpcSubKindIdType subKind,
+    std::optional<NpcSubKindIdType> subKind,
     vec2f const & position,
     bool doMoveWholeMesh)
 {
@@ -1059,7 +1059,7 @@ std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> World::BeginP
 }
 
 std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> World::BeginPlaceNewHumanNpc(
-    NpcSubKindIdType subKind,
+    std::optional<NpcSubKindIdType> subKind,
     vec2f const & position,
     bool doMoveWholeMesh)
 {

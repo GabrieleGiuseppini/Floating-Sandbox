@@ -257,8 +257,8 @@ public:
     void SetLampAt(DisplayLogicalCoordinates const & screenCoordinates, float radiusScreenFraction) override;
     void ResetLamp() override;
     NpcKindType GetNpcKind(NpcId id) override;
-    std::optional<PickedNpc> BeginPlaceNewFurnitureNpc(NpcSubKindIdType subKind, DisplayLogicalCoordinates const & screenCoordinates, bool doMoveWholeMesh) override;
-    std::optional<PickedNpc> BeginPlaceNewHumanNpc(NpcSubKindIdType subKind, DisplayLogicalCoordinates const & screenCoordinates, bool doMoveWholeMesh) override;
+    std::optional<PickedNpc> BeginPlaceNewFurnitureNpc(std::optional<NpcSubKindIdType> subKind, DisplayLogicalCoordinates const & screenCoordinates, bool doMoveWholeMesh) override;
+    std::optional<PickedNpc> BeginPlaceNewHumanNpc(std::optional<NpcSubKindIdType> subKind, DisplayLogicalCoordinates const & screenCoordinates, bool doMoveWholeMesh) override;
     std::optional<PickedNpc> ProbeNpcAt(DisplayLogicalCoordinates const & screenCoordinates) const override;
     void BeginMoveNpc(NpcId id, int particleOrdinal, bool doMoveWholeMesh) override;
     void MoveNpcTo(NpcId id, DisplayLogicalCoordinates const & screenCoordinates, vec2f const & worldOffset, bool doMoveWholeMesh) override;

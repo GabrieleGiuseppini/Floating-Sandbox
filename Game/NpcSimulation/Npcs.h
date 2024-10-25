@@ -852,13 +852,13 @@ public:
 	NpcKindType GetNpcKind(NpcId id);
 
 	std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> BeginPlaceNewFurnitureNpc(
-		NpcSubKindIdType subKind,
+		std::optional<NpcSubKindIdType> subKind,
 		vec2f const & worldCoordinates,
 		bool doMoveWholeMesh,
 		float currentSimulationTime);
 
 	std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> BeginPlaceNewHumanNpc(
-		NpcSubKindIdType subKind,
+		std::optional<NpcSubKindIdType> subKind,
 		vec2f const & worldCoordinates,
 		bool doMoveWholeMesh,
 		float currentSimulationTime);
@@ -1079,8 +1079,8 @@ private:
 	NpcId GetNewNpcId();
 
 	NpcSubKindIdType ChooseSubKind(
-		ShipId shipId,
-		NpcKindType kind) const;
+		NpcKindType kind,
+		std::optional<ShipId> shipId) const;
 
 	bool CommonNpcRemoval(NpcId npcId);
 

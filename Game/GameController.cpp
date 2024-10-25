@@ -1315,7 +1315,7 @@ NpcKindType GameController::GetNpcKind(NpcId id)
 }
 
 std::optional<PickedNpc> GameController::BeginPlaceNewFurnitureNpc(
-    NpcSubKindIdType subKind,
+    std::optional<NpcSubKindIdType> subKind,
     DisplayLogicalCoordinates const & screenCoordinates,
     bool doMoveWholeMesh)
 {
@@ -1341,7 +1341,7 @@ std::optional<PickedNpc> GameController::BeginPlaceNewFurnitureNpc(
 }
 
 std::optional<PickedNpc> GameController::BeginPlaceNewHumanNpc(
-    NpcSubKindIdType subKind,
+    std::optional<NpcSubKindIdType> subKind,
     DisplayLogicalCoordinates const & screenCoordinates,
     bool doMoveWholeMesh)
 {
