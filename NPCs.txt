@@ -210,6 +210,14 @@ Next release:
 
 - New human behaviors:
 
+	- First off: "next triangle" check when planning:
+		- WalkingBehaviorState contains: tri index, edge ordinal, "half edge sign", and x orientation
+			- Init'd to None at each transition into Walking
+			- Used to detect change of "half edge"
+		- When change detected:
+			- if half_change*orientation > 0: do whatever
+			- Update state with current half
+
 	- Panic when water entering
 
 	- Walk away from water
@@ -339,6 +347,7 @@ Next release:
 				- Guaranteed to stop mid-way
 
 - Forward-looking walk planning:
+	- TODO: CurrentTriangleIndex below might change to above (*)
 	- First off: WalkingBehaviorState remembers CurrentTriangleElementIndex (of primary)
 		- Init'd to None at each transition into Walking
 	- @ UpdateBehavior while walking (or at WalkingUpdate):

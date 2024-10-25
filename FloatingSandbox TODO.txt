@@ -19,7 +19,9 @@
 	- Movie:
 		- Carnival Dream Video, exterior view, plenty of NPCs
 		- Then interior view
-		- Scene 2: zero waves, no fish, furniture all setup and NPCs, then wave from afar
+		- Scene 2: furniture all setup and NPCs, then sinking at other extreme
+			- Prep: zero waves, no fish
+			- Might need to lower friction, depending on ship's bottom
 		- TODOHERE
 
 
@@ -37,9 +39,36 @@
 		+ Thinness: reduce
 			+ Force both extremes synthetically
 			+ Do something for head
-		- Humans and furniture spinning too much around mouse
+		+ Furniture spinning too much around mouse
+			+ Test WholeMesh (SHIFT)
+		+ Friction work
+			+ GameParameters::NpcFrictionAdjustment (for both, default 1)
+			+ NpcDatabase: "FrictionSurfaceAdjustment" - w/comment for surface
+				+ ParticleAttributes: member
+				+ Humans globals: feet & head
+				+ Per-furniture kind
+					+ For all particles
+				+ json
+			+ Npcs:
+				+ Func to calculate: in = material, surface adj, npc adj, global adj => float
+				+ Members at particles: kinetic+static adjustments ("TotalAdjustment")
+				+ At creation
+				+ At param changes
+					+ Separate loop: update particles'
+				+ Use at each friction calculation
+			+ SettingsDialog
+			+ Adjust furniture values
+				+ Dissect both s and k friction coeffs used
+				+ Cart: per-particle, wheels very low and rest very high
+			+ Test human values
+		- Exclude tungsten block from group
+		- Add random NPC
+			- Menu: "Random" as first entry to both Human and Furniture
+			- Npcs: refactor choice into function
+				- Call from AddGroup
+			- Tool and GameController --> Npcs::BeginAdd: SubKindId optional
 
-	- See optimization for OrthoMatrix @ ShipRenderContext
+	+ See optimization for OrthoMatrix @ ShipRenderContext
 
 	+ Perlin noise on Land:
 		+ Figure out first if can have single-float 2D texture: RED channel only?

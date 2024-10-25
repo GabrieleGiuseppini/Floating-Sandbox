@@ -38,6 +38,8 @@ public:
         , mBuoyancyVolumeFillBuffer(maxParticleCount, 0.0f)
         , mMassBuffer(maxParticleCount, 0.0f)
         , mBuoyancyFactorBuffer(maxParticleCount, 0.0f)
+        , mStaticFrictionTotalAdjustmentBuffer(maxParticleCount, 1.0f)
+        , mKineticFrictionTotalAdjustmentBuffer(maxParticleCount, 1.0f)
         , mPositionBuffer(maxParticleCount, vec2f::zero())
         , mVelocityBuffer(maxParticleCount, vec2f::zero())
         , mPreliminaryForcesBuffer(maxParticleCount, vec2f::zero())
@@ -69,6 +71,8 @@ public:
         float buoyancyVolumeFill,
         float buoyancyFactor,
         StructuralMaterial const * material,
+        float staticFrictionTotalAdjustment,
+        float kineticFrictionTotalAdjustment,
         vec2f const & position,
         rgbaColor const & color);
 
@@ -116,6 +120,30 @@ public:
         float value) noexcept
     {
         mBuoyancyFactorBuffer[particleElementIndex] = value;
+    }
+
+    float const GetStaticFrictionTotalAdjustment(ElementIndex particleElementIndex) const noexcept
+    {
+        return mStaticFrictionTotalAdjustmentBuffer[particleElementIndex];
+    }
+
+    void SetStaticFrictionTotalAdjustment(
+        ElementIndex particleElementIndex,
+        float value) noexcept
+    {
+        mStaticFrictionTotalAdjustmentBuffer[particleElementIndex] = value;
+    }
+
+    float const GetKineticFrictionTotalAdjustment(ElementIndex particleElementIndex) const noexcept
+    {
+        return mKineticFrictionTotalAdjustmentBuffer[particleElementIndex];
+    }
+
+    void SetKineticFrictionTotalAdjustment(
+        ElementIndex particleElementIndex,
+        float value) noexcept
+    {
+        mKineticFrictionTotalAdjustmentBuffer[particleElementIndex] = value;
     }
 
     vec2f const & GetPosition(ElementIndex particleElementIndex) const noexcept
@@ -304,6 +332,8 @@ private:
     Buffer<float> mBuoyancyVolumeFillBuffer;
     Buffer<float> mMassBuffer; // Adjusted
     Buffer<float> mBuoyancyFactorBuffer; // Adjusted
+    Buffer<float> mStaticFrictionTotalAdjustmentBuffer;
+    Buffer<float> mKineticFrictionTotalAdjustmentBuffer;
     Buffer<vec2f> mPositionBuffer;
     Buffer<vec2f> mVelocityBuffer;
     Buffer<vec2f> mPreliminaryForcesBuffer;

@@ -245,6 +245,9 @@ struct IGameControllerSettings
     virtual float GetNpcSpringDampingCoefficientAdjustment() const = 0;
     virtual void SetNpcSpringDampingCoefficientAdjustment(float value) = 0;
 
+    virtual float GetNpcFrictionAdjustment() const = 0;
+    virtual void SetNpcFrictionAdjustment(float value) = 0;
+
     virtual float GetNpcSizeMultiplier() const = 0;
     virtual void SetNpcSizeMultiplier(float value) = 0;
 

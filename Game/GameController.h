@@ -668,18 +668,26 @@ public:
     float GetMinNpcSpringReductionFractionAdjustment() const override { return GameParameters::MinNpcSpringReductionFractionAdjustment; }
     float GetMaxNpcSpringReductionFractionAdjustment() const override { return GameParameters::MaxNpcSpringReductionFractionAdjustment; }
 
-    bool GetDoApplyPhysicsToolsToNpcs() const override { return mGameParameters.DoApplyPhysicsToolsToNpcs; }
-    void SetDoApplyPhysicsToolsToNpcs(bool value) override { mGameParameters.DoApplyPhysicsToolsToNpcs = value; }
-
     float GetNpcSpringDampingCoefficientAdjustment() const override { return mGameParameters.NpcSpringDampingCoefficientAdjustment; }
     void SetNpcSpringDampingCoefficientAdjustment(float value) override { mGameParameters.NpcSpringDampingCoefficientAdjustment = value; }
     float GetMinNpcSpringDampingCoefficientAdjustment() const override { return GameParameters::MinNpcSpringDampingCoefficientAdjustment; }
     float GetMaxNpcSpringDampingCoefficientAdjustment() const override { return GameParameters::MaxNpcSpringDampingCoefficientAdjustment; }
 
+    float GetNpcFrictionAdjustment() const override { return mGameParameters.NpcFrictionAdjustment; }
+    void SetNpcFrictionAdjustment(float value) override { mGameParameters.NpcFrictionAdjustment = value; }
+    float GetMinNpcFrictionAdjustment() const override { return GameParameters::MinNpcFrictionAdjustment; }
+    float GetMaxNpcFrictionAdjustment() const override { return GameParameters::MaxNpcFrictionAdjustment; }
+
+    float GetMinNpcWindReceptivityAdjustment() const override { return GameParameters::MinNpcWindReceptivityAdjustment; }
+    float GetMaxNpcWindReceptivityAdjustment() const override { return GameParameters::MaxNpcWindReceptivityAdjustment; }
+
     float GetNpcSizeMultiplier() const override { return mFloatParameterSmoothers[NpcSizeMultiplierParameterSmoother].GetValue(); }
     void SetNpcSizeMultiplier(float value) override { mFloatParameterSmoothers[NpcSizeMultiplierParameterSmoother].SetValue(value); }
     float GetMinNpcSizeMultiplier() const override { return GameParameters::MinNpcSizeMultiplier; }
     float GetMaxNpcSizeMultiplier() const override { return GameParameters::MaxNpcSizeMultiplier; }
+
+    bool GetDoApplyPhysicsToolsToNpcs() const override { return mGameParameters.DoApplyPhysicsToolsToNpcs; }
+    void SetDoApplyPhysicsToolsToNpcs(bool value) override { mGameParameters.DoApplyPhysicsToolsToNpcs = value; }
 
     // Misc
 

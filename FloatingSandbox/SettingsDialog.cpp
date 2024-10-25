@@ -2889,6 +2889,32 @@ void SettingsDialog::PopulateLightsElectricalFishesNpcsPanel(wxPanel * panel)
         {
             wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
 
+            // Friction Adjustment
+            {
+                mNpcFrictionAdjustmentSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Friction Adjust"),
+                    _("Adjusts the friction exherted by and onto NPC particles."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::NpcFrictionAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions.GetMinNpcFrictionAdjustment(),
+                        mGameControllerSettingsOptions.GetMaxNpcFrictionAdjustment()));
+
+                sizer->Add(
+                    mNpcFrictionAdjustmentSlider,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
             // Size Multiplier
             {
                 mNpcSizeMultiplierSlider = new SliderControl<float>(
@@ -2909,7 +2935,7 @@ void SettingsDialog::PopulateLightsElectricalFishesNpcsPanel(wxPanel * panel)
 
                 sizer->Add(
                     mNpcSizeMultiplierSlider,
-                    wxGBPosition(0, 0),
+                    wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
@@ -2940,7 +2966,7 @@ void SettingsDialog::PopulateLightsElectricalFishesNpcsPanel(wxPanel * panel)
 
                 sizer->Add(
                     vSizer,
-                    wxGBPosition(0, 1),
+                    wxGBPosition(0, 2),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
@@ -5948,6 +5974,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mDoFishShoalingCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoFishShoaling));
     mFishShoalRadiusAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::FishShoalRadiusAdjustment));
     mFishShoalRadiusAdjustmentSlider->Enable(settings.GetValue<bool>(GameSettings::DoFishShoaling));
+    mNpcFrictionAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::NpcFrictionAdjustment));
     mNpcSizeMultiplierSlider->SetValue(settings.GetValue<float>(GameSettings::NpcSizeMultiplier));
     mDoApplyPhysicsToolsToNpcsCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoApplyPhysicsToolsToNpcs));
 

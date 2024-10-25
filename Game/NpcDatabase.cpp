@@ -439,7 +439,7 @@ NpcDatabase::FurnitureSubKind NpcDatabase::ParseFurnitureSubKind(
     {
         if (jsonParticleAttributesOverrides->size() == particleCount)
         {
-            // As-is
+            // As-is, one for each particle
             for (auto const & bvfV : *jsonParticleAttributesOverrides)
             {
                 particleAttributes.push_back(
@@ -510,11 +510,13 @@ NpcDatabase::ParticleAttributesType NpcDatabase::MakeParticleAttributes(
     float const buoyancyVolumeFill = Utils::GetOptionalJsonMember<float>(particleAttributesOverrideJsonObject, "buoyancy_volume_fill", defaultParticleAttributes.BuoyancyVolumeFill);
     float const springReductionFraction = Utils::GetOptionalJsonMember<float>(particleAttributesOverrideJsonObject, "spring_reduction_fraction", defaultParticleAttributes.SpringReductionFraction);
     float const springDampingCoefficient = Utils::GetOptionalJsonMember<float>(particleAttributesOverrideJsonObject, "spring_damping_coefficient", defaultParticleAttributes.SpringDampingCoefficient);
+    float const frictionSurfaceAdjustment = Utils::GetOptionalJsonMember<float>(particleAttributesOverrideJsonObject, "friction_surface_adjustment", 1.0f);
 
     return ParticleAttributesType{
         buoyancyVolumeFill,
         springReductionFraction,
-        springDampingCoefficient
+        springDampingCoefficient,
+        frictionSurfaceAdjustment
     };
 }
 
@@ -522,11 +524,13 @@ NpcDatabase::ParticleAttributesType NpcDatabase::MakeDefaultParticleAttributes(S
 {
     float constexpr DefaultSpringReductionFraction = 0.97f;
     float constexpr DefaultSpringDampingCoefficient = 0.5f * 0.906f;
+    float constexpr DefaultFrictionSurfaceAdjustment = 1.0f;
 
     return ParticleAttributesType{
         baseMaterial.BuoyancyVolumeFill,
         DefaultSpringReductionFraction,
-        DefaultSpringDampingCoefficient
+        DefaultSpringDampingCoefficient,
+        DefaultFrictionSurfaceAdjustment
     };
 }
 

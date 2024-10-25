@@ -117,8 +117,7 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(float, FishShoalRadiusAdjustment);
 
     // NPCs
-    ADD_GC_SETTING(float, NpcSpringReductionFractionAdjustment);
-    ADD_GC_SETTING(float, NpcSpringDampingCoefficientAdjustment);
+    ADD_GC_SETTING(float, NpcFrictionAdjustment);
     ADD_GC_SETTING(float, NpcSizeMultiplier);
     ADD_GC_SETTING(bool, DoApplyPhysicsToolsToNpcs);
 

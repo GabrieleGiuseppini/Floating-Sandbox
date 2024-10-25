@@ -62,6 +62,17 @@ void Npcs::Update(
         RecalculateSizeAndMassParameters();
     }
 
+    if (gameParameters.StaticFrictionAdjustment != mCurrentStaticFrictionAdjustment
+        || gameParameters.KineticFrictionAdjustment != mCurrentKineticFrictionAdjustment
+        || gameParameters.NpcFrictionAdjustment != mCurrentNpcFrictionAdjustment)
+    {
+        mCurrentStaticFrictionAdjustment = gameParameters.StaticFrictionAdjustment;
+        mCurrentKineticFrictionAdjustment = gameParameters.KineticFrictionAdjustment;
+        mCurrentNpcFrictionAdjustment = gameParameters.NpcFrictionAdjustment;
+
+        RecalculateFrictionTotalAdjustments();
+    }
+
     if (gameParameters.HumanNpcWalkingSpeedAdjustment != mCurrentHumanNpcWalkingSpeedAdjustment)
     {
         mCurrentHumanNpcWalkingSpeedAdjustment = gameParameters.HumanNpcWalkingSpeedAdjustment;
@@ -401,8 +412,8 @@ NpcKindType Npcs::GetNpcKind(NpcId id)
 std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> Npcs::BeginPlaceNewFurnitureNpc(
     NpcSubKindIdType subKind,
     vec2f const & worldCoordinates,
-    float /*currentSimulationTime*/,
-    bool doMoveWholeMesh)
+    bool doMoveWholeMesh,
+    float /*currentSimulationTime*/)
 {
     int constexpr ParticleOrdinal = 0; // We use primary for furniture
 
@@ -460,11 +471,23 @@ std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> Npcs::BeginPl
 #endif
             );
 
+            float const staticFrictionTotalAdjustment = CalculateFrictionTotalAdjustment(
+                mNpcDatabase.GetFurnitureParticleAttributes(subKind, 0).FrictionSurfaceAdjustment,
+                mCurrentNpcFrictionAdjustment,
+                mCurrentStaticFrictionAdjustment);
+
+            float const kineticFrictionTotalAdjustment = CalculateFrictionTotalAdjustment(
+                mNpcDatabase.GetFurnitureParticleAttributes(subKind, 0).FrictionSurfaceAdjustment,
+                mCurrentNpcFrictionAdjustment,
+                mCurrentKineticFrictionAdjustment);
+
             auto const primaryParticleIndex = mParticles.Add(
                 mass,
                 buoyancyVolumeFill,
                 buoyancyFactor,
                 &furnitureMaterial,
+                staticFrictionTotalAdjustment,
+                kineticFrictionTotalAdjustment,
                 worldCoordinates,
                 furnitureMaterial.RenderColor);
 
@@ -530,11 +553,23 @@ std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> Npcs::BeginPl
 #endif
                 );
 
+                float const staticFrictionTotalAdjustment = CalculateFrictionTotalAdjustment(
+                    mNpcDatabase.GetFurnitureParticleAttributes(subKind, p).FrictionSurfaceAdjustment,
+                    mCurrentNpcFrictionAdjustment,
+                    mCurrentStaticFrictionAdjustment);
+
+                float const kineticFrictionTotalAdjustment = CalculateFrictionTotalAdjustment(
+                    mNpcDatabase.GetFurnitureParticleAttributes(subKind, p).FrictionSurfaceAdjustment,
+                    mCurrentNpcFrictionAdjustment,
+                    mCurrentKineticFrictionAdjustment);
+
                 auto const particleIndex = mParticles.Add(
                     mass,
                     buoyancyVolumeFill,
                     buoyancyFactor * GameRandomEngine::GetInstance().GenerateUniformReal(0.99f, 1.01f), // Make sure rotates while floating
                     &furnitureMaterial,
+                    staticFrictionTotalAdjustment,
+                    kineticFrictionTotalAdjustment,
                     particlePosition,
                     furnitureMaterial.RenderColor);
 
@@ -662,8 +697,8 @@ std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> Npcs::BeginPl
 std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> Npcs::BeginPlaceNewHumanNpc(
     NpcSubKindIdType subKind,
     vec2f const & worldCoordinates,
-    float currentSimulationTime,
-    bool doMoveWholeMesh)
+    bool doMoveWholeMesh,
+    float currentSimulationTime)
 {
     int constexpr ParticleOrdinal = 1; // We use head for humans
 
@@ -713,11 +748,23 @@ std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> Npcs::BeginPl
 #endif
     );
 
+    float const feetStaticFrictionTotalAdjustment = CalculateFrictionTotalAdjustment(
+        mNpcDatabase.GetHumanFeetParticleAttributes(subKind).FrictionSurfaceAdjustment,
+        mCurrentNpcFrictionAdjustment,
+        mCurrentStaticFrictionAdjustment);
+
+    float const feetKineticFrictionTotalAdjustment = CalculateFrictionTotalAdjustment(
+        mNpcDatabase.GetHumanFeetParticleAttributes(subKind).FrictionSurfaceAdjustment,
+        mCurrentNpcFrictionAdjustment,
+        mCurrentKineticFrictionAdjustment);
+
     auto const primaryParticleIndex = mParticles.Add(
         feetMass,
         feetParticleAttributes.BuoyancyVolumeFill,
         feetBuoyancyFactor,
         &feetMaterial,
+        feetStaticFrictionTotalAdjustment,
+        feetKineticFrictionTotalAdjustment,
         worldCoordinates - vec2f(0.0f, height),
         feetMaterial.RenderColor);
 
@@ -744,11 +791,23 @@ std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> Npcs::BeginPl
 #endif
     );
 
+    float const headStaticFrictionTotalAdjustment = CalculateFrictionTotalAdjustment(
+        mNpcDatabase.GetHumanHeadParticleAttributes(subKind).FrictionSurfaceAdjustment,
+        mCurrentNpcFrictionAdjustment,
+        mCurrentStaticFrictionAdjustment);
+
+    float const headKineticFrictionTotalAdjustment = CalculateFrictionTotalAdjustment(
+        mNpcDatabase.GetHumanHeadParticleAttributes(subKind).FrictionSurfaceAdjustment,
+        mCurrentNpcFrictionAdjustment,
+        mCurrentKineticFrictionAdjustment);
+
     auto const secondaryParticleIndex = mParticles.Add(
         headMass,
         headParticleAttributes.BuoyancyVolumeFill,
         headBuoyancyFactor,
         &headMaterial,
+        headStaticFrictionTotalAdjustment,
+        headKineticFrictionTotalAdjustment,
         worldCoordinates,
         headMaterial.RenderColor);
 
@@ -1096,8 +1155,10 @@ void Npcs::MoveNpcTo(
     assert(mStateBuffer[id]->CurrentRegime == StateType::RegimeType::BeingPlaced);
     assert(mStateBuffer[id]->BeingPlacedState.has_value());
 
+    auto & npc = *mStateBuffer[id];
+
     // Calculate delta movement for anchor particle
-    ElementIndex anchorParticleIndex = mStateBuffer[id]->ParticleMesh.Particles[mStateBuffer[id]->BeingPlacedState->AnchorParticleOrdinal].ParticleIndex;
+    ElementIndex anchorParticleIndex = npc.ParticleMesh.Particles[npc.BeingPlacedState->AnchorParticleOrdinal].ParticleIndex;
     vec2f const deltaAnchorPosition = (position - offset) - mParticles.GetPosition(anchorParticleIndex);
 
     // Calculate absolute velocity for this delta movement
@@ -1105,25 +1166,31 @@ void Npcs::MoveNpcTo(
     vec2f const targetAbsoluteVelocity = deltaAnchorPosition / GameParameters::SimulationStepTimeDuration<float> * InertialVelocityFactor;
 
     // Move particles
-    for (int p = 0; p < mStateBuffer[id]->ParticleMesh.Particles.size(); ++p)
+    for (int p = 0; p < npc.ParticleMesh.Particles.size(); ++p)
     {
-        if (doMoveWholeMesh || p == mStateBuffer[id]->BeingPlacedState->AnchorParticleOrdinal)
+        auto const particleIndex = npc.ParticleMesh.Particles[p].ParticleIndex;
+
+        if (doMoveWholeMesh || p == npc.BeingPlacedState->AnchorParticleOrdinal)
         {
-            auto const particleIndex = mStateBuffer[id]->ParticleMesh.Particles[p].ParticleIndex;
             mParticles.SetPosition(particleIndex, mParticles.GetPosition(particleIndex) + deltaAnchorPosition);
             mParticles.SetVelocity(particleIndex, targetAbsoluteVelocity);
 
-            if (mStateBuffer[id]->ParticleMesh.Particles[p].ConstrainedState.has_value())
+            if (npc.ParticleMesh.Particles[p].ConstrainedState.has_value())
             {
                 // We can only assume here, and we assume the ship is still and since the user doesn't move with the ship,
                 // all this velocity is also relative to mesh
-                mStateBuffer[id]->ParticleMesh.Particles[p].ConstrainedState->MeshRelativeVelocity = targetAbsoluteVelocity;
+                npc.ParticleMesh.Particles[p].ConstrainedState->MeshRelativeVelocity = targetAbsoluteVelocity;
             }
+        }
+        else if (npc.ParticleMesh.Particles.size() > 2)
+        {
+            // Brake down particle, or else it spins
+            mParticles.SetVelocity(particleIndex, mParticles.GetVelocity(particleIndex) * 0.75f);
         }
     }
 
     // Update state
-    mStateBuffer[id]->BeingPlacedState->DoMoveWholeMesh = doMoveWholeMesh;
+    npc.BeingPlacedState->DoMoveWholeMesh = doMoveWholeMesh;
 }
 
 void Npcs::EndMoveNpc(
@@ -1498,8 +1565,8 @@ std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> Npcs::AddNpcGroup
                 placementOutcome = BeginPlaceNewFurnitureNpc(
                     subKind,
                     position,
-                    currentSimulationTime,
-                    false);
+                    false,
+                    currentSimulationTime);
 
                 break;
             }
@@ -1515,8 +1582,8 @@ std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> Npcs::AddNpcGroup
                 placementOutcome = BeginPlaceNewHumanNpc(
                     subKind,
                     npcPosition + vec2f(0.0, height), // Head
-                    currentSimulationTime,
-                    false);
+                    false,
+                    currentSimulationTime);
 
                 break;
             }

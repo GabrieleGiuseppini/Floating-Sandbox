@@ -1222,14 +1222,14 @@ void Npcs::UpdateNpcParticlePhysics(
                         // Kinetic friction
                         frictionCoefficient =
                             (mParticles.GetMaterial(npcParticle.ParticleIndex).KineticFrictionCoefficient + meshMaterial.KineticFrictionCoefficient) / 2.0f
-                            * gameParameters.KineticFrictionAdjustment;
+                            * mParticles.GetKineticFrictionTotalAdjustment(npcParticle.ParticleIndex);
                     }
                     else
                     {
                         // Static friction
                         frictionCoefficient =
                             (mParticles.GetMaterial(npcParticle.ParticleIndex).StaticFrictionCoefficient + meshMaterial.StaticFrictionCoefficient) / 2.0f
-                            * gameParameters.StaticFrictionAdjustment;
+                            * mParticles.GetStaticFrictionTotalAdjustment(npcParticle.ParticleIndex);
                     }
 
                     // Calculate friction (integrated) force magnitude (along edgeDir),
@@ -2080,6 +2080,74 @@ float Npcs::CalculateParticleBuoyancyFactor(
         ;
 
     return buoyancyFactor;
+}
+
+void Npcs::RecalculateFrictionTotalAdjustments()
+{
+    for (auto & state : mStateBuffer)
+    {
+        if (state.has_value())
+        {
+            for (int p = 0; p < state->ParticleMesh.Particles.size(); ++p)
+            {
+                auto const particleIndex = state->ParticleMesh.Particles[p].ParticleIndex;
+
+                switch (state->Kind)
+                {
+                    case NpcKindType::Furniture:
+                    {
+                        mParticles.SetStaticFrictionTotalAdjustment(particleIndex,
+                            CalculateFrictionTotalAdjustment(
+                                mNpcDatabase.GetFurnitureParticleAttributes(state->KindSpecificState.FurnitureNpcState.SubKindId, p).FrictionSurfaceAdjustment,
+                                mCurrentNpcFrictionAdjustment,
+                                mCurrentStaticFrictionAdjustment));
+
+                        mParticles.SetKineticFrictionTotalAdjustment(particleIndex,
+                            CalculateFrictionTotalAdjustment(
+                                mNpcDatabase.GetFurnitureParticleAttributes(state->KindSpecificState.FurnitureNpcState.SubKindId, p).FrictionSurfaceAdjustment,
+                                mCurrentNpcFrictionAdjustment,
+                                mCurrentKineticFrictionAdjustment));
+
+                        break;
+                    }
+
+                    case NpcKindType::Human:
+                    {
+                        assert(p == 0 || p == 1);
+
+                        float const frictionSurfaceAdjustment = (p == 0)
+                            ? mNpcDatabase.GetHumanFeetParticleAttributes(state->KindSpecificState.FurnitureNpcState.SubKindId).FrictionSurfaceAdjustment
+                            : mNpcDatabase.GetHumanHeadParticleAttributes(state->KindSpecificState.FurnitureNpcState.SubKindId).FrictionSurfaceAdjustment;
+
+                        mParticles.SetStaticFrictionTotalAdjustment(particleIndex,
+                            CalculateFrictionTotalAdjustment(
+                                frictionSurfaceAdjustment,
+                                mCurrentNpcFrictionAdjustment,
+                                mCurrentStaticFrictionAdjustment));
+
+                        mParticles.SetKineticFrictionTotalAdjustment(particleIndex,
+                            CalculateFrictionTotalAdjustment(
+                                frictionSurfaceAdjustment,
+                                mCurrentNpcFrictionAdjustment,
+                                mCurrentKineticFrictionAdjustment));
+
+                        break;
+                    }
+                }
+            }
+        }
+    }
+}
+
+float Npcs::CalculateFrictionTotalAdjustment(
+    float npcSurfaceFrictionAdjustment,
+    float npcAdjustment,
+    float globalAdjustment)
+{
+    return
+        npcSurfaceFrictionAdjustment
+        * npcAdjustment
+        * globalAdjustment;
 }
 
 void Npcs::CalculateSprings(
@@ -3364,7 +3432,7 @@ void Npcs::BounceConstrainedNpcParticle(
         float const materialFrictionCoefficient = (particles.GetMaterial(npcParticle.ParticleIndex).KineticFrictionCoefficient + meshMaterial.KineticFrictionCoefficient) / 2.0f;
         vec2f const tangentialResponse =
             tangentialVelocity
-            * std::max(0.0f, 1.0f - materialFrictionCoefficient * gameParameters.KineticFrictionAdjustment);
+            * std::max(0.0f, 1.0f - materialFrictionCoefficient * particles.GetKineticFrictionTotalAdjustment(npcParticle.ParticleIndex));
 
         // Calculate whole response (which, given that we've been working in *apparent* space (we've calc'd the collision response to *trajectory* which is apparent displacement)),
         // is a relative velocity (relative to mesh)
@@ -3514,7 +3582,7 @@ void Npcs::MaintainOverLand(
             // Calculate tangential response: Vt' = a*Vt (a = (1.0-friction), [0.0 - 1.0])
             vec2f const tangentialResponse =
                 tangentialVelocity
-                * std::max(0.0f, 1.0f - mParticles.GetMaterial(p).KineticFrictionCoefficient * gameParameters.KineticFrictionAdjustment); // For lazyness
+                * std::max(0.0f, 1.0f - mParticles.GetMaterial(p).KineticFrictionCoefficient * mParticles.GetKineticFrictionTotalAdjustment(p)); // For lazyness
 
             //
             // Impart final position and velocity

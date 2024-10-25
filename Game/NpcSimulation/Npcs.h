@@ -806,6 +806,9 @@ public:
 		, mCurrentHumanNpcWalkingSpeedAdjustment(1.0f)
 		, mCurrentSpringReductionFractionAdjustment(1.0f)
 		, mCurrentSpringDampingCoefficientAdjustment(1.0f)
+		, mCurrentStaticFrictionAdjustment(1.0f)
+		, mCurrentKineticFrictionAdjustment(1.0f)
+		, mCurrentNpcFrictionAdjustment(1.0f)
 	{
 		RecalculateGlobalDampingFactor();
 	}
@@ -851,14 +854,14 @@ public:
 	std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> BeginPlaceNewFurnitureNpc(
 		NpcSubKindIdType subKind,
 		vec2f const & worldCoordinates,
-		float currentSimulationTime,
-		bool doMoveWholeMesh);
+		bool doMoveWholeMesh,
+		float currentSimulationTime);
 
 	std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> BeginPlaceNewHumanNpc(
 		NpcSubKindIdType subKind,
 		vec2f const & worldCoordinates,
-		float currentSimulationTime,
-		bool doMoveWholeMesh);
+		bool doMoveWholeMesh,
+		float currentSimulationTime);
 
 	std::optional<PickedNpc> ProbeNpcAt(
 		vec2f const & position,
@@ -1232,6 +1235,13 @@ private:
 		, float buoyancyAdjustment
 #endif
 		);
+
+	void RecalculateFrictionTotalAdjustments();
+
+	static float CalculateFrictionTotalAdjustment(
+		float npcSurfaceFrictionAdjustment,
+		float npcAdjustment,
+		float globalAdjustment);
 
 	static void CalculateSprings(
 		float sizeMultiplier,
@@ -1829,6 +1839,9 @@ private:
 	float mCurrentHumanNpcWalkingSpeedAdjustment;
 	float mCurrentSpringReductionFractionAdjustment;
 	float mCurrentSpringDampingCoefficientAdjustment;
+	float mCurrentStaticFrictionAdjustment;
+	float mCurrentKineticFrictionAdjustment;
+	float mCurrentNpcFrictionAdjustment;
 
 #ifdef IN_BARYLAB
 

@@ -89,6 +89,7 @@ GameParameters::GameParameters()
     // NPCs
     , NpcSpringReductionFractionAdjustment(1.0f)
     , NpcSpringDampingCoefficientAdjustment(1.0f)
+    , NpcFrictionAdjustment(1.0f)
     , NpcWindReceptivityAdjustment(6.0f)
     , NpcSizeMultiplier(1.0f)
     , DoApplyPhysicsToolsToNpcs(true)

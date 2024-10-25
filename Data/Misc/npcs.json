@@ -4,16 +4,18 @@
             "head_material": "NPC Human Head",
             "head_particle_attributes_overrides": {
                 "spring_damping_coefficient": 0.5,
-                "spring_reduction_fraction": 0.39
+                "spring_reduction_fraction": 0.39,
+		"friction_surface_adjustment": 0.5
             },
             "feet_material": "NPC Human Feet",
             "feet_particle_attributes_overrides": {
                 "spring_damping_coefficient": 0.5,
-                "spring_reduction_fraction": 0.39
+                "spring_reduction_fraction": 0.39,
+		"friction_surface_adjustment": 0.9
             },
 	    "texture_geometry_comments": [
-		"Head length fraction: we want it 0.2 * textureH/16, and then alpha_reduction=0.76",
-		"From this come torso and leg length fractions, as each simply half of the remaining with a head of 16x16",
+		"Head length fraction: we want it 0.2 * headTextureH/16, and then alpha_reduction=0.76",
+		"From this come torso and leg length fractions, as each simply half of the remainder of a 16x16 head",
 		"Torso W/H ratio: we want it textureW/textureH, and then alpha_reduction=0.79",
 		"Here we address most common dimensions: head=16x17, torso=22x32"
 	    ],
@@ -781,7 +783,8 @@
                     "height": 0.8,
                     "particle_attributes_overrides": [
                         {
-                            "buoyancy_volume_fill": 0.07
+                            "buoyancy_volume_fill": 0.07,
+			    "friction_surface_adjustment": 0.4
                         }
                     ]
                 },
@@ -797,7 +800,8 @@
                     "height": 0.8,
                     "particle_attributes_overrides": [
                         {
-                            "buoyancy_volume_fill": 0.7
+                            "buoyancy_volume_fill": 0.7,
+			    "friction_surface_adjustment": 0.4
                         }
                     ]
                 },
@@ -813,7 +817,8 @@
                     "height": 0.8,
                     "particle_attributes_overrides": [
                         {
-                            "buoyancy_volume_fill": 0.0847
+                            "buoyancy_volume_fill": 0.0847,
+			    "friction_surface_adjustment": 0.4
                         }
                     ]
                 },
@@ -829,7 +834,8 @@
                     "height": 0.3,
                     "particle_attributes_overrides": [
                         {
-                            "buoyancy_volume_fill": 0.0847
+                            "buoyancy_volume_fill": 0.0847,
+			    "friction_surface_adjustment": 1.0
                         }
                     ]
                 },
@@ -845,7 +851,8 @@
                     "height": 0.3,
                     "particle_attributes_overrides": [
                         {
-                            "buoyancy_volume_fill": 0.06
+                            "buoyancy_volume_fill": 0.06,
+			    "friction_surface_adjustment": 0.9
                         }
                     ]
                 },
@@ -861,7 +868,8 @@
                     "height": 0.3,
                     "particle_attributes_overrides": [
                         {
-                            "buoyancy_volume_fill": 0.05
+                            "buoyancy_volume_fill": 0.05,
+			    "friction_surface_adjustment": 0.8
                         }
                     ]
                 },
@@ -877,9 +885,22 @@
                     "height": 0.65,
                     "particle_attributes_overrides": [
                         {
-                            "buoyancy_volume_fill": 0.7
+                            "buoyancy_volume_fill": 0.7,
+			    "friction_surface_adjustment": 0.7
+                        },
+                        {
+                            "buoyancy_volume_fill": 0.7,
+			    "friction_surface_adjustment": 0.7
+                        },
+                        {
+                            "buoyancy_volume_fill": 0.7,
+			    "friction_surface_adjustment": 0.15
+                        },
+                        {
+                            "buoyancy_volume_fill": 0.7,
+			    "friction_surface_adjustment": 0.15
                         }
-                    ]
+		    ]
                 },
                 "texture_filename_stem": "coal_cart",
                 "render_color": "#50684A"
@@ -909,7 +930,8 @@
                     "height": 0.8,
                     "particle_attributes_overrides": [
                         {
-                            "buoyancy_volume_fill": 0.0847
+                            "buoyancy_volume_fill": 0.0847,
+			    "friction_surface_adjustment": 0.6
                         }
                     ]
                 },
@@ -925,7 +947,8 @@
                     "height": 0.8,
                     "particle_attributes_overrides": [
                         {
-                            "buoyancy_volume_fill": 0.0847
+                            "buoyancy_volume_fill": 0.0847,
+			    "friction_surface_adjustment": 0.6
                         }
                     ]
                 },
@@ -941,7 +964,8 @@
                     "height": 0.72,
                     "particle_attributes_overrides": [
                         {
-                            "buoyancy_volume_fill": 0.0847
+                            "buoyancy_volume_fill": 0.0847,
+			    "friction_surface_adjustment": 0.85
                         }
                     ]
                 },
@@ -957,7 +981,8 @@
                     "height": 0.72,
                     "particle_attributes_overrides": [
                         {
-                            "buoyancy_volume_fill": 0.75
+                            "buoyancy_volume_fill": 0.75,
+			    "friction_surface_adjustment": 0.6
                         }
                     ]
                 },
@@ -1021,7 +1046,8 @@
                     "height": 0.4,
                     "particle_attributes_overrides": [
                         {
-                            "buoyancy_volume_fill": 0.0847
+                            "buoyancy_volume_fill": 0.0847,
+			    "friction_surface_adjustment": 0.45
                         }
                     ]
                 },
@@ -1037,7 +1063,8 @@
                     "height": 0.4,
                     "particle_attributes_overrides": [
                         {
-                            "buoyancy_volume_fill": 0.0847
+                            "buoyancy_volume_fill": 0.0847,
+			    "friction_surface_adjustment": 0.35
                         }
                     ]
                 },
@@ -1084,7 +1111,8 @@
                     "kind": "Particle",
                     "particle_attributes_overrides": [
                         {
-                            "buoyancy_volume_fill": 0.0847
+                            "buoyancy_volume_fill": 0.0847,
+			    "friction_surface_adjustment": 0.1
                         }
                     ]
                 },

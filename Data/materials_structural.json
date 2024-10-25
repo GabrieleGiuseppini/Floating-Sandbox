@@ -1445,8 +1445,8 @@
             ],
             "combustion_type": "Combustion",
             "elasticity_coefficient": 0.5,
-            "friction_kinetic_coefficient": 0.3,
-            "friction_static_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.69,
+            "friction_static_coefficient": 1.25,
             "ignition_temperature": 453.0,
             "is_hull": false,
             "mass": {

@@ -16,6 +16,8 @@ ElementIndex NpcParticles::Add(
     float buoyancyVolumeFill,
     float buoyancyFactor,
     StructuralMaterial const * material,
+    float staticFrictionTotalAdjustment,
+    float kineticFrictionTotalAdjustment,
     vec2f const & position,
     rgbaColor const & color)
 {
@@ -28,6 +30,8 @@ ElementIndex NpcParticles::Add(
     mBuoyancyVolumeFillBuffer[p] = buoyancyVolumeFill;
     mMassBuffer[p] = mass;
     mBuoyancyFactorBuffer[p] = buoyancyFactor;
+    mStaticFrictionTotalAdjustmentBuffer[p] = staticFrictionTotalAdjustment;
+    mKineticFrictionTotalAdjustmentBuffer[p] = kineticFrictionTotalAdjustment;
     mPositionBuffer[p] = position;
     mVelocityBuffer[p] = vec2f::zero();
     mPreliminaryForcesBuffer[p] = vec2f::zero();
