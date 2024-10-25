@@ -61,7 +61,7 @@
 				+ Dissect both s and k friction coeffs used
 				+ Cart: per-particle, wheels very low and rest very high
 			+ Test human values
-		- Exclude tungsten block from group
+		+ Exclude tungsten block from group
 		- Add random NPC
 			- Menu: "Random" as first entry to both Human and Furniture
 			- Npcs: refactor choice into function

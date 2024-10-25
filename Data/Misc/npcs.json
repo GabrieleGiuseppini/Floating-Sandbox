@@ -1089,7 +1089,7 @@
             },
             {
                 "name": "Tungsten Block",
-                "role": "Furniture",
+                "role": "Other",
                 "material": "Tungsten Hull",
                 "particle_mesh": {
                     "kind": "Quad",

@@ -1308,7 +1308,7 @@ std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> Npcs::AddNpcGroup
         {
             case NpcKindType::Furniture:
             {
-                // Trivial choice
+                // Furniture
                 auto const & furnitureRoles = mNpcDatabase.GetFurnitureSubKindIdsByRole()[static_cast<size_t>(NpcFurnitureRoleType::Furniture)];
                 size_t iSubKind = GameRandomEngine::GetInstance().Choose(furnitureRoles.size());
                 subKind = furnitureRoles[iSubKind];
