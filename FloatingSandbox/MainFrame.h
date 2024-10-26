@@ -417,7 +417,7 @@ private:
     void ReconciliateUIWithUIPreferencesAndSettings();
     void ReconciliateUIWithFishPresence(bool areFishPresent);
     void ReconciliateUIWithNpcPresence(bool areNpcsPresent);
-    void ReconciliateAddNpcSubItems();
+    void ReconciliateAddNpcSubItems(ToolType toolType);
     void ReconciliateUIWithAutoFocusTarget(std::optional<AutoFocusTargetKindType> target);
     void ReconciliateShipViewModeWithCurrentTool();
 

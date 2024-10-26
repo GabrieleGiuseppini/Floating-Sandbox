@@ -2586,7 +2586,7 @@ void MainFrame::OnNonNpcToolSelected(ToolType toolType)
     }
 
     // Reconciliate AddNpc sub-menu items
-    ReconciliateAddNpcSubItems();
+    ReconciliateAddNpcSubItems(toolType);
 
     // Reconciliate ship view mode
     ReconciliateShipViewModeWithCurrentTool();
@@ -2617,7 +2617,7 @@ void MainFrame::OnNpcToolSelected(ToolType toolType)
     }
 
     // Reconciliate AddNpc sub-menu items
-    ReconciliateAddNpcSubItems();
+    ReconciliateAddNpcSubItems(toolType);
 
     // Reconciliate ship view mode
     ReconciliateShipViewModeWithCurrentTool();
@@ -2752,20 +2752,20 @@ void MainFrame::ReconciliateUIWithNpcPresence(bool areNpcsPresent)
     }
 }
 
-void MainFrame::ReconciliateAddNpcSubItems()
+void MainFrame::ReconciliateAddNpcSubItems(ToolType toolType)
 {
     assert(!!mToolController);
 
     auto const selectedHumanSubKind = mToolController->GetCurrentAddHumanNpcSubKind();
     for (auto & entry : mAddHumanNpcSubMenuItems)
     {
-        std::get<1>(entry)->Check(std::get<0>(entry) == selectedHumanSubKind);
+        std::get<1>(entry)->Check(toolType == ToolType::PlaceHumanNpc && std::get<0>(entry) == selectedHumanSubKind);
     }
 
     auto const selectedFurnitureSubKind = mToolController->GetCurrentAddFurnitureNpcSubKind();
     for (auto & entry : mAddFurnitureNpcSubMenuItems)
     {
-        std::get<1>(entry)->Check(std::get<0>(entry) == selectedFurnitureSubKind);
+        std::get<1>(entry)->Check(toolType == ToolType::PlaceFurnitureNpc && std::get<0>(entry) == selectedFurnitureSubKind);
     }
 }
 
