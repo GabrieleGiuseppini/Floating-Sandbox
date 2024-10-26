@@ -77,10 +77,10 @@
 				X 2: move spring forcing _after_ update
 			= Rearc 1:
 				+ Move NpcUpdate code to own helper
-				- Commit
+				+ Commit
 				- MoveNpc:
 					- Anchor moves and sets clamped velocity
-					- Others move and add clamped velocity OR set clamped velocity (if whole mesh)
+					- Others move and add clamped velocity OR set clamped velocity if whole mesh
 				- UpdateNpc:
 					+ Anchor or WholeMesh does nothing
 					- Others:
