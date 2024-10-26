@@ -67,13 +67,27 @@
 			+ Npcs: refactor choice into function
 				+ Call from AddGroup
 			+ Tool and GameController --> Npcs::BeginAdd: SubKindId optional
-		= Check again placement
-			= Shouldn't impart all that velocity when leaving
-				! It's the seco'd following primary's new position and thus gaining that velocity
-				+ Plan:
-					+ Clamp V for those moved @ Move
-					+ Clamp V for those updated @ Update
-			X 2: move spring forcing _after_ update
+		= Redo placement
+			= Pre-work:
+				X Shouldn't impart all that velocity when leaving
+					! It's the seco'd following primary's new position and thus gaining that velocity
+					+ Plan:
+						+ Clamp V for those moved @ Move
+						+ Clamp V for those updated @ Update
+				X 2: move spring forcing _after_ update
+			= Rearc 1:
+				+ Move NpcUpdate code to own helper
+				- Commit
+				- MoveNpc:
+					- Anchor moves and sets clamped velocity
+					- Others move and add clamped velocity OR set clamped velocity (if whole mesh)
+				- UpdateNpc:
+					+ Anchor or WholeMesh does nothing
+					- Others:
+						- TODOHERE
+
+
+
 			- If can ensure no folding occurs, then can lower (increase) placement damp
 
 		+ MainFrame: first call to ReconciliateAddNpcSubItems will check both furniture and human

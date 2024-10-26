@@ -1263,6 +1263,12 @@ private:
 
 	void RecalculateGlobalDampingFactor();
 
+	void UpdateNpcParticle_BeingPlaced(
+		StateType & npc,
+		int npcParticleOrdinal,
+		vec2f physicsDeltaPos,
+		NpcParticles & particles) const;
+
 	void UpdateNpcParticle_Free(
 		StateType::NpcParticleStateType & particle,
 		vec2f const & startPosition,

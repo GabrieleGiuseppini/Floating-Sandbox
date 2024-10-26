@@ -728,14 +728,19 @@ void Npcs::UpdateNpcParticlePhysics(
             " f=", (physicalForces / particleMass) * dt * dt, ")");
     }
 
-    if (npc.CurrentRegime == StateType::RegimeType::BeingPlaced
-        && (npc.BeingPlacedState->DoMoveWholeMesh || npcParticleOrdinal == npc.BeingPlacedState->AnchorParticleOrdinal))
+
+    if (npc.CurrentRegime == StateType::RegimeType::BeingPlaced)
     {
         //
-        // Particle is being placed - nothing to do
+        // Being placed
         //
 
-        LogNpcDebug("    Being placed");
+
+        UpdateNpcParticle_BeingPlaced(
+            npc,
+            npcParticleOrdinal,
+            physicsDeltaPos,
+            mParticles);
     }
     else if (!npcParticle.ConstrainedState.has_value())
     {
@@ -746,60 +751,11 @@ void Npcs::UpdateNpcParticlePhysics(
         LogNpcDebug("    Free: velocity=", mParticles.GetVelocity(npcParticle.ParticleIndex), " prelimF=", mParticles.GetPreliminaryForces(npcParticle.ParticleIndex), " physicsDeltaPos=", physicsDeltaPos);
         LogNpcDebug("    StartPosition=", particleStartAbsolutePosition, " StartVelocity=", mParticles.GetVelocity(npcParticle.ParticleIndex));
 
-        // Strive to maintain spring lengths if we're being placed
-        if (npc.CurrentRegime == StateType::RegimeType::BeingPlaced
-            && npcParticleOrdinal != npc.BeingPlacedState->AnchorParticleOrdinal
-            && npc.ParticleMesh.Springs.size() > 0)
-        {
-            for (int p = 0; ; )
-            {
-                // Decide next endpoint of spring: previous, unless this is 0,
-                // in which case we go for anchor
-
-                int otherP;
-                if (npcParticleOrdinal == 0)
-                {
-                    assert(npc.BeingPlacedState->AnchorParticleOrdinal > 0);
-                    otherP = npc.BeingPlacedState->AnchorParticleOrdinal;
-                }
-                else
-                {
-                    otherP = p;
-                }
-
-                assert(otherP != npcParticleOrdinal);
-
-                // Adjust physicsDeltaPos to maintain spring length
-
-                int const s = GetSpringAmongEndpoints(npcParticleOrdinal, otherP, npc.ParticleMesh);
-                float const targetSpringLength = npc.ParticleMesh.Springs[s].RestLength;
-                vec2f const & otherPPosition = mParticles.GetPosition(npc.ParticleMesh.Particles[otherP].ParticleIndex);
-                vec2f const particleAdjustedPosition =
-                    otherPPosition
-                    + (particleStartAbsolutePosition + physicsDeltaPos - otherPPosition).normalise() * targetSpringLength;
-                physicsDeltaPos = particleAdjustedPosition - particleStartAbsolutePosition;
-
-                // Advance
-
-                p = otherP + 1;
-                if (p >= npcParticleOrdinal)
-                {
-                    break;
-                }
-            }
-        }
-
         UpdateNpcParticle_Free(
             npcParticle,
             particleStartAbsolutePosition,
             particleStartAbsolutePosition + physicsDeltaPos,
             mParticles);
-
-        // TODOTEST
-        if (npc.CurrentRegime == StateType::RegimeType::BeingPlaced)
-        {
-            mParticles.SetVelocity(npcParticle.ParticleIndex, ClampPlacementVelocity(mParticles.GetVelocity(npcParticle.ParticleIndex)));
-        }
 
         LogNpcDebug("    EndPosition=", mParticles.GetPosition(npcParticle.ParticleIndex), " EndVelocity=", mParticles.GetVelocity(npcParticle.ParticleIndex));
 
@@ -2215,6 +2171,103 @@ float Npcs::CalculateSpringLength(
 void Npcs::RecalculateGlobalDampingFactor()
 {
     mGlobalDampingFactor = 1.0f - GameParameters::NpcDamping * mCurrentGlobalDampingAdjustment;
+}
+
+void Npcs::UpdateNpcParticle_BeingPlaced(
+    StateType & npc,
+    int npcParticleOrdinal,
+    vec2f physicsDeltaPos,
+    NpcParticles & particles) const
+{
+    assert(npc.CurrentRegime == StateType::RegimeType::BeingPlaced);
+
+    LogNpcDebug("    Being placed");
+
+    if (npc.BeingPlacedState->DoMoveWholeMesh || npcParticleOrdinal == npc.BeingPlacedState->AnchorParticleOrdinal)
+    {
+        //
+        // Particle is moved independently and fixed - nothing to do
+        //
+    }
+    else
+    {
+        //
+        // Particle is moved dependently
+        //
+
+        auto const & npcParticle = npc.ParticleMesh.Particles[npcParticleOrdinal];
+        assert(!npcParticle.ConstrainedState.has_value());
+
+        vec2f const & startPosition = particles.GetPosition(npcParticle.ParticleIndex);
+
+        // Strive to maintain spring lengths if we're being placed
+        if (npc.CurrentRegime == StateType::RegimeType::BeingPlaced
+            && npcParticleOrdinal != npc.BeingPlacedState->AnchorParticleOrdinal
+            && npc.ParticleMesh.Springs.size() > 0)
+        {
+            for (int p = 0; ; )
+            {
+                // Decide next endpoint of spring: previous, unless this is 0,
+                // in which case we go for anchor
+
+                int otherP;
+                if (npcParticleOrdinal == 0)
+                {
+                    assert(npc.BeingPlacedState->AnchorParticleOrdinal > 0);
+                    otherP = npc.BeingPlacedState->AnchorParticleOrdinal;
+                }
+                else
+                {
+                    otherP = p;
+                }
+
+                assert(otherP != npcParticleOrdinal);
+
+                // Adjust physicsDeltaPos to maintain spring length
+
+                int const s = GetSpringAmongEndpoints(npcParticleOrdinal, otherP, npc.ParticleMesh);
+                float const targetSpringLength = npc.ParticleMesh.Springs[s].RestLength;
+                vec2f const & otherPPosition = mParticles.GetPosition(npc.ParticleMesh.Particles[otherP].ParticleIndex);
+                vec2f const particleAdjustedPosition =
+                    otherPPosition
+                    + (startPosition + physicsDeltaPos - otherPPosition).normalise() * targetSpringLength;
+                physicsDeltaPos = particleAdjustedPosition - startPosition;
+
+                // Advance
+
+                p = otherP + 1;
+                if (p >= npcParticleOrdinal)
+                {
+                    break;
+                }
+            }
+        }
+
+        //
+        // Update physics
+        //
+
+        float constexpr dt = GameParameters::SimulationStepTimeDuration<float>;
+
+        vec2f const endPosition = startPosition + physicsDeltaPos;
+
+        // Update position
+        particles.SetPosition(
+            npcParticle.ParticleIndex,
+            endPosition);
+
+        // Update velocity
+        // Use whole time quantum for velocity, as communicated start/end positions are those planned for whole dt
+        particles.SetVelocity(
+            npcParticle.ParticleIndex,
+            physicsDeltaPos / dt * mGlobalDampingFactor);
+
+        // TODOTEST
+        if (npc.CurrentRegime == StateType::RegimeType::BeingPlaced)
+        {
+            particles.SetVelocity(npcParticle.ParticleIndex, ClampPlacementVelocity(particles.GetVelocity(npcParticle.ParticleIndex)));
+        }
+    }
 }
 
 void Npcs::UpdateNpcParticle_Free(
