@@ -795,6 +795,12 @@ void Npcs::UpdateNpcParticlePhysics(
             particleStartAbsolutePosition + physicsDeltaPos,
             mParticles);
 
+        // TODOTEST
+        if (npc.CurrentRegime == StateType::RegimeType::BeingPlaced)
+        {
+            mParticles.SetVelocity(npcParticle.ParticleIndex, ClampPlacementVelocity(mParticles.GetVelocity(npcParticle.ParticleIndex)));
+        }
+
         LogNpcDebug("    EndPosition=", mParticles.GetPosition(npcParticle.ParticleIndex), " EndVelocity=", mParticles.GetVelocity(npcParticle.ParticleIndex));
 
         // Update total distance traveled

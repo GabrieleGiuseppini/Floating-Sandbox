@@ -1172,8 +1172,7 @@ void Npcs::MoveNpcTo(
     vec2f const deltaAnchorPosition = (position - offset) - mParticles.GetPosition(anchorParticleIndex);
 
     // Calculate absolute velocity for this delta movement
-    float constexpr InertialVelocityFactor = 0.4f; // Magic number for how much velocity we impart
-    vec2f const targetAbsoluteVelocity = deltaAnchorPosition / GameParameters::SimulationStepTimeDuration<float> * InertialVelocityFactor;
+    vec2f const targetAbsoluteVelocity = ClampPlacementVelocity(deltaAnchorPosition / GameParameters::SimulationStepTimeDuration<float>);
 
     // Move particles
     for (int p = 0; p < npc.ParticleMesh.Particles.size(); ++p)
@@ -1192,12 +1191,13 @@ void Npcs::MoveNpcTo(
                 npc.ParticleMesh.Particles[p].ConstrainedState->MeshRelativeVelocity = targetAbsoluteVelocity;
             }
         }
-        else if (npc.ParticleMesh.Particles.size() > 2)
-        {
-            // Brake down particle, or else it spins
-            float constexpr DampFactor = 0.75f;
-            mParticles.SetVelocity(particleIndex, mParticles.GetVelocity(particleIndex) * DampFactor);
-        }
+        ////// TODOTEST
+        ////else if (npc.ParticleMesh.Particles.size() > 2)
+        ////{
+        ////    // Brake down particle, or else it spins
+        ////    float constexpr DampFactor = 0.75f;
+        ////    mParticles.SetVelocity(particleIndex, mParticles.GetVelocity(particleIndex) * DampFactor);
+        ////}
     }
 
     // Update state
