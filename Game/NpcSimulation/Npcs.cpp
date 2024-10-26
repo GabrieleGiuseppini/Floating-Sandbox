@@ -1183,13 +1183,6 @@ void Npcs::MoveNpcTo(
         {
             mParticles.SetPosition(particleIndex, mParticles.GetPosition(particleIndex) + deltaAnchorPosition);
             mParticles.SetVelocity(particleIndex, targetAbsoluteVelocity);
-
-            if (npc.ParticleMesh.Particles[p].ConstrainedState.has_value())
-            {
-                // We can only assume here, and we assume the ship is still and since the user doesn't move with the ship,
-                // all this velocity is also relative to mesh
-                npc.ParticleMesh.Particles[p].ConstrainedState->MeshRelativeVelocity = targetAbsoluteVelocity;
-            }
         }
         ////// TODOTEST
         ////else if (npc.ParticleMesh.Particles.size() > 2)
@@ -1198,6 +1191,9 @@ void Npcs::MoveNpcTo(
         ////    float constexpr DampFactor = 0.75f;
         ////    mParticles.SetVelocity(particleIndex, mParticles.GetVelocity(particleIndex) * DampFactor);
         ////}
+
+        // No worries about mesh-relative velocity
+        assert(!npc.ParticleMesh.Particles[p].ConstrainedState.has_value());
     }
 
     // Update state

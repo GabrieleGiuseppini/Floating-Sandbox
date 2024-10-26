@@ -2249,12 +2249,10 @@ void Npcs::UpdateNpcParticle_BeingPlaced(
 
         float constexpr dt = GameParameters::SimulationStepTimeDuration<float>;
 
-        vec2f const endPosition = startPosition + physicsDeltaPos;
-
         // Update position
         particles.SetPosition(
             npcParticle.ParticleIndex,
-            endPosition);
+            startPosition + physicsDeltaPos);
 
         // Update velocity
         // Use whole time quantum for velocity, as communicated start/end positions are those planned for whole dt
@@ -2263,10 +2261,7 @@ void Npcs::UpdateNpcParticle_BeingPlaced(
             physicsDeltaPos / dt * mGlobalDampingFactor);
 
         // TODOTEST
-        if (npc.CurrentRegime == StateType::RegimeType::BeingPlaced)
-        {
-            particles.SetVelocity(npcParticle.ParticleIndex, ClampPlacementVelocity(particles.GetVelocity(npcParticle.ParticleIndex)));
-        }
+        particles.SetVelocity(npcParticle.ParticleIndex, ClampPlacementVelocity(particles.GetVelocity(npcParticle.ParticleIndex)));
     }
 }
 
