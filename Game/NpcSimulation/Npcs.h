@@ -1716,7 +1716,7 @@ private:
 	static vec2f ClampPlacementVelocity(vec2f const & velocity)
 	{
 		float const length = velocity.length();
-		return velocity.normalise(length) * std::min(length, 8.0f);
+		return velocity.normalise(length) * std::min(length, 10.0f);
 	}
 
 	static vec2f CalculateSpringVector(ElementIndex primaryParticleIndex, ElementIndex secondaryParticleIndex, NpcParticles const & particles)

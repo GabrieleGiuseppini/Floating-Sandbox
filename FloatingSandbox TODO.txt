@@ -68,16 +68,22 @@
 				+ Call from AddGroup
 			+ Tool and GameController --> Npcs::BeginAdd: SubKindId optional
 		= Redo placement
-			= Pre-work:
-				X Shouldn't impart all that velocity when leaving
-					! It's the seco'd following primary's new position and thus gaining that velocity
-					+ Plan:
-						+ Clamp V for those moved @ Move
-						+ Clamp V for those updated @ Update
+			+ Shouldn't impart all that velocity when leaving
+				! It's the seco'd following primary's new position and thus gaining that velocity
+				+ Plan:
+					+ Clamp V for those moved @ Move
+					+ Clamp V for those updated @ Update
 				X 2: move spring forcing _after_ update
-			= Rearc 1:
-				+ Move NpcUpdate code to own helper
-				+ Commit
+			+ Move NpcUpdate code to own helper
+			! Problem analysis:
+				! When we enter UpdateNpc for a non-achored particle, deltaPos already contains a humongous - albeit 
+			- Fold auto-detection
+			- Test:
+				- WholeMesh
+			- Cleanups
+				- ClampPlacementVelocity to vec2f
+
+			BOTCHED:
 				- MoveNpc:
 					- Anchor moves and sets clamped velocity
 					- Others move and add clamped velocity OR set clamped velocity if whole mesh

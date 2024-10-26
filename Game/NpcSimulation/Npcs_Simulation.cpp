@@ -2200,11 +2200,15 @@ void Npcs::UpdateNpcParticle_BeingPlaced(
 
         vec2f const & startPosition = particles.GetPosition(npcParticle.ParticleIndex);
 
+        //
         // Strive to maintain spring lengths if we're being placed
+        //
+
         if (npc.CurrentRegime == StateType::RegimeType::BeingPlaced
-            && npcParticleOrdinal != npc.BeingPlacedState->AnchorParticleOrdinal
             && npc.ParticleMesh.Springs.size() > 0)
         {
+            assert(npcParticleOrdinal != npc.BeingPlacedState->AnchorParticleOrdinal);
+
             for (int p = 0; ; )
             {
                 // Decide next endpoint of spring: previous, unless this is 0,
@@ -2223,7 +2227,7 @@ void Npcs::UpdateNpcParticle_BeingPlaced(
 
                 assert(otherP != npcParticleOrdinal);
 
-                // Adjust physicsDeltaPos to maintain spring length
+                // Adjust physicsDeltaPos to maintain spring length after we've traveled it
 
                 int const s = GetSpringAmongEndpoints(npcParticleOrdinal, otherP, npc.ParticleMesh);
                 float const targetSpringLength = npc.ParticleMesh.Springs[s].RestLength;
@@ -2256,12 +2260,10 @@ void Npcs::UpdateNpcParticle_BeingPlaced(
 
         // Update velocity
         // Use whole time quantum for velocity, as communicated start/end positions are those planned for whole dt
+        // Note: we clamp it exactly as the anchor is clamped at
         particles.SetVelocity(
             npcParticle.ParticleIndex,
-            physicsDeltaPos / dt * mGlobalDampingFactor);
-
-        // TODOTEST
-        particles.SetVelocity(npcParticle.ParticleIndex, ClampPlacementVelocity(particles.GetVelocity(npcParticle.ParticleIndex)));
+            ClampPlacementVelocity(physicsDeltaPos / dt * mGlobalDampingFactor));
     }
 }
 

@@ -1171,7 +1171,7 @@ void Npcs::MoveNpcTo(
     ElementIndex anchorParticleIndex = npc.ParticleMesh.Particles[npc.BeingPlacedState->AnchorParticleOrdinal].ParticleIndex;
     vec2f const deltaAnchorPosition = (position - offset) - mParticles.GetPosition(anchorParticleIndex);
 
-    // Calculate absolute velocity for this delta movement
+    // Calculate absolute velocity for this delta movement - we want it clamped
     vec2f const targetAbsoluteVelocity = ClampPlacementVelocity(deltaAnchorPosition / GameParameters::SimulationStepTimeDuration<float>);
 
     // Move particles
@@ -1184,13 +1184,6 @@ void Npcs::MoveNpcTo(
             mParticles.SetPosition(particleIndex, mParticles.GetPosition(particleIndex) + deltaAnchorPosition);
             mParticles.SetVelocity(particleIndex, targetAbsoluteVelocity);
         }
-        ////// TODOTEST
-        ////else if (npc.ParticleMesh.Particles.size() > 2)
-        ////{
-        ////    // Brake down particle, or else it spins
-        ////    float constexpr DampFactor = 0.75f;
-        ////    mParticles.SetVelocity(particleIndex, mParticles.GetVelocity(particleIndex) * DampFactor);
-        ////}
 
         // No worries about mesh-relative velocity
         assert(!npc.ParticleMesh.Particles[p].ConstrainedState.has_value());
