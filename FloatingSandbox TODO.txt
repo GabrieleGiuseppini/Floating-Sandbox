@@ -6,8 +6,6 @@
 
 - Roadmap:
 
-	- Post:
-		- 445 commits
 
 	- Vegas:
 		- Screenshots:
@@ -16,16 +14,17 @@
 			- Temperature overlay
 			- Stress overlay
 
-	- Movie:
-		- Scene 1:
-			- "Carnival Dream Video" ship, exterior view, plenty of NPCs, medium zoom
-			- Then interior view
-			- Zoom more
-		- Scene 2: furniture all setup and NPCs, then sinking at other extreme, and things slide down
-			- Prep: zero waves, no fish
-			- Might need to lower friction, depending on ship's bottom
-		- TODOHERE
 
+	- GameJolt Post:
+It took 1 year, 3 months, and 11 days to make 445 commits and change 723 files and 59,922 lines of code, but finally we have entered beta testing - a few more weeks and Floating Sandbox 1.19.0 will be out!
+
+We are quite excited to bring you the first version of Floating Sandbox with NPC support. This version will contain the bare minimum NPC engine functionality - enough to add a new dimension to the familiar Floating Sandbox physics. Subsequent versions will implement new behaviors, improve functionality, and add detail to this new sub-system of the simulator. 
+
+Stay tuned for the release coming up in November!
+
+Music: Path of Least Dunka Dunka, by Carbon Based Lifeforms - carbonbasedlifeforms.net
+
+https://youtu.be/LNVxgPC4qkA
 
 
 
@@ -33,7 +32,7 @@
 		+ Merge into master
 		+ Changelist
 
-	= Npcs post-work:
+	+ Npcs post-work:
 		= Work with TimCan for improvements
 			= Chests
 			= Square heads
@@ -85,7 +84,6 @@
 				+ WholeMesh
 			+ Cleanups
 				+ ClampPlacementVelocity to vec2f
-
 		+ MainFrame: first call to ReconciliateAddNpcSubItems will check both furniture and human
 			+ Need to only check the one kind whose tool is selected (if any)
 			+ See if Recon() may take ToolType as arg

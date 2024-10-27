@@ -11,7 +11,7 @@
             "feet_particle_attributes_overrides": {
                 "spring_damping_coefficient": 0.5,
                 "spring_reduction_fraction": 0.39,
-		"friction_surface_adjustment": 1.0
+		"friction_surface_adjustment": 0.95
             },
 	    "texture_geometry_comments": [
 		"Head length fraction: we want it 0.2 * headTextureH/16, and then alpha_reduction=0.76",
@@ -784,7 +784,7 @@
                     "particle_attributes_overrides": [
                         {
                             "buoyancy_volume_fill": 0.07,
-			    "friction_surface_adjustment": 0.4
+			    "friction_surface_adjustment": 0.42
                         }
                     ]
                 },
@@ -801,7 +801,7 @@
                     "particle_attributes_overrides": [
                         {
                             "buoyancy_volume_fill": 0.7,
-			    "friction_surface_adjustment": 0.4
+			    "friction_surface_adjustment": 0.38
                         }
                     ]
                 },
@@ -931,7 +931,7 @@
                     "particle_attributes_overrides": [
                         {
                             "buoyancy_volume_fill": 0.0847,
-			    "friction_surface_adjustment": 0.6
+			    "friction_surface_adjustment": 0.5
                         }
                     ]
                 },
@@ -948,7 +948,7 @@
                     "particle_attributes_overrides": [
                         {
                             "buoyancy_volume_fill": 0.0847,
-			    "friction_surface_adjustment": 0.6
+			    "friction_surface_adjustment": 0.49
                         }
                     ]
                 },
@@ -965,7 +965,7 @@
                     "particle_attributes_overrides": [
                         {
                             "buoyancy_volume_fill": 0.0847,
-			    "friction_surface_adjustment": 0.85
+			    "friction_surface_adjustment": 0.55
                         }
                     ]
                 },
@@ -982,7 +982,7 @@
                     "particle_attributes_overrides": [
                         {
                             "buoyancy_volume_fill": 0.75,
-			    "friction_surface_adjustment": 0.6
+			    "friction_surface_adjustment": 0.45
                         }
                     ]
                 },
@@ -1047,7 +1047,7 @@
                     "particle_attributes_overrides": [
                         {
                             "buoyancy_volume_fill": 0.0847,
-			    "friction_surface_adjustment": 0.45
+			    "friction_surface_adjustment": 0.4
                         }
                     ]
                 },
