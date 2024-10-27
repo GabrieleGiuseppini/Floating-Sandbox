@@ -724,7 +724,7 @@ void Npcs::UpdateNpcParticlePhysics(
 
         physicsDeltaPos = mParticles.GetVelocity(npcParticle.ParticleIndex) * dt + (physicalForces / particleMass) * dt * dt;
 
-        LogNpcDebug("    physicsDeltaPos=", physicsDeltaPos, " ( v=", mParticles.GetVelocity(npcParticle.ParticleIndex) * dt,
+        LogNpcDebug("    physicsDeltaPos=", physicsDeltaPos, " (v=", mParticles.GetVelocity(npcParticle.ParticleIndex) * dt,
             " f=", (physicalForces / particleMass) * dt * dt, ")");
     }
 
