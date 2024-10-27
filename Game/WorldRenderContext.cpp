@@ -23,7 +23,7 @@ ImageSize constexpr ThumbnailSize(32, 32);
 
 WorldRenderContext::WorldRenderContext(
     ShaderManager<ShaderManagerTraits> & shaderManager,
-    GlobalRenderContext const & globalRenderContext)
+    GlobalRenderContext & globalRenderContext)
     : mGlobalRenderContext(globalRenderContext)
     , mShaderManager(shaderManager)
     // Buffers and parameters
@@ -1051,6 +1051,7 @@ void WorldRenderContext::RenderDrawCloudsAndBackgroundLightnings(RenderParameter
         cloudsOverLightningVertexStart = static_cast<GLsizei>(mCloudVertexBuffer.size()) - (6 * CloudsOverLightnings);
 
         glDrawArrays(GL_TRIANGLES, 0, cloudsOverLightningVertexStart);
+
         CheckOpenGLError();
     }
 
@@ -1070,6 +1071,7 @@ void WorldRenderContext::RenderDrawCloudsAndBackgroundLightnings(RenderParameter
         glDrawArrays(GL_TRIANGLES,
             0,
             static_cast<GLsizei>(mBackgroundLightningVertexCount));
+
         CheckOpenGLError();
     }
 
@@ -1097,6 +1099,7 @@ void WorldRenderContext::RenderDrawCloudsAndBackgroundLightnings(RenderParameter
             glLineWidth(0.1f);
 
         glDrawArrays(GL_TRIANGLES, cloudsOverLightningVertexStart, static_cast<GLsizei>(mCloudVertexBuffer.size()) - cloudsOverLightningVertexStart);
+
         CheckOpenGLError();
     }
 

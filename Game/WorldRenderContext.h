@@ -42,7 +42,7 @@ public:
 
     WorldRenderContext(
         ShaderManager<ShaderManagerTraits> & shaderManager,
-        GlobalRenderContext const & globalRenderContext);
+        GlobalRenderContext & globalRenderContext);
 
     ~WorldRenderContext();
 
@@ -833,7 +833,7 @@ private:
 
 private:
 
-    GlobalRenderContext const & mGlobalRenderContext;
+    GlobalRenderContext & mGlobalRenderContext;
 
     ShaderManager<ShaderManagerTraits> & mShaderManager;
 
