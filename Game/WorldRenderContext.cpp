@@ -526,15 +526,10 @@ WorldRenderContext::~WorldRenderContext()
 
 void WorldRenderContext::InitializeCloudTextures(ResourceLocator const & resourceLocator)
 {
-    // Load texture database
-    auto cloudTextureDatabase = TextureDatabase<Render::CloudTextureDatabaseTraits>::Load(
+    // Load atlas
+    TextureAtlas<CloudTextureGroups> cloudTextureAtlas = TextureAtlas<CloudTextureGroups>::Deserialize(
+        CloudTextureDatabaseTraits::DatabaseName,
         resourceLocator.GetTexturesRootFolderPath());
-
-    // Create atlas
-    auto cloudTextureAtlas = TextureAtlasBuilder<CloudTextureGroups>::BuildAtlas(
-        cloudTextureDatabase,
-        AtlasOptions::None,
-        [](float, ProgressMessageType) {});
 
     LogMessage("Cloud texture atlas size: ", cloudTextureAtlas.AtlasData.Size);
 
@@ -2167,7 +2162,7 @@ void WorldRenderContext::ApplyLandNoiseChanges(RenderParameters const & renderPa
     if (renderParameters.LandRenderDetail == LandRenderDetailType::Detailed)
     {
         // We do want noise
-        
+
         //
         // Make sure we have a noise
         //
@@ -2179,7 +2174,7 @@ void WorldRenderContext::ApplyLandNoiseChanges(RenderParameters const & renderPa
 
         //
         // Allocate texture
-        //        
+        //
 
         GLuint tmpGLuint;
         glGenTextures(1, &tmpGLuint);
@@ -2198,7 +2193,7 @@ void WorldRenderContext::ApplyLandNoiseChanges(RenderParameters const & renderPa
         // Set filtering
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        
+
         //
         // Upload texture
         //

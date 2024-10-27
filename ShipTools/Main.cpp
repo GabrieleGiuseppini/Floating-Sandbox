@@ -163,7 +163,14 @@ int DoBakeAtlas(int argc, char ** argv)
     std::cout << "  regular                       : " << options.Regular << std::endl;
 
     size_t frameCount;
-    if (Utils::CaseInsensitiveEquals(databaseName, "explosion"))
+    if (Utils::CaseInsensitiveEquals(databaseName, "cloud"))
+    {
+        frameCount = Baker::BakeAtlas<Render::CloudTextureDatabaseTraits>(
+            texturesRootDirectoryPath,
+            outputDirectoryPath,
+            options);
+    }
+    else if (Utils::CaseInsensitiveEquals(databaseName, "explosion"))
     {
         frameCount = Baker::BakeAtlas<Render::ExplosionTextureDatabaseTraits>(
             texturesRootDirectoryPath,
@@ -284,7 +291,7 @@ void PrintUsage()
     std::cout << std::endl;
     std::cout << "Usage:" << std::endl;
     std::cout << " analyze <materials_dir> <in_file>" << std::endl;
-    std::cout << " bake_atlas NPC|Explosion <textures_root_dir> <out_dir> [[-a] [-b] [-m] [-r] | -o <options_json>]" << std::endl;
+    std::cout << " bake_atlas Cloud|Explosion|NPC <textures_root_dir> <out_dir> [[-a] [-b] [-m] [-r] | -o <options_json>]" << std::endl;
     std::cout << " quantize <materials_dir> <in_file> <out_png> [-c <target_fixed_color>]" << std::endl;
     std::cout << "          -r, --keep_ropes] [-g, --keep_glass]" << std::endl;
     std::cout << " resize <in_file> <out_png> <width>" << std::endl;

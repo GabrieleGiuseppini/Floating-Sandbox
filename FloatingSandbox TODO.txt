@@ -19,7 +19,7 @@
 	- Movie:
 		- Carnival Dream Video, exterior view, plenty of NPCs
 		- Then interior view
-		- Scene 2: furniture all setup and NPCs, then sinking at other extreme
+		- Scene 2: furniture all setup and NPCs, then sinking at other extreme, and things slide down
 			- Prep: zero waves, no fish
 			- Might need to lower friction, depending on ship's bottom
 		- TODOHERE
@@ -151,9 +151,9 @@
 					+ Cleanup shader
 		+ Merge into npcs_v1
 
-	- Clouds V3: with fantastic texture coords offset
-		- First off, technical debt:
-			- Do clouds as baked atlas
+	= Clouds V3: with fantastic texture coords offset
+		= First off, technical debt:
+			+ Do clouds as baked atlas
 			- Do index-based rendering
 		- Magic work:
 
