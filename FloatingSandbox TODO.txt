@@ -31,7 +31,7 @@
 		+ Merge into master
 		+ Changelist
 
-	= Npcs post-work:
+	+ Npcs post-work:
 		= Work with TimCan for improvements
 			= Chests
 			= Square heads
@@ -67,7 +67,7 @@
 			+ Npcs: refactor choice into function
 				+ Call from AddGroup
 			+ Tool and GameController --> Npcs::BeginAdd: SubKindId optional
-		= Redo placement
+		+ Redo placement
 			+ Shouldn't impart all that velocity when leaving
 				! It's the seco'd following primary's new position and thus gaining that velocity
 				+ Plan:
@@ -79,20 +79,10 @@
 				! When we enter UpdateNpc for a non-achored particle, deltaPos already contains a humongous - albeit 
 			+ Fold auto-detection
 			+ Spring length maintenance: each vertex should also spar with anchor
-			- If can ensure no folding occurs, then can lower (increase) placement damp
-			- Test:
-				- WholeMesh
-			- Cleanups
-				- ClampPlacementVelocity to vec2f
-
-			BOTCHED:
-				- MoveNpc:
-					- Anchor moves and sets clamped velocity
-					- Others move and add clamped velocity OR set clamped velocity if whole mesh
-				- UpdateNpc:
-					+ Anchor or WholeMesh does nothing
-					- Others:
-						- TODOHERE
+			+ Test:
+				+ WholeMesh
+			+ Cleanups
+				+ ClampPlacementVelocity to vec2f
 
 		+ MainFrame: first call to ReconciliateAddNpcSubItems will check both furniture and human
 			+ Need to only check the one kind whose tool is selected (if any)

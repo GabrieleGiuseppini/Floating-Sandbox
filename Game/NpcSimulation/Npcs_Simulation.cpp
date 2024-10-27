@@ -2252,7 +2252,7 @@ void Npcs::UpdateNpcParticle_BeingPlaced(
         // Note: we clamp it exactly as the anchor's is clamped
         particles.SetVelocity(
             npcParticle.ParticleIndex,
-            ClampPlacementVelocity(physicsDeltaPos / dt * mGlobalDampingFactor));
+            (physicsDeltaPos / dt * mGlobalDampingFactor).clamp_length_upper(GameParameters::MaxNpcToolMoveVelocityMagnitude));
 
         //
         // Unfold if folded quad (fight long strides)

@@ -1179,7 +1179,7 @@ void Npcs::MoveNpcTo(
     vec2f const deltaAnchorPosition = (position - offset) - mParticles.GetPosition(anchorParticleIndex);
 
     // Calculate absolute velocity for this delta movement - we want it clamped
-    vec2f const targetAbsoluteVelocity = ClampPlacementVelocity(deltaAnchorPosition / GameParameters::SimulationStepTimeDuration<float>);
+    vec2f const targetAbsoluteVelocity = (deltaAnchorPosition / GameParameters::SimulationStepTimeDuration<float> * mGlobalDampingFactor).clamp_length_upper(GameParameters::MaxNpcToolMoveVelocityMagnitude);
 
     // Move particles
     for (int p = 0; p < npc.ParticleMesh.Particles.size(); ++p)

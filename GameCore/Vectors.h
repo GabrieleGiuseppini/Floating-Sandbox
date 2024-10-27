@@ -316,6 +316,12 @@ public:
             y * multiplier.y);
     }
 
+    inline vec2f clamp_length_upper(float maxMagnitude) const noexcept
+    {
+        float const l = length();
+        return normalise_approx(l) * std::min(l, maxMagnitude);
+    }
+
     std::string toString() const;
 
     vec2i to_vec2i_round() const;
