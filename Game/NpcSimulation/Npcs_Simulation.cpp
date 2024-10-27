@@ -2208,42 +2208,32 @@ void Npcs::UpdateNpcParticle_BeingPlaced(
         {
             assert(npcParticleOrdinal != npc.BeingPlacedState->AnchorParticleOrdinal);
 
-            for (int p = 0; ; )
+            vec2f adjustedDeltaPosSum = vec2f::zero();
+            float adjustedDeltaPosCount = 0.0f;
+
+            // Pair this particle with:
+            // a) Each particle already done,
+            // b) The anchor particle
+            for (int p = 0; p < npc.ParticleMesh.Particles.size(); ++p)
             {
-                // Decide next endpoint of spring: previous, unless this is 0,
-                // in which case we go for anchor
-
-                int otherP;
-                if (npcParticleOrdinal == 0)
+                if (p < npcParticleOrdinal || (p > npcParticleOrdinal && p == npc.BeingPlacedState->AnchorParticleOrdinal))
                 {
-                    assert(npc.BeingPlacedState->AnchorParticleOrdinal > 0);
-                    otherP = npc.BeingPlacedState->AnchorParticleOrdinal;
-                }
-                else
-                {
-                    otherP = p;
-                }
+                    // Adjust physicsDeltaPos to maintain spring length after we've traveled it
 
-                assert(otherP != npcParticleOrdinal);
+                    int const s = GetSpringAmongEndpoints(npcParticleOrdinal, p, npc.ParticleMesh);
+                    float const targetSpringLength = npc.ParticleMesh.Springs[s].RestLength;
+                    vec2f const & otherPPosition = mParticles.GetPosition(npc.ParticleMesh.Particles[p].ParticleIndex);
+                    vec2f const particleAdjustedPosition =
+                        otherPPosition
+                        + (startPosition + physicsDeltaPos - otherPPosition).normalise() * targetSpringLength;
 
-                // Adjust physicsDeltaPos to maintain spring length after we've traveled it
-
-                int const s = GetSpringAmongEndpoints(npcParticleOrdinal, otherP, npc.ParticleMesh);
-                float const targetSpringLength = npc.ParticleMesh.Springs[s].RestLength;
-                vec2f const & otherPPosition = mParticles.GetPosition(npc.ParticleMesh.Particles[otherP].ParticleIndex);
-                vec2f const particleAdjustedPosition =
-                    otherPPosition
-                    + (startPosition + physicsDeltaPos - otherPPosition).normalise() * targetSpringLength;
-                physicsDeltaPos = particleAdjustedPosition - startPosition;
-
-                // Advance
-
-                p = otherP + 1;
-                if (p >= npcParticleOrdinal)
-                {
-                    break;
+                    adjustedDeltaPosSum += particleAdjustedPosition - startPosition;
+                    adjustedDeltaPosCount += 1.0f;
                 }
             }
+
+            assert(adjustedDeltaPosCount != 0.0f);
+            physicsDeltaPos = adjustedDeltaPosSum / adjustedDeltaPosCount;
         }
 
         //
@@ -2258,16 +2248,14 @@ void Npcs::UpdateNpcParticle_BeingPlaced(
             startPosition + physicsDeltaPos);
 
         // Update velocity
-        // Use whole time quantum for velocity, as communicated start/end positions are those planned for whole dt
-        // Note: we clamp it exactly as the anchor is clamped at
+        //
+        // Note: we clamp it exactly as the anchor's is clamped
         particles.SetVelocity(
             npcParticle.ParticleIndex,
             ClampPlacementVelocity(physicsDeltaPos / dt * mGlobalDampingFactor));
 
         //
-        // Unfold if folded quad
-        //
-        // Despite the code above that
+        // Unfold if folded quad (fight long strides)
         //
 
         if (npc.ParticleMesh.Particles.size() == 4)

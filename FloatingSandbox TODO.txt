@@ -78,7 +78,8 @@
 			! Problem analysis:
 				! When we enter UpdateNpc for a non-achored particle, deltaPos already contains a humongous - albeit 
 			+ Fold auto-detection
-			= If can ensure no folding occurs, then can lower (increase) placement damp
+			+ Spring length maintenance: each vertex should also spar with anchor
+			- If can ensure no folding occurs, then can lower (increase) placement damp
 			- Test:
 				- WholeMesh
 			- Cleanups
