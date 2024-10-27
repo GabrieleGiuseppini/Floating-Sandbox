@@ -11,7 +11,7 @@
             "feet_particle_attributes_overrides": {
                 "spring_damping_coefficient": 0.5,
                 "spring_reduction_fraction": 0.39,
-		"friction_surface_adjustment": 0.9
+		"friction_surface_adjustment": 1.0
             },
 	    "texture_geometry_comments": [
 		"Head length fraction: we want it 0.2 * headTextureH/16, and then alpha_reduction=0.76",

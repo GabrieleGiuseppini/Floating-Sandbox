@@ -17,8 +17,10 @@
 			- Stress overlay
 
 	- Movie:
-		- Carnival Dream Video, exterior view, plenty of NPCs
-		- Then interior view
+		- Scene 1:
+			- "Carnival Dream Video" ship, exterior view, plenty of NPCs, medium zoom
+			- Then interior view
+			- Zoom more
 		- Scene 2: furniture all setup and NPCs, then sinking at other extreme, and things slide down
 			- Prep: zero waves, no fish
 			- Might need to lower friction, depending on ship's bottom
@@ -31,7 +33,7 @@
 		+ Merge into master
 		+ Changelist
 
-	+ Npcs post-work:
+	= Npcs post-work:
 		= Work with TimCan for improvements
 			= Chests
 			= Square heads
@@ -155,6 +157,7 @@
 		= First off, technical debt:
 			+ Do clouds as baked atlas
 			- Do index-based rendering
+				- TODOHERE: complications with two sets of clouds, do math carefully
 		- Magic work:
 
 			void mainImage( out vec4 fragColor, in vec2 fragCoord )
