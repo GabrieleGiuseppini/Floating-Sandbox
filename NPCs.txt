@@ -219,6 +219,7 @@ Next release:
 			- Update state with current half
 
 	- Panic when water entering
+	- Panic when sinking detected
 
 	- Walk away from water
 

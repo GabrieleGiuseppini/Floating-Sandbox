@@ -152,10 +152,9 @@ https://youtu.be/LNVxgPC4qkA
 		+ Merge into npcs_v1
 
 	= Clouds V3: with fantastic texture coords offset
-		= First off, technical debt:
+		+ First off, technical debt:
 			+ Do clouds as baked atlas
-			- Do index-based rendering
-				- TODOHERE: complications with two sets of clouds, do math carefully
+			+ Do index-based rendering
 		- Magic work:
 
 			void mainImage( out vec4 fragColor, in vec2 fragCoord )
@@ -219,6 +218,18 @@ https://youtu.be/LNVxgPC4qkA
 				- Cannot clamp in shader: would still look awful, and nice to have long flanges
 
 		- Test clouds distributed over Z layers/depth
+
+	- Send build for testing
+	- Bump up version
+
+	- AtlasBuilder: detect duplicates
+		- New option
+		- Use at all baking options
+		- AtlasBuilder:
+			- At each frame:
+				- SerializedFrames: contains size, hash, path (plus values: frame ID)
+				- When about to add new one: search matching on size, hash, and content
+				- Add new ones to SerializedFrames
 	
 	+ Remove too much logging from ShipLoadDialog
 	+ Merchandise link

@@ -233,6 +233,10 @@ WorldRenderContext::WorldRenderContext(
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Cloud2), 4, GL_FLOAT, GL_FALSE, sizeof(CloudVertex), (void *)(4 * sizeof(float)));
     CheckOpenGLError();
 
+    // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
+    // in the VAO. So we won't associate the element VBO here, but rather before each drawing call.
+    ////mGlobalRenderContext.GetElementIndices().Bind()
+
     glBindVertexArray(0);
 
 
@@ -736,7 +740,9 @@ void WorldRenderContext::UploadCloudsStart(size_t cloudCount)
     // Clouds are not sticky: we upload them at each frame
     //
 
-    mCloudVertexBuffer.reset(6 * cloudCount);
+    mCloudVertexBuffer.reset(4 * cloudCount);
+
+    mGlobalRenderContext.GetElementIndices().EnsureSize(cloudCount);
 }
 
 void WorldRenderContext::UploadCloudsEnd()
@@ -1023,15 +1029,21 @@ void WorldRenderContext::RenderDrawCloudsAndBackgroundLightnings(RenderParameter
 
     bool const areCloudsHighQuality = (renderParameters.CloudRenderDetail == CloudRenderDetailType::Detailed);
 
+    assert((mCloudVertexBuffer.size() % 4) == 0);
+    size_t const elementIndexCount = mCloudVertexBuffer.size() / 4 * 6; // 4 vertices -> 6 element indices
+
     // The number of clouds we want to draw *over* background
     // lightnings
     size_t constexpr CloudsOverLightnings = 5;
-    GLsizei cloudsOverLightningVertexStart = 0;
+    GLsizei cloudsOverLightningElementIndexStart = 0;
 
     if (mBackgroundLightningVertexCount > 0
-        && mCloudVertexBuffer.size() > 6 * CloudsOverLightnings)
+        && mCloudVertexBuffer.size() > 4 * CloudsOverLightnings)
     {
         glBindVertexArray(*mCloudVAO);
+
+        // Intel bug: cannot associate with VAO
+        mGlobalRenderContext.GetElementIndices().Bind();
 
         if (areCloudsHighQuality)
         {
@@ -1048,9 +1060,13 @@ void WorldRenderContext::RenderDrawCloudsAndBackgroundLightnings(RenderParameter
         if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Wireframe)
             glLineWidth(0.1f);
 
-        cloudsOverLightningVertexStart = static_cast<GLsizei>(mCloudVertexBuffer.size()) - (6 * CloudsOverLightnings);
+        cloudsOverLightningElementIndexStart = static_cast<GLsizei>(elementIndexCount) - (6 * CloudsOverLightnings);
 
-        glDrawArrays(GL_TRIANGLES, 0, cloudsOverLightningVertexStart);
+        glDrawElements(
+            GL_TRIANGLES,
+            cloudsOverLightningElementIndexStart,
+            GL_UNSIGNED_INT,
+            (GLvoid *)0);
 
         CheckOpenGLError();
     }
@@ -1079,9 +1095,12 @@ void WorldRenderContext::RenderDrawCloudsAndBackgroundLightnings(RenderParameter
     // Draw foreground clouds
     ////////////////////////////////////////////////////
 
-    if (mCloudVertexBuffer.size() > static_cast<size_t>(cloudsOverLightningVertexStart))
+    if (elementIndexCount > static_cast<size_t>(cloudsOverLightningElementIndexStart))
     {
         glBindVertexArray(*mCloudVAO);
+
+        // Intel bug: cannot associate with VAO
+        mGlobalRenderContext.GetElementIndices().Bind();
 
         if (areCloudsHighQuality)
         {
@@ -1098,7 +1117,11 @@ void WorldRenderContext::RenderDrawCloudsAndBackgroundLightnings(RenderParameter
         if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Wireframe)
             glLineWidth(0.1f);
 
-        glDrawArrays(GL_TRIANGLES, cloudsOverLightningVertexStart, static_cast<GLsizei>(mCloudVertexBuffer.size()) - cloudsOverLightningVertexStart);
+        glDrawElements(
+            GL_TRIANGLES,
+            static_cast<GLsizei>(elementIndexCount) - cloudsOverLightningElementIndexStart,
+            GL_UNSIGNED_INT,
+            (GLvoid *)static_cast<size_t>(cloudsOverLightningElementIndexStart));
 
         CheckOpenGLError();
     }
