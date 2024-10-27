@@ -12,15 +12,15 @@ in vec4 inCloud1; // Position (NDC) (vec2), TextureCoordinates (vec2)
 in vec4 inCloud2; // VirtualTextureCoordinates (vec2), Darkening, VolumetricGrowthProgress
 
 // Outputs
-out vec2 texturePos;
-out vec2 virtualTexturePos;
+out vec2 textureCoords;
+out vec2 virtualTextureCoords;
 out float darkness;
 out float volumetricGrowthProgress;
 
 void main()
 {
-    texturePos = inCloud1.zw;
-    virtualTexturePos = inCloud2.xy;
+    textureCoords = inCloud1.zw;
+    virtualTextureCoords = inCloud2.xy;
     darkness = inCloud2.z;
     volumetricGrowthProgress = inCloud2.w;
 
@@ -35,8 +35,8 @@ void main()
 #include "lamp_tool.glslinc"
 
 // Inputs from previous shader
-in vec2 texturePos;
-in vec2 virtualTexturePos;
+in vec2 textureCoords;
+in vec2 virtualTextureCoords; // [-1-e, +1+e]
 in float darkness;
 in float volumetricGrowthProgress;
 
@@ -53,7 +53,7 @@ uniform vec3 paramEffectiveMoonlightColor;
 void main()
 {
     // Sample texture
-    vec4 textureColor = texture2D(paramCloudsAtlasTexture, texturePos);
+    vec4 textureColor = texture2D(paramCloudsAtlasTexture, textureCoords);
 
     // Calculate lamp tool intensity
     float lampToolIntensity = CalculateLampToolIntensity(gl_FragCoord.xy);
@@ -74,7 +74,7 @@ void main()
     //
 
     // Center uv ~[-1., +1.]
-    vec2 virtualTextureCoordsCentered = (virtualTexturePos - vec2(0.5, 0.5)) * 2.;
+    vec2 virtualTextureCoordsCentered = (textureCoords - vec2(0.5, 0.5)) * 2.;
 
     // Convert to polar coords
     // (r, a) (r=[0.0, 1.0], a=[0.0, 1.0 CCW from W])
