@@ -2201,11 +2201,10 @@ void Npcs::UpdateNpcParticle_BeingPlaced(
         vec2f const & startPosition = particles.GetPosition(npcParticle.ParticleIndex);
 
         //
-        // Strive to maintain spring lengths if we're being placed
+        // Strive to maintain spring lengths (fight stretching)
         //
 
-        if (npc.CurrentRegime == StateType::RegimeType::BeingPlaced
-            && npc.ParticleMesh.Springs.size() > 0)
+        if (npc.ParticleMesh.Springs.size() > 0)
         {
             assert(npcParticleOrdinal != npc.BeingPlacedState->AnchorParticleOrdinal);
 
@@ -2264,6 +2263,67 @@ void Npcs::UpdateNpcParticle_BeingPlaced(
         particles.SetVelocity(
             npcParticle.ParticleIndex,
             ClampPlacementVelocity(physicsDeltaPos / dt * mGlobalDampingFactor));
+
+        //
+        // Unfold if folded quad
+        //
+        // Despite the code above that
+        //
+
+        if (npc.ParticleMesh.Particles.size() == 4)
+        {
+            //
+            // Check folds along the two diagonals - which one to use depends
+            // on the particle
+            //
+
+            std::array<std::pair<int, int>, 4> const diagonalEndpoints{ { // tail->head, in the order that makes the triangle with this particle CW
+                {1, 3},
+                {2, 0},
+                {3, 1},
+                {0, 2}
+            } };
+
+            ElementIndex const diagTailParticleIndex = npc.ParticleMesh.Particles[diagonalEndpoints[npcParticleOrdinal].first].ParticleIndex;
+            ElementIndex const diagHeadParticleIndex = npc.ParticleMesh.Particles[diagonalEndpoints[npcParticleOrdinal].second].ParticleIndex;
+
+            vec2f const & diagTailPosition = particles.GetPosition(diagTailParticleIndex);
+
+            vec2f const diagonalVector =
+                particles.GetPosition(diagHeadParticleIndex)
+                - diagTailPosition;
+
+            vec2f const particleVector =
+                particles.GetPosition(npcParticle.ParticleIndex)
+                - diagTailPosition;
+
+            if (particleVector.cross(diagonalVector) < 0.0f)
+            {
+                // This particle is on the wrong size of the diagonal
+                LogNpcDebug("BeingMoved Quad ", npc.Id, ":", npcParticleOrdinal, ": folded");
+
+                //
+                // Move particle to other side of diagonal
+                //
+                // We do so by moving particle twice along normal to diagonal
+                //
+                // Note: the cross product we have is the dot product of the
+                // particle vector with the perpendicular to the diagonal;
+                // almost what we need, with an extra |diagonal| on top of it.
+                // Since we have to calculate a length and then perform a division,
+                // for clarity we keep the formulation of P - 2*diag_n
+                //
+
+                vec2f const dNorm = diagonalVector.to_perpendicular().normalise_approx();
+                float const particleVectorAlongDiagonalNormal = particleVector.dot(dNorm);
+                assert(particleVectorAlongDiagonalNormal > 0.0f); // Because we know cross < 0
+                vec2f const newPos =
+                    particles.GetPosition(npcParticle.ParticleIndex)
+                    - dNorm * 2.0f * particleVectorAlongDiagonalNormal;
+
+                particles.SetPosition(npcParticle.ParticleIndex, newPos);
+            }
+        }
     }
 }
 

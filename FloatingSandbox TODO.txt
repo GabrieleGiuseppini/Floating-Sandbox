@@ -77,7 +77,8 @@
 			+ Move NpcUpdate code to own helper
 			! Problem analysis:
 				! When we enter UpdateNpc for a non-achored particle, deltaPos already contains a humongous - albeit 
-			- Fold auto-detection
+			+ Fold auto-detection
+			= If can ensure no folding occurs, then can lower (increase) placement damp
 			- Test:
 				- WholeMesh
 			- Cleanups
@@ -91,10 +92,6 @@
 					+ Anchor or WholeMesh does nothing
 					- Others:
 						- TODOHERE
-
-
-
-			- If can ensure no folding occurs, then can lower (increase) placement damp
 
 		+ MainFrame: first call to ReconciliateAddNpcSubItems will check both furniture and human
 			+ Need to only check the one kind whose tool is selected (if any)

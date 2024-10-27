@@ -443,6 +443,13 @@ std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> Npcs::BeginPl
     {
         case NpcDatabase::ParticleMeshKindType::Dipole:
         {
+            // Check if there are enough particles
+
+            if (mParticles.GetRemainingParticlesCount() < 2)
+            {
+                return { std::nullopt, NpcCreationFailureReasonType::TooManyNpcs };
+            }
+
             // TODO
             throw GameException("Dipoles not yet supported!");
         }
