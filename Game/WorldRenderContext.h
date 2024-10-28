@@ -228,55 +228,43 @@ public:
         float const bottomY = ndcY - scale * cloudAtlasFrameMetadata.FrameMetadata.AnchorCenterWorld.y * aspectRatio;
         float const topY = bottomY + ndcHeight;
 
-        // Calculate virtual texture coords: ensure unity circle is always covered
-        float minVirtualTexX, maxVirtualTexX;
-        float minVirtualTexY, maxVirtualTexY;
-        if (ndcWidth >= ndcHeight)
-        {
-            minVirtualTexX = 0.5f - ndcWidth / ndcHeight * 0.5f;
-            maxVirtualTexX = 0.5f + ndcWidth / ndcHeight * 0.5f;
-            minVirtualTexY = 0.0f;
-            maxVirtualTexY = 1.0f;
-        }
-        else
-        {
-            minVirtualTexX = 0.0f;
-            maxVirtualTexX = 1.0f;
-            minVirtualTexY = 0.5f - ndcHeight / ndcWidth * 0.5f;
-            maxVirtualTexY = 0.5f + ndcHeight / ndcWidth * 0.5f;
-        }
+        float const textureWidth = std::max(cloudAtlasFrameMetadata.TextureSpaceWidth, cloudAtlasFrameMetadata.TextureSpaceHeight);
 
         // top-left
         mCloudVertexBuffer.emplace_back(
             vec2f(leftX, topY),
             vec2f(cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x, cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y),
-            vec2f(minVirtualTexX, maxVirtualTexY),
+            vec2f(-1.0f, 1.0f),
             darkening,
-            volumetricGrowthProgress);
+            volumetricGrowthProgress,
+            textureWidth);
 
         // bottom-left
         mCloudVertexBuffer.emplace_back(
             vec2f(leftX, bottomY),
             cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft,
-            vec2f(minVirtualTexX, minVirtualTexY),
+            vec2f(-1.0f, -1.0f),
             darkening,
-            volumetricGrowthProgress);
+            volumetricGrowthProgress,
+            textureWidth);
 
         // top-right
         mCloudVertexBuffer.emplace_back(
             vec2f(rightX, topY),
             cloudAtlasFrameMetadata.TextureCoordinatesTopRight,
-            vec2f(maxVirtualTexX, maxVirtualTexY),
+            vec2f(1.0f, 1.0f),
             darkening,
-            volumetricGrowthProgress);
+            volumetricGrowthProgress,
+            textureWidth);
 
         // bottom-right
         mCloudVertexBuffer.emplace_back(
             vec2f(rightX, bottomY),
             vec2f(cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x, cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y),
-            vec2f(maxVirtualTexX, minVirtualTexY),
+            vec2f(1.0f, -1.0f),
             darkening,
-            volumetricGrowthProgress);
+            volumetricGrowthProgress,
+            textureWidth);
     }
 
     void UploadCloudsEnd();
@@ -884,18 +872,21 @@ private:
         vec2f virtualTextureCoords;
         float darkness;
         float volumetricGrowthProgress;
+        float textureWidth;
 
         CloudVertex(
             vec2f _ndcPosition,
             vec2f _textureCoords,
             vec2f _virtualTextureCoords,
             float _darkness,
-            float _volumetricGrowthProgress)
+            float _volumetricGrowthProgress,
+            float _textureWidth)
             : ndcPosition(_ndcPosition)
             , textureCoords(_textureCoords)
             , virtualTextureCoords(_virtualTextureCoords)
             , darkness(_darkness)
             , volumetricGrowthProgress(_volumetricGrowthProgress)
+            , textureWidth(_textureWidth)
         {}
     };
 

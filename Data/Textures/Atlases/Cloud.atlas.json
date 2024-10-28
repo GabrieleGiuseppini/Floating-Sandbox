@@ -4,60 +4,17 @@
       "frame": {
         "anchor_center": {
           "x": 256,
-          "y": 64
-        },
-        "anchor_center_world": {
-          "x": 0.20000000298023224,
-          "y": 0.05000000074505806
-        },
-        "displayName": "cloud_0",
-        "filenameStem": "cloud_0",
-        "has_own_ambient_light": false,
-        "id": {
-          "frameIndex": 0,
-          "group": 0
-        },
-        "size": {
-          "height": 128,
-          "width": 512
-        },
-        "world_size": {
-          "height": 0.10000000149011612,
-          "width": 0.40000000596046448
-        }
-      },
-      "frame_coordinates": {
-        "bottom": 1024,
-        "left": 1024
-      },
-      "texture_coordinates": {
-        "anchorCenterX": 0.625244140625,
-        "anchorCenterY": 0.531494140625,
-        "bottom": 0.500244140625,
-        "left": 0.500244140625,
-        "right": 0.749755859375,
-        "top": 0.562255859375
-      },
-      "texture_space_size": {
-        "height": 0.0625,
-        "width": 0.25
-      }
-    },
-    {
-      "frame": {
-        "anchor_center": {
-          "x": 256,
           "y": 128
         },
         "anchor_center_world": {
           "x": 0.20000000298023224,
           "y": 0.10000000149011612
         },
-        "displayName": "cloud_1",
-        "filenameStem": "cloud_1",
+        "displayName": "cloud_0",
+        "filenameStem": "cloud_0",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 1,
+          "frameIndex": 0,
           "group": 0
         },
         "size": {
@@ -70,19 +27,19 @@
         }
       },
       "frame_coordinates": {
-        "bottom": 768,
+        "bottom": 512,
         "left": 0
       },
       "texture_coordinates": {
         "anchorCenterX": 0.125244140625,
-        "anchorCenterY": 0.437744140625,
-        "bottom": 0.375244140625,
+        "anchorCenterY": 0.62548828125,
+        "bottom": 0.50048828125,
         "left": 0.000244140625,
         "right": 0.249755859375,
-        "top": 0.499755859375
+        "top": 0.74951171875
       },
       "texture_space_size": {
-        "height": 0.125,
+        "height": 0.25,
         "width": 0.25
       }
     },
@@ -96,11 +53,11 @@
           "x": 0.40000000596046448,
           "y": 0.20000000298023224
         },
-        "displayName": "cloud_2",
-        "filenameStem": "cloud_2",
+        "displayName": "cloud_1",
+        "filenameStem": "cloud_1",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 2,
+          "frameIndex": 1,
           "group": 0
         },
         "size": {
@@ -118,25 +75,68 @@
       },
       "texture_coordinates": {
         "anchorCenterX": 0.250244140625,
-        "anchorCenterY": 0.125244140625,
-        "bottom": 0.000244140625,
+        "anchorCenterY": 0.25048828125,
+        "bottom": 0.00048828125,
         "left": 0.000244140625,
         "right": 0.499755859375,
-        "top": 0.249755859375
+        "top": 0.49951171875
       },
       "texture_space_size": {
-        "height": 0.25,
+        "height": 0.5,
         "width": 0.5
       }
     },
     {
       "frame": {
         "anchor_center": {
-          "x": 512,
+          "x": 256,
           "y": 128
         },
         "anchor_center_world": {
-          "x": 0.40000000596046448,
+          "x": 0.20000000298023224,
+          "y": 0.10000000149011612
+        },
+        "displayName": "cloud_2",
+        "filenameStem": "cloud_2",
+        "has_own_ambient_light": false,
+        "id": {
+          "frameIndex": 2,
+          "group": 0
+        },
+        "size": {
+          "height": 256,
+          "width": 512
+        },
+        "world_size": {
+          "height": 0.20000000298023224,
+          "width": 0.40000000596046448
+        }
+      },
+      "frame_coordinates": {
+        "bottom": 512,
+        "left": 512
+      },
+      "texture_coordinates": {
+        "anchorCenterX": 0.375244140625,
+        "anchorCenterY": 0.62548828125,
+        "bottom": 0.50048828125,
+        "left": 0.250244140625,
+        "right": 0.499755859375,
+        "top": 0.74951171875
+      },
+      "texture_space_size": {
+        "height": 0.25,
+        "width": 0.25
+      }
+    },
+    {
+      "frame": {
+        "anchor_center": {
+          "x": 256,
+          "y": 128
+        },
+        "anchor_center_world": {
+          "x": 0.20000000298023224,
           "y": 0.10000000149011612
         },
         "displayName": "cloud_3",
@@ -148,28 +148,28 @@
         },
         "size": {
           "height": 256,
-          "width": 1024
+          "width": 512
         },
         "world_size": {
           "height": 0.20000000298023224,
-          "width": 0.80000001192092896
+          "width": 0.40000000596046448
         }
       },
       "frame_coordinates": {
-        "bottom": 512,
+        "bottom": 768,
         "left": 0
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.250244140625,
-        "anchorCenterY": 0.312744140625,
-        "bottom": 0.250244140625,
+        "anchorCenterX": 0.125244140625,
+        "anchorCenterY": 0.87548828125,
+        "bottom": 0.75048828125,
         "left": 0.000244140625,
-        "right": 0.499755859375,
-        "top": 0.374755859375
+        "right": 0.249755859375,
+        "top": 0.99951171875
       },
       "texture_space_size": {
-        "height": 0.125,
-        "width": 0.5
+        "height": 0.25,
+        "width": 0.25
       }
     },
     {
@@ -204,58 +204,15 @@
       },
       "texture_coordinates": {
         "anchorCenterX": 0.375244140625,
-        "anchorCenterY": 0.437744140625,
-        "bottom": 0.375244140625,
+        "anchorCenterY": 0.87548828125,
+        "bottom": 0.75048828125,
         "left": 0.250244140625,
         "right": 0.499755859375,
-        "top": 0.499755859375
+        "top": 0.99951171875
       },
       "texture_space_size": {
-        "height": 0.125,
+        "height": 0.25,
         "width": 0.25
-      }
-    },
-    {
-      "frame": {
-        "anchor_center": {
-          "x": 128,
-          "y": 64
-        },
-        "anchor_center_world": {
-          "x": 0.10000000149011612,
-          "y": 0.05000000074505806
-        },
-        "displayName": "cloud_5",
-        "filenameStem": "cloud_5",
-        "has_own_ambient_light": false,
-        "id": {
-          "frameIndex": 5,
-          "group": 0
-        },
-        "size": {
-          "height": 128,
-          "width": 256
-        },
-        "world_size": {
-          "height": 0.10000000149011612,
-          "width": 0.20000000298023224
-        }
-      },
-      "frame_coordinates": {
-        "bottom": 1024,
-        "left": 1536
-      },
-      "texture_coordinates": {
-        "anchorCenterX": 0.812744140625,
-        "anchorCenterY": 0.531494140625,
-        "bottom": 0.500244140625,
-        "left": 0.750244140625,
-        "right": 0.874755859375,
-        "top": 0.562255859375
-      },
-      "texture_space_size": {
-        "height": 0.0625,
-        "width": 0.125
       }
     },
     {
@@ -268,11 +225,11 @@
           "x": 0.20000000298023224,
           "y": 0.10000000149011612
         },
-        "displayName": "cloud_6",
-        "filenameStem": "cloud_6",
+        "displayName": "cloud_5",
+        "filenameStem": "cloud_5",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 6,
+          "frameIndex": 5,
           "group": 0
         },
         "size": {
@@ -290,150 +247,21 @@
       },
       "texture_coordinates": {
         "anchorCenterX": 0.625244140625,
-        "anchorCenterY": 0.437744140625,
-        "bottom": 0.375244140625,
+        "anchorCenterY": 0.87548828125,
+        "bottom": 0.75048828125,
         "left": 0.500244140625,
         "right": 0.749755859375,
-        "top": 0.499755859375
+        "top": 0.99951171875
       },
       "texture_space_size": {
-        "height": 0.125,
-        "width": 0.25
-      }
-    },
-    {
-      "frame": {
-        "anchor_center": {
-          "x": 256,
-          "y": 128
-        },
-        "anchor_center_world": {
-          "x": 0.20000000298023224,
-          "y": 0.10000000149011612
-        },
-        "displayName": "cloud_7",
-        "filenameStem": "cloud_7",
-        "has_own_ambient_light": false,
-        "id": {
-          "frameIndex": 7,
-          "group": 0
-        },
-        "size": {
-          "height": 256,
-          "width": 512
-        },
-        "world_size": {
-          "height": 0.20000000298023224,
-          "width": 0.40000000596046448
-        }
-      },
-      "frame_coordinates": {
-        "bottom": 768,
-        "left": 1536
-      },
-      "texture_coordinates": {
-        "anchorCenterX": 0.875244140625,
-        "anchorCenterY": 0.437744140625,
-        "bottom": 0.375244140625,
-        "left": 0.750244140625,
-        "right": 0.999755859375,
-        "top": 0.499755859375
-      },
-      "texture_space_size": {
-        "height": 0.125,
-        "width": 0.25
-      }
-    },
-    {
-      "frame": {
-        "anchor_center": {
-          "x": 256,
-          "y": 128
-        },
-        "anchor_center_world": {
-          "x": 0.20000000298023224,
-          "y": 0.10000000149011612
-        },
-        "displayName": "cloud_8",
-        "filenameStem": "cloud_8",
-        "has_own_ambient_light": false,
-        "id": {
-          "frameIndex": 8,
-          "group": 0
-        },
-        "size": {
-          "height": 256,
-          "width": 512
-        },
-        "world_size": {
-          "height": 0.20000000298023224,
-          "width": 0.40000000596046448
-        }
-      },
-      "frame_coordinates": {
-        "bottom": 1024,
-        "left": 0
-      },
-      "texture_coordinates": {
-        "anchorCenterX": 0.125244140625,
-        "anchorCenterY": 0.562744140625,
-        "bottom": 0.500244140625,
-        "left": 0.000244140625,
-        "right": 0.249755859375,
-        "top": 0.624755859375
-      },
-      "texture_space_size": {
-        "height": 0.125,
-        "width": 0.25
-      }
-    },
-    {
-      "frame": {
-        "anchor_center": {
-          "x": 256,
-          "y": 128
-        },
-        "anchor_center_world": {
-          "x": 0.20000000298023224,
-          "y": 0.10000000149011612
-        },
-        "displayName": "cloud_9",
-        "filenameStem": "cloud_9",
-        "has_own_ambient_light": false,
-        "id": {
-          "frameIndex": 9,
-          "group": 0
-        },
-        "size": {
-          "height": 256,
-          "width": 512
-        },
-        "world_size": {
-          "height": 0.20000000298023224,
-          "width": 0.40000000596046448
-        }
-      },
-      "frame_coordinates": {
-        "bottom": 1024,
-        "left": 512
-      },
-      "texture_coordinates": {
-        "anchorCenterX": 0.375244140625,
-        "anchorCenterY": 0.562744140625,
-        "bottom": 0.500244140625,
-        "left": 0.250244140625,
-        "right": 0.499755859375,
-        "top": 0.624755859375
-      },
-      "texture_space_size": {
-        "height": 0.125,
+        "height": 0.25,
         "width": 0.25
       }
     }
   ],
   "options": 0,
   "size": {
-    "height": 2048,
+    "height": 1024,
     "width": 2048
   }
 }

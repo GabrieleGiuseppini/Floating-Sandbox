@@ -100,6 +100,7 @@ void Clouds::Update(
                     z2,
                     scale,
                     1.0f, // Darkening
+                    GameRandomEngine::GetInstance().GenerateUniformReal(0.0f, 4.0f), // VolumetricGrowthProgress
                     linearSpeedX));
         }
 
@@ -132,6 +133,7 @@ void Clouds::Update(
                     0.0f, // Z
                     stormParameters.CloudsSize,
                     stormParameters.CloudDarkening, // Darkening
+                    GameRandomEngine::GetInstance().GenerateUniformReal(0.0f, 4.0f), // VolumetricGrowthProgress
                     GameRandomEngine::GetInstance().GenerateUniformReal(0.003f, 0.007f))); // Linear speed X
         }
     }
@@ -163,7 +165,7 @@ void Clouds::Update(
         {
             cloud->X += CloudSpaceWidth;
             cloud->Darkening = stormParameters.CloudDarkening;
-        }        
+        }
     }
 
     for (auto it = mStormClouds.begin(); it != mStormClouds.end();)

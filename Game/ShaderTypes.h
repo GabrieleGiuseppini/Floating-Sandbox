@@ -200,6 +200,7 @@ enum class VertexAttributeType : GLuint
 
     Cloud1 = 0,
     Cloud2 = 1,
+    Cloud3 = 2,
 
     Land = 0,
 

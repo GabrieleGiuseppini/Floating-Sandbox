@@ -70,6 +70,7 @@ private:
             float z,
             float scale,
             float darkening,
+            float volumetricGrowthProgress,
             float linearSpeedX)
             : Id(id)
             , X(initialX)
@@ -77,7 +78,7 @@ private:
             , Z(z)
             , Scale(scale)
             , Darkening(darkening)
-            , VolumetricGrowthProgress(0.0f)
+            , VolumetricGrowthProgress(volumetricGrowthProgress)
             , mLinearSpeedX(linearSpeedX)
         {
         }
@@ -90,7 +91,7 @@ private:
             X += dx;
 
             // Update progress: mix of time and traveled step
-            VolumetricGrowthProgress += GameParameters::SimulationStepTimeDuration<float> + std::abs(dx) * 0.5f;
+            VolumetricGrowthProgress += GameParameters::SimulationStepTimeDuration<float> + std::abs(dx) * 3.0f;
         }
 
     private:

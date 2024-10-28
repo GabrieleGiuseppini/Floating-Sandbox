@@ -10,12 +10,14 @@
 // Inputs
 in vec4 inCloud1; // Position (NDC) (vec2), TextureCoordinates (vec2)
 in vec4 inCloud2; // VirtualTextureCoordinates (vec2), Darkening, VolumetricGrowthProgress
+in float inCloud3; // TextureWidth (widest dimension)
 
 // Outputs
 out vec2 textureCoords;
 out vec2 virtualTextureCoords;
 out float darkness;
 out float volumetricGrowthProgress;
+out float textureWidth;
 
 void main()
 {
@@ -23,6 +25,7 @@ void main()
     virtualTextureCoords = inCloud2.xy;
     darkness = inCloud2.z;
     volumetricGrowthProgress = inCloud2.w;
+    textureWidth = inCloud3;
 
     gl_Position = vec4(inCloud1.xy, -1.0, 1.0);
 }
@@ -36,9 +39,10 @@ void main()
 
 // Inputs from previous shader
 in vec2 textureCoords;
-in vec2 virtualTextureCoords; // [-1-e, +1+e]
+in vec2 virtualTextureCoords; // [-1, +1]
 in float darkness;
 in float volumetricGrowthProgress;
+in float textureWidth;
 
 // The texture
 uniform sampler2D paramCloudsAtlasTexture;
@@ -52,65 +56,50 @@ uniform vec3 paramEffectiveMoonlightColor;
 
 void main()
 {
-    // Sample texture
-    vec4 textureColor = texture2D(paramCloudsAtlasTexture, textureCoords);
-
     // Calculate lamp tool intensity
     float lampToolIntensity = CalculateLampToolIntensity(gl_FragCoord.xy);
 
-    // Adjust for ambient light and mooncolor and (storm) darkness
-    vec3 cloudColor = 
-        ApplyAmbientLight(
-            textureColor.xyz,
-            paramEffectiveMoonlightColor,
-            paramEffectiveAmbientLightIntensity,
-            lampToolIntensity)
-        * darkness;
-
 #ifdef DETAILED_CLOUDS
 
-    //
-    // Apply noise as growth from center
-    //
-
-    // Center uv ~[-1., +1.]
-    vec2 virtualTextureCoordsCentered = (textureCoords - vec2(0.5, 0.5)) * 2.;
-
-    // Convert to polar coords
-    // (r, a) (r=[0.0, 1.0], a=[0.0, 1.0 CCW from W])
-    #define PI 3.1415926
+    // Virtual texture coords -> Polar coords
+    // (r, a) (r=[0.0, 1.0], a=[0.0, 2PI CCW from W])        
     vec2 ra = vec2(
-        length(virtualTextureCoordsCentered), 
-        atan(virtualTextureCoordsCentered.y, virtualTextureCoordsCentered.x));
-    // Add growth and magnify to taste
-    #define GROWTH_SPEED 0.14
-    #define MAG 6.0
-    vec2 ra2 = vec2((ra.x - volumetricGrowthProgress * GROWTH_SPEED) / MAG, ra.y / (2. * PI));
-    float n = texture2D(paramNoiseTexture, ra2).x;
+        length(virtualTextureCoords), 
+        atan(virtualTextureCoords.y, virtualTextureCoords.x));
 
-    // Silence towards center
-    float a = 1.0 - abs(n) * smoothstep(0.2, 0.4, ra.x); 
-    // Modulate to desired incisiveness, and focus constrast to lower range
-    #define VAR 0.28
-    a = (1.0 - VAR) + VAR * smoothstep(0.0, 0.8, a);
+    // Evolve with time, and use as noise sample coords
+    #define SPEED 0.045
+    vec2 noiseCoords = vec2((ra.x - volumetricGrowthProgress * SPEED) / 6., ra.y / (2. * PI));
+    float n = texture2D(paramNoiseTexture, noiseCoords).x; // [0.0, 1.0]    
     
+    // Scale noise: [-amplitude/2, +amplitude/2]
     //
-    // Combine into final color
-    //
-
-    gl_FragColor = vec4(
-        cloudColor,
-        textureColor.a * a);
+    // Amplitude is zero at borders
+    #define BASE_AMPLITUDE 0.15 // Good for a texture of width 1.0
+    float amplitude = 
+        (BASE_AMPLITUDE * textureWidth)
+        * (1.0 - smoothstep(0.85, 1.0, max(abs(virtualTextureCoords.x), abs(virtualTextureCoords.y))));
+    n = (n - 0.5) * amplitude;
+    
+    // Zero at center
+    n = n * smoothstep(0.2, 0.4, ra.x);
+    
+    // Sample cloud texture using noise as offset
+    vec4 cloudColor = texture2D(paramCloudsAtlasTexture, textureCoords + vec2(n));
 
 #else
 
-    //
-    // Combine into final color
-    //
-
-    gl_FragColor = vec4(
-        cloudColor,
-        textureColor.a);
+    // Sample texture
+    vec4 cloudColor = texture2D(paramCloudsAtlasTexture, textureCoords);
 
 #endif
+
+    // Adjust for ambient light and mooncolor and (storm) darkness
+    gl_FragColor = vec4(
+        ApplyAmbientLight(
+            cloudColor.rgb,
+            paramEffectiveMoonlightColor,
+            paramEffectiveAmbientLightIntensity,
+            lampToolIntensity) * darkness,
+        cloudColor.a);
 } 

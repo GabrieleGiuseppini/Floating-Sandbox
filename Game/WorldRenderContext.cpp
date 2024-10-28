@@ -221,12 +221,14 @@ WorldRenderContext::WorldRenderContext(
     CheckOpenGLError();
 
     // Describe vertex attributes
-    static_assert(sizeof(CloudVertex) == (4 + 4) * sizeof(float));
+    static_assert(sizeof(CloudVertex) == (4 + 4 + 1) * sizeof(float));
     glBindBuffer(GL_ARRAY_BUFFER, *mCloudVBO);
     glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Cloud1));
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Cloud1), 4, GL_FLOAT, GL_FALSE, sizeof(CloudVertex), (void *)0);
     glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Cloud2));
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Cloud2), 4, GL_FLOAT, GL_FALSE, sizeof(CloudVertex), (void *)(4 * sizeof(float)));
+    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Cloud3));
+    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Cloud3), 1, GL_FLOAT, GL_FALSE, sizeof(CloudVertex), (void *)((4 + 4) * sizeof(float)));
     CheckOpenGLError();
 
     // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
