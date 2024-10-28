@@ -68,7 +68,7 @@ void main()
         atan(virtualTextureCoords.y, virtualTextureCoords.x));
 
     // Evolve with time, and use as noise sample coords
-    #define SPEED 0.045
+    #define SPEED 0.04
     vec2 noiseCoords = vec2((ra.x - volumetricGrowthProgress * SPEED) / 6., ra.y / (2. * PI));
     float n = texture2D(paramNoiseTexture, noiseCoords).x; // [0.0, 1.0]    
     
