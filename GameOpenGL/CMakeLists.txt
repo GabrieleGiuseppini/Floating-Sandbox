@@ -13,6 +13,7 @@ set  (SOURCES
 	ShaderManager.h
 	TriangleQuadElementArrayVBO.cpp
 	TriangleQuadElementArrayVBO.h
+	UploadedTextureManager.h
 )
 
 set  (GLAD_SOURCES

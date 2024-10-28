@@ -7,6 +7,8 @@
 
 #include "TextureDatabase.h"
 
+#include <GameCore/Noise.h>
+
 namespace Render {
 
 GlobalRenderContext::GlobalRenderContext(ShaderManager<ShaderManagerTraits> & shaderManager)
@@ -21,6 +23,8 @@ GlobalRenderContext::GlobalRenderContext(ShaderManager<ShaderManagerTraits> & sh
     , mExplosionTextureAtlasMetadata()
     , mNpcTextureAtlasOpenGLHandle()
     , mUploadedNoiseTexturesManager()
+    , mPerlinNoise_8_32_043_ToUpload()
+    , mPerlinNoise_8_1024_073_ToUpload()
 {
 }
 
@@ -42,15 +46,25 @@ void GlobalRenderContext::InitializeNoiseTextures(ResourceLocator const & resour
 
     mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture>();
 
-    mUploadedNoiseTexturesManager.UploadNextFrame(
-        noiseTextureDatabase.GetGroup(NoiseTextureGroups::Noise),
-        static_cast<TextureFrameIndex>(NoiseType::Gross),
+    mUploadedNoiseTexturesManager.UploadFrame(
+        NoiseType::Gross,
+        noiseTextureDatabase.GetGroup(NoiseTextureGroups::Noise).GetFrameSpecification(static_cast<TextureFrameIndex>(NoiseType::Gross)).LoadFrame().TextureData,
+        GL_RGBA,
+        GL_RGBA,
+        GL_UNSIGNED_BYTE,
         GL_LINEAR);
 
-    mUploadedNoiseTexturesManager.UploadNextFrame(
-        noiseTextureDatabase.GetGroup(NoiseTextureGroups::Noise),
-        static_cast<TextureFrameIndex>(NoiseType::Fine),
+    mUploadedNoiseTexturesManager.UploadFrame(
+        NoiseType::Fine,
+        noiseTextureDatabase.GetGroup(NoiseTextureGroups::Noise).GetFrameSpecification(static_cast<TextureFrameIndex>(NoiseType::Fine)).LoadFrame().TextureData,
+        GL_RGBA,
+        GL_RGBA,
+        GL_UNSIGNED_BYTE,
         GL_LINEAR);
+
+    mPerlinNoise_8_32_043_ToUpload = MakePerlinNoise_8_32_043(); // Will upload at firstRenderPrepare
+
+    mPerlinNoise_8_1024_073_ToUpload = MakePerlinNoise_8_1024_073(); // Will upload at firstRenderPrepare
 }
 
 void GlobalRenderContext::InitializeGenericTextures(ResourceLocator const & resourceLocator)
@@ -288,6 +302,93 @@ void GlobalRenderContext::RenderPrepare()
     {
         mElementIndices->Upload();
     }
+
+    if (mPerlinNoise_8_32_043_ToUpload)
+    {
+        mUploadedNoiseTexturesManager.UploadFrame(
+            NoiseType::Perlin_8_32_043,
+            *mPerlinNoise_8_32_043_ToUpload,
+            GL_R32F,
+            GL_RED,
+            GL_FLOAT,
+            GL_LINEAR);
+
+        mPerlinNoise_8_32_043_ToUpload.reset();
+    }
+
+    if (mPerlinNoise_8_1024_073_ToUpload)
+    {
+        mUploadedNoiseTexturesManager.UploadFrame(
+            NoiseType::Perlin_8_1024_073,
+            *mPerlinNoise_8_1024_073_ToUpload,
+            GL_R32F,
+            GL_RED,
+            GL_FLOAT,
+            GL_LINEAR);
+
+        mPerlinNoise_8_1024_073_ToUpload.reset();
+    }
+}
+
+void GlobalRenderContext::RegeneratePerlin_8_32_043_Noise()
+{
+    mPerlinNoise_8_32_043_ToUpload = MakePerlinNoise_8_32_043();
+}
+
+void GlobalRenderContext::RegeneratePerlin_8_1024_073_Noise()
+{
+    mPerlinNoise_8_1024_073_ToUpload = MakePerlinNoise_8_1024_073();
+}
+
+std::unique_ptr<Buffer2D<float, struct IntegralTag>> GlobalRenderContext::MakePerlinNoise_8_32_043()
+{
+    return MakePerlinNoise(
+        IntegralRectSize(1024, 1024),
+        8,
+        32,
+        0.43f);
+}
+
+std::unique_ptr<Buffer2D<float, struct IntegralTag>> GlobalRenderContext::MakePerlinNoise_8_1024_073()
+{
+    return MakePerlinNoise(
+        IntegralRectSize(1024, 1024),
+        8,
+        1024,
+        0.73f);
+}
+
+std::unique_ptr<Buffer2D<float, struct IntegralTag>> GlobalRenderContext::MakePerlinNoise(
+    IntegralRectSize const & size,
+    int firstGridDensity,
+    int lastGridDensity,
+    float persistence)
+{
+    auto buf = std::make_unique<Buffer2D<float, struct IntegralTag>>(
+        Noise::CreateRepeatableFractal2DPerlinNoise(
+            size,
+            firstGridDensity,
+            lastGridDensity,
+            persistence));
+
+    //
+    // Scale values to 0, +1
+    //
+
+    float minVal = std::numeric_limits<float>::max();
+    float maxVal = std::numeric_limits<float>::lowest();
+    for (size_t i = 0; i < buf->Size.GetLinearSize(); ++i)
+    {
+        minVal = std::min(minVal, buf->Data[i]);
+        maxVal = std::max(maxVal, buf->Data[i]);
+    }
+
+    for (size_t i = 0; i < buf->Size.GetLinearSize(); ++i)
+    {
+        buf->Data[i] = (buf->Data[i] - minVal) / (maxVal - minVal);
+    }
+
+    return buf;
 }
 
 }

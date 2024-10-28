@@ -12,7 +12,6 @@
 #include "ShaderTypes.h"
 #include "TextureAtlas.h"
 #include "TextureTypes.h"
-#include "UploadedTextureManager.h"
 #include "ViewModel.h"
 
 #include <GameOpenGL/GameOpenGL.h>
@@ -809,11 +808,9 @@ private:
     void ApplyOceanTextureIndexChanges(RenderParameters const & renderParameters);
     void ApplyLandRenderParametersChanges(RenderParameters const & renderParameters);
     void ApplyLandTextureIndexChanges(RenderParameters const & renderParameters);
-    void ApplyLandNoiseChanges(RenderParameters const & renderParameters);
 
     void RecalculateClearCanvasColor(RenderParameters const & renderParameters);
     void RecalculateWorldBorder(RenderParameters const & renderParameters);
-    static std::unique_ptr<Buffer2D<float, struct IntegralTag>> MakeLandNoise(RenderParameters const & renderParameters);
 
 private:
 
@@ -883,20 +880,20 @@ private:
     struct CloudVertex
     {
         vec2f ndcPosition;
-        vec2f atlasTexturePos;
-        vec2f virtualTexturePos;
+        vec2f textureCoords;
+        vec2f virtualTextureCoords;
         float darkness;
         float volumetricGrowthProgress;
 
         CloudVertex(
             vec2f _ndcPosition,
-            vec2f _atlasTexturePos,
-            vec2f _virtualTexturePos,
+            vec2f _textureCoords,
+            vec2f _virtualTextureCoords,
             float _darkness,
             float _volumetricGrowthProgress)
             : ndcPosition(_ndcPosition)
-            , atlasTexturePos(_atlasTexturePos)
-            , virtualTexturePos(_virtualTexturePos)
+            , textureCoords(_textureCoords)
+            , virtualTextureCoords(_virtualTextureCoords)
             , darkness(_darkness)
             , volumetricGrowthProgress(_volumetricGrowthProgress)
         {}
@@ -1151,15 +1148,11 @@ private:
     size_t mCloudShadowsTextureSize;
     bool mHasCloudShadowsTextureBeenAllocated;
 
-    UploadedTextureManager<WorldTextureGroups> mUploadedWorldTextureManager;
-
     std::vector<TextureFrameSpecification<WorldTextureGroups>> mOceanTextureFrameSpecifications;
     GameOpenGLTexture mOceanTextureOpenGLHandle;
 
     std::vector<TextureFrameSpecification<WorldTextureGroups>> mLandTextureFrameSpecifications;
     GameOpenGLTexture mLandTextureOpenGLHandle;
-    GameOpenGLTexture mLandNoiseTextureOpenGLHandle;
-    std::unique_ptr<Buffer2D<float, struct IntegralTag>> mLandNoiseToUpload;
 
     std::unique_ptr<TextureAtlasMetadata<FishTextureGroups>> mFishTextureAtlasMetadata;
     GameOpenGLTexture mFishTextureAtlasOpenGLHandle;

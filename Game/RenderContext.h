@@ -15,7 +15,6 @@
 #include "ShipRenderContext.h"
 #include "TextureAtlas.h"
 #include "TextureTypes.h"
-#include "UploadedTextureManager.h"
 #include "ViewModel.h"
 #include "WorldRenderContext.h"
 

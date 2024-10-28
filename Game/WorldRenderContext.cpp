@@ -12,7 +12,6 @@
 #include <GameCore/GameWallClock.h>
 #include <GameCore/ImageTools.h>
 #include <GameCore/Log.h>
-#include <GameCore/Noise.h>
 
 #include <cstring>
 #include <limits>
@@ -90,13 +89,10 @@ WorldRenderContext::WorldRenderContext(
     , mCloudShadowsTextureOpenGLHandle()
     , mCloudShadowsTextureSize(0)
     , mHasCloudShadowsTextureBeenAllocated(false)
-    , mUploadedWorldTextureManager()
     , mOceanTextureFrameSpecifications()
     , mOceanTextureOpenGLHandle()
     , mLandTextureFrameSpecifications()
     , mLandTextureOpenGLHandle()
-    , mLandNoiseTextureOpenGLHandle()
-    , mLandNoiseToUpload()
     , mFishTextureAtlasMetadata()
     , mFishTextureAtlasOpenGLHandle()
     , mGenericLinearTextureAtlasMetadata(globalRenderContext.GetGenericLinearTextureAtlasMetadata())
@@ -676,7 +672,7 @@ void WorldRenderContext::OnReset(RenderParameters const & renderParameters)
     if (renderParameters.LandRenderDetail == LandRenderDetailType::Detailed)
     {
         // Re-generate noise
-        mLandNoiseToUpload = MakeLandNoise(renderParameters);
+        mGlobalRenderContext.RegeneratePerlin_8_1024_073_Noise();
     }
 }
 
@@ -892,12 +888,6 @@ void WorldRenderContext::ProcessParameterChanges(RenderParameters const & render
     {
         ApplyLandTextureIndexChanges(renderParameters);
     }
-
-    if (renderParameters.IsLandRenderDetailDirty
-        || !!mLandNoiseToUpload)
-    {
-        ApplyLandNoiseChanges(renderParameters);
-    }
 }
 
 void WorldRenderContext::RenderPrepareStars(RenderParameters const & /*renderParameters*/)
@@ -1050,7 +1040,7 @@ void WorldRenderContext::RenderDrawCloudsAndBackgroundLightnings(RenderParameter
             mShaderManager.ActivateProgram<ProgramType::CloudsDetailed>();
 
             mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture>();
-            glBindTexture(GL_TEXTURE_2D, *mLandNoiseTextureOpenGLHandle);
+            glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(NoiseType::Perlin_8_32_043));
         }
         else
         {
@@ -1107,7 +1097,7 @@ void WorldRenderContext::RenderDrawCloudsAndBackgroundLightnings(RenderParameter
             mShaderManager.ActivateProgram<ProgramType::CloudsDetailed>();
 
             mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture>();
-            glBindTexture(GL_TEXTURE_2D, *mLandNoiseTextureOpenGLHandle);
+            glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(NoiseType::Perlin_8_32_043));
         }
         else
         {
@@ -1411,9 +1401,8 @@ void WorldRenderContext::RenderDrawOceanFloor(RenderParameters const & renderPar
     if (isHighQuality)
     {
         // Activate noise texture
-        assert(!!mLandNoiseTextureOpenGLHandle);
         mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture>();
-        glBindTexture(GL_TEXTURE_2D, *mLandNoiseTextureOpenGLHandle);
+        glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(NoiseType::Perlin_8_1024_073));
     }
 
     if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Wireframe)
@@ -2180,70 +2169,6 @@ void WorldRenderContext::ApplyLandTextureIndexChanges(RenderParameters const & r
     mShaderManager.SetTextureParameters<ProgramType::LandTextureDetailed>();
 }
 
-void WorldRenderContext::ApplyLandNoiseChanges(RenderParameters const & renderParameters)
-{
-    // Dealloc noise texture anyway
-    mLandNoiseTextureOpenGLHandle.reset();
-
-    if (renderParameters.LandRenderDetail == LandRenderDetailType::Detailed)
-    {
-        // We do want noise
-
-        //
-        // Make sure we have a noise
-        //
-
-        if (!mLandNoiseToUpload)
-        {
-            mLandNoiseToUpload = MakeLandNoise(renderParameters); // Only place where we generate noise "inline", only when user has changed detail mode
-        }
-
-        //
-        // Allocate texture
-        //
-
-        GLuint tmpGLuint;
-        glGenTextures(1, &tmpGLuint);
-        mLandNoiseTextureOpenGLHandle = tmpGLuint;
-
-        // Bind texture
-        mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture>();
-        glBindTexture(GL_TEXTURE_2D, *mLandNoiseTextureOpenGLHandle);
-        CheckOpenGLError();
-
-        // Set repeat mode
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        CheckOpenGLError();
-
-        // Set filtering
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-        //
-        // Upload texture
-        //
-
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, mLandNoiseToUpload->Size.width, mLandNoiseToUpload->Size.height, 0, GL_RED, GL_FLOAT, mLandNoiseToUpload->Data.get());
-        CheckOpenGLError();
-
-        // Unbind texture
-        glBindTexture(GL_TEXTURE_2D, 0);
-
-        //
-        // We've uploaded the texture, can forget buffer now
-        //
-
-        mLandNoiseToUpload.reset();
-    }
-    else
-    {
-        assert(renderParameters.LandRenderDetail == LandRenderDetailType::Basic);
-
-        // Nothing here
-    }
-}
-
 template <typename TVertexBuffer>
 static void EmplaceWorldBorderQuad(
     float x1,
@@ -2381,37 +2306,6 @@ void WorldRenderContext::RecalculateWorldBorder(RenderParameters const & renderP
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
-}
-
-std::unique_ptr<Buffer2D<float, struct IntegralTag>> WorldRenderContext::MakeLandNoise(RenderParameters const & /*renderParameters*/) // Not yet needed
-{
-    auto constexpr NoiseTextureSize = IntegralRectSize(1024, 1024);
-
-    auto buf = std::make_unique<Buffer2D<float, struct IntegralTag>>(
-        Noise::CreateRepeatableFractal2DPerlinNoise(
-            NoiseTextureSize,
-            8,
-            1024, //32,
-            0.73f)); //0.43f));
-
-    //
-    // Scale values to 0, +1
-    //
-
-    float minVal = std::numeric_limits<float>::max();
-    float maxVal = std::numeric_limits<float>::lowest();
-    for (size_t i = 0; i < buf->Size.GetLinearSize(); ++i)
-    {
-        minVal = std::min(minVal, buf->Data[i]);
-        maxVal = std::max(maxVal, buf->Data[i]);
-    }
-
-    for (size_t i = 0; i < buf->Size.GetLinearSize(); ++i)
-    {
-        buf->Data[i] = (buf->Data[i] - minVal) / (maxVal - minVal);
-    }
-
-    return buf;
 }
 
 }

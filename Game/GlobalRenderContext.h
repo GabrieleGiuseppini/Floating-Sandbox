@@ -10,11 +10,13 @@
 #include "ShaderTypes.h"
 #include "TextureAtlas.h"
 #include "TextureTypes.h"
-#include "UploadedTextureManager.h"
 
 #include <GameOpenGL/GameOpenGL.h>
 #include <GameOpenGL/ShaderManager.h>
 #include <GameOpenGL/TriangleQuadElementArrayVBO.h>
+#include <GameOpenGL/UploadedTextureManager.h>
+
+#include <GameCore/Buffer2D.h>
 
 #include <cassert>
 #include <memory>
@@ -75,21 +77,37 @@ public:
 
     inline GLuint GetNoiseTextureOpenGLHandle(NoiseType noiseType) const
     {
-        return mUploadedNoiseTexturesManager.GetOpenGLHandle(NoiseTextureGroups::Noise, static_cast<TextureFrameIndex>(noiseType));
+        return mUploadedNoiseTexturesManager.GetOpenGLHandle(noiseType);
     }
+
+    void RegeneratePerlin_8_32_043_Noise();
+
+    void RegeneratePerlin_8_1024_073_Noise();
+
+private:
+
+    static std::unique_ptr<Buffer2D<float, struct IntegralTag>> MakePerlinNoise_8_32_043();
+
+    static std::unique_ptr<Buffer2D<float, struct IntegralTag>> MakePerlinNoise_8_1024_073();
+
+    static std::unique_ptr<Buffer2D<float, struct IntegralTag>> MakePerlinNoise(
+        IntegralRectSize const & size,
+        int firstGridDensity,
+        int lastGridDensity,
+        float persistence);
 
 private:
 
     ShaderManager<ShaderManagerTraits> & mShaderManager;
 
     //
-    // Element indices
+    // Global Element indices
     //
 
     std::unique_ptr<TriangleQuadElementArrayVBO> mElementIndices;
 
     //
-    // Textures
+    // Global Textures
     //
 
     GameOpenGLTexture mGenericLinearTextureAtlasOpenGLHandle;
@@ -103,7 +121,9 @@ private:
 
     GameOpenGLTexture mNpcTextureAtlasOpenGLHandle;
 
-    UploadedTextureManager<NoiseTextureGroups> mUploadedNoiseTexturesManager;
+    UploadedTextureManager<NoiseType> mUploadedNoiseTexturesManager;
+    std::unique_ptr<Buffer2D<float, struct IntegralTag>> mPerlinNoise_8_32_043_ToUpload; // When set, will be uploaded in rendering thread
+    std::unique_ptr<Buffer2D<float, struct IntegralTag>> mPerlinNoise_8_1024_073_ToUpload; // When set, will be uploaded in rendering thread
 };
 
 }

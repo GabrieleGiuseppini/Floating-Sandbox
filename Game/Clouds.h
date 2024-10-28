@@ -89,7 +89,7 @@ private:
             // Update position
             X += dx;
 
-            // Update progress: mix of time and step
+            // Update progress: mix of time and traveled step
             VolumetricGrowthProgress += GameParameters::SimulationStepTimeDuration<float> + std::abs(dx) * 0.5f;
         }
 

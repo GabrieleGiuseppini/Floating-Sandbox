@@ -155,7 +155,10 @@ https://youtu.be/LNVxgPC4qkA
 		+ First off, technical debt:
 			+ Do clouds as baked atlas
 			+ Do index-based rendering
-		- Magic work:
+		+ Magic work:
+			+ See shader on shader toy: use cloud texture coords offset based on noise centered around 0.
+				+ But solve problem of going to other texture: need more room around textures?
+					+ Cannot clamp in shader: would still look awful, and nice to have long flanges
 
 			void mainImage( out vec4 fragColor, in vec2 fragCoord )
 			{
@@ -211,11 +214,23 @@ https://youtu.be/LNVxgPC4qkA
 				1.0);
 			    
 			}
+
+		+ Noise needed:
+			+ Perlin-8,32,0.43 (different than land)
+				+ Move from WorldRenderContext to GlobalRenderContext
+					+ Basically move mLandNoiseTextureOpenGLHandle
+			+ Test:
+				+ Land noise
+				+ Clouds (old  noise)
+
+		- Shader
+		
+		- Triage current cloud textures
+			- In ShaderToy
 		- Test AdobeStock clouds
 			 - Test alpha pre-multiply first with our current clouds; if they're not OK, we might have troubles with Adobe's as they are black
-		- See shader on shader toy: use cloud texture coords offset based on noise centered around 0.
-			- But solve problem of going to other texture: need more room around textures?
-				- Cannot clamp in shader: would still look awful, and nice to have long flanges
+
+		- Cleanup vertex attribute members that are not needed
 
 		- Test clouds distributed over Z layers/depth
 

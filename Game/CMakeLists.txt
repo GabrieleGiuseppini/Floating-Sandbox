@@ -158,8 +158,6 @@ set  (RENDER_SOURCES
 	TextureAtlas.h
 	TextureDatabase-inl.h
 	TextureDatabase.h
-	UploadedTextureManager.h
-	UploadedTextureManager-inl.h
 	ViewModel.h
 	WorldRenderContext.cpp
 	WorldRenderContext.h)
