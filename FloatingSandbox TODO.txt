@@ -168,19 +168,21 @@ https://youtu.be/LNVxgPC4qkA
 				+ Clouds (old  noise)
 		= Shader
 			+ Does amplitude need to depend on texture coords w/h?
-		= Randomize starting progress
+		+ Randomize starting progress
 		- Tests:
 			- Basic
 				- Moonlight, Lamp
 			- Detailed
-				- Moonlight, Lamp				
+				- Moonlight, Lamp
+			- Storm
 		+ Triage current cloud textures
 			+ In ShaderToy
 
-		- Test AdobeStock clouds
-			 - Test alpha pre-multiply first with our current clouds; if they're not OK, we might have troubles with Adobe's as they are black
-
 		- Cleanup vertex attribute members that are not needed
+
+		- Test AdobeStock clouds
+
+		- Changelist
 
 		- Test clouds distributed over Z layers/depth
 

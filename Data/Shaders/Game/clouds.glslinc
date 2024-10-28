@@ -10,14 +10,14 @@
 // Inputs
 in vec4 inCloud1; // Position (NDC) (vec2), TextureCoordinates (vec2)
 in vec4 inCloud2; // VirtualTextureCoordinates (vec2), Darkening, VolumetricGrowthProgress
-in float inCloud3; // TextureWidth (widest dimension)
+in float inCloud3; // TextureWidthAdjust (widest dimension)
 
 // Outputs
 out vec2 textureCoords;
 out vec2 virtualTextureCoords;
 out float darkness;
 out float volumetricGrowthProgress;
-out float textureWidth;
+out float textureWidthAdjust;
 
 void main()
 {
@@ -25,7 +25,7 @@ void main()
     virtualTextureCoords = inCloud2.xy;
     darkness = inCloud2.z;
     volumetricGrowthProgress = inCloud2.w;
-    textureWidth = inCloud3;
+    textureWidthAdjust = inCloud3;
 
     gl_Position = vec4(inCloud1.xy, -1.0, 1.0);
 }
@@ -42,7 +42,7 @@ in vec2 textureCoords;
 in vec2 virtualTextureCoords; // [-1, +1]
 in float darkness;
 in float volumetricGrowthProgress;
-in float textureWidth;
+in float textureWidthAdjust;
 
 // The texture
 uniform sampler2D paramCloudsAtlasTexture;
@@ -77,7 +77,7 @@ void main()
     // Amplitude is zero at borders
     #define BASE_AMPLITUDE 0.15 // Good for a texture of width 1.0
     float amplitude = 
-        (BASE_AMPLITUDE * textureWidth)
+        (BASE_AMPLITUDE * textureWidthAdjust)
         * (1.0 - smoothstep(0.85, 1.0, max(abs(virtualTextureCoords.x), abs(virtualTextureCoords.y))));
     n = (n - 0.5) * amplitude;
     

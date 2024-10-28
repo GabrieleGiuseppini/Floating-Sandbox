@@ -228,7 +228,7 @@ public:
         float const bottomY = ndcY - scale * cloudAtlasFrameMetadata.FrameMetadata.AnchorCenterWorld.y * aspectRatio;
         float const topY = bottomY + ndcHeight;
 
-        float const textureWidth = std::max(cloudAtlasFrameMetadata.TextureSpaceWidth, cloudAtlasFrameMetadata.TextureSpaceHeight);
+        float const textureWidthAdjust = std::max(cloudAtlasFrameMetadata.TextureSpaceWidth, cloudAtlasFrameMetadata.TextureSpaceHeight);
 
         // top-left
         mCloudVertexBuffer.emplace_back(
@@ -237,7 +237,7 @@ public:
             vec2f(-1.0f, 1.0f),
             darkening,
             volumetricGrowthProgress,
-            textureWidth);
+            textureWidthAdjust);
 
         // bottom-left
         mCloudVertexBuffer.emplace_back(
@@ -246,7 +246,7 @@ public:
             vec2f(-1.0f, -1.0f),
             darkening,
             volumetricGrowthProgress,
-            textureWidth);
+            textureWidthAdjust);
 
         // top-right
         mCloudVertexBuffer.emplace_back(
@@ -255,7 +255,7 @@ public:
             vec2f(1.0f, 1.0f),
             darkening,
             volumetricGrowthProgress,
-            textureWidth);
+            textureWidthAdjust);
 
         // bottom-right
         mCloudVertexBuffer.emplace_back(
@@ -264,7 +264,7 @@ public:
             vec2f(1.0f, -1.0f),
             darkening,
             volumetricGrowthProgress,
-            textureWidth);
+            textureWidthAdjust);
     }
 
     void UploadCloudsEnd();
@@ -872,7 +872,7 @@ private:
         vec2f virtualTextureCoords;
         float darkness;
         float volumetricGrowthProgress;
-        float textureWidth;
+        float textureWidthAdjust;
 
         CloudVertex(
             vec2f _ndcPosition,
@@ -880,13 +880,13 @@ private:
             vec2f _virtualTextureCoords,
             float _darkness,
             float _volumetricGrowthProgress,
-            float _textureWidth)
+            float _textureWidthAdjust)
             : ndcPosition(_ndcPosition)
             , textureCoords(_textureCoords)
             , virtualTextureCoords(_virtualTextureCoords)
             , darkness(_darkness)
             , volumetricGrowthProgress(_volumetricGrowthProgress)
-            , textureWidth(_textureWidth)
+            , textureWidthAdjust(_textureWidthAdjust)
         {}
     };
 
