@@ -83,7 +83,7 @@ void main()
     n = (n - 0.5) * amplitude;
     
     // Zero at center
-    n = n * smoothstep(0.2, 0.4, ra.x);
+    n = n * smoothstep(0.2, 0.3, ra.x);
     
     // Sample cloud texture using noise as offset
     vec4 cloudColor = texture2D(paramCloudsAtlasTexture, textureCoords + vec2(n));

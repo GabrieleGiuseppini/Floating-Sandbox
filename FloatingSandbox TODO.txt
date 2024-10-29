@@ -181,6 +181,9 @@ https://youtu.be/LNVxgPC4qkA
 				+ Moonlight, Lamp
 			+ Storm
 
+		- Test enlarging canvas of tight clouds
+			- And if OK: reduce border flattening
+
 		- Test AdobeStock/Getty clouds
 
 		- Changelist
