@@ -80,15 +80,11 @@ public:
         return mUploadedNoiseTexturesManager.GetOpenGLHandle(noiseType);
     }
 
-    void RegeneratePerlin_8_32_043_Noise();
+    void RegeneratePerlin_4_16_043_Noise();
 
     void RegeneratePerlin_8_1024_073_Noise();
 
 private:
-
-    static std::unique_ptr<Buffer2D<float, struct IntegralTag>> MakePerlinNoise_8_32_043();
-
-    static std::unique_ptr<Buffer2D<float, struct IntegralTag>> MakePerlinNoise_8_1024_073();
 
     static std::unique_ptr<Buffer2D<float, struct IntegralTag>> MakePerlinNoise(
         IntegralRectSize const & size,
@@ -122,7 +118,7 @@ private:
     GameOpenGLTexture mNpcTextureAtlasOpenGLHandle;
 
     UploadedTextureManager<NoiseType> mUploadedNoiseTexturesManager;
-    std::unique_ptr<Buffer2D<float, struct IntegralTag>> mPerlinNoise_8_32_043_ToUpload; // When set, will be uploaded in rendering thread
+    std::unique_ptr<Buffer2D<float, struct IntegralTag>> mPerlinNoise_4_16_043_ToUpload; // When set, will be uploaded in rendering thread
     std::unique_ptr<Buffer2D<float, struct IntegralTag>> mPerlinNoise_8_1024_073_ToUpload; // When set, will be uploaded in rendering thread
 };
 

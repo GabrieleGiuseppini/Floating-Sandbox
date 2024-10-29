@@ -166,25 +166,24 @@ https://youtu.be/LNVxgPC4qkA
 			+ Test:
 				+ Land noise
 				+ Clouds (old  noise)
-		= Shader
+		+ Shader
 			+ Does amplitude need to depend on texture coords w/h?
+			+ Play with detail
+		+ Triage current cloud textures
+			+ In ShaderToy		
 		+ Randomize starting progress
+		= Verify that the Perlin we're using is the same as on the desktop
+			+ Save image, before and after recalibrating
 		- Tests:
 			- Basic
 				- Moonlight, Lamp
 			- Detailed
 				- Moonlight, Lamp
 			- Storm
-		+ Triage current cloud textures
-			+ In ShaderToy
-
-		- Cleanup vertex attribute members that are not needed
 
 		- Test AdobeStock clouds
 
 		- Changelist
-
-		- Test clouds distributed over Z layers/depth
 
 	- Send build for testing
 	- Bump up version
@@ -372,7 +371,7 @@ https://youtu.be/LNVxgPC4qkA
 
 	+ Redo notifications' EphemeralText: RollingText
 
-	- Do other atlases (Clouds, GenericLinear, GenericMipMapped)
+	- Do other atlases (GenericLinear, GenericMipMapped)
 		- Clean checkout
 		- Move to Baking
 		- Produce atlases
@@ -420,7 +419,7 @@ https://youtu.be/LNVxgPC4qkA
 				- After: upload= render=
 		- If works, other candidates:
 			- Flames
-			- Clouds
+			+ Clouds
 			- Generic textures
 			- Text (NotificationContext)
 			- Fishes
