@@ -1042,7 +1042,7 @@ void WorldRenderContext::RenderDrawCloudsAndBackgroundLightnings(RenderParameter
             mShaderManager.ActivateProgram<ProgramType::CloudsDetailed>();
 
             mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture>();
-            glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(NoiseType::Perlin_4_16_043));
+            glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(NoiseType::Perlin_4_32_043));
         }
         else
         {
@@ -1099,7 +1099,7 @@ void WorldRenderContext::RenderDrawCloudsAndBackgroundLightnings(RenderParameter
             mShaderManager.ActivateProgram<ProgramType::CloudsDetailed>();
 
             mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture>();
-            glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(NoiseType::Perlin_4_16_043));
+            glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(NoiseType::Perlin_4_32_043));
         }
         else
         {

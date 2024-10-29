@@ -97,7 +97,7 @@ enum class NoiseType : uint32_t
 {
     Gross = 0,
     Fine = 1,
-    Perlin_4_16_043 = 2,
+    Perlin_4_32_043 = 2,
     Perlin_8_1024_073 = 3
 };
 

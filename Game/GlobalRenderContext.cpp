@@ -23,7 +23,7 @@ GlobalRenderContext::GlobalRenderContext(ShaderManager<ShaderManagerTraits> & sh
     , mExplosionTextureAtlasMetadata()
     , mNpcTextureAtlasOpenGLHandle()
     , mUploadedNoiseTexturesManager()
-    , mPerlinNoise_4_16_043_ToUpload()
+    , mPerlinNoise_4_32_043_ToUpload()
     , mPerlinNoise_8_1024_073_ToUpload()
 {
 }
@@ -62,7 +62,7 @@ void GlobalRenderContext::InitializeNoiseTextures(ResourceLocator const & resour
         GL_UNSIGNED_BYTE,
         GL_LINEAR);
 
-    RegeneratePerlin_4_16_043_Noise(); // Will upload at firstRenderPrepare
+    RegeneratePerlin_4_32_043_Noise(); // Will upload at firstRenderPrepare
 
     RegeneratePerlin_8_1024_073_Noise(); // Will upload at firstRenderPrepare
 }
@@ -303,17 +303,17 @@ void GlobalRenderContext::RenderPrepare()
         mElementIndices->Upload();
     }
 
-    if (mPerlinNoise_4_16_043_ToUpload)
+    if (mPerlinNoise_4_32_043_ToUpload)
     {
         mUploadedNoiseTexturesManager.UploadFrame(
-            NoiseType::Perlin_4_16_043,
-            *mPerlinNoise_4_16_043_ToUpload,
+            NoiseType::Perlin_4_32_043,
+            *mPerlinNoise_4_32_043_ToUpload,
             GL_R32F,
             GL_RED,
             GL_FLOAT,
             GL_LINEAR);
 
-        mPerlinNoise_4_16_043_ToUpload.reset();
+        mPerlinNoise_4_32_043_ToUpload.reset();
     }
 
     if (mPerlinNoise_8_1024_073_ToUpload)
@@ -330,12 +330,12 @@ void GlobalRenderContext::RenderPrepare()
     }
 }
 
-void GlobalRenderContext::RegeneratePerlin_4_16_043_Noise()
+void GlobalRenderContext::RegeneratePerlin_4_32_043_Noise()
 {
-    mPerlinNoise_4_16_043_ToUpload = MakePerlinNoise(
+    mPerlinNoise_4_32_043_ToUpload = MakePerlinNoise(
         IntegralRectSize(1024, 1024),
         4,
-        16,
+        32,
         0.43f);
 }
 

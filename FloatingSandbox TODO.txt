@@ -172,16 +172,16 @@ https://youtu.be/LNVxgPC4qkA
 		+ Triage current cloud textures
 			+ In ShaderToy		
 		+ Randomize starting progress
-		= Verify that the Perlin we're using is the same as on the desktop
+		+ Verify that the Perlin we're using is the same as on the desktop
 			+ Save image, before and after recalibrating
-		- Tests:
+		= Tests:
 			- Basic
 				- Moonlight, Lamp
-			- Detailed
-				- Moonlight, Lamp
+			+ Detailed
+				+ Moonlight, Lamp
 			- Storm
 
-		- Test AdobeStock clouds
+		- Test AdobeStock/GEtty clouds
 
 		- Changelist
 
