@@ -1113,7 +1113,7 @@ void WorldRenderContext::RenderDrawCloudsAndBackgroundLightnings(RenderParameter
             GL_TRIANGLES,
             static_cast<GLsizei>(elementIndexCount) - cloudsOverLightningElementIndexStart,
             GL_UNSIGNED_INT,
-            (GLvoid *)static_cast<size_t>(cloudsOverLightningElementIndexStart));
+            (GLvoid *)(static_cast<size_t>(cloudsOverLightningElementIndexStart) * sizeof(int)));
 
         CheckOpenGLError();
     }

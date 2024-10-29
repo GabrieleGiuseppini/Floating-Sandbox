@@ -174,12 +174,12 @@ https://youtu.be/LNVxgPC4qkA
 		+ Randomize starting progress
 		+ Verify that the Perlin we're using is the same as on the desktop
 			+ Save image, before and after recalibrating
-		= Tests:
+		+ Tests:
 			+ Basic
 				+ Moonlight, Lamp
 			+ Detailed
 				+ Moonlight, Lamp
-			- Storm
+			+ Storm
 
 		- Test AdobeStock/Getty clouds
 

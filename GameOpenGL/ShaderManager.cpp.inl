@@ -104,18 +104,6 @@ void ShaderManager<Traits>::CompileShader(
             shaderSource,
             allShaderSources);
 
-        // TODOTEST
-        if (programName == "ShipGenericMipMappedTextures")
-        {
-            std::ofstream oss1("C:\\Users\\NEUROD~1\\AppData\\Local\\Temp\\foo1.txt");
-            oss1 << shaderSource;
-            oss1.close();
-
-            std::ofstream oss2("C:\\Users\\NEUROD~1\\AppData\\Local\\Temp\\foo2.txt");
-            oss2 << preprocessedShaderSource;
-            oss2.close();
-        }
-
         // Split the source file
         auto [vertexShaderSource, fragmentShaderSource] = SplitSource(preprocessedShaderSource);
 
