@@ -175,13 +175,13 @@ https://youtu.be/LNVxgPC4qkA
 		+ Verify that the Perlin we're using is the same as on the desktop
 			+ Save image, before and after recalibrating
 		= Tests:
-			- Basic
-				- Moonlight, Lamp
+			+ Basic
+				+ Moonlight, Lamp
 			+ Detailed
 				+ Moonlight, Lamp
 			- Storm
 
-		- Test AdobeStock/GEtty clouds
+		- Test AdobeStock/Getty clouds
 
 		- Changelist
 

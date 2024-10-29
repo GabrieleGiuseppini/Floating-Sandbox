@@ -6,7 +6,7 @@
 	"hasOwnAmbientLight": false,
 	"frames":[
 		{	
-			"worldScaling": 0.00078125,
+			"worldScaling": 0.0008,
 			"filenamePattern": "cloud_.*"
 		}
 	]
