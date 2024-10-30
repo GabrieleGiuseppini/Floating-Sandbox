@@ -2,5 +2,6 @@
 	"alphaPreMultiply": false,
 	"binaryTransparencySmoothing": true,
 	"mipMappable": true,
-	"regular": false
+	"regular": false,
+	"suppressDuplicates": true
 }

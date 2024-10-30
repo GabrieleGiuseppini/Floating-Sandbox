@@ -20,6 +20,7 @@ set  (GAME_SOURCES
 	IGameControllerSettings.h
 	IGameControllerSettingsOptions.h
 	IGameEventHandlers.h
+	ImageFileMap.h
 	ImageFileTools.cpp
 	ImageFileTools.h
 	LayerElements.h

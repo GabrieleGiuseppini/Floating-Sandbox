@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include <GameCore/Colors.h>
 #include <GameCore/DeSerializationBuffer.h>
 #include <GameCore/ImageData.h>
 
@@ -22,14 +23,30 @@ public:
 
     static ImageSize GetImageSize(std::filesystem::path const & filepath);
 
+    template<typename TColor>
+    static ImageData<TColor> LoadImageFile(std::filesystem::path const & filepath);
+
+    template<>
+    static ImageData<rgbaColor> LoadImageFile<rgbaColor>(std::filesystem::path const & filepath)
+    {
+        return LoadImageRgba(filepath);
+    }
+
+    template<>
+    static ImageData<rgbColor> LoadImageFile<rgbColor>(std::filesystem::path const & filepath)
+    {
+        return LoadImageRgb(filepath);
+    }
+
     static RgbaImageData LoadImageRgba(std::filesystem::path const & filepath);
     static RgbImageData LoadImageRgb(std::filesystem::path const & filepath);
+
     static RgbaImageData LoadImageRgbaAndMagnify(std::filesystem::path const & filepath, int magnificationFactor);
     static RgbaImageData LoadImageRgbaAndResize(std::filesystem::path const & filepath, int resizedWidth);
     static RgbaImageData LoadImageRgbaAndResize(std::filesystem::path const & filepath, ImageSize const & maxSize);
     static RgbImageData LoadImageRgbAndResize(std::filesystem::path const & filepath, ImageSize const & maxSize);
 
-    static void SavePngImage(        
+    static void SavePngImage(
         RgbaImageData const & image,
         std::filesystem::path filepath);
 

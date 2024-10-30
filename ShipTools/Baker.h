@@ -24,6 +24,7 @@ public:
         bool BinaryTransparencySmoothing;
         bool MipMappable;
         bool Regular;
+        bool SuppressDuplicates;
 
         static AtlasBakingOptions Deserialize(std::filesystem::path const & optionsJsonFilePath)
         {
@@ -33,19 +34,21 @@ public:
             bool mipMappable = Utils::GetMandatoryJsonMember<bool>(rootJsonObject, "mipMappable");
             bool binaryTransparencySmoothing = Utils::GetMandatoryJsonMember<bool>(rootJsonObject, "binaryTransparencySmoothing");
             bool regular = Utils::GetMandatoryJsonMember<bool>(rootJsonObject, "regular");
+            bool suppressDuplicates = Utils::GetMandatoryJsonMember<bool>(rootJsonObject, "suppressDuplicates");
 
             return AtlasBakingOptions({
                 alphaPreMultiply,
                 binaryTransparencySmoothing,
                 mipMappable,
-                regular });
+                regular,
+                suppressDuplicates });
         }
     };
 
 public:
 
     template<typename TextureDatabaseTraits>
-    static size_t BakeAtlas(
+    static std::tuple<size_t, ImageSize> BakeAtlas(
         std::filesystem::path const & texturesRootDirectoryPath,
         std::filesystem::path const & outputDirectoryPath,
         AtlasBakingOptions const & options)
@@ -75,6 +78,8 @@ public:
             atlasOptions = atlasOptions | Render::AtlasOptions::BinaryTransparencySmoothing;
         if (options.MipMappable)
             atlasOptions = atlasOptions | Render::AtlasOptions::MipMappable;
+        if (options.SuppressDuplicates)
+            atlasOptions = atlasOptions | Render::AtlasOptions::SuppressDuplicates;
 
         auto textureAtlas = options.Regular
             ? Render::TextureAtlasBuilder<typename TextureDatabaseTraits::TextureGroups>::BuildRegularAtlas(
@@ -99,6 +104,6 @@ public:
             TextureDatabaseTraits::DatabaseName,
             outputDirectoryPath);
 
-        return textureAtlas.Metadata.GetFrameCount();
+        return { textureAtlas.Metadata.GetFrameCount(), textureAtlas.AtlasData.Size };
     }
 };

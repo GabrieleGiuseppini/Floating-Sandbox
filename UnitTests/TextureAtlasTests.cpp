@@ -6,13 +6,31 @@
 
 namespace Render {
 
+RgbaImageData DUMMY_IMAGE(5, 5, rgbaColor(0x01, 0x01, 0x01, 0x01));
+
 TEST(TextureAtlasTests, Specification_OneTexture)
 {
     std::vector<TextureAtlasBuilder<CloudTextureGroups>::TextureInfo> textureInfos{
         { {CloudTextureGroups::Cloud, 5}, {43, 12} }
     };
 
-    auto atlasSpecification = TextureAtlasBuilder<CloudTextureGroups>::BuildAtlasSpecification(textureInfos);
+    auto atlasSpecification = TextureAtlasBuilder<CloudTextureGroups>::BuildAtlasSpecification(
+        textureInfos,
+        AtlasOptions::None,
+        [](auto const &) -> TextureFrame<CloudTextureGroups>
+        {
+            return TextureFrame<CloudTextureGroups>(
+                {
+                    DUMMY_IMAGE.Size,
+                    1.0f, 1.0f,
+                    false,
+                    ImageCoordinates(0, 0),
+                    vec2f::zero(),
+                    TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 15),
+                    "0", "0"
+                },
+                DUMMY_IMAGE.Clone());
+        });
 
     EXPECT_EQ(64, atlasSpecification.AtlasSize.width);
     EXPECT_EQ(16, atlasSpecification.AtlasSize.height);
@@ -39,7 +57,23 @@ TEST(TextureAtlasTests, Specification_MultipleTextures)
         { {CloudTextureGroups::Cloud, 7}, {64, 64} }
     };
 
-    auto atlasSpecification = TextureAtlasBuilder<CloudTextureGroups>::BuildAtlasSpecification(textureInfos);
+    auto atlasSpecification = TextureAtlasBuilder<CloudTextureGroups>::BuildAtlasSpecification(
+        textureInfos,
+        AtlasOptions::None,
+        [](auto const &) -> TextureFrame<CloudTextureGroups>
+        {
+            return TextureFrame<CloudTextureGroups>(
+                {
+                    DUMMY_IMAGE.Size,
+                    1.0f, 1.0f,
+                    false,
+                    ImageCoordinates(0, 0),
+                    vec2f::zero(),
+                    TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 15),
+                    "0", "0"
+                },
+                DUMMY_IMAGE.Clone());
+        });
 
     EXPECT_EQ(512, atlasSpecification.AtlasSize.width);
     EXPECT_EQ(256, atlasSpecification.AtlasSize.height);
@@ -173,10 +207,92 @@ TEST(TextureAtlasTests, Specification_RoundsAtlasSize)
         { {CloudTextureGroups::Cloud, 5}, {32, 64} }
     };
 
-    auto atlasSpecification = TextureAtlasBuilder<CloudTextureGroups>::BuildAtlasSpecification(textureInfos);
+    auto atlasSpecification = TextureAtlasBuilder<CloudTextureGroups>::BuildAtlasSpecification(
+        textureInfos,
+        AtlasOptions::None,
+        [](auto const &) -> TextureFrame<CloudTextureGroups>
+        {
+            return TextureFrame<CloudTextureGroups>(
+                {
+                    DUMMY_IMAGE.Size,
+                    1.0f, 1.0f,
+                    false,
+                    ImageCoordinates(0, 0),
+                    vec2f::zero(),
+                    TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 15),
+                    "0", "0"
+                },
+                DUMMY_IMAGE.Clone());
+        });
 
     EXPECT_EQ(512, atlasSpecification.AtlasSize.width);
     EXPECT_EQ(256, atlasSpecification.AtlasSize.height);
+}
+
+TEST(TextureAtlasTests, Specification_DuplicateSuppression)
+{
+    RgbaImageData image1(4, 4, rgbaColor(0x01, 0x01, 0x01, 0x01));
+    RgbaImageData image2a(5, 5, rgbaColor(0x01, 0x01, 0x01, 0x01));
+    RgbaImageData image2b(5, 5, rgbaColor(0x01, 0x01, 0x01, 0x01));
+    RgbaImageData image3(5, 5, rgbaColor(0x01, 0x02, 0x01, 0x01));
+
+    TextureFrameMetadata<CloudTextureGroups> stockFrameMetadata(
+        DUMMY_IMAGE.Size,
+        1.0f, 1.0f,
+        false,
+        ImageCoordinates(0, 0),
+        vec2f::zero(),
+        TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 15),
+        "0", "0");
+
+    // Original guess: 256x256
+    std::vector<TextureAtlasBuilder<CloudTextureGroups>::TextureInfo> textureInfos{
+        { {CloudTextureGroups::Cloud, 0}, {4, 4} },
+        { {CloudTextureGroups::Cloud, 1}, {5, 5} },
+        { {CloudTextureGroups::Cloud, 2}, {5, 5} },
+        { {CloudTextureGroups::Cloud, 3}, {5, 5} }
+    };
+
+    auto atlasSpecification = TextureAtlasBuilder<CloudTextureGroups>::BuildAtlasSpecification(
+        textureInfos,
+        AtlasOptions::SuppressDuplicates,
+        [&](TextureFrameId<CloudTextureGroups> const & frameId) -> TextureFrame<CloudTextureGroups>
+        {
+            RgbaImageData img(4, 4, rgbaColor(0x01, 0x01, 0x01, 0x01));
+            if (frameId.FrameIndex == 0)
+                img = image1.Clone();
+            else if (frameId.FrameIndex == 1)
+                img = image2a.Clone();
+            else if (frameId.FrameIndex == 2)
+                img = image2b.Clone();
+            else
+            {
+                assert(frameId.FrameIndex == 3);
+                img = image3.Clone();
+            }
+
+            auto tf = TextureFrame<CloudTextureGroups>(
+                stockFrameMetadata,
+                std::move(img));
+            tf.Metadata.FrameId = frameId;
+
+            return tf;
+        });
+
+    EXPECT_EQ(16, atlasSpecification.AtlasSize.width);
+    EXPECT_EQ(8, atlasSpecification.AtlasSize.height);
+
+    ASSERT_EQ(3u, atlasSpecification.TextureLocationInfos.size());
+
+    EXPECT_EQ(TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 1), atlasSpecification.TextureLocationInfos[0].FrameId);
+    EXPECT_EQ(TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 3), atlasSpecification.TextureLocationInfos[1].FrameId);
+    EXPECT_EQ(TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 0), atlasSpecification.TextureLocationInfos[2].FrameId);
+
+    ASSERT_EQ(1u, atlasSpecification.DuplicateTextureInfos.size());
+
+    EXPECT_EQ(TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 2), atlasSpecification.DuplicateTextureInfos[0].DuplicateFrameMetadata.FrameId);
+    EXPECT_EQ(stockFrameMetadata.Size, atlasSpecification.DuplicateTextureInfos[0].DuplicateFrameMetadata.Size);
+    EXPECT_EQ(TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 1), atlasSpecification.DuplicateTextureInfos[0].OriginalFrameId);
 }
 
 TEST(TextureAtlasTests, Placement_InAtlasSizeMatchingFrameSize)
@@ -195,6 +311,7 @@ TEST(TextureAtlasTests, Placement_InAtlasSizeMatchingFrameSize)
                 vec2i(4, 0), // Position
                 frame0Image.Size), // In-atlas size
         },
+        {},
         ImageSize(12, 8));
 
     auto const atlas = TextureAtlasBuilder<CloudTextureGroups>::InternalBuildAtlas(
@@ -296,6 +413,7 @@ TEST(TextureAtlasTests, Placement_InAtlasSizeLargerThanFrameSize)
                 vec2i(4, 0), // Position
                 ImageSize(8, 8)), // In-atlas size
         },
+        {},
         ImageSize(12, 8));
 
     auto const atlas = TextureAtlasBuilder<CloudTextureGroups>::InternalBuildAtlas(
@@ -391,6 +509,87 @@ TEST(TextureAtlasTests, Placement_InAtlasSizeLargerThanFrameSize)
     EXPECT_EQ(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 1 }).TextureCoordinatesAnchorCenter.y, dy + 1.0f / 8.0f + 3.0f / 8.0f);
     EXPECT_EQ(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 1 }).TextureCoordinatesTopRight.x, 0.0f / 12.0f + 3.0f / 12.0f - dx);
     EXPECT_EQ(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 1 }).TextureCoordinatesTopRight.y, 1.0f / 8.0f + 2.0f / 8.0f - dy);
+}
+
+TEST(TextureAtlasTests, Placement_Duplicates)
+{
+    RgbaImageData frame0Image(5, 5, rgbaColor(0x01, 0x01, 0x01, 0x01));
+    RgbaImageData frame1aImage(3, 2, rgbaColor(0x04, 0x04, 0x04, 0x04)); // Original
+    RgbaImageData frame1bImage(3, 2, rgbaColor(0x04, 0x04, 0x04, 0x04)); // Duplicate
+
+    auto const specification = TextureAtlasBuilder<CloudTextureGroups>::AtlasSpecification(
+        {
+            TextureAtlasBuilder<CloudTextureGroups>::AtlasSpecification::TextureLocationInfo(
+                {CloudTextureGroups::Cloud, 1},
+                vec2i(0, 0), // Position
+                ImageSize(4, 4)), // In-atlas size
+            TextureAtlasBuilder<CloudTextureGroups>::AtlasSpecification::TextureLocationInfo(
+                {CloudTextureGroups::Cloud, 0},
+                vec2i(4, 0), // Position
+                ImageSize(8, 8)), // In-atlas size
+        },
+        {
+            {
+                TextureFrameMetadata<CloudTextureGroups>(
+                    frame1bImage.Size,
+                    1.0f, 1.0f,
+                    false,
+                    ImageCoordinates(0, 0),
+                    vec2f::zero(),
+                    TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 2),
+                    "1b", "1b"),
+                TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 1)
+            }
+        },
+        ImageSize(12, 8));
+
+    auto const atlas = TextureAtlasBuilder<CloudTextureGroups>::InternalBuildAtlas(
+        specification,
+        AtlasOptions::SuppressDuplicates,
+        [&](TextureFrameId<CloudTextureGroups> const & frameId)
+        {
+            if (frameId.FrameIndex == 0)
+            {
+                return TextureFrame<CloudTextureGroups>(
+                    {
+                        frame0Image.Size,
+                        1.0f, 1.0f,
+                        false,
+                        ImageCoordinates(0, 0),
+                        vec2f::zero(),
+                        frameId,
+                        "0", "0"
+                    },
+                    frame0Image.Clone());
+            }
+            else
+            {
+                EXPECT_EQ(frameId.FrameIndex, 1);
+
+                return TextureFrame<CloudTextureGroups>(
+                    {
+                        frame1aImage.Size,
+                        1.0f, 1.0f,
+                        false,
+                        ImageCoordinates(2, 3),
+                        vec2f::zero(),
+                        frameId,
+                        "1a", "1a"
+                    },
+                    frame1aImage.Clone());
+            }
+        },
+        [](float, ProgressMessageType) {});
+
+    EXPECT_EQ(
+        atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 1 }).TextureCoordinatesBottomLeft,
+        atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 2 }).TextureCoordinatesBottomLeft);
+    EXPECT_EQ(
+        atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 1 }).TextureCoordinatesAnchorCenter,
+        atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 2 }).TextureCoordinatesAnchorCenter);
+    EXPECT_EQ(
+        atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 1 }).TextureCoordinatesTopRight,
+        atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 2 }).TextureCoordinatesTopRight);
 }
 
 }

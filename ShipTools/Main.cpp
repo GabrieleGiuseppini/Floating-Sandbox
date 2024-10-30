@@ -113,7 +113,7 @@ int DoBakeAtlas(int argc, char ** argv)
         false,
         false,
         false
-        });
+        }); // TODOHERE
 
     for (int i = 5; i < argc; ++i)
     {
@@ -125,6 +125,10 @@ int DoBakeAtlas(int argc, char ** argv)
         else if (option == "-b")
         {
             options.BinaryTransparencySmoothing = true;
+        }
+        else if (option == "-d")
+        {
+            options.SuppressDuplicates = true;
         }
         else if (option == "-m")
         {
@@ -161,25 +165,26 @@ int DoBakeAtlas(int argc, char ** argv)
     std::cout << "  binary transparency smoothing : " << options.BinaryTransparencySmoothing << std::endl;
     std::cout << "  mip-mappable                  : " << options.MipMappable << std::endl;
     std::cout << "  regular                       : " << options.Regular << std::endl;
+    std::cout << "  duplicates suppression        : " << options.SuppressDuplicates << std::endl;
 
-    size_t frameCount;
+    std::tuple<size_t, ImageSize> atlasData{ 0, ImageSize(0, 0) };
     if (Utils::CaseInsensitiveEquals(databaseName, "cloud"))
     {
-        frameCount = Baker::BakeAtlas<Render::CloudTextureDatabaseTraits>(
+        atlasData = Baker::BakeAtlas<Render::CloudTextureDatabaseTraits>(
             texturesRootDirectoryPath,
             outputDirectoryPath,
             options);
     }
     else if (Utils::CaseInsensitiveEquals(databaseName, "explosion"))
     {
-        frameCount = Baker::BakeAtlas<Render::ExplosionTextureDatabaseTraits>(
+        atlasData = Baker::BakeAtlas<Render::ExplosionTextureDatabaseTraits>(
             texturesRootDirectoryPath,
             outputDirectoryPath,
             options);
     }
     else if (Utils::CaseInsensitiveEquals(databaseName, "npc"))
     {
-        frameCount = Baker::BakeAtlas<Render::NpcTextureDatabaseTraits>(
+        atlasData = Baker::BakeAtlas<Render::NpcTextureDatabaseTraits>(
             texturesRootDirectoryPath,
             outputDirectoryPath,
             options);
@@ -189,7 +194,8 @@ int DoBakeAtlas(int argc, char ** argv)
         throw std::runtime_error("Unrecognized database name '" + databaseName + "'");
     }
 
-    std::cout << "Baking completed - " << frameCount << " frames." << std::endl;
+    std::cout << "Baking completed - " << std::get<0>(atlasData) << " frames, " << std::get<1>(atlasData).width
+        << "x" << std::get<1>(atlasData).height << "." << std::endl;
 
     return 0;
 }
@@ -291,7 +297,7 @@ void PrintUsage()
     std::cout << std::endl;
     std::cout << "Usage:" << std::endl;
     std::cout << " analyze <materials_dir> <in_file>" << std::endl;
-    std::cout << " bake_atlas Cloud|Explosion|NPC <textures_root_dir> <out_dir> [[-a] [-b] [-m] [-r] | -o <options_json>]" << std::endl;
+    std::cout << " bake_atlas Cloud|Explosion|NPC <textures_root_dir> <out_dir> [[-a] [-b] [-m] [-d] [-r] | -o <options_json>]" << std::endl;
     std::cout << " quantize <materials_dir> <in_file> <out_png> [-c <target_fixed_color>]" << std::endl;
     std::cout << "          -r, --keep_ropes] [-g, --keep_glass]" << std::endl;
     std::cout << " resize <in_file> <out_png> <width>" << std::endl;

@@ -106,6 +106,13 @@ struct TextureFrame
         : Metadata(metadata)
         , TextureData(std::move(textureData))
     {}
+
+    TextureFrame Clone() const
+    {
+        return TextureFrame(
+            Metadata,
+            TextureData.Clone());
+    }
 };
 
 template <typename TextureGroups>

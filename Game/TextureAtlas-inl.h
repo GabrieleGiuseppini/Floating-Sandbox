@@ -6,9 +6,11 @@
 #include "TextureAtlas.h"
 
 #include "ImageFileTools.h"
+#include "ImageFileMap.h"
 
 #include <GameCore/GameException.h>
 #include <GameCore/ImageTools.h>
+#include <GameCore/Log.h>
 #include <GameCore/SysSpecifics.h>
 #include <GameCore/Utils.h>
 
@@ -251,8 +253,11 @@ TextureAtlas<TextureGroups> TextureAtlas<TextureGroups>::Deserialize(
 // Builder
 ////////////////////////////////////////////////////////////////////////////////
 
-template <typename TextureGroups>
-typename TextureAtlasBuilder<TextureGroups>::AtlasSpecification TextureAtlasBuilder<TextureGroups>::BuildAtlasSpecification(std::vector<TextureInfo> const & inputTextureInfos)
+template<typename TextureGroups>
+typename TextureAtlasBuilder<TextureGroups>::AtlasSpecification TextureAtlasBuilder<TextureGroups>::BuildAtlasSpecification(
+    std::vector<TextureInfo> const & inputTextureInfos,
+    AtlasOptions options,
+    std::function<TextureFrame<TextureGroups>(TextureFrameId<TextureGroups> const &)> frameLoader)
 {
     //
     // Sort input texture info's by height, from tallest to shortest,
@@ -291,55 +296,107 @@ typename TextureAtlasBuilder<TextureGroups>::AtlasSpecification TextureAtlasBuil
     std::vector<typename AtlasSpecification::TextureLocationInfo> textureLocationInfos;
     textureLocationInfos.reserve(inputTextureInfos.size());
 
+    std::vector<typename AtlasSpecification::DuplicateTextureInfo> duplicateTextureInfos;
+
     std::vector<vec2i> positionStack;
     positionStack.emplace_back(vec2i(0, 0));
 
+    ImageFileMap<rgbaColor, TextureFrameMetadata<TextureGroups>> dupeMap; // For duplicate suppression
+
     for (TextureInfo const & t : sortedTextureInfos)
     {
-        while (true)
+        // Check whether we need to look for duplicates
+        bool isDuplicate = false;
+        if (!!(options & AtlasOptions::SuppressDuplicates))
         {
-            vec2i const currentPosition = positionStack.back();
+            // Load this frame
+            TextureFrame<TextureGroups> frame = frameLoader(t.FrameId);
 
-            if (currentPosition.x + t.InAtlasSize.width < atlasWidth   // Fits at current position
-                || positionStack.size() == 1 // We can't backtrack
-                || (ceil_power_of_two(currentPosition.x + t.InAtlasSize.width) - atlasWidth) <= (ceil_power_of_two(positionStack.front().y + t.InAtlasSize.height) - atlasHeight)) // Extra W <= Extra H
+            assert(frame.Metadata.FrameId == t.FrameId);
+
+            // Check if it's a duplicate of a frame we have already seen
+            size_t imageHash = frame.TextureData.Hash();
+            auto originalFrameMetadata = dupeMap.Find(
+                imageHash,
+                frame.TextureData,
+                [frameLoader](TextureFrameMetadata<TextureGroups> const & frameMetadata) -> ImageData<rgbaColor>
+                {
+                    return frameLoader(frameMetadata.FrameId).TextureData;
+                });
+
+            if (originalFrameMetadata.has_value())
             {
-                // Put it at the current location
-                textureLocationInfos.emplace_back(
-                    t.FrameId,
-                    currentPosition,
-                    t.InAtlasSize);
+                // It's a duplicate
 
-                if (positionStack.size() == 1
-                    || currentPosition.y + t.InAtlasSize.height < std::next(positionStack.rbegin())->y)
-                {
-                    // Move current location up to top
-                    positionStack.back().y += t.InAtlasSize.height;
-                }
-                else
-                {
-                    // Current location is completed
-                    assert(currentPosition.y + t.InAtlasSize.height == std::next(positionStack.rbegin())->y);
+                LogMessage("Frame \"", frame.Metadata.FilenameStem, "\" is a duplicate of \"", originalFrameMetadata->FilenameStem, "\"");
 
-                    // Pop it from stack
-                    positionStack.pop_back();
-                }
+                isDuplicate = true;
 
-                // Add new location to the right of this tile
-                positionStack.emplace_back(currentPosition.x + t.InAtlasSize.width, currentPosition.y);
-
-                // Adjust atlas dimensions
-                atlasWidth = ceil_power_of_two(std::max(atlasWidth, currentPosition.x + t.InAtlasSize.width));
-                atlasHeight = ceil_power_of_two(std::max(atlasHeight, currentPosition.y + t.InAtlasSize.height));
-
-                // We are done with this tile
-                break;
+                // Store duplicate information
+                duplicateTextureInfos.emplace_back(
+                    frame.Metadata,
+                    originalFrameMetadata->FrameId);
             }
             else
             {
-                // Backtrack
-                positionStack.pop_back();
-                assert(!positionStack.empty());
+                // Add this original
+
+                dupeMap.Add(
+                    imageHash,
+                    frame.TextureData.Size,
+                    frame.Metadata);
+            }
+        }
+
+        if (!isDuplicate)
+        {
+            // Place frame
+
+            while (true)
+            {
+                vec2i const currentPosition = positionStack.back();
+
+                if (currentPosition.x + t.InAtlasSize.width < atlasWidth   // Fits at current position
+                    || positionStack.size() == 1 // We can't backtrack
+                    || (ceil_power_of_two(currentPosition.x + t.InAtlasSize.width) - atlasWidth) <= (ceil_power_of_two(positionStack.front().y + t.InAtlasSize.height) - atlasHeight)) // Extra W <= Extra H
+                {
+                    // Put it at the current location
+                    textureLocationInfos.emplace_back(
+                        t.FrameId,
+                        currentPosition,
+                        t.InAtlasSize);
+
+                    if (positionStack.size() == 1
+                        || currentPosition.y + t.InAtlasSize.height < std::next(positionStack.rbegin())->y)
+                    {
+                        // Move current location up to top
+                        positionStack.back().y += t.InAtlasSize.height;
+                    }
+                    else
+                    {
+                        // Current location is completed
+                        assert(currentPosition.y + t.InAtlasSize.height == std::next(positionStack.rbegin())->y);
+
+                        // Pop it from stack
+                        positionStack.pop_back();
+                    }
+
+                    // Add new location to the right of this tile
+                    positionStack.emplace_back(currentPosition.x + t.InAtlasSize.width, currentPosition.y);
+
+                    // Adjust atlas dimensions
+                    atlasWidth = ceil_power_of_two(std::max(atlasWidth, currentPosition.x + t.InAtlasSize.width));
+                    atlasHeight = ceil_power_of_two(std::max(atlasHeight, currentPosition.y + t.InAtlasSize.height));
+
+                    // We are done with this tile
+                    break;
+                }
+                else
+                {
+                    // Backtrack
+                    positionStack.pop_back();
+                    assert(!positionStack.empty());
+                }
             }
         }
     }
@@ -352,16 +409,20 @@ typename TextureAtlasBuilder<TextureGroups>::AtlasSpecification TextureAtlasBuil
     atlasHeight = ceil_power_of_two(atlasHeight);
 
     //
-    // Return atlas
+    // Return spec
     //
+
+    assert(textureLocationInfos.size() + duplicateTextureInfos.size() == inputTextureInfos.size());
 
     return AtlasSpecification(
         std::move(textureLocationInfos),
+        std::move(duplicateTextureInfos),
         ImageSize(atlasWidth, atlasHeight));
 }
 
 template <typename TextureGroups>
-typename TextureAtlasBuilder<TextureGroups>::AtlasSpecification TextureAtlasBuilder<TextureGroups>::BuildRegularAtlasSpecification(std::vector<TextureInfo> const & inputTextureInfos)
+typename TextureAtlasBuilder<TextureGroups>::AtlasSpecification TextureAtlasBuilder<TextureGroups>::BuildRegularAtlasSpecification(
+    std::vector<TextureInfo> const & inputTextureInfos)
 {
     //
     // Verify frames
@@ -405,6 +466,8 @@ typename TextureAtlasBuilder<TextureGroups>::AtlasSpecification TextureAtlasBuil
     std::vector<typename AtlasSpecification::TextureLocationInfo> textureLocationInfos;
     textureLocationInfos.reserve(virtualNumberOfFrames);
 
+    std::vector<typename AtlasSpecification::DuplicateTextureInfo> duplicateTextureInfos;
+
     for (int i = 0; i < static_cast<int>(inputTextureInfos.size()); ++i)
     {
         int const c = i % numberOfFramesPerSide;
@@ -422,6 +485,7 @@ typename TextureAtlasBuilder<TextureGroups>::AtlasSpecification TextureAtlasBuil
 
     return AtlasSpecification(
         std::move(textureLocationInfos),
+        std::move(duplicateTextureInfos),
         ImageSize(atlasWidth, atlasHeight));
 }
 
@@ -436,19 +500,23 @@ TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::InternalBuildAtl
     float const dx = 0.5f / static_cast<float>(specification.AtlasSize.width);
     float const dy = 0.5f / static_cast<float>(specification.AtlasSize.height);
 
-    // Allocate image
+    // Allocate atlas image
     size_t const imagePoints = specification.AtlasSize.width * specification.AtlasSize.height;
     std::unique_ptr<rgbaColor[]> atlasImage(new rgbaColor[imagePoints]);
 
-    // Fill image - transparent black
+    // Fill atlas image - transparent black
     std::fill_n(atlasImage.get(), imagePoints, rgbaColor::zero());
 
+    //
     // Copy all textures into image, building metadata at the same time
-    std::vector<TextureAtlasFrameMetadata<TextureGroups>> frameMetadata;
+    //
+
+    std::vector<TextureAtlasFrameMetadata<TextureGroups>> allAtlasFrameMetadata;
+
     for (auto const & textureLocationInfo : specification.TextureLocationInfos)
     {
         progressCallback(
-            static_cast<float>(frameMetadata.size()) / static_cast<float>(specification.TextureLocationInfos.size()),
+            static_cast<float>(allAtlasFrameMetadata.size()) / static_cast<float>(specification.TextureLocationInfos.size()),
             ProgressMessageType::None);
 
         // Load frame
@@ -490,8 +558,8 @@ TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::InternalBuildAtl
         float const textureSpaceFrameWidth = static_cast<float>(textureFrame.TextureData.Size.width) / static_cast<float>(specification.AtlasSize.width);
         float const textureSpaceFrameHeight = static_cast<float>(textureFrame.TextureData.Size.height) / static_cast<float>(specification.AtlasSize.height);
 
-        // Store texture metadata
-        frameMetadata.emplace_back(
+        // Create atlas frame metadata
+        TextureAtlasFrameMetadata<TextureGroups> atlasFrameMetadata(
             textureSpaceFrameWidth,
             textureSpaceFrameHeight,
             // Bottom-left
@@ -509,20 +577,46 @@ TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::InternalBuildAtl
             frameActualPosition.x,
             frameActualPosition.y,
             textureFrame.Metadata);
+
+        // Store
+        allAtlasFrameMetadata.push_back(atlasFrameMetadata);
     }
 
+    // Process dupes, if any
+    for (auto const & duplicateTextureInfo : specification.DuplicateTextureInfos)
+    {
+        // Find the original among the ones we've just processed
+
+        auto const findIt = std::find_if(
+            allAtlasFrameMetadata.cbegin(),
+            allAtlasFrameMetadata.cend(),
+            [duplicateTextureInfo](TextureAtlasFrameMetadata<TextureGroups> const & v)
+            {
+                return v.FrameMetadata.FrameId == duplicateTextureInfo.OriginalFrameId;
+            });
+
+        assert(findIt != allAtlasFrameMetadata.cend());
+
+        // Create atlas frame metadata
+        TextureAtlasFrameMetadata<TextureGroups> atlasFrameMetadata = findIt->CloneForNewTextureFrame(duplicateTextureInfo.DuplicateFrameMetadata);
+
+        // Store
+        allAtlasFrameMetadata.push_back(atlasFrameMetadata);
+    }
+
+    progressCallback(1.0f, ProgressMessageType::None);
+
+    // Create atlas image
     RgbaImageData atlasImageData(
         specification.AtlasSize,
         std::move(atlasImage));
-
-    progressCallback(1.0f, ProgressMessageType::None);
 
     // Return atlas
     return TextureAtlas<TextureGroups>(
         TextureAtlasMetadata<TextureGroups>(
             specification.AtlasSize,
             options,
-            std::move(frameMetadata)),
+            std::move(allAtlasFrameMetadata)),
         std::move(atlasImageData));
 }
 

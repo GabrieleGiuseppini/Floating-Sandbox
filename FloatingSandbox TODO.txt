@@ -180,28 +180,31 @@ https://youtu.be/LNVxgPC4qkA
 			+ Detailed
 				+ Moonlight, Lamp
 			+ Storm
-		= Test enlarging canvas of tight clouds
-			- And if OK: reduce border flattening
+		+ Test enlarging canvas of tight clouds
 
 		- Test AdobeStock/Getty clouds
 
 		- Changelist
 
-	- Send build for testing
-	- Bump up version
-
-	- AtlasBuilder: detect duplicates
-		- New option
-		- Use at all baking options
-		- AtlasBuilder:
-			- At each frame:
-				- SerializedFrames: contains size, hash, path (plus values: frame ID)
-				- When about to add new one: search matching on size, hash, and content
-				- Add new ones to SerializedFrames
+	+ AtlasBuilder: detect duplicates
+		+ New option
+		+ Use at NPC baking options
+		+ AtlasBuilder:
+			+ BuildSpecification:
+				+ Disallow option @ Regular
+				+ TextureLocationInfo contains additional vector with dupe info (FrameId of DB, FrameId original that this is a dupe of)
+			+ BuildAtlas:
+				+ Visit two vectors separately
+					+ Second visit searches (linearly...) in allAtlasFrameMetadata for FrameId original, clones, and adds
+		+ Unit tests
+		+ Test
 	
 	+ Remove too much logging from ShipLoadDialog
 	+ Merchandise link
 	+ Version on splash screen
+
+	- Send build for testing
+	- Bump up version
 	
 	- FIX: background flames carry backdrop with them
 		! Was like this also before

@@ -8,6 +8,7 @@
 #include "GameTypes.h"
 
 #include <algorithm>
+#include <cstring>
 #include <memory>
 
 template <typename TElement, typename TIntegralTag>
@@ -97,9 +98,30 @@ public:
         return *this;
     }
 
+    bool operator==(Buffer2D const & other) const noexcept
+    {
+        if (Size != other.Size)
+        {
+            return false;
+        }
+
+        return std::memcmp(Data.get(), other.Data.get(), GetByteSize()) == 0;
+    }
+
     size_t GetByteSize() const
     {
         return mLinearSize * sizeof(TElement);
+    }
+
+    size_t Hash() const
+    {
+        size_t hash = 0;
+        for (int i = 0; i < GetByteSize(); ++i)
+        {
+            hash += static_cast<size_t>((reinterpret_cast<uint8_t const *>(Data.get()))[i]) * 7 + 11;
+        }
+
+        return hash;
     }
 
     TElement & operator[](coordinates_type const & index)

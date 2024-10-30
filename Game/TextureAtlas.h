@@ -34,7 +34,8 @@ enum class AtlasOptions
     None = 0,
     AlphaPremultiply = 1,
     MipMappable = 2,
-    BinaryTransparencySmoothing = 4
+    BinaryTransparencySmoothing = 4,
+    SuppressDuplicates = 8
 };
 
 template <> struct is_flag<AtlasOptions> : std::true_type {};
@@ -77,6 +78,16 @@ public:
         , FrameBottomY(frameBottomY)
         , FrameMetadata(frameMetadata)
     {}
+
+    /*
+     * Creates a copy of self with same in-atlas properties but for a new frame.
+     */
+    TextureAtlasFrameMetadata CloneForNewTextureFrame(TextureFrameMetadata<TextureGroups> const & newFrameMetadata) const
+    {
+        TextureAtlasFrameMetadata clone = *this;
+        clone.FrameMetadata = newFrameMetadata;
+        return clone;
+    }
 
     void Serialize(picojson::object & root) const;
 
@@ -234,6 +245,11 @@ public:
     {
         static_assert(std::is_same<TextureGroups, typename TextureDatabaseTraits::TextureGroups>::value);
 
+        auto frameLoader = [&database](TextureFrameId<TextureGroups> const & frameId) -> TextureFrame<TextureGroups>
+            {
+                return database.GetGroup(frameId.Group).LoadFrame(frameId.FrameIndex);
+            };
+
         // Build TextureInfo's
         std::vector<TextureInfo> textureInfos;
         for (auto const & group : database.GetGroups())
@@ -242,16 +258,16 @@ public:
         }
 
         // Build specification
-        auto const specification = BuildAtlasSpecification(textureInfos);
+        auto const specification = BuildAtlasSpecification(
+            textureInfos,
+            options,
+            frameLoader);
 
         // Build atlas
         return InternalBuildAtlas(
             specification,
             options,
-            [&database](TextureFrameId<TextureGroups> const & frameId)
-            {
-                return database.GetGroup(frameId.Group).LoadFrame(frameId.FrameIndex);
-            },
+            frameLoader,
             progressCallback);
     }
 
@@ -259,9 +275,21 @@ public:
      * Builds an atlas with the specified textures.
      */
     static TextureAtlas<TextureGroups> BuildAtlas(
-        std::vector<TextureFrame<TextureGroups>> textureFrames,
+        std::vector<TextureFrame<TextureGroups>> && textureFrames,
         AtlasOptions options)
     {
+        auto frameLoader = [&textureFrames](TextureFrameId<TextureGroups> const & frameId) -> TextureFrame<TextureGroups>
+            {
+                for (size_t t = 0; t < textureFrames.size(); t++)
+                {
+                    if (frameId == textureFrames[t].Metadata.FrameId)
+                        return textureFrames[t].Clone();
+                }
+
+                assert(false);
+                throw GameException("Cannot find texture frame");
+            };
+
         // Build TextureInfo's
         std::vector<TextureInfo> textureInfos;
         for (size_t t = 0; t < textureFrames.size(); ++t)
@@ -272,23 +300,16 @@ public:
         }
 
         // Build specification
-        auto const specification = BuildAtlasSpecification(textureInfos);
+        auto const specification = BuildAtlasSpecification(
+            textureInfos,
+            options,
+            frameLoader);
 
         // Build atlas
         return InternalBuildAtlas(
             specification,
             options,
-            [&textureFrames](TextureFrameId<TextureGroups> const & frameId)
-            {
-                for (size_t t = 0; t < textureFrames.size(); t++)
-                {
-                    if (frameId == textureFrames[t].Metadata.FrameId)
-                        return std::move(textureFrames[t]);
-                }
-
-                assert(false);
-                throw GameException("Cannot find texture frame");
-            },
+            frameLoader,
             [](float, ProgressMessageType) {});
     }
 
@@ -306,6 +327,11 @@ public:
         ProgressCallback const & progressCallback)
     {
         static_assert(std::is_same<TextureGroups, typename TextureDatabaseTraits::TextureGroups>::value);
+
+        if (!!(options & AtlasOptions::SuppressDuplicates))
+        {
+            throw GameException("Duplicate suppression is not implemented with regular atlases");
+        }
 
         // Build TextureInfo's
         std::vector<TextureInfo> textureInfos;
@@ -362,25 +388,47 @@ private:
             {}
         };
 
-        // The locations of the textures
+        struct DuplicateTextureInfo
+        {
+            TextureFrameMetadata<TextureGroups> DuplicateFrameMetadata;
+            TextureFrameId<TextureGroups> OriginalFrameId;
+
+            DuplicateTextureInfo(
+                TextureFrameMetadata<TextureGroups> duplicateFrameMetadata,
+                TextureFrameId<TextureGroups> originalFrameId)
+                : DuplicateFrameMetadata(duplicateFrameMetadata)
+                , OriginalFrameId(originalFrameId)
+            {}
+        };
+
+        // The locations of the textures - contains all database frames except for duplicates
         std::vector<TextureLocationInfo> TextureLocationInfos;
+
+        // The database frames that are duplicate - which do not appear in TextureLocationInfos
+        std::vector<DuplicateTextureInfo> DuplicateTextureInfos;
 
         // The size of the atlas
         ImageSize AtlasSize;
 
         AtlasSpecification(
             std::vector<TextureLocationInfo> && textureLocationInfos,
+            std::vector<DuplicateTextureInfo> && duplicateTextureInfos,
             ImageSize atlasSize)
             : TextureLocationInfos(std::move(textureLocationInfos))
+            , DuplicateTextureInfos(std::move(duplicateTextureInfos))
             , AtlasSize(atlasSize)
         {}
     };
 
     // Unit-tested
-    static AtlasSpecification BuildAtlasSpecification(std::vector<TextureInfo> const & inputTextureInfos);
+    static AtlasSpecification BuildAtlasSpecification(
+        std::vector<TextureInfo> const & inputTextureInfos,
+        AtlasOptions options,
+        std::function<TextureFrame<TextureGroups>(TextureFrameId<TextureGroups> const &)> frameLoader);
 
     // Unit-tested
-    static AtlasSpecification BuildRegularAtlasSpecification(std::vector<TextureInfo> const & inputTextureInfos);
+    static AtlasSpecification BuildRegularAtlasSpecification(
+        std::vector<TextureInfo> const & inputTextureInfos);
 
     // Unit-tested
     static TextureAtlas<TextureGroups> InternalBuildAtlas(
@@ -430,8 +478,10 @@ private:
     friend class TextureAtlasTests_Specification_MultipleTextures_Test;
     friend class TextureAtlasTests_Specification_RegularAtlas_Test;
     friend class TextureAtlasTests_Specification_RoundsAtlasSize_Test;
+    friend class TextureAtlasTests_Specification_DuplicateSuppression_Test;
     friend class TextureAtlasTests_Placement_InAtlasSizeMatchingFrameSize_Test;
     friend class TextureAtlasTests_Placement_InAtlasSizeLargerThanFrameSize_Test;
+    friend class TextureAtlasTests_Placement_Duplicates_Test;
 };
 
 }
