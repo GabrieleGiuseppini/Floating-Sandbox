@@ -1134,10 +1134,12 @@ void World::AbortNewNpc(NpcId id)
     mNpcs->AbortNewNpc(id);
 }
 
-std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> World::AddNpcGroup(NpcKindType kind)
+std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> World::AddNpcGroup(
+    NpcKindType kind,
+    VisibleWorld const & visibleWorld)
 {
     assert(mNpcs);
-    return mNpcs->AddNpcGroup(kind, mCurrentSimulationTime);
+    return mNpcs->AddNpcGroup(kind, visibleWorld, mCurrentSimulationTime);
 }
 
 void World::TurnaroundNpc(NpcId id)

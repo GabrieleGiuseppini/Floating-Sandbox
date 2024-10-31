@@ -11,6 +11,7 @@
 #include "Physics.h"
 #include "RenderContext.h"
 #include "RenderTypes.h"
+#include "VisibleWorld.h"
 
 #include <GameCore/BarycentricCoords.h>
 #include <GameCore/ElementIndexRangeIterator.h>
@@ -894,6 +895,7 @@ public:
 
 	std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> AddNpcGroup(
 		NpcKindType kind,
+		VisibleWorld const & visibleWorld,
 		float currentSimulationTime);
 
 	void TurnaroundNpc(NpcId id);

@@ -14,20 +14,6 @@
 			- Temperature overlay
 			- Stress overlay
 
-
-	- GameJolt Post:
-It took 1 year, 3 months, and 11 days to make 445 commits and change 723 files and 59,922 lines of code, but finally we have entered beta testing - a few more weeks and Floating Sandbox 1.19.0 will be out!
-
-We are quite excited to bring you the first version of Floating Sandbox with NPC support. This version will contain the bare minimum NPC engine functionality - enough to add a new dimension to the familiar Floating Sandbox physics. Subsequent versions will implement new behaviors, improve functionality, and add detail to this new sub-system of the simulator. 
-
-Stay tuned for the release coming up in November!
-
-Music: Path of Least Dunka Dunka, by Carbon Based Lifeforms - carbonbasedlifeforms.net
-
-https://youtu.be/LNVxgPC4qkA
-
-
-
 	+ Npcs - take 1
 		+ Merge into master
 		+ Changelist
@@ -90,7 +76,7 @@ https://youtu.be/LNVxgPC4qkA
 
 	+ See optimization for OrthoMatrix @ ShipRenderContext
 
-	+ Perlin noise on Land:
+	+ Perlin noise on Land
 		+ Figure out first if can have single-float 2D texture: RED channel only?
 		+ Figure out current 2 noise textures vs texture unit
 		+ Noise.cpp -> Buffer<float>
@@ -203,8 +189,23 @@ https://youtu.be/LNVxgPC4qkA
 	+ Merchandise link
 	+ Version on splash screen
 
-	- Send build for testing
-	- Bump up version
+	+ Send build for testing
+	
+	+ Bump up version
+	+ MaxNpcs=2048
+
+	- "Gravity doesn't seem to be constant for the NPC and objects. Unless it's just some serious drag that prevents them from falling fast"
+	- Preferences setting to turn ON auto-focus on spawn
+		- Which is OFF by default
+	+ Auto-placing:
+		+ Overcome bias in auto-placing NPCs
+		+ An option to do auto-placement constrained in visible world view
+	- ? Work for MaxNpcs in Preferences? (*)
+	- Update Help with NPCs
+
+	- Release:
+		- Localization:
+			- Send Help to Joadix who noticed bugs
 	
 	- FIX: background flames carry backdrop with them
 		! Was like this also before
@@ -457,7 +458,7 @@ https://youtu.be/LNVxgPC4qkA
 		- Update GameJolt to say Ubuntu 20.04
 		- Delete my Ubuntu 18 VM way after next release
 
-	- Remove NpcSpringReduction/DampAdjust from SettingsDialog
+	- A way to spawn ships like NPCs: at any place
 
 	- See if can use keys to pan along diagonals
 

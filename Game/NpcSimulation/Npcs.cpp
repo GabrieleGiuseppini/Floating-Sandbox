@@ -1256,6 +1256,7 @@ void Npcs::AbortNewNpc(NpcId id)
 
 std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> Npcs::AddNpcGroup(
     NpcKindType kind,
+    VisibleWorld const & visibleWorld,
     float currentSimulationTime)
 {
     size_t const groupSize = GameParameters::NpcsPerGroup;
@@ -1291,12 +1292,117 @@ std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> Npcs::AddNpcGroup
     Triangles const & triangles = mShips[shipId]->HomeShip.GetTriangles();
 
     //
-    // Create group
+    // Build set of candidate triangles with the best score
     //
 
-    // We reduce this when we determine an index at and after which there are no more viable triangles;
-    // index is excluded
-    ElementCount minimallyViableTriangleUpperBound = triangles.GetElementCount();
+    std::vector<ElementIndex> candidateTriangles;
+    size_t bestTriangleScore = 0;
+
+    for (ElementIndex t : triangles)
+    {
+        // Check triangle viability
+        if (!triangles.IsDeleted(t))
+        {
+            ElementIndex const pA = triangles.GetPointAIndex(t);
+            ElementIndex const pB = triangles.GetPointBIndex(t);
+            ElementIndex const pC = triangles.GetPointCIndex(t);
+
+            vec2f const aPosition = points.GetPosition(pA);
+            vec2f const bPosition = points.GetPosition(pB);
+            vec2f const cPosition = points.GetPosition(pC);
+
+            if (aPosition.x >= visibleWorld.TopLeft.x && aPosition.x <= visibleWorld.BottomRight.x
+                && aPosition.y >= visibleWorld.BottomRight.y && aPosition.y <= visibleWorld.TopLeft.y
+                && bPosition.x >= visibleWorld.TopLeft.x && bPosition.x <= visibleWorld.BottomRight.x
+                && bPosition.y >= visibleWorld.BottomRight.y && bPosition.y <= visibleWorld.TopLeft.y
+                && cPosition.x >= visibleWorld.TopLeft.x && cPosition.x <= visibleWorld.BottomRight.x
+                && cPosition.y >= visibleWorld.BottomRight.y && cPosition.y <= visibleWorld.TopLeft.y
+                && !IsTriangleFolded(aPosition, bPosition, cPosition))
+            {
+                // Minimally viable
+
+                //
+                // Calculate score
+                //
+
+                size_t score = 1;
+
+                // Water
+                float constexpr MaxWater = 0.05f; // Arbitrary
+                if (points.GetWater(pA) < MaxWater && points.GetWater(pB) < MaxWater && points.GetWater(pC) < MaxWater)
+                {
+                    ++score;
+                }
+
+                // Fire
+                if (!points.IsBurning(pA) && !points.IsBurning(pB) && !points.IsBurning(pC))
+                {
+                    ++score;
+                }
+
+                // Surrounded by triangles
+                for (int e = 0; e < 3; ++e)
+                {
+                    auto const & oppositeTriangleInfo = triangles.GetOppositeTriangle(t, e);
+                    if (oppositeTriangleInfo.TriangleElementIndex != NoneElementIndex && !triangles.IsDeleted(oppositeTriangleInfo.TriangleElementIndex))
+                    {
+                        ++score;
+                    }
+                }
+
+                // Floor underneath and no floors above
+                {
+                    vec2f const centerPosition = (aPosition + bPosition + cPosition) / 3.0f;
+                    bcoords3f underneathBCoords = triangles.ToBarycentricCoordinates(centerPosition + vec2f(0.0f, -2.0f), t, points);
+
+                    // Heuristic: we consider as "it's gonna be our floor" any edge that has its corresponding bcoord < 0, and viceversa
+                    bool hasRightFloorUnderneath = false;
+                    bool hasRightFloorAbove = false;
+                    for (int v = 0; v < 3; ++v)
+                    {
+                        if (underneathBCoords[v] < 0.0f && triangles.GetSubSpringNpcFloorKind(t, (v + 1) % 3) != NpcFloorKindType::NotAFloor)
+                        {
+                            hasRightFloorUnderneath = true;
+                        }
+                        else if (underneathBCoords[v] > 0.0f && triangles.GetSubSpringNpcFloorKind(t, (v + 1) % 3) == NpcFloorKindType::NotAFloor)
+                        {
+                            hasRightFloorAbove = true;
+                        }
+                    }
+
+                    if (hasRightFloorUnderneath)
+                    {
+                        ++score;
+                    }
+
+                    if (hasRightFloorAbove)
+                    {
+                        ++score;
+                    }
+                }
+
+                //
+                // Check if improved best score
+                //
+
+                if (score > bestTriangleScore)
+                {
+                    candidateTriangles.clear();
+                    bestTriangleScore = score;
+                }
+
+                //
+                // Store candidate
+                //
+
+                candidateTriangles.push_back(t);
+            }
+        }
+    }
+
+    //
+    // Create group
+    //
 
     // Triangles already chosen - we'll try to avoid cramming multiple NPCs in the same triangle
     std::vector<ElementIndex> alreadyChosenTriangles;
@@ -1316,154 +1422,22 @@ std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> Npcs::AddNpcGroup
         // Find triangle - if none, we'll go free
         //
 
-        ElementIndex bestCandidateTriangle = NoneElementIndex;
-        size_t bestCandidateTriangleScore = 0;
-
-        // Decide where to start the search from
-        ElementIndex const searchStartTriangle = GameRandomEngine::GetInstance().Choose(minimallyViableTriangleUpperBound);
-
-        // To keep track of the upper bound
-        ElementIndex lastMinimallyViableTriangle = NoneElementIndex;
-
-        // Visit all triangles starting from this one, eventually looping around
-        for (ElementIndex t = searchStartTriangle; ; )
+        ElementIndex chosenTriangle = NoneElementIndex;
+        if (!candidateTriangles.empty())
         {
-            // Check triangle viability
-            if (!triangles.IsDeleted(t))
+            for (int t = 0; t < 10; ++t)
             {
-                ElementIndex const pA = triangles.GetPointAIndex(t);
-                ElementIndex const pB = triangles.GetPointBIndex(t);
-                ElementIndex const pC = triangles.GetPointCIndex(t);
+                chosenTriangle = candidateTriangles[GameRandomEngine::GetInstance().Choose(static_cast<ElementCount>(candidateTriangles.size()))];
 
-                vec2f const aPosition = points.GetPosition(pA);
-                vec2f const bPosition = points.GetPosition(pB);
-                vec2f const cPosition = points.GetPosition(pC);
-
-                if (!IsTriangleFolded(aPosition, bPosition, cPosition))
+                if (auto const searchIt = std::find(alreadyChosenTriangles.cbegin(), alreadyChosenTriangles.cend(), chosenTriangle);
+                    searchIt == alreadyChosenTriangles.cend())
                 {
-                    // Minimally viable
-
-                    // Update for upper bound
-                    lastMinimallyViableTriangle = t;
-
-                    //
-                    // Calculate score
-                    //
-
-                    size_t score = 1;
-
-                    // Water
-                    float constexpr MaxWater = 0.05f; // Arbitrary
-                    if (points.GetWater(pA) < MaxWater && points.GetWater(pB) < MaxWater && points.GetWater(pC) < MaxWater)
-                    {
-                        ++score;
-                    }
-
-                    // Fire
-                    if (!points.IsBurning(pA) && !points.IsBurning(pB) && !points.IsBurning(pC))
-                    {
-                        ++score;
-                    }
-
-                    // Surrounded by triangles
-                    for (int e = 0; e < 3; ++e)
-                    {
-                        auto const & oppositeTriangleInfo = triangles.GetOppositeTriangle(t, e);
-                        if (oppositeTriangleInfo.TriangleElementIndex != NoneElementIndex && !triangles.IsDeleted(oppositeTriangleInfo.TriangleElementIndex))
-                        {
-                            ++score;
-                        }
-                    }
-
-                    // Floor underneath and no floors above
-                    {
-                        vec2f const centerPosition = (aPosition + bPosition + cPosition) / 3.0f;
-                        bcoords3f underneathBCoords = triangles.ToBarycentricCoordinates(centerPosition + vec2f(0.0f, -2.0f), t, points);
-
-                        // Heuristic: we consider as "it's gonna be our floor" any edge that has its corresponding bcoord < 0, and viceversa
-                        bool hasRightFloorUnderneath = false;
-                        bool hasRightFloorAbove = false;
-                        for (int v = 0; v < 3; ++v)
-                        {
-                            if (underneathBCoords[v] < 0.0f && triangles.GetSubSpringNpcFloorKind(t, (v+1) % 3) != NpcFloorKindType::NotAFloor)
-                            {
-                                hasRightFloorUnderneath = true;
-                            }
-                            else if (underneathBCoords[v] > 0.0f && triangles.GetSubSpringNpcFloorKind(t, (v + 1) % 3) == NpcFloorKindType::NotAFloor)
-                            {
-                                hasRightFloorAbove = true;
-                            }
-                        }
-
-                        if (hasRightFloorUnderneath)
-                        {
-                            ++score;
-                        }
-
-                        if (hasRightFloorAbove)
-                        {
-                            ++score;
-                        }
-                    }
-
-                    // Not chosen earlier
-                    {
-                        if (auto const searchIt = std::find(alreadyChosenTriangles.cbegin(), alreadyChosenTriangles.cend(), t);
-                            searchIt == alreadyChosenTriangles.cend())
-                        {
-                            ++score;
-                        }
-                    }
-
-                    //
-                    // Check if best score
-                    //
-
-                    size_t constexpr MaxScore =
-                        1       // Is minimally viable
-                        + 1     // No water
-                        + 1     // No Fire
-                        + 3     // Surrounding triangles
-                        + 2     // Has right floors
-                        + 1;    // Not chosen earlier
-
-                    if (score > bestCandidateTriangleScore)
-                    {
-                        bestCandidateTriangle = t;
-                        bestCandidateTriangleScore = score;
-
-                        assert(score <= MaxScore);
-                        if (score == MaxScore)
-                        {
-                            // Can't get any better!
-                            break;
-                        }
-                    }
+                    break;
                 }
             }
 
-            // Haven't found a best one yet
-
-            // Advance
-            ++t;
-            if (t >= minimallyViableTriangleUpperBound)
-            {
-                // Loop around
-                t = 0;
-
-                // Reduce the limit
-                if (lastMinimallyViableTriangle != NoneElementIndex)
-                {
-                    assert(lastMinimallyViableTriangle + 1 <= minimallyViableTriangleUpperBound);
-                    minimallyViableTriangleUpperBound = lastMinimallyViableTriangle + 1;
-                }
-            }
-
-            // Check completion
-            if (t == searchStartTriangle)
-            {
-                break;
-            }
+            // Remember this was chosen
+            alreadyChosenTriangles.push_back(chosenTriangle);
         }
 
         //
@@ -1471,23 +1445,20 @@ std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> Npcs::AddNpcGroup
         //
 
         vec2f npcPosition;
-        if (bestCandidateTriangle != NoneElementIndex)
+        if (chosenTriangle != NoneElementIndex)
         {
             // Center
-            vec2f const aPosition = points.GetPosition(triangles.GetPointAIndex(bestCandidateTriangle));
-            vec2f const bPosition = points.GetPosition(triangles.GetPointBIndex(bestCandidateTriangle));
-            vec2f const cPosition = points.GetPosition(triangles.GetPointCIndex(bestCandidateTriangle));
+            vec2f const aPosition = points.GetPosition(triangles.GetPointAIndex(chosenTriangle));
+            vec2f const bPosition = points.GetPosition(triangles.GetPointBIndex(chosenTriangle));
+            vec2f const cPosition = points.GetPosition(triangles.GetPointCIndex(chosenTriangle));
             npcPosition = (aPosition + bPosition + cPosition) / 3.0f;
-
-            // Remember this was chosen
-            alreadyChosenTriangles.push_back(bestCandidateTriangle);
         }
         else
         {
             // Choose freely
             npcPosition = vec2f(
-                GameRandomEngine::GetInstance().GenerateUniformReal(-100.0f, 100.0f),
-                GameRandomEngine::GetInstance().GenerateUniformReal(0.0f, 100.0f));
+                GameRandomEngine::GetInstance().GenerateUniformReal(visibleWorld.TopLeft.x, visibleWorld.BottomRight.x),
+                GameRandomEngine::GetInstance().GenerateUniformReal(visibleWorld.BottomRight.y, visibleWorld.TopLeft.y));
         }
 
         //

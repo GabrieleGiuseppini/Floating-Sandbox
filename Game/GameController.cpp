@@ -1433,7 +1433,9 @@ void GameController::AbortNewNpc(NpcId id)
 void GameController::AddNpcGroup(NpcKindType kind)
 {
     assert(!!mWorld);
-    auto const result = mWorld->AddNpcGroup(kind);
+    auto const result = mWorld->AddNpcGroup(
+        kind,
+        mRenderContext->GetVisibleWorld());
 
     auto const & pickedNpcId = std::get<0>(result);
     if (pickedNpcId.has_value())
