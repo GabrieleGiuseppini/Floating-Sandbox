@@ -202,7 +202,7 @@
 		+ Overcome bias in auto-placing NPCs
 		+ An option to do auto-placement constrained in visible world view
 	- ? Work for MaxNpcs in Preferences? (*)
-	- Update Help with NPCs
+	+ Update Help with NPCs
 
 	- Release:
 		- Localization:
