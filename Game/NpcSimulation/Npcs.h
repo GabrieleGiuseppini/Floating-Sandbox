@@ -783,14 +783,16 @@ public:
 	Npcs(
 		Physics::World & parentWorld,
 		NpcDatabase const & npcDatabase,
-		std::shared_ptr<GameEventDispatcher> gameEventHandler)
+		std::shared_ptr<GameEventDispatcher> gameEventHandler,
+		GameParameters const & gameParameters)
 		: mParentWorld(parentWorld)
 		, mNpcDatabase(npcDatabase)
 		, mGameEventHandler(std::move(gameEventHandler))
+		, mMaxNpcs(gameParameters.MaxNpcs)
 		// Container
 		, mStateBuffer()
 		, mShips()
-		, mParticles(GameParameters::MaxNpcs * GameParameters::MaxParticlesPerNpc)
+		, mParticles(static_cast<ElementCount>(mMaxNpcs * GameParameters::MaxParticlesPerNpc))
 		// State
 		, mCurrentSimulationSequenceNumber()
 		, mCurrentlySelectedNpc()
@@ -1796,6 +1798,7 @@ private:
 	World & mParentWorld;
 	NpcDatabase const & mNpcDatabase;
 	std::shared_ptr<GameEventDispatcher> mGameEventHandler;
+	size_t const mMaxNpcs;
 
 	//
 	// Container

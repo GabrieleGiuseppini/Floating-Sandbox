@@ -692,6 +692,11 @@ public:
     bool GetDoApplyPhysicsToolsToNpcs() const override { return mGameParameters.DoApplyPhysicsToolsToNpcs; }
     void SetDoApplyPhysicsToolsToNpcs(bool value) override { mGameParameters.DoApplyPhysicsToolsToNpcs = value; }
 
+    size_t GetMaxNpcs() const override { return mGameParameters.MaxNpcs; }
+    void SetMaxNpcs(size_t value) { mGameParameters.MaxNpcs = value; }
+    size_t GetMinMaxNpcs() const { return GameParameters::MinMaxNpcs; }
+    size_t GetMaxMaxNpcs() const { return GameParameters::MaxMaxNpcs; }
+
     // Misc
 
     OceanFloorTerrain const & GetOceanFloorTerrain() const override { return mWorld->GetOceanFloorTerrain(); }

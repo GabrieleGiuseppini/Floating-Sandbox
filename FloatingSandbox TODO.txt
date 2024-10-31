@@ -200,28 +200,21 @@
 	+ Auto-placing:
 		+ Overcome bias in auto-placing NPCs
 		+ An option to do auto-placement constrained in visible world view
-	- ? Work for MaxNpcs in Preferences? (*)
 	+ Update Help with NPCs
+	= NPC count limit:
+		"I suggest, a user defined limit between 1-9999 and keep it by default at 1000. This way, people can change it however they want and 9999 seems more than enough - In "Preferences" would be ok"
+		+ GameParameters has it as "movable" param
+			+ Default: 1024
+			+ Min: 1024
+			+ Max: 8192
+		+ Used at Npcs instantiation
+			+ Npcs() stores own copy of GameParameters at instantiation time, and uses that one from that moment onwards
+		- PreferencesManager/Dialog change it
+	- Re-check placement: why not happening on floors?
 
 	- Release:
 		- Localization:
-			- Send Help to Joadix who noticed bugs
-	
-	- FIX: background flames carry backdrop with them
-		! Was like this also before
-		! Because background flames are drawn *before* triangles, hence Z depth makes them carry sky
-			! They are drawn *before* triangles because ropes *are* before triangles (order is: rope, BG flame, triangle)
-		! Happens when rope/particle has planeID > background ship; this is what we draw then:
-			! Ropes:
-				- plane 0 (irrelevant)
-				- plane 1 (piece)
-			! BG flame:
-				- plane 0 (irrelevant)
-				- plane 1 (piece of rope) -- here background is still sky
-			! Triangle:
-				- plane 0 -- depth is < BG flames on plane 1 and hence they lose depth test when drawn above BG flames plane 1
-		- Attempt 1: BG flames shader has higher threshold for alpha-discard
-	
+			- Send Help to Joadix who noticed bugs	
 	
 	+ Fix all 2022 copyright years (big #define?), and add g2-labs to:
 		+ Credits
@@ -526,7 +519,6 @@
 
 	- Replace points with quads from geometry shader
 
-	- Buy new track for farewell: https://www.pond5.com/royalty-free-music/item/204959560-nearer-my-god-thee
 
 	- Adjustable level of water
 		- Think of problem with flattening waves on bottom?
@@ -535,9 +527,6 @@
 		- Managed by Ship adjusting colors' alpha's
 
 	- Frozen structure (*)
-
-	- Windows 11 issue: try to play with vsync
-		- https://stackoverflow.com/questions/589064/how-to-enable-vertical-sync-in-opengl
 
 	- Bubbles issue (that "old" issue)
 		- Add temp code to calc total internal water, and see if it's true that it keeps increasing
@@ -549,11 +538,13 @@
 		- 0.025 is better, but stresses too much
 			- Add optional stress_strength_fraction material property, default=current value, for ropes=100%
 
-	- Add more background music:
-		+ "Symmetry" - Kevin MacLeod (incompetech.com)			
-		- "Shadowlands 5 - Antechamber" - Kevin MacLeod (incompetech.com)
-		- https://www.scottbuckley.com.au/library/soul-searcher/
-		- https://www.scottbuckley.com.au/library/intervention/
+	- Add more music:
+		- Background:
+			+ "Symmetry" - Kevin MacLeod (incompetech.com)			
+			- "Shadowlands 5 - Antechamber" - Kevin MacLeod (incompetech.com)
+			- https://www.scottbuckley.com.au/library/soul-searcher/
+			- https://www.scottbuckley.com.au/library/intervention/
+		- Buy new track for farewell: https://www.pond5.com/royalty-free-music/item/204959560-nearer-my-god-thee
 
 	- Make Mac instructions
 		- SFML build: https://github.com/SFML/SFML/issues/1496
@@ -991,6 +982,7 @@
 ======================================================================================================================
 ======================================================================================================================
 ======================================================================================================================
+
 - Technical Debt:
 	+ Global damp as game parameter
 	+ Ships start from 1
@@ -1059,7 +1051,7 @@
 	- To further improve parallelism at Ship::Update, could allow threads to publish events by having EventDispatcher allow multiple threads to store* event
 		- No locks needed on read and clean, as it's done after Update has finished
 
-- Known issues:
+- Known issues (bugs):
 	- After many many hours, rain looks aweful - very likely due to timer values being high
 		- Storm: store timestamp of rain start, and pass (now-start)::to_float() to shader
 	- After many hours, zoom stutters
@@ -1069,6 +1061,23 @@
 			- Zoom solution: ParameterSmoother: various timestamp members become time_point (rather than float's)
 		- Might have same issue with various tools
 		- TODO: is it really worth fixing this?
+	- FIX: background flames carry backdrop with them
+		! Was like this also before
+		! Because background flames are drawn *before* triangles, hence Z depth makes them carry sky
+			! They are drawn *before* triangles because ropes *are* before triangles (order is: rope, BG flame, triangle)
+		! Happens when rope/particle has planeID > background ship; this is what we draw then:
+			! Ropes:
+				- plane 0 (irrelevant)
+				- plane 1 (piece)
+			! BG flame:
+				- plane 0 (irrelevant)
+				- plane 1 (piece of rope) -- here background is still sky
+			! Triangle:
+				- plane 0 -- depth is < BG flames on plane 1 and hence they lose depth test when drawn above BG flames plane 1
+		- Attempt 1: BG flames shader has higher threshold for alpha-discard
+	- Windows 11 issue: try to play with vsync
+		- https://stackoverflow.com/questions/589064/how-to-enable-vertical-sync-in-opengl
+		! IS IT GONE BY NOW?
 
 
 - Simulation Optimizations:

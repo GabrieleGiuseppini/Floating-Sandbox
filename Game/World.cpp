@@ -33,7 +33,7 @@ World::World(
     , mOceanSurface(*this, mGameEventHandler)
     , mOceanFloor(std::move(oceanFloorTerrain))
     , mFishes(fishSpeciesDatabase, mGameEventHandler)
-    , mNpcs(std::make_unique<Npcs>(*this, npcDatabase, mGameEventHandler))
+    , mNpcs(std::make_unique<Npcs>(*this, npcDatabase, mGameEventHandler, gameParameters))
     //
     , mAllShipAABBs()
 {

@@ -421,7 +421,7 @@ std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> Npcs::BeginPl
     // Check if there are too many NPCs
     //
 
-    if (CalculateTotalNpcCount() >= GameParameters::MaxNpcs)
+    if (CalculateTotalNpcCount() >= mMaxNpcs)
     {
         return { std::nullopt, NpcCreationFailureReasonType::TooManyNpcs };
     }
@@ -718,7 +718,7 @@ std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> Npcs::BeginPl
     // Check if there are enough NPCs and particles
     //
 
-    if (CalculateTotalNpcCount() >= GameParameters::MaxNpcs || mParticles.GetRemainingParticlesCount() < 2)
+    if (CalculateTotalNpcCount() >= mMaxNpcs || mParticles.GetRemainingParticlesCount() < 2)
     {
         return { std::nullopt, NpcCreationFailureReasonType::TooManyNpcs };
     }

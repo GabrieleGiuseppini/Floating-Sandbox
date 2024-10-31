@@ -201,10 +201,6 @@ Current perf:
 Next release:
 
 - Misc:
-	- NPC count limit:
-		"I suggest, a user defined limit between 1-9999 and keep it by default at 1000. This way, people can change it however they want and 9999 seems more than enough - In "Preferences" would be ok"
-		- Preferences
-		- Used at Npcs instantiation
 	- Remove NPC tool for "area"
 		"Perhaps some sort of selection tool to remove NPCs - removing a large cluster 1 by 1 is a bit annoying"
 		- RemoveNpcTool: when mouse down on no candidate, enter "selection mode" drawing rectangle
