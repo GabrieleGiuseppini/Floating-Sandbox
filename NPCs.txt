@@ -213,6 +213,9 @@ Next release:
 	- Injury system - requires further though
 		"Something that might be interesting would be to add some sort of injuries system for the NPCs. Doesn't have to be gruesome or gory, but since they seems to be made out of individual joints,
 		 they could have some sort of HP and if a bomb blows off, they might lose their legs or something like that"
+	- "Gravity doesn't seem to be constant for the NPC and objects. Unless it's just some serious drag that prevents them from falling fast"
+		! Indeed we have NPC-specific damping
+		! A too-low NPC-specific damping causes NPCs to bounce forever when in water
 
 - Explosive NPCs
 	- Explode at hit

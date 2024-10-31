@@ -194,7 +194,6 @@
 	+ Bump up version
 	+ MaxNpcs=2048
 
-	- "Gravity doesn't seem to be constant for the NPC and objects. Unless it's just some serious drag that prevents them from falling fast"
 	+ Preferences setting to turn ON auto-focus on spawn
 		+ Which is OFF by default
 		+ PreferencedDialog and PreferencesManager
