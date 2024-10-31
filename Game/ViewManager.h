@@ -30,10 +30,13 @@ public:
     bool GetDoAutoFocusOnShipLoad() const;
     void SetDoAutoFocusOnShipLoad(bool value);
 
+    bool GetDoAutoFocusOnNpcPlacement() const;
+    void SetDoAutoFocusOnNpcPlacement(bool value);
+
     std::optional<AutoFocusTargetKindType> GetAutoFocusTarget() const;
     void SetAutoFocusTarget(std::optional<AutoFocusTargetKindType> const & target);
 
-    void OnViewModelUpdated();    
+    void OnViewModelUpdated();
     void Pan(vec2f const & worldOffset);
     void PanToWorldX(float worldX);
     void AdjustZoom(float amount);
@@ -83,6 +86,7 @@ private:
     float mCameraSpeedAdjustment; // Storage
 
     bool mDoAutoFocusOnShipLoad; // Storage
+    bool mDoAutoFocusOnNpcPlacement; // Storage
 
     struct AutoFocusSessionData
     {

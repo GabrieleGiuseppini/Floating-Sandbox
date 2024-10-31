@@ -290,9 +290,9 @@ void PreferencesDialog::OnContinuousAutoFocusOnShipCheckBoxClicked(wxCommandEven
     mOnChangeCallback();
 }
 
-void PreferencesDialog::OnAutoFocusAtShipLoadCheckBoxClicked(wxCommandEvent & /*event*/)
+void PreferencesDialog::OnAutoFocusOnShipLoadCheckBoxClicked(wxCommandEvent & /*event*/)
 {
-    mUIPreferencesManager.SetDoAutoFocusAtShipLoad(mAutoFocusAtShipLoadCheckBox->GetValue());
+    mUIPreferencesManager.SetDoAutoFocusOnShipLoad(mAutoFocusOnShipLoadCheckBox->GetValue());
 
     mOnChangeCallback();
 }
@@ -307,6 +307,13 @@ void PreferencesDialog::OnAutoShowSwitchboardCheckBoxClicked(wxCommandEvent & /*
 void PreferencesDialog::OnShowElectricalNotificationsCheckBoxClicked(wxCommandEvent & /*event*/)
 {
     mUIPreferencesManager.SetDoShowElectricalNotifications(mShowElectricalNotificationsCheckBox->GetValue());
+
+    mOnChangeCallback();
+}
+
+void PreferencesDialog::OnAutoFocusOnNpcPlacementCheckBoxClicked(wxCommandEvent & /*event*/)
+{
+    mUIPreferencesManager.SetDoAutoFocusOnNpcPlacement(mAutoFocusOnNpcPlacementCheckBox->GetValue());
 
     mOnChangeCallback();
 }
@@ -968,15 +975,15 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            // Auto-Focus
+            // Auto-Focus on Ship Load
             {
-                mAutoFocusAtShipLoadCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY,
+                mAutoFocusOnShipLoadCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY,
                     _("Auto-Focus at Ship Load"), wxDefaultPosition, wxDefaultSize, 0);
-                mAutoFocusAtShipLoadCheckBox->SetToolTip(_("Enables or disables auto-focus when a ship is loaded."));
-                mAutoFocusAtShipLoadCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnAutoFocusAtShipLoadCheckBoxClicked, this);
+                mAutoFocusOnShipLoadCheckBox->SetToolTip(_("Enables or disables auto-focus when a ship is loaded."));
+                mAutoFocusOnShipLoadCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnAutoFocusOnShipLoadCheckBoxClicked, this);
 
                 sizer->Add(
-                    mAutoFocusAtShipLoadCheckBox,
+                    mAutoFocusOnShipLoadCheckBox,
                     wxGBPosition(3, 0),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -1008,6 +1015,21 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
                 sizer->Add(
                     mShowElectricalNotificationsCheckBox,
                     wxGBPosition(5, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Auto-Focus on Npc Placement
+            {
+                mAutoFocusOnNpcPlacementCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY,
+                    _("Auto-Focus at NPC Add"), wxDefaultPosition, wxDefaultSize, 0);
+                mAutoFocusOnNpcPlacementCheckBox->SetToolTip(_("Enables or disables auto-focus when an NPC is added."));
+                mAutoFocusOnNpcPlacementCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnAutoFocusOnNpcPlacementCheckBoxClicked, this);
+
+                sizer->Add(
+                    mAutoFocusOnNpcPlacementCheckBox,
+                    wxGBPosition(6, 0),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
@@ -1240,9 +1262,10 @@ void PreferencesDialog::ReadSettings()
     mReloadLastLoadedShipOnStartupCheckBox->SetValue(mUIPreferencesManager.GetReloadLastLoadedShipOnStartup());
     mShowShipDescriptionAtShipLoadCheckBox->SetValue(mUIPreferencesManager.GetShowShipDescriptionsAtShipLoad());
     mContinuousAutoFocusOnShipCheckBox->SetValue(mUIPreferencesManager.GetAutoFocusTarget() == AutoFocusTargetKindType::Ship);
-    mAutoFocusAtShipLoadCheckBox->SetValue(mUIPreferencesManager.GetDoAutoFocusAtShipLoad());
+    mAutoFocusOnShipLoadCheckBox->SetValue(mUIPreferencesManager.GetDoAutoFocusOnShipLoad());
     mAutoShowSwitchboardCheckBox->SetValue(mUIPreferencesManager.GetAutoShowSwitchboard());
     mShowElectricalNotificationsCheckBox->SetValue(mUIPreferencesManager.GetDoShowElectricalNotifications());
+    mAutoFocusOnNpcPlacementCheckBox->SetValue(mUIPreferencesManager.GetDoAutoFocusOnNpcPlacement());
     switch (mUIPreferencesManager.GetShipAutoTexturizationSharedSettings().Mode)
     {
         case ShipAutoTexturizationModeType::FlatStructure:

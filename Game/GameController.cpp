@@ -1908,7 +1908,8 @@ void GameController::OnBeginPlaceNewNpc(
     NpcId const & npcId,
     bool doAnchorToScreen)
 {
-    if (!mViewManager.GetAutoFocusTarget().has_value())
+    if (mViewManager.GetDoAutoFocusOnNpcPlacement()
+        && !mViewManager.GetAutoFocusTarget().has_value())
     {
         // Focus on this NPC (one-off)
 

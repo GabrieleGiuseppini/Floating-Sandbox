@@ -1848,7 +1848,7 @@ void MainFrame::OnZoomOutMenuItemSelected(wxCommandEvent & /*event*/)
 void MainFrame::OnAutoFocusAtShipLoadMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mUIPreferencesManager);
-    mUIPreferencesManager->SetDoAutoFocusAtShipLoad(mAutoFocusAtShipLoadMenuItem->IsChecked());
+    mUIPreferencesManager->SetDoAutoFocusOnShipLoad(mAutoFocusAtShipLoadMenuItem->IsChecked());
 }
 
 void MainFrame::OnResetViewMenuItemSelected(wxCommandEvent & /*event*/)
@@ -2628,7 +2628,7 @@ void MainFrame::ReconciliateUIWithUIPreferencesAndSettings()
     assert(mGameController);
     assert(mUIPreferencesManager);
 
-    mAutoFocusAtShipLoadMenuItem->Check(mUIPreferencesManager->GetDoAutoFocusAtShipLoad());
+    mAutoFocusAtShipLoadMenuItem->Check(mUIPreferencesManager->GetDoAutoFocusOnShipLoad());
 
     mContinuousAutoFocusOnShipMenuItem->Check(mUIPreferencesManager->GetAutoFocusTarget() == AutoFocusTargetKindType::Ship);
     mContinuousAutoFocusOnSelectedNpcMenuItem->Check(mUIPreferencesManager->GetAutoFocusTarget() == AutoFocusTargetKindType::SelectedNpc);

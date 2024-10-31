@@ -52,6 +52,7 @@ ViewManager::ViewManager(
     // Defaults
     , mCameraSpeedAdjustment(1.0f)
     , mDoAutoFocusOnShipLoad(true)
+    , mDoAutoFocusOnNpcPlacement(false)
     , mAutoFocus() // Set later
 {
     // Default: continuous auto-focus is ON on ships
@@ -81,6 +82,16 @@ bool ViewManager::GetDoAutoFocusOnShipLoad() const
 void ViewManager::SetDoAutoFocusOnShipLoad(bool value)
 {
     mDoAutoFocusOnShipLoad = value;
+}
+
+bool ViewManager::GetDoAutoFocusOnNpcPlacement() const
+{
+    return mDoAutoFocusOnNpcPlacement;
+}
+
+void ViewManager::SetDoAutoFocusOnNpcPlacement(bool value)
+{
+    mDoAutoFocusOnNpcPlacement = value;
 }
 
 std::optional<AutoFocusTargetKindType> ViewManager::GetAutoFocusTarget() const

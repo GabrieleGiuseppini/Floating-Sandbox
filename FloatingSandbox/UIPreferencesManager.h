@@ -215,14 +215,24 @@ public:
         return mGameController.GetMaxCameraSpeedAdjustment();
     }
 
-    bool GetDoAutoFocusAtShipLoad() const
+    bool GetDoAutoFocusOnShipLoad() const
     {
         return mGameController.GetDoAutoFocusOnShipLoad();
     }
 
-    void SetDoAutoFocusAtShipLoad(bool value)
+    void SetDoAutoFocusOnShipLoad(bool value)
     {
         mGameController.SetDoAutoFocusOnShipLoad(value);
+    }
+
+    bool GetDoAutoFocusOnNpcPlacement() const
+    {
+        return mGameController.GetDoAutoFocusOnNpcPlacement();
+    }
+
+    void SetDoAutoFocusOnNpcPlacement(bool value)
+    {
+        mGameController.SetDoAutoFocusOnNpcPlacement(value);
     }
 
     std::optional<AutoFocusTargetKindType> GetAutoFocusTarget() const

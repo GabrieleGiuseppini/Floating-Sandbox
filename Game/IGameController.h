@@ -194,6 +194,9 @@ struct IGameController
     virtual bool GetDoAutoFocusOnShipLoad() const = 0;
     virtual void SetDoAutoFocusOnShipLoad(bool value) = 0;
 
+    virtual bool GetDoAutoFocusOnNpcPlacement() const = 0;
+    virtual void SetDoAutoFocusOnNpcPlacement(bool value) = 0;
+
     virtual std::optional<AutoFocusTargetKindType> GetAutoFocusTarget() const = 0;
     virtual void SetAutoFocusTarget(std::optional<AutoFocusTargetKindType> const & autoFocusTarget) = 0;
 

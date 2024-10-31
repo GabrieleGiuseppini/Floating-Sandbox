@@ -313,6 +313,9 @@ public:
     bool GetDoAutoFocusOnShipLoad() const override { return mViewManager.GetDoAutoFocusOnShipLoad(); }
     void SetDoAutoFocusOnShipLoad(bool value) override { mViewManager.SetDoAutoFocusOnShipLoad(value); }
 
+    bool GetDoAutoFocusOnNpcPlacement() const override { return mViewManager.GetDoAutoFocusOnNpcPlacement(); }
+    void SetDoAutoFocusOnNpcPlacement(bool value) override { mViewManager.SetDoAutoFocusOnNpcPlacement(value); }
+
     std::optional<AutoFocusTargetKindType> GetAutoFocusTarget() const override;
     void SetAutoFocusTarget(std::optional<AutoFocusTargetKindType> const & autoFocusTarget) override;
 

@@ -339,6 +339,16 @@ void UIPreferencesManager::LoadPreferences()
         }
 
         //
+        // Auto-focus at NPC placement
+        //
+
+        if (auto it = preferencesRootObject->find("auto_focus_at_npc_placement");
+            it != preferencesRootObject->end() && it->second.is<bool>())
+        {
+            mGameController.SetDoAutoFocusOnNpcPlacement(it->second.get<bool>());
+        }
+
+        //
         // Continuous auto-focus on ships
         //
         // If set: ships; else: none (we don't save SelectedNpc)
@@ -552,6 +562,9 @@ void UIPreferencesManager::SavePreferences() const
 
     // Add auto focus at ship load
     preferencesRootObject["auto_zoom_at_ship_load"] = picojson::value(mGameController.GetDoAutoFocusOnShipLoad());
+
+    // Add auto focus at NPC placement
+    preferencesRootObject["auto_focus_at_npc_placement"] = picojson::value(mGameController.GetDoAutoFocusOnNpcPlacement());
 
     // Add continuous auto focus
     preferencesRootObject["continuous_auto_focus"] = picojson::value(mGameController.GetAutoFocusTarget() == AutoFocusTargetKindType::Ship);

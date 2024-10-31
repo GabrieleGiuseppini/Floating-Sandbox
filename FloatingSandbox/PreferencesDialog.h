@@ -51,9 +51,10 @@ private:
     void OnReloadLastLoadedShipOnStartupCheckBoxClicked(wxCommandEvent & event);
     void OnShowShipDescriptionAtShipLoadCheckBoxClicked(wxCommandEvent & event);
     void OnContinuousAutoFocusOnShipCheckBoxClicked(wxCommandEvent & event);
-    void OnAutoFocusAtShipLoadCheckBoxClicked(wxCommandEvent & event);
+    void OnAutoFocusOnShipLoadCheckBoxClicked(wxCommandEvent & event);
     void OnAutoShowSwitchboardCheckBoxClicked(wxCommandEvent & event);
     void OnShowElectricalNotificationsCheckBoxClicked(wxCommandEvent & event);
+    void OnAutoFocusOnNpcPlacementCheckBoxClicked(wxCommandEvent & event);
     void OnAutoTexturizationModeRadioButtonClick(wxCommandEvent & event);
     void OnForceSharedAutoTexturizationSettingsOntoShipCheckBoxClicked(wxCommandEvent & event);
 
@@ -107,9 +108,10 @@ private:
     wxCheckBox * mReloadLastLoadedShipOnStartupCheckBox;
     wxCheckBox * mShowShipDescriptionAtShipLoadCheckBox;
     wxCheckBox * mContinuousAutoFocusOnShipCheckBox;
-    wxCheckBox * mAutoFocusAtShipLoadCheckBox;
+    wxCheckBox * mAutoFocusOnShipLoadCheckBox;
     wxCheckBox * mAutoShowSwitchboardCheckBox;
     wxCheckBox * mShowElectricalNotificationsCheckBox;
+    wxCheckBox * mAutoFocusOnNpcPlacementCheckBox;
     wxRadioButton * mFlatStructureAutoTexturizationModeRadioButton;
     wxRadioButton * mMaterialTexturesAutoTexturizationModeRadioButton;
     wxCheckBox * mForceSharedAutoTexturizationSettingsOntoShipCheckBox;
