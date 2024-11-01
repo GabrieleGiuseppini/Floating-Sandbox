@@ -1340,44 +1340,39 @@ std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> Npcs::AddNpcGroup
                     ++score;
                 }
 
-                // Surrounded by triangles
-                for (int e = 0; e < 3; ++e)
-                {
-                    auto const & oppositeTriangleInfo = triangles.GetOppositeTriangle(t, e);
-                    if (oppositeTriangleInfo.TriangleElementIndex != NoneElementIndex && !triangles.IsDeleted(oppositeTriangleInfo.TriangleElementIndex))
-                    {
-                        ++score;
-                    }
-                }
-
-                // Floor underneath and no floors above
+                // Floor underneath and at least one edge that can walk through and out
                 {
                     vec2f const centerPosition = (aPosition + bPosition + cPosition) / 3.0f;
                     bcoords3f underneathBCoords = triangles.ToBarycentricCoordinates(centerPosition + vec2f(0.0f, -2.0f), t, points);
 
                     // Heuristic: we consider as "it's gonna be our floor" any edge that has its corresponding bcoord < 0, and viceversa
                     bool hasRightFloorUnderneath = false;
-                    bool hasRightFloorAbove = false;
+                    bool hasAtLeastOneEdgeToWalkOut = false;
                     for (int v = 0; v < 3; ++v)
                     {
-                        if (underneathBCoords[v] < 0.0f && triangles.GetSubSpringNpcFloorKind(t, (v + 1) % 3) != NpcFloorKindType::NotAFloor)
+                        int const edgeOrdinal = (v + 1) % 3;
+                        if (underneathBCoords[v] < 0.0f && triangles.GetSubSpringNpcFloorKind(t, edgeOrdinal) != NpcFloorKindType::NotAFloor)
                         {
                             hasRightFloorUnderneath = true;
                         }
-                        else if (underneathBCoords[v] > 0.0f && triangles.GetSubSpringNpcFloorKind(t, (v + 1) % 3) == NpcFloorKindType::NotAFloor)
+                        else if (underneathBCoords[v] > 0.0f && triangles.GetSubSpringNpcFloorKind(t, edgeOrdinal) == NpcFloorKindType::NotAFloor)
                         {
-                            hasRightFloorAbove = true;
+                            auto const & oppositeTriangleInfo = triangles.GetOppositeTriangle(t, edgeOrdinal);
+                            if (oppositeTriangleInfo.TriangleElementIndex != NoneElementIndex && !triangles.IsDeleted(oppositeTriangleInfo.TriangleElementIndex))
+                            {
+                                hasAtLeastOneEdgeToWalkOut = true;
+                            }
                         }
                     }
 
                     if (hasRightFloorUnderneath)
                     {
                         ++score;
-                    }
 
-                    if (hasRightFloorAbove)
-                    {
-                        ++score;
+                        if (hasAtLeastOneEdgeToWalkOut)
+                        {
+                            ++score;
+                        }
                     }
                 }
 
@@ -1395,7 +1390,10 @@ std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> Npcs::AddNpcGroup
                 // Store candidate
                 //
 
-                candidateTriangles.push_back(t);
+                if (score == bestTriangleScore)
+                {
+                    candidateTriangles.push_back(t);
+                }
             }
         }
     }

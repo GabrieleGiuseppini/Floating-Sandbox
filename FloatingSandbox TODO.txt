@@ -210,7 +210,9 @@
 		+ Used at Npcs instantiation
 			+ Npcs() stores own copy of GameParameters at instantiation time, and uses that one from that moment onwards
 		- PreferencesManager/Dialog change it
-	- Re-check placement: why not happening on floors?
+		- Test hitting limit
+	+ Re-check placement: why not happening on floors?
+		+ FIX: floor with nothing on other side is trumped by floor with a triangle on other side
 
 	- Release:
 		- Localization:
@@ -431,6 +433,17 @@
 				- After:
 		- static ship attribs
 		- ocean, land
+	- Consider invoking World::Upload from render thread (via RenderContext, as func<>, *synchronously*)
+		- So that may upload to GPU buffers directly (or at XYZEnd()), instead of local temp buffers
+			- Eventually using mapped buffers, so no local storage at all, unless when mapped buffers not possible because we don't know size in advance or e.g. need sorting
+		- Plan:
+			! Measure perf in all below
+				- Ideally on old Dell
+			- 1a. Quick'n'dirty test A
+				- Just invoke World::Upload from thread, no other changes needed other than not calling RenderThread for those few uploads that happen on render thread
+			- 1b. Converge to optimum
+				- Replace, one by one, local buffers with mapped buffers / upload at end() (when mapped buffers not possible)
+					- Nuke corresponding RenderPrepare() each time
 
 
 	- Try to lower global damping - seems quite slow
@@ -512,10 +525,6 @@
 				- TODO-WHY OLD: because doing like ocean floor collisions is essentially the same, except that it also works on ropes
 		- Impl:
 			- TODOHERE
-
-	- Consider invoking World::Upload from render thread (via RenderContext, as func<>)
-		- So that may upload to GPU buffers directly, instead of local temp buffers
-			- Eventually using mapped buffers
 
 	- Replace points with quads from geometry shader
 
