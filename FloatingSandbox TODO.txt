@@ -6,17 +6,30 @@
 
 - Roadmap:
 
-
-	- Vegas:
-		- Screenshots:
-			- Wreck at night w/wout lamp
-			- Twilight
-			- Temperature overlay
-			- Stress overlay
-
 	+ Npcs - take 1
 		+ Merge into master
 		+ Changelist
+
+	+ Terrain tool: guide
+		+ SHIFT starts guide == line via NotificationLayer
+			+ While Shift is pressed, guide snaps to horizontal
+			+ Releasing shift removes snapping but guide mode is maintained
+		+ Terrain is then drawn only at left button up
+		+ Impl:
+			+ Completely separate state machine, guided by mEngagementData == enum mode, union of structs
+				+ When in guide mode, we reason in screen coords - so e.g. start point is fixed on screen
+				+ SimulationUpdate: talk to GameController iff in guide mode
+			+ NotificationLayer/Context
+		+ Display degrees
+		+ Test:
+			+ Sound
+			+ Cursor
+			+ Error		
+		+ Add to changelist
+
+	+ "Random" button to load random ship
+		+ At LoadDialog
+
 
 	+ Npcs post-work:
 		= Work with TimCan for improvements
@@ -137,41 +150,6 @@
 					+ Cleanup shader
 		+ Merge into npcs_v1
 
-	= Clouds V3: with fantastic texture coords offset
-		+ First off, technical debt:
-			+ Do clouds as baked atlas
-			+ Do index-based rendering
-		+ Magic work:
-			+ See shader on shader toy: use cloud texture coords offset based on noise centered around 0.
-				+ But solve problem of going to other texture: need more room around textures?
-					+ Cannot clamp in shader: would still look awful, and nice to have long flanges
-		+ Noise needed:
-			+ Perlin-8,32,0.43 (different than land)
-				+ Move from WorldRenderContext to GlobalRenderContext
-					+ Basically move mLandNoiseTextureOpenGLHandle
-			+ Test:
-				+ Land noise
-				+ Clouds (old  noise)
-		+ Shader
-			+ Does amplitude need to depend on texture coords w/h?
-			+ Play with detail
-		+ Triage current cloud textures
-			+ In ShaderToy		
-		+ Randomize starting progress
-		+ Verify that the Perlin we're using is the same as on the desktop
-			+ Save image, before and after recalibrating
-		+ Tests:
-			+ Basic
-				+ Moonlight, Lamp
-			+ Detailed
-				+ Moonlight, Lamp
-			+ Storm
-		+ Test enlarging canvas of tight clouds
-
-		- Test AdobeStock/Getty clouds
-
-		- Changelist
-
 	+ AtlasBuilder: detect duplicates
 		+ New option
 		+ Use at NPC baking options
@@ -194,30 +172,6 @@
 	+ Bump up version
 	+ MaxNpcs=2048
 
-	+ Preferences setting to turn ON auto-focus on spawn
-		+ Which is OFF by default
-		+ PreferencedDialog and PreferencesManager
-	+ Auto-placing:
-		+ Overcome bias in auto-placing NPCs
-		+ An option to do auto-placement constrained in visible world view
-	+ Update Help with NPCs
-	= NPC count limit:
-		"I suggest, a user defined limit between 1-9999 and keep it by default at 1000. This way, people can change it however they want and 9999 seems more than enough - In "Preferences" would be ok"
-		+ GameParameters has it as "movable" param
-			+ Default: 1024
-			+ Min: 1024
-			+ Max: 8192
-		+ Used at Npcs instantiation
-			+ Npcs() stores own copy of GameParameters at instantiation time, and uses that one from that moment onwards
-		- PreferencesManager/Dialog change it
-		- Test hitting limit
-	+ Re-check placement: why not happening on floors?
-		+ FIX: floor with nothing on other side is trumped by floor with a triangle on other side
-
-	- Release:
-		- Localization:
-			- Send Help to Joadix who noticed bugs	
-	
 	+ Fix all 2022 copyright years (big #define?), and add g2-labs to:
 		+ Credits
 		+ Resource files x 2
@@ -372,6 +326,69 @@
 
 	+ Redo notifications' EphemeralText: RollingText
 
+	+ Preferences setting to turn ON auto-focus on spawn
+		+ Which is OFF by default
+		+ PreferencedDialog and PreferencesManager
+	+ Auto-placing:
+		+ Overcome bias in auto-placing NPCs
+		+ An option to do auto-placement constrained in visible world view
+	+ Update Help with NPCs
+	+ NPC count limit:
+		"I suggest, a user defined limit between 1-9999 and keep it by default at 1000. This way, people can change it however they want and 9999 seems more than enough - In "Preferences" would be ok"
+		+ GameParameters has it as "movable" param
+			+ Default: 1024
+			+ Min: 1024
+			+ Max: 8192
+		+ Used at Npcs instantiation
+			+ Npcs() stores own copy of GameParameters at instantiation time, and uses that one from that moment onwards
+	+ Re-check placement: why not happening on floors?
+		+ FIX: floor with nothing on other side is trumped by floor with a triangle on other side
+	- Settings:
+		- PreferencesManager/Dialog:
+			- NpcCountLimit
+				- FixedSetSliderCore, with ::FromPowerOfTwos
+					- UnitTests
+				- Warning icon
+				- Requires reset
+					- Reset dirty flag w/question
+			- NpcsPerGroup
+		- Test hitting NPC limit
+
+	= Clouds V3: with fantastic texture coords offset
+		+ First off, technical debt:
+			+ Do clouds as baked atlas
+			+ Do index-based rendering
+		+ Magic work:
+			+ See shader on shader toy: use cloud texture coords offset based on noise centered around 0.
+				+ But solve problem of going to other texture: need more room around textures?
+					+ Cannot clamp in shader: would still look awful, and nice to have long flanges
+		+ Noise needed:
+			+ Perlin-8,32,0.43 (different than land)
+				+ Move from WorldRenderContext to GlobalRenderContext
+					+ Basically move mLandNoiseTextureOpenGLHandle
+			+ Test:
+				+ Land noise
+				+ Clouds (old  noise)
+		+ Shader
+			+ Does amplitude need to depend on texture coords w/h?
+			+ Play with detail
+		+ Triage current cloud textures
+			+ In ShaderToy		
+		+ Randomize starting progress
+		+ Verify that the Perlin we're using is the same as on the desktop
+			+ Save image, before and after recalibrating
+		+ Tests:
+			+ Basic
+				+ Moonlight, Lamp
+			+ Detailed
+				+ Moonlight, Lamp
+			+ Storm
+		+ Test enlarging canvas of tight clouds
+
+		- Test AdobeStock/Getty clouds
+
+		- Changelist	
+
 	- Do other atlases (GenericLinear, GenericMipMapped)
 		- Clean checkout
 		- Move to Baking
@@ -433,6 +450,55 @@
 				- After:
 		- static ship attribs
 		- ocean, land
+
+	- ShipBuilder: see issue with copy'n'paste of electrical materials losing instance ID
+
+	- Add more music:
+		- Background:
+			+ "Symmetry" - Kevin MacLeod (incompetech.com)			
+			- "Shadowlands 5 - Antechamber" - Kevin MacLeod (incompetech.com)
+			- https://www.scottbuckley.com.au/library/soul-searcher/
+			- https://www.scottbuckley.com.au/library/intervention/
+		- Buy new track for farewell: https://www.pond5.com/royalty-free-music/item/204959560-nearer-my-god-thee
+
+	- Ubuntu preparation
+
+	- Release prep:
+		- Ships:
+			- See below			-
+			- FS email
+			- All Discord's
+		- Localization:
+			- Change two help files to remove stuff we've removed and add stuff we haven't localized
+				- RU, UK, ES
+			- Prepare po's
+			- Prepare text files with NPC json
+				- RU
+				- UK
+				- ES
+			- IT:
+				- PO
+				- Two helps
+				- NPC json
+			- ES:
+				- PO
+				- Two helps // Joadix had noticed bugs
+				- NPC json
+			- RU:
+				- PO
+				- Two helps
+				- NPC json
+			- UK:
+				- PO
+				- Two helps
+				- NPC json
+
+	- After next release:
+		- Update GameJolt to say Ubuntu 20.04
+		- Delete my Ubuntu 18 VM way after next release
+
+	===========================
+
 	- Consider invoking World::Upload from render thread (via RenderContext, as func<>, *synchronously*)
 		- So that may upload to GPU buffers directly (or at XYZEnd()), instead of local temp buffers
 			- Eventually using mapped buffers, so no local storage at all, unless when mapped buffers not possible because we don't know size in advance or e.g. need sorting
@@ -460,10 +526,6 @@
 			- 4. Progress bar shows progress, and OpenGL quadrant shows ship sinking, stepping with progress
 		- OnProgress is always called, but has a visible effect only from step 3 onwards
 
-	- @ next release:
-		- Update GameJolt to say Ubuntu 20.04
-		- Delete my Ubuntu 18 VM way after next release
-
 	- A way to spawn ships like NPCs: at any place
 
 	- See if can use keys to pan along diagonals
@@ -471,8 +533,6 @@
 	- Ship engines should not work when not underwater
 
 	- Ship passwords only to prevent being edited, but allow password-protected ships to be inspected
-
-	- See issue with copy'n'paste of electrical materials losing instance ID
 
 	- ShipStrengthRandomizer: try to optimize
 		- Responsible for half of loading time
@@ -484,23 +544,6 @@
 	- Redo timer bomb
 		- Shader for fuse + sparks
 
-	+ Terrain tool: guide
-		+ SHIFT starts guide == line via NotificationLayer
-			+ While Shift is pressed, guide snaps to horizontal
-			+ Releasing shift removes snapping but guide mode is maintained
-		+ Terrain is then drawn only at left button up
-		+ Impl:
-			+ Completely separate state machine, guided by mEngagementData == enum mode, union of structs
-				+ When in guide mode, we reason in screen coords - so e.g. start point is fixed on screen
-				+ SimulationUpdate: talk to GameController iff in guide mode
-			+ NotificationLayer/Context
-		+ Display degrees
-		+ Test:
-			+ Sound
-			+ Cursor
-			+ Error		
-		+ Add to changelist
-
 	- Try with parallel "water" subsystem, but for "bulk" (gravel, etc.)
 		- May co-exist with water
 		- Physics slightly different (more dense)
@@ -511,9 +554,6 @@
 			- Same subsystem as water (now renamed "Internal Fluids"), own buffers
 			- UpdateWaterMomenta: double calculations in existing loops
 				- Only difference: horizontal propagation is subject to "friction"
-
-	+ "Random" button to load random ship
-		+ At LoadDialog
 
 	- Option to have larger world size
 
@@ -527,7 +567,6 @@
 			- TODOHERE
 
 	- Replace points with quads from geometry shader
-
 
 	- Adjustable level of water
 		- Think of problem with flattening waves on bottom?
@@ -547,13 +586,6 @@
 		- 0.025 is better, but stresses too much
 			- Add optional stress_strength_fraction material property, default=current value, for ropes=100%
 
-	- Add more music:
-		- Background:
-			+ "Symmetry" - Kevin MacLeod (incompetech.com)			
-			- "Shadowlands 5 - Antechamber" - Kevin MacLeod (incompetech.com)
-			- https://www.scottbuckley.com.au/library/soul-searcher/
-			- https://www.scottbuckley.com.au/library/intervention/
-		- Buy new track for farewell: https://www.pond5.com/royalty-free-music/item/204959560-nearer-my-god-thee
 
 	- Make Mac instructions
 		- SFML build: https://github.com/SFML/SFML/issues/1496
@@ -875,6 +907,12 @@
 		- DevIL: so's?
 
 - Marketing:
+	- Vegas:
+		- Screenshots:
+			- Wreck at night w/wout lamp
+			- Twilight
+			- Temperature overlay
+			- Stress overlay
 	- GameJolt:
 		- Use new video as preview
 	- www.floatingsandbox.com:
