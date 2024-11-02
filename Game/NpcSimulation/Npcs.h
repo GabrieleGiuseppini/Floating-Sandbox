@@ -898,7 +898,8 @@ public:
 	std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> AddNpcGroup(
 		NpcKindType kind,
 		VisibleWorld const & visibleWorld,
-		float currentSimulationTime);
+		float currentSimulationTime,
+		GameParameters const & gameParameters);
 
 	void TurnaroundNpc(NpcId id);
 

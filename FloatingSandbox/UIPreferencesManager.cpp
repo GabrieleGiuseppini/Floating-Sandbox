@@ -9,6 +9,7 @@
 
 #include <Game/ResourceLocator.h>
 
+#include <GameCore/GameMath.h>
 #include <GameCore/Utils.h>
 
 UIPreferencesManager::UIPreferencesManager(
@@ -277,16 +278,6 @@ void UIPreferencesManager::LoadPreferences()
         }
 
         //
-        // Show npc notifications
-        //
-
-        if (auto showNpcNotificationsIt = preferencesRootObject->find("show_npc_notifications");
-            showNpcNotificationsIt != preferencesRootObject->end() && showNpcNotificationsIt->second.is<bool>())
-        {
-            mGameController.SetDoShowNpcNotifications(showNpcNotificationsIt->second.get<bool>());
-        }
-
-        //
         // Display units system
         //
 
@@ -336,16 +327,6 @@ void UIPreferencesManager::LoadPreferences()
             it != preferencesRootObject->end() && it->second.is<bool>())
         {
             mGameController.SetDoAutoFocusOnShipLoad(it->second.get<bool>());
-        }
-
-        //
-        // Auto-focus at NPC placement
-        //
-
-        if (auto it = preferencesRootObject->find("auto_focus_at_npc_placement");
-            it != preferencesRootObject->end() && it->second.is<bool>())
-        {
-            mGameController.SetDoAutoFocusOnNpcPlacement(it->second.get<bool>());
         }
 
         //
@@ -429,6 +410,54 @@ void UIPreferencesManager::LoadPreferences()
             showExtendedStatusTextIt != preferencesRootObject->end() && showExtendedStatusTextIt->second.is<bool>())
         {
             mGameController.SetShowExtendedStatusText(showExtendedStatusTextIt->second.get<bool>());
+        }
+
+        //
+        // NPCs
+        //
+
+        {
+            //
+            // Max NPCs
+            //
+
+            if (auto it = preferencesRootObject->find("max_npcs");
+                it != preferencesRootObject->end() && it->second.is<std::int64_t>())
+            {
+                size_t value = static_cast<size_t>(it->second.get<std::int64_t>());
+                mGameController.SetMaxNpcs(Clamp(value, mGameController.GetMinMaxNpcs(), mGameController.GetMaxMaxNpcs()));
+            }
+
+            //
+            // NPCs per group
+            //
+
+            if (auto it = preferencesRootObject->find("npcs_per_group");
+                it != preferencesRootObject->end() && it->second.is<std::int64_t>())
+            {
+                size_t value = static_cast<size_t>(it->second.get<std::int64_t>());
+                mGameController.SetNpcsPerGroup(Clamp(value, mGameController.GetMinNpcsPerGroup(), mGameController.GetMaxNpcsPerGroup()));
+            }
+
+            //
+            // Auto-focus at NPC placement
+            //
+
+            if (auto it = preferencesRootObject->find("auto_focus_at_npc_placement");
+                it != preferencesRootObject->end() && it->second.is<bool>())
+            {
+                mGameController.SetDoAutoFocusOnNpcPlacement(it->second.get<bool>());
+            }
+
+            //
+            // Show npc notifications
+            //
+
+            if (auto it = preferencesRootObject->find("show_npc_notifications");
+                it != preferencesRootObject->end() && it->second.is<bool>())
+            {
+                mGameController.SetDoShowNpcNotifications(it->second.get<bool>());
+            }
         }
 
         //
@@ -544,9 +573,6 @@ void UIPreferencesManager::SavePreferences() const
     // Add show tsunami notification
     preferencesRootObject["show_tsunami_notifications"] = picojson::value(mGameController.GetDoShowTsunamiNotifications());
 
-    // Add show npc notification
-    preferencesRootObject["show_npc_notifications"] = picojson::value(mGameController.GetDoShowNpcNotifications());
-
     // Add display units system
     preferencesRootObject["display_units_system"] = picojson::value(static_cast<std::int64_t>(mGameController.GetDisplayUnitsSystem()));
 
@@ -562,9 +588,6 @@ void UIPreferencesManager::SavePreferences() const
 
     // Add auto focus at ship load
     preferencesRootObject["auto_zoom_at_ship_load"] = picojson::value(mGameController.GetDoAutoFocusOnShipLoad());
-
-    // Add auto focus at NPC placement
-    preferencesRootObject["auto_focus_at_npc_placement"] = picojson::value(mGameController.GetDoAutoFocusOnNpcPlacement());
 
     // Add continuous auto focus
     preferencesRootObject["continuous_auto_focus"] = picojson::value(mGameController.GetAutoFocusTarget() == AutoFocusTargetKindType::Ship);
@@ -589,6 +612,24 @@ void UIPreferencesManager::SavePreferences() const
 
     // Add show extended status text
     preferencesRootObject["show_extended_status_text"] = picojson::value(mGameController.GetShowExtendedStatusText());
+
+    //
+    // NPCs
+    //
+
+    {
+        // Add max NPCs
+        preferencesRootObject["max_npcs"] = picojson::value(static_cast<std::int64_t>(mGameController.GetMaxNpcs()));
+
+        // Add NPCs per group
+        preferencesRootObject["npcs_per_group"] = picojson::value(static_cast<std::int64_t>(mGameController.GetNpcsPerGroup()));
+
+        // Add auto-focus at NPC placement
+        preferencesRootObject["auto_focus_at_npc_placement"] = picojson::value(mGameController.GetDoAutoFocusOnNpcPlacement());
+
+        // Add show npc notification
+        preferencesRootObject["show_npc_notifications"] = picojson::value(mGameController.GetDoShowNpcNotifications());
+    }
 
     //
     // Sounds and Music

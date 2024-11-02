@@ -6,6 +6,8 @@
 #include "PreferencesDialog.h"
 
 #include <GameCore/ExponentialSliderCore.h>
+#include <GameCore/FixedSetSliderCore.h>
+#include <GameCore/IntegralLinearSliderCore.h>
 #include <GameCore/LinearSliderCore.h>
 
 #include <wx/gbsizer.h>
@@ -31,7 +33,8 @@ static float constexpr CameraSpeedAdjustmentSpinFactor = 100.0f;
 PreferencesDialog::PreferencesDialog(
     wxWindow* parent,
     UIPreferencesManager & uiPreferencesManager,
-    std::function<void()> onChangeCallback)
+    std::function<void()> onChangeCallback,
+    ResourceLocator const & resourceLocator)
     : mParent(parent)
     , mUIPreferencesManager(uiPreferencesManager)
     , mOnChangeCallback(std::move(onChangeCallback))
@@ -49,6 +52,13 @@ PreferencesDialog::PreferencesDialog(
 
     SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
 
+    //
+    // Load icons
+    //
+
+    mWarningIcon = std::make_unique<wxBitmap>(
+        resourceLocator.GetIconFilePath("warning_icon").string(),
+        wxBITMAP_TYPE_PNG);
 
     //
     // Lay the dialog out
@@ -84,6 +94,17 @@ PreferencesDialog::PreferencesDialog(
         PopulateShipPanel(shipsPanel);
 
         notebook->AddPage(shipsPanel, _("Ships"));
+
+
+        //
+        // NPC Preferences
+        //
+
+        wxPanel * npcsPanel = new wxPanel(notebook);
+
+        PopulateNpcPanel(npcsPanel);
+
+        notebook->AddPage(npcsPanel, _("NPCs"));
 
 
         //
@@ -185,13 +206,6 @@ void PreferencesDialog::OnSaveSettingsOnExitCheckBoxClicked(wxCommandEvent & /*e
 void PreferencesDialog::OnShowTsunamiNotificationsCheckBoxClicked(wxCommandEvent & /*event*/)
 {
     mUIPreferencesManager.SetDoShowTsunamiNotifications(mShowTsunamiNotificationsCheckBox->GetValue());
-
-    mOnChangeCallback();
-}
-
-void PreferencesDialog::OnShowNpcNotificationsCheckBoxClicked(wxCommandEvent & /*event*/)
-{
-    mUIPreferencesManager.SetDoShowNpcNotifications(mShowNpcNotificationsCheckBox->GetValue());
 
     mOnChangeCallback();
 }
@@ -311,13 +325,6 @@ void PreferencesDialog::OnShowElectricalNotificationsCheckBoxClicked(wxCommandEv
     mOnChangeCallback();
 }
 
-void PreferencesDialog::OnAutoFocusOnNpcPlacementCheckBoxClicked(wxCommandEvent & /*event*/)
-{
-    mUIPreferencesManager.SetDoAutoFocusOnNpcPlacement(mAutoFocusOnNpcPlacementCheckBox->GetValue());
-
-    mOnChangeCallback();
-}
-
 void PreferencesDialog::OnAutoTexturizationModeRadioButtonClick(wxCommandEvent & /*event*/)
 {
     if (mFlatStructureAutoTexturizationModeRadioButton->GetValue())
@@ -338,6 +345,20 @@ void PreferencesDialog::OnAutoTexturizationModeRadioButtonClick(wxCommandEvent &
 void PreferencesDialog::OnForceSharedAutoTexturizationSettingsOntoShipCheckBoxClicked(wxCommandEvent & /*event*/)
 {
     mUIPreferencesManager.SetShipAutoTexturizationForceSharedSettingsOntoShipDefinition(mForceSharedAutoTexturizationSettingsOntoShipCheckBox->GetValue());
+
+    mOnChangeCallback();
+}
+
+void PreferencesDialog::OnAutoFocusOnNpcPlacementCheckBoxClicked(wxCommandEvent & /*event*/)
+{
+    mUIPreferencesManager.SetDoAutoFocusOnNpcPlacement(mAutoFocusOnNpcPlacementCheckBox->GetValue());
+
+    mOnChangeCallback();
+}
+
+void PreferencesDialog::OnShowNpcNotificationsCheckBoxClicked(wxCommandEvent & /*event*/)
+{
+    mUIPreferencesManager.SetDoShowNpcNotifications(mShowNpcNotificationsCheckBox->GetValue());
 
     mOnChangeCallback();
 }
@@ -602,26 +623,12 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
             //
 
             {
-                mShowNpcNotificationsCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY,
-                    _("Show NPC Notifications"), wxDefaultPosition, wxDefaultSize, 0);
-                mShowNpcNotificationsCheckBox->SetToolTip(_("Enables or disables notifications about NPCs."));
-                mShowNpcNotificationsCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowNpcNotificationsCheckBoxClicked, this);
-
-                sizer->Add(
-                    mShowNpcNotificationsCheckBox,
-                    wxGBPosition(5, 0),
-                    wxGBSpan(1, 1),
-                    wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxLEFT | wxBOTTOM,
-                    UserInterfaceBorder);
-            }
-
-            {
                 wxStaticText * displayUnitsSystemStaticText = new wxStaticText(boxSizer->GetStaticBox(), wxID_ANY, _("Units system:"));
 
                 sizer->Add(
                     displayUnitsSystemStaticText,
-                    wxGBPosition(5, 2),
-                    wxGBSpan(1, 2),
+                    wxGBPosition(5, 0),
+                    wxGBSpan(1, 1),
                     wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT,
                     UserInterfaceBorder);
             }
@@ -689,14 +696,14 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
 
                 sizer->Add(
                     mDisplayUnitsSettingsComboBox,
-                    wxGBPosition(6, 2),
-                    wxGBSpan(1, 2),
+                    wxGBPosition(6, 0),
+                    wxGBSpan(1, 1),
                     wxALIGN_LEFT | wxLEFT | wxBOTTOM | wxRIGHT,
                     UserInterfaceBorder);
             }
 
             //
-            // Row 7
+            // Row 8
             //
 
             {
@@ -705,13 +712,13 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
                 sizer->Add(
                     screenshotDirStaticText,
                     wxGBPosition(7, 0),
-                    wxGBSpan(1, 4),
+                    wxGBSpan(1, 1),
                     wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT,
                     UserInterfaceBorder);
             }
 
             //
-            // Row 8
+            // Row 9
             //
 
             {
@@ -1020,21 +1027,6 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            // Auto-Focus on Npc Placement
-            {
-                mAutoFocusOnNpcPlacementCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY,
-                    _("Auto-Focus at NPC Add"), wxDefaultPosition, wxDefaultSize, 0);
-                mAutoFocusOnNpcPlacementCheckBox->SetToolTip(_("Enables or disables auto-focus when an NPC is added."));
-                mAutoFocusOnNpcPlacementCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnAutoFocusOnNpcPlacementCheckBoxClicked, this);
-
-                sizer->Add(
-                    mAutoFocusOnNpcPlacementCheckBox,
-                    wxGBPosition(6, 0),
-                    wxGBSpan(1, 1),
-                    wxEXPAND | wxALL,
-                    CellBorderInner);
-            }
-
             boxSizer->Add(sizer, 0, wxALL, StaticBoxInsetMargin);
         }
 
@@ -1044,6 +1036,108 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
             wxGBSpan(1, 1),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
+    }
+
+    // Finalize panel
+    panel->SetSizerAndFit(gridSizer);
+}
+
+void PreferencesDialog::PopulateNpcPanel(wxPanel * panel)
+{
+    wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
+
+    // Max NPCs
+    {
+        mMaxNpcsSlider = new SliderControl<size_t>(
+            panel,
+            SliderControl<size_t>::DirectionType::Vertical,
+            SliderWidth,
+            SliderHeight,
+            _("Max NPCs"),
+            _("Changes the maximum number of NPCs. Warning: higher values require more computing resources, with the risk of slowing the simulation down! Changes to this setting will only be visible after the next ship is loaded."),
+            [this](size_t value)
+            {
+                mUIPreferencesManager.SetMaxNpcs(value);
+                mOnChangeCallback();
+            },
+            FixedSetSliderCore<size_t>::FromPowersOfTwo(
+                mUIPreferencesManager.GetMinMaxNpcs(),
+                mUIPreferencesManager.GetMaxMaxNpcs()),
+            mWarningIcon.get());
+
+        gridSizer->Add(
+            mMaxNpcsSlider,
+            wxGBPosition(0, 0),
+            wxGBSpan(2, 1),
+            wxEXPAND | wxALL,
+            CellBorderInner);
+    }
+
+    // NPCs per Group
+    {
+        mNpcsPerGroupSlider = new SliderControl<size_t>(
+            panel,
+            SliderControl<size_t>::DirectionType::Vertical,
+            SliderWidth,
+            SliderHeight,
+            _("NPCs per Group"),
+            _("Changes the number of NPCs spawned when a group is added."),
+            [this](size_t value)
+            {
+                mUIPreferencesManager.SetNpcsPerGroup(value);
+                mOnChangeCallback();
+            },
+            std::make_unique<IntegralLinearSliderCore<size_t>>(
+                mUIPreferencesManager.GetMinNpcsPerGroup(),
+                mUIPreferencesManager.GetMaxNpcsPerGroup()));
+
+        gridSizer->Add(
+            mNpcsPerGroupSlider,
+            wxGBPosition(0, 1),
+            wxGBSpan(2, 1),
+            wxEXPAND | wxALL,
+            CellBorderInner);
+    }
+
+    // Checkboxes
+
+    {
+        wxBoxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
+
+        // Auto-Focus on Npc Placement
+        {
+            mAutoFocusOnNpcPlacementCheckBox = new wxCheckBox(panel, wxID_ANY,
+                _("Auto-Focus at NPC Add"), wxDefaultPosition, wxDefaultSize, 0);
+            mAutoFocusOnNpcPlacementCheckBox->SetToolTip(_("Enables or disables auto-focus when an NPC is added."));
+            mAutoFocusOnNpcPlacementCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnAutoFocusOnNpcPlacementCheckBoxClicked, this);
+
+            vSizer->Add(
+                mAutoFocusOnNpcPlacementCheckBox,
+                0,
+                wxALIGN_LEFT | wxALL,
+                Border);
+        }
+
+        // Show NPC Notifications
+        {
+            mShowNpcNotificationsCheckBox = new wxCheckBox(panel, wxID_ANY,
+                _("Show NPC Notifications"), wxDefaultPosition, wxDefaultSize, 0);
+            mShowNpcNotificationsCheckBox->SetToolTip(_("Enables or disables notifications about NPCs."));
+            mShowNpcNotificationsCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowNpcNotificationsCheckBoxClicked, this);
+
+            vSizer->Add(
+                mShowNpcNotificationsCheckBox,
+                0,
+                wxALIGN_LEFT | wxALL,
+                Border);
+        }
+
+        gridSizer->Add(
+            vSizer,
+            wxGBPosition(0, 2),
+            wxGBSpan(1, 1),
+            wxALL,
+            CellBorderInner);
     }
 
     // Finalize panel
@@ -1231,7 +1325,6 @@ void PreferencesDialog::ReadSettings()
     mCheckForUpdatesAtStartupCheckBox->SetValue(mUIPreferencesManager.GetCheckUpdatesAtStartup());
     mSaveSettingsOnExitCheckBox->SetValue(mUIPreferencesManager.GetSaveSettingsOnExit());
     mShowTsunamiNotificationsCheckBox->SetValue(mUIPreferencesManager.GetDoShowTsunamiNotifications());
-    mShowNpcNotificationsCheckBox->SetValue(mUIPreferencesManager.GetDoShowNpcNotifications());
     mZoomIncrementSpinCtrl->SetValue(ZoomIncrementToZoomIncrementSpin(mUIPreferencesManager.GetZoomIncrement()));
     mPanIncrementSpinCtrl->SetValue(PanIncrementToPanIncrementSpin(mUIPreferencesManager.GetPanIncrement()));
     mCameraSpeedAdjustmentSpinCtrl->SetValue(CameraSpeedAdjustmentToCameraSpeedAdjustmentSpin(mUIPreferencesManager.GetCameraSpeedAdjustment()));
@@ -1265,7 +1358,6 @@ void PreferencesDialog::ReadSettings()
     mAutoFocusOnShipLoadCheckBox->SetValue(mUIPreferencesManager.GetDoAutoFocusOnShipLoad());
     mAutoShowSwitchboardCheckBox->SetValue(mUIPreferencesManager.GetAutoShowSwitchboard());
     mShowElectricalNotificationsCheckBox->SetValue(mUIPreferencesManager.GetDoShowElectricalNotifications());
-    mAutoFocusOnNpcPlacementCheckBox->SetValue(mUIPreferencesManager.GetDoAutoFocusOnNpcPlacement());
     switch (mUIPreferencesManager.GetShipAutoTexturizationSharedSettings().Mode)
     {
         case ShipAutoTexturizationModeType::FlatStructure:
@@ -1283,6 +1375,11 @@ void PreferencesDialog::ReadSettings()
     mForceSharedAutoTexturizationSettingsOntoShipCheckBox->SetValue(mUIPreferencesManager.GetShipAutoTexturizationForceSharedSettingsOntoShipDefinition());
     mMaterialTextureMagnificationSlider->SetValue(mUIPreferencesManager.GetShipAutoTexturizationSharedSettings().MaterialTextureMagnification);
     mMaterialTextureTransparencySlider->SetValue(mUIPreferencesManager.GetShipAutoTexturizationSharedSettings().MaterialTextureTransparency);
+
+    mMaxNpcsSlider->SetValue(mUIPreferencesManager.GetMaxNpcs());
+    mNpcsPerGroupSlider->SetValue(mUIPreferencesManager.GetNpcsPerGroup());
+    mAutoFocusOnNpcPlacementCheckBox->SetValue(mUIPreferencesManager.GetDoAutoFocusOnNpcPlacement());
+    mShowNpcNotificationsCheckBox->SetValue(mUIPreferencesManager.GetDoShowNpcNotifications());
 
     mGlobalMuteCheckBox->SetValue(mUIPreferencesManager.GetGlobalMute());
     mBackgroundMusicVolumeSlider->SetValue(mUIPreferencesManager.GetBackgroundMusicVolume());

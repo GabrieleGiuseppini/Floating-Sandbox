@@ -1257,10 +1257,9 @@ void Npcs::AbortNewNpc(NpcId id)
 std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> Npcs::AddNpcGroup(
     NpcKindType kind,
     VisibleWorld const & visibleWorld,
-    float currentSimulationTime)
+    float currentSimulationTime,
+    GameParameters const & gameParameters)
 {
-    size_t const groupSize = GameParameters::NpcsPerGroup;
-
     //
     // Choose a ship
     //
@@ -1404,11 +1403,11 @@ std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> Npcs::AddNpcGroup
 
     // Triangles already chosen - we'll try to avoid cramming multiple NPCs in the same triangle
     std::vector<ElementIndex> alreadyChosenTriangles;
-    alreadyChosenTriangles.reserve(groupSize);
+    alreadyChosenTriangles.reserve(gameParameters.NpcsPerGroup);
 
     size_t nNpcsAdded = 0;
     NpcId firstNpcId;
-    for (; nNpcsAdded < groupSize; ++nNpcsAdded)
+    for (; nNpcsAdded < gameParameters.NpcsPerGroup; ++nNpcsAdded)
     {
         //
         // Decide sub-kind

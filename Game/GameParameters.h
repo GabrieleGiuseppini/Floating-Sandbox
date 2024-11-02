@@ -517,10 +517,12 @@ struct GameParameters
     };
 
     size_t MaxNpcs;
-    static size_t constexpr MinMaxNpcs = 2048u;
-    static size_t constexpr MaxMaxNpcs = 8192;
+    static size_t constexpr MinMaxNpcs = 1024u;
+    static size_t constexpr MaxMaxNpcs = 8192u;
 
-    static size_t constexpr NpcsPerGroup = 32; // The number of NPCs we add when we "add NPC group"
+    size_t NpcsPerGroup; // The number of NPCs we add when we "add NPC group"
+    static size_t constexpr MinNpcsPerGroup = 1u;
+    static size_t constexpr MaxNpcsPerGroup = MinMaxNpcs;
 
     //
     // Misc

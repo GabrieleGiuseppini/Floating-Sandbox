@@ -697,6 +697,11 @@ public:
     size_t GetMinMaxNpcs() const { return GameParameters::MinMaxNpcs; }
     size_t GetMaxMaxNpcs() const { return GameParameters::MaxMaxNpcs; }
 
+    size_t GetNpcsPerGroup() const override { return mGameParameters.NpcsPerGroup; }
+    void SetNpcsPerGroup(size_t value) { mGameParameters.NpcsPerGroup = value; }
+    size_t GetMinNpcsPerGroup() const { return GameParameters::MinNpcsPerGroup; }
+    size_t GetMaxNpcsPerGroup() const { return GameParameters::MaxNpcsPerGroup; }
+
     // Misc
 
     OceanFloorTerrain const & GetOceanFloorTerrain() const override { return mWorld->GetOceanFloorTerrain(); }

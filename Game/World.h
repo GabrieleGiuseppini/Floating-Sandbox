@@ -411,7 +411,8 @@ public:
 
     std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> AddNpcGroup(
         NpcKindType kind,
-        VisibleWorld const & visibleWorld);
+        VisibleWorld const & visibleWorld,
+        GameParameters const & gameParameters);
 
     void TurnaroundNpc(NpcId id);
 

@@ -7,9 +7,12 @@
 
 #include "UIPreferencesManager.h"
 
+#include <Game/ResourceLocator.h>
+
 #include <UILib/LocalizationManager.h>
 #include <UILib/SliderControl.h>
 
+#include <wx/bitmap.h>
 #include <wx/combobox.h>
 #include <wx/filepicker.h>
 #include <wx/listbox.h>
@@ -26,7 +29,8 @@ public:
     PreferencesDialog(
         wxWindow * parent,
         UIPreferencesManager & uiPreferencesManager,
-        std::function<void()> onChangeCallback);
+        std::function<void()> onChangeCallback,
+        ResourceLocator const & resourceLocator);
 
     virtual ~PreferencesDialog();
 
@@ -40,7 +44,6 @@ private:
     void OnCheckForUpdatesAtStartupCheckBoxClicked(wxCommandEvent & event);
     void OnSaveSettingsOnExitCheckBoxClicked(wxCommandEvent & event);
     void OnShowTsunamiNotificationsCheckBoxClicked(wxCommandEvent & event);
-    void OnShowNpcNotificationsCheckBoxClicked(wxCommandEvent & event);
     void OnZoomIncrementSpinCtrl(wxSpinEvent & event);
     void OnPanIncrementSpinCtrl(wxSpinEvent & event);
     void OnCameraSpeedAdjustmentSpinCtrl(wxSpinEvent & event);
@@ -54,9 +57,11 @@ private:
     void OnAutoFocusOnShipLoadCheckBoxClicked(wxCommandEvent & event);
     void OnAutoShowSwitchboardCheckBoxClicked(wxCommandEvent & event);
     void OnShowElectricalNotificationsCheckBoxClicked(wxCommandEvent & event);
-    void OnAutoFocusOnNpcPlacementCheckBoxClicked(wxCommandEvent & event);
     void OnAutoTexturizationModeRadioButtonClick(wxCommandEvent & event);
     void OnForceSharedAutoTexturizationSettingsOntoShipCheckBoxClicked(wxCommandEvent & event);
+
+    void OnAutoFocusOnNpcPlacementCheckBoxClicked(wxCommandEvent & event);
+    void OnShowNpcNotificationsCheckBoxClicked(wxCommandEvent & event);
 
     void OnGlobalMuteCheckBoxClicked(wxCommandEvent & event);
     void OnPlayBackgroundMusicCheckBoxClicked(wxCommandEvent & event);
@@ -68,6 +73,7 @@ private:
 
     void PopulateGamePanel(wxPanel * panel);
     void PopulateShipPanel(wxPanel * panel);
+    void PopulateNpcPanel(wxPanel * panel);
     void PopulateMusicPanel(wxPanel * panel);
 
     void ReadSettings();
@@ -95,7 +101,6 @@ private:
     wxCheckBox * mCheckForUpdatesAtStartupCheckBox;
     wxCheckBox * mSaveSettingsOnExitCheckBox;
     wxCheckBox * mShowTsunamiNotificationsCheckBox;
-    wxCheckBox * mShowNpcNotificationsCheckBox;
     wxSpinCtrl * mZoomIncrementSpinCtrl;
     wxSpinCtrl * mPanIncrementSpinCtrl;
     wxSpinCtrl * mCameraSpeedAdjustmentSpinCtrl;
@@ -111,12 +116,17 @@ private:
     wxCheckBox * mAutoFocusOnShipLoadCheckBox;
     wxCheckBox * mAutoShowSwitchboardCheckBox;
     wxCheckBox * mShowElectricalNotificationsCheckBox;
-    wxCheckBox * mAutoFocusOnNpcPlacementCheckBox;
     wxRadioButton * mFlatStructureAutoTexturizationModeRadioButton;
     wxRadioButton * mMaterialTexturesAutoTexturizationModeRadioButton;
     wxCheckBox * mForceSharedAutoTexturizationSettingsOntoShipCheckBox;
     SliderControl<float> * mMaterialTextureMagnificationSlider;
     SliderControl<float> * mMaterialTextureTransparencySlider;
+
+    // NPCs panel
+    SliderControl<size_t> * mMaxNpcsSlider;
+    SliderControl<size_t> * mNpcsPerGroupSlider;
+    wxCheckBox * mAutoFocusOnNpcPlacementCheckBox;
+    wxCheckBox * mShowNpcNotificationsCheckBox;
 
     // Global Sound and Music panel
     wxCheckBox * mGlobalMuteCheckBox;
@@ -127,6 +137,9 @@ private:
 
     // Buttons
     wxButton * mOkButton;
+
+    // Icons
+    std::unique_ptr<wxBitmap> mWarningIcon;
 
 private:
 

@@ -343,16 +343,20 @@
 			+ Npcs() stores own copy of GameParameters at instantiation time, and uses that one from that moment onwards
 	+ Re-check placement: why not happening on floors?
 		+ FIX: floor with nothing on other side is trumped by floor with a triangle on other side
-	- Settings:
-		- PreferencesManager/Dialog:
-			- NpcCountLimit
+	= Settings:
+		= PreferencesManager/Dialog:
+			= NpcCountLimit
 				+ FixedSetSliderCore, with ::FromPowerOfTwos
 					+ UnitTests
-				- Warning icon
+				= Warning icon
 				- Requires reset
 					- Reset dirty flag w/question
+			= NpcsPerGroup
+				+ Use by Npcs::AddGroup
+		- Tests:
 			- NpcsPerGroup
-		- Test hitting NPC limit
+			- MaxNpcs
+				- hitting NPC limit
 
 	= Clouds V3: with fantastic texture coords offset
 		+ First off, technical debt:

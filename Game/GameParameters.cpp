@@ -97,6 +97,7 @@ GameParameters::GameParameters()
     , HumanNpcEquilibriumTorqueDampingCoefficient(0.0012f)
     , HumanNpcWalkingSpeedAdjustment(1.0f)
     , MaxNpcs(2048u)
+    , NpcsPerGroup(32u)
     // Misc
     , SeaDepth(1000.0f)
     , OceanFloorBumpiness(1.0f)

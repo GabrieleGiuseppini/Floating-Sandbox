@@ -225,16 +225,6 @@ public:
         mGameController.SetDoAutoFocusOnShipLoad(value);
     }
 
-    bool GetDoAutoFocusOnNpcPlacement() const
-    {
-        return mGameController.GetDoAutoFocusOnNpcPlacement();
-    }
-
-    void SetDoAutoFocusOnNpcPlacement(bool value)
-    {
-        mGameController.SetDoAutoFocusOnNpcPlacement(value);
-    }
-
     std::optional<AutoFocusTargetKindType> GetAutoFocusTarget() const
     {
         return mGameController.GetAutoFocusTarget();
@@ -253,16 +243,6 @@ public:
     void SetDoShowTsunamiNotifications(bool value)
     {
         mGameController.SetDoShowTsunamiNotifications(value);
-    }
-
-    bool GetDoShowNpcNotifications() const
-    {
-        return mGameController.GetDoShowNpcNotifications();
-    }
-
-    void SetDoShowNpcNotifications(bool value)
-    {
-        mGameController.SetDoShowNpcNotifications(value);
     }
 
     UnitsSystem GetDisplayUnitsSystem() const
@@ -343,6 +323,70 @@ public:
     void SetShowExtendedStatusText(bool value)
     {
         mGameController.SetShowExtendedStatusText(value);
+    }
+
+    //
+    // NPCs
+    //
+
+    size_t GetMaxNpcs() const
+    {
+        return mGameController.GetMaxNpcs();
+    }
+
+    void SetMaxNpcs(size_t value)
+    {
+        mGameController.SetMaxNpcs(value);
+    }
+
+    size_t GetMinMaxNpcs() const
+    {
+        return mGameController.GetMinMaxNpcs();
+    }
+
+    size_t GetMaxMaxNpcs() const
+    {
+        return mGameController.GetMaxMaxNpcs();
+    }
+
+    size_t GetNpcsPerGroup() const
+    {
+        return mGameController.GetNpcsPerGroup();
+    }
+
+    void SetNpcsPerGroup(size_t value)
+    {
+        mGameController.SetNpcsPerGroup(value);
+    }
+
+    size_t GetMinNpcsPerGroup() const
+    {
+        return mGameController.GetMinNpcsPerGroup();
+    }
+
+    size_t GetMaxNpcsPerGroup() const
+    {
+        return mGameController.GetMaxNpcsPerGroup();
+    }
+
+    bool GetDoAutoFocusOnNpcPlacement() const
+    {
+        return mGameController.GetDoAutoFocusOnNpcPlacement();
+    }
+
+    void SetDoAutoFocusOnNpcPlacement(bool value)
+    {
+        mGameController.SetDoAutoFocusOnNpcPlacement(value);
+    }
+
+    bool GetDoShowNpcNotifications() const
+    {
+        return mGameController.GetDoShowNpcNotifications();
+    }
+
+    void SetDoShowNpcNotifications(bool value)
+    {
+        mGameController.SetDoShowNpcNotifications(value);
     }
 
     //

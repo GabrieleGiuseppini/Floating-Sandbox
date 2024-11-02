@@ -2027,7 +2027,8 @@ void MainFrame::OnOpenPreferencesWindowMenuItemSelected(wxCommandEvent & /*event
             [this]()
             {
                 this->ReconciliateUIWithUIPreferencesAndSettings();
-            });
+            },
+            mResourceLocator);
     }
 
     mPreferencesDialog->Open();

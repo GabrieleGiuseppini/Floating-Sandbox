@@ -201,6 +201,20 @@ struct IGameController
     virtual void SetAutoFocusTarget(std::optional<AutoFocusTargetKindType> const & autoFocusTarget) = 0;
 
     //
+    // NPCs
+    //
+
+    virtual size_t GetMaxNpcs() const = 0;
+    virtual void SetMaxNpcs(size_t value) = 0;
+    virtual size_t GetMinMaxNpcs() const = 0;
+    virtual size_t GetMaxMaxNpcs() const = 0;
+
+    virtual size_t GetNpcsPerGroup() const = 0;
+    virtual void SetNpcsPerGroup(size_t value) = 0;
+    virtual size_t GetMinNpcsPerGroup() const = 0;
+    virtual size_t GetMaxNpcsPerGroup() const = 0;
+
+    //
     // UI parameters
     //
 
