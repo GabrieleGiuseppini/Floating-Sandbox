@@ -346,8 +346,8 @@
 	- Settings:
 		- PreferencesManager/Dialog:
 			- NpcCountLimit
-				- FixedSetSliderCore, with ::FromPowerOfTwos
-					- UnitTests
+				+ FixedSetSliderCore, with ::FromPowerOfTwos
+					+ UnitTests
 				- Warning icon
 				- Requires reset
 					- Reset dirty flag w/question
@@ -428,6 +428,7 @@
 					+ Own Upload(): ensure_size(# of quads)
 					+ Own RenderDraw: Bind() (because of Intel bug)
 		- Test with bubbles
+			- Prepare baseline with old dell and new dell
 			- Do
 			- New Dell: 
 				- Before: upload= render=

@@ -16,18 +16,18 @@ public:
         float zeroValue,
         float maxValue);
 
-    virtual int GetNumberOfTicks() const override;
+    int GetNumberOfTicks() const override;
 
-    virtual float TickToValue(int tick) const override;
+    float TickToValue(int tick) const override;
 
-    virtual int ValueToTick(float value) const override;
+    int ValueToTick(float value) const override;
 
-    virtual float const & GetMinValue() const override
+    float const & GetMinValue() const override
     {
         return mMinValue;
     }
 
-    virtual float const & GetMaxValue() const override
+    float const & GetMaxValue() const override
     {
         return mMaxValue;
     }

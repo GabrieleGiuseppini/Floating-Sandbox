@@ -50,12 +50,12 @@ public:
         mValueAtTickMax = maxValue - mValueOffset;
     }
 
-    virtual int GetNumberOfTicks() const override
+    int GetNumberOfTicks() const override
     {
         return mNumberOfTicks;
     }
 
-    virtual TValue TickToValue(int tick) const override
+    TValue TickToValue(int tick) const override
     {
         TValue sliderValue;
 
@@ -76,7 +76,7 @@ public:
     }
 
 
-    virtual int ValueToTick(TValue value) const override
+    int ValueToTick(TValue value) const override
     {
         value -= mValueOffset;
 
@@ -94,12 +94,12 @@ public:
         }
     }
 
-    virtual TValue const & GetMinValue() const override
+    TValue const & GetMinValue() const override
     {
         return mMinValue;
     }
 
-    virtual TValue const & GetMaxValue() const override
+    TValue const & GetMaxValue() const override
     {
         return mMaxValue;
     }

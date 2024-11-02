@@ -1,4 +1,5 @@
 #include <GameCore/ExponentialSliderCore.h>
+#include <GameCore/FixedSetSliderCore.h>
 #include <GameCore/IntegralLinearSliderCore.h>
 #include <GameCore/LinearSliderCore.h>
 
@@ -184,4 +185,110 @@ TEST(ExponentialSliderCoreTest, NegativeEdges_ArbitraryMidpoint)
 
     EXPECT_EQ(core.TickToValue(100), 100000.0f);
     EXPECT_EQ(core.ValueToTick(100000.0f), 100);
+}
+
+TEST(FixedSetSliderCoreTest, FixedSet_Integral)
+{
+    FixedSetSliderCore<int> core({1, 40, 90, 117});
+
+    EXPECT_EQ(core.GetNumberOfTicks(), 4);
+
+    EXPECT_EQ(core.TickToValue(0), 1);
+    EXPECT_EQ(core.TickToValue(1), 40);
+    EXPECT_EQ(core.TickToValue(2), 90);
+    EXPECT_EQ(core.TickToValue(3), 117);
+
+    EXPECT_EQ(core.ValueToTick(-100), 0);
+    EXPECT_EQ(core.ValueToTick(0), 0);
+    EXPECT_EQ(core.ValueToTick(1), 0);
+    EXPECT_EQ(core.ValueToTick(2), 0);
+    EXPECT_EQ(core.ValueToTick(19), 0);
+    EXPECT_EQ(core.ValueToTick(20), 0);
+    EXPECT_EQ(core.ValueToTick(21), 1);
+    EXPECT_EQ(core.ValueToTick(22), 1);
+    EXPECT_EQ(core.ValueToTick(39), 1);
+    EXPECT_EQ(core.ValueToTick(40), 1);
+    EXPECT_EQ(core.ValueToTick(41), 1);
+    EXPECT_EQ(core.ValueToTick(89), 2);
+    EXPECT_EQ(core.ValueToTick(90), 2);
+    EXPECT_EQ(core.ValueToTick(91), 2);
+    EXPECT_EQ(core.ValueToTick(100), 2);
+    EXPECT_EQ(core.ValueToTick(104), 3);
+    EXPECT_EQ(core.ValueToTick(117), 3);
+    EXPECT_EQ(core.ValueToTick(118), 3);
+    EXPECT_EQ(core.ValueToTick(1000), 3);
+
+    EXPECT_EQ(core.GetMinValue(), 1);
+    EXPECT_EQ(core.GetMaxValue(), 117);
+}
+
+TEST(FixedSetSliderCoreTest, FixedSet_Float)
+{
+    FixedSetSliderCore<float> core({ 1.0f, 40.0f, 90.0f, 117.0f });
+
+    EXPECT_EQ(core.GetNumberOfTicks(), 4);
+
+    EXPECT_EQ(core.TickToValue(0), 1.0f);
+    EXPECT_EQ(core.TickToValue(1), 40.0f);
+    EXPECT_EQ(core.TickToValue(2), 90.0f);
+    EXPECT_EQ(core.TickToValue(3), 117.0f);
+
+    EXPECT_EQ(core.ValueToTick(-100.0f), 0);
+    EXPECT_EQ(core.ValueToTick(0.0f), 0);
+    EXPECT_EQ(core.ValueToTick(1.0f), 0);
+    EXPECT_EQ(core.ValueToTick(2.0f), 0);
+    EXPECT_EQ(core.ValueToTick(19.0f), 0);
+    EXPECT_EQ(core.ValueToTick(20.0f), 0);
+    EXPECT_EQ(core.ValueToTick(21.0f), 1);
+    EXPECT_EQ(core.ValueToTick(22.0f), 1);
+    EXPECT_EQ(core.ValueToTick(39.0f), 1);
+    EXPECT_EQ(core.ValueToTick(40.0f), 1);
+    EXPECT_EQ(core.ValueToTick(41.0f), 1);
+    EXPECT_EQ(core.ValueToTick(89.0f), 2);
+    EXPECT_EQ(core.ValueToTick(90.0f), 2);
+    EXPECT_EQ(core.ValueToTick(91.0f), 2);
+    EXPECT_EQ(core.ValueToTick(100.0f), 2);
+    EXPECT_EQ(core.ValueToTick(104.0f), 3);
+    EXPECT_EQ(core.ValueToTick(117.0f), 3);
+    EXPECT_EQ(core.ValueToTick(118.0f), 3);
+    EXPECT_EQ(core.ValueToTick(1000.0f), 3);
+
+    EXPECT_EQ(core.GetMinValue(), 1.0f);
+    EXPECT_EQ(core.GetMaxValue(), 117.0f);
+}
+
+TEST(FixedSetSliderCoreTest, FixedSet_FromPowersOfTwo)
+{
+    auto const core = FixedSetSliderCore<int>::FromPowersOfTwo(8, 128);
+
+    EXPECT_EQ(core->GetNumberOfTicks(), 5);
+
+    EXPECT_EQ(core->TickToValue(0), 8);
+    EXPECT_EQ(core->TickToValue(1), 16);
+    EXPECT_EQ(core->TickToValue(2), 32);
+    EXPECT_EQ(core->TickToValue(3), 64);
+    EXPECT_EQ(core->TickToValue(4), 128);
+
+    EXPECT_EQ(core->ValueToTick(-100), 0);
+    EXPECT_EQ(core->ValueToTick(0), 0);
+    EXPECT_EQ(core->ValueToTick(7), 0);
+    EXPECT_EQ(core->ValueToTick(8), 0);
+    EXPECT_EQ(core->ValueToTick(9), 0);
+    EXPECT_EQ(core->ValueToTick(12), 1);
+    EXPECT_EQ(core->ValueToTick(13), 1);
+    EXPECT_EQ(core->ValueToTick(15), 1);
+    EXPECT_EQ(core->ValueToTick(16), 1);
+    EXPECT_EQ(core->ValueToTick(17), 1);
+    EXPECT_EQ(core->ValueToTick(31), 2);
+    EXPECT_EQ(core->ValueToTick(32), 2);
+    EXPECT_EQ(core->ValueToTick(33), 2);
+    EXPECT_EQ(core->ValueToTick(63), 3);
+    EXPECT_EQ(core->ValueToTick(64), 3);
+    EXPECT_EQ(core->ValueToTick(65), 3);
+    EXPECT_EQ(core->ValueToTick(127), 4);
+    EXPECT_EQ(core->ValueToTick(128), 4);
+    EXPECT_EQ(core->ValueToTick(129), 4);
+
+    EXPECT_EQ(core->GetMinValue(), 8);
+    EXPECT_EQ(core->GetMaxValue(), 128);
 }
