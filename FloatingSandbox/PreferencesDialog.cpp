@@ -9,8 +9,10 @@
 #include <GameCore/FixedSetSliderCore.h>
 #include <GameCore/IntegralLinearSliderCore.h>
 #include <GameCore/LinearSliderCore.h>
+#include <GameCore/Version.h>
 
 #include <wx/gbsizer.h>
+#include <wx/msgdlg.h>
 #include <wx/notebook.h>
 #include <wx/stattext.h>
 
@@ -34,12 +36,15 @@ PreferencesDialog::PreferencesDialog(
     wxWindow* parent,
     UIPreferencesManager & uiPreferencesManager,
     std::function<void()> onChangeCallback,
+    std::function<void()> shipResetCallback,
     ResourceLocator const & resourceLocator)
     : mParent(parent)
     , mUIPreferencesManager(uiPreferencesManager)
     , mOnChangeCallback(std::move(onChangeCallback))
+    , mShipResetCallback(std::move(shipResetCallback))
     , mAvailableLanguages(mUIPreferencesManager.GetAvailableLanguages())
     , mHasWarnedAboutLanguageSettingChanges(false)
+    , mHasDirtySettingsThatRequireRestart(false)
 {
     Create(
         mParent,
@@ -159,6 +164,7 @@ void PreferencesDialog::Open()
     ReadSettings();
 
     mHasWarnedAboutLanguageSettingChanges = false;
+    mHasDirtySettingsThatRequireRestart = false;
 
     this->Show();
 }
@@ -340,6 +346,8 @@ void PreferencesDialog::OnAutoTexturizationModeRadioButtonClick(wxCommandEvent &
     ReconciliateShipAutoTexturizationModeSettings();
 
     mOnChangeCallback();
+
+    mHasDirtySettingsThatRequireRestart = true;
 }
 
 void PreferencesDialog::OnForceSharedAutoTexturizationSettingsOntoShipCheckBoxClicked(wxCommandEvent & /*event*/)
@@ -392,6 +400,15 @@ void PreferencesDialog::OnPlaySinkingMusicCheckBoxClicked(wxCommandEvent & /*eve
 
 void PreferencesDialog::OnOkButton(wxCommandEvent & /*event*/)
 {
+    if (mHasDirtySettingsThatRequireRestart)
+    {
+        int result = wxMessageBox(_("Some of the changes made will only be enforced when the next ship is loaded. Reload the ship now?"), ApplicationName, wxICON_EXCLAMATION | wxYES_NO | wxCENTRE);
+        if (result == wxYES)
+        {
+            mShipResetCallback();
+        }
+    }
+
     // Close ourselves
     this->Close();
 }
@@ -876,6 +893,8 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
                     {
                         mUIPreferencesManager.GetShipAutoTexturizationSharedSettings().MaterialTextureMagnification = value;
                         mOnChangeCallback();
+
+                        mHasDirtySettingsThatRequireRestart = true;
                     },
                     std::make_unique<ExponentialSliderCore>(
                         0.1f,
@@ -903,6 +922,8 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
                     {
                         mUIPreferencesManager.GetShipAutoTexturizationSharedSettings().MaterialTextureTransparency = value;
                         mOnChangeCallback();
+
+                        mHasDirtySettingsThatRequireRestart = true;
                     },
                     std::make_unique<LinearSliderCore>(
                         0.0f,
@@ -1059,6 +1080,8 @@ void PreferencesDialog::PopulateNpcPanel(wxPanel * panel)
             {
                 mUIPreferencesManager.SetMaxNpcs(value);
                 mOnChangeCallback();
+
+                mHasDirtySettingsThatRequireRestart = true;
             },
             FixedSetSliderCore<size_t>::FromPowersOfTwo(
                 mUIPreferencesManager.GetMinMaxNpcs(),

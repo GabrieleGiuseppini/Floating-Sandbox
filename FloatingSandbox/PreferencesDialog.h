@@ -30,6 +30,7 @@ public:
         wxWindow * parent,
         UIPreferencesManager & uiPreferencesManager,
         std::function<void()> onChangeCallback,
+        std::function<void()> shipResetCallback,
         ResourceLocator const & resourceLocator);
 
     virtual ~PreferencesDialog();
@@ -146,8 +147,10 @@ private:
     wxWindow * const mParent;
     UIPreferencesManager & mUIPreferencesManager;
     std::function<void()> mOnChangeCallback;
+    std::function<void()> mShipResetCallback;
 
     std::vector<LocalizationManager::LanguageInfo> const mAvailableLanguages;
 
     bool mHasWarnedAboutLanguageSettingChanges = false;
+    bool mHasDirtySettingsThatRequireRestart = false;
 };

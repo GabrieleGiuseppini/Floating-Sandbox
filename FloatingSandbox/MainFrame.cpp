@@ -258,7 +258,7 @@ MainFrame::MainFrame(
 
             wxMenuItem * reloadCurrentShipMenuItem = new wxMenuItem(fileMenu, ID_RELOAD_CURRENT_SHIP_MENUITEM, _("Reload Current Ship") + wxS("\tCtrl+R"), wxEmptyString, wxITEM_NORMAL);
             fileMenu->Append(reloadCurrentShipMenuItem);
-            Connect(ID_RELOAD_CURRENT_SHIP_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnReloadCurrentShipMenuItemSelected);
+            fileMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [this](wxCommandEvent &) { ReloadCurrentShip(); }, ID_RELOAD_CURRENT_SHIP_MENUITEM);
 
             mReloadPreviousShipMenuItem = new wxMenuItem(fileMenu, ID_RELOAD_PREVIOUS_SHIP_MENUITEM, _("Reload Previous Ship") + wxS("\tCtrl+V"), wxEmptyString, wxITEM_NORMAL);
             fileMenu->Append(mReloadPreviousShipMenuItem);
@@ -1719,13 +1719,6 @@ void MainFrame::OnLoadShipMenuItemSelected(wxCommandEvent & /*event*/)
     SetPaused(false);
 }
 
-void MainFrame::OnReloadCurrentShipMenuItemSelected(wxCommandEvent & /*event*/)
-{
-    assert(mCurrentShipLoadSpecs.has_value());
-
-    LoadShip(*mCurrentShipLoadSpecs, false);
-}
-
 void MainFrame::OnReloadPreviousShipMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(mPreviousShipLoadSpecs.has_value()); // Or else we wouldn't be here
@@ -2027,6 +2020,10 @@ void MainFrame::OnOpenPreferencesWindowMenuItemSelected(wxCommandEvent & /*event
             [this]()
             {
                 this->ReconciliateUIWithUIPreferencesAndSettings();
+            },
+            [this]()
+            {
+                this->ReloadCurrentShip();
             },
             mResourceLocator);
     }
@@ -3009,6 +3006,13 @@ void MainFrame::LoadShip(
 
     assert(mToolController);
     mToolController->ResetEnd();
+}
+
+void MainFrame::ReloadCurrentShip()
+{
+    assert(mCurrentShipLoadSpecs.has_value());
+
+    LoadShip(*mCurrentShipLoadSpecs, false);
 }
 
 void MainFrame::OnShipLoaded(ShipLoadSpecifications loadSpecs)

@@ -227,7 +227,6 @@ private:
     void OnPauseMenuItemSelected(wxCommandEvent & event);
     void OnStepMenuItemSelected(wxCommandEvent & event);
     void OnLoadShipMenuItemSelected(wxCommandEvent & event);
-    void OnReloadCurrentShipMenuItemSelected(wxCommandEvent & event);
     void OnReloadPreviousShipMenuItemSelected(wxCommandEvent & event);
     void OnSaveScreenshotMenuItemSelected(wxCommandEvent & event);
 
@@ -428,6 +427,8 @@ private:
     void LoadShip(
         ShipLoadSpecifications const & loadSpecs,
         bool isFromUser);
+
+    void ReloadCurrentShip();
 
     void OnShipLoaded(ShipLoadSpecifications loadSpecs); // By val to have own copy vs current/prev
 

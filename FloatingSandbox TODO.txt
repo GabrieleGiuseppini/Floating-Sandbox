@@ -378,22 +378,21 @@ v			+ FixedSetSliderCore
 							+ IntegralLinear
 							+ Linear
 							+ Test cases
-
-	= Settings:
-		= PreferencesManager/Dialog:
-			= NpcCountLimit
+	+ Settings:
+		+ PreferencesManager/Dialog:
+			+ NpcCountLimit
 				+ FixedSetSliderCore, with ::FromPowerOfTwos
 					+ UnitTests
 				+ Warning icon
-				- Requires reset
-					- Reset dirty flag w/question
+				+ Requires reset
+					+ Reset dirty flag w/question
 			+ NpcsPerGroup
 				+ Use by Npcs::AddGroup
-		- Tests:
-			- NpcsPerGroup
-			- MaxNpcs
-				- hitting NPC limit
-			- Pan speed
+		+ Tests:
+			+ NpcsPerGroup
+			+ MaxNpcs
+				+ hitting NPC limit
+			+ Pan speed et al
 
 	- Fix: npcs burn under (ship) water
 
