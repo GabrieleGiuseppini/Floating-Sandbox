@@ -42,7 +42,11 @@ public:
 
 private:
 
-    size_t mMaxSimulationParallelism; // Calculated via init args and hardware concurrency; never changes
+    static size_t CalculateMaxSimulationParallelism(bool isRenderingMultithreaded);
+
+private:
+
+    size_t const mMaxSimulationParallelism; // Calculated via init args and hardware concurrency; never changes
 
     std::unique_ptr<ThreadPool> mSimulationThreadPool;
 };

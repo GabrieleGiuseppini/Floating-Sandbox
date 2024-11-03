@@ -1141,7 +1141,17 @@ void PreferencesDialog::PopulateNpcPanel(wxPanel * panel)
     }
 
     // Finalize panel
-    panel->SetSizerAndFit(gridSizer);
+
+    wxBoxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
+    vSizer->AddStretchSpacer(1);
+    vSizer->Add(
+        gridSizer,
+        0,
+        wxALIGN_CENTER,
+        0);
+    vSizer->AddStretchSpacer(1);
+
+    panel->SetSizerAndFit(vSizer);
 }
 
 void PreferencesDialog::PopulateMusicPanel(wxPanel * panel)

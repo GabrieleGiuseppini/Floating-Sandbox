@@ -427,7 +427,7 @@ struct GameParameters
 
     unsigned int NumberOfFishes;
     static constexpr unsigned int MinNumberOfFishes = 0;
-    static constexpr unsigned int MaxNumberOfFishes = 2056;
+    static constexpr unsigned int MaxNumberOfFishes = 2560; // 80x32
 
     float FishSizeMultiplier;
     static constexpr float MinFishSizeMultiplier = 1.0f;

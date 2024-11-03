@@ -8,23 +8,28 @@
 #include <cassert>
 
 /*
- * This slider is two exponentials, meeting at the center (number of ticks=beta).
- * The upper exponential starts slowly from beta and reaches the maximum with an increasing slope.
+ * This slider is two exponentials, meeting at the center. The number of ticks on each side is
+ * beta, but they share a tick in the middle, hence the number of ticks is 2*beta - 1, and tick
+ * values are [0 -> beta-1] and [beta-1 -> 2*beta - 2].
+ *
+ * The upper exponential starts slowly from zeroValue @ tick=beta-1 and reaches maxValue @ tick=2*beta-2 with an increasing slope.
  * Its definition is:
- *     value = a*exp(b * (tick - beta))
- * The lower exponential goes down from beta slowly and reaches the minimum with an increasing slope.
+ *     value = a + exp(b * (tick - (beta-1)))
+ *     With:
+ *          zeroValue (@ beta-1) = a + 1
+ *          maxValue (@ 2 * beta - 2) = a + exp(b * (beta - 1))
+ *
+ * The lower exponential goes down slowly from zeroValue @ tick=beta-1 and reaches minValue @ tick=0 with an increasing slope.
  * Its definition is:
- *     value = a - b*exp(gamma * (beta - tick))
+ *     value = a - exp(b * ((beta-1) - tick))
+ *     With:
+ *          minValue (@ 0) = a - exp(b * (beta - 1))
+ *          zeroValue (@ beta-1) = a - 1
  */
 
 
 template<typename T>
-constexpr T NumberOfTicks = 100;
-
-template<typename T>
-constexpr T Beta = NumberOfTicks<T> / 2;
-
-constexpr float Gamma = 0.01f;
+constexpr T Beta = 50; // Number of ticks on either side, one overlapping in center
 
 ExponentialSliderCore::ExponentialSliderCore(
     float minValue,
@@ -33,35 +38,36 @@ ExponentialSliderCore::ExponentialSliderCore(
     : mMinValue(minValue)
     , mZeroValue(zeroValue)
     , mMaxValue(maxValue)
-    , mLowerA((zeroValue * exp(Gamma * Beta<float>) - minValue) / (exp(Gamma * Beta<float>) - 1.0f))
-    , mLowerB((zeroValue - minValue) / (exp(Gamma * Beta<float>) - 1.0f))
-    , mUpperA(zeroValue)
-    , mUpperB(logf(maxValue / zeroValue) / Beta<float>)
+    , mLowerA(zeroValue + 1.0f)
+    , mLowerB(logf(zeroValue + 1.0f - minValue) / (Beta<float> - 1.0f))
+    , mUpperA(zeroValue - 1.0f)
+    , mUpperB(logf(maxValue - zeroValue + 1.0f) / (Beta<float> - 1.0f))
 {
+    assert(maxValue > zeroValue && zeroValue > minValue);
 }
 
 int ExponentialSliderCore::GetNumberOfTicks() const
 {
-    return NumberOfTicks<int>;
+    return 2 * Beta<int> - 1;
 }
 
 float ExponentialSliderCore::TickToValue(int tick) const
 {
-    if (tick < NumberOfTicks<int> / 2.0f)
+    if (tick < Beta<int>)
     {
         // Lower part
         if (tick == 0)
             return mMinValue;
         else
-            return mLowerA - mLowerB * exp(Gamma * (NumberOfTicks<float> / 2.0f - static_cast<float>(tick)));
+            return mLowerA - exp(mLowerB * static_cast<float>(Beta<float> - 1.0f - tick));
     }
     else
     {
         // Upper part
-        if (tick == NumberOfTicks<int>)
+        if (tick >= GetNumberOfTicks() - 1)
             return mMaxValue;
         else
-            return mUpperA * exp(mUpperB * (static_cast<float>(tick) - NumberOfTicks<float> / 2.0f));
+            return mUpperA + exp(mUpperB * (static_cast<float>(tick) - (Beta<float> - 1.0f)));
     }
 }
 
@@ -70,13 +76,13 @@ int ExponentialSliderCore::ValueToTick(float value) const
     if (value < mZeroValue)
     {
         // Lower part
-        float x = Beta<float> - log((mLowerA - value) / mLowerB) / Gamma;
+        float x = Beta<float> - 1.0f - log(mLowerA - value) / mLowerB;
         return static_cast<int>(roundf(x));
     }
     else
     {
         // Upper part
-        float x = (log(value) - log(mUpperA)) / mUpperB;
-        return static_cast<int>(roundf(Beta<float> + x));
+        float x = log(value - mUpperA) / mUpperB + Beta<float> - 1.0f;
+        return static_cast<int>(roundf(x));
     }
 }

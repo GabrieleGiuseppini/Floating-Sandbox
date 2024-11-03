@@ -16,9 +16,10 @@ FixedTickSliderCore::FixedTickSliderCore(
     , mMaxValue(maxValue)
 {
     assert(tickSize > 0.0f);
+    assert(maxValue >= minValue);
 
     // Calculate number of ticks
-    mNumberOfTicks = static_cast<int>((maxValue - minValue) / tickSize);
+    mNumberOfTicks = static_cast<int>((maxValue - minValue) / tickSize) + 1;
 }
 
 int FixedTickSliderCore::GetNumberOfTicks() const
@@ -28,7 +29,7 @@ int FixedTickSliderCore::GetNumberOfTicks() const
 
 float FixedTickSliderCore::TickToValue(int tick) const
 {
-    return mMinValue + mTickSize * tick;
+    return std::min(mMinValue + mTickSize * tick, mMaxValue);
 }
 
 int FixedTickSliderCore::ValueToTick(float value) const

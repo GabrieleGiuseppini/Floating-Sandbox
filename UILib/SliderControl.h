@@ -94,6 +94,10 @@ public:
         if (!toolTipLabel.IsEmpty())
             SetToolTip(toolTipLabel);
 
+        // Calculate parameters
+        int const n = mSliderCore->GetNumberOfTicks();
+        int const wxMaxValue = std::max(n - 1, 1); // So we always give max > min to wxWidgets; but then we disable ourselves if n <= 1
+
         wxBoxSizer* vSizer = new wxBoxSizer(wxVERTICAL);
 
         //
@@ -105,14 +109,14 @@ public:
                 this,
                 wxNewId(),
                 0, // Start value
-                0,
-                mSliderCore->GetNumberOfTicks(),
+                0, // Min value
+                wxMaxValue, // Max value, included
                 wxDefaultPosition,
                 wxSize(-1, height),
                 (direction == DirectionType::Vertical ? (wxSL_VERTICAL | wxSL_LEFT | wxSL_INVERSE) : (wxSL_HORIZONTAL)) | wxSL_AUTOTICKS,
                 wxDefaultValidator);
 
-            mSlider->SetTickFreq(4);
+            mSlider->SetTickFreq(height >= n * 4 ? 1 : std::max(4, static_cast<int>(std::ceil(static_cast<float>(n) / static_cast<float>(height)))));
 
             mSlider->Bind(wxEVT_SLIDER, (wxObjectEventFunction)&SliderControl::OnSliderScroll, this);
 
@@ -127,7 +131,6 @@ public:
                 vSizer->Add(mSlider, 0, wxEXPAND);
             }
         }
-
 
         //
         // Label
@@ -213,7 +216,7 @@ public:
                     wxSize(-1, 22),
                     wxSP_VERTICAL | wxSP_ARROW_KEYS);
 
-                mSpinButton->SetRange(0, mSliderCore->GetNumberOfTicks());
+                mSpinButton->SetRange(0, wxMaxValue);
                 mSpinButton->SetValue(mSlider->GetValue());
 
                 mSpinButton->Bind(wxEVT_SPIN, &SliderControl::OnSpinButton, this);
@@ -225,6 +228,15 @@ public:
         }
 
         this->SetSizerAndFit(vSizer);
+
+        //
+        // Disable self if no degrees of freedom
+        //
+
+        if (n <= 1)
+        {
+            this->Enable(false);
+        }
     }
 
     TValue GetValue() const

@@ -18,6 +18,11 @@ ViewManager::ViewManager(
     GameEventDispatcher & gameEventDispatcher)
     : mRenderContext(renderContext)
     , mGameEventHandler(gameEventDispatcher)
+    // Defaults
+    , mCameraSpeedAdjustment(1.0f)
+    , mDoAutoFocusOnShipLoad(true)
+    , mDoAutoFocusOnNpcPlacement(false)
+    //
     , mInverseZoomParameterSmoother(
         [this]() -> float
         {
@@ -49,10 +54,7 @@ ViewManager::ViewManager(
         CalculateParameterSmootherConvergenceFactor(mCameraSpeedAdjustment),
         SmootherTerminationThreshold)
     , mCameraWorldPositionParameterSmootherContingentMultiplier(1.0f)
-    // Defaults
-    , mCameraSpeedAdjustment(1.0f)
-    , mDoAutoFocusOnShipLoad(true)
-    , mDoAutoFocusOnNpcPlacement(false)
+    //
     , mAutoFocus() // Set later
 {
     // Default: continuous auto-focus is ON on ships

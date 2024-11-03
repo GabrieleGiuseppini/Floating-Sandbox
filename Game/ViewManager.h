@@ -79,14 +79,13 @@ private:
     Render::RenderContext & mRenderContext;
     GameEventDispatcher & mGameEventHandler;
 
+    float mCameraSpeedAdjustment; // Storage
+    bool mDoAutoFocusOnShipLoad; // Storage
+    bool mDoAutoFocusOnNpcPlacement; // Storage
+
     ParameterSmoother<float> mInverseZoomParameterSmoother; // Smooths 1/zoom, which is effectively the Z coord
     ParameterSmoother<vec2f> mCameraWorldPositionParameterSmoother;
     float mCameraWorldPositionParameterSmootherContingentMultiplier; // One shot, always reset to 1.0 after use
-
-    float mCameraSpeedAdjustment; // Storage
-
-    bool mDoAutoFocusOnShipLoad; // Storage
-    bool mDoAutoFocusOnNpcPlacement; // Storage
 
     struct AutoFocusSessionData
     {

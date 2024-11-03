@@ -343,20 +343,59 @@
 			+ Npcs() stores own copy of GameParameters at instantiation time, and uses that one from that moment onwards
 	+ Re-check placement: why not happening on floors?
 		+ FIX: floor with nothing on other side is trumped by floor with a triangle on other side
+	+ Slider/Core fixes
+		+ SliderCore changes
+v			+ FixedSetSliderCore
+			+ LinearSliderCore
+			+ IntegralLinearSliderCore
+			+ ExponentialSliderCore
+		+ Slider changes
+		+ Test:
+			+ FixedSetSliderCore
+			+ LinearSliderCore
+			+ IntegralLinearSliderCore
+			+ ExponentialSliderCore
+			+ All (default) values reproducible
+				+ Mech + Term
+				+ Water...
+				+ Wind and Waves
+				+ Air and Sky
+				+ ...Fishes
+				+ Heat flow
+				+ ...
+				+ ...
+				+ Rendering
+					+ Darkening rate
+				+ Max threads: 
+					+ inter-tick
+						+ IntegralLinearSliderCore: min/max w/actual range
+						+ Test cases
+					+ Test # of threads when it's only one
+						+ Slider: disable self
+						+ All cores: assert/do right things
+							+ Exponential
+							+ FixedTick
+							+ IntegralLinear
+							+ Linear
+							+ Test cases
+
 	= Settings:
 		= PreferencesManager/Dialog:
 			= NpcCountLimit
 				+ FixedSetSliderCore, with ::FromPowerOfTwos
 					+ UnitTests
-				= Warning icon
+				+ Warning icon
 				- Requires reset
 					- Reset dirty flag w/question
-			= NpcsPerGroup
+			+ NpcsPerGroup
 				+ Use by Npcs::AddGroup
 		- Tests:
 			- NpcsPerGroup
 			- MaxNpcs
 				- hitting NPC limit
+			- Pan speed
+
+	- Fix: npcs burn under (ship) water
 
 	= Clouds V3: with fantastic texture coords offset
 		+ First off, technical debt:

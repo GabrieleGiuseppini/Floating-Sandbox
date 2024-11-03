@@ -17,17 +17,26 @@ LinearSliderCore::LinearSliderCore(
     //
     // Calculate number of ticks and tick size, i.e. value delta for each tick, as follows:
     //
-    // NumberOfTicks * TickSize = Max - Min
+    // (NumberOfTicks - 1) * TickSize = Max - Min
     //
-    // With: TickSize = 1/2**n
+    // With: TickSize = 1/2**(n - 1)
     //
 
-    // Start with an approximate number of ticks
-    float n = std::floor(std::log(100.0f / (maxValue - minValue)) / std::log(2.0f));
-    mTickSize = 1.0f / std::pow(2.0f, n);
+    assert(maxValue >= minValue);
+
+    if (maxValue > minValue)
+    {
+        // Start with an approximate number of ticks
+        float n = std::floor(std::log(100.0f / (maxValue - minValue)) / std::log(2.0f)) + 1.0f;
+        mTickSize = 1.0f / std::pow(2.0f, n - 1.0f);
+    }
+    else
+    {
+        mTickSize = 1.0f;
+    }
 
     // Now calculate the real number of ticks
-    float numberOfTicks = std::ceil((maxValue - minValue) / mTickSize);
+    float numberOfTicks = std::ceil((maxValue - minValue) / mTickSize) + 1.0f;
     mNumberOfTicks = static_cast<int>(numberOfTicks);
 
     // Re-adjust min: calc min at tick 0 (exclusive of offset), and offset to add to slider's value
@@ -36,7 +45,7 @@ LinearSliderCore::LinearSliderCore(
     assert(mValueAtTickZero < mTickSize);
 
     // Store maximum tick value and maximum value (exclusive of offset) at that tick
-    float theoreticalMaxValue = mValueOffset + numberOfTicks * mTickSize;
+    float theoreticalMaxValue = mValueOffset + (numberOfTicks - 1.0f) * mTickSize;
     assert(theoreticalMaxValue - maxValue < mTickSize);
     (void)theoreticalMaxValue;
     mValueAtTickMax = maxValue - mValueOffset;
@@ -55,7 +64,7 @@ float LinearSliderCore::TickToValue(int tick) const
     {
         sliderValue = mValueAtTickZero;
     }
-    else if (tick == mNumberOfTicks)
+    else if (tick >= mNumberOfTicks - 1)
     {
         sliderValue = mValueAtTickMax;
     }
@@ -77,7 +86,7 @@ int LinearSliderCore::ValueToTick(float value) const
     }
     else if (value >= mValueAtTickMax)
     {
-        return mNumberOfTicks;
+        return mNumberOfTicks - 1;
     }
     else
     {

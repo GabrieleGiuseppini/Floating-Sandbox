@@ -1,5 +1,6 @@
 #include <GameCore/ExponentialSliderCore.h>
 #include <GameCore/FixedSetSliderCore.h>
+#include <GameCore/FixedTickSliderCore.h>
 #include <GameCore/IntegralLinearSliderCore.h>
 #include <GameCore/LinearSliderCore.h>
 
@@ -18,18 +19,18 @@ INSTANTIATE_TEST_SUITE_P(
     LinearSliderCoreTests,
     LinearSliderCoreTest,
     ::testing::Values(
-        std::make_tuple(0.0f, 0.5f, 60),
-        std::make_tuple(0.001f, 0.5f, 60),
-        std::make_tuple(0.0f, 1.0f, 60),
-        std::make_tuple(0.001f, 1.0f, 60),
-        std::make_tuple(0.001f, 2.4f, 60),
-        std::make_tuple(0.0f, 5.0f, 60),
-        std::make_tuple(0.0f, 20.0f, 60),
-        std::make_tuple(0.1f, 20.0f, 60),
-        std::make_tuple(0.0f, 1000.0f, 60),
-        std::make_tuple(0.0001f, 1000.0f, 60),
-        std::make_tuple(900.0f, 1000.0f, 60),
-        std::make_tuple(20.0f, 500.0f, 60)
+        std::make_tuple(0.0f, 0.5f, 60 + 1),
+        std::make_tuple(0.001f, 0.5f, 60 + 1),
+        std::make_tuple(0.0f, 1.0f, 60 + 1),
+        std::make_tuple(0.001f, 1.0f, 60 + 1),
+        std::make_tuple(0.001f, 2.4f, 60 + 1),
+        std::make_tuple(0.0f, 5.0f, 60 + 1),
+        std::make_tuple(0.0f, 20.0f, 60 + 1),
+        std::make_tuple(0.1f, 20.0f, 60 + 1),
+        std::make_tuple(0.0f, 1000.0f, 60 + 1),
+        std::make_tuple(0.0001f, 1000.0f, 60 + 1),
+        std::make_tuple(900.0f, 1000.0f, 60 + 1),
+        std::make_tuple(20.0f, 500.0f, 60 + 1)
     ));
 
 TEST_P(LinearSliderCoreTest, LinearTestCases)
@@ -44,7 +45,8 @@ TEST_P(LinearSliderCoreTest, LinearTestCases)
 
     EXPECT_EQ(core.TickToValue(0), minValue);
     EXPECT_GT(core.TickToValue(1), minValue);
-    EXPECT_LT(core.TickToValue(core.GetNumberOfTicks() - 1), maxValue);
+    EXPECT_LT(core.TickToValue(core.GetNumberOfTicks() - 2), maxValue);
+    EXPECT_EQ(core.TickToValue(core.GetNumberOfTicks() - 1), maxValue);
     EXPECT_EQ(core.TickToValue(core.GetNumberOfTicks()), maxValue);
 }
 
@@ -52,7 +54,7 @@ TEST_F(LinearSliderCoreTest, AlmostZeroToTen)
 {
     LinearSliderCore core(0.1f, 10.0f); // Step=0.125
 
-    EXPECT_EQ(core.GetNumberOfTicks(), 80);
+    EXPECT_EQ(core.GetNumberOfTicks(), 80 + 1);
 
     EXPECT_EQ(core.TickToValue(0), 0.1f);
     EXPECT_EQ(core.ValueToTick(0.1f), 0);
@@ -71,13 +73,15 @@ TEST_F(LinearSliderCoreTest, AlmostZeroToTen)
 
     EXPECT_EQ(core.TickToValue(80), 10.0f);
     EXPECT_EQ(core.ValueToTick(10.f), 80);
+
+    EXPECT_EQ(core.TickToValue(81), 10.0f);
 }
 
 TEST_F(LinearSliderCoreTest, NegativeMin)
 {
     LinearSliderCore core(-10.0f, 10.0f); // Step=0.25
 
-    EXPECT_EQ(core.GetNumberOfTicks(), 80);
+    EXPECT_EQ(core.GetNumberOfTicks(), 80 + 1);
 
     EXPECT_EQ(core.TickToValue(0), -10.0f);
     EXPECT_EQ(core.ValueToTick(-10.0f), 0);
@@ -96,13 +100,15 @@ TEST_F(LinearSliderCoreTest, NegativeMin)
 
     EXPECT_EQ(core.TickToValue(80), 10.0f);
     EXPECT_EQ(core.ValueToTick(10.f), 80);
+
+    EXPECT_EQ(core.TickToValue(81), 10.0f);
 }
 
 TEST_F(LinearSliderCoreTest, TwentyToFiveHundred)
 {
     LinearSliderCore core(20.0f, 500.0f); // Step=8
 
-    EXPECT_EQ(core.GetNumberOfTicks(), 60);
+    EXPECT_EQ(core.GetNumberOfTicks(), 60 + 1);
 
     EXPECT_EQ(core.TickToValue(0), 20.0f);
     EXPECT_EQ(core.ValueToTick(20.f), 0);
@@ -115,13 +121,25 @@ TEST_F(LinearSliderCoreTest, TwentyToFiveHundred)
 
     EXPECT_EQ(core.TickToValue(60), 500.0f);
     EXPECT_EQ(core.ValueToTick(500.0f), 60);
+
+    EXPECT_EQ(core.TickToValue(61), 500.0f);
 }
 
-TEST(IntegralLinearSliderCoreTest, ZeroToTen)
+TEST_F(LinearSliderCoreTest, EmptyRange)
+{
+    LinearSliderCore core(10.0f, 10.0f);
+
+    EXPECT_EQ(core.GetNumberOfTicks(), 1);
+
+    EXPECT_EQ(core.TickToValue(0), 10.0f);
+    EXPECT_EQ(core.ValueToTick(10.0f), 0);
+}
+
+TEST(IntegralLinearSliderCoreTest, MoreDeltaThanTicks)
 {
     IntegralLinearSliderCore<size_t> core(100, 1000); // TickSize = 16
 
-    EXPECT_EQ(core.GetNumberOfTicks(), 57);
+    EXPECT_EQ(core.GetNumberOfTicks(), 57 + 1);
 
     EXPECT_EQ(core.TickToValue(0), 100u);
     EXPECT_EQ(core.ValueToTick(100), 0);
@@ -137,54 +155,151 @@ TEST(IntegralLinearSliderCoreTest, ZeroToTen)
     EXPECT_EQ(core.TickToValue(57), 1000u);
     EXPECT_EQ(core.ValueToTick(999), 56);
     EXPECT_EQ(core.ValueToTick(1000), 57);
+
+    EXPECT_EQ(core.TickToValue(58), 1000u);
+}
+
+TEST(IntegralLinearSliderCoreTest, MoreTicksThanDelta)
+{
+    IntegralLinearSliderCore<size_t> core(100, 110); // TickSize = 1
+
+    EXPECT_EQ(core.GetNumberOfTicks(), 11);
+
+    EXPECT_EQ(core.TickToValue(0), 100u);
+    EXPECT_EQ(core.ValueToTick(100), 0);
+
+    EXPECT_EQ(core.TickToValue(1), 101u);
+    EXPECT_EQ(core.ValueToTick(101), 1);
+
+    EXPECT_EQ(core.TickToValue(9), 109u);
+    EXPECT_EQ(core.ValueToTick(109), 9);
+
+    EXPECT_EQ(core.TickToValue(10), 110u);
+    EXPECT_EQ(core.ValueToTick(110), 10);
+
+    EXPECT_EQ(core.TickToValue(11), 110u);
+}
+
+TEST(IntegralLinearSliderCoreTest, EmptyRange)
+{
+    IntegralLinearSliderCore<size_t> core(10, 10);
+
+    EXPECT_EQ(core.GetNumberOfTicks(), 1);
+
+    EXPECT_EQ(core.TickToValue(0), 10);
+    EXPECT_EQ(core.ValueToTick(10), 0);
 }
 
 TEST(ExponentialSliderCoreTest, PositiveEdges)
 {
     ExponentialSliderCore core(0.01f, 1.0f, 1000.0f);
 
-    EXPECT_EQ(core.GetNumberOfTicks(), 100);
+    EXPECT_EQ(core.GetNumberOfTicks(), 99);
 
     EXPECT_TRUE(ApproxEquals(core.TickToValue(0), 0.01f, 0.001f));
     EXPECT_EQ(core.ValueToTick(0.01f), 0);
 
-    EXPECT_EQ(core.TickToValue(50), 1.0f);
-    EXPECT_EQ(core.ValueToTick(1.0f), 50);
+    EXPECT_EQ(core.TickToValue((99 - 1) / 2), 1.0f);
+    EXPECT_EQ(core.ValueToTick(1.0f), (99 - 1) / 2);
 
-    EXPECT_EQ(core.TickToValue(100), 1000.0f);
-    EXPECT_EQ(core.ValueToTick(1000.0f), 100);
+    EXPECT_EQ(core.TickToValue(99 - 1), 1000.0f);
+    EXPECT_EQ(core.ValueToTick(1000.0f), (99 - 1));
 }
 
 TEST(ExponentialSliderCoreTest, NegativeEdges)
 {
     ExponentialSliderCore core(-50.0f, 1.0f, 100000.0f);
 
-    EXPECT_EQ(core.GetNumberOfTicks(), 100);
+    EXPECT_EQ(core.GetNumberOfTicks(), 99);
 
     EXPECT_EQ(core.TickToValue(0), -50.0f);
     EXPECT_EQ(core.ValueToTick(-50.0f), 0);
 
-    EXPECT_EQ(core.TickToValue(50), 1.0f);
-    EXPECT_EQ(core.ValueToTick(1.0f), 50);
+    EXPECT_EQ(core.TickToValue((99 - 1) / 2), 1.0f);
+    EXPECT_EQ(core.ValueToTick(1.0f), (99 - 1) / 2);
 
-    EXPECT_EQ(core.TickToValue(100), 100000.0f);
-    EXPECT_EQ(core.ValueToTick(100000.0f), 100);
+    EXPECT_EQ(core.TickToValue(99 - 1), 100000.0f);
+    EXPECT_EQ(core.ValueToTick(100000.0f), 99 - 1);
 }
 
 TEST(ExponentialSliderCoreTest, NegativeEdges_ArbitraryMidpoint)
 {
     ExponentialSliderCore core(-50.0f, 300.0f, 100000.0f);
 
-    EXPECT_EQ(core.GetNumberOfTicks(), 100);
+    EXPECT_EQ(core.GetNumberOfTicks(), 99);
 
     EXPECT_EQ(core.TickToValue(0), -50.0f);
     EXPECT_EQ(core.ValueToTick(-50.0f), 0);
 
-    EXPECT_EQ(core.TickToValue(50), 300.0f);
-    EXPECT_EQ(core.ValueToTick(300.0f), 50);
+    EXPECT_EQ(core.TickToValue((99 - 1) / 2), 300.0f);
+    EXPECT_EQ(core.ValueToTick(300.0f), (99 - 1) / 2);
 
-    EXPECT_EQ(core.TickToValue(100), 100000.0f);
-    EXPECT_EQ(core.ValueToTick(100000.0f), 100);
+    EXPECT_EQ(core.TickToValue(99 - 1), 100000.0f);
+    EXPECT_EQ(core.ValueToTick(100000.0f), 99 - 1);
+}
+
+TEST(FixedTickSliderCoreTest, FractionalTickSize)
+{
+    FixedTickSliderCore core(0.5f, 10.0f, 20.0f);
+
+    EXPECT_EQ(core.GetNumberOfTicks(), 21);
+
+    EXPECT_EQ(core.TickToValue(0), 10.0f);
+    EXPECT_EQ(core.ValueToTick(10.0f), 0);
+
+    EXPECT_EQ(core.TickToValue(1), 10.5f);
+    EXPECT_EQ(core.ValueToTick(10.5f), 1);
+
+    EXPECT_EQ(core.TickToValue(2), 11.0f);
+    EXPECT_EQ(core.ValueToTick(11.0f), 2);
+
+    EXPECT_EQ(core.TickToValue(9), 14.5f);
+    EXPECT_EQ(core.ValueToTick(14.5f), 9);
+
+    EXPECT_EQ(core.TickToValue(10), 15.0f);
+    EXPECT_EQ(core.ValueToTick(15.0f), 10);
+
+    EXPECT_EQ(core.TickToValue(11), 15.5f);
+    EXPECT_EQ(core.ValueToTick(15.5f), 11);
+
+    EXPECT_EQ(core.TickToValue(19), 19.5f);
+    EXPECT_EQ(core.ValueToTick(19.5f), 19);
+
+    EXPECT_EQ(core.TickToValue(20), 20.0f);
+    EXPECT_EQ(core.ValueToTick(20.0f), 20);
+
+    EXPECT_EQ(core.TickToValue(21), 20.0f);
+}
+
+TEST(FixedTickSliderCoreTest, IntegralTickSize)
+{
+    FixedTickSliderCore core(2.0f, 10.0f, 20.0f);
+
+    EXPECT_EQ(core.GetNumberOfTicks(), 6);
+
+    EXPECT_EQ(core.TickToValue(0), 10.0f);
+    EXPECT_EQ(core.ValueToTick(10.0f), 0);
+
+    EXPECT_EQ(core.TickToValue(1), 12.0f);
+    EXPECT_EQ(core.ValueToTick(12.0f), 1);
+
+    EXPECT_EQ(core.TickToValue(4), 18.0f);
+    EXPECT_EQ(core.ValueToTick(18.0f), 4);
+
+    EXPECT_EQ(core.TickToValue(5), 20.0f);
+    EXPECT_EQ(core.ValueToTick(20.0f), 5);
+
+    EXPECT_EQ(core.TickToValue(6), 20.0f);
+}
+
+TEST(FixedTickSliderCoreTest, EmptyRange)
+{
+    FixedTickSliderCore core(2.0f, 10.0f, 10.0f);
+
+    EXPECT_EQ(core.GetNumberOfTicks(), 1);
+
+    EXPECT_EQ(core.TickToValue(0), 10.0f);
+    EXPECT_EQ(core.ValueToTick(10.0f), 0);
 }
 
 TEST(FixedSetSliderCoreTest, FixedSet_Integral)

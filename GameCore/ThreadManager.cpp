@@ -27,17 +27,8 @@ size_t ThreadManager::GetNumberOfProcessors()
 ThreadManager::ThreadManager(
     bool isRenderingMultithreaded,
     size_t maxInitialParallelism)
+    : mMaxSimulationParallelism(CalculateMaxSimulationParallelism(isRenderingMultithreaded))
 {
-    auto const numberOfProcessors = GetNumberOfProcessors();
-
-    // Calculate max simulation parallelism
-
-    int availableThreads = static_cast<int>(numberOfProcessors);    
-    if (isRenderingMultithreaded)
-        --availableThreads;
-
-    mMaxSimulationParallelism = std::max(availableThreads, 1); // Includes this thread
-
     size_t const simulationParallelism = std::min(mMaxSimulationParallelism, maxInitialParallelism);
 
     LogMessage("ThreadManager: isRenderingMultithreaded=", (isRenderingMultithreaded ? "YES" : "NO"),
@@ -87,4 +78,17 @@ void ThreadManager::InitializeThisThread()
 #ifdef FLOATING_POINT_CHECKS
     EnableFloatingPointExceptions();
 #endif
+}
+
+size_t ThreadManager::CalculateMaxSimulationParallelism(bool isRenderingMultithreaded)
+{
+    auto const numberOfProcessors = GetNumberOfProcessors();
+
+    // Calculate max simulation parallelism
+
+    int availableThreads = static_cast<int>(numberOfProcessors);
+    if (isRenderingMultithreaded)
+        --availableThreads;
+
+    return std::max(availableThreads, 1); // Includes this thread
 }
