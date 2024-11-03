@@ -394,7 +394,7 @@ v			+ FixedSetSliderCore
 				+ hitting NPC limit
 			+ Pan speed et al
 
-	- Fix: npcs burn under (ship) water
+	+ Fix: npcs burn under (ship) water
 
 	= Clouds V3: with fantastic texture coords offset
 		+ First off, technical debt:

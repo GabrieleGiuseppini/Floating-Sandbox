@@ -426,7 +426,7 @@ void Npcs::UpdateNpcs(
                 // Waterness, Water Velocity, Combustion
 
                 bool atLeastOneNpcParticleOnFire = false;
-                bool atLeastOneNpcParticleInFreeWater = false;
+                bool atLeastOneNpcParticleInWater = false;
 
                 for (auto p = 0; p < npcState->ParticleMesh.Particles.size(); ++p)
                 {
@@ -465,7 +465,11 @@ void Npcs::UpdateNpcs(
                         vec2f const meshWaterVelocity = totalWaterVelocity / (std::max(waterablePointCount, 1.0f));
                         mParticles.SetMeshWaterVelocity(particle.ParticleIndex, meshWaterVelocity);
 
-                        if (meshWaterness < 0.4f) // Otherwise too much water for fire
+                        if (meshWaterness > 0.4f)
+                        {
+                            atLeastOneNpcParticleInWater = true;
+                        }
+                        else // Otherwise too much water for fire
                         {
                             atLeastOneNpcParticleOnFire = atLeastOneNpcParticleOnFire || isAtLeastOneMeshPointOnFire;
                         }
@@ -475,14 +479,14 @@ void Npcs::UpdateNpcs(
                         // Free - check if underwater (using AnyWaterness as proxy)
                         if (mParticles.GetAnyWaterness(particle.ParticleIndex) > 0.4f)
                         {
-                            atLeastOneNpcParticleInFreeWater = true;
+                            atLeastOneNpcParticleInWater = true;
                         }
                     }
                 } // For all NPC particles
 
                 // Update NPC's fire progress
 
-                if (atLeastOneNpcParticleInFreeWater)
+                if (atLeastOneNpcParticleInWater)
                 {
                     // Smother immediately
                     npcState->CombustionProgress += (-1.0f - npcState->CombustionProgress) * 0.1f;
