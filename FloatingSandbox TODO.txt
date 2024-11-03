@@ -429,7 +429,7 @@ v			+ FixedSetSliderCore
 
 		- Test AdobeStock/Getty clouds
 
-		- Changelist	
+		- Changelist
 
 	- Do other atlases (GenericLinear, GenericMipMapped)
 		- Clean checkout

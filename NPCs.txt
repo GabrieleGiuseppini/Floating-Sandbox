@@ -222,7 +222,6 @@ Next release:
 			- TODOHERE: will we need a way to keep the NPC "out of the loop" for the rest of the simulation step?
 
 - New human behaviors:
-
 	- First off: "next triangle" check when planning:
 		- WalkingBehaviorState contains: tri index, edge ordinal, "half edge sign", and x orientation
 			- Init'd to None at each transition into Walking
@@ -345,10 +344,14 @@ Next release:
 		- Re-enable/take care of various "TODOHERE"'s for not-yet implemented things
 		- Ability to auto-generate InteriorTexture from structure
 			- via ShipTexturizer
+	- Tests:
+		- Old FS loading ship with it
 
 - Floorplan layer from user:
 	- ShipFactory: when a floorplan layer is present, it needs to inform tessellation (i.e. triangle selection) which needs
 	  to use floor information (ipv hull springs) to decide between covering triangles
+	- Tests:
+		- Old FS loading ship with it
 
 - Area walk planning:
 	- TODO: floor types (normal, assembly, lifeboats, etc.)
