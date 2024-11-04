@@ -300,6 +300,7 @@ void GlobalRenderContext::RenderPrepare()
 {
     if (mElementIndices->IsDirty())
     {
+        // Note: this happens before all other render contexts prepare
         mElementIndices->Upload();
     }
 

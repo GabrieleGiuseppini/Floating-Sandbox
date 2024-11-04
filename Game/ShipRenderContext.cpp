@@ -352,6 +352,10 @@ ShipRenderContext::ShipRenderContext(
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::NpcAttributeGroup4), 3, GL_FLOAT, GL_FALSE, sizeof(NpcQuadRoleVertex), (void *)(0));
         CheckOpenGLError();
 
+        //
+        // Associate element VBO
+        //
+
         // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
         // in the VAO. So we won't associate the element VBO here, but rather before each drawing call.
         ////mGlobalRenderContext.GetElementIndices().Bind()
@@ -505,6 +509,14 @@ ShipRenderContext::ShipRenderContext(
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipGenericMipMappedTexture3));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipGenericMipMappedTexture3), 3, GL_FLOAT, GL_FALSE, sizeof(GenericTextureVertex), (void*)((4 + 4) * sizeof(float)));
         CheckOpenGLError();
+
+        //
+        // Associate element VBO
+        //
+
+        // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
+        // in the VAO. So we won't associate the element VBO here, but rather before each drawing call.
+        ////mGlobalRenderContext.GetElementIndices().Bind()
 
         glBindVertexArray(0);
     }
@@ -700,7 +712,11 @@ void ShipRenderContext::UploadStart(PlaneId maxMaxPlaneId)
     mSparkleVertexBuffer.clear();
 
     {
+        // Air bubbles
+
         mGenericMipMappedTextureAirBubbleVertexBuffer.clear();
+
+        // Generic mip-mapped
 
         size_t const newSize = static_cast<size_t>(maxMaxPlaneId) + 1u;
         assert(mGenericMipMappedTexturePlaneVertexBuffers.size() <= newSize);
@@ -1121,7 +1137,29 @@ void ShipRenderContext::UploadPointToPointArrowsEnd()
 
 void ShipRenderContext::UploadEnd()
 {
-    // Nop
+    //
+    // Calculate indices needed for generic mipmapped textures
+    //
+    // We do this here so we allow subsequent GlobalRenderContext::RenderPrepare
+    // to upload indices
+    //
+
+    size_t const nonAirBubblesTotalVertexCount = std::accumulate(
+        mGenericMipMappedTexturePlaneVertexBuffers.cbegin(),
+        mGenericMipMappedTexturePlaneVertexBuffers.cend(),
+        size_t(0),
+        [](size_t const total, auto const & vec)
+        {
+            return total + vec.vertexBuffer.size();
+        });
+
+    assert((mGenericMipMappedTextureAirBubbleVertexBuffer.size() % 4) == 0);
+    assert((nonAirBubblesTotalVertexCount % 4) == 0);
+
+    mGenericMipMappedTextureTotalVertexCount = mGenericMipMappedTextureAirBubbleVertexBuffer.size() + nonAirBubblesTotalVertexCount;
+
+    assert((mGenericMipMappedTextureTotalVertexCount % 4) == 0);
+    mGlobalRenderContext.GetElementIndices().EnsureSize(mGenericMipMappedTextureTotalVertexCount / 4);
 }
 
 void ShipRenderContext::ProcessParameterChanges(RenderParameters const & renderParameters)
@@ -1403,7 +1441,7 @@ void ShipRenderContext::RenderPrepare(RenderParameters const & renderParameters)
     RenderPrepareSparkles(renderParameters);
 
     //
-    // Prepare generic textures
+    // Prepare generic mipmapped textures
     //
 
     RenderPrepareGenericMipMappedTextures(renderParameters);
@@ -2101,18 +2139,7 @@ void ShipRenderContext::RenderDrawSparkles(RenderParameters const & renderParame
 
 void ShipRenderContext::RenderPrepareGenericMipMappedTextures(RenderParameters const & /*renderParameters*/)
 {
-    size_t const nonAirBubblesTotalVertexCount = std::accumulate(
-        mGenericMipMappedTexturePlaneVertexBuffers.cbegin(),
-        mGenericMipMappedTexturePlaneVertexBuffers.cend(),
-        size_t(0),
-        [](size_t const total, auto const & vec)
-        {
-            return total + vec.vertexBuffer.size();
-        });
-
-    mGenericMipMappedTextureTotalVertexCount = mGenericMipMappedTextureAirBubbleVertexBuffer.size() + nonAirBubblesTotalVertexCount;
-
-    if (mGenericMipMappedTextureTotalVertexCount > 0)
+    if (mGenericMipMappedTextureTotalVertexCount > 0) // Calculated at UploadEnd()
     {
         glBindBuffer(GL_ARRAY_BUFFER, *mGenericMipMappedTextureVBO);
 
@@ -2163,18 +2190,25 @@ void ShipRenderContext::RenderDrawGenericMipMappedTextures(
     {
         glBindVertexArray(*mGenericMipMappedTextureVAO);
 
+        // Intel bug: cannot associate with VAO
+        mGlobalRenderContext.GetElementIndices().Bind();
+
         mShaderManager.ActivateProgram<ProgramType::ShipGenericMipMappedTextures>();
 
         if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Wireframe)
             glLineWidth(0.1f);
 
-        assert(0 == (mGenericMipMappedTextureTotalVertexCount % 6));
-        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mGenericMipMappedTextureTotalVertexCount));
+        assert(0 == (mGenericMipMappedTextureTotalVertexCount % 4));
+        glDrawElements(
+            GL_TRIANGLES,
+            static_cast<GLsizei>(mGenericMipMappedTextureTotalVertexCount / 4 * 6),
+            GL_UNSIGNED_INT,
+            (GLvoid *)0);
 
         glBindVertexArray(0);
 
         // Update stats
-        renderStats.LastRenderedShipGenericMipMappedTextures += mGenericMipMappedTextureTotalVertexCount / 6; // # of quads
+        renderStats.LastRenderedShipGenericMipMappedTextures += mGenericMipMappedTextureTotalVertexCount / 4; // # of quads
     }
 }
 

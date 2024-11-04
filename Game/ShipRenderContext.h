@@ -1299,9 +1299,7 @@ private:
         float const ambientLightSensitivity =
             frame.FrameMetadata.HasOwnAmbientLight ? 0.0f : 1.0f;
 
-        // Append vertices - two triangles
-
-        // Triangle 1
+        // Append vertices
 
         // Top-left
         vertexBuffer.emplace_back(
@@ -1313,30 +1311,6 @@ private:
             -angleCw,
             alpha,
             ambientLightSensitivity);
-
-        // Top-Right
-        vertexBuffer.emplace_back(
-            position,
-            vec2f(rightX, topY),
-            frame.TextureCoordinatesTopRight,
-            static_cast<float>(planeId),
-            scale,
-            -angleCw,
-            alpha,
-            ambientLightSensitivity);
-
-        // Bottom-left
-        vertexBuffer.emplace_back(
-            position,
-            vec2f(leftX, bottomY),
-            frame.TextureCoordinatesBottomLeft,
-            static_cast<float>(planeId),
-            scale,
-            -angleCw,
-            alpha,
-            ambientLightSensitivity);
-
-        // Triangle 2
 
         // Top-Right
         vertexBuffer.emplace_back(

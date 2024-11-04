@@ -529,7 +529,7 @@ void RenderContext::Draw()
                     mShaderManager->SetProgramParameterInAllShaders<ProgramParameterType::LampToolAttributes>(*lampToolToSet);
                 }
 
-                mGlobalRenderContext->RenderPrepare();
+                mGlobalRenderContext->RenderPrepare(); // Before all
 
                 mWorldRenderContext->RenderPrepareStars(renderParameters);
 

@@ -462,22 +462,27 @@ v			+ FixedSetSliderCore
 					+  @ VAO Setups: Bind() (though pointless because of Intel bug)
 					+ Own Upload(): ensure_size(# of quads)
 					+ Own RenderDraw: Bind() (because of Intel bug)
-		- Test with bubbles
-			- Prepare baseline with old dell and new dell
-			- Do
-			- New Dell: 
-				- Before: upload=0.26/0.29 render=6.2/6.3/6.4 @ z=0.5 w/no ship
-				- After: upload= render=
-			- Old Dell: 
-				- Before: upload= render=
-				- After: upload= render=
+		+ Test with bubbles
+			+ Prepare baseline with old dell and new dell
+			+ Do
+			+ New Dell: 
+				+ Before: upload=0.26/0.29 render=6.2/6.3/6.4 @ z=0.5 w/no ship
+				+ After: upload=0.24/0.25/0.26 render=6.2/6.3
+			+ Old Dell: 
+				+ Before: upload=1.5/1.6 render=14.9/15.1 - 17.9/18.7
+				+ After: upload=1.2/1.3 render=14.0 - 18.3
 		- If works, other candidates:
 			- Flames
 			+ Clouds
-			- Generic textures
+			+ Generic textures
 			- Text (NotificationContext)
 			- Fishes
-			- RectSelection (NotificationContext)
+
+	- Air bubbles:
+		- We effed up formula: final scale is 0.2, old coeff was 0.75
+		- Test humans' bubbles as well
+		- With rotation?
+			- Pass personality seed at ShipRenderContext::UploadAirBubble
 
 	- Align "big" render buffers, e.g.:
 		- Ship: generic mip mapped
