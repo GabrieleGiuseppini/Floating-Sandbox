@@ -1533,7 +1533,7 @@ void Points::UpdateEphemeralParticles(
                                 mParentWorld.DisplaceOceanSurfaceAt(
                                     GetPosition(pointIndex).x,
                                     // Magnitude is lower with depth and higher with scale
-                                    (oceanFloorDisplacementAtAirBubbleSurfacingSurfaceOffset - depth) * state.FinalScale * 0.375f); // Magic number
+                                    (oceanFloorDisplacementAtAirBubbleSurfacingSurfaceOffset - depth) * state.FinalScale * 3.75f); // Magic number
 
                                 mGameEventHandler->OnAirBubbleSurfaced(1);
                             }

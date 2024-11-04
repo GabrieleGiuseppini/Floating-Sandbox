@@ -478,9 +478,9 @@ v			+ FixedSetSliderCore
 			- Text (NotificationContext)
 			- Fishes
 
-	- Air bubbles:
-		- We effed up formula: final scale is 0.2, old coeff was 0.75
-		- Test humans' bubbles as well
+	= Air bubbles:
+		+ We effed up formula: final scale is 0.2, old coeff was 0.75
+		+ Test humans' bubbles as well
 		- With rotation?
 			- Pass personality seed at ShipRenderContext::UploadAirBubble
 
