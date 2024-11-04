@@ -137,31 +137,42 @@ NotificationRenderContext::NotificationRenderContext(
     // Initialize text notifications
     //
 
-    // Set texture parameters
-    mShaderManager.ActivateProgram<ProgramType::Text>();
-    mShaderManager.SetTextureParameters<ProgramType::Text>();
+    {
 
-    // Initialize VBO
-    glGenBuffers(1, &tmpGLuint);
-    mTextVBO = tmpGLuint;
+        // Set texture parameters
+        mShaderManager.ActivateProgram<ProgramType::Text>();
+        mShaderManager.SetTextureParameters<ProgramType::Text>();
 
-    // Initialize VAO
-    glGenVertexArrays(1, &tmpGLuint);
-    mTextVAO = tmpGLuint;
+        // Initialize VBO
+        glGenBuffers(1, &tmpGLuint);
+        mTextVBO = tmpGLuint;
 
-    glBindVertexArray(*mTextVAO);
-    CheckOpenGLError();
+        // Initialize VAO
+        glGenVertexArrays(1, &tmpGLuint);
+        mTextVAO = tmpGLuint;
 
-    // Describe vertex attributes
-    static_assert(sizeof(TextQuadVertex) == (4 + 1) * sizeof(float));
-    glBindBuffer(GL_ARRAY_BUFFER, *mTextVBO);
-    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Text1));
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Text1), 4, GL_FLOAT, GL_FALSE, (4 + 1) * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Text2));
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Text2), 1, GL_FLOAT, GL_FALSE, (4 + 1) * sizeof(float), (void*)(4 * sizeof(float)));
-    CheckOpenGLError();
+        glBindVertexArray(*mTextVAO);
+        CheckOpenGLError();
 
-    glBindVertexArray(0);
+        // Describe vertex attributes
+        static_assert(sizeof(TextQuadVertex) == (4 + 1) * sizeof(float));
+        glBindBuffer(GL_ARRAY_BUFFER, *mTextVBO);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Text1));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Text1), 4, GL_FLOAT, GL_FALSE, (4 + 1) * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Text2));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Text2), 1, GL_FLOAT, GL_FALSE, (4 + 1) * sizeof(float), (void*)(4 * sizeof(float)));
+        CheckOpenGLError();
+
+        //
+        // Associate element VBO
+        //
+
+        // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
+        // in the VAO. So we won't associate the element VBO here, but rather before each drawing call.
+        ////mGlobalRenderContext.GetElementIndices().Bind()
+
+        glBindVertexArray(0);
+    }
 
     // Initialize font texture atlas metadata
     for (size_t f = 0; f < fonts.size(); ++f)
@@ -217,16 +228,16 @@ NotificationRenderContext::NotificationRenderContext(
     // Initialize text notification contexts for each type of notification
     {
         // Status text
-        static_assert(static_cast<size_t>(TextNotificationType::StatusText) == 0);
-        mTextNotificationTypeContexts.emplace_back(mFontTextureAtlasMetadata[static_cast<size_t>(FontType::Font0)]);
+        mTextNotificationTypeContexts[static_cast<size_t>(TextNotificationType::StatusText)] =
+            TextNotificationTypeContext(&(mFontTextureAtlasMetadata[static_cast<size_t>(FontType::Font0)]));
 
         // Notification text
-        static_assert(static_cast<size_t>(TextNotificationType::NotificationText) == 1);
-        mTextNotificationTypeContexts.emplace_back(mFontTextureAtlasMetadata[static_cast<size_t>(FontType::Font1)]);
+        mTextNotificationTypeContexts[static_cast<size_t>(TextNotificationType::NotificationText)] =
+            TextNotificationTypeContext(&(mFontTextureAtlasMetadata[static_cast<size_t>(FontType::Font1)]));
 
         // Physics probe reading
-        static_assert(static_cast<size_t>(TextNotificationType::PhysicsProbeReading) == 2);
-        mTextNotificationTypeContexts.emplace_back(mFontTextureAtlasMetadata[static_cast<size_t>(FontType::Font2)]);
+        mTextNotificationTypeContexts[static_cast<size_t>(TextNotificationType::PhysicsProbeReading)] =
+            TextNotificationTypeContext(&(mFontTextureAtlasMetadata[static_cast<size_t>(FontType::Font2)]));
     }
 
     //
@@ -980,7 +991,7 @@ void NotificationRenderContext::RenderPrepareTextNotifications()
     {
         if (textNotificationTypeContext.AreTextLinesDirty)
         {
-            // Re-generated quad vertices for this notification type
+            // Re-generate quad vertices for this notification type
             GenerateTextVertices(textNotificationTypeContext);
 
             textNotificationTypeContext.AreTextLinesDirty = false;
@@ -1594,7 +1605,7 @@ void NotificationRenderContext::RenderDrawLineGuide()
 
 void NotificationRenderContext::GenerateTextVertices(TextNotificationTypeContext & context) const
 {
-    FontTextureAtlasMetadata const & fontTextureAtlasMetadata = context.NotificationFontTextureAtlasMetadata;
+    FontTextureAtlasMetadata const & fontTextureAtlasMetadata = *(context.NotificationFontTextureAtlasMetadata);
     FontMetadata const & fontMetadata = fontTextureAtlasMetadata.OriginalFontMetadata;
 
     //

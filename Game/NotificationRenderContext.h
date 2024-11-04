@@ -511,7 +511,7 @@ public:
 		float const worldOffset = smallestDimension * 8.0f;
 
 		//
-		// Calculate world dimension multiplier so that the smallest dimension _plus_ 
+		// Calculate world dimension multiplier so that the smallest dimension _plus_
 		// a world offset is at least a desired number of pixels
 		//
 
@@ -996,21 +996,28 @@ private:
 	 */
 	struct TextNotificationTypeContext
 	{
-		FontTextureAtlasMetadata const & NotificationFontTextureAtlasMetadata; // The metadata of the font to be used for this notification type
+		FontTextureAtlasMetadata const * NotificationFontTextureAtlasMetadata; // The metadata of the font to be used for this notification type
 
 		std::vector<TextLine> TextLines;
 		bool AreTextLinesDirty; // When dirty, we'll re-build the quads for this notification type
 		std::vector<TextQuadVertex> TextQuadVertexBuffer;
 
-		explicit TextNotificationTypeContext(FontTextureAtlasMetadata const & notificationFontTextureAtlasMetadata)
+		explicit TextNotificationTypeContext(FontTextureAtlasMetadata const * notificationFontTextureAtlasMetadata)
 			: NotificationFontTextureAtlasMetadata(notificationFontTextureAtlasMetadata)
+			, TextLines()
+			, AreTextLinesDirty(false)
+			, TextQuadVertexBuffer()
+		{}
+
+		TextNotificationTypeContext() // Just to allow array
+			: NotificationFontTextureAtlasMetadata(nullptr)
 			, TextLines()
 			, AreTextLinesDirty(false)
 			, TextQuadVertexBuffer()
 		{}
 	};
 
-	std::vector<TextNotificationTypeContext> mTextNotificationTypeContexts;
+	std::array<TextNotificationTypeContext, static_cast<size_t>(TextNotificationType::_Last) + 1> mTextNotificationTypeContexts;
 
 	GameOpenGLVAO mTextVAO;
 	size_t mCurrentTextQuadVertexBufferSize; // Number of elements (vertices)

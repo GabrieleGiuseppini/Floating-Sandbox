@@ -471,18 +471,22 @@ v			+ FixedSetSliderCore
 			+ Old Dell: 
 				+ Before: upload=1.5/1.6 render=14.9/15.1 - 17.9/18.7
 				+ After: upload=1.2/1.3 render=14.0 - 18.3
-		- If works, other candidates:
+		= If works, other candidates:
+			= Text (NotificationContext)
+				- In order to ensure indices size, need to know/calc total quads needed before RenderPrepare
+					- Only need this when any of AreTextLinesDirty is true
+						- Can move relevant part of RenderPrepareTextNotifications into UploadEnd, and then ensure indices
 			- Flames
 			+ Clouds
 			+ Generic textures
-			- Text (NotificationContext)
 			- Fishes
 
-	+ Air bubbles:
+	= Air bubbles:
 		+ We effed up formula: final scale is 0.2, old coeff was 0.75
 		+ Test humans' bubbles as well
-		+ With rotation
+		= With rotation
 			+ Pass personality seed at ShipRenderContext::UploadAirBubble
+			- See to make it progress?
 
 	- Align "big" render buffers, e.g.:
 		- Ship: generic mip mapped
