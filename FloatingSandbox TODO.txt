@@ -430,14 +430,7 @@ v			+ FixedSetSliderCore
 		- Test AdobeStock/Getty clouds
 
 		- Changelist
-
-	- Do other atlases (GenericLinear, GenericMipMapped)
-		- Clean checkout
-		- Move to Baking
-		- Produce atlases
-		- Change atlas loading code
-		- Check startup mem: was 798MB
-
+	
 	= Quad rendering with indices
 		+ Sharing VBOs (for indices) in VAOs: 
 			! https://computergraphics.stackexchange.com/questions/4623/multiple-vao-share-a-vbo
@@ -473,7 +466,7 @@ v			+ FixedSetSliderCore
 			- Prepare baseline with old dell and new dell
 			- Do
 			- New Dell: 
-				- Before: upload= render=
+				- Before: upload=0.26/0.29 render=6.2/6.3/6.4 @ z=0.5 w/no ship
 				- After: upload= render=
 			- Old Dell: 
 				- Before: upload= render=
