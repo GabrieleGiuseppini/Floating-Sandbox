@@ -792,7 +792,7 @@ public:
     void CreateEphemeralParticleAirBubble(
         vec2f const & position,
         float depth,
-        float finalScale, 
+        float finalScale,
         float temperature,
         float buoyancyVolumeFillAdjustment,
         float vortexAmplitude,
@@ -2059,6 +2059,7 @@ public:
     // Randomness
     //
 
+    // [0.0, 1.0]
     float GetRandomNormalizedUniformPersonalitySeed(ElementIndex pointElementIndex) const
     {
         return mRandomNormalizedUniformFloatBuffer[pointElementIndex];
@@ -2374,7 +2375,7 @@ private:
     // Randomness
     //
 
-    Buffer<float> mRandomNormalizedUniformFloatBuffer;
+    Buffer<float> mRandomNormalizedUniformFloatBuffer; // [0.0, 1.0]
 
     //
     // Immutable render attributes

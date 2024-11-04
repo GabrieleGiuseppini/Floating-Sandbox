@@ -2070,7 +2070,8 @@ void Points::UploadEphemeralParticles(
                     GetPlaneId(pointIndex),
                     GetPosition(pointIndex),
                     scale,
-                    std::min(0.6f, state.CurrentDeltaY)); // Alpha
+                    std::min(0.6f, state.CurrentDeltaY), // Alpha
+                    mRandomNormalizedUniformFloatBuffer[pointIndex]); // Angle
 
                 break;
             }
