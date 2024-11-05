@@ -1137,29 +1137,7 @@ void ShipRenderContext::UploadPointToPointArrowsEnd()
 
 void ShipRenderContext::UploadEnd()
 {
-    //
-    // Calculate indices needed for generic mipmapped textures
-    //
-    // We do this here so we allow subsequent GlobalRenderContext::RenderPrepare
-    // to upload indices
-    //
-
-    size_t const nonAirBubblesTotalVertexCount = std::accumulate(
-        mGenericMipMappedTexturePlaneVertexBuffers.cbegin(),
-        mGenericMipMappedTexturePlaneVertexBuffers.cend(),
-        size_t(0),
-        [](size_t const total, auto const & vec)
-        {
-            return total + vec.vertexBuffer.size();
-        });
-
-    assert((mGenericMipMappedTextureAirBubbleVertexBuffer.size() % 4) == 0);
-    assert((nonAirBubblesTotalVertexCount % 4) == 0);
-
-    mGenericMipMappedTextureTotalVertexCount = mGenericMipMappedTextureAirBubbleVertexBuffer.size() + nonAirBubblesTotalVertexCount;
-
-    assert((mGenericMipMappedTextureTotalVertexCount % 4) == 0);
-    mGlobalRenderContext.GetElementIndices().EnsureSize(mGenericMipMappedTextureTotalVertexCount / 4);
+    // Nop
 }
 
 void ShipRenderContext::ProcessParameterChanges(RenderParameters const & renderParameters)
@@ -2139,7 +2117,31 @@ void ShipRenderContext::RenderDrawSparkles(RenderParameters const & renderParame
 
 void ShipRenderContext::RenderPrepareGenericMipMappedTextures(RenderParameters const & /*renderParameters*/)
 {
-    if (mGenericMipMappedTextureTotalVertexCount > 0) // Calculated at UploadEnd()
+    //
+    // Calculate indices needed for generic mipmapped textures
+    //
+    // We do this here so we allow subsequent GlobalRenderContext::RenderPrepare
+    // to upload indices
+    //
+
+    size_t const nonAirBubblesTotalVertexCount = std::accumulate(
+        mGenericMipMappedTexturePlaneVertexBuffers.cbegin(),
+        mGenericMipMappedTexturePlaneVertexBuffers.cend(),
+        size_t(0),
+        [](size_t const total, auto const & vec)
+        {
+            return total + vec.vertexBuffer.size();
+        });
+
+    assert((mGenericMipMappedTextureAirBubbleVertexBuffer.size() % 4) == 0);
+    assert((nonAirBubblesTotalVertexCount % 4) == 0);
+
+    mGenericMipMappedTextureTotalVertexCount = mGenericMipMappedTextureAirBubbleVertexBuffer.size() + nonAirBubblesTotalVertexCount;
+
+    assert((mGenericMipMappedTextureTotalVertexCount % 4) == 0);
+    mGlobalRenderContext.GetElementIndices().EnsureSize(mGenericMipMappedTextureTotalVertexCount / 4);
+
+    if (mGenericMipMappedTextureTotalVertexCount > 0)
     {
         glBindBuffer(GL_ARRAY_BUFFER, *mGenericMipMappedTextureVBO);
 

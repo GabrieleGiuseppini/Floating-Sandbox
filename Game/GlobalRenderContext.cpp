@@ -296,14 +296,8 @@ void GlobalRenderContext::ProcessParameterChanges(RenderParameters const & rende
     }
 }
 
-void GlobalRenderContext::RenderPrepare()
+void GlobalRenderContext::RenderPrepareStart()
 {
-    if (mElementIndices->IsDirty())
-    {
-        // Note: this happens before all other render contexts prepare
-        mElementIndices->Upload();
-    }
-
     if (mPerlinNoise_4_32_043_ToUpload)
     {
         mUploadedNoiseTexturesManager.UploadFrame(
@@ -328,6 +322,14 @@ void GlobalRenderContext::RenderPrepare()
             GL_LINEAR);
 
         mPerlinNoise_8_1024_073_ToUpload.reset();
+    }
+}
+
+void GlobalRenderContext::RenderPrepareEnd()
+{
+    if (mElementIndices->IsDirty())
+    {
+        mElementIndices->Upload();
     }
 }
 

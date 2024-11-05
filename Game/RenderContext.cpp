@@ -529,7 +529,7 @@ void RenderContext::Draw()
                     mShaderManager->SetProgramParameterInAllShaders<ProgramParameterType::LampToolAttributes>(*lampToolToSet);
                 }
 
-                mGlobalRenderContext->RenderPrepare(); // Before all
+                mGlobalRenderContext->RenderPrepareStart();
 
                 mWorldRenderContext->RenderPrepareStars(renderParameters);
 
@@ -557,6 +557,8 @@ void RenderContext::Draw()
                 mWorldRenderContext->RenderPrepareAABBs(renderParameters);
 
                 mNotificationRenderContext->RenderPrepare();
+
+                mGlobalRenderContext->RenderPrepareEnd(); // Updates global element indices
 
                 // Update stats
                 mPerfStats.TotalUploadRenderDrawDuration.Update(GameChronometer::now() - startTime);

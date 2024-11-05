@@ -41,7 +41,9 @@ public:
 
     void ProcessParameterChanges(RenderParameters const & renderParameters);
 
-    void RenderPrepare();
+    void RenderPrepareStart();
+
+    void RenderPrepareEnd();
 
 public:
 
