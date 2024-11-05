@@ -404,6 +404,10 @@ ShipRenderContext::ShipRenderContext(
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Flame2), 3, GL_FLOAT, GL_FALSE, sizeof(FlameVertex), (void*)((4) * sizeof(float)));
         CheckOpenGLError();
 
+        // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
+        // in the VAO. So we won't associate the element VBO here, but rather before each drawing call.
+        ////mGlobalRenderContext.GetElementIndices().Bind()
+
         glBindVertexArray(0);
     }
 
@@ -1038,15 +1042,17 @@ void ShipRenderContext::UploadFlamesStart(size_t count)
     // though they will be empty most of the time
     //
 
-    mFlameVertexBuffer.reset(6 * count);
+    mFlameVertexBuffer.reset(4 * count);
 
     mFlameBackgroundCount = 0;
     mFlameForegroundCount = 0;
+
+    mGlobalRenderContext.GetElementIndices().EnsureSize(count);
 }
 
 void ShipRenderContext::UploadFlamesEnd()
 {
-    assert((mFlameBackgroundCount + mFlameForegroundCount) * 6u == mFlameVertexBuffer.size());
+    assert((mFlameBackgroundCount + mFlameForegroundCount) * 4u == mFlameVertexBuffer.size());
 
     // Nop
 }
@@ -2005,12 +2011,17 @@ void ShipRenderContext::RenderDrawFlames(
     {
         glBindVertexArray(*mFlameVAO);
 
+        // Intel bug: cannot associate with VAO
+        mGlobalRenderContext.GetElementIndices().Bind();
+
         mShaderManager.ActivateProgram<FlameShaderType>();
 
-        glDrawArrays(
+        glDrawElements(
             GL_TRIANGLES,
-            static_cast<GLint>(startFlameIndex * 6u),
-            static_cast<GLint>(flameCount * 6u));
+            static_cast<GLsizei>(flameCount * 6u),
+            GL_UNSIGNED_INT,
+            (GLvoid *)(static_cast<size_t>(startFlameIndex) * 6u * sizeof(int)));
+        CheckOpenGLError();
 
         glBindVertexArray(0);
 

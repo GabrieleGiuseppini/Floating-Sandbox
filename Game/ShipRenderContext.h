@@ -1222,8 +1222,6 @@ private:
         // Store quad vertices
         //
 
-        // Triangle 1
-
         // Top-left
         mFlameVertexBuffer.emplace_back(
             vec2f(C.x, C.y),
@@ -1233,24 +1231,6 @@ private:
             vec2f(-1.0f, 1.0f));
 
         // Top-right
-        mFlameVertexBuffer.emplace_back(
-            vec2f(D.x, D.y),
-            static_cast<float>(planeId),
-            flamePersonalitySeed,
-            flameWindRotationAngle,
-            vec2f(1.0f, 1.0f));
-
-        // Bottom-left
-        mFlameVertexBuffer.emplace_back(
-            vec2f(A.x, A.y),
-            static_cast<float>(planeId),
-            flamePersonalitySeed,
-            flameWindRotationAngle,
-            vec2f(-1.0f, 0.0f));
-
-        // Triangle 2
-
-        // Top-Right
         mFlameVertexBuffer.emplace_back(
             vec2f(D.x, D.y),
             static_cast<float>(planeId),
