@@ -478,6 +478,16 @@ v			+ FixedSetSliderCore
 			+ Generic textures
 			- Fishes
 
+	- Flames shader:
+		! fract is always positive
+		- Dead center clamping is wrong - gets multiplier by tile size
+			+ Try: incorporate it in AtlasTileSize, in shader
+			= If ok: get rid of param and adjust AtlasTileSize
+				+ Simplify shader
+				+ Comments for dead center being included
+				- alpha sampling
+		- See if can get rid of AtlasTile1Dx for good, by also incorporating it in WorldBorder
+
 	= Air bubbles:
 		+ We effed up formula: final scale is 0.2, old coeff was 0.75
 		+ Test humans' bubbles as well

@@ -118,30 +118,31 @@ void GlobalRenderContext::InitializeGenericTextures(ResourceLocator const & reso
     // Flames
     //
 
-    // Set FlamesBackground shader parameters
     auto const & fireAtlasFrameMetadata = mGenericLinearTextureAtlasMetadata->GetFrameMetadata(GenericLinearTextureGroups::Fire, 0);
-    mShaderManager.ActivateProgram<ProgramType::ShipFlamesBackground>();
-    mShaderManager.SetTextureParameters<ProgramType::ShipFlamesBackground>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground, ProgramParameterType::AtlasTile1Dx>(
+
+    vec2f const atlasTileDx = vec2f(
         1.0f / static_cast<float>(fireAtlasFrameMetadata.FrameMetadata.Size.width),
         1.0f / static_cast<float>(fireAtlasFrameMetadata.FrameMetadata.Size.height));
+
+    // Set FlamesBackground shader parameters
+    mShaderManager.ActivateProgram<ProgramType::ShipFlamesBackground>();
+    mShaderManager.SetTextureParameters<ProgramType::ShipFlamesBackground>();
+    // Atlas tile coords, inclusive of dead center adjustments
     mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground, ProgramParameterType::AtlasTile1LeftBottomTextureCoordinates>(
-        fireAtlasFrameMetadata.TextureCoordinatesBottomLeft);
+        fireAtlasFrameMetadata.TextureCoordinatesBottomLeft + atlasTileDx);
     mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground, ProgramParameterType::AtlasTile1Size>(
-        fireAtlasFrameMetadata.TextureSpaceWidth,
-        fireAtlasFrameMetadata.TextureSpaceHeight);
+        fireAtlasFrameMetadata.TextureSpaceWidth - atlasTileDx.x * 2.0f,
+        fireAtlasFrameMetadata.TextureSpaceHeight - atlasTileDx.y * 2.0f);
 
     // Set FlamesForeground shader parameters
     mShaderManager.ActivateProgram<ProgramType::ShipFlamesForeground>();
     mShaderManager.SetTextureParameters<ProgramType::ShipFlamesForeground>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground, ProgramParameterType::AtlasTile1Dx>(
-        1.0f / static_cast<float>(fireAtlasFrameMetadata.FrameMetadata.Size.width),
-        1.0f / static_cast<float>(fireAtlasFrameMetadata.FrameMetadata.Size.height));
+    // Atlas tile coords, inclusive of dead center adjustments
     mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground, ProgramParameterType::AtlasTile1LeftBottomTextureCoordinates>(
-        fireAtlasFrameMetadata.TextureCoordinatesBottomLeft);
+        fireAtlasFrameMetadata.TextureCoordinatesBottomLeft + atlasTileDx);
     mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground, ProgramParameterType::AtlasTile1Size>(
-        fireAtlasFrameMetadata.TextureSpaceWidth,
-        fireAtlasFrameMetadata.TextureSpaceHeight);
+        fireAtlasFrameMetadata.TextureSpaceWidth - atlasTileDx.x * 2.0f,
+        fireAtlasFrameMetadata.TextureSpaceHeight - atlasTileDx.y * 2.0f);
 
     //
     // Create generic mipmapped texture atlas

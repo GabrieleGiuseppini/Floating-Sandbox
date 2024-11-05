@@ -39,9 +39,8 @@ uniform sampler2D paramNoiseTexture;
 uniform sampler2D paramGenericLinearTexturesAtlasTexture;
 
 // Params
-uniform vec2 paramAtlasTile1Dx; // span across two pixels
-uniform vec2 paramAtlasTile1LeftBottomTextureCoordinates;
-uniform vec2 paramAtlasTile1Size;
+uniform vec2 paramAtlasTile1LeftBottomTextureCoordinates; // Inclusive of dead-center
+uniform vec2 paramAtlasTile1Size; // Inclusive of dead-center
 uniform float paramFlameProgress;
 
 //
@@ -133,14 +132,14 @@ void main()
 
     vec2 alphaVirtualTextureCoords = vec2(
             ((uv.x + 1.0) + noiseOffset.x) / AlphaResolution,
-            min(flameSpacePosition.y, 1.0 - paramAtlasTile1Dx.y)); // y has to fit perfectly in the 0..1 range, taking into account the dead-center dy
+            flameSpacePosition.y);
 
     vec2 alphaSampleCoords = paramAtlasTile1LeftBottomTextureCoordinates + paramAtlasTile1Size * alphaVirtualTextureCoords;
     vec4 sampledAlphaSample = texture2D(paramGenericLinearTexturesAtlasTexture, alphaSampleCoords);
 
     // We only want sampled alpha to affect the top part of the flame; the bottom
     // part should stay put at 1.0
-    float sampledAlpha = mix(1.0, sampledAlphaSample.w, flameSpacePosition.y * flameSpacePosition.y);
+    float sampledAlpha = mix(1.0, sampledAlphaSample.a, flameSpacePosition.y * flameSpacePosition.y);
     
     //
 	// Sample color
@@ -148,13 +147,11 @@ void main()
 
     #define ColorResolution 7.
 
+    // [0.0, 1.0]
     vec2 colorVirtualTextureCoords = fract(
         vec2(
             uv.x / ColorResolution,
             uv.y / ColorResolution - paramFlameProgress * 1.5 + noiseOffset.x)); // Adding some per-flame random Y displacement
-
-    // Clamp to dead center pixels
-    colorVirtualTextureCoords = clamp(colorVirtualTextureCoords, paramAtlasTile1Dx, vec2(1.0) - paramAtlasTile1Dx);
 
     vec2 colorSampleCoords = paramAtlasTile1LeftBottomTextureCoordinates + paramAtlasTile1Size * colorVirtualTextureCoords;
     vec4 sampledColor = texture2D(paramGenericLinearTexturesAtlasTexture, colorSampleCoords);
@@ -177,7 +174,7 @@ void main()
         discard;
 
     // Make final color
-    gl_FragColor = vec4(sampledColor.xyz, finalAlpha);
+    gl_FragColor = vec4(sampledColor.rgb, finalAlpha);
 
 
     /*
