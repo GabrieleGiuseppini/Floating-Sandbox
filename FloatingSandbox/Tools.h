@@ -3406,20 +3406,23 @@ public:
                 }
             }
 
-            // Calculate intensity multipliers
-            float const preFrontIntensityMultiplier = intensity * (inputState.IsShiftKeyDown ? 3.0f : 1.0f);
-            float const mainFrontIntensityMultiplier = intensity * (inputState.IsShiftKeyDown ? 1.5f : 1.0f);
+            if (mEngagementData.has_value())
+            {
+                // Calculate intensity multipliers
+                float const preFrontIntensityMultiplier = intensity * (inputState.IsShiftKeyDown ? 3.0f : 1.0f);
+                float const mainFrontIntensityMultiplier = intensity * (inputState.IsShiftKeyDown ? 1.5f : 1.0f);
 
-            // Invoke world
-            mGameController.ApplyRadialWindFrom(
-                centerPosition,
-                mEngagementData->GetElapsedPreFrontSimulationTime(currentSimulationTime),
-                preFrontIntensityMultiplier,
-                mEngagementData->GetElapsedMainFrontSimulationTime(currentSimulationTime),
-                mainFrontIntensityMultiplier);
+                // Invoke world
+                mGameController.ApplyRadialWindFrom(
+                    centerPosition,
+                    mEngagementData->GetElapsedPreFrontSimulationTime(currentSimulationTime),
+                    preFrontIntensityMultiplier,
+                    mEngagementData->GetElapsedMainFrontSimulationTime(currentSimulationTime),
+                    mainFrontIntensityMultiplier);
 
-            // Sound
-            mSoundController.PlayOrUpdateWindMakerWindSound(mainFrontIntensityMultiplier * 50.0f);
+                // Sound
+                mSoundController.PlayOrUpdateWindMakerWindSound(mainFrontIntensityMultiplier * 50.0f);
+            }
         }
 
         if (doUpdateCursor)
