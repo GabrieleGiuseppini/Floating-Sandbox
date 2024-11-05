@@ -67,7 +67,7 @@ public:
 	NotificationRenderContext(
         ResourceLocator const & resourceLocator,
         ShaderManager<ShaderManagerTraits> & shaderManager,
-		GlobalRenderContext const & globalRenderContext);
+		GlobalRenderContext & globalRenderContext);
 
 public:
 
@@ -725,7 +725,7 @@ private:
 
 private:
 
-	GlobalRenderContext const & mGlobalRenderContext;
+	GlobalRenderContext & mGlobalRenderContext;
 
     ShaderManager<ShaderManagerTraits> & mShaderManager;
 

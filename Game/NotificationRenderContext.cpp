@@ -17,7 +17,7 @@ float constexpr MarginTopScreen = MarginScreen + 25.0f; // Consider menu bar
 NotificationRenderContext::NotificationRenderContext(
     ResourceLocator const & resourceLocator,
     ShaderManager<ShaderManagerTraits> & shaderManager,
-    GlobalRenderContext const & globalRenderContext)
+    GlobalRenderContext & globalRenderContext)
     : mGlobalRenderContext(globalRenderContext)
     , mShaderManager(shaderManager)
     , mScreenToNdcX(0.0f) // Will be recalculated
@@ -986,6 +986,7 @@ void NotificationRenderContext::RenderPrepareTextNotifications()
     //
 
     bool doNeedToUploadQuadVertexBuffers = false;
+    size_t totalTextQuadVertexBufferSize = 0;
 
     for (auto & textNotificationTypeContext : mTextNotificationTypeContexts)
     {
@@ -999,6 +1000,8 @@ void NotificationRenderContext::RenderPrepareTextNotifications()
             // We need to re-upload the vertex buffers
             doNeedToUploadQuadVertexBuffers = true;
         }
+
+        totalTextQuadVertexBufferSize += textNotificationTypeContext.TextQuadVertexBuffer.size();
     }
 
     if (doNeedToUploadQuadVertexBuffers)
@@ -1009,15 +1012,8 @@ void NotificationRenderContext::RenderPrepareTextNotifications()
 
         glBindBuffer(GL_ARRAY_BUFFER, *mTextVBO);
 
-        // Calculate total buffer size
-        mCurrentTextQuadVertexBufferSize = std::accumulate(
-            mTextNotificationTypeContexts.cbegin(),
-            mTextNotificationTypeContexts.cend(),
-            size_t(0),
-            [](size_t total, auto const & tntc) -> size_t
-            {
-                return total + tntc.TextQuadVertexBuffer.size();
-            });
+        // Update total buffer size
+        mCurrentTextQuadVertexBufferSize = totalTextQuadVertexBufferSize;
 
         if (mCurrentTextQuadVertexBufferSize > mAllocatedTextQuadVertexBufferSize)
         {
@@ -1049,6 +1045,13 @@ void NotificationRenderContext::RenderPrepareTextNotifications()
         assert(start == mCurrentTextQuadVertexBufferSize);
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        //
+        // Ensure element indices cover whole text
+        //
+
+        assert((mCurrentTextQuadVertexBufferSize % 4) == 0);
+        mGlobalRenderContext.GetElementIndices().EnsureSize(mCurrentTextQuadVertexBufferSize / 4);
     }
 }
 
@@ -1057,6 +1060,9 @@ void NotificationRenderContext::RenderDrawTextNotifications()
     if (mCurrentTextQuadVertexBufferSize > 0)
     {
         glBindVertexArray(*mTextVAO);
+
+        // Intel bug: cannot associate with VAO
+        mGlobalRenderContext.GetElementIndices().Bind();
 
         // Activate texture unit
         mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
@@ -1069,7 +1075,12 @@ void NotificationRenderContext::RenderDrawTextNotifications()
         mShaderManager.ActivateProgram<ProgramType::Text>();
 
         // Draw vertices
-        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mCurrentTextQuadVertexBufferSize));
+        assert(0 == (mCurrentTextQuadVertexBufferSize % 4));
+        glDrawElements(
+            GL_TRIANGLES,
+            static_cast<GLsizei>(mCurrentTextQuadVertexBufferSize / 4 * 6),
+            GL_UNSIGNED_INT,
+            (GLvoid *)0);
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -1759,22 +1770,6 @@ void NotificationRenderContext::GenerateTextVertices(TextNotificationTypeContext
                 linePositionNdc.x,
                 linePositionNdc.y + glyphHeightNdc,
                 textureULeft,
-                textureVTop,
-                alpha);
-
-            // Bottom-left
-            vertices.emplace_back(
-                linePositionNdc.x,
-                linePositionNdc.y,
-                textureULeft,
-                textureVBottom,
-                alpha);
-
-            // Top-right
-            vertices.emplace_back(
-                linePositionNdc.x + glyphWidthNdc,
-                linePositionNdc.y + glyphHeightNdc,
-                textureURight,
                 textureVTop,
                 alpha);
 

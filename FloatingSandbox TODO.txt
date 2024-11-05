@@ -472,7 +472,7 @@ v			+ FixedSetSliderCore
 				+ Before: upload=1.5/1.6 render=14.9/15.1 - 17.9/18.7
 				+ After: upload=1.2/1.3 render=14.0 - 18.3
 		= If works, other candidates:
-			- Text (NotificationContext)
+			+ Text (NotificationContext)
 			- Flames
 			+ Clouds
 			+ Generic textures
