@@ -1224,7 +1224,7 @@ private:
 
         // Top-left
         mFlameVertexBuffer.emplace_back(
-            vec2f(C.x, C.y),
+            C,
             static_cast<float>(planeId),
             flamePersonalitySeed,
             flameWindRotationAngle,
@@ -1232,7 +1232,7 @@ private:
 
         // Top-right
         mFlameVertexBuffer.emplace_back(
-            vec2f(D.x, D.y),
+            D,
             static_cast<float>(planeId),
             flamePersonalitySeed,
             flameWindRotationAngle,
@@ -1240,7 +1240,7 @@ private:
 
         // Bottom-left
         mFlameVertexBuffer.emplace_back(
-            vec2f(A.x, A.y),
+            A,
             static_cast<float>(planeId),
             flamePersonalitySeed,
             flameWindRotationAngle,
@@ -1248,7 +1248,7 @@ private:
 
         // Bottom-right
         mFlameVertexBuffer.emplace_back(
-            vec2f(B.x, B.y),
+            B,
             static_cast<float>(planeId),
             flamePersonalitySeed,
             flameWindRotationAngle,
