@@ -326,4 +326,7 @@ struct IGameControllerSettingsOptions
 
     virtual float GetMinShipFlameSizeAdjustment() const = 0;
     virtual float GetMaxShipFlameSizeAdjustment() const = 0;
+
+    virtual float GetMinShipFlameKaosAdjustment() const = 0;
+    virtual float GetMaxShipFlameKaosAdjustment() const = 0;
 };

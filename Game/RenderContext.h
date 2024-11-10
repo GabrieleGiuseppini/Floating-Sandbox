@@ -545,6 +545,20 @@ public:
     static constexpr float MinShipFlameSizeAdjustment = 0.1f;
     static constexpr float MaxShipFlameSizeAdjustment = 20.0f;
 
+    float GetShipFlameKaosAdjustment() const
+    {
+        return mRenderParameters.ShipFlameKaosAdjustment;
+    }
+
+    void SetShipFlameKaosAdjustment(float value)
+    {
+        mRenderParameters.ShipFlameKaosAdjustment = value;
+        mRenderParameters.AreShipFlameRenderParametersDirty = true;
+    }
+
+    static constexpr float MinShipFlameKaosAdjustment = 0.0f;
+    static constexpr float MaxShipFlameKaosAdjustment = 2.0f;
+
     bool GetShowStressedSprings() const
     {
         return mRenderParameters.ShowStressedSprings;

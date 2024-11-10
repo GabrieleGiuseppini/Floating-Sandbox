@@ -428,6 +428,7 @@ v			+ FixedSetSliderCore
 		+ Test enlarging canvas of tight clouds
 
 		- Test AdobeStock/Getty clouds
+			- Need Publisher or Illustrator
 
 		- Changelist
 	
@@ -478,15 +479,91 @@ v			+ FixedSetSliderCore
 			+ Generic textures
 			- Fishes
 
-	- Flames shader:
+	= Flames shader:
 		! fract is always positive
-		- Dead center clamping is wrong - gets multiplier by tile size
+		+ Dead center clamping is wrong - gets multiplier by tile size
 			+ Try: incorporate it in AtlasTileSize, in shader
-			= If ok: get rid of param and adjust AtlasTileSize
+			+ If ok: get rid of param and adjust AtlasTileSize
 				+ Simplify shader
 				+ Comments for dead center being included
-				- alpha sampling
-		- See if can get rid of AtlasTile1Dx for good, by also incorporating it in WorldBorder
+		+ Check why texture is truncated above (to test: set alpha = sampled texture alpha)
+			! Shadertoy
+			! Observations:
+				! Neighbor, full texture (512x128): this repeats with zero artifacts:
+				    c = vec2(
+					(flameSpacePosition.x + 1.) / 2.,
+					fract(flameSpacePosition.y * 2.0));					
+				    dy=0.0; // Note: with dy=0.5/128.0 there _are_ artifacts
+				    paramAtlasTile1LeftBottomTextureCoordinates = vec2(dx, dy);
+				    paramAtlasTile1Size = vec2(1.0, 1.0) - vec2(dx, dy) * 2.; // Inclusive of dead-center					   
+				    fragColor = texture(
+					iChannel0, 
+					paramAtlasTile1LeftBottomTextureCoordinates + paramAtlasTile1Size * c);
+				! Linear, full texture (512x128): above repeats with minimal artifacts - good enough!
+				! Linear, calculated texture (1024x256): this repeats with more artifacts - dubious if good enough:
+					! It's the "linear" issue
+				    c = vec2(
+					(flameSpacePosition.x + 1.) / 2.,
+					fract(flameSpacePosition.y * 2.0));
+					
+				    dx=0.5 / 1024.0;
+				    dy=0.5 / 256.0;
+				    paramAtlasTile1LeftBottomTextureCoordinates = vec2(0.25, 0.25) + vec2(dx, dy); // Inclusive of dead-center
+				    paramAtlasTile1Size = vec2(0.5, 0.5) - vec2(dx, dy) * 2.; // Inclusive of dead-center					   
+				    fragColor = texture(
+					iChannel0, 
+					paramAtlasTile1LeftBottomTextureCoordinates + paramAtlasTile1Size * c);
+			+ Texture:
+				+ Linear, calculated texture (1024x256) with "repeat" trick:
+					+ Texture trick: repeated lines above and below
+						- 126 H
+						- Make 0-126 x 2 (i.e. 0-252)
+						- Apply dark BG
+						- Smooth seam with brush
+						- Copy upper half of below (126 +63) to top
+						- Trim to top 126
+						- Save
+						- Test (double canvas - to 252, copy & paste - verify no seam) - then undo
+							- Back to H=126
+						- Enlarge canvas to 128
+						- Duplicate top and bottom rows
+						- Save
+						- Test (double canvas - to 256, copy & paste - verify no seam) - then undo
+							- Back to H=128
+						- Import into Fire.psd and work it
+						- Since you're here, see if can apply that "contrast" in shader to image as a style
+						- Since you're here, make alpha channel repeatable as well
+						- Save to both png's
+				+ Problem with alpha truncation at top
+					+ Redo alpha map
+						+ Make sure color map is good
+					+ Problem with Photoshop/enlarge canvas adding white stripes (confirmed with magick)
+						+ Try to enlarge with magick
+						+ magick convert fire_0_full.png -channel RGBA -separate -gravity center -extent 1024x256 -combine fire_0.png
+			+ Find dead/etc. to make fire texture really v-repeatable
+			+ Find dead/etc. to make alpha texture relly h-repeatable				
+
+		+ Shader:
+			+ Thickness fix: 
+				+ Make texture all opaque at bottom
+				+ Taper from 0.0 now
+			+ Shape tapering
+			+ color sample should taper at bottom
+				+ See if can reuse shape (thickness or alpha) instead of calculating new smoothstep for sample tapering
+			+ kaos control with pulses
+			+ More noise downstairs
+			+ contrast adjustment at flames - AFTER COMMIT!
+			X Test with Perlin
+			
+		= Integration
+			- Fix dead pixels as per shader instructions
+				- WAS: Dead pixels are 1.0, should be 0.5 - and when we give it as atlas tile params, should be based off full atlas size!!!!
+			- Test first both maps for repeatability
+			- Tet then discard alphas
+			- See if can get rid of AtlasTile1Dx for good, by also incorporating it in WorldBorder
+			- Settings dialog for kaos adjust
+
+	- Fix Bazzico bug - NPCs no work first, only after changing options
 
 	= Air bubbles:
 		+ We effed up formula: final scale is 0.2, old coeff was 0.75

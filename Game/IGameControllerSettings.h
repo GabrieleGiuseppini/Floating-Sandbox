@@ -475,6 +475,9 @@ struct IGameControllerSettings
     virtual float GetShipFlameSizeAdjustment() const = 0;
     virtual void SetShipFlameSizeAdjustment(float value) = 0;
 
+    virtual float GetShipFlameKaosAdjustment() const = 0;
+    virtual void SetShipFlameKaosAdjustment(float value) = 0;
+
     virtual bool GetDrawHeatBlasterFlame() const = 0;
     virtual void SetDrawHeatBlasterFlame(bool value) = 0;
 };

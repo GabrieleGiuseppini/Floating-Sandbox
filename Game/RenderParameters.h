@@ -60,6 +60,7 @@ struct RenderParameters
     rgbColor FlatLampLightColor;
     bool DrawExplosions;
     bool DrawFlames;
+    float ShipFlameKaosAdjustment;
     bool ShowStressedSprings;
     bool ShowFrontiers;
     bool ShowAABBs;
@@ -100,6 +101,7 @@ struct RenderParameters
     bool IsShipAmbientLightSensitivityDirty;
     bool IsShipDepthDarkeningSensitivityDirty;
     bool IsFlatLampLightColorDirty;
+    bool AreShipFlameRenderParametersDirty;
     bool IsShipWaterColorDirty;
     bool IsShipWaterContrastDirty;
     bool IsShipWaterLevelOfDetailDirty;

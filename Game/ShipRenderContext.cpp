@@ -676,6 +676,7 @@ ShipRenderContext::ShipRenderContext(
     ApplyDepthDarkeningSensitivityChanges(renderParameters);
     ApplySkyChanges(renderParameters);
     ApplyFlatLampLightColorChanges(renderParameters);
+    ApplyShipFlameRenderParameterChanges(renderParameters);
     ApplyWaterColorChanges(renderParameters);
     ApplyWaterContrastChanges(renderParameters);
     ApplyWaterLevelOfDetailChanges(renderParameters);
@@ -1188,6 +1189,11 @@ void ShipRenderContext::ProcessParameterChanges(RenderParameters const & renderP
         || renderParameters.AreShipStructureRenderModeSelectorsDirty)
     {
         ApplyFlatLampLightColorChanges(renderParameters);
+    }
+
+    if (renderParameters.AreShipFlameRenderParametersDirty)
+    {
+        ApplyShipFlameRenderParameterChanges(renderParameters);
     }
 
     if (renderParameters.IsShipWaterColorDirty
@@ -2661,6 +2667,8 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
     mShaderManager.ActivateProgram<ProgramType::ShipFlamesBackground>();
     mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground, ProgramParameterType::OrthoMatrix>(
         shipOrthoMatrix);
+    mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground, ProgramParameterType::Zoom>(
+        view.GetZoom());
 
     //
     // Layer 2: Springs
@@ -2822,6 +2830,8 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
     mShaderManager.ActivateProgram<ProgramType::ShipFlamesForeground>();
     mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground, ProgramParameterType::OrthoMatrix>(
         shipOrthoMatrix);
+    mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground, ProgramParameterType::Zoom>(
+        view.GetZoom());
 
     mShaderManager.ActivateProgram<ProgramType::ShipJetEngineFlames>();
     mShaderManager.SetProgramParameter<ProgramType::ShipJetEngineFlames, ProgramParameterType::OrthoMatrix>(
@@ -3058,6 +3068,21 @@ void ShipRenderContext::ApplyFlatLampLightColorChanges(RenderParameters const & 
     mShaderManager.SetProgramParameter<ProgramParameterType::LampLightColor>(
         mShipTrianglesProgram,
         lampLightColor);
+}
+
+void ShipRenderContext::ApplyShipFlameRenderParameterChanges(RenderParameters const & renderParameters)
+{
+    //
+    // Set parameters in all affected programs
+    //
+
+    mShaderManager.ActivateProgram(ProgramType::ShipFlamesBackground);
+    mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground, ProgramParameterType::KaosAdjustment>(
+        renderParameters.ShipFlameKaosAdjustment);
+
+    mShaderManager.ActivateProgram(ProgramType::ShipFlamesForeground);
+    mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground, ProgramParameterType::KaosAdjustment>(
+        renderParameters.ShipFlameKaosAdjustment);
 }
 
 void ShipRenderContext::ApplyWaterColorChanges(RenderParameters const & renderParameters)

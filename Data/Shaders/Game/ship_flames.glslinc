@@ -10,7 +10,7 @@ in vec3 inFlame2; // WindRotationAngle, FlameSpacePosition
 // Outputs
 out float windRotationAngle;
 out vec2 flameSpacePosition;
-out vec2 noiseOffset;
+out float personalitySeed;
 
 // Params
 uniform mat4 paramOrthoMatrix;
@@ -20,7 +20,7 @@ void main()
 {
     windRotationAngle = inFlame2.x;
     flameSpacePosition = inFlame2.yz;
-    noiseOffset = vec2(inFlame1.w, inFlame1.w - paramFlameProgress);
+    personalitySeed = inFlame1.w;
 
     gl_Position = paramOrthoMatrix * vec4(inFlame1.xyz, 1.0);
 }
@@ -29,10 +29,12 @@ void main()
 
 #define in varying
 
+#include "common.glslinc"
+
 // Inputs from previous shader
 in float windRotationAngle; // [-0.5, +0.5]
 in vec2 flameSpacePosition; // (x=[-1.0, 1.0], y=[0.0, 1.0])
-in vec2 noiseOffset;
+in float personalitySeed; // [0.0, 1.0]
 
 // The textures
 uniform sampler2D paramNoiseTexture;
@@ -42,6 +44,9 @@ uniform sampler2D paramGenericLinearTexturesAtlasTexture;
 uniform vec2 paramAtlasTile1LeftBottomTextureCoordinates; // Inclusive of dead-center
 uniform vec2 paramAtlasTile1Size; // Inclusive of dead-center
 uniform float paramFlameProgress;
+uniform float paramKaosAdjustment;
+uniform float paramZoom;
+
 
 //
 // Loosely based on "Flame in the Wind" by kuvkar (https://www.shadertoy.com/view/4tXXRn)
@@ -68,125 +73,127 @@ void main()
     
     // Rotation angle is higher the higher we go
     float windAngle = windRotationAngle * flameSpacePosition.y;
-    windAngle += (noiseOffset.x - .5) * windAngle * 0.8; // Randomize with personality seed
             
     // Rotate around bottom
     vec2 uv = GetRotationMatrix(windAngle) * flameSpacePosition;
     
-    // Center vertically
-    uv -= vec2(0.0, 0.5);
-
-    // uv now is in the (x=[-1.0, 1.0], y=[-0.5, 0.5]) range
+    // uv now is in the (x=[-1.0, 1.0], y=[0.0, 1.0]) range
 
 
-    //
-    // Get noise for this fragment and time
-    //
-
-    #define NoiseResolution 0.4
-    vec2 noiseUv = uv * NoiseResolution + noiseOffset;
-    float fragmentNoise = texture2D(paramNoiseTexture, noiseUv).r * 0.5 + 0.25; // -> (0.25, 0.75)
-    
-    
     //
     // Rotate fragment based on noise and vertical extent
     //
+
+    #define NOISE_RESOLUTION 0.5
+    #define NOISE_SPEED 3.3
     
-    float angle = (fragmentNoise - 0.5); // -> (-0.25, 0.25)
-        
-    // Magnify rotation amount based on distance from center of screen
-    angle /= max(0.1, length(uv));
-        
-    // Straighten the flame at the bottom and make full turbulence higher up
-    angle *= smoothstep(-1.0, 0.3, flameSpacePosition.y);    
+    vec2 noiseUv = (uv * NOISE_RESOLUTION - vec2(0, paramFlameProgress * NOISE_SPEED)) * paramZoom;
+    float noiseAngle = texture2D(paramNoiseTexture, noiseUv).r * 0.5 - 0.25; // -> (-0.25, 0.25)
+          
+    // Smooth (control kaos), pulsating
+    #define MIN_KAOS_SONTROL 0.20  // at least this
+    #define MAX_KAOS_CONTROL 0.65 // at most this
+    float s = 1.0 - smoothstep(0.9, 1.0, sin(paramFlameProgress * 1.5 * 4. - flameSpacePosition.y));
+    float kaosControl = (MIN_KAOS_SONTROL + (MAX_KAOS_CONTROL - MIN_KAOS_SONTROL) * s) * paramKaosAdjustment;
+    noiseAngle *= kaosControl;
     
-    // Smooth the angle
-    angle *= 0.35;
-    
-    // Rotate and add!
-    uv += GetRotationMatrix(angle) * uv;    
+    // Rotate - and add!
+    #define ROT_OFFSET 0.09  // The higher, the more kaos at bottom
+    uv += GetRotationMatrix(noiseAngle) * (uv + vec2(0, ROT_OFFSET)) - vec2(0, ROT_OFFSET);    
         
-    // uv now is in the (x=[-2.0, 2.0], y=[-1.0, 1.0]) range (really?)
+    // uv now is in the (x=[-2.0, 2.0], y=[0.0, 2.0]) range (really?)
+    
+    
     
     //
-    // Calculate thickness
+    // Calculate thickness (alpha)
     //
 
-    #define FlameWidth 2.4 // The higher this value, the narrower the flame
-    float thickness = 1.3 - abs(uv.x) * FlameWidth;
+    #define BEGIN_FLAME_WIDTH 0.44
+    #define L1 0.19
+    #define L2 0.23
+    #define L3 0.70
+    #define END_FLAME_WIDTH 0.27
+    float flameWidth = 
+        step(flameSpacePosition.y, L1)
+            * sqrt(abs(L1 * L1 - (flameSpacePosition.y - L1) * (flameSpacePosition.y - L1))) * BEGIN_FLAME_WIDTH / L1;
+    flameWidth = max(flameWidth,
+        IsInBox(L1, L2, flameSpacePosition.y) 
+            * BEGIN_FLAME_WIDTH);
+    flameWidth = max(flameWidth,
+        IsInBox(L2, L3, flameSpacePosition.y) 
+            * (END_FLAME_WIDTH + (BEGIN_FLAME_WIDTH - END_FLAME_WIDTH) * (1.0 - smoothstep(L2, L3, flameSpacePosition.y))));
+    flameWidth = max(flameWidth,            
+        IsInBox(L3, 1.1, flameSpacePosition.y) 
+            * END_FLAME_WIDTH);
     
-    // Taper flame down
-    thickness *= smoothstep(-0.15, 0.15, flameSpacePosition.y); // Taper down    
+    float thickness = 1.0 - abs(uv.x) / flameWidth; // [-inf, 0.0 @ width, 1.0 @ center x]
 
-    // Calculate implicit alpha
-    float implicitAlpha = smoothstep(0.7, 1.2, thickness);
+    // Calculate thickness alpha - should be 1.0 when thickness > 0, but we do anti-aliasing
+    float thicknessAlpha = smoothstep(0.0, 0.6, thickness);    
 
-    if (implicitAlpha < MinAlpha) // For perf
-        discard;   
-   
+    //if (thicknessAlpha < MinAlpha) // For perf
+    //    discard;
+    
+    // Calculate factor to taper sampling at bottom
+    float bottomSampleTapering = 
+        0.4 
+        + 0.6 * flameWidth / BEGIN_FLAME_WIDTH;
+    
     //
     // Sample alpha
     //
 
-    #define AlphaResolution 2.0 // When >= 2, we're guaranteed to fall within the atlas tile's boundaries
+    #define ALPHA_MAP_RESOLUTION 1.25
 
-    vec2 alphaVirtualTextureCoords = vec2(
-            ((uv.x + 1.0) + noiseOffset.x) / AlphaResolution,
-            flameSpacePosition.y);
-
-    vec2 alphaSampleCoords = paramAtlasTile1LeftBottomTextureCoordinates + paramAtlasTile1Size * alphaVirtualTextureCoords;
-    vec4 sampledAlphaSample = texture2D(paramGenericLinearTexturesAtlasTexture, alphaSampleCoords);
-
-    // We only want sampled alpha to affect the top part of the flame; the bottom
-    // part should stay put at 1.0
-    float sampledAlpha = mix(1.0, sampledAlphaSample.a, flameSpacePosition.y * flameSpacePosition.y);
+    // [0.0, 1.0]
+    vec2 alphaMapVirtualTextureCoords = vec2(
+        fract(
+            uv.x / ALPHA_MAP_RESOLUTION / bottomSampleTapering
+            + personalitySeed),
+        flameSpacePosition.y);
+    vec2 alphaMapTextureCoords = paramAtlasTile1LeftBottomTextureCoordinates + paramAtlasTile1Size * alphaMapVirtualTextureCoords;    
+    float sampledAlpha = texture2D(paramGenericLinearTexturesAtlasTexture, alphaMapTextureCoords).a;
+    
     
     //
 	// Sample color
     //
+    // Color map: continuous along y    
+    //
 
-    #define ColorResolution 7.
+    #define COLOR_MAP_RESOLUTION 3.
+    #define COLOR_MAP_SPEED 1.5
 
     // [0.0, 1.0]
-    vec2 colorVirtualTextureCoords = fract(
+    vec2 colorMapVirtualTextureCoords = fract(
         vec2(
-            uv.x / ColorResolution,
-            uv.y / ColorResolution - paramFlameProgress * 1.5 + noiseOffset.x)); // Adding some per-flame random Y displacement
-
-    vec2 colorSampleCoords = paramAtlasTile1LeftBottomTextureCoordinates + paramAtlasTile1Size * colorVirtualTextureCoords;
-    vec4 sampledColor = texture2D(paramGenericLinearTexturesAtlasTexture, colorSampleCoords);
+            abs(uv.x) / COLOR_MAP_RESOLUTION / bottomSampleTapering + personalitySeed,
+            flameSpacePosition.y / COLOR_MAP_RESOLUTION 
+                - paramFlameProgress * COLOR_MAP_SPEED 
+                + personalitySeed)); // Adding some per-flame random Y displacement
+    vec2 colorMapTextureCoords = paramAtlasTile1LeftBottomTextureCoordinates + paramAtlasTile1Size * colorMapVirtualTextureCoords;
+    vec4 sampledColor = texture2D(paramGenericLinearTexturesAtlasTexture, colorMapTextureCoords);
 
     // Better contrast
+    /*
     float lum = 0.2126 * sampledColor.r + 0.7152 * sampledColor.g + 0.0722 * sampledColor.b;
     float flum = 1.0 / (3.0 + exp(8.0 - 16.0*lum*lum));
     sampledColor = vec4(
         sampledColor.rgb + (vec3(1.) - sampledColor.rgb) * flum,
         sampledColor.a);
+    */
 
     //
     // Emit
     //
 
     // Calculate final alpha
-    float finalAlpha = sampledAlpha * implicitAlpha;
+    float finalAlpha = sampledAlpha * thicknessAlpha;
     
-    if (finalAlpha < MinAlpha) // For Z test
-        discard;
-
+    //if (finalAlpha < MinAlpha) // For Z test
+    //    discard;
+        
     // Make final color
     gl_FragColor = vec4(sampledColor.rgb, finalAlpha);
-
-
-    /*
-    //
-    // Test for tile wrapping
-    //
-
-    vec2 srCoords = (flameSpacePosition + vec2(1.0, 0.0)) * vec2(0.5, 1.0); // [0.0, 1.0] [0.0, 1.0]
-    srCoords.y = fract(srCoords.y - paramFlameProgress); // Wrap
-    srCoords.y = clamp(srCoords.y, paramAtlasTile1Dx.y, 1.0 - paramAtlasTile1Dx.y); // Clamp to fight against linear filtering - though no idea why dx works and dx/2.0 does not work
-    vec2 sampleCoords = paramAtlasTile1LeftBottomTextureCoordinates + paramAtlasTile1Size * srCoords;
-    vec4 testCol = texture2D(paramGenericLinearTexturesAtlasTexture, sampleCoords);
-    gl_FragColor = vec4(testCol.xyz, 1.0);
-    */
 }

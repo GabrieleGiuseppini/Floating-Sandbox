@@ -437,6 +437,8 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::FlatSkyColor;
     else if (str == "HeatShift")
         return ProgramParameterType::HeatShift;
+    else if (str == "KaosAdjustment")
+        return ProgramParameterType::KaosAdjustment;
     else if (str == "LampLightColor")
         return ProgramParameterType::LampLightColor;
     else if (str == "LampToolAttributes")
@@ -491,6 +493,8 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::WaterLevelThreshold;
     else if (str == "WidthNdc")
         return ProgramParameterType::WidthNdc;
+    else if (str == "Zoom")
+        return ProgramParameterType::Zoom;
     // Textures
     else if (str == "SharedTexture")
         return ProgramParameterType::SharedTexture;
@@ -538,6 +542,8 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
             return "FlatSkyColor";
         case ProgramParameterType::HeatShift:
             return "HeatShift";
+        case ProgramParameterType::KaosAdjustment:
+            return "KaosAdjustment";
         case ProgramParameterType::LampLightColor:
             return "LampLightColor";
         case ProgramParameterType::LampToolAttributes:
@@ -592,7 +598,9 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
             return "WaterLevelThreshold";
         case ProgramParameterType::WidthNdc:
             return "WidthNdc";
-            // Textures
+        case ProgramParameterType::Zoom:
+            return "Zoom";
+        // Textures
         case ProgramParameterType::SharedTexture:
             return "SharedTexture";
         case ProgramParameterType::CloudsAtlasTexture:

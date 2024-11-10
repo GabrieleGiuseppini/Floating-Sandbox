@@ -991,6 +991,11 @@ public:
     float GetMinShipFlameSizeAdjustment() const override { return Render::RenderContext::MinShipFlameSizeAdjustment; }
     float GetMaxShipFlameSizeAdjustment() const override { return Render::RenderContext::MaxShipFlameSizeAdjustment; }
 
+    float GetShipFlameKaosAdjustment() const override { return mRenderContext->GetShipFlameKaosAdjustment(); }
+    void SetShipFlameKaosAdjustment(float value) override { mRenderContext->SetShipFlameKaosAdjustment(value); }
+    float GetMinShipFlameKaosAdjustment() const override { return Render::RenderContext::MinShipFlameKaosAdjustment; }
+    float GetMaxShipFlameKaosAdjustment() const override { return Render::RenderContext::MaxShipFlameKaosAdjustment; }
+
     //
     // Interaction parameters
     //

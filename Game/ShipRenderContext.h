@@ -1373,6 +1373,7 @@ private:
     void ApplyDepthDarkeningSensitivityChanges(RenderParameters const & renderParameters);
     void ApplySkyChanges(RenderParameters const & renderParameters);
     void ApplyFlatLampLightColorChanges(RenderParameters const & renderParameters);
+    void ApplyShipFlameRenderParameterChanges(RenderParameters const & renderParameters);
     void ApplyWaterColorChanges(RenderParameters const & renderParameters);
     void ApplyWaterContrastChanges(RenderParameters const & renderParameters);
     void ApplyWaterLevelOfDetailChanges(RenderParameters const & renderParameters);

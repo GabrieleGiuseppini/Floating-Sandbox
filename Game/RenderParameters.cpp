@@ -38,6 +38,7 @@ RenderParameters::RenderParameters(
 	, FlatLampLightColor(0xff, 0xff, 0xbf)
 	, DrawExplosions(true)
 	, DrawFlames(true)
+	, ShipFlameKaosAdjustment(0.65f)
 	, ShowStressedSprings(false)
 	, ShowFrontiers(false)
 	, ShowAABBs(false)
@@ -68,6 +69,7 @@ RenderParameters::RenderParameters(
 	, IsShipAmbientLightSensitivityDirty(true)
 	, IsShipDepthDarkeningSensitivityDirty(true)
 	, IsFlatLampLightColorDirty(true)
+	, AreShipFlameRenderParametersDirty(true)
 	, IsShipWaterColorDirty(true)
 	, IsShipWaterContrastDirty(true)
 	, IsShipWaterLevelOfDetailDirty(true)
@@ -100,6 +102,7 @@ RenderParameters RenderParameters::TakeSnapshotAndClear()
 	IsShipAmbientLightSensitivityDirty = false;
 	IsShipDepthDarkeningSensitivityDirty = false;
 	IsFlatLampLightColorDirty = false;
+	AreShipFlameRenderParametersDirty = false;
 	IsShipWaterColorDirty = false;
 	IsShipWaterContrastDirty = false;
 	IsShipWaterLevelOfDetailDirty = false;
