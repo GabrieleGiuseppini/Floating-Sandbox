@@ -2667,8 +2667,6 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
     mShaderManager.ActivateProgram<ProgramType::ShipFlamesBackground>();
     mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground, ProgramParameterType::OrthoMatrix>(
         shipOrthoMatrix);
-    mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground, ProgramParameterType::Zoom>(
-        view.GetZoom());
 
     //
     // Layer 2: Springs
@@ -2830,8 +2828,6 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
     mShaderManager.ActivateProgram<ProgramType::ShipFlamesForeground>();
     mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground, ProgramParameterType::OrthoMatrix>(
         shipOrthoMatrix);
-    mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground, ProgramParameterType::Zoom>(
-        view.GetZoom());
 
     mShaderManager.ActivateProgram<ProgramType::ShipJetEngineFlames>();
     mShaderManager.SetProgramParameter<ProgramType::ShipJetEngineFlames, ProgramParameterType::OrthoMatrix>(
