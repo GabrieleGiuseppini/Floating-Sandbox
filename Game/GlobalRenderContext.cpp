@@ -127,7 +127,7 @@ void GlobalRenderContext::InitializeGenericTextures(ResourceLocator const & reso
     // Set FlamesBackground shader parameters
     mShaderManager.ActivateProgram<ProgramType::ShipFlamesBackground>();
     mShaderManager.SetTextureParameters<ProgramType::ShipFlamesBackground>();
-    // Atlas tile coords, inclusive of extra pixel (for workaround to GL_LINEAR trick)
+    // Atlas tile coords, inclusive of extra pixel (for workaround to GL_LINEAR in atlas)
     mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground, ProgramParameterType::AtlasTile1LeftBottomTextureCoordinates>(
         fireAtlasFrameMetadata.TextureCoordinatesBottomLeft + atlasPixelDx);
     mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground, ProgramParameterType::AtlasTile1Size>(
@@ -137,7 +137,7 @@ void GlobalRenderContext::InitializeGenericTextures(ResourceLocator const & reso
     // Set FlamesForeground shader parameters
     mShaderManager.ActivateProgram<ProgramType::ShipFlamesForeground>();
     mShaderManager.SetTextureParameters<ProgramType::ShipFlamesForeground>();
-    // Atlas tile coords, inclusive of extra pixel (for workaround to GL_LINEAR trick)
+    // Atlas tile coords, inclusive of extra pixel (for workaround to GL_LINEAR in atlas)
     mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground, ProgramParameterType::AtlasTile1LeftBottomTextureCoordinates>(
         fireAtlasFrameMetadata.TextureCoordinatesBottomLeft + atlasPixelDx);
     mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground, ProgramParameterType::AtlasTile1Size>(
