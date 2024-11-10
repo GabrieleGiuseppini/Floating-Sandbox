@@ -1782,7 +1782,8 @@ private:
     //
 
     GameOpenGLVAO mShipVAO;
-    GameOpenGLVAO mNpcTextureQuadVAO;
+    GameOpenGLVAO mNpcTextureAndQuadFlatVAO;
+    GameOpenGLVAO mNpcQuadWithRolesVAO;
     GameOpenGLVAO mElectricSparkVAO;
     GameOpenGLVAO mFlameVAO;
     GameOpenGLVAO mJetEngineFlameVAO;

@@ -196,6 +196,7 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(bool, DrawExplosions);
     ADD_GC_SETTING(bool, DrawFlames);
     ADD_GC_SETTING(float, ShipFlameSizeAdjustment);
+    ADD_GC_SETTING(float, ShipFlameKaosAdjustment);
     ADD_GC_SETTING(bool, DrawHeatBlasterFlame);
 
     // Sound

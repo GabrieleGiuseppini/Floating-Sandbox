@@ -71,6 +71,7 @@ void main()
     
     // Rotation angle is higher the higher we go
     float windAngle = windRotationAngle * flameSpacePosition.y;
+    windAngle += (personalitySeed - .5) * windAngle * 0.6; // Randomize with personality seed
             
     // Rotate around bottom
     vec2 uv = GetRotationMatrix(windAngle) * flameSpacePosition;
@@ -107,7 +108,7 @@ void main()
     // Calculate thickness (alpha)
     //
 
-    #define BEGIN_FLAME_WIDTH 0.44
+    #define BEGIN_FLAME_WIDTH 0.41
     #define L1 0.19
     #define L2 0.23
     #define L3 0.70

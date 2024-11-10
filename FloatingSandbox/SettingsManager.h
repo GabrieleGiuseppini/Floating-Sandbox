@@ -169,6 +169,7 @@ enum class GameSettings : size_t
     DrawExplosions,
     DrawFlames,
     ShipFlameSizeAdjustment,
+    ShipFlameKaosAdjustment,
     DrawHeatBlasterFlame,
 
     // Sound

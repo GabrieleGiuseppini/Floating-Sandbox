@@ -4617,7 +4617,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     mShipFlameSizeAdjustmentSlider,
                     wxGBPosition(0, 4),
                     wxGBSpan(2, 1),
-                    wxALL,
+                    wxEXPAND | wxALL,
                     CellBorderInner);
             }
 

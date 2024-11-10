@@ -130,7 +130,8 @@ ShipRenderContext::ShipRenderContext(
     , mTriangleElementVBOStartIndex(0)
     // VAOs
     , mShipVAO()
-    , mNpcTextureQuadVAO()
+    , mNpcTextureAndQuadFlatVAO()
+    , mNpcQuadWithRolesVAO()
     , mElectricSparkVAO()
     , mFlameVAO()
     , mJetEngineFlameVAO()
@@ -326,39 +327,55 @@ ShipRenderContext::ShipRenderContext(
     //
 
     {
+        // We use these two same VBOs in two different VAO's, as we need to use different VAOs
+        // because one buffer is not used in one VAO and thus might not be allocated - which
+        // doesn't fly with AMD video cards (thanks Bazzichetto!)
+        auto const describeCommonVbosFunc = [&]()
+        {
+            glBindBuffer(GL_ARRAY_BUFFER, *mNpcPositionVBO);
+            static_assert(sizeof(Quad::V.TopLeft) == (2) * sizeof(float));
+            glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::NpcAttributeGroup1));
+            glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::NpcAttributeGroup1), 2, GL_FLOAT, GL_FALSE, sizeof(Quad::V.TopLeft), (void *)(0));
+            CheckOpenGLError();
+
+            glBindBuffer(GL_ARRAY_BUFFER, *mNpcAttributesVertexVBO);
+            static_assert(sizeof(NpcAttributesVertex) == (4 + 2) * sizeof(float));
+            glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::NpcAttributeGroup2));
+            glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::NpcAttributeGroup2), 4, GL_FLOAT, GL_FALSE, sizeof(NpcAttributesVertex), (void *)(0));
+            glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::NpcAttributeGroup3));
+            glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::NpcAttributeGroup3), 2, GL_FLOAT, GL_FALSE, sizeof(NpcAttributesVertex), (void *)(4 * sizeof(float)));
+            CheckOpenGLError();
+
+            //
+            // Associate element VBO
+            //
+
+            // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
+            // in the VAO. So we won't associate the element VBO here, but rather before each drawing call.
+            ////mGlobalRenderContext.GetElementIndices().Bind()
+        };
+
         glGenVertexArrays(1, &tmpGLuint);
-        mNpcTextureQuadVAO = tmpGLuint;
+        mNpcTextureAndQuadFlatVAO = tmpGLuint;
 
-        glBindVertexArray(*mNpcTextureQuadVAO);
+        glBindVertexArray(*mNpcTextureAndQuadFlatVAO);
         CheckOpenGLError();
 
-        glBindBuffer(GL_ARRAY_BUFFER, *mNpcPositionVBO);
-        static_assert(sizeof(Quad::V.TopLeft) == (2) * sizeof(float));
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::NpcAttributeGroup1));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::NpcAttributeGroup1), 2, GL_FLOAT, GL_FALSE, sizeof(Quad::V.TopLeft), (void *)(0));
+        describeCommonVbosFunc();
+
+        glGenVertexArrays(1, &tmpGLuint);
+        mNpcQuadWithRolesVAO = tmpGLuint;
+
+        glBindVertexArray(*mNpcQuadWithRolesVAO);
         CheckOpenGLError();
 
-        glBindBuffer(GL_ARRAY_BUFFER, *mNpcAttributesVertexVBO);
-        static_assert(sizeof(NpcAttributesVertex) == (4 + 2) * sizeof(float));
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::NpcAttributeGroup2));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::NpcAttributeGroup2), 4, GL_FLOAT, GL_FALSE, sizeof(NpcAttributesVertex), (void *)(0));
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::NpcAttributeGroup3));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::NpcAttributeGroup3), 2, GL_FLOAT, GL_FALSE, sizeof(NpcAttributesVertex), (void *)(4 * sizeof(float)));
-        CheckOpenGLError();
+        describeCommonVbosFunc();
 
         glBindBuffer(GL_ARRAY_BUFFER, *mNpcQuadRoleVertexVBO);
         static_assert(sizeof(NpcQuadRoleVertex) == (3) * sizeof(float));
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::NpcAttributeGroup4));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::NpcAttributeGroup4), 3, GL_FLOAT, GL_FALSE, sizeof(NpcQuadRoleVertex), (void *)(0));
         CheckOpenGLError();
-
-        //
-        // Associate element VBO
-        //
-
-        // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
-        // in the VAO. So we won't associate the element VBO here, but rather before each drawing call.
-        ////mGlobalRenderContext.GetElementIndices().Bind()
 
         glBindVertexArray(0);
     }
@@ -1881,31 +1898,32 @@ void ShipRenderContext::RenderDrawNpcs(RenderParameters const & renderParameters
 {
     if (!mNpcPositionBuffer.empty())
     {
-        glBindVertexArray(*mNpcTextureQuadVAO);
-
-        // Intel bug: cannot associate with VAO
-        mGlobalRenderContext.GetElementIndices().Bind();
-
         switch (renderParameters.NpcRenderMode)
         {
             case NpcRenderModeType::Texture:
             {
+                glBindVertexArray(*mNpcTextureAndQuadFlatVAO);
                 mShaderManager.ActivateProgram<ProgramType::ShipNpcsTexture>();
                 break;
             }
 
             case NpcRenderModeType::QuadWithRoles:
             {
+                glBindVertexArray(*mNpcQuadWithRolesVAO);
                 mShaderManager.ActivateProgram<ProgramType::ShipNpcsQuadWithRoles>();
                 break;
             }
 
             case NpcRenderModeType::QuadFlat:
             {
+                glBindVertexArray(*mNpcTextureAndQuadFlatVAO);
                 mShaderManager.ActivateProgram<ProgramType::ShipNpcsQuadFlat>();
                 break;
             }
         }
+
+        // Intel bug: cannot associate with VAO
+        mGlobalRenderContext.GetElementIndices().Bind();
 
         if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Wireframe)
             glLineWidth(0.1f);

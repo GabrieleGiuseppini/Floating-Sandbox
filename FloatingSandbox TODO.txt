@@ -563,14 +563,15 @@ v			+ FixedSetSliderCore
 				+ Remove zoom
 				+ Back to discard alphas
 				- Settings dialog for kaos adjust
-					- Nuke heat boost
-					- Flame size adjust: watch out spacing, different than neighbors
+					- Swap Npcs with Land
+					+ Flame size adjust: watch out spacing, different than neighbors
 			- Test also fire on NPCs
 			- See if can get rid of AtlasTile1Dx for good, by also incorporating it in WorldBorder
-		- changelist
+		- Merge into master
+		- Changelist
 
 	= Fix Bazzico bug
-		- Need a buffer allocated when VAO is bound
+		! Need a buffer allocated when VAO is bound
 
 	- Test fire and NPCs with nVidia
 
