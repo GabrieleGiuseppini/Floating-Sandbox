@@ -120,29 +120,29 @@ void GlobalRenderContext::InitializeGenericTextures(ResourceLocator const & reso
 
     auto const & fireAtlasFrameMetadata = mGenericLinearTextureAtlasMetadata->GetFrameMetadata(GenericLinearTextureGroups::Fire, 0);
 
-    vec2f const atlasTileDx = vec2f(
-        1.0f / static_cast<float>(fireAtlasFrameMetadata.FrameMetadata.Size.width),
-        1.0f / static_cast<float>(fireAtlasFrameMetadata.FrameMetadata.Size.height));
+    vec2f const atlasPixelDx = vec2f(
+        1.0f / static_cast<float>(mGenericLinearTextureAtlasMetadata->GetSize().width),
+        1.0f / static_cast<float>(mGenericLinearTextureAtlasMetadata->GetSize().height));
 
     // Set FlamesBackground shader parameters
     mShaderManager.ActivateProgram<ProgramType::ShipFlamesBackground>();
     mShaderManager.SetTextureParameters<ProgramType::ShipFlamesBackground>();
-    // Atlas tile coords, inclusive of dead center adjustments
+    // Atlas tile coords, inclusive of extra pixel (for workaround to GL_LINEAR trick)
     mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground, ProgramParameterType::AtlasTile1LeftBottomTextureCoordinates>(
-        fireAtlasFrameMetadata.TextureCoordinatesBottomLeft + atlasTileDx);
+        fireAtlasFrameMetadata.TextureCoordinatesBottomLeft + atlasPixelDx);
     mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground, ProgramParameterType::AtlasTile1Size>(
-        fireAtlasFrameMetadata.TextureSpaceWidth - atlasTileDx.x * 2.0f,
-        fireAtlasFrameMetadata.TextureSpaceHeight - atlasTileDx.y * 2.0f);
+        fireAtlasFrameMetadata.TextureSpaceWidth - atlasPixelDx.x * 2.0f,
+        fireAtlasFrameMetadata.TextureSpaceHeight - atlasPixelDx.y * 2.0f);
 
     // Set FlamesForeground shader parameters
     mShaderManager.ActivateProgram<ProgramType::ShipFlamesForeground>();
     mShaderManager.SetTextureParameters<ProgramType::ShipFlamesForeground>();
-    // Atlas tile coords, inclusive of dead center adjustments
+    // Atlas tile coords, inclusive of extra pixel (for workaround to GL_LINEAR trick)
     mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground, ProgramParameterType::AtlasTile1LeftBottomTextureCoordinates>(
-        fireAtlasFrameMetadata.TextureCoordinatesBottomLeft + atlasTileDx);
+        fireAtlasFrameMetadata.TextureCoordinatesBottomLeft + atlasPixelDx);
     mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground, ProgramParameterType::AtlasTile1Size>(
-        fireAtlasFrameMetadata.TextureSpaceWidth - atlasTileDx.x * 2.0f,
-        fireAtlasFrameMetadata.TextureSpaceHeight - atlasTileDx.y * 2.0f);
+        fireAtlasFrameMetadata.TextureSpaceWidth - atlasPixelDx.x * 2.0f,
+        fireAtlasFrameMetadata.TextureSpaceHeight - atlasPixelDx.y * 2.0f);
 
     //
     // Create generic mipmapped texture atlas
