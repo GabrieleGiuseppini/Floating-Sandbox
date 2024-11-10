@@ -559,13 +559,20 @@ v			+ FixedSetSliderCore
 			+ Fix dead pixels as per shader instructions
 				+ WAS: Dead pixels are 1.0, should be 0.5 - and when we give it as atlas tile params, should be based off full atlas size!!!!
 			+ Test first both maps for repeatability
-			- Fine-tune params
-			- Back to discard alphas
+			= Fine-tune params
+				+ Remove zoom
+				+ Back to discard alphas
+				- Settings dialog for kaos adjust
+					- Nuke heat boost
+					- Flame size adjust: watch out spacing, different than neighbors
+			- Test also fire on NPCs
 			- See if can get rid of AtlasTile1Dx for good, by also incorporating it in WorldBorder
-			- Settings dialog for kaos adjust
+		- changelist
 
 	= Fix Bazzico bug
 		- Need a buffer allocated when VAO is bound
+
+	- Test fire and NPCs with nVidia
 
 	= Air bubbles:
 		+ We effed up formula: final scale is 0.2, old coeff was 0.75
