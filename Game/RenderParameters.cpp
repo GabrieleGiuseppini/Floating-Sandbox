@@ -38,7 +38,7 @@ RenderParameters::RenderParameters(
 	, FlatLampLightColor(0xff, 0xff, 0xbf)
 	, DrawExplosions(true)
 	, DrawFlames(true)
-	, ShipFlameKaosAdjustment(0.65f)
+	, ShipFlameKaosAdjustment(0.656f)
 	, ShowStressedSprings(false)
 	, ShowFrontiers(false)
 	, ShowAABBs(false)

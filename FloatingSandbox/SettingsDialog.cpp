@@ -4277,94 +4277,69 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
             CellBorderInner);
     }
 
-    // Land
+    // NPC
     {
-        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Land"));
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("NPC"));
 
         {
             wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
 
-            // Land Render Mode
+            // Render Mode
             {
-                wxStaticBoxSizer * landRenderModeBoxSizer = new wxStaticBoxSizer(wxVERTICAL, boxSizer->GetStaticBox(), _("Draw Mode"));
+                wxStaticBoxSizer * npcRenderModeBoxSizer = new wxStaticBoxSizer(wxVERTICAL, boxSizer->GetStaticBox(), _("Draw Mode"));
 
                 {
-                    wxGridBagSizer * landRenderModeSizer = new wxGridBagSizer(5, 5);
+                    wxGridBagSizer * npcRenderModeSizer = new wxGridBagSizer(5, 5);
+                    npcRenderModeSizer->SetFlexibleDirection(wxHORIZONTAL); // All rows same height
 
-                    mTextureLandRenderModeRadioButton = new wxRadioButton(landRenderModeBoxSizer->GetStaticBox(), wxID_ANY, _("Texture"),
+                    // Texture
+
+                    mTextureNpcRenderModeRadioButton = new wxRadioButton(npcRenderModeBoxSizer->GetStaticBox(), wxID_ANY, _("Texture"),
                         wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
-                    mTextureLandRenderModeRadioButton->SetToolTip(_("Draws the ocean floor using a static image."));
-                    mTextureLandRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnLandRenderModeRadioButtonClick, this);
+                    mTextureNpcRenderModeRadioButton->SetToolTip(_("Draws NPCs with skins."));
+                    mTextureNpcRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnNpcRenderModeRadioButtonClick, this);
 
-                    landRenderModeSizer->Add(mTextureLandRenderModeRadioButton, wxGBPosition(0, 0), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL, 0);
+                    npcRenderModeSizer->Add(mTextureNpcRenderModeRadioButton, wxGBPosition(0, 0), wxGBSpan(1, 2), wxALIGN_CENTER_VERTICAL, 0);
 
-                    mTextureLandComboBox = new wxBitmapComboBox(landRenderModeBoxSizer->GetStaticBox(), wxID_ANY, wxEmptyString,
-                        wxDefaultPosition, wxSize(140, -1), wxArrayString(), wxCB_READONLY);
-                    for (auto const & entry : mGameControllerSettingsOptions.GetTextureLandAvailableThumbnails())
-                    {
-                        mTextureLandComboBox->Append(
-                            entry.first,
-                            WxHelpers::MakeBitmap(entry.second));
-                    }
-                    mTextureLandComboBox->SetToolTip(_("Sets the texture to use for the ocean floor."));
-                    mTextureLandComboBox->Bind(
-                        wxEVT_COMBOBOX,
-                        [this](wxCommandEvent & /*event*/)
-                        {
-                            mLiveSettings.SetValue(GameSettings::TextureLandTextureIndex, static_cast<size_t>(mTextureLandComboBox->GetSelection()));
-                            OnLiveSettingsChanged();
-                        });
+                    // Quad with Roles
 
-                    landRenderModeSizer->Add(mTextureLandComboBox, wxGBPosition(0, 1), wxGBSpan(1, 2), 0, 0);
+                    mQuadWithRolesNpcRenderModeRadioButton = new wxRadioButton(npcRenderModeBoxSizer->GetStaticBox(), wxID_ANY, _("Stickmen With Roles"));
+                    mQuadWithRolesNpcRenderModeRadioButton->SetToolTip(_("Draws NPCs as stick-men, color-coded according to their roles."));
+                    mQuadWithRolesNpcRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnNpcRenderModeRadioButtonClick, this);
 
-                    mFlatLandRenderModeRadioButton = new wxRadioButton(landRenderModeBoxSizer->GetStaticBox(), wxID_ANY, _("Flat"));
-                    mFlatLandRenderModeRadioButton->SetToolTip(_("Draws the ocean floor using a static color."));
-                    mFlatLandRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnLandRenderModeRadioButtonClick, this);
+                    npcRenderModeSizer->Add(mQuadWithRolesNpcRenderModeRadioButton, wxGBPosition(1, 0), wxGBSpan(1, 2), wxALIGN_CENTER_VERTICAL, 0);
 
-                    landRenderModeSizer->Add(mFlatLandRenderModeRadioButton, wxGBPosition(1, 0), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL, 0);
+                    // Quad flat
 
-                    mFlatLandColorPicker = new wxColourPickerCtrl(landRenderModeBoxSizer->GetStaticBox(), wxID_ANY);
-                    mFlatLandColorPicker->SetToolTip(_("Sets the single color of the ocean floor."));
-                    mFlatLandColorPicker->Bind(
+                    mQuadFlatNpcRenderModeRadioButton = new wxRadioButton(npcRenderModeBoxSizer->GetStaticBox(), wxID_ANY, _("Anonymous Stickmen"));
+                    mQuadFlatNpcRenderModeRadioButton->SetToolTip(_("Draws NPCs as uniformly-colored stick-men, with no distinctions among roles."));
+                    mQuadFlatNpcRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnNpcRenderModeRadioButtonClick, this);
+
+                    npcRenderModeSizer->Add(mQuadFlatNpcRenderModeRadioButton, wxGBPosition(2, 0), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL, 0);
+
+                    mQuadFlatNpcColorPicker = new wxColourPickerCtrl(npcRenderModeBoxSizer->GetStaticBox(), wxID_ANY);
+                    mQuadFlatNpcColorPicker->SetToolTip(_("Sets the color of anonymous NPCs."));
+                    mQuadFlatNpcColorPicker->Bind(
                         wxEVT_COLOURPICKER_CHANGED,
                         [this](wxColourPickerEvent & event)
                         {
                             auto color = event.GetColour();
 
                             mLiveSettings.SetValue(
-                                GameSettings::FlatLandColor,
+                                GameSettings::NpcQuadFlatColor,
                                 rgbColor(color.Red(), color.Green(), color.Blue()));
 
                             OnLiveSettingsChanged();
                         });
 
-                    landRenderModeSizer->Add(mFlatLandColorPicker, wxGBPosition(1, 1), wxGBSpan(1, 1), 0, 0);
+                    npcRenderModeSizer->Add(mQuadFlatNpcColorPicker, wxGBPosition(2, 1), wxGBSpan(1, 1), 0, 0);
 
-                    landRenderModeBoxSizer->Add(landRenderModeSizer, 1, wxALL, StaticBoxInsetMargin2);
+                    npcRenderModeBoxSizer->Add(npcRenderModeSizer, 1, wxALL, StaticBoxInsetMargin2);
                 }
 
                 sizer->Add(
-                    landRenderModeBoxSizer,
+                    npcRenderModeBoxSizer,
                     wxGBPosition(0, 0),
-                    wxGBSpan(1, 1),
-                    wxALL,
-                    CellBorderInner);
-            }
-
-            // High-Quality Rendering
-            {
-                mLandRenderDetailModeDetailedCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY, _("High-Quality Rendering"));
-                mLandRenderDetailModeDetailedCheckBox->SetToolTip(_("Renders the ocean floor with additional details. Requires more computational resources."));
-                mLandRenderDetailModeDetailedCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED,
-                    [this](wxCommandEvent & event)
-                    {
-                        mLiveSettings.SetValue(GameSettings::LandRenderDetail, event.IsChecked() ? LandRenderDetailType::Detailed : LandRenderDetailType::Basic);
-                        OnLiveSettingsChanged();
-                    });
-
-                sizer->Add(
-                    mLandRenderDetailModeDetailedCheckBox,
-                    wxGBPosition(1, 0),
                     wxGBSpan(1, 1),
                     wxALL,
                     CellBorderInner);
@@ -4376,7 +4351,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
         gridSizer->Add(
             boxSizer,
             wxGBPosition(0, 5),
-            wxGBSpan(1, 1),
+            wxGBSpan(1, 2),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderInner);
     }
@@ -4419,7 +4394,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
         gridSizer->Add(
             boxSizer,
             wxGBPosition(1, 5),
-            wxGBSpan(1, 1),
+            wxGBSpan(1, 2),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderInner);
     }
@@ -4621,6 +4596,32 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
+            // Flame chaos adjustment
+            {
+                mShipFlameKaosAdjustmentSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Flame Chaos Adjust"),
+                    _("Adjusts the chaoticness of flames."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::ShipFlameKaosAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions.GetMinShipFlameKaosAdjustment(),
+                        mGameControllerSettingsOptions.GetMaxShipFlameKaosAdjustment()));
+
+                sizer->Add(
+                    mShipFlameKaosAdjustmentSlider,
+                    wxGBPosition(0, 5),
+                    wxGBSpan(2, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
             boxSizer->Add(sizer, 0, wxALL, StaticBoxInsetMargin);
         }
 
@@ -4722,74 +4723,99 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
         gridSizer->Add(
             boxSizer,
             wxGBPosition(2, 4),
-            wxGBSpan(2, 1),
+            wxGBSpan(2, 2),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderInner);
     }
 
-    // NPC
+    // Land
     {
-        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("NPC"));
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Land"));
 
         {
             wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
 
-            // Render Mode
+            // Land Render Mode
             {
-                wxStaticBoxSizer * npcRenderModeBoxSizer = new wxStaticBoxSizer(wxVERTICAL, boxSizer->GetStaticBox(), _("Draw Mode"));
+                wxStaticBoxSizer * landRenderModeBoxSizer = new wxStaticBoxSizer(wxVERTICAL, boxSizer->GetStaticBox(), _("Draw Mode"));
 
                 {
-                    wxGridBagSizer * npcRenderModeSizer = new wxGridBagSizer(5, 5);
-                    npcRenderModeSizer->SetFlexibleDirection(wxHORIZONTAL); // All rows same height
+                    wxGridBagSizer * landRenderModeSizer = new wxGridBagSizer(5, 5);
 
-                    // Texture
-
-                    mTextureNpcRenderModeRadioButton = new wxRadioButton(npcRenderModeBoxSizer->GetStaticBox(), wxID_ANY, _("Texture"),
+                    mTextureLandRenderModeRadioButton = new wxRadioButton(landRenderModeBoxSizer->GetStaticBox(), wxID_ANY, _("Texture"),
                         wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
-                    mTextureNpcRenderModeRadioButton->SetToolTip(_("Draws NPCs with skins."));
-                    mTextureNpcRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnNpcRenderModeRadioButtonClick, this);
+                    mTextureLandRenderModeRadioButton->SetToolTip(_("Draws the ocean floor using a static image."));
+                    mTextureLandRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnLandRenderModeRadioButtonClick, this);
 
-                    npcRenderModeSizer->Add(mTextureNpcRenderModeRadioButton, wxGBPosition(0, 0), wxGBSpan(1, 2), wxALIGN_CENTER_VERTICAL, 0);
+                    landRenderModeSizer->Add(mTextureLandRenderModeRadioButton, wxGBPosition(0, 0), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL, 0);
 
-                    // Quad with Roles
+                    mTextureLandComboBox = new wxBitmapComboBox(landRenderModeBoxSizer->GetStaticBox(), wxID_ANY, wxEmptyString,
+                        wxDefaultPosition, wxSize(140, -1), wxArrayString(), wxCB_READONLY);
+                    for (auto const & entry : mGameControllerSettingsOptions.GetTextureLandAvailableThumbnails())
+                    {
+                        mTextureLandComboBox->Append(
+                            entry.first,
+                            WxHelpers::MakeBitmap(entry.second));
+                    }
+                    mTextureLandComboBox->SetToolTip(_("Sets the texture to use for the ocean floor."));
+                    mTextureLandComboBox->Bind(
+                        wxEVT_COMBOBOX,
+                        [this](wxCommandEvent & /*event*/)
+                        {
+                            mLiveSettings.SetValue(GameSettings::TextureLandTextureIndex, static_cast<size_t>(mTextureLandComboBox->GetSelection()));
+                            OnLiveSettingsChanged();
+                        });
 
-                    mQuadWithRolesNpcRenderModeRadioButton = new wxRadioButton(npcRenderModeBoxSizer->GetStaticBox(), wxID_ANY, _("Stickmen With Roles"));
-                    mQuadWithRolesNpcRenderModeRadioButton->SetToolTip(_("Draws NPCs as stick-men, color-coded according to their roles."));
-                    mQuadWithRolesNpcRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnNpcRenderModeRadioButtonClick, this);
+                    landRenderModeSizer->Add(mTextureLandComboBox, wxGBPosition(0, 1), wxGBSpan(1, 2), 0, 0);
 
-                    npcRenderModeSizer->Add(mQuadWithRolesNpcRenderModeRadioButton, wxGBPosition(1, 0), wxGBSpan(1, 2), wxALIGN_CENTER_VERTICAL, 0);
+                    mFlatLandRenderModeRadioButton = new wxRadioButton(landRenderModeBoxSizer->GetStaticBox(), wxID_ANY, _("Flat"));
+                    mFlatLandRenderModeRadioButton->SetToolTip(_("Draws the ocean floor using a static color."));
+                    mFlatLandRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnLandRenderModeRadioButtonClick, this);
 
-                    // Quad flat
+                    landRenderModeSizer->Add(mFlatLandRenderModeRadioButton, wxGBPosition(1, 0), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL, 0);
 
-                    mQuadFlatNpcRenderModeRadioButton = new wxRadioButton(npcRenderModeBoxSizer->GetStaticBox(), wxID_ANY, _("Anonymous Stickmen"));
-                    mQuadFlatNpcRenderModeRadioButton->SetToolTip(_("Draws NPCs as uniformly-colored stick-men, with no distinctions among roles."));
-                    mQuadFlatNpcRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnNpcRenderModeRadioButtonClick, this);
-
-                    npcRenderModeSizer->Add(mQuadFlatNpcRenderModeRadioButton, wxGBPosition(2, 0), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL, 0);
-
-                    mQuadFlatNpcColorPicker = new wxColourPickerCtrl(npcRenderModeBoxSizer->GetStaticBox(), wxID_ANY);
-                    mQuadFlatNpcColorPicker->SetToolTip(_("Sets the color of anonymous NPCs."));
-                    mQuadFlatNpcColorPicker->Bind(
+                    mFlatLandColorPicker = new wxColourPickerCtrl(landRenderModeBoxSizer->GetStaticBox(), wxID_ANY);
+                    mFlatLandColorPicker->SetToolTip(_("Sets the single color of the ocean floor."));
+                    mFlatLandColorPicker->Bind(
                         wxEVT_COLOURPICKER_CHANGED,
                         [this](wxColourPickerEvent & event)
                         {
                             auto color = event.GetColour();
 
                             mLiveSettings.SetValue(
-                                GameSettings::NpcQuadFlatColor,
+                                GameSettings::FlatLandColor,
                                 rgbColor(color.Red(), color.Green(), color.Blue()));
 
                             OnLiveSettingsChanged();
                         });
 
-                    npcRenderModeSizer->Add(mQuadFlatNpcColorPicker, wxGBPosition(2, 1), wxGBSpan(1, 1), 0, 0);
+                    landRenderModeSizer->Add(mFlatLandColorPicker, wxGBPosition(1, 1), wxGBSpan(1, 1), 0, 0);
 
-                    npcRenderModeBoxSizer->Add(npcRenderModeSizer, 1, wxALL, StaticBoxInsetMargin2);
+                    landRenderModeBoxSizer->Add(landRenderModeSizer, 1, wxALL, StaticBoxInsetMargin2);
                 }
 
                 sizer->Add(
-                    npcRenderModeBoxSizer,
+                    landRenderModeBoxSizer,
                     wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxALL,
+                    CellBorderInner);
+            }
+
+            // High-Quality Rendering
+            {
+                mLandRenderDetailModeDetailedCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY, _("High-Quality Rendering"));
+                mLandRenderDetailModeDetailedCheckBox->SetToolTip(_("Renders the ocean floor with additional details. Requires more computational resources."));
+                mLandRenderDetailModeDetailedCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED,
+                    [this](wxCommandEvent & event)
+                    {
+                        mLiveSettings.SetValue(GameSettings::LandRenderDetail, event.IsChecked() ? LandRenderDetailType::Detailed : LandRenderDetailType::Basic);
+                        OnLiveSettingsChanged();
+                    });
+
+                sizer->Add(
+                    mLandRenderDetailModeDetailedCheckBox,
+                    wxGBPosition(1, 0),
                     wxGBSpan(1, 1),
                     wxALL,
                     CellBorderInner);
@@ -4800,7 +4826,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(2, 5),
+            wxGBPosition(2, 6),
             wxGBSpan(1, 1),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderInner);
@@ -6154,6 +6180,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     }
 
     mShipFlameSizeAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::ShipFlameSizeAdjustment));
+    mShipFlameKaosAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::ShipFlameKaosAdjustment));
     mShipAmbientLightSensitivitySlider->SetValue(settings.GetValue<float>(GameSettings::ShipAmbientLightSensitivity));
     mShipDepthDarkeningSensitivitySlider->SetValue(settings.GetValue<float>(GameSettings::ShipDepthDarkeningSensitivity));
 
