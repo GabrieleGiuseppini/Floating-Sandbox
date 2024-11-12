@@ -33,7 +33,7 @@
 static int constexpr SliderWidth = 72; // Min
 static int constexpr SliderHeight = 140;
 
-static int constexpr IconInStaticBorderMargin = 4;
+static int constexpr IconSpacing = 4;
 static int constexpr TopmostCellOverSliderHeight = 24;
 static int constexpr InterCheckboxRowMargin = 4;
 static int constexpr StaticBoxInsetMargin = 0;
@@ -709,14 +709,20 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(
                     CellBorderInner);
             }
 
-            boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
+            WxHelpers::MakeAllColumnsExpandable(sizer);
+
+            boxSizer->Add(
+                sizer,
+                1,
+                wxEXPAND | wxALL,
+                StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             boxSizer,
             wxGBPosition(0, 0),
-            wxGBSpan(1, 2),
-            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxGBSpan(1, 6),
+            wxEXPAND | wxALL,
             CellBorderOuter);
     }
 
@@ -759,9 +765,9 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(0, 2),
+            wxGBPosition(0, 6),
             wxGBSpan(1, 1),
-            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxEXPAND | wxALL,
             CellBorderOuter);
     }
 
@@ -910,14 +916,20 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(
                     CellBorderInner);
             }
 
-            combustionBoxSizer->Add(combustionSizer, 1, wxALL, StaticBoxInsetMargin);
+            WxHelpers::MakeAllColumnsExpandable(combustionSizer);
+
+            combustionBoxSizer->Add(
+                combustionSizer,
+                1,
+                wxEXPAND | wxALL,
+                StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             combustionBoxSizer,
             wxGBPosition(1, 0),
-            wxGBSpan(1, 2),
-            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxGBSpan(1, 5),
+            wxEXPAND | wxALL,
             CellBorderOuter);
     }
 
@@ -985,21 +997,26 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(
                     CellBorderInner);
             }
 
-            thermodynamicsBoxSizer->Add(thermodynamicsSizer, 1, wxALL, StaticBoxInsetMargin);
+            WxHelpers::MakeAllColumnsExpandable(thermodynamicsSizer);
+
+            thermodynamicsBoxSizer->Add(
+                thermodynamicsSizer,
+                1,
+                wxEXPAND | wxALL,
+                StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             thermodynamicsBoxSizer,
-            wxGBPosition(1, 2),
-            wxGBSpan(1, 1),
-            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxGBPosition(1, 5),
+            wxGBSpan(1, 2),
+            wxEXPAND | wxALL,
             CellBorderOuter);
     }
 
     // Finalize panel
 
-    for (int c = 0; c < gridSizer->GetCols(); ++c)
-        gridSizer->AddGrowableCol(c);
+    WxHelpers::MakeAllColumnsExpandable(gridSizer);
 
     panel->SetSizer(gridSizer);
 }
@@ -1013,7 +1030,7 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
     //
 
     {
-        wxStaticBoxSizer * waterBoxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Water"));
+        wxStaticBoxSizer * waterBoxSizer = new wxStaticBoxSizer(wxHORIZONTAL, panel, _("Water"));
 
         {
             wxGridBagSizer * waterSizer = new wxGridBagSizer(0, 0);
@@ -1179,14 +1196,20 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            waterBoxSizer->Add(waterSizer, 1, wxALL, StaticBoxInsetMargin);
+            WxHelpers::MakeAllColumnsExpandable(waterSizer);
+
+            waterBoxSizer->Add(
+                waterSizer,
+                1,
+                wxEXPAND | wxALL,
+                StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             waterBoxSizer,
             wxGBPosition(0, 0),
             wxGBSpan(1, 6),
-            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxEXPAND | wxALL,
             CellBorderOuter);
     }
 
@@ -1227,14 +1250,20 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            rottingBoxSizer->Add(rottingSizer, 1, wxALL, StaticBoxInsetMargin);
+            WxHelpers::MakeAllColumnsExpandable(rottingSizer);
+
+            rottingBoxSizer->Add(
+                rottingSizer,
+                1,
+                wxEXPAND | wxALL,
+                StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             rottingBoxSizer,
             wxGBPosition(0, 6),
             wxGBSpan(1, 1),
-            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxEXPAND | wxALL,
             CellBorderOuter);
     }
 
@@ -1275,14 +1304,20 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            oceanBoxSizer->Add(oceanSizer, 1, wxALL, StaticBoxInsetMargin);
+            WxHelpers::MakeAllColumnsExpandable(oceanSizer);
+
+            oceanBoxSizer->Add(
+                oceanSizer,
+                1,
+                wxEXPAND | wxALL,
+                StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             oceanBoxSizer,
             wxGBPosition(0, 7),
             wxGBSpan(1, 1),
-            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxEXPAND | wxALL,
             CellBorderOuter);
     }
 
@@ -1375,14 +1410,20 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
+            WxHelpers::MakeAllColumnsExpandable(sizer);
+
+            boxSizer->Add(
+                sizer,
+                1,
+                wxEXPAND | wxALL,
+                StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(1, 0),
+            wxGBPosition(2, 0),
             wxGBSpan(1, 3),
-            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxEXPAND | wxALL,
             CellBorderOuter);
     }
 
@@ -1443,7 +1484,7 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
                     restoreDefaultTerrainButton,
                     wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
-                    wxLEFT | wxRIGHT | wxALIGN_CENTER_VERTICAL,
+                    wxLEFT | wxRIGHT | wxALIGN_CENTER_VERTICAL | wxALIGN_CENTER_HORIZONTAL,
                     CellBorderInner);
 
                 sizer->SetMinSize(-1, TopmostCellOverSliderHeight);
@@ -1556,21 +1597,26 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
 
             oceanFloorSizer->AddGrowableRow(1);
 
-            oceanFloorBoxSizer->Add(oceanFloorSizer, 1, wxALL, StaticBoxInsetMargin);
+            WxHelpers::MakeAllColumnsExpandable(oceanFloorSizer);
+
+            oceanFloorBoxSizer->Add(
+                oceanFloorSizer,
+                1,
+                wxEXPAND | wxALL,
+                StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             oceanFloorBoxSizer,
-            wxGBPosition(1, 3),
+            wxGBPosition(2, 3),
             wxGBSpan(1, 5),
-            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxEXPAND | wxALL,
             CellBorderOuter);
     }
 
     // Finalize panel
 
-    for (int c = 0; c < gridSizer->GetCols(); ++c)
-        gridSizer->AddGrowableCol(c);
+    WxHelpers::MakeAllColumnsExpandable(gridSizer);
 
     panel->SetSizer(gridSizer);
 }
@@ -1606,7 +1652,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     zeroWindButton,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
-                    wxLEFT | wxRIGHT | wxALIGN_CENTER_VERTICAL,
+                    wxLEFT | wxRIGHT | wxALIGN_CENTER_VERTICAL | wxALIGN_CENTER_HORIZONTAL,
                     CellBorderInner);
 
                 sizer->SetMinSize(-1, TopmostCellOverSliderHeight);
@@ -1656,7 +1702,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     mModulateWindCheckBox,
                     wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
-                    wxLEFT | wxRIGHT | wxALIGN_CENTER_VERTICAL,
+                    wxLEFT | wxRIGHT | wxALIGN_CENTER_VERTICAL | wxALIGN_CENTER_HORIZONTAL,
                     CellBorderInner);
 
                 sizer->SetMinSize(-1, TopmostCellOverSliderHeight);
@@ -1690,14 +1736,20 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
 
             windSizer->AddGrowableRow(1);
 
-            windBoxSizer->Add(windSizer, 1, wxALL, StaticBoxInsetMargin);
+            WxHelpers::MakeAllColumnsExpandable(windSizer);
+
+            windBoxSizer->Add(
+                windSizer,
+                1,
+                wxEXPAND | wxALL,
+                StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             windBoxSizer,
             wxGBPosition(0, 0),
             wxGBSpan(1, 2),
-            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxEXPAND | wxALL,
             CellBorderOuter);
     }
 
@@ -1731,8 +1783,8 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
 
                 wavesSizer->Add(
                     mBasalWaveHeightAdjustmentSlider,
-                    wxGBPosition(0, 2),
-                    wxGBSpan(2, 1),
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
             }
@@ -1758,8 +1810,8 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
 
                 wavesSizer->Add(
                     mBasalWaveLengthAdjustmentSlider,
-                    wxGBPosition(0, 3),
-                    wxGBSpan(2, 1),
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
             }
@@ -1784,20 +1836,26 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
 
                 wavesSizer->Add(
                     mBasalWaveSpeedAdjustmentSlider,
-                    wxGBPosition(0, 4),
-                    wxGBSpan(2, 1),
+                    wxGBPosition(0, 2),
+                    wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
             }
 
-            wavesBoxSizer->Add(wavesSizer, 1, wxALL, StaticBoxInsetMargin);
+            WxHelpers::MakeAllColumnsExpandable(wavesSizer);
+
+            wavesBoxSizer->Add(
+                wavesSizer,
+                1,
+                wxEXPAND | wxALL,
+                StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             wavesBoxSizer,
             wxGBPosition(0, 2),
             wxGBSpan(1, 3),
-            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxEXPAND | wxALL,
             CellBorderOuter);
     }
 
@@ -1829,7 +1887,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     mDoDisplaceWaterCheckBox,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
-                    wxLEFT | wxRIGHT | wxALIGN_CENTER_VERTICAL,
+                    wxLEFT | wxRIGHT | wxALIGN_CENTER_VERTICAL | wxALIGN_CENTER_HORIZONTAL,
                     CellBorderInner);
 
                 sizer->SetMinSize(-1, TopmostCellOverSliderHeight);
@@ -1889,14 +1947,20 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
 
             displacementWavesSizer->AddGrowableRow(1);
 
-            displacementWavesBoxSizer->Add(displacementWavesSizer, 1, wxALL, StaticBoxInsetMargin);
+            WxHelpers::MakeAllColumnsExpandable(displacementWavesSizer);
+
+            displacementWavesBoxSizer->Add(
+                displacementWavesSizer,
+                1,
+                wxEXPAND | wxALL,
+                StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             displacementWavesBoxSizer,
             wxGBPosition(0, 5),
             wxGBSpan(1, 2),
-            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxEXPAND | wxALL,
             CellBorderOuter);
     }
 
@@ -1962,14 +2026,20 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            wavePhenomenaBoxSizer->Add(wavePhenomenaSizer, 1, wxALL, StaticBoxInsetMargin);
+            WxHelpers::MakeAllColumnsExpandable(wavePhenomenaSizer);
+
+            wavePhenomenaBoxSizer->Add(
+                wavePhenomenaSizer,
+                1,
+                wxEXPAND | wxALL,
+                StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             wavePhenomenaBoxSizer,
             wxGBPosition(1, 0),
             wxGBSpan(1, 2),
-            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxEXPAND | wxALL,
             CellBorderOuter);
     }
 
@@ -2028,7 +2098,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     mDoRainWithStormCheckBox,
                     wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
-                    wxLEFT | wxRIGHT | wxALIGN_CENTER_VERTICAL,
+                    wxLEFT | wxRIGHT | wxALIGN_CENTER_VERTICAL | wxALIGN_CENTER_HORIZONTAL,
                     CellBorderInner);
 
                 sizer->SetMinSize(-1, TopmostCellOverSliderHeight);
@@ -2083,7 +2153,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     mLightningBlastProbabilitySlider,
                     wxGBPosition(0, 2),
                     wxGBSpan(2, 1),
-                    wxEXPAND | wxLEFT | wxBOTTOM | wxRIGHT,
+                    wxEXPAND | wxALL,
                     CellBorderInner);
             }
 
@@ -2141,21 +2211,26 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
 
             stormsSizer->AddGrowableRow(1);
 
-            stormsBoxSizer->Add(stormsSizer, 1, wxALL, StaticBoxInsetMargin);
+            WxHelpers::MakeAllColumnsExpandable(stormsSizer);
+
+            stormsBoxSizer->Add(
+                stormsSizer,
+                1,
+                wxEXPAND | wxALL,
+                StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             stormsBoxSizer,
             wxGBPosition(1, 2),
             wxGBSpan(1, 5),
-            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxEXPAND | wxALL,
             CellBorderOuter);
     }
 
     // Finalize panel
 
-    for (int c = 0; c < gridSizer->GetCols(); ++c)
-        gridSizer->AddGrowableCol(c);
+    WxHelpers::MakeAllColumnsExpandable(gridSizer);
 
     panel->SetSizer(gridSizer);
 }
@@ -2307,14 +2382,20 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            airBoxSizer->Add(airSizer, 1, wxALL, StaticBoxInsetMargin);
+            WxHelpers::MakeAllColumnsExpandable(airSizer);
+
+            airBoxSizer->Add(
+                airSizer,
+                1,
+                wxEXPAND | wxALL,
+                StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             airBoxSizer,
             wxGBPosition(0, 0),
-            wxGBSpan(1, 1),
-            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxGBSpan(1, 5),
+            wxEXPAND | wxALL,
             CellBorderOuter);
     }
 
@@ -2382,15 +2463,20 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
+            WxHelpers::MakeAllColumnsExpandable(smokeSizer);
 
-            smokeBoxSizer->Add(smokeSizer, 1, wxALL, StaticBoxInsetMargin);
+            smokeBoxSizer->Add(
+                smokeSizer,
+                1,
+                wxEXPAND | wxALL,
+                StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             smokeBoxSizer,
-            wxGBPosition(0, 1),
-            wxGBSpan(1, 1),
-            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxGBPosition(1, 0),
+            wxGBSpan(1, 2),
+            wxEXPAND | wxALL,
             CellBorderOuter);
     }
 
@@ -2474,7 +2560,7 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
                     mDoDayLightCycleCheckBox,
                     wxGBPosition(0, 2),
                     wxGBSpan(1, 1),
-                    wxLEFT | wxRIGHT | wxALIGN_CENTER_VERTICAL,
+                    wxLEFT | wxRIGHT | wxALIGN_CENTER_VERTICAL | wxALIGN_CENTER_HORIZONTAL,
                     CellBorderInner);
 
                 sizer->SetMinSize(-1, TopmostCellOverSliderHeight);
@@ -2508,21 +2594,26 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
 
             skySizer->AddGrowableRow(1);
 
-            skyBoxSizer->Add(skySizer, 1, wxALL, StaticBoxInsetMargin);
+            WxHelpers::MakeAllColumnsExpandable(skySizer);
+
+            skyBoxSizer->Add(
+                skySizer,
+                1,
+                wxEXPAND | wxALL,
+                StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             skyBoxSizer,
-            wxGBPosition(1, 0),
-            wxGBSpan(1, 2),
-            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxGBPosition(1, 2),
+            wxGBSpan(1, 3),
+            wxEXPAND | wxALL,
             CellBorderOuter);
     }
 
     // Finalize panel
 
-    for (int c = 0; c < gridSizer->GetCols(); ++c)
-        gridSizer->AddGrowableCol(c);
+    WxHelpers::MakeAllColumnsExpandable(gridSizer);
 
     panel->SetSizer(gridSizer);
 }
@@ -2594,14 +2685,20 @@ void SettingsDialog::PopulateLightsElectricalFishesNpcsPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            lightsBoxSizer->Add(lightsSizer, 1, wxALL, StaticBoxInsetMargin);
+            WxHelpers::MakeAllColumnsExpandable(lightsSizer);
+
+            lightsBoxSizer->Add(
+                lightsSizer,
+                1,
+                wxEXPAND | wxALL,
+                StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             lightsBoxSizer,
             wxGBPosition(0, 0),
             wxGBSpan(1, 1),
-            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxEXPAND | wxALL,
             CellBorderOuter);
     }
 
@@ -2631,7 +2728,7 @@ void SettingsDialog::PopulateLightsElectricalFishesNpcsPanel(wxPanel * panel)
                     mGenerateEngineWakeCheckBox,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
-                    wxLEFT | wxRIGHT | wxALIGN_CENTER_VERTICAL,
+                    wxLEFT | wxRIGHT | wxALIGN_CENTER_VERTICAL | wxALIGN_LEFT,
                     CellBorderInner);
 
                 cellSizer->SetMinSize(-1, TopmostCellOverSliderHeight);
@@ -2718,14 +2815,20 @@ void SettingsDialog::PopulateLightsElectricalFishesNpcsPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
+            WxHelpers::MakeAllColumnsExpandable(sizer);
+
+            boxSizer->Add(
+                sizer,
+                1,
+                wxEXPAND | wxALL,
+                StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             boxSizer,
             wxGBPosition(0, 1),
             wxGBSpan(1, 1),
-            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxEXPAND | wxALL,
             CellBorderOuter);
     }
 
@@ -2835,7 +2938,7 @@ void SettingsDialog::PopulateLightsElectricalFishesNpcsPanel(wxPanel * panel)
                     mDoFishShoalingCheckBox,
                     wxGBPosition(0, 3),
                     wxGBSpan(1, 1),
-                    wxLEFT | wxRIGHT | wxALIGN_CENTER_VERTICAL,
+                    wxLEFT | wxRIGHT | wxALIGN_CENTER_VERTICAL | wxALIGN_LEFT,
                     CellBorderInner);
 
                 cellSizer->SetMinSize(-1, TopmostCellOverSliderHeight);
@@ -2868,14 +2971,20 @@ void SettingsDialog::PopulateLightsElectricalFishesNpcsPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
+            WxHelpers::MakeAllColumnsExpandable(sizer);
+
+            boxSizer->Add(
+                sizer,
+                1,
+                wxEXPAND | wxALL,
+                StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             boxSizer,
             wxGBPosition(1, 0),
             wxGBSpan(1, 1),
-            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxEXPAND | wxALL,
             CellBorderOuter);
     }
 
@@ -2972,21 +3081,26 @@ void SettingsDialog::PopulateLightsElectricalFishesNpcsPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
+            WxHelpers::MakeAllColumnsExpandable(sizer);
+
+            boxSizer->Add(
+                sizer,
+                1,
+                wxEXPAND | wxALL,
+                StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             boxSizer,
             wxGBPosition(1, 1),
             wxGBSpan(1, 1),
-            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxEXPAND | wxALL,
             CellBorderOuter);
     }
 
     // Finalize panel
 
-    for (int c = 0; c < gridSizer->GetCols(); ++c)
-        gridSizer->AddGrowableCol(c);
+    WxHelpers::MakeAllColumnsExpandable(gridSizer);
 
     panel->SetSizer(gridSizer);
 }
@@ -3007,68 +3121,24 @@ void SettingsDialog::PopulateDestructiveToolsPanel(
         {
             wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
 
-            // Icon
+            // Icons
             {
-                wxBitmap bitmap = wxBitmap(
-                    resourceLocator.GetCursorFilePath("impact_bomb_cursor").string(),
-                    wxBITMAP_TYPE_PNG);
-
-                auto staticBitmap = new wxStaticBitmap(boxSizer->GetStaticBox(), wxID_ANY, bitmap);
+                auto * iconVSizer = MakeToolVerticalStripIcons(
+                    boxSizer->GetStaticBox(),
+                    {
+                        "impact_bomb_cursor",
+                        "rc_bomb_cursor",
+                        "timer_bomb_cursor",
+                        "am_bomb_cursor"
+                    },
+                    resourceLocator);
 
                 sizer->Add(
-                    staticBitmap,
+                    iconVSizer,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
-                    wxALIGN_LEFT | wxTOP | wxLEFT,
-                    IconInStaticBorderMargin);
-            }
-
-            // Icon
-            {
-                wxBitmap bitmap = wxBitmap(
-                    resourceLocator.GetCursorFilePath("rc_bomb_cursor").string(),
-                    wxBITMAP_TYPE_PNG);
-
-                auto staticBitmap = new wxStaticBitmap(boxSizer->GetStaticBox(), wxID_ANY, bitmap);
-
-                sizer->Add(
-                    staticBitmap,
-                    wxGBPosition(1, 0),
-                    wxGBSpan(1, 1),
-                    wxALIGN_LEFT | wxTOP | wxLEFT,
-                    IconInStaticBorderMargin);
-            }
-
-            // Icon
-            {
-                wxBitmap bitmap = wxBitmap(
-                    resourceLocator.GetCursorFilePath("timer_bomb_cursor").string(),
-                    wxBITMAP_TYPE_PNG);
-
-                auto staticBitmap = new wxStaticBitmap(boxSizer->GetStaticBox(), wxID_ANY, bitmap);
-
-                sizer->Add(
-                    staticBitmap,
-                    wxGBPosition(2, 0),
-                    wxGBSpan(1, 1),
-                    wxALIGN_LEFT | wxTOP | wxLEFT,
-                    IconInStaticBorderMargin);
-            }
-
-            // Icon
-            {
-                wxBitmap bitmap = wxBitmap(
-                    resourceLocator.GetCursorFilePath("am_bomb_cursor").string(),
-                    wxBITMAP_TYPE_PNG);
-
-                auto staticBitmap = new wxStaticBitmap(boxSizer->GetStaticBox(), wxID_ANY, bitmap);
-
-                sizer->Add(
-                    staticBitmap,
-                    wxGBPosition(3, 0),
-                    wxGBSpan(1, 1),
-                    wxALIGN_LEFT | wxTOP | wxLEFT,
-                    IconInStaticBorderMargin);
+                    wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL,
+                    CellBorderInner);
             }
 
             // Bomb Blast Radius
@@ -3081,10 +3151,10 @@ void SettingsDialog::PopulateDestructiveToolsPanel(
                     _("Blast Radius"),
                     _("The radius of bomb explosions (m)."),
                     [this](float value)
-                {
-                    this->mLiveSettings.SetValue(GameSettings::BombBlastRadius, value);
-                    this->OnLiveSettingsChanged();
-                },
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::BombBlastRadius, value);
+                        this->OnLiveSettingsChanged();
+                    },
                     std::make_unique<LinearSliderCore>(
                         mGameControllerSettingsOptions.GetMinBombBlastRadius(),
                         mGameControllerSettingsOptions.GetMaxBombBlastRadius()));
@@ -3092,7 +3162,7 @@ void SettingsDialog::PopulateDestructiveToolsPanel(
                 sizer->Add(
                     mBombBlastRadiusSlider,
                     wxGBPosition(0, 1),
-                    wxGBSpan(4, 1),
+                    wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
             }
@@ -3107,10 +3177,10 @@ void SettingsDialog::PopulateDestructiveToolsPanel(
                     _("Blast Force Adjust"),
                     _("Adjusts the blast force generated by bomb explosions."),
                     [this](float value)
-                {
-                    this->mLiveSettings.SetValue(GameSettings::BombBlastForceAdjustment, value);
-                    this->OnLiveSettingsChanged();
-                },
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::BombBlastForceAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
                     std::make_unique<LinearSliderCore>(
                         mGameControllerSettingsOptions.GetMinBombBlastForceAdjustment(),
                         mGameControllerSettingsOptions.GetMaxBombBlastForceAdjustment()));
@@ -3118,7 +3188,7 @@ void SettingsDialog::PopulateDestructiveToolsPanel(
                 sizer->Add(
                     mBombBlastForceAdjustmentSlider,
                     wxGBPosition(0, 2),
-                    wxGBSpan(4, 1),
+                    wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
             }
@@ -3133,10 +3203,10 @@ void SettingsDialog::PopulateDestructiveToolsPanel(
                     _("Blast Heat"),
                     _("The heat generated by bomb explosions (KJ/s)."),
                     [this](float value)
-                {
-                    this->mLiveSettings.SetValue(GameSettings::BombBlastHeat, value);
-                    this->OnLiveSettingsChanged();
-                },
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::BombBlastHeat, value);
+                        this->OnLiveSettingsChanged();
+                    },
                     std::make_unique<ExponentialSliderCore>(
                         mGameControllerSettingsOptions.GetMinBombBlastHeat(),
                         40000.0f,
@@ -3145,7 +3215,7 @@ void SettingsDialog::PopulateDestructiveToolsPanel(
                 sizer->Add(
                     mBombBlastHeatSlider,
                     wxGBPosition(0, 3),
-                    wxGBSpan(4, 1),
+                    wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
             }
@@ -3160,10 +3230,10 @@ void SettingsDialog::PopulateDestructiveToolsPanel(
                     _("AM Bomb Implosion Strength"),
                     _("Adjusts the strength of the initial anti-matter bomb implosion."),
                     [this](float value)
-                {
-                    this->mLiveSettings.SetValue(GameSettings::AntiMatterBombImplosionStrength, value);
-                    this->OnLiveSettingsChanged();
-                },
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::AntiMatterBombImplosionStrength, value);
+                        this->OnLiveSettingsChanged();
+                    },
                     std::make_unique<LinearSliderCore>(
                         mGameControllerSettingsOptions.GetMinAntiMatterBombImplosionStrength(),
                         mGameControllerSettingsOptions.GetMaxAntiMatterBombImplosionStrength()));
@@ -3171,19 +3241,25 @@ void SettingsDialog::PopulateDestructiveToolsPanel(
                 sizer->Add(
                     mAntiMatterBombImplosionStrengthSlider,
                     wxGBPosition(0, 4),
-                    wxGBSpan(4, 1),
+                    wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
             }
 
-            boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
+            WxHelpers::MakeAllColumnsExpandable(sizer);
+
+            boxSizer->Add(
+                sizer,
+                1,
+                wxEXPAND | wxALL,
+                StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             boxSizer,
             wxGBPosition(0, 0),
             wxGBSpan(1, 4),
-            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxEXPAND | wxALL,
             CellBorderOuter);
     }
 
@@ -3197,20 +3273,21 @@ void SettingsDialog::PopulateDestructiveToolsPanel(
         {
             wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
 
-            // Icon
+            // Icons
             {
-                wxBitmap bitmap = wxBitmap(
-                    resourceLocator.GetCursorFilePath("smash_cursor_up").string(),
-                    wxBITMAP_TYPE_PNG);
-
-                auto staticBitmap = new wxStaticBitmap(boxSizer->GetStaticBox(), wxID_ANY, bitmap);
+                auto * iconVSizer = MakeToolVerticalStripIcons(
+                    boxSizer->GetStaticBox(),
+                    {
+                        "smash_cursor_up"
+                    },
+                    resourceLocator);
 
                 sizer->Add(
-                    staticBitmap,
+                    iconVSizer,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
-                    wxALIGN_LEFT | wxTOP | wxLEFT,
-                    IconInStaticBorderMargin);
+                    wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL,
+                    CellBorderInner);
             }
 
             // Destroy Radius
@@ -3223,10 +3300,10 @@ void SettingsDialog::PopulateDestructiveToolsPanel(
                     _("Destroy Radius"),
                     _("The starting radius of the damage caused by destructive tools (m)."),
                     [this](float value)
-                {
-                    this->mLiveSettings.SetValue(GameSettings::DestroyRadius, value);
-                    this->OnLiveSettingsChanged();
-                },
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::DestroyRadius, value);
+                        this->OnLiveSettingsChanged();
+                    },
                     std::make_unique<LinearSliderCore>(
                         mGameControllerSettingsOptions.GetMinDestroyRadius(),
                         mGameControllerSettingsOptions.GetMaxDestroyRadius()));
@@ -3239,14 +3316,20 @@ void SettingsDialog::PopulateDestructiveToolsPanel(
                     CellBorderInner);
             }
 
-            boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
+            WxHelpers::MakeAllColumnsExpandable(sizer);
+
+            boxSizer->Add(
+                sizer,
+                1,
+                wxEXPAND | wxALL,
+                StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             boxSizer,
             wxGBPosition(1, 0),
             wxGBSpan(1, 1),
-            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxEXPAND | wxALL,
             CellBorderOuter);
     }
 
@@ -3260,20 +3343,21 @@ void SettingsDialog::PopulateDestructiveToolsPanel(
         {
             wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
 
-            // Icon
+            // Icons
             {
-                wxBitmap bitmap = wxBitmap(
-                    resourceLocator.GetCursorFilePath("blast_cursor_up_1").string(),
-                    wxBITMAP_TYPE_PNG);
-
-                auto staticBitmap = new wxStaticBitmap(boxSizer->GetStaticBox(), wxID_ANY, bitmap);
+                auto * iconVSizer = MakeToolVerticalStripIcons(
+                    boxSizer->GetStaticBox(),
+                    {
+                        "blast_cursor_up_1"
+                    },
+                    resourceLocator);
 
                 sizer->Add(
-                    staticBitmap,
+                    iconVSizer,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
-                    wxALIGN_LEFT | wxTOP | wxLEFT,
-                    IconInStaticBorderMargin);
+                    wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL,
+                    CellBorderInner);
             }
 
             // Blast Tool Radius
@@ -3328,14 +3412,20 @@ void SettingsDialog::PopulateDestructiveToolsPanel(
                     CellBorderInner);
             }
 
-            boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
+            WxHelpers::MakeAllColumnsExpandable(sizer);
+
+            boxSizer->Add(
+                sizer,
+                1,
+                wxEXPAND | wxALL,
+                StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             boxSizer,
             wxGBPosition(1, 1),
             wxGBSpan(1, 2),
-            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxEXPAND | wxALL,
             CellBorderOuter);
     }
 
@@ -3349,20 +3439,21 @@ void SettingsDialog::PopulateDestructiveToolsPanel(
         {
             wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
 
-            // Icon
+            // Icons
             {
-                wxBitmap bitmap = wxBitmap(
-                    resourceLocator.GetCursorFilePath("laser_cannon_icon").string(),
-                    wxBITMAP_TYPE_PNG);
-
-                auto staticBitmap = new wxStaticBitmap(boxSizer->GetStaticBox(), wxID_ANY, bitmap);
+                auto * iconVSizer = MakeToolVerticalStripIcons(
+                    boxSizer->GetStaticBox(),
+                    {
+                        "laser_cannon_icon"
+                    },
+                    resourceLocator);
 
                 sizer->Add(
-                    staticBitmap,
+                    iconVSizer,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
-                    wxALIGN_LEFT | wxTOP | wxLEFT,
-                    IconInStaticBorderMargin);
+                    wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL,
+                    CellBorderInner);
             }
 
             // Heat Flow
@@ -3391,21 +3482,26 @@ void SettingsDialog::PopulateDestructiveToolsPanel(
                     CellBorderInner);
             }
 
-            boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
+            WxHelpers::MakeAllColumnsExpandable(sizer);
+
+            boxSizer->Add(
+                sizer,
+                1,
+                wxEXPAND | wxALL,
+                StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             boxSizer,
             wxGBPosition(1, 3),
             wxGBSpan(1, 1),
-            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxEXPAND | wxALL,
             CellBorderOuter);
     }
 
     // Finalize panel
 
-    for (int c = 0; c < gridSizer->GetCols(); ++c)
-        gridSizer->AddGrowableCol(c);
+    WxHelpers::MakeAllColumnsExpandable(gridSizer);
 
     panel->SetSizer(gridSizer);
 }
@@ -3426,20 +3522,21 @@ void SettingsDialog::PopulateOtherToolsPanel(
         {
             wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
 
-            // Icon
+            // Icons
             {
-                wxBitmap bitmap = wxBitmap(
-                    resourceLocator.GetCursorFilePath("flood_cursor_up").string(),
-                    wxBITMAP_TYPE_PNG);
-
-                auto staticBitmap = new wxStaticBitmap(boxSizer->GetStaticBox(), wxID_ANY, bitmap);
+                auto * iconVSizer = MakeToolVerticalStripIcons(
+                    boxSizer->GetStaticBox(),
+                    {
+                        "flood_cursor_up"
+                    },
+                    resourceLocator);
 
                 sizer->Add(
-                    staticBitmap,
+                    iconVSizer,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
-                    wxALIGN_LEFT | wxTOP | wxLEFT,
-                    IconInStaticBorderMargin);
+                    wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL,
+                    CellBorderInner);
             }
 
             // Flood Radius
@@ -3452,10 +3549,10 @@ void SettingsDialog::PopulateOtherToolsPanel(
                     _("Radius"),
                     _("How wide an area is flooded or drained by the flood tool (m)."),
                     [this](float value)
-                {
-                    this->mLiveSettings.SetValue(GameSettings::FloodRadius, value);
-                    this->OnLiveSettingsChanged();
-                },
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::FloodRadius, value);
+                        this->OnLiveSettingsChanged();
+                    },
                     std::make_unique<LinearSliderCore>(
                         mGameControllerSettingsOptions.GetMinFloodRadius(),
                         mGameControllerSettingsOptions.GetMaxFloodRadius()));
@@ -3478,10 +3575,10 @@ void SettingsDialog::PopulateOtherToolsPanel(
                     _("Flow"),
                     _("How much water is injected or drained by the flood tool (m3)."),
                     [this](float value)
-                {
-                    this->mLiveSettings.SetValue(GameSettings::FloodQuantity, value);
-                    this->OnLiveSettingsChanged();
-                },
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::FloodQuantity, value);
+                        this->OnLiveSettingsChanged();
+                    },
                     std::make_unique<LinearSliderCore>(
                         mGameControllerSettingsOptions.GetMinFloodQuantity(),
                         mGameControllerSettingsOptions.GetMaxFloodQuantity()));
@@ -3494,14 +3591,20 @@ void SettingsDialog::PopulateOtherToolsPanel(
                     CellBorderInner);
             }
 
-            boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
+            WxHelpers::MakeAllColumnsExpandable(sizer);
+
+            boxSizer->Add(
+                sizer,
+                1,
+                wxEXPAND | wxALL,
+                StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             boxSizer,
             wxGBPosition(0, 0),
             wxGBSpan(1, 2),
-            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxEXPAND | wxALL,
             CellBorderOuter);
     }
 
@@ -3515,20 +3618,21 @@ void SettingsDialog::PopulateOtherToolsPanel(
         {
             wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
 
-            // Icon
+            // Icons
             {
-                wxBitmap bitmap = wxBitmap(
-                    resourceLocator.GetCursorFilePath("heat_blaster_heat_cursor_up").string(),
-                    wxBITMAP_TYPE_PNG);
-
-                auto staticBitmap = new wxStaticBitmap(boxSizer->GetStaticBox(), wxID_ANY, bitmap);
+                auto * iconVSizer = MakeToolVerticalStripIcons(
+                    boxSizer->GetStaticBox(),
+                    {
+                        "heat_blaster_heat_cursor_up"
+                    },
+                    resourceLocator);
 
                 sizer->Add(
-                    staticBitmap,
+                    iconVSizer,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
-                    wxALIGN_LEFT | wxTOP | wxLEFT,
-                    IconInStaticBorderMargin);
+                    wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL,
+                    CellBorderInner);
             }
 
             // Radius
@@ -3584,14 +3688,20 @@ void SettingsDialog::PopulateOtherToolsPanel(
                     CellBorderInner);
             }
 
-            boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
+            WxHelpers::MakeAllColumnsExpandable(sizer);
+
+            boxSizer->Add(
+                sizer,
+                1,
+                wxEXPAND | wxALL,
+                StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             boxSizer,
             wxGBPosition(0, 2),
             wxGBSpan(1, 2),
-            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxEXPAND | wxALL,
             CellBorderOuter);
     }
 
@@ -3605,20 +3715,21 @@ void SettingsDialog::PopulateOtherToolsPanel(
         {
             wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
 
-            // Icon
+            // Icons
             {
-                wxBitmap bitmap = wxBitmap(
-                    resourceLocator.GetCursorFilePath("air_tank_cursor_up").string(),
-                    wxBITMAP_TYPE_PNG);
-
-                auto staticBitmap = new wxStaticBitmap(boxSizer->GetStaticBox(), wxID_ANY, bitmap);
+                auto * iconVSizer = MakeToolVerticalStripIcons(
+                    boxSizer->GetStaticBox(),
+                    {
+                        "air_tank_cursor_up"
+                    },
+                    resourceLocator);
 
                 sizer->Add(
-                    staticBitmap,
+                    iconVSizer,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
-                    wxALIGN_LEFT | wxTOP | wxLEFT,
-                    IconInStaticBorderMargin);
+                    wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL,
+                    CellBorderInner);
             }
 
             // Inject Pressure Quantity
@@ -3631,10 +3742,10 @@ void SettingsDialog::PopulateOtherToolsPanel(
                     _("Flow"),
                     _("Adjusts the number of atmospheres that are injected or drained by the inject pressure tool (atm)."),
                     [this](float value)
-                {
-                    this->mLiveSettings.SetValue(GameSettings::InjectPressureQuantity, value);
-                    this->OnLiveSettingsChanged();
-                },
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::InjectPressureQuantity, value);
+                        this->OnLiveSettingsChanged();
+                    },
                     std::make_unique<ExponentialSliderCore>(
                         mGameControllerSettingsOptions.GetMinInjectPressureQuantity(),
                         1.0f,
@@ -3648,14 +3759,20 @@ void SettingsDialog::PopulateOtherToolsPanel(
                     CellBorderInner);
             }
 
-            boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
+            WxHelpers::MakeAllColumnsExpandable(sizer);
+
+            boxSizer->Add(
+                sizer,
+                1,
+                wxEXPAND | wxALL,
+                StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             boxSizer,
             wxGBPosition(0, 4),
             wxGBSpan(1, 1),
-            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxEXPAND | wxALL,
             CellBorderOuter);
     }
 
@@ -3669,20 +3786,21 @@ void SettingsDialog::PopulateOtherToolsPanel(
         {
             wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
 
-            // Icon
+            // Icons
             {
-                wxBitmap bitmap = wxBitmap(
-                    resourceLocator.GetCursorFilePath("repair_structure_cursor_up").string(),
-                    wxBITMAP_TYPE_PNG);
-
-                auto staticBitmap = new wxStaticBitmap(boxSizer->GetStaticBox(), wxID_ANY, bitmap);
+                auto * iconVSizer = MakeToolVerticalStripIcons(
+                    boxSizer->GetStaticBox(),
+                    {
+                        "repair_structure_cursor_up"
+                    },
+                    resourceLocator);
 
                 sizer->Add(
-                    staticBitmap,
+                    iconVSizer,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
-                    wxALIGN_LEFT | wxTOP | wxLEFT,
-                    IconInStaticBorderMargin);
+                    wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL,
+                    CellBorderInner);
             }
 
             // Repair Radius
@@ -3695,10 +3813,10 @@ void SettingsDialog::PopulateOtherToolsPanel(
                     _("Radius"),
                     _("Adjusts the radius of the repair tool (m)."),
                     [this](float value)
-                {
-                    this->mLiveSettings.SetValue(GameSettings::RepairRadius, value);
-                    this->OnLiveSettingsChanged();
-                },
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::RepairRadius, value);
+                        this->OnLiveSettingsChanged();
+                    },
                     std::make_unique<LinearSliderCore>(
                         mGameControllerSettingsOptions.GetMinRepairRadius(),
                         mGameControllerSettingsOptions.GetMaxRepairRadius()));
@@ -3721,10 +3839,10 @@ void SettingsDialog::PopulateOtherToolsPanel(
                     _("Speed Adjust"),
                     _("Adjusts the speed with which the repair tool attracts particles to repair damage. Warning: at high speeds the repair tool might become destructive!"),
                     [this](float value)
-                {
-                    this->mLiveSettings.SetValue(GameSettings::RepairSpeedAdjustment, value);
-                    this->OnLiveSettingsChanged();
-                },
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::RepairSpeedAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
                     std::make_unique<LinearSliderCore>(
                         mGameControllerSettingsOptions.GetMinRepairSpeedAdjustment(),
                         mGameControllerSettingsOptions.GetMaxRepairSpeedAdjustment()));
@@ -3737,14 +3855,20 @@ void SettingsDialog::PopulateOtherToolsPanel(
                     CellBorderInner);
             }
 
-            boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
+            WxHelpers::MakeAllColumnsExpandable(sizer);
+
+            boxSizer->Add(
+                sizer,
+                1,
+                wxEXPAND | wxALL,
+                StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             boxSizer,
             wxGBPosition(1, 0),
             wxGBSpan(1, 2),
-            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxEXPAND | wxALL,
             CellBorderOuter);
     }
 
@@ -3758,36 +3882,22 @@ void SettingsDialog::PopulateOtherToolsPanel(
         {
             wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
 
-            // Icon
+            // Icons
             {
-                wxBitmap bitmap = wxBitmap(
-                    resourceLocator.GetCursorFilePath("scrub_cursor_up").string(),
-                    wxBITMAP_TYPE_PNG);
-
-                auto staticBitmap = new wxStaticBitmap(boxSizer->GetStaticBox(), wxID_ANY, bitmap);
+                auto * iconVSizer = MakeToolVerticalStripIcons(
+                    boxSizer->GetStaticBox(),
+                    {
+                        "scrub_cursor_up",
+                        "rot_cursor_up"
+                    },
+                    resourceLocator);
 
                 sizer->Add(
-                    staticBitmap,
+                    iconVSizer,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
-                    wxALIGN_LEFT | wxTOP | wxLEFT,
-                    IconInStaticBorderMargin);
-            }
-
-            // Icon
-            {
-                wxBitmap bitmap = wxBitmap(
-                    resourceLocator.GetCursorFilePath("rot_cursor_up").string(),
-                    wxBITMAP_TYPE_PNG);
-
-                auto staticBitmap = new wxStaticBitmap(boxSizer->GetStaticBox(), wxID_ANY, bitmap);
-
-                sizer->Add(
-                    staticBitmap,
-                    wxGBPosition(1, 0),
-                    wxGBSpan(1, 1),
-                    wxALIGN_LEFT | wxTOP | wxLEFT,
-                    IconInStaticBorderMargin);
+                    wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL,
+                    CellBorderInner);
             }
 
             // Scrub/Rot Radius
@@ -3811,19 +3921,25 @@ void SettingsDialog::PopulateOtherToolsPanel(
                 sizer->Add(
                     mScrubRotRadiusSlider,
                     wxGBPosition(0, 1),
-                    wxGBSpan(2, 1),
+                    wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
             }
 
-            boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
+            WxHelpers::MakeAllColumnsExpandable(sizer);
+
+            boxSizer->Add(
+                sizer,
+                1,
+                wxEXPAND | wxALL,
+                StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             boxSizer,
             wxGBPosition(1, 2),
             wxGBSpan(1, 2),
-            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxEXPAND | wxALL,
             CellBorderOuter);
     }
 
@@ -3837,20 +3953,21 @@ void SettingsDialog::PopulateOtherToolsPanel(
         {
             wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
 
-            // Icon
+            // Icons
             {
-                wxBitmap bitmap = wxBitmap(
-                    resourceLocator.GetCursorFilePath("wind_cursor_up").string(),
-                    wxBITMAP_TYPE_PNG);
-
-                auto staticBitmap = new wxStaticBitmap(boxSizer->GetStaticBox(), wxID_ANY, bitmap);
+                auto * iconVSizer = MakeToolVerticalStripIcons(
+                    boxSizer->GetStaticBox(),
+                    {
+                        "wind_cursor_up"
+                    },
+                    resourceLocator);
 
                 sizer->Add(
-                    staticBitmap,
+                    iconVSizer,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
-                    wxALIGN_LEFT | wxTOP | wxLEFT,
-                    IconInStaticBorderMargin);
+                    wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL,
+                    CellBorderInner);
             }
 
             // Wind speed
@@ -3879,21 +3996,26 @@ void SettingsDialog::PopulateOtherToolsPanel(
                     CellBorderInner);
             }
 
-            boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
+            WxHelpers::MakeAllColumnsExpandable(sizer);
+
+            boxSizer->Add(
+                sizer,
+                1,
+                wxEXPAND | wxALL,
+                StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             boxSizer,
             wxGBPosition(1, 4),
             wxGBSpan(1, 1),
-            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxEXPAND | wxALL,
             CellBorderOuter);
     }
 
     // Finalize panel
 
-    for (int c = 0; c < gridSizer->GetCols(); ++c)
-        gridSizer->AddGrowableCol(c);
+    WxHelpers::MakeAllColumnsExpandable(gridSizer);
 
     panel->SetSizer(gridSizer);
 }
@@ -4834,8 +4956,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
     // Finalize panel
 
-    for (int c = 0; c < gridSizer->GetCols(); ++c)
-        gridSizer->AddGrowableCol(c);
+    WxHelpers::MakeAllColumnsExpandable(gridSizer);
 
     panel->SetSizer(gridSizer);
 }
@@ -4873,7 +4994,7 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
                     mEffectsVolumeSlider,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
-                    wxALL,
+                    wxEXPAND | wxALL,
                     CellBorderInner);
             }
 
@@ -4899,7 +5020,7 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
                     mToolsVolumeSlider,
                     wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
-                    wxALL,
+                    wxEXPAND | wxALL,
                     CellBorderInner);
             }
 
@@ -4913,10 +5034,10 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
                     mPlayBreakSoundsCheckBox->Bind(
                         wxEVT_COMMAND_CHECKBOX_CLICKED,
                         [this](wxCommandEvent & event)
-                    {
-                        mLiveSettings.SetValue(GameSettings::PlayBreakSounds, event.IsChecked());
-                        OnLiveSettingsChanged();
-                    });
+                        {
+                            mLiveSettings.SetValue(GameSettings::PlayBreakSounds, event.IsChecked());
+                            OnLiveSettingsChanged();
+                        });
 
                     checkboxesSizer->Add(mPlayBreakSoundsCheckBox, 0, wxALL | wxALIGN_LEFT, InterCheckboxRowMargin);
                 }
@@ -4927,10 +5048,10 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
                     mPlayStressSoundsCheckBox->Bind(
                         wxEVT_COMMAND_CHECKBOX_CLICKED,
                         [this](wxCommandEvent & event)
-                    {
-                        mLiveSettings.SetValue(GameSettings::PlayStressSounds, event.IsChecked());
-                        OnLiveSettingsChanged();
-                    });
+                        {
+                            mLiveSettings.SetValue(GameSettings::PlayStressSounds, event.IsChecked());
+                            OnLiveSettingsChanged();
+                        });
 
                     checkboxesSizer->Add(mPlayStressSoundsCheckBox, 0, wxALL | wxALIGN_LEFT, InterCheckboxRowMargin);
                 }
@@ -4941,10 +5062,10 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
                     mPlayWindSoundCheckBox->Bind(
                         wxEVT_COMMAND_CHECKBOX_CLICKED,
                         [this](wxCommandEvent & event)
-                    {
-                        mLiveSettings.SetValue(GameSettings::PlayWindSound, event.IsChecked());
-                        OnLiveSettingsChanged();
-                    });
+                        {
+                            mLiveSettings.SetValue(GameSettings::PlayWindSound, event.IsChecked());
+                            OnLiveSettingsChanged();
+                        });
 
                     checkboxesSizer->Add(mPlayWindSoundCheckBox, 0, wxALL | wxALIGN_LEFT, InterCheckboxRowMargin);
                 }
@@ -4955,10 +5076,10 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
                     mPlayAirBubbleSurfaceSoundCheckBox->Bind(
                         wxEVT_COMMAND_CHECKBOX_CLICKED,
                         [this](wxCommandEvent & event)
-                    {
-                        mLiveSettings.SetValue(GameSettings::PlayAirBubbleSurfaceSound, event.IsChecked());
-                        OnLiveSettingsChanged();
-                    });
+                        {
+                            mLiveSettings.SetValue(GameSettings::PlayAirBubbleSurfaceSound, event.IsChecked());
+                            OnLiveSettingsChanged();
+                        });
 
                     checkboxesSizer->Add(mPlayAirBubbleSurfaceSoundCheckBox, 0, wxALL | wxALIGN_LEFT, InterCheckboxRowMargin);
                 }
@@ -4967,18 +5088,24 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
                     checkboxesSizer,
                     wxGBPosition(0, 2),
                     wxGBSpan(1, 1),
-                    wxALL,
+                    wxEXPAND | wxALL,
                     CellBorderInner);
             }
 
-            boxSizer->Add(sizer, 0, wxALL, StaticBoxInsetMargin);
+            WxHelpers::MakeAllColumnsExpandable(sizer);
+
+            boxSizer->Add(
+                sizer,
+                1,
+                wxEXPAND | wxALL,
+                StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             boxSizer,
             wxGBPosition(0, 0),
             wxGBSpan(1, 3),
-            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxEXPAND | wxALL,
             CellBorderInner);
     }
 
@@ -5012,7 +5139,7 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
                     mStrengthRandomizationDensityAdjustmentSlider,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
-                    wxALL,
+                    wxEXPAND | wxALL,
                     CellBorderInner);
             }
 
@@ -5038,18 +5165,24 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
                     mStrengthRandomizationExtentSlider,
                     wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
-                    wxALL,
+                    wxEXPAND | wxALL,
                     CellBorderInner);
             }
 
-            boxSizer->Add(sizer, 0, wxALL, StaticBoxInsetMargin);
+            WxHelpers::MakeAllColumnsExpandable(sizer);
+
+            boxSizer->Add(
+                sizer,
+                1,
+                wxEXPAND | wxALL,
+                StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             boxSizer,
             wxGBPosition(0, 3),
-            wxGBSpan(1, 1),
-            wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxGBSpan(1, 2),
+            wxEXPAND | wxALL,
             CellBorderInner);
     }
 
@@ -5084,7 +5217,7 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
                     mSpringStiffnessSlider,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
-                    wxALL,
+                    wxEXPAND | wxALL,
                     CellBorderInner);
             }
 
@@ -5112,18 +5245,24 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
                     mSpringDampingSlider,
                     wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
-                    wxALL,
+                    wxEXPAND | wxALL,
                     CellBorderInner);
             }
 
-            boxSizer->Add(sizer, 0, wxALL, StaticBoxInsetMargin);
+            WxHelpers::MakeAllColumnsExpandable(sizer);
+
+            boxSizer->Add(
+                sizer,
+                1,
+                wxEXPAND | wxALL,
+                StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(0, 4),
-            wxGBSpan(1, 1),
-            wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxGBPosition(0, 5),
+            wxGBSpan(1, 2),
+            wxEXPAND | wxALL,
             CellBorderInner);
     }
 
@@ -5194,7 +5333,7 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
             mDebugShipRenderModeRadioBox,
             wxGBPosition(1, 0),
             wxGBSpan(1, 1),
-            wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxEXPAND | wxALL,
             CellBorderInner);
     }
 
@@ -5290,7 +5429,7 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
             boxSizer,
             wxGBPosition(1, 1),
             wxGBSpan(1, 1),
-            wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxEXPAND | wxALL,
             CellBorderInner);
     }
 
@@ -5361,7 +5500,7 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
             mVectorFieldRenderModeRadioBox,
             wxGBPosition(1, 2),
             wxGBSpan(1, 1),
-            wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxEXPAND | wxALL,
             CellBorderInner);
     }
 
@@ -5400,8 +5539,8 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
         gridSizer->Add(
             boxSizer,
             wxGBPosition(1, 3),
-            wxGBSpan(1, 1),
-            wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxGBSpan(1, 2),
+            wxEXPAND | wxALL,
             CellBorderInner);
     }
 
@@ -5469,21 +5608,26 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            performanceBoxSizer->Add(performanceSizer, 1, wxALL, StaticBoxInsetMargin);
+            WxHelpers::MakeAllColumnsExpandable(performanceSizer);
+
+            performanceBoxSizer->Add(
+                performanceSizer,
+                1,
+                wxEXPAND | wxALL,
+                StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             performanceBoxSizer,
-            wxGBPosition(1, 4),
-            wxGBSpan(1, 1),
-            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxGBPosition(1, 5),
+            wxGBSpan(1, 2),
+            wxEXPAND | wxALL,
             CellBorderOuter);
     }
 
     // Finalize panel
 
-    for (int c = 0; c < gridSizer->GetCols(); ++c)
-        gridSizer->AddGrowableCol(c);
+    WxHelpers::MakeAllColumnsExpandable(gridSizer);
 
     panel->SetSizer(gridSizer);
 }
@@ -5505,46 +5649,60 @@ void SettingsDialog::PopulateSettingsManagementPanel(wxPanel * panel)
             // Col 1
 
             {
-                mPersistedSettingsListCtrl = new wxListCtrl(
-                    boxSizer->GetStaticBox(),
-                    wxID_ANY,
-                    wxDefaultPosition,
-                    wxSize(250, 370),
-                    wxBORDER_STATIC /*https://trac.wxwidgets.org/ticket/18549*/ | wxLC_REPORT | wxLC_NO_HEADER | wxLC_SINGLE_SEL);
+                wxBoxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
 
-                mPersistedSettingsListCtrl->AppendColumn(
-                    wxEmptyString,
-                    wxLIST_FORMAT_LEFT,
-                    mPersistedSettingsListCtrl->GetSize().GetWidth() - 10);
-
-                for (size_t p = 0; p < mPersistedSettings.size(); ++p)
                 {
-                    InsertPersistedSettingInCtrl(p, mPersistedSettings[p].Key);
+                    mPersistedSettingsListCtrl = new wxListCtrl(
+                        boxSizer->GetStaticBox(),
+                        wxID_ANY,
+                        wxDefaultPosition,
+                        wxSize(250, 370),
+                        wxBORDER_STATIC /*https://trac.wxwidgets.org/ticket/18549*/ | wxLC_REPORT | wxLC_NO_HEADER | wxLC_SINGLE_SEL);
+
+                    mPersistedSettingsListCtrl->AppendColumn(
+                        wxEmptyString,
+                        wxLIST_FORMAT_LEFT,
+                        mPersistedSettingsListCtrl->GetSize().GetWidth() - 10);
+
+                    for (size_t p = 0; p < mPersistedSettings.size(); ++p)
+                    {
+                        InsertPersistedSettingInCtrl(p, mPersistedSettings[p].Key);
+                    }
+
+                    if (!mPersistedSettings.empty())
+                    {
+                        // Select first item
+                        mPersistedSettingsListCtrl->SetItemState(0, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED);
+                    }
+
+                    mPersistedSettingsListCtrl->Bind(
+                        wxEVT_LIST_ITEM_SELECTED,
+                        [this](wxListEvent &)
+                        {
+                            ReconciliateLoadPersistedSettings();
+                        });
+
+                    mPersistedSettingsListCtrl->Bind(
+                        wxEVT_LIST_ITEM_ACTIVATED,
+                        [this](wxListEvent & event)
+                        {
+                            assert(event.GetIndex() != wxNOT_FOUND);
+
+                            LoadPersistedSettings(static_cast<size_t>(event.GetIndex()), true);
+                        });
+
+                    vSizer->Add(
+                        mPersistedSettingsListCtrl,
+                        0,
+                        wxALL | wxALIGN_CENTER_HORIZONTAL, // Do not expand, but center horiz
+                        5);
                 }
 
-                if (!mPersistedSettings.empty())
-                {
-                    // Select first item
-                    mPersistedSettingsListCtrl->SetItemState(0, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED);
-                }
-
-                mPersistedSettingsListCtrl->Bind(
-                    wxEVT_LIST_ITEM_SELECTED,
-                    [this](wxListEvent &)
-                    {
-                        ReconciliateLoadPersistedSettings();
-                    });
-
-                mPersistedSettingsListCtrl->Bind(
-                    wxEVT_LIST_ITEM_ACTIVATED,
-                    [this](wxListEvent & event)
-                    {
-                        assert(event.GetIndex() != wxNOT_FOUND);
-
-                        LoadPersistedSettings(static_cast<size_t>(event.GetIndex()), true);
-                    });
-
-                hSizer->Add(mPersistedSettingsListCtrl, 0, wxALL | wxEXPAND, 5);
+                hSizer->Add(
+                    vSizer,
+                    0,
+                    wxEXPAND | wxALL,
+                    5);
             }
 
             // Col 2
@@ -5567,7 +5725,11 @@ void SettingsDialog::PopulateSettingsManagementPanel(wxPanel * panel)
                         wxSize(250, 120),
                         wxTE_MULTILINE | wxTE_READONLY | wxTE_WORDWRAP);
 
-                    vSizer->Add(mPersistedSettingsDescriptionTextCtrl, 0, wxALL | wxEXPAND, 5);
+                    vSizer->Add(
+                        mPersistedSettingsDescriptionTextCtrl,
+                        0,
+                        wxEXPAND | wxALL,
+                        5);
                 }
 
                 {
@@ -5588,7 +5750,11 @@ void SettingsDialog::PopulateSettingsManagementPanel(wxPanel * panel)
                             }
                         });
 
-                    vSizer->Add(mApplyPersistedSettingsButton, 0, wxALL | wxEXPAND, 5);
+                    vSizer->Add(
+                        mApplyPersistedSettingsButton,
+                        0,
+                        wxEXPAND | wxALL,
+                        5);
 
                     mRevertToPersistedSettingsButton = new wxButton(boxSizer->GetStaticBox(), wxID_ANY, _("Revert to Saved Settings"));
                     mRevertToPersistedSettingsButton->SetToolTip(_("Reverts all settings to the selected settings."));
@@ -5607,7 +5773,11 @@ void SettingsDialog::PopulateSettingsManagementPanel(wxPanel * panel)
                             }
                         });
 
-                    vSizer->Add(mRevertToPersistedSettingsButton, 0, wxALL | wxEXPAND, 5);
+                    vSizer->Add(
+                        mRevertToPersistedSettingsButton,
+                        0,
+                        wxEXPAND | wxALL,
+                        5);
 
                     mReplacePersistedSettingsButton = new wxButton(boxSizer->GetStaticBox(), wxID_ANY, _("Replace Saved Settings with Current"));
                     mReplacePersistedSettingsButton->SetToolTip(_("Overwrites the selected settings with the current settings."));
@@ -5643,7 +5813,11 @@ void SettingsDialog::PopulateSettingsManagementPanel(wxPanel * panel)
                             }
                         });
 
-                    vSizer->Add(mReplacePersistedSettingsButton, 0, wxALL | wxEXPAND, 5);
+                    vSizer->Add(
+                        mReplacePersistedSettingsButton,
+                        0,
+                        wxEXPAND | wxALL,
+                        5);
 
                     mDeletePersistedSettingsButton = new wxButton(boxSizer->GetStaticBox(), wxID_ANY, _("Delete Saved Settings"));
                     mDeletePersistedSettingsButton->SetToolTip(_("Deletes the selected settings."));
@@ -5694,20 +5868,32 @@ void SettingsDialog::PopulateSettingsManagementPanel(wxPanel * panel)
                             }
                         });
 
-                    vSizer->Add(mDeletePersistedSettingsButton, 0, wxALL | wxEXPAND, 5);
+                    vSizer->Add(
+                        mDeletePersistedSettingsButton,
+                        0,
+                        wxEXPAND | wxALL,
+                        5);
                 }
 
-                hSizer->Add(vSizer, 0, 0, 0);
+                hSizer->Add(
+                    vSizer,
+                    1,
+                    wxEXPAND | wxALL,
+                    5);
             }
 
-            boxSizer->Add(hSizer, 0, wxALL, StaticBoxInsetMargin);
+            boxSizer->Add(
+                hSizer,
+                0,
+                wxEXPAND | wxALL,
+                StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
             boxSizer,
             wxGBPosition(0, 0),
             wxGBSpan(1, 1),
-            wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxEXPAND | wxALL,
             CellBorderInner);
 
         ReconciliateLoadPersistedSettings();
@@ -5878,7 +6064,11 @@ void SettingsDialog::PopulateSettingsManagementPanel(wxPanel * panel)
                         ReconciliateSavePersistedSettings();
                     });
 
-                boxSizer->Add(mSaveSettingsButton, 0, wxALL | wxEXPAND, 5);
+                boxSizer->Add(
+                    mSaveSettingsButton,
+                    0,
+                    wxALL | wxALIGN_CENTER_HORIZONTAL, // Do not expand this button
+                    5);
             }
         }
 
@@ -5886,7 +6076,7 @@ void SettingsDialog::PopulateSettingsManagementPanel(wxPanel * panel)
             boxSizer,
             wxGBPosition(0, 1),
             wxGBSpan(1, 1),
-            wxALL | wxALIGN_CENTER_HORIZONTAL,
+            wxEXPAND | wxALL,
             CellBorderInner);
 
         ReconciliateSavePersistedSettings();
@@ -5894,8 +6084,7 @@ void SettingsDialog::PopulateSettingsManagementPanel(wxPanel * panel)
 
     // Finalize panel
 
-    for (int c = 0; c < gridSizer->GetCols(); ++c)
-        gridSizer->AddGrowableCol(c);
+    WxHelpers::MakeAllColumnsExpandable(gridSizer);
 
     panel->SetSizer(gridSizer);
 }
@@ -6540,4 +6729,29 @@ void SettingsDialog::ReconciliateSavePersistedSettings()
 void SettingsDialog::OnPersistenceError(std::string const & errorMessage) const
 {
     wxMessageBox(errorMessage, _("Error"), wxICON_ERROR);
+}
+
+wxSizer * SettingsDialog::MakeToolVerticalStripIcons(
+    wxWindow * parent,
+    std::vector<std::string> && iconNames,
+    ResourceLocator const & resourceLocator)
+{
+    wxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
+
+    for (int i = 0; i < iconNames.size(); ++i)
+    {
+        wxBitmap bitmap = wxBitmap(
+            resourceLocator.GetCursorFilePath(iconNames[i]).string(),
+            wxBITMAP_TYPE_PNG);
+
+        auto * staticBitmap = new wxStaticBitmap(parent, wxID_ANY, bitmap);
+
+        vSizer->Add(
+            staticBitmap,
+            0,
+            wxTOP,
+            (i == 0) ? 0 : IconSpacing);
+    }
+
+    return vSizer;
 }

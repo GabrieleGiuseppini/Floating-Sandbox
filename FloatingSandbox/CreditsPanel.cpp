@@ -103,7 +103,8 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
         {1, wxS("TheCrafters001"), 0},
         {1, wxS("minch"), 0},
         {1, wxS("Rpr5704"), 0},
-        {1, wxS("Pocketwatch"), VMargin3},
+        {1, wxS("Pocketwatch"), 0},
+        {1, wxS("Dario Bazzichetto"), VMargin3},
 
         {0, _("BUILD ENGINEERING"), 0},
         {1, wxS("The_SamminAter (macOS)"), 0},

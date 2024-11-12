@@ -25,6 +25,7 @@
 #include <wx/textctrl.h>
 
 #include <memory>
+#include <string>
 #include <vector>
 
 class SettingsDialog : public wxFrame
@@ -282,6 +283,11 @@ private:
     void SavePersistedSettings(PersistedSettingsMetadata const & metadata);
     void ReconciliateSavePersistedSettings();
     void OnPersistenceError(std::string const & errorMessage) const;
+
+    wxSizer * MakeToolVerticalStripIcons(
+        wxWindow * parent,
+        std::vector<std::string> && iconNames,
+        ResourceLocator const & resourceLocator);
 
 private:
 

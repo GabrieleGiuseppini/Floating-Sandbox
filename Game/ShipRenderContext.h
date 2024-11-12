@@ -39,7 +39,7 @@ class ShipRenderContext
 private:
 
     // Base dimensions of flame quads
-    static float constexpr BasisShipFlameHalfQuadWidth = 8.0f;
+    static float constexpr BasisShipFlameHalfQuadWidth = 10.5f;
     static float constexpr BasisShipFlameQuadHeight = 7.5f;
     static float constexpr BasisNpcFlameHalfQuadWidth = 10.5f * 0.15f;
     static float constexpr BasisNpcFlameQuadHeight = 7.5f * 0.15f;

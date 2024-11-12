@@ -107,7 +107,7 @@ wxBitmap WxHelpers::MakeBaseButtonBitmap(std::filesystem::path const & bitmapFil
     }
 
     wxBitmap newBitmap(
-        baseWidth + 2 * Style::ButtonExtraBorderThickness, 
+        baseWidth + 2 * Style::ButtonExtraBorderThickness,
         baseHeight + 2 * Style::ButtonExtraBorderThickness,
         baseBitmap.GetDepth());
     auto const newWidth = newBitmap.GetWidth();
@@ -189,7 +189,7 @@ wxBitmap WxHelpers::MakeSelectedButtonBitmap(std::filesystem::path const & bitma
     }
 
     wxBitmap newBitmap = wxBitmap(
-        baseWidth + 2 * Style::ButtonExtraBorderThickness, 
+        baseWidth + 2 * Style::ButtonExtraBorderThickness,
         baseHeight + 2 * Style::ButtonExtraBorderThickness,
         baseBitmap.GetDepth());
     auto const newWidth = newBitmap.GetWidth();
@@ -220,7 +220,7 @@ wxBitmap WxHelpers::MakeSelectedButtonBitmap(std::filesystem::path const & bitma
         for (int nx = 0; nx < newWidth; ++nx, ++writeIt)
         {
             rgbaColor newColor;
-            if (ny == 0 || ny == newHeight - 1 
+            if (ny == 0 || ny == newHeight - 1
                 || nx == 0 || nx == newWidth - 1)
             {
                 // Border
@@ -473,7 +473,7 @@ wxImage WxHelpers::MakeImage(RgbaImageData const & imageData)
     unsigned char * const dstAlphaPtr = reinterpret_cast<unsigned char *>(std::malloc(linearSize * 1));
     assert(nullptr != dstAlphaPtr);
     rgbColor::data_type * dstAlpha = reinterpret_cast<rgbColor::data_type *>(dstAlphaPtr);
-    
+
     for (int y = imageData.Size.height - 1; y >= 0; --y)
     {
         for (int x = 0; x < imageData.Size.width; ++x)
@@ -489,4 +489,10 @@ wxImage WxHelpers::MakeImage(RgbaImageData const & imageData)
     dst.SetAlpha(dstAlphaPtr, false);
 
     return dst;
+}
+
+void WxHelpers::MakeAllColumnsExpandable(wxFlexGridSizer * gridSizer)
+{
+    for (int c = 0; c < gridSizer->GetCols(); ++c)
+        gridSizer->AddGrowableCol(c);
 }

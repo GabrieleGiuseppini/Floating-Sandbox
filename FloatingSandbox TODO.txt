@@ -566,6 +566,7 @@ v			+ FixedSetSliderCore
 					+ Swap Npcs with Land
 					+ Flame size adjust: watch out spacing, different than neighbors
 				- Shape finalization
+					= Put back quad width (was new: // 8.0f;)
 			- Test also fire on NPCs
 			- See if can get rid of AtlasTile1Dx for good, by also incorporating it in WorldBorder
 		- Merge into master
@@ -576,7 +577,14 @@ v			+ FixedSetSliderCore
 
 	- Test fire and NPCs with nVidia
 
-	- Redo SettingsDialog layout
+	= Redo SettingsDialog layout
+		! Rules:
+			! Everything is wxEXPAND | wxALL, no ALIGN_CENTER
+			! AddGrowableCol for each internal gridSizer
+		+ Mechanics and Termodynamics
+		+ Icons at two tool panels
+		+ Sound and ADvanced Settings
+		- Test with Italian
 
 	= Air bubbles:
 		+ We effed up formula: final scale is 0.2, old coeff was 0.75

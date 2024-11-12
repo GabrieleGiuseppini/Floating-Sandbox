@@ -14,6 +14,7 @@
 #include <wx/cursor.h>
 #include <wx/generic/statbmpg.h>
 #include <wx/image.h>
+#include <wx/sizer.h>
 #include <wx/wx.h>
 
 #include <filesystem>
@@ -30,7 +31,7 @@ namespace WxHelpers
     wxBitmap LoadBitmap(
         std::string const & bitmapName,
         ImageSize const & size,
-        ResourceLocator const & resourceLocator);    
+        ResourceLocator const & resourceLocator);
 
     wxBitmap MakeBitmap(RgbaImageData const & imageData);
 
@@ -65,4 +66,6 @@ namespace WxHelpers
         rgbColor newTint);
 
     wxImage MakeImage(RgbaImageData const & imageData);
+
+    void MakeAllColumnsExpandable(wxFlexGridSizer * gridSizer);
 };
