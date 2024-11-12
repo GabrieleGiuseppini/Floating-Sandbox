@@ -219,28 +219,55 @@ Next release:
 	- Need mechanism for dynamic removal of NPCs
 		- Will be useful also for human removal animation (*)
 		- Option 1: set of NpcId's to remove, scavenged at end of Update()
-			- TODOHERE: will we need a way to keep the NPC "out of the loop" for the rest of the simulation step?
+			- BeingRemoved regime: to keep the NPC "out of the loop" for the rest of the simulation step
+				- No physics, no human behavior update (other than for BeingRemoved itself, updating orientations and progress for animation)
+					- BeingRemoved is in fact also a human behavior for completeness, for consistency with UpdateHumanBehavior and UpdateAnimation
+			- When marking an NPC for removal (via helper): 
+				- Add to set
+				- Set regime and human behavior (iff human)
 
 - New human behaviors:
-	- First off: "next triangle" check when planning:
-		- WalkingBehaviorState contains: tri index, edge ordinal, "half edge sign", and x orientation
-			- Init'd to None at each transition into Walking
-			- Used to detect change of "half edge"
-		- When change detected:
-			- if half_change*orientation > 0: do whatever
-			- Update state with current half
+	- Prelim work:
+		- 1. Commodotize finding alternatives at end of triangle
+			- Extract vertex navigation w/candidates finding into own function
+				- Args, among others:
+					- xDir: translated into CCW or CW
+					- Shortcut to stop search if at least one candidate is found
+						- Activated at forward-looking walk planning (* below), where we are interested in just knowing whether we can proceed or not
+				- Return type: TODO: candidates, etc.
+		- 2: "next triangle" check when planning:
+			- @ UpdateBehavior while walking (or at WalkingUpdate):
+				- WalkingBehaviorState contains: tri index, edge ordinal, "half edge sign", and x orientation
+					- Init'd to None at each transition into Walking
+					- Used to detect change of "half edge"
+				- When change detected:
+					- if half_change*orientation > 0: we're walking into next edge in this direction; do <X>
+					- Update state with current half
 
 	- Panic when water entering
 	- Panic when sinking detected
 
 	- Walk away from water
 
+	- Forward-looking walk planning:
+		! Goal: while walking, do not proceed towards a wall or a hole
+		- Requires 1. and 2. @ Prelim work above
+		- @ Walking behavior (* above): when "half-triangle" change detected (* above):
+			- Find if a next floor exists in cur triangle along walking direction
+				- Via commoditized helper
+			- Can not proceed if doesn't find any alternatives
+				- Flip
+					! We'll figure out whether we're stuck also in other direction after we cross the half-triangle again
+
 	- When human removed, enters "Removal" behavior: rotates with arms 90degree and legs closed, alpha down, then disappears
-		- Requires delayed removal (@UpdateBehavior), see (*) above
-			- Can't be picked when in this state
-			- Physics update: skipped when in this state (like BeingPlaced, but for whole NPC this time)
-			- Tests:
-				- Stats published
+		- Requires delayed removal (@UpdateBehavior), see (*) above at Explosive NPCs
+			- "BeingRemoved" regime for whole NPC
+		- Can't be picked when in this regime
+		- Physics update: skipped when in this regime (kinda like BeingPlaced, but for whole NPC this time)
+		- Furniture animation:
+			- Similar shader but no rotation
+		- Tests:
+			- Stats published
 
 	- When ship is repaired, all NPCs do a little dance
 		- Sync is simulation clock (so all are in sync)
@@ -362,19 +389,6 @@ Next release:
 			- Breadth first visit of elements in the queue (all elements first, all reachable from those next, etc.), storing distance in n's slot
 			- Do not revisit a pointVedge if it has been already visited at this full run
 				- Guaranteed to stop mid-way
-
-- Forward-looking walk planning:
-	- TODO: CurrentTriangleIndex below might change to above (*)
-	- First off: WalkingBehaviorState remembers CurrentTriangleElementIndex (of primary)
-		- Init'd to None at each transition into Walking
-	- @ UpdateBehavior while walking (or at WalkingUpdate):
-		- If current primary triangle != current:
-			- Planning:
-				- Find next floor in cur triangle along walking direction
-					- CanProceedInDirection(TriangleEdge, xDir) -> bool
-						- xDir translated into CCW or CW, then proceeds with analytical vertex finding until floor
-						- Can not proceed if doesn't find any alternatives
-			- current = current primary triangle
 
 - NPC packs:
 	- NpcDatabase:
