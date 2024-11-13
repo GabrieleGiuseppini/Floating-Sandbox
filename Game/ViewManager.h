@@ -39,6 +39,7 @@ public:
     void OnViewModelUpdated();
     void Pan(vec2f const & worldOffset);
     void PanToWorldX(float worldX);
+    void PanToWorldY(float worldY);
     void AdjustZoom(float amount);
     void FocusOn(
         Geometry::AABB const & aabb,

@@ -558,7 +558,7 @@ v			+ FixedSetSliderCore
 			+ contrast adjustment at flames - AFTER COMMIT!
 			X Test with Perlin
 			
-		= Integration
+		+ Integration
 			+ Fix dead pixels as per shader instructions
 				+ WAS: Dead pixels are 1.0, should be 0.5 - and when we give it as atlas tile params, should be based off full atlas size!!!!
 			+ Test first both maps for repeatability
@@ -572,7 +572,6 @@ v			+ FixedSetSliderCore
 					+ Put back quad width (was new: // 8.0f;)
 					+ Simplify shader
 			+ Test also fire on NPCs
-			- See if can get rid of AtlasTile1Dx for good, by also incorporating it in WorldBorder
 		- Merge into master
 		- Changelist
 		- Cleanup desktop
@@ -609,6 +608,8 @@ v			+ FixedSetSliderCore
 		- ocean, land
 
 	- ShipBuilder: see issue with copy'n'paste of electrical materials losing instance ID
+	- WorldBorder: it's broken, likely because of linear
+		- See if can get rid of AtlasTile1Dx for good, by also incorporating it in WorldBorder
 
 	- Add more music:
 		- Background:

@@ -160,6 +160,22 @@ void ViewManager::PanToWorldX(float worldX)
     }
 }
 
+void ViewManager::PanToWorldY(float worldY)
+{
+    if (!mAutoFocus.has_value())
+    {
+        vec2f const newTargetCameraWorldPosition = vec2f(
+            mCameraWorldPositionParameterSmoother.GetValue().x,
+            worldY);
+
+        mCameraWorldPositionParameterSmoother.SetValue(newTargetCameraWorldPosition);
+    }
+    else
+    {
+        mAutoFocus->UserCameraWorldPositionOffset.y = worldY;
+    }
+}
+
 void ViewManager::AdjustZoom(float amount)
 {
     if (!mAutoFocus.has_value())

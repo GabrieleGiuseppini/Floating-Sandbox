@@ -268,6 +268,8 @@ bool MainApp::OnInit()
         mSecretTypingMappings.emplace_back("BUILTINSHIP3", std::bind(&MainFrame::OnSecretTypingLoadBuiltInShip, mMainFrame, 3));
         mSecretTypingMappings.emplace_back("LEFT", std::bind(&MainFrame::OnSecretTypingGoToWorldEnd, mMainFrame, 0));
         mSecretTypingMappings.emplace_back("RIGHT", std::bind(&MainFrame::OnSecretTypingGoToWorldEnd, mMainFrame, 1));
+        mSecretTypingMappings.emplace_back("TOP", std::bind(&MainFrame::OnSecretTypingGoToWorldEnd, mMainFrame, 2));
+        mSecretTypingMappings.emplace_back("BOTTOM", std::bind(&MainFrame::OnSecretTypingGoToWorldEnd, mMainFrame, 3));
 
         //
         // Run

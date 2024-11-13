@@ -1587,10 +1587,32 @@ void GameController::Pan(DisplayLogicalSize const & screenOffset)
 
 void GameController::PanToWorldEnd(int side)
 {
-    mViewManager.PanToWorldX(
-        side == 0
-        ? -GameParameters::HalfMaxWorldWidth
-        : GameParameters::HalfMaxWorldWidth);
+    switch (side)
+    {
+        case 0:
+        {
+            mViewManager.PanToWorldX(-GameParameters::HalfMaxWorldWidth);
+            break;
+        }
+
+        case 1:
+        {
+            mViewManager.PanToWorldX(GameParameters::HalfMaxWorldWidth);
+            break;
+        }
+
+        case 2:
+        {
+            mViewManager.PanToWorldY(GameParameters::HalfMaxWorldHeight);
+            break;
+        }
+
+        default:
+        {
+            mViewManager.PanToWorldY(-GameParameters::HalfMaxWorldHeight);
+            break;
+        }
+    }
 }
 
 void GameController::AdjustZoom(float amount)
