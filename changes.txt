@@ -5,6 +5,9 @@
 - Added new "Lamp" tool, allowing you to peer at wrecks into the darkness
 	- Revisited darkness of wrecks in the process: ships now fade into darkness as they sink deeper and deeper
 		- This new behavior may be controlled via "Settings"->"Rendering"->"Ship"->"Depth Darkening"
+- Improved flames
+	- Each release brings flames closer to the way I've always wanted them to look...
+- Improved clouds
 - Revisited ocean floor friction and silting
 	- ...mostly spurred from a lot of development in this area due to NPC work
 - Added "Guide Mode" to Terrain Adjust tool: keep SHIFT pressed and you'll be able to draw terrain along straight lines

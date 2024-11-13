@@ -572,7 +572,7 @@ v			+ FixedSetSliderCore
 					+ Put back quad width (was new: // 8.0f;)
 					+ Simplify shader
 			+ Test also fire on NPCs
-		- Merge into master
+		+ Merge into master
 		- Changelist
 		- Cleanup desktop
 
