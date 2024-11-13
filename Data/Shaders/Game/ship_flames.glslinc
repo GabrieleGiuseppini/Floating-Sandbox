@@ -108,6 +108,16 @@ void main()
     // Calculate thickness (alpha)
     //
 
+    #define FLAME_WIDTH 0.19
+    #define BOTTOM_RADIUS 0.19
+    float flameWidth = 
+        step(flameSpacePosition.y, BOTTOM_RADIUS)
+        * sqrt(abs(BOTTOM_RADIUS * BOTTOM_RADIUS - (flameSpacePosition.y - BOTTOM_RADIUS) * (flameSpacePosition.y - BOTTOM_RADIUS))) * FLAME_WIDTH / BOTTOM_RADIUS
+        +
+        step(BOTTOM_RADIUS, flameSpacePosition.y)
+        * FLAME_WIDTH;
+
+    /* FOLLOWING IS FOR TEAR-SHAPED FLAMES
     #define BEGIN_FLAME_WIDTH 0.41
     #define L1 0.19
     #define L2 0.23
@@ -125,6 +135,7 @@ void main()
     flameWidth = max(flameWidth,            
         IsInBox(L3, 1.1, flameSpacePosition.y) 
             * END_FLAME_WIDTH);
+    */
     
     float thickness = 1.0 - abs(uv.x) / flameWidth; // [-inf, 0.0 @ width, 1.0 @ center x]
 
@@ -137,8 +148,8 @@ void main()
     
     // Calculate factor to taper sampling at bottom
     float bottomSampleTapering = 
-        0.4 
-        + 0.6 * flameWidth / BEGIN_FLAME_WIDTH;
+        0.3 
+        + 0.7 * flameWidth / FLAME_WIDTH;
     
     //
     // Sample alpha

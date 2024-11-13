@@ -141,7 +141,7 @@
 		+ Cleanup shader
 		+ Commit
 		+ Extras:
-			= Try it on clouds as well:
+			+ Try it on clouds as well:
 				+ Prototype: simply bind to texture @ CloudRender, and update shader
 				+ Adjust growth parameter: use time
 				X Test another noise
@@ -430,6 +430,9 @@ v			+ FixedSetSliderCore
 		- Test AdobeStock/Getty clouds
 			- Need Publisher or Illustrator
 
+		- Test cloud 8008 on desktop (replacing cloud_2 in Atlas which is a badly processed version)
+			- See if we have it in authoring alreday though
+
 		- Changelist
 	
 	= Quad rendering with indices
@@ -559,23 +562,27 @@ v			+ FixedSetSliderCore
 			+ Fix dead pixels as per shader instructions
 				+ WAS: Dead pixels are 1.0, should be 0.5 - and when we give it as atlas tile params, should be based off full atlas size!!!!
 			+ Test first both maps for repeatability
-			= Fine-tune
+			+ Fine-tune
 				+ Remove zoom
 				+ Back to discard alphas
 				+ Settings dialog for kaos adjust
 					+ Swap Npcs with Land
 					+ Flame size adjust: watch out spacing, different than neighbors
-				- Shape finalization
-					= Put back quad width (was new: // 8.0f;)
-			- Test also fire on NPCs
+				+ Shape finalization
+					+ Put back quad width (was new: // 8.0f;)
+					+ Simplify shader
+			+ Test also fire on NPCs
 			- See if can get rid of AtlasTile1Dx for good, by also incorporating it in WorldBorder
 		- Merge into master
 		- Changelist
+		- Cleanup desktop
 
 	+ Fix Bazzico bug
 		! Need a buffer allocated when VAO is bound
 
-	- Test fire and NPCs with nVidia
+	- Test fire and NPCs with:
+		- nVidia
+		- Old Dell
 
 	= Redo SettingsDialog layout
 		! Rules:
@@ -615,9 +622,39 @@ v			+ FixedSetSliderCore
 
 	- Release prep:
 		- Ships:
-			- See below			-
-			- FS email
+			= FS email
+				! From Sean Dempsey
+					+ R.M.S. Centennial
+					+ H.M.H.S. Imagination
+					+ S.S. Dempsey					
+					- Asked credits
+					- Add to credits
+				! From Dimitry Warin (aka Helooping)
+					+ Galeb
+					+ Lamartine
+					+ Transilvania
+					- Xia Zhi Yuan 6
+						- Bends too much, asked
+					- Check shipbuckets credits for all
+					- Make .shp2 for all
+				
 			- All Discord's
+				= Bright mammooth - ⁵⁵𝐓𝐡𝐞 𝟐𝟒𝐭𝐡_𝐃𝐨𝐜𝐭𝐨𝐫-𝟏𝟗𝟐𝟐⁵⁵#1963
+					+ Asked name: doctor1922
+					- Add to credits
+				- https://discord.com/channels/@me/1128107472129896568/1259012624524247098
+				- All these: https://discord.com/channels/559822257275404307/562030667198758913/1124472062308778184
+				- And these: https://discord.com/channels/559822257275404307/561385586355732503/1272069465244176424
+		
+			- _TO_TEST:
+				- Saturn V (Ur local brazilian#0842, aka Transportation Fan - already in credits)
+				- "Hellooping" in _TO_TEST
+					+ Guy is already credited		
+				- R.V.S. Velouria
+					- Is it from Discord?
+				- Maximum 4 (desktop)
+					- Is it from Discord?
+		
 		- Localization:
 			- Change two help files to remove stuff we've removed and add stuff we haven't localized
 				- RU, UK, ES
@@ -916,20 +953,6 @@ v			+ FixedSetSliderCore
 			+ Test
 			+ Meta: The package includes 11 ships. The name of this pack is: The Mateusz's Small Steamship ShipPack. Author: "The Mateusz"
 	- New ships:
-		- Discord:
-			- https://discord.com/channels/@me/1128107472129896568/1259012624524247098
-			- All these: https://discord.com/channels/559822257275404307/562030667198758913/1124472062308778184
-			- And these: https://discord.com/channels/559822257275404307/561385586355732503/1272069465244176424
-		- _TO_TEST:
-			- Saturn V (Ur local brazilian#0842, aka Transportation Fan - already in credits)
-			- "Hellooping"
-				+ Guy is already credited
-			- Sean (in gmail)
-		= _TO_TAKE:
-			- Bright mammooth - ⁵⁵𝐓𝐡𝐞 𝟐𝟒𝐭𝐡_𝐃𝐨𝐜𝐭𝐨𝐫-𝟏𝟗𝟐𝟐⁵⁵#1963
-				+ Asked name: doctor1922
-				- Add to credits
-			- Velouria
 
 - Ubuntu:
 	+ Event polling issue:

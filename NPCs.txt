@@ -206,12 +206,12 @@ Next release:
 		- RemoveNpcTool: when mouse down on no candidate, enter "selection mode" drawing rectangle
 			- During selection drawing, talks to GameController in no-NPC language to just draw selection rectangle
 			- Then at mouse up, call Npcs::RemoveNpcs(AABB region)
-	- Injury system - requires further though
+	- Injury system - requires further thought
 		"Something that might be interesting would be to add some sort of injuries system for the NPCs. Doesn't have to be gruesome or gory, but since they seems to be made out of individual joints,
 		 they could have some sort of HP and if a bomb blows off, they might lose their legs or something like that"
 	- "Gravity doesn't seem to be constant for the NPC and objects. Unless it's just some serious drag that prevents them from falling fast"
 		! Indeed we have NPC-specific damping
-		! A too-low NPC-specific damping causes NPCs to bounce forever when in water
+		! A too-low NPC-specific damping causes NPCs to bounce forever when in water, though
 
 - Explosive NPCs
 	- Explode at hit
@@ -229,6 +229,7 @@ Next release:
 - New human behaviors:
 	- Prelim work:
 		- 1. Commodotize finding alternatives at end of triangle
+			! Used by: panic checks, forward-looking walk planning, are walk planning
 			- Extract vertex navigation w/candidates finding into own function
 				- Args, among others:
 					- xDir: translated into CCW or CW
@@ -259,33 +260,36 @@ Next release:
 				- Flip
 					! We'll figure out whether we're stuck also in other direction after we cross the half-triangle again
 
-	- When human removed, enters "Removal" behavior: rotates with arms 90degree and legs closed, alpha down, then disappears
+	- When human removed, enters "Removal" behavior: rotates with arms 90degree and legs closed, alpha down, then disappears; shader does pixie dust
 		- Requires delayed removal (@UpdateBehavior), see (*) above at Explosive NPCs
 			- "BeingRemoved" regime for whole NPC
 		- Can't be picked when in this regime
 		- Physics update: skipped when in this regime (kinda like BeingPlaced, but for whole NPC this time)
 		- Furniture animation:
-			- Similar shader but no rotation
+			- Similar shader, but no rotation
 		- Tests:
 			- Stats published
+		- TODO: need to figure out:
+			- Shader: existing shader with toggled enrichments, or shader on top?
+				- Shader on top has potential Z issues?
 
 	- When ship is repaired, all NPCs do a little dance
 		- Sync is simulation clock (so all are in sync)
 		- Signal from outside (OnShipRepaired) sets global flag
-			- Global flag is decayed to false
+			- Global flag is decayed to false (-1)
 			- At HumanUpdate:
 				- If state is Equilibrium|Walking: if global flag is set: transition to Dancing
 				- Elif state is Dancing: if global flag is not set: transition to Equlibrium
 				- Dancing:
 					- Transitions out with same out transitions as Equilibrium
-			- At UpdateSimulation:
+			- At UpdateAnimation:
 				- Do dance
 	- Engineers repair ship
 		- Ship exposes simplified "Repair" functionality, which simply detaches needed particles from where they are and brings them close
 		- New human NPC behavior ("Constrained_Repairing") with associated animation
 			- Entered when wanting to cross a triangle that on the other side is free because it's damaged
 		- Might also have "Underwater Engineers" with zero buoyancy, unaffected by internal water, who can thus repair when the ship is flooded
-			- This guys has speed multiplier, applies to walk speed and all other movements on a period
+			- This guys has speed multiplier, applies to walk speed and all other movements that are on a period
 
 - New furniture behaviors:
 	- Exploding
