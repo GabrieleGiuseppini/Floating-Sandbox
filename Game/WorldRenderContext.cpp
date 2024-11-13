@@ -351,6 +351,10 @@ WorldRenderContext::WorldRenderContext(
     glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Fish4), 2, GL_FLOAT, GL_FALSE, sizeof(FishVertex), (void *)(12 * sizeof(float)));
     CheckOpenGLError();
 
+    // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
+    // in the VAO. So we won't associate the element VBO here, but rather before each drawing call.
+    ////mGlobalRenderContext.GetElementIndices().Bind()
+
     glBindVertexArray(0);
 
 
@@ -487,7 +491,7 @@ WorldRenderContext::WorldRenderContext(
         CheckOpenGLError();
 
         // Set repeat mode
-        glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_1D, 0x2802, GL_CLAMP_TO_EDGE);
         CheckOpenGLError();
 
         // Set filtering
@@ -513,8 +517,11 @@ WorldRenderContext::WorldRenderContext(
     mShaderManager.ActivateProgram<ProgramType::WorldBorder>();
     mShaderManager.SetTextureParameters<ProgramType::WorldBorder>();
     mShaderManager.SetProgramParameter<ProgramType::WorldBorder, ProgramParameterType::AtlasTile1Dx>(
-        1.0f / static_cast<float>(worldBorderAtlasFrameMetadata.FrameMetadata.Size.width),
-        1.0f / static_cast<float>(worldBorderAtlasFrameMetadata.FrameMetadata.Size.height));
+        // TODOTEST
+        ////1.0f / static_cast<float>(worldBorderAtlasFrameMetadata.FrameMetadata.Size.width),
+        ////1.0f / static_cast<float>(worldBorderAtlasFrameMetadata.FrameMetadata.Size.height));
+        1.0f / static_cast<float>(mGenericLinearTextureAtlasMetadata.GetSize().width),
+        1.0f / static_cast<float>(mGenericLinearTextureAtlasMetadata.GetSize().height));
     mShaderManager.SetProgramParameter<ProgramType::WorldBorder, ProgramParameterType::AtlasTile1LeftBottomTextureCoordinates>(
         worldBorderAtlasFrameMetadata.TextureCoordinatesBottomLeft);
     mShaderManager.SetProgramParameter<ProgramType::WorldBorder, ProgramParameterType::AtlasTile1Size>(
@@ -817,7 +824,9 @@ void WorldRenderContext::UploadFishesStart(size_t fishCount)
     // Fishes are not sticky: we upload them at each frame
     //
 
-    mFishVertexBuffer.reset(6 * fishCount);
+    mFishVertexBuffer.reset(4 * fishCount);
+
+    mGlobalRenderContext.GetElementIndices().EnsureSize(fishCount);
 }
 
 void WorldRenderContext::UploadFishesEnd()
@@ -1443,6 +1452,9 @@ void WorldRenderContext::RenderDrawFishes(RenderParameters const & renderParamet
     {
         glBindVertexArray(*mFishVAO);
 
+        // Intel bug: cannot associate with VAO
+        mGlobalRenderContext.GetElementIndices().Bind();
+
         switch (renderParameters.OceanRenderDetail)
         {
             case OceanRenderDetailType::Basic:
@@ -1466,7 +1478,11 @@ void WorldRenderContext::RenderDrawFishes(RenderParameters const & renderParamet
         mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture>();
         glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(NoiseType::Fine));
 
-        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mFishVertexBuffer.size()));
+        glDrawElements(
+            GL_TRIANGLES,
+            static_cast<GLsizei>(mFishVertexBuffer.size() / 4 * 6),
+            GL_UNSIGNED_INT,
+            (GLvoid *)0);
         CheckOpenGLError();
 
         glBindVertexArray(0);

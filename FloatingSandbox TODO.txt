@@ -435,7 +435,7 @@ v			+ FixedSetSliderCore
 
 		- Changelist
 	
-	= Quad rendering with indices
+	+ Quad rendering with indices
 		+ Sharing VBOs (for indices) in VAOs: 
 			! https://computergraphics.stackexchange.com/questions/4623/multiple-vao-share-a-vbo
 				! Binding the (GL_ELEMENT_ARRAY_BUFFER) buffer ties it to the currently bound VAO
@@ -475,12 +475,12 @@ v			+ FixedSetSliderCore
 			+ Old Dell: 
 				+ Before: upload=1.5/1.6 render=14.9/15.1 - 17.9/18.7
 				+ After: upload=1.2/1.3 render=14.0 - 18.3
-		= If works, other candidates:
+		+ If works, other candidates:
 			+ Text (NotificationContext)
 			+ Flames
 			+ Clouds
 			+ Generic textures
-			- Fishes
+			+ Fishes
 
 	= Flames shader:
 		! fract is always positive
@@ -573,7 +573,7 @@ v			+ FixedSetSliderCore
 					+ Simplify shader
 			+ Test also fire on NPCs
 		+ Merge into master
-		- Changelist
+		+ Changelist
 		- Cleanup desktop
 
 	+ Fix Bazzico bug

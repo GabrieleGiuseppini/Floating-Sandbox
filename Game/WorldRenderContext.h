@@ -481,30 +481,6 @@ public:
             tailSwing,
             tailProgress);
 
-        // bottom-left
-        mFishVertexBuffer.emplace_back(
-            position,
-            vec2f(-offsetX, -offsetY),
-            frame.TextureCoordinatesBottomLeft,
-            frame.TextureCoordinatesTopRight,
-            vec2f(frame.TextureCoordinatesBottomLeft.x, frame.TextureCoordinatesBottomLeft.y),
-            angleCw,
-            tailX,
-            tailSwing,
-            tailProgress);
-
-        // top-right
-        mFishVertexBuffer.emplace_back(
-            position,
-            vec2f(offsetX, offsetY),
-            frame.TextureCoordinatesBottomLeft,
-            frame.TextureCoordinatesTopRight,
-            vec2f(frame.TextureCoordinatesTopRight.x, frame.TextureCoordinatesTopRight.y),
-            angleCw,
-            tailX,
-            tailSwing,
-            tailProgress);
-
         // bottom-right
         mFishVertexBuffer.emplace_back(
             position,
