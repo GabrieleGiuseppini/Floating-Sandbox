@@ -428,7 +428,7 @@ v			+ FixedSetSliderCore
 		+ Test enlarging canvas of tight clouds
 
 		- Test AdobeStock/Getty clouds
-			- Need Publisher or Illustrator
+			- Need Illustrator
 
 		- Test cloud 8008 on desktop (replacing cloud_2 in Atlas which is a badly processed version)
 			- See if we have it in authoring alreday though
@@ -482,7 +482,7 @@ v			+ FixedSetSliderCore
 			+ Generic textures
 			+ Fishes
 
-	= Flames shader:
+	+ Flames shader:
 		! fract is always positive
 		+ Dead center clamping is wrong - gets multiplier by tile size
 			+ Try: incorporate it in AtlasTileSize, in shader
@@ -574,7 +574,7 @@ v			+ FixedSetSliderCore
 			+ Test also fire on NPCs
 		+ Merge into master
 		+ Changelist
-		- Cleanup desktop
+		+ Cleanup desktop
 
 	+ Fix Bazzico bug
 		! Need a buffer allocated when VAO is bound
@@ -583,14 +583,14 @@ v			+ FixedSetSliderCore
 		- nVidia
 		- Old Dell
 
-	= Redo SettingsDialog layout
+	+ Redo SettingsDialog layout
 		! Rules:
 			! Everything is wxEXPAND | wxALL, no ALIGN_CENTER
 			! AddGrowableCol for each internal gridSizer
 		+ Mechanics and Termodynamics
 		+ Icons at two tool panels
 		+ Sound and ADvanced Settings
-		- Test with Italian
+		+ Test with Italian
 
 	= Air bubbles:
 		+ We effed up formula: final scale is 0.2, old coeff was 0.75
@@ -666,6 +666,10 @@ v			+ FixedSetSliderCore
 				- ES
 			- IT:
 				- PO
+					- Fix: Storms-Strength Adjust is Resistenza (probably because of materials as well)
+						- Change it to "Power Adjust"
+							- "Potenza"
+						- See if there are others
 				- Two helps
 				- NPC json
 			- ES:
