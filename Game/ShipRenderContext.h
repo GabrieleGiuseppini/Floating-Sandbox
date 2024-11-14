@@ -812,14 +812,14 @@ public:
         vec2f const & position,
         float scale,
         float alpha,
-        float randomPersonalitySeed) // [0.0, 1.0]
+        float angle)
     {
         StoreGenericMipMappedTextureRenderSpecification(
             planeId,
             TextureFrameId<GenericMipMappedTextureGroups>(GenericMipMappedTextureGroups::AirBubble, 0),
             position,
             scale,
-            randomPersonalitySeed * Pi<float> * 2.0f, // angle
+            angle,
             alpha,
             mGenericMipMappedTextureAirBubbleVertexBuffer);
     }

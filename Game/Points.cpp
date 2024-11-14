@@ -2071,7 +2071,7 @@ void Points::UploadEphemeralParticles(
                     GetPosition(pointIndex),
                     scale,
                     std::min(0.6f, state.CurrentDeltaY), // Alpha
-                    mRandomNormalizedUniformFloatBuffer[pointIndex]); // Angle
+                    state.SimulationLifetime * Pi<float> * 2.0f); // Angle
 
                 break;
             }

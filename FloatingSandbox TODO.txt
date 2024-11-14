@@ -592,20 +592,37 @@ v			+ FixedSetSliderCore
 		+ Sound and ADvanced Settings
 		+ Test with Italian
 
-	= Air bubbles:
+	+ Air bubbles:
 		+ We effed up formula: final scale is 0.2, old coeff was 0.75
 		+ Test humans' bubbles as well
-		= With rotation
+		+ With rotation
 			+ Pass personality seed at ShipRenderContext::UploadAirBubble
-			- See to make it progress?
+			+ See to make it progress?
 
 	- Align "big" render buffers, e.g.:
-		- Ship: generic mip mapped
-			- Perf of bubbles:
-				- Before:
-				- After:
-		- static ship attribs
+		! No sweat on padding
+		- Save exe first
+		- Ship: bubbles
+			- mGenericMipMappedTextureAirBubbleVertexBuffer: make it BoundedVector
+		- dynamic ship attribs
+		- ship element indices
 		- ocean, land
+			- These _are_ aligned (via BoundedVector), but not each vertex
+		- Perf verifs:
+			- New Dell:
+				- Bubbles:
+					- Before:
+					- After:
+				- Just ship:
+					- Before:
+					- After:
+			- Old Dell:
+				- Bubbles:
+					- Before:
+					- After:
+				- Just ship:
+					- Before:
+					- After:
 
 	- ShipBuilder: see issue with copy'n'paste of electrical materials losing instance ID
 	- WorldBorder: it's broken, likely because of linear
@@ -627,7 +644,8 @@ v			+ FixedSetSliderCore
 				! From Sean Dempsey
 					+ R.M.S. Centennial
 					+ H.M.H.S. Imagination
-					+ S.S. Dempsey					
+					+ S.S. Dempsey
+					- Lamps?
 					- Asked credits
 					- Add to credits
 				! From Dimitry Warin (aka Helooping)
