@@ -605,7 +605,7 @@ v			+ FixedSetSliderCore
 		+ Save exe first
 		= dynamic ship attribs
 			+ Mutable point attribs
-			- mTriangleElementBuffer
+			+ mTriangleElementBuffer
 			- mPointElementBuffer
 			- ...
 		- ship element indices

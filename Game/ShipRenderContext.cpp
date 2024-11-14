@@ -257,7 +257,7 @@ ShipRenderContext::ShipRenderContext(
     mEphemeralPointElementBuffer.reserve(GameParameters::MaxEphemeralParticles);
     mSpringElementBuffer.reserve(pointCount * GameParameters::MaxSpringsPerPoint);
     mRopeElementBuffer.reserve(pointCount); // Arbitrary
-    mTriangleElementBuffer.reserve(pointCount * GameParameters::MaxTrianglesPerPoint);
+    // Nothing for mTriangleElementBuffer
 
     //
     // Initialize Ship VAO
@@ -972,7 +972,7 @@ void ShipRenderContext::UploadElementTrianglesStart(size_t trianglesCount)
     //
     // No need to clear, we'll repopulate everything
 
-    mTriangleElementBuffer.resize(trianglesCount);
+    mTriangleElementBuffer.reset_full(trianglesCount);
 }
 
 void ShipRenderContext::UploadElementTrianglesEnd()

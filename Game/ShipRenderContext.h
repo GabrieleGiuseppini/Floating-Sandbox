@@ -1764,7 +1764,7 @@ private:
     std::vector<PointElement> mEphemeralPointElementBuffer;
     std::vector<LineElement> mSpringElementBuffer;
     std::vector<LineElement> mRopeElementBuffer;
-    std::vector<TriangleElement> mTriangleElementBuffer;
+    BoundedVector<TriangleElement> mTriangleElementBuffer;
     bool mAreElementBuffersDirty;
     GameOpenGLVBO mElementVBO;
     size_t mElementVBOAllocatedIndexSize;
