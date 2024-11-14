@@ -601,13 +601,19 @@ v			+ FixedSetSliderCore
 
 	- Align "big" render buffers, e.g.:
 		! No sweat on padding
-		- Save exe first
+		+ Titanic: 3.28/3.33/3.85 0.05/0.06/0.07
+		+ Save exe first
+		= dynamic ship attribs
+			+ Mutable point attribs
+			- mTriangleElementBuffer
+			- mPointElementBuffer
+			- ...
+		- ship element indices
 		- Ship: bubbles
 			- mGenericMipMappedTextureAirBubbleVertexBuffer: make it BoundedVector
-		- dynamic ship attribs
-		- ship element indices
 		- ocean, land
 			- These _are_ aligned (via BoundedVector), but not each vertex
+		- text
 		- Perf verifs:
 			- New Dell:
 				- Bubbles:

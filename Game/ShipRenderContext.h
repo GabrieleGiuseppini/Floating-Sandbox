@@ -1668,10 +1668,10 @@ private:
     // Buffers
     //
 
-    std::unique_ptr<vec4f> mPointAttributeGroup1Buffer; // Position, TextureCoordinates
+    BoundedVector<vec4f> mPointAttributeGroup1Buffer; // Position, TextureCoordinates
     GameOpenGLVBO mPointAttributeGroup1VBO;
 
-    std::unique_ptr<vec4f> mPointAttributeGroup2Buffer; // Light, Water, PlaneId, Decay
+    BoundedVector<vec4f> mPointAttributeGroup2Buffer; // Light, Water, PlaneId, Decay
     GameOpenGLVBO mPointAttributeGroup2VBO;
 
     GameOpenGLVBO mPointColorVBO;

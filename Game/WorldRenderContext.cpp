@@ -712,7 +712,7 @@ void WorldRenderContext::UploadStarsStart(
     // a prefix of it
     //
 
-    mStarVertexBuffer.ensure_size_fill(totalCount);
+    mStarVertexBuffer.ensure_size_full(totalCount);
     mDirtyStarsCount = uploadCount;
 }
 
@@ -728,7 +728,7 @@ void WorldRenderContext::UploadLightningsStart(size_t lightningCount)
     // though they will be empty most of the time
     //
 
-    mLightningVertexBuffer.reset_fill(6 * lightningCount);
+    mLightningVertexBuffer.reset_full(6 * lightningCount);
 
     mBackgroundLightningVertexCount = 0;
     mForegroundLightningVertexCount = 0;

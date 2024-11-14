@@ -94,7 +94,7 @@ public:
         mSize = 0u;
     }
 
-    inline void reset_fill(size_t maxSize)
+    inline void reset_full(size_t maxSize)
     {
         internal_reset(maxSize);
         mSize = maxSize;
@@ -110,7 +110,7 @@ public:
         mSize = std::min(mSize, maxSize);
     }
 
-    inline void ensure_size_fill(size_t maxSize)
+    inline void ensure_size_full(size_t maxSize)
     {
         if (maxSize > mAllocatedSize)
         {
