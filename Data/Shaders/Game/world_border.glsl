@@ -35,6 +35,7 @@ void main()
     // 0.0 on hard border
     float borderValue = min(textureSpaceCoords.x, textureSpaceCoords.y);
     float alpha = 1.0 - borderValue;
+    alpha *= alpha;
 
     gl_FragColor = vec4(
         vec3(STOCK_COLOR_RED1) * paramEffectiveAmbientLightIntensity,

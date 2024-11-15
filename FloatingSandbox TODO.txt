@@ -609,16 +609,15 @@ v			+ FixedSetSliderCore
 			+ mEphemeralPointElementBuffer
 			+ mGenericMipMappedTextureAirBubbleVertexBuffer
 
-	= WorldBorder: it's broken, likely because of linear
-		= Redo it:
+	+ WorldBorder: it's broken, likely because of linear
+		+ Redo it:
 			+ Nuke texture
 				+ Folder
 				+ ShaderTypes/Traits
 			+ WorldRenderContext::Recalculate
 				+ Do basic
-			= Shader
+			+ Shader
 				+ Basic
-				- More pronounced 1-pixel
 
 	- ShipBuilder: see issue with copy'n'paste of electrical materials losing instance ID
 
