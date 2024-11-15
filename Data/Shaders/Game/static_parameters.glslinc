@@ -1,3 +1,6 @@
+// These are to be kept in sync with StockColors
+#define STOCK_COLOR_RED1 224.0/255.0, 18.0/255.0, 18.0/255.0
+
 #define ROT_GREEN_COLOR 0.015, 0.207, 0.011
 #define ROT_BROWN_COLOR 0.26, 0.16, 0.0
 

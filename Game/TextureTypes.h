@@ -180,9 +180,8 @@ enum class GenericLinearTextureGroups : uint16_t
     PhysicsProbePanel,
     SoundMuteNotification,
     UVModeNotification,
-    WorldBorder,
 
-    _Last = WorldBorder
+    _Last = UVModeNotification
 };
 
 struct GenericLinearTextureTextureDatabaseTraits
@@ -205,8 +204,6 @@ struct GenericLinearTextureTextureDatabaseTraits
             return TextureGroups::SoundMuteNotification;
         else if (Utils::CaseInsensitiveEquals(str, "UVModeNotification"))
             return TextureGroups::UVModeNotification;
-        else if (Utils::CaseInsensitiveEquals(str, "WorldBorder"))
-            return TextureGroups::WorldBorder;
         else
             throw GameException("Unrecognized GenericLinearTexture texture group \"" + str + "\"");
     }

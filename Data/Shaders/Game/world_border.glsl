@@ -22,32 +22,21 @@ void main()
 
 #define in varying
 
+#include "static_parameters.glslinc"
+
 // Inputs from previous shader
 in vec2 textureSpaceCoords; // 3.0 => 3 full frames
 
-// The texture
-uniform sampler2D paramGenericLinearTexturesAtlasTexture;
-
 // Parameters        
-uniform vec2 paramAtlasTile1Dx; // span across two pixels
-uniform vec2 paramAtlasTile1LeftBottomTextureCoordinates;
-uniform vec2 paramAtlasTile1Size;
 uniform float paramEffectiveAmbientLightIntensity;
 
 void main()
 {
-    //
-    // Wrap the atlas texture tile
-    //
+    // 0.0 on hard border
+    float borderValue = min(textureSpaceCoords.x, textureSpaceCoords.y);
+    float alpha = 1.0 - borderValue;
 
-    // Clamp to fight against linear filtering - though no idea why dx works and dx/2.0 (half pixel) doesn't
-    vec2 uv = clamp(
-        fract(textureSpaceCoords), 
-        paramAtlasTile1Dx, 
-        vec2(1.0) - paramAtlasTile1Dx);
-
-    vec2 sampleCoords = paramAtlasTile1LeftBottomTextureCoordinates + paramAtlasTile1Size * uv;
-
-    vec4 textureColor = texture2D(paramGenericLinearTexturesAtlasTexture, sampleCoords);
-    gl_FragColor = vec4(textureColor.xyz * paramEffectiveAmbientLightIntensity, 0.75);
+    gl_FragColor = vec4(
+        vec3(STOCK_COLOR_RED1) * paramEffectiveAmbientLightIntensity,
+        alpha);
 } 

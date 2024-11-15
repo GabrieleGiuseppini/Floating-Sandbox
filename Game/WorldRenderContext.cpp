@@ -511,22 +511,6 @@ WorldRenderContext::WorldRenderContext(
 
     glBindTexture(GL_TEXTURE_2D, globalRenderContext.GetGenericLinearTextureAtlasOpenGLHandle());
     CheckOpenGLError();
-
-    auto const & worldBorderAtlasFrameMetadata = mGenericLinearTextureAtlasMetadata.GetFrameMetadata(GenericLinearTextureGroups::WorldBorder, 0);
-
-    mShaderManager.ActivateProgram<ProgramType::WorldBorder>();
-    mShaderManager.SetTextureParameters<ProgramType::WorldBorder>();
-    mShaderManager.SetProgramParameter<ProgramType::WorldBorder, ProgramParameterType::AtlasTile1Dx>(
-        // TODOTEST
-        ////1.0f / static_cast<float>(worldBorderAtlasFrameMetadata.FrameMetadata.Size.width),
-        ////1.0f / static_cast<float>(worldBorderAtlasFrameMetadata.FrameMetadata.Size.height));
-        1.0f / static_cast<float>(mGenericLinearTextureAtlasMetadata.GetSize().width),
-        1.0f / static_cast<float>(mGenericLinearTextureAtlasMetadata.GetSize().height));
-    mShaderManager.SetProgramParameter<ProgramType::WorldBorder, ProgramParameterType::AtlasTile1LeftBottomTextureCoordinates>(
-        worldBorderAtlasFrameMetadata.TextureCoordinatesBottomLeft);
-    mShaderManager.SetProgramParameter<ProgramType::WorldBorder, ProgramParameterType::AtlasTile1Size>(
-        worldBorderAtlasFrameMetadata.TextureSpaceWidth,
-        worldBorderAtlasFrameMetadata.TextureSpaceHeight);
 }
 
 WorldRenderContext::~WorldRenderContext()
@@ -2215,95 +2199,85 @@ void WorldRenderContext::RecalculateClearCanvasColor(RenderParameters const & re
 
 void WorldRenderContext::RecalculateWorldBorder(RenderParameters const & renderParameters)
 {
+    // Calculate width and height, in world coordinates, of the world border, under the constraint
+    // that they result in the specified pixel size
+
     auto const & viewModel = renderParameters.View;
 
-    ImageSize const & worldBorderTextureSize =
-        mGenericLinearTextureAtlasMetadata.GetFrameMetadata(GenericLinearTextureGroups::WorldBorder, 0)
-        .FrameMetadata.Size;
-
-    // Calculate width and height, in world coordinates, of the world border, under the constraint
-    // that we want to ensure that the texture is rendered with half of its original pixel size
-    float const worldBorderWorldWidth = viewModel.PhysicalDisplayOffsetToWorldOffset(static_cast<float>(worldBorderTextureSize.width)) / 2.0f;
-    float const worldBorderWorldHeight = viewModel.PhysicalDisplayOffsetToWorldOffset(static_cast<float>(worldBorderTextureSize.height)) / 2.0f;
-
-    // Max coordinates in texture space (e.g. 3.0 means three frames); note that the texture bottom-left origin
-    // already starts at a dead pixel (0.5/size)
-    float const textureSpaceWidth =
-        GameParameters::MaxWorldWidth / worldBorderWorldWidth
-        - 1.0f / static_cast<float>(worldBorderTextureSize.width);
-    float const textureSpaceHeight = GameParameters::MaxWorldHeight / worldBorderWorldHeight
-        - 1.0f / static_cast<float>(worldBorderTextureSize.height);
+    static float constexpr WorldBorderPixelSize = 20.0f;
+    float const worldBorderWorldSize = viewModel.PhysicalDisplayOffsetToWorldOffset(static_cast<float>(WorldBorderPixelSize));
 
     //
-    // Check which sides of the border we need to draw
+    // Check which sides - if any - of the border we need to draw
     //
+    // Note: texture coord 0 is max border
 
     mWorldBorderVertexBuffer.clear();
 
     // Left
-    if (-GameParameters::HalfMaxWorldWidth + worldBorderWorldWidth >= viewModel.GetVisibleWorld().TopLeft.x)
+    if (-GameParameters::HalfMaxWorldWidth + worldBorderWorldSize >= viewModel.GetVisibleWorld().TopLeft.x)
     {
         EmplaceWorldBorderQuad(
             // Top-left
             -GameParameters::HalfMaxWorldWidth,
             GameParameters::HalfMaxWorldHeight,
             0.0f,
-            textureSpaceHeight,
+            1.0f,
             // Bottom-right
-            -GameParameters::HalfMaxWorldWidth + worldBorderWorldWidth,
+            -GameParameters::HalfMaxWorldWidth + worldBorderWorldSize,
             -GameParameters::HalfMaxWorldHeight,
             1.0f,
-            0.0f,
+            1.0f,
             mWorldBorderVertexBuffer);
     }
 
     // Right
-    if (GameParameters::HalfMaxWorldWidth - worldBorderWorldWidth <= viewModel.GetVisibleWorld().BottomRight.x)
+    if (GameParameters::HalfMaxWorldWidth - worldBorderWorldSize <= viewModel.GetVisibleWorld().BottomRight.x)
     {
         EmplaceWorldBorderQuad(
             // Top-left
-            GameParameters::HalfMaxWorldWidth - worldBorderWorldWidth,
+            GameParameters::HalfMaxWorldWidth - worldBorderWorldSize,
             GameParameters::HalfMaxWorldHeight,
-            0.0f,
-            textureSpaceHeight,
+            1.0f,
+            1.0f,
             // Bottom-right
             GameParameters::HalfMaxWorldWidth,
             -GameParameters::HalfMaxWorldHeight,
-            1.0f,
             0.0f,
+            1.0f,
             mWorldBorderVertexBuffer);
     }
 
     // Top
-    if (GameParameters::HalfMaxWorldHeight - worldBorderWorldHeight <= viewModel.GetVisibleWorld().TopLeft.y)
+    if (GameParameters::HalfMaxWorldHeight - worldBorderWorldSize <= viewModel.GetVisibleWorld().TopLeft.y)
     {
         EmplaceWorldBorderQuad(
             // Top-left
             -GameParameters::HalfMaxWorldWidth,
             GameParameters::HalfMaxWorldHeight,
-            0.0f,
             1.0f,
+            0.0f,
             // Bottom-right
             GameParameters::HalfMaxWorldWidth,
-            GameParameters::HalfMaxWorldHeight - worldBorderWorldHeight,
-            textureSpaceWidth,
-            0.0f,
+            GameParameters::HalfMaxWorldHeight - worldBorderWorldSize,
+            1.0f,
+            1.0f,
             mWorldBorderVertexBuffer);
     }
 
     // Bottom
-    if (-GameParameters::HalfMaxWorldHeight + worldBorderWorldHeight >= viewModel.GetVisibleWorld().BottomRight.y)
+    if (-GameParameters::HalfMaxWorldHeight + worldBorderWorldSize >= viewModel.GetVisibleWorld().BottomRight.y)
     {
         EmplaceWorldBorderQuad(
             // Top-left
             -GameParameters::HalfMaxWorldWidth,
-            -GameParameters::HalfMaxWorldHeight + worldBorderWorldHeight,
-            0.0f,
+            -GameParameters::HalfMaxWorldHeight + worldBorderWorldSize,
+            1.0f,
             1.0f,
             // Bottom-right
             GameParameters::HalfMaxWorldWidth,
             -GameParameters::HalfMaxWorldHeight,
-            textureSpaceWidth,
+            1.0f,
             0.0f,
             mWorldBorderVertexBuffer);
     }

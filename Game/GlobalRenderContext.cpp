@@ -124,6 +124,8 @@ void GlobalRenderContext::InitializeGenericTextures(ResourceLocator const & reso
         1.0f / static_cast<float>(mGenericLinearTextureAtlasMetadata->GetSize().width),
         1.0f / static_cast<float>(mGenericLinearTextureAtlasMetadata->GetSize().height));
 
+    // Note: the below might not be perfect, as TextureCoordinatesBottomLeft includes dx, but TextureSpaceWidth/Height do not
+
     // Set FlamesBackground shader parameters
     mShaderManager.ActivateProgram<ProgramType::ShipFlamesBackground>();
     mShaderManager.SetTextureParameters<ProgramType::ShipFlamesBackground>();
