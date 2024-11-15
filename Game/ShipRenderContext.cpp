@@ -257,7 +257,7 @@ ShipRenderContext::ShipRenderContext(
     mEphemeralPointElementBuffer.reserve(GameParameters::MaxEphemeralParticles);
     mSpringElementBuffer.reserve(pointCount * GameParameters::MaxSpringsPerPoint);
     mRopeElementBuffer.reserve(pointCount); // Arbitrary
-    // Nothing for mTriangleElementBuffer
+    // Nothing for mTriangleElementBuffer, will size it as needed
 
     //
     // Initialize Ship VAO

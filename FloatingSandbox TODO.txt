@@ -589,7 +589,7 @@ v			+ FixedSetSliderCore
 			! AddGrowableCol for each internal gridSizer
 		+ Mechanics and Termodynamics
 		+ Icons at two tool panels
-		+ Sound and ADvanced Settings
+		+ Sound and Advanced Settings
 		+ Test with Italian
 
 	+ Air bubbles:
@@ -603,16 +603,13 @@ v			+ FixedSetSliderCore
 		! No sweat on padding
 		+ Titanic: 3.28/3.33/3.85 0.05/0.06/0.07
 		+ Save exe first
-		= dynamic ship attribs
+		= Ship
 			+ Mutable point attribs
 			+ mTriangleElementBuffer
-			- mPointElementBuffer
+			- mPointElementBuffer and all other element buffers
 			- ...
-		- ship element indices
-		- Ship: bubbles
-			- mGenericMipMappedTextureAirBubbleVertexBuffer: make it BoundedVector
-		- ocean, land
-			- These _are_ aligned (via BoundedVector), but not each vertex
+			- bubbles
+				- mGenericMipMappedTextureAirBubbleVertexBuffer: make it BoundedVector
 		- text
 		- Perf verifs:
 			- New Dell:

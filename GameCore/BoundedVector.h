@@ -14,10 +14,10 @@
 #include <memory>
 
 /*
- * This class is a vector whose max size is specified at runtime, and which cannot grow
+ * This class is an (aligned) vector whose max size is specified at runtime, and which cannot grow
  * more than that specified size.
  *
- * The buffer is reallocated each time the max size changes.
+ * The buffer is reallocated each time the max size grows.
  *
  * The container is optimized for fast *pushes* of POD types.
  */
