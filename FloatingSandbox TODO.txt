@@ -599,36 +599,20 @@ v			+ FixedSetSliderCore
 			+ Pass personality seed at ShipRenderContext::UploadAirBubble
 			+ See to make it progress?
 
-	- Align "big" render buffers, e.g.:
+	+ Align "big" render buffers, e.g.:
 		! No sweat on padding
 		+ Titanic: 3.28/3.33/3.85 0.05/0.06/0.07
 		+ Save exe first
-		= Ship
+		+ Ship
 			+ Mutable point attribs
 			+ mTriangleElementBuffer
 			+ mEphemeralPointElementBuffer
-			- AirBubbles
-				- mGenericMipMappedTextureAirBubbleVertexBuffer: make it BoundedVector
-		- text
-		- Perf verifs:
-			- New Dell:
-				- Bubbles:
-					- Before: 5.62/0.20
-					- After:
-				- Just ship:
-					- Before:
-					- After:
-			- Old Dell:
-				- Bubbles:
-					- Before:
-					- After:
-				- Just ship:
-					- Before:
-					- After:
+			+ mGenericMipMappedTextureAirBubbleVertexBuffer
 
-	- ShipBuilder: see issue with copy'n'paste of electrical materials losing instance ID
 	- WorldBorder: it's broken, likely because of linear
 		- See if can get rid of AtlasTile1Dx for good, by also incorporating it in WorldBorder
+
+	- ShipBuilder: see issue with copy'n'paste of electrical materials losing instance ID
 
 	- Add more music:
 		- Background:

@@ -1728,7 +1728,7 @@ private:
     GameOpenGLVBO mSparkleVBO;
     size_t mSparkleVBOAllocatedVertexSize;
 
-    std::vector<GenericTextureVertex> mGenericMipMappedTextureAirBubbleVertexBuffer; // Specifically for air bubbles; mixed planes
+    BoundedVector<GenericTextureVertex> mGenericMipMappedTextureAirBubbleVertexBuffer; // Specifically for air bubbles; mixed planes
     std::vector<GenericTexturePlaneData> mGenericMipMappedTexturePlaneVertexBuffers; // For all other generic textures; separate buffers per-plane
     size_t mGenericMipMappedTextureTotalVertexCount; // Calculated at RenderPrepare and cached for convenience
     GameOpenGLVBO mGenericMipMappedTextureVBO;

@@ -540,6 +540,12 @@ ShipRenderContext::ShipRenderContext(
         ////mGlobalRenderContext.GetElementIndices().Bind()
 
         glBindVertexArray(0);
+
+        //
+        // Initialize buffers
+        //
+
+        mGenericMipMappedTextureAirBubbleVertexBuffer.reset(GameParameters::MaxEphemeralParticles * 4);
     }
 
 
@@ -640,37 +646,39 @@ ShipRenderContext::ShipRenderContext(
     // Initialize StressedSpring texture
     //
 
-    glGenTextures(1, &tmpGLuint);
-    mStressedSpringTextureOpenGLHandle = tmpGLuint;
+    {
+        glGenTextures(1, &tmpGLuint);
+        mStressedSpringTextureOpenGLHandle = tmpGLuint;
 
-    // Bind texture
-    mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
-    glBindTexture(GL_TEXTURE_2D, *mStressedSpringTextureOpenGLHandle);
-    CheckOpenGLError();
+        // Bind texture
+        mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
+        glBindTexture(GL_TEXTURE_2D, *mStressedSpringTextureOpenGLHandle);
+        CheckOpenGLError();
 
-    // Set repeat mode
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    CheckOpenGLError();
+        // Set repeat mode
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        CheckOpenGLError();
 
-    // Set filtering
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    CheckOpenGLError();
+        // Set filtering
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        CheckOpenGLError();
 
-    // Make texture data
-    unsigned char buf[] = {
-        239, 16, 39, 255,       255, 253, 181,  255,    239, 16, 39, 255,
-        255, 253, 181, 255,     239, 16, 39, 255,       255, 253, 181,  255,
-        239, 16, 39, 255,       255, 253, 181,  255,    239, 16, 39, 255
-    };
+        // Make texture data
+        unsigned char buf[] = {
+            239, 16, 39, 255,       255, 253, 181,  255,    239, 16, 39, 255,
+            255, 253, 181, 255,     239, 16, 39, 255,       255, 253, 181,  255,
+            239, 16, 39, 255,       255, 253, 181,  255,    239, 16, 39, 255
+        };
 
-    // Upload texture data
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 3, 3, 0, GL_RGBA, GL_UNSIGNED_BYTE, buf);
-    CheckOpenGLError();
+        // Upload texture data
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 3, 3, 0, GL_RGBA, GL_UNSIGNED_BYTE, buf);
+        CheckOpenGLError();
 
-    // Unbind texture
-    glBindTexture(GL_TEXTURE_2D, 0);
+        // Unbind texture
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
 
 
     //
