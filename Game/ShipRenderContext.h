@@ -1761,10 +1761,10 @@ private:
     //
 
     std::vector<PointElement> mPointElementBuffer;
-    std::vector<PointElement> mEphemeralPointElementBuffer;
+    BoundedVector<PointElement> mEphemeralPointElementBuffer; // We have a global maximum
     std::vector<LineElement> mSpringElementBuffer;
     std::vector<LineElement> mRopeElementBuffer;
-    BoundedVector<TriangleElement> mTriangleElementBuffer;
+    BoundedVector<TriangleElement> mTriangleElementBuffer; // We know in advance how many will be uploaded
     bool mAreElementBuffersDirty;
     GameOpenGLVBO mElementVBO;
     size_t mElementVBOAllocatedIndexSize;

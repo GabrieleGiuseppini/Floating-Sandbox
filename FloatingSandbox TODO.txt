@@ -606,15 +606,14 @@ v			+ FixedSetSliderCore
 		= Ship
 			+ Mutable point attribs
 			+ mTriangleElementBuffer
-			- mPointElementBuffer and all other element buffers
-			- ...
-			- bubbles
+			+ mEphemeralPointElementBuffer
+			- AirBubbles
 				- mGenericMipMappedTextureAirBubbleVertexBuffer: make it BoundedVector
 		- text
 		- Perf verifs:
 			- New Dell:
 				- Bubbles:
-					- Before:
+					- Before: 5.62/0.20
 					- After:
 				- Just ship:
 					- Before:
