@@ -137,7 +137,7 @@ struct ElectricalLayerData
     {
         return ElectricalLayerData(
             Buffer.CloneRegion(region),
-            MakedTrimmedPanel(Panel, region));
+            MakeTrimmedPanel(Panel, region));
     }
 
     ElectricalLayerData MakeRegionBackup(ShipSpaceRect const & region) const
@@ -165,7 +165,7 @@ struct ElectricalLayerData
 
     void Trim(ShipSpaceRect const & rect)
     {
-        Panel = MakedTrimmedPanel(Panel, rect);
+        Panel = MakeTrimmedPanel(Panel, rect);
         Buffer.Trim(rect);
     }
 
@@ -176,7 +176,7 @@ struct ElectricalLayerData
 
 private:
 
-    ElectricalPanel MakedTrimmedPanel(
+    ElectricalPanel MakeTrimmedPanel(
         ElectricalPanel const & panel,
         ShipSpaceRect const & rect) const;
 };

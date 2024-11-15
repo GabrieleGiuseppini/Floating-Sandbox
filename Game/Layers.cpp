@@ -23,7 +23,7 @@ ElectricalLayerData ElectricalLayerData::MakeReframed(
     ElectricalElement const & fillerValue) const
 {
     // Trim panel
-    ElectricalPanel newPanel = MakedTrimmedPanel(
+    ElectricalPanel newPanel = MakeTrimmedPanel(
         Panel,
         ShipSpaceRect(
             -originOffset,
@@ -38,7 +38,7 @@ ElectricalLayerData ElectricalLayerData::MakeReframed(
         std::move(newPanel));
 }
 
-ElectricalPanel ElectricalLayerData::MakedTrimmedPanel(
+ElectricalPanel ElectricalLayerData::MakeTrimmedPanel(
     ElectricalPanel const & panel,
     ShipSpaceRect const & rect) const
 {
