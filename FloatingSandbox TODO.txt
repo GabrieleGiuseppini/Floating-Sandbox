@@ -679,9 +679,8 @@ v			+ FixedSetSliderCore
 					- Is it from Discord?
 		
 		- Localization:
-			- Change two help files to remove stuff we've removed and add stuff we haven't localized
-				- RU, UK, ES
-			- Prepare po's
+			+ Change two help files to remove stuff we've removed and add stuff we haven't localized
+			+ Prepare po's
 			- Prepare text files with NPC json
 				- RU
 				- UK

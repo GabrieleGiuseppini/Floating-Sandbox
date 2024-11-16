@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Floating Sandbox\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-06-30 19:33+0200\n"
+"PO-Revision-Date: 2024-11-16 21:22+0100\n"
 "Last-Translator: Gabriele Giuseppini <gabrielegiuseppini@gmail.com>\n"
 "Language-Team: Ilya Voloshin; Roman Shavernew (DioxCode)\n"
 "Language: ru\n"
@@ -14,31 +14,35 @@ msgstr ""
 "X-Generator: Poedit 2.4\n"
 "X-Poedit-Basepath: .\n"
 
-#: ..\FloatingSandbox\MainFrame.cpp:305
+#: ..\FloatingSandbox\MainFrame.cpp:386
 msgid "&Controls"
 msgstr "&Управление"
 
-#: ..\FloatingSandbox\MainFrame.cpp:244
+#: ..\FloatingSandbox\MainFrame.cpp:290
 msgid "&File"
 msgstr "&Файл"
 
-#: ..\FloatingSandbox\MainFrame.cpp:622
+#: ..\FloatingSandbox\MainFrame.cpp:769
 msgid "&Help"
 msgstr "&Справка"
 
-#: ..\FloatingSandbox\MainFrame.cpp:570
+#: ..\FloatingSandbox\MainFrame.cpp:648
+msgid "&NPCs"
+msgstr ""
+
+#: ..\FloatingSandbox\MainFrame.cpp:709
 msgid "&Options"
 msgstr "&Параметры"
 
-#: ..\FloatingSandbox\MainFrame.cpp:586
+#: ..\FloatingSandbox\MainFrame.cpp:725
 msgid "&ShipBuilder"
 msgstr "&Судостроитель"
 
-#: ..\FloatingSandbox\MainFrame.cpp:508
+#: ..\FloatingSandbox\MainFrame.cpp:566
 msgid "&Tools"
 msgstr "&Инструменты"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:3074
+#: ..\ShipBuilderLib\MainFrame.cpp:3131
 msgid "(Game View)"
 msgstr "(Просмотр игры)"
 
@@ -46,43 +50,49 @@ msgstr "(Просмотр игры)"
 msgid "(Min 5 characters, at least one digit or punctuation character)"
 msgstr "(Не менее 5 знаков, по крайней мере одна цифра или знак препинания)"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:3132
+#: ..\ShipBuilderLib\MainFrame.cpp:3189
 msgid "(Structure View)"
 msgstr "(Просмотр структуры)"
 
-#: ..\FloatingSandbox\CreditsPanel.cpp:71
-msgid "(c) Gabriele Giuseppini 2018-2022"
+#: ..\FloatingSandbox\CreditsPanel.cpp:72
+#, fuzzy
+#| msgid "(c) Gabriele Giuseppini 2018-2022"
+msgid "(c) Gabriele Giuseppini (G2-Labs) 2018-2024"
 msgstr "(c) Gabriele Giuseppini 2018-2022"
 
-#: ..\FloatingSandbox\CreditsPanel.cpp:156
+#: ..\FloatingSandbox\CreditsPanel.cpp:161
 msgid "3RD-PARTY SOFTWARE"
 msgstr "ПРОГРАММНОЕ ОБЕСПЕЧЕНИЕ ТРЕТЬЕЙ СТОРОНЫ"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1621 ..\ShipBuilderLib\MainFrame.cpp:2769
+#: ..\ShipBuilderLib\MainFrame.cpp:1672 ..\ShipBuilderLib\MainFrame.cpp:2825
 msgid "90 CCW"
 msgstr "90º налево"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1604 ..\ShipBuilderLib\MainFrame.cpp:2725
+#: ..\ShipBuilderLib\MainFrame.cpp:1655 ..\ShipBuilderLib\MainFrame.cpp:2781
 msgid "90 CW"
 msgstr "90º направо"
+
+#: ..\FloatingSandbox\CreditsPanel.cpp:193
+msgid "A G2-Labs Production"
+msgstr ""
 
 #: ..\FloatingSandbox\NewVersionDisplayDialog.cpp:19
 msgid "A New Version Is Available!"
 msgstr "Доступна новая версия!"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3031
+#: ..\FloatingSandbox\SettingsDialog.cpp:3230
 msgid "AM Bomb Implosion Strength"
 msgstr "Сила взрыва Анти-Материальной Бомбы"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:875
+#: ..\ShipBuilderLib\MainFrame.cpp:880
 msgid "Abandon And Return"
 msgstr "Бросить и вернуться"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:2956
+#: ..\ShipBuilderLib\MainFrame.cpp:3012
 msgid "Abort"
 msgstr "Отмена"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:2942
+#: ..\ShipBuilderLib\MainFrame.cpp:2998
 msgid "Abort the paste operation."
 msgstr "Отменить операцию вставки."
 
@@ -91,48 +101,48 @@ msgstr "Отменить операцию вставки."
 msgid "About %s"
 msgstr "Об игре %s"
 
-#: ..\FloatingSandbox\MainFrame.cpp:598
+#: ..\FloatingSandbox\MainFrame.cpp:737
 msgid "About and Credits"
 msgstr "Об игре и Благодарности"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1267
+#: ..\ShipBuilderLib\MainFrame.cpp:1293
 msgid "Add or clean this layer."
 msgstr "Добавьте или очистите этот слой."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1265
+#: ..\ShipBuilderLib\MainFrame.cpp:1291
 msgid "Add/Clear"
 msgstr "Добавить/убрать"
 
-#: ..\FloatingSandbox\MainFrame.cpp:450
+#: ..\FloatingSandbox\MainFrame.cpp:505
 msgid "Adjust Terrain"
 msgstr "Настройка Рельефа"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1333
+#: ..\FloatingSandbox\SettingsDialog.cpp:1395
 msgid "Adjusts how \"splashy\" water flows inside a physical body."
 msgstr ""
 "Регулирует, с каким усилием \"брызжущая\" вода втекает внутрь физического "
 "тела."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4464
+#: ..\FloatingSandbox\SettingsDialog.cpp:4824
 msgid "Adjusts how detailed water inside a physical body looks."
 msgstr ""
 "Регулирует, насколько детализированной выглядит вода внутри физического тела."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2341
+#: ..\FloatingSandbox\SettingsDialog.cpp:2447
 msgid "Adjusts how long it takes for smoke to vanish."
 msgstr "Регулирует, сколько времени потребуется для исчезновения дыма."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1382
+#: ..\FloatingSandbox\SettingsDialog.cpp:1448
 msgid "Adjusts how much the ocean floor rolls up and down."
 msgstr "Регулирует, неровность океанского дна."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2554
+#: ..\FloatingSandbox\SettingsDialog.cpp:2670
 msgid "Adjusts how wide light emitted by luminescent materials spreads out."
 msgstr ""
 "Регулирует, насколько широко распространяется свет, излучаемый "
 "люминесцентными материалами."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1110
+#: ..\FloatingSandbox\SettingsDialog.cpp:1154
 msgid ""
 "Adjusts the amount by which internal pressure in the ship counterbalances "
 "the external hydrostatic pressure. Lower values increase the depth at which "
@@ -143,7 +153,7 @@ msgstr ""
 "глубину, на которой внутреннее давление перестает вносить вклад в общее "
 "гидростатическое давление."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2677
+#: ..\FloatingSandbox\SettingsDialog.cpp:2799
 msgid ""
 "Adjusts the amount of heat generated by working electrical elements, such as "
 "lamps and generators."
@@ -151,7 +161,7 @@ msgstr ""
 "Регулирует количество тепла, выделяемого работающими электрическими "
 "элементами, такими как лампы и генераторы."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4701
+#: ..\FloatingSandbox\SettingsDialog.cpp:5127
 msgid ""
 "Adjusts the amount of weaknesses injected in structures. Changes to this "
 "setting will only be in effect when the next ship is loaded."
@@ -159,15 +169,15 @@ msgstr ""
 "Регулирует количество слабых мест, вводимых в конструкции. Изменения в этой "
 "настройке вступят в силу только при загрузке следующего судна."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2979
+#: ..\FloatingSandbox\SettingsDialog.cpp:3178
 msgid "Adjusts the blast force generated by bomb explosions."
 msgstr "Регулирует силу взрыва, создаваемую взрывами бомб."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3184
+#: ..\FloatingSandbox\SettingsDialog.cpp:3397
 msgid "Adjusts the blast force generated by the Blast tool."
 msgstr "Регулирует силу взрыва, создаваемую инструментом взрыва."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:537
+#: ..\FloatingSandbox\SettingsDialog.cpp:558
 msgid ""
 "Adjusts the breaking point of springs under stress. Has no effect on the "
 "rigidity of a ship."
@@ -175,7 +185,13 @@ msgstr ""
 "Регулирует предел прочности пружин под напряжением. Не оказывает никакого "
 "влияния на жесткость корабля."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1435
+#: ..\FloatingSandbox\SettingsDialog.cpp:4729
+#, fuzzy
+#| msgid "Adjusts the size of flames."
+msgid "Adjusts the chaoticness of flames."
+msgstr "Регулирует размер пламени."
+
+#: ..\FloatingSandbox\SettingsDialog.cpp:1501
 msgid ""
 "Adjusts the contrast of the user-drawn ocean floor terrain. Setting this to "
 "zero disables the ability to adjust the ocean floor."
@@ -184,11 +200,11 @@ msgstr ""
 "дна. Установка этого значения на ноль отключает возможность регулировки дна "
 "океана."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4438
+#: ..\FloatingSandbox\SettingsDialog.cpp:4798
 msgid "Adjusts the contrast of water inside physical bodies."
 msgstr "Регулирует контраст воды внутри физических тел."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2160
+#: ..\FloatingSandbox\SettingsDialog.cpp:2260
 msgid ""
 "Adjusts the density of air, and thus also the buoyancy it exerts on physical "
 "bodies."
@@ -196,7 +212,7 @@ msgstr ""
 "Регулирует плотность воздуха, а следовательно, и плавучесть, которую он "
 "оказывает на физические тела."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1002
+#: ..\FloatingSandbox\SettingsDialog.cpp:1046
 msgid ""
 "Adjusts the density of sea water, and thus also the buoyancy it exerts on "
 "physical bodies."
@@ -204,19 +220,25 @@ msgstr ""
 "Регулирует плотность морской воды, а следовательно, и плавучесть, которую "
 "она оказывает на физические тела."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2314
+#: ..\FloatingSandbox\SettingsDialog.cpp:2420
 msgid "Adjusts the density of smoke particles."
 msgstr "Регулирует плотность частиц дыма."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1462
+#: ..\FloatingSandbox\SettingsDialog.cpp:612
+#, fuzzy
+#| msgid "Adjusts the elasticity of collisions with the ocean floor."
+msgid "Adjusts the elasticity of collisions between materials."
+msgstr "Регулирует упругость столкновений с океанским дном."
+
+#: ..\FloatingSandbox\SettingsDialog.cpp:1528
 msgid "Adjusts the elasticity of collisions with the ocean floor."
 msgstr "Регулирует упругость столкновений с океанским дном."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2020
+#: ..\FloatingSandbox\SettingsDialog.cpp:2115
 msgid "Adjusts the extent to which rain floods exposed areas of a ship."
 msgstr "Регулирует степень затопления дождем открытых участков судна."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4728
+#: ..\FloatingSandbox\SettingsDialog.cpp:5154
 msgid ""
 "Adjusts the extent to which structures are weakened. Changes to this setting "
 "will only be in effect when the next ship is loaded."
@@ -224,11 +246,17 @@ msgstr ""
 "Регулирует степень ослабления структур. Изменения в этой настройке вступят в "
 "силу только при загрузке следующего судна."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1488
+#: ..\FloatingSandbox\SettingsDialog.cpp:3009
+#, fuzzy
+#| msgid "Adjusts the friction exherted by the ocean floor."
+msgid "Adjusts the friction exherted by and onto NPC particles."
+msgstr "Регулирует трение, создаваемое океанским дном."
+
+#: ..\FloatingSandbox\SettingsDialog.cpp:1554
 msgid "Adjusts the friction exherted by the ocean floor."
 msgstr "Регулирует трение, создаваемое океанским дном."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2187
+#: ..\FloatingSandbox\SettingsDialog.cpp:2287
 msgid ""
 "Adjusts the frictional drag force (or 'skin' drag) exerted by air on "
 "physical bodies."
@@ -236,7 +264,7 @@ msgstr ""
 "Регулирует силу трения (или \"оболочного\" сопротивления), оказываемую "
 "воздухом на физические тела."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1029
+#: ..\FloatingSandbox\SettingsDialog.cpp:1073
 msgid ""
 "Adjusts the frictional drag force (or 'skin' drag) exerted by sea water on "
 "physical bodies."
@@ -244,11 +272,11 @@ msgstr ""
 "Регулирует силу трения (или «поверхностного» сопротивления), оказываемую "
 "морской водой на физические тела."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:564
+#: ..\FloatingSandbox\SettingsDialog.cpp:585
 msgid "Adjusts the global damping of velocities."
 msgstr "Регулирует глобальное подавление скоростей."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1514
+#: ..\FloatingSandbox\SettingsDialog.cpp:1580
 msgid ""
 "Adjusts the hardness of the silt layer on top of the ocean floor, which "
 "slowly buries ship wrecks over time. Setting to 1.0 disables completely the "
@@ -258,7 +286,7 @@ msgstr ""
 "медленно закапывает обломки кораблей. Установка на 1.0 полностью отключает "
 "моделирование ила."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:840
+#: ..\FloatingSandbox\SettingsDialog.cpp:873
 msgid ""
 "Adjusts the heat generated by fire; together with the maximum number of "
 "burning particles, determines the speed with which fire spreads to adjacent "
@@ -268,7 +296,7 @@ msgstr ""
 "горящих частиц определяет скорость, с которой огонь распространяется на "
 "соседние частицы."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1697
+#: ..\FloatingSandbox\SettingsDialog.cpp:1774
 msgid ""
 "Adjusts the height of ocean waves wrt their optimal value, which is "
 "determined by wind speed."
@@ -276,18 +304,22 @@ msgstr ""
 "Регулирует высоту океанских волн относительно их оптимального значения, "
 "которое определяется скоростью ветра."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1083
+#: ..\FloatingSandbox\SettingsDialog.cpp:666
+msgid "Adjusts the kinetic friction coefficient."
+msgstr ""
+
+#: ..\FloatingSandbox\SettingsDialog.cpp:1127
 msgid ""
 "Adjusts the magnitude of forces generated by high-velocity impacts with "
 "water."
 msgstr ""
 "Регулирует величину сил, возникающих при ударах воды с большой скоростью."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1821
+#: ..\FloatingSandbox\SettingsDialog.cpp:1904
 msgid "Adjusts the magnitude of the waves caused by water displacement."
 msgstr "Регулирует величину волн, вызванных смещением воды."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3503
+#: ..\FloatingSandbox\SettingsDialog.cpp:3743
 msgid ""
 "Adjusts the number of atmospheres that are injected or drained by the inject "
 "pressure tool (atm)."
@@ -295,11 +327,11 @@ msgstr ""
 "Регулирует количество атмосфер, нагнетаемых или откачиваемых инструментом "
 "давления нагнетания (атм)."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2650
+#: ..\FloatingSandbox\SettingsDialog.cpp:2772
 msgid "Adjusts the power of water pumps."
 msgstr "Регулирует мощность водяных насосов."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2214
+#: ..\FloatingSandbox\SettingsDialog.cpp:2314
 msgid ""
 "Adjusts the pressure drag force (or 'form' drag) exerted by air on physical "
 "bodies."
@@ -307,7 +339,7 @@ msgstr ""
 "Регулирует силу сопротивления давлению (или \"форму\" сопротивления), "
 "оказываемую воздухом на физические тела."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1056
+#: ..\FloatingSandbox\SettingsDialog.cpp:1100
 msgid ""
 "Adjusts the pressure drag force (or 'form' drag) exerted by sea water on "
 "physical bodies."
@@ -315,7 +347,7 @@ msgstr ""
 "Регулирует силу сопротивления давления (или сопротивление формы), "
 "оказываемое морской водой на физические тела."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2047
+#: ..\FloatingSandbox\SettingsDialog.cpp:2142
 msgid ""
 "Adjusts the probability of a lightning hitting the ship. Set to zero to "
 "prevent altogether lightnings from hitting the ship."
@@ -323,39 +355,39 @@ msgstr ""
 "Регулирует вероятность попадания молнии в корабль. Установите нулевое "
 "значение, чтобы предотвратить попадание молний в корабль."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2527
+#: ..\FloatingSandbox\SettingsDialog.cpp:2643
 msgid "Adjusts the quantity of light emitted by luminescent materials."
 msgstr "Регулирует количество света, излучаемого люминесцентными материалами."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2827
+#: ..\FloatingSandbox\SettingsDialog.cpp:2955
 msgid "Adjusts the radius of the neighborhood tracked by fishes in a shoal."
 msgstr "Регулирует радиус окрестностей, отслеживаемых рыбами на мелководье."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3567
+#: ..\FloatingSandbox\SettingsDialog.cpp:3814
 msgid "Adjusts the radius of the repair tool (m)."
 msgstr "Регулирует радиус ремонтного инструмента (м)."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3967
+#: ..\FloatingSandbox\SettingsDialog.cpp:4219
 msgid "Adjusts the rate at which the ocean darkens with depth."
 msgstr "Регулирует глубину затемнения океана."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:813
+#: ..\FloatingSandbox\SettingsDialog.cpp:846
 msgid "Adjusts the rate with which materials consume when burning."
 msgstr "Регулирует скорость, с которой материалы уничтожаются при горении."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4327
+#: ..\FloatingSandbox\SettingsDialog.cpp:4703
 msgid "Adjusts the size of flames."
 msgstr "Регулирует размер пламени."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1847
+#: ..\FloatingSandbox\SettingsDialog.cpp:1930
 msgid "Adjusts the smoothness of waves caused by water displacement."
 msgstr "Регулирует плавность волн, вызванных смещением воды."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2777
+#: ..\FloatingSandbox\SettingsDialog.cpp:2905
 msgid "Adjusts the speed of fishes."
 msgstr "Регулирует скорость рыб."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1750
+#: ..\FloatingSandbox\SettingsDialog.cpp:1827
 msgid ""
 "Adjusts the speed of ocean waves wrt their optimal value, which is "
 "determined by wind speed."
@@ -363,15 +395,15 @@ msgstr ""
 "Регулирует скорость океанских волн относительно их оптимального значения, "
 "которое определяется скоростью ветра."
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:498
+#: ..\FloatingSandbox\PreferencesDialog.cpp:551
 msgid "Adjusts the speed of the camera movements."
 msgstr "Регулирует скорость движения камеры."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:639
+#: ..\FloatingSandbox\SettingsDialog.cpp:954
 msgid "Adjusts the speed with which heat propagates along materials."
 msgstr "Регулирует скорость, с которой тепло распространяется по материалам."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:666
+#: ..\FloatingSandbox\SettingsDialog.cpp:981
 msgid ""
 "Adjusts the speed with which materials dissipate or accumulate heat to or "
 "from air and water."
@@ -379,7 +411,7 @@ msgstr ""
 "Регулирует скорость, с которой материалы рассеивают или накапливают тепло в "
 "воздухе и воде."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1184
+#: ..\FloatingSandbox\SettingsDialog.cpp:1234
 msgid ""
 "Adjusts the speed with which materials rot when exposed to sea water. Set to "
 "zero to disable rotting altogether."
@@ -387,14 +419,14 @@ msgstr ""
 "Регулирует скорость, с которой материалы гниют под воздействием морской "
 "воды. Установите на ноль, чтобы полностью отключить гниение."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1280
+#: ..\FloatingSandbox\SettingsDialog.cpp:1342
 msgid ""
 "Adjusts the speed with which sea water enters or leaves a physical body."
 msgstr ""
 "Регулирует скорость, с которой морская вода входит или выходит из "
 "физического тела."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3593
+#: ..\FloatingSandbox\SettingsDialog.cpp:3840
 msgid ""
 "Adjusts the speed with which the repair tool attracts particles to repair "
 "damage. Warning: at high speeds the repair tool might become destructive!"
@@ -403,12 +435,16 @@ msgstr ""
 "устранения повреждений. Предупреждение: на высоких скоростях ремонтный "
 "инструмент может стать разрушительным!"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1307
+#: ..\FloatingSandbox\SettingsDialog.cpp:1369
 msgid "Adjusts the speed with which water propagates within a physical body."
 msgstr ""
 "Регулирует скорость, с которой вода распространяется внутри физического тела."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:591
+#: ..\FloatingSandbox\SettingsDialog.cpp:639
+msgid "Adjusts the static friction coefficient."
+msgstr ""
+
+#: ..\FloatingSandbox\SettingsDialog.cpp:693
 msgid ""
 "Adjusts the static pressure force exherted against the external hull of "
 "physical bodies. Set to zero to disable static pressure altogether."
@@ -417,47 +453,47 @@ msgstr ""
 "физических тел. Установите на ноль, чтобы полностью отключить статическое "
 "давление."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1969
+#: ..\FloatingSandbox\SettingsDialog.cpp:2064
 msgid "Adjusts the strength of storms."
 msgstr "Регулирует силу штормов."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3032
+#: ..\FloatingSandbox\SettingsDialog.cpp:3231
 msgid "Adjusts the strength of the initial anti-matter bomb implosion."
 msgstr "Регулирует силу первоначального взрыва Анти-Материальной Бомбы."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:759
+#: ..\FloatingSandbox\SettingsDialog.cpp:792
 msgid "Adjusts the temperature at which materials ignite."
 msgstr "Регулирует температуру, при которой материалы воспламеняются."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:786
+#: ..\FloatingSandbox\SettingsDialog.cpp:819
 msgid "Adjusts the temperature at which materials melt."
 msgstr "Регулирует температуру, при которой материалы плавятся."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2623
+#: ..\FloatingSandbox\SettingsDialog.cpp:2745
 msgid "Adjusts the thrust exerted by engines."
 msgstr "Регулирует тягу, создаваемую двигателями."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3941
+#: ..\FloatingSandbox\SettingsDialog.cpp:4193
 msgid "Adjusts the transparency of sea water."
 msgstr "Регулирует прозрачность морской воды."
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:1055
+#: ..\FloatingSandbox\PreferencesDialog.cpp:1226
 msgid "Adjusts the volume of background music."
 msgstr "Регулирует громкость фоновой музыки."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4589
+#: ..\FloatingSandbox\SettingsDialog.cpp:5009
 msgid "Adjusts the volume of sounds generated by interactive tools."
 msgstr "Регулирует громкость звуков, генерируемых инструментами."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4563
+#: ..\FloatingSandbox\SettingsDialog.cpp:4983
 msgid "Adjusts the volume of sounds generated by the simulation."
 msgstr "Регулирует громкость звуков, генерируемых симуляцией."
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:1081
+#: ..\FloatingSandbox\PreferencesDialog.cpp:1252
 msgid "Adjusts the volume of the music played when a ship is sinking."
 msgstr "Регулирует громкость музыки, воспроизводимой при затоплении судна."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1723
+#: ..\FloatingSandbox\SettingsDialog.cpp:1800
 msgid ""
 "Adjusts the width of ocean waves wrt their optimal value, which is "
 "determined by wind speed."
@@ -465,15 +501,15 @@ msgstr ""
 "Регулирует ширину океанских волн относительно их оптимального значения, "
 "которое определяется скоростью ветра."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4759
+#: ..\FloatingSandbox\SettingsDialog.cpp:5191
 msgid "Advanced"
 msgstr "Дополнительно"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2147
+#: ..\FloatingSandbox\SettingsDialog.cpp:2247
 msgid "Air"
 msgstr "Воздух"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2266
+#: ..\FloatingSandbox\SettingsDialog.cpp:2366
 msgid "Air Bubbles Density"
 msgstr "Плотность Воздушных Пузырей"
 
@@ -481,7 +517,7 @@ msgstr "Плотность Воздушных Пузырей"
 msgid "Air and Sky"
 msgstr "Воздух и небо"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:2548
+#: ..\ShipBuilderLib\MainFrame.cpp:2603
 msgid "All Layers:"
 msgstr "Слои:"
 
@@ -527,19 +563,23 @@ msgstr ""
 "Все источники питания в электрическом слое подключены по крайней мере к "
 "одному электрическому элементу."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1820
+#: ..\ShipBuilderLib\MainFrame.cpp:1871
 msgid "Analysis"
 msgstr "Анализ"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:2405
+#: ..\FloatingSandbox\SettingsDialog.cpp:4436
+msgid "Anonymous Stickmen"
+msgstr ""
+
+#: ..\ShipBuilderLib\MainFrame.cpp:2456
 msgid "Anti-Alias:"
 msgstr "Анти-Алиас:"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:5200
+#: ..\FloatingSandbox\SettingsDialog.cpp:5736
 msgid "Apply Saved Settings"
 msgstr "Применить Сохраненные Настройки"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:5292
+#: ..\FloatingSandbox\SettingsDialog.cpp:5840
 #, c-format
 msgid "Are you sure you want to delete settings \"%s\"?"
 msgstr "Вы уверены, что хотите удалить настройки \"%s\"?"
@@ -552,7 +592,7 @@ msgstr ""
 "Вы уверены, что хотите снять защиту паролем с этого корабля, позволив всем "
 "желающим вносить в него изменения?"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:5255
+#: ..\FloatingSandbox\SettingsDialog.cpp:5799
 #, c-format
 msgid ""
 "Are you sure you want to replace settings \"%s\" with the current settings?"
@@ -566,7 +606,7 @@ msgstr ""
 "В данный момент невозможно проверить наличие обновлений; пожалуйста, "
 "попробуйте позже..."
 
-#: ..\FloatingSandbox\MainFrame.cpp:385
+#: ..\FloatingSandbox\MainFrame.cpp:440
 msgid "Attract/Repel"
 msgstr "Приятжение/Отталкивание"
 
@@ -586,62 +626,68 @@ msgstr ""
 msgid "Author(s), e.g. \"Ellen Ripley; David Gahan\""
 msgstr "Автор(ы), например, \"Эллен Рипли; Дэвид Гаан\"."
 
-#: ..\FloatingSandbox\MainFrame.cpp:265
-#: ..\FloatingSandbox\PreferencesDialog.cpp:952
+#: ..\FloatingSandbox\PreferencesDialog.cpp:1133
+#, fuzzy
+#| msgid "Auto-Focus at Ship Load"
+msgid "Auto-Focus at NPC Add"
+msgstr "Автофокусировка при загрузке судна"
+
+#: ..\FloatingSandbox\MainFrame.cpp:316
+#: ..\FloatingSandbox\PreferencesDialog.cpp:1009
 msgid "Auto-Focus at Ship Load"
 msgstr "Автофокусировка при загрузке судна"
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:778
+#: ..\FloatingSandbox\PreferencesDialog.cpp:831
 #: ..\ShipBuilderLib\UI\ShipPropertiesEditDialog.cpp:92
 msgid "Auto-Texturization"
 msgstr "Автоматическое Текстурирование"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1587
+#: ..\ShipBuilderLib\MainFrame.cpp:1638
 msgid "Auto-Trim"
 msgstr "Автоматическая обрезка"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:3372
+#: ..\ShipBuilderLib\MainFrame.cpp:3450
 msgid "Auto-texturization mode: view ship as when it is auto-texturized."
 msgstr ""
 "Режим автотекстурирования: просмотр корабля в режиме автотекстурирования."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2436
+#: ..\FloatingSandbox\SettingsDialog.cpp:2547
 msgid "Automatic Daylight Cycle"
 msgstr "Автоматический Дневной Цикл"
 
-#: ..\FloatingSandbox\CreditsPanel.cpp:104
+#: ..\FloatingSandbox\CreditsPanel.cpp:109
 msgid "BUILD ENGINEERING"
 msgstr "СТРОИТЕЛЬНАЯ ИНЖЕНЕРИЯ"
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:1054
+#: ..\FloatingSandbox\PreferencesDialog.cpp:1225
 msgid "Background Music Volume"
 msgstr "Громкость Фоновой Музыки"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:834
+#: ..\ShipBuilderLib\MainFrame.cpp:839
 msgid "Backup Ship"
 msgstr "Резервный корабль"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1597
+#: ..\FloatingSandbox\SettingsDialog.cpp:1668
 msgid "Base Speed"
 msgstr "Базовая скорость"
 
-#: ..\FloatingSandbox\MainFrame.cpp:375
+#: ..\FloatingSandbox\MainFrame.cpp:430
 msgid "Blast"
 msgstr "Взрыв"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2978
+#: ..\FloatingSandbox\SettingsDialog.cpp:3177
 msgid "Blast Force Adjust"
 msgstr "Регулировка Силы взрыва"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3004
+#: ..\FloatingSandbox\SettingsDialog.cpp:3203
 msgid "Blast Heat"
 msgstr "Взрывная жара"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2952
+#: ..\FloatingSandbox\SettingsDialog.cpp:3151
 msgid "Blast Radius"
 msgstr "Радиус взрыва"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3129
+#: ..\FloatingSandbox\SettingsDialog.cpp:3341
 msgid "Blast Tool"
 msgstr "Взрывной инструмент"
 
@@ -649,7 +695,7 @@ msgstr "Взрывной инструмент"
 msgid "Blue Sky"
 msgstr "Синее небо"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2876
+#: ..\FloatingSandbox\SettingsDialog.cpp:3119
 msgid "Bombs"
 msgstr "Бомбы"
 
@@ -657,11 +703,11 @@ msgstr "Бомбы"
 msgid "Boot Settings"
 msgstr "Настройки Загрузки"
 
-#: ..\FloatingSandbox\MainFrame.cpp:280
+#: ..\FloatingSandbox\MainFrame.cpp:361
 msgid "Bright Ambient Light"
 msgstr "Осветлить Окружающий Свет"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1381
+#: ..\FloatingSandbox\SettingsDialog.cpp:1447
 msgid "Bumpiness"
 msgstr "Бугристость"
 
@@ -669,20 +715,24 @@ msgstr "Бугристость"
 msgid "Buoyant Volume"
 msgstr "Объем плавучести"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:758
+#: ..\FloatingSandbox\SettingsDialog.cpp:791
 msgid "Burning Point Adjust"
 msgstr "Точка горения"
+
+#: ..\FloatingSandbox\MainFrame.cpp:754
+msgid "Buy Merchandise..."
+msgstr ""
 
 #: ..\ShipBuilderLib\UI\MaterialPalette.cpp:718
 msgid "Cable"
 msgstr "Кабель"
 
-#: ..\FloatingSandbox\SplashScreenDialog.cpp:128
+#: ..\FloatingSandbox\SplashScreenDialog.cpp:156
 msgid "Calibrating game on the computer..."
 msgstr "Калибровка игры под ваш компьютер..."
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:493
-#: ..\FloatingSandbox\PreferencesDialog.cpp:510
+#: ..\FloatingSandbox\PreferencesDialog.cpp:546
+#: ..\FloatingSandbox\PreferencesDialog.cpp:563
 msgid "Camera Speed"
 msgstr "Скорость камеры"
 
@@ -694,7 +744,7 @@ msgstr "Скорость камеры"
 #: ..\ShipBuilderLib\UI\PreferencesDialog.cpp:251
 #: ..\ShipBuilderLib\UI\ResizeDialog.cpp:365
 #: ..\ShipBuilderLib\UI\ShipPropertiesEditDialog.cpp:122
-#: ..\UILib\ShipLoadDialog.cpp:435
+#: ..\UILib\ShipLoadDialog.cpp:439
 msgid "Cancel"
 msgstr "Отмена"
 
@@ -710,19 +760,19 @@ msgstr "Цвет фона холста:"
 msgid "Center Texture"
 msgstr "Текстура центра"
 
-#: ..\UILib\ShipLoadDialog.cpp:236
+#: ..\UILib\ShipLoadDialog.cpp:232
 msgid "Change direction of ships' order"
 msgstr "Изменение направления следования судов"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1043
+#: ..\ShipBuilderLib\MainFrame.cpp:1048
 msgid "Change general ShipBuilder settings."
 msgstr "Изменить общие настройки ShipBuilder."
 
-#: ..\UILib\ShipLoadDialog.cpp:218
+#: ..\UILib\ShipLoadDialog.cpp:214
 msgid "Change order of ships"
 msgstr "Изменение порядка следования судов"
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:451
+#: ..\FloatingSandbox\PreferencesDialog.cpp:504
 msgid ""
 "Changes the amount by which the camera position changes when using the pan "
 "controls."
@@ -730,7 +780,7 @@ msgstr ""
 "Изменяет величину изменения положения камеры при использовании элементов "
 "управления панорамированием."
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:406
+#: ..\FloatingSandbox\PreferencesDialog.cpp:459
 msgid "Changes the amount by which zoom changes when using the zoom controls."
 msgstr ""
 "Изменяет величину изменения масштаба при использовании элементов управления "
@@ -740,7 +790,7 @@ msgstr ""
 msgid "Changes the level of detail of materials' textures."
 msgstr "Изменяет уровень детализации текстур материалов."
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:838
+#: ..\FloatingSandbox\PreferencesDialog.cpp:891
 msgid ""
 "Changes the level of detail of materials' textures. Changes to this setting "
 "will only be visible after the next ship is loaded."
@@ -748,11 +798,28 @@ msgstr ""
 "Изменяет уровень детализации текстур материалов. Изменения этого параметра "
 "будут видны только после загрузки следующего корабля."
 
+#: ..\FloatingSandbox\PreferencesDialog.cpp:1078
+#, fuzzy
+#| msgid ""
+#| "Changes the level of detail of materials' textures. Changes to this "
+#| "setting will only be visible after the next ship is loaded."
+msgid ""
+"Changes the maximum number of NPCs. Warning: higher values require more "
+"computing resources, with the risk of slowing the simulation down! Changes "
+"to this setting will only be visible after the next ship is loaded."
+msgstr ""
+"Изменяет уровень детализации текстур материалов. Изменения этого параметра "
+"будут видны только после загрузки следующего корабля."
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:1107
+msgid "Changes the number of NPCs spawned when a group is added."
+msgstr ""
+
 #: ..\ShipBuilderLib\UI\ShipPropertiesEditDialog.cpp:900
 msgid "Changes the transparency of materials' textures."
 msgstr "Изменяет прозрачность текстур материалов."
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:865
+#: ..\FloatingSandbox\PreferencesDialog.cpp:920
 msgid ""
 "Changes the transparency of materials' textures. Changes to this setting "
 "will only be visible after the next ship is loaded."
@@ -760,15 +827,15 @@ msgstr ""
 "Изменяет прозрачность текстур материалов. Изменения этого параметра будут "
 "видны только после загрузки следующего корабля."
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:480
+#: ..\FloatingSandbox\PreferencesDialog.cpp:533
 msgid "Check for Updates on Startup"
 msgstr "Проверка Наличия Обновлений при Запуске"
 
-#: ..\FloatingSandbox\MainFrame.cpp:604
+#: ..\FloatingSandbox\MainFrame.cpp:743
 msgid "Check for Updates..."
 msgstr "Проверить Наличие Обновлений..."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1867
+#: ..\ShipBuilderLib\MainFrame.cpp:1918
 msgid "Check the ship for issues."
 msgstr "Проверьте корабль на наличие проблем."
 
@@ -794,16 +861,16 @@ msgstr ""
 msgid "Closes the window keeping all changes."
 msgstr "Закрывает окно, сохраняя все изменения."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:746
+#: ..\FloatingSandbox\SettingsDialog.cpp:779
 #: ..\ShipBuilderLib\UI\MaterialPalette.cpp:663
 msgid "Combustion"
 msgstr "Горение"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:839
+#: ..\FloatingSandbox\SettingsDialog.cpp:872
 msgid "Combustion Heat Adjust"
 msgstr "Температура горения"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:812
+#: ..\FloatingSandbox\SettingsDialog.cpp:845
 msgid "Combustion Speed Adjust"
 msgstr "Скорость горения"
 
@@ -811,11 +878,11 @@ msgstr "Скорость горения"
 msgid "Combustion Type"
 msgstr "Вид горения"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:2912
+#: ..\ShipBuilderLib\MainFrame.cpp:2968
 msgid "Commit"
 msgstr "Выполнить"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:2898
+#: ..\ShipBuilderLib\MainFrame.cpp:2954
 msgid "Commit the paste operation."
 msgstr "Выполните операцию вставки."
 
@@ -831,20 +898,31 @@ msgstr "Подтвердите пароль:"
 msgid "Congratulations! The ship has no issues and it may be saved."
 msgstr "Поздравляем! Корабль не имеет проблем и может быть сохранен."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:2294 ..\ShipBuilderLib\MainFrame.cpp:2439
+#: ..\ShipBuilderLib\MainFrame.cpp:2345 ..\ShipBuilderLib\MainFrame.cpp:2490
 msgid "Contiguous Only:"
 msgstr "Только смежные:"
 
-#: ..\FloatingSandbox\MainFrame.cpp:269
-#: ..\FloatingSandbox\PreferencesDialog.cpp:937
+#: ..\FloatingSandbox\PreferencesDialog.cpp:994
 msgid "Continuous Auto-Focus"
 msgstr "Непрерывная автофокусировка"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4437
+#: ..\FloatingSandbox\MainFrame.cpp:331
+#, fuzzy
+#| msgid "Continuous Auto-Focus"
+msgid "Continuous Auto-Focus on NPC"
+msgstr "Непрерывная автофокусировка"
+
+#: ..\FloatingSandbox\MainFrame.cpp:322
+#, fuzzy
+#| msgid "Continuous Auto-Focus"
+msgid "Continuous Auto-Focus on Ship"
+msgstr "Непрерывная автофокусировка"
+
+#: ..\FloatingSandbox\SettingsDialog.cpp:4797
 msgid "Contrast"
 msgstr "Контраст"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4301
+#: ..\FloatingSandbox\SettingsDialog.cpp:4651
 msgid ""
 "Controls the sensitivity of the ship to ambient light; lower values allow "
 "the ship to be visible also at night."
@@ -852,57 +930,69 @@ msgstr ""
 "Управляет чувствительностью корабля к окружающему свету; более низкие "
 "значения позволяют видеть корабль даже ночью."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1727
+#: ..\FloatingSandbox\SettingsDialog.cpp:4677
+#, fuzzy
+#| msgid ""
+#| "Controls the sensitivity of the ship to ambient light; lower values allow "
+#| "the ship to be visible also at night."
+msgid ""
+"Controls the sensitivity of the ship to depth darkening; lower values allow "
+"the ship to be visible also at depth."
+msgstr ""
+"Управляет чувствительностью корабля к окружающему свету; более низкие "
+"значения позволяют видеть корабль даже ночью."
+
+#: ..\ShipBuilderLib\MainFrame.cpp:1778
 msgid "Copy"
 msgstr "Копировать"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1732
+#: ..\ShipBuilderLib\MainFrame.cpp:1783
 msgid "Copy the current selection to the clipboard (Ctrl+C)."
 msgstr "Копирование текущего выделения в буфер обмена (Ctrl+C)."
 
-#: ..\FloatingSandbox\CreditsPanel.cpp:159
+#: ..\FloatingSandbox\CreditsPanel.cpp:164
 msgid "Copyright (c) 1998-2005 Julian Smart, Robert Roebling et al"
 msgstr "Copyright (c) 1998-2005 Julian Smart, Robert Roebling et al"
 
-#: ..\FloatingSandbox\CreditsPanel.cpp:171
+#: ..\FloatingSandbox\CreditsPanel.cpp:176
 msgid "Copyright (c) 2005-2011 Karl Walsh (Codehead)"
 msgstr "Copyright (c) 2005-2011 Karl Walsh (Codehead)"
 
-#: ..\FloatingSandbox\CreditsPanel.cpp:168
+#: ..\FloatingSandbox\CreditsPanel.cpp:173
 msgid ""
 "Copyright (c) 2009-2010 Cybozu Labs, Inc.; Copyright (c) 2011-2014 Kazuho Oku"
 msgstr ""
 "Copyright (c) 2009-2010 Cybozu Labs, Inc.; Copyright (c) 2011-2014 Kazuho Oku"
 
-#: ..\FloatingSandbox\CreditsPanel.cpp:174
+#: ..\FloatingSandbox\CreditsPanel.cpp:179
 msgid "Copyright (c) 2011 Paul Mineiro"
 msgstr "Copyright (c) 2011 Paul Mineiro"
 
-#: ..\FloatingSandbox\CreditsPanel.cpp:162
+#: ..\FloatingSandbox\CreditsPanel.cpp:167
 msgid "Copyright (c) Laurent Gomila"
 msgstr "Copyright (c) Laurent Gomila"
 
-#: ..\FloatingSandbox\MainFrame.cpp:578
+#: ..\FloatingSandbox\MainFrame.cpp:717
 msgid "Create New Ship..."
 msgstr "Создать новый корабль..."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:742
+#: ..\ShipBuilderLib\MainFrame.cpp:747
 msgid "Create a new empty ship (Ctrl+N)."
 msgstr "Создайте новый пустой корабль (Ctrl+N)."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4042
+#: ..\FloatingSandbox\SettingsDialog.cpp:4294
 msgid "Crepuscular"
 msgstr "Сумеречный"
 
-#: ..\ShipBuilderLib\Controller.cpp:739 ..\ShipBuilderLib\MainFrame.cpp:1753
+#: ..\ShipBuilderLib\Controller.cpp:800 ..\ShipBuilderLib\MainFrame.cpp:1804
 msgid "Cut"
 msgstr "Вырезать"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3966
+#: ..\FloatingSandbox\SettingsDialog.cpp:4218
 msgid "Darkening Rate"
 msgstr "Коэффициент затемнения дна"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2465
+#: ..\FloatingSandbox\SettingsDialog.cpp:2576
 msgid "Daylight Cycle Duration"
 msgstr "Продолжительность дневного цикла"
 
@@ -916,34 +1006,40 @@ msgstr "Откладка"
 msgid "Default"
 msgstr "По умолчанию"
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:737
+#: ..\FloatingSandbox\PreferencesDialog.cpp:790
 msgid "Default Language (from system)"
 msgstr "Язык по Умолчанию (системный)"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:5274
+#: ..\FloatingSandbox\SettingsDialog.cpp:5822
 msgid "Delete Saved Settings"
 msgstr "Удалить Сохраненные Настройки"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:5275
+#: ..\FloatingSandbox\SettingsDialog.cpp:5823
 msgid "Deletes the selected settings."
 msgstr "Удаляет выбранные настройки."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1001
-#: ..\FloatingSandbox\SettingsDialog.cpp:2159
-#: ..\FloatingSandbox\SettingsDialog.cpp:2313
-#: ..\FloatingSandbox\SettingsDialog.cpp:4700
+#: ..\FloatingSandbox\SettingsDialog.cpp:1045
+#: ..\FloatingSandbox\SettingsDialog.cpp:2259
+#: ..\FloatingSandbox\SettingsDialog.cpp:2419
+#: ..\FloatingSandbox\SettingsDialog.cpp:5126
 msgid "Density Adjust"
 msgstr "Регулировка плотности"
 
-#: ..\FloatingSandbox\CreditsPanel.cpp:165
+#: ..\FloatingSandbox\CreditsPanel.cpp:170
 msgid "Denton Woods et al"
 msgstr "Denton Woods и другие люди"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1231
+#: ..\FloatingSandbox\SettingsDialog.cpp:1287
 msgid "Depth"
 msgstr "Глубина"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3818
+#: ..\FloatingSandbox\SettingsDialog.cpp:4676
+#, fuzzy
+#| msgid "Darkening Rate"
+msgid "Depth Darkening"
+msgstr "Коэффициент затемнения дна"
+
+#: ..\FloatingSandbox\SettingsDialog.cpp:4070
 msgid "Depth Gradient"
 msgstr "Градиент Глубины"
 
@@ -960,12 +1056,12 @@ msgstr ""
 "Описание корабля, длинное или короткое, по вашему желанию, или пустое, чтобы "
 "оставить корабль без описания"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:5182
-#: ..\FloatingSandbox\SettingsDialog.cpp:5386
+#: ..\FloatingSandbox\SettingsDialog.cpp:5714
+#: ..\FloatingSandbox\SettingsDialog.cpp:5946
 msgid "Description:"
 msgstr "Описание:"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:2617
+#: ..\ShipBuilderLib\MainFrame.cpp:2672
 msgid "Deselect"
 msgstr "Снять выделение"
 
@@ -973,7 +1069,7 @@ msgstr "Снять выделение"
 msgid "Destroy"
 msgstr "Уничтожить"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3094
+#: ..\FloatingSandbox\SettingsDialog.cpp:3300
 msgid "Destroy Radius"
 msgstr "Радиус Уничтожения"
 
@@ -985,15 +1081,15 @@ msgstr "Уничтожить!"
 msgid "Destructive Tools"
 msgstr "Разрушительные инструменты"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1434
+#: ..\FloatingSandbox\SettingsDialog.cpp:1500
 msgid "Detail"
 msgstr "Детали"
 
-#: ..\FloatingSandbox\MainFrame.cpp:484
+#: ..\FloatingSandbox\MainFrame.cpp:542
 msgid "Detonate Anti-Matter Bombs"
 msgstr "Взорвать Анти-Материальные Бомбы"
 
-#: ..\FloatingSandbox\MainFrame.cpp:476
+#: ..\FloatingSandbox\MainFrame.cpp:534
 msgid "Detonate RC Bombs"
 msgstr "Взорвать Радиоуправляемые Бомбы"
 
@@ -1001,11 +1097,11 @@ msgstr "Взорвать Радиоуправляемые Бомбы"
 msgid "Diesel"
 msgstr "Дизель"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1306
+#: ..\FloatingSandbox\SettingsDialog.cpp:1368
 msgid "Diffusion Speed"
 msgstr "Скорость диффузии"
 
-#: ..\FloatingSandbox\MainFrame.cpp:284
+#: ..\FloatingSandbox\MainFrame.cpp:365
 msgid "Dim Ambient Light"
 msgstr "Затемнить Окружающий Свет"
 
@@ -1013,24 +1109,30 @@ msgstr "Затемнить Окружающий Свет"
 msgid "Direction (rad)"
 msgstr "Направление (рад)"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:880
+#: ..\FloatingSandbox\MainFrame.cpp:340
+#, fuzzy
+#| msgid "Enable or disable continuous auto-focus."
+msgid "Disable continuous auto-focus."
+msgstr "Включение или отключение непрерывной автофокусировки."
+
+#: ..\ShipBuilderLib\MainFrame.cpp:885
 msgid "Discard the current ship and return to the simulator."
 msgstr "Выбросить текущий корабль и вернуться в симулятор."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1791
+#: ..\FloatingSandbox\SettingsDialog.cpp:1874
 msgid "Displace Water"
 msgstr "Вытеснение воды"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1784
+#: ..\FloatingSandbox\SettingsDialog.cpp:1867
 msgid "Displacement Waves"
 msgstr "Смещение волн"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:5476
+#: ..\ShipBuilderLib\MainFrame.cpp:5596
 #, c-format
 msgid "Do you also want to rename the ship file to \"%s\"?"
 msgstr "Вы также хотите переименовать файл корабля в \"%s\"?"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:5469
+#: ..\ShipBuilderLib\MainFrame.cpp:5589
 msgid "Do you want to save your changes before continuing?"
 msgstr "Хотите ли вы сохранить изменения перед продолжением?"
 
@@ -1050,138 +1152,152 @@ msgstr "Не показывать описания при загрузке ко�
 msgid "Don't show this tip again"
 msgstr "Не показывать этот совет снова"
 
-#: ..\FloatingSandbox\MainFrame.cpp:608
+#: ..\FloatingSandbox\MainFrame.cpp:748
 msgid "Donate..."
 msgstr "Пожертвование..."
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:111
+#: ..\FloatingSandbox\PreferencesDialog.cpp:137
 msgid "Done"
 msgstr "Готово"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4841
+#: ..\FloatingSandbox\SettingsDialog.cpp:5279
 msgid "Draw Decay"
 msgstr "Показывать Распад"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4907
+#: ..\FloatingSandbox\SettingsDialog.cpp:5345
 msgid "Draw Explosions"
 msgstr "Отрисовка взрывов"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4921
+#: ..\FloatingSandbox\SettingsDialog.cpp:5359
 msgid "Draw Flames"
 msgstr "Показывать Огонь"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4977
+#: ..\FloatingSandbox\SettingsDialog.cpp:5415
 msgid "Draw HeatBlaster Flame"
 msgstr "Показывать Огонь от Огнемета"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4842
+#: ..\FloatingSandbox\SettingsDialog.cpp:5280
 msgid "Draw Internal Pressure"
 msgstr "Показывать  внутреннее давление"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3785
-#: ..\FloatingSandbox\SettingsDialog.cpp:4006
-#: ..\FloatingSandbox\SettingsDialog.cpp:4140
+#: ..\FloatingSandbox\SettingsDialog.cpp:4036
+#: ..\FloatingSandbox\SettingsDialog.cpp:4258
+#: ..\FloatingSandbox\SettingsDialog.cpp:4411
+#: ..\FloatingSandbox\SettingsDialog.cpp:4862
 msgid "Draw Mode"
 msgstr "Режим Прорисовки"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4839
+#: ..\FloatingSandbox\SettingsDialog.cpp:5277
 msgid "Draw Only Edge Springs"
 msgstr "Показывать Только Края"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4837
+#: ..\FloatingSandbox\SettingsDialog.cpp:5275
 msgid "Draw Only Points"
 msgstr "Показывать Только Точки"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4838
+#: ..\FloatingSandbox\SettingsDialog.cpp:5276
 msgid "Draw Only Springs"
 msgstr "Показывать Только Пружины"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4843
+#: ..\FloatingSandbox\SettingsDialog.cpp:5281
 msgid "Draw Strength"
 msgstr "Показывать Прочность"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4840
+#: ..\FloatingSandbox\SettingsDialog.cpp:5278
 msgid "Draw Structure"
 msgstr "Показывать Структуру"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:4235
+#: ..\ShipBuilderLib\MainFrame.cpp:4313
 msgid "Draw a rope between two endpoints."
 msgstr "Нарисуйте веревку между двумя конечными точками."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:4072
+#: ..\ShipBuilderLib\MainFrame.cpp:4150
 msgid "Draw electrical elements in lines."
 msgstr "Нарисуйте электрические элементы в виде линий."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4836
+#: ..\FloatingSandbox\SettingsDialog.cpp:5274
 msgid "Draw in Wireframe Mode"
 msgstr "Показывать в Каркасном Режиме"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:4040
+#: ..\ShipBuilderLib\MainFrame.cpp:4118
 msgid "Draw individual electrical elements."
 msgstr "Нарисуйте отдельные электрические элементы."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:3797
+#: ..\ShipBuilderLib\MainFrame.cpp:3875
 msgid "Draw individual structure particles."
 msgstr "Нарисуйте отдельные частицы структуры."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:3829
+#: ..\ShipBuilderLib\MainFrame.cpp:3907
 msgid "Draw particles in lines."
 msgstr "Рисуйте частицы линиями."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:3845
+#: ..\ShipBuilderLib\MainFrame.cpp:3923
 msgid "Draw rectangles of particles."
 msgstr "Нарисуйте прямоугольники из частиц."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4172
+#: ..\FloatingSandbox\SettingsDialog.cpp:4429
+msgid "Draws NPCs as stick-men, color-coded according to their roles."
+msgstr ""
+
+#: ..\FloatingSandbox\SettingsDialog.cpp:4437
+msgid ""
+"Draws NPCs as uniformly-colored stick-men, with no distinctions among roles."
+msgstr ""
+
+#: ..\FloatingSandbox\SettingsDialog.cpp:4421
+msgid "Draws NPCs with skins."
+msgstr ""
+
+#: ..\FloatingSandbox\SettingsDialog.cpp:4894
 msgid "Draws the ocean floor using a static color."
 msgstr "Изображает дно океана однотонным цветом."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4147
+#: ..\FloatingSandbox\SettingsDialog.cpp:4869
 msgid "Draws the ocean floor using a static image."
 msgstr "Изображает дно океана, используя статический узор."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3861
+#: ..\FloatingSandbox\SettingsDialog.cpp:4113
 msgid "Draws the ocean using a single color."
 msgstr "Изображает океан однотонным цветом."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3792
+#: ..\FloatingSandbox\SettingsDialog.cpp:4044
 msgid "Draws the ocean using a static pattern."
 msgstr "Изображает океан, используя статический узор."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3819
+#: ..\FloatingSandbox\SettingsDialog.cpp:4071
 msgid "Draws the ocean using a vertical color gradient."
 msgstr "Изображать океан с помощью вертикального цветового градиента."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4043
+#: ..\FloatingSandbox\SettingsDialog.cpp:4295
 msgid "Draws the sky using a crepuscolar gradient."
 msgstr "Рисует небо с помощью сумеречного градиента."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4016
+#: ..\FloatingSandbox\SettingsDialog.cpp:4268
 msgid "Draws the sky using a static color."
 msgstr "Рисует небо, используя статичный цвет."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2072
+#: ..\FloatingSandbox\SettingsDialog.cpp:2167
 msgid "Duration"
 msgstr "Продолжительность"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:5005
+#: ..\FloatingSandbox\SettingsDialog.cpp:5443
 msgid "Dynamic Forces"
 msgstr "Динамические силы"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1169 ..\ShipBuilderLib\MainFrame.cpp:1513
-#: ..\ShipBuilderLib\MainFrame.cpp:1716
+#: ..\ShipBuilderLib\MainFrame.cpp:1187 ..\ShipBuilderLib\MainFrame.cpp:1564
+#: ..\ShipBuilderLib\MainFrame.cpp:1767
 msgid "Edit"
 msgstr "Редактировать"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1480
+#: ..\ShipBuilderLib\MainFrame.cpp:1531
 msgid "Edit Panel"
 msgstr "Панель редактирования"
 
-#: ..\FloatingSandbox\MainFrame.cpp:582
+#: ..\FloatingSandbox\MainFrame.cpp:721
 msgid "Edit This Ship..."
 msgstr "Редактировать этот корабль..."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1485
+#: ..\ShipBuilderLib\MainFrame.cpp:1536
 msgid ""
 "Edit the electrical panel that is visualized in the game when this ship is "
 "loaded."
@@ -1189,23 +1305,29 @@ msgstr ""
 "Отредактируйте электрическую панель, которая отображается в игре при "
 "загрузке этого корабля."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1693
+#: ..\ShipBuilderLib\MainFrame.cpp:1744
 msgid "Edit the ship properties."
 msgstr "Редактирование свойств корабля."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4562
+#: ..\FloatingSandbox\SettingsDialog.cpp:4982
 msgid "Effects Volume"
 msgstr "Громкость эффектов"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1461
+#: ..\FloatingSandbox\SettingsDialog.cpp:1527
 msgid "Elasticity"
 msgstr "Эластичность"
 
-#: ..\FloatingSandbox\MainFrame.cpp:380
+#: ..\FloatingSandbox\SettingsDialog.cpp:611
+#, fuzzy
+#| msgid "Elasticity"
+msgid "Elasticity Adjust"
+msgstr "Эластичность"
+
+#: ..\FloatingSandbox\MainFrame.cpp:435
 msgid "Electric Spark"
 msgstr "Электрическая искра"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1100 ..\ShipBuilderLib\MainFrame.cpp:3176
+#: ..\ShipBuilderLib\MainFrame.cpp:1105 ..\ShipBuilderLib\MainFrame.cpp:3233
 msgid "Electrical Layer"
 msgstr "Слой Электрики"
 
@@ -1217,7 +1339,7 @@ msgstr "Электрическая панель"
 msgid "Electrical Panel Edit"
 msgstr "Редактирование электрической панели"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2588
+#: ..\FloatingSandbox\SettingsDialog.cpp:2710
 msgid "Electricals"
 msgstr "Электрика"
 
@@ -1225,43 +1347,57 @@ msgstr "Электрика"
 msgid "Emission Rate"
 msgstr "Коэффициент выбросов"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2797
+#: ..\FloatingSandbox\SettingsDialog.cpp:2925
 msgid "Enable Shoaling"
 msgstr "Включить обмеление"
 
-#: ..\FloatingSandbox\MainFrame.cpp:265
+#: ..\FloatingSandbox\MainFrame.cpp:331
+#, fuzzy
+#| msgid "Enable or disable continuous auto-focus."
+msgid "Enable continuous auto-focus on selected NPCs."
+msgstr "Включение или отключение непрерывной автофокусировки."
+
+#: ..\FloatingSandbox\MainFrame.cpp:322
+#, fuzzy
+#| msgid "Enable or disable continuous auto-focus."
+msgid "Enable continuous auto-focus on ships."
+msgstr "Включение или отключение непрерывной автофокусировки."
+
+#: ..\FloatingSandbox\MainFrame.cpp:316
 msgid "Enable or disable auto-focus when a ship is loaded."
 msgstr "Включить или отключить автофокусировку при загрузке корабля."
 
-#: ..\FloatingSandbox\MainFrame.cpp:269
-msgid "Enable or disable continuous auto-focus."
-msgstr "Включение или отключение непрерывной автофокусировки."
-
-#: ..\ShipBuilderLib\MainFrame.cpp:3721
+#: ..\ShipBuilderLib\MainFrame.cpp:3799
 msgid "Enable/disable the visual guides."
 msgstr "Включите/выключите визуальные подсказки."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:3698
+#: ..\ShipBuilderLib\MainFrame.cpp:3776
 msgid "Enable/disable visualization of the ship's center of mass."
 msgstr "Включить/выключить визуализацию центра масс корабля."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:720
+#: ..\FloatingSandbox\SettingsDialog.cpp:753
 msgid "Enables or disables amplification of tool forces and inflicted damages."
 msgstr "Включает или отключает усиление инструментов и нанесенных повреждений."
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:953
+#: ..\FloatingSandbox\PreferencesDialog.cpp:1010
 msgid "Enables or disables auto-focus when a ship is loaded."
 msgstr "Включает или выключает автофокусировку при загрузке корабля."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2437
+#: ..\FloatingSandbox\PreferencesDialog.cpp:1134
+#, fuzzy
+#| msgid "Enables or disables auto-focus when a ship is loaded."
+msgid "Enables or disables auto-focus when an NPC is added."
+msgstr "Включает или выключает автофокусировку при загрузке корабля."
+
+#: ..\FloatingSandbox\SettingsDialog.cpp:2548
 msgid "Enables or disables automatic cycling of daylight."
 msgstr "Включает или отключает автоматическое переключение дневного света."
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:938
+#: ..\FloatingSandbox\PreferencesDialog.cpp:995
 msgid "Enables or disables automatic focus on the ship."
 msgstr "Включает или выключает автоматическую фокусировку на корабле."
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:968
+#: ..\FloatingSandbox\PreferencesDialog.cpp:1025
 msgid ""
 "Enables or disables automatic showing of the ship's electrical panel when a "
 "ship with interactive electrical elements is loaded."
@@ -1269,15 +1405,15 @@ msgstr ""
 "Включает или выключает автоматический показ электрической панели корабля, "
 "когда загружается корабль с интерактивными электрическими элементами."
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:1109
+#: ..\FloatingSandbox\PreferencesDialog.cpp:1280
 msgid "Enables or disables background music while playing the game."
 msgstr "Включает или отключает фоновую музыку во время игры."
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:481
+#: ..\FloatingSandbox\PreferencesDialog.cpp:534
 msgid "Enables or disables checking for new versions when the game starts."
 msgstr "Включает или отключает проверку наличия новых версий при запуске игры."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1792
+#: ..\FloatingSandbox\SettingsDialog.cpp:1875
 msgid ""
 "Enables or disables displacement of water due to interactions with physical "
 "objects."
@@ -1285,29 +1421,29 @@ msgstr ""
 "Включает или отключает перемещение воды из-за взаимодействия с физическими "
 "объектами."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:5075
+#: ..\FloatingSandbox\SettingsDialog.cpp:5513
 msgid "Enables or disables generation of debris when using destructive tools."
 msgstr ""
 "Включает или отключает генерацию обломков при использовании разрушающих "
 "инструментов."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1991
+#: ..\FloatingSandbox\SettingsDialog.cpp:2086
 msgid "Enables or disables generation of rain during a storm."
 msgstr "Включает или отключает генерацию дождя во время шторма."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:5089
+#: ..\FloatingSandbox\SettingsDialog.cpp:5527
 msgid ""
 "Enables or disables generation of sparkles when using the saw tool on metal."
 msgstr ""
 "Включает или отключает генерацию искр при использовании пилы на металле."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2596
+#: ..\FloatingSandbox\SettingsDialog.cpp:2718
 msgid ""
 "Enables or disables generation of wakes when engines are running underwater."
 msgstr ""
 "Включает или отключает генерацию следа при работе двигателей под водой."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4964
+#: ..\FloatingSandbox\SettingsDialog.cpp:5402
 msgid ""
 "Enables or disables highlighting of the springs that are under heavy stress "
 "and close to rupture."
@@ -1315,39 +1451,45 @@ msgstr ""
 "Включает или отключает выделение пружин, находящихся под большим напряжением "
 "и близких к разрыву."
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:560
+#: ..\FloatingSandbox\PreferencesDialog.cpp:1148
+#, fuzzy
+#| msgid "Enables or disables notifications when a tsunami is being spawned."
+msgid "Enables or disables notifications about NPCs."
+msgstr "Включает или отключает уведомления при возникновении цунами."
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:613
 msgid "Enables or disables notifications when a tsunami is being spawned."
 msgstr "Включает или отключает уведомления при возникновении цунами."
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:1124
+#: ..\FloatingSandbox\PreferencesDialog.cpp:1295
 msgid "Enables or disables playing sorrow music when a ship starts sinking."
 msgstr ""
 "Включает или отключает воспроизведение печальной музыки, когда корабль "
 "начинает тонуть."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4908
+#: ..\FloatingSandbox\SettingsDialog.cpp:5346
 msgid "Enables or disables rendering of explosions."
 msgstr "Включает или отключает рендеринг взрывов."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4922
+#: ..\FloatingSandbox\SettingsDialog.cpp:5360
 msgid "Enables or disables rendering of flames."
 msgstr "Включает или отключает рендеринг пламени."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:5012
+#: ..\FloatingSandbox\SettingsDialog.cpp:5450
 msgid "Enables or disables rendering of vector fields."
 msgstr "Включает или отключает отрисовку векторных полей."
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:528
+#: ..\FloatingSandbox\PreferencesDialog.cpp:581
 msgid ""
 "Enables or disables saving the last-modified settings when exiting the game."
 msgstr ""
 "Включает или отключает сохранение последних настроек при выходе из игры."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2798
+#: ..\FloatingSandbox\SettingsDialog.cpp:2926
 msgid "Enables or disables shoaling behavior in fishes."
 msgstr "Включает или отключает поведение рыб."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1619
+#: ..\FloatingSandbox\SettingsDialog.cpp:1690
 msgid ""
 "Enables or disables simulation of wind variations, alternating between dead "
 "calm and high-speed gusts."
@@ -1355,14 +1497,14 @@ msgstr ""
 "Включает или отключает симуляцию колебаний ветра, чередующихся между мертвым "
 "штилем и высокоскоростными порывами."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4655
+#: ..\FloatingSandbox\SettingsDialog.cpp:5075
 msgid ""
 "Enables or disables the bubbling sound when air bubbles come to the surface."
 msgstr ""
 "Включает или отключает звук пузырей при выходе пузырьков воздуха на "
 "поверхность."
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:574
+#: ..\FloatingSandbox\PreferencesDialog.cpp:627
 msgid ""
 "Enables or disables the display of extended game performance information, "
 "such as update/render ratio and counts of primitives being rendered."
@@ -1371,7 +1513,7 @@ msgstr ""
 "производительности игры, такой как коэффициент обновления/визуализации и "
 "количество визуализируемых примитивов."
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:542
+#: ..\FloatingSandbox\PreferencesDialog.cpp:595
 msgid ""
 "Enables or disables the display of game performance information, such as "
 "frame rate and time elapsed."
@@ -1379,37 +1521,43 @@ msgstr ""
 "Включает или отключает отображение информации о производительности игры, "
 "такой как частота кадров и прошедшее время."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4627
+#: ..\FloatingSandbox\SettingsDialog.cpp:3060
+msgid ""
+"Enables or disables the effect of physics tools - such as Swirl, Attract, or "
+"Repel - on NPCs."
+msgstr ""
+
+#: ..\FloatingSandbox\SettingsDialog.cpp:5047
 msgid ""
 "Enables or disables the generation of sounds when materials are under stress."
 msgstr ""
 "Включает или отключает генерацию звуков, когда материалы подвергаются "
 "нагрузке."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4613
+#: ..\FloatingSandbox\SettingsDialog.cpp:5033
 msgid "Enables or disables the generation of sounds when materials break."
 msgstr ""
 "Включает или отключает генерацию звуков при разламывании/разрыве материалов."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4641
+#: ..\FloatingSandbox\SettingsDialog.cpp:5061
 msgid "Enables or disables the generation of wind sounds."
 msgstr "Включает или отключает генерацию звуков ветра."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4080
+#: ..\FloatingSandbox\SettingsDialog.cpp:4332
 msgid "Enables or disables the moon's light at night."
 msgstr "Включает или выключает свет луны в ночное время."
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:436
+#: ..\FloatingSandbox\PreferencesDialog.cpp:489
 msgid "Enables or disables the tips shown when the game starts."
 msgstr "Включает или отключает подсказки, отображаемые при запуске игры."
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:923
+#: ..\FloatingSandbox\PreferencesDialog.cpp:980
 msgid ""
 "Enables or disables the window showing ship descriptions when ships are "
 "loaded."
 msgstr "Включает или отключает окно с описанием кораблей при их загрузке."
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:983
+#: ..\FloatingSandbox\PreferencesDialog.cpp:1040
 msgid ""
 "Enables or disables visual notifications when an electrical element changes "
 "state."
@@ -1417,14 +1565,14 @@ msgstr ""
 "Включает или отключает визуальные уведомления при изменении состояния "
 "электрического элемента."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4950
+#: ..\FloatingSandbox\SettingsDialog.cpp:5388
 msgid ""
 "Enables or disables visualization of the AABBs (Axis-Aligned Bounding Boxes)."
 msgstr ""
 "Включает или отключает визуализацию AABB (ограничивающих рамок, выровненных "
 "по оси)."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4936
+#: ..\FloatingSandbox\SettingsDialog.cpp:5374
 msgid "Enables or disables visualization of the frontiers of the ship."
 msgstr "Включает или отключает визуализацию границ корабля."
 
@@ -1436,7 +1584,7 @@ msgstr "Двигатель"
 msgid "Engine Controller"
 msgstr "Контроллер двигателя"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2622
+#: ..\FloatingSandbox\SettingsDialog.cpp:2744
 msgid "Engine Thrust Adjust"
 msgstr "Регулировка Тяги Двигателя"
 
@@ -1448,23 +1596,23 @@ msgstr "Трансмиссия двигателя"
 msgid "Engine Type"
 msgstr "Тип двигателя"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:4430
+#: ..\ShipBuilderLib\MainFrame.cpp:4508
 msgid "Erase background."
 msgstr "Стереть фон."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:4056
+#: ..\ShipBuilderLib\MainFrame.cpp:4134
 msgid "Erase individual electrical elements."
 msgstr "Стирание отдельных электрических элементов."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:3813
+#: ..\ShipBuilderLib\MainFrame.cpp:3891
 msgid "Erase individual structure particles."
 msgstr "Стирание отдельных частиц структуры."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:4414
+#: ..\ShipBuilderLib\MainFrame.cpp:4492
 msgid "Erase individual texture pixels."
 msgstr "Стирание отдельных пикселей текстуры."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:2453
+#: ..\ShipBuilderLib\MainFrame.cpp:2504
 msgid ""
 "Erase only pixels contiguous to the starting pixel. When not checked, the "
 "tool effectively removes colors."
@@ -1472,24 +1620,24 @@ msgstr ""
 "Стирать только пиксели, смежные с начальным пикселем. Если флажок не "
 "установлен, инструмент эффективно удаляет цвета."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:4251
+#: ..\ShipBuilderLib\MainFrame.cpp:4329
 msgid "Erase rope endpoints."
 msgstr "Стереть конечные точки каната."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1758
+#: ..\ShipBuilderLib\MainFrame.cpp:1809
 msgid ""
 "Erase the specified region and copy its content to the clipboard (Ctrl+X)."
 msgstr ""
 "Стереть указанную область и скопировать ее содержимое в буфер обмена (Ctrl"
 "+X)."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1959 ..\ShipBuilderLib\MainFrame.cpp:2013
-#: ..\ShipBuilderLib\MainFrame.cpp:2494
+#: ..\ShipBuilderLib\MainFrame.cpp:2010 ..\ShipBuilderLib\MainFrame.cpp:2064
+#: ..\ShipBuilderLib\MainFrame.cpp:2547
 msgid "Eraser Size:"
 msgstr "Размер ластика:"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:6124
-#: ..\ShipBuilderLib\MainFrame.cpp:639
+#: ..\FloatingSandbox\SettingsDialog.cpp:6731
+#: ..\ShipBuilderLib\MainFrame.cpp:644
 msgid "Error"
 msgstr "Ошибка"
 
@@ -1501,23 +1649,33 @@ msgstr "Запись событий"
 msgid "Explosion"
 msgstr "Взрыв"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1429
+#: ..\ShipBuilderLib\MainFrame.cpp:1474
 msgid "Export"
 msgstr "Экспорт"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1452
+#: ..\ShipBuilderLib\MainFrame.cpp:1503
 msgid "Export this layer to a file."
 msgstr "Экспортируйте этот слой в файл."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4727
+#: ..\FloatingSandbox\SettingsDialog.cpp:5153
 msgid "Extent"
 msgstr "Степень"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4904
+#: ..\ShipBuilderLib\MainFrame.cpp:1123 ..\ShipBuilderLib\MainFrame.cpp:3325
+#, fuzzy
+#| msgid "Electrical Layer"
+msgid "Exterior Layer"
+msgstr "Слой Электрики"
+
+#: ..\FloatingSandbox\MainFrame.cpp:351
+msgid "Exterior View"
+msgstr ""
+
+#: ..\FloatingSandbox\SettingsDialog.cpp:5342
 msgid "Extra Draw Options"
 msgstr "Дополнительные параметры отрисовки"
 
-#: ..\FloatingSandbox\CreditsPanel.cpp:123
+#: ..\FloatingSandbox\CreditsPanel.cpp:128
 msgid "FACTORY OF IDEAS"
 msgstr "ГЕНЕРАТОР ИДЕЙ"
 
@@ -1526,27 +1684,27 @@ msgstr "ГЕНЕРАТОР ИДЕЙ"
 msgid "False"
 msgstr "Выключить"
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:1080
+#: ..\FloatingSandbox\PreferencesDialog.cpp:1251
 msgid "Farewell Music Volume"
 msgstr "Громкость Прощальной Музыки"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:715 ..\ShipBuilderLib\MainFrame.cpp:726
+#: ..\ShipBuilderLib\MainFrame.cpp:720 ..\ShipBuilderLib\MainFrame.cpp:731
 msgid "File"
 msgstr "Файл"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:2188
+#: ..\ShipBuilderLib\MainFrame.cpp:2239
 msgid "Fill Mode:"
 msgstr "Режим заливки:"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:3861
+#: ..\ShipBuilderLib\MainFrame.cpp:3939
 msgid "Fill an area with structure particles."
 msgstr "Заполните область частицами структуры."
 
-#: ..\FloatingSandbox\MainFrame.cpp:370
+#: ..\FloatingSandbox\MainFrame.cpp:425
 msgid "Fire Extinguisher"
 msgstr "Огнетушитель"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2712
+#: ..\FloatingSandbox\SettingsDialog.cpp:2840
 msgid "Fishes"
 msgstr "Рыбы"
 
@@ -1558,17 +1716,23 @@ msgstr "Исправьте эту ошибку"
 msgid "Fix this error by removing the offending electrical particles."
 msgstr "Исправьте эту ошибку, удалив нарушившие ее электрические частицы."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4326
+#: ..\FloatingSandbox\SettingsDialog.cpp:4728
+#, fuzzy
+#| msgid "Flame Size Adjust"
+msgid "Flame Chaos Adjust"
+msgstr "Размер пламени"
+
+#: ..\FloatingSandbox\SettingsDialog.cpp:4702
 msgid "Flame Size Adjust"
 msgstr "Размер пламени"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3860
-#: ..\FloatingSandbox\SettingsDialog.cpp:4014
-#: ..\FloatingSandbox\SettingsDialog.cpp:4171
+#: ..\FloatingSandbox\SettingsDialog.cpp:4112
+#: ..\FloatingSandbox\SettingsDialog.cpp:4266
+#: ..\FloatingSandbox\SettingsDialog.cpp:4893
 msgid "Flat"
 msgstr "Один Цвет"
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:791
+#: ..\FloatingSandbox\PreferencesDialog.cpp:844
 msgid "Flat Structure"
 msgstr "Плоская Конструкция"
 
@@ -1582,41 +1746,41 @@ msgid ""
 msgstr ""
 "Режим Flat Structure: генерирует текстуру, используя матовые цвета частиц."
 
-#: ..\ShipBuilderLib\Controller.cpp:2257 ..\ShipBuilderLib\MainFrame.cpp:1638
-#: ..\ShipBuilderLib\MainFrame.cpp:2813
+#: ..\ShipBuilderLib\Controller.cpp:2464 ..\ShipBuilderLib\MainFrame.cpp:1689
+#: ..\ShipBuilderLib\MainFrame.cpp:2869
 msgid "Flip H"
 msgstr "Перевернуть H"
 
-#: ..\ShipBuilderLib\Controller.cpp:2261
+#: ..\ShipBuilderLib\Controller.cpp:2468
 msgid "Flip H+V"
 msgstr "Перевернуть H+V"
 
-#: ..\ShipBuilderLib\Controller.cpp:2259 ..\ShipBuilderLib\MainFrame.cpp:1655
-#: ..\ShipBuilderLib\MainFrame.cpp:2857
+#: ..\ShipBuilderLib\Controller.cpp:2466 ..\ShipBuilderLib\MainFrame.cpp:1706
+#: ..\ShipBuilderLib\MainFrame.cpp:2913
 msgid "Flip V"
 msgstr "Перевернуть V"
 
-#: ..\UILib\ShipLoadDialog.cpp:134
+#: ..\UILib\ShipLoadDialog.cpp:130
 msgid "Flip ship horizontally when loaded"
 msgstr "Перевернуть корабль в горизонтальное положение при загрузке"
 
-#: ..\UILib\ShipLoadDialog.cpp:149
+#: ..\UILib\ShipLoadDialog.cpp:145
 msgid "Flip ship vertically when loaded"
 msgstr "Перевернуть корабль вертикально при загрузке"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:2799
+#: ..\ShipBuilderLib\MainFrame.cpp:2855
 msgid "Flip the pasted region horizontally."
 msgstr "Переверните вставленную область по горизонтали."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:2843
+#: ..\ShipBuilderLib\MainFrame.cpp:2899
 msgid "Flip the pasted region vertically."
 msgstr "Переверните вставленную область по вертикали."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1644
+#: ..\ShipBuilderLib\MainFrame.cpp:1695
 msgid "Flip the ship horizontally."
 msgstr "Переверните корабль в горизонтальное положение."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1661
+#: ..\ShipBuilderLib\MainFrame.cpp:1712
 msgid "Flip the ship vertically."
 msgstr "Переверните корабль вертикально."
 
@@ -1624,11 +1788,11 @@ msgstr "Переверните корабль вертикально."
 msgid "Floats:"
 msgstr "Плавучесть:"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3295
+#: ..\FloatingSandbox\SettingsDialog.cpp:3520
 msgid "Flood Tool"
 msgstr "Инструмент наводнения"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:2308
+#: ..\ShipBuilderLib\MainFrame.cpp:2359
 msgid ""
 "Flood only particles touching each other. When not checked, the flood tool "
 "effectively replaces a material with another."
@@ -1636,24 +1800,28 @@ msgstr ""
 "Заливает только частицы, соприкасающиеся друг с другом. Если флажок не "
 "установлен, инструмент заливки эффективно заменяет материал другим."
 
-#: ..\FloatingSandbox\MainFrame.cpp:405
+#: ..\FloatingSandbox\MainFrame.cpp:460
 msgid "Flood/Dry"
 msgstr "Насос"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3349
-#: ..\FloatingSandbox\SettingsDialog.cpp:3502
+#: ..\FloatingSandbox\SettingsDialog.cpp:3575
+#: ..\FloatingSandbox\SettingsDialog.cpp:3742
 msgid "Flow"
 msgstr "Поток"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1332
+#: ..\FloatingSandbox\SettingsDialog.cpp:1394
 msgid "Fluid Crazyness"
 msgstr "Водное безумие"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3183
+#: ..\FloatingSandbox\MainFrame.cpp:622
+msgid "Follow NPC"
+msgstr ""
+
+#: ..\FloatingSandbox\SettingsDialog.cpp:3396
 msgid "Force Adjust"
 msgstr "Регулировка силы"
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:818
+#: ..\FloatingSandbox\PreferencesDialog.cpp:871
 msgid "Force Defaults onto Ships"
 msgstr "Принудительно установить для кораблей значения по умолчанию"
 
@@ -1665,7 +1833,7 @@ msgstr "Не принудительно использовать glFinish ()"
 msgid "Force no multithreaded rendering"
 msgstr "Запрещать многопоточный рендеринг"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1851
+#: ..\ShipBuilderLib\MainFrame.cpp:1902
 msgid ""
 "Forecast where the ship's waterline will be once the ship is in the water."
 msgstr ""
@@ -1676,52 +1844,58 @@ msgstr ""
 msgid "Frame Rate"
 msgstr "Частота Кадров"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1487
+#: ..\FloatingSandbox\SettingsDialog.cpp:1553
 msgid "Friction"
 msgstr "Трение"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1028
-#: ..\FloatingSandbox\SettingsDialog.cpp:2186
+#: ..\FloatingSandbox\SettingsDialog.cpp:3008
+#, fuzzy
+#| msgid "Friction Drag Adjust"
+msgid "Friction Adjust"
+msgstr "Регулировка сопротивления к трению"
+
+#: ..\FloatingSandbox\SettingsDialog.cpp:1072
+#: ..\FloatingSandbox\SettingsDialog.cpp:2286
 msgid "Friction Drag Adjust"
 msgstr "Регулировка сопротивления к трению"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1275
+#: ..\ShipBuilderLib\MainFrame.cpp:1301
 msgid "From Image"
 msgstr "Из изображения"
 
-#: ..\FloatingSandbox\MainFrame.cpp:288
+#: ..\FloatingSandbox\MainFrame.cpp:369
 msgid "Full Day/Night"
 msgstr "Полная(й) День/Ночь"
 
-#: ..\FloatingSandbox\MainFrame.cpp:555
+#: ..\FloatingSandbox\MainFrame.cpp:694
 msgid "Full Screen"
 msgstr "Полный Экран"
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:75
+#: ..\FloatingSandbox\PreferencesDialog.cpp:90
 msgid "Game"
 msgstr "Игра"
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:44
+#: ..\FloatingSandbox\PreferencesDialog.cpp:52
 msgid "Game Preferences"
 msgstr "Игровые Предпочтения"
 
-#: ..\FloatingSandbox\MainFrame.cpp:525
+#: ..\FloatingSandbox\MainFrame.cpp:664
 msgid "Game Preferences..."
 msgstr "Игровые Предпочтения..."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1193
+#: ..\ShipBuilderLib\MainFrame.cpp:1211
 msgid "Game View"
 msgstr "Просмотр игры"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:5074
+#: ..\FloatingSandbox\SettingsDialog.cpp:5512
 msgid "Generate Debris"
 msgstr "Создать Мусор"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2595
+#: ..\FloatingSandbox\SettingsDialog.cpp:2717
 msgid "Generate Engine Wake"
 msgstr "Генерация следа от лопастей"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:5088
+#: ..\FloatingSandbox\SettingsDialog.cpp:5526
 msgid "Generate Sparkles"
 msgstr "Создать искры"
 
@@ -1729,19 +1903,19 @@ msgstr "Создать искры"
 msgid "Generator"
 msgstr "Генератор"
 
-#: ..\FloatingSandbox\MainFrame.cpp:224
+#: ..\FloatingSandbox\MainFrame.cpp:270
 msgid "Get More Ships..."
 msgstr "Получить больше кораблей..."
 
-#: ..\FloatingSandbox\MainFrame.cpp:594
+#: ..\FloatingSandbox\MainFrame.cpp:733
 msgid "Get help about the simulator"
 msgstr "Получите помощь по симулятору"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:563
+#: ..\FloatingSandbox\SettingsDialog.cpp:584
 msgid "Global Damping Adjust"
 msgstr "Глобальная Регулировка Демпфирования"
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:97
+#: ..\FloatingSandbox\PreferencesDialog.cpp:123
 msgid "Global Sound and Music"
 msgstr "Глобальный звук и музыка"
 
@@ -1749,15 +1923,15 @@ msgstr "Глобальный звук и музыка"
 msgid "Go to the Download Page!"
 msgstr "Перейдите на страницу загрузки!"
 
-#: ..\UILib\ShipLoadDialog.cpp:401
+#: ..\UILib\ShipLoadDialog.cpp:397
 msgid "Go to the default Ships folder"
 msgstr "Перейдите в папку кораблей по умолчанию"
 
-#: ..\UILib\ShipLoadDialog.cpp:288
+#: ..\UILib\ShipLoadDialog.cpp:284
 msgid "Go to the next search result"
 msgstr "Перейти к следующему результату поиска"
 
-#: ..\UILib\ShipLoadDialog.cpp:413
+#: ..\UILib\ShipLoadDialog.cpp:409
 msgid "Go to your Ships folder"
 msgstr "Перейдите в папку \"Корабли\""
 
@@ -1765,31 +1939,31 @@ msgstr "Перейдите в папку \"Корабли\""
 msgid "Green Screen"
 msgstr "Зеленый экран"
 
-#: ..\FloatingSandbox\MainFrame.cpp:594
+#: ..\FloatingSandbox\MainFrame.cpp:733
 msgid "Guide"
 msgstr "Руководство"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1647
+#: ..\FloatingSandbox\SettingsDialog.cpp:1718
 msgid "Gust Amplitude"
 msgstr "Амплитуда порыва ветра"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3438
+#: ..\FloatingSandbox\SettingsDialog.cpp:3671
 msgid "Heat"
 msgstr "Высокая температура"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4274
+#: ..\FloatingSandbox\SettingsDialog.cpp:4624
 msgid "Heat Boost"
 msgstr "Повышение температуры"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:665
+#: ..\FloatingSandbox\SettingsDialog.cpp:980
 msgid "Heat Dissipation Adjust"
 msgstr "Потеря тепла. (Остывание материала)"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4232
+#: ..\FloatingSandbox\SettingsDialog.cpp:4540
 msgid "Heat Draw Options"
 msgstr "Параметры тепловой настройки"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3246
+#: ..\FloatingSandbox\SettingsDialog.cpp:3466
 msgid "Heat Flow"
 msgstr "Тепловой поток"
 
@@ -1797,24 +1971,24 @@ msgstr "Тепловой поток"
 msgid "Heat Generated (KJ/s)"
 msgstr "Вырабатываемое тепло (КДж/с)"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2676
+#: ..\FloatingSandbox\SettingsDialog.cpp:2798
 msgid "Heat Generation Adjust"
 msgstr "Тепловыделение (Нагрев материала)"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4228
+#: ..\FloatingSandbox\SettingsDialog.cpp:4536
 msgid "Heat Overlay"
 msgstr "Тепловое наложение"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3384
+#: ..\FloatingSandbox\SettingsDialog.cpp:3616
 msgid "HeatBlaster"
 msgstr "Тепловой Бластер"
 
-#: ..\FloatingSandbox\MainFrame.cpp:365
+#: ..\FloatingSandbox\MainFrame.cpp:420
 msgid "HeatBlaster/CoolBlaster"
 msgstr "Тепловой Бластер/Ледяной Бластер"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1696
-#: ..\FloatingSandbox\SettingsDialog.cpp:1820
+#: ..\FloatingSandbox\SettingsDialog.cpp:1773
+#: ..\FloatingSandbox\SettingsDialog.cpp:1903
 msgid "Height Adjust"
 msgstr "Регулировка высоты"
 
@@ -1822,11 +1996,18 @@ msgstr "Регулировка высоты"
 msgid "Help"
 msgstr "Помощь"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3897
+#: ..\FloatingSandbox\SettingsDialog.cpp:4374
+#, fuzzy
+#| msgid "High-Quality Rendering"
+msgid "High-Quality Clouds"
+msgstr "Качественный рендеринг"
+
+#: ..\FloatingSandbox\SettingsDialog.cpp:4149
+#: ..\FloatingSandbox\SettingsDialog.cpp:4929
 msgid "High-Quality Rendering"
 msgstr "Качественный рендеринг"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:915
+#: ..\FloatingSandbox\SettingsDialog.cpp:5565
 msgid ""
 "Higher values improve the rigidity of simulated structures, at the expense "
 "of longer computation times and decreased fragility."
@@ -1838,7 +2019,7 @@ msgstr ""
 msgid "Horizontal and vertical offset of the ship, in meters"
 msgstr "Горизонтальное и вертикальное смещение судна, в метрах"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:2364 ..\ShipBuilderLib\MainFrame.cpp:2389
+#: ..\ShipBuilderLib\MainFrame.cpp:2415 ..\ShipBuilderLib\MainFrame.cpp:2440
 msgid ""
 "How different other colors must be from the selected color in order to be "
 "erased."
@@ -1846,17 +2027,17 @@ msgstr ""
 "Насколько другие цвета должны отличаться от выбранного цвета, чтобы их можно "
 "было стереть."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3350
+#: ..\FloatingSandbox\SettingsDialog.cpp:3576
 msgid "How much water is injected or drained by the flood tool (m3)."
 msgstr ""
 "Сколько воды закачивается или сливается устройством для затопления (м³)."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3672
+#: ..\FloatingSandbox\SettingsDialog.cpp:3911
 msgid "How wide an area is affected by the scrub/rot tool (m)."
 msgstr ""
 "Насколько широкую область воздействует инструмент для чистки/гниения (м)."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3324
+#: ..\FloatingSandbox\SettingsDialog.cpp:3550
 msgid "How wide an area is flooded or drained by the flood tool (m)."
 msgstr ""
 "Насколько широкая площадь затоплена или осушена инструментом для наводнения "
@@ -1866,11 +2047,11 @@ msgstr ""
 msgid "Hull"
 msgstr "Корпус"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:2100
+#: ..\ShipBuilderLib\MainFrame.cpp:2151
 msgid "Hull Mode:"
 msgstr "Режим корпуса:"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1109
+#: ..\FloatingSandbox\SettingsDialog.cpp:1153
 msgid "Hydrostatic Pressure Adjust"
 msgstr "Регулировка гидростатического давления"
 
@@ -1882,63 +2063,71 @@ msgstr "Температура воспламенения (K)"
 msgid "Image files"
 msgstr "Файлы изображений"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1082
+#: ..\FloatingSandbox\SettingsDialog.cpp:1126
 msgid "Impact Force Adjust"
 msgstr "Регулировка силы удара"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1296
+#: ..\ShipBuilderLib\MainFrame.cpp:1322
 msgid "Import"
 msgstr "Импорт"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:5129
+#: ..\ShipBuilderLib\MainFrame.cpp:5232
 msgid "Import Electrical Layer"
 msgstr "Импортировать электрический слой"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:5149
+#: ..\ShipBuilderLib\MainFrame.cpp:5290 ..\ShipBuilderLib\MainFrame.cpp:5376
+#, fuzzy
+#| msgid "Import Texture Layer"
+msgid "Import Exterior Layer"
+msgstr "Импорт слоя текстуры"
+
+#: ..\ShipBuilderLib\MainFrame.cpp:5308
+#, fuzzy
+#| msgid "Import Texture Layer"
+msgid "Import Interior Layer"
+msgstr "Импорт слоя текстуры"
+
+#: ..\ShipBuilderLib\MainFrame.cpp:5252
 msgid "Import Ropes Layer"
 msgstr "Импортировать слой канатов"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:5170
+#: ..\ShipBuilderLib\MainFrame.cpp:5273
 msgid "Import Structural Layer"
 msgstr "Импорт структурного слоя"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:5187 ..\ShipBuilderLib\MainFrame.cpp:5256
-msgid "Import Texture Layer"
-msgstr "Импорт слоя текстуры"
-
-#: ..\ShipBuilderLib\MainFrame.cpp:1277
+#: ..\ShipBuilderLib\MainFrame.cpp:1303
 msgid "Import this layer from an image file."
 msgstr "Импортируйте этот слой из файла изображения."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1311
+#: ..\ShipBuilderLib\MainFrame.cpp:1337
 msgid "Import this layer from another ship."
 msgstr "Импортируйте этот слой из другого корабля."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4227
+#: ..\FloatingSandbox\SettingsDialog.cpp:4535
 msgid "Incandescence"
 msgstr "Накаливания"
 
-#: ..\UILib\ShipLoadDialog.cpp:197
+#: ..\UILib\ShipLoadDialog.cpp:193
 msgid "Indicates whether the ship is password-protected"
 msgstr "Указывает, защищено ли судно паролем"
 
-#: ..\FloatingSandbox\SplashScreenDialog.cpp:114
+#: ..\FloatingSandbox\SplashScreenDialog.cpp:142
 msgid "Initializing OpenGL..."
 msgstr "Инициализация OpenGL ..."
 
-#: ..\FloatingSandbox\SplashScreenDialog.cpp:122
+#: ..\FloatingSandbox\SplashScreenDialog.cpp:150
 msgid "Initializing graphics..."
 msgstr "Инициализация графики ..."
 
-#: ..\FloatingSandbox\SplashScreenDialog.cpp:116
+#: ..\FloatingSandbox\SplashScreenDialog.cpp:144
 msgid "Initializing noise..."
 msgstr "Инициализация шума ..."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3474
+#: ..\FloatingSandbox\SettingsDialog.cpp:3713
 msgid "Inject Pressure Tool"
 msgstr "Инструмент для нагнетания давления"
 
-#: ..\FloatingSandbox\MainFrame.cpp:400
+#: ..\FloatingSandbox\MainFrame.cpp:455
 msgid "Inject/Remove Pressure"
 msgstr "Впрыснуть/Убрать давление"
 
@@ -1949,6 +2138,16 @@ msgstr "Экземпляр"
 #: ..\ShipBuilderLib\UI\MaterialPalette.cpp:792
 msgid "Interactive Switch"
 msgstr "Интерактивный переключатель"
+
+#: ..\ShipBuilderLib\MainFrame.cpp:1129
+#, fuzzy
+#| msgid "Electrical Layer"
+msgid "Interior Layer"
+msgstr "Слой Электрики"
+
+#: ..\FloatingSandbox\MainFrame.cpp:355
+msgid "Interior View"
+msgstr ""
 
 #: ..\ShipBuilderLib\UI\ShipPropertiesEditDialog.cpp:622
 msgid "Internal Pressure"
@@ -1976,82 +2175,95 @@ msgstr "Кажется, что лучшим названием для этого
 msgid "Jet"
 msgstr "Реактивный двигатель"
 
+#: ..\FloatingSandbox\SettingsDialog.cpp:665
+#, fuzzy
+#| msgid "Friction Drag Adjust"
+msgid "Kinetic Friction Adjust"
+msgstr "Регулировка сопротивления к трению"
+
+#: ..\FloatingSandbox\MainFrame.cpp:525
 #: ..\ShipBuilderLib\UI\MaterialPalette.cpp:818
 msgid "Lamp"
 msgstr "Лампа"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4495
+#: ..\FloatingSandbox\SettingsDialog.cpp:4483
 msgid "Lamp Light"
 msgstr "Свет лампы"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4133
+#: ..\FloatingSandbox\SettingsDialog.cpp:4855
 msgid "Land"
 msgstr "Земля"
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:724
+#: ..\FloatingSandbox\PreferencesDialog.cpp:777
 msgid "Language"
 msgstr "Язык"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3218
+#: ..\FloatingSandbox\SettingsDialog.cpp:3437
 msgid "Laser Ray"
 msgstr "Лазерный луч"
 
-#: ..\FloatingSandbox\MainFrame.cpp:445
+#: ..\FloatingSandbox\MainFrame.cpp:500
 msgid "LaserCannon"
 msgstr "ЛазернаяПушка"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1066
+#: ..\ShipBuilderLib\MainFrame.cpp:1071
 msgid "Layers"
 msgstr "Слои"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4463
+#: ..\FloatingSandbox\SettingsDialog.cpp:4823
 msgid "Level of Detail"
 msgstr "Уровень детализации"
 
-#: ..\FloatingSandbox\CreditsPanel.cpp:136
-#: ..\FloatingSandbox\CreditsPanel.cpp:140
-#: ..\FloatingSandbox\CreditsPanel.cpp:144
-#: ..\FloatingSandbox\CreditsPanel.cpp:148
+#: ..\FloatingSandbox\CreditsPanel.cpp:141
+#: ..\FloatingSandbox\CreditsPanel.cpp:145
+#: ..\FloatingSandbox\CreditsPanel.cpp:149
+#: ..\FloatingSandbox\CreditsPanel.cpp:153
 msgid "Licensed under Creative Commons: By Attribution 4.0 License"
 msgstr "Лицензия Creative Commons: By Attribution 4.0 License"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2046
+#: ..\FloatingSandbox\SettingsDialog.cpp:2141
 msgid "Lightning Hit Probability"
 msgstr "Вероятность попадания молнии"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2514
+#: ..\FloatingSandbox\SettingsDialog.cpp:2630
 msgid "Lights"
 msgstr "Свет"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:198
-msgid "Lights, Electricals, and Fishes"
+#, fuzzy
+#| msgid "Lights, Electricals, and Fishes"
+msgid "Lights, Electricals, Fishes, NPCs"
 msgstr "Свет, электрика и рыба"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:2067 ..\ShipBuilderLib\MainFrame.cpp:2155
+#: ..\ShipBuilderLib\MainFrame.cpp:2118 ..\ShipBuilderLib\MainFrame.cpp:2206
 msgid "Line Size:"
 msgstr "Размер линии:"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:3601
+#: ..\ShipBuilderLib\MainFrame.cpp:3679
 msgid "Lines mode: view ropes as lines."
 msgstr "Режим \"Линии\": просмотр канатов в виде линий."
 
-#: ..\UILib\ShipLoadDialog.cpp:429
+#: ..\UILib\ShipLoadDialog.cpp:425
 msgid "Load"
 msgstr "Загрузить"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:5126
+#: ..\FloatingSandbox\SettingsDialog.cpp:5644
 msgid "Load Settings"
 msgstr "Загрузить настройки"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:763 ..\UILib\ShipLoadDialog.cpp:36
+#: ..\ShipBuilderLib\MainFrame.cpp:768 ..\UILib\ShipLoadDialog.cpp:36
 msgid "Load Ship"
 msgstr "Загрузить корабль"
 
-#: ..\FloatingSandbox\MainFrame.cpp:209
+#: ..\FloatingSandbox\MainFrame.cpp:255
 msgid "Load Ship..."
 msgstr "Загрузить корабль..."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:768
+#: ..\UILib\ShipLoadDialog.cpp:433
+msgid "Load a random ship"
+msgstr ""
+
+#: ..\ShipBuilderLib\MainFrame.cpp:773
 msgid "Load a ship (Ctrl+O)."
 msgstr "Загрузить в корабль (Ctrl+O)."
 
@@ -2059,64 +2271,64 @@ msgstr "Загрузить в корабль (Ctrl+O)."
 msgid "Load an Image"
 msgstr "Загрузить изображение"
 
-#: ..\FloatingSandbox\SplashScreenDialog.cpp:126
+#: ..\FloatingSandbox\SplashScreenDialog.cpp:154
 msgid "Loading ShipBuilder..."
 msgstr "Загрузка ShipBuilder..."
 
-#: ..\FloatingSandbox\SplashScreenDialog.cpp:119
+#: ..\FloatingSandbox\SplashScreenDialog.cpp:147
 msgid "Loading cloud texture atlas..."
 msgstr "Загрузка атласа текстур облаков..."
 
-#: ..\FloatingSandbox\SplashScreenDialog.cpp:125
+#: ..\FloatingSandbox\SplashScreenDialog.cpp:153
 msgid "Loading electrical panel..."
 msgstr "Загрузка электрической панели..."
 
-#: ..\FloatingSandbox\SplashScreenDialog.cpp:118
+#: ..\FloatingSandbox\SplashScreenDialog.cpp:146
 msgid "Loading explosion texture atlas..."
 msgstr "Загрузка атласа текстур взрыва..."
 
-#: ..\FloatingSandbox\SplashScreenDialog.cpp:120
+#: ..\FloatingSandbox\SplashScreenDialog.cpp:148
 msgid "Loading fish texture atlas..."
 msgstr "Загрузка атласа текстур рыб ..."
 
-#: ..\FloatingSandbox\SplashScreenDialog.cpp:113
+#: ..\FloatingSandbox\SplashScreenDialog.cpp:141
 msgid "Loading fonts..."
 msgstr "Загрузка шрифтов..."
 
-#: ..\FloatingSandbox\SplashScreenDialog.cpp:117
+#: ..\FloatingSandbox\SplashScreenDialog.cpp:145
 msgid "Loading generic textures..."
 msgstr "Загрузка стандартных текстур..."
 
-#: ..\FloatingSandbox\SplashScreenDialog.cpp:127
+#: ..\FloatingSandbox\SplashScreenDialog.cpp:155
 msgid "Loading materials palette..."
 msgstr "Загрузка палитры материалов..."
 
-#: ..\FloatingSandbox\SplashScreenDialog.cpp:124
+#: ..\FloatingSandbox\SplashScreenDialog.cpp:152
 msgid "Loading music..."
 msgstr "Загрузка музыки..."
 
-#: ..\FloatingSandbox\SplashScreenDialog.cpp:115
+#: ..\FloatingSandbox\SplashScreenDialog.cpp:143
 msgid "Loading shaders..."
 msgstr "Загрузка шейдеров..."
 
-#: ..\FloatingSandbox\SplashScreenDialog.cpp:123
+#: ..\FloatingSandbox\SplashScreenDialog.cpp:151
 msgid "Loading sounds..."
 msgstr "Загрузка звуков..."
 
-#: ..\FloatingSandbox\SplashScreenDialog.cpp:121
+#: ..\FloatingSandbox\SplashScreenDialog.cpp:149
 msgid "Loading world textures..."
 msgstr "Загрузка текстур мира..."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:5201
+#: ..\FloatingSandbox\SettingsDialog.cpp:5737
 msgid ""
 "Loads the selected settings and applies them on top of the current settings."
 msgstr "Загружает выбранные настройки и применяет их к текущим настройкам."
 
-#: ..\UILib\LoggingDialog.cpp:29
+#: ..\UILib\LoggingDialog.cpp:28
 msgid "Logging"
 msgstr "Логирование"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4275
+#: ..\FloatingSandbox\SettingsDialog.cpp:4625
 msgid ""
 "Lowers the temperature at which materials start emitting red radiation, "
 "hence making incandescence more visible at lower temperatures."
@@ -2129,23 +2341,29 @@ msgstr ""
 msgid "Luminescence"
 msgstr "Люминесценция"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2526
+#: ..\FloatingSandbox\SettingsDialog.cpp:2642
 msgid "Luminescence Adjust"
 msgstr "Регулировка люминесценции"
 
-#: ..\FloatingSandbox\CreditsPanel.cpp:129
+#: ..\FloatingSandbox\CreditsPanel.cpp:134
 msgid "MUSIC"
 msgstr "МУЗЫКА"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2751
+#: ..\FloatingSandbox\SettingsDialog.cpp:3035
+#, fuzzy
+#| msgid "Magnifies or minimizes the physical size of fishes."
+msgid "Magnifies or minimizes the physical size of NPCs."
+msgstr "Увеличивает или уменьшает физический размер рыб."
+
+#: ..\FloatingSandbox\SettingsDialog.cpp:2879
 msgid "Magnifies or minimizes the physical size of fishes."
 msgstr "Увеличивает или уменьшает физический размер рыб."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:942
+#: ..\ShipBuilderLib\MainFrame.cpp:947
 msgid "Magnify the view (+)."
 msgstr "Увеличьте обзор (+)."
 
-#: ..\FloatingSandbox\MainFrame.cpp:2352 ..\ShipBuilderLib\MainFrame.cpp:5483
+#: ..\FloatingSandbox\MainFrame.cpp:2353 ..\ShipBuilderLib\MainFrame.cpp:5603
 msgid "Maritime Disaster"
 msgstr "Морская катастрофа"
 
@@ -2153,7 +2371,7 @@ msgstr "Морская катастрофа"
 msgid "Mass (Kg)"
 msgstr "Масса (кг)"
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:799
+#: ..\FloatingSandbox\PreferencesDialog.cpp:852
 msgid "Material Textures"
 msgstr "Текстуры Материала"
 
@@ -2168,23 +2386,27 @@ msgstr ""
 "Режим \"Текстуры материалов\": генерирует текстуру, используя текстуры, "
 "специфичные для материала."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:3662
+#: ..\ShipBuilderLib\MainFrame.cpp:3740
 msgid "Matte mode: view texture as an opaque image."
 msgstr "Матовый режим: просмотр текстуры как непрозрачного изображения."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:866
+#: ..\FloatingSandbox\SettingsDialog.cpp:899
 msgid "Max Burning Particles"
 msgstr "Максимальное количество горящих частиц"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:942
+#: ..\FloatingSandbox\PreferencesDialog.cpp:1077
+msgid "Max NPCs"
+msgstr ""
+
+#: ..\FloatingSandbox\SettingsDialog.cpp:5592
 msgid "Max Threads"
 msgstr "Максимальные Потоки"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:3925
+#: ..\ShipBuilderLib\MainFrame.cpp:4003
 msgid "Measure lengths."
 msgstr "Измерьте длину."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:524
+#: ..\FloatingSandbox\SettingsDialog.cpp:545
 msgid "Mechanics"
 msgstr "Механика"
 
@@ -2192,7 +2414,7 @@ msgstr "Механика"
 msgid "Mechanics and Thermodynamics"
 msgstr "Механика и термодинамика"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:785
+#: ..\FloatingSandbox\SettingsDialog.cpp:818
 msgid "Melting Point Adjust"
 msgstr "Точка плавления"
 
@@ -2200,7 +2422,7 @@ msgstr "Точка плавления"
 msgid "Melting Temperature (K)"
 msgstr "Температура плавления (K)"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:3456
+#: ..\ShipBuilderLib\MainFrame.cpp:3534
 msgid ""
 "Mesh mode: view the structural mesh as it is induced by the structure "
 "particles."
@@ -2212,48 +2434,69 @@ msgstr ""
 msgid "Metadata"
 msgstr "Метаданные"
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:899
+#: ..\FloatingSandbox\PreferencesDialog.cpp:956
 msgid "Miscellaneous"
 msgstr "Разнообразный"
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:785
+#: ..\FloatingSandbox\PreferencesDialog.cpp:838
 #: ..\ShipBuilderLib\UI\ShipPropertiesEditDialog.cpp:759
 msgid "Mode"
 msgstr "Режим"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1618
+#: ..\FloatingSandbox\SettingsDialog.cpp:1689
 msgid "Modulate Wind"
 msgstr "Модулировать Ветра"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4079
+#: ..\FloatingSandbox\SettingsDialog.cpp:4331
 msgid "Moonlight"
 msgstr "Лунный свет"
 
-#: ..\FloatingSandbox\MainFrame.cpp:346
+#: ..\FloatingSandbox\MainFrame.cpp:401
 msgid "Move All/Rotate All"
 msgstr "Переместить Все/Повернуть Все"
 
-#: ..\FloatingSandbox\MainFrame.cpp:341
+#: ..\FloatingSandbox\MainFrame.cpp:606
+msgid "Move NPC"
+msgstr ""
+
+#: ..\FloatingSandbox\MainFrame.cpp:396
 msgid "Move/Rotate"
 msgstr "Двигать/Поворачивать"
 
-#: ..\FloatingSandbox\MainFrame.cpp:565
+#: ..\FloatingSandbox\MainFrame.cpp:704
 msgid "Mute"
 msgstr "Беззвучный"
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:1021
+#: ..\FloatingSandbox\PreferencesDialog.cpp:1192
 msgid "Mute All Sounds"
 msgstr "Приглушить Все Звуки"
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:1022
+#: ..\FloatingSandbox\PreferencesDialog.cpp:1193
 msgid "Mutes or allows all sounds."
 msgstr "Приглушает или разрешает все звуки."
+
+#: ..\FloatingSandbox\SettingsDialog.cpp:4404
+msgid "NPC"
+msgstr ""
+
+#: ..\FloatingSandbox\CreditsPanel.cpp:80
+msgid "NPC ASSETS"
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:112
+#: ..\FloatingSandbox\SettingsDialog.cpp:2996
+msgid "NPCs"
+msgstr ""
+
+#: ..\FloatingSandbox\PreferencesDialog.cpp:1106
+msgid "NPCs per Group"
+msgstr ""
 
 #: ..\ShipBuilderLib\UI\ShipPropertiesEditDialog.cpp:213
 msgid "Name of the ship, e.g. \"R.M.S. Titanic\""
 msgstr "Название судна, например, \"R.M.S. Titanic\"."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:5351
+#: ..\FloatingSandbox\SettingsDialog.cpp:5911
 msgid "Name:"
 msgstr "Имя:"
 
@@ -2265,7 +2508,7 @@ msgstr "Новый электрический слой"
 msgid "New Ropes Layer"
 msgstr "Новый слой канатов"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:737
+#: ..\ShipBuilderLib\MainFrame.cpp:742
 msgid "New Ship"
 msgstr "Новый корабль"
 
@@ -2285,7 +2528,7 @@ msgstr "Новый размер"
 msgid "New Structural Layer"
 msgstr "Новый структурный слой"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4300
+#: ..\FloatingSandbox\SettingsDialog.cpp:4650
 msgid "Night Vision"
 msgstr "Ночное Видение"
 
@@ -2293,7 +2536,13 @@ msgstr "Ночное Видение"
 msgid "No"
 msgstr "Нет"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4835
+#: ..\FloatingSandbox\MainFrame.cpp:340
+#, fuzzy
+#| msgid "Continuous Auto-Focus"
+msgid "No Auto-Focus"
+msgstr "Непрерывная автофокусировка"
+
+#: ..\FloatingSandbox\SettingsDialog.cpp:5273
 msgid "No Debug"
 msgstr "Нет Отладки"
 
@@ -2301,23 +2550,23 @@ msgstr "Нет Отладки"
 msgid "No New Updates"
 msgstr "Нет Новых Обновлений"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:3517
+#: ..\ShipBuilderLib\MainFrame.cpp:3595
 msgid "No visualization: the electrical layer is not drawn."
 msgstr "Нет визуализации: электрический слой не прорисован."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:3349
+#: ..\ShipBuilderLib\MainFrame.cpp:3427
 msgid "No visualization: the game view is not drawn."
 msgstr "Нет визуализации: игровой вид не отрисовывается."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:3578
+#: ..\ShipBuilderLib\MainFrame.cpp:3656
 msgid "No visualization: the ropes layer is not drawn."
 msgstr "Нет визуализации: слой канатов не отрисовывается."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:3433
+#: ..\ShipBuilderLib\MainFrame.cpp:3511
 msgid "No visualization: the structural layer is not drawn."
 msgstr "Нет визуализации: структурный слой не отрисовывается."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:3639
+#: ..\ShipBuilderLib\MainFrame.cpp:3717
 msgid "No visualization: the texture layer is not drawn."
 msgstr "Нет визуализации: слой текстуры не отрисовывается."
 
@@ -2329,26 +2578,26 @@ msgstr "Нет, я хочу сохранить свое имя"
 msgid "Nominal Force"
 msgstr "Номинальное усилие"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4229
-#: ..\FloatingSandbox\SettingsDialog.cpp:4351
-#: ..\FloatingSandbox\SettingsDialog.cpp:5002
-#: ..\ShipBuilderLib\MainFrame.cpp:2203
+#: ..\FloatingSandbox\SettingsDialog.cpp:4537
+#: ..\FloatingSandbox\SettingsDialog.cpp:4581
+#: ..\FloatingSandbox\SettingsDialog.cpp:5440
+#: ..\ShipBuilderLib\MainFrame.cpp:2254
 msgid "None"
 msgstr "None"
 
-#: ..\FloatingSandbox\MainFrame.cpp:559
+#: ..\FloatingSandbox\MainFrame.cpp:698
 msgid "Normal Screen"
 msgstr "Оконный экран"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2415
+#: ..\FloatingSandbox\SettingsDialog.cpp:2526
 msgid "Number of Clouds"
 msgstr "Количество Облаков"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2724
+#: ..\FloatingSandbox\SettingsDialog.cpp:2852
 msgid "Number of Fishes"
 msgstr "Количество рыб"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2389
+#: ..\FloatingSandbox\SettingsDialog.cpp:2500
 msgid "Number of Stars"
 msgstr "Количество Звезд"
 
@@ -2367,15 +2616,15 @@ msgstr "Количество Звезд"
 msgid "OK"
 msgstr "ОК"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1219
+#: ..\FloatingSandbox\SettingsDialog.cpp:1275
 msgid "Ocean"
 msgstr "Океан"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1369
+#: ..\FloatingSandbox\SettingsDialog.cpp:1435
 msgid "Ocean Floor"
 msgstr "Дно океана"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1684
+#: ..\FloatingSandbox\SettingsDialog.cpp:1761
 msgid "Oceanic Waves"
 msgstr "Океанические волны"
 
@@ -2393,49 +2642,49 @@ msgstr ""
 "структурном слое. Частицы в электрическом слое всегда должны находиться над "
 "частицами в структурном слое."
 
-#: ..\FloatingSandbox\MainFrame.cpp:618
+#: ..\FloatingSandbox\MainFrame.cpp:765
 msgid "Open Download Page"
 msgstr "Открыть страницу загрузки"
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:967
+#: ..\FloatingSandbox\PreferencesDialog.cpp:1024
 msgid "Open Electrical Panel at Load"
 msgstr "Открыть электрическую панель при нагрузке"
 
-#: ..\FloatingSandbox\MainFrame.cpp:614
+#: ..\FloatingSandbox\MainFrame.cpp:761
 msgid "Open Home Page"
 msgstr "Открыть домашнюю страницу"
 
-#: ..\FloatingSandbox\MainFrame.cpp:531
+#: ..\FloatingSandbox\MainFrame.cpp:670
 msgid "Open Log Window"
 msgstr "Открыть окно журнала"
 
-#: ..\FloatingSandbox\MainFrame.cpp:234
+#: ..\FloatingSandbox\MainFrame.cpp:280
 msgid "Open Screenshots Folder"
 msgstr "Открыть папку скриншотов"
 
-#: ..\FloatingSandbox\MainFrame.cpp:578
+#: ..\FloatingSandbox\MainFrame.cpp:717
 msgid "Open the ShipBuilder to create a new ship"
 msgstr "Откройте Судостроитель для создания нового корабля"
 
-#: ..\FloatingSandbox\MainFrame.cpp:582
+#: ..\FloatingSandbox\MainFrame.cpp:721
 msgid "Open the ShipBuilder to edit the currently-loaded ship"
 msgstr ""
 "Откройте Судостроитель для редактирования загруженного в данный момент "
 "корабля"
 
-#: ..\UILib\ShipLoadDialog.cpp:541
+#: ..\UILib\ShipLoadDialog.cpp:545
 msgid "Order ships by features"
 msgstr "Упорядочить корабли по характеристикам"
 
-#: ..\UILib\ShipLoadDialog.cpp:503
+#: ..\UILib\ShipLoadDialog.cpp:507
 msgid "Order ships by last modified time"
 msgstr "Упорядочить суда по времени последнего изменения"
 
-#: ..\UILib\ShipLoadDialog.cpp:484
+#: ..\UILib\ShipLoadDialog.cpp:488
 msgid "Order ships by name"
 msgstr "Упорядочить корабли по названию"
 
-#: ..\UILib\ShipLoadDialog.cpp:522
+#: ..\UILib\ShipLoadDialog.cpp:526
 msgid "Order ships by year built"
 msgstr "Упорядочить корабли по году постройки"
 
@@ -2443,7 +2692,7 @@ msgstr "Упорядочить корабли по году постройки"
 msgid "Original Size"
 msgstr "Оригинальный размер"
 
-#: ..\FloatingSandbox\CreditsPanel.cpp:72
+#: ..\FloatingSandbox\CreditsPanel.cpp:73
 msgid "Original concept (c) Luke Wren, Francis Racicot (Pac0master) 2013"
 msgstr "Оригинальный Концепт (c) Luke Wren, Francis Racicot (Pac0master) 2013"
 
@@ -2459,7 +2708,7 @@ msgstr "Прочие инструменты"
 msgid "Outboard"
 msgstr "Подвесной"
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:819
+#: ..\FloatingSandbox\PreferencesDialog.cpp:872
 msgid ""
 "Override individual ships' auto-texturization settings with these defaults. "
 "This setting is not saved, and it will revert to OFF the next time the game "
@@ -2469,16 +2718,16 @@ msgstr ""
 "умолчанию. Этот параметр не сохраняется, и он вернется в состояние ВЫКЛ при "
 "следующем запуске игры."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:5239
+#: ..\FloatingSandbox\SettingsDialog.cpp:5783
 msgid "Overwrites the selected settings with the current settings."
 msgstr "Заменяет выбранные настройки текущими настройками."
 
-#: ..\FloatingSandbox\CreditsPanel.cpp:76
+#: ..\FloatingSandbox\CreditsPanel.cpp:77
 msgid "PROGRAMMING"
 msgstr "ПРОГРАММИРОВАНИЕ"
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:448
-#: ..\FloatingSandbox\PreferencesDialog.cpp:463
+#: ..\FloatingSandbox\PreferencesDialog.cpp:501
+#: ..\FloatingSandbox\PreferencesDialog.cpp:516
 msgid "Pan Increment"
 msgstr "Приращение панорамирования"
 
@@ -2486,36 +2735,36 @@ msgstr "Приращение панорамирования"
 msgid "Password Protection"
 msgstr "Защита паролем"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1779
+#: ..\ShipBuilderLib\MainFrame.cpp:1830
 msgid "Paste"
 msgstr "Вставить"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:3909 ..\ShipBuilderLib\MainFrame.cpp:4120
-#: ..\ShipBuilderLib\MainFrame.cpp:4283 ..\ShipBuilderLib\MainFrame.cpp:4462
+#: ..\ShipBuilderLib\MainFrame.cpp:3987 ..\ShipBuilderLib\MainFrame.cpp:4198
+#: ..\ShipBuilderLib\MainFrame.cpp:4361 ..\ShipBuilderLib\MainFrame.cpp:4540
 msgid "Paste clipboard."
 msgstr "Вставить буфер обмена."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1784
+#: ..\ShipBuilderLib\MainFrame.cpp:1835
 msgid "Paste the content of the clipboard into the ship (Ctrl+V)."
 msgstr "Вставьте содержимое буфера обмена в корабль (Ctrl+V)."
 
-#: ..\FloatingSandbox\MainFrame.cpp:294
+#: ..\FloatingSandbox\MainFrame.cpp:375
 msgid "Pause"
 msgstr "Пауза"
 
-#: ..\FloatingSandbox\MainFrame.cpp:294
+#: ..\FloatingSandbox\MainFrame.cpp:375
 msgid "Pause the game"
 msgstr "Приостановить игру"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1905
+#: ..\ShipBuilderLib\MainFrame.cpp:1956
 msgid "Pencil Size:"
 msgstr "Размер карандаша:"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:902
+#: ..\FloatingSandbox\SettingsDialog.cpp:5552
 msgid "Performance"
 msgstr "Производительность"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2340
+#: ..\FloatingSandbox\SettingsDialog.cpp:2446
 msgid "Persistence Adjust"
 msgstr "Настройка стойкости дыма"
 
@@ -2523,43 +2772,47 @@ msgstr "Настройка стойкости дыма"
 msgid "Physics"
 msgstr "Физика"
 
-#: ..\FloatingSandbox\MainFrame.cpp:350
+#: ..\FloatingSandbox\SettingsDialog.cpp:3059
+msgid "Physics Tools Affect NPCs"
+msgstr ""
+
+#: ..\FloatingSandbox\MainFrame.cpp:405
 msgid "Pick-n-Pull"
 msgstr "Плоскогубцы"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:3540
+#: ..\ShipBuilderLib\MainFrame.cpp:3618
 msgid "Pixel mode: view electrical particles as pixels."
 msgstr "Пиксельный режим: рассматривать электрические частицы как пиксели."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:3479
+#: ..\ShipBuilderLib\MainFrame.cpp:3557
 msgid "Pixel mode: view structural particles as pixels."
 msgstr "Пиксельный режим: просмотр структурных частиц как пикселей."
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:1108
+#: ..\FloatingSandbox\PreferencesDialog.cpp:1279
 msgid "Play Background Music"
 msgstr "Воспроизведение фоновой музыки"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4612
+#: ..\FloatingSandbox\SettingsDialog.cpp:5032
 msgid "Play Break Sounds"
 msgstr "Воспроизвести звуки разрушения"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4654
+#: ..\FloatingSandbox\SettingsDialog.cpp:5074
 msgid "Play Bubbles' Surface Sounds"
 msgstr "Воспроизвести звуки поверхности пузырей"
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:1123
+#: ..\FloatingSandbox\PreferencesDialog.cpp:1294
 msgid "Play Farewell Music"
 msgstr "Включи прощальную музыку"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4626
+#: ..\FloatingSandbox\SettingsDialog.cpp:5046
 msgid "Play Stress Sounds"
 msgstr "Воспроизвести звуки стресса"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4640
+#: ..\FloatingSandbox\SettingsDialog.cpp:5060
 msgid "Play Wind Sounds"
 msgstr "Воспроизвести звуки ветра"
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:251
+#: ..\FloatingSandbox\PreferencesDialog.cpp:278
 msgid ""
 "Please note that a restart is required for language changes to take effect."
 msgstr ""
@@ -2578,7 +2831,7 @@ msgstr "Монитор питания"
 msgid "Prefer This Ship Name?"
 msgstr "Предпочитаете это название корабля?"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1027 ..\ShipBuilderLib\MainFrame.cpp:1038
+#: ..\ShipBuilderLib\MainFrame.cpp:1032 ..\ShipBuilderLib\MainFrame.cpp:1043
 #: ..\ShipBuilderLib\UI\PreferencesDialog.cpp:29
 msgid "Preferences"
 msgstr "Параметры"
@@ -2587,8 +2840,8 @@ msgstr "Параметры"
 msgid "Preset Colors:"
 msgstr "Заданные цвета:"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1055
-#: ..\FloatingSandbox\SettingsDialog.cpp:2213
+#: ..\FloatingSandbox\SettingsDialog.cpp:1099
+#: ..\FloatingSandbox\SettingsDialog.cpp:2313
 msgid "Pressure Drag Adjust"
 msgstr "Регулировка Сопротивления к Давлению Воздуха"
 
@@ -2619,15 +2872,15 @@ msgstr ""
 "Предотвращает показ этих советов при каждом запуске игры. Вы всегда можете "
 "изменить этот параметр позже в окне «Настройки игры»."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:2201
+#: ..\ShipBuilderLib\MainFrame.cpp:2252
 msgid "Primary Material"
 msgstr "Первичный материал"
 
-#: ..\FloatingSandbox\CreditsPanel.cpp:188
+#: ..\FloatingSandbox\CreditsPanel.cpp:195
 msgid "Programmed in Amsterdam, the Netherlands"
 msgstr "Программируется в Амстердаме, Нидерланды"
 
-#: ..\ShipBuilderLib\Controller.cpp:218 ..\ShipBuilderLib\MainFrame.cpp:1688
+#: ..\ShipBuilderLib\Controller.cpp:218 ..\ShipBuilderLib\MainFrame.cpp:1739
 msgid "Properties"
 msgstr "Свойства"
 
@@ -2639,39 +2892,43 @@ msgstr "Введите пароль"
 msgid "Push Button"
 msgstr "Нажмите кнопку"
 
-#: ..\FloatingSandbox\MainFrame.cpp:240 ..\ShipBuilderLib\MainFrame.cpp:892
+#: ..\FloatingSandbox\MainFrame.cpp:286 ..\ShipBuilderLib\MainFrame.cpp:897
 msgid "Quit"
 msgstr "Выйти"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:897
+#: ..\ShipBuilderLib\MainFrame.cpp:902
 msgid "Quit and leave the program (ALT+F4)."
 msgstr "Выйти из программы (ALT+F4)."
 
-#: ..\FloatingSandbox\MainFrame.cpp:240
+#: ..\FloatingSandbox\MainFrame.cpp:286
 msgid "Quit the game"
 msgstr "Выйти из игры"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3157
-#: ..\FloatingSandbox\SettingsDialog.cpp:3323
-#: ..\FloatingSandbox\SettingsDialog.cpp:3412
-#: ..\FloatingSandbox\SettingsDialog.cpp:3566
-#: ..\FloatingSandbox\SettingsDialog.cpp:3671
+#: ..\FloatingSandbox\SettingsDialog.cpp:3370
+#: ..\FloatingSandbox\SettingsDialog.cpp:3549
+#: ..\FloatingSandbox\SettingsDialog.cpp:3645
+#: ..\FloatingSandbox\SettingsDialog.cpp:3813
+#: ..\FloatingSandbox\SettingsDialog.cpp:3910
 msgid "Radius"
 msgstr "Радиус"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2019
+#: ..\FloatingSandbox\SettingsDialog.cpp:2114
 msgid "Rain Flood Adjust"
 msgstr "Дождь и наводнение"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2098
+#: ..\FloatingSandbox\MainFrame.cpp:2869 ..\FloatingSandbox\MainFrame.cpp:2915
+msgid "Random"
+msgstr ""
+
+#: ..\FloatingSandbox\SettingsDialog.cpp:2193
 msgid "Rate"
 msgstr "Скорость"
 
-#: ..\FloatingSandbox\SplashScreenDialog.cpp:129
+#: ..\FloatingSandbox\SplashScreenDialog.cpp:157
 msgid "Ready!"
 msgstr "Готово!"
 
-#: ..\UILib\ShipLoadDialog.cpp:358
+#: ..\UILib\ShipLoadDialog.cpp:354
 msgid "Recent directories:"
 msgstr "Последние каталоги:"
 
@@ -2679,47 +2936,61 @@ msgstr "Последние каталоги:"
 msgid "Red Screen"
 msgstr "Красный экран"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:968
+#: ..\ShipBuilderLib\MainFrame.cpp:973
 msgid "Reduce the view (-)."
 msgstr "Уменьшите обзор (-)."
 
-#: ..\FloatingSandbox\MainFrame.cpp:213
+#: ..\FloatingSandbox\MainFrame.cpp:259
 msgid "Reload Current Ship"
 msgstr "Перезагрузить текущий корабль"
 
-#: ..\FloatingSandbox\MainFrame.cpp:521
+#: ..\FloatingSandbox\MainFrame.cpp:660
 msgid "Reload Last-Modified Simulation Settings"
 msgstr "Перезагрузить последние измененные настройки моделирования"
 
-#: ..\FloatingSandbox\MainFrame.cpp:217
+#: ..\FloatingSandbox\MainFrame.cpp:263
 msgid "Reload Previous Ship"
 msgstr "Перезагрузить предыдущий корабль"
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:907
+#: ..\FloatingSandbox\PreferencesDialog.cpp:964
 msgid "Reload Previous Ship on Startup"
 msgstr "Перезагрузить предыдущий корабль при запуске"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1333
+#: ..\ShipBuilderLib\MainFrame.cpp:1359
 msgid "Remove"
 msgstr "Удалить"
 
-#: ..\ShipBuilderLib\Controller.cpp:1613
+#: ..\ShipBuilderLib\Controller.cpp:1743
 msgid "Remove Electrical Layer"
 msgstr "Удалите электрический слой"
 
-#: ..\ShipBuilderLib\Controller.cpp:1625
+#: ..\ShipBuilderLib\Controller.cpp:1767
+#, fuzzy
+#| msgid "Remove Texture Layer"
+msgid "Remove Exterior Layer"
+msgstr "Удалить слой текстуры"
+
+#: ..\ShipBuilderLib\Controller.cpp:1781
+#, fuzzy
+#| msgid "Remove Texture Layer"
+msgid "Remove Interior Layer"
+msgstr "Удалить слой текстуры"
+
+#: ..\FloatingSandbox\MainFrame.cpp:612
+#, fuzzy
+#| msgid "Remove"
+msgid "Remove NPC"
+msgstr "Удалить"
+
+#: ..\ShipBuilderLib\Controller.cpp:1755
 msgid "Remove Ropes Layer"
 msgstr "Удалить слой канатов"
 
-#: ..\ShipBuilderLib\Controller.cpp:1639
-msgid "Remove Texture Layer"
-msgstr "Удалить слой текстуры"
-
-#: ..\ShipBuilderLib\MainFrame.cpp:1593
+#: ..\ShipBuilderLib\MainFrame.cpp:1644
 msgid "Remove empty space around the ship."
 msgstr "Удаляет пустое пространство вокруг корабля."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:2593
+#: ..\ShipBuilderLib\MainFrame.cpp:2648
 msgid "Remove the current selection (Ctrl+D)."
 msgstr "Снять текущее выделение (Ctrl+D)."
 
@@ -2727,7 +2998,7 @@ msgstr "Снять текущее выделение (Ctrl+D)."
 msgid "Remove the password lock."
 msgstr "Снимите блокировку пароля."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1399
+#: ..\ShipBuilderLib\MainFrame.cpp:1443
 msgid "Remove this layer from the ship."
 msgstr "Удалите этот слой с корабля."
 
@@ -2735,11 +3006,35 @@ msgstr "Удалите этот слой с корабля."
 msgid "Rendering"
 msgstr "Рендеринг"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4978
+#: ..\FloatingSandbox\SettingsDialog.cpp:4375
+#, fuzzy
+#| msgid ""
+#| "Renders the ocean with additional details. Requires more computational "
+#| "resources."
+msgid ""
+"Renders clouds with additional details. Requires more computational "
+"resources."
+msgstr ""
+"Отображает океан с дополнительными деталями. (Требуется больше "
+"вычислительных ресурсов)."
+
+#: ..\FloatingSandbox\SettingsDialog.cpp:5416
 msgid "Renders flames out of the HeatBlaster tool."
 msgstr "Визуализирует пламя с помощью инструмента Тепловой бластер."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3898
+#: ..\FloatingSandbox\SettingsDialog.cpp:4930
+#, fuzzy
+#| msgid ""
+#| "Renders the ocean with additional details. Requires more computational "
+#| "resources."
+msgid ""
+"Renders the ocean floor with additional details. Requires more computational "
+"resources."
+msgstr ""
+"Отображает океан с дополнительными деталями. (Требуется больше "
+"вычислительных ресурсов)."
+
+#: ..\FloatingSandbox\SettingsDialog.cpp:4150
 msgid ""
 "Renders the ocean with additional details. Requires more computational "
 "resources."
@@ -2747,19 +3042,19 @@ msgstr ""
 "Отображает океан с дополнительными деталями. (Требуется больше "
 "вычислительных ресурсов)."
 
-#: ..\FloatingSandbox\MainFrame.cpp:455
+#: ..\FloatingSandbox\MainFrame.cpp:510
 msgid "Repair"
 msgstr "Ремонт"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3538
+#: ..\FloatingSandbox\SettingsDialog.cpp:3784
 msgid "Repair Tool"
 msgstr "Инструмент для ремонта"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:5238
+#: ..\FloatingSandbox\SettingsDialog.cpp:5782
 msgid "Replace Saved Settings with Current"
 msgstr "Заменить сохраненные настройки текущими"
 
-#: ..\FloatingSandbox\MainFrame.cpp:273 ..\ShipBuilderLib\MainFrame.cpp:989
+#: ..\FloatingSandbox\MainFrame.cpp:311 ..\ShipBuilderLib\MainFrame.cpp:994
 msgid "Reset View"
 msgstr "Сбросить вид"
 
@@ -2767,12 +3062,12 @@ msgstr "Сбросить вид"
 msgid "Resets all settings to their default values."
 msgstr "Сбрасывает все настройки до значений по умолчанию."
 
-#: ..\ShipBuilderLib\Controller.cpp:1008
+#: ..\ShipBuilderLib\Controller.cpp:1094
 #: ..\ShipBuilderLib\UI\ResizeDialog.cpp:463
 msgid "Resize Ship"
 msgstr "Изменить размер корабля"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1677
+#: ..\ShipBuilderLib\MainFrame.cpp:1728
 msgid "Resize the ship."
 msgstr "Изменение размера корабля."
 
@@ -2780,7 +3075,7 @@ msgstr "Изменение размера корабля."
 msgid "Resolving the following warning(s) would improve this ship:"
 msgstr "Устранение следующего(их) предупреждения(й) улучшит это судно:"
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:252
+#: ..\FloatingSandbox\PreferencesDialog.cpp:279
 msgid "Restart Required"
 msgstr "Требуется перезапуск"
 
@@ -2788,11 +3083,11 @@ msgstr "Требуется перезапуск"
 msgid "Restore"
 msgstr "Восстановить"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1402
+#: ..\FloatingSandbox\SettingsDialog.cpp:1468
 msgid "Restore Default Terrain"
 msgstr "Восстановить ландшафт по умолчанию"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:994
+#: ..\ShipBuilderLib\MainFrame.cpp:999
 msgid "Restore view settings to their defaults (HOME)."
 msgstr "Сбрасывает все настройки до значений по умолчанию (HOME)."
 
@@ -2810,7 +3105,7 @@ msgstr "Повторная попытка через %d..."
 msgid "Revert to Defaults"
 msgstr "Вернуться к значениям по умолчанию"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:5219
+#: ..\FloatingSandbox\SettingsDialog.cpp:5759
 msgid "Revert to Saved Settings"
 msgstr "Вернуться к сохраненным настройкам"
 
@@ -2826,11 +3121,11 @@ msgstr ""
 msgid "Reverts all changes effected since the window was last opened."
 msgstr "Отменяет все изменения, затронутые с момента последнего открытия окна."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:5220
+#: ..\FloatingSandbox\SettingsDialog.cpp:5760
 msgid "Reverts all settings to the selected settings."
 msgstr "Возвращает все настройки к выбранным настройкам."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1403
+#: ..\FloatingSandbox\SettingsDialog.cpp:1469
 msgid "Reverts the user-drawn ocean floor terrain to the default terrain."
 msgstr ""
 "Возвращает нарисованный пользователем ландшафт дна океана к ландшафту по "
@@ -2840,47 +3135,47 @@ msgstr ""
 msgid "Rewind"
 msgstr "Перемотка"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1921
+#: ..\FloatingSandbox\SettingsDialog.cpp:2010
 msgid "Rogue Wave Rate"
 msgstr "Скорость Разбойной Волны"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1106 ..\ShipBuilderLib\MainFrame.cpp:3222
+#: ..\ShipBuilderLib\MainFrame.cpp:1111 ..\ShipBuilderLib\MainFrame.cpp:3279
 msgid "Ropes Layer"
 msgstr "Слой канатов"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1183
+#: ..\FloatingSandbox\SettingsDialog.cpp:1233
 msgid "Rot Acceler8r"
 msgstr "Ускоритель гниения"
 
-#: ..\ShipBuilderLib\Controller.cpp:2307
+#: ..\ShipBuilderLib\Controller.cpp:2514
 msgid "Rotate CCW"
 msgstr "Вращать налево"
 
-#: ..\ShipBuilderLib\Controller.cpp:2300
+#: ..\ShipBuilderLib\Controller.cpp:2507
 msgid "Rotate CW"
 msgstr "Вращать вправо"
 
-#: ..\UILib\ShipLoadDialog.cpp:164
+#: ..\UILib\ShipLoadDialog.cpp:160
 msgid "Rotate ship 90 degrees clockwise when loaded"
 msgstr "Поворот судна на 90 градусов по часовой стрелке при погрузке"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:2755
+#: ..\ShipBuilderLib\MainFrame.cpp:2811
 msgid "Rotate the pasted region 90 degrees anti-clockwise."
 msgstr "Поверните вставленную область на 90 градусов против часовой стрелки."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:2711
+#: ..\ShipBuilderLib\MainFrame.cpp:2767
 msgid "Rotate the pasted region 90 degrees clockwise."
 msgstr "Поверните вставленную область на 90 градусов по часовой стрелке."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1627
+#: ..\ShipBuilderLib\MainFrame.cpp:1678
 msgid "Rotate the ship 90 degrees anti-clockwise."
 msgstr "Поверните корабль на 90 градусов налево."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1610
+#: ..\ShipBuilderLib\MainFrame.cpp:1661
 msgid "Rotate the ship 90 degrees clockwise."
 msgstr "Поверните корабль на 90 градусов на право."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1171
+#: ..\FloatingSandbox\SettingsDialog.cpp:1221
 msgid "Rotting"
 msgstr "Гниение"
 
@@ -2888,28 +3183,28 @@ msgstr "Гниение"
 msgid "Rust Receptivity"
 msgstr "Восприимчивость к ржавчине"
 
-#: ..\FloatingSandbox\CreditsPanel.cpp:108
+#: ..\FloatingSandbox\CreditsPanel.cpp:113
 msgid "SHIP ENGINEERING"
 msgstr "СУДОСТРОЕНИЕ"
 
-#: ..\FloatingSandbox\CreditsPanel.cpp:126
+#: ..\FloatingSandbox\CreditsPanel.cpp:131
 msgid "SHIP LITERATURE"
 msgstr "КОРАБЕЛЬНАЯ ЛИТЕРАТУРА"
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:607
+#: ..\FloatingSandbox\PreferencesDialog.cpp:660
 msgid "SI (Celsius)"
 msgstr "SI (Цельсия)"
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:606
+#: ..\FloatingSandbox\PreferencesDialog.cpp:659
 msgid "SI (Kelvin)"
 msgstr "SI (Кельвин)"
 
-#: ..\FloatingSandbox\CreditsPanel.cpp:176
+#: ..\FloatingSandbox\CreditsPanel.cpp:181
 msgid "SPECIAL THANKS"
 msgstr "ОТДЕЛЬНОЕ СПАСИБО"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:3877 ..\ShipBuilderLib\MainFrame.cpp:4088
-#: ..\ShipBuilderLib\MainFrame.cpp:4299
+#: ..\ShipBuilderLib\MainFrame.cpp:3955 ..\ShipBuilderLib\MainFrame.cpp:4166
+#: ..\ShipBuilderLib\MainFrame.cpp:4377
 msgid "Sample the material under the cursor."
 msgstr "Возьмите образец материала под курсором."
 
@@ -2917,31 +3212,31 @@ msgstr "Возьмите образец материала под курсоро
 msgid "Save"
 msgstr "Сохранить"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:854
+#: ..\ShipBuilderLib\MainFrame.cpp:859
 msgid "Save And Return"
 msgstr "Сохранить и вернуть"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:5411
+#: ..\FloatingSandbox\SettingsDialog.cpp:5971
 msgid "Save Current Settings"
 msgstr "Сохранить текущие настройки"
 
-#: ..\FloatingSandbox\MainFrame.cpp:230
+#: ..\FloatingSandbox\MainFrame.cpp:276
 msgid "Save Screenshot"
 msgstr "Сохранить снимок экрана"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:5347
+#: ..\FloatingSandbox\SettingsDialog.cpp:5907
 msgid "Save Settings"
 msgstr "Сохранить Настройки"
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:527
+#: ..\FloatingSandbox\PreferencesDialog.cpp:580
 msgid "Save Settings on Exit"
 msgstr "Сохранить настройки при выходе"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:789
+#: ..\ShipBuilderLib\MainFrame.cpp:794
 msgid "Save Ship"
 msgstr "Сохранить корабль"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:818
+#: ..\ShipBuilderLib\MainFrame.cpp:823
 msgid "Save Ship As"
 msgstr "Сохранить корабль как"
 
@@ -2953,19 +3248,19 @@ msgstr "Сохранить изображение"
 msgid "Save and Quit"
 msgstr "Сохранить и выйти"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:859
+#: ..\ShipBuilderLib\MainFrame.cpp:864
 msgid "Save the current ship and return to the simulator."
 msgstr "Сохранить текущий корабль и вернуться в симулятор."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:839
+#: ..\ShipBuilderLib\MainFrame.cpp:844
 msgid "Save the current ship file to a backup file."
 msgstr "Сохранить текущий файл корабля в резервный файл."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:823
+#: ..\ShipBuilderLib\MainFrame.cpp:828
 msgid "Save the current ship to a different file."
 msgstr "Сохранить текущий корабль в другой файл."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:794
+#: ..\ShipBuilderLib\MainFrame.cpp:799
 msgid "Save the current ship."
 msgstr "Сохранить текущий корабль."
 
@@ -2977,68 +3272,72 @@ msgstr "Сохраните структурный слой"
 msgid "Save this ship"
 msgstr "Сохранить этот корабль"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:5412
+#: ..\FloatingSandbox\SettingsDialog.cpp:5972
 msgid "Saves the current settings using the specified name."
 msgstr "Сохраняет текущие настройки под указанным именем."
 
-#: ..\FloatingSandbox\MainFrame.cpp:465
+#: ..\FloatingSandbox\MainFrame.cpp:520
 msgid "Scare/Allure Fishes"
 msgstr "Пугать/приманивать рыб"
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:674
+#: ..\FloatingSandbox\PreferencesDialog.cpp:727
 msgid "Screenshot directory:"
 msgstr "Каталог снимков экрана:"
 
-#: ..\FloatingSandbox\MainFrame.cpp:460
+#: ..\FloatingSandbox\MainFrame.cpp:515
 msgid "Scrub/Rot"
 msgstr "Губка/Гниение"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3627
+#: ..\FloatingSandbox\SettingsDialog.cpp:3880
 msgid "Scrub/Rot Tool"
 msgstr "Инструмент Губка / Гниение"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3778
+#: ..\FloatingSandbox\SettingsDialog.cpp:4029
 msgid "Sea"
 msgstr "Море"
 
-#: ..\UILib\ShipLoadDialog.cpp:258
+#: ..\UILib\ShipLoadDialog.cpp:254
 msgid "Search in this folder:"
 msgstr "Искать в этой папке:"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:2202
+#: ..\ShipBuilderLib\MainFrame.cpp:2253
 msgid "Secondary Material"
 msgstr "Вторичный материал"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3916
+#: ..\FloatingSandbox\SettingsDialog.cpp:4168
 msgid "See Ship Through Water"
 msgstr "Увидеть корабль сквозь воду"
 
-#: ..\UILib\ShipLoadDialog.cpp:114
+#: ..\UILib\ShipLoadDialog.cpp:110
 msgid "See ship information"
 msgstr "Смотрите информацию о судне"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:3893 ..\ShipBuilderLib\MainFrame.cpp:4104
-#: ..\ShipBuilderLib\MainFrame.cpp:4267 ..\ShipBuilderLib\MainFrame.cpp:4446
+#: ..\FloatingSandbox\MainFrame.cpp:643
+msgid "Select Next NPC"
+msgstr ""
+
+#: ..\ShipBuilderLib\MainFrame.cpp:3971 ..\ShipBuilderLib\MainFrame.cpp:4182
+#: ..\ShipBuilderLib\MainFrame.cpp:4345 ..\ShipBuilderLib\MainFrame.cpp:4524
 msgid "Select an area for copying and/or cutting."
 msgstr "Выберите область для копирования и/или резки."
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:693
+#: ..\FloatingSandbox\PreferencesDialog.cpp:746
 msgid "Select directory that screenshots will be saved to:"
 msgstr "Выберите каталог, в который будут сохраняться скриншоты:"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1174
+#: ..\ShipBuilderLib\MainFrame.cpp:1192
 msgid "Select this layer as the primary layer."
 msgstr "Выберите этот слой в качестве основного."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4234
+#: ..\FloatingSandbox\SettingsDialog.cpp:4542
 msgid "Selects how heat is rendered on the ship."
 msgstr "Выбирает способ отвода тепла на корабле."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4356
+#: ..\FloatingSandbox\SettingsDialog.cpp:4586
 msgid "Selects how stress is rendered on the ship."
 msgstr "Выбор способа отображения напряжения на корабле."
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:391
+#: ..\FloatingSandbox\PreferencesDialog.cpp:444
 msgid ""
 "Selects whether the game starts in full-screen mode or as a normal window."
 msgstr ""
@@ -3069,7 +3368,7 @@ msgstr "Установите параметры автотекстурирова
 msgid "Set ship-specific auto-texturization settings."
 msgstr "Установка параметров автотекстурирования для конкретного корабля."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:943
+#: ..\FloatingSandbox\SettingsDialog.cpp:5593
 msgid "Sets a cap to the maximum number of threads used for the simulation."
 msgstr ""
 "Устанавливает ограничение на максимальное количество потоков, используемых "
@@ -3079,7 +3378,13 @@ msgstr ""
 msgid "Sets a predefined color for the canvas background."
 msgstr "Устанавливает предопределенный цвет для фона холста."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4503
+#: ..\FloatingSandbox\SettingsDialog.cpp:4443
+#, fuzzy
+#| msgid "Sets the color of lamp lights."
+msgid "Sets the color of anonymous NPCs."
+msgstr "Устанавливает цвет свечения лампы."
+
+#: ..\FloatingSandbox\SettingsDialog.cpp:4491
 msgid "Sets the color of lamp lights."
 msgstr "Устанавливает цвет свечения лампы."
 
@@ -3087,11 +3392,11 @@ msgstr "Устанавливает цвет свечения лампы."
 msgid "Sets the color of the canvas background."
 msgstr "Устанавливает цвет фона холста."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4098
+#: ..\FloatingSandbox\SettingsDialog.cpp:4350
 msgid "Sets the color of the moon's light."
 msgstr "Задает цвет света луны."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4408
+#: ..\FloatingSandbox\SettingsDialog.cpp:4768
 msgid ""
 "Sets the color of water which is used when ocean render mode is set to "
 "'Texture'."
@@ -3099,55 +3404,55 @@ msgstr ""
 "Устанавливает цвет воды, который используется, когда режим рендеринга океана "
 "установлен на «Текстура»."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4050
+#: ..\FloatingSandbox\SettingsDialog.cpp:4302
 msgid "Sets the crepuscolar overtone of the sky."
 msgstr "Задает сумеречный тон неба."
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:697
+#: ..\FloatingSandbox\PreferencesDialog.cpp:750
 msgid ""
 "Sets the directory into which in-game screenshots are automatically saved."
 msgstr ""
 "Задает каталог, в который автоматически сохраняются внутриигровые скриншоты."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3842
+#: ..\FloatingSandbox\SettingsDialog.cpp:4094
 msgid "Sets the ending (bottom) color of the gradient."
 msgstr "Задает конечный (нижний) цвет градиента."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4178
+#: ..\FloatingSandbox\SettingsDialog.cpp:4900
 msgid "Sets the single color of the ocean floor."
 msgstr "Задает единый цвет океанского дна."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3868
+#: ..\FloatingSandbox\SettingsDialog.cpp:4120
 msgid "Sets the single color of the ocean."
 msgstr "Задает единый цвет океана."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4023
+#: ..\FloatingSandbox\SettingsDialog.cpp:4275
 msgid "Sets the single color of the sky."
 msgstr "Задает единый цвет неба."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3825
+#: ..\FloatingSandbox\SettingsDialog.cpp:4077
 msgid "Sets the starting (top) color of the gradient."
 msgstr "Задает начальный (верхний) цвет градиента."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4160
+#: ..\FloatingSandbox\SettingsDialog.cpp:4882
 msgid "Sets the texture to use for the ocean floor."
 msgstr "Задает текстуру для использования на дне океана."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3805
+#: ..\FloatingSandbox\SettingsDialog.cpp:4057
 msgid "Sets the texture to use for the ocean."
 msgstr "Задает текстуру для использования в океане."
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:621
+#: ..\FloatingSandbox\PreferencesDialog.cpp:674
 msgid "Sets the units system to use when displaying physical quantities."
 msgstr ""
 "Устанавливает систему единиц, используемую при отображении физических "
 "величин."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1570
+#: ..\FloatingSandbox\SettingsDialog.cpp:1641
 msgid "Sets wind speed to zero."
 msgstr "Установить скорость ветра на ноль."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:5446
+#: ..\FloatingSandbox\SettingsDialog.cpp:6006
 #, c-format
 msgid ""
 "Settings \"%s\" already exist; do you want to replace them with the current "
@@ -3159,12 +3464,12 @@ msgstr ""
 msgid "Settings Management"
 msgstr "Управление Настройками"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4218
-#: ..\ShipBuilderLib\MainFrame.cpp:1576
+#: ..\FloatingSandbox\SettingsDialog.cpp:4526
+#: ..\ShipBuilderLib\MainFrame.cpp:1627
 msgid "Ship"
 msgstr "Корабль"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4846
+#: ..\FloatingSandbox\SettingsDialog.cpp:5284
 msgid "Ship Debug Draw Options"
 msgstr "Параметры Чертежа Отладки Корабля"
 
@@ -3184,73 +3489,79 @@ msgstr "Свойства Корабля"
 msgid "Ship files"
 msgstr "Файлы корабля"
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:86
+#: ..\FloatingSandbox\PreferencesDialog.cpp:101
 msgid "Ships"
 msgstr "Корабли"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2826
+#: ..\FloatingSandbox\SettingsDialog.cpp:2954
 msgid "Shoal Radius Adjust"
 msgstr "Регулировка радиуса мелководья"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4949
+#: ..\FloatingSandbox\SettingsDialog.cpp:5387
 msgid "Show AABBs"
 msgstr "Показать AABB"
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:982
+#: ..\FloatingSandbox\PreferencesDialog.cpp:1039
 msgid "Show Electrical Notifications"
 msgstr "Показать электрические уведомления"
 
-#: ..\FloatingSandbox\MainFrame.cpp:535
+#: ..\FloatingSandbox\MainFrame.cpp:674
 msgid "Show Event Ticker"
 msgstr "Показать Тикер Событий"
 
-#: ..\FloatingSandbox\MainFrame.cpp:549
-#: ..\FloatingSandbox\PreferencesDialog.cpp:573
+#: ..\FloatingSandbox\MainFrame.cpp:688
+#: ..\FloatingSandbox\PreferencesDialog.cpp:626
 msgid "Show Extended Status Text"
 msgstr "Показать расширенный текст состояния"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4935
+#: ..\FloatingSandbox\SettingsDialog.cpp:5373
 msgid "Show Frontiers"
 msgstr "Показать границы"
 
-#: ..\FloatingSandbox\MainFrame.cpp:540
+#: ..\FloatingSandbox\PreferencesDialog.cpp:1147
+#, fuzzy
+#| msgid "Show Tsunami Notifications"
+msgid "Show NPC Notifications"
+msgstr "Показывать Уведомления О Цунами"
+
+#: ..\FloatingSandbox\MainFrame.cpp:679
 msgid "Show Probe Panel"
 msgstr "Показать панель зонда"
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:922
+#: ..\FloatingSandbox\PreferencesDialog.cpp:979
 msgid "Show Ship Descriptions at Load"
 msgstr "Показать описание судна при загрузке"
 
-#: ..\FloatingSandbox\MainFrame.cpp:545
-#: ..\FloatingSandbox\PreferencesDialog.cpp:541
+#: ..\FloatingSandbox\MainFrame.cpp:684
+#: ..\FloatingSandbox\PreferencesDialog.cpp:594
 msgid "Show Status Text"
 msgstr "Показать текст статуса"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4963
+#: ..\FloatingSandbox\SettingsDialog.cpp:5401
 msgid "Show Stress"
 msgstr "Показать Стресс"
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:435
+#: ..\FloatingSandbox\PreferencesDialog.cpp:488
 msgid "Show Tips on Startup"
 msgstr "Показывать советы при запуске"
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:559
+#: ..\FloatingSandbox\PreferencesDialog.cpp:612
 msgid "Show Tsunami Notifications"
 msgstr "Показывать Уведомления О Цунами"
 
-#: ..\FloatingSandbox\MainFrame.cpp:598
+#: ..\FloatingSandbox\MainFrame.cpp:737
 msgid "Show credits and other I'vedunnit stuff"
 msgstr "Показать авторов и прочее"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3917
+#: ..\FloatingSandbox\SettingsDialog.cpp:4169
 msgid "Shows the ship either behind the sea water or in front of it."
 msgstr "Показывает корабль за морской водой или перед ней."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:5071
+#: ..\FloatingSandbox\SettingsDialog.cpp:5509
 msgid "Side-Effects"
 msgstr "Побочные явления"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1513
+#: ..\FloatingSandbox\SettingsDialog.cpp:1579
 msgid "Silt Hardness"
 msgstr "Иловая твердость"
 
@@ -3258,36 +3569,37 @@ msgstr "Иловая твердость"
 msgid "Simulation Settings"
 msgstr "Настройки Моделирования"
 
-#: ..\FloatingSandbox\MainFrame.cpp:517
+#: ..\FloatingSandbox\MainFrame.cpp:656
 msgid "Simulation Settings..."
 msgstr "Параметры Моделирования..."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1672
+#: ..\ShipBuilderLib\MainFrame.cpp:1723
 msgid "Size"
 msgstr "Размер"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2750
+#: ..\FloatingSandbox\SettingsDialog.cpp:2878
+#: ..\FloatingSandbox\SettingsDialog.cpp:3034
 msgid "Size Multiplier"
 msgstr "Множитель размера"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2377
-#: ..\FloatingSandbox\SettingsDialog.cpp:3999
+#: ..\FloatingSandbox\SettingsDialog.cpp:2488
+#: ..\FloatingSandbox\SettingsDialog.cpp:4251
 msgid "Sky"
 msgstr "Небо"
 
-#: ..\FloatingSandbox\MainFrame.cpp:360
+#: ..\FloatingSandbox\MainFrame.cpp:415
 msgid "Slice"
 msgstr "Пила"
 
-#: ..\FloatingSandbox\MainFrame.cpp:355
+#: ..\FloatingSandbox\MainFrame.cpp:410
 msgid "Smash"
 msgstr "Молоток"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3066
+#: ..\FloatingSandbox\SettingsDialog.cpp:3271
 msgid "Smash Tool"
 msgstr "Инструмент Молоток"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2301
+#: ..\FloatingSandbox\SettingsDialog.cpp:2407
 msgid "Smoke"
 msgstr "Дым"
 
@@ -3295,11 +3607,17 @@ msgstr "Дым"
 msgid "Smoke Emitter"
 msgstr "Излучатель дыма"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1846
+#: ..\FloatingSandbox\SettingsDialog.cpp:1929
 msgid "Smoothness Adjust"
 msgstr "Регулировка плавности"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4550
+#: ..\FloatingSandbox\PreferencesDialog.cpp:405
+msgid ""
+"Some of the changes made will only be enforced when the next ship is loaded. "
+"Reload the ship now?"
+msgstr ""
+
+#: ..\FloatingSandbox\SettingsDialog.cpp:4970
 msgid "Sound"
 msgstr "Звук"
 
@@ -3311,7 +3629,23 @@ msgstr "Излучатель звука"
 msgid "Sound and Advanced Settings"
 msgstr "Звук и дополнительные настройки"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1990
+#: ..\FloatingSandbox\MainFrame.cpp:636
+msgid "Spawn Furniture NPC Group"
+msgstr ""
+
+#: ..\FloatingSandbox\MainFrame.cpp:596
+msgid "Spawn Furniture NPC..."
+msgstr ""
+
+#: ..\FloatingSandbox\MainFrame.cpp:629
+msgid "Spawn Human NPC Group"
+msgstr ""
+
+#: ..\FloatingSandbox\MainFrame.cpp:583
+msgid "Spawn Human NPC..."
+msgstr ""
+
+#: ..\FloatingSandbox\SettingsDialog.cpp:2085
 msgid "Spawn Rain"
 msgstr "Создать дождь"
 
@@ -3319,10 +3653,10 @@ msgstr "Создать дождь"
 msgid "Specific Heat (J/(Kg*K))"
 msgstr "Удельная теплота (Дж/(кг*К))"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1279
-#: ..\FloatingSandbox\SettingsDialog.cpp:1749
-#: ..\FloatingSandbox\SettingsDialog.cpp:2776
-#: ..\FloatingSandbox\SettingsDialog.cpp:3592
+#: ..\FloatingSandbox\SettingsDialog.cpp:1341
+#: ..\FloatingSandbox\SettingsDialog.cpp:1826
+#: ..\FloatingSandbox\SettingsDialog.cpp:2904
+#: ..\FloatingSandbox\SettingsDialog.cpp:3839
 msgid "Speed Adjust"
 msgstr "Регулировка скорости"
 
@@ -3330,19 +3664,19 @@ msgstr "Регулировка скорости"
 msgid "Spread"
 msgstr "Разброс"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2553
+#: ..\FloatingSandbox\SettingsDialog.cpp:2669
 msgid "Spread Adjust"
 msgstr "Регулировка разброса"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:914
+#: ..\FloatingSandbox\SettingsDialog.cpp:5564
 msgid "Spring Algo Adjust"
 msgstr "Регулировка Пружины Альго"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4799
+#: ..\FloatingSandbox\SettingsDialog.cpp:5231
 msgid "Spring Damping Adjust"
 msgstr "Демпфирования пружины"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4771
+#: ..\FloatingSandbox\SettingsDialog.cpp:5203
 msgid "Spring Stiffness Adjust"
 msgstr "Жесткость пружинности"
 
@@ -3350,15 +3684,21 @@ msgstr "Жесткость пружинности"
 msgid "Start"
 msgstr "Начать"
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:390
+#: ..\FloatingSandbox\PreferencesDialog.cpp:443
 msgid "Start in Full Screen"
 msgstr "Запуск в полноэкранном режиме"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:5004
+#: ..\FloatingSandbox\SettingsDialog.cpp:5442
 msgid "Static Forces"
 msgstr "Статические силы"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:590
+#: ..\FloatingSandbox\SettingsDialog.cpp:638
+#, fuzzy
+#| msgid "Water Friction Drag Adjust"
+msgid "Static Friction Adjust"
+msgstr "Регулировка сопротивления водному трению"
+
+#: ..\FloatingSandbox\SettingsDialog.cpp:692
 msgid "Static Pressure Adjust"
 msgstr "Регулировка статического давления"
 
@@ -3374,13 +3714,17 @@ msgstr "Сила Статического Давления"
 msgid "Steam"
 msgstr "Пар"
 
-#: ..\FloatingSandbox\DebugDialog.cpp:316 ..\FloatingSandbox\MainFrame.cpp:300
+#: ..\FloatingSandbox\DebugDialog.cpp:316 ..\FloatingSandbox\MainFrame.cpp:381
 msgid "Step"
 msgstr "Шаг"
 
-#: ..\FloatingSandbox\MainFrame.cpp:300
+#: ..\FloatingSandbox\MainFrame.cpp:381
 msgid "Step one frame at a time"
 msgstr "Шаг один кадр за раз"
+
+#: ..\FloatingSandbox\SettingsDialog.cpp:4428
+msgid "Stickmen With Roles"
+msgstr ""
 
 #: ..\ShipBuilderLib\UI\MaterialPalette.cpp:591
 msgid "Stiffness"
@@ -3390,7 +3734,7 @@ msgstr "Жесткость"
 msgid "Stop"
 msgstr "Стоп"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1956
+#: ..\FloatingSandbox\SettingsDialog.cpp:2051
 msgid "Storms"
 msgstr "Шторм"
 
@@ -3398,25 +3742,25 @@ msgstr "Шторм"
 msgid "Strength"
 msgstr "Прочность"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:536
-#: ..\FloatingSandbox\SettingsDialog.cpp:1968
+#: ..\FloatingSandbox\SettingsDialog.cpp:557
+#: ..\FloatingSandbox\SettingsDialog.cpp:2063
 msgid "Strength Adjust"
 msgstr "Регулировка силы"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4688
+#: ..\FloatingSandbox\SettingsDialog.cpp:5114
 msgid "Strength Randomization"
 msgstr "Рандомизация прочности"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4354
+#: ..\FloatingSandbox\SettingsDialog.cpp:4584
 msgid "Stress Draw Options"
 msgstr "Варианты рисования стресса"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4349
+#: ..\FloatingSandbox\SettingsDialog.cpp:4579
 msgid "Stress Overlay"
 msgstr "Наложение стресса"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1112 ..\ShipBuilderLib\MainFrame.cpp:3062
-#: ..\ShipBuilderLib\MainFrame.cpp:3120
+#: ..\ShipBuilderLib\MainFrame.cpp:1117 ..\ShipBuilderLib\MainFrame.cpp:3119
+#: ..\ShipBuilderLib\MainFrame.cpp:3177
 msgid "Structural Layer"
 msgstr "Структурный слой"
 
@@ -3428,7 +3772,7 @@ msgstr "Файлы изображений только со структурой
 msgid "Success"
 msgstr "Успех"
 
-#: ..\FloatingSandbox\MainFrame.cpp:390
+#: ..\FloatingSandbox\MainFrame.cpp:445
 msgid "Swirl/Counterswirl"
 msgstr "Завихрение/противодействие"
 
@@ -3436,25 +3780,26 @@ msgstr "Завихрение/противодействие"
 msgid "Switch Type"
 msgstr "Тип переключателя"
 
-#: ..\FloatingSandbox\CreditsPanel.cpp:79
+#: ..\FloatingSandbox\CreditsPanel.cpp:89
 msgid "TESTING"
 msgstr "ТЕСТИРОВАНИЕ"
 
-#: ..\FloatingSandbox\CreditsPanel.cpp:98
+#: ..\FloatingSandbox\CreditsPanel.cpp:83
 msgid "TRANSLATION"
 msgstr "ПЕРЕВОД"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1136
-#: ..\FloatingSandbox\SettingsDialog.cpp:2240
+#: ..\FloatingSandbox\SettingsDialog.cpp:1180
+#: ..\FloatingSandbox\SettingsDialog.cpp:2340
 msgid "Temperature"
 msgstr "Температура"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4350
+#: ..\FloatingSandbox\SettingsDialog.cpp:4580
 msgid "Tension Overlay"
 msgstr "Наложение натяжения"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3790
-#: ..\FloatingSandbox\SettingsDialog.cpp:4145
+#: ..\FloatingSandbox\SettingsDialog.cpp:4042
+#: ..\FloatingSandbox\SettingsDialog.cpp:4419
+#: ..\FloatingSandbox\SettingsDialog.cpp:4867
 msgid "Texture"
 msgstr "Текстура"
 
@@ -3462,33 +3807,31 @@ msgstr "Текстура"
 msgid "Texture Credits"
 msgstr "Авторы на текстуру"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1118 ..\ShipBuilderLib\MainFrame.cpp:3268
-msgid "Texture Layer"
-msgstr "Слой текстуры"
-
-#: ..\FloatingSandbox\PreferencesDialog.cpp:837
+#: ..\FloatingSandbox\PreferencesDialog.cpp:890
 #: ..\ShipBuilderLib\UI\ShipPropertiesEditDialog.cpp:861
 msgid "Texture Magnification"
 msgstr "Увеличение текстуры"
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:864
+#: ..\FloatingSandbox\PreferencesDialog.cpp:919
 #: ..\ShipBuilderLib\UI\ShipPropertiesEditDialog.cpp:899
 msgid "Texture Transparency"
 msgstr "Прозрачность текстуры"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:3395
-msgid "Texture mode: view ship with texture."
+#: ..\ShipBuilderLib\MainFrame.cpp:3473
+#, fuzzy
+#| msgid "Texture mode: view ship with texture."
+msgid "Texture mode: view ship with exterior texture."
 msgstr "Режим текстуры: просмотр корабля с текстурой."
 
-#: ..\FloatingSandbox\MainFrame.cpp:430
+#: ..\FloatingSandbox\MainFrame.cpp:485
 msgid "Thanos' Snap"
 msgstr "Щелчок Таноса"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1648
+#: ..\FloatingSandbox\SettingsDialog.cpp:1719
 msgid "The amplitude of wind gusts, as a multiplier of the base wind speed."
 msgstr "Амплитуда порывов ветра как множитель базовой скорости ветра."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1598
+#: ..\FloatingSandbox\SettingsDialog.cpp:1669
 msgid ""
 "The base speed of wind (Km/h), before modulation takes place. Wind speed in "
 "turn determines ocean wave characteristics such as their height, speed, and "
@@ -3498,23 +3841,23 @@ msgstr ""
 "определяет характеристики океанских волн, такие как их высота, скорость и "
 "ширина."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1093
+#: ..\ShipBuilderLib\MainFrame.cpp:1098
 msgid ""
 "The current changes to the layer will be lost; are you sure you want to "
 "continue?"
 msgstr ""
 "Текущие изменения в слое будут потеряны; вы уверены, что хотите продолжить?"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2267
+#: ..\FloatingSandbox\SettingsDialog.cpp:2367
 msgid "The density of air bubbles generated when water enters a ship."
 msgstr ""
 "Плотность пузырьков воздуха, образующихся при попадании воды на корабль."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2466
+#: ..\FloatingSandbox\SettingsDialog.cpp:2577
 msgid "The duration of a full daylight cycle (minutes)."
 msgstr "Продолжительность полного светового дня (минуты)."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2073
+#: ..\FloatingSandbox\SettingsDialog.cpp:2168
 msgid "The duration of a storm (s)."
 msgstr "Продолжительность шторма (секунды)."
 
@@ -3590,7 +3933,7 @@ msgstr ""
 msgid "The electrical panel does not contain too many elements."
 msgstr "Электрическая панель не содержит слишком много элементов."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1922
+#: ..\FloatingSandbox\SettingsDialog.cpp:2011
 msgid ""
 "The expected time between two automatically-generated rogue waves (seconds). "
 "Set to zero to disable automatic generation of rogue waves altogether."
@@ -3599,7 +3942,7 @@ msgstr ""
 "(секунды). Установите значение \"ноль\", чтобы полностью отключить "
 "автоматическую генерацию случайных волн."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2099
+#: ..\FloatingSandbox\SettingsDialog.cpp:2194
 msgid ""
 "The expected time between two automatically-generated storms (minutes). Set "
 "to zero to disable automatic generation of storms altogether."
@@ -3607,7 +3950,7 @@ msgstr ""
 "Ожидаемое время между двумя автоматически созданными штормами (в минутах). "
 "Установите в ноль, чтобы полностью отключить автоматическое создание штормов."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1896
+#: ..\FloatingSandbox\SettingsDialog.cpp:1985
 msgid ""
 "The expected time between two automatically-generated tsunami waves "
 "(minutes). Set to zero to disable automatic generation of tsunami waves "
@@ -3617,15 +3960,15 @@ msgstr ""
 "минутах). Установите в ноль, чтобы полностью отключить автоматическое "
 "создание волн цунами."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3005
+#: ..\FloatingSandbox\SettingsDialog.cpp:3204
 msgid "The heat generated by bomb explosions (KJ/s)."
 msgstr "Тепло, выделяемое при взрывах бомб (кДж /с)."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3439
+#: ..\FloatingSandbox\SettingsDialog.cpp:3672
 msgid "The heat produced by the HeatBlaster tool (KJ/s)."
 msgstr "Тепло, выделяемое инструментом Тепловым Бластером (кДж/с)."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3247
+#: ..\FloatingSandbox\SettingsDialog.cpp:3467
 msgid "The heat produced by the laser ray (KJ/s)."
 msgstr "Тепло, выделяемое лазерным лучом (КДж/с)."
 
@@ -3646,19 +3989,27 @@ msgstr ""
 msgid "The level of detail of materials' textures"
 msgstr "Уровень детализации текстур материалов"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:867
+#: ..\FloatingSandbox\SettingsDialog.cpp:900
+#, fuzzy
+#| msgid ""
+#| "The maximum number of particles that may burn at any given moment in "
+#| "time; together with the combustion heat adjustment, determines the speed "
+#| "with which fire spreads to adjacent particles. Warning: higher values "
+#| "require more computing resources, with the risk of slowing the simulation "
+#| "down!"
 msgid ""
-"The maximum number of particles that may burn at any given moment in time; "
-"together with the combustion heat adjustment, determines the speed with "
-"which fire spreads to adjacent particles. Warning: higher values require "
-"more computing resources, with the risk of slowing the simulation down!"
+"The maximum number of particles that may burn at any given moment in time on "
+"a ship; together with the combustion heat adjustment, determines the speed "
+"with which fire spreads to adjacent particles. Warning: higher values "
+"require more computing resources, with the risk of slowing the simulation "
+"down!"
 msgstr ""
 "Максимальное количество частиц, которые могут гореть в любой момент времени; "
 "вместе с регулировкой теплоты сгорания определяет скорость, с которой огонь "
 "распространяется на соседние частицы. Предупреждение: более высокие значения "
 "требуют больше вычислительных ресурсов, что может замедлить симуляцию!"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2416
+#: ..\FloatingSandbox\SettingsDialog.cpp:2527
 msgid ""
 "The number of clouds in the world's sky. This is the total number of clouds "
 "in the world; at any moment in time, the number of clouds that are visible "
@@ -3668,45 +4019,53 @@ msgstr ""
 "момент времени количество видимых облаков будет меньше или равно этому "
 "значению."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2725
+#: ..\FloatingSandbox\SettingsDialog.cpp:2853
 msgid "The number of fishes in the ocean."
 msgstr "Количество рыб в океане."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2390
+#: ..\FloatingSandbox\SettingsDialog.cpp:2501
 msgid "The number of stars in the sky."
 msgstr "Количество звезд на небе."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1232
+#: ..\FloatingSandbox\SettingsDialog.cpp:1288
 msgid "The ocean depth (m)."
 msgstr "Глубина океана (метры)."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3413
+#: ..\FloatingSandbox\SettingsDialog.cpp:3646
 msgid "The radius of HeatBlaster tool (m)."
 msgstr "Радиус инструмента Тепловой Бластер (метры)."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2953
+#: ..\FloatingSandbox\SettingsDialog.cpp:3152
 msgid "The radius of bomb explosions (m)."
 msgstr "Радиус взрыва бомбы (метры)."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3158
+#: ..\FloatingSandbox\SettingsDialog.cpp:3371
 msgid "The radius of the blast tool (m)."
 msgstr "Радиус взрывного инструмента (метры)."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:5139
+#: ..\ShipBuilderLib\MainFrame.cpp:5242
 msgid "The selected ship does not have a ropes layer"
 msgstr "Выбранное судно не имеет слоя канатов"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:5159
+#: ..\ShipBuilderLib\MainFrame.cpp:5262
 msgid "The selected ship does not have a structural layer"
 msgstr "Выбранное судно не имеет структурного слоя"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:5180
-msgid "The selected ship does not have a texture layer"
-msgstr "Выбранный корабль не имеет слоя текстуры"
-
-#: ..\ShipBuilderLib\MainFrame.cpp:5118
+#: ..\ShipBuilderLib\MainFrame.cpp:5221
 msgid "The selected ship does not have an electrical layer"
 msgstr "Выбранное судно не имеет электрического слоя"
+
+#: ..\ShipBuilderLib\MainFrame.cpp:5283
+#, fuzzy
+#| msgid "The selected ship does not have a texture layer"
+msgid "The selected ship does not have an exterior layer"
+msgstr "Выбранный корабль не имеет слоя текстуры"
+
+#: ..\ShipBuilderLib\MainFrame.cpp:5301
+#, fuzzy
+#| msgid "The selected ship does not have a texture layer"
+msgid "The selected ship does not have an interior layer"
+msgstr "Выбранный корабль не имеет слоя текстуры"
 
 #: ..\ShipBuilderLib\UI\AskPasswordDialog.cpp:78
 msgid ""
@@ -3718,24 +4077,24 @@ msgid "The ship may not be saved unless the following error(s) are resolved:"
 msgstr ""
 "Корабль не может быть сохранен, пока не будет устранена следующая ошибка(и):"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1977 ..\ShipBuilderLib\MainFrame.cpp:2031
-#: ..\ShipBuilderLib\MainFrame.cpp:2512
+#: ..\ShipBuilderLib\MainFrame.cpp:2028 ..\ShipBuilderLib\MainFrame.cpp:2082
+#: ..\ShipBuilderLib\MainFrame.cpp:2565
 msgid "The size of the eraser tool."
 msgstr "Размер инструмента ластика."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:2085
+#: ..\ShipBuilderLib\MainFrame.cpp:2136
 msgid "The size of the line tool."
 msgstr "Размер линейного инструмента."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1923
+#: ..\ShipBuilderLib\MainFrame.cpp:1974
 msgid "The size of the pencil tool."
 msgstr "Размер инструмента \"карандаш\"."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:2173
+#: ..\ShipBuilderLib\MainFrame.cpp:2224
 msgid "The size of the rectangle tool's line."
 msgstr "Размер линии инструмента прямоугольника."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:5212
+#: ..\ShipBuilderLib\MainFrame.cpp:5332
 msgid ""
 "The specified texture image is empty, and thus it may not be used for this "
 "ship."
@@ -3743,7 +4102,7 @@ msgstr ""
 "Указанное изображение текстуры пустое, поэтому оно не может быть "
 "использовано для этого корабля."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3095
+#: ..\FloatingSandbox\SettingsDialog.cpp:3301
 msgid "The starting radius of the damage caused by destructive tools (m)."
 msgstr "Начальный радиус поражения разрушающими инструментами (метры)."
 
@@ -3770,11 +4129,11 @@ msgstr "Структурный слой не содержит слишком м�
 msgid "The structural layer is empty. Place at least one particle in it."
 msgstr "Структурный слой пуст. Поместите в него хотя бы одну частицу."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2241
+#: ..\FloatingSandbox\SettingsDialog.cpp:2341
 msgid "The temperature of air (K)."
 msgstr "Температура воздуха (К)."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1137
+#: ..\FloatingSandbox\SettingsDialog.cpp:1181
 msgid "The temperature of water (K)."
 msgstr "Температура воды (К)."
 
@@ -3790,15 +4149,17 @@ msgstr "The width of the canvas."
 msgid "Thermal Conductivity (W/(m*K))"
 msgstr "Теплопроводность (Вт/(м*К))"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:638
+#: ..\FloatingSandbox\SettingsDialog.cpp:953
 msgid "Thermal Conductivity Adjust"
 msgstr "Регулировка теплопроводности"
 
 #: ..\ShipBuilderLib\UI\MaterialPalette.cpp:603
-msgid "Thermal Expansion Coefficient (1/K)"
+#, fuzzy
+#| msgid "Thermal Expansion Coefficient (1/K)"
+msgid "Thermal Expansion Coefficient (1/MK)"
 msgstr "Коэффициент теплового расширения (1/K)"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:626
+#: ..\FloatingSandbox\SettingsDialog.cpp:941
 msgid "Thermodynamics"
 msgstr "Термодинамика"
 
@@ -3812,7 +4173,7 @@ msgstr ""
 "Этот файл не является действительным файлом корабля - он может быть "
 "поврежден или испорчен."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4800
+#: ..\FloatingSandbox\SettingsDialog.cpp:5232
 msgid ""
 "This setting is for testing physical instability of the mass-spring network "
 "with different damping values; it is not meant for improving the rigidity of "
@@ -3822,7 +4183,7 @@ msgstr ""
 "масса-пружина с различными значениями демпфирования; он не предназначен для "
 "улучшения жесткости физических тел."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4772
+#: ..\FloatingSandbox\SettingsDialog.cpp:5204
 msgid ""
 "This setting is for testing physical instability of the mass-spring network "
 "with high stiffness values; it is not meant for improving the rigidity of "
@@ -3859,33 +4220,33 @@ msgstr ""
 "Этот корабль был создан в более новой версии Floating Sandbox, и он не может "
 "быть загружен в этой версии. Обновите Floating Sandbox до новейшей версии."
 
-#: ..\UILib\ShipLoadDialog.cpp:188
+#: ..\UILib\ShipLoadDialog.cpp:184
 msgid "This ship is password-protected for editing."
 msgstr "Этот корабль защищен паролем для редактирования."
 
-#: ..\FloatingSandbox\CreditsPanel.cpp:74
+#: ..\FloatingSandbox\CreditsPanel.cpp:75
 msgid ""
 "This software is licensed to Mattia, Elia, and all the others kids in the "
 "world!"
 msgstr "Лицензия для Маттиа, Элии и всех остальных детей мира!"
 
-#: ..\FloatingSandbox\MainFrame.cpp:425
+#: ..\FloatingSandbox\MainFrame.cpp:480
 msgid "Toggle Anti-Matter Bomb"
 msgstr "Антиматериальная бомба"
 
-#: ..\FloatingSandbox\MainFrame.cpp:420
+#: ..\FloatingSandbox\MainFrame.cpp:475
 msgid "Toggle Impact Bomb"
 msgstr "Граната"
 
-#: ..\FloatingSandbox\MainFrame.cpp:470
+#: ..\FloatingSandbox\MainFrame.cpp:529
 msgid "Toggle Physics Probe"
 msgstr "Переключить физический зонд"
 
-#: ..\FloatingSandbox\MainFrame.cpp:395
+#: ..\FloatingSandbox\MainFrame.cpp:450
 msgid "Toggle Pin"
 msgstr "Прицепить булавку (гвоздик)"
 
-#: ..\FloatingSandbox\MainFrame.cpp:415
+#: ..\FloatingSandbox\MainFrame.cpp:470
 msgid "Toggle RC Bomb"
 msgstr "Радиоуправляемая бомба"
 
@@ -3893,11 +4254,11 @@ msgstr "Радиоуправляемая бомба"
 msgid "Toggle Switch"
 msgstr "Перекидной переключатель"
 
-#: ..\FloatingSandbox\MainFrame.cpp:410
+#: ..\FloatingSandbox\MainFrame.cpp:465
 msgid "Toggle Timer Bomb"
 msgstr "Бомба с таймером"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:2349
+#: ..\ShipBuilderLib\MainFrame.cpp:2400
 msgid "Tolerance:"
 msgstr "Толерантность:"
 
@@ -3905,11 +4266,11 @@ msgstr "Толерантность:"
 msgid "Too many attempts, aborting."
 msgstr "Слишком много попыток, прерывание."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1893
+#: ..\ShipBuilderLib\MainFrame.cpp:1944
 msgid "Tool Settings"
 msgstr "Настройки инструмента"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:4588
+#: ..\FloatingSandbox\SettingsDialog.cpp:5008
 msgid "Tools Volume"
 msgstr "Громкость инструментов"
 
@@ -3917,11 +4278,11 @@ msgstr "Громкость инструментов"
 msgid "Total Damage"
 msgstr "Общий ущерб"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3940
+#: ..\FloatingSandbox\SettingsDialog.cpp:4192
 msgid "Transparency"
 msgstr "Прозрачность"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:2661
+#: ..\ShipBuilderLib\MainFrame.cpp:2717
 msgid "Transparent:"
 msgstr "Прозрачный:"
 
@@ -3929,23 +4290,23 @@ msgstr "Прозрачный:"
 msgid "Triangles"
 msgstr "Треугольники"
 
-#: ..\FloatingSandbox\MainFrame.cpp:504
+#: ..\FloatingSandbox\MainFrame.cpp:562
 msgid "Trigger Lightning"
 msgstr "Ударить молнией"
 
-#: ..\FloatingSandbox\MainFrame.cpp:495
+#: ..\FloatingSandbox\MainFrame.cpp:553
 msgid "Trigger Rogue Wave"
 msgstr "Вызвать волну"
 
-#: ..\FloatingSandbox\MainFrame.cpp:499
+#: ..\FloatingSandbox\MainFrame.cpp:557
 msgid "Trigger Storm"
 msgstr "Вызвать шторм"
 
-#: ..\FloatingSandbox\MainFrame.cpp:491
+#: ..\FloatingSandbox\MainFrame.cpp:549
 msgid "Trigger Tsunami"
 msgstr "Вызвать цунами"
 
-#: ..\ShipBuilderLib\Controller.cpp:967
+#: ..\ShipBuilderLib\Controller.cpp:1053
 msgid "Trim"
 msgstr "Отклонение"
 
@@ -3962,9 +4323,13 @@ msgstr "Отклонение:"
 msgid "True"
 msgstr "Включить"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1895
+#: ..\FloatingSandbox\SettingsDialog.cpp:1984
 msgid "Tsunami Rate"
 msgstr "Сила цунами"
+
+#: ..\FloatingSandbox\MainFrame.cpp:617
+msgid "Turnaround NPC"
+msgstr ""
 
 #: ..\ShipBuilderLib\UI\MaterialPalette.cpp:710
 msgid "Type"
@@ -3978,11 +4343,11 @@ msgstr "Введите новый пароль"
 msgid "Type your new password:"
 msgstr "Введите свой новый пароль:"
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:608
+#: ..\FloatingSandbox\PreferencesDialog.cpp:661
 msgid "USCS"
 msgstr "USCS"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:699
+#: ..\FloatingSandbox\SettingsDialog.cpp:732
 msgid "Ultra-Violent Mode"
 msgstr "Ультра-жестокий режим"
 
@@ -3991,15 +4356,15 @@ msgid "Under Construction"
 msgstr "В процессе строительства"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:294
-#: ..\ShipBuilderLib\MainFrame.cpp:1526 ..\ShipBuilderLib\MainFrame.cpp:1537
+#: ..\ShipBuilderLib\MainFrame.cpp:1577 ..\ShipBuilderLib\MainFrame.cpp:1588
 msgid "Undo"
 msgstr "Отменить"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1543
+#: ..\ShipBuilderLib\MainFrame.cpp:1594
 msgid "Undo the last edit operation (Ctrl+Z)."
 msgstr "Отмена последней операции редактирования (Ctrl+Z)."
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:590
+#: ..\FloatingSandbox\PreferencesDialog.cpp:643
 msgid "Units system:"
 msgstr "Система единиц измерения:"
 
@@ -4015,28 +4380,28 @@ msgstr "Используйте глобальные настройки авто�
 msgid "Use the global auto-texturization settings."
 msgstr "Используйте глобальные настройки автотекстурирования."
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:372
+#: ..\FloatingSandbox\PreferencesDialog.cpp:425
 msgid "User Interface"
 msgstr "Пользовательский интерфейс"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1862
+#: ..\ShipBuilderLib\MainFrame.cpp:1913
 msgid "Validation"
 msgstr "Проверка"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:5010
+#: ..\FloatingSandbox\SettingsDialog.cpp:5448
 msgid "Vector Field Draw Options"
 msgstr "Параметры рисования векторного поля"
 
 # Правильно
-#: ..\FloatingSandbox\SettingsDialog.cpp:5003
+#: ..\FloatingSandbox\SettingsDialog.cpp:5441
 msgid "Velocities"
 msgstr "Точечная скорость"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:926
+#: ..\ShipBuilderLib\MainFrame.cpp:931
 msgid "View"
 msgstr "Посмотреть"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1198
+#: ..\ShipBuilderLib\MainFrame.cpp:1216
 msgid "View the structure as it is rendered by the simulator."
 msgstr ""
 "Просмотрите структуру в том виде, в котором она отображается в симуляторе."
@@ -4049,14 +4414,14 @@ msgstr ""
 "ПРЕДУПРЕЖДЕНИЕ! Эти настройки вступят в силу только после перезапуска "
 "симулятора !!!"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:5258
-#: ..\FloatingSandbox\SettingsDialog.cpp:5295
-#: ..\FloatingSandbox\SettingsDialog.cpp:5449
+#: ..\FloatingSandbox\SettingsDialog.cpp:5802
+#: ..\FloatingSandbox\SettingsDialog.cpp:5843
+#: ..\FloatingSandbox\SettingsDialog.cpp:6009
 msgid "Warning"
 msgstr "Предупреждение"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:989
-#: ..\FloatingSandbox\SettingsDialog.cpp:4400
+#: ..\FloatingSandbox\SettingsDialog.cpp:1033
+#: ..\FloatingSandbox\SettingsDialog.cpp:4760
 msgid "Water"
 msgstr "Вода"
 
@@ -4064,11 +4429,11 @@ msgstr "Вода"
 msgid "Water Inflow"
 msgstr "Приток воды"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1267
+#: ..\FloatingSandbox\SettingsDialog.cpp:1329
 msgid "Water Ingress"
 msgstr "Попадание воды"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:5007
+#: ..\FloatingSandbox\SettingsDialog.cpp:5445
 msgid "Water Momenta"
 msgstr "Водяные Импульсы"
 
@@ -4076,7 +4441,7 @@ msgstr "Водяные Импульсы"
 msgid "Water Pump"
 msgstr "Водяная помпа"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:2649
+#: ..\FloatingSandbox\SettingsDialog.cpp:2771
 msgid "Water Pump Power Adjust"
 msgstr "Мощность водяного насоса"
 
@@ -4084,7 +4449,7 @@ msgstr "Мощность водяного насоса"
 msgid "Water Switch"
 msgstr "Переключатель воды"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:5006
+#: ..\FloatingSandbox\SettingsDialog.cpp:5444
 msgid "Water Velocities"
 msgstr "Скорости Воды"
 
@@ -4092,7 +4457,7 @@ msgstr "Скорости Воды"
 msgid "Water and Ocean"
 msgstr "Вода и океан"
 
-#: ..\ShipBuilderLib\MainFrame.cpp:1831
+#: ..\ShipBuilderLib\MainFrame.cpp:1882
 msgid "Waterline"
 msgstr "Ватерлиния"
 
@@ -4108,11 +4473,11 @@ msgstr "Водонепроницаемая дверь"
 msgid "Watertight Factor"
 msgstr "Фактор водонепроницаемости"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1883
+#: ..\FloatingSandbox\SettingsDialog.cpp:1972
 msgid "Wave Phenomena"
 msgstr "Волновые явления"
 
-#: ..\FloatingSandbox\MainFrame.cpp:435
+#: ..\FloatingSandbox\MainFrame.cpp:490
 msgid "WaveMaker"
 msgstr "Создатель волн"
 
@@ -4124,7 +4489,7 @@ msgstr "Добро пожаловать!"
 msgid "What's the name of your new ship?"
 msgstr "Как называется ваш новый корабль?"
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:800
+#: ..\FloatingSandbox\PreferencesDialog.cpp:853
 msgid ""
 "When a ship does not have a high-definition image, generates one using "
 "material-specific textures. Changes to this setting will only be visible "
@@ -4134,7 +4499,7 @@ msgstr ""
 "использованием текстур, специфичных для материала. Изменения в этой "
 "настройке будут видны только после загрузки следующего судна."
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:792
+#: ..\FloatingSandbox\PreferencesDialog.cpp:845
 msgid ""
 "When a ship does not have a high-definition image, generates one using the "
 "materials' matte colors. Changes to this setting will only be visible after "
@@ -4144,7 +4509,7 @@ msgstr ""
 "использованием матовых цветов материалов. Изменения этого параметра будут "
 "видны только после загрузки следующего корабля."
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:908
+#: ..\FloatingSandbox\PreferencesDialog.cpp:965
 msgid ""
 "When checked, the game starts with the ship that had been loaded when the "
 "game was last played."
@@ -4152,11 +4517,11 @@ msgstr ""
 "Если этот флажок установлен, игра начинается с корабля, который был загружен "
 "при последней игре."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:2114
+#: ..\ShipBuilderLib\MainFrame.cpp:2165
 msgid "When enabled, draw lines with pixel edges touching each other."
 msgstr "Если включено, рисует линии с краями пикселей, касающимися друг друга."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:2675
+#: ..\ShipBuilderLib\MainFrame.cpp:2731
 msgid ""
 "When enabled, empty regions are pasted as transparent; otherwise, empty "
 "regions are pasted as opaque and will erase anything on the background."
@@ -4165,7 +4530,7 @@ msgstr ""
 "противном случае пустые области вставляются как непрозрачные и стирают все, "
 "что находится на фоне."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:2419
+#: ..\ShipBuilderLib\MainFrame.cpp:2470
 msgid ""
 "When enabled, the contours of erased background color regions are anti-"
 "aliased in order to minimize the appearance of jagged lines."
@@ -4173,7 +4538,7 @@ msgstr ""
 "Если эта функция включена, контуры областей со стертым цветом фона "
 "сглаживаются, чтобы минимизировать появление неровных линий."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:2562
+#: ..\ShipBuilderLib\MainFrame.cpp:2617
 msgid ""
 "When enabled, the selection affects all layers instead of just the current "
 "layer."
@@ -4181,20 +4546,20 @@ msgstr ""
 "Если эта функция включена, выделение затрагивает все слои, а не только "
 "текущий слой."
 
-#: ..\ShipBuilderLib\MainFrame.cpp:2209
+#: ..\ShipBuilderLib\MainFrame.cpp:2260
 msgid "Which material to fill the rectangle with."
 msgstr "Каким материалом заполнить прямоугольник."
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1722
+#: ..\FloatingSandbox\SettingsDialog.cpp:1799
 msgid "Width Adjust"
 msgstr "Регулировка ширины волн"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1562
+#: ..\FloatingSandbox\SettingsDialog.cpp:1633
 msgid "Wind"
 msgstr "Ветер"
 
 #: ..\FloatingSandbox\ProbePanel.cpp:39
-#: ..\FloatingSandbox\SettingsDialog.cpp:3734
+#: ..\FloatingSandbox\SettingsDialog.cpp:3980
 msgid "Wind Speed"
 msgstr "Скорость Ветра"
 
@@ -4202,15 +4567,15 @@ msgstr "Скорость Ветра"
 msgid "Wind and Waves"
 msgstr "Ветер и волны"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3735
+#: ..\FloatingSandbox\SettingsDialog.cpp:3981
 msgid "Wind speed conjured by the WindMaker tool (Km/h)."
 msgstr "Скорость ветра, рассчитанная инструментом Поток Воздуха (км/ч)."
 
-#: ..\FloatingSandbox\MainFrame.cpp:440
+#: ..\FloatingSandbox\MainFrame.cpp:495
 msgid "WindMaker"
 msgstr "Поток Воздуха"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:3706
+#: ..\FloatingSandbox\SettingsDialog.cpp:3951
 msgid "WindMaker Tool"
 msgstr "Инструмент Поток Воздуха"
 
@@ -4230,22 +4595,25 @@ msgstr "Да"
 msgid "Yes, I want to use the suggested name"
 msgstr "Да, я хочу использовать предложенное имя"
 
-#: ..\FloatingSandbox\SettingsDialog.cpp:1569
+#: ..\FloatingSandbox\SettingsDialog.cpp:1640
 msgid "Zero"
 msgstr "Ноль"
 
-#: ..\FloatingSandbox\MainFrame.cpp:253 ..\ShipBuilderLib\MainFrame.cpp:937
+#: ..\FloatingSandbox\MainFrame.cpp:299 ..\ShipBuilderLib\MainFrame.cpp:942
 msgid "Zoom In"
 msgstr "Увеличить"
 
-#: ..\FloatingSandbox\PreferencesDialog.cpp:403
-#: ..\FloatingSandbox\PreferencesDialog.cpp:418
+#: ..\FloatingSandbox\PreferencesDialog.cpp:456
+#: ..\FloatingSandbox\PreferencesDialog.cpp:471
 msgid "Zoom Increment"
 msgstr "Увеличение масштаба"
 
-#: ..\FloatingSandbox\MainFrame.cpp:259 ..\ShipBuilderLib\MainFrame.cpp:963
+#: ..\FloatingSandbox\MainFrame.cpp:305 ..\ShipBuilderLib\MainFrame.cpp:968
 msgid "Zoom Out"
 msgstr "Уменьшить"
+
+#~ msgid "Texture Layer"
+#~ msgstr "Слой текстуры"
 
 #~ msgid "Simulation Quality"
 #~ msgstr "Качество Моделирования"
@@ -4344,9 +4712,6 @@ msgstr "Уменьшить"
 
 #~ msgid "Water Density Adjust"
 #~ msgstr "Плотность воды"
-
-#~ msgid "Water Friction Drag Adjust"
-#~ msgstr "Регулировка сопротивления водному трению"
 
 #~ msgid "Wave Speed Adjust"
 #~ msgstr "Скорость волн"
