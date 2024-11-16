@@ -619,7 +619,18 @@ v			+ FixedSetSliderCore
 			+ Shader
 				+ Basic
 
-	- ShipBuilder: see issue with copy'n'paste of electrical materials losing instance ID
+	+ ShipBuilder: see issue with copy'n'paste of electrical materials losing instance ID
+		! Repro: Copy (instanced), paste+commit, Copy it, paste+commit, Undo
+			! ModelController::RestoreElectricalRegion: dupe instance ID
+			! Note: problem is NOT in panel, but in electrical elements' instance IDs
+			! Problem is: we don't renumber instance IDs in buffer at Paste 
+				! i.e. at element operator in ModelController::Paste
+				! Because element operator does not update instance ID in buffer
+		+ Fix:
+			+ DoElectricalRegionBufferPaste's operator returns electrical element by value
+			+ Caller (Paste) returns modified electrical element
+		! No other cases seems like
+			
 
 	- Add more music:
 		- Background:

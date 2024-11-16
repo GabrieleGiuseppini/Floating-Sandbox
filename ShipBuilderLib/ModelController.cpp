@@ -615,7 +615,7 @@ GenericUndoPayload ModelController::Paste(
                 sourcePayload.ElectricalLayer->Buffer,
                 affectedSourceRegion,
                 actualPasteOriginShip,
-                [isTransparent, this, &sourcePayload](ElectricalElement const & src, ElectricalElement const & dst) -> ElectricalElement const &
+                [isTransparent, this, &sourcePayload](ElectricalElement const & src, ElectricalElement const & dst) -> ElectricalElement
                 {
                     // Take care of deletion of old
                     if (dst.Material != nullptr && (src.Material != nullptr || !isTransparent))
@@ -643,6 +643,8 @@ GenericUndoPayload ModelController::Paste(
                         // See whether new is instanced
                         if (src.InstanceIndex != NoneElectricalElementInstanceIndex)
                         {
+                            // Source is instanced
+
                             // Register new instance ID
                             auto newInstanceIndex = mInstancedElectricalElementSet.IsRegistered(src.InstanceIndex)
                                 ? mInstancedElectricalElementSet.Add(src.Material) // Rename
@@ -655,12 +657,21 @@ GenericUndoPayload ModelController::Paste(
                                     newInstanceIndex,
                                     sourcePayload.ElectricalLayer->Panel[src.InstanceIndex]);
                             }
+
+                            return ElectricalElement(
+                                src.Material,
+                                newInstanceIndex);
+                        }
+                        else
+                        {
+                            return src;
                         }
                     }
-
-                    return isTransparent
-                        ? (src.Material ? src : dst)
-                        : src;
+                    else
+                    {
+                        // No source: if transparent, return dst
+                        return isTransparent ? dst : src;
+                    }
                 });
 
             assert(static_cast<size_t>(std::count_if(
@@ -3590,7 +3601,7 @@ void ModelController::DoElectricalRegionBufferPaste(
     typename LayerTypeTraits<LayerType::Electrical>::buffer_type const & sourceBuffer,
     ShipSpaceRect const & sourceRegion,
     ShipSpaceCoordinates const & targetCoordinates,
-    std::function<ElectricalElement const &(ElectricalElement const &, ElectricalElement const &)> elementOperator)
+    std::function<ElectricalElement(ElectricalElement const &, ElectricalElement const &)> elementOperator)
 {
     assert(mModel.HasLayer(LayerType::Electrical));
 

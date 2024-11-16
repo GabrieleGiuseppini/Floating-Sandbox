@@ -12,6 +12,7 @@
 	- ...mostly spurred from a lot of development in this area due to NPC work
 - Added "Guide Mode" to Terrain Adjust tool: keep SHIFT pressed and you'll be able to draw terrain along straight lines
 - Added new "Tungsten" material - the heaviest in Floating Sandbox's library!
+- Fixed a ShipBuilder bug that was messing up copy-and-paste of electrical elements
 - ...and a few more small improvements here and there!
 - Musical theme for this release: Carbon Based Lifeforms, entire discography
 

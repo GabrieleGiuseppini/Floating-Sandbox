@@ -654,7 +654,7 @@ private:
         typename LayerTypeTraits<LayerType::Electrical>::buffer_type const & sourceBuffer,
         ShipSpaceRect const & sourceRegion,
         ShipSpaceCoordinates const & targetCoordinates,
-        std::function<ElectricalElement const &(ElectricalElement const &, ElectricalElement const &)> elementOperator);
+        std::function<ElectricalElement(ElectricalElement const &, ElectricalElement const &)> elementOperator);
 
     void DoRopesRegionBufferPaste(
         typename LayerTypeTraits<LayerType::Ropes>::buffer_type const & sourceBuffer,
