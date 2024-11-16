@@ -630,17 +630,18 @@ v			+ FixedSetSliderCore
 			+ DoElectricalRegionBufferPaste's operator returns electrical element by value
 			+ Caller (Paste) returns modified electrical element
 		! No other cases seems like
-			
 
-	- Add more music:
-		- Background:
-			+ "Symmetry" - Kevin MacLeod (incompetech.com)			
-			- "Shadowlands 5 - Antechamber" - Kevin MacLeod (incompetech.com)
-			- https://www.scottbuckley.com.au/library/soul-searcher/
-			- https://www.scottbuckley.com.au/library/intervention/
-		- Buy new track for farewell: https://www.pond5.com/royalty-free-music/item/204959560-nearer-my-god-thee
+	+ Send for final testing
+		+ Send localization files
+	+ Bump up version			
 
 	- Ubuntu preparation
+		- Build
+		- Test
+			- NPCs
+			- All indexed rendering
+			- Flames
+			- Clouds
 
 	- Release prep:
 		- Ships:
@@ -660,23 +661,54 @@ v			+ FixedSetSliderCore
 						- Bends too much, asked
 					- Check shipbuckets credits for all
 					- Make .shp2 for all
+					+ Already in credits
 				
 			- All Discord's
 				= Bright mammooth - ⁵⁵𝐓𝐡𝐞 𝟐𝟒𝐭𝐡_𝐃𝐨𝐜𝐭𝐨𝐫-𝟏𝟗𝟐𝟐⁵⁵#1963
 					+ Asked name: doctor1922
 					- Add to credits
-				- https://discord.com/channels/@me/1128107472129896568/1259012624524247098
-				- All these: https://discord.com/channels/559822257275404307/562030667198758913/1124472062308778184
-				- And these: https://discord.com/channels/559822257275404307/561385586355732503/1272069465244176424
+				+ https://discord.com/channels/@me/1128107472129896568/1259012624524247098
+				+ All these: https://discord.com/channels/559822257275404307/562030667198758913/1124472062308778184
+
+				- Results:
+					- Takara:
+						- Test Takara's: _TO_TRY, Takara - Ships for Gab.zip
+						- See if we had already replaced Egg Carrier structure - _TO_TRY
+					- KV Mauvmellow - 1912:
+						- Test R.V.S. Velouria: _TO_TRY
+						+ Asked credits: KV Mauvmellow - 1912
+					- Splayer
+						- Test U.S.S. San Francisco (CA-38): _TO_TRY
+						- Asked credits
+					- MatthewAnderson
+						- Test all: _TO_TRY/MatthewAnderson
+						+ Already in credits
+					- Last batch FWed by TimCan:
+						- Test all: _TO_TRY/FromTimCan
+							- Add each one to credits
+					- Techo:
+						- Test all: _TO_TRY/Techo
+						+ Already in credits
+					- DKUZ:
+						- Test all: _TO_TRY/DKUZ
+						+ Already in credits
+					- Kiko:
+						- Test all: _TO_TRY/Kiko
+						+ Already in credits
+					- Bartosz1944PL 
+						- Test: _TO_TRY/Bartosz1944PL
+						- Asked credits
 		
 			- _TO_TEST:
 				- Saturn V (Ur local brazilian#0842, aka Transportation Fan - already in credits)
 				- "Hellooping" in _TO_TEST
 					+ Guy is already credited		
-				- R.V.S. Velouria
-					- Is it from Discord?
 				- Maximum 4 (desktop)
 					- Is it from Discord?
+
+			- Remove:
+				- See screenshot @ desktop
+					- Test Kurks and Hesleden and Francianic on old Dell
 		
 		= Localization:
 			+ Change two help files to remove stuff we've removed and add stuff we haven't localized
@@ -711,6 +743,7 @@ v			+ FixedSetSliderCore
 					- Test:
 						- Copyright @ Credits
 						- NPC menu
+					- LOCALIZATION credits: add Dkuz 
 			- UK:
 				- PO
 				- Two helps
@@ -725,6 +758,15 @@ v			+ FixedSetSliderCore
 		- Delete my Ubuntu 18 VM way after next release
 
 	===========================
+
+	- Add more music:
+		- Background:
+			+ "Symmetry" - Kevin MacLeod (incompetech.com)			
+			- "Shadowlands 5 - Antechamber" - Kevin MacLeod (incompetech.com)
+			- https://www.scottbuckley.com.au/library/soul-searcher/
+			- https://www.scottbuckley.com.au/library/intervention/
+		- Buy new track for farewell: https://www.pond5.com/royalty-free-music/item/204959560-nearer-my-god-thee
+
 
 	- Consider invoking World::Upload from render thread (via RenderContext, as func<>, *synchronously*)
 		- So that may upload to GPU buffers directly (or at XYZEnd()), instead of local temp buffers
@@ -765,7 +807,8 @@ v			+ FixedSetSliderCore
 		- Responsible for half of loading time
 
 	- Render glowing particles after burning
-		- Ship points rendering: temperature attribute should be enough; swap rot with temperature?
+		- Ship points rendering: temperature attribute should be enough for new code in shader
+			- TODOOLD: swap rot with temperature?
 			- Do we still see browned particles?
 
 	- Redo timer bomb
@@ -1136,6 +1179,18 @@ v			+ FixedSetSliderCore
 		- Types
 
 - Suggestions to spec:
+
+	- Explosions improvements:
+		- (Kiko) For explosions, i think the "blast wave" could follow along the decks instead of spreading out in a circle
+			- Escape via holes
+				- Note that the above is about external vs. internal explosions
+				- Explosive particles that come with the ship cause internal explosions, while bombs placed by the player cause external explosions
+			- Also damage structure
+				- Ideally by bending only
+		- And for explosive materials, instead of each particle exploding individually, i think they should combine and form a single larger explosion
+	- Choice for flames: inside vs outside
+		- Inside won't extinguish with water
+		- Inside could damage the structure but not the hull
 	- Northern lights
 	- Heat bomb
 		- Just heat
