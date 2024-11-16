@@ -678,33 +678,47 @@ v			+ FixedSetSliderCore
 				- Maximum 4 (desktop)
 					- Is it from Discord?
 		
-		- Localization:
+		= Localization:
 			+ Change two help files to remove stuff we've removed and add stuff we haven't localized
 			+ Prepare po's
-			- Prepare text files with NPC json
-				- RU
-				- UK
-				- ES
-			- IT:
-				- PO
-					- Fix: Storms-Strength Adjust is Resistenza (probably because of materials as well)
-						- Change it to "Power Adjust"
-							- "Potenza"
-						- See if there are others
-				- Two helps
-				- NPC json
+			+ Prepare text files with NPC json
+				+ ES
+				+ RU
+				+ UK
+			+ IT:
+				+ PO
+					+ Fix: Storms-Strength Adjust is Resistenza (probably because of materials as well)
+						+ Change it to "Power Adjust"
+							+ "Potenza"
+				+ Two helps
+				+ When done:
+					+ Test:
+						+ Storm strength vs. sping strength adjust
+						+ Copyright @ Credits
 			- ES:
 				- PO
 				- Two helps // Joadix had noticed bugs
 				- NPC json
+				- When done:
+					- Test:
+						- Copyright @ Credits
+						- NPC menu
 			- RU:
 				- PO
 				- Two helps
 				- NPC json
+				- When done:
+					- Test:
+						- Copyright @ Credits
+						- NPC menu
 			- UK:
 				- PO
 				- Two helps
 				- NPC json
+				- When done:
+					- Test:
+						- Copyright @ Credits
+						- NPC menu
 
 	- After next release:
 		- Update GameJolt to say Ubuntu 20.04

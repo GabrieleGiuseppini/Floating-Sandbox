@@ -2833,6 +2833,12 @@ msgstr ""
 msgid "Power (HP)"
 msgstr "Poder (HP)"
 
+#: ..\FloatingSandbox\SettingsDialog.cpp:2063
+#, fuzzy
+#| msgid "Force Adjust"
+msgid "Power Adjust"
+msgstr "Ajuste de fuerza"
+
 #: ..\ShipBuilderLib\UI\MaterialPalette.cpp:849
 msgid "Power Monitor"
 msgstr "Monitor de poder"
@@ -3758,7 +3764,6 @@ msgid "Strength"
 msgstr "Fuerza"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:557
-#: ..\FloatingSandbox\SettingsDialog.cpp:2063
 msgid "Strength Adjust"
 msgstr "Ajuste de fuerza"
 

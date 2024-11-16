@@ -2060,7 +2060,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
-                    _("Strength Adjust"),
+                    _("Power Adjust"),
                     _("Adjusts the strength of storms."),
                     [this](float value)
                     {

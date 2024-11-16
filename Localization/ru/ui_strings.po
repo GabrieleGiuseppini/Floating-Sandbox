@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Floating Sandbox\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-11-16 21:22+0100\n"
+"PO-Revision-Date: 2024-11-16 22:05+0100\n"
 "Last-Translator: Gabriele Giuseppini <gabrielegiuseppini@gmail.com>\n"
 "Language-Team: Ilya Voloshin; Roman Shavernew (DioxCode)\n"
 "Language: ru\n"
@@ -2823,6 +2823,12 @@ msgstr ""
 msgid "Power (HP)"
 msgstr "Мощность (HP)"
 
+#: ..\FloatingSandbox\SettingsDialog.cpp:2063
+#, fuzzy
+#| msgid "Force Adjust"
+msgid "Power Adjust"
+msgstr "Регулировка силы"
+
 #: ..\ShipBuilderLib\UI\MaterialPalette.cpp:849
 msgid "Power Monitor"
 msgstr "Монитор питания"
@@ -3743,7 +3749,6 @@ msgid "Strength"
 msgstr "Прочность"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:557
-#: ..\FloatingSandbox\SettingsDialog.cpp:2063
 msgid "Strength Adjust"
 msgstr "Регулировка силы"
 
