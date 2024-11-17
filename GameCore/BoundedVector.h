@@ -129,13 +129,13 @@ public:
         }
     }
 
-    inline [[nodiscard]] TElement & emplace_back_ghost()
+    [[nodiscard]] inline TElement & emplace_back_ghost()
     {
         assert(mSize < mAllocatedSize);
         return mBuffer[mSize++];
     }
 
-    inline [[nodiscard]] TElement & emplace_back_ghost(size_t elementCount)
+    [[nodiscard]] inline TElement & emplace_back_ghost(size_t elementCount)
     {
         assert(mSize + elementCount <= mAllocatedSize);
         auto & res = mBuffer[mSize];
