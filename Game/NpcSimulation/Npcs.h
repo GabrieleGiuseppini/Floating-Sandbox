@@ -1883,6 +1883,6 @@ private:
 #endif
 };
 
-template <> struct is_flag<Npcs::NpcInitializationOptions> : std::true_type {};
-
 }
+
+template <> struct is_flag<Physics::Npcs::NpcInitializationOptions> : std::true_type {};
