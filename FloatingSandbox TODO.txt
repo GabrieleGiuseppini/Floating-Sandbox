@@ -767,7 +767,7 @@ v			+ FixedSetSliderCore
 					- LOCALIZATION credits: add Dkuz 
 			- UK:
 				- PO
-				- Two helps
+				+ Two helps
 				- NPC json
 				- When done:
 					- Test:
