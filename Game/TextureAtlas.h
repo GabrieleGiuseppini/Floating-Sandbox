@@ -38,7 +38,11 @@ enum class AtlasOptions
     SuppressDuplicates = 8
 };
 
-template <> struct ::is_flag<Render::AtlasOptions> : std::true_type {};
+}
+
+template <> struct is_flag<Render::AtlasOptions> : std::true_type {};
+
+namespace Render {
 
 /*
  * Metadata about one single frame in a texture atlas.
