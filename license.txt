@@ -1,5 +1,8 @@
 ﻿© Gabriele Giuseppini 2018-2021; based upon Luke Wren's original work © Luke Wren 2013. Licensed under the Creative Commons Attribution 4.0 International license, http://creativecommons.org/licenses/by/4.0/.
 
+You CAN build the game, learn from the source code, and play with it.
+You CAN NOT distribute any of the deliverables that you build from this repository.
+
 Contains extra work from diverse authors, including artwork from The Shipbucket Project (shipbucket.com).
 We took great care in ensuring all extra work in this simulator is either for free use or licensed under the Creative Commons license, and we did our best to credit all authors of such work in the simulator's "About" window and/or in individual Ship files.
 If you believe a work of yours has been unlawfully included in the game, or you believe you should be credited for a work of yours, then please get in touch with the developers via the contact form at floatingsandbox.com, and we will promptly apologize and take corrective actions.

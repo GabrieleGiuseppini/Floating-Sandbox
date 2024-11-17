@@ -639,7 +639,7 @@ v			+ FixedSetSliderCore
 		+ Root bug is: we don't update mInstancedElectricalElementSet when we write over same particle but different material
 			+ Fix at WriteParticle
 			+ See if others exist
-		- Changelist
+		+ Changelist
 	
 	- Ubuntu preparation
 		- Build
@@ -649,8 +649,8 @@ v			+ FixedSetSliderCore
 			- Flames
 			- Clouds
 
-	- Release prep:
-		- Ships:
+	= Release prep:
+		= Ships:
 			+ FS email
 				! From Sean Dempsey
 					+ R.M.S. Centennial
@@ -716,6 +716,8 @@ v			+ FixedSetSliderCore
 				- QHM
 				- Ha-Ha Hans
 			- Cleanup all installed Ships folders, re-copy, and test
+			- Run ship verification script
+			- Changelist
 			+ Undo code change for password checks
 		
 		= Localization:
