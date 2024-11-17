@@ -635,8 +635,8 @@ v			+ FixedSetSliderCore
 		+ Send localization files
 	+ Bump up version
 
-	= Fix electrical panel labels after editing material		
-		= Root bug is: we don't update mInstancedElectricalElementSet when we write over same particle but different material
+	+ Fix electrical panel labels after editing material		
+		+ Root bug is: we don't update mInstancedElectricalElementSet when we write over same particle but different material
 			+ Fix at WriteParticle
 			+ See if others exist
 		- Changelist
@@ -706,11 +706,8 @@ v			+ FixedSetSliderCore
 					+ Guy is already credited		
 				- U.S.S. Maximum 4 in _TO_TEST
 					- Is it from Discord?
-				- All others in folder
-
-			- Remove:
-				- See screenshot @ desktop
-					- Test Kurks and Hesleden and Francianic on old Dell
+			+ Remove:
+				+ See screenshot @ desktop
 			- Credits:
 				- scdem
 				- doctor1922
