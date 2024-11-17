@@ -1112,13 +1112,13 @@ private:
 		assert(particleMesh.Particles.size() >= 2);
 		ElementIndex p1 = particleMesh.Particles[particleEndpoint1].ParticleIndex;
 		ElementIndex p2 = particleMesh.Particles[particleEndpoint2].ParticleIndex;
-		for (int s = 0; s < particleMesh.Springs.size(); ++s)
+		for (size_t s = 0; s < particleMesh.Springs.size(); ++s)
 		{
 			auto const & spring = particleMesh.Springs[s];
 			if ((spring.EndpointAIndex == p1 && spring.EndpointBIndex == p2)
 				|| (spring.EndpointBIndex == p1 && spring.EndpointAIndex == p2))
 			{
-				return s;
+				return static_cast<int>(s);
 			}
 		}
 
@@ -1678,7 +1678,7 @@ private:
 		StateType const & npc,
 		Ship const & homeShip)
 	{
-		for (auto p = 0; p < npc.ParticleMesh.Particles.size(); ++p)
+		for (size_t p = 0; p < npc.ParticleMesh.Particles.size(); ++p)
 		{
 			auto const & particle = npc.ParticleMesh.Particles[p];
 			if (particle.ConstrainedState.has_value())
@@ -1700,7 +1700,7 @@ private:
 		StateType const & npc,
 		Ship const & homeShip)
 	{
-		for (auto p = 0; p < npc.ParticleMesh.Particles.size(); ++p)
+		for (size_t p = 0; p < npc.ParticleMesh.Particles.size(); ++p)
 		{
 			auto const & particle = npc.ParticleMesh.Particles[p];
 			if (particle.ConstrainedState.has_value())

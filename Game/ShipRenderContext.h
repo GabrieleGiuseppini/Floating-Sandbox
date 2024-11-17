@@ -225,7 +225,7 @@ public:
 
     void UploadNpcsStart(size_t maxQuadCount);
 
-    Quad [[nodiscard]] & UploadNpcPosition()
+    [[nodiscard]] Quad & UploadNpcPosition()
     {
         return mNpcPositionBuffer.emplace_back_ghost();
     }
