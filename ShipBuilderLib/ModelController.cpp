@@ -3095,6 +3095,9 @@ void ModelController::WriteParticle(
 
             // ...keep old instanceIndex
             instanceIndex = oldElement.InstanceIndex;
+
+            // Update (in case it's different)
+            mInstancedElectricalElementSet.Replace(instanceIndex, material);
         }
     }
 

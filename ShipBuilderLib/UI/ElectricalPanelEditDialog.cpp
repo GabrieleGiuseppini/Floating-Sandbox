@@ -153,24 +153,29 @@ void ElectricalPanelEditDialog::ShowModal(
     ElectricalPanel const & originalElectricalPanel)
 {
     //
-    // Create own electrical panel, fully populated
+    // Create own electrical panel, fully populated with all elements
+    // (as opposed to current electrical panel, which might not have
+    //  all elements)
     //
 
     ElectricalPanel electricalPanel = originalElectricalPanel;
 
     for (auto const & elementEntry : instancedElectricalElementSet.GetElements())
     {
+        auto const label = elementEntry.second->MakeInstancedElementLabel(elementEntry.first);
+
+        // Add element if not in pane;
         auto [it, isInserted] = electricalPanel.TryAdd(
             elementEntry.first,
             ElectricalPanel::ElementMetadata(
                 std::nullopt,
-                elementEntry.second->MakeInstancedElementLabel(elementEntry.first),
+                label,
                 false)); // Not hidden by default
 
-        // If we had it already, make sure there's a label
+        // If we had it already, make sure at least it has a label
         if (!isInserted && !it->second.Label.has_value())
         {
-            it->second.Label = elementEntry.second->MakeInstancedElementLabel(elementEntry.first);
+            it->second.Label = label;
         }
     }
 

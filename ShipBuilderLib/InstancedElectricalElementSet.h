@@ -51,7 +51,9 @@ public:
         return newIndex;
     }
 
-    ElectricalElementInstanceIndex Register(ElectricalElementInstanceIndex instanceIndex, ElectricalMaterial const * material)
+    ElectricalElementInstanceIndex Register(
+        ElectricalElementInstanceIndex instanceIndex,
+        ElectricalMaterial const * material)
     {
         assert(mInstanceMap.count(instanceIndex) == 0);
         assert(nullptr != material);
@@ -84,6 +86,16 @@ public:
         {
             mFirstFreeInstanceIndex = freedIndex;
         }
+    }
+
+    void Replace(
+        ElectricalElementInstanceIndex instanceIndex,
+        ElectricalMaterial const * material)
+    {
+        auto it = mInstanceMap.find(instanceIndex);
+        assert(it != mInstanceMap.end());
+
+        it->second = material;
     }
 
     void Reset()

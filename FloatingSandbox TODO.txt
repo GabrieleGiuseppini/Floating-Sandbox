@@ -633,8 +633,14 @@ v			+ FixedSetSliderCore
 
 	+ Send for final testing
 		+ Send localization files
-	+ Bump up version			
+	+ Bump up version
 
+	= Fix electrical panel labels after editing material		
+		= Root bug is: we don't update mInstancedElectricalElementSet when we write over same particle but different material
+			+ Fix at WriteParticle
+			+ See if others exist
+		- Changelist
+	
 	- Ubuntu preparation
 		- Build
 		- Test
@@ -645,70 +651,75 @@ v			+ FixedSetSliderCore
 
 	- Release prep:
 		- Ships:
-			= FS email
+			+ FS email
 				! From Sean Dempsey
 					+ R.M.S. Centennial
 					+ H.M.H.S. Imagination
 					+ S.S. Dempsey
-					- Lamps?
-					- Asked credits
-					- Add to credits
+					+ Lamps?
+					X Asked credits
 				! From Dimitry Warin (aka Helooping)
 					+ Galeb
 					+ Lamartine
 					+ Transilvania
-					- Xia Zhi Yuan 6
-						- Bends too much, asked
-					- Check shipbuckets credits for all
-					- Make .shp2 for all
-					+ Already in credits
-				
-			- All Discord's
-				= Bright mammooth - ⁵⁵𝐓𝐡𝐞 𝟐𝟒𝐭𝐡_𝐃𝐨𝐜𝐭𝐨𝐫-𝟏𝟗𝟐𝟐⁵⁵#1963
+					+ Check shipbuckets credits for all
+					+ Make .shp2 for all
+					+ Already in credits				
+			= All Discord's
+				+ Bright mammooth - ⁵⁵𝐓𝐡𝐞 𝟐𝟒𝐭𝐡_𝐃𝐨𝐜𝐭𝐨𝐫-𝟏𝟗𝟐𝟐⁵⁵#1963
 					+ Asked name: doctor1922
-					- Add to credits
 				+ https://discord.com/channels/@me/1128107472129896568/1259012624524247098
 				+ All these: https://discord.com/channels/559822257275404307/562030667198758913/1124472062308778184
+				-  #contest-entries
 
 				- Results:
-					- Takara:
-						- Test Takara's: _TO_TRY, Takara - Ships for Gab.zip
-						- See if we had already replaced Egg Carrier structure - _TO_TRY
-					- KV Mauvmellow - 1912:
-						- Test R.V.S. Velouria: _TO_TRY
+					+ Takara:
+						+ Test Takara's: _TO_TRY, Takara - Ships for Gab.zip
+						+ See if we had already replaced Egg Carrier structure - _TO_TRY
+					+ KV Mauvmellow - 1912:
+						+ Test R.V.S. Velouria: _TO_TRY
 						+ Asked credits: KV Mauvmellow - 1912
-					- Splayer
-						- Test U.S.S. San Francisco (CA-38): _TO_TRY
+					X Splayer
+						X Test U.S.S. San Francisco (CA-38): _TO_TRY
+							X Too big
+						+ Asked credits: "Splayer"
+					+ MatthewAnderson
+						+ Test all: _TO_TRY/MatthewAnderson
+						+ Already in credits
+					+ Last batch FWed by TimCan:
+						+ Test all: _TO_TRY/FromTimCan
+					+ Techo:
+						+ Test all: _TO_TRY/Techo
+						+ Already in credits
+					+ DKUZ:
+						+ Test all: _TO_TRY/DKUZ
+						+ Already in credits
+					= Bartosz1944PL 
+						+ Test: _TO_TRY/Bartosz1944PL
 						- Asked credits
-					- MatthewAnderson
-						- Test all: _TO_TRY/MatthewAnderson
-						+ Already in credits
-					- Last batch FWed by TimCan:
-						- Test all: _TO_TRY/FromTimCan
-							- Add each one to credits
-					- Techo:
-						- Test all: _TO_TRY/Techo
-						+ Already in credits
-					- DKUZ:
-						- Test all: _TO_TRY/DKUZ
-						+ Already in credits
-					- Kiko:
-						- Test all: _TO_TRY/Kiko
-						+ Already in credits
-					- Bartosz1944PL 
-						- Test: _TO_TRY/Bartosz1944PL
-						- Asked credits
+						- Move to final
 		
-			- _TO_TEST:
-				- Saturn V (Ur local brazilian#0842, aka Transportation Fan - already in credits)
-				- "Hellooping" in _TO_TEST
+			= _TO_TEST:
+				+ JU 87 B-2 by Ha-Ha Hans
+				+ Saturn V (Ur local brazilian#0842, aka Transportation Fan - already in credits)
+				+ "Hellooping" in _TO_TEST
 					+ Guy is already credited		
-				- Maximum 4 (desktop)
+				- U.S.S. Maximum 4 in _TO_TEST
 					- Is it from Discord?
+				- All others in folder
 
 			- Remove:
 				- See screenshot @ desktop
 					- Test Kurks and Hesleden and Francianic on old Dell
+			- Credits:
+				- scdem
+				- doctor1922
+				- KV Mauvmellow
+				- Ventrix
+				- QHM
+				- Ha-Ha Hans
+			- Cleanup all installed Ships folders, re-copy, and test
+			+ Undo code change for password checks
 		
 		= Localization:
 			+ Change two help files to remove stuff we've removed and add stuff we haven't localized
