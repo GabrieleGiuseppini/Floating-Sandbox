@@ -26,18 +26,6 @@ public:
     template<typename TColor>
     static ImageData<TColor> LoadImageFile(std::filesystem::path const & filepath);
 
-    template<>
-    static ImageData<rgbaColor> LoadImageFile<rgbaColor>(std::filesystem::path const & filepath)
-    {
-        return LoadImageRgba(filepath);
-    }
-
-    template<>
-    static ImageData<rgbColor> LoadImageFile<rgbColor>(std::filesystem::path const & filepath)
-    {
-        return LoadImageRgb(filepath);
-    }
-
     static RgbaImageData LoadImageRgba(std::filesystem::path const & filepath);
     static RgbImageData LoadImageRgb(std::filesystem::path const & filepath);
 

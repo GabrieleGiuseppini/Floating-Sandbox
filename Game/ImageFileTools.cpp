@@ -52,6 +52,18 @@ ImageSize ImageFileTools::GetImageSize(std::filesystem::path const & filepath)
     return ImageSize(width, height);
 }
 
+template<>
+ImageData<rgbaColor> ImageFileTools::LoadImageFile<rgbaColor>(std::filesystem::path const & filepath)
+{
+    return LoadImageRgba(filepath);
+}
+
+template<>
+ImageData<rgbColor> ImageFileTools::LoadImageFile<rgbColor>(std::filesystem::path const & filepath)
+{
+    return LoadImageRgb(filepath);
+}
+
 RgbaImageData ImageFileTools::LoadImageRgba(std::filesystem::path const & filepath)
 {
     return InternalLoadImage<rgbaColor>(
