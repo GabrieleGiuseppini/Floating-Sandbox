@@ -1,4 +1,4 @@
-﻿© Gabriele Giuseppini 2018-2021; based upon Luke Wren's original work © Luke Wren 2013. Licensed under the Creative Commons Attribution 4.0 International license, http://creativecommons.org/licenses/by/4.0/.
+﻿© Gabriele Giuseppini (G2-Labs) 2018-2024; based upon Luke Wren's original work © Luke Wren 2013. Licensed under the Creative Commons Attribution 4.0 International license, http://creativecommons.org/licenses/by/4.0/.
 
 You CAN build the game, learn from the source code, and play with it.
 You CAN NOT distribute any of the deliverables that you build from this repository.
