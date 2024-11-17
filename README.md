@@ -55,6 +55,7 @@ And even with all of this, the simulator still adapts itself to the characterist
 	- OpenGL 2.1 or later, MESA drivers are fine
 	- OpenAL, Vorbis and FLAC
 		- Many Linux distributions now use Wayland for their desktop environments, and Floating Sandbox will encounter an error when launching. To rectify this, set the environment variable "GDK_BACKEND" to "x11"
+	- Note: the game has been built and tested only on Ubuntu 20.04
 
 <img src="https://i.imgur.com/6LOVsqX.jpg">
 
