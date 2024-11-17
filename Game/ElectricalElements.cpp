@@ -1328,7 +1328,7 @@ void ElectricalElements::UpdateEngineConductivity(
                                     engineState.EngineGroup = engineGroupIndex;
                                     engineState.EngineConnectivityVisitSequenceNumber = newConnectivityVisitSequenceNumber;
 
-                                    // Store reference point - we take use arbitrarily this point (e) as it's "incoming" to the engine,
+                                    // Store reference point - we take arbitrarily this point (e) as it's "incoming" to the engine,
                                     // and we know for a fact that it's not deleted
                                     {
                                         ElementIndex const enginePointIndex = GetPointIndex(ce);
