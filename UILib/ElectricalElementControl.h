@@ -612,8 +612,8 @@ private:
     {
         return centerPoint
             + wxPoint(
-                handLength * std::cos(angle),
-                -handLength * std::sin(angle));
+                handLength * std::cosf(angle),
+                -handLength * std::sinf(angle));
     }
 
     void OnPaint(wxPaintEvent & event);
@@ -769,7 +769,7 @@ private:
         // 0 -> -1.0
         // EngineControllerTelegraphDegreesOfFreedom / 2 -> 0.0
         // MaxValue (EngineControllerTelegraphDegreesOfFreedom - 1) -> 1.0
-        
+
         return (static_cast<float>(telegraphValue) - static_cast<float>(GameParameters::EngineControllerTelegraphDegreesOfFreedom / 2))
             / static_cast<float>(GameParameters::EngineControllerTelegraphDegreesOfFreedom / 2);
     }
@@ -905,7 +905,7 @@ private:
     wxBitmap const mDisabledHandleImage;
     wxPoint const mCenterPoint;
     float const mYExtent;
-    
+
     std::function<void(float)> mOnControllerUpdated;
 
     // Current state
@@ -1068,7 +1068,7 @@ private:
     wxBitmap const mOnDisabledImage;
     wxBitmap const mOffDisabledImage;
 
-    std::function<void(float)> mOnControllerUpdated;    
+    std::function<void(float)> mOnControllerUpdated;
 
     // Current state
     float mCurrentValue;

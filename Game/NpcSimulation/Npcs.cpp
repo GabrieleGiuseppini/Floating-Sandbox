@@ -3833,7 +3833,7 @@ void Npcs::UpdateNpcAnimation(
         // Angle of human wrt edge until which arm is angled to the max
         // (extent of early stage during rising)
         float constexpr MaxHumanEdgeAngleForArms = 0.40489178628508342331207292900944f;
-        //static_assert(MaxHumanEdgeAngleForArms == std::atan(GameParameters::HumanNpcGeometry::ArmLengthFraction / (1.0f - GameParameters::HumanNpcGeometry::HeadLengthFraction)));
+        //static_assert(MaxHumanEdgeAngleForArms == std::atanf(GameParameters::HumanNpcGeometry::ArmLengthFraction / (1.0f - GameParameters::HumanNpcGeometry::HeadLengthFraction)));
 
         switch (humanNpcState.CurrentBehavior)
         {
@@ -3848,11 +3848,11 @@ void Npcs::UpdateNpcAnimation(
                         ) * (1.0f + humanNpcState.ResultantPanicLevel * 0.2f)
                     * (Pi<float> *2.0f + npc.RandomNormalizedUniformSeed * 4.0f);
 
-                float const yArms = std::sin(arg);
+                float const yArms = std::sinf(arg);
                 targetAngles.RightArm = Pi<float> / 2.0f + Pi<float> / 2.0f * 0.7f * yArms;
                 targetAngles.LeftArm = -targetAngles.RightArm;
 
-                float const yLegs = std::sin(arg + npc.RandomNormalizedUniformSeed * Pi<float> *2.0f);
+                float const yLegs = std::sinf(arg + npc.RandomNormalizedUniformSeed * Pi<float> *2.0f);
                 targetAngles.RightLeg = (1.0f + yLegs) / 2.0f * Pi<float> / 2.0f * 0.3f;
                 targetAngles.LeftLeg = -targetAngles.RightLeg;
 
@@ -4104,7 +4104,7 @@ void Npcs::UpdateNpcAnimation(
                 // Add some dependency on walking speed
                 float const actualWalkingSpeed = CalculateActualHumanWalkingAbsoluteSpeed(humanNpcState);
                 float const MaxLegAngle =
-                    0.41f // std::atan((GameParameters::HumanNpcGeometry::StepLengthFraction / 2.0f) / GameParameters::HumanNpcGeometry::LegLengthFraction)
+                    0.41f // std::atanf((GameParameters::HumanNpcGeometry::StepLengthFraction / 2.0f) / GameParameters::HumanNpcGeometry::LegLengthFraction)
                     * std::sqrt(actualWalkingSpeed * 0.9f);
 
                 adjustedStandardHumanHeight = npc.ParticleMesh.Springs[0].RestLength;

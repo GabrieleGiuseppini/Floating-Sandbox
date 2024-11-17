@@ -320,7 +320,7 @@ inline float SmootherStep(
 
 inline float InverseSmoothStep(float x) noexcept
 {
-    return 0.5f - std::sin(std::asin(1.0f - 2.0f * x) / 3.0f);
+    return 0.5f - std::sinf(std::asinf(1.0f - 2.0f * x) / 3.0f);
 }
 
 /*

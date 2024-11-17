@@ -204,7 +204,7 @@ static void TopN_TemporallyCoherentPriorityQueue_AddCoherently(benchmark::State&
     {
         for (int64_t i = 0; i < state.range(0); ++i)
         {
-            float delta = 1.0f * std::sin(static_cast<float>(i) + static_cast<float>(phase / 10.0f));
+            float delta = 1.0f * std::sinf(static_cast<float>(i) + static_cast<float>(phase / 10.0f));
             results.add_or_update(static_cast<ElementIndex>(i), static_cast<float>(i) + delta);
         }
 

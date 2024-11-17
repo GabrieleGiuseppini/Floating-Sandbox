@@ -1361,8 +1361,8 @@ void ElectricalElements::UpdateEngineConductivity(
 
                                         // Store in engine state
                                         engineState.ReferencePointIndex = referencePointIndex;
-                                        engineState.ReferencePointCWAngleCos = std::cos(engineCWAngle);
-                                        engineState.ReferencePointCWAngleSin = std::sin(engineCWAngle);
+                                        engineState.ReferencePointCWAngleCos = std::cosf(engineCWAngle);
+                                        engineState.ReferencePointCWAngleSin = std::sinf(engineCWAngle);
                                     }
 
                                     // Add to queue
@@ -2621,7 +2621,7 @@ void ElectricalElements::UpdateSinks(
 
                         // Sine perturbation - to make sure that water displacement keeps moving,
                         // otherwise big waves build up
-                        float const sinePerturbation = std::sin(currentSimulationTime * 2.5f);
+                        float const sinePerturbation = std::sinf(currentSimulationTime * 2.5f);
 
                         // Displacement amount - goes to zero after a certain depth threshold
                         float constexpr MaxDepth = 10.0f;

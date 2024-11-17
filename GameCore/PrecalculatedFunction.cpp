@@ -10,5 +10,5 @@
 PrecalculatedFunction<512> const PrecalcLoFreqSin(
     [](float x)
     {
-        return std::sin(2.0f * Pi<float> * x);
+        return std::sinf(2.0f * Pi<float> * x);
     });

@@ -641,7 +641,11 @@ v			+ FixedSetSliderCore
 			+ See if others exist
 		+ Changelist
 	
-	- Ubuntu preparation
+	= Ubuntu preparation
+		= Upgrade
+			- Change Readme for version
+			- Change Ubuntu instructions for version and gcc version
+			- Change mention here below
 		- Build
 		- Test
 			- NPCs
@@ -671,6 +675,8 @@ v			+ FixedSetSliderCore
 				+ https://discord.com/channels/@me/1128107472129896568/1259012624524247098
 				+ All these: https://discord.com/channels/559822257275404307/562030667198758913/1124472062308778184
 				-  #contest-entries
+					- https://discord.com/channels/925233659118755842/1290838947777478758, all in _TO_TRY already, have to chase owners we don't know
+						- Check if dupes
 
 				- Results:
 					+ Takara:
@@ -696,6 +702,11 @@ v			+ FixedSetSliderCore
 						+ Already in credits
 					= Bartosz1944PL 
 						+ Test: _TO_TRY/Bartosz1944PL
+						- Asked credits
+						- Move to final
+					- TheCochu444yt
+						= Test: _TO_TRY/Lorotanic
+							- Asked which version
 						- Asked credits
 						- Move to final
 		

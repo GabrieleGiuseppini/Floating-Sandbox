@@ -172,7 +172,7 @@ void Fishes::Upload(Render::RenderContext & renderContext) const
             horizontalScale,
             species.TailX,
             species.TailSwingWidth,
-            std::sin(fish.CurrentTailProgressPhase));
+            std::sinf(fish.CurrentTailProgressPhase));
     }
 
     renderContext.UploadFishesEnd();
@@ -660,7 +660,7 @@ void Fishes::UpdateDynamics(
             {
                 fish.CurrentPosition +=
                     fish.CurrentRenderVector
-                    * (1.0f + std::sin(2.0f * fish.CurrentTailProgressPhase))
+                    * (1.0f + std::sinf(2.0f * fish.CurrentTailProgressPhase))
                     * (1.0f + fish.PanicCharge) // Grow incisiveness with panic
                     / 150.0f; // Magic number
             }

@@ -71,7 +71,7 @@ void ShipStrengthRandomizer::RandomizeStrength_Perlin(std::vector<ShipFactoryPoi
 
     auto const gradientVectorAt = [](float x, float y) -> vec2f // Always positive
     {
-        float const arg = (1.0f + std::sin(x * (x * 12.9898f + y * 78.233f))) * 43758.5453f;
+        float const arg = (1.0f + std::sinf(x * (x * 12.9898f + y * 78.233f))) * 43758.5453f;
         float const random = arg - std::floor(arg);
         return vec2f(random, random);
     };

@@ -1018,8 +1018,8 @@ public:
         vec2f const & vector,
         float lengthAdjustment)
     {
-        static float const CosAlphaLeftRight = std::cos(-2.f * Pi<float> / 8.f);
-        static float const SinAlphaLeft = std::sin(-2.f * Pi<float> / 8.f);
+        static float const CosAlphaLeftRight = std::cosf(-2.f * Pi<float> / 8.f);
+        static float const SinAlphaLeft = std::sinf(-2.f * Pi<float> / 8.f);
         static float const SinAlphaRight = -SinAlphaLeft;
 
         static vec2f const XMatrixLeft = vec2f(CosAlphaLeftRight, SinAlphaLeft);
@@ -1123,8 +1123,8 @@ public:
         vec2f const & endPoint,
         rgbColor const & color)
     {
-        static float const CosAlphaLeftRight = std::cos(-2.f * Pi<float> / 8.f);
-        static float const SinAlphaLeft = std::sin(-2.f * Pi<float> / 8.f);
+        static float const CosAlphaLeftRight = std::cosf(-2.f * Pi<float> / 8.f);
+        static float const SinAlphaLeft = std::sinf(-2.f * Pi<float> / 8.f);
         static float const SinAlphaRight = -SinAlphaLeft;
 
         static vec2f const XMatrixLeft = vec2f(CosAlphaLeftRight, SinAlphaLeft);
