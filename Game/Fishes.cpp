@@ -1350,7 +1350,7 @@ vec2f Fishes::ChoosePosition(
 
     float const positionY =
         -5.0f // Min depth
-        - std::fabs(GameRandomEngine::GetInstance().GenerateNormalReal(averagePosition.y, yVariance));
+        - std::abs(GameRandomEngine::GetInstance().GenerateNormalReal(averagePosition.y, yVariance));
 
     return vec2f(positionX, positionY);
 }
