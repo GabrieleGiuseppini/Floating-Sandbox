@@ -644,9 +644,7 @@ v			+ FixedSetSliderCore
 	= Ubuntu preparation
 		+ Upgrade
 		+ Install gcc 14
-		- Start clean with 24.04
-		- Follow whole template
-		- Build
+		= Build
 		- Test
 			- NPCs
 			- All indexed rendering
@@ -654,7 +652,8 @@ v			+ FixedSetSliderCore
 			- Clouds
 		- Change Readme for version
 		- Change Ubuntu instructions for version and gcc version
-		- Change mention here below
+		- Change mention below in this file
+		- Rename VirtualBox image and nuke old Ubuntu
 
 	= Release prep:
 		= Ships:

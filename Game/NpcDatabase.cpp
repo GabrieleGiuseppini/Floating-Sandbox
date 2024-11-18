@@ -386,7 +386,7 @@ NpcDatabase::FurnitureSubKind NpcDatabase::ParseFurnitureSubKind(
     ParticleMeshKindType const particleMeshKind = StrToParticleMeshKindType(
         Utils::GetMandatoryJsonMember<std::string>(particleMeshObject, "kind"));
 
-    int particleCount = 0;
+    size_t particleCount = 0;
     FurnitureGeometryType geometry{ 0.0f, 0.0f };
     switch (particleMeshKind)
     {
