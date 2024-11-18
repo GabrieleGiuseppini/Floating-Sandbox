@@ -21,7 +21,7 @@ public:
         : mValues(std::move(values))
     {
         assert(mValues.size() >= 2);
-        for (int i = 0; i < mValues.size() - 1; ++i)
+        for (size_t i = 0; i < mValues.size() - 1; ++i)
         {
             assert(mValues[i] < mValues[i + 1]);
         }
@@ -57,18 +57,18 @@ public:
 
     int ValueToTick(TValue value) const override
     {
-        for (int i = 0; i < mValues.size() - 1; ++i)
+        for (size_t i = 0; i < mValues.size() - 1; ++i)
         {
             if (value < mValues[i + 1])
             {
                 // Find closest
                 if ((value - mValues[i]) < (mValues[i + 1] - value))
                 {
-                    return i;
+                    return static_cast<int>(i);
                 }
                 else
                 {
-                    return i+1;
+                    return static_cast<int>(i + 1);
                 }
             }
         }

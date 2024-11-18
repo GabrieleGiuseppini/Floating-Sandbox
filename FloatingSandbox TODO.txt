@@ -647,6 +647,7 @@ v			+ FixedSetSliderCore
 		= Build
 		- Rebuild new VM from scratch
 			- Update instructions as you go		
+		- Run unit tests
 		- Test
 			- NPCs
 			- All indexed rendering

@@ -181,7 +181,7 @@ void WorkbenchState::LoadPreferences()
             mShipLoadDirectories.clear();
 
             auto shipLoadDirectories = shipLoadDirectoriesIt->second.get<picojson::array>();
-            for (auto const shipLoadDirectory : shipLoadDirectories)
+            for (auto const & shipLoadDirectory : shipLoadDirectories)
             {
                 if (shipLoadDirectory.is<std::string>())
                 {
