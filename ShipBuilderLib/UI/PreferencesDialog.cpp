@@ -3,7 +3,7 @@
  * Created:             2022-06-20
  * Copyright:           Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
  ***************************************************************************************/
-#include "UI/PreferencesDialog.h"
+#include "PreferencesDialog.h"
 
 #include <UILib/WxHelpers.h>
 
@@ -256,9 +256,9 @@ PreferencesDialog::PreferencesDialog(
         buttonsSizer->AddSpacer(Margin);
 
         dialogVSizer->Add(
-            buttonsSizer, 
-            0, 
-            wxALIGN_CENTER_HORIZONTAL, 
+            buttonsSizer,
+            0,
+            wxALIGN_CENTER_HORIZONTAL,
             0);
     }
 

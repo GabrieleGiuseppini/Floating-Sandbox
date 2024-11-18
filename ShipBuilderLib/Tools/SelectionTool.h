@@ -5,8 +5,9 @@
 ***************************************************************************************/
 #pragma once
 
-#include "SelectionManager.h"
 #include "Tool.h"
+
+#include "../SelectionManager.h"
 
 #include <Game/ResourceLocator.h>
 

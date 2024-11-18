@@ -3,10 +3,10 @@
  * Created:             2021-10-20
  * Copyright:           Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
  ***************************************************************************************/
-#include "UI/ShipPropertiesEditDialog.h"
+#include "ShipPropertiesEditDialog.h"
 
-#include "UI/NewPasswordDialog.h"
-#include "UI/ShipNameSuggestionDialog.h"
+#include "NewPasswordDialog.h"
+#include "ShipNameSuggestionDialog.h"
 
 #include <UILib/WxHelpers.h>
 

@@ -5,7 +5,7 @@
  ***************************************************************************************/
 #pragma once
 
-#include "ShipNameNormalizer.h"
+#include "../ShipNameNormalizer.h"
 
 #include <Game/ResourceLocator.h>
 

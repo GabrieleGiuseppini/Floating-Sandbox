@@ -5,9 +5,10 @@
  ***************************************************************************************/
 #pragma once
 
-#include "Controller.h"
-#include "ShipNameNormalizer.h"
 #include "ShipOffsetVisualizationControl.h"
+
+#include "../Controller.h"
+#include "../ShipNameNormalizer.h"
 
 #include <UILib/BitmapRadioButton.h>
 #include <UILib/EditSpinBox.h>

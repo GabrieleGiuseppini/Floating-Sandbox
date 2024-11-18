@@ -5,10 +5,10 @@
  ***************************************************************************************/
 #pragma once
 
-#include "UI/ElectricalPanelLayoutControl.h"
+#include "ElectricalPanelLayoutControl.h"
 
-#include "Controller.h"
-#include "InstancedElectricalElementSet.h"
+#include "../Controller.h"
+#include "../InstancedElectricalElementSet.h"
 
 #include <Game/Layers.h>
 #include <Game/ResourceLocator.h>

@@ -5,10 +5,11 @@
  ***************************************************************************************/
 #pragma once
 
-#include "IModelObservable.h"
-#include "IUserInterface.h"
-#include "View.h"
 #include "WaterlineAnalysisOutcomeVisualizationControl.h"
+
+#include "../IModelObservable.h"
+#include "../IUserInterface.h"
+#include "../View.h"
 #include "WaterlineAnalyzer.h"
 
 #include <Game/ResourceLocator.h>

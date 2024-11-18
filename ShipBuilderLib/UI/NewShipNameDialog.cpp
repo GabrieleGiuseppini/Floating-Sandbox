@@ -5,7 +5,7 @@
  ***************************************************************************************/
 #include "NewShipNameDialog.h"
 
-#include "UI/ShipNameSuggestionDialog.h"
+#include "ShipNameSuggestionDialog.h"
 
 #include <GameCore/Utils.h>
 

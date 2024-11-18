@@ -5,13 +5,13 @@
 ***************************************************************************************/
 #pragma once
 
-#include "GameEventDispatcher.h"
-#include "GameParameters.h"
-#include "NpcDatabase.h"
-#include "Physics.h"
-#include "RenderContext.h"
-#include "RenderTypes.h"
-#include "VisibleWorld.h"
+#include "../GameEventDispatcher.h"
+#include "../GameParameters.h"
+#include "../NpcDatabase.h"
+#include "../Physics.h"
+#include "../RenderContext.h"
+#include "../RenderTypes.h"
+#include "../VisibleWorld.h"
 
 #include <GameCore/BarycentricCoords.h>
 #include <GameCore/ElementIndexRangeIterator.h>

@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #include "TextureEraserTool.h"
 
-#include "Controller.h"
+#include "../Controller.h"
 
 #include <GameCore/GameGeometry.h>
 

@@ -5,9 +5,9 @@
  ***************************************************************************************/
 #pragma once
 
-#include "Controller.h"
-#include "ModelValidationResults.h"
-#include "ModelValidationSession.h"
+#include "../Controller.h"
+#include "../ModelValidationResults.h"
+#include "../ModelValidationSession.h"
 
 #include <Game/ResourceLocator.h>
 

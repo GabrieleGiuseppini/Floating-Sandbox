@@ -28,8 +28,7 @@ source_group("glad" FILES ${GLAD_SOURCES})
 
 add_library (GameOpenGLLib ${SOURCES} ${GLAD_SOURCES})
 
-get_filename_component(PARENT_DIR ../ ABSOLUTE)
-target_include_directories(GameOpenGLLib INTERFACE ${PARENT_DIR})
+target_include_directories(GameOpenGLLib INTERFACE ..)
 
 target_link_libraries (GameOpenGLLib
 	GameCoreLib

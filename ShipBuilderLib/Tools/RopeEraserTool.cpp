@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #include "RopeEraserTool.h"
 
-#include <Controller.h>
+#include "../Controller.h"
 
 #include <UILib/WxHelpers.h>
 

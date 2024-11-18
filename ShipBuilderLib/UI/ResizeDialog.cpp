@@ -5,7 +5,7 @@
  ***************************************************************************************/
 #include "ResizeDialog.h"
 
-#include "WorkbenchState.h"
+#include "../WorkbenchState.h"
 
 #include <UILib/WxHelpers.h>
 

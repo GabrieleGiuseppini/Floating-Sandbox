@@ -3,7 +3,7 @@
  * Created:             2022-04-04
  * Copyright:           Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
  ***************************************************************************************/
-#include "UI/ElectricalPanelEditDialog.h"
+#include "ElectricalPanelEditDialog.h"
 
 #include <UILib/WxHelpers.h>
 

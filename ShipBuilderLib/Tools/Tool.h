@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include "ShipBuilderTypes.h"
+#include "../ShipBuilderTypes.h"
 
 #include <GameCore/GameTypes.h>
 

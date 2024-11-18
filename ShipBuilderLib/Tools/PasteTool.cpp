@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #include "PasteTool.h"
 
-#include <Controller.h>
+#include "../Controller.h"
 
 #include "GameCore/GameMath.h"
 

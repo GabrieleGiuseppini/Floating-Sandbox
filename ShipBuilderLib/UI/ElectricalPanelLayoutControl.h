@@ -5,7 +5,7 @@
  ***************************************************************************************/
 #pragma once
 
-#include "InstancedElectricalElementSet.h"
+#include "../InstancedElectricalElementSet.h"
 
 #include <Game/Layers.h>
 #include <Game/ResourceLocator.h>

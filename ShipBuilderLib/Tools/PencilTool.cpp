@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #include "PencilTool.h"
 
-#include "Controller.h"
+#include "../Controller.h"
 
 #include <GameCore/GameGeometry.h>
 

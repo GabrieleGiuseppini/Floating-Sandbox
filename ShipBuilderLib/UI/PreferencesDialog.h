@@ -5,8 +5,8 @@
  ***************************************************************************************/
 #pragma once
 
-#include "Controller.h"
-#include "WorkbenchState.h"
+#include "../Controller.h"
+#include "../WorkbenchState.h"
 
 #include <UILib/EditSpinBox.h>
 

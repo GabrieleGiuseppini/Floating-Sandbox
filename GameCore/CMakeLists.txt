@@ -92,8 +92,7 @@ source_group(" " FILES ${SOURCES})
 add_library (GameCoreLib ${SOURCES})
 
 target_include_directories(GameCoreLib PUBLIC ${PICOJSON_INCLUDE_DIRS})
-get_filename_component(PARENT_DIR ../ ABSOLUTE)
-target_include_directories(GameCoreLib INTERFACE ${PARENT_DIR})
+target_include_directories(GameCoreLib INTERFACE ..)
 
 target_link_libraries (GameCoreLib
 	${ADDITIONAL_LIBRARIES})

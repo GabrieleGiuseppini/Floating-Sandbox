@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #include "MeasuringTapeTool.h"
 
-#include <Controller.h>
+#include "../Controller.h"
 
 #include <UILib/WxHelpers.h>
 
@@ -55,7 +55,7 @@ void MeasuringTapeTool::OnMouseMove(DisplayLogicalCoordinates const & mouseCoord
     else
     {
         // Not engaged: only show overlay when inside the ship
-        
+
         mouseShipCoords = GetCurrentMouseShipCoordinatesIfInShip(mouseCoordinates);
         if (mouseShipCoords)
         {

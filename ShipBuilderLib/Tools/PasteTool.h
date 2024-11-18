@@ -5,9 +5,10 @@
 ***************************************************************************************/
 #pragma once
 
-#include "GenericEphemeralVisualizationRestorePayload.h"
-#include "GenericUndoPayload.h"
 #include "Tool.h"
+
+#include "../GenericEphemeralVisualizationRestorePayload.h"
+#include "../GenericUndoPayload.h"
 
 #include <UILib/WxHelpers.h>
 

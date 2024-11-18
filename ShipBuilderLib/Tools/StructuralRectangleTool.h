@@ -5,8 +5,9 @@
 ***************************************************************************************/
 #pragma once
 
-#include "GenericEphemeralVisualizationRestorePayload.h"
 #include "Tool.h"
+
+#include "../GenericEphemeralVisualizationRestorePayload.h"
 
 #include <Game/ResourceLocator.h>
 

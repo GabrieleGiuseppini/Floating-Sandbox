@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #include "SamplerTool.h"
 
-#include <Controller.h>
+#include "../Controller.h"
 
 #include <type_traits>
 

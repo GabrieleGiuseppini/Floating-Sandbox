@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include "ShipBuilderTypes.h"
+#include "../ShipBuilderTypes.h"
 
 #include <Game/Layers.h>
 #include <Game/Materials.h>
@@ -96,7 +96,7 @@ public:
 };
 
 template<LayerType TLayer>
-class MaterialPalette final : 
+class MaterialPalette final :
     public wxPopupTransientWindow,
     public IMaterialPalette
 {

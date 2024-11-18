@@ -5,8 +5,8 @@
 ***************************************************************************************/
 #pragma once
 
-#include "GameParameters.h"
-#include "Materials.h"
+#include "../GameParameters.h"
+#include "../Materials.h"
 
 #include <GameCore/Buffer.h>
 #include <GameCore/Colors.h>
