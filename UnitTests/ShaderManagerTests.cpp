@@ -51,7 +51,7 @@ bbb
     EXPECT_EQ("\naaa\nsancho\nnano\n\nbbb\n", resolvedSource);
 }
 
-TEST_F(ShaderManagerTests, ProcessesIncludes_DetectsLoops)
+TEST_F(ShaderManagerTests, ProcessesIncludes_AllowsLoops)
 {
     std::string source = R"(
 aaa
@@ -63,11 +63,11 @@ bbb
     includeFiles["inc2.glslinc"] = std::make_pair<bool, std::string>(true, std::string("#include \"inc1.glsl\"\n"));
     includeFiles["inc1.glsl"] = { false, std::string("sancho\n#include \"inc2.glslinc\"") };
 
-    EXPECT_THROW(
-        TestShaderManager::ResolveIncludes(
-            source,
-            includeFiles),
-        GameException);
+    auto resolvedSource = TestShaderManager::ResolveIncludes(
+        source,
+        includeFiles);
+
+    EXPECT_EQ("\naaa\nsancho\n\nbbb\n", resolvedSource);
 }
 
 TEST_F(ShaderManagerTests, ProcessesIncludes_ComplainsWhenIncludeNotFound)

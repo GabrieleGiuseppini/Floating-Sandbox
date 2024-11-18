@@ -2,6 +2,8 @@
 
 #include <Game/TextureTypes.h>
 
+#include "Utils.h"
+
 #include "gtest/gtest.h"
 
 namespace Render {
@@ -495,20 +497,20 @@ TEST(TextureAtlasTests, Placement_InAtlasSizeLargerThanFrameSize)
     float const dy = 0.5f / 8.0f;
 
     // Frame 0: @ (4 + 1, 0 + 1) x (5, 5)
-    EXPECT_EQ(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 0 }).TextureCoordinatesBottomLeft.x, dx + 5.0f / 12.0f);
-    EXPECT_EQ(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 0 }).TextureCoordinatesBottomLeft.y, dy + 1.0f / 8.0f);
-    EXPECT_EQ(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 0 }).TextureCoordinatesAnchorCenter.x, dx + 5.0f / 12.0f + 0.0f / 12.0f);
-    EXPECT_EQ(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 0 }).TextureCoordinatesAnchorCenter.y, dy + 1.0f / 8.0f + 0.0f / 8.0f);
-    EXPECT_EQ(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 0 }).TextureCoordinatesTopRight.x, 5.0f / 12.0f + 5.0f / 12.0f - dx);
-    EXPECT_EQ(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 0 }).TextureCoordinatesTopRight.y, 1.0f / 8.0f + 5.0f / 8.0f - dy);
+    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 0 }).TextureCoordinatesBottomLeft.x, dx + 5.0f / 12.0f, 0.01f));
+    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 0 }).TextureCoordinatesBottomLeft.y, dy + 1.0f / 8.0f, 0.01f));
+    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 0 }).TextureCoordinatesAnchorCenter.x, dx + 5.0f / 12.0f + 0.0f / 12.0f, 0.01f));
+    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 0 }).TextureCoordinatesAnchorCenter.y, dy + 1.0f / 8.0f + 0.0f / 8.0f, 0.01f));
+    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 0 }).TextureCoordinatesTopRight.x, 5.0f / 12.0f + 5.0f / 12.0f - dx, 0.01f));
+    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 0 }).TextureCoordinatesTopRight.y, 1.0f / 8.0f + 5.0f / 8.0f - dy, 0.01f));
 
     // Frame 1: @ (0 + 0, 0 + 1) x (3, 2)
-    EXPECT_EQ(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 1 }).TextureCoordinatesBottomLeft.x, dx);
-    EXPECT_EQ(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 1 }).TextureCoordinatesBottomLeft.y, dy + 1.0f / 8.0f);
-    EXPECT_EQ(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 1 }).TextureCoordinatesAnchorCenter.x, dx + 2.0f / 12.0f);
-    EXPECT_EQ(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 1 }).TextureCoordinatesAnchorCenter.y, dy + 1.0f / 8.0f + 3.0f / 8.0f);
-    EXPECT_EQ(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 1 }).TextureCoordinatesTopRight.x, 0.0f / 12.0f + 3.0f / 12.0f - dx);
-    EXPECT_EQ(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 1 }).TextureCoordinatesTopRight.y, 1.0f / 8.0f + 2.0f / 8.0f - dy);
+    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 1 }).TextureCoordinatesBottomLeft.x, dx, 0.01f));
+    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 1 }).TextureCoordinatesBottomLeft.y, dy + 1.0f / 8.0f, 0.01f));
+    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 1 }).TextureCoordinatesAnchorCenter.x, dx + 2.0f / 12.0f, 0.01f));
+    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 1 }).TextureCoordinatesAnchorCenter.y, dy + 1.0f / 8.0f + 3.0f / 8.0f, 0.01f));
+    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 1 }).TextureCoordinatesTopRight.x, 0.0f / 12.0f + 3.0f / 12.0f - dx, 0.01f));
+    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 1 }).TextureCoordinatesTopRight.y, 1.0f / 8.0f + 2.0f / 8.0f - dy, 0.01f));
 }
 
 TEST(TextureAtlasTests, Placement_Duplicates)

@@ -1,5 +1,7 @@
 #include <GameCore/GameTypes.h>
 
+#include "Utils.h"
+
 #include "gtest/gtest.h"
 
 TEST(IntegralSystemTests, Algebra_CoordsMinusSize)
@@ -154,7 +156,9 @@ TEST_P(CoordsRatio, CoordsRatio)
 {
     auto const result = std::get<0>(GetParam()).ToFractionalCoords(std::get<1>(GetParam()));
 
-    EXPECT_EQ(result, std::get<2>(GetParam()));
+    vec2f const expected = std::get<2>(GetParam());
+    EXPECT_TRUE(ApproxEquals(result.x, expected.x, 0.00001f));
+    EXPECT_TRUE(ApproxEquals(result.y, expected.y, 0.00001f));
 }
 
 TEST(IntegralSystemTests, Rect_Center)

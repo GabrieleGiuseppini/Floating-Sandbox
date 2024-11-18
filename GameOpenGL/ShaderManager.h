@@ -361,7 +361,7 @@ private:
 
     friend class ShaderManagerTests_ProcessesIncludes_OneLevel_Test;
     friend class ShaderManagerTests_ProcessesIncludes_MultipleLevels_Test;
-    friend class ShaderManagerTests_ProcessesIncludes_DetectsLoops_Test;
+    friend class ShaderManagerTests_ProcessesIncludes_AllowsLoops_Test;
     friend class ShaderManagerTests_ProcessesIncludes_ComplainsWhenIncludeNotFound_Test;
 
     friend class ShaderManagerTests_SplitsShaders_Test;
