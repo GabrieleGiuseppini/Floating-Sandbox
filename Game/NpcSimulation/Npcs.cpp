@@ -13,7 +13,9 @@
 #include <algorithm>
 #include <cassert>
 
+#ifdef _MSC_VER
 #pragma warning(disable : 4324) // std::optional of StateType gets padded because of alignment requirements
+#endif
 
 namespace Physics {
 

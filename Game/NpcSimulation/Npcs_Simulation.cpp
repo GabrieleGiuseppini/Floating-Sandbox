@@ -2770,13 +2770,6 @@ float Npcs::UpdateNpcParticle_ConstrainedInertial(
 
             vec2f const trajectory = segmentTrajectoryEndAbsolutePosition - segmentTrajectoryStartAbsolutePosition;
 
-            vec2f const intersectionEdgeDir =
-                homeShip.GetTriangles().GetSubSpringVector(
-                    npcParticleConstrainedState.CurrentBCoords.TriangleElementIndex,
-                    intersectionEdgeOrdinal,
-                    homeShip.GetPoints())
-                .normalise();
-
             BounceConstrainedNpcParticle(
                 npc,
                 npcParticleOrdinal,
@@ -2856,17 +2849,17 @@ float Npcs::UpdateNpcParticle_ConstrainedInertial(
             npcParticleConstrainedState.CurrentBCoords = AbsoluteTriangleBCoords(oppositeTriangleInfo.TriangleElementIndex, newBarycentricCoords);
 
             // Translate target coords to this triangle, for next iteration
-            auto const oldSegmentTrajectoryEndBarycentricCoords = segmentTrajectoryEndBarycentricCoords; // For logging
             // Note: here we introduce a lot of error - the target bary coords are not anymore
             // guaranteed to lie exactly on the (continuation of the) edge
-            segmentTrajectoryEndBarycentricCoords = homeShip.GetTriangles().ToBarycentricCoordinatesInsideEdge(
+            auto const newSegmentTrajectoryEndBarycentricCoords = homeShip.GetTriangles().ToBarycentricCoordinatesInsideEdge(
                 segmentTrajectoryEndAbsolutePosition,
                 oppositeTriangleInfo.TriangleElementIndex,
                 homeShip.GetPoints(),
                 oppositeTriangleInfo.EdgeOrdinal);
 
-            LogNpcDebug("      TrajEndB-Coords: ", oldSegmentTrajectoryEndBarycentricCoords, " -> ", segmentTrajectoryEndBarycentricCoords);
-            (void)oldSegmentTrajectoryEndBarycentricCoords;
+            LogNpcDebug("      TrajEndB-Coords: ", segmentTrajectoryEndAbsolutePosition, " -> ", newSegmentTrajectoryEndBarycentricCoords);
+
+            segmentTrajectoryEndBarycentricCoords = newSegmentTrajectoryEndBarycentricCoords;
 
             // Continue
         }
