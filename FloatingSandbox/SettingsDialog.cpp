@@ -6738,7 +6738,7 @@ wxSizer * SettingsDialog::MakeToolVerticalStripIcons(
 {
     wxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
 
-    for (int i = 0; i < iconNames.size(); ++i)
+    for (size_t i = 0; i < iconNames.size(); ++i)
     {
         wxBitmap bitmap = wxBitmap(
             resourceLocator.GetCursorFilePath(iconNames[i]).string(),

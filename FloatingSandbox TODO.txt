@@ -648,6 +648,7 @@ v			+ FixedSetSliderCore
 		- Rebuild new VM from scratch
 			- Update instructions as you go		
 		- Run unit tests
+		- Test Windows (clean) build
 		- Test
 			- NPCs
 			- All indexed rendering
