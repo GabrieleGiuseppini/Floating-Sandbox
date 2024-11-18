@@ -278,6 +278,12 @@ inline void GenerateIntegralLinePath(
     }
 }
 
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+// We load a vec2f below (2 floats) into a 4-float register
+#pragma GCC diagnostic ignored "-Warray-bounds="
+#endif
+
 inline void MakeQuadInto(
     vec2f const & centerTop,
     vec2f const & centerBottom,
@@ -311,6 +317,10 @@ inline void MakeQuadInto(
 
 #endif
 }
+
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
 
 inline Quad MakeQuad(
     vec2f const & centerTop,

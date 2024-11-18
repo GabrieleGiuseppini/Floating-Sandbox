@@ -3825,7 +3825,7 @@ void Npcs::UpdateNpcAnimation(
         float humanEdgeAngle = 0.0f;
         float adjustedStandardHumanHeight = 0.0f;
         vec2f edgp1 = vec2f::zero(), edgp2 = vec2f::zero(), edgVector, edgDir;
-        vec2f feetPosition, actualBodyVector, actualBodyDir;
+        vec2f feetPosition = vec2f::zero(), actualBodyVector = vec2f::zero(), actualBodyDir = vec2f::zero();
         float periodicValue = 0.0f;
 
         float targetUpperLegLengthFraction = 1.0f;

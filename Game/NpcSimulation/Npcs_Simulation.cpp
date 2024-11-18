@@ -11,7 +11,9 @@
 #include <array>
 #include <limits>
 
+#ifdef _MSC_VER
 #pragma warning(disable : 4324) // std::optional of StateType gets padded because of alignment requirements
+#endif
 
 namespace Physics {
 
@@ -428,7 +430,7 @@ void Npcs::UpdateNpcs(
                 bool atLeastOneNpcParticleOnFire = false;
                 bool atLeastOneNpcParticleInWater = false;
 
-                for (auto p = 0; p < npcState->ParticleMesh.Particles.size(); ++p)
+                for (size_t p = 0; p < npcState->ParticleMesh.Particles.size(); ++p)
                 {
                     auto const & particle = npcState->ParticleMesh.Particles[p];
 
@@ -565,7 +567,7 @@ void Npcs::UpdateNpcs(
 
             // Check validity of constrained triangles, and calculate preliminary forces
 
-            for (auto p = 0; p < npcState->ParticleMesh.Particles.size(); ++p)
+            for (size_t p = 0; p < npcState->ParticleMesh.Particles.size(); ++p)
             {
                 auto const & particleConstrainedState = npcState->ParticleMesh.Particles[p].ConstrainedState;
                 if (particleConstrainedState.has_value())
@@ -576,7 +578,7 @@ void Npcs::UpdateNpcs(
                     if (homeShip.GetTriangles().IsDeleted(particleConstrainedState->CurrentBCoords.TriangleElementIndex)
                         || IsTriangleFolded(particleConstrainedState->CurrentBCoords.TriangleElementIndex, homeShip))
                     {
-                        TransitionParticleToFreeState(*npcState, p, homeShip);
+                        TransitionParticleToFreeState(*npcState, static_cast<int>(p), homeShip);
                     }
                 }
                 else if (p > 0)
@@ -603,7 +605,7 @@ void Npcs::UpdateNpcs(
 
                 CalculateNpcParticlePreliminaryForces(
                     *npcState,
-                    p,
+                    static_cast<int>(p),
                     globalWindForce,
                     gameParameters);
             }
@@ -614,7 +616,7 @@ void Npcs::UpdateNpcs(
 
             // Update physical state for all particles and maintain world bounds
 
-            for (auto p = 0; p < npcState->ParticleMesh.Particles.size(); ++p)
+            for (size_t p = 0; p < npcState->ParticleMesh.Particles.size(); ++p)
             {
                 UpdateNpcParticlePhysics(
                     *npcState,
@@ -625,7 +627,7 @@ void Npcs::UpdateNpcs(
 
                 MaintainInWorldBounds(
                     *npcState,
-                    p,
+                    static_cast<int>(p),
                     homeShip,
                     gameParameters);
 
@@ -634,7 +636,7 @@ void Npcs::UpdateNpcs(
                     // Only maintain over land if _all_ particles are free
                     MaintainOverLand(
                         *npcState,
-                        p,
+                        static_cast<int>(p),
                         homeShip,
                         gameParameters);
                 }
@@ -2054,7 +2056,7 @@ void Npcs::RecalculateFrictionTotalAdjustments()
     {
         if (state.has_value())
         {
-            for (int p = 0; p < state->ParticleMesh.Particles.size(); ++p)
+            for (size_t p = 0; p < state->ParticleMesh.Particles.size(); ++p)
             {
                 auto const particleIndex = state->ParticleMesh.Particles[p].ParticleIndex;
 
@@ -2064,13 +2066,13 @@ void Npcs::RecalculateFrictionTotalAdjustments()
                     {
                         mParticles.SetStaticFrictionTotalAdjustment(particleIndex,
                             CalculateFrictionTotalAdjustment(
-                                mNpcDatabase.GetFurnitureParticleAttributes(state->KindSpecificState.FurnitureNpcState.SubKindId, p).FrictionSurfaceAdjustment,
+                                mNpcDatabase.GetFurnitureParticleAttributes(state->KindSpecificState.FurnitureNpcState.SubKindId, static_cast<int>(p)).FrictionSurfaceAdjustment,
                                 mCurrentNpcFrictionAdjustment,
                                 mCurrentStaticFrictionAdjustment));
 
                         mParticles.SetKineticFrictionTotalAdjustment(particleIndex,
                             CalculateFrictionTotalAdjustment(
-                                mNpcDatabase.GetFurnitureParticleAttributes(state->KindSpecificState.FurnitureNpcState.SubKindId, p).FrictionSurfaceAdjustment,
+                                mNpcDatabase.GetFurnitureParticleAttributes(state->KindSpecificState.FurnitureNpcState.SubKindId, static_cast<int>(p)).FrictionSurfaceAdjustment,
                                 mCurrentNpcFrictionAdjustment,
                                 mCurrentKineticFrictionAdjustment));
 
@@ -2218,7 +2220,7 @@ void Npcs::UpdateNpcParticle_BeingPlaced(
             // Pair this particle with:
             // a) Each particle already done,
             // b) The anchor particle
-            for (int p = 0; p < npc.ParticleMesh.Particles.size(); ++p)
+            for (int p = 0; p < static_cast<int>(npc.ParticleMesh.Particles.size()); ++p)
             {
                 if (p < npcParticleOrdinal || (p > npcParticleOrdinal && p == npc.BeingPlacedState->AnchorParticleOrdinal))
                 {
@@ -2774,7 +2776,6 @@ float Npcs::UpdateNpcParticle_ConstrainedInertial(
                     intersectionEdgeOrdinal,
                     homeShip.GetPoints())
                 .normalise();
-            vec2f const intersectionEdgeNormal = intersectionEdgeDir.to_perpendicular();
 
             BounceConstrainedNpcParticle(
                 npc,
@@ -2865,6 +2866,7 @@ float Npcs::UpdateNpcParticle_ConstrainedInertial(
                 oppositeTriangleInfo.EdgeOrdinal);
 
             LogNpcDebug("      TrajEndB-Coords: ", oldSegmentTrajectoryEndBarycentricCoords, " -> ", segmentTrajectoryEndBarycentricCoords);
+            (void)oldSegmentTrajectoryEndBarycentricCoords;
 
             // Continue
         }
