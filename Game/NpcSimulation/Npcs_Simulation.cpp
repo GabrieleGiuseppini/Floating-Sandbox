@@ -3,7 +3,7 @@
  * Created:				2023-07-23
  * Copyright:			Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
  ***************************************************************************************/
-#include <Physics.h>
+#include "Physics.h"
 
 #include <GameCore/Conversions.h>
 #include <GameCore/GameMath.h>
@@ -2220,13 +2220,14 @@ void Npcs::UpdateNpcParticle_BeingPlaced(
             // Pair this particle with:
             // a) Each particle already done,
             // b) The anchor particle
-            for (int p = 0; p < static_cast<int>(npc.ParticleMesh.Particles.size()); ++p)
+            for (size_t p = 0; p < npc.ParticleMesh.Particles.size(); ++p)
             {
-                if (p < npcParticleOrdinal || (p > npcParticleOrdinal && p == npc.BeingPlacedState->AnchorParticleOrdinal))
+                if (static_cast<int>(p) < npcParticleOrdinal ||
+                    (static_cast<int>(p) > npcParticleOrdinal && static_cast<int>(p) == npc.BeingPlacedState->AnchorParticleOrdinal))
                 {
                     // Adjust physicsDeltaPos to maintain spring length after we've traveled it
 
-                    int const s = GetSpringAmongEndpoints(npcParticleOrdinal, p, npc.ParticleMesh);
+                    int const s = GetSpringAmongEndpoints(npcParticleOrdinal, static_cast<int>(p), npc.ParticleMesh);
                     float const targetSpringLength = npc.ParticleMesh.Springs[s].RestLength;
                     vec2f const & otherPPosition = mParticles.GetPosition(npc.ParticleMesh.Particles[p].ParticleIndex);
                     vec2f const particleAdjustedPosition =

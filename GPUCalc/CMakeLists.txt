@@ -21,7 +21,8 @@ source_group(" " FILES ${SOURCES})
 
 add_library (GPUCalcLib ${SOURCES})
 
-target_include_directories(GPUCalcLib INTERFACE ..)
+get_filename_component(PARENT_DIR ../ ABSOLUTE)
+target_include_directories(GPUCalcLib INTERFACE ${PARENT_DIR})
 
 target_link_libraries (GPUCalcLib
 	GameCoreLib
