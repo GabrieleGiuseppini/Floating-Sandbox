@@ -3817,7 +3817,7 @@ void Npcs::UpdateNpcAnimation(
         //
 
         // Target: begin with current
-        FS_ALIGN16_BEG LimbVector targetAngles(animationState.LimbAngles) FS_ALIGN16_END;
+        FS_ALIGN16_BEG LimbVector targetAngles FS_ALIGN16_END = LimbVector(animationState.LimbAngles);
 
         float convergenceRate = 0.0f;
 
@@ -4583,7 +4583,7 @@ void Npcs::UpdateNpcAnimation(
         // Length Multipliers
         //
 
-        FS_ALIGN16_BEG LimbVector targetLengthMultipliers({ 1.0f, 1.0f, 1.0f, 1.0f }) FS_ALIGN16_END;
+        FS_ALIGN16_BEG LimbVector targetLengthMultipliers FS_ALIGN16_END = LimbVector({ 1.0f, 1.0f, 1.0f, 1.0f });
         float limbLengthConvergenceRate = convergenceRate;
 
         float targetCrotchHeightMultiplier = 1.0f;

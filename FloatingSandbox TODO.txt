@@ -645,6 +645,8 @@ v			+ FixedSetSliderCore
 		+ Upgrade
 		+ Install gcc 14
 		= Build
+		- Rebuild new VM from scratch
+			- Update instructions as you go		
 		- Test
 			- NPCs
 			- All indexed rendering
@@ -653,7 +655,7 @@ v			+ FixedSetSliderCore
 		- Change Readme for version
 		- Change Ubuntu instructions for version and gcc version
 		- Change mention below in this file
-		- Rename VirtualBox image and nuke old Ubuntu
+		- Nuke old Ubuntu's
 
 	= Release prep:
 		= Ships:
@@ -777,8 +779,9 @@ v			+ FixedSetSliderCore
 						- NPC menu
 
 	- After next release:
-		- Update GameJolt to say Ubuntu 20.04
-		- Delete my Ubuntu 18 VM way after next release
+		- Update GameJolt to say Ubuntu 24.04
+			- Also add "How to Play" pinned post
+		- Delete old Ubuntu VMs after next release
 
 	===========================
 
