@@ -1810,12 +1810,18 @@ private:
 	//	3. Reaching an NPC by its ID
 	//
 
+#ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4324) // std::optional of StateType gets padded because of alignment requirements
+#endif
+
 	// The actual container of NPC states, indexed by NPC ID.
 	// Indices are stable; elements are null'ed when removed.
 	std::vector<std::optional<StateType>> mStateBuffer;
+
+#ifdef _MSC_VER
 #pragma warning(pop)
+#endif
 
 	// All the ships - together with their NPCs - indexed by Ship ID.
 	// Indices are stable; elements are null'ed when removed.

@@ -378,7 +378,7 @@ void Npcs::OnShipConnectivityChanged(ShipId shipId)
             npcState.CurrentConnectedComponentId = homeShip.GetPoints().GetConnectedComponentId(primaryTriangleRepresentativePoint);
 
             // Now visit all constained secondaries and transition to free those that have been severed from primary
-            for (int p = 1; p < npcState.ParticleMesh.Particles.size(); ++p)
+            for (size_t p = 1; p < npcState.ParticleMesh.Particles.size(); ++p)
             {
                 auto & secondaryParticle = npcState.ParticleMesh.Particles[p];
                 if (secondaryParticle.ConstrainedState.has_value())
@@ -386,7 +386,7 @@ void Npcs::OnShipConnectivityChanged(ShipId shipId)
                     auto const secondaryTriangleRepresentativePoint = homeShip.GetTriangles().GetPointAIndex(secondaryParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex);
                     if (homeShip.GetPoints().GetConnectedComponentId(secondaryTriangleRepresentativePoint) != npcState.CurrentConnectedComponentId)
                     {
-                        TransitionParticleToFreeState(npcState, p, homeShip);
+                        TransitionParticleToFreeState(npcState, static_cast<int>(p), homeShip);
                     }
                 }
             }
@@ -984,7 +984,7 @@ std::optional<PickedNpc> Npcs::ProbeNpcAt(
                     // Proximity search for all particles
 
                     bool aParticleWasFound = false;
-                    for (int p = 0; p < npc->ParticleMesh.Particles.size(); ++p)
+                    for (size_t p = 0; p < npc->ParticleMesh.Particles.size(); ++p)
                     {
                         auto const & particle = npc->ParticleMesh.Particles[p];
 
@@ -997,7 +997,7 @@ std::optional<PickedNpc> Npcs::ProbeNpcAt(
                                 // It's on-plane
                                 if (squareDistance < nearestOnPlaneNpc.SquareDistance)
                                 {
-                                    nearestOnPlaneNpc = { npc->Id, p, squareDistance };
+                                    nearestOnPlaneNpc = { npc->Id, static_cast<int>(p), squareDistance };
                                     aParticleWasFound = true;
                                 }
                             }
@@ -1006,7 +1006,7 @@ std::optional<PickedNpc> Npcs::ProbeNpcAt(
                                 // It's off-plane
                                 if (squareDistance < nearestOffPlaneNpc.SquareDistance)
                                 {
-                                    nearestOffPlaneNpc = { npc->Id, p, squareDistance };
+                                    nearestOffPlaneNpc = { npc->Id, static_cast<int>(p), squareDistance };
                                     aParticleWasFound = true;
                                 }
                             }
@@ -1182,11 +1182,11 @@ void Npcs::MoveNpcTo(
     vec2f const targetAbsoluteVelocity = (deltaAnchorPosition / GameParameters::SimulationStepTimeDuration<float> * mGlobalDampingFactor).clamp_length_upper(GameParameters::MaxNpcToolMoveVelocityMagnitude);
 
     // Move particles
-    for (int p = 0; p < npc.ParticleMesh.Particles.size(); ++p)
+    for (size_t p = 0; p < npc.ParticleMesh.Particles.size(); ++p)
     {
         auto const particleIndex = npc.ParticleMesh.Particles[p].ParticleIndex;
 
-        if (doMoveWholeMesh || p == npc.BeingPlacedState->AnchorParticleOrdinal)
+        if (doMoveWholeMesh || p == static_cast<size_t>(npc.BeingPlacedState->AnchorParticleOrdinal))
         {
             mParticles.SetPosition(particleIndex, mParticles.GetPosition(particleIndex) + deltaAnchorPosition);
             mParticles.SetVelocity(particleIndex, targetAbsoluteVelocity);
@@ -1687,7 +1687,7 @@ void Npcs::MoveBy(
                 && homeShip.GetPoints().GetConnectedComponentId(homeShip.GetTriangles().GetPointAIndex(primaryParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex)) == *connectedComponent))
         {
             // In scope - move all of its particles
-            for (auto particleOrdinal = 0; particleOrdinal < mStateBuffer[npcId]->ParticleMesh.Particles.size(); ++particleOrdinal)
+            for (size_t particleOrdinal = 0; particleOrdinal < mStateBuffer[npcId]->ParticleMesh.Particles.size(); ++particleOrdinal)
             {
                 ElementIndex const particleIndex = mStateBuffer[npcId]->ParticleMesh.Particles[particleOrdinal].ParticleIndex;
                 mParticles.SetPosition(particleIndex, mParticles.GetPosition(particleIndex) + offset);
@@ -1699,7 +1699,7 @@ void Npcs::MoveBy(
                 // Maintain world bounds
                 MaintainInWorldBounds(
                     *mStateBuffer[npcId],
-                    particleOrdinal,
+                    static_cast<int>(particleOrdinal),
                     homeShip,
                     gameParameters);
             }
@@ -1739,7 +1739,7 @@ void Npcs::RotateBy(
             || (primaryParticle.ConstrainedState.has_value()
                 && homeShip.GetPoints().GetConnectedComponentId(homeShip.GetTriangles().GetPointAIndex(primaryParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex)) == *connectedComponent))
         {
-            for (auto particleOrdinal = 0; particleOrdinal < mStateBuffer[npcId]->ParticleMesh.Particles.size(); ++particleOrdinal)
+            for (size_t particleOrdinal = 0; particleOrdinal < mStateBuffer[npcId]->ParticleMesh.Particles.size(); ++particleOrdinal)
             {
                 ElementIndex const particleIndex = mStateBuffer[npcId]->ParticleMesh.Particles[particleOrdinal].ParticleIndex;
                 vec2f const centeredPos = mParticles.GetPosition(particleIndex) - center;
@@ -1755,7 +1755,7 @@ void Npcs::RotateBy(
                 // Maintain world bounds
                 MaintainInWorldBounds(
                     *mStateBuffer[npcId],
-                    particleOrdinal,
+                    static_cast<int>(particleOrdinal),
                     homeShip,
                     gameParameters);
             }
