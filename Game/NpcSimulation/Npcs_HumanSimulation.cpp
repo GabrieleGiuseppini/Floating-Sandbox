@@ -3,7 +3,7 @@
  * Created:				2023-10-20
  * Copyright:			Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
  ***************************************************************************************/
-#include "Physics.h"
+#include <Physics.h>
 
 #include <GameCore/GameMath.h>
 #include <GameCore/GameRandomEngine.h>

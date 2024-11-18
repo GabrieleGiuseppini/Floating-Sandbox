@@ -116,7 +116,7 @@ public:
     size_t Hash() const
     {
         size_t hash = 0;
-        for (int i = 0; i < GetByteSize(); ++i)
+        for (size_t i = 0; i < GetByteSize(); ++i)
         {
             hash += static_cast<size_t>((reinterpret_cast<uint8_t const *>(Data.get()))[i]) * 7 + 11;
         }
