@@ -141,6 +141,7 @@ MainFrame::MainFrame(
     , mCurrentRCBombCount(0u)
     , mCurrentAntiMatterBombCount(0u)
     , mIsShiftKeyDown(false)
+    , mIsMidMouseButtonDown(false)
     , mIsMouseCapturedByGLCanvas(false)
 {
     Create(
@@ -177,10 +178,12 @@ MainFrame::MainFrame(
 
     mMainGLCanvas->Connect(wxEVT_PAINT, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasPaint, 0, this);
     mMainGLCanvas->Connect(wxEVT_SIZE, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasResize, 0, this);
-    mMainGLCanvas->Connect(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasLeftDown, 0, this);
-    mMainGLCanvas->Connect(wxEVT_LEFT_UP, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasLeftUp, 0, this);
-    mMainGLCanvas->Connect(wxEVT_RIGHT_DOWN, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasRightDown, 0, this);
-    mMainGLCanvas->Connect(wxEVT_RIGHT_UP, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasRightUp, 0, this);
+    mMainGLCanvas->Connect(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasMouseLeftDown, 0, this);
+    mMainGLCanvas->Connect(wxEVT_LEFT_UP, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasMouseLeftUp, 0, this);
+    mMainGLCanvas->Connect(wxEVT_RIGHT_DOWN, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasMouseRightDown, 0, this);
+    mMainGLCanvas->Connect(wxEVT_RIGHT_UP, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasMouseRightUp, 0, this);
+    mMainGLCanvas->Connect(wxEVT_MIDDLE_DOWN, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasMouseMiddleDown, 0, this);
+    mMainGLCanvas->Connect(wxEVT_MIDDLE_UP, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasMouseMiddleUp, 0, this);
     mMainGLCanvas->Connect(wxEVT_MOTION, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasMouseMove, 0, this);
     mMainGLCanvas->Connect(wxEVT_MOUSEWHEEL, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasMouseWheel, 0, this);
     mMainGLCanvas->Connect(wxEVT_MOUSE_CAPTURE_LOST, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasCaptureMouseLost, 0, this);
@@ -1586,7 +1589,7 @@ void MainFrame::OnMainGLCanvasResize(wxSizeEvent & event)
     event.Skip();
 }
 
-void MainFrame::OnMainGLCanvasLeftDown(wxMouseEvent & /*event*/)
+void MainFrame::OnMainGLCanvasMouseLeftDown(wxMouseEvent & /*event*/)
 {
     // First of all, set focus on the canvas if it has lost it - we want
     // it to receive all mouse events
@@ -1609,7 +1612,7 @@ void MainFrame::OnMainGLCanvasLeftDown(wxMouseEvent & /*event*/)
     }
 }
 
-void MainFrame::OnMainGLCanvasLeftUp(wxMouseEvent & /*event*/)
+void MainFrame::OnMainGLCanvasMouseLeftUp(wxMouseEvent & /*event*/)
 {
     // We can now release the mouse
     if (mIsMouseCapturedByGLCanvas)
@@ -1624,7 +1627,7 @@ void MainFrame::OnMainGLCanvasLeftUp(wxMouseEvent & /*event*/)
     }
 }
 
-void MainFrame::OnMainGLCanvasRightDown(wxMouseEvent & /*event*/)
+void MainFrame::OnMainGLCanvasMouseRightDown(wxMouseEvent & /*event*/)
 {
     if (mToolController)
     {
@@ -1639,7 +1642,7 @@ void MainFrame::OnMainGLCanvasRightDown(wxMouseEvent & /*event*/)
     }
 }
 
-void MainFrame::OnMainGLCanvasRightUp(wxMouseEvent & /*event*/)
+void MainFrame::OnMainGLCanvasMouseRightUp(wxMouseEvent & /*event*/)
 {
     // We can now release the mouse
     if (mIsMouseCapturedByGLCanvas)
@@ -1652,6 +1655,16 @@ void MainFrame::OnMainGLCanvasRightUp(wxMouseEvent & /*event*/)
     {
         mToolController->OnRightMouseUp();
     }
+}
+
+void MainFrame::OnMainGLCanvasMouseMiddleDown(wxMouseEvent & /*event*/)
+{
+    OnMidMouseButtonObservation(true);
+}
+
+void MainFrame::OnMainGLCanvasMouseMiddleUp(wxMouseEvent & /*event*/)
+{
+    OnMidMouseButtonObservation(false);
 }
 
 void MainFrame::OnMainGLCanvasMouseMove(wxMouseEvent & event)
@@ -2225,22 +2238,7 @@ void MainFrame::RunGameIteration()
     assert(mToolController);
 
     // Update SHIFT key state
-    if (wxGetKeyState(WXK_SHIFT))
-    {
-        if (!mIsShiftKeyDown)
-        {
-            mIsShiftKeyDown = true;
-            mToolController->OnShiftKeyDown();
-        }
-    }
-    else
-    {
-        if (mIsShiftKeyDown)
-        {
-            mIsShiftKeyDown = false;
-            mToolController->OnShiftKeyUp();
-        }
-    }
+    OnShiftKeyObservation(wxGetKeyState(WXK_SHIFT));
 
     //
     // Run a game step
@@ -2872,7 +2870,7 @@ void MainFrame::RebuildNpcMenus()
 
         for (auto const & subKindInfo : mGameController->GetHumanNpcSubKinds(language))
         {
-            addMenu(std::get<0>(subKindInfo), std::get<1>(subKindInfo));
+            addMenu(std::get<0>(subKindInfo), wxString::FromUTF8(std::get<1>(subKindInfo)));
         }
     }
 
@@ -2918,7 +2916,7 @@ void MainFrame::RebuildNpcMenus()
 
         for (auto const & subKindInfo : mGameController->GetFurnitureNpcSubKinds(language))
         {
-            addMenu(std::get<0>(subKindInfo), std::get<1>(subKindInfo));
+            addMenu(std::get<0>(subKindInfo), wxString::FromUTF8(std::get<1>(subKindInfo)));
         }
     }
 }
@@ -3143,4 +3141,50 @@ void MainFrame::SetMenuItemChecked(
     bool isChecked)
 {
     menuItem->SetBitmap(isChecked ? checkedBitmap : uncheckedBitmap);
+}
+
+void MainFrame::OnShiftKeyObservation(bool isDown)
+{
+    if (!mIsMidMouseButtonDown) // We do not care about SHIFT if mid-mouse button is down
+    {
+        if (isDown)
+        {
+            if (!mIsShiftKeyDown)
+            {
+                mIsShiftKeyDown = true;
+                mToolController->OnShiftKeyDown();
+            }
+        }
+        else
+        {
+            if (mIsShiftKeyDown)
+            {
+                mIsShiftKeyDown = false;
+                mToolController->OnShiftKeyUp();
+            }
+        }
+    }
+}
+
+void MainFrame::OnMidMouseButtonObservation(bool isDown)
+{
+    if (!mIsShiftKeyDown) // We do not care about mid button if SHIFT is down
+    {
+        if (isDown)
+        {
+            if (!mIsMidMouseButtonDown)
+            {
+                mIsMidMouseButtonDown = true;
+                mToolController->OnShiftKeyDown();
+            }
+        }
+        else
+        {
+            if (mIsMidMouseButtonDown)
+            {
+                mIsMidMouseButtonDown = false;
+                mToolController->OnShiftKeyUp();
+            }
+        }
+    }
 }

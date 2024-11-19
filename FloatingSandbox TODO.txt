@@ -822,8 +822,7 @@ v			+ FixedSetSliderCore
 					- Test:
 						- Copyright @ Credits
 						- NPC menu
-
-	- Send beta to localizers for final test
+				- Ask credits
 
 	- After next release:
 		- Update GameJolt to say Ubuntu 24.04
