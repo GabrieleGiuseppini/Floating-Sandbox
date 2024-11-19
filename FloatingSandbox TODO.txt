@@ -784,16 +784,15 @@ v			+ FixedSetSliderCore
 					+ Test:
 						+ Storm strength vs. sping strength adjust
 						+ Copyright @ Credits
-			- ES:
+			+ ES:
 				+ PO
 					+ Taken
 					+ Test
 					+ Compile
 				+ Two helps // Joadix had noticed bugs
-				= NPC json
+				+ NPC json
 					+ Take
-					= Test
-						- Asked: Pasagero vs Pasajero
+					+ Test
 				+ When done:
 					+ Test:
 						+ Copyright @ Credits

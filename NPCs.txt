@@ -384,6 +384,9 @@ Next release:
 	- Tests:
 		- Old FS loading ship with it
 
+- NPC layer from user:
+	- First off, global ship setting for NPC size
+
 - Area walk planning:
 	- TODO: floor types (normal, assembly, lifeboats, etc.)
 	- TODO: states (random walk, to assembly, to lifeboats, etc.)
@@ -395,6 +398,9 @@ Next release:
 				- Guaranteed to stop mid-way
 
 - NPC packs:
+	! Gist:
+		! At startup, TODOHERE: write down plan: create DB based off a) all found in flie system, b) accepted (saved in UI prefs), c) blocked (saved in UI prefs)
+		! If issues adding, popup (passive) dialog at startup communicating automatic decision (i.e. blocked)
 	- NpcDatabase:
 		- AddDatabase(NpcDatabase const &, TextureAtlas(Metadata?) const &, MaterialDB const &) // (this might be old)
 
