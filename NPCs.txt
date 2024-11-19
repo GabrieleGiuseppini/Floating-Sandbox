@@ -399,8 +399,28 @@ Next release:
 
 - NPC packs:
 	! Gist:
-		! At startup, TODOHERE: write down plan: create DB based off a) all found in flie system, b) accepted (saved in UI prefs), c) blocked (saved in UI prefs)
-		! If issues adding, popup (passive) dialog at startup communicating automatic decision (i.e. blocked)
+		! An NPC pack is three files:
+			! An atlas (png and json)
+			! npcs.json
+		! At startup, new "Combining NPC Packs" step
+			! Combines all packs - starting with "Default" - merging jsons (NPC db) and atlases, until eventually exceeds max atlas dimensions
+				! Driven by three sets:
+					! All packs found in file system, + "Default"
+					! List of Accepted packs (saved in UI prefs)
+					! List of Blocked packs (saved in UI prefs)
+			! If exceeds, popup (passive) dialog at startup communicating which ones have been blocked, and hinting at Preferences
+	- Impl:
+		- static AtlasBuilder::Combine(Atlas 1, Atlas 2) -> Atlas
+			- Requires changes to main atlas builder func (default one only is ok, no need for Regular)
+				- FrameProvider callback might require an additional "source ordinal" argument, and extracts RgbaImage from atlas
+			- Also requires changes to frame IDs so that the output has unique frame IDs
+				- Also store original source frame ID, needed later to combine NPC databases (frame lookup is from individual json's hence refer to original frame IDs)
+			- Might also require sorting to guarantee determinism (needs to build same Atlas with same inputs every time)
+			- Unit tests
+				- Verify multi-step idempotence
+		- static NpcDatabase::Combine(NpcDb 1, NpcDb 2, Atlas (combined), ...)
+		- static NpcPackManager::CombinePacks(Filesystem list, Accepted list, Blocked list)
+			- Uses AtlasBuilder::Combine plus NpcDatabase::Combine
 	- NpcDatabase:
 		- AddDatabase(NpcDatabase const &, TextureAtlas(Metadata?) const &, MaterialDB const &) // (this might be old)
 
