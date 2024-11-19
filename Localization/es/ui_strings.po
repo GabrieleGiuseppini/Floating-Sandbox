@@ -10,7 +10,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 2.4\n"
+"X-Generator: Poedit 3.5\n"
 
 #: ..\FloatingSandbox\MainFrame.cpp:386
 msgid "&Controls"
@@ -26,7 +26,7 @@ msgstr "&Ayuda"
 
 #: ..\FloatingSandbox\MainFrame.cpp:648
 msgid "&NPCs"
-msgstr ""
+msgstr "&NPCs"
 
 #: ..\FloatingSandbox\MainFrame.cpp:709
 msgid "&Options"
@@ -53,10 +53,8 @@ msgid "(Structure View)"
 msgstr "(Vista estructural)"
 
 #: ..\FloatingSandbox\CreditsPanel.cpp:72
-#, fuzzy
-#| msgid "(c) Gabriele Giuseppini 2018-2022"
 msgid "(c) Gabriele Giuseppini (G2-Labs) 2018-2024"
-msgstr "(c) Gabriele Giuseppini 2018-2022"
+msgstr "(c) Gabriele Giuseppini (G2-Labs) 2018-2024"
 
 #: ..\FloatingSandbox\CreditsPanel.cpp:161
 msgid "3RD-PARTY SOFTWARE"
@@ -72,7 +70,7 @@ msgstr "90 en sentido Horario"
 
 #: ..\FloatingSandbox\CreditsPanel.cpp:193
 msgid "A G2-Labs Production"
-msgstr ""
+msgstr "Una producción G2-Labs"
 
 #: ..\FloatingSandbox\NewVersionDisplayDialog.cpp:19
 msgid "A New Version Is Available!"
@@ -180,10 +178,8 @@ msgstr ""
 "sobre la rigidez del barco."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4729
-#, fuzzy
-#| msgid "Adjusts the size of flames."
 msgid "Adjusts the chaoticness of flames."
-msgstr "Ajusta el tamaño de las llamas."
+msgstr "Ajusta el caos de las llamas."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1501
 msgid ""
@@ -218,10 +214,8 @@ msgid "Adjusts the density of smoke particles."
 msgstr "Ajusta la densidad de las partículas de humo."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:612
-#, fuzzy
-#| msgid "Adjusts the elasticity of collisions with the ocean floor."
 msgid "Adjusts the elasticity of collisions between materials."
-msgstr "Ajusta la elasticidad de las colisiones con el fondo marino."
+msgstr "Ajusta la elasticidad de las colisiones entre materiales."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1528
 msgid "Adjusts the elasticity of collisions with the ocean floor."
@@ -241,10 +235,8 @@ msgstr ""
 "esta configuración son solo visibles cuando un nuevo barco es cargado."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3009
-#, fuzzy
-#| msgid "Adjusts the friction exherted by the ocean floor."
 msgid "Adjusts the friction exherted by and onto NPC particles."
-msgstr "Ajusta la fricción ejercida por el fondo marino."
+msgstr "Ajusta la fricción ejercida por y en las partículas NPC."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1554
 msgid "Adjusts the friction exherted by the ocean floor."
@@ -300,7 +292,7 @@ msgstr ""
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:666
 msgid "Adjusts the kinetic friction coefficient."
-msgstr ""
+msgstr "Ajusta el coeficiente de fricción cinética."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1127
 msgid ""
@@ -437,7 +429,7 @@ msgstr "Ajusta la velocidad a la cual el agua se propaga por un cuerpo físico."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:639
 msgid "Adjusts the static friction coefficient."
-msgstr ""
+msgstr "Ajusta el coeficiente de fricción estática."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:693
 msgid ""
@@ -565,7 +557,7 @@ msgstr "Analisis"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4436
 msgid "Anonymous Stickmen"
-msgstr ""
+msgstr "Hombre de palo anónimo"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2456
 msgid "Anti-Alias:"
@@ -625,10 +617,8 @@ msgid "Author(s), e.g. \"Ellen Ripley; David Gahan\""
 msgstr "Autor(es). ej. \"Ellen Ripley; David Gahan\""
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:1133
-#, fuzzy
-#| msgid "Auto-Focus at Ship Load"
 msgid "Auto-Focus at NPC Add"
-msgstr "Auto-Enfocado al cargar el Barco"
+msgstr "Auto-Enfocado al añadir NPC"
 
 #: ..\FloatingSandbox\MainFrame.cpp:316
 #: ..\FloatingSandbox\PreferencesDialog.cpp:1009
@@ -720,7 +710,7 @@ msgstr "Ajuste del punto de ignicion"
 
 #: ..\FloatingSandbox\MainFrame.cpp:754
 msgid "Buy Merchandise..."
-msgstr ""
+msgstr "Comprar Merchandising..."
 
 #: ..\ShipBuilderLib\UI\MaterialPalette.cpp:718
 msgid "Cable"
@@ -797,21 +787,18 @@ msgstr ""
 "configuración son solo visibles cuando un nuevo barco es cargado."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:1078
-#, fuzzy
-#| msgid ""
-#| "Changes the level of detail of materials' textures. Changes to this "
-#| "setting will only be visible after the next ship is loaded."
 msgid ""
 "Changes the maximum number of NPCs. Warning: higher values require more "
 "computing resources, with the risk of slowing the simulation down! Changes "
 "to this setting will only be visible after the next ship is loaded."
 msgstr ""
-"Cambia el nivel de detalle de las texturas de los materiales. Cambios a esta "
+"Cambia el numero máximo de NPCs. Advertencia: Valores elevados requieren mas "
+"recursos, con el riesgo de enlentecer la simulación! Cambios a esta "
 "configuración son solo visibles cuando un nuevo barco es cargado."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:1107
 msgid "Changes the number of NPCs spawned when a group is added."
-msgstr ""
+msgstr "Cambia el numero de NPCs generados cuando un grupo es añadido."
 
 #: ..\ShipBuilderLib\UI\ShipPropertiesEditDialog.cpp:900
 msgid "Changes the transparency of materials' textures."
@@ -903,16 +890,12 @@ msgid "Continuous Auto-Focus"
 msgstr "Auto-Enfocado Continuo"
 
 #: ..\FloatingSandbox\MainFrame.cpp:331
-#, fuzzy
-#| msgid "Continuous Auto-Focus"
 msgid "Continuous Auto-Focus on NPC"
-msgstr "Auto-Enfocado Continuo"
+msgstr "Auto-Enfocado Continuo en NPC"
 
 #: ..\FloatingSandbox\MainFrame.cpp:322
-#, fuzzy
-#| msgid "Continuous Auto-Focus"
 msgid "Continuous Auto-Focus on Ship"
-msgstr "Auto-Enfocado Continuo"
+msgstr "Auto-Enfocado Continuo en Barcos"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4797
 msgid "Contrast"
@@ -927,16 +910,12 @@ msgstr ""
 "inferiores permiten al barco ser visible en la noche."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4677
-#, fuzzy
-#| msgid ""
-#| "Controls the sensitivity of the ship to ambient light; lower values allow "
-#| "the ship to be visible also at night."
 msgid ""
 "Controls the sensitivity of the ship to depth darkening; lower values allow "
 "the ship to be visible also at depth."
 msgstr ""
-"Controla la sensibilidad del barco ante la luz del ambiente; Valores "
-"inferiores permiten al barco ser visible en la noche."
+"Controla la sensibilidad del oscurecimiento del barco por profundidad; "
+"Valores inferiores permiten al barco ser visible en las profundidades."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1778
 msgid "Copy"
@@ -1030,10 +1009,8 @@ msgid "Depth"
 msgstr "Profundidad"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4676
-#, fuzzy
-#| msgid "Darkening Rate"
 msgid "Depth Darkening"
-msgstr "Velocidad de oscurecimiento"
+msgstr "Oscurecimiento por profundidad"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4070
 msgid "Depth Gradient"
@@ -1106,10 +1083,8 @@ msgid "Direction (rad)"
 msgstr "Dirección (Rad)"
 
 #: ..\FloatingSandbox\MainFrame.cpp:340
-#, fuzzy
-#| msgid "Enable or disable continuous auto-focus."
 msgid "Disable continuous auto-focus."
-msgstr "Habilita o Deshabilita el auto-enfocado continuo."
+msgstr "Deshabilita el auto-enfocado continuo."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:885
 msgid "Discard the current ship and return to the simulator."
@@ -1233,16 +1208,18 @@ msgstr "Dibujar cuadrados de partículas."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4429
 msgid "Draws NPCs as stick-men, color-coded according to their roles."
-msgstr ""
+msgstr "Dibuja los NPCs como hombres de palo, cuyo color cambia con su rol."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4437
 msgid ""
 "Draws NPCs as uniformly-colored stick-men, with no distinctions among roles."
 msgstr ""
+"Dibuja los NPCs como hombres de palo uniformes, cuyo color no cambia con su "
+"rol."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4421
 msgid "Draws NPCs with skins."
-msgstr ""
+msgstr "Dibuja los NPCs con texturas."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4894
 msgid "Draws the ocean floor using a static color."
@@ -1314,10 +1291,8 @@ msgid "Elasticity"
 msgstr "Elasticidad"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:611
-#, fuzzy
-#| msgid "Elasticity"
 msgid "Elasticity Adjust"
-msgstr "Elasticidad"
+msgstr "Ajuste de Elasticidad"
 
 #: ..\FloatingSandbox\MainFrame.cpp:435
 msgid "Electric Spark"
@@ -1348,16 +1323,13 @@ msgid "Enable Shoaling"
 msgstr "Habilitar Cardumenes"
 
 #: ..\FloatingSandbox\MainFrame.cpp:331
-#, fuzzy
-#| msgid "Enable or disable continuous auto-focus."
 msgid "Enable continuous auto-focus on selected NPCs."
-msgstr "Habilita o Deshabilita el auto-enfocado continuo."
+msgstr ""
+"Habilita o Deshabilita el auto-enfocado continuo en NPCs seleccionados."
 
 #: ..\FloatingSandbox\MainFrame.cpp:322
-#, fuzzy
-#| msgid "Enable or disable continuous auto-focus."
 msgid "Enable continuous auto-focus on ships."
-msgstr "Habilita o Deshabilita el auto-enfocado continuo."
+msgstr "Habilita el auto-enfocado continuo en barcos."
 
 #: ..\FloatingSandbox\MainFrame.cpp:316
 msgid "Enable or disable auto-focus when a ship is loaded."
@@ -1382,10 +1354,8 @@ msgid "Enables or disables auto-focus when a ship is loaded."
 msgstr "Habilita o Deshabilita el auto-enfocado cuando un barco es cargado."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:1134
-#, fuzzy
-#| msgid "Enables or disables auto-focus when a ship is loaded."
 msgid "Enables or disables auto-focus when an NPC is added."
-msgstr "Habilita o Deshabilita el auto-enfocado cuando un barco es cargado."
+msgstr "Habilita o Deshabilita el auto-enfocado cuando un NPC es añadido."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2548
 msgid "Enables or disables automatic cycling of daylight."
@@ -1454,12 +1424,8 @@ msgstr ""
 "estrés y cerca de la ruptura."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:1148
-#, fuzzy
-#| msgid "Enables or disables notifications when a tsunami is being spawned."
 msgid "Enables or disables notifications about NPCs."
-msgstr ""
-"Habilita o Deshabilita las notificaciones cuando un tsunami esta siendo "
-"generado."
+msgstr "Habilita o Deshabilita las notificaciones sobre NPCs."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:613
 msgid "Enables or disables notifications when a tsunami is being spawned."
@@ -1533,6 +1499,8 @@ msgid ""
 "Enables or disables the effect of physics tools - such as Swirl, Attract, or "
 "Repel - on NPCs."
 msgstr ""
+"Habilita o deshabilita el efecto de las herramientas de física - Como el "
+"remolino, atraer o repeler - en NPCs."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:5047
 msgid ""
@@ -1637,8 +1605,8 @@ msgstr "Borrar las puntas de las cuerdas."
 msgid ""
 "Erase the specified region and copy its content to the clipboard (Ctrl+X)."
 msgstr ""
-"Eliminar la región especificada y copiar su contenido al portapapeles (Ctrl"
-"+x)"
+"Eliminar la región especificada y copiar su contenido al portapapeles "
+"(Ctrl+x)"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2010 ..\ShipBuilderLib\MainFrame.cpp:2064
 #: ..\ShipBuilderLib\MainFrame.cpp:2547
@@ -1671,14 +1639,12 @@ msgid "Extent"
 msgstr "Extensión"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1123 ..\ShipBuilderLib\MainFrame.cpp:3325
-#, fuzzy
-#| msgid "Electrical Layer"
 msgid "Exterior Layer"
-msgstr "Capa eléctrica"
+msgstr "Capa exterior"
 
 #: ..\FloatingSandbox\MainFrame.cpp:351
 msgid "Exterior View"
-msgstr ""
+msgstr "Vista Exterior"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:5342
 msgid "Extra Draw Options"
@@ -1727,10 +1693,8 @@ msgstr ""
 "Arreglar este error eliminando las partículas eléctricas problemáticas."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4728
-#, fuzzy
-#| msgid "Flame Size Adjust"
 msgid "Flame Chaos Adjust"
-msgstr "Ajustar el tamaño de las llamas"
+msgstr "Ajustar el caos de las llamas"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4702
 msgid "Flame Size Adjust"
@@ -1826,7 +1790,7 @@ msgstr "Locura del fluido"
 
 #: ..\FloatingSandbox\MainFrame.cpp:622
 msgid "Follow NPC"
-msgstr ""
+msgstr "Seguir NPC"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3396
 msgid "Force Adjust"
@@ -1860,10 +1824,8 @@ msgid "Friction"
 msgstr "Friccion"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3008
-#, fuzzy
-#| msgid "Friction Drag Adjust"
 msgid "Friction Adjust"
-msgstr "Ajuste de la fricción por arrastre"
+msgstr "Ajuste de la fricción"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1072
 #: ..\FloatingSandbox\SettingsDialog.cpp:2286
@@ -2008,10 +1970,8 @@ msgid "Help"
 msgstr "Ayuda"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4374
-#, fuzzy
-#| msgid "High-Quality Rendering"
 msgid "High-Quality Clouds"
-msgstr "Renderización de Alta Calidad"
+msgstr "Nubes de alta Calidad"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4149
 #: ..\FloatingSandbox\SettingsDialog.cpp:4929
@@ -2087,16 +2047,12 @@ msgid "Import Electrical Layer"
 msgstr "Importar capa eléctrica"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:5290 ..\ShipBuilderLib\MainFrame.cpp:5376
-#, fuzzy
-#| msgid "Import Texture Layer"
 msgid "Import Exterior Layer"
-msgstr "Importar capa de textura"
+msgstr "Importar capa exterior"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:5308
-#, fuzzy
-#| msgid "Import Texture Layer"
 msgid "Import Interior Layer"
-msgstr "Importar capa de textura"
+msgstr "Importar capa interior"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:5252
 msgid "Import Ropes Layer"
@@ -2151,14 +2107,12 @@ msgid "Interactive Switch"
 msgstr "Llave interactiva"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1129
-#, fuzzy
-#| msgid "Electrical Layer"
 msgid "Interior Layer"
-msgstr "Capa eléctrica"
+msgstr "Capa interior"
 
 #: ..\FloatingSandbox\MainFrame.cpp:355
 msgid "Interior View"
-msgstr ""
+msgstr "Vista Interior"
 
 #: ..\ShipBuilderLib\UI\ShipPropertiesEditDialog.cpp:622
 msgid "Internal Pressure"
@@ -2186,10 +2140,8 @@ msgid "Jet"
 msgstr "Jet"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:665
-#, fuzzy
-#| msgid "Friction Drag Adjust"
 msgid "Kinetic Friction Adjust"
-msgstr "Ajuste de la fricción por arrastre"
+msgstr "Ajuste de la fricción cinética"
 
 #: ..\FloatingSandbox\MainFrame.cpp:525
 #: ..\ShipBuilderLib\UI\MaterialPalette.cpp:818
@@ -2240,10 +2192,8 @@ msgid "Lights"
 msgstr "Luces"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:198
-#, fuzzy
-#| msgid "Lights, Electricals, and Fishes"
 msgid "Lights, Electricals, Fishes, NPCs"
-msgstr "Luces, Eléctrica, y Peces"
+msgstr "Luces, Eléctrica, Peces y NPCs"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2118 ..\ShipBuilderLib\MainFrame.cpp:2206
 msgid "Line Size:"
@@ -2271,7 +2221,7 @@ msgstr "Cargar Barco..."
 
 #: ..\UILib\ShipLoadDialog.cpp:433
 msgid "Load a random ship"
-msgstr ""
+msgstr "Cargar un barco aleatorio"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:773
 msgid "Load a ship (Ctrl+O)."
@@ -2361,10 +2311,8 @@ msgid "MUSIC"
 msgstr "MUSICA"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3035
-#, fuzzy
-#| msgid "Magnifies or minimizes the physical size of fishes."
 msgid "Magnifies or minimizes the physical size of NPCs."
-msgstr "Aumenta o disminuye el tamaño físico de los peces."
+msgstr "Aumenta o disminuye el tamaño físico de los NPCs."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2879
 msgid "Magnifies or minimizes the physical size of fishes."
@@ -2407,7 +2355,7 @@ msgstr "Máximas partículas incendiadas"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:1077
 msgid "Max NPCs"
-msgstr ""
+msgstr "Máximos NPCs"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:5592
 msgid "Max Threads"
@@ -2468,7 +2416,7 @@ msgstr "Mover todo/Rotar todo"
 
 #: ..\FloatingSandbox\MainFrame.cpp:606
 msgid "Move NPC"
-msgstr ""
+msgstr "Mover NPC"
 
 #: ..\FloatingSandbox\MainFrame.cpp:396
 msgid "Move/Rotate"
@@ -2488,20 +2436,20 @@ msgstr "Silencia o Habilita todos los sonidos."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4404
 msgid "NPC"
-msgstr ""
+msgstr "NPC"
 
 #: ..\FloatingSandbox\CreditsPanel.cpp:80
 msgid "NPC ASSETS"
-msgstr ""
+msgstr "RECURSOS NPC"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:112
 #: ..\FloatingSandbox\SettingsDialog.cpp:2996
 msgid "NPCs"
-msgstr ""
+msgstr "NPCs"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:1106
 msgid "NPCs per Group"
-msgstr ""
+msgstr "NPCs por grupo"
 
 #: ..\ShipBuilderLib\UI\ShipPropertiesEditDialog.cpp:213
 msgid "Name of the ship, e.g. \"R.M.S. Titanic\""
@@ -2548,10 +2496,8 @@ msgid "No"
 msgstr "No"
 
 #: ..\FloatingSandbox\MainFrame.cpp:340
-#, fuzzy
-#| msgid "Continuous Auto-Focus"
 msgid "No Auto-Focus"
-msgstr "Auto-Enfocado Continuo"
+msgstr "No Auto-Enfocado"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:5273
 msgid "No Debug"
@@ -2784,7 +2730,7 @@ msgstr "Fisicas"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3059
 msgid "Physics Tools Affect NPCs"
-msgstr ""
+msgstr "Las herramientas físicas afectan a los NPCs"
 
 #: ..\FloatingSandbox\MainFrame.cpp:405
 msgid "Pick-n-Pull"
@@ -2834,10 +2780,8 @@ msgid "Power (HP)"
 msgstr "Poder (HP)"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2063
-#, fuzzy
-#| msgid "Force Adjust"
 msgid "Power Adjust"
-msgstr "Ajuste de fuerza"
+msgstr "Ajuste de poder"
 
 #: ..\ShipBuilderLib\UI\MaterialPalette.cpp:849
 msgid "Power Monitor"
@@ -2939,7 +2883,7 @@ msgstr "Ajustar la inundación por lluvia"
 
 #: ..\FloatingSandbox\MainFrame.cpp:2869 ..\FloatingSandbox\MainFrame.cpp:2915
 msgid "Random"
-msgstr ""
+msgstr "Aleatorio"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2193
 msgid "Rate"
@@ -2986,22 +2930,16 @@ msgid "Remove Electrical Layer"
 msgstr "Remover capa eléctrica"
 
 #: ..\ShipBuilderLib\Controller.cpp:1767
-#, fuzzy
-#| msgid "Remove Texture Layer"
 msgid "Remove Exterior Layer"
-msgstr "Remover capa de textura"
+msgstr "Remover capa exterior"
 
 #: ..\ShipBuilderLib\Controller.cpp:1781
-#, fuzzy
-#| msgid "Remove Texture Layer"
 msgid "Remove Interior Layer"
-msgstr "Remover capa de textura"
+msgstr "Remover capa interior"
 
 #: ..\FloatingSandbox\MainFrame.cpp:612
-#, fuzzy
-#| msgid "Remove"
 msgid "Remove NPC"
-msgstr "Remover"
+msgstr "Remover NPC"
 
 #: ..\ShipBuilderLib\Controller.cpp:1755
 msgid "Remove Ropes Layer"
@@ -3028,32 +2966,21 @@ msgid "Rendering"
 msgstr "Renderización"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4375
-#, fuzzy
-#| msgid ""
-#| "Renders the ocean with additional details. Requires more computational "
-#| "resources."
 msgid ""
 "Renders clouds with additional details. Requires more computational "
 "resources."
-msgstr ""
-"Renderiza el océano con detalles adicionales. Requiere mas poder de "
-"procesamiento."
+msgstr "Renderiza las nubes con detalles adicionales. Consume mas recursos."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:5416
 msgid "Renders flames out of the HeatBlaster tool."
 msgstr "Renderiza llamas fuera la herramienta del lanzallamas ."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4930
-#, fuzzy
-#| msgid ""
-#| "Renders the ocean with additional details. Requires more computational "
-#| "resources."
 msgid ""
 "Renders the ocean floor with additional details. Requires more computational "
 "resources."
 msgstr ""
-"Renderiza el océano con detalles adicionales. Requiere mas poder de "
-"procesamiento."
+"Renderiza el fondo oceánico con detalles adicionales. Consume mas recursos."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4150
 msgid ""
@@ -3335,7 +3262,7 @@ msgstr "Ver la información del barco"
 
 #: ..\FloatingSandbox\MainFrame.cpp:643
 msgid "Select Next NPC"
-msgstr ""
+msgstr "Seleccionar NPC siguiente"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:3971 ..\ShipBuilderLib\MainFrame.cpp:4182
 #: ..\ShipBuilderLib\MainFrame.cpp:4345 ..\ShipBuilderLib\MainFrame.cpp:4524
@@ -3399,10 +3326,8 @@ msgid "Sets a predefined color for the canvas background."
 msgstr "Establece un color predeterminado para el fondo del lienzo."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4443
-#, fuzzy
-#| msgid "Sets the color of lamp lights."
 msgid "Sets the color of anonymous NPCs."
-msgstr "Establece el color de las luces de las lamparas."
+msgstr "Establece el color de los NPCs anónimos."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4491
 msgid "Sets the color of lamp lights."
@@ -3540,10 +3465,8 @@ msgid "Show Frontiers"
 msgstr "Mostrar Fronteras"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:1147
-#, fuzzy
-#| msgid "Show Tsunami Notifications"
 msgid "Show NPC Notifications"
-msgstr "Mostrar notificaciones de tsunami"
+msgstr "Mostrar notificaciones de NPC"
 
 #: ..\FloatingSandbox\MainFrame.cpp:679
 msgid "Show Probe Panel"
@@ -3637,6 +3560,8 @@ msgid ""
 "Some of the changes made will only be enforced when the next ship is loaded. "
 "Reload the ship now?"
 msgstr ""
+"Algunos de los cambios realizados solo surtirán efecto cuando el próximo "
+"barco sea cargado. Desea recargar el barco?"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4970
 msgid "Sound"
@@ -3652,19 +3577,19 @@ msgstr "Sonido y configuraciones avanzadas"
 
 #: ..\FloatingSandbox\MainFrame.cpp:636
 msgid "Spawn Furniture NPC Group"
-msgstr ""
+msgstr "Generar grupo de muebles NPC"
 
 #: ..\FloatingSandbox\MainFrame.cpp:596
 msgid "Spawn Furniture NPC..."
-msgstr ""
+msgstr "Generar muebles NPC..."
 
 #: ..\FloatingSandbox\MainFrame.cpp:629
 msgid "Spawn Human NPC Group"
-msgstr ""
+msgstr "Generar grupo humano NPC"
 
 #: ..\FloatingSandbox\MainFrame.cpp:583
 msgid "Spawn Human NPC..."
-msgstr ""
+msgstr "Generar humano NPC..."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2085
 msgid "Spawn Rain"
@@ -3714,10 +3639,8 @@ msgid "Static Forces"
 msgstr "Fuerzas estaticas"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:638
-#, fuzzy
-#| msgid "Water Friction Drag Adjust"
 msgid "Static Friction Adjust"
-msgstr "Ajuste de la fricción por arrastre del agua"
+msgstr "Ajuste de la fricción estatica"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:692
 msgid "Static Pressure Adjust"
@@ -3745,7 +3668,7 @@ msgstr "Pasar un fotograma a la vez"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4428
 msgid "Stickmen With Roles"
-msgstr ""
+msgstr "Hombres de palo con roles"
 
 #: ..\ShipBuilderLib\UI\MaterialPalette.cpp:591
 msgid "Stiffness"
@@ -3838,10 +3761,8 @@ msgid "Texture Transparency"
 msgstr "Transparencia de las texturas"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:3473
-#, fuzzy
-#| msgid "Texture mode: view ship with texture."
 msgid "Texture mode: view ship with exterior texture."
-msgstr "Modo de texturas: ver el barco con la textura."
+msgstr "Modo de texturas: ver el barco con la textura exterior."
 
 #: ..\FloatingSandbox\MainFrame.cpp:485
 msgid "Thanos' Snap"
@@ -4012,13 +3933,6 @@ msgid "The level of detail of materials' textures"
 msgstr "El nivel de detalle de las texturas de los materiales"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:900
-#, fuzzy
-#| msgid ""
-#| "The maximum number of particles that may burn at any given moment in "
-#| "time; together with the combustion heat adjustment, determines the speed "
-#| "with which fire spreads to adjacent particles. Warning: higher values "
-#| "require more computing resources, with the risk of slowing the simulation "
-#| "down!"
 msgid ""
 "The maximum number of particles that may burn at any given moment in time on "
 "a ship; together with the combustion heat adjustment, determines the speed "
@@ -4026,10 +3940,10 @@ msgid ""
 "require more computing resources, with the risk of slowing the simulation "
 "down!"
 msgstr ""
-"El numero máximo de partículas que se queman en el momento; en conjunto con "
-"el ajuste de calor de combustión, determina la velocidad a la cual el fuego "
-"se dispersa a partículas cercanas. Aviso: valores altos requieren mas poder "
-"de procesamiento con el riesgo de enlentecer la simulación!"
+"El numero máximo de partículas que se queman al mismo tiempo; en conjunto "
+"con el ajuste de calor de combustión, determina la velocidad a la cual el "
+"fuego se dispersa a partículas cercanas. Aviso: valores altos consumen mas "
+"recursos, con el riesgo de enlentecer la simulación!"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2527
 msgid ""
@@ -4078,16 +3992,12 @@ msgid "The selected ship does not have an electrical layer"
 msgstr "El barco seleccionado no tiene una capa electrica"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:5283
-#, fuzzy
-#| msgid "The selected ship does not have a texture layer"
 msgid "The selected ship does not have an exterior layer"
-msgstr "El barco seleccionado no tiene una capa de texturas"
+msgstr "El barco seleccionado no tiene una capa externa"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:5301
-#, fuzzy
-#| msgid "The selected ship does not have a texture layer"
 msgid "The selected ship does not have an interior layer"
-msgstr "El barco seleccionado no tiene una capa de texturas"
+msgstr "El barco seleccionado no tiene una capa interna"
 
 #: ..\ShipBuilderLib\UI\AskPasswordDialog.cpp:78
 msgid ""
@@ -4179,10 +4089,8 @@ msgid "Thermal Conductivity Adjust"
 msgstr "Ajuste de la conductividad térmica"
 
 #: ..\ShipBuilderLib\UI\MaterialPalette.cpp:603
-#, fuzzy
-#| msgid "Thermal Expansion Coefficient (1/K)"
 msgid "Thermal Expansion Coefficient (1/MK)"
-msgstr "Coeficiente de expansión termal (1/K)"
+msgstr "Coeficiente de expansión termal (1/MK)"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:941
 msgid "Thermodynamics"
@@ -4355,7 +4263,7 @@ msgstr "Frecuencia de los tsunamis"
 
 #: ..\FloatingSandbox\MainFrame.cpp:617
 msgid "Turnaround NPC"
-msgstr ""
+msgstr "Girar NPC"
 
 #: ..\ShipBuilderLib\UI\MaterialPalette.cpp:710
 msgid "Type"

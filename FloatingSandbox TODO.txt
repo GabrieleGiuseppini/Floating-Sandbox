@@ -649,8 +649,10 @@ v			+ FixedSetSliderCore
 			X If ok: use it again at EndMoveNpc and CompleteNewNpc and AddGroup
 			+ If not ok: nuke whole GainMeshVelocity and options
 	
-	- Use mouse wheel down as shift:
-		- https://forums.wxwidgets.org/viewtopic.php?t=50464
+	= Use mouse wheel down as shift:
+		+ https://forums.wxwidgets.org/viewtopic.php?t=50464
+		= User test
+		- changelist
 
 	= Ubuntu preparation
 		+ Upgrade
@@ -659,6 +661,7 @@ v			+ FixedSetSliderCore
 		+ Run unit tests
 		= Test
 			- First off: see that env var we're set and confirm we say it right in the readme
+			- Mid button
 			- NPCs
 			- All indexed rendering
 			- Flames
@@ -694,9 +697,9 @@ v			+ FixedSetSliderCore
 					+ Asked name: doctor1922
 				+ https://discord.com/channels/@me/1128107472129896568/1259012624524247098
 				+ All these: https://discord.com/channels/559822257275404307/562030667198758913/1124472062308778184
-				-  #contest-entries
+				+ #contest-entries
 					- https://discord.com/channels/925233659118755842/1290838947777478758, all in _TO_TRY already, have to chase owners we don't know
-						- Check if dupes
+						+ Check if dupes
 
 				- Results:
 					+ Takara:
@@ -724,20 +727,29 @@ v			+ FixedSetSliderCore
 						+ Test: _TO_TRY/Bartosz1944PL
 						- Asked credits
 						- Move to final
-					- TheCochu444yt
+					+ TheCochu444yt
 						= Test: _TO_TRY/Lorotanic
-							- Asked which version
-						- Asked credits
-						- Move to final
+						+ Asked credits: TheCochu444yt
+						+ Move to final
 		
 			= _TO_TEST:
 				+ JU 87 B-2 by Ha-Ha Hans
-				+ Saturn V (Ur local brazilian#0842, aka Transportation Fan - already in credits)
+				= Saturn V (Ur local brazilian#0842, aka Transportation Fan - already in credits)
+					- Attach engines
+						- Asked permission
 				+ "Hellooping" in _TO_TEST
 					+ Guy is already credited		
 				- U.S.S. Maximum 4 in _TO_TEST
 					- Is it from Discord?
-				- S.S. Matos from Sean Dempsey, in _TO_TEST
+				X S.S. Matos from Sean Dempsey, in _TO_TEST
+				- Longhorn ships, in _TO_TEST
+					+ All good:
+						+ SS 19H1
+						+ SS Tuscany
+						+ SS Cedar
+						+ SS Quebec
+					- Asked permission & credits
+					- Move to final
 			+ Remove:
 				+ See screenshot @ desktop
 			- Credits:
@@ -747,6 +759,7 @@ v			+ FixedSetSliderCore
 				- Ventrix
 				- QHM
 				- Ha-Ha Hans
+				- TheCochu444yt
 			- Cleanup all installed Ships folders, re-copy, and test
 			- Run ship verification script
 			- Changelist
@@ -772,30 +785,46 @@ v			+ FixedSetSliderCore
 						+ Storm strength vs. sping strength adjust
 						+ Copyright @ Credits
 			- ES:
-				- PO
-				- Two helps // Joadix had noticed bugs
-				- NPC json
-				- When done:
-					- Test:
-						- Copyright @ Credits
-						- NPC menu
-			- RU:
-				- PO
-				- Two helps
-				- NPC json
-				- When done:
-					- Test:
-						- Copyright @ Credits
-						- NPC menu
-					- LOCALIZATION credits: add Dkuz 
+				+ PO
+					+ Taken
+					+ Test
+					+ Compile
+				+ Two helps // Joadix had noticed bugs
+				= NPC json
+					+ Take
+					= Test
+						- Asked: Pasagero vs Pasajero
+				+ When done:
+					+ Test:
+						+ Copyright @ Credits
+						+ NPC menu
+			+ RU:
+				+ PO
+					+ Taken
+					+ Test
+					+ Compile
+				+ Two helps
+					+ Test
+				+ NPC json
+					+ Take
+					+ Test
+				+ When done:
+					+ Test:
+						+ Copyright @ Credits
+						+ NPC menu
+					+ LOCALIZATION credits: add Dkuz 
+
 			- UK:
 				- PO
 				+ Two helps
-				- NPC json
+				= NPC json
+					- Take and test
 				- When done:
 					- Test:
 						- Copyright @ Credits
 						- NPC menu
+
+	- Send beta to localizers for final test
 
 	- After next release:
 		- Update GameJolt to say Ubuntu 24.04

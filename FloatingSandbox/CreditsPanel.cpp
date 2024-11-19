@@ -84,6 +84,7 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
         {1, wxS("Gabriele Giuseppini (Italian)"), 0},
         {1, wxS("Ilya Voloshin (https://vk.com/1lvol) (Russian)"), 0},
         {1, wxS("Roman Shavernew (DioxCode) (Russian, Ukrainian)"), 0},
+        {1, wxS("Dmitrii Kuznetzov (Dkuz) (Russian)"), 0},
         {1, wxS("Joaquin Olivera (Joadix100) (Spanish)"), VMargin3},
 
         {0, _("TESTING"), 0},
