@@ -742,13 +742,13 @@ v			+ FixedSetSliderCore
 				- U.S.S. Maximum 4 in _TO_TEST
 					- Is it from Discord?
 				X S.S. Matos from Sean Dempsey, in _TO_TEST
-				- Longhorn ships, in _TO_TEST
+				= Longhorn ships, in _TO_TEST
 					+ All good:
 						+ SS 19H1
 						+ SS Tuscany
 						+ SS Cedar
 						+ SS Quebec
-					- Asked permission & credits
+					+ Asked permission & credits: "Longhorn"
 					- Move to final
 			+ Remove:
 				+ See screenshot @ desktop
@@ -760,6 +760,7 @@ v			+ FixedSetSliderCore
 				- QHM
 				- Ha-Ha Hans
 				- TheCochu444yt
+				- Longhorn
 			- Cleanup all installed Ships folders, re-copy, and test
 			- Run ship verification script
 			- Changelist
@@ -824,6 +825,9 @@ v			+ FixedSetSliderCore
 						+ Copyright @ Credits
 						+ NPC menu
 				+ Ask credits
+
+	- Pre-release MSI smoke testing candidates:
+		- Longhorn
 
 	- After next release:
 		- Update GameJolt to say Ubuntu 24.04
