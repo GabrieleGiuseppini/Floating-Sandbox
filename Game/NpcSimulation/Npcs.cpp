@@ -1206,14 +1206,14 @@ void Npcs::EndMoveNpc(
     NpcId id,
     float currentSimulationTime)
 {
-    InternalEndMoveNpc(id, currentSimulationTime, NpcInitializationOptions::None);
+    InternalEndMoveNpc(id, currentSimulationTime);
 }
 
 void Npcs::CompleteNewNpc(
     NpcId id,
     float currentSimulationTime)
 {
-    InternalCompleteNewNpc(id, currentSimulationTime, NpcInitializationOptions::None);
+    InternalCompleteNewNpc(id, currentSimulationTime);
 }
 
 void Npcs::RemoveNpc(NpcId id)
@@ -1515,7 +1515,7 @@ std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> Npcs::AddNpcGroup
                 placementOutcome = BeginPlaceNewHumanNpc(
                     subKind,
                     npcPosition + vec2f(0.0, height), // Head
-                    false,
+                    false, // DoWholeMesh
                     currentSimulationTime);
 
                 break;
@@ -1530,8 +1530,7 @@ std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> Npcs::AddNpcGroup
 
         InternalCompleteNewNpc(
             std::get<0>(placementOutcome)->Id,
-            currentSimulationTime,
-            NpcInitializationOptions::GainMeshVelocity);
+            currentSimulationTime);
 
         if (nNpcsAdded == 0)
         {

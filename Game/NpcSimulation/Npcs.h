@@ -1150,33 +1150,23 @@ private:
 	// Simulation
 	//
 
-	enum class NpcInitializationOptions
-	{
-		None = 0,
-		GainMeshVelocity = 1
-	};
-
 	void InternalEndMoveNpc(
 		NpcId id,
-		float currentSimulationTime,
-		NpcInitializationOptions options);
+		float currentSimulationTime);
 
 	void InternalCompleteNewNpc(
 		NpcId id,
-		float currentSimulationTime,
-		NpcInitializationOptions options);
+		float currentSimulationTime);
 
 	void ResetNpcStateToWorld(
 		StateType & npc,
-		float currentSimulationTime,
-		NpcInitializationOptions options);
+		float currentSimulationTime);
 
 	void ResetNpcStateToWorld(
 		StateType & npc,
 		float currentSimulationTime,
 		Ship const & homeShip,
-		std::optional<ElementIndex> primaryParticleTriangleIndex,
-		NpcInitializationOptions options);
+		std::optional<ElementIndex> primaryParticleTriangleIndex);
 
 	void TransitionParticleToConstrainedState(
 		StateType & npc,
@@ -1890,5 +1880,3 @@ private:
 };
 
 }
-
-template <> struct is_flag<Physics::Npcs::NpcInitializationOptions> : std::true_type {};

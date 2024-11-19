@@ -640,7 +640,18 @@ v			+ FixedSetSliderCore
 			+ Fix at WriteParticle
 			+ See if others exist
 		+ Changelist
+
+	+ See why Group NPCs fall immediately
+		+ Removing GainMeshVelocity makes it ok
+		+ Re-check gain: we set abs velocity, should also set relative? (NOTE: verified rel is zero now)
+			X Try with setting abs velocity to avg of all endpoints of triangles of all particles
+				! After all, the abnormal velocity we impart now is due to mesh vibrations
+			X If ok: use it again at EndMoveNpc and CompleteNewNpc and AddGroup
+			+ If not ok: nuke whole GainMeshVelocity and options
 	
+	- Use mouse wheel down as shift:
+		- https://forums.wxwidgets.org/viewtopic.php?t=50464
+
 	= Ubuntu preparation
 		+ Upgrade
 		+ Install gcc 14
@@ -726,6 +737,7 @@ v			+ FixedSetSliderCore
 					+ Guy is already credited		
 				- U.S.S. Maximum 4 in _TO_TEST
 					- Is it from Discord?
+				- S.S. Matos from Sean Dempsey, in _TO_TEST
 			+ Remove:
 				+ See screenshot @ desktop
 			- Credits:
@@ -739,6 +751,8 @@ v			+ FixedSetSliderCore
 			- Run ship verification script
 			- Changelist
 			+ Undo code change for password checks
+
+		- Ask Denis credits for testing
 		
 		= Localization:
 			+ Change two help files to remove stuff we've removed and add stuff we haven't localized
