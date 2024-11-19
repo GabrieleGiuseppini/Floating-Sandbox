@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Floating Sandbox\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-11-16 22:05+0100\n"
+"PO-Revision-Date: 2024-11-19 23:00+0100\n"
 "Last-Translator: Gabriele Giuseppini <gabrielegiuseppini@gmail.com>\n"
 "Language-Team: Ilya Voloshin; Roman Shavernew (DioxCode)\n"
 "Language: ru\n"
@@ -28,7 +28,7 @@ msgstr "&Довідка"
 
 #: ..\FloatingSandbox\MainFrame.cpp:648
 msgid "&NPCs"
-msgstr ""
+msgstr "&НПС"
 
 #: ..\FloatingSandbox\MainFrame.cpp:709
 msgid "&Options"
@@ -55,10 +55,8 @@ msgid "(Structure View)"
 msgstr "(Перегляд структури)"
 
 #: ..\FloatingSandbox\CreditsPanel.cpp:72
-#, fuzzy
-#| msgid "(c) Gabriele Giuseppini 2018-2022"
 msgid "(c) Gabriele Giuseppini (G2-Labs) 2018-2024"
-msgstr "(c) Gabriele Giuseppini 2018-2022"
+msgstr "(c) Gabriele Giuseppini (G2-Labs) 2018-2024"
 
 #: ..\FloatingSandbox\CreditsPanel.cpp:161
 msgid "3RD-PARTY SOFTWARE"
@@ -74,7 +72,7 @@ msgstr "90º праворуч"
 
 #: ..\FloatingSandbox\CreditsPanel.cpp:193
 msgid "A G2-Labs Production"
-msgstr ""
+msgstr "Виробництво  G2-Labs"
 
 #: ..\FloatingSandbox\NewVersionDisplayDialog.cpp:19
 msgid "A New Version Is Available!"
@@ -184,10 +182,8 @@ msgstr ""
 "жорсткість корабля."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4729
-#, fuzzy
-#| msgid "Adjusts the size of flames."
 msgid "Adjusts the chaoticness of flames."
-msgstr "Регулює розмір полум'я."
+msgstr "Регулює хаотичність полум'я."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1501
 msgid ""
@@ -223,10 +219,8 @@ msgid "Adjusts the density of smoke particles."
 msgstr "Регулює щільність частинок диму."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:612
-#, fuzzy
-#| msgid "Adjusts the elasticity of collisions with the ocean floor."
 msgid "Adjusts the elasticity of collisions between materials."
-msgstr "Регулює пружність зіткнень з океанським дном."
+msgstr "Регулює пружність зіткнень між матеріалами."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1528
 msgid "Adjusts the elasticity of collisions with the ocean floor."
@@ -245,10 +239,8 @@ msgstr ""
 "чинності тільки під час завантаження наступного судна."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3009
-#, fuzzy
-#| msgid "Adjusts the friction exherted by the ocean floor."
 msgid "Adjusts the friction exherted by and onto NPC particles."
-msgstr "Регулює тертя, яке створює океанське дно."
+msgstr "Регулює тертя частинок НПС і на них."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1554
 msgid "Adjusts the friction exherted by the ocean floor."
@@ -304,7 +296,7 @@ msgstr ""
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:666
 msgid "Adjusts the kinetic friction coefficient."
-msgstr ""
+msgstr "Регулює кінетичний коефіцієнт тертя."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1127
 msgid ""
@@ -440,7 +432,7 @@ msgstr "Регулює швидкість, з якою вода поширюєт
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:639
 msgid "Adjusts the static friction coefficient."
-msgstr ""
+msgstr "Регулює коефіцієнт статичного тертя."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:693
 msgid ""
@@ -566,7 +558,7 @@ msgstr "Аналіз"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4436
 msgid "Anonymous Stickmen"
-msgstr ""
+msgstr "Анонімні Стікмен"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2456
 msgid "Anti-Alias:"
@@ -625,10 +617,8 @@ msgid "Author(s), e.g. \"Ellen Ripley; David Gahan\""
 msgstr "Автор(и), наприклад, \"Еллен Ріплі; Девід Гаан\"."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:1133
-#, fuzzy
-#| msgid "Auto-Focus at Ship Load"
 msgid "Auto-Focus at NPC Add"
-msgstr "Автофокусування під час завантаження судна"
+msgstr "Автофокус на додавання НПС"
 
 #: ..\FloatingSandbox\MainFrame.cpp:316
 #: ..\FloatingSandbox\PreferencesDialog.cpp:1009
@@ -718,7 +708,7 @@ msgstr "Точка горіння"
 
 #: ..\FloatingSandbox\MainFrame.cpp:754
 msgid "Buy Merchandise..."
-msgstr ""
+msgstr "Купи товари..."
 
 #: ..\ShipBuilderLib\UI\MaterialPalette.cpp:718
 msgid "Cable"
@@ -796,21 +786,18 @@ msgstr ""
 "видно тільки після завантаження наступного корабля."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:1078
-#, fuzzy
-#| msgid ""
-#| "Changes the level of detail of materials' textures. Changes to this "
-#| "setting will only be visible after the next ship is loaded."
 msgid ""
 "Changes the maximum number of NPCs. Warning: higher values require more "
 "computing resources, with the risk of slowing the simulation down! Changes "
 "to this setting will only be visible after the next ship is loaded."
 msgstr ""
-"Змінює рівень деталізації текстур матеріалів. Зміни цього параметра буде "
-"видно тільки після завантаження наступного корабля."
+"Змінює максимальну кількість НПС. Попередження: вищі значення потребують "
+"більше обчислювальних ресурсів, що може сповільнити симуляцію! Зміни цього "
+"параметра будуть помітні лише після завантаження наступного корабля."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:1107
 msgid "Changes the number of NPCs spawned when a group is added."
-msgstr ""
+msgstr "Змінює кількість НПС, що з'являються під час додавання групи."
 
 #: ..\ShipBuilderLib\UI\ShipPropertiesEditDialog.cpp:900
 msgid "Changes the transparency of materials' textures."
@@ -903,16 +890,12 @@ msgid "Continuous Auto-Focus"
 msgstr "Безперервне автофокусування"
 
 #: ..\FloatingSandbox\MainFrame.cpp:331
-#, fuzzy
-#| msgid "Continuous Auto-Focus"
 msgid "Continuous Auto-Focus on NPC"
-msgstr "Безперервне автофокусування"
+msgstr "Безперервний автофокус на НПС"
 
 #: ..\FloatingSandbox\MainFrame.cpp:322
-#, fuzzy
-#| msgid "Continuous Auto-Focus"
 msgid "Continuous Auto-Focus on Ship"
-msgstr "Безперервне автофокусування"
+msgstr "Безперервний автофокус на судні"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4797
 msgid "Contrast"
@@ -927,16 +910,12 @@ msgstr ""
 "бачити корабель навіть уночі."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4677
-#, fuzzy
-#| msgid ""
-#| "Controls the sensitivity of the ship to ambient light; lower values allow "
-#| "the ship to be visible also at night."
 msgid ""
 "Controls the sensitivity of the ship to depth darkening; lower values allow "
 "the ship to be visible also at depth."
 msgstr ""
-"Керує чутливістю корабля до навколишнього світла; нижчі значення дають змогу "
-"бачити корабель навіть уночі."
+"Контролює чутливість корабля до глибинного затемнення; нижчі значення "
+"дозволяють судну бути видимим також на глибині."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1778
 msgid "Copy"
@@ -1030,10 +1009,8 @@ msgid "Depth"
 msgstr "Глибина"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4676
-#, fuzzy
-#| msgid "Darkening Rate"
 msgid "Depth Darkening"
-msgstr "Коефіцієнт затемнення дна"
+msgstr "Глибина затемнення"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4070
 msgid "Depth Gradient"
@@ -1106,10 +1083,8 @@ msgid "Direction (rad)"
 msgstr "Напрямок (рад)"
 
 #: ..\FloatingSandbox\MainFrame.cpp:340
-#, fuzzy
-#| msgid "Enable or disable continuous auto-focus."
 msgid "Disable continuous auto-focus."
-msgstr "Увімкнення або вимкнення безперервного автофокусування."
+msgstr "Вимкніть безперервний автофокус."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:885
 msgid "Discard the current ship and return to the simulator."
@@ -1233,16 +1208,16 @@ msgstr "Намалюйте прямокутники з частинок."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4429
 msgid "Draws NPCs as stick-men, color-coded according to their roles."
-msgstr ""
+msgstr "Малює НПС як паличок, позначених кольорами відповідно до їхніх ролей."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4437
 msgid ""
 "Draws NPCs as uniformly-colored stick-men, with no distinctions among roles."
-msgstr ""
+msgstr "Малює НПС як одноколірних паличок без відмінностей між ролями."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4421
 msgid "Draws NPCs with skins."
-msgstr ""
+msgstr "Малює НПС зі скінами."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4894
 msgid "Draws the ocean floor using a static color."
@@ -1314,10 +1289,8 @@ msgid "Elasticity"
 msgstr "Еластичність"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:611
-#, fuzzy
-#| msgid "Elasticity"
 msgid "Elasticity Adjust"
-msgstr "Еластичність"
+msgstr "Регулювання еластичності"
 
 #: ..\FloatingSandbox\MainFrame.cpp:435
 msgid "Electric Spark"
@@ -1348,16 +1321,12 @@ msgid "Enable Shoaling"
 msgstr "Увімкнути обміління"
 
 #: ..\FloatingSandbox\MainFrame.cpp:331
-#, fuzzy
-#| msgid "Enable or disable continuous auto-focus."
 msgid "Enable continuous auto-focus on selected NPCs."
-msgstr "Увімкнення або вимкнення безперервного автофокусування."
+msgstr "Увімкніть постійний автофокус на вибраних НПС."
 
 #: ..\FloatingSandbox\MainFrame.cpp:322
-#, fuzzy
-#| msgid "Enable or disable continuous auto-focus."
 msgid "Enable continuous auto-focus on ships."
-msgstr "Увімкнення або вимкнення безперервного автофокусування."
+msgstr "Увімкніть постійний автофокус на кораблях."
 
 #: ..\FloatingSandbox\MainFrame.cpp:316
 msgid "Enable or disable auto-focus when a ship is loaded."
@@ -1380,10 +1349,8 @@ msgid "Enables or disables auto-focus when a ship is loaded."
 msgstr "Вмикає або вимикає автофокусування під час завантаження корабля."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:1134
-#, fuzzy
-#| msgid "Enables or disables auto-focus when a ship is loaded."
 msgid "Enables or disables auto-focus when an NPC is added."
-msgstr "Вмикає або вимикає автофокусування під час завантаження корабля."
+msgstr "Вмикає або вимикає автофокус, коли додається НПС."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2548
 msgid "Enables or disables automatic cycling of daylight."
@@ -1447,10 +1414,8 @@ msgstr ""
 "близькі до розриву."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:1148
-#, fuzzy
-#| msgid "Enables or disables notifications when a tsunami is being spawned."
 msgid "Enables or disables notifications about NPCs."
-msgstr "Вмикає або вимикає сповіщення у разі виникнення цунамі."
+msgstr "Вмикає або вимикає сповіщення про НПС."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:613
 msgid "Enables or disables notifications when a tsunami is being spawned."
@@ -1520,6 +1485,8 @@ msgid ""
 "Enables or disables the effect of physics tools - such as Swirl, Attract, or "
 "Repel - on NPCs."
 msgstr ""
+"Вмикає або вимикає дію фізичних інструментів, таких як Вихор, Притягувати, "
+"або Відштовхувати, на НПС."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:5047
 msgid ""
@@ -1654,14 +1621,12 @@ msgid "Extent"
 msgstr "Ступінь"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1123 ..\ShipBuilderLib\MainFrame.cpp:3325
-#, fuzzy
-#| msgid "Electrical Layer"
 msgid "Exterior Layer"
-msgstr "Шар Електрики"
+msgstr "Зовнішній шар"
 
 #: ..\FloatingSandbox\MainFrame.cpp:351
 msgid "Exterior View"
-msgstr ""
+msgstr "Зовнішній вигляд"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:5342
 msgid "Extra Draw Options"
@@ -1709,10 +1674,8 @@ msgid "Fix this error by removing the offending electrical particles."
 msgstr "Виправте цю помилку, видаливши електричні частинки, що порушили її."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4728
-#, fuzzy
-#| msgid "Flame Size Adjust"
 msgid "Flame Chaos Adjust"
-msgstr "Розмір полум'я"
+msgstr "Налаштування хаосу полум'я"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4702
 msgid "Flame Size Adjust"
@@ -1808,7 +1771,7 @@ msgstr "Водне божевілля"
 
 #: ..\FloatingSandbox\MainFrame.cpp:622
 msgid "Follow NPC"
-msgstr ""
+msgstr "Дотримуйтесь НПС"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3396
 msgid "Force Adjust"
@@ -1842,10 +1805,8 @@ msgid "Friction"
 msgstr "Тертя"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3008
-#, fuzzy
-#| msgid "Friction Drag Adjust"
 msgid "Friction Adjust"
-msgstr "Регулювання опору до тертя"
+msgstr "Регулювання тертя"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1072
 #: ..\FloatingSandbox\SettingsDialog.cpp:2286
@@ -1990,10 +1951,8 @@ msgid "Help"
 msgstr "Допомога"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4374
-#, fuzzy
-#| msgid "High-Quality Rendering"
 msgid "High-Quality Clouds"
-msgstr "Якісний рендеринг"
+msgstr "Високо-якісні хмари"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4149
 #: ..\FloatingSandbox\SettingsDialog.cpp:4929
@@ -2066,16 +2025,12 @@ msgid "Import Electrical Layer"
 msgstr "Імпортувати електричний шар"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:5290 ..\ShipBuilderLib\MainFrame.cpp:5376
-#, fuzzy
-#| msgid "Import Texture Layer"
 msgid "Import Exterior Layer"
-msgstr "Імпорт шару текстури"
+msgstr "Імпорт зовнішнього шару"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:5308
-#, fuzzy
-#| msgid "Import Texture Layer"
 msgid "Import Interior Layer"
-msgstr "Імпорт шару текстури"
+msgstr "Імпорт внутрішнього шару"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:5252
 msgid "Import Ropes Layer"
@@ -2130,14 +2085,12 @@ msgid "Interactive Switch"
 msgstr "Інтерактивний перемикач"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1129
-#, fuzzy
-#| msgid "Electrical Layer"
 msgid "Interior Layer"
-msgstr "Шар Електрики"
+msgstr "Внутрішній шар"
 
 #: ..\FloatingSandbox\MainFrame.cpp:355
 msgid "Interior View"
-msgstr ""
+msgstr "Внутрішній вигляд"
 
 #: ..\ShipBuilderLib\UI\ShipPropertiesEditDialog.cpp:622
 msgid "Internal Pressure"
@@ -2165,10 +2118,8 @@ msgid "Jet"
 msgstr "Реактивний двигун"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:665
-#, fuzzy
-#| msgid "Friction Drag Adjust"
 msgid "Kinetic Friction Adjust"
-msgstr "Регулювання опору до тертя"
+msgstr "Регулювання кінетичного тертя"
 
 #: ..\FloatingSandbox\MainFrame.cpp:525
 #: ..\ShipBuilderLib\UI\MaterialPalette.cpp:818
@@ -2219,10 +2170,8 @@ msgid "Lights"
 msgstr "Світло"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:198
-#, fuzzy
-#| msgid "Lights, Electricals, and Fishes"
 msgid "Lights, Electricals, Fishes, NPCs"
-msgstr "Світло, електрика та риба"
+msgstr "Світло, електрика , риба та НПС"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2118 ..\ShipBuilderLib\MainFrame.cpp:2206
 msgid "Line Size:"
@@ -2250,7 +2199,7 @@ msgstr "Завантажити корабель..."
 
 #: ..\UILib\ShipLoadDialog.cpp:433
 msgid "Load a random ship"
-msgstr ""
+msgstr "Завантажити випадкове судно"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:773
 msgid "Load a ship (Ctrl+O)."
@@ -2339,10 +2288,8 @@ msgid "MUSIC"
 msgstr "МУЗИКА"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3035
-#, fuzzy
-#| msgid "Magnifies or minimizes the physical size of fishes."
 msgid "Magnifies or minimizes the physical size of NPCs."
-msgstr "Збільшує або зменшує фізичний розмір риб."
+msgstr "Збільшує або зменшує фізичний розмір НПС."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2879
 msgid "Magnifies or minimizes the physical size of fishes."
@@ -2385,7 +2332,7 @@ msgstr "Максимальна кількість частинок, що гор�
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:1077
 msgid "Max NPCs"
-msgstr ""
+msgstr "Максимальна кількість НПС"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:5592
 msgid "Max Threads"
@@ -2446,7 +2393,7 @@ msgstr "Перемістити всі/Повернути всі"
 
 #: ..\FloatingSandbox\MainFrame.cpp:606
 msgid "Move NPC"
-msgstr ""
+msgstr "Перемістити НПС"
 
 #: ..\FloatingSandbox\MainFrame.cpp:396
 msgid "Move/Rotate"
@@ -2466,20 +2413,20 @@ msgstr "Приглушує або дозволяє всі звуки."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4404
 msgid "NPC"
-msgstr ""
+msgstr "НПС"
 
 #: ..\FloatingSandbox\CreditsPanel.cpp:80
 msgid "NPC ASSETS"
-msgstr ""
+msgstr "Активи НПС"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:112
 #: ..\FloatingSandbox\SettingsDialog.cpp:2996
 msgid "NPCs"
-msgstr ""
+msgstr "НПС"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:1106
 msgid "NPCs per Group"
-msgstr ""
+msgstr "НПС на групу"
 
 #: ..\ShipBuilderLib\UI\ShipPropertiesEditDialog.cpp:213
 msgid "Name of the ship, e.g. \"R.M.S. Titanic\""
@@ -2526,10 +2473,8 @@ msgid "No"
 msgstr "Ні"
 
 #: ..\FloatingSandbox\MainFrame.cpp:340
-#, fuzzy
-#| msgid "Continuous Auto-Focus"
 msgid "No Auto-Focus"
-msgstr "Безперервне автофокусування"
+msgstr "Немає автофокусу"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:5273
 msgid "No Debug"
@@ -2762,7 +2707,7 @@ msgstr "Фізика"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3059
 msgid "Physics Tools Affect NPCs"
-msgstr ""
+msgstr "Інструменти фізики впливають на НПС"
 
 #: ..\FloatingSandbox\MainFrame.cpp:405
 msgid "Pick-n-Pull"
@@ -2811,8 +2756,6 @@ msgid "Power (HP)"
 msgstr "Потужність (HP)"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2063
-#, fuzzy
-#| msgid "Force Adjust"
 msgid "Power Adjust"
 msgstr "Регулювання потужності"
 
@@ -2911,7 +2854,7 @@ msgstr "Дощ і повінь"
 
 #: ..\FloatingSandbox\MainFrame.cpp:2869 ..\FloatingSandbox\MainFrame.cpp:2915
 msgid "Random"
-msgstr ""
+msgstr "Випадковий"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2193
 msgid "Rate"
@@ -2958,22 +2901,16 @@ msgid "Remove Electrical Layer"
 msgstr "Видаліть електричний шар"
 
 #: ..\ShipBuilderLib\Controller.cpp:1767
-#, fuzzy
-#| msgid "Remove Texture Layer"
 msgid "Remove Exterior Layer"
-msgstr "Видалити шар текстури"
+msgstr "Видалити зовнішній шар"
 
 #: ..\ShipBuilderLib\Controller.cpp:1781
-#, fuzzy
-#| msgid "Remove Texture Layer"
 msgid "Remove Interior Layer"
-msgstr "Видалити шар текстури"
+msgstr "Видалити внутрішній шар"
 
 #: ..\FloatingSandbox\MainFrame.cpp:612
-#, fuzzy
-#| msgid "Remove"
 msgid "Remove NPC"
-msgstr "Видалити"
+msgstr "Видалити НПС"
 
 #: ..\ShipBuilderLib\Controller.cpp:1755
 msgid "Remove Ropes Layer"
@@ -3000,15 +2937,11 @@ msgid "Rendering"
 msgstr "Рендеринг"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4375
-#, fuzzy
-#| msgid ""
-#| "Renders the ocean with additional details. Requires more computational "
-#| "resources."
 msgid ""
 "Renders clouds with additional details. Requires more computational "
 "resources."
 msgstr ""
-"Відображає океан із додатковими деталями. (Потрібно більше обчислювальних "
+"Відтворює хмари з додатковими деталями. (Потрібно більше обчислювальних "
 "ресурсів)."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:5416
@@ -3016,16 +2949,12 @@ msgid "Renders flames out of the HeatBlaster tool."
 msgstr "Візуалізує полум'я за допомогою інструмента Тепловий бластер."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4930
-#, fuzzy
-#| msgid ""
-#| "Renders the ocean with additional details. Requires more computational "
-#| "resources."
 msgid ""
 "Renders the ocean floor with additional details. Requires more computational "
 "resources."
 msgstr ""
-"Відображає океан із додатковими деталями. (Потрібно більше обчислювальних "
-"ресурсів)."
+"Відображає дно океану з додатковими деталями. (Потрібно більше "
+"обчислювальних ресурсів)."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4150
 msgid ""
@@ -3309,7 +3238,7 @@ msgstr "Дивіться інформацію про судно"
 
 #: ..\FloatingSandbox\MainFrame.cpp:643
 msgid "Select Next NPC"
-msgstr ""
+msgstr "Виберіть наступний НПС"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:3971 ..\ShipBuilderLib\MainFrame.cpp:4182
 #: ..\ShipBuilderLib\MainFrame.cpp:4345 ..\ShipBuilderLib\MainFrame.cpp:4524
@@ -3374,10 +3303,8 @@ msgid "Sets a predefined color for the canvas background."
 msgstr "Встановлює зумовлений колір для фону полотна."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4443
-#, fuzzy
-#| msgid "Sets the color of lamp lights."
 msgid "Sets the color of anonymous NPCs."
-msgstr "Встановлює колір світіння лампи."
+msgstr "Встановлює колір анонімних НПС."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4491
 msgid "Sets the color of lamp lights."
@@ -3515,10 +3442,8 @@ msgid "Show Frontiers"
 msgstr "Показати межі"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:1147
-#, fuzzy
-#| msgid "Show Tsunami Notifications"
 msgid "Show NPC Notifications"
-msgstr "Показувати Повідомлення Про Цунамі"
+msgstr "Показати сповіщення НПС"
 
 #: ..\FloatingSandbox\MainFrame.cpp:679
 msgid "Show Probe Panel"
@@ -3612,6 +3537,8 @@ msgid ""
 "Some of the changes made will only be enforced when the next ship is loaded. "
 "Reload the ship now?"
 msgstr ""
+"Деякі внесені зміни будуть застосовані лише після завантаження наступного "
+"корабля. Зараз перезавантажити корабель?"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4970
 msgid "Sound"
@@ -3627,19 +3554,19 @@ msgstr "Звук і додаткові налаштування"
 
 #: ..\FloatingSandbox\MainFrame.cpp:636
 msgid "Spawn Furniture NPC Group"
-msgstr ""
+msgstr "Створити групу НПС меблів"
 
 #: ..\FloatingSandbox\MainFrame.cpp:596
 msgid "Spawn Furniture NPC..."
-msgstr ""
+msgstr "Створити меблевий НПС..."
 
 #: ..\FloatingSandbox\MainFrame.cpp:629
 msgid "Spawn Human NPC Group"
-msgstr ""
+msgstr "Створити групу людських НПС"
 
 #: ..\FloatingSandbox\MainFrame.cpp:583
 msgid "Spawn Human NPC..."
-msgstr ""
+msgstr "Створити людських НПС..."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2085
 msgid "Spawn Rain"
@@ -3689,10 +3616,8 @@ msgid "Static Forces"
 msgstr "Статичні сили"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:638
-#, fuzzy
-#| msgid "Water Friction Drag Adjust"
 msgid "Static Friction Adjust"
-msgstr "Регулировка сопротивления водному трению"
+msgstr "Регулювання статичного тертя"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:692
 msgid "Static Pressure Adjust"
@@ -3720,7 +3645,7 @@ msgstr "Крок один кадр за раз"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4428
 msgid "Stickmen With Roles"
-msgstr ""
+msgstr "Стікмен з ролями"
 
 #: ..\ShipBuilderLib\UI\MaterialPalette.cpp:591
 msgid "Stiffness"
@@ -3813,10 +3738,8 @@ msgid "Texture Transparency"
 msgstr "Прозорість текстури"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:3473
-#, fuzzy
-#| msgid "Texture mode: view ship with texture."
 msgid "Texture mode: view ship with exterior texture."
-msgstr "Режим текстури: перегляд корабля з текстурою."
+msgstr "Режим текстури: дивіться корабель із зовнішньою текстурою."
 
 #: ..\FloatingSandbox\MainFrame.cpp:485
 msgid "Thanos' Snap"
@@ -3988,13 +3911,6 @@ msgid "The level of detail of materials' textures"
 msgstr "Рівень деталізації текстур матеріалів"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:900
-#, fuzzy
-#| msgid ""
-#| "The maximum number of particles that may burn at any given moment in "
-#| "time; together with the combustion heat adjustment, determines the speed "
-#| "with which fire spreads to adjacent particles. Warning: higher values "
-#| "require more computing resources, with the risk of slowing the simulation "
-#| "down!"
 msgid ""
 "The maximum number of particles that may burn at any given moment in time on "
 "a ship; together with the combustion heat adjustment, determines the speed "
@@ -4054,16 +3970,12 @@ msgid "The selected ship does not have an electrical layer"
 msgstr "Обране судно не має електричного шару"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:5283
-#, fuzzy
-#| msgid "The selected ship does not have a texture layer"
 msgid "The selected ship does not have an exterior layer"
-msgstr "Обраний корабель не має шару текстури"
+msgstr "Обраний корабель не має зовнішнього шару"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:5301
-#, fuzzy
-#| msgid "The selected ship does not have a texture layer"
 msgid "The selected ship does not have an interior layer"
-msgstr "Обраний корабель не має шару текстури"
+msgstr "Обраний корабель не має внутрішнього шару"
 
 #: ..\ShipBuilderLib\UI\AskPasswordDialog.cpp:78
 msgid ""
@@ -4151,8 +4063,6 @@ msgid "Thermal Conductivity Adjust"
 msgstr "Регулювання теплопровідності"
 
 #: ..\ShipBuilderLib\UI\MaterialPalette.cpp:603
-#, fuzzy
-#| msgid "Thermal Expansion Coefficient (1/K)"
 msgid "Thermal Expansion Coefficient (1/MK)"
 msgstr "Коефіцієнт теплового розширення (1/К)"
 
@@ -4327,7 +4237,7 @@ msgstr "Сила цунамі"
 
 #: ..\FloatingSandbox\MainFrame.cpp:617
 msgid "Turnaround NPC"
-msgstr ""
+msgstr "Повернути НПС"
 
 #: ..\ShipBuilderLib\UI\MaterialPalette.cpp:710
 msgid "Type"

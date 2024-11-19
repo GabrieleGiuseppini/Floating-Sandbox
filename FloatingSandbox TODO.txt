@@ -765,9 +765,9 @@ v			+ FixedSetSliderCore
 			- Changelist
 			+ Undo code change for password checks
 
-		- Ask Denis credits for testing
+		+ Ask Denis credits for testing
 		
-		= Localization:
+		+ Localization:
 			+ Change two help files to remove stuff we've removed and add stuff we haven't localized
 			+ Prepare po's
 			+ Prepare text files with NPC json
@@ -813,16 +813,17 @@ v			+ FixedSetSliderCore
 						+ NPC menu
 					+ LOCALIZATION credits: add Dkuz 
 
-			- UK:
-				- PO
+			+ UK:
+				+ PO
 				+ Two helps
-				= NPC json
-					- Take and test
-				- When done:
-					- Test:
-						- Copyright @ Credits
-						- NPC menu
-				- Ask credits
+				+ NPC json
+					+ Take
+					+ Test
+				+ When done:
+					+ Test:
+						+ Copyright @ Credits
+						+ NPC menu
+				+ Ask credits
 
 	- After next release:
 		- Update GameJolt to say Ubuntu 24.04

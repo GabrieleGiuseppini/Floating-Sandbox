@@ -81,11 +81,12 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
         {1, wxS("Officer TimCan"), VMargin3},
 
         {0, _("TRANSLATION"), 0},
+        {1, wxS("Denis (Ukrainian)"), 0},
+        {1, wxS("Dmitrii Kuznetzov (Dkuz) (Russian)"), 0},
         {1, wxS("Gabriele Giuseppini (Italian)"), 0},
         {1, wxS("Ilya Voloshin (https://vk.com/1lvol) (Russian)"), 0},
-        {1, wxS("Roman Shavernew (DioxCode) (Russian, Ukrainian)"), 0},
-        {1, wxS("Dmitrii Kuznetzov (Dkuz) (Russian)"), 0},
-        {1, wxS("Joaquin Olivera (Joadix100) (Spanish)"), VMargin3},
+        {1, wxS("Joaquin Olivera (Joadix100) (Spanish)"), 0},
+        {1, wxS("Roman Shavernew (DioxCode) (Russian, Ukrainian)"), VMargin3},
 
         {0, _("TESTING"), 0},
         {1, wxS("Pac0master"), 0},
@@ -94,7 +95,7 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
         {1, wxS("Dkuz"), 0},
         {1, wxS("_ASTYuu_"), 0},
         {1, wxS("sinking_feeling"), 0},
-        {1, wxS("KikoTheBoatBuilder"), 0},
+        {1, wxS("Kiko"), 0},
         {1, wxS("Michael Bozarth (https://www.youtube.com/channel/UCaJkgYP6yNw64U3WUZ3t1sw)"), 0},
         {1, wxS("Officer TimCan (https://www.youtube.com/channel/UCXXWokC-BXQ_jeq1rIQN0dg)"), 0},
         {1, wxS("DioxCode (https://www.youtube.com/channel/UC7Fk3s8hw_CQydnOG4epYFQ)"), 0},
@@ -105,6 +106,7 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
         {1, wxS("minch"), 0},
         {1, wxS("Rpr5704"), 0},
         {1, wxS("Pocketwatch"), 0},
+        {1, wxS("Denis"), 0},
         {1, wxS("Dario Bazzichetto"), VMargin3},
 
         {0, _("BUILD ENGINEERING"), 0},
@@ -113,7 +115,7 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
 
         {0, _("SHIP ENGINEERING"), 0},
         {2, wxS("Dumbphones    NotTelling    Hugo_2503    _ASTYuu_    Serhiiiihres    CPM    Pocketwatch    MTF    Gustav Shedletsky"), 0},
-        {2, wxS("Pac0master    CorbinPasta93    Yorkie    Bluefox    KikoTheBoatBuilder    Raynair    Menta1ity    Transportation Fan"), 0},
+        {2, wxS("Pac0master    CorbinPasta93    Yorkie    Bluefox    Kiko    Raynair    Menta1ity    Transportation Fan"), 0},
         {2, wxS("Albert Windsor    Takara    Rockabilly Rebel    McShooter2018    sinking_feeling    braun    P1X    Higuys153"), 0},
         {2, wxS("Matthew Anderson    DennisDanielGrimaldo    blue_funnel    Charles Calvin    Denis    Aqua    Hellooping"), 0},
         {2, wxS("MasterGarfield    Aur\xe9lien WOLFF    Alex di Roma    2017 Leonardo    FER ZCL    AvSimplified    Techo"), 0},
