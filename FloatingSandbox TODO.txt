@@ -657,18 +657,18 @@
 			- Ask guy
 		- changelist w/thanks for the guy
 
-	- Check furniture placement w/group
+	+ Check furniture placement w/group
 
 	= Ubuntu preparation
 		+ Upgrade
 		+ Install gcc 14
 		+ Build
 		+ Run unit tests
-		= Test
+		+ Test
 			+ First off: see that env var we're set and confirm we say it right in the readme
 			+ Rebuild
-			- FIX: hotkeys
-				- Menus are selected, but not tools, and not de-selected
+			+ FIX: hotkeys
+				+ Menus are selected, but not tools, and not de-selected
 			+ Mid button
 			+ NPCs
 			+ Flames

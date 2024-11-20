@@ -1487,10 +1487,10 @@ std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> Npcs::AddNpcGroup
 
                     case NpcDatabase::ParticleMeshKindType::Quad:
                     {
-                        // Position we give is of center, but we want bottom (left, arbitrarily) to be here
+                        // Position we give is of primary (top-left), but we want bottom (h-center) to be here
                         float const width = mNpcDatabase.GetFurnitureGeometry(subKind).Width;
                         float const height = mNpcDatabase.GetFurnitureGeometry(subKind).Height;
-                        position = npcPosition + vec2f(width / 2.0f, height / 2.0f);
+                        position = npcPosition + vec2f(-width / 2.0f, height);
                         break;
                     }
                 }
