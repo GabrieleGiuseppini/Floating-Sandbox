@@ -207,10 +207,10 @@ MainFrame::MainFrame(
         {\
             wxMenu * const parentMenu = (isNpc) ? mNpcToolsMenu : mNonNpcToolsMenu;\
             auto const id = wxNewId();\
-            wxMenuItem * toolMenuItem = new wxMenuItem(parentMenu, (id), (label) + (shortcut), wxEmptyString, wxITEM_CHECK);\
+            wxMenuItem * toolMenuItem = new wxMenuItem(parentMenu, id, (label) + (shortcut), wxEmptyString, wxITEM_CHECK);\
             auto const [uncheckedBmp, checkedBmp] = MakeMenuBitmaps((bitmap_path));\
             SET_BITMAPS(toolMenuItem, uncheckedBmp, checkedBmp)\
-            parentMenu->Bind(wxEVT_COMMAND_MENU_SELECTED,\
+            Bind(wxEVT_COMMAND_MENU_SELECTED,\
                 [this](wxCommandEvent &)\
                 {\
                     SelectTool((toolType), (isNpc));\

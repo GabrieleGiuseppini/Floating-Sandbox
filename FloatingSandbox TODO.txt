@@ -30,7 +30,6 @@
 	+ "Random" button to load random ship
 		+ At LoadDialog
 
-
 	+ Npcs post-work:
 		= Work with TimCan for improvements
 			= Chests
@@ -345,7 +344,7 @@
 		+ FIX: floor with nothing on other side is trumped by floor with a triangle on other side
 	+ Slider/Core fixes
 		+ SliderCore changes
-v			+ FixedSetSliderCore
+			+ FixedSetSliderCore
 			+ LinearSliderCore
 			+ IntegralLinearSliderCore
 			+ ExponentialSliderCore
@@ -427,11 +426,13 @@ v			+ FixedSetSliderCore
 			+ Storm
 		+ Test enlarging canvas of tight clouds
 
-		- Test AdobeStock/Getty clouds
-			- Need Illustrator
+		= Test AdobeStock/Getty clouds
+			+ Need Illustrator
+			- Cancel subscription
+				! By clicking "Agree and subscribe", you agree: After your trial ends, you will be charged € 32,76 (excl. VAT) monthly. Your subscription will automatically renew monthly until you cancel (price subject to change). Cancel before your trial ends and you won't be charged. Cancel anytime via Adobe Account or Customer Support. Cancel before Dec 10, 2024 to get a full refund. You also agree to the Terms of Use and the Subscription and Cancellation Terms.
 
-		- Test cloud 8008 on desktop (replacing cloud_2 in Atlas which is a badly processed version)
-			- See if we have it in authoring alreday though
+		- Test cloud 8008 which is on desktop (replacing cloud_2 in Atlas which is a badly processed version)
+			X See if we have it in authoring already though
 
 		- Changelist
 	
@@ -651,8 +652,12 @@ v			+ FixedSetSliderCore
 	
 	= Use mouse wheel down as shift:
 		+ https://forums.wxwidgets.org/viewtopic.php?t=50464
-		= User test
-		- changelist
+		+ User test (sent)
+		- How about mid toggle?
+			- Ask guy
+		- changelist w/thanks for the guy
+
+	- Check furniture placement w/group
 
 	= Ubuntu preparation
 		+ Upgrade
@@ -660,32 +665,35 @@ v			+ FixedSetSliderCore
 		+ Build
 		+ Run unit tests
 		= Test
-			- First off: see that env var we're set and confirm we say it right in the readme
-			- Mid button
-			- NPCs
-			- All indexed rendering
-			- Flames
-			- Clouds
+			+ First off: see that env var we're set and confirm we say it right in the readme
+			+ Rebuild
+			- FIX: hotkeys
+				- Menus are selected, but not tools, and not de-selected
+			+ Mid button
+			+ NPCs
+			+ Flames
+			+ Clouds
+			+ All other indexed rendering 
+				+ Bubbles
+				+ Bombs
+				+ Fishes
 		- Change Readme for version (Ubuntu & GCC if applicable)
 		- Change Ubuntu instructions for version and gcc version
 			- https://gcc.gnu.org/bugzilla/show_bug.cgi?id=79700
 		+ Change mention below in this file
 		+ Nuke old Ubuntu
 
-		- Test Windows (clean) build
-			+ Unit tests
-			- Game
-
 	= Release prep:
 		= Ships:
-			+ FS email
-				! From Sean Dempsey
+			= FS email
+				= From Sean Dempsey
 					+ R.M.S. Centennial
 					+ H.M.H.S. Imagination
 					+ S.S. Dempsey
 					+ Lamps?
-					X Asked credits
-				! From Dimitry Warin (aka Helooping)
+					+ Asked credits: Sean Dempsey
+					- Asked if also wants name change in .shp2 files
+				+ From Dimitry Warin (aka Helooping)
 					+ Galeb
 					+ Lamartine
 					+ Transilvania
@@ -698,10 +706,10 @@ v			+ FixedSetSliderCore
 				+ https://discord.com/channels/@me/1128107472129896568/1259012624524247098
 				+ All these: https://discord.com/channels/559822257275404307/562030667198758913/1124472062308778184
 				+ #contest-entries
-					- https://discord.com/channels/925233659118755842/1290838947777478758, all in _TO_TRY already, have to chase owners we don't know
+					+ https://discord.com/channels/925233659118755842/1290838947777478758, all in _TO_TRY already, have to chase owners we don't know
 						+ Check if dupes
 
-				- Results:
+				= Results:
 					+ Takara:
 						+ Test Takara's: _TO_TRY, Takara - Ships for Gab.zip
 						+ See if we had already replaced Egg Carrier structure - _TO_TRY
@@ -728,7 +736,7 @@ v			+ FixedSetSliderCore
 						- Asked credits
 						- Move to final
 					+ TheCochu444yt
-						= Test: _TO_TRY/Lorotanic
+						+ Test: _TO_TRY/Lorotanic
 						+ Asked credits: TheCochu444yt
 						+ Move to final
 		
@@ -750,10 +758,13 @@ v			+ FixedSetSliderCore
 						+ SS Quebec
 					+ Asked permission & credits: "Longhorn"
 					- Move to final
-			+ Remove:
+			+ Remove ships:
 				+ See screenshot @ desktop
+			- Move from _TO_TAKE
+			- Cleanup all installed Ships folders, re-copy, and test
+			- Run ship verification script
 			- Credits:
-				- scdem
+				- Sean Dempsey
 				- doctor1922
 				- KV Mauvmellow
 				- Ventrix
@@ -761,8 +772,6 @@ v			+ FixedSetSliderCore
 				- Ha-Ha Hans
 				- TheCochu444yt
 				- Longhorn
-			- Cleanup all installed Ships folders, re-copy, and test
-			- Run ship verification script
 			- Changelist
 			+ Undo code change for password checks
 
@@ -840,8 +849,8 @@ v			+ FixedSetSliderCore
 			! Smoke shuld be drawn behind flames => "Z Issue"
 				- TODO: write solution here, which includes preliminary PlaneId rearc so that triangle ("main") planes start from 1 and everything in the background
 				  is on plane PlaneId-1
-					- Should remove necessity of separate Flame uploads and of its layer (iff that layer is only for it)
-					- Test first if this solution flies with TODOOLD below
+					- This should remove necessity of separate flame uploads and of its layer (iff that layer is only for it)
+					- Test with code first if this solution flies with TODOOLD below
 						- We _do_ early discard at generic textures after all, but that might not be enough
 				- TODOOLD was:
 					- Smoke should be drawn behind flames, hence GenericTexture's should be in an earlier layer than flames.
