@@ -796,23 +796,22 @@
 		= Localization:
 			+ IT
 				+ Compile MO
-			- ES	
-				- Compile MO
-			- RU (DKUZ)
-				- Compile MO
+			+ ES	
+				+ Compile MO
+			+ RU (DKUZ)
+				+ Compile MO
 			- UK (Denis)
 				- Compile MO
-		- Tell TimCan that Longhorn should be in beta group
 
 	= Fix Analyzer: seems another UTF8 issue
 		+ Fix
-		- Ask DKUZ to test it
-
-	- Lights on NPCs
+		= Ask DKUZ to test it
 
 	- Test fire and NPCs with:
 		- nVidia
 		- Old Dell
+
+	- Add Damien to Tester credits
 
 	- Release template:
 		- Branch is merged into master (if applicable)

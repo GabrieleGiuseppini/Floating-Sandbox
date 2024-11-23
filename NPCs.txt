@@ -200,6 +200,12 @@ Current perf:
 ===================
 Next release:
 
+- Lights: 
+	- Option 1: second pass of lighting algorithm with all NPC particles, for each ship
+		- Adding to NPC particles' _light_ buffer
+			- But test it first, as humans are dipoles and dubious result
+	- Option 2: populate NPC particles' _light_ buffer with triangles' endpoints (so only for constrained)
+
 - Misc:
 	- Remove NPC tool for "area"
 		"Perhaps some sort of selection tool to remove NPCs - removing a large cluster 1 by 1 is a bit annoying"
@@ -302,10 +308,6 @@ Next release:
 - New furniture behaviors:
 	- Exploding
 	- Depth charges
-
-- Lights: second pass of lighting algorithm with all NPC particles, for each ship
-	- Adding to NPC particles' _light_ buffer
-		- But test it first, as humans are dipoles and dubious result
 
 - Doors:
 	- New "DoorHinge" electrical element (with both ON/OFF types), controls floorness of springs (and thus triangle edges) among neighboring pairs of them
