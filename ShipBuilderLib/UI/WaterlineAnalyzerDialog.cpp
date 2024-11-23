@@ -383,21 +383,21 @@ void WaterlineAnalyzerDialog::ReconcileUIWithState()
 
         // IsFloating
         {
-            std::stringstream ss;
+            wxString strIsFloating;
 
             if (isFloating)
             {
-                ss << _("Yes");
+                strIsFloating = _("Yes");
                 mIsFloatingLabel->SetBackgroundColour(Green);
             }
             else
             {
-                ss << _("No");
+                strIsFloating = _("No");
                 mIsFloatingLabel->SetBackgroundColour(Red);
             }
 
             mIsFloatingLabel->SetForegroundColour(*wxWHITE);
-            mIsFloatingLabel->SetLabel(ss.str());
+            mIsFloatingLabel->SetLabel(strIsFloating);
         }
 
         // Outcome
