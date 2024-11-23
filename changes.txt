@@ -9,12 +9,14 @@
 	- Improved flames
 		- Each release brings flames closer to the way I've always wanted them to look...
 	- Improved clouds
+	- Marginal rendering performance improvements
 - Revisited ocean floor friction and silting
 	- ...mostly spurred from a lot of development in this area due to NPC work
-- Added "shift lock mode": use middle mouse button to toggle SHIFT on or off
+- Added "shift lock mode": use middle mouse button to toggle SHIFT on or off, for easier exercising of advanced tool behaviors
 	- Thanks to Damien for the idea!
 - Added "Guide Mode" to Terrain Adjust tool: keep SHIFT pressed and you'll be able to draw terrain along straight lines
 - Added new "Tungsten" material - the heaviest in Floating Sandbox's library!
+- Added 28 new ships
 - Bug fixes:
 	- Fixed a ShipBuilder bug that was messing up copy-and-paste of electrical elements
 	- Fixed a ShipBuilder bug with the electrical panel not reflecting some changes to the electrical layer

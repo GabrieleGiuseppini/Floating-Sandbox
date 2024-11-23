@@ -10,11 +10,12 @@ sudo apt update
 sudo apt install software-properties-common
 sudo add-apt-repository ppa:ubuntu-toolchain-r/test
 ```
-### gcc 8.4.0 (at least)
+### gcc 14 (at least)
+Unfortunately we need (at least) GCC 14, because bug https://gcc.gnu.org/bugzilla/show_bug.cgi?id=79700 is only fixed there.
 ```
-sudo apt install gcc-8
-sudo apt install g++-8
-sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 80 --slave /usr/bin/g++ g++ /usr/bin/g++-8
+sudo apt install gcc-14
+sudo apt install g++-14
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 80 --slave /usr/bin/g++ g++ /usr/bin/g++-14
 ```
 Check the installed versions now:
 ```

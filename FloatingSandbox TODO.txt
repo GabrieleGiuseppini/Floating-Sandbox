@@ -539,10 +539,6 @@
 	+ Fix Bazzico bug
 		! Need a buffer allocated when VAO is bound
 
-	- Test fire and NPCs with:
-		- nVidia
-		- Old Dell
-
 	+ Redo SettingsDialog layout
 		! Rules:
 			! Everything is wxEXPAND | wxALL, no ALIGN_CENTER
@@ -629,7 +625,7 @@
 
 	+ Check furniture placement w/group
 
-	= Ubuntu preparation
+	+ Ubuntu preparation
 		+ Upgrade
 		+ Install gcc 14
 		+ Build
@@ -647,24 +643,24 @@
 				+ Bubbles
 				+ Bombs
 				+ Fishes
-		- Change Readme for version (Ubuntu & GCC if applicable)
-		- Change Ubuntu instructions for version and gcc version
-			- https://gcc.gnu.org/bugzilla/show_bug.cgi?id=79700
+		+ Change Readme for version (Ubuntu & GCC if applicable)
+		+ Change Ubuntu instructions for version and gcc version
+			+ https://gcc.gnu.org/bugzilla/show_bug.cgi?id=79700
 		+ Change mention below in this file
 		+ Nuke old Ubuntu
 
-	= Release prep:
-		= Ships:
-			= FS email
-				= From Sean Dempsey
+	+ Release prep:
+		+ Ships:
+			+ FS email
+				+ From Sean Dempsey
 					+ R.M.S. Centennial
 					+ H.M.H.S. Imagination
 					+ S.S. Dempsey
 					+ Lamps?
 					+ Asked credits: Sean Dempsey
-					- Asked if also wants name change in .shp2 files
+					+ Asked if also wants name change in .shp2 files
 						+ Yes
-						- Do it
+						+ Do it
 				+ From Dimitry Warin (aka Helooping)
 					+ Galeb
 					+ Lamartine
@@ -672,7 +668,7 @@
 					+ Check shipbuckets credits for all
 					+ Make .shp2 for all
 					+ Already in credits				
-			= All Discord's
+			+ All Discord's
 				+ Bright mammooth - ⁵⁵𝐓𝐡𝐞 𝟐𝟒𝐭𝐡_𝐃𝐨𝐜𝐭𝐨𝐫-𝟏𝟗𝟐𝟐⁵⁵#1963
 					+ Asked name: doctor1922
 				+ https://discord.com/channels/@me/1128107472129896568/1259012624524247098
@@ -680,8 +676,7 @@
 				+ #contest-entries
 					+ https://discord.com/channels/925233659118755842/1290838947777478758, all in _TO_TRY already, have to chase owners we don't know
 						+ Check if dupes
-
-				= Results:
+				+ Results:
 					+ Takara:
 						+ Test Takara's: _TO_TRY, Takara - Ships for Gab.zip
 						+ See if we had already replaced Egg Carrier structure - _TO_TRY
@@ -703,48 +698,37 @@
 					+ DKUZ:
 						+ Test all: _TO_TRY/DKUZ
 						+ Already in credits
-					= Bartosz1944PL 
-						+ Test: _TO_TRY/Bartosz1944PL
-						- Asked credits
-						- Move to final
 					+ TheCochu444yt
 						+ Test: _TO_TRY/Lorotanic
 						+ Asked credits: TheCochu444yt
-						+ Move to final
-		
-			= _TO_TEST:
+						+ Move to final		
+			+ _TO_TEST:
 				+ JU 87 B-2 by Ha-Ha Hans
-				= Saturn V (Ur local brazilian#0842, aka Transportation Fan - already in credits)
-					- Attach engines
-						- Asked permission
+				+ Saturn V (Ur local brazilian#0842, aka Transportation Fan - already in credits)
 				+ "Hellooping" in _TO_TEST
 					+ Guy is already credited		
-				- U.S.S. Maximum 4 in _TO_TEST
-					- Is it from Discord?
 				X S.S. Matos from Sean Dempsey, in _TO_TEST
-				= Longhorn ships, in _TO_TEST
+				+ Longhorn ships, in _TO_TEST
 					+ All good:
 						+ SS 19H1
 						+ SS Tuscany
 						+ SS Cedar
 						+ SS Quebec
 					+ Asked permission & credits: "Longhorn"
-					- Move to final
+					+ Move to final
 			+ Remove ships:
 				+ See screenshot @ desktop
-			- Move from _TO_TAKE
-			- Cleanup all installed Ships folders, re-copy, and test
-			- Run ship verification script
-			- Credits:
-				- Sean Dempsey
-				- doctor1922
-				- KV Mauvmellow
-				- Ventrix
-				- QHM
-				- Ha-Ha Hans
-				- TheCochu444yt
-				- Longhorn
-			- Changelist
+			+ Move from _TO_TAKE
+			+ Credits:
+				+ Sean Dempsey
+				+ doctor1922
+				+ KV Mauvmellow
+				+ Ventrix
+				+ QHM
+				+ Ha-Ha Hans
+				+ TheCochu444yt
+				+ Longhorn
+			+ Changelist
 			+ Undo code change for password checks
 
 		+ Ask Denis credits for testing
@@ -807,8 +791,54 @@
 						+ NPC menu
 				+ Ask credits
 
-	- Pre-release MSI smoke testing candidates:
-		- Longhorn
+	- I changed the size multiplier of the NPCs to 10, and then shrunk it down to a little above the default, ~1.25 or something similar, and multiple (though not all) of the NPCs seemed to become very oddly proportioned with their torso stretched to what I assume is the size multiple of 10 (leading to very tall figures) though their width was at what I assume to be what I set the multiple to, while these people were also stuck in a diagonal rotation, in short, multiple NPCs became the shape of diagonal baguettes, though would return to normal if I destroyed the structure they were on. All of the affected NPCs were in some form of non-permeable material, so I've concluded that I believe some of the NPCs don't stretch back to their newly-set size multiple because they are stuck in a hull material as a result of being set to a size that put them into that stuck position.
+ 
+	- I understand you can undo this with the Follow NPC button, though I'd like to suggest for the "Select Next NPC" button: an option around the menus to unselect NPCs with the red highlighting square would be nice, given the amount of people that ask how to download the game, I can very easily imagine a fair amount of players unintentionally selecting an NPC and then not knowing how to just as easily unselect them. Additionally, maybe a "Select Last NPC" seeing as the "Select First NPC" has a shortcut and could easily have a player's desired NPC skipped from spamming the shortcut across the NPCs?
+
+	- Test fire and NPCs with:
+		- nVidia
+		- Old Dell
+
+	- Release template:
+		- Branch is merged into master (if applicable)
+		- Windows
+			- MSI variable
+			- Commit & push
+			- 64-bit MSI
+				- Cleanup Install
+				- Build Release Install (after clean)
+				- Make MSI
+				- Rename MSI
+				- Test upgrade from previous version
+			- 32-bit MSI
+				- Cleanup Install
+				- Build Release Install (after clean)
+				- Make MSI
+				- Rename MSI
+				- Test clean install
+		- Ubuntu
+			- rm -rf ~/floating-sandbox
+			- pull 
+			- rm -rf build; mkdir build; cd build
+			- cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
+			- make install
+			- Make tar ("cd ~/floating-sandbox && tar -cvf ../Floating-Sandbox-1.16.5-x64.tar . && cd -")
+			- Zip tar
+			- Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
+		- Get 3 installers tested on dev server
+			- Also:
+				- Longhorn
+		- Wait for test results
+		- Cut tag on github
+		- Upload packages to GameJolt
+			- Report file as safe (https://gamejolt.com/privacy)
+			- Post
+		- www.floatingsandbox.com:
+			- Update current version in FAQ
+			- Wait a day or two, to exclude disastrous bugs
+			- Upload changes2.txt
+				- Test w/old FS
+
 
 	- After next release:
 		- Update GameJolt to say Ubuntu 24.04
@@ -1149,6 +1179,13 @@
 			+ Test
 			+ Meta: The package includes 11 ships. The name of this pack is: The Mateusz's Small Steamship ShipPack. Author: "The Mateusz"
 	- New ships:
+		- U.S.S. Maximum 4 in _TO_TEST
+			+ Test
+			- Is it from Discord?
+		= Bartosz1944PL 
+			+ Test: _TO_TRY/Bartosz1944PL
+			- Asked credits
+			- Move to final
 
 - Ubuntu:
 	+ Event polling issue:
