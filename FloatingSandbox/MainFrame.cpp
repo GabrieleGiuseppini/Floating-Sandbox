@@ -646,6 +646,13 @@ MainFrame::MainFrame(
                 Connect(mSelectNextNpcMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnSelectNextNpcMenuItemSelected);
             }
 
+            // De-Select
+            {
+                mDeselectNpcMenuItem = new wxMenuItem(mNpcToolsMenu, wxNewId(), _("Deselect NPC"), wxEmptyString, wxITEM_NORMAL);
+                mNpcToolsMenu->Append(mDeselectNpcMenuItem);
+                Connect(mDeselectNpcMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnDeselectNpcMenuItemSelected);
+            }
+
             mainMenuBar->Append(mNpcToolsMenu, _("&NPCs"));
         }
 
@@ -1939,6 +1946,12 @@ void MainFrame::OnSelectNextNpcMenuItemSelected(wxCommandEvent & /*event*/)
     mGameController->SelectNextNpc();
 }
 
+void MainFrame::OnDeselectNpcMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!!mGameController);
+    mGameController->SelectNpc(std::nullopt);
+}
+
 void MainFrame::OnTriggerLightningMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mGameController);
@@ -2696,6 +2709,11 @@ void MainFrame::ReconciliateUIWithNpcPresence(bool areNpcsPresent)
         {
             mSelectNextNpcMenuItem->Enable(true);
         }
+
+        if (!mDeselectNpcMenuItem->IsEnabled())
+        {
+            mDeselectNpcMenuItem->Enable(true);
+        }
     }
     else
     {
@@ -2731,10 +2749,15 @@ void MainFrame::ReconciliateUIWithNpcPresence(bool areNpcsPresent)
             mSelectNextNpcMenuItem->Enable(false);
         }
 
+        if (mDeselectNpcMenuItem->IsEnabled())
+        {
+            mDeselectNpcMenuItem->Enable(false);
+        }
+
         // If current tool is a tool that requires NPCs, toggle it out
         assert(!!mToolController);
         auto const currentTool = mToolController->GetCurrentTool();
-        if (currentTool == ToolType::MoveNpc || currentTool == ToolType::RemoveNpc || currentTool == ToolType::TurnaroundNpc || currentTool == ToolType::FollowNpc)
+        if (currentTool == ToolType::MoveNpc || currentTool == ToolType::TurnaroundNpc || currentTool == ToolType::FollowNpc)
         {
             SelectTool(InitialNonNpcToolType, false);
         }

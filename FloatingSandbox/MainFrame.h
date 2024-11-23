@@ -147,6 +147,7 @@ private:
     wxMenuItem * mTurnaroundNpcMenuItem;
     wxMenuItem * mFollowNpcMenuItem;
     wxMenuItem * mSelectNextNpcMenuItem;
+    wxMenuItem * mDeselectNpcMenuItem;
 
     wxMenuItem * mReloadLastModifiedSettingsMenuItem;
     wxMenuItem * mShowEventTickerMenuItem;
@@ -240,6 +241,7 @@ private:
     void OnAddHumanNpcGroupMenuItemSelected(wxCommandEvent & event);
     void OnAddFurnitureNpcGroupMenuItemSelected(wxCommandEvent & event);
     void OnSelectNextNpcMenuItemSelected(wxCommandEvent & event);
+    void OnDeselectNpcMenuItemSelected(wxCommandEvent & event);
 
     void OnOpenSettingsWindowMenuItemSelected(wxCommandEvent & event);
     void OnReloadLastModifiedSettingsMenuItem(wxCommandEvent & event);
