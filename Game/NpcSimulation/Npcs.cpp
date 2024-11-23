@@ -1640,7 +1640,7 @@ void Npcs::SelectNpc(std::optional<NpcId> id)
 
     mCurrentlySelectedNpc = id;
     mCurrentlySelectedNpcWallClockTimestamp = GameWallClock::GetInstance().Now();
-    mGameEventHandler->OnNpcSelectionChanged(mCurrentlySelectedNpc);
+    PublishSelection();
 
 #ifdef IN_BARYLAB
     Publish();
@@ -1654,9 +1654,10 @@ void Npcs::HighlightNpc(std::optional<NpcId> id)
     mCurrentlyHighlightedNpc = id;
 }
 
-void Npcs::PublishCount()
+void Npcs::Announce()
 {
-    mGameEventHandler->OnNpcCountsUpdated(CalculateTotalNpcCount());
+    PublishCount();
+    PublishSelection();
 }
 
 /////////////////////////////////////////
@@ -2548,6 +2549,16 @@ void Npcs::Publish() const
 #endif
 
 ///////////////////////////////
+
+void Npcs::PublishCount()
+{
+    mGameEventHandler->OnNpcCountsUpdated(CalculateTotalNpcCount());
+}
+
+void Npcs::PublishSelection()
+{
+    mGameEventHandler->OnNpcSelectionChanged(mCurrentlySelectedNpc);
+}
 
 NpcId Npcs::GetNewNpcId()
 {

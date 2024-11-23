@@ -913,7 +913,7 @@ public:
 
 	void HighlightNpc(std::optional<NpcId> id);
 
-	void PublishCount();
+	void Announce();
 
 public:
 
@@ -1080,6 +1080,10 @@ public:
 #endif
 
 private:
+
+	void PublishCount();
+
+	void PublishSelection();
 
 	NpcId GetNewNpcId();
 

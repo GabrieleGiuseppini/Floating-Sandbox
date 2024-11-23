@@ -1472,6 +1472,12 @@ void GameController::TurnaroundNpc(NpcId id)
     mWorld->TurnaroundNpc(id);
 }
 
+std::optional<NpcId> GameController::GetCurrentlySelectedNpc() const
+{
+    assert(!!mWorld);
+    return mWorld->GetSelectedNpc();
+}
+
 void GameController::SelectNpc(std::optional<NpcId> id)
 {
     assert(!!mWorld);

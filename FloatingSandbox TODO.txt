@@ -793,6 +793,7 @@
  
 	= I understand you can undo this with the Follow NPC button, though I'd like to suggest for the "Select Next NPC" button: an option around the menus to unselect NPCs with the red highlighting square would be nice, given the amount of people that ask how to download the game, I can very easily imagine a fair amount of players unintentionally selecting an NPC and then not knowing how to just as easily unselect them. Additionally, maybe a "Select Last NPC" seeing as the "Select First NPC" has a shortcut and could easily have a player's desired NPC skipped from spamming the shortcut across the NPCs?
 		+ Do
+		+ State machine
 		= Localization:
 			+ IT
 				+ Compile MO
@@ -803,15 +804,23 @@
 			- UK (Denis)
 				- Compile MO
 
-	= Fix Analyzer: seems another UTF8 issue
+	= Fix WaterlineAnalyzer: seems another UTF8 issue
 		+ Fix
 		= Ask DKUZ to test it
 
-	- Test fire and NPCs with:
-		- nVidia
-		- Old Dell
+	+ Test fire and NPCs with:
+		+ nVidia
+		+ Old Dell
 
 	- Add Damien to Tester credits
+
+	- Send last beta
+		- Deselect
+		- SHIFT lock
+		- New ships
+		- Furniture placement
+		- Code changes for Linux
+		- Bump up build
 
 	- Release template:
 		- Branch is merged into master (if applicable)
@@ -847,6 +856,11 @@
 		- Upload packages to GameJolt
 			- Report file as safe (https://gamejolt.com/privacy)
 			- Post
+				- Android
+				- Npc features for future version:
+					- Lights
+					- Walk planning
+					- ShipBuilder
 		- www.floatingsandbox.com:
 			- Update current version in FAQ
 			- Wait a day or two, to exclude disastrous bugs

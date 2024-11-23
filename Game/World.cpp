@@ -79,7 +79,7 @@ void World::Announce()
         ship->Announce();
     }
 
-    mNpcs->PublishCount();
+    mNpcs->Announce();
 }
 
 void World::SetEventRecorder(EventRecorder * eventRecorder)
@@ -1147,6 +1147,12 @@ void World::TurnaroundNpc(NpcId id)
 {
     assert(mNpcs);
     mNpcs->TurnaroundNpc(id);
+}
+
+std::optional<NpcId> World::GetSelectedNpc() const
+{
+    assert(mNpcs);
+    return mNpcs->GetCurrentlySelectedNpc();
 }
 
 void World::SelectFirstNpc()

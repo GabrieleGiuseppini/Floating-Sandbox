@@ -416,6 +416,8 @@ public:
 
     void TurnaroundNpc(NpcId id);
 
+    std::optional<NpcId> GetSelectedNpc() const;
+
     void SelectFirstNpc();
 
     void SelectNextNpc();

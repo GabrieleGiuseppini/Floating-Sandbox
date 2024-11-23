@@ -1279,6 +1279,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     // Tiny hack: synthetically fire first events that would have reached us
     // if we had already registered
     this->OnFishCountUpdated(mGameController->GetNumberOfFishes());
+    this->OnNpcSelectionChanged(mGameController->GetCurrentlySelectedNpc());
 
     this->RegisterEventHandler(*mGameController);
     mProbePanel->RegisterEventHandler(*mGameController);
@@ -2712,7 +2713,7 @@ void MainFrame::ReconciliateUIWithNpcPresence(bool areNpcsPresent)
 
         if (!mDeselectNpcMenuItem->IsEnabled())
         {
-            mDeselectNpcMenuItem->Enable(true);
+            mDeselectNpcMenuItem->Enable(mGameController->GetCurrentlySelectedNpc().has_value());
         }
     }
     else
@@ -2762,6 +2763,11 @@ void MainFrame::ReconciliateUIWithNpcPresence(bool areNpcsPresent)
             SelectTool(InitialNonNpcToolType, false);
         }
     }
+}
+
+void MainFrame::ReconciliateUIWithNpcSelection(bool areNpcsSelected)
+{
+    mDeselectNpcMenuItem->Enable(areNpcsSelected);
 }
 
 void MainFrame::ReconciliateAddNpcSubItems(ToolType toolType)

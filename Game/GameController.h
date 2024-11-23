@@ -271,6 +271,7 @@ public:
     void AbortNewNpc(NpcId id) override;
     void AddNpcGroup(NpcKindType kind) override;
     void TurnaroundNpc(NpcId id) override;
+    std::optional<NpcId> GetCurrentlySelectedNpc() const override;
     void SelectNpc(std::optional<NpcId> id) override;
     void SelectNextNpc() override;
     void HighlightNpc(std::optional<NpcId> id) override;

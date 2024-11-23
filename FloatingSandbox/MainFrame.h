@@ -351,6 +351,11 @@ private:
         ReconciliateUIWithNpcPresence(totalNpcCount > 0);
     }
 
+    void OnNpcSelectionChanged(std::optional<NpcId> selectedNpc) override
+    {
+        ReconciliateUIWithNpcSelection(selectedNpc.has_value());
+    }
+
     void OnAutoFocusTargetChanged(std::optional<AutoFocusTargetKindType> target) override
     {
         ReconciliateUIWithAutoFocusTarget(target);
@@ -419,6 +424,7 @@ private:
     void ReconciliateUIWithUIPreferencesAndSettings();
     void ReconciliateUIWithFishPresence(bool areFishPresent);
     void ReconciliateUIWithNpcPresence(bool areNpcsPresent);
+    void ReconciliateUIWithNpcSelection(bool areNpcsSelected);
     void ReconciliateAddNpcSubItems(ToolType toolType);
     void ReconciliateUIWithAutoFocusTarget(std::optional<AutoFocusTargetKindType> target);
     void ReconciliateShipViewModeWithCurrentTool();
