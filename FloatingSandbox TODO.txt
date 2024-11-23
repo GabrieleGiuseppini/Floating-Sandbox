@@ -791,28 +791,28 @@
 						+ NPC menu
 				+ Ask credits
  
-	= I understand you can undo this with the Follow NPC button, though I'd like to suggest for the "Select Next NPC" button: an option around the menus to unselect NPCs with the red highlighting square would be nice, given the amount of people that ask how to download the game, I can very easily imagine a fair amount of players unintentionally selecting an NPC and then not knowing how to just as easily unselect them. Additionally, maybe a "Select Last NPC" seeing as the "Select First NPC" has a shortcut and could easily have a player's desired NPC skipped from spamming the shortcut across the NPCs?
+	+ I understand you can undo this with the Follow NPC button, though I'd like to suggest for the "Select Next NPC" button: an option around the menus to unselect NPCs with the red highlighting square would be nice, given the amount of people that ask how to download the game, I can very easily imagine a fair amount of players unintentionally selecting an NPC and then not knowing how to just as easily unselect them. Additionally, maybe a "Select Last NPC" seeing as the "Select First NPC" has a shortcut and could easily have a player's desired NPC skipped from spamming the shortcut across the NPCs?
 		+ Do
 		+ State machine
-		= Localization:
+		+ Localization:
 			+ IT
 				+ Compile MO
 			+ ES	
 				+ Compile MO
 			+ RU (DKUZ)
 				+ Compile MO
-			- UK (Denis)
-				- Compile MO
+			+ UK (Denis)
+				+ Compile MO
 
-	= Fix WaterlineAnalyzer: seems another UTF8 issue
+	+ Fix WaterlineAnalyzer: seems another UTF8 issue
 		+ Fix
-		= Ask DKUZ to test it
+		+ Ask DKUZ to test it
 
 	+ Test fire and NPCs with:
 		+ nVidia
 		+ Old Dell
 
-	- Add Damien to Tester credits
+	+ Add Damien to Tester credits
 
 	- Send last beta
 		- Deselect
