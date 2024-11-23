@@ -197,6 +197,9 @@ public:
 
     void NotifySoundMuted(bool isSoundMuted) override;
 
+    bool IsShiftOn() const override;
+    void SetShiftOn(bool value) override;
+
     // Not sticky
     void SetLineGuide(
         DisplayLogicalCoordinates const & start,
@@ -1121,6 +1124,7 @@ private:
     //
 
     float mTimeOfDay;
+    bool mIsShiftOn;
     bool mDoShowTsunamiNotifications;
     bool mDoShowNpcNotifications;
     bool mDoDrawHeatBlasterFlame;

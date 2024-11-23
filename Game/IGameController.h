@@ -78,6 +78,9 @@ struct IGameController
 
     virtual void NotifySoundMuted(bool isSoundMuted) = 0;
 
+    virtual bool IsShiftOn() const = 0;
+    virtual void SetShiftOn(bool value) = 0;
+
     // Not sticky
     virtual void SetLineGuide(
         DisplayLogicalCoordinates const & start,

@@ -141,7 +141,6 @@ MainFrame::MainFrame(
     , mCurrentRCBombCount(0u)
     , mCurrentAntiMatterBombCount(0u)
     , mIsShiftKeyDown(false)
-    , mIsMidMouseButtonDown(false)
     , mIsMouseCapturedByGLCanvas(false)
 {
     Create(
@@ -183,7 +182,6 @@ MainFrame::MainFrame(
     mMainGLCanvas->Connect(wxEVT_RIGHT_DOWN, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasMouseRightDown, 0, this);
     mMainGLCanvas->Connect(wxEVT_RIGHT_UP, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasMouseRightUp, 0, this);
     mMainGLCanvas->Connect(wxEVT_MIDDLE_DOWN, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasMouseMiddleDown, 0, this);
-    mMainGLCanvas->Connect(wxEVT_MIDDLE_UP, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasMouseMiddleUp, 0, this);
     mMainGLCanvas->Connect(wxEVT_MOTION, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasMouseMove, 0, this);
     mMainGLCanvas->Connect(wxEVT_MOUSEWHEEL, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasMouseWheel, 0, this);
     mMainGLCanvas->Connect(wxEVT_MOUSE_CAPTURE_LOST, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasCaptureMouseLost, 0, this);
@@ -1659,12 +1657,7 @@ void MainFrame::OnMainGLCanvasMouseRightUp(wxMouseEvent & /*event*/)
 
 void MainFrame::OnMainGLCanvasMouseMiddleDown(wxMouseEvent & /*event*/)
 {
-    OnMidMouseButtonObservation(true);
-}
-
-void MainFrame::OnMainGLCanvasMouseMiddleUp(wxMouseEvent & /*event*/)
-{
-    OnMidMouseButtonObservation(false);
+    OnMidMouseButtonDown();
 }
 
 void MainFrame::OnMainGLCanvasMouseMove(wxMouseEvent & event)
@@ -3145,44 +3138,46 @@ void MainFrame::SetMenuItemChecked(
 
 void MainFrame::OnShiftKeyObservation(bool isDown)
 {
-    if (!mIsMidMouseButtonDown) // We do not care about SHIFT if mid-mouse button is down
+    if (mGameController)
     {
-        if (isDown)
+        if (!mGameController->IsShiftOn()) // We do not care about SHIFT if mid-mouse button is down
         {
-            if (!mIsShiftKeyDown)
+            if (isDown)
             {
-                mIsShiftKeyDown = true;
-                mToolController->OnShiftKeyDown();
+                if (!mIsShiftKeyDown)
+                {
+                    mIsShiftKeyDown = true;
+                    mToolController->OnShiftKeyDown();
+                }
             }
-        }
-        else
-        {
-            if (mIsShiftKeyDown)
+            else
             {
-                mIsShiftKeyDown = false;
-                mToolController->OnShiftKeyUp();
+                if (mIsShiftKeyDown)
+                {
+                    mIsShiftKeyDown = false;
+                    mToolController->OnShiftKeyUp();
+                }
             }
         }
     }
 }
 
-void MainFrame::OnMidMouseButtonObservation(bool isDown)
+void MainFrame::OnMidMouseButtonDown()
 {
-    if (!mIsShiftKeyDown) // We do not care about mid button if SHIFT is down
+    if (mGameController)
     {
-        if (isDown)
+        if (!mIsShiftKeyDown) // We do not care about mid button if SHIFT is down
         {
-            if (!mIsMidMouseButtonDown)
+            // Toggle sticky shift ("shift lock")
+
+            if (!mGameController->IsShiftOn())
             {
-                mIsMidMouseButtonDown = true;
+                mGameController->SetShiftOn(true);
                 mToolController->OnShiftKeyDown();
             }
-        }
-        else
-        {
-            if (mIsMidMouseButtonDown)
+            else
             {
-                mIsMidMouseButtonDown = false;
+                mGameController->SetShiftOn(false);
                 mToolController->OnShiftKeyUp();
             }
         }

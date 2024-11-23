@@ -28,6 +28,7 @@ public:
 		bool isSoundMuted,
 		bool isDayLightCycleOn,
 		bool isAutoFocusOn,
+		bool isShiftOn,
 		UnitsSystem displayUnitsSystem,
 		GameEventDispatcher & gameEventHandler);
 
@@ -59,6 +60,8 @@ public:
 	void SetDayLightCycleIndicator(bool isDayLightCycleOn);
 
 	void SetAutoFocusIndicator(bool isAutoFocusOn);
+
+	void SetShiftIndicator(bool isShiftOn);
 
 	void SetPhysicsProbePanelState(float targetOpen);
 
@@ -200,6 +203,7 @@ private:
 	bool mIsSoundMuteIndicatorOn;
 	bool mIsDayLightCycleOn;
 	bool mIsAutoFocusOn;
+	bool mIsShiftOn;
 	bool mAreTextureNotificationsDirty;
 
 	//

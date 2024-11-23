@@ -49,6 +49,19 @@
 },
 
 {
+	"groupName": "ShiftNotification",
+	"hasOwnAmbientLight": true,
+	"frames":[
+		{	
+			"worldWidth": 1.0,
+			"worldHeight": 1.0,
+			"filenamePattern": "shift_notification_\\d+"
+		}
+	]
+},
+
+
+{
 	"groupName": "SoundMuteNotification",
 	"hasOwnAmbientLight": true,
 	"frames":[

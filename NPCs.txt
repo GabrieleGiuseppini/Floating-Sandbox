@@ -206,6 +206,8 @@ Next release:
 		- RemoveNpcTool: when mouse down on no candidate, enter "selection mode" drawing rectangle
 			- During selection drawing, talks to GameController in no-NPC language to just draw selection rectangle
 			- Then at mouse up, call Npcs::RemoveNpcs(AABB region)
+			- Selectrion rectangle: expand current "Line Guide" into set of them - so can draw quads
+				- TODO: need to clear via name, as line are sticky and we may have many types
 	- Injury system - requires further thought
 		"Something that might be interesting would be to add some sort of injuries system for the NPCs. Doesn't have to be gruesome or gory, but since they seems to be made out of individual joints,
 		 they could have some sort of HP and if a bomb blows off, they might lose their legs or something like that"
@@ -266,7 +268,12 @@ Next release:
 		- Can't be picked when in this regime
 		- Physics update: skipped when in this regime (kinda like BeingPlaced, but for whole NPC this time)
 		- Furniture animation:
-			- Similar shader, but no rotation
+			- Same shader, but no rotation
+		- Pixie dust shader:
+			- Quad is "covering" quad: along H->F for humans - considering extended arms - or quad itself for particle
+			- Then feathers out by a tiny little bit
+			- Vortex, growing from centerH below to whole rect
+				- Noise sampled moving L to R
 		- Tests:
 			- Stats published
 		- TODO: need to figure out:

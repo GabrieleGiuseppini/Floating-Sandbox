@@ -212,7 +212,6 @@ private:
     void OnMainGLCanvasMouseRightDown(wxMouseEvent & event);
     void OnMainGLCanvasMouseRightUp(wxMouseEvent & event);
     void OnMainGLCanvasMouseMiddleDown(wxMouseEvent & event);
-    void OnMainGLCanvasMouseMiddleUp(wxMouseEvent & event);
     void OnMainGLCanvasMouseMove(wxMouseEvent & event);
     void OnMainGLCanvasMouseWheel(wxMouseEvent & event);
     void OnMainGLCanvasCaptureMouseLost(wxMouseCaptureLostEvent & event);
@@ -447,7 +446,7 @@ private:
     void SetMenuItemChecked(wxMenuItem * menuItem, wxBitmap & uncheckedBitmap, wxBitmap & checkedBitmap, bool isChecked);
 
     void OnShiftKeyObservation(bool isDown);
-    void OnMidMouseButtonObservation(bool isDown);
+    void OnMidMouseButtonDown();
 
 private:
 
@@ -466,7 +465,6 @@ private:
     std::vector<std::string> mCurrentShipTitles;
     size_t mCurrentRCBombCount;
     size_t mCurrentAntiMatterBombCount;
-    bool mIsShiftKeyDown; // Implements SHIFT state machine; mutex with below
-    bool mIsMidMouseButtonDown; // Implements SHIFT state machine; mutex with above
+    bool mIsShiftKeyDown; // Implements SHIFT state machine; mutex with GameController::IsShiftOn
     bool mIsMouseCapturedByGLCanvas;
 };

@@ -394,47 +394,6 @@
 			+ Pan speed et al
 
 	+ Fix: npcs burn under (ship) water
-
-	= Clouds V3: with fantastic texture coords offset
-		+ First off, technical debt:
-			+ Do clouds as baked atlas
-			+ Do index-based rendering
-		+ Magic work:
-			+ See shader on shader toy: use cloud texture coords offset based on noise centered around 0.
-				+ But solve problem of going to other texture: need more room around textures?
-					+ Cannot clamp in shader: would still look awful, and nice to have long flanges
-		+ Noise needed:
-			+ Perlin-8,32,0.43 (different than land)
-				+ Move from WorldRenderContext to GlobalRenderContext
-					+ Basically move mLandNoiseTextureOpenGLHandle
-			+ Test:
-				+ Land noise
-				+ Clouds (old  noise)
-		+ Shader
-			+ Does amplitude need to depend on texture coords w/h?
-			+ Play with detail
-		+ Triage current cloud textures
-			+ In ShaderToy		
-		+ Randomize starting progress
-		+ Verify that the Perlin we're using is the same as on the desktop
-			+ Save image, before and after recalibrating
-		+ Tests:
-			+ Basic
-				+ Moonlight, Lamp
-			+ Detailed
-				+ Moonlight, Lamp
-			+ Storm
-		+ Test enlarging canvas of tight clouds
-
-		= Test AdobeStock/Getty clouds
-			+ Need Illustrator
-			- Cancel subscription
-				! By clicking "Agree and subscribe", you agree: After your trial ends, you will be charged € 32,76 (excl. VAT) monthly. Your subscription will automatically renew monthly until you cancel (price subject to change). Cancel before your trial ends and you won't be charged. Cancel anytime via Adobe Account or Customer Support. Cancel before Dec 10, 2024 to get a full refund. You also agree to the Terms of Use and the Subscription and Cancellation Terms.
-
-		- Test cloud 8008 which is on desktop (replacing cloud_2 in Atlas which is a badly processed version)
-			X See if we have it in authoring already though
-
-		- Changelist
 	
 	+ Quad rendering with indices
 		+ Sharing VBOs (for indices) in VAOs: 
@@ -650,12 +609,23 @@
 			X If ok: use it again at EndMoveNpc and CompleteNewNpc and AddGroup
 			+ If not ok: nuke whole GainMeshVelocity and options
 	
-	= Use mouse wheel down as shift:
+	+ Use mouse wheel down as shift:
 		+ https://forums.wxwidgets.org/viewtopic.php?t=50464
 		+ User test (sent)
-		- How about mid toggle?
-			- Ask guy
-		- changelist w/thanks for the guy
+		+ How about mid toggle?
+			+ Ask Damien
+			+ Shift texture notification
+				+ png
+				+ TextureTypes code
+				+ NotificationLayer & NotificationRenderContext code
+			+ GameController owns storage
+				+ Member
+				+ getter/setter
+			+ MainFrame::OnMidDown
+			+ Let him test it
+			+ Bump up version
+			+ Reposition notifications - the ones on by default should be BR
+		+ changelist w/thanks for the guy
 
 	+ Check furniture placement w/group
 
@@ -693,6 +663,8 @@
 					+ Lamps?
 					+ Asked credits: Sean Dempsey
 					- Asked if also wants name change in .shp2 files
+						+ Yes
+						- Do it
 				+ From Dimitry Warin (aka Helooping)
 					+ Galeb
 					+ Lamartine
@@ -843,6 +815,47 @@
 			- Also add "How to Play" pinned post
 
 	===========================
+
+	= Clouds V3: with fantastic texture coords offset
+		+ First off, technical debt:
+			+ Do clouds as baked atlas
+			+ Do index-based rendering
+		+ Magic work:
+			+ See shader on shader toy: use cloud texture coords offset based on noise centered around 0.
+				+ But solve problem of going to other texture: need more room around textures?
+					+ Cannot clamp in shader: would still look awful, and nice to have long flanges
+		+ Noise needed:
+			+ Perlin-8,32,0.43 (different than land)
+				+ Move from WorldRenderContext to GlobalRenderContext
+					+ Basically move mLandNoiseTextureOpenGLHandle
+			+ Test:
+				+ Land noise
+				+ Clouds (old  noise)
+		+ Shader
+			+ Does amplitude need to depend on texture coords w/h?
+			+ Play with detail
+		+ Triage current cloud textures
+			+ In ShaderToy		
+		+ Randomize starting progress
+		+ Verify that the Perlin we're using is the same as on the desktop
+			+ Save image, before and after recalibrating
+		+ Tests:
+			+ Basic
+				+ Moonlight, Lamp
+			+ Detailed
+				+ Moonlight, Lamp
+			+ Storm
+		+ Test enlarging canvas of tight clouds
+
+		= Test AdobeStock/Getty clouds
+			+ Need Illustrator
+			+ Cancel subscription
+				! By clicking "Agree and subscribe", you agree: After your trial ends, you will be charged € 32,76 (excl. VAT) monthly. Your subscription will automatically renew monthly until you cancel (price subject to change). Cancel before your trial ends and you won't be charged. Cancel anytime via Adobe Account or Customer Support. Cancel before Dec 10, 2024 to get a full refund. You also agree to the Terms of Use and the Subscription and Cancellation Terms.
+
+		- Test cloud 8008 which is on desktop (replacing cloud_2 in Atlas which is a badly processed version)
+			X See if we have it in authoring already though
+
+		- Changelist
 
 	= See if fire may emit Heavy smoke
 		! Gist:

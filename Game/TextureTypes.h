@@ -178,6 +178,7 @@ enum class GenericLinearTextureGroups : uint16_t
     DayLightCycleNotification,
     Fire,
     PhysicsProbePanel,
+    ShiftNotification,
     SoundMuteNotification,
     UVModeNotification,
 
@@ -200,6 +201,8 @@ struct GenericLinearTextureTextureDatabaseTraits
             return TextureGroups::Fire;
         else if (Utils::CaseInsensitiveEquals(str, "PhysicsProbePanel"))
             return TextureGroups::PhysicsProbePanel;
+        else if (Utils::CaseInsensitiveEquals(str, "ShiftNotification"))
+            return TextureGroups::ShiftNotification;
         else if (Utils::CaseInsensitiveEquals(str, "SoundMuteNotification"))
             return TextureGroups::SoundMuteNotification;
         else if (Utils::CaseInsensitiveEquals(str, "UVModeNotification"))

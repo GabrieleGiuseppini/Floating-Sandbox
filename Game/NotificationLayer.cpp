@@ -19,6 +19,7 @@ NotificationLayer::NotificationLayer(
 	bool isSoundMuted,
 	bool isDayLightCycleOn,
 	bool isAutoFocusOn,
+	bool isShiftOn,
 	UnitsSystem displayUnitsSystem,
 	GameEventDispatcher & gameEventHandler)
     : mGameEventHandler(gameEventHandler)
@@ -33,6 +34,7 @@ NotificationLayer::NotificationLayer(
 	, mIsSoundMuteIndicatorOn(isSoundMuted)
 	, mIsDayLightCycleOn(isDayLightCycleOn)
 	, mIsAutoFocusOn(isAutoFocusOn)
+	, mIsShiftOn(isShiftOn)
 	, mAreTextureNotificationsDirty(true)
 	// Physics probe
 	, mPhysicsProbePanelState()
@@ -241,6 +243,14 @@ void NotificationLayer::SetAutoFocusIndicator(bool isAutoFocusOn)
 	mAreTextureNotificationsDirty = true;
 }
 
+void NotificationLayer::SetShiftIndicator(bool isShiftOn)
+{
+	mIsShiftOn = isShiftOn;
+
+	// Indicator needs to be re-uploaded
+	mAreTextureNotificationsDirty = true;
+}
+
 void NotificationLayer::Reset()
 {
 	// Nuke rolling text
@@ -406,10 +416,10 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 	{
 		notificationRenderContext.UploadTextureNotificationStart();
 
-		if (mIsUltraViolentModeIndicatorOn)
+		if (mIsAutoFocusOn)
 		{
 			notificationRenderContext.UploadTextureNotification(
-				TextureFrameId(Render::GenericLinearTextureGroups::UVModeNotification, 0),
+				TextureFrameId(Render::GenericLinearTextureGroups::AutoFocusNotification, 0),
 				Render::AnchorPositionType::BottomRight,
 				vec2f(0.0f, 0.0f),
 				1.0f);
@@ -424,21 +434,30 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 				1.0f);
 		}
 
-		if (mIsDayLightCycleOn)
+		if (mIsShiftOn)
 		{
 			notificationRenderContext.UploadTextureNotification(
-				TextureFrameId(Render::GenericLinearTextureGroups::DayLightCycleNotification, 0),
+				TextureFrameId(Render::GenericLinearTextureGroups::ShiftNotification, 0),
 				Render::AnchorPositionType::BottomRight,
 				vec2f(-3.0f, 0.0f),
 				1.0f);
 		}
 
-		if (mIsAutoFocusOn)
+		if (mIsUltraViolentModeIndicatorOn)
 		{
 			notificationRenderContext.UploadTextureNotification(
-				TextureFrameId(Render::GenericLinearTextureGroups::AutoFocusNotification, 0),
+				TextureFrameId(Render::GenericLinearTextureGroups::UVModeNotification, 0),
 				Render::AnchorPositionType::BottomRight,
-				vec2f(-4.5f, 0.0f),
+				vec2f(0.0f, -1.5f),
+				1.0f);
+		}
+
+		if (mIsDayLightCycleOn)
+		{
+			notificationRenderContext.UploadTextureNotification(
+				TextureFrameId(Render::GenericLinearTextureGroups::DayLightCycleNotification, 0),
+				Render::AnchorPositionType::BottomRight,
+				vec2f(-1.5f, -1.5f),
 				1.0f);
 		}
 

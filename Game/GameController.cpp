@@ -102,6 +102,7 @@ GameController::GameController(
     , mIsMoveToolEngaged(false)
     // Parameters that we own
     , mTimeOfDay(0.0f) // We'll set it later
+    , mIsShiftOn(false)
     , mDoShowTsunamiNotifications(true)
     , mDoShowNpcNotifications(true)
     , mDoDrawHeatBlasterFlame(true)
@@ -113,6 +114,7 @@ GameController::GameController(
         false /*isSoundMuted; loaded value will come later*/,
         mGameParameters.DoDayLightCycle,
         false /*isAutoFocusOn; loaded value will come later*/,
+        mIsShiftOn,
         mRenderContext->GetDisplayUnitsSystem(),
         *mGameEventDispatcher)
     , mThreadManager(
@@ -645,6 +647,17 @@ void GameController::DisplayEphemeralTextLine(std::string const & text)
 void GameController::NotifySoundMuted(bool isSoundMuted)
 {
     mNotificationLayer.SetSoundMuteIndicator(isSoundMuted);
+}
+
+bool GameController::IsShiftOn() const
+{
+    return mIsShiftOn;
+}
+
+void GameController::SetShiftOn(bool value)
+{
+    mIsShiftOn = value;
+    mNotificationLayer.SetShiftIndicator(mIsShiftOn);
 }
 
 void GameController::SetLineGuide(
