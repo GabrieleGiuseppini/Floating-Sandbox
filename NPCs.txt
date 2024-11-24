@@ -207,6 +207,9 @@ Next release:
 	- Option 2: populate NPC particles' _light_ buffer with triangles' endpoints (so only for constrained)
 
 - Misc:
+	- Ghost Walls bug:
+		- https://discord.com/channels/559822257275404307/561385724855975938/1309212146508365834
+		- Test Data/NPC walls bug report ship.shps
 	- Remove NPC tool for "area"
 		"Perhaps some sort of selection tool to remove NPCs - removing a large cluster 1 by 1 is a bit annoying"
 		- RemoveNpcTool: when mouse down on no candidate, enter "selection mode" drawing rectangle
@@ -237,6 +240,7 @@ Next release:
 
 - New human behaviors:
 	- Prelim work:
+		- Backport FS to Barylab
 		- 1. Commodotize finding alternatives at end of triangle
 			! Used by: panic checks, forward-looking walk planning, are walk planning
 			- Extract vertex navigation w/candidates finding into own function
@@ -304,6 +308,8 @@ Next release:
 			- Entered when wanting to cross a triangle that on the other side is free because it's damaged
 		- Might also have "Underwater Engineers" with zero buoyancy, unaffected by internal water, who can thus repair when the ship is flooded
 			- This guys has speed multiplier, applies to walk speed and all other movements that are on a period
+
+	- Thanos interactions
 
 - New furniture behaviors:
 	- Exploding

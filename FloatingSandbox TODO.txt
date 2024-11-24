@@ -814,13 +814,15 @@
 
 	+ Add Damien to Tester credits
 
-	- Send last beta
-		- Deselect
-		- SHIFT lock
-		- New ships
-		- Furniture placement
-		- Code changes for Linux
-		- Bump up build
+	+ Send last beta
+		! Deselect
+		! SHIFT lock
+		! New ships
+		! Furniture placement
+		! Code changes for Linux
+	
+
+	+ Bump up build
 
 	- Release template:
 		- Branch is merged into master (if applicable)
@@ -860,7 +862,9 @@
 				- Npc features for future version:
 					- Lights
 					- Walk planning
+					- Doors
 					- ShipBuilder
+					- NPC packs
 		- www.floatingsandbox.com:
 			- Update current version in FAQ
 			- Wait a day or two, to exclude disastrous bugs
@@ -871,8 +875,13 @@
 	- After next release:
 		- Update GameJolt to say Ubuntu 24.04
 			- Also add "How to Play" pinned post
+		- Invite BumBumBaby to beta server
 
 	===========================
+
+	- Redo texture notifications - see size 64+32
+
+	- New materials (*)
 
 	= Clouds V3: with fantastic texture coords offset
 		+ First off, technical debt:
@@ -1887,9 +1896,14 @@
 					- Has precedence when looking for candidates @ Lightning strike
 				- Uranium 235
 					- "A single pixel of uranium when smashed with a hammer or cut with a chainsaw causes a huge explosion the size of the titanic. And it glows blue when you put in underwater."
-				- New metal color (for White Line): F1D4A1
+				- Definitely more colors
+					- https://discord.com/channels/559822257275404307/561385532698001419/1309941207836786828
+					- New metal color (for White Line): F1D4A1
+					- "And you can do it differently, leave the existing colors, and to them to make a separate slot, when you click on this slot, the polytra appears, and you choose a color"
+				- Check Longhorn's materials
 			- Electrical materials:
 				- Backup generators: would activate 10 seconds after connection is cut from the main power and it would power the lights only
+					- Has it's own amount of power and will lose the energy over an amount of time but can be revitalized either by gen or with electric shock tool
 				- Non-Instanced Watertight Doors (see if possible)
 				- Non-Instanced Water In/Out Pumps (see if possible)
 				- Clamp
