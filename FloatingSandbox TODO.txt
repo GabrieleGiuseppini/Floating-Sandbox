@@ -827,19 +827,24 @@
 	= Release:
 		= Windows
 			+ MSI variable
-			- Commit & push
-			- 64-bit MSI
-				- Cleanup Install
-				- Build Release Install (after clean)
+			+ Commit & push
+			+ 64-bit MSI
+				+ Cleanup Install
+				+ Build Release Install (after clean)
+				+ Sign two exes
+				+ Make MSI
+				+ Rename MSI
+				+ Sign MSI
+				+ Test upgrade from previous version
+			= 32-bit MSI
+				+ Cleanup Install
+				= Build Release Install (after clean)
+				- Sign two exes
 				- Make MSI
 				- Rename MSI
-				- Test upgrade from previous version
-			- 32-bit MSI
-				- Cleanup Install
-				- Build Release Install (after clean)
-				- Make MSI
-				- Rename MSI
+				- Sign MSI
 				- Test clean install
+				- Verify it's a 32-bit process
 		- Ubuntu
 			- rm -rf ~/floating-sandbox
 			- pull 
@@ -904,7 +909,11 @@ TODOHERE
 
 	===========================
 
-	- Redo texture notifications - see size 64+32
+	- Make branch
+
+	- Redo texture notifications - test size 64+32
+		- All 5 or 6 textures
+		- Make sure code takes sizes from files
 
 	- New materials (*)
 
@@ -1142,14 +1151,18 @@ TODOHERE
 		- 64-bit MSI
 			- Cleanup Install
 			- Build Release Install (after clean)
+			- Sign two exes
 			- Make MSI
 			- Rename MSI
+			- Sign MSI
 			- Test upgrade from previous version
 		- 32-bit MSI
 			- Cleanup Install
 			- Build Release Install (after clean)
+			- Sign two exes
 			- Make MSI
 			- Rename MSI
+			- Sign MSI
 			- Test clean install
 	- Ubuntu
 		- rm -rf ~/floating-sandbox

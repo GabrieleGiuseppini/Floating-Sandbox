@@ -186,7 +186,7 @@ TEST(IntegralLinearSliderCoreTest, EmptyRange)
 
     EXPECT_EQ(core.GetNumberOfTicks(), 1);
 
-    EXPECT_EQ(core.TickToValue(0), 10);
+    EXPECT_EQ(core.TickToValue(0), 10u);
     EXPECT_EQ(core.ValueToTick(10), 0);
 }
 
