@@ -854,11 +854,15 @@
 			+ Make tar ("cd ~/floating-sandbox && tar -cvf ../Floating-Sandbox-1.19.0-x64.tar . && cd -")
 			+ Zip tar
 			+ Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
-		- Get 3 installers tested on dev server
+		+ Get 3 installers tested on dev server
+			! 64: https://drive.google.com/file/d/1ypKBnDvqKN-0v4R8SLCZnw1udALG_GWu/view?usp=sharing
+			! 32: https://drive.google.com/file/d/1AP7et_gOBQ5j_1DMISE_7jDG13QDkU3x/view?usp=sharing
+			! Linux: https://drive.google.com/file/d/18_khQtZxeLaW1IME_387rFlsLHvALPmY/view?usp=sharing
 		- Wait for test results
 		*******
 		- Tell delayed release
 		- Cut tag on github
+			- Delete useless branches since you're here
 		- Copy binaries to Prev
 		- Copy MSIs to scratch
 		- Upload packages to GameJolt
@@ -1173,7 +1177,7 @@ TODOHERE
 		- Make tar ("cd ~/floating-sandbox && tar -cvf ../Floating-Sandbox-1.16.5-x64.tar . && cd -")
 		- Zip tar
 		- Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
-	- Get 3 installers tested on dev server
+	- Send 3 installers to dev server for final smoke test
 	- Wait for test results
 	*******
 	- Cut tag on github
