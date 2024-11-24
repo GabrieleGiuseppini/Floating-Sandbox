@@ -791,7 +791,7 @@
 						+ NPC menu
 				+ Ask credits
  
-	+ I understand you can undo this with the Follow NPC button, though I'd like to suggest for the "Select Next NPC" button: an option around the menus to unselect NPCs with the red highlighting square would be nice, given the amount of people that ask how to download the game, I can very easily imagine a fair amount of players unintentionally selecting an NPC and then not knowing how to just as easily unselect them. Additionally, maybe a "Select Last NPC" seeing as the "Select First NPC" has a shortcut and could easily have a player's desired NPC skipped from spamming the shortcut across the NPCs?
+	+ "I understand you can undo this with the Follow NPC button, though I'd like to suggest for the "Select Next NPC" button: an option around the menus to unselect NPCs with the red highlighting square would be nice, given the amount of people that ask how to download the game, I can very easily imagine a fair amount of players unintentionally selecting an NPC and then not knowing how to just as easily unselect them." 
 		+ Do
 		+ State machine
 		+ Localization:
@@ -824,8 +824,7 @@
 
 	+ Bump up build
 
-	- Release template:
-		- Branch is merged into master (if applicable)
+	- Release:
 		- Windows
 			- MSI variable
 			- Commit & push
@@ -854,17 +853,43 @@
 			- Also:
 				- Longhorn
 		- Wait for test results
+		*******
 		- Cut tag on github
+		- Copy binaries to Prev
 		- Upload packages to GameJolt
 			- Report file as safe (https://gamejolt.com/privacy)
 			- Post
-				- Android
-				- Npc features for future version:
-					- Lights
-					- Walk planning
-					- Doors
-					- ShipBuilder
-					- NPC packs
+
+
+
+Dear shipmates,
+
+We are proud - and at the same time relieved - to announce the release of Floating Sandbox 1.19: the NPC update!
+
+It took sixteen months to cook NPC support in the simulator. During these sixteen months we have basically coded a whole new game in a game, and most arduously, we had to learn to reason in terms of barycentric coordinates - which is the space occupied by NPCs inhabiting a ship. Nonetheless, through all the hardships, we had been making continuous, steady progress - each small step being documented with the videos that you can check in our channel [https://www.youtube.com/@GabrieleGiuseppini].
+
+Today, all that work has finally come to an end - or better said, to a BEGINNING! In fact, this new release of Floating Sandbox only brings the _basics_ of NPC support - the core physics, the interactions with the ship, and the NPC rendering engine. There are *plenty* of more articulated features missing in this release, and which we will be working on in the next few releases. Some of these are:
+* Basic walk planning - while in this release NPCs happily walk into manholes, in future releases they will plan their walk ahead and avoid obvious pitfalls
+* Complex walk planning - imagine sounding an alarm and seeing all NPCs group at assembly points
+* Complex interactions - NPCs will do more things than just lemminging out on the ship
+* ShipBuilder support for designing floorplans - in this release NPCs simply walk on hull floors, in future releases you'll be able to draw ad-hoc floorplans
+* Doors - controlled via switches
+* Lights shining on NPCs - in this release NPCs are dark at night
+* NPC packs - we'll have add-ons with new skins
+* ...and a zillion new things (yes, possibly lifeboats as well!)
+
+All of this will be worked on while we finally resume working on the mobile port of Floating Sandbox - more news about this in laters posts.
+
+With no further ado, here's the changelist for this release:
+TODOHERE
+
+
+
+
+
+
+		- Update GameJolt roadmap post with release dates
+
 		- www.floatingsandbox.com:
 			- Update current version in FAQ
 			- Wait a day or two, to exclude disastrous bugs
@@ -1137,7 +1162,9 @@
 		- Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
 	- Get 3 installers tested on dev server
 	- Wait for test results
+	*******
 	- Cut tag on github
+	- Copy binaries to Prev
 	- Upload packages to GameJolt
 		- Report file as safe (https://gamejolt.com/privacy)
 		- Post
