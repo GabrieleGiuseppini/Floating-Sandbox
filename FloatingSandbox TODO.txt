@@ -825,7 +825,7 @@
 	+ Bump up build
 
 	= Release:
-		= Windows
+		+ Windows
 			+ MSI variable
 			+ Commit & push
 			+ 64-bit MSI
@@ -836,36 +836,35 @@
 				+ Rename MSI
 				+ Sign MSI
 				+ Test upgrade from previous version
-			= 32-bit MSI
+			+ 32-bit MSI
 				+ Cleanup Install
-				= Build Release Install (after clean)
-				- Sign two exes
-				- Make MSI
-				- Rename MSI
-				- Sign MSI
-				- Test clean install
-				- Verify it's a 32-bit process
-		- Ubuntu
-			- rm -rf ~/floating-sandbox
-			- pull 
-			- rm -rf build; mkdir build; cd build
-			- cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
-			- make install
-			- Make tar ("cd ~/floating-sandbox && tar -cvf ../Floating-Sandbox-1.16.5-x64.tar . && cd -")
-			- Zip tar
-			- Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
+				+ Build Release Install (after clean)
+				+ Sign two exes
+				+ Make MSI
+				+ Rename MSI
+				+ Sign MSI
+				+ Test clean install
+				+ Verify it's a 32-bit process
+		+ Ubuntu
+			+ rm -rf ~/floating-sandbox
+			+ pull 
+			+ rm -rf build; mkdir build; cd build
+			+ cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
+			+ make install
+			+ Make tar ("cd ~/floating-sandbox && tar -cvf ../Floating-Sandbox-1.19.0-x64.tar . && cd -")
+			+ Zip tar
+			+ Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
 		- Get 3 installers tested on dev server
-			- Also:
-				- Longhorn
 		- Wait for test results
 		*******
+		- Tell delayed release
 		- Cut tag on github
 		- Copy binaries to Prev
+		- Copy MSIs to scratch
 		- Upload packages to GameJolt
-			- Report file as safe (https://gamejolt.com/privacy)
+			- Verify Windows Defender
+				- Report file as safe (https://gamejolt.com/privacy)
 			- Post
-
-
 
 Dear shipmates,
 
@@ -1164,6 +1163,7 @@ TODOHERE
 			- Rename MSI
 			- Sign MSI
 			- Test clean install
+				- Verify it's a 32-bit process
 	- Ubuntu
 		- rm -rf ~/floating-sandbox
 		- pull 
@@ -1178,8 +1178,10 @@ TODOHERE
 	*******
 	- Cut tag on github
 	- Copy binaries to Prev
+	- Copy MSIs to scratch
 	- Upload packages to GameJolt
-		- Report file as safe (https://gamejolt.com/privacy)
+		- Verify Windows Defender
+			- Report file as safe (https://gamejolt.com/privacy)
 		- Post
 	- www.floatingsandbox.com:
 		- Update current version in FAQ

@@ -407,6 +407,7 @@ Next release:
 	- TODO: floor types (normal, assembly, lifeboats, etc.)
 	- TODO: states (random walk, to assembly, to lifeboats, etc.)
 	- Separate thread calcs <floor_point>->[distance to each floor area connected component]
+		! Make calculations unit-testable
 		- Step 1: visit graph with flooding and store all pointsVedges in N queues, one for each floor type are we want to track
 		- Step 2: for each queue Qn:
 			- Breadth first visit of elements in the queue (all elements first, all reachable from those next, etc.), storing distance in n's slot
