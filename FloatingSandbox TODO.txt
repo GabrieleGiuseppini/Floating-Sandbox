@@ -824,9 +824,9 @@
 
 	+ Bump up build
 
-	- Release:
-		- Windows
-			- MSI variable
+	= Release:
+		= Windows
+			+ MSI variable
 			- Commit & push
 			- 64-bit MSI
 				- Cleanup Install
