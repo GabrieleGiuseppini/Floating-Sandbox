@@ -913,6 +913,8 @@ TODOHERE
 	===========================
 
 	- Make branch
+	- Bump up minor
+	- Reduce fish size
 
 	- Redo texture notifications - test size 64+32
 		- All 5 or 6 textures
