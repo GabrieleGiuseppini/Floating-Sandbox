@@ -467,6 +467,7 @@ private:
 				// Panic levels
 				float OnFirePanicLevel; // [0.0f ... +1.0f], auto-decayed
 				float BombProximityPanicLevel; // [0.0f ... +1.0f], auto-decayed
+				float IncomingWaterProximityPanicLevel; // [0.0f ... +1.0f], auto-decayed
 				float MiscPanicLevel; // [0.0f ... +1.0f], auto-decayed; includes triangle break
 				float ResultantPanicLevel; // [0.0f ... +INF)
 
@@ -522,6 +523,7 @@ private:
 					, CurrentFaceDirectionX(0.0f)
 					, OnFirePanicLevel(0.0f)
 					, BombProximityPanicLevel(0.0f)
+					, IncomingWaterProximityPanicLevel(0.0f)
 					, MiscPanicLevel(0.0f)
 					, ResultantPanicLevel(0.0f)
 					// Animation

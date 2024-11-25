@@ -80,6 +80,7 @@ void Npcs::UpdateHuman(
 	humanState.ResultantPanicLevel =
 		humanState.OnFirePanicLevel
 		+ humanState.BombProximityPanicLevel
+		+ humanState.IncomingWaterProximityPanicLevel
 		+ humanState.MiscPanicLevel
 		+ mGeneralizedPanicLevel;
 
@@ -87,6 +88,7 @@ void Npcs::UpdateHuman(
 
 	humanState.OnFirePanicLevel -= humanState.OnFirePanicLevel * 0.01f;
 	humanState.BombProximityPanicLevel -= humanState.BombProximityPanicLevel * 0.0025f;
+	humanState.IncomingWaterProximityPanicLevel -= humanState.IncomingWaterProximityPanicLevel * 0.005f;
 	humanState.MiscPanicLevel -= humanState.MiscPanicLevel * 0.009f;
 
 	//
@@ -665,7 +667,7 @@ void Npcs::UpdateHuman(
 
 					if (HasBomb(npc, homeShip))
 					{
-						if (humanState.BombProximityPanicLevel < 0.6)
+						if (humanState.BombProximityPanicLevel < 0.6f)
 						{
 							// Time to flip
 							humanState.CurrentFaceDirectionX *= -1.0f;
@@ -683,7 +685,7 @@ void Npcs::UpdateHuman(
 
 			if (npc.CombustionState.has_value())
 			{
-				if (humanState.OnFirePanicLevel < 0.6)
+				if (humanState.OnFirePanicLevel < 0.6f)
 				{
 					// Time to flip
 					humanState.CurrentFaceDirectionX *= -1.0f;
@@ -693,6 +695,30 @@ void Npcs::UpdateHuman(
 				humanState.OnFirePanicLevel = 1.0f;
 
 				// Continue
+			}
+
+			// Check incoming water panic
+
+			if (humanState.BombProximityPanicLevel < 0.6f
+				&& humanState.OnFirePanicLevel < 0.6f) // Just make check subordinate to other panics, don't want to flip headlessly
+			{
+				vec2f const & waterMeshVelocity = mParticles.GetMeshWaterVelocity(primaryParticleState.ParticleIndex);
+				if (std::fabsf(waterMeshVelocity.x) > 0.1f)
+				{
+					// Water velocity passes test
+
+					if (waterMeshVelocity.x * humanState.CurrentFaceDirectionX <= 0.0f
+						&& humanState.IncomingWaterProximityPanicLevel < 0.6f)
+					{
+						// Time to flip
+						humanState.CurrentFaceDirectionX *= -1.0f;
+					}
+
+					// Panic
+					humanState.IncomingWaterProximityPanicLevel = 1.0f;
+
+					// Continue
+				}
 			}
 
 			// Check progress to walking

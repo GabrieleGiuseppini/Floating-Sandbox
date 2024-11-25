@@ -200,23 +200,83 @@ Current perf:
 ===================
 Next release:
 
+- Remove NPC tool for "area"
+	! "Perhaps some sort of selection tool to remove NPCs - removing a large cluster 1 by 1 is a bit annoying"
+	- RemoveNpcTool: when mouse down on no candidate, enter "selection mode" drawing rectangle
+		- During selection drawing, talks to GameController in no-NPC language to just draw selection rectangle
+		- Then at mouse up, call Npcs::RemoveNpcs(AABB region)
+		- Selection rectangle: expand current "Line Guide" into set of them - so can draw quads
+			- Rename to "InteractiveToolGuideLines", with assumption there's only one set at a time
+			- Make sure quad corners look good
+			- ClearXXX() clears them all
+	- Highlight all
+		- Make highlight NOT sticky
+	- Changelist
+
+- Backport FS to Barylab
+
+- Mechanism for dynamic removal of NPCs, plus human removal and furniture explosion
+	! Will be useful for explosive NPCs (to make explosive furniture disappear) (*) and for human removal animation (*)
+	- BeingRemoved regime: to keep the NPC "out of the loop" for the rest of the simulation step
+			- Since we are here: see if it makes sense to make helper to switch regime - even if only invokes OnMayBeRegimeChanged
+		- No physics, no human behavior update (other than for specific variants of removal itself, e.g. updating orientations and progress for animation, and/or alpha)
+		- Can't be picked when in this regime
+		- Physics update: skipped when in this regime (kinda like BeingPlaced, but for whole NPC this time)
+	- Set of NpcId's to remove, scavenged at end of Update()
+		- assert they are all in BeingRemoved regime
+	- Human removal:
+		- Triggered by: manual removal (from tool is the only one at the moment....right?)
+		- Regime <- BeingRemoved
+		- HumanBehavior <- Removing
+			- State: simulationStartTimestamp
+			- Behavior update: countdown to final insertion into Set of NpcIds to remove
+			- Animation: 
+				- Human: rotates with arms 90degree and legs closed, alpha down, then disappears; shader does pixie dust
+				- Furniture: alpha down, then disappears; shader does pixie dust
+				- Pixie dust shader:
+					- Quad is "covering" quad: along H->F for humans - considering extended arms - or quad itself for particle
+					- Then feathers out by a tiny little bit
+					- Vortex, growing from centerH below to whole rect
+						- Noise sampled moving L to R
+				- TODO: need to figure out:
+					- Shader: use current NPC shader with toggled enrichments, or shader on top?
+						- Shader on top has potential Z issues?
+
+	- Furniture explosion:
+		- Triggered by: impact
+			- At that call site, also inject explosion state machine @ Ship, should take care of physics _and_ rendering!
+		- Regime <- BeingRemoved
+		- FurnitureState <- Exploding
+				- Requires new furniture state
+				- Requires new helper
+			- State: simulationStartTimestamp
+			- Behavior update: countdown to final insertion into Set of NpcIds to remove
+				- Requires BehaviorUpdate() for furniture
+			- Animation: alpha
+				- Requires UpdateAnimation() for furniture
+
+	- Cleanups:
+		- TODO: what to do with InternalRemove/OnRemoval/whatever
+		
+	- Tests:
+		- Stats published correctly for removed humans
+
+	- changelist
+
+
 - Lights: 
 	- Option 1: second pass of lighting algorithm with all NPC particles, for each ship
 		- Adding to NPC particles' _light_ buffer
 			- But test it first, as humans are dipoles and dubious result
 	- Option 2: populate NPC particles' _light_ buffer with triangles' endpoints (so only for constrained)
+		- First try to do this @ first pass, before physics update
+			- Real should be after
 
 - Misc:
+	! TODO: move the long-term ones below to a new "Wishlist" section
 	- Ghost Walls bug:
 		- https://discord.com/channels/559822257275404307/561385724855975938/1309212146508365834
 		- Test Data/NPC walls bug report ship.shps
-	- Remove NPC tool for "area"
-		"Perhaps some sort of selection tool to remove NPCs - removing a large cluster 1 by 1 is a bit annoying"
-		- RemoveNpcTool: when mouse down on no candidate, enter "selection mode" drawing rectangle
-			- During selection drawing, talks to GameController in no-NPC language to just draw selection rectangle
-			- Then at mouse up, call Npcs::RemoveNpcs(AABB region)
-			- Selectrion rectangle: expand current "Line Guide" into set of them - so can draw quads
-				- TODO: need to clear via name, as line are sticky and we may have many types
 	- Injury system - requires further thought
 		"Something that might be interesting would be to add some sort of injuries system for the NPCs. Doesn't have to be gruesome or gory, but since they seems to be made out of individual joints,
 		 they could have some sort of HP and if a bomb blows off, they might lose their legs or something like that"
@@ -225,23 +285,16 @@ Next release:
 		! A too-low NPC-specific damping causes NPCs to bounce forever when in water, though
 	- I changed the size multiplier of the NPCs to 10, and then shrunk it down to a little above the default, ~1.25 or something similar, and multiple (though not all) of the NPCs seemed to become very oddly proportioned with their torso stretched to what I assume is the size multiple of 10 (leading to very tall figures) though their width was at what I assume to be what I set the multiple to, while these people were also stuck in a diagonal rotation, in short, multiple NPCs became the shape of diagonal baguettes, though would return to normal if I destroyed the structure they were on. All of the affected NPCs were in some form of non-permeable material, so I've concluded that I believe some of the NPCs don't stretch back to their newly-set size multiple because they are stuck in a hull material as a result of being set to a size that put them into that stuck position.
 
-- Explosive NPCs
-	- Explode at hit
-		- Just inject explosion state machine @ Ship, should take care of physics _and_ rendering!
-	- Need mechanism for dynamic removal of NPCs
-		- Will be useful also for human removal animation (*)
-		- Option 1: set of NpcId's to remove, scavenged at end of Update()
-			- BeingRemoved regime: to keep the NPC "out of the loop" for the rest of the simulation step
-				- No physics, no human behavior update (other than for BeingRemoved itself, updating orientations and progress for animation)
-					- BeingRemoved is in fact also a human behavior for completeness, for consistency with UpdateHumanBehavior and UpdateAnimation
-			- When marking an NPC for removal (via helper): 
-				- Add to set
-				- Set regime and human behavior (iff human)
-
 - New human behaviors:
-	- Prelim work:
-		- Backport FS to Barylab
-		- 1. Commodotize finding alternatives at end of triangle
+
+	- Panic when sinking detected
+		- TODO: type? Do we still need "Generalized"? (note: it's global)
+			- "Generalized" is good for BaryLab - may be just #ifdef it to it?
+			- Can still have many named "global" panics, e.g. SinkingPanic
+
+	
+	- Prelim work:		
+		- 1. Commoditize finding alternatives at end of triangle
 			! Used by: panic checks, forward-looking walk planning, are walk planning
 			- Extract vertex navigation w/candidates finding into own function
 				- Args, among others:
@@ -252,44 +305,33 @@ Next release:
 		- 2: "next triangle" check when planning:
 			- @ UpdateBehavior while walking (or at WalkingUpdate):
 				- WalkingBehaviorState contains: tri index, edge ordinal, "half edge sign", and x orientation
+						- Also contains "times checked in this triangle" to detect stall and to go into "Walking_Undecided" state
 					- Init'd to None at each transition into Walking
 					- Used to detect change of "half edge"
 				- When change detected:
 					- if half_change*orientation > 0: we're walking into next edge in this direction; do <X>
 					- Update state with current half
 
-	- Panic when water entering
-	- Panic when sinking detected
+	+ Panic when water entering (also "Walk away from water")
+		+ Done @ Walking update, by looking at water velocity wrt direction
+		+ Has own panic
+		+ With chain of panics (fire, bomb, water - right order)
 
-	- Walk away from water
+	- Panic when water starts entering ship
+		- TODO: how detected exactly?
+		- TODO: panic type? And for all, or for a few?
 
 	- Forward-looking walk planning:
 		! Goal: while walking, do not proceed towards a wall or a hole
 		- Requires 1. and 2. @ Prelim work above
-		- @ Walking behavior (* above): when "half-triangle" change detected (* above):
+		- @ Walking behavior (* above): when "half-triangle" change detected (<X> above):
 			- Find if a next floor exists in cur triangle along walking direction
 				- Via commoditized helper
 			- Can not proceed if doesn't find any alternatives
 				- Flip
-					! We'll figure out whether we're stuck also in other direction after we cross the half-triangle again
+					! We'll figure out whether we're stuck also in other direction after we cross the half-triangle again, and via the "times checked in this triangle" state member
+					! Also flip when under panic, that will make for funny fall-on-back
 
-	- When human removed, enters "Removal" behavior: rotates with arms 90degree and legs closed, alpha down, then disappears; shader does pixie dust
-		- Requires delayed removal (@UpdateBehavior), see (*) above at Explosive NPCs
-			- "BeingRemoved" regime for whole NPC
-		- Can't be picked when in this regime
-		- Physics update: skipped when in this regime (kinda like BeingPlaced, but for whole NPC this time)
-		- Furniture animation:
-			- Same shader, but no rotation
-		- Pixie dust shader:
-			- Quad is "covering" quad: along H->F for humans - considering extended arms - or quad itself for particle
-			- Then feathers out by a tiny little bit
-			- Vortex, growing from centerH below to whole rect
-				- Noise sampled moving L to R
-		- Tests:
-			- Stats published
-		- TODO: need to figure out:
-			- Shader: existing shader with toggled enrichments, or shader on top?
-				- Shader on top has potential Z issues?
 
 	- When ship is repaired, all NPCs do a little dance
 		- Sync is simulation clock (so all are in sync)
@@ -310,6 +352,7 @@ Next release:
 			- This guys has speed multiplier, applies to walk speed and all other movements that are on a period
 
 	- Thanos interactions
+		- TODO
 
 - New furniture behaviors:
 	- Exploding
