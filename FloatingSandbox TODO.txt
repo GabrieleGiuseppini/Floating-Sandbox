@@ -858,43 +858,46 @@
 			! 64: https://drive.google.com/file/d/1ypKBnDvqKN-0v4R8SLCZnw1udALG_GWu/view?usp=sharing
 			! 32: https://drive.google.com/file/d/1AP7et_gOBQ5j_1DMISE_7jDG13QDkU3x/view?usp=sharing
 			! Linux: https://drive.google.com/file/d/18_khQtZxeLaW1IME_387rFlsLHvALPmY/view?usp=sharing
-		- Wait for test results
+		+ Wait for test results
 		*******
-		- Tell delayed release
-		- Cut tag on github
+		+ Tell delayed release
+		+ Cut tag on github
 			- Delete useless branches since you're here
 		- Copy binaries to Prev
 		- Copy MSIs to scratch
-		- Upload packages to GameJolt
+		+ Upload packages to GameJolt
+		- Upload video to YouTube
+			- Text: just music
+			- Verify copyright issues
+			- Do NOT publish yet
+		- GameJolt: make release public
 			- Verify Windows Defender
 				- Report file as safe (https://gamejolt.com/privacy)
-			- Post
+			- Update GameJolt to say Ubuntu 24.04
+		- Send changelist to TimCan
+		- Publish YouTube video
+		- GameJolt post:
 
 Dear shipmates,
 
 We are proud - and at the same time relieved - to announce the release of Floating Sandbox 1.19: the NPC update!
 
-It took sixteen months to cook NPC support in the simulator. During these sixteen months we have basically coded a whole new game in a game, and most arduously, we had to learn to reason in terms of barycentric coordinates - which is the space occupied by NPCs inhabiting a ship. Nonetheless, through all the hardships, we had been making continuous, steady progress - each small step being documented with the videos that you can check in our channel [https://www.youtube.com/@GabrieleGiuseppini].
+It took sixteen months to cook NPC support in the simulator. During these sixteen months we have basically coded a whole new game in a game, and most arduously, we had to learn how to reason in terms of barycentric coordinates - the space occupied by NPCs inhabiting a ship. Nonetheless, through all the hardships, we had been making continuous, steady progress - each small step being documented with the videos that you can check in our YouTube channel [https://www.youtube.com/@GabrieleGiuseppini].
 
 Today, all that work has finally come to an end - or better said, to a BEGINNING! In fact, this new release of Floating Sandbox only brings the _basics_ of NPC support - the core physics, the interactions with the ship, and the NPC rendering engine. There are *plenty* of more articulated features missing in this release, and which we will be working on in the next few releases. Some of these are:
 * Basic walk planning - while in this release NPCs happily walk into manholes, in future releases they will plan their walk ahead and avoid obvious pitfalls
-* Complex walk planning - imagine sounding an alarm and seeing all NPCs group at assembly points
-* Complex interactions - NPCs will do more things than just lemminging out on the ship
+* Complex behaviors - NPCs will do more things than just lemminging out on the ship - imagine sounding an alarm and seeing all NPCs group at assembly points
 * ShipBuilder support for designing floorplans - in this release NPCs simply walk on hull floors, in future releases you'll be able to draw ad-hoc floorplans
 * Doors - controlled via switches
 * Lights shining on NPCs - in this release NPCs are dark at night
+* Physics sounds - e.g. when NPC furniture hits a floor
 * NPC packs - we'll have add-ons with new skins
 * ...and a zillion new things (yes, possibly lifeboats as well!)
 
 All of this will be worked on while we finally resume working on the mobile port of Floating Sandbox - more news about this in laters posts.
 
-With no further ado, here's the changelist for this release:
+Without further ado, here's the changelist for this release:
 TODOHERE
-
-
-
-
-
 
 		- Update GameJolt roadmap post with release dates
 
@@ -906,13 +909,12 @@ TODOHERE
 
 
 	- After next release:
-		- Update GameJolt to say Ubuntu 24.04
-			- Also add "How to Play" pinned post
+		- GameJolt: add "How to Play" pinned post
 		- Invite BumBumBaby to beta server
 
 	===========================
 
-	- Make branch
+	+ Make branch (1.19.0.next)
 	- Bump up minor
 	- Reduce fish size
 
