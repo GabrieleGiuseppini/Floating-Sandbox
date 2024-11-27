@@ -649,6 +649,30 @@ void Npcs::UpdateNpcs(
                 *npcState,
                 currentSimulationTime,
                 homeShip);
+
+            // Light
+
+            for (size_t p = 0; p < npcState->ParticleMesh.Particles.size(); ++p)
+            {
+                float light;
+
+                // Only lighten constrained particles
+                if (npcState->ParticleMesh.Particles[p].ConstrainedState.has_value())
+                {
+                    auto const & triangleIndices = homeShip.GetTriangles().GetPointIndices(npcState->ParticleMesh.Particles[p].ConstrainedState->CurrentBCoords.TriangleElementIndex);
+                    auto const & bcoords = npcState->ParticleMesh.Particles[p].ConstrainedState->CurrentBCoords.BCoords;
+                    light =
+                        homeShip.GetPoints().GetLight(triangleIndices[0]) * bcoords[0]
+                        + homeShip.GetPoints().GetLight(triangleIndices[1]) * bcoords[1]
+                        + homeShip.GetPoints().GetLight(triangleIndices[2]) * bcoords[2];
+                }
+                else
+                {
+                    light = 0.0f;
+                }
+
+                mParticles.SetLight(npcState->ParticleMesh.Particles[p].ParticleIndex, light);
+            }
         }
     }
 }

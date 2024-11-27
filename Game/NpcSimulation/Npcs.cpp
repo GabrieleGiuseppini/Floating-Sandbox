@@ -2932,7 +2932,8 @@ void Npcs::RenderNpc(
             : static_cast<float>(npc.CurrentPlaneId),
         (mCurrentlyHighlightedNpc == npc.Id)
             ? vec3f(1.0f, 0.21f, 0.08f)
-            : vec3f(0.0f, 0.0f, 0.0f)
+            : vec3f(0.0f, 0.0f, 0.0f),
+        1.0f // Alpha -- FutureWork
     };
 
     switch (npc.Kind)
@@ -3042,6 +3043,12 @@ void Npcs::RenderNpc(
                 -1.0f, 1.0f
             };
 
+            // Prepare light
+            float const _lowerLight = mParticles.GetLight(npc.ParticleMesh.Particles[0].ParticleIndex);
+            std::array<float, 4> const lowerLight = { _lowerLight, _lowerLight, _lowerLight, _lowerLight };
+            float const _upperLight = mParticles.GetLight(npc.ParticleMesh.Particles[1].ParticleIndex);
+            std::array<float, 4> const upperLight = { _upperLight, _upperLight, _upperLight, _upperLight };
+
             if (humanNpcState.CurrentFaceOrientation != 0.0f)
             {
                 //
@@ -3060,10 +3067,12 @@ void Npcs::RenderNpc(
                     if constexpr (IsTextureMode)
                         shipRenderContext.UploadNpcTextureAttributes(
                             humanNpcState.CurrentFaceOrientation > 0.0f ? humanNpcState.TextureFrames.HeadFront : humanNpcState.TextureFrames.HeadBack,
+                            upperLight,
                             staticAttribs);
                     else
                         shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
                             quadModeTextureCoordinates,
+                            upperLight,
                             staticAttribs,
                             npc.RenderColor);
                 }
@@ -3092,10 +3101,12 @@ void Npcs::RenderNpc(
                         if constexpr (IsTextureMode)
                             shipRenderContext.UploadNpcTextureAttributes(
                                 humanNpcState.TextureFrames.ArmFront,
+                                upperLight,
                                 staticAttribs);
                         else
                             shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
                                 quadModeTextureCoordinates,
+                                upperLight,
                                 staticAttribs,
                                 npc.RenderColor);
                     }
@@ -3113,10 +3124,12 @@ void Npcs::RenderNpc(
                         if constexpr (IsTextureMode)
                             shipRenderContext.UploadNpcTextureAttributes(
                                 humanNpcState.TextureFrames.ArmFront.FlipH(),
+                                upperLight,
                                 staticAttribs);
                         else
                             shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
                                 quadModeTextureCoordinates,
+                                upperLight,
                                 staticAttribs,
                                 npc.RenderColor);
                     }
@@ -3134,10 +3147,12 @@ void Npcs::RenderNpc(
                         if constexpr (IsTextureMode)
                             shipRenderContext.UploadNpcTextureAttributes(
                                 humanNpcState.TextureFrames.LegFront,
+                                lowerLight,
                                 staticAttribs);
                         else
                             shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
                                 quadModeTextureCoordinates,
+                                lowerLight,
                                 staticAttribs,
                                 npc.RenderColor);
                     }
@@ -3155,10 +3170,12 @@ void Npcs::RenderNpc(
                         if constexpr (IsTextureMode)
                             shipRenderContext.UploadNpcTextureAttributes(
                                 humanNpcState.TextureFrames.LegFront.FlipH(),
+                                lowerLight,
                                 staticAttribs);
                         else
                             shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
                                 quadModeTextureCoordinates,
+                                lowerLight,
                                 staticAttribs,
                                 npc.RenderColor);
                     }
@@ -3180,10 +3197,12 @@ void Npcs::RenderNpc(
                         if constexpr (IsTextureMode)
                             shipRenderContext.UploadNpcTextureAttributes(
                                 humanNpcState.TextureFrames.ArmBack,
+                                upperLight,
                                 staticAttribs);
                         else
                             shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
                                 quadModeTextureCoordinates,
+                                upperLight,
                                 staticAttribs,
                                 npc.RenderColor);
                     }
@@ -3201,10 +3220,12 @@ void Npcs::RenderNpc(
                         if constexpr (IsTextureMode)
                             shipRenderContext.UploadNpcTextureAttributes(
                                 humanNpcState.TextureFrames.ArmBack.FlipH(),
+                                upperLight,
                                 staticAttribs);
                         else
                             shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
                                 quadModeTextureCoordinates,
+                                upperLight,
                                 staticAttribs,
                                 npc.RenderColor);
                     }
@@ -3222,10 +3243,12 @@ void Npcs::RenderNpc(
                         if constexpr (IsTextureMode)
                             shipRenderContext.UploadNpcTextureAttributes(
                                 humanNpcState.TextureFrames.LegBack,
+                                lowerLight,
                                 staticAttribs);
                         else
                             shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
                                 quadModeTextureCoordinates,
+                                lowerLight,
                                 staticAttribs,
                                 npc.RenderColor);
                     }
@@ -3243,10 +3266,12 @@ void Npcs::RenderNpc(
                         if constexpr (IsTextureMode)
                             shipRenderContext.UploadNpcTextureAttributes(
                                 humanNpcState.TextureFrames.LegBack.FlipH(),
+                                lowerLight,
                                 staticAttribs);
                         else
                             shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
                                 quadModeTextureCoordinates,
+                                lowerLight,
                                 staticAttribs,
                                 npc.RenderColor);
                     }
@@ -3264,10 +3289,12 @@ void Npcs::RenderNpc(
                     if constexpr (IsTextureMode)
                         shipRenderContext.UploadNpcTextureAttributes(
                             humanNpcState.CurrentFaceOrientation > 0.0f ? humanNpcState.TextureFrames.TorsoFront : humanNpcState.TextureFrames.TorsoBack,
+                            upperLight,
                             staticAttribs);
                     else
                         shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
                             quadModeTextureCoordinates,
+                            upperLight,
                             staticAttribs,
                             npc.RenderColor);
                 }
@@ -3439,10 +3466,12 @@ void Npcs::RenderNpc(
                         if constexpr (IsTextureMode)
                             shipRenderContext.UploadNpcTextureAttributes(
                                 leftUpperLegQuad.TextureCoords,
+                                lowerLight,
                                 staticAttribs);
                         else
                             shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
                                 leftUpperLegQuad.TextureCoords,
+                                lowerLight,
                                 staticAttribs,
                                 npc.RenderColor);
                     }
@@ -3453,10 +3482,12 @@ void Npcs::RenderNpc(
                         if constexpr (IsTextureMode)
                             shipRenderContext.UploadNpcTextureAttributes(
                                 leftLowerLegQuad->TextureCoords,
+                                lowerLight,
                                 staticAttribs);
                         else
                             shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
                                 leftLowerLegQuad->TextureCoords,
+                                lowerLight,
                                 staticAttribs,
                                 npc.RenderColor);
                     }
@@ -3473,10 +3504,12 @@ void Npcs::RenderNpc(
                         if constexpr (IsTextureMode)
                             shipRenderContext.UploadNpcTextureAttributes(
                                 humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.ArmSide : humanNpcState.TextureFrames.ArmSide.FlipH(),
+                                upperLight,
                                 staticAttribs);
                         else
                             shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
                                 quadModeTextureCoordinates,
+                                upperLight,
                                 staticAttribs,
                                 npc.RenderColor);
                     }
@@ -3490,10 +3523,12 @@ void Npcs::RenderNpc(
                         if constexpr (IsTextureMode)
                             shipRenderContext.UploadNpcTextureAttributes(
                                 rightUpperLegQuad.TextureCoords,
+                                lowerLight,
                                 staticAttribs);
                         else
                             shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
                                 rightUpperLegQuad.TextureCoords,
+                                lowerLight,
                                 staticAttribs,
                                 npc.RenderColor);
                     }
@@ -3504,10 +3539,12 @@ void Npcs::RenderNpc(
                         if constexpr (IsTextureMode)
                             shipRenderContext.UploadNpcTextureAttributes(
                                 rightLowerLegQuad->TextureCoords,
+                                lowerLight,
                                 staticAttribs);
                         else
                             shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
                                 rightLowerLegQuad->TextureCoords,
+                                lowerLight,
                                 staticAttribs,
                                 npc.RenderColor);
                     }
@@ -3524,10 +3561,12 @@ void Npcs::RenderNpc(
                         if constexpr (IsTextureMode)
                             shipRenderContext.UploadNpcTextureAttributes(
                                 humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.ArmSide : humanNpcState.TextureFrames.ArmSide.FlipH(),
+                                upperLight,
                                 staticAttribs);
                         else
                             shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
                                 quadModeTextureCoordinates,
+                                upperLight,
                                 staticAttribs,
                                 npc.RenderColor);
                     }
@@ -3545,10 +3584,12 @@ void Npcs::RenderNpc(
                     if constexpr (IsTextureMode)
                         shipRenderContext.UploadNpcTextureAttributes(
                             humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.HeadSide : humanNpcState.TextureFrames.HeadSide.FlipH(),
+                            upperLight,
                             staticAttribs);
                     else
                         shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
                             quadModeTextureCoordinates,
+                            upperLight,
                             staticAttribs,
                             npc.RenderColor);
                 }
@@ -3565,10 +3606,12 @@ void Npcs::RenderNpc(
                     if constexpr (IsTextureMode)
                         shipRenderContext.UploadNpcTextureAttributes(
                             humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.TorsoSide : humanNpcState.TextureFrames.TorsoSide.FlipH(),
+                            upperLight,
                             staticAttribs);
                     else
                         shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
                             quadModeTextureCoordinates,
+                            upperLight,
                             staticAttribs,
                             npc.RenderColor);
                 }
@@ -3584,10 +3627,12 @@ void Npcs::RenderNpc(
                         if constexpr (IsTextureMode)
                             shipRenderContext.UploadNpcTextureAttributes(
                                 rightUpperLegQuad.TextureCoords,
+                                lowerLight,
                                 staticAttribs);
                         else
                             shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
                                 rightUpperLegQuad.TextureCoords,
+                                lowerLight,
                                 staticAttribs,
                                 npc.RenderColor);
                     }
@@ -3598,10 +3643,12 @@ void Npcs::RenderNpc(
                         if constexpr (IsTextureMode)
                             shipRenderContext.UploadNpcTextureAttributes(
                                 rightLowerLegQuad->TextureCoords,
+                                lowerLight,
                                 staticAttribs);
                         else
                             shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
                                 rightLowerLegQuad->TextureCoords,
+                                lowerLight,
                                 staticAttribs,
                                 npc.RenderColor);
                     }
@@ -3618,10 +3665,12 @@ void Npcs::RenderNpc(
                         if constexpr (IsTextureMode)
                             shipRenderContext.UploadNpcTextureAttributes(
                                 humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.ArmSide : humanNpcState.TextureFrames.ArmSide.FlipH(),
+                                upperLight,
                                 staticAttribs);
                         else
                             shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
                                 quadModeTextureCoordinates,
+                                upperLight,
                                 staticAttribs,
                                 npc.RenderColor);
                     }
@@ -3635,10 +3684,12 @@ void Npcs::RenderNpc(
                         if constexpr (IsTextureMode)
                             shipRenderContext.UploadNpcTextureAttributes(
                                 leftUpperLegQuad.TextureCoords,
+                                lowerLight,
                                 staticAttribs);
                         else
                             shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
                                 leftUpperLegQuad.TextureCoords,
+                                lowerLight,
                                 staticAttribs,
                                 npc.RenderColor);
                     }
@@ -3649,10 +3700,12 @@ void Npcs::RenderNpc(
                         if constexpr (IsTextureMode)
                             shipRenderContext.UploadNpcTextureAttributes(
                                 leftLowerLegQuad->TextureCoords,
+                                lowerLight,
                                 staticAttribs);
                         else
                             shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
                                 leftLowerLegQuad->TextureCoords,
+                                lowerLight,
                                 staticAttribs,
                                 npc.RenderColor);
                     }
@@ -3669,15 +3722,19 @@ void Npcs::RenderNpc(
                         if constexpr (IsTextureMode)
                             shipRenderContext.UploadNpcTextureAttributes(
                                 humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.ArmSide : humanNpcState.TextureFrames.ArmSide.FlipH(),
+                                upperLight,
                                 staticAttribs);
                         else
                             shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
                                 quadModeTextureCoordinates,
+                                upperLight,
                                 staticAttribs,
                                 npc.RenderColor);
                     }
                 }
             }
+
+            // Selection
 
             if (npc.Id == mCurrentlySelectedNpc)
             {
@@ -3720,13 +3777,22 @@ void Npcs::RenderNpc(
                 quad.V.TopRight = mParticles.GetPosition(npc.ParticleMesh.Particles[1].ParticleIndex);
                 quad.V.BottomRight = mParticles.GetPosition(npc.ParticleMesh.Particles[2].ParticleIndex),
                 quad.V.BottomLeft = mParticles.GetPosition(npc.ParticleMesh.Particles[3].ParticleIndex);
+
+                std::array<float, 4> const light = {
+                    mParticles.GetLight(npc.ParticleMesh.Particles[0].ParticleIndex),
+                    mParticles.GetLight(npc.ParticleMesh.Particles[1].ParticleIndex),
+                    mParticles.GetLight(npc.ParticleMesh.Particles[2].ParticleIndex),
+                    mParticles.GetLight(npc.ParticleMesh.Particles[3].ParticleIndex) };
+
                 if constexpr (RenderMode == NpcRenderModeType::Texture)
                     shipRenderContext.UploadNpcTextureAttributes(
                         textureCoords,
+                        light,
                         staticAttribs);
                 else
                     shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
                         textureCoords,
+                        light,
                         staticAttribs,
                         npc.RenderColor);
             }
@@ -3738,6 +3804,8 @@ void Npcs::RenderNpc(
                 {
                     float constexpr ParticleHalfWidth  = ParticleSize / 2.0f;
                     vec2f const position = mParticles.GetPosition(particle.ParticleIndex);
+                    float const _light = mParticles.GetLight(particle.ParticleIndex);
+                    std::array<float, 4> const light = { _light, _light, _light, _light };
 
                     auto & quad = shipRenderContext.UploadNpcPosition();
                     quad.V.TopLeft = vec2f(position.x - ParticleHalfWidth, position.y + ParticleHalfWidth);
@@ -3747,14 +3815,18 @@ void Npcs::RenderNpc(
                     if constexpr (RenderMode == NpcRenderModeType::Texture)
                         shipRenderContext.UploadNpcTextureAttributes(
                             textureCoords,
+                            light,
                             staticAttribs);
                     else
                         shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
                             textureCoords,
+                            light,
                             staticAttribs,
                             npc.RenderColor);
                 }
             }
+
+            // Selection
 
             if (npc.Id == mCurrentlySelectedNpc)
             {

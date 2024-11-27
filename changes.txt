@@ -1,3 +1,7 @@
+1.19.1
+- Npcs on a ship are now lit by the ship's lamps
+- Npcs run away from running water
+
 1.19.0
 - Initial implementation of NPCs!
 	- This release contains the foundation of the new NPC sub-system of the simulator

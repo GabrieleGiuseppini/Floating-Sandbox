@@ -41,6 +41,7 @@ ElementIndex NpcParticles::Add(
     mMeshWaterVelocityBuffer[p] = vec2f::zero();
     mAnyWaternessBuffer[p] = 0.0f;
     mRandomNormalizedUniformFloatBuffer[p] = GameRandomEngine::GetInstance().GenerateNormalizedUniformReal();
+    mLightBuffer[p] = 0.0f;
 
     mRenderColorBuffer[p] = color;
 

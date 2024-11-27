@@ -236,32 +236,35 @@ public:
     {
         float PlaneId;
         vec3f OverlayColor;
+        float Alpha;
     };
 
 #pragma pack(pop)
 
     void UploadNpcTextureAttributes(
         TextureCoordinatesQuad const & textureCoords,
+        std::array<float, 4> const & light,
         NpcStaticAttributes const & staticAttributes)
     {
         auto * buf = &(mNpcAttributesVertexBuffer.emplace_back_ghost(4));
-        buf[0] = { staticAttributes, vec2f(textureCoords.LeftX, textureCoords.TopY) };
-        buf[1] = { staticAttributes, vec2f(textureCoords.LeftX, textureCoords.BottomY) };
-        buf[2] = { staticAttributes, vec2f(textureCoords.RightX, textureCoords.TopY) };
-        buf[3] = { staticAttributes, vec2f(textureCoords.RightX, textureCoords.BottomY) };
+        buf[0] = { staticAttributes, vec2f(textureCoords.LeftX, textureCoords.TopY), light[0]};
+        buf[1] = { staticAttributes, vec2f(textureCoords.LeftX, textureCoords.BottomY), light[1]};
+        buf[2] = { staticAttributes, vec2f(textureCoords.RightX, textureCoords.TopY), light[2]};
+        buf[3] = { staticAttributes, vec2f(textureCoords.RightX, textureCoords.BottomY), light[3]};
     }
 
     template<NpcRenderModeType NpcRenderMode>
     void UploadNpcQuadAttributes(
         TextureCoordinatesQuad const & textureCoords,
+        std::array<float, 4> const & light,
         NpcStaticAttributes const & staticAttributes,
         vec3f const & roleColor)
     {
         auto * buf = &(mNpcAttributesVertexBuffer.emplace_back_ghost(4));
-        buf[0] = { staticAttributes, vec2f(textureCoords.LeftX, textureCoords.TopY) };
-        buf[1] = { staticAttributes, vec2f(textureCoords.LeftX, textureCoords.BottomY) };
-        buf[2] = { staticAttributes, vec2f(textureCoords.RightX, textureCoords.TopY) };
-        buf[3] = { staticAttributes, vec2f(textureCoords.RightX, textureCoords.BottomY) };
+        buf[0] = { staticAttributes, vec2f(textureCoords.LeftX, textureCoords.TopY), light[0]};
+        buf[1] = { staticAttributes, vec2f(textureCoords.LeftX, textureCoords.BottomY), light[1]};
+        buf[2] = { staticAttributes, vec2f(textureCoords.RightX, textureCoords.TopY), light[2]};
+        buf[3] = { staticAttributes, vec2f(textureCoords.RightX, textureCoords.BottomY), light[3]};
 
         if constexpr (NpcRenderMode == NpcRenderModeType::QuadWithRoles)
         {
@@ -1437,12 +1440,15 @@ private:
     {
         NpcStaticAttributes staticAttributes;
         vec2f textureCoordinates;
+        float light;
 
         NpcAttributesVertex(
             NpcStaticAttributes const & _staticAttributes,
-            vec2f const & _textureCoordinates)
+            vec2f const & _textureCoordinates,
+            float _light)
             : staticAttributes(_staticAttributes)
             , textureCoordinates(_textureCoordinates)
+            , light(_light)
         {}
     };
 

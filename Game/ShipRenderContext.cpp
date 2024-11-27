@@ -339,11 +339,11 @@ ShipRenderContext::ShipRenderContext(
             CheckOpenGLError();
 
             glBindBuffer(GL_ARRAY_BUFFER, *mNpcAttributesVertexVBO);
-            static_assert(sizeof(NpcAttributesVertex) == (4 + 2) * sizeof(float));
+            static_assert(sizeof(NpcAttributesVertex) == (6 + 2) * sizeof(float));
             glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::NpcAttributeGroup2));
             glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::NpcAttributeGroup2), 4, GL_FLOAT, GL_FALSE, sizeof(NpcAttributesVertex), (void *)(0));
             glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::NpcAttributeGroup3));
-            glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::NpcAttributeGroup3), 2, GL_FLOAT, GL_FALSE, sizeof(NpcAttributesVertex), (void *)(4 * sizeof(float)));
+            glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::NpcAttributeGroup3), 4, GL_FLOAT, GL_FALSE, sizeof(NpcAttributesVertex), (void *)(4 * sizeof(float)));
             CheckOpenGLError();
 
             //
@@ -3089,6 +3089,19 @@ void ShipRenderContext::ApplyFlatLampLightColorChanges(RenderParameters const & 
     mShaderManager.ActivateProgram(mShipTrianglesProgram);
     mShaderManager.SetProgramParameter<ProgramParameterType::LampLightColor>(
         mShipTrianglesProgram,
+        lampLightColor);
+
+
+    mShaderManager.ActivateProgram(ProgramType::ShipNpcsQuadFlat);
+    mShaderManager.SetProgramParameter<ProgramType::ShipNpcsQuadFlat, ProgramParameterType::LampLightColor>(
+        lampLightColor);
+
+    mShaderManager.ActivateProgram(ProgramType::ShipNpcsQuadWithRoles);
+    mShaderManager.SetProgramParameter<ProgramType::ShipNpcsQuadWithRoles, ProgramParameterType::LampLightColor>(
+        lampLightColor);
+
+    mShaderManager.ActivateProgram(ProgramType::ShipNpcsTexture);
+    mShaderManager.SetProgramParameter<ProgramType::ShipNpcsTexture, ProgramParameterType::LampLightColor>(
         lampLightColor);
 }
 

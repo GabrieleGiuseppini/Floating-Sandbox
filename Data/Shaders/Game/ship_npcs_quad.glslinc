@@ -6,7 +6,7 @@
 // Inputs
 in vec2 inNpcAttributeGroup1; // Position
 in vec4 inNpcAttributeGroup2; // PlaneId, OverlayColor
-in vec2 inNpcAttributeGroup3; // VertexSpacePosition
+in vec4 inNpcAttributeGroup3; // Alpha, VertexSpacePosition, Light
 #ifdef WITH_ROLES
 in vec3 inNpcAttributeGroup4; // RoleColor
 #endif
@@ -14,6 +14,8 @@ in vec3 inNpcAttributeGroup4; // RoleColor
 // Outputs
 out float vertexWorldY;
 out vec2 vertexSpacePosition;
+out float vertexAlpha;
+out float vertexLight;
 out vec3 vertexOverlayColor;
 #ifdef WITH_ROLES
 out vec3 vertexRoleColor;
@@ -25,7 +27,9 @@ uniform mat4 paramOrthoMatrix;
 void main()
 {
     vertexWorldY = inNpcAttributeGroup1.y;
-    vertexSpacePosition = inNpcAttributeGroup3;
+    vertexSpacePosition = inNpcAttributeGroup3.yz;
+    vertexAlpha = inNpcAttributeGroup3.x;
+    vertexLight = inNpcAttributeGroup3.w;
     vertexOverlayColor = inNpcAttributeGroup2.yzw;
 #ifdef WITH_ROLES
     vertexRoleColor = inNpcAttributeGroup4;
@@ -44,6 +48,8 @@ void main()
 // Inputs from previous shader
 in float vertexWorldY;
 in vec2 vertexSpacePosition; // [(-1.0, -1.0), (1.0, 1.0)]
+in float vertexAlpha;
+in float vertexLight;
 in vec3 vertexOverlayColor;
 #ifdef WITH_ROLES
 in vec3 vertexRoleColor;
@@ -51,6 +57,7 @@ in vec3 vertexRoleColor;
 
 // Parameters
 uniform float paramEffectiveAmbientLightIntensity;
+uniform vec3 paramLampLightColor;
 uniform float paramOceanDepthDarkeningRate;
 uniform float paramShipDepthDarkeningSensitivity;
 #ifndef WITH_ROLES
@@ -102,6 +109,9 @@ void main()
         ovCol,
         step(0.0001, vertexOverlayColor.r + vertexOverlayColor.g + vertexOverlayColor.b) * c.a);
 
+    // Complement missing ambient light with point's light
+    float effectiveAmbientLightIntensity = mix(vertexLight, 1.0, paramEffectiveAmbientLightIntensity);
+
     // Calculate lamp tool intensity
     float lampToolIntensity = CalculateLampToolIntensity(gl_FragCoord.xy);
 
@@ -116,11 +126,22 @@ void main()
         c.rgb = mix(
             c.rgb,
             vec3(0.),
-            darkeningFactor * (1.0 - lampToolIntensity) * paramShipDepthDarkeningSensitivity);
+            darkeningFactor * (1.0 - lampToolIntensity) * (1.0 - vertexLight) * paramShipDepthDarkeningSensitivity);
     }
 
-    // Apply ambient light
-    c.rgb *= max(paramEffectiveAmbientLightIntensity, lampToolIntensity);    
+    // Apply ambient/lamp light
+    // (complement missing ambient light with point's light_
+    c.rgb *= max(
+        mix(
+            vertexLight, 
+            1.0, 
+            paramEffectiveAmbientLightIntensity), 
+        lampToolIntensity);        
+
+    // Apply electric lamp color
+    c.rgb = mix(c.rgb, paramLampLightColor, vertexLight);
+
+    c.a *= vertexAlpha;
 
     gl_FragColor = c;
 } 

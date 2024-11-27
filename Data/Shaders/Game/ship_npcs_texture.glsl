@@ -6,11 +6,13 @@
 // Inputs
 in vec2 inNpcAttributeGroup1; // Position
 in vec4 inNpcAttributeGroup2; // PlaneId, OverlayColor
-in vec2 inNpcAttributeGroup3; // VertexSpacePosition
+in vec4 inNpcAttributeGroup3; // Alpha, VertexSpacePosition, Light
 
 // Outputs
 out float vertexWorldY;
 out vec2 textureCoords;
+out float vertexAlpha;
+out float vertexLight;
 out vec3 vertexOverlayColor;
 
 // Params
@@ -19,7 +21,9 @@ uniform mat4 paramOrthoMatrix;
 void main()
 {
     vertexWorldY = inNpcAttributeGroup1.y;
-    textureCoords = inNpcAttributeGroup3;
+    textureCoords = inNpcAttributeGroup3.yz;
+    vertexAlpha = inNpcAttributeGroup3.x;
+    vertexLight = inNpcAttributeGroup3.w;
     vertexOverlayColor = inNpcAttributeGroup2.yzw;
 
     gl_Position = paramOrthoMatrix * vec4(inNpcAttributeGroup1.xy, inNpcAttributeGroup2.x, 1.0);
@@ -35,6 +39,8 @@ void main()
 // Inputs from previous shader
 in float vertexWorldY;
 in vec2 textureCoords;
+in float vertexAlpha;
+in float vertexLight;
 in vec3 vertexOverlayColor;
 
 // The texture
@@ -42,6 +48,7 @@ uniform sampler2D paramNpcAtlasTexture;
 
 // Params
 uniform float paramEffectiveAmbientLightIntensity;
+uniform vec3 paramLampLightColor;
 uniform float paramOceanDepthDarkeningRate;
 uniform float paramShipDepthDarkeningSensitivity;
 
@@ -87,11 +94,22 @@ void main()
         c.rgb = mix(
             c.rgb,
             vec3(0.),
-            darkeningFactor * (1.0 - lampToolIntensity) * paramShipDepthDarkeningSensitivity);
+            darkeningFactor * (1.0 - lampToolIntensity) * (1.0 - vertexLight) * paramShipDepthDarkeningSensitivity);
     }
     
-    // Apply ambient light
-    c.rgb *= max(paramEffectiveAmbientLightIntensity, lampToolIntensity);        
+    // Apply ambient/lamp light
+    // (complement missing ambient light with point's light_
+    c.rgb *= max(
+        mix(
+            vertexLight, 
+            1.0, 
+            paramEffectiveAmbientLightIntensity), 
+        lampToolIntensity);        
+
+    // Apply electric lamp color
+    c.rgb = mix(c.rgb, paramLampLightColor, vertexLight);
+
+    c.a *= vertexAlpha;
 
     gl_FragColor = c;
 } 
