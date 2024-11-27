@@ -2087,7 +2087,7 @@ public:
                         inputState);
 
                     // Draw guide
-                    mGameController.SetLineGuide(
+                    mGameController.ShowInteractiveToolDashedLine(
                         start,
                         end);
 

@@ -4,15 +4,15 @@
 #define out varying
 
 // Inputs
-in vec3 inLineGuide1; // Vertex position (NDC), Pixel coord (pixel space)
+in vec3 inInteractiveToolDashedLine1; // Vertex position (NDC), Pixel coord (pixel space)
 
 // Outputs
 out float pixelCoord;
 
 void main()
 {
-    pixelCoord = inLineGuide1.z;
-    gl_Position = vec4(inLineGuide1.xy, 0.0, 1.0);
+    pixelCoord = inInteractiveToolDashedLine1.z;
+    gl_Position = vec4(inInteractiveToolDashedLine1.xy, 0.0, 1.0);
 }
 
 ###FRAGMENT-120

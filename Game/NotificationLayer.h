@@ -141,11 +141,11 @@ public:
 	}
 
 	// One frame only; after Update() it's gone
-	inline void SetLineGuide(
+	inline void ShowInteractiveToolDashedLine(
 		DisplayLogicalCoordinates const & start,
 		DisplayLogicalCoordinates const & end)
 	{
-		mLineGuideToRender1.emplace(
+		mInteractiveToolDashedLineToRender1.emplace_back(
 			start,
 			end);
 	}
@@ -405,6 +405,6 @@ private:
 		{}
 	};
 
-	std::optional<LineGuide> mLineGuideToRender1;
-	std::optional<LineGuide> mLineGuideToRender2;
+	std::vector<LineGuide> mInteractiveToolDashedLineToRender1;
+	std::vector<LineGuide> mInteractiveToolDashedLineToRender2;
 };

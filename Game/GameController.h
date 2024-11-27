@@ -201,7 +201,7 @@ public:
     void SetShiftOn(bool value) override;
 
     // Not sticky
-    void SetLineGuide(
+    void ShowInteractiveToolDashedLine(
         DisplayLogicalCoordinates const & start,
         DisplayLogicalCoordinates const & end) override;
 

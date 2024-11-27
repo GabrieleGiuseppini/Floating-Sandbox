@@ -275,8 +275,8 @@ void NotificationLayer::Reset()
 	mWindSphereToRender2.reset();
 	mLaserCannonToRender1.reset();
 	mLaserCannonToRender2.reset();
-	mLineGuideToRender1.reset();
-	mLineGuideToRender2.reset();
+	mInteractiveToolDashedLineToRender1.clear();
+	mInteractiveToolDashedLineToRender2.clear();
 }
 
 void NotificationLayer::Update(
@@ -372,8 +372,8 @@ void NotificationLayer::Update(
 	mLaserCannonToRender2 = mLaserCannonToRender1;
 	mLaserCannonToRender1.reset();
 
-	mLineGuideToRender2 = mLineGuideToRender1;
-	mLineGuideToRender1.reset();
+	mInteractiveToolDashedLineToRender2 = std::move(mInteractiveToolDashedLineToRender1);
+	mInteractiveToolDashedLineToRender1.clear();
 }
 
 void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
@@ -552,11 +552,11 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 			renderContext.GetViewModel());
 	}
 
-	if (mLineGuideToRender2.has_value())
+	for (auto const & dashedLine : mInteractiveToolDashedLineToRender2)
 	{
-		notificationRenderContext.UploadLineGuide(
-			mLineGuideToRender2->Start,
-			mLineGuideToRender2->End,
+		notificationRenderContext.UploadInteractiveToolDashedLine(
+			dashedLine.Start,
+			dashedLine.End,
 			renderContext.GetViewModel());
 	}
 }

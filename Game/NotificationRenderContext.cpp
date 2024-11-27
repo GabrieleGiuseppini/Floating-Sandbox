@@ -64,8 +64,8 @@ NotificationRenderContext::NotificationRenderContext(
     , mLaserRayVBO()
     , mRectSelectionVAO()
     , mRectSelectionVBO()
-    , mLineGuideVAO()
-    , mLineGuideVBO()
+    , mInteractiveToolDashedLineVAO()
+    , mInteractiveToolDashedLineVBO()
 {
     GLuint tmpGLuint;
 
@@ -528,24 +528,24 @@ NotificationRenderContext::NotificationRenderContext(
     }
 
     //
-    // Initialize Line Guide
+    // Initialize Interactive Tool Line Guide
     //
 
     {
         glGenVertexArrays(1, &tmpGLuint);
-        mLineGuideVAO = tmpGLuint;
+        mInteractiveToolDashedLineVAO = tmpGLuint;
 
-        glBindVertexArray(*mLineGuideVAO);
+        glBindVertexArray(*mInteractiveToolDashedLineVAO);
         CheckOpenGLError();
 
         glGenBuffers(1, &tmpGLuint);
-        mLineGuideVBO = tmpGLuint;
+        mInteractiveToolDashedLineVBO = tmpGLuint;
 
         // Describe vertex attributes
-        static_assert(sizeof(LineGuideVertex) == (2 + 1) * sizeof(float));
-        glBindBuffer(GL_ARRAY_BUFFER, *mLineGuideVBO);
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::LineGuide1));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::LineGuide1), (2 + 1), GL_FLOAT, GL_FALSE, sizeof(LineGuideVertex), (void *)0);
+        static_assert(sizeof(InteractiveToolDashedLineVertex) == (2 + 1) * sizeof(float));
+        glBindBuffer(GL_ARRAY_BUFFER, *mInteractiveToolDashedLineVBO);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::InteractiveToolDashedLine1));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::InteractiveToolDashedLine1), (2 + 1), GL_FLOAT, GL_FALSE, sizeof(InteractiveToolDashedLineVertex), (void *)0);
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -580,8 +580,8 @@ void NotificationRenderContext::UploadStart()
     // Reset rect selection, it's uploaded as needed
     mRectSelectionVertexBuffer.clear();
 
-    // Reset LineGuide, it's uploaded as needed
-    mLineGuideVertexBuffer.clear();
+    // Reset InteractiveToolDashedLines, they are uploaded as needed
+    mInteractiveToolDashedLineVertexBuffer.clear();
 }
 
 void NotificationRenderContext::UploadLaserCannon(
@@ -741,7 +741,7 @@ void NotificationRenderContext::UploadLaserCannon(
     }
 }
 
-void NotificationRenderContext::UploadLineGuide(
+void NotificationRenderContext::UploadInteractiveToolDashedLine(
     DisplayLogicalCoordinates const & screenStart,
     DisplayLogicalCoordinates const & screenEnd,
     ViewModel const & viewModel)
@@ -760,11 +760,11 @@ void NotificationRenderContext::UploadLineGuide(
     float const leftover = std::fmod(pixelLength + DashPeriod / 2.0f, DashPeriod);
     pixelLength += (DashPeriod - leftover);
 
-    mLineGuideVertexBuffer.emplace_back(
+    mInteractiveToolDashedLineVertexBuffer.emplace_back(
         ndcStart,
         0.0f);
 
-    mLineGuideVertexBuffer.emplace_back(
+    mInteractiveToolDashedLineVertexBuffer.emplace_back(
         ndcEnd,
         pixelLength);
 }
@@ -821,7 +821,7 @@ void NotificationRenderContext::RenderPrepare()
 
     RenderPrepareRectSelection();
 
-    RenderPrepareLineGuide();
+    RenderPrepareInteractiveToolDashedLines();
 }
 
 void NotificationRenderContext::RenderDraw()
@@ -860,7 +860,7 @@ void NotificationRenderContext::RenderDraw()
 
     RenderDrawRectSelection();
 
-    RenderDrawLineGuide();
+    RenderDrawInteractiveToolDashedLines();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1579,15 +1579,15 @@ void NotificationRenderContext::RenderDrawRectSelection()
     }
 }
 
-void NotificationRenderContext::RenderPrepareLineGuide()
+void NotificationRenderContext::RenderPrepareInteractiveToolDashedLines()
 {
-    if (!mLineGuideVertexBuffer.empty())
+    if (!mInteractiveToolDashedLineVertexBuffer.empty())
     {
-        glBindBuffer(GL_ARRAY_BUFFER, *mLineGuideVBO);
+        glBindBuffer(GL_ARRAY_BUFFER, *mInteractiveToolDashedLineVBO);
 
         glBufferData(GL_ARRAY_BUFFER,
-            sizeof(LineGuideVertex) * mLineGuideVertexBuffer.size(),
-            mLineGuideVertexBuffer.data(),
+            sizeof(InteractiveToolDashedLineVertex) * mInteractiveToolDashedLineVertexBuffer.size(),
+            mInteractiveToolDashedLineVertexBuffer.data(),
             GL_DYNAMIC_DRAW);
         CheckOpenGLError();
 
@@ -1595,21 +1595,21 @@ void NotificationRenderContext::RenderPrepareLineGuide()
     }
 }
 
-void NotificationRenderContext::RenderDrawLineGuide()
+void NotificationRenderContext::RenderDrawInteractiveToolDashedLines()
 {
-    if (!mLineGuideVertexBuffer.empty())
+    if (!mInteractiveToolDashedLineVertexBuffer.empty())
     {
         // Bind VAO
-        glBindVertexArray(*mLineGuideVAO);
+        glBindVertexArray(*mInteractiveToolDashedLineVAO);
 
         // Activate program
-        mShaderManager.ActivateProgram<ProgramType::LineGuide>();
+        mShaderManager.ActivateProgram<ProgramType::InteractiveToolDashedLines>();
 
         // Set line width
         glLineWidth(2.0f);
 
         // Draw
-        glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(mLineGuideVertexBuffer.size()));
+        glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(mInteractiveToolDashedLineVertexBuffer.size()));
         CheckOpenGLError();
     }
 }

@@ -660,11 +660,11 @@ void GameController::SetShiftOn(bool value)
     mNotificationLayer.SetShiftIndicator(mIsShiftOn);
 }
 
-void GameController::SetLineGuide(
+void GameController::ShowInteractiveToolDashedLine(
     DisplayLogicalCoordinates const & start,
     DisplayLogicalCoordinates const & end)
 {
-    mNotificationLayer.SetLineGuide(start, end);
+    mNotificationLayer.ShowInteractiveToolDashedLine(start, end);
 }
 
 void GameController::ToggleToFullDayOrNight()

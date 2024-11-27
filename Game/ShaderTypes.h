@@ -30,13 +30,13 @@ enum class ProgramType
     GenericMipMappedTexturesNdc,
     HeatBlasterFlameCool,
     HeatBlasterFlameHeat,
+    InteractiveToolDashedLines,
     LandFlatBasic,
     LandFlatDetailed,
     LandTextureBasic,
     LandTextureDetailed,
     LaserRay,
     Lightning,
-    LineGuide,
     OceanDepthBasic,
     OceanDepthDetailedBackground,
     OceanDepthDetailedForeground,
@@ -310,7 +310,7 @@ enum class VertexAttributeType : GLuint
     RectSelection2 = 1,
     RectSelection3 = 2,
 
-    LineGuide1 = 0,
+    InteractiveToolDashedLine1 = 0,
 
     //
     // Global

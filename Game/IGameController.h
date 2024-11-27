@@ -81,8 +81,8 @@ struct IGameController
     virtual bool IsShiftOn() const = 0;
     virtual void SetShiftOn(bool value) = 0;
 
-    // Not sticky
-    virtual void SetLineGuide(
+    // Sticky
+    virtual void ShowInteractiveToolDashedLine(
         DisplayLogicalCoordinates const & start,
         DisplayLogicalCoordinates const & end) = 0;
 

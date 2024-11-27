@@ -628,7 +628,7 @@ public:
 			elapsedSimulationTime);
 	}
 
-	void UploadLineGuide(
+	void UploadInteractiveToolDashedLine(
 		DisplayLogicalCoordinates const & screenStart,
 		DisplayLogicalCoordinates const & screenEnd,
 		ViewModel const & viewModel);
@@ -681,8 +681,8 @@ private:
 	inline void RenderPrepareRectSelection();
 	inline void RenderDrawRectSelection();
 
-	inline void RenderPrepareLineGuide();
-	inline void RenderDrawLineGuide();
+	inline void RenderPrepareInteractiveToolDashedLines();
+	inline void RenderDrawInteractiveToolDashedLines();
 
 private:
 
@@ -916,14 +916,14 @@ private:
 		{}
 	};
 
-	struct LineGuideVertex
+	struct InteractiveToolDashedLineVertex
 	{
 		vec2f ndcPosition;
 		float pixelCoord; //  PixelSpace
 
-		LineGuideVertex() = default;
+		InteractiveToolDashedLineVertex() = default;
 
-		LineGuideVertex(
+		InteractiveToolDashedLineVertex(
 			vec2f _ndcPosition,
 			float _pixelCoord)
 			: ndcPosition(_ndcPosition)
@@ -1119,9 +1119,9 @@ private:
 	std::vector<RectSelectionVertex> mRectSelectionVertexBuffer;
 	GameOpenGLVBO mRectSelectionVBO;
 
-	GameOpenGLVAO mLineGuideVAO;
-	std::vector<LineGuideVertex> mLineGuideVertexBuffer;
-	GameOpenGLVBO mLineGuideVBO;
+	GameOpenGLVAO mInteractiveToolDashedLineVAO;
+	std::vector<InteractiveToolDashedLineVertex> mInteractiveToolDashedLineVertexBuffer;
+	GameOpenGLVBO mInteractiveToolDashedLineVBO;
 };
 
 }

@@ -39,6 +39,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::HeatBlasterFlameCool;
     else if (lstr == "heat_blaster_flame_heat")
         return ProgramType::HeatBlasterFlameHeat;
+    else if (lstr == "interactive_tool_dashed_lines")
+        return ProgramType::InteractiveToolDashedLines;
     else if (lstr == "land_flat_basic")
         return ProgramType::LandFlatBasic;
     else if (lstr == "land_flat_detailed")
@@ -51,8 +53,6 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::LaserRay;
     else if (lstr == "lightning")
         return ProgramType::Lightning;
-    else if (lstr == "line_guide")
-        return ProgramType::LineGuide;
     else if (lstr == "ocean_depth_basic")
         return ProgramType::OceanDepthBasic;
     else if (lstr == "ocean_depth_detailed_background")
@@ -241,6 +241,8 @@ std::string ProgramTypeToStr(ProgramType program)
             return "HeatBlasterFlameCool";
         case ProgramType::HeatBlasterFlameHeat:
             return "HeatBlasterFlameHeat";
+        case ProgramType::InteractiveToolDashedLines:
+            return "InteractiveToolDashedLines";
         case ProgramType::LandFlatBasic:
             return "LandFlatBasic";
         case ProgramType::LandFlatDetailed:
@@ -253,8 +255,6 @@ std::string ProgramTypeToStr(ProgramType program)
             return "LaserRay";
         case ProgramType::Lightning:
             return "Lightning";
-        case ProgramType::LineGuide:
-            return "LineGuide";
         case ProgramType::OceanDepthBasic:
             return "OceanDepthBasic";
         case ProgramType::OceanDepthDetailedBackground:
@@ -780,8 +780,8 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::RectSelection2;
     else if (Utils::CaseInsensitiveEquals(str, "RectSelection3"))
         return VertexAttributeType::RectSelection3;
-    else if (Utils::CaseInsensitiveEquals(str, "LineGuide1"))
-        return VertexAttributeType::LineGuide1;
+    else if (Utils::CaseInsensitiveEquals(str, "InteractiveToolDashedLine1"))
+        return VertexAttributeType::InteractiveToolDashedLine1;
     // Global
     else if (Utils::CaseInsensitiveEquals(str, "GenericMipMappedTextureNdc1"))
         return VertexAttributeType::GenericMipMappedTextureNdc1;
