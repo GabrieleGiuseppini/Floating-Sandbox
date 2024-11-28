@@ -234,6 +234,13 @@ Next release:
 
 = Remove NPC tool for "area"
 	! "Perhaps some sort of selection tool to remove NPCs - removing a large cluster 1 by 1 is a bit annoying"
+	+ Prelim:
+		+ Highlight per-NPC
+			+ Move global member to StateType member
+			+ Non-sticky: reset at end of RenderUpload
+			+ Interface: lose std::opt and take const vec &
+			+ Tools
+			+ Test
 	- RemoveNpcTool (BaseSelectNpcTool): when mouse down on no candidate, enter "selection mode" drawing rectangle
 		- During selection drawing, talks to GameController in no-NPC language to just draw selection rectangle
 			- Same way we talk at TerrainAdjust
@@ -241,10 +248,11 @@ Next release:
 		= Selection rectangle: expand current "Line Guide" into set of them - so can draw quads
 			+ Rename to "InteractiveToolDashedLines", with assumption there's only one set at a time
 			- Make sure quad corners look good
-	- Highlight all
-		- Make highlight NOT sticky
-	- Changelist
-- Move NPC tool for "area"
+		- Highlight all
+	- Tools:
+		- Move
+		- Remove
+		- Turnaround
 	- Changelist
 
 - Backport FS to Barylab

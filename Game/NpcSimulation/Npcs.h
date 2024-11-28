@@ -691,6 +691,10 @@ private:
 		// The render color for this NPC.
 		vec3f const RenderColor;
 
+		// The highlighting state for this NPC.
+		// Not sticky: reset after rendering.
+		bool mutable IsHighlightedForRendering;
+
 		// The current ship that this NPC belongs to.
 		// NPCs always belong to a ship, and can change ships during the
 		// course of their lives.
@@ -740,6 +744,7 @@ private:
 			: Id(id)
 			, Kind(kind)
 			, RenderColor(renderColor)
+			, IsHighlightedForRendering(false)
 			, CurrentShipId(initialShipId)
 			, CurrentPlaneId(initialPlaneId)
 			, CurrentConnectedComponentId(currentConnectedComponentId)
@@ -799,7 +804,6 @@ public:
 		, mCurrentSimulationSequenceNumber()
 		, mCurrentlySelectedNpc()
 		, mCurrentlySelectedNpcWallClockTimestamp()
-		, mCurrentlyHighlightedNpc()
 		, mGeneralizedPanicLevel(0.0f)
 		// Stats
 		, mFreeRegimeHumanNpcCount(0)
@@ -913,7 +917,7 @@ public:
 
 	void SelectNpc(std::optional<NpcId> id);
 
-	void HighlightNpc(std::optional<NpcId> id);
+	void HighlightNpcs(std::vector<NpcId> const & ids);
 
 	void Announce();
 
@@ -1834,7 +1838,6 @@ private:
 
 	std::optional<NpcId> mCurrentlySelectedNpc;
 	GameWallClock::time_point mCurrentlySelectedNpcWallClockTimestamp;
-	std::optional<NpcId> mCurrentlyHighlightedNpc;
 
 	float mGeneralizedPanicLevel; // [0.0f ... +1.0f], manually decayed
 

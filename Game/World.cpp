@@ -1173,10 +1173,10 @@ void World::SelectNpc(std::optional<NpcId> id)
     mNpcs->SelectNpc(id);
 }
 
-void World::HighlightNpc(std::optional<NpcId> id)
+void World::HighlightNpcs(std::vector<NpcId> const & ids)
 {
     assert(mNpcs);
-    mNpcs->HighlightNpc(id);
+    mNpcs->HighlightNpcs(ids);
 }
 
 bool World::DestroyTriangle(GlobalElementId triangleId)

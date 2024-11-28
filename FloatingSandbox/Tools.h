@@ -4002,18 +4002,16 @@ public:
 
     virtual void Deinitialize() override
     {
-        mGameController.HighlightNpc(std::nullopt);
+        // Nop
     }
 
     virtual void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
     {
-        mGameController.HighlightNpc(std::nullopt);
-
         auto const probeOutcome = mGameController.ProbeNpcAt(inputState.MousePosition);
         if (probeOutcome
             && (!mApplicableKind.has_value() || mGameController.GetNpcKind(probeOutcome->Id) == *mApplicableKind))
         {
-            mGameController.HighlightNpc(probeOutcome->Id);
+            mGameController.HighlightNpcs({ probeOutcome->Id });
         }
     }
 

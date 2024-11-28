@@ -274,7 +274,7 @@ public:
     std::optional<NpcId> GetCurrentlySelectedNpc() const override;
     void SelectNpc(std::optional<NpcId> id) override;
     void SelectNextNpc() override;
-    void HighlightNpc(std::optional<NpcId> id) override;
+    void HighlightNpcs(std::vector<NpcId> const & ids) override;
     std::optional<GlobalElementId> GetNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const override;
     void QueryNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const override;
 

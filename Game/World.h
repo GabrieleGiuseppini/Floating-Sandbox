@@ -424,7 +424,7 @@ public:
 
     void SelectNpc(std::optional<NpcId> id);
 
-    void HighlightNpc(std::optional<NpcId> id);
+    void HighlightNpcs(std::vector<NpcId> const & ids);
 
     bool DestroyTriangle(GlobalElementId triangleId);
 

@@ -1647,11 +1647,14 @@ void Npcs::SelectNpc(std::optional<NpcId> id)
 #endif
 }
 
-void Npcs::HighlightNpc(std::optional<NpcId> id)
+void Npcs::HighlightNpcs(std::vector<NpcId> const & ids)
 {
-    assert(!id.has_value() || mStateBuffer[*id].has_value());
+    for (auto const id : ids)
+    {
+        assert(mStateBuffer[id].has_value());
 
-    mCurrentlyHighlightedNpc = id;
+        mStateBuffer[id]->IsHighlightedForRendering = true;
+    }
 }
 
 void Npcs::Announce()
@@ -2930,7 +2933,7 @@ void Npcs::RenderNpc(
         (npc.CurrentRegime == StateType::RegimeType::BeingPlaced)
             ? static_cast<float>(mShips[npc.CurrentShipId]->HomeShip.GetMaxPlaneId())
             : static_cast<float>(npc.CurrentPlaneId),
-        (mCurrentlyHighlightedNpc == npc.Id)
+        (npc.IsHighlightedForRendering)
             ? vec3f(1.0f, 0.21f, 0.08f)
             : vec3f(0.0f, 0.0f, 0.0f),
         1.0f // Alpha -- FutureWork
@@ -3877,6 +3880,9 @@ void Npcs::RenderNpc(
             break;
         }
     }
+
+    // Reset highlight state
+    npc.IsHighlightedForRendering = false;
 }
 
 void Npcs::UpdateNpcAnimation(

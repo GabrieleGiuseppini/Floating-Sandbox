@@ -155,7 +155,7 @@ struct IGameController
     virtual std::optional<NpcId> GetCurrentlySelectedNpc() const = 0;
     virtual void SelectNpc(std::optional<NpcId> id) = 0;
     virtual void SelectNextNpc() = 0;
-    virtual void HighlightNpc(std::optional<NpcId> id) = 0;
+    virtual void HighlightNpcs(std::vector<NpcId> const & ids) = 0;
     virtual std::optional<GlobalElementId> GetNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const = 0;
     virtual void QueryNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const = 0;
 

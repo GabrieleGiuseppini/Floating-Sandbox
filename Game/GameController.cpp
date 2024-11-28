@@ -1500,10 +1500,10 @@ void GameController::SelectNextNpc()
     }
 }
 
-void GameController::HighlightNpc(std::optional<NpcId> id)
+void GameController::HighlightNpcs(std::vector<NpcId> const & ids)
 {
     assert(!!mWorld);
-    mWorld->HighlightNpc(id);
+    mWorld->HighlightNpcs(ids);
 }
 
 std::optional<GlobalElementId> GameController::GetNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const
