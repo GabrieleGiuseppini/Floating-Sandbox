@@ -756,7 +756,7 @@ PlaceHumanNpcTool::PlaceHumanNpcTool(
 {
 }
 
-BaseSelectNpcTool::BaseSelectNpcTool(
+BaseSingleSelectNpcTool::BaseSingleSelectNpcTool(
     ToolType toolType,
     IToolCursorManager & toolCursorManager,
     IGameController & gameController,
@@ -775,20 +775,38 @@ BaseSelectNpcTool::BaseSelectNpcTool(
 {
 }
 
-MoveNpcTool::MoveNpcTool(
+FollowNpcTool::FollowNpcTool(
     IToolCursorManager & toolCursorManager,
     IGameController & gameController,
     SoundController & soundController,
     ResourceLocator const & resourceLocator)
-    : BaseSelectNpcTool(
-        ToolType::MoveNpc,
+    : BaseSingleSelectNpcTool(
+        ToolType::FollowNpc,
         toolCursorManager,
         gameController,
         soundController,
         std::nullopt, // All kinds
-        WxHelpers::LoadCursorImage("move_npc_cursor_down", 11, 29, resourceLocator),
-        WxHelpers::LoadCursorImage("move_npc_cursor_up", 11, 29, resourceLocator))
-    , mBeingMovedNpc()
+        WxHelpers::LoadCursorImage("autofocus_on_npc_cursor", 16, 16, resourceLocator),
+        WxHelpers::LoadCursorImage("autofocus_on_npc_cursor", 16, 16, resourceLocator))
+{
+}
+
+BaseMultiSelectNpcTool::BaseMultiSelectNpcTool(
+    ToolType toolType,
+    IToolCursorManager & toolCursorManager,
+    IGameController & gameController,
+    SoundController & soundController,
+    std::optional<NpcKindType> applicableKind,
+    wxImage && downCursorImage,
+    wxImage && upCursorImage)
+    : Tool(
+        toolType,
+        toolCursorManager,
+        gameController,
+        soundController)
+    , mApplicableKind(applicableKind)
+    , mDownCursorImage(std::move(downCursorImage))
+    , mUpCursorImage(std::move(upCursorImage))
 {
 }
 
@@ -797,7 +815,7 @@ RemoveNpcTool::RemoveNpcTool(
     IGameController & gameController,
     SoundController & soundController,
     ResourceLocator const & resourceLocator)
-    : BaseSelectNpcTool(
+    : BaseMultiSelectNpcTool(
         ToolType::RemoveNpc,
         toolCursorManager,
         gameController,
@@ -813,7 +831,7 @@ TurnaroundNpcTool::TurnaroundNpcTool(
     IGameController & gameController,
     SoundController & soundController,
     ResourceLocator const & resourceLocator)
-    : BaseSelectNpcTool(
+    : BaseMultiSelectNpcTool(
         ToolType::TurnaroundNpc,
         toolCursorManager,
         gameController,
@@ -824,18 +842,18 @@ TurnaroundNpcTool::TurnaroundNpcTool(
 {
 }
 
-FollowNpcTool::FollowNpcTool(
+MoveNpcTool::MoveNpcTool(
     IToolCursorManager & toolCursorManager,
     IGameController & gameController,
     SoundController & soundController,
     ResourceLocator const & resourceLocator)
-    : BaseSelectNpcTool(
-        ToolType::FollowNpc,
+    : Tool(
+        ToolType::MoveNpc,
         toolCursorManager,
         gameController,
-        soundController,
-        std::nullopt, // All kinds
-        WxHelpers::LoadCursorImage("autofocus_on_npc_cursor", 16, 16, resourceLocator),
-        WxHelpers::LoadCursorImage("autofocus_on_npc_cursor", 16, 16, resourceLocator))
+        soundController)
+    , mBeingMovedNpc()
+    , mDownCursorImage(WxHelpers::LoadCursorImage("move_npc_cursor_down", 11, 29, resourceLocator))
+    , mUpCursorImage(WxHelpers::LoadCursorImage("move_npc_cursor_up", 11, 29, resourceLocator))
 {
 }

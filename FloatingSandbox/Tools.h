@@ -3980,11 +3980,11 @@ private:
     std::optional<NpcSubKindIdType> mKind;
 };
 
-class BaseSelectNpcTool : public Tool
+class BaseSingleSelectNpcTool : public Tool
 {
 public:
 
-    BaseSelectNpcTool(
+    BaseSingleSelectNpcTool(
         ToolType toolType,
         IToolCursorManager & toolCursorManager,
         IGameController & gameController,
@@ -3995,17 +3995,17 @@ public:
 
 public:
 
-    virtual void Initialize(InputState const & inputState) override
+    void Initialize(InputState const & inputState) override
     {
         SetCurrentCursor(inputState.IsLeftMouseDown);
     }
 
-    virtual void Deinitialize() override
+    void Deinitialize() override
     {
         // Nop
     }
 
-    virtual void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
+    void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
     {
         auto const probeOutcome = mGameController.ProbeNpcAt(inputState.MousePosition);
         if (probeOutcome
@@ -4015,7 +4015,28 @@ public:
         }
     }
 
+    void OnLeftMouseDown(InputState const & inputState) override
+    {
+        auto const probeOutcome = mGameController.ProbeNpcAt(inputState.MousePosition);
+        DoAction(probeOutcome);
+
+        SetCurrentCursor(true);
+    }
+
+    void OnLeftMouseUp(InputState const & /*inputState*/) override
+    {
+        SetCurrentCursor(false);
+    }
+
+    void OnMouseMove(InputState const & /*inputState*/) override {}
+    void OnShiftKeyDown(InputState const & /*inputState*/) override {}
+    void OnShiftKeyUp(InputState const & /*inputState*/) override {}
+
 protected:
+
+    virtual void DoAction(std::optional<PickedNpc> const & probeOutcome) = 0;
+
+private:
 
     void SetCurrentCursor(bool isMouseDown)
     {
@@ -4029,7 +4050,171 @@ protected:
         }
     }
 
+    // The kind we apply to (if any)
+    std::optional<NpcKindType> const mApplicableKind;
+
+    // The cursors
+    wxImage const mDownCursorImage;
+    wxImage const mUpCursorImage;
+};
+
+class FollowNpcTool final : public BaseSingleSelectNpcTool
+{
+public:
+
+    FollowNpcTool(
+        IToolCursorManager & toolCursorManager,
+        IGameController & gameController,
+        SoundController & soundController,
+        ResourceLocator const & resourceLocator);
+
+protected:
+
+    void DoAction(std::optional<PickedNpc> const & probeOutcome) override
+    {
+        if (probeOutcome)
+        {
+            mGameController.SelectNpc(probeOutcome->Id);
+            mGameController.SetAutoFocusTarget(AutoFocusTargetKindType::SelectedNpc);
+        }
+        else
+        {
+            // Remove selection
+            mGameController.SelectNpc(std::nullopt);
+        }
+    }
+};
+
+class BaseMultiSelectNpcTool : public Tool
+{
+public:
+
+    BaseMultiSelectNpcTool(
+        ToolType toolType,
+        IToolCursorManager & toolCursorManager,
+        IGameController & gameController,
+        SoundController & soundController,
+        std::optional<NpcKindType> applicableKind,
+        wxImage && downCursorImage,
+        wxImage && upCursorImage);
+
+public:
+
+    virtual void Initialize(InputState const & inputState) override
+    {
+        mSelectionStartPosition.reset();
+
+        SetCurrentCursor(inputState.IsLeftMouseDown);
+    }
+
+    virtual void Deinitialize() override
+    {
+        // Nop
+    }
+
+    virtual void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
+    {
+        if (!mSelectionStartPosition.has_value())
+        {
+            // Immediate mode
+
+            if (!inputState.IsShiftKeyDown)
+            {
+                auto const probeOutcome = mGameController.ProbeNpcAt(inputState.MousePosition);
+                if (probeOutcome.has_value())
+                {
+                    mGameController.HighlightNpcs({ probeOutcome->Id });
+                }
+            }
+        }
+        else
+        {
+            // Selection mode
+
+            // Draw rectangle
+            mGameController.ShowInteractiveToolDashedRect(
+                *mSelectionStartPosition,
+                inputState.MousePosition);
+
+            // Highlight
+            mGameController.HighlightNpcs(
+                mGameController.ProbeNpcsInRect(
+                    *mSelectionStartPosition,
+                    inputState.MousePosition));
+        }
+    }
+
+    void OnLeftMouseDown(InputState const & inputState) override
+    {
+        assert(!mSelectionStartPosition.has_value());
+
+        std::optional<PickedNpc> probeOutcome;
+        if (!inputState.IsShiftKeyDown)
+        {
+            probeOutcome = mGameController.ProbeNpcAt(inputState.MousePosition);
+        }
+
+        if (probeOutcome.has_value())
+        {
+            // Immediate
+
+            DoAction(probeOutcome->Id);
+
+            // We're done
+        }
+        else
+        {
+            // Start Selection Mode
+
+            mSelectionStartPosition.emplace(inputState.MousePosition);
+        }
+
+        SetCurrentCursor(true);
+    }
+
+    void OnLeftMouseUp(InputState const & inputState) override
+    {
+        if (mSelectionStartPosition.has_value())
+        {
+            // Done with selection mode - do action
+
+            DoAction(
+                *mSelectionStartPosition,
+                inputState.MousePosition);
+
+            mSelectionStartPosition.reset();
+        }
+
+        SetCurrentCursor(false);
+    }
+
+    void OnMouseMove(InputState const & /*inputState*/) override {}
+    void OnShiftKeyDown(InputState const & /*inputState*/) override {}
+    void OnShiftKeyUp(InputState const & /*inputState*/) override {}
+
+protected:
+
+    virtual void DoAction(NpcId npcId) = 0;
+    virtual void DoAction(DisplayLogicalCoordinates const & corner1, DisplayLogicalCoordinates const & corner2) = 0;
+
 private:
+
+    void SetCurrentCursor(bool isMouseDown)
+    {
+        if (isMouseDown)
+        {
+            mToolCursorManager.SetToolCursor(mDownCursorImage);
+        }
+        else
+        {
+            mToolCursorManager.SetToolCursor(mUpCursorImage);
+        }
+    }
+
+    // Our state:
+    //  - When not set: we are in hovering mode; at key down we check and either do action or go to selection mode
+    //  - When set: we are in selection mode; at key up we do action, and reset
+    std::optional<DisplayLogicalCoordinates> mSelectionStartPosition;
 
     // The kind we apply to (if any)
     std::optional<NpcKindType> const mApplicableKind;
@@ -4039,7 +4224,53 @@ private:
     wxImage const mUpCursorImage;
 };
 
-class MoveNpcTool final : public BaseSelectNpcTool
+class RemoveNpcTool final : public BaseMultiSelectNpcTool
+{
+public:
+
+    RemoveNpcTool(
+        IToolCursorManager & toolCursorManager,
+        IGameController & gameController,
+        SoundController & soundController,
+        ResourceLocator const & resourceLocator);
+
+protected:
+
+    void DoAction(NpcId npcId) override
+    {
+        mGameController.RemoveNpc(npcId);
+    }
+
+    void DoAction(DisplayLogicalCoordinates const & corner1, DisplayLogicalCoordinates const & corner2) override
+    {
+        mGameController.RemoveNpcsInRect(corner1, corner2);
+    }
+};
+
+class TurnaroundNpcTool final : public BaseMultiSelectNpcTool
+{
+public:
+
+    TurnaroundNpcTool(
+        IToolCursorManager & toolCursorManager,
+        IGameController & gameController,
+        SoundController & soundController,
+        ResourceLocator const & resourceLocator);
+
+protected:
+
+    void DoAction(NpcId npcId) override
+    {
+        mGameController.TurnaroundNpc(npcId);
+    }
+
+    void DoAction(DisplayLogicalCoordinates const & corner1, DisplayLogicalCoordinates const & corner2) override
+    {
+        mGameController.TurnaroundNpcsInRect(corner1, corner2);
+    }
+};
+
+class MoveNpcTool final : public Tool
 {
 public:
 
@@ -4051,11 +4282,25 @@ public:
 
 public:
 
-    virtual void Initialize(InputState const & inputState) override
+    void Initialize(InputState const & inputState) override
     {
         mBeingMovedNpc.reset();
 
-        BaseSelectNpcTool::Initialize(inputState);
+        SetCurrentCursor(inputState.IsLeftMouseDown);
+    }
+
+    void Deinitialize() override
+    {
+        // Nop
+    }
+
+    void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
+    {
+        auto const probeOutcome = mGameController.ProbeNpcAt(inputState.MousePosition);
+        if (probeOutcome)
+        {
+            mGameController.HighlightNpcs({ probeOutcome->Id });
+        }
     }
 
     void OnLeftMouseDown(InputState const & inputState) override
@@ -4121,112 +4366,23 @@ private:
             inputState.IsShiftKeyDown);
     }
 
-    // Our state
-    std::optional<PickedNpc> mBeingMovedNpc;
-};
-
-class RemoveNpcTool final : public BaseSelectNpcTool
-{
-public:
-
-    RemoveNpcTool(
-        IToolCursorManager & toolCursorManager,
-        IGameController & gameController,
-        SoundController & soundController,
-        ResourceLocator const & resourceLocator);
-
-public:
-
-    void OnLeftMouseDown(InputState const & inputState) override
+    void SetCurrentCursor(bool isMouseDown)
     {
-        auto const probeOutcome = mGameController.ProbeNpcAt(inputState.MousePosition);
-        if (probeOutcome)
+        if (isMouseDown)
         {
-            mGameController.RemoveNpc(probeOutcome->Id);
-        }
-
-        SetCurrentCursor(true);
-    }
-
-    void OnLeftMouseUp(InputState const & /*inputState*/) override
-    {
-        SetCurrentCursor(false);
-    }
-
-    void OnMouseMove(InputState const & /*inputState*/) override {}
-    void OnShiftKeyDown(InputState const & /*inputState*/) override {}
-    void OnShiftKeyUp(InputState const & /*inputState*/) override {}
-};
-
-class TurnaroundNpcTool final : public BaseSelectNpcTool
-{
-public:
-
-    TurnaroundNpcTool(
-        IToolCursorManager & toolCursorManager,
-        IGameController & gameController,
-        SoundController & soundController,
-        ResourceLocator const & resourceLocator);
-
-public:
-
-    void OnLeftMouseDown(InputState const & inputState) override
-    {
-        auto const probeOutcome = mGameController.ProbeNpcAt(inputState.MousePosition);
-        if (probeOutcome.has_value())
-        {
-            mGameController.TurnaroundNpc(probeOutcome->Id);
-        }
-
-        SetCurrentCursor(true);
-    }
-
-    void OnLeftMouseUp(InputState const & /*inputState*/) override
-    {
-        SetCurrentCursor(false);
-    }
-
-    void OnMouseMove(InputState const & /*inputState*/) override {}
-    void OnShiftKeyDown(InputState const & /*inputState*/) override {}
-    void OnShiftKeyUp(InputState const & /*inputState*/) override {}
-};
-
-class FollowNpcTool final : public BaseSelectNpcTool
-{
-public:
-
-    FollowNpcTool(
-        IToolCursorManager & toolCursorManager,
-        IGameController & gameController,
-        SoundController & soundController,
-        ResourceLocator const & resourceLocator);
-
-public:
-
-    void OnLeftMouseDown(InputState const & inputState) override
-    {
-        auto const probeOutcome = mGameController.ProbeNpcAt(inputState.MousePosition);
-        if (probeOutcome)
-        {
-            mGameController.SelectNpc(probeOutcome->Id);
-            mGameController.SetAutoFocusTarget(AutoFocusTargetKindType::SelectedNpc);
+            mToolCursorManager.SetToolCursor(mDownCursorImage);
         }
         else
         {
-            // Remove selection
-            mGameController.SelectNpc(std::nullopt);
+            mToolCursorManager.SetToolCursor(mUpCursorImage);
         }
-
-        SetCurrentCursor(true);
     }
 
-    void OnLeftMouseUp(InputState const & /*inputState*/) override
-    {
-        SetCurrentCursor(false);
-    }
+    // Our state
+    std::optional<PickedNpc> mBeingMovedNpc;
 
-    void OnMouseMove(InputState const & /*inputState*/) override {}
-    void OnShiftKeyDown(InputState const & /*inputState*/) override {}
-    void OnShiftKeyUp(InputState const & /*inputState*/) override {}
+    // The cursors
+    wxImage const mDownCursorImage;
+    wxImage const mUpCursorImage;
 };
 

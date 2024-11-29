@@ -17,39 +17,6 @@
 
 namespace Physics {
 
-void Npcs::InternalEndMoveNpc(
-    NpcId id,
-    float currentSimulationTime)
-{
-    assert(mStateBuffer[id].has_value());
-
-    auto & npc = *mStateBuffer[id];
-
-    assert(npc.CurrentRegime == StateType::RegimeType::BeingPlaced);
-
-    ResetNpcStateToWorld(
-        npc,
-        currentSimulationTime);
-
-    OnMayBeNpcRegimeChanged(
-        StateType::RegimeType::BeingPlaced,
-        npc);
-
-    npc.BeingPlacedState.reset();
-
-#ifdef IN_BARYLAB
-    // Select NPC's primary particle
-    SelectParticle(npc.ParticleMesh.Particles[0].ParticleIndex);
-#endif
-}
-
-void Npcs::InternalCompleteNewNpc(
-    NpcId id,
-    float currentSimulationTime)
-{
-    InternalEndMoveNpc(id, currentSimulationTime);
-}
-
 void Npcs::ResetNpcStateToWorld(
     StateType & npc,
     float currentSimulationTime)

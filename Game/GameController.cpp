@@ -667,6 +667,16 @@ void GameController::ShowInteractiveToolDashedLine(
     mNotificationLayer.ShowInteractiveToolDashedLine(start, end);
 }
 
+void GameController::ShowInteractiveToolDashedRect(
+    DisplayLogicalCoordinates const & corner1,
+    DisplayLogicalCoordinates const & corner2)
+{
+    mNotificationLayer.ShowInteractiveToolDashedLine(corner1, { corner2.x, corner1.y });
+    mNotificationLayer.ShowInteractiveToolDashedLine({ corner2.x, corner1.y }, corner2);
+    mNotificationLayer.ShowInteractiveToolDashedLine(corner2, { corner1.x, corner2.y });
+    mNotificationLayer.ShowInteractiveToolDashedLine({ corner1.x, corner2.y }, corner1);
+}
+
 void GameController::ToggleToFullDayOrNight()
 {
     if (mTimeOfDay >= 0.5f)
@@ -1391,6 +1401,17 @@ std::optional<PickedNpc> GameController::ProbeNpcAt(DisplayLogicalCoordinates co
         mGameParameters);
 }
 
+std::vector<NpcId> GameController::ProbeNpcsInRect(
+    DisplayLogicalCoordinates const & corner1ScreenCoordinates,
+    DisplayLogicalCoordinates const & corner2ScreenCoordinates) const
+{
+    vec2f const corner1WorldCoordinates = mRenderContext->ScreenToWorld(corner1ScreenCoordinates);
+    vec2f const corner2WorldCoordinates = mRenderContext->ScreenToWorld(corner2ScreenCoordinates);
+
+    assert(!!mWorld);
+    return mWorld->ProbeNpcsInRect(corner1WorldCoordinates, corner2WorldCoordinates);
+}
+
 void GameController::BeginMoveNpc(
     NpcId id,
     int particleOrdinal,
@@ -1437,6 +1458,17 @@ void GameController::RemoveNpc(NpcId id)
     mWorld->RemoveNpc(id);
 }
 
+void GameController::RemoveNpcsInRect(
+    DisplayLogicalCoordinates const & corner1ScreenCoordinates,
+    DisplayLogicalCoordinates const & corner2ScreenCoordinates)
+{
+    vec2f const corner1WorldCoordinates = mRenderContext->ScreenToWorld(corner1ScreenCoordinates);
+    vec2f const corner2WorldCoordinates = mRenderContext->ScreenToWorld(corner2ScreenCoordinates);
+
+    assert(!!mWorld);
+    mWorld->RemoveNpcsInRect(corner1WorldCoordinates, corner2WorldCoordinates);
+}
+
 void GameController::AbortNewNpc(NpcId id)
 {
     assert(!!mWorld);
@@ -1470,6 +1502,17 @@ void GameController::TurnaroundNpc(NpcId id)
 {
     assert(!!mWorld);
     mWorld->TurnaroundNpc(id);
+}
+
+void GameController::TurnaroundNpcsInRect(
+    DisplayLogicalCoordinates const & corner1ScreenCoordinates,
+    DisplayLogicalCoordinates const & corner2ScreenCoordinates)
+{
+    vec2f const corner1WorldCoordinates = mRenderContext->ScreenToWorld(corner1ScreenCoordinates);
+    vec2f const corner2WorldCoordinates = mRenderContext->ScreenToWorld(corner2ScreenCoordinates);
+
+    assert(!!mWorld);
+    mWorld->TurnaroundNpcsInRect(corner1WorldCoordinates, corner2WorldCoordinates);
 }
 
 std::optional<NpcId> GameController::GetCurrentlySelectedNpc() const

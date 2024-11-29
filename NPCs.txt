@@ -241,21 +241,28 @@ Next release:
 			+ Interface: lose std::opt and take const vec &
 			+ Tools
 			+ Test
-	- RemoveNpcTool (BaseSelectNpcTool): when mouse down on no candidate, enter "selection mode" drawing rectangle
-		- During selection drawing, talks to GameController in no-NPC language to just draw selection rectangle
-			- Same way we talk at TerrainAdjust
-		- Then at mouse up, call Npcs::RemoveNpcs(AABB region)
-		= Selection rectangle: expand current "Line Guide" into set of them - so can draw quads
+	+ RemoveNpcTool (BaseSelectNpcTool): when mouse down on no candidate, enter "selection mode" drawing rectangle
+		+ Do whole chain for ProbeNpcsInQuad(...) -> vec<NpcId>
+		+ During selection drawing, talks to GameController in no-NPC language to just draw selection rectangle
+			+ Same way we talk at TerrainAdjust
+		+ Then at mouse up, call Npcs::RemoveNpcs(quad)
+		+ Selection rectangle: expand current "Line Guide" into set of them - so can draw quads
 			+ Rename to "InteractiveToolDashedLines", with assumption there's only one set at a time
-			- Make sure quad corners look good
+			+ Make sure quad corners look good
 		- Highlight all
-	- Tools:
+			- TODO: wanna have overload with corner?
+	- MoveNpcTool:
+		- TODOHERE
+	- Test:
+		+ Remove
+		+ Turnaround
 		- Move
-		- Remove
-		- Turnaround
+	- Change menu labels - with '/' ?
 	- Changelist
 
 - Backport FS to Barylab
+
+- TODO: do half-triangle planning work here
 
 - Mechanism for dynamic removal of NPCs, plus human removal and furniture explosion
 	! Will be useful for explosive NPCs (to make explosive furniture disappear) (*) and for human removal animation (*)
@@ -307,6 +314,7 @@ Next release:
 
 
 - Misc:
+	- Sound for NPC fire smothering
 	! TODO: move the long-term ones below to a new "Wishlist" section
 	- Ghost Walls bug:
 		- https://discord.com/channels/559822257275404307/561385724855975938/1309212146508365834
@@ -321,6 +329,11 @@ Next release:
 	- Do chest fixes
 
 - New human behaviors:
+
+	+ Panic when water entering (also "Walk away from water")
+		+ Done @ Walking update, by looking at water velocity wrt direction
+		+ Has own panic
+		+ With chain of panics (fire, bomb, water - right order)
 
 	- Panic when sinking detected
 		- TODO: type? Do we still need "Generalized"? (note: it's global)
@@ -338,35 +351,32 @@ Next release:
 						- Activated at forward-looking walk planning (* below), where we are interested in just knowing whether we can proceed or not
 				- Return type: TODO: candidates, etc.
 		- 2: "next triangle" check when planning:
+			! Detect when we _positively_ move from the "back" half edge to the "front" half edge - wrt direction of walk
 			- @ UpdateBehavior while walking (or at WalkingUpdate):
-				- WalkingBehaviorState contains: tri index, edge ordinal, "half edge sign", and x orientation
+				- WalkingBehaviorState contains last opt<<tri index, bcoords>, edge ordinal>
 						- Also contains "times checked in this triangle" to detect stall and to go into "Walking_Undecided" state
 					- Init'd to None at each transition into Walking
 					- Used to detect change of "half edge"
+						- nullopt doesn't count - if nullopt, just initialize it
+						- To calc quickly if in "last half edge", use inline helper: is last half edge == (bcoord along edge - 0.5) * face_x_dir > 0.0
+						- We invoke it both (old and new) to detect change
 				- When change detected:
-					- if half_change*orientation > 0: we're walking into next edge in this direction; do <X>
-					- Update state with current half
-
-	+ Panic when water entering (also "Walk away from water")
-		+ Done @ Walking update, by looking at water velocity wrt direction
-		+ Has own panic
-		+ With chain of panics (fire, bomb, water - right order)
-
-	- Panic when water starts entering ship
-		- TODO: how detected exactly?
-		- TODO: panic type? And for all, or for a few?
+					- do <X>
+				- Update state
 
 	- Forward-looking walk planning:
 		! Goal: while walking, do not proceed towards a wall or a hole
 		- Requires 1. and 2. @ Prelim work above
 		- @ Walking behavior (* above): when "half-triangle" change detected (<X> above):
 			- Find if a next floor exists in cur triangle along walking direction
-				- Via commoditized helper
+				- Via helper wrapping commoditized helper, which will also be reused for initial walk direction choice (see below)
 			- Can not proceed if doesn't find any alternatives
 				- Flip
 					! We'll figure out whether we're stuck also in other direction after we cross the half-triangle again, and via the "times checked in this triangle" state member
 					! Also flip when under panic, that will make for funny fall-on-back
 
+	- Initial walk direction: check which direction is best
+		- Otherwise just choose
 
 	- When ship is repaired, all NPCs do a little dance
 		- Sync is simulation clock (so all are in sync)

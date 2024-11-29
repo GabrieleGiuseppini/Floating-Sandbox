@@ -1117,6 +1117,23 @@ std::optional<PickedNpc> Npcs::ProbeNpcAt(
     }
 }
 
+std::vector<NpcId> Npcs::ProbeNpcsInRect(
+    vec2f const & corner1,
+    vec2f const & corner2) const
+{
+    std::vector<NpcId> result;
+
+    VisitNpcsInQuad(
+        corner1,
+        corner2,
+        [&](NpcId id)
+        {
+            result.emplace_back(id);
+        });
+
+    return result;
+}
+
 void Npcs::BeginMoveNpc(
     NpcId id,
     int particleOrdinal,
@@ -1218,37 +1235,32 @@ void Npcs::CompleteNewNpc(
 
 void Npcs::RemoveNpc(NpcId id)
 {
-    assert(mStateBuffer[id].has_value());
-    assert(mShips[mStateBuffer[id]->CurrentShipId].has_value());
-
-    bool const humanStatsUpdated = CommonNpcRemoval(id);
+    bool const humanStatsUpdated = InternalRemoveNpc(id);
     if (humanStatsUpdated)
     {
         PublishHumanNpcStats();
     }
+}
 
-    PublishCount();
+void Npcs::RemoveNpcsInRect(
+    vec2f const & corner1,
+    vec2f const & corner2)
+{
+    bool humanStatsUpdated = false;
 
-    //
-    // Update ship indices
-    //
+    VisitNpcsInQuad(
+        corner1,
+        corner2,
+        [&](NpcId id)
+        {
+            bool const _humanStatsUpdated = InternalRemoveNpc(id);
+            humanStatsUpdated |= _humanStatsUpdated;
+        });
 
-    assert(mShips[mStateBuffer[id]->CurrentShipId].has_value());
-
-    auto it = std::find(
-        mShips[mStateBuffer[id]->CurrentShipId]->Npcs.begin(),
-        mShips[mStateBuffer[id]->CurrentShipId]->Npcs.end(),
-        id);
-
-    assert(it != mShips[mStateBuffer[id]->CurrentShipId]->Npcs.end());
-
-    mShips[mStateBuffer[id]->CurrentShipId]->Npcs.erase(it);
-
-    //
-    // Get rid of NPC
-    //
-
-    mStateBuffer[id].reset();
+    if (humanStatsUpdated)
+    {
+        PublishHumanNpcStats();
+    }
 }
 
 void Npcs::AbortNewNpc(NpcId id)
@@ -1545,40 +1557,20 @@ std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> Npcs::AddNpcGroup
 
 void Npcs::TurnaroundNpc(NpcId id)
 {
-    assert(mStateBuffer[id].has_value());
+    InternalTurnaroundNpc(id);
+}
 
-    switch (mStateBuffer[id]->Kind)
-    {
-        case NpcKindType::Human:
+void Npcs::TurnaroundNpcsInRect(
+    vec2f const & corner1,
+    vec2f const & corner2)
+{
+    VisitNpcsInQuad(
+        corner1,
+        corner2,
+        [&](NpcId id)
         {
-            if (mStateBuffer[id]->KindSpecificState.HumanNpcState.CurrentBehavior == StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::Constrained_Walking)
-            {
-                // Flip walk
-                FlipHumanWalk(mStateBuffer[id]->KindSpecificState.HumanNpcState, StrongTypedTrue<_DoImmediate>);
-            }
-            else
-            {
-                // Just change orientation/direction
-                if (mStateBuffer[id]->KindSpecificState.HumanNpcState.CurrentFaceDirectionX != 0.0f)
-                {
-                    mStateBuffer[id]->KindSpecificState.HumanNpcState.CurrentFaceDirectionX *= -1.0f;
-                }
-                else
-                {
-                    mStateBuffer[id]->KindSpecificState.HumanNpcState.CurrentFaceOrientation *= -1.0f;
-                }
-            }
-
-            break;
-        }
-
-        case NpcKindType::Furniture:
-        {
-            mStateBuffer[id]->KindSpecificState.FurnitureNpcState.CurrentFaceDirectionX *= -1.0f;
-
-            break;
-        }
-    }
+            InternalTurnaroundNpc(id);
+        });
 }
 
 std::optional<NpcId> Npcs::GetCurrentlySelectedNpc() const
@@ -2552,6 +2544,146 @@ void Npcs::Publish() const
 #endif
 
 ///////////////////////////////
+
+void Npcs::VisitNpcsInQuad(
+    vec2f const & corner1,
+    vec2f const & corner2,
+    std::function<void(NpcId)> action) const
+{
+    float const minX = std::min(corner1.x, corner2.x);
+    float const maxX = std::max(corner1.x, corner2.x);
+    float const minY = std::min(corner1.y, corner2.y);
+    float const maxY = std::max(corner1.y, corner2.y);
+
+    for (auto const & npc : mStateBuffer)
+    {
+        if (npc.has_value())
+        {
+            // We visit the NPC if at least one of its particles is in the quad
+
+            bool isChosen = false;
+
+            for (size_t p = 0; p < npc->ParticleMesh.Particles.size(); ++p)
+            {
+                vec2f const & pos = mParticles.GetPosition(npc->ParticleMesh.Particles[p].ParticleIndex);
+                if (pos.x >= minX && pos.x <= maxX && pos.y >= minY && pos.y <= maxY)
+                {
+                    // Found!
+                    isChosen = true;
+                    break;
+                }
+            }
+
+            if (isChosen)
+            {
+                action(npc->Id);
+            }
+        }
+    }
+}
+
+bool Npcs::InternalRemoveNpc(NpcId id)
+{
+    assert(mStateBuffer[id].has_value());
+    assert(mShips[mStateBuffer[id]->CurrentShipId].has_value());
+
+    bool const humanStatsUpdated = CommonNpcRemoval(id);
+    PublishCount();
+
+    //
+    // Update ship indices
+    //
+
+    assert(mShips[mStateBuffer[id]->CurrentShipId].has_value());
+
+    auto it = std::find(
+        mShips[mStateBuffer[id]->CurrentShipId]->Npcs.begin(),
+        mShips[mStateBuffer[id]->CurrentShipId]->Npcs.end(),
+        id);
+
+    assert(it != mShips[mStateBuffer[id]->CurrentShipId]->Npcs.end());
+
+    mShips[mStateBuffer[id]->CurrentShipId]->Npcs.erase(it);
+
+    //
+    // Get rid of NPC
+    //
+
+    mStateBuffer[id].reset();
+
+    return humanStatsUpdated;
+}
+
+void Npcs::InternalEndMoveNpc(
+    NpcId id,
+    float currentSimulationTime)
+{
+    assert(mStateBuffer[id].has_value());
+
+    auto & npc = *mStateBuffer[id];
+
+    assert(npc.CurrentRegime == StateType::RegimeType::BeingPlaced);
+
+    ResetNpcStateToWorld(
+        npc,
+        currentSimulationTime);
+
+    OnMayBeNpcRegimeChanged(
+        StateType::RegimeType::BeingPlaced,
+        npc);
+
+    npc.BeingPlacedState.reset();
+
+#ifdef IN_BARYLAB
+    // Select NPC's primary particle
+    SelectParticle(npc.ParticleMesh.Particles[0].ParticleIndex);
+#endif
+}
+
+void Npcs::InternalCompleteNewNpc(
+    NpcId id,
+    float currentSimulationTime)
+{
+    InternalEndMoveNpc(id, currentSimulationTime);
+}
+
+void Npcs::InternalTurnaroundNpc(NpcId id)
+{
+    assert(mStateBuffer[id].has_value());
+
+    switch (mStateBuffer[id]->Kind)
+    {
+        case NpcKindType::Human:
+        {
+            if (mStateBuffer[id]->KindSpecificState.HumanNpcState.CurrentBehavior == StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::Constrained_Walking)
+            {
+                // Flip walk
+                FlipHumanWalk(mStateBuffer[id]->KindSpecificState.HumanNpcState, StrongTypedTrue<_DoImmediate>);
+            }
+            else
+            {
+                // Just change orientation/direction
+                if (mStateBuffer[id]->KindSpecificState.HumanNpcState.CurrentFaceDirectionX != 0.0f)
+                {
+                    mStateBuffer[id]->KindSpecificState.HumanNpcState.CurrentFaceDirectionX *= -1.0f;
+                }
+                else
+                {
+                    mStateBuffer[id]->KindSpecificState.HumanNpcState.CurrentFaceOrientation *= -1.0f;
+            }
+        }
+
+            break;
+        }
+
+        case NpcKindType::Furniture:
+        {
+            mStateBuffer[id]->KindSpecificState.FurnitureNpcState.CurrentFaceDirectionX *= -1.0f;
+
+            break;
+        }
+    }
+}
 
 void Npcs::PublishCount()
 {

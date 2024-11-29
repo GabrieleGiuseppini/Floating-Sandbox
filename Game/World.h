@@ -390,6 +390,10 @@ public:
         float radius,
         GameParameters const & gameParameters) const;
 
+    std::vector<NpcId> ProbeNpcsInRect(
+        vec2f const & corner1,
+        vec2f const & corner2) const;
+
     void BeginMoveNpc(
         NpcId id,
         int particleOrdinal,
@@ -407,6 +411,10 @@ public:
 
     void RemoveNpc(NpcId id);
 
+    void RemoveNpcsInRect(
+        vec2f const & corner1,
+        vec2f const & corner2);
+
     void AbortNewNpc(NpcId id);
 
     std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> AddNpcGroup(
@@ -415,6 +423,10 @@ public:
         GameParameters const & gameParameters);
 
     void TurnaroundNpc(NpcId id);
+
+    void TurnaroundNpcsInRect(
+        vec2f const & corner1,
+        vec2f const & corner2);
 
     std::optional<NpcId> GetSelectedNpc() const;
 

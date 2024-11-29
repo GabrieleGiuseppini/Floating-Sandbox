@@ -1083,6 +1083,16 @@ std::optional<PickedNpc> World::ProbeNpcAt(
         gameParameters);
 }
 
+std::vector<NpcId> World::ProbeNpcsInRect(
+    vec2f const & corner1,
+    vec2f const & corner2) const
+{
+    assert(mNpcs);
+    return mNpcs->ProbeNpcsInRect(
+        corner1,
+        corner2);
+}
+
 void World::BeginMoveNpc(
     NpcId id,
     int particleOrdinal,
@@ -1128,6 +1138,14 @@ void World::RemoveNpc(NpcId id)
     mNpcs->RemoveNpc(id);
 }
 
+void World::RemoveNpcsInRect(
+    vec2f const & corner1,
+    vec2f const & corner2)
+{
+    assert(mNpcs);
+    mNpcs->RemoveNpcsInRect(corner1, corner2);
+}
+
 void World::AbortNewNpc(NpcId id)
 {
     assert(mNpcs);
@@ -1147,6 +1165,14 @@ void World::TurnaroundNpc(NpcId id)
 {
     assert(mNpcs);
     mNpcs->TurnaroundNpc(id);
+}
+
+void World::TurnaroundNpcsInRect(
+    vec2f const & corner1,
+    vec2f const & corner2)
+{
+    assert(mNpcs);
+    mNpcs->TurnaroundNpcsInRect(corner1, corner2);
 }
 
 std::optional<NpcId> World::GetSelectedNpc() const

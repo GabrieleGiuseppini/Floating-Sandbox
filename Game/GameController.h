@@ -201,9 +201,14 @@ public:
     void SetShiftOn(bool value) override;
 
     // Not sticky
+
     void ShowInteractiveToolDashedLine(
         DisplayLogicalCoordinates const & start,
         DisplayLogicalCoordinates const & end) override;
+
+    void ShowInteractiveToolDashedRect(
+        DisplayLogicalCoordinates const & corner1,
+        DisplayLogicalCoordinates const & corner2) override;
 
     //
     // World probing
@@ -263,14 +268,17 @@ public:
     std::optional<PickedNpc> BeginPlaceNewFurnitureNpc(std::optional<NpcSubKindIdType> subKind, DisplayLogicalCoordinates const & screenCoordinates, bool doMoveWholeMesh) override;
     std::optional<PickedNpc> BeginPlaceNewHumanNpc(std::optional<NpcSubKindIdType> subKind, DisplayLogicalCoordinates const & screenCoordinates, bool doMoveWholeMesh) override;
     std::optional<PickedNpc> ProbeNpcAt(DisplayLogicalCoordinates const & screenCoordinates) const override;
+    std::vector<NpcId> ProbeNpcsInRect(DisplayLogicalCoordinates const & corner1ScreenCoordinates, DisplayLogicalCoordinates const & corner2ScreenCoordinates) const override;
     void BeginMoveNpc(NpcId id, int particleOrdinal, bool doMoveWholeMesh) override;
     void MoveNpcTo(NpcId id, DisplayLogicalCoordinates const & screenCoordinates, vec2f const & worldOffset, bool doMoveWholeMesh) override;
     void EndMoveNpc(NpcId id) override;
     void CompleteNewNpc(NpcId id) override;
     void RemoveNpc(NpcId id) override;
+    void RemoveNpcsInRect(DisplayLogicalCoordinates const & corner1ScreenCoordinates, DisplayLogicalCoordinates const & corner2ScreenCoordinates) override;
     void AbortNewNpc(NpcId id) override;
     void AddNpcGroup(NpcKindType kind) override;
     void TurnaroundNpc(NpcId id) override;
+    void TurnaroundNpcsInRect(DisplayLogicalCoordinates const & corner1ScreenCoordinates, DisplayLogicalCoordinates const & corner2ScreenCoordinates) override;
     std::optional<NpcId> GetCurrentlySelectedNpc() const override;
     void SelectNpc(std::optional<NpcId> id) override;
     void SelectNextNpc() override;

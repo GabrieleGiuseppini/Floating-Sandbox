@@ -81,10 +81,15 @@ struct IGameController
     virtual bool IsShiftOn() const = 0;
     virtual void SetShiftOn(bool value) = 0;
 
-    // Sticky
+    // Not Sticky
+
     virtual void ShowInteractiveToolDashedLine(
         DisplayLogicalCoordinates const & start,
         DisplayLogicalCoordinates const & end) = 0;
+
+    virtual void ShowInteractiveToolDashedRect(
+        DisplayLogicalCoordinates const & corner1,
+        DisplayLogicalCoordinates const & corner2) = 0;
 
     //
     // World
@@ -144,14 +149,17 @@ struct IGameController
     virtual std::optional<PickedNpc> BeginPlaceNewFurnitureNpc(std::optional<NpcSubKindIdType> subKind, DisplayLogicalCoordinates const & screenCoordinates, bool doMoveWholeMesh) = 0;
     virtual std::optional<PickedNpc> BeginPlaceNewHumanNpc(std::optional<NpcSubKindIdType> subKind, DisplayLogicalCoordinates const & screenCoordinates, bool doMoveWholeMesh) = 0;
     virtual std::optional<PickedNpc> ProbeNpcAt(DisplayLogicalCoordinates const & screenCoordinates) const = 0;
+    virtual std::vector<NpcId> ProbeNpcsInRect(DisplayLogicalCoordinates const & corner1ScreenCoordinates, DisplayLogicalCoordinates const & corner2ScreenCoordinates) const = 0;
     virtual void BeginMoveNpc(NpcId id, int particleOrdinal, bool doMoveWholeMesh) = 0;
     virtual void MoveNpcTo(NpcId id, DisplayLogicalCoordinates const & screenCoordinates, vec2f const & worldOffset, bool doMoveWholeMesh) = 0;
     virtual void EndMoveNpc(NpcId id) = 0;
     virtual void CompleteNewNpc(NpcId id) = 0;
     virtual void RemoveNpc(NpcId id) = 0;
+    virtual void RemoveNpcsInRect(DisplayLogicalCoordinates const & corner1ScreenCoordinates, DisplayLogicalCoordinates const & corner2ScreenCoordinates) = 0;
     virtual void AbortNewNpc(NpcId id) = 0;
     virtual void AddNpcGroup(NpcKindType kind) = 0;
     virtual void TurnaroundNpc(NpcId id) = 0;
+    virtual void TurnaroundNpcsInRect(DisplayLogicalCoordinates const & corner1ScreenCoordinates, DisplayLogicalCoordinates const & corner2ScreenCoordinates) = 0;
     virtual std::optional<NpcId> GetCurrentlySelectedNpc() const = 0;
     virtual void SelectNpc(std::optional<NpcId> id) = 0;
     virtual void SelectNextNpc() = 0;

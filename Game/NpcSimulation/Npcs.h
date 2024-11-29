@@ -26,6 +26,7 @@
 #include <GameCore/SysSpecifics.h>
 #include <GameCore/Vectors.h>
 
+#include <functional>
 #include <memory>
 #include <optional>
 #include <vector>
@@ -877,6 +878,10 @@ public:
 		float radius,
 		GameParameters const & gameParameters) const;
 
+	std::vector<NpcId> ProbeNpcsInRect(
+		vec2f const & corner1,
+		vec2f const & corner2) const;
+
 	void BeginMoveNpc(
 		NpcId id,
 		int particleOrdinal,
@@ -899,6 +904,10 @@ public:
 
 	void RemoveNpc(NpcId id);
 
+	void RemoveNpcsInRect(
+		vec2f const & corner1,
+		vec2f const & corner2);
+
 	void AbortNewNpc(NpcId id);
 
 	std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> AddNpcGroup(
@@ -908,6 +917,10 @@ public:
 		GameParameters const & gameParameters);
 
 	void TurnaroundNpc(NpcId id);
+
+	void TurnaroundNpcsInRect(
+		vec2f const & corner1,
+		vec2f const & corner2);
 
 	std::optional<NpcId> GetCurrentlySelectedNpc() const;
 
@@ -1087,6 +1100,23 @@ public:
 
 private:
 
+	void VisitNpcsInQuad(
+		vec2f const & corner1,
+		vec2f const & corner2,
+		std::function<void(NpcId)> action) const;
+
+	bool InternalRemoveNpc(NpcId id);
+
+	void InternalEndMoveNpc(
+		NpcId id,
+		float currentSimulationTime);
+
+	void InternalCompleteNewNpc(
+		NpcId id,
+		float currentSimulationTime);
+
+	void InternalTurnaroundNpc(NpcId id);
+
 	void PublishCount();
 
 	void PublishSelection();
@@ -1159,14 +1189,6 @@ private:
 	//
 	// Simulation
 	//
-
-	void InternalEndMoveNpc(
-		NpcId id,
-		float currentSimulationTime);
-
-	void InternalCompleteNewNpc(
-		NpcId id,
-		float currentSimulationTime);
 
 	void ResetNpcStateToWorld(
 		StateType & npc,
