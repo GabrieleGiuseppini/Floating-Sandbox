@@ -25,7 +25,7 @@ NotificationRenderContext::NotificationRenderContext(
     // Textures
     , mGenericLinearTextureAtlasMetadata(globalRenderContext.GetGenericLinearTextureAtlasMetadata())
     , mGenericMipMappedTextureAtlasMetadata(globalRenderContext.GetGenericMipMappedTextureAtlasMetadata())
-	// Text
+    // Text
     , mFontTextureAtlasMetadata()
     , mTextNotificationTypeContexts()
     , mTextVAO()
