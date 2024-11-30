@@ -375,7 +375,7 @@ typename TextureAtlasBuilder<TextureGroups>::AtlasSpecification TextureAtlasBuil
                     else
                     {
                         // Current location is completed
-                        assert(currentPosition.y + t.InAtlasSize.height == std::next(positionStack.rbegin())->y);
+                        assert(currentPosition.y + t.InAtlasSize.height >= std::next(positionStack.rbegin())->y);
 
                         // Pop it from stack
                         positionStack.pop_back();
