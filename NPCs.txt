@@ -224,15 +224,12 @@ Next release:
 			+ X 3 shaders
 			+ also lamp tool
 			+ also depth darkening
-			
 	X Option 2: second pass of lighting algorithm with all NPC particles, for each ship
 		- Adding to NPC particles' _light_ buffer
 			- But test it first, as humans are dipoles and dubious result
-
 	+ Changelist
 
-
-= Remove NPC tool for "area"
++ Remove NPC tool for "area"
 	! "Perhaps some sort of selection tool to remove NPCs - removing a large cluster 1 by 1 is a bit annoying"
 	+ Prelim:
 		+ Highlight per-NPC
@@ -251,14 +248,22 @@ Next release:
 			+ Make sure quad corners look good
 		- Highlight all
 			- TODO: wanna have overload with corner?
-	- MoveNpcTool:
-		- TODOHERE
-	- Test:
+	+ MoveNpcTool:
+		+ Npcs::MoveXYZ
+			+ And chain up
+		+ MoveNpcTool
+			+ Shift for whole mesh
+				+ Requires refresh of move
+		+ Fix wholeMesh=>imparted velocity
+			+ Should zero velocity at UpdateNpcParticle_BeingPlaced when wholeMesh=T
+	+ Test:
 		+ Remove
 		+ Turnaround
-		- Move
-	- Change menu labels - with '/' ?
-	- Changelist
+		+ Move
+	+ Change menu labels - with '/' ?
+	+ Changelist
+
+- See guy crash/repair tool
 
 - Backport FS to Barylab
 

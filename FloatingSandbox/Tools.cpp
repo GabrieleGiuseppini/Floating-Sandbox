@@ -852,7 +852,7 @@ MoveNpcTool::MoveNpcTool(
         toolCursorManager,
         gameController,
         soundController)
-    , mBeingMovedNpc()
+    , mCurrentState()
     , mDownCursorImage(WxHelpers::LoadCursorImage("move_npc_cursor_down", 11, 29, resourceLocator))
     , mUpCursorImage(WxHelpers::LoadCursorImage("move_npc_cursor_up", 11, 29, resourceLocator))
 {

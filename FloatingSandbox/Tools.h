@@ -4137,10 +4137,9 @@ public:
                 inputState.MousePosition);
 
             // Highlight
-            mGameController.HighlightNpcs(
-                mGameController.ProbeNpcsInRect(
+            mGameController.HighlightNpcsInRect(
                     *mSelectionStartPosition,
-                    inputState.MousePosition));
+                    inputState.MousePosition);
         }
     }
 
@@ -4282,87 +4281,288 @@ public:
 
 public:
 
-    void Initialize(InputState const & inputState) override
-    {
-        mBeingMovedNpc.reset();
-
-        SetCurrentCursor(inputState.IsLeftMouseDown);
-    }
-
-    void Deinitialize() override
-    {
-        // Nop
-    }
-
-    void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
-    {
-        auto const probeOutcome = mGameController.ProbeNpcAt(inputState.MousePosition);
-        if (probeOutcome)
+        void Initialize(InputState const & inputState) override
         {
-            mGameController.HighlightNpcs({ probeOutcome->Id });
-        }
-    }
+            mCurrentState.ResetToStart();
 
-    void OnLeftMouseDown(InputState const & inputState) override
-    {
-        auto const probeOutcome = mGameController.ProbeNpcAt(inputState.MousePosition);
-        if (probeOutcome)
-        {
-            mBeingMovedNpc = probeOutcome;
-            mGameController.BeginMoveNpc(
-                mBeingMovedNpc->Id,
-                mBeingMovedNpc->ParticleOrdinal,
-                inputState.IsShiftKeyDown);
+            SetCurrentCursor(inputState.IsLeftMouseDown);
         }
 
-        SetCurrentCursor(true);
-    }
-
-    void OnLeftMouseUp(InputState const & /*inputState*/) override
-    {
-        if (mBeingMovedNpc.has_value())
+        void Deinitialize() override
         {
-            mGameController.EndMoveNpc(mBeingMovedNpc->Id);
-            mBeingMovedNpc.reset();
+            switch (mCurrentState.StateKind)
+            {
+                case StateType::StateKindType::MovingOne:
+                {
+                    assert(mCurrentState.Npc.has_value());
+                    mGameController.EndMoveNpc(mCurrentState.Npc->Id);
+
+                    break;
+                }
+
+                case StateType::StateKindType::MovingMany:
+                {
+                    assert(mCurrentState.Npcs.has_value());
+                    for (auto const npcId : *mCurrentState.Npcs)
+                    {
+                        mGameController.EndMoveNpc(npcId);
+                    }
+
+                    break;
+                }
+
+                case StateType::StateKindType::Start:
+                case StateType::StateKindType::Selecting:
+                case StateType::StateKindType::HaveMany:
+                {
+                    // Nop
+                    break;
+                }
+            }
+
+            mCurrentState.ResetToStart(); // Just to be neat
         }
 
-        SetCurrentCursor(false);
-    }
-
-    void OnMouseMove(InputState const & inputState) override
-    {
-        if (mBeingMovedNpc.has_value())
+        void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
         {
-            MoveNpc(inputState);
-        }
-    }
+            switch (mCurrentState.StateKind)
+            {
+                case StateType::StateKindType::Start:
+                {
+                    auto const probeOutcome = mGameController.ProbeNpcAt(inputState.MousePosition);
+                    if (probeOutcome.has_value())
+                    {
+                        mGameController.HighlightNpcs({ probeOutcome->Id });
+                    }
 
-    void OnShiftKeyDown(InputState const & inputState) override
-    {
-        // Refresh shift state
-        if (mBeingMovedNpc.has_value())
-        {
-            MoveNpc(inputState);
-        }
-    }
+                    break;
+                }
 
-    void OnShiftKeyUp(InputState const & inputState) override
-    {
-        // Refresh shift state
-        if (mBeingMovedNpc.has_value())
-        {
-            MoveNpc(inputState);
+                case StateType::StateKindType::Selecting:
+                {
+                    assert(mCurrentState.StartPosition.has_value());
+
+                    // Draw rectangle
+                    mGameController.ShowInteractiveToolDashedRect(
+                        *mCurrentState.StartPosition,
+                        inputState.MousePosition);
+
+                    // Highlight
+                    mGameController.HighlightNpcsInRect(
+                        *mCurrentState.StartPosition,
+                        inputState.MousePosition);
+
+                    break;
+                }
+
+                case StateType::StateKindType::HaveMany:
+                {
+                    assert(mCurrentState.Npcs.has_value());
+
+                    // Highlight
+                    mGameController.HighlightNpcs(*mCurrentState.Npcs);
+
+                    break;
+                }
+
+                case StateType::StateKindType::MovingOne:
+                case StateType::StateKindType::MovingMany:
+                {
+                    // Nop
+                    break;
+                }
+            }
         }
-    }
+
+        void OnLeftMouseDown(InputState const & inputState) override
+        {
+            switch (mCurrentState.StateKind)
+            {
+                case StateType::StateKindType::MovingOne: // Impossible
+                case StateType::StateKindType::Selecting: // Impossible
+                case StateType::StateKindType::MovingMany: // Impossible
+                {
+                    mCurrentState.ResetToStart();
+                    [[fallthrough]];
+                }
+
+                case StateType::StateKindType::Start:
+                {
+                    std::optional<PickedNpc> probeOutcome;
+                    if (!inputState.IsShiftKeyDown)
+                    {
+                        probeOutcome = mGameController.ProbeNpcAt(inputState.MousePosition);
+                    }
+
+                    if (probeOutcome.has_value())
+                    {
+                        // We have an NPC, start moving it
+
+                        mGameController.BeginMoveNpc(
+                            probeOutcome->Id,
+                            probeOutcome->ParticleOrdinal,
+                            inputState.IsShiftKeyDown);
+
+                        mCurrentState.ToMovingOne(*probeOutcome);
+                    }
+                    else
+                    {
+                        // Start rect selection
+
+                        mCurrentState.ToSelecting(inputState.MousePosition);
+                    }
+
+                    break;
+                }
+
+                case StateType::StateKindType::HaveMany:
+                {
+                    // We have many NPCs, start moving them
+
+                    assert(mCurrentState.Npcs.has_value());
+                    mGameController.BeginMoveNpcs(*mCurrentState.Npcs);
+
+                    mCurrentState.ToMovingMany(inputState.MousePosition);
+
+                    break;
+                }
+            }
+
+            SetCurrentCursor(true);
+        }
+
+        void OnLeftMouseUp(InputState const & inputState) override
+        {
+            switch (mCurrentState.StateKind)
+            {
+                case StateType::StateKindType::Start: // Impossible
+                case StateType::StateKindType::HaveMany: // Impossible
+                {
+                    // Nop
+                    break;
+                }
+
+                case StateType::StateKindType::MovingOne:
+                {
+                    // We're done moving one NPC
+
+                    assert(mCurrentState.Npc.has_value());
+                    mGameController.EndMoveNpc(mCurrentState.Npc->Id);
+
+                    mCurrentState.ResetToStart();
+
+                    break;
+                }
+
+                case StateType::StateKindType::Selecting:
+                {
+                    // We're done selecting rectangle
+
+                    // Time to probe
+                    assert(mCurrentState.StartPosition.has_value());
+                    auto npcs = mGameController.ProbeNpcsInRect(
+                        *mCurrentState.StartPosition,
+                        inputState.MousePosition);
+
+                    // Wait for movement
+                    mCurrentState.ToHaveMany(std::move(npcs));
+
+                    break;
+                }
+
+                case StateType::StateKindType::MovingMany:
+                {
+                    // We're done moving many NPCs
+
+                    assert(mCurrentState.Npcs.has_value());
+                    for (auto const npcId : *mCurrentState.Npcs)
+                    {
+                        mGameController.EndMoveNpc(npcId);
+                    }
+
+                    mCurrentState.ResetToStart();
+
+                    break;
+                }
+            }
+
+            SetCurrentCursor(false);
+        }
+
+        void OnMouseMove(InputState const & inputState) override
+        {
+            switch (mCurrentState.StateKind)
+            {
+                case StateType::StateKindType::Start:
+                {
+                    // Nop, we take care of this at UpdateSimulation
+                    break;
+                }
+
+                case StateType::StateKindType::MovingOne:
+                {
+                    // Move our one NPC
+
+                    MoveOneNpc(inputState);
+
+                    break;
+                }
+
+                case StateType::StateKindType::Selecting:
+                {
+                    // Nop, we take care of this at UpdateSimulation
+                    break;
+                }
+
+                case StateType::StateKindType::HaveMany:
+                {
+                    // Nop
+                    break;
+                }
+
+                case StateType::StateKindType::MovingMany:
+                {
+                    // Move our many NPCs
+
+                    assert(mCurrentState.Npcs.has_value());
+                    assert(mCurrentState.StartPosition.has_value());
+                    mGameController.MoveNpcsBy(
+                        *mCurrentState.Npcs,
+                        inputState.MousePosition - *mCurrentState.StartPosition);
+                    mCurrentState.StartPosition = inputState.MousePosition;
+
+                    break;
+                }
+            }
+        }
+
+        void OnShiftKeyDown(InputState const & inputState) override
+        {
+            if (mCurrentState.StateKind == StateType::StateKindType::MovingOne)
+            {
+                // Just refresh "move whole mesh"
+                MoveOneNpc(inputState);
+            }
+        }
+
+        void OnShiftKeyUp(InputState const & inputState) override
+        {
+            if (mCurrentState.StateKind == StateType::StateKindType::MovingOne)
+            {
+                // Just refresh "move whole mesh"
+                MoveOneNpc(inputState);
+            }
+        }
 
 private:
 
-    void MoveNpc(InputState const & inputState)
+    void MoveOneNpc(InputState const & inputState)
     {
+        assert(mCurrentState.Npc.has_value());
         mGameController.MoveNpcTo(
-            mBeingMovedNpc->Id,
+            mCurrentState.Npc->Id,
             inputState.MousePosition,
-            mBeingMovedNpc->WorldOffset,
+            mCurrentState.Npc->WorldOffset,
             inputState.IsShiftKeyDown);
     }
 
@@ -4378,8 +4578,84 @@ private:
         }
     }
 
+    //
     // Our state
-    std::optional<PickedNpc> mBeingMovedNpc;
+    //
+
+    struct StateType
+    {
+        enum class StateKindType
+        {
+            Start,
+
+            MovingOne,
+
+            Selecting,
+            HaveMany,
+            MovingMany
+        };
+
+        StateKindType StateKind;
+
+        std::optional<PickedNpc> Npc;
+        std::optional<std::vector<NpcId>> Npcs;
+        std::optional<DisplayLogicalCoordinates> StartPosition;
+
+        StateType()
+            : StateKind(StateKindType::Start)
+        {}
+
+        void ResetToStart()
+        {
+            StateKind = StateKindType::Start;
+            Npc.reset();
+            Npcs.reset();
+            StartPosition.reset();
+        }
+
+        void ToMovingOne(PickedNpc const & npc)
+        {
+            StateKind = StateKindType::MovingOne;
+            assert(!Npc.has_value());
+            Npc = npc;
+
+            assert(!Npcs.has_value());
+            assert(!StartPosition.has_value());
+        }
+
+        void ToSelecting(DisplayLogicalCoordinates const & startSelectionPosition)
+        {
+            StateKind = StateKindType::Selecting;
+            assert(!StartPosition.has_value());
+            StartPosition = startSelectionPosition;
+
+            assert(!Npc.has_value());
+            assert(!Npcs.has_value());
+        }
+
+        void ToHaveMany(std::vector<NpcId> && npcs)
+        {
+            StateKind = StateKindType::HaveMany;
+            assert(!Npcs.has_value());
+            Npcs.emplace(std::move(npcs));
+
+            assert(!Npc.has_value());
+            assert(StartPosition.has_value());
+            StartPosition.reset();
+        }
+
+        void ToMovingMany(DisplayLogicalCoordinates const & startPosition)
+        {
+            StateKind = StateKindType::MovingMany;
+            assert(!StartPosition.has_value());
+            StartPosition = startPosition;
+
+            assert(!Npc.has_value());
+            assert(Npcs.has_value());
+        }
+    };
+
+    StateType mCurrentState;
 
     // The cursors
     wxImage const mDownCursorImage;

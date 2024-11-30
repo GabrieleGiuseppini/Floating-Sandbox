@@ -1106,6 +1106,14 @@ void World::BeginMoveNpc(
         doMoveWholeMesh);
 }
 
+void World::BeginMoveNpcs(std::vector<NpcId> const & ids)
+{
+    assert(mNpcs);
+    mNpcs->BeginMoveNpcs(
+        ids,
+        mCurrentSimulationTime);
+}
+
 void World::MoveNpcTo(
     NpcId id,
     vec2f const & position,
@@ -1118,6 +1126,16 @@ void World::MoveNpcTo(
         position,
         offset,
         doMoveWholeMesh);
+}
+
+void World::MoveNpcsBy(
+    std::vector<NpcId> const & ids,
+    vec2f const & stride)
+{
+    assert(mNpcs);
+    mNpcs->MoveNpcsBy(
+        ids,
+        stride);
 }
 
 void World::EndMoveNpc(NpcId id)
@@ -1203,6 +1221,14 @@ void World::HighlightNpcs(std::vector<NpcId> const & ids)
 {
     assert(mNpcs);
     mNpcs->HighlightNpcs(ids);
+}
+
+void World::HighlightNpcsInRect(
+    vec2f const & corner1,
+    vec2f const & corner2)
+{
+    assert(mNpcs);
+    mNpcs->HighlightNpcsInRect(corner1, corner2);
 }
 
 bool World::DestroyTriangle(GlobalElementId triangleId)

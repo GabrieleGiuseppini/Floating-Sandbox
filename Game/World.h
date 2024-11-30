@@ -399,11 +399,17 @@ public:
         int particleOrdinal,
         bool doMoveWholeMesh);
 
+    void BeginMoveNpcs(std::vector<NpcId> const & ids);
+
     void MoveNpcTo(
         NpcId id,
         vec2f const & position,
         vec2f const & offset,
         bool doMoveWholeMesh);
+
+    void MoveNpcsBy(
+        std::vector<NpcId> const & ids,
+        vec2f const & stride);
 
     void EndMoveNpc(NpcId id);
 
@@ -437,6 +443,10 @@ public:
     void SelectNpc(std::optional<NpcId> id);
 
     void HighlightNpcs(std::vector<NpcId> const & ids);
+
+    void HighlightNpcsInRect(
+        vec2f const & corner1,
+        vec2f const & corner2);
 
     bool DestroyTriangle(GlobalElementId triangleId);
 

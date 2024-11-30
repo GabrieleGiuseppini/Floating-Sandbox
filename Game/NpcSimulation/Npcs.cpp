@@ -1140,44 +1140,24 @@ void Npcs::BeginMoveNpc(
     float currentSimulationTime,
     bool doMoveWholeMesh)
 {
-    assert(mStateBuffer[id].has_value());
-    auto & npc = *mStateBuffer[id];
-
-    //
-    // Move NPC to topmost ship
-    //
-
-    TransferNpcToShip(npc, GetTopmostShipId());
-    npc.CurrentPlaneId = 0; // Irrelevant as long as it's in BeingPlaced
-
-    //
-    // Move NPC to BeingPlaced
-    //
-
-    auto const oldRegime = npc.CurrentRegime;
-
-    // All particles become free
-    for (auto & particle : npc.ParticleMesh.Particles)
-    {
-        particle.ConstrainedState.reset();
-    }
-
-    // Setup being placed state
-    npc.BeingPlacedState = StateType::BeingPlacedStateType({
+    InternalBeginMoveNpc(
+        id,
         particleOrdinal,
-        doMoveWholeMesh,
-        oldRegime
-    });
+        currentSimulationTime,
+        doMoveWholeMesh);
+}
 
-    // Change regime
-    npc.CurrentRegime = StateType::RegimeType::BeingPlaced;
-
-    if (npc.Kind == NpcKindType::Human)
+void Npcs::BeginMoveNpcs(
+    std::vector<NpcId> const & ids,
+    float currentSimulationTime)
+{
+    for (NpcId const id : ids)
     {
-        // Change behavior
-        npc.KindSpecificState.HumanNpcState.TransitionToState(
-            StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::BeingPlaced,
-            currentSimulationTime);
+        InternalBeginMoveNpc(
+            id,
+            0, // Primary
+            currentSimulationTime,
+            true);
     }
 }
 
@@ -1191,32 +1171,27 @@ void Npcs::MoveNpcTo(
     assert(mStateBuffer[id]->CurrentRegime == StateType::RegimeType::BeingPlaced);
     assert(mStateBuffer[id]->BeingPlacedState.has_value());
 
-    auto & npc = *mStateBuffer[id];
-
     // Calculate delta movement for anchor particle
-    ElementIndex anchorParticleIndex = npc.ParticleMesh.Particles[npc.BeingPlacedState->AnchorParticleOrdinal].ParticleIndex;
+    ElementIndex anchorParticleIndex = mStateBuffer[id]->ParticleMesh.Particles[mStateBuffer[id]->BeingPlacedState->AnchorParticleOrdinal].ParticleIndex;
     vec2f const deltaAnchorPosition = (position - offset) - mParticles.GetPosition(anchorParticleIndex);
 
-    // Calculate absolute velocity for this delta movement - we want it clamped
-    vec2f const targetAbsoluteVelocity = (deltaAnchorPosition / GameParameters::SimulationStepTimeDuration<float> * mGlobalDampingFactor).clamp_length_upper(GameParameters::MaxNpcToolMoveVelocityMagnitude);
+    InternalMoveNpcBy(
+        id,
+        deltaAnchorPosition,
+        doMoveWholeMesh);
+}
 
-    // Move particles
-    for (size_t p = 0; p < npc.ParticleMesh.Particles.size(); ++p)
+void Npcs::MoveNpcsBy(
+    std::vector<NpcId> const & ids,
+    vec2f const & stride)
+{
+    for (NpcId const id : ids)
     {
-        auto const particleIndex = npc.ParticleMesh.Particles[p].ParticleIndex;
-
-        if (doMoveWholeMesh || p == static_cast<size_t>(npc.BeingPlacedState->AnchorParticleOrdinal))
-        {
-            mParticles.SetPosition(particleIndex, mParticles.GetPosition(particleIndex) + deltaAnchorPosition);
-            mParticles.SetVelocity(particleIndex, targetAbsoluteVelocity);
-        }
-
-        // No worries about mesh-relative velocity
-        assert(!npc.ParticleMesh.Particles[p].ConstrainedState.has_value());
+        InternalMoveNpcBy(
+            id,
+            stride,
+            true);
     }
-
-    // Update state
-    npc.BeingPlacedState->DoMoveWholeMesh = doMoveWholeMesh;
 }
 
 void Npcs::EndMoveNpc(
@@ -1643,10 +1618,21 @@ void Npcs::HighlightNpcs(std::vector<NpcId> const & ids)
 {
     for (auto const id : ids)
     {
-        assert(mStateBuffer[id].has_value());
-
-        mStateBuffer[id]->IsHighlightedForRendering = true;
+        InternalHighlightNpc(id);
     }
+}
+
+void Npcs::HighlightNpcsInRect(
+    vec2f const & corner1,
+    vec2f const & corner2)
+{
+    VisitNpcsInQuad(
+        corner1,
+        corner2,
+        [&](NpcId id)
+        {
+            InternalHighlightNpc(id);
+        });
 }
 
 void Npcs::Announce()
@@ -2582,6 +2568,86 @@ void Npcs::VisitNpcsInQuad(
     }
 }
 
+void Npcs::InternalBeginMoveNpc(
+    NpcId id,
+    int particleOrdinal,
+    float currentSimulationTime,
+    bool doMoveWholeMesh)
+{
+    assert(mStateBuffer[id].has_value());
+    auto & npc = *mStateBuffer[id];
+
+    //
+    // Move NPC to topmost ship
+    //
+
+    TransferNpcToShip(npc, GetTopmostShipId());
+    npc.CurrentPlaneId = 0; // Irrelevant as long as it's in BeingPlaced
+
+    //
+    // Move NPC to BeingPlaced
+    //
+
+    auto const oldRegime = npc.CurrentRegime;
+
+    // All particles become free
+    for (auto & particle : npc.ParticleMesh.Particles)
+    {
+        particle.ConstrainedState.reset();
+    }
+
+    // Setup being placed state
+    npc.BeingPlacedState = StateType::BeingPlacedStateType({
+        particleOrdinal,
+        doMoveWholeMesh,
+        oldRegime
+        });
+
+    // Change regime
+    npc.CurrentRegime = StateType::RegimeType::BeingPlaced;
+
+    if (npc.Kind == NpcKindType::Human)
+    {
+        // Change behavior
+        npc.KindSpecificState.HumanNpcState.TransitionToState(
+            StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::BeingPlaced,
+            currentSimulationTime);
+    }
+}
+
+void Npcs::InternalMoveNpcBy(
+    NpcId id,
+    vec2f const & deltaAnchorPosition,
+    bool doMoveWholeMesh)
+{
+    assert(mStateBuffer[id].has_value());
+    assert(mStateBuffer[id]->CurrentRegime == StateType::RegimeType::BeingPlaced);
+    assert(mStateBuffer[id]->BeingPlacedState.has_value());
+
+    auto & npc = *mStateBuffer[id];
+
+    // Calculate absolute velocity for this delta movement - we want it clamped
+    vec2f const targetAbsoluteVelocity = (deltaAnchorPosition / GameParameters::SimulationStepTimeDuration<float> *mGlobalDampingFactor).clamp_length_upper(GameParameters::MaxNpcToolMoveVelocityMagnitude);
+
+    // Move particles
+    for (size_t p = 0; p < npc.ParticleMesh.Particles.size(); ++p)
+    {
+        auto const particleIndex = npc.ParticleMesh.Particles[p].ParticleIndex;
+
+        if (doMoveWholeMesh || p == static_cast<size_t>(npc.BeingPlacedState->AnchorParticleOrdinal))
+        {
+            mParticles.SetPosition(particleIndex, mParticles.GetPosition(particleIndex) + deltaAnchorPosition);
+            mParticles.SetVelocity(particleIndex, targetAbsoluteVelocity);
+        }
+
+        // No worries about mesh-relative velocity
+        assert(!npc.ParticleMesh.Particles[p].ConstrainedState.has_value());
+    }
+
+    // Update state
+    npc.BeingPlacedState->DoMoveWholeMesh = doMoveWholeMesh;
+}
+
 bool Npcs::InternalRemoveNpc(NpcId id)
 {
     assert(mStateBuffer[id].has_value());
@@ -2683,6 +2749,13 @@ void Npcs::InternalTurnaroundNpc(NpcId id)
             break;
         }
     }
+}
+
+void Npcs::InternalHighlightNpc(NpcId id)
+{
+    assert(mStateBuffer[id].has_value());
+
+    mStateBuffer[id]->IsHighlightedForRendering = true;
 }
 
 void Npcs::PublishCount()
@@ -4501,18 +4574,6 @@ void Npcs::UpdateNpcAnimation(
                 targetAngles.LeftLeg = 0.0f;
 
                 convergenceRate = 0.2f;
-
-                // TODO: nuke when we decide it's useless, now that we don't have non-mid-leg fraction
-                // Upper length fraction: when we transition from Rising (which has UpperLengthFraction < 1.0) to KnockedOut,
-                // changing UpperLengthFraction immediately to 0.0 causes a "kick" (because leg angles are 90 degrees at that moment);
-                // smooth that kick here
-                ////targetUpperLegLengthFraction = animationState.UpperLegLengthFraction + (1.0f - animationState.UpperLegLengthFraction) * 0.3f;
-
-                ////// But converge to one definitely
-                ////if (targetUpperLegLengthFraction >= 0.98f)
-                ////{
-                ////    targetUpperLegLengthFraction = 1.0f;
-                ////}
 
                 break;
             }

@@ -1424,6 +1424,12 @@ void GameController::BeginMoveNpc(
         doMoveWholeMesh || mIsPaused);
 }
 
+void GameController::BeginMoveNpcs(std::vector<NpcId> const & ids)
+{
+    assert(!!mWorld);
+    mWorld->BeginMoveNpcs(ids);
+}
+
 void GameController::MoveNpcTo(
     NpcId id,
     DisplayLogicalCoordinates const & screenCoordinates,
@@ -1438,6 +1444,18 @@ void GameController::MoveNpcTo(
         worldCoordinates,
         worldOffset,
         doMoveWholeMesh || mIsPaused);
+}
+
+void GameController::MoveNpcsBy(
+    std::vector<NpcId> const & ids,
+    DisplayLogicalSize const & screenOffset)
+{
+    vec2f const worldOffset = mRenderContext->ScreenOffsetToWorldOffset(screenOffset);
+
+    assert(!!mWorld);
+    mWorld->MoveNpcsBy(
+        ids,
+        worldOffset);
 }
 
 void GameController::EndMoveNpc(NpcId id)
@@ -1547,6 +1565,17 @@ void GameController::HighlightNpcs(std::vector<NpcId> const & ids)
 {
     assert(!!mWorld);
     mWorld->HighlightNpcs(ids);
+}
+
+void GameController::HighlightNpcsInRect(
+    DisplayLogicalCoordinates const & corner1ScreenCoordinates,
+    DisplayLogicalCoordinates const & corner2ScreenCoordinates)
+{
+    vec2f const corner1WorldCoordinates = mRenderContext->ScreenToWorld(corner1ScreenCoordinates);
+    vec2f const corner2WorldCoordinates = mRenderContext->ScreenToWorld(corner2ScreenCoordinates);
+
+    assert(!!mWorld);
+    mWorld->HighlightNpcsInRect(corner1WorldCoordinates, corner2WorldCoordinates);
 }
 
 std::optional<GlobalElementId> GameController::GetNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const

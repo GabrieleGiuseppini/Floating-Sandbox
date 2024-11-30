@@ -151,7 +151,9 @@ struct IGameController
     virtual std::optional<PickedNpc> ProbeNpcAt(DisplayLogicalCoordinates const & screenCoordinates) const = 0;
     virtual std::vector<NpcId> ProbeNpcsInRect(DisplayLogicalCoordinates const & corner1ScreenCoordinates, DisplayLogicalCoordinates const & corner2ScreenCoordinates) const = 0;
     virtual void BeginMoveNpc(NpcId id, int particleOrdinal, bool doMoveWholeMesh) = 0;
+    virtual void BeginMoveNpcs(std::vector<NpcId> const & ids) = 0;
     virtual void MoveNpcTo(NpcId id, DisplayLogicalCoordinates const & screenCoordinates, vec2f const & worldOffset, bool doMoveWholeMesh) = 0;
+    virtual void MoveNpcsBy(std::vector<NpcId> const & ids, DisplayLogicalSize const & screenOffset) = 0;
     virtual void EndMoveNpc(NpcId id) = 0;
     virtual void CompleteNewNpc(NpcId id) = 0;
     virtual void RemoveNpc(NpcId id) = 0;
@@ -164,6 +166,7 @@ struct IGameController
     virtual void SelectNpc(std::optional<NpcId> id) = 0;
     virtual void SelectNextNpc() = 0;
     virtual void HighlightNpcs(std::vector<NpcId> const & ids) = 0;
+    virtual void HighlightNpcsInRect(DisplayLogicalCoordinates const & corner1ScreenCoordinates, DisplayLogicalCoordinates const & corner2ScreenCoordinates) = 0;
     virtual std::optional<GlobalElementId> GetNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const = 0;
     virtual void QueryNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const = 0;
 

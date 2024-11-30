@@ -604,18 +604,18 @@ MainFrame::MainFrame(
 
             // Move
             {
-                mMoveNpcMenuItem = ADD_TOOL_MENUITEM(_("Move NPC"), wxS("\t3"), "move_npc_icon", ToolType::MoveNpc, true);
+                mMoveNpcMenuItem = ADD_TOOL_MENUITEM(_("Move NPC/NPCs"), wxS("\t3"), "move_npc_icon", ToolType::MoveNpc, true);
                 ADD_PLAIN_ACCELERATOR_KEY('3', mMoveNpcMenuItem);
             }
 
             // Remove
             {
-                mRemoveNpcMenuItem = ADD_TOOL_MENUITEM(_("Remove NPC"), wxS("\tDEL"), "remove_npc_icon", ToolType::RemoveNpc, true);
+                mRemoveNpcMenuItem = ADD_TOOL_MENUITEM(_("Remove NPC/NPCs"), wxS("\tDEL"), "remove_npc_icon", ToolType::RemoveNpc, true);
             }
 
             // Turnaround
             {
-                mTurnaroundNpcMenuItem = ADD_TOOL_MENUITEM(_("Turnaround NPC"), wxS(""), "turnaround_npc_icon", ToolType::TurnaroundNpc, true);
+                mTurnaroundNpcMenuItem = ADD_TOOL_MENUITEM(_("Turnaround NPC/NPCs"), wxS(""), "turnaround_npc_icon", ToolType::TurnaroundNpc, true);
             }
 
             // Follow

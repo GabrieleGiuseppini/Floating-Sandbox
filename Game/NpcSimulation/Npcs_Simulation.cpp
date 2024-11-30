@@ -2157,8 +2157,14 @@ void Npcs::UpdateNpcParticle_BeingPlaced(
     if (npc.BeingPlacedState->DoMoveWholeMesh || npcParticleOrdinal == npc.BeingPlacedState->AnchorParticleOrdinal)
     {
         //
-        // Particle is moved independently and fixed - nothing to do
+        // Particle is moved independently and it's fixed
         //
+
+        // Just remove the inertial velocity we've imparted at its last move,
+        // given that we haven't used it
+        particles.SetVelocity(
+            npc.ParticleMesh.Particles[npcParticleOrdinal].ParticleIndex,
+            vec2f::zero());
     }
     else
     {

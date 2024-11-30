@@ -270,7 +270,9 @@ public:
     std::optional<PickedNpc> ProbeNpcAt(DisplayLogicalCoordinates const & screenCoordinates) const override;
     std::vector<NpcId> ProbeNpcsInRect(DisplayLogicalCoordinates const & corner1ScreenCoordinates, DisplayLogicalCoordinates const & corner2ScreenCoordinates) const override;
     void BeginMoveNpc(NpcId id, int particleOrdinal, bool doMoveWholeMesh) override;
+    void BeginMoveNpcs(std::vector<NpcId> const & ids) override;
     void MoveNpcTo(NpcId id, DisplayLogicalCoordinates const & screenCoordinates, vec2f const & worldOffset, bool doMoveWholeMesh) override;
+    void MoveNpcsBy(std::vector<NpcId> const & ids, DisplayLogicalSize const & screenOffset) override;
     void EndMoveNpc(NpcId id) override;
     void CompleteNewNpc(NpcId id) override;
     void RemoveNpc(NpcId id) override;
@@ -283,6 +285,7 @@ public:
     void SelectNpc(std::optional<NpcId> id) override;
     void SelectNextNpc() override;
     void HighlightNpcs(std::vector<NpcId> const & ids) override;
+    void HighlightNpcsInRect(DisplayLogicalCoordinates const & corner1ScreenCoordinates, DisplayLogicalCoordinates const & corner2ScreenCoordinates) override;
     std::optional<GlobalElementId> GetNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const override;
     void QueryNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const override;
 

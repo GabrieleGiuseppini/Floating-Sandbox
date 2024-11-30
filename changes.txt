@@ -1,4 +1,5 @@
 1.19.1
+- The Move, Remove, and Turnaround NPC tools may now be used on *groups* of NPCs
 - Npcs on a ship are now lit by the ship's lamps
 - Npcs run away from running water
 

@@ -888,11 +888,19 @@ public:
 		float currentSimulationTime,
 		bool doMoveWholeMesh);
 
+	void BeginMoveNpcs(
+		std::vector<NpcId> const & ids,
+		float currentSimulationTime);
+
 	void MoveNpcTo(
 		NpcId id,
 		vec2f const & position,
 		vec2f const & offset,
 		bool doMoveWholeMesh);
+
+	void MoveNpcsBy(
+		std::vector<NpcId> const & ids,
+		vec2f const & stride);
 
 	void EndMoveNpc(
 		NpcId id,
@@ -931,6 +939,10 @@ public:
 	void SelectNpc(std::optional<NpcId> id);
 
 	void HighlightNpcs(std::vector<NpcId> const & ids);
+
+	void HighlightNpcsInRect(
+		vec2f const & corner1,
+		vec2f const & corner2);
 
 	void Announce();
 
@@ -1105,6 +1117,17 @@ private:
 		vec2f const & corner2,
 		std::function<void(NpcId)> action) const;
 
+	void InternalBeginMoveNpc(
+		NpcId id,
+		int particleOrdinal,
+		float currentSimulationTime,
+		bool doMoveWholeMesh);
+
+	void InternalMoveNpcBy(
+		NpcId id,
+		vec2f const & deltaAnchorPosition,
+		bool doMoveWholeMesh);
+
 	bool InternalRemoveNpc(NpcId id);
 
 	void InternalEndMoveNpc(
@@ -1116,6 +1139,8 @@ private:
 		float currentSimulationTime);
 
 	void InternalTurnaroundNpc(NpcId id);
+
+	void InternalHighlightNpc(NpcId id);
 
 	void PublishCount();
 
