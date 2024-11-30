@@ -12,8 +12,10 @@
 		- Invite BumBumBaby to beta server
 
 	+ Make branch (1.19.0.next)
-	- Bump up minor
-	- Reduce fish size
+	+ Bump up minor
+	+ Reduce fish size
+
+	- See guy crash/repair tool
 
 	- Redo texture notifications - test size 64+32
 		- All 5 or 6 textures

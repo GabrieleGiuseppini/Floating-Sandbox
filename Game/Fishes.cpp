@@ -311,7 +311,7 @@ void Fishes::UpdateNumberOfFishes(
                 auto & newShoal = mFishShoals.emplace_back(
                     species,
                     static_cast<ElementIndex>(f), // startFishIndex
-                    (species.WorldSize.x >= species.WorldSize.y ? species.WorldSize.x : species.WorldSize.y) * mCurrentFishSizeMultiplier);
+                    std::max(species.WorldSize.x, species.WorldSize.y) * mCurrentFishSizeMultiplier);
 
                 assert(freeShoalIndex == mFishShoals.size() - 1);
 
@@ -379,7 +379,7 @@ void Fishes::UpdateNumberOfFishes(
                 personalitySeed,
                 initialPosition,
                 targetPosition,
-                MakeCuisingVelocity((targetPosition - initialPosition).normalise(), species, personalitySeed, gameParameters),
+                MakeCruisingVelocity((targetPosition - initialPosition).normalise(), species, personalitySeed, gameParameters),
                 headOffset,
                 GameRandomEngine::GetInstance().GenerateUniformReal(0.0f, 2.0f * Pi<float>), // initial progress phase
                 TextureFrameId<Render::FishTextureGroups>(Render::FishTextureGroups::Fish, species.RenderTextureFrameIndices[renderTextureFrameIndex]));
@@ -481,6 +481,9 @@ void Fishes::UpdateDynamics(
             //
 
             float const elapsedSteeringDurationFraction = (currentSimulationTime - fish.CruiseSteeringState->SimulationTimeStart) / fish.CruiseSteeringState->SimulationTimeDuration;
+
+            if (f == 0)
+                LogMessage("TODOTEST: ", fish.CruiseSteeringState->SimulationTimeDuration);
 
             // Check whether we should stop steering
             if (elapsedSteeringDurationFraction >= 1.0f)
@@ -779,7 +782,7 @@ void Fishes::UpdateDynamics(
                 visibleWorld);
 
             // Calculate new target velocity
-            fish.TargetVelocity = MakeCuisingVelocity((fish.TargetPosition - fish.CurrentPosition).normalise(), fishSpecies, fish.PersonalitySeed, gameParameters);
+            fish.TargetVelocity = MakeCruisingVelocity((fish.TargetPosition - fish.CurrentPosition).normalise(), fishSpecies, fish.PersonalitySeed, gameParameters);
 
             // Setup steering, depending on whether we're turning or not
             if (fish.TargetVelocity.x * fish.CurrentVelocity.x < 0.0f
@@ -814,7 +817,7 @@ void Fishes::UpdateDynamics(
             // Continue to current target
 
             // Calculate new target velocity
-            fish.TargetVelocity = MakeCuisingVelocity((fish.TargetPosition - fish.CurrentPosition).normalise(), fishSpecies, fish.PersonalitySeed, gameParameters);
+            fish.TargetVelocity = MakeCruisingVelocity((fish.TargetPosition - fish.CurrentPosition).normalise(), fishSpecies, fish.PersonalitySeed, gameParameters);
 
             // Setup steering, depending on whether we're turning or not
             if (fish.TargetVelocity.x * fish.CurrentVelocity.x < 0.0f
@@ -863,7 +866,7 @@ void Fishes::UpdateDynamics(
             vec2f const bounceDirection = vec2f(fish.TargetVelocity.x, -fish.TargetVelocity.y).normalise();
 
             // Calculate new target velocity - along bounce direction
-            fish.TargetVelocity = MakeCuisingVelocity(bounceDirection, fishSpecies, fish.PersonalitySeed, gameParameters);
+            fish.TargetVelocity = MakeCruisingVelocity(bounceDirection, fishSpecies, fish.PersonalitySeed, gameParameters);
 
             // Converge direction change at this rate
             fish.CurrentDirectionSmoothingConvergenceRate = std::max(
@@ -1051,7 +1054,7 @@ void Fishes::UpdateShoaling(
                                         visibleWorld);
 
                                     // Change target velocity to get to target position
-                                    fish.TargetVelocity = MakeCuisingVelocity(neighborDirection, fishShoal.Species, fish.PersonalitySeed, gameParameters);
+                                    fish.TargetVelocity = MakeCruisingVelocity(neighborDirection, fishShoal.Species, fish.PersonalitySeed, gameParameters);
 
                                     // Perform a cruise steering
                                     fish.CruiseSteeringState.emplace(
@@ -1102,7 +1105,7 @@ void Fishes::UpdateShoaling(
                                 visibleWorld);
 
                             // Change target velocity to get to target position
-                            fish.TargetVelocity = MakeCuisingVelocity(fishToLeadDirection, fishShoal.Species, fish.PersonalitySeed, gameParameters);
+                            fish.TargetVelocity = MakeCruisingVelocity(fishToLeadDirection, fishShoal.Species, fish.PersonalitySeed, gameParameters);
 
                             // Perform a cruise steering
                             fish.CruiseSteeringState.emplace(
@@ -1215,7 +1218,7 @@ void Fishes::EnactDisturbance(
                 }
 
                 // Calculate new target velocity - away from disturbance point, and will be panic velocity
-                fish.TargetVelocity = MakeCuisingVelocity(panicDirection, species, fish.PersonalitySeed, gameParameters);
+                fish.TargetVelocity = MakeCruisingVelocity(panicDirection, species, fish.PersonalitySeed, gameParameters);
 
                 // Converge directions really fast
                 fish.CurrentDirectionSmoothingConvergenceRate = std::max(
@@ -1285,7 +1288,7 @@ void Fishes::EnactAttraction(
                 // Don't change target position, we'll return to it when panic is over
 
                 // Calculate new target velocity - towards food, and will be panic velocity
-                fish.TargetVelocity = MakeCuisingVelocity(panicDirection, species, fish.PersonalitySeed, gameParameters);
+                fish.TargetVelocity = MakeCruisingVelocity(panicDirection, species, fish.PersonalitySeed, gameParameters);
 
                 // Converge directions at this rate
                 fish.CurrentDirectionSmoothingConvergenceRate = std::max(
@@ -1325,7 +1328,7 @@ void Fishes::EnactWidespreadPanic(GameParameters const & gameParameters)
             // Don't change target position, we'll return to it when panic is over
 
             // Calculate new target velocity in this direction - and will be panic velocity
-            fish.TargetVelocity = MakeCuisingVelocity(panicDirection, species, fish.PersonalitySeed, gameParameters);
+            fish.TargetVelocity = MakeCruisingVelocity(panicDirection, species, fish.PersonalitySeed, gameParameters);
 
             // Converge directions at this rate
             fish.CurrentDirectionSmoothingConvergenceRate = std::max(
@@ -1407,7 +1410,7 @@ vec2f Fishes::FindNewCruisingTargetPosition(
         PositionYVariance); // y variance
 }
 
-vec2f Fishes::MakeCuisingVelocity(
+vec2f Fishes::MakeCruisingVelocity(
     vec2f const & direction,
     FishSpecies const & species,
     float personalitySeed,

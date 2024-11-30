@@ -263,11 +263,31 @@ Next release:
 	+ Change menu labels - with '/' ?
 	+ Changelist
 
-- See guy crash/repair tool
-
 - Backport FS to Barylab
 
-- TODO: do half-triangle planning work here
+- Prelim work for walk planning:		
+	- 1. Commoditize finding alternatives at end of triangle
+		! Used by: panic checks, forward-looking walk planning, are walk planning
+		- Extract vertex navigation w/candidates finding into own function
+			- Args, among others:
+				- xDir: translated into CCW or CW
+				- Shortcut to stop search if at least one candidate is found
+					- Activated at forward-looking walk planning (* below), where we are interested in just knowing whether we can proceed or not
+			- Return type: TODO: candidates, etc.
+	- 2: "next triangle" check when planning:
+		! Detect when we _positively_ move from the "back" half edge to the "front" half edge - wrt direction of walk
+		- @ UpdateBehavior while walking (or at WalkingUpdate):
+			- WalkingBehaviorState contains last opt<<tri index, bcoords>, edge ordinal>
+					- Also contains "times checked in this triangle" to detect stall and to go into "Walking_Undecided" state
+				- Init'd to None at each transition into Walking
+				- Used to detect change of "half edge"
+					- nullopt doesn't count - if nullopt, just initialize it
+					- To calc quickly if in "last half edge", use inline helper: is last half edge == (bcoord along edge - 0.5) * face_x_dir > 0.0
+					- We invoke it both (old and new) to detect change
+			- When change detected:
+				- do <X>
+			- Update state
+
 
 - Mechanism for dynamic removal of NPCs, plus human removal and furniture explosion
 	! Will be useful for explosive NPCs (to make explosive furniture disappear) (*) and for human removal animation (*)
@@ -346,29 +366,6 @@ Next release:
 			- Can still have many named "global" panics, e.g. SinkingPanic
 
 	
-	- Prelim work:		
-		- 1. Commoditize finding alternatives at end of triangle
-			! Used by: panic checks, forward-looking walk planning, are walk planning
-			- Extract vertex navigation w/candidates finding into own function
-				- Args, among others:
-					- xDir: translated into CCW or CW
-					- Shortcut to stop search if at least one candidate is found
-						- Activated at forward-looking walk planning (* below), where we are interested in just knowing whether we can proceed or not
-				- Return type: TODO: candidates, etc.
-		- 2: "next triangle" check when planning:
-			! Detect when we _positively_ move from the "back" half edge to the "front" half edge - wrt direction of walk
-			- @ UpdateBehavior while walking (or at WalkingUpdate):
-				- WalkingBehaviorState contains last opt<<tri index, bcoords>, edge ordinal>
-						- Also contains "times checked in this triangle" to detect stall and to go into "Walking_Undecided" state
-					- Init'd to None at each transition into Walking
-					- Used to detect change of "half edge"
-						- nullopt doesn't count - if nullopt, just initialize it
-						- To calc quickly if in "last half edge", use inline helper: is last half edge == (bcoord along edge - 0.5) * face_x_dir > 0.0
-						- We invoke it both (old and new) to detect change
-				- When change detected:
-					- do <X>
-				- Update state
-
 	- Forward-looking walk planning:
 		! Goal: while walking, do not proceed towards a wall or a hole
 		- Requires 1. and 2. @ Prelim work above
@@ -381,7 +378,8 @@ Next release:
 					! Also flip when under panic, that will make for funny fall-on-back
 
 	- Initial walk direction: check which direction is best
-		- Otherwise just choose
+		- Using commoditized helper
+		- If no clear choice, just choose randomly
 
 	- When ship is repaired, all NPCs do a little dance
 		- Sync is simulation clock (so all are in sync)
