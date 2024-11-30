@@ -1816,18 +1816,24 @@ void NotificationRenderContext::GenerateTextureNotificationVertices()
             mGenericLinearTextureAtlasMetadata.GetFrameMetadata(textureNotification.FrameId);
 
         ImageSize const & frameSize = frame.FrameMetadata.Size;
+        float const frameNdcWidth = static_cast<float>(frameSize.width) * mScreenToNdcX;
+        float const frameNdcHeight = static_cast<float>(frameSize.height) * mScreenToNdcY;
+
+        float const marginNdcWidth = MarginScreen * mScreenToNdcX;
+        float const marginNdcHeight = MarginScreen * mScreenToNdcY;
+        float const marginNdcHeightTop = MarginTopScreen * mScreenToNdcY;
 
         vec2f quadTopLeft( // Start with offset
-            textureNotification.ScreenOffset.x * static_cast<float>(frameSize.width) * mScreenToNdcX,
-            -textureNotification.ScreenOffset.y * static_cast<float>(frameSize.height) * mScreenToNdcY);
+            textureNotification.ScreenOffset.x * frameNdcWidth,
+            -textureNotification.ScreenOffset.y * frameNdcHeight);
 
         switch (textureNotification.Anchor)
         {
             case AnchorPositionType::BottomLeft:
             {
                 quadTopLeft += vec2f(
-                    -1.f + MarginScreen * mScreenToNdcX,
-                    -1.f + (MarginScreen + static_cast<float>(frameSize.height)) * mScreenToNdcY);
+                    -1.f + marginNdcWidth,
+                    -1.f + marginNdcHeight + frameNdcHeight);
 
                 break;
             }
@@ -1835,8 +1841,8 @@ void NotificationRenderContext::GenerateTextureNotificationVertices()
             case AnchorPositionType::BottomRight:
             {
                 quadTopLeft += vec2f(
-                    1.f - (MarginScreen + static_cast<float>(frameSize.width)) * mScreenToNdcX,
-                    -1.f + (MarginScreen + static_cast<float>(frameSize.height)) * mScreenToNdcY);
+                    1.f - marginNdcWidth - frameNdcWidth,
+                    -1.f + marginNdcHeight + frameNdcHeight);
 
                 break;
             }
@@ -1844,8 +1850,8 @@ void NotificationRenderContext::GenerateTextureNotificationVertices()
             case AnchorPositionType::TopLeft:
             {
                 quadTopLeft += vec2f(
-                    -1.f + MarginScreen * mScreenToNdcX,
-                    1.f - MarginTopScreen * mScreenToNdcY);
+                    -1.f + marginNdcWidth,
+                    1.f - marginNdcHeightTop);
 
                 break;
             }
@@ -1853,16 +1859,16 @@ void NotificationRenderContext::GenerateTextureNotificationVertices()
             case AnchorPositionType::TopRight:
             {
                 quadTopLeft += vec2f(
-                    1.f - (MarginScreen + static_cast<float>(frameSize.width)) * mScreenToNdcX,
-                    1.f - MarginTopScreen * mScreenToNdcY);
+                    1.f - marginNdcWidth - frameNdcWidth,
+                    1.f - marginNdcHeightTop);
 
                 break;
             }
         }
 
-        vec2f quadBottomRight = quadTopLeft + vec2f(
-            static_cast<float>(frameSize.width) * mScreenToNdcX,
-            -static_cast<float>(frameSize.height) * mScreenToNdcY);
+        vec2f quadBottomRight =
+            quadTopLeft
+            + vec2f(frameNdcWidth, -frameNdcHeight);
 
         // Append vertices - two triangles
 

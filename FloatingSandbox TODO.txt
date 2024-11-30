@@ -17,9 +17,9 @@
 
 	- See guy crash/repair tool
 
-	- Redo texture notifications - test size 64+32
-		- All 5 or 6 textures
-		- Make sure code takes sizes from files
+	+ Redo texture notifications - test size 64+32
+		+ All 5 textures
+		+ Make sure code takes sizes from files
 
 	- New materials (*)
 
