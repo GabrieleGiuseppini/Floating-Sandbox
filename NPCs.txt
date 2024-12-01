@@ -317,7 +317,8 @@ Next release:
 	- BeingRemoved regime: to keep the NPC "out of the loop" for the rest of the simulation step
 			- Since we are here: see if it makes sense to make helper to switch regime - even if only invokes OnMayBeRegimeChanged
 		- No physics, no human behavior update (other than for specific variants of removal itself, e.g. updating orientations and progress for animation, and/or alpha)
-		- Can't be picked when in this regime
+			- Participates just in UpdateBehavior (H+F), UpdateAnimation, and scavenging
+		- Can't be picked (probed, neitehr of the 2 ways) when in this regime, hance: no move, remove, turnaround, ... - not noticed by tools
 		- Physics update: skipped when in this regime (kinda like BeingPlaced, but for whole NPC this time)
 	- Set of NpcId's to remove, scavenged at end of Update()
 		- assert they are all in BeingRemoved regime
@@ -338,6 +339,8 @@ Next release:
 				- TODO: need to figure out:
 					- Shader: use current NPC shader with toggled enrichments, or shader on top?
 						- Shader on top has potential Z issues?
+		- For completeness, also Furniture removal follows same path
+			- Sets state to BeingRemoved, which immediately inserts into set of NpcIds to remove
 
 	- Furniture explosion:
 		- Triggered by: 
@@ -346,6 +349,7 @@ Next release:
 				- At that call site, also inject explosion state machine @ Ship, should take care of physics _and_ rendering!
 			- Combustion update
 				- Honor material's properties
+			- Waterness (for sodium)
 		- Regime <- BeingRemoved
 		- FurnitureState <- Exploding
 				- Requires new furniture state

@@ -28,6 +28,7 @@
 		+ changelist
 
 	- See if can make a map of pointindex=>instance ID in ShipFactory instead of that vector
+		- Though it's a double map?
 
 	+ Redo texture notifications - test size 64+32
 		+ All 5 textures
