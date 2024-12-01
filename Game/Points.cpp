@@ -622,15 +622,19 @@ void Points::Restore(ElementIndex pointElementIndex)
     mLeakingCompositeBuffer[pointElementIndex].LeakingSources.StructuralLeak =
         mFactoryIsStructurallyLeakingBuffer[pointElementIndex] ? 1.0f : 0.0f;
 
-    // Remove point from set of burning points, in case it was burning
+    // Reset combustion state, in case it was not neutral
     if (mCombustionStateBuffer[pointElementIndex].State != CombustionState::StateType::NotBurning)
     {
-        auto pointIt = std::find(
-            mBurningPoints.cbegin(),
-            mBurningPoints.cend(),
-            pointElementIndex);
-        assert(pointIt != mBurningPoints.cend());
-        mBurningPoints.erase(pointIt);
+        // Remove point from set of burning points, in case it was burning
+        if (mCombustionStateBuffer[pointElementIndex].State != CombustionState::StateType::Exploded)
+        {
+            auto pointIt = std::find(
+                mBurningPoints.cbegin(),
+                mBurningPoints.cend(),
+                pointElementIndex);
+            assert(pointIt != mBurningPoints.cend());
+            mBurningPoints.erase(pointIt);
+        }
 
         // Restore combustion state
         mCombustionStateBuffer[pointElementIndex].Reset();
@@ -1426,6 +1430,8 @@ void Points::UpdateCombustionHighFrequency(
     {
         for (auto stoppedBurningPoint : mStoppedBurningPoints)
         {
+            assert(mCombustionStateBuffer[stoppedBurningPoint].State == CombustionState::StateType::NotBurning);
+
             auto burningPointIt = std::find(
                 mBurningPoints.cbegin(),
                 mBurningPoints.cend(),

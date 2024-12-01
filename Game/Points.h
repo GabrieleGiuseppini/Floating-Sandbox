@@ -238,6 +238,7 @@ private:
             Extinguishing_Consumed,
             Extinguishing_SmotheredRain,
             Extinguishing_SmotheredWater,
+
             Exploded
         };
 
