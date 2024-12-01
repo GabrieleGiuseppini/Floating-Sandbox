@@ -252,6 +252,7 @@ private:
 					Constrained_Rising, // Tries to stand up (appliying torque)
 					Constrained_Equilibrium, // Stands up; continues to adjust alignment with torque
 					Constrained_Walking, // Walks; continues to adjust alignment with torque
+					Constrained_WalkingUndecided, // Small pause while walking
 
 					Constrained_InWater, // Does nothing (like Constrained_Aerial), but waits to swim
 					Constrained_Swimming_Style1, // Swims
@@ -361,13 +362,30 @@ private:
 						float CurrentFlipDecision; // [0.0f, 1.0f]
 						float TargetFlipDecision; // [0.0f, 1.0f]
 
+						struct LastHalfTriangleEdgeType
+						{
+							ElementIndex TriangleElementIndex;
+							int EdgeOrdinal;
+							float EdgeBCoord;
+							size_t NumberOfTimesHasFlipped;
+						};
+						std::optional<LastHalfTriangleEdgeType> LastHalfTriangleEdge;
+
 						void Reset()
 						{
 							CurrentWalkMagnitude = 0.0f;
 							CurrentFlipDecision = 0.0f;
 							TargetFlipDecision = 0.0f;
+							LastHalfTriangleEdge.reset();
 						}
 					} Constrained_Walking;
+
+					struct Constrained_WalkingUndecidedType
+					{
+						void Reset()
+						{
+						}
+					} Constrained_WalkingUndecided;
 
 					struct Constrained_InWaterType
 					{
@@ -451,6 +469,9 @@ private:
 							ProgressToLeaving = 0.0f;
 						}
 					} ConstrainedOrFree_Smashed;
+
+					BehaviorStateType()
+					{}
 
 				} CurrentBehaviorState;
 
@@ -608,6 +629,12 @@ private:
 						case BehaviorType::Constrained_Walking:
 						{
 							CurrentBehaviorState.Constrained_Walking.Reset();
+							break;
+						}
+
+						case BehaviorType::Constrained_WalkingUndecided:
+						{
+							CurrentBehaviorState.Constrained_WalkingUndecided.Reset();
 							break;
 						}
 
@@ -1459,13 +1486,54 @@ private:
 	static inline NavigateVertexOutcome NavigateVertex(
 		StateType const & npc,
 		int npcParticleOrdinal,
-		std::optional<TriangleAndEdge> const & walkedEdge,
+		std::optional<TriangleAndEdge> const & edgeBeingWalked,
 		int vertexOrdinal,
 		vec2f const & trajectory,
 		vec2f const & trajectoryEndAbsolutePosition,
 		bcoords3f trajectoryEndBarycentricCoords,
 		Ship const & homeShip,
 		NpcParticles const & particles);
+
+	struct ProbeWalkResult
+	{
+		struct AbsoluteTriangleBCoordsAndEdge
+		{
+			AbsoluteTriangleBCoords TriangleBCoords;
+			int EdgeOrdinal;
+
+			AbsoluteTriangleBCoordsAndEdge() = default;
+
+			AbsoluteTriangleBCoordsAndEdge(
+				AbsoluteTriangleBCoords const & triangleBCoords,
+				int edgeOrdinal)
+				: TriangleBCoords(triangleBCoords)
+				, EdgeOrdinal(edgeOrdinal)
+			{}
+		};
+
+		FixedSizeVector<AbsoluteTriangleBCoordsAndEdge, GameParameters::MaxSpringsPerPoint> FloorCandidatesEasySlope;
+		FixedSizeVector<AbsoluteTriangleBCoordsAndEdge, GameParameters::MaxSpringsPerPoint> FloorCandidatesHardSlope;
+		std::optional<AbsoluteTriangleBCoordsAndEdge> FirstBounceableFloor;
+		std::optional<AbsoluteTriangleBCoords> FirstTriangleInterior;
+	};
+
+	static inline ProbeWalkResult ProbeWalkAhead(
+		StateType const & npc,
+		int npcParticleOrdinal,
+		AbsoluteTriangleBCoords currentBCoords,
+		TriangleAndEdge const & edgeBeingWalked, // Might not match current bcoords'; used for floor nature probing
+		int vertexOrdinal,
+		vec2f const & trajectoryEndAbsolutePosition,
+		bcoords3f trajectoryEndBarycentricCoords,
+		Ship const & homeShip,
+		NpcParticles const & particles,
+		bool isForProbingOnly);
+
+	bool CanWalkInDirection(
+		StateType const & npc,
+		TriangleAndEdge const & edgeBeingWalked,
+		float walkDirectionX,
+		Ship const & homeShip);
 
 	void BounceConstrainedNpcParticle(
 		StateType & npc,
@@ -1765,6 +1833,11 @@ private:
 		return false;
 	}
 
+	static bool IsInLastHalfOfEdge(float edgeBCoord, float faceDirectionX)
+	{
+		return (edgeBCoord - 0.5f) * faceDirectionX > 0.0f;
+	}
+
 	static vec2f CalculateSpringVector(ElementIndex primaryParticleIndex, ElementIndex secondaryParticleIndex, NpcParticles const & particles)
 	{
 		return particles.GetPosition(primaryParticleIndex) - particles.GetPosition(secondaryParticleIndex);
@@ -1813,6 +1886,11 @@ private:
 		vec2f const & bounceEdgeNormal,
 		float currentSimulationTime) const;
 
+	std::optional<float> DecideWalkingDirection(
+		StateType const & npc,
+		StateType::NpcParticleStateType const & primaryParticleState,
+		Ship const & homeShip);
+
 	using DoImmediate = StrongTypedBool<struct _DoImmediate>;
 
 	void FlipHumanWalk(
@@ -1840,6 +1918,14 @@ private:
 			* (1.0f + std::min(humanState.ResultantPanicLevel, 1.0f) * 3.0f),
 			GameParameters::MaxHumanNpcTotalWalkingSpeedAdjustment); // Absolute cap
 	}
+
+private:
+
+	//
+	// Constants
+	//
+
+	static float constexpr WalkingUndecidedDuration = 3.0f;
 
 private:
 

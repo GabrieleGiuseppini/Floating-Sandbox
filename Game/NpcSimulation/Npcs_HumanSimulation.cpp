@@ -623,6 +623,7 @@ void Npcs::UpdateHuman(
 		case HumanNpcStateType::BehaviorType::Constrained_Rising:
 		case HumanNpcStateType::BehaviorType::Constrained_Equilibrium:
 		case HumanNpcStateType::BehaviorType::Constrained_Walking:
+		case HumanNpcStateType::BehaviorType::Constrained_WalkingUndecided:
 		{
 			if (isFree)
 			{
@@ -636,7 +637,9 @@ void Npcs::UpdateHuman(
 
 			if (mCurrentSimulationSequenceNumber.IsStepOf(npc.Id % LowFrequencyUpdatePeriod, LowFrequencyUpdatePeriod))
 			{
-				if (humanState.CurrentBehavior == HumanNpcStateType::BehaviorType::Constrained_Equilibrium || humanState.CurrentBehavior == HumanNpcStateType::BehaviorType::Constrained_Walking)
+				if (humanState.CurrentBehavior == HumanNpcStateType::BehaviorType::Constrained_Equilibrium
+					|| humanState.CurrentBehavior == HumanNpcStateType::BehaviorType::Constrained_Walking
+					|| humanState.CurrentBehavior == HumanNpcStateType::BehaviorType::Constrained_WalkingUndecided)
 				{
 					// Check electrification
 
@@ -681,47 +684,54 @@ void Npcs::UpdateHuman(
 				}
 			}
 
-			// Check fire panic
-
-			if (npc.CombustionState.has_value())
+			if (humanState.CurrentBehavior == HumanNpcStateType::BehaviorType::Constrained_Walking)
 			{
-				if (humanState.OnFirePanicLevel < 0.6f)
+				// Check fire panic
+
+				if (npc.CombustionState.has_value())
 				{
-					// Time to flip
-					humanState.CurrentFaceDirectionX *= -1.0f;
-				}
-
-				// Panic
-				humanState.OnFirePanicLevel = 1.0f;
-
-				// Continue
-			}
-
-			// Check incoming water panic
-
-			if (humanState.BombProximityPanicLevel < 0.6f
-				&& humanState.OnFirePanicLevel < 0.6f) // Just make check subordinate to other panics, don't want to flip headlessly
-			{
-				vec2f const & waterMeshVelocity = mParticles.GetMeshWaterVelocity(primaryParticleState.ParticleIndex);
-				if (std::fabsf(waterMeshVelocity.x) > 0.1f)
-				{
-					// Water velocity passes test
-
-					if (waterMeshVelocity.x * humanState.CurrentFaceDirectionX <= 0.0f
-						&& humanState.IncomingWaterProximityPanicLevel < 0.6f)
+					if (humanState.OnFirePanicLevel < 0.6f)
 					{
 						// Time to flip
+						// Note: not via helper as we don't want to lose walking magnitude
 						humanState.CurrentFaceDirectionX *= -1.0f;
 					}
 
 					// Panic
-					humanState.IncomingWaterProximityPanicLevel = 1.0f;
+					humanState.OnFirePanicLevel = 1.0f;
 
 					// Continue
+				}
+
+				// Check incoming water panic
+
+				if (humanState.BombProximityPanicLevel < 0.6f
+					&& humanState.OnFirePanicLevel < 0.6f) // Just make check subordinate to other panics, don't want to flip headlessly
+				{
+					vec2f const & waterMeshVelocity = mParticles.GetMeshWaterVelocity(primaryParticleState.ParticleIndex);
+					if (std::fabsf(waterMeshVelocity.x) > 0.1f)
+					{
+						// Water velocity passes test
+
+						if (waterMeshVelocity.x * humanState.CurrentFaceDirectionX <= 0.0f
+							&& humanState.IncomingWaterProximityPanicLevel < 0.6f)
+						{
+							// Time to flip
+							// Note: not via helper as we don't want to lose walking magnitude
+							humanState.CurrentFaceDirectionX *= -1.0f;
+						}
+
+						// Panic
+						humanState.IncomingWaterProximityPanicLevel = 1.0f;
+
+						// Continue
+					}
 				}
 			}
 
 			// Check progress to walking
+
+			bool doTransitionToWalking = false;
 
 			bool const areFeetOnFloor = primaryParticleState.ConstrainedState.has_value() && primaryParticleState.ConstrainedState->CurrentVirtualFloor.has_value();
 			if (humanState.CurrentBehavior == HumanNpcStateType::BehaviorType::Constrained_Equilibrium)
@@ -742,25 +752,67 @@ void Npcs::UpdateHuman(
 					if (IsAtTarget(humanState.CurrentBehaviorState.Constrained_Equilibrium.ProgressToWalking, 1.0f))
 					{
 						// Transition
-
-						humanState.TransitionToState(HumanNpcStateType::BehaviorType::Constrained_Walking, currentSimulationTime);
-
-						// Face: 0/rnd
-						humanState.CurrentFaceOrientation = 0.0f;
-						humanState.CurrentFaceDirectionX = GameRandomEngine::GetInstance().GenerateUniformBoolean(0.5f) ? +1.0f : -1.0f;
-
-						// Keep torque
-
-#ifdef BARYLAB_PROBING
-						if (npc.Id == mCurrentlySelectedNpc)
-						{
-							mGameEventHandler->OnHumanNpcBehaviorChanged("Constrained_Walking");
-						}
-#endif
-
-						break;
+						doTransitionToWalking = true;
 					}
 				}
+			}
+			else if (humanState.CurrentBehavior == HumanNpcStateType::BehaviorType::Constrained_WalkingUndecided)
+			{
+				if (areFeetOnFloor)
+				{
+					float const elapsed = currentSimulationTime - humanState.CurrentStateTransitionSimulationTimestamp;
+					if (elapsed >= WalkingUndecidedDuration)
+					{
+						// Transition
+						doTransitionToWalking = true;
+					}
+				}
+			}
+
+			if (doTransitionToWalking)
+			{
+				// See if we can choose a direction
+				auto const direction = DecideWalkingDirection(npc, primaryParticleState, homeShip);
+				if (!direction.has_value())
+				{
+					// Transition to undecided
+
+					humanState.TransitionToState(HumanNpcStateType::BehaviorType::Constrained_WalkingUndecided, currentSimulationTime);
+
+					// Face: 1.0/0.0
+					humanState.CurrentFaceOrientation = 1.0f;
+					humanState.CurrentFaceDirectionX = 0.0f;
+
+					// Keep torque
+
+#ifdef BARYLAB_PROBING
+					if (npc.Id == mCurrentlySelectedNpc)
+					{
+						mGameEventHandler->OnHumanNpcBehaviorChanged("Constrained_WalkingUndecided");
+					}
+#endif
+				}
+				else
+				{
+					// Transition to walking
+
+					humanState.TransitionToState(HumanNpcStateType::BehaviorType::Constrained_Walking, currentSimulationTime);
+
+					// Face: 0/chosen
+					humanState.CurrentFaceOrientation = 0.0f;
+					humanState.CurrentFaceDirectionX = *direction;
+
+					// Keep torque
+
+#ifdef BARYLAB_PROBING
+					if (npc.Id == mCurrentlySelectedNpc)
+					{
+						mGameEventHandler->OnHumanNpcBehaviorChanged("Constrained_Walking");
+					}
+#endif
+				}
+
+				break;
 			}
 
 			//
@@ -953,13 +1005,116 @@ void Npcs::UpdateHuman(
 			{
 				// Nop
 			}
-			else
+			else if (humanState.CurrentBehavior == HumanNpcStateType::BehaviorType::Constrained_Walking)
 			{
-				assert(humanState.CurrentBehavior == HumanNpcStateType::BehaviorType::Constrained_Walking);
+				auto & walkingState = humanState.CurrentBehaviorState.Constrained_Walking;
 
 				if (areFeetOnFloor) // Note: no need to silence walk as we don't apply walk displacement in inertial (i.e. not-on-edge) case
 				{
+					//
+					// Good to continue walking!
+					//
+
+					// Forward-looking: since it might be expensive, we only do it when we cross the
+					// currently-walked triangle edge into its last half
+
+					assert(primaryParticleState.ConstrainedState.has_value());
+					auto const & primaryParticleConstrainedState = *primaryParticleState.ConstrainedState;
+					int const walkedEdgeOrdinal = primaryParticleConstrainedState.CurrentVirtualFloor->EdgeOrdinal;
+
+					if (primaryParticleConstrainedState.CurrentVirtualFloor.has_value()
+						&& primaryParticleConstrainedState.CurrentVirtualFloor->TriangleElementIndex == primaryParticleConstrainedState.CurrentBCoords.TriangleElementIndex) // For safety
+					{
+						if (!walkingState.LastHalfTriangleEdge.has_value()
+							|| primaryParticleConstrainedState.CurrentVirtualFloor->TriangleElementIndex != walkingState.LastHalfTriangleEdge->TriangleElementIndex
+							|| walkedEdgeOrdinal != walkingState.LastHalfTriangleEdge->EdgeOrdinal)
+						{
+							// We have changed edge
+							walkingState.LastHalfTriangleEdge = {
+								primaryParticleConstrainedState.CurrentVirtualFloor->TriangleElementIndex,
+								walkedEdgeOrdinal,
+								primaryParticleConstrainedState.CurrentBCoords.BCoords[walkedEdgeOrdinal],
+								0 };
+						}
+						else
+						{
+							// We were last in this triangle and on this edge
+
+							// Check whether we have crossed the last half
+							float const faceDirectionX = npc.KindSpecificState.HumanNpcState.CurrentFaceDirectionX;
+							bool const hasCrossed =
+								!IsInLastHalfOfEdge(walkingState.LastHalfTriangleEdge->EdgeBCoord, faceDirectionX)
+								&& IsInLastHalfOfEdge(primaryParticleConstrainedState.CurrentBCoords.BCoords[walkedEdgeOrdinal], faceDirectionX);
+
+							// Update state
+							walkingState.LastHalfTriangleEdge->EdgeBCoord = primaryParticleConstrainedState.CurrentBCoords.BCoords[walkedEdgeOrdinal];
+
+							if (hasCrossed)
+							{
+								//
+								// Just crossed
+								//
+
+								LogNpcDebug("Crossed half-edge");
+
+								//
+								// Plan ahead
+								//
+
+								if (!CanWalkInDirection(npc, *primaryParticleConstrainedState.CurrentVirtualFloor, faceDirectionX, homeShip))
+								{
+									LogNpcDebug("Cannot continue walking along face direction");
+
+									//
+									// Flip
+									//
+									// We'll figure out whether we're stuck also in other direction after we cross the half-triangle again
+									// enough times
+									//
+									// Also flip when under panic, that will make for funny fall-on-back
+									//
+
+									// Check if we've flipped too many times
+									if (walkingState.LastHalfTriangleEdge->NumberOfTimesHasFlipped >= 2)
+									{
+										LogNpcDebug("Crossed half-edge too many times - transitioning to WalkingUndecided")
+
+										// Transition to undecided
+
+										humanState.TransitionToState(HumanNpcStateType::BehaviorType::Constrained_WalkingUndecided, currentSimulationTime);
+
+										// Face: 1.0/0
+										humanState.CurrentFaceOrientation = 1.0f;
+										humanState.CurrentFaceDirectionX = 0.0f;
+
+										// Keep torque
+
+#ifdef BARYLAB_PROBING
+										if (npc.Id == mCurrentlySelectedNpc)
+										{
+											mGameEventHandler->OnHumanNpcBehaviorChanged("Constrained_WalkingUndecided");
+										}
+#endif
+
+										break;
+									}
+
+									FlipHumanWalk(humanState, StrongTypedTrue<_DoImmediate>);
+
+									//
+									// Update number of times we've flipped
+									//
+
+									++walkingState.LastHalfTriangleEdge->NumberOfTimesHasFlipped;
+								}
+							}
+						}
+					}
+
+					//
 					// Impart walk displacement & run walking state machine
+					//
+
 					RunWalkingHumanStateMachine(
 						humanState,
 						primaryParticleState,
@@ -973,6 +1128,12 @@ void Npcs::UpdateHuman(
 				else
 					publishStateQuantity = std::make_tuple("EquilibriumTermination", std::to_string(humanState.CurrentEquilibriumSoftTerminationDecision));
 #endif
+			}
+			else
+			{
+				assert(humanState.CurrentBehavior == HumanNpcStateType::BehaviorType::Constrained_WalkingUndecided);
+
+				// Nop
 			}
 
 			break;
@@ -1711,6 +1872,41 @@ void Npcs::OnHumanImpact(
 			break;
 		}
 	}
+}
+
+std::optional<float> Npcs::DecideWalkingDirection(
+	StateType const & npc,
+	StateType::NpcParticleStateType const & primaryParticleState,
+	Ship const & homeShip)
+{
+	FixedSizeVector<float, 2> candidates;
+
+	assert(primaryParticleState.ConstrainedState.has_value());
+	if (!primaryParticleState.ConstrainedState->CurrentVirtualFloor.has_value())
+	{
+		// Not much we can do, just choose randomly
+		candidates.emplace_back(1.0f);
+		candidates.emplace_back(-1.0f);
+	}
+	else
+	{
+		if (CanWalkInDirection(npc, *primaryParticleState.ConstrainedState->CurrentVirtualFloor, 1.0f, homeShip))
+		{
+			candidates.emplace_back(1.0f);
+		}
+
+		if (CanWalkInDirection(npc, *primaryParticleState.ConstrainedState->CurrentVirtualFloor, -1.0f, homeShip))
+		{
+			candidates.emplace_back(-1.0f);
+		}
+	}
+
+	if (candidates.empty())
+	{
+		return std::nullopt;
+	}
+
+	return candidates[GameRandomEngine::GetInstance().Choose(candidates.size())];
 }
 
 void Npcs::FlipHumanWalk(

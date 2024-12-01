@@ -263,31 +263,54 @@ Next release:
 	+ Change menu labels - with '/' ?
 	+ Changelist
 
-- Backport FS to Barylab
++ Backport FS to Barylab
++ Profile BaryLab
+	Upd: 3.4
+	RndUpl: 2.4
 
-- Prelim work for walk planning:		
-	- 1. Commoditize finding alternatives at end of triangle
++ Prelim work for walk planning:		
+	+ 1. Commoditize finding alternatives at end of triangle
 		! Used by: panic checks, forward-looking walk planning, are walk planning
-		- Extract vertex navigation w/candidates finding into own function
-			- Args, among others:
-				- xDir: translated into CCW or CW
-				- Shortcut to stop search if at least one candidate is found
-					- Activated at forward-looking walk planning (* below), where we are interested in just knowing whether we can proceed or not
-			- Return type: TODO: candidates, etc.
-	- 2: "next triangle" check when planning:
+		+ Extract vertex navigation w/candidates finding into own function
+			+ static inline "ProbeWalkAhead"(.) -> ProbeWalkResult				
+			+ Args, among others:
+				+ Shortcut to stop search if at least one candidate is found
+					+ Stop as soon as a candidate is found
+					! Activated at forward-looking walk planning (* below), where we are interested in just knowing whether we can proceed or not					
+			+ Return type: candidates, etc.
+			+ Add "futurework" for hard floor type (doors)
+		+ Test
+			+ Can still choose
+	+ 2: "next triangle" check when planning:
 		! Detect when we _positively_ move from the "back" half edge to the "front" half edge - wrt direction of walk
-		- @ UpdateBehavior while walking (or at WalkingUpdate):
-			- WalkingBehaviorState contains last opt<<tri index, bcoords>, edge ordinal>
-					- Also contains "times checked in this triangle" to detect stall and to go into "Walking_Undecided" state
-				- Init'd to None at each transition into Walking
-				- Used to detect change of "half edge"
-					- nullopt doesn't count - if nullopt, just initialize it
-					- To calc quickly if in "last half edge", use inline helper: is last half edge == (bcoord along edge - 0.5) * face_x_dir > 0.0
-					- We invoke it both (old and new) to detect change
-			- When change detected:
-				- do <X>
-			- Update state
+		+ @ UpdateBehavior while walking (or at WalkingUpdate):
+			+ WalkingBehaviorState contains last opt<<tri index, bcoords -- OR JUST THE FLOAT>, edge ordinal>
+					+ Also contains "times crossed in this triangle" to detect stall and to go into "Walking_Undecided" state
+				+ Init'd to None at each transition into Walking
+			! Used to detect change of "half edge"
+				! nullopt doesn't count - if nullopt, just initialize it
+				- To calc quickly if in "last half edge", use inline helper: is last half edge == (bcoord along edge - 0.5) * face_x_dir > 0.0
+				- We invoke it both (old and new) to detect change
+			+ Change detection impl:
+				+ ...
+				+ If we have a current virtual edge:
+					+ If last is not set, or it's a different triangle or a different edge:
+						+ Set it
+							+ Zero last->number_of_times_crossed_in_tri
+					+ Else:
+						! We were last in this triangle and on this edge
+						+ See if crossed half-side
+						+ Update last  (only what changed, bcoords right?)
+						+ If crossed:
+							+ See if too many times - if so, transition and leave
+							+ Do<X>
+							+ last->number_of_times_crossed_in_tri++						
+				+ ...WalkState progress...
 
+	+ To test, do "do not fall into trap/wall" work below
+		+ Test very skewy ship
+
++ Port back to FS
 
 - Mechanism for dynamic removal of NPCs, plus human removal and furniture explosion
 	! Will be useful for explosive NPCs (to make explosive furniture disappear) (*) and for human removal animation (*)
@@ -317,8 +340,12 @@ Next release:
 						- Shader on top has potential Z issues?
 
 	- Furniture explosion:
-		- Triggered by: impact
-			- At that call site, also inject explosion state machine @ Ship, should take care of physics _and_ rendering!
+		- Triggered by: 
+			- Impact
+				- Honor material's properties
+				- At that call site, also inject explosion state machine @ Ship, should take care of physics _and_ rendering!
+			- Combustion update
+				- Honor material's properties
 		- Regime <- BeingRemoved
 		- FurnitureState <- Exploding
 				- Requires new furniture state
@@ -328,6 +355,8 @@ Next release:
 				- Requires BehaviorUpdate() for furniture
 			- Animation: alpha
 				- Requires UpdateAnimation() for furniture
+		- Make Sodium furniture
+			- Make sure we can inject explosion type as well
 
 	- Cleanups:
 		- TODO: what to do with InternalRemove/OnRemoval/whatever
@@ -366,20 +395,37 @@ Next release:
 			- Can still have many named "global" panics, e.g. SinkingPanic
 
 	
-	- Forward-looking walk planning:
+	+ Forward-looking walk planning:
 		! Goal: while walking, do not proceed towards a wall or a hole
-		- Requires 1. and 2. @ Prelim work above
-		- @ Walking behavior (* above): when "half-triangle" change detected (<X> above):
-			- Find if a next floor exists in cur triangle along walking direction
-				- Via helper wrapping commoditized helper, which will also be reused for initial walk direction choice (see below)
-			- Can not proceed if doesn't find any alternatives
-				- Flip
+		+ Requires 1. and 2. @ Prelim work above
+		+ @ Walking behavior (* above): when "half-triangle" change detected (<X> above):
+			+ Find if a next floor exists in cur triangle along walking direction
+				+ Via helper wrapping commoditized helper, which will also be reused for initial walk direction choice (see below)
+					+ Convert "face direction x" into trajectoryEndXXX via elongation of current edge by two
+			+ Can not proceed if doesn't find any alternatives
+				+ Flip
 					! We'll figure out whether we're stuck also in other direction after we cross the half-triangle again, and via the "times checked in this triangle" state member
 					! Also flip when under panic, that will make for funny fall-on-back
+		+ Undecided behavior
+			+ Code
+			+ Transition to it
+			+ Behavior
+				+ Merged with Rising/Eq/Walking
+			+ Animation
+				- 0.4 of duration: arms rising up
+				- 0.4 of duration: arms falling down
+				- 0.2 remaining: nothing
+			+ Verify we do walk a tiny bit when on thin floor
 
-	- Initial walk direction: check which direction is best
-		- Using commoditized helper
-		- If no clear choice, just choose randomly
+	+ Initial walk direction: check which direction is best
+		+ Using commoditized helper
+		+ If no way on either side: transition to Undecided
+			+ See if fixes ugly vibration
+		+ If yes on both sides: choose randomly
+		+ If only one: use that 
+		+ See if it fixes random falling from thin floor
+		+ Cleanup #DEBUG's
+		+ Profile
 
 	- When ship is repaired, all NPCs do a little dance
 		- Sync is simulation clock (so all are in sync)
@@ -408,6 +454,8 @@ Next release:
 	- Furniture over time, should sink, not forever it will float, and then rot.
 
 - Doors:
+	- TODO: we need a way to stop floor candidate search (@ProbeWalk) when encountering such a floor/door
+		- New HardFloor type?
 	- New "DoorHinge" electrical element (with both ON/OFF types), controls floorness of springs (and thus triangle edges) among neighboring pairs of them
 		- Triangle edge/floors: split "factory" vs. "actual"
 			- Iff we end up having H1,V1,S2,etc. floor types, as resetting door would need to know that

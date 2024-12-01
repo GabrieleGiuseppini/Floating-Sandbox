@@ -1,7 +1,9 @@
 1.19.1
+- Improved Human NPC behaviors:
+	- NPCs now "look ahead" when walking and avoid falling into holes
+	- NPCs run away from running water
 - The Move, Remove, and Turnaround NPC tools may now be used on *groups* of NPCs
-- Npcs on a ship are now lit by the ship's lamps
-- Npcs run away from running water
+- NPCs on a ship are now lit by the ship's lamps
 
 1.19.0
 - Initial implementation of NPCs!

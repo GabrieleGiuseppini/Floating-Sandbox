@@ -15,7 +15,18 @@
 	+ Bump up minor
 	+ Reduce fish size
 
-	- See guy crash/repair tool
+	= See guy crash/repair tool
+		X Play
+		+ Give it RelWithDebInfo/PDB
+		- I load any ship, like for example Astyu's Ise, Agano or Akitsu Maru. I blow a hole in the hull through a simulated torpedo hit or magazine explosion, usually done with the RC bombs or heating tool.
+		  Then i use the repair tool. If held long enough, the game crashes.
+		  This happened even in 18.0.
+                  It happens in Astyu's ships.
+                  Specifically those with compartments and magazine cordite modelled in.
+                  I sent the .dmp file.
+
+	= See other guy's bug on github (elec panel)
+		- Try his ship
 
 	+ Redo texture notifications - test size 64+32
 		+ All 5 textures

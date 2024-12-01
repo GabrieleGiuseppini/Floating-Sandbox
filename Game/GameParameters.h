@@ -490,7 +490,8 @@ struct GameParameters
 
     static float constexpr MaxNpcToolMoveVelocityMagnitude = 10.0f; // We cap velocity gained with move tool to prevent crazy spinning
 
-    static float constexpr MaxHumanNpcWalkSinSlope = 0.87f; // Max sin of slope we're willing to climb up: ___*\___<W---  (60.5 degrees)
+    static float constexpr MaxHumanNpcWalkSinSlopeUp = 0.87f; // Max sin of slope we're willing to climb up: ___*\___<W---  (60.5 degrees)
+    static float constexpr MinHumanNpcWalkSinSlopeDown = -0.98f; // Min sin of slope we're willing to climb down: ________<W---
 
     struct HumanNpcGeometry
     {
