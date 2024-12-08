@@ -2857,7 +2857,7 @@ bool Npcs::InternalCommonNpcDeletion(NpcId npcId)
     }
 
     //
-    // Remove from burning set
+    // Remove from burning set, if there
     //
 
     auto burningNpcIt = std::find(mShips[shipId]->BurningNpcs.begin(), mShips[shipId]->BurningNpcs.end(), npcId);
