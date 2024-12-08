@@ -316,24 +316,100 @@ void Npcs::OnShipRemoved(ShipId shipId)
     // Handle destruction of all NPCs of this NPC ship
     //
 
-    bool doPublishHumanNpcStats = false;
-
     for (auto const npcId : mShips[s]->Npcs)
     {
         assert(mStateBuffer[npcId].has_value());
 
-        if (InternalCommonNpcDeletion(npcId))
+        if (mStateBuffer[npcId]->CurrentRegime == StateType::RegimeType::BeingRemoved)
         {
-            doPublishHumanNpcStats = true;
+            //
+            // Remove from deferred NPCs
+            //
+
+            auto deferredRemovalNpcIt = std::find(mDeferredRemovalNpcs.begin(), mDeferredRemovalNpcs.end(), npcId);
+            assert(deferredRemovalNpcIt != mDeferredRemovalNpcs.end());
+            mDeferredRemovalNpcs.erase(deferredRemovalNpcIt);
+
+            // Not burning
+            assert(std::find(mShips[s]->BurningNpcs.cbegin(), mShips[s]->BurningNpcs.cend(), npcId) == mShips[s]->BurningNpcs.cend());
+
+            // Not selected
+            assert(mCurrentlySelectedNpc != npcId);
         }
+        else
+        {
+            // Not in deferred NPCs
+            assert(std::find(mDeferredRemovalNpcs.cbegin(), mDeferredRemovalNpcs.cend(), npcId) == mDeferredRemovalNpcs.cend());
 
-        // Nuke NPC
-        mStateBuffer[npcId].reset();
-    }
+            //
+            // Update general and human stats
+            //
 
-    if (doPublishHumanNpcStats)
-    {
-        PublishHumanNpcStats();
+            bool humanNpcStatsUpdated = false;
+            switch (mStateBuffer[npcId]->Kind)
+            {
+                case NpcKindType::Furniture:
+                {
+                    --(mShips[s]->FurnitureNpcCount);
+
+                    break;
+                }
+
+                case NpcKindType::Human:
+                {
+                    --(mShips[s]->HumanNpcCount);
+
+                    if (mStateBuffer[npcId]->KindSpecificState.HumanNpcState.Role == NpcHumanRoleType::Captain)
+                    {
+                        assert(mShips[s]->HumanNpcCaptainCount > 0);
+                        --(mShips[s]->HumanNpcCaptainCount);
+                    }
+
+                    if (mStateBuffer[npcId]->CurrentRegime == StateType::RegimeType::Constrained)
+                    {
+                        assert(mConstrainedRegimeHumanNpcCount > 0);
+                        --mConstrainedRegimeHumanNpcCount;
+                        humanNpcStatsUpdated = true;
+                    }
+                    else if (mStateBuffer[npcId]->CurrentRegime == StateType::RegimeType::Free)
+                    {
+                        assert(mFreeRegimeHumanNpcCount > 0);
+                        --mFreeRegimeHumanNpcCount;
+                        humanNpcStatsUpdated = true;
+                    }
+
+                    break;
+                }
+            }
+
+            PublishCount();
+
+            if (humanNpcStatsUpdated)
+            {
+                PublishHumanNpcStats();
+            }
+
+            //
+            // Remove from burning set, if there
+            //
+
+            auto burningNpcIt = std::find(mShips[s]->BurningNpcs.begin(), mShips[s]->BurningNpcs.end(), npcId);
+            if (burningNpcIt != mShips[s]->BurningNpcs.end())
+            {
+                mShips[s]->BurningNpcs.erase(burningNpcIt);
+            }
+
+            //
+            // Deselect if selected
+            //
+
+            if (mCurrentlySelectedNpc == npcId)
+            {
+                mCurrentlySelectedNpc.reset();
+
+                // No need to publish anything, GameController will figure out @ Update()
+            }
+        }
     }
 
     //
@@ -701,10 +777,11 @@ std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> Npcs::BeginPl
     mShips[shipId]->Npcs.push_back(npcId);
 
     //
-    // Update stats
+    // Update general stats
     //
 
     ++(mShips[shipId]->FurnitureNpcCount);
+
     PublishCount();
 
     return { PickedNpc(npcId, ParticleOrdinal, vec2f::zero()), NpcCreationFailureReasonType::Success };
@@ -919,14 +996,16 @@ std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> Npcs::BeginPl
     mShips[shipId]->Npcs.push_back(npcId);
 
     //
-    // Update stats
+    // Update general stats
     //
 
     ++(mShips[shipId]->HumanNpcCount);
+
     if (mNpcDatabase.GetHumanRole(*subKind) == NpcHumanRoleType::Captain)
     {
         ++(mShips[shipId]->HumanNpcCaptainCount);
     }
+
     PublishCount();
 
     return { PickedNpc(npcId, ParticleOrdinal, vec2f::zero()), NpcCreationFailureReasonType::Success };
@@ -1244,7 +1323,69 @@ void Npcs::RemoveNpcsInRect(
 
 void Npcs::AbortNewNpc(NpcId id)
 {
-    InternalDeleteNpcImmediate(id);
+    assert(mStateBuffer[id].has_value());
+    auto & npc = *mStateBuffer[id];
+
+    assert(mShips[mStateBuffer[id]->CurrentShipId].has_value());
+    auto & ship = *mShips[mStateBuffer[id]->CurrentShipId];
+
+    // Not being removed
+    assert(npc.CurrentRegime != StateType::RegimeType::BeingRemoved);
+    assert(std::find(mDeferredRemovalNpcs.cbegin(), mDeferredRemovalNpcs.cend(), id) == mDeferredRemovalNpcs.cend());
+
+    // Not burning
+    assert(std::find(ship.BurningNpcs.cbegin(), ship.BurningNpcs.cend(), id) == ship.BurningNpcs.cend());
+
+    // Not selected
+    assert(mCurrentlySelectedNpc != id);
+
+    //
+    // Update general stats
+    //
+
+    switch (npc.Kind)
+    {
+        case NpcKindType::Furniture:
+        {
+            --(ship.FurnitureNpcCount);
+
+            break;
+        }
+
+        case NpcKindType::Human:
+        {
+            --(ship.HumanNpcCount);
+
+            if (npc.KindSpecificState.HumanNpcState.Role == NpcHumanRoleType::Captain)
+            {
+                assert(ship.HumanNpcCaptainCount > 0);
+                --(ship.HumanNpcCaptainCount);
+            }
+
+            break;
+        }
+    }
+
+    PublishCount();
+
+    //
+    // Remove from ship
+    //
+
+    auto it = std::find(
+        ship.Npcs.begin(),
+        ship.Npcs.end(),
+        id);
+
+    assert(it != ship.Npcs.end());
+
+    ship.Npcs.erase(it);
+
+    //
+    // Reset NPC
+    //
+
+    mStateBuffer[id].reset();
 }
 
 std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> Npcs::AddNpcGroup(
@@ -1643,7 +1784,7 @@ void Npcs::HighlightNpcsInRect(
         [&](NpcId id)
         {
             assert(mStateBuffer[id].has_value());
-            if (mStateBuffer[id]->CurrentRegime != StateType::RegimeType::BeingRemoved)
+            if (mStateBuffer[id]->CurrentRegime != StateType::RegimeType::BeingRemoved) // BeingRemoved NPCs are invisible
             {
                 InternalHighlightNpc(id);
             }
@@ -2603,6 +2744,7 @@ void Npcs::InternalBeginMoveNpc(
 {
     assert(mStateBuffer[id].has_value());
     assert(mStateBuffer[id]->CurrentRegime != StateType::RegimeType::BeingRemoved);
+    assert(std::find(mDeferredRemovalNpcs.cbegin(), mDeferredRemovalNpcs.cend(), id) == mDeferredRemovalNpcs.cend());
 
     auto & npc = *mStateBuffer[id];
 
@@ -2682,22 +2824,11 @@ void Npcs::InternalBeginNpcRemoval(
     NpcId id,
     float currentSimulationTime)
 {
-    assert(mStateBuffer[id].has_value());
-    assert(mStateBuffer[id]->CurrentRegime != StateType::RegimeType::BeingRemoved);
-
-    auto & npc = *mStateBuffer[id];
-
-    //
-    // Move NPC to BeingRemoved
-    //
-
-    auto const oldRegime = npc.CurrentRegime;
-
-    // Change regime
-    npc.CurrentRegime = StateType::RegimeType::BeingRemoved;
-    OnMayBeNpcRegimeChanged(oldRegime, npc);
+    InternalBeginDeferredDeletion(id, currentSimulationTime);
 
     // Change behavior
+    assert(mStateBuffer[id].has_value());
+    auto & npc = *mStateBuffer[id];
     switch (npc.Kind)
     {
         case NpcKindType::Furniture:
@@ -2724,6 +2855,79 @@ void Npcs::InternalBeginNpcRemoval(
 
             break;
         }
+    }
+}
+
+void Npcs::InternalBeginDeferredDeletion(
+    NpcId id,
+    float /*currentSimulationTime*/)
+{
+    assert(mStateBuffer[id].has_value());
+    assert(mStateBuffer[id]->CurrentRegime != StateType::RegimeType::BeingRemoved);
+    assert(std::find(mDeferredRemovalNpcs.cbegin(), mDeferredRemovalNpcs.cend(), id) == mDeferredRemovalNpcs.cend());
+
+    auto & npc = *mStateBuffer[id];
+
+    //
+    // Move NPC to BeingRemoved
+    //
+
+    auto const oldRegime = npc.CurrentRegime;
+
+    // Change regime
+    npc.CurrentRegime = StateType::RegimeType::BeingRemoved;
+    OnMayBeNpcRegimeChanged(oldRegime, npc);
+
+    //
+    // Update general stats
+    //
+
+    auto const shipId = npc.CurrentShipId;
+
+    switch (mStateBuffer[id]->Kind)
+    {
+        case NpcKindType::Furniture:
+        {
+            --(mShips[shipId]->FurnitureNpcCount);
+
+            break;
+        }
+
+        case NpcKindType::Human:
+        {
+            --(mShips[shipId]->HumanNpcCount);
+
+            if (mStateBuffer[shipId]->KindSpecificState.HumanNpcState.Role == NpcHumanRoleType::Captain)
+            {
+                assert(mShips[shipId]->HumanNpcCaptainCount > 0);
+                --(mShips[shipId]->HumanNpcCaptainCount);
+            }
+
+            break;
+        }
+    }
+
+    PublishCount();
+
+    //
+    // Remove from burning set, if there
+    //
+
+    auto burningNpcIt = std::find(mShips[shipId]->BurningNpcs.begin(), mShips[shipId]->BurningNpcs.end(), id);
+    if (burningNpcIt != mShips[shipId]->BurningNpcs.end())
+    {
+        mShips[shipId]->BurningNpcs.erase(burningNpcIt);
+    }
+
+    //
+    // Deselect, if selected
+    //
+
+    if (mCurrentlySelectedNpc == id)
+    {
+        mCurrentlySelectedNpc.reset();
+
+        // No need to publish anything, GameController will figure out @ Update()
     }
 }
 
@@ -2757,137 +2961,6 @@ void Npcs::InternalCompleteNewNpc(
     float currentSimulationTime)
 {
     InternalEndMoveNpc(id, currentSimulationTime);
-}
-
-void Npcs::InternalDeleteNpcImmediate(NpcId id)
-{
-    //
-    // Internal bookkeeping, including ship, and stats publishing
-    //
-
-    bool const doPublishHumanNpcStats = InternalDeleteNpc(id);
-
-    if (doPublishHumanNpcStats)
-    {
-        PublishHumanNpcStats();
-    }
-}
-
-bool Npcs::InternalDeleteNpc(NpcId npcId)
-{
-    //
-    // Internal bookkeeping, including ship
-    //
-
-    bool const humanStatsUpdated = InternalCommonNpcDeletion(npcId);
-    PublishCount();
-
-    //
-    // Update ship indices
-    //
-
-    assert(mShips[mStateBuffer[npcId]->CurrentShipId].has_value());
-
-    auto it = std::find(
-        mShips[mStateBuffer[npcId]->CurrentShipId]->Npcs.begin(),
-        mShips[mStateBuffer[npcId]->CurrentShipId]->Npcs.end(),
-        npcId);
-
-    assert(it != mShips[mStateBuffer[npcId]->CurrentShipId]->Npcs.end());
-
-    mShips[mStateBuffer[npcId]->CurrentShipId]->Npcs.erase(it);
-
-    //
-    // Get rid of NPC
-    //
-
-    mStateBuffer[npcId].reset();
-
-    return humanStatsUpdated;
-}
-
-bool Npcs::InternalCommonNpcDeletion(NpcId npcId)
-{
-    //
-    // Internal bookkeeping, excluding ship (invoked also when removing ship altogether)
-    //
-
-    auto const shipId = mStateBuffer[npcId]->CurrentShipId;
-
-    //
-    // Maintain stats
-    //
-
-    bool humanNpcStatsUpdated = false;
-
-    switch (mStateBuffer[npcId]->Kind)
-    {
-        case NpcKindType::Furniture:
-        {
-            --(mShips[shipId]->FurnitureNpcCount);
-
-            break;
-        }
-
-        case NpcKindType::Human:
-        {
-            --(mShips[shipId]->HumanNpcCount);
-
-            if (mStateBuffer[npcId]->KindSpecificState.HumanNpcState.Role == NpcHumanRoleType::Captain)
-            {
-                assert(mShips[shipId]->HumanNpcCaptainCount > 0);
-                --(mShips[shipId]->HumanNpcCaptainCount);
-            }
-
-            if (mStateBuffer[npcId]->CurrentRegime == StateType::RegimeType::Constrained)
-            {
-                assert(mConstrainedRegimeHumanNpcCount > 0);
-                --mConstrainedRegimeHumanNpcCount;
-                humanNpcStatsUpdated = true;
-            }
-            else if (mStateBuffer[npcId]->CurrentRegime == StateType::RegimeType::Free)
-            {
-                assert(mFreeRegimeHumanNpcCount > 0);
-                --mFreeRegimeHumanNpcCount;
-                humanNpcStatsUpdated = true;
-            }
-
-            break;
-        }
-    }
-
-    //
-    // Remove from burning set, if there
-    //
-
-    auto burningNpcIt = std::find(mShips[shipId]->BurningNpcs.begin(), mShips[shipId]->BurningNpcs.end(), npcId);
-    if (burningNpcIt != mShips[shipId]->BurningNpcs.end())
-    {
-        mShips[shipId]->BurningNpcs.erase(burningNpcIt);
-    }
-
-    //
-    // Remove from deferred removal NPCs, if there
-    //
-
-    auto deferredRemovalNpcIt = std::find(mDeferredRemovalNpcs.begin(), mDeferredRemovalNpcs.end(), npcId);
-    if (deferredRemovalNpcIt != mDeferredRemovalNpcs.end())
-    {
-        mDeferredRemovalNpcs.erase(deferredRemovalNpcIt);
-    }
-
-    //
-    // Deselect if selected
-    //
-
-    if (mCurrentlySelectedNpc == npcId)
-    {
-        mCurrentlySelectedNpc.reset();
-
-        // No need to publish anything, GameController will figure out @ Update()
-    }
-
-    return humanNpcStatsUpdated;
 }
 
 void Npcs::InternalTurnaroundNpc(NpcId id)

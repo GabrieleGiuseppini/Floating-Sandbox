@@ -424,21 +424,120 @@ Next release:
 		+ RenderNPC:			
 			+ Upload alpha, highlightAlpha, removalProgress
 		
-	- Tests:
-		- AbortNewNpc
-			- Check stats
-		- Stats published correctly for removed humans
-			- Immediately
-		- Tools do not see being removed NPC
-			- Fix:
-				- OnShipConnectivityChanged
-				- All other external calls that make us go through NPCs
+	= Fix:
+		+ Redo removal workflows:
+			! Current removal structure:
+				- BeginNew:
+					- Update stats -> PublishCount
+					- Add to ship
+				- AbortNewNpc: InternalDeleteNpcImmediate
+				- CompleteNew:
+					- OnMayBeNpcRegimeChanged
+						- Update constrained/free count (old and new) -> PublishHumanNpcStats
+				- RemoveNpc: InternalBeginNpcRemoval (*selection)
+				- OnShipRemoved: 
+					- InternalCommonNpcDeletion (*selection)
+				- Update/Deferred: InternalDeleteNpc
 
+				- InternalBeginNpcRemoval:
+					- Regime->BeingRemoved	
+						- OnMayBeNpcRegimeChanged
+							- Update constrained/free count (old and new) -> PublishHumanNpcStats
+					- Behavior->BeingRemoved
+				- InternalDeleteNpcImmediate: Internal bookkeeping, including ship, and stats publishing
+					- InternalDeleteNpc
+					- PublishHumanNpcStats
+				- InternalDeleteNpc: Internal bookkeeping, including ship
+					- InternalCommonNpcDeletion
+					- Remove from ship
+					- Reset NPC
+				- InternalCommonNpcDeletion: Internal bookkeeping, excluding ship (invoked also when removing ship altogether)
+					- Update constrained/free count (new)
+					- Update stats
+					- Remove from burning set, if there
+					- Remove from deferred removal, if there
+					- Deselect, if selected
+			+ New removal structure:
+				+ BeginNew:
+					+ Update stats -> PublishCount
+					+ Add to ship
+				+ AbortNewNpc: // No human stats
+					+ assert(! in deferred removal)
+					+ assert(! burning)
+					+ assert(! selected)
+					+ Update stats -> PublishCount
+					+ Remove from ship (2)
+					+ Reset NPC (2)
+				+ CompleteNew:
+					+ OnMayBeNpcRegimeChanged
+						+ Update constrained/free count (old and new) -> PublishHumanNpcStats
+				+ RemoveNpc:
+					+ InternalBeginNpcRemoval
+						+ InternalBeginDeferredDeletion()
+						+ Behavior->BeingRemoved
+				+ OnShipRemoved:
+					+ If in BeingRemoved:
+						+ Remove from deferred removal (assert is there)
+						+ assert(! burning)
+						+ assert(! selected)
+					+ Else:
+						+ Update constrained/free count -> PublishHumanNpcStats
+						+ Update stats -> PublishCount (1)
+						+ assert(! in deferred removal)
+						+ Remove from burning set, if there (1)
+						+ Deselect, if selected (1)
+				+ Update/Deferred:
+					+ assert(! burning)
+					+ assert(! selected)
+					+ Remove from ship (2)
+					+ Reset NPC (2)
+
+				+ InternalBeginDeferredDeletion // Helper, also for explosion
+					+ assert(! regime BeingRemoved)
+					+ assert(! in deferred removal)
+					+ Regime->BeingRemoved	
+						+ OnMayBeNpcRegimeChanged
+							+ Update constrained/free count (old and new) -> PublishHumanNpcStats
+					
+					+ Update stats -> PublishCount (1)
+					+ Remove from burning set, if there (1)
+					+ Deselect, if selected (1)
+			+ See if need aggregations for addition of many NPCs/publish
+			+ Back to FS
+
+		- OnShipConnectivityChanged, and all other external calls that make us go through NPCs
+			- HasNpc/HasNpcs: do not consider BeingRemoved
+				- HasNpcs should come for free, given that we have already updated stats
+			- Go through all the public's
+			- Considerations:
+				- Selection: do we want to de-select these immediately (think: follow NPC)
+					- If so, need a "common" helper also for begin, to take care of this @ both Begin and Immediate
+				- HasNpc/s (also affects above as GameController::Update() checks if auto-focused one is still available)
+				- Force fields: also do not apply
+					
+	- Tests:
+		- Tools do not see being removed NPC
+		- Stats published correctly for added humans (at end of add)
+		- AbortNewNpc: no stats changes
+			- Need temporary hack to force - @ tool release
+		- Stats published correctly when beginning removal (immediately)
+		- Select NPC w/auto-focus: stops following when deleted
+		- OnShipConnectivityChanged on deleted
+		- Burning NPCs then deleted
+		- MainFrame reconciliation with presence of NPCs
 
 	- changelist
 
 
 + Test bouncing on wall & candidates - evtlly remove lookahead for it
+
+- See chairs floating in lava (Camodo video)
+
+- See NPCs with bomb
+	- See first if can do internal pressure physics - do we have velocity there?
+		- If so, do physics, and then NPCs picking it up
+	- Adjust blast on NPCs
+
 
 - Do chest fixes at skins
 

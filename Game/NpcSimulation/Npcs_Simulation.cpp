@@ -267,32 +267,32 @@ void Npcs::OnMayBeNpcRegimeChanged(
         // Update stats
         //
 
-        bool doPublishStats = false;
+        bool doPublishHumanStats = false;
         if (oldRegime == StateType::RegimeType::Constrained)
         {
             assert(mConstrainedRegimeHumanNpcCount > 0);
             --mConstrainedRegimeHumanNpcCount;
-            doPublishStats = true;
+            doPublishHumanStats = true;
         }
         else if (oldRegime == StateType::RegimeType::Free)
         {
             assert(mFreeRegimeHumanNpcCount > 0);
             --mFreeRegimeHumanNpcCount;
-            doPublishStats = true;
+            doPublishHumanStats = true;
         }
 
         if (npc.CurrentRegime == StateType::RegimeType::Constrained)
         {
             ++mConstrainedRegimeHumanNpcCount;
-            doPublishStats = true;
+            doPublishHumanStats = true;
         }
         else if (npc.CurrentRegime == StateType::RegimeType::Free)
         {
             ++mFreeRegimeHumanNpcCount;
-            doPublishStats = true;
+            doPublishHumanStats = true;
         }
 
-        if (doPublishStats)
+        if (doPublishHumanStats)
         {
             PublishHumanNpcStats();
         }
@@ -674,25 +674,41 @@ void Npcs::UpdateNpcs(
 
     if (!mDeferredRemovalNpcs.empty())
     {
-        bool humanStatsUpdated = false;
-
-        while (!mDeferredRemovalNpcs.empty())
+        for (auto const npcId : mDeferredRemovalNpcs)
         {
-            auto const npcId = mDeferredRemovalNpcs[0];
-
             assert(mStateBuffer[npcId].has_value());
             assert(mStateBuffer[npcId]->CurrentRegime == StateType::RegimeType::BeingRemoved);
 
-            bool _humanStatsUpdated = InternalDeleteNpc(npcId); // Will remove from deferred NPCs
-            humanStatsUpdated |= _humanStatsUpdated;
+            assert(mShips[mStateBuffer[npcId]->CurrentShipId].has_value());
+            auto & ship = *mShips[mStateBuffer[npcId]->CurrentShipId];
+
+            // Not burning
+            assert(std::find(ship.BurningNpcs.cbegin(), ship.BurningNpcs.cend(), npcId) == ship.BurningNpcs.cend());
+
+            // Not selected
+            assert(mCurrentlySelectedNpc != npcId);
+
+            //
+            // Remove from ship
+            //
+
+            auto it = std::find(
+                ship.Npcs.begin(),
+                ship.Npcs.end(),
+                npcId);
+
+            assert(it != ship.Npcs.end());
+
+            ship.Npcs.erase(it);
+
+            //
+            // Reset NPC
+            //
+
+            mStateBuffer[npcId].reset();
         }
 
-        assert(mDeferredRemovalNpcs.empty());
-
-        if (humanStatsUpdated)
-        {
-            PublishHumanNpcStats();
-        }
+        mDeferredRemovalNpcs.clear();
     }
 }
 

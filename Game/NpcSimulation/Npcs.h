@@ -1290,6 +1290,10 @@ private:
 		NpcId id,
 		float currentSimulationTime);
 
+	void InternalBeginDeferredDeletion(
+		NpcId id,
+		float currentSimulationTime);
+
 	void InternalEndMoveNpc(
 		NpcId id,
 		float currentSimulationTime);
@@ -1297,12 +1301,6 @@ private:
 	void InternalCompleteNewNpc(
 		NpcId id,
 		float currentSimulationTime);
-
-	void InternalDeleteNpcImmediate(NpcId id);
-
-	bool InternalDeleteNpc(NpcId npcId);
-
-	bool InternalCommonNpcDeletion(NpcId npcId);
 
 	void InternalTurnaroundNpc(NpcId id);
 
