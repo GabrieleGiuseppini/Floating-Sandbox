@@ -193,6 +193,9 @@ Arch
 ========================================================								
 
 Current perf:
+	- Update: 3.4/3.5 (Walk lookahead)
+	- RenderUpload: 1.5 (Light)
+1.19.0:
 	- Update: 3.0/3.1
 	- RenderUpload: 1.1
 
@@ -314,18 +317,17 @@ Next release:
 
 - Mechanism for dynamic removal of NPCs, plus human removal and furniture explosion
 	! Will be useful for explosive NPCs (to make explosive furniture disappear) (*) and for human removal animation (*)
-	- BeingRemoved regime: to keep the NPC "out of the loop" for the rest of the simulation step
+	! BeingRemoved regime: to keep the NPC "out of the loop" for the rest of the simulation step
 			- Since we are here: see if it makes sense to make helper to switch regime - even if only invokes OnMayBeRegimeChanged
-		- No physics, no human behavior update (other than for specific variants of removal itself, e.g. updating orientations and progress for animation, and/or alpha)
-			- Participates just in UpdateBehavior (H+F), UpdateAnimation, and scavenging
-		- Can't be picked (probed, neitehr of the 2 ways) when in this regime, hance: no move, remove, turnaround, ... - not noticed by tools
-		- Physics update: skipped when in this regime (kinda like BeingPlaced, but for whole NPC this time)
-	- Set of NpcId's to remove, scavenged at end of Update()
-		- assert they are all in BeingRemoved regime
-	- Human removal:
-		- Triggered by: manual removal (from tool is the only one at the moment....right?)
-		- Regime <- BeingRemoved
-		- HumanBehavior <- Removing
+		! No physics, no human behavior update (other than for specific variants of removal itself, e.g. updating orientations and progress for animation, and/or alpha)
+			! Participates just in UpdateBehavior (H+F), UpdateAnimation, and scavenging
+		! Can't be picked (probed, neither of the 2 ways) when in this regime, hance: no move, remove, turnaround, ... - not noticed by tools
+		! Physics update: skipped when in this regime (kinda like BeingPlaced, but for whole NPC this time)
+	! Set of NpcId's to remove, scavenged at end of Update()		
+	! Human removal:
+		! Triggered by: manual removal (from tool is the only one at the moment....right?)
+		! Regime <- BeingRemoved
+		! HumanBehavior <- Removing
 			- State: simulationStartTimestamp
 			- Behavior update: countdown to final insertion into Set of NpcIds to remove
 			- Animation: 
@@ -339,7 +341,7 @@ Next release:
 				- TODO: need to figure out:
 					- Shader: use current NPC shader with toggled enrichments, or shader on top?
 						- Shader on top has potential Z issues?
-		- For completeness, also Furniture removal follows same path
+		! For completeness, also Furniture removal follows same path
 			- Sets state to BeingRemoved, which immediately inserts into set of NpcIds to remove
 
 	- Furniture explosion:
@@ -362,14 +364,80 @@ Next release:
 		- Make Sodium furniture
 			- Make sure we can inject explosion type as well
 
-	- Cleanups:
-		- TODO: what to do with InternalRemove/OnRemoval/whatever
+	+ Impl:
+		+ New removal:
+			+ vector member
+			+ assert clearness @ beginning of update
+			+ Scavenge @ end of update
+				+ assert they are all in BeingRemoved regime
+			+ RemoveNpc rewrite
+				+ See who else calls CommonNpcRemoval -- fine, RemoveShip()
+				+ InternalBeginNpcRemoval
+					+ Transition regime & behavior
+				+ InternalEndNpcRemoval
+		+ AbortNewNpc: need immediate removal
+			+ InternalBeginRemoval
+			+ InternalEndDeferredDeletion
+			+ InternalDeleteImmediate
+			+ InternalCommonDeletion
+		+ Human behavior:
+			+ BeingRemoved state machine
+				+ Make upright
+				+ Rotate
+				+ Add to set after long
+		+ Furniture behavior:
+			+ Calls to update
+			+ Initialization (just cctor)
+			+ BeingRemoved state machine
+				+ Add to set after short
+		+ BeingRemoved regime
+			+ Add to enum
+			+ Can't be picked (probed, neither of the 2 ways) when in this regime, hance: no move, remove, turnaround, ... - not noticed by tools
+			+ Physics update: skipped when in this regime (kinda like BeingPlaced, but for whole NPC this time)
+		+ AnimationUpdate:
+			+ Human
+				+ Traslate and rotation to become upright; 0 limbs -> devil limbs -> 0 limbs
+				+ Pause; -> 0 limbs
+				+ Rotation; -> pi/2 or 0, depending on side
+				+ Try:
+					+ devil limbs also when already upright, during levitation
+					- Shader mid-highlight
+					- Initial arm angle of devil arms based on current (or convergence?)
+				+ Test:
+					+ LR
+					+ FB
+				+ Cleanup all old's and TODO's
+				+ Alpha
+				+ RemovalProgress
+			+ Furniture
+				+ Alpha
+				+ RemovalProgress
+		+ Port back to FS
+		+ Rendering:
+			+ Upload alpha, highlightAlpha, removalProgress
+			+ Shader
+				+ Fix
+					+ Highlight color: vec3f(1.0f, 0.21f, 0.08f)
+				+ Do removal
+					+ ShaderToy
+					+ Against darkening & ambient light
+		+ RenderNPC:			
+			+ Upload alpha, highlightAlpha, removalProgress
 		
 	- Tests:
+		- AbortNewNpc
+			- Check stats
 		- Stats published correctly for removed humans
+			- Only @ end, after final removal
+		- Tools do not see being removed NPC
+
 
 	- changelist
 
+
++ Test bouncing on wall & candidates - evtlly remove lookahead for it
+
+- Do chest fixes at skins
 
 - Misc:
 	- Sound for NPC fire smothering
@@ -384,7 +452,6 @@ Next release:
 		! Indeed we have NPC-specific damping
 		! A too-low NPC-specific damping causes NPCs to bounce forever when in water, though
 	- I changed the size multiplier of the NPCs to 10, and then shrunk it down to a little above the default, ~1.25 or something similar, and multiple (though not all) of the NPCs seemed to become very oddly proportioned with their torso stretched to what I assume is the size multiple of 10 (leading to very tall figures) though their width was at what I assume to be what I set the multiple to, while these people were also stuck in a diagonal rotation, in short, multiple NPCs became the shape of diagonal baguettes, though would return to normal if I destroyed the structure they were on. All of the affected NPCs were in some form of non-permeable material, so I've concluded that I believe some of the NPCs don't stretch back to their newly-set size multiple because they are stuck in a hull material as a result of being set to a size that put them into that stuck position.
-	- Do chest fixes at skins
 
 - New human behaviors:
 

@@ -339,11 +339,11 @@ ShipRenderContext::ShipRenderContext(
             CheckOpenGLError();
 
             glBindBuffer(GL_ARRAY_BUFFER, *mNpcAttributesVertexVBO);
-            static_assert(sizeof(NpcAttributesVertex) == (6 + 2) * sizeof(float));
+            static_assert(sizeof(NpcAttributesVertex) == (4 + 2 + 1) * sizeof(float));
             glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::NpcAttributeGroup2));
             glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::NpcAttributeGroup2), 4, GL_FLOAT, GL_FALSE, sizeof(NpcAttributesVertex), (void *)(0));
             glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::NpcAttributeGroup3));
-            glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::NpcAttributeGroup3), 4, GL_FLOAT, GL_FALSE, sizeof(NpcAttributesVertex), (void *)(4 * sizeof(float)));
+            glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::NpcAttributeGroup3), 3, GL_FLOAT, GL_FALSE, sizeof(NpcAttributesVertex), (void *)(4 * sizeof(float)));
             CheckOpenGLError();
 
             //

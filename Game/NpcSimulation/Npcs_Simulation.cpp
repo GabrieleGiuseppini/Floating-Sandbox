@@ -135,6 +135,7 @@ void Npcs::ResetNpcStateToWorld(
     // Regime
 
     npc.CurrentRegime = CalculateRegime(npc);
+    // Caller will check regime change
 
     // Kind specific
 
@@ -316,6 +317,8 @@ void Npcs::UpdateNpcs(
     LogNpcDebug("----------------------------------");
     LogNpcDebug("----------------------------------");
 
+    assert(mDeferredRemovalNpcs.empty());
+
     //
     // 1. Reset buffers
     //
@@ -351,7 +354,8 @@ void Npcs::UpdateNpcs(
 
     for (auto & npcState : mStateBuffer)
     {
-        if (npcState.has_value())
+        if (npcState.has_value()
+            && npcState->CurrentRegime != StateType::RegimeType::BeingRemoved) // Do not do physics on BeingRemoved NPCs
         {
             assert(mShips[npcState->CurrentShipId].has_value());
             auto & homeShip = mShips[npcState->CurrentShipId]->HomeShip;
@@ -599,23 +603,42 @@ void Npcs::UpdateNpcs(
             assert(mShips[npcState->CurrentShipId].has_value());
             auto & homeShip = mShips[npcState->CurrentShipId]->HomeShip;
 
-            // Behavior
+            // Behavior and animation
 
-            if (npcState->Kind == NpcKindType::Human)
+            switch (npcState->Kind)
             {
-                UpdateHuman(
-                    *npcState,
-                    currentSimulationTime,
-                    homeShip,
-                    gameParameters);
+                case NpcKindType::Furniture:
+                {
+                    UpdateFurniture(
+                        *npcState,
+                        currentSimulationTime,
+                        homeShip,
+                        gameParameters);
+
+                    UpdateFurnitureNpcAnimation(
+                        *npcState,
+                        currentSimulationTime,
+                        homeShip);
+
+                    break;
+                }
+
+                case NpcKindType::Human:
+                {
+                    UpdateHuman(
+                        *npcState,
+                        currentSimulationTime,
+                        homeShip,
+                        gameParameters);
+
+                    UpdateHumanNpcAnimation(
+                        *npcState,
+                        currentSimulationTime,
+                        homeShip);
+
+                    break;
+                }
             }
-
-            // Animation
-
-            UpdateNpcAnimation(
-                *npcState,
-                currentSimulationTime,
-                homeShip);
 
             // Light
 
@@ -640,6 +663,35 @@ void Npcs::UpdateNpcs(
 
                 mParticles.SetLight(npcState->ParticleMesh.Particles[p].ParticleIndex, light);
             }
+        }
+    }
+
+    //
+    // 11. Deferred NPC removal
+    //
+
+    LogNpcDebug("----------------------------------");
+
+    if (!mDeferredRemovalNpcs.empty())
+    {
+        bool humanStatsUpdated = false;
+
+        while (!mDeferredRemovalNpcs.empty())
+        {
+            auto const npcId = mDeferredRemovalNpcs[0];
+
+            assert(mStateBuffer[npcId].has_value());
+            assert(mStateBuffer[npcId]->CurrentRegime == StateType::RegimeType::BeingRemoved);
+
+            bool _humanStatsUpdated = InternalDeleteNpc(npcId); // Will remove from deferred NPCs
+            humanStatsUpdated |= _humanStatsUpdated;
+        }
+
+        assert(mDeferredRemovalNpcs.empty());
+
+        if (humanStatsUpdated)
+        {
+            PublishHumanNpcStats();
         }
     }
 }
@@ -3518,7 +3570,21 @@ bool Npcs::CanWalkInDirection(
         mParticles,
         true); // Only for probing!
 
-    return !probeResult.FloorCandidatesEasySlope.empty() || !probeResult.FloorCandidatesHardSlope.empty();
+    if (!probeResult.FloorCandidatesEasySlope.empty() || !probeResult.FloorCandidatesHardSlope.empty())
+    {
+        // There are candidates
+        return true;
+    }
+
+    if (probeResult.FirstBounceableFloor.has_value())
+    {
+        // No candidates, but a wall in front of us: there might be candidates
+        // when arriving at that wall (e.g. walking up a stair that meets the
+        // wall at the floor), and we want to walk on the floor in this case
+        return true;
+    }
+
+    return false;
 }
 
 void Npcs::BounceConstrainedNpcParticle(

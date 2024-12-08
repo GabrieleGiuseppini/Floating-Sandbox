@@ -40,6 +40,46 @@ Npcs::StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType Npcs::Ca
 	}
 }
 
+void Npcs::UpdateFurniture(
+	StateType & npc,
+	float currentSimulationTime,
+	Ship & /*homeShip*/ ,
+	GameParameters const & /*gameParameters*/)
+{
+	assert(npc.Kind == NpcKindType::Furniture);
+	auto & furnitureState = npc.KindSpecificState.FurnitureNpcState;
+	using FurnitureNpcStateType = StateType::KindSpecificStateType::FurnitureNpcStateType;
+
+	//
+	// Process furniture
+	//
+
+	LogNpcDebug("CurrentBehavior: ", int(furnitureState.CurrentBehavior));
+
+	switch (furnitureState.CurrentBehavior)
+	{
+		case FurnitureNpcStateType::BehaviorType::Default:
+		{
+			// Nop
+			break;
+		}
+
+		case FurnitureNpcStateType::BehaviorType::BeingRemoved:
+		{
+			// See if we're done
+			float const elapsed = currentSimulationTime - furnitureState.CurrentStateTransitionSimulationTimestamp;
+			if (elapsed >= FurnitureRemovalDuration)
+			{
+				// Deferred removal
+				assert(std::find(mDeferredRemovalNpcs.cbegin(), mDeferredRemovalNpcs.cend(), npc.Id) == mDeferredRemovalNpcs.cend());
+				mDeferredRemovalNpcs.emplace_back(npc.Id);
+			}
+
+			break;
+		}
+	}
+}
+
 void Npcs::UpdateHuman(
 	StateType & npc,
 	float currentSimulationTime,
@@ -1661,6 +1701,166 @@ void Npcs::UpdateHuman(
 				}
 
 				break;
+			}
+
+			break;
+		}
+
+		case HumanNpcStateType::BehaviorType::BeingRemoved:
+		{
+			auto & behaviorState = humanState.CurrentBehaviorState.BeingRemoved;
+
+			float const elapsed = currentSimulationTime - humanState.CurrentStateTransitionSimulationTimestamp;
+			float const relElapsed = elapsed - behaviorState.CurrentStateTransitionTimestamp;
+
+			switch (behaviorState.CurrentState)
+			{
+				case HumanNpcStateType::BehaviorStateType::BeingRemovedStateType::StateType::Init:
+				{
+					auto const & headPosition = mParticles.GetPosition(secondaryParticleState.ParticleIndex);
+					auto const & feetPosition = mParticles.GetPosition(primaryParticleState.ParticleIndex);
+					vec2f const humanVector = headPosition - feetPosition;
+					float const actualAngleCW = humanVector.angleCw(vec2f(0.0f, 1.0f));
+
+					// Initialize angle and duration
+					behaviorState.StartUprightAngle = actualAngleCW;
+					behaviorState.TotalUprightDuration = std::max(
+						std::fabsf(actualAngleCW) / (Pi<float> / 2.0f) * HumanRemovalUprightReferenceDuration, // RefDuration is for PI/2
+						HumanRemovalLevitationDuration)
+						+ npc.RandomNormalizedUniformSeed * 0.2f;
+
+					// Transition
+					behaviorState.CurrentState = HumanNpcStateType::BehaviorStateType::BeingRemovedStateType::StateType::GettingUpright;
+					behaviorState.CurrentStateTransitionTimestamp = elapsed;
+
+					break;
+				}
+
+				case HumanNpcStateType::BehaviorStateType::BeingRemovedStateType::StateType::GettingUpright:
+				{
+					//
+					// Check whether we're done
+					//
+
+					if (relElapsed >= behaviorState.TotalUprightDuration)
+					{
+						//
+						// Save current limbs
+						//
+
+						if (humanState.CurrentFaceOrientation == 0.0f)
+						{
+							// L/R
+							behaviorState.WorkingLimbLRAngles = humanState.AnimationState.LimbAngles;
+							behaviorState.WorkingLimbFBAngles = LimbVector{ 0.0f, 0.0f, 0.0f, 0.0f };
+						}
+						else
+						{
+							// F/B
+							behaviorState.WorkingLimbFBAngles = humanState.AnimationState.LimbAngles;
+							behaviorState.WorkingLimbLRAngles = LimbVector{ 0.0f, 0.0f, 0.0f, 0.0f };
+						}
+
+						//
+						// Go frontal
+						//
+
+						humanState.CurrentFaceDirectionX = 0.0f;
+						humanState.CurrentFaceOrientation = 1.0f;
+						behaviorState.NextRotation = HumanRemovalRotationStepBase;
+
+						// Transition
+						behaviorState.CurrentState = HumanNpcStateType::BehaviorStateType::BeingRemovedStateType::StateType::Rotating;
+						behaviorState.CurrentStateTransitionTimestamp = elapsed;
+
+						break;
+					}
+
+					//
+					// Levitation + getting upright
+					//
+
+					auto & headPosition = mParticles.GetPosition(secondaryParticleState.ParticleIndex);
+					auto & feetPosition = mParticles.GetPosition(primaryParticleState.ParticleIndex);
+
+					//
+					// Get upright
+					//
+
+					vec2f const humanVector = headPosition - feetPosition;
+
+					// Calculate desired angle
+					float const desiredAngle = (1.0f - SmoothStep(0.0f, behaviorState.TotalUprightDuration, relElapsed)) * (behaviorState.StartUprightAngle);
+
+					// Get upright
+					headPosition = feetPosition + vec2f(0.0f, 1.0f).rotate(desiredAngle) * humanVector.length();
+
+					//
+					// Levitate
+					//
+
+					float const levitationDepth = std::max(1.0f - (relElapsed * relElapsed) / (HumanRemovalLevitationDuration * HumanRemovalLevitationDuration), 0.0f);
+					vec2f const upTraslation = vec2f(0.0f, GameParameters::SimulationStepTimeDuration<float> / HumanRemovalLevitationDuration * levitationDepth);
+					feetPosition += upTraslation;
+					headPosition += upTraslation;
+
+					break;
+				}
+
+				case HumanNpcStateType::BehaviorStateType::BeingRemovedStateType::StateType::Rotating:
+				{
+					//
+					// Check whether we're done
+					//
+
+					if (relElapsed >= HumanRemovalRotationDuration)
+					{
+						// We're done!
+
+						// Deferred removal
+						assert(std::find(mDeferredRemovalNpcs.cbegin(), mDeferredRemovalNpcs.cend(), npc.Id) == mDeferredRemovalNpcs.cend());
+						mDeferredRemovalNpcs.emplace_back(npc.Id);
+
+						break;
+					}
+
+					//
+					// Rotate
+					//
+
+					if (relElapsed >= behaviorState.NextRotation)
+					{
+						if (humanState.CurrentFaceOrientation == 1.0f)
+						{
+							humanState.CurrentFaceDirectionX = -1.0f;
+							humanState.CurrentFaceOrientation = 0.0f;
+						}
+						else if (humanState.CurrentFaceDirectionX == -1.0f)
+						{
+							humanState.CurrentFaceDirectionX = 0.0f;
+							humanState.CurrentFaceOrientation = -1.0f;
+						}
+						else if (humanState.CurrentFaceOrientation == -1.0f)
+						{
+							humanState.CurrentFaceDirectionX = 1.0f;
+							humanState.CurrentFaceOrientation = 0.0f;
+						}
+						else
+						{
+							assert(humanState.CurrentFaceDirectionX == 1.0f);
+							humanState.CurrentFaceDirectionX = 0.0f;
+							humanState.CurrentFaceOrientation = 1.0f;
+						}
+
+						// Calculate next rotation timestamp - we want to climax at Duration*alpha
+						float constexpr ActualDuration = HumanRemovalRotationDuration * 0.9f;
+						float const progress = Clamp(relElapsed / ActualDuration, 0.0f, 1.0f);
+						behaviorState.NextRotation +=
+							+ (1.0f - std::sqrtf(progress)) * HumanRemovalRotationStepBase;
+					}
+
+					break;
+				}
 			}
 
 			break;

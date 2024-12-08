@@ -235,8 +235,9 @@ public:
     struct NpcStaticAttributes
     {
         float PlaneId;
-        vec3f OverlayColor;
         float Alpha;
+        float HighlightAlpha;
+        float RemovalProgress;
     };
 
 #pragma pack(pop)

@@ -50,6 +50,11 @@
 
 namespace Physics {
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4324) // std::optional of StateType gets padded because of alignment requirements
+#endif
+
 class Npcs final
 {
 private:
@@ -107,7 +112,8 @@ private:
 		{
 			BeingPlaced,
 			Constrained,
-			Free
+			Free,
+			BeingRemoved
 		};
 
 		struct NpcParticleStateType final
@@ -219,15 +225,92 @@ private:
 				Render::TextureCoordinatesQuad const TextureCoordinatesQuad;
 				float CurrentFaceDirectionX; // [-1.0f, 0.0f, 1.0f]
 
+				enum class BehaviorType
+				{
+					Default, // Nothing
+
+					BeingRemoved // Removal animation
+				};
+
+				BehaviorType CurrentBehavior;
+
+				union BehaviorStateType
+				{
+					struct DefaultStateType
+					{
+						void Reset()
+						{
+						}
+					} Default;
+
+					struct BeingRemovedStateType
+					{
+						void Reset()
+						{
+						}
+					} BeingRemoved;
+
+					BehaviorStateType()
+					{}
+
+				} CurrentBehaviorState;
+
+				float CurrentStateTransitionSimulationTimestamp;
+
+				// Animation
+
+				struct AnimationStateType
+				{
+					float Alpha;
+					float RemovalProgress;
+
+					AnimationStateType()
+						: Alpha(1.0f)
+						, RemovalProgress(0.0f)
+					{}
+				} AnimationState;
+
 				FurnitureNpcStateType(
 					NpcSubKindIdType subKindId,
 					NpcFurnitureRoleType role,
-					Render::TextureCoordinatesQuad const & textureCoordinatesQuad)
+					Render::TextureCoordinatesQuad const & textureCoordinatesQuad,
+					BehaviorType initialBehavior,
+					float currentSimulationTime)
 					: SubKindId(subKindId)
 					, Role(role)
 					, TextureCoordinatesQuad(textureCoordinatesQuad)
 					, CurrentFaceDirectionX(1.0f)
-				{}
+					// Animation
+					, AnimationState()
+				{
+					TransitionToState(initialBehavior, currentSimulationTime);
+				}
+
+				void TransitionToState(
+					BehaviorType behavior,
+					float currentSimulationTime)
+				{
+					LogNpcDebug("  FurnitureBehaviorTransition: ", int(CurrentBehavior), " -> ", int(behavior));
+
+					CurrentBehavior = behavior;
+
+					switch (behavior)
+					{
+						case BehaviorType::Default:
+						{
+							CurrentBehaviorState.Default.Reset();
+							break;
+						}
+
+						case BehaviorType::BeingRemoved:
+						{
+							CurrentBehaviorState.BeingRemoved.Reset();
+							break;
+						}
+					}
+
+					CurrentStateTransitionSimulationTimestamp = currentSimulationTime;
+				}
 			} FurnitureNpcState;
 
 			struct HumanNpcStateType final
@@ -268,7 +351,9 @@ private:
 					Free_Swimming_Style2, // Swims
 					Free_Swimming_Style3, // Swims
 
-					ConstrainedOrFree_Smashed // Plat
+					ConstrainedOrFree_Smashed, // Plat
+
+					BeingRemoved // Removal animation
 				};
 
 				BehaviorType CurrentBehavior;
@@ -470,6 +555,38 @@ private:
 						}
 					} ConstrainedOrFree_Smashed;
 
+					struct BeingRemovedStateType
+					{
+						enum class StateType
+						{
+							Init,			// Initialization
+							GettingUpright, // Levitation and getting upright
+							Rotating		// Rotating
+						};
+
+						StateType CurrentState;
+						float CurrentStateTransitionTimestamp; // wrt elapsed
+
+						float StartUprightAngle; // Calc'd at init
+						float TotalUprightDuration; // Calc'd at init
+
+						std::optional<LimbVector> WorkingLimbFBAngles;
+						std::optional<LimbVector> WorkingLimbLRAngles;
+
+						float NextRotation; // wrt rel elapsed
+
+						void Reset()
+						{
+							CurrentState = StateType::Init;
+							CurrentStateTransitionTimestamp = 0.0f;
+							StartUprightAngle = 0.0f;
+							TotalUprightDuration = 0.0f;
+							WorkingLimbFBAngles.reset();
+							WorkingLimbLRAngles.reset();
+							NextRotation = 0.0f;
+						}
+					} BeingRemoved;
+
 					BehaviorStateType()
 					{}
 
@@ -497,6 +614,9 @@ private:
 
 				struct AnimationStateType
 				{
+					float Alpha;
+					float RemovalProgress;
+
 					// Angles are CCW relative to vertical, regardless of where the NPC is looking towards (L/R)
 					// (when we flip we pretend immediate mirroring of limbs from the point of view of the human,
 					// so angles are independent from direction, and animation is smoother)
@@ -515,7 +635,9 @@ private:
 					float CrotchHeightMultiplier; // Multiplier for the part of the body from the crotch down to the feet
 
 					AnimationStateType()
-						: LimbAngles({ InitialLegAngle, -InitialLegAngle, InitialArmAngle, -InitialArmAngle })
+						: Alpha(1.0f)
+						, RemovalProgress(0.0f)
+						, LimbAngles({ InitialLegAngle, -InitialLegAngle, InitialArmAngle, -InitialArmAngle })
 						, LimbAnglesCos({std::cosf(LimbAngles.RightLeg), std::cosf(LimbAngles.LeftLeg), std::cosf(LimbAngles.RightArm), std::cosf(LimbAngles.LeftArm)})
 						, LimbAnglesSin({ std::sinf(LimbAngles.RightLeg), std::sinf(LimbAngles.LeftLeg), std::sinf(LimbAngles.RightArm), std::sinf(LimbAngles.LeftArm) })
 						, LimbLengthMultipliers({1.0f, 1.0f, 1.0f, 1.0f})
@@ -667,6 +789,12 @@ private:
 						case BehaviorType::ConstrainedOrFree_Smashed:
 						{
 							CurrentBehaviorState.ConstrainedOrFree_Smashed.Reset();
+							break;
+						}
+
+						case BehaviorType::BeingRemoved:
+						{
+							CurrentBehaviorState.BeingRemoved.Reset();
 							break;
 						}
 					}
@@ -937,11 +1065,14 @@ public:
 		NpcId id,
 		float currentSimulationTime);
 
-	void RemoveNpc(NpcId id);
+	void RemoveNpc(
+		NpcId id,
+		float currentSimulationTime);
 
 	void RemoveNpcsInRect(
 		vec2f const & corner1,
-		vec2f const & corner2);
+		vec2f const & corner2,
+		float currentSimulationTime);
 
 	void AbortNewNpc(NpcId id);
 
@@ -1155,7 +1286,9 @@ private:
 		vec2f const & deltaAnchorPosition,
 		bool doMoveWholeMesh);
 
-	bool InternalRemoveNpc(NpcId id);
+	void InternalBeginNpcRemoval(
+		NpcId id,
+		float currentSimulationTime);
 
 	void InternalEndMoveNpc(
 		NpcId id,
@@ -1164,6 +1297,12 @@ private:
 	void InternalCompleteNewNpc(
 		NpcId id,
 		float currentSimulationTime);
+
+	void InternalDeleteNpcImmediate(NpcId id);
+
+	bool InternalDeleteNpc(NpcId npcId);
+
+	bool InternalCommonNpcDeletion(NpcId npcId);
 
 	void InternalTurnaroundNpc(NpcId id);
 
@@ -1178,8 +1317,6 @@ private:
 	NpcSubKindIdType ChooseSubKind(
 		NpcKindType kind,
 		std::optional<ShipId> shipId) const;
-
-	bool CommonNpcRemoval(NpcId npcId);
 
 	size_t CalculateTotalNpcCount() const;
 
@@ -1231,7 +1368,12 @@ private:
 		Render::RenderContext & renderContext,
 		Render::ShipRenderContext & shipRenderContext) const;
 
-	void UpdateNpcAnimation(
+	void UpdateFurnitureNpcAnimation(
+		StateType & npc,
+		float currentSimulationTime,
+		Ship const & homeShip);
+
+	void UpdateHumanNpcAnimation(
 		StateType & npc,
 		float currentSimulationTime,
 		Ship const & homeShip);
@@ -1859,6 +2001,12 @@ private:
 
 	static StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType CalculateHumanBehavior(StateType & npc);
 
+	void UpdateFurniture(
+		StateType & npc,
+		float currentSimulationTime,
+		Ship & homeShip,
+		GameParameters const & gameParameters);
+
 	void UpdateHuman(
 		StateType & npc,
 		float currentSimulationTime,
@@ -1927,6 +2075,12 @@ private:
 
 	static float constexpr WalkingUndecidedDuration = 3.0f;
 
+	static float constexpr FurnitureRemovalDuration = 1.0f;
+	static float constexpr HumanRemovalUprightReferenceDuration = 1.5f; // Time for PI/2
+	static float constexpr HumanRemovalLevitationDuration = 1.0f;
+	static float constexpr HumanRemovalRotationDuration = 3.0f;
+	static float constexpr HumanRemovalRotationStepBase = 0.3f;
+
 private:
 
 	World & mParentWorld;
@@ -1943,18 +2097,9 @@ private:
 	//	3. Reaching an NPC by its ID
 	//
 
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 4324) // std::optional of StateType gets padded because of alignment requirements
-#endif
-
 	// The actual container of NPC states, indexed by NPC ID.
 	// Indices are stable; elements are null'ed when removed.
 	std::vector<std::optional<StateType>> mStateBuffer;
-
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
 
 	// All the ships - together with their NPCs - indexed by Ship ID.
 	// Indices are stable; elements are null'ed when removed.
@@ -1968,6 +2113,8 @@ private:
 	//
 
 	SequenceNumber mCurrentSimulationSequenceNumber;
+
+	std::vector<NpcId> mDeferredRemovalNpcs; // If we flag at simulation step N, we scavenge and remove at end of simulation step N
 
 	std::optional<NpcId> mCurrentlySelectedNpc;
 	GameWallClock::time_point mCurrentlySelectedNpcWallClockTimestamp;
@@ -2020,5 +2167,9 @@ private:
 
 #endif
 };
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 }

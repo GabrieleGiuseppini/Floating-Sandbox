@@ -1153,7 +1153,7 @@ void World::CompleteNewNpc(NpcId id)
 void World::RemoveNpc(NpcId id)
 {
     assert(mNpcs);
-    mNpcs->RemoveNpc(id);
+    mNpcs->RemoveNpc(id, mCurrentSimulationTime);
 }
 
 void World::RemoveNpcsInRect(
@@ -1161,7 +1161,7 @@ void World::RemoveNpcsInRect(
     vec2f const & corner2)
 {
     assert(mNpcs);
-    mNpcs->RemoveNpcsInRect(corner1, corner2);
+    mNpcs->RemoveNpcsInRect(corner1, corner2, mCurrentSimulationTime);
 }
 
 void World::AbortNewNpc(NpcId id)
