@@ -5111,7 +5111,7 @@ void Npcs::UpdateHumanNpcAnimation(
 
                     //
                     // Arms:
-                    //  FB: Arms->PI/2 Legs->0
+                    //  FB: Arms->PI/2+rnd Legs->0
                     //  LR: Arms->0 Legs->0
                     //
                     // Since we're rotating, we converge immediately, hence the use of shadow "working" angles
@@ -5119,7 +5119,8 @@ void Npcs::UpdateHumanNpcAnimation(
 
                     float constexpr ConvergenceRate = 0.025f;
 
-                    behaviorState.WorkingLimbFBAngles->ConvergeTo({ 0.0f, 0.0f, Pi<float> / 2.0f, -Pi<float> / 2.0f }, ConvergenceRate);
+                    float const fbArmAngle = Pi<float> / 2.0f + npc.RandomNormalizedUniformSeed * 0.2f; // PI/2 slightly randomized
+                    behaviorState.WorkingLimbFBAngles->ConvergeTo({ 0.0f, 0.0f, fbArmAngle, -fbArmAngle }, ConvergenceRate);
                     behaviorState.WorkingLimbLRAngles->ConvergeTo({ 0.0f, 0.0f, 0.0f, 0.0f }, ConvergenceRate);
 
                     if (humanNpcState.CurrentFaceOrientation == 0.0f)
