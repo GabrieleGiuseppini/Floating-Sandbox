@@ -428,8 +428,11 @@ Next release:
 		- AbortNewNpc
 			- Check stats
 		- Stats published correctly for removed humans
-			- Only @ end, after final removal
+			- Immediately
 		- Tools do not see being removed NPC
+			- Fix:
+				- OnShipConnectivityChanged
+				- All other external calls that make us go through NPCs
 
 
 	- changelist

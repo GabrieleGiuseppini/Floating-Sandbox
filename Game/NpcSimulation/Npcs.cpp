@@ -1642,7 +1642,11 @@ void Npcs::HighlightNpcsInRect(
         corner2,
         [&](NpcId id)
         {
-            InternalHighlightNpc(id);
+            assert(mStateBuffer[id].has_value());
+            if (mStateBuffer[id]->CurrentRegime != StateType::RegimeType::BeingRemoved)
+            {
+                InternalHighlightNpc(id);
+            }
         });
 }
 
