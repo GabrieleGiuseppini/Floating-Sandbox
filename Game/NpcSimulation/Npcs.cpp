@@ -1335,8 +1335,15 @@ void Npcs::AbortNewNpc(NpcId id)
     // Not burning
     assert(std::find(ship.BurningNpcs.cbegin(), ship.BurningNpcs.cend(), id) == ship.BurningNpcs.cend());
 
-    // Not selected
-    assert(mCurrentlySelectedNpc != id);
+    //
+    // Deselect, if selected
+    //
+
+    if (mCurrentlySelectedNpc == id)
+    {
+        mCurrentlySelectedNpc.reset();
+        PublishSelection();
+    }
 
     //
     // Update ship stats

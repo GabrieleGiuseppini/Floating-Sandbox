@@ -1752,7 +1752,12 @@ void Npcs::UpdateHuman(
 						{
 							// L/R
 							behaviorState.WorkingLimbLRAngles = humanState.AnimationState.LimbAngles;
-							behaviorState.WorkingLimbFBAngles = LimbVector{ 0.0f, 0.0f, 0.0f, 0.0f };
+							// Make current FB based on current LR
+							behaviorState.WorkingLimbFBAngles = LimbVector{
+								0.0f,
+								0.0f,
+								std::fabsf(behaviorState.WorkingLimbLRAngles->RightArm) * 0.5f,
+								-std::fabsf(behaviorState.WorkingLimbLRAngles->LeftArm) * 0.5f };
 						}
 						else
 						{

@@ -344,26 +344,6 @@ Next release:
 		! For completeness, also Furniture removal follows same path
 			- Sets state to BeingRemoved, which immediately inserts into set of NpcIds to remove
 
-	- Furniture explosion:
-		- Triggered by: 
-			- Impact
-				- Honor material's properties
-				- At that call site, also inject explosion state machine @ Ship, should take care of physics _and_ rendering!
-			- Combustion update
-				- Honor material's properties
-			- Waterness (for sodium)
-		- Regime <- BeingRemoved
-		- FurnitureState <- Exploding
-				- Requires new furniture state
-				- Requires new helper
-			- State: simulationStartTimestamp
-			- Behavior update: countdown to final insertion into Set of NpcIds to remove
-				- Requires BehaviorUpdate() for furniture
-			- Animation: alpha
-				- Requires UpdateAnimation() for furniture
-		- Make Sodium furniture
-			- Make sure we can inject explosion type as well
-
 	+ Impl:
 		+ New removal:
 			+ vector member
@@ -537,20 +517,49 @@ Next release:
 	+ Ship::RemoveNpc(id)
 		+ Use
 	
-	- Removal animation: when becoming frontal, arms should be a tad open
-		- Try: when we save working limbs, cheat: if we're on the side, make F/B same as L/R
+	+ Removal animation: when becoming frontal, arms should be a tad open
+		+ Try: when we save working limbs at going frontal, cheat: if we're on the side, make F/B ~same as L/R (takes abs of each and right signs)
+		+ Port back to FS
 
 	- Tests:
 		+ Tools do not see being removed NPC
 		+ Stats published correctly for added humans (at end of add)
 		- AbortNewNpc: no stats changes
-			- Need temporary hack to force - @ tool release
+			- Need temporary hack to force - @ tool release w/SHIFT
+			- Also check stats when adding another NPC later
+		- Captain constraint is satisfied
+			- Also when twice in a row
 		+ Stats published correctly when beginning removal (immediately)
 		+ Select NPC w/auto-focus: stops following when deleted
 		+ OnShipConnectivityChanged on deleted
 		+ Burning NPCs then deleted
 		+ MainFrame reconciliation with presence of NPCs
 			+ Deselect NPC when one is left
+
+	- Furniture explosion:
+		- TriggerExplosion(NpcId)
+			- Calc center
+			- Inject explosion state machine @ Ship, should take care of physics _and_ rendering!
+			- Start deferred removal
+		- Triggered by: 
+			- Impact
+				- Honor material's properties
+			- Combustion update
+				- Honor material's properties
+			- Waterness (for sodium)
+				- Honor material's properties
+		- Regime <- BeingRemoved
+		- FurnitureState <- Exploding
+				- Requires new furniture state
+			- State: simulationStartTimestamp
+			- Behavior update: countdown to final insertion into Set of NpcIds to remove
+			- Animation: alpha
+		- Make TNT furniture
+			- New material: TNT Crate (wood+power)
+		- Make Sodium furniture
+			- New material: Sodium Tank (metal+sodium)
+			- Make sure we can inject explosion type as well
+
 
 	- changelist
 		- Explosion
