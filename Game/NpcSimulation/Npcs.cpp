@@ -10,9 +10,6 @@
 #include <GameCore/Colors.h>
 #include <GameCore/GameGeometry.h>
 
-#include <algorithm>
-#include <cassert>
-
 #ifdef _MSC_VER
 #pragma warning(disable : 4324) // std::optional of StateType gets padded because of alignment requirements
 #endif
@@ -159,8 +156,8 @@ void Npcs::Upload(Render::RenderContext & renderContext) const
             auto & shipRenderContext = renderContext.GetShipRenderContext(shipId);
 
             shipRenderContext.UploadNpcsStart(
-                mShips[shipId]->FurnitureNpcCount			// Furniture: one single quad
-                + mShips[shipId]->HumanNpcCount * (6 + 2)); // Human: max 8 quads (limbs)
+                mShips[shipId]->TotalNpcStats.FurnitureNpcCount			// Furniture: one single quad
+                + mShips[shipId]->TotalNpcStats.HumanNpcCount * (6 + 2)); // Human: max 8 quads (limbs)
 
             for (NpcId const npcId : mShips[shipId]->Npcs)
             {
@@ -258,23 +255,37 @@ void Npcs::UploadFlames(
 
 bool Npcs::HasNpcs() const
 {
+    // Working NPCs only
+
     return std::any_of(
-        mStateBuffer.cbegin(),
-        mStateBuffer.cend(),
-        [](auto const & npcState)
+        mShips.cbegin(),
+        mShips.cend(),
+        [](auto const & ship)
         {
-            return npcState.has_value();
+            if (ship.has_value())
+            {
+                return ship->WorkingNpcStats.FurnitureNpcCount > 0
+                    || ship->WorkingNpcStats.HumanNpcCount > 0;
+            }
+            else
+            {
+                return false;
+            }
         });
 }
 
 bool Npcs::HasNpc(NpcId npcId) const
 {
-    return mStateBuffer[npcId].has_value();
+    // Working NPC only
+
+    return mStateBuffer[npcId].has_value()
+        && mStateBuffer[npcId]->CurrentRegime != StateType::RegimeType::BeingRemoved;
 }
 
 Geometry::AABB Npcs::GetNpcAABB(NpcId npcId) const
 {
     assert(mStateBuffer[npcId].has_value());
+    assert(mStateBuffer[npcId]->CurrentRegime != StateType::RegimeType::BeingRemoved);
 
     Geometry::AABB aabb;
     for (auto const & particle : mStateBuffer[npcId]->ParticleMesh.Particles)
@@ -316,6 +327,8 @@ void Npcs::OnShipRemoved(ShipId shipId)
     // Handle destruction of all NPCs of this NPC ship
     //
 
+    bool humanNpcStatsUpdated = false;
+
     for (auto const npcId : mShips[s]->Npcs)
     {
         assert(mStateBuffer[npcId].has_value());
@@ -330,6 +343,12 @@ void Npcs::OnShipRemoved(ShipId shipId)
             assert(deferredRemovalNpcIt != mDeferredRemovalNpcs.end());
             mDeferredRemovalNpcs.erase(deferredRemovalNpcIt);
 
+            //
+            // Update ship stats
+            //
+
+            mShips[s]->TotalNpcStats.Remove(*mStateBuffer[npcId]);
+
             // Not burning
             assert(std::find(mShips[s]->BurningNpcs.cbegin(), mShips[s]->BurningNpcs.cend(), npcId) == mShips[s]->BurningNpcs.cend());
 
@@ -342,51 +361,26 @@ void Npcs::OnShipRemoved(ShipId shipId)
             assert(std::find(mDeferredRemovalNpcs.cbegin(), mDeferredRemovalNpcs.cend(), npcId) == mDeferredRemovalNpcs.cend());
 
             //
-            // Update general and human stats
+            // Update ship stats
             //
 
-            bool humanNpcStatsUpdated = false;
-            switch (mStateBuffer[npcId]->Kind)
+            mShips[s]->WorkingNpcStats.Remove(*mStateBuffer[npcId]);
+            mShips[s]->TotalNpcStats.Remove(*mStateBuffer[npcId]);
+
+            if (mStateBuffer[npcId]->Kind == NpcKindType::Human)
             {
-                case NpcKindType::Furniture:
+                if (mStateBuffer[npcId]->CurrentRegime == StateType::RegimeType::Constrained)
                 {
-                    --(mShips[s]->FurnitureNpcCount);
-
-                    break;
+                    assert(mConstrainedRegimeHumanNpcCount > 0);
+                    --mConstrainedRegimeHumanNpcCount;
+                    humanNpcStatsUpdated = true;
                 }
-
-                case NpcKindType::Human:
+                else if (mStateBuffer[npcId]->CurrentRegime == StateType::RegimeType::Free)
                 {
-                    --(mShips[s]->HumanNpcCount);
-
-                    if (mStateBuffer[npcId]->KindSpecificState.HumanNpcState.Role == NpcHumanRoleType::Captain)
-                    {
-                        assert(mShips[s]->HumanNpcCaptainCount > 0);
-                        --(mShips[s]->HumanNpcCaptainCount);
-                    }
-
-                    if (mStateBuffer[npcId]->CurrentRegime == StateType::RegimeType::Constrained)
-                    {
-                        assert(mConstrainedRegimeHumanNpcCount > 0);
-                        --mConstrainedRegimeHumanNpcCount;
-                        humanNpcStatsUpdated = true;
-                    }
-                    else if (mStateBuffer[npcId]->CurrentRegime == StateType::RegimeType::Free)
-                    {
-                        assert(mFreeRegimeHumanNpcCount > 0);
-                        --mFreeRegimeHumanNpcCount;
-                        humanNpcStatsUpdated = true;
-                    }
-
-                    break;
+                    assert(mFreeRegimeHumanNpcCount > 0);
+                    --mFreeRegimeHumanNpcCount;
+                    humanNpcStatsUpdated = true;
                 }
-            }
-
-            PublishCount();
-
-            if (humanNpcStatsUpdated)
-            {
-                PublishHumanNpcStats();
             }
 
             //
@@ -400,16 +394,22 @@ void Npcs::OnShipRemoved(ShipId shipId)
             }
 
             //
-            // Deselect if selected
+            // Deselect, if selected
             //
 
             if (mCurrentlySelectedNpc == npcId)
             {
                 mCurrentlySelectedNpc.reset();
-
-                // No need to publish anything, GameController will figure out @ Update()
+                PublishSelection();
             }
         }
+    }
+
+    PublishCount();
+
+    if (humanNpcStatsUpdated)
+    {
+        PublishHumanNpcStats();
     }
 
     //
@@ -441,42 +441,46 @@ void Npcs::OnShipConnectivityChanged(ShipId shipId)
     for (auto const npcId : mShips[s]->Npcs)
     {
         assert(mStateBuffer[npcId].has_value());
-
         auto & npcState = *mStateBuffer[npcId];
-        assert(npcState.ParticleMesh.Particles.size() > 0);
-        auto const & primaryParticle = npcState.ParticleMesh.Particles[0];
-        if (primaryParticle.ConstrainedState.has_value())
+
+        if (npcState.CurrentRegime != StateType::RegimeType::BeingPlaced
+            && npcState.CurrentRegime != StateType::RegimeType::BeingRemoved)
         {
-            // NPC is constrained
-            assert(npcState.CurrentRegime == StateType::RegimeType::Constrained);
-
-            // Assign NPC's plane/ccid to the primary's
-            auto const primaryTriangleRepresentativePoint = homeShip.GetTriangles().GetPointAIndex(primaryParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex);
-            npcState.CurrentPlaneId = homeShip.GetPoints().GetPlaneId(primaryTriangleRepresentativePoint);
-            npcState.CurrentConnectedComponentId = homeShip.GetPoints().GetConnectedComponentId(primaryTriangleRepresentativePoint);
-
-            // Now visit all constained secondaries and transition to free those that have been severed from primary
-            for (size_t p = 1; p < npcState.ParticleMesh.Particles.size(); ++p)
+            assert(npcState.ParticleMesh.Particles.size() > 0);
+            auto const & primaryParticle = npcState.ParticleMesh.Particles[0];
+            if (primaryParticle.ConstrainedState.has_value())
             {
-                auto & secondaryParticle = npcState.ParticleMesh.Particles[p];
-                if (secondaryParticle.ConstrainedState.has_value())
+                // NPC is constrained
+                assert(npcState.CurrentRegime == StateType::RegimeType::Constrained);
+
+                // Assign NPC's plane/ccid to the primary's
+                auto const primaryTriangleRepresentativePoint = homeShip.GetTriangles().GetPointAIndex(primaryParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex);
+                npcState.CurrentPlaneId = homeShip.GetPoints().GetPlaneId(primaryTriangleRepresentativePoint);
+                npcState.CurrentConnectedComponentId = homeShip.GetPoints().GetConnectedComponentId(primaryTriangleRepresentativePoint);
+
+                // Now visit all constained secondaries and transition to free those that have been severed from primary
+                for (size_t p = 1; p < npcState.ParticleMesh.Particles.size(); ++p)
                 {
-                    auto const secondaryTriangleRepresentativePoint = homeShip.GetTriangles().GetPointAIndex(secondaryParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex);
-                    if (homeShip.GetPoints().GetConnectedComponentId(secondaryTriangleRepresentativePoint) != npcState.CurrentConnectedComponentId)
+                    auto & secondaryParticle = npcState.ParticleMesh.Particles[p];
+                    if (secondaryParticle.ConstrainedState.has_value())
                     {
-                        TransitionParticleToFreeState(npcState, static_cast<int>(p), homeShip);
+                        auto const secondaryTriangleRepresentativePoint = homeShip.GetTriangles().GetPointAIndex(secondaryParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex);
+                        if (homeShip.GetPoints().GetConnectedComponentId(secondaryTriangleRepresentativePoint) != npcState.CurrentConnectedComponentId)
+                        {
+                            TransitionParticleToFreeState(npcState, static_cast<int>(p), homeShip);
+                        }
                     }
                 }
             }
-        }
-        else
-        {
-            // NPC is free
-            assert(npcState.CurrentRegime == StateType::RegimeType::Free);
+            else
+            {
+                // NPC is free
+                assert(npcState.CurrentRegime == StateType::RegimeType::Free);
 
-            // Re-assign plane ID to this NPC
-            npcState.CurrentPlaneId = homeShip.GetMaxPlaneId();
-            assert(!npcState.CurrentConnectedComponentId.has_value());
+                // Re-assign plane ID to this NPC
+                npcState.CurrentPlaneId = homeShip.GetMaxPlaneId();
+                assert(!npcState.CurrentConnectedComponentId.has_value());
+            }
         }
     }
 }
@@ -774,14 +778,14 @@ std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> Npcs::BeginPl
         StateType::BeingPlacedStateType({ ParticleOrdinal, doMoveWholeMesh}));
 
     assert(mShips[shipId].has_value());
-    mShips[shipId]->Npcs.push_back(npcId);
+    mShips[shipId]->AddNpc(npcId);
 
     //
-    // Update general stats
+    // Update ship stats
     //
 
-    ++(mShips[shipId]->FurnitureNpcCount);
-
+    mShips[shipId]->WorkingNpcStats.Add(*mStateBuffer[npcId]);
+    mShips[shipId]->TotalNpcStats.Add(*mStateBuffer[npcId]);
     PublishCount();
 
     return { PickedNpc(npcId, ParticleOrdinal, vec2f::zero()), NpcCreationFailureReasonType::Success };
@@ -993,19 +997,14 @@ std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> Npcs::BeginPl
         StateType::BeingPlacedStateType({ ParticleOrdinal, doMoveWholeMesh })); // Human: anchor is head (second particle)
 
     assert(mShips[shipId].has_value());
-    mShips[shipId]->Npcs.push_back(npcId);
+    mShips[shipId]->AddNpc(npcId);
 
     //
-    // Update general stats
+    // Update ship stats
     //
 
-    ++(mShips[shipId]->HumanNpcCount);
-
-    if (mNpcDatabase.GetHumanRole(*subKind) == NpcHumanRoleType::Captain)
-    {
-        ++(mShips[shipId]->HumanNpcCaptainCount);
-    }
-
+    mShips[shipId]->WorkingNpcStats.Add(*mStateBuffer[npcId]);
+    mShips[shipId]->TotalNpcStats.Add(*mStateBuffer[npcId]);
     PublishCount();
 
     return { PickedNpc(npcId, ParticleOrdinal, vec2f::zero()), NpcCreationFailureReasonType::Success };
@@ -1340,46 +1339,18 @@ void Npcs::AbortNewNpc(NpcId id)
     assert(mCurrentlySelectedNpc != id);
 
     //
-    // Update general stats
+    // Update ship stats
     //
 
-    switch (npc.Kind)
-    {
-        case NpcKindType::Furniture:
-        {
-            --(ship.FurnitureNpcCount);
-
-            break;
-        }
-
-        case NpcKindType::Human:
-        {
-            --(ship.HumanNpcCount);
-
-            if (npc.KindSpecificState.HumanNpcState.Role == NpcHumanRoleType::Captain)
-            {
-                assert(ship.HumanNpcCaptainCount > 0);
-                --(ship.HumanNpcCaptainCount);
-            }
-
-            break;
-        }
-    }
-
+    ship.WorkingNpcStats.Remove(npc);
+    ship.TotalNpcStats.Remove(npc);
     PublishCount();
 
     //
     // Remove from ship
     //
 
-    auto it = std::find(
-        ship.Npcs.begin(),
-        ship.Npcs.end(),
-        id);
-
-    assert(it != ship.Npcs.end());
-
-    ship.Npcs.erase(it);
+    ship.RemoveNpc(id);
 
     //
     // Reset NPC
@@ -1817,30 +1788,33 @@ void Npcs::MoveBy(
     {
         assert(mStateBuffer[npcId].has_value());
 
-        // Check if this NPC is in scope: it is iff:
-        //	- We're moving all, OR
-        //	- The primary is constrained and in this connected component
-        auto const & primaryParticle = mStateBuffer[npcId]->ParticleMesh.Particles[0];
-        if (!connectedComponent
-            || (primaryParticle.ConstrainedState.has_value()
-                && homeShip.GetPoints().GetConnectedComponentId(homeShip.GetTriangles().GetPointAIndex(primaryParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex)) == *connectedComponent))
+        if (mStateBuffer[npcId]->CurrentRegime != StateType::RegimeType::BeingRemoved)
         {
-            // In scope - move all of its particles
-            for (size_t particleOrdinal = 0; particleOrdinal < mStateBuffer[npcId]->ParticleMesh.Particles.size(); ++particleOrdinal)
+            // Check if this NPC is in scope: it is iff:
+            //	- We're moving all, OR
+            //	- The primary is constrained and in this connected component
+            auto const & primaryParticle = mStateBuffer[npcId]->ParticleMesh.Particles[0];
+            if (!connectedComponent
+                || (primaryParticle.ConstrainedState.has_value()
+                    && homeShip.GetPoints().GetConnectedComponentId(homeShip.GetTriangles().GetPointAIndex(primaryParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex)) == *connectedComponent))
             {
-                ElementIndex const particleIndex = mStateBuffer[npcId]->ParticleMesh.Particles[particleOrdinal].ParticleIndex;
-                mParticles.SetPosition(particleIndex, mParticles.GetPosition(particleIndex) + offset);
-                mParticles.SetVelocity(particleIndex, actualInertialVelocity);
+                // In scope - move all of its particles
+                for (size_t particleOrdinal = 0; particleOrdinal < mStateBuffer[npcId]->ParticleMesh.Particles.size(); ++particleOrdinal)
+                {
+                    ElementIndex const particleIndex = mStateBuffer[npcId]->ParticleMesh.Particles[particleOrdinal].ParticleIndex;
+                    mParticles.SetPosition(particleIndex, mParticles.GetPosition(particleIndex) + offset);
+                    mParticles.SetVelocity(particleIndex, actualInertialVelocity);
 
-                // Zero-out already-existing forces
-                mParticles.SetExternalForces(particleIndex, vec2f::zero());
+                    // Zero-out already-existing forces
+                    mParticles.SetExternalForces(particleIndex, vec2f::zero());
 
-                // Maintain world bounds
-                MaintainInWorldBounds(
-                    *mStateBuffer[npcId],
-                    static_cast<int>(particleOrdinal),
-                    homeShip,
-                    gameParameters);
+                    // Maintain world bounds
+                    MaintainInWorldBounds(
+                        *mStateBuffer[npcId],
+                        static_cast<int>(particleOrdinal),
+                        homeShip,
+                        gameParameters);
+                }
             }
         }
     }
@@ -1870,33 +1844,36 @@ void Npcs::RotateBy(
     {
         assert(mStateBuffer[npcId].has_value());
 
-        // Check if this NPC is in scope: it is iff:
-        //	- We're rotating all, OR
-        //	- The primary is constrained and in this connected component
-        auto const & primaryParticle = mStateBuffer[npcId]->ParticleMesh.Particles[0];
-        if (!connectedComponent
-            || (primaryParticle.ConstrainedState.has_value()
-                && homeShip.GetPoints().GetConnectedComponentId(homeShip.GetTriangles().GetPointAIndex(primaryParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex)) == *connectedComponent))
+        if (mStateBuffer[npcId]->CurrentRegime != StateType::RegimeType::BeingRemoved)
         {
-            for (size_t particleOrdinal = 0; particleOrdinal < mStateBuffer[npcId]->ParticleMesh.Particles.size(); ++particleOrdinal)
+            // Check if this NPC is in scope: it is iff:
+            //	- We're rotating all, OR
+            //	- The primary is constrained and in this connected component
+            auto const & primaryParticle = mStateBuffer[npcId]->ParticleMesh.Particles[0];
+            if (!connectedComponent
+                || (primaryParticle.ConstrainedState.has_value()
+                    && homeShip.GetPoints().GetConnectedComponentId(homeShip.GetTriangles().GetPointAIndex(primaryParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex)) == *connectedComponent))
             {
-                ElementIndex const particleIndex = mStateBuffer[npcId]->ParticleMesh.Particles[particleOrdinal].ParticleIndex;
-                vec2f const centeredPos = mParticles.GetPosition(particleIndex) - center;
-                vec2f const newPosition = vec2f(centeredPos.dot(rotX), centeredPos.dot(rotY)) + center;
-                mParticles.SetPosition(particleIndex, newPosition);
+                for (size_t particleOrdinal = 0; particleOrdinal < mStateBuffer[npcId]->ParticleMesh.Particles.size(); ++particleOrdinal)
+                {
+                    ElementIndex const particleIndex = mStateBuffer[npcId]->ParticleMesh.Particles[particleOrdinal].ParticleIndex;
+                    vec2f const centeredPos = mParticles.GetPosition(particleIndex) - center;
+                    vec2f const newPosition = vec2f(centeredPos.dot(rotX), centeredPos.dot(rotY)) + center;
+                    mParticles.SetPosition(particleIndex, newPosition);
 
-                vec2f const linearInertialVelocity = (vec2f(centeredPos.dot(inertialRotX), centeredPos.dot(inertialRotY)) - centeredPos) * inertiaMagnitude;
-                mParticles.SetVelocity(particleIndex, linearInertialVelocity);
+                    vec2f const linearInertialVelocity = (vec2f(centeredPos.dot(inertialRotX), centeredPos.dot(inertialRotY)) - centeredPos) * inertiaMagnitude;
+                    mParticles.SetVelocity(particleIndex, linearInertialVelocity);
 
-                // Zero-out already-existing forces
-                mParticles.SetExternalForces(particleIndex, vec2f::zero());
+                    // Zero-out already-existing forces
+                    mParticles.SetExternalForces(particleIndex, vec2f::zero());
 
-                // Maintain world bounds
-                MaintainInWorldBounds(
-                    *mStateBuffer[npcId],
-                    static_cast<int>(particleOrdinal),
-                    homeShip,
-                    gameParameters);
+                    // Maintain world bounds
+                    MaintainInWorldBounds(
+                        *mStateBuffer[npcId],
+                        static_cast<int>(particleOrdinal),
+                        homeShip,
+                        gameParameters);
+                }
             }
         }
     }
@@ -1915,9 +1892,11 @@ void Npcs::SmashAt(
 
     for (auto & npc : mStateBuffer)
     {
-        if (npc.has_value() && npc->Kind == NpcKindType::Human)
+        if (npc.has_value()
+            && npc->Kind == NpcKindType::Human
+            && npc->CurrentRegime != StateType::RegimeType::BeingRemoved)
         {
-             bool hasOneParticleInRadius = false;
+            bool hasOneParticleInRadius = false;
             for (auto const & npcParticle : npc->ParticleMesh.Particles)
             {
                 float const pointSquareDistance = (mParticles.GetPosition(npcParticle.ParticleIndex) - targetPos).squareLength();
@@ -1968,7 +1947,8 @@ void Npcs::DrawTo(
 
     for (auto const & npc : mStateBuffer)
     {
-        if (npc.has_value())
+        if (npc.has_value()
+            && npc->CurrentRegime != StateType::RegimeType::BeingRemoved)
         {
             for (auto const & npcParticle : npc->ParticleMesh.Particles)
             {
@@ -1996,7 +1976,8 @@ void Npcs::SwirlAt(
 
     for (auto const & npc : mStateBuffer)
     {
-        if (npc.has_value())
+        if (npc.has_value()
+            && npc->CurrentRegime != StateType::RegimeType::BeingRemoved)
         {
             for (auto const & npcParticle : npc->ParticleMesh.Particles)
             {
@@ -2036,7 +2017,8 @@ void Npcs::ApplyBlast(
 
     for (auto const & npc : mStateBuffer)
     {
-        if (npc.has_value())
+        if (npc.has_value()
+            && npc->CurrentRegime != StateType::RegimeType::BeingRemoved)
         {
             for (auto const & npcParticle : npc->ParticleMesh.Particles)
             {
@@ -2082,7 +2064,8 @@ void Npcs::ApplyAntiMatterBombPreimplosion(
 
     for (auto const & npc : mStateBuffer)
     {
-        if (npc.has_value())
+        if (npc.has_value()
+            && npc->CurrentRegime != StateType::RegimeType::BeingRemoved)
         {
             for (auto const & npcParticle : npc->ParticleMesh.Particles)
             {
@@ -2126,7 +2109,8 @@ void Npcs::ApplyAntiMatterBombImplosion(
 
     for (auto const & npc : mStateBuffer)
     {
-        if (npc.has_value())
+        if (npc.has_value()
+            && npc->CurrentRegime != StateType::RegimeType::BeingRemoved)
         {
             for (auto const & npcParticle : npc->ParticleMesh.Particles)
             {
@@ -2177,7 +2161,8 @@ void Npcs::ApplyAntiMatterBombExplosion(
 
     for (auto const & npc : mStateBuffer)
     {
-        if (npc.has_value())
+        if (npc.has_value()
+            && npc->CurrentRegime != StateType::RegimeType::BeingRemoved)
         {
             for (auto const & npcParticle : npc->ParticleMesh.Particles)
             {
@@ -2235,7 +2220,9 @@ void Npcs::OnShipTriangleDestroyed(
         assert(mStateBuffer[npcId].has_value());
 
         auto & npc = *mStateBuffer[npcId];
+
         if (npc.CurrentConnectedComponentId == triangleConnectedComponentId
+            && npc.CurrentRegime != StateType::RegimeType::BeingRemoved
             && npc.Kind == NpcKindType::Human
             && npc.KindSpecificState.HumanNpcState.CurrentBehavior == StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::Constrained_Walking)
         {
@@ -2879,44 +2866,23 @@ void Npcs::InternalBeginDeferredDeletion(
     OnMayBeNpcRegimeChanged(oldRegime, npc);
 
     //
-    // Update general stats
+    // Update ship stats
     //
 
-    auto const shipId = npc.CurrentShipId;
+    assert(mShips[npc.CurrentShipId].has_value());
+    auto & ship = *(mShips[npc.CurrentShipId]);
 
-    switch (mStateBuffer[id]->Kind)
-    {
-        case NpcKindType::Furniture:
-        {
-            --(mShips[shipId]->FurnitureNpcCount);
-
-            break;
-        }
-
-        case NpcKindType::Human:
-        {
-            --(mShips[shipId]->HumanNpcCount);
-
-            if (mStateBuffer[shipId]->KindSpecificState.HumanNpcState.Role == NpcHumanRoleType::Captain)
-            {
-                assert(mShips[shipId]->HumanNpcCaptainCount > 0);
-                --(mShips[shipId]->HumanNpcCaptainCount);
-            }
-
-            break;
-        }
-    }
-
+    ship.WorkingNpcStats.Remove(npc);
     PublishCount();
 
     //
     // Remove from burning set, if there
     //
 
-    auto burningNpcIt = std::find(mShips[shipId]->BurningNpcs.begin(), mShips[shipId]->BurningNpcs.end(), id);
-    if (burningNpcIt != mShips[shipId]->BurningNpcs.end())
+    auto burningNpcIt = std::find(ship.BurningNpcs.begin(), ship.BurningNpcs.end(), id);
+    if (burningNpcIt != ship.BurningNpcs.end())
     {
-        mShips[shipId]->BurningNpcs.erase(burningNpcIt);
+        ship.BurningNpcs.erase(burningNpcIt);
     }
 
     //
@@ -2926,8 +2892,7 @@ void Npcs::InternalBeginDeferredDeletion(
     if (mCurrentlySelectedNpc == id)
     {
         mCurrentlySelectedNpc.reset();
-
-        // No need to publish anything, GameController will figure out @ Update()
+        PublishSelection();
     }
 }
 
@@ -3012,7 +2977,7 @@ void Npcs::InternalHighlightNpc(NpcId id)
 
 void Npcs::PublishCount()
 {
-    mGameEventHandler->OnNpcCountsUpdated(CalculateTotalNpcCount());
+    mGameEventHandler->OnNpcCountsUpdated(CalculateWorkingNpcCount());
 }
 
 void Npcs::PublishSelection()
@@ -3054,7 +3019,7 @@ NpcSubKindIdType Npcs::ChooseSubKind(
         case NpcKindType::Human:
         {
             // Check whether ship already has a captain
-            if (shipId.has_value() && mShips[*shipId]->HumanNpcCaptainCount == 0)
+            if (shipId.has_value() && mShips[*shipId]->WorkingNpcStats.HumanCaptainNpcCount == 0)
             {
                 // Choose a captain
                 auto const & captainRoles = mNpcDatabase.GetHumanSubKindIdsByRole()[static_cast<size_t>(NpcHumanRoleType::Captain)];
@@ -3086,6 +3051,22 @@ NpcSubKindIdType Npcs::ChooseSubKind(
     return 0;
 }
 
+size_t Npcs::CalculateWorkingNpcCount() const
+{
+    size_t totalCount = 0;
+
+    for (auto const & s : mShips)
+    {
+        if (s.has_value())
+        {
+            totalCount += s->WorkingNpcStats.FurnitureNpcCount;
+            totalCount += s->WorkingNpcStats.HumanNpcCount;
+        }
+    }
+
+    return totalCount;
+}
+
 size_t Npcs::CalculateTotalNpcCount() const
 {
     size_t totalCount = 0;
@@ -3094,8 +3075,8 @@ size_t Npcs::CalculateTotalNpcCount() const
     {
         if (s.has_value())
         {
-            totalCount += s->FurnitureNpcCount;
-            totalCount += s->HumanNpcCount;
+            totalCount += s->TotalNpcStats.FurnitureNpcCount;
+            totalCount += s->TotalNpcStats.HumanNpcCount;
         }
     }
 
@@ -3214,46 +3195,23 @@ void Npcs::TransferNpcToShip(
     }
 
     //
-    // Maintain indices
+    // Remove from old ship and add to new ship
     //
 
     assert(mShips[npc.CurrentShipId].has_value());
-
-    auto it = std::find(
-        mShips[npc.CurrentShipId]->Npcs.begin(),
-        mShips[npc.CurrentShipId]->Npcs.end(),
-        npc.Id);
-
-    assert(it != mShips[npc.CurrentShipId]->Npcs.end());
-
-    mShips[npc.CurrentShipId]->Npcs.erase(it);
+    mShips[npc.CurrentShipId]->RemoveNpc(npc.Id);
 
     assert(mShips[newShip].has_value());
-
-    mShips[newShip]->Npcs.push_back(newShip);
+    mShips[newShip]->AddNpc(npc.Id);
 
     //
     // Maintain stats
     //
 
-    switch (npc.Kind)
-    {
-        case NpcKindType::Furniture:
-        {
-            --(mShips[npc.CurrentShipId]->FurnitureNpcCount);
-            ++(mShips[newShip]->FurnitureNpcCount);
-
-            break;
-        }
-
-        case NpcKindType::Human:
-        {
-            --(mShips[npc.CurrentShipId]->HumanNpcCount);
-            ++(mShips[newShip]->HumanNpcCount);
-
-            break;
-        }
-    }
+    mShips[npc.CurrentShipId]->WorkingNpcStats.Remove(npc);
+    mShips[npc.CurrentShipId]->TotalNpcStats.Remove(npc);
+    mShips[newShip]->WorkingNpcStats.Add(npc);
+    mShips[newShip]->TotalNpcStats.Add(npc);
 
     //
     // Set ShipId in npc
@@ -4155,6 +4113,8 @@ void Npcs::RenderNpc(
                 npc.IsHighlightedForRendering ? 1.0f : 0.0f,
                 animationState.RemovalProgress
             };
+
+            LogMessage("TODO: ", staticAttribs.RemovalProgress);
 
             Render::TextureCoordinatesQuad textureCoords;
             if constexpr (RenderMode == NpcRenderModeType::Texture)
@@ -5202,10 +5162,10 @@ void Npcs::UpdateHumanNpcAnimation(
                         targetAngles = *behaviorState.WorkingLimbLRAngles;
 
                         // Note: this should be taken care by rendering...
-                        targetAngles.RightArm *= humanNpcState.CurrentFaceDirectionX;
-                        targetAngles.LeftArm *= humanNpcState.CurrentFaceDirectionX;
-                        targetAngles.RightLeg *= humanNpcState.CurrentFaceDirectionX;
-                        targetAngles.LeftLeg *= humanNpcState.CurrentFaceDirectionX;
+                        targetAngles.RightArm = std::fabs(targetAngles.RightArm) * humanNpcState.CurrentFaceDirectionX * -1.0f;
+                        targetAngles.LeftArm = std::fabs(targetAngles.LeftArm) * humanNpcState.CurrentFaceDirectionX * -1.0f;
+                        targetAngles.RightLeg = std::fabs(targetAngles.RightLeg) * humanNpcState.CurrentFaceDirectionX * -1.0f;
+                        targetAngles.LeftLeg = std::fabs(targetAngles.LeftLeg) * humanNpcState.CurrentFaceDirectionX * -1.0f;
                     }
                     else
                     {

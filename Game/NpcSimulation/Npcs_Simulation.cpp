@@ -264,7 +264,7 @@ void Npcs::OnMayBeNpcRegimeChanged(
     if (npc.Kind == NpcKindType::Human)
     {
         //
-        // Update stats
+        // Update human stats
         //
 
         bool doPublishHumanStats = false;
@@ -689,17 +689,16 @@ void Npcs::UpdateNpcs(
             assert(mCurrentlySelectedNpc != npcId);
 
             //
+            // Update ship stats
+            //
+
+            ship.TotalNpcStats.Remove(*mStateBuffer[npcId]);
+
+            //
             // Remove from ship
             //
 
-            auto it = std::find(
-                ship.Npcs.begin(),
-                ship.Npcs.end(),
-                npcId);
-
-            assert(it != ship.Npcs.end());
-
-            ship.Npcs.erase(it);
+            ship.RemoveNpc(npcId);
 
             //
             // Reset NPC

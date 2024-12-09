@@ -424,7 +424,7 @@ Next release:
 		+ RenderNPC:			
 			+ Upload alpha, highlightAlpha, removalProgress
 		
-	= Fix:
+	+ Fix:
 		+ Redo removal workflows:
 			! Current removal structure:
 				- BeginNew:
@@ -459,13 +459,13 @@ Next release:
 					- Deselect, if selected
 			+ New removal structure:
 				+ BeginNew:
-					+ Update stats -> PublishCount
+					+ Update general stats -> PublishCount
 					+ Add to ship
 				+ AbortNewNpc: // No human stats
 					+ assert(! in deferred removal)
 					+ assert(! burning)
 					+ assert(! selected)
-					+ Update stats -> PublishCount
+					+ Update general stats -> PublishCount
 					+ Remove from ship (2)
 					+ Reset NPC (2)
 				+ CompleteNew:
@@ -482,7 +482,7 @@ Next release:
 						+ assert(! selected)
 					+ Else:
 						+ Update constrained/free count -> PublishHumanNpcStats
-						+ Update stats -> PublishCount (1)
+						+ Update general stats -> PublishCount (1)
 						+ assert(! in deferred removal)
 						+ Remove from burning set, if there (1)
 						+ Deselect, if selected (1)
@@ -499,34 +499,59 @@ Next release:
 						+ OnMayBeNpcRegimeChanged
 							+ Update constrained/free count (old and new) -> PublishHumanNpcStats
 					
-					+ Update stats -> PublishCount (1)
+					+ Update general stats -> PublishCount (1)
 					+ Remove from burning set, if there (1)
 					+ Deselect, if selected (1)
 			+ See if need aggregations for addition of many NPCs/publish
 			+ Back to FS
 
-		- OnShipConnectivityChanged, and all other external calls that make us go through NPCs
-			- HasNpc/HasNpcs: do not consider BeingRemoved
-				- HasNpcs should come for free, given that we have already updated stats
-			- Go through all the public's
-			- Considerations:
-				- Selection: do we want to de-select these immediately (think: follow NPC)
-					- If so, need a "common" helper also for begin, to take care of this @ both Begin and Immediate
-				- HasNpc/s (also affects above as GameController::Update() checks if auto-focused one is still available)
-				- Force fields: also do not apply
+		+ All public calls:
+			+ HasNpc: do not consider BeingRemoved
+			+ HasNpcs: do not consider BeingRemoved
+			+ OnShipConnectivityChanged
+			+ MoveBy
+			+ RotateBy
+			+ SmashAt
+			+ DrawTo
+			+ SwirlAt
+			+ ...go through all the public's
+
+	+ Fix: render Upload() uses human count + furniture count, which we decrease already @ beginning of deferred deletion
+		+ Repro: add, delete, add
+		+ Fix:
+			+ Ship has two counts:
+				+ Working
+				+ Total
+					+ NpcStatsByKind
+			+ Update Working/Total/both where we update now
+			+ Update Total at Update/Deferred removal
+			+ Use Total at Rendering
+			+ See if can redo HasNpcs() using these
+			+ Cleanup CalculateTotalTODO
+	= Fix: animation started when looking left
+		+ bug 1: legs are on wrong side
+			+ When adjusting sign, use abs to impose final sign
+		- bug 2: rotates right then left
+			- Remember rotation wise in new state member
+			
+	+ Ship::RemoveNpc(id)
+		+ Use
 					
 	- Tests:
-		- Tools do not see being removed NPC
-		- Stats published correctly for added humans (at end of add)
+		+ Tools do not see being removed NPC
+		+ Stats published correctly for added humans (at end of add)
 		- AbortNewNpc: no stats changes
 			- Need temporary hack to force - @ tool release
-		- Stats published correctly when beginning removal (immediately)
-		- Select NPC w/auto-focus: stops following when deleted
-		- OnShipConnectivityChanged on deleted
-		- Burning NPCs then deleted
-		- MainFrame reconciliation with presence of NPCs
+		+ Stats published correctly when beginning removal (immediately)
+		+ Select NPC w/auto-focus: stops following when deleted
+		+ OnShipConnectivityChanged on deleted
+		+ Burning NPCs then deleted
+		+ MainFrame reconciliation with presence of NPCs
+			+ Deselect NPC when one is left
 
 	- changelist
+		- Explosion
+		- ...improvements
 
 
 + Test bouncing on wall & candidates - evtlly remove lookahead for it

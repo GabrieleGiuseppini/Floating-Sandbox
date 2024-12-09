@@ -29,6 +29,12 @@
 
 	- Invite alex_guy1011 to beta group (GameJolt's guy)
 
+	- OpenGL:
+		- Flat
+			- ARB
+			- Really good?
+		- Points: see if can make them round, see https://www.khronos.org/opengl/wiki/Fragment_Shader#Inputs
+
 	- See if can make a map of pointindex=>instance ID in ShipFactory instead of that vector
 		- Though it's a double map?
 

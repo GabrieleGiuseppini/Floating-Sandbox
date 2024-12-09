@@ -26,6 +26,8 @@
 #include <GameCore/SysSpecifics.h>
 #include <GameCore/Vectors.h>
 
+#include <algorithm>
+#include <cassert>
 #include <functional>
 #include <memory>
 #include <optional>
@@ -918,6 +920,70 @@ private:
 	// The information heading the list of NPCs in a ship.
 	//
 
+	struct NpcStatsByKind
+	{
+		size_t FurnitureNpcCount;
+		size_t HumanNpcCount;
+		size_t HumanCaptainNpcCount;
+
+		void Add(StateType const & npcState)
+		{
+			switch (npcState.Kind)
+			{
+				case NpcKindType::Furniture:
+				{
+					++FurnitureNpcCount;
+					break;
+				}
+
+				case NpcKindType::Human:
+				{
+					++HumanNpcCount;
+
+					if (npcState.KindSpecificState.HumanNpcState.Role == NpcHumanRoleType::Captain)
+					{
+						++HumanCaptainNpcCount;
+					}
+
+					break;
+				}
+			}
+		}
+
+		void Remove(StateType const & npcState)
+		{
+			switch (npcState.Kind)
+			{
+				case NpcKindType::Furniture:
+				{
+					assert(FurnitureNpcCount > 0);
+					--FurnitureNpcCount;
+					break;
+				}
+
+				case NpcKindType::Human:
+				{
+					assert(HumanNpcCount > 0);
+					--HumanNpcCount;
+
+					if (npcState.KindSpecificState.HumanNpcState.Role == NpcHumanRoleType::Captain)
+					{
+						assert(HumanCaptainNpcCount > 0);
+						--HumanCaptainNpcCount;
+					}
+
+					break;
+				}
+			}
+		}
+
+		NpcStatsByKind()
+			: FurnitureNpcCount(0)
+			, HumanNpcCount(0)
+			, HumanCaptainNpcCount(0)
+		{}
+	};
+
 	struct ShipNpcsType final
 	{
 		Ship & HomeShip; // Non-const as we forward interactions to ships
@@ -926,18 +992,29 @@ private:
 		std::vector<NpcId> BurningNpcs; // Maintained as a set
 
 		// Stats
-		size_t FurnitureNpcCount;
-		size_t HumanNpcCount;
-		size_t HumanNpcCaptainCount;
+		NpcStatsByKind WorkingNpcStats;
+		NpcStatsByKind TotalNpcStats; // Included being removed; used e.g. for rendering
+
+		void AddNpc(NpcId npcId)
+		{
+			assert(std::find(Npcs.cbegin(), Npcs.cend(), npcId) == Npcs.cend());
+			Npcs.push_back(npcId);
+		}
+
+		void RemoveNpc(NpcId npcId)
+		{
+			auto it = std::find(Npcs.begin(), Npcs.end(), npcId);
+			assert(it != Npcs.end());
+			Npcs.erase(it);
+		}
 
 		ShipNpcsType(Ship & homeShip)
 			: HomeShip(homeShip)
 			, Npcs()
 			, BurningNpcs()
 			//
-			, FurnitureNpcCount(0)
-			, HumanNpcCount(0)
-			, HumanNpcCaptainCount(0)
+			, WorkingNpcStats()
+			, TotalNpcStats()
 		{}
 	};
 
@@ -1316,6 +1393,7 @@ private:
 		NpcKindType kind,
 		std::optional<ShipId> shipId) const;
 
+	size_t CalculateWorkingNpcCount() const;
 	size_t CalculateTotalNpcCount() const;
 
 	ShipId GetTopmostShipId() const;
