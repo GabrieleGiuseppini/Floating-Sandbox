@@ -4464,8 +4464,16 @@ public:
                         *mCurrentState.StartPosition,
                         inputState.MousePosition);
 
-                    // Wait for movement
-                    mCurrentState.ToHaveMany(std::move(npcs));
+                    if (!npcs.empty())
+                    {
+                        // Wait for movement
+                        mCurrentState.ToHaveMany(std::move(npcs));
+                    }
+                    else
+                    {
+                        // Back to start
+                        mCurrentState.ResetToStart();
+                    }
 
                     break;
                 }

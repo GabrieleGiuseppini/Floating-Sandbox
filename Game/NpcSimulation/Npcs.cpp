@@ -4114,8 +4114,6 @@ void Npcs::RenderNpc(
                 animationState.RemovalProgress
             };
 
-            LogMessage("TODO: ", staticAttribs.RemovalProgress);
-
             Render::TextureCoordinatesQuad textureCoords;
             if constexpr (RenderMode == NpcRenderModeType::Texture)
             {
