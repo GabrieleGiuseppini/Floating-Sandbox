@@ -1765,8 +1765,13 @@ void Npcs::UpdateHuman(
 						// Go frontal
 						//
 
+						behaviorState.RotationDirection = (humanState.CurrentFaceDirectionX != 0.0f)
+							? humanState.CurrentFaceDirectionX
+							: 1.0f; // Arbitrarily
+
 						humanState.CurrentFaceDirectionX = 0.0f;
 						humanState.CurrentFaceOrientation = 1.0f;
+
 						behaviorState.NextRotation = HumanRemovalRotationStepBase;
 
 						// Transition
@@ -1832,24 +1837,24 @@ void Npcs::UpdateHuman(
 					{
 						if (humanState.CurrentFaceOrientation == 1.0f)
 						{
-							humanState.CurrentFaceDirectionX = -1.0f;
+							humanState.CurrentFaceDirectionX = -behaviorState.RotationDirection;
 							humanState.CurrentFaceOrientation = 0.0f;
 						}
 						else if (humanState.CurrentFaceDirectionX == -1.0f)
 						{
 							humanState.CurrentFaceDirectionX = 0.0f;
-							humanState.CurrentFaceOrientation = -1.0f;
+							humanState.CurrentFaceOrientation = -behaviorState.RotationDirection;
 						}
 						else if (humanState.CurrentFaceOrientation == -1.0f)
 						{
-							humanState.CurrentFaceDirectionX = 1.0f;
+							humanState.CurrentFaceDirectionX = behaviorState.RotationDirection;
 							humanState.CurrentFaceOrientation = 0.0f;
 						}
 						else
 						{
 							assert(humanState.CurrentFaceDirectionX == 1.0f);
 							humanState.CurrentFaceDirectionX = 0.0f;
-							humanState.CurrentFaceOrientation = 1.0f;
+							humanState.CurrentFaceOrientation = behaviorState.RotationDirection;
 						}
 
 						// Calculate next rotation timestamp - we want to climax at Duration*alpha

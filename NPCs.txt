@@ -528,15 +528,18 @@ Next release:
 			+ Use Total at Rendering
 			+ See if can redo HasNpcs() using these
 			+ Cleanup CalculateTotalTODO
-	= Fix: animation started when looking left
+	+ Fix: animation started when looking left
 		+ bug 1: legs are on wrong side
 			+ When adjusting sign, use abs to impose final sign
-		- bug 2: rotates right then left
-			- Remember rotation wise in new state member
+		+ bug 2: rotates right then left
+			+ Remember rotation wise in new state member
 			
 	+ Ship::RemoveNpc(id)
 		+ Use
-					
+	
+	- Removal animation: when becoming frontal, arms should be a tad open
+		- Try: when we save working limbs, cheat: if we're on the side, make F/B same as L/R
+
 	- Tests:
 		+ Tools do not see being removed NPC
 		+ Stats published correctly for added humans (at end of add)

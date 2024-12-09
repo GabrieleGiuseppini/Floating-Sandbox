@@ -576,6 +576,7 @@ private:
 						std::optional<LimbVector> WorkingLimbLRAngles;
 
 						float NextRotation; // wrt rel elapsed
+						float RotationDirection; // >0: after R there's F
 
 						void Reset()
 						{
@@ -586,6 +587,7 @@ private:
 							WorkingLimbFBAngles.reset();
 							WorkingLimbLRAngles.reset();
 							NextRotation = 0.0f;
+							RotationDirection = 0.0f;
 						}
 					} BeingRemoved;
 
