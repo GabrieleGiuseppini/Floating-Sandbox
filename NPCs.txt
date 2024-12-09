@@ -527,8 +527,8 @@ Next release:
 		- AbortNewNpc: no stats changes
 			- Need temporary hack to force - @ tool release w/SHIFT
 			- Also check stats when adding another NPC later
-		- Captain constraint is satisfied
-			- Also when twice in a row
+		+ Captain constraint is satisfied
+			+ Also when twice in a row
 		+ Stats published correctly when beginning removal (immediately)
 		+ Select NPC w/auto-focus: stops following when deleted
 		+ OnShipConnectivityChanged on deleted
@@ -540,7 +540,8 @@ Next release:
 		- TriggerExplosion(NpcId)
 			- Calc center
 			- Inject explosion state machine @ Ship, should take care of physics _and_ rendering!
-			- Start deferred removal
+			- Transition behavior to Exploding
+			- Start deferred deletion (InternalBeginDeferredDeletion)
 		- Triggered by: 
 			- Impact
 				- Honor material's properties
@@ -548,9 +549,7 @@ Next release:
 				- Honor material's properties
 			- Waterness (for sodium)
 				- Honor material's properties
-		- Regime <- BeingRemoved
-		- FurnitureState <- Exploding
-				- Requires new furniture state
+		- FurnitureState::Exploding
 			- State: simulationStartTimestamp
 			- Behavior update: countdown to final insertion into Set of NpcIds to remove
 			- Animation: alpha

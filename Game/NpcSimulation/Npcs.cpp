@@ -2863,7 +2863,7 @@ void Npcs::InternalBeginDeferredDeletion(
     auto & npc = *mStateBuffer[id];
 
     //
-    // Move NPC to BeingRemoved
+    // Move NPC regime to BeingRemoved
     //
 
     auto const oldRegime = npc.CurrentRegime;
