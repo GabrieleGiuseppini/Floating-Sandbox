@@ -112,10 +112,10 @@ private:
 	{
 		enum class RegimeType
 		{
-			BeingPlaced,
-			Constrained,
-			Free,
-			BeingRemoved
+			BeingPlaced,	// Active
+			Constrained,	// Active
+			Free,			// Active
+			BeingRemoved	// Not active
 		};
 
 		struct NpcParticleStateType final
@@ -916,6 +916,11 @@ private:
 			, RandomNormalizedUniformSeed(GameRandomEngine::GetInstance().GenerateUniformReal(-1.0f, 1.0f))
 			, BeingPlacedState(beingPlacedState)
 		{}
+
+		bool IsActive() const
+		{
+			return CurrentRegime != RegimeType::BeingRemoved;
+		}
 	};
 
 	//
@@ -994,7 +999,7 @@ private:
 		std::vector<NpcId> BurningNpcs; // Maintained as a set
 
 		// Stats
-		NpcStatsByKind WorkingNpcStats;
+		NpcStatsByKind ActiveNpcStats;
 		NpcStatsByKind TotalNpcStats; // Included being removed; used e.g. for rendering
 
 		void AddNpc(NpcId npcId)
@@ -1015,7 +1020,7 @@ private:
 			, Npcs()
 			, BurningNpcs()
 			//
-			, WorkingNpcStats()
+			, ActiveNpcStats()
 			, TotalNpcStats()
 		{}
 	};
@@ -1189,14 +1194,14 @@ public:
 	// Interactions
 	//
 
-	void MoveBy(
+	void MoveShipBy(
 		ShipId shipId,
 		std::optional<ConnectedComponentId> connectedComponent,
 		vec2f const & offset,
 		vec2f const & inertialVelocity,
 		GameParameters const & gameParameters);
 
-	void RotateBy(
+	void RotateShipBy(
 		ShipId shipId,
 		std::optional<ConnectedComponentId> connectedComponent,
 		float angle,
@@ -1395,7 +1400,7 @@ private:
 		NpcKindType kind,
 		std::optional<ShipId> shipId) const;
 
-	size_t CalculateWorkingNpcCount() const;
+	size_t CalculateActiveNpcCount() const;
 	size_t CalculateTotalNpcCount() const;
 
 	ShipId GetTopmostShipId() const;

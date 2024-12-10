@@ -521,12 +521,12 @@ Next release:
 		+ Try: when we save working limbs at going frontal, cheat: if we're on the side, make F/B ~same as L/R (takes abs of each and right signs)
 		+ Port back to FS
 
-	- Tests:
+	+ Tests:
 		+ Tools do not see being removed NPC
 		+ Stats published correctly for added humans (at end of add)
-		- AbortNewNpc: no stats changes
-			- Need temporary hack to force - @ tool release w/SHIFT
-			- Also check stats when adding another NPC later
+		+ AbortNewNpc: no stats changes
+			+ Need temporary hack to force - @ tool release w/SHIFT
+			+ Also check stats when adding another NPC later
 		+ Captain constraint is satisfied
 			+ Also when twice in a row
 		+ Stats published correctly when beginning removal (immediately)
@@ -536,13 +536,23 @@ Next release:
 		+ MainFrame reconciliation with presence of NPCs
 			+ Deselect NPC when one is left
 
-	- Furniture explosion:
-		- TriggerExplosion(NpcId)
-			- Calc center
+	= Furniture explosion:
+		+ StateType: bool IsActive() const
+			+ Simply checks for regime==BeingRemoved
+			+ Use everywhere we check for BeingRemoved
+			+ Rename stats
+		- Split UpdateNpc into UpdateNpcPhysics & UpdateNpcBehavior
+			- UpdateNpcPhysics: return whenever ! working anymore
+		- TriggerExplosion(NpcId, particle ordinal, ExplosionType)
+			- TODO: see mapping of material to ExplosionType from Ship
+			- @ particle's pos
 			- Inject explosion state machine @ Ship, should take care of physics _and_ rendering!
-			- Transition behavior to Exploding
+				- Ship::StartExplosion(...) becomes public, and moves up among public's
+			- Transition (furniture) behavior to Exploding
+				- If human: assert false ("for no particular reason")
 			- Start deferred deletion (InternalBeginDeferredDeletion)
-		- Triggered by: 
+
+		- Explosion triggers: 
 			- Impact
 				- Honor material's properties
 			- Combustion update
@@ -555,10 +565,13 @@ Next release:
 			- Animation: alpha
 		- Make TNT furniture
 			- New material: TNT Crate (wood+power)
-		- Make Sodium furniture
+		- Make Sodium furniture (and other tanks from TimCan)
 			- New material: Sodium Tank (metal+sodium)
-			- Make sure we can inject explosion type as well
+			+ Make sure we can inject explosion type as well
 
+	- Shader:
+		- Yellow
+		- Other improvements?
 
 	- changelist
 		- Explosion

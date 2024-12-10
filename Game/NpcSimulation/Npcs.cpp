@@ -255,7 +255,7 @@ void Npcs::UploadFlames(
 
 bool Npcs::HasNpcs() const
 {
-    // Working NPCs only
+    // Active NPCs only
 
     return std::any_of(
         mShips.cbegin(),
@@ -264,8 +264,8 @@ bool Npcs::HasNpcs() const
         {
             if (ship.has_value())
             {
-                return ship->WorkingNpcStats.FurnitureNpcCount > 0
-                    || ship->WorkingNpcStats.HumanNpcCount > 0;
+                return ship->ActiveNpcStats.FurnitureNpcCount > 0
+                    || ship->ActiveNpcStats.HumanNpcCount > 0;
             }
             else
             {
@@ -276,16 +276,18 @@ bool Npcs::HasNpcs() const
 
 bool Npcs::HasNpc(NpcId npcId) const
 {
-    // Working NPC only
+    // Active NPC only
 
     return mStateBuffer[npcId].has_value()
-        && mStateBuffer[npcId]->CurrentRegime != StateType::RegimeType::BeingRemoved;
+        && mStateBuffer[npcId]->IsActive();
 }
 
 Geometry::AABB Npcs::GetNpcAABB(NpcId npcId) const
 {
     assert(mStateBuffer[npcId].has_value());
-    assert(mStateBuffer[npcId]->CurrentRegime != StateType::RegimeType::BeingRemoved);
+
+    // Is active
+    assert(mStateBuffer[npcId]->IsActive());
 
     Geometry::AABB aabb;
     for (auto const & particle : mStateBuffer[npcId]->ParticleMesh.Particles)
@@ -333,7 +335,7 @@ void Npcs::OnShipRemoved(ShipId shipId)
     {
         assert(mStateBuffer[npcId].has_value());
 
-        if (mStateBuffer[npcId]->CurrentRegime == StateType::RegimeType::BeingRemoved)
+        if (!mStateBuffer[npcId]->IsActive())
         {
             //
             // Remove from deferred NPCs
@@ -364,7 +366,7 @@ void Npcs::OnShipRemoved(ShipId shipId)
             // Update ship stats
             //
 
-            mShips[s]->WorkingNpcStats.Remove(*mStateBuffer[npcId]);
+            mShips[s]->ActiveNpcStats.Remove(*mStateBuffer[npcId]);
             mShips[s]->TotalNpcStats.Remove(*mStateBuffer[npcId]);
 
             if (mStateBuffer[npcId]->Kind == NpcKindType::Human)
@@ -443,8 +445,8 @@ void Npcs::OnShipConnectivityChanged(ShipId shipId)
         assert(mStateBuffer[npcId].has_value());
         auto & npcState = *mStateBuffer[npcId];
 
-        if (npcState.CurrentRegime != StateType::RegimeType::BeingPlaced
-            && npcState.CurrentRegime != StateType::RegimeType::BeingRemoved)
+        if (npcState.IsActive()
+            && npcState.CurrentRegime != StateType::RegimeType::BeingPlaced) // BeingPlaced is on its special plane
         {
             assert(npcState.ParticleMesh.Particles.size() > 0);
             auto const & primaryParticle = npcState.ParticleMesh.Particles[0];
@@ -784,7 +786,7 @@ std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> Npcs::BeginPl
     // Update ship stats
     //
 
-    mShips[shipId]->WorkingNpcStats.Add(*mStateBuffer[npcId]);
+    mShips[shipId]->ActiveNpcStats.Add(*mStateBuffer[npcId]);
     mShips[shipId]->TotalNpcStats.Add(*mStateBuffer[npcId]);
     PublishCount();
 
@@ -1003,7 +1005,7 @@ std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> Npcs::BeginPl
     // Update ship stats
     //
 
-    mShips[shipId]->WorkingNpcStats.Add(*mStateBuffer[npcId]);
+    mShips[shipId]->ActiveNpcStats.Add(*mStateBuffer[npcId]);
     mShips[shipId]->TotalNpcStats.Add(*mStateBuffer[npcId]);
     PublishCount();
 
@@ -1052,13 +1054,13 @@ std::optional<PickedNpc> Npcs::ProbeNpcAt(
     }
 
     //
-    // Visit all NPCs and find winner, if any
+    // Visit all active NPCs and find winner, if any
     //
 
     for (auto const & npc : mStateBuffer)
     {
         if (npc.has_value()
-            && npc->CurrentRegime != StateType::RegimeType::BeingRemoved) // BeingRemoved NPCs are invisible
+            && npc->IsActive())
         {
             switch (npc->Kind)
             {
@@ -1209,9 +1211,8 @@ std::vector<NpcId> Npcs::ProbeNpcsInRect(
         corner2,
         [&](NpcId id)
         {
-            // BeingRemoved NPCs are invisible
             assert(mStateBuffer[id].has_value());
-            if (mStateBuffer[id]->CurrentRegime != StateType::RegimeType::BeingRemoved)
+            if (mStateBuffer[id]->IsActive())
             {
                 result.emplace_back(id);
             }
@@ -1311,9 +1312,8 @@ void Npcs::RemoveNpcsInRect(
         corner2,
         [&](NpcId id)
         {
-            // BeingRemoved NPCs are invisible
             assert(mStateBuffer[id].has_value());
-            if (mStateBuffer[id]->CurrentRegime != StateType::RegimeType::BeingRemoved)
+            if (mStateBuffer[id]->IsActive())
             {
                 InternalBeginNpcRemoval(id, currentSimulationTime);
             }
@@ -1328,8 +1328,8 @@ void Npcs::AbortNewNpc(NpcId id)
     assert(mShips[mStateBuffer[id]->CurrentShipId].has_value());
     auto & ship = *mShips[mStateBuffer[id]->CurrentShipId];
 
-    // Not being removed
-    assert(npc.CurrentRegime != StateType::RegimeType::BeingRemoved);
+    // Is active
+    assert(npc.IsActive());
     assert(std::find(mDeferredRemovalNpcs.cbegin(), mDeferredRemovalNpcs.cend(), id) == mDeferredRemovalNpcs.cend());
 
     // Not burning
@@ -1349,7 +1349,7 @@ void Npcs::AbortNewNpc(NpcId id)
     // Update ship stats
     //
 
-    ship.WorkingNpcStats.Remove(npc);
+    ship.ActiveNpcStats.Remove(npc);
     ship.TotalNpcStats.Remove(npc);
     PublishCount();
 
@@ -1667,9 +1667,8 @@ void Npcs::TurnaroundNpcsInRect(
         corner2,
         [&](NpcId id)
         {
-            // BeingRemoved NPCs are invisible
             assert(mStateBuffer[id].has_value());
-            if (mStateBuffer[id]->CurrentRegime != StateType::RegimeType::BeingRemoved)
+            if (mStateBuffer[id]->IsActive())
             {
                 InternalTurnaroundNpc(id);
             }
@@ -1689,7 +1688,7 @@ void Npcs::SelectFirstNpc()
     for (auto const & npc : mStateBuffer)
     {
         if (npc.has_value()
-            && npc->CurrentRegime != StateType::RegimeType::BeingRemoved) // BeingRemoved NPCs are invisible
+            && npc->IsActive())
         {
             // Found!
             SelectNpc(npc->Id);
@@ -1722,7 +1721,7 @@ void Npcs::SelectNextNpc()
         }
 
         if (mStateBuffer[newId].has_value()
-            && mStateBuffer[newId]->CurrentRegime != StateType::RegimeType::BeingRemoved) // BeingRemoved NPCs are invisible
+            && mStateBuffer[newId]->IsActive())
         {
             // Found!
             SelectNpc(newId);
@@ -1733,7 +1732,7 @@ void Npcs::SelectNextNpc()
 
 void Npcs::SelectNpc(std::optional<NpcId> id)
 {
-    assert(!id.has_value() || (mStateBuffer[*id].has_value() && mStateBuffer[*id]->CurrentRegime != StateType::RegimeType::BeingRemoved));
+    assert(!id.has_value() || (mStateBuffer[*id].has_value() && mStateBuffer[*id]->IsActive()));
 
     mCurrentlySelectedNpc = id;
     mCurrentlySelectedNpcWallClockTimestamp = GameWallClock::GetInstance().Now();
@@ -1762,7 +1761,7 @@ void Npcs::HighlightNpcsInRect(
         [&](NpcId id)
         {
             assert(mStateBuffer[id].has_value());
-            if (mStateBuffer[id]->CurrentRegime != StateType::RegimeType::BeingRemoved) // BeingRemoved NPCs are invisible
+            if (mStateBuffer[id]->IsActive())
             {
                 InternalHighlightNpc(id);
             }
@@ -1777,7 +1776,7 @@ void Npcs::Announce()
 
 /////////////////////////////////////////
 
-void Npcs::MoveBy(
+void Npcs::MoveShipBy(
     ShipId shipId,
     std::optional<ConnectedComponentId> connectedComponent,
     vec2f const & offset,
@@ -1795,7 +1794,7 @@ void Npcs::MoveBy(
     {
         assert(mStateBuffer[npcId].has_value());
 
-        if (mStateBuffer[npcId]->CurrentRegime != StateType::RegimeType::BeingRemoved)
+        if (mStateBuffer[npcId]->IsActive())
         {
             // Check if this NPC is in scope: it is iff:
             //	- We're moving all, OR
@@ -1827,7 +1826,7 @@ void Npcs::MoveBy(
     }
 }
 
-void Npcs::RotateBy(
+void Npcs::RotateShipBy(
     ShipId shipId,
     std::optional<ConnectedComponentId> connectedComponent,
     float angle,
@@ -1851,7 +1850,7 @@ void Npcs::RotateBy(
     {
         assert(mStateBuffer[npcId].has_value());
 
-        if (mStateBuffer[npcId]->CurrentRegime != StateType::RegimeType::BeingRemoved)
+        if (mStateBuffer[npcId]->IsActive())
         {
             // Check if this NPC is in scope: it is iff:
             //	- We're rotating all, OR
@@ -1892,7 +1891,7 @@ void Npcs::SmashAt(
     float currentSimulationTime)
 {
     //
-    // Transition all humans in radius which have not transitioned yet
+    // Transition all active humans in radius which have not transitioned yet
     //
 
     float const squareRadius = radius * radius;
@@ -1901,7 +1900,7 @@ void Npcs::SmashAt(
     {
         if (npc.has_value()
             && npc->Kind == NpcKindType::Human
-            && npc->CurrentRegime != StateType::RegimeType::BeingRemoved)
+            && npc->IsActive())
         {
             bool hasOneParticleInRadius = false;
             for (auto const & npcParticle : npc->ParticleMesh.Particles)
@@ -1955,7 +1954,7 @@ void Npcs::DrawTo(
     for (auto const & npc : mStateBuffer)
     {
         if (npc.has_value()
-            && npc->CurrentRegime != StateType::RegimeType::BeingRemoved)
+            && npc->IsActive())
         {
             for (auto const & npcParticle : npc->ParticleMesh.Particles)
             {
@@ -1984,7 +1983,7 @@ void Npcs::SwirlAt(
     for (auto const & npc : mStateBuffer)
     {
         if (npc.has_value()
-            && npc->CurrentRegime != StateType::RegimeType::BeingRemoved)
+            && npc->IsActive())
         {
             for (auto const & npcParticle : npc->ParticleMesh.Particles)
             {
@@ -2025,7 +2024,7 @@ void Npcs::ApplyBlast(
     for (auto const & npc : mStateBuffer)
     {
         if (npc.has_value()
-            && npc->CurrentRegime != StateType::RegimeType::BeingRemoved)
+            && npc->IsActive())
         {
             for (auto const & npcParticle : npc->ParticleMesh.Particles)
             {
@@ -2072,7 +2071,7 @@ void Npcs::ApplyAntiMatterBombPreimplosion(
     for (auto const & npc : mStateBuffer)
     {
         if (npc.has_value()
-            && npc->CurrentRegime != StateType::RegimeType::BeingRemoved)
+            && npc->IsActive())
         {
             for (auto const & npcParticle : npc->ParticleMesh.Particles)
             {
@@ -2117,7 +2116,7 @@ void Npcs::ApplyAntiMatterBombImplosion(
     for (auto const & npc : mStateBuffer)
     {
         if (npc.has_value()
-            && npc->CurrentRegime != StateType::RegimeType::BeingRemoved)
+            && npc->IsActive())
         {
             for (auto const & npcParticle : npc->ParticleMesh.Particles)
             {
@@ -2169,7 +2168,7 @@ void Npcs::ApplyAntiMatterBombExplosion(
     for (auto const & npc : mStateBuffer)
     {
         if (npc.has_value()
-            && npc->CurrentRegime != StateType::RegimeType::BeingRemoved)
+            && npc->IsActive())
         {
             for (auto const & npcParticle : npc->ParticleMesh.Particles)
             {
@@ -2212,7 +2211,7 @@ void Npcs::OnShipTriangleDestroyed(
     }
 
     //
-    // Visit all NPCs on this ship and scare the close ones that are walking
+    // Visit all active NPCs on this ship and scare the close ones that are walking
     //
 
     ElementIndex trianglePointElementIndex = homeShip.GetTriangles().GetPointAIndex(triangleElementIndex); // Representative
@@ -2229,7 +2228,7 @@ void Npcs::OnShipTriangleDestroyed(
         auto & npc = *mStateBuffer[npcId];
 
         if (npc.CurrentConnectedComponentId == triangleConnectedComponentId
-            && npc.CurrentRegime != StateType::RegimeType::BeingRemoved
+            && npc.IsActive()
             && npc.Kind == NpcKindType::Human
             && npc.KindSpecificState.HumanNpcState.CurrentBehavior == StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::Constrained_Walking)
         {
@@ -2737,7 +2736,11 @@ void Npcs::InternalBeginMoveNpc(
     bool doMoveWholeMesh)
 {
     assert(mStateBuffer[id].has_value());
-    assert(mStateBuffer[id]->CurrentRegime != StateType::RegimeType::BeingRemoved);
+
+    // Is active
+    assert(mStateBuffer[id]->IsActive());
+
+    // Not in deferred removal
     assert(std::find(mDeferredRemovalNpcs.cbegin(), mDeferredRemovalNpcs.cend(), id) == mDeferredRemovalNpcs.cend());
 
     auto & npc = *mStateBuffer[id];
@@ -2857,7 +2860,11 @@ void Npcs::InternalBeginDeferredDeletion(
     float /*currentSimulationTime*/)
 {
     assert(mStateBuffer[id].has_value());
-    assert(mStateBuffer[id]->CurrentRegime != StateType::RegimeType::BeingRemoved);
+
+    // Is active
+    assert(mStateBuffer[id]->IsActive());
+
+    // Not in deferred removal already
     assert(std::find(mDeferredRemovalNpcs.cbegin(), mDeferredRemovalNpcs.cend(), id) == mDeferredRemovalNpcs.cend());
 
     auto & npc = *mStateBuffer[id];
@@ -2879,7 +2886,7 @@ void Npcs::InternalBeginDeferredDeletion(
     assert(mShips[npc.CurrentShipId].has_value());
     auto & ship = *(mShips[npc.CurrentShipId]);
 
-    ship.WorkingNpcStats.Remove(npc);
+    ship.ActiveNpcStats.Remove(npc);
     PublishCount();
 
     //
@@ -2938,7 +2945,9 @@ void Npcs::InternalCompleteNewNpc(
 void Npcs::InternalTurnaroundNpc(NpcId id)
 {
     assert(mStateBuffer[id].has_value());
-    assert(mStateBuffer[id]->CurrentRegime != StateType::RegimeType::BeingRemoved);
+
+    // Is active
+    assert(mStateBuffer[id]->IsActive());
 
     switch (mStateBuffer[id]->Kind)
     {
@@ -2977,14 +2986,16 @@ void Npcs::InternalTurnaroundNpc(NpcId id)
 void Npcs::InternalHighlightNpc(NpcId id)
 {
     assert(mStateBuffer[id].has_value());
-    assert(mStateBuffer[id]->CurrentRegime != StateType::RegimeType::BeingRemoved);
+
+    // Is active
+    assert(mStateBuffer[id]->IsActive());
 
     mStateBuffer[id]->IsHighlightedForRendering = true;
 }
 
 void Npcs::PublishCount()
 {
-    mGameEventHandler->OnNpcCountsUpdated(CalculateWorkingNpcCount());
+    mGameEventHandler->OnNpcCountsUpdated(CalculateActiveNpcCount());
 }
 
 void Npcs::PublishSelection()
@@ -3026,7 +3037,7 @@ NpcSubKindIdType Npcs::ChooseSubKind(
         case NpcKindType::Human:
         {
             // Check whether ship already has a captain
-            if (shipId.has_value() && mShips[*shipId]->WorkingNpcStats.HumanCaptainNpcCount == 0)
+            if (shipId.has_value() && mShips[*shipId]->ActiveNpcStats.HumanCaptainNpcCount == 0)
             {
                 // Choose a captain
                 auto const & captainRoles = mNpcDatabase.GetHumanSubKindIdsByRole()[static_cast<size_t>(NpcHumanRoleType::Captain)];
@@ -3058,7 +3069,7 @@ NpcSubKindIdType Npcs::ChooseSubKind(
     return 0;
 }
 
-size_t Npcs::CalculateWorkingNpcCount() const
+size_t Npcs::CalculateActiveNpcCount() const
 {
     size_t totalCount = 0;
 
@@ -3066,8 +3077,8 @@ size_t Npcs::CalculateWorkingNpcCount() const
     {
         if (s.has_value())
         {
-            totalCount += s->WorkingNpcStats.FurnitureNpcCount;
-            totalCount += s->WorkingNpcStats.HumanNpcCount;
+            totalCount += s->ActiveNpcStats.FurnitureNpcCount;
+            totalCount += s->ActiveNpcStats.HumanNpcCount;
         }
     }
 
@@ -3215,10 +3226,11 @@ void Npcs::TransferNpcToShip(
     // Maintain stats
     //
 
-    mShips[npc.CurrentShipId]->WorkingNpcStats.Remove(npc);
+    mShips[npc.CurrentShipId]->ActiveNpcStats.Remove(npc);
     mShips[npc.CurrentShipId]->TotalNpcStats.Remove(npc);
-    mShips[newShip]->WorkingNpcStats.Add(npc);
+    mShips[newShip]->ActiveNpcStats.Add(npc);
     mShips[newShip]->TotalNpcStats.Add(npc);
+    // No need to publish as total hasn't changed
 
     //
     // Set ShipId in npc

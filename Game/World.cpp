@@ -166,7 +166,7 @@ void World::MoveBy(
         inertialVelocity,
         gameParameters);
 
-    mNpcs->MoveBy(
+    mNpcs->MoveShipBy(
         shipId,
         connectedComponentId.GetLocalObjectId(),
         offset,
@@ -187,7 +187,7 @@ void World::MoveBy(
         inertialVelocity,
         gameParameters);
 
-    mNpcs->MoveBy(
+    mNpcs->MoveShipBy(
         shipId,
         std::nullopt,
         offset,
@@ -212,7 +212,7 @@ void World::RotateBy(
         inertialAngle,
         gameParameters);
 
-    mNpcs->RotateBy(
+    mNpcs->RotateShipBy(
         shipId,
         connectedComponentId.GetLocalObjectId(),
         angle,
@@ -236,7 +236,7 @@ void World::RotateBy(
         inertialAngle,
         gameParameters);
 
-    mNpcs->RotateBy(
+    mNpcs->RotateShipBy(
         shipId,
         std::nullopt,
         angle,
