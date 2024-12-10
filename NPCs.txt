@@ -541,30 +541,48 @@ Next release:
 			+ Simply checks for regime==BeingRemoved
 			+ Use everywhere we check for BeingRemoved
 			+ Rename stats
-		- Split UpdateNpc into UpdateNpcPhysics & UpdateNpcBehavior
-			- UpdateNpcPhysics: return whenever ! working anymore
-		- TriggerExplosion(NpcId, particle ordinal, ExplosionType)
-			- TODO: see mapping of material to ExplosionType from Ship
-			- @ particle's pos
-			- Inject explosion state machine @ Ship, should take care of physics _and_ rendering!
-				- Ship::StartExplosion(...) becomes public, and moves up among public's
+		+ Split UpdateNpc into UpdateNpcPhysics & UpdateNpcBehavior
+			+ Split
+			+ UpdateNpcPhysics: return whenever ! working anymore
+		= TriggerExplosion(NpcId, particle ordinal, ExplosionType, sim time)
+			+ @ particle's pos
+			= Inject explosion state machine @ Ship, should take care of physics _and_ rendering!
+				- TODO: we assume Combustion has right properties - may be pass?
+			- Notify (for sound)
+				- Depends on ExplosionType:
+					- Deflagration: OnBombExplosion
+					- Combustion: OnCombustionExplosion
+					- Sodium: OnWaterReactionExplosion
 			- Transition (furniture) behavior to Exploding
 				- If human: assert false ("for no particular reason")
 			- Start deferred deletion (InternalBeginDeferredDeletion)
 
-		- Explosion triggers: 
-			- Impact
-				- Honor material's properties
+		= Explosion triggers: 
+			! Mapping of material to ExplosionType from Ship:
+				! Bombs<->Deflagration
+				! StructuralMaterial::MaterialCombustionType::Explosion<->Combustion
+				! WaterReactivity threshold<->Sodium
+			= Impact
+				- Check a threshold
+					- Do Log lines to figure out value
+				+ If material is MaterialCombustionType::Explosion: ExplosionType=Combustion
+				- Test
+					- Also params
 			- Combustion update
-				- Honor material's properties
+				- If material is MaterialCombustionType::Explosion, and temperature threshold (TODO: double-check @ ship): ExplosionType=Combustion
 			- Waterness (for sodium)
-				- Honor material's properties
+				- If water >= reactivity threshold: ExplosionType=Sodium
+					- Perf: do we want particle buffer for reactivity threshold?
+				- Test
+					- Also params
 		- FurnitureState::Exploding
 			- State: simulationStartTimestamp
 			- Behavior update: countdown to final insertion into Set of NpcIds to remove
 			- Animation: alpha
-		- Make TNT furniture
-			- New material: TNT Crate (wood+power)
+		= Make TNT furniture
+			+ New material: Gunpowder Strong Crate (wood+powder)
+			- Test:
+				- Buoyancy
 		- Make Sodium furniture (and other tanks from TimCan)
 			- New material: Sodium Tank (metal+sodium)
 			+ Make sure we can inject explosion type as well

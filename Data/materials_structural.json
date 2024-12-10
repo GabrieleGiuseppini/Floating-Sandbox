@@ -1846,7 +1846,7 @@
             "texture_name": "concrete_1",
             "thermal_conductivity": 140.0,
             "water_diffusion_speed": 0.5,
-            "water_reactivity": 1.0,
+            "water_reactivity_threshold": 0.5,
             "water_retention": 0.25,
             "wind_receptivity": 0.1
         },
@@ -3848,6 +3848,8 @@
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
+
+
         {
             "buoyancy_volume_fill": 0.05,
             "color_key": "#070780",
@@ -3887,6 +3889,37 @@
             "render_color": "#070781",
             "strength": 1.0,
             "wind_receptivity": 0.14
+        },
+
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": "#D3AE83",
+            "combustion_type": "Explosion",
+            "elasticity_coefficient": 0.5,
+            "explosive_combustion_radius": 8.0,
+            "explosive_combustion_strength": 100.0,
+            "friction_kinetic_coefficient": 0.69,
+            "friction_static_coefficient": 1.25,
+            "ignition_temperature": 693.15,
+	    "is_exempt_from_palette": true,
+            "is_hull": false,
+            "mass": {
+                "density": 0.116875,
+                "nominal_mass": 650
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Gunpowder Strong Crate",
+            "render_color": "#D3AE83",
+            "sound_type": "Wood",
+            "specific_heat": 300.0,
+            "stiffness": 1.0,
+            "strength": 0.1605,
+            "texture_name": "wood_planks_3",
+            "thermal_conductivity": 0.1,
+            "thermal_expansion_coefficient": 0.00015,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
         }
     ],
     "palettes": {

@@ -1499,9 +1499,13 @@ private:
 
 	static StateType::RegimeType CalculateRegime(StateType const & npc);
 
-	void UpdateNpcs(
+	void UpdateNpcPhysics(
 		float currentSimulationTime,
 		Storm::Parameters const & stormParameters,
+		GameParameters const & gameParameters);
+
+	void UpdateNpcBehavior(
+		float currentSimulationTime,
 		GameParameters const & gameParameters);
 
 	void UpdateNpcsEnd();
@@ -1777,9 +1781,18 @@ private:
 	void OnImpact(
 		StateType & npc,
 		int npcParticleOrdinal,
+		ElementIndex npcParticleIndex,
 		vec2f const & normalResponse,
 		vec2f const & bounceEdgeNormal,
-		float currentSimulationTime) const;
+		float currentSimulationTime,
+		GameParameters const & gameParameters) const;
+
+	void TriggerExplosion(
+		StateType & npc,
+		ElementIndex npcParticleIndex,
+		ExplosionType explosionType,
+		float currentSimulationTime,
+		GameParameters const & gameParameters) const;
 
 	inline void MaintainInWorldBounds(
 		StateType & npc,

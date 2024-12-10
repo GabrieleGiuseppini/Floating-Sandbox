@@ -298,18 +298,18 @@ private:
     public:
 
         StateType State;
-        float Reactivity;
+        float Threshold;
         GameWallClock::float_time ExplosionTimestamp; // Only valid in ReactionTriggered state
 
-        WaterReactionState(float materialWaterReactivity)
+        WaterReactionState(float materialWaterReactivityThreshold)
         {
-            Reactivity = materialWaterReactivity;
+            Threshold = materialWaterReactivityThreshold;
             Reset();
         }
 
         inline void Reset()
         {
-            State = (Reactivity == 0.0f) ? StateType::Inert : StateType::Unreacted;
+            State = (Threshold == 0.0f) ? StateType::Inert : StateType::Unreacted;
             ExplosionTimestamp = std::numeric_limits<GameWallClock::float_time>::min();
         }
     };

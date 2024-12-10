@@ -90,7 +90,7 @@ StructuralMaterial StructuralMaterial::Create(
         // Misc
 
         float const windReceptivity = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "wind_receptivity");
-        float const waterReactivity = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "water_reactivity", 0.0f);
+        float const waterReactivityThreshold = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "water_reactivity_threshold", 0.0f);
         bool isLegacyElectrical = Utils::GetOptionalJsonMember<bool>(structuralMaterialJson, "is_legacy_electrical", false);
         bool isExemptFromPalette = Utils::GetOptionalJsonMember<bool>(structuralMaterialJson, "is_exempt_from_palette", false);
 
@@ -142,7 +142,7 @@ StructuralMaterial StructuralMaterial::Create(
             explosiveCombustionStrength,
             // Misc
             windReceptivity,
-            waterReactivity,
+            waterReactivityThreshold,
             isLegacyElectrical,
             // Palette
             paletteCoordinates);

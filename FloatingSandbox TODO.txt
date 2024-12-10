@@ -122,6 +122,11 @@
 		- Buy new track for farewell: https://www.pond5.com/royalty-free-music/item/204959560-nearer-my-god-thee
 
 
+	- Localization changes:
+		- NPC menu: ".../Group"
+		- New NPCs in json
+
+
 	- Consider invoking World::Upload from render thread (via RenderContext, as func<>, *synchronously*)
 		- So that may upload to GPU buffers directly (or at XYZEnd()), instead of local temp buffers
 			- Eventually using mapped buffers, so no local storage at all, unless when mapped buffers not possible because we don't know size in advance or e.g. need sorting

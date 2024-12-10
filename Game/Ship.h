@@ -650,7 +650,7 @@ private:
             gameParameters);
     }
 
-private:
+public:
 
     /////////////////////////////////////////////////////////////////////////
     // IShipPhysicsHandler

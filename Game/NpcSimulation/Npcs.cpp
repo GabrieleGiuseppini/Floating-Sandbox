@@ -84,7 +84,9 @@ void Npcs::Update(
     // Advance the current simulation sequence
     ++mCurrentSimulationSequenceNumber;
 
-    UpdateNpcs(currentSimulationTime, stormParameters, gameParameters);
+    UpdateNpcPhysics(currentSimulationTime, stormParameters, gameParameters);
+
+    UpdateNpcBehavior(currentSimulationTime, gameParameters);
 }
 
 void Npcs::UpdateEnd()

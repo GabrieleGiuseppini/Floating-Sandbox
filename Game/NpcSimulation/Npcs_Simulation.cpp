@@ -21,6 +21,8 @@ void Npcs::ResetNpcStateToWorld(
     StateType & npc,
     float currentSimulationTime)
 {
+    assert(npc.IsActive());
+
     //
     // Find topmost triangle - among all ships - which contains this NPC
     //
@@ -71,6 +73,8 @@ void Npcs::ResetNpcStateToWorld(
     Ship const & homeShip,
     std::optional<ElementIndex> primaryParticleTriangleIndex)
 {
+    assert(npc.IsActive());
+
     // Plane ID, connected component ID
 
     if (primaryParticleTriangleIndex.has_value())
@@ -169,6 +173,8 @@ void Npcs::TransitionParticleToConstrainedState(
     int npcParticleOrdinal,
     StateType::NpcParticleStateType::ConstrainedStateType constrainedState)
 {
+    assert(npc.IsActive());
+
     // Transition
     npc.ParticleMesh.Particles[npcParticleOrdinal].ConstrainedState = constrainedState;
 
@@ -185,6 +191,8 @@ void Npcs::TransitionParticleToFreeState(
     int npcParticleOrdinal,
     Ship const & homeShip)
 {
+    assert(npc.IsActive());
+
     // Transition
     npc.ParticleMesh.Particles[npcParticleOrdinal].ConstrainedState.reset();
     if (npcParticleOrdinal == 0)
@@ -308,7 +316,7 @@ Npcs::StateType::RegimeType Npcs::CalculateRegime(StateType const & npc)
         : StateType::RegimeType::Free;
 }
 
-void Npcs::UpdateNpcs(
+void Npcs::UpdateNpcPhysics(
     float currentSimulationTime,
     Storm::Parameters const & stormParameters,
     GameParameters const & gameParameters)
@@ -355,7 +363,7 @@ void Npcs::UpdateNpcs(
     for (auto & npcState : mStateBuffer)
     {
         if (npcState.has_value()
-            && npcState->CurrentRegime != StateType::RegimeType::BeingRemoved) // Do not do physics on BeingRemoved NPCs
+            && npcState->IsActive())
         {
             assert(mShips[npcState->CurrentShipId].has_value());
             auto & homeShip = mShips[npcState->CurrentShipId]->HomeShip;
@@ -453,6 +461,9 @@ void Npcs::UpdateNpcs(
                 }
             }
 
+            if (!npcState->IsActive())
+                continue;
+
             // High-frequency updates
 
             {
@@ -510,6 +521,9 @@ void Npcs::UpdateNpcs(
                 }
             }
 
+            if (!npcState->IsActive())
+                continue;
+
             // Check validity of constrained triangles, and calculate preliminary forces
 
             for (size_t p = 0; p < npcState->ParticleMesh.Particles.size(); ++p)
@@ -555,20 +569,29 @@ void Npcs::UpdateNpcs(
                     gameParameters);
             }
 
+            assert(npcState->IsActive());
+
             // Spring forces for whole NPC
 
             CalculateNpcParticleSpringForces(*npcState);
 
             // Update physical state for all particles and maintain world bounds
 
+            assert(npcState->IsActive());
+
             for (size_t p = 0; p < npcState->ParticleMesh.Particles.size(); ++p)
             {
+                assert(npcState->IsActive());
+
                 UpdateNpcParticlePhysics(
                     *npcState,
                     static_cast<int>(p),
                     homeShip,
                     currentSimulationTime,
                     gameParameters);
+
+                if (!npcState->IsActive())
+                    break;
 
                 MaintainInWorldBounds(
                     *npcState,
@@ -588,13 +611,16 @@ void Npcs::UpdateNpcs(
             }
         }
     }
+}
 
-    //
-    // 9. Update behavioral state machines
-    // 10. Update animation
-    //
-
+void Npcs::UpdateNpcBehavior(
+    float currentSimulationTime,
+    GameParameters const & gameParameters)
+{
     LogNpcDebug("----------------------------------");
+    LogNpcDebug("----------------------------------");
+
+    assert(mDeferredRemovalNpcs.empty()); // Only made deferred removable by behavior updates
 
     for (auto & npcState : mStateBuffer)
     {
@@ -665,19 +691,20 @@ void Npcs::UpdateNpcs(
             }
         }
     }
+}
 
+void Npcs::UpdateNpcsEnd()
+{
     //
-    // 11. Deferred NPC removal
+    // Deferred NPC removal
     //
-
-    LogNpcDebug("----------------------------------");
 
     if (!mDeferredRemovalNpcs.empty())
     {
         for (auto const npcId : mDeferredRemovalNpcs)
         {
             assert(mStateBuffer[npcId].has_value());
-            assert(mStateBuffer[npcId]->CurrentRegime == StateType::RegimeType::BeingRemoved);
+            assert(!mStateBuffer[npcId]->IsActive());
 
             assert(mShips[mStateBuffer[npcId]->CurrentShipId].has_value());
             auto & ship = *mShips[mStateBuffer[npcId]->CurrentShipId];
@@ -709,11 +736,11 @@ void Npcs::UpdateNpcs(
 
         mDeferredRemovalNpcs.clear();
     }
-}
 
-void Npcs::UpdateNpcsEnd()
-{
-    // We consume this one
+    //
+    // An NPC update step consume external forces
+    //
+
     mParticles.ResetExternalForces();
 }
 
@@ -3670,75 +3697,77 @@ void Npcs::BounceConstrainedNpcParticle(
             0.0f, 1.0f);
         vec2f const normalResponse =
             -normalVelocity
-            * elasticityCoefficient;
+                * elasticityCoefficient;
 
-        // Calculate tangential response: Vt' = a*Vt (a = (1.0-friction), [0.0 - 1.0])
-        float const materialFrictionCoefficient = (particles.GetMaterial(npcParticle.ParticleIndex).KineticFrictionCoefficient + meshMaterial.KineticFrictionCoefficient) / 2.0f;
-        vec2f const tangentialResponse =
-            tangentialVelocity
-            * std::max(0.0f, 1.0f - materialFrictionCoefficient * particles.GetKineticFrictionTotalAdjustment(npcParticle.ParticleIndex));
+            // Calculate tangential response: Vt' = a*Vt (a = (1.0-friction), [0.0 - 1.0])
+            float const materialFrictionCoefficient = (particles.GetMaterial(npcParticle.ParticleIndex).KineticFrictionCoefficient + meshMaterial.KineticFrictionCoefficient) / 2.0f;
+            vec2f const tangentialResponse =
+                tangentialVelocity
+                * std::max(0.0f, 1.0f - materialFrictionCoefficient * particles.GetKineticFrictionTotalAdjustment(npcParticle.ParticleIndex));
 
-        // Calculate whole response (which, given that we've been working in *apparent* space (we've calc'd the collision response to *trajectory* which is apparent displacement)),
-        // is a relative velocity (relative to mesh)
-        vec2f const resultantRelativeVelocity = (normalResponse + tangentialResponse);
+            // Calculate whole response (which, given that we've been working in *apparent* space (we've calc'd the collision response to *trajectory* which is apparent displacement)),
+            // is a relative velocity (relative to mesh)
+            vec2f const resultantRelativeVelocity = (normalResponse + tangentialResponse);
 
-        // Do not damp velocity if we're trying to maintain equilibrium
-        vec2f const resultantAbsoluteVelocity =
-            resultantRelativeVelocity * ((npc.Kind != NpcKindType::Human || npc.KindSpecificState.HumanNpcState.EquilibriumTorque == 0.0f) ? mGlobalDampingFactor : 1.0f)
-            + meshVelocity;
+            // Do not damp velocity if we're trying to maintain equilibrium
+            vec2f const resultantAbsoluteVelocity =
+                resultantRelativeVelocity * ((npc.Kind != NpcKindType::Human || npc.KindSpecificState.HumanNpcState.EquilibriumTorque == 0.0f) ? mGlobalDampingFactor : 1.0f)
+                + meshVelocity;
 
-        LogNpcDebug("        Impact: trajectory=", trajectory, " apparentParticleVelocity=", apparentParticleVelocity, " nr=", normalResponse, " tr=", tangentialResponse, " rr=", resultantRelativeVelocity);
+            LogNpcDebug("        Impact: trajectory=", trajectory, " apparentParticleVelocity=", apparentParticleVelocity, " nr=", normalResponse, " tr=", tangentialResponse, " rr=", resultantRelativeVelocity);
 
-        //
-        // Set position and velocity
-        //
-
-        particles.SetPosition(npcParticle.ParticleIndex, bouncePosition);
-
-        particles.SetVelocity(npcParticle.ParticleIndex, resultantAbsoluteVelocity);
-        npcParticle.ConstrainedState->MeshRelativeVelocity = resultantRelativeVelocity;
-
-        //
-        // Impart force against edge - but only if hit was "substantial", so
-        // we don't end up in infinite loops bouncing against a soft mesh
-        //
-
-        if (apparentParticleVelocityAlongNormal > 2.0f) // Magic number
-        {
-            // Calculate impact force: Dp/Dt
             //
-            //  Dp = v2*m - v1*m (using _relative_ velocities)
-            //  Dt = duration of impact - and here we are conservative, taking a whole simulation dt
-            //       ...but then it's too much
-            vec2f const impartedForce =
-                (normalVelocity - normalResponse) // normalVelocity is directed outside of triangle
-                * mParticles.GetMass(npcParticle.ParticleIndex)
-                / GameParameters::SimulationStepTimeDuration<float>
-                * 0.2f; // Magic damper
+            // Set position and velocity
+            //
 
-            // Divide among two vertices
+            particles.SetPosition(npcParticle.ParticleIndex, bouncePosition);
 
-            int const edgeVertex1Ordinal = bounceEdgeOrdinal;
-            ElementIndex const edgeVertex1PointIndex = homeShip.GetTriangles().GetPointIndices(npcParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex)[edgeVertex1Ordinal];
-            float const vertex1InterpCoeff = npcParticle.ConstrainedState->CurrentBCoords.BCoords[edgeVertex1Ordinal];
-            homeShip.GetPoints().AddStaticForce(edgeVertex1PointIndex, impartedForce * vertex1InterpCoeff);
+            particles.SetVelocity(npcParticle.ParticleIndex, resultantAbsoluteVelocity);
+            npcParticle.ConstrainedState->MeshRelativeVelocity = resultantRelativeVelocity;
 
-            int const edgeVertex2Ordinal = (bounceEdgeOrdinal + 1) % 3;
-            ElementIndex const edgeVertex2PointIndex = homeShip.GetTriangles().GetPointIndices(npcParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex)[edgeVertex2Ordinal];
-            float const vertex2InterpCoeff = npcParticle.ConstrainedState->CurrentBCoords.BCoords[edgeVertex2Ordinal];
-            homeShip.GetPoints().AddStaticForce(edgeVertex2PointIndex, impartedForce * vertex2InterpCoeff);
-        }
+            //
+            // Impart force against edge - but only if hit was "substantial", so
+            // we don't end up in infinite loops bouncing against a soft mesh
+            //
 
-        //
-        // Publish impact
-        //
+            if (apparentParticleVelocityAlongNormal > 2.0f) // Magic number
+            {
+                // Calculate impact force: Dp/Dt
+                //
+                //  Dp = v2*m - v1*m (using _relative_ velocities)
+                //  Dt = duration of impact - and here we are conservative, taking a whole simulation dt
+                //       ...but then it's too much
+                vec2f const impartedForce =
+                    (normalVelocity - normalResponse) // normalVelocity is directed outside of triangle
+                    * mParticles.GetMass(npcParticle.ParticleIndex)
+                    / GameParameters::SimulationStepTimeDuration<float>
+                    *0.2f; // Magic damper
 
-        OnImpact(
-            npc,
-            npcParticleOrdinal,
-            normalVelocity,
-            floorEdgeNormal,
-            currentSimulationTime);
+                // Divide among two vertices
+
+                int const edgeVertex1Ordinal = bounceEdgeOrdinal;
+                ElementIndex const edgeVertex1PointIndex = homeShip.GetTriangles().GetPointIndices(npcParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex)[edgeVertex1Ordinal];
+                float const vertex1InterpCoeff = npcParticle.ConstrainedState->CurrentBCoords.BCoords[edgeVertex1Ordinal];
+                homeShip.GetPoints().AddStaticForce(edgeVertex1PointIndex, impartedForce * vertex1InterpCoeff);
+
+                int const edgeVertex2Ordinal = (bounceEdgeOrdinal + 1) % 3;
+                ElementIndex const edgeVertex2PointIndex = homeShip.GetTriangles().GetPointIndices(npcParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex)[edgeVertex2Ordinal];
+                float const vertex2InterpCoeff = npcParticle.ConstrainedState->CurrentBCoords.BCoords[edgeVertex2Ordinal];
+                homeShip.GetPoints().AddStaticForce(edgeVertex2PointIndex, impartedForce * vertex2InterpCoeff);
+            }
+
+            //
+            // Publish impact
+            //
+
+            OnImpact(
+                npc,
+                npcParticleOrdinal,
+                npcParticle.ParticleIndex,
+                normalVelocity,
+                floorEdgeNormal,
+                currentSimulationTime,
+                gameParameters);
     }
     else
     {
@@ -3758,13 +3787,18 @@ void Npcs::BounceConstrainedNpcParticle(
 void Npcs::OnImpact(
     StateType & npc,
     int npcParticleOrdinal,
+    ElementIndex npcParticleIndex,
     vec2f const & normalResponse,
     vec2f const & bounceEdgeNormal, // Pointing outside of triangle
-    float currentSimulationTime) const
+    float currentSimulationTime,
+    GameParameters const & gameParameters) const
 {
     LogNpcDebug("    OnImpact(mag=", normalResponse.length(), ", bounceEdgeNormal=", bounceEdgeNormal, ")");
 
-    // Human state machine
+    //
+    // Update human state machine
+    //
+
     if (npc.Kind == NpcKindType::Human)
     {
         OnHumanImpact(
@@ -3774,6 +3808,107 @@ void Npcs::OnImpact(
             bounceEdgeNormal,
             currentSimulationTime);
     }
+
+    //
+    // Check explosion
+    //
+
+    if (mParticles.GetMaterial(npcParticleIndex).CombustionType == StructuralMaterial::MaterialCombustionType::Explosion)
+    {
+        TriggerExplosion(
+            npc,
+            npcParticleIndex,
+            ExplosionType::Combustion,
+            currentSimulationTime,
+            gameParameters);
+    }
+}
+
+void Npcs::TriggerExplosion(
+    StateType & npc,
+    ElementIndex npcParticleIndex,
+    ExplosionType explosionType,
+    float currentSimulationTime,
+    GameParameters const & gameParameters) const
+{
+    vec2f const & position = mParticles.GetPosition(npcParticleIndex);
+
+    // Calculate params
+    //
+
+    // Note: might argue that these could be passed by caller upon determining
+    // that an explosion is needed
+
+    float blastRadius = 0.0f;
+    float blastForce = 0.0f;
+    float blastHeat = 0.0f;
+
+    switch (explosionType)
+    {
+        case ExplosionType::Combustion:
+        {
+            blastHeat =
+                GameParameters::CombustionHeat
+                * 1.5f // Arbitrary multiplier
+                * gameParameters.CombustionHeatAdjustment
+                * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+
+            blastRadius =
+                mParticles.GetMaterial(npcParticleIndex).ExplosiveCombustionRadius
+                * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
+
+            blastForce =
+                40000.0f // Magic number
+                * mParticles.GetMaterial(npcParticleIndex).ExplosiveCombustionStrength;
+
+            break;
+        }
+
+        case ExplosionType::Deflagration:
+        {
+            blastHeat =
+                gameParameters.BombBlastHeat * 0.3f // Just less caustic
+                * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+
+            blastRadius = gameParameters.IsUltraViolentMode
+                ? std::min(gameParameters.BombBlastRadius * 10.0f, GameParameters::MaxBombBlastRadius * 2.0f)
+                : gameParameters.BombBlastRadius;
+
+            blastForce =
+                10.0f * 50000.0f // Magic number
+                * (gameParameters.IsUltraViolentMode
+                    ? std::min(gameParameters.BombBlastForceAdjustment * 10.0f, GameParameters::MaxBombBlastForceAdjustment * 2.0f)
+                    : gameParameters.BombBlastForceAdjustment);
+
+            break;
+        }
+
+        case ExplosionType::Sodium:
+        {
+            blastHeat =
+                GameParameters::WaterReactionHeat
+                * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+
+            blastRadius =
+                3.5f // Magic number
+                * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
+
+            blastForce = 1000000.0f; // Magic number
+
+            break;
+        }
+    }
+
+    assert(mShips[npc.CurrentShipId].has_value());
+    mShips[npc.CurrentShipId]->HomeShip.StartExplosion(
+        currentSimulationTime,
+        npc.CurrentPlaneId,
+        position,
+        blastRadius,
+        blastForce,
+        blastHeat,
+        explosionType,
+        gameParameters);
 }
 
 void Npcs::MaintainOverLand(

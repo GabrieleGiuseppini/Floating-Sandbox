@@ -917,8 +917,7 @@ void Points::UpdateCombustionLowFrequency(
         if (waterReactivityState.State == WaterReactionState::StateType::Unreacted)
         {
             // See if should react
-            float const waterReactionThreshold = 0.5f * waterReactivityState.Reactivity;
-            if (GetWater(pointIndex) >= waterReactionThreshold)
+            if (GetWater(pointIndex) >= waterReactivityState.Threshold)
             {
                 // Switch state
                 waterReactivityState.State = WaterReactionState::StateType::ReactionTriggered;
