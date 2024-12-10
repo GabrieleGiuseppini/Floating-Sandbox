@@ -231,7 +231,8 @@ private:
 				{
 					Default, // Nothing
 
-					BeingRemoved // Removal animation
+					BeingRemoved, // Removal animation
+					BeingRemoved_Exploding // Disappearing
 				};
 
 				BehaviorType CurrentBehavior;
@@ -251,6 +252,13 @@ private:
 						{
 						}
 					} BeingRemoved;
+
+					struct BeingRemoved_ExplodingStateType
+					{
+						void Reset()
+						{
+						}
+					} BeingRemoved_Exploding;
 
 					BehaviorStateType()
 					{}
@@ -309,6 +317,12 @@ private:
 							CurrentBehaviorState.BeingRemoved.Reset();
 							break;
 						}
+
+						case BehaviorType::BeingRemoved_Exploding:
+						{
+							CurrentBehaviorState.BeingRemoved_Exploding.Reset();
+							break;
+						}
 					}
 
 					CurrentStateTransitionSimulationTimestamp = currentSimulationTime;
@@ -355,7 +369,8 @@ private:
 
 					ConstrainedOrFree_Smashed, // Plat
 
-					BeingRemoved // Removal animation
+					BeingRemoved, // Removal animation
+					BeingRemoved_Exploding // Disappearing
 				};
 
 				BehaviorType CurrentBehavior;
@@ -591,6 +606,13 @@ private:
 						}
 					} BeingRemoved;
 
+					struct BeingRemoved_ExplodingStateType
+					{
+						void Reset()
+						{
+						}
+					} BeingRemoved_Exploding;
+
 					BehaviorStateType()
 					{}
 
@@ -799,6 +821,12 @@ private:
 						case BehaviorType::BeingRemoved:
 						{
 							CurrentBehaviorState.BeingRemoved.Reset();
+							break;
+						}
+
+						case BehaviorType::BeingRemoved_Exploding:
+						{
+							CurrentBehaviorState.BeingRemoved_Exploding.Reset();
 							break;
 						}
 					}
@@ -1776,7 +1804,7 @@ private:
 		Ship & homeShip,
 		NpcParticles & particles,
 		float currentSimulationTime,
-		GameParameters const & gameParameters) const;
+		GameParameters const & gameParameters);
 
 	void OnImpact(
 		StateType & npc,
@@ -1785,14 +1813,17 @@ private:
 		vec2f const & normalResponse,
 		vec2f const & bounceEdgeNormal,
 		float currentSimulationTime,
-		GameParameters const & gameParameters) const;
+		GameParameters const & gameParameters);
 
 	void TriggerExplosion(
 		StateType & npc,
 		ElementIndex npcParticleIndex,
+		float blastRadius,
+		float blastForce,
+		float blastHeat,
 		ExplosionType explosionType,
 		float currentSimulationTime,
-		GameParameters const & gameParameters) const;
+		GameParameters const & gameParameters);
 
 	inline void MaintainInWorldBounds(
 		StateType & npc,
@@ -2176,6 +2207,8 @@ private:
 	static float constexpr HumanRemovalLevitationDuration = 1.0f;
 	static float constexpr HumanRemovalRotationDuration = 3.0f;
 	static float constexpr HumanRemovalRotationStepBase = 0.3f;
+
+	static float constexpr ExplosionDuration = 0.2f;
 
 private:
 

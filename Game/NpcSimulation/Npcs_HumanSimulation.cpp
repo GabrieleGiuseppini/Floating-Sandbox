@@ -77,6 +77,20 @@ void Npcs::UpdateFurniture(
 
 			break;
 		}
+
+		case FurnitureNpcStateType::BehaviorType::BeingRemoved_Exploding:
+		{
+			// See if we're done
+			float const elapsed = currentSimulationTime - furnitureState.CurrentStateTransitionSimulationTimestamp;
+			if (elapsed >= ExplosionDuration)
+			{
+				// Deferred removal
+				assert(std::find(mDeferredRemovalNpcs.cbegin(), mDeferredRemovalNpcs.cend(), npc.Id) == mDeferredRemovalNpcs.cend());
+				mDeferredRemovalNpcs.emplace_back(npc.Id);
+			}
+
+			break;
+		}
 	}
 }
 
@@ -1871,6 +1885,20 @@ void Npcs::UpdateHuman(
 
 					break;
 				}
+			}
+
+			break;
+		}
+
+		case HumanNpcStateType::BehaviorType::BeingRemoved_Exploding:
+		{
+			// See if we're done
+			float const elapsed = currentSimulationTime - humanState.CurrentStateTransitionSimulationTimestamp;
+			if (elapsed >= ExplosionDuration)
+			{
+				// Deferred removal
+				assert(std::find(mDeferredRemovalNpcs.cbegin(), mDeferredRemovalNpcs.cend(), npc.Id) == mDeferredRemovalNpcs.cend());
+				mDeferredRemovalNpcs.emplace_back(npc.Id);
 			}
 
 			break;

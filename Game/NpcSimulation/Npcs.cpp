@@ -2011,7 +2011,7 @@ void Npcs::ApplyBlast(
     // Only NPCs of this ship, or free regime of any ship
     //
 
-    float const actualBlastRadius = blastRadius * 4.0f;
+    float const actualBlastRadius = blastRadius * 6.0f;
     float const squareRadius = actualBlastRadius * actualBlastRadius;
 
     // The specified blast is for damage to the ship; here we want a lower
@@ -2043,11 +2043,11 @@ void Npcs::ApplyBlast(
                         // Apply blast force
                         //
 
-                        float const particleBlastForce = blastAcceleration * 6.0f * std::sqrt(mParticles.GetMass(npcParticle.ParticleIndex));
+                        float const particleBlastForce = blastAcceleration * 7.0f * std::sqrt(mParticles.GetMass(npcParticle.ParticleIndex));
 
                         mParticles.AddExternalForce(
                             npcParticle.ParticleIndex,
-                            particleRadius.normalise(particleRadiusLength) * particleBlastForce / (particleRadiusLength + 2.0f));
+                            particleRadius.normalise(particleRadiusLength) * particleBlastForce / (particleRadiusLength + 1.0f));
                     }
                 }
             }
@@ -4288,6 +4288,17 @@ void Npcs::UpdateFurnitureNpcAnimation(
             break;
         }
 
+        case FurnitureNpcStateType::BehaviorType::BeingRemoved_Exploding:
+        {
+            // Alpha
+
+            float const elapsed = currentSimulationTime - furnitureNpcState.CurrentStateTransitionSimulationTimestamp;
+
+            animationState.Alpha = 1.0f - std::min(elapsed / ExplosionDuration, 1.0f);
+
+            break;
+        }
+
         case FurnitureNpcStateType::BehaviorType::Default:
         {
             // Nop
@@ -5209,6 +5220,17 @@ void Npcs::UpdateHumanNpcAnimation(
 
             break;
         }
+
+        case HumanNpcStateType::BehaviorType::BeingRemoved_Exploding:
+        {
+            // Alpha
+
+            float const elapsed = currentSimulationTime - humanNpcState.CurrentStateTransitionSimulationTimestamp;
+
+            animationState.Alpha = 1.0f - std::min(elapsed / ExplosionDuration, 1.0f);
+
+            break;
+        }
     }
 
     // Converge
@@ -5396,6 +5418,7 @@ void Npcs::UpdateHumanNpcAnimation(
         case HumanNpcStateType::BehaviorType::Free_InWater:
         case HumanNpcStateType::BehaviorType::Free_Swimming_Style1:
         case HumanNpcStateType::BehaviorType::ConstrainedOrFree_Smashed:
+        case HumanNpcStateType::BehaviorType::BeingRemoved_Exploding:
         {
             // Nop
             break;

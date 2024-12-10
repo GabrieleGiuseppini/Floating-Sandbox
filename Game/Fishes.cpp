@@ -482,9 +482,6 @@ void Fishes::UpdateDynamics(
 
             float const elapsedSteeringDurationFraction = (currentSimulationTime - fish.CruiseSteeringState->SimulationTimeStart) / fish.CruiseSteeringState->SimulationTimeDuration;
 
-            if (f == 0)
-                LogMessage("TODOTEST: ", fish.CruiseSteeringState->SimulationTimeDuration);
-
             // Check whether we should stop steering
             if (elapsedSteeringDurationFraction >= 1.0f)
             {

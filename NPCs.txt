@@ -544,52 +544,61 @@ Next release:
 		+ Split UpdateNpc into UpdateNpcPhysics & UpdateNpcBehavior
 			+ Split
 			+ UpdateNpcPhysics: return whenever ! working anymore
-		= TriggerExplosion(NpcId, particle ordinal, ExplosionType, sim time)
+		+ TriggerExplosion(NpcId, particle ordinal, ExplosionType, sim time)
 			+ @ particle's pos
-			= Inject explosion state machine @ Ship, should take care of physics _and_ rendering!
-				- TODO: we assume Combustion has right properties - may be pass?
-			- Notify (for sound)
-				- Depends on ExplosionType:
-					- Deflagration: OnBombExplosion
-					- Combustion: OnCombustionExplosion
-					- Sodium: OnWaterReactionExplosion
-			- Transition (furniture) behavior to Exploding
-				- If human: assert false ("for no particular reason")
-			- Start deferred deletion (InternalBeginDeferredDeletion)
+			+ Inject explosion state machine @ Ship, should take care of physics _and_ rendering!
+			+ Notify (for sound)
+				+ Depends on ExplosionType:
+					+ Deflagration: OnBombExplosion
+					+ Combustion: OnCombustionExplosion
+					+ Sodium: OnWaterReactionExplosion
+			+ Transition (furniture) behavior to Exploding
+			+ Start deferred deletion (InternalBeginDeferredDeletion)
 
 		= Explosion triggers: 
 			! Mapping of material to ExplosionType from Ship:
 				! Bombs<->Deflagration
 				! StructuralMaterial::MaterialCombustionType::Explosion<->Combustion
 				! WaterReactivity threshold<->Sodium
-			= Impact
-				- Check a threshold
-					- Do Log lines to figure out value
+			+ Impact
+				+ Check a threshold
 				+ If material is MaterialCombustionType::Explosion: ExplosionType=Combustion
-				- Test
-					- Also params
+				+ Test
+					+ Also params, w/ & without UV mode
 			- Combustion update
 				- If material is MaterialCombustionType::Explosion, and temperature threshold (TODO: double-check @ ship): ExplosionType=Combustion
+				- Test
+					- Also params, w/ & without UV mode
 			- Waterness (for sodium)
 				- If water >= reactivity threshold: ExplosionType=Sodium
 					- Perf: do we want particle buffer for reactivity threshold?
 				- Test
-					- Also params
-		- FurnitureState::Exploding
-			- State: simulationStartTimestamp
-			- Behavior update: countdown to final insertion into Set of NpcIds to remove
-			- Animation: alpha
+					- Also params, w/ & without UV mode
+		= Furniture/HumanState::Exploding
+			+ State: <empty>
+			+ Behavior update: countdown to final insertion into Set of NpcIds to remove
+			+ Animation: alpha
+			+ Test
 		= Make TNT furniture
 			+ New material: Gunpowder Strong Crate (wood+powder)
 			- Test:
 				- Buoyancy
+				- Sound
 		- Make Sodium furniture (and other tanks from TimCan)
 			- New material: Sodium Tank (metal+sodium)
 			+ Make sure we can inject explosion type as well
+			- Test:
+				- Sound
+
+	- Check if any logging is left behind (run)
+
+	- Fix bug with placing (furniture) NPC: anchor being particle ordinal 2 
 
 	- Shader:
 		- Yellow
 		- Other improvements?
+			- Don't boost lum that much w/progress
+			- Darkening fight only for deep
 
 	- changelist
 		- Explosion
