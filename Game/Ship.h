@@ -600,7 +600,7 @@ private:
         GameParameters const & gameParameters);
 
     void InternalSpawnAirBubble(
-        vec2f const & position,        
+        vec2f const & position,
         float depth,
         float finalScale, // Relative to texture's world dimensions
         float temperature,
@@ -656,43 +656,43 @@ private:
     // IShipPhysicsHandler
     /////////////////////////////////////////////////////////////////////////
 
-    virtual void HandlePointDetach(
+    void HandlePointDetach(
         ElementIndex pointElementIndex,
         bool generateDebris,
         bool fireDestroyEvent,
         float currentSimulationTime,
         GameParameters const & gameParameters) override;
 
-    virtual void HandlePointDamaged(ElementIndex pointElementIndex) override;
+    void HandlePointDamaged(ElementIndex pointElementIndex) override;
 
-    virtual void HandleEphemeralParticleDestroy(
+    void HandleEphemeralParticleDestroy(
         ElementIndex pointElementIndex) override;
 
-    virtual void HandlePointRestore(ElementIndex pointElementIndex) override;
+    void HandlePointRestore(ElementIndex pointElementIndex) override;
 
-    virtual void HandleSpringDestroy(
+    void HandleSpringDestroy(
         ElementIndex springElementIndex,
         bool destroyAllTriangles,
         GameParameters const & gameParameters) override;
 
-    virtual void HandleSpringRestore(
+    void HandleSpringRestore(
         ElementIndex springElementIndex,
         GameParameters const & gameParameters) override;
 
-    virtual void HandleTriangleDestroy(ElementIndex triangleElementIndex) override;
+    void HandleTriangleDestroy(ElementIndex triangleElementIndex) override;
 
-    virtual void HandleTriangleRestore(ElementIndex triangleElementIndex) override;
+    void HandleTriangleRestore(ElementIndex triangleElementIndex) override;
 
-    virtual void HandleElectricalElementDestroy(
+    void HandleElectricalElementDestroy(
         ElementIndex electricalElementIndex,
         ElementIndex pointIndex,
         ElectricalElementDestroySpecializationType specialization,
         float currentSimulationTime,
         GameParameters const & gameParameters) override;
 
-    virtual void HandleElectricalElementRestore(ElementIndex electricalElementIndex) override;
+    void HandleElectricalElementRestore(ElementIndex electricalElementIndex) override;
 
-    virtual void StartExplosion(
+    void StartExplosion(
         float currentSimulationTime,
         PlaneId planeId,
         vec2f const & centerPosition,
@@ -702,27 +702,27 @@ private:
         ExplosionType explosionType,
         GameParameters const & gameParameters) override;
 
-    virtual void DoAntiMatterBombPreimplosion(
+    void DoAntiMatterBombPreimplosion(
         vec2f const & centerPosition,
         float sequenceProgress,
         float radius,
         GameParameters const & gameParameters) override;
 
-    virtual void DoAntiMatterBombImplosion(
+    void DoAntiMatterBombImplosion(
         vec2f const & centerPosition,
         float sequenceProgress,
         GameParameters const & gameParameters) override;
 
-    virtual void DoAntiMatterBombExplosion(
+    void DoAntiMatterBombExplosion(
         vec2f const & centerPosition,
         float sequenceProgress,
         GameParameters const & gameParameters) override;
 
-    virtual void HandleWatertightDoorUpdated(
+    void HandleWatertightDoorUpdated(
         ElementIndex pointElementIndex,
         bool isOpen) override;
 
-    virtual void HandleElectricSpark(
+    void HandleElectricSpark(
         ElementIndex pointElementIndex,
         float strength,
         float currentSimulationTime,
