@@ -581,8 +581,8 @@ Next release:
 			+ Test
 		= Make TNT furniture
 			+ New material: Gunpowder Strong Crate (wood+powder)
-			- Test:
-				- Buoyancy
+			= Test:
+				+ Buoyancy
 				- Sound
 		- Make Sodium furniture (and other tanks from TimCan)
 			- New material: Sodium Tank (metal+sodium)
@@ -592,7 +592,10 @@ Next release:
 
 	- Check if any logging is left behind (run)
 
-	- Fix bug with placing (furniture) NPC: anchor being particle ordinal 2 
+	+ Fix bug with placing (furniture) NPC: anchor being particle ordinal 2 
+		! Due to folded tri unfolding, which happens before other particles are moved
+		+ Fix: do folded tri unfolding _after_ all particles have been moved
+			+ UpdateNpsPhysisic: after all particles are done: if being moved: do now and maintain world bounds (if has been moved)
 
 	- Shader:
 		- Yellow
@@ -612,7 +615,8 @@ Next release:
 - See NPCs with bomb
 	- See first if can do internal pressure physics - do we have velocity there?
 		- If so, do physics, and then NPCs picking it up
-	- Adjust blast on NPCs
+	= Adjust blast on NPCs
+	- Check forced breaking with first frame
 
 
 - Do chest fixes at skins

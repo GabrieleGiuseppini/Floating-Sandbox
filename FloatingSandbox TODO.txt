@@ -31,7 +31,7 @@
 
 	- OpenGL:
 		- Flat
-			- ARB
+			- ARB: https://registry.khronos.org/OpenGL/extensions/EXT/EXT_gpu_shader4.txt
 			- Really good?
 		- Points: see if can make them round, see https://www.khronos.org/opengl/wiki/Fragment_Shader#Inputs
 

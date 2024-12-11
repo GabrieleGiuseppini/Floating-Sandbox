@@ -1825,6 +1825,11 @@ private:
 		float currentSimulationTime,
 		GameParameters const & gameParameters);
 
+	void MaintainNpcUnfolded(
+		StateType & npc,
+		Ship const & homeShip,
+		GameParameters const & gameParameters);
+
 	inline void MaintainInWorldBounds(
 		StateType & npc,
 		int npcParticleOrdinal,
