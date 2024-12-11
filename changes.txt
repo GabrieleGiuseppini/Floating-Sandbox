@@ -8,6 +8,7 @@
 - Bug fixes:
 	- Fixed a crash when using the repair tool on a part of the ship that had exploded (thanks to AlexGuy!)
 - ...and a few more small improvements here and there!
+	- Among which: better NPC physics with explosions
 
 1.19.0
 - Initial implementation of NPCs!

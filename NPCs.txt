@@ -620,6 +620,9 @@ Next release:
 + Test bouncing on wall & candidates - evtlly remove lookahead for it
 
 - See chairs floating in lava (Camodo video)
+	- It's frction drag adj - clamp value @ World forces - water drag
+
+- Bomb scare: larger radius
 
 + See NPCs with bomb
 	X See first if can do internal pressure physics - do we have velocity there?

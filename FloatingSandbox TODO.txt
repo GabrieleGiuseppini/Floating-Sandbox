@@ -29,6 +29,19 @@
 
 	- Invite alex_guy1011 to beta group (GameJolt's guy)
 
+	- Improve explosions:
+		- Gfx radius
+			- ShipRenderContext::WhateverExplosion: also takes gfx radius
+			- Ship::StartExplosion: also takes gfx radius (max, like the others)
+				- Names: BlastRadius, RenderRadius
+				- State machine grows it as well
+			- Callers of Ship::StartExplosion: calc and pass gfx radius
+				- Prelim: calculate all using verbatim old ShipRenderContext formula (i.e. force radius + 13)
+			- When done, fine tune gfx radii
+				- Npc
+					- Check out: now TNT has radius 8x hydrogen
+		- Sounds
+
 	- OpenGL:
 		- Flat
 			- ARB: https://registry.khronos.org/OpenGL/extensions/EXT/EXT_gpu_shader4.txt
