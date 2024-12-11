@@ -121,17 +121,17 @@ void main()
     float lampToolIntensity = CalculateLampToolIntensity(gl_FragCoord.xy);
 
     // Calculate removal shading depth
-    float removalProgressSquare = vertexRemovalProgress * vertexRemovalProgress;    
     float lum = 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b;
-    float removalDepth = (lum + removalProgressSquare) * 1.5;
-    removalDepth *= removalProgressSquare;
-    vec3 removalColor = vec3(NPC_REMOVAL_COLOR);
+    float removalDepth = min(lum + vertexRemovalProgress, 1.0);
+    removalDepth *= vertexRemovalProgress;
+    vec3 c2 = min(
+        vec3(NPC_REMOVAL_COLOR),
+        c.rgb + vec3(NPC_REMOVAL_COLOR) * removalDepth);
+
     c.rgb = mix(
         c.rgb,
-        min(
-            removalColor,
-            c.rgb + removalColor),
-         removalDepth);
+        c2,
+        removalDepth);
 
     if (paramShipDepthDarkeningSensitivity > 0.0) // Fine to branch - all pixels will follow the same branching
     {
@@ -151,9 +151,9 @@ void main()
     // (complement missing ambient light with point's light)
     c.rgb *= max(
         mix(
-            max(vertexLight, removalDepth),
+            vertexLight,
             1.0, 
-            paramEffectiveAmbientLightIntensity), 
+            max(paramEffectiveAmbientLightIntensity, removalDepth)),
         lampToolIntensity);
 
     // Apply electric lamp color

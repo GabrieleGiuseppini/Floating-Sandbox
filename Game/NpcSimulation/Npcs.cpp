@@ -1890,10 +1890,12 @@ void Npcs::RotateShipBy(
 void Npcs::SmashAt(
     vec2f const & targetPos,
     float radius,
-    float currentSimulationTime)
+    float currentSimulationTime,
+    GameParameters const & gameParameters)
 {
     //
-    // Transition all active humans in radius which have not transitioned yet
+    // Visit all active NPCs in radius and check if should explode, and
+    // transition all humans which have not transitioned yet
     //
 
     float const squareRadius = radius * radius;
@@ -1901,41 +1903,78 @@ void Npcs::SmashAt(
     for (auto & npc : mStateBuffer)
     {
         if (npc.has_value()
-            && npc->Kind == NpcKindType::Human
             && npc->IsActive())
         {
             bool hasOneParticleInRadius = false;
+            ElementIndex explosiveParticleInRadius = NoneElementIndex;
             for (auto const & npcParticle : npc->ParticleMesh.Particles)
             {
                 float const pointSquareDistance = (mParticles.GetPosition(npcParticle.ParticleIndex) - targetPos).squareLength();
                 if (pointSquareDistance < squareRadius)
                 {
                     hasOneParticleInRadius = true;
-                    break;
+                    if (mParticles.GetMaterial(npcParticle.ParticleIndex).CombustionType == StructuralMaterial::MaterialCombustionType::Explosion)
+                    {
+                        explosiveParticleInRadius = npcParticle.ParticleIndex;
+                    }
                 }
             }
 
             if (hasOneParticleInRadius)
             {
-                auto & humanState = npc->KindSpecificState.HumanNpcState;
-                if (humanState.CurrentBehavior != StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::ConstrainedOrFree_Smashed)
+                if (explosiveParticleInRadius != NoneElementIndex)
                 {
-                    // Transition to Smashed
-                    humanState.TransitionToState(StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::ConstrainedOrFree_Smashed, currentSimulationTime);
+                    // Explode
 
-                    // Turn front/back iff side-looking
-                    if (humanState.CurrentFaceOrientation == 0.0f)
-                    {
-                        humanState.CurrentFaceOrientation = GameRandomEngine::GetInstance().GenerateUniformBoolean(0.5f) ? +1.0f : -1.0f;
-                        humanState.CurrentFaceDirectionX = 0.0f;
-                    }
+                    float const blastRadius =
+                        mParticles.GetMaterial(explosiveParticleInRadius).ExplosiveCombustionRadius
+                        * 0.05f // Magic number
+                        * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
 
-                    // Futurework: sound
+                    float const blastForce =
+                        20000.0f // Magic number
+                        * mParticles.GetMaterial(explosiveParticleInRadius).ExplosiveCombustionStrength;
+
+                    float const blastHeat =
+                        GameParameters::CombustionHeat
+                        * 0.5f // Magic number
+                        * gameParameters.CombustionHeatAdjustment
+                        * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+
+                    TriggerExplosion(
+                        *npc,
+                        explosiveParticleInRadius,
+                        blastRadius,
+                        blastForce,
+                        blastHeat,
+                        ExplosionType::Combustion,
+                        currentSimulationTime,
+                        gameParameters);
                 }
-                else
+                else if (npc->Kind == NpcKindType::Human)
                 {
-                    // Prolong stay
-                    humanState.CurrentBehaviorState.ConstrainedOrFree_Smashed.Reset();
+                    // Smash
+
+                    auto & humanState = npc->KindSpecificState.HumanNpcState;
+                    if (humanState.CurrentBehavior != StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::ConstrainedOrFree_Smashed)
+                    {
+                        // Transition to Smashed
+                        humanState.TransitionToState(StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::ConstrainedOrFree_Smashed, currentSimulationTime);
+
+                        // Turn front/back iff side-looking
+                        if (humanState.CurrentFaceOrientation == 0.0f)
+                        {
+                            humanState.CurrentFaceOrientation = GameRandomEngine::GetInstance().GenerateUniformBoolean(0.5f) ? +1.0f : -1.0f;
+                            humanState.CurrentFaceDirectionX = 0.0f;
+                        }
+
+                        // Futurework: sound
+                    }
+                    else
+                    {
+                        // Prolong stay
+                        humanState.CurrentBehaviorState.ConstrainedOrFree_Smashed.Reset();
+                    }
                 }
             }
         }

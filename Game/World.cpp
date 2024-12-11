@@ -309,7 +309,8 @@ void World::DestroyAt(
     mNpcs->SmashAt(
         targetPos,
         radius,
-        mCurrentSimulationTime);
+        mCurrentSimulationTime,
+        gameParameters);
 }
 
 void World::RepairAt(

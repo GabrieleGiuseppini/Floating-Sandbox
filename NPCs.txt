@@ -565,14 +565,13 @@ Next release:
 				+ If material is MaterialCombustionType::Explosion: ExplosionType=Combustion
 				+ Test
 					+ Also params, w/ & without UV mode
-			- Impact w/smash
-			- Combustion update
-				- If material is MaterialCombustionType::Explosion, and temperature threshold (TODO: double-check @ ship): ExplosionType=Combustion
-				- Test
-					- Also params, w/ & without UV mode
-			- Waterness (for sodium)
-				- If water >= reactivity threshold: ExplosionType=Sodium
-					- Perf: do we want particle buffer for reactivity threshold?
+			+ Impact w/smash
+			+ Combustion update
+				+ If material is MaterialCombustionType::Explosion, and temperature threshold (TODO: double-check @ ship): ExplosionType=Combustion
+				+ Test
+					+ Also params, w/ & without UV mode
+			= Waterness (for sodium)
+				+ If water >= reactivity threshold: ExplosionType=Sodium
 				- Test
 					- Also params, w/ & without UV mode
 		+ Furniture/HumanState::Exploding
@@ -599,11 +598,11 @@ Next release:
 		+ Fix: do folded tri unfolding _after_ all particles have been moved
 			+ UpdateNpsPhysisic: after all particles are done: if being moved: do now and maintain world bounds (if has been moved)
 
-	- Shader:
-		- Yellow
-		- Other improvements?
-			- Don't boost lum that much w/progress
-			- Darkening fight only for deep
+	= Shader:
+		= Yellow
+		= Other improvements?
+			= Don't boost lum that much w/progress
+			= Darkening fight only for deep
 
 	- changelist
 		- Explosion

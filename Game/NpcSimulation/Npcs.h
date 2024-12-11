@@ -1240,7 +1240,8 @@ public:
 	void SmashAt(
 		vec2f const & targetPos,
 		float radius,
-		float currentSimulationTime);
+		float currentSimulationTime,
+		GameParameters const & gameParameters);
 
 	void DrawTo(
 		vec2f const & targetPos,

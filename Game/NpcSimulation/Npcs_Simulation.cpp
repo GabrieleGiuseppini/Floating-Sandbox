@@ -380,8 +380,8 @@ void Npcs::UpdateNpcPhysics(
             {
                 // Waterness, Water Velocity, Combustion
 
-                bool atLeastOneNpcParticleOnFire = false;
-                bool atLeastOneNpcParticleInWater = false;
+                ElementIndex oneNpcParticleOnFire = NoneElementIndex;
+                ElementIndex oneNpcParticleInWater = NoneElementIndex;
 
                 for (size_t p = 0; p < npcState->ParticleMesh.Particles.size(); ++p)
                 {
@@ -422,11 +422,14 @@ void Npcs::UpdateNpcPhysics(
 
                         if (meshWaterness > 0.4f)
                         {
-                            atLeastOneNpcParticleInWater = true;
+                            oneNpcParticleInWater = particle.ParticleIndex;
                         }
                         else // Otherwise too much water for fire
                         {
-                            atLeastOneNpcParticleOnFire = atLeastOneNpcParticleOnFire || isAtLeastOneMeshPointOnFire;
+                            if (isAtLeastOneMeshPointOnFire)
+                            {
+                                oneNpcParticleOnFire = particle.ParticleIndex;
+                            }
                         }
                     }
                     else
@@ -434,21 +437,21 @@ void Npcs::UpdateNpcPhysics(
                         // Free - check if underwater (using AnyWaterness as proxy)
                         if (mParticles.GetAnyWaterness(particle.ParticleIndex) > 0.4f)
                         {
-                            atLeastOneNpcParticleInWater = true;
+                            oneNpcParticleInWater = particle.ParticleIndex;
                         }
                     }
                 } // For all NPC particles
 
                 // Update NPC's fire progress
 
-                if (atLeastOneNpcParticleInWater)
+                if (oneNpcParticleInWater != NoneElementIndex)
                 {
-                    // Smother immediately
+                    // Smother quickly
                     npcState->CombustionProgress += (-1.0f - npcState->CombustionProgress) * 0.1f;
                 }
                 else
                 {
-                    if (atLeastOneNpcParticleOnFire)
+                    if (oneNpcParticleOnFire != NoneElementIndex)
                     {
                         // Increase
                         npcState->CombustionProgress += (1.0f - npcState->CombustionProgress) * 0.3f;
@@ -459,7 +462,63 @@ void Npcs::UpdateNpcPhysics(
                         npcState->CombustionProgress += (-1.0f - npcState->CombustionProgress) * 0.007f;
                     }
                 }
-            }
+
+                // Explosion and water reactivity ignition
+
+                if (oneNpcParticleOnFire != NoneElementIndex
+                    && mParticles.GetMaterial(oneNpcParticleOnFire).CombustionType == StructuralMaterial::MaterialCombustionType::Explosion)
+                {
+                    float const blastRadius =
+                        mParticles.GetMaterial(oneNpcParticleOnFire).ExplosiveCombustionRadius
+                        * 0.1f // Magic number
+                        * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
+
+                    float const blastForce =
+                        55000.0f // Magic number
+                        * mParticles.GetMaterial(oneNpcParticleOnFire).ExplosiveCombustionStrength;
+
+                    float const blastHeat =
+                        GameParameters::CombustionHeat
+                        * 1.0f // Magic number
+                        * gameParameters.CombustionHeatAdjustment
+                        * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+
+                    TriggerExplosion(
+                        *npcState,
+                        oneNpcParticleOnFire,
+                        blastRadius,
+                        blastForce,
+                        blastHeat,
+                        ExplosionType::Combustion,
+                        currentSimulationTime,
+                        gameParameters);
+
+                }
+                else if (oneNpcParticleInWater != NoneElementIndex
+                    && mParticles.GetMeshWaterness(oneNpcParticleInWater) > mParticles.GetMaterial(oneNpcParticleInWater).WaterReactivity)
+                {
+                    float const blastRadius =
+                        5.0f // Magic number
+                        * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
+
+                    float const blastForce = 3000000.0f; // Magic number
+
+                    float const blastHeat =
+                        GameParameters::WaterReactionHeat
+                        * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+
+                    TriggerExplosion(
+                        *npcState,
+                        oneNpcParticleInWater,
+                        blastRadius,
+                        blastForce,
+                        blastHeat,
+                        ExplosionType::Sodium,
+                        currentSimulationTime,
+                        gameParameters);
+                }
+
+            } // if (low-freq step)
 
             if (!npcState->IsActive())
                 continue;
@@ -3775,12 +3834,6 @@ void Npcs::OnImpact(
     {
         float const multiplier = std::min(impactMagnitude / ImpactMagnitudeThreshold, 2.5f);
 
-        float const blastHeat =
-            GameParameters::CombustionHeat
-            * 1.0f // Magic number
-            * gameParameters.CombustionHeatAdjustment
-            * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
-
         float const blastRadius =
             mParticles.GetMaterial(npcParticleIndex).ExplosiveCombustionRadius
             * 0.1f // Magic number
@@ -3791,6 +3844,12 @@ void Npcs::OnImpact(
             55000.0f // Magic number
             * multiplier
             * mParticles.GetMaterial(npcParticleIndex).ExplosiveCombustionStrength;
+
+        float const blastHeat =
+            GameParameters::CombustionHeat
+            * 1.0f // Magic number
+            * gameParameters.CombustionHeatAdjustment
+            * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
         TriggerExplosion(
             npc,
@@ -3815,70 +3874,6 @@ void Npcs::TriggerExplosion(
     GameParameters const & gameParameters)
 {
     vec2f const & position = mParticles.GetPosition(npcParticleIndex);
-
-    // TODOOLD
-    ////// Note: might argue that these could be passed by caller upon determining
-    ////// that an explosion is needed
-
-    ////float blastRadius = 0.0f;
-    ////float blastForce = 0.0f;
-    ////float blastHeat = 0.0f;
-
-    ////switch (explosionType)
-    ////{
-    ////    case ExplosionType::Combustion:
-    ////    {
-    ////        blastHeat =
-    ////            GameParameters::CombustionHeat
-    ////            * 1.5f // Arbitrary multiplier
-    ////            * gameParameters.CombustionHeatAdjustment
-    ////            * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
-
-    ////        blastRadius =
-    ////            mParticles.GetMaterial(npcParticleIndex).ExplosiveCombustionRadius
-    ////            * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
-
-    ////        blastForce =
-    ////            40000.0f // Magic number
-    ////            * mParticles.GetMaterial(npcParticleIndex).ExplosiveCombustionStrength;
-
-    ////        break;
-    ////    }
-
-    ////    case ExplosionType::Deflagration:
-    ////    {
-    ////        blastHeat =
-    ////            gameParameters.BombBlastHeat * 0.3f // Just less caustic
-    ////            * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
-
-    ////        blastRadius = gameParameters.IsUltraViolentMode
-    ////            ? std::min(gameParameters.BombBlastRadius * 10.0f, GameParameters::MaxBombBlastRadius * 2.0f)
-    ////            : gameParameters.BombBlastRadius;
-
-    ////        blastForce =
-    ////            10.0f * 50000.0f // Magic number
-    ////            * (gameParameters.IsUltraViolentMode
-    ////                ? std::min(gameParameters.BombBlastForceAdjustment * 10.0f, GameParameters::MaxBombBlastForceAdjustment * 2.0f)
-    ////                : gameParameters.BombBlastForceAdjustment);
-
-    ////        break;
-    ////    }
-
-    ////    case ExplosionType::Sodium:
-    ////    {
-    ////        blastHeat =
-    ////            GameParameters::WaterReactionHeat
-    ////            * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
-
-    ////        blastRadius =
-    ////            3.5f // Magic number
-    ////            * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
-
-    ////        blastForce = 1000000.0f; // Magic number
-
-    ////        break;
-    ////    }
-    ////}
 
     assert(mShips[npc.CurrentShipId].has_value());
     mShips[npc.CurrentShipId]->HomeShip.StartExplosion(

@@ -69,8 +69,8 @@ bool Ship::UpdateExplosionStateMachine(
             explosionStateMachine.BlastHeat * 1000.0f // KJoule->Joule
             * GameParameters::SimulationStepTimeDuration<float>;
 
-        float closestPointSquareDistance = std::numeric_limits<float>::max();
-        ElementIndex closestPointIndex = NoneElementIndex;
+        float closestStructuralPointSquareDistance = std::numeric_limits<float>::max();
+        ElementIndex closestStructuralPointIndex = NoneElementIndex;
 
         // Visit all points
         for (auto const pointIndex : mPoints)
@@ -115,13 +115,15 @@ bool Ship::UpdateExplosionStateMachine(
                     mPoints.GetWaterVelocity(pointIndex) + blastDir * 100.0f * mPoints.GetWater(pointIndex)); // Magic number
 
                 //
-                // Check whether this point is the closest point
+                // Check whether this point is the closest point, if it's structural
                 //
 
-                if (squarePointDistance < closestPointSquareDistance)
+                if (squarePointDistance < closestStructuralPointSquareDistance
+                    && pointIndex < mPoints.GetRawShipPointCount()
+                    && !mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.empty())
                 {
-                    closestPointSquareDistance = squarePointDistance;
-                    closestPointIndex = pointIndex;
+                    closestStructuralPointSquareDistance = squarePointDistance;
+                    closestStructuralPointIndex = pointIndex;
                 }
             }
         }
@@ -131,7 +133,7 @@ bool Ship::UpdateExplosionStateMachine(
         //
 
         if (explosionStateMachine.IsFirstIteration
-            && NoneElementIndex != closestPointIndex)
+            && NoneElementIndex != closestStructuralPointIndex)
         {
             // Choose a detach velocity - using the same distribution as Debris
             vec2f const detachVelocity = GameRandomEngine::GetInstance().GenerateUniformRadialVector(
@@ -140,7 +142,7 @@ bool Ship::UpdateExplosionStateMachine(
 
             // Detach point
             mPoints.Detach(
-                closestPointIndex,
+                closestStructuralPointIndex,
                 detachVelocity,
                 Points::DetachOptions::GenerateDebris
                 | Points::DetachOptions::FireDestroyEvent,
