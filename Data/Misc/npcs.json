@@ -1107,6 +1107,23 @@
             },
 
             {
+                "name": "Sodium Tank",
+                "role": "Other",
+                "material": "Sodium Tank",
+                "particle_mesh": {
+                    "kind": "Quad",
+                    "height": 1.0,
+                    "particle_attributes_overrides": [
+                        {
+                            "buoyancy_volume_fill": 0.2
+                        }
+                    ]
+                },
+                "texture_filename_stem": "sodium_tank_1",
+                "render_color": "#8B93AF"
+            },
+
+            {
                 "name": "TNT Crate",
                 "role": "Other",
                 "material": "Gunpowder Strong Crate",
@@ -1267,6 +1284,8 @@
             "Small Table 1": "Tavolino 1",
             "Small Table 2": "Tavolino 2",
             "Stone Ballast": "Zavorra di Pietra",
+	    "Hydrogen Tank": "Bombola di Idrogeno",
+	    "Sodium Tank": "Bombola di Sodio",
 	    "TNT Crate": "Cassa di Tritolo",
             "Tungsten Block": "Blocco di Tungsteno",
             "Particle": "Particella"

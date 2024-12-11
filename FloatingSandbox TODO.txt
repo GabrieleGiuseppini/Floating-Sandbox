@@ -32,7 +32,15 @@
 	- OpenGL:
 		- Flat
 			- ARB: https://registry.khronos.org/OpenGL/extensions/EXT/EXT_gpu_shader4.txt
-			- Really good?
+			- Test if perf good:
+				- Load ARB
+				- Get baseline perf (water?)
+				- Do shader (water?) and profile
+			- If OK:
+				- Check ARB
+				- Do #define's
+				- Use at:
+					- TODO: list of shaders
 		- Points: see if can make them round, see https://www.khronos.org/opengl/wiki/Fragment_Shader#Inputs
 
 	- See if can make a map of pointindex=>instance ID in ShipFactory instead of that vector

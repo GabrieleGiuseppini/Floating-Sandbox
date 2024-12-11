@@ -496,7 +496,8 @@ void Npcs::UpdateNpcPhysics(
                 }
                 else if (oneNpcParticleInWater != NoneElementIndex
                     && mParticles.GetMaterial(oneNpcParticleInWater).WaterReactivity > 0.0f
-                    && mParticles.GetMeshWaterness(oneNpcParticleInWater) > mParticles.GetMaterial(oneNpcParticleInWater).WaterReactivity)
+                    // Note: AnyWaterness is updated later, so here we use a one-frame stale value
+                    && mParticles.GetAnyWaterness(oneNpcParticleInWater) > mParticles.GetMaterial(oneNpcParticleInWater).WaterReactivity)
                 {
                     float const blastRadius =
                         5.0f // Magic number

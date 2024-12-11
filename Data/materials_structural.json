@@ -3944,12 +3944,41 @@
             "sound_type": "Metal",
             "specific_heat": 449.0,
             "stiffness": 1.0,
-            "strength": 0.055,
+            "strength": 0.42,
             "texture_name": "metal_riveted_1_small",
             "thermal_conductivity": 79.5,
             "thermal_expansion_coefficient": 1.06e-05,
             "water_diffusion_speed": 0.5,
             "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": "#484849",
+            "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.69,
+            "friction_static_coefficient": 1.25,
+            "ignition_temperature": 388.15,
+            "is_exempt_from_palette": true,
+            "is_hull": true,
+            "mass": {
+                "density": 0.025,
+                "nominal_mass": 7950
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Sodium Tank",
+            "render_color": "#F5F5E9",
+            "sound_type": "Metal",
+            "specific_heat": 1230.0,
+            "stiffness": 1.0,
+            "strength": 0.42,
+            "texture_name": "metal_riveted_1_small",
+            "thermal_conductivity": 140.0,
+            "water_diffusion_speed": 0.5,
+            "water_reactivity_threshold": 0.5,
+            "water_retention": 0.25,
             "wind_receptivity": 0.1
         }
 

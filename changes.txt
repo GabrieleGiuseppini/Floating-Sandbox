@@ -2,10 +2,12 @@
 - Improved Human NPC behaviors:
 	- NPCs now "look ahead" when walking and avoid falling into holes
 	- NPCs run away from running water
+- Added explosive furniture NPCs (TNT create, hydrogen & sodium tanks)
 - The Move, Remove, and Turnaround NPC tools may now be used on *groups* of NPCs
 - NPCs on a ship are now lit by the ship's lamps
 - Bug fixes:
 	- Fixed a crash when using the repair tool on a part of the ship that had exploded (thanks to AlexGuy!)
+- ...and a few more small improvements here and there!
 
 1.19.0
 - Initial implementation of NPCs!

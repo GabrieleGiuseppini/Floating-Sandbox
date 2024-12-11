@@ -315,7 +315,7 @@ Next release:
 
 + Port back to FS
 
-- Mechanism for dynamic removal of NPCs, plus human removal and furniture explosion
++ Mechanism for dynamic removal of NPCs, plus human removal and furniture explosion
 	! Will be useful for explosive NPCs (to make explosive furniture disappear) (*) and for human removal animation (*)
 	! BeingRemoved regime: to keep the NPC "out of the loop" for the rest of the simulation step
 			- Since we are here: see if it makes sense to make helper to switch regime - even if only invokes OnMayBeRegimeChanged
@@ -536,7 +536,7 @@ Next release:
 		+ MainFrame reconciliation with presence of NPCs
 			+ Deselect NPC when one is left
 
-	= Furniture explosion:
+	+ Furniture explosion:
 		+ StateType: bool IsActive() const
 			+ Simply checks for regime==BeingRemoved
 			+ Use everywhere we check for BeingRemoved
@@ -555,7 +555,7 @@ Next release:
 			+ Transition (furniture) behavior to Exploding
 			+ Start deferred deletion (InternalBeginDeferredDeletion)
 
-		= Explosion triggers: 
+		+ Explosion triggers: 
 			! Mapping of material to ExplosionType from Ship:
 				! Bombs<->Deflagration
 				! StructuralMaterial::MaterialCombustionType::Explosion<->Combustion
@@ -570,10 +570,11 @@ Next release:
 				+ If material is MaterialCombustionType::Explosion, and temperature threshold (TODO: double-check @ ship): ExplosionType=Combustion
 				+ Test
 					+ Also params, w/ & without UV mode
-			= Waterness (for sodium)
+			+ Waterness (for sodium)
 				+ If water >= reactivity threshold: ExplosionType=Sodium
-				- Test
-					- Also params, w/ & without UV mode
+				+ Also sea!
+				+ Test
+					+ Also params, w/ & without UV mode
 		+ Furniture/HumanState::Exploding
 			+ State: <empty>
 			+ Behavior update: countdown to final insertion into Set of NpcIds to remove
@@ -584,37 +585,36 @@ Next release:
 			+ Test:
 				+ Buoyancy
 				+ Sound
-		- Make Sodium and Hydrogen furniture (and other tanks from TimCan)
-			- New materials: 
+		+ Make Sodium and Hydrogen furniture (and other tanks from TimCan)
+			+ New materials: 
 				+ Hydrogen Tank (hydrogen)
-				- Sodium Tank (metal+sodium)
-			- New NPCs
+				+ Sodium Tank (metal+sodium)
+			+ New NPCs
 				+ Hydrogen Tank
-				- Sodium Tank
-			+ Make sure we can inject explosion type as well
-			- Test:
+				+ Sodium Tank
+			+ Test:
 				+ Basics Hydrogen
-				- Basics Sodium
-				- Sodium reacts in sea as well
-				- Sound
+				+ Basics Sodium
+				+ Sodium reacts in sea as well
+				+ Sound
 
-	- Check if any logging is left behind (run)
+	+ Check if any logging is left behind (run)
 
 	+ Fix bug with placing (furniture) NPC: anchor being particle ordinal 2 
 		! Due to folded tri unfolding, which happens before other particles are moved
 		+ Fix: do folded tri unfolding _after_ all particles have been moved
 			+ UpdateNpsPhysisic: after all particles are done: if being moved: do now and maintain world bounds (if has been moved)
 
-	= Shader:
+	+ Shader:
 		+ Yellow
-		= Other improvements?
+		+ Other improvements?
 			+ Don't boost lum that much w/progress
 			+ Darkening fight only for deep
-		- Test also 2xStickmen
+		+ Test also 2xStickmen
 
-	- changelist
-		- Explosion
-		- ...improvements
+	+ changelist
+		+ Explosion
+		+ ...improvements
 
 
 + Test bouncing on wall & candidates - evtlly remove lookahead for it
