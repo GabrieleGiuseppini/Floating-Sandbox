@@ -103,7 +103,7 @@ public:
 
     // Misc
     float WindReceptivity;
-    float WaterReactivity;
+    float WaterReactivity; // When > 0, material explodes with this quantity of water threshold
     bool IsLegacyElectrical;
 
     // Palette
