@@ -130,7 +130,7 @@ bool Ship::UpdateExplosionStateMachine(
         // Eventually detach the closest point
         //
 
-        if (blastProgress == 0.0f // First frame
+        if (explosionStateMachine.IsFirstIteration
             && NoneElementIndex != closestPointIndex)
         {
             // Choose a detach velocity - using the same distribution as Debris
@@ -168,6 +168,8 @@ bool Ship::UpdateExplosionStateMachine(
             explosionStateMachine.IsBlasting = false;
         }
     }
+
+    explosionStateMachine.IsFirstIteration = false;
 
     return false;
 }

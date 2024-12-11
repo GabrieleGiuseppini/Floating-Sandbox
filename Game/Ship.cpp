@@ -840,7 +840,6 @@ void Ship::RenderUpload(Render::RenderContext & renderContext)
 
     shipRenderContext.UploadFlamesEnd();
 
-
     //
     // Upload gadgets
     //

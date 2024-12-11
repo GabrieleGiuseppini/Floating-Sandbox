@@ -936,7 +936,7 @@ void Npcs::UpdateNpcParticlePhysics(
 
         std::optional<int> currentNonInertialFloorEdgeOrdinal;
 
-        for (float remainingDt = dt; ; )
+        for (float remainingDt = dt; npc.IsActive(); )
         {
             assert(remainingDt > 0.0f);
 
@@ -3784,11 +3784,11 @@ void Npcs::OnImpact(
         float const blastRadius =
             mParticles.GetMaterial(npcParticleIndex).ExplosiveCombustionRadius
             * 0.1f // Magic number
-            * multiplier
+            * multiplier * multiplier
             * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
 
         float const blastForce =
-            65000.0f // Magic number
+            55000.0f // Magic number
             * multiplier
             * mParticles.GetMaterial(npcParticleIndex).ExplosiveCombustionStrength;
 

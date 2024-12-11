@@ -23,6 +23,7 @@ public:
     float const PersonalitySeed;
 
     float CurrentProgress;
+    bool IsFirstIteration; // Independent from progress, as progress might start at Dt already
     bool IsBlasting;
 
     ExplosionStateMachine(
@@ -43,6 +44,7 @@ public:
         , Type(type)
         , PersonalitySeed(GameRandomEngine::GetInstance().GenerateNormalizedUniformReal())
         , CurrentProgress(0.0f)
+        , IsFirstIteration(true)
         , IsBlasting(true)
     {}
 };

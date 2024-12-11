@@ -3897,7 +3897,7 @@
             "combustion_type": "Explosion",
             "elasticity_coefficient": 0.5,
             "explosive_combustion_radius": 8.0,
-            "explosive_combustion_strength": 100.0,
+            "explosive_combustion_strength": 50.0,
             "friction_kinetic_coefficient": 0.69,
             "friction_static_coefficient": 1.25,
             "ignition_temperature": 693.15,
