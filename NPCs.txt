@@ -584,12 +584,19 @@ Next release:
 			+ Test:
 				+ Buoyancy
 				+ Sound
-		- Make Sodium furniture (and other tanks from TimCan)
-			- New material: Sodium Tank (metal+sodium)
+		- Make Sodium and Hydrogen furniture (and other tanks from TimCan)
+			- New materials: 
+				+ Hydrogen Tank (hydrogen)
+				- Sodium Tank (metal+sodium)
+			- New NPCs
+				+ Hydrogen Tank
+				- Sodium Tank
 			+ Make sure we can inject explosion type as well
 			- Test:
+				+ Basics Hydrogen
+				- Basics Sodium
+				- Sodium reacts in sea as well
 				- Sound
-		- Make other furniture from TimCan
 
 	- Check if any logging is left behind (run)
 
@@ -603,6 +610,7 @@ Next release:
 		= Other improvements?
 			+ Don't boost lum that much w/progress
 			+ Darkening fight only for deep
+		- Test also 2xStickmen
 
 	- changelist
 		- Explosion

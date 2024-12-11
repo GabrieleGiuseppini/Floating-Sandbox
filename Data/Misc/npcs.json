@@ -1084,9 +1084,28 @@
                         }
                     ]
                 },
-                "texture_filename_stem": "stone_ballast",
+                "texture_filename_stem": "stone_ballast_1",
                 "render_color": "#A5988C"
             },
+
+
+            {
+                "name": "Hydrogen Tank",
+                "role": "Other",
+                "material": "Hydrogen Tank",
+                "particle_mesh": {
+                    "kind": "Quad",
+                    "height": 1.0,
+                    "particle_attributes_overrides": [
+                        {
+                            "buoyancy_volume_fill": 0.2
+                        }
+                    ]
+                },
+                "texture_filename_stem": "hydrogen_tank_1",
+                "render_color": "#8B93AF"
+            },
+
             {
                 "name": "TNT Crate",
                 "role": "Other",
@@ -1101,7 +1120,7 @@
                     ]
                 },
                 "texture_filename_stem": "tnt_crate_1",
-                "render_color": "#9E682B"
+                "render_color": "#895925"
             },
 
             {
@@ -1117,7 +1136,7 @@
                         }
                     ]
                 },
-                "texture_filename_stem": "tungsten_block",
+                "texture_filename_stem": "tungsten_block_1",
                 "render_color": "#9AA6B1"
             },
             {
