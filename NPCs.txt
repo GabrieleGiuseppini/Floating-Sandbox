@@ -599,10 +599,10 @@ Next release:
 			+ UpdateNpsPhysisic: after all particles are done: if being moved: do now and maintain world bounds (if has been moved)
 
 	= Shader:
-		= Yellow
+		+ Yellow
 		= Other improvements?
-			= Don't boost lum that much w/progress
-			= Darkening fight only for deep
+			+ Don't boost lum that much w/progress
+			+ Darkening fight only for deep
 
 	- changelist
 		- Explosion

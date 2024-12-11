@@ -495,6 +495,7 @@ void Npcs::UpdateNpcPhysics(
 
                 }
                 else if (oneNpcParticleInWater != NoneElementIndex
+                    && mParticles.GetMaterial(oneNpcParticleInWater).WaterReactivity > 0.0f
                     && mParticles.GetMeshWaterness(oneNpcParticleInWater) > mParticles.GetMaterial(oneNpcParticleInWater).WaterReactivity)
                 {
                     float const blastRadius =
