@@ -1822,6 +1822,7 @@ private:
 		float blastRadius,
 		float blastForce,
 		float blastHeat,
+		float renderRadiusOffset,
 		ExplosionType explosionType,
 		float currentSimulationTime,
 		GameParameters const & gameParameters);

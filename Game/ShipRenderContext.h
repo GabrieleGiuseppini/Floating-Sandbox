@@ -618,17 +618,15 @@ public:
         float const dTextureX = 1.0f / (2.0f * static_cast<float>(mExplosionTextureAtlasMetadata.GetSize().width));
         float const dTextureY = 1.0f / (2.0f * static_cast<float>(mExplosionTextureAtlasMetadata.GetSize().height));
 
-        // Calculate render half quad size - magic offset to account for
-        // empty outskirts of frames
-        float const renderHalfQuadSize = halfQuadSize + 13.0f;
-
-        // Calculate explosion index and yellowing based off explosion type
+        // Calculate gfx radius, explosion index and yellowing based off explosion type
+        float effectiveHalfQuadSize = 0.0f; // Based off empirical measurement of texture frames: frame size / "core" fireball size
         float explosionIndex;
         float yellowing;
         switch (explosionType)
         {
             case ExplosionType::Combustion:
             {
+                effectiveHalfQuadSize = halfQuadSize / (220.0f / 256.0f);
                 explosionIndex = 3.0f;
                 yellowing = 0.0f;
                 break;
@@ -637,6 +635,7 @@ public:
             case ExplosionType::Deflagration:
             {
                 // 0..2, randomly
+                effectiveHalfQuadSize = halfQuadSize / (160.0f / 256.0f);
                 explosionIndex = std::min(2.0f, std::floor(personalitySeed * 3.0f));
                 yellowing = 0.0f;
                 break;
@@ -644,6 +643,7 @@ public:
 
             case ExplosionType::Sodium:
             {
+                effectiveHalfQuadSize = halfQuadSize / (220.0f / 256.0f);
                 explosionIndex = 3.0f;
                 yellowing = 1.0f;
                 break;
@@ -660,7 +660,7 @@ public:
         // Top-left
         vertexBuffer.emplace_back(
             centerPosition,
-            vec2f(-renderHalfQuadSize, renderHalfQuadSize),
+            vec2f(-effectiveHalfQuadSize, effectiveHalfQuadSize),
             vec2f(0.0f + dTextureX, 1.0f - dTextureY),
             static_cast<float>(planeId),
             angleCcw,
@@ -671,7 +671,7 @@ public:
         // Top-Right
         vertexBuffer.emplace_back(
             centerPosition,
-            vec2f(renderHalfQuadSize, renderHalfQuadSize),
+            vec2f(effectiveHalfQuadSize, effectiveHalfQuadSize),
             vec2f(1.0f - dTextureX, 1.0f - dTextureY),
             static_cast<float>(planeId),
             angleCcw,
@@ -682,7 +682,7 @@ public:
         // Bottom-left
         vertexBuffer.emplace_back(
             centerPosition,
-            vec2f(-renderHalfQuadSize, -renderHalfQuadSize),
+            vec2f(-effectiveHalfQuadSize, -effectiveHalfQuadSize),
             vec2f(0.0f + dTextureX, 0.0f + dTextureY),
             static_cast<float>(planeId),
             angleCcw,
@@ -695,7 +695,7 @@ public:
         // Top-Right
         vertexBuffer.emplace_back(
             centerPosition,
-            vec2f(renderHalfQuadSize, renderHalfQuadSize),
+            vec2f(effectiveHalfQuadSize, effectiveHalfQuadSize),
             vec2f(1.0f - dTextureX, 1.0f - dTextureY),
             static_cast<float>(planeId),
             angleCcw,
@@ -706,7 +706,7 @@ public:
         // Bottom-left
         vertexBuffer.emplace_back(
             centerPosition,
-            vec2f(-renderHalfQuadSize, -renderHalfQuadSize),
+            vec2f(-effectiveHalfQuadSize, -effectiveHalfQuadSize),
             vec2f(0.0f + dTextureX, 0.0f + dTextureY),
             static_cast<float>(planeId),
             angleCcw,
@@ -717,7 +717,7 @@ public:
         // Bottom-right
         vertexBuffer.emplace_back(
             centerPosition,
-            vec2f(renderHalfQuadSize, -renderHalfQuadSize),
+            vec2f(effectiveHalfQuadSize, -effectiveHalfQuadSize),
             vec2f(1.0f - dTextureX, 0.0f + dTextureY),
             static_cast<float>(planeId),
             angleCcw,

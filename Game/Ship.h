@@ -699,6 +699,7 @@ public:
         float blastRadius,
         float blastForce,
         float blastHeat,
+        float renderRadiusOffset,
         ExplosionType explosionType,
         GameParameters const & gameParameters) override;
 

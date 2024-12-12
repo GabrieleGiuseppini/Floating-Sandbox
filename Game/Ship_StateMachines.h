@@ -19,6 +19,7 @@ public:
     float const BlastRadius; // m
     float const BlastForce; // N
     float const BlastHeat; // KJ
+    float const RenderRadiusOffset; // On top of blast radius
     ExplosionType const Type;
     float const PersonalitySeed;
 
@@ -33,6 +34,7 @@ public:
         float blastRadius,
         float blastForce,
         float blastHeat,
+        float renderRadiusOffset,
         ExplosionType type)
         : StateMachine(StateMachineType::Explosion)
         , StartSimulationTime(startSimulationTime)
@@ -41,6 +43,7 @@ public:
         , BlastRadius(blastRadius)
         , BlastForce(blastForce)
         , BlastHeat(blastHeat)
+        , RenderRadiusOffset(renderRadiusOffset)
         , Type(type)
         , PersonalitySeed(GameRandomEngine::GetInstance().GenerateNormalizedUniformReal())
         , CurrentProgress(0.0f)

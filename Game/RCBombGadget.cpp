@@ -132,6 +132,7 @@ bool RCBombGadget::Update(
                     blastRadius,
                     blastForce,
                     blastHeat,
+                    8.0f, // Radius offset spectacularization
                     ExplosionType::Deflagration,
                     gameParameters);
 

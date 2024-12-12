@@ -172,6 +172,7 @@ bool TimerBombGadget::Update(
                     blastRadius,
                     blastForce,
                     blastHeat,
+                    10.0f, // Radius offset spectacularization
                     ExplosionType::Deflagration,
                     gameParameters);
 

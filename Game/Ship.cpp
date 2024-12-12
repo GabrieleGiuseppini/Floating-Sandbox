@@ -4014,6 +4014,7 @@ void Ship::StartExplosion(
     float blastRadius,
     float blastForce,
     float blastHeat,
+    float renderRadiusOffset,
     ExplosionType explosionType,
     GameParameters const & /*gameParameters*/)
 {
@@ -4026,6 +4027,7 @@ void Ship::StartExplosion(
             blastRadius,
             blastForce,
             blastHeat,
+            renderRadiusOffset,
             explosionType));
 }
 

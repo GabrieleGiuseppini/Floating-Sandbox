@@ -1947,6 +1947,7 @@ void Npcs::SmashAt(
                         blastRadius,
                         blastForce,
                         blastHeat,
+                        5.0f, 
                         ExplosionType::Combustion,
                         currentSimulationTime,
                         gameParameters);

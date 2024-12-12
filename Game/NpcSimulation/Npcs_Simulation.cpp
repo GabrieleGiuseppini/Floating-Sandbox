@@ -489,6 +489,7 @@ void Npcs::UpdateNpcPhysics(
                         blastRadius,
                         blastForce,
                         blastHeat,
+                        5.0f,
                         ExplosionType::Combustion,
                         currentSimulationTime,
                         gameParameters);
@@ -515,6 +516,7 @@ void Npcs::UpdateNpcPhysics(
                         blastRadius,
                         blastForce,
                         blastHeat,
+                        5.0f,
                         ExplosionType::Sodium,
                         currentSimulationTime,
                         gameParameters);
@@ -3866,6 +3868,7 @@ void Npcs::OnImpact(
             blastRadius,
             blastForce,
             blastHeat,
+            3.0f,
             ExplosionType::Combustion,
             currentSimulationTime,
             gameParameters);
@@ -3878,10 +3881,15 @@ void Npcs::TriggerExplosion(
     float blastRadius,
     float blastForce,
     float blastHeat,
+    float renderRadiusOffset,
     ExplosionType explosionType,
     float currentSimulationTime,
     GameParameters const & gameParameters)
 {
+    //
+    // Start explosion
+    //
+
     vec2f const & position = mParticles.GetPosition(npcParticleIndex);
 
     assert(mShips[npc.CurrentShipId].has_value());
@@ -3892,6 +3900,7 @@ void Npcs::TriggerExplosion(
         blastRadius,
         blastForce,
         blastHeat,
+        renderRadiusOffset,
         explosionType,
         gameParameters);
 
@@ -3899,7 +3908,7 @@ void Npcs::TriggerExplosion(
     // Notify
     //
 
-    bool const isUnderwater = mParticles.GetAnyWaterness(npcParticleIndex) > 0.5f;
+    bool const isUnderwater = mParticles.GetAnyWaterness(npcParticleIndex) >= 0.5f;
 
     switch (explosionType)
     {

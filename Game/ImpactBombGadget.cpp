@@ -89,6 +89,7 @@ bool ImpactBombGadget::Update(
                 blastRadius,
                 blastForce,
                 blastHeat,
+                7.0f, // Radius offset spectacularization
                 ExplosionType::Deflagration,
                 gameParameters);
 

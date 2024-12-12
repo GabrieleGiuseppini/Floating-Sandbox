@@ -1074,6 +1074,7 @@ void Points::UpdateCombustionLowFrequency(
                 blastRadius,
                 blastForce,
                 blastHeat,
+                10.0f,
                 ExplosionType::Combustion,
                 gameParameters);
 
@@ -1138,6 +1139,7 @@ void Points::UpdateCombustionLowFrequency(
                 blastRadius,
                 blastForce,
                 blastHeat,
+                5.0f,
                 ExplosionType::Sodium,
                 gameParameters);
 

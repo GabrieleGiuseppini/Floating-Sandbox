@@ -185,7 +185,7 @@ void Ship::UploadExplosionStateMachine(
     shipRenderContext.UploadExplosion(
         explosionStateMachine.Plane,
         explosionStateMachine.CenterPosition,
-        explosionStateMachine.BlastRadius,
+        explosionStateMachine.BlastRadius + explosionStateMachine.RenderRadiusOffset,
         explosionStateMachine.Type,
         explosionStateMachine.PersonalitySeed,
         explosionStateMachine.CurrentProgress);
