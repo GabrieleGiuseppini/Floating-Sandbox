@@ -28,16 +28,16 @@
 		+ changelist
 
 	= Improve explosions:
-		= Gfx radius
+		+ Gfx radius
+			! Goal: predictably tied to real blast radius
 			+ ShipRenderContext uses empirically texture-determined radius multipliers to focus "core" fireball in frame
-			+ Ship::StartExplosion: also takes gfx radius offset
+			+ Ship::StartExplosion: also takes gfx radius offset for added spectacularity
 				+ Names: BlastRadius, RenderRadiusOffset
 				+ Passes to ShipRenderContext::Upload(radius==blast radius + offset)
 			+ ShipRenderContext::UploadExplosion: takes gfx offset
 				+ And no +13
 			+ Check all explosions
 				+ Hydrogen NPC
-		- NPCs combustion trigger: replace point_on_fire with temperature (avg of three)
 		- NPC blast multiplier: move to GameParameters as constant, and add adjustment
 			- Might make constant slightly less?
 			- SettingsDialog: under NPCs, "Blast TODO Adjust"
@@ -48,6 +48,8 @@
 		- Sounds
 		- Tests:
 			- Npcs: underwater sounds (not related with this work item)
+		- Changelist
+			- "Slightly reworked explosions (physycs, TODO)"
 
 	- Invite alex_guy1011 to beta group (GameJolt's guy)
 
