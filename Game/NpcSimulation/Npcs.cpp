@@ -2050,7 +2050,7 @@ void Npcs::ApplyBlast(
     // Only NPCs of this ship, or free regime of any ship
     //
 
-    float const actualBlastRadius = blastRadius * 6.0f;
+    float const actualBlastRadius = blastRadius * 6.0f; // Multiplier for NPCs, accounts for "virtual pressure space" in closed spaces :-)
     float const squareRadius = actualBlastRadius * actualBlastRadius;
 
     // The specified blast is for damage to the ship; here we want a lower

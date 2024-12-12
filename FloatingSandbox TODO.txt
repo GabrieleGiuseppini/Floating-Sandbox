@@ -31,15 +31,22 @@
 
 	- Improve explosions:
 		- Gfx radius
-			- ShipRenderContext::WhateverExplosion: also takes gfx radius
-			- Ship::StartExplosion: also takes gfx radius (max, like the others)
-				- Names: BlastRadius, RenderRadius
-				- State machine grows it as well
-			- Callers of Ship::StartExplosion: calc and pass gfx radius
-				- Prelim: calculate all using verbatim old ShipRenderContext formula (i.e. force radius + 13)
+			- Ship::StartExplosion: also takes gfx radius multiplier (over blast radius, >/=/< 1.0) 
+				- Names: BlastRadius, RenderRadiusMultiplier
+				- Passes to ShipRenderContext::Upload(radius==blast radius * multiplier)
+			- ShipRenderContext::WhateverExplosion: takes gfx radius 
+				- Then, for now: adds +13
+			- Callers of Ship::StartExplosion: for now pass 1.0 for multiplier
+			- Now do a pass and verify whether +13 is really justified
+			
 			- When done, fine tune gfx radii
+				- Ship
+					- print both and see if gfx has to be different than force
 				- Npc
 					- Check out: now TNT has radius 8x hydrogen
+		- Explosion time adjust
+			- 1. Move constant to GameParameters, say attuned to sound
+			- 2. Take adjustment
 		- Sounds
 
 	- OpenGL:

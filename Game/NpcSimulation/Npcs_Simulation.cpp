@@ -1916,10 +1916,17 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
 
             // 5. World forces - water drag
 
+            // Differently than with the ship, with NPCs too-high linear drag forces cause growing oscillations in
+            // the mesh (even in the absence of spring damper forces!); so we clamp here to a tenth of the theoretical
+            // max that doesn't cause a V inversion (10 is determined empirically)
+            float const maxC = particleMass / GameParameters::SimulationStepTimeDuration<float>;
+            float const c = std::min(
+                GameParameters::WaterFrictionDragCoefficient * gameParameters.WaterFrictionDragAdjustment,
+                maxC / 10.0f);
+
             preliminaryForces +=
                 -mParticles.GetVelocity(npcParticle.ParticleIndex)
-                * GameParameters::WaterFrictionDragCoefficient
-                * gameParameters.WaterFrictionDragAdjustment;
+                * c;
         }
         else
         {
