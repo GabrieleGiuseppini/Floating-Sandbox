@@ -383,7 +383,7 @@ struct GameParameters
     static float constexpr MinCombustionHeatAdjustment = 0.1f;
     static float constexpr MaxCombustionHeatAdjustment = 100.0f;
 
-    float ExplosionBlastForceDuration; // s
+    static float constexpr ExplosionBlastForceDuration = 0.25f; // s
     static float constexpr ExplosionRenderDuration = 1.0f; // s, attuned with sound
 
     float HeatBlasterHeatFlow; // KJoules/sec

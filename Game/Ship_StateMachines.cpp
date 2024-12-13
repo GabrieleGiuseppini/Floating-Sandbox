@@ -24,7 +24,7 @@ bool Ship::UpdateExplosionStateMachine(
 
     float const elapsed = currentSimulationTime - explosionStateMachine.StartSimulationTime;
 
-    float const explosionBlastForceProgress = elapsed / gameParameters.ExplosionBlastForceDuration;
+    float const explosionBlastForceProgress = elapsed / GameParameters::ExplosionBlastForceDuration;
     explosionStateMachine.CurrentRenderProgress = elapsed / GameParameters::ExplosionRenderDuration;
 
     if (explosionBlastForceProgress > 1.0f && explosionStateMachine.CurrentRenderProgress > 1.0f)

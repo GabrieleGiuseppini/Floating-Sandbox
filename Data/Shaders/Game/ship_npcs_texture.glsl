@@ -95,12 +95,15 @@ void main()
     vec3 c2 = min(
         vec3(NPC_REMOVAL_COLOR),
         c.rgb + vec3(NPC_REMOVAL_COLOR) * removalDepth);
-    c2 *= 0.7 + 0.3 * rand(vertexTextureCoords * vertexRemovalProgress);
 
     c.rgb = mix(
         c.rgb,
         c2,
         removalDepth);
+    c.a = mix(
+        c.a,
+        rand(vertexTextureCoords * vertexRemovalProgress),
+        vertexRemovalProgress);
 
     if (paramShipDepthDarkeningSensitivity > 0.0) // Fine to branch - all pixels will follow the same branching
     {

@@ -45,12 +45,8 @@
 			+ GameParameters adjustment
                         + Might make constant slightly less?
                         + SettingsDialog: under NPCs, "Blast TODO Adjust"
-		= Explosion time adjust
+		+ Explosion time
 			+ 1. Move constants to GameParameters, say attuned to sound
-			- 2. Make and take adjustment (for blast force only)
-				- SettingsDialog: under Thermodynamics
-			- 3. See if makes sense to also adjust gfx
-				- Test 1: gfx == 4 * blastForce
 		- Sounds
 		- Tests:
 			+ Npcs: underwater sounds (not related with this work item)
