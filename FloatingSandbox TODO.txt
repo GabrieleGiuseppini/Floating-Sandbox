@@ -52,7 +52,7 @@
 				- SettingsDialog: under Thermodynamics
 		- Sounds
 		- Tests:
-			- Npcs: underwater sounds (not related with this work item)
+			+ Npcs: underwater sounds (not related with this work item)
 		- Changelist
 			- "Slightly reworked explosions (physycs, TODO)"
 
