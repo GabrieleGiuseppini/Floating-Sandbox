@@ -7,6 +7,12 @@ vec2 linearstep(vec2 lEdge, vec2 rEdge, vec2 x)
     return clamp((x-lEdge)/(rEdge - lEdge), 0.0, 1.0);
 }
 
+float rand(vec2 uv)
+{ 
+    // From https://www.shadertoy.com/view/Xt23Ry
+    return fract(sin(dot(uv.xy ,vec2(12.9898,78.233))) * 43758.5453); 
+}
+
 float IsInBox(float lEdge, float rEdge, float x)
 {
     return step(lEdge, x) * step(x, rEdge);

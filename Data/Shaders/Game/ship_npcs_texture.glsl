@@ -95,6 +95,7 @@ void main()
     vec3 c2 = min(
         vec3(NPC_REMOVAL_COLOR),
         c.rgb + vec3(NPC_REMOVAL_COLOR) * removalDepth);
+    c2 *= 0.7 + 0.3 * rand(vertexTextureCoords * vertexRemovalProgress);
 
     c.rgb = mix(
         c.rgb,
