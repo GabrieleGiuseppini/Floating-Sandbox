@@ -630,6 +630,9 @@ Next release:
 
 - Do chest fixes at skins
 
+- Diesel can
+	- Lots of heat: goal is that all wood ship around catches fire
+
 - Misc:
 	- Sound for NPC fire smothering
 	! TODO: move the long-term ones below to a new "Wishlist" section

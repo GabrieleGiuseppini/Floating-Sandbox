@@ -51,7 +51,7 @@
 		- Tests:
 			+ Npcs: underwater sounds (not related with this work item)
 		- Changelist
-			- "Slightly reworked explosions (physycs, TODO)"
+			- "Slightly reworked explosions (fine-tuned physycs, TODO)"
 
 	- Invite alex_guy1011 to beta group (GameJolt's guy)
 

@@ -125,7 +125,7 @@ void main()
         mix(
             vertexLight,
             1.0, 
-            max(paramEffectiveAmbientLightIntensity, removalDepth)),
+            max(paramEffectiveAmbientLightIntensity, removalDepth * removalDepth)),
         lampToolIntensity);
 
     // Apply electric lamp color
