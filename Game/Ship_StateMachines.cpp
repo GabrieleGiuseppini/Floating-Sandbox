@@ -22,19 +22,18 @@ bool Ship::UpdateExplosionStateMachine(
     // Update progress
     //
 
-    float constexpr ExplosionDuration = 1.0f; // In "simulation seconds"
+    float const elapsed = currentSimulationTime - explosionStateMachine.StartSimulationTime;
 
-    explosionStateMachine.CurrentProgress =
-        (currentSimulationTime - explosionStateMachine.StartSimulationTime)
-        / ExplosionDuration;
+    float const explosionBlastForceProgress = elapsed / gameParameters.ExplosionBlastForceDuration;
+    explosionStateMachine.CurrentRenderProgress = elapsed / GameParameters::ExplosionRenderDuration;
 
-    if (explosionStateMachine.CurrentProgress > 1.0f)
+    if (explosionBlastForceProgress > 1.0f && explosionStateMachine.CurrentRenderProgress > 1.0f)
     {
         // We're done
         return true;
     }
 
-    if (explosionStateMachine.IsBlasting)
+    if (explosionBlastForceProgress <= 1.0f)
     {
         //
         // Update explosion
@@ -42,15 +41,10 @@ bool Ship::UpdateExplosionStateMachine(
 
         vec2f const centerPosition = explosionStateMachine.CenterPosition;
 
-        // Blast progress: reaches max at a fraction of the blast duration,
-        // as the whole explosion duration includes also gfx effects while
-        // the actual blast should last for less time
-        float const blastProgress = explosionStateMachine.CurrentProgress * 4.0f;
-
         // Blast radius: from 1.0 to BlastRadius, linearly with progress
         float const blastRadius =
             1.0f +
-            std::max(explosionStateMachine.BlastRadius - 1.0f, 0.0f) * std::min(1.0f, blastProgress);
+            std::max(explosionStateMachine.BlastRadius - 1.0f, 0.0f) * std::min(1.0f, explosionBlastForceProgress); // Clamp to 1.0 max
 
         //
         // Blast force and heat
@@ -159,16 +153,6 @@ bool Ship::UpdateExplosionStateMachine(
             blastRadius,
             explosionStateMachine.BlastForce,
             gameParameters);
-
-        //
-        // Check if blast is over
-        //
-
-        if (blastProgress > 1.0f)
-        {
-            // Stop blasting
-            explosionStateMachine.IsBlasting = false;
-        }
     }
 
     explosionStateMachine.IsFirstIteration = false;
@@ -180,15 +164,18 @@ void Ship::UploadExplosionStateMachine(
     ExplosionStateMachine const & explosionStateMachine,
     Render::RenderContext & renderContext)
 {
-    auto & shipRenderContext = renderContext.GetShipRenderContext(mId);
+    if (explosionStateMachine.CurrentRenderProgress <= 1.0f)
+    {
+        auto & shipRenderContext = renderContext.GetShipRenderContext(mId);
 
-    shipRenderContext.UploadExplosion(
-        explosionStateMachine.Plane,
-        explosionStateMachine.CenterPosition,
-        explosionStateMachine.BlastRadius + explosionStateMachine.RenderRadiusOffset,
-        explosionStateMachine.Type,
-        explosionStateMachine.PersonalitySeed,
-        explosionStateMachine.CurrentProgress);
+        shipRenderContext.UploadExplosion(
+            explosionStateMachine.Plane,
+            explosionStateMachine.CenterPosition,
+            explosionStateMachine.BlastRadius + explosionStateMachine.RenderRadiusOffset,
+            explosionStateMachine.Type,
+            explosionStateMachine.PersonalitySeed,
+            explosionStateMachine.CurrentRenderProgress);
+    }
 }
 
 ////////////////////////////////////////////////////////////////////

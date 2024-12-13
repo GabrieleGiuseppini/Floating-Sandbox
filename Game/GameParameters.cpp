@@ -70,6 +70,7 @@ GameParameters::GameParameters()
     , MeltingTemperatureAdjustment(1.0f)
     , CombustionSpeedAdjustment(1.0f)
     , CombustionHeatAdjustment(1.0f)
+    , ExplosionBlastForceDuration(0.25f) // s
     , HeatBlasterHeatFlow(2000.0f) // 900KJ: 80kg of iron (~=1 particle) get dT=1500 in 60 seconds
     , HeatBlasterRadius(8.0f)
     , LaserRayHeatFlow(327680.0f)
