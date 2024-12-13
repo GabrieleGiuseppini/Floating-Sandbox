@@ -2058,10 +2058,11 @@ void Npcs::ApplyBlast(
 
     float const actualBlastRadius =
         blastRadius
-        * 6.0f; // Multiplier for NPCs, accounts for "virtual pressure space" in closed spaces :-)
+        * GameParameters::NpcBaseBlastRadiusMultiplier;
 
     float const actualBlastAcceleration =
-        blastForce / 3750.0f // This yields a blast force of 35000, i.e. an acceleration of 1000 on a human particle
+        blastForce
+        / 3750.0f // This yields a blast force of 35000, i.e. an acceleration of 1000 on a human particle
         * 7.0f; // Magic number
 
     float const squareRadius = actualBlastRadius * actualBlastRadius;

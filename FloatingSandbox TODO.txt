@@ -40,9 +40,11 @@
 				+ Hydrogen NPC
 		+ Bomb base force to constants
 		+ NPC blast force multiplier: local constant
--               - NPC blast radius multiplier: move to GameParameters as constant, and add adjustment
--                       - Might make constant slightly less?
--                       - SettingsDialog: under NPCs, "Blast TODO Adjust"
+                = NPC blast radius multiplier: move to GameParameters as constant, and add adjustment
+			+ GameParameters constant
+			- GameParameters adjustment
+                        - Might make constant slightly less?
+                        - SettingsDialog: under NPCs, "Blast TODO Adjust"
 		- NPC BlastAt: are NPCs that fall into cracks not swept away?
 		- Explosion time adjust
 			- TODOHERE
