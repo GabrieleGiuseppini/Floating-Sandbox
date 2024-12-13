@@ -1947,7 +1947,7 @@ void Npcs::SmashAt(
                         blastRadius,
                         blastForce,
                         blastHeat,
-                        5.0f, 
+                        5.0f,
                         ExplosionType::Combustion,
                         currentSimulationTime,
                         gameParameters);
@@ -2051,17 +2051,20 @@ void Npcs::ApplyBlast(
     // Only NPCs of this ship, or free regime of any ship
     //
 
-    float const actualBlastRadius = blastRadius * 6.0f; // Multiplier for NPCs, accounts for "virtual pressure space" in closed spaces :-)
-    float const squareRadius = actualBlastRadius * actualBlastRadius;
-
-    // The specified blast is for damage to the ship; here we want a lower
+    // The blast parameter is for damage to the ship; here we want a lower
     // force and a larger radius - as if only caused by air - and thus we
     // make the force ~proportional to the particle's mass so we have ~constant
     // runaway speeds
-    //
-    // Anchor points:
-    //   Human: F=35000 == 1000*mass
-    float const blastAcceleration = blastForce / 3750.0f; // This yields a blast force of 35000, i.e. an acceleration of 1000 on a human particle
+
+    float const actualBlastRadius =
+        blastRadius
+        * 6.0f; // Multiplier for NPCs, accounts for "virtual pressure space" in closed spaces :-)
+
+    float const actualBlastAcceleration =
+        blastForce / 3750.0f // This yields a blast force of 35000, i.e. an acceleration of 1000 on a human particle
+        * 7.0f; // Magic number
+
+    float const squareRadius = actualBlastRadius * actualBlastRadius;
 
     for (auto const & npc : mStateBuffer)
     {
@@ -2077,13 +2080,13 @@ void Npcs::ApplyBlast(
                     float const squareParticleDistance = particleRadius.squareLength();
                     if (squareParticleDistance < squareRadius)
                     {
-                        float const particleRadiusLength = std::sqrt(squareParticleDistance);
+                        float const particleRadiusLength = std::sqrtf(squareParticleDistance);
 
                         //
                         // Apply blast force
                         //
 
-                        float const particleBlastForce = blastAcceleration * 7.0f * std::sqrt(mParticles.GetMass(npcParticle.ParticleIndex));
+                        float const particleBlastForce = actualBlastAcceleration * std::sqrtf(mParticles.GetMass(npcParticle.ParticleIndex));
 
                         mParticles.AddExternalForce(
                             npcParticle.ParticleIndex,

@@ -154,7 +154,8 @@ bool TimerBombGadget::Update(
 
                 // Blast force
                 float const blastForce =
-                    80.0f * 50000.0f // Magic number
+                    GameParameters::BaseBombBlastForce
+                    * 80.0f // Bomb-specific multiplier
                     * (gameParameters.IsUltraViolentMode
                         ? std::min(gameParameters.BombBlastForceAdjustment * 10.0f, GameParameters::MaxBombBlastForceAdjustment * 2.0f)
                         : gameParameters.BombBlastForceAdjustment);
