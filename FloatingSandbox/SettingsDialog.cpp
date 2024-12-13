@@ -3050,6 +3050,34 @@ void SettingsDialog::PopulateLightsElectricalFishesNpcsPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
+            // Passive Blast Radius Adjust
+            {
+                mNpcPassiveBlastRadiusAdjustmentSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Passive Blast Radius Adjust"),
+                    _("Adjusts the extent of blast force fields on NPCs."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::NpcPassiveBlastRadiusAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions.GetMinNpcPassiveBlastRadiusAdjustment(),
+                        1.0f,
+                        mGameControllerSettingsOptions.GetMaxNpcPassiveBlastRadiusAdjustment()));
+
+                sizer->Add(
+                    mNpcPassiveBlastRadiusAdjustmentSlider,
+                    wxGBPosition(0, 2),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+
             // Options
             {
                 wxBoxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
@@ -3075,7 +3103,7 @@ void SettingsDialog::PopulateLightsElectricalFishesNpcsPanel(wxPanel * panel)
 
                 sizer->Add(
                     vSizer,
-                    wxGBPosition(0, 2),
+                    wxGBPosition(0, 3),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
@@ -6191,6 +6219,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mFishShoalRadiusAdjustmentSlider->Enable(settings.GetValue<bool>(GameSettings::DoFishShoaling));
     mNpcFrictionAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::NpcFrictionAdjustment));
     mNpcSizeMultiplierSlider->SetValue(settings.GetValue<float>(GameSettings::NpcSizeMultiplier));
+    mNpcPassiveBlastRadiusAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::NpcPassiveBlastRadiusAdjustment));
     mDoApplyPhysicsToolsToNpcsCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoApplyPhysicsToolsToNpcs));
 
     //

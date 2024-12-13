@@ -2045,7 +2045,7 @@ void Npcs::ApplyBlast(
     vec2f const & centerPosition,
     float blastRadius,
     float blastForce, // N
-    GameParameters const & /*gameParameters*/)
+    GameParameters const & gameParameters)
 {
     //
     // Only NPCs of this ship, or free regime of any ship
@@ -2058,12 +2058,13 @@ void Npcs::ApplyBlast(
 
     float const actualBlastRadius =
         blastRadius
-        * GameParameters::NpcBaseBlastRadiusMultiplier;
+        * GameParameters::NpcBasePassiveBlastRadiusMultiplier
+        * gameParameters.NpcPassiveBlastRadiusAdjustment;
 
     float const actualBlastAcceleration =
         blastForce
         / 3750.0f // This yields a blast force of 35000, i.e. an acceleration of 1000 on a human particle
-        * 7.0f; // Magic number
+        * 3.0f; // Magic number
 
     float const squareRadius = actualBlastRadius * actualBlastRadius;
 
@@ -2087,11 +2088,14 @@ void Npcs::ApplyBlast(
                         // Apply blast force
                         //
 
-                        float const particleBlastForce = actualBlastAcceleration * std::sqrtf(mParticles.GetMass(npcParticle.ParticleIndex));
+                        float const particleBlastForce =
+                            actualBlastAcceleration * std::sqrtf(mParticles.GetMass(npcParticle.ParticleIndex))
+                            // Decrease with distance
+                            * (1.0f - particleRadiusLength / actualBlastRadius);
 
                         mParticles.AddExternalForce(
                             npcParticle.ParticleIndex,
-                            particleRadius.normalise(particleRadiusLength) * particleBlastForce / (particleRadiusLength + 1.0f));
+                            particleRadius.normalise(particleRadiusLength) * particleBlastForce);
                     }
                 }
             }

@@ -93,6 +93,7 @@ enum class GameSettings : size_t
     NpcFrictionAdjustment,
     NpcSizeMultiplier,
     DoApplyPhysicsToolsToNpcs,
+    NpcPassiveBlastRadiusAdjustment,
 
     // Misc
     OceanFloorTerrain,

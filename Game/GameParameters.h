@@ -471,8 +471,11 @@ struct GameParameters
 
     bool DoApplyPhysicsToolsToNpcs; // Swirl/Counterwirl, Attract/Repel
 
-    static float constexpr NpcBaseBlastRadiusMultiplier = 6.0f; // Accounts for "virtual pressure space" in closed spaces :-)
-    // TODOHERE
+    static float constexpr NpcBasePassiveBlastRadiusMultiplier = 8.0f; // Accounts for "virtual pressure space" in closed spaces :-)
+
+    float NpcPassiveBlastRadiusAdjustment;
+    static float constexpr MinNpcPassiveBlastRadiusAdjustment = 0.05f;
+    static float constexpr MaxNpcPassiveBlastRadiusAdjustment = 10.0f;
 
     static float constexpr HumanNpcTemperature = 310.15f; // 37 Celsius
 

@@ -120,6 +120,7 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(float, NpcFrictionAdjustment);
     ADD_GC_SETTING(float, NpcSizeMultiplier);
     ADD_GC_SETTING(bool, DoApplyPhysicsToolsToNpcs);
+    ADD_GC_SETTING(float, NpcPassiveBlastRadiusAdjustment);
 
     // Misc
     ADD_GC_SETTING(OceanFloorTerrain, OceanFloorTerrain);

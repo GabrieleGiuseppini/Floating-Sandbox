@@ -142,6 +142,7 @@ private:
     SliderControl<float> * mFishShoalRadiusAdjustmentSlider;
     SliderControl<float> * mNpcFrictionAdjustmentSlider;
     SliderControl<float> * mNpcSizeMultiplierSlider;
+    SliderControl<float> * mNpcPassiveBlastRadiusAdjustmentSlider;
     wxCheckBox * mDoApplyPhysicsToolsToNpcsCheckBox;
 
     // Destructive Tools

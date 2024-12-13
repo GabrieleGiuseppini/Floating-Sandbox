@@ -628,8 +628,6 @@ Next release:
 + See chairs floating in lava (Camodo video)
 	+ It's friction drag adj - clamp value @ "World forces - water drag"
 
-- Bomb scare: larger radius
-
 - Do chest fixes at skins
 
 - Misc:

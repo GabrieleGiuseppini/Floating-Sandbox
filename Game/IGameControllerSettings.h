@@ -254,6 +254,9 @@ struct IGameControllerSettings
     virtual bool GetDoApplyPhysicsToolsToNpcs() const = 0;
     virtual void SetDoApplyPhysicsToolsToNpcs(bool value) = 0;
 
+    virtual float GetNpcPassiveBlastRadiusAdjustment() const = 0;
+    virtual void SetNpcPassiveBlastRadiusAdjustment(float value) = 0;
+
     // Misc
 
     virtual OceanFloorTerrain const & GetOceanFloorTerrain() const = 0;

@@ -707,6 +707,11 @@ public:
     bool GetDoApplyPhysicsToolsToNpcs() const override { return mGameParameters.DoApplyPhysicsToolsToNpcs; }
     void SetDoApplyPhysicsToolsToNpcs(bool value) override { mGameParameters.DoApplyPhysicsToolsToNpcs = value; }
 
+    float GetNpcPassiveBlastRadiusAdjustment() const override { return mGameParameters.NpcPassiveBlastRadiusAdjustment; }
+    void SetNpcPassiveBlastRadiusAdjustment(float value) override { mGameParameters.NpcPassiveBlastRadiusAdjustment = value; }
+    float GetMinNpcPassiveBlastRadiusAdjustment() const override { return GameParameters::MinNpcPassiveBlastRadiusAdjustment; }
+    float GetMaxNpcPassiveBlastRadiusAdjustment() const override { return GameParameters::MaxNpcPassiveBlastRadiusAdjustment; }
+
     size_t GetMaxNpcs() const override { return mGameParameters.MaxNpcs; }
     void SetMaxNpcs(size_t value) { mGameParameters.MaxNpcs = value; }
     size_t GetMinMaxNpcs() const { return GameParameters::MinMaxNpcs; }

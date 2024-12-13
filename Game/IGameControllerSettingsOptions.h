@@ -233,6 +233,9 @@ struct IGameControllerSettingsOptions
     virtual float GetMinNpcSizeMultiplier() const = 0;
     virtual float GetMaxNpcSizeMultiplier() const = 0;
 
+    virtual float GetMinNpcPassiveBlastRadiusAdjustment() const = 0;
+    virtual float GetMaxNpcPassiveBlastRadiusAdjustment() const = 0;
+
     // Misc
 
     virtual float GetMinSeaDepth() const = 0;
