@@ -38,6 +38,8 @@
 				+ And no +13
 			+ Check all explosions
 				+ Hydrogen NPC
+		- Bomb base force to constants
+		- NPC BlastAt: are NPCs that fall into cracks not swept away?
 		- NPC blast multiplier: move to GameParameters as constant, and add adjustment
 			- Might make constant slightly less?
 			- SettingsDialog: under NPCs, "Blast TODO Adjust"
