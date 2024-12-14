@@ -3893,6 +3893,36 @@
 
         {
             "buoyancy_volume_fill": 1.0,
+            "color_key": "#D9D9D9",
+            "combustion_type": "Explosion",
+            "elasticity_coefficient": 0.5,
+            "explosive_combustion_radius": 1.15,
+            "explosive_combustion_strength": 50.0,
+            "friction_kinetic_coefficient": 0.69,
+            "friction_static_coefficient": 1.25,
+            "ignition_temperature": 483.15,
+	    "is_exempt_from_palette": true,
+            "is_hull": false,
+            "mass": {
+                "density": 1.0,
+                "nominal_mass": 30.0
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Diesel Can",
+            "sound_type": "Metal",
+            "specific_heat": 897.0,
+            "stiffness": 1.0,
+            "strength": 0.1,
+            "texture_name": "metal_riveted_2_small",
+            "thermal_conductivity": 205.0,
+            "thermal_expansion_coefficient": 2.2e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+
+        {
+            "buoyancy_volume_fill": 1.0,
             "color_key": "#D3AE83",
             "combustion_type": "Explosion",
             "elasticity_coefficient": 0.5,
@@ -3904,12 +3934,11 @@
 	    "is_exempt_from_palette": true,
             "is_hull": false,
             "mass": {
-                "density": 0.116875,
-                "nominal_mass": 650
+                "density": 1.0,
+                "nominal_mass": 75
             },
             "melting_temperature": 1000000.0,
             "name": "Gunpowder Strong Crate",
-            "render_color": "#D3AE83",
             "sound_type": "Wood",
             "specific_heat": 300.0,
             "stiffness": 1.0,
@@ -3935,8 +3964,8 @@
 	    "is_exempt_from_palette": true,
             "is_hull": true,
             "mass": {
-                "density": 0.025,
-                "nominal_mass": 7950
+                "density": 1.0,
+                "nominal_mass": 200.0
             },
             "melting_temperature": 1000000.0,
             "name": "Hydrogen Tank",
@@ -3964,12 +3993,11 @@
             "is_exempt_from_palette": true,
             "is_hull": true,
             "mass": {
-                "density": 0.025,
-                "nominal_mass": 7950
+                "density": 1.0,
+                "nominal_mass": 200.0
             },
             "melting_temperature": 1000000.0,
             "name": "Sodium Tank",
-            "render_color": "#F5F5E9",
             "sound_type": "Metal",
             "specific_heat": 1230.0,
             "stiffness": 1.0,

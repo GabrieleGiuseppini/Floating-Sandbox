@@ -712,13 +712,11 @@ void Npcs::UpdateNpcBehavior(
                     UpdateFurniture(
                         *npcState,
                         currentSimulationTime,
-                        homeShip,
                         gameParameters);
 
                     UpdateFurnitureNpcAnimation(
                         *npcState,
-                        currentSimulationTime,
-                        homeShip);
+                        currentSimulationTime);
 
                     break;
                 }
@@ -728,13 +726,11 @@ void Npcs::UpdateNpcBehavior(
                     UpdateHuman(
                         *npcState,
                         currentSimulationTime,
-                        homeShip,
                         gameParameters);
 
                     UpdateHumanNpcAnimation(
                         *npcState,
-                        currentSimulationTime,
-                        homeShip);
+                        currentSimulationTime);
 
                     break;
                 }

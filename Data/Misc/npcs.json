@@ -1088,6 +1088,22 @@
                 "render_color": "#A5988C"
             },
 
+            {
+                "name": "Diesel Can",
+                "role": "Other",
+                "material": "Diesel Can",
+                "particle_mesh": {
+                    "kind": "Quad",
+                    "height": 0.4,
+                    "particle_attributes_overrides": [
+                        {
+                            "buoyancy_volume_fill": 0.2
+                        }
+                    ]
+                },
+                "texture_filename_stem": "diesel_can_1",
+                "render_color": "#A3A3A3"
+            },
 
             {
                 "name": "Hydrogen Tank",
@@ -1284,6 +1300,7 @@
             "Small Table 1": "Tavolino 1",
             "Small Table 2": "Tavolino 2",
             "Stone Ballast": "Zavorra di Pietra",
+	    "Diesel Can": "Tanica di Diesel",
 	    "Hydrogen Tank": "Bombola di Idrogeno",
 	    "Sodium Tank": "Bombola di Sodio",
 	    "TNT Crate": "Cassa di Tritolo",

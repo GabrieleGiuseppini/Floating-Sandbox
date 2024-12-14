@@ -18,6 +18,117 @@ namespace Physics {
 
 float constexpr ParticleSize = 0.30f; // For rendering, mostly - given that particles have zero dimensions
 
+Npcs::Npcs(
+    Physics::World & parentWorld,
+    NpcDatabase const & npcDatabase,
+    std::shared_ptr<GameEventDispatcher> gameEventHandler,
+    GameParameters const & gameParameters)
+    : mParentWorld(parentWorld)
+    , mNpcDatabase(npcDatabase)
+    , mGameEventHandler(std::move(gameEventHandler))
+    , mMaxNpcs(gameParameters.MaxNpcs)
+    // Container
+    , mStateBuffer()
+    , mShips()
+    , mParticles(static_cast<ElementCount>(mMaxNpcs * GameParameters::MaxParticlesPerNpc))
+    // State
+    , mCurrentSimulationSequenceNumber()
+    , mCurrentlySelectedNpc()
+    , mCurrentlySelectedNpcWallClockTimestamp()
+    , mGeneralizedPanicLevel(0.0f)
+    // Stats
+    , mFreeRegimeHumanNpcCount(0)
+    , mConstrainedRegimeHumanNpcCount(0)
+    // Simulation parameters
+    , mGlobalDampingFactor(0.0f) // Will be calculated
+    , mCurrentGlobalDampingAdjustment(1.0f)
+    , mCurrentSizeMultiplier(1.0f)
+    , mCurrentHumanNpcWalkingSpeedAdjustment(1.0f)
+    , mCurrentSpringReductionFractionAdjustment(1.0f)
+    , mCurrentSpringDampingCoefficientAdjustment(1.0f)
+    , mCurrentStaticFrictionAdjustment(1.0f)
+    , mCurrentKineticFrictionAdjustment(1.0f)
+    , mCurrentNpcFrictionAdjustment(1.0f)
+    // Dance moves
+    , mRepairDanceMoves(MakeRepairDanceMoves())
+{
+    RecalculateGlobalDampingFactor();
+}
+
+std::vector<Npcs::DanceMove> Npcs::MakeRepairDanceMoves()
+{
+    float constexpr TQrtPi = Pi<float> * 3.0f / 4.0f;
+    float constexpr HlfPi = Pi<float> / 2.0f;
+    float constexpr QrtPi = Pi<float> / 4.0f;
+
+    return std::vector<Npcs::DanceMove>{
+        // Frontal
+        DanceMove({
+            1.0f, 0.0f,
+            {0.2f, -0.2f, HlfPi, -HlfPi},
+            {1.0f, 1.0f, 1.0f, 1.0f},
+            1.0f
+            }),
+        DanceMove({
+            1.0f, 0.0f,
+            {0.05f, -0.05f, Pi<float>, -Pi<float>},
+            {1.0f, 1.0f, 1.0f, 1.0f},
+            1.0f
+            }),
+        DanceMove({
+            1.0f, 0.0f,
+            {0.05f, -0.05f, HlfPi, -HlfPi},
+            {1.0f, 1.0f, 1.0f, 1.0f},
+            1.0f
+            }),
+        // R
+        DanceMove({
+            0.0f, 1.0f,
+            {0.00f, -0.00f, HlfPi, HlfPi},
+            {1.0f, 1.0f, 1.0f, 1.0f},
+            1.0f
+            }),
+        DanceMove({
+            0.0f, 1.0f,
+            {QrtPi, -0.00f, TQrtPi, QrtPi},
+            {1.0f, 1.0f, 1.0f, 1.0f},
+            0.5f
+            }),
+        DanceMove({
+            0.0f, 1.0f,
+            {0.00f, -0.00f, QrtPi, TQrtPi},
+            {1.0f, 1.0f, 1.0f, 1.0f},
+            1.0f
+            }),
+        // Frontal
+        DanceMove({
+            1.0f, 0.0f,
+            {0.2f, -0.2f, HlfPi, -HlfPi},
+            {1.0f, 1.0f, 1.0f, 1.0f},
+            1.0f
+            }),
+        // L
+        DanceMove({
+            0.0f, -1.0f,
+            {0.00f, -0.00f, -HlfPi, -HlfPi},
+            {1.0f, 1.0f, 1.0f, 1.0f},
+            1.0f
+            }),
+        DanceMove({
+            0.0f, -1.0f,
+            {-QrtPi, -0.00f, -TQrtPi, -QrtPi},
+            {1.0f, 1.0f, 1.0f, 1.0f},
+            0.5f
+            }),
+        DanceMove({
+            0.0f, -1.0f,
+            {0.00f, -0.00f, -QrtPi, -TQrtPi},
+            {1.0f, 1.0f, 1.0f, 1.0f},
+            1.0f
+            })
+    };
+}
+
 /*
 Main principles:
     - Global damping: when constrained, we only apply it to velocity *relative* to the mesh ("air moves with the ship")
@@ -89,10 +200,24 @@ void Npcs::Update(
     UpdateNpcBehavior(currentSimulationTime, gameParameters);
 
     //
-    // Decay global panics
+    // Decays
     //
 
-    mSinkingShipPanicLevel -= mSinkingShipPanicLevel * 0.0005f;
+    for (auto & ship : mShips)
+    {
+        if (ship.has_value())
+        {
+            // Sinking panic level
+            ship->SinkingShipPanicLevel -= ship->SinkingShipPanicLevel * 0.0008f;
+
+            // Post-repair mode
+            if (ship->ShipReparationStartSimulationTimestamp.has_value()
+                && (currentSimulationTime - *ship->ShipReparationStartSimulationTimestamp) >= RepairDanceDuration)
+            {
+                ship->ShipReparationStartSimulationTimestamp.reset();
+            }
+        }
+    }
 }
 
 void Npcs::UpdateEnd()
@@ -2312,6 +2437,22 @@ void Npcs::OnShipTriangleDestroyed(
     }
 }
 
+void Npcs::OnShipStartedSinking(
+    ShipId shipId,
+    float /*currentSimulationTime*/)
+{
+    assert(mShips[shipId].has_value());
+    mShips[shipId]->SinkingShipPanicLevel = 1.0f;
+}
+
+void Npcs::OnShipRepaired(
+    ShipId shipId,
+    float currentSimulationTime)
+{
+    assert(mShips[shipId].has_value());
+    mShips[shipId]->ShipReparationStartSimulationTimestamp = currentSimulationTime;
+}
+
 /////////////////////////////// Barylab-specific
 
 #ifdef IN_BARYLAB
@@ -2637,6 +2778,12 @@ void Npcs::Publish() const
                 case StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::Constrained_Aerial:
                 {
                     mGameEventHandler->OnHumanNpcBehaviorChanged("Constrained_Aerial");
+                    break;
+                }
+
+                case StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::Constrained_Dancing_Repaired:
+                {
+                    mGameEventHandler->OnHumanNpcBehaviorChanged("Constrained_Dancing_Repaired");
                     break;
                 }
 
@@ -4319,8 +4466,7 @@ void Npcs::RenderNpc(
 
 void Npcs::UpdateFurnitureNpcAnimation(
     StateType & npc,
-    float currentSimulationTime,
-    Ship const & /*homeShip*/)
+    float currentSimulationTime)
 {
     assert(npc.Kind == NpcKindType::Furniture);
 
@@ -4348,7 +4494,7 @@ void Npcs::UpdateFurnitureNpcAnimation(
 
             float const elapsed = currentSimulationTime - furnitureNpcState.CurrentStateTransitionSimulationTimestamp;
 
-            animationState.Alpha = 1.0f - std::min(elapsed / ExplosionDuration, 1.0f);
+            animationState.Alpha = 1.0f - std::min(elapsed / NpcExplosionDuration, 1.0f);
 
             break;
         }
@@ -4363,8 +4509,7 @@ void Npcs::UpdateFurnitureNpcAnimation(
 
 void Npcs::UpdateHumanNpcAnimation(
     StateType & npc,
-    float currentSimulationTime,
-    Ship const & homeShip)
+    float currentSimulationTime)
 {
     assert(npc.Kind == NpcKindType::Human);
 
@@ -4377,6 +4522,10 @@ void Npcs::UpdateHumanNpcAnimation(
     ElementIndex const primaryParticleIndex = npc.ParticleMesh.Particles[0].ParticleIndex;
     auto const & primaryContrainedState = npc.ParticleMesh.Particles[0].ConstrainedState;
     ElementIndex const secondaryParticleIndex = npc.ParticleMesh.Particles[1].ParticleIndex;
+
+    assert(mShips[npc.CurrentShipId].has_value());
+    auto const & ship = *mShips[npc.CurrentShipId];
+    auto const & homeShip = ship.HomeShip;
 
     //
     // Angles and thigh
@@ -4814,6 +4963,23 @@ void Npcs::UpdateHumanNpcAnimation(
             targetAngles.LeftLeg = -lLegAngles[absolutePhase % 4];
 
             convergenceRate = 0.5f;
+
+            break;
+        }
+
+        case HumanNpcStateType::BehaviorType::Constrained_Dancing_Repaired:
+        {
+            auto const & moves = mRepairDanceMoves;
+
+            assert(ship.ShipReparationStartSimulationTimestamp.has_value());
+            size_t const m =
+                static_cast<size_t>(std::floorf((currentSimulationTime - *ship.ShipReparationStartSimulationTimestamp) / DanceMoveDuration))
+                % moves.size();
+
+            targetAngles = moves[m].LimbAngles;
+            targetUpperLegLengthFraction = moves[m].UpperLegLengthFraction;
+
+            convergenceRate = 0.15f;
 
             break;
         }
@@ -5281,7 +5447,7 @@ void Npcs::UpdateHumanNpcAnimation(
 
             float const elapsed = currentSimulationTime - humanNpcState.CurrentStateTransitionSimulationTimestamp;
 
-            animationState.Alpha = 1.0f - std::min(elapsed / ExplosionDuration, 1.0f);
+            animationState.Alpha = 1.0f - std::min(elapsed / NpcExplosionDuration, 1.0f);
 
             break;
         }
@@ -5403,6 +5569,22 @@ void Npcs::UpdateHumanNpcAnimation(
 
                 limbLengthConvergenceRate = 0.09f;
             }
+
+            break;
+        }
+
+        case HumanNpcStateType::BehaviorType::Constrained_Dancing_Repaired:
+        {
+            auto const & moves = mRepairDanceMoves;
+
+            assert(ship.ShipReparationStartSimulationTimestamp.has_value());
+            size_t const m =
+                static_cast<size_t>(std::floorf((currentSimulationTime - *ship.ShipReparationStartSimulationTimestamp) / DanceMoveDuration))
+                % moves.size();
+
+            targetLengthMultipliers = moves[m].LimbLengthMultipliers;
+
+            limbLengthConvergenceRate = 0.15f;
 
             break;
         }

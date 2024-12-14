@@ -358,6 +358,7 @@ private:
 					Constrained_Swimming_Style2, // Swims
 
 					Constrained_Electrified, // Doing electrification dance, assuming being vertical
+					Constrained_Dancing_Repaired, // Dances
 
 					Free_Aerial, // Does nothing, stays here as long as it's moving
 					Free_KnockedOut, // Does nothing, stays here as long as it's still
@@ -515,6 +516,13 @@ private:
 							ProgressToLeaving = 0.0f;
 						}
 					} Constrained_Electrified;
+
+					struct Constrained_Dancing_RepairedType
+					{
+						void Reset()
+						{
+						}
+					} Constrained_Dancing_Repaired;
 
 					struct Free_AerialStateType
 					{
@@ -721,6 +729,12 @@ private:
 						case BehaviorType::Constrained_Aerial:
 						{
 							CurrentBehaviorState.Constrained_Aerial.Reset();
+							break;
+						}
+
+						case BehaviorType::Constrained_Dancing_Repaired:
+						{
+							CurrentBehaviorState.Constrained_Dancing_Repaired.Reset();
 							break;
 						}
 
@@ -1026,6 +1040,9 @@ private:
 
 		std::vector<NpcId> BurningNpcs; // Maintained as a set
 
+		float SinkingShipPanicLevel; // [0.0f ... +1.0f], automatically decayed
+		std::optional<float> ShipReparationStartSimulationTimestamp; // When set, we're in post-reparation mode
+
 		// Stats
 		NpcStatsByKind ActiveNpcStats;
 		NpcStatsByKind TotalNpcStats; // Included being removed; used e.g. for rendering
@@ -1047,10 +1064,26 @@ private:
 			: HomeShip(homeShip)
 			, Npcs()
 			, BurningNpcs()
+			, SinkingShipPanicLevel(0.0)
+			, ShipReparationStartSimulationTimestamp()
 			//
 			, ActiveNpcStats()
 			, TotalNpcStats()
 		{}
+	};
+
+	//
+	// (Human) dance moves
+	//
+
+	struct DanceMove final
+	{
+		float FaceOrientation;
+		float FaceDirectionX;
+
+		LimbVector LimbAngles;
+		LimbVector LimbLengthMultipliers;
+		float UpperLegLengthFraction;
 	};
 
 public:
@@ -1059,37 +1092,7 @@ public:
 		Physics::World & parentWorld,
 		NpcDatabase const & npcDatabase,
 		std::shared_ptr<GameEventDispatcher> gameEventHandler,
-		GameParameters const & gameParameters)
-		: mParentWorld(parentWorld)
-		, mNpcDatabase(npcDatabase)
-		, mGameEventHandler(std::move(gameEventHandler))
-		, mMaxNpcs(gameParameters.MaxNpcs)
-		// Container
-		, mStateBuffer()
-		, mShips()
-		, mParticles(static_cast<ElementCount>(mMaxNpcs * GameParameters::MaxParticlesPerNpc))
-		// State
-		, mCurrentSimulationSequenceNumber()
-		, mCurrentlySelectedNpc()
-		, mCurrentlySelectedNpcWallClockTimestamp()
-		, mSinkingShipPanicLevel(0.0f)
-		, mGeneralizedPanicLevel(0.0f)
-		// Stats
-		, mFreeRegimeHumanNpcCount(0)
-		, mConstrainedRegimeHumanNpcCount(0)
-		// Simulation parameters
-		, mGlobalDampingFactor(0.0f) // Will be calculated
-		, mCurrentGlobalDampingAdjustment(1.0f)
-		, mCurrentSizeMultiplier(1.0f)
-		, mCurrentHumanNpcWalkingSpeedAdjustment(1.0f)
-		, mCurrentSpringReductionFractionAdjustment(1.0f)
-		, mCurrentSpringDampingCoefficientAdjustment(1.0f)
-		, mCurrentStaticFrictionAdjustment(1.0f)
-		, mCurrentKineticFrictionAdjustment(1.0f)
-		, mCurrentNpcFrictionAdjustment(1.0f)
-	{
-		RecalculateGlobalDampingFactor();
-	}
+		GameParameters const & gameParameters);
 
 	void Update(
 		float currentSimulationTime,
@@ -1281,10 +1284,13 @@ public:
 		ShipId shipId,
 		ElementIndex triangleElementIndex);
 
-	void OnShipStartedSinking()
-	{
-		mSinkingShipPanicLevel = 1.0f;
-	}
+	void OnShipStartedSinking(
+		ShipId shipId,
+		float currentSimulationTime);
+
+	void OnShipRepaired(
+		ShipId shipId,
+		float currentSimulationTime);
 
 	void SetGeneralizedPanicLevel(float panicLevel)
 	{
@@ -1488,13 +1494,11 @@ private:
 
 	void UpdateFurnitureNpcAnimation(
 		StateType & npc,
-		float currentSimulationTime,
-		Ship const & homeShip);
+		float currentSimulationTime);
 
 	void UpdateHumanNpcAnimation(
 		StateType & npc,
-		float currentSimulationTime,
-		Ship const & homeShip);
+		float currentSimulationTime);
 
 private:
 
@@ -2144,13 +2148,11 @@ private:
 	void UpdateFurniture(
 		StateType & npc,
 		float currentSimulationTime,
-		Ship & homeShip,
 		GameParameters const & gameParameters);
 
 	void UpdateHuman(
 		StateType & npc,
 		float currentSimulationTime,
-		Ship & homeShip,
 		GameParameters const & gameParameters);
 
 	inline bool CheckAndMaintainHumanEquilibrium(
@@ -2221,7 +2223,10 @@ private:
 	static float constexpr HumanRemovalRotationDuration = 3.0f;
 	static float constexpr HumanRemovalRotationStepBase = 0.3f;
 
-	static float constexpr ExplosionDuration = 0.2f;
+	static float constexpr NpcExplosionDuration = 0.2f; // Lifetime after an NPC exploded
+
+	static float constexpr DanceMoveDuration = 0.25f; // > 120bpm
+	static float constexpr RepairDanceDuration = 10.0f;
 
 private:
 
@@ -2261,7 +2266,6 @@ private:
 	std::optional<NpcId> mCurrentlySelectedNpc;
 	GameWallClock::time_point mCurrentlySelectedNpcWallClockTimestamp;
 
-	float mSinkingShipPanicLevel; // [0.0f ... +1.0f], automatically decayed
 	float mGeneralizedPanicLevel; // [0.0f ... +1.0f], manually decayed
 
 	//
@@ -2309,6 +2313,14 @@ private:
 	std::optional<ParticleTrajectory> mCurrentParticleTrajectoryNotification;
 
 #endif
+
+	//
+	// Dance moves
+	//
+
+	std::vector<DanceMove> const mRepairDanceMoves;
+
+	static std::vector<DanceMove> MakeRepairDanceMoves();
 };
 
 #ifdef _MSC_VER

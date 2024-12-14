@@ -17,7 +17,7 @@ void Ship::RepairAt(
     vec2f const & targetPos,
     float radiusMultiplier,
     SequenceNumber repairStepId,
-    float /*currentSimulationTime*/,
+    float currentSimulationTime,
     GameParameters const & gameParameters)
 {
     float const searchRadius =
@@ -65,6 +65,7 @@ void Ship::RepairAt(
                 targetPos,
                 squareSearchRadius,
                 repairStepId,
+                currentSimulationTime,
                 gameParameters);
         }
     }
@@ -82,6 +83,7 @@ void Ship::RepairAt(
             targetPos,
             squareSearchRadius,
             repairStepId,
+            currentSimulationTime,
             gameParameters);
     }
 
@@ -122,9 +124,9 @@ void Ship::RepairAt(
                     mTriangles.Restore(fct);
 
                     // Attempt to restore all endpoints
-                    AttemptPointRestore(mTriangles.GetPointAIndex(fct));
-                    AttemptPointRestore(mTriangles.GetPointBIndex(fct));
-                    AttemptPointRestore(mTriangles.GetPointCIndex(fct));
+                    AttemptPointRestore(mTriangles.GetPointAIndex(fct), currentSimulationTime);
+                    AttemptPointRestore(mTriangles.GetPointBIndex(fct), currentSimulationTime);
+                    AttemptPointRestore(mTriangles.GetPointCIndex(fct), currentSimulationTime);
                 }
             }
         }
@@ -353,6 +355,7 @@ bool Ship::TryRepairAndPropagateFromPoint(
     vec2f const & targetPos,
     float squareSearchRadius,
     SequenceNumber repairStepId,
+    float currentSimulationTime,
     GameParameters const & gameParameters)
 {
     bool hasRepairedAnything = false;
@@ -401,6 +404,7 @@ bool Ship::TryRepairAndPropagateFromPoint(
                     pointIndex,
                     repairStrength,
                     repairStepId,
+                    currentSimulationTime,
                     gameParameters);
 
                 hasRepairedAnything |= hasRepaired;
@@ -446,6 +450,7 @@ bool Ship::RepairFromAttractor(
     ElementIndex attractorPointIndex,
     float repairStrength,
     SequenceNumber repairStepId,
+    float currentSimulationTime,
     GameParameters const & gameParameters)
 {
     // Tolerance to distance: the minimum distance between the endpoint
@@ -851,8 +856,8 @@ bool Ship::RepairFromAttractor(
                         mSprings.GetFactoryRestLength(fcs.SpringIndex));
 
                     // Attempt to restore both endpoints
-                    AttemptPointRestore(attractorPointIndex);
-                    AttemptPointRestore(attracteePointIndex);
+                    AttemptPointRestore(attractorPointIndex, currentSimulationTime);
+                    AttemptPointRestore(attracteePointIndex, currentSimulationTime);
 
                     // Recalculate the spring's coefficients, since we have changed the
                     // spring's rest length

@@ -79,7 +79,8 @@ bool ImpactBombGadget::Update(
 
             // Blast heat
             float const blastHeat =
-                gameParameters.BombBlastHeat * 1.2f // Just a bit more caustic
+                gameParameters.BombBlastHeat
+                * 1.2f // Bomb-specific multiplier
                 * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
             // Start explosion

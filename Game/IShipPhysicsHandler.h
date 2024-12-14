@@ -72,7 +72,9 @@ struct IShipPhysicsHandler
      * The repair tool will invoke this only after connected springs and triangles
      * have also been restored.
      */
-    virtual void HandlePointRestore(ElementIndex pointElementIndex) = 0;
+    virtual void HandlePointRestore(
+        ElementIndex pointElementIndex,
+        float currentSimulationTime) = 0;
 
     /*
      * Invoked whenever a spring is destroyed.

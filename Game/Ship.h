@@ -534,7 +534,7 @@ private:
         GameParameters const & gameParameters,
         float & waterSplashed);
 
-    void UpdateSinking();
+    void UpdateSinking(float currentSimulationTime);
 
     // Electrical
 
@@ -590,7 +590,9 @@ private:
         ElementIndex pointAElementIndex,
         ElementIndex pointBElementIndex);
 
-    void AttemptPointRestore(ElementIndex pointElementIndex);
+    void AttemptPointRestore(
+        ElementIndex pointElementIndex,
+        float currentSimulationTime);
 
     // Does secondary tasks after a blast has been applied to the ship's points
     void OnBlast(
@@ -668,7 +670,9 @@ public:
     void HandleEphemeralParticleDestroy(
         ElementIndex pointElementIndex) override;
 
-    void HandlePointRestore(ElementIndex pointElementIndex) override;
+    void HandlePointRestore(
+        ElementIndex pointElementIndex,
+        float currentSimulationTime) override;
 
     void HandleSpringDestroy(
         ElementIndex springElementIndex,
@@ -788,12 +792,14 @@ private:
         vec2f const & targetPos,
         float squareSearchRadius,
         SequenceNumber repairStepId,
+        float currentSimulationTime,
         GameParameters const & gameParameters);
 
     bool RepairFromAttractor(
         ElementIndex attractorPointIndex,
         float repairStrength,
         SequenceNumber repairStepId,
+        float currentSimulationTime,
         GameParameters const & gameParameters);
 
 private:

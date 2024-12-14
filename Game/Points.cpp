@@ -611,7 +611,9 @@ void Points::Detach(
     }
 }
 
-void Points::Restore(ElementIndex pointElementIndex)
+void Points::Restore(
+    ElementIndex pointElementIndex,
+    float currentSimulationTime)
 {
     assert(IsDamaged(pointElementIndex));
 
@@ -645,7 +647,7 @@ void Points::Restore(ElementIndex pointElementIndex)
 
     // Invoke ship handler
     assert(nullptr != mShipPhysicsHandler);
-    mShipPhysicsHandler->HandlePointRestore(pointElementIndex);
+    mShipPhysicsHandler->HandlePointRestore(pointElementIndex, currentSimulationTime);
 }
 
 void Points::OnOrphaned(ElementIndex pointElementIndex)

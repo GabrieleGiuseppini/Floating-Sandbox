@@ -122,7 +122,8 @@ bool RCBombGadget::Update(
 
                 // Blast heat
                 float const blastHeat =
-                    gameParameters.BombBlastHeat * 0.8f // Just a bit less caustic
+                    gameParameters.BombBlastHeat
+                    * 0.8f // Bomb-specific multiplier
                     * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
                 // Start explosion

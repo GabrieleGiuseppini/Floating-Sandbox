@@ -886,7 +886,9 @@ public:
         float currentSimulationTime,
         GameParameters const & gameParameters);
 
-    void Restore(ElementIndex pointElementIndex);
+    void Restore(
+        ElementIndex pointElementIndex,
+        float currentSimulationTime);
 
     void OnOrphaned(ElementIndex pointElementIndex);
 

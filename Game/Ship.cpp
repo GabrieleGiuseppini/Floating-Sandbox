@@ -515,7 +515,7 @@ void Ship::Update(
 
     if (mCurrentSimulationSequenceNumber.IsStepOf(UpdateSinkingStep, GameParameters::ParticleUpdateLowFrequencyPeriod))
     {
-        UpdateSinking();
+        UpdateSinking(currentSimulationTime);
     }
 
 #ifdef _DEBUG
@@ -2603,7 +2603,7 @@ void Ship::UpdateWaterVelocities(
     mPoints.UpdateWaterVelocitiesFromMomenta();
 }
 
-void Ship::UpdateSinking()
+void Ship::UpdateSinking(float currentSimulationTime)
 {
     //
     // Calculate total number of wet points
@@ -2622,7 +2622,7 @@ void Ship::UpdateSinking()
         if (wetPointCount > mPoints.GetRawShipPointCount() * 3 / 10 + mPoints.GetTotalFactoryWetPoints()) // High watermark
         {
             // Started sinking
-            mParentWorld.GetNpcs().OnShipStartedSinking(); // Tell NPCs
+            mParentWorld.GetNpcs().OnShipStartedSinking(mId, currentSimulationTime); // Tell NPCs
             mGameEventHandler->OnSinkingBegin(mId);
             mIsSinking = true;
         }
@@ -3249,7 +3249,9 @@ void Ship::DestroyConnectedTriangles(
     }
 }
 
-void Ship::AttemptPointRestore(ElementIndex pointElementIndex)
+void Ship::AttemptPointRestore(
+    ElementIndex pointElementIndex,
+    float currentSimulationTime)
 {
     //
     // A point is eligible for restore if it's damaged and has all of its factory springs and all
@@ -3260,7 +3262,7 @@ void Ship::AttemptPointRestore(ElementIndex pointElementIndex)
         && mPoints.GetConnectedTriangles(pointElementIndex).ConnectedTriangles.size() == mPoints.GetFactoryConnectedTriangles(pointElementIndex).ConnectedTriangles.size()
         && mPoints.IsDamaged(pointElementIndex))
     {
-        mPoints.Restore(pointElementIndex);
+        mPoints.Restore(pointElementIndex, currentSimulationTime);
     }
 }
 
@@ -3608,7 +3610,9 @@ void Ship::HandleEphemeralParticleDestroy(ElementIndex pointElementIndex)
     mPinnedPoints.OnEphemeralParticleDestroyed(pointElementIndex);
 }
 
-void Ship::HandlePointRestore(ElementIndex pointElementIndex)
+void Ship::HandlePointRestore(
+    ElementIndex pointElementIndex,
+    float currentSimulationTime)
 {
     //
     // Restore the connected electrical element, if any and if it's deleted
@@ -3630,6 +3634,7 @@ void Ship::HandlePointRestore(ElementIndex pointElementIndex)
     // Notify if we've just completely restored the ship
     if (mDamagedPointsCount == 0 && mBrokenSpringsCount == 0 && mBrokenTrianglesCount == 0)
     {
+        mParentWorld.GetNpcs().OnShipRepaired(mId, currentSimulationTime); // Tell NPCs
         mGameEventHandler->OnShipRepaired(mId);
     }
 }
