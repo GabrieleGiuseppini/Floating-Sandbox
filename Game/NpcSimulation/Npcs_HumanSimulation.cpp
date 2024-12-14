@@ -136,6 +136,7 @@ void Npcs::UpdateHuman(
 		+ humanState.BombProximityPanicLevel
 		+ humanState.IncomingWaterProximityPanicLevel
 		+ humanState.MiscPanicLevel
+		+ mSinkingShipPanicLevel
 		+ mGeneralizedPanicLevel;
 
 	// Decay

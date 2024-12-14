@@ -668,11 +668,7 @@ Next release:
 		+ Has own panic
 		+ With chain of panics (fire, bomb, water - right order)
 
-	- Panic when sinking detected
-		- TODO: type? Do we still need "Generalized"? (note: it's global)
-			- "Generalized" is good for BaryLab - may be just #ifdef it to it?
-			- Can still have many named "global" panics, e.g. SinkingPanic
-
+	+ Panic when sinking detected
 	
 	+ Forward-looking walk planning:
 		! Goal: while walking, do not proceed towards a wall or a hole

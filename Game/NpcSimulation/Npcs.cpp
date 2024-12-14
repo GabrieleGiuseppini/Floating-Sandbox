@@ -87,6 +87,12 @@ void Npcs::Update(
     UpdateNpcPhysics(currentSimulationTime, stormParameters, gameParameters);
 
     UpdateNpcBehavior(currentSimulationTime, gameParameters);
+
+    //
+    // Decay global panics
+    //
+
+    mSinkingShipPanicLevel -= mSinkingShipPanicLevel * 0.0005f;
 }
 
 void Npcs::UpdateEnd()

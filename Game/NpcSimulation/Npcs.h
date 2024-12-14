@@ -1072,6 +1072,7 @@ public:
 		, mCurrentSimulationSequenceNumber()
 		, mCurrentlySelectedNpc()
 		, mCurrentlySelectedNpcWallClockTimestamp()
+		, mSinkingShipPanicLevel(0.0f)
 		, mGeneralizedPanicLevel(0.0f)
 		// Stats
 		, mFreeRegimeHumanNpcCount(0)
@@ -1279,6 +1280,11 @@ public:
 	void OnShipTriangleDestroyed(
 		ShipId shipId,
 		ElementIndex triangleElementIndex);
+
+	void OnShipStartedSinking()
+	{
+		mSinkingShipPanicLevel = 1.0f;
+	}
 
 	void SetGeneralizedPanicLevel(float panicLevel)
 	{
@@ -2255,6 +2261,7 @@ private:
 	std::optional<NpcId> mCurrentlySelectedNpc;
 	GameWallClock::time_point mCurrentlySelectedNpcWallClockTimestamp;
 
+	float mSinkingShipPanicLevel; // [0.0f ... +1.0f], automatically decayed
 	float mGeneralizedPanicLevel; // [0.0f ... +1.0f], manually decayed
 
 	//

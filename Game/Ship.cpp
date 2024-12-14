@@ -2622,6 +2622,7 @@ void Ship::UpdateSinking()
         if (wetPointCount > mPoints.GetRawShipPointCount() * 3 / 10 + mPoints.GetTotalFactoryWetPoints()) // High watermark
         {
             // Started sinking
+            mParentWorld.GetNpcs().OnShipStartedSinking(); // Tell NPCs
             mGameEventHandler->OnSinkingBegin(mId);
             mIsSinking = true;
         }
