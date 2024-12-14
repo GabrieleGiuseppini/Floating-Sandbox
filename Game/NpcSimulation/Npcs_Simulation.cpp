@@ -474,12 +474,11 @@ void Npcs::UpdateNpcPhysics(
                         * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
 
                     float const blastForce =
-                        55000.0f // Magic number
-                        * mParticles.GetMaterial(oneNpcParticleOnFire).ExplosiveCombustionStrength;
+                        mParticles.GetMaterial(oneNpcParticleOnFire).ExplosiveCombustionStrength
+                        * 55000.0f; // Magic number
 
                     float const blastHeat =
-                        GameParameters::CombustionHeat
-                        * 1.0f // Magic number
+                        mParticles.GetMaterial(oneNpcParticleOnFire).ExplosiveCombustionHeat
                         * gameParameters.CombustionHeatAdjustment
                         * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
@@ -3848,13 +3847,12 @@ void Npcs::OnImpact(
             * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
 
         float const blastForce =
-            55000.0f // Magic number
-            * multiplier
-            * mParticles.GetMaterial(npcParticleIndex).ExplosiveCombustionStrength;
+            mParticles.GetMaterial(npcParticleIndex).ExplosiveCombustionStrength
+            * 55000.0f // Magic number
+            * multiplier;
 
         float const blastHeat =
-            GameParameters::CombustionHeat
-            * 1.0f // Magic number
+            mParticles.GetMaterial(npcParticleIndex).ExplosiveCombustionHeat
             * gameParameters.CombustionHeatAdjustment
             * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 

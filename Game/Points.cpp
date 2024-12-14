@@ -1041,14 +1041,6 @@ void Points::UpdateCombustionLowFrequency(
                 return std::get<1>(t1) > std::get<1>(t2);
             });
 
-        // Calculate blast heat
-        float const blastHeat =
-            GameParameters::CombustionHeat
-            * 1.5f // Arbitrary multiplier
-            * GameParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>
-            * gameParameters.CombustionHeatAdjustment
-            * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
-
         // Explode these points
         for (size_t i = 0; i < maxExplosionPoints; ++i)
         {
@@ -1059,6 +1051,11 @@ void Points::UpdateCombustionLowFrequency(
             //
             // Explode!
             //
+
+            float const blastHeat =
+                mMaterialsBuffer[pointIndex].Structural->ExplosiveCombustionHeat
+                * gameParameters.CombustionHeatAdjustment
+                * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
             float const blastRadius =
                 mMaterialsBuffer[pointIndex].Structural->ExplosiveCombustionRadius

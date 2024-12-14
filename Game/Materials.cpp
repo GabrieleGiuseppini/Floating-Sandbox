@@ -84,6 +84,7 @@ StructuralMaterial StructuralMaterial::Create(
         float const thermalExpansionCoefficient = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "thermal_expansion_coefficient", 0.0);
         float const specificHeat = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "specific_heat", 100.0f);
         MaterialCombustionType const combustionType = StrToMaterialCombustionType(Utils::GetMandatoryJsonMember<std::string>(structuralMaterialJson, "combustion_type"));
+        float const explosiveCombustionHeat = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "explosive_combustion_heat", 0.0);
         float const explosiveCombustionRadius = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "explosive_combustion_radius", 0.0);
         float const explosiveCombustionStrength = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "explosive_combustion_strength", 1.0);
 
@@ -138,6 +139,7 @@ StructuralMaterial StructuralMaterial::Create(
             thermalExpansionCoefficient,
             specificHeat,
             combustionType,
+            explosiveCombustionHeat,
             explosiveCombustionRadius,
             explosiveCombustionStrength,
             // Misc

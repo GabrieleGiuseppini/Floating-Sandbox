@@ -2063,12 +2063,11 @@ void Npcs::SmashAt(
                         * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
 
                     float const blastForce =
-                        20000.0f // Magic number
-                        * mParticles.GetMaterial(explosiveParticleInRadius).ExplosiveCombustionStrength;
+                        mParticles.GetMaterial(explosiveParticleInRadius).ExplosiveCombustionStrength
+                        * 20000.0f; // Magic number
 
                     float const blastHeat =
-                        GameParameters::CombustionHeat
-                        * 0.5f // Magic number
+                        mParticles.GetMaterial(explosiveParticleInRadius).ExplosiveCombustionHeat
                         * gameParameters.CombustionHeatAdjustment
                         * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 

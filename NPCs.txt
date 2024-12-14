@@ -645,14 +645,31 @@ Next release:
 	+ Stoker 4
 
 = Diesel can
-	+ NPC
-	- Lots of heat: goal is that all wood ship around catches fire
-		- Should we add material property - explosive_combustion_heat?
-			- J
-			- default: 100.0f * 1000.0f
-			- Use at all StartExplosion calls - except three gadget bombs:
-				- Ship
-				- Npc
+	+ NPC & structural material
+	= Lots of heat: goal is that all wood ship around catches fire
+		+ Add material property - explosive_combustion_heat
+			+ J
+			+ default: 100.0f * 1000.0f
+				+ Structural materials: those with CombustionType==Explosion must have 1.5 times that
+			+ Use at all StartExplosion calls - except three gadget bombs:
+				+ Ship
+				+ Npc
+			+ Test:
+				+ 3 bombs
+				+ Ship:
+					+ Gunpowder
+					+ Sodium
+					+ Hydrogen
+					+ Helium
+					! NOT DIESEL
+				+ NPC:
+					+ Gunpowder
+					+ Sodium
+					+ Hydrogen
+					! NOT DIESEL
+		- Experiment heat with:
+			- Ship ("diesel" material)
+			- Npc ("diesel can" material)
 
 - Misc:
 	- Sound for NPC fire smothering
