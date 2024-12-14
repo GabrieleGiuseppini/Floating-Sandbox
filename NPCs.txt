@@ -628,7 +628,21 @@ Next release:
 + See chairs floating in lava (Camodo video)
 	+ It's friction drag adj - clamp value @ "World forces - water drag"
 
-- Do chest fixes at skins
++ Do chest fixes at skins
+	! Check out json geometry overrides first
+	! Baker: good! Use as guideline
+	+ Captain 1
+	+ Captain 2
+	+ Civ Male Passenger 1
+	+ Civ Male Passenger 2
+	+ Civ Male Passenger 4
+	+ Civ Male Passenger 6 ?
+	+ Engineer
+	+ Officer
+	+ Oiler
+		+ Also arms' sides
+	+ Quartermaster
+	+ Stoker 4
 
 - Diesel can
 	- Lots of heat: goal is that all wood ship around catches fire

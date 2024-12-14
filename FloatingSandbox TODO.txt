@@ -51,7 +51,7 @@
 		- Tests:
 			+ Npcs: underwater sounds (not related with this work item)
 		- Changelist
-			- "Slightly reworked explosions (fine-tuned physycs, TODO)"
+			- "Fine-tuned explosions' physics"
 
 	- Invite alex_guy1011 to beta group (GameJolt's guy)
 
@@ -73,7 +73,8 @@
 		- Though it's a double map?
 
 	- Do a pass for ships
-		- Discord
+		- email: Sean Dempsey
+		- Discord DMs
 		- https://gamejolt.com/p/i-ve-been-procrastinating-lately-but-have-gotten-to-work-on-the-foo-bxqynw9m
 
 	+ Redo texture notifications - test size 64+32
