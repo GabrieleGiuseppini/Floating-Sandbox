@@ -668,8 +668,12 @@ Next release:
 					+ Hydrogen
 					! NOT DIESEL
 		- Experiment heat with:
-			- Ship ("diesel" material)
+			+ Ship ("diesel" material)
 			- Npc ("diesel can" material)
+	- Since we're here:
+		- NPC-generated explosions (i.e. NPC materials):
+			- We currently multiply radius by 0.1 most of the time; hence, change in material and remove (or adjust) multiplier
+				- Look @ all TriggerExplosion calls
 
 - Misc:
 	- Sound for NPC fire smothering
