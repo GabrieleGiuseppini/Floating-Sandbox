@@ -468,26 +468,32 @@ void Npcs::UpdateNpcPhysics(
                 if (oneNpcParticleOnFire != NoneElementIndex
                     && mParticles.GetMaterial(oneNpcParticleOnFire).CombustionType == StructuralMaterial::MaterialCombustionType::Explosion)
                 {
-                    float const blastRadius =
-                        mParticles.GetMaterial(oneNpcParticleOnFire).ExplosiveCombustionRadius
+                    float const blastForce =
+                        mParticles.GetMaterial(oneNpcParticleOnFire).ExplosiveCombustionForce
+                        * 1000.0f; // KN -> N
+
+                    float const blastForceRadius =
+                        mParticles.GetMaterial(oneNpcParticleOnFire).ExplosiveCombustionForceRadius
                         * 0.1f // Magic number
                         * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
-
-                    float const blastForce =
-                        mParticles.GetMaterial(oneNpcParticleOnFire).ExplosiveCombustionStrength
-                        * 55000.0f; // Magic number
 
                     float const blastHeat =
                         mParticles.GetMaterial(oneNpcParticleOnFire).ExplosiveCombustionHeat
                         * gameParameters.CombustionHeatAdjustment
                         * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
+                    float const blastHeatRadius =
+                        mParticles.GetMaterial(oneNpcParticleOnFire).ExplosiveCombustionHeatRadius
+                        * 0.1f // Magic number
+                        * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
+
                     TriggerExplosion(
                         *npcState,
                         oneNpcParticleOnFire,
-                        blastRadius,
                         blastForce,
+                        blastForceRadius,
                         blastHeat,
+                        blastHeatRadius,
                         5.0f,
                         ExplosionType::Combustion,
                         currentSimulationTime,
@@ -499,11 +505,11 @@ void Npcs::UpdateNpcPhysics(
                     // Note: AnyWaterness is updated later, so here we use a one-frame stale value
                     && mParticles.GetAnyWaterness(oneNpcParticleInWater) > mParticles.GetMaterial(oneNpcParticleInWater).WaterReactivity)
                 {
-                    float const blastRadius =
-                        5.0f // Magic number
-                        * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
-
                     float const blastForce = 3000000.0f; // Magic number
+
+                    float const blastRadius =
+                        3.0f // Magic number
+                        * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
 
                     float const blastHeat =
                         GameParameters::WaterReactionHeat
@@ -512,9 +518,10 @@ void Npcs::UpdateNpcPhysics(
                     TriggerExplosion(
                         *npcState,
                         oneNpcParticleInWater,
-                        blastRadius,
                         blastForce,
+                        blastRadius,
                         blastHeat,
+                        blastRadius,
                         5.0f,
                         ExplosionType::Sodium,
                         currentSimulationTime,
@@ -3838,30 +3845,37 @@ void Npcs::OnImpact(
     if (mParticles.GetMaterial(npcParticleIndex).CombustionType == StructuralMaterial::MaterialCombustionType::Explosion
         && impactMagnitude >= ImpactMagnitudeThreshold)
     {
-        float const multiplier = std::min(impactMagnitude / ImpactMagnitudeThreshold, 2.5f);
-
-        float const blastRadius =
-            mParticles.GetMaterial(npcParticleIndex).ExplosiveCombustionRadius
-            * 0.1f // Magic number
-            * multiplier * multiplier
-            * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
+        float const impactMultiplier = std::min(impactMagnitude / ImpactMagnitudeThreshold, 2.5f);
 
         float const blastForce =
-            mParticles.GetMaterial(npcParticleIndex).ExplosiveCombustionStrength
-            * 55000.0f // Magic number
-            * multiplier;
+            mParticles.GetMaterial(npcParticleIndex).ExplosiveCombustionForce
+            * 1000.0f // KN -> N
+            * impactMultiplier;
+
+        float const blastForceRadius =
+            mParticles.GetMaterial(npcParticleIndex).ExplosiveCombustionForceRadius
+            * 0.1f // Magic number
+            * impactMultiplier * impactMultiplier
+            * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
 
         float const blastHeat =
             mParticles.GetMaterial(npcParticleIndex).ExplosiveCombustionHeat
             * gameParameters.CombustionHeatAdjustment
             * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
+        float const blastHeatRadius =
+            mParticles.GetMaterial(npcParticleIndex).ExplosiveCombustionHeatRadius
+            * 0.1f // Magic number
+            * impactMultiplier * impactMultiplier
+            * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
+
         TriggerExplosion(
             npc,
             npcParticleIndex,
-            blastRadius,
             blastForce,
+            blastForceRadius,
             blastHeat,
+            blastHeatRadius,
             3.0f,
             ExplosionType::Combustion,
             currentSimulationTime,
@@ -3872,9 +3886,10 @@ void Npcs::OnImpact(
 void Npcs::TriggerExplosion(
     StateType & npc,
     ElementIndex npcParticleIndex,
-    float blastRadius,
     float blastForce,
+    float blastForceRadius,
     float blastHeat,
+    float blastHeatRadius,
     float renderRadiusOffset,
     ExplosionType explosionType,
     float currentSimulationTime,
@@ -3891,9 +3906,10 @@ void Npcs::TriggerExplosion(
         currentSimulationTime,
         npc.CurrentPlaneId,
         position,
-        blastRadius,
         blastForce,
+        blastForceRadius,
         blastHeat,
+        blastHeatRadius,
         renderRadiusOffset,
         explosionType,
         gameParameters);

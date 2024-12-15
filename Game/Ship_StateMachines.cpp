@@ -41,10 +41,15 @@ bool Ship::UpdateExplosionStateMachine(
 
         vec2f const centerPosition = explosionStateMachine.CenterPosition;
 
-        // Blast radius: from 1.0 to BlastRadius, linearly with progress
-        float const blastRadius =
+        // Blast force radius: from 1.0 to BlastForceRadius, linearly with progress
+        float const blastForceRadius =
             1.0f +
-            std::max(explosionStateMachine.BlastRadius - 1.0f, 0.0f) * std::min(1.0f, explosionBlastForceProgress); // Clamp to 1.0 max
+            std::max(explosionStateMachine.BlastForceRadius - 1.0f, 0.0f) * std::min(1.0f, explosionBlastForceProgress); // Clamp to 1.0 max
+
+        // Blast heat radius: from 0.0 to BlastHeatRadius, linearly with progress
+        float const blastHeatRadius =
+            explosionStateMachine.BlastHeatRadius
+            * explosionBlastForceProgress;
 
         //
         // Blast force and heat
@@ -52,11 +57,12 @@ bool Ship::UpdateExplosionStateMachine(
         // Go through all points and, for each point in radius:
         //  - Apply blast force
         //  - Apply blast heat
-        // - Keep non-ephemeral point that is closest to blast position; we'll Detach() it later
+        //  - Keep non-ephemeral point that is closest to blast position; we'll Detach() it later
         //   (if this is the fist frame of the blast sequence)
         //
 
-        float const squareBlastRadius = blastRadius * blastRadius;
+        float const squareHeatRadius = blastHeatRadius * blastHeatRadius;
+        float const squareForceRadius = blastForceRadius * blastForceRadius;
 
         // Q = q*dt
         float const blastHeat =
@@ -71,22 +77,9 @@ bool Ship::UpdateExplosionStateMachine(
         {
             vec2f const pointRadius = mPoints.GetPosition(pointIndex) - centerPosition;
             float const squarePointDistance = pointRadius.squareLength();
-            if (squarePointDistance < squareBlastRadius)
+
+            if (squarePointDistance < squareHeatRadius)
             {
-                float const pointRadiusLength = std::sqrt(squarePointDistance);
-
-                //
-                // Apply blast force
-                //
-                // (inversely proportional to square root of distance, not second power as one would expect though)
-                //
-
-                vec2f const blastDir = pointRadius.normalise_approx(pointRadiusLength);
-
-                mPoints.AddStaticForce(
-                    pointIndex,
-                    blastDir * explosionStateMachine.BlastForce / std::sqrt(std::max((pointRadiusLength * 0.3f) + 0.7f, 1.0f)));
-
                 //
                 // Inject heat at this point
                 //
@@ -95,13 +88,30 @@ bool Ship::UpdateExplosionStateMachine(
                 // T = Q/HeatCapacity
                 float const deltaT =
                     blastHeat
-                    / std::max(pointRadiusLength, 1.0f)
+                    * (1.0f - squarePointDistance / squareHeatRadius)
                     * mPoints.GetMaterialHeatCapacityReciprocal(pointIndex);
 
                 // Increase temperature
                 mPoints.SetTemperature(
                     pointIndex,
                     mPoints.GetTemperature(pointIndex) + deltaT);
+            }
+
+            if (squarePointDistance < squareForceRadius)
+            {
+                //
+                // Apply blast force
+                //
+                // (inversely proportional to square root of distance, not second power as one would expect though)
+                //
+
+                float const pointRadiusLength = std::sqrt(squarePointDistance);
+
+                vec2f const blastDir = pointRadius.normalise_approx(pointRadiusLength);
+
+                mPoints.AddStaticForce(
+                    pointIndex,
+                    blastDir * explosionStateMachine.BlastForce / std::sqrt(std::max((pointRadiusLength * 0.3f) + 0.7f, 1.0f)));
 
                 // Update water velocity
                 mPoints.SetWaterVelocity(
@@ -150,7 +160,7 @@ bool Ship::UpdateExplosionStateMachine(
 
         OnBlast(
             centerPosition,
-            blastRadius,
+            blastForceRadius,
             explosionStateMachine.BlastForce,
             gameParameters);
     }
@@ -171,7 +181,7 @@ void Ship::UploadExplosionStateMachine(
         shipRenderContext.UploadExplosion(
             explosionStateMachine.Plane,
             explosionStateMachine.CenterPosition,
-            explosionStateMachine.BlastRadius + explosionStateMachine.RenderRadiusOffset,
+            explosionStateMachine.BlastForceRadius + explosionStateMachine.RenderRadiusOffset,
             explosionStateMachine.Type,
             explosionStateMachine.PersonalitySeed,
             explosionStateMachine.CurrentRenderProgress);

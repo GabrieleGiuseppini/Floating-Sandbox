@@ -400,7 +400,7 @@ struct GameParameters
 
     // Water reactions
 
-    static float constexpr WaterReactionHeat = 100.0f * 1000.0f; // 100KJ, for exothermic reactions
+    static float constexpr WaterReactionHeat = 100.0f * 1000.0f; // 100KJ/s, for exothermic reactions
 
     // Electricals
 

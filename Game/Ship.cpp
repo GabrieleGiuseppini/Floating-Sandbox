@@ -4017,9 +4017,10 @@ void Ship::StartExplosion(
     float currentSimulationTime,
     PlaneId planeId,
     vec2f const & centerPosition,
-    float blastRadius,
     float blastForce,
+    float blastForceRadius,
     float blastHeat,
+    float blastHeatRadius,
     float renderRadiusOffset,
     ExplosionType explosionType,
     GameParameters const & /*gameParameters*/)
@@ -4030,9 +4031,10 @@ void Ship::StartExplosion(
             currentSimulationTime,
             planeId,
             centerPosition,
-            blastRadius,
             blastForce,
+            blastForceRadius,
             blastHeat,
+            blastHeatRadius,
             renderRadiusOffset,
             explosionType));
 }

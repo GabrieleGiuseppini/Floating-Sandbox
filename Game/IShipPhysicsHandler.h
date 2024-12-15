@@ -166,10 +166,11 @@ struct IShipPhysicsHandler
         float currentSimulationTime,
         PlaneId planeId,
         vec2f const & centerPosition,
-        float blastRadius, // m
         float blastForce, // N
-        float blastHeat, // KJ
-        float renderRadiusOffset, // On top of blast radius
+        float blastForceRadius, // m
+        float blastHeat, // KJ/s
+        float blastHeatRadius, // m
+        float renderRadiusOffset, // On top of blast force radius
         ExplosionType explosionType,
         GameParameters const & gameParameters) = 0;
 

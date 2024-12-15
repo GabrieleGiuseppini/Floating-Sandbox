@@ -644,9 +644,9 @@ Next release:
 	+ Quartermaster
 	+ Stoker 4
 
-= Diesel can
++ Diesel can
 	+ NPC & structural material
-	= Lots of heat: goal is that all wood ship around catches fire
+	+ Lots of heat: goal is that all wood ship around catches fire
 		+ Add material property - explosive_combustion_heat
 			+ J
 			+ default: 100.0f * 1000.0f
@@ -667,30 +667,49 @@ Next release:
 					+ Sodium
 					+ Hydrogen
 					! NOT DIESEL
-		- Experiment heat with:
+	+ Improvements
+		+ Heat:
 			+ Ship ("diesel" material)
-			- Npc ("diesel can" material)
-				- Try: different (larger) radius for heat only
-					- Test first w/hardcoded, and check both diesel's
-	- Since we're here:
-		- Sodium explosion (@ Points): we multiply by ParticleUpdateLowFrequencyStepTimeDuration; decide that the value is per frame, and thus recalc all so that it's same value per-frame
-			- Constant *= 0.5625
-			- Remove Points' multiplication by ParticleUpdateLowFrequencyStepTimeDuration
-			- Review both:
-				- Ship sodium
-				- NPC sodium
-		- NPC-generated explosions (i.e. NPC materials):
-			! We currently multiply radius by 0.1 most of the time => make this a volumetric constant
-			- NpcDatabase contains own set of StructuralMaterial's
-				- Cloned via StructuralMaterial::CopyForVolume(float volume ratio)
-				- Volume ratio calc'd based off geometry (over 1m3)
-			- Npcs uses materials from database
-			- Impl:
-				- Get cur values first:
-					- Mass & buoyancy used for each NPC
-					- Values used for each explosion
-				- Impl
-				- Get new values, and for each divergent, decide if not ok and eventually override as needed
+			+ Npc ("diesel can" material)
+				+ Try: different (larger) radius for heat only
+					+ Code
+					+ Materials:
+						+ Diesel (x2)
+						+ Hydrogen (x2)
+		+ Sodium explosion (@ Points): we multiply by ParticleUpdateLowFrequencyStepTimeDuration; decide that the value is per frame, and thus recalc all so that it's same value per-frame
+			X Constant *= 0.5625
+			+ Remove Points' multiplication by ParticleUpdateLowFrequencyStepTimeDuration
+		+ Review:
+			+ 3xBombs
+			+ Ship
+				+ Gunpowder
+				+ Diesel
+				+ Sodium
+				+ Hydrogen
+			+ NPC
+				+ TNT
+				+ Diesel
+					+ Doesn't have much heat
+				+ Sodium
+					+ Smaller
+				+ Hydrogen
+
+	
+- Volumetric materials:
+	! We currently multiply radii by 0.1 most of the time => make this a volumetric constant
+	! We currently adjust buoyancy volume fill's
+	- NpcDatabase contains own set of StructuralMaterial's
+		- Cloned via StructuralMaterial::CopyForVolume(float volume ratio)
+		- Volume ratio calc'd based off geometry (over 1m3)
+	- Npcs uses materials from database
+	- Impl:
+		- Get cur values first:
+			- Mass & buoyancy used for each NPC
+			- Values used for each explosion
+		- Impl
+		- Get new values, and for each divergent, decide if not ok and eventually override as needed
+			- Goals:
+				- Diesel can & hydrogen: walls on fire
 
 - Misc:
 	- Sound for NPC fire smothering

@@ -700,9 +700,10 @@ public:
         float currentSimulationTime,
         PlaneId planeId,
         vec2f const & centerPosition,
-        float blastRadius,
         float blastForce,
+        float blastForceRadius,
         float blastHeat,
+        float blastHeatRadius,
         float renderRadiusOffset,
         ExplosionType explosionType,
         GameParameters const & gameParameters) override;

@@ -147,11 +147,6 @@ bool TimerBombGadget::Update(
                 mExplosionPosition = GetPosition();
                 mExplosionPlaneId = GetPlaneId();
 
-                // Blast radius
-                float const blastRadius = gameParameters.IsUltraViolentMode
-                    ? std::min(gameParameters.BombBlastRadius * 10.0f, GameParameters::MaxBombBlastRadius * 2.0f)
-                    : gameParameters.BombBlastRadius;
-
                 // Blast force
                 float const blastForce =
                     GameParameters::BaseBombBlastForce
@@ -159,6 +154,11 @@ bool TimerBombGadget::Update(
                     * (gameParameters.IsUltraViolentMode
                         ? std::min(gameParameters.BombBlastForceAdjustment * 10.0f, GameParameters::MaxBombBlastForceAdjustment * 2.0f)
                         : gameParameters.BombBlastForceAdjustment);
+
+                // Blast radius
+                float const blastRadius = gameParameters.IsUltraViolentMode
+                    ? std::min(gameParameters.BombBlastRadius * 10.0f, GameParameters::MaxBombBlastRadius * 2.0f)
+                    : gameParameters.BombBlastRadius;
 
                 // Blast heat
                 float const blastHeat =
@@ -171,9 +171,10 @@ bool TimerBombGadget::Update(
                     currentSimulationTime,
                     mExplosionPlaneId,
                     mExplosionPosition,
-                    blastRadius,
                     blastForce,
+                    blastRadius,
                     blastHeat,
+                    blastRadius,
                     10.0f, // Radius offset spectacularization
                     ExplosionType::Deflagration,
                     gameParameters);

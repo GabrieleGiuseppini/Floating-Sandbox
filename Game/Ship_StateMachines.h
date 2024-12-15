@@ -16,10 +16,11 @@ public:
     float const StartSimulationTime;
     PlaneId const Plane;
     vec2f const CenterPosition;
-    float const BlastRadius; // m
     float const BlastForce; // N
-    float const BlastHeat; // KJ
-    float const RenderRadiusOffset; // On top of blast radius
+    float const BlastForceRadius; // m
+    float const BlastHeat; // KJ/s
+    float const BlastHeatRadius; // m
+    float const RenderRadiusOffset; // On top of blast force radius
     ExplosionType const Type;
     float const PersonalitySeed;
 
@@ -30,18 +31,20 @@ public:
         float startSimulationTime,
         PlaneId planeId,
         vec2f const & centerPosition,
-        float blastRadius,
         float blastForce,
+        float blastForceRadius,
         float blastHeat,
+        float blastHeatRadius,
         float renderRadiusOffset,
         ExplosionType type)
         : StateMachine(StateMachineType::Explosion)
         , StartSimulationTime(startSimulationTime)
         , Plane(planeId)
         , CenterPosition(centerPosition)
-        , BlastRadius(blastRadius)
         , BlastForce(blastForce)
+        , BlastForceRadius(blastForceRadius)
         , BlastHeat(blastHeat)
+        , BlastHeatRadius(blastHeatRadius)
         , RenderRadiusOffset(renderRadiusOffset)
         , Type(type)
         , PersonalitySeed(GameRandomEngine::GetInstance().GenerateNormalizedUniformReal())

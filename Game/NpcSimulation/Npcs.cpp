@@ -2057,26 +2057,32 @@ void Npcs::SmashAt(
                 {
                     // Explode
 
-                    float const blastRadius =
-                        mParticles.GetMaterial(explosiveParticleInRadius).ExplosiveCombustionRadius
+                    float const blastForce =
+                        mParticles.GetMaterial(explosiveParticleInRadius).ExplosiveCombustionForce
+                        * 1000.0f; // KN->N
+
+                    float const blastForceRadius =
+                        mParticles.GetMaterial(explosiveParticleInRadius).ExplosiveCombustionForceRadius
                         * 0.05f // Magic number
                         * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
-
-                    float const blastForce =
-                        mParticles.GetMaterial(explosiveParticleInRadius).ExplosiveCombustionStrength
-                        * 20000.0f; // Magic number
 
                     float const blastHeat =
                         mParticles.GetMaterial(explosiveParticleInRadius).ExplosiveCombustionHeat
                         * gameParameters.CombustionHeatAdjustment
                         * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
+                    float const blastHeatRadius =
+                        mParticles.GetMaterial(explosiveParticleInRadius).ExplosiveCombustionHeatRadius
+                        * 0.05f // Magic number
+                        * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
+
                     TriggerExplosion(
                         *npc,
                         explosiveParticleInRadius,
-                        blastRadius,
                         blastForce,
+                        blastForceRadius,
                         blastHeat,
+                        blastHeatRadius,
                         5.0f,
                         ExplosionType::Combustion,
                         currentSimulationTime,

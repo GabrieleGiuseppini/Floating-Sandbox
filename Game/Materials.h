@@ -98,9 +98,10 @@ public:
     float ThermalExpansionCoefficient; // 1/K
     float SpecificHeat; // J/(Kg*K)
     MaterialCombustionType CombustionType;
-    float ExplosiveCombustionHeat; // J
-    float ExplosiveCombustionRadius; // m
-    float ExplosiveCombustionStrength; // adimensional
+    float ExplosiveCombustionForce; // KN
+    float ExplosiveCombustionForceRadius; // m
+    float ExplosiveCombustionHeat; // KJoules/sec
+    float ExplosiveCombustionHeatRadius; // m
 
     // Misc
     float WindReceptivity;
@@ -175,9 +176,10 @@ public:
         float thermalExpansionCoefficient,
         float specificHeat,
         MaterialCombustionType combustionType,
+        float explosiveCombustionForce,
+        float explosiveCombustionForceRadius,
         float explosiveCombustionHeat,
-        float explosiveCombustionRadius,
-        float explosiveCombustionStrength,
+        float explosiveCombustionHeatRadius,
         // Misc
         float windReceptivity,
         float waterReactivity,
@@ -211,9 +213,10 @@ public:
         , ThermalExpansionCoefficient(thermalExpansionCoefficient)
         , SpecificHeat(specificHeat)
         , CombustionType(combustionType)
+        , ExplosiveCombustionForce(explosiveCombustionForce)
+        , ExplosiveCombustionForceRadius(explosiveCombustionForceRadius)
         , ExplosiveCombustionHeat(explosiveCombustionHeat)
-        , ExplosiveCombustionRadius(explosiveCombustionRadius)
-        , ExplosiveCombustionStrength(explosiveCombustionStrength)
+        , ExplosiveCombustionHeatRadius(explosiveCombustionHeatRadius)
         , WindReceptivity(windReceptivity)
         , WaterReactivity(waterReactivity)
         , IsLegacyElectrical(isLegacyElectrical)
@@ -249,9 +252,10 @@ public:
         , ThermalExpansionCoefficient(1.0f)
         , SpecificHeat(1.0f)
         , CombustionType(MaterialCombustionType::Combustion)
+        , ExplosiveCombustionForce(0.0f)
+        , ExplosiveCombustionForceRadius(1.0f)
         , ExplosiveCombustionHeat(0.0f)
-        , ExplosiveCombustionRadius(1.0f)
-        , ExplosiveCombustionStrength(1.0f)
+        , ExplosiveCombustionHeatRadius(1.0f)
         , WindReceptivity(1.0f)
         , WaterReactivity(0.0f)
         , IsLegacyElectrical(false)

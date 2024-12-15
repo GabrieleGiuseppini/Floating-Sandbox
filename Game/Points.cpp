@@ -1052,28 +1052,33 @@ void Points::UpdateCombustionLowFrequency(
             // Explode!
             //
 
+            float const blastForce =
+                mMaterialsBuffer[pointIndex].Structural->ExplosiveCombustionForce
+                * 1000.0f; // KN -> N
+
+            float const blastForceRadius =
+                mMaterialsBuffer[pointIndex].Structural->ExplosiveCombustionForceRadius
+                * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
+
             float const blastHeat =
                 mMaterialsBuffer[pointIndex].Structural->ExplosiveCombustionHeat
                 * gameParameters.CombustionHeatAdjustment
                 * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
-            float const blastRadius =
-                mMaterialsBuffer[pointIndex].Structural->ExplosiveCombustionRadius
+            float const blastHeatRadius =
+                mMaterialsBuffer[pointIndex].Structural->ExplosiveCombustionHeatRadius
                 * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
-
-            float const blastForce =
-                40000.0f // Magic number
-                * mMaterialsBuffer[pointIndex].Structural->ExplosiveCombustionStrength;
 
             // Start explosion
             mShipPhysicsHandler->StartExplosion(
                 currentSimulationTime,
                 GetPlaneId(pointIndex),
                 GetPosition(pointIndex),
-                blastRadius,
                 blastForce,
+                blastForceRadius,
                 blastHeat,
-                10.0f,
+                blastHeatRadius,
+                10.0f, // Render radius offset
                 ExplosionType::Combustion,
                 gameParameters);
 
@@ -1111,7 +1116,6 @@ void Points::UpdateCombustionLowFrequency(
 
         float const blastHeat =
             GameParameters::WaterReactionHeat
-            * GameParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>
             * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
         float const blastRadius =
@@ -1135,10 +1139,11 @@ void Points::UpdateCombustionLowFrequency(
                 currentSimulationTime,
                 GetPlaneId(pointIndex),
                 GetPosition(pointIndex),
-                blastRadius,
                 blastForce,
+                blastRadius,
                 blastHeat,
-                5.0f,
+                blastRadius,
+                5.0f, // Render radius offset
                 ExplosionType::Sodium,
                 gameParameters);
 
