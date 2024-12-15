@@ -670,10 +670,27 @@ Next release:
 		- Experiment heat with:
 			+ Ship ("diesel" material)
 			- Npc ("diesel can" material)
+				- Try: different (larger) radius for heat only
+					- Test first w/hardcoded, and check both diesel's
 	- Since we're here:
+		- Sodium explosion (@ Points): we multiply by ParticleUpdateLowFrequencyStepTimeDuration; decide that the value is per frame, and thus recalc all so that it's same value per-frame
+			- Constant *= 0.5625
+			- Remove Points' multiplication by ParticleUpdateLowFrequencyStepTimeDuration
+			- Review both:
+				- Ship sodium
+				- NPC sodium
 		- NPC-generated explosions (i.e. NPC materials):
-			- We currently multiply radius by 0.1 most of the time; hence, change in material and remove (or adjust) multiplier
-				- Look @ all TriggerExplosion calls
+			! We currently multiply radius by 0.1 most of the time => make this a volumetric constant
+			- NpcDatabase contains own set of StructuralMaterial's
+				- Cloned via StructuralMaterial::CopyForVolume(float volume ratio)
+				- Volume ratio calc'd based off geometry (over 1m3)
+			- Npcs uses materials from database
+			- Impl:
+				- Get cur values first:
+					- Mass & buoyancy used for each NPC
+					- Values used for each explosion
+				- Impl
+				- Get new values, and for each divergent, decide if not ok and eventually override as needed
 
 - Misc:
 	- Sound for NPC fire smothering
