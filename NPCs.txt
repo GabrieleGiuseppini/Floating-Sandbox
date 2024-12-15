@@ -711,6 +711,25 @@ Next release:
 			- Goals:
 				- Diesel can & hydrogen: walls on fire
 
+- Temperature rearc
+	! After all, we do sample temperature of all triangle vertex endpoints anyways
+	- NpcParticles has temperature
+	- Simulation:
+		- During low-freq update, we converge each NPC particle's heat to the bcoords-interp'd of the three temperatures
+			- "MeshTemperature"
+			- Note: we now ignore mesh particles' ignition points
+		- For each NPC particle, we check if _its_ temperature makes it ignited
+			- also checking mesh waterness
+			- => oneNpcParticleOnFire
+				- And then everything proceeds as now
+	- These interactions provide heat to *free* NPC particles (no need to constrained, as those gain from ship):
+		- via Npcs::ApplyHeat(pos, radius, heat)
+		- Heat blaster tool
+		- Blast
+			- Requires changes to ShipStateMachine: OnBlast needs to be followed by Npcs::ApplyHeat
+		- Laser cannon
+	- Simulation: air/water temperature transfers heat to *free* NPC particles
+
 - Misc:
 	- Sound for NPC fire smothering
 	! TODO: move the long-term ones below to a new "Wishlist" section
@@ -776,8 +795,8 @@ Next release:
 				+ If state is Dancing: if global flag is not set: transition to Equlibrium
 				+ Dancing:
 					+ Transitions out with same out transitions as Equilibrium
-			- At UpdateAnimation:
-				- Do dance
+			= At UpdateAnimation:
+				= Do dance
 	- Engineers repair ship
 		- Ship exposes simplified "Repair" functionality, which simply detaches needed particles from where they are and brings them close
 		- New human NPC behavior ("Constrained_Repairing") with associated animation

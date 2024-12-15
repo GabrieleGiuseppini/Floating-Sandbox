@@ -27,7 +27,7 @@
 		+ Credits (asked if "AlexGuy" works out)
 		+ changelist
 
-	= Improve explosions:
+	+ Improve explosions:
 		+ Gfx radius
 			! Goal: predictably tied to real blast radius
 			+ ShipRenderContext uses empirically texture-determined radius multipliers to focus "core" fireball in frame
@@ -47,11 +47,15 @@
                         + SettingsDialog: under NPCs, "Blast TODO Adjust"
 		+ Explosion time
 			+ 1. Move constants to GameParameters, say attuned to sound
-		- Sounds
-		- Tests:
+		X Sounds
+			! Handler::OnCombustionExplosion
+				! SoundType::CombustionExplosion: combustionexplosion_1...4 + UW
+			! Handler::OnBombExplosion(bombType)
+				! SoundType::BombExplosion: bombexplosion_1...4 + UW
+		+ Tests:
 			+ Npcs: underwater sounds (not related with this work item)
-		- Changelist
-			- "Fine-tuned explosions' physics"
+		+ Changelist
+			+ "Fine-tuned explosions' physics"
 
 	- Invite alex_guy1011 to beta group (GameJolt's guy)
 
