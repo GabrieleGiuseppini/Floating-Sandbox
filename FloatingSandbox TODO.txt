@@ -77,7 +77,7 @@
 		- Though it's a double map?
 
 	- Do a pass for ships
-		- email: Sean Dempsey
+		= email: Sean Dempsey
 		- Discord DMs
 		- https://gamejolt.com/p/i-ve-been-procrastinating-lately-but-have-gotten-to-work-on-the-foo-bxqynw9m
 

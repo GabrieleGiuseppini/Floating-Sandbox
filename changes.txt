@@ -3,7 +3,8 @@
 	- NPCs now "look ahead" when walking and avoid falling into holes
 	- NPCs run away from running water
 - Added explosive furniture NPCs (TNT crate, hydrogen & sodium tanks, diesel can)
-	- ...and fine-tuned general explosion physics in the process
+	- ...adding a whole new dimension to the game!
+	- Fine-tuned general explosion physics in the process
 - The Move, Remove, and Turnaround NPC tools may now be used on *groups* of NPCs
 - NPCs on a ship are now lit by the ship's lamps
 - Bug fixes:

@@ -713,15 +713,27 @@ Next release:
 
 - Temperature rearc
 	! After all, we do sample temperature of all triangle vertex endpoints anyways
+	! Philosophy: C particles exchange with mesh, F particles with air/water
 	- NpcParticles has temperature
 	- Simulation:
-		- During low-freq update, we converge each NPC particle's heat to the bcoords-interp'd of the three temperatures
-			- "MeshTemperature"
+		- During low-freq update, we converge each NPC particle's heat to: C: the bcoords-interp'd of the three temperatures, F: air/water temp
 			- Note: we now ignore mesh particles' ignition points
 		- For each NPC particle, we check if _its_ temperature makes it ignited
-			- also checking mesh waterness
+			- also checking waterness
 			- => oneNpcParticleOnFire
 				- And then everything proceeds as now
+		- Impl:
+			- LowFrequencyUpdate():
+				- For each NPC p:
+					- T, W
+					- If C:
+						- Calc ambient temperature -> T
+						- Calc mesh waterness -> W
+					- Else (F):
+						- Calc ambient temperature -> T
+						- Get waterness -> W
+					- p(T) <- T
+					- Check ignition
 	- These interactions provide heat to *free* NPC particles (no need to constrained, as those gain from ship):
 		- via Npcs::ApplyHeat(pos, radius, heat)
 		- Heat blaster tool
@@ -729,6 +741,8 @@ Next release:
 			- Requires changes to ShipStateMachine: OnBlast needs to be followed by Npcs::ApplyHeat
 		- Laser cannon
 	- Simulation: air/water temperature transfers heat to *free* NPC particles
+	- See HumanNpcTemperature
+	- Changelist
 
 - Misc:
 	- Sound for NPC fire smothering

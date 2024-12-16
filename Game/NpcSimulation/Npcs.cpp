@@ -125,6 +125,38 @@ std::vector<Npcs::DanceMove> Npcs::MakeRepairDanceMoves()
             {0.00f, -0.00f, -QrtPi, -TQrtPi},
             {1.0f, 1.0f, 1.0f, 1.0f},
             1.0f
+            }),
+        // Back
+        DanceMove({
+            -1.0f, 0.0f,
+            {0.2f, -0.2f, Pi<float> * 0.9f, -Pi<float> *0.9f},
+            {1.0f, 1.0f, 1.0f, 1.0f},
+            1.0f
+            }),
+        DanceMove({
+            -1.0f, 0.0f,
+            {0.2f, -0.2f, Pi<float> * 0.9f, -Pi<float> *0.9f},
+            {1.0f, 1.0f, 1.0f, 0.2f},
+            1.0f
+            }),
+        DanceMove({
+            -1.0f, 0.0f,
+            {0.2f, -0.2f, Pi<float> *0.9f, -Pi<float> *0.9f},
+            {1.0f, 1.0f, 1.0f, 1.0f},
+            1.0f
+            }),
+        DanceMove({
+            -1.0f, 0.0f,
+            {0.2f, -0.2f, Pi<float> *0.9f, -Pi<float> *0.9f},
+            {1.0f, 1.0f, 0.2f, 1.0f},
+            1.0f
+            }),
+        // R
+        DanceMove({
+            0.0f, 1.0f,
+            {0.00f, -0.00f, HlfPi, HlfPi},
+            {1.0f, 1.0f, 1.0f, 1.0f},
+            1.0f
             })
     };
 }
