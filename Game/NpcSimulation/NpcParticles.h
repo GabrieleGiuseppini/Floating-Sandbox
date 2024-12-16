@@ -44,6 +44,7 @@ public:
         , mVelocityBuffer(maxParticleCount, vec2f::zero())
         , mPreliminaryForcesBuffer(maxParticleCount, vec2f::zero())
         , mExternalForcesBuffer(maxParticleCount, vec2f::zero())
+        , mTemperatureBuffer(maxParticleCount, 0.0f)
         , mMeshWaternessBuffer(maxParticleCount, 0.0f)
         , mMeshWaterVelocityBuffer(maxParticleCount, vec2f::zero())
         , mAnyWaternessBuffer(maxParticleCount, 0.0f)
@@ -247,6 +248,18 @@ public:
         mExternalForcesBuffer.fill(vec2f::zero());
     }
 
+    float GetTemperature(ElementIndex particleElementIndex) const noexcept
+    {
+        return mTemperatureBuffer[particleElementIndex];
+    }
+
+    void SetTemperature(
+        ElementIndex particleElementIndex,
+        float value) noexcept
+    {
+        mTemperatureBuffer[particleElementIndex] = value;
+    }
+
     // [0.0, ~1.0]
     float const GetMeshWaterness(ElementIndex particleElementIndex) const noexcept
     {
@@ -351,6 +364,8 @@ private:
     Buffer<vec2f> mVelocityBuffer;
     Buffer<vec2f> mPreliminaryForcesBuffer;
     Buffer<vec2f> mExternalForcesBuffer;
+
+    Buffer<float> mTemperatureBuffer;
 
     Buffer<float> mMeshWaternessBuffer; // Mesh water at triangle (when constrained); // [0.0, ~1.0]
     Buffer<vec2f> mMeshWaterVelocityBuffer; // (when constrained)

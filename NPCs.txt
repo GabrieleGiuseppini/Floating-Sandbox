@@ -694,54 +694,63 @@ Next release:
 					+ Smaller
 				+ Hydrogen
 
-	
-- Volumetric materials:
-	! We currently multiply radii by 0.1 most of the time => make this a volumetric constant
-	! We currently adjust buoyancy volume fill's
-	- NpcDatabase contains own set of StructuralMaterial's
-		- Cloned via StructuralMaterial::CopyForVolume(float volume ratio)
-		- Volume ratio calc'd based off geometry (over 1m3)
-	- Npcs uses materials from database
-	- Impl:
-		- Get cur values first:
-			- Mass & buoyancy used for each NPC
-			- Values used for each explosion
-		- Impl
-		- Get new values, and for each divergent, decide if not ok and eventually override as needed
-			- Goals:
-				- Diesel can & hydrogen: walls on fire
-
-- Temperature rearc
+= Temperature rearc
 	! After all, we do sample temperature of all triangle vertex endpoints anyways
 	! Philosophy: C particles exchange with mesh, F particles with air/water
-	- NpcParticles has temperature
-	- Simulation:
-		- During low-freq update, we converge each NPC particle's heat to: C: the bcoords-interp'd of the three temperatures, F: air/water temp
-			- Note: we now ignore mesh particles' ignition points
-		- For each NPC particle, we check if _its_ temperature makes it ignited
-			- also checking waterness
-			- => oneNpcParticleOnFire
-				- And then everything proceeds as now
-		- Impl:
-			- LowFrequencyUpdate():
-				- For each NPC p:
-					- T, W
-					- If C:
-						- Calc ambient temperature -> T
-						- Calc mesh waterness -> W
-					- Else (F):
-						- Calc ambient temperature -> T
-						- Get waterness -> W
-					- p(T) <- T
-					- Check ignition
-	- These interactions provide heat to *free* NPC particles (no need to constrained, as those gain from ship):
-		- via Npcs::ApplyHeat(pos, radius, heat)
+	+ NpcParticles has temperature
+	+ Simulation:
+		+ During low-freq update, we converge each NPC particle's heat to: C: the bcoords-interp'd of the three temperatures, F: air/water temp
+			+ Note: we now ignore mesh particles' ignition points
+		+ For each NPC particle, we check if _its_ temperature makes it ignited
+			+ also checking waterness
+			+ => oneNpcParticleOnFire
+				+ And then everything proceeds as now
+		+ Test:
+			+ Mesh temperature for constrained
+			+ Air temperature for free
+			+ Water temperature for free
+			+ Catches fire @:
+				+ Constrained in hot mesh
+				+ Free in hot water
+				+ Free in hot air
+			+ Explodes @:
+				+ Constrained in hot mesh
+				+ Free in hot water
+				+ Free in hot air
+	+ Move constant w/comment on cheapness
+	- These interactions provide heat to NPC particles:
+		- Do tool chain via World
+			- Npcs::interaction-method -> bool, invoked by World with or without ShipId depending on whether found
+				- Interactions: on ship or, if no shipid, free
+					- TODOHERE: or ~like others: 
+						- C:
+							- If shipid: if of ship
+							- Else: any ship
+						- F: of any ship
+						- Change also others
+				- Interaction also return bool if at least one NPC found
+				- World then returns that bool
+		- Npcs::ApplyHeat helper
 		- Heat blaster tool
-		- Blast
-			- Requires changes to ShipStateMachine: OnBlast needs to be followed by Npcs::ApplyHeat
+			- See if makes sense to have helper to visit NPCs
 		- Laser cannon
-	- Simulation: air/water temperature transfers heat to *free* NPC particles
+		- Fire extinguisher
+			- Also extinguish fire - just reset combustion state
+	- Explosion		
+		- Provide heat
+			- Requires changes to ShipStateMachine: ShipOnBlast needs to be followed by Npcs::ApplyHeat
+			- Test:
+				- Other TNT crates explode for heat wave (zero impact explosion for test)
+					- Remove impact explosion test
+	+ Simulation: air/water temperature transfers heat to *free* NPC particles
 	- See HumanNpcTemperature
+	- Cleanup:
+		- TODOTEST logs
+		- Old code
+
+	- Port to BaryLab and profile
+		- Optimize low-freq phys update
+
 	- Changelist
 
 - Misc:

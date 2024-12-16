@@ -482,6 +482,8 @@ struct GameParameters
 
     static float constexpr HumanNpcTemperature = 310.15f; // 37 Celsius
 
+    static float constexpr NpcTemperatureTransferRate = 0.1f; // Magic; for cheap temperature transfer simulation
+
     float HumanNpcEquilibriumTorqueStiffnessCoefficient;
     static float constexpr MinHumanNpcEquilibriumTorqueStiffnessCoefficient = 0.0f;
     static float constexpr MaxHumanNpcEquilibriumTorqueStiffnessCoefficient = 0.01f;
