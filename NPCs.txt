@@ -719,7 +719,7 @@ Next release:
 				+ Free in hot air
 	+ Move constant w/comment on cheapness
 	- These interactions provide heat to NPC particles:
-		- Do tool chain via World
+		- Do tool chain via World, not from Ship
 			- Npcs::interaction-method -> bool, invoked by World with or without ShipId depending on whether found
 				- Interactions: on ship or, if no shipid, free
 					- TODOHERE: or ~like others: 
@@ -727,7 +727,7 @@ Next release:
 							- If shipid: if of ship
 							- Else: any ship
 						- F: of any ship
-						- Change also others
+						- TODO: change also other interactions in Npcs to this C/F/ShipId scheme
 				- Interaction also return bool if at least one NPC found
 				- World then returns that bool
 		- Npcs::ApplyHeat helper
@@ -749,9 +749,12 @@ Next release:
 		- Old code
 
 	- Port to BaryLab and profile
-		- Optimize low-freq phys update
+		- Optimize low-freq phys update, plenty of opp'ties there
+			- Also refactor mesh+ambient temperature -> particle temperature to one place
 
-	- Changelist
+	- Changelist:
+		- Temperature
+		- More tool interactions
 
 - Misc:
 	- Sound for NPC fire smothering
