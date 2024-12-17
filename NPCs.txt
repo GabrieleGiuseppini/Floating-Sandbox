@@ -721,18 +721,19 @@ Next release:
 	- These interactions provide heat to NPC particles:
 		- Do tool chain via World, not from Ship
 			- Npcs::interaction-method -> bool, invoked by World with or without ShipId depending on whether found
-				- Interactions: on ship or, if no shipid, free
-					- TODOHERE: or ~like others: 
-						- C:
-							- If shipid: if of ship
-							- Else: any ship
-						- F: of any ship
-						- TODO: change also other interactions in Npcs to this C/F/ShipId scheme
-				- Interaction also return bool if at least one NPC found
+				- Interactions:
+					- C:
+						- If shipid: if of that ship
+						- Else: of any ship
+					- F: of any ship
+					- TODO: change also other interactions in Npcs to this C/F/ShipId scheme
+						- ShipId being optional
+						- TODO: SmashAt: would this work?
+				- Interaction returns bool if at least one NPC found
+				- See if makes sense to have (inline) helper to visit NPCs with this condition
 				- World then returns that bool
 		- Npcs::ApplyHeat helper
-		- Heat blaster tool
-			- See if makes sense to have helper to visit NPCs
+		- Heat blaster tool		
 		- Laser cannon
 		- Fire extinguisher
 			- Also extinguish fire - just reset combustion state
@@ -755,6 +756,10 @@ Next release:
 	- Changelist:
 		- Temperature
 		- More tool interactions
+
+- Test NPCs walking into water-filled compartment
+	- Check water @ lookahead?
+- Test perf with removal of 8192 NPCs
 
 - Misc:
 	- Sound for NPC fire smothering
@@ -836,7 +841,18 @@ Next release:
 - New furniture behaviors:
 	= Exploding
 	- Depth charges
-	- Furniture over time, should sink, not forever it will float, and then rot.
+	- Furniture over time, should sink, not forever it will float, and then rot
+		! Particle: rot float, starts at zero
+			! Augmented with "rot contribution"
+			! Restored or augmented with scrub/rust tool
+		! Shader: rot float
+		! Rot contributions:
+			! Fire
+			! In water
+		! Rot used for:
+			! Buoyancy
+			! Shader
+			! Burn capability
 
 - Doors:
 	- TODO: we need a way to stop floor candidate search (@ProbeWalk) when encountering such a floor/door
