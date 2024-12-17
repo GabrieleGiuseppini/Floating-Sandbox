@@ -718,36 +718,53 @@ Next release:
 				+ Free in hot water
 				+ Free in hot air
 	+ Move constant w/comment on cheapness
-	- These interactions provide heat to NPC particles:
-		- Do tool chain via World, not from Ship
-			- Npcs::interaction-method -> bool, invoked by World with or without ShipId depending on whether found
-				- Interactions:
-					- C:
-						- If shipid: if of that ship
-						- Else: of any ship
-					- F: of any ship
-					- TODO: change also other interactions in Npcs to this C/F/ShipId scheme
-						- ShipId being optional
-						- TODO: SmashAt: would this work?
-				- Interaction returns bool if at least one NPC found
-				- See if makes sense to have (inline) helper to visit NPCs with this condition
-				- World then returns that bool
-		- Npcs::ApplyHeat helper
-		- Heat blaster tool		
+	= Interactions (and provide heat to NPC particles):
+		! Do tool chain via World, not from Ship
+			! Npcs::interaction-method -> bool, invoked by World with or without ShipId depending on whether found
+				! Interactions (make helper):
+					! C:
+						! If shipid: id of that ship
+						! Else: of any ship
+					! F: of any ship
+				! Interaction returns bool if at least one NPC found
+				! World then returns that bool ORd with nearest ship bool
+		! Tests: 
+			a) interaction on ship, C (in range)
+			b) interaction on ship, F (in range)
+			c) interaction off ship, F (in range)
+		+ (inline) helper to visit NPC particles with this condition
+			+ Use for other interactions that may use it
+				+ ApplyBlast
+				+ ApplyAntiMatterBombPreimplosion
+				+ ApplyAntiMatterBombImplosion
+				+ ApplyAntiMatterBombExplosion
+		+ DestroyAt
+			+ Test
+		+ Heat blaster tool
+			+ Fix: too much dissipation in C and F
+		- Allow explosion also if particle temperature is above ignition, even if in water
+			- Means that we can't trigger explosion just "if oneNpcParticleOnFire" - it's really about "oneNpcParticleOverIgnitionTemperature", which is independent from water,
+			  but also "oneNpcParticleOnFire" with same condition as now (plus "oneMeshParticleOnFire"
+		- Combustion state update (low-freq): catch fire also if mesh is on fire - for at least one particle
+			- Catch fire immediately, try by just setting combustion state (without forcing temperature)
+				- See if fire is really short-lived
 		- Laser cannon
 		- Fire extinguisher
 			- Also extinguish fire - just reset combustion state
-	- Explosion		
-		- Provide heat
-			- Requires changes to ShipStateMachine: ShipOnBlast needs to be followed by Npcs::ApplyHeat
+	+ Dissipation adjust affects NPC particle temperature transfer
+	- Explosion (of ship bombs or ship particles or NPCs): provide heat
+			- Requires changes to ShipStateMachine: ShipOnBlast needs to take heat
+			- Npcs::OnBlast: take and apply heat
 			- Test:
 				- Other TNT crates explode for heat wave (zero impact explosion for test)
 					- Remove impact explosion test
 	+ Simulation: air/water temperature transfers heat to *free* NPC particles
 	- See HumanNpcTemperature
 	- Cleanup:
-		- TODOTEST logs
-		- Old code
+		- TODOTEST: at particle temperature update, log+custom probe
+		+ TODOTEST logs
+		+ Old code
+		- VErify no logs
 
 	- Port to BaryLab and profile
 		- Optimize low-freq phys update, plenty of opp'ties there
@@ -757,6 +774,9 @@ Next release:
 		- Temperature
 		- More tool interactions
 
+- Re-test bug fix: add/remove 8k NPCs N times
+- Impact also on land
+	- Test explosive NPCs
 - Test NPCs walking into water-filled compartment
 	- Check water @ lookahead?
 - Test perf with removal of 8192 NPCs

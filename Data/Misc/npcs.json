@@ -1114,7 +1114,7 @@
                     "height": 1.0,
                     "particle_attributes_overrides": [
                         {
-                            "buoyancy_volume_fill": 0.22
+                            "buoyancy_volume_fill": 0.055
                         }
                     ]
                 },
@@ -1131,7 +1131,7 @@
                     "height": 1.0,
                     "particle_attributes_overrides": [
                         {
-                            "buoyancy_volume_fill": 0.2
+                            "buoyancy_volume_fill": 0.05
                         }
                     ]
                 },
@@ -1148,7 +1148,7 @@
                     "height": 0.5,
                     "particle_attributes_overrides": [
                         {
-                            "buoyancy_volume_fill": 0.0847
+                            "buoyancy_volume_fill": 0.021175
                         }
                     ]
                 },

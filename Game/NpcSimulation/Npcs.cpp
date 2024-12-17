@@ -557,7 +557,12 @@ void Npcs::OnShipRemoved(ShipId shipId)
             auto burningNpcIt = std::find(mShips[s]->BurningNpcs.begin(), mShips[s]->BurningNpcs.end(), npcId);
             if (burningNpcIt != mShips[s]->BurningNpcs.end())
             {
+                assert(mStateBuffer[npcId]->CombustionState.has_value());
+
                 mShips[s]->BurningNpcs.erase(burningNpcIt);
+
+                // Emit event
+                mGameEventHandler->OnPointCombustionEnd();
             }
 
             //
@@ -570,6 +575,12 @@ void Npcs::OnShipRemoved(ShipId shipId)
                 PublishSelection();
             }
         }
+
+        //
+        // Free particles
+        //
+
+        InternalFreeNpcParticles(*mStateBuffer[npcId]);
     }
 
     PublishCount();
@@ -1525,6 +1536,12 @@ void Npcs::AbortNewNpc(NpcId id)
     ship.RemoveNpc(id);
 
     //
+    // Free particles
+    //
+
+    InternalFreeNpcParticles(npc);
+
+    //
     // Reset NPC
     //
 
@@ -2050,12 +2067,15 @@ void Npcs::RotateShipBy(
     }
 }
 
-void Npcs::SmashAt(
+bool Npcs::DestroyAt(
+    ShipId shipId,
     vec2f const & targetPos,
     float radius,
     float currentSimulationTime,
     GameParameters const & gameParameters)
 {
+    bool hasFoundNpc = false;
+
     //
     // Visit all active NPCs in radius and check if should explode, and
     // transition all humans which have not transitioned yet
@@ -2072,13 +2092,18 @@ void Npcs::SmashAt(
             ElementIndex explosiveParticleInRadius = NoneElementIndex;
             for (auto const & npcParticle : npc->ParticleMesh.Particles)
             {
-                float const pointSquareDistance = (mParticles.GetPosition(npcParticle.ParticleIndex) - targetPos).squareLength();
-                if (pointSquareDistance < squareRadius)
+                if (!npcParticle.ConstrainedState.has_value() // Free
+                    || shipId == NoneShipId                   // No ship specified
+                    || npc->CurrentShipId == shipId)		  // Constrained belonging to this ship
                 {
-                    hasOneParticleInRadius = true;
-                    if (mParticles.GetMaterial(npcParticle.ParticleIndex).CombustionType == StructuralMaterial::MaterialCombustionType::Explosion)
+                    float const pointSquareDistance = (mParticles.GetPosition(npcParticle.ParticleIndex) - targetPos).squareLength();
+                    if (pointSquareDistance < squareRadius)
                     {
-                        explosiveParticleInRadius = npcParticle.ParticleIndex;
+                        hasOneParticleInRadius = true;
+                        if (mParticles.GetMaterial(npcParticle.ParticleIndex).CombustionType == StructuralMaterial::MaterialCombustionType::Explosion)
+                        {
+                            explosiveParticleInRadius = npcParticle.ParticleIndex;
+                        }
                     }
                 }
             }
@@ -2087,7 +2112,7 @@ void Npcs::SmashAt(
             {
                 if (explosiveParticleInRadius != NoneElementIndex)
                 {
-                    // Explode
+                    // Explode NPC
 
                     float const blastForce =
                         mParticles.GetMaterial(explosiveParticleInRadius).ExplosiveCombustionForce
@@ -2146,8 +2171,67 @@ void Npcs::SmashAt(
                     }
                 }
             }
+
+            hasFoundNpc = true;
         }
     }
+
+    return hasFoundNpc;
+}
+
+bool Npcs::ApplyHeatBlasterAt(
+    ShipId shipId,
+    vec2f const & targetPos,
+    HeatBlasterActionType action,
+    float radius,
+    GameParameters const & gameParameters)
+{
+    // Q = q*dt
+    float const heatBlasterHeat =
+        gameParameters.HeatBlasterHeatFlow * 1000.0f // KJoule->Joule
+        * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f)
+        * GameParameters::SimulationStepTimeDuration<float>
+        * (action == HeatBlasterActionType::Cool ? -1.0f : 1.0f); // Heat vs. Cool
+
+    float const squareRadius = radius * radius;
+
+    bool atLeastOneParticleFound = false;
+
+    VisitNpcParticlesForInteraction(
+        shipId,
+        [&](StateType &, StateType::NpcParticleStateType & npcParticle)
+        {
+            auto const particleIndex = npcParticle.ParticleIndex;
+            float const pointSquareDistance = (mParticles.GetPosition(particleIndex) - targetPos).squareLength();
+            if (pointSquareDistance < squareRadius)
+            {
+                //
+                // Inject/remove heat at this particle
+                //
+
+                // Smooth heat out for radius
+                float const smoothing = 1.0f - SmoothStep(
+                    0.0f,
+                    radius,
+                    sqrt(pointSquareDistance));
+
+                // Calc temperature delta
+                // T = Q/HeatCapacity
+                float deltaT =
+                    heatBlasterHeat * smoothing
+                    / mParticles.GetMaterial(particleIndex).GetHeatCapacity();
+
+                // Increase/lower temperature
+                mParticles.SetTemperature(
+                    particleIndex,
+                    std::max(mParticles.GetTemperature(particleIndex) + deltaT, 0.1f)); // 3rd principle of thermodynamics
+
+                // Remember we've found a particle
+                atLeastOneParticleFound = true;
+            }
+        });
+
+    return atLeastOneParticleFound;
 }
 
 void Npcs::DrawTo(
@@ -2215,10 +2299,6 @@ void Npcs::ApplyBlast(
     float blastForce, // N
     GameParameters const & gameParameters)
 {
-    //
-    // Only NPCs of this ship, or free regime of any ship
-    //
-
     // The blast parameter is for damage to the ship; here we want a lower
     // force and a larger radius - as if only caused by air - and thus we
     // make the force ~proportional to the particle's mass so we have ~constant
@@ -2236,39 +2316,30 @@ void Npcs::ApplyBlast(
 
     float const squareRadius = actualBlastRadius * actualBlastRadius;
 
-    for (auto const & npc : mStateBuffer)
-    {
-        if (npc.has_value()
-            && npc->IsActive())
+    VisitNpcParticlesForInteraction(
+        shipId,
+        [&](StateType &, StateType::NpcParticleStateType & npcParticle)
         {
-            for (auto const & npcParticle : npc->ParticleMesh.Particles)
+            vec2f const particleRadius = mParticles.GetPosition(npcParticle.ParticleIndex) - centerPosition;
+            float const squareParticleDistance = particleRadius.squareLength();
+            if (squareParticleDistance < squareRadius)
             {
-                if (!npcParticle.ConstrainedState.has_value()
-                    || npc->CurrentShipId == shipId)
-                {
-                    vec2f const particleRadius = mParticles.GetPosition(npcParticle.ParticleIndex) - centerPosition;
-                    float const squareParticleDistance = particleRadius.squareLength();
-                    if (squareParticleDistance < squareRadius)
-                    {
-                        float const particleRadiusLength = std::sqrtf(squareParticleDistance);
+                float const particleRadiusLength = std::sqrtf(squareParticleDistance);
 
-                        //
-                        // Apply blast force
-                        //
+                //
+                // Apply blast force
+                //
 
-                        float const particleBlastForce =
-                            actualBlastAcceleration * std::sqrtf(mParticles.GetMass(npcParticle.ParticleIndex))
-                            // Decrease with distance
-                            * (1.0f - particleRadiusLength / actualBlastRadius);
+                float const particleBlastForce =
+                    actualBlastAcceleration * std::sqrtf(mParticles.GetMass(npcParticle.ParticleIndex))
+                    // Decrease with distance
+                    * (1.0f - particleRadiusLength / actualBlastRadius);
 
-                        mParticles.AddExternalForce(
-                            npcParticle.ParticleIndex,
-                            particleRadius.normalise(particleRadiusLength) * particleBlastForce);
-                    }
-                }
+                mParticles.AddExternalForce(
+                    npcParticle.ParticleIndex,
+                    particleRadius.normalise(particleRadiusLength) * particleBlastForce);
             }
-        }
-    }
+        });
 }
 
 void Npcs::ApplyAntiMatterBombPreimplosion(
@@ -2278,41 +2349,28 @@ void Npcs::ApplyAntiMatterBombPreimplosion(
     float radiusThickness,
     GameParameters const & gameParameters)
 {
-    //
-    // Only NPCs of this ship, or free regime of any ship
-    //
-
     float const strength =
-        5000.0f // Magic number
+        8000.0f // Magic number
         * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
 
-    for (auto const & npc : mStateBuffer)
-    {
-        if (npc.has_value()
-            && npc->IsActive())
+    VisitNpcParticlesForInteraction(
+        shipId,
+        [&](StateType &, StateType::NpcParticleStateType & npcParticle)
         {
-            for (auto const & npcParticle : npc->ParticleMesh.Particles)
+            vec2f const particleRadius = mParticles.GetPosition(npcParticle.ParticleIndex) - centerPosition;
+            float const particleDistanceFromRadius = particleRadius.length() - radius;
+            float const absoluteParticleDistanceFromRadius = std::abs(particleDistanceFromRadius);
+            if (absoluteParticleDistanceFromRadius <= radiusThickness)
             {
-                if (!npcParticle.ConstrainedState.has_value()
-                    || npc->CurrentShipId == shipId)
-                {
-                    vec2f const particleRadius = mParticles.GetPosition(npcParticle.ParticleIndex) - centerPosition;
-                    float const particleDistanceFromRadius = particleRadius.length() - radius;
-                    float const absoluteParticleDistanceFromRadius = std::abs(particleDistanceFromRadius);
-                    if (absoluteParticleDistanceFromRadius <= radiusThickness)
-                    {
-                        float const forceDirection = particleDistanceFromRadius >= 0.0f ? 1.0f : -1.0f;
+                float const forceDirection = particleDistanceFromRadius >= 0.0f ? 1.0f : -1.0f;
 
-                        float const forceStrength = strength * (1.0f - absoluteParticleDistanceFromRadius / radiusThickness);
+                float const forceStrength = strength * (1.0f - absoluteParticleDistanceFromRadius / radiusThickness);
 
-                        mParticles.AddExternalForce(
-                            npcParticle.ParticleIndex,
-                            particleRadius.normalise() * forceStrength * forceDirection);
-                    }
-                }
+                mParticles.AddExternalForce(
+                    npcParticle.ParticleIndex,
+                    particleRadius.normalise() * forceStrength * forceDirection);
             }
-        }
-    }
+        });
 }
 
 void Npcs::ApplyAntiMatterBombImplosion(
@@ -2321,53 +2379,40 @@ void Npcs::ApplyAntiMatterBombImplosion(
     float sequenceProgress,
     GameParameters const & gameParameters)
 {
-    //
-    // Only NPCs of this ship, or free regime of any ship
-    //
-
     float const strength =
         (sequenceProgress * sequenceProgress)
         * gameParameters.AntiMatterBombImplosionStrength
         * 3000.0f // Magic number
         * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
 
-    for (auto const & npc : mStateBuffer)
-    {
-        if (npc.has_value()
-            && npc->IsActive())
+    VisitNpcParticlesForInteraction(
+        shipId,
+        [&](StateType &, StateType::NpcParticleStateType & npcParticle)
         {
-            for (auto const & npcParticle : npc->ParticleMesh.Particles)
-            {
-                if (!npcParticle.ConstrainedState.has_value()
-                    || npc->CurrentShipId == shipId)
-                {
-                    vec2f displacement = centerPosition - mParticles.GetPosition(npcParticle.ParticleIndex);
-                    float const displacementLength = displacement.length();
-                    vec2f normalizedDisplacement = displacement.normalise(displacementLength);
+            vec2f displacement = centerPosition - mParticles.GetPosition(npcParticle.ParticleIndex);
+            float const displacementLength = displacement.length();
+            vec2f normalizedDisplacement = displacement.normalise(displacementLength);
 
-                    // Make final acceleration somewhat independent from mass
-                    float const massNormalization = mParticles.GetMass(npcParticle.ParticleIndex) / 50.0f;
+            // Make final acceleration somewhat independent from mass
+            float const massNormalization = mParticles.GetMass(npcParticle.ParticleIndex) / 50.0f;
 
-                    // Angular (constant)
-                    mParticles.AddExternalForce(
-                        npcParticle.ParticleIndex,
-                        vec2f(-normalizedDisplacement.y, normalizedDisplacement.x)
-                        * strength
-                        * massNormalization
-                        / 10.0f); // Magic number
+            // Angular (constant)
+            mParticles.AddExternalForce(
+                npcParticle.ParticleIndex,
+                vec2f(-normalizedDisplacement.y, normalizedDisplacement.x)
+                * strength
+                * massNormalization
+                / 10.0f); // Magic number
 
-                    // Radial (stronger when closer)
-                    mParticles.AddExternalForce(
-                        npcParticle.ParticleIndex,
-                        normalizedDisplacement
-                        * strength
-                        / (0.2f + 0.5f * sqrt(displacementLength))
-                        * massNormalization
-                        * 10.0f); // Magic number
-                }
-            }
-        }
-    }
+            // Radial (stronger when closer)
+            mParticles.AddExternalForce(
+                npcParticle.ParticleIndex,
+                normalizedDisplacement
+                * strength
+                / (0.2f + 0.5f * sqrt(displacementLength))
+                * massNormalization
+                * 10.0f); // Magic number
+        });
 }
 
 void Npcs::ApplyAntiMatterBombExplosion(
@@ -2375,34 +2420,21 @@ void Npcs::ApplyAntiMatterBombExplosion(
     vec2f const & centerPosition,
     GameParameters const & gameParameters)
 {
-    //
-    // Only NPCs of this ship, or free regime of any ship
-    //
-
     float const strength =
         30000.0f // Magic number
         * (gameParameters.IsUltraViolentMode ? 50.0f : 1.0f);
 
-    for (auto const & npc : mStateBuffer)
-    {
-        if (npc.has_value()
-            && npc->IsActive())
+    VisitNpcParticlesForInteraction(
+        shipId,
+        [&](StateType &, StateType::NpcParticleStateType & npcParticle)
         {
-            for (auto const & npcParticle : npc->ParticleMesh.Particles)
-            {
-                if (!npcParticle.ConstrainedState.has_value()
-                    || npc->CurrentShipId == shipId)
-                {
-                    vec2f displacement = mParticles.GetPosition(npcParticle.ParticleIndex) - centerPosition;
-                    float forceMagnitude = strength / sqrtf(0.1f + displacement.length());
+            vec2f displacement = mParticles.GetPosition(npcParticle.ParticleIndex) - centerPosition;
+            float forceMagnitude = strength / sqrtf(0.1f + displacement.length());
 
-                    mParticles.AddExternalForce(
-                        npcParticle.ParticleIndex,
-                        displacement.normalise() * forceMagnitude);
-                }
-            }
-        }
-    }
+            mParticles.AddExternalForce(
+                npcParticle.ParticleIndex,
+                displacement.normalise() * forceMagnitude);
+        });
 }
 
 void Npcs::OnShipTriangleDestroyed(
@@ -3136,7 +3168,12 @@ void Npcs::InternalBeginDeferredDeletion(
     auto burningNpcIt = std::find(ship.BurningNpcs.begin(), ship.BurningNpcs.end(), id);
     if (burningNpcIt != ship.BurningNpcs.end())
     {
+        assert(mStateBuffer[id]->CombustionState.has_value());
+
         ship.BurningNpcs.erase(burningNpcIt);
+
+        // Emit event
+        mGameEventHandler->OnPointCombustionEnd();
     }
 
     //
@@ -3231,6 +3268,14 @@ void Npcs::InternalHighlightNpc(NpcId id)
     assert(mStateBuffer[id]->IsActive());
 
     mStateBuffer[id]->IsHighlightedForRendering = true;
+}
+
+void Npcs::InternalFreeNpcParticles(StateType const & npc)
+{
+    for (auto const & p : npc.ParticleMesh.Particles)
+    {
+        mParticles.Remove(p.ParticleIndex);
+    }
 }
 
 void Npcs::PublishCount()

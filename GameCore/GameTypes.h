@@ -45,7 +45,7 @@ static ElementIndex constexpr NoneElementIndex = std::numeric_limits<ElementInde
  * Comparable and ordered. Start from 0.
  */
 using ShipId = std::uint32_t;
-static ShipId constexpr NoneShip = std::numeric_limits<ShipId>::max();
+static ShipId constexpr NoneShipId = std::numeric_limits<ShipId>::max();
 
 /*
  * Connected component identifiers.

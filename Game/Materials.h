@@ -38,7 +38,6 @@ public:
     {
         Air = 0,
         Glass,
-        Human,
         Rope,
         Water,
 

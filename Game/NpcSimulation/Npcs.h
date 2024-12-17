@@ -1241,10 +1241,18 @@ public:
 		float inertialAngle,
 		GameParameters const & gameParameters);
 
-	void SmashAt(
+	bool DestroyAt(
+		ShipId shipId,
 		vec2f const & targetPos,
 		float radius,
 		float currentSimulationTime,
+		GameParameters const & gameParameters);
+
+	bool ApplyHeatBlasterAt(
+		ShipId shipId,
+		vec2f const & targetPos,
+		HeatBlasterActionType action,
+		float radius,
 		GameParameters const & gameParameters);
 
 	void DrawTo(
@@ -1395,6 +1403,34 @@ public:
 
 private:
 
+	inline void VisitNpcParticlesForInteraction(
+		ShipId shipId, // Or none
+		std::function<void(StateType &, StateType::NpcParticleStateType &)> visitor)
+	{
+		//
+		// Visit particles:
+		//	C: If shipId: on that ship; else: of any ship
+		//	F: Of any ship
+		//
+
+		for (auto & npc : mStateBuffer)
+		{
+			if (npc.has_value()
+				&& npc->IsActive())
+			{
+				for (auto & npcParticle : npc->ParticleMesh.Particles)
+				{
+					if (!npcParticle.ConstrainedState.has_value() // Free
+						|| shipId == NoneShipId                   // No ship specified
+						|| npc->CurrentShipId == shipId)		  // Constrained belonging to this ship
+					{
+						visitor(*npc, npcParticle);
+					}
+				}
+			}
+		}
+	}
+
 	void VisitNpcsInQuad(
 		vec2f const & corner1,
 		vec2f const & corner2,
@@ -1430,6 +1466,8 @@ private:
 	void InternalTurnaroundNpc(NpcId id);
 
 	void InternalHighlightNpc(NpcId id);
+
+	void InternalFreeNpcParticles(StateType const & npc);
 
 	void PublishCount();
 

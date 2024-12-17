@@ -289,28 +289,37 @@ void World::DestroyAt(
         * radiusMultiplier
         * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
-    // Ships
-    for (auto & ship : mAllShips)
+    // Ships - all of them, but remembering topmost one, if any
+    ShipId topmostHitShipId = NoneShipId;
+    for (size_t s = mAllShips.size(); s > 0; --s)
     {
-        ship->DestroyAt(
+        auto & ship = mAllShips[s - 1];
+        if (ship->DestroyAt(
             targetPos,
             radius,
             mCurrentSimulationTime,
-            gameParameters);
+            gameParameters))
+        {
+            if (topmostHitShipId == NoneShipId)
+            {
+                topmostHitShipId = ship->GetId();
+            }
+        }
     }
+
+    // NPCs
+    mNpcs->DestroyAt(
+        topmostHitShipId,
+        targetPos,
+        radius,
+        mCurrentSimulationTime,
+        gameParameters);
 
     // Scare fishes at bit
     mFishes.DisturbAt(
         targetPos,
         6.5f + radiusMultiplier,
         std::chrono::milliseconds(0));
-
-    // Smash NPCs
-    mNpcs->SmashAt(
-        targetPos,
-        radius,
-        mCurrentSimulationTime,
-        gameParameters);
 }
 
 void World::RepairAt(
@@ -359,20 +368,33 @@ bool World::ApplyHeatBlasterAt(
     float radius,
     GameParameters const & gameParameters)
 {
-    bool atLeastOneShipApplied = false;
-
-    for (auto & ship : mAllShips)
+    // Ships - all of them, but remembering topmost one, if any
+    ShipId topmostShipId = NoneShipId;
+    for (size_t s = mAllShips.size(); s > 0; --s)
     {
-        bool const isApplied = ship->ApplyHeatBlasterAt(
+        auto & ship = mAllShips[s - 1];
+        if (ship->ApplyHeatBlasterAt(
             targetPos,
             action,
             radius,
-            gameParameters);
-
-        atLeastOneShipApplied |= isApplied;
+            gameParameters))
+        {
+            if (topmostShipId == NoneShipId)
+            {
+                topmostShipId = ship->GetId();
+            }
+        }
     }
 
-    return atLeastOneShipApplied;
+    // Npcs
+    bool const isAppliedOnNpcs = mNpcs->ApplyHeatBlasterAt(
+        topmostShipId,
+        targetPos,
+        action,
+        radius,
+        gameParameters);
+
+    return (topmostShipId != NoneShipId || isAppliedOnNpcs);
 }
 
 bool World::ExtinguishFireAt(
