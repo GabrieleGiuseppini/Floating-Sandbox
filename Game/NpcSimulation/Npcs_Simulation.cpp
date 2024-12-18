@@ -389,17 +389,19 @@ void Npcs::UpdateNpcPhysics(
                 //  - Constrained particles exchange with mesh, Free particles with air/water (and evt. interactions)
                 //
 
-                ElementIndex oneNpcParticleOnFire = NoneElementIndex;
-                ElementIndex oneNpcParticleInWater = NoneElementIndex;
+                bool isOneNpcParticleInBurningMesh = false; // True if NPC has at least one particle in a burning mesh
+                ElementIndex oneNpcParticleAboveIgnitionTemperature = NoneElementIndex; // If set, that particle is above its ignition temperature
+                bool isOneNpcParticleInWater = false; // True if NPC has at least one particle in water (using magic threshold)
+                ElementIndex oneNpcParticleAboveWaterReactionThreshold = NoneElementIndex; // If set, that (reactive) particle is ready to react
 
+                // Visit all particles
                 for (size_t p = 0; p < npcState->ParticleMesh.Particles.size(); ++p)
                 {
                     auto const & particle = npcState->ParticleMesh.Particles[p];
 
-                    float constexpr WaternessThresholdForInWater = 0.4f;
-                    bool isParticleInWater;
-
+                    float particleWaterness;
                     float particleTemperature;
+                    bool isParticleInBurningMesh = false;
 
                     if (particle.ConstrainedState.has_value())
                     {
@@ -433,6 +435,13 @@ void Npcs::UpdateNpcPhysics(
                             // Temperature
 
                             totalMeshTemperature += homeShip.GetPoints().GetTemperature(pointElementIndex) * particle.ConstrainedState->CurrentBCoords.BCoords[v];
+
+                            // Burning mesh
+
+                            if (homeShip.GetPoints().IsBurning(pointElementIndex))
+                            {
+                                isParticleInBurningMesh = true;
+                            }
                         }
 
                         //
@@ -441,15 +450,10 @@ void Npcs::UpdateNpcPhysics(
 
                         float const meshWaterness = totalMeshWaterness / (std::max(meshWaterablePointCount, 1.0f));
                         mParticles.SetMeshWaterness(particle.ParticleIndex, meshWaterness);
+                        particleWaterness = meshWaterness; // Use this for water determinations
 
                         vec2f const meshWaterVelocity = totalMeshWaterVelocity / (std::max(meshWaterablePointCount, 1.0f));
                         mParticles.SetMeshWaterVelocity(particle.ParticleIndex, meshWaterVelocity);
-
-                        //
-                        // Check if particle is in water
-                        //
-
-                        isParticleInWater = (meshWaterness > WaternessThresholdForInWater);
 
                         //
                         // Calculate particle's mesh temperature
@@ -467,14 +471,12 @@ void Npcs::UpdateNpcPhysics(
                     {
                         // Free particle
 
+                        //
+                        // Get particle waterness
                         // Note: is stale (from previous frame), but that's ok
-                        float const particleWaterness = mParticles.GetAnyWaterness(particle.ParticleIndex);
-
-                        //
-                        // Check if particle is in water
                         //
 
-                        isParticleInWater = (particleWaterness > WaternessThresholdForInWater);
+                        particleWaterness = mParticles.GetAnyWaterness(particle.ParticleIndex);
 
                         //
                         // Calculate temperature
@@ -512,82 +514,75 @@ void Npcs::UpdateNpcPhysics(
                     mParticles.SetTemperature(particle.ParticleIndex, particleTemperature);
 
                     //
-                    // Check if particle is on fire
+                    // Sample particle properties
                     //
 
-                    if (particleTemperature >= mParticles.GetMaterial(particle.ParticleIndex).IgnitionTemperature * gameParameters.IgnitionTemperatureAdjustment
-                        && !isParticleInWater)
+                    if (isParticleInBurningMesh)
                     {
-                        oneNpcParticleOnFire = particle.ParticleIndex;
+                        isOneNpcParticleInBurningMesh = true;
                     }
 
-                    //
-                    // Check if particle is in water
-                    //
-
-                    if (isParticleInWater)
+                    if (particleTemperature >= mParticles.GetMaterial(particle.ParticleIndex).IgnitionTemperature * gameParameters.IgnitionTemperatureAdjustment)
                     {
-                        oneNpcParticleInWater = particle.ParticleIndex;
+                        oneNpcParticleAboveIgnitionTemperature = particle.ParticleIndex;
+                    }
+
+                    float constexpr WaternessThresholdForInWater = 0.3f;
+                    if (particleWaterness >= WaternessThresholdForInWater)
+                    {
+                        isOneNpcParticleInWater = true;
+                    }
+
+                    if (mParticles.GetMaterial(particle.ParticleIndex).WaterReactivity > 0.0f
+                        && particleWaterness > mParticles.GetMaterial(particle.ParticleIndex).WaterReactivity)
+                    {
+                        oneNpcParticleAboveWaterReactionThreshold = particle.ParticleIndex;
                     }
 
                 } // for (all particles)
 
                 //
-                // Combustion
+                // Combustion/Water Reaction
                 //
                 // Rules:
+                //  - If a particle's temperature is above its ignition temperature and it's explosive, the NPC explodes
+                //    (regardless of water)
+                //  - If a particle's waterness is above its water reactivity threshold and it's water-reactable, the NPC reacts
+                //  - If a particle is in a burning mesh and NPC not in water, the NPC catches fire immediately
+                //      - Don't explode it yet, we wait for its temperature to reach ignition temperature
+                //  - If a particle's temperature is above its ignition temperature and NPC not in water, the NPC combustion progress
+                //    goes up; else, the NPC combustion progress goes down
+                //  - If the NPC is in water, the NPC combustion progress goes (quickly) down
+                //
+                // Notes:
                 //  - If one particle is in water, we consider the whole NPC in water for the purposes of combustion
                 //
 
-                // Update NPC's fire progress
-
-                if (oneNpcParticleInWater != NoneElementIndex)
-                {
-                    // Smother quickly
-                    npcState->CombustionProgress += (-1.0f - npcState->CombustionProgress) * 0.1f;
-                }
-                else
-                {
-                    if (oneNpcParticleOnFire != NoneElementIndex)
-                    {
-                        // Increase
-                        npcState->CombustionProgress += (1.0f - npcState->CombustionProgress) * 0.3f;
-                    }
-                    else
-                    {
-                        // Decrease (slowly)
-                        npcState->CombustionProgress += (-1.0f - npcState->CombustionProgress) * 0.007f;
-                    }
-                }
-
-                // Explosion and water reactivity ignitions
-
-                if (oneNpcParticleOnFire != NoneElementIndex
-                    && oneNpcParticleInWater == NoneElementIndex // No explosion if in water
-                    && mParticles.GetMaterial(oneNpcParticleOnFire).CombustionType == StructuralMaterial::MaterialCombustionType::Explosion)
+                if (oneNpcParticleAboveIgnitionTemperature != NoneElementIndex
+                    && mParticles.GetMaterial(oneNpcParticleAboveIgnitionTemperature).CombustionType == StructuralMaterial::MaterialCombustionType::Explosion)
                 {
                     float const blastForce =
-                        mParticles.GetMaterial(oneNpcParticleOnFire).ExplosiveCombustionForce
+                        mParticles.GetMaterial(oneNpcParticleAboveIgnitionTemperature).ExplosiveCombustionForce
                         * 1000.0f; // KN -> N
 
                     float const blastForceRadius =
-                        mParticles.GetMaterial(oneNpcParticleOnFire).ExplosiveCombustionForceRadius
+                        mParticles.GetMaterial(oneNpcParticleAboveIgnitionTemperature).ExplosiveCombustionForceRadius
                         * 0.1f // Magic number
                         * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
 
                     float const blastHeat =
-                        mParticles.GetMaterial(oneNpcParticleOnFire).ExplosiveCombustionHeat
+                        mParticles.GetMaterial(oneNpcParticleAboveIgnitionTemperature).ExplosiveCombustionHeat
                         * gameParameters.CombustionHeatAdjustment
                         * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
                     float const blastHeatRadius =
-                        mParticles.GetMaterial(oneNpcParticleOnFire).ExplosiveCombustionHeatRadius
+                        mParticles.GetMaterial(oneNpcParticleAboveIgnitionTemperature).ExplosiveCombustionHeatRadius
                         * 0.1f // Magic number
                         * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
 
                     TriggerExplosion(
                         *npcState,
-                        oneNpcParticleOnFire,
+                        oneNpcParticleAboveIgnitionTemperature,
                         blastForce,
                         blastForceRadius,
                         blastHeat,
@@ -598,10 +593,7 @@ void Npcs::UpdateNpcPhysics(
                         gameParameters);
 
                 }
-                else if (oneNpcParticleInWater != NoneElementIndex
-                    && mParticles.GetMaterial(oneNpcParticleInWater).WaterReactivity > 0.0f
-                    // Note: AnyWaterness is updated later, so here we use a one-frame stale value
-                    && mParticles.GetAnyWaterness(oneNpcParticleInWater) > mParticles.GetMaterial(oneNpcParticleInWater).WaterReactivity)
+                else if (oneNpcParticleAboveWaterReactionThreshold != NoneElementIndex)
                 {
                     float const blastForce = 3000000.0f; // Magic number
 
@@ -615,7 +607,7 @@ void Npcs::UpdateNpcPhysics(
 
                     TriggerExplosion(
                         *npcState,
-                        oneNpcParticleInWater,
+                        oneNpcParticleAboveWaterReactionThreshold,
                         blastForce,
                         blastRadius,
                         blastHeat,
@@ -625,6 +617,134 @@ void Npcs::UpdateNpcPhysics(
                         currentSimulationTime,
                         gameParameters);
                 }
+                else
+                {
+                    if (!isOneNpcParticleInWater)
+                    {
+                        //
+                        // NPC is not in water
+                        //
+
+                        if (isOneNpcParticleInBurningMesh)
+                        {
+                            // Catch fire immediately
+                            npcState->CombustionProgress = 1.0f;
+                        }
+                        else
+                        {
+                            if (oneNpcParticleAboveIgnitionTemperature != NoneElementIndex)
+                            {
+                                // Increase combustion progress
+                                npcState->CombustionProgress += (1.0f - npcState->CombustionProgress) * 0.3f;
+                            }
+                            else
+                            {
+                                // Decrease combustion progress (slowly)
+                                npcState->CombustionProgress += (-1.0f - npcState->CombustionProgress) * 0.007f;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        //
+                        // NPC is in water
+                        //
+
+                        // Smother combustion progress quickly
+                        {
+                            npcState->CombustionProgress += (-1.0f - npcState->CombustionProgress) * 0.1f;
+                        }
+                    }
+                }
+
+                ////// TODOOLD
+
+                ////// Update NPC's fire progress
+
+                ////if (oneNpcParticleInWater != NoneElementIndex)
+                ////{
+                ////    // Smother quickly
+                ////    npcState->CombustionProgress += (-1.0f - npcState->CombustionProgress) * 0.1f;
+                ////}
+                ////else
+                ////{
+                ////    if (oneNpcParticleOnFire != NoneElementIndex)
+                ////    {
+                ////        // Increase
+                ////        npcState->CombustionProgress += (1.0f - npcState->CombustionProgress) * 0.3f;
+                ////    }
+                ////    else
+                ////    {
+                ////        // Decrease (slowly)
+                ////        npcState->CombustionProgress += (-1.0f - npcState->CombustionProgress) * 0.007f;
+                ////    }
+                ////}
+
+                ////// Explosion and water reactivity ignitions
+
+                ////if (oneNpcParticleOnFire != NoneElementIndex
+                ////    && oneNpcParticleInWater == NoneElementIndex // No explosion if in water
+                ////    && mParticles.GetMaterial(oneNpcParticleOnFire).CombustionType == StructuralMaterial::MaterialCombustionType::Explosion)
+                ////{
+                ////    float const blastForce =
+                ////        mParticles.GetMaterial(oneNpcParticleOnFire).ExplosiveCombustionForce
+                ////        * 1000.0f; // KN -> N
+
+                ////    float const blastForceRadius =
+                ////        mParticles.GetMaterial(oneNpcParticleOnFire).ExplosiveCombustionForceRadius
+                ////        * 0.1f // Magic number
+                ////        * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
+
+                ////    float const blastHeat =
+                ////        mParticles.GetMaterial(oneNpcParticleOnFire).ExplosiveCombustionHeat
+                ////        * gameParameters.CombustionHeatAdjustment
+                ////        * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+
+                ////    float const blastHeatRadius =
+                ////        mParticles.GetMaterial(oneNpcParticleOnFire).ExplosiveCombustionHeatRadius
+                ////        * 0.1f // Magic number
+                ////        * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
+
+                ////    TriggerExplosion(
+                ////        *npcState,
+                ////        oneNpcParticleOnFire,
+                ////        blastForce,
+                ////        blastForceRadius,
+                ////        blastHeat,
+                ////        blastHeatRadius,
+                ////        5.0f,
+                ////        ExplosionType::Combustion,
+                ////        currentSimulationTime,
+                ////        gameParameters);
+
+                ////}
+                ////else if (oneNpcParticleInWater != NoneElementIndex
+                ////    && mParticles.GetMaterial(oneNpcParticleInWater).WaterReactivity > 0.0f
+                ////    // Note: AnyWaterness is updated later, so here we use a one-frame stale value
+                ////    && mParticles.GetAnyWaterness(oneNpcParticleInWater) > mParticles.GetMaterial(oneNpcParticleInWater).WaterReactivity)
+                ////{
+                ////    float const blastForce = 3000000.0f; // Magic number
+
+                ////    float const blastRadius =
+                ////        3.0f // Magic number
+                ////        * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
+
+                ////    float const blastHeat =
+                ////        GameParameters::WaterReactionHeat
+                ////        * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+
+                ////    TriggerExplosion(
+                ////        *npcState,
+                ////        oneNpcParticleInWater,
+                ////        blastForce,
+                ////        blastRadius,
+                ////        blastHeat,
+                ////        blastRadius,
+                ////        5.0f,
+                ////        ExplosionType::Sodium,
+                ////        currentSimulationTime,
+                ////        gameParameters);
+                ////}
 
             } // if (low-freq step)
 

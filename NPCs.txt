@@ -742,12 +742,21 @@ Next release:
 			+ Test
 		+ Heat blaster tool
 			+ Fix: too much dissipation in C and F
-		- Allow explosion also if particle temperature is above ignition, even if in water
-			- Means that we can't trigger explosion just "if oneNpcParticleOnFire" - it's really about "oneNpcParticleOverIgnitionTemperature", which is independent from water,
-			  but also "oneNpcParticleOnFire" with same condition as now (plus "oneMeshParticleOnFire"
-		- Combustion state update (low-freq): catch fire also if mesh is on fire - for at least one particle
-			- Catch fire immediately, try by just setting combustion state (without forcing temperature)
-				- See if fire is really short-lived
+		= Little combustion rearc:
+			+ Allow explosion always if particle temperature is above ignition, even if in water
+				+ Means that we can't trigger explosion just "if oneNpcParticleOnFire" - it's really about "oneNpcParticleOverIgnitionTemperature", which is independent from water,
+				  but also "oneNpcParticleOnFire" with same condition as now (plus "oneMeshParticleOnFire")
+			+ Combustion state update (low-freq): catch fire also if mesh is on fire - for at least one particle
+				+ Catch fire immediately, try by just setting combustion state (without forcing temperature)
+					+ See if fire is really short-lived
+			- Exploding NPC in burning mesh: delay between catching fire and exploding is NOT reasonable, explode immediately
+				- Tests:
+					- Diesel can
+					- Hydrogen tank
+					- TNT crate
+			- Cleanup:
+				- TODOOLD
+
 		- Laser cannon
 		- Fire extinguisher
 			- Also extinguish fire - just reset combustion state
