@@ -47,7 +47,7 @@ ElementIndex NpcParticles::Add(
 
     mRenderColorBuffer[p] = color;
 
-    ++mParticleInUseCount;
+    ++mParticlesInUseCount;
 
     return p;
 }
@@ -56,11 +56,12 @@ void NpcParticles::Remove(
     ElementIndex particleIndex)
 {
     assert(mIsInUseBuffer[particleIndex]);
+    assert(mParticlesInUseCount > 0);
 
     mIsInUseBuffer[particleIndex] = false;
     mFreeParticleSearchStartIndex = std::min(mFreeParticleSearchStartIndex, particleIndex);
 
-    --mParticleInUseCount;
+    --mParticlesInUseCount;
 }
 
 void NpcParticles::Query(ElementIndex particleElementIndex) const

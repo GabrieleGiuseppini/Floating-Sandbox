@@ -172,6 +172,12 @@ void Npcs::Update(
     GameParameters const & gameParameters)
 {
     //
+    // Check invariants
+    //
+
+    assert(CalculateTotalNpcCount() > 0 || mParticles.GetInUseParticlesCount() == 0);
+
+    //
     // Update parameters
     //
 

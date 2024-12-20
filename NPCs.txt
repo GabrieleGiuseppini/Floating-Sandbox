@@ -742,21 +742,23 @@ Next release:
 			+ Test
 		+ Heat blaster tool
 			+ Fix: too much dissipation in C and F
-		= Little combustion rearc:
+		+ Little combustion rearc:
 			+ Allow explosion always if particle temperature is above ignition, even if in water
 				+ Means that we can't trigger explosion just "if oneNpcParticleOnFire" - it's really about "oneNpcParticleOverIgnitionTemperature", which is independent from water,
 				  but also "oneNpcParticleOnFire" with same condition as now (plus "oneMeshParticleOnFire")
 			+ Combustion state update (low-freq): catch fire also if mesh is on fire - for at least one particle
 				+ Catch fire immediately, try by just setting combustion state (without forcing temperature)
 					+ See if fire is really short-lived
-			- Exploding NPC in burning mesh: delay between catching fire and exploding is NOT reasonable, explode immediately
-				- Tests:
-					- Diesel can
-					- Hydrogen tank
-					- TNT crate
-			- Cleanup:
-				- TODOOLD
-
+			+ Exploding NPC in burning mesh: delay between catching fire and exploding is NOT reasonable, explode immediately
+				+ Store oneNpcParticleIsExplosive: just last NPC particle that may explode
+				+ Explosion condition: if <as now> || (npc.BurningState.isBurning && oneNpcParticleIsExplosive)
+					+ And then grab right ElementIndex in <if> branch
+				+ Tests:
+					+ In burning mesh:
+						+ Diesel can
+						+ Hydrogen tank
+						+ TNT crate
+						+ Crate (no explo)
 		- Laser cannon
 		- Fire extinguisher
 			- Also extinguish fire - just reset combustion state
@@ -769,11 +771,13 @@ Next release:
 					- Remove impact explosion test
 	+ Simulation: air/water temperature transfers heat to *free* NPC particles
 	- See HumanNpcTemperature
+		- Replace with temperature of secondary particle
 	- Cleanup:
 		- TODOTEST: at particle temperature update, log+custom probe
 		+ TODOTEST logs
 		+ Old code
-		- VErify no logs
+		- Verify no logs
+	- Run in debug
 
 	- Port to BaryLab and profile
 		- Optimize low-freq phys update, plenty of opp'ties there
@@ -784,11 +788,11 @@ Next release:
 		- More tool interactions
 
 - Re-test bug fix: add/remove 8k NPCs N times
+	- Since you're here: test perf with removal of 8192 NPCs
 - Impact also on land
 	- Test explosive NPCs
 - Test NPCs walking into water-filled compartment
 	- Check water @ lookahead?
-- Test perf with removal of 8192 NPCs
 
 - Misc:
 	- Sound for NPC fire smothering

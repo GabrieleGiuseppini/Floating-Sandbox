@@ -1405,7 +1405,7 @@ private:
 
 	inline void VisitNpcParticlesForInteraction(
 		ShipId shipId, // Or none
-		std::function<void(StateType &, StateType::NpcParticleStateType &)> visitor)
+		std::function<void(StateType &, StateType::NpcParticleStateType &)> && visitor)
 	{
 		//
 		// Visit particles:

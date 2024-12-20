@@ -9,6 +9,7 @@
 - NPCs on a ship are now lit by the ship's lamps
 - Bug fixes:
 	- Fixed a crash when using the repair tool on a part of the ship that had exploded (thanks to AlexGuy!)
+	- Fixed a crash happening after adding and removing many NPCs multiple times
 - ...and a few more small improvements here and there!
 
 1.19.0

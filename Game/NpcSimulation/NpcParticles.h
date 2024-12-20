@@ -55,17 +55,22 @@ public:
         //////////////////////////////////
         // Container
         //////////////////////////////////
-        , mParticleInUseCount(0)
+        , mParticlesInUseCount(0)
         , mFreeParticleSearchStartIndex(0)
     {
     }
 
     NpcParticles(NpcParticles && other) = default;
 
+    ElementCount GetInUseParticlesCount() const
+    {
+        return mParticlesInUseCount;
+    }
+
     ElementCount GetRemainingParticlesCount() const
     {
         assert(mParticleInUseCount <= mMaxParticleCount);
-        return mMaxParticleCount - mParticleInUseCount;
+        return mMaxParticleCount - mParticlesInUseCount;
     }
 
     ElementIndex Add(
@@ -386,7 +391,7 @@ private:
     //////////////////////////////////////////////////////////
 
     // Convenience counter
-    ElementCount mParticleInUseCount;
+    ElementCount mParticlesInUseCount;
 
     // The index at which to start searching for free particles
     // (just an optimization over restarting from zero each time)
