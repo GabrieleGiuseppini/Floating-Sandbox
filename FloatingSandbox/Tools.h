@@ -1209,7 +1209,7 @@ public:
     {
         if (inputState.IsLeftMouseDown)
         {
-            mIsEngaged = mGameController.ExtinguishFireAt(inputState.MousePosition);
+            mIsEngaged = InternalExtinguishFireAt(inputState);
         }
         else
         {
@@ -1231,7 +1231,7 @@ public:
 
         if (inputState.IsLeftMouseDown)
         {
-            isEngaged = mGameController.ExtinguishFireAt(inputState.MousePosition);
+            isEngaged = InternalExtinguishFireAt(inputState);
         }
         else
         {
@@ -1275,6 +1275,13 @@ public:
     void OnShiftKeyUp(InputState const & /*inputState*/) override {}
 
 private:
+
+    bool InternalExtinguishFireAt(InputState const & inputState)
+    {
+        return mGameController.ExtinguishFireAt(
+            inputState.MousePosition,
+            inputState.IsShiftKeyDown ? 4.0f : 1.0f);
+    }
 
     void SetCurrentCursor()
     {

@@ -173,6 +173,7 @@ public:
 
     bool ExtinguishFireAt(
         vec2f const & targetPos,
+        float strengthMultiplier,
         float radius,
         GameParameters const & gameParameters);
 

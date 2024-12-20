@@ -913,7 +913,9 @@ bool GameController::ApplyHeatBlasterAt(
     return isApplied;
 }
 
-bool GameController::ExtinguishFireAt(DisplayLogicalCoordinates const & screenCoordinates)
+bool GameController::ExtinguishFireAt(
+    DisplayLogicalCoordinates const & screenCoordinates,
+    float strengthMultiplier)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
@@ -928,6 +930,7 @@ bool GameController::ExtinguishFireAt(DisplayLogicalCoordinates const & screenCo
     assert(!!mWorld);
     bool isApplied = mWorld->ExtinguishFireAt(
         worldCoordinates,
+        strengthMultiplier,
         radius,
         mGameParameters);
 

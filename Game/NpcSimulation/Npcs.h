@@ -1258,6 +1258,7 @@ public:
 	bool ExtinguishFireAt(
 		ShipId shipId,
 		vec2f const & targetPos,
+		float strengthMultiplier,
 		float radius,
 		GameParameters const & gameParameters);
 

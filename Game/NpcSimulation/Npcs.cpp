@@ -2205,7 +2205,7 @@ bool Npcs::ApplyHeatBlasterAt(
 
     VisitNpcParticlesForInteraction(
         shipId,
-        [&](StateType &, StateType::NpcParticleStateType & npcParticle)
+        [&](StateType & npc, StateType::NpcParticleStateType & npcParticle)
         {
             auto const particleIndex = npcParticle.ParticleIndex;
             float const pointSquareDistance = (mParticles.GetPosition(particleIndex) - targetPos).squareLength();
@@ -2232,6 +2232,12 @@ bool Npcs::ApplyHeatBlasterAt(
                     particleIndex,
                     std::max(mParticles.GetTemperature(particleIndex) + deltaT, 0.1f)); // 3rd principle of thermodynamics
 
+                // Panic the human NPC
+                if (npc.Kind == NpcKindType::Human)
+                {
+                    npc.KindSpecificState.HumanNpcState.MiscPanicLevel = 1.0f;
+                }
+
                 // Remember we've found a particle
                 atLeastOneParticleFound = true;
             }
@@ -2243,16 +2249,52 @@ bool Npcs::ApplyHeatBlasterAt(
 bool Npcs::ExtinguishFireAt(
     ShipId shipId,
     vec2f const & targetPos,
+    float strengthMultiplier,
     float radius,
     GameParameters const & gameParameters)
 {
-    // TODOHERE
-    (void)shipId;
-    (void)targetPos;
-    (void)radius;
-    (void)gameParameters;
+    float const squareRadius = radius * radius;
 
-    return false;
+    float const heatRemoved =
+        GameParameters::FireExtinguisherHeatRemoved
+        * 0.3f // NPC adjustment
+        * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f)
+        * strengthMultiplier;
+
+    bool atLeastOneParticleFound = false;
+
+    VisitNpcParticlesForInteraction(
+        shipId,
+        [&](StateType & npc, StateType::NpcParticleStateType & npcParticle)
+        {
+            auto const particleIndex = npcParticle.ParticleIndex;
+            float const pointSquareDistance = (mParticles.GetPosition(particleIndex) - targetPos).squareLength();
+            if (pointSquareDistance < squareRadius)
+            {
+                // Lower temperature
+
+                float const strength = 1.0f - SmoothStep(
+                    squareRadius * 3.0f / 4.0f,
+                    squareRadius,
+                    pointSquareDistance);
+
+                mParticles.AddHeat(
+                    particleIndex,
+                    -heatRemoved * strength);
+
+                // Lower the NPC's combustion, to affect flame geometry while we wait for temperature to lower progress below 0.0
+
+                if (particleIndex == 0)
+                {
+                    npc.CombustionProgress = std::min(npc.CombustionProgress, npc.CombustionProgress * 0.9f);
+                }
+
+                // Remember we've found a particle
+                atLeastOneParticleFound = true;
+            }
+        });
+
+    return atLeastOneParticleFound;
 }
 
 void Npcs::ApplyLaserCannonThrough(
@@ -2272,7 +2314,7 @@ void Npcs::ApplyLaserCannonThrough(
 
     VisitNpcParticlesForInteraction(
         shipId,
-        [&](StateType &, StateType::NpcParticleStateType & npcParticle)
+        [&](StateType & npc, StateType::NpcParticleStateType & npcParticle)
         {
             auto const particleIndex = npcParticle.ParticleIndex;
             float const distance = Geometry::Segment::DistanceToPoint(startPos, endPos, mParticles.GetPosition(particleIndex));
@@ -2284,6 +2326,13 @@ void Npcs::ApplyLaserCannonThrough(
                 //
 
                 mParticles.AddHeat(particleIndex, effectiveLaserHeat);
+
+                // Panic the human NPC
+
+                if (npc.Kind == NpcKindType::Human)
+                {
+                    npc.KindSpecificState.HumanNpcState.MiscPanicLevel = 1.0f;
+                }
             }
         });
 }

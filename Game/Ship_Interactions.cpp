@@ -583,6 +583,7 @@ bool Ship::ApplyHeatBlasterAt(
 
 bool Ship::ExtinguishFireAt(
     vec2f const & targetPos,
+    float strengthMultiplier,
     float radius,
     GameParameters const & gameParameters)
 {
@@ -590,7 +591,8 @@ bool Ship::ExtinguishFireAt(
 
     float const heatRemoved =
         GameParameters::FireExtinguisherHeatRemoved
-        * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+        * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f)
+        * strengthMultiplier;
 
     // Search for burning points within the radius
     //

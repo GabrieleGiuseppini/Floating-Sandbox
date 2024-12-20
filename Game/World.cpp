@@ -399,6 +399,7 @@ bool World::ApplyHeatBlasterAt(
 
 bool World::ExtinguishFireAt(
     vec2f const & targetPos,
+    float strengthMultiplier,
     float radius,
     GameParameters const & gameParameters)
 {
@@ -409,6 +410,7 @@ bool World::ExtinguishFireAt(
         auto & ship = mAllShips[s - 1];
         if (ship->ExtinguishFireAt(
             targetPos,
+            strengthMultiplier,
             radius,
             gameParameters))
         {
@@ -423,6 +425,7 @@ bool World::ExtinguishFireAt(
     bool const isAppliedOnNpcs = mNpcs->ExtinguishFireAt(
         topmostShipId,
         targetPos,
+        strengthMultiplier,
         radius,
         gameParameters);
 

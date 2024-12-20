@@ -645,7 +645,7 @@ void Npcs::UpdateNpcPhysics(
                             if (oneNpcParticleAboveIgnitionTemperature != NoneElementIndex)
                             {
                                 // Increase combustion progress
-                                npcState->CombustionProgress += (1.0f - npcState->CombustionProgress) * 0.3f;
+                                npcState->CombustionProgress += (1.0f - npcState->CombustionProgress) * 0.2f;
                             }
                             else
                             {

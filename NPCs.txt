@@ -767,9 +767,19 @@ Next release:
 			+ Tests:
 				+ LaserCut on/off ship
 				+ And then on NPCs
-		- Fire extinguisher
-			- Also extinguish fire - halve combustion progress (so it affects geometry) while we wait for temperature to lower progress below 0.0
-				- See if smothering time is ok
+		+ Fire extinguisher
+			+ Also extinguish fire - halve combustion progress (so it affects geometry) while we wait for temperature to lower progress below 0.0
+				+ See if smothering time is ok
+			+ Tests:
+				+ On nothing
+				+ On ship
+				+ On free NPC
+				+ On constrained NPC
+		- Review panic w/swimming
+			- Panic with laser
+				- UW
+			- Panic with heatblaster
+				- UW
 		- ApplyBlastAt
 			! Old dynamics:
 				- World::ApplyBlast (tool) -> Ship -> Queued -> Ship + Ship::OnBlast
@@ -782,10 +792,15 @@ Next release:
 				- TODOHERE: Ship: just do ship, move everything else to World
 		- Rethink NPC interactions's shipId: depending on interaction, we might want to hit all available ships
 			- Or the interaction itself might want to only work on the topmost ship - in which case _break_
-			- Destroy
-			- HeatBlaster
-			- FireExtinguisher
-			- LaserCannon
+			- Destroy: classic is all ships
+			- HeatBlaster: classic is all ships
+			- FireExtinguisher: classic is all ships
+			- LaserCannon: classic is all ships
+			- Tests:
+				- On nothing
+				- On ship
+				- On free NPC
+				- On constrained NPC
 
 	+ Dissipation adjust affects NPC particle temperature transfer
 	- Explosion (of ship bombs or ship particles or NPCs): provide heat
@@ -810,7 +825,7 @@ Next release:
 
 	- Changelist:
 		- Temperature
-		- More tool interactions
+		- More tool interact with NPCs
 
 - Re-test bug fix: add/remove 8k NPCs N times
 	- Since you're here: test perf with removal of 8192 NPCs
