@@ -759,9 +759,34 @@ Next release:
 						+ Hydrogen tank
 						+ TNT crate
 						+ Crate (no explo)
-		- Laser cannon
+		+ Laser cannon
+			+ Just apply heat
+				+ Use particles.ApplyHeat
+				+ Use particles.ApplyHeat everywhere
+			+ ShipInteractions: use points.ApplyHeat
+			+ Tests:
+				+ LaserCut on/off ship
+				+ And then on NPCs
 		- Fire extinguisher
-			- Also extinguish fire - just reset combustion state
+			- Also extinguish fire - halve combustion progress (so it affects geometry) while we wait for temperature to lower progress below 0.0
+				- See if smothering time is ok
+		- ApplyBlastAt
+			! Old dynamics:
+				- World::ApplyBlast (tool) -> Ship -> Queued -> Ship + Ship::OnBlast
+				- Explosion -> Ship -> Ship::OnBlast
+				- Ship::OnBlast: 
+					- Npcs
+					- OceanSurface
+					- Fishes
+			- New dynamics:
+				- TODOHERE: Ship: just do ship, move everything else to World
+		- Rethink NPC interactions's shipId: depending on interaction, we might want to hit all available ships
+			- Or the interaction itself might want to only work on the topmost ship - in which case _break_
+			- Destroy
+			- HeatBlaster
+			- FireExtinguisher
+			- LaserCannon
+
 	+ Dissipation adjust affects NPC particle temperature transfer
 	- Explosion (of ship bombs or ship particles or NPCs): provide heat
 			- Requires changes to ShipStateMachine: ShipOnBlast needs to take heat

@@ -265,6 +265,17 @@ public:
         mTemperatureBuffer[particleElementIndex] = value;
     }
 
+    void AddHeat(
+        ElementIndex particleElementIndex,
+        float heat) // J
+    {
+        assert(GetMaterial(particleElementIndex).GetHeatCapacity() > 0.0f);
+
+        mTemperatureBuffer[particleElementIndex] +=
+            heat
+            / GetMaterial(particleElementIndex).GetHeatCapacity();
+    }
+
     // [0.0, ~1.0]
     float const GetMeshWaterness(ElementIndex particleElementIndex) const noexcept
     {

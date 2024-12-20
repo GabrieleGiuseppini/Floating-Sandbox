@@ -42,6 +42,7 @@ public:
         , mLightFlickerEvents()
         , mSpringRepairedEvents()
         , mTriangleRepairedEvents()
+        , mLaserCutEvents(0)
         , mPinToggledEvents()
         , mWaterDisplacedEvents(0.0f)
         , mAirBubbleSurfacedEvents(0u)
@@ -618,10 +619,7 @@ public:
 
     virtual void OnLaserCut(unsigned int size) override
     {
-        for (auto sink : mGenericSinks)
-        {
-            sink->OnLaserCut(size);
-        }
+        mLaserCutEvents += size;
     }
 
     void OnPinToggled(
@@ -949,6 +947,11 @@ public:
                 sink->OnTriangleRepaired(*(std::get<0>(entry.first)), std::get<1>(entry.first), entry.second);
             }
 
+            if (mLaserCutEvents > 0)
+            {
+                sink->OnLaserCut(mLaserCutEvents);
+            }
+
             for (auto const & entry : mPinToggledEvents)
             {
                 sink->OnPinToggled(std::get<0>(entry), std::get<1>(entry));
@@ -1007,6 +1010,7 @@ public:
 
         mSpringRepairedEvents.clear();
         mTriangleRepairedEvents.clear();
+        mLaserCutEvents = 0;
         mPinToggledEvents.clear();
         mWaterDisplacedEvents = 0.0f;
         mAirBubbleSurfacedEvents = 0u;
@@ -1082,6 +1086,7 @@ private:
     unordered_tuple_map<std::tuple<DurationShortLongType, bool>, unsigned int> mLightFlickerEvents;
     unordered_tuple_map<std::tuple<StructuralMaterial const *, bool>, unsigned int> mSpringRepairedEvents;
     unordered_tuple_map<std::tuple<StructuralMaterial const *, bool>, unsigned int> mTriangleRepairedEvents;
+    unsigned int mLaserCutEvents;
     unordered_tuple_set<std::tuple<bool, bool>> mPinToggledEvents;
     float mWaterDisplacedEvents;
     unsigned int mAirBubbleSurfacedEvents;

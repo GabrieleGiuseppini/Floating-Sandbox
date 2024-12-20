@@ -1255,6 +1255,19 @@ public:
 		float radius,
 		GameParameters const & gameParameters);
 
+	bool ExtinguishFireAt(
+		ShipId shipId,
+		vec2f const & targetPos,
+		float radius,
+		GameParameters const & gameParameters);
+
+	void ApplyLaserCannonThrough(
+		ShipId shipId,
+		vec2f const & startPos,
+		vec2f const & endPos,
+		float strength,
+		GameParameters const & gameParameters);
+
 	void DrawTo(
 		vec2f const & targetPos,
 		float strength);

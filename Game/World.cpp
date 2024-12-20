@@ -402,19 +402,31 @@ bool World::ExtinguishFireAt(
     float radius,
     GameParameters const & gameParameters)
 {
-    bool atLeastOneShipApplied = false;
-
-    for (auto & ship : mAllShips)
+    // Ships - all of them, but remembering topmost one, if any
+    ShipId topmostShipId = NoneShipId;
+    for (size_t s = mAllShips.size(); s > 0; --s)
     {
-        bool isApplied = ship->ExtinguishFireAt(
+        auto & ship = mAllShips[s - 1];
+        if (ship->ExtinguishFireAt(
             targetPos,
             radius,
-            gameParameters);
-
-        atLeastOneShipApplied |= isApplied;
+            gameParameters))
+        {
+            if (topmostShipId == NoneShipId)
+            {
+                topmostShipId = ship->GetId();
+            }
+        }
     }
 
-    return atLeastOneShipApplied;
+    // Npcs
+    bool const isAppliedOnNpcs = mNpcs->ExtinguishFireAt(
+        topmostShipId,
+        targetPos,
+        radius,
+        gameParameters);
+
+    return (topmostShipId != NoneShipId || isAppliedOnNpcs);
 }
 
 void World::ApplyBlastAt(
@@ -526,21 +538,33 @@ bool World::ApplyLaserCannonThrough(
     float strength,
     GameParameters const & gameParameters)
 {
-    bool atLeastOneCut = false;
-
-    // Apply to ships
-    for (auto & ship : mAllShips)
+    // Ships - all of them, but remembering topmost one, if any
+    ShipId topmostShipIdCut = NoneShipId;
+    for (size_t s = mAllShips.size(); s > 0; --s)
     {
-        bool const isCut = ship->ApplyLaserCannonThrough(
+        auto & ship = mAllShips[s - 1];
+        if (ship->ApplyLaserCannonThrough(
             startPos,
             endPos,
             strength,
-            gameParameters);
-
-        atLeastOneCut |= isCut;
+            gameParameters))
+        {
+            if (topmostShipIdCut == NoneShipId)
+            {
+                topmostShipIdCut = ship->GetId();
+            }
+        }
     }
 
-    return atLeastOneCut;
+    // Npcs
+    mNpcs->ApplyLaserCannonThrough(
+        topmostShipIdCut,
+        startPos,
+        endPos,
+        strength,
+        gameParameters);
+
+    return topmostShipIdCut != NoneShipId;
 }
 
 void World::DrawTo(

@@ -2240,6 +2240,54 @@ bool Npcs::ApplyHeatBlasterAt(
     return atLeastOneParticleFound;
 }
 
+bool Npcs::ExtinguishFireAt(
+    ShipId shipId,
+    vec2f const & targetPos,
+    float radius,
+    GameParameters const & gameParameters)
+{
+    // TODOHERE
+    (void)shipId;
+    (void)targetPos;
+    (void)radius;
+    (void)gameParameters;
+
+    return false;
+}
+
+void Npcs::ApplyLaserCannonThrough(
+    ShipId shipId,
+    vec2f const & startPos,
+    vec2f const & endPos,
+    float strength,
+    GameParameters const & gameParameters)
+{
+    // Q = q*dt
+    float const effectiveLaserHeat =
+        gameParameters.LaserRayHeatFlow * 1000.0f // KJoule->Joule
+        * 0.1f // NPC adjustment
+        * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f)
+        * GameParameters::SimulationStepTimeDuration<float>
+        * (1.0f + (strength - 1.0f) * 4.0f);
+
+    VisitNpcParticlesForInteraction(
+        shipId,
+        [&](StateType &, StateType::NpcParticleStateType & npcParticle)
+        {
+            auto const particleIndex = npcParticle.ParticleIndex;
+            float const distance = Geometry::Segment::DistanceToPoint(startPos, endPos, mParticles.GetPosition(particleIndex));
+
+            if (distance < GameParameters::LaserRayRadius)
+            {
+                //
+                // Inject/remove heat at this point
+                //
+
+                mParticles.AddHeat(particleIndex, effectiveLaserHeat);
+            }
+        });
+}
+
 void Npcs::DrawTo(
     vec2f const & targetPos,
     float strength)

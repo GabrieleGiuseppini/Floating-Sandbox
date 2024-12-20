@@ -589,7 +589,7 @@ bool Ship::ExtinguishFireAt(
     float const squareRadius = radius * radius;
 
     float const heatRemoved =
-        100000.0f
+        GameParameters::FireExtinguisherHeatRemoved
         * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
     // Search for burning points within the radius
@@ -757,27 +757,16 @@ bool Ship::ApplyLaserCannonThrough(
         * GameParameters::SimulationStepTimeDuration<float>
         * (1.0f + (strength - 1.0f) * 4.0f);
 
-    float constexpr SearchRadius = 0.75f; // Magic number
-
     for (auto p : mPoints)
     {
         float const distance = Geometry::Segment::DistanceToPoint(startPos, endPos, mPoints.GetPosition(p));
-        if (distance < SearchRadius)
+        if (distance < GameParameters::LaserRayRadius)
         {
             //
             // Inject/remove heat at this point
             //
 
-            // Calc temperature delta
-            // T = Q/HeatCapacity
-            float deltaT =
-                effectiveLaserHeat
-                * mPoints.GetMaterialHeatCapacityReciprocal(p);
-
-            // Increase/lower temperature
-            mPoints.SetTemperature(
-                p,
-                mPoints.GetTemperature(p) + deltaT);
+            mPoints.AddHeat(p, effectiveLaserHeat);
         }
     }
 

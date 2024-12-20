@@ -386,7 +386,7 @@ struct GameParameters
     static float constexpr ExplosionBlastForceDuration = 0.25f; // s
     static float constexpr ExplosionRenderDuration = 1.0f; // s, attuned with sound
 
-    float HeatBlasterHeatFlow; // KJoules/sec
+    float HeatBlasterHeatFlow; // KJ/sec
     static float constexpr MinHeatBlasterHeatFlow = 200.0f;
     static float constexpr MaxHeatBlasterHeatFlow = 100000.0f;
 
@@ -394,9 +394,13 @@ struct GameParameters
     static float constexpr MinHeatBlasterRadius = 1.0f;
     static float constexpr MaxHeatBlasterRadius = 100.0f;
 
-    float LaserRayHeatFlow; // KJoules/sec
+    static float constexpr FireExtinguisherHeatRemoved = 100000.0f; // J
+
+    float LaserRayHeatFlow; // KJ/sec
     static float constexpr MinLaserRayHeatFlow = 50000.0f;
     static float constexpr MaxLaserRayHeatFlow = 2000000.0f;
+
+    static float constexpr LaserRayRadius = 0.75f;
 
     // Water reactions
 
