@@ -484,8 +484,6 @@ struct GameParameters
     static float constexpr MinNpcPassiveBlastRadiusAdjustment = 0.05f;
     static float constexpr MaxNpcPassiveBlastRadiusAdjustment = 10.0f;
 
-    static float constexpr HumanNpcTemperature = 310.15f; // 37 Celsius
-
     static float constexpr NpcConstrainedTemperatureTransferRate = 0.007f; // Magic; for cheap temperature transfer simulation
     static float constexpr NpcFreeAirTemperatureTransferRate = 0.0015f; // Magic; for cheap temperature transfer simulation; slower, as we are free and in air
     static float constexpr NpcFreeWaterTemperatureTransferRate = 0.01f; // Magic; for cheap temperature transfer simulation

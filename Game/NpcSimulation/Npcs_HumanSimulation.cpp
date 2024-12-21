@@ -1712,7 +1712,7 @@ void Npcs::UpdateHuman(
 				homeShip.SpawnAirBubble(
 					mParticles.GetPosition(secondaryParticleState.ParticleIndex),
 					GameParameters::NpcAirBubbleFinalScale,
-					GameParameters::HumanNpcTemperature,
+					mParticles.GetTemperature(secondaryParticleState.ParticleIndex), // Head temperature
 					currentSimulationTime,
 					npc.CurrentPlaneId,
 					gameParameters);
