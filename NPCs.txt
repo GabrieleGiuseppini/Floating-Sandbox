@@ -818,16 +818,20 @@ Next release:
 					+ Remove impact explosion test
 
 		- Rethink NPC interactions's shipId: depending on interaction, we might want to hit all available ships
-			- Or the interaction itself might want to only work on the topmost ship - in which case _break_
-			- Destroy: classic is all ships
-			- HeatBlaster: classic is all ships
-			- FireExtinguisher: classic is all ships
-			- LaserCannon: classic is all ships
+			! Or the interaction itself might want to only work on the topmost ship - in which case _break_
+			! Classically these are on all ships:
+				! Destroy
+				! HeatBlaster
+				! FireExtinguisher
+				! LaserCannon
+			- So, resimplify World: do not track ship id, just bool, and give None ship ID to Npcs
 			- Tests:
 				- On nothing
 				- On ship
 				- On free NPC
 				- On constrained NPC
+
+		+ QueryNpcAt
 
 	+ Dissipation adjust affects NPC particle temperature transfer
 	+ Simulation: air/water temperature transfers heat to *free* NPC particles

@@ -1039,6 +1039,13 @@ void World::QueryNearestPointAt(
     }
 }
 
+void World::QueryNearestNpcAt(
+    vec2f const & targetPos,
+    float radius) const
+{
+    mNpcs->QueryNearestNpcAt(targetPos, radius);
+}
+
 std::optional<vec2f> World::FindSuitableLightningTarget() const
 {
     // Try all ships until a target is found

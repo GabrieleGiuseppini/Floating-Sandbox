@@ -19,6 +19,25 @@ int const TessellationCircularOrderDirections[8][2] = {
     {  1,  1 }   // 7: NE
 };
 
+std::string NpcKindTypeToStr(NpcKindType npcKind)
+{
+    switch (npcKind)
+    {
+        case NpcKindType::Furniture:
+        {
+            return "Furniture";
+        }
+
+        case NpcKindType::Human:
+        {
+            return "Human";
+        }
+    }
+
+    assert(false);
+    return "";
+}
+
 NpcHumanRoleType StrToNpcHumanRoleType(std::string const & str)
 {
     if (Utils::CaseInsensitiveEquals(str, "Captain"))

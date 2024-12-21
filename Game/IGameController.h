@@ -169,6 +169,7 @@ struct IGameController
     virtual void HighlightNpcsInRect(DisplayLogicalCoordinates const & corner1ScreenCoordinates, DisplayLogicalCoordinates const & corner2ScreenCoordinates) = 0;
     virtual std::optional<GlobalElementId> GetNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const = 0;
     virtual void QueryNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const = 0;
+    virtual void QueryNearestNpcAt(DisplayLogicalCoordinates const & screenCoordinates) const = 0;
 
     virtual void TriggerTsunami() = 0;
     virtual void TriggerRogueWave() = 0;

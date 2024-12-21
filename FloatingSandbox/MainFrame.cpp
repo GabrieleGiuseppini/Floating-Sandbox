@@ -902,7 +902,14 @@ bool MainFrame::ProcessKeyDown(
 
             LogMessage("@ ", worldCoords.toString(), ":");
 
-            mGameController->QueryNearestPointAt(screenCoords);
+            if ((keyModifiers & wxMOD_ALT) == 0)
+            {
+                mGameController->QueryNearestPointAt(screenCoords);
+            }
+            else
+            {
+                mGameController->QueryNearestNpcAt(screenCoords);
+            }
 
             return true;
         }

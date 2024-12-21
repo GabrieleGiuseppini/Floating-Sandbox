@@ -288,6 +288,7 @@ public:
     void HighlightNpcsInRect(DisplayLogicalCoordinates const & corner1ScreenCoordinates, DisplayLogicalCoordinates const & corner2ScreenCoordinates) override;
     std::optional<GlobalElementId> GetNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const override;
     void QueryNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const override;
+    void QueryNearestNpcAt(DisplayLogicalCoordinates const & screenCoordinates) const override;
 
     void TriggerTsunami() override;
     void TriggerRogueWave() override;

@@ -1223,6 +1223,10 @@ public:
 		vec2f const & corner1,
 		vec2f const & corner2);
 
+	bool QueryNearestNpcAt(
+		vec2f const & targetPos,
+		float radius) const;
+
 	void Announce();
 
 public:

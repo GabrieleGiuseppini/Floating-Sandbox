@@ -345,6 +345,10 @@ public:
         vec2f const & targetPos,
         float radius) const;
 
+    void QueryNearestNpcAt(
+        vec2f const & targetPos,
+        float radius) const;
+
     std::optional<vec2f> FindSuitableLightningTarget() const;
 
     void ApplyLightning(

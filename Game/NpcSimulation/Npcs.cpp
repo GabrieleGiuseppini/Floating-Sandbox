@@ -1956,6 +1956,55 @@ void Npcs::HighlightNpcsInRect(
         });
 }
 
+bool Npcs::QueryNearestNpcAt(
+    vec2f const & targetPos,
+    float radius) const
+{
+    //
+    // Find NPC
+    //
+
+    float const squareRadius = radius * radius;
+
+    NpcId bestNpc = NoneNpcId;
+    float bestSquareDistance = std::numeric_limits<float>::max();
+
+    for (auto const & npc : mStateBuffer)
+    {
+        if (npc.has_value()
+            && npc->IsActive())
+        {
+            for (auto const & p : npc->ParticleMesh.Particles)
+            {
+                float squareDistance = (mParticles.GetPosition(p.ParticleIndex) - targetPos).squareLength();
+                if (squareDistance < squareRadius && squareDistance < bestSquareDistance)
+                {
+                    bestNpc = npc->Id;
+                    bestSquareDistance = squareDistance;
+                }
+            }
+        }
+    }
+
+    if (NoneElementIndex != bestNpc)
+    {
+        assert(mStateBuffer[bestNpc].has_value());
+        auto const & npc = *mStateBuffer[bestNpc];
+
+        LogMessage("NPC: ", bestNpc, " ", NpcKindTypeToStr(npc.Kind));
+        for (auto const & p : npc.ParticleMesh.Particles)
+        {
+            LogMessage("  ", p.ParticleIndex, ": P=", mParticles.GetPosition(p.ParticleIndex), " T=", mParticles.GetTemperature(p.ParticleIndex));
+        }
+
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
 void Npcs::Announce()
 {
     PublishCount();

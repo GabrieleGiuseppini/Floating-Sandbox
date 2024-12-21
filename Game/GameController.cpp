@@ -1597,6 +1597,14 @@ void GameController::QueryNearestPointAt(DisplayLogicalCoordinates const & scree
     mWorld->QueryNearestPointAt(worldCoordinates, 1.0f);
 }
 
+void GameController::QueryNearestNpcAt(DisplayLogicalCoordinates const & screenCoordinates) const
+{
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+
+    assert(!!mWorld);
+    mWorld->QueryNearestNpcAt(worldCoordinates, 1.0f);
+}
+
 void GameController::TriggerTsunami()
 {
     assert(!!mWorld);

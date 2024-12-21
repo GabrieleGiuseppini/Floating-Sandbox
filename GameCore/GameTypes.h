@@ -1082,6 +1082,8 @@ enum class NpcKindType
     Human
 };
 
+std::string NpcKindTypeToStr(NpcKindType npcKind);
+
 /*
  * Second level of NPC type hierarchy; domain is open
  * as it may be expanded after compile time, via NPC packs.
