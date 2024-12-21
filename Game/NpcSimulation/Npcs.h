@@ -1986,6 +1986,7 @@ private:
 		StateType & npc,
 		int npcParticleOrdinal,
 		Ship const & homeShip,
+		float currentSimulationTime,
 		GameParameters const & gameParameters);
 
 	static bool IsEdgeFloorToParticle(

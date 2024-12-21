@@ -849,7 +849,7 @@ Next release:
 
 + Re-test bug fix: add/remove 8k NPCs N times
 	+ Since you're here: test perf with removal of 8192 NPCs
-- Impact also on land
++ Impact also on land
 	- Test explosive NPCs
 + Test NPCs walking into water-filled compartment
 	X Check water @ lookahead?

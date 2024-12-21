@@ -806,6 +806,7 @@ void Npcs::UpdateNpcPhysics(
                         *npcState,
                         static_cast<int>(p),
                         homeShip,
+                        currentSimulationTime,
                         gameParameters);
                 }
             }
@@ -4205,6 +4206,7 @@ void Npcs::MaintainOverLand(
     StateType & npc,
     int npcParticleOrdinal,
     Ship const & homeShip,
+    float currentSimulationTime,
     GameParameters const & gameParameters)
 {
     ElementIndex const p = npc.ParticleMesh.Particles[npcParticleOrdinal].ParticleIndex;
@@ -4268,6 +4270,19 @@ void Npcs::MaintainOverLand(
             mParticles.SetVelocity(
                 p,
                 (normalResponse + tangentialResponse));
+
+            //
+            // Communicate impact
+            //
+
+            OnImpact(
+                npc,
+                npcParticleOrdinal,
+                p,
+                seaFloorAntiNormal * particleVelocityAlongAntiNormal,
+                -seaFloorAntiNormal.to_perpendicular(),
+                currentSimulationTime,
+                gameParameters);
         }
 
         // Become free - so to avoid bouncing back and forth
