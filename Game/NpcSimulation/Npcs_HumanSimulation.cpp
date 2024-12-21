@@ -2096,7 +2096,7 @@ void Npcs::RunWalkingHumanStateMachine(
 void Npcs::OnHumanImpact(
 	StateType & npc,
 	int npcParticleOrdinal,
-	vec2f const & normalResponse,
+	vec2f const & impactNormalVelocity,
 	vec2f const & bounceEdgeNormal,  // Pointing outside of triangle
 	float currentSimulationTime) const
 {
@@ -2108,7 +2108,7 @@ void Npcs::OnHumanImpact(
 	{
 		case StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::Constrained_Rising:
 		{
-			if (npcParticleOrdinal == 1 && normalResponse.length() > 0.4f)
+			if (npcParticleOrdinal == 1 && impactNormalVelocity.length() > 0.4f)
 			{
 				// Hit head while rising
 
@@ -2122,7 +2122,7 @@ void Npcs::OnHumanImpact(
 
 		case StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::Constrained_Equilibrium:
 		{
-			if (npcParticleOrdinal == 1 && normalResponse.length() > 1.5f)
+			if (npcParticleOrdinal == 1 && impactNormalVelocity.length() > 1.5f)
 			{
 				// Hit head hard while in equilibrium
 

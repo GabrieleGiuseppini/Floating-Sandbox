@@ -3859,77 +3859,77 @@ void Npcs::BounceConstrainedNpcParticle(
             0.0f, 1.0f);
         vec2f const normalResponse =
             -normalVelocity
-                * elasticityCoefficient;
+            * elasticityCoefficient;
 
-            // Calculate tangential response: Vt' = a*Vt (a = (1.0-friction), [0.0 - 1.0])
-            float const materialFrictionCoefficient = (particles.GetMaterial(npcParticle.ParticleIndex).KineticFrictionCoefficient + meshMaterial.KineticFrictionCoefficient) / 2.0f;
-            vec2f const tangentialResponse =
-                tangentialVelocity
-                * std::max(0.0f, 1.0f - materialFrictionCoefficient * particles.GetKineticFrictionTotalAdjustment(npcParticle.ParticleIndex));
+        // Calculate tangential response: Vt' = a*Vt (a = (1.0-friction), [0.0 - 1.0])
+        float const materialFrictionCoefficient = (particles.GetMaterial(npcParticle.ParticleIndex).KineticFrictionCoefficient + meshMaterial.KineticFrictionCoefficient) / 2.0f;
+        vec2f const tangentialResponse =
+            tangentialVelocity
+            * std::max(0.0f, 1.0f - materialFrictionCoefficient * particles.GetKineticFrictionTotalAdjustment(npcParticle.ParticleIndex));
 
-            // Calculate whole response (which, given that we've been working in *apparent* space (we've calc'd the collision response to *trajectory* which is apparent displacement)),
-            // is a relative velocity (relative to mesh)
-            vec2f const resultantRelativeVelocity = (normalResponse + tangentialResponse);
+        // Calculate whole response (which, given that we've been working in *apparent* space (we've calc'd the collision response to *trajectory* which is apparent displacement)),
+        // is a relative velocity (relative to mesh)
+        vec2f const resultantRelativeVelocity = (normalResponse + tangentialResponse);
 
-            // Do not damp velocity if we're trying to maintain equilibrium
-            vec2f const resultantAbsoluteVelocity =
-                resultantRelativeVelocity * ((npc.Kind != NpcKindType::Human || npc.KindSpecificState.HumanNpcState.EquilibriumTorque == 0.0f) ? mGlobalDampingFactor : 1.0f)
-                + meshVelocity;
+        // Do not damp velocity if we're trying to maintain equilibrium
+        vec2f const resultantAbsoluteVelocity =
+            resultantRelativeVelocity * ((npc.Kind != NpcKindType::Human || npc.KindSpecificState.HumanNpcState.EquilibriumTorque == 0.0f) ? mGlobalDampingFactor : 1.0f)
+            + meshVelocity;
 
-            LogNpcDebug("        Impact: trajectory=", trajectory, " apparentParticleVelocity=", apparentParticleVelocity, " nr=", normalResponse, " tr=", tangentialResponse, " rr=", resultantRelativeVelocity);
+        LogNpcDebug("        Impact: trajectory=", trajectory, " apparentParticleVelocity=", apparentParticleVelocity, " nr=", normalResponse, " tr=", tangentialResponse, " rr=", resultantRelativeVelocity);
 
+        //
+        // Set position and velocity
+        //
+
+        particles.SetPosition(npcParticle.ParticleIndex, bouncePosition);
+
+        particles.SetVelocity(npcParticle.ParticleIndex, resultantAbsoluteVelocity);
+        npcParticle.ConstrainedState->MeshRelativeVelocity = resultantRelativeVelocity;
+
+        //
+        // Impart force against edge - but only if hit was "substantial", so
+        // we don't end up in infinite loops bouncing against a soft mesh
+        //
+
+        if (apparentParticleVelocityAlongNormal > 2.0f) // Magic number
+        {
+            // Calculate impact force: Dp/Dt
             //
-            // Set position and velocity
-            //
+            //  Dp = v2*m - v1*m (using _relative_ velocities)
+            //  Dt = duration of impact - and here we are conservative, taking a whole simulation dt
+            //       ...but then it's too much
+            vec2f const impartedForce =
+                (normalVelocity - normalResponse) // normalVelocity is directed outside of triangle
+                * mParticles.GetMass(npcParticle.ParticleIndex)
+                / GameParameters::SimulationStepTimeDuration<float>
+                * 0.2f; // Magic damper
 
-            particles.SetPosition(npcParticle.ParticleIndex, bouncePosition);
+            // Divide among two vertices
 
-            particles.SetVelocity(npcParticle.ParticleIndex, resultantAbsoluteVelocity);
-            npcParticle.ConstrainedState->MeshRelativeVelocity = resultantRelativeVelocity;
+            int const edgeVertex1Ordinal = bounceEdgeOrdinal;
+            ElementIndex const edgeVertex1PointIndex = homeShip.GetTriangles().GetPointIndices(npcParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex)[edgeVertex1Ordinal];
+            float const vertex1InterpCoeff = npcParticle.ConstrainedState->CurrentBCoords.BCoords[edgeVertex1Ordinal];
+            homeShip.GetPoints().AddStaticForce(edgeVertex1PointIndex, impartedForce * vertex1InterpCoeff);
 
-            //
-            // Impart force against edge - but only if hit was "substantial", so
-            // we don't end up in infinite loops bouncing against a soft mesh
-            //
+            int const edgeVertex2Ordinal = (bounceEdgeOrdinal + 1) % 3;
+            ElementIndex const edgeVertex2PointIndex = homeShip.GetTriangles().GetPointIndices(npcParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex)[edgeVertex2Ordinal];
+            float const vertex2InterpCoeff = npcParticle.ConstrainedState->CurrentBCoords.BCoords[edgeVertex2Ordinal];
+            homeShip.GetPoints().AddStaticForce(edgeVertex2PointIndex, impartedForce * vertex2InterpCoeff);
+        }
 
-            if (apparentParticleVelocityAlongNormal > 2.0f) // Magic number
-            {
-                // Calculate impact force: Dp/Dt
-                //
-                //  Dp = v2*m - v1*m (using _relative_ velocities)
-                //  Dt = duration of impact - and here we are conservative, taking a whole simulation dt
-                //       ...but then it's too much
-                vec2f const impartedForce =
-                    (normalVelocity - normalResponse) // normalVelocity is directed outside of triangle
-                    * mParticles.GetMass(npcParticle.ParticleIndex)
-                    / GameParameters::SimulationStepTimeDuration<float>
-                    *0.2f; // Magic damper
+        //
+        // Publish impact
+        //
 
-                // Divide among two vertices
-
-                int const edgeVertex1Ordinal = bounceEdgeOrdinal;
-                ElementIndex const edgeVertex1PointIndex = homeShip.GetTriangles().GetPointIndices(npcParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex)[edgeVertex1Ordinal];
-                float const vertex1InterpCoeff = npcParticle.ConstrainedState->CurrentBCoords.BCoords[edgeVertex1Ordinal];
-                homeShip.GetPoints().AddStaticForce(edgeVertex1PointIndex, impartedForce * vertex1InterpCoeff);
-
-                int const edgeVertex2Ordinal = (bounceEdgeOrdinal + 1) % 3;
-                ElementIndex const edgeVertex2PointIndex = homeShip.GetTriangles().GetPointIndices(npcParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex)[edgeVertex2Ordinal];
-                float const vertex2InterpCoeff = npcParticle.ConstrainedState->CurrentBCoords.BCoords[edgeVertex2Ordinal];
-                homeShip.GetPoints().AddStaticForce(edgeVertex2PointIndex, impartedForce * vertex2InterpCoeff);
-            }
-
-            //
-            // Publish impact
-            //
-
-            OnImpact(
-                npc,
-                npcParticleOrdinal,
-                npcParticle.ParticleIndex,
-                normalVelocity,
-                floorEdgeNormal,
-                currentSimulationTime,
-                gameParameters);
+        OnImpact(
+            npc,
+            npcParticleOrdinal,
+            npcParticle.ParticleIndex,
+            normalVelocity,
+            floorEdgeNormal,
+            currentSimulationTime,
+            gameParameters);
     }
     else
     {
@@ -3950,12 +3950,12 @@ void Npcs::OnImpact(
     StateType & npc,
     int npcParticleOrdinal,
     ElementIndex npcParticleIndex,
-    vec2f const & normalResponse,
+    vec2f const & impactNormalVelocity,
     vec2f const & bounceEdgeNormal, // Pointing outside of triangle
     float currentSimulationTime,
     GameParameters const & gameParameters)
 {
-    LogNpcDebug("    OnImpact(mag=", normalResponse.length(), ", bounceEdgeNormal=", bounceEdgeNormal, ")");
+    LogNpcDebug("    OnImpact(mag=", impactNormalVelocity.length(), ", bounceEdgeNormal=", bounceEdgeNormal, ")");
 
     //
     // Update human state machine
@@ -3966,7 +3966,7 @@ void Npcs::OnImpact(
         OnHumanImpact(
             npc,
             npcParticleOrdinal,
-            normalResponse,
+            impactNormalVelocity,
             bounceEdgeNormal,
             currentSimulationTime);
     }
@@ -3975,7 +3975,7 @@ void Npcs::OnImpact(
     // Check explosion
     //
 
-    float const impactMagnitude = normalResponse.length();
+    float const impactMagnitude = impactNormalVelocity.length();
 
     float constexpr ImpactMagnitudeThreshold = 9.0f; // Magic number
 

@@ -847,12 +847,12 @@ Next release:
 		+ Temperature
 		+ More tools interact with NPCs
 
-- Re-test bug fix: add/remove 8k NPCs N times
-	- Since you're here: test perf with removal of 8192 NPCs
++ Re-test bug fix: add/remove 8k NPCs N times
+	+ Since you're here: test perf with removal of 8192 NPCs
 - Impact also on land
 	- Test explosive NPCs
-- Test NPCs walking into water-filled compartment
-	- Check water @ lookahead?
++ Test NPCs walking into water-filled compartment
+	X Check water @ lookahead?
 - Dance moves(below)
 
 - Sounds:

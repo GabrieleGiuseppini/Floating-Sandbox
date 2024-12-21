@@ -1884,7 +1884,7 @@ private:
 		StateType & npc,
 		int npcParticleOrdinal,
 		ElementIndex npcParticleIndex,
-		vec2f const & normalResponse,
+		vec2f const & impactNormalVelocity,
 		vec2f const & bounceEdgeNormal,
 		float currentSimulationTime,
 		GameParameters const & gameParameters);
@@ -2236,7 +2236,7 @@ private:
 	void OnHumanImpact(
 		StateType & npc,
 		int npcParticleOrdinal,
-		vec2f const & normalResponse,
+		vec2f const & impactNormalVelocity,
 		vec2f const & bounceEdgeNormal,
 		float currentSimulationTime) const;
 
