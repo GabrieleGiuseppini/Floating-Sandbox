@@ -651,6 +651,8 @@ private:
 					float Alpha;
 					float RemovalProgress;
 
+					float AnimationElapsed; // Used by animations that require variable speeds; doesn't necessarily go with simulation time
+
 					// Angles are CCW relative to vertical, regardless of where the NPC is looking towards (L/R)
 					// (when we flip we pretend immediate mirroring of limbs from the point of view of the human,
 					// so angles are independent from direction, and animation is smoother)
@@ -671,6 +673,7 @@ private:
 					AnimationStateType()
 						: Alpha(1.0f)
 						, RemovalProgress(0.0f)
+						, AnimationElapsed(0.0f)
 						, LimbAngles({ InitialLegAngle, -InitialLegAngle, InitialArmAngle, -InitialArmAngle })
 						, LimbAnglesCos({std::cosf(LimbAngles.RightLeg), std::cosf(LimbAngles.LeftLeg), std::cosf(LimbAngles.RightArm), std::cosf(LimbAngles.LeftArm)})
 						, LimbAnglesSin({ std::sinf(LimbAngles.RightLeg), std::sinf(LimbAngles.LeftLeg), std::sinf(LimbAngles.RightArm), std::sinf(LimbAngles.LeftArm) })
@@ -848,6 +851,8 @@ private:
 					CurrentStateTransitionSimulationTimestamp = currentSimulationTime;
 					TotalDistanceTraveledOnEdgeSinceStateTransition = 0.0f;
 					TotalDistanceTraveledOffEdgeSinceStateTransition = 0.0f;
+
+					AnimationState.AnimationElapsed = 0.0f;
 				}
 			} HumanNpcState;
 

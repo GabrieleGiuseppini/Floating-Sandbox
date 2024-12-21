@@ -5291,6 +5291,9 @@ void Npcs::UpdateHumanNpcAnimation(
             //
             // Arms and legs up<->down
             //
+            // Here we use an animation-specific elapsed time, which grows
+            // with a variable rate, determined by animation
+            //
 
             //
             // 1 period:
@@ -5304,7 +5307,7 @@ void Npcs::UpdateHumanNpcAnimation(
             float constexpr Period1 = 3.00f;
             float constexpr Period2 = 1.00f;
 
-            float elapsed = currentSimulationTime - humanNpcState.CurrentStateTransitionSimulationTimestamp;
+            float elapsed = animationState.AnimationElapsed;
             // Prolong first period
             float constexpr ActualLeadInTime = 6.0f;
             if (elapsed < ActualLeadInTime)
@@ -5316,11 +5319,9 @@ void Npcs::UpdateHumanNpcAnimation(
                 elapsed = elapsed - Period1;
             }
 
-            float const panicAccelerator = 1.0f + std::min(humanNpcState.ResultantPanicLevel, 2.0f) / 2.0f * 4.0f;
-
             float const arg =
                 Period1 / 2.0f // Start some-halfway-through to avoid sudden extreme angles
-                + elapsed * 2.6f * panicAccelerator
+                + elapsed * 2.6f
                 + humanNpcState.TotalDistanceTraveledOffEdgeSinceStateTransition * 0.7f;
 
             float const inPeriod = FastMod(arg, (Period1 + Period2));
@@ -5355,6 +5356,10 @@ void Npcs::UpdateHumanNpcAnimation(
             float const MaxConvergenceWait = 3.5f;
             convergenceRate = 0.01f + Clamp(elapsed, 0.0f, MaxConvergenceWait) / MaxConvergenceWait * (0.25f - 0.01f);
 
+            // Advance animation elapsed with variable speed
+            float const panicAccelerator = 1.0f + std::min(humanNpcState.ResultantPanicLevel, 2.0f) * 2.0f;
+            animationState.AnimationElapsed += GameParameters::SimulationStepTimeDuration<float> * panicAccelerator;
+
             break;
         }
 
@@ -5369,7 +5374,7 @@ void Npcs::UpdateHumanNpcAnimation(
 
             float constexpr Period = 3.00f;
 
-            float elapsed = currentSimulationTime - humanNpcState.CurrentStateTransitionSimulationTimestamp;
+            float const elapsed = currentSimulationTime - humanNpcState.CurrentStateTransitionSimulationTimestamp;
 
             float const arg =
                 elapsed * 2.3f
@@ -5427,14 +5432,16 @@ void Npcs::UpdateHumanNpcAnimation(
             //
             // Trappelen
             //
+            // Here we use an animation-specific elapsed time, which grows
+            // with a variable rate, determined by animation
+            //
 
             float constexpr Period = 2.00f;
 
-            float const elapsed = currentSimulationTime - humanNpcState.CurrentStateTransitionSimulationTimestamp;
-            float const panicAccelerator = 1.0f + std::min(humanNpcState.ResultantPanicLevel, 2.0f) / 2.0f * 1.0f;
+            float const elapsed = animationState.AnimationElapsed;
 
             float const arg =
-                elapsed * 2.6f * panicAccelerator
+                elapsed * 2.6f
                 + humanNpcState.TotalDistanceTraveledOffEdgeSinceStateTransition * 0.7f;
 
             float const inPeriod = FastMod(arg, Period);
@@ -5455,6 +5462,10 @@ void Npcs::UpdateHumanNpcAnimation(
             float const MaxConvergenceWait = 3.5f;
             convergenceRate = 0.01f + Clamp(elapsed, 0.0f, MaxConvergenceWait) / MaxConvergenceWait * (0.25f - 0.01f);
 
+            // Advance animation elapsed with variable speed
+            float const panicAccelerator = 1.0f + std::min(humanNpcState.ResultantPanicLevel, 2.0f) * 2.0f;
+            animationState.AnimationElapsed += GameParameters::SimulationStepTimeDuration<float> *panicAccelerator;
+
             break;
         }
 
@@ -5463,14 +5474,16 @@ void Npcs::UpdateHumanNpcAnimation(
             //
             // Trappelen
             //
+            // Here we use an animation-specific elapsed time, which grows
+            // with a variable rate, determined by animation
+            //
 
             float constexpr Period = 2.00f;
 
-            float const elapsed = currentSimulationTime - humanNpcState.CurrentStateTransitionSimulationTimestamp;
-            float const panicAccelerator = 1.0f + std::min(humanNpcState.ResultantPanicLevel, 2.0f) / 2.0f * 2.0f;
+            float const elapsed = animationState.AnimationElapsed;
 
             float const arg =
-                elapsed * 2.6f * panicAccelerator
+                elapsed * 2.6f
                 + humanNpcState.TotalDistanceTraveledOffEdgeSinceStateTransition * 0.7f;
 
             float const inPeriod = FastMod(arg, Period);
@@ -5500,6 +5513,10 @@ void Npcs::UpdateHumanNpcAnimation(
             // Convergence rate depends on how long we've been in this state
             float const MaxConvergenceWait = 3.5f;
             convergenceRate = 0.01f + Clamp(elapsed, 0.0f, MaxConvergenceWait) / MaxConvergenceWait * (0.25f - 0.01f);
+
+            // Advance animation elapsed with variable speed
+            float const panicAccelerator = 1.0f + std::min(humanNpcState.ResultantPanicLevel, 2.0f) * 2.0f;
+            animationState.AnimationElapsed += GameParameters::SimulationStepTimeDuration<float> *panicAccelerator;
 
             break;
         }
