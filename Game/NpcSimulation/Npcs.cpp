@@ -75,12 +75,6 @@ std::vector<Npcs::DanceMove> Npcs::MakeRepairDanceMoves()
             {1.0f, 1.0f, 1.0f, 1.0f},
             1.0f
             }),
-        DanceMove({
-            1.0f, 0.0f,
-            {0.05f, -0.05f, HlfPi, -HlfPi},
-            {1.0f, 1.0f, 1.0f, 1.0f},
-            1.0f
-            }),
         // R
         DanceMove({
             0.0f, 1.0f,
@@ -92,7 +86,7 @@ std::vector<Npcs::DanceMove> Npcs::MakeRepairDanceMoves()
             0.0f, 1.0f,
             {QrtPi, -0.00f, TQrtPi, QrtPi},
             {1.0f, 1.0f, 1.0f, 1.0f},
-            0.5f
+            0.5f // Shorten leg
             }),
         DanceMove({
             0.0f, 1.0f,
@@ -100,10 +94,22 @@ std::vector<Npcs::DanceMove> Npcs::MakeRepairDanceMoves()
             {1.0f, 1.0f, 1.0f, 1.0f},
             1.0f
             }),
+        DanceMove({
+            0.0f, 1.0f,
+            {0.00f, -0.00f, HlfPi, HlfPi},
+            {1.0f, 1.0f, 1.0f, 1.0f},
+            1.0f
+            }),
         // Frontal
         DanceMove({
             1.0f, 0.0f,
-            {0.2f, -0.2f, HlfPi, -HlfPi},
+            {0.2f, -0.2f, Pi<float>, -Pi<float>},
+            {1.0f, 1.0f, 1.0f, 1.0f},
+            1.0f
+            }),
+        DanceMove({
+            1.0f, 0.0f,
+            {0.05f, -0.05f, HlfPi, -HlfPi},
             {1.0f, 1.0f, 1.0f, 1.0f},
             1.0f
             }),
@@ -118,11 +124,17 @@ std::vector<Npcs::DanceMove> Npcs::MakeRepairDanceMoves()
             0.0f, -1.0f,
             {-QrtPi, -0.00f, -TQrtPi, -QrtPi},
             {1.0f, 1.0f, 1.0f, 1.0f},
-            0.5f
+            0.5f // Shorten leg
             }),
         DanceMove({
             0.0f, -1.0f,
             {0.00f, -0.00f, -QrtPi, -TQrtPi},
+            {1.0f, 1.0f, 1.0f, 1.0f},
+            1.0f
+            }),
+        DanceMove({
+            0.0f, -1.0f,
+            {0.00f, -0.00f, -HlfPi, -HlfPi},
             {1.0f, 1.0f, 1.0f, 1.0f},
             1.0f
             }),
@@ -135,8 +147,8 @@ std::vector<Npcs::DanceMove> Npcs::MakeRepairDanceMoves()
             }),
         DanceMove({
             -1.0f, 0.0f,
-            {0.2f, -0.2f, Pi<float> * 0.9f, -Pi<float> *0.9f},
-            {1.0f, 1.0f, 1.0f, 0.2f},
+            {0.1f, -0.1f, Pi<float> * 0.9f, -Pi<float> *0.9f},
+            {1.0f, 1.0f, 1.0f, 0.2f}, // Shorten arm
             1.0f
             }),
         DanceMove({
@@ -147,16 +159,22 @@ std::vector<Npcs::DanceMove> Npcs::MakeRepairDanceMoves()
             }),
         DanceMove({
             -1.0f, 0.0f,
-            {0.2f, -0.2f, Pi<float> *0.9f, -Pi<float> *0.9f},
-            {1.0f, 1.0f, 0.2f, 1.0f},
+            {0.1f, -0.1f, Pi<float> *0.9f, -Pi<float> *0.9f},
+            {1.0f, 1.0f, 0.2f, 1.0f}, // Shorten arm
             1.0f
             }),
         // R
         DanceMove({
             0.0f, 1.0f,
-            {0.00f, -0.00f, HlfPi, HlfPi},
+            {0.00f, -0.00f, TQrtPi, QrtPi},
             {1.0f, 1.0f, 1.0f, 1.0f},
             1.0f
+            }),
+        DanceMove({
+            0.0f, 1.0f,
+            {QrtPi, -0.00f, QrtPi, TQrtPi},
+            {1.0f, 1.0f, 1.0f, 1.0f},
+            0.5f // Shorten leg
             })
     };
 }
