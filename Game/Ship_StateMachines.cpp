@@ -84,17 +84,13 @@ bool Ship::UpdateExplosionStateMachine(
                 // Inject heat at this point
                 //
 
-                // Calc temperature delta
-                // T = Q/HeatCapacity
-                float const deltaT =
+                float const adjustedHeat =
                     blastHeat
-                    * (1.0f - squarePointDistance / squareHeatRadius)
-                    * mPoints.GetMaterialHeatCapacityReciprocal(pointIndex);
+                    * (1.0f - squarePointDistance / squareHeatRadius);
 
-                // Increase temperature
-                mPoints.SetTemperature(
+                mPoints.AddHeat(
                     pointIndex,
-                    mPoints.GetTemperature(pointIndex) + deltaT);
+                    adjustedHeat);
             }
 
             if (squarePointDistance < squareForceRadius)
@@ -111,7 +107,7 @@ bool Ship::UpdateExplosionStateMachine(
 
                 mPoints.AddStaticForce(
                     pointIndex,
-                    blastDir * explosionStateMachine.BlastForce / std::sqrt(std::max((pointRadiusLength * 0.3f) + 0.7f, 1.0f)));
+                    blastDir * explosionStateMachine.BlastForceMagnitude / std::sqrt(std::max((pointRadiusLength * 0.3f) + 0.7f, 1.0f)));
 
                 // Update water velocity
                 mPoints.SetWaterVelocity(
@@ -158,10 +154,13 @@ bool Ship::UpdateExplosionStateMachine(
         // Apply side-effects
         //
 
-        OnBlast(
+        mParentWorld.OnBlast(
+            mId,
             centerPosition,
+            explosionStateMachine.BlastForceMagnitude,
             blastForceRadius,
-            explosionStateMachine.BlastForce,
+            explosionStateMachine.BlastHeat,
+            blastHeatRadius,
             gameParameters);
     }
 

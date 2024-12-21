@@ -3058,7 +3058,7 @@ void SettingsDialog::PopulateLightsElectricalFishesNpcsPanel(wxPanel * panel)
                     SliderWidth,
                     SliderHeight,
                     _("Passive Blast Radius Adjust"),
-                    _("Adjusts the extent of blast force fields on NPCs."),
+                    _("Adjusts the extent of blast force fields onto NPCs."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::NpcPassiveBlastRadiusAdjustment, value);

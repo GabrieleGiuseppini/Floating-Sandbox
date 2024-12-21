@@ -1285,8 +1285,10 @@ public:
 	void ApplyBlast(
 		ShipId shipId,
 		vec2f const & centerPosition,
-		float blastRadius,
-		float blastForce, // N
+		float blastForceMagnitude, // N
+		float blastForceRadius, // m
+		float blastHeat, // KJ/s
+		float blastHeatRadius, // m
 		GameParameters const & gameParameters);
 
 	void ApplyAntiMatterBombPreimplosion(

@@ -16,7 +16,7 @@ public:
     float const StartSimulationTime;
     PlaneId const Plane;
     vec2f const CenterPosition;
-    float const BlastForce; // N
+    float const BlastForceMagnitude; // N
     float const BlastForceRadius; // m
     float const BlastHeat; // KJ/s
     float const BlastHeatRadius; // m
@@ -31,7 +31,7 @@ public:
         float startSimulationTime,
         PlaneId planeId,
         vec2f const & centerPosition,
-        float blastForce,
+        float blastForceMagnitude,
         float blastForceRadius,
         float blastHeat,
         float blastHeatRadius,
@@ -41,7 +41,7 @@ public:
         , StartSimulationTime(startSimulationTime)
         , Plane(planeId)
         , CenterPosition(centerPosition)
-        , BlastForce(blastForce)
+        , BlastForceMagnitude(blastForceMagnitude)
         , BlastForceRadius(blastForceRadius)
         , BlastHeat(blastHeat)
         , BlastHeatRadius(blastHeatRadius)

@@ -126,6 +126,83 @@ bool World::IsUnderwater(GlobalElementId elementId) const
     return mAllShips[shipId]->IsUnderwater(elementId.GetLocalObjectId());
 }
 
+void World::OnBlast(
+    ShipId shipId, // None if global
+    vec2f const & centerPosition,
+    float blastForceMagnitude, // N
+    float blastForceRadius, // m
+    float blastHeat, // KJ/s
+    float blastHeatRadius, // m
+    GameParameters const & gameParameters)
+{
+    //
+    // Blast NPCs
+    //
+
+    mNpcs->ApplyBlast(
+        shipId,
+        centerPosition,
+        blastForceMagnitude,
+        blastForceRadius,
+        blastHeat,
+        blastHeatRadius,
+        gameParameters);
+
+    //
+    // Blast ocean surface displacement
+    //
+
+    if (gameParameters.DoDisplaceWater)
+    {
+        // Explosion depth (positive when underwater)
+        float const explosionDepth = mOceanSurface.GetDepth(centerPosition);
+        float const absExplosionDepth = std::abs(explosionDepth);
+
+        // No effect when abs depth greater than this
+        float constexpr MaxDepth = 20.0f;
+
+        // Calculate (lateral) radius: depends on depth (abs)
+        //  radius(depth) = ax + b
+        //  radius(0) = maxRadius
+        //  radius(maxDepth) = MinRadius;
+        float constexpr MinRadius = 1.0f;
+        float const maxRadius = 20.0f * blastForceRadius; // Spectacular, spectacular
+        float const radius = maxRadius + (absExplosionDepth / MaxDepth * (MinRadius - maxRadius));
+
+        // Calculate displacement: depends on depth
+        //  displacement(depth) =  ax^2 + bx + c
+        //  f(MaxDepth) = 0
+        //  f(0) = MaxDisplacement
+        //  f'(MaxDepth) = 0
+        float constexpr MaxDisplacement = 6.0f; // Max displacement
+        float constexpr a = -MaxDisplacement / (MaxDepth * MaxDepth);
+        float constexpr b = 2.0f * MaxDisplacement / MaxDepth;
+        float constexpr c = -MaxDisplacement;
+        float const displacement =
+            (a * absExplosionDepth * absExplosionDepth + b * absExplosionDepth + c)
+            * (absExplosionDepth > MaxDepth ? 0.0f : 1.0f) // Turn off at far-away depths
+            * (explosionDepth <= 0.0f ? 1.0f : -1.0f); // Follow depth sign
+
+        // Displace
+        for (float r = 0.0f; r <= radius; r += 0.5f)
+        {
+            float const d = displacement * (1.0f - r / radius);
+            DisplaceOceanSurfaceAt(centerPosition.x - r, d);
+            DisplaceOceanSurfaceAt(centerPosition.x + r, d);
+        }
+    }
+
+    //
+    // Scare fishes
+    //
+
+    DisturbOceanAt(
+        centerPosition,
+        blastForceRadius * 125.0f,
+        std::chrono::milliseconds(150));
+}
+
+
 //////////////////////////////////////////////////////////////////////////////
 // Interactions
 //////////////////////////////////////////////////////////////////////////////
@@ -438,46 +515,31 @@ void World::ApplyBlastAt(
     float forceMultiplier,
     GameParameters const & gameParameters)
 {
+    // Calculate blast force magnitude
+    float const blastForceMagnitude =
+        75.0f * 50000.0f // Magic number
+        * forceMultiplier
+        * gameParameters.BlastToolForceAdjustment
+        * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
+
     for (auto & ship : mAllShips)
     {
         ship->ApplyBlastAt(
             targetPos,
             radius,
-            forceMultiplier,
+            blastForceMagnitude,
             gameParameters);
     }
 
-    // Displace ocean surface
-    {
-        // Explosion depth (positive when underwater)
-        float const explosionDepth = mOceanSurface.GetHeightAt(targetPos.x) - targetPos.y;
-
-        // Calculate length of chord on circle given (clamped) distance of
-        // ocean surface from center of blast (i.e. depth)
-        float const circleRadius = radius * 2.0f; // Displacement sphere radius larger than blast
-        float const halfChordLength = std::sqrt(
-            std::max(
-                circleRadius * circleRadius - explosionDepth * explosionDepth,
-                0.0f));
-
-        // Apply displacement along chord length
-        for (float r = 0.0f; r < halfChordLength; r += 0.5f)
-        {
-            float const d =
-                1.0f  // Magic number
-                * (1.0f - r / halfChordLength) // Max at center, zero at extremes
-                * (explosionDepth <= 0.0f ? -1.0f : 1.0f); // Follow depth sign
-
-            mOceanSurface.DisplaceAt(targetPos.x - r, d);
-            mOceanSurface.DisplaceAt(targetPos.x + r, d);
-        }
-    }
-
-    // Also scare fishes at bit
-    mFishes.DisturbAt(
+    // Apply side-effects
+    OnBlast(
+        NoneShipId, // Global
         targetPos,
+        blastForceMagnitude,
         radius,
-        std::chrono::milliseconds(0));
+        0.0f, // No heat
+        0.0f, // No heat
+        gameParameters);
 }
 
 bool World::ApplyElectricSparkAt(

@@ -639,27 +639,20 @@ bool Ship::ExtinguishFireAt(
 void Ship::ApplyBlastAt(
     vec2f const & targetPos,
     float radius,
-    float forceMultiplier,
-    GameParameters const & gameParameters)
+    float forceMagnitude,
+    GameParameters const & /*gameParameters*/)
 {
-    // Calculate blast force magnitude
-    float const blastForceMagnitude =
-        75.0f * 50000.0f // Magic number
-        * forceMultiplier
-        * gameParameters.BlastToolForceAdjustment
-        * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
-
     // Queue interaction
     mQueuedInteractions.emplace_back(
         Interaction::ArgumentsUnion::BlastArguments(
             targetPos,
             radius,
-            blastForceMagnitude));
+            forceMagnitude));
 }
 
 void Ship::ApplyBlastAt(
     Interaction::ArgumentsUnion::BlastArguments const & args,
-    GameParameters const & gameParameters)
+    GameParameters const & /*gameParameters*/)
 {
     float const squareRadius = args.Radius * args.Radius;
 
@@ -680,16 +673,9 @@ void Ship::ApplyBlastAt(
 
             mPoints.AddStaticForce(
                 pointIndex,
-                pointRadius.normalise(pointRadiusLength) * args.Magnitude / std::sqrt(std::max((pointRadiusLength * 0.4f) + 0.6f, 1.0f)));
+                pointRadius.normalise(pointRadiusLength) * args.ForceMagnitude / std::sqrt(std::max((pointRadiusLength * 0.4f) + 0.6f, 1.0f)));
         }
     }
-
-    // Apply side-effects
-    OnBlast(
-        args.CenterPos,
-        args.Radius,
-        args.Magnitude,
-        gameParameters);
 }
 
 bool Ship::ApplyElectricSparkAt(

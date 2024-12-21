@@ -148,6 +148,16 @@ public:
         return mWind.GetCurrentRadialWindField();
     }
 
+    // Does secondary tasks after a blast has been applied to a ship or globally
+    void OnBlast(
+        ShipId shipId, // None if global
+        vec2f const & centerPosition,
+        float blastForceMagnitude, // N
+        float blastForceRadius, // m
+        float blastHeat, // KJ/s
+        float blastHeatRadius, // m
+        GameParameters const & gameParameters);
+
     //
     // Interactions
     //

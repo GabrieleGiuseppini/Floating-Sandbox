@@ -782,7 +782,11 @@ Next release:
 					+ UW
 				+ Panic with heatblaster
 					+ UW
-		- ApplyBlastAt
+		= ApplyBlastAt: 
+			! Do from World, with ShipId argument
+			! Explosion (of ship bombs or ship particles or NPCs) should provide heat
+					- Requires changes to ShipStateMachine: ShipOnBlast needs to take heat
+					- Npcs::OnBlast: take and apply heat
 			! Old dynamics:
 				- World::ApplyBlast (tool) -> Ship -> Queued -> Ship + Ship::OnBlast
 				- Explosion -> Ship -> Ship::OnBlast
@@ -790,12 +794,29 @@ Next release:
 					- Npcs
 					- OceanSurface
 					- Fishes
-			- New dynamics:
-				- World::ApplyBlast (tool) -> Ship -> Queued -> Ship
-							   -> Npcs, OceanSurface, Fishes
-				- Explosion -> Ship TODOHERE
-				- TODOHERE: Ship: just do ship, move everything else to World
-			- Do @ Npcs
+			+ New dynamics:
+				+ World::ApplyBlast (tool) -> Ship -> Queued -> Ship
+							   -> OnBlast
+				+ Explosion -> Ship -> World::OnBlast
+				+ World::OnBlast:
+					+ Npcs
+					+ OceanSurface
+					+ Fishes
+			+ Do heat @ Npcs
+			- Test:
+				+ Explosion on ship: blast force, blast heat
+					+ Fishes
+					+ Waves
+				+ Explosion on constrained NPCs: blast force, blast heat
+				+ Explosion on free NPCs: blast force, blast heat
+				+ BlastTool on ship: blast force
+					+ Fishes
+					+ Waves
+				+ BlastTool on constrained NPCs: blast force
+				+ BlastTool on free NPCs: blast force
+				- Other diesel can crates explode for heat wave (zero impact explosion for test)
+					- Remove impact explosion test
+
 		- Rethink NPC interactions's shipId: depending on interaction, we might want to hit all available ships
 			- Or the interaction itself might want to only work on the topmost ship - in which case _break_
 			- Destroy: classic is all ships
@@ -809,12 +830,6 @@ Next release:
 				- On constrained NPC
 
 	+ Dissipation adjust affects NPC particle temperature transfer
-	- Explosion (of ship bombs or ship particles or NPCs): provide heat
-			- Requires changes to ShipStateMachine: ShipOnBlast needs to take heat
-			- Npcs::OnBlast: take and apply heat
-			- Test:
-				- Other TNT crates explode for heat wave (zero impact explosion for test)
-					- Remove impact explosion test
 	+ Simulation: air/water temperature transfers heat to *free* NPC particles
 	- See HumanNpcTemperature
 		- Replace with temperature of secondary particle

@@ -180,7 +180,7 @@ public:
     void ApplyBlastAt(
         vec2f const & targetPos,
         float radius,
-        float forceMultiplier,
+        float forceMagnitude,
         GameParameters const & gameParameters);
 
     bool ApplyElectricSparkAt(
@@ -331,15 +331,15 @@ private:
             {
                 vec2f CenterPos;
                 float Radius;
-                float Magnitude;
+                float ForceMagnitude;
 
                 BlastArguments(
                     vec2f const & centerPos,
                     float radius,
-                    float magnitude)
+                    float forceMagnitude)
                     : CenterPos(centerPos)
                     , Radius(radius)
-                    , Magnitude(magnitude)
+                    , ForceMagnitude(forceMagnitude)
                 {}
             };
 
@@ -594,13 +594,6 @@ private:
     void AttemptPointRestore(
         ElementIndex pointElementIndex,
         float currentSimulationTime);
-
-    // Does secondary tasks after a blast has been applied to the ship's points
-    void OnBlast(
-        vec2f const & centerPosition,
-        float blastRadius,
-        float blastForce, // N
-        GameParameters const & gameParameters);
 
     void InternalSpawnAirBubble(
         vec2f const & position,
