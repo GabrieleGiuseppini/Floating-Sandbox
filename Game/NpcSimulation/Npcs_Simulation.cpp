@@ -4163,7 +4163,7 @@ void Npcs::MaintainNpcUnfolded(
                 {
                     // This particle is on the wrong size of the diagonal
 
-                    LogNpcDebug("BeingMoved Quad ", npc.Id, ":", npcParticleOrdinal, ": folded");
+                    LogNpcDebug("BeingMoved Quad ", npc.Id, ":", p, ": folded");
 
                     //
                     // Move particle to other side of diagonal

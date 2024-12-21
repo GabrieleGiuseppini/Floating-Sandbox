@@ -3131,6 +3131,12 @@ void Npcs::Publish() const
                     mGameEventHandler->OnHumanNpcBehaviorChanged("BeingRemoved");
                     break;
                 }
+
+                case StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::BeingRemoved_Exploding:
+                {
+                    mGameEventHandler->OnHumanNpcBehaviorChanged("BeingRemoved_Exploding");
+                    break;
+                }
             }
         }
     }

@@ -694,7 +694,7 @@ Next release:
 					+ Smaller
 				+ Hydrogen
 
-= Temperature rearc
++ Temperature rearc
 	! After all, we do sample temperature of all triangle vertex endpoints anyways
 	! Philosophy: C particles exchange with mesh, F particles with air/water
 	+ NpcParticles has temperature
@@ -843,14 +843,9 @@ Next release:
 		+ Old code
 		+ Verify no logs
 	+ Run in debug
-
-	- Port to BaryLab and profile
-		- Optimize low-freq phys update, plenty of opp'ties there
-			- Also refactor mesh+ambient temperature -> particle temperature to one place
-
-	- Changelist:
-		- Temperature
-		- More tools interact with NPCs
+	+ Changelist:
+		+ Temperature
+		+ More tools interact with NPCs
 
 - Re-test bug fix: add/remove 8k NPCs N times
 	- Since you're here: test perf with removal of 8192 NPCs
@@ -859,6 +854,32 @@ Next release:
 - Test NPCs walking into water-filled compartment
 	- Check water @ lookahead?
 - Dance moves(below)
+
+- Sounds:
+	- New SoundType's:
+		- NpcDatabase: allow human & furniture to override (per-particle ideally)
+			- And store SoundType @ ParticleAttributesType
+		- NpcHead/NpcFeet: Human
+		- Piano furniture: Piano
+	- Npcs: publish these two events only:
+			- Sound type is from NPC database::ParticleAttributesType
+		- DestroyAt: OnDestroy (existing one)
+		- OnImpact: OnImpact
+			- Takes kinetic energy (dissipated)
+			- EventDispatcher aggregates
+			- SoundController
+				- Transform kinetic energy into volume
+	- Sounds:
+		- destroy:
+			- NPCHead X {2..4}X[non-uw, uw}
+			- NPCFoot X {2..4}X[non-uw, uw}
+			- Piano X {2..4}X[non-uw, uw}
+		- impact:
+			- All types
+			- NPCHead X {2..4}X[non-uw, uw}
+			- NPCFoot X {2..4}X[non-uw, uw}
+			- Piano X {2..4}X[non-uw, uw}
+
 
 - Misc:
 	- Sound for NPC fire smothering
@@ -1005,21 +1026,6 @@ Next release:
 
 	- See what we do with Watertight doors and whether they can also act as doors, in which case we can put them in the same category (Watertight door == door but also controlling WaterPermeability)
 	
-
-- Sounds:
-	- Hit:
-		- Material has SoundType property; NPC can override with own
-			- Furniture overrides for e.g. piano
-			- HumanNPC materials have two different sound types
-		- New IGameEventHandler event, which takes kinetic energy (dissipated)
-			- Aggregated
-			- Invoked @ Npcs bounce
-		- SoundController
-			- Transforms kinetic energy to volume
-		- Sounds:
-			- NPCHead X {2..4}X[non-uw, uw}
-			- NPCFoot X {2..4}X[non-uw, uw}
-			- Piano X {2..4}X[non-uw, uw}
 
 
 - InternalTexture layer from user:
