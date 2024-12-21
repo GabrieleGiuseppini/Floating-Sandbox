@@ -842,7 +842,7 @@ Next release:
 		+ TODOTEST logs
 		+ Old code
 		+ Verify no logs
-	- Run in debug
+	+ Run in debug
 
 	- Port to BaryLab and profile
 		- Optimize low-freq phys update, plenty of opp'ties there

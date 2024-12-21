@@ -69,7 +69,7 @@ public:
 
     ElementCount GetRemainingParticlesCount() const
     {
-        assert(mParticleInUseCount <= mMaxParticleCount);
+        assert(mParticlesInUseCount <= mMaxParticleCount);
         return mMaxParticleCount - mParticlesInUseCount;
     }
 
