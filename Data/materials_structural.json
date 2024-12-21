@@ -3891,7 +3891,7 @@
             "melting_temperature": 1000000.0,
             "name": "Diesel Can",
             "sound_type": "Metal",
-            "specific_heat": 897.0,
+            "specific_heat": 297.0,
             "stiffness": 1.0,
             "strength": 0.1,
             "texture_name": "metal_riveted_2_small",
