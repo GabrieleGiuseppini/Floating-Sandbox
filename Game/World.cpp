@@ -366,27 +366,19 @@ void World::DestroyAt(
         * radiusMultiplier
         * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
-    // Ships - all of them, but remembering topmost one, if any
-    ShipId topmostHitShipId = NoneShipId;
-    for (size_t s = mAllShips.size(); s > 0; --s)
+    // Ships
+    for (auto & ship : mAllShips)
     {
-        auto & ship = mAllShips[s - 1];
-        if (ship->DestroyAt(
+        ship->DestroyAt(
             targetPos,
             radius,
             mCurrentSimulationTime,
-            gameParameters))
-        {
-            if (topmostHitShipId == NoneShipId)
-            {
-                topmostHitShipId = ship->GetId();
-            }
-        }
+            gameParameters);
     }
 
     // NPCs
     mNpcs->DestroyAt(
-        topmostHitShipId,
+        NoneShipId,
         targetPos,
         radius,
         mCurrentSimulationTime,
@@ -445,33 +437,28 @@ bool World::ApplyHeatBlasterAt(
     float radius,
     GameParameters const & gameParameters)
 {
-    // Ships - all of them, but remembering topmost one, if any
-    ShipId topmostShipId = NoneShipId;
-    for (size_t s = mAllShips.size(); s > 0; --s)
+    bool atLeastOneShipApplied = false;
+
+    for (auto & ship : mAllShips)
     {
-        auto & ship = mAllShips[s - 1];
-        if (ship->ApplyHeatBlasterAt(
+        bool const isApplied = ship->ApplyHeatBlasterAt(
             targetPos,
             action,
             radius,
-            gameParameters))
-        {
-            if (topmostShipId == NoneShipId)
-            {
-                topmostShipId = ship->GetId();
-            }
-        }
+            gameParameters);
+
+        atLeastOneShipApplied |= isApplied;
     }
 
     // Npcs
-    bool const isAppliedOnNpcs = mNpcs->ApplyHeatBlasterAt(
-        topmostShipId,
+    bool const atLeastOneNpcApplied = mNpcs->ApplyHeatBlasterAt(
+        NoneShipId,
         targetPos,
         action,
         radius,
         gameParameters);
 
-    return (topmostShipId != NoneShipId || isAppliedOnNpcs);
+    return (atLeastOneShipApplied || atLeastOneNpcApplied);
 }
 
 bool World::ExtinguishFireAt(
@@ -480,33 +467,28 @@ bool World::ExtinguishFireAt(
     float radius,
     GameParameters const & gameParameters)
 {
-    // Ships - all of them, but remembering topmost one, if any
-    ShipId topmostShipId = NoneShipId;
-    for (size_t s = mAllShips.size(); s > 0; --s)
+    bool atLeastOneShipApplied = false;
+
+    for (auto & ship : mAllShips)
     {
-        auto & ship = mAllShips[s - 1];
-        if (ship->ExtinguishFireAt(
+        bool isApplied = ship->ExtinguishFireAt(
             targetPos,
             strengthMultiplier,
             radius,
-            gameParameters))
-        {
-            if (topmostShipId == NoneShipId)
-            {
-                topmostShipId = ship->GetId();
-            }
-        }
+            gameParameters);
+
+        atLeastOneShipApplied |= isApplied;
     }
 
     // Npcs
-    bool const isAppliedOnNpcs = mNpcs->ExtinguishFireAt(
-        topmostShipId,
+    bool const atLeastOneNpcApplied = mNpcs->ExtinguishFireAt(
+        NoneShipId,
         targetPos,
         strengthMultiplier,
         radius,
         gameParameters);
 
-    return (topmostShipId != NoneShipId || isAppliedOnNpcs);
+    return (atLeastOneShipApplied || atLeastOneNpcApplied);
 }
 
 void World::ApplyBlastAt(
@@ -603,33 +585,29 @@ bool World::ApplyLaserCannonThrough(
     float strength,
     GameParameters const & gameParameters)
 {
-    // Ships - all of them, but remembering topmost one, if any
-    ShipId topmostShipIdCut = NoneShipId;
-    for (size_t s = mAllShips.size(); s > 0; --s)
+    bool atLeastOneShipCut = false;
+
+    // Apply to ships
+    for (auto & ship : mAllShips)
     {
-        auto & ship = mAllShips[s - 1];
-        if (ship->ApplyLaserCannonThrough(
+        bool const isCut = ship->ApplyLaserCannonThrough(
             startPos,
             endPos,
             strength,
-            gameParameters))
-        {
-            if (topmostShipIdCut == NoneShipId)
-            {
-                topmostShipIdCut = ship->GetId();
-            }
-        }
+            gameParameters);
+
+        atLeastOneShipCut |= isCut;
     }
 
     // Npcs
     mNpcs->ApplyLaserCannonThrough(
-        topmostShipIdCut,
+        NoneShipId,
         startPos,
         endPos,
         strength,
         gameParameters);
 
-    return topmostShipIdCut != NoneShipId;
+    return atLeastOneShipCut;
 }
 
 void World::DrawTo(

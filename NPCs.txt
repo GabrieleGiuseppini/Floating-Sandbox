@@ -718,7 +718,7 @@ Next release:
 				+ Free in hot water
 				+ Free in hot air
 	+ Move constant w/comment on cheapness
-	= Interactions (and provide heat to NPC particles):
+	+ Interactions (and provide heat to NPC particles):
 		! Do tool chain via World, not from Ship
 			! Npcs::interaction-method -> bool, invoked by World with or without ShipId depending on whether found
 				! Interactions (make helper):
@@ -817,20 +817,19 @@ Next release:
 				+ Other diesel can crates explode for heat wave (zero impact explosion for test)
 					+ Remove impact explosion test
 
-		- Rethink NPC interactions's shipId: depending on interaction, we might want to hit all available ships
+		+ Rethink NPC interactions's shipId: depending on interaction, we might want to hit all available ships
 			! Or the interaction itself might want to only work on the topmost ship - in which case _break_
 			! Classically these are on all ships:
 				! Destroy
 				! HeatBlaster
 				! FireExtinguisher
 				! LaserCannon
-			- So, resimplify World: do not track ship id, just bool, and give None ship ID to Npcs
-			- Tests:
-				- On nothing
-				- On ship
-				- On free NPC
-				- On constrained NPC
-
+			+ So, resimplify World: do not track ship id, just bool, and give None ship ID to Npcs
+			+ Tests:
+				+ On nothing
+				+ On ship
+				+ On free NPC
+				+ On constrained NPC
 		+ QueryNpcAt
 
 	+ Dissipation adjust affects NPC particle temperature transfer
@@ -838,11 +837,11 @@ Next release:
 	+ See HumanNpcTemperature
 		+ Replace with temperature of secondary particle
 		+ Test bubbles from overheated NPCs
-	- Cleanup:
-		- TODOTEST: at particle temperature update, log+custom probe
+	+ Cleanup:
+		+ TODOTEST: at particle temperature update, log+custom probe
 		+ TODOTEST logs
 		+ Old code
-		- Verify no logs
+		+ Verify no logs
 	- Run in debug
 
 	- Port to BaryLab and profile
@@ -859,6 +858,7 @@ Next release:
 	- Test explosive NPCs
 - Test NPCs walking into water-filled compartment
 	- Check water @ lookahead?
+- Dance moves(below)
 
 - Misc:
 	- Sound for NPC fire smothering

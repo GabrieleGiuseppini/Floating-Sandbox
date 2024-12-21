@@ -504,14 +504,6 @@ void Npcs::UpdateNpcPhysics(
                     // Store temperature
                     //
 
-                    // TODOTEST
-                    if (particle.ParticleIndex == 1)
-                    {
-                        LogMessage("TODOTEST: ", mParticles.GetTemperature(particle.ParticleIndex), " -> ", particleTemperature, " (",
-                            (mParticles.GetTemperature(particle.ParticleIndex) - particleTemperature), ")");
-                        mGameEventHandler->OnCustomProbe("T", particleTemperature);
-                    }
-
                     mParticles.SetTemperature(particle.ParticleIndex, particleTemperature);
 
                     //
