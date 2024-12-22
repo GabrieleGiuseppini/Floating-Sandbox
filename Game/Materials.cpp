@@ -195,10 +195,14 @@ StructuralMaterial::MaterialSoundType StructuralMaterial::StrToMaterialSoundType
         return MaterialSoundType::Gas;
     else if (Utils::CaseInsensitiveEquals(str, "Glass"))
         return MaterialSoundType::Glass;
+    else if (Utils::CaseInsensitiveEquals(str, "Human"))
+        return MaterialSoundType::Human;
     else if (Utils::CaseInsensitiveEquals(str, "Lego"))
         return MaterialSoundType::Lego;
     else if (Utils::CaseInsensitiveEquals(str, "Metal"))
         return MaterialSoundType::Metal;
+    else if (Utils::CaseInsensitiveEquals(str, "Piano"))
+        return MaterialSoundType::Piano;
     else if (Utils::CaseInsensitiveEquals(str, "Plastic"))
         return MaterialSoundType::Plastic;
     else if (Utils::CaseInsensitiveEquals(str, "Rubber"))

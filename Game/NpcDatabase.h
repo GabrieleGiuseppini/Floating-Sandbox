@@ -6,6 +6,7 @@
 #pragma once
 
 #include "MaterialDatabase.h"
+#include "Materials.h"
 #include "RenderTypes.h"
 #include "ResourceLocator.h"
 #include "TextureAtlas.h"
@@ -38,7 +39,7 @@ public:
         float BuoyancyVolumeFill;
         float SpringReductionFraction;
         float SpringDampingCoefficient;
-        float FrictionSurfaceAdjustment; // To account fo diminished surface of structures in contact with floor
+        float FrictionSurfaceAdjustment; // To account for diminished surface of structures in contact with floor
     };
 
     struct HumanTextureGeometryType

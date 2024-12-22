@@ -21,9 +21,11 @@
 
 using namespace std::chrono_literals;
 
-float constexpr BreakSoundVolume = 10.0f;
 float constexpr StressSoundVolume = 7.0f;
+float constexpr ImpactSoundVolume = 40.0f;
+float constexpr BreakSoundVolume = 10.0f;
 float constexpr RepairVolume = 40.0f;
+float constexpr TerrainAdjustVolume = 40.0f;
 float constexpr SawVolume = 50.0f;
 float constexpr SawedVolume = 80.0f;
 std::chrono::milliseconds constexpr SawedInertiaDuration = std::chrono::milliseconds(200);
@@ -433,6 +435,7 @@ SoundController::SoundController(
         }
         else if (soundType == SoundType::Break
                 || soundType == SoundType::Destroy
+                || soundType == SoundType::Impact
                 || soundType == SoundType::Stress
                 || soundType == SoundType::RepairSpring
                 || soundType == SoundType::RepairTriangle)
@@ -1334,7 +1337,7 @@ void SoundController::PlayTerrainAdjustSound()
     PlayOneShotMultipleChoiceSound(
         SoundType::TerrainAdjust,
         SoundGroupType::Tools,
-        100.0f,
+        TerrainAdjustVolume,
         true);
 }
 
@@ -1778,6 +1781,27 @@ void SoundController::OnStress(
             size,
             isUnderwater,
             StressSoundVolume,
+            true);
+    }
+}
+
+void SoundController::OnImpact(
+    StructuralMaterial const & structuralMaterial,
+    bool isUnderwater,
+    float kineticEnergy)
+{
+    if (!!(structuralMaterial.MaterialSound))
+    {
+        // Transform kinetic energy into size
+        unsigned int size = static_cast<unsigned int>(std::floorf(kineticEnergy / 5000));
+
+        PlayMSUOneShotMultipleChoiceSound(
+            SoundType::Impact,
+            *(structuralMaterial.MaterialSound),
+            SoundGroupType::Effects,
+            size,
+            isUnderwater,
+            ImpactSoundVolume,
             true);
     }
 }

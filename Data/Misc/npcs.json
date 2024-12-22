@@ -1024,15 +1024,10 @@
             {
                 "name": "Piano",
                 "role": "Furniture",
-                "material": "Iron Hull",
+                "material": "Piano",
                 "particle_mesh": {
                     "kind": "Quad",
-                    "height": 0.8,
-                    "particle_attributes_overrides": [
-                        {
-                            "buoyancy_volume_fill": 0.7
-                        }
-                    ]
+                    "height": 0.8
                 },
                 "texture_filename_stem": "piano_1",
                 "render_color": "#AB7737"

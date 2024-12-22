@@ -853,32 +853,28 @@ Next release:
 	- Test explosive NPCs
 + Test NPCs walking into water-filled compartment
 	X Check water @ lookahead?
-- Dance moves(below)
 
-- Sounds:
-	- New SoundType's:
-		- NpcDatabase: allow human & furniture to override (per-particle ideally)
-			- And store SoundType @ ParticleAttributesType
-		- NpcHead/NpcFeet: Human
-		- Piano furniture: Piano
-	- Npcs: publish these two events only:
+= Sounds:
+	= Npcs: publish these two events only:
 			- Sound type is from NPC database::ParticleAttributesType
-		- DestroyAt: OnDestroy (existing one)
-		- OnImpact: OnImpact
-			- Takes kinetic energy (dissipated)
-			- EventDispatcher aggregates
-			- SoundController
-				- Transform kinetic energy into volume
+		+ DestroyAt: OnDestroy (existing one)
+		= OnImpact: OnImpact
+			= Takes kinetic energy
+				- Dissipated, use current vel to calc
+					- But retain energy->sound_size transformation, it's perfect!
+			+ EventDispatcher aggregates
+			+ SoundController
+				+ Transform kinetic energy into size
 	- Sounds:
 		- destroy:
 			- NPCHead X {2..4}X[non-uw, uw}
 			- NPCFoot X {2..4}X[non-uw, uw}
-			- Piano X {2..4}X[non-uw, uw}
+			- Piano X {2..4}X[non-uw, uw} -- mix impact/cacophony with wood destroy
 		- impact:
 			- All types
 			- NPCHead X {2..4}X[non-uw, uw}
 			- NPCFoot X {2..4}X[non-uw, uw}
-			- Piano X {2..4}X[non-uw, uw}
+			+ Piano X {2..4}X[non-uw, uw}
 
 
 - Misc:

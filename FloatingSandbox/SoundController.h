@@ -227,6 +227,11 @@ public:
         bool isUnderwater,
         unsigned int size) override;
 
+    void OnImpact(
+        StructuralMaterial const & structuralMaterial,
+        bool isUnderwater,
+        float kineticEnergy) override;
+
     void OnBreak(
         StructuralMaterial const & structuralMaterial,
         bool isUnderwater,

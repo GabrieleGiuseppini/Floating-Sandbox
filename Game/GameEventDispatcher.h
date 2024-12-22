@@ -33,6 +33,7 @@ public:
 
     GameEventDispatcher()
         : mStressEvents()
+        , mImpactEvents()
         , mBreakEvents()
         , mLampBrokenEvents()
         , mLampExplodedEvents()
@@ -124,6 +125,14 @@ public:
         unsigned int size) override
     {
         mStressEvents[std::make_tuple(&structuralMaterial, isUnderwater)] += size;
+    }
+
+    virtual void OnImpact(
+        StructuralMaterial const & structuralMaterial,
+        bool isUnderwater,
+        float kineticEnergy)
+    {
+        mImpactEvents[std::make_tuple(&structuralMaterial, isUnderwater)] += kineticEnergy;
     }
 
     void OnBreak(
@@ -878,6 +887,11 @@ public:
                 sink->OnStress(*(std::get<0>(entry.first)), std::get<1>(entry.first), entry.second);
             }
 
+            for (auto const & entry : mImpactEvents)
+            {
+                sink->OnImpact(*(std::get<0>(entry.first)), std::get<1>(entry.first), entry.second);
+            }
+
             for (auto const & entry : mBreakEvents)
             {
                 sink->OnBreak(*(std::get<0>(entry.first)), std::get<1>(entry.first), entry.second);
@@ -900,6 +914,7 @@ public:
         }
 
         mStressEvents.clear();
+        mImpactEvents.clear();
         mBreakEvents.clear();
         mLampBrokenEvents.clear();
         mLampExplodedEvents.clear();
@@ -1077,6 +1092,7 @@ private:
 
     // The current events being aggregated
     unordered_tuple_map<std::tuple<StructuralMaterial const *, bool>, unsigned int> mStressEvents;
+    unordered_tuple_map<std::tuple<StructuralMaterial const *, bool>, float> mImpactEvents;
     unordered_tuple_map<std::tuple<StructuralMaterial const *, bool>, unsigned int> mBreakEvents;
     unordered_tuple_map<std::tuple<bool>, unsigned int> mLampBrokenEvents;
     unordered_tuple_map<std::tuple<bool>, unsigned int> mLampExplodedEvents;

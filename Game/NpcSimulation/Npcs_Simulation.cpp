@@ -3978,12 +3978,13 @@ void Npcs::OnImpact(
 
     float const impactMagnitude = impactNormalVelocity.length();
 
-    float constexpr ImpactMagnitudeThreshold = 9.0f; // Magic number
+    float constexpr NotificationImpactMagnitudeThreshold = 3.0f; // Magic number
+    float constexpr ExplosionImpactMagnitudeThreshold = 9.0f; // Magic number
 
-    if (mParticles.GetMaterial(npcParticleIndex).CombustionType == StructuralMaterial::MaterialCombustionType::Explosion
-        && impactMagnitude >= ImpactMagnitudeThreshold)
+    if (impactMagnitude >= ExplosionImpactMagnitudeThreshold
+        && mParticles.GetMaterial(npcParticleIndex).CombustionType == StructuralMaterial::MaterialCombustionType::Explosion)
     {
-        float const impactMultiplier = std::min(impactMagnitude / ImpactMagnitudeThreshold, 2.5f);
+        float const impactMultiplier = std::min(impactMagnitude / ExplosionImpactMagnitudeThreshold, 2.5f);
 
         float const blastForce =
             mParticles.GetMaterial(npcParticleIndex).ExplosiveCombustionForce
@@ -4018,6 +4019,19 @@ void Npcs::OnImpact(
             ExplosionType::Combustion,
             currentSimulationTime,
             gameParameters);
+    }
+    else if (impactMagnitude >= NotificationImpactMagnitudeThreshold)
+    {
+        // Notify
+
+        float const kineticEnergy = 0.5f * mParticles.GetMass(npcParticleIndex) * impactMagnitude * impactMagnitude;
+
+        LogMessage("TODOTEST: ", impactMagnitude, " -> ", kineticEnergy);
+
+        mGameEventHandler->OnImpact(
+            mParticles.GetMaterial(npcParticleIndex),
+            mParticles.GetAnyWaterness(npcParticleIndex) >= 0.5f,
+            kineticEnergy);
     }
 }
 

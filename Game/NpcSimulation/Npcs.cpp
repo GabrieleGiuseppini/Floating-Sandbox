@@ -2242,6 +2242,14 @@ bool Npcs::DestroyAt(
                         // Prolong stay
                         humanState.CurrentBehaviorState.ConstrainedOrFree_Smashed.Reset();
                     }
+
+                    // Notify
+
+                    ElementIndex const primaryParticleIndex = npc->ParticleMesh.Particles[0].ParticleIndex;
+                    mGameEventHandler->OnDestroy(
+                        mParticles.GetMaterial(primaryParticleIndex),
+                        mParticles.GetAnyWaterness(primaryParticleIndex) >= 0.5f,
+                        1);
                 }
             }
 

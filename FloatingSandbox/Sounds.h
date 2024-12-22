@@ -31,6 +31,7 @@ enum class SoundType : uint32_t
 {
     Break = 0,
     Destroy,
+    Impact,
     LightningHit,
     RepairSpring,
     RepairTriangle,

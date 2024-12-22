@@ -13,6 +13,8 @@ SoundType StrToSoundType(std::string const & str)
         return SoundType::Break;
     else if (Utils::CaseInsensitiveEquals(str, "Destroy"))
         return SoundType::Destroy;
+    else if (Utils::CaseInsensitiveEquals(str, "Impact"))
+        return SoundType::Impact;
     else if (Utils::CaseInsensitiveEquals(str, "LightningHit"))
         return SoundType::LightningHit;
     else if (Utils::CaseInsensitiveEquals(str, "RepairSpring"))

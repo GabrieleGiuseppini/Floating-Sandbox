@@ -60,6 +60,14 @@ struct IStructuralGameEventHandler
         // Default-implemented
     }
 
+    virtual void OnImpact(
+        StructuralMaterial const & /*structuralMaterial*/,
+        bool /*isUnderwater*/,
+        float /*kineticEnergy*/) // J
+    {
+        // Default-implemented
+    }
+
     virtual void OnBreak(
         StructuralMaterial const & /*structuralMaterial*/,
         bool /*isUnderwater*/,
