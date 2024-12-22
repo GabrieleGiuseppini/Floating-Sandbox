@@ -3844,6 +3844,7 @@
             "melting_temperature": 1000000.0,
             "name": "NPC Human Head",
             "render_color": "#070780",
+	    "sound_type": "Human",
             "specific_heat": 1200.0,
             "strength": 1.0,
             "wind_receptivity": 0.14
@@ -3865,6 +3866,7 @@
             "melting_temperature": 1000000.0,
             "name": "NPC Human Feet",
             "render_color": "#070781",
+	    "sound_type": "Human",
             "specific_heat": 1200.0,
             "strength": 1.0,
             "wind_receptivity": 0.14
