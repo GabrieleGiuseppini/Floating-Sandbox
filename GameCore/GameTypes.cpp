@@ -8,6 +8,8 @@
 #include "GameException.h"
 #include "Utils.h"
 
+#include <chrono>
+
 int const TessellationCircularOrderDirections[8][2] = {
     {  1,  0 },  // 0: E
     {  1, -1 },  // 1: SE
@@ -18,6 +20,13 @@ int const TessellationCircularOrderDirections[8][2] = {
     {  0,  1 },  // 6: N
     {  1,  1 }   // 7: NE
 };
+
+SessionId SessionId::New()
+{
+    static std::uint64_t currentValue = 0;
+
+    return SessionId((++currentValue));
+}
 
 std::string NpcKindTypeToStr(NpcKindType npcKind)
 {

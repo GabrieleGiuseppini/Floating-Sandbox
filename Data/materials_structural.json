@@ -1969,7 +1969,7 @@
                 "sub_category": "Tungsten Hull",
                 "sub_category_ordinal": 0
             },
-            "sound_type": "Metal",
+            "sound_type": "Wood",
             "specific_heat": 134.0,
             "stiffness": 1.0,
             "strength": 0.055,
@@ -3890,7 +3890,7 @@
             },
             "melting_temperature": 1000000.0,
             "name": "Diesel Can",
-            "sound_type": "Metal",
+            "sound_type": "Plastic",
             "specific_heat": 297.0,
             "stiffness": 1.0,
             "strength": 0.1,

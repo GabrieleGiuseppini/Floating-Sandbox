@@ -205,6 +205,7 @@ public:
     void DestroyAt(
         vec2f const & targetPos,
         float radiusMultiplier,
+        SessionId const & sessionId,
         GameParameters const & gameParameters);
 
     void RepairAt(

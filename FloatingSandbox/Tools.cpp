@@ -140,9 +140,11 @@ void SmashTool::ApplyTool(
     InternalSetToolCursor(mDownCursorImage, radiusFraction);
 
     // Destroy
+    assert(mCurrentSession.has_value());
     mGameController.DestroyAt(
         inputState.MousePosition,
-        radiusFraction * 10.0f);
+        radiusFraction * 10.0f,
+        mCurrentSession);
 }
 
 ////////////////////////////////////////////////////////////////////////

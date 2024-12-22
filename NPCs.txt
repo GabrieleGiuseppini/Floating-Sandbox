@@ -855,30 +855,36 @@ Next release:
 	X Check water @ lookahead?
 
 = Sounds:
-	= Npcs: publish these two events only:
-			- Sound type is from NPC database::ParticleAttributesType
-		+ DestroyAt: OnDestroy (existing one)
-		= OnImpact: OnImpact
+	= Npcs: publish OnImpact at:
+		+ DestroyAt
+			+ Need to prevent re-sounding at next frame (tool is continuous); need a temporary "destroyed" flag (opt cur sim time)
+				+ Or better: DestroyAt interaction provides SessionId, i.e. timestamp coerced into uint64_t
+					+ Type at GameTypes (SessionId), starts at 0, always increasing, never repeated, not guaranteed to always be fully observed
+					+ SessionId stored at NPC as "interaction"
+			+ Random kinetic energy, so to explore whole range
+		= OnImpact
 			= Takes kinetic energy
 				- Dissipated, use current vel to calc
 					- But retain energy->sound_size transformation, it's perfect!
 			+ EventDispatcher aggregates
 			+ SoundController
 				+ Transform kinetic energy into size
-	- Sounds:
-		- destroy:
-			- NPCHead X {2..4}X[non-uw, uw}
-			- NPCFoot X {2..4}X[non-uw, uw}
-			- Piano X {2..4}X[non-uw, uw} -- mix impact/cacophony with wood destroy
-		- impact:
-			- All types
-			- NPCHead X {2..4}X[non-uw, uw}
-			- NPCFoot X {2..4}X[non-uw, uw}
-			+ Piano X {2..4}X[non-uw, uw}
+	= Sounds:
+		= impact:
+			! All: {2..4} X [non-uw, uw}
+			- Types:
+				- Wood
+				- Metal
+				- Concrete
+				- Plastic
+				- Human
+				+ Piano
 
+	X Sound for NPC fire smothering in water
+		+ Just call event
+		X Takes too long to figure out, seems delayed
 
 - Misc:
-	- Sound for NPC fire smothering
 	! TODO: move the long-term ones below to a new "Wishlist" section
 	- Ghost Walls bug:
 		- https://discord.com/channels/559822257275404307/561385724855975938/1309212146508365834

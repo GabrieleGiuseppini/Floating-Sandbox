@@ -260,6 +260,40 @@ inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, Sequ
     return os;
 }
 
+/*
+ * Session identifiers. The main usecase is tool interactions.
+ *
+ * Never equal to itself, globally. Starts from 0.
+ */
+struct SessionId
+{
+public:
+
+    static SessionId New();
+
+    SessionId()
+        : mValue(0)
+    {}
+
+    inline bool operator==(SessionId const & other) const
+    {
+        return mValue == other.mValue;
+    }
+
+    inline bool operator!=(SessionId const & other) const
+    {
+        return !(*this == other);
+    }
+
+private:
+
+    explicit SessionId(std::uint64_t value)
+        : mValue(value)
+    {}
+
+    std::uint64_t mValue;
+};
+
 // Password hash
 using PasswordHash = std::uint64_t;
 

@@ -359,6 +359,7 @@ void World::Pull(
 void World::DestroyAt(
     vec2f const & targetPos,
     float radiusMultiplier,
+    SessionId const & sessionId,
     GameParameters const & gameParameters)
 {
     float const radius =
@@ -372,6 +373,7 @@ void World::DestroyAt(
         ship->DestroyAt(
             targetPos,
             radius,
+            sessionId,
             mCurrentSimulationTime,
             gameParameters);
     }
@@ -381,6 +383,7 @@ void World::DestroyAt(
         NoneShipId,
         targetPos,
         radius,
+        sessionId,
         mCurrentSimulationTime,
         gameParameters);
 

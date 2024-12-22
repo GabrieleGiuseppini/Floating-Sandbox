@@ -2144,6 +2144,7 @@ bool Npcs::DestroyAt(
     ShipId shipId,
     vec2f const & targetPos,
     float radius,
+    SessionId const & sessionId,
     float currentSimulationTime,
     GameParameters const & gameParameters)
 {
@@ -2218,38 +2219,44 @@ bool Npcs::DestroyAt(
                         currentSimulationTime,
                         gameParameters);
                 }
-                else if (npc->Kind == NpcKindType::Human)
+                else
                 {
-                    // Smash
-
-                    auto & humanState = npc->KindSpecificState.HumanNpcState;
-                    if (humanState.CurrentBehavior != StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::ConstrainedOrFree_Smashed)
+                    if (npc->Kind == NpcKindType::Human)
                     {
-                        // Transition to Smashed
-                        humanState.TransitionToState(StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::ConstrainedOrFree_Smashed, currentSimulationTime);
+                        // Smash
 
-                        // Turn front/back iff side-looking
-                        if (humanState.CurrentFaceOrientation == 0.0f)
+                        auto & humanState = npc->KindSpecificState.HumanNpcState;
+                        if (humanState.CurrentBehavior != StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::ConstrainedOrFree_Smashed)
                         {
-                            humanState.CurrentFaceOrientation = GameRandomEngine::GetInstance().GenerateUniformBoolean(0.5f) ? +1.0f : -1.0f;
-                            humanState.CurrentFaceDirectionX = 0.0f;
+                            // Transition to Smashed
+                            humanState.TransitionToState(StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::ConstrainedOrFree_Smashed, currentSimulationTime);
+
+                            // Turn front/back iff side-looking
+                            if (humanState.CurrentFaceOrientation == 0.0f)
+                            {
+                                humanState.CurrentFaceOrientation = GameRandomEngine::GetInstance().GenerateUniformBoolean(0.5f) ? +1.0f : -1.0f;
+                                humanState.CurrentFaceDirectionX = 0.0f;
+                            }
                         }
-
-                        // Futurework: sound
+                        else
+                        {
+                            // Prolong stay
+                            humanState.CurrentBehaviorState.ConstrainedOrFree_Smashed.Reset();
+                        }
                     }
-                    else
+
+                    // Notify if first call for this interaction session
+
+                    if (npc->CurrentInteractionSessionId != sessionId)
                     {
-                        // Prolong stay
-                        humanState.CurrentBehaviorState.ConstrainedOrFree_Smashed.Reset();
+                        ElementIndex const primaryParticleIndex = npc->ParticleMesh.Particles[0].ParticleIndex;
+                        mGameEventHandler->OnImpact(
+                            mParticles.GetMaterial(primaryParticleIndex),
+                            mParticles.GetAnyWaterness(primaryParticleIndex) >= 0.5f,
+                            GameRandomEngine::GetInstance().GenerateUniformReal(1.0f, 11.0f) * 5000.0f); // Explore whole range
+
+                        npc->CurrentInteractionSessionId = sessionId;
                     }
-
-                    // Notify
-
-                    ElementIndex const primaryParticleIndex = npc->ParticleMesh.Particles[0].ParticleIndex;
-                    mGameEventHandler->OnDestroy(
-                        mParticles.GetMaterial(primaryParticleIndex),
-                        mParticles.GetAnyWaterness(primaryParticleIndex) >= 0.5f,
-                        1);
                 }
             }
 

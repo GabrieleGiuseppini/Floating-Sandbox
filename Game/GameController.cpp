@@ -832,7 +832,8 @@ void GameController::RotateBy(
 
 void GameController::DestroyAt(
     DisplayLogicalCoordinates const & screenCoordinates,
-    float radiusMultiplier)
+    float radiusMultiplier,
+    SessionId const & sessionId)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
@@ -841,6 +842,7 @@ void GameController::DestroyAt(
     mWorld->DestroyAt(
         worldCoordinates,
         radiusMultiplier,
+        sessionId,
         mGameParameters);
 }
 

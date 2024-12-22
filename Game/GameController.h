@@ -233,7 +233,7 @@ public:
     void RotateBy(ShipId shipId, float screenDeltaY, DisplayLogicalCoordinates const & screenCenter, float intertialScreenDeltaY) override;
     std::optional<GlobalElementId> PickObjectForPickAndPull(DisplayLogicalCoordinates const & screenCoordinates) override;
     void Pull(GlobalElementId elementId, DisplayLogicalCoordinates const & screenTarget) override;
-    void DestroyAt(DisplayLogicalCoordinates const & screenCoordinates, float radiusMultiplier) override;
+    void DestroyAt(DisplayLogicalCoordinates const & screenCoordinates, float radiusMultiplier, SessionId const & sessionId) override;
     void RepairAt(DisplayLogicalCoordinates const & screenCoordinates, float radiusMultiplier, SequenceNumber repairStepId) override;
     bool SawThrough(DisplayLogicalCoordinates const & startScreenCoordinates, DisplayLogicalCoordinates const & endScreenCoordinates, bool isFirstSegment) override;
     bool ApplyHeatBlasterAt(DisplayLogicalCoordinates const & screenCoordinates, HeatBlasterActionType action) override;

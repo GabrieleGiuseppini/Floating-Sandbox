@@ -851,6 +851,7 @@ public:
 
     void OnLeftMouseDown(InputState const & inputState) override
     {
+        mCurrentSession = SessionId::New();
         ContinuousTool::OnLeftMouseDown(inputState);
 
         // Reset cursor
@@ -884,6 +885,8 @@ private:
             mToolCursorManager.SetToolCursor(mUpCursorImage, 0.0f);
         }
     }
+
+    SessionId mCurrentSession;
 
     wxImage mUpCursorImage;
     wxImage mDownCursorImage;

@@ -937,6 +937,9 @@ private:
 		// Info for placing (presence is correlated with regime==BeingPlaced)
 		std::optional<BeingPlacedStateType> BeingPlacedState;
 
+		// Current session for interactions
+		SessionId CurrentInteractionSessionId;
+
 		StateType(
 			NpcId id,
 			NpcKindType kind,
@@ -962,6 +965,7 @@ private:
 			, CombustionState()
 			, RandomNormalizedUniformSeed(GameRandomEngine::GetInstance().GenerateUniformReal(-1.0f, 1.0f))
 			, BeingPlacedState(beingPlacedState)
+			, CurrentInteractionSessionId()
 		{}
 
 		bool IsActive() const
@@ -1254,6 +1258,7 @@ public:
 		ShipId shipId,
 		vec2f const & targetPos,
 		float radius,
+		SessionId const & sessionId,
 		float currentSimulationTime,
 		GameParameters const & gameParameters);
 

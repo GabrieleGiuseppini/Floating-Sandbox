@@ -353,6 +353,7 @@ void Ship::Pull(Interaction::ArgumentsUnion::PullArguments const & args)
 bool Ship::DestroyAt(
     vec2f const & targetPos,
     float radius,
+    SessionId const & /*sessionId*/,
     float currentSimulationTime,
     GameParameters const & gameParameters)
 {

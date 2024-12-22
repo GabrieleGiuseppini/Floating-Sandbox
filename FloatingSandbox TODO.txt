@@ -1108,18 +1108,21 @@
 			- All strings in LocalizationManager
 				- ~"Structure"+"Form/Variant/Kind/Genre/Class"
 		- New materials:
-			- Bending materials
-				- Basically extremely high strength and low spring reduction coeff
 			- Structural materials:
+				- Check Longhorn's materials
+					- A) New colors for existing materials
+					- B) New materials altogether
+					- Then these should be taken care of:
+						- Uranium 235
+							- "A single pixel of uranium when smashed with a hammer or cut with a chainsaw causes a huge explosion the size of the titanic. And it glows blue when you put in underwater."
 				- "Lightning rod" material
 					- Has precedence when looking for candidates @ Lightning strike
-				- Uranium 235
-					- "A single pixel of uranium when smashed with a hammer or cut with a chainsaw causes a huge explosion the size of the titanic. And it glows blue when you put in underwater."
 				- Definitely more colors
 					- https://discord.com/channels/559822257275404307/561385532698001419/1309941207836786828
 					- New metal color (for White Line): F1D4A1
 					- "And you can do it differently, leave the existing colors, and to them to make a separate slot, when you click on this slot, the polytra appears, and you choose a color"
-				- Check Longhorn's materials
+				- Bending materials
+					- Basically extremely high strength and low spring reduction coeff
 			- Electrical materials:
 				- Backup generators: would activate 10 seconds after connection is cut from the main power and it would power the lights only
 					- Has it's own amount of power and will lose the energy over an amount of time but can be revitalized either by gen or with electric shock tool
