@@ -876,8 +876,6 @@ Next release:
 			= Types:
 				+ Wood
 				+ Metal
-					+ OW
-					- UW
 				- Concrete
 					- S
 						- OW
