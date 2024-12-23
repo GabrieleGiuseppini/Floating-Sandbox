@@ -867,8 +867,9 @@ Next release:
 				- Dissipated, use current vel to calc
 					- But retain energy->sound_size transformation, it's perfect!
 			+ EventDispatcher aggregates
-			+ SoundController
+			= SoundController
 				+ Transform kinetic energy into size
+				- And transform kinetic energy into volume (maxed by that constant)
 	= Sounds:
 		= impact:
 			! All: {2..4} X [non-uw, uw}
