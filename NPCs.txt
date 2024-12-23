@@ -873,12 +873,12 @@ Next release:
 	= Sounds:
 		= impact:
 			! All: {2..4} X [non-uw, uw}
-			- Types:
+			= Types:
 				- Wood
 				- Metal
 				- Concrete
 				- Plastic
-				= Human
+				+ Human
 				+ Piano
 
 	X Sound for NPC fire smothering in water
