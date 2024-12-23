@@ -3980,7 +3980,7 @@ void Npcs::OnImpact(
 
     float const impactMagnitude = impactNormalVelocity.length();
 
-    float constexpr NotificationImpactMagnitudeThreshold = 3.0f; // Magic number
+    float constexpr NotificationImpactMagnitudeThreshold = 2.0f; // Magic number
     float constexpr ExplosionImpactMagnitudeThreshold = 9.0f; // Magic number
 
     if (impactMagnitude >= ExplosionImpactMagnitudeThreshold
@@ -4028,8 +4028,6 @@ void Npcs::OnImpact(
 
         float const responseMagnitude = responseNormalVelocity.length();
         float const dissipatedKineticEnergy = 0.5f * mParticles.GetMass(npcParticleIndex) * (impactMagnitude * impactMagnitude - responseMagnitude * responseMagnitude);
-
-        LogMessage("TODOTEST: ", impactMagnitude, " -> Dissipated=", dissipatedKineticEnergy);
 
         mGameEventHandler->OnImpact(
             mParticles.GetMaterial(npcParticleIndex),

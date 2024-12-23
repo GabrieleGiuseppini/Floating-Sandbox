@@ -2980,8 +2980,7 @@ void SoundController::ChooseAndPlayOneShotMultipleChoiceSound(
         sound.LastPlayedSoundIndex = chosenIndex;
     }
 
-    // TODOTEST
-    LogMessage(sound.Choices[chosenIndex]->Filename, " @ ", volume);
+    //LogMessage(sound.Choices[chosenIndex]->Filename, " @ ", volume);
 
     PlayOneShotSound(
         soundType,
