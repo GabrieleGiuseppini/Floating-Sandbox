@@ -874,12 +874,35 @@ Next release:
 		= impact:
 			! All: {2..4} X [non-uw, uw}
 			= Types:
-				- Wood
-				- Metal
+				+ Wood
+				+ Metal
+					+ OW
+					- UW
 				- Concrete
+					- S
+						- OW
+						- UW
+					- M
+						- OW
+						- UW
+					- L
+						- OW
+						- UW
 				- Plastic
+					- S
+						- OW
+						- UW
+					- M
+						- OW
+						- UW
+					- L
+						- OW
+						- UW
 				+ Human
 				+ Piano
+		- Cleanup:
+			- Log @ SoundController
+			- Log @ OnImpact (?)
 
 	X Sound for NPC fire smothering in water
 		+ Just call event

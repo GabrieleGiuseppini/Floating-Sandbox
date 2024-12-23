@@ -1969,7 +1969,7 @@
                 "sub_category": "Tungsten Hull",
                 "sub_category_ordinal": 0
             },
-            "sound_type": "Wood",
+            "sound_type": "Metal",
             "specific_heat": 134.0,
             "stiffness": 1.0,
             "strength": 0.055,
