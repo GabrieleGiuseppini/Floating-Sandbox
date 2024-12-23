@@ -1795,8 +1795,8 @@ void SoundController::OnImpact(
         // Transform kinetic energy into size
         unsigned int const size = static_cast<unsigned int>(std::floorf(kineticEnergy / 5000.0f));
 
-        // Transform kinetic energy into volume multiplier (0 => 0, 5000 => 1)
-        float const volumeMultiplier = std::min(kineticEnergy / 5000.0f, 1.0f);
+        // Transform kinetic energy into volume multiplier (0 => 0, 4000 => 1)
+        float const volumeMultiplier = std::min(kineticEnergy / 4000.0f, 1.0f);
 
         PlayMSUOneShotMultipleChoiceSound(
             SoundType::Impact,
@@ -2979,6 +2979,9 @@ void SoundController::ChooseAndPlayOneShotMultipleChoiceSound(
 
         sound.LastPlayedSoundIndex = chosenIndex;
     }
+
+    // TODOTEST
+    LogMessage(sound.Choices[chosenIndex]->Filename, " @ ", volume);
 
     PlayOneShotSound(
         soundType,
