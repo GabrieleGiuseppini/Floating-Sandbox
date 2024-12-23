@@ -1890,6 +1890,7 @@ private:
 		int npcParticleOrdinal,
 		ElementIndex npcParticleIndex,
 		vec2f const & impactNormalVelocity,
+		vec2f const & responseNormalVelocity,
 		vec2f const & bounceEdgeNormal,
 		float currentSimulationTime,
 		GameParameters const & gameParameters);

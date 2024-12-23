@@ -3928,6 +3928,7 @@ void Npcs::BounceConstrainedNpcParticle(
             npcParticleOrdinal,
             npcParticle.ParticleIndex,
             normalVelocity,
+            normalResponse,
             floorEdgeNormal,
             currentSimulationTime,
             gameParameters);
@@ -3952,6 +3953,7 @@ void Npcs::OnImpact(
     int npcParticleOrdinal,
     ElementIndex npcParticleIndex,
     vec2f const & impactNormalVelocity,
+    vec2f const & responseNormalVelocity,
     vec2f const & bounceEdgeNormal, // Pointing outside of triangle
     float currentSimulationTime,
     GameParameters const & gameParameters)
@@ -4024,14 +4026,15 @@ void Npcs::OnImpact(
     {
         // Notify
 
-        float const kineticEnergy = 0.5f * mParticles.GetMass(npcParticleIndex) * impactMagnitude * impactMagnitude;
+        float const responseMagnitude = responseNormalVelocity.length();
+        float const dissipatedKineticEnergy = 0.5f * mParticles.GetMass(npcParticleIndex) * (impactMagnitude * impactMagnitude - responseMagnitude * responseMagnitude);
 
-        LogMessage("TODOTEST: ", impactMagnitude, " -> ", kineticEnergy);
+        LogMessage("TODOTEST: ", impactMagnitude, " -> Dissipated=", dissipatedKineticEnergy);
 
         mGameEventHandler->OnImpact(
             mParticles.GetMaterial(npcParticleIndex),
             mParticles.GetAnyWaterness(npcParticleIndex) >= 0.5f,
-            kineticEnergy);
+            dissipatedKineticEnergy);
     }
 }
 
@@ -4295,6 +4298,7 @@ void Npcs::MaintainOverLand(
                 p,
                 seaFloorAntiNormal * particleVelocityAlongAntiNormal,
                 -seaFloorAntiNormal.to_perpendicular(),
+                normalResponse,
                 currentSimulationTime,
                 gameParameters);
         }

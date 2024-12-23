@@ -1788,12 +1788,15 @@ void SoundController::OnStress(
 void SoundController::OnImpact(
     StructuralMaterial const & structuralMaterial,
     bool isUnderwater,
-    float kineticEnergy)
+    float kineticEnergy) // Dissipated, J
 {
     if (!!(structuralMaterial.MaterialSound))
     {
         // Transform kinetic energy into size
-        unsigned int size = static_cast<unsigned int>(std::floorf(kineticEnergy / 5000));
+        unsigned int const size = static_cast<unsigned int>(std::floorf(kineticEnergy / 5000.0f));
+
+        // Transform kinetic energy into volume multiplier (0 => 0, 5000 => 1)
+        float const volumeMultiplier = std::min(kineticEnergy / 5000.0f, 1.0f);
 
         PlayMSUOneShotMultipleChoiceSound(
             SoundType::Impact,
@@ -1801,7 +1804,7 @@ void SoundController::OnImpact(
             SoundGroupType::Effects,
             size,
             isUnderwater,
-            ImpactSoundVolume,
+            volumeMultiplier * ImpactSoundVolume,
             true);
     }
 }

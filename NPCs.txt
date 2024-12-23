@@ -878,7 +878,7 @@ Next release:
 				- Metal
 				- Concrete
 				- Plastic
-				- Human
+				= Human
 				+ Piano
 
 	X Sound for NPC fire smothering in water

@@ -63,7 +63,7 @@ struct IStructuralGameEventHandler
     virtual void OnImpact(
         StructuralMaterial const & /*structuralMaterial*/,
         bool /*isUnderwater*/,
-        float /*kineticEnergy*/) // J
+        float /*kineticEnergy*/) // Dissipated; J
     {
         // Default-implemented
     }
