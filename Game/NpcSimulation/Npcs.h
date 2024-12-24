@@ -1898,9 +1898,9 @@ private:
 	void TriggerExplosion(
 		StateType & npc,
 		ElementIndex npcParticleIndex,
-		float blastForce,
+		float blastForce, // N
 		float blastForceRadius,
-		float blastHeat,
+		float blastHeat, // KJ/s
 		float blastHeatRadius,
 		float renderRadiusOffset,
 		ExplosionType explosionType,

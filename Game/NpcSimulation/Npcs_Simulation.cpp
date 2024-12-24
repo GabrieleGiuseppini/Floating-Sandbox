@@ -4013,9 +4013,9 @@ void Npcs::OnImpact(
         TriggerExplosion(
             npc,
             npcParticleIndex,
-            blastForce,
+            blastForce, // N
             blastForceRadius,
-            blastHeat,
+            blastHeat, // KJ/s
             blastHeatRadius,
             3.0f,
             ExplosionType::Combustion,
