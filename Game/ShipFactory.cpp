@@ -336,14 +336,12 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData, RgbaImageData> ShipFac
     // Visit all ShipFactoryPoint's and create Points, i.e. the entire set of points
     //
 
-    std::vector<ElectricalElementInstanceIndex> electricalElementInstanceIndices;
-    Physics::Points points = CreatePoints(
+    auto [points, allElectricalElementInstanceIndices] = CreatePoints(
         pointInfos2,
         parentWorld,
         materialDatabase,
         gameEventDispatcher,
         gameParameters,
-        electricalElementInstanceIndices,
         shipDefinition.PhysicsData);
 
     //
@@ -375,7 +373,8 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData, RgbaImageData> ShipFac
 
     ElectricalElements electricalElements = CreateElectricalElements(
         points,
-        electricalElementInstanceIndices,
+        pointInfos2,
+        allElectricalElementInstanceIndices,
         shipDefinition.Layers.ElectricalLayer
             ? shipDefinition.Layers.ElectricalLayer->Panel
             : ElectricalPanel(),
@@ -1441,11 +1440,11 @@ ShipFactory::LayoutOptimizationResults ShipFactory::OptimizeLayout(
     }
 
     return std::make_tuple(
-        pointInfos2,
-        optimalPointRemap,
-        springInfos2,
-        optimalSpringRemap,
-        perfectSquareCount);
+        std::move(pointInfos2),
+        std::move(optimalPointRemap),
+        std::move(springInfos2),
+        std::move(optimalSpringRemap),
+        std::move(perfectSquareCount));
 }
 
 void ShipFactory::ConnectSpringsAndTriangles(
@@ -1869,13 +1868,12 @@ std::vector<ElementIndex> ShipFactory::PropagateFrontier(
     return edgeIndices;
 }
 
-Physics::Points ShipFactory::CreatePoints(
+std::tuple<Physics::Points, std::set<ElectricalElementInstanceIndex>> ShipFactory::CreatePoints(
     std::vector<ShipFactoryPoint> const & pointInfos2,
     World & parentWorld,
     MaterialDatabase const & materialDatabase,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     GameParameters const & gameParameters,
-    std::vector<ElectricalElementInstanceIndex> & electricalElementInstanceIndices,
     ShipPhysicsData const & physicsData)
 {
     Physics::Points points(
@@ -1885,7 +1883,7 @@ Physics::Points ShipFactory::CreatePoints(
         std::move(gameEventDispatcher),
         gameParameters);
 
-    electricalElementInstanceIndices.reserve(pointInfos2.size());
+    std::set<ElectricalElementInstanceIndex> allElectricalElementInstanceIndices;
 
     float const internalPressure =
         physicsData.InternalPressure // Default internal pressure is 1atm
@@ -1923,13 +1921,20 @@ Physics::Points ShipFactory::CreatePoints(
             GameRandomEngine::GetInstance().GenerateNormalizedUniformReal());
 
         //
-        // Store electrical element instance index
+        // Remember electrical element instance index
         //
 
-        electricalElementInstanceIndices.push_back(pointInfo.ElectricalElementInstanceIdx);
+        if (pointInfo.ElectricalElementInstanceIdx != NoneElectricalElementInstanceIndex)
+        {
+            auto [_, isInserted] = allElectricalElementInstanceIndices.insert(pointInfo.ElectricalElementInstanceIdx);
+            assert(isInserted);
+            (void)isInserted;
+        }
     }
 
-    return points;
+    return std::make_tuple(
+        std::move(points),
+        std::move(allElectricalElementInstanceIndices));
 }
 
 Physics::Springs ShipFactory::CreateSprings(
@@ -2097,7 +2102,8 @@ Physics::Triangles ShipFactory::CreateTriangles(
 
 ElectricalElements ShipFactory::CreateElectricalElements(
     Physics::Points const & points,
-    std::vector<ElectricalElementInstanceIndex> const & electricalElementInstanceIndices,
+    std::vector<ShipFactoryPoint> const & pointInfos2,
+    std::set<ElectricalElementInstanceIndex> const & allElectricalElementInstanceIndices,
     ElectricalPanel const & electricalPanel,
     bool flipH,
     bool flipV,
@@ -2107,16 +2113,15 @@ ElectricalElements ShipFactory::CreateElectricalElements(
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     GameParameters const & gameParameters)
 {
+    assert(points.GetRawShipPointCount() == pointInfos2.size());
+
     //
     // Verify all panel metadata indices are valid instance IDs
     //
 
     for (auto const & entry : electricalPanel)
     {
-        if (std::find(
-            electricalElementInstanceIndices.cbegin(),
-            electricalElementInstanceIndices.cend(),
-            entry.first) == electricalElementInstanceIndices.cend())
+        if (allElectricalElementInstanceIndices.count(entry.first) == 0)
         {
             throw GameException("Index '" + std::to_string(entry.first) + "' of electrical panel metadata cannot be found among electrical element indices");
         }
@@ -2145,12 +2150,12 @@ ElectricalElements ShipFactory::CreateElectricalElements(
 
     std::vector<ElectricalElementInfo> electricalElementInfos;
     ElementIndex lampElementCount = 0;
-    for (auto pointIndex : points)
+    for (auto pointIndex : points.RawShipPoints())
     {
         ElectricalMaterial const * const electricalMaterial = points.GetElectricalMaterial(pointIndex);
         if (nullptr != electricalMaterial)
         {
-            auto const instanceIndex = electricalElementInstanceIndices[pointIndex];
+            auto const instanceIndex = pointInfos2[pointIndex].ElectricalElementInstanceIdx;
 
             // Get panel metadata
             std::optional<ElectricalPanel::ElementMetadata> panelElementMetadata;

@@ -25,6 +25,7 @@
 #include <map>
 #include <memory>
 #include <optional>
+#include <set>
 #include <unordered_map>
 #include <vector>
 
@@ -156,13 +157,12 @@ private:
         ShipFactoryPointPairToIndexMap const & pointPairToSpringIndex1Map,
         IndexRemap const & springIndexRemap);
 
-    static Physics::Points CreatePoints(
+    static std::tuple<Physics::Points, std::set<ElectricalElementInstanceIndex>> CreatePoints(
         std::vector<ShipFactoryPoint> const & pointInfos2,
         Physics::World & parentWorld,
         MaterialDatabase const & materialDatabase,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         GameParameters const & gameParameters,
-        std::vector<ElectricalElementInstanceIndex> & electricalElementInstanceIndices,
         ShipPhysicsData const & physicsData);
 
     static Physics::Springs CreateSprings(
@@ -182,7 +182,8 @@ private:
 
     static Physics::ElectricalElements CreateElectricalElements(
         Physics::Points const & points,
-        std::vector<ElectricalElementInstanceIndex> const & electricalElementInstanceIndices,
+        std::vector<ShipFactoryPoint> const & pointInfos2,
+        std::set<ElectricalElementInstanceIndex> const & allElectricalElementInstanceIndices,
         ElectricalPanel const & electricalPanel,
         bool flipH,
         bool flipV,

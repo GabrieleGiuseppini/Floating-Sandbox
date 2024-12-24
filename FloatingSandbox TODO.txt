@@ -65,8 +65,7 @@
 	- See DKUZ bug
 	- Gunpowder keg
 
-	- See if can make a map of pointindex=>instance ID in ShipFactory instead of that vector
-		- Though it's a double map?
+	+ See if can make a map of pointindex=>instance ID in ShipFactory instead of that vector
 		! Cur:
 			! idx: point index 2 idx; val: pointInfos2[p].ElectricalElementInstanceIdx
 			! usage:
