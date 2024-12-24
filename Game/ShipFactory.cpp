@@ -2158,11 +2158,11 @@ ElectricalElements ShipFactory::CreateElectricalElements(
             {
                 assert(NoneElectricalElementInstanceIndex != instanceIndex);
 
-                auto const findIt = electricalPanel.Find(instanceIndex);
-                if (findIt != electricalPanel.end())
+                auto const panelEntryIt = electricalPanel.Find(instanceIndex);
+                if (panelEntryIt != electricalPanel.end()) // Note: we allow instanced elements to not have a panel entry
                 {
                     // Take metadata
-                    panelElementMetadata = findIt->second;
+                    panelElementMetadata = panelEntryIt->second;
                 }
             }
 
