@@ -48,8 +48,8 @@ public:
         , mMeshWaternessBuffer(maxParticleCount, 0.0f)
         , mMeshWaterVelocityBuffer(maxParticleCount, vec2f::zero())
         , mAnyWaternessBuffer(maxParticleCount, 0.0f)
-        , mRandomNormalizedUniformFloatBuffer(maxParticleCount, 0.0f)
         , mLightBuffer(maxParticleCount, 0.0f)
+        , mRandomNormalizedUniformFloatBuffer(maxParticleCount, 0.0f)
         // Render
         , mRenderColorBuffer(maxParticleCount, rgbaColor::zero())
         //////////////////////////////////
