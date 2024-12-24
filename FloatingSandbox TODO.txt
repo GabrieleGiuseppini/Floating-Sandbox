@@ -57,11 +57,16 @@
 		+ Changelist
 			+ "Fine-tuned explosions' physics"
 	
+	+ Redo texture notifications - test size 64+32
+		+ All 5 textures
+		+ Make sure code takes sizes from files
 
 	+ M2L to credits
 	- See DKUZ bug
-	- Linux: SFML 2.5
 	- Gunpowder keg
+
+	- See if can make a map of pointindex=>instance ID in ShipFactory instead of that vector
+		- Though it's a double map?
 
 	= Localization:
 	    "Diesel Can"
@@ -95,18 +100,10 @@
 					- TODO: list of shaders
 		- Points: see if can make them round, see https://www.khronos.org/opengl/wiki/Fragment_Shader#Inputs
 
-	- See if can make a map of pointindex=>instance ID in ShipFactory instead of that vector
-		- Though it's a double map?
-
 	- Do a pass for ships
 		+ email: Sean Dempsey
-		- https://gamejolt.com/p/i-ve-been-procrastinating-lately-but-have-gotten-to-work-on-the-foo-bxqynw9m
 		- _TO_TEST:
 			- Ryanair updates: new updates
-
-	+ Redo texture notifications - test size 64+32
-		+ All 5 textures
-		+ Make sure code takes sizes from files
 
 	- New materials (*)
 
@@ -182,11 +179,6 @@
 			- https://www.scottbuckley.com.au/library/soul-searcher/
 			- https://www.scottbuckley.com.au/library/intervention/
 		- Buy new track for farewell: https://www.pond5.com/royalty-free-music/item/204959560-nearer-my-god-thee
-
-
-	- Localization changes:
-		- NPC menu: ".../Group"
-		- New NPCs in json
 
 
 	- Consider invoking World::Upload from render thread (via RenderContext, as func<>, *synchronously*)

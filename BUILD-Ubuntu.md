@@ -80,7 +80,7 @@ sudo apt install libpng-dev
 sudo apt install libjpeg-dev
 ```
 ### SFML SDK
-SFML is a multi-media library. Floating Sandbox uses it mostly for sound support. We're going to need version 2.5.
+SFML is a multi-media library. Floating Sandbox uses it mostly for sound support. We're going to need at least version 2.5 (though Ubuntu 24.04 comes with 2.6, which is fine as well).
 ```
 sudo apt install libsfml-dev
 ```
