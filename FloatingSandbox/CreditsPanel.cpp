@@ -118,11 +118,11 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
         {0, _("SHIP ENGINEERING"), 0},
         {2, wxS("Pandadude12345    John Smith    Dkuz    Loree    Daewoom    Arkstar_    BeamierBoomer    Kazindel    KV Mauvmellow    Longhorn"), 0},
         {2, wxS("TopHatLemons    Truce#3326    RetroGraczzPL    Nomadavid    Wreno    R.M.S. Atlantic    Golden    doctor1922    TheCochu444yt"), 0},
+        {2, wxS("Matthew Anderson    DennisDanielGrimaldo    blue_funnel    Charles Calvin    Denis    Aqua    Hellooping    Ventrix    M2L"), 0},
         {2, wxS("Dumbphones    NotTelling    Hugo_2503    _ASTYuu_    Serhiiiihres    CPM    Pocketwatch    MTF    Gustav Shedletsky"), 0},
         {2, wxS("MasterGarfield    Aur\xe9lien WOLFF    Alex di Roma    2017 Leonardo    FER ZCL    AvSimplified    Techo    Ha-Ha Hans"), 0},
         {2, wxS("Albert Windsor    Takara    Rockabilly Rebel    McShooter2018    sinking_feeling    braun    P1X    Higuys153    QHM"), 0},
         {2, wxS("Pac0master    CorbinPasta93    Yorkie    Bluefox    Kiko    Raynair    Menta1ity    Transportation Fan    Sean Dempsey"), 0},
-        {2, wxS("Matthew Anderson    DennisDanielGrimaldo    blue_funnel    Charles Calvin    Denis    Aqua    Hellooping    Ventrix"), 0},
         {2, wxS("JackTheBrickfilmMaker    Michael Bozarth    Officer TimCan    Darek225    HummeL    Fox Assor"), VMargin3},
 
         {0, _("FACTORY OF IDEAS"), 0},

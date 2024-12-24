@@ -56,6 +56,12 @@
 			+ Npcs: underwater sounds (not related with this work item)
 		+ Changelist
 			+ "Fine-tuned explosions' physics"
+	
+
+	+ M2L to credits
+	- See DKUZ bug
+	- Linux: SFML 2.5
+	- Gunpowder keg
 
 	- Invite alex_guy1011 to beta group (GameJolt's guy)
 
@@ -94,6 +100,8 @@
 		+ email: Sean Dempsey
 		- Discord DMs
 		- https://gamejolt.com/p/i-ve-been-procrastinating-lately-but-have-gotten-to-work-on-the-foo-bxqynw9m
+		- _TO_TEST:
+			- Ryanair updates: new updates
 
 	+ Redo texture notifications - test size 64+32
 		+ All 5 textures
