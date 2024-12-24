@@ -2156,7 +2156,7 @@ ElectricalElements ShipFactory::CreateElectricalElements(
             std::optional<ElectricalPanel::ElementMetadata> panelElementMetadata;
             if (electricalMaterial->IsInstanced)
             {
-                assert(NoneElectricalElementInstanceIndex != instanceIndex);
+                assert(instanceIndex != NoneElectricalElementInstanceIndex);
 
                 auto const panelEntryIt = electricalPanel.Find(instanceIndex);
                 if (panelEntryIt != electricalPanel.end()) // Note: we allow instanced elements to not have a panel entry
