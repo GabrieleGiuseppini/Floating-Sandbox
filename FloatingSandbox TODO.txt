@@ -63,21 +63,23 @@
 	- Linux: SFML 2.5
 	- Gunpowder keg
 
-	- Invite alex_guy1011 to beta group (GameJolt's guy)
-
-	- Localization:
+	= Localization:
 	    "Diesel Can"
 	    "Gunpowder Keg"
 	    "Hydrogen Tank"
 	    "Sodium Tank"
 	    "TNT Crate"
-	    ---
-	    "Move NPC" -> "Move NPC/NPCs", like "Move NPC/Group of NPCs"
 
 	    + IT
 	    - ES
+		- mo
+		- npcs
 	    - RU
-	    - UK
+		- mo
+		- npcs
+	    = UK
+		+ mo
+		- npcs
 
 	- OpenGL:
 		- Flat
@@ -98,7 +100,6 @@
 
 	- Do a pass for ships
 		+ email: Sean Dempsey
-		- Discord DMs
 		- https://gamejolt.com/p/i-ve-been-procrastinating-lately-but-have-gotten-to-work-on-the-foo-bxqynw9m
 		- _TO_TEST:
 			- Ryanair updates: new updates

@@ -2,16 +2,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Floating Sandbox\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-12-24 16:07+0100\n"
+"PO-Revision-Date: 2024-12-24 17:57+0200\n"
 "Last-Translator: Gabriele Giuseppini <gabrielegiuseppini@gmail.com>\n"
 "Language-Team: Ilya Voloshin; Roman Shavernew (DioxCode)\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
-"%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
-"X-Generator: Poedit 2.4\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
+"X-Generator: Poedit 3.5\n"
 "X-Poedit-Basepath: .\n"
 
 #: ..\FloatingSandbox\MainFrame.cpp:387
@@ -227,10 +227,8 @@ msgid "Adjusts the elasticity of collisions with the ocean floor."
 msgstr "Регулює пружність зіткнень з океанським дном."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3061
-#, fuzzy
-#| msgid "Adjusts the strength of storms."
 msgid "Adjusts the extent of blast force fields onto NPCs."
-msgstr "Регулює силу штормів."
+msgstr "Налаштовує ступінь дії полів сили вибуху на НПС."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2115
 msgid "Adjusts the extent to which rain floods exposed areas of a ship."
@@ -2402,10 +2400,8 @@ msgid "Move All/Rotate All"
 msgstr "Перемістити всі/Повернути всі"
 
 #: ..\FloatingSandbox\MainFrame.cpp:607
-#, fuzzy
-#| msgid "Move NPC"
 msgid "Move NPC/NPCs"
-msgstr "Перемістити НПС"
+msgstr "Перемістіть НПС"
 
 #: ..\FloatingSandbox\MainFrame.cpp:397
 msgid "Move/Rotate"
@@ -2677,10 +2673,8 @@ msgid "Pan Increment"
 msgstr "Приріст панорамування"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3060
-#, fuzzy
-#| msgid "Shoal Radius Adjust"
 msgid "Passive Blast Radius Adjust"
-msgstr "Регулювання радіуса мілководдя"
+msgstr "Регулювання радіуса пасивного вибуху"
 
 #: ..\ShipBuilderLib\UI\ShipPropertiesEditDialog.cpp:100
 msgid "Password Protection"
@@ -2927,8 +2921,6 @@ msgid "Remove Interior Layer"
 msgstr "Видалити внутрішній шар"
 
 #: ..\FloatingSandbox\MainFrame.cpp:613
-#, fuzzy
-#| msgid "Remove NPC"
 msgid "Remove NPC/NPCs"
 msgstr "Видалити НПС"
 
@@ -4256,8 +4248,6 @@ msgid "Tsunami Rate"
 msgstr "Сила цунамі"
 
 #: ..\FloatingSandbox\MainFrame.cpp:618
-#, fuzzy
-#| msgid "Turnaround NPC"
 msgid "Turnaround NPC/NPCs"
 msgstr "Повернути НПС"
 
