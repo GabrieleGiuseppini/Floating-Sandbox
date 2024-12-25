@@ -11,7 +11,6 @@ in vec4 inOceanDetailed2;	// yBack/yMid/yFront/dYFront2 (float, world y)
 uniform mat4 paramOrthoMatrix;
 
 // Outputs
-out vec3 oceanColor;
 out vec2 shadowPosNdc;
 out float yWorld;
 out vec4 yVectorWorld; // yBackWorld/yMidWorld/yFrontWorld/dYFront2World
