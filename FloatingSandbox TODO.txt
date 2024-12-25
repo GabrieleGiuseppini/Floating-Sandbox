@@ -96,6 +96,12 @@
 			X Not enough varying's to even give a perf boost
 			X Not driven by ARB but by glsl language version
 		- Points: see if can make them round, see https://www.khronos.org/opengl/wiki/Fragment_Shader#Inputs
+			- Requires glEnable(0x8861) // GL_POINT_SPRITE
+			- Shader:
+				- Requires early discard (0.2)
+				- Requires own shader/#define
+					- Best to handle alpha as aearly as possible so can piggyback on existing early discard
+
 
 	- Do a pass for ships
 		+ email: Sean Dempsey
