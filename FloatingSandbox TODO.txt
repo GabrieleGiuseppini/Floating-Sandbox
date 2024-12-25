@@ -61,10 +61,6 @@
 		+ All 5 textures
 		+ Make sure code takes sizes from files
 
-	+ M2L to credits
-	- See DKUZ bug
-	- Gunpowder keg
-
 	+ See if can make a map of pointindex=>instance ID in ShipFactory instead of that vector
 		! Cur:
 			! idx: point index 2 idx; val: pointInfos2[p].ElectricalElementInstanceIdx
@@ -72,6 +68,10 @@
 				! Make sure ElectricalPanel's ElectricalElementInstanceIndex exist
 				! Given pointElementIndex, get its ElectricalElementInstanceIndex
 
+	+ M2L to credits
+	- See DKUZ bug
+	- See ShipBuilder on Linux
+	- Gunpowder keg
 
 	= Localization:
 	    "Diesel Can"
@@ -92,17 +92,9 @@
 		- npcs
 
 	- OpenGL:
-		- Flat
-			- ARB: https://registry.khronos.org/OpenGL/extensions/EXT/EXT_gpu_shader4.txt
-			- Test if perf good:
-				- Load ARB
-				- Get baseline perf (water?)
-				- Do shader (water?) and profile
-			- If OK:
-				- Check ARB
-				- Do #define's
-				- Use at:
-					- TODO: list of shaders
+		X Flat
+			X Not enough varying's to even give a perf boost
+			X Not driven by ARB but by glsl language version
 		- Points: see if can make them round, see https://www.khronos.org/opengl/wiki/Fragment_Shader#Inputs
 
 	- Do a pass for ships
