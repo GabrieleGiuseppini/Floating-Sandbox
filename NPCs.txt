@@ -854,7 +854,7 @@ Next release:
 + Test NPCs walking into water-filled compartment
 	X Check water @ lookahead?
 
-= Sounds:
++ Sounds:
 	+ Npcs: publish OnImpact at:
 		+ DestroyAt
 			+ Need to prevent re-sounding at next frame (tool is continuous); need a temporary "destroyed" flag (opt cur sim time)

@@ -138,7 +138,7 @@ void Npcs::UpdateHuman(
 		+ humanState.BombProximityPanicLevel
 		+ humanState.IncomingWaterProximityPanicLevel
 		+ humanState.MiscPanicLevel
-		+ mShips[npc.CurrentShipId]->SinkingShipPanicLevel
+		+ (humanState.Role != NpcHumanRoleType::Captain ? mShips[npc.CurrentShipId]->SinkingShipPanicLevel : 0.0f)
 		+ mGeneralizedPanicLevel;
 
 	// Decay

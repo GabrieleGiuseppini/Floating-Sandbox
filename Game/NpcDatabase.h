@@ -94,7 +94,9 @@ public:
 
     // Humans
 
-    std::vector<std::tuple<NpcSubKindIdType, std::string>> GetHumanSubKinds(std::string const & language) const;
+    std::vector<std::tuple<NpcSubKindIdType, std::string>> GetHumanSubKinds(
+        NpcHumanRoleType role,
+        std::string const & language) const;
 
     std::vector<std::vector<NpcSubKindIdType>> const & GetHumanSubKindIdsByRole() const
     {
@@ -155,7 +157,9 @@ public:
 
     // Furniture
 
-    std::vector<std::tuple<NpcSubKindIdType, std::string>> GetFurnitureSubKinds(std::string const & language) const;
+    std::vector<std::tuple<NpcSubKindIdType, std::string>> GetFurnitureSubKinds(
+        NpcFurnitureRoleType role,
+        std::string const & language) const;
 
     std::vector<std::vector<NpcSubKindIdType>> const & GetFurnitureSubKindIdsByRole() const
     {
@@ -315,10 +319,11 @@ private:
         std::string const & memberName,
         Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas);
 
-    template<typename TNpcSubKindContainer>
+    template<typename TNpcSubKindContainer, typename TNpcRoleType>
     static std::vector<std::tuple<NpcSubKindIdType, std::string>> GetSubKinds(
         TNpcSubKindContainer const & container,
         StringTable const & stringTable,
+        TNpcRoleType role,
         std::string const & language);
 
     static ParticleMeshKindType StrToParticleMeshKindType(std::string const & str);

@@ -127,14 +127,18 @@ NpcDatabase NpcDatabase::Load(
         std::move(stringTable));
 }
 
-std::vector<std::tuple<NpcSubKindIdType, std::string>> NpcDatabase::GetHumanSubKinds(std::string const & language) const
+std::vector<std::tuple<NpcSubKindIdType, std::string>> NpcDatabase::GetHumanSubKinds(
+    NpcHumanRoleType role,
+    std::string const & language) const
 {
-    return GetSubKinds(mHumanSubKinds, mStringTable, language);
+    return GetSubKinds(mHumanSubKinds, mStringTable, role, language);
 }
 
-std::vector<std::tuple<NpcSubKindIdType, std::string>> NpcDatabase::GetFurnitureSubKinds(std::string const & language) const
+std::vector<std::tuple<NpcSubKindIdType, std::string>> NpcDatabase::GetFurnitureSubKinds(
+    NpcFurnitureRoleType role,
+    std::string const & language) const
 {
-    return GetSubKinds(mFurnitureSubKinds, mStringTable, language);
+    return GetSubKinds(mFurnitureSubKinds, mStringTable, role, language);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -548,37 +552,41 @@ Render::TextureCoordinatesQuad NpcDatabase::ParseTextureCoordinatesQuad(
         atlasFrameMetadata.TextureCoordinatesTopRight.y });
 }
 
-template<typename TNpcSubKindContainer>
+template<typename TNpcSubKindContainer, typename TNpcRoleType>
 std::vector<std::tuple<NpcSubKindIdType, std::string>> NpcDatabase::GetSubKinds(
     TNpcSubKindContainer const & container,
     StringTable const & stringTable,
+    TNpcRoleType role,
     std::string const & language)
 {
     std::vector<std::tuple<NpcSubKindIdType, std::string>> subKindIds;
 
     for (auto const & it : container)
     {
-        std::string name = it.second.Name;
-
-        // Try to localize it
-        auto const itName = stringTable.find(it.second.Name);
-        if (itName != stringTable.cend())
+        if (it.second.Role == role)
         {
-            auto const itLang = std::find_if(
-                itName->second.cbegin(),
-                itName->second.cend(),
-                [&language](auto const & entry)
-                {
-                    return entry.Language == language;
-                });
+            std::string name = it.second.Name;
 
-            if (itLang != itName->second.cend())
+            // Try to localize it
+            auto const itName = stringTable.find(it.second.Name);
+            if (itName != stringTable.cend())
             {
-                name = itLang->Value;
-            }
-        }
+                auto const itLang = std::find_if(
+                    itName->second.cbegin(),
+                    itName->second.cend(),
+                    [&language](auto const & entry)
+                    {
+                        return entry.Language == language;
+                    });
 
-        subKindIds.emplace_back(it.first, name);
+                if (itLang != itName->second.cend())
+                {
+                    name = itLang->Value;
+                }
+            }
+
+            subKindIds.emplace_back(it.first, name);
+        }
     }
 
     return subKindIds;

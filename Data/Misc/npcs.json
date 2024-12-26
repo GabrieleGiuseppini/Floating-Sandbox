@@ -1101,6 +1101,23 @@
             },
 
             {
+                "name": "Gunpowder Keg",
+                "role": "Other",
+                "material": "Gunpowder Light Crate",
+                "particle_mesh": {
+                    "kind": "Quad",
+                    "height": 0.7,
+                    "particle_attributes_overrides": [
+                        {
+                            "buoyancy_volume_fill": 0.024
+                        }
+                    ]
+                },
+                "texture_filename_stem": "powder_keg_1",
+                "render_color": "#895925"
+            },
+
+            {
                 "name": "Hydrogen Tank",
                 "role": "Other",
                 "material": "Hydrogen Tank",

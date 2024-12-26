@@ -2895,11 +2895,14 @@ void MainFrame::RebuildNpcMenus()
 
         addMenu(std::nullopt, _("Random"));
 
-        mHumanNpcSubMenu->AppendSeparator();
-
-        for (auto const & subKindInfo : mGameController->GetHumanNpcSubKinds(language))
+        for (std::uint32_t iRole = 0; iRole <= static_cast<std::uint32_t>(NpcHumanRoleType::_Last); ++iRole)
         {
-            addMenu(std::get<0>(subKindInfo), wxString::FromUTF8(std::get<1>(subKindInfo)));
+            mHumanNpcSubMenu->AppendSeparator();
+
+            for (auto const & subKindInfo : mGameController->GetHumanNpcSubKinds(static_cast<NpcHumanRoleType>(iRole), language))
+            {
+                addMenu(std::get<0>(subKindInfo), wxString::FromUTF8(std::get<1>(subKindInfo)));
+            }
         }
     }
 
@@ -2941,11 +2944,14 @@ void MainFrame::RebuildNpcMenus()
 
         addMenu(std::nullopt, _("Random"));
 
-        mFurnitureNpcSubMenu->AppendSeparator();
-
-        for (auto const & subKindInfo : mGameController->GetFurnitureNpcSubKinds(language))
+        for (std::uint32_t iRole = 0; iRole <= static_cast<std::uint32_t>(NpcFurnitureRoleType::_Last); ++iRole)
         {
-            addMenu(std::get<0>(subKindInfo), wxString::FromUTF8(std::get<1>(subKindInfo)));
+            mFurnitureNpcSubMenu->AppendSeparator();
+
+            for (auto const & subKindInfo : mGameController->GetFurnitureNpcSubKinds(static_cast<NpcFurnitureRoleType>(iRole), language))
+            {
+                addMenu(std::get<0>(subKindInfo), wxString::FromUTF8(std::get<1>(subKindInfo)));
+            }
         }
     }
 }

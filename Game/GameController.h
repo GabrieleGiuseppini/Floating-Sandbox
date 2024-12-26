@@ -84,14 +84,18 @@ public:
         return mShipStrengthRandomizer;
     }
 
-    auto GetHumanNpcSubKinds(std::string const & language) const
+    auto GetHumanNpcSubKinds(
+        NpcHumanRoleType role,
+        std::string const & language) const
     {
-        return mNpcDatabase.GetHumanSubKinds(language);
+        return mNpcDatabase.GetHumanSubKinds(role, language);
     }
 
-    auto GetFurnitureNpcSubKinds(std::string const & language) const
+    auto GetFurnitureNpcSubKinds(
+        NpcFurnitureRoleType role,
+        std::string const & language) const
     {
-        return mNpcDatabase.GetFurnitureSubKinds(language);
+        return mNpcDatabase.GetFurnitureSubKinds(role, language);
     }
 
     /////////////////////////////////////////////////////////
