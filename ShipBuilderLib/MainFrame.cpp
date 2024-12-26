@@ -5045,7 +5045,6 @@ void MainFrame::Open()
 
     // Show us
     Show(true);
-    Maximize();
     Layout();
 
     // Select "Main" ribbon page

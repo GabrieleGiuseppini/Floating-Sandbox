@@ -4159,7 +4159,7 @@ void Npcs::MaintainNpcUnfolded(
 
         for (size_t p = 0; p < npc.ParticleMesh.Particles.size(); ++p)
         {
-            if (!npc.BeingPlacedState.has_value() || npc.BeingPlacedState->DoMoveWholeMesh || p != npc.BeingPlacedState->AnchorParticleOrdinal)
+            if (!npc.BeingPlacedState.has_value() || npc.BeingPlacedState->DoMoveWholeMesh || p != static_cast<decltype(p)>(npc.BeingPlacedState->AnchorParticleOrdinal))
             {
                 ElementIndex const particleIndex = npc.ParticleMesh.Particles[p].ParticleIndex;
                 ElementIndex const diagTailParticleIndex = npc.ParticleMesh.Particles[diagonalEndpoints[p].first].ParticleIndex;
