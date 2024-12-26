@@ -68,6 +68,23 @@
 				! Make sure ElectricalPanel's ElectricalElementInstanceIndex exist
 				! Given pointElementIndex, get its ElectricalElementInstanceIndex
 
+	+ OpenGL:
+		X Flat
+			X Not enough varying's to even give a perf boost
+			X Not driven by ARB but by glsl language version
+		X Points: see if can make them round, see https://www.khronos.org/opengl/wiki/Fragment_Shader#Inputs
+			- Requires glEnable(0x8861) // GL_POINT_SPRITE
+				<enum value="0x8861" name="GL_POINT_SPRITE" group="TextureEnvTarget"/>
+				<enum value="0x8861" name="GL_POINT_SPRITE_ARB"/>
+			- Shader:
+				- Requires early discard (0.2)
+				- Requires own shader/#define
+					- Best to handle alpha as aearly as possible so can piggyback on existing early discard
+			X Not liked by kids
+		X GL_POLYGON_SMOOTH for land
+			X Doesn't seem to help
+
+
 	+ M2L to credits
 	- See DKUZ bug
 	- See ShipBuilder on Linux
@@ -90,20 +107,6 @@
 	    = UK
 		+ mo
 		- npcs
-
-	- OpenGL:
-		X Flat
-			X Not enough varying's to even give a perf boost
-			X Not driven by ARB but by glsl language version
-		- Points: see if can make them round, see https://www.khronos.org/opengl/wiki/Fragment_Shader#Inputs
-			- Requires glEnable(0x8861) // GL_POINT_SPRITE
-				<enum value="0x8861" name="GL_POINT_SPRITE" group="TextureEnvTarget"/>
-				<enum value="0x8861" name="GL_POINT_SPRITE_ARB"/>
-			- Shader:
-				- Requires early discard (0.2)
-				- Requires own shader/#define
-					- Best to handle alpha as aearly as possible so can piggyback on existing early discard
-		- GL_POLYGON_SMOOTH for land
 
 
 	- Do a pass for ships

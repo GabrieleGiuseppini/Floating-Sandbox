@@ -182,7 +182,7 @@
 		],
 		"texture_geometry_overrides": {
 			"head_length_fraction": 0.19,
-			"torso_wh_ratio": 0.37,
+			"torso_wh_ratio": 0.47,
 			"leg_wh_ratio": 0.4
 		},
                 "render_color": "#BBBACF"
@@ -230,7 +230,7 @@
 		],
 		"texture_geometry_overrides": {
 			"head_length_fraction": 0.20,
-			"torso_wh_ratio": 0.43,
+			"torso_wh_ratio": 0.46,
 			"leg_wh_ratio": 0.4
 		},
                 "render_color": "#B8AFBF"
@@ -326,7 +326,7 @@
 		],
 		"texture_geometry_overrides": {
 			"head_length_fraction": 0.20,
-			"torso_wh_ratio": 0.447,
+			"torso_wh_ratio": 0.49,
 			"leg_wh_ratio": 0.4
 		},
                 "render_color": "#9DBFC7"
