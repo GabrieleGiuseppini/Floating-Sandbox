@@ -4767,6 +4767,10 @@ void MainFrame::OnWorkCanvasPaint(wxPaintEvent & /*event*/)
         try
         {
             initialAction();
+
+#ifdef __WXGTK__
+            Maximize();
+#endif
         }
         catch (std::exception const & e)
         {

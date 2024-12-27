@@ -88,8 +88,9 @@
 	+ M2L to credits
 	- See ShipBuilder on Linux
 		= '+' shortcut
-			= Also @ FS
+			+ Also @ FS
 		- Maximization of frame
+			- Try to do it in InitialAction
 	- Explosion json attributes rearc
 		- Materials structural:
 			- Diesel Can, Gunpowder * Crate, * Tank: only used for NPCs: hence all explosive_* attributes rescaled so that we don't have scaling in code
