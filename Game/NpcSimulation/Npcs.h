@@ -2034,7 +2034,7 @@ private:
 
 		// Ok, it's a floor and we're not ghosting
 
-		// If it's not the secondary of a dipole, then every floor is a floor
+		// If this particle is not the secondary of a dipole, then every floor is a floor
 
 		if (npc.ParticleMesh.Particles.size() != 2
 			|| npcParticleOrdinal == 0)
@@ -2106,6 +2106,7 @@ private:
 		// It's on the other side of the edge if its "edge's" b-coord is negative
 		if (primaryBaryCoords[(edgeOrdinal + 2) % 3] >= -0.05f) // Some slack
 		{
+			// Same side
 			return true;
 		}
 
@@ -2116,7 +2117,7 @@ private:
 		// we consider this as a floor only if the human is not "quite vertical"
 
 		vec2f const & secondaryPosition = npcParticles.GetPosition(npcParticle.ParticleIndex);
-		vec2f const humanDir = (primaryPosition - secondaryPosition).normalise(); // Pointing down to feet
+		vec2f const humanDir = (primaryPosition - secondaryPosition).normalise_approx(); // Pointing down to feet
 
 		// It's vertical when y is -1.0 (cos of angle)
 		if (humanDir.y > -0.8f)

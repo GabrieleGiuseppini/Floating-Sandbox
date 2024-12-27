@@ -570,7 +570,6 @@ void Npcs::UpdateNpcPhysics(
 
                     float const blastForceRadius =
                         mParticles.GetMaterial(particleIndex).ExplosiveCombustionForceRadius
-                        * 0.1f // Magic number
                         * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
 
                     float const blastHeat =
@@ -580,7 +579,6 @@ void Npcs::UpdateNpcPhysics(
 
                     float const blastHeatRadius =
                         mParticles.GetMaterial(particleIndex).ExplosiveCombustionHeatRadius
-                        * 0.1f // Magic number
                         * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
 
                     TriggerExplosion(
@@ -3995,7 +3993,6 @@ void Npcs::OnImpact(
 
         float const blastForceRadius =
             mParticles.GetMaterial(npcParticleIndex).ExplosiveCombustionForceRadius
-            * 0.1f // Magic number
             * impactMultiplier * impactMultiplier
             * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
 
@@ -4006,7 +4003,6 @@ void Npcs::OnImpact(
 
         float const blastHeatRadius =
             mParticles.GetMaterial(npcParticleIndex).ExplosiveCombustionHeatRadius
-            * 0.1f // Magic number
             * impactMultiplier * impactMultiplier
             * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
 

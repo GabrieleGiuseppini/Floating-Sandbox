@@ -2194,7 +2194,7 @@ bool Npcs::DestroyAt(
 
                     float const blastForceRadius =
                         mParticles.GetMaterial(explosiveParticleInRadius).ExplosiveCombustionForceRadius
-                        * 0.05f // Magic number
+                        * 0.5f // Magic number - lower radius with Smash
                         * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
 
                     float const blastHeat =
@@ -2204,7 +2204,7 @@ bool Npcs::DestroyAt(
 
                     float const blastHeatRadius =
                         mParticles.GetMaterial(explosiveParticleInRadius).ExplosiveCombustionHeatRadius
-                        * 0.05f // Magic number
+                        * 0.5f // Magic number - lower radius with Smash
                         * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
 
                     TriggerExplosion(

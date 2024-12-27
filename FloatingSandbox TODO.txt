@@ -91,10 +91,12 @@
 			+ Also @ FS
 		+ Maximization of frame
 			+ Try to do it in InitialAction
-	- Explosion json attributes rearc
-		- Materials structural:
-			- Diesel Can, Gunpowder * Crate, * Tank: only used for NPCs: hence all explosive_* attributes rescaled so that we don't have scaling in code
-				- Other than 0.5 when we want to do half
+	+ Explosion json attributes rearc
+		+ Materials structural:
+			+ Diesel Can, Gunpowder * Crate, * Tank: only used for NPCs: hence all explosive_* attributes rescaled so that we don't have scaling in code
+				+ Other than 0.5 when we want to do half
+		+ Remove 0.1 scale
+
 	- See DKUZ bug
 	+ Gunpowder keg
 

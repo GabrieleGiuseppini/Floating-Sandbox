@@ -887,9 +887,11 @@ Next release:
 		X Takes too long to figure out, seems delayed
 	+ changelist
 
+= Hanging by the feet: do something about it
+	= Shorter time before "disconnecting"
+
 - Misc:
-	! TODO: move the long-term ones below to a new "Wishlist" section
-	- Hanging by the feet: do something, e.g. shorter time before "disconnecting"
+	! TODO: move the long-term ones below to a new "Wishlist" section	
 	- Ghost Walls bug:
 		- https://discord.com/channels/559822257275404307/561385724855975938/1309212146508365834
 		- Test Data/NPC walls bug report ship.shps
