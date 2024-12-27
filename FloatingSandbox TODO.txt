@@ -86,8 +86,15 @@
 
 
 	+ M2L to credits
-	- See DKUZ bug
 	- See ShipBuilder on Linux
+		= '+' shortcut
+			= Also @ FS
+		- Maximization of frame
+	- Explosion json attributes rearc
+		- Materials structural:
+			- Diesel Can, Gunpowder * Crate, * Tank: only used for NPCs: hence all explosive_* attributes rescaled so that we don't have scaling in code
+				- Other than 0.5 when we want to do half
+	- See DKUZ bug
 	+ Gunpowder keg
 
 	= Localization:

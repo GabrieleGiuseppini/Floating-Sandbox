@@ -948,15 +948,17 @@ wxRibbonPanel * MainFrame::CreateMainViewRibbonPanel(wxRibbonPage * parent)
 
         panelGridSizer->Add(mZoomInButton);
 
-        AddAcceleratorKey(wxACCEL_NORMAL, (int)'+',
-            [this]()
+        auto zoomInHandler = [this]()
             {
                 // With keys we have no insurance of a controller
                 if (mController)
                 {
                     ZoomIn();
                 }
-            });
+            };
+
+        AddAcceleratorKey(wxACCEL_NORMAL, (int)'+', zoomInHandler);
+        AddAcceleratorKey(wxACCEL_NORMAL, (int)WXK_NUMPAD_ADD, zoomInHandler);
     }
 
     // Zoom Out
@@ -974,15 +976,17 @@ wxRibbonPanel * MainFrame::CreateMainViewRibbonPanel(wxRibbonPage * parent)
 
         panelGridSizer->Add(mZoomOutButton);
 
-        AddAcceleratorKey(wxACCEL_NORMAL, (int)'-',
-            [this]()
+        auto zoomOutHandler = [this]()
             {
                 // With keys we have no insurance of a controller
                 if (mController)
                 {
                     ZoomOut();
                 }
-            });
+            };
+
+        AddAcceleratorKey(wxACCEL_NORMAL, (int)'-', zoomOutHandler);
+        AddAcceleratorKey(wxACCEL_NORMAL, (int)WXK_NUMPAD_SUBTRACT, zoomOutHandler);
     }
 
     // Reset View
