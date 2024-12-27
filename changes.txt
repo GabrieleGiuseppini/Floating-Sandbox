@@ -1,20 +1,21 @@
 1.19.1
-- Added thermodynamics and sounds to NPC simulation
-	- With proper heat dissipation and transfer between NPCs and ship/ambient
-- Added explosive furniture NPCs (TNT crate, hydrogen & sodium tanks, diesel can)
+- Added explosive furniture NPCs
 	- ...adding a whole new dimension to the game!
 	- Fine-tuned general explosion physics in the process
+- Added thermodynamics and sounds to NPC simulation
+	- With proper heat dissipation and transfer between NPCs and ship/ambient
 - Improved Human NPC behaviors:
 	- NPCs now "look ahead" when walking and avoid falling into holes
 	- NPCs run away from running water
 - More tools interact with NPCs
-	- HeatBlaster, laser cannon, fire extinguisher
+	- Among which: HeatBlaster, laser cannon, fire extinguisher
 - The Move, Remove, and Turnaround NPC tools may now be used on *groups* of NPCs
 - NPCs on a ship are now lit by the ship's lamps
 - Added 3 new ships
 - Bug fixes:
 	- Fixed a crash when using the repair tool on a part of the ship that had exploded (thanks to AlexGuy!)
 	- Fixed a crash happening after adding and removing many NPCs multiple times
+	- Linux: fixed ShipBuilder window not opening up as maximized
 - ...and a few more small improvements here and there!
 
 1.19.0
