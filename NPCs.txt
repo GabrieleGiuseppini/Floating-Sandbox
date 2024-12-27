@@ -887,8 +887,8 @@ Next release:
 		X Takes too long to figure out, seems delayed
 	+ changelist
 
-= Hanging by the feet: do something about it
-	= Shorter time before "disconnecting"
++ Hanging by the feet: do something about it
+	+ Shorter time before "disconnecting"
 
 - Misc:
 	! TODO: move the long-term ones below to a new "Wishlist" section	
