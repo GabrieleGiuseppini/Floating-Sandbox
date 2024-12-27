@@ -17,6 +17,7 @@
 	- Fixed a crash happening after adding and removing many NPCs multiple times
 	- Linux: fixed ShipBuilder window not opening up as maximized
 - ...and a few more small improvements here and there!
+- Musical theme for this release: Nils Frahm, entire discography
 
 1.19.0
 - Initial implementation of NPCs!

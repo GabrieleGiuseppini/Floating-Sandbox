@@ -470,10 +470,10 @@ void Npcs::UpdateHuman(
 				humanState.CurrentBehaviorState.Constrained_KnockedOut.ProgressToPreRising + toPreRisingIncrement,
 				0.0f);
 
-			// 30-40-50 (panic 0) -> 15-20-25 (panic +INF)
+			// 30-40-50 (panic 0) -> 12-16-20 (panic +INF)
 			float const toPreRisingTarget =
 				(40.0f + npc.RandomNormalizedUniformSeed * 10.0f)
-				/ (1.0f + std::min(humanState.ResultantPanicLevel, 1.0f));
+				/ (1.0f + std::min(humanState.ResultantPanicLevel, 1.5f));
 
 #ifdef BARYLAB_PROBING
 			publishStateQuantity = std::make_tuple("ProgressToPreRising", std::to_string(humanState.CurrentBehaviorState.Constrained_KnockedOut.ProgressToPreRising / toPreRisingTarget));
