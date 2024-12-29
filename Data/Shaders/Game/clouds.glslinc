@@ -76,7 +76,7 @@ void main()
     // Scale noise: [-amplitude/2, +amplitude/2]
     //
     // Amplitude is zero at borders
-    #define BASE_AMPLITUDE 0.15 // Good for a texture of width 1.0
+    #define BASE_AMPLITUDE 0.13 // Good for a texture of width 1.0
     float amplitude = 
         (BASE_AMPLITUDE * textureWidthAdjust)
         * (1.0 - smoothstep(0.85, 1.0, max(abs(virtualTextureCoords.x), abs(virtualTextureCoords.y))));

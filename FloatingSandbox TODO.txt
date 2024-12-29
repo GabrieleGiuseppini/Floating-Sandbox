@@ -161,8 +161,8 @@
 			+ Need Illustrator
 			+ Cancel subscription
 				! By clicking "Agree and subscribe", you agree: After your trial ends, you will be charged € 32,76 (excl. VAT) monthly. Your subscription will automatically renew monthly until you cancel (price subject to change). Cancel before your trial ends and you won't be charged. Cancel anytime via Adobe Account or Customer Support. Cancel before Dec 10, 2024 to get a full refund. You also agree to the Terms of Use and the Subscription and Cancellation Terms.
-			= Replace all texture clouds with these
-				- Need to resize all though
+			+ Replace all texture clouds with these
+				+ Need to resize all though
 					! Was: 2048x2048
 				+ FIX: truncated frame in atlas
 					+ Redo algo
@@ -191,14 +191,13 @@
 					+ Cleanup
 					+ Unit tests
 					+ changelist
+				+ Test (visually) clouds
 
 		X Test cloud 8008 which is on desktop (replacing cloud_2 in Atlas which is a badly processed version)
 			X See if we have it in authoring already though
 			X It's doo dark ("rainy")
-
-		- Render clouds with Z depth
-			- Currently broken
-			- Remove debug log of Z's
+		- Test storm
+			- See if can lower # of clouds
 		- Changelist
 
 	- No redistribute
