@@ -275,19 +275,11 @@ typename TextureAtlasBuilder<TextureGroups>::AtlasSpecification TextureAtlasBuil
         });
 
     //
-    // Calculate size of atlas
+    // Initialize atlas size
     //
 
-    uint64_t totalArea = 0;
-    for (auto const & ti : sortedTextureInfos)
-    {
-        totalArea += static_cast<uint64_t>(ti.InAtlasSize.width * ti.InAtlasSize.height);
-    }
-
-    // Square root of area, floor'd to next power of two, minimized
-    int const atlasSide = ceil_power_of_two(static_cast<int>(std::floor(std::sqrt(static_cast<float>(totalArea))))) / 2;
-    int atlasWidth = atlasSide;
-    int atlasHeight = atlasSide;
+    int atlasWidth = 0;
+    int atlasHeight = 0;
 
     //
     // Place tiles
@@ -298,10 +290,49 @@ typename TextureAtlasBuilder<TextureGroups>::AtlasSpecification TextureAtlasBuil
 
     std::vector<typename AtlasSpecification::DuplicateTextureInfo> duplicateTextureInfos;
 
-    std::vector<vec2i> positionStack;
-    positionStack.emplace_back(vec2i(0, 0));
-
     ImageFileMap<rgbaColor, TextureFrameMetadata<TextureGroups>> dupeMap; // For duplicate suppression
+
+    // Bands
+
+    // The width of a VBand is the width of the first (bottom) item in it.
+    struct VBand
+    {
+        int const Width;
+        int const LeftX; // For convenience; matches left's VBand right (or zero)
+        int TopY;
+
+        VBand(
+            int width,
+            int leftX)
+            : Width(width)
+            , LeftX(leftX)
+            , TopY(0)
+        {}
+    };
+
+    // The height of a HBand is the height of the first (left) item in it.
+    struct HBand
+    {
+        int const Height;
+        int const BottomY; // For convenience; matches b-1's top (or zero)
+        int RightmostX;
+
+        std::vector<VBand> VBands;
+
+        HBand(
+            int height,
+            int bottomY)
+            : Height(height)
+            , BottomY(bottomY)
+            , RightmostX(0)
+            , VBands()
+        {}
+    };
+
+    std::vector<HBand> hBands;
+
+    int topmostY = 0; // Convenience: top of last (top) HBand
+    int rightmostX = 0; // Convenience: max(right) among all last (right) VBand's
 
     for (TextureInfo const & t : sortedTextureInfos)
     {
@@ -350,69 +381,248 @@ typename TextureAtlasBuilder<TextureGroups>::AtlasSpecification TextureAtlasBuil
 
         if (!isDuplicate)
         {
+            //
             // Place frame
+            //
+
+            LogMessage("Placing frame ", t.FrameId.FrameIndex, " ", t.InAtlasSize);
 
             while (true)
             {
-                vec2i const currentPosition = positionStack.back();
+                std::stringstream ss; ss << "  Bands: ";
+                for (size_t h = 0; h < hBands.size(); ++h)
+                    ss << "(" << "H=" << hBands[h].Height << " Rx=" << hBands[h].RightmostX << ") ";
+                LogMessage(ss.str());
 
-                if (currentPosition.x + t.InAtlasSize.width < atlasWidth   // Fits at current position
-                    || positionStack.size() == 1 // We can't backtrack
-                    || (ceil_power_of_two(currentPosition.x + t.InAtlasSize.width) - atlasWidth) <= (ceil_power_of_two(positionStack.front().y + t.InAtlasSize.height) - atlasHeight)) // Extra W <= Extra H
+                // Look for a band that is "viable" for this frame,
+                // and place texture frame in it
+                bool hasBeenPlaced = false;
+                for (size_t h = 0; h < hBands.size(); ++h)
                 {
-                    // Put it at the current location
-                    textureLocationInfos.emplace_back(
-                        t.FrameId,
-                        currentPosition,
-                        t.InAtlasSize);
-
-                    if (positionStack.size() == 1
-                        || currentPosition.y + t.InAtlasSize.height < std::next(positionStack.rbegin())->y)
+                    // If band's height fits this frame, and there's room to the right
+                    if (hBands[h].Height >= t.InAtlasSize.height && hBands[h].RightmostX + t.InAtlasSize.width <= atlasWidth)
                     {
-                        // Move current location up to top
-                        positionStack.back().y += t.InAtlasSize.height;
+                        // Found!
+
+                        LogMessage("  FOUND: ", h);
+
+                        // Place here
+                        textureLocationInfos.emplace_back(
+                            t.FrameId,
+                            vec2i(hBands[h].RightmostX, hBands[h].BottomY),
+                            t.InAtlasSize);
+
+                        // Update band's rightmost X
+                        hBands[h].RightmostX += t.InAtlasSize.width;
+
+                        // Update extrema
+                        topmostY = std::max(topmostY, hBands[h].BottomY + t.InAtlasSize.height);
+                        rightmostX = std::max(rightmostX, hBands[h].RightmostX + t.InAtlasSize.width);
+
+                        hasBeenPlaced = true;
+                        break;
                     }
-                    else
-                    {
-                        // Current location is completed
-                        assert(currentPosition.y + t.InAtlasSize.height >= std::next(positionStack.rbegin())->y);
+                }
 
-                        // Pop it from stack
-                        positionStack.pop_back();
-                    }
-
-                    // Add new location to the right of this tile
-                    positionStack.emplace_back(currentPosition.x + t.InAtlasSize.width, currentPosition.y);
-
-                    // Adjust atlas dimensions
-                    atlasWidth = ceil_power_of_two(std::max(atlasWidth, currentPosition.x + t.InAtlasSize.width));
-                    atlasHeight = ceil_power_of_two(std::max(atlasHeight, currentPosition.y + t.InAtlasSize.height));
-
-                    // We are done with this tile
+                if (hasBeenPlaced)
+                {
                     break;
+                }
+
+                //
+                // No luck
+                //
+                // See if can get away with a new H band
+                //
+
+                assert(hBands.empty() || topmostY == hBands.back().BottomY + hBands.back().Height);
+                if (topmostY + t.InAtlasSize.height <= atlasHeight
+                    && t.InAtlasSize.width <= atlasWidth) // And Atlas must fit the frame horizontally
+                {
+                    hBands.emplace_back(t.InAtlasSize.height, topmostY);
+
+                    LogMessage("  No luck; added band @ y=", topmostY);
                 }
                 else
                 {
-                    // Backtrack
-                    positionStack.pop_back();
-                    assert(!positionStack.empty());
+                    //
+                    // No luck
+                    //
+                    // Enlarge atlas and retry
+                    //
+
+                    // Choose direction that wastes the least
+                    int const candidateNewAtlasHeight = ceil_power_of_two(atlasHeight + t.InAtlasSize.height);
+                    int const candidateNewAtlasWidth = ceil_power_of_two(atlasWidth + t.InAtlasSize.width);
+                    if ((candidateNewAtlasHeight - (topmostY + t.InAtlasSize.height)) >= (candidateNewAtlasWidth - (rightmostX + t.InAtlasSize.width)))
+                    {
+                        // Go wide
+                        atlasWidth = candidateNewAtlasWidth;
+                    }
+                    else
+                    {
+                        // Go high
+                        atlasHeight = candidateNewAtlasHeight;
+                    }
+
+                    LogMessage("  No luck; enlarged atlas: ", atlasWidth, " x ", atlasHeight);
                 }
             }
         }
     }
 
-    //
-    // Round final size
-    //
+    assert(atlasWidth == ceil_power_of_two(atlasWidth));
+    assert(atlasHeight == ceil_power_of_two(atlasHeight));
 
-    atlasWidth = ceil_power_of_two(atlasWidth);
-    atlasHeight = ceil_power_of_two(atlasHeight);
+
+    ////// TODOOLD
+
+    //////
+    ////// Place tiles
+    //////
+
+    ////std::vector<typename AtlasSpecification::TextureLocationInfo> textureLocationInfos;
+    ////textureLocationInfos.reserve(inputTextureInfos.size());
+
+    ////std::vector<typename AtlasSpecification::DuplicateTextureInfo> duplicateTextureInfos;
+
+    ////std::vector<vec2i> positionStack;
+    ////positionStack.emplace_back(vec2i(0, 0));
+
+    ////ImageFileMap<rgbaColor, TextureFrameMetadata<TextureGroups>> dupeMap; // For duplicate suppression
+
+    ////for (TextureInfo const & t : sortedTextureInfos)
+    ////{
+    ////    // Check whether we need to look for duplicates
+    ////    bool isDuplicate = false;
+    ////    if (!!(options & AtlasOptions::SuppressDuplicates))
+    ////    {
+    ////        // Load this frame
+    ////        TextureFrame<TextureGroups> frame = frameLoader(t.FrameId);
+
+    ////        assert(frame.Metadata.FrameId == t.FrameId);
+
+    ////        // Check if it's a duplicate of a frame we have already seen
+    ////        size_t imageHash = frame.TextureData.Hash();
+    ////        auto originalFrameMetadata = dupeMap.Find(
+    ////            imageHash,
+    ////            frame.TextureData,
+    ////            [frameLoader](TextureFrameMetadata<TextureGroups> const & frameMetadata) -> ImageData<rgbaColor>
+    ////            {
+    ////                return frameLoader(frameMetadata.FrameId).TextureData;
+    ////            });
+
+    ////        if (originalFrameMetadata.has_value())
+    ////        {
+    ////            // It's a duplicate
+
+    ////            LogMessage("Frame \"", frame.Metadata.FilenameStem, "\" is a duplicate of \"", originalFrameMetadata->FilenameStem, "\"");
+
+    ////            isDuplicate = true;
+
+    ////            // Store duplicate information
+    ////            duplicateTextureInfos.emplace_back(
+    ////                frame.Metadata,
+    ////                originalFrameMetadata->FrameId);
+    ////        }
+    ////        else
+    ////        {
+    ////            // Add this original
+
+    ////            dupeMap.Add(
+    ////                imageHash,
+    ////                frame.TextureData.Size,
+    ////                frame.Metadata);
+    ////        }
+    ////    }
+
+    ////    if (!isDuplicate)
+    ////    {
+    ////        // Place frame
+
+    ////        while (true)
+    ////        {
+    ////            LogMessage("-----", t.FrameId.FrameIndex);
+
+    ////            vec2i const currentPosition = positionStack.back();
+
+    ////            // TODOTEST
+    ////            std::stringstream ss;
+    ////            ss << "   ";
+    ////            for (auto const & p : positionStack)
+    ////            {
+    ////                ss << p;
+    ////                ss << "  ";
+    ////            }
+    ////            LogMessage(ss.str());
+
+    ////            if (currentPosition.x + t.InAtlasSize.width < atlasWidth   // Fits at current position
+    ////                || positionStack.size() == 1 // We can't backtrack
+    ////                || (ceil_power_of_two(currentPosition.x + t.InAtlasSize.width) - atlasWidth) <= (ceil_power_of_two(positionStack.front().y + t.InAtlasSize.height) - atlasHeight)) // Extra W <= Extra H
+    ////            {
+    ////                // Put it at the current location
+    ////                textureLocationInfos.emplace_back(
+    ////                    t.FrameId,
+    ////                    currentPosition,
+    ////                    t.InAtlasSize);
+
+    ////                LogMessage("   PLACED: ", t.FrameId.FrameIndex, " @ ", currentPosition, " size=", t.InAtlasSize);
+
+    ////                if (positionStack.size() == 1
+    ////                    || currentPosition.y + t.InAtlasSize.height < std::next(positionStack.rbegin())->y)
+    ////                {
+    ////                    // Move current location up to top
+    ////                    positionStack.back().y += t.InAtlasSize.height;
+
+    ////                    LogMessage("     Bumped back up by ", t.InAtlasSize.height);
+    ////                }
+    ////                else
+    ////                {
+    ////                    // Current location is completed
+    ////                    assert(currentPosition.y + t.InAtlasSize.height >= std::next(positionStack.rbegin())->y);
+
+    ////                    // Pop it from stack
+    ////                    positionStack.pop_back();
+
+    ////                    LogMessage("     Popped back");
+    ////                }
+
+    ////                // Add new location to the right of this tile
+    ////                positionStack.emplace_back(currentPosition.x + t.InAtlasSize.width, currentPosition.y);
+    ////                LogMessage("     Added new: ", positionStack.back());
+
+    ////                // Adjust atlas dimensions
+    ////                atlasWidth = ceil_power_of_two(std::max(atlasWidth, currentPosition.x + t.InAtlasSize.width));
+    ////                atlasHeight = ceil_power_of_two(std::max(atlasHeight, currentPosition.y + t.InAtlasSize.height));
+
+    ////                // We are done with this tile
+    ////                break;
+    ////            }
+    ////            else
+    ////            {
+    ////                // Backtrack
+    ////                positionStack.pop_back();
+    ////                assert(!positionStack.empty());
+
+    ////                LogMessage("   BACKTRACK");
+    ////            }
+    ////        }
+    ////    }
+    ////}
+
+    //////
+    ////// Round final size
+    //////
+
+    ////atlasWidth = ceil_power_of_two(atlasWidth);
+    ////atlasHeight = ceil_power_of_two(atlasHeight);
 
     //
     // Return spec
     //
 
-    assert(textureLocationInfos.size() + duplicateTextureInfos.size() == inputTextureInfos.size());
+    //TODOTEST
+    //assert(textureLocationInfos.size() + duplicateTextureInfos.size() == inputTextureInfos.size());
 
     return AtlasSpecification(
         std::move(textureLocationInfos),
@@ -546,6 +756,8 @@ TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::InternalBuildAtl
 
         // Calculate actual position of frame in atlas
         vec2i frameActualPosition = textureLocationInfo.InAtlasBottomLeft + framePositionOffset;
+
+        LogMessage("TODOTEST: ", textureLocationInfo.FrameId.FrameIndex, ":", textureImageData.Size, " @ ", frameActualPosition);
 
         // Copy frame
         CopyImage(
