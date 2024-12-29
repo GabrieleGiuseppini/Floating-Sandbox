@@ -497,6 +497,7 @@ typename TextureAtlasBuilder<TextureGroups>::AtlasSpecification TextureAtlasBuil
                     // Compelled to go high - with guarantee
                     atlasHeight = candidateNewAtlasHeight;
                 }
+                // Minimize waste
                 else if ((candidateNewAtlasHeight - (totalTopmostY + t.InAtlasSize.height)) >= (candidateNewAtlasWidth - (totalRightmostX + t.InAtlasSize.width)))
                 {
                     // Go wide

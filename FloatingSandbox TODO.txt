@@ -161,11 +161,50 @@
 			+ Need Illustrator
 			+ Cancel subscription
 				! By clicking "Agree and subscribe", you agree: After your trial ends, you will be charged € 32,76 (excl. VAT) monthly. Your subscription will automatically renew monthly until you cancel (price subject to change). Cancel before your trial ends and you won't be charged. Cancel anytime via Adobe Account or Customer Support. Cancel before Dec 10, 2024 to get a full refund. You also agree to the Terms of Use and the Subscription and Cancellation Terms.
+			= Replace all texture clouds with these
+				- Need to resize all though
+					! Was: 2048x2048
+				+ FIX: truncated frame in atlas
+					+ Redo algo
+					+ Test/Rebuild all atlases
+						! Old:
+							01:34:15.685398:Generic linear texture atlas size: (1024 x 512)
+							01:34:15.793748:Generic mipmapped texture atlas size: (4096 x 2048)
+							01:34:16.111068:Explosion texture atlas size: (4096 x 4096)
+							01:34:16.149235:NPC texture atlas size: (1024 x 1024)
+							01:34:16.219541:Cloud texture atlas size: (2048 x 2048)
+							01:34:16.257569:Fish texture atlas size: (1024 x 1024)
+							01:34:16.663246:Font texture atlas size: (512 x 512)
+						+ New:
+							01:35:20.540971:Generic linear texture atlas size: (2048 x 256) ==
+							01:35:20.894641:Generic mipmapped texture atlas size: (4096 x 2048) ==
+							02:20:17.073347:Explosion texture atlas size: (4096 x 4096) ==
+							02:20:17.100341:NPC texture atlas size: (512 x 1024)  !!!
+							02:20:17.285106:Cloud texture atlas size: (2048 x 2048) ==
+							01:35:22.061520:Fish texture atlas size: (1024 x 512) !!!
+							01:35:22.870568:Font texture atlas size: (512 x 512)  ===
+						+ Command-line 
+							+ Visually 
+							+ In-game
+						+ In-game (liner, mipmapped, fishes)
+							+ In-game
+					+ Cleanup
+					+ Unit tests
+					+ changelist
 
-		- Test cloud 8008 which is on desktop (replacing cloud_2 in Atlas which is a badly processed version)
+		X Test cloud 8008 which is on desktop (replacing cloud_2 in Atlas which is a badly processed version)
 			X See if we have it in authoring already though
+			X It's doo dark ("rainy")
 
+		- Render clouds with Z depth
+			- Currently broken
+			- Remove debug log of Z's
 		- Changelist
+
+	- No redistribute
+		- @ License
+		- @ Atlases
+		- EULA @ installer?
 
 	= See if fire may emit Heavy smoke
 		! Gist:
@@ -194,9 +233,13 @@
 	- Add more music:
 		- Background:
 			+ "Symmetry" - Kevin MacLeod (incompetech.com)			
+			= https://www.scottbuckley.com.au/library/intervention/
+				! 'Intervention' by Scott Buckley - released under CC-BY 4.0. www.scottbuckley.com.au
+				- Deterministic music sorting
+				- CreditsPanel
+				- changelist
 			- "Shadowlands 5 - Antechamber" - Kevin MacLeod (incompetech.com)
 			- https://www.scottbuckley.com.au/library/soul-searcher/
-			- https://www.scottbuckley.com.au/library/intervention/
 		- Buy new track for farewell: https://www.pond5.com/royalty-free-music/item/204959560-nearer-my-god-thee
 
 

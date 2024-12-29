@@ -95,38 +95,38 @@ TEST(TextureAtlasTests, Specification_MultipleTextures)
     EXPECT_EQ(128, atlasSpecification.TextureLocationInfos[1].InAtlasSize.height);
 
     EXPECT_EQ(TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 0), atlasSpecification.TextureLocationInfos[2].FrameId);
-    EXPECT_EQ(256 + 128, atlasSpecification.TextureLocationInfos[2].InAtlasBottomLeft.x);
-    EXPECT_EQ(0, atlasSpecification.TextureLocationInfos[2].InAtlasBottomLeft.y);
+    EXPECT_EQ(256, atlasSpecification.TextureLocationInfos[2].InAtlasBottomLeft.x);
+    EXPECT_EQ(128, atlasSpecification.TextureLocationInfos[2].InAtlasBottomLeft.y);
     EXPECT_EQ(128, atlasSpecification.TextureLocationInfos[2].InAtlasSize.width);
     EXPECT_EQ(64, atlasSpecification.TextureLocationInfos[2].InAtlasSize.height);
 
     EXPECT_EQ(TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 1), atlasSpecification.TextureLocationInfos[3].FrameId);
-    EXPECT_EQ(256 + 128, atlasSpecification.TextureLocationInfos[3].InAtlasBottomLeft.x);
-    EXPECT_EQ(64, atlasSpecification.TextureLocationInfos[3].InAtlasBottomLeft.y);
+    EXPECT_EQ(256, atlasSpecification.TextureLocationInfos[3].InAtlasBottomLeft.x);
+    EXPECT_EQ(128 + 64, atlasSpecification.TextureLocationInfos[3].InAtlasBottomLeft.y);
     EXPECT_EQ(128, atlasSpecification.TextureLocationInfos[3].InAtlasSize.width);
     EXPECT_EQ(64, atlasSpecification.TextureLocationInfos[3].InAtlasSize.height);
 
     EXPECT_EQ(TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 3), atlasSpecification.TextureLocationInfos[4].FrameId);
-    EXPECT_EQ(256, atlasSpecification.TextureLocationInfos[4].InAtlasBottomLeft.x);
-    EXPECT_EQ(128, atlasSpecification.TextureLocationInfos[4].InAtlasBottomLeft.y);
+    EXPECT_EQ(256 + 128, atlasSpecification.TextureLocationInfos[4].InAtlasBottomLeft.x);
+    EXPECT_EQ(0, atlasSpecification.TextureLocationInfos[4].InAtlasBottomLeft.y);
     EXPECT_EQ(64, atlasSpecification.TextureLocationInfos[4].InAtlasSize.width);
     EXPECT_EQ(64, atlasSpecification.TextureLocationInfos[4].InAtlasSize.height);
 
     EXPECT_EQ(TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 5), atlasSpecification.TextureLocationInfos[5].FrameId);
-    EXPECT_EQ(256 + 64, atlasSpecification.TextureLocationInfos[5].InAtlasBottomLeft.x);
-    EXPECT_EQ(128, atlasSpecification.TextureLocationInfos[5].InAtlasBottomLeft.y);
+    EXPECT_EQ(256 + 128, atlasSpecification.TextureLocationInfos[5].InAtlasBottomLeft.x);
+    EXPECT_EQ(64, atlasSpecification.TextureLocationInfos[5].InAtlasBottomLeft.y);
     EXPECT_EQ(64, atlasSpecification.TextureLocationInfos[5].InAtlasSize.width);
     EXPECT_EQ(64, atlasSpecification.TextureLocationInfos[5].InAtlasSize.height);
 
     EXPECT_EQ(TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 6), atlasSpecification.TextureLocationInfos[6].FrameId);
-    EXPECT_EQ(256 + 64 + 64, atlasSpecification.TextureLocationInfos[6].InAtlasBottomLeft.x);
-    EXPECT_EQ(128, atlasSpecification.TextureLocationInfos[6].InAtlasBottomLeft.y);
+    EXPECT_EQ(256 + 128, atlasSpecification.TextureLocationInfos[6].InAtlasBottomLeft.x);
+    EXPECT_EQ(64 + 64, atlasSpecification.TextureLocationInfos[6].InAtlasBottomLeft.y);
     EXPECT_EQ(64, atlasSpecification.TextureLocationInfos[6].InAtlasSize.width);
     EXPECT_EQ(64, atlasSpecification.TextureLocationInfos[6].InAtlasSize.height);
 
     EXPECT_EQ(TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 7), atlasSpecification.TextureLocationInfos[7].FrameId);
-    EXPECT_EQ(256 + 64 + 64 + 64, atlasSpecification.TextureLocationInfos[7].InAtlasBottomLeft.x);
-    EXPECT_EQ(128, atlasSpecification.TextureLocationInfos[7].InAtlasBottomLeft.y);
+    EXPECT_EQ(256 + 128, atlasSpecification.TextureLocationInfos[7].InAtlasBottomLeft.x);
+    EXPECT_EQ(64 + 64 + 64, atlasSpecification.TextureLocationInfos[7].InAtlasBottomLeft.y);
     EXPECT_EQ(64, atlasSpecification.TextureLocationInfos[7].InAtlasSize.width);
     EXPECT_EQ(64, atlasSpecification.TextureLocationInfos[7].InAtlasSize.height);
 }
@@ -227,8 +227,8 @@ TEST(TextureAtlasTests, Specification_RoundsAtlasSize)
                 DUMMY_IMAGE.Clone());
         });
 
-    EXPECT_EQ(512, atlasSpecification.AtlasSize.width);
-    EXPECT_EQ(256, atlasSpecification.AtlasSize.height);
+    EXPECT_EQ(256, atlasSpecification.AtlasSize.width);
+    EXPECT_EQ(512, atlasSpecification.AtlasSize.height);
 }
 
 TEST(TextureAtlasTests, Specification_DuplicateSuppression)
