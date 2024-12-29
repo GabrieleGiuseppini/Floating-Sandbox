@@ -133,6 +133,10 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
 
         {0, _("MUSIC"), VMargin},
 
+        {1, wxS("\"Intervention\""), 0},
+        {3, wxS("Scott Buckley (https://www.scottbuckley.com.au)"), 0},
+        {2, _("Licensed under Creative Commons: By Attribution 4.0 License"), VMargin},
+
         {1, wxS("\"Nightmare\""), 0},
         {3, wxS("Kukan Effect (https://kukaneffect.bandcamp.com/)"), VMargin},
 

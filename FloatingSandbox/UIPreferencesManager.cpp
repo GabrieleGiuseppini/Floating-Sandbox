@@ -12,6 +12,8 @@
 #include <GameCore/GameMath.h>
 #include <GameCore/Utils.h>
 
+static std::string const LastPlayedBackgroundMusicSettingName = "last_played_background_music_19.1";
+
 UIPreferencesManager::UIPreferencesManager(
     IGameController & gameController,
     MusicController & musicController,
@@ -489,7 +491,7 @@ void UIPreferencesManager::LoadPreferences()
             }
 
             // Last-played background music
-            if (auto lastPlayedBackgroundMusicIt = preferencesRootObject->find("last_played_background_music");
+            if (auto lastPlayedBackgroundMusicIt = preferencesRootObject->find(LastPlayedBackgroundMusicSettingName);
                 lastPlayedBackgroundMusicIt != preferencesRootObject->end() && lastPlayedBackgroundMusicIt->second.is<int64_t>())
             {
                 mMusicController.SetLastPlayedBackgroundMusic(static_cast<size_t>(lastPlayedBackgroundMusicIt->second.get<int64_t>()));
@@ -642,7 +644,7 @@ void UIPreferencesManager::SavePreferences() const
 
         preferencesRootObject["play_background_music"] = picojson::value(mMusicController.GetPlayBackgroundMusic());
 
-        preferencesRootObject["last_played_background_music"] = picojson::value(static_cast<int64_t>(mMusicController.GetLastPlayedBackgroundMusic()));
+        preferencesRootObject[LastPlayedBackgroundMusicSettingName] = picojson::value(static_cast<int64_t>(mMusicController.GetLastPlayedBackgroundMusic()));
 
         preferencesRootObject["game_music_volume"] = picojson::value(static_cast<double>(mMusicController.GetGameMusicVolume()));
 

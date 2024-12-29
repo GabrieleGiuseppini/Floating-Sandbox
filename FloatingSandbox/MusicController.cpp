@@ -44,6 +44,8 @@ MusicController::MusicController(
 
     auto musicNames = resourceLocator.GetMusicNames();
 
+    std::sort(musicNames.begin(), musicNames.end()); // Sort music deterministically
+
     for (size_t i = 0; i < musicNames.size(); ++i)
     {
         std::string const & musicName = musicNames[i];

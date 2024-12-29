@@ -100,32 +100,6 @@
 	- See DKUZ bug
 	+ Gunpowder keg
 
-	= Localization:
-	    "Diesel Can"
-	    "Gunpowder Keg"
-	    "Hydrogen Tank"
-	    "Sodium Tank"
-	    "TNT Crate"
-
-	    + IT
-	    - ES
-		- mo
-		- npcs
-	    - RU
-		- mo
-		- npcs
-	    = UK
-		+ mo
-		- npcs
-
-
-	- Do a pass for ships
-		+ email: Sean Dempsey
-		- _TO_TEST:
-			- Ryanair updates: new updates
-
-	- New materials (*)
-
 	= Clouds V3: with fantastic texture coords offset
 		+ First off, technical debt:
 			+ Do clouds as baked atlas
@@ -156,8 +130,7 @@
 				+ Moonlight, Lamp
 			+ Storm
 		+ Test enlarging canvas of tight clouds
-
-		= Test AdobeStock/Getty clouds
+		+ Test AdobeStock/Getty clouds
 			+ Need Illustrator
 			+ Cancel subscription
 				! By clicking "Agree and subscribe", you agree: After your trial ends, you will be charged € 32,76 (excl. VAT) monthly. Your subscription will automatically renew monthly until you cancel (price subject to change). Cancel before your trial ends and you won't be charged. Cancel anytime via Adobe Account or Customer Support. Cancel before Dec 10, 2024 to get a full refund. You also agree to the Terms of Use and the Subscription and Cancellation Terms.
@@ -200,8 +173,47 @@
 			- See if can lower # of clouds
 		+ Changelist
 
+	- Add more music:
+		- Background:
+			+ "Symmetry" - Kevin MacLeod (incompetech.com)			
+			+ https://www.scottbuckley.com.au/library/intervention/
+				! 'Intervention' by Scott Buckley - released under CC-BY 4.0. www.scottbuckley.com.au
+				+ Deterministic music sorting
+				+ Verify starts automatically with no preferences
+				+ CreditsPanel
+				+ changelist
+			- "Shadowlands 5 - Antechamber" - Kevin MacLeod (incompetech.com)
+			- https://www.scottbuckley.com.au/library/soul-searcher/
+		- Buy new track for farewell: https://www.pond5.com/royalty-free-music/item/204959560-nearer-my-god-thee
+
+	= Localization:
+	    "Diesel Can"
+	    "Gunpowder Keg"
+	    "Hydrogen Tank"
+	    "Sodium Tank"
+	    "TNT Crate"
+
+	    + IT
+	    - ES
+		- mo
+		- npcs
+	    - RU
+		- mo
+		- npcs
+	    = UK
+		+ mo
+		- npcs
+
+
+	- Do a pass for ships
+		+ email: Sean Dempsey
+		- _TO_TEST:
+			- Ryanair updates: new updates
+
+	- New materials (*)
+
 	- No redistribute
-		- @ License
+		+ @ License
 		- @ Atlases
 		- EULA @ installer?
 
@@ -227,19 +239,6 @@
 			- 1. Do test above: see if planes and Z are enough, if all shaders do early discard
 			- 2. If test ok, finalize work with plane-1
 				- Replace Flames' dual upload
-
-
-	- Add more music:
-		- Background:
-			+ "Symmetry" - Kevin MacLeod (incompetech.com)			
-			= https://www.scottbuckley.com.au/library/intervention/
-				! 'Intervention' by Scott Buckley - released under CC-BY 4.0. www.scottbuckley.com.au
-				- Deterministic music sorting
-				- CreditsPanel
-				- changelist
-			- "Shadowlands 5 - Antechamber" - Kevin MacLeod (incompetech.com)
-			- https://www.scottbuckley.com.au/library/soul-searcher/
-		- Buy new track for farewell: https://www.pond5.com/royalty-free-music/item/204959560-nearer-my-god-thee
 
 
 	- Consider invoking World::Upload from render thread (via RenderContext, as func<>, *synchronously*)
