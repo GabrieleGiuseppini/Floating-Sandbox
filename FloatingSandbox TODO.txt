@@ -183,8 +183,7 @@
 				+ Then remove diagnostic LogMessage's
 			X See if then NPC actions need to be damped
 				X And see if damping can be done independently from OnShip
-	- Ship engines should not work when not underwater: setting
-		- ElecElements:2432
+	+ Ship engines should not work when not underwater (with setting)
 	- TODO tool: only part of the ship is "taken" and moved, rest stays like now and subject to physics
 		- test first if physics ok
 	- AntiGravity TODOHERE: bomb or tool?
@@ -206,22 +205,25 @@
 		- Buy new track for farewell: https://www.pond5.com/royalty-free-music/item/204959560-nearer-my-god-thee
 
 	= Localization:
-	    "Diesel Can"
-	    "Gunpowder Keg"
-	    "Hydrogen Tank"
-	    "Sodium Tank"
-	    "TNT Crate"
+		= 1
+		    "Diesel Can"
+		    "Gunpowder Keg"
+		    "Hydrogen Tank"
+		    "Sodium Tank"
+		    "TNT Crate"
 
-	    + IT
-	    - ES
-		- mo
-		- npcs
-	    - RU
-		- mo
-		- npcs
-	    = UK
-		+ mo
-		- npcs
+		    + IT
+		    - ES
+			- mo
+			- npcs
+		    - RU
+			- mo
+			- npcs
+		    = UK
+			+ mo
+			- npcs
+		= 2
+		    - New SettingsDialog things (apply physics tool on ships; engines work above water)
 
 
 	- Do a pass for ships

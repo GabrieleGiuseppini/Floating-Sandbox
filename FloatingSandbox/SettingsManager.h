@@ -80,6 +80,7 @@ enum class GameSettings : size_t
     LightSpreadAdjustment,
     ElectricalElementHeatProducedAdjustment,
     EngineThrustAdjustment,
+    DoEnginesWorkAboveWater,
     WaterPumpPowerAdjustment,
 
     // Fishes

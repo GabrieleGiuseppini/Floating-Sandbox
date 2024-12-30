@@ -217,6 +217,9 @@ struct IGameControllerSettings
     virtual float GetEngineThrustAdjustment() const = 0;
     virtual void SetEngineThrustAdjustment(float value) = 0;
 
+    virtual bool GetDoEnginesWorkAboveWater() const = 0;
+    virtual void SetDoEnginesWorkAboveWater(bool value) = 0;
+
     virtual float GetWaterPumpPowerAdjustment() const = 0;
     virtual void SetWaterPumpPowerAdjustment(float value) = 0;
 

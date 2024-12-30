@@ -131,8 +131,9 @@ private:
     // Lights, Electricals, Fishes, NPCs
     SliderControl<float> * mLuminiscenceSlider;
     SliderControl<float> * mLightSpreadSlider;
-    wxCheckBox * mGenerateEngineWakeCheckBox;
     SliderControl<float> * mEngineThrustAdjustmentSlider;
+    wxCheckBox * mDoEnginesWorkAboveWaterCheckBox;
+    wxCheckBox * mGenerateEngineWakeCheckBox;
     SliderControl<float> * mWaterPumpPowerAdjustmentSlider;
     SliderControl<float> * mElectricalElementHeatProducedAdjustmentSlider;
     SliderControl<unsigned int> * mNumberOfFishesSlider;

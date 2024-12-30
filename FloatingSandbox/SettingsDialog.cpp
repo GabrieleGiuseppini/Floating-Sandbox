@@ -2623,6 +2623,156 @@ void SettingsDialog::PopulateLightsElectricalFishesNpcsPanel(wxPanel * panel)
     wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
 
     //
+    // Electricals
+    //
+
+    {
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Electricals"));
+
+        {
+            wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
+
+            // Engine Thrust Adjust
+            {
+                mEngineThrustAdjustmentSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    -1,
+                    _("Engine Thrust Adjust"),
+                    _("Adjusts the thrust exerted by engines."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::EngineThrustAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions.GetMinEngineThrustAdjustment(),
+                        1.0f,
+                        mGameControllerSettingsOptions.GetMaxEngineThrustAdjustment()));
+
+                sizer->Add(
+                    mEngineThrustAdjustmentSlider,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Engines options
+            {
+                wxBoxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
+
+                // Engines Work Above Water
+                {
+                    mDoEnginesWorkAboveWaterCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY, _("Propellers Work Above Water"));
+                    mDoEnginesWorkAboveWaterCheckBox->SetToolTip(_("Enables or disables the working of propellers when they are not underwater."));
+                    mDoEnginesWorkAboveWaterCheckBox->Bind(
+                        wxEVT_COMMAND_CHECKBOX_CLICKED,
+                        [this](wxCommandEvent & event)
+                        {
+                            mLiveSettings.SetValue(GameSettings::DoEnginesWorkAboveWater, event.IsChecked());
+                            OnLiveSettingsChanged();
+                        });
+
+                    vSizer->Add(mDoEnginesWorkAboveWaterCheckBox, 0, wxALL | wxALIGN_LEFT, InterCheckboxRowMargin);
+                }
+
+                // Generate Engine Wake
+                {
+                    mGenerateEngineWakeCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY, _("Generate Engine Wake"));
+                    mGenerateEngineWakeCheckBox->SetToolTip(_("Enables or disables generation of wakes when engines are running underwater."));
+                    mGenerateEngineWakeCheckBox->Bind(
+                        wxEVT_COMMAND_CHECKBOX_CLICKED,
+                        [this](wxCommandEvent & event)
+                        {
+                            mLiveSettings.SetValue(GameSettings::DoGenerateEngineWakeParticles, event.IsChecked());
+                            OnLiveSettingsChanged();
+                        });
+
+                    vSizer->Add(mGenerateEngineWakeCheckBox, 0, wxALL | wxALIGN_LEFT, InterCheckboxRowMargin);
+                }
+
+                sizer->Add(
+                    vSizer,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Water Pump Power Adjust
+            {
+                mWaterPumpPowerAdjustmentSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Water Pump Power Adjust"),
+                    _("Adjusts the power of water pumps."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::WaterPumpPowerAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions.GetMinWaterPumpPowerAdjustment(),
+                        1.0f,
+                        mGameControllerSettingsOptions.GetMaxWaterPumpPowerAdjustment()));
+
+                sizer->Add(
+                    mWaterPumpPowerAdjustmentSlider,
+                    wxGBPosition(0, 2),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Heat Generation Adjustment
+            {
+                mElectricalElementHeatProducedAdjustmentSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Heat Generation Adjust"),
+                    _("Adjusts the amount of heat generated by working electrical elements, such as lamps and generators."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::ElectricalElementHeatProducedAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions.GetMinElectricalElementHeatProducedAdjustment(),
+                        1.0f,
+                        mGameControllerSettingsOptions.GetMaxElectricalElementHeatProducedAdjustment()));
+
+                sizer->Add(
+                    mElectricalElementHeatProducedAdjustmentSlider,
+                    wxGBPosition(0, 3),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            WxHelpers::MakeAllColumnsExpandable(sizer);
+
+            boxSizer->Add(
+                sizer,
+                1,
+                wxEXPAND | wxALL,
+                StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            boxSizer,
+            wxGBPosition(0, 0),
+            wxGBSpan(1, 1),
+            wxEXPAND | wxALL,
+            CellBorderOuter);
+    }
+
+    //
     // Lights
     //
 
@@ -2696,136 +2846,6 @@ void SettingsDialog::PopulateLightsElectricalFishesNpcsPanel(wxPanel * panel)
 
         gridSizer->Add(
             lightsBoxSizer,
-            wxGBPosition(0, 0),
-            wxGBSpan(1, 1),
-            wxEXPAND | wxALL,
-            CellBorderOuter);
-    }
-
-    //
-    // Electricals
-    //
-
-    {
-        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Electricals"));
-
-        {
-            wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
-
-            // Generate Engine Wake
-            {
-                mGenerateEngineWakeCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY, _("Generate Engine Wake"));
-                mGenerateEngineWakeCheckBox->SetToolTip(_("Enables or disables generation of wakes when engines are running underwater."));
-                mGenerateEngineWakeCheckBox->Bind(
-                    wxEVT_COMMAND_CHECKBOX_CLICKED,
-                    [this](wxCommandEvent & event)
-                    {
-                        mLiveSettings.SetValue(GameSettings::DoGenerateEngineWakeParticles, event.IsChecked());
-                        OnLiveSettingsChanged();
-                    });
-
-                auto cellSizer = sizer->Add(
-                    mGenerateEngineWakeCheckBox,
-                    wxGBPosition(0, 0),
-                    wxGBSpan(1, 1),
-                    wxLEFT | wxRIGHT | wxALIGN_CENTER_VERTICAL | wxALIGN_LEFT,
-                    CellBorderInner);
-
-                cellSizer->SetMinSize(-1, TopmostCellOverSliderHeight);
-            }
-
-            // Engine Thrust Adjust
-            {
-                mEngineThrustAdjustmentSlider = new SliderControl<float>(
-                    boxSizer->GetStaticBox(),
-                    SliderControl<float>::DirectionType::Vertical,
-                    SliderWidth,
-                    -1,
-                    _("Engine Thrust Adjust"),
-                    _("Adjusts the thrust exerted by engines."),
-                    [this](float value)
-                    {
-                        this->mLiveSettings.SetValue(GameSettings::EngineThrustAdjustment, value);
-                        this->OnLiveSettingsChanged();
-                    },
-                    std::make_unique<ExponentialSliderCore>(
-                        mGameControllerSettingsOptions.GetMinEngineThrustAdjustment(),
-                        1.0f,
-                        mGameControllerSettingsOptions.GetMaxEngineThrustAdjustment()));
-
-                sizer->Add(
-                    mEngineThrustAdjustmentSlider,
-                    wxGBPosition(1, 0),
-                    wxGBSpan(1, 1),
-                    wxEXPAND | wxLEFT | wxBOTTOM | wxRIGHT,
-                    CellBorderInner);
-            }
-
-            // Water Pump Power Adjust
-            {
-                mWaterPumpPowerAdjustmentSlider = new SliderControl<float>(
-                    boxSizer->GetStaticBox(),
-                    SliderControl<float>::DirectionType::Vertical,
-                    SliderWidth,
-                    SliderHeight,
-                    _("Water Pump Power Adjust"),
-                    _("Adjusts the power of water pumps."),
-                    [this](float value)
-                    {
-                        this->mLiveSettings.SetValue(GameSettings::WaterPumpPowerAdjustment, value);
-                        this->OnLiveSettingsChanged();
-                    },
-                    std::make_unique<ExponentialSliderCore>(
-                        mGameControllerSettingsOptions.GetMinWaterPumpPowerAdjustment(),
-                        1.0f,
-                        mGameControllerSettingsOptions.GetMaxWaterPumpPowerAdjustment()));
-
-                sizer->Add(
-                    mWaterPumpPowerAdjustmentSlider,
-                    wxGBPosition(0, 1),
-                    wxGBSpan(2, 1),
-                    wxEXPAND | wxALL,
-                    CellBorderInner);
-            }
-
-            // Heat Generation Adjustment
-            {
-                mElectricalElementHeatProducedAdjustmentSlider = new SliderControl<float>(
-                    boxSizer->GetStaticBox(),
-                    SliderControl<float>::DirectionType::Vertical,
-                    SliderWidth,
-                    SliderHeight,
-                    _("Heat Generation Adjust"),
-                    _("Adjusts the amount of heat generated by working electrical elements, such as lamps and generators."),
-                    [this](float value)
-                    {
-                        this->mLiveSettings.SetValue(GameSettings::ElectricalElementHeatProducedAdjustment, value);
-                        this->OnLiveSettingsChanged();
-                    },
-                    std::make_unique<ExponentialSliderCore>(
-                        mGameControllerSettingsOptions.GetMinElectricalElementHeatProducedAdjustment(),
-                        1.0f,
-                        mGameControllerSettingsOptions.GetMaxElectricalElementHeatProducedAdjustment()));
-
-                sizer->Add(
-                    mElectricalElementHeatProducedAdjustmentSlider,
-                    wxGBPosition(0, 2),
-                    wxGBSpan(2, 1),
-                    wxEXPAND | wxALL,
-                    CellBorderInner);
-            }
-
-            WxHelpers::MakeAllColumnsExpandable(sizer);
-
-            boxSizer->Add(
-                sizer,
-                1,
-                wxEXPAND | wxALL,
-                StaticBoxInsetMargin);
-        }
-
-        gridSizer->Add(
-            boxSizer,
             wxGBPosition(0, 1),
             wxGBSpan(1, 1),
             wxEXPAND | wxALL,
@@ -6222,6 +6242,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mLightSpreadSlider->SetValue(settings.GetValue<float>(GameSettings::LightSpreadAdjustment));
     mGenerateEngineWakeCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoGenerateEngineWakeParticles));
     mEngineThrustAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::EngineThrustAdjustment));
+    mDoEnginesWorkAboveWaterCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoEnginesWorkAboveWater));
     mWaterPumpPowerAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::WaterPumpPowerAdjustment));
     mElectricalElementHeatProducedAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::ElectricalElementHeatProducedAdjustment));
     mNumberOfFishesSlider->SetValue(settings.GetValue<unsigned int>(GameSettings::NumberOfFishes));

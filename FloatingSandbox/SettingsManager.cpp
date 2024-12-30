@@ -107,6 +107,7 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(float, LightSpreadAdjustment);
     ADD_GC_SETTING(float, ElectricalElementHeatProducedAdjustment);
     ADD_GC_SETTING(float, EngineThrustAdjustment);
+    ADD_GC_SETTING(bool, DoEnginesWorkAboveWater);
     ADD_GC_SETTING(float, WaterPumpPowerAdjustment);
 
     // Fishes

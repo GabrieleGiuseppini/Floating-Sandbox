@@ -12,6 +12,8 @@
 - The Move, Remove, and Turnaround NPC tools may now be used on *groups* of NPCs
 - NPCs on a ship are now lit by the ship's lamps
 - Completed cloud rendering improvement work started in previous update
+- Propellers do not work anymore above water by default
+	- ...but added a new option to allow them to
 - Bug fixes:
 	- Fixed a crash when using the repair tool on a part of the ship that had exploded (thanks to AlexGuy!)
 	- Fixed a crash happening after adding and removing many NPCs multiple times

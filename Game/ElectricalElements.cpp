@@ -2426,11 +2426,21 @@ void ElectricalElements::UpdateSinks(
                 powerMultiplier *= expCoeff / (5.0f + expCoeff);
             }
 
-            // Adjust targets based off underwater (for *jet* types only)
-            if (engineType == ElectricalMaterial::EngineElementType::Jet
-                && points.IsCachedUnderwater(enginePointIndex))
+            // Jet types: do not work underwater
+            if (engineType == ElectricalMaterial::EngineElementType::Jet)
             {
-                powerMultiplier = 0.0f;
+                if (points.IsCachedUnderwater(enginePointIndex))
+                {
+                    powerMultiplier = 0.0f;
+                }
+            }
+            // Other engine types: do not work overwater (unless allowed)
+            else if (!gameParameters.DoEnginesWorkAboveWater)
+            {
+                if (!points.IsCachedUnderwater(enginePointIndex))
+                {
+                    powerMultiplier = 0.0f;
+                }
             }
 
             // Update current RPM to match group target (via responsiveness)

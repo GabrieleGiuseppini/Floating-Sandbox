@@ -426,6 +426,8 @@ struct GameParameters
     static float constexpr MinEngineThrustAdjustment = 0.1f;
     static float constexpr MaxEngineThrustAdjustment = 20.0f;
 
+    bool DoEnginesWorkAboveWater;
+
     float WaterPumpPowerAdjustment;
     static float constexpr MinWaterPumpPowerAdjustment = 0.1f;
     static float constexpr MaxWaterPumpPowerAdjustment = 20.0f;
