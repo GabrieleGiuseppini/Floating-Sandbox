@@ -2104,7 +2104,7 @@ private:
 		bcoords3f const primaryBaryCoords = homeShip.GetTriangles().ToBarycentricCoordinates(primaryPosition, triangleElementIndex, homeShip.GetPoints());
 
 		// It's on the other side of the edge if its "edge's" b-coord is negative
-		if (primaryBaryCoords[(edgeOrdinal + 2) % 3] >= -0.05f) // Some slack
+		if (primaryBaryCoords[(edgeOrdinal + 2) % 3] >= -0.07f) // Some slack
 		{
 			// Same side
 			return true;
