@@ -97,10 +97,9 @@
 				+ Other than 0.5 when we want to do half
 		+ Remove 0.1 scale
 
-	- See DKUZ bug
 	+ Gunpowder keg
 
-	= Clouds V3: with fantastic texture coords offset
+	+ Clouds V3: with fantastic texture coords offset
 		+ First off, technical debt:
 			+ Do clouds as baked atlas
 			+ Do index-based rendering
@@ -169,9 +168,24 @@
 		X Test cloud 8008 which is on desktop (replacing cloud_2 in Atlas which is a badly processed version)
 			X See if we have it in authoring already though
 			X It's doo dark ("rainy")
-		- Test storm
-			- See if can lower # of clouds
+		+ Test storm
+			+ See if can lower # of clouds
 		+ Changelist
+
+	- See if can use keys to pan along diagonals
+
+	- Attract & Swirl on NPCs only
+		- GameParams: Two bools: OnShip, On Npc
+		- SettingsDialog: two checkboxes
+		- Use @ World
+			- See if then NPC actions need to be damped
+				- And see if damping can be done independently from OnShip
+	- Ship engines should not work when not underwater: setting
+		- Not already the case?
+	- TODO tool: only part of the ship is "taken" and moved, rest stays like now and subject to physics
+	- AntiGravity TODOHERE: bomb or tool?
+
+	- See DKUZ bug
 
 	- Add more music:
 		- Background:
@@ -269,10 +283,6 @@
 		- OnProgress is always called, but has a visible effect only from step 3 onwards
 
 	- A way to spawn ships like NPCs: at any place
-
-	- See if can use keys to pan along diagonals
-
-	- Ship engines should not work when not underwater
 
 	- Ship passwords only to prevent being edited, but allow password-protected ships to be inspected
 

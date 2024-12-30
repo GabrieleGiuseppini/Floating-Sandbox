@@ -126,7 +126,7 @@ void Storm::Update(
     float constexpr AmbientDarkeningAndAirTemperatureDropDownEnd = 0.95f;
     float constexpr WindDownEnd = 1.0f;
 
-	float constexpr MaxClouds = 34.0f;
+	float constexpr MaxClouds = 28.0f;
 	float constexpr MinCloudSize = 2.85f;
 	float constexpr MaxCloudSize = 4.5f;
     float constexpr MaxAirTemperatureDelta = -15.0f;
