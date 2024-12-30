@@ -625,11 +625,14 @@ void World::DrawTo(
         * (gameParameters.IsUltraViolentMode ? 20.0f : 1.0f);
 
     // Apply to ships
-    for (auto & ship : mAllShips)
+    if (gameParameters.DoApplyPhysicsToolsToShips)
     {
-        ship->DrawTo(
-            targetPos,
-            strength);
+        for (auto & ship : mAllShips)
+        {
+            ship->DrawTo(
+                targetPos,
+                strength);
+        }
     }
 
     // Apply to NPCs
@@ -653,11 +656,15 @@ void World::SwirlAt(
         * strengthFraction
         * (gameParameters.IsUltraViolentMode ? 20.0f : 1.0f);
 
-    for (auto & ship : mAllShips)
+    // Apply to ships
+    if (gameParameters.DoApplyPhysicsToolsToShips)
     {
-        ship->SwirlAt(
-            targetPos,
-            strength);
+        for (auto & ship : mAllShips)
+        {
+            ship->SwirlAt(
+                targetPos,
+                strength);
+        }
     }
 
     // Apply to NPCs

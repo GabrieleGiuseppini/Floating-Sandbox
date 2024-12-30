@@ -92,7 +92,6 @@ enum class GameSettings : size_t
     // NPCs
     NpcFrictionAdjustment,
     NpcSizeMultiplier,
-    DoApplyPhysicsToolsToNpcs,
     NpcPassiveBlastRadiusAdjustment,
 
     // Misc
@@ -106,6 +105,8 @@ enum class GameSettings : size_t
     DestroyRadius,
     RepairRadius,
     RepairSpeedAdjustment,
+    DoApplyPhysicsToolsToShips,
+    DoApplyPhysicsToolsToNpcs,
     BombBlastRadius,
     BombBlastForceAdjustment,
     BombBlastHeat,

@@ -119,7 +119,6 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     // NPCs
     ADD_GC_SETTING(float, NpcFrictionAdjustment);
     ADD_GC_SETTING(float, NpcSizeMultiplier);
-    ADD_GC_SETTING(bool, DoApplyPhysicsToolsToNpcs);
     ADD_GC_SETTING(float, NpcPassiveBlastRadiusAdjustment);
 
     // Misc
@@ -133,6 +132,8 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(float, DestroyRadius);
     ADD_GC_SETTING(float, RepairRadius);
     ADD_GC_SETTING(float, RepairSpeedAdjustment);
+    ADD_GC_SETTING(bool, DoApplyPhysicsToolsToShips);
+    ADD_GC_SETTING(bool, DoApplyPhysicsToolsToNpcs);
     ADD_GC_SETTING(float, BombBlastRadius);
     ADD_GC_SETTING(float, BombBlastForceAdjustment);
     ADD_GC_SETTING(float, BombBlastHeat);

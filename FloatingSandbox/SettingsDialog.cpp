@@ -3077,38 +3077,6 @@ void SettingsDialog::PopulateLightsElectricalFishesNpcsPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-
-            // Options
-            {
-                wxBoxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
-
-                // Apply Physics Tools to NPCs
-                {
-                    mDoApplyPhysicsToolsToNpcsCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY, _("Physics Tools Affect NPCs"));
-                    mDoApplyPhysicsToolsToNpcsCheckBox->SetToolTip(_("Enables or disables the effect of physics tools - such as Swirl, Attract, or Repel - on NPCs."));
-                    mDoApplyPhysicsToolsToNpcsCheckBox->Bind(
-                        wxEVT_COMMAND_CHECKBOX_CLICKED,
-                        [this](wxCommandEvent & event)
-                        {
-                            mLiveSettings.SetValue<bool>(GameSettings::DoApplyPhysicsToolsToNpcs, event.IsChecked());
-                            OnLiveSettingsChanged();
-                        });
-
-                    vSizer->Add(
-                        mDoApplyPhysicsToolsToNpcsCheckBox,
-                        0,
-                        wxEXPAND, // Use all horizontal space
-                        0);
-                }
-
-                sizer->Add(
-                    vSizer,
-                    wxGBPosition(0, 3),
-                    wxGBSpan(1, 1),
-                    wxEXPAND | wxALL,
-                    CellBorderInner);
-            }
-
             WxHelpers::MakeAllColumnsExpandable(sizer);
 
             boxSizer->Add(
@@ -3966,7 +3934,7 @@ void SettingsDialog::PopulateOtherToolsPanel(
         gridSizer->Add(
             boxSizer,
             wxGBPosition(1, 2),
-            wxGBSpan(1, 2),
+            wxGBSpan(1, 1),
             wxEXPAND | wxALL,
             CellBorderOuter);
     }
@@ -4031,6 +3999,51 @@ void SettingsDialog::PopulateOtherToolsPanel(
                 1,
                 wxEXPAND | wxALL,
                 StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            boxSizer,
+            wxGBPosition(1, 3),
+            wxGBSpan(1, 1),
+            wxEXPAND | wxALL,
+            CellBorderOuter);
+    }
+
+    //
+    // Options
+    //
+
+    {
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Options"));
+
+        // Apply Physics Tools to Ships
+        {
+            mDoApplyPhysicsToolsToShipsCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY, _("Physics Tools Affect Ships"));
+            mDoApplyPhysicsToolsToShipsCheckBox->SetToolTip(_("Enables or disables the effect of physics tools - such as Swirl, Attract, or Repel - on Ships."));
+            mDoApplyPhysicsToolsToShipsCheckBox->Bind(
+                wxEVT_COMMAND_CHECKBOX_CLICKED,
+                [this](wxCommandEvent & event)
+                {
+                    mLiveSettings.SetValue<bool>(GameSettings::DoApplyPhysicsToolsToShips, event.IsChecked());
+                    OnLiveSettingsChanged();
+                });
+
+            boxSizer->Add(mDoApplyPhysicsToolsToShipsCheckBox, 0, wxALL | wxALIGN_LEFT, InterCheckboxRowMargin);
+        }
+
+        // Apply Physics Tools to NPCs
+        {
+            mDoApplyPhysicsToolsToNpcsCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY, _("Physics Tools Affect NPCs"));
+            mDoApplyPhysicsToolsToNpcsCheckBox->SetToolTip(_("Enables or disables the effect of physics tools - such as Swirl, Attract, or Repel - on NPCs."));
+            mDoApplyPhysicsToolsToNpcsCheckBox->Bind(
+                wxEVT_COMMAND_CHECKBOX_CLICKED,
+                [this](wxCommandEvent & event)
+                {
+                    mLiveSettings.SetValue<bool>(GameSettings::DoApplyPhysicsToolsToNpcs, event.IsChecked());
+                    OnLiveSettingsChanged();
+                });
+
+            boxSizer->Add(mDoApplyPhysicsToolsToNpcsCheckBox, 0, wxALL | wxALIGN_LEFT, InterCheckboxRowMargin);
         }
 
         gridSizer->Add(
@@ -6220,7 +6233,6 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mNpcFrictionAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::NpcFrictionAdjustment));
     mNpcSizeMultiplierSlider->SetValue(settings.GetValue<float>(GameSettings::NpcSizeMultiplier));
     mNpcPassiveBlastRadiusAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::NpcPassiveBlastRadiusAdjustment));
-    mDoApplyPhysicsToolsToNpcsCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoApplyPhysicsToolsToNpcs));
 
     //
     // Destructive Tools
@@ -6248,7 +6260,8 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mRepairSpeedAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::RepairSpeedAdjustment));
     mScrubRotRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::ScrubRotToolRadius));
     mWindMakerWindSpeedSlider->SetValue(settings.GetValue<float>(GameSettings::WindMakerToolWindSpeed));
-
+    mDoApplyPhysicsToolsToShipsCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoApplyPhysicsToolsToShips));
+    mDoApplyPhysicsToolsToNpcsCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoApplyPhysicsToolsToNpcs));
 
     //
     // Rendering

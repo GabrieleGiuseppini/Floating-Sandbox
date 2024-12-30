@@ -266,7 +266,6 @@ void ElectricalElements::Add(
     mInstanceInfos.emplace_back(instanceIndex, panelElementMetadata);
 }
 
-
 void ElectricalElements::AnnounceInstancedElements()
 {
     mGameEventHandler->OnElectricalElementAnnouncementsBegin();

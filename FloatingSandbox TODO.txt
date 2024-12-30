@@ -172,18 +172,23 @@
 			+ See if can lower # of clouds
 		+ Changelist
 
-	- See if can use keys to pan along diagonals
+	X See if can use keys to pan along diagonals
 
-	- Attract & Swirl on NPCs only
-		- GameParams: Two bools: OnShip, On Npc
-		- SettingsDialog: two checkboxes
-		- Use @ World
-			- See if then NPC actions need to be damped
-				- And see if damping can be done independently from OnShip
+	+ Attract & Swirl on NPCs only
+		+ GameParams: Two bools: OnShip, On Npc
+		+ SettingsDialog: two checkboxes
+		+ Use @ World
+			+ Also make sure others are done the same: if() @ World
+			+ FIX: ghosting through walls
+				+ Then remove diagnostic LogMessage's
+			X See if then NPC actions need to be damped
+				X And see if damping can be done independently from OnShip
 	- Ship engines should not work when not underwater: setting
-		- Not already the case?
+		- ElecElements:2432
 	- TODO tool: only part of the ship is "taken" and moved, rest stays like now and subject to physics
+		- test first if physics ok
 	- AntiGravity TODOHERE: bomb or tool?
+		- Magnetic?
 
 	- See DKUZ bug
 

@@ -143,7 +143,6 @@ private:
     SliderControl<float> * mNpcFrictionAdjustmentSlider;
     SliderControl<float> * mNpcSizeMultiplierSlider;
     SliderControl<float> * mNpcPassiveBlastRadiusAdjustmentSlider;
-    wxCheckBox * mDoApplyPhysicsToolsToNpcsCheckBox;
 
     // Destructive Tools
     SliderControl<float> * mDestroyRadiusSlider;
@@ -165,6 +164,8 @@ private:
     SliderControl<float> * mRepairSpeedAdjustmentSlider;
     SliderControl<float> * mScrubRotRadiusSlider;
     SliderControl<float> * mWindMakerWindSpeedSlider;
+    wxCheckBox * mDoApplyPhysicsToolsToShipsCheckBox;
+    wxCheckBox * mDoApplyPhysicsToolsToNpcsCheckBox;
 
     // Rendering
     wxRadioButton * mTextureOceanRenderModeRadioButton;

@@ -709,9 +709,6 @@ public:
     float GetMinNpcSizeMultiplier() const override { return GameParameters::MinNpcSizeMultiplier; }
     float GetMaxNpcSizeMultiplier() const override { return GameParameters::MaxNpcSizeMultiplier; }
 
-    bool GetDoApplyPhysicsToolsToNpcs() const override { return mGameParameters.DoApplyPhysicsToolsToNpcs; }
-    void SetDoApplyPhysicsToolsToNpcs(bool value) override { mGameParameters.DoApplyPhysicsToolsToNpcs = value; }
-
     float GetNpcPassiveBlastRadiusAdjustment() const override { return mGameParameters.NpcPassiveBlastRadiusAdjustment; }
     void SetNpcPassiveBlastRadiusAdjustment(float value) override { mGameParameters.NpcPassiveBlastRadiusAdjustment = value; }
     float GetMinNpcPassiveBlastRadiusAdjustment() const override { return GameParameters::MinNpcPassiveBlastRadiusAdjustment; }
@@ -778,6 +775,12 @@ public:
     void SetRepairSpeedAdjustment(float value) override { mGameParameters.RepairSpeedAdjustment = value; }
     float GetMinRepairSpeedAdjustment() const override { return GameParameters::MinRepairSpeedAdjustment; }
     float GetMaxRepairSpeedAdjustment() const override { return GameParameters::MaxRepairSpeedAdjustment; }
+
+    bool GetDoApplyPhysicsToolsToShips() const override { return mGameParameters.DoApplyPhysicsToolsToShips; }
+    void SetDoApplyPhysicsToolsToShips(bool value) override { mGameParameters.DoApplyPhysicsToolsToShips = value; }
+
+    bool GetDoApplyPhysicsToolsToNpcs() const override { return mGameParameters.DoApplyPhysicsToolsToNpcs; }
+    void SetDoApplyPhysicsToolsToNpcs(bool value) override { mGameParameters.DoApplyPhysicsToolsToNpcs = value; }
 
     float GetBombBlastRadius() const override { return mGameParameters.BombBlastRadius; }
     void SetBombBlastRadius(float value) override { mGameParameters.BombBlastRadius = value; }

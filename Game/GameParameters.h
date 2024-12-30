@@ -476,8 +476,6 @@ struct GameParameters
     static float constexpr MinNpcSizeMultiplier = 0.2f;
     static float constexpr MaxNpcSizeMultiplier = 10.0f;
 
-    bool DoApplyPhysicsToolsToNpcs; // Swirl/Counterwirl, Attract/Repel
-
     static float constexpr NpcBasePassiveBlastRadiusMultiplier = 8.0f; // Accounts for "virtual pressure space" in closed spaces :-)
 
     float NpcPassiveBlastRadiusAdjustment;
@@ -609,6 +607,9 @@ struct GameParameters
     static float constexpr DrawForce = 40000.0f;
 
     static float constexpr SwirlForce = 600.0f;
+
+    bool DoApplyPhysicsToolsToShips; // Swirl/Counterwirl, Attract/Repel
+    bool DoApplyPhysicsToolsToNpcs; // Swirl/Counterwirl, Attract/Repel
 
     float BombBlastRadius;
     static float constexpr MinBombBlastRadius = 0.1f;

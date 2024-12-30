@@ -251,9 +251,6 @@ struct IGameControllerSettings
     virtual float GetNpcSizeMultiplier() const = 0;
     virtual void SetNpcSizeMultiplier(float value) = 0;
 
-    virtual bool GetDoApplyPhysicsToolsToNpcs() const = 0;
-    virtual void SetDoApplyPhysicsToolsToNpcs(bool value) = 0;
-
     virtual float GetNpcPassiveBlastRadiusAdjustment() const = 0;
     virtual void SetNpcPassiveBlastRadiusAdjustment(float value) = 0;
 
@@ -290,6 +287,12 @@ struct IGameControllerSettings
 
     virtual float GetRepairSpeedAdjustment() const = 0;
     virtual void SetRepairSpeedAdjustment(float value) = 0;
+
+    virtual bool GetDoApplyPhysicsToolsToShips() const = 0;
+    virtual void SetDoApplyPhysicsToolsToShips(bool value) = 0;
+
+    virtual bool GetDoApplyPhysicsToolsToNpcs() const = 0;
+    virtual void SetDoApplyPhysicsToolsToNpcs(bool value) = 0;
 
     virtual float GetBombBlastRadius() const = 0;
     virtual void SetBombBlastRadius(float value) = 0;
