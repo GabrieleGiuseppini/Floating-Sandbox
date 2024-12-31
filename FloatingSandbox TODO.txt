@@ -184,8 +184,57 @@
 			X See if then NPC actions need to be damped
 				X And see if damping can be done independently from OnShip
 	+ Ship engines should not work when not underwater (with setting)
-	- TODO tool: only part of the ship is "taken" and moved, rest stays like now and subject to physics
-		- test first if physics ok
+	= Move Gripped tool: only part of the ship is "taken" and moved, rest stays like now and subject to physics
+		+ Test first if physics ok
+			+ Test with setting to 0 "WorldForcesReception" of particles in grip - smoothing to 1 on border
+				+ Use it at all forces - except spring
+					+ ApplyWorldForces
+						+ ApplyWorldParticleForces
+						+ ApplyWorldSurfaceForces
+					+ ApplyStaticPressureForces
+				+ Reset to 1.0 at each Update iteration end
+		= If thru:
+			! Spec:
+				! Tool:
+					! First mouse down sets center, following mouse move sets radius, release crystallizes radius
+					! Second mouse down starts move, release ends whole session
+				! Rendering: notification layer is first to use "uber" shader, with "uber" vertex buffers
+					! API: UploadGripCircle
+			- Impl:
+				- Tool:
+					- State machine for radius-making and two-phase
+						- TODOHERE
+					- Become always move (evt. by zero) at UpdateSimulation, not only when there's a trajectory
+						- i.e. make traj continuous
+					- Fix inertial velocity
+					- TODO: decide shift
+					- Cursors
+				- Points::WorldForcesReceptivity:
+					- WorldForce*s*Receptivity (rename) and comments
+					- Don't touch (assert) @ each ephemeral
+					- Ship:
+						- No reset @ end of upload
+						- Resee all usages				
+				- Ship (...world...controller) interactions:
+					- SetupMoveGrippedBy(center, display radius) -> world radius
+						- Controller: Notification
+					- MoveGrippedBy
+						- Controller: Notification
+						- World:
+							- No NPC's
+						- Ship:
+							- Not ephemeral
+							- Sets all points' WorldForcesReceptivity (including 1.0)
+					- EndMoveGrippedBy
+						- Not ephemeral
+						- Resets WorldForcesReceptivity to 1.0
+				- NotificationLayer: "uber notifications" shader, using uber vertex buffers
+					- Auto-reset (not sticky)
+					- UploadGripCircle(...)
+				- MainFrame
+					- Accelerator
+					- Icon
+
 	- AntiGravity TODOHERE: bomb or tool?
 		- Magnetic?
 

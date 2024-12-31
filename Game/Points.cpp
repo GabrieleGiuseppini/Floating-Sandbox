@@ -40,6 +40,7 @@ void Points::Add(
     assert(mDynamicForceBuffers.size() >= 1);
     mDynamicForceBuffers[0].emplace_back(vec2f::zero());
     mStaticForceBuffer.emplace_back(vec2f::zero());
+    mWorldForceReceptivityBuffer.emplace_back(1.0f);
     mAugmentedMaterialMassBuffer.emplace_back(structuralMaterial.GetMass());
     mTransientAdditionalMassBuffer.emplace_back(0.0f);
     mMassBuffer.emplace_back(structuralMaterial.GetMass());
@@ -166,6 +167,7 @@ void Points::CreateEphemeralParticleAirBubble(
     mVelocityBuffer[pointIndex] = vec2f::zero();
     assert(mDynamicForceBuffers[0][pointIndex] == vec2f::zero()); // Ephemeral points never participate in dynamic forces (springs + surface pressure)
     mStaticForceBuffer[pointIndex] = vec2f::zero();
+    mWorldForceReceptivityBuffer[pointIndex] = 1.0f;
     mAugmentedMaterialMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
     mTransientAdditionalMassBuffer[pointIndex] = 0.0f;
     mMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
@@ -257,6 +259,7 @@ void Points::CreateEphemeralParticleDebris(
     mVelocityBuffer[pointIndex] = velocity;
     assert(mDynamicForceBuffers[0][pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs + surface pressure
     mStaticForceBuffer[pointIndex] = vec2f::zero();
+    mWorldForceReceptivityBuffer[pointIndex] = 1.0f;
     mAugmentedMaterialMassBuffer[pointIndex] = structuralMaterial.GetMass();
     mTransientAdditionalMassBuffer[pointIndex] = 0.0f;
     mMassBuffer[pointIndex] = structuralMaterial.GetMass();
@@ -346,6 +349,7 @@ void Points::CreateEphemeralParticleSmoke(
     mVelocityBuffer[pointIndex] = vec2f::zero();
     assert(mDynamicForceBuffers[0][pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs nor surface pressure
     mStaticForceBuffer[pointIndex] = vec2f::zero();
+    mWorldForceReceptivityBuffer[pointIndex] = 1.0f;
     mAugmentedMaterialMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
     mTransientAdditionalMassBuffer[pointIndex] = 0.0f;
     mMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
@@ -436,6 +440,7 @@ void Points::CreateEphemeralParticleSparkle(
     mVelocityBuffer[pointIndex] = velocity;
     assert(mDynamicForceBuffers[0][pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs + surface pressure
     mStaticForceBuffer[pointIndex] = vec2f::zero();
+    mWorldForceReceptivityBuffer[pointIndex] = 1.0f;
     mAugmentedMaterialMassBuffer[pointIndex] = structuralMaterial.GetMass();
     mTransientAdditionalMassBuffer[pointIndex] = 0.0f;
     mMassBuffer[pointIndex] = structuralMaterial.GetMass();
@@ -511,6 +516,7 @@ void Points::CreateEphemeralParticleWakeBubble(
     mVelocityBuffer[pointIndex] = velocity;
     assert(mDynamicForceBuffers[0][pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs + surface pressure
     mStaticForceBuffer[pointIndex] = vec2f::zero();
+    mWorldForceReceptivityBuffer[pointIndex] = 1.0f;
     mAugmentedMaterialMassBuffer[pointIndex] = waterStructuralMaterial.GetMass();
     mTransientAdditionalMassBuffer[pointIndex] = 0.0f;
     mMassBuffer[pointIndex] = waterStructuralMaterial.GetMass();

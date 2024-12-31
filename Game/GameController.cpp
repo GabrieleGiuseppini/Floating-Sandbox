@@ -773,6 +773,25 @@ void GameController::MoveBy(
         mGameParameters);
 }
 
+void GameController::MoveGrippedBy(
+    vec2f const & worldGripCenter,
+    float worldGripRadius,
+    DisplayLogicalSize const & screenOffset,
+    DisplayLogicalSize const & inertialScreenOffset)
+{
+    vec2f const worldOffset = mRenderContext->ScreenOffsetToWorldOffset(screenOffset);
+    vec2f const inertialVelocity = mRenderContext->ScreenOffsetToWorldOffset(inertialScreenOffset);
+
+    // Apply action
+    assert(!!mWorld);
+    mWorld->MoveGrippedBy(
+        worldGripCenter,
+        worldGripRadius,
+        worldOffset,
+        inertialVelocity,
+        mGameParameters);
+}
+
 void GameController::RotateBy(
     GlobalConnectedComponentId const & connectedComponentId,
     float screenDeltaY,

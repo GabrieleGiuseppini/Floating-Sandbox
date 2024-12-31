@@ -403,6 +403,11 @@ MainFrame::MainFrame(
             }
 
             {
+                // TODO: icon
+                ADD_TOOL_MENUITEM(_("Move Gripped"), wxS(""), "move_all_cursor_up", ToolType::MoveGripped, false);
+            }
+
+            {
                 auto menuItem = ADD_TOOL_MENUITEM(_("Pick-n-Pull"), wxS("\tK"), "pliers_cursor_up", ToolType::PickAndPull, false);
                 ADD_PLAIN_ACCELERATOR_KEY('K', menuItem);
             }

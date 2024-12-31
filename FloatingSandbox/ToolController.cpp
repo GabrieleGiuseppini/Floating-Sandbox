@@ -49,6 +49,13 @@ ToolController::ToolController(
             resourceLocator));
 
     mAllTools.emplace_back(
+        std::make_unique<MoveGrippedTool>(
+            *this,
+            gameController,
+            soundController,
+            resourceLocator));
+
+    mAllTools.emplace_back(
         std::make_unique<PickAndPullTool>(
             *this,
             gameController,

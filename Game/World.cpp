@@ -230,46 +230,72 @@ void World::PickConnectedComponentToMove(
 
 void World::MoveBy(
     GlobalConnectedComponentId connectedComponentId,
-    vec2f const & offset,
+    vec2f const & moveOffset,
     vec2f const & inertialVelocity,
     GameParameters const & gameParameters)
 {
     auto const shipId = connectedComponentId.GetShipId();
     assert(shipId >= 0 && shipId < mAllShips.size());
 
+    // Ship
     mAllShips[shipId]->MoveBy(
         connectedComponentId.GetLocalObjectId(),
-        offset,
+        moveOffset,
         inertialVelocity,
         gameParameters);
 
+    // NPCs
     mNpcs->MoveShipBy(
         shipId,
         connectedComponentId.GetLocalObjectId(),
-        offset,
+        moveOffset,
         inertialVelocity,
         gameParameters);
 }
 
 void World::MoveBy(
     ShipId shipId,
-    vec2f const & offset,
+    vec2f const & moveOffset,
     vec2f const & inertialVelocity,
     GameParameters const & gameParameters)
 {
     assert(shipId >= 0 && shipId < mAllShips.size());
 
+    // Ship
     mAllShips[shipId]->MoveBy(
-        offset,
+        moveOffset,
         inertialVelocity,
         gameParameters);
 
+    // NPCs
     mNpcs->MoveShipBy(
         shipId,
         std::nullopt,
-        offset,
+        moveOffset,
         inertialVelocity,
         gameParameters);
+}
+
+void World::MoveGrippedBy(
+    vec2f const & gripCenter,
+    float const gripRadius,
+    vec2f const & moveOffset,
+    vec2f const & inertialVelocity,
+    GameParameters const & gameParameters)
+{
+    // Ships
+    for (auto & ship : mAllShips)
+    {
+        ship->MoveGrippedBy(
+            gripCenter,
+            gripRadius,
+            moveOffset,
+            inertialVelocity,
+            gameParameters);
+    }
+
+    // NPCs
+    // TODO
 }
 
 void World::RotateBy(

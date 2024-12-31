@@ -84,7 +84,7 @@ std::optional<ConnectedComponentId> Ship::PickConnectedComponentToMove(
 
 void Ship::MoveBy(
     ConnectedComponentId connectedComponentId,
-    vec2f const & offset,
+    vec2f const & moveOffset,
     vec2f const & inertialVelocity,
     GameParameters const & gameParameters)
 {
@@ -98,7 +98,7 @@ void Ship::MoveBy(
     {
         if (mPoints.GetConnectedComponentId(p) == connectedComponentId)
         {
-            mPoints.SetPosition(p, mPoints.GetPosition(p) + offset);
+            mPoints.SetPosition(p, mPoints.GetPosition(p) + moveOffset);
 
             if (!mPoints.IsPinned(p))
             {
@@ -116,7 +116,7 @@ void Ship::MoveBy(
 }
 
 void Ship::MoveBy(
-    vec2f const & offset,
+    vec2f const & moveOffset,
     vec2f const & inertialVelocity,
     GameParameters const & gameParameters)
 {
@@ -133,13 +133,63 @@ void Ship::MoveBy(
 
     for (auto const p : mPoints.BufferElements())
     {
-        positionBuffer[p] += offset;
+        positionBuffer[p] += moveOffset;
         velocityBuffer[p] = actualInertialVelocity;
         waterVelocityBuffer[p] = -actualInertialVelocity;
 
         // Zero-out already-existing forces
         staticForceBuffer[p] = vec2f::zero();
         dynamicForceBuffer[p] = vec2f::zero();
+    }
+
+    TrimForWorldBounds(gameParameters);
+}
+
+void Ship::MoveGrippedBy(
+    vec2f const & gripCenter,
+    float const gripRadius,
+    vec2f const & moveOffset,
+    vec2f const & inertialVelocity,
+    GameParameters const & gameParameters)
+{
+    float const squareGripRadius = gripRadius * gripRadius;
+
+    vec2f const actualInertialVelocity =
+        inertialVelocity
+        * gameParameters.MoveToolInertia
+        * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
+
+    vec2f * const restrict positionBuffer = mPoints.GetPositionBufferAsVec2();
+    vec2f * const restrict velocityBuffer = mPoints.GetVelocityBufferAsVec2();
+    vec2f * const restrict waterVelocityBuffer = mPoints.GetWaterVelocityBufferAsVec2();
+    vec2f * const restrict staticForceBuffer = mPoints.GetStaticForceBufferAsVec2();
+    vec2f * const restrict dynamicForceBuffer = mPoints.GetDynamicForceBufferAsVec2();
+    float * const restrict worldForcesReceptivityBuffer = mPoints.GetWorldForceReceptivityBuffer();
+
+    for (auto const p : mPoints.BufferElements())
+    {
+        // Check if in grip
+        float const squarePointRadius = (positionBuffer[p] - gripCenter).squareLength();
+        if (squarePointRadius <= squareGripRadius)
+        {
+            // Scale based on distance (1.0 at center, 0.0 at border)
+            //float const scale = 1.0f - std::sqrtf(squarePointRadius / squareGripRadius);
+            float const scale = 1.0f - SmoothStep(0.5f, 1.0f, std::sqrtf(squarePointRadius / squareGripRadius));
+
+            positionBuffer[p] += moveOffset * scale;
+            velocityBuffer[p] = actualInertialVelocity * scale;
+            waterVelocityBuffer[p] = -actualInertialVelocity * scale;
+
+            // Zero-out already-existing forces
+            staticForceBuffer[p] *= 1.0f - scale;
+            dynamicForceBuffer[p] *= 1.0f - scale;
+
+            worldForcesReceptivityBuffer[p] = 1.0f - scale;
+        }
+        else
+        {
+            worldForcesReceptivityBuffer[p] = 1.0f;
+        }
     }
 
     TrimForWorldBounds(gameParameters);

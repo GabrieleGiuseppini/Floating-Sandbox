@@ -1242,7 +1242,7 @@ public:
 	void MoveShipBy(
 		ShipId shipId,
 		std::optional<ConnectedComponentId> connectedComponent,
-		vec2f const & offset,
+		vec2f const & moveOffset,
 		vec2f const & inertialVelocity,
 		GameParameters const & gameParameters);
 

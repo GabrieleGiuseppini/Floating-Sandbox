@@ -83,6 +83,26 @@ MoveAllTool::MoveAllTool(
 }
 
 ////////////////////////////////////////////////////////////////////////
+// Move Gripped
+////////////////////////////////////////////////////////////////////////
+
+MoveGrippedTool::MoveGrippedTool(
+    IToolCursorManager & toolCursorManager,
+    IGameController & gameController,
+    SoundController & soundController,
+    ResourceLocator const & resourceLocator)
+    : Tool(
+        ToolType::MoveGripped,
+        toolCursorManager,
+        gameController,
+        soundController)
+    // TODO
+    , mUpCursorImage(WxHelpers::LoadCursorImage("move_all_cursor_up", 13, 5, resourceLocator))
+    , mDownCursorImage(WxHelpers::LoadCursorImage("move_all_cursor_down", 13, 5, resourceLocator))
+{
+}
+
+////////////////////////////////////////////////////////////////////////
 // Pick and Pull
 ////////////////////////////////////////////////////////////////////////
 

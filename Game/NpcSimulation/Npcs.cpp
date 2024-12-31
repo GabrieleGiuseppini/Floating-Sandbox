@@ -2034,7 +2034,7 @@ void Npcs::Announce()
 void Npcs::MoveShipBy(
     ShipId shipId,
     std::optional<ConnectedComponentId> connectedComponent,
-    vec2f const & offset,
+    vec2f const & moveOffset,
     vec2f const & inertialVelocity,
     GameParameters const & gameParameters)
 {
@@ -2063,7 +2063,7 @@ void Npcs::MoveShipBy(
                 for (size_t particleOrdinal = 0; particleOrdinal < mStateBuffer[npcId]->ParticleMesh.Particles.size(); ++particleOrdinal)
                 {
                     ElementIndex const particleIndex = mStateBuffer[npcId]->ParticleMesh.Particles[particleOrdinal].ParticleIndex;
-                    mParticles.SetPosition(particleIndex, mParticles.GetPosition(particleIndex) + offset);
+                    mParticles.SetPosition(particleIndex, mParticles.GetPosition(particleIndex) + moveOffset);
                     mParticles.SetVelocity(particleIndex, actualInertialVelocity);
 
                     // Zero-out already-existing forces

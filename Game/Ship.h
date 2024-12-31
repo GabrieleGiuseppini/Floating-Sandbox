@@ -114,12 +114,19 @@ public:
 
     void MoveBy(
         ConnectedComponentId connectedComponentId,
-        vec2f const & offset,
+        vec2f const & moveOffset,
         vec2f const & inertialVelocity,
         GameParameters const & gameParameters);
 
     void MoveBy(
-        vec2f const & offset,
+        vec2f const & moveOffset,
+        vec2f const & inertialVelocity,
+        GameParameters const & gameParameters);
+
+    void MoveGrippedBy(
+        vec2f const & gripCenter,
+        float const gripRadius,
+        vec2f const & moveOffset,
         vec2f const & inertialVelocity,
         GameParameters const & gameParameters);
 

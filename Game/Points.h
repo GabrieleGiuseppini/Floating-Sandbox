@@ -602,6 +602,7 @@ public:
         , mDynamicForceBuffers() // We'll start later with at least one
         , mDynamicForceRawBuffers()
         , mStaticForceBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
+        , mWorldForceReceptivityBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mAugmentedMaterialMassBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mTransientAdditionalMassBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mMassBuffer(mBufferElementCount, shipPointCount, 1.0f)
@@ -1101,7 +1102,6 @@ public:
 
     vec2f * GetParallelDynamicForceBuffer(size_t parallelIndex)
     {
-        // First buffer implicitly
         assert(parallelIndex < mDynamicForceBuffers.size());
         return mDynamicForceBuffers[parallelIndex].data();
     }
@@ -1196,6 +1196,29 @@ public:
     void ResetStaticForces()
     {
         mStaticForceBuffer.fill(vec2f::zero());
+    }
+
+    float GetWorldForceReceptivity(ElementIndex pointElementIndex) const
+    {
+        return mWorldForceReceptivityBuffer[pointElementIndex];
+    }
+
+    float * GetWorldForceReceptivityBuffer()
+    {
+        return mWorldForceReceptivityBuffer.data();
+    }
+
+    void SetWorldForceReceptivity(
+        ElementIndex pointElementIndex,
+        float receptivity) noexcept
+    {
+        mWorldForceReceptivityBuffer[pointElementIndex] = receptivity;
+    }
+
+    void ResetWorldForceReceptivityBuffer()
+    {
+        // First buffer implicitly
+        mWorldForceReceptivityBuffer.fill(1.0f);
     }
 
     float GetAugmentedMaterialMass(ElementIndex pointElementIndex) const
@@ -2232,11 +2255,12 @@ private:
     Buffer<vec2f> mPositionBuffer;
     Buffer<vec2f> mFactoryPositionBuffer;
     Buffer<vec2f> mVelocityBuffer;
-    std::vector<Buffer<vec2f>> mDynamicForceBuffers; // Forces that vary across the multiple mechanical iterations (i.e. spring, hydrostatic surface pressure) for each thread; always at least one.
+    std::vector<Buffer<vec2f>> mDynamicForceBuffers; // Forces that vary across the multiple mechanical iterations (i.e. spring, hydrostatic surface pressure) for each thread; always at least one
     std::vector<float *> mDynamicForceRawBuffers;
     Buffer<vec2f> mStaticForceBuffer; // Forces that never change across the multiple mechanical iterations (all other forces)
+    Buffer<float> mWorldForceReceptivityBuffer;
     Buffer<float> mAugmentedMaterialMassBuffer; // Structural + Offset
-    Buffer<float> mTransientAdditionalMassBuffer; // Anything; total mass is slowly updated to include this
+    Buffer<float> mTransientAdditionalMassBuffer; // Anything; total mass is slowly updated to include this. Reset at end of Update()
     Buffer<float> mMassBuffer; // Augmented + Transient + Water
     Buffer<float> mMaterialBuoyancyVolumeFillBuffer;
     Buffer<float> mStrengthBuffer; // Immutable

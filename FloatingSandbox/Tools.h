@@ -35,6 +35,7 @@ enum class ToolType : std::uint32_t
 {
     Move = 0,
     MoveAll,
+    MoveGripped,
     PickAndPull,
     Smash,
     Saw,
@@ -673,6 +674,301 @@ public:
         IGameController & gameController,
         SoundController & soundController,
         ResourceLocator const & resourceLocator);
+};
+
+class MoveGrippedTool final : public Tool
+{
+public:
+
+    MoveGrippedTool(
+        IToolCursorManager & toolCursorManager,
+        IGameController & gameController,
+        SoundController & soundController,
+        ResourceLocator const & resourceLocator);
+
+public:
+
+    virtual void Initialize(InputState const & inputState) override
+    {
+        // Reset state
+        mCurrentEngagementState.reset();
+
+        // Initialize state
+        ProcessInputStateChange(inputState);
+    }
+
+    virtual void Deinitialize() override
+    {
+    }
+
+    virtual void UpdateSimulation(InputState const & /*inputState*/, float /*currentSimulationTime*/) override
+    {
+        if (mCurrentEngagementState.has_value() && mCurrentEngagementState->CurrentTrajectory.has_value())
+        {
+            //
+            // We're following a trajectory
+            //
+
+            auto & trajectory = *(mCurrentEngagementState->CurrentTrajectory);
+
+            auto const now = std::chrono::steady_clock::now();
+
+            //
+            // Smooth current position
+            //
+
+            float const rawProgress = std::min(
+                static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(now - trajectory.StartTimestamp).count())
+                    / static_cast<float>(TrajectoryLag.count()),
+                1.0f);
+
+            // ((x+0.7)^2-0.49)/2.4
+            float const progress = ((rawProgress + 0.7f) * (rawProgress + 0.7f) - 0.49f) / (1.7f * 1.7f - 0.49f);
+
+            ////vec2f const newCurrentPosition =
+            ////    trajectory.StartPosition
+            ////    + (trajectory.EndPosition - trajectory.StartPosition) * progress;
+            vec2f const newCurrentPosition =
+                trajectory.CurrentPosition
+                + (trajectory.EndPosition - trajectory.CurrentPosition) * 0.05f;
+            (void)progress;
+
+            // Tell IGameController
+
+            // Calculate offset
+            vec2f const fractionalOffset = newCurrentPosition - trajectory.CurrentPosition + trajectory.CumulativeUnconsumedMoveOffset;
+            DisplayLogicalSize const integralOffset = DisplayLogicalSize::FromFloatRound(fractionalOffset);
+
+            // Move
+            mGameController.MoveGrippedBy(
+                mCurrentEngagementState->WorldGripCenter,
+                mCurrentEngagementState->WorldGripRadius,
+                integralOffset,
+                integralOffset);
+
+            // TODOTEST
+            mCurrentEngagementState->WorldGripCenter += mGameController.ScreenOffsetToWorldOffset(integralOffset);
+
+            // Accumulate debt
+            trajectory.CumulativeUnconsumedMoveOffset = fractionalOffset - integralOffset.ToFloat();
+
+            // Store new current position
+            trajectory.CurrentPosition = newCurrentPosition;
+
+            // Check whether we are done
+            ////if (rawProgress >= 1.0f)
+            ////{
+            ////    //
+            ////    // Close trajectory
+            ////    //
+
+            ////    // Tell game controller to stop inertia
+            ////    // Move to stop
+            ////    mGameController.MoveGrippedBy(
+            ////        mCurrentEngagementState->WorldGripCenter,
+            ////        mCurrentEngagementState->WorldGripRadius,
+            ////        DisplayLogicalSize(0, 0),
+            ////        DisplayLogicalSize(0, 0));
+
+            ////    // Reset trajectory
+            ////    mCurrentEngagementState->CurrentTrajectory.reset();
+            ////}
+        }
+    }
+
+    virtual void OnMouseMove(InputState const & inputState) override
+    {
+        if (mCurrentEngagementState.has_value())
+        {
+            auto const now = std::chrono::steady_clock::now();
+
+            if (mCurrentEngagementState->CurrentTrajectory.has_value())
+            {
+                //
+                // We already have a trajectory
+                //
+
+                // Re-register the start position from where we are now
+                mCurrentEngagementState->CurrentTrajectory->StartPosition = mCurrentEngagementState->CurrentTrajectory->CurrentPosition;
+
+                // If we're enough into the trajectory, restart the timing - to avoid cramming a mouse move stretch
+                // into a tiny little time interval
+                ////if (now > mCurrentEngagementState->CurrentTrajectory->StartTimestamp + TrajectoryLag / 2)
+                ////{
+                ////    mCurrentEngagementState->CurrentTrajectory->StartTimestamp = now;
+                ////    mCurrentEngagementState->CurrentTrajectory->EndTimestamp = mCurrentEngagementState->CurrentTrajectory->StartTimestamp + TrajectoryLag;
+                ////}
+
+                mCurrentEngagementState->CurrentTrajectory->StartTimestamp = now;
+                mCurrentEngagementState->CurrentTrajectory->EndTimestamp = mCurrentEngagementState->CurrentTrajectory->StartTimestamp + TrajectoryLag;
+            }
+            else
+            {
+                //
+                // Start a new trajectory
+                //
+
+                mCurrentEngagementState->CurrentTrajectory.emplace();
+                mCurrentEngagementState->CurrentTrajectory->StartPosition = inputState.PreviousMousePosition.ToFloat();
+                mCurrentEngagementState->CurrentTrajectory->CurrentPosition = mCurrentEngagementState->CurrentTrajectory->StartPosition;
+                mCurrentEngagementState->CurrentTrajectory->CumulativeUnconsumedMoveOffset = vec2f::zero();
+                mCurrentEngagementState->CurrentTrajectory->StartTimestamp = now;
+                mCurrentEngagementState->CurrentTrajectory->EndTimestamp = mCurrentEngagementState->CurrentTrajectory->StartTimestamp + TrajectoryLag;
+            }
+
+            mCurrentEngagementState->CurrentTrajectory->EndPosition = inputState.MousePosition.ToFloat();
+        }
+    }
+
+    virtual void OnLeftMouseDown(InputState const & inputState) override
+    {
+        ProcessInputStateChange(inputState);
+    }
+
+    virtual void OnLeftMouseUp(InputState const & inputState) override
+    {
+        ProcessInputStateChange(inputState);
+    }
+
+    virtual void OnShiftKeyDown(InputState const & inputState) override
+    {
+        ProcessInputStateChange(inputState);
+    }
+
+    virtual void OnShiftKeyUp(InputState const & inputState) override
+    {
+        ProcessInputStateChange(inputState);
+    }
+
+private:
+
+    void ProcessInputStateChange(InputState const & inputState)
+    {
+        //
+        // Update state
+        //
+
+        if (inputState.IsLeftMouseDown)
+        {
+            // Left mouse down
+
+            if (!mCurrentEngagementState.has_value())
+            {
+                //
+                // We're currently not engaged
+                //
+
+                // Engage
+
+                vec2f worldGripCenter = mGameController.ScreenToWorld(inputState.MousePosition);
+                // TODOTEST
+                float worldGripRadius = 40.0f;
+
+                mCurrentEngagementState.emplace(
+                    worldGripCenter,
+                    worldGripRadius);
+            }
+        }
+        else
+        {
+            // Left mouse up
+
+            if (mCurrentEngagementState.has_value())
+            {
+                //
+                // We're currently engaged
+                //
+
+                if (mCurrentEngagementState->CurrentTrajectory.has_value())
+                {
+                    //
+                    // We are in the midst of a trajectory
+                    //
+
+                    // Impart last inertia == distance left
+                    mGameController.MoveGrippedBy(
+                        mCurrentEngagementState->WorldGripCenter,
+                        mCurrentEngagementState->WorldGripRadius,
+                        DisplayLogicalSize(0, 0),
+                        DisplayLogicalSize::FromFloatRound(mCurrentEngagementState->CurrentTrajectory->EndPosition - mCurrentEngagementState->CurrentTrajectory->CurrentPosition));
+
+                    // Stop trajectory
+                    mCurrentEngagementState->CurrentTrajectory.reset();
+                }
+
+                // Disengage
+                mCurrentEngagementState.reset();
+            }
+        }
+
+        if (inputState.IsShiftKeyDown)
+        {
+            // Shift key down
+
+            // TODO
+        }
+        else
+        {
+            // Shift key up
+
+            // TODO
+        }
+
+        //
+        // Update cursor
+        //
+
+        if (!mCurrentEngagementState.has_value())
+        {
+            mToolCursorManager.SetToolCursor(mUpCursorImage);
+        }
+        else
+        {
+            mToolCursorManager.SetToolCursor(mDownCursorImage);
+        }
+    }
+
+private:
+
+    static constexpr std::chrono::milliseconds TrajectoryLag = std::chrono::milliseconds(2000);
+
+    // Our state
+
+    struct EngagementState
+    {
+        vec2f WorldGripCenter;
+        float WorldGripRadius;
+
+        struct Trajectory
+        {
+            vec2f StartPosition;
+            vec2f CurrentPosition;
+            vec2f EndPosition;
+
+            vec2f CumulativeUnconsumedMoveOffset; // We only offset by integral steps, and here we cumulate our rounding debt
+
+            std::chrono::steady_clock::time_point StartTimestamp;
+            std::chrono::steady_clock::time_point EndTimestamp;
+
+            Trajectory() = default;
+        };
+
+        // When set, we're smoothing the mouse position along a trajectory
+        std::optional<Trajectory> CurrentTrajectory;
+
+        EngagementState(
+            vec2f worldGripCenter,
+            float worldGripRadius)
+            : WorldGripCenter(worldGripCenter)
+            , WorldGripRadius(worldGripRadius)
+        {}
+    };
+
+    std::optional<EngagementState> mCurrentEngagementState; // When set, indicates it's engaged
+
+    // The cursors
+    wxImage const mUpCursorImage;
+    wxImage const mDownCursorImage;
 };
 
 class PickAndPullTool final : public Tool
