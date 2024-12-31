@@ -711,27 +711,14 @@ public:
 
             auto & trajectory = *(mCurrentEngagementState->CurrentTrajectory);
 
-            auto const now = std::chrono::steady_clock::now();
 
             //
             // Smooth current position
             //
 
-            float const rawProgress = std::min(
-                static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(now - trajectory.StartTimestamp).count())
-                    / static_cast<float>(TrajectoryLag.count()),
-                1.0f);
-
-            // ((x+0.7)^2-0.49)/2.4
-            float const progress = ((rawProgress + 0.7f) * (rawProgress + 0.7f) - 0.49f) / (1.7f * 1.7f - 0.49f);
-
-            ////vec2f const newCurrentPosition =
-            ////    trajectory.StartPosition
-            ////    + (trajectory.EndPosition - trajectory.StartPosition) * progress;
             vec2f const newCurrentPosition =
                 trajectory.CurrentPosition
                 + (trajectory.EndPosition - trajectory.CurrentPosition) * 0.05f;
-            (void)progress;
 
             // Tell IGameController
 
@@ -787,20 +774,6 @@ public:
                 //
                 // We already have a trajectory
                 //
-
-                // Re-register the start position from where we are now
-                mCurrentEngagementState->CurrentTrajectory->StartPosition = mCurrentEngagementState->CurrentTrajectory->CurrentPosition;
-
-                // If we're enough into the trajectory, restart the timing - to avoid cramming a mouse move stretch
-                // into a tiny little time interval
-                ////if (now > mCurrentEngagementState->CurrentTrajectory->StartTimestamp + TrajectoryLag / 2)
-                ////{
-                ////    mCurrentEngagementState->CurrentTrajectory->StartTimestamp = now;
-                ////    mCurrentEngagementState->CurrentTrajectory->EndTimestamp = mCurrentEngagementState->CurrentTrajectory->StartTimestamp + TrajectoryLag;
-                ////}
-
-                mCurrentEngagementState->CurrentTrajectory->StartTimestamp = now;
-                mCurrentEngagementState->CurrentTrajectory->EndTimestamp = mCurrentEngagementState->CurrentTrajectory->StartTimestamp + TrajectoryLag;
             }
             else
             {
@@ -809,11 +782,8 @@ public:
                 //
 
                 mCurrentEngagementState->CurrentTrajectory.emplace();
-                mCurrentEngagementState->CurrentTrajectory->StartPosition = inputState.PreviousMousePosition.ToFloat();
-                mCurrentEngagementState->CurrentTrajectory->CurrentPosition = mCurrentEngagementState->CurrentTrajectory->StartPosition;
+                mCurrentEngagementState->CurrentTrajectory->CurrentPosition = inputState.PreviousMousePosition.ToFloat();
                 mCurrentEngagementState->CurrentTrajectory->CumulativeUnconsumedMoveOffset = vec2f::zero();
-                mCurrentEngagementState->CurrentTrajectory->StartTimestamp = now;
-                mCurrentEngagementState->CurrentTrajectory->EndTimestamp = mCurrentEngagementState->CurrentTrajectory->StartTimestamp + TrajectoryLag;
             }
 
             mCurrentEngagementState->CurrentTrajectory->EndPosition = inputState.MousePosition.ToFloat();
@@ -930,8 +900,6 @@ private:
 
 private:
 
-    static constexpr std::chrono::milliseconds TrajectoryLag = std::chrono::milliseconds(2000);
-
     // Our state
 
     struct EngagementState
@@ -941,14 +909,11 @@ private:
 
         struct Trajectory
         {
-            vec2f StartPosition;
+            //vec2f StartPosition;
             vec2f CurrentPosition;
             vec2f EndPosition;
 
             vec2f CumulativeUnconsumedMoveOffset; // We only offset by integral steps, and here we cumulate our rounding debt
-
-            std::chrono::steady_clock::time_point StartTimestamp;
-            std::chrono::steady_clock::time_point EndTimestamp;
 
             Trajectory() = default;
         };

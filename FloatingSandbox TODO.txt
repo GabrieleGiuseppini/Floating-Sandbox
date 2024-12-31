@@ -206,7 +206,7 @@
 						- TODOHERE
 					- Become always move (evt. by zero) at UpdateSimulation, not only when there's a trajectory
 						- i.e. make traj continuous
-					- Fix inertial velocity
+					= Fix inertial velocity
 					- TODO: decide shift
 					- Cursors
 				- Points::WorldForcesReceptivity:
