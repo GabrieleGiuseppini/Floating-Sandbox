@@ -708,7 +708,7 @@ void Ship::ApplySpringsForces(
     }
 
     //
-    // 3. One-by-one
+    // 3. Remaining one-by-one's
     //
 
     for (; s < endSpringIndex; ++s)
