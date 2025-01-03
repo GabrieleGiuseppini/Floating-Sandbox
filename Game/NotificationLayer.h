@@ -141,6 +141,16 @@ public:
 	}
 
 	// One frame only; after Update() it's gone
+	inline void SetGripCircle(
+		vec2f const & worldCenterPosition,
+		float worldRadius)
+	{
+		mGripCircleToRender1.emplace(
+			worldCenterPosition,
+			worldRadius);
+	}
+
+	// One frame only; after Update() it's gone
 	inline void ShowInteractiveToolDashedLine(
 		DisplayLogicalCoordinates const & start,
 		DisplayLogicalCoordinates const & end)
@@ -391,6 +401,22 @@ private:
 
 	std::optional<LaserCannon> mLaserCannonToRender1;
 	std::optional<LaserCannon> mLaserCannonToRender2;
+
+	struct GripCircle
+	{
+		vec2f WorldCenterPosition;
+		float WorldRadius;
+
+		GripCircle(
+			vec2f const & worldCenterPosition,
+			float worldRadius)
+			: WorldCenterPosition(worldCenterPosition)
+			, WorldRadius(worldRadius)
+		{}
+	};
+
+	std::optional<GripCircle> mGripCircleToRender1;
+	std::optional<GripCircle> mGripCircleToRender2;
 
 	struct LineGuide
 	{

@@ -62,6 +62,8 @@ NotificationRenderContext::NotificationRenderContext(
     , mLaserCannonVBO()
     , mLaserRayVAO()
     , mLaserRayVBO()
+    , mMultiNotificationVAO()
+    , mMultiNotificationVBO()
     , mRectSelectionVAO()
     , mRectSelectionVBO()
     , mInteractiveToolDashedLineVAO()
@@ -500,6 +502,32 @@ NotificationRenderContext::NotificationRenderContext(
     }
 
     //
+    // Initialize Multi-Notification
+    //
+
+    {
+        glGenVertexArrays(1, &tmpGLuint);
+        mMultiNotificationVAO = tmpGLuint;
+
+        glBindVertexArray(*mMultiNotificationVAO);
+        CheckOpenGLError();
+
+        glGenBuffers(1, &tmpGLuint);
+        mMultiNotificationVBO = tmpGLuint;
+
+        // Describe vertex attributes
+        static_assert(sizeof(MultiNotificationVertex) == (3 + 2) * sizeof(float));
+        glBindBuffer(GL_ARRAY_BUFFER, *mMultiNotificationVBO);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::MultiNotification1));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::MultiNotification1), 3, GL_FLOAT, GL_FALSE, sizeof(MultiNotificationVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::MultiNotification2));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::MultiNotification2), 2, GL_FLOAT, GL_FALSE, sizeof(MultiNotificationVertex), (void *)(3 * sizeof(float)));
+        CheckOpenGLError();
+
+        glBindVertexArray(0);
+    }
+
+    //
     // Initialize Rect Selection Ray
     //
 
@@ -576,6 +604,9 @@ void NotificationRenderContext::UploadStart()
 
     // Reset laser ray, it's uploaded as needed
     mLaserRayVertexBuffer.clear();
+
+    // Reset multi-notifications, they are uploaded as needed
+    mMultiNotificationVertexBuffer.clear();
 
     // Reset rect selection, it's uploaded as needed
     mRectSelectionVertexBuffer.clear();
@@ -819,6 +850,8 @@ void NotificationRenderContext::RenderPrepare()
 
     RenderPrepareLaserRay();
 
+    RenderPrepareMultiNotification();
+
     RenderPrepareRectSelection();
 
     RenderPrepareInteractiveToolDashedLines();
@@ -857,6 +890,8 @@ void NotificationRenderContext::RenderDraw()
     RenderDrawPressureInjectionHalo();
 
     RenderDrawWindSphere();
+
+    RenderDrawMultiNotification();
 
     RenderDrawRectSelection();
 
@@ -899,6 +934,10 @@ void NotificationRenderContext::ApplyViewModelChanges(RenderParameters const & r
 
     mShaderManager.ActivateProgram<ProgramType::WindSphere>();
     mShaderManager.SetProgramParameter<ProgramType::WindSphere, ProgramParameterType::OrthoMatrix>(
+        globalOrthoMatrix);
+
+    mShaderManager.ActivateProgram<ProgramType::MultiNotification>();
+    mShaderManager.SetProgramParameter<ProgramType::MultiNotification, ProgramParameterType::OrthoMatrix>(
         globalOrthoMatrix);
 
     mShaderManager.ActivateProgram<ProgramType::RectSelection>();
@@ -1542,6 +1581,38 @@ void NotificationRenderContext::RenderDrawLaserRay()
         // Draw
         assert((mLaserRayVertexBuffer.size() % 6) == 0);
         glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mLaserRayVertexBuffer.size()));
+
+        glBindVertexArray(0);
+    }
+}
+
+void NotificationRenderContext::RenderPrepareMultiNotification()
+{
+    if (!mMultiNotificationVertexBuffer.empty())
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, *mMultiNotificationVBO);
+
+        glBufferData(GL_ARRAY_BUFFER,
+            sizeof(MultiNotificationVertex) * mMultiNotificationVertexBuffer.size(),
+            mMultiNotificationVertexBuffer.data(),
+            GL_STREAM_DRAW);
+        CheckOpenGLError();
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+}
+
+void NotificationRenderContext::RenderDrawMultiNotification()
+{
+    if (!mMultiNotificationVertexBuffer.empty())
+    {
+        glBindVertexArray(*mMultiNotificationVAO);
+
+        mShaderManager.ActivateProgram<ProgramType::MultiNotification>();
+
+        // Draw
+        assert((mMultiNotificationVertexBuffer.size() % 6) == 0);
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mMultiNotificationVertexBuffer.size()));
 
         glBindVertexArray(0);
     }

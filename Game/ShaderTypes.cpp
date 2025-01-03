@@ -53,6 +53,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::LaserRay;
     else if (lstr == "lightning")
         return ProgramType::Lightning;
+    else if (lstr == "multi_notification")
+        return ProgramType::MultiNotification;
     else if (lstr == "ocean_depth_basic")
         return ProgramType::OceanDepthBasic;
     else if (lstr == "ocean_depth_detailed_background")
@@ -255,6 +257,8 @@ std::string ProgramTypeToStr(ProgramType program)
             return "LaserRay";
         case ProgramType::Lightning:
             return "Lightning";
+        case ProgramType::MultiNotification:
+            return "MultiNotification";
         case ProgramType::OceanDepthBasic:
             return "OceanDepthBasic";
         case ProgramType::OceanDepthDetailedBackground:
@@ -754,6 +758,10 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::PhysicsProbePanel1;
     else if (Utils::CaseInsensitiveEquals(str, "PhysicsProbePanel2"))
         return VertexAttributeType::PhysicsProbePanel2;
+    else if (Utils::CaseInsensitiveEquals(str, "MultiNotification1"))
+        return VertexAttributeType::MultiNotification1;
+    else if (Utils::CaseInsensitiveEquals(str, "MultiNotification2"))
+        return VertexAttributeType::MultiNotification2;
     else if (Utils::CaseInsensitiveEquals(str, "FireExtinguisherSpray"))
         return VertexAttributeType::FireExtinguisherSpray;
     else if (Utils::CaseInsensitiveEquals(str, "HeatBlasterFlame"))

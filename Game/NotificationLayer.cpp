@@ -275,6 +275,8 @@ void NotificationLayer::Reset()
 	mWindSphereToRender2.reset();
 	mLaserCannonToRender1.reset();
 	mLaserCannonToRender2.reset();
+	mGripCircleToRender1.reset();
+	mGripCircleToRender2.reset();
 	mInteractiveToolDashedLineToRender1.clear();
 	mInteractiveToolDashedLineToRender2.clear();
 }
@@ -371,6 +373,9 @@ void NotificationLayer::Update(
 
 	mLaserCannonToRender2 = mLaserCannonToRender1;
 	mLaserCannonToRender1.reset();
+
+	mGripCircleToRender2 = mGripCircleToRender1;
+	mGripCircleToRender1.reset();
 
 	mInteractiveToolDashedLineToRender2 = std::move(mInteractiveToolDashedLineToRender1);
 	mInteractiveToolDashedLineToRender1.clear();
@@ -550,6 +555,13 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 			mLaserCannonToRender2->Center,
 			mLaserCannonToRender2->Strength,
 			renderContext.GetViewModel());
+	}
+
+	if (mGripCircleToRender2.has_value())
+	{
+		notificationRenderContext.UploadGripCircle(
+			mGripCircleToRender2->WorldCenterPosition,
+			mGripCircleToRender2->WorldRadius);
 	}
 
 	for (auto const & dashedLine : mInteractiveToolDashedLineToRender2)

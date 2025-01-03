@@ -37,6 +37,7 @@ enum class ProgramType
     LandTextureDetailed,
     LaserRay,
     Lightning,
+    MultiNotification,
     OceanDepthBasic,
     OceanDepthDetailedBackground,
     OceanDepthDetailedForeground,
@@ -289,6 +290,9 @@ enum class VertexAttributeType : GLuint
 
     PhysicsProbePanel1 = 0,
     PhysicsProbePanel2 = 1,
+
+    MultiNotification1 = 0,
+    MultiNotification2 = 1,
 
     FireExtinguisherSpray = 0,
 

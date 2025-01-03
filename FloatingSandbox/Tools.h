@@ -888,6 +888,13 @@ private:
         // Update cursor
         //
 
+        SetCursor();
+    }
+
+private:
+
+    void SetCursor()
+    {
         if (!mCurrentEngagementState.has_value())
         {
             mToolCursorManager.SetToolCursor(mUpCursorImage);
@@ -897,8 +904,6 @@ private:
             mToolCursorManager.SetToolCursor(mDownCursorImage);
         }
     }
-
-private:
 
     // Our state
 

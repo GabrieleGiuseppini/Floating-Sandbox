@@ -781,7 +781,9 @@ std::tuple<vec2f, float> GameController::SetupMoveGrippedBy(
     float const worldGripRadius = mRenderContext->ScreenOffsetToWorldOffset(screenGripOffset).length();
 
     // Notify
-    // TODOHERE
+    mNotificationLayer.SetGripCircle(
+        worldGripCenter,
+        worldGripRadius);
 
     return { worldGripCenter, worldGripRadius };
 }
@@ -805,14 +807,16 @@ void GameController::MoveGrippedBy(
         mGameParameters);
 
     // Notify
-    // TODOHERE
+    mNotificationLayer.SetGripCircle(
+        worldGripCenter,
+        worldGripRadius);
 }
 
 void GameController::EndMoveGrippedBy()
 {
     // Apply action
     assert(!!mWorld);
-    mWorld->EndMoveGrippedBy();
+    mWorld->EndMoveGrippedBy(mGameParameters);
 }
 
 void GameController::RotateBy(

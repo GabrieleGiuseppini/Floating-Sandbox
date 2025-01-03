@@ -496,6 +496,54 @@ public:
 		std::optional<float> strength,
 		ViewModel const & viewModel);
 
+	void UploadGripCircle(
+		vec2f const & worldCenterPosition,
+		float worldRadius)
+	{
+		//
+		// Populate vertices
+		//
+
+		float const left = worldCenterPosition.x - worldRadius;
+		float const right = worldCenterPosition.x + worldRadius;
+		float const top = worldCenterPosition.y + worldRadius;
+		float const bottom = worldCenterPosition.y - worldRadius;
+
+		// Triangle 1
+
+		mMultiNotificationVertexBuffer.emplace_back(
+			MultiNotificationVertex::MakeGripCircle(
+				vec2f(left, bottom),
+				vec2f(-1.0f, -1.0f)));
+
+		mMultiNotificationVertexBuffer.emplace_back(
+			MultiNotificationVertex::MakeGripCircle(
+				vec2f(left, top),
+				vec2f(-1.0f, 1.0f)));
+
+		mMultiNotificationVertexBuffer.emplace_back(
+			MultiNotificationVertex::MakeGripCircle(
+				vec2f(right, bottom),
+				vec2f(1.0f, -1.0f)));
+
+		// Triangle 2
+
+		mMultiNotificationVertexBuffer.emplace_back(
+			MultiNotificationVertex::MakeGripCircle(
+				vec2f(left, top),
+				vec2f(-1.0f, 1.0f)));
+
+		mMultiNotificationVertexBuffer.emplace_back(
+			MultiNotificationVertex::MakeGripCircle(
+				vec2f(right, bottom),
+				vec2f(1.0f, -1.0f)));
+
+		mMultiNotificationVertexBuffer.emplace_back(
+			MultiNotificationVertex::MakeGripCircle(
+				vec2f(right, top),
+				vec2f(1.0f, 1.0f)));
+	}
+
 	void UploadRectSelection(
 		vec2f const & centerPosition,
 		vec2f const & verticalDir,
@@ -677,6 +725,9 @@ private:
 
 	inline void RenderPrepareLaserRay();
 	inline void RenderDrawLaserRay();
+
+	inline void RenderPrepareMultiNotification();
+	inline void RenderDrawMultiNotification();
 
 	inline void RenderPrepareRectSelection();
 	inline void RenderDrawRectSelection();
@@ -888,6 +939,49 @@ private:
 			: vertexPositionNDC(_vertexPositionNDC)
 			, vertexSpacePosition(_vertexSpacePosition)
 			, strength(_strength)
+		{}
+	};
+
+	struct MultiNotificationVertex
+	{
+		enum VertexKindType
+		{
+			// Note: enum values are to be kept in sync with shader
+			GripCircle = 1
+		};
+		float vertexKind;
+
+		union MultiAttributesType
+		{
+			struct GripCircleType
+			{
+				vec2f vertexPosition;
+				vec2f virtualSpacePosition;
+			};
+			GripCircleType gripCircle;
+		};
+		MultiAttributesType multiAttributes;
+
+		static MultiNotificationVertex MakeGripCircle(
+			vec2f _vertexPosition,
+			vec2f _virtualSpacePosition)
+		{
+			MultiAttributesType multiAttributes;
+			multiAttributes.gripCircle = MultiAttributesType::GripCircleType({
+				_vertexPosition,
+				_virtualSpacePosition });
+			return MultiNotificationVertex(
+				static_cast<float>(VertexKindType::GripCircle),
+				multiAttributes);
+		}
+
+	private:
+
+		MultiNotificationVertex(
+			float _vertexKind,
+			MultiAttributesType const & _multiAttributes)
+			: vertexKind(_vertexKind)
+			, multiAttributes(_multiAttributes)
 		{}
 	};
 
@@ -1114,6 +1208,10 @@ private:
 	GameOpenGLVAO mLaserRayVAO;
 	std::vector<LaserRayVertex> mLaserRayVertexBuffer;
 	GameOpenGLVBO mLaserRayVBO;
+
+	GameOpenGLVAO mMultiNotificationVAO;
+	std::vector<MultiNotificationVertex> mMultiNotificationVertexBuffer;
+	GameOpenGLVBO mMultiNotificationVBO;
 
 	GameOpenGLVAO mRectSelectionVAO;
 	std::vector<RectSelectionVertex> mRectSelectionVertexBuffer;

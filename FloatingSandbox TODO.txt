@@ -211,16 +211,17 @@
 					+ SetForcesReceptivity
 						! Sticky, until NumMechIterations changes or FrozenCoefficient changes
 							+ Rename mFrozenCoefficientBuffer as IsPinnedBuffer
-				- NotificationLayer: "uber notifications" shader, using uber vertex buffers
-					- Also add other notifications
+				= NotificationLayer: "uber notifications" shader, using uber vertex buffers
+					= Vertex attributes struct contains union and type
+						X See if can use int type as varying
+						+ Struct has static factory methods
+						- Check assembly
+					+ Simple vertex buffer
+						+ Auto-reset (not sticky)
+					+ UploadGripCircle(...)
+					- Move other notifications
+						! Those that are NDC need to get world pos's, for easier vertex shader
 						- TODOHERE
-					- Vertex attributes struct contains union and type
-						- See if can use int type as varying
-						- Struct has static factory methods
-					- Simple vertex buffer
-						- Auto-reset (not sticky)
-					- UploadGripCircle(...)
-					- UploadXXX(...)
 				= Ship (...world...controller) interactions:
 					= SetupMoveGrippedBy(display center, display radius) -> [world pos, world radius]
 						! Doesn't touch World
@@ -252,7 +253,7 @@
 						- i.e. make traj continuous
 					= Fix inertial velocity
 					- Rotate
-						- Should not require any additional state, center is grip's center and angle is inputState.mouse.y-inputState.prevMouse.y
+						- Should not require any additional state, center is grip's center and angle is new_traj_pos.y - cur_traj_pos.y
 					- Cursors					
 				- MainFrame
 					- Accelerator
