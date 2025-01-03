@@ -164,9 +164,8 @@ void Ship::MoveGrippedBy(
     vec2f * const restrict waterVelocityBuffer = mPoints.GetWaterVelocityBufferAsVec2();
     vec2f * const restrict staticForceBuffer = mPoints.GetStaticForceBufferAsVec2();
     vec2f * const restrict dynamicForceBuffer = mPoints.GetDynamicForceBufferAsVec2();
-    float * const restrict worldForcesReceptivityBuffer = mPoints.GetWorldForceReceptivityBuffer();
 
-    for (auto const p : mPoints.BufferElements())
+    for (auto const p : mPoints.RawShipPoints())
     {
         // Check if in grip
         float const squarePointRadius = (positionBuffer[p] - gripCenter).squareLength();
@@ -184,15 +183,24 @@ void Ship::MoveGrippedBy(
             staticForceBuffer[p] *= 1.0f - scale;
             dynamicForceBuffer[p] *= 1.0f - scale;
 
-            worldForcesReceptivityBuffer[p] = 1.0f - scale;
+            mPoints.SetForcesReceptivity(p, 1.0f - scale);
         }
         else
         {
-            worldForcesReceptivityBuffer[p] = 1.0f;
+            mPoints.SetForcesReceptivity(p, 1.0f);
         }
     }
 
     TrimForWorldBounds(gameParameters);
+}
+
+void Ship::EndMoveGrippedBy(GameParameters const & /*gameParameters*/)
+{
+    // Reset forces receptivities
+    for (auto const p : mPoints.RawShipPoints())
+    {
+        mPoints.SetForcesReceptivity(p, 1.0f);
+    }
 }
 
 void Ship::RotateBy(

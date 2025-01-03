@@ -664,8 +664,6 @@ void Ship::Update(
     // it for use in the next simulation step
     mPoints.ResetTransientAdditionalMasses();
 
-    mPoints.ResetWorldForceReceptivityBuffer();
-
     ///////////////////////////////////////////////////////////////////
     // Diagnostics
     ///////////////////////////////////////////////////////////////////
@@ -1034,7 +1032,6 @@ void Ship::ApplyWorldParticleForces(
 
     float * const restrict newCachedPointDepthsBuffer = newCachedPointDepths.data();
     vec2f * const restrict staticForcesBuffer = mPoints.GetStaticForceBufferAsVec2();
-    float * const restrict worldForcesReceptivityBuffer = mPoints.GetWorldForceReceptivityBuffer();
 
     //
     // 1. Various world forces
@@ -1108,7 +1105,7 @@ void Ship::ApplyWorldParticleForces(
             * mPoints.GetMaterialWindReceptivity(pointIndex)
             * (1.0f - uwCoefficient); // Only above-water (modulated)
 
-        staticForcesBuffer[pointIndex] += staticForce * worldForcesReceptivityBuffer[pointIndex];
+        staticForcesBuffer[pointIndex] += staticForce;
     }
 
     //
@@ -1146,7 +1143,7 @@ void Ship::ApplyWorldParticleForces(
                         * mPoints.GetMaterialWindReceptivity(pointIndex);
 
                     // Apply force
-                    staticForcesBuffer[pointIndex] += force * worldForcesReceptivityBuffer[pointIndex];
+                    staticForcesBuffer[pointIndex] += force;
                 }
             }
         }
@@ -1162,8 +1159,6 @@ void Ship::ApplyWorldSurfaceForces(
     Geometry::AABBSet & externalAabbSet)
 {
     float totalWaterDisplacementMagnitude = 0.0f;
-
-    float * const restrict worldForcesReceptivityBuffer = mPoints.GetWorldForceReceptivityBuffer();
 
     //
     // Drag constants
@@ -1336,7 +1331,7 @@ void Ship::ApplyWorldSurfaceForces(
 
                 mPoints.AddStaticForce(
                     thisPointIndex,
-                    -surfaceNormal * (dragForceMagnitude + waterImpactForceMagnitude) * worldForcesReceptivityBuffer[thisPointIndex]);
+                    -surfaceNormal * (dragForceMagnitude + waterImpactForceMagnitude));
 
                 //
                 // Water displacement
@@ -1796,14 +1791,12 @@ void Ship::ApplyStaticPressureForces(
         * gameParameters.StaticPressureForceAdjustment
         * mRepairGracePeriodMultiplier; // Static pressure hinders the repair process
 
-    float * const restrict worldForcesReceptivityBuffer = mPoints.GetWorldForceReceptivityBuffer();
-
     size_t const particleCount = mStaticPressureBuffer.GetCurrentPopulatedSize();
     for (size_t hpi = 0; hpi < particleCount; ++hpi)
     {
         mPoints.AddDynamicForce(
             mStaticPressureBuffer[hpi].PointIndex,
-            mStaticPressureBuffer[hpi].ForceVector * forceMultiplier * worldForcesReceptivityBuffer[hpi]);
+            mStaticPressureBuffer[hpi].ForceVector * forceMultiplier);
     }
 }
 

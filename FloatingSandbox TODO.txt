@@ -195,63 +195,75 @@
 				+ Reset to 1.0 at each Update iteration end
 		= If thru:
 			! Spec:
+				! Points:
+					! No WorldForcesReceptivity, but use of IntegrationFactorTimeCoefficient
 				! Tool:
 					! First mouse down sets center, following mouse move sets radius, release crystallizes radius
 					! Second mouse down starts move, release ends whole session
 				! Rendering: notification layer is first to use "uber" shader, with "uber" vertex buffers
 					! API: UploadGripCircle
-			- Impl:
+			= Impl:
+				+ Points:
+					+ WorldForcesReceptivity:
+						+ Nuke from Points
+						+ Nuke all usages
+							+ Including end-of-update reset
+					+ SetForcesReceptivity
+						! Sticky, until NumMechIterations changes or FrozenCoefficient changes
+							+ Rename mFrozenCoefficientBuffer as IsPinnedBuffer
+				- NotificationLayer: "uber notifications" shader, using uber vertex buffers
+					- Also add other notifications
+						- TODOHERE
+					- Vertex attributes struct contains union and type
+						- See if can use int type as varying
+						- Struct has static factory methods
+					- Simple vertex buffer
+						- Auto-reset (not sticky)
+					- UploadGripCircle(...)
+					- UploadXXX(...)
+				= Ship (...world...controller) interactions:
+					= SetupMoveGrippedBy(display center, display radius) -> [world pos, world radius]
+						! Doesn't touch World
+						- Controller: Notification
+					= MoveGrippedBy
+						+ World:
+							+ No NPC's
+						= Ship:
+							+ Not ephemeral
+							+ Sets all points' ForcesReceptivity (including 1.0)
+							- See "frozen particles" problem
+								- Try with freeze radius smaller than move radius
+							- See if TrimWorldBounds really needed
+								- YES, needed (promise that next loop begins in-bounds)
+						- Controller: Notification
+					- RotateGrippedBy
+					+ EndMoveGrippedBy
+						+ Ship:
+							+ Not ephemeral
+							+ Resets ForcesReceptivity to 1.0
 				- Tool:
 					- State machine for radius-making and two-phase
-						- TODOHERE
+						- Two states, mutually exclusive:
+							- State 1: GripBuildingState
+								- ScreenCenterPosition
+							- State 2: MovingState
+								- WorldGripCenterPosition, WorldGripRadius
 					- Become always move (evt. by zero) at UpdateSimulation, not only when there's a trajectory
 						- i.e. make traj continuous
 					= Fix inertial velocity
-					- TODO: decide shift
-					- Cursors
-				- Points::WorldForcesReceptivity:
-					- WorldForce*s*Receptivity (rename) and comments
-					- Don't touch (assert) @ each ephemeral
-					- Ship:
-						- No reset @ end of upload
-						- Resee all usages				
-				- Ship (...world...controller) interactions:
-					- SetupMoveGrippedBy(center, display radius) -> world radius
-						- Controller: Notification
-					- MoveGrippedBy
-						- Controller: Notification
-						- World:
-							- No NPC's
-						- Ship:
-							- Not ephemeral
-							- Sets all points' WorldForcesReceptivity (including 1.0)
-					- EndMoveGrippedBy
-						- Not ephemeral
-						- Resets WorldForcesReceptivity to 1.0
-				- NotificationLayer: "uber notifications" shader, using uber vertex buffers
-					- Auto-reset (not sticky)
-					- UploadGripCircle(...)
+					- Rotate
+						- Should not require any additional state, center is grip's center and angle is inputState.mouse.y-inputState.prevMouse.y
+					- Cursors					
 				- MainFrame
 					- Accelerator
 					- Icon
+	- UI Preferences for auto-toggle to Exterior view
+		- changelist
 
 	- AntiGravity TODOHERE: bomb or tool?
 		- Magnetic?
 
 	- See DKUZ bug
-
-	- Add more music:
-		- Background:
-			+ "Symmetry" - Kevin MacLeod (incompetech.com)			
-			+ https://www.scottbuckley.com.au/library/intervention/
-				! 'Intervention' by Scott Buckley - released under CC-BY 4.0. www.scottbuckley.com.au
-				+ Deterministic music sorting
-				+ Verify starts automatically with no preferences
-				+ CreditsPanel
-				+ changelist
-			- "Shadowlands 5 - Antechamber" - Kevin MacLeod (incompetech.com)
-			- https://www.scottbuckley.com.au/library/soul-searcher/
-		- Buy new track for farewell: https://www.pond5.com/royalty-free-music/item/204959560-nearer-my-god-thee
 
 	= Localization:
 		= 1
@@ -310,6 +322,32 @@
 			- 2. If test ok, finalize work with plane-1
 				- Replace Flames' dual upload
 
+	- New SplashScreenDialog:
+		- Upper part OpenGL, lower part progress bar
+			- Own OpenGLContext (a third one) on own thread
+		- Dialog has own timer, updating animation in OpenGL quadrant as follows:
+			- 0: OpenGL quadrant occupies whole dialog
+			- 1. G2-Labs Sequence
+			- 2. Fade to black
+			- 3. OpenGL quadrant gets resized to allow for progress bar underneath
+				- Or OpenGL quadrant stays, and dialog becomes taller downwards for progress bar quadrant
+			- 4. Progress bar shows progress, and OpenGL quadrant shows ship sinking, stepping with progress
+		- OnProgress is always called, but has a visible effect only from step 3 onwards
+
+	- A way to spawn ships like NPCs: at any place
+
+	- Add more music:
+		- Background:
+			+ "Symmetry" - Kevin MacLeod (incompetech.com)			
+			+ https://www.scottbuckley.com.au/library/intervention/
+				! 'Intervention' by Scott Buckley - released under CC-BY 4.0. www.scottbuckley.com.au
+				+ Deterministic music sorting
+				+ Verify starts automatically with no preferences
+				+ CreditsPanel
+				+ changelist
+			- "Shadowlands 5 - Antechamber" - Kevin MacLeod (incompetech.com)
+			- https://www.scottbuckley.com.au/library/soul-searcher/
+		- Buy new track for farewell: https://www.pond5.com/royalty-free-music/item/204959560-nearer-my-god-thee
 
 	- Consider invoking World::Upload from render thread (via RenderContext, as func<>, *synchronously*)
 		- So that may upload to GPU buffers directly (or at XYZEnd()), instead of local temp buffers
@@ -325,20 +363,6 @@
 
 
 	- Try to lower global damping - seems quite slow
-
-	- New SplashScreenDialog:
-		- Upper part OpenGL, lower part progress bar
-			- Own OpenGLContext (a third one) on own thread
-		- Dialog has own timer, updating animation in OpenGL quadrant as follows:
-			- 0: OpenGL quadrant occupies whole dialog
-			- 1. G2-Labs Sequence
-			- 2. Fade to black
-			- 3. OpenGL quadrant gets resized to allow for progress bar underneath
-				- Or OpenGL quadrant stays, and dialog becomes taller downwards for progress bar quadrant
-			- 4. Progress bar shows progress, and OpenGL quadrant shows ship sinking, stepping with progress
-		- OnProgress is always called, but has a visible effect only from step 3 onwards
-
-	- A way to spawn ships like NPCs: at any place
 
 	- Ship passwords only to prevent being edited, but allow password-protected ships to be inspected
 

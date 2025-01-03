@@ -602,7 +602,6 @@ public:
         , mDynamicForceBuffers() // We'll start later with at least one
         , mDynamicForceRawBuffers()
         , mStaticForceBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
-        , mWorldForceReceptivityBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mAugmentedMaterialMassBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mTransientAdditionalMassBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mMassBuffer(mBufferElementCount, shipPointCount, 1.0f)
@@ -611,7 +610,7 @@ public:
         , mStressBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mDecayBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mIsDecayBufferDirty(true)
-        , mFrozenCoefficientBuffer(mBufferElementCount, shipPointCount, 1.0f)
+        , mPinningCoefficientBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mIntegrationFactorTimeCoefficientBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mOceanFloorCollisionFactorsBuffer(mBufferElementCount, shipPointCount, OceanFloorCollisionFactors(0.0f, 0.0f, 0.0f))
         , mAirWaterInterfaceInverseWidthBuffer(mBufferElementCount, shipPointCount, 1.0f)
@@ -1198,29 +1197,6 @@ public:
         mStaticForceBuffer.fill(vec2f::zero());
     }
 
-    float GetWorldForceReceptivity(ElementIndex pointElementIndex) const
-    {
-        return mWorldForceReceptivityBuffer[pointElementIndex];
-    }
-
-    float * GetWorldForceReceptivityBuffer()
-    {
-        return mWorldForceReceptivityBuffer.data();
-    }
-
-    void SetWorldForceReceptivity(
-        ElementIndex pointElementIndex,
-        float receptivity) noexcept
-    {
-        mWorldForceReceptivityBuffer[pointElementIndex] = receptivity;
-    }
-
-    void ResetWorldForceReceptivityBuffer()
-    {
-        // First buffer implicitly
-        mWorldForceReceptivityBuffer.fill(1.0f);
-    }
-
     float GetAugmentedMaterialMass(ElementIndex pointElementIndex) const
     {
         return mAugmentedMaterialMassBuffer[pointElementIndex];
@@ -1303,19 +1279,19 @@ public:
 
     bool IsPinned(ElementIndex pointElementIndex) const
     {
-        return (mFrozenCoefficientBuffer[pointElementIndex] == 0.0f);
+        return (mPinningCoefficientBuffer[pointElementIndex] == 0.0f);
     }
 
     void Pin(ElementIndex pointElementIndex)
     {
-        assert(1.0f == mFrozenCoefficientBuffer[pointElementIndex]);
+        assert(1.0f == mPinningCoefficientBuffer[pointElementIndex]);
 
         Freeze(pointElementIndex); // Recalculates integration coefficient
     }
 
     void Unpin(ElementIndex pointElementIndex)
     {
-        assert(0.0f == mFrozenCoefficientBuffer[pointElementIndex]);
+        assert(0.0f == mPinningCoefficientBuffer[pointElementIndex]);
 
         Thaw(pointElementIndex); // Recalculates integration coefficient
     }
@@ -1385,17 +1361,29 @@ public:
         return mIntegrationFactorBuffer.data();
     }
 
+    // Sticky, until NumMechanicalDynamicsIterations changes or PinningCoefficient changes,
+    // but we're fine with that as this is only used - at this moment - by MoveGripped
+    // interaction
+    void SetForcesReceptivity(
+        ElementIndex pointElementIndex,
+        float receptivity)
+    {
+        mIntegrationFactorTimeCoefficientBuffer[pointElementIndex] = CalculateIntegrationFactorTimeCoefficient(
+            mCurrentNumMechanicalDynamicsIterations,
+            mPinningCoefficientBuffer[pointElementIndex] * receptivity);
+    }
+
     // Changes the point's dynamics so that it freezes in place
     // and becomes oblivious to forces
     void Freeze(ElementIndex pointElementIndex)
     {
-        // Remember this point is now frozen
-        mFrozenCoefficientBuffer[pointElementIndex] = 0.0f;
+        // Remember this point is now pinned
+        mPinningCoefficientBuffer[pointElementIndex] = 0.0f;
 
         // Recalc integration factor time coefficient, freezing point
         mIntegrationFactorTimeCoefficientBuffer[pointElementIndex] = CalculateIntegrationFactorTimeCoefficient(
             mCurrentNumMechanicalDynamicsIterations,
-            mFrozenCoefficientBuffer[pointElementIndex]);
+            mPinningCoefficientBuffer[pointElementIndex]);
 
         // Also zero-out velocity, wiping all traces of this point moving
         mVelocityBuffer[pointElementIndex] = vec2f(0.0f, 0.0f);
@@ -1404,13 +1392,13 @@ public:
     // Changes the point's dynamics so that the point reacts again to forces
     void Thaw(ElementIndex pointElementIndex)
     {
-        // This point is not frozen anymore
-        mFrozenCoefficientBuffer[pointElementIndex] = 1.0f;
+        // This point is not pinned anymore
+        mPinningCoefficientBuffer[pointElementIndex] = 1.0f;
 
         // Re-populate its integration factor time coefficient, thawing point
         mIntegrationFactorTimeCoefficientBuffer[pointElementIndex] = CalculateIntegrationFactorTimeCoefficient(
             mCurrentNumMechanicalDynamicsIterations,
-            mFrozenCoefficientBuffer[pointElementIndex]);
+            mPinningCoefficientBuffer[pointElementIndex]);
     }
 
     //
@@ -2156,11 +2144,11 @@ private:
 
     static inline float CalculateIntegrationFactorTimeCoefficient(
         float numMechanicalDynamicsIterations,
-        float frozenCoefficient)
+        float isPinnedCoefficient)
     {
         return GameParameters::MechanicalSimulationStepTimeDuration<float>(numMechanicalDynamicsIterations)
             * GameParameters::MechanicalSimulationStepTimeDuration<float>(numMechanicalDynamicsIterations)
-            * frozenCoefficient;
+            * isPinnedCoefficient;
     }
 
     static inline BuoyancyCoefficients CalculateBuoyancyCoefficients(
@@ -2258,7 +2246,6 @@ private:
     std::vector<Buffer<vec2f>> mDynamicForceBuffers; // Forces that vary across the multiple mechanical iterations (i.e. spring, hydrostatic surface pressure) for each thread; always at least one
     std::vector<float *> mDynamicForceRawBuffers;
     Buffer<vec2f> mStaticForceBuffer; // Forces that never change across the multiple mechanical iterations (all other forces)
-    Buffer<float> mWorldForceReceptivityBuffer;
     Buffer<float> mAugmentedMaterialMassBuffer; // Structural + Offset
     Buffer<float> mTransientAdditionalMassBuffer; // Anything; total mass is slowly updated to include this. Reset at end of Update()
     Buffer<float> mMassBuffer; // Augmented + Transient + Water
@@ -2267,7 +2254,7 @@ private:
     Buffer<float> mStressBuffer; // -1.0 -> 1.0, only calculated (at springs) if rendering it
     Buffer<float> mDecayBuffer; // 1.0 -> 0.0 (completely decayed)
     bool mutable mIsDecayBufferDirty; // Only tracks non-ephemerals
-    Buffer<float> mFrozenCoefficientBuffer; // 1.0: not frozen; 0.0f: frozen
+    Buffer<float> mPinningCoefficientBuffer; // 1.0: not pinned; 0.0f: pinned
     Buffer<float> mIntegrationFactorTimeCoefficientBuffer; // dt^2 or zero when the point is frozen
     Buffer<OceanFloorCollisionFactors> mOceanFloorCollisionFactorsBuffer;
     Buffer<float> mAirWaterInterfaceInverseWidthBuffer; // The reciprocal of the air-water interface, to control the damping we perform against buoyancy oscillations

@@ -283,7 +283,6 @@ void World::MoveGrippedBy(
     vec2f const & inertialVelocity,
     GameParameters const & gameParameters)
 {
-    // Ships
     for (auto & ship : mAllShips)
     {
         ship->MoveGrippedBy(
@@ -293,9 +292,14 @@ void World::MoveGrippedBy(
             inertialVelocity,
             gameParameters);
     }
+}
 
-    // NPCs
-    // TODO
+void World::EndMoveGrippedBy(GameParameters const & gameParameters)
+{
+    for (auto & ship : mAllShips)
+    {
+        ship->EndMoveGrippedBy(gameParameters);
+    }
 }
 
 void World::RotateBy(

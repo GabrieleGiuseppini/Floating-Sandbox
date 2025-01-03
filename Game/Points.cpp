@@ -40,7 +40,6 @@ void Points::Add(
     assert(mDynamicForceBuffers.size() >= 1);
     mDynamicForceBuffers[0].emplace_back(vec2f::zero());
     mStaticForceBuffer.emplace_back(vec2f::zero());
-    mWorldForceReceptivityBuffer.emplace_back(1.0f);
     mAugmentedMaterialMassBuffer.emplace_back(structuralMaterial.GetMass());
     mTransientAdditionalMassBuffer.emplace_back(0.0f);
     mMassBuffer.emplace_back(structuralMaterial.GetMass());
@@ -48,7 +47,7 @@ void Points::Add(
     mStrengthBuffer.emplace_back(strength);
     mStressBuffer.emplace_back(0.0f);
     mDecayBuffer.emplace_back(1.0f);
-    mFrozenCoefficientBuffer.emplace_back(1.0f);
+    mPinningCoefficientBuffer.emplace_back(1.0f);
     mIntegrationFactorTimeCoefficientBuffer.emplace_back(CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f));
     mOceanFloorCollisionFactorsBuffer.emplace_back(CalculateOceanFloorCollisionFactors(
         mCurrentElasticityAdjustment,
@@ -167,14 +166,13 @@ void Points::CreateEphemeralParticleAirBubble(
     mVelocityBuffer[pointIndex] = vec2f::zero();
     assert(mDynamicForceBuffers[0][pointIndex] == vec2f::zero()); // Ephemeral points never participate in dynamic forces (springs + surface pressure)
     mStaticForceBuffer[pointIndex] = vec2f::zero();
-    mWorldForceReceptivityBuffer[pointIndex] = 1.0f;
     mAugmentedMaterialMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
     mTransientAdditionalMassBuffer[pointIndex] = 0.0f;
     mMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
     mMaterialBuoyancyVolumeFillBuffer[pointIndex] = airBubbleBuoyancyVolumeFill;
     assert(mDecayBuffer[pointIndex] == 1.0f);
     //mDecayBuffer[pointIndex] = 1.0f;
-    mFrozenCoefficientBuffer[pointIndex] = 1.0f;
+    mPinningCoefficientBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
     mOceanFloorCollisionFactorsBuffer[pointIndex] = CalculateOceanFloorCollisionFactors(
         mCurrentElasticityAdjustment,
@@ -259,14 +257,13 @@ void Points::CreateEphemeralParticleDebris(
     mVelocityBuffer[pointIndex] = velocity;
     assert(mDynamicForceBuffers[0][pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs + surface pressure
     mStaticForceBuffer[pointIndex] = vec2f::zero();
-    mWorldForceReceptivityBuffer[pointIndex] = 1.0f;
     mAugmentedMaterialMassBuffer[pointIndex] = structuralMaterial.GetMass();
     mTransientAdditionalMassBuffer[pointIndex] = 0.0f;
     mMassBuffer[pointIndex] = structuralMaterial.GetMass();
     mMaterialBuoyancyVolumeFillBuffer[pointIndex] = 0.0f; // No buoyancy
     assert(mDecayBuffer[pointIndex] == 1.0f);
     //mDecayBuffer[pointIndex] = 1.0f;
-    mFrozenCoefficientBuffer[pointIndex] = 1.0f;
+    mPinningCoefficientBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
     mAirWaterInterfaceInverseWidthBuffer[pointIndex] = 1.0f / GameParameters::ShipParticleAirWaterInterfaceWidth;
     mBuoyancyCoefficientsBuffer[pointIndex] = BuoyancyCoefficients(0.0f, 0.0f); // No buoyancy
@@ -349,14 +346,13 @@ void Points::CreateEphemeralParticleSmoke(
     mVelocityBuffer[pointIndex] = vec2f::zero();
     assert(mDynamicForceBuffers[0][pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs nor surface pressure
     mStaticForceBuffer[pointIndex] = vec2f::zero();
-    mWorldForceReceptivityBuffer[pointIndex] = 1.0f;
     mAugmentedMaterialMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
     mTransientAdditionalMassBuffer[pointIndex] = 0.0f;
     mMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
     mMaterialBuoyancyVolumeFillBuffer[pointIndex] = airStructuralMaterial.BuoyancyVolumeFill;
     assert(mDecayBuffer[pointIndex] == 1.0f);
     //mDecayBuffer[pointIndex] = 1.0f;
-    mFrozenCoefficientBuffer[pointIndex] = 1.0f;
+    mPinningCoefficientBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
     mOceanFloorCollisionFactorsBuffer[pointIndex] = CalculateOceanFloorCollisionFactors(
         mCurrentElasticityAdjustment,
@@ -440,14 +436,13 @@ void Points::CreateEphemeralParticleSparkle(
     mVelocityBuffer[pointIndex] = velocity;
     assert(mDynamicForceBuffers[0][pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs + surface pressure
     mStaticForceBuffer[pointIndex] = vec2f::zero();
-    mWorldForceReceptivityBuffer[pointIndex] = 1.0f;
     mAugmentedMaterialMassBuffer[pointIndex] = structuralMaterial.GetMass();
     mTransientAdditionalMassBuffer[pointIndex] = 0.0f;
     mMassBuffer[pointIndex] = structuralMaterial.GetMass();
     mMaterialBuoyancyVolumeFillBuffer[pointIndex] = 0.0f; // No buoyancy
     assert(mDecayBuffer[pointIndex] == 1.0f);
     //mDecayBuffer[pointIndex] = 1.0f;
-    mFrozenCoefficientBuffer[pointIndex] = 1.0f;
+    mPinningCoefficientBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
     mAirWaterInterfaceInverseWidthBuffer[pointIndex] = 1.0f / GameParameters::ShipParticleAirWaterInterfaceWidth;
     mBuoyancyCoefficientsBuffer[pointIndex] = BuoyancyCoefficients(0.0f, 0.0f); // No buoyancy
@@ -516,14 +511,13 @@ void Points::CreateEphemeralParticleWakeBubble(
     mVelocityBuffer[pointIndex] = velocity;
     assert(mDynamicForceBuffers[0][pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs + surface pressure
     mStaticForceBuffer[pointIndex] = vec2f::zero();
-    mWorldForceReceptivityBuffer[pointIndex] = 1.0f;
     mAugmentedMaterialMassBuffer[pointIndex] = waterStructuralMaterial.GetMass();
     mTransientAdditionalMassBuffer[pointIndex] = 0.0f;
     mMassBuffer[pointIndex] = waterStructuralMaterial.GetMass();
     mMaterialBuoyancyVolumeFillBuffer[pointIndex] = waterStructuralMaterial.BuoyancyVolumeFill;
     assert(mDecayBuffer[pointIndex] == 1.0f);
     //mDecayBuffer[pointIndex] = 1.0f;
-    mFrozenCoefficientBuffer[pointIndex] = 1.0f;
+    mPinningCoefficientBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
     mOceanFloorCollisionFactorsBuffer[pointIndex] = CalculateOceanFloorCollisionFactors(
         mCurrentElasticityAdjustment,
@@ -704,7 +698,7 @@ void Points::UpdateForGameParameters(GameParameters const & gameParameters)
         {
             mIntegrationFactorTimeCoefficientBuffer[i] = CalculateIntegrationFactorTimeCoefficient(
                 numMechanicalDynamicsIterations,
-                mFrozenCoefficientBuffer[i]);
+                mPinningCoefficientBuffer[i]);
         }
 
         // Remember the new value

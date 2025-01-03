@@ -130,6 +130,8 @@ public:
         vec2f const & inertialVelocity,
         GameParameters const & gameParameters);
 
+    void EndMoveGrippedBy(GameParameters const & gameParameters);
+
     void RotateBy(
         ConnectedComponentId connectedComponentId,
         float angle,

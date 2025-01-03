@@ -110,7 +110,9 @@ struct IGameController
     virtual void PickObjectToMove(DisplayLogicalCoordinates const & screenCoordinates, std::optional<ShipId> & shipId) = 0;
     virtual void MoveBy(GlobalConnectedComponentId const & connectedComponentId, DisplayLogicalSize const & screenOffset, DisplayLogicalSize const & inertialScreenOffset) = 0;
     virtual void MoveBy(ShipId shipId, DisplayLogicalSize const & screenOffset, DisplayLogicalSize const & inertialScreenOffset) = 0;
+    virtual std::tuple<vec2f, float> SetupMoveGrippedBy(DisplayLogicalCoordinates const & screenGripCenter, DisplayLogicalSize const & screenGripOffset) = 0;
     virtual void MoveGrippedBy(vec2f const & worldGripCenter, float worldGripRadius, DisplayLogicalSize const & screenOffset, DisplayLogicalSize const & inertialScreenOffset) = 0;
+    virtual void EndMoveGrippedBy() = 0;
     virtual void RotateBy(GlobalConnectedComponentId const & connectedComponentId, float screenDeltaY, DisplayLogicalCoordinates const & screenCenter, float inertialScreenDeltaY) = 0;
     virtual void RotateBy(ShipId shipId, float screenDeltaY, DisplayLogicalCoordinates const & screenCenter, float intertialScreenDeltaY) = 0;
     virtual std::optional<GlobalElementId> PickObjectForPickAndPull(DisplayLogicalCoordinates const & screenCoordinates) = 0;

@@ -773,6 +773,19 @@ void GameController::MoveBy(
         mGameParameters);
 }
 
+std::tuple<vec2f, float> GameController::SetupMoveGrippedBy(
+    DisplayLogicalCoordinates const & screenGripCenter,
+    DisplayLogicalSize const & screenGripOffset)
+{
+    vec2f const worldGripCenter = mRenderContext->ScreenToWorld(screenGripCenter);
+    float const worldGripRadius = mRenderContext->ScreenOffsetToWorldOffset(screenGripOffset).length();
+
+    // Notify
+    // TODOHERE
+
+    return { worldGripCenter, worldGripRadius };
+}
+
 void GameController::MoveGrippedBy(
     vec2f const & worldGripCenter,
     float worldGripRadius,
@@ -790,6 +803,16 @@ void GameController::MoveGrippedBy(
         worldOffset,
         inertialVelocity,
         mGameParameters);
+
+    // Notify
+    // TODOHERE
+}
+
+void GameController::EndMoveGrippedBy()
+{
+    // Apply action
+    assert(!!mWorld);
+    mWorld->EndMoveGrippedBy();
 }
 
 void GameController::RotateBy(
