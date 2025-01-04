@@ -1,3 +1,9 @@
+
+// Kept in sync with code
+#define BLAST_TOOL_HALO 1.0
+#define GRIP_CIRCLE 2.0
+#define PRESSURE_INJECTION_HALO 3.0
+
 ###VERTEX-120
 
 #define in attribute
@@ -40,26 +46,17 @@ in vec2 virtualSpacePosition; // [-1.0, 1.0]
 uniform float paramTime;
 uniform sampler2D paramNoiseTexture;
 
+#define PI 3.14159265358979323844
+
 float is_type(float notification_type, float value)
 {
     return step(value - 0.5, notification_type) * step(notification_type, value + 0.5);
 }
 
 vec4 make_blast_tool_halo(
-    vec2 virtualSpacePosition,
     float d,    
-    float progress,
-    float personalitySeed)
+    float noise)
 {
-    //
-    // Noise
-    //
-    
-    #define PI 3.14159265358979323844
-    
-    float theta = atan(virtualSpacePosition.y, virtualSpacePosition.x) / (2.0 * PI);
-    float noise = texture2D(paramNoiseTexture, vec2(0.015 * progress + personalitySeed, theta)).r; // 0.0 -> 1.0
-    
     //
     // Border
     //
@@ -119,14 +116,26 @@ vec4 make_pressure_injection_halo(
 
 void main()
 {
+    // Common to many
     float d = length(virtualSpacePosition);
 
-    vec4 blast_tool_halo = make_blast_tool_halo(virtualSpacePosition, d, float1, float2);
+    // Common to many
+    vec2 noiseSampleCoords;
+    {
+        // Blast tool halo
+        float theta = atan(virtualSpacePosition.y, virtualSpacePosition.x) / (2.0 * PI);
+        noiseSampleCoords = vec2(0.015 * float1 + float2, theta) * is_type(notification_type, BLAST_TOOL_HALO);
+    }
+    float noise = texture2D(paramNoiseTexture, noiseSampleCoords).r; // 0.0 -> 1.0
+
+    // Generate frag colors
+    vec4 blast_tool_halo = make_blast_tool_halo(d, noise);
     vec4 grip_circle = make_grip_circle(d);
     vec4 pressure_injection_halo = make_pressure_injection_halo(d, float1);
     
+    // Pick frag color
     gl_FragColor =
-        blast_tool_halo * is_type(notification_type, 1.0)
-        + grip_circle * is_type(notification_type, 2.0)
-        + pressure_injection_halo * is_type(notification_type, 3.0);
+        blast_tool_halo * is_type(notification_type, BLAST_TOOL_HALO)
+        + grip_circle * is_type(notification_type, GRIP_CIRCLE)
+        + pressure_injection_halo * is_type(notification_type, PRESSURE_INJECTION_HALO);
 }

@@ -223,6 +223,8 @@
 						! Those that are NDC need to get world pos's, for easier vertex shader
 						+ PressureInjectionHalo
 						+ BlastToolHalo
+						- FireExtinguisherSpray
+							- Do one sample texture early
 						- TODOHERE
 				= Ship (...world...controller) interactions:
 					+ SetupMoveGrippedBy(display center, display radius) -> [world pos, world radius]
