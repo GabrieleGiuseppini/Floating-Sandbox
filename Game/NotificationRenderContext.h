@@ -919,41 +919,16 @@ private:
 		{
 			// Note: enum values are to be kept in sync with shader
 			BlastToolHalo = 1,
-			GripCircle = 2,
-			PressureInjectionHalo = 3
+			FireExtinguisherSpray = 2,
+			GripCircle = 3,
+			PressureInjectionHalo = 4
 		};
 		float vertexKind;
 
-		union MultiAttributesType
-		{
-			struct BlastToolHaloType
-			{
-				vec2f vertexPosition;
-				float progress;
-				vec2f virtualSpacePosition;
-				float personalitySeed;
-			};
-			BlastToolHaloType blastToolHalo;
-
-			struct GripCircleType
-			{
-				vec2f vertexPosition;
-				float pad;
-				vec2f virtualSpacePosition;
-				float pad;
-			};
-			GripCircleType gripCircle;
-
-			struct PressureInjectionHaloType
-			{
-				vec2f vertexPosition;
-				float flowMultiplier;
-				vec2f virtualSpacePosition;
-				float pad;
-			};
-			PressureInjectionHaloType pressureInjectionHalo;
-		};
-		MultiAttributesType multiAttributes;
+		vec2f vertexPosition;
+		float float1; // FlowMultiplier | Progress
+		vec2f virtualSpacePosition;
+		float float2; // PersonalitySeed
 
 		static MultiNotificationVertex MakeBlastToolHalo(
 			vec2f vertexPosition,
@@ -961,30 +936,36 @@ private:
 			vec2f virtualSpacePosition,
 			float personalitySeed)
 		{
-			MultiAttributesType multiAttributes;
-			multiAttributes.blastToolHalo = MultiAttributesType::BlastToolHaloType({
+			return MultiNotificationVertex(
+				static_cast<float>(VertexKindType::BlastToolHalo),
 				vertexPosition,
 				progress,
 				virtualSpacePosition,
-				personalitySeed });
+				personalitySeed);
+		}
+
+		static MultiNotificationVertex MakeFireExtinguisherSpray(
+			vec2f vertexPosition,
+			vec2f virtualSpacePosition)
+		{
 			return MultiNotificationVertex(
-				static_cast<float>(VertexKindType::BlastToolHalo),
-				multiAttributes);
+				static_cast<float>(VertexKindType::FireExtinguisherSpray),
+				vertexPosition,
+				0.0f,
+				virtualSpacePosition,
+				0.0f);
 		}
 
 		static MultiNotificationVertex MakeGripCircle(
 			vec2f vertexPosition,
 			vec2f virtualSpacePosition)
 		{
-			MultiAttributesType multiAttributes;
-			multiAttributes.gripCircle = MultiAttributesType::GripCircleType({
+			return MultiNotificationVertex(
+				static_cast<float>(VertexKindType::GripCircle),
 				vertexPosition,
 				0.0f,
 				virtualSpacePosition,
-				0.0f });
-			return MultiNotificationVertex(
-				static_cast<float>(VertexKindType::GripCircle),
-				multiAttributes);
+				0.0f);
 		}
 
 		static MultiNotificationVertex MakePressureInjectionHalo(
@@ -992,24 +973,27 @@ private:
 			vec2f virtualSpacePosition,
 			float flowMultiplier)
 		{
-			MultiAttributesType multiAttributes;
-			multiAttributes.pressureInjectionHalo = MultiAttributesType::PressureInjectionHaloType({
+			return MultiNotificationVertex(
+				static_cast<float>(VertexKindType::PressureInjectionHalo),
 				vertexPosition,
 				flowMultiplier,
 				virtualSpacePosition,
-				0.0f });
-			return MultiNotificationVertex(
-				static_cast<float>(VertexKindType::PressureInjectionHalo),
-				multiAttributes);
+				0.0f);
 		}
 
 	private:
 
 		MultiNotificationVertex(
 			float _vertexKind,
-			MultiAttributesType const & _multiAttributes)
+			vec2f const & _vertexPosition,
+			float _float1,
+			vec2f const & _virtualSpacePosition,
+			float _float2)
 			: vertexKind(_vertexKind)
-			, multiAttributes(_multiAttributes)
+			, vertexPosition(_vertexPosition)
+			, float1(_float1)
+			, virtualSpacePosition(_virtualSpacePosition)
+			, float2(_float2)
 		{}
 	};
 
