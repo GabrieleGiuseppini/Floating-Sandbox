@@ -47,7 +47,7 @@ float is_type(float notification_type, float value)
 
 vec4 make_grip_circle(float d)
 {
-    #define MAX_ALPHA 0.3
+    #define MAX_ALPHA 0.24
 
     float alpha = MAX_ALPHA * (1.0 - smoothstep(0.95, 1.0, d));
 
