@@ -940,6 +940,7 @@ private:
 				vec2f vertexPosition;
 				float pad;
 				vec2f virtualSpacePosition;
+				float pad;
 			};
 			GripCircleType gripCircle;
 
@@ -948,6 +949,7 @@ private:
 				vec2f vertexPosition;
 				float flowMultiplier;
 				vec2f virtualSpacePosition;
+				float pad;
 			};
 			PressureInjectionHaloType pressureInjectionHalo;
 		};
@@ -978,7 +980,8 @@ private:
 			multiAttributes.gripCircle = MultiAttributesType::GripCircleType({
 				vertexPosition,
 				0.0f,
-				virtualSpacePosition });
+				virtualSpacePosition,
+				0.0f });
 			return MultiNotificationVertex(
 				static_cast<float>(VertexKindType::GripCircle),
 				multiAttributes);
@@ -993,7 +996,8 @@ private:
 			multiAttributes.pressureInjectionHalo = MultiAttributesType::PressureInjectionHaloType({
 				vertexPosition,
 				flowMultiplier,
-				virtualSpacePosition });
+				virtualSpacePosition,
+				0.0f });
 			return MultiNotificationVertex(
 				static_cast<float>(VertexKindType::PressureInjectionHalo),
 				multiAttributes);
