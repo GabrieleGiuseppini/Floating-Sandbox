@@ -237,6 +237,7 @@
 							- Finalize scaling
 								- See "frozen particles" problem
 									- Try with freeze radius smaller than move radius
+							- Impact with terrain not handled?
 							+ See if TrimWorldBounds really needed
 								+ YES, needed (promise that next loop begins in-bounds)
 						+ Controller: Notification
@@ -292,6 +293,7 @@
 					- Accelerator
 					- Icon
 				- K 024 HB
+				- changelist
 	- UI Preferences for auto-toggle to Exterior view
 		- changelist
 

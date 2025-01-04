@@ -152,9 +152,8 @@ void Ship::MoveGrippedBy(
     vec2f const & inertialVelocity,
     GameParameters const & gameParameters)
 {
-    float constexpr GripRadiusTransitionWidthFraction = 0.15f;
+    float constexpr GripRadiusTransitionWidthFraction = 0.25f;
 
-    //float const squareGripRadius = gripRadius * gripRadius;
     float const squareAugmentedGripRadius = (gripRadius * (1.0f + GripRadiusTransitionWidthFraction)) * (gripRadius * (1.0f + GripRadiusTransitionWidthFraction));
     vec2f const impartedWaterVelocity = moveOffset / GameParameters::SimulationStepTimeDuration<float>;
 
@@ -171,9 +170,7 @@ void Ship::MoveGrippedBy(
         if (squarePointRadius <= squareAugmentedGripRadius)
         {
             // Scale based on distance (1.0 at center, 0.0 at border)
-            //float const scale = 1.0f - std::sqrtf(squarePointRadius / squareAugmentedGripRadius);
-            //float const scale = 1.0f - SmoothStep(0.95f, 1.0f, std::sqrtf(squarePointRadius / squareAugmentedGripRadius));
-            float const scale = 1.0f - SmoothStep(1.0f - GripRadiusTransitionWidthFraction, 1.0f, std::sqrtf(squarePointRadius / squareAugmentedGripRadius));
+            float const scale = 1.0f - LinearStep(1.0f - GripRadiusTransitionWidthFraction, 1.0f, std::sqrtf(squarePointRadius / squareAugmentedGripRadius));
 
             positionBuffer[p] += moveOffset * scale;
             velocityBuffer[p] = velocityBuffer[p] * (1.0f - scale) + inertialVelocity * scale;

@@ -944,7 +944,7 @@ private:
                 return
                     CurrentPosition
                     + (EndPosition - CurrentPosition)
-                    * 0.025f; // Convergence rate
+                    * 0.02f; // Convergence rate
             }
         };
 
