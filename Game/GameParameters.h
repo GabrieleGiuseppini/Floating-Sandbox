@@ -671,6 +671,8 @@ struct GameParameters
 
     float MoveToolInertia;
 
+    static float constexpr GripToolRadiusTransitionWidthFraction = 0.25f; // How much grip radius is enlarged to allow for a smooth transition region
+
     //
     // Limits
     //

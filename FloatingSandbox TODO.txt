@@ -223,9 +223,11 @@
 						! Those that are NDC need to get world pos's, for easier vertex shader
 						+ PressureInjectionHalo
 						+ BlastToolHalo
-						- FireExtinguisherSpray
-							- Do one sample texture early
-						- TODOHERE
+						+ FireExtinguisherSpray
+						- HeatBlaster/Heat
+						- HeatBlaster/Cool
+						- WindSphere
+						- TODOHERE: others?
 				= Ship (...world...controller) interactions:
 					+ SetupMoveGrippedBy(display center, display radius) -> [world pos, world radius]
 						! Doesn't touch World
@@ -288,11 +290,12 @@
 						+ Augmented radius
 						+ It seems imparting velocity is beneficial, though there's runaway issue
 							+ Smoothing of quantities
-					- Rotate
-						- Should not require any additional state, center is grip's center and angle is new_traj_pos.y - cur_traj_pos.y
-					- Cursors					
+					+ Rotate
+						+ Should not require any additional state, center is grip's center and angle is new_traj_pos.y - cur_traj_pos.y
+					- Cursors
+						- With shift
 				- MainFrame
-					- Accelerator
+					- Accelerator key
 					- Icon
 				- K 024 HB
 				- changelist

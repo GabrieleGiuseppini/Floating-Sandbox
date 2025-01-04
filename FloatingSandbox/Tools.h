@@ -694,7 +694,7 @@ public:
         mDrawingCircleState.reset();
         mMovingState.reset();
 
-        SetCursor(inputState.IsLeftMouseDown);
+        SetCursor(inputState.IsLeftMouseDown, inputState.IsShiftKeyDown);
     }
 
     void Deinitialize() override
@@ -738,15 +738,26 @@ public:
                 vec2f const fractionalOffset = newCurrentPosition - trajectory.CurrentPosition + trajectory.CumulativeUnconsumedMoveOffset;
                 DisplayLogicalSize const integralOffset = DisplayLogicalSize::FromFloatRound(fractionalOffset);
 
-                // Move
-                mGameController.MoveGrippedBy(
-                    mMovingState->WorldGripCenter,
-                    mMovingState->WorldGripRadius,
-                    integralOffset,
-                    DisplayLogicalSize(0, 0)); // No inertial velocity now, or else gripped ship slips away
+                // Move/Rotate
+                if (inputState.IsShiftKeyDown)
+                {
+                    mGameController.RotateGrippedBy(
+                        mMovingState->WorldGripCenter,
+                        mMovingState->WorldGripRadius,
+                        integralOffset.height,
+                        0); // No inertial velocity now, or else gripped ship slips away
+                }
+                else
+                {
+                    mGameController.MoveGrippedBy(
+                        mMovingState->WorldGripCenter,
+                        mMovingState->WorldGripRadius,
+                        integralOffset,
+                        DisplayLogicalSize(0, 0)); // No inertial velocity now, or else gripped ship slips away
 
-                // Move grip center
-                mMovingState->WorldGripCenter += mGameController.ScreenOffsetToWorldOffset(integralOffset);
+                    // Move grip center
+                    mMovingState->WorldGripCenter += mGameController.ScreenOffsetToWorldOffset(integralOffset);
+                }
 
                 // Accumulate debt
                 trajectory.CumulativeUnconsumedMoveOffset = fractionalOffset - integralOffset.ToFloat();
@@ -830,7 +841,7 @@ public:
             mDrawingCircleState.emplace(inputState.MousePosition);
         }
 
-        SetCursor(true);
+        SetCursor(true, inputState.IsShiftKeyDown);
     }
 
     void OnLeftMouseUp(InputState const & inputState) override
@@ -865,11 +876,22 @@ public:
                     + mMovingState->CurrentTrajectory->CumulativeUnconsumedMoveOffset;
                 DisplayLogicalSize const integralOffset = DisplayLogicalSize::FromFloatRound(fractionalOffset);
 
-                mGameController.MoveGrippedBy(
-                    mMovingState->WorldGripCenter,
-                    mMovingState->WorldGripRadius,
-                    DisplayLogicalSize(0, 0),
-                    integralOffset);
+                if (inputState.IsShiftKeyDown)
+                {
+                    mGameController.RotateGrippedBy(
+                        mMovingState->WorldGripCenter,
+                        mMovingState->WorldGripRadius,
+                        0,
+                        integralOffset.height);
+                }
+                else
+                {
+                    mGameController.MoveGrippedBy(
+                        mMovingState->WorldGripCenter,
+                        mMovingState->WorldGripRadius,
+                        DisplayLogicalSize(0, 0),
+                        integralOffset);
+                }
 
                 // Stop trajectory
                 mMovingState->CurrentTrajectory.reset();
@@ -884,23 +906,28 @@ public:
             // Might have started with down...nop
         }
 
-        SetCursor(false);
+        SetCursor(false, inputState.IsShiftKeyDown);
     }
 
-    void OnShiftKeyDown(InputState const & /*inputState*/) override
+    void OnShiftKeyDown(InputState const & inputState) override
     {
-        // Nop, handled at UpdateSimulation
+        SetCursor(inputState.IsLeftMouseDown, true);
+        // Action is handled at UpdateSimulation
     }
 
-    void OnShiftKeyUp(InputState const & /*inputState*/) override
+    void OnShiftKeyUp(InputState const & inputState) override
     {
-        // Nop, handled at UpdateSimulation
+        SetCursor(inputState.IsLeftMouseDown, false);
+        // Action is handled at UpdateSimulation
     }
 
 private:
 
-    void SetCursor(bool isEngaged)
+    void SetCursor(bool isEngaged, bool isShift)
     {
+        // TODOHERE
+        (void)isShift;
+
         if (!isEngaged)
         {
             mToolCursorManager.SetToolCursor(mUpCursorImage);

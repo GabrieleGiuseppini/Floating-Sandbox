@@ -123,15 +123,6 @@ public:
         vec2f const & inertialVelocity,
         GameParameters const & gameParameters);
 
-    void MoveGrippedBy(
-        vec2f const & gripCenter,
-        float const gripRadius,
-        vec2f const & moveOffset,
-        vec2f const & inertialVelocity,
-        GameParameters const & gameParameters);
-
-    void EndMoveGrippedBy(GameParameters const & gameParameters);
-
     void RotateBy(
         ConnectedComponentId connectedComponentId,
         float angle,
@@ -144,6 +135,22 @@ public:
         vec2f const & center,
         float inertialAngle,
         GameParameters const & gameParameters);
+
+    void MoveGrippedBy(
+        vec2f const & gripCenter,
+        float const gripRadius,
+        vec2f const & moveOffset,
+        vec2f const & inertialVelocity,
+        GameParameters const & gameParameters);
+
+    void RotateGrippedBy(
+        vec2f const & gripCenter,
+        float const gripRadius,
+        float angle,
+        float inertialAngle,
+        GameParameters const & gameParameters);
+
+    void EndMoveGrippedBy(GameParameters const & gameParameters);
 
     std::optional<ElementIndex> PickObjectForPickAndPull(
         vec2f const & pickPosition,

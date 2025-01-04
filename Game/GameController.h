@@ -233,11 +233,12 @@ public:
     void PickObjectToMove(DisplayLogicalCoordinates const & screenCoordinates, std::optional<ShipId> & shipId) override;
     void MoveBy(GlobalConnectedComponentId const & connectedComponentId, DisplayLogicalSize const & screenOffset, DisplayLogicalSize const & inertialScreenOffset) override;
     void MoveBy(ShipId shipId, DisplayLogicalSize const & screenOffset, DisplayLogicalSize const & inertialScreenOffset) override;
-    std::tuple<vec2f, float> SetupMoveGrippedBy(DisplayLogicalCoordinates const & screenGripCenter, DisplayLogicalSize const & screenGripOffset) override;
-    void MoveGrippedBy(vec2f const & worldGripCenter, float worldGripRadius, DisplayLogicalSize const & screenOffset, DisplayLogicalSize const & inertialScreenOffset) override;
-    void EndMoveGrippedBy() override;
     void RotateBy(GlobalConnectedComponentId const & connectedComponentId, float screenDeltaY, DisplayLogicalCoordinates const & screenCenter, float inertialScreenDeltaY) override;
     void RotateBy(ShipId shipId, float screenDeltaY, DisplayLogicalCoordinates const & screenCenter, float intertialScreenDeltaY) override;
+    std::tuple<vec2f, float> SetupMoveGrippedBy(DisplayLogicalCoordinates const & screenGripCenter, DisplayLogicalSize const & screenGripOffset) override;
+    void MoveGrippedBy(vec2f const & worldGripCenter, float worldGripRadius, DisplayLogicalSize const & screenOffset, DisplayLogicalSize const & inertialScreenOffset) override;
+    void RotateGrippedBy(vec2f const & worldGripCenter, float worldGripRadius, float screenDeltaY, float inertialScreenDeltaY) override;
+    void EndMoveGrippedBy() override;
     std::optional<GlobalElementId> PickObjectForPickAndPull(DisplayLogicalCoordinates const & screenCoordinates) override;
     void Pull(GlobalElementId elementId, DisplayLogicalCoordinates const & screenTarget) override;
     void DestroyAt(DisplayLogicalCoordinates const & screenCoordinates, float radiusMultiplier, SessionId const & sessionId) override;

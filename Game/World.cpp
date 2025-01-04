@@ -276,32 +276,6 @@ void World::MoveBy(
         gameParameters);
 }
 
-void World::MoveGrippedBy(
-    vec2f const & gripCenter,
-    float const gripRadius,
-    vec2f const & moveOffset,
-    vec2f const & inertialWorldOffset,
-    GameParameters const & gameParameters)
-{
-    for (auto & ship : mAllShips)
-    {
-        ship->MoveGrippedBy(
-            gripCenter,
-            gripRadius,
-            moveOffset,
-            inertialWorldOffset / GameParameters::SimulationStepTimeDuration<float>,
-            gameParameters);
-    }
-}
-
-void World::EndMoveGrippedBy(GameParameters const & gameParameters)
-{
-    for (auto & ship : mAllShips)
-    {
-        ship->EndMoveGrippedBy(gameParameters);
-    }
-}
-
 void World::RotateBy(
     GlobalConnectedComponentId connectedComponentId,
     float angle,
@@ -350,6 +324,50 @@ void World::RotateBy(
         center,
         inertialAngle,
         gameParameters);
+}
+
+void World::MoveGrippedBy(
+    vec2f const & gripCenter,
+    float const gripRadius,
+    vec2f const & moveOffset,
+    vec2f const & inertialWorldOffset,
+    GameParameters const & gameParameters)
+{
+    for (auto & ship : mAllShips)
+    {
+        ship->MoveGrippedBy(
+            gripCenter,
+            gripRadius,
+            moveOffset,
+            inertialWorldOffset / GameParameters::SimulationStepTimeDuration<float>,
+            gameParameters);
+    }
+}
+
+void World::RotateGrippedBy(
+    vec2f const & gripCenter,
+    float const gripRadius,
+    float angle,
+    float inertialAngle,
+    GameParameters const & gameParameters)
+{
+    for (auto & ship : mAllShips)
+    {
+        ship->RotateGrippedBy(
+            gripCenter,
+            gripRadius,
+            angle,
+            inertialAngle,
+            gameParameters);
+    }
+}
+
+void World::EndMoveGrippedBy(GameParameters const & gameParameters)
+{
+    for (auto & ship : mAllShips)
+    {
+        ship->EndMoveGrippedBy(gameParameters);
+    }
 }
 
 std::optional<GlobalElementId> World::PickObjectForPickAndPull(

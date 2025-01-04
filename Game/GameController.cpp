@@ -773,52 +773,6 @@ void GameController::MoveBy(
         mGameParameters);
 }
 
-std::tuple<vec2f, float> GameController::SetupMoveGrippedBy(
-    DisplayLogicalCoordinates const & screenGripCenter,
-    DisplayLogicalSize const & screenGripOffset)
-{
-    vec2f const worldGripCenter = mRenderContext->ScreenToWorld(screenGripCenter);
-    float const worldGripRadius = mRenderContext->ScreenOffsetToWorldOffset(screenGripOffset).length();
-
-    // Notify
-    mNotificationLayer.SetGripCircle(
-        worldGripCenter,
-        worldGripRadius);
-
-    return { worldGripCenter, worldGripRadius };
-}
-
-void GameController::MoveGrippedBy(
-    vec2f const & worldGripCenter,
-    float worldGripRadius,
-    DisplayLogicalSize const & screenOffset,
-    DisplayLogicalSize const & inertialScreenOffset)
-{
-    vec2f const worldOffset = mRenderContext->ScreenOffsetToWorldOffset(screenOffset);
-    vec2f const inertialWorldOffset = mRenderContext->ScreenOffsetToWorldOffset(inertialScreenOffset);
-
-    // Apply action
-    assert(!!mWorld);
-    mWorld->MoveGrippedBy(
-        worldGripCenter,
-        worldGripRadius,
-        worldOffset,
-        inertialWorldOffset,
-        mGameParameters);
-
-    // Notify
-    mNotificationLayer.SetGripCircle(
-        worldGripCenter,
-        worldGripRadius);
-}
-
-void GameController::EndMoveGrippedBy()
-{
-    // Apply action
-    assert(!!mWorld);
-    mWorld->EndMoveGrippedBy(mGameParameters);
-}
-
 void GameController::RotateBy(
     GlobalConnectedComponentId const & connectedComponentId,
     float screenDeltaY,
@@ -874,6 +828,83 @@ void GameController::RotateBy(
         worldCenter,
         inertialAngle,
         mGameParameters);
+}
+
+std::tuple<vec2f, float> GameController::SetupMoveGrippedBy(
+    DisplayLogicalCoordinates const & screenGripCenter,
+    DisplayLogicalSize const & screenGripOffset)
+{
+    vec2f const worldGripCenter = mRenderContext->ScreenToWorld(screenGripCenter);
+    float const worldGripRadius = mRenderContext->ScreenOffsetToWorldOffset(screenGripOffset).length();
+
+    // Notify
+    mNotificationLayer.SetGripCircle(
+        worldGripCenter,
+        worldGripRadius);
+
+    return { worldGripCenter, worldGripRadius };
+}
+
+void GameController::MoveGrippedBy(
+    vec2f const & worldGripCenter,
+    float worldGripRadius,
+    DisplayLogicalSize const & screenOffset,
+    DisplayLogicalSize const & inertialScreenOffset)
+{
+    vec2f const worldOffset = mRenderContext->ScreenOffsetToWorldOffset(screenOffset);
+    vec2f const inertialWorldOffset = mRenderContext->ScreenOffsetToWorldOffset(inertialScreenOffset);
+
+    // Apply action
+    assert(!!mWorld);
+    mWorld->MoveGrippedBy(
+        worldGripCenter,
+        worldGripRadius,
+        worldOffset,
+        inertialWorldOffset,
+        mGameParameters);
+
+    // Notify
+    mNotificationLayer.SetGripCircle(
+        worldGripCenter,
+        worldGripRadius);
+}
+
+void GameController::RotateGrippedBy(
+    vec2f const & worldGripCenter,
+    float worldGripRadius,
+    float screenDeltaY,
+    float inertialScreenDeltaY)
+{
+    float const angle =
+        2.0f * Pi<float>
+        / static_cast<float>(mRenderContext->GetCanvasLogicalSize().height)
+        * screenDeltaY;
+
+    float const inertialAngle =
+        2.0f * Pi<float>
+        / static_cast<float>(mRenderContext->GetCanvasLogicalSize().height)
+        * inertialScreenDeltaY;
+
+    // Apply action
+    assert(!!mWorld);
+    mWorld->RotateGrippedBy(
+        worldGripCenter,
+        worldGripRadius,
+        angle,
+        inertialAngle,
+        mGameParameters);
+
+    // Notify
+    mNotificationLayer.SetGripCircle(
+        worldGripCenter,
+        worldGripRadius);
+}
+
+void GameController::EndMoveGrippedBy()
+{
+    // Apply action
+    assert(!!mWorld);
+    mWorld->EndMoveGrippedBy(mGameParameters);
 }
 
 void GameController::DestroyAt(
