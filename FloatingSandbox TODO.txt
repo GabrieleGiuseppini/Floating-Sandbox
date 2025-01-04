@@ -233,58 +233,62 @@
 						= Ship:
 							+ Not ephemeral
 							+ Sets all points' ForcesReceptivity (including 1.0)
-							- See "frozen particles" problem
-								- Try with freeze radius smaller than move radius
-							- See if TrimWorldBounds really needed
-								- YES, needed (promise that next loop begins in-bounds)
+							- Finalize scaling
+								- See "frozen particles" problem
+									- Try with freeze radius smaller than move radius
+							+ See if TrimWorldBounds really needed
+								+ YES, needed (promise that next loop begins in-bounds)
 						+ Controller: Notification
 					- RotateGrippedBy
 					+ EndMoveGrippedBy
 						+ Ship:
 							+ Not ephemeral
 							+ Resets ForcesReceptivity to 1.0
-				- Tool:
-					- State machine for radius-making and two-phase
-						- Two states, mutually exclusive:
-							- State 1: GripBuildingState
-								- ScreenCenterPosition
-							- State 2: MovingState
-								- WorldGripCenterPosition, WorldGripRadius
-								- ...
-						- Init: both nullopt
-						- Deinit: if any of two: EndMoveGrippedBy()
-						- UpdateSim:
-							- if state 1:
-								- Setup
-							- else if state 2:
-								- Do traj and move
-						- MouseDown:
-							- assert(!state1)
-							- if state 2:
+				= Tool:
+					= State machine for radius-making and two-phase
+						! Become always move (evt. by zero) at UpdateSimulation, not only when there's a trajectory
+							+ i.e. make traj continuous
+						+ Two states, mutually exclusive:
+							+ State 1: GripBuildingState
+								+ ScreenCenterPosition
+							+ State 2: MovingState
+								+ WorldGripCenterPosition, WorldGripRadius
+								+ ...
+						+ Init: both nullopt; set cursor
+						+ Deinit: if any of two: EndMoveGrippedBy()
+						+ UpdateSim:
+							+ if state 1:
+								+ Setup (to draw)
+							+ else if state 2:
+								+ Do traj and move
+						+ MouseDown:
+							+ assert(!state1)
+							+ if state 2:
 								! Nop
-							- else:
-								! Begin state 1
-						- MouseUp:
-							- if state 1:
-								- Transition to state 2
-							- else if state 2:
-								- end_session + reset  
-							- else:
-								- assert false
-						- MouseMove:
-							- if state 2:
-								- Update traj
-
-
-					- Become always move (evt. by zero) at UpdateSimulation, not only when there's a trajectory
-						- i.e. make traj continuous
+							+ else:
+								+ Begin state 1
+							+ set cursor
+						+ MouseUp:
+							+ if state 1:
+								+ Transition to state 2, using setup call
+							+ else if state 2:
+								+ end_session + reset  
+							+ else:
+								+ assert false
+							+ set cursor
+						+ MouseMove:
+							+ if state 2 && l down:
+								+ Update traj
 					= Fix inertial velocity
+						- GameController takes screen offset & divides by dt
+						- It seems imparting velocity is beneficial, though there's runaway issue
 					- Rotate
 						- Should not require any additional state, center is grip's center and angle is new_traj_pos.y - cur_traj_pos.y
 					- Cursors					
 				- MainFrame
 					- Accelerator
 					- Icon
+				- K 024 HB
 	- UI Preferences for auto-toggle to Exterior view
 		- changelist
 

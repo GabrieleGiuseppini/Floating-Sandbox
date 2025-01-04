@@ -154,11 +154,6 @@ void Ship::MoveGrippedBy(
 {
     float const squareGripRadius = gripRadius * gripRadius;
 
-    vec2f const actualInertialVelocity =
-        inertialVelocity
-        * gameParameters.MoveToolInertia
-        * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
-
     vec2f * const restrict positionBuffer = mPoints.GetPositionBufferAsVec2();
     vec2f * const restrict velocityBuffer = mPoints.GetVelocityBufferAsVec2();
     vec2f * const restrict waterVelocityBuffer = mPoints.GetWaterVelocityBufferAsVec2();
@@ -173,11 +168,12 @@ void Ship::MoveGrippedBy(
         {
             // Scale based on distance (1.0 at center, 0.0 at border)
             //float const scale = 1.0f - std::sqrtf(squarePointRadius / squareGripRadius);
-            float const scale = 1.0f - SmoothStep(0.5f, 1.0f, std::sqrtf(squarePointRadius / squareGripRadius));
+            //float const scale = 1.0f - SmoothStep(0.95f, 1.0f, std::sqrtf(squarePointRadius / squareGripRadius));
+            float const scale = 1.0f - SmoothStep(0.85f, 1.0f, std::sqrtf(squarePointRadius / squareGripRadius));
 
             positionBuffer[p] += moveOffset * scale;
-            velocityBuffer[p] = actualInertialVelocity * scale;
-            waterVelocityBuffer[p] = -actualInertialVelocity * scale;
+            velocityBuffer[p] = inertialVelocity * scale;
+            waterVelocityBuffer[p] = -inertialVelocity * scale;
 
             // Zero-out already-existing forces
             staticForceBuffer[p] *= 1.0f - scale;
@@ -191,6 +187,7 @@ void Ship::MoveGrippedBy(
         }
     }
 
+    // The promise is that we leave every particle within world bounds
     TrimForWorldBounds(gameParameters);
 }
 
