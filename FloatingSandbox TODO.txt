@@ -221,11 +221,12 @@
 					+ UploadGripCircle(...)
 					- Move other notifications
 						! Those that are NDC need to get world pos's, for easier vertex shader
+						= PressureInjectionHalo
 						- TODOHERE
 				= Ship (...world...controller) interactions:
-					= SetupMoveGrippedBy(display center, display radius) -> [world pos, world radius]
+					+ SetupMoveGrippedBy(display center, display radius) -> [world pos, world radius]
 						! Doesn't touch World
-						- Controller: Notification
+						+ Controller: Notification
 					= MoveGrippedBy
 						+ World:
 							+ No NPC's
@@ -236,7 +237,7 @@
 								- Try with freeze radius smaller than move radius
 							- See if TrimWorldBounds really needed
 								- YES, needed (promise that next loop begins in-bounds)
-						- Controller: Notification
+						+ Controller: Notification
 					- RotateGrippedBy
 					+ EndMoveGrippedBy
 						+ Ship:
@@ -253,10 +254,26 @@
 						- Init: both nullopt
 						- Deinit: if any of two: EndMoveGrippedBy()
 						- UpdateSim:
-							- 
+							- if state 1:
+								- Setup
+							- else if state 2:
+								- Do traj and move
 						- MouseDown:
+							- assert(!state1)
+							- if state 2:
+								! Nop
+							- else:
+								! Begin state 1
 						- MouseUp:
+							- if state 1:
+								- Transition to state 2
+							- else if state 2:
+								- end_session + reset  
+							- else:
+								- assert false
 						- MouseMove:
+							- if state 2:
+								- Update traj
 
 
 					- Become always move (evt. by zero) at UpdateSimulation, not only when there's a trajectory

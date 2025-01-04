@@ -389,37 +389,43 @@ public:
 
 		// Triangle 1
 
-		mPressureInjectionHaloVertexBuffer.emplace_back(
-			vec2f(left, bottom),
-			vec2f(-1.0f, -1.0f),
-			flowMultiplier);
+		mMultiNotificationVertexBuffer.emplace_back(
+			MultiNotificationVertex::MakePressureInjectionHalo(
+				vec2f(left, bottom),
+				vec2f(-1.0f, -1.0f),
+				flowMultiplier));
 
-		mPressureInjectionHaloVertexBuffer.emplace_back(
-			vec2f(left, top),
-			vec2f(-1.0f, 1.0f),
-			flowMultiplier);
+		mMultiNotificationVertexBuffer.emplace_back(
+			MultiNotificationVertex::MakePressureInjectionHalo(
+				vec2f(left, top),
+				vec2f(-1.0f, 1.0f),
+				flowMultiplier));
 
-		mPressureInjectionHaloVertexBuffer.emplace_back(
-			vec2f(right, bottom),
-			vec2f(1.0f, -1.0f),
-			flowMultiplier);
+		mMultiNotificationVertexBuffer.emplace_back(
+			MultiNotificationVertex::MakePressureInjectionHalo(
+				vec2f(right, bottom),
+				vec2f(1.0f, -1.0f),
+				flowMultiplier));
 
 		// Triangle 2
 
-		mPressureInjectionHaloVertexBuffer.emplace_back(
-			vec2f(left, top),
-			vec2f(-1.0f, 1.0f),
-			flowMultiplier);
+		mMultiNotificationVertexBuffer.emplace_back(
+			MultiNotificationVertex::MakePressureInjectionHalo(
+				vec2f(left, top),
+				vec2f(-1.0f, 1.0f),
+				flowMultiplier));
 
-		mPressureInjectionHaloVertexBuffer.emplace_back(
-			vec2f(right, bottom),
-			vec2f(1.0f, -1.0f),
-			flowMultiplier);
+		mMultiNotificationVertexBuffer.emplace_back(
+			MultiNotificationVertex::MakePressureInjectionHalo(
+				vec2f(right, bottom),
+				vec2f(1.0f, -1.0f),
+				flowMultiplier));
 
-		mPressureInjectionHaloVertexBuffer.emplace_back(
-			vec2f(right, top),
-			vec2f(1.0f, 1.0f),
-			flowMultiplier);
+		mMultiNotificationVertexBuffer.emplace_back(
+			MultiNotificationVertex::MakePressureInjectionHalo(
+				vec2f(right, top),
+				vec2f(1.0f, 1.0f),
+				flowMultiplier));
 	}
 
 	inline void UploadWindSphere(
@@ -714,9 +720,6 @@ private:
 	inline void RenderPrepareBlastToolHalo();
 	inline void RenderDrawBlastToolHalo();
 
-	inline void RenderPreparePressureInjectionHalo();
-	inline void RenderDrawPressureInjectionHalo();
-
 	inline void RenderPrepareWindSphere();
 	inline void RenderDrawWindSphere();
 
@@ -863,22 +866,6 @@ private:
 		{}
 	};
 
-	struct PressureInjectionHaloVertex
-	{
-		vec2f vertexPosition;
-		vec2f haloSpacePosition;
-		float flowMultiplier;
-
-		PressureInjectionHaloVertex(
-			vec2f _vertexPosition,
-			vec2f _haloSpacePosition,
-			float _flowMultiplier)
-			: vertexPosition(_vertexPosition)
-			, haloSpacePosition(_haloSpacePosition)
-			, flowMultiplier(_flowMultiplier)
-		{}
-	};
-
 	struct WindSphereVertex
 	{
 		vec2f vertexPosition;
@@ -947,7 +934,8 @@ private:
 		enum VertexKindType
 		{
 			// Note: enum values are to be kept in sync with shader
-			GripCircle = 1
+			GripCircle = 1,
+			PressureInjectionHalo = 2
 		};
 		float vertexKind;
 
@@ -956,9 +944,18 @@ private:
 			struct GripCircleType
 			{
 				vec2f vertexPosition;
+				float pad;
 				vec2f virtualSpacePosition;
 			};
 			GripCircleType gripCircle;
+
+			struct PressureInjectionHaloType
+			{
+				vec2f vertexPosition;
+				float flowMultiplier;
+				vec2f virtualSpacePosition;
+			};
+			PressureInjectionHaloType pressureInjectionHalo;
 		};
 		MultiAttributesType multiAttributes;
 
@@ -969,9 +966,25 @@ private:
 			MultiAttributesType multiAttributes;
 			multiAttributes.gripCircle = MultiAttributesType::GripCircleType({
 				_vertexPosition,
+				0.0f,
 				_virtualSpacePosition });
 			return MultiNotificationVertex(
 				static_cast<float>(VertexKindType::GripCircle),
+				multiAttributes);
+		}
+
+		static MultiNotificationVertex MakePressureInjectionHalo(
+			vec2f _vertexPosition,
+			vec2f _virtualSpacePosition,
+			float _flowMultiplier)
+		{
+			MultiAttributesType multiAttributes;
+			multiAttributes.pressureInjectionHalo = MultiAttributesType::PressureInjectionHaloType({
+				_vertexPosition,
+				_flowMultiplier,
+				_virtualSpacePosition });
+			return MultiNotificationVertex(
+				static_cast<float>(VertexKindType::PressureInjectionHalo),
 				multiAttributes);
 		}
 
@@ -1192,10 +1205,6 @@ private:
 	GameOpenGLVAO mBlastToolHaloVAO;
 	std::vector<BlastToolHaloVertex> mBlastToolHaloVertexBuffer;
 	GameOpenGLVBO mBlastToolHaloVBO;
-
-	GameOpenGLVAO mPressureInjectionHaloVAO;
-	std::vector<PressureInjectionHaloVertex> mPressureInjectionHaloVertexBuffer;
-	GameOpenGLVBO mPressureInjectionHaloVBO;
 
 	GameOpenGLVAO mWindSphereVAO;
 	std::vector<WindSphereVertex> mWindSphereVertexBuffer;

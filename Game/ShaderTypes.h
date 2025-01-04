@@ -48,7 +48,6 @@ enum class ProgramType
     OceanTextureDetailedBackground,
     OceanTextureDetailedForeground,
     PhysicsProbePanel,
-    PressureInjectionHalo,
     Rain,
     RectSelection,
     ShipCenters,
@@ -300,9 +299,6 @@ enum class VertexAttributeType : GLuint
 
     BlastToolHalo1 = 0,
     BlastToolHalo2 = 1,
-
-    PressureInjectionHalo1 = 0,
-    PressureInjectionHalo2 = 1,
 
     WindSphere1 = 0,
     WindSphere2 = 1,

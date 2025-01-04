@@ -75,8 +75,6 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::OceanTextureDetailedForeground;
     else if (lstr == "physics_probe_panel")
         return ProgramType::PhysicsProbePanel;
-    else if (lstr == "pressure_injection_halo")
-        return ProgramType::PressureInjectionHalo;
     else if (lstr == "rain")
         return ProgramType::Rain;
     else if (lstr == "rect_selection")
@@ -279,8 +277,6 @@ std::string ProgramTypeToStr(ProgramType program)
             return "OceanTextureDetailedForeground";
         case ProgramType::PhysicsProbePanel:
             return "PhysicsProbePanel";
-        case ProgramType::PressureInjectionHalo:
-            return "PressureInjectionHalo";
         case ProgramType::Rain:
             return "Rain";
         case ProgramType::RectSelection:
@@ -770,10 +766,6 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::BlastToolHalo1;
     else if (Utils::CaseInsensitiveEquals(str, "BlastToolHalo2"))
         return VertexAttributeType::BlastToolHalo2;
-    else if (Utils::CaseInsensitiveEquals(str, "PressureInjectionHalo1"))
-        return VertexAttributeType::PressureInjectionHalo1;
-    else if (Utils::CaseInsensitiveEquals(str, "PressureInjectionHalo2"))
-        return VertexAttributeType::PressureInjectionHalo2;
     else if (Utils::CaseInsensitiveEquals(str, "WindSphere1"))
         return VertexAttributeType::WindSphere1;
     else if (Utils::CaseInsensitiveEquals(str, "WindSphere2"))
