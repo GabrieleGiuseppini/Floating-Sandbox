@@ -249,6 +249,16 @@
 								- ScreenCenterPosition
 							- State 2: MovingState
 								- WorldGripCenterPosition, WorldGripRadius
+								- ...
+						- Init: both nullopt
+						- Deinit: if any of two: EndMoveGrippedBy()
+						- UpdateSim:
+							- 
+						- MouseDown:
+						- MouseUp:
+						- MouseMove:
+
+
 					- Become always move (evt. by zero) at UpdateSimulation, not only when there's a trajectory
 						- i.e. make traj continuous
 					= Fix inertial velocity

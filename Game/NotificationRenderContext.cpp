@@ -525,6 +525,8 @@ NotificationRenderContext::NotificationRenderContext(
         CheckOpenGLError();
 
         glBindVertexArray(0);
+
+        mMultiNotificationVertexBuffer.reserve(6 * 4); // Arbitrary
     }
 
     //
