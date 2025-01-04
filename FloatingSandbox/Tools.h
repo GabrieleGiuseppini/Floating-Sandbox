@@ -7,7 +7,6 @@
 
 #include "SoundController.h"
 
-#include <Game/GameParameters.h>
 #include <Game/IGameController.h>
 #include <Game/ResourceLocator.h>
 
@@ -738,14 +737,13 @@ public:
                 // Calculate offset
                 vec2f const fractionalOffset = newCurrentPosition - trajectory.CurrentPosition + trajectory.CumulativeUnconsumedMoveOffset;
                 DisplayLogicalSize const integralOffset = DisplayLogicalSize::FromFloatRound(fractionalOffset);
-                DisplayLogicalSize const integralVelocity = DisplayLogicalSize::FromFloatRound(fractionalOffset / GameParameters::SimulationStepTimeDuration<float>);
 
                 // Move
                 mGameController.MoveGrippedBy(
                     mMovingState->WorldGripCenter,
                     mMovingState->WorldGripRadius,
                     integralOffset,
-                    //integralVelocity); // was it better, physics-wise? (but issue of running away)
+                    //integralOffset); // was it better, physics-wise? (but issue of running away)
                     DisplayLogicalSize(0, 0));
 
                 // Move grip center
@@ -862,18 +860,17 @@ public:
 
                 // Impart last inertia == next quantum
 
-                vec2f const fractionalVelocity = (
+                vec2f const fractionalOffset =
                     mMovingState->CurrentTrajectory->CalculateNextPosition()
                     - mMovingState->CurrentTrajectory->CurrentPosition
-                    + mMovingState->CurrentTrajectory->CumulativeUnconsumedMoveOffset
-                    ) / GameParameters::SimulationStepTimeDuration<float>;
-                DisplayLogicalSize const integralVelocity = DisplayLogicalSize::FromFloatRound(fractionalVelocity);
+                    + mMovingState->CurrentTrajectory->CumulativeUnconsumedMoveOffset;
+                DisplayLogicalSize const integralOffset = DisplayLogicalSize::FromFloatRound(fractionalOffset);
 
                 mGameController.MoveGrippedBy(
                     mMovingState->WorldGripCenter,
                     mMovingState->WorldGripRadius,
                     DisplayLogicalSize(0, 0),
-                    integralVelocity);
+                    integralOffset);
 
                 // Stop trajectory
                 mMovingState->CurrentTrajectory.reset();

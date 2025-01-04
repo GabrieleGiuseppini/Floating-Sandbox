@@ -795,7 +795,7 @@ void GameController::MoveGrippedBy(
     DisplayLogicalSize const & inertialScreenOffset)
 {
     vec2f const worldOffset = mRenderContext->ScreenOffsetToWorldOffset(screenOffset);
-    vec2f const inertialVelocity = mRenderContext->ScreenOffsetToWorldOffset(inertialScreenOffset);
+    vec2f const inertialWorldOffset = mRenderContext->ScreenOffsetToWorldOffset(inertialScreenOffset);
 
     // Apply action
     assert(!!mWorld);
@@ -803,7 +803,7 @@ void GameController::MoveGrippedBy(
         worldGripCenter,
         worldGripRadius,
         worldOffset,
-        inertialVelocity,
+        inertialWorldOffset,
         mGameParameters);
 
     // Notify

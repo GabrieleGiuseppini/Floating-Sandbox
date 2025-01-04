@@ -280,7 +280,7 @@ void World::MoveGrippedBy(
     vec2f const & gripCenter,
     float const gripRadius,
     vec2f const & moveOffset,
-    vec2f const & inertialVelocity,
+    vec2f const & inertialWorldOffset,
     GameParameters const & gameParameters)
 {
     for (auto & ship : mAllShips)
@@ -289,7 +289,7 @@ void World::MoveGrippedBy(
             gripCenter,
             gripRadius,
             moveOffset,
-            inertialVelocity,
+            inertialWorldOffset / GameParameters::SimulationStepTimeDuration<float>,
             gameParameters);
     }
 }

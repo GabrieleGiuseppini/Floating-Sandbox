@@ -280,8 +280,9 @@
 							+ if state 2 && l down:
 								+ Update traj
 					= Fix inertial velocity
-						- GameController takes screen offset & divides by dt
+						+ GameController & World take intertial screen offset, World divides by dt
 						- It seems imparting velocity is beneficial, though there's runaway issue
+							- Smoothing of quantities
 					- Rotate
 						- Should not require any additional state, center is grip's center and angle is new_traj_pos.y - cur_traj_pos.y
 					- Cursors					

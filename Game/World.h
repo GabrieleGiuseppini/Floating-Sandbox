@@ -183,7 +183,7 @@ public:
         vec2f const & gripCenter,
         float const gripRadius,
         vec2f const & moveOffset,
-        vec2f const & inertialVelocity,
+        vec2f const & inertialWorldOffset,
         GameParameters const & gameParameters);
 
     void EndMoveGrippedBy(GameParameters const & gameParameters);
