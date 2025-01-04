@@ -743,8 +743,7 @@ public:
                     mMovingState->WorldGripCenter,
                     mMovingState->WorldGripRadius,
                     integralOffset,
-                    //integralOffset); // was it better, physics-wise? (but issue of running away)
-                    DisplayLogicalSize(0, 0));
+                    DisplayLogicalSize(0, 0)); // No inertial velocity now, or else gripped ship slips away
 
                 // Move grip center
                 mMovingState->WorldGripCenter += mGameController.ScreenOffsetToWorldOffset(integralOffset);
