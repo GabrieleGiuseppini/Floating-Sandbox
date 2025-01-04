@@ -23,7 +23,6 @@ enum class ProgramType
     CloudsBasic,
     CloudsDetailed,
     CrossOfLight,
-    FireExtinguisherSpray,
     FishesBasic,
     FishesDetailed,
     GenericMipMappedTexturesNdc,
@@ -291,8 +290,6 @@ enum class VertexAttributeType : GLuint
 
     MultiNotification1 = 0,
     MultiNotification2 = 1,
-
-    FireExtinguisherSpray = 0,
 
     HeatBlasterFlame = 0,
 

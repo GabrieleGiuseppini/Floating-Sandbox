@@ -49,9 +49,6 @@ NotificationRenderContext::NotificationRenderContext(
     , mHeatBlasterFlameVAO()
     , mHeatBlasterFlameVBO()
     , mHeatBlasterFlameShaderToRender()
-    , mFireExtinguisherSprayVAO()
-    , mFireExtinguisherSprayVBO()
-    , mFireExtinguisherSprayShaderToRender()
     , mWindSphereVAO()
     , mWindSphereVBO()
     , mLaserCannonVAO()
@@ -328,34 +325,6 @@ NotificationRenderContext::NotificationRenderContext(
     }
 
     //
-    // Initialize Fire Extinguisher spray
-    //
-
-    {
-        glGenVertexArrays(1, &tmpGLuint);
-        mFireExtinguisherSprayVAO = tmpGLuint;
-
-        glBindVertexArray(*mFireExtinguisherSprayVAO);
-        CheckOpenGLError();
-
-        glGenBuffers(1, &tmpGLuint);
-        mFireExtinguisherSprayVBO = tmpGLuint;
-
-        // Describe vertex attributes
-        static_assert(sizeof(FireExtinguisherSprayVertex) == 4 * sizeof(float));
-        glBindBuffer(GL_ARRAY_BUFFER, *mFireExtinguisherSprayVBO);
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::FireExtinguisherSpray));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::FireExtinguisherSpray), 4, GL_FLOAT, GL_FALSE, sizeof(FireExtinguisherSprayVertex), (void *)0);
-        CheckOpenGLError();
-
-        glBindVertexArray(0);
-
-        // Set texture parameters
-        mShaderManager.ActivateProgram<ProgramType::FireExtinguisherSpray>();
-        mShaderManager.SetTextureParameters<ProgramType::FireExtinguisherSpray>();
-    }
-
-    //
     // Initialize Wind Sphere
     //
 
@@ -533,9 +502,6 @@ void NotificationRenderContext::UploadStart()
 {
     // Reset HeatBlaster flame, it's uploaded as needed
     mHeatBlasterFlameShaderToRender.reset();
-
-    // Reset fire extinguisher spray, it's uploaded as needed
-    mFireExtinguisherSprayShaderToRender.reset();
 
     // Reset wind sphere, it's uploaded as needed
     mWindSphereVertexBuffer.clear();
@@ -779,8 +745,6 @@ void NotificationRenderContext::RenderPrepare()
 
     RenderPrepareHeatBlasterFlame();
 
-    RenderPrepareFireExtinguisherSpray();
-
     RenderPrepareWindSphere();
 
     RenderPrepareLaserCannon();
@@ -820,8 +784,6 @@ void NotificationRenderContext::RenderDraw()
 
     RenderDrawHeatBlasterFlame();
 
-    RenderDrawFireExtinguisherSpray();
-
     RenderDrawWindSphere();
 
     RenderDrawMultiNotification();
@@ -851,10 +813,6 @@ void NotificationRenderContext::ApplyViewModelChanges(RenderParameters const & r
 
     mShaderManager.ActivateProgram<ProgramType::HeatBlasterFlameHeat>();
     mShaderManager.SetProgramParameter<ProgramType::HeatBlasterFlameHeat, ProgramParameterType::OrthoMatrix>(
-        globalOrthoMatrix);
-
-    mShaderManager.ActivateProgram<ProgramType::FireExtinguisherSpray>();
-    mShaderManager.SetProgramParameter<ProgramType::FireExtinguisherSpray, ProgramParameterType::OrthoMatrix>(
         globalOrthoMatrix);
 
     mShaderManager.ActivateProgram<ProgramType::WindSphere>();
@@ -1280,43 +1238,6 @@ void NotificationRenderContext::RenderDrawHeatBlasterFlame()
     }
 }
 
-void NotificationRenderContext::RenderPrepareFireExtinguisherSpray()
-{
-    if (mFireExtinguisherSprayShaderToRender.has_value())
-    {
-        glBindBuffer(GL_ARRAY_BUFFER, *mFireExtinguisherSprayVBO);
-
-        glBufferData(GL_ARRAY_BUFFER,
-            sizeof(FireExtinguisherSprayVertex) * mFireExtinguisherSprayVertexBuffer.size(),
-            mFireExtinguisherSprayVertexBuffer.data(),
-            GL_DYNAMIC_DRAW);
-        CheckOpenGLError();
-
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-    }
-}
-
-void NotificationRenderContext::RenderDrawFireExtinguisherSpray()
-{
-    if (mFireExtinguisherSprayShaderToRender.has_value())
-    {
-        glBindVertexArray(*mFireExtinguisherSprayVAO);
-
-        mShaderManager.ActivateProgram(*mFireExtinguisherSprayShaderToRender);
-
-        // Set time parameter
-        mShaderManager.SetProgramParameter<ProgramParameterType::Time>(
-            *mFireExtinguisherSprayShaderToRender,
-            GameWallClock::GetInstance().ContinuousNowAsFloat());
-
-        // Draw
-        assert((mFireExtinguisherSprayVertexBuffer.size() % 6) == 0);
-        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mFireExtinguisherSprayVertexBuffer.size()));
-
-        glBindVertexArray(0);
-    }
-}
-
 void NotificationRenderContext::RenderPrepareWindSphere()
 {
     if (!mWindSphereVertexBuffer.empty())
@@ -1443,7 +1364,7 @@ void NotificationRenderContext::RenderPrepareMultiNotification()
         mShaderManager.ActivateProgram<ProgramType::MultiNotification>();
         mShaderManager.SetProgramParameter<ProgramParameterType::Time>(
             ProgramType::MultiNotification,
-            GameWallClock::GetInstance().NowAsFloat());
+            GameWallClock::GetInstance().ContinuousNowAsFloat());
     }
 }
 

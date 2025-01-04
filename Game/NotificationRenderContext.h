@@ -290,31 +290,37 @@ public:
 
 		// Triangle 1
 
-		mFireExtinguisherSprayVertexBuffer[0].vertexPosition = vec2f(left, bottom);
-		mFireExtinguisherSprayVertexBuffer[0].spraySpacePosition = vec2f(-0.5f, -0.5f);
+		mMultiNotificationVertexBuffer.emplace_back(
+			MultiNotificationVertex::MakeFireExtinguisherSpray(
+				vec2f(left, bottom),
+				vec2f(-1.0f, -1.0f)));
 
-		mFireExtinguisherSprayVertexBuffer[1].vertexPosition = vec2f(left, top);
-		mFireExtinguisherSprayVertexBuffer[1].spraySpacePosition = vec2f(-0.5f, 0.5f);
+		mMultiNotificationVertexBuffer.emplace_back(
+			MultiNotificationVertex::MakeFireExtinguisherSpray(
+				vec2f(left, top),
+				vec2f(-1.0f, 1.0f)));
 
-		mFireExtinguisherSprayVertexBuffer[2].vertexPosition = vec2f(right, bottom);
-		mFireExtinguisherSprayVertexBuffer[2].spraySpacePosition = vec2f(0.5f, -0.5f);
+		mMultiNotificationVertexBuffer.emplace_back(
+			MultiNotificationVertex::MakeFireExtinguisherSpray(
+				vec2f(right, bottom),
+				vec2f(1.0f, -1.0f)));
 
 		// Triangle 2
 
-		mFireExtinguisherSprayVertexBuffer[3].vertexPosition = vec2f(left, top);
-		mFireExtinguisherSprayVertexBuffer[3].spraySpacePosition = vec2f(-0.5f, 0.5f);
+		mMultiNotificationVertexBuffer.emplace_back(
+			MultiNotificationVertex::MakeFireExtinguisherSpray(
+				vec2f(left, top),
+				vec2f(-1.0f, 1.0f)));
 
-		mFireExtinguisherSprayVertexBuffer[4].vertexPosition = vec2f(right, bottom);
-		mFireExtinguisherSprayVertexBuffer[4].spraySpacePosition = vec2f(0.5f, -0.5f);
+		mMultiNotificationVertexBuffer.emplace_back(
+			MultiNotificationVertex::MakeFireExtinguisherSpray(
+				vec2f(right, bottom),
+				vec2f(1.0f, -1.0f)));
 
-		mFireExtinguisherSprayVertexBuffer[5].vertexPosition = vec2f(right, top);
-		mFireExtinguisherSprayVertexBuffer[5].spraySpacePosition = vec2f(0.5f, 0.5f);
-
-		//
-		// Store shader
-		//
-
-		mFireExtinguisherSprayShaderToRender = Render::ProgramType::FireExtinguisherSpray;
+		mMultiNotificationVertexBuffer.emplace_back(
+			MultiNotificationVertex::MakeFireExtinguisherSpray(
+				vec2f(right, top),
+				vec2f(1.0f, 1.0f)));
 	}
 
 	inline void UploadBlastToolHalo(
@@ -720,9 +726,6 @@ private:
 	inline void RenderPrepareHeatBlasterFlame();
 	inline void RenderDrawHeatBlasterFlame();
 
-	inline void RenderPrepareFireExtinguisherSpray();
-	inline void RenderDrawFireExtinguisherSpray();
-
 	inline void RenderPrepareWindSphere();
 	inline void RenderDrawWindSphere();
 
@@ -838,15 +841,6 @@ private:
 		vec2f flameSpacePosition;
 
 		HeatBlasterFlameVertex()
-		{}
-	};
-
-	struct FireExtinguisherSprayVertex
-	{
-		vec2f vertexPosition;
-		vec2f spraySpacePosition;
-
-		FireExtinguisherSprayVertex()
 		{}
 	};
 
@@ -1195,11 +1189,6 @@ private:
 	std::array<HeatBlasterFlameVertex, 6> mHeatBlasterFlameVertexBuffer;
 	GameOpenGLVBO mHeatBlasterFlameVBO;
 	std::optional<Render::ProgramType> mHeatBlasterFlameShaderToRender;
-
-	GameOpenGLVAO mFireExtinguisherSprayVAO;
-	std::array<FireExtinguisherSprayVertex, 6> mFireExtinguisherSprayVertexBuffer;
-	GameOpenGLVBO mFireExtinguisherSprayVBO;
-	std::optional<Render::ProgramType> mFireExtinguisherSprayShaderToRender;
 
 	GameOpenGLVAO mWindSphereVAO;
 	std::vector<WindSphereVertex> mWindSphereVertexBuffer;
