@@ -4,12 +4,13 @@
 #define out varying
 
 // Inputs
-in vec4 inMultiNotification1;  // Type, WorldPosition (vec2), [FlowMultiplier] float1 (float)
-in vec2 inMultiNotification2; // VirtualSpacePosition (vec2)
+in vec4 inMultiNotification1;  // Type, WorldPosition (vec2), [FlowMultiplier|Progress] float1 (float)
+in vec3 inMultiNotification2; // VirtualSpacePosition (vec2), [PersonalitySeed] float2 (float)
 
 // Outputs
 out float notification_type;
 out float float1;
+out float float2;
 out vec2 virtualSpacePosition;
 
 // Parameters
@@ -19,6 +20,7 @@ void main()
 {
     notification_type = inMultiNotification1.x;
     float1 = inMultiNotification1.w;
+    float2 = inMultiNotification2.z;
     virtualSpacePosition = inMultiNotification2.xy;
 
     gl_Position = paramOrthoMatrix * vec4(inMultiNotification1.yz, -1.0, 1.0);
@@ -30,19 +32,46 @@ void main()
 
 // Inputs from previous shader
 in float notification_type;
-in float float1; // FlowMultiplier
+in float float1; // FlowMultiplier|Progress
+in float float2; // PersonalitySeed
 in vec2 virtualSpacePosition; // [-1.0, 1.0]
 
 // Parameters
 uniform float paramTime;
-
-// TODOHERE
-// The texture
-//uniform sampler2D paramNoiseTexture;
+uniform sampler2D paramNoiseTexture;
 
 float is_type(float notification_type, float value)
 {
     return step(value - 0.5, notification_type) * step(notification_type, value + 0.5);
+}
+
+vec4 make_blast_tool_halo(
+    vec2 virtualSpacePosition,
+    float d,    
+    float progress,
+    float personalitySeed)
+{
+    //
+    // Noise
+    //
+    
+    #define PI 3.14159265358979323844
+    
+    float theta = atan(virtualSpacePosition.y, virtualSpacePosition.x) / (2.0 * PI);
+    float noise = texture2D(paramNoiseTexture, vec2(0.015 * progress + personalitySeed, theta)).r; // 0.0 -> 1.0
+    
+    //
+    // Border
+    //
+        
+    #define BORDER_WIDTH 0.05
+    float whiteDepth = 
+        smoothstep(1.0 - BORDER_WIDTH - BORDER_WIDTH - noise, 1.0 - BORDER_WIDTH, d)
+        - smoothstep(1.0 - BORDER_WIDTH, 1.0 - BORDER_WIDTH / 2., d);
+    
+    whiteDepth *= d * .7;
+    
+    return vec4(whiteDepth, whiteDepth, whiteDepth, 1.);
 }
 
 vec4 make_grip_circle(float d)
@@ -92,10 +121,12 @@ void main()
 {
     float d = length(virtualSpacePosition);
 
+    vec4 blast_tool_halo = make_blast_tool_halo(virtualSpacePosition, d, float1, float2);
     vec4 grip_circle = make_grip_circle(d);
     vec4 pressure_injection_halo = make_pressure_injection_halo(d, float1);
     
     gl_FragColor =
-        grip_circle * is_type(notification_type, 1.0)
-        + pressure_injection_halo * is_type(notification_type, 2.0);
+        blast_tool_halo * is_type(notification_type, 1.0)
+        + grip_circle * is_type(notification_type, 2.0)
+        + pressure_injection_halo * is_type(notification_type, 3.0);
 }

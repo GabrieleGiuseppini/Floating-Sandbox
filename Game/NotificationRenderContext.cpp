@@ -52,8 +52,6 @@ NotificationRenderContext::NotificationRenderContext(
     , mFireExtinguisherSprayVAO()
     , mFireExtinguisherSprayVBO()
     , mFireExtinguisherSprayShaderToRender()
-    , mBlastToolHaloVAO()
-    , mBlastToolHaloVBO()
     , mWindSphereVAO()
     , mWindSphereVBO()
     , mLaserCannonVAO()
@@ -358,36 +356,6 @@ NotificationRenderContext::NotificationRenderContext(
     }
 
     //
-    // Initialize Blast Tool halo
-    //
-
-    {
-        glGenVertexArrays(1, &tmpGLuint);
-        mBlastToolHaloVAO = tmpGLuint;
-
-        glBindVertexArray(*mBlastToolHaloVAO);
-        CheckOpenGLError();
-
-        glGenBuffers(1, &tmpGLuint);
-        mBlastToolHaloVBO = tmpGLuint;
-
-        // Describe vertex attributes
-        static_assert(sizeof(BlastToolHaloVertex) == (4 + 2) * sizeof(float));
-        glBindBuffer(GL_ARRAY_BUFFER, *mBlastToolHaloVBO);
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::BlastToolHalo1));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::BlastToolHalo1), 4, GL_FLOAT, GL_FALSE, sizeof(BlastToolHaloVertex), (void *)0);
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::BlastToolHalo2));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::BlastToolHalo2), 2, GL_FLOAT, GL_FALSE, sizeof(BlastToolHaloVertex), (void *)(4 * sizeof(float)));
-        CheckOpenGLError();
-
-        glBindVertexArray(0);
-
-        // Set texture parameters
-        mShaderManager.ActivateProgram<ProgramType::BlastToolHalo>();
-        mShaderManager.SetTextureParameters<ProgramType::BlastToolHalo>();
-    }
-
-    //
     // Initialize Wind Sphere
     //
 
@@ -488,16 +456,21 @@ NotificationRenderContext::NotificationRenderContext(
         mMultiNotificationVBO = tmpGLuint;
 
         // Describe vertex attributes
-        static_assert(sizeof(MultiNotificationVertex) == (1 + 5) * sizeof(float));
+        static_assert(sizeof(MultiNotificationVertex) == (1 + 6) * sizeof(float));
         glBindBuffer(GL_ARRAY_BUFFER, *mMultiNotificationVBO);
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::MultiNotification1));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::MultiNotification1), 4, GL_FLOAT, GL_FALSE, sizeof(MultiNotificationVertex), (void *)0);
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::MultiNotification2));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::MultiNotification2), 2, GL_FLOAT, GL_FALSE, sizeof(MultiNotificationVertex), (void *)(4 * sizeof(float)));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::MultiNotification2), 3, GL_FLOAT, GL_FALSE, sizeof(MultiNotificationVertex), (void *)(4 * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
 
+        // Set texture parameters
+        mShaderManager.ActivateProgram<ProgramType::MultiNotification>();
+        mShaderManager.SetTextureParameters<ProgramType::MultiNotification>();
+
+        // Prepare buffer
         mMultiNotificationVertexBuffer.reserve(6 * 4); // Arbitrary
     }
 
@@ -563,9 +536,6 @@ void NotificationRenderContext::UploadStart()
 
     // Reset fire extinguisher spray, it's uploaded as needed
     mFireExtinguisherSprayShaderToRender.reset();
-
-    // Reset blast tool halo, it's uploaded as needed
-    mBlastToolHaloVertexBuffer.clear();
 
     // Reset wind sphere, it's uploaded as needed
     mWindSphereVertexBuffer.clear();
@@ -811,8 +781,6 @@ void NotificationRenderContext::RenderPrepare()
 
     RenderPrepareFireExtinguisherSpray();
 
-    RenderPrepareBlastToolHalo();
-
     RenderPrepareWindSphere();
 
     RenderPrepareLaserCannon();
@@ -854,8 +822,6 @@ void NotificationRenderContext::RenderDraw()
 
     RenderDrawFireExtinguisherSpray();
 
-    RenderDrawBlastToolHalo();
-
     RenderDrawWindSphere();
 
     RenderDrawMultiNotification();
@@ -889,10 +855,6 @@ void NotificationRenderContext::ApplyViewModelChanges(RenderParameters const & r
 
     mShaderManager.ActivateProgram<ProgramType::FireExtinguisherSpray>();
     mShaderManager.SetProgramParameter<ProgramType::FireExtinguisherSpray, ProgramParameterType::OrthoMatrix>(
-        globalOrthoMatrix);
-
-    mShaderManager.ActivateProgram<ProgramType::BlastToolHalo>();
-    mShaderManager.SetProgramParameter<ProgramType::BlastToolHalo, ProgramParameterType::OrthoMatrix>(
         globalOrthoMatrix);
 
     mShaderManager.ActivateProgram<ProgramType::WindSphere>();
@@ -1355,46 +1317,6 @@ void NotificationRenderContext::RenderDrawFireExtinguisherSpray()
     }
 }
 
-void NotificationRenderContext::RenderPrepareBlastToolHalo()
-{
-    if (!mBlastToolHaloVertexBuffer.empty())
-    {
-        glBindBuffer(GL_ARRAY_BUFFER, *mBlastToolHaloVBO);
-
-        glBufferData(GL_ARRAY_BUFFER,
-            sizeof(BlastToolHaloVertex) * mBlastToolHaloVertexBuffer.size(),
-            mBlastToolHaloVertexBuffer.data(),
-            GL_DYNAMIC_DRAW);
-        CheckOpenGLError();
-
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-    }
-}
-
-void NotificationRenderContext::RenderDrawBlastToolHalo()
-{
-    if (!mBlastToolHaloVertexBuffer.empty())
-    {
-        glBindVertexArray(*mBlastToolHaloVAO);
-
-        mShaderManager.ActivateProgram<ProgramType::BlastToolHalo>();
-
-        // Setup blending
-        glBlendFunc(GL_SRC_COLOR, GL_ONE);
-        glBlendEquation(GL_FUNC_ADD);
-
-        // Draw
-        assert((mBlastToolHaloVertexBuffer.size() % 6) == 0);
-        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mBlastToolHaloVertexBuffer.size()));
-
-        // Reset blending
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glBlendEquation(GL_FUNC_ADD);
-
-        glBindVertexArray(0);
-    }
-}
-
 void NotificationRenderContext::RenderPrepareWindSphere()
 {
     if (!mWindSphereVertexBuffer.empty())
@@ -1533,18 +1455,22 @@ void NotificationRenderContext::RenderDrawMultiNotification()
 
         mShaderManager.ActivateProgram<ProgramType::MultiNotification>();
 
-        if (mMultiNotificationVertexBuffer[0].vertexKind == static_cast<float>(MultiNotificationVertex::VertexKindType::PressureInjectionHalo))
+        bool doResetBlending = false;
+        if (mMultiNotificationVertexBuffer[0].vertexKind == static_cast<float>(MultiNotificationVertex::VertexKindType::BlastToolHalo)
+            || mMultiNotificationVertexBuffer[0].vertexKind == static_cast<float>(MultiNotificationVertex::VertexKindType::PressureInjectionHalo))
         {
-            // Setup blending
+            // Setup custom blending
             glBlendFunc(GL_SRC_COLOR, GL_ONE);
             glBlendEquation(GL_FUNC_ADD);
+
+            doResetBlending = true;
         }
 
         // Draw
         assert((mMultiNotificationVertexBuffer.size() % 6) == 0);
         glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mMultiNotificationVertexBuffer.size()));
 
-        if (mMultiNotificationVertexBuffer[0].vertexKind == static_cast<float>(MultiNotificationVertex::VertexKindType::PressureInjectionHalo))
+        if (doResetBlending)
         {
             // Reset blending
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

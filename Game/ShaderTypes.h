@@ -20,7 +20,6 @@ enum class ProgramType
 {
     AABBs = 0,
     AMBombPreImplosion,
-    BlastToolHalo,
     CloudsBasic,
     CloudsDetailed,
     CrossOfLight,
@@ -296,9 +295,6 @@ enum class VertexAttributeType : GLuint
     FireExtinguisherSpray = 0,
 
     HeatBlasterFlame = 0,
-
-    BlastToolHalo1 = 0,
-    BlastToolHalo2 = 1,
 
     WindSphere1 = 0,
     WindSphere2 = 1,

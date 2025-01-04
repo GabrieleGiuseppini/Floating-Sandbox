@@ -219,9 +219,10 @@
 					+ Simple vertex buffer
 						+ Auto-reset (not sticky)
 					+ UploadGripCircle(...)
-					- Move other notifications
+					= Move other notifications
 						! Those that are NDC need to get world pos's, for easier vertex shader
-						= PressureInjectionHalo
+						+ PressureInjectionHalo
+						+ BlastToolHalo
 						- TODOHERE
 				= Ship (...world...controller) interactions:
 					+ SetupMoveGrippedBy(display center, display radius) -> [world pos, world radius]
@@ -245,7 +246,7 @@
 							+ Not ephemeral
 							+ Resets ForcesReceptivity to 1.0
 				= Tool:
-					= State machine for radius-making and two-phase
+					+ State machine for radius-making and two-phase
 						! Become always move (evt. by zero) at UpdateSimulation, not only when there's a trajectory
 							+ i.e. make traj continuous
 						+ Two states, mutually exclusive:
@@ -279,10 +280,10 @@
 						+ MouseMove:
 							+ if state 2 && l down:
 								+ Update traj
-					= Fix inertial velocity
+					+ Fix inertial velocity
 						+ GameController & World take intertial screen offset, World divides by dt
 						+ Augmented radius
-						= It seems imparting velocity is beneficial, though there's runaway issue
+						+ It seems imparting velocity is beneficial, though there's runaway issue
 							+ Smoothing of quantities
 					- Rotate
 						- Should not require any additional state, center is grip's center and angle is new_traj_pos.y - cur_traj_pos.y

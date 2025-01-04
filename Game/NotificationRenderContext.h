@@ -334,43 +334,49 @@ public:
 
 		// Triangle 1
 
-		mBlastToolHaloVertexBuffer.emplace_back(
-			vec2f(left, bottom),
-			vec2f(-1.0f, -1.0f),
-			renderProgress,
-			personalitySeed);
+		mMultiNotificationVertexBuffer.emplace_back(
+			MultiNotificationVertex::MakeBlastToolHalo(
+				vec2f(left, bottom),
+				renderProgress,
+				vec2f(-1.0f, -1.0f),
+				personalitySeed));
 
-		mBlastToolHaloVertexBuffer.emplace_back(
-			vec2f(left, top),
-			vec2f(-1.0f, 1.0f),
-			renderProgress,
-			personalitySeed);
+		mMultiNotificationVertexBuffer.emplace_back(
+			MultiNotificationVertex::MakeBlastToolHalo(
+				vec2f(left, top),
+				renderProgress,
+				vec2f(-1.0f, 1.0f),
+				personalitySeed));
 
-		mBlastToolHaloVertexBuffer.emplace_back(
-			vec2f(right, bottom),
-			vec2f(1.0f, -1.0f),
-			renderProgress,
-			personalitySeed);
+		mMultiNotificationVertexBuffer.emplace_back(
+			MultiNotificationVertex::MakeBlastToolHalo(
+				vec2f(right, bottom),
+				renderProgress,
+				vec2f(1.0f, -1.0f),
+				personalitySeed));
 
 		// Triangle 2
 
-		mBlastToolHaloVertexBuffer.emplace_back(
-			vec2f(left, top),
-			vec2f(-1.0f, 1.0f),
-			renderProgress,
-			personalitySeed);
+		mMultiNotificationVertexBuffer.emplace_back(
+			MultiNotificationVertex::MakeBlastToolHalo(
+				vec2f(left, top),
+				renderProgress,
+				vec2f(-1.0f, 1.0f),
+				personalitySeed));
 
-		mBlastToolHaloVertexBuffer.emplace_back(
-			vec2f(right, bottom),
-			vec2f(1.0f, -1.0f),
-			renderProgress,
-			personalitySeed);
+		mMultiNotificationVertexBuffer.emplace_back(
+			MultiNotificationVertex::MakeBlastToolHalo(
+				vec2f(right, bottom),
+				renderProgress,
+				vec2f(1.0f, -1.0f),
+				personalitySeed));
 
-		mBlastToolHaloVertexBuffer.emplace_back(
-			vec2f(right, top),
-			vec2f(1.0f, 1.0f),
-			renderProgress,
-			personalitySeed);
+		mMultiNotificationVertexBuffer.emplace_back(
+			MultiNotificationVertex::MakeBlastToolHalo(
+				vec2f(right, top),
+				renderProgress,
+				vec2f(1.0f, 1.0f),
+				personalitySeed));
 	}
 
 	inline void UploadPressureInjectionHalo(
@@ -717,9 +723,6 @@ private:
 	inline void RenderPrepareFireExtinguisherSpray();
 	inline void RenderDrawFireExtinguisherSpray();
 
-	inline void RenderPrepareBlastToolHalo();
-	inline void RenderDrawBlastToolHalo();
-
 	inline void RenderPrepareWindSphere();
 	inline void RenderDrawWindSphere();
 
@@ -847,25 +850,6 @@ private:
 		{}
 	};
 
-	struct BlastToolHaloVertex
-	{
-		vec2f vertexPosition;
-		vec2f haloSpacePosition;
-		float renderProgress;
-		float personalitySeed;
-
-		BlastToolHaloVertex(
-			vec2f _vertexPosition,
-			vec2f _haloSpacePosition,
-			float _renderProgress,
-			float _personalitySeed)
-			: vertexPosition(_vertexPosition)
-			, haloSpacePosition(_haloSpacePosition)
-			, renderProgress(_renderProgress)
-			, personalitySeed(_personalitySeed)
-		{}
-	};
-
 	struct WindSphereVertex
 	{
 		vec2f vertexPosition;
@@ -934,13 +918,23 @@ private:
 		enum VertexKindType
 		{
 			// Note: enum values are to be kept in sync with shader
-			GripCircle = 1,
-			PressureInjectionHalo = 2
+			BlastToolHalo = 1,
+			GripCircle = 2,
+			PressureInjectionHalo = 3
 		};
 		float vertexKind;
 
 		union MultiAttributesType
 		{
+			struct BlastToolHaloType
+			{
+				vec2f vertexPosition;
+				float progress;
+				vec2f virtualSpacePosition;
+				float personalitySeed;
+			};
+			BlastToolHaloType blastToolHalo;
+
 			struct GripCircleType
 			{
 				vec2f vertexPosition;
@@ -959,30 +953,47 @@ private:
 		};
 		MultiAttributesType multiAttributes;
 
+		static MultiNotificationVertex MakeBlastToolHalo(
+			vec2f vertexPosition,
+			float progress,
+			vec2f virtualSpacePosition,
+			float personalitySeed)
+		{
+			MultiAttributesType multiAttributes;
+			multiAttributes.blastToolHalo = MultiAttributesType::BlastToolHaloType({
+				vertexPosition,
+				progress,
+				virtualSpacePosition,
+				personalitySeed });
+			return MultiNotificationVertex(
+				static_cast<float>(VertexKindType::BlastToolHalo),
+				multiAttributes);
+		}
+
 		static MultiNotificationVertex MakeGripCircle(
-			vec2f _vertexPosition,
-			vec2f _virtualSpacePosition)
+			vec2f vertexPosition,
+			vec2f virtualSpacePosition)
 		{
 			MultiAttributesType multiAttributes;
 			multiAttributes.gripCircle = MultiAttributesType::GripCircleType({
-				_vertexPosition,
+				vertexPosition,
 				0.0f,
-				_virtualSpacePosition });
+				virtualSpacePosition });
 			return MultiNotificationVertex(
 				static_cast<float>(VertexKindType::GripCircle),
 				multiAttributes);
 		}
 
 		static MultiNotificationVertex MakePressureInjectionHalo(
-			vec2f _vertexPosition,
-			vec2f _virtualSpacePosition,
-			float _flowMultiplier)
+			vec2f vertexPosition,
+			vec2f virtualSpacePosition,
+			float flowMultiplier)
 		{
 			MultiAttributesType multiAttributes;
 			multiAttributes.pressureInjectionHalo = MultiAttributesType::PressureInjectionHaloType({
-				_vertexPosition,
-				_flowMultiplier,
-				_virtualSpacePosition });
+				vertexPosition,
+				flowMultiplier,
+				virtualSpacePosition });
 			return MultiNotificationVertex(
 				static_cast<float>(VertexKindType::PressureInjectionHalo),
 				multiAttributes);
@@ -1201,10 +1212,6 @@ private:
 	std::array<FireExtinguisherSprayVertex, 6> mFireExtinguisherSprayVertexBuffer;
 	GameOpenGLVBO mFireExtinguisherSprayVBO;
 	std::optional<Render::ProgramType> mFireExtinguisherSprayShaderToRender;
-
-	GameOpenGLVAO mBlastToolHaloVAO;
-	std::vector<BlastToolHaloVertex> mBlastToolHaloVertexBuffer;
-	GameOpenGLVBO mBlastToolHaloVBO;
 
 	GameOpenGLVAO mWindSphereVAO;
 	std::vector<WindSphereVertex> mWindSphereVertexBuffer;

@@ -19,8 +19,6 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::AABBs;
     else if (lstr == "am_bomb_preimplosion")
         return ProgramType::AMBombPreImplosion;
-    else if (lstr == "blast_tool_halo")
-        return ProgramType::BlastToolHalo;
     else if (lstr == "clouds_basic")
         return ProgramType::CloudsBasic;
     else if (lstr == "clouds_detailed")
@@ -221,8 +219,6 @@ std::string ProgramTypeToStr(ProgramType program)
             return "AABBs";
         case ProgramType::AMBombPreImplosion:
             return "AMBombPreImplosion";
-        case ProgramType::BlastToolHalo:
-            return "BlastToolHalo";
         case ProgramType::CloudsBasic:
             return "CloudsBasic";
         case ProgramType::CloudsDetailed:
@@ -762,10 +758,6 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::FireExtinguisherSpray;
     else if (Utils::CaseInsensitiveEquals(str, "HeatBlasterFlame"))
         return VertexAttributeType::HeatBlasterFlame;
-    else if (Utils::CaseInsensitiveEquals(str, "BlastToolHalo1"))
-        return VertexAttributeType::BlastToolHalo1;
-    else if (Utils::CaseInsensitiveEquals(str, "BlastToolHalo2"))
-        return VertexAttributeType::BlastToolHalo2;
     else if (Utils::CaseInsensitiveEquals(str, "WindSphere1"))
         return VertexAttributeType::WindSphere1;
     else if (Utils::CaseInsensitiveEquals(str, "WindSphere2"))
