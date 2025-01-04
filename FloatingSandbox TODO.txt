@@ -281,6 +281,7 @@
 								+ Update traj
 					= Fix inertial velocity
 						+ GameController & World take intertial screen offset, World divides by dt
+						+ Augmented radius
 						= It seems imparting velocity is beneficial, though there's runaway issue
 							+ Smoothing of quantities
 					- Rotate
