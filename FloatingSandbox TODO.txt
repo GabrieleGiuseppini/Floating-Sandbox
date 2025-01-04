@@ -224,9 +224,9 @@
 						+ PressureInjectionHalo
 						+ BlastToolHalo
 						+ FireExtinguisherSpray
+						+ WindSphere
 						- HeatBlaster/Heat
 						- HeatBlaster/Cool
-						- WindSphere
 						- TODOHERE: others?
 				= Ship (...world...controller) interactions:
 					+ SetupMoveGrippedBy(display center, display radius) -> [world pos, world radius]

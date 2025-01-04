@@ -49,8 +49,6 @@ NotificationRenderContext::NotificationRenderContext(
     , mHeatBlasterFlameVAO()
     , mHeatBlasterFlameVBO()
     , mHeatBlasterFlameShaderToRender()
-    , mWindSphereVAO()
-    , mWindSphereVBO()
     , mLaserCannonVAO()
     , mLaserCannonVBO()
     , mLaserRayVAO()
@@ -325,36 +323,6 @@ NotificationRenderContext::NotificationRenderContext(
     }
 
     //
-    // Initialize Wind Sphere
-    //
-
-    {
-        glGenVertexArrays(1, &tmpGLuint);
-        mWindSphereVAO = tmpGLuint;
-
-        glBindVertexArray(*mWindSphereVAO);
-        CheckOpenGLError();
-
-        glGenBuffers(1, &tmpGLuint);
-        mWindSphereVBO = tmpGLuint;
-
-        // Describe vertex attributes
-        static_assert(sizeof(WindSphereVertex) == (4 + 4) * sizeof(float));
-        glBindBuffer(GL_ARRAY_BUFFER, *mWindSphereVBO);
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::WindSphere1));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::WindSphere1), 4, GL_FLOAT, GL_FALSE, sizeof(WindSphereVertex), (void *)0);
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::WindSphere2));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::WindSphere2), 4, GL_FLOAT, GL_FALSE, sizeof(WindSphereVertex), (void *)(4 * sizeof(float)));
-        CheckOpenGLError();
-
-        glBindVertexArray(0);
-
-        // Set texture parameters
-        mShaderManager.ActivateProgram<ProgramType::WindSphere>();
-        mShaderManager.SetTextureParameters<ProgramType::WindSphere>();
-    }
-
-    //
     // Initialize Laser Cannon
     //
 
@@ -425,12 +393,14 @@ NotificationRenderContext::NotificationRenderContext(
         mMultiNotificationVBO = tmpGLuint;
 
         // Describe vertex attributes
-        static_assert(sizeof(MultiNotificationVertex) == (1 + 6) * sizeof(float));
+        static_assert(sizeof(MultiNotificationVertex) == (1 + 8) * sizeof(float));
         glBindBuffer(GL_ARRAY_BUFFER, *mMultiNotificationVBO);
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::MultiNotification1));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::MultiNotification1), 4, GL_FLOAT, GL_FALSE, sizeof(MultiNotificationVertex), (void *)0);
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::MultiNotification2));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::MultiNotification2), 3, GL_FLOAT, GL_FALSE, sizeof(MultiNotificationVertex), (void *)(4 * sizeof(float)));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::MultiNotification2), 4, GL_FLOAT, GL_FALSE, sizeof(MultiNotificationVertex), (void *)(4 * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::MultiNotification3));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::MultiNotification3), 1, GL_FLOAT, GL_FALSE, sizeof(MultiNotificationVertex), (void *)(8 * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -502,9 +472,6 @@ void NotificationRenderContext::UploadStart()
 {
     // Reset HeatBlaster flame, it's uploaded as needed
     mHeatBlasterFlameShaderToRender.reset();
-
-    // Reset wind sphere, it's uploaded as needed
-    mWindSphereVertexBuffer.clear();
 
     // Reset laser cannon, it's uploaded as needed
     mLaserCannonVertexBuffer.clear();
@@ -745,8 +712,6 @@ void NotificationRenderContext::RenderPrepare()
 
     RenderPrepareHeatBlasterFlame();
 
-    RenderPrepareWindSphere();
-
     RenderPrepareLaserCannon();
 
     RenderPrepareLaserRay();
@@ -784,8 +749,6 @@ void NotificationRenderContext::RenderDraw()
 
     RenderDrawHeatBlasterFlame();
 
-    RenderDrawWindSphere();
-
     RenderDrawMultiNotification();
 
     RenderDrawRectSelection();
@@ -813,10 +776,6 @@ void NotificationRenderContext::ApplyViewModelChanges(RenderParameters const & r
 
     mShaderManager.ActivateProgram<ProgramType::HeatBlasterFlameHeat>();
     mShaderManager.SetProgramParameter<ProgramType::HeatBlasterFlameHeat, ProgramParameterType::OrthoMatrix>(
-        globalOrthoMatrix);
-
-    mShaderManager.ActivateProgram<ProgramType::WindSphere>();
-    mShaderManager.SetProgramParameter<ProgramType::WindSphere, ProgramParameterType::OrthoMatrix>(
         globalOrthoMatrix);
 
     mShaderManager.ActivateProgram<ProgramType::MultiNotification>();
@@ -1233,44 +1192,6 @@ void NotificationRenderContext::RenderDrawHeatBlasterFlame()
 
         assert((mHeatBlasterFlameVertexBuffer.size() % 6) == 0);
         glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mHeatBlasterFlameVertexBuffer.size()));
-
-        glBindVertexArray(0);
-    }
-}
-
-void NotificationRenderContext::RenderPrepareWindSphere()
-{
-    if (!mWindSphereVertexBuffer.empty())
-    {
-        glBindBuffer(GL_ARRAY_BUFFER, *mWindSphereVBO);
-
-        glBufferData(GL_ARRAY_BUFFER,
-            sizeof(WindSphereVertex) * mWindSphereVertexBuffer.size(),
-            mWindSphereVertexBuffer.data(),
-            GL_DYNAMIC_DRAW);
-        CheckOpenGLError();
-
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-        // Set time parameter
-        mShaderManager.ActivateProgram<ProgramType::WindSphere>();
-        mShaderManager.SetProgramParameter<ProgramParameterType::Time>(
-            ProgramType::WindSphere,
-            GameWallClock::GetInstance().NowAsFloat());
-    }
-}
-
-void NotificationRenderContext::RenderDrawWindSphere()
-{
-    if (!mWindSphereVertexBuffer.empty())
-    {
-        glBindVertexArray(*mWindSphereVAO);
-
-        mShaderManager.ActivateProgram<ProgramType::WindSphere>();
-
-        // Draw
-        assert((mWindSphereVertexBuffer.size() % 6) == 0);
-        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mWindSphereVertexBuffer.size()));
 
         glBindVertexArray(0);
     }

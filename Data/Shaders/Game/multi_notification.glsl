@@ -4,6 +4,7 @@
 #define FIRE_EXTINGUISHER_SPRAY 2.0
 #define GRIP_CIRCLE 3.0
 #define PRESSURE_INJECTION_HALO 4.0
+#define WIND_SPHERE 5.0
 
 ###VERTEX-120
 
@@ -11,14 +12,17 @@
 #define out varying
 
 // Inputs
-in vec4 inMultiNotification1;  // Type, WorldPosition (vec2), [FlowMultiplier|Progress] float1 (float)
-in vec3 inMultiNotification2; // VirtualSpacePosition (vec2), [PersonalitySeed] float2 (float)
+in vec4 inMultiNotification1;  // Type, WorldPosition (vec2), [FlowMultiplier|Progress|PreFrontRadius] float1 (float)
+in vec4 inMultiNotification2; // [VirtualSpacePosition -1..1|VirtualSpacePosition -W..W] auxPosition (vec2), [PersonalitySeed|PreFrontIntensity] float2 (float), [MainFrontRadius] float3 (float)
+in float inMultiNotification3; // [MainFrontIntensity] float4 (float)
 
 // Outputs
 out float notification_type;
 out float float1;
 out float float2;
-out vec2 virtualSpacePosition;
+out float float3;
+out float float4;
+out vec2 auxPosition;
 
 // Parameters
 uniform mat4 paramOrthoMatrix;
@@ -28,7 +32,9 @@ void main()
     notification_type = inMultiNotification1.x;
     float1 = inMultiNotification1.w;
     float2 = inMultiNotification2.z;
-    virtualSpacePosition = inMultiNotification2.xy;
+    float3 = inMultiNotification2.w;
+    float4 = inMultiNotification3;
+    auxPosition = inMultiNotification2.xy;
 
     gl_Position = paramOrthoMatrix * vec4(inMultiNotification1.yz, -1.0, 1.0);
 }
@@ -39,9 +45,11 @@ void main()
 
 // Inputs from previous shader
 in float notification_type;
-in float float1; // FlowMultiplier|Progress
-in float float2; // PersonalitySeed
-in vec2 virtualSpacePosition; // [-1.0, 1.0]
+in float float1; // FlowMultiplier|Progress|PreFrontRadius
+in float float2; // PersonalitySeed|PreFrontIntensity
+in float float3; // MainFrontRadius
+in float float4; // MainFrontIntensity
+in vec2 auxPosition; // VirtualSpacePosition -1..1|CenterPosition
 
 // Parameters
 uniform float paramTime;
@@ -178,19 +186,57 @@ vec4 make_pressure_injection_halo(
     return vec4(whiteDepth, whiteDepth, whiteDepth, 1.); // white
 }
 
+vec4 make_wind_sphere(
+    float d,
+    float preFrontRadiusWorld,
+    float preFrontIntensity,
+    float mainFrontRadiusWorld,
+    float mainFrontIntensity,
+    float noise)
+{
+    //
+    // 1. Sphere inclusion check
+    //
+    
+    #define IntensityMultiplier .05
+    
+    float isInSphere = 
+        (1.0 - step(preFrontRadiusWorld, d)) * preFrontIntensity * IntensityMultiplier
+        * step(mainFrontRadiusWorld, d)
+        +
+        (1.0 - step(mainFrontRadiusWorld, d)) * mainFrontIntensity * IntensityMultiplier;
+            
+    //
+    // 2. Wave inclusion check
+    //
+            
+    float isInWave = noise;
+    
+    
+    //
+    // 3. Combine
+    //    
+    
+    float whiteDepth = isInSphere * isInWave;
+        
+    return vec4(1., 1., 1., whiteDepth);
+}
+
 void main()
 {
     // Common to many
-    float d = length(virtualSpacePosition);
+    float d = length(auxPosition);
+
+    // Common to many
+    float auxPositionAngle = atan(auxPosition.y, auxPosition.x) / (2.0 * PI);
 
     // Common to many
     vec2 noiseSampleCoords = vec2(0.0);
     {
         // Blast tool halo
 
-        float theta = atan(virtualSpacePosition.y, virtualSpacePosition.x) / (2.0 * PI);
         noiseSampleCoords += 
-            vec2(0.015 * float1 + float2, theta) 
+            vec2(0.015 * float1 + float2, auxPositionAngle) 
             * is_type(notification_type, BLAST_TOOL_HALO);
     }
     float sprayTime;
@@ -203,30 +249,40 @@ void main()
         // Rotate based on noise sampled via polar coordinates of pixel
         
         // (r, a) (r=[0.0, 1.0], a=[0.0, 1.0 CCW from W])
-        vec2 angleNoiseRa = vec2(
-            d, 
-            (atan(virtualSpacePosition.y, virtualSpacePosition.x) / (2.0 * PI) + 0.5));
-        
         #define AngleNoiseResolution 1.0        
         noiseSampleCoords += 
             (
-                angleNoiseRa * vec2(AngleNoiseResolution, AngleNoiseResolution) 
+                vec2(d, auxPositionAngle + 0.5) * AngleNoiseResolution
                 + vec2(-0.5 * sprayTime, 0.2* sprayTime)
             )
-            * is_type(notification_type, BLAST_TOOL_HALO);
+            * is_type(notification_type, FIRE_EXTINGUISHER_SPRAY);
+    }
+    {
+        // Wind sphere
+
+        // (r, a) (r=[0.0, +INF], a=[0.0, 1.0 CCW from W])
+        #define RadialResolution 1. / 200.
+        noiseSampleCoords += 
+            (
+                vec2(d * RadialResolution, auxPositionAngle + 0.5) 
+                + vec2(-paramTime * .5, 0.)
+            )
+            * is_type(notification_type, WIND_SPHERE);
     }
     float noise = texture2D(paramNoiseTexture, noiseSampleCoords).r; // 0.0 -> 1.0
 
     // Generate frag colors
     vec4 blast_tool_halo = make_blast_tool_halo(d, noise);
-    vec4 fire_extinguisher_spray = make_fire_extinguisher_spray(virtualSpacePosition, d, sprayTime, noise);
+    vec4 fire_extinguisher_spray = make_fire_extinguisher_spray(auxPosition, d, sprayTime, noise);
     vec4 grip_circle = make_grip_circle(d);
     vec4 pressure_injection_halo = make_pressure_injection_halo(d, float1);
-    
+    vec4 wind_sphere = make_wind_sphere(d, float1, float2, float3, float4, noise);
+
     // Pick frag color
     gl_FragColor =
         blast_tool_halo * is_type(notification_type, BLAST_TOOL_HALO)
         + fire_extinguisher_spray * is_type(notification_type, FIRE_EXTINGUISHER_SPRAY)
         + grip_circle * is_type(notification_type, GRIP_CIRCLE)
-        + pressure_injection_halo * is_type(notification_type, PRESSURE_INJECTION_HALO);
+        + pressure_injection_halo * is_type(notification_type, PRESSURE_INJECTION_HALO)
+        + wind_sphere * is_type(notification_type, WIND_SPHERE);
 }

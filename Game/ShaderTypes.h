@@ -111,7 +111,6 @@ enum class ProgramType
     Stars,
     Text,
     TextureNotifications,
-    WindSphere,
     WorldBorder,
 
     _Last = WorldBorder
@@ -290,11 +289,9 @@ enum class VertexAttributeType : GLuint
 
     MultiNotification1 = 0,
     MultiNotification2 = 1,
+    MultiNotification3 = 2,
 
     HeatBlasterFlame = 0,
-
-    WindSphere1 = 0,
-    WindSphere2 = 1,
 
     LaserRay1 = 0,
     LaserRay2 = 1,

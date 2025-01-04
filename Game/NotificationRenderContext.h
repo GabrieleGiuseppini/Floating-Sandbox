@@ -458,55 +458,61 @@ public:
 
 		// Triangle 1
 
-		mWindSphereVertexBuffer.emplace_back(
-			vec2f(left, bottom),
-			centerPosition,
-			preFrontRadius,
-			preFrontIntensityMultiplier,
-			mainFrontRadius,
-			mainFrontIntensityMultiplier);
+		mMultiNotificationVertexBuffer.emplace_back(
+			MultiNotificationVertex::MakeWindSphere(
+				vec2f(left, bottom),
+				vec2f(-preFrontRadius, -preFrontRadius),
+				preFrontRadius,
+				preFrontIntensityMultiplier,
+				mainFrontRadius,
+				mainFrontIntensityMultiplier));
 
-		mWindSphereVertexBuffer.emplace_back(
-			vec2f(left, top),
-			centerPosition,
-			preFrontRadius,
-			preFrontIntensityMultiplier,
-			mainFrontRadius,
-			mainFrontIntensityMultiplier);
+		mMultiNotificationVertexBuffer.emplace_back(
+			MultiNotificationVertex::MakeWindSphere(
+				vec2f(left, top),
+				vec2f(-preFrontRadius, preFrontRadius),
+				preFrontRadius,
+				preFrontIntensityMultiplier,
+				mainFrontRadius,
+				mainFrontIntensityMultiplier));
 
-		mWindSphereVertexBuffer.emplace_back(
-			vec2f(right, bottom),
-			centerPosition,
-			preFrontRadius,
-			preFrontIntensityMultiplier,
-			mainFrontRadius,
-			mainFrontIntensityMultiplier);
+		mMultiNotificationVertexBuffer.emplace_back(
+			MultiNotificationVertex::MakeWindSphere(
+				vec2f(right, bottom),
+				vec2f(preFrontRadius, -preFrontRadius),
+				preFrontRadius,
+				preFrontIntensityMultiplier,
+				mainFrontRadius,
+				mainFrontIntensityMultiplier));
 
 		// Triangle 2
 
-		mWindSphereVertexBuffer.emplace_back(
-			vec2f(left, top),
-			centerPosition,
-			preFrontRadius,
-			preFrontIntensityMultiplier,
-			mainFrontRadius,
-			mainFrontIntensityMultiplier);
+		mMultiNotificationVertexBuffer.emplace_back(
+			MultiNotificationVertex::MakeWindSphere(
+				vec2f(left, top),
+				vec2f(-preFrontRadius, preFrontRadius),
+				preFrontRadius,
+				preFrontIntensityMultiplier,
+				mainFrontRadius,
+				mainFrontIntensityMultiplier));
 
-		mWindSphereVertexBuffer.emplace_back(
-			vec2f(right, bottom),
-			centerPosition,
-			preFrontRadius,
-			preFrontIntensityMultiplier,
-			mainFrontRadius,
-			mainFrontIntensityMultiplier);
+		mMultiNotificationVertexBuffer.emplace_back(
+			MultiNotificationVertex::MakeWindSphere(
+				vec2f(right, bottom),
+				vec2f(preFrontRadius, -preFrontRadius),
+				preFrontRadius,
+				preFrontIntensityMultiplier,
+				mainFrontRadius,
+				mainFrontIntensityMultiplier));
 
-		mWindSphereVertexBuffer.emplace_back(
-			vec2f(right, top),
-			centerPosition,
-			preFrontRadius,
-			preFrontIntensityMultiplier,
-			mainFrontRadius,
-			mainFrontIntensityMultiplier);
+		mMultiNotificationVertexBuffer.emplace_back(
+			MultiNotificationVertex::MakeWindSphere(
+				vec2f(right, top),
+				vec2f(preFrontRadius, preFrontRadius),
+				preFrontRadius,
+				preFrontIntensityMultiplier,
+				mainFrontRadius,
+				mainFrontIntensityMultiplier));
 	}
 
 	void UploadLaserCannon(
@@ -726,9 +732,6 @@ private:
 	inline void RenderPrepareHeatBlasterFlame();
 	inline void RenderDrawHeatBlasterFlame();
 
-	inline void RenderPrepareWindSphere();
-	inline void RenderDrawWindSphere();
-
 	inline void RenderPrepareLaserCannon();
 	inline void RenderDrawLaserCannon();
 
@@ -844,31 +847,6 @@ private:
 		{}
 	};
 
-	struct WindSphereVertex
-	{
-		vec2f vertexPosition;
-		vec2f centerPosition;
-		float preFrontRadius;
-		float preFrontIntensity;
-		float mainFrontRadius;
-		float mainFrontIntensity;
-
-		WindSphereVertex(
-			vec2f _vertexPosition,
-			vec2f _centerPosition,
-			float _preFrontRadius,
-			float _preFrontIntensity,
-			float _mainFrontRadius,
-			float _mainFrontIntensity)
-			: vertexPosition(_vertexPosition)
-			, centerPosition(_centerPosition)
-			, preFrontRadius(_preFrontRadius)
-			, preFrontIntensity(_preFrontIntensity)
-			, mainFrontRadius(_mainFrontRadius)
-			, mainFrontIntensity(_mainFrontIntensity)
-		{}
-	};
-
 	struct LaserCannonVertex
 	{
 		vec2f vertexPositionNDC;
@@ -915,14 +893,17 @@ private:
 			BlastToolHalo = 1,
 			FireExtinguisherSpray = 2,
 			GripCircle = 3,
-			PressureInjectionHalo = 4
+			PressureInjectionHalo = 4,
+			WindSphere = 5
 		};
 		float vertexKind;
 
 		vec2f vertexPosition;
-		float float1; // FlowMultiplier | Progress
-		vec2f virtualSpacePosition;
-		float float2; // PersonalitySeed
+		float float1; // FlowMultiplier | Progress | PreFrontRadius
+		vec2f auxPosition; // VirtualSpacePosition | CenterPosition
+		float float2; // PersonalitySeed | PreFrontIntensity
+		float float3; // MainFrontRadius
+		float float4; // MainFrontIntensity
 
 		static MultiNotificationVertex MakeBlastToolHalo(
 			vec2f vertexPosition,
@@ -935,7 +916,9 @@ private:
 				vertexPosition,
 				progress,
 				virtualSpacePosition,
-				personalitySeed);
+				personalitySeed,
+				0.0f,
+				0.0f);
 		}
 
 		static MultiNotificationVertex MakeFireExtinguisherSpray(
@@ -947,6 +930,8 @@ private:
 				vertexPosition,
 				0.0f,
 				virtualSpacePosition,
+				0.0f,
+				0.0f,
 				0.0f);
 		}
 
@@ -959,6 +944,8 @@ private:
 				vertexPosition,
 				0.0f,
 				virtualSpacePosition,
+				0.0f,
+				0.0f,
 				0.0f);
 		}
 
@@ -972,7 +959,27 @@ private:
 				vertexPosition,
 				flowMultiplier,
 				virtualSpacePosition,
+				0.0f,
+				0.0f,
 				0.0f);
+		}
+
+		static MultiNotificationVertex MakeWindSphere(
+			vec2f vertexPosition,
+			vec2f virtualSpacePosition, // In world dimensions
+			float preFrontRadius,
+			float preFrontIntensity,
+			float mainFrontRadius,
+			float mainFrontIntensity)
+		{
+			return MultiNotificationVertex(
+				static_cast<float>(VertexKindType::WindSphere),
+				vertexPosition,
+				preFrontRadius,
+				virtualSpacePosition,
+				preFrontIntensity,
+				mainFrontRadius,
+				mainFrontIntensity);
 		}
 
 	private:
@@ -981,13 +988,17 @@ private:
 			float _vertexKind,
 			vec2f const & _vertexPosition,
 			float _float1,
-			vec2f const & _virtualSpacePosition,
-			float _float2)
+			vec2f const & _auxPosition,
+			float _float2,
+			float _float3,
+			float _float4)
 			: vertexKind(_vertexKind)
 			, vertexPosition(_vertexPosition)
 			, float1(_float1)
-			, virtualSpacePosition(_virtualSpacePosition)
+			, auxPosition(_auxPosition)
 			, float2(_float2)
+			, float3(_float3)
+			, float4(_float4)
 		{}
 	};
 
@@ -1189,10 +1200,6 @@ private:
 	std::array<HeatBlasterFlameVertex, 6> mHeatBlasterFlameVertexBuffer;
 	GameOpenGLVBO mHeatBlasterFlameVBO;
 	std::optional<Render::ProgramType> mHeatBlasterFlameShaderToRender;
-
-	GameOpenGLVAO mWindSphereVAO;
-	std::vector<WindSphereVertex> mWindSphereVertexBuffer;
-	GameOpenGLVBO mWindSphereVBO;
 
 	GameOpenGLVAO mLaserCannonVAO;
 	std::vector<LaserCannonVertex> mLaserCannonVertexBuffer;

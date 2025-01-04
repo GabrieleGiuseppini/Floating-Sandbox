@@ -201,8 +201,6 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::Text;
     else if (lstr == "texture_notifications")
         return ProgramType::TextureNotifications;
-    else if (lstr == "wind_sphere")
-        return ProgramType::WindSphere;
     else if (lstr == "world_border")
         return ProgramType::WorldBorder;
     else
@@ -399,8 +397,6 @@ std::string ProgramTypeToStr(ProgramType program)
             return "Text";
         case ProgramType::TextureNotifications:
             return "TextureNotifications";
-        case ProgramType::WindSphere:
-            return "WindSphere";
         case ProgramType::WorldBorder:
             return "WorldBorder";
     }
@@ -750,12 +746,10 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::MultiNotification1;
     else if (Utils::CaseInsensitiveEquals(str, "MultiNotification2"))
         return VertexAttributeType::MultiNotification2;
+    else if (Utils::CaseInsensitiveEquals(str, "MultiNotification3"))
+        return VertexAttributeType::MultiNotification3;
     else if (Utils::CaseInsensitiveEquals(str, "HeatBlasterFlame"))
         return VertexAttributeType::HeatBlasterFlame;
-    else if (Utils::CaseInsensitiveEquals(str, "WindSphere1"))
-        return VertexAttributeType::WindSphere1;
-    else if (Utils::CaseInsensitiveEquals(str, "WindSphere2"))
-        return VertexAttributeType::WindSphere2;
     else if (Utils::CaseInsensitiveEquals(str, "LaserRay1"))
         return VertexAttributeType::LaserRay1;
     else if (Utils::CaseInsensitiveEquals(str, "LaserRay2"))
