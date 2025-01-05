@@ -39,10 +39,10 @@ UIPreferencesManager::UIPreferencesManager(
     mShowShipDescriptionsAtShipLoad = true;
     mAutoShowSwitchboard = true;
     mSwitchboardBackgroundBitmapIndex = 0;
+    mAutoToggleToExteriorViewWhenNonNpcToolIsSelected = true;
 
     mZoomIncrement = 1.05f;
     mPanIncrement = 20;
-
 
     //
     // Load preferences
@@ -452,6 +452,16 @@ void UIPreferencesManager::LoadPreferences()
             }
 
             //
+            // Auto-toggle to exterior view at non-NPC tool selection
+            //
+
+            if (auto it = preferencesRootObject->find("auto_toggle_to_exterior_view_when_nonnpc_tool_is_selected");
+                it != preferencesRootObject->end() && it->second.is<bool>())
+            {
+                mAutoToggleToExteriorViewWhenNonNpcToolIsSelected = it->second.get<bool>();
+            }
+
+            //
             // Show npc notifications
             //
 
@@ -628,6 +638,9 @@ void UIPreferencesManager::SavePreferences() const
 
         // Add auto-focus at NPC placement
         preferencesRootObject["auto_focus_at_npc_placement"] = picojson::value(mGameController.GetDoAutoFocusOnNpcPlacement());
+
+        // Auto-toggle to exterior view at non-NPC tool selection
+        preferencesRootObject["auto_toggle_to_exterior_view_when_nonnpc_tool_is_selected"] = picojson::value(mAutoToggleToExteriorViewWhenNonNpcToolIsSelected);
 
         // Add show npc notification
         preferencesRootObject["show_npc_notifications"] = picojson::value(mGameController.GetDoShowNpcNotifications());

@@ -62,6 +62,7 @@ private:
     void OnForceSharedAutoTexturizationSettingsOntoShipCheckBoxClicked(wxCommandEvent & event);
 
     void OnAutoFocusOnNpcPlacementCheckBoxClicked(wxCommandEvent & event);
+    void OnAutoToggleToExteriorViewWhenNonNpcToolIsSelectedCheckBoxClicked(wxCommandEvent & event);
     void OnShowNpcNotificationsCheckBoxClicked(wxCommandEvent & event);
 
     void OnGlobalMuteCheckBoxClicked(wxCommandEvent & event);
@@ -127,6 +128,7 @@ private:
     SliderControl<size_t> * mMaxNpcsSlider;
     SliderControl<size_t> * mNpcsPerGroupSlider;
     wxCheckBox * mAutoFocusOnNpcPlacementCheckBox;
+    wxCheckBox * mAutoToggleToExteriorViewWhenNonNpcToolIsSelectedCheckBox;
     wxCheckBox * mShowNpcNotificationsCheckBox;
 
     // Global Sound and Music panel

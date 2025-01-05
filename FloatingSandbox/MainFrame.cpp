@@ -2846,8 +2846,10 @@ void MainFrame::ReconciliateShipViewModeWithCurrentTool()
         }
         else
         {
-            // Switch to exterior view
-            if (mGameController->GetShipViewMode() != ShipViewModeType::Exterior)
+            // Switch to exterior view, if enabled
+            assert(!!mUIPreferencesManager);
+            if (mGameController->GetShipViewMode() != ShipViewModeType::Exterior
+                && mUIPreferencesManager->GetDoAutoToggleToExteriorViewWhenNonNpcToolIsSelected())
             {
                 mGameController->SetShipViewMode(ShipViewModeType::Exterior);
                 mShipViewExteriorMenuItem->Check(true);

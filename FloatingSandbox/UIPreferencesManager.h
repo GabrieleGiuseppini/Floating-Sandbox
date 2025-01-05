@@ -379,6 +379,16 @@ public:
         mGameController.SetDoAutoFocusOnNpcPlacement(value);
     }
 
+    bool GetDoAutoToggleToExteriorViewWhenNonNpcToolIsSelected() const
+    {
+        return mAutoToggleToExteriorViewWhenNonNpcToolIsSelected;
+    }
+
+    void SetDoAutoToggleToExteriorViewWhenNonNpcToolIsSelected(bool value)
+    {
+        mAutoToggleToExteriorViewWhenNonNpcToolIsSelected = value;
+    }
+
     bool GetDoShowNpcNotifications() const
     {
         return mGameController.GetDoShowNpcNotifications();
@@ -501,6 +511,7 @@ private:
     bool mShowShipDescriptionsAtShipLoad;
     bool mAutoShowSwitchboard;
     int mSwitchboardBackgroundBitmapIndex;
+    bool mAutoToggleToExteriorViewWhenNonNpcToolIsSelected;
 
     float mZoomIncrement;
     int mPanIncrement;

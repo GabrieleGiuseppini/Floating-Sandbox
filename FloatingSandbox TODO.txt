@@ -308,8 +308,9 @@
 					+ Icon
 				+ changelist
 
-	- UI Preferences for auto-toggle to Exterior view
-		- changelist
+	+ UI Preferences for auto-toggle to Exterior view
+
+	- merge back into master
 
 	- Fire Extinguisher Bomb:
 		- Sound for explosion

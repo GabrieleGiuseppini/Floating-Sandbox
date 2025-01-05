@@ -364,6 +364,13 @@ void PreferencesDialog::OnAutoFocusOnNpcPlacementCheckBoxClicked(wxCommandEvent 
     mOnChangeCallback();
 }
 
+void PreferencesDialog::OnAutoToggleToExteriorViewWhenNonNpcToolIsSelectedCheckBoxClicked(wxCommandEvent & /*event*/)
+{
+    mUIPreferencesManager.SetDoAutoToggleToExteriorViewWhenNonNpcToolIsSelected(mAutoToggleToExteriorViewWhenNonNpcToolIsSelectedCheckBox->GetValue());
+
+    mOnChangeCallback();
+}
+
 void PreferencesDialog::OnShowNpcNotificationsCheckBoxClicked(wxCommandEvent & /*event*/)
 {
     mUIPreferencesManager.SetDoShowNpcNotifications(mShowNpcNotificationsCheckBox->GetValue());
@@ -1141,6 +1148,20 @@ void PreferencesDialog::PopulateNpcPanel(wxPanel * panel)
                 Border);
         }
 
+        // Auto-Toggle to Exterior view when non-Npc tool is selected
+        {
+            mAutoToggleToExteriorViewWhenNonNpcToolIsSelectedCheckBox = new wxCheckBox(panel, wxID_ANY,
+                _("Toggle to Exterior With Non-NPC Tool"), wxDefaultPosition, wxDefaultSize, 0);
+            mAutoToggleToExteriorViewWhenNonNpcToolIsSelectedCheckBox->SetToolTip(_("Enables or disables auto-toggling to the exterior view when a non-NPC tool is selected."));
+            mAutoToggleToExteriorViewWhenNonNpcToolIsSelectedCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnAutoToggleToExteriorViewWhenNonNpcToolIsSelectedCheckBoxClicked, this);
+
+            vSizer->Add(
+                mAutoToggleToExteriorViewWhenNonNpcToolIsSelectedCheckBox,
+                0,
+                wxALIGN_LEFT | wxALL,
+                Border);
+        }
+
         // Show NPC Notifications
         {
             mShowNpcNotificationsCheckBox = new wxCheckBox(panel, wxID_ANY,
@@ -1412,6 +1433,7 @@ void PreferencesDialog::ReadSettings()
     mMaxNpcsSlider->SetValue(mUIPreferencesManager.GetMaxNpcs());
     mNpcsPerGroupSlider->SetValue(mUIPreferencesManager.GetNpcsPerGroup());
     mAutoFocusOnNpcPlacementCheckBox->SetValue(mUIPreferencesManager.GetDoAutoFocusOnNpcPlacement());
+    mAutoToggleToExteriorViewWhenNonNpcToolIsSelectedCheckBox->SetValue(mUIPreferencesManager.GetDoAutoToggleToExteriorViewWhenNonNpcToolIsSelected());
     mShowNpcNotificationsCheckBox->SetValue(mUIPreferencesManager.GetDoShowNpcNotifications());
 
     mGlobalMuteCheckBox->SetValue(mUIPreferencesManager.GetGlobalMute());
