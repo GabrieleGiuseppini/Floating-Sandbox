@@ -3,8 +3,10 @@
 #define BLAST_TOOL_HALO 1.0
 #define FIRE_EXTINGUISHER_SPRAY 2.0
 #define GRIP_CIRCLE 3.0
-#define PRESSURE_INJECTION_HALO 4.0
-#define WIND_SPHERE 5.0
+#define HEATBLASTER_FLAME_COOL 4.0
+#define HEATBLASTER_FLAME_HEAT 5.0
+#define PRESSURE_INJECTION_HALO 6.0
+#define WIND_SPHERE 7.0
 
 ###VERTEX-120
 
@@ -71,6 +73,7 @@ mat2 get_rotation_matrix(float angle)
     return m;
 }
 
+/////////////////////////
 
 vec4 make_blast_tool_halo(
     float d,    
@@ -152,6 +155,60 @@ vec4 make_grip_circle(float d)
     return vec4(0.0, 0.0, 0.0, alpha);
 }
 
+vec4 make_heatblaster_flame(
+    float d_scaled,
+    vec2 noiseSampleCoords, 
+    float noise1)
+{
+    // Calculate noise
+    float fragmentNoise = 
+        (noise1 - 0.5) * 0.5
+        + (texture2D(paramNoiseTexture, noiseSampleCoords * 2.0).r - 0.5) * 0.5 * 0.5;
+    
+    //
+    // Randomize radius based on noise and radius
+    //
+    
+    float variationR = fragmentNoise;
+
+    // Straighten the flame at the center and make full turbulence outside
+    variationR *= smoothstep(-0.05, 0.4, d_scaled);
+    
+    // Scale variation
+    variationR *= 0.65;
+    
+    // Randomize!
+    float radius1 = d_scaled + variationR;
+
+    // Focus (compress dynamics)
+    float radius2 = smoothstep(0.2, 0.35, radius1);    
+    float alpha = 1.0 - radius2; // Transparent when radius1 >= 0.35, opaque when radius <= 0.2
+
+    // Cool
+    vec3 cool;
+    {
+        cool = mix(vec3(1.0, 1.0, 1.0), vec3(0.6, 1.0, 1.0), smoothstep(0.1, 0.2, radius1));
+        cool = mix(cool, vec3(0.1, 0.4, 1.0), smoothstep(0.18, 0.25, radius1));
+    }
+
+    // Heat
+    vec3 heat;
+    {
+        // Core1 (white->yellow)
+        heat = mix(vec3(1.0, 1.0, 1.0), vec3(1.0, 1.0, 0.1), smoothstep(0.03, 0.1, radius1));
+
+        // Core2 (->red)
+        heat = mix(heat, vec3(1.0, 0.35, 0.0), smoothstep(0.12, 0.23, radius1));
+
+        // Border (->dark red)
+        heat = mix(heat, vec3(0.3, 0.0, 0.0), smoothstep(0.2, 0.23, radius1));
+    }
+
+    return vec4(
+        cool * is_type(notification_type, HEATBLASTER_FLAME_COOL) + heat * is_type(notification_type, HEATBLASTER_FLAME_HEAT),
+        alpha);
+}
+
 vec4 make_pressure_injection_halo(
     float d,
     float flowMultiplier)
@@ -224,6 +281,10 @@ vec4 make_wind_sphere(
 
 void main()
 {
+    float is_any_heat_blaster = 
+        is_type(notification_type, HEATBLASTER_FLAME_COOL) 
+        + is_type(notification_type, HEATBLASTER_FLAME_HEAT);
+
     // Common to many
     float d = length(auxPosition);
 
@@ -257,14 +318,38 @@ void main()
             )
             * is_type(notification_type, FIRE_EXTINGUISHER_SPRAY);
     }
+    float heatBlasterDScaled;
+    {
+        // Heat blasters
+
+        // (r, a) (r=[0.0, 1.0], a=[0.0, 1.0 CCW from W])
+        #define HeatBlasterRadialResolution 1.2
+        heatBlasterDScaled = d * HeatBlasterRadialResolution;
+        vec2 uv = vec2(heatBlasterDScaled, auxPositionAngle + 0.5);
+    
+        // Flame time
+        #define FlameSpeed 0.2
+        float flameTime = paramTime * FlameSpeed;
+        flameTime *= 
+            is_type(notification_type, HEATBLASTER_FLAME_COOL) * -1.0
+            + is_type(notification_type, HEATBLASTER_FLAME_HEAT) * 1.0;
+
+        // Coords
+        #define NoiseResolution 1.0
+        noiseSampleCoords +=
+            (
+                uv * vec2(NoiseResolution / 4.0, NoiseResolution) + vec2(-flameTime, 0.0)
+            )
+            * is_any_heat_blaster;
+    }
     {
         // Wind sphere
 
         // (r, a) (r=[0.0, +INF], a=[0.0, 1.0 CCW from W])
-        #define RadialResolution 1. / 200.
+        #define WindSphereRadialResolution 1. / 200.
         noiseSampleCoords += 
             (
-                vec2(d * RadialResolution, auxPositionAngle + 0.5) 
+                vec2(d * WindSphereRadialResolution, auxPositionAngle + 0.5) 
                 + vec2(-paramTime * .5, 0.)
             )
             * is_type(notification_type, WIND_SPHERE);
@@ -275,6 +360,7 @@ void main()
     vec4 blast_tool_halo = make_blast_tool_halo(d, noise);
     vec4 fire_extinguisher_spray = make_fire_extinguisher_spray(auxPosition, d, sprayTime, noise);
     vec4 grip_circle = make_grip_circle(d);
+    vec4 heatblaster_flame = make_heatblaster_flame(heatBlasterDScaled, noiseSampleCoords, noise);
     vec4 pressure_injection_halo = make_pressure_injection_halo(d, float1);
     vec4 wind_sphere = make_wind_sphere(d, float1, float2, float3, float4, noise);
 
@@ -283,6 +369,7 @@ void main()
         blast_tool_halo * is_type(notification_type, BLAST_TOOL_HALO)
         + fire_extinguisher_spray * is_type(notification_type, FIRE_EXTINGUISHER_SPRAY)
         + grip_circle * is_type(notification_type, GRIP_CIRCLE)
+        + heatblaster_flame * is_any_heat_blaster
         + pressure_injection_halo * is_type(notification_type, PRESSURE_INJECTION_HALO)
         + wind_sphere * is_type(notification_type, WIND_SPHERE);
 }

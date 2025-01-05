@@ -46,9 +46,6 @@ NotificationRenderContext::NotificationRenderContext(
     , mPhysicsProbePanelVertexBuffer()
     , mPhysicsProbePanelVBO()
     // Tool notifications
-    , mHeatBlasterFlameVAO()
-    , mHeatBlasterFlameVBO()
-    , mHeatBlasterFlameShaderToRender()
     , mLaserCannonVAO()
     , mLaserCannonVBO()
     , mLaserRayVAO()
@@ -293,36 +290,6 @@ NotificationRenderContext::NotificationRenderContext(
     }
 
     //
-    // Initialize HeatBlaster flame
-    //
-
-    {
-        glGenVertexArrays(1, &tmpGLuint);
-        mHeatBlasterFlameVAO = tmpGLuint;
-
-        glBindVertexArray(*mHeatBlasterFlameVAO);
-        CheckOpenGLError();
-
-        glGenBuffers(1, &tmpGLuint);
-        mHeatBlasterFlameVBO = tmpGLuint;
-
-        // Describe vertex attributes
-        static_assert(sizeof(HeatBlasterFlameVertex) == 4 * sizeof(float));
-        glBindBuffer(GL_ARRAY_BUFFER, *mHeatBlasterFlameVBO);
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::HeatBlasterFlame));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::HeatBlasterFlame), 4, GL_FLOAT, GL_FALSE, sizeof(HeatBlasterFlameVertex), (void *)0);
-        CheckOpenGLError();
-
-        glBindVertexArray(0);
-
-        // Set texture parameters
-        mShaderManager.ActivateProgram<ProgramType::HeatBlasterFlameCool>();
-        mShaderManager.SetTextureParameters<ProgramType::HeatBlasterFlameCool>();
-        mShaderManager.ActivateProgram<ProgramType::HeatBlasterFlameHeat>();
-        mShaderManager.SetTextureParameters<ProgramType::HeatBlasterFlameHeat>();
-    }
-
-    //
     // Initialize Laser Cannon
     //
 
@@ -470,9 +437,6 @@ NotificationRenderContext::NotificationRenderContext(
 
 void NotificationRenderContext::UploadStart()
 {
-    // Reset HeatBlaster flame, it's uploaded as needed
-    mHeatBlasterFlameShaderToRender.reset();
-
     // Reset laser cannon, it's uploaded as needed
     mLaserCannonVertexBuffer.clear();
 
@@ -710,8 +674,6 @@ void NotificationRenderContext::RenderPrepare()
 
     RenderPreparePhysicsProbePanel();
 
-    RenderPrepareHeatBlasterFlame();
-
     RenderPrepareLaserCannon();
 
     RenderPrepareLaserRay();
@@ -747,8 +709,6 @@ void NotificationRenderContext::RenderDraw()
 
     RenderDrawTextureNotifications();
 
-    RenderDrawHeatBlasterFlame();
-
     RenderDrawMultiNotification();
 
     RenderDrawRectSelection();
@@ -769,14 +729,6 @@ void NotificationRenderContext::ApplyViewModelChanges(RenderParameters const & r
 
     ViewModel::ProjectionMatrix globalOrthoMatrix;
     renderParameters.View.CalculateGlobalOrthoMatrix(ZFar, ZNear, globalOrthoMatrix);
-
-    mShaderManager.ActivateProgram<ProgramType::HeatBlasterFlameCool>();
-    mShaderManager.SetProgramParameter<ProgramType::HeatBlasterFlameCool, ProgramParameterType::OrthoMatrix>(
-        globalOrthoMatrix);
-
-    mShaderManager.ActivateProgram<ProgramType::HeatBlasterFlameHeat>();
-    mShaderManager.SetProgramParameter<ProgramType::HeatBlasterFlameHeat, ProgramParameterType::OrthoMatrix>(
-        globalOrthoMatrix);
 
     mShaderManager.ActivateProgram<ProgramType::MultiNotification>();
     mShaderManager.SetProgramParameter<ProgramType::MultiNotification, ProgramParameterType::OrthoMatrix>(
@@ -1156,42 +1108,6 @@ void NotificationRenderContext::RenderDrawPhysicsProbePanel()
 
         assert((mPhysicsProbePanelVertexBuffer.size() % 6) == 0);
         glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mPhysicsProbePanelVertexBuffer.size()));
-
-        glBindVertexArray(0);
-    }
-}
-
-void NotificationRenderContext::RenderPrepareHeatBlasterFlame()
-{
-    if (mHeatBlasterFlameShaderToRender.has_value())
-    {
-        glBindBuffer(GL_ARRAY_BUFFER, *mHeatBlasterFlameVBO);
-
-        glBufferData(GL_ARRAY_BUFFER,
-            sizeof(HeatBlasterFlameVertex) * mHeatBlasterFlameVertexBuffer.size(),
-            mHeatBlasterFlameVertexBuffer.data(),
-            GL_DYNAMIC_DRAW);
-        CheckOpenGLError();
-
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-    }
-}
-
-void NotificationRenderContext::RenderDrawHeatBlasterFlame()
-{
-    if (mHeatBlasterFlameShaderToRender.has_value())
-    {
-        glBindVertexArray(*mHeatBlasterFlameVAO);
-
-        mShaderManager.ActivateProgram(*mHeatBlasterFlameShaderToRender);
-
-        // Set time parameter
-        mShaderManager.SetProgramParameter<ProgramParameterType::Time>(
-            *mHeatBlasterFlameShaderToRender,
-            GameWallClock::GetInstance().ContinuousNowAsFloat());
-
-        assert((mHeatBlasterFlameVertexBuffer.size() % 6) == 0);
-        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mHeatBlasterFlameVertexBuffer.size()));
 
         glBindVertexArray(0);
     }

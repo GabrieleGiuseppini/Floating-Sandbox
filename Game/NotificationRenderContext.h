@@ -232,43 +232,83 @@ public:
 		float const top = centerPosition.y + quadHalfSize;
 		float const bottom = centerPosition.y - quadHalfSize;
 
-		// Triangle 1
-
-		mHeatBlasterFlameVertexBuffer[0].vertexPosition = vec2f(left, bottom);
-		mHeatBlasterFlameVertexBuffer[0].flameSpacePosition = vec2f(-0.5f, -0.5f);
-
-		mHeatBlasterFlameVertexBuffer[1].vertexPosition = vec2f(left, top);
-		mHeatBlasterFlameVertexBuffer[1].flameSpacePosition = vec2f(-0.5f, 0.5f);
-
-		mHeatBlasterFlameVertexBuffer[2].vertexPosition = vec2f(right, bottom);
-		mHeatBlasterFlameVertexBuffer[2].flameSpacePosition = vec2f(0.5f, -0.5f);
-
-		// Triangle 2
-
-		mHeatBlasterFlameVertexBuffer[3].vertexPosition = vec2f(left, top);
-		mHeatBlasterFlameVertexBuffer[3].flameSpacePosition = vec2f(-0.5f, 0.5f);
-
-		mHeatBlasterFlameVertexBuffer[4].vertexPosition = vec2f(right, bottom);
-		mHeatBlasterFlameVertexBuffer[4].flameSpacePosition = vec2f(0.5f, -0.5f);
-
-		mHeatBlasterFlameVertexBuffer[5].vertexPosition = vec2f(right, top);
-		mHeatBlasterFlameVertexBuffer[5].flameSpacePosition = vec2f(0.5f, 0.5f);
-
-		//
-		// Store shader
-		//
-
 		switch (action)
 		{
 			case HeatBlasterActionType::Cool:
 			{
-				mHeatBlasterFlameShaderToRender = Render::ProgramType::HeatBlasterFlameCool;
+				// Triangle 1
+
+				mMultiNotificationVertexBuffer.emplace_back(
+					MultiNotificationVertex::MakeHeatBlasterFlameCool(
+						vec2f(left, bottom),
+						vec2f(-1.0f, -1.0f)));
+
+				mMultiNotificationVertexBuffer.emplace_back(
+					MultiNotificationVertex::MakeHeatBlasterFlameCool(
+						vec2f(left, top),
+						vec2f(-1.0f, 1.0f)));
+
+				mMultiNotificationVertexBuffer.emplace_back(
+					MultiNotificationVertex::MakeHeatBlasterFlameCool(
+						vec2f(right, bottom),
+						vec2f(1.0f, -1.0f)));
+
+				// Triangle 2
+
+				mMultiNotificationVertexBuffer.emplace_back(
+					MultiNotificationVertex::MakeHeatBlasterFlameCool(
+						vec2f(left, top),
+						vec2f(-1.0f, 1.0f)));
+
+				mMultiNotificationVertexBuffer.emplace_back(
+					MultiNotificationVertex::MakeHeatBlasterFlameCool(
+						vec2f(right, bottom),
+						vec2f(1.0f, -1.0f)));
+
+				mMultiNotificationVertexBuffer.emplace_back(
+					MultiNotificationVertex::MakeHeatBlasterFlameCool(
+						vec2f(right, top),
+						vec2f(1.0f, 1.0f)));
+
 				break;
 			}
 
 			case HeatBlasterActionType::Heat:
 			{
-				mHeatBlasterFlameShaderToRender = Render::ProgramType::HeatBlasterFlameHeat;
+				// Triangle 1
+
+				mMultiNotificationVertexBuffer.emplace_back(
+					MultiNotificationVertex::MakeHeatBlasterFlameHeat(
+						vec2f(left, bottom),
+						vec2f(-1.0f, -1.0f)));
+
+				mMultiNotificationVertexBuffer.emplace_back(
+					MultiNotificationVertex::MakeHeatBlasterFlameHeat(
+						vec2f(left, top),
+						vec2f(-1.0f, 1.0f)));
+
+				mMultiNotificationVertexBuffer.emplace_back(
+					MultiNotificationVertex::MakeHeatBlasterFlameHeat(
+						vec2f(right, bottom),
+						vec2f(1.0f, -1.0f)));
+
+				// Triangle 2
+
+				mMultiNotificationVertexBuffer.emplace_back(
+					MultiNotificationVertex::MakeHeatBlasterFlameHeat(
+						vec2f(left, top),
+						vec2f(-1.0f, 1.0f)));
+
+				mMultiNotificationVertexBuffer.emplace_back(
+					MultiNotificationVertex::MakeHeatBlasterFlameHeat(
+						vec2f(right, bottom),
+						vec2f(1.0f, -1.0f)));
+
+				mMultiNotificationVertexBuffer.emplace_back(
+					MultiNotificationVertex::MakeHeatBlasterFlameHeat(
+						vec2f(right, top),
+						vec2f(1.0f, 1.0f)));
+
 				break;
 			}
 		}
@@ -729,9 +769,6 @@ private:
 	inline void RenderPreparePhysicsProbePanel();
 	inline void RenderDrawPhysicsProbePanel();
 
-	inline void RenderPrepareHeatBlasterFlame();
-	inline void RenderDrawHeatBlasterFlame();
-
 	inline void RenderPrepareLaserCannon();
 	inline void RenderDrawLaserCannon();
 
@@ -838,15 +875,6 @@ private:
 		{}
 	};
 
-	struct HeatBlasterFlameVertex
-	{
-		vec2f vertexPosition;
-		vec2f flameSpacePosition;
-
-		HeatBlasterFlameVertex()
-		{}
-	};
-
 	struct LaserCannonVertex
 	{
 		vec2f vertexPositionNDC;
@@ -893,8 +921,10 @@ private:
 			BlastToolHalo = 1,
 			FireExtinguisherSpray = 2,
 			GripCircle = 3,
-			PressureInjectionHalo = 4,
-			WindSphere = 5
+			HeatBlasterFlameCool = 4,
+			HeatBlasterFlameHeat = 5,
+			PressureInjectionHalo = 6,
+			WindSphere = 7
 		};
 		float vertexKind;
 
@@ -941,6 +971,34 @@ private:
 		{
 			return MultiNotificationVertex(
 				static_cast<float>(VertexKindType::GripCircle),
+				vertexPosition,
+				0.0f,
+				virtualSpacePosition,
+				0.0f,
+				0.0f,
+				0.0f);
+		}
+
+		static MultiNotificationVertex MakeHeatBlasterFlameCool(
+			vec2f vertexPosition,
+			vec2f virtualSpacePosition)
+		{
+			return MultiNotificationVertex(
+				static_cast<float>(VertexKindType::HeatBlasterFlameCool),
+				vertexPosition,
+				0.0f,
+				virtualSpacePosition,
+				0.0f,
+				0.0f,
+				0.0f);
+		}
+
+		static MultiNotificationVertex MakeHeatBlasterFlameHeat(
+			vec2f vertexPosition,
+			vec2f virtualSpacePosition)
+		{
+			return MultiNotificationVertex(
+				static_cast<float>(VertexKindType::HeatBlasterFlameHeat),
 				vertexPosition,
 				0.0f,
 				virtualSpacePosition,
@@ -1195,11 +1253,6 @@ private:
 	//
 	// Tool notifications
 	//
-
-	GameOpenGLVAO mHeatBlasterFlameVAO;
-	std::array<HeatBlasterFlameVertex, 6> mHeatBlasterFlameVertexBuffer;
-	GameOpenGLVBO mHeatBlasterFlameVBO;
-	std::optional<Render::ProgramType> mHeatBlasterFlameShaderToRender;
 
 	GameOpenGLVAO mLaserCannonVAO;
 	std::vector<LaserCannonVertex> mLaserCannonVertexBuffer;

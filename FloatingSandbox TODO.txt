@@ -221,15 +221,14 @@
 					+ Simple vertex buffer
 						+ Auto-reset (not sticky)
 					+ UploadGripCircle(...)
-					= Move other notifications
+					+ Move other notifications
 						! Those that are NDC need to get world pos's, for easier vertex shader
 						+ PressureInjectionHalo
 						+ BlastToolHalo
 						+ FireExtinguisherSpray
 						+ WindSphere
-						- HeatBlaster/Heat
-						- HeatBlaster/Cool
-						- TODOHERE: others?
+						+ HeatBlaster/Heat
+						+ HeatBlaster/Cool
 					- Test shader on old Dell
 				+ Ship (...world...controller) interactions:
 					+ SetupMoveGrippedBy(display center, display radius) -> [world pos, world radius]

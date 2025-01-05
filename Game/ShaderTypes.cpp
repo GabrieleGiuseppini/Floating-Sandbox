@@ -31,10 +31,6 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::FishesDetailed;
     else if (lstr == "generic_mipmapped_textures_ndc")
         return ProgramType::GenericMipMappedTexturesNdc;
-    else if (lstr == "heat_blaster_flame_cool")
-        return ProgramType::HeatBlasterFlameCool;
-    else if (lstr == "heat_blaster_flame_heat")
-        return ProgramType::HeatBlasterFlameHeat;
     else if (lstr == "interactive_tool_dashed_lines")
         return ProgramType::InteractiveToolDashedLines;
     else if (lstr == "land_flat_basic")
@@ -227,10 +223,6 @@ std::string ProgramTypeToStr(ProgramType program)
             return "FishesDetailed";
         case ProgramType::GenericMipMappedTexturesNdc:
             return "GenericMipMappedTexturesNdc";
-        case ProgramType::HeatBlasterFlameCool:
-            return "HeatBlasterFlameCool";
-        case ProgramType::HeatBlasterFlameHeat:
-            return "HeatBlasterFlameHeat";
         case ProgramType::InteractiveToolDashedLines:
             return "InteractiveToolDashedLines";
         case ProgramType::LandFlatBasic:
@@ -748,8 +740,6 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::MultiNotification2;
     else if (Utils::CaseInsensitiveEquals(str, "MultiNotification3"))
         return VertexAttributeType::MultiNotification3;
-    else if (Utils::CaseInsensitiveEquals(str, "HeatBlasterFlame"))
-        return VertexAttributeType::HeatBlasterFlame;
     else if (Utils::CaseInsensitiveEquals(str, "LaserRay1"))
         return VertexAttributeType::LaserRay1;
     else if (Utils::CaseInsensitiveEquals(str, "LaserRay2"))

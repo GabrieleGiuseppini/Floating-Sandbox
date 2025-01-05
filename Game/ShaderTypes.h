@@ -26,8 +26,6 @@ enum class ProgramType
     FishesBasic,
     FishesDetailed,
     GenericMipMappedTexturesNdc,
-    HeatBlasterFlameCool,
-    HeatBlasterFlameHeat,
     InteractiveToolDashedLines,
     LandFlatBasic,
     LandFlatDetailed,
@@ -290,8 +288,6 @@ enum class VertexAttributeType : GLuint
     MultiNotification1 = 0,
     MultiNotification2 = 1,
     MultiNotification3 = 2,
-
-    HeatBlasterFlame = 0,
 
     LaserRay1 = 0,
     LaserRay2 = 1,
