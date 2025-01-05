@@ -249,7 +249,7 @@
 						+ Ship:
 							+ Not ephemeral
 							+ Resets ForcesReceptivity to 1.0
-				= Tool:
+				+ Tool:
 					+ State machine for radius-making and two-phase
 						! Become always move (evt. by zero) at UpdateSimulation, not only when there's a trajectory
 							+ i.e. make traj continuous
@@ -294,23 +294,39 @@
 					+ Cursors
 						+ Plain
 						+ With shift
-				= Is velocity even used, now that we zero out integration factor?
+				+ Is velocity even used, now that we zero out integration factor?
 					+ Yes it is - we just multiply by dt there
-					- Note: this is the core of the "land" issue (impact with terrain)
+					! Note: this is the core of the "land" issue (impact with terrain): no impact takes place when velocity is zero
 				+ Test with Pinned
 					+ Make sure pins are enforced
 						+ Move
 						+ Rotate
 				+ Test with explosions
-				- WaterVelocity/Inertia
+				+ WaterVelocity/Inertia
 				+ MainFrame
 					+ Accelerator key: '4'
 					+ Icon
-				- K 024 HB
-				- changelist
+				+ changelist
 
 	- UI Preferences for auto-toggle to Exterior view
 		- changelist
+
+	- Fire Extinguisher Bomb:
+		- Sound for explosion
+		- Ship::StateMachine for the explosion
+		- Gadget
+			- Texture
+			- MainFrame
+		- NPC
+			- StructuralMaterial 
+				- New explosion type enum value
+				- StructuralMaterial for the NPC
+			- Atlas frame
+			- NPC json
+			- Trigger
+				- Combustion
+				- Impact
+				- Any others?
 
 	- AntiGravity TODOHERE: bomb or tool?
 		- Magnetic?
@@ -340,9 +356,17 @@
 
 	- Localization 2:
 		- IT
+			- mo
+			- npcs string table (fire ext. bomb)
 		- ES
+			- mo
+			- npcs string table (fire ext. bomb)
 		- RU
+			- mo
+			- npcs string table (fire ext. bomb)
 		- UK
+			- mo
+			- npcs string table (fire ext. bomb)
 
 
 	- Do a pass for ships

@@ -238,6 +238,7 @@ void Ship::MoveGrippedBy(
         (gripRadius * (1.0f + GameParameters::GripToolRadiusTransitionWidthFraction / 2.0f))
         * (gripRadius * (1.0f + GameParameters::GripToolRadiusTransitionWidthFraction / 2.0f));
 
+    // Water velocity is actual movement
     vec2f const impartedWaterVelocity = moveOffset / GameParameters::SimulationStepTimeDuration<float>;
 
     vec2f * const restrict positionBuffer = mPoints.GetPositionBufferAsVec2();

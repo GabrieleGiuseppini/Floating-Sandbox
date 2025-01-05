@@ -403,7 +403,7 @@ MainFrame::MainFrame(
             }
 
             {
-                auto menuItem = ADD_TOOL_MENUITEM(_("Move Gripped"), wxS("\t4"), "move_gripped_cursor_up", ToolType::MoveGripped, false);
+                auto menuItem = ADD_TOOL_MENUITEM(_("Move/Rotate Gripped"), wxS("\t4"), "move_gripped_cursor_up", ToolType::MoveGripped, false);
                 ADD_PLAIN_ACCELERATOR_KEY('4', menuItem);
             }
 

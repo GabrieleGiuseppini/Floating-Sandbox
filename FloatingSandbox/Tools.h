@@ -868,7 +868,8 @@ public:
                 // We are in the midst of a trajectory
                 //
 
-                // Impart last inertia == next quantum
+                // Impart last move == next quantum
+                // It's also inertial now
 
                 vec2f const fractionalOffset =
                     mMovingState->CurrentTrajectory->CalculateNextPosition()
@@ -881,16 +882,16 @@ public:
                     mGameController.RotateGrippedBy(
                         mMovingState->WorldGripCenter,
                         mMovingState->WorldGripRadius,
-                        0,
-                        integralOffset.height);
+                        integralOffset.height,
+                        integralOffset.height); // Finally we impart inertia
                 }
                 else
                 {
                     mGameController.MoveGrippedBy(
                         mMovingState->WorldGripCenter,
                         mMovingState->WorldGripRadius,
-                        DisplayLogicalSize(0, 0),
-                        integralOffset);
+                        integralOffset,
+                        integralOffset); // Finally we impart inertia
                 }
 
                 // Stop trajectory
