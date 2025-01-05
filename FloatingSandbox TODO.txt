@@ -186,7 +186,7 @@
 
 	+ Ship engines should not work when not underwater (with setting)
 
-	= Move Gripped tool: only part of the ship is "taken" and moved, rest stays like now and subject to physics
+	+ Move Gripped tool: only part of the ship is "taken" and moved, rest stays like now and subject to physics
 		+ Test first if physics ok
 			+ Test with setting to 0 "WorldForcesReception" of particles in grip - smoothing to 1 on border
 				+ Use it at all forces - except spring
@@ -195,7 +195,7 @@
 						+ ApplyWorldSurfaceForces
 					+ ApplyStaticPressureForces
 				+ Reset to 1.0 at each Update iteration end
-		= If thru:
+		+ If thru:
 			! Spec:
 				! Points:
 					! No WorldForcesReceptivity, but use of IntegrationFactorTimeCoefficient
@@ -204,7 +204,7 @@
 					! Second mouse down starts move, release ends whole session
 				! Rendering: notification layer is first to use "uber" shader, with "uber" vertex buffers
 					! API: UploadGripCircle
-			= Impl:
+			+ Impl:
 				+ Points:
 					+ WorldForcesReceptivity:
 						+ Nuke from Points
@@ -213,7 +213,7 @@
 					+ SetForcesReceptivity
 						! Sticky, until NumMechIterations changes or FrozenCoefficient changes
 							+ Rename mFrozenCoefficientBuffer as IsPinnedBuffer
-				= NotificationLayer: "uber notifications" shader, using uber vertex buffers
+				+ NotificationLayer: "uber notifications" shader, using uber vertex buffers
 					+ Vertex attributes struct contains union and type
 						X See if can use int type as varying
 						+ Struct has static factory methods
@@ -229,7 +229,7 @@
 						+ WindSphere
 						+ HeatBlaster/Heat
 						+ HeatBlaster/Cool
-					- Test shader on old Dell
+					+ Test shader on old Dell
 				+ Ship (...world...controller) interactions:
 					+ SetupMoveGrippedBy(display center, display radius) -> [world pos, world radius]
 						! Doesn't touch World
@@ -314,6 +314,15 @@
 	- Fire Extinguisher Bomb:
 		- Sound for explosion
 		- Ship::StateMachine for the explosion
+			- Does the physics on the ship
+			- Calls ParentWorld::OnFireExtinguishBlast(mId, ...)
+				- World::OnFireExtinguishBlast(shipId, ...):
+					- Applies onto Npcs of ship
+					- Ocean + fish disturb
+						- Make World private helper shared with OnBlast
+			- Uploads to ShipRenderContext
+		- ShipRenderContext: gfx, much like Explosions
+			- TODO
 		- Gadget
 			- Texture
 			- MainFrame
