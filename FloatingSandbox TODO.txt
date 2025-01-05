@@ -301,7 +301,7 @@
 					+ Make sure pins are enforced
 						+ Move
 						+ Rotate
-				- Test with explosions
+				+ Test with explosions
 				- WaterVelocity/Inertia
 				+ MainFrame
 					+ Accelerator key: '4'
