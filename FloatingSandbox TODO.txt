@@ -228,6 +228,7 @@
 						- HeatBlaster/Heat
 						- HeatBlaster/Cool
 						- TODOHERE: others?
+					- Test shader on old Dell
 				= Ship (...world...controller) interactions:
 					+ SetupMoveGrippedBy(display center, display radius) -> [world pos, world radius]
 						! Doesn't touch World
@@ -290,13 +291,20 @@
 						+ Augmented radius
 						+ It seems imparting velocity is beneficial, though there's runaway issue
 							+ Smoothing of quantities
-					+ Rotate
+					= Rotate
 						+ Should not require any additional state, center is grip's center and angle is new_traj_pos.y - cur_traj_pos.y
-					- Cursors
-						- With shift
-				- MainFrame
-					- Accelerator key
-					- Icon
+						- Are we sure we want to retain old position (even if *(1-scale))? Try without old position
+					+ Cursors
+						+ Plain
+						+ With shift
+					= Is velocity even used, now that we zero out integration factor?
+						+ Yes it is - we just multiply by dt there
+					- Test with Pinned
+						- Make sure pins are enforced?
+					- Test with explosions
+				= MainFrame
+					= Accelerator key: '4'
+					= Icon
 				- K 024 HB
 				- changelist
 	- UI Preferences for auto-toggle to Exterior view

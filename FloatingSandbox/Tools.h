@@ -925,16 +925,29 @@ private:
 
     void SetCursor(bool isEngaged, bool isShift)
     {
-        // TODOHERE
-        (void)isShift;
-
         if (!isEngaged)
         {
-            mToolCursorManager.SetToolCursor(mUpCursorImage);
+            // Up
+            if (isShift)
+            {
+                mToolCursorManager.SetToolCursor(mRotateUpCursorImage);
+            }
+            else
+            {
+                mToolCursorManager.SetToolCursor(mMoveUpCursorImage);
+            }
         }
         else
         {
-            mToolCursorManager.SetToolCursor(mDownCursorImage);
+            // Down
+            if (isShift)
+            {
+                mToolCursorManager.SetToolCursor(mRotateDownCursorImage);
+            }
+            else
+            {
+                mToolCursorManager.SetToolCursor(mMoveDownCursorImage);
+            }
         }
     }
 
@@ -989,8 +1002,10 @@ private:
     std::optional<MovingState> mMovingState;
 
     // The cursors
-    wxImage const mUpCursorImage;
-    wxImage const mDownCursorImage;
+    wxImage const mMoveUpCursorImage;
+    wxImage const mMoveDownCursorImage;
+    wxImage const mRotateUpCursorImage;
+    wxImage const mRotateDownCursorImage;
 };
 
 class PickAndPullTool final : public Tool

@@ -403,8 +403,8 @@ MainFrame::MainFrame(
             }
 
             {
-                // TODO: icon
-                ADD_TOOL_MENUITEM(_("Move Gripped"), wxS(""), "move_all_cursor_up", ToolType::MoveGripped, false);
+                auto menuItem = ADD_TOOL_MENUITEM(_("Move Gripped"), wxS("\t4"), "move_gripped_cursor_up", ToolType::MoveGripped, false);
+                ADD_PLAIN_ACCELERATOR_KEY('4', menuItem);
             }
 
             {
