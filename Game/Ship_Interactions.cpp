@@ -245,6 +245,7 @@ void Ship::MoveGrippedBy(
     vec2f * const restrict waterVelocityBuffer = mPoints.GetWaterVelocityBufferAsVec2();
     vec2f * const restrict staticForceBuffer = mPoints.GetStaticForceBufferAsVec2();
     vec2f * const restrict dynamicForceBuffer = mPoints.GetDynamicForceBufferAsVec2();
+    float const * const restrict isPinnedBuffer = mPoints.GetIsPinnedBufferAsFloat();
 
     for (auto const p : mPoints.RawShipPoints())
     {
@@ -253,10 +254,13 @@ void Ship::MoveGrippedBy(
         if (squarePointRadius <= squareAugmentedGripRadius)
         {
             // Scale based on distance (1.0 at center, 0.0 at border)
-            float const scale = 1.0f - LinearStep(
-                1.0f - GameParameters::GripToolRadiusTransitionWidthFraction,
-                1.0f,
-                std::sqrtf(squarePointRadius / squareAugmentedGripRadius));
+            float const scale = (
+                1.0f - LinearStep(
+                    1.0f - GameParameters::GripToolRadiusTransitionWidthFraction,
+                    1.0f,
+                    std::sqrtf(squarePointRadius / squareAugmentedGripRadius))
+                )
+                * isPinnedBuffer[p]; // Nothing if pinned
 
             positionBuffer[p] += moveOffset * scale;
             velocityBuffer[p] = velocityBuffer[p] * (1.0f - scale) + inertialVelocity * scale;
@@ -300,6 +304,7 @@ void Ship::RotateGrippedBy(
     vec2f * const restrict waterVelocityBuffer = mPoints.GetWaterVelocityBufferAsVec2();
     vec2f * const restrict staticForceBuffer = mPoints.GetStaticForceBufferAsVec2();
     vec2f * const restrict dynamicForceBuffer = mPoints.GetDynamicForceBufferAsVec2();
+    float const * const restrict isPinnedBuffer = mPoints.GetIsPinnedBufferAsFloat();
 
     for (auto const p : mPoints.RawShipPoints())
     {
@@ -308,10 +313,13 @@ void Ship::RotateGrippedBy(
         if (squarePointRadius <= squareAugmentedGripRadius)
         {
             // Scale based on distance (1.0 at center, 0.0 at border)
-            float const scale = 1.0f - LinearStep(
-                1.0f - GameParameters::GripToolRadiusTransitionWidthFraction,
-                1.0f,
-                std::sqrtf(squarePointRadius / squareAugmentedGripRadius));
+            float const scale = (
+                1.0f - LinearStep(
+                    1.0f - GameParameters::GripToolRadiusTransitionWidthFraction,
+                    1.0f,
+                    std::sqrtf(squarePointRadius / squareAugmentedGripRadius))
+                )
+                * isPinnedBuffer[p]; // Nothing if pinned
 
             vec2f const centeredPos = positionBuffer[p] - gripCenter;
             vec2f const newPosition = vec2f(centeredPos.dot(rotX), centeredPos.dot(rotY)) + gripCenter;

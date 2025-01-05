@@ -1282,6 +1282,11 @@ public:
         return (mPinningCoefficientBuffer[pointElementIndex] == 0.0f);
     }
 
+    float const * GetIsPinnedBufferAsFloat() const
+    {
+        return mPinningCoefficientBuffer.data();
+    }
+
     void Pin(ElementIndex pointElementIndex)
     {
         assert(1.0f == mPinningCoefficientBuffer[pointElementIndex]);

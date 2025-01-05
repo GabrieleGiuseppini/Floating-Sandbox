@@ -183,7 +183,9 @@
 				+ Then remove diagnostic LogMessage's
 			X See if then NPC actions need to be damped
 				X And see if damping can be done independently from OnShip
+
 	+ Ship engines should not work when not underwater (with setting)
+
 	= Move Gripped tool: only part of the ship is "taken" and moved, rest stays like now and subject to physics
 		+ Test first if physics ok
 			+ Test with setting to 0 "WorldForcesReception" of particles in grip - smoothing to 1 on border
@@ -212,10 +214,10 @@
 						! Sticky, until NumMechIterations changes or FrozenCoefficient changes
 							+ Rename mFrozenCoefficientBuffer as IsPinnedBuffer
 				= NotificationLayer: "uber notifications" shader, using uber vertex buffers
-					= Vertex attributes struct contains union and type
+					+ Vertex attributes struct contains union and type
 						X See if can use int type as varying
 						+ Struct has static factory methods
-						- Check assembly
+						+ Check assembly
 					+ Simple vertex buffer
 						+ Auto-reset (not sticky)
 					+ UploadGripCircle(...)
@@ -229,24 +231,20 @@
 						- HeatBlaster/Cool
 						- TODOHERE: others?
 					- Test shader on old Dell
-				= Ship (...world...controller) interactions:
+				+ Ship (...world...controller) interactions:
 					+ SetupMoveGrippedBy(display center, display radius) -> [world pos, world radius]
 						! Doesn't touch World
 						+ Controller: Notification
-					= MoveGrippedBy
+					+ MoveGrippedBy
 						+ World:
 							+ No NPC's
-						= Ship:
+						+ Ship:
 							+ Not ephemeral
 							+ Sets all points' ForcesReceptivity (including 1.0)
-							- Finalize scaling
-								- See "frozen particles" problem
-									- Try with freeze radius smaller than move radius
-							- Impact with terrain not handled?
 							+ See if TrimWorldBounds really needed
 								+ YES, needed (promise that next loop begins in-bounds)
 						+ Controller: Notification
-					- RotateGrippedBy
+					+ RotateGrippedBy
 					+ EndMoveGrippedBy
 						+ Ship:
 							+ Not ephemeral
@@ -291,22 +289,26 @@
 						+ Augmented radius
 						+ It seems imparting velocity is beneficial, though there's runaway issue
 							+ Smoothing of quantities
-					= Rotate
+					+ Rotate
 						+ Should not require any additional state, center is grip's center and angle is new_traj_pos.y - cur_traj_pos.y
-						- Are we sure we want to retain old position (even if *(1-scale))? Try without old position
 					+ Cursors
 						+ Plain
 						+ With shift
-					= Is velocity even used, now that we zero out integration factor?
-						+ Yes it is - we just multiply by dt there
-					- Test with Pinned
-						- Make sure pins are enforced?
-					- Test with explosions
-				= MainFrame
-					= Accelerator key: '4'
-					= Icon
+				= Is velocity even used, now that we zero out integration factor?
+					+ Yes it is - we just multiply by dt there
+					- Note: this is the core of the "land" issue (impact with terrain)
+				+ Test with Pinned
+					+ Make sure pins are enforced
+						+ Move
+						+ Rotate
+				- Test with explosions
+				- WaterVelocity/Inertia
+				+ MainFrame
+					+ Accelerator key: '4'
+					+ Icon
 				- K 024 HB
 				- changelist
+
 	- UI Preferences for auto-toggle to Exterior view
 		- changelist
 
@@ -315,7 +317,7 @@
 
 	- See DKUZ bug
 
-	= Localization:
+	= Localization 1:
 		= 1
 		    "Diesel Can"
 		    "Gunpowder Keg"
@@ -335,6 +337,12 @@
 			- npcs
 		= 2
 		    - New SettingsDialog things (apply physics tool on ships; engines work above water)
+
+	- Localization 2:
+		- IT
+		- ES
+		- RU
+		- UK
 
 
 	- Do a pass for ships
