@@ -311,32 +311,67 @@
 
 	+ merge back into master
 
-	- Fire Extinguisher Bomb:
-		- Sound for explosion
-		- Ship::StateMachine for the explosion
-			- Does the physics on the ship
-			- Calls ParentWorld::OnFireExtinguishBlast(mId, ...)
-				- World::OnFireExtinguishBlast(shipId, ...):
-					- Applies onto Npcs of ship
-					- Ocean + fish disturb
-						- Make World private helper shared with OnBlast
-			- Uploads to ShipRenderContext
-		- ShipRenderContext: gfx, much like Explosions
-			- TODO
+	- Fire Extinguishing Bomb:		
+		! Implemented as new ExplosionType; re-uses ship state machine
+			! Blast radius: very short
+			! Heat radius: very large
+		! Both gadget and NPC
+
+		- Name: Fire-Extinguishing Bomb
+
+		- New GadgetType enum value - "FireExtinguishingBomb"
+		- New ExplosionType enum value - "FireExtinguishing"
+
+		- Sound (as BombType)
+			! Played by SoundsController::OnBombExplosion w/ new gadget bomb type
+			! Above- and Under-water
+			- Sound files
+				- Above
+				- Underwater
+			- SoundController mechanics
+		- Ship Explosion state machine
+			- Physics, with if's on boolean flags calculated as function of ExplosionType
+				- Extinguishing happens in heat radius, together with heat subtraction (heat value from 
+			- Give type to World::OnBlast
+			+ RenderUpload
+		- ShipRenderContext: uploaded via existing UploadExplosion
+			- Switches in UploadExplosion on ExplosionType
+			- Explosions shader with variator (much like yellowing)
+				- option 1: code-ish from fire extinguisher
+					- Very transparent
+					- Shader flattens vertically (so looks like a "disc")
+				- option 2: b&w
 		- Gadget
+			! Static state & rendering
+				! One single texture
+				! Explodes immediately @ detonate (and @ other trigers)
+			- GameParameter for Heat radius, just like for blast
+				- Use at all gadgets that call StartExplosion
+			- Explosion: render radius should equal heat radius (i.e. extinguish radius), so calc RenderOffset so that BlastForceRadius+RenderOffset equals HeatOffset
+			- TODO: spec state machine
 			- Texture
+				- Static
+				- Fire extinguisher tank, rolled as a sphere
 			- MainFrame
-		- NPC
+			- Tool -> IGameController
+		- World::OnBlast:
+			- Takes ExplosionType
+				- Passes to Npcs
+		- Npcs::ApplyBlast:
+			- Takes ExplosionType
+			- Physics, with if's on boolean flags calculated as function of ExplosionType
+		- New furniture NPC
+			- TODO: fire extinguisher, or fire extinguisher bomb?
 			- StructuralMaterial 
-				- New explosion type enum value
-				- StructuralMaterial for the NPC
-			- Atlas frame
+				- StructuralMaterial for the NPC, w/new explosion type and appropriate 4x blast values
+			- Atlas frame (TimCan)
 			- NPC json
 			- Trigger
-				- Combustion
 				- Impact
+				- Combustion?
 				- Any others?
-
+				- When gadgets detonate?
+	
 	- AntiGravity TODOHERE: bomb or tool?
 		- Magnetic?
 

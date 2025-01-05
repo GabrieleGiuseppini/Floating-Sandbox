@@ -35,7 +35,7 @@ public:
         float blastForceRadius,
         float blastHeat,
         float blastHeatRadius,
-        float renderRadiusOffset,
+        float renderRadiusOffset, // On top of blastForceRadius
         ExplosionType type)
         : StateMachine(StateMachineType::Explosion)
         , StartSimulationTime(startSimulationTime)
