@@ -136,7 +136,7 @@ vec4 make_fire_extinguisher_spray(
 
     // Straighten the spray at the center and make full turbulence outside,
     // scaling it at the same time
-    variationR *= 0.35 * smoothstep(-0.40, 0.4, ra.x);
+    variationR *= 0.35 * smoothstep(-0.4, 0.4, ra.x);
 
     float radius = ra.x + variationR;
 

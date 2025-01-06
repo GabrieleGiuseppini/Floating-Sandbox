@@ -185,7 +185,7 @@ void FireExtinguishingBombGadget::Detonate(
             blastForceRadius,
             blastHeat,
             blastHeatRadius,
-            blastHeatRadius - blastForceRadius, // Render radius to equal heat (extinguishing) radius
+            blastHeatRadius - blastForceRadius + 3.0f, // Render radius to equal heat (extinguishing) radius, plus magic offset
             ExplosionType::FireExtinguishing,
             gameParameters);
 

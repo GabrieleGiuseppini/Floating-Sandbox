@@ -196,14 +196,15 @@ void main()
 
         // Straighten the spray at the center and make full turbulence outside,
         // scaling it at the same time
-        variationR *= 0.35 * smoothstep(-0.40, 0.4, ra.x);
+        variationR *= 0.35 * smoothstep(-0.4, 0.4, ra.x);
 
         float radius = ra.x + variationR;
 
         // Focus (compress dynamics)
         float alpha = 1.0 - smoothstep(0.2, 1.4, radius);
 
-        fire_extinguishing_color = vec4(alpha, alpha, alpha, alpha * c.a * c.r);
+        //fire_extinguishing_color = vec4(alpha, alpha, alpha, alpha * c.a * c.r * c.g);
+        fire_extinguishing_color = vec4(alpha, alpha, alpha, alpha * c.a * c.g);
     }
 
 
