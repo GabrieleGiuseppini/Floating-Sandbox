@@ -63,6 +63,19 @@
 },
 
 {
+	"groupName": "FireExtinguishingBomb",
+	"hasOwnAmbientLight": false,
+	"frames":[
+		{	
+			"worldWidth": 12.0,
+			"worldHeight": 12.0,
+			"anchorOffsetX": 24,
+			"filenamePattern": "fire_extinguishing_bomb_\\d+"
+		}
+	]
+},
+
+{
 	"groupName": "ImpactBomb",
 	"hasOwnAmbientLight": false,
 	"frames":[

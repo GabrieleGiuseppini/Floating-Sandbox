@@ -644,6 +644,9 @@ public:
             case ExplosionType::FireExtinguishing:
             {
                 // TODOHERE
+                effectiveHalfQuadSize = halfQuadSize / (220.0f / 256.0f);
+                explosionIndex = 3.0f;
+                yellowing = 0.0f;
                 break;
             }
 

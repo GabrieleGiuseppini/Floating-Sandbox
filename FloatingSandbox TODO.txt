@@ -328,9 +328,11 @@
 				+ What state machine do we need, if any?
 				= Explosion: render radius should equal heat radius (i.e. extinguish radius), so calc RenderOffset so that BlastForceRadius+RenderOffset equals HeatRadius
 					= Other values are massaged forms of GameParameters::BombXYZ params
-			- Texture
-				= Fire extinguisher tank, rolled as a sphere
-				- Verify doesn't grow atlas
+			+ Texture
+				+ Fire extinguisher tank, rolled as a sphere
+				+ Verify doesn't grow atlas
+					! old: 4096x2048
+					+ new: 4096x2048
 			= MainFrame
 				= Just toggle menu ("Toggle RC Fire-Extinguishing Bomb") - detonation done via Detonate RC Bombs
 				= Tool
@@ -346,6 +348,7 @@
 			+ RenderUpload
 		- ShipRenderContext: uploaded via existing UploadExplosion
 			- Switches in UploadExplosion on ExplosionType
+				- Or simply explosion type?
 			- Explosions shader with variator (much like yellowing)
 				- option 1: code-ish from fire extinguisher
 					- Very transparent
