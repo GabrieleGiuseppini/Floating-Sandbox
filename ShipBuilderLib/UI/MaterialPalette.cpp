@@ -669,6 +669,12 @@ void MaterialPalette<TLayer>::PopulateMaterialProperties(TMaterial const * mater
                     mStructuralMaterialPropertyGrids[1]->SetPropertyValue("CombustionType", _("Explosion"));
                     break;
                 }
+
+                case StructuralMaterial::MaterialCombustionType::FireExtinguishing:
+                {
+                    mStructuralMaterialPropertyGrids[1]->SetPropertyValue("CombustionType", _("Fire-Extinguishing"));
+                    break;
+                }
             }
 
             mStructuralMaterialPropertyGrids[1]->SetPropertyValue("IgnitionTemperature", material->IgnitionTemperature);

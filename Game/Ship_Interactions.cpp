@@ -625,6 +625,7 @@ bool Ship::SawThrough(
                     springIndex,
                     Springs::DestroyOptions::FireBreakEvent
                     | Springs::DestroyOptions::DestroyOnlyConnectedTriangle,
+                    currentSimulationTime,
                     gameParameters,
                     mPoints);
 
@@ -830,6 +831,7 @@ bool Ship::ApplyLaserCannonThrough(
     vec2f const & startPos,
     vec2f const & endPos,
     float strength,
+    float currentSimulationTime,
     GameParameters const & gameParameters)
 {
     //
@@ -857,6 +859,7 @@ bool Ship::ApplyLaserCannonThrough(
                     springIndex,
                     Springs::DestroyOptions::DoNotFireBreakEvent
                     | Springs::DestroyOptions::DestroyOnlyConnectedTriangle,
+                    currentSimulationTime,
                     gameParameters,
                     mPoints);
 
@@ -1179,6 +1182,15 @@ bool Ship::ToggleAntiMatterBombAt(
         gameParameters);
 }
 
+bool Ship::ToggleFireExtinguishingBombAt(
+    vec2f const & targetPos,
+    GameParameters const & gameParameters)
+{
+    return mGadgets.ToggleFireExtinguishingBombAt(
+        targetPos,
+        gameParameters);
+}
+
 bool Ship::ToggleImpactBombAt(
     vec2f const & targetPos,
     GameParameters const & gameParameters)
@@ -1220,9 +1232,11 @@ bool Ship::ToggleTimerBombAt(
         gameParameters);
 }
 
-void Ship::DetonateRCBombs()
+void Ship::DetonateRCBombs(
+    float currentSimulationTime,
+    GameParameters const & gameParameters)
 {
-    mGadgets.DetonateRCBombs();
+    mGadgets.DetonateRCBombs(currentSimulationTime, gameParameters);
 }
 
 void Ship::DetonateAntiMatterBombs()

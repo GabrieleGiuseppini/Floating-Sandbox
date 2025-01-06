@@ -100,6 +100,7 @@ void Springs::Add(
 void Springs::Destroy(
     ElementIndex springElementIndex,
     DestroyOptions destroyOptions,
+    float currentSimulationTime,
     GameParameters const & gameParameters,
     Points const & points)
 {
@@ -110,6 +111,7 @@ void Springs::Destroy(
     mShipPhysicsHandler->HandleSpringDestroy(
         springElementIndex,
         !!(destroyOptions & Springs::DestroyOptions::DestroyAllTriangles),
+        currentSimulationTime,
         gameParameters);
 
     // Fire spring break event, unless told otherwise
@@ -239,17 +241,18 @@ void Springs::UploadStressedSpringElements(
 }
 
 void Springs::UpdateForStrains(
+    float currentSimulationTime,
     GameParameters const & gameParameters,
     Points & points,
     StressRenderModeType stressRenderMode)
 {
     if (stressRenderMode == StressRenderModeType::None)
     {
-        InternalUpdateForStrains<false>(gameParameters, points);
+        InternalUpdateForStrains<false>(currentSimulationTime, gameParameters, points);
     }
     else
     {
-        InternalUpdateForStrains<true>(gameParameters, points);
+        InternalUpdateForStrains<true>(currentSimulationTime, gameParameters, points);
     }
 }
 
@@ -257,6 +260,7 @@ void Springs::UpdateForStrains(
 
 template<bool DoUpdateStress>
 void Springs::InternalUpdateForStrains(
+    float currentSimulationTime,
     GameParameters const & gameParameters,
     Points & points)
 {
@@ -287,6 +291,7 @@ void Springs::InternalUpdateForStrains(
                     s,
                     DestroyOptions::FireBreakEvent // Notify Break
                     | DestroyOptions::DestroyAllTriangles,
+                    currentSimulationTime,
                     gameParameters,
                     points);
             }
@@ -325,7 +330,7 @@ void Springs::InternalUpdateForStrains(
                 if constexpr (DoUpdateStress)
                 {
                     float const stress = strain / breakingElongation; // Between -1.0 and +1.0
-                    
+
                     if (std::abs(stress) > std::abs(points.GetStress(GetEndpointAIndex(s))))
                     {
                         points.SetStress(

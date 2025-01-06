@@ -163,6 +163,8 @@ StructuralMaterial::MaterialCombustionType StructuralMaterial::StrToMaterialComb
         return MaterialCombustionType::Combustion;
     else if (Utils::CaseInsensitiveEquals(str, "Explosion"))
         return MaterialCombustionType::Explosion;
+    else if (Utils::CaseInsensitiveEquals(str, "FireExtinguishingExplosion"))
+        return MaterialCombustionType::FireExtinguishingExplosion;
     else
         throw GameException("Unrecognized MaterialCombustionType \"" + str + "\"");
 }

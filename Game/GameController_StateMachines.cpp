@@ -252,7 +252,6 @@ bool GameController::UpdateThanosSnapStateMachine(
             radius,
             leftOuterEdgeX,
             leftInnerEdgeX,
-            currentSimulationTime,
             stateMachine.IsSparseMode,
             mGameParameters);
 
@@ -268,7 +267,6 @@ bool GameController::UpdateThanosSnapStateMachine(
             radius,
             rightInnerEdgeX,
             rightOuterEdgeX,
-            currentSimulationTime,
             stateMachine.IsSparseMode,
             mGameParameters);
 

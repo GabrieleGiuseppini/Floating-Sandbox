@@ -1231,6 +1231,7 @@ enum class FrontierType
 enum class GadgetType
 {
     AntiMatterBomb,
+    FireExtinguishingBomb,
     ImpactBomb,
     PhysicsProbe,
     RCBomb,
@@ -1244,6 +1245,7 @@ enum class ExplosionType
 {
     Combustion,
     Deflagration,
+    FireExtinguishing,
     Sodium
 };
 

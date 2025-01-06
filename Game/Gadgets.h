@@ -58,17 +58,35 @@ public:
         Storm::Parameters const & stormParameters,
         GameParameters const & gameParameters);
 
-    void OnPointDetached(ElementIndex pointElementIndex);
+    void OnPointDetached(
+        ElementIndex pointElementIndex,
+        float currentSimulationTime,
+        GameParameters const & gameParameters);
 
-    void OnSpringDestroyed(ElementIndex springElementIndex);
+    void OnSpringDestroyed(
+        ElementIndex springElementIndex,
+        float currentSimulationTime,
+        GameParameters const & gameParameters);
 
-    void OnElectricSpark(ElementIndex pointElementIndex);
+    void OnElectricSpark(
+        ElementIndex pointElementIndex,
+        float currentSimulationTime,
+        GameParameters const & gameParameters);
 
     bool ToggleAntiMatterBombAt(
         vec2f const & targetPos,
         GameParameters const & gameParameters)
     {
         return ToggleGadgetAt<AntiMatterBombGadget>(
+            targetPos,
+            gameParameters);
+    }
+
+    bool ToggleFireExtinguishingBombAt(
+        vec2f const & targetPos,
+        GameParameters const & gameParameters)
+    {
+        return ToggleGadgetAt<FireExtinguishingBombGadget>(
             targetPos,
             gameParameters);
     }
@@ -106,7 +124,9 @@ public:
             gameParameters);
     }
 
-    void DetonateRCBombs();
+    void DetonateRCBombs(
+        float currentSimulationTime,
+        GameParameters const & gameParameters);
 
     void DetonateAntiMatterBombs();
 

@@ -93,7 +93,10 @@ void Gadgets::Update(
     }
 }
 
-void Gadgets::OnPointDetached(ElementIndex pointElementIndex)
+void Gadgets::OnPointDetached(
+    ElementIndex pointElementIndex,
+    float currentSimulationTime,
+    GameParameters const & gameParameters)
 {
     float constexpr SquareNeighborhoodRadius = NeighborhoodRadius * NeighborhoodRadius;
 
@@ -110,14 +113,17 @@ void Gadgets::OnPointDetached(ElementIndex pointElementIndex)
         if (squareGadgetDistance < SquareNeighborhoodRadius)
         {
             // Tell the gadget that its neighborhood has been disturbed
-            gadget->OnNeighborhoodDisturbed();
+            gadget->OnNeighborhoodDisturbed(currentSimulationTime, gameParameters);
         }
     }
 
     // No need to check Physics probe gadget
 }
 
-void Gadgets::OnSpringDestroyed(ElementIndex springElementIndex)
+void Gadgets::OnSpringDestroyed(
+    ElementIndex springElementIndex,
+    float currentSimulationTime,
+    GameParameters const & gameParameters)
 {
     float constexpr SquareNeighborhoodRadius = NeighborhoodRadius * NeighborhoodRadius;
 
@@ -142,7 +148,7 @@ void Gadgets::OnSpringDestroyed(ElementIndex springElementIndex)
         if (squareGadgetDistance < SquareNeighborhoodRadius)
         {
             // Tell the gadget that its neighborhood has been disturbed
-            gadget->OnNeighborhoodDisturbed();
+            gadget->OnNeighborhoodDisturbed(currentSimulationTime, gameParameters);
         }
     }
 
@@ -162,7 +168,10 @@ void Gadgets::OnSpringDestroyed(ElementIndex springElementIndex)
     }
 }
 
-void Gadgets::OnElectricSpark(ElementIndex pointElementIndex)
+void Gadgets::OnElectricSpark(
+    ElementIndex pointElementIndex,
+    float currentSimulationTime,
+    GameParameters const & gameParameters)
 {
     //
     // Gadgets
@@ -173,7 +182,7 @@ void Gadgets::OnElectricSpark(ElementIndex pointElementIndex)
         if (gadget->GetPointIndex() == pointElementIndex)
         {
             // Tell the gadget that its neighborhood has been disturbed
-            gadget->OnNeighborhoodDisturbed();
+            gadget->OnNeighborhoodDisturbed(currentSimulationTime, gameParameters);
         }
     }
 
@@ -302,14 +311,21 @@ void Gadgets::RemovePhysicsProbe()
     }
 }
 
-void Gadgets::DetonateRCBombs()
+void Gadgets::DetonateRCBombs(
+    float currentSimulationTime,
+    GameParameters const & gameParameters)
 {
     for (auto & gadget : mCurrentGadgets)
     {
-        if (GadgetType::RCBomb == gadget->GetType())
+        if (GadgetType::FireExtinguishingBomb == gadget->GetType())
+        {
+            FireExtinguishingBombGadget * feb = dynamic_cast<FireExtinguishingBombGadget *>(gadget.get());
+            feb->Detonate(currentSimulationTime, gameParameters);
+        }
+        else if (GadgetType::RCBomb == gadget->GetType())
         {
             RCBombGadget * rcb = dynamic_cast<RCBombGadget *>(gadget.get());
-            rcb->Detonate();
+            rcb->Detonate(currentSimulationTime, gameParameters);
         }
     }
 }

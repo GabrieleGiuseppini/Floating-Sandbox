@@ -4090,6 +4090,16 @@ void Npcs::TriggerExplosion(
             break;
         }
 
+        case ExplosionType::FireExtinguishing:
+        {
+            mGameEventHandler->OnBombExplosion(
+                GadgetType::FireExtinguishingBomb, // Arbitrarily
+                isUnderwater,
+                1);
+
+            break;
+        }
+
         case ExplosionType::Sodium:
         {
             mGameEventHandler->OnWaterReactionExplosion(

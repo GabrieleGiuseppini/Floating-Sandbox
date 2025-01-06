@@ -61,7 +61,9 @@ public:
         }
     }
 
-    virtual void OnNeighborhoodDisturbed() override;
+    virtual void OnNeighborhoodDisturbed(
+        float currentSimulationTime,
+        GameParameters const & gameParameters) override;
 
     virtual void Upload(
         ShipId shipId,

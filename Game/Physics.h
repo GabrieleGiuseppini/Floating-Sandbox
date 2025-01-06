@@ -52,6 +52,7 @@ namespace Physics
 
 #include "Gadget.h"
 #include "AntiMatterBombGadget.h"
+#include "FireExtinguishingBombGadget.h"
 #include "ImpactBombGadget.h"
 #include "PhysicsProbeGadget.h"
 #include "RCBombGadget.h"

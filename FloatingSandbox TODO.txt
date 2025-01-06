@@ -312,26 +312,36 @@
 	+ merge back into master
 
 	- Fire Extinguishing Bomb:		
+		! Name: Fire-Extinguishing Bomb
 		! Implemented as new ExplosionType; re-uses ship state machine
 			! Blast radius: very short
 			! Heat radius: very large
-		! Both gadget and NPC
+		! Both gadget ("FireExtinguishingBomb") - remote-controlled, and NPC ("Fire-Extinguishing Bomb")
 
-		- Name: Fire-Extinguishing Bomb
+		+ New GadgetType enum value - "FireExtinguishingBomb"
+		+ New ExplosionType enum value - "FireExtinguishing"
+		+ New material ExplosionType enum value - "FireExtinguishingExplosion"
 
-		- New GadgetType enum value - "FireExtinguishingBomb"
-		- New ExplosionType enum value - "FireExtinguishing"
-
-		- Sound (as BombType)
-			! Played by SoundsController::OnBombExplosion w/ new gadget bomb type
-			! Above- and Under-water
-			- Sound files
-				- Above
-				- Underwater
-			- SoundController mechanics
+		= Gadget ("FireExtinguishingBomb")
+			! Triggers: fire, breakage, remote detonation
+			= Immediate explosion
+				+ What state machine do we need, if any?
+				= Explosion: render radius should equal heat radius (i.e. extinguish radius), so calc RenderOffset so that BlastForceRadius+RenderOffset equals HeatRadius
+					= Other values are massaged forms of GameParameters::BombXYZ params
+			- Texture
+				= Fire extinguisher tank, rolled as a sphere
+				- Verify doesn't grow atlas
+			= MainFrame
+				= Just toggle menu ("Toggle RC Fire-Extinguishing Bomb") - detonation done via Detonate RC Bombs
+				= Tool
+					- Cursor: fire_extinguishing_bomb_cursor
+						- Fire extinguisher, fat, with flames in background
+			+ Tool -> IGameController
 		- Ship Explosion state machine
 			- Physics, with if's on boolean flags calculated as function of ExplosionType
-				- Extinguishing happens in heat radius, together with heat subtraction (heat value from 
+				- Make templated_on_flags inline helper
+				- Extinguishing happens in heat radius, together with heat subtraction
+					+ Heat is already negative
 			- Give type to World::OnBlast
 			+ RenderUpload
 		- ShipRenderContext: uploaded via existing UploadExplosion
@@ -341,36 +351,46 @@
 					- Very transparent
 					- Shader flattens vertically (so looks like a "disc")
 				- option 2: b&w
-		- Gadget
-			! Static state & rendering
-				! One single texture
-				! Explodes immediately @ detonate (and @ other trigers)
-			- GameParameter for Heat radius, just like for blast
-				- Use at all gadgets that call StartExplosion
-			- Explosion: render radius should equal heat radius (i.e. extinguish radius), so calc RenderOffset so that BlastForceRadius+RenderOffset equals HeatOffset
-			- TODO: spec state machine
-			- Texture
-				- Static
-				- Fire extinguisher tank, rolled as a sphere
-			- MainFrame
-			- Tool -> IGameController
+
+		- Sound (as BombType)
+			! Played by SoundsController::OnBombExplosion w/ new gadget bomb type
+			! Above- and Under-water
+			- Sound files
+				- Above
+				- Underwater
+			- SoundController:
+				- Sound type loading
+				- OnBombExplosion: use new sound type
+
+		- Points::Combustion: honor new material explosion type
+			- Explode if on fire == combustion point ignition
 		- World::OnBlast:
 			- Takes ExplosionType
-				- Passes to Npcs
+				- Passes to Npcs		
 		- Npcs::ApplyBlast:
 			- Takes ExplosionType
 			- Physics, with if's on boolean flags calculated as function of ExplosionType
 		- New furniture NPC
-			- TODO: fire extinguisher, or fire extinguisher bomb?
+			- Fire-Extinguishing Bomb
 			- StructuralMaterial 
 				- StructuralMaterial for the NPC, w/new explosion type and appropriate 4x blast values
+					- Remember: heat must be negative
+					- Combustion & melting point to +INF
 			- Atlas frame (TimCan)
 			- NPC json
 			- Trigger
 				- Impact
-				- Combustion?
-				- Any others?
-				- When gadgets detonate?
+				- Fire
+
+		- Tests:
+			- UV mode
+				- Bomb
+				- NPC
+			- Lightning (for currentSimulationTime)
+				- From tool
+				- From storm
+			- Thanos snap (for currentSimulationTime)
+			- Laser Ray (for currentSimulationTime)
 	
 	- AntiGravity TODOHERE: bomb or tool?
 		- Magnetic?
@@ -443,6 +463,8 @@
 				! Need a new shader anyway, 'cause black smoke looks awful when it fades away
 				! Texture coords are params (set @ initialization, texture never changes)
 				! Also random rotation angle
+			! See if can replace timer bomb's fuse "heavy smoke" eph particle textures
+				! These use room in Generic textures!
 		- Impl:
 			- 1. Do test above: see if planes and Z are enough, if all shaders do early discard
 			- 2. If test ok, finalize work with plane-1

@@ -50,9 +50,7 @@ Storm::Storm(
 {
 }
 
-void Storm::Update(
-	float currentSimulationTime,
-	GameParameters const & gameParameters)
+void Storm::Update(GameParameters const & gameParameters)
 {
     auto const now = GameWallClock::GetInstance().Now();
 
@@ -72,7 +70,7 @@ void Storm::Update(
 	// Advance lightnings' state machines
 	//
 
-	UpdateLightnings(now, currentSimulationTime, gameParameters);
+	UpdateLightnings(now, gameParameters);
 
 
 	//
@@ -546,7 +544,6 @@ void Storm::DoTriggerForegroundLightning(
 
 void Storm::UpdateLightnings(
 	GameWallClock::time_point now,
-	float currentSimulationTime,
 	GameParameters const & gameParameters)
 {
 	for (auto it = mLightnings.begin(); it != mLightnings.end(); /*incremented in loop*/)
@@ -573,7 +570,6 @@ void Storm::UpdateLightnings(
 				assert(!!(it->TargetWorldPosition));
 				mParentWorld.ApplyLightning(
 					*(it->TargetWorldPosition),
-					currentSimulationTime,
 					gameParameters);
 			}
 

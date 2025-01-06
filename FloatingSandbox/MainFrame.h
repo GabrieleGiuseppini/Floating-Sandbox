@@ -310,7 +310,8 @@ private:
         GadgetType gadgetType,
         bool /*isUnderwater*/) override
     {
-        if (GadgetType::RCBomb == gadgetType)
+        if (GadgetType::RCBomb == gadgetType
+            || GadgetType::FireExtinguishingBomb == gadgetType)
         {
             ++mCurrentRCBombCount;
             mRCBombsDetonateMenuItem->Enable(mCurrentRCBombCount > 0);
@@ -327,7 +328,8 @@ private:
         GadgetType gadgetType,
         std::optional<bool> /*isUnderwater*/) override
     {
-        if (GadgetType::RCBomb == gadgetType)
+        if (GadgetType::RCBomb == gadgetType
+            || GadgetType::FireExtinguishingBomb == gadgetType)
         {
             assert(mCurrentRCBombCount > 0u);
             --mCurrentRCBombCount;

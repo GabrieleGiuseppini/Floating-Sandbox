@@ -78,7 +78,9 @@ public:
     /*
      * Invoked when the neighborhood of the gadget has been disturbed.
      */
-    virtual void OnNeighborhoodDisturbed() = 0;
+    virtual void OnNeighborhoodDisturbed(
+        float currentSimulationTime,
+        GameParameters const & gameParameters) = 0;
 
     /*
      * Uploads rendering information to the render context.

@@ -39,7 +39,7 @@ World::World(
 {
     // Initialize world pieces that need to be initialized now
     mStars.Update(mCurrentSimulationTime, gameParameters);
-    mStorm.Update(mCurrentSimulationTime, gameParameters);
+    mStorm.Update(gameParameters);
     mWind.Update(mStorm.GetParameters(), gameParameters);
     mClouds.Update(mCurrentSimulationTime, mWind.GetBaseAndStormSpeedMagnitude(), mStorm.GetParameters(), gameParameters);
     mOceanSurface.Update(mCurrentSimulationTime, mWind, gameParameters);
@@ -579,7 +579,6 @@ bool World::ApplyElectricSparkAt(
     vec2f const & targetPos,
     std::uint64_t counter,
     float lengthMultiplier,
-    float currentSimulationTime,
     GameParameters const & gameParameters)
 {
     bool atLeastOneShipApplied = false;
@@ -590,7 +589,7 @@ bool World::ApplyElectricSparkAt(
             targetPos,
             counter,
             lengthMultiplier,
-            currentSimulationTime,
+            mCurrentSimulationTime,
             gameParameters);
 
         atLeastOneShipApplied |= isApplied;
@@ -645,6 +644,7 @@ bool World::ApplyLaserCannonThrough(
             startPos,
             endPos,
             strength,
+            mCurrentSimulationTime,
             gameParameters);
 
         atLeastOneShipCut |= isCut;
@@ -834,6 +834,24 @@ void World::ToggleAntiMatterBombAt(
     }
 }
 
+void World::ToggleFireExtinguishingBombAt(
+    vec2f const & targetPos,
+    GameParameters const & gameParameters)
+{
+    // Stop at first ship that successfully places or removes a bomb
+    for (auto it = mAllShips.rbegin(); it != mAllShips.rend(); ++it)
+    {
+        if ((*it)->ToggleFireExtinguishingBombAt(targetPos, gameParameters))
+        {
+            // Found!
+            return;
+        }
+
+        // No luck...
+        // search other ships
+    }
+}
+
 void World::ToggleImpactBombAt(
     vec2f const & targetPos,
     GameParameters const & gameParameters)
@@ -925,11 +943,11 @@ void World::ToggleTimerBombAt(
     }
 }
 
-void World::DetonateRCBombs()
+void World::DetonateRCBombs(GameParameters const & gameParameters)
 {
     for (auto const & ship : mAllShips)
     {
-        ship->DetonateRCBombs();
+        ship->DetonateRCBombs(mCurrentSimulationTime, gameParameters);
     }
 }
 
@@ -1005,7 +1023,6 @@ void World::ApplyThanosSnap(
     float leftFrontX,
     float rightFrontX,
     bool isSparseMode,
-    float currentSimulationTime,
     GameParameters const & gameParameters)
 {
     // Apply to all ships
@@ -1016,7 +1033,7 @@ void World::ApplyThanosSnap(
             radius,
             leftFrontX,
             rightFrontX,
-            currentSimulationTime,
+            mCurrentSimulationTime,
             isSparseMode,
             gameParameters);
     }
@@ -1097,13 +1114,12 @@ std::optional<vec2f> World::FindSuitableLightningTarget() const
 
 void World::ApplyLightning(
     vec2f const & targetPos,
-    float currentSimulationTime,
     GameParameters const & gameParameters)
 {
     // Apply to all ships
     for (auto & ship : mAllShips)
     {
-        ship->ApplyLightning(targetPos, currentSimulationTime, gameParameters);
+        ship->ApplyLightning(targetPos, mCurrentSimulationTime, gameParameters);
     }
 
     // Apply to fishes
@@ -1425,7 +1441,7 @@ void World::Update(
 
     mStars.Update(mCurrentSimulationTime, gameParameters);
 
-    mStorm.Update(mCurrentSimulationTime, gameParameters);
+    mStorm.Update(gameParameters);
 
     mWind.Update(mStorm.GetParameters(), gameParameters);
 

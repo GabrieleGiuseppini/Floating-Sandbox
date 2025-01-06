@@ -188,6 +188,7 @@ public:
     void Destroy(
         ElementIndex springElementIndex,
         DestroyOptions destroyOptions,
+        float currentSimulationTime,
         GameParameters const & gameParameters,
         Points const & points);
 
@@ -237,6 +238,7 @@ public:
      * eventually breaking springs.
      */
     void UpdateForStrains(
+        float currentSimulationTime,
         GameParameters const & gameParameters,
         Points & points,
         StressRenderModeType stressRenderMode);
@@ -588,6 +590,7 @@ private:
 
     template<bool DoUpdateStress>
     inline void InternalUpdateForStrains(
+        float currentSimulationTime,
         GameParameters const & gameParameters,
         Points & points);
 

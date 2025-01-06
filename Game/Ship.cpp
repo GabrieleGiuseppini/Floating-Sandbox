@@ -323,6 +323,7 @@ void Ship::Update(
     // - Outputs: S.Destroy(), P.Stress
     // - Fires events, updates frontiers
     mSprings.UpdateForStrains(
+        currentSimulationTime,
         gameParameters,
         mPoints,
         stressRenderMode);
@@ -3458,6 +3459,7 @@ void Ship::HandlePointDetach(
             connectedSprings.back().SpringIndex,
             Springs::DestroyOptions::DoNotFireBreakEvent // We're already firing the Destroy event for the point
             | Springs::DestroyOptions::DestroyAllTriangles, // Destroy all triangles connected to each endpoint
+            currentSimulationTime,
             gameParameters,
             mPoints);
 
@@ -3501,7 +3503,10 @@ void Ship::HandlePointDetach(
     if (hasAnythingBeenDestroyed)
     {
         // Notify gadgets
-        mGadgets.OnPointDetached(pointElementIndex);
+        mGadgets.OnPointDetached(
+            pointElementIndex,
+            currentSimulationTime,
+            gameParameters);
 
         if (generateDebris)
         {
@@ -3571,7 +3576,8 @@ void Ship::HandlePointRestore(
 void Ship::HandleSpringDestroy(
     ElementIndex springElementIndex,
     bool destroyAllTriangles,
-    GameParameters const & /*gameParameters*/)
+    float currentSimulationTime,
+    GameParameters const & gameParameters)
 {
     auto const pointAIndex = mSprings.GetEndpointAIndex(springElementIndex);
     auto const pointBIndex = mSprings.GetEndpointBIndex(springElementIndex);
@@ -3654,7 +3660,10 @@ void Ship::HandleSpringDestroy(
     //
 
     // Notify gadgets
-    mGadgets.OnSpringDestroyed(springElementIndex);
+    mGadgets.OnSpringDestroyed(
+        springElementIndex,
+        currentSimulationTime,
+        gameParameters);
 
     // Remember our structure is now dirty
     mIsStructureDirty = true;
@@ -4206,7 +4215,10 @@ void Ship::HandleElectricSpark(
     // Gadgets
     //
 
-    mGadgets.OnElectricSpark(pointElementIndex);
+    mGadgets.OnElectricSpark(
+        pointElementIndex,
+        currentSimulationTime,
+        gameParameters);
 }
 
 #ifdef _DEBUG

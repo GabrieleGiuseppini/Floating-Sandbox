@@ -86,7 +86,7 @@ bool RCBombGadget::Update(
                 if (mShipPoints.GetTemperature(mPointIndex) > GameParameters::BombsTemperatureTrigger)
                 {
                     // Triggered!
-                    Detonate();
+                    Detonate(currentSimulationTime, gameParameters);
                 }
             }
 
@@ -285,7 +285,9 @@ void RCBombGadget::Upload(
     }
 }
 
-void RCBombGadget::Detonate()
+void RCBombGadget::Detonate(
+    float /*currentSimulationTime*/,
+    GameParameters const & /*gameParameters*/)
 {
     if (State::IdlePingOff == mState
         || State::IdlePingOn == mState)

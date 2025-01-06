@@ -488,6 +488,11 @@ MainFrame::MainFrame(
             }
 
             {
+                auto menuItem = ADD_TOOL_MENUITEM(_("Toggle RC Fire-Extinguishing Bomb"), wxS("\t5"), "fire_extinguishing_bomb_cursor", ToolType::FireExtinguishingBomb, false);
+                ADD_PLAIN_ACCELERATOR_KEY('5', menuItem);
+            }
+
+            {
                 auto menuItem = ADD_TOOL_MENUITEM(_("Thanos' Snap"), wxS("\tQ"), "thanos_snap_cursor_up", ToolType::ThanosSnap, false);
                 ADD_PLAIN_ACCELERATOR_KEY('Q', menuItem);
             }

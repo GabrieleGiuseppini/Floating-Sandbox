@@ -247,7 +247,7 @@ public:
     bool ApplyHeatBlasterAt(DisplayLogicalCoordinates const & screenCoordinates, HeatBlasterActionType action) override;
     bool ExtinguishFireAt(DisplayLogicalCoordinates const & screenCoordinates, float strengthMultiplier) override;
     void ApplyBlastAt(DisplayLogicalCoordinates const & screenCoordinates, float radiusMultiplier, float forceMultiplier, float renderProgress, float personalitySeed) override;
-    bool ApplyElectricSparkAt(DisplayLogicalCoordinates const & screenCoordinates, std::uint64_t counter, float lengthMultiplier, float currentSimulationTime) override;
+    bool ApplyElectricSparkAt(DisplayLogicalCoordinates const & screenCoordinates, std::uint64_t counter, float lengthMultiplier) override;
     void ApplyRadialWindFrom(DisplayLogicalCoordinates const & sourcePos, float preFrontSimulationTimeElapsed, float preFrontIntensityMultiplier, float mainFrontSimulationTimeElapsed, float mainFrontIntensityMultiplier) override;
     bool ApplyLaserCannonThrough(DisplayLogicalCoordinates const & startScreenCoordinates, DisplayLogicalCoordinates const & endScreenCoordinates, std::optional<float> strength) override;
     void DrawTo(DisplayLogicalCoordinates const & screenCoordinates, float strengthFraction) override;
@@ -257,6 +257,7 @@ public:
     std::optional<ToolApplicationLocus> InjectPressureAt(DisplayLogicalCoordinates const & screenCoordinates, float pressureQuantityMultiplier) override;
     bool FloodAt(DisplayLogicalCoordinates const & screenCoordinates, float waterQuantityMultiplier) override;
     void ToggleAntiMatterBombAt(DisplayLogicalCoordinates const & screenCoordinates) override;
+    void ToggleFireExtinguishingBombAt(DisplayLogicalCoordinates const & screenCoordinates) override;
     void ToggleImpactBombAt(DisplayLogicalCoordinates const & screenCoordinates) override;
     void TogglePhysicsProbeAt(DisplayLogicalCoordinates const & screenCoordinates) override;
     void ToggleRCBombAt(DisplayLogicalCoordinates const & screenCoordinates) override;

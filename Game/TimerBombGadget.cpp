@@ -256,7 +256,9 @@ bool TimerBombGadget::Update(
     }
 }
 
-void TimerBombGadget::OnNeighborhoodDisturbed()
+void TimerBombGadget::OnNeighborhoodDisturbed(
+    float /*currentSimulationTime*/,
+    GameParameters const & /*gameParameters*/)
 {
     if (State::SlowFuseBurning == mState
         || State::Defused == mState)

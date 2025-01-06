@@ -47,6 +47,7 @@ enum class ToolType : std::uint32_t
     InjectPressure,
     FloodHose,
     AntiMatterBomb,
+    FireExtinguishingBomb,
     ImpactBomb,
     RCBomb,
     TimerBomb,
@@ -2151,6 +2152,37 @@ private:
     wxImage const mCursorImage;
 };
 
+class FireExtinguishingBombTool final : public OneShotTool
+{
+public:
+
+    FireExtinguishingBombTool(
+        IToolCursorManager & toolCursorManager,
+        IGameController & gameController,
+        SoundController & soundController,
+        ResourceLocator const & resourceLocator);
+
+public:
+
+    void Initialize(InputState const & /*inputState*/) override
+    {
+        // Reset cursor
+        mToolCursorManager.SetToolCursor(mCursorImage);
+    }
+
+    void OnLeftMouseDown(InputState const & inputState) override
+    {
+        // Toggle bomb
+        mGameController.ToggleFireExtinguishingBombAt(inputState.MousePosition);
+    }
+
+    void OnLeftMouseUp(InputState const & /*inputState*/) override {}
+
+private:
+
+    wxImage const mCursorImage;
+};
+
 class ImpactBombTool final : public OneShotTool
 {
 public:
@@ -3474,7 +3506,7 @@ public:
         mSoundController.StopElectricSparkSound();
     }
 
-    void UpdateSimulation(InputState const & inputState, float currentSimulationTime) override
+    void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
     {
         if (inputState.IsLeftMouseDown)
         {
@@ -3488,8 +3520,7 @@ public:
                 bool hasBeenApplied = mGameController.ApplyElectricSparkAt(
                     inputState.MousePosition,
                     ++(mEngagementData->CurrentCounter),
-                    mEngagementData->CurrentLengthMultiplier,
-                    currentSimulationTime);
+                    mEngagementData->CurrentLengthMultiplier);
 
                 if (!hasBeenApplied)
                 {
@@ -3523,8 +3554,7 @@ public:
                 bool hasBeenApplied = mGameController.ApplyElectricSparkAt(
                     inputState.MousePosition,
                     0,
-                    interactionLengthMultiplier,
-                    currentSimulationTime);
+                    interactionLengthMultiplier);
 
                 if (hasBeenApplied)
                 {

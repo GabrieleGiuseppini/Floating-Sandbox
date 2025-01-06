@@ -52,16 +52,20 @@ public:
     {
     }
 
-    virtual void OnNeighborhoodDisturbed() override
+    virtual void OnNeighborhoodDisturbed(
+        float currentSimulationTime,
+        GameParameters const & gameParameters) override
     {
-        Detonate();
+        Detonate(currentSimulationTime, gameParameters);
     }
 
     virtual void Upload(
         ShipId shipId,
         Render::RenderContext & renderContext) const override;
 
-    void Detonate();
+    void Detonate(
+        float currentSimulationTime,
+        GameParameters const & gameParameters);
 
 private:
 

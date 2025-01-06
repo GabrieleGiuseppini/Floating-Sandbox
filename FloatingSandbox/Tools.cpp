@@ -412,6 +412,25 @@ AntiMatterBombTool::AntiMatterBombTool(
 }
 
 ////////////////////////////////////////////////////////////////////////
+// FireExtinguishingBomb
+////////////////////////////////////////////////////////////////////////
+
+FireExtinguishingBombTool::FireExtinguishingBombTool(
+    IToolCursorManager & toolCursorManager,
+    IGameController & gameController,
+    SoundController & soundController,
+    ResourceLocator const & resourceLocator)
+    : OneShotTool(
+        ToolType::FireExtinguishingBomb,
+        toolCursorManager,
+        gameController,
+        soundController)
+    // TODOHERE
+    , mCursorImage(WxHelpers::LoadCursorImage("fire_extinguishing_bomb_cursor", 16, 21, resourceLocator))
+{
+}
+
+////////////////////////////////////////////////////////////////////////
 // ImpactBomb
 ////////////////////////////////////////////////////////////////////////
 

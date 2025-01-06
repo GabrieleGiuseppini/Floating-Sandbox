@@ -211,6 +211,7 @@ public:
         vec2f const & startPos,
         vec2f const & endPos,
         float strength,
+        float currentSimulationTime,
         GameParameters const & gameParameters);
 
     void DrawTo(
@@ -246,6 +247,10 @@ public:
         vec2f const & targetPos,
         GameParameters const & gameParameters);
 
+    bool ToggleFireExtinguishingBombAt(
+        vec2f const & targetPos,
+        GameParameters const & gameParameters);
+
     bool ToggleImpactBombAt(
         vec2f const & targetPos,
         GameParameters const & gameParameters);
@@ -264,7 +269,9 @@ public:
         vec2f const & targetPos,
         GameParameters const & gameParameters);
 
-    void DetonateRCBombs();
+    void DetonateRCBombs(
+        float currentSimulationTime,
+        GameParameters const & gameParameters);
 
     void DetonateAntiMatterBombs();
 
@@ -688,6 +695,7 @@ public:
     void HandleSpringDestroy(
         ElementIndex springElementIndex,
         bool destroyAllTriangles,
+        float currentSimulationTime,
         GameParameters const & gameParameters) override;
 
     void HandleSpringRestore(

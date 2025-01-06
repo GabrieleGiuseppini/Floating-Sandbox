@@ -31,7 +31,8 @@ public:
     enum class MaterialCombustionType
     {
         Combustion,
-        Explosion
+        Explosion,
+        FireExtinguishingExplosion
     };
 
     enum class MaterialUniqueType : size_t // There's an array indexed by this

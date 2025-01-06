@@ -57,7 +57,9 @@ public:
         }
     }
 
-    virtual void OnNeighborhoodDisturbed() override
+    virtual void OnNeighborhoodDisturbed(
+        float /*currentSimulationTime*/,
+        GameParameters const & /*gameParameters*/) override
     {
         Detonate();
     }

@@ -641,6 +641,12 @@ public:
                 break;
             }
 
+            case ExplosionType::FireExtinguishing:
+            {
+                // TODOHERE
+                break;
+            }
+
             case ExplosionType::Sodium:
             {
                 effectiveHalfQuadSize = halfQuadSize / (220.0f / 256.0f);

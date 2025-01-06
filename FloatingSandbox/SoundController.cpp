@@ -2430,6 +2430,7 @@ void SoundController::OnGadgetPlaced(
     switch (gadgetType)
     {
         case GadgetType::AntiMatterBomb:
+        case GadgetType::FireExtinguishingBomb:
         case GadgetType::ImpactBomb:
         case GadgetType::RCBomb:
         case GadgetType::TimerBomb:
@@ -2466,6 +2467,7 @@ void SoundController::OnGadgetRemoved(
     switch (gadgetType)
     {
         case GadgetType::AntiMatterBomb:
+        case GadgetType::FireExtinguishingBomb:
         case GadgetType::ImpactBomb:
         case GadgetType::RCBomb:
         case GadgetType::TimerBomb:
@@ -2511,6 +2513,21 @@ void SoundController::OnBombExplosion(
         {
             PlayUOneShotMultipleChoiceSound(
                 SoundType::AntiMatterBombExplosion,
+                SoundGroupType::Effects,
+                isUnderwater,
+                std::max(
+                    100.0f,
+                    50.0f * size),
+                true);
+
+            break;
+        }
+
+        case GadgetType::FireExtinguishingBomb:
+        {
+            // TODOHERE
+            PlayUOneShotMultipleChoiceSound(
+                SoundType::BombExplosion,
                 SoundGroupType::Effects,
                 isUnderwater,
                 std::max(

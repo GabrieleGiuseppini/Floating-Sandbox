@@ -81,6 +81,8 @@ set  (PHYSICS_SOURCES
 	Clouds.h	
 	ElectricalElements.cpp
 	ElectricalElements.h
+	FireExtinguishingBombGadget.cpp
+	FireExtinguishingBombGadget.h
 	Fishes.cpp
 	Fishes.h
 	Formulae.h

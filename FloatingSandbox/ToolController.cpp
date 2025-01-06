@@ -133,6 +133,13 @@ ToolController::ToolController(
             resourceLocator));
 
     mAllTools.emplace_back(
+        std::make_unique<FireExtinguishingBombTool>(
+            *this,
+            gameController,
+            soundController,
+            resourceLocator));
+
+    mAllTools.emplace_back(
         std::make_unique<ImpactBombTool>(
             *this,
             gameController,

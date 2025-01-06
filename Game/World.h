@@ -258,7 +258,6 @@ public:
         vec2f const & targetPos,
         std::uint64_t counter,
         float lengthMultiplier,
-        float currentSimulationTime,
         GameParameters const & gameParameters);
 
     void ApplyRadialWindFrom(
@@ -305,6 +304,10 @@ public:
         vec2f const & targetPos,
         GameParameters const & gameParameters);
 
+    void ToggleFireExtinguishingBombAt(
+        vec2f const & targetPos,
+        GameParameters const & gameParameters);
+
     void ToggleImpactBombAt(
         vec2f const & targetPos,
         GameParameters const & gameParameters);
@@ -321,7 +324,8 @@ public:
         vec2f const & targetPos,
         GameParameters const & gameParameters);
 
-    void DetonateRCBombs();
+    void DetonateRCBombs(
+        GameParameters const & gameParameters);
 
     void DetonateAntiMatterBombs();
 
@@ -351,7 +355,6 @@ public:
         float leftFrontX,
         float rightFrontX,
         bool isSparseMode,
-        float currentSimulationTime,
         GameParameters const & gameParameters);
 
     std::optional<GlobalElementId> GetNearestPointAt(
@@ -370,7 +373,6 @@ public:
 
     void ApplyLightning(
         vec2f const & targetPos,
-        float currentSimulationTime,
         GameParameters const & gameParameters);
 
     void TriggerTsunami();

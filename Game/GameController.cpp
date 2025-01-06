@@ -1058,8 +1058,7 @@ void GameController::ApplyBlastAt(
 bool GameController::ApplyElectricSparkAt(
     DisplayLogicalCoordinates const & screenCoordinates,
     std::uint64_t counter,
-    float lengthMultiplier,
-    float currentSimulationTime)
+    float lengthMultiplier)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
@@ -1069,7 +1068,6 @@ bool GameController::ApplyElectricSparkAt(
         worldCoordinates,
         counter,
         lengthMultiplier,
-        currentSimulationTime,
         mGameParameters);
 }
 
@@ -1237,6 +1235,17 @@ void GameController::ToggleAntiMatterBombAt(DisplayLogicalCoordinates const & sc
         mGameParameters);
 }
 
+void GameController::ToggleFireExtinguishingBombAt(DisplayLogicalCoordinates const & screenCoordinates)
+{
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+
+    // Apply action
+    assert(!!mWorld);
+    mWorld->ToggleFireExtinguishingBombAt(
+        worldCoordinates,
+        mGameParameters);
+}
+
 void GameController::ToggleImpactBombAt(DisplayLogicalCoordinates const & screenCoordinates)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
@@ -1291,7 +1300,7 @@ void GameController::DetonateRCBombs()
 {
     // Apply action
     assert(!!mWorld);
-    mWorld->DetonateRCBombs();
+    mWorld->DetonateRCBombs(mGameParameters);
 }
 
 void GameController::DetonateAntiMatterBombs()

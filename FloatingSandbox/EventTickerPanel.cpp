@@ -221,6 +221,12 @@ void EventTickerPanel::OnGadgetPlaced(
             break;
         }
 
+        case GadgetType::FireExtinguishingBomb:
+        {
+            ss << "Fire-extinguishing bomb";
+            break;
+        }
+
         case GadgetType::ImpactBomb:
         {
             ss << "Impact bomb";
@@ -262,6 +268,12 @@ void EventTickerPanel::OnGadgetRemoved(
         case GadgetType::AntiMatterBomb:
         {
             ss << "Anti-matter bomb";
+            break;
+        }
+
+        case GadgetType::FireExtinguishingBomb:
+        {
+            ss << "Fire-extinguishing bomb";
             break;
         }
 

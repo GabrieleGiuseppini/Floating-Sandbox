@@ -89,6 +89,7 @@ struct IShipPhysicsHandler
     virtual void HandleSpringDestroy(
         ElementIndex springElementIndex,
         bool destroyAllTriangles,
+        float currentSimulationTime,
         GameParameters const & gameParameters) = 0;
 
     /*
