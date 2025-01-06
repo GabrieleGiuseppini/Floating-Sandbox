@@ -621,14 +621,14 @@ public:
         // Calculate gfx radius, explosion index and yellowing based off explosion type
         float effectiveHalfQuadSize = 0.0f; // Based off empirical measurement of texture frames: frame size / "core" fireball size
         float explosionIndex;
-        float yellowing;
+        float explosionKind;
         switch (explosionType)
         {
             case ExplosionType::Combustion:
             {
                 effectiveHalfQuadSize = halfQuadSize / (220.0f / 256.0f);
                 explosionIndex = 3.0f;
-                yellowing = 0.0f;
+                explosionKind = static_cast<float>(ExplosionVertex::ExplosionKindType::Default);
                 break;
             }
 
@@ -637,16 +637,15 @@ public:
                 // 0..2, randomly
                 effectiveHalfQuadSize = halfQuadSize / (160.0f / 256.0f);
                 explosionIndex = std::min(2.0f, std::floor(personalitySeed * 3.0f));
-                yellowing = 0.0f;
+                explosionKind = static_cast<float>(ExplosionVertex::ExplosionKindType::Default);
                 break;
             }
 
             case ExplosionType::FireExtinguishing:
             {
-                // TODOHERE
                 effectiveHalfQuadSize = halfQuadSize / (220.0f / 256.0f);
                 explosionIndex = 0.0f; // More "bubbly" than others
-                yellowing = 0.0f;
+                explosionKind = static_cast<float>(ExplosionVertex::ExplosionKindType::FireExtinguishing);
                 break;
             }
 
@@ -654,7 +653,7 @@ public:
             {
                 effectiveHalfQuadSize = halfQuadSize / (220.0f / 256.0f);
                 explosionIndex = 3.0f;
-                yellowing = 1.0f;
+                explosionKind = static_cast<float>(ExplosionVertex::ExplosionKindType::Sodium);
                 break;
             }
         }
@@ -674,7 +673,7 @@ public:
             static_cast<float>(planeId),
             angleCcw,
             explosionIndex,
-            yellowing,
+            explosionKind,
             progress);
 
         // Top-Right
@@ -685,7 +684,7 @@ public:
             static_cast<float>(planeId),
             angleCcw,
             explosionIndex,
-            yellowing,
+            explosionKind,
             progress);
 
         // Bottom-left
@@ -696,7 +695,7 @@ public:
             static_cast<float>(planeId),
             angleCcw,
             explosionIndex,
-            yellowing,
+            explosionKind,
             progress);
 
         // Triangle 2
@@ -709,7 +708,7 @@ public:
             static_cast<float>(planeId),
             angleCcw,
             explosionIndex,
-            yellowing,
+            explosionKind,
             progress);
 
         // Bottom-left
@@ -720,7 +719,7 @@ public:
             static_cast<float>(planeId),
             angleCcw,
             explosionIndex,
-            yellowing,
+            explosionKind,
             progress);
 
         // Bottom-right
@@ -731,7 +730,7 @@ public:
             static_cast<float>(planeId),
             angleCcw,
             explosionIndex,
-            yellowing,
+            explosionKind,
             progress);
     }
 
@@ -1531,6 +1530,13 @@ private:
 
     struct ExplosionVertex
     {
+        enum ExplosionKindType : int
+        {
+            Default = 1,
+            FireExtinguishing = 2,
+            Sodium = 3,
+        };
+
         vec2f centerPosition;
         vec2f vertexOffset;
         vec2f textureCoordinate;
@@ -1539,7 +1545,7 @@ private:
 
         float angle;
         float explosionIndex;
-        float yellowing;
+        float explosionKind;
         float progress;
 
         ExplosionVertex(
@@ -1549,7 +1555,7 @@ private:
             float _planeId,
             float _angle,
             float _explosionIndex,
-            float _yellowing,
+            float _explosionKind,
             float _progress)
             : centerPosition(_centerPosition)
             , vertexOffset(_vertexOffset)
@@ -1557,7 +1563,7 @@ private:
             , planeId(_planeId)
             , angle(_angle)
             , explosionIndex(_explosionIndex)
-            , yellowing(_yellowing)
+            , explosionKind(_explosionKind)
             , progress(_progress)
         {}
     };

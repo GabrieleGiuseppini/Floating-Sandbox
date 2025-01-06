@@ -67,7 +67,7 @@
 	"hasOwnAmbientLight": false,
 	"frames":[
 		{	
-			"worldWidth": 12.0,
+			"worldWidth": 8.44,
 			"worldHeight": 12.0,
 			"anchorOffsetX": 24,
 			"filenamePattern": "fire_extinguishing_bomb_\\d+"

@@ -333,11 +333,13 @@
 				+ Verify doesn't grow atlas
 					! old: 4096x2048
 					+ new: 4096x2048
+				+ Fix bleeding
 			= MainFrame
 				+ Just toggle menu ("Toggle RC Fire-Extinguishing Bomb") - detonation done via Detonate RC Bombs
 				= Tool
 					- Cursor: fire_extinguishing_bomb_cursor
 						- Fire extinguisher, fat, with flames in background
+					- Icon @ SettingsDialog
 			+ Tool -> IGameController
 		= Ship Explosion state machine
 			+ Physics, with if's on boolean flags calculated as function of ExplosionType
@@ -348,9 +350,9 @@
 			+ RenderUpload
 			+ Tests:
 				+ Force blast on NPCs
-		- ShipRenderContext: uploaded via existing UploadExplosion
-			- Switch case in UploadExplosion on ExplosionType
-			- Explosions shader with variator (much like yellowing)
+		= ShipRenderContext: uploaded via existing UploadExplosion
+			+ Switch case in UploadExplosion on ExplosionType
+			= Explosions shader with variator (much like yellowing)
 				- option 1: code-ish from fire extinguisher
 					- Very transparent
 					- Shader flattens vertically (so looks like a "disc")
@@ -384,12 +386,13 @@
 			- NPC json
 			- Trigger
 				- Impact
-				- Fire
+				- Fire		
 
 		- Tests:
 			- UV mode
 				- Bomb
 				- NPC
+			- NPCs panic for this bomb
 			- Lightning (for currentSimulationTime)
 				- From tool
 				- From storm

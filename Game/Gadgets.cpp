@@ -15,6 +15,7 @@ bool Gadgets::AreBombsInProximity(vec2f const & position) const
     {
         auto const gadgetType = gadget->GetType();
         if (gadgetType == GadgetType::AntiMatterBomb
+            || gadgetType == GadgetType::FireExtinguishingBomb
             || gadgetType == GadgetType::ImpactBomb
             || gadgetType == GadgetType::RCBomb
             || gadgetType == GadgetType::TimerBomb)

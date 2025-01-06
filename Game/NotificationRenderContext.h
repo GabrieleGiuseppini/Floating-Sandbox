@@ -915,7 +915,7 @@ private:
 
 	struct MultiNotificationVertex
 	{
-		enum VertexKindType
+		enum VertexKindType : int
 		{
 			// Note: enum values are to be kept in sync with shader
 			BlastToolHalo = 1,

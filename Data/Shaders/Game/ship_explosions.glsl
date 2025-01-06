@@ -1,3 +1,9 @@
+
+// Kept in sync with code
+#define EXPLOSION_TYPE_DEFAULT 1.0
+#define EXPLOSION_TYPE_FIRE_EXTINGUISHING 2.0
+#define EXPLOSION_TYPE_SODIUM 3.0
+
 ###VERTEX-120
 
 #define in attribute
@@ -6,12 +12,12 @@
 // Inputs
 in vec4 inExplosion1; // CenterPosition, VertexOffset
 in vec4 inExplosion2; // TextureCoordinates, PlaneId, Angle
-in vec3 inExplosion3; // ExplosionIndex, Yellowing, Progress
+in vec3 inExplosion3; // ExplosionIndex, ExplosionType, Progress
 
 // Outputs
 out vec2 vertexTextureCoordinates;
 out float vertexExplosionIndex;
-out float vertexYellowing;
+out float vertexExplosionType;
 out float vertexProgress;
 
 // Params
@@ -21,7 +27,7 @@ void main()
 {
     vertexTextureCoordinates = inExplosion2.xy; 
     vertexExplosionIndex = inExplosion3.x;
-    vertexYellowing = inExplosion3.y;
+    vertexExplosionType = inExplosion3.y;
     vertexProgress = inExplosion3.z;
 
     float angle = inExplosion2.w;
@@ -44,13 +50,13 @@ void main()
 // Inputs from previous shader
 in vec2 vertexTextureCoordinates; // (0.0, 0.0) (bottom-left) -> (1.0, 1.0)
 in float vertexExplosionIndex;
-in float vertexYellowing;
+in float vertexExplosionType;
 in float vertexProgress; // 0.0 -> 1.0
 
 // The texture
 uniform sampler2D paramExplosionsAtlasTexture;
 
-// Parameters
+// Constants
 
 // Actual frames per explosion, there is also an implicit pre-frame and a post-frame
 #define NExplosionFrames 16.
@@ -61,7 +67,12 @@ uniform sampler2D paramExplosionsAtlasTexture;
 // Size of a frame side, in texture coords
 #define FrameSideSize 1. / AtlasSideFrames
 
-vec4 SampleColor(float frameIndex, vec2 uv)
+float is_type(float notification_type, float value)
+{
+    return step(value - 0.5, notification_type) * step(notification_type, value + 0.5);
+}
+
+vec4 sample_texture(float frameIndex, vec2 uv)
 {   
     // Row at which the desired explosion starts
     float explosionIndexRowStart = 2. * vertexExplosionIndex;
@@ -112,13 +123,39 @@ void main()
     //
     
     vec2 centeredSpacePosition = vertexTextureCoordinates - vec2(.5);
-    vec4 c1 = SampleColor(bucket - 1., centeredSpacePosition / scale1 + vec2(.5));
-    vec4 c2 = SampleColor(bucket, centeredSpacePosition / scale2 + vec2(.5));
+    vec4 c1 = sample_texture(bucket - 1., centeredSpacePosition / scale1 + vec2(.5));
+    vec4 c2 = sample_texture(bucket, centeredSpacePosition / scale2 + vec2(.5));
 
     vec4 c = mix(c1, c2, inBucket);
 
-    gl_FragColor = mix(
-        c,
-        vec4((c.r + c.g) / 2., (c.r + c.g) / 2., c.b, c.a),
-        vertexYellowing);
+
+    //
+    // Fire-Extinguishing
+    //
+
+    vec4 fire_extinguishing_color;
+    {
+        // TODOHERE
+        fire_extinguishing_color = vec4(c.r * 0.2, c.g * 0.2, c.b, c.a);
+    }
+
+
+    //
+    // Sodium
+    //
+
+    vec4 sodium_color;
+    {
+        sodium_color = vec4((c.r + c.g) / 2., (c.r + c.g) / 2., c.b, c.a);
+    }
+
+
+    //
+    // Combine
+    //
+
+    gl_FragColor =
+        c * is_type(vertexExplosionType, EXPLOSION_TYPE_DEFAULT)
+        + fire_extinguishing_color * is_type(vertexExplosionType, EXPLOSION_TYPE_FIRE_EXTINGUISHING)
+        + sodium_color * is_type(vertexExplosionType, EXPLOSION_TYPE_SODIUM);
 } 
