@@ -346,8 +346,8 @@
 					+ Heat is already negative
 			+ Give type to World::OnBlast
 			+ RenderUpload
-			- Tests:
-				- Force blast on NPCs
+			+ Tests:
+				+ Force blast on NPCs
 		- ShipRenderContext: uploaded via existing UploadExplosion
 			- Switch case in UploadExplosion on ExplosionType
 			- Explosions shader with variator (much like yellowing)

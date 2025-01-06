@@ -147,7 +147,7 @@ void FireExtinguishingBombGadget::Detonate(
         // Blast force
         float const blastForce =
             GameParameters::BaseBombBlastForce
-            * 1.0f // Bomb-specific multiplier
+            * 7.0f // Bomb-specific multiplier
             * (gameParameters.IsUltraViolentMode
                 ? std::min(gameParameters.BombBlastForceAdjustment * 10.0f, GameParameters::MaxBombBlastForceAdjustment * 2.0f)
                 : gameParameters.BombBlastForceAdjustment);
@@ -159,7 +159,7 @@ void FireExtinguishingBombGadget::Detonate(
                 ? std::min(gameParameters.BombBlastRadius * 10.0f, GameParameters::MaxBombBlastRadius * 2.0f)
                 : gameParameters.BombBlastRadius
             )
-            * 0.2f; // Bomb-specific multiplier
+            * 0.3f; // Bomb-specific multiplier
 
         // Blast heat (removed)
         float const blastHeat =
