@@ -102,7 +102,7 @@ vec4 make_fire_extinguisher_spray(
     // Rotate based on noise sampled via polar coordinates of pixel
 
     float angle = noise;
-    // Magnify rotation amount based on distance from center of screen
+    // Magnify rotation amount based on distance from center
     angle *= 1.54 * smoothstep(0.0, 0.6, d);
     
     // Rotate!

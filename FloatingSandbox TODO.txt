@@ -341,7 +341,7 @@
 						- Fire extinguisher, fat, with flames in background
 					- Icon @ SettingsDialog
 			+ Tool -> IGameController
-		= Ship Explosion state machine
+		+ Ship Explosion state machine
 			+ Physics, with if's on boolean flags calculated as function of ExplosionType
 				+ Make templated_on_flags inline helper
 				+ Extinguishing happens in heat radius, together with heat subtraction
@@ -353,10 +353,9 @@
 		= ShipRenderContext: uploaded via existing UploadExplosion
 			+ Switch case in UploadExplosion on ExplosionType
 			= Explosions shader with variator (much like yellowing)
-				- option 1: code-ish from fire extinguisher
+				=code-ish from fire extinguisher
 					- Very transparent
 					- Shader flattens vertically (so looks like a "disc")
-				- option 2: b&w
 
 		- Sound (as BombType)
 			! Played by SoundsController::OnBombExplosion w/ new gadget bomb type

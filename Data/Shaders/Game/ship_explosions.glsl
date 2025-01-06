@@ -53,8 +53,9 @@ in float vertexExplosionIndex;
 in float vertexExplosionType;
 in float vertexProgress; // 0.0 -> 1.0
 
-// The texture
+// The textures
 uniform sampler2D paramExplosionsAtlasTexture;
+uniform sampler2D paramNoiseTexture;
 
 // Constants
 
@@ -67,9 +68,20 @@ uniform sampler2D paramExplosionsAtlasTexture;
 // Size of a frame side, in texture coords
 #define FrameSideSize 1. / AtlasSideFrames
 
+#define PI 3.14159265358979323844
+
 float is_type(float notification_type, float value)
 {
     return step(value - 0.5, notification_type) * step(notification_type, value + 0.5);
+}
+
+mat2 get_rotation_matrix(float angle)
+{
+    mat2 m;
+    m[0][0] = cos(angle); m[0][1] = -sin(angle);
+    m[1][0] = sin(angle); m[1][1] = cos(angle);
+
+    return m;
 }
 
 vec4 sample_texture(float frameIndex, vec2 uv)
@@ -135,8 +147,63 @@ void main()
 
     vec4 fire_extinguishing_color;
     {
-        // TODOHERE
-        fire_extinguishing_color = vec4(c.r * 0.2, c.g * 0.2, c.b, c.a);
+        #define SpraySpeed 0.3
+        float sprayTime = vertexProgress * SpraySpeed;    
+
+        // Polar coords
+        centeredSpacePosition *= 2.0;
+        float polarRadius = length(centeredSpacePosition);
+        float polarAngle = atan(centeredSpacePosition.y, centeredSpacePosition.x) / (2.0 * PI);
+    
+        // Rotate based on noise sampled via polar coordinates of pixel
+        #define AngleNoiseResolution 1.0        
+        vec2 noiseSampleCoords = 
+            vec2(polarRadius, polarAngle + 0.5) * AngleNoiseResolution
+            + vec2(-0.5 * sprayTime, 0.2* sprayTime);
+
+        float angle = texture2D(paramNoiseTexture, noiseSampleCoords).r; // 0.0 -> 1.0
+        // Magnify rotation amount based on distance from center
+        angle *= 1.54 * smoothstep(0.0, 0.6, polarRadius);
+        
+        // Rotate!
+        centeredSpacePosition += get_rotation_matrix(angle) * centeredSpacePosition;
+        
+        //
+        // Transform to polar coordinates
+        //
+        
+        // (r, a) (r=[0.0, 1.0], a=[0.0, 1.0 CCW from W])
+            
+        vec2 ra = vec2(
+            polarRadius, 
+            (atan(centeredSpacePosition.y, centeredSpacePosition.x) / (2.0 * PI) + 0.5));
+            
+        // Scale radius to better fit in quad
+        ra.x *= 1.7;                   
+
+        
+        //
+        // Randomize radius based on noise and radius
+        //
+        
+        #define VariationRNoiseResolution 1.0
+        float variationR = texture2D(
+            paramNoiseTexture, 
+            ra * vec2(VariationRNoiseResolution / 4.0, VariationRNoiseResolution / 1.0) 
+            + vec2(-sprayTime, 0.0)).r;
+        
+        variationR -= 0.5;
+
+        // Straighten the spray at the center and make full turbulence outside,
+        // scaling it at the same time
+        variationR *= 0.35 * smoothstep(-0.40, 0.4, ra.x);
+
+        float radius = ra.x + variationR;
+
+        // Focus (compress dynamics)
+        float alpha = 1.0 - smoothstep(0.2, 1.4, radius);
+
+        fire_extinguishing_color = vec4(alpha, alpha, alpha, alpha * c.a * c.r);
     }
 
 
