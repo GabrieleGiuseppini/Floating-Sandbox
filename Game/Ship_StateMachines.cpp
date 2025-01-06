@@ -35,138 +35,181 @@ bool Ship::UpdateExplosionStateMachine(
 
     if (explosionBlastForceProgress <= 1.0f)
     {
-        //
-        // Update explosion
-        //
+        // Continue updating
 
-        vec2f const centerPosition = explosionStateMachine.CenterPosition;
-
-        // Blast force radius: from 1.0 to BlastForceRadius, linearly with progress
-        float const blastForceRadius =
-            1.0f +
-            std::max(explosionStateMachine.BlastForceRadius - 1.0f, 0.0f) * std::min(1.0f, explosionBlastForceProgress); // Clamp to 1.0 max
-
-        // Blast heat radius: from 0.0 to BlastHeatRadius, linearly with progress
-        float const blastHeatRadius =
-            explosionStateMachine.BlastHeatRadius
-            * explosionBlastForceProgress;
-
-        //
-        // Blast force and heat
-        //
-        // Go through all points and, for each point in radius:
-        //  - Apply blast force
-        //  - Apply blast heat
-        //  - Keep non-ephemeral point that is closest to blast position; we'll Detach() it later
-        //   (if this is the fist frame of the blast sequence)
-        //
-
-        float const squareHeatRadius = blastHeatRadius * blastHeatRadius;
-        float const squareForceRadius = blastForceRadius * blastForceRadius;
-
-        // Q = q*dt
-        float const blastHeat =
-            explosionStateMachine.BlastHeat * 1000.0f // KJoule->Joule
-            * GameParameters::SimulationStepTimeDuration<float>;
-
-        float closestStructuralPointSquareDistance = std::numeric_limits<float>::max();
-        ElementIndex closestStructuralPointIndex = NoneElementIndex;
-
-        // Visit all points
-        for (auto const pointIndex : mPoints)
+        if (explosionStateMachine.Type != ExplosionType::FireExtinguishing)
         {
-            vec2f const pointRadius = mPoints.GetPosition(pointIndex) - centerPosition;
-            float const squarePointDistance = pointRadius.squareLength();
-
-            if (squarePointDistance < squareHeatRadius)
-            {
-                //
-                // Inject heat at this point
-                //
-
-                float const adjustedHeat =
-                    blastHeat
-                    * (1.0f - squarePointDistance / squareHeatRadius);
-
-                mPoints.AddHeat(
-                    pointIndex,
-                    adjustedHeat);
-            }
-
-            if (squarePointDistance < squareForceRadius)
-            {
-                //
-                // Apply blast force
-                //
-                // (inversely proportional to square root of distance, not second power as one would expect though)
-                //
-
-                float const pointRadiusLength = std::sqrt(squarePointDistance);
-
-                vec2f const blastDir = pointRadius.normalise_approx(pointRadiusLength);
-
-                mPoints.AddStaticForce(
-                    pointIndex,
-                    blastDir * explosionStateMachine.BlastForceMagnitude / std::sqrt(std::max((pointRadiusLength * 0.3f) + 0.7f, 1.0f)));
-
-                // Update water velocity
-                mPoints.SetWaterVelocity(
-                    pointIndex,
-                    mPoints.GetWaterVelocity(pointIndex) + blastDir * 100.0f * mPoints.GetWater(pointIndex)); // Magic number
-
-                //
-                // Check whether this point is the closest point, if it's structural
-                //
-
-                if (squarePointDistance < closestStructuralPointSquareDistance
-                    && pointIndex < mPoints.GetRawShipPointCount()
-                    && !mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.empty())
-                {
-                    closestStructuralPointSquareDistance = squarePointDistance;
-                    closestStructuralPointIndex = pointIndex;
-                }
-            }
-        }
-
-        //
-        // Eventually detach the closest point
-        //
-
-        if (explosionStateMachine.IsFirstIteration
-            && NoneElementIndex != closestStructuralPointIndex)
-        {
-            // Choose a detach velocity - using the same distribution as Debris
-            vec2f const detachVelocity = GameRandomEngine::GetInstance().GenerateUniformRadialVector(
-                GameParameters::MinDebrisParticlesVelocity,
-                GameParameters::MaxDebrisParticlesVelocity);
-
-            // Detach point
-            mPoints.Detach(
-                closestStructuralPointIndex,
-                detachVelocity,
-                Points::DetachOptions::GenerateDebris
-                | Points::DetachOptions::FireDestroyEvent,
+            InternalUpdateExplosionStateMachine<false, true>(
+                explosionStateMachine,
+                explosionBlastForceProgress,
                 currentSimulationTime,
                 gameParameters);
         }
-
-        //
-        // Apply side-effects
-        //
-
-        mParentWorld.OnBlast(
-            mId,
-            centerPosition,
-            explosionStateMachine.BlastForceMagnitude,
-            blastForceRadius,
-            explosionStateMachine.BlastHeat,
-            blastHeatRadius,
-            gameParameters);
+        else
+        {
+            InternalUpdateExplosionStateMachine<true, false>(
+                explosionStateMachine,
+                explosionBlastForceProgress,
+                currentSimulationTime,
+                gameParameters);
+        }
     }
 
     explosionStateMachine.IsFirstIteration = false;
 
     return false;
+}
+
+template<bool DoExtinguishFire, bool DoDetachNearestPoint>
+void Ship::InternalUpdateExplosionStateMachine(
+    ExplosionStateMachine & explosionStateMachine,
+    float explosionBlastForceProgress,
+    float currentSimulationTime,
+    GameParameters const & gameParameters)
+{
+    //
+    // Update explosion
+    //
+
+    vec2f const centerPosition = explosionStateMachine.CenterPosition;
+
+    // Blast force radius: from 1.0 to BlastForceRadius, linearly with progress
+    float const blastForceRadius =
+        1.0f +
+        std::max(explosionStateMachine.BlastForceRadius - 1.0f, 0.0f) * std::min(1.0f, explosionBlastForceProgress); // Clamp to 1.0 max
+
+    // Blast heat radius: from 0.0 to BlastHeatRadius, linearly with progress
+    float const blastHeatRadius =
+        explosionStateMachine.BlastHeatRadius
+        * explosionBlastForceProgress;
+
+    //
+    // Blast force and heat
+    //
+    // Go through all points and, for each point in radius:
+    //  - Apply blast force
+    //  - Apply blast heat (note: it's supposed to be negative for fire=extionguishing explosions)
+    //  - Keep non-ephemeral point that is closest to blast position; we'll Detach() it later
+    //    (if this is the fist frame of the blast sequence)
+    //
+
+    float const squareHeatRadius = blastHeatRadius * blastHeatRadius;
+    float const squareForceRadius = blastForceRadius * blastForceRadius;
+
+    // Q = q*dt
+    float const blastHeat =
+        explosionStateMachine.BlastHeat * 1000.0f // KJoule->Joule
+        * GameParameters::SimulationStepTimeDuration<float>;
+
+    float nearestStructuralPointSquareDistance = std::numeric_limits<float>::max();
+    ElementIndex nearestStructuralPointIndex = NoneElementIndex;
+
+    // Visit all points
+    for (auto const pointIndex : mPoints)
+    {
+        vec2f const pointRadius = mPoints.GetPosition(pointIndex) - centerPosition;
+        float const squarePointDistance = pointRadius.squareLength();
+
+        if (squarePointDistance < squareHeatRadius)
+        {
+            //
+            // Inject heat at this point
+            //
+
+            float const adjustedHeat =
+                blastHeat
+                * (1.0f - squarePointDistance / squareHeatRadius);
+
+            mPoints.AddHeat(
+                pointIndex,
+                adjustedHeat);
+
+            if constexpr (DoExtinguishFire)
+            {
+                //
+                // Extinguish it if burning
+                //
+
+                if (mPoints.IsBurningForExtinguisherHeatSubtraction(pointIndex))
+                {
+                    mPoints.SmotherCombustion(pointIndex, true); // Fake it's water
+                }
+            }
+        }
+
+        if (squarePointDistance < squareForceRadius)
+        {
+            //
+            // Apply blast force
+            //
+            // (inversely proportional to square root of distance, not second power as one would expect though)
+            //
+
+            float const pointRadiusLength = std::sqrt(squarePointDistance);
+
+            vec2f const blastDir = pointRadius.normalise_approx(pointRadiusLength);
+
+            mPoints.AddStaticForce(
+                pointIndex,
+                blastDir * explosionStateMachine.BlastForceMagnitude / std::sqrt(std::max((pointRadiusLength * 0.3f) + 0.7f, 1.0f)));
+
+            // Update water velocity
+            mPoints.SetWaterVelocity(
+                pointIndex,
+                mPoints.GetWaterVelocity(pointIndex) + blastDir * 100.0f * mPoints.GetWater(pointIndex)); // Magic number
+
+            if constexpr (DoDetachNearestPoint)
+            {
+                //
+                // Check whether this point is the closest point, if it's structural
+                //
+
+                if (squarePointDistance < nearestStructuralPointSquareDistance
+                    && pointIndex < mPoints.GetRawShipPointCount()
+                    && !mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.empty())
+                {
+                    nearestStructuralPointSquareDistance = squarePointDistance;
+                    nearestStructuralPointIndex = pointIndex;
+                }
+            }
+        }
+    }
+
+    //
+    // Eventually detach the nearest point
+    //
+
+    if (explosionStateMachine.IsFirstIteration
+        && NoneElementIndex != nearestStructuralPointIndex)
+    {
+        // Choose a detach velocity - using the same distribution as Debris
+        vec2f const detachVelocity = GameRandomEngine::GetInstance().GenerateUniformRadialVector(
+            GameParameters::MinDebrisParticlesVelocity,
+            GameParameters::MaxDebrisParticlesVelocity);
+
+        // Detach point
+        mPoints.Detach(
+            nearestStructuralPointIndex,
+            detachVelocity,
+            Points::DetachOptions::GenerateDebris
+            | Points::DetachOptions::FireDestroyEvent,
+            currentSimulationTime,
+            gameParameters);
+    }
+
+    //
+    // Apply side-effects
+    //
+
+    mParentWorld.OnBlast(
+        mId,
+        centerPosition,
+        explosionStateMachine.BlastForceMagnitude,
+        blastForceRadius,
+        explosionStateMachine.BlastHeat,
+        blastHeatRadius,
+        explosionStateMachine.Type,
+        gameParameters);
 }
 
 void Ship::UploadExplosionStateMachine(

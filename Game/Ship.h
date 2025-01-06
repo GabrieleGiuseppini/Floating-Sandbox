@@ -791,6 +791,13 @@ private:
         float currentSimulationTime,
         GameParameters const & gameParameters);
 
+    template<bool DoExtinguishFire, bool DoDetachNearestPoint>
+    inline void InternalUpdateExplosionStateMachine(
+        ExplosionStateMachine & explosionStateMachine,
+        float explosionBlastForceProgress,
+        float currentSimulationTime,
+        GameParameters const & gameParameters);
+
     inline void UploadExplosionStateMachine(
         ExplosionStateMachine const & explosionStateMachine,
         Render::RenderContext & renderContext);

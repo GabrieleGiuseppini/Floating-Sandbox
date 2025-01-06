@@ -58,7 +58,7 @@ ComputerCalibrationScore ComputerCalibrator::Calibrate()
 
 void ComputerCalibrator::TuneGame(
     ComputerCalibrationScore const & score,
-    GameParameters & /*gameParameters*/,
+    GameParameters & gameParameters,
     Render::RenderContext & renderContext)
 {
     //
@@ -71,6 +71,9 @@ void ComputerCalibrator::TuneGame(
     {
         // Ocean detail requires CPU as well as GPU
         renderContext.SetOceanRenderDetail(OceanRenderDetailType::Basic);
+
+        // Flames require CPU as well as GPU
+        gameParameters.MaxBurningParticlesPerShip = 112;
     }
 
     if (score.NormalizedGfxScore < 0.1f)

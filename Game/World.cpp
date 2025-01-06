@@ -133,6 +133,7 @@ void World::OnBlast(
     float blastForceRadius, // m
     float blastHeat, // KJ/s
     float blastHeatRadius, // m
+    ExplosionType explosionType,
     GameParameters const & gameParameters)
 {
     //
@@ -146,6 +147,7 @@ void World::OnBlast(
         blastForceRadius,
         blastHeat,
         blastHeatRadius,
+        explosionType,
         gameParameters);
 
     //
@@ -572,6 +574,7 @@ void World::ApplyBlastAt(
         radius,
         0.0f, // No heat
         0.0f, // No heat
+        ExplosionType::Deflagration, // Arbitrary - this gives us side effects we want (forces)
         gameParameters);
 }
 

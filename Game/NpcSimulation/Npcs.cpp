@@ -2484,6 +2484,7 @@ void Npcs::ApplyBlast(
     float blastForceRadius, // m
     float blastHeat, // KJ/s
     float blastHeatRadius, // ms
+    ExplosionType explosionType,
     GameParameters const & gameParameters)
 {
     // The blast parameter is for damage to the ship; here we want a lower
@@ -2530,6 +2531,13 @@ void Npcs::ApplyBlast(
                 mParticles.AddHeat(
                     npcParticle.ParticleIndex,
                     adjustedHeat);
+
+                //
+                // Extinguish burning particles
+                //
+
+                // TODOHERE
+                (void)explosionType;
             }
 
             if (squareParticleDistance < squareForceRadius)

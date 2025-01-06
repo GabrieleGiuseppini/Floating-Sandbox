@@ -1298,6 +1298,7 @@ public:
 		float blastForceRadius, // m
 		float blastHeat, // KJ/s
 		float blastHeatRadius, // m
+		ExplosionType explosionType,
 		GameParameters const & gameParameters);
 
 	void ApplyAntiMatterBombPreimplosion(

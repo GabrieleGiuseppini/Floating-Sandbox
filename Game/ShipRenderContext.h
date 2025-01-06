@@ -645,7 +645,7 @@ public:
             {
                 // TODOHERE
                 effectiveHalfQuadSize = halfQuadSize / (220.0f / 256.0f);
-                explosionIndex = 3.0f;
+                explosionIndex = 0.0f; // More "bubbly" than others
                 yellowing = 0.0f;
                 break;
             }
