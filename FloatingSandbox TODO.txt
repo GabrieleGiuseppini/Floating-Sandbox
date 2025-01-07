@@ -354,6 +354,7 @@
 			+ Switch case in UploadExplosion on ExplosionType
 			= Explosions shader with variator (much like yellowing)
 				=code-ish from fire extinguisher
+					- No alpha dynamic compression
 					- Very transparent
 					- Shader flattens vertically (so looks like a "disc")
 
