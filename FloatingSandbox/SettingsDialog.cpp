@@ -3145,7 +3145,8 @@ void SettingsDialog::PopulateDestructiveToolsPanel(
                         "impact_bomb_cursor",
                         "rc_bomb_cursor",
                         "timer_bomb_cursor",
-                        "am_bomb_cursor"
+                        "am_bomb_cursor",
+                        "fire_extinguishing_bomb_cursor",
                     },
                     resourceLocator);
 

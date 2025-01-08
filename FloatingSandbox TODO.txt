@@ -322,7 +322,7 @@
 		+ New ExplosionType enum value - "FireExtinguishing"
 		+ New material ExplosionType enum value - "FireExtinguishingExplosion"
 
-		= Gadget ("FireExtinguishingBomb")
+		+ Gadget ("FireExtinguishingBomb")
 			! Triggers: fire, breakage, remote detonation
 			+ Immediate explosion
 				+ What state machine do we need, if any?
@@ -334,12 +334,11 @@
 					! old: 4096x2048
 					+ new: 4096x2048
 				+ Fix bleeding
-			= MainFrame
+			+ MainFrame
 				+ Just toggle menu ("Toggle RC Fire-Extinguishing Bomb") - detonation done via Detonate RC Bombs
-				= Tool
-					- Cursor: fire_extinguishing_bomb_cursor
-						- Fire extinguisher, fat, with flames in background
-					- Icon @ SettingsDialog
+				+ Tool
+					+ Cursor: fire_extinguishing_bomb_cursor
+					+ Icon @ SettingsDialog
 			+ Tool -> IGameController
 		+ Ship Explosion state machine
 			+ Physics, with if's on boolean flags calculated as function of ExplosionType

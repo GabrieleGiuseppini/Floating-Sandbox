@@ -425,8 +425,7 @@ FireExtinguishingBombTool::FireExtinguishingBombTool(
         toolCursorManager,
         gameController,
         soundController)
-    // TODOHERE
-    , mCursorImage(WxHelpers::LoadCursorImage("fire_extinguishing_bomb_cursor", 16, 21, resourceLocator))
+    , mCursorImage(WxHelpers::LoadCursorImage("fire_extinguishing_bomb_cursor", 18, 17, resourceLocator))
 {
 }
 
