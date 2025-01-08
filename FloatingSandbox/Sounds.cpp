@@ -171,6 +171,8 @@ SoundType StrToSoundType(std::string const & str)
         return SoundType::AntiMatterBombImplosion;
     else if (Utils::CaseInsensitiveEquals(str, "AntiMatterBombExplosion"))
         return SoundType::AntiMatterBombExplosion;
+    else if (Utils::CaseInsensitiveEquals(str, "FireExtinguishingBombExplosion"))
+        return SoundType::FireExtinguishingBombExplosion;
     else if (Utils::CaseInsensitiveEquals(str, "PhysicsProbeAttached"))
         return SoundType::PhysicsProbeAttached;
     else if (Utils::CaseInsensitiveEquals(str, "PhysicsProbeDetached"))

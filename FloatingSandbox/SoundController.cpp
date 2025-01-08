@@ -2525,14 +2525,13 @@ void SoundController::OnBombExplosion(
 
         case GadgetType::FireExtinguishingBomb:
         {
-            // TODOHERE
             PlayUOneShotMultipleChoiceSound(
-                SoundType::BombExplosion,
+                SoundType::FireExtinguishingBombExplosion,
                 SoundGroupType::Effects,
                 isUnderwater,
                 std::max(
                     100.0f,
-                    50.0f * size),
+                    75.0f * size),
                 true);
 
             break;

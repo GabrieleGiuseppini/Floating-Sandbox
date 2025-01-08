@@ -358,15 +358,16 @@
 					- Very transparent
 					- Shader flattens vertically (so looks like a "disc")
 
-		- Sound (as BombType)
+		+ Sound (as BombType)
 			! Played by SoundsController::OnBombExplosion w/ new gadget bomb type
 			! Above- and Under-water
-			- Sound files
-				- Above
-				- Underwater
-			- SoundController:
-				- Sound type loading
-				- OnBombExplosion: use new sound type
+			+ Sound files
+				+ 2xAbove
+				+ 2xUnderwater
+				+ Test volumes compared with other bombs
+			+ SoundController:
+				+ Sound type loading
+				+ OnBombExplosion: use new sound type
 
 		- Points::Combustion: honor new material explosion type
 			- Explode if on fire == combustion point ignition
