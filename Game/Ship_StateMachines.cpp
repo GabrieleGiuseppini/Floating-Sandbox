@@ -112,17 +112,15 @@ void Ship::InternalUpdateExplosionStateMachine(
 
         if (squarePointDistance < squareHeatRadius)
         {
+            float const scalingFactor = (1.0f - squarePointDistance / squareHeatRadius);
+
             //
             // Inject heat at this point
             //
 
-            float const adjustedHeat =
-                blastHeat
-                * (1.0f - squarePointDistance / squareHeatRadius);
-
             mPoints.AddHeat(
                 pointIndex,
-                adjustedHeat);
+                blastHeat * scalingFactor);
 
             if constexpr (DoExtinguishFire)
             {
@@ -139,11 +137,12 @@ void Ship::InternalUpdateExplosionStateMachine(
                 // Also send temperature below combustion point
                 //
 
+                float const oldTemperature = mPoints.GetTemperature(pointIndex);
+                float const deltaTemperature = mPoints.GetMaterialIgnitionTemperature(pointIndex) / 2.0f - oldTemperature;
+
                 mPoints.SetTemperature(
                     pointIndex,
-                    std::min(
-                        mPoints.GetTemperature(pointIndex),
-                        mPoints.GetMaterialIgnitionTemperature(pointIndex) / 2.0f));
+                    oldTemperature + std::min(deltaTemperature * scalingFactor, 0.0f));
             }
         }
 
@@ -192,6 +191,8 @@ void Ship::InternalUpdateExplosionStateMachine(
     if (explosionStateMachine.IsFirstIteration
         && NoneElementIndex != nearestStructuralPointIndex)
     {
+        assert(DoDetachNearestPoint);
+
         // Choose a detach velocity - using the same distribution as Debris
         vec2f const detachVelocity = GameRandomEngine::GetInstance().GenerateUniformRadialVector(
             GameParameters::MinDebrisParticlesVelocity,
