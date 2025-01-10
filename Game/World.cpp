@@ -1036,8 +1036,8 @@ void World::ApplyThanosSnap(
             radius,
             leftFrontX,
             rightFrontX,
-            mCurrentSimulationTime,
             isSparseMode,
+            mCurrentSimulationTime,
             gameParameters);
     }
 

@@ -412,22 +412,24 @@
 					+ Other two explosions:
 						+ Powder keg
 						+ Sodium
-		- Points::Combustion: honor new material explosion type
-			- Explode if on fire == combustion point ignition
+		+ Points::Combustion: honor new material explosion type
+			+ Explode if on fire == combustion point ignition
 			! Note: not testable
-				- But test normal explosions are not broken
+				+ But test normal explosions are not broken
 
-		- Tests:
-			- UV mode
-				- Bomb
-				- NPC
-			- NPCs panic for this bomb
-			- Lightning (for currentSimulationTime)
-				- From tool
-				- From storm
-			- Thanos snap (for currentSimulationTime)
-			- Laser Ray (for currentSimulationTime)
+		= Tests:
+			+ UV mode
+				+ Bomb
+				+ NPC
+			+ NPCs panic for this bomb
+			+ Lightning (for currentSimulationTime)
+				+ From tool
+				+ From storm
+			+ Thanos snap (for currentSimulationTime)
+			+ Laser Ray (for currentSimulationTime)
 			- Flames on old Dell (for max particles changes) -- verify 112
+
+		- Merge into master
 	
 	- AntiGravity TODOHERE: bomb or tool?
 		- Magnetic?
