@@ -76,7 +76,7 @@ uniform sampler2D paramNoiseTexture;
 // Size of a frame side, in texture coords
 #define FrameSideSize 1. / AtlasSideFrames
 
-#define PI 3.14159265358979323844
+#define PI 3.14159265358979323846
 
 float is_type(float notification_type, float value)
 {
@@ -155,9 +155,8 @@ void main()
         float polarAngle = atan(centeredSpacePosition.y, centeredSpacePosition.x) / (2.0 * PI);
 
         // Rotate based on noise sampled via polar coordinates of pixel
-        #define AngleNoiseResolution 0.8
         vec2 noiseSampleCoords =
-            vec2(polarRadius, polarAngle + 0.5) * AngleNoiseResolution
+            vec2(polarRadius, polarAngle + 0.5)
             + vec2(-0.5 * sprayTime, 0.2* sprayTime);
 
         float angle = texture2D(paramNoiseTexture, noiseSampleCoords).r; // 0.0 -> 1.0
