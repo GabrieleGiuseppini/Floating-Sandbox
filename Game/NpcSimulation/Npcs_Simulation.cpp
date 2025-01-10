@@ -520,7 +520,8 @@ void Npcs::UpdateNpcPhysics(
                         oneNpcParticleAboveIgnitionTemperature = particle.ParticleIndex;
                     }
 
-                    if (mParticles.GetMaterial(particle.ParticleIndex).CombustionType == StructuralMaterial::MaterialCombustionType::Explosion)
+                    if (mParticles.GetMaterial(particle.ParticleIndex).CombustionType == StructuralMaterial::MaterialCombustionType::Explosion
+                        || mParticles.GetMaterial(particle.ParticleIndex).CombustionType == StructuralMaterial::MaterialCombustionType::FireExtinguishingExplosion)
                     {
                         oneNpcParticleExplosive = particle.ParticleIndex;
                     }
@@ -564,32 +565,11 @@ void Npcs::UpdateNpcPhysics(
                     ElementIndex const particleIndex = (npcState->CombustionState.has_value() && oneNpcParticleExplosive != NoneElementIndex)
                         ? oneNpcParticleExplosive : oneNpcParticleAboveIgnitionTemperature;
 
-                    float const blastForce =
-                        mParticles.GetMaterial(particleIndex).ExplosiveCombustionForce
-                        * 1000.0f; // KN -> N
-
-                    float const blastForceRadius =
-                        mParticles.GetMaterial(particleIndex).ExplosiveCombustionForceRadius
-                        * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
-
-                    float const blastHeat =
-                        mParticles.GetMaterial(particleIndex).ExplosiveCombustionHeat
-                        * gameParameters.CombustionHeatAdjustment
-                        * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
-
-                    float const blastHeatRadius =
-                        mParticles.GetMaterial(particleIndex).ExplosiveCombustionHeatRadius
-                        * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
-
-                    TriggerExplosion(
+                    TriggerParticleExplosionWithMaterialProperties(
                         *npcState,
                         particleIndex,
-                        blastForce,
-                        blastForceRadius,
-                        blastHeat,
-                        blastHeatRadius,
-                        5.0f,
-                        ExplosionType::Combustion,
+                        1.0f,
+                        3.0f,
                         currentSimulationTime,
                         gameParameters);
                 }
@@ -3985,45 +3965,13 @@ void Npcs::OnImpact(
         && (mParticles.GetMaterial(npcParticleIndex).CombustionType == StructuralMaterial::MaterialCombustionType::Explosion
             || mParticles.GetMaterial(npcParticleIndex).CombustionType == StructuralMaterial::MaterialCombustionType::FireExtinguishingExplosion))
     {
-        bool const isFireExtinguishingExplosion = (mParticles.GetMaterial(npcParticleIndex).CombustionType == StructuralMaterial::MaterialCombustionType::FireExtinguishingExplosion);
-
         float const impactMultiplier = std::min(impactMagnitude / ExplosionImpactMagnitudeThreshold, 2.5f);
 
-        float const blastForce =
-            mParticles.GetMaterial(npcParticleIndex).ExplosiveCombustionForce
-            * 1000.0f // KN -> N
-            * impactMultiplier;
-
-        float const blastForceRadius =
-            mParticles.GetMaterial(npcParticleIndex).ExplosiveCombustionForceRadius
-            * impactMultiplier * impactMultiplier
-            * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
-
-        float const blastHeat =
-            mParticles.GetMaterial(npcParticleIndex).ExplosiveCombustionHeat
-            * gameParameters.CombustionHeatAdjustment
-            * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
-
-        float const blastHeatRadius =
-            mParticles.GetMaterial(npcParticleIndex).ExplosiveCombustionHeatRadius
-            * (isFireExtinguishingExplosion ? 1.0f : impactMultiplier * impactMultiplier)
-            * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
-
-        float const renderRadiusOffset = isFireExtinguishingExplosion
-            ? blastHeatRadius - blastForceRadius + 3.0f // Render radius to equal heat (extinguishing) radius, plus magic offset
-            : 3.0f;
-
-        TriggerExplosion(
+        TriggerParticleExplosionWithMaterialProperties(
             npc,
             npcParticleIndex,
-            blastForce, // N
-            blastForceRadius,
-            blastHeat, // KJ/s
-            blastHeatRadius,
-            renderRadiusOffset,
-            isFireExtinguishingExplosion
-                ? ExplosionType::FireExtinguishing
-                : ExplosionType::Combustion,
+            impactMultiplier,
+            3.0f,
             currentSimulationTime,
             gameParameters);
     }
@@ -4039,6 +3987,55 @@ void Npcs::OnImpact(
             mParticles.GetAnyWaterness(npcParticleIndex) >= 0.5f,
             dissipatedKineticEnergy);
     }
+}
+
+void Npcs::TriggerParticleExplosionWithMaterialProperties(
+    StateType & npc,
+    ElementIndex npcParticleIndex,
+    float multiplier,
+    float renderRadiusOffset,
+    float currentSimulationTime,
+    GameParameters const & gameParameters)
+{
+    bool const isFireExtinguishingExplosion = (mParticles.GetMaterial(npcParticleIndex).CombustionType == StructuralMaterial::MaterialCombustionType::FireExtinguishingExplosion);
+
+    float const blastForce =
+        mParticles.GetMaterial(npcParticleIndex).ExplosiveCombustionForce
+        * 1000.0f // KN -> N
+        * multiplier;
+
+    float const blastForceRadius =
+        mParticles.GetMaterial(npcParticleIndex).ExplosiveCombustionForceRadius
+        * multiplier * multiplier
+        * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
+
+    float const blastHeat =
+        mParticles.GetMaterial(npcParticleIndex).ExplosiveCombustionHeat
+        * gameParameters.CombustionHeatAdjustment
+        * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+
+    float const blastHeatRadius =
+        mParticles.GetMaterial(npcParticleIndex).ExplosiveCombustionHeatRadius
+        * (isFireExtinguishingExplosion ? 1.0f : multiplier * multiplier)
+        * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
+
+    float const actualRenderRadiusOffset = isFireExtinguishingExplosion
+        ? blastHeatRadius - blastForceRadius + renderRadiusOffset // Render radius to equal heat (extinguishing) radius, plus offset
+        : renderRadiusOffset;
+
+    TriggerExplosion(
+        npc,
+        npcParticleIndex,
+        blastForce, // N
+        blastForceRadius,
+        blastHeat, // KJ/s
+        blastHeatRadius,
+        actualRenderRadiusOffset,
+        isFireExtinguishingExplosion
+            ? ExplosionType::FireExtinguishing
+            : ExplosionType::Combustion,
+        currentSimulationTime,
+        gameParameters);
 }
 
 void Npcs::TriggerExplosion(

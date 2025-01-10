@@ -57,7 +57,7 @@ in vec2 auxPosition; // VirtualSpacePosition -1..1|CenterPosition
 uniform float paramTime;
 uniform sampler2D paramNoiseTexture;
 
-#define PI 3.14159265358979323844
+#define PI 3.14159265358979323846
 
 float is_type(float notification_type, float value)
 {

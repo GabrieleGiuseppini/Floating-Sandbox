@@ -1896,6 +1896,14 @@ private:
 		float currentSimulationTime,
 		GameParameters const & gameParameters);
 
+	void TriggerParticleExplosionWithMaterialProperties(
+		StateType & npc,
+		ElementIndex npcParticleIndex,
+		float multiplier,
+		float renderRadiusOffset,
+		float currentSimulationTime,
+		GameParameters const & gameParameters);
+
 	void TriggerExplosion(
 		StateType & npc,
 		ElementIndex npcParticleIndex,
