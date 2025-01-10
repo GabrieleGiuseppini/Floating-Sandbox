@@ -195,7 +195,7 @@ void main()
 
         // Straighten the spray at the center and make full turbulence outside,
         // scaling it at the same time
-        variationR *= 0.65 * smoothstep(-0.4, 0.4, ra.x);
+        variationR *= 1.65 * smoothstep(-0.4, 0.4, ra.x);
 
         // Randomize!
         float radius = ra.x + variationR;

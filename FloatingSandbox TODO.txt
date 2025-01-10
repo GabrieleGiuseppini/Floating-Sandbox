@@ -356,14 +356,10 @@
 				+ Test (on Ship only):
 					+ Explosion on non-burning point: verify temperature
 					+ Explosion on burning point: verify temperature and smothering
-		= ShipRenderContext: uploaded via existing UploadExplosion
+		+ ShipRenderContext: uploaded via existing UploadExplosion
 			+ Switch case in UploadExplosion on ExplosionType
-			= Explosions shader with variator (much like yellowing)
-				=code-ish from fire extinguisher
-					- No alpha dynamic compression
-					- Very transparent
-					- Shader flattens vertically (so looks like a "disc")
-
+			+ Explosions shader with variator (much like yellowing)
+				+code-ish from fire extinguisher
 		+ Sound (as BombType)
 			! Played by SoundsController::OnBombExplosion w/ new gadget bomb type
 			! Above- and Under-water
@@ -386,7 +382,7 @@
 					+ Explosion of gadget bomb on non-burning NPC: verify temperature of particles
 					+ Explosion of gadget bomb on burning NPC: verify temperature of particles and smothering
 		- New furniture NPC
-			- "Fire-Extinguishing Bomb"
+			! "Fire-Extinguishing Bomb"
 			- StructuralMaterial 
 				- StructuralMaterial for the NPC, w/new explosion type and appropriate 4x blast values
 					- Remember: heat must be zero
@@ -397,11 +393,21 @@
 			- Trigger
 				! See if makes sense to have helpers for triggers
 				- Impact
-				- Itself on fire	
+				- Itself on fire
+					- oneNpcParticleExplosive must be set
 			- Test (on both Ship and NPCs):
-				- Explosion of new NPC on non-burning NPC: verify temperature of particles
-				- Explosion of new NPC on burning NPC: verify temperature of particles and smothering
-
+				- Impact
+					- Explosion of new NPC on non-burning NPC: verify temperature of particles
+					- Explosion of new NPC on burning NPC: verify temperature of particles and smothering
+					- Other two explosions:
+						- Powder keg
+						- Sodium
+				- Itself on fire
+					- Explosion of new NPC on non-burning NPC: verify temperature of particles
+					- Explosion of new NPC on burning NPC: verify temperature of particles and smothering
+					- Other two explosions:
+						- Powder keg
+						- Sodium
 		- Points::Combustion: honor new material explosion type
 			- Explode if on fire == combustion point ignition
 			! Note: not testable
