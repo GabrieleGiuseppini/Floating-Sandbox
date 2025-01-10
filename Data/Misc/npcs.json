@@ -1101,6 +1101,23 @@
             },
 
             {
+                "name": "Fire-Extinguishing Bomb",
+                "role": "Other",
+                "material": "Fire-Extinguishing Bomb",
+                "particle_mesh": {
+                    "kind": "Quad",
+                    "height": 0.35,
+                    "particle_attributes_overrides": [
+                        {
+                            "buoyancy_volume_fill": 0.021
+                        }
+                    ]
+                },
+                "texture_filename_stem": "sodium_tank_1",
+                "render_color": "#7B1818"
+            },
+
+            {
                 "name": "Gunpowder Keg",
                 "role": "Other",
                 "material": "Gunpowder Light Crate",
@@ -1313,6 +1330,7 @@
             "Small Table 2": "Tavolino 2",
             "Stone Ballast": "Zavorra di Pietra",
 	    "Diesel Can": "Tanica di Diesel",
+	    "Fire-Extinguishing Bomb": "Bomba Estinguente",
 	    "Hydrogen Tank": "Bombola di Idrogeno",
 	    "Sodium Tank": "Bombola di Sodio",
 	    "TNT Crate": "Cassa di Tritolo",
