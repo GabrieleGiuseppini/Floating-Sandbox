@@ -134,6 +134,16 @@ void Ship::InternalUpdateExplosionStateMachine(
                 {
                     mPoints.SmotherCombustion(pointIndex, true); // Fake it's water
                 }
+
+                //
+                // Also send temperature below combustion point
+                //
+
+                mPoints.SetTemperature(
+                    pointIndex,
+                    std::min(
+                        mPoints.GetTemperature(pointIndex),
+                        mPoints.GetMaterialIgnitionTemperature(pointIndex) / 2.0f));
             }
         }
 

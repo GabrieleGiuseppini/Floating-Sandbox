@@ -147,7 +147,7 @@ void FireExtinguishingBombGadget::Detonate(
         // Blast force
         float const blastForce =
             GameParameters::BaseBombBlastForce
-            * 7.0f // Bomb-specific multiplier
+            * 7.0f // Bomb-specific multiplier (very low, just for NPC scenics)
             * (gameParameters.IsUltraViolentMode
                 ? std::min(gameParameters.BombBlastForceAdjustment * 10.0f, GameParameters::MaxBombBlastForceAdjustment * 2.0f)
                 : gameParameters.BombBlastForceAdjustment);
@@ -161,20 +161,19 @@ void FireExtinguishingBombGadget::Detonate(
             )
             * 0.3f; // Bomb-specific multiplier
 
-        // Blast heat (removed)
-        float const blastHeat =
-            -gameParameters.BombBlastHeat
-            * 10.0f // Bomb-specific multiplier
-            * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+        // Blast heat
+        // Note: ship's explosion state machine will change temperatures forcibly
+        float const blastHeat = 0.0f;
 
         // Blast heat radius
+        // Note: also used for extinguish radius
         float const blastHeatRadius =
             (
                 gameParameters.IsUltraViolentMode
                 ? std::min(gameParameters.BombBlastRadius * 10.0f, GameParameters::MaxBombBlastRadius * 2.0f)
                 : gameParameters.BombBlastRadius
             )
-            * 3.0f; // Bomb-specific multiplier
+            * 3.2f; // Bomb-specific multiplier
 
         // Start explosion
         mShipPhysicsHandler.StartExplosion(

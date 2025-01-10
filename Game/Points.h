@@ -1644,6 +1644,11 @@ public:
         return mMaterialHeatCapacityReciprocalBuffer[pointElementIndex];
     }
 
+    float GetMaterialIgnitionTemperature(ElementIndex pointElementIndex) const
+    {
+        return mMaterialIgnitionTemperatureBuffer[pointElementIndex];
+    }
+
     /*
      * Checks whether a point is simply burning.
      */

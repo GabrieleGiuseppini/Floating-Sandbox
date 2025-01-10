@@ -311,7 +311,7 @@
 
 	+ merge back into master
 
-	- Fire Extinguishing Bomb:		
+	= Fire-Extinguishing Bomb:		
 		! Name: Fire-Extinguishing Bomb
 		! Implemented as new ExplosionType; re-uses ship state machine
 			! Blast radius: very short
@@ -349,6 +349,13 @@
 			+ RenderUpload
 			+ Tests:
 				+ Force blast on NPCs
+			+ Too much heat removed: ship goes to -30,000K!
+				! Just change temperature of particle directly to half ignition temperature
+				+ Heat removed from bomb: little (not that x10 multiplier) - or even zero
+				+ If fire-extinguishing: change temperature of particle directly to half ignition temperature
+				+ Test (on Ship only):
+					+ Explosion on non-burning point: verify temperature
+					+ Explosion on burning point: verify temperature and smothering
 		= ShipRenderContext: uploaded via existing UploadExplosion
 			+ Switch case in UploadExplosion on ExplosionType
 			= Explosions shader with variator (much like yellowing)
@@ -368,14 +375,16 @@
 				+ Sound type loading
 				+ OnBombExplosion: use new sound type
 
-		- Points::Combustion: honor new material explosion type
-			- Explode if on fire == combustion point ignition
 		+ World::OnBlast:
 			+ Takes ExplosionType
 				+ Passes to Npcs		
 		- Npcs::ApplyBlast:
 			+ Takes ExplosionType
 			- Physics, with if's on boolean flags calculated as function of ExplosionType
+				- Same we do above on ship
+				- Test (on NPCs only):
+					- Explosion of gadget bomb on non-burning NPC: verify temperature of particles
+					- Explosion of gadget bomb on burning NPC: verify temperature of particles and smothering
 		- New furniture NPC
 			- Fire-Extinguishing Bomb
 			- StructuralMaterial 
@@ -387,6 +396,14 @@
 			- Trigger
 				- Impact
 				- Fire		
+			- Test (on both Ship and NPCs):
+				- Explosion of new NPC on non-burning NPC: verify temperature of particles
+				- Explosion of new NPC on burning NPC: verify temperature of particles and smothering
+
+		- Points::Combustion: honor new material explosion type
+			- Explode if on fire == combustion point ignition
+			! Note: not testable
+				- But test normal explosions are not broken
 
 		- Tests:
 			- UV mode
