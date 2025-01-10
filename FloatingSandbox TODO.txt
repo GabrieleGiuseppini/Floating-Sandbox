@@ -392,22 +392,22 @@
 			+ Test NPC per-se
 				+ Fall
 				+ Buoyancy
-			- Trigger
+			= Trigger
 				! See if makes sense to have helpers for triggers
-				- Impact
+				+ Impact
 				- Itself on fire
 					- oneNpcParticleExplosive must be set
 			- Atlas frame (TimCan)
 				- Change filename in npcs.json
 			- Test (on both Ship and NPCs):
-				- Impact
-					- Explosion of new NPC on non-burning NPC: verify temperature of particles
-					- Explosion of new NPC on burning NPC: verify temperature of particles and smothering
-					- Other two explosions:
-						- Powder keg
+				+ Impact
+					+ Explosion of new NPC on burning ship: verify temperature of particles and smothering
+					+ Explosion of new NPC on burning NPC: verify temperature of particles and smothering
+					+ Other two explosions:
+						+ Powder keg
 						- Sodium
 				- Itself on fire
-					- Explosion of new NPC on non-burning NPC: verify temperature of particles
+					- Explosion of new NPC on burning ship: verify temperature of particles
 					- Explosion of new NPC on burning NPC: verify temperature of particles and smothering
 					- Other two explosions:
 						- Powder keg

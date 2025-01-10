@@ -3911,7 +3911,7 @@
 	    "explosive_combustion_force": 350.0,
             "explosive_combustion_force_radius": 0.7,
 	    "explosive_combustion_heat": 0.0,
-	    "explosive_combustion_heat_radius": 15.0,
+	    "explosive_combustion_heat_radius": 7.5,
 	    "elasticity_coefficient": 0.5,
             "friction_kinetic_coefficient": 0.69,
             "friction_static_coefficient": 1.25,
