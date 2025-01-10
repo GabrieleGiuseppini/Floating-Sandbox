@@ -1908,6 +1908,15 @@ private:
 		float currentSimulationTime,
 		GameParameters const & gameParameters);
 
+	template<bool DoExtinguishFire>
+	inline void InternalApplyBlast(
+		ShipId shipId,
+		vec2f const & centerPosition,
+		float actualBlastAcceleration,
+		float actualBlastForceRadius,
+		float actualBlastHeat,
+		float actualBlastHeatRadius);
+
 	void MaintainNpcUnfolded(
 		StateType & npc,
 		Ship const & homeShip,

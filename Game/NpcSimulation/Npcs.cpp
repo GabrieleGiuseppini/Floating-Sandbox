@@ -2492,7 +2492,7 @@ void Npcs::ApplyBlast(
     // make the force ~proportional to the particle's mass so we have ~constant
     // runaway speeds
 
-    float const actualForceRadius =
+    float const actualBlastForceRadius =
         blastForceRadius
         * GameParameters::NpcBasePassiveBlastRadiusMultiplier
         * gameParameters.NpcPassiveBlastRadiusAdjustment;
@@ -2502,45 +2502,90 @@ void Npcs::ApplyBlast(
         / 3750.0f // This yields a blast force of 35000, i.e. an acceleration of 1000 on a human particle
         * 3.0f; // Magic number
 
-    float const squareForceRadius = actualForceRadius * actualForceRadius;
-
-    float const actualHeatRadius =
+    float const actualBlastHeatRadius =
         blastHeatRadius
         * GameParameters::NpcBasePassiveBlastRadiusMultiplier
         * gameParameters.NpcPassiveBlastRadiusAdjustment;
 
-    float const squareHeatRadius = actualHeatRadius * actualHeatRadius;
+    if (explosionType != ExplosionType::FireExtinguishing)
+    {
+        InternalApplyBlast<false>(
+            shipId,
+            centerPosition,
+            actualBlastAcceleration,
+            actualBlastForceRadius,
+            blastHeat,
+            actualBlastHeatRadius);
+    }
+    else
+    {
+        InternalApplyBlast<true>(
+            shipId,
+            centerPosition,
+            actualBlastAcceleration,
+            actualBlastForceRadius,
+            blastHeat,
+            actualBlastHeatRadius);
+    }}
+
+template<bool DoExtinguishFire>
+void Npcs::InternalApplyBlast(
+    ShipId shipId,
+    vec2f const & centerPosition,
+    float actualBlastAcceleration,
+    float actualBlastForceRadius,
+    float actualBlastHeat,
+    float actualBlastHeatRadius)
+{
+    float const squareBlastForceRadius = actualBlastForceRadius * actualBlastForceRadius;
+    float const squareBlastHeatRadius = actualBlastHeatRadius * actualBlastHeatRadius;
 
     VisitNpcParticlesForInteraction(
         shipId,
-        [&](StateType &, StateType::NpcParticleStateType & npcParticle)
+        [&](StateType & npc, StateType::NpcParticleStateType & npcParticle)
         {
             vec2f const particleRadius = mParticles.GetPosition(npcParticle.ParticleIndex) - centerPosition;
             float const squareParticleDistance = particleRadius.squareLength();
 
-            if (squareParticleDistance < squareHeatRadius)
+            if (squareParticleDistance < squareBlastHeatRadius)
             {
+                float const scalingFactor = (1.0f - squareParticleDistance / squareBlastHeatRadius);
+
                 //
                 // Inject heat
                 //
 
-                float const adjustedHeat =
-                    blastHeat
-                    * (1.0f - squareParticleDistance / squareHeatRadius);
-
                 mParticles.AddHeat(
                     npcParticle.ParticleIndex,
-                    adjustedHeat);
+                    actualBlastHeat * scalingFactor);
 
-                //
-                // Extinguish burning particles
-                //
+                if constexpr (DoExtinguishFire)
+                {
+                    //
+                    // Extinguish (unconditionally)
+                    //
 
-                // TODOHERE
-                (void)explosionType;
+                    float const deltaCombustionProgress = 0.2f - npc.CombustionProgress;
+                    npc.CombustionProgress = npc.CombustionProgress + std::min(deltaCombustionProgress * scalingFactor, 0.0f);
+
+                    //
+                    // Also send temperature below combustion point
+                    //
+
+                    float const oldTemperature = mParticles.GetTemperature(npcParticle.ParticleIndex);
+                    float const deltaTemperature = mParticles.GetMaterial(npcParticle.ParticleIndex).IgnitionTemperature / 2.0f - oldTemperature;
+
+                    mParticles.SetTemperature(
+                        npcParticle.ParticleIndex,
+                        oldTemperature + std::min(deltaTemperature * scalingFactor, 0.0f));
+                }
+                else
+                {
+                    (void)npc;
+                }
             }
 
-            if (squareParticleDistance < squareForceRadius)
+            if (squareParticleDistance < squareBlastForceRadius)
             {
                 //
                 // Apply blast force
@@ -2551,7 +2596,7 @@ void Npcs::ApplyBlast(
                 float const particleBlastForce =
                     actualBlastAcceleration * std::sqrtf(mParticles.GetMass(npcParticle.ParticleIndex))
                     // Decrease with distance
-                    * (1.0f - particleRadiusLength / actualForceRadius);
+                    * (1.0f - particleRadiusLength / actualBlastForceRadius);
 
                 mParticles.AddExternalForce(
                     npcParticle.ParticleIndex,
