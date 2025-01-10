@@ -834,7 +834,8 @@ void Points::UpdateCombustionLowFrequency(
                         pointIndex,
                         (GetTemperature(pointIndex) - effectiveIgnitionTemperature) / effectiveIgnitionTemperature);
                 }
-                else if (combustionType == StructuralMaterial::MaterialCombustionType::Explosion)
+                else if (combustionType == StructuralMaterial::MaterialCombustionType::Explosion
+                    || combustionType == StructuralMaterial::MaterialCombustionType::FireExtinguishingExplosion)
                 {
                     // Store point as explosion candidate
                     mCombustionExplosionCandidates.emplace_back(
@@ -1052,6 +1053,8 @@ void Points::UpdateCombustionLowFrequency(
             // Explode!
             //
 
+            bool const isFireExtinguishing = (mMaterialCombustionTypeBuffer[pointIndex] == StructuralMaterial::MaterialCombustionType::FireExtinguishingExplosion);
+
             float const blastForce =
                 mMaterialsBuffer[pointIndex].Structural->ExplosiveCombustionForce
                 * 1000.0f; // KN -> N
@@ -1078,8 +1081,12 @@ void Points::UpdateCombustionLowFrequency(
                 blastForceRadius,
                 blastHeat,
                 blastHeatRadius,
-                10.0f, // Render radius offset
-                ExplosionType::Combustion,
+                isFireExtinguishing // Render radius offset
+                    ? blastHeatRadius - blastForceRadius + 10.0f
+                    : 10.0f,
+                isFireExtinguishing
+                    ? ExplosionType::FireExtinguishing
+                    : ExplosionType::Combustion,
                 gameParameters);
 
             // Notify explosion
