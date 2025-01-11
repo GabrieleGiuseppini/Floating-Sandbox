@@ -311,7 +311,7 @@
 
 	+ merge back into master
 
-	= Fire-Extinguishing Bomb:		
+	+ Fire-Extinguishing Bomb:		
 		! Name: Fire-Extinguishing Bomb
 		! Implemented as new ExplosionType; re-uses ship state machine
 			! Blast radius: very short
@@ -417,7 +417,7 @@
 			! Note: not testable
 				+ But test normal explosions are not broken
 
-		= Tests:
+		+ Tests:
 			+ UV mode
 				+ Bomb
 				+ NPC
@@ -427,7 +427,7 @@
 				+ From storm
 			+ Thanos snap (for currentSimulationTime)
 			+ Laser Ray (for currentSimulationTime)
-			- Flames on old Dell (for max particles changes) -- verify 112
+			+ Flames on old Dell (for max particles changes) -- verify 112
 
 		- Merge into master
 	
