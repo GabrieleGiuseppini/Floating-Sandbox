@@ -429,14 +429,22 @@
 			+ Laser Ray (for currentSimulationTime)
 			+ Flames on old Dell (for max particles changes) -- verify 112
 
-		- Merge into master
+		+ Merge into master
+		+ changelist
+
+	- AntiGravity TODOHERE: bomb or tool?
+		- Make branch
+		- First test feasibility
+			- Try with mass imbalance; possible funcs f(m):
+				- f: 0 at 0, growing slowly with m => then mass = mass - f(m)
+			- Try with segment
+		- If ok:
+			- Line shader:
+				- Progress with chaotic noise
 	
 	- Test: underwater forces based on waves (derivative @ surface plus damper for depth)
 		- Just test feasibility
 		- If ok, optimize using cached depth?
-
-	- AntiGravity TODOHERE: bomb or tool?
-		- Magnetic?
 
 	- See DKUZ bug
 

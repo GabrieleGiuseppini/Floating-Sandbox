@@ -7,6 +7,9 @@
 - Improved Human NPC behaviors:
 	- NPCs now "look ahead" when walking and avoid falling into holes
 	- NPCs run away from running water
+- Added new bomb type: Fire-Extinguishing Bomb
+	- Use it to quickly extinguish fires, but watch out for its blast wave!
+	- ...also added as NPC
 - Added new "Move/Rotate Gripped" tool, aka "Physics Move"
 	- Simulates moving or rotating a ship while it is being held by a grip
 	- The old "Move/Rotate" tool is not really physical - it simply pauses simulation while the ship is being moved or rotated; this new tool, instead, moves or rotates a ship in a real "physical" fashion
