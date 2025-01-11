@@ -381,7 +381,7 @@
 				+ Test (on NPCs only):
 					+ Explosion of gadget bomb on non-burning NPC: verify temperature of particles
 					+ Explosion of gadget bomb on burning NPC: verify temperature of particles and smothering
-		= New furniture NPC
+		+ New furniture NPC
 			! "Fire-Extinguishing Bomb"
 			+ StructuralMaterial 
 				+ StructuralMaterial for the NPC, w/new explosion type and appropriate 4x blast values
@@ -397,8 +397,8 @@
 				+ Impact
 				+ Itself on fire
 					+ oneNpcParticleExplosive must be set
-			- Atlas frame (TimCan)
-				- Change filename in npcs.json
+			+ Atlas frame (TimCan)
+				+ Change filename in npcs.json
 			+ Test (on both Ship and NPCs):
 				+ Impact
 					+ Explosion of new NPC on burning ship: verify temperature of particles and smothering
@@ -431,6 +431,10 @@
 
 		- Merge into master
 	
+	- Test: underwater forces based on waves (derivative @ surface plus damper for depth)
+		- Just test feasibility
+		- If ok, optimize using cached depth?
+
 	- AntiGravity TODOHERE: bomb or tool?
 		- Magnetic?
 
