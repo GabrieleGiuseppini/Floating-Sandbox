@@ -435,7 +435,7 @@
 	X See DKUZ bug
 
 	- Tinies:
-		- Furniture: redo proportions to human, according to screenshot; e.g. barrel: as tall as half human
+		+ Furniture: redo proportions to human, according to screenshot; e.g. barrel: as tall as half human
 
 	= Localization 1:
 		    "Diesel Can"
