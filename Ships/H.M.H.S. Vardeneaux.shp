@@ -2,7 +2,7 @@
 	"structure_image":"hmhs_vardeneaux_structural.png.dat",
         "electrical_image":"hmhs_vardeneaux_electrical.png.dat",
 	"ship_name":"H.M.H.S. Vardeneaux",
-	"created_by":"TopHat",
+	"created_by":"Mia",
 	"year_built":"1925",
 	"offset":{"x":0, "y":-20},
 

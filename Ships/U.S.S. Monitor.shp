@@ -2,7 +2,7 @@
 	"structure_image":"uss_monitor_structure.png.dat",
         "electrical_image":"uss_monitor_electrical.png.dat",
 	"ship_name":"U.S.S. Monitor",
-	"created_by":"TopHatLemons",
+	"created_by":"Mia",
 	"year_built":"1862",
 	"electrical_panel":{
 

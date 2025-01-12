@@ -436,6 +436,11 @@
 
 	- Tinies:
 		+ Furniture: redo proportions to human, according to screenshot; e.g. barrel: as tall as half human
+		+ Change the name "tophat" or "tophatlemons" to "Mia"
+			+ Credits
+			+ Ships
+		- Storm: problem with clouds staying back when base speed is zero
+			- Solution: do not slow down storm clouds to a halt (min velocity)
 
 	= Localization 1:
 		    "Diesel Can"
@@ -507,6 +512,8 @@
 			- 1. Do test above: see if planes and Z are enough, if all shaders do early discard
 			- 2. If test ok, finalize work with plane-1
 				- Replace Flames' dual upload
+		- Also, new fire emitter for black smore
+			- See if this item was somewhere else in the plan
 
 	- New materials (*)
 

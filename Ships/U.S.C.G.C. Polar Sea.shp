@@ -3,7 +3,7 @@
         "electrical_image":"uscgc_polar_sea_electrical.png.dat",
 	"offset":{"x":0.0, "y":-11.0},
 	"ship_name":"U.S.C.G.C. Polar Sea",
-	"created_by":"TopHat",
+	"created_by":"Mia",
 	"year_built":"1999",
 	"electrical_panel":{
 		"20": {"panel_x":-7, "panel_y":0, "label":"Engine 1" },

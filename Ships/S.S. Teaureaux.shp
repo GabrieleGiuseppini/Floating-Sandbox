@@ -2,7 +2,7 @@
 	"structure_image":"ss_teaureaux_structural.png.dat",
         "electrical_image":"ss_teaureaux_electrical.png.dat",
 	"ship_name":"S.S. Teaureaux",
-	"created_by":"TopHat",
+	"created_by":"Mia",
 	"year_built":"1923",
 	"offset":{"x":0, "y":-20},
 

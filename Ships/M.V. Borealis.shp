@@ -3,7 +3,7 @@
         "electrical_image":"mv_borealis_electrical.png.dat",
 	"offset":{"x":0.0, "y":-11.0},
 	"ship_name":"M.V. Borealis",
-	"created_by":"TopHat",
+	"created_by":"Mia",
 	"year_built":"1997",
 	"electrical_panel":{
 		"20": {"panel_x":-7, "panel_y":0, "label":"Engine 1" },
