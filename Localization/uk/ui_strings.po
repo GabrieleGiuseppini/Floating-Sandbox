@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Floating Sandbox\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-01-12 01:29+0100\n"
+"PO-Revision-Date: 2025-01-13 00:34+0100\n"
 "Last-Translator: Gabriele Giuseppini <gabrielegiuseppini@gmail.com>\n"
 "Language-Team: Ilya Voloshin; Roman Shavernew (DioxCode)\n"
 "Language: ru\n"
@@ -1361,12 +1361,12 @@ msgid "Enables or disables auto-focus when an NPC is added."
 msgstr "Вмикає або вимикає автофокус, коли додається НПС."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:1155
-#, fuzzy
-#| msgid "Enables or disables auto-focus when an NPC is added."
 msgid ""
 "Enables or disables auto-toggling to the exterior view when a non-NPC tool "
 "is selected."
-msgstr "Вмикає або вимикає автофокус, коли додається НПС."
+msgstr ""
+"Вмикає або вимикає автоматичне перемикання на зовнішній вигляд, коли вибран "
+"інструмент, що не є НПС."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2548
 msgid "Enables or disables automatic cycling of daylight."
@@ -1505,10 +1505,6 @@ msgstr ""
 "або Відштовхувати, на НПС."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4043
-#, fuzzy
-#| msgid ""
-#| "Enables or disables the effect of physics tools - such as Swirl, Attract, "
-#| "or Repel - on NPCs."
 msgid ""
 "Enables or disables the effect of physics tools - such as Swirl, Attract, or "
 "Repel - on Ships."
@@ -1546,13 +1542,9 @@ msgid ""
 msgstr "Вмикає або вимикає вікно з описом кораблів під час їх завантаження."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2669
-#, fuzzy
-#| msgid ""
-#| "Enables or disables generation of wakes when engines are running "
-#| "underwater."
 msgid ""
 "Enables or disables the working of propellers when they are not underwater."
-msgstr "Вмикає або вимикає генерацію сліду під час роботи двигунів під водою."
+msgstr "Вмикає або вимикає роботу гвинтів, коли вони не під водою."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:1047
 msgid ""
@@ -1699,10 +1691,8 @@ msgid "Fire Extinguisher"
 msgstr "Вогнегасник"
 
 #: ..\ShipBuilderLib\UI\MaterialPalette.cpp:675
-#, fuzzy
-#| msgid "Fire Extinguisher"
 msgid "Fire-Extinguishing"
-msgstr "Вогнегасник"
+msgstr "Пожежогасіння"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2860
 msgid "Fishes"
@@ -2444,10 +2434,8 @@ msgid "Move/Rotate"
 msgstr "Рухати/Повертати"
 
 #: ..\FloatingSandbox\MainFrame.cpp:406
-#, fuzzy
-#| msgid "Move/Rotate"
 msgid "Move/Rotate Gripped"
-msgstr "Рухати/Повертати"
+msgstr "Переміщення/Обертання"
 
 #: ..\FloatingSandbox\MainFrame.cpp:722
 msgid "Mute"
@@ -2656,10 +2644,8 @@ msgstr ""
 "Відкрийте Суднобудівник для редагування завантаженого в даний момент корабля"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4038
-#, fuzzy
-#| msgid "&Options"
 msgid "Options"
-msgstr "&Параметри"
+msgstr "Опції"
 
 #: ..\UILib\ShipLoadDialog.cpp:545
 msgid "Order ships by features"
@@ -2770,10 +2756,8 @@ msgid "Physics Tools Affect NPCs"
 msgstr "Інструменти фізики впливають на НПС"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4042
-#, fuzzy
-#| msgid "Physics Tools Affect NPCs"
 msgid "Physics Tools Affect Ships"
-msgstr "Інструменти фізики впливають на НПС"
+msgstr "Фізичні інструменти впливають на кораблі"
 
 #: ..\FloatingSandbox\MainFrame.cpp:411
 msgid "Pick-n-Pull"
@@ -2884,7 +2868,7 @@ msgstr "Програмується в Амстердамі, Нідерланди
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2668
 msgid "Propellers Work Above Water"
-msgstr ""
+msgstr "Пропелери працюють над водою"
 
 #: ..\ShipBuilderLib\Controller.cpp:218 ..\ShipBuilderLib\MainFrame.cpp:1743
 msgid "Properties"
@@ -4230,7 +4214,7 @@ msgstr "Радіокерована бомба"
 
 #: ..\FloatingSandbox\MainFrame.cpp:491
 msgid "Toggle RC Fire-Extinguishing Bomb"
-msgstr ""
+msgstr "Перемкніть Вогнегасну бомбу"
 
 #: ..\ShipBuilderLib\UI\MaterialPalette.cpp:813
 msgid "Toggle Switch"
@@ -4242,7 +4226,7 @@ msgstr "Бомба з таймером"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:1154
 msgid "Toggle to Exterior With Non-NPC Tool"
-msgstr ""
+msgstr "Перемикання на зовнішній вигляд за допомогою інструмента, що не є NPC"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2404
 msgid "Tolerance:"
