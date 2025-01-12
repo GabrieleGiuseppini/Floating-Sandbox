@@ -917,17 +917,33 @@ void Ship::DrawTo(Interaction::ArgumentsUnion::DrawArguments const & args)
     for (auto pointIndex : mPoints)
     {
         vec2f displacement = (args.CenterPos - mPoints.GetPosition(pointIndex));
-        float forceMagnitude = args.Strength / sqrtf(0.1f + displacement.length());
 
-        // Scale back force if mass is small
-        // 0  -> 0
-        // 50 -> 1
-        // +INF -> 1
-        forceMagnitude *= std::min(mPoints.GetMass(pointIndex) / 50.0f, 1.0f);
+        ////float forceMagnitude = args.Strength / sqrtf(0.1f + displacement.length());
 
-        mPoints.AddStaticForce(
-            pointIndex,
-            displacement.normalise() * forceMagnitude);
+        ////// Scale back force if mass is small
+        ////// 0  -> 0
+        ////// 50 -> 1
+        ////// +INF -> 1
+        ////forceMagnitude *= std::min(mPoints.GetMass(pointIndex) / 50.0f, 1.0f);
+
+        ////mPoints.AddStaticForce(
+        ////    pointIndex,
+        ////    displacement.normalise() * forceMagnitude);
+
+        float const m = mPoints.GetMass(pointIndex);
+        float const m2 = std::max(m - m * m * (100.0f / (700.0f * 700.0f)), 0.0f);
+        //float const m2 = std::max(m - m * m * (10.0f / (300.0f * 300.0f)), 0.0f);
+        //float const m2 = m + std::max(200.0f - m * m * (200.0f / (100.0f * 100.0f)), 0.0f);
+
+        vec2f force = -GameParameters::Gravity * m2;
+
+        vec2f const & currentVelocity = mPoints.GetVelocity(pointIndex);
+        vec2f const targetVelocity = vec2f(0.0f, 1.5f);
+        vec2f const desiredVelocity = currentVelocity + (targetVelocity - currentVelocity) * 0.03f;
+        vec2f const requiredAcceleration = (desiredVelocity - currentVelocity) / GameParameters::SimulationStepTimeDuration<float>;
+        force += requiredAcceleration * m2;
+
+        mPoints.AddStaticForce(pointIndex, force);
     }
 }
 
