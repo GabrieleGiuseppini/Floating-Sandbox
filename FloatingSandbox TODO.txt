@@ -457,19 +457,20 @@
 		    "TNT Crate"
 
 		    + IT
-		    - ES
-			- mo
-			- npcs
+		    + ES
+			+ mo
+			+ npcs
 		    - RU
 			- mo
-			- npcs
+			+ npcs
 		    = UK
 			+ mo
-			- npcs
+			+ npcs
 		= 2
 		    - New SettingsDialog things (apply physics tool on ships; engines work above water)
 
 	- Localization 2:
+		- Prepare pot's w/string extraction
 		- IT
 			- mo
 			+ npcs string table (fire ext. bomb)

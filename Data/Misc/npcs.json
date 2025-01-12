@@ -1273,6 +1273,12 @@
             "Small Table 1": "Mesa Ratona 1",
             "Small Table 2": "Mesa Ratona 2",
             "Stone Ballast": "Contrapeso de piedra",
+	    "Diesel Can": "Lata de Diesel",
+	    "Fire-Extinguishing Bomb": "TODO",
+	    "Gunpowder Keg": "Barril de Polvora",
+	    "Hydrogen Tank": "Tanque de Hidrogeno",
+	    "Sodium Tank": "Tanque de Sodio",
+	    "TNT Crate": "Caja de Dinamita",
             "Tungsten Block": "Bloque de Tungsteno",
             "Particle": "Particula"
         },
@@ -1331,6 +1337,7 @@
             "Stone Ballast": "Zavorra di Pietra",
 	    "Diesel Can": "Tanica di Diesel",
 	    "Fire-Extinguishing Bomb": "Bomba Estinguente",
+	    "Gunpowder Keg": "Barile di Polvere da Sparo",
 	    "Hydrogen Tank": "Bombola di Idrogeno",
 	    "Sodium Tank": "Bombola di Sodio",
 	    "TNT Crate": "Cassa di Tritolo",
@@ -1390,9 +1397,16 @@
             "Small Table 1": "Маленкий Стол 1",
             "Small Table 2": "Маленкий Стол 2",
             "Stone Ballast": "Каменный Балласт",
+	    "Diesel Can": "Дизельная канистра",
+	    "Fire-Extinguishing Bomb": "TODO",
+	    "Gunpowder Keg": "Бочка с порохом",
+	    "Hydrogen Tank": Баллон с водородом",
+	    "Sodium Tank": "Баллон с натрием",
+	    "TNT Crate": "Ящик с тротилом",
             "Tungsten Block": "Блок из Тунгстена",
             "Particle": "Частица"
         },
+
         "uk": {
             "Baker": "Пекар",
             "Captain 1": "Капітан 1",
@@ -1446,6 +1460,12 @@
             "Small Table 1": "Маленький столик 1",
             "Small Table 2": "Маленький столик 2",
             "Stone Ballast": "Кам'яний баласт",
+	    "Diesel Can": "Дизельна каністра",
+	    "Fire-Extinguishing Bomb": "TODO",
+	    "Gunpowder Keg": "Бочка пороху",
+	    "Hydrogen Tank": "Бак для водню",
+	    "Sodium Tank": "Натрієвий танк",
+	    "TNT Crate": "ТНТ Ящик",
             "Tungsten Block": "Вольфрамовий блок",
             "Particle": "Частинка"
         }

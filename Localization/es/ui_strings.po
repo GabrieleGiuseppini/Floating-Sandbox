@@ -222,10 +222,8 @@ msgid "Adjusts the elasticity of collisions with the ocean floor."
 msgstr "Ajusta la elasticidad de las colisiones con el fondo marino."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3061
-#, fuzzy
-#| msgid "Adjusts the strength of storms."
 msgid "Adjusts the extent of blast force fields onto NPCs."
-msgstr "Ajusta la fuerza de las tormentas."
+msgstr "Ajustar la extensión del campo de fuerza de la explosión en los NPCs."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2115
 msgid "Adjusts the extent to which rain floods exposed areas of a ship."
@@ -2425,10 +2423,8 @@ msgid "Move All/Rotate All"
 msgstr "Mover todo/Rotar todo"
 
 #: ..\FloatingSandbox\MainFrame.cpp:607
-#, fuzzy
-#| msgid "Move NPC"
 msgid "Move NPC/NPCs"
-msgstr "Mover NPC"
+msgstr "Mover NPC/NPCs"
 
 #: ..\FloatingSandbox\MainFrame.cpp:397
 msgid "Move/Rotate"
@@ -2700,10 +2696,8 @@ msgid "Pan Increment"
 msgstr "Incremento panoramico"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3060
-#, fuzzy
-#| msgid "Shoal Radius Adjust"
 msgid "Passive Blast Radius Adjust"
-msgstr "Ajuste de radio de los cardumenes"
+msgstr "Ajuste de radio de explosiones pasivas"
 
 #: ..\ShipBuilderLib\UI\ShipPropertiesEditDialog.cpp:100
 msgid "Password Protection"
@@ -2956,10 +2950,8 @@ msgid "Remove Interior Layer"
 msgstr "Remover capa interior"
 
 #: ..\FloatingSandbox\MainFrame.cpp:613
-#, fuzzy
-#| msgid "Remove NPC"
 msgid "Remove NPC/NPCs"
-msgstr "Remover NPC"
+msgstr "Remover NPC/NPCs"
 
 #: ..\ShipBuilderLib\Controller.cpp:1755
 msgid "Remove Ropes Layer"
@@ -4282,10 +4274,8 @@ msgid "Tsunami Rate"
 msgstr "Frecuencia de los tsunamis"
 
 #: ..\FloatingSandbox\MainFrame.cpp:618
-#, fuzzy
-#| msgid "Turnaround NPC"
 msgid "Turnaround NPC/NPCs"
-msgstr "Girar NPC"
+msgstr "Girar NPC/NPCs"
 
 #: ..\ShipBuilderLib\UI\MaterialPalette.cpp:710
 msgid "Type"
