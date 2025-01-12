@@ -203,693 +203,6 @@ Current perf:
 ===================
 Next release:
 
-+ Lights: 
-	+ Option 1: populate NPC particles' _light_ buffer with triangles' endpoints (so only for constrained)
-		! Gist:
-			! Linear combi of triangle's lights, with bary coords as weights
-			! Do @ last pass
-				! Just add a per-particle loop there
-		+ Impl:
-			+ NpcParticles::LightBuffer
-			+ Rendering
-				+ ShipRenderContext
-					+ Also add alpha since you're at it
-					+ Both upload methods take array[4] & for light
-				+ Shaders x 2
-					+ param light color
-						+ Set @ changes
-					+ all light uses
-			+ Npcs:
-				+ Update()
-				+ RenderUpload()
-					+ Pass array[4]
-		+ Test:
-			+ X 3 shaders
-			+ also lamp tool
-			+ also depth darkening
-	X Option 2: second pass of lighting algorithm with all NPC particles, for each ship
-		- Adding to NPC particles' _light_ buffer
-			- But test it first, as humans are dipoles and dubious result
-	+ Changelist
-
-+ Remove NPC tool for "area"
-	! "Perhaps some sort of selection tool to remove NPCs - removing a large cluster 1 by 1 is a bit annoying"
-	+ Prelim:
-		+ Highlight per-NPC
-			+ Move global member to StateType member
-			+ Non-sticky: reset at end of RenderUpload
-			+ Interface: lose std::opt and take const vec &
-			+ Tools
-			+ Test
-	+ RemoveNpcTool (BaseSelectNpcTool): when mouse down on no candidate, enter "selection mode" drawing rectangle
-		+ Do whole chain for ProbeNpcsInQuad(...) -> vec<NpcId>
-		+ During selection drawing, talks to GameController in no-NPC language to just draw selection rectangle
-			+ Same way we talk at TerrainAdjust
-		+ Then at mouse up, call Npcs::RemoveNpcs(quad)
-		+ Selection rectangle: expand current "Line Guide" into set of them - so can draw quads
-			+ Rename to "InteractiveToolDashedLines", with assumption there's only one set at a time
-			+ Make sure quad corners look good
-		- Highlight all
-			- TODO: wanna have overload with corner?
-	+ MoveNpcTool:
-		+ Npcs::MoveXYZ
-			+ And chain up
-		+ MoveNpcTool
-			+ Shift for whole mesh
-				+ Requires refresh of move
-		+ Fix wholeMesh=>imparted velocity
-			+ Should zero velocity at UpdateNpcParticle_BeingPlaced when wholeMesh=T
-	+ Test:
-		+ Remove
-		+ Turnaround
-		+ Move
-	+ Change menu labels - with '/' ?
-	+ Changelist
-
-+ Backport FS to Barylab
-+ Profile BaryLab
-	Upd: 3.4
-	RndUpl: 2.4
-
-+ Prelim work for walk planning:		
-	+ 1. Commoditize finding alternatives at end of triangle
-		! Used by: panic checks, forward-looking walk planning, are walk planning
-		+ Extract vertex navigation w/candidates finding into own function
-			+ static inline "ProbeWalkAhead"(.) -> ProbeWalkResult				
-			+ Args, among others:
-				+ Shortcut to stop search if at least one candidate is found
-					+ Stop as soon as a candidate is found
-					! Activated at forward-looking walk planning (* below), where we are interested in just knowing whether we can proceed or not					
-			+ Return type: candidates, etc.
-			+ Add "futurework" for hard floor type (doors)
-		+ Test
-			+ Can still choose
-	+ 2: "next triangle" check when planning:
-		! Detect when we _positively_ move from the "back" half edge to the "front" half edge - wrt direction of walk
-		+ @ UpdateBehavior while walking (or at WalkingUpdate):
-			+ WalkingBehaviorState contains last opt<<tri index, bcoords -- OR JUST THE FLOAT>, edge ordinal>
-					+ Also contains "times crossed in this triangle" to detect stall and to go into "Walking_Undecided" state
-				+ Init'd to None at each transition into Walking
-			! Used to detect change of "half edge"
-				! nullopt doesn't count - if nullopt, just initialize it
-				- To calc quickly if in "last half edge", use inline helper: is last half edge == (bcoord along edge - 0.5) * face_x_dir > 0.0
-				- We invoke it both (old and new) to detect change
-			+ Change detection impl:
-				+ ...
-				+ If we have a current virtual edge:
-					+ If last is not set, or it's a different triangle or a different edge:
-						+ Set it
-							+ Zero last->number_of_times_crossed_in_tri
-					+ Else:
-						! We were last in this triangle and on this edge
-						+ See if crossed half-side
-						+ Update last  (only what changed, bcoords right?)
-						+ If crossed:
-							+ See if too many times - if so, transition and leave
-							+ Do<X>
-							+ last->number_of_times_crossed_in_tri++						
-				+ ...WalkState progress...
-
-	+ To test, do "do not fall into trap/wall" work below
-		+ Test very skewy ship
-
-+ Port back to FS
-
-+ Mechanism for dynamic removal of NPCs, plus human removal and furniture explosion
-	! Will be useful for explosive NPCs (to make explosive furniture disappear) (*) and for human removal animation (*)
-	! BeingRemoved regime: to keep the NPC "out of the loop" for the rest of the simulation step
-			- Since we are here: see if it makes sense to make helper to switch regime - even if only invokes OnMayBeRegimeChanged
-		! No physics, no human behavior update (other than for specific variants of removal itself, e.g. updating orientations and progress for animation, and/or alpha)
-			! Participates just in UpdateBehavior (H+F), UpdateAnimation, and scavenging
-		! Can't be picked (probed, neither of the 2 ways) when in this regime, hance: no move, remove, turnaround, ... - not noticed by tools
-		! Physics update: skipped when in this regime (kinda like BeingPlaced, but for whole NPC this time)
-	! Set of NpcId's to remove, scavenged at end of Update()		
-	! Human removal:
-		! Triggered by: manual removal (from tool is the only one at the moment....right?)
-		! Regime <- BeingRemoved
-		! HumanBehavior <- Removing
-			- State: simulationStartTimestamp
-			- Behavior update: countdown to final insertion into Set of NpcIds to remove
-			- Animation: 
-				- Human: rotates with arms 90degree and legs closed, alpha down, then disappears; shader does pixie dust
-				- Furniture: alpha down, then disappears; shader does pixie dust
-				- Pixie dust shader:
-					- Quad is "covering" quad: along H->F for humans - considering extended arms - or quad itself for particle
-					- Then feathers out by a tiny little bit
-					- Vortex, growing from centerH below to whole rect
-						- Noise sampled moving L to R
-				- TODO: need to figure out:
-					- Shader: use current NPC shader with toggled enrichments, or shader on top?
-						- Shader on top has potential Z issues?
-		! For completeness, also Furniture removal follows same path
-			- Sets state to BeingRemoved, which immediately inserts into set of NpcIds to remove
-
-	+ Impl:
-		+ New removal:
-			+ vector member
-			+ assert clearness @ beginning of update
-			+ Scavenge @ end of update
-				+ assert they are all in BeingRemoved regime
-			+ RemoveNpc rewrite
-				+ See who else calls CommonNpcRemoval -- fine, RemoveShip()
-				+ InternalBeginNpcRemoval
-					+ Transition regime & behavior
-				+ InternalEndNpcRemoval
-		+ AbortNewNpc: need immediate removal
-			+ InternalBeginRemoval
-			+ InternalEndDeferredDeletion
-			+ InternalDeleteImmediate
-			+ InternalCommonDeletion
-		+ Human behavior:
-			+ BeingRemoved state machine
-				+ Make upright
-				+ Rotate
-				+ Add to set after long
-		+ Furniture behavior:
-			+ Calls to update
-			+ Initialization (just cctor)
-			+ BeingRemoved state machine
-				+ Add to set after short
-		+ BeingRemoved regime
-			+ Add to enum
-			+ Can't be picked (probed, neither of the 2 ways) when in this regime, hance: no move, remove, turnaround, ... - not noticed by tools
-			+ Physics update: skipped when in this regime (kinda like BeingPlaced, but for whole NPC this time)
-		+ AnimationUpdate:
-			+ Human
-				+ Traslate and rotation to become upright; 0 limbs -> devil limbs -> 0 limbs
-				+ Pause; -> 0 limbs
-				+ Rotation; -> pi/2 or 0, depending on side
-				+ Try:
-					+ devil limbs also when already upright, during levitation
-					- Shader mid-highlight
-					- Initial arm angle of devil arms based on current (or convergence?)
-				+ Test:
-					+ LR
-					+ FB
-				+ Cleanup all old's and TODO's
-				+ Alpha
-				+ RemovalProgress
-			+ Furniture
-				+ Alpha
-				+ RemovalProgress
-		+ Port back to FS
-		+ Rendering:
-			+ Upload alpha, highlightAlpha, removalProgress
-			+ Shader
-				+ Fix
-					+ Highlight color: vec3f(1.0f, 0.21f, 0.08f)
-				+ Do removal
-					+ ShaderToy
-					+ Against darkening & ambient light
-		+ RenderNPC:			
-			+ Upload alpha, highlightAlpha, removalProgress
-		
-	+ Fix:
-		+ Redo removal workflows:
-			! Current removal structure:
-				- BeginNew:
-					- Update stats -> PublishCount
-					- Add to ship
-				- AbortNewNpc: InternalDeleteNpcImmediate
-				- CompleteNew:
-					- OnMayBeNpcRegimeChanged
-						- Update constrained/free count (old and new) -> PublishHumanNpcStats
-				- RemoveNpc: InternalBeginNpcRemoval (*selection)
-				- OnShipRemoved: 
-					- InternalCommonNpcDeletion (*selection)
-				- Update/Deferred: InternalDeleteNpc
-
-				- InternalBeginNpcRemoval:
-					- Regime->BeingRemoved	
-						- OnMayBeNpcRegimeChanged
-							- Update constrained/free count (old and new) -> PublishHumanNpcStats
-					- Behavior->BeingRemoved
-				- InternalDeleteNpcImmediate: Internal bookkeeping, including ship, and stats publishing
-					- InternalDeleteNpc
-					- PublishHumanNpcStats
-				- InternalDeleteNpc: Internal bookkeeping, including ship
-					- InternalCommonNpcDeletion
-					- Remove from ship
-					- Reset NPC
-				- InternalCommonNpcDeletion: Internal bookkeeping, excluding ship (invoked also when removing ship altogether)
-					- Update constrained/free count (new)
-					- Update stats
-					- Remove from burning set, if there
-					- Remove from deferred removal, if there
-					- Deselect, if selected
-			+ New removal structure:
-				+ BeginNew:
-					+ Update general stats -> PublishCount
-					+ Add to ship
-				+ AbortNewNpc: // No human stats
-					+ assert(! in deferred removal)
-					+ assert(! burning)
-					+ assert(! selected)
-					+ Update general stats -> PublishCount
-					+ Remove from ship (2)
-					+ Reset NPC (2)
-				+ CompleteNew:
-					+ OnMayBeNpcRegimeChanged
-						+ Update constrained/free count (old and new) -> PublishHumanNpcStats
-				+ RemoveNpc:
-					+ InternalBeginNpcRemoval
-						+ InternalBeginDeferredDeletion()
-						+ Behavior->BeingRemoved
-				+ OnShipRemoved:
-					+ If in BeingRemoved:
-						+ Remove from deferred removal (assert is there)
-						+ assert(! burning)
-						+ assert(! selected)
-					+ Else:
-						+ Update constrained/free count -> PublishHumanNpcStats
-						+ Update general stats -> PublishCount (1)
-						+ assert(! in deferred removal)
-						+ Remove from burning set, if there (1)
-						+ Deselect, if selected (1)
-				+ Update/Deferred:
-					+ assert(! burning)
-					+ assert(! selected)
-					+ Remove from ship (2)
-					+ Reset NPC (2)
-
-				+ InternalBeginDeferredDeletion // Helper, also for explosion
-					+ assert(! regime BeingRemoved)
-					+ assert(! in deferred removal)
-					+ Regime->BeingRemoved	
-						+ OnMayBeNpcRegimeChanged
-							+ Update constrained/free count (old and new) -> PublishHumanNpcStats
-					
-					+ Update general stats -> PublishCount (1)
-					+ Remove from burning set, if there (1)
-					+ Deselect, if selected (1)
-			+ See if need aggregations for addition of many NPCs/publish
-			+ Back to FS
-
-		+ All public calls:
-			+ HasNpc: do not consider BeingRemoved
-			+ HasNpcs: do not consider BeingRemoved
-			+ OnShipConnectivityChanged
-			+ MoveBy
-			+ RotateBy
-			+ SmashAt
-			+ DrawTo
-			+ SwirlAt
-			+ ...go through all the public's
-
-	+ Fix: render Upload() uses human count + furniture count, which we decrease already @ beginning of deferred deletion
-		+ Repro: add, delete, add
-		+ Fix:
-			+ Ship has two counts:
-				+ Working
-				+ Total
-					+ NpcStatsByKind
-			+ Update Working/Total/both where we update now
-			+ Update Total at Update/Deferred removal
-			+ Use Total at Rendering
-			+ See if can redo HasNpcs() using these
-			+ Cleanup CalculateTotalTODO
-	+ Fix: animation started when looking left
-		+ bug 1: legs are on wrong side
-			+ When adjusting sign, use abs to impose final sign
-		+ bug 2: rotates right then left
-			+ Remember rotation wise in new state member
-			
-	+ Ship::RemoveNpc(id)
-		+ Use
-	
-	+ Removal animation: when becoming frontal, arms should be a tad open
-		+ Try: when we save working limbs at going frontal, cheat: if we're on the side, make F/B ~same as L/R (takes abs of each and right signs)
-		+ Port back to FS
-
-	+ Tests:
-		+ Tools do not see being removed NPC
-		+ Stats published correctly for added humans (at end of add)
-		+ AbortNewNpc: no stats changes
-			+ Need temporary hack to force - @ tool release w/SHIFT
-			+ Also check stats when adding another NPC later
-		+ Captain constraint is satisfied
-			+ Also when twice in a row
-		+ Stats published correctly when beginning removal (immediately)
-		+ Select NPC w/auto-focus: stops following when deleted
-		+ OnShipConnectivityChanged on deleted
-		+ Burning NPCs then deleted
-		+ MainFrame reconciliation with presence of NPCs
-			+ Deselect NPC when one is left
-
-	+ Furniture explosion:
-		+ StateType: bool IsActive() const
-			+ Simply checks for regime==BeingRemoved
-			+ Use everywhere we check for BeingRemoved
-			+ Rename stats
-		+ Split UpdateNpc into UpdateNpcPhysics & UpdateNpcBehavior
-			+ Split
-			+ UpdateNpcPhysics: return whenever ! working anymore
-		+ TriggerExplosion(NpcId, particle ordinal, ExplosionType, sim time)
-			+ @ particle's pos
-			+ Inject explosion state machine @ Ship, should take care of physics _and_ rendering!
-			+ Notify (for sound)
-				+ Depends on ExplosionType:
-					+ Deflagration: OnBombExplosion
-					+ Combustion: OnCombustionExplosion
-					+ Sodium: OnWaterReactionExplosion
-			+ Transition (furniture) behavior to Exploding
-			+ Start deferred deletion (InternalBeginDeferredDeletion)
-
-		+ Explosion triggers: 
-			! Mapping of material to ExplosionType from Ship:
-				! Bombs<->Deflagration
-				! StructuralMaterial::MaterialCombustionType::Explosion<->Combustion
-				! WaterReactivity threshold<->Sodium
-			+ Impact
-				+ Check a threshold
-				+ If material is MaterialCombustionType::Explosion: ExplosionType=Combustion
-				+ Test
-					+ Also params, w/ & without UV mode
-			+ Impact w/smash
-			+ Combustion update
-				+ If material is MaterialCombustionType::Explosion, and temperature threshold (TODO: double-check @ ship): ExplosionType=Combustion
-				+ Test
-					+ Also params, w/ & without UV mode
-			+ Waterness (for sodium)
-				+ If water >= reactivity threshold: ExplosionType=Sodium
-				+ Also sea!
-				+ Test
-					+ Also params, w/ & without UV mode
-		+ Furniture/HumanState::Exploding
-			+ State: <empty>
-			+ Behavior update: countdown to final insertion into Set of NpcIds to remove
-			+ Animation: alpha
-			+ Test
-		+ Make TNT furniture
-			+ New material: Gunpowder Strong Crate (wood+powder)
-			+ Test:
-				+ Buoyancy
-				+ Sound
-		+ Make Sodium and Hydrogen furniture (and other tanks from TimCan)
-			+ New materials: 
-				+ Hydrogen Tank (hydrogen)
-				+ Sodium Tank (metal+sodium)
-			+ New NPCs
-				+ Hydrogen Tank
-				+ Sodium Tank
-			+ Test:
-				+ Basics Hydrogen
-				+ Basics Sodium
-				+ Sodium reacts in sea as well
-				+ Sound
-
-	+ Check if any logging is left behind (run)
-
-	+ Fix bug with placing (furniture) NPC: anchor being particle ordinal 2 
-		! Due to folded tri unfolding, which happens before other particles are moved
-		+ Fix: do folded tri unfolding _after_ all particles have been moved
-			+ UpdateNpsPhysisic: after all particles are done: if being moved: do now and maintain world bounds (if has been moved)
-
-	+ Shader:
-		+ Yellow
-		+ Other improvements?
-			+ Don't boost lum that much w/progress
-			+ Darkening fight only for deep
-		+ Test also 2xStickmen
-
-	+ changelist
-		+ Explosion
-		+ ...improvements
-
-
-+ Test bouncing on wall & candidates - evtlly remove lookahead for it
-
-+ See NPCs with bomb
-	X See first if can do internal pressure physics - do we have velocity there?
-		X If so, do physics, and then NPCs picking it up
-	+ Adjust blast on NPCs
-	+ Check forced breaking with first frame
-
-+ See chairs floating in lava (Camodo video)
-	+ It's friction drag adj - clamp value @ "World forces - water drag"
-
-+ Do chest fixes at skins
-	! Check out json geometry overrides first
-	! Baker: good! Use as guideline
-	+ Captain 1
-	+ Captain 2
-	+ Civ Male Passenger 1
-	+ Civ Male Passenger 2
-	+ Civ Male Passenger 4
-	+ Civ Male Passenger 6 ?
-	+ Engineer
-	+ Officer
-	+ Oiler
-		+ Also arms' sides
-	+ Quartermaster
-	+ Stoker 4
-
-+ Diesel can
-	+ NPC & structural material
-	+ Lots of heat: goal is that all wood ship around catches fire
-		+ Add material property - explosive_combustion_heat
-			+ J
-			+ default: 100.0f * 1000.0f
-				+ Structural materials: those with CombustionType==Explosion must have 1.5 times that
-			+ Use at all StartExplosion calls - except three gadget bombs:
-				+ Ship
-				+ Npc
-			+ Test:
-				+ 3 bombs
-				+ Ship:
-					+ Gunpowder
-					+ Sodium
-					+ Hydrogen
-					+ Helium
-					! NOT DIESEL
-				+ NPC:
-					+ Gunpowder
-					+ Sodium
-					+ Hydrogen
-					! NOT DIESEL
-	+ Improvements
-		+ Heat:
-			+ Ship ("diesel" material)
-			+ Npc ("diesel can" material)
-				+ Try: different (larger) radius for heat only
-					+ Code
-					+ Materials:
-						+ Diesel (x2)
-						+ Hydrogen (x2)
-		+ Sodium explosion (@ Points): we multiply by ParticleUpdateLowFrequencyStepTimeDuration; decide that the value is per frame, and thus recalc all so that it's same value per-frame
-			X Constant *= 0.5625
-			+ Remove Points' multiplication by ParticleUpdateLowFrequencyStepTimeDuration
-		+ Review:
-			+ 3xBombs
-			+ Ship
-				+ Gunpowder
-				+ Diesel
-				+ Sodium
-				+ Hydrogen
-			+ NPC
-				+ TNT
-				+ Diesel
-					+ Doesn't have much heat
-				+ Sodium
-					+ Smaller
-				+ Hydrogen
-
-+ Temperature rearc
-	! After all, we do sample temperature of all triangle vertex endpoints anyways
-	! Philosophy: C particles exchange with mesh, F particles with air/water
-	+ NpcParticles has temperature
-	+ Simulation:
-		+ During low-freq update, we converge each NPC particle's heat to: C: the bcoords-interp'd of the three temperatures, F: air/water temp
-			+ Note: we now ignore mesh particles' ignition points
-		+ For each NPC particle, we check if _its_ temperature makes it ignited
-			+ also checking waterness
-			+ => oneNpcParticleOnFire
-				+ And then everything proceeds as now
-		+ Test:
-			+ Mesh temperature for constrained
-			+ Air temperature for free
-			+ Water temperature for free
-			+ Catches fire @:
-				+ Constrained in hot mesh
-				+ Free in hot water
-				+ Free in hot air
-			+ Explodes @:
-				+ Constrained in hot mesh
-				+ Free in hot water
-				+ Free in hot air
-	+ Move constant w/comment on cheapness
-	+ Interactions (and provide heat to NPC particles):
-		! Do tool chain via World, not from Ship
-			! Npcs::interaction-method -> bool, invoked by World with or without ShipId depending on whether found
-				! Interactions (make helper):
-					! C:
-						! If shipid: id of that ship
-						! Else: of any ship
-					! F: of any ship
-				! Interaction returns bool if at least one NPC found
-				! World then returns that bool ORd with nearest ship bool
-		! Tests: 
-			a) interaction on ship, C (in range)
-			b) interaction on ship, F (in range)
-			c) interaction off ship, F (in range)
-		+ (inline) helper to visit NPC particles with this condition
-			+ Use for other interactions that may use it
-				+ ApplyBlast
-				+ ApplyAntiMatterBombPreimplosion
-				+ ApplyAntiMatterBombImplosion
-				+ ApplyAntiMatterBombExplosion
-		+ DestroyAt
-			+ Test
-		+ Heat blaster tool
-			+ Fix: too much dissipation in C and F
-		+ Little combustion rearc:
-			+ Allow explosion always if particle temperature is above ignition, even if in water
-				+ Means that we can't trigger explosion just "if oneNpcParticleOnFire" - it's really about "oneNpcParticleOverIgnitionTemperature", which is independent from water,
-				  but also "oneNpcParticleOnFire" with same condition as now (plus "oneMeshParticleOnFire")
-			+ Combustion state update (low-freq): catch fire also if mesh is on fire - for at least one particle
-				+ Catch fire immediately, try by just setting combustion state (without forcing temperature)
-					+ See if fire is really short-lived
-			+ Exploding NPC in burning mesh: delay between catching fire and exploding is NOT reasonable, explode immediately
-				+ Store oneNpcParticleIsExplosive: just last NPC particle that may explode
-				+ Explosion condition: if <as now> || (npc.BurningState.isBurning && oneNpcParticleIsExplosive)
-					+ And then grab right ElementIndex in <if> branch
-				+ Tests:
-					+ In burning mesh:
-						+ Diesel can
-						+ Hydrogen tank
-						+ TNT crate
-						+ Crate (no explo)
-		+ Laser cannon
-			+ Just apply heat
-				+ Use particles.ApplyHeat
-				+ Use particles.ApplyHeat everywhere
-			+ ShipInteractions: use points.ApplyHeat
-			+ Tests:
-				+ LaserCut on/off ship
-				+ And then on NPCs
-		+ Fire extinguisher
-			+ Also extinguish fire - halve combustion progress (so it affects geometry) while we wait for temperature to lower progress below 0.0
-				+ See if smothering time is ok
-			+ Tests:
-				+ On nothing
-				+ On ship
-				+ On free NPC
-				+ On constrained NPC
-		+ Review panic w/swimming
-			+ Replace with progress @ AnimationState
-			+ Tests:
-				+ Panic with laser
-					+ UW
-				+ Panic with heatblaster
-					+ UW
-		+ ApplyBlastAt: 
-			! Do from World, with ShipId argument
-			! Explosion (of ship bombs or ship particles or NPCs) should provide heat
-					- Requires changes to ShipStateMachine: ShipOnBlast needs to take heat
-					- Npcs::OnBlast: take and apply heat
-			! Old dynamics:
-				- World::ApplyBlast (tool) -> Ship -> Queued -> Ship + Ship::OnBlast
-				- Explosion -> Ship -> Ship::OnBlast
-				- Ship::OnBlast: 
-					- Npcs
-					- OceanSurface
-					- Fishes
-			+ New dynamics:
-				+ World::ApplyBlast (tool) -> Ship -> Queued -> Ship
-							   -> OnBlast
-				+ Explosion -> Ship -> World::OnBlast
-				+ World::OnBlast:
-					+ Npcs
-					+ OceanSurface
-					+ Fishes
-			+ Do heat @ Npcs
-			+ Test:
-				+ Explosion on ship: blast force, blast heat
-					+ Fishes
-					+ Waves
-				+ Explosion on constrained NPCs: blast force, blast heat
-				+ Explosion on free NPCs: blast force, blast heat
-				+ BlastTool on ship: blast force
-					+ Fishes
-					+ Waves
-				+ BlastTool on constrained NPCs: blast force
-				+ BlastTool on free NPCs: blast force
-				+ Other diesel can crates explode for heat wave (zero impact explosion for test)
-					+ Remove impact explosion test
-
-		+ Rethink NPC interactions's shipId: depending on interaction, we might want to hit all available ships
-			! Or the interaction itself might want to only work on the topmost ship - in which case _break_
-			! Classically these are on all ships:
-				! Destroy
-				! HeatBlaster
-				! FireExtinguisher
-				! LaserCannon
-			+ So, resimplify World: do not track ship id, just bool, and give None ship ID to Npcs
-			+ Tests:
-				+ On nothing
-				+ On ship
-				+ On free NPC
-				+ On constrained NPC
-		+ QueryNpcAt
-
-	+ Dissipation adjust affects NPC particle temperature transfer
-	+ Simulation: air/water temperature transfers heat to *free* NPC particles
-	+ See HumanNpcTemperature
-		+ Replace with temperature of secondary particle
-		+ Test bubbles from overheated NPCs
-	+ Cleanup:
-		+ TODOTEST: at particle temperature update, log+custom probe
-		+ TODOTEST logs
-		+ Old code
-		+ Verify no logs
-	+ Run in debug
-	+ Changelist:
-		+ Temperature
-		+ More tools interact with NPCs
-
-+ Re-test bug fix: add/remove 8k NPCs N times
-	+ Since you're here: test perf with removal of 8192 NPCs
-+ Impact also on land
-	- Test explosive NPCs
-+ Test NPCs walking into water-filled compartment
-	X Check water @ lookahead?
-
-+ Sounds:
-	+ Npcs: publish OnImpact at:
-		+ DestroyAt
-			+ Need to prevent re-sounding at next frame (tool is continuous); need a temporary "destroyed" flag (opt cur sim time)
-				+ Or better: DestroyAt interaction provides SessionId, i.e. timestamp coerced into uint64_t
-					+ Type at GameTypes (SessionId), starts at 0, always increasing, never repeated, not guaranteed to always be fully observed
-					+ SessionId stored at NPC as "interaction"
-			+ Random kinetic energy, so to explore whole range
-		+ OnImpact
-			+ Takes kinetic energy
-				+ Dissipated, use current vel to calc
-					+ But retain energy->sound_size transformation, it's perfect!
-			+ EventDispatcher aggregates
-			+ SoundController
-				+ Transform kinetic energy into size
-				+ And transform kinetic energy into volume (maxed by that constant)
-	+ Sounds:
-		+ impact:
-			! All: {2..4} X [non-uw, uw}
-			+ Types:
-				+ Wood
-				+ Metal
-				+ Plastic
-				+ Human
-				+ Piano
-		+ Cleanup:
-			+ Log @ SoundController
-			+ Log @ OnImpact (?)
-	X Sound for NPC fire smothering in water
-		+ Just call event
-		X Takes too long to figure out, seems delayed
-	+ changelist
-
-+ Hanging by the feet: do something about it
-	+ Shorter time before "disconnecting"
-
 - Misc:
 	! TODO: move the long-term ones below to a new "Wishlist" section	
 	- Ghost Walls bug:
@@ -966,8 +279,13 @@ Next release:
 	- Thanos interactions
 		- TODO: some form of NPC removal?
 
-- New furniture behaviors:
+- New furniture/behaviors:
 	+ Exploding
+	- TimCan's:
+		- Floater
+		- Crab pot
+		Can be used for Ro/Ro's, they interact the exact same as normal props, but they are automatically randomized, basically there will be a bunch of colors, maybe some trucks, Vans, and when you spawn them in they are automatically randomized or we could just add like "Car 1, Car 2, Truck 1, Truck 2" type thing as well. they would sink but take a minute to fully submerge, and maybe they can roll around.
+		Another idea for the Vehicles is that they can be exploded with fire and or heat, and do a similar interaction with NPCs and the Electrocution feature, so if the cars are in the water they will create a radius around them where its electrified (idea can tie into like batteries or whatever as well so its not needed unless the feature is added to other stuff)
 	- Depth charges
 	- Furniture over time, should sink, not forever it will float, and then rot
 		! Particle: rot float, starts at zero
@@ -4561,3 +3879,693 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 
 + Turnover tool:
 	+ Also Furniture
+
+===============================================================================================
+
++ Lights: 
+	+ Option 1: populate NPC particles' _light_ buffer with triangles' endpoints (so only for constrained)
+		! Gist:
+			! Linear combi of triangle's lights, with bary coords as weights
+			! Do @ last pass
+				! Just add a per-particle loop there
+		+ Impl:
+			+ NpcParticles::LightBuffer
+			+ Rendering
+				+ ShipRenderContext
+					+ Also add alpha since you're at it
+					+ Both upload methods take array[4] & for light
+				+ Shaders x 2
+					+ param light color
+						+ Set @ changes
+					+ all light uses
+			+ Npcs:
+				+ Update()
+				+ RenderUpload()
+					+ Pass array[4]
+		+ Test:
+			+ X 3 shaders
+			+ also lamp tool
+			+ also depth darkening
+	X Option 2: second pass of lighting algorithm with all NPC particles, for each ship
+		- Adding to NPC particles' _light_ buffer
+			- But test it first, as humans are dipoles and dubious result
+	+ Changelist
+
++ Remove NPC tool for "area"
+	! "Perhaps some sort of selection tool to remove NPCs - removing a large cluster 1 by 1 is a bit annoying"
+	+ Prelim:
+		+ Highlight per-NPC
+			+ Move global member to StateType member
+			+ Non-sticky: reset at end of RenderUpload
+			+ Interface: lose std::opt and take const vec &
+			+ Tools
+			+ Test
+	+ RemoveNpcTool (BaseSelectNpcTool): when mouse down on no candidate, enter "selection mode" drawing rectangle
+		+ Do whole chain for ProbeNpcsInQuad(...) -> vec<NpcId>
+		+ During selection drawing, talks to GameController in no-NPC language to just draw selection rectangle
+			+ Same way we talk at TerrainAdjust
+		+ Then at mouse up, call Npcs::RemoveNpcs(quad)
+		+ Selection rectangle: expand current "Line Guide" into set of them - so can draw quads
+			+ Rename to "InteractiveToolDashedLines", with assumption there's only one set at a time
+			+ Make sure quad corners look good
+		- Highlight all
+			- TODO: wanna have overload with corner?
+	+ MoveNpcTool:
+		+ Npcs::MoveXYZ
+			+ And chain up
+		+ MoveNpcTool
+			+ Shift for whole mesh
+				+ Requires refresh of move
+		+ Fix wholeMesh=>imparted velocity
+			+ Should zero velocity at UpdateNpcParticle_BeingPlaced when wholeMesh=T
+	+ Test:
+		+ Remove
+		+ Turnaround
+		+ Move
+	+ Change menu labels - with '/' ?
+	+ Changelist
+
++ Backport FS to Barylab
++ Profile BaryLab
+	Upd: 3.4
+	RndUpl: 2.4
+
++ Prelim work for walk planning:		
+	+ 1. Commoditize finding alternatives at end of triangle
+		! Used by: panic checks, forward-looking walk planning, are walk planning
+		+ Extract vertex navigation w/candidates finding into own function
+			+ static inline "ProbeWalkAhead"(.) -> ProbeWalkResult				
+			+ Args, among others:
+				+ Shortcut to stop search if at least one candidate is found
+					+ Stop as soon as a candidate is found
+					! Activated at forward-looking walk planning (* below), where we are interested in just knowing whether we can proceed or not					
+			+ Return type: candidates, etc.
+			+ Add "futurework" for hard floor type (doors)
+		+ Test
+			+ Can still choose
+	+ 2: "next triangle" check when planning:
+		! Detect when we _positively_ move from the "back" half edge to the "front" half edge - wrt direction of walk
+		+ @ UpdateBehavior while walking (or at WalkingUpdate):
+			+ WalkingBehaviorState contains last opt<<tri index, bcoords -- OR JUST THE FLOAT>, edge ordinal>
+					+ Also contains "times crossed in this triangle" to detect stall and to go into "Walking_Undecided" state
+				+ Init'd to None at each transition into Walking
+			! Used to detect change of "half edge"
+				! nullopt doesn't count - if nullopt, just initialize it
+				- To calc quickly if in "last half edge", use inline helper: is last half edge == (bcoord along edge - 0.5) * face_x_dir > 0.0
+				- We invoke it both (old and new) to detect change
+			+ Change detection impl:
+				+ ...
+				+ If we have a current virtual edge:
+					+ If last is not set, or it's a different triangle or a different edge:
+						+ Set it
+							+ Zero last->number_of_times_crossed_in_tri
+					+ Else:
+						! We were last in this triangle and on this edge
+						+ See if crossed half-side
+						+ Update last  (only what changed, bcoords right?)
+						+ If crossed:
+							+ See if too many times - if so, transition and leave
+							+ Do<X>
+							+ last->number_of_times_crossed_in_tri++						
+				+ ...WalkState progress...
+
+	+ To test, do "do not fall into trap/wall" work below
+		+ Test very skewy ship
+
++ Port back to FS
+
++ Mechanism for dynamic removal of NPCs, plus human removal and furniture explosion
+	! Will be useful for explosive NPCs (to make explosive furniture disappear) (*) and for human removal animation (*)
+	! BeingRemoved regime: to keep the NPC "out of the loop" for the rest of the simulation step
+			- Since we are here: see if it makes sense to make helper to switch regime - even if only invokes OnMayBeRegimeChanged
+		! No physics, no human behavior update (other than for specific variants of removal itself, e.g. updating orientations and progress for animation, and/or alpha)
+			! Participates just in UpdateBehavior (H+F), UpdateAnimation, and scavenging
+		! Can't be picked (probed, neither of the 2 ways) when in this regime, hance: no move, remove, turnaround, ... - not noticed by tools
+		! Physics update: skipped when in this regime (kinda like BeingPlaced, but for whole NPC this time)
+	! Set of NpcId's to remove, scavenged at end of Update()		
+	! Human removal:
+		! Triggered by: manual removal (from tool is the only one at the moment....right?)
+		! Regime <- BeingRemoved
+		! HumanBehavior <- Removing
+			- State: simulationStartTimestamp
+			- Behavior update: countdown to final insertion into Set of NpcIds to remove
+			- Animation: 
+				- Human: rotates with arms 90degree and legs closed, alpha down, then disappears; shader does pixie dust
+				- Furniture: alpha down, then disappears; shader does pixie dust
+				- Pixie dust shader:
+					- Quad is "covering" quad: along H->F for humans - considering extended arms - or quad itself for particle
+					- Then feathers out by a tiny little bit
+					- Vortex, growing from centerH below to whole rect
+						- Noise sampled moving L to R
+				- TODO: need to figure out:
+					- Shader: use current NPC shader with toggled enrichments, or shader on top?
+						- Shader on top has potential Z issues?
+		! For completeness, also Furniture removal follows same path
+			- Sets state to BeingRemoved, which immediately inserts into set of NpcIds to remove
+
+	+ Impl:
+		+ New removal:
+			+ vector member
+			+ assert clearness @ beginning of update
+			+ Scavenge @ end of update
+				+ assert they are all in BeingRemoved regime
+			+ RemoveNpc rewrite
+				+ See who else calls CommonNpcRemoval -- fine, RemoveShip()
+				+ InternalBeginNpcRemoval
+					+ Transition regime & behavior
+				+ InternalEndNpcRemoval
+		+ AbortNewNpc: need immediate removal
+			+ InternalBeginRemoval
+			+ InternalEndDeferredDeletion
+			+ InternalDeleteImmediate
+			+ InternalCommonDeletion
+		+ Human behavior:
+			+ BeingRemoved state machine
+				+ Make upright
+				+ Rotate
+				+ Add to set after long
+		+ Furniture behavior:
+			+ Calls to update
+			+ Initialization (just cctor)
+			+ BeingRemoved state machine
+				+ Add to set after short
+		+ BeingRemoved regime
+			+ Add to enum
+			+ Can't be picked (probed, neither of the 2 ways) when in this regime, hance: no move, remove, turnaround, ... - not noticed by tools
+			+ Physics update: skipped when in this regime (kinda like BeingPlaced, but for whole NPC this time)
+		+ AnimationUpdate:
+			+ Human
+				+ Traslate and rotation to become upright; 0 limbs -> devil limbs -> 0 limbs
+				+ Pause; -> 0 limbs
+				+ Rotation; -> pi/2 or 0, depending on side
+				+ Try:
+					+ devil limbs also when already upright, during levitation
+					- Shader mid-highlight
+					- Initial arm angle of devil arms based on current (or convergence?)
+				+ Test:
+					+ LR
+					+ FB
+				+ Cleanup all old's and TODO's
+				+ Alpha
+				+ RemovalProgress
+			+ Furniture
+				+ Alpha
+				+ RemovalProgress
+		+ Port back to FS
+		+ Rendering:
+			+ Upload alpha, highlightAlpha, removalProgress
+			+ Shader
+				+ Fix
+					+ Highlight color: vec3f(1.0f, 0.21f, 0.08f)
+				+ Do removal
+					+ ShaderToy
+					+ Against darkening & ambient light
+		+ RenderNPC:			
+			+ Upload alpha, highlightAlpha, removalProgress
+		
+	+ Fix:
+		+ Redo removal workflows:
+			! Current removal structure:
+				- BeginNew:
+					- Update stats -> PublishCount
+					- Add to ship
+				- AbortNewNpc: InternalDeleteNpcImmediate
+				- CompleteNew:
+					- OnMayBeNpcRegimeChanged
+						- Update constrained/free count (old and new) -> PublishHumanNpcStats
+				- RemoveNpc: InternalBeginNpcRemoval (*selection)
+				- OnShipRemoved: 
+					- InternalCommonNpcDeletion (*selection)
+				- Update/Deferred: InternalDeleteNpc
+
+				- InternalBeginNpcRemoval:
+					- Regime->BeingRemoved	
+						- OnMayBeNpcRegimeChanged
+							- Update constrained/free count (old and new) -> PublishHumanNpcStats
+					- Behavior->BeingRemoved
+				- InternalDeleteNpcImmediate: Internal bookkeeping, including ship, and stats publishing
+					- InternalDeleteNpc
+					- PublishHumanNpcStats
+				- InternalDeleteNpc: Internal bookkeeping, including ship
+					- InternalCommonNpcDeletion
+					- Remove from ship
+					- Reset NPC
+				- InternalCommonNpcDeletion: Internal bookkeeping, excluding ship (invoked also when removing ship altogether)
+					- Update constrained/free count (new)
+					- Update stats
+					- Remove from burning set, if there
+					- Remove from deferred removal, if there
+					- Deselect, if selected
+			+ New removal structure:
+				+ BeginNew:
+					+ Update general stats -> PublishCount
+					+ Add to ship
+				+ AbortNewNpc: // No human stats
+					+ assert(! in deferred removal)
+					+ assert(! burning)
+					+ assert(! selected)
+					+ Update general stats -> PublishCount
+					+ Remove from ship (2)
+					+ Reset NPC (2)
+				+ CompleteNew:
+					+ OnMayBeNpcRegimeChanged
+						+ Update constrained/free count (old and new) -> PublishHumanNpcStats
+				+ RemoveNpc:
+					+ InternalBeginNpcRemoval
+						+ InternalBeginDeferredDeletion()
+						+ Behavior->BeingRemoved
+				+ OnShipRemoved:
+					+ If in BeingRemoved:
+						+ Remove from deferred removal (assert is there)
+						+ assert(! burning)
+						+ assert(! selected)
+					+ Else:
+						+ Update constrained/free count -> PublishHumanNpcStats
+						+ Update general stats -> PublishCount (1)
+						+ assert(! in deferred removal)
+						+ Remove from burning set, if there (1)
+						+ Deselect, if selected (1)
+				+ Update/Deferred:
+					+ assert(! burning)
+					+ assert(! selected)
+					+ Remove from ship (2)
+					+ Reset NPC (2)
+
+				+ InternalBeginDeferredDeletion // Helper, also for explosion
+					+ assert(! regime BeingRemoved)
+					+ assert(! in deferred removal)
+					+ Regime->BeingRemoved	
+						+ OnMayBeNpcRegimeChanged
+							+ Update constrained/free count (old and new) -> PublishHumanNpcStats
+					
+					+ Update general stats -> PublishCount (1)
+					+ Remove from burning set, if there (1)
+					+ Deselect, if selected (1)
+			+ See if need aggregations for addition of many NPCs/publish
+			+ Back to FS
+
+		+ All public calls:
+			+ HasNpc: do not consider BeingRemoved
+			+ HasNpcs: do not consider BeingRemoved
+			+ OnShipConnectivityChanged
+			+ MoveBy
+			+ RotateBy
+			+ SmashAt
+			+ DrawTo
+			+ SwirlAt
+			+ ...go through all the public's
+
+	+ Fix: render Upload() uses human count + furniture count, which we decrease already @ beginning of deferred deletion
+		+ Repro: add, delete, add
+		+ Fix:
+			+ Ship has two counts:
+				+ Working
+				+ Total
+					+ NpcStatsByKind
+			+ Update Working/Total/both where we update now
+			+ Update Total at Update/Deferred removal
+			+ Use Total at Rendering
+			+ See if can redo HasNpcs() using these
+			+ Cleanup CalculateTotalTODO
+	+ Fix: animation started when looking left
+		+ bug 1: legs are on wrong side
+			+ When adjusting sign, use abs to impose final sign
+		+ bug 2: rotates right then left
+			+ Remember rotation wise in new state member
+			
+	+ Ship::RemoveNpc(id)
+		+ Use
+	
+	+ Removal animation: when becoming frontal, arms should be a tad open
+		+ Try: when we save working limbs at going frontal, cheat: if we're on the side, make F/B ~same as L/R (takes abs of each and right signs)
+		+ Port back to FS
+
+	+ Tests:
+		+ Tools do not see being removed NPC
+		+ Stats published correctly for added humans (at end of add)
+		+ AbortNewNpc: no stats changes
+			+ Need temporary hack to force - @ tool release w/SHIFT
+			+ Also check stats when adding another NPC later
+		+ Captain constraint is satisfied
+			+ Also when twice in a row
+		+ Stats published correctly when beginning removal (immediately)
+		+ Select NPC w/auto-focus: stops following when deleted
+		+ OnShipConnectivityChanged on deleted
+		+ Burning NPCs then deleted
+		+ MainFrame reconciliation with presence of NPCs
+			+ Deselect NPC when one is left
+
+	+ Furniture explosion:
+		+ StateType: bool IsActive() const
+			+ Simply checks for regime==BeingRemoved
+			+ Use everywhere we check for BeingRemoved
+			+ Rename stats
+		+ Split UpdateNpc into UpdateNpcPhysics & UpdateNpcBehavior
+			+ Split
+			+ UpdateNpcPhysics: return whenever ! working anymore
+		+ TriggerExplosion(NpcId, particle ordinal, ExplosionType, sim time)
+			+ @ particle's pos
+			+ Inject explosion state machine @ Ship, should take care of physics _and_ rendering!
+			+ Notify (for sound)
+				+ Depends on ExplosionType:
+					+ Deflagration: OnBombExplosion
+					+ Combustion: OnCombustionExplosion
+					+ Sodium: OnWaterReactionExplosion
+			+ Transition (furniture) behavior to Exploding
+			+ Start deferred deletion (InternalBeginDeferredDeletion)
+
+		+ Explosion triggers: 
+			! Mapping of material to ExplosionType from Ship:
+				! Bombs<->Deflagration
+				! StructuralMaterial::MaterialCombustionType::Explosion<->Combustion
+				! WaterReactivity threshold<->Sodium
+			+ Impact
+				+ Check a threshold
+				+ If material is MaterialCombustionType::Explosion: ExplosionType=Combustion
+				+ Test
+					+ Also params, w/ & without UV mode
+			+ Impact w/smash
+			+ Combustion update
+				+ If material is MaterialCombustionType::Explosion, and temperature threshold (TODO: double-check @ ship): ExplosionType=Combustion
+				+ Test
+					+ Also params, w/ & without UV mode
+			+ Waterness (for sodium)
+				+ If water >= reactivity threshold: ExplosionType=Sodium
+				+ Also sea!
+				+ Test
+					+ Also params, w/ & without UV mode
+		+ Furniture/HumanState::Exploding
+			+ State: <empty>
+			+ Behavior update: countdown to final insertion into Set of NpcIds to remove
+			+ Animation: alpha
+			+ Test
+		+ Make TNT furniture
+			+ New material: Gunpowder Strong Crate (wood+powder)
+			+ Test:
+				+ Buoyancy
+				+ Sound
+		+ Make Sodium and Hydrogen furniture (and other tanks from TimCan)
+			+ New materials: 
+				+ Hydrogen Tank (hydrogen)
+				+ Sodium Tank (metal+sodium)
+			+ New NPCs
+				+ Hydrogen Tank
+				+ Sodium Tank
+			+ Test:
+				+ Basics Hydrogen
+				+ Basics Sodium
+				+ Sodium reacts in sea as well
+				+ Sound
+
+	+ Check if any logging is left behind (run)
+
+	+ Fix bug with placing (furniture) NPC: anchor being particle ordinal 2 
+		! Due to folded tri unfolding, which happens before other particles are moved
+		+ Fix: do folded tri unfolding _after_ all particles have been moved
+			+ UpdateNpsPhysisic: after all particles are done: if being moved: do now and maintain world bounds (if has been moved)
+
+	+ Shader:
+		+ Yellow
+		+ Other improvements?
+			+ Don't boost lum that much w/progress
+			+ Darkening fight only for deep
+		+ Test also 2xStickmen
+
+	+ changelist
+		+ Explosion
+		+ ...improvements
+
+
++ Test bouncing on wall & candidates - evtlly remove lookahead for it
+
++ See NPCs with bomb
+	X See first if can do internal pressure physics - do we have velocity there?
+		X If so, do physics, and then NPCs picking it up
+	+ Adjust blast on NPCs
+	+ Check forced breaking with first frame
+
++ See chairs floating in lava (Camodo video)
+	+ It's friction drag adj - clamp value @ "World forces - water drag"
+
++ Do chest fixes at skins
+	! Check out json geometry overrides first
+	! Baker: good! Use as guideline
+	+ Captain 1
+	+ Captain 2
+	+ Civ Male Passenger 1
+	+ Civ Male Passenger 2
+	+ Civ Male Passenger 4
+	+ Civ Male Passenger 6 ?
+	+ Engineer
+	+ Officer
+	+ Oiler
+		+ Also arms' sides
+	+ Quartermaster
+	+ Stoker 4
+
++ Diesel can
+	+ NPC & structural material
+	+ Lots of heat: goal is that all wood ship around catches fire
+		+ Add material property - explosive_combustion_heat
+			+ J
+			+ default: 100.0f * 1000.0f
+				+ Structural materials: those with CombustionType==Explosion must have 1.5 times that
+			+ Use at all StartExplosion calls - except three gadget bombs:
+				+ Ship
+				+ Npc
+			+ Test:
+				+ 3 bombs
+				+ Ship:
+					+ Gunpowder
+					+ Sodium
+					+ Hydrogen
+					+ Helium
+					! NOT DIESEL
+				+ NPC:
+					+ Gunpowder
+					+ Sodium
+					+ Hydrogen
+					! NOT DIESEL
+	+ Improvements
+		+ Heat:
+			+ Ship ("diesel" material)
+			+ Npc ("diesel can" material)
+				+ Try: different (larger) radius for heat only
+					+ Code
+					+ Materials:
+						+ Diesel (x2)
+						+ Hydrogen (x2)
+		+ Sodium explosion (@ Points): we multiply by ParticleUpdateLowFrequencyStepTimeDuration; decide that the value is per frame, and thus recalc all so that it's same value per-frame
+			X Constant *= 0.5625
+			+ Remove Points' multiplication by ParticleUpdateLowFrequencyStepTimeDuration
+		+ Review:
+			+ 3xBombs
+			+ Ship
+				+ Gunpowder
+				+ Diesel
+				+ Sodium
+				+ Hydrogen
+			+ NPC
+				+ TNT
+				+ Diesel
+					+ Doesn't have much heat
+				+ Sodium
+					+ Smaller
+				+ Hydrogen
+
++ Temperature rearc
+	! After all, we do sample temperature of all triangle vertex endpoints anyways
+	! Philosophy: C particles exchange with mesh, F particles with air/water
+	+ NpcParticles has temperature
+	+ Simulation:
+		+ During low-freq update, we converge each NPC particle's heat to: C: the bcoords-interp'd of the three temperatures, F: air/water temp
+			+ Note: we now ignore mesh particles' ignition points
+		+ For each NPC particle, we check if _its_ temperature makes it ignited
+			+ also checking waterness
+			+ => oneNpcParticleOnFire
+				+ And then everything proceeds as now
+		+ Test:
+			+ Mesh temperature for constrained
+			+ Air temperature for free
+			+ Water temperature for free
+			+ Catches fire @:
+				+ Constrained in hot mesh
+				+ Free in hot water
+				+ Free in hot air
+			+ Explodes @:
+				+ Constrained in hot mesh
+				+ Free in hot water
+				+ Free in hot air
+	+ Move constant w/comment on cheapness
+	+ Interactions (and provide heat to NPC particles):
+		! Do tool chain via World, not from Ship
+			! Npcs::interaction-method -> bool, invoked by World with or without ShipId depending on whether found
+				! Interactions (make helper):
+					! C:
+						! If shipid: id of that ship
+						! Else: of any ship
+					! F: of any ship
+				! Interaction returns bool if at least one NPC found
+				! World then returns that bool ORd with nearest ship bool
+		! Tests: 
+			a) interaction on ship, C (in range)
+			b) interaction on ship, F (in range)
+			c) interaction off ship, F (in range)
+		+ (inline) helper to visit NPC particles with this condition
+			+ Use for other interactions that may use it
+				+ ApplyBlast
+				+ ApplyAntiMatterBombPreimplosion
+				+ ApplyAntiMatterBombImplosion
+				+ ApplyAntiMatterBombExplosion
+		+ DestroyAt
+			+ Test
+		+ Heat blaster tool
+			+ Fix: too much dissipation in C and F
+		+ Little combustion rearc:
+			+ Allow explosion always if particle temperature is above ignition, even if in water
+				+ Means that we can't trigger explosion just "if oneNpcParticleOnFire" - it's really about "oneNpcParticleOverIgnitionTemperature", which is independent from water,
+				  but also "oneNpcParticleOnFire" with same condition as now (plus "oneMeshParticleOnFire")
+			+ Combustion state update (low-freq): catch fire also if mesh is on fire - for at least one particle
+				+ Catch fire immediately, try by just setting combustion state (without forcing temperature)
+					+ See if fire is really short-lived
+			+ Exploding NPC in burning mesh: delay between catching fire and exploding is NOT reasonable, explode immediately
+				+ Store oneNpcParticleIsExplosive: just last NPC particle that may explode
+				+ Explosion condition: if <as now> || (npc.BurningState.isBurning && oneNpcParticleIsExplosive)
+					+ And then grab right ElementIndex in <if> branch
+				+ Tests:
+					+ In burning mesh:
+						+ Diesel can
+						+ Hydrogen tank
+						+ TNT crate
+						+ Crate (no explo)
+		+ Laser cannon
+			+ Just apply heat
+				+ Use particles.ApplyHeat
+				+ Use particles.ApplyHeat everywhere
+			+ ShipInteractions: use points.ApplyHeat
+			+ Tests:
+				+ LaserCut on/off ship
+				+ And then on NPCs
+		+ Fire extinguisher
+			+ Also extinguish fire - halve combustion progress (so it affects geometry) while we wait for temperature to lower progress below 0.0
+				+ See if smothering time is ok
+			+ Tests:
+				+ On nothing
+				+ On ship
+				+ On free NPC
+				+ On constrained NPC
+		+ Review panic w/swimming
+			+ Replace with progress @ AnimationState
+			+ Tests:
+				+ Panic with laser
+					+ UW
+				+ Panic with heatblaster
+					+ UW
+		+ ApplyBlastAt: 
+			! Do from World, with ShipId argument
+			! Explosion (of ship bombs or ship particles or NPCs) should provide heat
+					- Requires changes to ShipStateMachine: ShipOnBlast needs to take heat
+					- Npcs::OnBlast: take and apply heat
+			! Old dynamics:
+				- World::ApplyBlast (tool) -> Ship -> Queued -> Ship + Ship::OnBlast
+				- Explosion -> Ship -> Ship::OnBlast
+				- Ship::OnBlast: 
+					- Npcs
+					- OceanSurface
+					- Fishes
+			+ New dynamics:
+				+ World::ApplyBlast (tool) -> Ship -> Queued -> Ship
+							   -> OnBlast
+				+ Explosion -> Ship -> World::OnBlast
+				+ World::OnBlast:
+					+ Npcs
+					+ OceanSurface
+					+ Fishes
+			+ Do heat @ Npcs
+			+ Test:
+				+ Explosion on ship: blast force, blast heat
+					+ Fishes
+					+ Waves
+				+ Explosion on constrained NPCs: blast force, blast heat
+				+ Explosion on free NPCs: blast force, blast heat
+				+ BlastTool on ship: blast force
+					+ Fishes
+					+ Waves
+				+ BlastTool on constrained NPCs: blast force
+				+ BlastTool on free NPCs: blast force
+				+ Other diesel can crates explode for heat wave (zero impact explosion for test)
+					+ Remove impact explosion test
+
+		+ Rethink NPC interactions's shipId: depending on interaction, we might want to hit all available ships
+			! Or the interaction itself might want to only work on the topmost ship - in which case _break_
+			! Classically these are on all ships:
+				! Destroy
+				! HeatBlaster
+				! FireExtinguisher
+				! LaserCannon
+			+ So, resimplify World: do not track ship id, just bool, and give None ship ID to Npcs
+			+ Tests:
+				+ On nothing
+				+ On ship
+				+ On free NPC
+				+ On constrained NPC
+		+ QueryNpcAt
+
+	+ Dissipation adjust affects NPC particle temperature transfer
+	+ Simulation: air/water temperature transfers heat to *free* NPC particles
+	+ See HumanNpcTemperature
+		+ Replace with temperature of secondary particle
+		+ Test bubbles from overheated NPCs
+	+ Cleanup:
+		+ TODOTEST: at particle temperature update, log+custom probe
+		+ TODOTEST logs
+		+ Old code
+		+ Verify no logs
+	+ Run in debug
+	+ Changelist:
+		+ Temperature
+		+ More tools interact with NPCs
+
++ Re-test bug fix: add/remove 8k NPCs N times
+	+ Since you're here: test perf with removal of 8192 NPCs
++ Impact also on land
+	- Test explosive NPCs
++ Test NPCs walking into water-filled compartment
+	X Check water @ lookahead?
+
++ Sounds:
+	+ Npcs: publish OnImpact at:
+		+ DestroyAt
+			+ Need to prevent re-sounding at next frame (tool is continuous); need a temporary "destroyed" flag (opt cur sim time)
+				+ Or better: DestroyAt interaction provides SessionId, i.e. timestamp coerced into uint64_t
+					+ Type at GameTypes (SessionId), starts at 0, always increasing, never repeated, not guaranteed to always be fully observed
+					+ SessionId stored at NPC as "interaction"
+			+ Random kinetic energy, so to explore whole range
+		+ OnImpact
+			+ Takes kinetic energy
+				+ Dissipated, use current vel to calc
+					+ But retain energy->sound_size transformation, it's perfect!
+			+ EventDispatcher aggregates
+			+ SoundController
+				+ Transform kinetic energy into size
+				+ And transform kinetic energy into volume (maxed by that constant)
+	+ Sounds:
+		+ impact:
+			! All: {2..4} X [non-uw, uw}
+			+ Types:
+				+ Wood
+				+ Metal
+				+ Plastic
+				+ Human
+				+ Piano
+		+ Cleanup:
+			+ Log @ SoundController
+			+ Log @ OnImpact (?)
+	X Sound for NPC fire smothering in water
+		+ Just call event
+		X Takes too long to figure out, seems delayed
+	+ changelist
+
++ Hanging by the feet: do something about it
+	+ Shorter time before "disconnecting"
+

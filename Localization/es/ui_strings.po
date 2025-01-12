@@ -10,7 +10,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 2.4\n"
+"X-Generator: Poedit 3.5\n"
 
 #: ..\FloatingSandbox\MainFrame.cpp:387
 msgid "&Controls"
@@ -1366,12 +1366,12 @@ msgid "Enables or disables auto-focus when an NPC is added."
 msgstr "Habilita o Deshabilita el auto-enfocado cuando un NPC es añadido."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:1155
-#, fuzzy
-#| msgid "Enables or disables auto-focus when an NPC is added."
 msgid ""
 "Enables or disables auto-toggling to the exterior view when a non-NPC tool "
 "is selected."
-msgstr "Habilita o Deshabilita el auto-enfocado cuando un NPC es añadido."
+msgstr ""
+"Habilita o deshabilita la alternancia automática a la vista exterior cuando "
+"se selecciona una herramienta que no es NPC."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2548
 msgid "Enables or disables automatic cycling of daylight."
@@ -1519,16 +1519,12 @@ msgstr ""
 "remolino, atraer o repeler - en NPCs."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4043
-#, fuzzy
-#| msgid ""
-#| "Enables or disables the effect of physics tools - such as Swirl, Attract, "
-#| "or Repel - on NPCs."
 msgid ""
 "Enables or disables the effect of physics tools - such as Swirl, Attract, or "
 "Repel - on Ships."
 msgstr ""
 "Habilita o deshabilita el efecto de las herramientas de física - Como el "
-"remolino, atraer o repeler - en NPCs."
+"remolino, atraer, o repeler - en Barcos."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:5109
 msgid ""
@@ -1563,14 +1559,10 @@ msgstr ""
 "Habilita o Deshabilita las descripciones de los barcos cuando son cargados."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2669
-#, fuzzy
-#| msgid ""
-#| "Enables or disables generation of wakes when engines are running "
-#| "underwater."
 msgid ""
 "Enables or disables the working of propellers when they are not underwater."
 msgstr ""
-"Habilita o Deshabilita la generación de estela cuando los motores funcionan "
+"Habilita o Deshabilita el funcionamiento de las propelas cuando no están "
 "bajo el agua."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:1047
@@ -1644,8 +1636,8 @@ msgstr "Borrar las puntas de las cuerdas."
 msgid ""
 "Erase the specified region and copy its content to the clipboard (Ctrl+X)."
 msgstr ""
-"Eliminar la región especificada y copiar su contenido al portapapeles (Ctrl"
-"+x)"
+"Eliminar la región especificada y copiar su contenido al portapapeles "
+"(Ctrl+x)"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2014 ..\ShipBuilderLib\MainFrame.cpp:2068
 #: ..\ShipBuilderLib\MainFrame.cpp:2551
@@ -1719,10 +1711,8 @@ msgid "Fire Extinguisher"
 msgstr "Extintor de fuego"
 
 #: ..\ShipBuilderLib\UI\MaterialPalette.cpp:675
-#, fuzzy
-#| msgid "Fire Extinguisher"
 msgid "Fire-Extinguishing"
-msgstr "Extintor de fuego"
+msgstr "Extinción de fuego"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2860
 msgid "Fishes"
@@ -2469,10 +2459,8 @@ msgid "Move/Rotate"
 msgstr "Mover/Rotar"
 
 #: ..\FloatingSandbox\MainFrame.cpp:406
-#, fuzzy
-#| msgid "Move/Rotate"
 msgid "Move/Rotate Gripped"
-msgstr "Mover/Rotar"
+msgstr "Mover/Rotar Agarrado"
 
 #: ..\FloatingSandbox\MainFrame.cpp:722
 msgid "Mute"
@@ -2681,10 +2669,8 @@ msgstr ""
 "Abrir el constructor de barcos para editar el barco actualmente cargado"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4038
-#, fuzzy
-#| msgid "&Options"
 msgid "Options"
-msgstr "&Opciones"
+msgstr "Opciones"
 
 #: ..\UILib\ShipLoadDialog.cpp:545
 msgid "Order ships by features"
@@ -2795,10 +2781,8 @@ msgid "Physics Tools Affect NPCs"
 msgstr "Las herramientas físicas afectan a los NPCs"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4042
-#, fuzzy
-#| msgid "Physics Tools Affect NPCs"
 msgid "Physics Tools Affect Ships"
-msgstr "Las herramientas físicas afectan a los NPCs"
+msgstr "Las herramientas físicas afectan a los Barcos"
 
 #: ..\FloatingSandbox\MainFrame.cpp:411
 msgid "Pick-n-Pull"
@@ -2915,7 +2899,7 @@ msgstr "Programado en Ámsterdam, Paises Bajos"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2668
 msgid "Propellers Work Above Water"
-msgstr ""
+msgstr "Las propelas funcionan fuera del agua"
 
 #: ..\ShipBuilderLib\Controller.cpp:218 ..\ShipBuilderLib\MainFrame.cpp:1743
 msgid "Properties"
@@ -4258,7 +4242,7 @@ msgstr "Bomba a Control Remoto"
 
 #: ..\FloatingSandbox\MainFrame.cpp:491
 msgid "Toggle RC Fire-Extinguishing Bomb"
-msgstr ""
+msgstr "Alternar bomba de extinción de incendios RC"
 
 #: ..\ShipBuilderLib\UI\MaterialPalette.cpp:813
 msgid "Toggle Switch"
@@ -4270,7 +4254,7 @@ msgstr "Bomba de tiempo"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:1154
 msgid "Toggle to Exterior With Non-NPC Tool"
-msgstr ""
+msgstr "Alternar al exterior con una herramienta que no sea NPC"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2404
 msgid "Tolerance:"

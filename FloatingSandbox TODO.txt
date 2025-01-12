@@ -432,24 +432,12 @@
 		+ Merge into master
 		+ changelist
 
-	- AntiGravity TODOHERE: bomb or tool?
-		- Make branch
-		- First test feasibility
-			- Try with mass imbalance; possible funcs f(m):
-				- f: 0 at 0, growing slowly with m => then mass = mass - f(m)
-			- Try with segment
-		- If ok:
-			- Line shader:
-				- Progress with chaotic noise
-	
-	- Test: underwater forces based on waves (derivative @ surface plus damper for depth)
-		- Just test feasibility
-		- If ok, optimize using cached depth?
+	X See DKUZ bug
 
-	- See DKUZ bug
+	- Tinies:
+		- Furniture: redo proportions to human, according to screenshot; e.g. barrel: as tall as half human
 
 	= Localization 1:
-		= 1
 		    "Diesel Can"
 		    "Gunpowder Keg"
 		    "Hydrogen Tank"
@@ -460,23 +448,21 @@
 		    + ES
 			+ mo
 			+ npcs
-		    - RU
+		    = RU
 			- mo
 			+ npcs
-		    = UK
+		    + UK
 			+ mo
 			+ npcs
-		= 2
-		    - New SettingsDialog things (apply physics tool on ships; engines work above water)
 
 	- Localization 2:
-		- Prepare pot's w/string extraction
-		- IT
+		+ Prepare pot's w/string extraction
+		= IT
 			- mo
 			+ npcs string table (fire ext. bomb)
-		- ES
-			- mo
-			- npcs string table (fire ext. bomb)
+		+ ES
+			+ mo
+			+ npcs string table (fire ext. bomb)
 		- RU
 			- mo
 			- npcs string table (fire ext. bomb)
@@ -487,10 +473,9 @@
 
 	- Do a pass for ships
 		+ email: Sean Dempsey
+		- Discord DMs
 		- _TO_TEST:
 			- Ryanair updates: new updates
-
-	- New materials (*)
 
 	- No redistribute
 		+ @ License
@@ -522,6 +507,24 @@
 			- 2. If test ok, finalize work with plane-1
 				- Replace Flames' dual upload
 
+	- New materials (*)
+
+	- Watertight doors should stay put even after unpowered (or new type altogether)
+
+	- AntiGravity TODOHERE: bomb or tool?
+		+ Make branch
+		- First test feasibility
+			- Try with mass imbalance; possible funcs f(m):
+				- f: 0 at 0, growing slowly with m => then mass = mass - f(m)
+			- Try with segment
+		- If ok:
+			- Line shader:
+				- Progress with chaotic noise
+	
+	- Test: underwater forces based on waves (derivative @ surface plus damper for depth)
+		- Just test feasibility
+		- If ok, optimize using cached depth?
+
 	- New SplashScreenDialog:
 		- Upper part OpenGL, lower part progress bar
 			- Own OpenGLContext (a third one) on own thread
@@ -533,6 +536,13 @@
 				- Or OpenGL quadrant stays, and dialog becomes taller downwards for progress bar quadrant
 			- 4. Progress bar shows progress, and OpenGL quadrant shows ship sinking, stepping with progress
 		- OnProgress is always called, but has a visible effect only from step 3 onwards
+
+	- Ship in mud
+		- Setting changes nature of floor
+		- Physics:
+			- Like silting, but more
+		- Shader:
+			- New tessellation with control of alphaing of floor over ship
 
 	- A way to spawn ships like NPCs: at any place
 
