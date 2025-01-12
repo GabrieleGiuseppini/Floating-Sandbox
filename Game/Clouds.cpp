@@ -149,7 +149,8 @@ void Clouds::Update(
     // Also, higher winds should make clouds move over-linearly faster.
     //
     // A linear factor of 1.0/8.0 worked fine at low wind speeds.
-    float const globalCloudSpeed = windSign * 0.005f * std::pow(std::abs(baseAndStormSpeedMagnitude), 2.1f);
+    float const absoluteGlobalCloudSpeed = 0.005f * std::pow(std::abs(baseAndStormSpeedMagnitude), 2.1f);
+    float const globalCloudSpeed = windSign * absoluteGlobalCloudSpeed;
 
     for (auto & cloud : mClouds)
     {
@@ -159,18 +160,22 @@ void Clouds::Update(
         if (baseAndStormSpeedMagnitude >= 0.0f && cloud->X > MaxCloudSpaceX)
         {
             cloud->X -= CloudSpaceWidth;
-            cloud->Darkening = stormParameters.CloudDarkening;
         }
         else if (baseAndStormSpeedMagnitude < 0.0f && cloud->X < -MaxCloudSpaceX)
         {
             cloud->X += CloudSpaceWidth;
-            cloud->Darkening = stormParameters.CloudDarkening;
         }
+
+        // Update darkening anyway, as still non-storm clouds should still change their color
+        // (or else they remain dark)
+        cloud->Darkening = stormParameters.CloudDarkening;
     }
+
+    float const stormGlobalCloudSpeed = windSign * std::max(absoluteGlobalCloudSpeed, 12.0f); // Ensure storm clouds ultimately leave the screen
 
     for (auto it = mStormClouds.begin(); it != mStormClouds.end();)
     {
-        (*it)->Update(globalCloudSpeed);
+        (*it)->Update(stormGlobalCloudSpeed);
 
         // Manage clouds leaving space: retire when cross border if too many, else rollover
         if (baseAndStormSpeedMagnitude >= 0.0f && (*it)->X > MaxCloudSpaceX)

@@ -150,14 +150,14 @@ void Storm::Update(GameParameters const & gameParameters)
 		mParameters.WindSpeed = windSmoothProgress * mMaxWindSpeed;
 
         // Clouds
-        float const cloudsLinearProgress = Clamp((upProgress - CloudsUpStart) / (CloudsUpEnd - CloudsUpStart), 0.0f, 1.0f);
+        float const cloudsLinearProgress = Clamp((upProgress - CloudsUpStart) / (CloudsUpEnd - CloudsUpStart), 0.0f, 1.0f); // 0.0 -> 1.0
         mParameters.NumberOfClouds = static_cast<int>(MaxClouds * cloudsLinearProgress);
         mParameters.CloudsSize = MinCloudSize + (MaxCloudSize - MinCloudSize) * cloudsLinearProgress;
-        mParameters.CloudDarkening = (cloudsLinearProgress < 0.5f) ? 0.65f : (cloudsLinearProgress < 0.9f ? 0.56f : 0.4f);
 
-        // Ambient darkening and air temperature drop
+        // Ambient and cloud darkening, and air temperature drop
         float const ambientDarkeningAndAirTemperatureDropSmoothProgress = SmoothStep(AmbientDarkeningAndAirTemperatureDropUpStart, AmbientDarkeningAndAirTemperatureDropUpEnd, upProgress);
         mParameters.AmbientDarkening = 1.0f - ambientDarkeningAndAirTemperatureDropSmoothProgress * mMaxDarkening;
+		mParameters.CloudDarkening = 0.4f + 0.6f * (1.0f - ambientDarkeningAndAirTemperatureDropSmoothProgress); // 1.0 -> 0.4
         mParameters.AirTemperatureDelta = ambientDarkeningAndAirTemperatureDropSmoothProgress * MaxAirTemperatureDelta;
 
 		// Rain
@@ -181,16 +181,15 @@ void Storm::Update(GameParameters const & gameParameters)
 		mParameters.WindSpeed = windSmoothProgress * mMaxWindSpeed;
 
         // Clouds
-        // from 1.0 to 0.0
-        float const cloudsLinearProgress = 1.0f - Clamp((downProgress - CloudsDownStart) / (CloudsDownEnd - CloudsDownStart), 0.0f, 1.0f);
+        float const cloudsLinearProgress = 1.0f - Clamp((downProgress - CloudsDownStart) / (CloudsDownEnd - CloudsDownStart), 0.0f, 1.0f); // 1.0 -> 0.0
         mParameters.NumberOfClouds = static_cast<int>(MaxClouds * cloudsLinearProgress);
         mParameters.CloudsSize = MinCloudSize + (MaxCloudSize - MinCloudSize) * cloudsLinearProgress;
-        mParameters.CloudDarkening = (cloudsLinearProgress < 0.5f) ? 1.0f : (cloudsLinearProgress < 0.9f ? 0.56f : 0.4f);
 
-        // Ambient darkening and air temperature drop
+        // Ambient and cloud darkening, and air temperature drop
         float const ambientDarkeningAndAirTemperatureDropSmoothProgress = 1.0f - SmoothStep(AmbientDarkeningAndAirTemperatureDropDownStart, AmbientDarkeningAndAirTemperatureDropDownEnd, downProgress);
         mParameters.AmbientDarkening = 1.0f - ambientDarkeningAndAirTemperatureDropSmoothProgress * mMaxDarkening;
-        mParameters.AirTemperatureDelta = ambientDarkeningAndAirTemperatureDropSmoothProgress * MaxAirTemperatureDelta;
+		mParameters.CloudDarkening = 0.4f + 0.6f * (1.0f - ambientDarkeningAndAirTemperatureDropSmoothProgress); // 1.0 -> 0.4
+		mParameters.AirTemperatureDelta = ambientDarkeningAndAirTemperatureDropSmoothProgress * MaxAirTemperatureDelta;
 
 		// Rain
 		if (gameParameters.DoRainWithStorm)
