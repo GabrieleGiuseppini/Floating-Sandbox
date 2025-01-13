@@ -48,7 +48,7 @@ set  (SOURCES
 	ImageTools.h
 	IndexRemap.h
 	IntegralLinearSliderCore.h
-	ISliderCore.h	
+	ISliderCore.h
 	LinearSliderCore.cpp
 	LinearSliderCore.h
 	Log.cpp
@@ -63,7 +63,7 @@ set  (SOURCES
 	PrecalculatedFunction.cpp
 	PrecalculatedFunction.h
 	ProgressCallback.h
-	RunningAverage.h	
+	RunningAverage.h
 	StrongTypeDef.h
 	SysSpecifics.cpp
 	SysSpecifics.h
@@ -79,10 +79,10 @@ set  (SOURCES
 	UniqueBuffer.h
 	UserGameException.h
 	Utils.cpp
-	Utils.h	
+	Utils.h
 	Vectors.cpp
 	Vectors.h
-	Version.h	
+	Version.h
 )
 
 source_group(" " FILES ${SOURCES})
@@ -94,9 +94,3 @@ target_include_directories(GameCoreLib INTERFACE ..)
 
 target_link_libraries (GameCoreLib
 	${ADDITIONAL_LIBRARIES})
-
-if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
-	target_link_libraries (GameCoreLib
-		"stdc++fs")
-endif()
-
