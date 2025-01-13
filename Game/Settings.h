@@ -6,9 +6,10 @@
 #pragma once
 
 #include "FileSystem.h"
-#include "Log.h"
-#include "Utils.h"
-#include "Version.h"
+
+#include <GameCore/Log.h>
+#include <GameCore/Utils.h>
+#include <GameCore/Version.h>
 
 #include <picojson.h>
 

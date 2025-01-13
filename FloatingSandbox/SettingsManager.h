@@ -8,8 +8,7 @@
 #include "SoundController.h"
 
 #include <Game/IGameControllerSettings.h>
-
-#include <GameCore/Settings.h>
+#include <Game/Settings.h>
 
 enum class GameSettings : size_t
 {

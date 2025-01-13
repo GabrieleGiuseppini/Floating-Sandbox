@@ -8,6 +8,7 @@ set  (GAME_SOURCES
 	ComputerCalibration.h
 	ElectricalPanel.h
 	EventRecorder.h
+	FileSystem.h
 	FishSpeciesDatabase.cpp
 	FishSpeciesDatabase.h
 	GameController.cpp
@@ -42,6 +43,8 @@ set  (GAME_SOURCES
 	RopeBuffer.h
 	RollingText.cpp
 	RollingText.h
+	Settings.cpp
+	Settings.h
 	ShipAutoTexturizationSettings.cpp
 	ShipAutoTexturizationSettings.h
 	ShipDefinition.h

@@ -1,4 +1,4 @@
-#include <GameCore/Settings.h>
+#include <Game/Settings.h>
 
 #include <GameCore/Utils.h>
 

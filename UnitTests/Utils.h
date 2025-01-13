@@ -1,6 +1,6 @@
+#include <Game/FileSystem.h>
 #include <Game/Materials.h>
 
-#include <GameCore/FileSystem.h>
 #include <GameCore/MemoryStreams.h>
 
 #include <map>

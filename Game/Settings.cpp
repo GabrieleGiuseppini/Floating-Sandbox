@@ -5,7 +5,7 @@
  ***************************************************************************************/
 #include "Settings.h"
 
-#include "Colors.h"
+#include <GameCore/Colors.h>
 
 #include <regex>
 

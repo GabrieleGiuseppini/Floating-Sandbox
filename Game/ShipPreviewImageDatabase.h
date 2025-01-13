@@ -5,7 +5,8 @@
 ***************************************************************************************/
 #pragma once
 
-#include <GameCore/FileSystem.h>
+#include "FileSystem.h"
+
 #include <GameCore/ImageData.h>
 #include <GameCore/Version.h>
 

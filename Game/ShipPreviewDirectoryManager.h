@@ -5,11 +5,11 @@
 ***************************************************************************************/
 #pragma once
 
+#include "FileSystem.h"
 #include "ShipDefinition.h"
 #include "ShipPreviewData.h"
 #include "ShipPreviewImageDatabase.h"
 
-#include <GameCore/FileSystem.h>
 #include <GameCore/ImageData.h>
 
 #include <filesystem>

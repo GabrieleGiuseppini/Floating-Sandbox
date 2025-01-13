@@ -12,8 +12,7 @@
 
 #include <Game/IGameControllerSettingsOptions.h>
 #include <Game/ResourceLocator.h>
-
-#include <GameCore/Settings.h>
+#include <Game/Settings.h>
 
 #include <wx/bitmap.h>
 #include <wx/bmpcbox.h>

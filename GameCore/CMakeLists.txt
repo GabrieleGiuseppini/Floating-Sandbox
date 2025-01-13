@@ -27,7 +27,6 @@ set  (SOURCES
 	EnumFlags.h
 	ExponentialSliderCore.cpp
 	ExponentialSliderCore.h
-	FileSystem.h
 	Finalizer.h
 	FixedSetSliderCore.h
 	FixedSizeVector.h
@@ -65,8 +64,6 @@ set  (SOURCES
 	PrecalculatedFunction.h
 	ProgressCallback.h
 	RunningAverage.h	
-	Settings.cpp
-	Settings.h
 	StrongTypeDef.h
 	SysSpecifics.cpp
 	SysSpecifics.h
