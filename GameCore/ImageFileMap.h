@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include <GameCore/ImageData.h>
+#include "ImageData.h"
 
 #include <cassert>
 #include <optional>

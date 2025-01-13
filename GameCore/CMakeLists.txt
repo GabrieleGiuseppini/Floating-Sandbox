@@ -44,6 +44,7 @@ set  (SOURCES
 	GameTypes.h
 	GameWallClock.h
 	ImageData.h
+	ImageFileMap.h
 	ImageTools.cpp
 	ImageTools.h
 	IndexRemap.h

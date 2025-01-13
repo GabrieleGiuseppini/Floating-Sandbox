@@ -6,9 +6,9 @@
 #include "TextureAtlas.h"
 
 #include "ImageFileTools.h"
-#include "ImageFileMap.h"
 
 #include <GameCore/GameException.h>
+#include <GameCore/ImageFileMap.h>
 #include <GameCore/ImageTools.h>
 #include <GameCore/Log.h>
 #include <GameCore/SysSpecifics.h>
