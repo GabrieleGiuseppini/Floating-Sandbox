@@ -5,8 +5,6 @@
 ***************************************************************************************/
 #include "ImageSaveDialog.h"
 
-namespace ShipBuilder {
-
 ImageSaveDialog::ImageSaveDialog(wxWindow * parent)
 	: wxFileDialog(
 		parent,
@@ -21,6 +19,4 @@ ImageSaveDialog::ImageSaveDialog(wxWindow * parent)
 	SetMessage(_("Save an Image"));
 
 	SetWildcard(_("Image files") + wxS(" (*.png)|*.png"));
-}
-
 }

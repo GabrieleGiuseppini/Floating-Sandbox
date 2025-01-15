@@ -5,8 +5,6 @@
 ***************************************************************************************/
 #include "ImageLoadDialog.h"
 
-namespace ShipBuilder {
-
 ImageLoadDialog::ImageLoadDialog(wxWindow * parent)
 	: wxFileDialog(
 		parent,
@@ -21,6 +19,4 @@ ImageLoadDialog::ImageLoadDialog(wxWindow * parent)
 	SetMessage(_("Load an Image"));
 
 	SetWildcard(_("Image files") + wxS(" (*.jpg; *.png)|*.jpg; *.png"));
-}
-
 }

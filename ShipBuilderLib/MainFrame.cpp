@@ -5333,7 +5333,7 @@ void MainFrame::ImportExteriorTextureLayerFromImage()
     {
         try
         {
-            auto image = ImageFileTools::LoadImageRgba(dlg.GetPath().ToStdString());
+            auto image = ImageFileTools::LoadImageRgba(dlg.GetChosenFilepath());
 
             if (image.Size.width == 0 || image.Size.height == 0)
             {

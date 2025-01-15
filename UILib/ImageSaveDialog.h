@@ -9,8 +9,6 @@
 
 #include <filesystem>
 
-namespace ShipBuilder {
-
 class ImageSaveDialog : public wxFileDialog
 {
 public:
@@ -22,5 +20,3 @@ public:
 		return std::filesystem::path(GetPath().ToStdString());
 	}
 };
-
-}
