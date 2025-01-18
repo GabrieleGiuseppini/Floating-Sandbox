@@ -490,7 +490,7 @@
 			X LJKMagic - if ok: see if these are updates, and see credits
 
 	- Release template:
-		- Branch is merged into master (if applicable)
+		= Branch is merged into master (if applicable)
 		- Windows
 			- MSI variable
 			- Commit & push

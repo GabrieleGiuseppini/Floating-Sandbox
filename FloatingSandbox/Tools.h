@@ -803,8 +803,6 @@ public:
         {
             if (mMovingState.has_value())
             {
-                auto const now = std::chrono::steady_clock::now();
-
                 if (mMovingState->CurrentTrajectory.has_value())
                 {
                     //
