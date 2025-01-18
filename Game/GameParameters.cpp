@@ -79,7 +79,7 @@ GameParameters::GameParameters()
     , ElectricalElementHeatProducedAdjustment(1.0f)
     , DoShowElectricalNotifications(true)
     , EngineThrustAdjustment(1.0f)
-    , DoEnginesWorkAboveWater(false)
+    , DoEnginesWorkAboveWater(true)
     , WaterPumpPowerAdjustment(1.0f)
     // Fishes
     , NumberOfFishes(76)
