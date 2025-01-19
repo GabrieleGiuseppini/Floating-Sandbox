@@ -692,6 +692,7 @@
 	- Test User Ships folder
 
 - Misc:
+	- Fix: when there are validation issues during "Save", deciding to save without fixing goes on as "SaveAs"
 	- Once selected, selection could be moved right away, instead of having to copy'n'paste
 	- Localization:
 		- See if can do separate extraction into separate file, which then is loaded at all times by LocalizationManager together with the other one 

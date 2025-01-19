@@ -127,6 +127,7 @@ K.I.S.
 K.L.
 K.L.D.
 K.M.
+K.M.S.
 K.N.
 K.N.M.
 K.N.S.

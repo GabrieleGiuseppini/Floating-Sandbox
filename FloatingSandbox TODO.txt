@@ -487,7 +487,11 @@
 				+ "Mattytitanic" 
 					+ Verify all when done
 				+ Prendi descrizione da foto
-			- mia
+			+ mia
+				+ Fix:
+					+ Author
+					+ Ship names
+			+ S.S. Commonwealth from P1X
 			X LJKMagic - if ok: see if these are updates, and see credits
 
 	- Release template:
