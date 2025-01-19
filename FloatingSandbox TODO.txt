@@ -434,7 +434,7 @@
 
 	X See DKUZ bug
 
-	- Tinies:
+	= Tinies:
 		+ Furniture: redo proportions to human, according to screenshot; e.g. barrel: as tall as half human
 		+ Change the name "tophat" or "tophatlemons" to "Mia"
 			+ Credits
@@ -447,7 +447,7 @@
 		- Look at non-anti-aliased borders
 			! On my new dell, also 1.18 shows non-anti-aliased borders
 
-	= Localization 1:
+	+ Localization 1:
 		    "Diesel Can"
 		    "Gunpowder Keg"
 		    "Hydrogen Tank"
@@ -458,14 +458,14 @@
 		    + ES
 			+ mo
 			+ npcs
-		    = RU
-			- mo
+		    + RU
+			+ mo
 			+ npcs
 		    + UK
 			+ mo
 			+ npcs
 
-	= Localization 2:
+	+ Localization 2:
 		+ Prepare pot's w/string extraction
 		+ IT
 			+ mo
@@ -473,9 +473,9 @@
 		+ ES
 			+ mo
 			+ npcs string table (fire ext. bomb)
-		- RU
-			- mo
-				- Check also old ("move group", )
+		+ RU
+			+ mo
+				+ Check also old ("move group", )
 			+ npcs string table (fire ext. bomb)
 		+ UK
 			+ mo
@@ -493,10 +493,17 @@
 				+ Fix:
 					+ Author
 					+ Ship names
-			+ S.S. Commonwealth from P1X
+			= S.S. Commonwealth from P1X
+				+ Added and all
+				= Asked if ok
+			- Four new ships from email guy, in _TO_TRY
+				- Ask credits if OK
+					- LostLinerLegend
+						- Credits
+						- Ships
 			X LJKMagic - if ok: see if these are updates, and see credits
 
-	- Final beta
+	- Send final beta
 		- Changes:
 			- Made Small Tables, Cabin Desk, and Chests slightly bigger
 			- Changed default for propellers above water
@@ -610,11 +617,13 @@
 				+ Note: we already have OceanFloor::DisplaceAt; read below
 			- Render:
 				- Dust clouds
+					- Could be short-lived ephemeral particles driving rendering of a texture, much like smoke
+						- Springing up from impact, then quickly falling down (very heavy)
 		- 2. Silting
 			- Once on the floor, should dive more than today
 			- Render:
 				- Ideally the ship shows through the floor, with a random pattern 
-					- (think: Perlin controlling alphaing of floor over ship)
+					- think: Perlin controlling alphaing of floor over ship
 		- WAS:
 			= Ocean floor deforming upon impact (*)
 				! Better done after frontier work, so that may calculate pointness

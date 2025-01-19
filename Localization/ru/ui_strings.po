@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Floating Sandbox\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-01-12 01:28+0100\n"
+"PO-Revision-Date: 2025-01-19 19:56+0100\n"
 "Last-Translator: Gabriele Giuseppini <gabrielegiuseppini@gmail.com>\n"
 "Language-Team: Ilya Voloshin; Roman Shavernew (DioxCode)\n"
 "Language: ru\n"
@@ -229,10 +229,8 @@ msgid "Adjusts the elasticity of collisions with the ocean floor."
 msgstr "Регулирует упругость столкновений с океанским дном."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3081
-#, fuzzy
-#| msgid "Adjusts the strength of storms."
 msgid "Adjusts the extent of blast force fields onto NPCs."
-msgstr "Регулирует силу штормов."
+msgstr "Регулирует степень воздействия силовых полей взрыва на НИПов."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2115
 msgid "Adjusts the extent to which rain floods exposed areas of a ship."
@@ -1368,12 +1366,12 @@ msgid "Enables or disables auto-focus when an NPC is added."
 msgstr "Включает или выключает автофокусировку при добавлении НИПов."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:1155
-#, fuzzy
-#| msgid "Enables or disables auto-focus when an NPC is added."
 msgid ""
 "Enables or disables auto-toggling to the exterior view when a non-NPC tool "
 "is selected."
-msgstr "Включает или выключает автофокусировку при добавлении НИПов."
+msgstr ""
+"Включает или выключает автоматическое переключение на внешний вид при выборе "
+"инструмента, не относящегося к НИПам."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2548
 msgid "Enables or disables automatic cycling of daylight."
@@ -1514,16 +1512,12 @@ msgstr ""
 "Притяжение или Отталкивание, на НИПов."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4043
-#, fuzzy
-#| msgid ""
-#| "Enables or disables the effect of physics tools - such as Swirl, Attract, "
-#| "or Repel - on NPCs."
 msgid ""
 "Enables or disables the effect of physics tools - such as Swirl, Attract, or "
 "Repel - on Ships."
 msgstr ""
 "Включает или отключает действие физических инструментов, таких как Вращение, "
-"Притяжение или Отталкивание, на НИПов."
+"Притяжение или Отталкивание, на кораблях."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:5109
 msgid ""
@@ -1556,14 +1550,11 @@ msgid ""
 msgstr "Включает или отключает окно с описанием кораблей при их загрузке."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2669
-#, fuzzy
-#| msgid ""
-#| "Enables or disables generation of wakes when engines are running "
-#| "underwater."
 msgid ""
 "Enables or disables the working of propellers when they are not underwater."
 msgstr ""
-"Включает или отключает генерацию следа при работе двигателей под водой."
+"Включает или выключает работу гребных винтов, когда они не находятся под "
+"водой."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:1047
 msgid ""
@@ -1711,10 +1702,8 @@ msgid "Fire Extinguisher"
 msgstr "Огнетушитель"
 
 #: ..\ShipBuilderLib\UI\MaterialPalette.cpp:675
-#, fuzzy
-#| msgid "Fire Extinguisher"
 msgid "Fire-Extinguishing"
-msgstr "Огнетушитель"
+msgstr "Пожаро-Тушаущий"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2860
 msgid "Fishes"
@@ -2451,20 +2440,16 @@ msgid "Move All/Rotate All"
 msgstr "Переместить Все/Повернуть Все"
 
 #: ..\FloatingSandbox\MainFrame.cpp:617
-#, fuzzy
-#| msgid "Move NPC"
 msgid "Move NPC/NPCs"
-msgstr "Переместить НИПа"
+msgstr "Переместить НИПа/НИПов"
 
 #: ..\FloatingSandbox\MainFrame.cpp:397
 msgid "Move/Rotate"
 msgstr "Двигать/Поворачивать"
 
 #: ..\FloatingSandbox\MainFrame.cpp:406
-#, fuzzy
-#| msgid "Move/Rotate"
 msgid "Move/Rotate Gripped"
-msgstr "Двигать/Поворачивать"
+msgstr "Двигать/Поворачивать Схваченное"
 
 #: ..\FloatingSandbox\MainFrame.cpp:722
 msgid "Mute"
@@ -2674,10 +2659,8 @@ msgstr ""
 "корабля"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4038
-#, fuzzy
-#| msgid "&Options"
 msgid "Options"
-msgstr "&Параметры"
+msgstr "Параметры"
 
 #: ..\UILib\ShipLoadDialog.cpp:545
 msgid "Order ships by features"
@@ -2739,10 +2722,8 @@ msgid "Pan Increment"
 msgstr "Приращение панорамирования"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3080
-#, fuzzy
-#| msgid "Shoal Radius Adjust"
 msgid "Passive Blast Radius Adjust"
-msgstr "Регулировка радиуса мелководья"
+msgstr "Регулировка радиуса пассивного взрыва"
 
 #: ..\ShipBuilderLib\UI\ShipPropertiesEditDialog.cpp:100
 msgid "Password Protection"
@@ -2790,10 +2771,8 @@ msgid "Physics Tools Affect NPCs"
 msgstr "Физические Инструмены Влияют На НИПов"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4042
-#, fuzzy
-#| msgid "Physics Tools Affect NPCs"
 msgid "Physics Tools Affect Ships"
-msgstr "Физические Инструмены Влияют На НИПов"
+msgstr "Физические Инструменты Воздействуют На Корабль"
 
 #: ..\FloatingSandbox\MainFrame.cpp:411
 msgid "Pick-n-Pull"
@@ -2905,7 +2884,7 @@ msgstr "Программируется в Амстердаме, Нидерлан
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2668
 msgid "Propellers Work Above Water"
-msgstr ""
+msgstr "Винты Работают Над Водой"
 
 #: ..\ShipBuilderLib\Controller.cpp:218 ..\ShipBuilderLib\MainFrame.cpp:1743
 msgid "Properties"
@@ -3000,10 +2979,8 @@ msgid "Remove Interior Layer"
 msgstr "Удалить слой интерьерой текстуры"
 
 #: ..\FloatingSandbox\MainFrame.cpp:623
-#, fuzzy
-#| msgid "Remove NPC"
 msgid "Remove NPC/NPCs"
-msgstr "Удалить НИПа"
+msgstr "Удалить НИПа/НИПов"
 
 #: ..\ShipBuilderLib\Controller.cpp:1755
 msgid "Remove Ropes Layer"
@@ -4248,7 +4225,7 @@ msgstr "Радиоуправляемая бомба"
 
 #: ..\FloatingSandbox\MainFrame.cpp:491
 msgid "Toggle RC Fire-Extinguishing Bomb"
-msgstr ""
+msgstr "Радиоуправляемая Огнетушающая Бомба"
 
 #: ..\ShipBuilderLib\UI\MaterialPalette.cpp:813
 msgid "Toggle Switch"
@@ -4260,7 +4237,7 @@ msgstr "Бомба с таймером"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:1154
 msgid "Toggle to Exterior With Non-NPC Tool"
-msgstr ""
+msgstr "Переключение На Вид Снаружи С Инструментом, Не относящимся к НИПам"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2404
 msgid "Tolerance:"
@@ -4332,10 +4309,8 @@ msgid "Tsunami Rate"
 msgstr "Сила цунами"
 
 #: ..\FloatingSandbox\MainFrame.cpp:628
-#, fuzzy
-#| msgid "Turnaround NPC"
 msgid "Turnaround NPC/NPCs"
-msgstr "Развернуть НИПа"
+msgstr "Развернуть НИПа/НИПов"
 
 #: ..\ShipBuilderLib\UI\MaterialPalette.cpp:716
 msgid "Type"
