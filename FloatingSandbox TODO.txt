@@ -496,11 +496,11 @@
 			= S.S. Commonwealth from P1X
 				+ Added and all
 				= Asked if ok
-			- Four new ships from email guy, in _TO_TRY
-				- Ask credits if OK
-					- LostLinerLegend
-						- Credits
-						- Ships
+			+ Four new ships from email guy, in _TO_TRY
+				+ Ask credits if OK
+					+ LostLinerLegend
+						+ Credits
+						+ Ships
 			X LJKMagic - if ok: see if these are updates, and see credits
 
 	- Send final beta
@@ -509,6 +509,7 @@
 			- Changed default for propellers above water
 			- Added many more ships (from Mia, Mattytitanic, P1X, LostLinerLegend)
 			- Completed localization
+		- Bump up version
 
 	- Release template:
 		= Branch is merged into master (if applicable)
@@ -624,6 +625,26 @@
 			- Render:
 				- Ideally the ship shows through the floor, with a random pattern 
 					- think: Perlin controlling alphaing of floor over ship
+		- Possible 1:
+			- OceanFloorDatabase: replaces flat list of textures with declaration of textures + physical properties (i.e. hardness)
+				- Move ocean floor textures into own folder, referenced by database implementation
+				- We still verify at runtime that folder content is covered
+			- Physics:
+				- Velocity @ impact time determines reponse (both P and V), via function that careully modulates input V to do:
+					- Right penetration and impact response
+					- Right generation of dust clouds
+			- Rendering:
+				- Dust clouds:
+					- Eph particles
+					- Shader does radial expansion (or Perlin-based like clouds)
+						- Speed depends on V of particles
+					- Lifetime:
+						- TODO: based on dust settling down?
+					- Alpha based on lifetime
+						- So clouds continue on floor
+				- Floor transparency:
+					- TODO: how can we avoid having to work on floor shader? Z depth tricks?
+
 		- WAS:
 			= Ocean floor deforming upon impact (*)
 				! Better done after frontier work, so that may calculate pointness
