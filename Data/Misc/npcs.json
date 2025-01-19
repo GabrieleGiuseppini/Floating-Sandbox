@@ -814,7 +814,7 @@
                 "material": "Solid Pine Wood I-Beam",
                 "particle_mesh": {
                     "kind": "Quad",
-                    "height": 0.8,
+                    "height": 0.9,
                     "particle_attributes_overrides": [
                         {
                             "buoyancy_volume_fill": 0.0847,
@@ -831,7 +831,7 @@
                 "material": "Solid Pine Wood I-Beam",
                 "particle_mesh": {
                     "kind": "Quad",
-                    "height": 0.45,
+                    "height": 0.48,
                     "particle_attributes_overrides": [
                         {
                             "buoyancy_volume_fill": 0.0847,
@@ -848,7 +848,7 @@
                 "material": "Solid Pine Wood I-Beam",
                 "particle_mesh": {
                     "kind": "Quad",
-                    "height": 0.45,
+                    "height": 0.49,
                     "particle_attributes_overrides": [
                         {
                             "buoyancy_volume_fill": 0.06,
@@ -865,7 +865,7 @@
                 "material": "Solid Pine Wood I-Beam",
                 "particle_mesh": {
                     "kind": "Quad",
-                    "height": 0.45,
+                    "height": 0.51,
                     "particle_attributes_overrides": [
                         {
                             "buoyancy_volume_fill": 0.05,
@@ -1038,7 +1038,7 @@
                 "material": "Solid Pine Wood I-Beam",
                 "particle_mesh": {
                     "kind": "Quad",
-                    "height": 0.4,
+                    "height": 0.5,
                     "particle_attributes_overrides": [
                         {
                             "buoyancy_volume_fill": 0.0847,
@@ -1055,7 +1055,7 @@
                 "material": "Solid Pine Wood I-Beam",
                 "particle_mesh": {
                     "kind": "Quad",
-                    "height": 0.4,
+                    "height": 0.48,
                     "particle_attributes_overrides": [
                         {
                             "buoyancy_volume_fill": 0.0847,
@@ -1398,7 +1398,7 @@
             "Small Table 2": "Маленкий Стол 2",
             "Stone Ballast": "Каменный Балласт",
 	    "Diesel Can": "Дизельная канистра",
-	    "Fire-Extinguishing Bomb": "TODO",
+	    "Fire-Extinguishing Bomb": "Пожаро-Тушающая Бомба",
 	    "Gunpowder Keg": "Бочка с порохом",
 	    "Hydrogen Tank": "Баллон с водородом",
 	    "Sodium Tank": "Баллон с натрием",
