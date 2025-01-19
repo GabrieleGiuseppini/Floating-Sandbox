@@ -465,7 +465,7 @@
 			+ mo
 			+ npcs
 
-	+ Localization 2:
+	= Localization 2:
 		+ Prepare pot's w/string extraction
 		+ IT
 			+ mo
@@ -473,9 +473,10 @@
 		+ ES
 			+ mo
 			+ npcs string table (fire ext. bomb)
-		+ RU
-			+ mo
+		= RU
+			= mo
 				+ Check also old ("move group", )
+				= Not sure if complete
 			+ npcs string table (fire ext. bomb)
 		+ UK
 			+ mo
@@ -503,13 +504,13 @@
 						+ Ships
 			X LJKMagic - if ok: see if these are updates, and see credits
 
-	- Send final beta
-		- Changes:
-			- Made Small Tables, Cabin Desk, and Chests slightly bigger
-			- Changed default for propellers above water
+	+ Send final beta
+		+ Changes:
+			- Made Small Tables, Cabin Desk, and Chests slightly bigger (@mia)
+			- Changed default for propellers above water (after all, too many ship were relying on engines working above water...)
 			- Added many more ships (from Mia, Mattytitanic, P1X, LostLinerLegend)
 			- Completed localization
-		- Bump up version
+		+ Bump up version
 
 	- Release template:
 		= Branch is merged into master (if applicable)
