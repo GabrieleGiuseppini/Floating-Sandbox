@@ -483,10 +483,11 @@
 	= Do a pass for ships
 		+ email: Sean Dempsey
 		= _TO_TEST:
-			= MattyTitanic - ask credits if we take them
-				- "Mattytitanic" 
-					- Verify all when done
-				- Prendi descrizione da foto
+			+ MattyTitanic - ask credits if we take them
+				+ "Mattytitanic" 
+					+ Verify all when done
+				+ Prendi descrizione da foto
+			- mia
 			X LJKMagic - if ok: see if these are updates, and see credits
 
 	- Release template:
@@ -575,7 +576,8 @@
 
 	- AntiGravity TODOHERE: bomb or tool?
 		+ Make branch: anti_gravity_field
-		- First test feasibility
+		- First, test feasibility
+			+ Fixed min mass (so light materials have more force, thus move more and break)
 			- Try with mass imbalance; possible funcs f(m):
 				- f: 0 at 0, growing slowly with m => then mass = mass - f(m)
 			- Try with segment
@@ -586,6 +588,36 @@
 	- Test: underwater forces based on waves (derivative @ surface plus damper for depth)
 		- Just test feasibility
 		- If ok, optimize using cached depth?
+
+	- Ship in mud
+		- 1. Impact
+			- "My idea could be using the sea bed as a sort of cushion and quick sand effect, I'm thinking that the sea floor can have a softer silt Simulation. 
+			   It seems like the silt doesn't allow any give even at the softest setting and it still hitting the ground like a wall."
+			- Also: floor deforming upon impact
+				+ Note: we already have OceanFloor::DisplaceAt; read below
+			- Render:
+				- Dust clouds
+		- 2. Silting
+			- Once on the floor, should dive more than today
+			- Render:
+				- Ideally the ship shows through the floor, with a random pattern 
+					- (think: Perlin controlling alphaing of floor over ship)
+		- WAS:
+			= Ocean floor deforming upon impact (*)
+				! Better done after frontier work, so that may calculate pointness
+				+ ParentWorld exposes DisplaceOceanFloor(x, offsetY)
+				- @ Ocean floor collision: upon (non-orphaned) point entering floor:
+					- Ocean floor's H goes back (opposite) by displacement * FloorFriability * f(pointness, massiveness)
+						- displacement is whatever displacement we moved (bounced) the point by
+						- FloorFriability = new param [0.0, ..., 1.0]
+						- pointness = TBD, based off frontier
+						- massiveness = point's connected component size
+				- WATCH OUT: might be ugly with peaks (very vertical slope)
+					- Increase resolution of ocean floor - shouldn't impact perf other than for cache misses
+					- Another way to reduce the warping is to have varying resolution, btw - e.g. the ocean floor becoming more detailed where an impact happens
+						- That could also open up to simulating a layer of sand that gets disturbed with the impact, without having to use particles, but by just playing with that higher-resolution "bitmap"
+				- Could also have a "dust cloud" effect
+
 
 	- New SplashScreenDialog:
 		- Upper part OpenGL, lower part progress bar
@@ -598,13 +630,6 @@
 				- Or OpenGL quadrant stays, and dialog becomes taller downwards for progress bar quadrant
 			- 4. Progress bar shows progress, and OpenGL quadrant shows ship sinking, stepping with progress
 		- OnProgress is always called, but has a visible effect only from step 3 onwards
-
-	- Ship in mud
-		- Setting changes nature of floor
-		- Physics:
-			- Like silting, but more
-		- Shader:
-			- New tessellation with control of alphaing of floor over ship
 
 	- A way to spawn ships like NPCs: at any place
 
@@ -1008,6 +1033,7 @@
 	- Vegas:
 		- Screenshots:
 			- Wreck at night w/wout lamp
+			- Ship from afar at night, w large lamp
 			- Twilight
 			- Temperature overlay
 			- Stress overlay
@@ -1528,8 +1554,7 @@
 		- https://www.opengl.org/discussion_boards/showthread.php/154811-magnifying-glass-effect
 		- https://www.shadertoy.com/view/4tdXDl
 
-	- Add a flashlight to see the ships deep underwater. Its hard to see the ships at some depths. Plus the idea of seeing a rusty hulk of metal appear out of the dark abyss is really cool
-		- Requires "sources of light" feature (*)
+	+ Add a flashlight to see the ships deep underwater. Its hard to see the ships at some depths. Plus the idea of seeing a rusty hulk of metal appear out of the dark abyss is really cool
 
 	- Less repetitive auto-texturization:
 		- Material textures have to become procedurally-generated
@@ -1565,6 +1590,7 @@
 					- "And you can do it differently, leave the existing colors, and to them to make a separate slot, when you click on this slot, the polytra appears, and you choose a color"
 				- Bending materials
 					- Basically extremely high strength and low spring reduction coeff
+				- Redo template!
 			- Electrical materials:
 				- Backup generators: would activate 10 seconds after connection is cut from the main power and it would power the lights only
 					- Has it's own amount of power and will lose the energy over an amount of time but can be revitalized either by gen or with electric shock tool
@@ -1586,6 +1612,7 @@
 				- Thermal switch
 				- Solar panel
 					- Like generator, but only generates power when daylight above threshold, *and* when on frontier
+				- Redo template!
 
 	- "Soft" setting for ocean floors
 		- Just less impact
@@ -1782,22 +1809,6 @@
 			- Only the cables should be able to make 8 connections (sides + diagonals)
 			- Any devices should only be connected in 4 direction (sides only)
 		- Option C: multiple electrical layers
-
-	= Ocean floor deforming upon impact (*)
-		! Better done after frontier work, so that may calculate pointness
-		+ ParentWorld exposes DisplaceOceanFloor(x, offsetY)
-		- @ Ocean floor collision: upon (non-orphaned) point entering floor:
-			- Ocean floor's H goes back (opposite) by displacement * FloorFriability * f(pointness, massiveness)
-				- displacement is whatever displacement we moved (bounced) the point by
-				- FloorFriability = new param [0.0, ..., 1.0]
-				- pointness = TBD, based off frontier
-				- massiveness = point's connected component size
-		- WATCH OUT: might be ugly with peaks (very vertical slope)
-			- Increase resolution of ocean floor - shouldn't impact perf other than for cache misses
-			- Another way to reduce the warping is to have varying resolution, btw - e.g. the ocean floor becoming more detailed where an impact happens
-				- That could also open up to simulating a layer of sand that gets disturbed with the impact, without having to use particles, but by just playing with that higher-resolution "bitmap"
-		- Could also have a "dust cloud" effect
-
 
 	- Richter reading upon impact (see https://www.quora.com/How-fast-did-the-Titanic-sink-to-the-bottom-and-did-it-make-a-noise-when-it-hit)
 

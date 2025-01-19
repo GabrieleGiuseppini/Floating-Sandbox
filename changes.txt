@@ -24,7 +24,7 @@
 	- Fixed a crash happening after adding and removing many NPCs multiple times
 	- Linux: fixed ShipBuilder window not opening up as maximized
 - Reduced amount of graphics memory required by rendering engine (texture atlases and shaders)
-- Added 3 new ships
+- Added 9 new ships
 - Added new background music: "Intervention", by Scott Buckley (www.scottbuckley.com.au)
 - ...and a few more small improvements here and there!
 - Musical theme for this release: Nils Frahm, entire discography

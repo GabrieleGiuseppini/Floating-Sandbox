@@ -124,7 +124,7 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
         {2, wxS("MasterGarfield    Aur\xe9lien WOLFF    Alex di Roma    2017 Leonardo    FER ZCL    AvSimplified    Techo    Ha-Ha Hans"), 0},
         {2, wxS("Albert Windsor    Takara    Rockabilly Rebel    McShooter2018    sinking_feeling    braun    P1X    Higuys153    QHM"), 0},
         {2, wxS("Pac0master    CorbinPasta93    Yorkie    Bluefox    Kiko    Raynair    Menta1ity    Transportation Fan    Sean Dempsey"), 0},
-        {2, wxS("JackTheBrickfilmMaker    Michael Bozarth    Officer TimCan    Darek225    HummeL    Fox Assor"), VMargin3},
+        {2, wxS("JackTheBrickfilmMaker    Michael Bozarth    Officer TimCan    Darek225    HummeL    Fox Assor    Mattytitanic"), VMargin3},
 
         {0, _("FACTORY OF IDEAS"), 0},
         {1, wxS("Mattia Giuseppini"), VMargin3},

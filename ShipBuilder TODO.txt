@@ -692,6 +692,7 @@
 	- Test User Ships folder
 
 - Misc:
+	- Once selected, selection could be moved right away, instead of having to copy'n'paste
 	- Localization:
 		- See if can do separate extraction into separate file, which then is loaded at all times by LocalizationManager together with the other one 
 	- Ruler: pick a scale (pixels to meter of original ship), then you choose how long the ruler
