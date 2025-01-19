@@ -507,7 +507,7 @@
 		- Changes:
 			- Made Small Tables, Cabin Desk, and Chests slightly bigger
 			- Changed default for propellers above water
-			- Added many more ships (from Mia, Mattytitanic, P1X)
+			- Added many more ships (from Mia, Mattytitanic, P1X, LostLinerLegend)
 			- Completed localization
 
 	- Release template:
