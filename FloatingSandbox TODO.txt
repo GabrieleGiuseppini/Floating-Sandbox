@@ -465,7 +465,7 @@
 			+ mo
 			+ npcs
 
-	= Localization 2:
+	+ Localization 2:
 		+ Prepare pot's w/string extraction
 		+ IT
 			+ mo
@@ -473,10 +473,10 @@
 		+ ES
 			+ mo
 			+ npcs string table (fire ext. bomb)
-		= RU
-			= mo
+		+ RU
+			+ mo
 				+ Check also old ("move group", )
-				= Not sure if complete
+				+ Not sure if complete
 			+ npcs string table (fire ext. bomb)
 		+ UK
 			+ mo
