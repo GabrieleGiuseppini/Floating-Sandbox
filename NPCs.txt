@@ -217,6 +217,7 @@ Next release:
 	- I changed the size multiplier of the NPCs to 10, and then shrunk it down to a little above the default, ~1.25 or something similar, and multiple (though not all) of the NPCs seemed to become very oddly proportioned with their torso stretched to what I assume is the size multiple of 10 (leading to very tall figures) though their width was at what I assume to be what I set the multiple to, while these people were also stuck in a diagonal rotation, in short, multiple NPCs became the shape of diagonal baguettes, though would return to normal if I destroyed the structure they were on. All of the affected NPCs were in some form of non-permeable material, so I've concluded that I believe some of the NPCs don't stretch back to their newly-set size multiple because they are stuck in a hull material as a result of being set to a size that put them into that stuck position.
 	- Different blast force & size adjustments for explosive NPCs (thus not using bombs' anymore)
 	- Sending NPCs _behind_ the internal layer, for glass transparency
+		- Under the structure layer
 
 - New human behaviors:
 

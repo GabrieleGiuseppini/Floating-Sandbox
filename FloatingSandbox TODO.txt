@@ -483,9 +483,9 @@
 			+ npcs string table (fire ext. bomb)
 
 
-	= Do a pass for ships
+	+ Do a pass for ships
 		+ email: Sean Dempsey
-		= _TO_TEST:
+		+ _TO_TEST:
 			+ MattyTitanic - ask credits if we take them
 				+ "Mattytitanic" 
 					+ Verify all when done
@@ -494,9 +494,9 @@
 				+ Fix:
 					+ Author
 					+ Ship names
-			= S.S. Commonwealth from P1X
+			+ S.S. Commonwealth from P1X
 				+ Added and all
-				= Asked if ok
+				+ Asked if ok
 			+ Four new ships from email guy, in _TO_TRY
 				+ Ask credits if OK
 					+ LostLinerLegend
