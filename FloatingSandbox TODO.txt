@@ -546,10 +546,10 @@
 		+ Bump up version
 		+ changelist
 
-	- Release template:
-		= Branch is merged into master (if applicable)
-		- Windows
-			- MSI variable
+	= Release template:
+		+ Branch is merged into master (if applicable)
+		= Windows
+			+ MSI variable
 			- Commit & push
 			- 64-bit MSI
 				- Cleanup Install
