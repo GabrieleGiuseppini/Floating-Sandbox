@@ -512,7 +512,7 @@
 
 	= Fix Pac0's regional settings issue
 		= Work on fix
-			= Fix 1:
+			X Fix 1:
 				! Utils::LexicalCast: specialize for float, and do following:
 					iss.imbue(std::locale("")); // Use regional settings for decimal separator
 				! SliderControl::ValueToString: specialize for float, and do following:
@@ -526,15 +526,22 @@
 				+ Test GTK
 				+ Remove logging
 				+ Verify completely undone previous commit
-			- Move to helpers (wxHelpers), w/type traits
-			- See if conversions done in other UI controls, & replace as needed
-				- EditSpinBox
-					- ShipBuilder: offset X/Y
-			+ Test with Pac0's settings
-			+ Test with default settings
-		+ Reset my settings
-		= Build & test Ubuntu
-			- Test typing setting values
+			+ Move to helpers (wxHelpers), w/type traits
+			+ See if conversions done in other UI controls, & replace as needed
+				+ EditSpinBox
+					+ ShipBuilder: offset X/Y
+			= Final tests:
+				+ Windows:
+					+ Default Windows
+						+ SettingsDialog: float, int
+						+ EditSpinBox
+					+ Pac0-ized Windows
+						+ SettingsDialog: float, int
+						+ EditSpinBox
+						+ Reset my settings
+				- Linux:
+					- SettingsDialog: float, int
+					- EditSpinBox
 		- Send beta
 		- Bump up version
 		- changelist

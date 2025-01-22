@@ -8,10 +8,9 @@
 #include "TextValidators.h"
 
 #include <GameCore/ISliderCore.h>
-#include <GameCore/Utils.h>
+#include <UILib/WxHelpers.h>
 
 #include <wx/bitmap.h>
-#include <wx/numformatter.h>
 #include <wx/slider.h>
 #include <wx/spinbutt.h>
 #include <wx/stattext.h>
@@ -20,15 +19,8 @@
 #include <wx/valnum.h>
 #include <wx/wx.h>
 
-#include <cassert>
-#include <cstdint>
 #include <functional>
-#include <limits>
 #include <memory>
-#include <optional>
-#include <sstream>
-#include <string>
-#include <type_traits>
 
 /*
  * This control incorporates a slider and a textbox that shows the
@@ -251,126 +243,11 @@ public:
         auto const tickValue = mSliderCore->ValueToTick(value);
 
         mSlider->SetValue(tickValue);
-        mTextCtrl->SetValue(ValueToString(value));
+        mTextCtrl->SetValue(WxHelpers::ValueToString(value));
         mSpinButton->SetValue(tickValue);
     }
 
 private:
-
-    ////template<typename _TValue>
-    ////bool StringToValue(wxString const & strValue, _TValue * value)
-    ////{
-    ////    return wxNumberFormatter::FromString(strValue, value);
-    ////}
-
-    bool StringToValue(wxString const & strValue, int * value)
-    {
-        long long _value;
-        if (wxNumberFormatter::FromString(strValue, &_value))
-        {
-            *value = static_cast<int>(_value);
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    bool StringToValue(wxString const & strValue, std::int64_t * value)
-    {
-        long long _value;
-        if (wxNumberFormatter::FromString(strValue, &_value))
-        {
-            *value = static_cast<std::int64_t>(_value);
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    bool StringToValue(wxString const & strValue, size_t * value)
-    {
-        long long _value;
-        if (wxNumberFormatter::FromString(strValue, &_value))
-        {
-            *value = static_cast<size_t>(_value);
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    bool StringToValue(wxString const & strValue, unsigned int * value)
-    {
-        long long _value;
-        if (wxNumberFormatter::FromString(strValue, &_value))
-        {
-            *value = static_cast<unsigned int>(_value);
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    ////bool StringToValue(wxString const & strValue, std::uint64_t * value)
-    ////{
-    ////    long long _value;
-    ////    if (wxNumberFormatter::FromString(strValue, &_value))
-    ////    {
-    ////        *value = static_cast<std::uint64_t>(_value);
-    ////        return true;
-    ////    }
-    ////    else
-    ////    {
-    ////        return false;
-    ////    }
-    ////}
-
-    bool StringToValue(wxString const & strValue, float * value)
-    {
-        double _value;
-        if (wxNumberFormatter::FromString(strValue, &_value))
-        {
-            *value = static_cast<float>(_value);
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    std::string ValueToString(int value)
-    {
-        return wxNumberFormatter::ToString(static_cast<long>(value)).ToStdString();
-    }
-
-    std::string ValueToString(std::int64_t value)
-    {
-        return wxNumberFormatter::ToString(static_cast<long long>(value)).ToStdString();
-    }
-
-    std::string ValueToString(size_t value)
-    {
-        return wxNumberFormatter::ToString(static_cast<long long>(value)).ToStdString();
-    }
-
-    std::string ValueToString(unsigned int value)
-    {
-        return wxNumberFormatter::ToString(static_cast<long long>(value)).ToStdString();
-    }
-
-    std::string ValueToString(float value)
-    {
-        return wxNumberFormatter::ToString(value, 3).ToStdString();
-    }
 
     void OnSliderScroll(wxScrollEvent & /*event*/)
     {
@@ -394,10 +271,8 @@ private:
 
     void OnTextUpdated()
     {
-        auto const strValue = mTextCtrl->GetValue();
-
         TValue value;
-        if (StringToValue(strValue, &value))
+        if (WxHelpers::StringToValue(mTextCtrl->GetValue(), &value))
         {
             // Clamp to range
             value = std::max(value, mSliderCore->GetMinValue());
@@ -409,7 +284,7 @@ private:
             mSlider->SetValue(tickValue);
 
             // Set text ctrl back to value
-            mTextCtrl->SetValue(ValueToString(value));
+            mTextCtrl->SetValue(WxHelpers::ValueToString(value));
 
             // Set SpinButton to value
             mSpinButton->SetValue(tickValue);
@@ -431,7 +306,7 @@ private:
     {
         TValue const value = mSliderCore->TickToValue(tick);
 
-        mTextCtrl->SetValue(ValueToString(value));
+        mTextCtrl->SetValue(WxHelpers::ValueToString(value));
 
         // Notify value
         mOnValueChanged(value);

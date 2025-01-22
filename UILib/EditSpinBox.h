@@ -7,15 +7,12 @@
 
 #include "TextValidators.h"
 
-#include <GameCore/Utils.h>
+#include <UILib/WxHelpers.h>
 
 #include <wx/panel.h>
 #include <wx/sizer.h>
 #include <wx/spinbutt.h>
 #include <wx/textctrl.h>
-
-#include <sstream>
-#include <string>
 
 template <typename TValue>
 class EditSpinBox : public wxPanel
@@ -54,7 +51,7 @@ public:
                 wxTE_CENTRE | wxTE_PROCESS_ENTER,
                 *mTextCtrlValidator);
 
-            mTextCtrl->SetValue(ValueToString(currentValue));
+            mTextCtrl->SetValue(WxHelpers::ValueToString(currentValue));
 
             mTextCtrl->Bind(wxEVT_KILL_FOCUS, &EditSpinBox::OnKillFocus, this);
             mTextCtrl->Bind(wxEVT_TEXT_ENTER, &EditSpinBox::OnTextEnter, this);
@@ -102,7 +99,7 @@ public:
         mIsModified = false;
 
         mSpinButton->SetValue(mValue);
-        mTextCtrl->SetValue(ValueToString(mValue));
+        mTextCtrl->SetValue(WxHelpers::ValueToString(mValue));
     }
 
     // Marks as modified
@@ -114,11 +111,6 @@ public:
     }
 
 private:
-
-    std::string ValueToString(TValue value) const
-    {
-        return std::to_string(value);
-    }
 
     void OnKillFocus(wxFocusEvent & event)
     {
@@ -134,10 +126,8 @@ private:
 
     void OnTextUpdated()
     {
-        std::string const strValue = mTextCtrl->GetValue().ToStdString();
-
         TValue value;
-        if (Utils::LexicalCast<TValue>(strValue, &value))
+        if (WxHelpers::StringToValue(mTextCtrl->GetValue(), &value))
         {
             // Clamp to range
             value = std::max(value, mMinValue);
@@ -148,7 +138,7 @@ private:
             mIsModified = true;
 
             // Set text ctrl back to value
-            mTextCtrl->SetValue(ValueToString(value));
+            mTextCtrl->SetValue(WxHelpers::ValueToString(value));
 
             // Set SpinButton to value
             mSpinButton->SetValue(value);
@@ -163,7 +153,7 @@ private:
         mValue = static_cast<TValue>(event.GetValue());
         mIsModified = true;
 
-        mTextCtrl->SetValue(ValueToString(mValue));
+        mTextCtrl->SetValue(WxHelpers::ValueToString(mValue));
 
         // Notify value
         mOnValueChanged(mValue);
