@@ -264,6 +264,7 @@ private:
     std::string ValueToString(float value)
     {
         std::stringstream ss;
+        ss.imbue(std::locale("")); // Use regional settings for decimal separator
         ss << std::fixed;
         ss.precision(3);
         ss << value;

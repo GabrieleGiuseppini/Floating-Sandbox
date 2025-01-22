@@ -510,6 +510,15 @@
 			- Completed localization
 		+ Bump up version
 
+	= Fix Pac0's regional settings issue
+		= Work on fix
+			- Test with Pac0's settings
+			- Test with default settings
+		- Reset my settings
+		- Send beta
+			- Bump up version
+		- changelist
+
 	- Release template:
 		= Branch is merged into master (if applicable)
 		- Windows

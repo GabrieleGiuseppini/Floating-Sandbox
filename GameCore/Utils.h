@@ -429,6 +429,27 @@ namespace Utils
     template<>
     inline bool LexicalCast(
         std::string const & str,
+        float * outValue)
+    {
+        std::istringstream iss;
+        iss.imbue(std::locale("")); // Use regional settings for decimal separator
+        iss.unsetf(std::ios::skipws);
+
+        iss.str(str);
+
+        float value;
+        iss >> value;
+
+        if (iss.bad() || iss.get() != EOF)
+            return false;
+
+        *outValue = value;
+        return true;
+    }
+
+    template<>
+    inline bool LexicalCast(
+        std::string const & str,
         uint8_t * outValue)
     {
         std::istringstream iss;
