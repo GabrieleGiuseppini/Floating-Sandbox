@@ -16,7 +16,9 @@
 #include <UILib/StandardSystemPaths.h>
 
 #include <Game/ResourceLocator.h>
+#include <Game/Version.h>
 
+#include <GameCore/BuildInfo.h>
 #include <GameCore/Log.h>
 #include <GameCore/SysSpecifics.h>
 #include <GameCore/ThreadManager.h>
@@ -120,6 +122,13 @@ MainApp::MainApp()
     : mMainFrame(nullptr)
     , mLocalizationManager()
 {
+    //
+    // Bootstrap log
+    //
+
+    // Log full app name, current build info, and today's date
+    LogMessage(std::string(APPLICATION_NAME_WITH_LONG_VERSION), " ", BuildInfo::GetBuildInfo().ToString(), " @ ", Utils::MakeTodayDateString());
+
 #if FS_IS_OS_LINUX()
 
     //

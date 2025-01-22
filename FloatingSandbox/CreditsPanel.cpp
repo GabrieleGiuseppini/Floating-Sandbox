@@ -6,7 +6,8 @@
 #include "CreditsPanel.h"
 
 #include <GameCore/BuildInfo.h>
-#include <GameCore/Version.h>
+
+#include <Game/Version.h>
 
 #include <utility>
 

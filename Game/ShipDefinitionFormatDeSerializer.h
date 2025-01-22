@@ -9,12 +9,12 @@
 #include "MaterialDatabase.h"
 #include "ShipDefinition.h"
 #include "ShipPreviewData.h"
+#include "Version.h"
 
 #include <GameCore/DeSerializationBuffer.h>
 #include <GameCore/GameTypes.h>
 #include <GameCore/ImageData.h>
 #include <GameCore/PortableTimepoint.h>
-#include <GameCore/Version.h>
 
 #include <cstdint>
 #include <filesystem>

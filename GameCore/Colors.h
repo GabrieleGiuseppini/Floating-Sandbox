@@ -21,6 +21,7 @@ public:
 
     typedef uint8_t data_type;
     static constexpr uint8_t data_type_max = std::numeric_limits<uint8_t>::max();
+    static constexpr size_t channel_count = 3;
 
 public:
 
@@ -127,6 +128,7 @@ public:
 
     typedef uint8_t data_type;
     static constexpr uint8_t data_type_max = std::numeric_limits<uint8_t>::max();
+    static constexpr size_t channel_count = 4;
 
 public:
 

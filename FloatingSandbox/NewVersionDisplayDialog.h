@@ -7,7 +7,7 @@
 
 #include "UIPreferencesManager.h"
 
-#include <GameCore/Version.h>
+#include <Game/Version.h>
 
 #include <wx/dialog.h>
 #include <wx/wxhtml.h>

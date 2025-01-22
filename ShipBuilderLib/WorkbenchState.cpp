@@ -7,8 +7,9 @@
 
 #include <UILib/StandardSystemPaths.h>
 
+#include <Game/Version.h>
+
 #include <GameCore/Utils.h>
-#include <GameCore/Version.h>
 
 #include <cassert>
 

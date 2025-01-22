@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include <GameCore/Version.h>
+#include <Game/Version.h>
 
 #include <mutex>
 #include <optional>

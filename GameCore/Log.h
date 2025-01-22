@@ -5,9 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include "BuildInfo.h"
 #include "Utils.h"
-#include "Version.h"
 
 #include <cassert>
 #include <chrono>
@@ -60,8 +58,6 @@ public:
 		, mStoredMessages()
         , mMutex()
 	{
-        // Log full app name, current build info, and today's date
-        Log(std::string(APPLICATION_NAME_WITH_LONG_VERSION), " ", BuildInfo::GetBuildInfo().ToString(), " @ ", Utils::MakeTodayDateString());
 	}
 
 	Logger(Logger const &) = delete;

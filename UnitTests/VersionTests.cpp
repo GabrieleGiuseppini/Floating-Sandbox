@@ -1,4 +1,4 @@
-#include <GameCore/Version.h>
+#include <Game/Version.h>
 
 #include "gtest/gtest.h"
 

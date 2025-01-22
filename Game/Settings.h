@@ -7,9 +7,10 @@
 
 #include "FileSystem.h"
 
+#include <Game/Version.h>
+
 #include <GameCore/Log.h>
 #include <GameCore/Utils.h>
-#include <GameCore/Version.h>
 
 #include <picojson.h>
 

@@ -5,9 +5,10 @@
 ***************************************************************************************/
 #include "SplashScreenDialog.h"
 
+#include <Game/Version.h>
+
 #include <GameCore/GameException.h>
 #include <GameCore/Log.h>
-#include <GameCore/Version.h>
 
 #include <wx/generic/statbmpg.h>
 #include <wx/settings.h>

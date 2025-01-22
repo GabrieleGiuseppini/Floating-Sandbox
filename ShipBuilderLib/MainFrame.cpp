@@ -18,13 +18,13 @@
 
 #include <Game/ImageFileTools.h>
 #include <Game/ShipDeSerializer.h>
+#include <Game/Version.h>
 
 #include <GameOpenGL/GameOpenGL.h>
 
 #include <GameCore/Log.h>
 #include <GameCore/UserGameException.h>
 #include <GameCore/Utils.h>
-#include <GameCore/Version.h>
 
 #include <wx/button.h>
 #include <wx/combobox.h>

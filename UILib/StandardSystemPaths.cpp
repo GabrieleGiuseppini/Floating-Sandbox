@@ -5,8 +5,9 @@
 ***************************************************************************************/
 #include "StandardSystemPaths.h"
 
+#include <Game/Version.h>
+
 #include <GameCore/SysSpecifics.h>
-#include <GameCore/Version.h>
 
 #include <wx/stdpaths.h>
 

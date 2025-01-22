@@ -5,11 +5,12 @@
  ***************************************************************************************/
 #include "PreferencesDialog.h"
 
+#include <Game/Version.h>
+
 #include <GameCore/ExponentialSliderCore.h>
 #include <GameCore/FixedSetSliderCore.h>
 #include <GameCore/IntegralLinearSliderCore.h>
 #include <GameCore/LinearSliderCore.h>
-#include <GameCore/Version.h>
 
 #include <wx/gbsizer.h>
 #include <wx/msgdlg.h>

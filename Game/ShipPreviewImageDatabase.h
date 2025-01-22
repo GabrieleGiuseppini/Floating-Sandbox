@@ -6,9 +6,9 @@
 #pragma once
 
 #include "FileSystem.h"
+#include "Version.h"
 
 #include <GameCore/ImageData.h>
-#include <GameCore/Version.h>
 
 #include <array>
 #include <cstdint>

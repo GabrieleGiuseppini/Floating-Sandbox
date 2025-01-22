@@ -15,6 +15,10 @@
 #include <Game/MaterialDatabase.h>
 #include <Game/ResourceLocator.h>
 #include <Game/ShipTexturizer.h>
+#include <Game/Version.h>
+
+#include <GameCore/BuildInfo.h>
+#include <GameCore/Log.h>
 
 #include <wx/app.h>
 #include <wx/msgdlg.h>
@@ -66,6 +70,12 @@ IMPLEMENT_APP(MainApp);
 MainApp::MainApp()
     : mMainFrame(nullptr)
 {
+    //
+    // Bootstrap log
+    //
+
+    // Log full app name, current build info, and today's date
+    LogMessage(std::string(APPLICATION_NAME_WITH_LONG_VERSION), " ", BuildInfo::GetBuildInfo().ToString(), " @ ", Utils::MakeTodayDateString());
 }
 
 bool MainApp::OnInit()

@@ -9,8 +9,6 @@ set  (SOURCES
 	Algorithms.h
 	BarycentricCoords.cpp
 	BarycentricCoords.h
-	BootSettings.cpp
-	BootSettings.h
 	BoundedVector.h
 	Buffer.h
 	Buffer2D.h
@@ -42,6 +40,7 @@ set  (SOURCES
 	GameTypes.cpp
 	GameTypes.h
 	GameWallClock.h
+	IAssetManager.h
 	ImageData.h
 	ImageFileMap.h
 	ImageTools.cpp
@@ -58,6 +57,8 @@ set  (SOURCES
 	Noise.cpp
 	Noise.h
 	ParameterSmoother.h
+	PngTools.cpp
+	PngTools.h
 	PortableTimepoint.cpp
 	PortableTimepoint.h
 	PrecalculatedFunction.cpp
@@ -82,15 +83,16 @@ set  (SOURCES
 	Utils.h
 	Vectors.cpp
 	Vectors.h
-	Version.h
 )
 
 source_group(" " FILES ${SOURCES})
 
 add_library (GameCoreLib ${SOURCES})
 
+target_include_directories(GameCoreLib PRIVATE ${PNG_PNG_INCLUDE_DIR})
 target_include_directories(GameCoreLib PUBLIC ${PICOJSON_INCLUDE_DIRS})
 target_include_directories(GameCoreLib INTERFACE ..)
 
 target_link_libraries (GameCoreLib
+	${PNG_LIBRARY}
 	${ADDITIONAL_LIBRARIES})

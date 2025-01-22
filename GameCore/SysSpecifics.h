@@ -72,6 +72,21 @@
 #define FS_IS_OS_WINDOWS() 1
 #endif
 
+//
+// Platform
+//
+
+#define FS_IS_PLATFORM_PC() 0
+#define FS_IS_PLATFORM_MOBILE() 0
+
+#if defined(__ANDROID__)
+#undef FS_IS_PLATFORM_MOBILE
+#define FS_IS_PLATFORM_MOBILE() 1
+#else
+#undef FS_IS_PLATFORM_PC
+#define FS_IS_PLATFORM_PC() 1
+#endif
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 using register_int_32 = std::int32_t;

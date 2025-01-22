@@ -5,9 +5,8 @@
 ***************************************************************************************/
 #pragma once
 
+#include <Game/BootSettings.h>
 #include <Game/ResourceLocator.h>
-
-#include <GameCore/BootSettings.h>
 
 #include <wx/radiobut.h>
 #include <wx/dialog.h>

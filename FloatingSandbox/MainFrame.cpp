@@ -15,13 +15,13 @@
 #include <UILib/ShipDescriptionDialog.h>
 #include <UILib/WxHelpers.h>
 
+#include <Game/BootSettings.h>
 #include <Game/ImageFileTools.h>
+#include <Game/Version.h>
 
-#include <GameCore/BootSettings.h>
 #include <GameCore/GameException.h>
 #include <GameCore/Log.h>
 #include <GameCore/Utils.h>
-#include <GameCore/Version.h>
 
 #include <wx/intl.h>
 #include <wx/msgdlg.h>

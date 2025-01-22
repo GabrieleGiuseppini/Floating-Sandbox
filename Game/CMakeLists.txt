@@ -4,6 +4,8 @@
 #
 
 set  (GAME_SOURCES	
+	BootSettings.cpp
+	BootSettings.h
 	ComputerCalibration.cpp
 	ComputerCalibration.h
 	ElectricalPanel.h
@@ -72,9 +74,11 @@ set  (GAME_SOURCES
 	ShipStrengthRandomizer.h
 	ShipTexturizer.cpp
 	ShipTexturizer.h
+	Version.h
 	ViewManager.cpp
 	ViewManager.h
-	VisibleWorld.h)
+	VisibleWorld.h
+)
 
 set  (PHYSICS_SOURCES
 	AntiMatterBombGadget.h
@@ -139,7 +143,8 @@ set  (PHYSICS_SOURCES
 	Wind.cpp
 	Wind.h
 	World.cpp
-	World.h)
+	World.h
+)
 
 set  (RENDER_SOURCES
 	Font.cpp
@@ -165,7 +170,8 @@ set  (RENDER_SOURCES
 	TextureDatabase.h
 	ViewModel.h
 	WorldRenderContext.cpp
-	WorldRenderContext.h)
+	WorldRenderContext.h
+)
 
 source_group(" " FILES ${GAME_SOURCES})
 source_group("Physics" FILES ${PHYSICS_SOURCES})
