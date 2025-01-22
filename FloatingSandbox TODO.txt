@@ -511,7 +511,19 @@
 		+ Bump up version
 
 	= Fix Pac0's regional settings issue
-		+ Work on fix
+		= Work on fix
+			= Fix 1:
+				! Utils::LexicalCast: specialize for float, and do following:
+					iss.imbue(std::locale("")); // Use regional settings for decimal separator
+				! SliderControl::ValueToString: specialize for float, and do following:
+					ss.imbue(std::locale("")); // Use regional settings for decimal separator
+				+ Test default Windows
+				+ Test Pac0-ized Windows
+				X Text GTK
+			- Fix 2: using wxWidgets' wxNumberFormatter
+				- Test default Windows
+				- Test Pac0-ized Windows
+				- Test GTK
 			+ Test with Pac0's settings
 			+ Test with default settings
 		+ Reset my settings

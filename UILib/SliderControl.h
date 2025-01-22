@@ -11,6 +11,7 @@
 #include <GameCore/Utils.h>
 
 #include <wx/bitmap.h>
+#include <wx/numformatter.h>
 #include <wx/slider.h>
 #include <wx/spinbutt.h>
 #include <wx/stattext.h>
@@ -20,6 +21,7 @@
 #include <wx/wx.h>
 
 #include <cassert>
+#include <cstdint>
 #include <functional>
 #include <limits>
 #include <memory>
@@ -255,20 +257,119 @@ public:
 
 private:
 
-    template<typename _TValue>
-    std::string ValueToString(_TValue value)
+    ////template<typename _TValue>
+    ////bool StringToValue(wxString const & strValue, _TValue * value)
+    ////{
+    ////    return wxNumberFormatter::FromString(strValue, value);
+    ////}
+
+    bool StringToValue(wxString const & strValue, int * value)
     {
-        return std::to_string(value);
+        long long _value;
+        if (wxNumberFormatter::FromString(strValue, &_value))
+        {
+            *value = static_cast<int>(_value);
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    bool StringToValue(wxString const & strValue, std::int64_t * value)
+    {
+        long long _value;
+        if (wxNumberFormatter::FromString(strValue, &_value))
+        {
+            *value = static_cast<std::int64_t>(_value);
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    bool StringToValue(wxString const & strValue, size_t * value)
+    {
+        long long _value;
+        if (wxNumberFormatter::FromString(strValue, &_value))
+        {
+            *value = static_cast<size_t>(_value);
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    bool StringToValue(wxString const & strValue, unsigned int * value)
+    {
+        long long _value;
+        if (wxNumberFormatter::FromString(strValue, &_value))
+        {
+            *value = static_cast<unsigned int>(_value);
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    ////bool StringToValue(wxString const & strValue, std::uint64_t * value)
+    ////{
+    ////    long long _value;
+    ////    if (wxNumberFormatter::FromString(strValue, &_value))
+    ////    {
+    ////        *value = static_cast<std::uint64_t>(_value);
+    ////        return true;
+    ////    }
+    ////    else
+    ////    {
+    ////        return false;
+    ////    }
+    ////}
+
+    bool StringToValue(wxString const & strValue, float * value)
+    {
+        double _value;
+        if (wxNumberFormatter::FromString(strValue, &_value))
+        {
+            *value = static_cast<float>(_value);
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    std::string ValueToString(int value)
+    {
+        return wxNumberFormatter::ToString(static_cast<long>(value)).ToStdString();
+    }
+
+    std::string ValueToString(std::int64_t value)
+    {
+        return wxNumberFormatter::ToString(static_cast<long long>(value)).ToStdString();
+    }
+
+    std::string ValueToString(size_t value)
+    {
+        return wxNumberFormatter::ToString(static_cast<long long>(value)).ToStdString();
+    }
+
+    std::string ValueToString(unsigned int value)
+    {
+        return wxNumberFormatter::ToString(static_cast<long long>(value)).ToStdString();
     }
 
     std::string ValueToString(float value)
     {
-        std::stringstream ss;
-        ss.imbue(std::locale("")); // Use regional settings for decimal separator
-        ss << std::fixed;
-        ss.precision(3);
-        ss << value;
-        return ss.str();
+        return wxNumberFormatter::ToString(value, 3).ToStdString();
     }
 
     void OnSliderScroll(wxScrollEvent & /*event*/)
@@ -293,10 +394,12 @@ private:
 
     void OnTextUpdated()
     {
-        std::string const strValue = mTextCtrl->GetValue().ToStdString();
+        auto const strValue = mTextCtrl->GetValue();
+
+        LogMessage("TODOHERE: Decimal=", wxNumberFormatter::GetDecimalSeparator());
 
         TValue value;
-        if (Utils::LexicalCast<TValue>(strValue, &value))
+        if (StringToValue(strValue, &value))
         {
             // Clamp to range
             value = std::max(value, mSliderCore->GetMinValue());
