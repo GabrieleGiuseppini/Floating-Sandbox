@@ -520,10 +520,16 @@
 				+ Test default Windows
 				+ Test Pac0-ized Windows
 				X Text GTK
-			- Fix 2: using wxWidgets' wxNumberFormatter
-				- Test default Windows
-				- Test Pac0-ized Windows
-				- Test GTK
+			+ Fix 2: using wxWidgets' wxNumberFormatter
+				+ Test default Windows
+				+ Test Pac0-ized Windows
+				+ Test GTK
+				+ Remove logging
+				+ Verify completely undone previous commit
+			- Move to helpers (wxHelpers), w/type traits
+			- See if conversions done in other UI controls, & replace as needed
+				- EditSpinBox
+					- ShipBuilder: offset X/Y
 			+ Test with Pac0's settings
 			+ Test with default settings
 		+ Reset my settings

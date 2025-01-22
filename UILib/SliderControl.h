@@ -396,8 +396,6 @@ private:
     {
         auto const strValue = mTextCtrl->GetValue();
 
-        LogMessage("TODOHERE: Decimal=", wxNumberFormatter::GetDecimalSeparator());
-
         TValue value;
         if (StringToValue(strValue, &value))
         {
