@@ -13,7 +13,7 @@
 - Added new "Move/Rotate Gripped" tool, aka "Physics Move"
 	- Simulates moving or rotating a ship while it is being held by a grip
 	- The old "Move/Rotate" tool is not really physical - it simply pauses simulation while the ship is being moved or rotated; this new tool, instead, moves or rotates a ship in a real "physical" fashion
-- More plain tools interact with NPCs
+- More tools interact with NPCs
 	- Among which: HeatBlaster, laser cannon, fire extinguisher
 - The Move, Remove, and Turnaround NPC tools may now be used on *groups* of NPCs
 - NPCs on a ship are now lit by the ship's lamps

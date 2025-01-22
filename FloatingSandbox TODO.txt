@@ -434,7 +434,7 @@
 
 	X See DKUZ bug
 
-	= Tinies:
+	+ Tinies:
 		+ Furniture: redo proportions to human, according to screenshot; e.g. barrel: as tall as half human
 		+ Change the name "tophat" or "tophatlemons" to "Mia"
 			+ Credits
@@ -444,8 +444,6 @@
 		+ Look at Pac0master's density adjust
 		+ "The new scales look amazing, a few complaints is I feel the cabin desk is a tad bit small, not by very much but it feels a slight too short, 
 		  that and the chairs and the Small Table 1 and 2 seems too tiny to a pretty high degree, those are mainly my only complaints with the scale issues now, that and maybe the chests could be a smidge bigger too
-		- Look at non-anti-aliased borders
-			! On my new dell, also 1.18 shows non-anti-aliased borders
 
 	+ Localization 1:
 		    "Diesel Can"
@@ -558,12 +556,29 @@
 			- Wait a day or two, to exclude disastrous bugs
 			- Upload changes2.txt
 				- Test w/old FS
+		- Bump up version
 
+	=========================================================================
+
+	- When tsunami starts you can see edges during the shaking
+
+	- Reduce ghost forces from depth pressure
+		- See https://discord.com/channels/925233659118755842/1313073164879921203/1313073164879921203
+
+	- DoDisplaceWater setting should also control Fishes and NPCs
+		- ...find if anything else displaces water without checking toggle
+
+	- Ocean render optimization:
+		- Could be due to ocean texture not being mipmapped (bandwidth to transfer texture)
+			- See what LOD is used at default zoom, I'm afraid it's 1
 
 	- No redistribute
 		+ @ License
 		- @ Atlases
 		- EULA @ installer?
+
+	- Look at non-anti-aliased borders
+		! On my new dell, also 1.18 shows non-anti-aliased borders
 
 	= See if fire may emit Heavy smoke
 		! Gist:
@@ -870,6 +885,7 @@
 		- Wait a day or two, to exclude disastrous bugs
 		- Upload changes2.txt
 			- Test w/old FS
+	- Bump up version
 
 - Localization:
 	- Italian: Gabriele Giuseppini
@@ -947,6 +963,12 @@
 			+ Test: _TO_TRY/Bartosz1944PL
 			- Asked credits
 			- Move to final
+		+ S.S. Andrea Doria, in _TO_TAKE
+			+ Already in credits, ship is ready
+		- Konigsbreg, under _TO_TRY
+			+ Already in credits, cleared by author
+			- Need to cleanup
+		
 
 - Ubuntu:
 	+ Event polling issue:
@@ -1636,6 +1658,7 @@
 					- Basically extremely high strength and low spring reduction coeff
 				- Redo template!
 			- Electrical materials:
+			        - Battery: a generator that can power a limited amount of assets for a certain amount of time or uses until it runs out. You can recharge the battery by a lighting or by using the electrical shock tool
 				- Backup generators: would activate 10 seconds after connection is cut from the main power and it would power the lights only
 					- Has it's own amount of power and will lose the energy over an amount of time but can be revitalized either by gen or with electric shock tool
 				- Non-Instanced Watertight Doors (see if possible)

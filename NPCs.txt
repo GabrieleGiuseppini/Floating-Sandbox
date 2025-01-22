@@ -219,6 +219,8 @@ Next release:
 	- Sending NPCs _behind_ the internal layer, for glass transparency
 		- Under the structure layer
 
+- Slider for NPC transparency
+
 - New human behaviors:
 
 	+ Panic when water entering (also "Walk away from water")

@@ -702,7 +702,6 @@
 		- Only one ruler at a time
 	- Ship bootstrapper from texture
 		- Uses fg and bg color for contour/interior
-	- Selectable backgrounds		
 	- Inherits FullScreen state and shares state changes (so, for example, if exits full screen in ShipBuilder, also Game has exited full screen)
 		- How to share state changes? 
 			- FullScreenManager class, shared_ptr in both
@@ -713,6 +712,7 @@
 		- What to do with background music when switching back and forth?
 	- Ability to import an image to trace over it
 		- Like a texture layer, but not saved and not part of the ship
+		- Covers: "selectable backgrounds		"
 	- MainFrame: add "export to image" button (in non-layer-specific ribbon) - basically a Screenshot tool
 		- Screenshot for the current visualization(s), i.e. the canvas render buffer as it is
 	- MaterialsPalette: make flag for making it its own wxFrame, so one can use it in a second monitor
