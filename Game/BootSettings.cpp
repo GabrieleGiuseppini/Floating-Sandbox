@@ -5,8 +5,9 @@
 ***************************************************************************************/
 #include "BootSettings.h"
 
-#include "Utils.h"
 #include "Version.h"
+
+#include <GameCore/Utils.h>
 
 BootSettings BootSettings::Load(std::filesystem::path const & filePath)
 {
