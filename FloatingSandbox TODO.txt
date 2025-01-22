@@ -510,8 +510,8 @@
 			- Completed localization
 		+ Bump up version
 
-	= Fix Pac0's regional settings issue
-		= Work on fix
+	+ Fix Pac0's regional settings issue
+		+ Work on fix
 			X Fix 1:
 				! Utils::LexicalCast: specialize for float, and do following:
 					iss.imbue(std::locale("")); // Use regional settings for decimal separator
@@ -530,7 +530,7 @@
 			+ See if conversions done in other UI controls, & replace as needed
 				+ EditSpinBox
 					+ ShipBuilder: offset X/Y
-			= Final tests:
+			+ Final tests:
 				+ Windows:
 					+ Default Windows
 						+ SettingsDialog: float, int
@@ -539,12 +539,12 @@
 						+ SettingsDialog: float, int
 						+ EditSpinBox
 						+ Reset my settings
-				- Linux:
-					- SettingsDialog: float, int
-					- EditSpinBox
-		- Send beta
-		- Bump up version
-		- changelist
+				+ Linux:
+					+ SettingsDialog: float, int
+					+ EditSpinBox
+		+ Send beta
+		+ Bump up version
+		+ changelist
 
 	- Release template:
 		= Branch is merged into master (if applicable)

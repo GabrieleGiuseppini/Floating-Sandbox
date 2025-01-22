@@ -22,8 +22,8 @@
 - Bug fixes:
 	- Fixed a crash when using the repair tool on a part of the ship that had exploded (thanks to AlexGuy!)
 	- Fixed a crash happening after adding and removing many NPCs multiple times
-	- Fixed wrong decimal separator used for numerical settings (e.g. "12.5" instead of "12,5" on systems with "," as the decimal separator)
-		- This bug has been there since day 1 of FloatingSandbox; many thanks to Pac0master!
+	- Fixed wrong decimal and thousands separators used for numerical settings (e.g. "12.5" instead of "12,5" on systems with "," as the decimal separator)
+		- This bug had been there since day 1 of FloatingSandbox; many thanks to Pac0master!
 	- Linux: fixed ShipBuilder window not opening up as maximized
 - Reduced amount of graphics memory required by rendering engine (texture atlases and shaders)
 - Added 27 new ships
