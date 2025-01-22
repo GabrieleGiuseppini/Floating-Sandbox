@@ -511,12 +511,14 @@
 		+ Bump up version
 
 	= Fix Pac0's regional settings issue
-		= Work on fix
-			- Test with Pac0's settings
-			- Test with default settings
-		- Reset my settings
+		+ Work on fix
+			+ Test with Pac0's settings
+			+ Test with default settings
+		+ Reset my settings
+		= Build & test Ubuntu
+			- Test typing setting values
 		- Send beta
-			- Bump up version
+		- Bump up version
 		- changelist
 
 	- Release template:

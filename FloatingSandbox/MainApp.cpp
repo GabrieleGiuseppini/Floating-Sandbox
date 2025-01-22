@@ -120,7 +120,6 @@ MainApp::MainApp()
     : mMainFrame(nullptr)
     , mLocalizationManager()
 {
-
 #if FS_IS_OS_LINUX()
 
     //
@@ -208,6 +207,26 @@ bool MainApp::OnInit()
     {
         return false;
     }
+
+    //
+    // Undo the wx locale initialization, as we want to be sure to use the
+    // same (default) locale "C" always and everywhere. Using other locales
+    // introduces a lot of subtle errors. E.g. reading floating point numbers
+    // from anywhere (like text files!) fails because e.g. "1.4" is no proper
+    // floating point string in the german locale (but "1,4" is).
+    //
+
+    LogMessage("1)");
+    LogMessage("wxString::Format(\"%%.3f\", 123.4) = ", wxString::Format("%.3f", 123.4));
+    LogMessage("thousands sep = ", wxLocale::GetInfo(wxLOCALE_THOUSANDS_SEP, wxLOCALE_CAT_NUMBER));
+    LogMessage("decimal   sep = ", wxLocale::GetInfo(wxLOCALE_DECIMAL_POINT, wxLOCALE_CAT_NUMBER));
+
+    setlocale(LC_ALL, "C");
+
+    wxLogDebug("2)");
+    LogMessage("wxString::Format(\"%%.3f\", 123.4) = ", wxString::Format("%.3f", 123.4));
+    LogMessage("thousands sep = ", wxLocale::GetInfo(wxLOCALE_THOUSANDS_SEP, wxLOCALE_CAT_NUMBER));
+    LogMessage("decimal   sep = ", wxLocale::GetInfo(wxLOCALE_DECIMAL_POINT, wxLOCALE_CAT_NUMBER));
 
     try
     {
