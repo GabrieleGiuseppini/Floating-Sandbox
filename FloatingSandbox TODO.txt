@@ -548,45 +548,59 @@
 
 	= Release template:
 		+ Branch is merged into master (if applicable)
-		= Windows
+		+ Windows
 			+ MSI variable
-			- Commit & push
-			- 64-bit MSI
-				- Cleanup Install
-				- Build Release Install (after clean)
-				- Sign two exes
-				- Make MSI
-				- Rename MSI
-				- Sign MSI
-				- Test upgrade from previous version
-			- 32-bit MSI
-				- Cleanup Install
-				- Build Release Install (after clean)
-				- Sign two exes
-				- Make MSI
-				- Rename MSI
-				- Sign MSI
-				- Test clean install
-					- Verify it's a 32-bit process
-		- Ubuntu
-			- rm -rf ~/floating-sandbox
-			- pull 
-			- rm -rf build; mkdir build; cd build
-			- cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
-			- make install
-			- Make tar ("cd ~/floating-sandbox && tar -cvf ../Floating-Sandbox-1.16.5-x64.tar . && cd -")
-			- Zip tar
-			- Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
+			+ Commit & push
+			+ 64-bit MSI
+				+ Cleanup Install
+				+ Build Release Install (after clean)
+				+ Sign two exes
+				+ Make MSI
+				+ Rename MSI
+				+ Sign MSI
+				+ Test upgrade from previous version
+			+ 32-bit MSI
+				+ Cleanup Install
+				+ Build Release Install (after clean)
+				+ Sign two exes
+				+ Make MSI
+				+ Rename MSI
+				+ Sign MSI
+				+ Test clean install
+					+ Verify it's a 32-bit process
+		+ Ubuntu
+			+ rm -rf ~/floating-sandbox
+			+ pull 
+			+ rm -rf build; mkdir build; cd build
+			+ cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
+			+ make install
+			+ Make tar ("cd ~/floating-sandbox && tar -cvf ../Floating-Sandbox-1.19.1-x64.tar . && cd -")
+			+ Zip tar
+			+ Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
 		- Send 3 installers to dev server for final smoke test
 		- Wait for test results
 		*******
 		- Cut tag on github
 		- Copy binaries to Prev
-		- Copy MSIs to scratch
+		- Copy MSIs to scratch and GoogleDrive
 		- Upload packages to GameJolt
 			- Verify Windows Defender
 				- Report file as safe (https://gamejolt.com/privacy)
 			- Post
+Dear shipmates,
+It has been almost 2 months on the day after the 1.19.0 release, and here we are again with a new release!
+Today's 1.19.1 update smooths out some corners that were left a little rough with the NPC release. As a few examples, our little passengers are now a tad smarter and avoid falling into empty spaces, thermodynamics is a real thing with NPCs, and some proportions have been improved.
+On top of this, the update brings a whole new dimension to the game: explosive NPCs! These are the NPC counterparts to the bombs you've grown accustomed with, and they live _inside_ a ship and interact with its interiors. Sprinkle a few of them here and there, send your ship to a tumultuous ride, and see what happens when they start bouncing on walls and floors!
+Here's the full list of changes in this update:
+
+After this update we will finally take some time off the development of the "main" Floating Sandbox timeline in order to dive back heads down into the Android port. As you probably remember, we experimented with Android 1 year back [https://www.youtube.com/watch?v=mRtM61nlYrA], and results were encouraging. It is time now to set aside that proof-of-concept and restart the project like a pro. What I have in mind now is heavy restructuring of the source code of Floating Sandbox to allow for drop-in porting of the physics engine IN ITS ENTIRETY. This will surely save a LOT of time that would otherwise have to be spent with porting features one by one, leaving more time to the tasks that are instead really time-consuming: optimizing for phones (read: NEON intrinsics) _and_ designing a new user interface that makes playing Floating Sandbox on a phone a fulfilling user experience. Wish me good luck as it's going to be a long rabbit hole from now on :-)
+
+Talk to you soon,
+    Gabe
+
+
+
+
 		- www.floatingsandbox.com:
 			- Update current version in FAQ
 			- Wait a day or two, to exclude disastrous bugs
@@ -911,7 +925,7 @@
 	*******
 	- Cut tag on github
 	- Copy binaries to Prev
-	- Copy MSIs to scratch
+	- Copy MSIs to scratch and GoogleDrive
 	- Upload packages to GameJolt
 		- Verify Windows Defender
 			- Report file as safe (https://gamejolt.com/privacy)
