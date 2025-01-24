@@ -131,6 +131,25 @@ public:
     }
 
     /*
+     * Appends undefined data for the specified amount of data, advances by that much,
+     * and returns the pointer to the append position, which should be used right away.
+     */
+    inline TElement * receive(size_t size)
+    {
+        if (mCurrentPopulatedSize < mSize)
+        {
+            // Advance
+            size_t startIndex = mCurrentPopulatedSize;
+            mCurrentPopulatedSize += size;
+            return &(mBuffer[startIndex]);
+        }
+        else
+        {
+            throw std::runtime_error("The buffer does not have enough free space");
+        }
+    }
+
+    /*
      * Fills the buffer with a value.
      */
     inline void fill(TElement value)

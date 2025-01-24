@@ -10,9 +10,9 @@
 #include "UI/WaterlineAnalyzerDialog.h"
 
 #include <UILib/HighlightableTextButton.h>
-
 #include <UILib/ImageLoadDialog.h>
 #include <UILib/ImageSaveDialog.h>
+#include <UILib/ImageLoader.h>
 #include <UILib/UnderConstructionDialog.h>
 #include <UILib/WxHelpers.h>
 
@@ -5333,8 +5333,7 @@ void MainFrame::ImportExteriorTextureLayerFromImage()
     {
         try
         {
-            // TODOHERE: JPG
-            auto image = PngImageFileTools::LoadImageRgba(dlg.GetChosenFilepath());
+            auto image = ImageLoader::LoadImageRgba(dlg.GetChosenFilepath());
 
             if (image.Size.width == 0 || image.Size.height == 0)
             {

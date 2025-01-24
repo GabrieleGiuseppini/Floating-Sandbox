@@ -594,6 +594,7 @@ template<typename TImageData>
 Buffer<std::uint8_t> PngTools::InternalEncodeImage(TImageData const & image)
 {
     std::vector<std::uint8_t> tmpOutputBuffer;
+    tmpOutputBuffer.reserve(1024 * 1024);
 
     auto context = _detail::EncodeProlog(tmpOutputBuffer);
 
@@ -658,7 +659,7 @@ Buffer<std::uint8_t> PngTools::InternalEncodeImage(TImageData const & image)
 
     // Convert to buffer
     Buffer<std::uint8_t> outputBuffer(tmpOutputBuffer.size());
-    std::memcpy(outputBuffer.data(), tmpOutputBuffer.data(), tmpOutputBuffer.size() * sizeof(std::uint8_t));
+    std::memcpy(outputBuffer.receive(tmpOutputBuffer.size()), tmpOutputBuffer.data(), tmpOutputBuffer.size() * sizeof(std::uint8_t));
 
     return outputBuffer;
 }
