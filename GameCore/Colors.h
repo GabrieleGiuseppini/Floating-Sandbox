@@ -22,6 +22,7 @@ public:
     typedef uint8_t data_type;
     static constexpr uint8_t data_type_max = std::numeric_limits<uint8_t>::max();
     static constexpr size_t channel_count = 3;
+    typedef vec3f f_vector_type;
 
 public:
 
@@ -78,6 +79,11 @@ public:
             || (r == other.r && g == other.g && b < other.b);
 	}
 
+    inline constexpr f_vector_type toVec() const
+    {
+        return toVec3f();
+    }
+
     inline constexpr vec3f toVec3f() const
     {
         return vec3f(
@@ -129,6 +135,7 @@ public:
     typedef uint8_t data_type;
     static constexpr uint8_t data_type_max = std::numeric_limits<uint8_t>::max();
     static constexpr size_t channel_count = 4;
+    typedef vec4f f_vector_type;
 
 public:
 
@@ -249,12 +256,9 @@ public:
         return rgbColor(r, g, b);
     }
 
-    inline constexpr vec3f toVec3f() const noexcept
+    inline constexpr f_vector_type toVec() const
     {
-        return vec3f(
-            _toFloat(r),
-            _toFloat(g),
-            _toFloat(b));
+        return toVec4f();
     }
 
     inline constexpr vec4f toVec4f() const noexcept
@@ -264,6 +268,14 @@ public:
             _toFloat(g),
             _toFloat(b),
             _toFloat(a));
+    }
+
+    inline constexpr vec3f toVec3f() const noexcept
+    {
+        return vec3f(
+            _toFloat(r),
+            _toFloat(g),
+            _toFloat(b));
     }
 
     inline constexpr float alphaAsFloat() const noexcept

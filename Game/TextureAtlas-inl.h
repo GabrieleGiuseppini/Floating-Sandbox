@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #include "TextureAtlas.h"
 
-#include "ImageFileTools.h"
+#include "PngImageFileTools.h"
 
 #include <GameCore/GameException.h>
 #include <GameCore/ImageFileMap.h>
@@ -217,7 +217,7 @@ void TextureAtlas<TextureGroups>::Serialize(
     //
 
     std::filesystem::path const imageFilePath = outputDirectoryPath / MakeImageFilename(databaseName);
-    ImageFileTools::SavePngImage(AtlasData, imageFilePath);
+    PngImageFileTools::SavePngImage(AtlasData, imageFilePath);
 }
 
 template <typename TextureGroups>
@@ -244,7 +244,7 @@ TextureAtlas<TextureGroups> TextureAtlas<TextureGroups>::Deserialize(
     //
 
     std::filesystem::path const imageFilePath = databaseRootDirectoryPath / "Atlases" / MakeImageFilename(databaseName);
-    RgbaImageData atlasData = ImageFileTools::LoadImageRgba(imageFilePath);
+    RgbaImageData atlasData = PngImageFileTools::LoadImageRgba(imageFilePath);
 
     return TextureAtlas<TextureGroups>(std::move(metadata), std::move(atlasData));
 }

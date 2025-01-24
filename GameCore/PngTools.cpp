@@ -8,8 +8,6 @@
 
 #include "PngTools.h"
 
-#include "Log.h"
-
 #include <cstring>
 
 #ifdef _MSC_VER
@@ -30,17 +28,20 @@ namespace _detail
 
     struct PngDecodeContext
     {
-        Buffer<std::uint8_t> raw_data_buffer;
+        std::uint8_t const * const raw_data_buffer;
+        size_t raw_data_buffer_size;
         png_structp png_ptr;
         png_infop info_ptr;
 
         png_size_t raw_data_buffer_read_offset;
 
         PngDecodeContext(
-            Buffer<std::uint8_t> && _raw_data_buffer,
+            std::uint8_t const * _raw_data_buffer,
+            size_t _raw_data_buffer_size,
             png_structp _png_ptr,
             png_infop _info_ptr)
-            : raw_data_buffer(std::move(_raw_data_buffer))
+            : raw_data_buffer(_raw_data_buffer)
+            , raw_data_buffer_size(_raw_data_buffer_size)
             , png_ptr(_png_ptr)
             , info_ptr(_info_ptr)
             , raw_data_buffer_read_offset(0)
@@ -58,7 +59,7 @@ namespace _detail
         png_size_t read_length)
     {
         auto * png_read_ctx_ptr = reinterpret_cast<PngDecodeContext *>(png_get_io_ptr(png_ptr));
-        png_byte const * const raw_data_src = png_read_ctx_ptr->raw_data_buffer.data() + png_read_ctx_ptr->raw_data_buffer_read_offset;
+        png_byte const * const raw_data_src = png_read_ctx_ptr->raw_data_buffer + png_read_ctx_ptr->raw_data_buffer_read_offset;
 
         // Read
         memcpy(
@@ -70,12 +71,12 @@ namespace _detail
         png_read_ctx_ptr->raw_data_buffer_read_offset += read_length;
     }
 
-    std::unique_ptr<PngDecodeContext> DecodeProlog(Buffer<std::uint8_t> && pngImageData)
+    std::unique_ptr<PngDecodeContext> DecodeProlog(std::uint8_t const * pngImageData, size_t pngImageDataSize)
     {
         // Sanity checks
 
-        if (pngImageData.GetSize() <= 8
-            || !png_check_sig(reinterpret_cast<png_const_bytep>(pngImageData.data()), 8))
+        if (pngImageDataSize <= 8
+            || !png_check_sig(reinterpret_cast<png_const_bytep>(pngImageData), 8))
         {
             ThrowErrorDecodingPng();
         }
@@ -95,7 +96,8 @@ namespace _detail
         // Create context
 
         auto context = std::make_unique<PngDecodeContext>(
-            std::move(pngImageData),
+            pngImageData,
+            pngImageDataSize,
             png_ptr,
             info_ptr);
 
@@ -175,19 +177,29 @@ namespace _detail
     }
 }
 
-RgbaImageData PngTools::DecodeImageRgba(Buffer<std::uint8_t> && pngImageData)
+RgbaImageData PngTools::DecodeImageRgba(Buffer<std::uint8_t> const & pngImageData)
 {
-    return InternalDecodeImage<RgbaImageData>(std::move(pngImageData));
+    return InternalDecodeImage<RgbaImageData>(pngImageData.data(), pngImageData.GetSize());
 }
 
-RgbImageData PngTools::DecodeImageRgb(Buffer<std::uint8_t> && pngImageData)
+RgbaImageData PngTools::DecodeImageRgba(std::uint8_t const * pngImageData, size_t pngImageDataSize)
 {
-    return InternalDecodeImage<RgbImageData>(std::move(pngImageData));
+    return InternalDecodeImage<RgbaImageData>(pngImageData, pngImageDataSize);
 }
 
-ImageSize PngTools::GetImageSize(Buffer<std::uint8_t> && pngImageData)
+RgbImageData PngTools::DecodeImageRgb(Buffer<std::uint8_t> const & pngImageData)
 {
-    auto context = _detail::DecodeProlog(std::move(pngImageData));
+    return InternalDecodeImage<RgbImageData>(pngImageData.data(), pngImageData.GetSize());
+}
+
+RgbImageData PngTools::DecodeImageRgb(std::uint8_t const * pngImageData, size_t pngImageDataSize)
+{
+    return InternalDecodeImage<RgbImageData>(pngImageData, pngImageDataSize);
+}
+
+ImageSize PngTools::GetImageSize(Buffer<std::uint8_t> const & pngImageData)
+{
+    auto context = _detail::DecodeProlog(pngImageData.data(), pngImageData.GetSize());
 
     // Setup error callback
     if (setjmp(png_jmpbuf(context->png_ptr)))
@@ -235,9 +247,9 @@ Buffer<std::uint8_t> PngTools::EncodeImage(RgbImageData const & image)
 ///////////////////////////////////////////////////
 
 template<typename TImageData>
-TImageData PngTools::InternalDecodeImage(Buffer<std::uint8_t> && pngImageData)
+TImageData PngTools::InternalDecodeImage(std::uint8_t const * pngImageData, size_t pngImageDataSize)
 {
-    auto context = _detail::DecodeProlog(std::move(pngImageData));
+    auto context = _detail::DecodeProlog(pngImageData, pngImageDataSize);
 
     //
     // Setup error callback
@@ -277,7 +289,7 @@ TImageData PngTools::InternalDecodeImage(Buffer<std::uint8_t> && pngImageData)
             context->info_ptr,
             PNG_INFO_tRNS);
 
-        LogMessage("color_type=", color_type, " bit_depth=", bit_depth, " interlace_type=", interlace_type, " has_tRNS=", has_tRNS);
+        //LogMessage("color_type=", color_type, " bit_depth=", bit_depth, " interlace_type=", interlace_type, " has_tRNS=", has_tRNS);
 
         //
         // Build transformation plan
@@ -463,103 +475,9 @@ TImageData PngTools::InternalDecodeImage(Buffer<std::uint8_t> && pngImageData)
             {
                 _detail::ThrowErrorUnsupportedPng();
             }
-
-            ////// TODOOLD
-
-            ////// Grayscale with depth<8 with or without transparency
-            ////if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8)
-            ////{
-            ////    // png_set_gray_to_rgb
-            ////    transformation_plan[iPlan++] = 'C';
-            ////    // png_set_add_alpha
-            ////    transformation_plan[iPlan++] = 'A';
-            ////}
-            ////// Indexed with depth<8 without transparency
-            ////else if (color_type == PNG_COLOR_TYPE_PALETTE && bit_depth < 8 && !has_tRNS)
-            ////{
-            ////    // png_set_palette_to_rgb
-            ////    transformation_plan[iPlan++] = 'P';
-            ////    // png_set_add_alpha
-            ////    transformation_plan[iPlan++] = 'A';
-            ////}
-            ////// Grayscale with or without transparency
-            ////else if (color_type == PNG_COLOR_TYPE_GRAY && !has_tRNS)
-            ////{
-            ////    // png_set_gray_to_rgb
-            ////    transformation_plan[iPlan++] = 'C';
-            ////    // png_set_add_alpha
-            ////    transformation_plan[iPlan++] = 'A';
-            ////}
-            ////// Grayscale with transparency
-            ////else if (color_type == PNG_COLOR_TYPE_GRAY && has_tRNS)
-            ////{
-            ////    // png_set_gray_to_rgb
-            ////    transformation_plan[iPlan++] = 'C';
-            ////    // png_set_tRNS_to_alpha
-            ////    transformation_plan[iPlan++] = 'T';
-            ////}
-            ////// RGB without transparency
-            ////else if (color_type == PNG_COLOR_TYPE_RGB && !has_tRNS)
-            ////{
-            ////    // png_set_add_alpha
-            ////    transformation_plan[iPlan++] = 'A';
-            ////}
-            ////// RGB with transparency
-            ////else if (color_type == PNG_COLOR_TYPE_RGB && has_tRNS)
-            ////{
-            ////    // png_set_tRNS_to_alpha
-            ////    transformation_plan[iPlan++] = 'T';
-            ////}
-            ////// Indexed without transparency
-            ////else if (color_type == PNG_COLOR_TYPE_PALETTE && !has_tRNS)
-            ////{
-            ////    // png_set_palette_to_rgb
-            ////    transformation_plan[iPlan++] = 'P';
-            ////    // png_set_add_alpha
-            ////    transformation_plan[iPlan++] = 'A';
-            ////}
-            ////// Indexed with transparency
-            ////else if (color_type == PNG_COLOR_TYPE_PALETTE && has_tRNS)
-            ////{
-            ////    // png_set_palette_to_rgb
-            ////    transformation_plan[iPlan++] = 'P';
-            ////}
-            ////// Grayscale with alpha without transparency
-            ////else if (color_type == PNG_COLOR_TYPE_GRAY_ALPHA && !has_tRNS)
-            ////{
-            ////    // png_set_gray_to_rgb
-            ////    transformation_plan[iPlan++] = 'C';
-            ////}
-            ////// Grayscale without alpha with transparency
-            ////else if (color_type == PNG_COLOR_TYPE_GRAY_ALPHA && has_tRNS)
-            ////{
-            ////    // png_set_gray_to_rgb
-            ////    transformation_plan[iPlan++] = 'C';
-            ////    // png_set_background
-            ////    transformation_plan[iPlan++] = 'B';
-            ////    // png_set_add_alpha
-            ////    transformation_plan[iPlan++] = 'A';
-            ////}
-            ////// RGB with alpha without transparency
-            ////else if (color_type == PNG_COLOR_TYPE_RGB_ALPHA && !has_tRNS)
-            ////{
-            ////    // Nop
-            ////}
-            ////// RGB with alpha with transparency
-            ////else if (color_type == PNG_COLOR_TYPE_RGB_ALPHA && has_tRNS)
-            ////{
-            ////    // png_set_background
-            ////    transformation_plan[iPlan++] = 'B';
-            ////    // png_set_add_alpha
-            ////    transformation_plan[iPlan++] = 'A';
-            ////}
-            ////else
-            ////{
-            ////    _detail::ThrowErrorUnsupportedPng();
-            ////}
         }
 
-        LogMessage("transformation_plan=", transformation_plan);
+        //LogMessage("transformation_plan=", transformation_plan);
 
         //
         // Run transformation plan
@@ -617,55 +535,6 @@ TImageData PngTools::InternalDecodeImage(Buffer<std::uint8_t> && pngImageData)
                 assert(false);
             }
         }
-
-        // TODOHERE
-
-        ////// TODOOLD
-        ////// Convert transparency to full alpha
-        ////if (png_get_valid(
-        ////    context->png_ptr,
-        ////    context->info_ptr,
-        ////    PNG_INFO_tRNS))
-        ////{
-        ////    png_set_tRNS_to_alpha(context->png_ptr);
-        ////}
-
-        ////// Convert grayscale to 8-bit, if needed
-        ////if ((color_type == PNG_COLOR_TYPE_GRAY || color_type == PNG_COLOR_TYPE_GRAY_ALPHA) && bit_depth < 8)
-        ////{
-        ////    png_set_expand_gray_1_2_4_to_8(context->png_ptr);
-        ////}
-
-        ////// Convert grayscale to RGB
-        ////if (color_type == PNG_COLOR_TYPE_GRAY || color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
-        ////{
-        ////    png_set_gray_to_rgb(context->png_ptr);
-        ////}
-
-        ////// Convert paletted images to RGB, if needed
-        ////if (color_type == PNG_COLOR_TYPE_PALETTE)
-        ////{
-        ////    png_set_palette_to_rgb(context->png_ptr);
-        ////}
-
-        ////// Add/remove alpha channel as needed
-        ////if constexpr (TImageData::element_type::has_alpha)
-        ////{
-        ////    if ((color_type & PNG_COLOR_MASK_ALPHA) == 0)
-        ////    {
-        ////        png_set_add_alpha(
-        ////            context->png_ptr,
-        ////            0xFF,
-        ////            PNG_FILLER_AFTER);
-        ////    }
-        ////}
-        ////else
-        ////{
-        ////    if ((color_type & PNG_COLOR_MASK_ALPHA) != 0)
-        ////    {
-        ////        png_set_strip_alpha(context->png_ptr);
-        ////    }
-        ////}
 
         //
         // Ensure 8-bit packing

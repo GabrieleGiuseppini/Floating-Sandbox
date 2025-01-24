@@ -454,6 +454,13 @@ struct _IntegralSize
             this->height * factor);
     }
 
+    inline _IntegralSize<TIntegralTag> operator*(float factor) const
+    {
+        return _IntegralSize<TIntegralTag>(
+            static_cast<int>(std::roundf(static_cast<float>(this->width) * factor)),
+            static_cast<int>(std::roundf(static_cast<float>(this->height) * factor)));
+    }
+
     inline size_t GetLinearSize() const
     {
         return this->width * this->height;
@@ -476,6 +483,30 @@ struct _IntegralSize
         return _IntegralSize<TIntegralTag>(
             std::min(this->width, other.width),
             std::min(this->height, other.height));
+    }
+
+    inline _IntegralSize<TIntegralTag> ScaleToWidth(int finalWidth) const
+    {
+        return _IntegralSize<TIntegralTag>(
+            finalWidth,
+            static_cast<int>(
+                std::roundf(
+                    static_cast<float>(this->height)
+                    / static_cast<float>(this->width)
+                    * static_cast<float>(finalWidth))));
+    }
+
+    inline _IntegralSize<TIntegralTag> ShrinkToFit(_IntegralSize<TIntegralTag> const & maxSize) const
+    {
+        float wShrinkFactor = static_cast<float>(maxSize.width) / static_cast<float>(this->width);
+        float hShrinkFactor = static_cast<float>(maxSize.height) / static_cast<float>(this->height);
+        float shrinkFactor = std::min(
+            std::min(wShrinkFactor, hShrinkFactor),
+            1.0f);
+
+        return _IntegralSize<TIntegralTag>(
+            static_cast<int>(std::roundf(static_cast<float>(this->width) * shrinkFactor)),
+            static_cast<int>(std::roundf(static_cast<float>(this->height) * shrinkFactor)));
     }
 
     vec2f ToFloat() const

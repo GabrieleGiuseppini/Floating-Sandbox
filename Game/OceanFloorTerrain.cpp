@@ -6,7 +6,7 @@
 #include "OceanFloorTerrain.h"
 
 #include "GameParameters.h"
-#include "ImageFileTools.h"
+#include "PngImageFileTools.h"
 
 #include <cmath>
 
@@ -41,7 +41,7 @@ OceanFloorTerrain OceanFloorTerrain::LoadFromImage(std::filesystem::path const &
     unique_buffer<float> terrainBuffer(GameParameters::OceanFloorTerrainSamples<size_t>);
 
     // Load image
-    RgbImageData oceanFloorImage = ImageFileTools::LoadImageRgb(imageFilePath);
+    RgbImageData oceanFloorImage = PngImageFileTools::LoadImageRgb(imageFilePath);
     float const halfHeight = static_cast<float>(oceanFloorImage.Size.height) / 2.0f;
 
     // Calculate SampleI->WorldX factor, i.e. world width between two samples

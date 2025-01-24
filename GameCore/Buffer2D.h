@@ -108,6 +108,11 @@ public:
         return std::memcmp(Data.get(), other.Data.get(), GetByteSize()) == 0;
     }
 
+    size_t GetLinearSize() const
+    {
+        return mLinearSize;
+    }
+
     size_t GetByteSize() const
     {
         return mLinearSize * sizeof(TElement);

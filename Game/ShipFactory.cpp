@@ -420,6 +420,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData, RgbaImageData> ShipFac
                 0.65f),
             ShipTexturizer::MaxHighDefinitionTextureSize);
 
+    // Whiteout
     ImageTools::BlendWithColor(
         interiorTextureImage,
         rgbColor(rgbColor::data_type_max, rgbColor::data_type_max, rgbColor::data_type_max),

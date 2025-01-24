@@ -5,17 +5,20 @@
 ***************************************************************************************/
 #include "ShipDefinitionFormatDeSerializer.h"
 
-#include "ImageFileTools.h"
+#include "PngImageFileTools.h"
 
 #include <GameCore/Colors.h>
 #include <GameCore/GameException.h>
 #include <GameCore/GameTypes.h>
+#include <GameCore/ImageTools.h>
 #include <GameCore/Log.h>
+#include <GameCore/PngTools.h>
 #include <GameCore/UserGameException.h>
 
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <cstring>
 #include <utility>
 
 namespace {
@@ -516,9 +519,13 @@ size_t ShipDefinitionFormatDeSerializer::AppendPngImage(
     RgbaImageData const & rawImageData,
     DeSerializationBuffer<BigEndianess> & buffer)
 {
-    return ImageFileTools::EncodePngImage(
-        rawImageData,
-        buffer);
+    auto encodedImage = PngTools::EncodeImage(rawImageData);
+
+    size_t const byteSize = encodedImage.GetCurrentPopulatedByteSize();
+    void * targetBuf = reinterpret_cast<void *>(buffer.Receive(byteSize));
+    std::memcpy(targetBuf, encodedImage.data(), byteSize);
+
+    return byteSize;
 }
 
 void ShipDefinitionFormatDeSerializer::AppendFileHeader(
@@ -1385,14 +1392,18 @@ ShipDefinitionFormatDeSerializer::SectionHeader ShipDefinitionFormatDeSerializer
 
 RgbaImageData ShipDefinitionFormatDeSerializer::ReadPngImage(DeSerializationBuffer<BigEndianess> & buffer)
 {
-    return ImageFileTools::DecodePngImage(buffer);
+    return PngTools::DecodeImageRgba(buffer.GetData(), buffer.GetSize());
 }
 
 RgbaImageData ShipDefinitionFormatDeSerializer::ReadPngImageAndResize(
     DeSerializationBuffer<BigEndianess> & buffer,
     ImageSize const & maxSize)
 {
-    return ImageFileTools::DecodePngImageAndResize(buffer, maxSize);
+    RgbaImageData orig = PngTools::DecodeImageRgba(buffer.GetData(), buffer.GetSize());
+    return ImageTools::Resize(
+        orig,
+        orig.Size.ShrinkToFit(maxSize),
+        ImageTools::FilterKind::Bilinear);
 }
 
 void ShipDefinitionFormatDeSerializer::ReadFileHeader(

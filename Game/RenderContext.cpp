@@ -5,8 +5,6 @@
 ***************************************************************************************/
 #include "RenderContext.h"
 
-#include <Game/ImageFileTools.h>
-
 #include <GameCore/GameChronometer.h>
 #include <GameCore/GameException.h>
 #include <GameCore/Log.h>

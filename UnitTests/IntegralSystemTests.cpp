@@ -169,3 +169,50 @@ TEST(IntegralSystemTests, Rect_Center)
 
     EXPECT_EQ(rect.Center(), IntegralCoordinates(12, 14));
 }
+
+TEST(IntegralSystemTests, IntegralSize_MultiplyFloat)
+{
+    ImageSize orig(102, 205);
+
+    ImageSize smaller = orig * 0.5f;
+    EXPECT_EQ(51, smaller.width);
+    EXPECT_EQ(103, smaller.height);
+
+    ImageSize larger = orig * 2.0f;
+    EXPECT_EQ(204, larger.width);
+    EXPECT_EQ(410, larger.height);
+
+    ImageSize fract = orig * 1.24f;
+    EXPECT_EQ(126, fract.width);
+    EXPECT_EQ(254, fract.height);
+}
+
+TEST(IntegralSystemTests, IntegralSize_ScaleToWidth)
+{
+    ImageSize orig(102, 205);
+
+    ImageSize sz1 = orig.ScaleToWidth(102);
+    EXPECT_EQ(102, sz1.width);
+    EXPECT_EQ(205, sz1.height);
+
+    ImageSize sz2 = orig.ScaleToWidth(200);
+    EXPECT_EQ(200, sz2.width);
+    EXPECT_EQ(402, sz2.height);
+}
+
+TEST(IntegralSystemTests, IntegralSize_ShrinkToFit)
+{
+    ImageSize orig(102, 205);
+
+    ImageSize sz1 = orig.ShrinkToFit(ImageSize(102, 205));
+    EXPECT_EQ(102, sz1.width);
+    EXPECT_EQ(205, sz1.height);
+
+    ImageSize sz2 = orig.ShrinkToFit(ImageSize(2000, 300));
+    EXPECT_EQ(102, sz2.width);
+    EXPECT_EQ(205, sz2.height);
+
+    ImageSize sz3 = orig.ShrinkToFit(ImageSize(50, 300));
+    EXPECT_EQ(50, sz3.width);
+    EXPECT_EQ(100, sz3.height);
+}

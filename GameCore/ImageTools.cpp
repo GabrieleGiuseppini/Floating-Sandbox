@@ -5,6 +5,34 @@
 ***************************************************************************************/
 #include "ImageTools.h"
 
+#include <type_traits>
+
+template<typename TImageData>
+TImageData ImageTools::Resize(
+    TImageData const & image,
+    ImageSize const & newSize,
+    FilterKind filter)
+{
+    switch (filter)
+    {
+        case FilterKind::Bilinear:
+        {
+            return InternalResizeBilinear(image, newSize);
+        }
+
+        case FilterKind::Nearest:
+        {
+            return InternalResizeNearest(image, newSize);
+        }
+    }
+
+    assert(false);
+    return TImageData(ImageSize(0, 0));
+}
+
+template RgbaImageData ImageTools::Resize(RgbaImageData const & image, ImageSize const & newSize, FilterKind filter);
+template RgbImageData ImageTools::Resize(RgbImageData const & image, ImageSize const & newSize, FilterKind filter);
+
 void ImageTools::BlendWithColor(
     RgbaImageData & imageData,
     rgbColor const & color,
@@ -130,20 +158,149 @@ RgbImageData ImageTools::ToRgb(RgbaImageData const & imageData)
     return RgbImageData(imageData.Size, std::move(newImageData));
 }
 
-RgbImageData ImageTools::ToAlpha(RgbaImageData const & imageData)
+template<typename TImageData>
+TImageData ImageTools::InternalResizeNearest(
+    TImageData const & image,
+    ImageSize const & newSize)
 {
-    std::unique_ptr<rgbColor[]> newImageData = std::make_unique<rgbColor[]>(imageData.Size.GetLinearSize());
+    TImageData result(newSize);
 
-    for (int r = 0; r < imageData.Size.height; ++r)
+    // Strategy: for each target pixel, find source pixel
+
+    // 0-1 space
+    float const tgtToSrcW = static_cast<float>(image.Size.width);
+    float const tgtToSrcH = static_cast<float>(image.Size.height);
+
+    // We sample target pixels at their center
+    float const tgtPixelDW = 1.0f / static_cast<float>(newSize.width);
+    float const tgtPixelDH = 1.0f / static_cast<float>(newSize.height);
+    float yf = tgtPixelDH / 2.0f;
+    for (int y = 0; y < newSize.height; ++y, yf += tgtPixelDH)
     {
-        auto const rowStartIndex = r * imageData.Size.width;
-        for (int c = 0; c < imageData.Size.width; ++c)
+        int const srcY = static_cast<int>(yf * tgtToSrcH);
+
+        float xf = tgtPixelDW / 2.0f;
+        for (int x = 0; x < newSize.width; ++x, xf += tgtPixelDW)
         {
-            auto const a = imageData.Data[rowStartIndex + c].a;
-            rgbColor c2(a, a, a);
-            newImageData[rowStartIndex + c] = c2;
+            int const srcX = static_cast<int>(xf * tgtToSrcW);
+
+            assert(srcX >= 0 && srcX < image.Size.width);
+            assert(srcY >= 0 && srcY < image.Size.height);
+
+            result[{x, y}] = image[{srcX, srcY}];
         }
     }
 
-    return RgbImageData(imageData.Size, std::move(newImageData));
+    return result;
+}
+
+template RgbaImageData ImageTools::InternalResizeNearest(RgbaImageData const & image, ImageSize const & newSize);
+template RgbImageData ImageTools::InternalResizeNearest(RgbImageData const & image, ImageSize const & newSize);
+
+template<typename TImageData>
+TImageData ImageTools::InternalResizeBilinear(
+    TImageData const & image,
+    ImageSize const & newSize)
+{
+    using color_type = typename TImageData::element_type;
+    TImageData result(newSize);
+
+    // Convert input to floats
+    using f_vec_type = typename TImageData::element_type::f_vector_type;
+    auto const imageF = InternalToFloat(image);
+
+    // Strategy: for each target pixel, find source pixel
+
+    // 0-1 space
+    float const tgtToSrcW = static_cast<float>(image.Size.width);
+    float const tgtToSrcH = static_cast<float>(image.Size.height);
+
+    // We sample target pixels at their center
+    float const tgtPixelDW = 1.0f / static_cast<float>(newSize.width);
+    float const tgtPixelDH = 1.0f / static_cast<float>(newSize.height);
+    float yf = tgtPixelDH / 2.0f;
+    for (int y = 0; y < newSize.height; ++y, yf += tgtPixelDH)
+    {
+        float const srcYF = yf * tgtToSrcH;
+        int const srcY = static_cast<int>(FastTruncateToArchInt(srcYF));
+        float const srcYDF = srcYF - srcY;
+
+        int otherSrcY;
+        float thisDy;
+        if (srcYDF >= 0.5f)
+        {
+            // Next
+            otherSrcY = (srcY + 1 < image.Size.height)
+                ? srcY + 1
+                : srcY; // Reuse same
+            thisDy = srcYDF - 0.5f;
+        }
+        else
+        {
+            // Prev
+            otherSrcY = (srcY > 0)
+                ? srcY - 1
+                : srcY; // Reuse same
+            thisDy = 0.5f - srcYDF;
+        }
+
+        assert(thisDy >= 0.0f && thisDy < 1.0f);
+
+        float xf = tgtPixelDW / 2.0f;
+        for (int x = 0; x < newSize.width; ++x, xf += tgtPixelDW)
+        {
+            float const srcXF = xf * tgtToSrcW;
+            int const srcX = static_cast<int>(FastTruncateToArchInt(srcXF));
+            float const srcXDF = srcXF - srcX;
+
+            int otherSrcX;
+            float thisDx;
+            if (srcXDF >= 0.5f)
+            {
+                // Next
+                otherSrcX = (srcX + 1 < image.Size.width)
+                    ? srcX + 1
+                    : srcX; // Reuse same
+                thisDx = srcXDF - 0.5f;
+            }
+            else
+            {
+                // Prev
+                otherSrcX = (srcX > 0)
+                    ? srcX - 1
+                    : srcX; // Reuse same
+                thisDx = 0.5f - srcXDF;
+            }
+
+            assert(thisDx >= 0.0f && thisDx < 1.0f);
+
+            // Interpolate this-y X
+            f_vec_type const thisY_X = Mix(imageF[{srcX, srcY}], imageF[{otherSrcX, srcY}], thisDx);
+            // Interpolate other-t Y
+            f_vec_type const otherY_X = Mix(imageF[{srcX, otherSrcY}], imageF[{otherSrcX, otherSrcY}], thisDx);
+            // Interpolate Y's
+            result[{x, y}] = color_type(Mix(thisY_X, otherY_X, thisDy));
+        }
+    }
+
+    return result;
+}
+
+template RgbaImageData ImageTools::InternalResizeBilinear(RgbaImageData const & image, ImageSize const & newSize);
+template RgbImageData ImageTools::InternalResizeBilinear(RgbImageData const & image, ImageSize const & newSize);
+
+template<typename TImageData>
+Buffer2D<typename TImageData::element_type::f_vector_type, struct ImageTag> ImageTools::InternalToFloat(TImageData const & imageData)
+{
+    Buffer2D<typename TImageData::element_type::f_vector_type, struct ImageTag> result(imageData.Size);
+
+    typename TImageData::element_type const * const restrict src = imageData.Data.get();
+    typename TImageData::element_type::f_vector_type * const restrict trg = result.Data.get();
+    size_t const sz = imageData.GetLinearSize();
+    for (size_t i = 0; i < sz; ++i)
+    {
+        *(trg + i) = (src + i)->toVec();
+    }
+
+    return result;
 }

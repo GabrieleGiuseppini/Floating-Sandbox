@@ -104,6 +104,15 @@ public:
     }
 
     /*
+     * Gets the current number of bytes populated in the buffer via emplace_back();
+     * less than or equal the declared buffer size.
+     */
+    size_t GetCurrentPopulatedByteSize() const
+    {
+        return mCurrentPopulatedSize * sizeof(TElement);
+    }
+
+    /*
      * Adds an element to the buffer. Assumed to be invoked only at initialization time.
      *
      * Cannot add more elements than the size specified at constructor time.

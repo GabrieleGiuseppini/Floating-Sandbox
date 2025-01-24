@@ -13,7 +13,7 @@
  * A database is a collection of groups.
  */
 
-#include "ImageFileTools.h"
+#include "PngImageFileTools.h"
 
 #include <GameCore/GameException.h>
 #include <GameCore/GameTypes.h>
@@ -133,7 +133,7 @@ struct TextureFrameSpecification
 
     TextureFrame<TextureGroups> LoadFrame() const
     {
-        RgbaImageData imageData = ImageFileTools::LoadImageRgba(FilePath);
+        RgbaImageData imageData = PngImageFileTools::LoadImageRgba(FilePath);
 
         return TextureFrame<TextureGroups>(
             Metadata,

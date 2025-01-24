@@ -23,8 +23,6 @@ set  (GAME_SOURCES
 	IGameControllerSettings.h
 	IGameControllerSettingsOptions.h
 	IGameEventHandlers.h
-	ImageFileTools.cpp
-	ImageFileTools.h
 	LayerElements.h
 	Layers.cpp
 	Layers.h
@@ -39,6 +37,8 @@ set  (GAME_SOURCES
 	OceanFloorTerrain.cpp
 	OceanFloorTerrain.h
 	PerfStats.h
+	PngImageFileTools.cpp
+	PngImageFileTools.h
 	RenderDeviceProperties.h
 	ResourceLocator.cpp
 	ResourceLocator.h

@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "Buffer2D.h"
 #include "GameMath.h"
 #include "GameTypes.h"
 #include "ImageData.h"
@@ -17,6 +18,18 @@
 class ImageTools
 {
 public:
+
+    enum class FilterKind
+    {
+        Nearest,
+        Bilinear
+    };
+
+    template<typename TImageData>
+    static TImageData Resize(
+        TImageData const & image,
+        ImageSize const & newSize,
+        FilterKind filter);
 
     static void BlendWithColor(
         RgbaImageData & imageData,
@@ -101,9 +114,17 @@ public:
 
     static RgbImageData ToRgb(RgbaImageData const & imageData);
 
-    static RgbImageData ToAlpha(RgbaImageData const & imageData);
-
 private:
+
+    template<typename TImageData>
+    static TImageData InternalResizeNearest(
+        TImageData const & image,
+        ImageSize const & newSize);
+
+    template<typename TImageData>
+    static TImageData InternalResizeBilinear(
+        TImageData const & image,
+        ImageSize const & newSize);
 
     template<typename TColor>
     static inline ImageData<TColor> InternalTrim(
@@ -223,4 +244,7 @@ private:
             return imageData;
         }
     }
+
+    template<typename TImageData>
+    static Buffer2D<typename TImageData::element_type::f_vector_type, struct ImageTag> InternalToFloat(TImageData const & imageData);
 };

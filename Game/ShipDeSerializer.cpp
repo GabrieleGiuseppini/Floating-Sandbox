@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #include "ShipDeSerializer.h"
 
-#include "ImageFileTools.h"
+#include "PngImageFileTools.h"
 #include "ShipDefinitionFormatDeSerializer.h"
 #include "ShipLegacyFormatDeSerializer.h"
 
@@ -98,7 +98,7 @@ void ShipDeSerializer::SaveStructuralLayerImage(
         }
     }
 
-    ImageFileTools::SavePngImage(
+    PngImageFileTools::SavePngImage(
         structuralLayerImage,
         shipFilePath);
 }

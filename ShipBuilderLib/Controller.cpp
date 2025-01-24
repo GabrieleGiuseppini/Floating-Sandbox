@@ -18,7 +18,7 @@
 #include "Tools/TextureEraserTool.h"
 #include "Tools/TextureMagicWandTool.h"
 
-#include <Game/ImageFileTools.h>
+#include <Game/PngImageFileTools.h>
 
 #include <cassert>
 
@@ -108,7 +108,7 @@ Controller::Controller(
         mResourceLocator);
 
     mView->UploadBackgroundTexture(
-        ImageFileTools::LoadImageRgba(
+        PngImageFileTools::LoadImageRgba(
             mResourceLocator.GetBitmapFilePath("shipbuilder_background")));
 
     // Set ideal zoom

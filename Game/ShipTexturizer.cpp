@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #include "ShipTexturizer.h"
 
-#include "ImageFileTools.h"
+#include "PngImageFileTools.h"
 
 #include <GameCore/GameChronometer.h>
 #include <GameCore/GameException.h>
@@ -742,7 +742,7 @@ ShipTexturizer::Vec2fImageData const & ShipTexturizer::GetMaterialTexture(std::o
 
         // Load texture
         assert(mMaterialTextureNameToTextureFilePathMap.count(actualTextureName) > 0);
-        RgbImageData texture = ImageFileTools::LoadImageRgb(mMaterialTextureNameToTextureFilePathMap.at(actualTextureName));
+        RgbImageData texture = PngImageFileTools::LoadImageRgb(mMaterialTextureNameToTextureFilePathMap.at(actualTextureName));
 
         // Convert to vec2f
         auto const pixelCount = texture.Size.GetLinearSize();

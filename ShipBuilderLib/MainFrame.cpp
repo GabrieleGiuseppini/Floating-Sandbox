@@ -16,7 +16,7 @@
 #include <UILib/UnderConstructionDialog.h>
 #include <UILib/WxHelpers.h>
 
-#include <Game/ImageFileTools.h>
+#include <Game/PngImageFileTools.h>
 #include <Game/ShipDeSerializer.h>
 #include <Game/Version.h>
 
@@ -1490,7 +1490,7 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
                         }
                         else if (layer == LayerType::ExteriorTexture)
                         {
-                            ImageFileTools::SavePngImage(
+                            PngImageFileTools::SavePngImage(
                                 mController->GetModelController().GetExteriorTextureLayer().Buffer,
                                 dlg.GetChosenFilepath());
                         }
@@ -1498,7 +1498,7 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
                         {
                             assert(layer == LayerType::InteriorTexture);
 
-                            ImageFileTools::SavePngImage(
+                            PngImageFileTools::SavePngImage(
                                 mController->GetModelController().GetInteriorTextureLayer().Buffer,
                                 dlg.GetChosenFilepath());
                         }
@@ -5333,7 +5333,8 @@ void MainFrame::ImportExteriorTextureLayerFromImage()
     {
         try
         {
-            auto image = ImageFileTools::LoadImageRgba(dlg.GetChosenFilepath());
+            // TODOHERE: JPG
+            auto image = PngImageFileTools::LoadImageRgba(dlg.GetChosenFilepath());
 
             if (image.Size.width == 0 || image.Size.height == 0)
             {

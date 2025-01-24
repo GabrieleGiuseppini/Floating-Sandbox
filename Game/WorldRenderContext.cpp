@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #include "WorldRenderContext.h"
 
-#include <Game/ImageFileTools.h>
+#include <Game/PngImageFileTools.h>
 
 #include <GameCore/GameChronometer.h>
 #include <GameCore/GameException.h>
@@ -575,9 +575,11 @@ void WorldRenderContext::InitializeWorldTextures(ResourceLocator const & resourc
     {
         auto const & tfs = mOceanTextureFrameSpecifications[i];
 
-        auto textureThumbnail = ImageFileTools::LoadImageRgbaAndResize(
-            tfs.FilePath,
-            ThumbnailSize);
+        auto originalTextureImage = PngImageFileTools::LoadImageRgba(tfs.FilePath);
+        auto textureThumbnail = ImageTools::Resize(
+            originalTextureImage,
+            originalTextureImage.Size.ShrinkToFit(ThumbnailSize),
+            ImageTools::FilterKind::Bilinear);
 
         assert(static_cast<size_t>(tfs.Metadata.FrameId.FrameIndex) == mOceanAvailableThumbnails.size());
 
@@ -595,9 +597,11 @@ void WorldRenderContext::InitializeWorldTextures(ResourceLocator const & resourc
     {
         auto const & tfs = mLandTextureFrameSpecifications[i];
 
-        auto textureThumbnail = ImageFileTools::LoadImageRgbaAndResize(
-            tfs.FilePath,
-            ThumbnailSize);
+        auto originalTextureImage = PngImageFileTools::LoadImageRgba(tfs.FilePath);
+        auto textureThumbnail = ImageTools::Resize(
+            originalTextureImage,
+            originalTextureImage.Size.ShrinkToFit(ThumbnailSize),
+            ImageTools::FilterKind::Bilinear);
 
         assert(static_cast<size_t>(tfs.Metadata.FrameId.FrameIndex) == mLandAvailableThumbnails.size());
 

@@ -34,6 +34,7 @@ set (UNIT_TEST_SOURCES
 	GameEventDispatcherTests.cpp
 	GameGeometryTests.cpp
 	GameMathTests.cpp
+	ImageToolsTests.cpp
 	IndexRemapTests.cpp
 	InstancedElectricalElementSetTests.cpp
 	IntegralSystemTests.cpp

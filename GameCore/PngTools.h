@@ -22,10 +22,12 @@ class PngTools
 {
 public:
 
-    static RgbaImageData DecodeImageRgba(Buffer<std::uint8_t> && pngImageData);
-    static RgbImageData DecodeImageRgb(Buffer<std::uint8_t> && pngImageData);
+    static RgbaImageData DecodeImageRgba(Buffer<std::uint8_t> const & pngImageData);
+    static RgbaImageData DecodeImageRgba(std::uint8_t const * pngImageData, size_t pngImageDataSize);
+    static RgbImageData DecodeImageRgb(Buffer<std::uint8_t> const & pngImageData);
+    static RgbImageData DecodeImageRgb(std::uint8_t const * pngImageData, size_t pngImageDataSize);
 
-    static ImageSize GetImageSize(Buffer<std::uint8_t> && pngImageData);
+    static ImageSize GetImageSize(Buffer<std::uint8_t> const & pngImageData);
 
     static Buffer<std::uint8_t> EncodeImage(RgbaImageData const & image);
     static Buffer<std::uint8_t> EncodeImage(RgbImageData const & image);
@@ -33,7 +35,7 @@ public:
 private:
 
     template<typename TImageData>
-    static TImageData InternalDecodeImage(Buffer<std::uint8_t> && pngImageData);
+    static TImageData InternalDecodeImage(std::uint8_t const * pngImageData, size_t pngImageDataSize);
 
     template<typename TImageData>
     static Buffer<std::uint8_t> InternalEncodeImage(TImageData const & image);

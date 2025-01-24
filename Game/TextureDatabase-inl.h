@@ -215,7 +215,7 @@ TextureDatabase<TextureDatabaseTraits> TextureDatabase<TextureDatabaseTraits>::L
                     // Get frame size
                     //
 
-                    ImageSize textureSize = ImageFileTools::GetImageSize(fileData.Path);
+                    ImageSize textureSize = PngImageFileTools::GetImageSize(fileData.Path);
 
 
                     //

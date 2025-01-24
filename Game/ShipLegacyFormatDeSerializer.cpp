@@ -4,7 +4,8 @@
 * Copyright:			Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
 #include "ShipLegacyFormatDeSerializer.h"
-#include "ImageFileTools.h"
+
+#include "PngImageFileTools.h"
 
 #include <GameCore/GameException.h>
 #include <GameCore/ImageTools.h>
@@ -48,7 +49,7 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadShipFromLegacyShpShipDefinition
 
 ShipPreviewData ShipLegacyFormatDeSerializer::LoadShipPreviewDataFromImageDefinition(std::filesystem::path const & imageDefinitionFilePath)
 {
-    auto const imageSize = ImageFileTools::GetImageSize(imageDefinitionFilePath);
+    auto const imageSize = PngImageFileTools::GetImageSize(imageDefinitionFilePath);
 
     return ShipPreviewData(
         imageDefinitionFilePath,
@@ -85,7 +86,7 @@ ShipPreviewData ShipLegacyFormatDeSerializer::LoadShipPreviewDataFromLegacyShpSh
     if (!jsonDefinition.Metadata.DoHideElectricalsInPreview)
         hasElectricals = jsonDefinition.ElectricalLayerImageFilePath.has_value();
 
-    ImageSize const structuralImageSize = ImageFileTools::GetImageSize(jsonDefinition.StructuralLayerImageFilePath);
+    ImageSize const structuralImageSize = PngImageFileTools::GetImageSize(jsonDefinition.StructuralLayerImageFilePath);
 
     return ShipPreviewData(
         previewImageFilePath,
@@ -100,9 +101,11 @@ RgbaImageData ShipLegacyFormatDeSerializer::LoadPreviewImage(
     std::filesystem::path const & previewFilePath,
     ImageSize const & maxSize)
 {
-    RgbaImageData previewImage = ImageFileTools::LoadImageRgbaAndResize(
-        previewFilePath,
-        maxSize);
+    RgbaImageData originalPreviewImage = PngImageFileTools::LoadImageRgba(previewFilePath);
+    RgbaImageData previewImage = ImageTools::Resize(
+        originalPreviewImage,
+        originalPreviewImage.Size.ShrinkToFit(maxSize),
+        ImageTools::FilterKind::Bilinear);
 
     // Trim
     return ImageTools::TrimWhiteOrTransparent(std::move(previewImage));
@@ -304,7 +307,7 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImageFilePaths(
     // Load images
     //
 
-    RgbImageData structuralLayerImage = ImageFileTools::LoadImageRgb(structuralLayerImageFilePath);
+    RgbImageData structuralLayerImage = PngImageFileTools::LoadImageRgb(structuralLayerImageFilePath);
 
     std::optional<RgbImageData> electricalLayerImage;
     if (electricalLayerImageFilePath.has_value())
@@ -312,7 +315,7 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImageFilePaths(
         try
         {
             electricalLayerImage.emplace(
-                ImageFileTools::LoadImageRgb(*electricalLayerImageFilePath));
+                PngImageFileTools::LoadImageRgb(*electricalLayerImageFilePath));
         }
         catch (GameException const & gex)
         {
@@ -326,7 +329,7 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImageFilePaths(
         try
         {
             ropesLayerImage.emplace(
-                ImageFileTools::LoadImageRgb(*ropesLayerImageFilePath));
+                PngImageFileTools::LoadImageRgb(*ropesLayerImageFilePath));
         }
         catch (GameException const & gex)
         {
@@ -340,7 +343,7 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImageFilePaths(
         try
         {
             textureLayerImage.emplace(
-                ImageFileTools::LoadImageRgba(*textureLayerImageFilePath));
+                PngImageFileTools::LoadImageRgba(*textureLayerImageFilePath));
         }
         catch (GameException const & gex)
         {
