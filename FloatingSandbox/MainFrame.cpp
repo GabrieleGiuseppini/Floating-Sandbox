@@ -16,7 +16,7 @@
 #include <UILib/WxHelpers.h>
 
 #include <Game/BootSettings.h>
-#include <Game/ImageFileTools.h>
+#include <Game/PngImageFileTools.h>
 #include <Game/Version.h>
 
 #include <GameCore/GameException.h>
@@ -1836,7 +1836,7 @@ void MainFrame::OnSaveScreenshotMenuItemSelected(wxCommandEvent & /*event*/)
 
         try
         {
-            ImageFileTools::SavePngImage(
+            PngImageFileTools::SavePngImage(
                 screenshotImage,
                 screenshotFilePath);
         }

@@ -8,7 +8,7 @@
 #include <UILib/LayoutHelper.h>
 #include <UILib/WxHelpers.h>
 
-#include <Game/ImageFileTools.h>
+#include <Game/PngImageFileTools.h>
 
 #include <GameCore/ImageTools.h>
 
@@ -106,9 +106,11 @@ SwitchboardPanel::SwitchboardPanel(
 
             for (auto const & backgroundBitmapFilepath : backgroundBitmapFilepaths)
             {
-                auto backgroundBitmapThumb1 = ImageFileTools::LoadImageRgbaAndResize(
-                    backgroundBitmapFilepath,
-                    128);
+                auto backgroundImage = PngImageFileTools::LoadImageRgba(backgroundBitmapFilepath);
+                auto backgroundBitmapThumb1 = ImageTools::Resize(
+                    backgroundImage,
+                    backgroundImage.Size.ScaleToWidth(128),
+                    ImageTools::FilterKind::Bilinear);
 
                 auto backgroundBitmapThumb2 = ImageTools::Truncate(std::move(backgroundBitmapThumb1), ImageSize(64, 32));
 
@@ -1592,6 +1594,9 @@ void SwitchboardPanel::OnRightDown(wxMouseEvent & event)
 void SwitchboardPanel::OnBackgroundSelectionChanged(wxCommandEvent & /*event*/)
 {
     int selection = mBackgroundBitmapComboBox->GetSelection();
+
+    // Hide selector
+    mBackgroundSelectorPopup->Dismiss();
 
     // Set bitmap
     SetBackgroundBitmapFromCombo(selection);
