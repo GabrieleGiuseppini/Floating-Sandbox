@@ -20,13 +20,9 @@ source_group(" " FILES ${SHIP_TOOLS_SOURCES})
 
 add_executable (ShipTools ${SHIP_TOOLS_SOURCES})
 
-target_include_directories(ShipTools PRIVATE ${IL_INCLUDE_DIR})
-
 target_link_libraries (ShipTools
 	GameCoreLib
 	GameLib
-	${IL_LIBRARIES}
-	${ILU_LIBRARIES}
 	${ADDITIONAL_LIBRARIES})
 
 

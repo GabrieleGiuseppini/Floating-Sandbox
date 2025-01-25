@@ -5,7 +5,6 @@ set(FS_USE_STATIC_LIBS ON)
 set(SDK_ROOT "C:/Users/Neurodancer/source/SDK")
 set(REPOS_ROOT "C:/Users/Neurodancer/source/repos")
 
-set(DevIL_ROOT_DIR "${SDK_ROOT}/DevIL-1.8.0")
 set(ZLIB_ROOT "${SDK_ROOT}/ZLib-1.2.11")
 set(JPEG_ROOT "${SDK_ROOT}/jpeg-9d")
 set(PNG_ROOT "${SDK_ROOT}/LibPNG-1.6.37")

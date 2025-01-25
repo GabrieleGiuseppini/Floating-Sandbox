@@ -105,21 +105,6 @@ message(STATUS "wxWidgets_ROOT:" ${wxWidgets_ROOT})
 find_package(wxWidgets REQUIRED base core gl html propgrid ribbon)
 
 #
-# DevIL
-#
-
-message(STATUS "DevIL_ROOT_DIR:" ${DevIL_ROOT_DIR})
-
-find_package(DevIL REQUIRED)
-
-if(FS_USE_STATIC_LIBS)
-	# If we use static linking, we expect to have built DevIL 
-	# as static libs, and we expect to _use_ it as static libs,
-	# so tell the DevIL include files that DevIL is used as static libs
-	add_compile_definitions("IL_STATIC_LIB")
-endif()
-
-#
 # SFML
 #
 

@@ -6,11 +6,9 @@
 #include "Quantizer.h"
 
 #include <Game/MaterialDatabase.h>
+#include <Game/PngImageFileTools.h>
 
 #include <GameCore/Vectors.h>
-
-#include <IL/il.h>
-#include <IL/ilu.h>
 
 #include <limits>
 #include <stdexcept>
@@ -28,32 +26,7 @@ void Quantizer::Quantize(
     // Load image
     //
 
-    ILuint image;
-    ilGenImages(1, &image);
-    ilBindImage(image);
-
-    if (!ilLoadImage(inputFile.c_str()))
-    {
-        ILint devilError = ilGetError();
-        std::string devilErrorMessage(iluErrorString(devilError));
-        throw std::runtime_error("Could not load image '" + inputFile + "': " + devilErrorMessage);
-    }
-
-    // Convert format
-    if (ilGetInteger(IL_IMAGE_FORMAT) != IL_RGBA
-        || ilGetInteger(IL_IMAGE_TYPE) != IL_UNSIGNED_BYTE)
-    {
-        if (!ilConvertImage(IL_RGBA, IL_UNSIGNED_BYTE))
-        {
-            ILint devilError = ilGetError();
-            std::string devilErrorMessage(iluErrorString(devilError));
-            throw std::runtime_error("Could not convert image '" + inputFile + "': " + devilErrorMessage);
-        }
-    }
-
-    ILubyte * imageData = ilGetData();
-    int const width = ilGetInteger(IL_IMAGE_WIDTH);
-    int const height = ilGetInteger(IL_IMAGE_HEIGHT);
+    RgbaImageData image = PngImageFileTools::LoadImageRgba(inputFile);
 
     //
     // Create set of colors to quantize to
@@ -87,16 +60,12 @@ void Quantizer::Quantize(
     // Quantize image
     //
 
-    for (int r = 0; r < height; ++r)
+    for (int r = 0; r < image.Size.height; ++r)
     {
-        size_t index = r * width * 4;
-
-        for (int c = 0; c < width; ++c, index += 4)
+        for (int c = 0; c < image.Size.width; ++c)
         {
-            vec3f imgColor = vec3f(
-                static_cast<float>(imageData[index]) / 255.0f,
-                static_cast<float>(imageData[index + 1]) / 255.0f,
-                static_cast<float>(imageData[index + 2]) / 255.0f);
+            rgbaColor & imgColor = image[{c, r}];
+            vec3f imgColorF = imgColor.toVec3f();
 
             std::optional<rgbColor> bestColor;
 
@@ -107,7 +76,7 @@ void Quantizer::Quantize(
                 float bestColorSquareDistance = std::numeric_limits<float>::max();
                 for (size_t gameColor = 0; gameColor < gameColors.size(); ++gameColor)
                 {
-                    float colorSquareDistance = (imgColor - gameColors[gameColor].first).squareLength();
+                    float colorSquareDistance = (imgColorF - gameColors[gameColor].first).squareLength();
                     if (colorSquareDistance < bestColorSquareDistance)
                     {
                         bestGameColorIndex = gameColor;
@@ -122,7 +91,7 @@ void Quantizer::Quantize(
             else
             {
                 // Assign a color only if not transparent
-                if (imageData[index + 3] != 0)
+                if (imgColor.a != 0)
                 {
                     bestColor = *targetFixedColor;
                 }
@@ -130,18 +99,12 @@ void Quantizer::Quantize(
 
             if (!!bestColor)
             {
-                imageData[index] = bestColor->r;
-                imageData[index + 1] = bestColor->g;
-                imageData[index + 2] = bestColor->b;
-                imageData[index + 3] = 255;
+                imgColor = rgbaColor(*bestColor, 255);
             }
             else
             {
                 // Full white
-                imageData[index] = PureWhite.r;
-                imageData[index + 1] = PureWhite.g;
-                imageData[index + 2] = PureWhite.b;
-                imageData[index + 3] = 255;
+                imgColor = rgbaColor(PureWhite, 255);
             }
         }
     }
@@ -151,11 +114,5 @@ void Quantizer::Quantize(
     // Save image
     //
 
-    ilEnable(IL_FILE_OVERWRITE);
-    if (!ilSave(IL_PNG, outputFile.c_str()))
-    {
-        ILint devilError = ilGetError();
-        std::string devilErrorMessage(iluErrorString(devilError));
-        throw std::runtime_error("Could not save image '" + outputFile + "': " + devilErrorMessage);
-    }
+    PngImageFileTools::SavePngImage(image, outputFile);
 }

@@ -99,34 +99,6 @@ git clone https://github.com/kazuho/picojson.git
 cd picojson
 git checkout v1.3.0
 ```
-## DevIL 1.8.0
-DevIL is a cross-platform image manipulation library. We'll need to clone it _and_ build it as a static library.
-### Cloning
-```
-cd ~/git
-git clone https://github.com/DentonW/DevIL
-cd DevIL
-git checkout v1.8.0
-```
-### Building
-Before we can build, we need to apply a patch to fix [an issue in DevIL with building static libraries](https://github.com/DentonW/DevIL/issues/95). Since DevIL seems pretty much dead, I couldn't get my patch to the repo and thus you'll be better off applying the `devil-issue-95.patch` patch - which you can find in the root of the Floating Sandbox repo - to your checkout:
-```
-cd ~/git/DevIL
-git apply devil-issue-95.patch
-```
-We are now ready to build DevIL in a folder named `build` under its checkout root.
-```
-cd ~/git/DevIL
-mkdir build
-cd build
-cmake -DCMAKE_BUILD_TYPE=Release -DIL_NO_TIF=1 -DIL_NO_JP2=1 -DIL_USE_DXTC_SQUISH=0 -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=~/fs_libs/DevIL ../DevIL 
-make install
-```
-After the build is complete and installed, you should see the following under your new `~/fs_libs/DevIL` directory:
-```
-drwxrwxr-x 3 gg gg 4096 mei 22 17:52 include/
-drwxrwxr-x 3 gg gg 4096 mei 22 17:52 lib/
-```
 ## WxWidgets 3.1.4
 Finally, we're gonna build _wxWidgets_, a cross-platform library for windowing and user interfaces. Floating Sandbox uses wxWidgets for the "administrative" UI of the simulator, such as the menu bars and the various dialogs for settings and preferences.
 ### Cloning

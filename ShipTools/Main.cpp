@@ -11,9 +11,6 @@
 
 #include <GameCore/Utils.h>
 
-#include <IL/il.h>
-#include <IL/ilu.h>
-
 #include <cassert>
 #include <iostream>
 #include <stdexcept>
@@ -30,10 +27,6 @@ void PrintUsage();
 
 int main(int argc, char ** argv)
 {
-    // Initialize DevIL
-    ilInit();
-    iluInit();
-
     if (argc == 1)
     {
         PrintUsage();

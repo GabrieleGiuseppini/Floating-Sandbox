@@ -67,7 +67,6 @@ I build this game with Visual Studio 2022 (thus with full C++ 17 support) on Win
 
 In order to build the game, you will need the following dependencies:
 - <a href="https://www.wxwidgets.org/">WxWidgets</a> (cross-platform GUI library) (v3.1.4)
-- <a href="http://openil.sourceforge.net/">DevIL</a> (cross-platform image manipulation library) (1.8.0)
 - <a href="https://www.sfml-dev.org/index.php">SFML</a> (cross-platform multimedia library) (2.5.1)
 - <a href="https://github.com/kazuho/picojson">picojson</a> (header-only JSON parser and serializer)
 - <a href="https://github.com/google/benchmark">Google Benchmark</a> (1.7.0)

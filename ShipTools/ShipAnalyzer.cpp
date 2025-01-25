@@ -6,13 +6,10 @@
 #include "ShipAnalyzer.h"
 
 #include <Game/GameParameters.h>
-#include <Game/ImageFileTools.h>
+#include <Game/PngImageFileTools.h>
 #include <Game/MaterialDatabase.h>
 
 #include <GameCore/Colors.h>
-
-#include <IL/il.h>
-#include <IL/ilu.h>
 
 #include <limits>
 #include <stdexcept>
@@ -23,7 +20,7 @@ ShipAnalyzer::AnalysisInfo ShipAnalyzer::Analyze(
     std::string const & materialsDir)
 {
     // Load image
-    auto image = ImageFileTools::LoadImageRgb(std::filesystem::path(inputFile));
+    auto image = PngImageFileTools::LoadImageRgb(std::filesystem::path(inputFile));
 
     float const halfWidth = static_cast<float>(image.Size.width) / 2.0f;
 

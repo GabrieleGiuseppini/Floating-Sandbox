@@ -179,7 +179,6 @@ source_group("Render" FILES ${RENDER_SOURCES})
 
 add_library (GameLib ${GAME_SOURCES} ${PHYSICS_SOURCES} ${RENDER_SOURCES})
 
-target_include_directories(GameLib PRIVATE ${IL_INCLUDE_DIR})
 target_include_directories(GameLib PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(GameLib PUBLIC ${LIBSIMDPP_INCLUDE_DIRS})
 target_include_directories(GameLib PUBLIC ${PICOJSON_INCLUDE_DIRS})
@@ -192,8 +191,5 @@ target_link_libraries (GameLib
 	${ZLIB_LIBRARY}
 	${JPEG_LIBRARY}
 	${PNG_LIBRARY}
-	${IL_LIBRARIES}
-	${ILU_LIBRARIES}
-	${ILUT_LIBRARIES}
 	${OPENGL_LIBRARIES}
 	${ADDITIONAL_LIBRARIES})

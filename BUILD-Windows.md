@@ -51,32 +51,6 @@ git clone https://github.com/kazuho/picojson.git
 cd picojson
 git checkout v1.3.0
 ```
-## DevIL 1.8.0
-DevIL is a cross-platform image manipulation library. We'll need to clone it _and_ build it as a static library.
-### Cloning
-```
-cd %SOURCE_ROOT%
-git clone https://github.com/DentonW/DevIL
-cd DevIL
-git checkout v1.8.0
-```
-### Building
-Before we can build, we need to apply a patch to fix [an issue in DevIL with building static libraries](https://github.com/DentonW/DevIL/issues/95). Since DevIL seems pretty much dead, I couldn't get my patch to the repo and thus you'll be better off applying the `devil-issue-95.patch` patch - which you can find in the root of the Floating Sandbox repo - to your checkout:
-```
-cd %SOURCE_ROOT%\DevIL
-git apply devil-issue-95.patch
-```
-We are now ready to generate the Visual Studio solution file as follows:
-```
-cd %BUILD_ROOT%
-mkdir DevIL-1.8.0
-cd DevIL-1.8.0
-cmake %SOURCE_ROOT%\DevIL\DevIL -D BUILD_SHARED_LIBS=OFF -D ZLIB_ROOT=%SDK_ROOT%\ZLib-1.2.11 -D JPEG_ROOT=%SDK_ROOT%\jpeg-9d -D PNG_ROOT=%SDK_ROOT%\LibPNG-1.6.37 -D IL_NO_TIF=1 -D IL_NO_JP2=1 -D CMAKE_POLICY_DEFAULT_CMP0012=NEW -D CMAKE_POLICY_DEFAULT_CMP0074=NEW -D CMAKE_LIBRARY_ARCHITECTURE=x64 -D CMAKE_INSTALL_PREFIX=%SDK_ROOT%\DevIL-1.8.0
-```
-Do not worry if you see errors about CMake not being able to find the TIFF, Jasper, or other image format libraries - it's only important that it finds the ZLIB, PNG, and JPEG libraries that you've built earlier.
-
-Open the `ImageLib` solution in Visual Studio, and make sure that the `C\C++ -> Code Generation -> Runtime Library` setting of the IL and ILU projects in the `Release` configuration is set to `Multi-threaded (/MT)`, as we want to statically link to the C runtime.
-Then select the `Release` configuration, and start a build for the `INSTALL` project. The output of this build will go into your new `%SDK_ROOT%\DevIL-1.8.0` directory.
 ## SFML 2.5.1
 SFML is a multi-media library. Floating Sandbox uses it mostly for sound support.
 ### Cloning
@@ -219,8 +193,6 @@ The output of this last command should look like this - after substituting obvio
 -- Found PNG: optimized;C:/Users/FSUser/source/SDK/LibPNG-1.6.37/lib/x64/libpng16_static.lib;debug;C:/Users/FSUser/source/SDK/LibPNG-1.6.37/lib/x64/libpng16_staticd.lib (found version "1.6.37")
 -- wxWidgets_ROOT:C:/Users/FSUser/source/SDK/wxWidgets-3.1.4
 -- Found wxWidgets: debug;C:/Users/FSUser/source/SDK/wxWidgets-3.1.4/lib/vc_x64_lib/wxbase31ud.lib;optimized;C:/Users/FSUser/source/SDK/wxWidgets-3.1.4/lib/vc_x64_lib/wxbase31u.lib;debug;C:/Users/FSUser/source/SDK/wxWidgets-3.1.4/lib/vc_x64_lib/wxmsw31ud_gl.lib;optimized;C:/Users/FSUser/source/SDK/wxWidgets-3.1.4/lib/vc_x64_lib/wxmsw31u_gl.lib;debug;C:/Users/FSUser/source/SDK/wxWidgets-3.1.4/lib/vc_x64_lib/wxmsw31ud_core.lib;optimized;C:/Users/FSUser/source/SDK/wxWidgets-3.1.4/lib/vc_x64_lib/wxmsw31u_core.lib;debug;C:/Users/FSUser/source/SDK/wxWidgets-3.1.4/lib/vc_x64_lib/wxmsw31ud_html.lib;optimized;C:/Users/FSUser/source/SDK/wxWidgets-3.1.4/lib/vc_x64_lib/wxmsw31u_html.lib;debug;C:/Users/FSUser/source/SDK/wxWidgets-3.1.4/lib/vc_x64_lib/wxmsw31ud_propgrid.lib;optimized;C:/Users/FSUser/source/SDK/wxWidgets-3.1.4/lib/vc_x64_lib/wxmsw31u_propgrid.lib;debug;C:/Users/FSUser/source/SDK/wxWidgets-3.1.4/lib/vc_x64_lib/wxregexud.lib;optimized;C:/Users/FSUser/source/SDK/wxWidgets-3.1.4/lib/vc_x64_lib/wxregexu.lib;opengl32;glu32;winmm;comctl32;oleacc;rpcrt4;shlwapi;version;wsock32
--- DevIL_ROOT_DIR:C:/Users/FSUser/source/SDK/DevIL-1.8.0
--- Found DevIL: optimized;C:/Users/FSUser/source/SDK/DevIL-1.8.0/Release/lib/DevIL.lib;debug;C:/Users/FSUser/source/SDK/DevIL-1.8.0/Debug/lib/DevIL.lib
 -- SFML_ROOT:C:/Users/FSUser/source/SDK/SFML-2.5.1/lib/cmake/SFML
 -- Found SFML 2.5.1 in C:/Users/FSUser/source/SDK/SFML-2.5.1/lib/cmake/SFML
 -- Found OpenGL: opengl32
