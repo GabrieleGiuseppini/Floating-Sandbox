@@ -6,609 +6,11 @@
 
 - Roadmap:
 
-	===========================
-
-	+ Before next release:
-		+ Invite BumBumBaby to beta server
-
-	+ Make branch (1.19.0.next)
-	+ Bump up minor
-	+ Reduce fish size
-
-	+ See AlexGuy crash/repair tool
-		X Play
-		+ Give it RelWithDebInfo/PDB
-		+ I load any ship, like for example Astyu's Ise, Agano or Akitsu Maru. I blow a hole in the hull through a simulated torpedo hit or magazine explosion, usually done with the RC bombs or heating tool.
-		  Then i use the repair tool. If held long enough, the game crashes.
-		  This happened even in 18.0.
-                  It happens in Astyu's ships.
-                  Specifically those with compartments and magazine cordite modelled in.
-                  I sent the .dmp file.
-		+ Credits (asked if "AlexGuy" works out)
-		+ changelist
-
-	+ Improve explosions:
-		+ Gfx radius
-			! Goal: predictably tied to real blast radius
-			+ ShipRenderContext uses empirically texture-determined radius multipliers to focus "core" fireball in frame
-			+ Ship::StartExplosion: also takes gfx radius offset for added spectacularity
-				+ Names: BlastRadius, RenderRadiusOffset
-				+ Passes to ShipRenderContext::Upload(radius==blast radius + offset)
-			+ ShipRenderContext::UploadExplosion: takes gfx offset
-				+ And no +13
-			+ Check all explosions
-				+ Hydrogen NPC
-		+ Bomb base force to constants
-		+ NPC blast force multiplier: local constant
-                + NPC blast radius multiplier: move to GameParameters as constant, and add adjustment
-			+ GameParameters constant
-			+ GameParameters adjustment
-                        + Might make constant slightly less?
-                        + SettingsDialog: under NPCs, "Blast TODO Adjust"
-		+ Explosion time
-			+ 1. Move constants to GameParameters, say attuned to sound
-		X Sounds
-			! Handler::OnCombustionExplosion
-				! SoundType::CombustionExplosion: combustionexplosion_1...4 + UW
-			! Handler::OnBombExplosion(bombType)
-				! SoundType::BombExplosion: bombexplosion_1...4 + UW
-		+ Tests:
-			+ Npcs: underwater sounds (not related with this work item)
-		+ Changelist
-			+ "Fine-tuned explosions' physics"
-	
-	+ Redo texture notifications - test size 64+32
-		+ All 5 textures
-		+ Make sure code takes sizes from files
-
-	+ See if can make a map of pointindex=>instance ID in ShipFactory instead of that vector
-		! Cur:
-			! idx: point index 2 idx; val: pointInfos2[p].ElectricalElementInstanceIdx
-			! usage:
-				! Make sure ElectricalPanel's ElectricalElementInstanceIndex exist
-				! Given pointElementIndex, get its ElectricalElementInstanceIndex
-
-	+ OpenGL:
-		X Flat
-			X Not enough varying's to even give a perf boost
-			X Not driven by ARB but by glsl language version
-		X Points: see if can make them round, see https://www.khronos.org/opengl/wiki/Fragment_Shader#Inputs
-			- Requires glEnable(0x8861) // GL_POINT_SPRITE
-				<enum value="0x8861" name="GL_POINT_SPRITE" group="TextureEnvTarget"/>
-				<enum value="0x8861" name="GL_POINT_SPRITE_ARB"/>
-			- Shader:
-				- Requires early discard (0.2)
-				- Requires own shader/#define
-					- Best to handle alpha as aearly as possible so can piggyback on existing early discard
-			X Not liked by kids
-		X GL_POLYGON_SMOOTH for land
-			X Doesn't seem to help
-
-
-	+ M2L to credits
-	+ See ShipBuilder on Linux
-		X '+' shortcut
-			+ Also @ FS
-		+ Maximization of frame
-			+ Try to do it in InitialAction
-	+ Explosion json attributes rearc
-		+ Materials structural:
-			+ Diesel Can, Gunpowder * Crate, * Tank: only used for NPCs: hence all explosive_* attributes rescaled so that we don't have scaling in code
-				+ Other than 0.5 when we want to do half
-		+ Remove 0.1 scale
-
-	+ Gunpowder keg
-
-	+ Clouds V3: with fantastic texture coords offset
-		+ First off, technical debt:
-			+ Do clouds as baked atlas
-			+ Do index-based rendering
-		+ Magic work:
-			+ See shader on shader toy: use cloud texture coords offset based on noise centered around 0.
-				+ But solve problem of going to other texture: need more room around textures?
-					+ Cannot clamp in shader: would still look awful, and nice to have long flanges
-		+ Noise needed:
-			+ Perlin-8,32,0.43 (different than land)
-				+ Move from WorldRenderContext to GlobalRenderContext
-					+ Basically move mLandNoiseTextureOpenGLHandle
-			+ Test:
-				+ Land noise
-				+ Clouds (old  noise)
-		+ Shader
-			+ Does amplitude need to depend on texture coords w/h?
-			+ Play with detail
-		+ Triage current cloud textures
-			+ In ShaderToy		
-		+ Randomize starting progress
-		+ Verify that the Perlin we're using is the same as on the desktop
-			+ Save image, before and after recalibrating
-		+ Tests:
-			+ Basic
-				+ Moonlight, Lamp
-			+ Detailed
-				+ Moonlight, Lamp
-			+ Storm
-		+ Test enlarging canvas of tight clouds
-		+ Test AdobeStock/Getty clouds
-			+ Need Illustrator
-			+ Cancel subscription
-				! By clicking "Agree and subscribe", you agree: After your trial ends, you will be charged € 32,76 (excl. VAT) monthly. Your subscription will automatically renew monthly until you cancel (price subject to change). Cancel before your trial ends and you won't be charged. Cancel anytime via Adobe Account or Customer Support. Cancel before Dec 10, 2024 to get a full refund. You also agree to the Terms of Use and the Subscription and Cancellation Terms.
-			+ Replace all texture clouds with these
-				+ Need to resize all though
-					! Was: 2048x2048
-				+ FIX: truncated frame in atlas
-					+ Redo algo
-					+ Test/Rebuild all atlases
-						! Old:
-							01:34:15.685398:Generic linear texture atlas size: (1024 x 512)
-							01:34:15.793748:Generic mipmapped texture atlas size: (4096 x 2048)
-							01:34:16.111068:Explosion texture atlas size: (4096 x 4096)
-							01:34:16.149235:NPC texture atlas size: (1024 x 1024)
-							01:34:16.219541:Cloud texture atlas size: (2048 x 2048)
-							01:34:16.257569:Fish texture atlas size: (1024 x 1024)
-							01:34:16.663246:Font texture atlas size: (512 x 512)
-						+ New:
-							01:35:20.540971:Generic linear texture atlas size: (2048 x 256) ==
-							01:35:20.894641:Generic mipmapped texture atlas size: (4096 x 2048) ==
-							02:20:17.073347:Explosion texture atlas size: (4096 x 4096) ==
-							02:20:17.100341:NPC texture atlas size: (512 x 1024)  !!!
-							02:20:17.285106:Cloud texture atlas size: (2048 x 2048) ==
-							01:35:22.061520:Fish texture atlas size: (1024 x 512) !!!
-							01:35:22.870568:Font texture atlas size: (512 x 512)  ===
-						+ Command-line 
-							+ Visually 
-							+ In-game
-						+ In-game (liner, mipmapped, fishes)
-							+ In-game
-					+ Cleanup
-					+ Unit tests
-					+ changelist
-				+ Test (visually) clouds
-
-		X Test cloud 8008 which is on desktop (replacing cloud_2 in Atlas which is a badly processed version)
-			X See if we have it in authoring already though
-			X It's doo dark ("rainy")
-		+ Test storm
-			+ See if can lower # of clouds
-		+ Changelist
-
-	X See if can use keys to pan along diagonals
-
-	+ Attract & Swirl on NPCs only
-		+ GameParams: Two bools: OnShip, On Npc
-		+ SettingsDialog: two checkboxes
-		+ Use @ World
-			+ Also make sure others are done the same: if() @ World
-			+ FIX: ghosting through walls
-				+ Then remove diagnostic LogMessage's
-			X See if then NPC actions need to be damped
-				X And see if damping can be done independently from OnShip
-
-	+ Ship engines should not work when not underwater (with setting)
-
-	+ Move Gripped tool: only part of the ship is "taken" and moved, rest stays like now and subject to physics
-		+ Test first if physics ok
-			+ Test with setting to 0 "WorldForcesReception" of particles in grip - smoothing to 1 on border
-				+ Use it at all forces - except spring
-					+ ApplyWorldForces
-						+ ApplyWorldParticleForces
-						+ ApplyWorldSurfaceForces
-					+ ApplyStaticPressureForces
-				+ Reset to 1.0 at each Update iteration end
-		+ If thru:
-			! Spec:
-				! Points:
-					! No WorldForcesReceptivity, but use of IntegrationFactorTimeCoefficient
-				! Tool:
-					! First mouse down sets center, following mouse move sets radius, release crystallizes radius
-					! Second mouse down starts move, release ends whole session
-				! Rendering: notification layer is first to use "uber" shader, with "uber" vertex buffers
-					! API: UploadGripCircle
-			+ Impl:
-				+ Points:
-					+ WorldForcesReceptivity:
-						+ Nuke from Points
-						+ Nuke all usages
-							+ Including end-of-update reset
-					+ SetForcesReceptivity
-						! Sticky, until NumMechIterations changes or FrozenCoefficient changes
-							+ Rename mFrozenCoefficientBuffer as IsPinnedBuffer
-				+ NotificationLayer: "uber notifications" shader, using uber vertex buffers
-					+ Vertex attributes struct contains union and type
-						X See if can use int type as varying
-						+ Struct has static factory methods
-						+ Check assembly
-					+ Simple vertex buffer
-						+ Auto-reset (not sticky)
-					+ UploadGripCircle(...)
-					+ Move other notifications
-						! Those that are NDC need to get world pos's, for easier vertex shader
-						+ PressureInjectionHalo
-						+ BlastToolHalo
-						+ FireExtinguisherSpray
-						+ WindSphere
-						+ HeatBlaster/Heat
-						+ HeatBlaster/Cool
-					+ Test shader on old Dell
-				+ Ship (...world...controller) interactions:
-					+ SetupMoveGrippedBy(display center, display radius) -> [world pos, world radius]
-						! Doesn't touch World
-						+ Controller: Notification
-					+ MoveGrippedBy
-						+ World:
-							+ No NPC's
-						+ Ship:
-							+ Not ephemeral
-							+ Sets all points' ForcesReceptivity (including 1.0)
-							+ See if TrimWorldBounds really needed
-								+ YES, needed (promise that next loop begins in-bounds)
-						+ Controller: Notification
-					+ RotateGrippedBy
-					+ EndMoveGrippedBy
-						+ Ship:
-							+ Not ephemeral
-							+ Resets ForcesReceptivity to 1.0
-				+ Tool:
-					+ State machine for radius-making and two-phase
-						! Become always move (evt. by zero) at UpdateSimulation, not only when there's a trajectory
-							+ i.e. make traj continuous
-						+ Two states, mutually exclusive:
-							+ State 1: GripBuildingState
-								+ ScreenCenterPosition
-							+ State 2: MovingState
-								+ WorldGripCenterPosition, WorldGripRadius
-								+ ...
-						+ Init: both nullopt; set cursor
-						+ Deinit: if any of two: EndMoveGrippedBy()
-						+ UpdateSim:
-							+ if state 1:
-								+ Setup (to draw)
-							+ else if state 2:
-								+ Do traj and move
-						+ MouseDown:
-							+ assert(!state1)
-							+ if state 2:
-								! Nop
-							+ else:
-								+ Begin state 1
-							+ set cursor
-						+ MouseUp:
-							+ if state 1:
-								+ Transition to state 2, using setup call
-							+ else if state 2:
-								+ end_session + reset  
-							+ else:
-								+ assert false
-							+ set cursor
-						+ MouseMove:
-							+ if state 2 && l down:
-								+ Update traj
-					+ Fix inertial velocity
-						+ GameController & World take intertial screen offset, World divides by dt
-						+ Augmented radius
-						+ It seems imparting velocity is beneficial, though there's runaway issue
-							+ Smoothing of quantities
-					+ Rotate
-						+ Should not require any additional state, center is grip's center and angle is new_traj_pos.y - cur_traj_pos.y
-					+ Cursors
-						+ Plain
-						+ With shift
-				+ Is velocity even used, now that we zero out integration factor?
-					+ Yes it is - we just multiply by dt there
-					! Note: this is the core of the "land" issue (impact with terrain): no impact takes place when velocity is zero
-				+ Test with Pinned
-					+ Make sure pins are enforced
-						+ Move
-						+ Rotate
-				+ Test with explosions
-				+ WaterVelocity/Inertia
-				+ MainFrame
-					+ Accelerator key: '4'
-					+ Icon
-				+ changelist
-
-	+ UI Preferences for auto-toggle to Exterior view
-
-	+ merge back into master
-
-	+ Fire-Extinguishing Bomb:		
-		! Name: Fire-Extinguishing Bomb
-		! Implemented as new ExplosionType; re-uses ship state machine
-			! Blast radius: very short
-			! Heat radius: very large
-		! Both gadget ("FireExtinguishingBomb") - remote-controlled, and NPC ("Fire-Extinguishing Bomb")
-
-		+ New GadgetType enum value - "FireExtinguishingBomb"
-		+ New ExplosionType enum value - "FireExtinguishing"
-		+ New material ExplosionType enum value - "FireExtinguishingExplosion"
-
-		+ Gadget ("FireExtinguishingBomb")
-			! Triggers: fire, breakage, remote detonation
-			+ Immediate explosion
-				+ What state machine do we need, if any?
-				+ Explosion: render radius should equal heat radius (i.e. extinguish radius), so calc RenderOffset so that BlastForceRadius+RenderOffset equals HeatRadius
-					+ Other values are massaged forms of GameParameters::BombXYZ params
-			+ Texture
-				+ Fire extinguisher tank, rolled as a sphere
-				+ Verify doesn't grow atlas
-					! old: 4096x2048
-					+ new: 4096x2048
-				+ Fix bleeding
-			+ MainFrame
-				+ Just toggle menu ("Toggle RC Fire-Extinguishing Bomb") - detonation done via Detonate RC Bombs
-				+ Tool
-					+ Cursor: fire_extinguishing_bomb_cursor
-					+ Icon @ SettingsDialog
-			+ Tool -> IGameController
-		+ Ship Explosion state machine
-			+ Physics, with if's on boolean flags calculated as function of ExplosionType
-				+ Make templated_on_flags inline helper
-				+ Extinguishing happens in heat radius, together with heat subtraction
-					+ Heat is already negative
-			+ Give type to World::OnBlast
-			+ RenderUpload
-			+ Tests:
-				+ Force blast on NPCs
-			+ Too much heat removed: ship goes to -30,000K!
-				! Just change temperature of particle directly to half ignition temperature
-				+ Heat removed from bomb: little (not that x10 multiplier) - or even zero
-				+ If fire-extinguishing: change temperature of particle directly to half ignition temperature
-				+ Test (on Ship only):
-					+ Explosion on non-burning point: verify temperature
-					+ Explosion on burning point: verify temperature and smothering
-		+ ShipRenderContext: uploaded via existing UploadExplosion
-			+ Switch case in UploadExplosion on ExplosionType
-			+ Explosions shader with variator (much like yellowing)
-				+code-ish from fire extinguisher
-		+ Sound (as BombType)
-			! Played by SoundsController::OnBombExplosion w/ new gadget bomb type
-			! Above- and Under-water
-			+ Sound files
-				+ 2xAbove
-				+ 2xUnderwater
-				+ Test volumes compared with other bombs
-			+ SoundController:
-				+ Sound type loading
-				+ OnBombExplosion: use new sound type
-
-		+ World::OnBlast:
-			+ Takes ExplosionType
-				+ Passes to Npcs		
-		+ Npcs::ApplyBlast:
-			+ Takes ExplosionType
-			+ Physics, with if's on boolean flags calculated as function of ExplosionType
-				+ Same we do above on ship
-				+ Test (on NPCs only):
-					+ Explosion of gadget bomb on non-burning NPC: verify temperature of particles
-					+ Explosion of gadget bomb on burning NPC: verify temperature of particles and smothering
-		+ New furniture NPC
-			! "Fire-Extinguishing Bomb"
-			+ StructuralMaterial 
-				+ StructuralMaterial for the NPC, w/new explosion type and appropriate 4x blast values
-					+ Remember: heat must be zero
-					+ Combustion & melting point to +INF
-			+ NPC json
-				+ -> Localization task
-			+ Test NPC per-se
-				+ Fall
-				+ Buoyancy
-			+ Trigger
-				! See if makes sense to have helpers for triggers
-				+ Impact
-				+ Itself on fire
-					+ oneNpcParticleExplosive must be set
-			+ Atlas frame (TimCan)
-				+ Change filename in npcs.json
-			+ Test (on both Ship and NPCs):
-				+ Impact
-					+ Explosion of new NPC on burning ship: verify temperature of particles and smothering
-					+ Explosion of new NPC on burning NPC: verify temperature of particles and smothering
-					+ Other two explosions:
-						+ Powder keg
-						+ Sodium
-				+ Itself on fire
-					+ Explosion of new NPC on burning ship: verify smothering
-					+ Explosion of new NPC on burning NPC: verify smothering
-					+ Other two explosions:
-						+ Powder keg
-						+ Sodium
-		+ Points::Combustion: honor new material explosion type
-			+ Explode if on fire == combustion point ignition
-			! Note: not testable
-				+ But test normal explosions are not broken
-
-		+ Tests:
-			+ UV mode
-				+ Bomb
-				+ NPC
-			+ NPCs panic for this bomb
-			+ Lightning (for currentSimulationTime)
-				+ From tool
-				+ From storm
-			+ Thanos snap (for currentSimulationTime)
-			+ Laser Ray (for currentSimulationTime)
-			+ Flames on old Dell (for max particles changes) -- verify 112
-
-		+ Merge into master
-		+ changelist
-
-	X See DKUZ bug
-
-	+ Tinies:
-		+ Furniture: redo proportions to human, according to screenshot; e.g. barrel: as tall as half human
-		+ Change the name "tophat" or "tophatlemons" to "Mia"
-			+ Credits
-			+ Ships
-		+ Storm: problem with clouds staying back when base speed is zero
-			+ Solution: do not slow down storm clouds to a halt (min velocity)
-		+ Look at Pac0master's density adjust
-		+ "The new scales look amazing, a few complaints is I feel the cabin desk is a tad bit small, not by very much but it feels a slight too short, 
-		  that and the chairs and the Small Table 1 and 2 seems too tiny to a pretty high degree, those are mainly my only complaints with the scale issues now, that and maybe the chests could be a smidge bigger too
-
-	+ Localization 1:
-		    "Diesel Can"
-		    "Gunpowder Keg"
-		    "Hydrogen Tank"
-		    "Sodium Tank"
-		    "TNT Crate"
-
-		    + IT
-		    + ES
-			+ mo
-			+ npcs
-		    + RU
-			+ mo
-			+ npcs
-		    + UK
-			+ mo
-			+ npcs
-
-	+ Localization 2:
-		+ Prepare pot's w/string extraction
-		+ IT
-			+ mo
-			+ npcs string table (fire ext. bomb)
-		+ ES
-			+ mo
-			+ npcs string table (fire ext. bomb)
-		+ RU
-			+ mo
-				+ Check also old ("move group", )
-				+ Not sure if complete
-			+ npcs string table (fire ext. bomb)
-		+ UK
-			+ mo
-			+ npcs string table (fire ext. bomb)
-
-
-	+ Do a pass for ships
-		+ email: Sean Dempsey
-		+ _TO_TEST:
-			+ MattyTitanic - ask credits if we take them
-				+ "Mattytitanic" 
-					+ Verify all when done
-				+ Prendi descrizione da foto
-			+ mia
-				+ Fix:
-					+ Author
-					+ Ship names
-			+ S.S. Commonwealth from P1X
-				+ Added and all
-				+ Asked if ok
-			+ Four new ships from email guy, in _TO_TRY
-				+ Ask credits if OK
-					+ LostLinerLegend
-						+ Credits
-						+ Ships
-			X LJKMagic - if ok: see if these are updates, and see credits
-
-	+ Send final beta
-		+ Changes:
-			- Made Small Tables, Cabin Desk, and Chests slightly bigger (@mia)
-			- Changed default for propellers above water (after all, too many ship were relying on engines working above water...)
-			- Added many more ships (from Mia, Mattytitanic, P1X, LostLinerLegend)
-			- Completed localization
-		+ Bump up version
-
-	+ Fix Pac0's regional settings issue
-		+ Work on fix
-			X Fix 1:
-				! Utils::LexicalCast: specialize for float, and do following:
-					iss.imbue(std::locale("")); // Use regional settings for decimal separator
-				! SliderControl::ValueToString: specialize for float, and do following:
-					ss.imbue(std::locale("")); // Use regional settings for decimal separator
-				+ Test default Windows
-				+ Test Pac0-ized Windows
-				X Text GTK
-			+ Fix 2: using wxWidgets' wxNumberFormatter
-				+ Test default Windows
-				+ Test Pac0-ized Windows
-				+ Test GTK
-				+ Remove logging
-				+ Verify completely undone previous commit
-			+ Move to helpers (wxHelpers), w/type traits
-			+ See if conversions done in other UI controls, & replace as needed
-				+ EditSpinBox
-					+ ShipBuilder: offset X/Y
-			+ Final tests:
-				+ Windows:
-					+ Default Windows
-						+ SettingsDialog: float, int
-						+ EditSpinBox
-					+ Pac0-ized Windows
-						+ SettingsDialog: float, int
-						+ EditSpinBox
-						+ Reset my settings
-				+ Linux:
-					+ SettingsDialog: float, int
-					+ EditSpinBox
-		+ Send beta
-		+ Bump up version
-		+ changelist
-
-	= Release template:
-		+ Branch is merged into master (if applicable)
-		+ Windows
-			+ MSI variable
-			+ Commit & push
-			+ 64-bit MSI
-				+ Cleanup Install
-				+ Build Release Install (after clean)
-				+ Sign two exes
-				+ Make MSI
-				+ Rename MSI
-				+ Sign MSI
-				+ Test upgrade from previous version
-			+ 32-bit MSI
-				+ Cleanup Install
-				+ Build Release Install (after clean)
-				+ Sign two exes
-				+ Make MSI
-				+ Rename MSI
-				+ Sign MSI
-				+ Test clean install
-					+ Verify it's a 32-bit process
-		+ Ubuntu
-			+ rm -rf ~/floating-sandbox
-			+ pull 
-			+ rm -rf build; mkdir build; cd build
-			+ cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
-			+ make install
-			+ Make tar ("cd ~/floating-sandbox && tar -cvf ../Floating-Sandbox-1.19.1-x64.tar . && cd -")
-			+ Zip tar
-			+ Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
-		- Send 3 installers to dev server for final smoke test
-		- Wait for test results
-		*******
-		- Cut tag on github
-		- Copy binaries to Prev
-		- Copy MSIs to scratch and GoogleDrive
-		- Upload packages to GameJolt
-			- Verify Windows Defender
-				- Report file as safe (https://gamejolt.com/privacy)
-			- Post
-Dear shipmates,
-It has been almost 2 months on the day after the 1.19.0 release, and here we are again with a new release!
-Today's 1.19.1 update smooths out some corners that were left a little rough with the NPC release. As a few examples, our little passengers are now a tad smarter and avoid falling into empty spaces, thermodynamics is a real thing with NPCs, and some proportions have been improved.
-On top of this, the update brings a whole new dimension to the game: explosive NPCs! These are the NPC counterparts to the bombs you've grown accustomed with, and they live _inside_ a ship and interact with its interiors. Sprinkle a few of them here and there, send your ship to a tumultuous ride, and see what happens when they start bouncing on walls and floors!
-Here's the full list of changes in this update:
-
-After this update we will finally take some time off the development of the "main" Floating Sandbox timeline in order to dive back heads down into the Android port. As you probably remember, we experimented with Android 1 year back [https://www.youtube.com/watch?v=mRtM61nlYrA], and results were encouraging. It is time now to set aside that proof-of-concept and restart the project like a pro. What I have in mind now is heavy restructuring of the source code of Floating Sandbox to allow for drop-in porting of the physics engine IN ITS ENTIRETY. This will surely save a LOT of time that would otherwise have to be spent with porting features one by one, leaving more time to the tasks that are instead really time-consuming: optimizing for phones (read: NEON intrinsics) _and_ designing a new user interface that makes playing Floating Sandbox on a phone a fulfilling user experience. Wish me good luck as it's going to be a long rabbit hole from now on :-)
-
-Talk to you soon,
-    Gabe
-
-
-
-
-		- www.floatingsandbox.com:
-			- Update current version in FAQ
-			- Wait a day or two, to exclude disastrous bugs
-			- Upload changes2.txt
-				- Test w/old FS
-		- Bump up version
-
 	=========================================================================
+
+	- Bump up version
+
+	- See why ships with international characters show up weird on some Windows'
 
 	- When tsunami starts you can see edges during the shaking
 
@@ -16485,882 +15887,1466 @@ IF WX:
 				+ Upload changes2.txt
 					+ Test w/old FS
 
-	+ 1.19.0:
-		+ Npcs - take 1
-			+ Merge into master
-			+ Changelist
++ 1.19.0:
+	+ Npcs - take 1
+		+ Merge into master
+		+ Changelist
 
-		+ Terrain tool: guide
-			+ SHIFT starts guide == line via NotificationLayer
-				+ While Shift is pressed, guide snaps to horizontal
-				+ Releasing shift removes snapping but guide mode is maintained
-			+ Terrain is then drawn only at left button up
-			+ Impl:
-				+ Completely separate state machine, guided by mEngagementData == enum mode, union of structs
-					+ When in guide mode, we reason in screen coords - so e.g. start point is fixed on screen
-					+ SimulationUpdate: talk to GameController iff in guide mode
-				+ NotificationLayer/Context
-			+ Display degrees
+	+ Terrain tool: guide
+		+ SHIFT starts guide == line via NotificationLayer
+			+ While Shift is pressed, guide snaps to horizontal
+			+ Releasing shift removes snapping but guide mode is maintained
+		+ Terrain is then drawn only at left button up
+		+ Impl:
+			+ Completely separate state machine, guided by mEngagementData == enum mode, union of structs
+				+ When in guide mode, we reason in screen coords - so e.g. start point is fixed on screen
+				+ SimulationUpdate: talk to GameController iff in guide mode
+			+ NotificationLayer/Context
+		+ Display degrees
+		+ Test:
+			+ Sound
+			+ Cursor
+			+ Error		
+		+ Add to changelist
+
+	+ "Random" button to load random ship
+		+ At LoadDialog
+
+	+ Npcs post-work:
+		= Work with TimCan for improvements
+			= Chests
+			= Square heads
+			= Detail (e.g. ears) with shades
+		+ Thinness: reduce
+			+ Force both extremes synthetically
+			+ Do something for head
+		+ Furniture spinning too much around mouse
+			+ Test WholeMesh (SHIFT)
+		+ Friction work
+			+ GameParameters::NpcFrictionAdjustment (for both, default 1)
+			+ NpcDatabase: "FrictionSurfaceAdjustment" - w/comment for surface
+				+ ParticleAttributes: member
+				+ Humans globals: feet & head
+				+ Per-furniture kind
+					+ For all particles
+				+ json
+			+ Npcs:
+				+ Func to calculate: in = material, surface adj, npc adj, global adj => float
+				+ Members at particles: kinetic+static adjustments ("TotalAdjustment")
+				+ At creation
+				+ At param changes
+					+ Separate loop: update particles'
+				+ Use at each friction calculation
+			+ SettingsDialog
+			+ Adjust furniture values
+				+ Dissect both s and k friction coeffs used
+				+ Cart: per-particle, wheels very low and rest very high
+			+ Test human values
+		+ Exclude tungsten block from group
+		+ Add random NPC
+			+ Menu: "Random" as first entry to both Human and Furniture
+			+ Npcs: refactor choice into function
+				+ Call from AddGroup
+			+ Tool and GameController --> Npcs::BeginAdd: SubKindId optional
+		+ Redo placement
+			+ Shouldn't impart all that velocity when leaving
+				! It's the seco'd following primary's new position and thus gaining that velocity
+				+ Plan:
+					+ Clamp V for those moved @ Move
+					+ Clamp V for those updated @ Update
+				X 2: move spring forcing _after_ update
+			+ Move NpcUpdate code to own helper
+			! Problem analysis:
+				! When we enter UpdateNpc for a non-achored particle, deltaPos already contains a humongous - albeit 
+			+ Fold auto-detection
+			+ Spring length maintenance: each vertex should also spar with anchor
 			+ Test:
-				+ Sound
-				+ Cursor
-				+ Error		
-			+ Add to changelist
+				+ WholeMesh
+			+ Cleanups
+				+ ClampPlacementVelocity to vec2f
+		+ MainFrame: first call to ReconciliateAddNpcSubItems will check both furniture and human
+			+ Need to only check the one kind whose tool is selected (if any)
+			+ See if Recon() may take ToolType as arg
 
-		+ "Random" button to load random ship
-			+ At LoadDialog
+	+ See optimization for OrthoMatrix @ ShipRenderContext
 
-		+ Npcs post-work:
-			= Work with TimCan for improvements
-				= Chests
-				= Square heads
-				= Detail (e.g. ears) with shades
-			+ Thinness: reduce
-				+ Force both extremes synthetically
-				+ Do something for head
-			+ Furniture spinning too much around mouse
-				+ Test WholeMesh (SHIFT)
-			+ Friction work
-				+ GameParameters::NpcFrictionAdjustment (for both, default 1)
-				+ NpcDatabase: "FrictionSurfaceAdjustment" - w/comment for surface
-					+ ParticleAttributes: member
-					+ Humans globals: feet & head
-					+ Per-furniture kind
-						+ For all particles
-					+ json
-				+ Npcs:
-					+ Func to calculate: in = material, surface adj, npc adj, global adj => float
-					+ Members at particles: kinetic+static adjustments ("TotalAdjustment")
-					+ At creation
-					+ At param changes
-						+ Separate loop: update particles'
-					+ Use at each friction calculation
-				+ SettingsDialog
-				+ Adjust furniture values
-					+ Dissect both s and k friction coeffs used
-					+ Cart: per-particle, wheels very low and rest very high
-				+ Test human values
-			+ Exclude tungsten block from group
-			+ Add random NPC
-				+ Menu: "Random" as first entry to both Human and Furniture
-				+ Npcs: refactor choice into function
-					+ Call from AddGroup
-				+ Tool and GameController --> Npcs::BeginAdd: SubKindId optional
-			+ Redo placement
-				+ Shouldn't impart all that velocity when leaving
-					! It's the seco'd following primary's new position and thus gaining that velocity
-					+ Plan:
-						+ Clamp V for those moved @ Move
-						+ Clamp V for those updated @ Update
-					X 2: move spring forcing _after_ update
-				+ Move NpcUpdate code to own helper
-				! Problem analysis:
-					! When we enter UpdateNpc for a non-achored particle, deltaPos already contains a humongous - albeit 
-				+ Fold auto-detection
-				+ Spring length maintenance: each vertex should also spar with anchor
-				+ Test:
-					+ WholeMesh
-				+ Cleanups
-					+ ClampPlacementVelocity to vec2f
-			+ MainFrame: first call to ReconciliateAddNpcSubItems will check both furniture and human
-				+ Need to only check the one kind whose tool is selected (if any)
-				+ See if Recon() may take ToolType as arg
+	+ Perlin noise on Land
+		+ Figure out first if can have single-float 2D texture: RED channel only?
+		+ Figure out current 2 noise textures vs texture unit
+		+ Noise.cpp -> Buffer<float>
+			+ Optimize: 74ms -> 44ms
+				+ 1 cell pos for each cell -> 32ms -> 30/31ms -> 28/30ms
+				+ Linearized 1 -> 24/25ms
+			+ Returns Buffer<float>
+				+ Move image-making into MainFrame, at MakeNoise()
+				+ 15/16ms
+		+ Arch:
+			+ WorldRenderContext:
+				+ Members:
+					+ Owns the Perlin noise OpenGL texture (handle)
+					+ uq_ptr<FloatBuffer> mLandNoiseToUpload
+				+ static uq_ptr<FloatBuffer> MakeLandNoise(RenderParameters)
+					+ Do
+				+ Initialize: nothing; render params will be dirty hence it will call ApplyLandNoiseChanges(renderParameters) which, if in HighQuality mode, will create land noise
+					+ Verify
+				+ New LandRenderDetailType, like OceanRenderDetailType
+					+ SettingsDialog
+					+ Use it to compare perf
+				+ ProcessParameterChanges:
+					+ If affected RenderParameters dirty || mLandNoiseToUpload:
+						+ ApplyLandNoiseChanges()
+				+ ApplyLandNoiseChanges:
+					+ Dealloc mLandNoise (if any)
+					+ If RenderMode is HighQuality:
+						+ If mLandNoiseToUpload is none: mLandNoiseToUpload = MakeLandNoise(RenderParameters) // Only place where we do "inline"
+						+ Alloc new mLandNoise OpenGL buffer and upload
+							+ Texture: one single float (see CloudShadows)
+						+ mLandNoiseToUpload.reset()
+				+ OnReset(RenderParameters)
+					+ Called by RenderContext::Reset() (synchronously but on render thread)
+					+ If HighQuality: mLandNoiseToUpload = MakeLandNoise(RenderParameters)
+				+ RenderDrawOceanFloor:
+					+ Choose which of four programs
+					+ If HighQuality: activate texture unit, bind texture
+				+ Apply view changes et al.
+					+ Apply to all (new) land shaders
+		+ Shader:
+			+ Split Texture and Flat in two (non-detailed, detailed) - unless already done
+			+ Use one or the other depending on HighQuality Rendering mode
+			+ Shader code
+				+ Experiments:
+					+ Only darken dark areas
+					+ Derivatives for fake "bumps"
+		+ Test:
+			+ Hiccup when changing render quality
+		+ Cleanup shader
+		+ Commit
+		+ Extras:
+			+ Try it on clouds as well:
+				+ Prototype: simply bind to texture @ CloudRender, and update shader
+				+ Adjust growth parameter: use time
+				X Test another noise
+				+ Cleanup code if want to keep it
+					+ Remove TextureCenterPos from vertex attribs
+					+ Cleanup shader
+		+ Merge into npcs_v1
 
-		+ See optimization for OrthoMatrix @ ShipRenderContext
+	+ AtlasBuilder: detect duplicates
+		+ New option
+		+ Use at NPC baking options
+		+ AtlasBuilder:
+			+ BuildSpecification:
+				+ Disallow option @ Regular
+				+ TextureLocationInfo contains additional vector with dupe info (FrameId of DB, FrameId original that this is a dupe of)
+			+ BuildAtlas:
+				+ Visit two vectors separately
+					+ Second visit searches (linearly...) in allAtlasFrameMetadata for FrameId original, clones, and adds
+		+ Unit tests
+		+ Test
+	
+	+ Remove too much logging from ShipLoadDialog
+	+ Merchandise link
+	+ Version on splash screen
 
-		+ Perlin noise on Land
-			+ Figure out first if can have single-float 2D texture: RED channel only?
-			+ Figure out current 2 noise textures vs texture unit
-			+ Noise.cpp -> Buffer<float>
-				+ Optimize: 74ms -> 44ms
-					+ 1 cell pos for each cell -> 32ms -> 30/31ms -> 28/30ms
-					+ Linearized 1 -> 24/25ms
-				+ Returns Buffer<float>
-					+ Move image-making into MainFrame, at MakeNoise()
-					+ 15/16ms
-			+ Arch:
-				+ WorldRenderContext:
-					+ Members:
-						+ Owns the Perlin noise OpenGL texture (handle)
-						+ uq_ptr<FloatBuffer> mLandNoiseToUpload
-					+ static uq_ptr<FloatBuffer> MakeLandNoise(RenderParameters)
-						+ Do
-					+ Initialize: nothing; render params will be dirty hence it will call ApplyLandNoiseChanges(renderParameters) which, if in HighQuality mode, will create land noise
-						+ Verify
-					+ New LandRenderDetailType, like OceanRenderDetailType
+	+ Send build for testing
+	
+	+ Bump up version
+	+ MaxNpcs=2048
+
+	+ Fix all 2022 copyright years (big #define?), and add g2-labs to:
+		+ Credits
+		+ Resource files x 2
+
+	+ New tool: lamp
+		! Gist: 
+			! Affects DepthDarkening and AmbientLight shading
+			! Param in all shaders using the above: vec4 paramLampAttributes: position (vec2 in frag space), radius (float), toggle (float, 0/1)
+			! Shaders call lamp.glsinc::CalculateLampFactor(frag coords, param) -> float, and then pass float to DepthDarkening and/or AmbientLight funcs/local calculations
+		+ Impl:
+			+ ShaderManager: SetParameterInAllShaders<Param>(value)
+				+ @ ShaderManager initiation: build vector<param #, vector<shaders>>
+			+ lamp.glslinc:
+				+ param declaration (vec4)
+				+ CalculateLampFactor
+					+ Two smoothsteps				
+			+ Depth darkening rearc first:
+				+ Create common.glslinc
+					+ Copy to here CalculateOceanDepthDarkeningFactor from ocean.glslinc, but change to return darkening strength float
+					+ Copy to here Dither from ocean.glslinc
+				+ ocean.glslinc:
+					+ Lose ApplyDepthDarkening
+					+ Lose ApplyDepthDarkeningWithDither
+				+ fishes.glslinc:
+					+ Include common.glslinc
+					+ Use CalculateOceanDepthDarkeningFactor and do color mix explicitly
+				+ land.glslinc:
+					+ Lose ApplyDepthDarkening
+				+ land_flat.glslinc:
+					+ Include common.glslinc
+					+ Use CalculateOceanDepthDarkeningFactor and do color mix explicitly
+				+ land_texture.glslinc:
+					+ Include common.glslinc
+					+ Use CalculateOceanDepthDarkeningFactor and do color mix explicitly
+				+ ocean_depth_basic.glsl, ocean_depth_detailed.glslinc:
+					+ Include common.glslinc
+					+ Use CalculateOceanDepthDarkeningFactor and do color mix explicitly (doing gradient)
+					+ Use ApplyDither
+				+ ocean_flat_detailed.glslinc:
+					+ Include common.glslinc
+					+ Use CalculateOceanDepthDarkeningFactor and do color mix explicitly
+					+ Use ApplyDither
+				+ ocean_texture_basic.glsl, ocean_texture_detailed.glsl
+					+ Include common.glslinc
+					+ Use CalculateOceanDepthDarkeningFactor and do color mix explicitly
+				+ Test
+			+ All affected shaders:
+				! Include lamp_tool.glslinc
+				! Call CalculateLampFactor and use lamp factor with:
+					! Result of ApplyOceanDepthDarkening
+					! AmbientLight calculations
+				+ Do at:
+					+ Land:
+						+ land_flat.glslinc
+						+ land_texture.glslinc
+					+ Fishes:
+						+ fishes.glslinc
+					+ Ocean:
+						+ ocean_depth{basic,detailed}
+						+ ocean_flat_basic
+						+ ocean_flat_detailed
+						+ ocean_texture_basic
+						+ ocean_texture_detailed
+					+ clouds
+					+ Address ocean shader slowdown:
+						! Old: 4.62-4.64
+						! New: 5.9-6.05-6.06 (w/out clouds: 5.4-5.5)
+						! Lamp tool off: 5.34
+						+ Try lamp w/d division: 6.1-6.2
+						X Try all inline calls: 5.9-6.0 
+						X glsl optimizer
+					+ generic_mipmapped_textures_ndc
+					+ rain
+					+ ship_decay
+					+ ship_generic_mipmapped_textures
+					+ ship_internal_pressure
+					+ ship_strength
+					+ ship_element
+					+ ship_npcs_texture
+					X world_border
+				+ Make clouds basic
+					+ SettingsDialog setting
+					+ Calibration
+					+ Redo old Dell test
+						+ Old FS: 13.6
+						+ New FS before work: 17.8
+						+ New FS after work: 16.5/16.6
+
+				+ Test with depth darkening also @ ship
+					+ Add ship sensitivity
+						+ Both params SetinAllShaders
 						+ SettingsDialog
-						+ Use it to compare perf
-					+ ProcessParameterChanges:
-						+ If affected RenderParameters dirty || mLandNoiseToUpload:
-							+ ApplyLandNoiseChanges()
-					+ ApplyLandNoiseChanges:
-						+ Dealloc mLandNoise (if any)
-						+ If RenderMode is HighQuality:
-							+ If mLandNoiseToUpload is none: mLandNoiseToUpload = MakeLandNoise(RenderParameters) // Only place where we do "inline"
-							+ Alloc new mLandNoise OpenGL buffer and upload
-								+ Texture: one single float (see CloudShadows)
-							+ mLandNoiseToUpload.reset()
-					+ OnReset(RenderParameters)
-						+ Called by RenderContext::Reset() (synchronously but on render thread)
-						+ If HighQuality: mLandNoiseToUpload = MakeLandNoise(RenderParameters)
-					+ RenderDrawOceanFloor:
-						+ Choose which of four programs
-						+ If HighQuality: activate texture unit, bind texture
-					+ Apply view changes et al.
-						+ Apply to all (new) land shaders
-			+ Shader:
-				+ Split Texture and Flat in two (non-detailed, detailed) - unless already done
-				+ Use one or the other depending on HighQuality Rendering mode
-				+ Shader code
-					+ Experiments:
-						+ Only darken dark areas
-						+ Derivatives for fake "bumps"
-			+ Test:
-				+ Hiccup when changing render quality
-			+ Cleanup shader
-			+ Commit
-			+ Extras:
-				+ Try it on clouds as well:
-					+ Prototype: simply bind to texture @ CloudRender, and update shader
-					+ Adjust growth parameter: use time
-					X Test another noise
-					+ Cleanup code if want to keep it
-						+ Remove TextureCenterPos from vertex attribs
-						+ Cleanup shader
-			+ Merge into npcs_v1
-
-		+ AtlasBuilder: detect duplicates
-			+ New option
-			+ Use at NPC baking options
-			+ AtlasBuilder:
-				+ BuildSpecification:
-					+ Disallow option @ Regular
-					+ TextureLocationInfo contains additional vector with dupe info (FrameId of DB, FrameId original that this is a dupe of)
-				+ BuildAtlas:
-					+ Visit two vectors separately
-						+ Second visit searches (linearly...) in allAtlasFrameMetadata for FrameId original, clones, and adds
-			+ Unit tests
-			+ Test
-		
-		+ Remove too much logging from ShipLoadDialog
-		+ Merchandise link
-		+ Version on splash screen
-
-		+ Send build for testing
-		
-		+ Bump up version
-		+ MaxNpcs=2048
-
-		+ Fix all 2022 copyright years (big #define?), and add g2-labs to:
-			+ Credits
-			+ Resource files x 2
-
-		+ New tool: lamp
-			! Gist: 
-				! Affects DepthDarkening and AmbientLight shading
-				! Param in all shaders using the above: vec4 paramLampAttributes: position (vec2 in frag space), radius (float), toggle (float, 0/1)
-				! Shaders call lamp.glsinc::CalculateLampFactor(frag coords, param) -> float, and then pass float to DepthDarkening and/or AmbientLight funcs/local calculations
-			+ Impl:
-				+ ShaderManager: SetParameterInAllShaders<Param>(value)
-					+ @ ShaderManager initiation: build vector<param #, vector<shaders>>
-				+ lamp.glslinc:
-					+ param declaration (vec4)
-					+ CalculateLampFactor
-						+ Two smoothsteps				
-				+ Depth darkening rearc first:
-					+ Create common.glslinc
-						+ Copy to here CalculateOceanDepthDarkeningFactor from ocean.glslinc, but change to return darkening strength float
-						+ Copy to here Dither from ocean.glslinc
-					+ ocean.glslinc:
-						+ Lose ApplyDepthDarkening
-						+ Lose ApplyDepthDarkeningWithDither
-					+ fishes.glslinc:
-						+ Include common.glslinc
-						+ Use CalculateOceanDepthDarkeningFactor and do color mix explicitly
-					+ land.glslinc:
-						+ Lose ApplyDepthDarkening
-					+ land_flat.glslinc:
-						+ Include common.glslinc
-						+ Use CalculateOceanDepthDarkeningFactor and do color mix explicitly
-					+ land_texture.glslinc:
-						+ Include common.glslinc
-						+ Use CalculateOceanDepthDarkeningFactor and do color mix explicitly
-					+ ocean_depth_basic.glsl, ocean_depth_detailed.glslinc:
-						+ Include common.glslinc
-						+ Use CalculateOceanDepthDarkeningFactor and do color mix explicitly (doing gradient)
-						+ Use ApplyDither
-					+ ocean_flat_detailed.glslinc:
-						+ Include common.glslinc
-						+ Use CalculateOceanDepthDarkeningFactor and do color mix explicitly
-						+ Use ApplyDither
-					+ ocean_texture_basic.glsl, ocean_texture_detailed.glsl
-						+ Include common.glslinc
-						+ Use CalculateOceanDepthDarkeningFactor and do color mix explicitly
-					+ Test
-				+ All affected shaders:
-					! Include lamp_tool.glslinc
-					! Call CalculateLampFactor and use lamp factor with:
-						! Result of ApplyOceanDepthDarkening
-						! AmbientLight calculations
-					+ Do at:
-						+ Land:
-							+ land_flat.glslinc
-							+ land_texture.glslinc
-						+ Fishes:
-							+ fishes.glslinc
-						+ Ocean:
-							+ ocean_depth{basic,detailed}
-							+ ocean_flat_basic
-							+ ocean_flat_detailed
-							+ ocean_texture_basic
-							+ ocean_texture_detailed
-						+ clouds
-						+ Address ocean shader slowdown:
-							! Old: 4.62-4.64
-							! New: 5.9-6.05-6.06 (w/out clouds: 5.4-5.5)
-							! Lamp tool off: 5.34
-							+ Try lamp w/d division: 6.1-6.2
-							X Try all inline calls: 5.9-6.0 
-							X glsl optimizer
-						+ generic_mipmapped_textures_ndc
-						+ rain
-						+ ship_decay
-						+ ship_generic_mipmapped_textures
-						+ ship_internal_pressure
-						+ ship_strength
+					+ Use it as feature switch to control perf loss
+						= Calibration sets it off
+					+ Shaders:
 						+ ship_element
-						+ ship_npcs_texture
-						X world_border
-					+ Make clouds basic
-						+ SettingsDialog setting
-						+ Calibration
-						+ Redo old Dell test
-							+ Old FS: 13.6
-							+ New FS before work: 17.8
-							+ New FS after work: 16.5/16.6
+						+ ship_generic_mipmapped_textures
+							+ Make sure works on air bubbles
+						+ ship_npcs
+					+ Test perf on old dell - 31.2
+				+ Optim's:
+					+ Switch on toggle
+						+ Test first: 
+							+ 1. Hack test on old Dell
+								+ Result: 16.5 -> 14.2
+							+ 2. Hack test on new Dell
+								+ Result: 3.95 -> 3.6
+						+ Do in func
+					
+					X Try with depth darkening: subst exp with approximating quadratic
+						- -1/(40 * 40)*x*x - 1/20*x
+							- Valid from 0 until -40
+						- Test w/full ocean:
+							- New dell: 5.5 -> 5.4, but curve is not right
 
-					+ Test with depth darkening also @ ship
-						+ Add ship sensitivity
-							+ Both params SetinAllShaders
-							+ SettingsDialog
-						+ Use it as feature switch to control perf loss
-							= Calibration sets it off
-						+ Shaders:
-							+ ship_element
-							+ ship_generic_mipmapped_textures
-								+ Make sure works on air bubbles
-							+ ship_npcs
-						+ Test perf on old dell - 31.2
-					+ Optim's:
-						+ Switch on toggle
-							+ Test first: 
-								+ 1. Hack test on old Dell
-									+ Result: 16.5 -> 14.2
-								+ 2. Hack test on new Dell
-									+ Result: 3.95 -> 3.6
-							+ Do in func
-						
-						X Try with depth darkening: subst exp with approximating quadratic
-							- -1/(40 * 40)*x*x - 1/20*x
-								- Valid from 0 until -40
-							- Test w/full ocean:
-								- New dell: 5.5 -> 5.4, but curve is not right
-
-				+ Tool:
-					+ Icon & cursors
-						+ lamp_cursor_up
-						+ Set anchor coords
-					+ MainFrame menu
-					+ OnMouseDown / OnMouseMove(w/left down):
-						+ Calc radius (screen fraction) as function of SHIFT
-						+ GameController::SetLampAt(screen coords, radius screen fraction)
-							+ -> RenderContext::SetLamp(pos in display logical coords, radius in screen fraction)
-								+ Calc both in physical coords (coords: add tx method to ViewModel, LogToPhys; radius: based off canvas physical size)
-								+ mLampToSet (opt vec4f) = vec4f(...)
-							+ -> ScareFishes(world, world) 
-					+ OnMouseUp:
-						+ GameController::ResetLamp()
-							+ -> RenderContext::ResetLamp()
-								+ mLampToSet = vec4f(...off)					
-				+ RenderContext:
-					+ Draw():
-						+ Inside render thread - taking copy of mLampToSet:
-							+ if lampToSet:
-								+ SetParameterInAllShaders(vec4)
-						+ mLampToSet.reset()
-			+ Cleanup:
-				+ RenderContext::cctor(): mLampToSet initialization
-			+ Test:
-				+ Scare fishes
-				+ Test rendering time delta - before-code and after-code
-					! NOTE: NUMBERS BELOW ARE OBSOLETE - WE NOW SHORT_CIRCUIT LAMP
-					+ On Dell:
-						+ Prev: 14.4
-						+ New: 18.1
-					+ On new:
-						+ Prev: 3.20
-						+ New: 3.80-3.90
-			
-			+ Changelist
-
-		+ Redo notifications' EphemeralText: RollingText
-
-		+ Preferences setting to turn ON auto-focus on spawn
-			+ Which is OFF by default
-			+ PreferencedDialog and PreferencesManager
-		+ Auto-placing:
-			+ Overcome bias in auto-placing NPCs
-			+ An option to do auto-placement constrained in visible world view
-		+ Update Help with NPCs
-		+ NPC count limit:
-			"I suggest, a user defined limit between 1-9999 and keep it by default at 1000. This way, people can change it however they want and 9999 seems more than enough - In "Preferences" would be ok"
-			+ GameParameters has it as "movable" param
-				+ Default: 1024
-				+ Min: 1024
-				+ Max: 8192
-			+ Used at Npcs instantiation
-				+ Npcs() stores own copy of GameParameters at instantiation time, and uses that one from that moment onwards
-		+ Re-check placement: why not happening on floors?
-			+ FIX: floor with nothing on other side is trumped by floor with a triangle on other side
-		+ Slider/Core fixes
-			+ SliderCore changes
-				+ FixedSetSliderCore
-				+ LinearSliderCore
-				+ IntegralLinearSliderCore
-				+ ExponentialSliderCore
-			+ Slider changes
-			+ Test:
-				+ FixedSetSliderCore
-				+ LinearSliderCore
-				+ IntegralLinearSliderCore
-				+ ExponentialSliderCore
-				+ All (default) values reproducible
-					+ Mech + Term
-					+ Water...
-					+ Wind and Waves
-					+ Air and Sky
-					+ ...Fishes
-					+ Heat flow
-					+ ...
-					+ ...
-					+ Rendering
-						+ Darkening rate
-					+ Max threads: 
-						+ inter-tick
-							+ IntegralLinearSliderCore: min/max w/actual range
-							+ Test cases
-						+ Test # of threads when it's only one
-							+ Slider: disable self
-							+ All cores: assert/do right things
-								+ Exponential
-								+ FixedTick
-								+ IntegralLinear
-								+ Linear
-								+ Test cases
-		+ Settings:
-			+ PreferencesManager/Dialog:
-				+ NpcCountLimit
-					+ FixedSetSliderCore, with ::FromPowerOfTwos
-						+ UnitTests
-					+ Warning icon
-					+ Requires reset
-						+ Reset dirty flag w/question
-				+ NpcsPerGroup
-					+ Use by Npcs::AddGroup
-			+ Tests:
-				+ NpcsPerGroup
-				+ MaxNpcs
-					+ hitting NPC limit
-				+ Pan speed et al
-
-		+ Fix: npcs burn under (ship) water
+			+ Tool:
+				+ Icon & cursors
+					+ lamp_cursor_up
+					+ Set anchor coords
+				+ MainFrame menu
+				+ OnMouseDown / OnMouseMove(w/left down):
+					+ Calc radius (screen fraction) as function of SHIFT
+					+ GameController::SetLampAt(screen coords, radius screen fraction)
+						+ -> RenderContext::SetLamp(pos in display logical coords, radius in screen fraction)
+							+ Calc both in physical coords (coords: add tx method to ViewModel, LogToPhys; radius: based off canvas physical size)
+							+ mLampToSet (opt vec4f) = vec4f(...)
+						+ -> ScareFishes(world, world) 
+				+ OnMouseUp:
+					+ GameController::ResetLamp()
+						+ -> RenderContext::ResetLamp()
+							+ mLampToSet = vec4f(...off)					
+			+ RenderContext:
+				+ Draw():
+					+ Inside render thread - taking copy of mLampToSet:
+						+ if lampToSet:
+							+ SetParameterInAllShaders(vec4)
+					+ mLampToSet.reset()
+		+ Cleanup:
+			+ RenderContext::cctor(): mLampToSet initialization
+		+ Test:
+			+ Scare fishes
+			+ Test rendering time delta - before-code and after-code
+				! NOTE: NUMBERS BELOW ARE OBSOLETE - WE NOW SHORT_CIRCUIT LAMP
+				+ On Dell:
+					+ Prev: 14.4
+					+ New: 18.1
+				+ On new:
+					+ Prev: 3.20
+					+ New: 3.80-3.90
 		
-		+ Quad rendering with indices
-			+ Sharing VBOs (for indices) in VAOs: 
-				! https://computergraphics.stackexchange.com/questions/4623/multiple-vao-share-a-vbo
-					! Binding the (GL_ELEMENT_ARRAY_BUFFER) buffer ties it to the currently bound VAO
-				! https://stackoverflow.com/questions/23542355/using-a-vertex-buffer-in-two-different-vertex-array-objects
-					! You can bind the ELEMENT_ARRAY_BUFFER in the setup as well. That binding is part of the VAO state
-				+ Idea: one single "TriangleQuadElementArrayVBO" VBO for all render contexts, created and initialized in GlobalRenderContext, and passed
-				  to all child contextes via cctor - as non-const &
-					+ New class in OpenGL lib: TriangleQuadElementArrayVBO
-						+ Wraps VBO (private) and local buffer (BoundedVector, private)
-							+ VBO created in static factory (read below, instance of TriangleQuadElementArrayVBO is deferred-init'd as uq_ptr)
-						+ Exposes void ensure_size(# of quads)
-							+ If # of quads > current: enlarge & populate local buffer, flag as dirty
-							+ Starts empty
-						+ static Create() -> uq_ptr
-							+ Creates VBO
-						+ Exposes IsDirty()
-						+ Exposes Bind()
-						+ Exposes Upload()
-							+ Binds and uploads
-					+ Copy from BaryLab
-					+ One single instance owned by GlobalRenderContext, as uq_ptr (w/deferred creation via static Create())
-						+ At GlobalRenderContext::cctor() (verify doable)
-					+ Accessed by child contextes via GlobalRenderContext
-					+ GlobalContext does:
-						+ @ Own setup: create it - via static Create() -> uq_ptr -> member
-						+ @RenderPrepare: if TriangleQuadElementArrayVBO.IsDirty: Upload()
-					+ Child contextes do:	
-						+  @ VAO Setups: Bind() (though pointless because of Intel bug)
-						+ Own Upload(): ensure_size(# of quads)
-						+ Own RenderDraw: Bind() (because of Intel bug)
-			+ Test with bubbles
-				+ Prepare baseline with old dell and new dell
-				+ Do
-				+ New Dell: 
-					+ Before: upload=0.26/0.29 render=6.2/6.3/6.4 @ z=0.5 w/no ship
-					+ After: upload=0.24/0.25/0.26 render=6.2/6.3
-				+ Old Dell: 
-					+ Before: upload=1.5/1.6 render=14.9/15.1 - 17.9/18.7
-					+ After: upload=1.2/1.3 render=14.0 - 18.3
-			+ If works, other candidates:
-				+ Text (NotificationContext)
-				+ Flames
-				+ Clouds
-				+ Generic textures
-				+ Fishes
+		+ Changelist
 
-		+ Flames shader:
-			! fract is always positive
-			+ Dead center clamping is wrong - gets multiplier by tile size
-				+ Try: incorporate it in AtlasTileSize, in shader
-				+ If ok: get rid of param and adjust AtlasTileSize
+	+ Redo notifications' EphemeralText: RollingText
+
+	+ Preferences setting to turn ON auto-focus on spawn
+		+ Which is OFF by default
+		+ PreferencedDialog and PreferencesManager
+	+ Auto-placing:
+		+ Overcome bias in auto-placing NPCs
+		+ An option to do auto-placement constrained in visible world view
+	+ Update Help with NPCs
+	+ NPC count limit:
+		"I suggest, a user defined limit between 1-9999 and keep it by default at 1000. This way, people can change it however they want and 9999 seems more than enough - In "Preferences" would be ok"
+		+ GameParameters has it as "movable" param
+			+ Default: 1024
+			+ Min: 1024
+			+ Max: 8192
+		+ Used at Npcs instantiation
+			+ Npcs() stores own copy of GameParameters at instantiation time, and uses that one from that moment onwards
+	+ Re-check placement: why not happening on floors?
+		+ FIX: floor with nothing on other side is trumped by floor with a triangle on other side
+	+ Slider/Core fixes
+		+ SliderCore changes
+			+ FixedSetSliderCore
+			+ LinearSliderCore
+			+ IntegralLinearSliderCore
+			+ ExponentialSliderCore
+		+ Slider changes
+		+ Test:
+			+ FixedSetSliderCore
+			+ LinearSliderCore
+			+ IntegralLinearSliderCore
+			+ ExponentialSliderCore
+			+ All (default) values reproducible
+				+ Mech + Term
+				+ Water...
+				+ Wind and Waves
+				+ Air and Sky
+				+ ...Fishes
+				+ Heat flow
+				+ ...
+				+ ...
+				+ Rendering
+					+ Darkening rate
+				+ Max threads: 
+					+ inter-tick
+						+ IntegralLinearSliderCore: min/max w/actual range
+						+ Test cases
+					+ Test # of threads when it's only one
+						+ Slider: disable self
+						+ All cores: assert/do right things
+							+ Exponential
+							+ FixedTick
+							+ IntegralLinear
+							+ Linear
+							+ Test cases
+	+ Settings:
+		+ PreferencesManager/Dialog:
+			+ NpcCountLimit
+				+ FixedSetSliderCore, with ::FromPowerOfTwos
+					+ UnitTests
+				+ Warning icon
+				+ Requires reset
+					+ Reset dirty flag w/question
+			+ NpcsPerGroup
+				+ Use by Npcs::AddGroup
+		+ Tests:
+			+ NpcsPerGroup
+			+ MaxNpcs
+				+ hitting NPC limit
+			+ Pan speed et al
+
+	+ Fix: npcs burn under (ship) water
+	
+	+ Quad rendering with indices
+		+ Sharing VBOs (for indices) in VAOs: 
+			! https://computergraphics.stackexchange.com/questions/4623/multiple-vao-share-a-vbo
+				! Binding the (GL_ELEMENT_ARRAY_BUFFER) buffer ties it to the currently bound VAO
+			! https://stackoverflow.com/questions/23542355/using-a-vertex-buffer-in-two-different-vertex-array-objects
+				! You can bind the ELEMENT_ARRAY_BUFFER in the setup as well. That binding is part of the VAO state
+			+ Idea: one single "TriangleQuadElementArrayVBO" VBO for all render contexts, created and initialized in GlobalRenderContext, and passed
+			  to all child contextes via cctor - as non-const &
+				+ New class in OpenGL lib: TriangleQuadElementArrayVBO
+					+ Wraps VBO (private) and local buffer (BoundedVector, private)
+						+ VBO created in static factory (read below, instance of TriangleQuadElementArrayVBO is deferred-init'd as uq_ptr)
+					+ Exposes void ensure_size(# of quads)
+						+ If # of quads > current: enlarge & populate local buffer, flag as dirty
+						+ Starts empty
+					+ static Create() -> uq_ptr
+						+ Creates VBO
+					+ Exposes IsDirty()
+					+ Exposes Bind()
+					+ Exposes Upload()
+						+ Binds and uploads
+				+ Copy from BaryLab
+				+ One single instance owned by GlobalRenderContext, as uq_ptr (w/deferred creation via static Create())
+					+ At GlobalRenderContext::cctor() (verify doable)
+				+ Accessed by child contextes via GlobalRenderContext
+				+ GlobalContext does:
+					+ @ Own setup: create it - via static Create() -> uq_ptr -> member
+					+ @RenderPrepare: if TriangleQuadElementArrayVBO.IsDirty: Upload()
+				+ Child contextes do:	
+					+  @ VAO Setups: Bind() (though pointless because of Intel bug)
+					+ Own Upload(): ensure_size(# of quads)
+					+ Own RenderDraw: Bind() (because of Intel bug)
+		+ Test with bubbles
+			+ Prepare baseline with old dell and new dell
+			+ Do
+			+ New Dell: 
+				+ Before: upload=0.26/0.29 render=6.2/6.3/6.4 @ z=0.5 w/no ship
+				+ After: upload=0.24/0.25/0.26 render=6.2/6.3
+			+ Old Dell: 
+				+ Before: upload=1.5/1.6 render=14.9/15.1 - 17.9/18.7
+				+ After: upload=1.2/1.3 render=14.0 - 18.3
+		+ If works, other candidates:
+			+ Text (NotificationContext)
+			+ Flames
+			+ Clouds
+			+ Generic textures
+			+ Fishes
+
+	+ Flames shader:
+		! fract is always positive
+		+ Dead center clamping is wrong - gets multiplier by tile size
+			+ Try: incorporate it in AtlasTileSize, in shader
+			+ If ok: get rid of param and adjust AtlasTileSize
+				+ Simplify shader
+				+ Comments for dead center being included
+		+ Check why texture is truncated above (to test: set alpha = sampled texture alpha)
+			! Shadertoy
+			! Observations:
+				! Neighbor, full texture (512x128): this repeats with zero artifacts:
+				    c = vec2(
+					(flameSpacePosition.x + 1.) / 2.,
+					fract(flameSpacePosition.y * 2.0));					
+				    dy=0.0; // Note: with dy=0.5/128.0 there _are_ artifacts
+				    paramAtlasTile1LeftBottomTextureCoordinates = vec2(dx, dy);
+				    paramAtlasTile1Size = vec2(1.0, 1.0) - vec2(dx, dy) * 2.; // Inclusive of dead-center					   
+				    fragColor = texture(
+					iChannel0, 
+					paramAtlasTile1LeftBottomTextureCoordinates + paramAtlasTile1Size * c);
+				! Linear, full texture (512x128): above repeats with minimal artifacts - good enough!
+				! Linear, calculated texture (1024x256): this repeats with more artifacts - dubious if good enough:
+					! It's the "linear" issue
+				    c = vec2(
+					(flameSpacePosition.x + 1.) / 2.,
+					fract(flameSpacePosition.y * 2.0));
+					
+				    dx=0.5 / 1024.0;
+				    dy=0.5 / 256.0;
+				    paramAtlasTile1LeftBottomTextureCoordinates = vec2(0.25, 0.25) + vec2(dx, dy); // Inclusive of dead-center
+				    paramAtlasTile1Size = vec2(0.5, 0.5) - vec2(dx, dy) * 2.; // Inclusive of dead-center					   
+				    fragColor = texture(
+					iChannel0, 
+					paramAtlasTile1LeftBottomTextureCoordinates + paramAtlasTile1Size * c);
+			+ Texture:
+				+ Linear, calculated texture (1024x256) with "repeat" trick:
+					+ Texture trick: repeated lines above and below
+						- 126 H
+						- Make 0-126 x 2 (i.e. 0-252)
+						- Apply dark BG
+						- Smooth seam with brush
+						- Copy upper half of below (126 +63) to top
+						- Trim to top 126
+						- Save
+						- Test (double canvas - to 252, copy & paste - verify no seam) - then undo
+							- Back to H=126
+						- Enlarge canvas to 128
+						- Duplicate top and bottom rows
+						- Save
+						- Test (double canvas - to 256, copy & paste - verify no seam) - then undo
+							- Back to H=128
+						- Import into Fire.psd and work it
+						- Since you're here, see if can apply that "contrast" in shader to image as a style
+						- Since you're here, make alpha channel repeatable as well
+						- Save to both png's
+				+ Problem with alpha truncation at top
+					+ Redo alpha map
+						+ Make sure color map is good
+					+ Problem with Photoshop/enlarge canvas adding white stripes (confirmed with magick)
+						+ Try to enlarge with magick
+						+ magick convert fire_0_full.png -channel RGBA -separate -gravity center -extent 1024x256 -combine fire_0.png
+			+ Find dead/etc. to make fire texture really v-repeatable
+			+ Find dead/etc. to make alpha texture relly h-repeatable				
+
+		+ Shader:
+			+ Thickness fix: 
+				+ Make texture all opaque at bottom
+				+ Taper from 0.0 now
+			+ Shape tapering
+			+ color sample should taper at bottom
+				+ See if can reuse shape (thickness or alpha) instead of calculating new smoothstep for sample tapering
+			+ kaos control with pulses
+			+ More noise downstairs
+			+ contrast adjustment at flames - AFTER COMMIT!
+			X Test with Perlin
+			
+		+ Integration
+			+ Fix dead pixels as per shader instructions
+				+ WAS: Dead pixels are 1.0, should be 0.5 - and when we give it as atlas tile params, should be based off full atlas size!!!!
+			+ Test first both maps for repeatability
+			+ Fine-tune
+				+ Remove zoom
+				+ Back to discard alphas
+				+ Settings dialog for kaos adjust
+					+ Swap Npcs with Land
+					+ Flame size adjust: watch out spacing, different than neighbors
+				+ Shape finalization
+					+ Put back quad width (was new: // 8.0f;)
 					+ Simplify shader
-					+ Comments for dead center being included
-			+ Check why texture is truncated above (to test: set alpha = sampled texture alpha)
-				! Shadertoy
-				! Observations:
-					! Neighbor, full texture (512x128): this repeats with zero artifacts:
-					    c = vec2(
-						(flameSpacePosition.x + 1.) / 2.,
-						fract(flameSpacePosition.y * 2.0));					
-					    dy=0.0; // Note: with dy=0.5/128.0 there _are_ artifacts
-					    paramAtlasTile1LeftBottomTextureCoordinates = vec2(dx, dy);
-					    paramAtlasTile1Size = vec2(1.0, 1.0) - vec2(dx, dy) * 2.; // Inclusive of dead-center					   
-					    fragColor = texture(
-						iChannel0, 
-						paramAtlasTile1LeftBottomTextureCoordinates + paramAtlasTile1Size * c);
-					! Linear, full texture (512x128): above repeats with minimal artifacts - good enough!
-					! Linear, calculated texture (1024x256): this repeats with more artifacts - dubious if good enough:
-						! It's the "linear" issue
-					    c = vec2(
-						(flameSpacePosition.x + 1.) / 2.,
-						fract(flameSpacePosition.y * 2.0));
-						
-					    dx=0.5 / 1024.0;
-					    dy=0.5 / 256.0;
-					    paramAtlasTile1LeftBottomTextureCoordinates = vec2(0.25, 0.25) + vec2(dx, dy); // Inclusive of dead-center
-					    paramAtlasTile1Size = vec2(0.5, 0.5) - vec2(dx, dy) * 2.; // Inclusive of dead-center					   
-					    fragColor = texture(
-						iChannel0, 
-						paramAtlasTile1LeftBottomTextureCoordinates + paramAtlasTile1Size * c);
-				+ Texture:
-					+ Linear, calculated texture (1024x256) with "repeat" trick:
-						+ Texture trick: repeated lines above and below
-							- 126 H
-							- Make 0-126 x 2 (i.e. 0-252)
-							- Apply dark BG
-							- Smooth seam with brush
-							- Copy upper half of below (126 +63) to top
-							- Trim to top 126
-							- Save
-							- Test (double canvas - to 252, copy & paste - verify no seam) - then undo
-								- Back to H=126
-							- Enlarge canvas to 128
-							- Duplicate top and bottom rows
-							- Save
-							- Test (double canvas - to 256, copy & paste - verify no seam) - then undo
-								- Back to H=128
-							- Import into Fire.psd and work it
-							- Since you're here, see if can apply that "contrast" in shader to image as a style
-							- Since you're here, make alpha channel repeatable as well
-							- Save to both png's
-					+ Problem with alpha truncation at top
-						+ Redo alpha map
-							+ Make sure color map is good
-						+ Problem with Photoshop/enlarge canvas adding white stripes (confirmed with magick)
-							+ Try to enlarge with magick
-							+ magick convert fire_0_full.png -channel RGBA -separate -gravity center -extent 1024x256 -combine fire_0.png
-				+ Find dead/etc. to make fire texture really v-repeatable
-				+ Find dead/etc. to make alpha texture relly h-repeatable				
+			+ Test also fire on NPCs
+		+ Merge into master
+		+ Changelist
+		+ Cleanup desktop
 
-			+ Shader:
-				+ Thickness fix: 
-					+ Make texture all opaque at bottom
-					+ Taper from 0.0 now
-				+ Shape tapering
-				+ color sample should taper at bottom
-					+ See if can reuse shape (thickness or alpha) instead of calculating new smoothstep for sample tapering
-				+ kaos control with pulses
-				+ More noise downstairs
-				+ contrast adjustment at flames - AFTER COMMIT!
-				X Test with Perlin
-				
-			+ Integration
-				+ Fix dead pixels as per shader instructions
-					+ WAS: Dead pixels are 1.0, should be 0.5 - and when we give it as atlas tile params, should be based off full atlas size!!!!
-				+ Test first both maps for repeatability
-				+ Fine-tune
-					+ Remove zoom
-					+ Back to discard alphas
-					+ Settings dialog for kaos adjust
-						+ Swap Npcs with Land
-						+ Flame size adjust: watch out spacing, different than neighbors
-					+ Shape finalization
-						+ Put back quad width (was new: // 8.0f;)
-						+ Simplify shader
-				+ Test also fire on NPCs
-			+ Merge into master
+	+ Fix Bazzico bug
+		! Need a buffer allocated when VAO is bound
+
+	+ Redo SettingsDialog layout
+		! Rules:
+			! Everything is wxEXPAND | wxALL, no ALIGN_CENTER
+			! AddGrowableCol for each internal gridSizer
+		+ Mechanics and Termodynamics
+		+ Icons at two tool panels
+		+ Sound and Advanced Settings
+		+ Test with Italian
+
+	+ Air bubbles:
+		+ We effed up formula: final scale is 0.2, old coeff was 0.75
+		+ Test humans' bubbles as well
+		+ With rotation
+			+ Pass personality seed at ShipRenderContext::UploadAirBubble
+			+ See to make it progress?
+
+	+ Align "big" render buffers, e.g.:
+		! No sweat on padding
+		+ Titanic: 3.28/3.33/3.85 0.05/0.06/0.07
+		+ Save exe first
+		+ Ship
+			+ Mutable point attribs
+			+ mTriangleElementBuffer
+			+ mEphemeralPointElementBuffer
+			+ mGenericMipMappedTextureAirBubbleVertexBuffer
+
+	+ WorldBorder: it's broken, likely because of linear
+		+ Redo it:
+			+ Nuke texture
+				+ Folder
+				+ ShaderTypes/Traits
+			+ WorldRenderContext::Recalculate
+				+ Do basic
+			+ Shader
+				+ Basic
+
+	+ ShipBuilder: see issue with copy'n'paste of electrical materials losing instance ID
+		! Repro: Copy (instanced), paste+commit, Copy it, paste+commit, Undo
+			! ModelController::RestoreElectricalRegion: dupe instance ID
+			! Note: problem is NOT in panel, but in electrical elements' instance IDs
+			! Problem is: we don't renumber instance IDs in buffer at Paste 
+				! i.e. at element operator in ModelController::Paste
+				! Because element operator does not update instance ID in buffer
+		+ Fix:
+			+ DoElectricalRegionBufferPaste's operator returns electrical element by value
+			+ Caller (Paste) returns modified electrical element
+		! No other cases seems like
+
+	+ Send for final testing
+		+ Send localization files
+	+ Bump up version
+
+	+ Fix electrical panel labels after editing material		
+		+ Root bug is: we don't update mInstancedElectricalElementSet when we write over same particle but different material
+			+ Fix at WriteParticle
+			+ See if others exist
+		+ Changelist
+
+	+ See why Group NPCs fall immediately
+		+ Removing GainMeshVelocity makes it ok
+		+ Re-check gain: we set abs velocity, should also set relative? (NOTE: verified rel is zero now)
+			X Try with setting abs velocity to avg of all endpoints of triangles of all particles
+				! After all, the abnormal velocity we impart now is due to mesh vibrations
+			X If ok: use it again at EndMoveNpc and CompleteNewNpc and AddGroup
+			+ If not ok: nuke whole GainMeshVelocity and options
+	
+	+ Use mouse wheel down as shift:
+		+ https://forums.wxwidgets.org/viewtopic.php?t=50464
+		+ User test (sent)
+		+ How about mid toggle?
+			+ Ask Damien
+			+ Shift texture notification
+				+ png
+				+ TextureTypes code
+				+ NotificationLayer & NotificationRenderContext code
+			+ GameController owns storage
+				+ Member
+				+ getter/setter
+			+ MainFrame::OnMidDown
+			+ Let him test it
+			+ Bump up version
+			+ Reposition notifications - the ones on by default should be BR
+		+ changelist w/thanks for the guy
+
+	+ Check furniture placement w/group
+
+	+ Ubuntu preparation
+		+ Upgrade
+		+ Install gcc 14
+		+ Build
+		+ Run unit tests
+		+ Test
+			+ First off: see that env var we're set and confirm we say it right in the readme
+			+ Rebuild
+			+ FIX: hotkeys
+				+ Menus are selected, but not tools, and not de-selected
+			+ Mid button
+			+ NPCs
+			+ Flames
+			+ Clouds
+			+ All other indexed rendering 
+				+ Bubbles
+				+ Bombs
+				+ Fishes
+		+ Change Readme for version (Ubuntu & GCC if applicable)
+		+ Change Ubuntu instructions for version and gcc version
+			+ https://gcc.gnu.org/bugzilla/show_bug.cgi?id=79700
+		+ Change mention below in this file
+		+ Nuke old Ubuntu
+
+	+ Release prep:
+		+ Ships:
+			+ FS email
+				+ From Sean Dempsey
+					+ R.M.S. Centennial
+					+ H.M.H.S. Imagination
+					+ S.S. Dempsey
+					+ Lamps?
+					+ Asked credits: Sean Dempsey
+					+ Asked if also wants name change in .shp2 files
+						+ Yes
+						+ Do it
+				+ From Dimitry Warin (aka Helooping)
+					+ Galeb
+					+ Lamartine
+					+ Transilvania
+					+ Check shipbuckets credits for all
+					+ Make .shp2 for all
+					+ Already in credits				
+			+ All Discord's
+				+ Bright mammooth - ⁵⁵𝐓𝐡𝐞 𝟐𝟒𝐭𝐡_𝐃𝐨𝐜𝐭𝐨𝐫-𝟏𝟗𝟐𝟐⁵⁵#1963
+					+ Asked name: doctor1922
+				+ https://discord.com/channels/@me/1128107472129896568/1259012624524247098
+				+ All these: https://discord.com/channels/559822257275404307/562030667198758913/1124472062308778184
+				+ #contest-entries
+					+ https://discord.com/channels/925233659118755842/1290838947777478758, all in _TO_TRY already, have to chase owners we don't know
+						+ Check if dupes
+				+ Results:
+					+ Takara:
+						+ Test Takara's: _TO_TRY, Takara - Ships for Gab.zip
+						+ See if we had already replaced Egg Carrier structure - _TO_TRY
+					+ KV Mauvmellow - 1912:
+						+ Test R.V.S. Velouria: _TO_TRY
+						+ Asked credits: KV Mauvmellow - 1912
+					X Splayer
+						X Test U.S.S. San Francisco (CA-38): _TO_TRY
+							X Too big
+						+ Asked credits: "Splayer"
+					+ MatthewAnderson
+						+ Test all: _TO_TRY/MatthewAnderson
+						+ Already in credits
+					+ Last batch FWed by TimCan:
+						+ Test all: _TO_TRY/FromTimCan
+					+ Techo:
+						+ Test all: _TO_TRY/Techo
+						+ Already in credits
+					+ DKUZ:
+						+ Test all: _TO_TRY/DKUZ
+						+ Already in credits
+					+ TheCochu444yt
+						+ Test: _TO_TRY/Lorotanic
+						+ Asked credits: TheCochu444yt
+						+ Move to final		
+			+ _TO_TEST:
+				+ JU 87 B-2 by Ha-Ha Hans
+				+ Saturn V (Ur local brazilian#0842, aka Transportation Fan - already in credits)
+				+ "Hellooping" in _TO_TEST
+					+ Guy is already credited		
+				X S.S. Matos from Sean Dempsey, in _TO_TEST
+				+ Longhorn ships, in _TO_TEST
+					+ All good:
+						+ SS 19H1
+						+ SS Tuscany
+						+ SS Cedar
+						+ SS Quebec
+					+ Asked permission & credits: "Longhorn"
+					+ Move to final
+			+ Remove ships:
+				+ See screenshot @ desktop
+			+ Move from _TO_TAKE
+			+ Credits:
+				+ Sean Dempsey
+				+ doctor1922
+				+ KV Mauvmellow
+				+ Ventrix
+				+ QHM
+				+ Ha-Ha Hans
+				+ TheCochu444yt
+				+ Longhorn
 			+ Changelist
-			+ Cleanup desktop
+			+ Undo code change for password checks
 
-		+ Fix Bazzico bug
-			! Need a buffer allocated when VAO is bound
+		+ Ask Denis credits for testing
+		
+		+ Localization:
+			+ Change two help files to remove stuff we've removed and add stuff we haven't localized
+			+ Prepare po's
+			+ Prepare text files with NPC json
+				+ ES
+				+ RU
+				+ UK
+			+ IT:
+				+ PO
+					+ Fix: Storms-Strength Adjust is Resistenza (probably because of materials as well)
+						+ Change it to "Power Adjust"
+							+ "Potenza"
+				+ Two helps
+				+ When done:
+					+ Test:
+						+ Storm strength vs. sping strength adjust
+						+ Copyright @ Credits
+			+ ES:
+				+ PO
+					+ Taken
+					+ Test
+					+ Compile
+				+ Two helps // Joadix had noticed bugs
+				+ NPC json
+					+ Take
+					+ Test
+				+ When done:
+					+ Test:
+						+ Copyright @ Credits
+						+ NPC menu
+			+ RU:
+				+ PO
+					+ Taken
+					+ Test
+					+ Compile
+				+ Two helps
+					+ Test
+				+ NPC json
+					+ Take
+					+ Test
+				+ When done:
+					+ Test:
+						+ Copyright @ Credits
+						+ NPC menu
+					+ LOCALIZATION credits: add Dkuz 
 
-		+ Redo SettingsDialog layout
-			! Rules:
-				! Everything is wxEXPAND | wxALL, no ALIGN_CENTER
-				! AddGrowableCol for each internal gridSizer
-			+ Mechanics and Termodynamics
-			+ Icons at two tool panels
-			+ Sound and Advanced Settings
-			+ Test with Italian
+			+ UK:
+				+ PO
+				+ Two helps
+				+ NPC json
+					+ Take
+					+ Test
+				+ When done:
+					+ Test:
+						+ Copyright @ Credits
+						+ NPC menu
+				+ Ask credits
+ 
+	+ "I understand you can undo this with the Follow NPC button, though I'd like to suggest for the "Select Next NPC" button: an option around the menus to unselect NPCs with the red highlighting square would be nice, given the amount of people that ask how to download the game, I can very easily imagine a fair amount of players unintentionally selecting an NPC and then not knowing how to just as easily unselect them." 
+		+ Do
+		+ State machine
+		+ Localization:
+			+ IT
+				+ Compile MO
+			+ ES	
+				+ Compile MO
+			+ RU (DKUZ)
+				+ Compile MO
+			+ UK (Denis)
+				+ Compile MO
 
-		+ Air bubbles:
-			+ We effed up formula: final scale is 0.2, old coeff was 0.75
-			+ Test humans' bubbles as well
-			+ With rotation
-				+ Pass personality seed at ShipRenderContext::UploadAirBubble
-				+ See to make it progress?
+	+ Fix WaterlineAnalyzer: seems another UTF8 issue
+		+ Fix
+		+ Ask DKUZ to test it
 
-		+ Align "big" render buffers, e.g.:
-			! No sweat on padding
-			+ Titanic: 3.28/3.33/3.85 0.05/0.06/0.07
-			+ Save exe first
-			+ Ship
-				+ Mutable point attribs
-				+ mTriangleElementBuffer
-				+ mEphemeralPointElementBuffer
-				+ mGenericMipMappedTextureAirBubbleVertexBuffer
+	+ Test fire and NPCs with:
+		+ nVidia
+		+ Old Dell
 
-		+ WorldBorder: it's broken, likely because of linear
-			+ Redo it:
-				+ Nuke texture
-					+ Folder
-					+ ShaderTypes/Traits
-				+ WorldRenderContext::Recalculate
-					+ Do basic
-				+ Shader
-					+ Basic
+	+ Add Damien to Tester credits
 
-		+ ShipBuilder: see issue with copy'n'paste of electrical materials losing instance ID
-			! Repro: Copy (instanced), paste+commit, Copy it, paste+commit, Undo
-				! ModelController::RestoreElectricalRegion: dupe instance ID
-				! Note: problem is NOT in panel, but in electrical elements' instance IDs
-				! Problem is: we don't renumber instance IDs in buffer at Paste 
-					! i.e. at element operator in ModelController::Paste
-					! Because element operator does not update instance ID in buffer
-			+ Fix:
-				+ DoElectricalRegionBufferPaste's operator returns electrical element by value
-				+ Caller (Paste) returns modified electrical element
-			! No other cases seems like
+	+ Send last beta
+		! Deselect
+		! SHIFT lock
+		! New ships
+		! Furniture placement
+		! Code changes for Linux
+	
 
-		+ Send for final testing
-			+ Send localization files
+	+ Bump up build
+
+	+ Release:
+		+ Windows
+			+ MSI variable
+			+ Commit & push
+			+ 64-bit MSI
+				+ Cleanup Install
+				+ Build Release Install (after clean)
+				+ Sign two exes
+				+ Make MSI
+				+ Rename MSI
+				+ Sign MSI
+				+ Test upgrade from previous version
+			+ 32-bit MSI
+				+ Cleanup Install
+				+ Build Release Install (after clean)
+				+ Sign two exes
+				+ Make MSI
+				+ Rename MSI
+				+ Sign MSI
+				+ Test clean install
+				+ Verify it's a 32-bit process
+		+ Ubuntu
+			+ rm -rf ~/floating-sandbox
+			+ pull 
+			+ rm -rf build; mkdir build; cd build
+			+ cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
+			+ make install
+			+ Make tar ("cd ~/floating-sandbox && tar -cvf ../Floating-Sandbox-1.19.0-x64.tar . && cd -")
+			+ Zip tar
+			+ Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
+		+ Get 3 installers tested on dev server
+			! 64: https://drive.google.com/file/d/1ypKBnDvqKN-0v4R8SLCZnw1udALG_GWu/view?usp=sharing
+			! 32: https://drive.google.com/file/d/1AP7et_gOBQ5j_1DMISE_7jDG13QDkU3x/view?usp=sharing
+			! Linux: https://drive.google.com/file/d/18_khQtZxeLaW1IME_387rFlsLHvALPmY/view?usp=sharing
+		+ Wait for test results
+		*******
+		+ Tell delayed release
+		+ Cut tag on github
+			+ Delete useless branches since you're here
+		+ Copy binaries to Prev
+		+ Copy MSIs to scratch
+		+ Upload packages to GameJolt
+		+ Upload video to YouTube
+			+ Text: just music: Breached Airlock, Gabriel Shadid & Tobias Marberger
+			+ Verify copyright issues
+			+ Do NOT publish yet
+		+ GameJolt: make release public
+			+ Verify Windows Defender
+				+ Report file as safe (https://gamejolt.com/privacy)
+			+ Update GameJolt to say Ubuntu 24.04
+		+ Send changelist to TimCan
+		+ Publish YouTube video
+		+ GameJolt post
+		+ Update GameJolt roadmap post with release dates
+		+ www.floatingsandbox.com:
+			+ Update current version in FAQ
+			+ Wait a day or two, to exclude disastrous bugs
+			+ Upload changes2.txt
+				+ Test w/old FS
+
++ 1.19.1:
+
+	+ Before next release:
+		+ Invite BumBumBaby to beta server
+
+	+ Make branch (1.19.0.next)
+	+ Bump up minor
+	+ Reduce fish size
+
+	+ See AlexGuy crash/repair tool
+		X Play
+		+ Give it RelWithDebInfo/PDB
+		+ I load any ship, like for example Astyu's Ise, Agano or Akitsu Maru. I blow a hole in the hull through a simulated torpedo hit or magazine explosion, usually done with the RC bombs or heating tool.
+		  Then i use the repair tool. If held long enough, the game crashes.
+		  This happened even in 18.0.
+                  It happens in Astyu's ships.
+                  Specifically those with compartments and magazine cordite modelled in.
+                  I sent the .dmp file.
+		+ Credits (asked if "AlexGuy" works out)
+		+ changelist
+
+	+ Improve explosions:
+		+ Gfx radius
+			! Goal: predictably tied to real blast radius
+			+ ShipRenderContext uses empirically texture-determined radius multipliers to focus "core" fireball in frame
+			+ Ship::StartExplosion: also takes gfx radius offset for added spectacularity
+				+ Names: BlastRadius, RenderRadiusOffset
+				+ Passes to ShipRenderContext::Upload(radius==blast radius + offset)
+			+ ShipRenderContext::UploadExplosion: takes gfx offset
+				+ And no +13
+			+ Check all explosions
+				+ Hydrogen NPC
+		+ Bomb base force to constants
+		+ NPC blast force multiplier: local constant
+                + NPC blast radius multiplier: move to GameParameters as constant, and add adjustment
+			+ GameParameters constant
+			+ GameParameters adjustment
+                        + Might make constant slightly less?
+                        + SettingsDialog: under NPCs, "Blast TODO Adjust"
+		+ Explosion time
+			+ 1. Move constants to GameParameters, say attuned to sound
+		X Sounds
+			! Handler::OnCombustionExplosion
+				! SoundType::CombustionExplosion: combustionexplosion_1...4 + UW
+			! Handler::OnBombExplosion(bombType)
+				! SoundType::BombExplosion: bombexplosion_1...4 + UW
+		+ Tests:
+			+ Npcs: underwater sounds (not related with this work item)
+		+ Changelist
+			+ "Fine-tuned explosions' physics"
+	
+	+ Redo texture notifications - test size 64+32
+		+ All 5 textures
+		+ Make sure code takes sizes from files
+
+	+ See if can make a map of pointindex=>instance ID in ShipFactory instead of that vector
+		! Cur:
+			! idx: point index 2 idx; val: pointInfos2[p].ElectricalElementInstanceIdx
+			! usage:
+				! Make sure ElectricalPanel's ElectricalElementInstanceIndex exist
+				! Given pointElementIndex, get its ElectricalElementInstanceIndex
+
+	+ OpenGL:
+		X Flat
+			X Not enough varying's to even give a perf boost
+			X Not driven by ARB but by glsl language version
+		X Points: see if can make them round, see https://www.khronos.org/opengl/wiki/Fragment_Shader#Inputs
+			- Requires glEnable(0x8861) // GL_POINT_SPRITE
+				<enum value="0x8861" name="GL_POINT_SPRITE" group="TextureEnvTarget"/>
+				<enum value="0x8861" name="GL_POINT_SPRITE_ARB"/>
+			- Shader:
+				- Requires early discard (0.2)
+				- Requires own shader/#define
+					- Best to handle alpha as aearly as possible so can piggyback on existing early discard
+			X Not liked by kids
+		X GL_POLYGON_SMOOTH for land
+			X Doesn't seem to help
+
+
+	+ M2L to credits
+	+ See ShipBuilder on Linux
+		X '+' shortcut
+			+ Also @ FS
+		+ Maximization of frame
+			+ Try to do it in InitialAction
+	+ Explosion json attributes rearc
+		+ Materials structural:
+			+ Diesel Can, Gunpowder * Crate, * Tank: only used for NPCs: hence all explosive_* attributes rescaled so that we don't have scaling in code
+				+ Other than 0.5 when we want to do half
+		+ Remove 0.1 scale
+
+	+ Gunpowder keg
+
+	+ Clouds V3: with fantastic texture coords offset
+		+ First off, technical debt:
+			+ Do clouds as baked atlas
+			+ Do index-based rendering
+		+ Magic work:
+			+ See shader on shader toy: use cloud texture coords offset based on noise centered around 0.
+				+ But solve problem of going to other texture: need more room around textures?
+					+ Cannot clamp in shader: would still look awful, and nice to have long flanges
+		+ Noise needed:
+			+ Perlin-8,32,0.43 (different than land)
+				+ Move from WorldRenderContext to GlobalRenderContext
+					+ Basically move mLandNoiseTextureOpenGLHandle
+			+ Test:
+				+ Land noise
+				+ Clouds (old  noise)
+		+ Shader
+			+ Does amplitude need to depend on texture coords w/h?
+			+ Play with detail
+		+ Triage current cloud textures
+			+ In ShaderToy		
+		+ Randomize starting progress
+		+ Verify that the Perlin we're using is the same as on the desktop
+			+ Save image, before and after recalibrating
+		+ Tests:
+			+ Basic
+				+ Moonlight, Lamp
+			+ Detailed
+				+ Moonlight, Lamp
+			+ Storm
+		+ Test enlarging canvas of tight clouds
+		+ Test AdobeStock/Getty clouds
+			+ Need Illustrator
+			+ Cancel subscription
+				! By clicking "Agree and subscribe", you agree: After your trial ends, you will be charged € 32,76 (excl. VAT) monthly. Your subscription will automatically renew monthly until you cancel (price subject to change). Cancel before your trial ends and you won't be charged. Cancel anytime via Adobe Account or Customer Support. Cancel before Dec 10, 2024 to get a full refund. You also agree to the Terms of Use and the Subscription and Cancellation Terms.
+			+ Replace all texture clouds with these
+				+ Need to resize all though
+					! Was: 2048x2048
+				+ FIX: truncated frame in atlas
+					+ Redo algo
+					+ Test/Rebuild all atlases
+						! Old:
+							01:34:15.685398:Generic linear texture atlas size: (1024 x 512)
+							01:34:15.793748:Generic mipmapped texture atlas size: (4096 x 2048)
+							01:34:16.111068:Explosion texture atlas size: (4096 x 4096)
+							01:34:16.149235:NPC texture atlas size: (1024 x 1024)
+							01:34:16.219541:Cloud texture atlas size: (2048 x 2048)
+							01:34:16.257569:Fish texture atlas size: (1024 x 1024)
+							01:34:16.663246:Font texture atlas size: (512 x 512)
+						+ New:
+							01:35:20.540971:Generic linear texture atlas size: (2048 x 256) ==
+							01:35:20.894641:Generic mipmapped texture atlas size: (4096 x 2048) ==
+							02:20:17.073347:Explosion texture atlas size: (4096 x 4096) ==
+							02:20:17.100341:NPC texture atlas size: (512 x 1024)  !!!
+							02:20:17.285106:Cloud texture atlas size: (2048 x 2048) ==
+							01:35:22.061520:Fish texture atlas size: (1024 x 512) !!!
+							01:35:22.870568:Font texture atlas size: (512 x 512)  ===
+						+ Command-line 
+							+ Visually 
+							+ In-game
+						+ In-game (liner, mipmapped, fishes)
+							+ In-game
+					+ Cleanup
+					+ Unit tests
+					+ changelist
+				+ Test (visually) clouds
+
+		X Test cloud 8008 which is on desktop (replacing cloud_2 in Atlas which is a badly processed version)
+			X See if we have it in authoring already though
+			X It's doo dark ("rainy")
+		+ Test storm
+			+ See if can lower # of clouds
+		+ Changelist
+
+	X See if can use keys to pan along diagonals
+
+	+ Attract & Swirl on NPCs only
+		+ GameParams: Two bools: OnShip, On Npc
+		+ SettingsDialog: two checkboxes
+		+ Use @ World
+			+ Also make sure others are done the same: if() @ World
+			+ FIX: ghosting through walls
+				+ Then remove diagnostic LogMessage's
+			X See if then NPC actions need to be damped
+				X And see if damping can be done independently from OnShip
+
+	+ Ship engines should not work when not underwater (with setting)
+
+	+ Move Gripped tool: only part of the ship is "taken" and moved, rest stays like now and subject to physics
+		+ Test first if physics ok
+			+ Test with setting to 0 "WorldForcesReception" of particles in grip - smoothing to 1 on border
+				+ Use it at all forces - except spring
+					+ ApplyWorldForces
+						+ ApplyWorldParticleForces
+						+ ApplyWorldSurfaceForces
+					+ ApplyStaticPressureForces
+				+ Reset to 1.0 at each Update iteration end
+		+ If thru:
+			! Spec:
+				! Points:
+					! No WorldForcesReceptivity, but use of IntegrationFactorTimeCoefficient
+				! Tool:
+					! First mouse down sets center, following mouse move sets radius, release crystallizes radius
+					! Second mouse down starts move, release ends whole session
+				! Rendering: notification layer is first to use "uber" shader, with "uber" vertex buffers
+					! API: UploadGripCircle
+			+ Impl:
+				+ Points:
+					+ WorldForcesReceptivity:
+						+ Nuke from Points
+						+ Nuke all usages
+							+ Including end-of-update reset
+					+ SetForcesReceptivity
+						! Sticky, until NumMechIterations changes or FrozenCoefficient changes
+							+ Rename mFrozenCoefficientBuffer as IsPinnedBuffer
+				+ NotificationLayer: "uber notifications" shader, using uber vertex buffers
+					+ Vertex attributes struct contains union and type
+						X See if can use int type as varying
+						+ Struct has static factory methods
+						+ Check assembly
+					+ Simple vertex buffer
+						+ Auto-reset (not sticky)
+					+ UploadGripCircle(...)
+					+ Move other notifications
+						! Those that are NDC need to get world pos's, for easier vertex shader
+						+ PressureInjectionHalo
+						+ BlastToolHalo
+						+ FireExtinguisherSpray
+						+ WindSphere
+						+ HeatBlaster/Heat
+						+ HeatBlaster/Cool
+					+ Test shader on old Dell
+				+ Ship (...world...controller) interactions:
+					+ SetupMoveGrippedBy(display center, display radius) -> [world pos, world radius]
+						! Doesn't touch World
+						+ Controller: Notification
+					+ MoveGrippedBy
+						+ World:
+							+ No NPC's
+						+ Ship:
+							+ Not ephemeral
+							+ Sets all points' ForcesReceptivity (including 1.0)
+							+ See if TrimWorldBounds really needed
+								+ YES, needed (promise that next loop begins in-bounds)
+						+ Controller: Notification
+					+ RotateGrippedBy
+					+ EndMoveGrippedBy
+						+ Ship:
+							+ Not ephemeral
+							+ Resets ForcesReceptivity to 1.0
+				+ Tool:
+					+ State machine for radius-making and two-phase
+						! Become always move (evt. by zero) at UpdateSimulation, not only when there's a trajectory
+							+ i.e. make traj continuous
+						+ Two states, mutually exclusive:
+							+ State 1: GripBuildingState
+								+ ScreenCenterPosition
+							+ State 2: MovingState
+								+ WorldGripCenterPosition, WorldGripRadius
+								+ ...
+						+ Init: both nullopt; set cursor
+						+ Deinit: if any of two: EndMoveGrippedBy()
+						+ UpdateSim:
+							+ if state 1:
+								+ Setup (to draw)
+							+ else if state 2:
+								+ Do traj and move
+						+ MouseDown:
+							+ assert(!state1)
+							+ if state 2:
+								! Nop
+							+ else:
+								+ Begin state 1
+							+ set cursor
+						+ MouseUp:
+							+ if state 1:
+								+ Transition to state 2, using setup call
+							+ else if state 2:
+								+ end_session + reset  
+							+ else:
+								+ assert false
+							+ set cursor
+						+ MouseMove:
+							+ if state 2 && l down:
+								+ Update traj
+					+ Fix inertial velocity
+						+ GameController & World take intertial screen offset, World divides by dt
+						+ Augmented radius
+						+ It seems imparting velocity is beneficial, though there's runaway issue
+							+ Smoothing of quantities
+					+ Rotate
+						+ Should not require any additional state, center is grip's center and angle is new_traj_pos.y - cur_traj_pos.y
+					+ Cursors
+						+ Plain
+						+ With shift
+				+ Is velocity even used, now that we zero out integration factor?
+					+ Yes it is - we just multiply by dt there
+					! Note: this is the core of the "land" issue (impact with terrain): no impact takes place when velocity is zero
+				+ Test with Pinned
+					+ Make sure pins are enforced
+						+ Move
+						+ Rotate
+				+ Test with explosions
+				+ WaterVelocity/Inertia
+				+ MainFrame
+					+ Accelerator key: '4'
+					+ Icon
+				+ changelist
+
+	+ UI Preferences for auto-toggle to Exterior view
+
+	+ merge back into master
+
+	+ Fire-Extinguishing Bomb:		
+		! Name: Fire-Extinguishing Bomb
+		! Implemented as new ExplosionType; re-uses ship state machine
+			! Blast radius: very short
+			! Heat radius: very large
+		! Both gadget ("FireExtinguishingBomb") - remote-controlled, and NPC ("Fire-Extinguishing Bomb")
+
+		+ New GadgetType enum value - "FireExtinguishingBomb"
+		+ New ExplosionType enum value - "FireExtinguishing"
+		+ New material ExplosionType enum value - "FireExtinguishingExplosion"
+
+		+ Gadget ("FireExtinguishingBomb")
+			! Triggers: fire, breakage, remote detonation
+			+ Immediate explosion
+				+ What state machine do we need, if any?
+				+ Explosion: render radius should equal heat radius (i.e. extinguish radius), so calc RenderOffset so that BlastForceRadius+RenderOffset equals HeatRadius
+					+ Other values are massaged forms of GameParameters::BombXYZ params
+			+ Texture
+				+ Fire extinguisher tank, rolled as a sphere
+				+ Verify doesn't grow atlas
+					! old: 4096x2048
+					+ new: 4096x2048
+				+ Fix bleeding
+			+ MainFrame
+				+ Just toggle menu ("Toggle RC Fire-Extinguishing Bomb") - detonation done via Detonate RC Bombs
+				+ Tool
+					+ Cursor: fire_extinguishing_bomb_cursor
+					+ Icon @ SettingsDialog
+			+ Tool -> IGameController
+		+ Ship Explosion state machine
+			+ Physics, with if's on boolean flags calculated as function of ExplosionType
+				+ Make templated_on_flags inline helper
+				+ Extinguishing happens in heat radius, together with heat subtraction
+					+ Heat is already negative
+			+ Give type to World::OnBlast
+			+ RenderUpload
+			+ Tests:
+				+ Force blast on NPCs
+			+ Too much heat removed: ship goes to -30,000K!
+				! Just change temperature of particle directly to half ignition temperature
+				+ Heat removed from bomb: little (not that x10 multiplier) - or even zero
+				+ If fire-extinguishing: change temperature of particle directly to half ignition temperature
+				+ Test (on Ship only):
+					+ Explosion on non-burning point: verify temperature
+					+ Explosion on burning point: verify temperature and smothering
+		+ ShipRenderContext: uploaded via existing UploadExplosion
+			+ Switch case in UploadExplosion on ExplosionType
+			+ Explosions shader with variator (much like yellowing)
+				+code-ish from fire extinguisher
+		+ Sound (as BombType)
+			! Played by SoundsController::OnBombExplosion w/ new gadget bomb type
+			! Above- and Under-water
+			+ Sound files
+				+ 2xAbove
+				+ 2xUnderwater
+				+ Test volumes compared with other bombs
+			+ SoundController:
+				+ Sound type loading
+				+ OnBombExplosion: use new sound type
+
+		+ World::OnBlast:
+			+ Takes ExplosionType
+				+ Passes to Npcs		
+		+ Npcs::ApplyBlast:
+			+ Takes ExplosionType
+			+ Physics, with if's on boolean flags calculated as function of ExplosionType
+				+ Same we do above on ship
+				+ Test (on NPCs only):
+					+ Explosion of gadget bomb on non-burning NPC: verify temperature of particles
+					+ Explosion of gadget bomb on burning NPC: verify temperature of particles and smothering
+		+ New furniture NPC
+			! "Fire-Extinguishing Bomb"
+			+ StructuralMaterial 
+				+ StructuralMaterial for the NPC, w/new explosion type and appropriate 4x blast values
+					+ Remember: heat must be zero
+					+ Combustion & melting point to +INF
+			+ NPC json
+				+ -> Localization task
+			+ Test NPC per-se
+				+ Fall
+				+ Buoyancy
+			+ Trigger
+				! See if makes sense to have helpers for triggers
+				+ Impact
+				+ Itself on fire
+					+ oneNpcParticleExplosive must be set
+			+ Atlas frame (TimCan)
+				+ Change filename in npcs.json
+			+ Test (on both Ship and NPCs):
+				+ Impact
+					+ Explosion of new NPC on burning ship: verify temperature of particles and smothering
+					+ Explosion of new NPC on burning NPC: verify temperature of particles and smothering
+					+ Other two explosions:
+						+ Powder keg
+						+ Sodium
+				+ Itself on fire
+					+ Explosion of new NPC on burning ship: verify smothering
+					+ Explosion of new NPC on burning NPC: verify smothering
+					+ Other two explosions:
+						+ Powder keg
+						+ Sodium
+		+ Points::Combustion: honor new material explosion type
+			+ Explode if on fire == combustion point ignition
+			! Note: not testable
+				+ But test normal explosions are not broken
+
+		+ Tests:
+			+ UV mode
+				+ Bomb
+				+ NPC
+			+ NPCs panic for this bomb
+			+ Lightning (for currentSimulationTime)
+				+ From tool
+				+ From storm
+			+ Thanos snap (for currentSimulationTime)
+			+ Laser Ray (for currentSimulationTime)
+			+ Flames on old Dell (for max particles changes) -- verify 112
+
+		+ Merge into master
+		+ changelist
+
+	X See DKUZ bug
+
+	+ Tinies:
+		+ Furniture: redo proportions to human, according to screenshot; e.g. barrel: as tall as half human
+		+ Change the name "tophat" or "tophatlemons" to "Mia"
+			+ Credits
+			+ Ships
+		+ Storm: problem with clouds staying back when base speed is zero
+			+ Solution: do not slow down storm clouds to a halt (min velocity)
+		+ Look at Pac0master's density adjust
+		+ "The new scales look amazing, a few complaints is I feel the cabin desk is a tad bit small, not by very much but it feels a slight too short, 
+		  that and the chairs and the Small Table 1 and 2 seems too tiny to a pretty high degree, those are mainly my only complaints with the scale issues now, that and maybe the chests could be a smidge bigger too
+
+	+ Localization 1:
+		    "Diesel Can"
+		    "Gunpowder Keg"
+		    "Hydrogen Tank"
+		    "Sodium Tank"
+		    "TNT Crate"
+
+		    + IT
+		    + ES
+			+ mo
+			+ npcs
+		    + RU
+			+ mo
+			+ npcs
+		    + UK
+			+ mo
+			+ npcs
+
+	+ Localization 2:
+		+ Prepare pot's w/string extraction
+		+ IT
+			+ mo
+			+ npcs string table (fire ext. bomb)
+		+ ES
+			+ mo
+			+ npcs string table (fire ext. bomb)
+		+ RU
+			+ mo
+				+ Check also old ("move group", )
+				+ Not sure if complete
+			+ npcs string table (fire ext. bomb)
+		+ UK
+			+ mo
+			+ npcs string table (fire ext. bomb)
+
+
+	+ Do a pass for ships
+		+ email: Sean Dempsey
+		+ _TO_TEST:
+			+ MattyTitanic - ask credits if we take them
+				+ "Mattytitanic" 
+					+ Verify all when done
+				+ Prendi descrizione da foto
+			+ mia
+				+ Fix:
+					+ Author
+					+ Ship names
+			+ S.S. Commonwealth from P1X
+				+ Added and all
+				+ Asked if ok
+			+ Four new ships from email guy, in _TO_TRY
+				+ Ask credits if OK
+					+ LostLinerLegend
+						+ Credits
+						+ Ships
+			X LJKMagic - if ok: see if these are updates, and see credits
+
+	+ Send final beta
+		+ Changes:
+			- Made Small Tables, Cabin Desk, and Chests slightly bigger (@mia)
+			- Changed default for propellers above water (after all, too many ship were relying on engines working above water...)
+			- Added many more ships (from Mia, Mattytitanic, P1X, LostLinerLegend)
+			- Completed localization
 		+ Bump up version
 
-		+ Fix electrical panel labels after editing material		
-			+ Root bug is: we don't update mInstancedElectricalElementSet when we write over same particle but different material
-				+ Fix at WriteParticle
-				+ See if others exist
-			+ Changelist
+	+ Fix Pac0's regional settings issue
+		+ Work on fix
+			X Fix 1:
+				! Utils::LexicalCast: specialize for float, and do following:
+					iss.imbue(std::locale("")); // Use regional settings for decimal separator
+				! SliderControl::ValueToString: specialize for float, and do following:
+					ss.imbue(std::locale("")); // Use regional settings for decimal separator
+				+ Test default Windows
+				+ Test Pac0-ized Windows
+				X Text GTK
+			+ Fix 2: using wxWidgets' wxNumberFormatter
+				+ Test default Windows
+				+ Test Pac0-ized Windows
+				+ Test GTK
+				+ Remove logging
+				+ Verify completely undone previous commit
+			+ Move to helpers (wxHelpers), w/type traits
+			+ See if conversions done in other UI controls, & replace as needed
+				+ EditSpinBox
+					+ ShipBuilder: offset X/Y
+			+ Final tests:
+				+ Windows:
+					+ Default Windows
+						+ SettingsDialog: float, int
+						+ EditSpinBox
+					+ Pac0-ized Windows
+						+ SettingsDialog: float, int
+						+ EditSpinBox
+						+ Reset my settings
+				+ Linux:
+					+ SettingsDialog: float, int
+					+ EditSpinBox
+		+ Send beta
+		+ Bump up version
+		+ changelist
 
-		+ See why Group NPCs fall immediately
-			+ Removing GainMeshVelocity makes it ok
-			+ Re-check gain: we set abs velocity, should also set relative? (NOTE: verified rel is zero now)
-				X Try with setting abs velocity to avg of all endpoints of triangles of all particles
-					! After all, the abnormal velocity we impart now is due to mesh vibrations
-				X If ok: use it again at EndMoveNpc and CompleteNewNpc and AddGroup
-				+ If not ok: nuke whole GainMeshVelocity and options
-		
-		+ Use mouse wheel down as shift:
-			+ https://forums.wxwidgets.org/viewtopic.php?t=50464
-			+ User test (sent)
-			+ How about mid toggle?
-				+ Ask Damien
-				+ Shift texture notification
-					+ png
-					+ TextureTypes code
-					+ NotificationLayer & NotificationRenderContext code
-				+ GameController owns storage
-					+ Member
-					+ getter/setter
-				+ MainFrame::OnMidDown
-				+ Let him test it
-				+ Bump up version
-				+ Reposition notifications - the ones on by default should be BR
-			+ changelist w/thanks for the guy
-
-		+ Check furniture placement w/group
-
-		+ Ubuntu preparation
-			+ Upgrade
-			+ Install gcc 14
-			+ Build
-			+ Run unit tests
-			+ Test
-				+ First off: see that env var we're set and confirm we say it right in the readme
-				+ Rebuild
-				+ FIX: hotkeys
-					+ Menus are selected, but not tools, and not de-selected
-				+ Mid button
-				+ NPCs
-				+ Flames
-				+ Clouds
-				+ All other indexed rendering 
-					+ Bubbles
-					+ Bombs
-					+ Fishes
-			+ Change Readme for version (Ubuntu & GCC if applicable)
-			+ Change Ubuntu instructions for version and gcc version
-				+ https://gcc.gnu.org/bugzilla/show_bug.cgi?id=79700
-			+ Change mention below in this file
-			+ Nuke old Ubuntu
-
-		+ Release prep:
-			+ Ships:
-				+ FS email
-					+ From Sean Dempsey
-						+ R.M.S. Centennial
-						+ H.M.H.S. Imagination
-						+ S.S. Dempsey
-						+ Lamps?
-						+ Asked credits: Sean Dempsey
-						+ Asked if also wants name change in .shp2 files
-							+ Yes
-							+ Do it
-					+ From Dimitry Warin (aka Helooping)
-						+ Galeb
-						+ Lamartine
-						+ Transilvania
-						+ Check shipbuckets credits for all
-						+ Make .shp2 for all
-						+ Already in credits				
-				+ All Discord's
-					+ Bright mammooth - ⁵⁵𝐓𝐡𝐞 𝟐𝟒𝐭𝐡_𝐃𝐨𝐜𝐭𝐨𝐫-𝟏𝟗𝟐𝟐⁵⁵#1963
-						+ Asked name: doctor1922
-					+ https://discord.com/channels/@me/1128107472129896568/1259012624524247098
-					+ All these: https://discord.com/channels/559822257275404307/562030667198758913/1124472062308778184
-					+ #contest-entries
-						+ https://discord.com/channels/925233659118755842/1290838947777478758, all in _TO_TRY already, have to chase owners we don't know
-							+ Check if dupes
-					+ Results:
-						+ Takara:
-							+ Test Takara's: _TO_TRY, Takara - Ships for Gab.zip
-							+ See if we had already replaced Egg Carrier structure - _TO_TRY
-						+ KV Mauvmellow - 1912:
-							+ Test R.V.S. Velouria: _TO_TRY
-							+ Asked credits: KV Mauvmellow - 1912
-						X Splayer
-							X Test U.S.S. San Francisco (CA-38): _TO_TRY
-								X Too big
-							+ Asked credits: "Splayer"
-						+ MatthewAnderson
-							+ Test all: _TO_TRY/MatthewAnderson
-							+ Already in credits
-						+ Last batch FWed by TimCan:
-							+ Test all: _TO_TRY/FromTimCan
-						+ Techo:
-							+ Test all: _TO_TRY/Techo
-							+ Already in credits
-						+ DKUZ:
-							+ Test all: _TO_TRY/DKUZ
-							+ Already in credits
-						+ TheCochu444yt
-							+ Test: _TO_TRY/Lorotanic
-							+ Asked credits: TheCochu444yt
-							+ Move to final		
-				+ _TO_TEST:
-					+ JU 87 B-2 by Ha-Ha Hans
-					+ Saturn V (Ur local brazilian#0842, aka Transportation Fan - already in credits)
-					+ "Hellooping" in _TO_TEST
-						+ Guy is already credited		
-					X S.S. Matos from Sean Dempsey, in _TO_TEST
-					+ Longhorn ships, in _TO_TEST
-						+ All good:
-							+ SS 19H1
-							+ SS Tuscany
-							+ SS Cedar
-							+ SS Quebec
-						+ Asked permission & credits: "Longhorn"
-						+ Move to final
-				+ Remove ships:
-					+ See screenshot @ desktop
-				+ Move from _TO_TAKE
-				+ Credits:
-					+ Sean Dempsey
-					+ doctor1922
-					+ KV Mauvmellow
-					+ Ventrix
-					+ QHM
-					+ Ha-Ha Hans
-					+ TheCochu444yt
-					+ Longhorn
-				+ Changelist
-				+ Undo code change for password checks
-
-			+ Ask Denis credits for testing
-			
-			+ Localization:
-				+ Change two help files to remove stuff we've removed and add stuff we haven't localized
-				+ Prepare po's
-				+ Prepare text files with NPC json
-					+ ES
-					+ RU
-					+ UK
-				+ IT:
-					+ PO
-						+ Fix: Storms-Strength Adjust is Resistenza (probably because of materials as well)
-							+ Change it to "Power Adjust"
-								+ "Potenza"
-					+ Two helps
-					+ When done:
-						+ Test:
-							+ Storm strength vs. sping strength adjust
-							+ Copyright @ Credits
-				+ ES:
-					+ PO
-						+ Taken
-						+ Test
-						+ Compile
-					+ Two helps // Joadix had noticed bugs
-					+ NPC json
-						+ Take
-						+ Test
-					+ When done:
-						+ Test:
-							+ Copyright @ Credits
-							+ NPC menu
-				+ RU:
-					+ PO
-						+ Taken
-						+ Test
-						+ Compile
-					+ Two helps
-						+ Test
-					+ NPC json
-						+ Take
-						+ Test
-					+ When done:
-						+ Test:
-							+ Copyright @ Credits
-							+ NPC menu
-						+ LOCALIZATION credits: add Dkuz 
-
-				+ UK:
-					+ PO
-					+ Two helps
-					+ NPC json
-						+ Take
-						+ Test
-					+ When done:
-						+ Test:
-							+ Copyright @ Credits
-							+ NPC menu
-					+ Ask credits
-	 
-		+ "I understand you can undo this with the Follow NPC button, though I'd like to suggest for the "Select Next NPC" button: an option around the menus to unselect NPCs with the red highlighting square would be nice, given the amount of people that ask how to download the game, I can very easily imagine a fair amount of players unintentionally selecting an NPC and then not knowing how to just as easily unselect them." 
-			+ Do
-			+ State machine
-			+ Localization:
-				+ IT
-					+ Compile MO
-				+ ES	
-					+ Compile MO
-				+ RU (DKUZ)
-					+ Compile MO
-				+ UK (Denis)
-					+ Compile MO
-
-		+ Fix WaterlineAnalyzer: seems another UTF8 issue
-			+ Fix
-			+ Ask DKUZ to test it
-
-		+ Test fire and NPCs with:
-			+ nVidia
-			+ Old Dell
-
-		+ Add Damien to Tester credits
-
-		+ Send last beta
-			! Deselect
-			! SHIFT lock
-			! New ships
-			! Furniture placement
-			! Code changes for Linux
-		
-
-		+ Bump up build
-
-		+ Release:
-			+ Windows
-				+ MSI variable
-				+ Commit & push
-				+ 64-bit MSI
-					+ Cleanup Install
-					+ Build Release Install (after clean)
-					+ Sign two exes
-					+ Make MSI
-					+ Rename MSI
-					+ Sign MSI
-					+ Test upgrade from previous version
-				+ 32-bit MSI
-					+ Cleanup Install
-					+ Build Release Install (after clean)
-					+ Sign two exes
-					+ Make MSI
-					+ Rename MSI
-					+ Sign MSI
-					+ Test clean install
+	+ Release template:
+		+ Branch is merged into master (if applicable)
+		+ Windows
+			+ MSI variable
+			+ Commit & push
+			+ 64-bit MSI
+				+ Cleanup Install
+				+ Build Release Install (after clean)
+				+ Sign two exes
+				+ Make MSI
+				+ Rename MSI
+				+ Sign MSI
+				+ Test upgrade from previous version
+			+ 32-bit MSI
+				+ Cleanup Install
+				+ Build Release Install (after clean)
+				+ Sign two exes
+				+ Make MSI
+				+ Rename MSI
+				+ Sign MSI
+				+ Test clean install
 					+ Verify it's a 32-bit process
-			+ Ubuntu
-				+ rm -rf ~/floating-sandbox
-				+ pull 
-				+ rm -rf build; mkdir build; cd build
-				+ cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
-				+ make install
-				+ Make tar ("cd ~/floating-sandbox && tar -cvf ../Floating-Sandbox-1.19.0-x64.tar . && cd -")
-				+ Zip tar
-				+ Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
-			+ Get 3 installers tested on dev server
-				! 64: https://drive.google.com/file/d/1ypKBnDvqKN-0v4R8SLCZnw1udALG_GWu/view?usp=sharing
-				! 32: https://drive.google.com/file/d/1AP7et_gOBQ5j_1DMISE_7jDG13QDkU3x/view?usp=sharing
-				! Linux: https://drive.google.com/file/d/18_khQtZxeLaW1IME_387rFlsLHvALPmY/view?usp=sharing
-			+ Wait for test results
-			*******
-			+ Tell delayed release
-			+ Cut tag on github
-				+ Delete useless branches since you're here
-			+ Copy binaries to Prev
-			+ Copy MSIs to scratch
-			+ Upload packages to GameJolt
-			+ Upload video to YouTube
-				+ Text: just music: Breached Airlock, Gabriel Shadid & Tobias Marberger
-				+ Verify copyright issues
-				+ Do NOT publish yet
-			+ GameJolt: make release public
-				+ Verify Windows Defender
-					+ Report file as safe (https://gamejolt.com/privacy)
-				+ Update GameJolt to say Ubuntu 24.04
-			+ Send changelist to TimCan
-			+ Publish YouTube video
-			+ GameJolt post
-			+ Update GameJolt roadmap post with release dates
-			+ www.floatingsandbox.com:
-				+ Update current version in FAQ
-				+ Wait a day or two, to exclude disastrous bugs
-				+ Upload changes2.txt
-					+ Test w/old FS
-
+		+ Ubuntu
+			+ rm -rf ~/floating-sandbox
+			+ pull 
+			+ rm -rf build; mkdir build; cd build
+			+ cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
+			+ make install
+			+ Make tar ("cd ~/floating-sandbox && tar -cvf ../Floating-Sandbox-1.19.1-x64.tar . && cd -")
+			+ Zip tar
+			+ Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
+		*******
+		+ Cut tag on github
+		+ Push master, merge into android_rearc
+		+ Copy binaries to Prev
+		+ Copy MSIs to scratch and GoogleDrive
+		+ Upload packages to GameJolt
+			+ Verify Windows Defender
+			+ Post
+		+ www.floatingsandbox.com:
+			+ Update current version in FAQ
+			+ Wait a day or two, to exclude disastrous bugs
+			+ Upload changes2.txt
+				+ Test w/old FS
