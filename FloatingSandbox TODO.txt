@@ -580,8 +580,8 @@
 		*******
 		+ Cut tag on github
 		- Push master, merge into android_rearc
-		- Copy binaries to Prev
-		- Copy MSIs to scratch and GoogleDrive
+		+ Copy binaries to Prev
+		+ Copy MSIs to scratch and GoogleDrive
 		+ Upload packages to GameJolt
 			+ Verify Windows Defender
 			+ Post
