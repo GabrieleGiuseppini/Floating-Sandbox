@@ -136,7 +136,7 @@ public:
      */
     inline TElement * receive(size_t size)
     {
-        if (mCurrentPopulatedSize < mSize)
+        if (mCurrentPopulatedSize + size <= mSize)
         {
             // Advance
             size_t startIndex = mCurrentPopulatedSize;
