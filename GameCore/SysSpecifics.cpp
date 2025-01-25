@@ -26,3 +26,11 @@
 #else
 #pragma message ("OS:<UNKNOWN>")
 #endif
+
+#if FS_IS_PLATFORM_PC()
+#pragma message ("PLATFORM:FS_PLATFORM_PC")
+#elif FS_IS_PLATFORM_MOBILE()
+#pragma message ("PLATFORM:FS_PLATFORM_MOBILE")
+#else
+#pragma message ("PLATFORM:<UNKNOWN>")
+#endif

@@ -586,7 +586,7 @@
 			+ Verify Windows Defender
 			+ Post
 		- www.floatingsandbox.com:
-			- Update current version in FAQ
+			+ Update current version in FAQ
 			- Wait a day or two, to exclude disastrous bugs
 			- Upload changes2.txt
 				- Test w/old FS
