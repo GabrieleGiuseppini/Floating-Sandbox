@@ -16,7 +16,7 @@ struct MyTestTextureDatabase
         _Last = MyTestGroup2
     };
 
-    using TextureGroupsEnumType = MyTextureGroups;
+    using TextureGroupsType = MyTextureGroups;
 
     static MyTextureGroups StrToTextureGroup(std::string const & str)
     {

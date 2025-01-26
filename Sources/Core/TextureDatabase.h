@@ -54,7 +54,7 @@ struct TextureFrameMetadata
     vec2f AnchorCenterWorld;
 
     // The ID of this frame
-    TextureFrameId<typename TTextureDatabase::TextureGroupsEnumType> FrameId;
+    TextureFrameId<typename TTextureDatabase::TextureGroupsType> FrameId;
 
     // The filename stem of this frame's texture
     std::string FilenameStem;
@@ -69,7 +69,7 @@ struct TextureFrameMetadata
         bool hasOwnAmbientLight,
         ImageCoordinates const & anchorCenter,
         vec2f const & anchorCenterWorld,
-        TextureFrameId<typename TTextureDatabase::TextureGroupsEnumType> frameId,
+        TextureFrameId<typename TTextureDatabase::TextureGroupsType> frameId,
         std::string const & filenameStem,
         std::string const & displayName)
         : Size(size)
@@ -149,13 +149,13 @@ class TextureGroup
 {
 public:
 
-    using TextureGroupsEnum = typename TTextureDatabase::TextureGroupsEnumType;
+    using TTextureGroups = typename TTextureDatabase::TextureGroupsType;
 
     // The group
-    TextureGroupsEnum Group;
+    TTextureGroups Group;
 
     TextureGroup(
-        TextureGroupsEnum group,
+        TTextureGroups group,
         std::vector<TextureFrameSpecification<TTextureDatabase>> frameSpecifications)
         : Group(group)
         , mFrameSpecifications(std::move(frameSpecifications))
@@ -196,7 +196,7 @@ class TextureDatabase
 {
 public:
 
-    using TextureGroupsEnum = typename TTextureDatabase::TextureGroupsEnumType;
+    using TTextureGroups = typename TTextureDatabase::TextureGroupsType;
 
     static TextureDatabase Load(IAssetManager & assetManager);
 
@@ -205,14 +205,14 @@ public:
         return mGroups;
     }
 
-    inline TextureGroup<TTextureDatabase> const & GetGroup(TextureGroupsEnum group) const
+    inline TextureGroup<TTextureDatabase> const & GetGroup(TTextureGroups group) const
     {
         assert(static_cast<size_t>(group) < mGroups.size());
         return mGroups[static_cast<size_t>(group)];
     }
 
     inline TextureFrameMetadata<TTextureDatabase> const & GetFrameMetadata(
-        TextureGroupsEnum group,
+        TTextureGroups group,
         TextureFrameIndex frameIndex) const
     {
         assert(static_cast<size_t>(group) < mGroups.size());

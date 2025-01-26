@@ -44,7 +44,7 @@ void TextureFrameMetadata<TTextureDatabase>::Serialize(picojson::object & root) 
 template <typename TTextureDatabase>
 TextureFrameMetadata<TTextureDatabase> TextureFrameMetadata<TTextureDatabase>::Deserialize(picojson::object const & root)
 {
-    using TextureGroupsEnum = typename TTextureDatabase::TextureGroupsEnumType;
+    using TTextureGroups = typename TTextureDatabase::TextureGroupsType;
 
     picojson::object const & sizeJson = root.at("size").get<picojson::object>();
     ImageSize size(
@@ -68,7 +68,7 @@ TextureFrameMetadata<TTextureDatabase> TextureFrameMetadata<TTextureDatabase>::D
         static_cast<float>(anchorCenterWorldJson.at("y").get<double>()));
 
     picojson::object const & frameIdJson = root.at("id").get<picojson::object>();
-    TextureGroupsEnum group = static_cast<TextureGroupsEnum>(frameIdJson.at("group").get<std::int64_t>());
+    TTextureGroups group = static_cast<TTextureGroups>(frameIdJson.at("group").get<std::int64_t>());
     TextureFrameIndex frameIndex = static_cast<TextureFrameIndex>(frameIdJson.at("frameIndex").get<std::int64_t>());
     std::string const & filenameStem = root.at("filenameStem").get<std::string>();
 
@@ -81,7 +81,7 @@ TextureFrameMetadata<TTextureDatabase> TextureFrameMetadata<TTextureDatabase>::D
         hasOwnAmbientLight,
         anchorCenter,
         anchorCenterWorld,
-        TextureFrameId<TTextureDatabase>(group, frameIndex),
+        TextureFrameId<TTextureGroups>(group, frameIndex),
         filenameStem,
         displayName);
 }
@@ -89,7 +89,7 @@ TextureFrameMetadata<TTextureDatabase> TextureFrameMetadata<TTextureDatabase>::D
 template <typename TTextureDatabase>
 TextureDatabase<TTextureDatabase> TextureDatabase<TTextureDatabase>::Load(IAssetManager & assetManager)
 {
-    using TextureGroupsEnum = typename TTextureDatabase::TextureGroupsEnumType;
+    using TTextureGroups = typename TTextureDatabase::TextureGroupsType;
 
     //
     // Load JSON file
@@ -125,7 +125,7 @@ TextureDatabase<TTextureDatabase> TextureDatabase<TTextureDatabase>::Load(IAsset
         auto groupJson = groupValue.get<picojson::object>();
 
         std::string groupName = Utils::GetMandatoryJsonMember<std::string>(groupJson, "groupName");
-        TextureGroupsEnum group = TTextureDatabase::StrToTextureGroup(groupName);
+        TTextureGroups group = TTextureDatabase::StrToTextureGroup(groupName);
 
         // Load group-wide defaults
         std::optional<float> groupWorldScaling = Utils::GetOptionalJsonMember<float>(groupJson, "worldScaling");
@@ -295,7 +295,7 @@ TextureDatabase<TTextureDatabase> TextureDatabase<TTextureDatabase>::Load(IAsset
                                 vec2f(
                                     anchorWorldX,
                                     anchorWorldY),
-                                TextureFrameId<TextureGroupsEnum>(group, frameIndex),
+                                TextureFrameId<TTextureGroups>(group, frameIndex),
                                 frameFilenameStem,
                                 frameDisplayName.has_value() ? *frameDisplayName : frameFilename),
                             frameFilename));
@@ -355,7 +355,7 @@ TextureDatabase<TTextureDatabase> TextureDatabase<TTextureDatabase>::Load(IAsset
         });
 
     // Make sure all group indices are found
-    for (uint16_t expectedIndex = 0; expectedIndex <= static_cast<uint16_t>(TextureGroupsEnum::_Last); ++expectedIndex)
+    for (uint16_t expectedIndex = 0; expectedIndex <= static_cast<uint16_t>(TTextureGroups::_Last); ++expectedIndex)
     {
         if (static_cast<uint16_t>(textureGroups[expectedIndex].Group) < expectedIndex)
         {
