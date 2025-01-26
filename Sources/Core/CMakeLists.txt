@@ -57,6 +57,7 @@ set  (SOURCES
 	Noise.cpp
 	Noise.h
 	ParameterSmoother.h
+	PerfStats.h
 	PngTools.cpp
 	PngTools.h
 	PortableTimepoint.cpp

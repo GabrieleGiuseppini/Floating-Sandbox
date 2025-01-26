@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include <GameCore/GameChronometer.h>
+#include "GameChronometer.h"
 
 #include <atomic>
 
