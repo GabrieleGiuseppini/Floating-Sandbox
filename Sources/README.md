@@ -14,10 +14,10 @@ Since it needs to be portable, it has no filesystem/fstream dependencies, nor Op
 
 Depends on nothing else.
 
-## OpenGL
+## OpenGLCore
 *Platform-specific* (probably)
 
-Utility code on top of OpenGL, such as OpenGL library loading and initialization, and slightly-higher-level helpers on top of OpenGL.
+Utility code on top of OpenGL, such as OpenGL library loading and initialization, ARB loading, and slightly-higher-level helpers on top of OpenGL.
 
 Depends on _Core_.
 
@@ -28,7 +28,7 @@ Implements the rendering engine of the game, which in turn is built on top of Op
 
 Though this library is non-portable, it is depended on by the portable _Simulation_; this implies that any port to a different platform needs to implement this library's **interface** verbatim.
 
-Depends on _Core_ and _OpenGL_.
+Depends on _Core_ and _OpenGLCore_.
 
 ## Simulation
 *Portable*
@@ -68,11 +68,9 @@ Following are secondary source folders - these do not contribute directly to the
 
 The meat of the ShipBuilder. The only reason for it to not be 100% portable is that there are no plans, at this moment, to have the ShipBuilder on non-PC platforms. I might revisit this decision one day.
 
-
 ## ShipBuilder
 
 The actual application for the ShipBuilder on PC. Implements its UI.
-
 
 ## ShipTools
 
@@ -86,10 +84,6 @@ Unit tests for some important functionalities of the game, which would be otherw
 
 Guess what - benchmarks to test performance of alternative implementations of various algorithms.
 
+## GPUCalc, GPUCalcTest
 
-
-
-
-
-
-
+A proof of concept for using the GPU to perform generic calculations. Not used in the game, but it worked and I'm keeping it around until I have the guts to profile its performance vs. CPU-based performance.
