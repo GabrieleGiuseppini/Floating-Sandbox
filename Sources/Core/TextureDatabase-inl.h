@@ -36,7 +36,7 @@ void TextureFrameMetadata<TTextureDatabase>::Serialize(picojson::object & root) 
     frameId["group"] = picojson::value(static_cast<int64_t>(FrameId.Group));
     frameId["frameIndex"] = picojson::value(static_cast<int64_t>(FrameId.FrameIndex));
     root["id"] = picojson::value(frameId);
-    root["filename"] = picojson::value(Filename);
+    root["filenameStem"] = picojson::value(FilenameStem);
 
     root["displayName"] = picojson::value(DisplayName);
 }
@@ -70,7 +70,7 @@ TextureFrameMetadata<TTextureDatabase> TextureFrameMetadata<TTextureDatabase>::D
     picojson::object const & frameIdJson = root.at("id").get<picojson::object>();
     TextureGroupsEnum group = static_cast<TextureGroupsEnum>(frameIdJson.at("group").get<std::int64_t>());
     TextureFrameIndex frameIndex = static_cast<TextureFrameIndex>(frameIdJson.at("frameIndex").get<std::int64_t>());
-    std::string const & filename = root.at("filename").get<std::string>();
+    std::string const & filenameStem = root.at("filenameStem").get<std::string>();
 
     std::string const & displayName = root.at("displayName").get<std::string>();
 
@@ -82,7 +82,7 @@ TextureFrameMetadata<TTextureDatabase> TextureFrameMetadata<TTextureDatabase>::D
         anchorCenter,
         anchorCenterWorld,
         TextureFrameId<TTextureDatabase>(group, frameIndex),
-        filename,
+        filenameStem,
         displayName);
 }
 
@@ -264,6 +264,21 @@ TextureDatabase<TTextureDatabase> TextureDatabase<TTextureDatabase>::Load(IAsset
                     float anchorWorldY = static_cast<float>(textureSize.height - anchorY) * worldHeight / static_cast<float>(textureSize.height);
 
                     //
+                    // Calculate filename stem
+                    //
+
+                    std::string frameFilenameStem;
+                    auto const dotPos = frameFilename.rfind('.');
+                    if (dotPos != std::string::npos)
+                    {
+                        frameFilenameStem = frameFilename.substr(0, dotPos);
+                    }
+                    else
+                    {
+                        frameFilenameStem = frameFilename;
+                    }
+
+                    //
                     // Store frame specification
                     //
 
@@ -281,8 +296,9 @@ TextureDatabase<TTextureDatabase> TextureDatabase<TTextureDatabase>::Load(IAsset
                                     anchorWorldX,
                                     anchorWorldY),
                                 TextureFrameId<TextureGroupsEnum>(group, frameIndex),
-                                frameFilename,
-                                frameDisplayName.has_value() ? *frameDisplayName : frameFilename)));
+                                frameFilenameStem,
+                                frameDisplayName.has_value() ? *frameDisplayName : frameFilename),
+                            frameFilename));
 
                     //
                     // Remember this frame file was matched

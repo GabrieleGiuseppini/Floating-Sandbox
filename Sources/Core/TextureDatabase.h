@@ -56,8 +56,8 @@ struct TextureFrameMetadata
     // The ID of this frame
     TextureFrameId<typename TTextureDatabase::TextureGroupsEnumType> FrameId;
 
-    // The filename of this frame's texture
-    std::string Filename;
+    // The filename stem of this frame's texture
+    std::string FilenameStem;
 
     // The optional name of the frame
     std::string DisplayName;
@@ -70,7 +70,7 @@ struct TextureFrameMetadata
         ImageCoordinates const & anchorCenter,
         vec2f const & anchorCenterWorld,
         TextureFrameId<typename TTextureDatabase::TextureGroupsEnumType> frameId,
-        std::string const & filename,
+        std::string const & filenameStem,
         std::string const & displayName)
         : Size(size)
         , WorldWidth(worldWidth)
@@ -79,7 +79,7 @@ struct TextureFrameMetadata
         , AnchorCenter(anchorCenter)
         , AnchorCenterWorld(anchorCenterWorld)
         , FrameId(frameId)
-        , Filename(filename)
+        , FilenameStem(filenameStem)
         , DisplayName(displayName)
     {}
 
@@ -118,15 +118,21 @@ struct TextureFrameSpecification
     // Metadata
     TextureFrameMetadata<TTextureDatabase> Metadata;
 
-    explicit TextureFrameSpecification(TextureFrameMetadata<TTextureDatabase> const & metadata)
+    // The filename of this frame's texture
+    std::string Filename;
+
+    TextureFrameSpecification(
+        TextureFrameMetadata<TTextureDatabase> const & metadata,
+        std::string const & filename)
         : Metadata(metadata)
+        , Filename(filename)
     {}
 
     TextureFrame<TTextureDatabase> LoadFrame(IAssetManager & assetManager) const
     {
         RgbaImageData imageData = assetManager.LoadTextureDatabaseFrameRGBA(
             TTextureDatabase::DatabaseName,
-            Metadata.Filename);
+            Filename);
 
         return TextureFrame<TTextureDatabase>(
             Metadata,
