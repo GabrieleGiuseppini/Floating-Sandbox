@@ -7,7 +7,33 @@
 
 #include "GameChronometer.h"
 
+#include <algorithm>
 #include <atomic>
+#include <vector>
+
+enum class PerfMeasurement : size_t
+{
+    // Update
+    TotalUpdate = 0,
+    TotalNpcUpdate,
+    TotalFishUpdate,
+    TotalOceanSurfaceUpdate,
+    TotalShipsUpdate,
+    TotalShipsSpringsUpdate,
+    TotalWaitForRenderUpload,
+    TotalNetUpdate, // = TotalUpdate - TotalWaitForRenderUpload
+
+    // Render-Upload
+    TotalWaitForRenderDraw,
+    TotalNetRenderUpload,
+
+    // Render-Draw
+    TotalMainThreadRenderDraw,
+    TotalRenderDraw, // In render thread
+    TotalUploadRenderDraw,
+
+    _Last = TotalUploadRenderDraw
+};
 
 struct PerfStats
 {
@@ -68,8 +94,8 @@ struct PerfStats
             if (ratio.Denominator == 0)
                 return 0.0f;
 
-            auto fs = std::chrono::duration_cast<std::chrono::duration<float>>(ratio.Duration);
-            return fs.count() * static_cast<float>(TDuration::period::den) / static_cast<float>(TDuration::period::num)
+            auto fDuration = std::chrono::duration_cast<std::chrono::duration<float>>(ratio.Duration);
+            return fDuration.count() * static_cast<float>(TDuration::period::den) / static_cast<float>(TDuration::period::num)
                 / static_cast<float>(ratio.Denominator);
         }
 
@@ -92,71 +118,43 @@ struct PerfStats
         }
     };
 
-    // Update
-    Ratio TotalUpdateDuration;
-    Ratio TotalNpcUpdateDuration;
-    Ratio TotalFishUpdateDuration;
-    Ratio TotalOceanSurfaceUpdateDuration;
-    Ratio TotalShipsUpdateDuration;
-    Ratio TotalShipsSpringsUpdateDuration;
-    Ratio TotalWaitForRenderUploadDuration;
-    Ratio TotalNetUpdateDuration; // = TotalUpdateDuration - TotalWaitForRenderUploadDuration
-
-    // Render-Upload
-    Ratio TotalWaitForRenderDrawDuration;
-    Ratio TotalNetRenderUploadDuration;
-
-    // Render-Draw
-    Ratio TotalMainThreadRenderDrawDuration;
-    Ratio TotalRenderDrawDuration; // In render thread
-    Ratio TotalUploadRenderDrawDuration;
-
     PerfStats()
     {
+        mMeasurements.resize(static_cast<size_t>(PerfMeasurement::_Last));
         Reset();
+    }
+
+    Ratio const & GetMeasurement(PerfMeasurement m) const
+    {
+        return mMeasurements[static_cast<std::size_t>(m)];
     }
 
     void Reset()
     {
-        TotalUpdateDuration.Reset();
-        TotalNpcUpdateDuration.Reset();
-        TotalFishUpdateDuration.Reset();
-        TotalOceanSurfaceUpdateDuration.Reset();
-        TotalShipsUpdateDuration.Reset();
-        TotalShipsSpringsUpdateDuration.Reset();
-        TotalWaitForRenderUploadDuration.Reset();
-        TotalNetUpdateDuration.Reset();
-
-        TotalWaitForRenderDrawDuration.Reset();
-        TotalNetRenderUploadDuration.Reset();
-
-        TotalMainThreadRenderDrawDuration.Reset();
-        TotalRenderDrawDuration.Reset();
-        TotalUploadRenderDrawDuration.Reset();
+        std::for_each(
+            mMeasurements.begin(),
+            mMeasurements.end(),
+            [](auto & m) { m.Reset; });
     }
 
     PerfStats & operator=(PerfStats const & other) = default;
+
+    friend PerfStats operator-(PerfStats const & lhs, PerfStats const & rhs);
+
+private:
+
+    // Indexed by PerfMeasurement integral
+    std::vector<Ratio> mMeasurements;
 };
 
-inline PerfStats operator-(PerfStats const & lhs, PerfStats const & rhs)
+PerfStats operator-(PerfStats const & lhs, PerfStats const & rhs)
 {
     PerfStats perfStats;
 
-    perfStats.TotalUpdateDuration = lhs.TotalUpdateDuration - rhs.TotalUpdateDuration;
-    perfStats.TotalNpcUpdateDuration = lhs.TotalNpcUpdateDuration - rhs.TotalNpcUpdateDuration;
-    perfStats.TotalFishUpdateDuration = lhs.TotalFishUpdateDuration - rhs.TotalFishUpdateDuration;
-    perfStats.TotalOceanSurfaceUpdateDuration = lhs.TotalOceanSurfaceUpdateDuration - rhs.TotalOceanSurfaceUpdateDuration;
-    perfStats.TotalShipsUpdateDuration = lhs.TotalShipsUpdateDuration - rhs.TotalShipsUpdateDuration;
-    perfStats.TotalShipsSpringsUpdateDuration = lhs.TotalShipsSpringsUpdateDuration - rhs.TotalShipsSpringsUpdateDuration;
-    perfStats.TotalWaitForRenderUploadDuration = lhs.TotalWaitForRenderUploadDuration - rhs.TotalWaitForRenderUploadDuration;
-    perfStats.TotalNetUpdateDuration = lhs.TotalNetUpdateDuration - rhs.TotalNetUpdateDuration;
-
-    perfStats.TotalWaitForRenderDrawDuration = lhs.TotalWaitForRenderDrawDuration - rhs.TotalWaitForRenderDrawDuration;
-    perfStats.TotalNetRenderUploadDuration = lhs.TotalNetRenderUploadDuration - rhs.TotalNetRenderUploadDuration;
-
-    perfStats.TotalMainThreadRenderDrawDuration = lhs.TotalMainThreadRenderDrawDuration - rhs.TotalMainThreadRenderDrawDuration;
-    perfStats.TotalRenderDrawDuration = lhs.TotalRenderDrawDuration - rhs.TotalRenderDrawDuration;
-    perfStats.TotalUploadRenderDrawDuration = lhs.TotalUploadRenderDrawDuration - rhs.TotalUploadRenderDrawDuration;
+    for (size_t i = 0; i < static_cast<size_t>(PerfMeasurement::_Last); ++i)
+    {
+        perfStats.mMeasurements[i] = lhs.mMeasurements[i] - rhs.mMeasurements[i];
+    }
 
     return perfStats;
 }
