@@ -1,4 +1,4 @@
-#include <GameCore/EnumFlags.h>
+#include <Core/EnumFlags.h>
 
 #include "gtest/gtest.h"
 
@@ -13,28 +13,6 @@ enum class TestEnum : uint8_t
 };
 
 template <> struct is_flag<TestEnum> : std::true_type { };
-
-//
-//TEST(EnumFlagsTests, Equality)
-//{
-//    EnumFlags<TestEnum> f1(TestEnum::Option1a);
-//    EnumFlags<TestEnum> f2(TestEnum::Option1a);
-//    EnumFlags<TestEnum> f3(TestEnum::Option1b);
-//
-//    EXPECT_EQ(f1, f2);
-//    EXPECT_NE(f1, f3);
-//}
-//
-//TEST(EnumFlagsTests, Assignment)
-//{
-//    EnumFlags<TestEnum> f1(TestEnum::Option1a);
-//    EnumFlags<TestEnum> f2 = f1;
-//    EnumFlags<TestEnum> f3(TestEnum::Option1b);
-//
-//    EXPECT_EQ(f1, f2);
-//    EXPECT_NE(f1, f3);
-//}
-//
 
 TEST(EnumFlagsTests, BitOperators)
 {

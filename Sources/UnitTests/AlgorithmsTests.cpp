@@ -1,9 +1,8 @@
-#include <GameCore/Algorithms.h>
-#include <GameCore/Vectors.h>
+#include <Core/Algorithms.h>
 
-#include "Utils.h"
 
-#include <GameCore/GameTypes.h>
+#include <Core/GameTypes.h>
+#include <Core/Vectors.h>
 
 #include <array>
 #include <cmath>

@@ -1,4 +1,4 @@
-#include <GameCore/IndexRemap.h>
+#include <Core/IndexRemap.h>
 
 #include "gtest/gtest.h"
 

@@ -1,4 +1,4 @@
-#include <GameCore/Matrix.h>
+#include <Core/Matrix.h>
 
 #include "gtest/gtest.h"
 

@@ -1,6 +1,6 @@
-#include <GameCore/Endian.h>
+#include <Core/Endian.h>
 
-#include <GameCore/SysSpecifics.h>
+#include <Core/SysSpecifics.h>
 
 #include "gtest/gtest.h"
 

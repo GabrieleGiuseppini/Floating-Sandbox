@@ -11,20 +11,20 @@
  * A frame is a single texture.
  * A group is a collection of related frames; for example, a group is an animation.
  * A database is a collection of groups.
+ *
+ * A database is defined by a "type traits" structure, which here is called "Texture Database".
  */
 
-#include "PngImageFileTools.h"
-
-#include <GameCore/GameException.h>
-#include <GameCore/GameTypes.h>
-#include <GameCore/ImageData.h>
-#include <GameCore/Utils.h>
+#include "GameException.h"
+#include "GameTypes.h"
+#include "IAssetManager.h"
+#include "ImageData.h"
+#include "Utils.h"
 
 #include <picojson.h>
 
 #include <cassert>
 #include <cstdint>
-#include <filesystem>
 #include <map>
 #include <memory>
 #include <regex>
@@ -32,9 +32,7 @@
 #include <string>
 #include <vector>
 
-namespace Render {
-
-template <typename TextureGroups>
+template <typename TTextureDatabase>
 struct TextureFrameMetadata
 {
     // Size of the image
@@ -57,10 +55,10 @@ struct TextureFrameMetadata
     vec2f AnchorCenterWorld;
 
     // The ID of this frame
-    TextureFrameId<TextureGroups> FrameId;
+    TextureFrameId<TTextureDatabase> FrameId;
 
-    // The filename (stem) of this frame's texture
-    std::string FilenameStem;
+    // The filename of this frame's texture
+    std::string Filename;
 
     // The optional name of the frame
     std::string DisplayName;
@@ -72,8 +70,8 @@ struct TextureFrameMetadata
         bool hasOwnAmbientLight,
         ImageCoordinates const & anchorCenter,
         vec2f const & anchorCenterWorld,
-        TextureFrameId<TextureGroups> frameId,
-        std::string const & filenameStem,
+        TextureFrameId<TTextureDatabase> frameId,
+        std::string const & filename,
         std::string const & displayName)
         : Size(size)
         , WorldWidth(worldWidth)
@@ -82,7 +80,7 @@ struct TextureFrameMetadata
         , AnchorCenter(anchorCenter)
         , AnchorCenterWorld(anchorCenterWorld)
         , FrameId(frameId)
-        , FilenameStem(filenameStem)
+        , Filename(filename)
         , DisplayName(displayName)
     {}
 
@@ -91,17 +89,17 @@ struct TextureFrameMetadata
     static TextureFrameMetadata Deserialize(picojson::object const & root);
 };
 
-template <typename TextureGroups>
+template <typename TTextureDatabase>
 struct TextureFrame
 {
     // Metadata
-    TextureFrameMetadata<TextureGroups> Metadata;
+    TextureFrameMetadata<TTextureDatabase> Metadata;
 
     // The image itself
     RgbaImageData TextureData;
 
     TextureFrame(
-        TextureFrameMetadata<TextureGroups> const & metadata,
+        TextureFrameMetadata<TTextureDatabase> const & metadata,
         RgbaImageData textureData)
         : Metadata(metadata)
         , TextureData(std::move(textureData))
@@ -115,27 +113,23 @@ struct TextureFrame
     }
 };
 
-template <typename TextureGroups>
+template <typename TTextureDatabase>
 struct TextureFrameSpecification
 {
     // Metadata
-    TextureFrameMetadata<TextureGroups> Metadata;
+    TextureFrameMetadata<TTextureDatabase> Metadata;
 
-    // The path to the image
-    std::filesystem::path FilePath;
-
-    TextureFrameSpecification(
-        TextureFrameMetadata<TextureGroups> const & metadata,
-        std::filesystem::path filePath)
+    TextureFrameSpecification(TextureFrameMetadata<TTextureDatabase> const & metadata)
         : Metadata(metadata)
-        , FilePath(filePath)
     {}
 
-    TextureFrame<TextureGroups> LoadFrame() const
+    TextureFrame<TTextureDatabase> LoadFrame(IAssetManager & assetManager) const
     {
-        RgbaImageData imageData = PngImageFileTools::LoadImageRgba(FilePath);
+        RgbaImageData imageData = assetManager.LoadTextureDatabaseFrameRGBA(
+            TTextureDatabase::DatabaseName,
+            Metadata.Filename);
 
-        return TextureFrame<TextureGroups>(
+        return TextureFrame<TTextureDatabase>(
             Metadata,
             std::move(imageData));
     }
@@ -145,17 +139,19 @@ struct TextureFrameSpecification
  * This class models a group of textures, and it has all the necessary information
  * to load individual frames at runtime.
  */
-template <typename TextureGroups>
+template <typename TTextureDatabase>
 class TextureGroup
 {
 public:
+
+    using TextureGroups = typename TTextureDatabase::TextureGroups;
 
     // The group
     TextureGroups Group;
 
     TextureGroup(
         TextureGroups group,
-        std::vector<TextureFrameSpecification<TextureGroups>> frameSpecifications)
+        std::vector<TextureFrameSpecification<TTextureDatabase>> frameSpecifications)
         : Group(group)
         , mFrameSpecifications(std::move(frameSpecifications))
     {}
@@ -176,41 +172,41 @@ public:
         return static_cast<TextureFrameIndex>(mFrameSpecifications.size());
     }
 
-    inline TextureFrame<TextureGroups> LoadFrame(TextureFrameIndex frameIndex) const
+    inline TextureFrame<TTextureDatabase> LoadFrame(TextureFrameIndex frameIndex, IAssetManager & assetManager) const
     {
         return mFrameSpecifications[frameIndex].LoadFrame();
     }
 
 private:
 
-    std::vector<TextureFrameSpecification<TextureGroups>> mFrameSpecifications;
+    std::vector<TextureFrameSpecification<TTextureDatabase>> mFrameSpecifications;
 };
 
 
 /*
  * A whole set of textures.
  */
-template <typename TextureDatabaseTraits>
+template <typename TTextureDatabase>
 class TextureDatabase
 {
 public:
 
-    using TextureGroups = typename TextureDatabaseTraits::TextureGroups;
+    using TextureGroups = typename TTextureDatabase::TextureGroups;
 
-    static TextureDatabase Load(std::filesystem::path const & texturesRootFolderPath);
+    static TextureDatabase Load(IAssetManager & assetManager);
 
     inline auto const & GetGroups() const
     {
         return mGroups;
     }
 
-    inline TextureGroup<TextureGroups> const & GetGroup(TextureGroups group) const
+    inline TextureGroup<TTextureDatabase> const & GetGroup(TextureGroups group) const
     {
         assert(static_cast<size_t>(group) < mGroups.size());
         return mGroups[static_cast<size_t>(group)];
     }
 
-    inline TextureFrameMetadata<TextureGroups> const & GetFrameMetadata(
+    inline TextureFrameMetadata<TTextureDatabase> const & GetFrameMetadata(
         TextureGroups group,
         TextureFrameIndex frameIndex) const
     {
@@ -221,13 +217,11 @@ public:
 
 private:
 
-    explicit TextureDatabase(std::vector<TextureGroup<TextureGroups>> groups)
+    explicit TextureDatabase(std::vector<TextureGroup<TTextureDatabase>> groups)
         : mGroups(std::move(groups))
     {}
 
-    std::vector<TextureGroup<TextureGroups>> mGroups;
+    std::vector<TextureGroup<TTextureDatabase>> mGroups;
 };
-
-}
 
 #include "TextureDatabase-inl.h"

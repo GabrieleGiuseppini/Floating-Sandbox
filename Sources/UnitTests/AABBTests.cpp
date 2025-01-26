@@ -1,5 +1,5 @@
-#include <GameCore/AABB.h>
-#include <GameCore/AABBSet.h>
+#include <Core/AABB.h>
+#include <Core/AABBSet.h>
 
 #include "gtest/gtest.h"
 

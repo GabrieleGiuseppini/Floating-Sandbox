@@ -1,4 +1,4 @@
-#include <GameCore/CircularList.h>
+#include <Core/CircularList.h>
 
 #include "gtest/gtest.h"
 

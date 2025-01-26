@@ -1,4 +1,4 @@
-#include <GameCore/ImageTools.h>
+#include <Core/ImageTools.h>
 
 #include "gtest/gtest.h"
 

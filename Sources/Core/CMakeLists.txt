@@ -24,7 +24,7 @@ set  (SOURCES
 	Endian.h
 	EnumFlags.h
 	ExponentialSliderCore.cpp
-	ExponentialSliderCore.h
+	ExponentialSliderCore.h	
 	Finalizer.h
 	FixedSetSliderCore.h
 	FixedSizeVector.h
@@ -72,6 +72,8 @@ set  (SOURCES
 	TaskThread.cpp
 	TaskThread.h
 	TemporallyCoherentPriorityQueue.h
+	TextureDatabase.h
+	TextureDatabase-inl.h
 	ThreadManager.cpp
 	ThreadManager.h
 	ThreadPool.cpp

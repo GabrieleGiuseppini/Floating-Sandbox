@@ -5,9 +5,9 @@
  ***************************************************************************************/
 #pragma once
 
-#include <GameCore/GameException.h>
-#include <GameCore/Log.h>
-#include <GameCore/Utils.h>
+#include <Core/GameException.h>
+#include <Core/Log.h>
+#include <Core/Utils.h>
 
 #include <filesystem>
 #include <fstream>
@@ -34,7 +34,7 @@ public:
 
     static void EnsureDirectoryExists(std::filesystem::path const & directoryPath)
     {
-        if (!std::filesystem::exists(directionPath))
+        if (!std::filesystem::exists(directoryPath))
         {
             std::filesystem::create_directories(directoryPath);
         }
@@ -185,7 +185,7 @@ public:
     static std::regex MakeFilenameMatchRegex(std::string const & pattern)
     {
         std::string regexPattern = Utils::FindAndReplaceAll(pattern, ".", "\\.");
-        regexPattern = FindAndReplaceAll(regexPattern, "*", ".*");
+        regexPattern = Utils::FindAndReplaceAll(regexPattern, "*", ".*");
 
         return std::regex(regexPattern, std::regex_constants::icase);
     }
@@ -296,7 +296,7 @@ class FileSystemImpl final : public IFileSystem
 {
 public:
 
-    FileSystem()
+    FileSystemImpl()
     {}
 
     bool Exists(std::filesystem::path const & path) override
@@ -340,6 +340,5 @@ public:
     {
         FileSystem::RenameFile(oldFilePath, newFilePath);
     }
-
 };
 

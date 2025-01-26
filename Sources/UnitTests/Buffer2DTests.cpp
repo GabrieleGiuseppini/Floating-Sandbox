@@ -1,4 +1,4 @@
-#include <GameCore/Buffer2D.h>
+#include <Core/Buffer2D.h>
 
 #include "gtest/gtest.h"
 

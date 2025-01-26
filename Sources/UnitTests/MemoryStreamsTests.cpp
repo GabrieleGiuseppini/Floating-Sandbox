@@ -1,4 +1,4 @@
-#include <GameCore/MemoryStreams.h>
+#include <Core/MemoryStreams.h>
 
 #include <istream>
 #include <ostream>

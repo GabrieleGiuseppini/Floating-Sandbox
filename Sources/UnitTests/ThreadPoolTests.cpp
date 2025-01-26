@@ -1,4 +1,4 @@
-#include <GameCore/ThreadPool.h>
+#include <Core/ThreadPool.h>
 
 #include <algorithm>
 #include <functional>

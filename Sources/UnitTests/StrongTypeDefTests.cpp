@@ -1,4 +1,4 @@
-#include <GameCore/StrongTypeDef.h>
+#include <Core/StrongTypeDef.h>
 
 #include "gtest/gtest.h"
 

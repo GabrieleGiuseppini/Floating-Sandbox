@@ -1,6 +1,6 @@
-#include <GameCore/BoundedVector.h>
+#include <Core/BoundedVector.h>
 
-#include <GameCore/GameTypes.h>
+#include <Core/GameTypes.h>
 
 #include "gtest/gtest.h"
 

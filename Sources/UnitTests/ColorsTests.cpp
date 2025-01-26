@@ -1,4 +1,4 @@
-#include <GameCore/Colors.h>
+#include <Core/Colors.h>
 
 #include "gtest/gtest.h"
 

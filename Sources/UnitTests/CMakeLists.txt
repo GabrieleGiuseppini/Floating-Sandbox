@@ -25,48 +25,51 @@ set (UNIT_TEST_SOURCES
 	CircularListTests.cpp
 	ColorsTests.cpp
 	DeSerializationBufferTests.cpp
-	ElectricalPanelTests.cpp
+	#ElectricalPanelTests.cpp
 	EndianTests.cpp
 	EnumFlagsTests.cpp
+	FileSystemTests.cpp
 	FinalizerTests.cpp
 	FixedSizeVectorTests.cpp
-	FloatingPointTests.cpp
-	GameEventDispatcherTests.cpp
-	GameGeometryTests.cpp
-	GameMathTests.cpp
+	#FloatingPointTests.cpp
+	#GameEventDispatcherTests.cpp
+	#GameGeometryTests.cpp
+	#GameMathTests.cpp
 	ImageToolsTests.cpp
 	IndexRemapTests.cpp
-	InstancedElectricalElementSetTests.cpp
-	IntegralSystemTests.cpp
-	LayerTests.cpp
-	LayoutHelperTests.cpp
+	#InstancedElectricalElementSetTests.cpp
+	#IntegralSystemTests.cpp
+	#LayerTests.cpp
+	#LayoutHelperTests.cpp
 	main.cpp
 	Matrix2Tests.cpp
 	MemoryStreamsTests.cpp
-	ParameterSmootherTests.cpp
+	#ParameterSmootherTests.cpp
 	PortableTimepointTests.cpp
 	PrecalculatedFunctionTests.cpp
-	RopeBufferTests.cpp
-	SettingsTests.cpp
-	ShaderManagerTests.cpp
-	ShipDefinitionFormatDeSerializerTests.cpp
-	ShipNameNormalizerTests.cpp
-	ShipPreviewDirectoryManagerTests.cpp
-	SliderCoreTests.cpp
+	#RopeBufferTests.cpp
+	#SettingsTests.cpp
+	#ShaderManagerTests.cpp
+	#ShipDefinitionFormatDeSerializerTests.cpp
+	#ShipNameNormalizerTests.cpp
+	#ShipPreviewDirectoryManagerTests.cpp
+	#ShipTests.cpp
+	#SliderCoreTests.cpp
 	StrongTypeDefTests.cpp
 	SysSpecificsTests.cpp
 	TaskThreadTests.cpp
 	TemporallyCoherentPriorityQueueTests.cpp
-	TextureAtlasTests.cpp
+	#TestingUtils.cpp
+	#TestingUtils.h
+	#TextureAtlasTests.cpp
+	TextureDatabaseTests.cpp
 	ThreadPoolTests.cpp
 	TruncatedPriorityQueueTests.cpp
 	TupleKeysTests.cpp
 	UniqueBufferTests.cpp
-	Utils.cpp
-	Utils.h
 	UtilsTests.cpp
-	VectorsTests.cpp
-	VersionTests.cpp
+	#VectorsTests.cpp
+	#VersionTests.cpp
 )
 
 source_group(" " FILES ${UNIT_TEST_SOURCES})
@@ -74,15 +77,13 @@ source_group(" " FILES ${UNIT_TEST_SOURCES})
 add_executable (UnitTests ${UNIT_TEST_SOURCES})
 add_test (UnitTests UnitTests)
 
-target_include_directories(UnitTests PRIVATE SYSTEM ${LIBSIMDPP_INCLUDE_DIRS})
-
 target_link_libraries (UnitTests
-	GameCoreLib
-	GameLib
-	GPUCalcLib
-	ShipBuilderLib
-	UILib
-	${OPENGL_LIBRARIES}
+	Core
+	#GameLib
+	#GPUCalcLib
+	#ShipBuilderLib
+	#UILib
+	#${OPENGL_LIBRARIES}
 	gmock
 	gtest
 	${ADDITIONAL_LIBRARIES})

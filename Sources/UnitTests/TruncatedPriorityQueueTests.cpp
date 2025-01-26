@@ -1,4 +1,4 @@
-#include <GameCore/TruncatedPriorityQueue.h>
+#include <Core/TruncatedPriorityQueue.h>
 
 #include "gtest/gtest.h"
 

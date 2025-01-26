@@ -1,5 +1,6 @@
 
 add_subdirectory(Core)
+add_subdirectory(UnitTests)
 
 # TODO: others
 # TODO

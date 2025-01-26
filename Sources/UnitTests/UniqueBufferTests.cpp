@@ -1,4 +1,4 @@
-#include <GameCore/UniqueBuffer.h>
+#include <Core/UniqueBuffer.h>
 
 #include "gtest/gtest.h"
 

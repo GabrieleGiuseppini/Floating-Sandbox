@@ -1,6 +1,6 @@
-#include <GameCore/DeSerializationBuffer.h>
+#include <Core/DeSerializationBuffer.h>
 
-#include <GameCore/Endian.h>
+#include <Core/Endian.h>
 
 #include "gtest/gtest.h"
 

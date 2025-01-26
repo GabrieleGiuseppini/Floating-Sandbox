@@ -11,6 +11,7 @@
 #include <picojson.h>
 
 #include <string>
+#include <vector>
 
 /*
  * Abstracts away the details on how to retrieve game assets.
@@ -28,6 +29,9 @@ class IAssetManager
 {
 public:
 
-	virtual picojson::value LoadTODO() = 0;
-
+	// Texture databases
+	virtual picojson::value LoadTetureDatabaseSpecification(std::string const & databaseName) = 0;
+	virtual ImageSize GetTextureDatabaseFrameSize(std::string const & databaseName, std::string const & frameFileName) = 0;
+	virtual RgbaImageData LoadTextureDatabaseFrameRGBA(std::string const & databaseName, std::string const & frameFileName) = 0;
+	virtual std::vector<std::string> EnumerateTextureDatabaseFrames(std::string const & databaseName) = 0;
 };

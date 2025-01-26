@@ -1,4 +1,4 @@
-#include <GameCore/TemporallyCoherentPriorityQueue.h>
+#include <Core/TemporallyCoherentPriorityQueue.h>
 
 #include "gtest/gtest.h"
 

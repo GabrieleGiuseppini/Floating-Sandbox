@@ -1,4 +1,4 @@
-#include <GameCore/SysSpecifics.h>
+#include <Core/SysSpecifics.h>
 
 #include "gtest/gtest.h"
 

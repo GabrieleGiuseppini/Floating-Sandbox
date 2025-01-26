@@ -5,12 +5,10 @@
 ***************************************************************************************/
 #include "TextureDatabase.h"
 
-#include <GameCore/Log.h>
+#include "Log.h"
 
-namespace Render {
-
-template <typename TextureGroups>
-void TextureFrameMetadata<TextureGroups>::Serialize(picojson::object & root) const
+template <typename TTextureDatabase>
+void TextureFrameMetadata<TTextureDatabase>::Serialize(picojson::object & root) const
 {
     picojson::object size;
     size["width"] = picojson::value(static_cast<int64_t>(Size.width));
@@ -38,14 +36,16 @@ void TextureFrameMetadata<TextureGroups>::Serialize(picojson::object & root) con
     frameId["group"] = picojson::value(static_cast<int64_t>(FrameId.Group));
     frameId["frameIndex"] = picojson::value(static_cast<int64_t>(FrameId.FrameIndex));
     root["id"] = picojson::value(frameId);
-    root["filenameStem"] = picojson::value(FilenameStem);
+    root["filename"] = picojson::value(Filename);
 
     root["displayName"] = picojson::value(DisplayName);
 }
 
-template <typename TextureGroups>
-TextureFrameMetadata<TextureGroups> TextureFrameMetadata<TextureGroups>::Deserialize(picojson::object const & root)
+template <typename TTextureDatabase>
+TextureFrameMetadata<TTextureDatabase> TextureFrameMetadata<TTextureDatabase>::Deserialize(picojson::object const & root)
 {
+    using TextureGroups = typename TTextureDatabase::TextureGroups;
+
     picojson::object const & sizeJson = root.at("size").get<picojson::object>();
     ImageSize size(
         static_cast<int>(sizeJson.at("width").get<std::int64_t>()),
@@ -70,79 +70,42 @@ TextureFrameMetadata<TextureGroups> TextureFrameMetadata<TextureGroups>::Deseria
     picojson::object const & frameIdJson = root.at("id").get<picojson::object>();
     TextureGroups group = static_cast<TextureGroups>(frameIdJson.at("group").get<std::int64_t>());
     TextureFrameIndex frameIndex = static_cast<TextureFrameIndex>(frameIdJson.at("frameIndex").get<std::int64_t>());
-    std::string const & filenameStem = root.at("filenameStem").get<std::string>();
+    std::string const & filename = root.at("filename").get<std::string>();
 
     std::string const & displayName = root.at("displayName").get<std::string>();
 
-    return TextureFrameMetadata<TextureGroups>(
+    return TextureFrameMetadata<TTextureDatabase>(
         size,
         worldWidth,
         worldHeight,
         hasOwnAmbientLight,
         anchorCenter,
         anchorCenterWorld,
-        TextureFrameId<TextureGroups>(group, frameIndex),
-        filenameStem,
+        TextureFrameId<TTextureDatabase>(group, frameIndex),
+        filename,
         displayName);
 }
 
-template <typename TextureDatabaseTraits>
-TextureDatabase<TextureDatabaseTraits> TextureDatabase<TextureDatabaseTraits>::Load(std::filesystem::path const & texturesRootFolderPath)
+template <typename TTextureDatabase>
+TextureDatabase<TTextureDatabase> TextureDatabase<TTextureDatabase>::Load(IAssetManager & assetManager)
 {
-    std::filesystem::path const databaseFolderPath = texturesRootFolderPath / TextureDatabaseTraits::DatabaseName;
-
-    //
-    // Visit directory and build set of all files
-    //
-
-    struct FileData
-    {
-        std::filesystem::path Path;
-        std::string Stem;
-
-        FileData(
-            std::filesystem::path path,
-            std::string stem)
-            : Path(path)
-            , Stem(stem)
-        {}
-    };
-
-    std::vector<FileData> allTextureFiles;
-
-    for (auto const & entryIt : std::filesystem::recursive_directory_iterator(databaseFolderPath))
-    {
-        if (std::filesystem::is_regular_file(entryIt.path())
-            && entryIt.path().extension().string() != ".json")
-        {
-            // We only expect png's
-            if (entryIt.path().extension().string() == ".png")
-            {
-                std::string const stem = entryIt.path().filename().stem().string();
-
-                allTextureFiles.emplace_back(
-                    entryIt.path(),
-                    stem);
-            }
-            else if (entryIt.path().extension().string() != ".txt") // txt allowed
-            {
-                LogMessage("WARNING: found file \"" + entryIt.path().string() + "\" with unexpected extension while loading a texture database");
-            }
-        }
-    }
-
+    using TextureGroups = typename TTextureDatabase::TextureGroups;
 
     //
     // Load JSON file
     //
 
-    std::filesystem::path const jsonFilePath = databaseFolderPath / "database.json";
-    picojson::value root = Utils::ParseJSONFile(jsonFilePath.string());
+    picojson::value root = assetManager.LoadTetureDatabaseSpecification(TTextureDatabase::DatabaseNamez);
     if (!root.is<picojson::array>())
     {
-        throw GameException("Texture database \"" + TextureDatabaseTraits::DatabaseName + "\": file \"" + jsonFilePath.string() + "\" does not contain a JSON array");
+        throw GameException("Texture database \"" + TTextureDatabase::DatabaseName + "\" specification file is not contain a JSON array");
     }
 
+    //
+    // Get list of frame filenames
+    //
+
+    std::vector<std::string> allTextureFrameFilenames = assetManager.EnumerateTextureDatabaseFrames(TTextureDatabase::DatabaseName);
 
     //
     // Process JSON groups and build texture groups
@@ -150,7 +113,7 @@ TextureDatabase<TextureDatabaseTraits> TextureDatabase<TextureDatabaseTraits>::L
 
     std::vector<TextureGroup<TextureGroups>> textureGroups;
 
-    std::set<std::filesystem::path> matchedTextureFiles;
+    std::set<std::string> matchedTextureFrameFilenames;
 
     for (auto const & groupValue : root.get<picojson::array>())
     {
@@ -162,7 +125,7 @@ TextureDatabase<TextureDatabaseTraits> TextureDatabase<TextureDatabaseTraits>::L
         auto groupJson = groupValue.get<picojson::object>();
 
         std::string groupName = Utils::GetMandatoryJsonMember<std::string>(groupJson, "groupName");
-        TextureGroups group = TextureDatabaseTraits::StrToTextureGroup(groupName);
+        TextureGroups group = TTextureDatabase::StrToTextureGroup(groupName);
 
         // Load group-wide defaults
         std::optional<float> groupWorldScaling = Utils::GetOptionalJsonMember<float>(groupJson, "worldScaling");
@@ -203,11 +166,9 @@ TextureDatabase<TextureDatabaseTraits> TextureDatabase<TextureDatabaseTraits>::L
 
             // Find all files matching the regex
             int filesFoundFromFrameCount = 0;
-            for (auto fileIt = allTextureFiles.cbegin(); fileIt != allTextureFiles.cend(); ++fileIt)
+            for (auto const & frameFilename : allTextureFrameFilenames)
             {
-                FileData const & fileData = *fileIt;
-
-                if (std::regex_match(fileData.Stem, frameFilenameRegex))
+                if (std::regex_match(frameFilename, frameFilenameRegex))
                 {
                     // This file belongs to this group
 
@@ -215,7 +176,7 @@ TextureDatabase<TextureDatabaseTraits> TextureDatabase<TextureDatabaseTraits>::L
                     // Get frame size
                     //
 
-                    ImageSize textureSize = PngImageFileTools::GetImageSize(fileData.Path);
+                    ImageSize textureSize = assetManager.GetTextureDatabaseFrameSize(TTextureDatabase::DatabaseName, frameFilename);
 
 
                     //
@@ -233,9 +194,9 @@ TextureDatabase<TextureDatabaseTraits> TextureDatabase<TextureDatabaseTraits>::L
                         // Extract index from filename
                         static std::regex const TextureFilenameFrameIndexRegex("^.+?_(\\d+)$");
                         std::smatch frameIndexMatch;
-                        if (!std::regex_match(fileData.Stem, frameIndexMatch, TextureFilenameFrameIndexRegex))
+                        if (!std::regex_match(frameFilename, frameIndexMatch, TextureFilenameFrameIndexRegex))
                         {
-                            throw GameException("Texture database: cannot extract frame index from texture filename \"" + fileData.Stem + "\", and auto-assigning indices is disabled");
+                            throw GameException("Texture database: cannot extract frame index from texture filename \"" + frameFilename + "\", and auto-assigning indices is disabled");
                         }
 
                         assert(frameIndexMatch.size() == 2);
@@ -320,16 +281,14 @@ TextureDatabase<TextureDatabaseTraits> TextureDatabase<TextureDatabaseTraits>::L
                                     anchorWorldX,
                                     anchorWorldY),
                                 TextureFrameId<TextureGroups>(group, frameIndex),
-                                fileData.Stem,
-                                frameDisplayName.has_value() ? *frameDisplayName : fileData.Stem),
-                            fileData.Path));
-
+                                frameFilename,
+                                frameDisplayName.has_value() ? *frameDisplayName : frameFilename)));
 
                     //
-                    // Remember this file was matched
+                    // Remember this frame file was matched
                     //
 
-                    matchedTextureFiles.insert(fileData.Path);
+                    matchedTextureFrameFilenames.insert(frameFilename);
 
                     ++filesFoundFromFrameCount;
                 }
@@ -393,15 +352,13 @@ TextureDatabase<TextureDatabaseTraits> TextureDatabase<TextureDatabaseTraits>::L
     }
 
     // Make sure all textures found in file system have been exhausted
-    if (matchedTextureFiles.size() != allTextureFiles.size())
+    if (matchedTextureFrameFilenames.size() != allTextureFrameFilenames.size())
     {
         throw GameException(
             "Texture database: couldn't match "
-            + std::to_string(allTextureFiles.size() - matchedTextureFiles.size())
-            + " texture files to texture specifications");
+            + std::to_string(allTextureFrameFilenames.size() - matchedTextureFrameFilenames.size())
+            + " texture frame files to texture specifications");
     }
 
     return TextureDatabase(std::move(textureGroups));
-}
-
 }

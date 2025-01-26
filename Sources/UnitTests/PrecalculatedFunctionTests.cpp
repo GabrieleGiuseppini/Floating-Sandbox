@@ -1,4 +1,4 @@
-#include <GameCore/PrecalculatedFunction.h>
+#include <Core/PrecalculatedFunction.h>
 
 #include <cmath>
 

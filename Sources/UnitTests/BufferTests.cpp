@@ -1,6 +1,6 @@
-#include <GameCore/Buffer.h>
+#include <Core/Buffer.h>
 
-#include <GameCore/Vectors.h>
+#include <Core/Vectors.h>
 
 #include "gtest/gtest.h"
 
