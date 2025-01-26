@@ -35,27 +35,13 @@ namespace /* anonymous */ {
     }
 }
 
-picojson::value Utils::ParseJSONFile(std::filesystem::path const & filepath)
-{
-	std::string fileContents = RemoveJSONComments(Utils::LoadTextFile(filepath));
-
-    return ParseJSONString(fileContents);
-}
-
-picojson::value Utils::ParseJSONStream(std::istream const & stream)
-{
-    std::string fileContents = RemoveJSONComments(Utils::LoadTextStream(stream));
-
-    return ParseJSONString(fileContents);
-}
-
 picojson::value Utils::ParseJSONString(std::string const & jsonString)
 {
     picojson::value jsonContent;
 
     if (!jsonString.empty())
     {
-        std::string const parseError = picojson::parse(jsonContent, jsonString);
+        std::string const parseError = picojson::parse(jsonContent, RemoveJSONComments(jsonString));
         if (!parseError.empty())
         {
             throw GameException("Error parsing JSON string: " + parseError);
@@ -65,15 +51,9 @@ picojson::value Utils::ParseJSONString(std::string const & jsonString)
     return jsonContent;
 }
 
-void Utils::SaveJSONFile(
-    picojson::value const & value,
-    std::filesystem::path const & filepath)
+std::string Utils::MakeStringFromJSON(picojson::value const & value)
 {
-    std::string serializedJson = value.serialize(true);
-
-    Utils::SaveTextFile(
-        serializedJson,
-        filepath);
+    return value.serialize(true);
 }
 
 ////////////////////////////////////////////////////////

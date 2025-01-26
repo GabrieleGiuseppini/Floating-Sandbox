@@ -11,8 +11,6 @@
 #include <chrono>
 #include <ctime>
 #include <deque>
-#include <filesystem>
-#include <fstream>
 #include <functional>
 #include <iomanip>
 #include <iostream>
@@ -141,25 +139,20 @@ public:
         _LogToNothing(std::forward<TArgs>(args)...);
     }
 
-    void FlushToFile(
-        std::filesystem::path const & logFolderPath,
-        std::string namePrefix = Utils::MakeNowDateAndTimeString())
+    std::string GetAll()
     {
-        std::filesystem::path const logFilePath = logFolderPath / (namePrefix + ".log");
-
-        std::ofstream outputFile(logFilePath, std::ios_base::out | std::ios_base::trunc);
+        std::stringstream ss;
 
         {
             std::scoped_lock lock(mMutex);
 
             for (auto const & s : mStoredMessages)
             {
-                outputFile << s;
+                ss << s;
             }
         }
 
-        outputFile.flush();
-        outputFile.close();
+        return ss.str();
     }
 
 private:

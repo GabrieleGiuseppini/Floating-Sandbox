@@ -7,10 +7,9 @@
 
 #include <chrono>
 #include <cstdint>
-#include <filesystem>
 
 /*
- * A portable arithmetic representation of timestamps, 
+ * A portable arithmetic representation of timestamps,
  * at an arbitrary granularity and with an arbitrary epoch.
  */
 class PortableTimepoint final
@@ -26,7 +25,16 @@ public:
 
 	static PortableTimepoint Now();
 
-	static PortableTimepoint FromLastWriteTime(std::filesystem::path const & filePath);
+	template<typename TTime>
+	static PortableTimepoint FromTime(TTime const & time)
+	{
+		// Convert to system clock (warning: approx)
+		auto const systemClockTime = std::chrono::time_point_cast<std::chrono::system_clock::duration>(
+			(time - TTime::clock::now())
+			+ std::chrono::system_clock::now());
+
+		return PortableTimepoint(systemClockTime);
+	}
 
 	value_type Value() const
 	{

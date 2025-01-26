@@ -18,13 +18,10 @@
 #include <chrono>
 #include <cstdint>
 #include <cstdio>
-#include <filesystem>
-#include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <iterator>
 #include <optional>
-#include <regex>
 #include <sstream>
 #include <string>
 
@@ -34,15 +31,9 @@ namespace Utils
     // JSON
     ////////////////////////////////////////////////////////
 
-    picojson::value ParseJSONFile(std::filesystem::path const & filepath);
-
-    picojson::value ParseJSONStream(std::istream const & stream);
-
     picojson::value ParseJSONString(std::string const & jsonString);
 
-    void SaveJSONFile(
-        picojson::value const & value,
-        std::filesystem::path const & filepath);
+    std::string MakeStringFromJSON(picojson::value const & value);
 
     template<typename T>
     inline T GetJsonValueAs(
@@ -460,14 +451,6 @@ namespace Utils
         return res;
     }
 
-    inline std::regex MakeFilenameMatchRegex(std::string const & pattern)
-    {
-        std::string regexPattern = FindAndReplaceAll(pattern, ".", "\\.");
-        regexPattern = FindAndReplaceAll(regexPattern, "*", ".*");
-
-        return std::regex(regexPattern, std::regex_constants::icase);
-    }
-
     inline std::string MakeTodayDateString()
     {
         auto now = std::chrono::system_clock::now();
@@ -488,127 +471,6 @@ namespace Utils
         ss << std::put_time(std::localtime(&now_c), "%Y%m%d_%H%M%S");
 
         return ss.str();
-    }
-
-    inline std::string MakeFilenameSafeString(std::string const & str)
-    {
-        // Make sure the filename may be converted to the local codepage
-        // (see https://developercommunity.visualstudio.com/content/problem/721120/stdfilesystempathgeneric-string-throws-an-exceptio.html)
-
-        // Go char by char and only add safe chars
-
-        std::string result;
-
-        for (size_t i = 0; i < str.length(); ++i)
-        {
-            if (str[i] != '\\' && str[i] != '/' && str[i] != ':' && str[i] != '\"' && str[i] != '*')
-            {
-                std::string const charString = str.substr(i, 1);
-                std::string const strTest = result + charString;
-
-                try
-                {
-                    std::string _ = std::filesystem::path(strTest).filename().string();
-                    (void)_;
-
-                    // Safe, keep it
-                    result += charString;
-                }
-                catch (...)
-                {
-                    // Skip it
-                }
-            }
-        }
-
-        return result;
-    }
-
-    ////////////////////////////////////////////////////////
-    // File system
-    ////////////////////////////////////////////////////////
-
-    inline bool IsFileUnderDirectory(
-        std::filesystem::path const & filePath,
-        std::filesystem::path const & directoryPath)
-    {
-        std::filesystem::path const normalizedFilePath = filePath.lexically_normal();
-        std::filesystem::path const normalizedDirectoryPath = directoryPath.lexically_normal();
-        auto const [dirEnd, _] = std::mismatch(normalizedDirectoryPath.begin(), normalizedDirectoryPath.end(), normalizedFilePath.begin(), normalizedFilePath.end());
-        return dirEnd == normalizedDirectoryPath.end();
-    }
-
-    ////////////////////////////////////////////////////////
-    // Text files
-    ////////////////////////////////////////////////////////
-
-    inline std::string LoadTextFile(std::filesystem::path const & filepath)
-    {
-        std::ifstream file(filepath.string(), std::ios::in);
-        if (!file.is_open())
-        {
-            throw GameException("Cannot open file \"" + filepath.string() + "\"");
-        }
-
-        std::stringstream ss;
-        ss << file.rdbuf();
-
-        std::string content = ss.str();
-
-        // For some reason, the preferences file sometimes is made of all null characters
-        content.erase(
-            std::find(content.begin(), content.end(), '\0'),
-            content.end());
-
-        return content;
-    }
-
-    inline std::vector<std::string> LoadTextFileLines(std::filesystem::path const & filepath)
-    {
-        std::ifstream file(filepath.string(), std::ios::in);
-        if (!file.is_open())
-        {
-            throw GameException("Cannot open file \"" + filepath.string() + "\"");
-        }
-
-        std::string line;
-        std::vector<std::string> lines;
-        while (std::getline(file, line))
-        {
-            lines.emplace_back(line);
-        }
-
-        return lines;
-    }
-
-    inline std::string LoadTextStream(std::istream const & stream)
-    {
-        std::stringstream ss;
-        ss << stream.rdbuf();
-
-        return ss.str();
-    }
-
-    inline void SaveTextFile(
-        std::string const & content,
-        std::filesystem::path const & filepath)
-    {
-        auto const directoryPath = filepath.parent_path();
-
-        if (!std::filesystem::exists(directoryPath))
-            std::filesystem::create_directories(directoryPath);
-
-        std::ofstream file(filepath.string(), std::ios::out);
-
-        if (!file.is_open())
-        {
-            throw GameException("Cannot open file \"" + filepath.string() + "\"");
-        }
-
-        file << content;
-
-        file.flush();
-        file.close();
     }
 
     ////////////////////////////////////////////////////////

@@ -1,6 +1,6 @@
 
 #
-# GameCore library
+# Core library
 #
 
 set  (SOURCES
@@ -87,12 +87,12 @@ set  (SOURCES
 
 source_group(" " FILES ${SOURCES})
 
-add_library (GameCoreLib ${SOURCES})
+add_library (Core ${SOURCES})
 
-target_include_directories(GameCoreLib PRIVATE ${PNG_PNG_INCLUDE_DIR})
-target_include_directories(GameCoreLib PUBLIC ${PICOJSON_INCLUDE_DIRS})
-target_include_directories(GameCoreLib INTERFACE ..)
+target_include_directories(Core PRIVATE ${PNG_PNG_INCLUDE_DIR})
+target_include_directories(Core PUBLIC ${PICOJSON_INCLUDE_DIRS})
+target_include_directories(Core INTERFACE ..)
 
-target_link_libraries (GameCoreLib
+target_link_libraries (Core
 	${PNG_LIBRARY}
 	${ADDITIONAL_LIBRARIES})

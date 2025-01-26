@@ -269,21 +269,7 @@ endif()
 # Sub-projects
 ####################################################
 
-add_subdirectory(FloatingSandbox)
-add_subdirectory(Game)
-add_subdirectory(GameCore)
-add_subdirectory(GameOpenGL)
-add_subdirectory(GPUCalc)
-add_subdirectory(GPUCalcTest)
-add_subdirectory(ShipBuilder)
-add_subdirectory(ShipBuilderLib)
-add_subdirectory(ShipTools)
-add_subdirectory(UILib)
-add_subdirectory(UnitTests)
-
-if(FS_BUILD_BENCHMARKS)
-	add_subdirectory(Benchmarks)
-endif()
+add_subdirectory(Sources)
 
 ####################################################
 # Visual Studio specifics
@@ -304,7 +290,8 @@ else()
 endif()
 
 # User-defined
-DefineUserPostInstall()
+# TODOHERE
+#DefineUserPostInstall()
 
 ####################################################
 # Diagnostics
