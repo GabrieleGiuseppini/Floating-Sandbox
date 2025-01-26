@@ -1,6 +1,6 @@
-#include <GameCore/FloatingPoint.h>
+#include <Core/FloatingPoint.h>
 
-#include "Utils.h"
+#include "TestingUtils.h"
 
 #include <limits>
 

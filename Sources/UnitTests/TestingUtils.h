@@ -1,7 +1,10 @@
-#include <Game/FileSystem.h>
-#include <Game/Materials.h>
+#include <Core/IAssetManager.h>
+#include <Core/ImageData.h>
+#include <Core/MemoryStreams.h>
 
-#include <GameCore/MemoryStreams.h>
+#include <Game/FileSystem.h>
+// TODOTEST
+//#include <Game/Materials.h>
 
 #include <map>
 #include <vector>
@@ -9,7 +12,35 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
-::testing::AssertionResult ApproxEquals(float a, float b, float tolerance);
+// Test texture database in storage
+struct TestTextureDatabase
+{
+    struct TestTextureDatabaseFrameInfo
+    {
+        std::string FrameFilename;
+        ImageSize FrameSize;
+    };
+
+    std::string DatabaseName;
+    std::vector<TestTextureDatabaseFrameInfo> FrameInfos;
+    std::string DatabaseJson;
+};
+
+class TestAssetManager : public IAssetManager
+{
+public:
+
+    TestAssetManager(std::vector<TestTextureDatabase> textureDatabases);
+
+    picojson::value LoadTetureDatabaseSpecification(std::string const & databaseName) override;
+    ImageSize GetTextureDatabaseFrameSize(std::string const & databaseName, std::string const & frameFileName) override;
+    RgbaImageData LoadTextureDatabaseFrameRGBA(std::string const & databaseName, std::string const & frameFileName) override;
+    std::vector<std::string> EnumerateTextureDatabaseFrames(std::string const & databaseName) override;
+
+private:
+
+    std::vector<TestTextureDatabase> mTextureDatabases;
+};
 
 class TestFileSystem : public IFileSystem
 {
@@ -182,7 +213,10 @@ public:
     MOCK_METHOD2(RenameFile, void(std::filesystem::path const & oldFilePath, std::filesystem::path const & newFilePath));
 };
 
+::testing::AssertionResult ApproxEquals(float a, float b, float tolerance);
+
 float DivideByTwo(float value);
 
-StructuralMaterial MakeTestStructuralMaterial(std::string name, rgbColor colorKey);
-ElectricalMaterial MakeTestElectricalMaterial(std::string name, rgbColor colorKey, bool isInstanced = false);
+// TODOTEST
+//StructuralMaterial MakeTestStructuralMaterial(std::string name, rgbColor colorKey);
+//ElectricalMaterial MakeTestElectricalMaterial(std::string name, rgbColor colorKey, bool isInstanced = false);

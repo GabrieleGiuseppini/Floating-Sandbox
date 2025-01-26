@@ -1,8 +1,8 @@
-#include <GameCore/GameMath.h>
+#include <Core/GameMath.h>
 
 #include <cmath>
 
-#include "Utils.h"
+#include "TestingUtils.h"
 
 #include "gtest/gtest.h"
 

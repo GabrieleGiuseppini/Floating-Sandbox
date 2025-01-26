@@ -1,6 +1,6 @@
-#include <GameCore/GameGeometry.h>
+#include <Core/GameGeometry.h>
 
-#include "Utils.h"
+#include "TestingUtils.h"
 
 #include "gtest/gtest.h"
 

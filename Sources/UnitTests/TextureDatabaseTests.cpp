@@ -1,12 +1,14 @@
 #include <Core/TextureDatabase.h>
 
+#include "TestingUtils.h"
+
 #include "gtest/gtest.h"
 
-struct TestTextureDatabase
+struct MyTestTextureDatabase
 {
-    static inline std::string DatabaseName = "Test";
+    static inline std::string DatabaseName = "MyTest";
 
-    enum class TextureGroups : uint16_t
+    enum class MyTextureGroups : uint16_t
     {
         MyTestGroup1 = 0,
         MyTestGroup2 = 1,
@@ -14,21 +16,37 @@ struct TestTextureDatabase
         _Last = MyTestGroup2
     };
 
-    static TextureGroups StrToTextureGroup(std::string const & str)
+    using TextureGroupsEnumType = MyTextureGroups;
+
+    static MyTextureGroups StrToTextureGroup(std::string const & str)
     {
         if (Utils::CaseInsensitiveEquals(str, "MyTestGroup1"))
-            return TextureGroups::MyTestGroup1;
+            return MyTextureGroups::MyTestGroup1;
         else if (Utils::CaseInsensitiveEquals(str, "MyTestGroup2"))
-            return TextureGroups::MyTestGroup2;
+            return MyTextureGroups::MyTestGroup2;
         else
             throw GameException("Unrecognized Test texture group \"" + str + "\"");
     }
 };
 
-TEST(TextureDatabaseTests, Instantiation)
+TEST(TextureDatabaseTests, Loading)
 {
-    // TODOHERE: provide a TestAssetManager, prepared with a database
-    IAssetManager * foo = nullptr;
-    IAssetManager testAssetManager = *foo;
-    auto db = TextureDatabase<TestTextureDatabase>::Load(testAssetManager);
+    // Prepare test DB
+    TestAssetManager testAssetManager(
+        {
+            TestTextureDatabase{
+                MyTestTextureDatabase::DatabaseName,
+                {},
+                "TODO"
+            }
+        }
+    );
+
+    // Load texture database
+    auto db = TextureDatabase<MyTestTextureDatabase>::Load(testAssetManager);
+
+    // TODOHERE
 }
+
+// TODO: not all frames matched
+// TODO: missing frame

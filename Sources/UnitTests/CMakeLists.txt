@@ -31,14 +31,14 @@ set (UNIT_TEST_SOURCES
 	FileSystemTests.cpp
 	FinalizerTests.cpp
 	FixedSizeVectorTests.cpp
-	#FloatingPointTests.cpp
+	FloatingPointTests.cpp
 	#GameEventDispatcherTests.cpp
-	#GameGeometryTests.cpp
-	#GameMathTests.cpp
+	GameGeometryTests.cpp
+	GameMathTests.cpp
 	ImageToolsTests.cpp
 	IndexRemapTests.cpp
 	#InstancedElectricalElementSetTests.cpp
-	#IntegralSystemTests.cpp
+	IntegralSystemTests.cpp
 	#LayerTests.cpp
 	#LayoutHelperTests.cpp
 	main.cpp
@@ -59,8 +59,8 @@ set (UNIT_TEST_SOURCES
 	SysSpecificsTests.cpp
 	TaskThreadTests.cpp
 	TemporallyCoherentPriorityQueueTests.cpp
-	#TestingUtils.cpp
-	#TestingUtils.h
+	TestingUtils.cpp
+	TestingUtils.h
 	#TextureAtlasTests.cpp
 	TextureDatabaseTests.cpp
 	ThreadPoolTests.cpp
@@ -68,7 +68,7 @@ set (UNIT_TEST_SOURCES
 	TupleKeysTests.cpp
 	UniqueBufferTests.cpp
 	UtilsTests.cpp
-	#VectorsTests.cpp
+	VectorsTests.cpp
 	#VersionTests.cpp
 )
 

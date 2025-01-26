@@ -1,8 +1,8 @@
-#include <GameCore/Vectors.h>
+#include <Core/Vectors.h>
 
-#include <GameCore/SysSpecifics.h>
+#include <Core/SysSpecifics.h>
 
-#include "Utils.h"
+#include "TestingUtils.h"
 
 #include <cmath>
 

@@ -19,7 +19,6 @@
 #include "GameTypes.h"
 #include "IAssetManager.h"
 #include "ImageData.h"
-#include "Utils.h"
 
 #include <picojson.h>
 
@@ -55,7 +54,7 @@ struct TextureFrameMetadata
     vec2f AnchorCenterWorld;
 
     // The ID of this frame
-    TextureFrameId<TTextureDatabase> FrameId;
+    TextureFrameId<typename TTextureDatabase::TextureGroupsEnumType> FrameId;
 
     // The filename of this frame's texture
     std::string Filename;
@@ -70,7 +69,7 @@ struct TextureFrameMetadata
         bool hasOwnAmbientLight,
         ImageCoordinates const & anchorCenter,
         vec2f const & anchorCenterWorld,
-        TextureFrameId<TTextureDatabase> frameId,
+        TextureFrameId<typename TTextureDatabase::TextureGroupsEnumType> frameId,
         std::string const & filename,
         std::string const & displayName)
         : Size(size)
@@ -119,7 +118,7 @@ struct TextureFrameSpecification
     // Metadata
     TextureFrameMetadata<TTextureDatabase> Metadata;
 
-    TextureFrameSpecification(TextureFrameMetadata<TTextureDatabase> const & metadata)
+    explicit TextureFrameSpecification(TextureFrameMetadata<TTextureDatabase> const & metadata)
         : Metadata(metadata)
     {}
 
@@ -144,13 +143,13 @@ class TextureGroup
 {
 public:
 
-    using TextureGroups = typename TTextureDatabase::TextureGroups;
+    using TextureGroupsEnum = typename TTextureDatabase::TextureGroupsEnumType;
 
     // The group
-    TextureGroups Group;
+    TextureGroupsEnum Group;
 
     TextureGroup(
-        TextureGroups group,
+        TextureGroupsEnum group,
         std::vector<TextureFrameSpecification<TTextureDatabase>> frameSpecifications)
         : Group(group)
         , mFrameSpecifications(std::move(frameSpecifications))
@@ -191,7 +190,7 @@ class TextureDatabase
 {
 public:
 
-    using TextureGroups = typename TTextureDatabase::TextureGroups;
+    using TextureGroupsEnum = typename TTextureDatabase::TextureGroupsEnumType;
 
     static TextureDatabase Load(IAssetManager & assetManager);
 
@@ -200,14 +199,14 @@ public:
         return mGroups;
     }
 
-    inline TextureGroup<TTextureDatabase> const & GetGroup(TextureGroups group) const
+    inline TextureGroup<TTextureDatabase> const & GetGroup(TextureGroupsEnum group) const
     {
         assert(static_cast<size_t>(group) < mGroups.size());
         return mGroups[static_cast<size_t>(group)];
     }
 
     inline TextureFrameMetadata<TTextureDatabase> const & GetFrameMetadata(
-        TextureGroups group,
+        TextureGroupsEnum group,
         TextureFrameIndex frameIndex) const
     {
         assert(static_cast<size_t>(group) < mGroups.size());
