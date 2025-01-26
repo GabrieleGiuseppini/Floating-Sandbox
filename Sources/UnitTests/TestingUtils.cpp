@@ -7,27 +7,6 @@
 #include <set>
 #include <stdexcept>
 
-TestAssetManager::TestAssetManager(std::vector<TestTextureDatabase> textureDatabases)
-    : mTextureDatabases(std::move(textureDatabases))
-{
-    // Verify no dupe DBs, and no dupe frames in each DB
-    std::set<std::string> encounteredDbNames;
-    for (auto const & db : textureDatabases)
-    {
-        assert(encounteredDbNames.count(db.DatabaseName) == 0);
-
-        std::set<std::string> encounteredFrameFilenames;
-        for (auto const & frameInfo : db.FrameInfos)
-        {
-            assert(encounteredFrameFilenames.count(frameInfo.FrameFilename) == 0);
-
-            encounteredFrameFilenames.insert(frameInfo.FrameFilename);
-        }
-
-        encounteredDbNames.insert(db.DatabaseName);
-    }
-}
-
 picojson::value TestAssetManager::LoadTetureDatabaseSpecification(std::string const & databaseName)
 {
     return Utils::ParseJSONString(GetDatabase(databaseName).DatabaseJson);
@@ -49,7 +28,7 @@ ImageSize TestAssetManager::GetTextureDatabaseFrameSize(std::string const & data
 
 RgbaImageData TestAssetManager::LoadTextureDatabaseFrameRGBA(std::string const & databaseName, std::string const & frameFileName)
 {
-    // TODO
+    assert(false); // Not needed by tests, so far
     (void)databaseName;
     (void)frameFileName;
     return RgbaImageData(0, 0);
@@ -72,9 +51,23 @@ std::vector<std::string> TestAssetManager::EnumerateTextureDatabaseFrames(std::s
     return frameFilenames;
 }
 
+picojson::value TestAssetManager::LoadTetureAtlasSpecification(std::string const & databaseName)
+{
+    assert(false); // Not needed by tests, so far
+    (void)databaseName;
+    return picojson::value();
+}
+
+RgbaImageData TestAssetManager::LoadTextureAtlasImage(std::string const & databaseName)
+{
+    assert(false); // Not needed by tests, so far
+    (void)databaseName;
+    return RgbaImageData(0, 0);
+}
+
 TestTextureDatabase const & TestAssetManager::GetDatabase(std::string const & databaseName)
 {
-    for (auto const & db : mTextureDatabases)
+    for (auto const & db : TestTextureDatabases)
     {
         if (db.DatabaseName == databaseName)
         {

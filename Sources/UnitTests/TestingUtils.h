@@ -30,18 +30,23 @@ class TestAssetManager : public IAssetManager
 {
 public:
 
-    TestAssetManager(std::vector<TestTextureDatabase> textureDatabases);
+    std::vector<TestTextureDatabase> TestTextureDatabases;
+
+public:
+
+    TestAssetManager() = default;
 
     picojson::value LoadTetureDatabaseSpecification(std::string const & databaseName) override;
     ImageSize GetTextureDatabaseFrameSize(std::string const & databaseName, std::string const & frameFileName) override;
     RgbaImageData LoadTextureDatabaseFrameRGBA(std::string const & databaseName, std::string const & frameFileName) override;
     std::vector<std::string> EnumerateTextureDatabaseFrames(std::string const & databaseName) override;
 
+    picojson::value LoadTetureAtlasSpecification(std::string const & databaseName) override;
+    RgbaImageData LoadTextureAtlasImage(std::string const & databaseName) override;
+
 private:
 
     TestTextureDatabase const & GetDatabase(std::string const & databaseName);
-
-    std::vector<TestTextureDatabase> mTextureDatabases;
 };
 
 class TestFileSystem : public IFileSystem

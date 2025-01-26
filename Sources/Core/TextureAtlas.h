@@ -7,10 +7,11 @@
 
 #include "EnumFlags.h"
 #include "GameException.h"
+#include "IAssetManager.h"
 #include "ImageData.h"
 #include "ProgressCallback.h"
 #include "TextureDatabase.h"
-#include "Vectors.h""
+#include "Vectors.h"
 
 #include <picojson.h>
 
@@ -18,7 +19,6 @@
 #include <cassert>
 #include <memory>
 #include <numeric>
-#include <type_traits>
 #include <unordered_map>
 #include <vector>
 
@@ -39,7 +39,7 @@ template <> struct is_flag<TextureAtlasOptions> : std::true_type {};
 /*
  * Metadata about one single frame in a texture atlas.
  */
-template <typename TextureGroups>
+template <typename TTextureDatabase>
 struct TextureAtlasFrameMetadata
 {
 public:
@@ -54,7 +54,7 @@ public:
     int FrameLeftX; // In pixel-coordinate space
     int FrameBottomY; // In pixel-coordinate space
 
-    TextureFrameMetadata<TextureGroups> FrameMetadata;
+    TextureFrameMetadata<TTextureDatabase> FrameMetadata;
 
     TextureAtlasFrameMetadata(
         float textureSpaceWidth,
@@ -64,7 +64,7 @@ public:
         vec2f textureCoordinatesTopRight,
         int frameLeftX,
         int frameBottomY,
-        TextureFrameMetadata<TextureGroups> frameMetadata)
+        TextureFrameMetadata<TTextureDatabase> frameMetadata)
         : TextureSpaceWidth(textureSpaceWidth)
         , TextureSpaceHeight(textureSpaceHeight)
         , TextureCoordinatesBottomLeft(textureCoordinatesBottomLeft)
@@ -78,7 +78,7 @@ public:
     /*
      * Creates a copy of self with same in-atlas properties but for a new frame.
      */
-    TextureAtlasFrameMetadata CloneForNewTextureFrame(TextureFrameMetadata<TextureGroups> const & newFrameMetadata) const
+    TextureAtlasFrameMetadata CloneForNewTextureFrame(TextureFrameMetadata<TTextureDatabase> const & newFrameMetadata) const
     {
         TextureAtlasFrameMetadata clone = *this;
         clone.FrameMetadata = newFrameMetadata;
@@ -93,15 +93,17 @@ public:
 /*
  * Metadata about a whole texture atlas.
  */
-template <typename TextureGroups>
+template <typename TTextureDatabase>
 struct TextureAtlasMetadata
 {
 public:
 
+    using TTextureGroups = typename TTextureDatabase::TextureGroupsType;
+
     TextureAtlasMetadata(
         ImageSize size,
         TextureAtlasOptions options,
-        std::vector<TextureAtlasFrameMetadata<TextureGroups>> && frames);
+        std::vector<TextureAtlasFrameMetadata<TTextureDatabase>> && frames);
 
     inline ImageSize const & GetSize() const
     {
@@ -123,18 +125,18 @@ public:
         return (mOptions & TextureAtlasOptions::MipMappable) != TextureAtlasOptions::None;
     }
 
-    inline std::vector<TextureAtlasFrameMetadata<TextureGroups>> const & GetAllFramesMetadata() const
+    inline std::vector<TextureAtlasFrameMetadata<TTextureDatabase>> const & GetAllFramesMetadata() const
     {
         return mFrameMetadata;
     }
 
-    inline TextureAtlasFrameMetadata<TextureGroups> const & GetFrameMetadata(TextureFrameId<TextureGroups> const & frameId) const
+    inline TextureAtlasFrameMetadata<TTextureDatabase> const & GetFrameMetadata(TextureFrameId<TTextureGroups> const & frameId) const
     {
         return GetFrameMetadata(frameId.Group, frameId.FrameIndex);
     }
 
-    inline TextureAtlasFrameMetadata<TextureGroups> const & GetFrameMetadata(
-        TextureGroups group,
+    inline TextureAtlasFrameMetadata<TTextureDatabase> const & GetFrameMetadata(
+        TTextureGroups group,
         TextureFrameIndex frameIndex) const
     {
         assert(static_cast<size_t>(group) < mFrameMetadataIndices.size());
@@ -142,7 +144,7 @@ public:
         return mFrameMetadata[mFrameMetadataIndices[static_cast<size_t>(group)][frameIndex]];
     }
 
-    inline TextureAtlasFrameMetadata<TextureGroups> const & GetFrameMetadata(std::string const & filenameStem) const
+    inline TextureAtlasFrameMetadata<TTextureDatabase> const & GetFrameMetadata(std::string const & filenameStem) const
     {
         if (mFrameMetadataByFilenameStem.count(filenameStem) != 1)
         {
@@ -152,7 +154,7 @@ public:
         return mFrameMetadata[mFrameMetadataByFilenameStem.at(filenameStem)];
     }
 
-    inline size_t GetFrameCount(TextureGroups group) const
+    inline size_t GetFrameCount(TTextureGroups group) const
     {
         assert(static_cast<size_t>(group) < mFrameMetadataIndices.size());
         return mFrameMetadataIndices[static_cast<size_t>(group)].size();
@@ -170,7 +172,7 @@ private:
 
     TextureAtlasOptions const mOptions;
 
-    std::vector<TextureAtlasFrameMetadata<TextureGroups>> mFrameMetadata;
+    std::vector<TextureAtlasFrameMetadata<TTextureDatabase>> mFrameMetadata;
 
     // Indexed by group first and frame index then
     std::vector<std::vector<size_t>> mFrameMetadataIndices;
@@ -182,19 +184,19 @@ private:
 /*
  * A texture atlas.
  */
-template <typename TextureGroups>
+template <typename TTextureDatabase>
 struct TextureAtlas
 {
 public:
 
     // Metadata
-    TextureAtlasMetadata<TextureGroups> Metadata;
+    TextureAtlasMetadata<TTextureDatabase> Metadata;
 
     // The image itself
     RgbaImageData AtlasData;
 
     TextureAtlas(
-        TextureAtlasMetadata<TextureGroups> && metadata,
+        TextureAtlasMetadata<TTextureDatabase> && metadata,
         RgbaImageData && atlasData)
         : Metadata(std::move(metadata))
         , AtlasData(std::move(atlasData))
@@ -204,47 +206,30 @@ public:
     // De/Serialization
     //
 
-    // TODOHERE
-    void Serialize(
-        std::string const & databaseName,
-        std::filesystem::path const & outputDirectoryPath) const;
+    std::tuple<picojson::value, RgbaImageData const &> Serialize() const;
 
-    static TextureAtlas Deserialize(
-        std::string const & databaseName,
-        std::filesystem::path const & databaseRootDirectoryPath);
-
-private:
-
-    static std::filesystem::path MakeMetadataFilename(std::string const & databaseName)
-    {
-        return databaseName + ".atlas.json";
-    }
-
-    static std::filesystem::path MakeImageFilename(std::string const & databaseName)
-    {
-        return databaseName + ".atlas.png";
-    }
+    static TextureAtlas Deserialize(IAssetManager & assetManager);
 };
 
-template <typename TextureGroups>
+template <typename TTextureDatabase>
 class TextureAtlasBuilder
 {
 public:
 
+    using TTextureGroups = typename TTextureDatabase::TextureGroupsType;
+
     /*
-     * Builds an atlas with the entire content of the specified database.
+     * Builds an atlas with the entire content of the database.
      */
-    template<typename TextureDatabaseTraits>
-    static TextureAtlas<TextureGroups> BuildAtlas(
-        TextureDatabase<TextureDatabaseTraits> const & database,
+    static TextureAtlas<TTextureDatabase> BuildAtlas(
+        TextureDatabase<TTextureDatabase> const & database,
         TextureAtlasOptions options,
+        IAssetManager & assetManager,
         ProgressCallback const & progressCallback)
     {
-        static_assert(std::is_same<TextureGroups, typename TextureDatabaseTraits::TextureGroups>::value);
-
-        auto frameLoader = [&database](TextureFrameId<TextureGroups> const & frameId) -> TextureFrame<TextureGroups>
+        auto frameLoader = [&database, &assetManager](TextureFrameId<TTextureGroups> const & frameId) -> TextureFrame<TTextureDatabase>
             {
-                return database.GetGroup(frameId.Group).LoadFrame(frameId.FrameIndex);
+                return database.GetGroup(frameId.Group).LoadFrame(frameId.FrameIndex, assetManager);
             };
 
         // Build TextureInfo's
@@ -271,11 +256,11 @@ public:
     /*
      * Builds an atlas with the specified textures.
      */
-    static TextureAtlas<TextureGroups> BuildAtlas(
-        std::vector<TextureFrame<TextureGroups>> && textureFrames,
+    static TextureAtlas<TTextureDatabase> BuildAtlas(
+        std::vector<TextureFrame<TTextureDatabase>> && textureFrames,
         TextureAtlasOptions options)
     {
-        auto frameLoader = [&textureFrames](TextureFrameId<TextureGroups> const & frameId) -> TextureFrame<TextureGroups>
+        auto frameLoader = [&textureFrames](TextureFrameId<TTextureGroups> const & frameId) -> TextureFrame<TTextureDatabase>
             {
                 for (size_t t = 0; t < textureFrames.size(); t++)
                 {
@@ -317,14 +302,12 @@ public:
      * without having to rely on a specification.
      * The atlas produced is suitable for mipmapping.
      */
-    template<typename TextureDatabaseTraits>
-    static TextureAtlas<TextureGroups> BuildRegularAtlas(
-        TextureDatabase<TextureDatabaseTraits> const & database,
+    static TextureAtlas<TTextureDatabase> BuildRegularAtlas(
+        TextureDatabase<TTextureDatabase> const & database,
         TextureAtlasOptions options,
+        IAssetManager & assetManager,
         ProgressCallback const & progressCallback)
     {
-        static_assert(std::is_same<TextureGroups, typename TextureDatabaseTraits::TextureGroups>::value);
-
         if (!!(options & TextureAtlasOptions::SuppressDuplicates))
         {
             throw GameException("Duplicate suppression is not implemented with regular atlases");
@@ -345,9 +328,9 @@ public:
         return InternalBuildAtlas(
             specification,
             options | TextureAtlasOptions::MipMappable,
-            [&database](TextureFrameId<TextureGroups> const & frameId)
+            [&database, &assetManager](TextureFrameId<TTextureGroups> const & frameId)
             {
-                return database.GetGroup(frameId.Group).LoadFrame(frameId.FrameIndex);
+                return database.GetGroup(frameId.Group).LoadFrame(frameId.FrameIndex, assetManager);
             },
             progressCallback);
     }
@@ -356,11 +339,11 @@ private:
 
     struct TextureInfo
     {
-        TextureFrameId<TextureGroups> FrameId;
+        TextureFrameId<TTextureGroups> FrameId;
         ImageSize InAtlasSize;
 
         TextureInfo(
-            TextureFrameId<TextureGroups> frameId,
+            TextureFrameId<TTextureGroups> frameId,
             ImageSize inAtlasSize)
             : FrameId(frameId)
             , InAtlasSize(inAtlasSize)
@@ -371,12 +354,12 @@ private:
     {
         struct TextureLocationInfo
         {
-            TextureFrameId<TextureGroups> FrameId;
+            TextureFrameId<TTextureGroups> FrameId;
             vec2i InAtlasBottomLeft;
             ImageSize InAtlasSize;
 
             TextureLocationInfo(
-                TextureFrameId<TextureGroups> frameId,
+                TextureFrameId<TTextureGroups> frameId,
                 vec2i inAtlasBottomLeft,
                 ImageSize inAtlasSize)
                 : FrameId(frameId)
@@ -387,12 +370,12 @@ private:
 
         struct DuplicateTextureInfo
         {
-            TextureFrameMetadata<TextureGroups> DuplicateFrameMetadata;
-            TextureFrameId<TextureGroups> OriginalFrameId;
+            TextureFrameMetadata<TTextureDatabase> DuplicateFrameMetadata;
+            TextureFrameId<TTextureGroups> OriginalFrameId;
 
             DuplicateTextureInfo(
-                TextureFrameMetadata<TextureGroups> duplicateFrameMetadata,
-                TextureFrameId<TextureGroups> originalFrameId)
+                TextureFrameMetadata<TTextureDatabase> duplicateFrameMetadata,
+                TextureFrameId<TTextureGroups> originalFrameId)
                 : DuplicateFrameMetadata(duplicateFrameMetadata)
                 , OriginalFrameId(originalFrameId)
             {}
@@ -420,18 +403,18 @@ private:
     // Unit-tested
     static AtlasSpecification BuildAtlasSpecification(
         std::vector<TextureInfo> const & inputTextureInfos,
-        AtlasOptions options,
-        std::function<TextureFrame<TextureGroups>(TextureFrameId<TextureGroups> const &)> frameLoader);
+        TextureAtlasOptions options,
+        std::function<TextureFrame<TTextureDatabase>(TextureFrameId<TTextureGroups> const &)> frameLoader);
 
     // Unit-tested
     static AtlasSpecification BuildRegularAtlasSpecification(
         std::vector<TextureInfo> const & inputTextureInfos);
 
     // Unit-tested
-    static TextureAtlas<TextureGroups> InternalBuildAtlas(
+    static TextureAtlas<TTextureDatabase> InternalBuildAtlas(
         AtlasSpecification const & specification,
-        AtlasOptions options,
-        std::function<TextureFrame<TextureGroups>(TextureFrameId<TextureGroups> const &)> frameLoader,
+        TextureAtlasOptions options,
+        std::function<TextureFrame<TTextureDatabase>(TextureFrameId<TTextureGroups> const &)> frameLoader,
         ProgressCallback const & progressCallback);
 
     static void CopyImage(
@@ -441,8 +424,8 @@ private:
         vec2i const & destinationBottomLeftPosition);
 
     static inline void AddTextureInfos(
-        TextureGroup<TextureGroups> const & group,
-        AtlasOptions options,
+        TextureGroup<TTextureDatabase> const & group,
+        TextureAtlasOptions options,
         std::vector<TextureInfo> /* out */ & textureInfos)
     {
         std::transform(
@@ -459,10 +442,10 @@ private:
 
     static ImageSize MakeInAtlasSize(
         ImageSize originalSize,
-        AtlasOptions options)
+        TextureAtlasOptions options)
     {
         // If we need a mip-mappable atlas, enforce dimensions to be power-of-two
-        return ((options & AtlasOptions::MipMappable) != AtlasOptions::None)
+        return ((options & TextureAtlasOptions::MipMappable) != TextureAtlasOptions::None)
             ? ImageSize(
                 ceil_power_of_two(originalSize.width),
                 ceil_power_of_two(originalSize.height))

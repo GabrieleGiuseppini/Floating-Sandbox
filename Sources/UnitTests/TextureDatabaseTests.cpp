@@ -32,18 +32,19 @@ struct MyTestTextureDatabase
 TEST(TextureDatabaseTests, Loading)
 {
     // Prepare test DB
-    TestAssetManager testAssetManager(
-        {
-            TestTextureDatabase{
-                MyTestTextureDatabase::DatabaseName,
-                {
-                    TestTextureDatabase::DatabaseFrameInfo{"George_0.png", ImageSize(1, 2)},
-                    TestTextureDatabase::DatabaseFrameInfo{"George_2.png", ImageSize(222, 223)},
-                    TestTextureDatabase::DatabaseFrameInfo{"John_1.png", ImageSize(111, 112)},
-                    TestTextureDatabase::DatabaseFrameInfo{"Ringo_0.png", ImageSize(2022, 2023)},
-                    TestTextureDatabase::DatabaseFrameInfo{"Ringo_1.png", ImageSize(2122, 2123)},
-                },
-                R"xxx(
+    TestAssetManager testAssetManager;
+    testAssetManager.TestTextureDatabases =
+    {
+        TestTextureDatabase{
+            MyTestTextureDatabase::DatabaseName,
+            {
+                TestTextureDatabase::DatabaseFrameInfo{"George_0.png", ImageSize(1, 2)},
+                TestTextureDatabase::DatabaseFrameInfo{"George_2.png", ImageSize(222, 223)},
+                TestTextureDatabase::DatabaseFrameInfo{"John_1.png", ImageSize(111, 112)},
+                TestTextureDatabase::DatabaseFrameInfo{"Ringo_0.png", ImageSize(2022, 2023)},
+                TestTextureDatabase::DatabaseFrameInfo{"Ringo_1.png", ImageSize(2122, 2123)},
+            },
+            R"xxx(
 [
     {
 	    "groupName": "MyTestGroup1",
@@ -76,8 +77,7 @@ TEST(TextureDatabaseTests, Loading)
 ]
                 )xxx"
             }
-        }
-    );
+    };
 
     // Load texture database
     auto db = TextureDatabase<MyTestTextureDatabase>::Load(testAssetManager);
@@ -131,14 +131,15 @@ TEST(TextureDatabaseTests, Loading)
 TEST(TextureDatabaseTests, NotAllGroupsCovered)
 {
     // Prepare test DB
-    TestAssetManager testAssetManager(
-        {
-            TestTextureDatabase{
-                MyTestTextureDatabase::DatabaseName,
-                {
-                    TestTextureDatabase::DatabaseFrameInfo{"George_0.png", ImageSize(1, 2)},
-                },
-                R"xxx(
+    TestAssetManager testAssetManager;
+    testAssetManager.TestTextureDatabases =
+    {
+        TestTextureDatabase{
+            MyTestTextureDatabase::DatabaseName,
+            {
+                TestTextureDatabase::DatabaseFrameInfo{"George_0.png", ImageSize(1, 2)},
+            },
+            R"xxx(
 [
     {
 	    "groupName": "MyTestGroup1",
@@ -148,13 +149,13 @@ TEST(TextureDatabaseTests, NotAllGroupsCovered)
 			    "worldWidth": 10.0,
 			    "worldHeight": 20.0,
 			    "filenameStemPattern": "George_\\d+"
-		    }	    ]
+		    }
+        ]
     }
 ]
-                )xxx"
-            }
+            )xxx"
         }
-    );
+    };
 
     EXPECT_THROW(
         TextureDatabase<MyTestTextureDatabase>::Load(testAssetManager),
@@ -165,17 +166,18 @@ TEST(TextureDatabaseTests, NotAllGroupsCovered)
 TEST(TextureDatabaseTests, NotAllFramesCovered)
 {
     // Prepare test DB
-    TestAssetManager testAssetManager(
-        {
-            TestTextureDatabase{
-                MyTestTextureDatabase::DatabaseName,
-                {
-                    TestTextureDatabase::DatabaseFrameInfo{"George_0.png", ImageSize(1, 2)},
-                    TestTextureDatabase::DatabaseFrameInfo{"John_1.png", ImageSize(111, 112)},
-                    TestTextureDatabase::DatabaseFrameInfo{"Ringo_0.png", ImageSize(2022, 2023)},
-                    TestTextureDatabase::DatabaseFrameInfo{"Ringo_1.png", ImageSize(2122, 2123)},
-                },
-                R"xxx(
+    TestAssetManager testAssetManager;
+    testAssetManager.TestTextureDatabases =
+    {
+        TestTextureDatabase{
+            MyTestTextureDatabase::DatabaseName,
+            {
+                TestTextureDatabase::DatabaseFrameInfo{"George_0.png", ImageSize(1, 2)},
+                TestTextureDatabase::DatabaseFrameInfo{"John_1.png", ImageSize(111, 112)},
+                TestTextureDatabase::DatabaseFrameInfo{"Ringo_0.png", ImageSize(2022, 2023)},
+                TestTextureDatabase::DatabaseFrameInfo{"Ringo_1.png", ImageSize(2122, 2123)},
+            },
+            R"xxx(
 [
     {
 	    "groupName": "MyTestGroup1",
@@ -202,9 +204,8 @@ TEST(TextureDatabaseTests, NotAllFramesCovered)
     }
 ]
                 )xxx"
-            }
         }
-    );
+    };
 
     EXPECT_THROW(
         TextureDatabase<MyTestTextureDatabase>::Load(testAssetManager),
@@ -214,17 +215,18 @@ TEST(TextureDatabaseTests, NotAllFramesCovered)
 TEST(TextureDatabaseTests, NotAllFramesFound)
 {
     // Prepare test DB
-    TestAssetManager testAssetManager(
-        {
-            TestTextureDatabase{
-                MyTestTextureDatabase::DatabaseName,
-                {
-                    TestTextureDatabase::DatabaseFrameInfo{"George_0.png", ImageSize(1, 2)},
-                    TestTextureDatabase::DatabaseFrameInfo{"George_2.png", ImageSize(222, 223)},
-                    TestTextureDatabase::DatabaseFrameInfo{"Ringo_0.png", ImageSize(2022, 2023)},
-                    TestTextureDatabase::DatabaseFrameInfo{"Ringo_1.png", ImageSize(2122, 2123)},
-                },
-                R"xxx(
+    TestAssetManager testAssetManager;
+    testAssetManager.TestTextureDatabases =
+    {
+        TestTextureDatabase{
+            MyTestTextureDatabase::DatabaseName,
+            {
+                TestTextureDatabase::DatabaseFrameInfo{"George_0.png", ImageSize(1, 2)},
+                TestTextureDatabase::DatabaseFrameInfo{"George_2.png", ImageSize(222, 223)},
+                TestTextureDatabase::DatabaseFrameInfo{"Ringo_0.png", ImageSize(2022, 2023)},
+                TestTextureDatabase::DatabaseFrameInfo{"Ringo_1.png", ImageSize(2122, 2123)},
+            },
+            R"xxx(
 [
     {
 	    "groupName": "MyTestGroup1",
@@ -256,9 +258,8 @@ TEST(TextureDatabaseTests, NotAllFramesFound)
     }
 ]
                 )xxx"
-            }
         }
-    );
+    };
 
     EXPECT_THROW(
         TextureDatabase<MyTestTextureDatabase>::Load(testAssetManager),

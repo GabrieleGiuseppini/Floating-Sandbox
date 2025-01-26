@@ -34,4 +34,8 @@ public:
 	virtual ImageSize GetTextureDatabaseFrameSize(std::string const & databaseName, std::string const & frameFileName) = 0;
 	virtual RgbaImageData LoadTextureDatabaseFrameRGBA(std::string const & databaseName, std::string const & frameFileName) = 0;
 	virtual std::vector<std::string> EnumerateTextureDatabaseFrames(std::string const & databaseName) = 0;
+
+	// Texture atlases
+	virtual picojson::value LoadTetureAtlasSpecification(std::string const & databaseName) = 0;
+	virtual RgbaImageData LoadTextureAtlasImage(std::string const & databaseName) = 0;
 };
