@@ -73,6 +73,8 @@ set  (SOURCES
 	TaskThread.cpp
 	TaskThread.h
 	TemporallyCoherentPriorityQueue.h
+	TextureAtlas.h
+	TextureAtlas-inl.h
 	TextureDatabase.h
 	TextureDatabase-inl.h
 	ThreadManager.cpp

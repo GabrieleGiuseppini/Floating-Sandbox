@@ -61,7 +61,7 @@ set (UNIT_TEST_SOURCES
 	TemporallyCoherentPriorityQueueTests.cpp
 	TestingUtils.cpp
 	TestingUtils.h
-	#TextureAtlasTests.cpp
+	TextureAtlasTests.cpp
 	TextureDatabaseTests.cpp
 	ThreadPoolTests.cpp
 	TruncatedPriorityQueueTests.cpp

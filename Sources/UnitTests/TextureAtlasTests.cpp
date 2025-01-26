@@ -1,34 +1,38 @@
-#include <Game/TextureAtlas.h>
+#include <Core/TextureAtlas.h>
 
-#include <Game/TextureTypes.h>
-
-#include "Utils.h"
+#include "TestingUtils.h"
 
 #include "gtest/gtest.h"
 
-namespace Render {
-
 RgbaImageData DUMMY_IMAGE(5, 5, rgbaColor(0x01, 0x01, 0x01, 0x01));
+
+enum class MyTextureGroups : uint16_t
+{
+    MyTestGroup1 = 0,
+
+    _Last = MyTestGroup1
+};
+
 
 TEST(TextureAtlasTests, Specification_OneTexture)
 {
-    std::vector<TextureAtlasBuilder<CloudTextureGroups>::TextureInfo> textureInfos{
-        { {CloudTextureGroups::Cloud, 5}, {43, 12} }
+    std::vector<TextureAtlasBuilder<MyTextureGroups>::TextureInfo> textureInfos{
+        { {MyTextureGroups::MyTestGroup1, 5}, {43, 12} }
     };
 
-    auto atlasSpecification = TextureAtlasBuilder<CloudTextureGroups>::BuildAtlasSpecification(
+    auto atlasSpecification = TextureAtlasBuilder<MyTextureGroups>::BuildAtlasSpecification(
         textureInfos,
-        AtlasOptions::None,
-        [](auto const &) -> TextureFrame<CloudTextureGroups>
+        TextureAtlasOptions::None,
+        [](auto const &) -> TextureFrame<MyTextureGroups>
         {
-            return TextureFrame<CloudTextureGroups>(
+            return TextureFrame<MyTextureGroups>(
                 {
                     DUMMY_IMAGE.Size,
                     1.0f, 1.0f,
                     false,
                     ImageCoordinates(0, 0),
                     vec2f::zero(),
-                    TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 15),
+                    TextureFrameId<MyTextureGroups>(MyTextureGroups::MyTestGroup1, 5),
                     "0", "0"
                 },
                 DUMMY_IMAGE.Clone());
@@ -38,7 +42,7 @@ TEST(TextureAtlasTests, Specification_OneTexture)
     EXPECT_EQ(16, atlasSpecification.AtlasSize.height);
 
     ASSERT_EQ(1u, atlasSpecification.TextureLocationInfos.size());
-    ASSERT_EQ(TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 5), atlasSpecification.TextureLocationInfos[0].FrameId);
+    ASSERT_EQ(TextureFrameId<MyTextureGroups>(MyTextureGroups::MyTestGroup1, 5), atlasSpecification.TextureLocationInfos[0].FrameId);
     ASSERT_EQ(0, atlasSpecification.TextureLocationInfos[0].InAtlasBottomLeft.x);
     ASSERT_EQ(0, atlasSpecification.TextureLocationInfos[0].InAtlasBottomLeft.y);
     ASSERT_EQ(43, atlasSpecification.TextureLocationInfos[0].InAtlasSize.width);
@@ -48,30 +52,30 @@ TEST(TextureAtlasTests, Specification_OneTexture)
 TEST(TextureAtlasTests, Specification_MultipleTextures)
 {
     // Original guess: 256x256
-    std::vector<TextureAtlasBuilder<CloudTextureGroups>::TextureInfo> textureInfos{
-        { {CloudTextureGroups::Cloud, 0}, {128, 64} },
-        { {CloudTextureGroups::Cloud, 1}, {128, 64} },
-        { {CloudTextureGroups::Cloud, 2}, {128, 128} },
-        { {CloudTextureGroups::Cloud, 3}, {64, 64} },
-        { {CloudTextureGroups::Cloud, 4}, {256, 256} },
-        { {CloudTextureGroups::Cloud, 5}, {64, 64} },
-        { {CloudTextureGroups::Cloud, 6}, {64, 64} },
-        { {CloudTextureGroups::Cloud, 7}, {64, 64} }
+    std::vector<TextureAtlasBuilder<MyTextureGroups>::TextureInfo> textureInfos{
+        { {MyTextureGroups::MyTestGroup1, 0}, {128, 64} },
+        { {MyTextureGroups::MyTestGroup1, 1}, {128, 64} },
+        { {MyTextureGroups::MyTestGroup1, 2}, {128, 128} },
+        { {MyTextureGroups::MyTestGroup1, 3}, {64, 64} },
+        { {MyTextureGroups::MyTestGroup1, 4}, {256, 256} },
+        { {MyTextureGroups::MyTestGroup1, 5}, {64, 64} },
+        { {MyTextureGroups::MyTestGroup1, 6}, {64, 64} },
+        { {MyTextureGroups::MyTestGroup1, 7}, {64, 64} }
     };
 
-    auto atlasSpecification = TextureAtlasBuilder<CloudTextureGroups>::BuildAtlasSpecification(
+    auto atlasSpecification = TextureAtlasBuilder<MyTextureGroups>::BuildAtlasSpecification(
         textureInfos,
-        AtlasOptions::None,
-        [](auto const &) -> TextureFrame<CloudTextureGroups>
+        TextureAtlasOptions::None,
+        [](auto const &) -> TextureFrame<MyTextureGroups>
         {
-            return TextureFrame<CloudTextureGroups>(
+            return TextureFrame<MyTextureGroups>(
                 {
                     DUMMY_IMAGE.Size,
                     1.0f, 1.0f,
                     false,
                     ImageCoordinates(0, 0),
                     vec2f::zero(),
-                    TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 15),
+                    TextureFrameId<MyTextureGroups>(MyTextureGroups::MyTestGroup1, 15),
                     "0", "0"
                 },
                 DUMMY_IMAGE.Clone());
@@ -82,49 +86,49 @@ TEST(TextureAtlasTests, Specification_MultipleTextures)
 
     ASSERT_EQ(8u, atlasSpecification.TextureLocationInfos.size());
 
-    EXPECT_EQ(TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 4), atlasSpecification.TextureLocationInfos[0].FrameId);
+    EXPECT_EQ(TextureFrameId<MyTextureGroups>(MyTextureGroups::MyTestGroup1, 4), atlasSpecification.TextureLocationInfos[0].FrameId);
     EXPECT_EQ(0, atlasSpecification.TextureLocationInfos[0].InAtlasBottomLeft.x);
     EXPECT_EQ(0, atlasSpecification.TextureLocationInfos[0].InAtlasBottomLeft.y);
     EXPECT_EQ(256, atlasSpecification.TextureLocationInfos[0].InAtlasSize.width);
     EXPECT_EQ(256, atlasSpecification.TextureLocationInfos[0].InAtlasSize.height);
 
-    EXPECT_EQ(TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 2), atlasSpecification.TextureLocationInfos[1].FrameId);
+    EXPECT_EQ(TextureFrameId<MyTextureGroups>(MyTextureGroups::MyTestGroup1, 2), atlasSpecification.TextureLocationInfos[1].FrameId);
     EXPECT_EQ(256, atlasSpecification.TextureLocationInfos[1].InAtlasBottomLeft.x);
     EXPECT_EQ(0, atlasSpecification.TextureLocationInfos[1].InAtlasBottomLeft.y);
     EXPECT_EQ(128, atlasSpecification.TextureLocationInfos[1].InAtlasSize.width);
     EXPECT_EQ(128, atlasSpecification.TextureLocationInfos[1].InAtlasSize.height);
 
-    EXPECT_EQ(TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 0), atlasSpecification.TextureLocationInfos[2].FrameId);
+    EXPECT_EQ(TextureFrameId<MyTextureGroups>(MyTextureGroups::MyTestGroup1, 0), atlasSpecification.TextureLocationInfos[2].FrameId);
     EXPECT_EQ(256, atlasSpecification.TextureLocationInfos[2].InAtlasBottomLeft.x);
     EXPECT_EQ(128, atlasSpecification.TextureLocationInfos[2].InAtlasBottomLeft.y);
     EXPECT_EQ(128, atlasSpecification.TextureLocationInfos[2].InAtlasSize.width);
     EXPECT_EQ(64, atlasSpecification.TextureLocationInfos[2].InAtlasSize.height);
 
-    EXPECT_EQ(TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 1), atlasSpecification.TextureLocationInfos[3].FrameId);
+    EXPECT_EQ(TextureFrameId<MyTextureGroups>(MyTextureGroups::MyTestGroup1, 1), atlasSpecification.TextureLocationInfos[3].FrameId);
     EXPECT_EQ(256, atlasSpecification.TextureLocationInfos[3].InAtlasBottomLeft.x);
     EXPECT_EQ(128 + 64, atlasSpecification.TextureLocationInfos[3].InAtlasBottomLeft.y);
     EXPECT_EQ(128, atlasSpecification.TextureLocationInfos[3].InAtlasSize.width);
     EXPECT_EQ(64, atlasSpecification.TextureLocationInfos[3].InAtlasSize.height);
 
-    EXPECT_EQ(TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 3), atlasSpecification.TextureLocationInfos[4].FrameId);
+    EXPECT_EQ(TextureFrameId<MyTextureGroups>(MyTextureGroups::MyTestGroup1, 3), atlasSpecification.TextureLocationInfos[4].FrameId);
     EXPECT_EQ(256 + 128, atlasSpecification.TextureLocationInfos[4].InAtlasBottomLeft.x);
     EXPECT_EQ(0, atlasSpecification.TextureLocationInfos[4].InAtlasBottomLeft.y);
     EXPECT_EQ(64, atlasSpecification.TextureLocationInfos[4].InAtlasSize.width);
     EXPECT_EQ(64, atlasSpecification.TextureLocationInfos[4].InAtlasSize.height);
 
-    EXPECT_EQ(TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 5), atlasSpecification.TextureLocationInfos[5].FrameId);
+    EXPECT_EQ(TextureFrameId<MyTextureGroups>(MyTextureGroups::MyTestGroup1, 5), atlasSpecification.TextureLocationInfos[5].FrameId);
     EXPECT_EQ(256 + 128, atlasSpecification.TextureLocationInfos[5].InAtlasBottomLeft.x);
     EXPECT_EQ(64, atlasSpecification.TextureLocationInfos[5].InAtlasBottomLeft.y);
     EXPECT_EQ(64, atlasSpecification.TextureLocationInfos[5].InAtlasSize.width);
     EXPECT_EQ(64, atlasSpecification.TextureLocationInfos[5].InAtlasSize.height);
 
-    EXPECT_EQ(TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 6), atlasSpecification.TextureLocationInfos[6].FrameId);
+    EXPECT_EQ(TextureFrameId<MyTextureGroups>(MyTextureGroups::MyTestGroup1, 6), atlasSpecification.TextureLocationInfos[6].FrameId);
     EXPECT_EQ(256 + 128, atlasSpecification.TextureLocationInfos[6].InAtlasBottomLeft.x);
     EXPECT_EQ(64 + 64, atlasSpecification.TextureLocationInfos[6].InAtlasBottomLeft.y);
     EXPECT_EQ(64, atlasSpecification.TextureLocationInfos[6].InAtlasSize.width);
     EXPECT_EQ(64, atlasSpecification.TextureLocationInfos[6].InAtlasSize.height);
 
-    EXPECT_EQ(TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 7), atlasSpecification.TextureLocationInfos[7].FrameId);
+    EXPECT_EQ(TextureFrameId<MyTextureGroups>(MyTextureGroups::MyTestGroup1, 7), atlasSpecification.TextureLocationInfos[7].FrameId);
     EXPECT_EQ(256 + 128, atlasSpecification.TextureLocationInfos[7].InAtlasBottomLeft.x);
     EXPECT_EQ(64 + 64 + 64, atlasSpecification.TextureLocationInfos[7].InAtlasBottomLeft.y);
     EXPECT_EQ(64, atlasSpecification.TextureLocationInfos[7].InAtlasSize.width);
@@ -133,69 +137,69 @@ TEST(TextureAtlasTests, Specification_MultipleTextures)
 
 TEST(TextureAtlasTests, Specification_RegularAtlas)
 {
-    std::vector<TextureAtlasBuilder<CloudTextureGroups>::TextureInfo> textureInfos{
-        { {CloudTextureGroups::Cloud, 0}, {64, 64} },
-        { {CloudTextureGroups::Cloud, 1}, {64, 64} },
-        { {CloudTextureGroups::Cloud, 2}, {64, 64} },
-        { {CloudTextureGroups::Cloud, 3}, {64, 64} },
-        { {CloudTextureGroups::Cloud, 4}, {64, 64} },
-        { {CloudTextureGroups::Cloud, 5}, {64, 64} },
-        { {CloudTextureGroups::Cloud, 6}, {64, 64} },
-        { {CloudTextureGroups::Cloud, 7}, {64, 64} },
-        { {CloudTextureGroups::Cloud, 8}, {64, 64} },
-        { {CloudTextureGroups::Cloud, 9}, {64, 64} },
-        { {CloudTextureGroups::Cloud, 10}, {64, 64} },
-        { {CloudTextureGroups::Cloud, 11}, {64, 64} },
-        { {CloudTextureGroups::Cloud, 12}, {64, 64} },
-        { {CloudTextureGroups::Cloud, 13}, {64, 64} },
-        { {CloudTextureGroups::Cloud, 14}, {64, 64} },
-        { {CloudTextureGroups::Cloud, 15}, {64, 64} }
+    std::vector<TextureAtlasBuilder<MyTextureGroups>::TextureInfo> textureInfos{
+        { {MyTextureGroups::MyTestGroup1, 0}, {64, 64} },
+        { {MyTextureGroups::MyTestGroup1, 1}, {64, 64} },
+        { {MyTextureGroups::MyTestGroup1, 2}, {64, 64} },
+        { {MyTextureGroups::MyTestGroup1, 3}, {64, 64} },
+        { {MyTextureGroups::MyTestGroup1, 4}, {64, 64} },
+        { {MyTextureGroups::MyTestGroup1, 5}, {64, 64} },
+        { {MyTextureGroups::MyTestGroup1, 6}, {64, 64} },
+        { {MyTextureGroups::MyTestGroup1, 7}, {64, 64} },
+        { {MyTextureGroups::MyTestGroup1, 8}, {64, 64} },
+        { {MyTextureGroups::MyTestGroup1, 9}, {64, 64} },
+        { {MyTextureGroups::MyTestGroup1, 10}, {64, 64} },
+        { {MyTextureGroups::MyTestGroup1, 11}, {64, 64} },
+        { {MyTextureGroups::MyTestGroup1, 12}, {64, 64} },
+        { {MyTextureGroups::MyTestGroup1, 13}, {64, 64} },
+        { {MyTextureGroups::MyTestGroup1, 14}, {64, 64} },
+        { {MyTextureGroups::MyTestGroup1, 15}, {64, 64} }
     };
 
-    auto atlasSpecification = TextureAtlasBuilder<CloudTextureGroups>::BuildRegularAtlasSpecification(textureInfos);
+    auto atlasSpecification = TextureAtlasBuilder<MyTextureGroups>::BuildRegularAtlasSpecification(textureInfos);
 
     EXPECT_EQ(256, atlasSpecification.AtlasSize.width);
     EXPECT_EQ(256, atlasSpecification.AtlasSize.height);
 
     ASSERT_EQ(16u, atlasSpecification.TextureLocationInfos.size());
 
-    EXPECT_EQ(TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 0), atlasSpecification.TextureLocationInfos[0].FrameId);
+    EXPECT_EQ(TextureFrameId<MyTextureGroups>(MyTextureGroups::MyTestGroup1, 0), atlasSpecification.TextureLocationInfos[0].FrameId);
     EXPECT_EQ(0, atlasSpecification.TextureLocationInfos[0].InAtlasBottomLeft.x);
     EXPECT_EQ(0, atlasSpecification.TextureLocationInfos[0].InAtlasBottomLeft.y);
     EXPECT_EQ(64, atlasSpecification.TextureLocationInfos[0].InAtlasSize.width);
     EXPECT_EQ(64, atlasSpecification.TextureLocationInfos[0].InAtlasSize.height);
 
-    EXPECT_EQ(TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 1), atlasSpecification.TextureLocationInfos[1].FrameId);
+    EXPECT_EQ(TextureFrameId<MyTextureGroups>(MyTextureGroups::MyTestGroup1, 1), atlasSpecification.TextureLocationInfos[1].FrameId);
     EXPECT_EQ(64, atlasSpecification.TextureLocationInfos[1].InAtlasBottomLeft.x);
     EXPECT_EQ(0, atlasSpecification.TextureLocationInfos[1].InAtlasBottomLeft.y);
 
-    EXPECT_EQ(TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 2), atlasSpecification.TextureLocationInfos[2].FrameId);
+    EXPECT_EQ(TextureFrameId<MyTextureGroups>(MyTextureGroups::MyTestGroup1, 2), atlasSpecification.TextureLocationInfos[2].FrameId);
     EXPECT_EQ(128, atlasSpecification.TextureLocationInfos[2].InAtlasBottomLeft.x);
     EXPECT_EQ(0, atlasSpecification.TextureLocationInfos[2].InAtlasBottomLeft.y);
 
-    EXPECT_EQ(TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 4), atlasSpecification.TextureLocationInfos[4].FrameId);
+    EXPECT_EQ(TextureFrameId<MyTextureGroups>(MyTextureGroups::MyTestGroup1, 4), atlasSpecification.TextureLocationInfos[4].FrameId);
     EXPECT_EQ(0, atlasSpecification.TextureLocationInfos[4].InAtlasBottomLeft.x);
     EXPECT_EQ(64, atlasSpecification.TextureLocationInfos[4].InAtlasBottomLeft.y);
 
-    EXPECT_EQ(TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 5), atlasSpecification.TextureLocationInfos[5].FrameId);
+    EXPECT_EQ(TextureFrameId<MyTextureGroups>(MyTextureGroups::MyTestGroup1, 5), atlasSpecification.TextureLocationInfos[5].FrameId);
     EXPECT_EQ(64, atlasSpecification.TextureLocationInfos[5].InAtlasBottomLeft.x);
     EXPECT_EQ(64, atlasSpecification.TextureLocationInfos[5].InAtlasBottomLeft.y);
 
-    EXPECT_EQ(TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 6), atlasSpecification.TextureLocationInfos[6].FrameId);
+    EXPECT_EQ(TextureFrameId<MyTextureGroups>(MyTextureGroups::MyTestGroup1, 6), atlasSpecification.TextureLocationInfos[6].FrameId);
     EXPECT_EQ(128, atlasSpecification.TextureLocationInfos[6].InAtlasBottomLeft.x);
     EXPECT_EQ(64, atlasSpecification.TextureLocationInfos[6].InAtlasBottomLeft.y);
 
-    EXPECT_EQ(TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 7), atlasSpecification.TextureLocationInfos[7].FrameId);
+    EXPECT_EQ(TextureFrameId<MyTextureGroups>(MyTextureGroups::MyTestGroup1, 7), atlasSpecification.TextureLocationInfos[7].FrameId);
     EXPECT_EQ(128 + 64, atlasSpecification.TextureLocationInfos[7].InAtlasBottomLeft.x);
     EXPECT_EQ(64, atlasSpecification.TextureLocationInfos[7].InAtlasBottomLeft.y);
     EXPECT_EQ(64, atlasSpecification.TextureLocationInfos[7].InAtlasSize.width);
     EXPECT_EQ(64, atlasSpecification.TextureLocationInfos[7].InAtlasSize.height);
 
-    EXPECT_EQ(TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 14), atlasSpecification.TextureLocationInfos[14].FrameId);
+    EXPECT_EQ(TextureFrameId<MyTextureGroups>(MyTextureGroups::MyTestGroup1, 14), atlasSpecification.TextureLocationInfos[14].FrameId);
     EXPECT_EQ(128, atlasSpecification.TextureLocationInfos[14].InAtlasBottomLeft.x);
     EXPECT_EQ(128 + 64, atlasSpecification.TextureLocationInfos[14].InAtlasBottomLeft.y);
 
-    EXPECT_EQ(TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 15), atlasSpecification.TextureLocationInfos[15].FrameId);
+    EXPECT_EQ(TextureFrameId<MyTextureGroups>(MyTextureGroups::MyTestGroup1, 15), atlasSpecification.TextureLocationInfos[15].FrameId);
     EXPECT_EQ(128 + 64, atlasSpecification.TextureLocationInfos[15].InAtlasBottomLeft.x);
     EXPECT_EQ(128 + 64, atlasSpecification.TextureLocationInfos[15].InAtlasBottomLeft.y);
     EXPECT_EQ(64, atlasSpecification.TextureLocationInfos[15].InAtlasSize.width);
@@ -204,24 +208,24 @@ TEST(TextureAtlasTests, Specification_RegularAtlas)
 
 TEST(TextureAtlasTests, Specification_RoundsAtlasSize)
 {
-    std::vector<TextureAtlasBuilder<CloudTextureGroups>::TextureInfo> textureInfos{
-        { {CloudTextureGroups::Cloud, 4}, {256, 256} },
-        { {CloudTextureGroups::Cloud, 5}, {32, 64} }
+    std::vector<TextureAtlasBuilder<MyTextureGroups>::TextureInfo> textureInfos{
+        { {MyTextureGroups::MyTestGroup1, 4}, {256, 256} },
+        { {MyTextureGroups::MyTestGroup1, 5}, {32, 64} }
     };
 
-    auto atlasSpecification = TextureAtlasBuilder<CloudTextureGroups>::BuildAtlasSpecification(
+    auto atlasSpecification = TextureAtlasBuilder<MyTextureGroups>::BuildAtlasSpecification(
         textureInfos,
-        AtlasOptions::None,
-        [](auto const &) -> TextureFrame<CloudTextureGroups>
+        TextureAtlasOptions::None,
+        [](auto const &) -> TextureFrame<MyTextureGroups>
         {
-            return TextureFrame<CloudTextureGroups>(
+            return TextureFrame<MyTextureGroups>(
                 {
                     DUMMY_IMAGE.Size,
                     1.0f, 1.0f,
                     false,
                     ImageCoordinates(0, 0),
                     vec2f::zero(),
-                    TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 15),
+                    TextureFrameId<MyTextureGroups>(MyTextureGroups::MyTestGroup1, 15),
                     "0", "0"
                 },
                 DUMMY_IMAGE.Clone());
@@ -238,27 +242,27 @@ TEST(TextureAtlasTests, Specification_DuplicateSuppression)
     RgbaImageData image2b(5, 5, rgbaColor(0x01, 0x01, 0x01, 0x01));
     RgbaImageData image3(5, 5, rgbaColor(0x01, 0x02, 0x01, 0x01));
 
-    TextureFrameMetadata<CloudTextureGroups> stockFrameMetadata(
+    TextureFrameMetadata<MyTextureGroups> stockFrameMetadata(
         DUMMY_IMAGE.Size,
         1.0f, 1.0f,
         false,
         ImageCoordinates(0, 0),
         vec2f::zero(),
-        TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 15),
+        TextureFrameId<MyTextureGroups>(MyTextureGroups::MyTestGroup1, 15),
         "0", "0");
 
     // Original guess: 256x256
-    std::vector<TextureAtlasBuilder<CloudTextureGroups>::TextureInfo> textureInfos{
-        { {CloudTextureGroups::Cloud, 0}, {4, 4} },
-        { {CloudTextureGroups::Cloud, 1}, {5, 5} },
-        { {CloudTextureGroups::Cloud, 2}, {5, 5} },
-        { {CloudTextureGroups::Cloud, 3}, {5, 5} }
+    std::vector<TextureAtlasBuilder<MyTextureGroups>::TextureInfo> textureInfos{
+        { {MyTextureGroups::MyTestGroup1, 0}, {4, 4} },
+        { {MyTextureGroups::MyTestGroup1, 1}, {5, 5} },
+        { {MyTextureGroups::MyTestGroup1, 2}, {5, 5} },
+        { {MyTextureGroups::MyTestGroup1, 3}, {5, 5} }
     };
 
-    auto atlasSpecification = TextureAtlasBuilder<CloudTextureGroups>::BuildAtlasSpecification(
+    auto atlasSpecification = TextureAtlasBuilder<MyTextureGroups>::BuildAtlasSpecification(
         textureInfos,
-        AtlasOptions::SuppressDuplicates,
-        [&](TextureFrameId<CloudTextureGroups> const & frameId) -> TextureFrame<CloudTextureGroups>
+        TextureAtlasOptions::SuppressDuplicates,
+        [&](TextureFrameId<MyTextureGroups> const & frameId) -> TextureFrame<MyTextureGroups>
         {
             RgbaImageData img(4, 4, rgbaColor(0x01, 0x01, 0x01, 0x01));
             if (frameId.FrameIndex == 0)
@@ -273,7 +277,7 @@ TEST(TextureAtlasTests, Specification_DuplicateSuppression)
                 img = image3.Clone();
             }
 
-            auto tf = TextureFrame<CloudTextureGroups>(
+            auto tf = TextureFrame<MyTextureGroups>(
                 stockFrameMetadata,
                 std::move(img));
             tf.Metadata.FrameId = frameId;
@@ -286,15 +290,15 @@ TEST(TextureAtlasTests, Specification_DuplicateSuppression)
 
     ASSERT_EQ(3u, atlasSpecification.TextureLocationInfos.size());
 
-    EXPECT_EQ(TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 1), atlasSpecification.TextureLocationInfos[0].FrameId);
-    EXPECT_EQ(TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 3), atlasSpecification.TextureLocationInfos[1].FrameId);
-    EXPECT_EQ(TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 0), atlasSpecification.TextureLocationInfos[2].FrameId);
+    EXPECT_EQ(TextureFrameId<MyTextureGroups>(MyTextureGroups::MyTestGroup1, 1), atlasSpecification.TextureLocationInfos[0].FrameId);
+    EXPECT_EQ(TextureFrameId<MyTextureGroups>(MyTextureGroups::MyTestGroup1, 3), atlasSpecification.TextureLocationInfos[1].FrameId);
+    EXPECT_EQ(TextureFrameId<MyTextureGroups>(MyTextureGroups::MyTestGroup1, 0), atlasSpecification.TextureLocationInfos[2].FrameId);
 
     ASSERT_EQ(1u, atlasSpecification.DuplicateTextureInfos.size());
 
-    EXPECT_EQ(TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 2), atlasSpecification.DuplicateTextureInfos[0].DuplicateFrameMetadata.FrameId);
+    EXPECT_EQ(TextureFrameId<MyTextureGroups>(MyTextureGroups::MyTestGroup1, 2), atlasSpecification.DuplicateTextureInfos[0].DuplicateFrameMetadata.FrameId);
     EXPECT_EQ(stockFrameMetadata.Size, atlasSpecification.DuplicateTextureInfos[0].DuplicateFrameMetadata.Size);
-    EXPECT_EQ(TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 1), atlasSpecification.DuplicateTextureInfos[0].OriginalFrameId);
+    EXPECT_EQ(TextureFrameId<MyTextureGroups>(MyTextureGroups::MyTestGroup1, 1), atlasSpecification.DuplicateTextureInfos[0].OriginalFrameId);
 }
 
 TEST(TextureAtlasTests, Placement_InAtlasSizeMatchingFrameSize)
@@ -302,28 +306,28 @@ TEST(TextureAtlasTests, Placement_InAtlasSizeMatchingFrameSize)
     RgbaImageData frame0Image(8, 8, rgbaColor(0x01, 0x01, 0x01, 0x01));
     RgbaImageData frame1Image(4, 4, rgbaColor(0x04, 0x04, 0x04, 0x04));
 
-    auto const specification = TextureAtlasBuilder<CloudTextureGroups>::AtlasSpecification(
+    auto const specification = TextureAtlasBuilder<MyTextureGroups>::AtlasSpecification(
         {
-            TextureAtlasBuilder<CloudTextureGroups>::AtlasSpecification::TextureLocationInfo(
-                {CloudTextureGroups::Cloud, 1},
+            TextureAtlasBuilder<MyTextureGroups>::AtlasSpecification::TextureLocationInfo(
+                {MyTextureGroups::MyTestGroup1, 1},
                 vec2i(0, 0), // Position
                 frame1Image.Size), // In-atlas size
-            TextureAtlasBuilder<CloudTextureGroups>::AtlasSpecification::TextureLocationInfo(
-                {CloudTextureGroups::Cloud, 0},
+            TextureAtlasBuilder<MyTextureGroups>::AtlasSpecification::TextureLocationInfo(
+                {MyTextureGroups::MyTestGroup1, 0},
                 vec2i(4, 0), // Position
                 frame0Image.Size), // In-atlas size
         },
         {},
         ImageSize(12, 8));
 
-    auto const atlas = TextureAtlasBuilder<CloudTextureGroups>::InternalBuildAtlas(
+    auto const atlas = TextureAtlasBuilder<MyTextureGroups>::InternalBuildAtlas(
         specification,
-        AtlasOptions::None,
-        [&](TextureFrameId<CloudTextureGroups> const & frameId)
+        TextureAtlasOptions::None,
+        [&](TextureFrameId<MyTextureGroups> const & frameId)
         {
             if (frameId.FrameIndex == 0)
             {
-                return TextureFrame<CloudTextureGroups>(
+                return TextureFrame<MyTextureGroups>(
                     {
                         frame0Image.Size,
                         1.0f, 1.0f,
@@ -339,7 +343,7 @@ TEST(TextureAtlasTests, Placement_InAtlasSizeMatchingFrameSize)
             {
                 EXPECT_EQ(frameId.FrameIndex, 1);
 
-                return TextureFrame<CloudTextureGroups>(
+                return TextureFrame<MyTextureGroups>(
                     {
                         frame1Image.Size,
                         1.0f, 1.0f,
@@ -384,19 +388,19 @@ TEST(TextureAtlasTests, Placement_InAtlasSizeMatchingFrameSize)
     float const dx = 0.5f / 12.0f;
     float const dy = 0.5f / 8.0f;
 
-    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 0 }).TextureCoordinatesBottomLeft.x, dx + 4.0f / 12.0f, 0.0001f));
-    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 0 }).TextureCoordinatesBottomLeft.y, dy + 0.0f / 8.0f, 0.0001f));
-    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 0 }).TextureCoordinatesAnchorCenter.x, dx + 4.0f / 12.0f + 0.0f / 12.0f, 0.0001f));
-    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 0 }).TextureCoordinatesAnchorCenter.y, dy + 0.0f / 8.0f + 0.0f / 8.0f, 0.0001f));
-    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 0 }).TextureCoordinatesTopRight.x, 4.0f / 12.0f + 8.0f / 12.0f - dx, 0.0001f));
-    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 0 }).TextureCoordinatesTopRight.y, 0.0f / 8.0f + 8.0f / 8.0f - dy, 0.0001f));
+    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ MyTextureGroups::MyTestGroup1, 0 }).TextureCoordinatesBottomLeft.x, dx + 4.0f / 12.0f, 0.0001f));
+    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ MyTextureGroups::MyTestGroup1, 0 }).TextureCoordinatesBottomLeft.y, dy + 0.0f / 8.0f, 0.0001f));
+    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ MyTextureGroups::MyTestGroup1, 0 }).TextureCoordinatesAnchorCenter.x, dx + 4.0f / 12.0f + 0.0f / 12.0f, 0.0001f));
+    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ MyTextureGroups::MyTestGroup1, 0 }).TextureCoordinatesAnchorCenter.y, dy + 0.0f / 8.0f + 0.0f / 8.0f, 0.0001f));
+    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ MyTextureGroups::MyTestGroup1, 0 }).TextureCoordinatesTopRight.x, 4.0f / 12.0f + 8.0f / 12.0f - dx, 0.0001f));
+    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ MyTextureGroups::MyTestGroup1, 0 }).TextureCoordinatesTopRight.y, 0.0f / 8.0f + 8.0f / 8.0f - dy, 0.0001f));
 
-    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 1 }).TextureCoordinatesBottomLeft.x, dx, 0.0001f));
-    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 1 }).TextureCoordinatesBottomLeft.y, dy, 0.0001f));
-    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 1 }).TextureCoordinatesAnchorCenter.x, dx + 1.0f / 12.0f, 0.0001f));
-    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 1 }).TextureCoordinatesAnchorCenter.y, dy + 2.0f / 8.0f, 0.0001f));
-    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 1 }).TextureCoordinatesTopRight.x, 4.0f / 12.0f - dx, 0.0001f));
-    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 1 }).TextureCoordinatesTopRight.y, 4.0f / 8.0f - dy, 0.0001f));
+    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ MyTextureGroups::MyTestGroup1, 1 }).TextureCoordinatesBottomLeft.x, dx, 0.0001f));
+    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ MyTextureGroups::MyTestGroup1, 1 }).TextureCoordinatesBottomLeft.y, dy, 0.0001f));
+    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ MyTextureGroups::MyTestGroup1, 1 }).TextureCoordinatesAnchorCenter.x, dx + 1.0f / 12.0f, 0.0001f));
+    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ MyTextureGroups::MyTestGroup1, 1 }).TextureCoordinatesAnchorCenter.y, dy + 2.0f / 8.0f, 0.0001f));
+    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ MyTextureGroups::MyTestGroup1, 1 }).TextureCoordinatesTopRight.x, 4.0f / 12.0f - dx, 0.0001f));
+    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ MyTextureGroups::MyTestGroup1, 1 }).TextureCoordinatesTopRight.y, 4.0f / 8.0f - dy, 0.0001f));
 }
 
 TEST(TextureAtlasTests, Placement_InAtlasSizeLargerThanFrameSize)
@@ -404,28 +408,28 @@ TEST(TextureAtlasTests, Placement_InAtlasSizeLargerThanFrameSize)
     RgbaImageData frame0Image(5, 5, rgbaColor(0x01, 0x01, 0x01, 0x01));
     RgbaImageData frame1Image(3, 2, rgbaColor(0x04, 0x04, 0x04, 0x04));
 
-    auto const specification = TextureAtlasBuilder<CloudTextureGroups>::AtlasSpecification(
+    auto const specification = TextureAtlasBuilder<MyTextureGroups>::AtlasSpecification(
         {
-            TextureAtlasBuilder<CloudTextureGroups>::AtlasSpecification::TextureLocationInfo(
-                {CloudTextureGroups::Cloud, 1},
+            TextureAtlasBuilder<MyTextureGroups>::AtlasSpecification::TextureLocationInfo(
+                {MyTextureGroups::MyTestGroup1, 1},
                 vec2i(0, 0), // Position
                 ImageSize(4, 4)), // In-atlas size
-            TextureAtlasBuilder<CloudTextureGroups>::AtlasSpecification::TextureLocationInfo(
-                {CloudTextureGroups::Cloud, 0},
+            TextureAtlasBuilder<MyTextureGroups>::AtlasSpecification::TextureLocationInfo(
+                {MyTextureGroups::MyTestGroup1, 0},
                 vec2i(4, 0), // Position
                 ImageSize(8, 8)), // In-atlas size
         },
         {},
         ImageSize(12, 8));
 
-    auto const atlas = TextureAtlasBuilder<CloudTextureGroups>::InternalBuildAtlas(
+    auto const atlas = TextureAtlasBuilder<MyTextureGroups>::InternalBuildAtlas(
         specification,
-        AtlasOptions::None,
-        [&](TextureFrameId<CloudTextureGroups> const & frameId)
+        TextureAtlasOptions::None,
+        [&](TextureFrameId<MyTextureGroups> const & frameId)
         {
             if (frameId.FrameIndex == 0)
             {
-                return TextureFrame<CloudTextureGroups>(
+                return TextureFrame<MyTextureGroups>(
                     {
                         frame0Image.Size,
                         1.0f, 1.0f,
@@ -441,7 +445,7 @@ TEST(TextureAtlasTests, Placement_InAtlasSizeLargerThanFrameSize)
             {
                 EXPECT_EQ(frameId.FrameIndex, 1);
 
-                return TextureFrame<CloudTextureGroups>(
+                return TextureFrame<MyTextureGroups>(
                     {
                         frame1Image.Size,
                         1.0f, 1.0f,
@@ -497,20 +501,20 @@ TEST(TextureAtlasTests, Placement_InAtlasSizeLargerThanFrameSize)
     float const dy = 0.5f / 8.0f;
 
     // Frame 0: @ (4 + 1, 0 + 1) x (5, 5)
-    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 0 }).TextureCoordinatesBottomLeft.x, dx + 5.0f / 12.0f, 0.01f));
-    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 0 }).TextureCoordinatesBottomLeft.y, dy + 1.0f / 8.0f, 0.01f));
-    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 0 }).TextureCoordinatesAnchorCenter.x, dx + 5.0f / 12.0f + 0.0f / 12.0f, 0.01f));
-    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 0 }).TextureCoordinatesAnchorCenter.y, dy + 1.0f / 8.0f + 0.0f / 8.0f, 0.01f));
-    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 0 }).TextureCoordinatesTopRight.x, 5.0f / 12.0f + 5.0f / 12.0f - dx, 0.01f));
-    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 0 }).TextureCoordinatesTopRight.y, 1.0f / 8.0f + 5.0f / 8.0f - dy, 0.01f));
+    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ MyTextureGroups::MyTestGroup1, 0 }).TextureCoordinatesBottomLeft.x, dx + 5.0f / 12.0f, 0.01f));
+    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ MyTextureGroups::MyTestGroup1, 0 }).TextureCoordinatesBottomLeft.y, dy + 1.0f / 8.0f, 0.01f));
+    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ MyTextureGroups::MyTestGroup1, 0 }).TextureCoordinatesAnchorCenter.x, dx + 5.0f / 12.0f + 0.0f / 12.0f, 0.01f));
+    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ MyTextureGroups::MyTestGroup1, 0 }).TextureCoordinatesAnchorCenter.y, dy + 1.0f / 8.0f + 0.0f / 8.0f, 0.01f));
+    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ MyTextureGroups::MyTestGroup1, 0 }).TextureCoordinatesTopRight.x, 5.0f / 12.0f + 5.0f / 12.0f - dx, 0.01f));
+    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ MyTextureGroups::MyTestGroup1, 0 }).TextureCoordinatesTopRight.y, 1.0f / 8.0f + 5.0f / 8.0f - dy, 0.01f));
 
     // Frame 1: @ (0 + 0, 0 + 1) x (3, 2)
-    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 1 }).TextureCoordinatesBottomLeft.x, dx, 0.01f));
-    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 1 }).TextureCoordinatesBottomLeft.y, dy + 1.0f / 8.0f, 0.01f));
-    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 1 }).TextureCoordinatesAnchorCenter.x, dx + 2.0f / 12.0f, 0.01f));
-    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 1 }).TextureCoordinatesAnchorCenter.y, dy + 1.0f / 8.0f + 3.0f / 8.0f, 0.01f));
-    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 1 }).TextureCoordinatesTopRight.x, 0.0f / 12.0f + 3.0f / 12.0f - dx, 0.01f));
-    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 1 }).TextureCoordinatesTopRight.y, 1.0f / 8.0f + 2.0f / 8.0f - dy, 0.01f));
+    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ MyTextureGroups::MyTestGroup1, 1 }).TextureCoordinatesBottomLeft.x, dx, 0.01f));
+    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ MyTextureGroups::MyTestGroup1, 1 }).TextureCoordinatesBottomLeft.y, dy + 1.0f / 8.0f, 0.01f));
+    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ MyTextureGroups::MyTestGroup1, 1 }).TextureCoordinatesAnchorCenter.x, dx + 2.0f / 12.0f, 0.01f));
+    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ MyTextureGroups::MyTestGroup1, 1 }).TextureCoordinatesAnchorCenter.y, dy + 1.0f / 8.0f + 3.0f / 8.0f, 0.01f));
+    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ MyTextureGroups::MyTestGroup1, 1 }).TextureCoordinatesTopRight.x, 0.0f / 12.0f + 3.0f / 12.0f - dx, 0.01f));
+    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ MyTextureGroups::MyTestGroup1, 1 }).TextureCoordinatesTopRight.y, 1.0f / 8.0f + 2.0f / 8.0f - dy, 0.01f));
 }
 
 TEST(TextureAtlasTests, Placement_Duplicates)
@@ -519,40 +523,40 @@ TEST(TextureAtlasTests, Placement_Duplicates)
     RgbaImageData frame1aImage(3, 2, rgbaColor(0x04, 0x04, 0x04, 0x04)); // Original
     RgbaImageData frame1bImage(3, 2, rgbaColor(0x04, 0x04, 0x04, 0x04)); // Duplicate
 
-    auto const specification = TextureAtlasBuilder<CloudTextureGroups>::AtlasSpecification(
+    auto const specification = TextureAtlasBuilder<MyTextureGroups>::AtlasSpecification(
         {
-            TextureAtlasBuilder<CloudTextureGroups>::AtlasSpecification::TextureLocationInfo(
-                {CloudTextureGroups::Cloud, 1},
+            TextureAtlasBuilder<MyTextureGroups>::AtlasSpecification::TextureLocationInfo(
+                {MyTextureGroups::MyTestGroup1, 1},
                 vec2i(0, 0), // Position
                 ImageSize(4, 4)), // In-atlas size
-            TextureAtlasBuilder<CloudTextureGroups>::AtlasSpecification::TextureLocationInfo(
-                {CloudTextureGroups::Cloud, 0},
+            TextureAtlasBuilder<MyTextureGroups>::AtlasSpecification::TextureLocationInfo(
+                {MyTextureGroups::MyTestGroup1, 0},
                 vec2i(4, 0), // Position
                 ImageSize(8, 8)), // In-atlas size
         },
         {
             {
-                TextureFrameMetadata<CloudTextureGroups>(
+                TextureFrameMetadata<MyTextureGroups>(
                     frame1bImage.Size,
                     1.0f, 1.0f,
                     false,
                     ImageCoordinates(0, 0),
                     vec2f::zero(),
-                    TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 2),
+                    TextureFrameId<MyTextureGroups>(MyTextureGroups::MyTestGroup1, 2),
                     "1b", "1b"),
-                TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 1)
+                TextureFrameId<MyTextureGroups>(MyTextureGroups::MyTestGroup1, 1)
             }
         },
         ImageSize(12, 8));
 
-    auto const atlas = TextureAtlasBuilder<CloudTextureGroups>::InternalBuildAtlas(
+    auto const atlas = TextureAtlasBuilder<MyTextureGroups>::InternalBuildAtlas(
         specification,
-        AtlasOptions::SuppressDuplicates,
-        [&](TextureFrameId<CloudTextureGroups> const & frameId)
+        TextureAtlasOptions::SuppressDuplicates,
+        [&](TextureFrameId<MyTextureGroups> const & frameId)
         {
             if (frameId.FrameIndex == 0)
             {
-                return TextureFrame<CloudTextureGroups>(
+                return TextureFrame<MyTextureGroups>(
                     {
                         frame0Image.Size,
                         1.0f, 1.0f,
@@ -568,7 +572,7 @@ TEST(TextureAtlasTests, Placement_Duplicates)
             {
                 EXPECT_EQ(frameId.FrameIndex, 1);
 
-                return TextureFrame<CloudTextureGroups>(
+                return TextureFrame<MyTextureGroups>(
                     {
                         frame1aImage.Size,
                         1.0f, 1.0f,
@@ -584,14 +588,12 @@ TEST(TextureAtlasTests, Placement_Duplicates)
         [](float, ProgressMessageType) {});
 
     EXPECT_EQ(
-        atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 1 }).TextureCoordinatesBottomLeft,
-        atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 2 }).TextureCoordinatesBottomLeft);
+        atlas.Metadata.GetFrameMetadata({ MyTextureGroups::MyTestGroup1, 1 }).TextureCoordinatesBottomLeft,
+        atlas.Metadata.GetFrameMetadata({ MyTextureGroups::MyTestGroup1, 2 }).TextureCoordinatesBottomLeft);
     EXPECT_EQ(
-        atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 1 }).TextureCoordinatesAnchorCenter,
-        atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 2 }).TextureCoordinatesAnchorCenter);
+        atlas.Metadata.GetFrameMetadata({ MyTextureGroups::MyTestGroup1, 1 }).TextureCoordinatesAnchorCenter,
+        atlas.Metadata.GetFrameMetadata({ MyTextureGroups::MyTestGroup1, 2 }).TextureCoordinatesAnchorCenter);
     EXPECT_EQ(
-        atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 1 }).TextureCoordinatesTopRight,
-        atlas.Metadata.GetFrameMetadata({ CloudTextureGroups::Cloud, 2 }).TextureCoordinatesTopRight);
-}
-
+        atlas.Metadata.GetFrameMetadata({ MyTextureGroups::MyTestGroup1, 1 }).TextureCoordinatesTopRight,
+        atlas.Metadata.GetFrameMetadata({ MyTextureGroups::MyTestGroup1, 2 }).TextureCoordinatesTopRight);
 }

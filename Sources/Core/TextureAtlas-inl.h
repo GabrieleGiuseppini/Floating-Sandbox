@@ -5,24 +5,19 @@
 ***************************************************************************************/
 #include "TextureAtlas.h"
 
-#include "PngImageFileTools.h"
-
-#include <GameCore/GameException.h>
-#include <GameCore/ImageFileMap.h>
-#include <GameCore/ImageTools.h>
-#include <GameCore/Log.h>
-#include <GameCore/SysSpecifics.h>
-#include <GameCore/Utils.h>
+#include "ImageFileMap.h"
+#include "ImageTools.h"
+#include "Log.h"
+#include "SysSpecifics.h"
+#include "Utils.h"
 
 #include <cmath>
 #include <cstring>
 
-namespace Render {
-
 template <typename TextureGroups>
 TextureAtlasMetadata<TextureGroups>::TextureAtlasMetadata(
     ImageSize size,
-    AtlasOptions options,
+    TextureAtlasOptions options,
     std::vector<TextureAtlasFrameMetadata<TextureGroups>> && frames)
     : mSize(size)
     , mOptions(options)
@@ -181,7 +176,7 @@ TextureAtlasMetadata<TextureGroups> TextureAtlasMetadata<TextureGroups>::Deseria
         static_cast<int>(sizeJson.at("width").get<std::int64_t>()),
         static_cast<int>(sizeJson.at("height").get<std::int64_t>()));
 
-    AtlasOptions options = static_cast<AtlasOptions>(root.at("options").get<std::int64_t>());
+    TextureAtlasOptions options = static_cast<TextureAtlasOptions>(root.at("options").get<std::int64_t>());
 
     picojson::array const & framesJson = root.at("frames").get<picojson::array>();
     std::vector<TextureAtlasFrameMetadata<TextureGroups>> frames;
@@ -256,7 +251,7 @@ TextureAtlas<TextureGroups> TextureAtlas<TextureGroups>::Deserialize(
 template<typename TextureGroups>
 typename TextureAtlasBuilder<TextureGroups>::AtlasSpecification TextureAtlasBuilder<TextureGroups>::BuildAtlasSpecification(
     std::vector<TextureInfo> const & inputTextureInfos,
-    AtlasOptions options,
+    TextureAtlasOptions options,
     std::function<TextureFrame<TextureGroups>(TextureFrameId<TextureGroups> const &)> frameLoader)
 {
     //
@@ -345,7 +340,7 @@ typename TextureAtlasBuilder<TextureGroups>::AtlasSpecification TextureAtlasBuil
     {
         // Check whether we need to look for duplicates
         bool isDuplicate = false;
-        if (!!(options & AtlasOptions::SuppressDuplicates))
+        if (!!(options & TextureAtlasOptions::SuppressDuplicates))
         {
             // Load this frame
             TextureFrame<TextureGroups> frame = frameLoader(t.FrameId);
@@ -599,7 +594,7 @@ typename TextureAtlasBuilder<TextureGroups>::AtlasSpecification TextureAtlasBuil
 template <typename TextureGroups>
 TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::InternalBuildAtlas(
     AtlasSpecification const & specification,
-    AtlasOptions options,
+    TextureAtlasOptions options,
     std::function<TextureFrame<TextureGroups>(TextureFrameId<TextureGroups> const &)> frameLoader,
     ProgressCallback const & progressCallback)
 {
@@ -633,13 +628,13 @@ TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::InternalBuildAtl
             std::move(textureFrame.TextureData.Data));
 
         // Pre-multiply alpha, if requested
-        if (!!(options & AtlasOptions::AlphaPremultiply))
+        if (!!(options & TextureAtlasOptions::AlphaPremultiply))
         {
             ImageTools::AlphaPreMultiply(textureImageData);
         }
 
         // Apply binary transparency smoothing, if requested
-        if (!!(options & AtlasOptions::BinaryTransparencySmoothing))
+        if (!!(options & TextureAtlasOptions::BinaryTransparencySmoothing))
         {
             ImageTools::ApplyBinaryTransparencySmoothing(textureImageData);
         }
@@ -747,4 +742,3 @@ void TextureAtlasBuilder<TextureGroups>::CopyImage(
     }
 }
 
-}

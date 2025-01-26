@@ -5,31 +5,27 @@
 ***************************************************************************************/
 #pragma once
 
+#include "EnumFlags.h"
+#include "GameException.h"
+#include "ImageData.h"
+#include "ProgressCallback.h"
 #include "TextureDatabase.h"
-
-#include <GameCore/EnumFlags.h>
-#include <GameCore/GameException.h>
-#include <GameCore/ImageData.h>
-#include <GameCore/ProgressCallback.h>
-#include <GameCore/Vectors.h>
+#include "Vectors.h""
 
 #include <picojson.h>
 
 #include <algorithm>
 #include <cassert>
-#include <filesystem>
 #include <memory>
 #include <numeric>
 #include <type_traits>
 #include <unordered_map>
 #include <vector>
 
-namespace Render {
-
 /*
  * Atlas creation options.
  */
-enum class AtlasOptions
+enum class TextureAtlasOptions
 {
     None = 0,
     AlphaPremultiply = 1,
@@ -38,11 +34,7 @@ enum class AtlasOptions
     SuppressDuplicates = 8
 };
 
-}
-
-template <> struct is_flag<Render::AtlasOptions> : std::true_type {};
-
-namespace Render {
+template <> struct is_flag<TextureAtlasOptions> : std::true_type {};
 
 /*
  * Metadata about one single frame in a texture atlas.
@@ -108,7 +100,7 @@ public:
 
     TextureAtlasMetadata(
         ImageSize size,
-        AtlasOptions options,
+        TextureAtlasOptions options,
         std::vector<TextureAtlasFrameMetadata<TextureGroups>> && frames);
 
     inline ImageSize const & GetSize() const
@@ -123,12 +115,12 @@ public:
 
     inline bool IsAlphaPremultiplied() const
     {
-        return (mOptions & AtlasOptions::AlphaPremultiply) != AtlasOptions::None;
+        return (mOptions & TextureAtlasOptions::AlphaPremultiply) != TextureAtlasOptions::None;
     }
 
     inline bool IsSuitableForMipMapping() const
     {
-        return (mOptions & AtlasOptions::MipMappable) != AtlasOptions::None;
+        return (mOptions & TextureAtlasOptions::MipMappable) != TextureAtlasOptions::None;
     }
 
     inline std::vector<TextureAtlasFrameMetadata<TextureGroups>> const & GetAllFramesMetadata() const
@@ -176,7 +168,7 @@ private:
 
     ImageSize const mSize;
 
-    AtlasOptions const mOptions;
+    TextureAtlasOptions const mOptions;
 
     std::vector<TextureAtlasFrameMetadata<TextureGroups>> mFrameMetadata;
 
@@ -212,6 +204,7 @@ public:
     // De/Serialization
     //
 
+    // TODOHERE
     void Serialize(
         std::string const & databaseName,
         std::filesystem::path const & outputDirectoryPath) const;
@@ -244,7 +237,7 @@ public:
     template<typename TextureDatabaseTraits>
     static TextureAtlas<TextureGroups> BuildAtlas(
         TextureDatabase<TextureDatabaseTraits> const & database,
-        AtlasOptions options,
+        TextureAtlasOptions options,
         ProgressCallback const & progressCallback)
     {
         static_assert(std::is_same<TextureGroups, typename TextureDatabaseTraits::TextureGroups>::value);
@@ -280,7 +273,7 @@ public:
      */
     static TextureAtlas<TextureGroups> BuildAtlas(
         std::vector<TextureFrame<TextureGroups>> && textureFrames,
-        AtlasOptions options)
+        TextureAtlasOptions options)
     {
         auto frameLoader = [&textureFrames](TextureFrameId<TextureGroups> const & frameId) -> TextureFrame<TextureGroups>
             {
@@ -327,12 +320,12 @@ public:
     template<typename TextureDatabaseTraits>
     static TextureAtlas<TextureGroups> BuildRegularAtlas(
         TextureDatabase<TextureDatabaseTraits> const & database,
-        AtlasOptions options,
+        TextureAtlasOptions options,
         ProgressCallback const & progressCallback)
     {
         static_assert(std::is_same<TextureGroups, typename TextureDatabaseTraits::TextureGroups>::value);
 
-        if (!!(options & AtlasOptions::SuppressDuplicates))
+        if (!!(options & TextureAtlasOptions::SuppressDuplicates))
         {
             throw GameException("Duplicate suppression is not implemented with regular atlases");
         }
@@ -351,7 +344,7 @@ public:
         // Build atlas
         return InternalBuildAtlas(
             specification,
-            options | AtlasOptions::MipMappable,
+            options | TextureAtlasOptions::MipMappable,
             [&database](TextureFrameId<TextureGroups> const & frameId)
             {
                 return database.GetGroup(frameId.Group).LoadFrame(frameId.FrameIndex);
@@ -487,7 +480,5 @@ private:
     friend class TextureAtlasTests_Placement_InAtlasSizeLargerThanFrameSize_Test;
     friend class TextureAtlasTests_Placement_Duplicates_Test;
 };
-
-}
 
 #include "TextureAtlas-inl.h"
