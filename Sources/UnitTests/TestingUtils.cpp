@@ -1,8 +1,11 @@
 #include "TestingUtils.h"
 
+#include <Core/Utils.h>
+
 #include <cassert>
 #include <cmath>
 #include <set>
+#include <stdexcept>
 
 TestAssetManager::TestAssetManager(std::vector<TestTextureDatabase> textureDatabases)
     : mTextureDatabases(std::move(textureDatabases))
@@ -27,17 +30,62 @@ TestAssetManager::TestAssetManager(std::vector<TestTextureDatabase> textureDatab
 
 picojson::value TestAssetManager::LoadTetureDatabaseSpecification(std::string const & databaseName)
 {
-
+    return Utils::ParseJSONString(GetDatabase(databaseName).DatabaseJson);
 }
 
 ImageSize TestAssetManager::GetTextureDatabaseFrameSize(std::string const & databaseName, std::string const & frameFileName)
-{}
+{
+    auto const & db = GetDatabase(databaseName);
+    for (auto const & f : db.FrameInfos)
+    {
+        if (f.FrameFilename == frameFileName)
+        {
+            return f.FrameSize;
+        }
+    }
+
+    throw std::runtime_error("Invalid test - unknown test texture database frame filename: " + frameFileName);
+}
 
 RgbaImageData TestAssetManager::LoadTextureDatabaseFrameRGBA(std::string const & databaseName, std::string const & frameFileName)
-{}
+{
+    // TODO
+    (void)databaseName;
+    (void)frameFileName;
+    return RgbaImageData(0, 0);
+}
 
 std::vector<std::string> TestAssetManager::EnumerateTextureDatabaseFrames(std::string const & databaseName)
-{}
+{
+    std::vector<std::string> frameFilenames;
+
+    auto const & db = GetDatabase(databaseName);
+    std::transform(
+        db.FrameInfos.cbegin(),
+        db.FrameInfos.cend(),
+        std::back_inserter(frameFilenames),
+            [](auto const & fi)
+            {
+                return fi.FrameFilename;
+            });
+
+    return frameFilenames;
+}
+
+TestTextureDatabase const & TestAssetManager::GetDatabase(std::string const & databaseName)
+{
+    for (auto const & db : mTextureDatabases)
+    {
+        if (db.DatabaseName == databaseName)
+        {
+            return db;
+        }
+    }
+
+    throw std::runtime_error("Invalid test - unknown test texture database name: " + databaseName);
+}
+
+///////////////////////////////////
 
 ::testing::AssertionResult ApproxEquals(float a, float b, float tolerance)
 {

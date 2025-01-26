@@ -15,14 +15,14 @@
 // Test texture database in storage
 struct TestTextureDatabase
 {
-    struct TestTextureDatabaseFrameInfo
+    struct DatabaseFrameInfo
     {
         std::string FrameFilename;
         ImageSize FrameSize;
     };
 
     std::string DatabaseName;
-    std::vector<TestTextureDatabaseFrameInfo> FrameInfos;
+    std::vector<DatabaseFrameInfo> FrameInfos;
     std::string DatabaseJson;
 };
 
@@ -38,6 +38,8 @@ public:
     std::vector<std::string> EnumerateTextureDatabaseFrames(std::string const & databaseName) override;
 
 private:
+
+    TestTextureDatabase const & GetDatabase(std::string const & databaseName);
 
     std::vector<TestTextureDatabase> mTextureDatabases;
 };

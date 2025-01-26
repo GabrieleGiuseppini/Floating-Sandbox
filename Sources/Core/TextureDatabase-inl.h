@@ -161,14 +161,26 @@ TextureDatabase<TTextureDatabase> TextureDatabase<TTextureDatabase>::Load(IAsset
             std::optional<std::string> const frameDisplayName = Utils::GetOptionalJsonMember<std::string>(frameJson, "displayName");
 
             // Get filename and make regex out of it
-            std::string const frameFilenamePattern = Utils::GetMandatoryJsonMember<std::string>(frameJson, "filenamePattern");
-            std::regex const frameFilenameRegex("^" + frameFilenamePattern + "$");
+            std::string const frameFilenameStemPattern = Utils::GetMandatoryJsonMember<std::string>(frameJson, "filenameStemPattern");
+            std::regex const frameFilenameStemRegex("^" + frameFilenameStemPattern + "$");
 
             // Find all files matching the regex
             int filesFoundFromFrameCount = 0;
             for (auto const & frameFilename : allTextureFrameFilenames)
             {
-                if (std::regex_match(frameFilename, frameFilenameRegex))
+                // Calculate filename stem
+                std::string frameFilenameStem;
+                auto const dotPos = frameFilename.rfind('.');
+                if (dotPos != std::string::npos)
+                {
+                    frameFilenameStem = frameFilename.substr(0, dotPos);
+                }
+                else
+                {
+                    frameFilenameStem = frameFilename;
+                }
+
+                if (std::regex_match(frameFilenameStem, frameFilenameStemRegex))
                 {
                     // This file belongs to this group
 
@@ -191,12 +203,12 @@ TextureDatabase<TTextureDatabase> TextureDatabase<TTextureDatabase>::Load(IAsset
                     }
                     else
                     {
-                        // Extract index from filename
-                        static std::regex const TextureFilenameFrameIndexRegex("^.+?_(\\d+)$");
+                        // Extract index from filename stem
+                        static std::regex const TextureFilenameStemFrameIndexRegex("^.+?_(\\d+)$");
                         std::smatch frameIndexMatch;
-                        if (!std::regex_match(frameFilename, frameIndexMatch, TextureFilenameFrameIndexRegex))
+                        if (!std::regex_match(frameFilenameStem, frameIndexMatch, TextureFilenameStemFrameIndexRegex))
                         {
-                            throw GameException("Texture database: cannot extract frame index from texture filename \"" + frameFilename + "\", and auto-assigning indices is disabled");
+                            throw GameException("Texture database: cannot extract frame index from texture filename \"" + frameFilenameStem + "\", and auto-assigning indices is disabled");
                         }
 
                         assert(frameIndexMatch.size() == 2);
@@ -251,7 +263,7 @@ TextureDatabase<TTextureDatabase> TextureDatabase<TTextureDatabase>::Load(IAsset
                     }
                     else
                     {
-                        throw GameException("Texture database: cannot find world dimensions for frame \"" + frameFilenamePattern + "\"");
+                        throw GameException("Texture database: cannot find world dimensions for frame \"" + frameFilenameStemPattern + "\"");
                     }
 
                     bool hasOwnAmbientLight = frameHasOwnAmbientLight.has_value() ? *frameHasOwnAmbientLight : groupHasOwnAmbientLight;
@@ -262,21 +274,6 @@ TextureDatabase<TTextureDatabase> TextureDatabase<TTextureDatabase>::Load(IAsset
                     // Transform to world
                     float anchorWorldX = static_cast<float>(anchorX) * worldWidth / static_cast<float>(textureSize.width);
                     float anchorWorldY = static_cast<float>(textureSize.height - anchorY) * worldHeight / static_cast<float>(textureSize.height);
-
-                    //
-                    // Calculate filename stem
-                    //
-
-                    std::string frameFilenameStem;
-                    auto const dotPos = frameFilename.rfind('.');
-                    if (dotPos != std::string::npos)
-                    {
-                        frameFilenameStem = frameFilename.substr(0, dotPos);
-                    }
-                    else
-                    {
-                        frameFilenameStem = frameFilename;
-                    }
 
                     //
                     // Store frame specification
@@ -313,7 +310,7 @@ TextureDatabase<TTextureDatabase> TextureDatabase<TTextureDatabase>::Load(IAsset
             // Make sure at least one matching file was found for this frame specification
             if (0 == filesFoundFromFrameCount)
             {
-                throw GameException("Texture database: couldn't match any file to frame filename pattern \"" + frameFilenamePattern + "\"");
+                throw GameException("Texture database: couldn't match any file to frame filename pattern \"" + frameFilenameStemPattern + "\"");
             }
         }
 
@@ -353,6 +350,12 @@ TextureDatabase<TTextureDatabase> TextureDatabase<TTextureDatabase>::Load(IAsset
         {
             return a.Group < b.Group;
         });
+
+    // Make sure all groups are found
+    if (textureGroups.size() != static_cast<size_t>(TTextureGroups::_Last) + 1)
+    {
+        throw GameException("Texture database: not all groups have been found");
+    }
 
     // Make sure all group indices are found
     for (uint16_t expectedIndex = 0; expectedIndex <= static_cast<uint16_t>(TTextureGroups::_Last); ++expectedIndex)
