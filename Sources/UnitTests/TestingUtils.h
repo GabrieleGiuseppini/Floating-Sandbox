@@ -42,7 +42,7 @@ public:
     std::vector<std::string> EnumerateTextureDatabaseFrames(std::string const & databaseName) override;
 
     picojson::value LoadTetureAtlasSpecification(std::string const & textureDatabaseName) override;
-    RgbaImageData LoadTextureAtlasImage(std::string const & textureDatabaseName) override;
+    RgbaImageData LoadTextureAtlasImageRGBA(std::string const & textureDatabaseName) override;
 
 private:
 

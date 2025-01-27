@@ -37,5 +37,5 @@ public:
 
 	// Texture atlases
 	virtual picojson::value LoadTetureAtlasSpecification(std::string const & textureDatabaseName) = 0;
-	virtual RgbaImageData LoadTextureAtlasImage(std::string const & textureDatabaseName) = 0;
+	virtual RgbaImageData LoadTextureAtlasImageRGBA(std::string const & textureDatabaseName) = 0;
 };

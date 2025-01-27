@@ -221,7 +221,7 @@ TextureAtlas<TTextureDatabase> TextureAtlas<TTextureDatabase>::Deserialize(IAsse
     // Image
     //
 
-    RgbaImageData atlasData = assetManager.LoadTextureAtlasImage(TTextureDatabase::DatabaseName);
+    RgbaImageData atlasData = assetManager.LoadTextureAtlasImageRGBA(TTextureDatabase::DatabaseName);
 
     return TextureAtlas<TTextureDatabase>(std::move(metadata), std::move(atlasData));
 }

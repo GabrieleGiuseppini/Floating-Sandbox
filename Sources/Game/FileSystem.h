@@ -5,6 +5,7 @@
  ***************************************************************************************/
 #pragma once
 
+#include <Core/Buffer.h>
 #include <Core/GameException.h>
 #include <Core/Log.h>
 #include <Core/Utils.h>
@@ -107,6 +108,30 @@ public:
         }
 
         return filePaths;
+    }
+
+    static Buffer<std::uint8_t> LoadBinaryFile(std::filesystem::path const & filePath)
+    {
+        auto fStream = std::ifstream(
+            filePath,
+            std::ios_base::in | std::ios_base::binary);
+        if (!fStream.is_open())
+        {
+            throw GameException("Error opening file \"" + filePath.string() + "\" for reading");
+        }
+
+        fStream.ignore(std::numeric_limits<std::streamsize>::max());
+        std::streamsize length = fStream.gcount();
+        fStream.clear();
+        fStream.seekg(0, std::ios_base::beg);
+
+        Buffer<std::uint8_t> buffer = Buffer<std::uint8_t>(static_cast<size_t>(length));
+        fStream.read(
+            reinterpret_cast<char *>(buffer.data()),
+            length);
+        fStream.close();
+
+        return buffer;
     }
 
     static std::string LoadTextFile(std::filesystem::path const & filePath)

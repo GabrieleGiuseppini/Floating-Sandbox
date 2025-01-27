@@ -58,7 +58,7 @@ picojson::value TestAssetManager::LoadTetureAtlasSpecification(std::string const
     return picojson::value();
 }
 
-RgbaImageData TestAssetManager::LoadTextureAtlasImage(std::string const & textureDatabaseName)
+RgbaImageData TestAssetManager::LoadTextureAtlasImageRGBA(std::string const & textureDatabaseName)
 {
     assert(false); // Not needed by tests, so far
     (void)textureDatabaseName;
