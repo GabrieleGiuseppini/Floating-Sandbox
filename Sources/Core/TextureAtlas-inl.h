@@ -198,7 +198,7 @@ std::tuple<picojson::value, RgbaImageData const &> TextureAtlas<TTextureDatabase
     picojson::object metadataJson;
     Metadata.Serialize(metadataJson);
 
-    return std::make_tuple(metadataJson, AtlasData);
+    return std::make_tuple(picojson::value(std::move(metadataJson)), std::ref(AtlasData));
 }
 
 template <typename TTextureDatabase>

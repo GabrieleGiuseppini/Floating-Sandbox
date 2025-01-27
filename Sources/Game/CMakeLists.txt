@@ -7,8 +7,6 @@ set  (GAME_SOURCES
 	FileSystem.h
 	GameAssetManager.cpp
 	GameAssetManager.h
-	PngImageFileTools.cpp
-	PngImageFileTools.h
 )
 
 source_group(" " FILES ${GAME_SOURCES})

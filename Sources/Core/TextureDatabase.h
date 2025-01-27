@@ -179,7 +179,7 @@ public:
 
     inline TextureFrame<TTextureDatabase> LoadFrame(TextureFrameIndex frameIndex, IAssetManager & assetManager) const
     {
-        return mFrameSpecifications[frameIndex].LoadFrame();
+        return mFrameSpecifications[frameIndex].LoadFrame(assetManager);
     }
 
 private:

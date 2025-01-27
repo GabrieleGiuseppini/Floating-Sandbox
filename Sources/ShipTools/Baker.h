@@ -4,11 +4,12 @@
 * Copyright:			Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
 
-#include <Game/TextureAtlas.h>
-#include <Game/TextureDatabase.h>
-#include <Game/TextureTypes.h>
+#include <Core/TextureAtlas.h>
+#include <Core/TextureDatabase.h>
+#include <Core/Utils.h>
 
-#include <GameCore/Utils.h>
+#include <Game/FileSystem.h>
+#include <Game/GameAssetManager.h>
 
 #include <filesystem>
 #include <iostream>
@@ -28,7 +29,7 @@ public:
 
         static AtlasBakingOptions Deserialize(std::filesystem::path const & optionsJsonFilePath)
         {
-            picojson::object rootJsonObject = Utils::GetJsonValueAsObject(Utils::ParseJSONFile(optionsJsonFilePath), "root");
+            picojson::object rootJsonObject = Utils::GetJsonValueAsObject(Utils::ParseJSONString(FileSystem::LoadTextFile(optionsJsonFilePath)), "root");
 
             bool alphaPreMultiply = Utils::GetMandatoryJsonMember<bool>(rootJsonObject, "alphaPreMultiply");
             bool mipMappable = Utils::GetMandatoryJsonMember<bool>(rootJsonObject, "mipMappable");
@@ -47,7 +48,7 @@ public:
 
 public:
 
-    template<typename TextureDatabaseTraits>
+    template<typename TTextureDatabase>
     static std::tuple<size_t, ImageSize> BakeAtlas(
         std::filesystem::path const & texturesRootDirectoryPath,
         std::filesystem::path const & outputDirectoryPath,
@@ -63,35 +64,39 @@ public:
             throw std::runtime_error("Output directory '" + outputDirectoryPath.string() + "' does not exist");
         }
 
+        // Instantiate asset manager
+        GameAssetManager assetManager(texturesRootDirectoryPath);
+
         // Load database
-        auto textureDatabase = Render::TextureDatabase<TextureDatabaseTraits>::Load(
-            texturesRootDirectoryPath);
+        auto textureDatabase = TextureDatabase<TTextureDatabase>::Load(assetManager);
 
         // Create atlas
 
-        std::cout << "Creating " << (options.Regular ? "regular " : "") << "atlas..";
+        std::cout << "Creating " << (options.Regular ? "regular " : "") << "atlas...";
 
-        Render::AtlasOptions atlasOptions = Render::AtlasOptions::None;
+        TextureAtlasOptions atlasOptions = TextureAtlasOptions::None;
         if (options.AlphaPremultiply)
-            atlasOptions = atlasOptions | Render::AtlasOptions::AlphaPremultiply;
+            atlasOptions = atlasOptions | TextureAtlasOptions::AlphaPremultiply;
         if (options.BinaryTransparencySmoothing)
-            atlasOptions = atlasOptions | Render::AtlasOptions::BinaryTransparencySmoothing;
+            atlasOptions = atlasOptions | TextureAtlasOptions::BinaryTransparencySmoothing;
         if (options.MipMappable)
-            atlasOptions = atlasOptions | Render::AtlasOptions::MipMappable;
+            atlasOptions = atlasOptions | TextureAtlasOptions::MipMappable;
         if (options.SuppressDuplicates)
-            atlasOptions = atlasOptions | Render::AtlasOptions::SuppressDuplicates;
+            atlasOptions = atlasOptions | TextureAtlasOptions::SuppressDuplicates;
 
         auto textureAtlas = options.Regular
-            ? Render::TextureAtlasBuilder<typename TextureDatabaseTraits::TextureGroups>::BuildRegularAtlas(
+            ? TextureAtlasBuilder<TTextureDatabase>::BuildRegularAtlas(
                 textureDatabase,
                 atlasOptions,
+                assetManager,
                 [](float, ProgressMessageType)
                 {
                     std::cout << ".";
                 })
-            : Render::TextureAtlasBuilder<typename TextureDatabaseTraits::TextureGroups>::BuildAtlas(
+            : TextureAtlasBuilder<TTextureDatabase>::BuildAtlas(
                 textureDatabase,
                 atlasOptions,
+                assetManager,
                 [](float, ProgressMessageType)
                 {
                     std::cout << ".";
@@ -100,9 +105,9 @@ public:
         std::cout << std::endl;
 
         // Serialize atlas
-        textureAtlas.Serialize(
-            TextureDatabaseTraits::DatabaseName,
-            outputDirectoryPath);
+        auto const [specificationJson, atlasImage] = textureAtlas.Serialize();
+        assetManager.SaveJson(specificationJson, outputDirectoryPath / GameAssetManager::MakeAtlasSpecificationFilename(TTextureDatabase::DatabaseName));
+        assetManager.SavePngImage(atlasImage, outputDirectoryPath / GameAssetManager::MakeAtlasImageFilename(TTextureDatabase::DatabaseName));
 
         return { textureAtlas.Metadata.GetFrameCount(), textureAtlas.AtlasData.Size };
     }

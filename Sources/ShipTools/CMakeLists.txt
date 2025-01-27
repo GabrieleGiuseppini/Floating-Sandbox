@@ -6,11 +6,7 @@
 set  (SHIP_TOOLS_SOURCES
 	Baker.h
 	Main.cpp
-	Quantizer.cpp
-	Quantizer.h
-	ShipAnalyzer.cpp
-	ShipAnalyzer.h
-	)
+)
 
 source_group(" " FILES ${SHIP_TOOLS_SOURCES})
 

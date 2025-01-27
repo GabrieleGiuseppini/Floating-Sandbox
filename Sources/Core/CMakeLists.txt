@@ -100,5 +100,6 @@ target_include_directories(Core PUBLIC ${PICOJSON_INCLUDE_DIRS})
 target_include_directories(Core INTERFACE ..)
 
 target_link_libraries (Core
+	${ZLIB_LIBRARY}
 	${PNG_LIBRARY}
 	${ADDITIONAL_LIBRARIES})

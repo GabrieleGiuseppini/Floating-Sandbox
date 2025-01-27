@@ -26,20 +26,17 @@ GameAssetManager::GameAssetManager(std::filesystem::path const & textureDatabase
 
 picojson::value GameAssetManager::LoadTetureDatabaseSpecification(std::string const & databaseName)
 {
-	return Utils::ParseJSONString(
-        FileSystem::LoadTextFile(mTextureDatabaseRoot / databaseName / "database.json"));
+    return LoadJson(mTextureDatabaseRoot / databaseName / "database.json");
 }
 
 ImageSize GameAssetManager::GetTextureDatabaseFrameSize(std::string const & databaseName, std::string const & frameFileName)
 {
-    auto const imageFile = FileSystem::LoadBinaryFile(mTextureDatabaseRoot / databaseName / frameFileName);
-    return PngTools::GetImageSize(imageFile);
+    return GetImageSize(mTextureDatabaseRoot / databaseName / frameFileName);
 }
 
 RgbaImageData GameAssetManager::LoadTextureDatabaseFrameRGBA(std::string const & databaseName, std::string const & frameFileName)
 {
-    auto const imageFile = FileSystem::LoadBinaryFile(mTextureDatabaseRoot / databaseName / frameFileName);
-    return PngTools::DecodeImageRgba(imageFile);
+    return LoadPngImageRgba(mTextureDatabaseRoot / databaseName / frameFileName);
 }
 
 std::vector<std::string> GameAssetManager::EnumerateTextureDatabaseFrames(std::string const & databaseName)
@@ -68,13 +65,71 @@ std::vector<std::string> GameAssetManager::EnumerateTextureDatabaseFrames(std::s
 
 picojson::value GameAssetManager::LoadTetureAtlasSpecification(std::string const & textureDatabaseName)
 {
-    return Utils::ParseJSONString(
-        FileSystem::LoadTextFile(mTextureDatabaseRoot / "Atlases" / (textureDatabaseName + ".atlas.json")));
+    return LoadJson(mTextureDatabaseRoot / "Atlases" / MakeAtlasSpecificationFilename(textureDatabaseName));
 }
 
 RgbaImageData GameAssetManager::LoadTextureAtlasImageRGBA(std::string const & textureDatabaseName)
 {
-    auto const imageFile = FileSystem::LoadBinaryFile(mTextureDatabaseRoot / "Atlases" / (textureDatabaseName + ".atlas.png"));
-    return PngTools::DecodeImageRgba(imageFile);
+    return LoadPngImageRgba(mTextureDatabaseRoot / "Atlases" / MakeAtlasImageFilename(textureDatabaseName));
 }
 
+// Helpers
+
+ImageSize GameAssetManager::GetImageSize(std::filesystem::path const & filePath)
+{
+    auto const buffer = FileSystem::LoadBinaryFile(filePath);
+    return PngTools::GetImageSize(buffer);
+}
+
+template<>
+ImageData<rgbaColor> GameAssetManager::LoadPngImage<rgbaColor>(std::filesystem::path const & filePath)
+{
+    return LoadPngImageRgba(filePath);
+}
+
+template<>
+ImageData<rgbColor> GameAssetManager::LoadPngImage<rgbColor>(std::filesystem::path const & filePath)
+{
+    return LoadPngImageRgb(filePath);
+}
+
+RgbaImageData GameAssetManager::LoadPngImageRgba(std::filesystem::path const & filePath)
+{
+    auto const buffer = FileSystem::LoadBinaryFile(filePath);
+    return PngTools::DecodeImageRgba(buffer);
+}
+
+RgbImageData GameAssetManager::LoadPngImageRgb(std::filesystem::path const & filePath)
+{
+    auto const buffer = FileSystem::LoadBinaryFile(filePath);
+    return PngTools::DecodeImageRgb(buffer);
+}
+
+void GameAssetManager::SavePngImage(
+    RgbaImageData const & image,
+    std::filesystem::path filePath)
+{
+    auto const buffer = PngTools::EncodeImage(image);
+    FileSystem::SaveBinaryFile(buffer, filePath);
+}
+
+void GameAssetManager::SavePngImage(
+    RgbImageData const & image,
+    std::filesystem::path filePath)
+{
+    auto const buffer = PngTools::EncodeImage(image);
+    FileSystem::SaveBinaryFile(buffer, filePath);
+}
+
+picojson::value GameAssetManager::LoadJson(std::filesystem::path const & filePath)
+{
+    return Utils::ParseJSONString(FileSystem::LoadTextFile(filePath));
+}
+
+void GameAssetManager::SaveJson(
+    picojson::value const & json,
+    std::filesystem::path const & filePath)
+{
+    std::string serializedJson = json.serialize(true);
+    FileSystem::SaveTextFile(serializedJson, filePath);
+}

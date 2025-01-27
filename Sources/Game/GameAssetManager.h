@@ -6,6 +6,9 @@
 #pragma once
 
 #include <Core/IAssetManager.h>
+#include <Core/ImageData.h>
+
+#include <picojson.h>
 
 #include <filesystem>
 #include <string>
@@ -22,17 +25,50 @@ public:
 	// IAssetManager
 	//
 
-	picojson::value LoadTetureDatabaseSpecification(std::string const & databaseName);
-	ImageSize GetTextureDatabaseFrameSize(std::string const & databaseName, std::string const & frameFileName);
-	RgbaImageData LoadTextureDatabaseFrameRGBA(std::string const & databaseName, std::string const & frameFileName);
-	std::vector<std::string> EnumerateTextureDatabaseFrames(std::string const & databaseName);
+	picojson::value LoadTetureDatabaseSpecification(std::string const & databaseName) override;
+	ImageSize GetTextureDatabaseFrameSize(std::string const & databaseName, std::string const & frameFileName) override;
+	RgbaImageData LoadTextureDatabaseFrameRGBA(std::string const & databaseName, std::string const & frameFileName) override;
+	std::vector<std::string> EnumerateTextureDatabaseFrames(std::string const & databaseName) override;
 
-	picojson::value LoadTetureAtlasSpecification(std::string const & textureDatabaseName);
-	RgbaImageData LoadTextureAtlasImageRGBA(std::string const & textureDatabaseName);
+	picojson::value LoadTetureAtlasSpecification(std::string const & textureDatabaseName) override;
+	RgbaImageData LoadTextureAtlasImageRGBA(std::string const & textureDatabaseName) override;
 
 	//
 	// Platform-specific
 	//
+
+	// Helpers
+
+	static ImageSize GetImageSize(std::filesystem::path const & filePath);
+
+	template<typename TColor>
+	static ImageData<TColor> LoadPngImage(std::filesystem::path const & filePath);
+	static RgbaImageData LoadPngImageRgba(std::filesystem::path const & filePath);
+	static RgbImageData LoadPngImageRgb(std::filesystem::path const & filePath);
+
+	static void SavePngImage(
+		RgbaImageData const & image,
+		std::filesystem::path filePath);
+
+	static void SavePngImage(
+		RgbImageData const & image,
+		std::filesystem::path filePath);
+
+	static picojson::value LoadJson(std::filesystem::path const & filePath);
+
+	static void SaveJson(
+		picojson::value const & json,
+		std::filesystem::path const & filePath);
+
+	static std::filesystem::path MakeAtlasSpecificationFilename(std::string const & textureDatabaseName)
+	{
+		return textureDatabaseName + ".atlas.json";
+	}
+
+	static std::filesystem::path MakeAtlasImageFilename(std::string const & textureDatabaseName)
+	{
+		return textureDatabaseName + ".atlas.png";
+	}
 
 private:
 
