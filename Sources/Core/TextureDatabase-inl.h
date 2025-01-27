@@ -105,7 +105,7 @@ TextureDatabase<TTextureDatabase> TextureDatabase<TTextureDatabase>::Load(IAsset
     // Get list of frame filenames
     //
 
-    std::vector<std::string> allTextureFrameFilenames = assetManager.EnumerateTextureDatabaseFrames(TTextureDatabase::DatabaseName);
+    auto const allTextureFrameLocators = assetManager.EnumerateTextureDatabaseFrames(TTextureDatabase::DatabaseName);
 
     //
     // Process JSON groups and build texture groups
@@ -113,7 +113,7 @@ TextureDatabase<TTextureDatabase> TextureDatabase<TTextureDatabase>::Load(IAsset
 
     std::vector<TextureGroup<TTextureDatabase>> textureGroups;
 
-    std::set<std::string> matchedTextureFrameFilenames;
+    std::set<std::string> matchedTextureFrameStems;
 
     for (auto const & groupValue : root.get<picojson::array>())
     {
@@ -166,21 +166,9 @@ TextureDatabase<TTextureDatabase> TextureDatabase<TTextureDatabase>::Load(IAsset
 
             // Find all files matching the regex
             int filesFoundFromFrameCount = 0;
-            for (auto const & frameFilename : allTextureFrameFilenames)
+            for (auto const & frameLocator : allTextureFrameLocators)
             {
-                // Calculate filename stem
-                std::string frameFilenameStem;
-                auto const dotPos = frameFilename.rfind('.');
-                if (dotPos != std::string::npos)
-                {
-                    frameFilenameStem = frameFilename.substr(0, dotPos);
-                }
-                else
-                {
-                    frameFilenameStem = frameFilename;
-                }
-
-                if (std::regex_match(frameFilenameStem, frameFilenameStemRegex))
+                if (std::regex_match(frameLocator.FilenameStem, frameFilenameStemRegex))
                 {
                     // This file belongs to this group
 
@@ -188,7 +176,7 @@ TextureDatabase<TTextureDatabase> TextureDatabase<TTextureDatabase>::Load(IAsset
                     // Get frame size
                     //
 
-                    ImageSize textureSize = assetManager.GetTextureDatabaseFrameSize(TTextureDatabase::DatabaseName, frameFilename);
+                    ImageSize textureSize = assetManager.GetTextureDatabaseFrameSize(TTextureDatabase::DatabaseName, frameLocator.RelativePath);
 
 
                     //
@@ -206,9 +194,9 @@ TextureDatabase<TTextureDatabase> TextureDatabase<TTextureDatabase>::Load(IAsset
                         // Extract index from filename stem
                         static std::regex const TextureFilenameStemFrameIndexRegex("^.+?_(\\d+)$");
                         std::smatch frameIndexMatch;
-                        if (!std::regex_match(frameFilenameStem, frameIndexMatch, TextureFilenameStemFrameIndexRegex))
+                        if (!std::regex_match(frameLocator.FilenameStem, frameIndexMatch, TextureFilenameStemFrameIndexRegex))
                         {
-                            throw GameException("Texture database: cannot extract frame index from texture filename \"" + frameFilenameStem + "\", and auto-assigning indices is disabled");
+                            throw GameException("Texture database: cannot extract frame index from texture filename \"" + frameLocator.FilenameStem + "\", and auto-assigning indices is disabled");
                         }
 
                         assert(frameIndexMatch.size() == 2);
@@ -293,15 +281,15 @@ TextureDatabase<TTextureDatabase> TextureDatabase<TTextureDatabase>::Load(IAsset
                                     anchorWorldX,
                                     anchorWorldY),
                                 TextureFrameId<TTextureGroups>(group, frameIndex),
-                                frameFilenameStem,
-                                frameDisplayName.has_value() ? *frameDisplayName : frameFilename),
-                            frameFilename));
+                                frameLocator.FilenameStem,
+                                frameDisplayName.has_value() ? *frameDisplayName : frameLocator.FilenameStem),
+                            frameLocator.RelativePath));
 
                     //
                     // Remember this frame file was matched
                     //
 
-                    matchedTextureFrameFilenames.insert(frameFilename);
+                    matchedTextureFrameStems.insert(frameLocator.FilenameStem);
 
                     ++filesFoundFromFrameCount;
                 }
@@ -371,11 +359,11 @@ TextureDatabase<TTextureDatabase> TextureDatabase<TTextureDatabase>::Load(IAsset
     }
 
     // Make sure all textures found in file system have been exhausted
-    if (matchedTextureFrameFilenames.size() != allTextureFrameFilenames.size())
+    if (matchedTextureFrameStems.size() != allTextureFrameLocators.size())
     {
         throw GameException(
             "Texture database: couldn't match "
-            + std::to_string(allTextureFrameFilenames.size() - matchedTextureFrameFilenames.size())
+            + std::to_string(allTextureFrameLocators.size() - matchedTextureFrameStems.size())
             + " texture frame files to texture specifications");
     }
 

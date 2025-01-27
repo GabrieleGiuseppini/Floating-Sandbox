@@ -26,9 +26,9 @@ public:
 	//
 
 	picojson::value LoadTetureDatabaseSpecification(std::string const & databaseName) override;
-	ImageSize GetTextureDatabaseFrameSize(std::string const & databaseName, std::string const & frameFileName) override;
-	RgbaImageData LoadTextureDatabaseFrameRGBA(std::string const & databaseName, std::string const & frameFileName) override;
-	std::vector<std::string> EnumerateTextureDatabaseFrames(std::string const & databaseName) override;
+	ImageSize GetTextureDatabaseFrameSize(std::string const & databaseName, std::string const & frameRelativePath) override;
+	RgbaImageData LoadTextureDatabaseFrameRGBA(std::string const & databaseName, std::string const & frameRelativePath) override;
+	std::vector<TextureDatabaseFrameLocator> EnumerateTextureDatabaseFrames(std::string const & databaseName) override;
 
 	picojson::value LoadTetureAtlasSpecification(std::string const & textureDatabaseName) override;
 	RgbaImageData LoadTextureAtlasImageRGBA(std::string const & textureDatabaseName) override;

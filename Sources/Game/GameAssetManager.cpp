@@ -29,21 +29,22 @@ picojson::value GameAssetManager::LoadTetureDatabaseSpecification(std::string co
     return LoadJson(mTextureDatabaseRoot / databaseName / "database.json");
 }
 
-ImageSize GameAssetManager::GetTextureDatabaseFrameSize(std::string const & databaseName, std::string const & frameFileName)
+ImageSize GameAssetManager::GetTextureDatabaseFrameSize(std::string const & databaseName, std::string const & frameRelativePath)
 {
-    return GetImageSize(mTextureDatabaseRoot / databaseName / frameFileName);
+    return GetImageSize(mTextureDatabaseRoot / databaseName / frameRelativePath);
 }
 
-RgbaImageData GameAssetManager::LoadTextureDatabaseFrameRGBA(std::string const & databaseName, std::string const & frameFileName)
+RgbaImageData GameAssetManager::LoadTextureDatabaseFrameRGBA(std::string const & databaseName, std::string const & frameRelativePath)
 {
-    return LoadPngImageRgba(mTextureDatabaseRoot / databaseName / frameFileName);
+    return LoadPngImageRgba(mTextureDatabaseRoot / databaseName / frameRelativePath);
 }
 
-std::vector<std::string> GameAssetManager::EnumerateTextureDatabaseFrames(std::string const & databaseName)
+std::vector<IAssetManager::TextureDatabaseFrameLocator> GameAssetManager::EnumerateTextureDatabaseFrames(std::string const & databaseName)
 {
-    std::vector<std::string> frameFilenames;
+    std::vector<TextureDatabaseFrameLocator> frameLocators;
 
-    for (auto const & entryIt : std::filesystem::recursive_directory_iterator(mTextureDatabaseRoot / databaseName))
+    std::filesystem::path const databaseRootPath = mTextureDatabaseRoot / databaseName;
+    for (auto const & entryIt : std::filesystem::recursive_directory_iterator(databaseRootPath))
     {
         if (std::filesystem::is_regular_file(entryIt.path())
             && entryIt.path().extension().string() != ".json")
@@ -51,7 +52,12 @@ std::vector<std::string> GameAssetManager::EnumerateTextureDatabaseFrames(std::s
             // We only expect png's
             if (entryIt.path().extension().string() == ".png")
             {
-                frameFilenames.push_back(entryIt.path().filename().string());
+                auto const framePath = entryIt.path();
+                frameLocators.push_back(
+                    TextureDatabaseFrameLocator{
+                        std::filesystem::relative(framePath, databaseRootPath).string(),
+                        framePath.filename().stem().string()
+                    });
             }
             else if (entryIt.path().extension().string() != ".txt") // txt allowed
             {
@@ -60,7 +66,7 @@ std::vector<std::string> GameAssetManager::EnumerateTextureDatabaseFrames(std::s
         }
     }
 
-    return frameFilenames;
+    return frameLocators;
 }
 
 picojson::value GameAssetManager::LoadTetureAtlasSpecification(std::string const & textureDatabaseName)

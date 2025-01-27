@@ -26,6 +26,14 @@ namespace _detail
         throw std::runtime_error("This PNG format is not supported");
     }
 
+    static void PngWarnFunc(png_structp png_ptr, png_const_charp message)
+    {
+        // Do nothing
+        (void)png_ptr;
+        (void)message;
+        return;
+    }
+
     struct PngDecodeContext
     {
         std::uint8_t const * const raw_data_buffer;
@@ -104,6 +112,10 @@ namespace _detail
         // Set buffer reading callback
 
         png_set_read_fn(png_ptr, context.get(), ReadPngDataCallback);
+
+        // Set error callbacks
+
+        png_set_error_fn(png_ptr, NULL, NULL, PngWarnFunc);
 
         return context;
     }

@@ -118,21 +118,21 @@ struct TextureFrameSpecification
     // Metadata
     TextureFrameMetadata<TTextureDatabase> Metadata;
 
-    // The filename of this frame's texture
-    std::string Filename;
+    // The relative path of this frame's texture
+    std::string RelativePath;
 
     TextureFrameSpecification(
         TextureFrameMetadata<TTextureDatabase> const & metadata,
-        std::string const & filename)
+        std::string const & relativePath)
         : Metadata(metadata)
-        , Filename(filename)
+        , RelativePath(relativePath)
     {}
 
     TextureFrame<TTextureDatabase> LoadFrame(IAssetManager & assetManager) const
     {
         RgbaImageData imageData = assetManager.LoadTextureDatabaseFrameRGBA(
             TTextureDatabase::DatabaseName,
-            Filename);
+            RelativePath);
 
         return TextureFrame<TTextureDatabase>(
             Metadata,
