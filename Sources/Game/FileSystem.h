@@ -134,6 +134,24 @@ public:
         return buffer;
     }
 
+    static void SaveBinaryFile(
+        Buffer<std::uint8_t> const & buffer,
+        std::filesystem::path const & filepath)
+    {
+        auto fStream = std::ofstream(
+            filepath,
+            std::ios_base::out | std::ios_base::binary);
+        if (!fStream.is_open())
+        {
+            throw GameException("Error opening file \"" + filepath.string() + "\" for writing");
+        }
+
+        fStream.write(
+            reinterpret_cast<char const *>(buffer.data()),
+            buffer.GetSize());
+        fStream.close();
+    }
+
     static std::string LoadTextFile(std::filesystem::path const & filePath)
     {
         std::ifstream file(filePath.string(), std::ios::in);

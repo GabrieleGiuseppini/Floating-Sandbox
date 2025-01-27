@@ -5,13 +5,9 @@
 
 set  (SHIP_TOOLS_SOURCES
 	Baker.h
-	Helpers.cpp
-	Helpers.h
 	Main.cpp
 	Quantizer.cpp
 	Quantizer.h
-	Resizer.cpp
-	Resizer.h
 	ShipAnalyzer.cpp
 	ShipAnalyzer.h
 	)
@@ -21,8 +17,9 @@ source_group(" " FILES ${SHIP_TOOLS_SOURCES})
 add_executable (ShipTools ${SHIP_TOOLS_SOURCES})
 
 target_link_libraries (ShipTools
-	GameCoreLib
-	GameLib
+	Core
+	#Simulation
+	Game
 	${ADDITIONAL_LIBRARIES})
 
 

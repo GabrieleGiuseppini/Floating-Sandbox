@@ -4,7 +4,7 @@
  * Copyright:			Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
  ***************************************************************************************/
 
-#include <GameCore/Colors.h>
+#include <Core/Colors.h>
 
 #include <optional>
 #include <string>

@@ -1,6 +1,7 @@
 
 add_subdirectory(Core)
 add_subdirectory(Game)
+add_subdirectory(ShipTools)
 add_subdirectory(UnitTests)
 
 # TODO: others

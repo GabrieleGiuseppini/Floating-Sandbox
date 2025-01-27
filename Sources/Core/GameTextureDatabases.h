@@ -267,7 +267,7 @@ enum class NpcTextureGroups : uint16_t
     _Last = Npc
 };
 
-struct NpcTextureTextureDatabase
+struct NpcTextureDatabase
 {
     static inline std::string DatabaseName = "NPC";
 

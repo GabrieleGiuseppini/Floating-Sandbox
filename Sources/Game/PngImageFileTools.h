@@ -5,8 +5,8 @@
 ***************************************************************************************/
 #pragma once
 
-#include <GameCore/Buffer.h>
-#include <GameCore/ImageData.h>
+#include <Core/Buffer.h>
+#include <Core/ImageData.h>
 
 #include <filesystem>
 
@@ -32,12 +32,4 @@ public:
     static void SavePngImage(
         RgbImageData const & image,
         std::filesystem::path filepath);
-
-private:
-
-    static Buffer<std::uint8_t> InternalLoadImageFile(std::filesystem::path const & filepath);
-
-    static void InternalSaveImageFile(
-        Buffer<std::uint8_t> const & buffer,
-        std::filesystem::path const & filepath);
 };

@@ -6,10 +6,11 @@
 
 #include "Baker.h"
 #include "Quantizer.h"
-#include "Resizer.h"
 #include "ShipAnalyzer.h"
 
-#include <GameCore/Utils.h>
+#include <Core/GameTextureDatabases.h>
+#include <Core/ImageData.h>
+#include <Core/Utils.h>
 
 #include <cassert>
 #include <iostream>
@@ -21,7 +22,6 @@
 int DoAnalyzeShip(int argc, char ** argv);
 int DoBakeAtlas(int argc, char ** argv);
 int DoQuantize(int argc, char ** argv);
-int DoResize(int argc, char ** argv);
 
 void PrintUsage();
 
@@ -47,10 +47,6 @@ int main(int argc, char ** argv)
         else if (verb == "quantize")
         {
             return DoQuantize(argc, argv);
-        }
-        else if (verb == "resize")
-        {
-            return DoResize(argc, argv);
         }
         else
         {
@@ -163,21 +159,21 @@ int DoBakeAtlas(int argc, char ** argv)
     std::tuple<size_t, ImageSize> atlasData{ 0, ImageSize(0, 0) };
     if (Utils::CaseInsensitiveEquals(databaseName, "cloud"))
     {
-        atlasData = Baker::BakeAtlas<Render::CloudTextureDatabaseTraits>(
+        atlasData = Baker::BakeAtlas<CloudTextureDatabase>(
             texturesRootDirectoryPath,
             outputDirectoryPath,
             options);
     }
     else if (Utils::CaseInsensitiveEquals(databaseName, "explosion"))
     {
-        atlasData = Baker::BakeAtlas<Render::ExplosionTextureDatabaseTraits>(
+        atlasData = Baker::BakeAtlas<ExplosionTextureDatabase>(
             texturesRootDirectoryPath,
             outputDirectoryPath,
             options);
     }
     else if (Utils::CaseInsensitiveEquals(databaseName, "npc"))
     {
-        atlasData = Baker::BakeAtlas<Render::NpcTextureDatabaseTraits>(
+        atlasData = Baker::BakeAtlas<NpcTextureDatabase>(
             texturesRootDirectoryPath,
             outputDirectoryPath,
             options);
@@ -260,31 +256,6 @@ int DoQuantize(int argc, char ** argv)
     return 0;
 }
 
-int DoResize(int argc, char ** argv)
-{
-    if (argc < 5)
-    {
-        PrintUsage();
-        return 0;
-    }
-
-    std::string inputFile(argv[2]);
-    std::string outputFile(argv[3]);
-    int width = std::stoi(argv[4]);
-
-    std::cout << SEPARATOR << std::endl;
-    std::cout << "Running resize:" << std::endl;
-    std::cout << "  input file : " << inputFile << std::endl;
-    std::cout << "  output file: " << outputFile << std::endl;
-    std::cout << "  width      : " << width << std::endl;
-
-    Resizer::Resize(inputFile, outputFile, width);
-
-    std::cout << "Resize completed." << std::endl;
-
-    return 0;
-}
-
 void PrintUsage()
 {
     std::cout << std::endl;
@@ -293,5 +264,4 @@ void PrintUsage()
     std::cout << " bake_atlas Cloud|Explosion|NPC <textures_root_dir> <out_dir> [[-a] [-b] [-m] [-d] [-r] | -o <options_json>]" << std::endl;
     std::cout << " quantize <materials_dir> <in_file> <out_png> [-c <target_fixed_color>]" << std::endl;
     std::cout << "          -r, --keep_ropes] [-g, --keep_glass]" << std::endl;
-    std::cout << " resize <in_file> <out_png> <width>" << std::endl;
 }

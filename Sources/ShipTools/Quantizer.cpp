@@ -8,7 +8,8 @@
 #include <Game/MaterialDatabase.h>
 #include <Game/PngImageFileTools.h>
 
-#include <GameCore/Vectors.h>
+#include <Core/ImageData.h>
+#include <Core/Vectors.h>
 
 #include <limits>
 #include <stdexcept>
