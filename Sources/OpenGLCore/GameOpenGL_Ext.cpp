@@ -5,8 +5,8 @@
 ***************************************************************************************/
 #include "GameOpenGL_Ext.h"
 
-#include <GameCore/GameException.h>
-#include <GameCore/Log.h>
+#include <Core/GameException.h>
+#include <Core/Log.h>
 
 template <typename TFunc>
 void LoadAndVerify(char const * functionName, TFunc * & pFunc, GLADloadproc load)

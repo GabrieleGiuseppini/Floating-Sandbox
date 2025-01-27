@@ -49,7 +49,7 @@ set (UNIT_TEST_SOURCES
 	PrecalculatedFunctionTests.cpp
 	#RopeBufferTests.cpp
 	#SettingsTests.cpp
-	#ShaderManagerTests.cpp
+	ShaderManagerTests.cpp
 	#ShipDefinitionFormatDeSerializerTests.cpp
 	#ShipNameNormalizerTests.cpp
 	#ShipPreviewDirectoryManagerTests.cpp
@@ -79,11 +79,12 @@ add_test (UnitTests UnitTests)
 
 target_link_libraries (UnitTests
 	Core
-	#GameLib
+	Game
+	OpenGLLib
 	#GPUCalcLib
 	#ShipBuilderLib
 	#UILib
-	#${OPENGL_LIBRARIES}
+	${OPENGL_LIBRARIES}
 	gmock
 	gtest
 	${ADDITIONAL_LIBRARIES})

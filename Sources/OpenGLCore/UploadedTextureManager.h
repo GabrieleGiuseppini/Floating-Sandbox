@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include <GameOpenGL/GameOpenGL.h>
+#include "GameOpenGL.h"
 
 #include <vector>
 

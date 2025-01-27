@@ -7,7 +7,7 @@
 
 #include "GameOpenGL.h"
 
-#include <GameCore/BoundedVector.h>
+#include <Core/BoundedVector.h>
 
 #include <cassert>
 #include <memory>

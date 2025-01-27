@@ -7,11 +7,11 @@
 
 #include "GameOpenGL.h"
 
-#include <GameCore/Vectors.h>
+#include <Core/IAssetManager.h>
+#include <Core/Vectors.h>
 
 #include <cassert>
 #include <cstdint>
-#include <filesystem>
 #include <iomanip>
 #include <limits>
 #include <map>
@@ -34,10 +34,10 @@ private:
 
 public:
 
-    static std::unique_ptr<ShaderManager> CreateInstance(std::filesystem::path const & shadersRoot)
+    static std::unique_ptr<ShaderManager> CreateInstance(IAssetManager & assetManager)
     {
         return std::unique_ptr<ShaderManager>(
-            new ShaderManager(shadersRoot));
+            new ShaderManager(assetManager));
     }
 
     template <typename Traits::ProgramType Program>
@@ -320,8 +320,7 @@ private:
 
 private:
 
-    ShaderManager(
-        std::filesystem::path const & shadersRoot);
+    explicit ShaderManager(IAssetManager & assetManager);
 
     void CompileShader(
         std::string const & shaderFilename,

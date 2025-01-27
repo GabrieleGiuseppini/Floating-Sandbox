@@ -7,9 +7,9 @@
 
 #include "GameOpenGL_Ext.h"
 
-#include <GameCore/GameException.h>
-#include <GameCore/ImageData.h>
-#include <GameCore/Log.h>
+#include <Core/GameException.h>
+#include <Core/ImageData.h>
+#include <Core/Log.h>
 
 #include <cassert>
 #include <cstdio>

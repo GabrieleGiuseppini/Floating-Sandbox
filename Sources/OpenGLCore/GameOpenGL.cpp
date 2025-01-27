@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #include "GameOpenGL.h"
 
-#include <GameCore/SysSpecifics.h>
+#include <Core/SysSpecifics.h>
 
 #include <algorithm>
 #include <memory>
