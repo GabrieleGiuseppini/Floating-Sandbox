@@ -51,17 +51,17 @@ std::vector<std::string> TestAssetManager::EnumerateTextureDatabaseFrames(std::s
     return frameFilenames;
 }
 
-picojson::value TestAssetManager::LoadTetureAtlasSpecification(std::string const & databaseName)
+picojson::value TestAssetManager::LoadTetureAtlasSpecification(std::string const & textureDatabaseName)
 {
     assert(false); // Not needed by tests, so far
-    (void)databaseName;
+    (void)textureDatabaseName;
     return picojson::value();
 }
 
-RgbaImageData TestAssetManager::LoadTextureAtlasImage(std::string const & databaseName)
+RgbaImageData TestAssetManager::LoadTextureAtlasImage(std::string const & textureDatabaseName)
 {
     assert(false); // Not needed by tests, so far
-    (void)databaseName;
+    (void)textureDatabaseName;
     return RgbaImageData(0, 0);
 }
 

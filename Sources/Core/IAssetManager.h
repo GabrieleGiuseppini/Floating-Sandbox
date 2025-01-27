@@ -36,6 +36,6 @@ public:
 	virtual std::vector<std::string> EnumerateTextureDatabaseFrames(std::string const & databaseName) = 0;
 
 	// Texture atlases
-	virtual picojson::value LoadTetureAtlasSpecification(std::string const & databaseName) = 0;
-	virtual RgbaImageData LoadTextureAtlasImage(std::string const & databaseName) = 0;
+	virtual picojson::value LoadTetureAtlasSpecification(std::string const & textureDatabaseName) = 0;
+	virtual RgbaImageData LoadTextureAtlasImage(std::string const & textureDatabaseName) = 0;
 };
