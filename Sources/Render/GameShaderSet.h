@@ -12,7 +12,7 @@
 // Shaders
 //
 
-enum class ProgramType
+enum class GameShaderProgramType
 {
     AABBs = 0,
     AMBombPreImplosion,
@@ -110,11 +110,13 @@ enum class ProgramType
     _Last = WorldBorder
 };
 
-ProgramType _ShaderNameToProgramType(std::string const & str);
+namespace _detail {
+GameShaderProgramType ShaderNameToGameShaderProgramType(std::string const & str);
 
-std::string _ProgramTypeToStr(ProgramType program);
+std::string GameShaderProgramTypeToStr(GameShaderProgramType program);
+}
 
-enum class ProgramParameterType : std::uint8_t
+enum class GameShaderProgramParameterType : std::uint8_t
 {
     AtlasTile1Dx = 0,
     AtlasTile1LeftBottomTextureCoordinates,
@@ -171,14 +173,18 @@ enum class ProgramParameterType : std::uint8_t
     _LastTexture = NpcAtlasTexture
 };
 
-ProgramParameterType _StrToProgramParameterType(std::string const & str);
+namespace _detail {
 
-std::string _ProgramParameterTypeToStr(ProgramParameterType programParameter);
+GameShaderProgramParameterType StrToGameShaderProgramParameterType(std::string const & str);
+
+std::string GameShaderProgramParameterTypeToStr(GameShaderProgramParameterType programParameter);
+
+}
 
 /*
  * This enum serves merely to associate a vertex attribute index to each vertex attribute name.
  */
-enum class VertexAttributeType : std::uint32_t
+enum class GameShaderVertexAttributeType : std::uint32_t
 {
     //
     // World
@@ -302,19 +308,24 @@ enum class VertexAttributeType : std::uint32_t
     GenericMipMappedTextureNdc2 = 1
 };
 
-VertexAttributeType _StrToVertexAttributeType(std::string const & str);
+namespace _detail
+{
+
+GameShaderVertexAttributeType StrToGameShaderVertexAttributeType(std::string const & str);
+
+}
 
 struct GameShaderSet
 {
-    using ProgramType = ProgramType;
-    using ProgramParameterType = ProgramParameterType;
-    using VertexAttributeType = VertexAttributeType;
+    using ProgramType = GameShaderProgramType;
+    using ProgramParameterType = GameShaderProgramParameterType;
+    using VertexAttributeType = GameShaderVertexAttributeType;
 
     static inline std::string ShaderSetName = "Game";
 
-    static constexpr auto ShaderNameToProgramType = _ShaderNameToProgramType;
-    static constexpr auto ProgramTypeToStr = _ProgramTypeToStr;
-    static constexpr auto StrToProgramParameterType = _StrToProgramParameterType;
-    static constexpr auto ProgramParameterTypeToStr = _ProgramParameterTypeToStr;
-    static constexpr auto StrToVertexAttributeType = _StrToVertexAttributeType;
+    static constexpr auto ShaderNameToProgramType = _detail::ShaderNameToGameShaderProgramType;
+    static constexpr auto ProgramTypeToStr = _detail::GameShaderProgramTypeToStr;
+    static constexpr auto StrToProgramParameterType = _detail::StrToGameShaderProgramParameterType;
+    static constexpr auto ProgramParameterTypeToStr = _detail::GameShaderProgramParameterTypeToStr;
+    static constexpr auto StrToVertexAttributeType = _detail::StrToGameShaderVertexAttributeType;
 };
