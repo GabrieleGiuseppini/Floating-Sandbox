@@ -44,4 +44,8 @@ public:
 	// Texture atlases
 	virtual picojson::value LoadTetureAtlasSpecification(std::string const & textureDatabaseName) = 0;
 	virtual RgbaImageData LoadTextureAtlasImageRGBA(std::string const & textureDatabaseName) = 0;
+
+	// Shaders
+	virtual std::vector<AssetDescriptor> EnumerateShaders(std::string const & shaderSetName) = 0;
+	virtual std::string LoadShader(std::string const & shaderSetName, std::string const & shaderRelativePath) = 0;
 };

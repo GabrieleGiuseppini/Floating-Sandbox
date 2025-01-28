@@ -44,6 +44,9 @@ public:
     picojson::value LoadTetureAtlasSpecification(std::string const & textureDatabaseName) override;
     RgbaImageData LoadTextureAtlasImageRGBA(std::string const & textureDatabaseName) override;
 
+    std::vector<AssetDescriptor> EnumerateShaders(std::string const & shaderSetName) override;
+    std::string LoadShader(std::string const & shaderSetName, std::string const & shaderRelativePath) override;
+
 private:
 
     TestTextureDatabase const & GetDatabase(std::string const & databaseName);

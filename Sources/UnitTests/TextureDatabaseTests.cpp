@@ -53,12 +53,12 @@ TEST(TextureDatabaseTests, Loading)
 		    {
 			    "worldWidth": 10.0,
 			    "worldHeight": 20.0,
-			    "filenameStemPattern": "George_\\d+"
+			    "frameNamePattern": "George_\\d+"
 		    },
 		    {
 			    "worldWidth": 100.0,
 			    "worldHeight": 200.0,
-			    "filenameStemPattern": "John_\\d+"
+			    "frameNamePattern": "John_\\d+"
 		    }
 	    ]
     },
@@ -70,7 +70,7 @@ TEST(TextureDatabaseTests, Loading)
 		    {
 			    "worldWidth": 10000.0,
 			    "worldHeight": 2000.0,
-			    "filenameStemPattern": "Ringo_\\d+"
+			    "frameNamePattern": "Ringo_\\d+"
 		    }
 	    ]
     }
@@ -97,7 +97,7 @@ TEST(TextureDatabaseTests, Loading)
         EXPECT_EQ(fs1.Metadata.WorldWidth, 10.0f);
         // FS2
         auto const & fs2 = groups[0].GetFrameSpecification(1);
-        EXPECT_EQ(fs2.RelativePath, "John_1.png"); // TODO: expecting failure
+        EXPECT_EQ(fs2.RelativePath, "Hello/John_1.png");
         ASSERT_EQ(fs2.Metadata.FrameId, TextureFrameId<MyTestTextureDatabase::MyTextureGroups>(MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 1));
         EXPECT_EQ(fs2.Metadata.Size, ImageSize(111, 112));
         EXPECT_EQ(fs2.Metadata.WorldWidth, 100.0f);
@@ -148,7 +148,7 @@ TEST(TextureDatabaseTests, NotAllGroupsCovered)
 		    {
 			    "worldWidth": 10.0,
 			    "worldHeight": 20.0,
-			    "filenameStemPattern": "George_\\d+"
+			    "frameNamePattern": "George_\\d+"
 		    }
         ]
     }
@@ -186,7 +186,7 @@ TEST(TextureDatabaseTests, NotAllFramesCovered)
 		    {
 			    "worldWidth": 10.0,
 			    "worldHeight": 20.0,
-			    "filenameStemPattern": "George_\\d+"
+			    "frameNamePattern": "George_\\d+"
 		    }
 	    ]
     },
@@ -198,7 +198,7 @@ TEST(TextureDatabaseTests, NotAllFramesCovered)
 		    {
 			    "worldWidth": 10000.0,
 			    "worldHeight": 2000.0,
-			    "filenameStemPattern": "Ringo_\\d+"
+			    "frameNamePattern": "Ringo_\\d+"
 		    }
 	    ]
     }
@@ -235,12 +235,12 @@ TEST(TextureDatabaseTests, NotAllFramesFound)
 		    {
 			    "worldWidth": 10.0,
 			    "worldHeight": 20.0,
-			    "filenameStemPattern": "George_\\d+"
+			    "frameNamePattern": "George_\\d+"
 		    },
 		    {
 			    "worldWidth": 100.0,
 			    "worldHeight": 200.0,
-			    "filenameStemPattern": "John_\\d+"
+			    "frameNamePattern": "John_\\d+"
 		    }
 	    ]
     },
@@ -252,7 +252,7 @@ TEST(TextureDatabaseTests, NotAllFramesFound)
 		    {
 			    "worldWidth": 10000.0,
 			    "worldHeight": 2000.0,
-			    "filenameStemPattern": "Ringo_\\d+"
+			    "frameNamePattern": "Ringo_\\d+"
 		    }
 	    ]
     }

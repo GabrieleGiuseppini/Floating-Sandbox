@@ -80,7 +80,8 @@ add_test (UnitTests UnitTests)
 target_link_libraries (UnitTests
 	Core
 	Game
-	OpenGLLib
+	OpenGLCore
+	Render
 	#GPUCalcLib
 	#ShipBuilderLib
 	#UILib

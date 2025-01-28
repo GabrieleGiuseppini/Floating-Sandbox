@@ -26,18 +26,18 @@ set  (GLAD_SOURCES
 source_group(" " FILES ${SOURCES})
 source_group("glad" FILES ${GLAD_SOURCES})
 
-add_library (GameOpenCore ${SOURCES} ${GLAD_SOURCES})
+add_library (OpenGLCore ${SOURCES} ${GLAD_SOURCES})
 
-target_include_directories(GameOpenCore INTERFACE ..)
+target_include_directories(OpenGLCore INTERFACE ..)
 
-target_link_libraries (GameOpenCore
+target_link_libraries (OpenGLCore
 	Core
 	${OPENGL_LIBRARIES}
 	${ADDITIONAL_LIBRARIES})
 
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 
-	target_link_libraries (GameOpenCore
+	target_link_libraries (OpenGLCore
 		${CMAKE_DL_LIBS})
 
 endif()

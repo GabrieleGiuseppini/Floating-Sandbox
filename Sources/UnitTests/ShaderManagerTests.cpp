@@ -1,4 +1,4 @@
-#include <Game/ShaderTypes.h>
+#include <Render/GameShaderSet.h>
 
 #include <OpenGLCore/ShaderManager.h>
 
@@ -6,7 +6,7 @@
 
 #include "gtest/gtest.h"
 
-using TestShaderManager = ShaderManager<Render::ShaderManagerTraits>;
+using TestShaderManager = ShaderManager<GameShaderSet>;
 
 class ShaderManagerTests : public testing::Test
 {

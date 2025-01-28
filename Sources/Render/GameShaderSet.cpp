@@ -3,16 +3,14 @@
 * Created:              2018-10-08
 * Copyright:            Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
-#include "ShaderTypes.h"
+#include "GameShaderSet.h"
 
-#include <GameCore/GameException.h>
-#include <GameCore/Utils.h>
+#include <Core/GameException.h>
+#include <Core/Utils.h>
 
 #include <cassert>
 
-namespace Render {
-
-ProgramType ShaderFilenameToProgramType(std::string const & str)
+ProgramType _ShaderFilenameToProgramType(std::string const & str)
 {
     std::string lstr = Utils::ToLower(str);
     if (lstr == "aabbs")
@@ -203,7 +201,7 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         throw GameException("Unrecognized program \"" + str + "\"");
 }
 
-std::string ProgramTypeToStr(ProgramType program)
+std::string _ProgramTypeToStr(ProgramType program)
 {
     switch (program)
     {
@@ -397,7 +395,7 @@ std::string ProgramTypeToStr(ProgramType program)
     throw GameException("Unsupported ProgramType");
 }
 
-ProgramParameterType StrToProgramParameterType(std::string const & str)
+ProgramParameterType _StrToProgramParameterType(std::string const & str)
 {
     if (str == "AtlasTile1Dx")
         return ProgramParameterType::AtlasTile1Dx;
@@ -500,7 +498,7 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         throw GameException("Unrecognized program parameter \"" + str + "\"");
 }
 
-std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
+std::string _ProgramParameterTypeToStr(ProgramParameterType programParameter)
 {
     switch (programParameter)
     {
@@ -607,7 +605,7 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
     throw GameException("Unsupported ProgramParameterType");
 }
 
-VertexAttributeType StrToVertexAttributeType(std::string const & str)
+VertexAttributeType _StrToVertexAttributeType(std::string const & str)
 {
     // World
     if (Utils::CaseInsensitiveEquals(str, "Sky"))
@@ -759,6 +757,4 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::GenericMipMappedTextureNdc2;
     else
         throw GameException("Unrecognized vertex attribute \"" + str + "\"");
-}
-
 }

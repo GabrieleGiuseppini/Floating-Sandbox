@@ -19,7 +19,7 @@ public:
 
 	explicit GameAssetManager(std::string const & argv0);
 
-	explicit GameAssetManager(std::filesystem::path const & textureDatabaseRoot);
+	explicit GameAssetManager(std::filesystem::path const & textureRoot);
 
 	//
 	// IAssetManager
@@ -32,6 +32,9 @@ public:
 
 	picojson::value LoadTetureAtlasSpecification(std::string const & textureDatabaseName) override;
 	RgbaImageData LoadTextureAtlasImageRGBA(std::string const & textureDatabaseName) override;
+
+	std::vector<AssetDescriptor> EnumerateShaders(std::string const & shaderSetName) override;
+	std::string LoadShader(std::string const & shaderSetName, std::string const & shaderRelativePath) override;
 
 	//
 	// Platform-specific
@@ -73,5 +76,6 @@ public:
 private:
 
 	std::filesystem::path const mDataRoot;
-	std::filesystem::path const mTextureDatabaseRoot;
+	std::filesystem::path const mTextureRoot;
+	std::filesystem::path const mShaderRoot;
 };

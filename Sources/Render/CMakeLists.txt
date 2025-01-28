@@ -1,23 +1,22 @@
 
 #
-# Game library
+# Render library
 #
 
-set  (GAME_SOURCES	
-	FileSystem.h
-	GameAssetManager.cpp
-	GameAssetManager.h
+set  (RENDER_SOURCES	
+	GameShaderSet.cpp
+	GameShaderSet.h
 )
 
-source_group(" " FILES ${GAME_SOURCES})
+source_group(" " FILES ${RENDER_SOURCES})
 
-add_library (Game ${GAME_SOURCES})
+add_library (Render ${RENDER_SOURCES})
 
 target_include_directories(Game PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(Game PUBLIC ${PICOJSON_INCLUDE_DIRS})
 target_include_directories(Game INTERFACE ..)
 
-target_link_libraries (Game
+target_link_libraries (Render
 	Core
-	Render
+	OpenGLCore
 	${ADDITIONAL_LIBRARIES})

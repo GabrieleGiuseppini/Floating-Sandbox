@@ -65,6 +65,23 @@ RgbaImageData TestAssetManager::LoadTextureAtlasImageRGBA(std::string const & te
     return RgbaImageData(0, 0);
 }
 
+std::vector<IAssetManager::AssetDescriptor> TestAssetManager::EnumerateShaders(std::string const & shaderSetName)
+{
+    assert(false); // Not needed by tests, so far
+    (void)shaderSetName;
+    return std::vector<IAssetManager::AssetDescriptor>();
+}
+
+std::string TestAssetManager::LoadShader(std::string const & shaderSetName, std::string const & shaderRelativePath)
+{
+    assert(false); // Not needed by tests, so far
+    (void)shaderSetName;
+    (void)shaderRelativePath;
+    return std::string();
+}
+
+////////////////////////////////////
+
 TestTextureDatabase const & TestAssetManager::GetDatabase(std::string const & databaseName)
 {
     for (auto const & db : TestTextureDatabases)

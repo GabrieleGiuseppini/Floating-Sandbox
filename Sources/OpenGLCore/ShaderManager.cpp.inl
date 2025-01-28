@@ -5,47 +5,30 @@
 ***************************************************************************************/
 #include "ShaderManager.h"
 
-#include <GameCore/GameException.h>
-#include <GameCore/Utils.h>
+#include <Core/GameException.h>
 
 #include <regex>
 #include <unordered_map>
 #include <unordered_set>
 
-template<typename Traits>
-ShaderManager<Traits>::ShaderManager(std::filesystem::path const & shadersRoot)
+template<typename TShaderSet>
+ShaderManager<TShaderSet>::ShaderManager(IAssetManager & assetManager)
 {
     //
     // Load all shader files
     //
 
-    if (!std::filesystem::exists(shadersRoot))
-    {
-        throw GameException("Shaders root path \"" + shadersRoot.string() + "\" does not exist");
-    }
-
-    // Filename -> (isShader, source)
+    // Shader name -> (isShader, source)
     std::unordered_map<std::string, std::pair<bool, std::string>> shaderSources;
 
-    for (auto const & entryIt : std::filesystem::directory_iterator(shadersRoot))
+    for (auto const & shaderDescriptor : assetManager.EnumerateShaders(TShaderSet::ShaderSetName))
     {
-        if (std::filesystem::is_regular_file(entryIt.path()))
-        {
-            if (entryIt.path().extension() == ".glsl" || entryIt.path().extension() == ".glslinc")
-            {
-                std::string shaderFilename = entryIt.path().filename().string();
+        assert(shaderSources.count(shaderDescriptor.Name) == 0); // Guaranteed by file system
 
-                assert(shaderSources.count(shaderFilename) == 0); // Guaranteed by file system
-
-                shaderSources[shaderFilename] = std::make_pair<bool, std::string>(
-                    entryIt.path().extension() == ".glsl",
-                    Utils::LoadTextFile(entryIt.path()));
-            }
-            else
-            {
-                LogMessage("WARNING: found file \"" + entryIt.path().string() + "\" with unexpected extension while loading shaders");
-            }
-        }
+        #define IncludeExtension ".glsl"
+        shaderSources[shaderDescriptor.Name] = std::make_pair<bool, std::string>(
+            shaderDescriptor.RelativePath.find(IncludeExtension, shaderDescriptor.RelativePath.size() - IncludeExtension.size()) != std::string::npos,
+            assetManager.LoadShader(TShaderSet::ShaderSetName, shaderDescriptor.RelativePath));
     }
 
     //
@@ -67,27 +50,26 @@ ShaderManager<Traits>::ShaderManager(std::filesystem::path const & shadersRoot)
     // Verify all expected programs have been loaded
     //
 
-    for (uint32_t i = 0; i <= static_cast<uint32_t>(Traits::ProgramType::_Last); ++i)
+    for (uint32_t i = 0; i <= static_cast<uint32_t>(TShaderSet::ProgramType::_Last); ++i)
     {
         if (i >= mPrograms.size() || !(mPrograms[i].OpenGLHandle))
         {
-            throw GameException("Cannot find GLSL source file for program \"" + Traits::ProgramTypeToStr(static_cast<typename Traits::ProgramType>(i)) + "\"");
+            throw GameException("Cannot find GLSL source file for program \"" + TShaderSet::ProgramTypeToStr(static_cast<typename TShaderSet::ProgramType>(i)) + "\"");
         }
     }
 }
 
-template<typename Traits>
-void ShaderManager<Traits>::CompileShader(
-    std::string const & shaderFilename,
+template<typename TShaderSet>
+void ShaderManager<TShaderSet>::CompileShader(
+    std::string const & shaderName,
     std::string const & shaderSource,
     std::unordered_map<std::string, std::pair<bool, std::string>> const & allShaderSources)
 {
     try
     {
         // Get the program type
-        std::filesystem::path shaderFilenamePath(shaderFilename);
-        typename Traits::ProgramType const program = Traits::ShaderFilenameToProgramType(shaderFilenamePath.stem().string());
-        std::string const programName = Traits::ProgramTypeToStr(program);
+        typename TShaderSet::ProgramType const program = TShaderSet::ShaderNameToProgramType(shaderName);
+        std::string const programName = TShaderSet::ProgramTypeToStr(program);
 
         // Make sure we have room for it
         size_t programIndex = static_cast<size_t>(program);
@@ -153,7 +135,7 @@ void ShaderManager<Traits>::CompileShader(
 
         for (auto const & vertexAttributeName : vertexAttributeNames)
         {
-            auto vertexAttribute = Traits::StrToVertexAttributeType(vertexAttributeName);
+            auto vertexAttribute = TShaderSet::StrToVertexAttributeType(vertexAttributeName);
 
             GameOpenGL::BindAttributeLocation(
                 mPrograms[programIndex].OpenGLHandle,
@@ -179,7 +161,7 @@ void ShaderManager<Traits>::CompileShader(
 
         for (auto const & parameterName : parameterNames)
         {
-            typename Traits::ProgramParameterType programParameter = Traits::StrToProgramParameterType(parameterName);
+            typename TShaderSet::ProgramParameterType programParameter = TShaderSet::StrToProgramParameterType(parameterName);
             size_t programParameterIndex = static_cast<size_t>(programParameter);
 
             //
@@ -195,7 +177,7 @@ void ShaderManager<Traits>::CompileShader(
             // Get and store
             mPrograms[programIndex].UniformLocations[programParameterIndex] = GameOpenGL::GetParameterLocation(
                 mPrograms[programIndex].OpenGLHandle,
-                "param" + Traits::ProgramParameterTypeToStr(programParameter));
+                "param" + TShaderSet::ProgramParameterTypeToStr(programParameter));
 
             //
             // Store in ProgramParameter->Program index
@@ -212,12 +194,12 @@ void ShaderManager<Traits>::CompileShader(
     }
     catch (GameException const & ex)
     {
-        throw GameException("Error compiling shader file \"" + shaderFilename + "\": " + ex.what());
+        throw GameException("Error compiling shader file \"" + shaderName + "\": " + ex.what());
     }
 }
 
-template<typename Traits>
-std::string ShaderManager<Traits>::ResolveIncludes(
+template<typename TShaderSet>
+std::string ShaderManager<TShaderSet>::ResolveIncludes(
     std::string const & shaderSource,
     std::unordered_map<std::string, std::pair<bool, std::string>> const & shaderSources)
 {
@@ -294,8 +276,8 @@ std::string ShaderManager<Traits>::ResolveIncludes(
     return resolvedSource;
 }
 
-template<typename Traits>
-std::tuple<std::string, std::string> ShaderManager<Traits>::SplitSource(std::string const & source)
+template<typename TShaderSet>
+std::tuple<std::string, std::string> ShaderManager<TShaderSet>::SplitSource(std::string const & source)
 {
     static std::regex const VertexHeaderRegex(R"!(\s*###VERTEX-(\d{3})\s*)!");
     static std::regex const FragmentHeaderRegex(R"!(\s*###FRAGMENT-(\d{3})\s*)!");
@@ -379,8 +361,8 @@ std::tuple<std::string, std::string> ShaderManager<Traits>::SplitSource(std::str
         fragmentShaderCode.str());
 }
 
-template<typename Traits>
-std::set<std::string> ShaderManager<Traits>::ExtractVertexAttributeNames(GameOpenGLShaderProgram const & shaderProgram)
+template<typename TShaderSet>
+std::set<std::string> ShaderManager<TShaderSet>::ExtractVertexAttributeNames(GameOpenGLShaderProgram const & shaderProgram)
 {
     std::set<std::string> attributeNames;
 
@@ -412,7 +394,7 @@ std::set<std::string> ShaderManager<Traits>::ExtractVertexAttributeNames(GameOpe
         std::string const attributeName(nameBuffer + 2, nameLength - 2);
 
         // Lookup the attribute name - just as a sanity check
-        Traits::StrToVertexAttributeType(attributeName);
+        TShaderSet::StrToVertexAttributeType(attributeName);
 
         // Store it, making sure it's not specified more than once
         if (!attributeNames.insert(attributeName).second)
@@ -424,8 +406,8 @@ std::set<std::string> ShaderManager<Traits>::ExtractVertexAttributeNames(GameOpe
     return attributeNames;
 }
 
-template<typename Traits>
-std::set<std::string> ShaderManager<Traits>::ExtractParameterNames(GameOpenGLShaderProgram const & shaderProgram)
+template<typename TShaderSet>
+std::set<std::string> ShaderManager<TShaderSet>::ExtractParameterNames(GameOpenGLShaderProgram const & shaderProgram)
 {
     static std::regex const ArrayParameterRegEx(R"!(^(.+)\[[0-9]+\]$)!");
     static char constexpr ParamPrefix[5] = { 'p', 'a', 'r', 'a', 'm' };
@@ -470,7 +452,7 @@ std::set<std::string> ShaderManager<Traits>::ExtractParameterNames(GameOpenGLSha
         }
 
         // Lookup the parameter name - just as a sanity check
-        Traits::StrToProgramParameterType(parameterName);
+        TShaderSet::StrToProgramParameterType(parameterName);
 
         // Store it, making sure it's not specified more than once
         if (!parameterNames.insert(parameterName).second
