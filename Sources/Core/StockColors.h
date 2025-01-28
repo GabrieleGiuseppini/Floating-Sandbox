@@ -5,16 +5,12 @@
 ***************************************************************************************/
 #pragma once
 
-#include <GameCore/Colors.h>
+#include "Colors.h"
 
-namespace Render {
-
-class StockColors final 
+class StockColors final
 {
 public:
 
 	// NpcSelection
 	static rgbColor constexpr Red1 = rgbColor(224, 18, 18);
 };
-
-}

@@ -67,6 +67,7 @@ set  (SOURCES
 	PrecalculatedFunction.h
 	ProgressCallback.h
 	RunningAverage.h
+	StockColors.h
 	StrongTypeDef.h
 	SysSpecifics.cpp
 	SysSpecifics.h

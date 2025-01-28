@@ -1106,6 +1106,20 @@ inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, Abso
     return os;
 }
 
+/*
+ * Definition of the visible portion of the world.
+ */
+struct VisibleWorld
+{
+    vec2f Center;
+
+    float Width;
+    float Height;
+
+    vec2f TopLeft;
+    vec2f BottomRight;
+};
+
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // Game
 ////////////////////////////////////////////////////////////////////////////////////////////////

@@ -1,8 +1,6 @@
-#include <Game/GameParameters.h>
+#include "Core/ParameterSmoother.h"
 
-#include <GameCore/ParameterSmoother.h>
-
-#include "Utils.h"
+#include "TestingUtils.h"
 
 #include "gtest/gtest.h"
 
@@ -120,7 +118,7 @@ TEST(ParameterSmootherTests, TargetsClampedTarget)
     smoother.SetValue(10.0f);
 
     // Real target is 5.0f
-    EXPECT_TRUE(ApproxEquals(smoother.GetValue(), 5.0f, 0.1f));    
+    EXPECT_TRUE(ApproxEquals(smoother.GetValue(), 5.0f, 0.1f));
 
 	EXPECT_FALSE(hasSetterBeenInvoked);
 
@@ -195,7 +193,7 @@ TEST(ParameterSmootherTests, StopsAfterThreshold)
 
     smoother.Update();
     EXPECT_TRUE(ApproxEquals(parameterValue, 8.75f, 0.0001f));
-    
+
     smoother.Update();
     EXPECT_TRUE(ApproxEquals(parameterValue, 10.0f, 0.0f));
 }

@@ -44,7 +44,7 @@ set (UNIT_TEST_SOURCES
 	main.cpp
 	Matrix2Tests.cpp
 	MemoryStreamsTests.cpp
-	#ParameterSmootherTests.cpp
+	ParameterSmootherTests.cpp
 	PortableTimepointTests.cpp
 	PrecalculatedFunctionTests.cpp
 	#RopeBufferTests.cpp
