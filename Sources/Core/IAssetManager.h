@@ -29,17 +29,17 @@ class IAssetManager
 {
 public:
 
-	struct TextureDatabaseFrameLocator
+	struct AssetDescriptor
 	{
+		std::string Name; // e.g. filename stem
 		std::string RelativePath;
-		std::string FilenameStem;
 	};
 
 	// Texture databases
 	virtual picojson::value LoadTetureDatabaseSpecification(std::string const & databaseName) = 0;
 	virtual ImageSize GetTextureDatabaseFrameSize(std::string const & databaseName, std::string const & frameRelativePath) = 0;
 	virtual RgbaImageData LoadTextureDatabaseFrameRGBA(std::string const & databaseName, std::string const & frameRelativePath) = 0;
-	virtual std::vector<TextureDatabaseFrameLocator> EnumerateTextureDatabaseFrames(std::string const & databaseName) = 0;
+	virtual std::vector<AssetDescriptor> EnumerateTextureDatabaseFrames(std::string const & databaseName) = 0;
 
 	// Texture atlases
 	virtual picojson::value LoadTetureAtlasSpecification(std::string const & textureDatabaseName) = 0;

@@ -36,8 +36,7 @@ void TextureFrameMetadata<TTextureDatabase>::Serialize(picojson::object & root) 
     frameId["group"] = picojson::value(static_cast<int64_t>(FrameId.Group));
     frameId["frameIndex"] = picojson::value(static_cast<int64_t>(FrameId.FrameIndex));
     root["id"] = picojson::value(frameId);
-    root["filenameStem"] = picojson::value(FilenameStem);
-
+    root["frameName"] = picojson::value(FrameName);
     root["displayName"] = picojson::value(DisplayName);
 }
 
@@ -70,8 +69,7 @@ TextureFrameMetadata<TTextureDatabase> TextureFrameMetadata<TTextureDatabase>::D
     picojson::object const & frameIdJson = root.at("id").get<picojson::object>();
     TTextureGroups group = static_cast<TTextureGroups>(frameIdJson.at("group").get<std::int64_t>());
     TextureFrameIndex frameIndex = static_cast<TextureFrameIndex>(frameIdJson.at("frameIndex").get<std::int64_t>());
-    std::string const & filenameStem = root.at("filenameStem").get<std::string>();
-
+    std::string const & frameName = root.at("frameName").get<std::string>();
     std::string const & displayName = root.at("displayName").get<std::string>();
 
     return TextureFrameMetadata<TTextureDatabase>(
@@ -82,7 +80,7 @@ TextureFrameMetadata<TTextureDatabase> TextureFrameMetadata<TTextureDatabase>::D
         anchorCenter,
         anchorCenterWorld,
         TextureFrameId<TTextureGroups>(group, frameIndex),
-        filenameStem,
+        frameName,
         displayName);
 }
 
@@ -102,10 +100,10 @@ TextureDatabase<TTextureDatabase> TextureDatabase<TTextureDatabase>::Load(IAsset
     }
 
     //
-    // Get list of frame filenames
+    // Get list of frame descriptors
     //
 
-    auto const allTextureFrameLocators = assetManager.EnumerateTextureDatabaseFrames(TTextureDatabase::DatabaseName);
+    auto const allTextureFrameDescriptors = assetManager.EnumerateTextureDatabaseFrames(TTextureDatabase::DatabaseName);
 
     //
     // Process JSON groups and build texture groups
@@ -113,7 +111,7 @@ TextureDatabase<TTextureDatabase> TextureDatabase<TTextureDatabase>::Load(IAsset
 
     std::vector<TextureGroup<TTextureDatabase>> textureGroups;
 
-    std::set<std::string> matchedTextureFrameStems;
+    std::set<std::string> matchedTextureFrameNames;
 
     for (auto const & groupValue : root.get<picojson::array>())
     {
@@ -161,14 +159,14 @@ TextureDatabase<TTextureDatabase> TextureDatabase<TTextureDatabase>::Load(IAsset
             std::optional<std::string> const frameDisplayName = Utils::GetOptionalJsonMember<std::string>(frameJson, "displayName");
 
             // Get filename and make regex out of it
-            std::string const frameFilenameStemPattern = Utils::GetMandatoryJsonMember<std::string>(frameJson, "filenameStemPattern");
-            std::regex const frameFilenameStemRegex("^" + frameFilenameStemPattern + "$");
+            std::string const frameNamePattern = Utils::GetMandatoryJsonMember<std::string>(frameJson, "frameNamePattern");
+            std::regex const frameNameRegex("^" + frameNamePattern + "$");
 
             // Find all files matching the regex
             int filesFoundFromFrameCount = 0;
-            for (auto const & frameLocator : allTextureFrameLocators)
+            for (auto const & frameDescriptor : allTextureFrameDescriptors)
             {
-                if (std::regex_match(frameLocator.FilenameStem, frameFilenameStemRegex))
+                if (std::regex_match(frameDescriptor.Name, frameNameRegex))
                 {
                     // This file belongs to this group
 
@@ -176,7 +174,7 @@ TextureDatabase<TTextureDatabase> TextureDatabase<TTextureDatabase>::Load(IAsset
                     // Get frame size
                     //
 
-                    ImageSize textureSize = assetManager.GetTextureDatabaseFrameSize(TTextureDatabase::DatabaseName, frameLocator.RelativePath);
+                    ImageSize textureSize = assetManager.GetTextureDatabaseFrameSize(TTextureDatabase::DatabaseName, frameDescriptor.RelativePath);
 
 
                     //
@@ -191,12 +189,12 @@ TextureDatabase<TTextureDatabase> TextureDatabase<TTextureDatabase>::Load(IAsset
                     }
                     else
                     {
-                        // Extract index from filename stem
-                        static std::regex const TextureFilenameStemFrameIndexRegex("^.+?_(\\d+)$");
+                        // Extract index from name
+                        static std::regex const TextureNameFrameIndexRegex("^.+?_(\\d+)$");
                         std::smatch frameIndexMatch;
-                        if (!std::regex_match(frameLocator.FilenameStem, frameIndexMatch, TextureFilenameStemFrameIndexRegex))
+                        if (!std::regex_match(frameDescriptor.Name, frameIndexMatch, TextureNameFrameIndexRegex))
                         {
-                            throw GameException("Texture database: cannot extract frame index from texture filename \"" + frameLocator.FilenameStem + "\", and auto-assigning indices is disabled");
+                            throw GameException("Texture database: cannot extract frame index from texture name \"" + frameDescriptor.Name + "\", and auto-assigning indices is disabled");
                         }
 
                         assert(frameIndexMatch.size() == 2);
@@ -251,7 +249,7 @@ TextureDatabase<TTextureDatabase> TextureDatabase<TTextureDatabase>::Load(IAsset
                     }
                     else
                     {
-                        throw GameException("Texture database: cannot find world dimensions for frame \"" + frameFilenameStemPattern + "\"");
+                        throw GameException("Texture database: cannot find world dimensions for frame \"" + frameDescriptor.Name + "\"");
                     }
 
                     bool hasOwnAmbientLight = frameHasOwnAmbientLight.has_value() ? *frameHasOwnAmbientLight : groupHasOwnAmbientLight;
@@ -281,15 +279,15 @@ TextureDatabase<TTextureDatabase> TextureDatabase<TTextureDatabase>::Load(IAsset
                                     anchorWorldX,
                                     anchorWorldY),
                                 TextureFrameId<TTextureGroups>(group, frameIndex),
-                                frameLocator.FilenameStem,
-                                frameDisplayName.has_value() ? *frameDisplayName : frameLocator.FilenameStem),
-                            frameLocator.RelativePath));
+                                frameDescriptor.Name,
+                                frameDisplayName.has_value() ? *frameDisplayName : frameDescriptor.Name),
+                            frameDescriptor.RelativePath));
 
                     //
                     // Remember this frame file was matched
                     //
 
-                    matchedTextureFrameStems.insert(frameLocator.FilenameStem);
+                    matchedTextureFrameNames.insert(frameDescriptor.Name);
 
                     ++filesFoundFromFrameCount;
                 }
@@ -298,7 +296,7 @@ TextureDatabase<TTextureDatabase> TextureDatabase<TTextureDatabase>::Load(IAsset
             // Make sure at least one matching file was found for this frame specification
             if (0 == filesFoundFromFrameCount)
             {
-                throw GameException("Texture database: couldn't match any file to frame filename pattern \"" + frameFilenameStemPattern + "\"");
+                throw GameException("Texture database: couldn't match any file to frame filename pattern \"" + frameNamePattern + "\"");
             }
         }
 
@@ -359,11 +357,11 @@ TextureDatabase<TTextureDatabase> TextureDatabase<TTextureDatabase>::Load(IAsset
     }
 
     // Make sure all textures found in file system have been exhausted
-    if (matchedTextureFrameStems.size() != allTextureFrameLocators.size())
+    if (matchedTextureFrameNames.size() != allTextureFrameDescriptors.size())
     {
         throw GameException(
             "Texture database: couldn't match "
-            + std::to_string(allTextureFrameLocators.size() - matchedTextureFrameStems.size())
+            + std::to_string(allTextureFrameDescriptors.size() - matchedTextureFrameNames.size())
             + " texture frame files to texture specifications");
     }
 

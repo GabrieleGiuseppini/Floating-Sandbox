@@ -17,7 +17,7 @@ ImageSize TestAssetManager::GetTextureDatabaseFrameSize(std::string const & data
     auto const & db = GetDatabase(databaseName);
     for (auto const & f : db.FrameInfos)
     {
-        if (f.FrameLocator.RelativePath == frameRelativePath)
+        if (f.AssetDescriptor.RelativePath == frameRelativePath)
         {
             return f.FrameSize;
         }
@@ -34,21 +34,21 @@ RgbaImageData TestAssetManager::LoadTextureDatabaseFrameRGBA(std::string const &
     return RgbaImageData(0, 0);
 }
 
-std::vector<IAssetManager::TextureDatabaseFrameLocator> TestAssetManager::EnumerateTextureDatabaseFrames(std::string const & databaseName)
+std::vector<IAssetManager::AssetDescriptor> TestAssetManager::EnumerateTextureDatabaseFrames(std::string const & databaseName)
 {
-    std::vector<TextureDatabaseFrameLocator> frameLocators;
+    std::vector<AssetDescriptor> assetDescriptors;
 
     auto const & db = GetDatabase(databaseName);
     std::transform(
         db.FrameInfos.cbegin(),
         db.FrameInfos.cend(),
-        std::back_inserter(frameLocators),
+        std::back_inserter(assetDescriptors),
             [](auto const & fi)
             {
-                return fi.FrameLocator;
+                return fi.AssetDescriptor;
             });
 
-    return frameLocators;
+    return assetDescriptors;
 }
 
 picojson::value TestAssetManager::LoadTetureAtlasSpecification(std::string const & textureDatabaseName)

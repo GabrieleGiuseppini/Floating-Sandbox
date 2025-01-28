@@ -39,9 +39,9 @@ RgbaImageData GameAssetManager::LoadTextureDatabaseFrameRGBA(std::string const &
     return LoadPngImageRgba(mTextureDatabaseRoot / databaseName / frameRelativePath);
 }
 
-std::vector<IAssetManager::TextureDatabaseFrameLocator> GameAssetManager::EnumerateTextureDatabaseFrames(std::string const & databaseName)
+std::vector<IAssetManager::AssetDescriptor> GameAssetManager::EnumerateTextureDatabaseFrames(std::string const & databaseName)
 {
-    std::vector<TextureDatabaseFrameLocator> frameLocators;
+    std::vector<AssetDescriptor> frameDescriptors;
 
     std::filesystem::path const databaseRootPath = mTextureDatabaseRoot / databaseName;
     for (auto const & entryIt : std::filesystem::recursive_directory_iterator(databaseRootPath))
@@ -53,10 +53,10 @@ std::vector<IAssetManager::TextureDatabaseFrameLocator> GameAssetManager::Enumer
             if (entryIt.path().extension().string() == ".png")
             {
                 auto const framePath = entryIt.path();
-                frameLocators.push_back(
-                    TextureDatabaseFrameLocator{
-                        std::filesystem::relative(framePath, databaseRootPath).string(),
-                        framePath.filename().stem().string()
+                frameDescriptors.push_back(
+                    AssetDescriptor{
+                        framePath.filename().stem().string(),
+                        std::filesystem::relative(framePath, databaseRootPath).string()
                     });
             }
             else if (entryIt.path().extension().string() != ".txt") // txt allowed
@@ -66,7 +66,7 @@ std::vector<IAssetManager::TextureDatabaseFrameLocator> GameAssetManager::Enumer
         }
     }
 
-    return frameLocators;
+    return frameDescriptors;
 }
 
 picojson::value GameAssetManager::LoadTetureAtlasSpecification(std::string const & textureDatabaseName)

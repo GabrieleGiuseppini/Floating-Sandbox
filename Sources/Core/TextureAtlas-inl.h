@@ -56,15 +56,15 @@ TextureAtlasMetadata<TTextureDatabase>::TextureAtlasMetadata(
 
     for (size_t i = 0; i < mFrameMetadata.size(); ++i)
     {
-        auto const [_, isInserted] = mFrameMetadataByFilenameStem.try_emplace(
-            mFrameMetadata[i].FrameMetadata.FilenameStem,
+        auto const [_, isInserted] = mFrameMetadataByName.try_emplace(
+            mFrameMetadata[i].FrameMetadata.FrameName,
             i);
 
         if (!isInserted)
         {
             // Note: this may happen if the same file is, for example, used with different world sizes; in such cases,
             // one cannot use an Atlas
-            throw GameException("Atlas metadata frame filename \"" + mFrameMetadata[i].FrameMetadata.FilenameStem + "\" is duplicated");
+            throw GameException("Atlas metadata frame \"" + mFrameMetadata[i].FrameMetadata.FrameName + "\" is duplicated");
         }
     }
 }
@@ -343,7 +343,7 @@ typename TextureAtlasBuilder<TTextureDatabase>::AtlasSpecification TextureAtlasB
             {
                 // It's a duplicate
 
-                LogMessage("Frame \"", frame.Metadata.FilenameStem, "\" is a duplicate of \"", originalFrameMetadata->FilenameStem, "\"");
+                LogMessage("Frame \"", frame.Metadata.FrameName, "\" is a duplicate of \"", originalFrameMetadata->FrameName, "\"");
 
                 isDuplicate = true;
 

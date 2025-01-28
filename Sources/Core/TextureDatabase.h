@@ -57,7 +57,7 @@ struct TextureFrameMetadata
     TextureFrameId<typename TTextureDatabase::TextureGroupsType> FrameId;
 
     // The filename stem of this frame's texture
-    std::string FilenameStem;
+    std::string FrameName;
 
     // The optional name of the frame
     std::string DisplayName;
@@ -70,7 +70,7 @@ struct TextureFrameMetadata
         ImageCoordinates const & anchorCenter,
         vec2f const & anchorCenterWorld,
         TextureFrameId<typename TTextureDatabase::TextureGroupsType> frameId,
-        std::string const & filenameStem,
+        std::string const & frameName,
         std::string const & displayName)
         : Size(size)
         , WorldWidth(worldWidth)
@@ -79,7 +79,7 @@ struct TextureFrameMetadata
         , AnchorCenter(anchorCenter)
         , AnchorCenterWorld(anchorCenterWorld)
         , FrameId(frameId)
-        , FilenameStem(filenameStem)
+        , FrameName(frameName)
         , DisplayName(displayName)
     {}
 

@@ -8,7 +8,7 @@
 	"frames":[
 		{	
 			"worldScaling": 1.0,
-			"filenameStemPattern": ".*"
+			"frameNamePattern": ".*"
 		}
 	]
 }

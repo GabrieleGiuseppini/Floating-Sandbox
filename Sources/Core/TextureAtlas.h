@@ -144,14 +144,14 @@ public:
         return mFrameMetadata[mFrameMetadataIndices[static_cast<size_t>(group)][frameIndex]];
     }
 
-    inline TextureAtlasFrameMetadata<TTextureDatabase> const & GetFrameMetadata(std::string const & filenameStem) const
+    inline TextureAtlasFrameMetadata<TTextureDatabase> const & GetFrameMetadata(std::string const & frameName) const
     {
-        if (mFrameMetadataByFilenameStem.count(filenameStem) != 1)
+        if (mFrameMetadataByName.count(frameName) != 1)
         {
-            throw GameException("The requested frame filename stem \"" + filenameStem + "\" could not be found in texture atlas");
+            throw GameException("The requested frame name \"" + frameName + "\" could not be found in texture atlas");
         }
 
-        return mFrameMetadata[mFrameMetadataByFilenameStem.at(filenameStem)];
+        return mFrameMetadata[mFrameMetadataByName.at(frameName)];
     }
 
     inline size_t GetFrameCount(TTextureGroups group) const
@@ -177,8 +177,8 @@ private:
     // Indexed by group first and frame index then
     std::vector<std::vector<size_t>> mFrameMetadataIndices;
 
-    // Indexed by filename stem, value is index in FrameMetadata array
-    std::map<std::string, size_t> mFrameMetadataByFilenameStem;
+    // Indexed by frame name, value is index in FrameMetadata array
+    std::map<std::string, size_t> mFrameMetadataByName;
 };
 
 /*
