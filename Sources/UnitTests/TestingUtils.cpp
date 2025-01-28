@@ -12,43 +12,43 @@ picojson::value TestAssetManager::LoadTetureDatabaseSpecification(std::string co
     return Utils::ParseJSONString(GetDatabase(databaseName).DatabaseJson);
 }
 
-ImageSize TestAssetManager::GetTextureDatabaseFrameSize(std::string const & databaseName, std::string const & frameFileName)
+ImageSize TestAssetManager::GetTextureDatabaseFrameSize(std::string const & databaseName, std::string const & frameRelativePath)
 {
     auto const & db = GetDatabase(databaseName);
     for (auto const & f : db.FrameInfos)
     {
-        if (f.FrameFilename == frameFileName)
+        if (f.FrameLocator.RelativePath == frameRelativePath)
         {
             return f.FrameSize;
         }
     }
 
-    throw std::runtime_error("Invalid test - unknown test texture database frame filename: " + frameFileName);
+    throw std::runtime_error("Invalid test - unknown test texture database frame relative path: " + frameRelativePath);
 }
 
-RgbaImageData TestAssetManager::LoadTextureDatabaseFrameRGBA(std::string const & databaseName, std::string const & frameFileName)
+RgbaImageData TestAssetManager::LoadTextureDatabaseFrameRGBA(std::string const & databaseName, std::string const & frameRelativePath)
 {
     assert(false); // Not needed by tests, so far
     (void)databaseName;
-    (void)frameFileName;
+    (void)frameRelativePath;
     return RgbaImageData(0, 0);
 }
 
-std::vector<std::string> TestAssetManager::EnumerateTextureDatabaseFrames(std::string const & databaseName)
+std::vector<IAssetManager::TextureDatabaseFrameLocator> TestAssetManager::EnumerateTextureDatabaseFrames(std::string const & databaseName)
 {
-    std::vector<std::string> frameFilenames;
+    std::vector<TextureDatabaseFrameLocator> frameLocators;
 
     auto const & db = GetDatabase(databaseName);
     std::transform(
         db.FrameInfos.cbegin(),
         db.FrameInfos.cend(),
-        std::back_inserter(frameFilenames),
+        std::back_inserter(frameLocators),
             [](auto const & fi)
             {
-                return fi.FrameFilename;
+                return fi.FrameLocator;
             });
 
-    return frameFilenames;
+    return frameLocators;
 }
 
 picojson::value TestAssetManager::LoadTetureAtlasSpecification(std::string const & textureDatabaseName)

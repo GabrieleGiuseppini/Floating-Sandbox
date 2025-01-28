@@ -38,11 +38,11 @@ TEST(TextureDatabaseTests, Loading)
         TestTextureDatabase{
             MyTestTextureDatabase::DatabaseName,
             {
-                TestTextureDatabase::DatabaseFrameInfo{"George_0.png", ImageSize(1, 2)},
-                TestTextureDatabase::DatabaseFrameInfo{"George_2.png", ImageSize(222, 223)},
-                TestTextureDatabase::DatabaseFrameInfo{"John_1.png", ImageSize(111, 112)},
-                TestTextureDatabase::DatabaseFrameInfo{"Ringo_0.png", ImageSize(2022, 2023)},
-                TestTextureDatabase::DatabaseFrameInfo{"Ringo_1.png", ImageSize(2122, 2123)},
+                TestTextureDatabase::DatabaseFrameInfo{{"George_0.png", "George_0.png"}, ImageSize(1, 2)},
+                TestTextureDatabase::DatabaseFrameInfo{{"George_2.png", "George_2.png"}, ImageSize(222, 223)},
+                TestTextureDatabase::DatabaseFrameInfo{{"John_1.png", "Hello/John_1.png"}, ImageSize(111, 112)},
+                TestTextureDatabase::DatabaseFrameInfo{{"Ringo_0.png", "Ringo_0.png"}, ImageSize(2022, 2023)},
+                TestTextureDatabase::DatabaseFrameInfo{{"Ringo_1.png", "Ringo_1.png"}, ImageSize(2122, 2123)},
             },
             R"xxx(
 [
@@ -91,19 +91,19 @@ TEST(TextureDatabaseTests, Loading)
         ASSERT_EQ(groups[0].GetFrameCount(), 3);
         // FS1
         auto const & fs1 = groups[0].GetFrameSpecification(0);
-        EXPECT_EQ(fs1.Filename, "George_0.png");
+        EXPECT_EQ(fs1.RelativePath, "George_0.png");
         ASSERT_EQ(fs1.Metadata.FrameId, TextureFrameId<MyTestTextureDatabase::MyTextureGroups>(MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 0));
         EXPECT_EQ(fs1.Metadata.Size, ImageSize(1, 2));
         EXPECT_EQ(fs1.Metadata.WorldWidth, 10.0f);
         // FS2
         auto const & fs2 = groups[0].GetFrameSpecification(1);
-        EXPECT_EQ(fs2.Filename, "John_1.png");
+        EXPECT_EQ(fs2.RelativePath, "John_1.png");
         ASSERT_EQ(fs2.Metadata.FrameId, TextureFrameId<MyTestTextureDatabase::MyTextureGroups>(MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 1));
         EXPECT_EQ(fs2.Metadata.Size, ImageSize(111, 112));
         EXPECT_EQ(fs2.Metadata.WorldWidth, 100.0f);
         // FS3
         auto const & fs3 = groups[0].GetFrameSpecification(2);
-        EXPECT_EQ(fs3.Filename, "George_2.png");
+        EXPECT_EQ(fs3.RelativePath, "George_2.png");
         ASSERT_EQ(fs3.Metadata.FrameId, TextureFrameId<MyTestTextureDatabase::MyTextureGroups>(MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 2));
         EXPECT_EQ(fs3.Metadata.Size, ImageSize(222, 223));
         EXPECT_EQ(fs3.Metadata.WorldWidth, 10.0f);
@@ -115,13 +115,13 @@ TEST(TextureDatabaseTests, Loading)
         ASSERT_EQ(groups[1].GetFrameCount(), 2);
         // FS1
         auto const & fs1 = groups[1].GetFrameSpecification(0);
-        EXPECT_EQ(fs1.Filename, "Ringo_0.png");
+        EXPECT_EQ(fs1.RelativePath, "Ringo_0.png");
         ASSERT_EQ(fs1.Metadata.FrameId, TextureFrameId<MyTestTextureDatabase::MyTextureGroups>(MyTestTextureDatabase::MyTextureGroups::MyTestGroup2, 0));
         EXPECT_EQ(fs1.Metadata.Size, ImageSize(2022, 2023));
         EXPECT_EQ(fs1.Metadata.WorldWidth, 10000.0f);
         // FS2
         auto const & fs2 = groups[1].GetFrameSpecification(1);
-        EXPECT_EQ(fs2.Filename, "Ringo_1.png");
+        EXPECT_EQ(fs2.RelativePath, "Ringo_1.png");
         ASSERT_EQ(fs2.Metadata.FrameId, TextureFrameId<MyTestTextureDatabase::MyTextureGroups>(MyTestTextureDatabase::MyTextureGroups::MyTestGroup2, 1));
         EXPECT_EQ(fs2.Metadata.Size, ImageSize(2122, 2123));
         EXPECT_EQ(fs2.Metadata.WorldWidth, 10000.0f);
@@ -137,7 +137,7 @@ TEST(TextureDatabaseTests, NotAllGroupsCovered)
         TestTextureDatabase{
             MyTestTextureDatabase::DatabaseName,
             {
-                TestTextureDatabase::DatabaseFrameInfo{"George_0.png", ImageSize(1, 2)},
+                TestTextureDatabase::DatabaseFrameInfo{{"George_0.png", "George_0.png"}, ImageSize(1, 2)},
             },
             R"xxx(
 [
@@ -172,10 +172,10 @@ TEST(TextureDatabaseTests, NotAllFramesCovered)
         TestTextureDatabase{
             MyTestTextureDatabase::DatabaseName,
             {
-                TestTextureDatabase::DatabaseFrameInfo{"George_0.png", ImageSize(1, 2)},
-                TestTextureDatabase::DatabaseFrameInfo{"John_1.png", ImageSize(111, 112)},
-                TestTextureDatabase::DatabaseFrameInfo{"Ringo_0.png", ImageSize(2022, 2023)},
-                TestTextureDatabase::DatabaseFrameInfo{"Ringo_1.png", ImageSize(2122, 2123)},
+                TestTextureDatabase::DatabaseFrameInfo{{"George_0.png", "George_0.png"}, ImageSize(1, 2)},
+                TestTextureDatabase::DatabaseFrameInfo{{"John_1.png", "John_1.png"}, ImageSize(111, 112)},
+                TestTextureDatabase::DatabaseFrameInfo{{"Ringo_0.png", "Ringo_0.png"}, ImageSize(2022, 2023)},
+                TestTextureDatabase::DatabaseFrameInfo{{"Ringo_1.png", "Ringo_1.png"}, ImageSize(2122, 2123)},
             },
             R"xxx(
 [
@@ -221,10 +221,10 @@ TEST(TextureDatabaseTests, NotAllFramesFound)
         TestTextureDatabase{
             MyTestTextureDatabase::DatabaseName,
             {
-                TestTextureDatabase::DatabaseFrameInfo{"George_0.png", ImageSize(1, 2)},
-                TestTextureDatabase::DatabaseFrameInfo{"George_2.png", ImageSize(222, 223)},
-                TestTextureDatabase::DatabaseFrameInfo{"Ringo_0.png", ImageSize(2022, 2023)},
-                TestTextureDatabase::DatabaseFrameInfo{"Ringo_1.png", ImageSize(2122, 2123)},
+                TestTextureDatabase::DatabaseFrameInfo{{"George_0.png", "George_0.png"}, ImageSize(1, 2)},
+                TestTextureDatabase::DatabaseFrameInfo{{"George_2.png", "George_2.png"}, ImageSize(222, 223)},
+                TestTextureDatabase::DatabaseFrameInfo{{"Ringo_0.png", "Ringo_0.png"}, ImageSize(2022, 2023)},
+                TestTextureDatabase::DatabaseFrameInfo{{"Ringo_1.png", "Ringo_1.png"}, ImageSize(2122, 2123)},
             },
             R"xxx(
 [
