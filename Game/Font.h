@@ -43,7 +43,7 @@ public:
     }
 
 	/*
-	 * Returns the height - in screen coordinates, i.e. pixels - of this font.
+	 * Returns the height - in screen coordinates, i.e. pixels - of this character.
 	 */
     template<typename TChar>
 	inline int GetGlyphScreenHeight(TChar /*ch*/) const
