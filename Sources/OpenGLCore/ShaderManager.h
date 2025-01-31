@@ -39,7 +39,7 @@ public:
             new ShaderManager(assetManager));
     }
 
-    template <typename TShaderSet::ProgramType Program>
+    template <typename TShaderSet::ProgramKindType Program>
     inline auto GetProgramOpenGLHandle()
     {
         uint32_t constexpr programIndex = static_cast<uint32_t>(Program);
@@ -51,7 +51,7 @@ public:
      * Sets all the texture parameters (identified as such by belonging to our ProgramParameterType's _Texture range)
      * in the specified (template argument) shader to the corresponding texture unit (identified via the integral value of that ProgramParameterType).
      */
-    template <typename TShaderSet::ProgramType Program>
+    template <typename TShaderSet::ProgramKindType Program>
     inline void SetTextureParameters()
     {
         size_t programIndex = static_cast<size_t>(Program);
@@ -61,17 +61,17 @@ public:
         {
             if (mPrograms[programIndex].UniformLocations[parameterIndex] != NoParameterLocation)
             {
-                typename TShaderSet::ProgramParameterType parameter = static_cast<typename TShaderSet::ProgramParameterType>(parameterIndex);
+                typename TShaderSet::ProgramParameterKindType parameter = static_cast<typename TShaderSet::ProgramParameterKindType>(parameterIndex);
 
                 // See if it's a texture/sampler parameter
-                if (parameter >= TShaderSet::ProgramParameterType::_FirstTexture
-                    && parameter <= TShaderSet::ProgramParameterType::_LastTexture)
+                if (parameter >= TShaderSet::ProgramParameterKindType::_FirstTexture
+                    && parameter <= TShaderSet::ProgramParameterKindType::_LastTexture)
                 {
                     //
                     // Set it
                     //
 
-                    auto const textureUnitIndex = static_cast<uint8_t>(parameter) - static_cast<uint8_t>(TShaderSet::ProgramParameterType::_FirstTexture);
+                    auto const textureUnitIndex = static_cast<uint8_t>(parameter) - static_cast<uint8_t>(TShaderSet::ProgramParameterKindType::_FirstTexture);
 
                     assert(mPrograms[programIndex].UniformLocations[parameterIndex] != NoParameterLocation);
 
@@ -85,15 +85,15 @@ public:
         }
     }
 
-    template <typename TShaderSet::ProgramType Program, typename TShaderSet::ProgramParameterType Parameter>
+    template <typename TShaderSet::ProgramKindType Program, typename TShaderSet::ProgramParameterKindType Parameter>
     inline void SetProgramParameter(float value)
     {
         SetProgramParameter<Parameter>(Program, value);
     }
 
-    template <typename TShaderSet::ProgramParameterType Parameter>
+    template <typename TShaderSet::ProgramParameterKindType Parameter>
     inline void SetProgramParameter(
-        typename TShaderSet::ProgramType program,
+        typename TShaderSet::ProgramKindType program,
         float value)
     {
         uint32_t const programIndex = static_cast<uint32_t>(program);
@@ -111,12 +111,12 @@ public:
     /*
      * Warning: changes currently-active program
      */
-    template <typename TShaderSet::ProgramParameterType Parameter>
+    template <typename TShaderSet::ProgramParameterKindType Parameter>
     inline void SetProgramParameterInAllShaders(float value)
     {
         constexpr uint32_t parameterIndex = static_cast<uint32_t>(Parameter);
         assert(parameterIndex < mProgramsByProgramParameter.size());
-        for (typename TShaderSet::ProgramType program : mProgramsByProgramParameter[parameterIndex])
+        for (typename TShaderSet::ProgramKindType program : mProgramsByProgramParameter[parameterIndex])
         {
             uint32_t const programIndex = static_cast<uint32_t>(program);
             assert(mPrograms[programIndex].UniformLocations[parameterIndex] != NoParameterLocation);
@@ -131,13 +131,13 @@ public:
         }
     }
 
-    template <typename TShaderSet::ProgramType Program, typename TShaderSet::ProgramParameterType Parameter>
+    template <typename TShaderSet::ProgramKindType Program, typename TShaderSet::ProgramParameterKindType Parameter>
     inline void SetProgramParameter(vec2f const & val)
     {
         SetProgramParameter<Program, Parameter>(val.x, val.y);
     }
 
-    template <typename TShaderSet::ProgramType Program, typename TShaderSet::ProgramParameterType Parameter>
+    template <typename TShaderSet::ProgramKindType Program, typename TShaderSet::ProgramParameterKindType Parameter>
     inline void SetProgramParameter(float val1, float val2)
     {
         constexpr uint32_t programIndex = static_cast<uint32_t>(Program);
@@ -153,15 +153,15 @@ public:
         CheckUniformError<Program, Parameter>();
     }
 
-    template <typename TShaderSet::ProgramType Program, typename TShaderSet::ProgramParameterType Parameter>
+    template <typename TShaderSet::ProgramKindType Program, typename TShaderSet::ProgramParameterKindType Parameter>
     inline void SetProgramParameter(vec3f const & val)
     {
         SetProgramParameter<Parameter>(Program, val);
     }
 
-    template <typename TShaderSet::ProgramParameterType Parameter>
+    template <typename TShaderSet::ProgramParameterKindType Parameter>
     inline void SetProgramParameter(
-        typename TShaderSet::ProgramType program,
+        typename TShaderSet::ProgramKindType program,
         vec3f const & val)
     {
         uint32_t const programIndex = static_cast<uint32_t>(program);
@@ -178,7 +178,7 @@ public:
         CheckUniformError(program, Parameter);
     }
 
-    template <typename TShaderSet::ProgramType Program, typename TShaderSet::ProgramParameterType Parameter>
+    template <typename TShaderSet::ProgramKindType Program, typename TShaderSet::ProgramParameterKindType Parameter>
     inline void SetProgramParameter(vec4f const & val)
     {
         constexpr uint32_t programIndex = static_cast<uint32_t>(Program);
@@ -199,12 +199,12 @@ public:
     /*
      * Warning: changes currently-active program
      */
-    template <typename TShaderSet::ProgramParameterType Parameter>
+    template <typename TShaderSet::ProgramParameterKindType Parameter>
     inline void SetProgramParameterInAllShaders(vec4f const & val)
     {
         constexpr uint32_t parameterIndex = static_cast<uint32_t>(Parameter);
         assert(parameterIndex < mProgramsByProgramParameter.size());
-        for (typename TShaderSet::ProgramType program : mProgramsByProgramParameter[parameterIndex])
+        for (typename TShaderSet::ProgramKindType program : mProgramsByProgramParameter[parameterIndex])
         {
             uint32_t const programIndex = static_cast<uint32_t>(program);
             assert(mPrograms[programIndex].UniformLocations[parameterIndex] != NoParameterLocation);
@@ -222,15 +222,15 @@ public:
         }
     }
 
-    template <typename TShaderSet::ProgramType Program, typename TShaderSet::ProgramParameterType Parameter>
+    template <typename TShaderSet::ProgramKindType Program, typename TShaderSet::ProgramParameterKindType Parameter>
     inline void SetProgramParameter(float const (*value)[4])
     {
         SetProgramParameter<Parameter>(Program, value);
     }
 
-    template <typename TShaderSet::ProgramParameterType Parameter>
+    template <typename TShaderSet::ProgramParameterKindType Parameter>
     inline void SetProgramParameter(
-        typename TShaderSet::ProgramType program,
+        typename TShaderSet::ProgramKindType program,
         float const (*value)[4])
     {
         uint32_t const programIndex = static_cast<uint32_t>(program);
@@ -247,9 +247,9 @@ public:
         CheckUniformError(program, Parameter);
     }
 
-    template <typename TShaderSet::ProgramParameterType Parameter>
+    template <typename TShaderSet::ProgramParameterKindType Parameter>
     inline void SetProgramParameterVec4fArray(
-        typename TShaderSet::ProgramType program,
+        typename TShaderSet::ProgramKindType program,
         vec4f const * array,
         size_t vectorCount)
     {
@@ -267,14 +267,14 @@ public:
     }
 
     // At any given moment, only one program may be active
-    template <typename TShaderSet::ProgramType Program>
+    template <typename TShaderSet::ProgramKindType Program>
     inline void ActivateProgram()
     {
         ActivateProgram(Program);
     }
 
     // At any given moment, only one program may be active
-    inline void ActivateProgram(typename TShaderSet::ProgramType program)
+    inline void ActivateProgram(typename TShaderSet::ProgramKindType program)
     {
         uint32_t const programIndex = static_cast<uint32_t>(program);
 
@@ -284,10 +284,10 @@ public:
     }
 
     // At any given moment, only one texture (unit) may be active
-    template <typename TShaderSet::ProgramParameterType Parameter>
+    template <typename TShaderSet::ProgramParameterKindType Parameter>
     inline void ActivateTexture()
     {
-        GLenum const textureUnit = static_cast<GLenum>(Parameter) - static_cast<GLenum>(TShaderSet::ProgramParameterType::_FirstTexture);
+        GLenum const textureUnit = static_cast<GLenum>(Parameter) - static_cast<GLenum>(TShaderSet::ProgramParameterKindType::_FirstTexture);
 
         glActiveTexture(GL_TEXTURE0 + textureUnit);
 
@@ -300,15 +300,15 @@ public:
 
 private:
 
-    template <typename TShaderSet::ProgramType Program, typename TShaderSet::ProgramParameterType Parameter>
+    template <typename TShaderSet::ProgramKindType Program, typename TShaderSet::ProgramParameterKindType Parameter>
     static inline void CheckUniformError()
     {
         CheckUniformError(Program, Parameter);
     }
 
     static inline void CheckUniformError(
-        typename TShaderSet::ProgramType program,
-        typename TShaderSet::ProgramParameterType parameter)
+        typename TShaderSet::ProgramKindType program,
+        typename TShaderSet::ProgramParameterKindType parameter)
     {
         GLenum const glError = glGetError();
         if (GL_NO_ERROR != glError)
@@ -353,7 +353,7 @@ private:
 
     // For each parameter, all programs including it;
     // indexed by ProgramParameterType
-    std::vector<std::vector<typename TShaderSet::ProgramType>> mProgramsByProgramParameter;
+    std::vector<std::vector<typename TShaderSet::ProgramKindType>> mProgramsByProgramParameter;
 
 private:
 

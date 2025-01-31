@@ -50,11 +50,11 @@ ShaderManager<TShaderSet>::ShaderManager(IAssetManager & assetManager)
     // Verify all expected programs have been loaded
     //
 
-    for (uint32_t i = 0; i <= static_cast<uint32_t>(TShaderSet::ProgramType::_Last); ++i)
+    for (uint32_t i = 0; i <= static_cast<uint32_t>(TShaderSet::ProgramKind::_Last); ++i)
     {
         if (i >= mPrograms.size() || !(mPrograms[i].OpenGLHandle))
         {
-            throw GameException("Cannot find GLSL source file for program \"" + TShaderSet::ProgramTypeToStr(static_cast<typename TShaderSet::ProgramType>(i)) + "\"");
+            throw GameException("Cannot find GLSL source file for program \"" + TShaderSet::ProgramTypeToStr(static_cast<typename TShaderSet::ProgramKind>(i)) + "\"");
         }
     }
 }
@@ -68,7 +68,7 @@ void ShaderManager<TShaderSet>::CompileShader(
     try
     {
         // Get the program type
-        typename TShaderSet::ProgramType const program = TShaderSet::ShaderNameToProgramType(shaderName);
+        typename TShaderSet::ProgramKind const program = TShaderSet::ShaderNameToProgramType(shaderName);
         std::string const programName = TShaderSet::ProgramTypeToStr(program);
 
         // Make sure we have room for it
@@ -135,7 +135,7 @@ void ShaderManager<TShaderSet>::CompileShader(
 
         for (auto const & vertexAttributeName : vertexAttributeNames)
         {
-            auto vertexAttribute = TShaderSet::StrToVertexAttributeType(vertexAttributeName);
+            auto vertexAttribute = TShaderSet::StrToVertexAttributeKind(vertexAttributeName);
 
             GameOpenGL::BindAttributeLocation(
                 mPrograms[programIndex].OpenGLHandle,
@@ -161,7 +161,7 @@ void ShaderManager<TShaderSet>::CompileShader(
 
         for (auto const & parameterName : parameterNames)
         {
-            typename TShaderSet::ProgramParameterType programParameter = TShaderSet::StrToProgramParameterType(parameterName);
+            typename TShaderSet::ProgramParameterKind programParameter = TShaderSet::StrToProgramParameterType(parameterName);
             size_t programParameterIndex = static_cast<size_t>(programParameter);
 
             //
@@ -394,7 +394,7 @@ std::set<std::string> ShaderManager<TShaderSet>::ExtractVertexAttributeNames(Gam
         std::string const attributeName(nameBuffer + 2, nameLength - 2);
 
         // Lookup the attribute name - just as a sanity check
-        TShaderSet::StrToVertexAttributeType(attributeName);
+        TShaderSet::StrToVertexAttributeKind(attributeName);
 
         // Store it, making sure it's not specified more than once
         if (!attributeNames.insert(attributeName).second)

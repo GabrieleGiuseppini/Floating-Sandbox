@@ -10,6 +10,7 @@
 
 #include <picojson.h>
 
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -48,4 +49,8 @@ public:
 	// Shaders
 	virtual std::vector<AssetDescriptor> EnumerateShaders(std::string const & shaderSetName) = 0;
 	virtual std::string LoadShader(std::string const & shaderSetName, std::string const & shaderRelativePath) = 0;
+
+	// Fonts
+	virtual std::vector<AssetDescriptor> EnumerateFonts(std::string const & fontSetName) = 0;
+	virtual Buffer<std::uint8_t> LoadFont(std::string const & fontSetName, std::string const & fontRelativePath) = 0;
 };

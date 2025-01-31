@@ -31,6 +31,8 @@ set  (SOURCES
 	FixedTickSliderCore.cpp
 	FixedTickSliderCore.h
 	FloatingPoint.h
+	FontSet.h
+	FontSet-inl.h
 	GameChronometer.h
 	GameDebug.h
 	GameException.h

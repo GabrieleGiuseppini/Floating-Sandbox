@@ -32,6 +32,7 @@ set (UNIT_TEST_SOURCES
 	FinalizerTests.cpp
 	FixedSizeVectorTests.cpp
 	FloatingPointTests.cpp
+	FontSetTests.cpp
 	#GameEventDispatcherTests.cpp
 	GameGeometryTests.cpp
 	GameMathTests.cpp

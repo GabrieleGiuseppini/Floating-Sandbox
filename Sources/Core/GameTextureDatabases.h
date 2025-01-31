@@ -281,12 +281,3 @@ struct NpcTextureDatabase
             throw GameException("Unrecognized NPC texture group \"" + str + "\"");
     }
 };
-
-// Font
-
-enum class FontTextureGroups : uint16_t
-{
-    Font = 0,
-
-    _Last = Font
-};

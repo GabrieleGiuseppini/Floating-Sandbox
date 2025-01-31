@@ -10,386 +10,386 @@
 
 #include <cassert>
 
-namespace _detail {
+namespace GameShaderSet::_detail {
 
-GameShaderProgramType ShaderNameToGameShaderProgramType(std::string const & str)
+ProgramKind ShaderNameToProgramKind(std::string const & str)
 {
     std::string lstr = Utils::ToLower(str);
     if (lstr == "aabbs")
-        return GameShaderProgramType::AABBs;
+        return ProgramKind::AABBs;
     else if (lstr == "am_bomb_preimplosion")
-        return GameShaderProgramType::AMBombPreImplosion;
+        return ProgramKind::AMBombPreImplosion;
     else if (lstr == "clouds_basic")
-        return GameShaderProgramType::CloudsBasic;
+        return ProgramKind::CloudsBasic;
     else if (lstr == "clouds_detailed")
-        return GameShaderProgramType::CloudsDetailed;
+        return ProgramKind::CloudsDetailed;
     else if (lstr == "cross_of_light")
-        return GameShaderProgramType::CrossOfLight;
+        return ProgramKind::CrossOfLight;
     else if (lstr == "fishes_basic")
-        return GameShaderProgramType::FishesBasic;
+        return ProgramKind::FishesBasic;
     else if (lstr == "fishes_detailed")
-        return GameShaderProgramType::FishesDetailed;
+        return ProgramKind::FishesDetailed;
     else if (lstr == "generic_mipmapped_textures_ndc")
-        return GameShaderProgramType::GenericMipMappedTexturesNdc;
+        return ProgramKind::GenericMipMappedTexturesNdc;
     else if (lstr == "interactive_tool_dashed_lines")
-        return GameShaderProgramType::InteractiveToolDashedLines;
+        return ProgramKind::InteractiveToolDashedLines;
     else if (lstr == "land_flat_basic")
-        return GameShaderProgramType::LandFlatBasic;
+        return ProgramKind::LandFlatBasic;
     else if (lstr == "land_flat_detailed")
-        return GameShaderProgramType::LandFlatDetailed;
+        return ProgramKind::LandFlatDetailed;
     else if (lstr == "land_texture_basic")
-        return GameShaderProgramType::LandTextureBasic;
+        return ProgramKind::LandTextureBasic;
     else if (lstr == "land_texture_detailed")
-        return GameShaderProgramType::LandTextureDetailed;
+        return ProgramKind::LandTextureDetailed;
     else if (lstr == "laser_ray")
-        return GameShaderProgramType::LaserRay;
+        return ProgramKind::LaserRay;
     else if (lstr == "lightning")
-        return GameShaderProgramType::Lightning;
+        return ProgramKind::Lightning;
     else if (lstr == "multi_notification")
-        return GameShaderProgramType::MultiNotification;
+        return ProgramKind::MultiNotification;
     else if (lstr == "ocean_depth_basic")
-        return GameShaderProgramType::OceanDepthBasic;
+        return ProgramKind::OceanDepthBasic;
     else if (lstr == "ocean_depth_detailed_background")
-        return GameShaderProgramType::OceanDepthDetailedBackground;
+        return ProgramKind::OceanDepthDetailedBackground;
     else if (lstr == "ocean_depth_detailed_foreground")
-        return GameShaderProgramType::OceanDepthDetailedForeground;
+        return ProgramKind::OceanDepthDetailedForeground;
     else if (lstr == "ocean_flat_basic")
-        return GameShaderProgramType::OceanFlatBasic;
+        return ProgramKind::OceanFlatBasic;
     else if (lstr == "ocean_flat_detailed_background")
-        return GameShaderProgramType::OceanFlatDetailedBackground;
+        return ProgramKind::OceanFlatDetailedBackground;
     else if (lstr == "ocean_flat_detailed_foreground")
-        return GameShaderProgramType::OceanFlatDetailedForeground;
+        return ProgramKind::OceanFlatDetailedForeground;
     else if (lstr == "ocean_texture_basic")
-        return GameShaderProgramType::OceanTextureBasic;
+        return ProgramKind::OceanTextureBasic;
     else if (lstr == "ocean_texture_detailed_background")
-        return GameShaderProgramType::OceanTextureDetailedBackground;
+        return ProgramKind::OceanTextureDetailedBackground;
     else if (lstr == "ocean_texture_detailed_foreground")
-        return GameShaderProgramType::OceanTextureDetailedForeground;
+        return ProgramKind::OceanTextureDetailedForeground;
     else if (lstr == "physics_probe_panel")
-        return GameShaderProgramType::PhysicsProbePanel;
+        return ProgramKind::PhysicsProbePanel;
     else if (lstr == "rain")
-        return GameShaderProgramType::Rain;
+        return ProgramKind::Rain;
     else if (lstr == "rect_selection")
-        return GameShaderProgramType::RectSelection;
+        return ProgramKind::RectSelection;
     else if (lstr == "ship_centers")
-        return GameShaderProgramType::ShipCenters;
+        return ProgramKind::ShipCenters;
     else if (lstr == "ship_circle_highlights")
-        return GameShaderProgramType::ShipCircleHighlights;
+        return ProgramKind::ShipCircleHighlights;
     else if (lstr == "ship_electrical_element_highlights")
-        return GameShaderProgramType::ShipElectricalElementHighlights;
+        return ProgramKind::ShipElectricalElementHighlights;
     else if (lstr == "ship_electric_sparks")
-        return GameShaderProgramType::ShipElectricSparks;
+        return ProgramKind::ShipElectricSparks;
     else if (lstr == "ship_explosions")
-        return GameShaderProgramType::ShipExplosions;
+        return ProgramKind::ShipExplosions;
     else if (lstr == "ship_flames_background")
-        return GameShaderProgramType::ShipFlamesBackground;
+        return ProgramKind::ShipFlamesBackground;
     else if (lstr == "ship_flames_foreground")
-        return GameShaderProgramType::ShipFlamesForeground;
+        return ProgramKind::ShipFlamesForeground;
     else if (lstr == "ship_frontier_edges")
-        return GameShaderProgramType::ShipFrontierEdges;
+        return ProgramKind::ShipFrontierEdges;
     else if (lstr == "ship_generic_mipmapped_textures")
-        return GameShaderProgramType::ShipGenericMipMappedTextures;
+        return ProgramKind::ShipGenericMipMappedTextures;
     else if (lstr == "ship_jet_engine_flames")
-        return GameShaderProgramType::ShipJetEngineFlames;
+        return ProgramKind::ShipJetEngineFlames;
     else if (lstr == "ship_npcs_quad_flat")
-        return GameShaderProgramType::ShipNpcsQuadFlat;
+        return ProgramKind::ShipNpcsQuadFlat;
     else if (lstr == "ship_npcs_quad_with_roles")
-        return GameShaderProgramType::ShipNpcsQuadWithRoles;
+        return ProgramKind::ShipNpcsQuadWithRoles;
     else if (lstr == "ship_npcs_texture")
-        return GameShaderProgramType::ShipNpcsTexture;
+        return ProgramKind::ShipNpcsTexture;
     else if (lstr == "ship_point_to_point_arrows")
-        return GameShaderProgramType::ShipPointToPointArrows;
+        return ProgramKind::ShipPointToPointArrows;
     else if (lstr == "ship_points_color")
-        return GameShaderProgramType::ShipPointsColor;
+        return ProgramKind::ShipPointsColor;
     else if (lstr == "ship_points_color_stress")
-        return GameShaderProgramType::ShipPointsColorStress;
+        return ProgramKind::ShipPointsColorStress;
     else if (lstr == "ship_points_color_heatoverlay")
-        return GameShaderProgramType::ShipPointsColorHeatOverlay;
+        return ProgramKind::ShipPointsColorHeatOverlay;
     else if (lstr == "ship_points_color_heatoverlay_stress")
-        return GameShaderProgramType::ShipPointsColorHeatOverlayStress;
+        return ProgramKind::ShipPointsColorHeatOverlayStress;
     else if (lstr == "ship_points_color_incandescence")
-        return GameShaderProgramType::ShipPointsColorIncandescence;
+        return ProgramKind::ShipPointsColorIncandescence;
     else if (lstr == "ship_points_color_incandescence_stress")
-        return GameShaderProgramType::ShipPointsColorIncandescenceStress;
+        return ProgramKind::ShipPointsColorIncandescenceStress;
     else if (lstr == "ship_ropes")
-        return GameShaderProgramType::ShipRopes;
+        return ProgramKind::ShipRopes;
     else if (lstr == "ship_ropes_stress")
-        return GameShaderProgramType::ShipRopesStress;
+        return ProgramKind::ShipRopesStress;
     else if (lstr == "ship_ropes_heatoverlay")
-        return GameShaderProgramType::ShipRopesHeatOverlay;
+        return ProgramKind::ShipRopesHeatOverlay;
     else if (lstr == "ship_ropes_heatoverlay_stress")
-        return GameShaderProgramType::ShipRopesHeatOverlayStress;
+        return ProgramKind::ShipRopesHeatOverlayStress;
     else if (lstr == "ship_ropes_incandescence")
-        return GameShaderProgramType::ShipRopesIncandescence;
+        return ProgramKind::ShipRopesIncandescence;
     else if (lstr == "ship_ropes_incandescence_stress")
-        return GameShaderProgramType::ShipRopesIncandescenceStress;
+        return ProgramKind::ShipRopesIncandescenceStress;
     else if (lstr == "ship_sparkles")
-        return GameShaderProgramType::ShipSparkles;
+        return ProgramKind::ShipSparkles;
     else if (lstr == "ship_springs_color")
-        return GameShaderProgramType::ShipSpringsColor;
+        return ProgramKind::ShipSpringsColor;
     else if (lstr == "ship_springs_color_stress")
-        return GameShaderProgramType::ShipSpringsColorStress;
+        return ProgramKind::ShipSpringsColorStress;
     else if (lstr == "ship_springs_color_heatoverlay")
-        return GameShaderProgramType::ShipSpringsColorHeatOverlay;
+        return ProgramKind::ShipSpringsColorHeatOverlay;
     else if (lstr == "ship_springs_color_heatoverlay_stress")
-        return GameShaderProgramType::ShipSpringsColorHeatOverlayStress;
+        return ProgramKind::ShipSpringsColorHeatOverlayStress;
     else if (lstr == "ship_springs_color_incandescence")
-        return GameShaderProgramType::ShipSpringsColorIncandescence;
+        return ProgramKind::ShipSpringsColorIncandescence;
     else if (lstr == "ship_springs_color_incandescence_stress")
-        return GameShaderProgramType::ShipSpringsColorIncandescenceStress;
+        return ProgramKind::ShipSpringsColorIncandescenceStress;
     else if (lstr == "ship_springs_decay")
-        return GameShaderProgramType::ShipSpringsDecay;
+        return ProgramKind::ShipSpringsDecay;
     else if (lstr == "ship_springs_internal_pressure")
-        return GameShaderProgramType::ShipSpringsInternalPressure;
+        return ProgramKind::ShipSpringsInternalPressure;
     else if (lstr == "ship_springs_strength")
-        return GameShaderProgramType::ShipSpringsStrength;
+        return ProgramKind::ShipSpringsStrength;
     else if (lstr == "ship_springs_texture")
-        return GameShaderProgramType::ShipSpringsTexture;
+        return ProgramKind::ShipSpringsTexture;
     else if (lstr == "ship_springs_texture_stress")
-        return GameShaderProgramType::ShipSpringsTextureStress;
+        return ProgramKind::ShipSpringsTextureStress;
     else if (lstr == "ship_springs_texture_heatoverlay")
-        return GameShaderProgramType::ShipSpringsTextureHeatOverlay;
+        return ProgramKind::ShipSpringsTextureHeatOverlay;
     else if (lstr == "ship_springs_texture_heatoverlay_stress")
-        return GameShaderProgramType::ShipSpringsTextureHeatOverlayStress;
+        return ProgramKind::ShipSpringsTextureHeatOverlayStress;
     else if (lstr == "ship_springs_texture_incandescence")
-        return GameShaderProgramType::ShipSpringsTextureIncandescence;
+        return ProgramKind::ShipSpringsTextureIncandescence;
     else if (lstr == "ship_springs_texture_incandescence_stress")
-        return GameShaderProgramType::ShipSpringsTextureIncandescenceStress;
+        return ProgramKind::ShipSpringsTextureIncandescenceStress;
     else if (lstr == "ship_stressed_springs")
-        return GameShaderProgramType::ShipStressedSprings;
+        return ProgramKind::ShipStressedSprings;
     else if (lstr == "ship_triangles_color")
-        return GameShaderProgramType::ShipTrianglesColor;
+        return ProgramKind::ShipTrianglesColor;
     else if (lstr == "ship_triangles_color_stress")
-        return GameShaderProgramType::ShipTrianglesColorStress;
+        return ProgramKind::ShipTrianglesColorStress;
     else if (lstr == "ship_triangles_color_heatoverlay")
-        return GameShaderProgramType::ShipTrianglesColorHeatOverlay;
+        return ProgramKind::ShipTrianglesColorHeatOverlay;
     else if (lstr == "ship_triangles_color_heatoverlay_stress")
-        return GameShaderProgramType::ShipTrianglesColorHeatOverlayStress;
+        return ProgramKind::ShipTrianglesColorHeatOverlayStress;
     else if (lstr == "ship_triangles_color_incandescence")
-        return GameShaderProgramType::ShipTrianglesColorIncandescence;
+        return ProgramKind::ShipTrianglesColorIncandescence;
     else if (lstr == "ship_triangles_color_incandescence_stress")
-        return GameShaderProgramType::ShipTrianglesColorIncandescenceStress;
+        return ProgramKind::ShipTrianglesColorIncandescenceStress;
     else if (lstr == "ship_triangles_decay")
-        return GameShaderProgramType::ShipTrianglesDecay;
+        return ProgramKind::ShipTrianglesDecay;
     else if (lstr == "ship_triangles_internal_pressure")
-        return GameShaderProgramType::ShipTrianglesInternalPressure;
+        return ProgramKind::ShipTrianglesInternalPressure;
     else if (lstr == "ship_triangles_strength")
-        return GameShaderProgramType::ShipTrianglesStrength;
+        return ProgramKind::ShipTrianglesStrength;
     else if (lstr == "ship_triangles_texture")
-        return GameShaderProgramType::ShipTrianglesTexture;
+        return ProgramKind::ShipTrianglesTexture;
     else if (lstr == "ship_triangles_texture_stress")
-        return GameShaderProgramType::ShipTrianglesTextureStress;
+        return ProgramKind::ShipTrianglesTextureStress;
     else if (lstr == "ship_triangles_texture_heatoverlay")
-        return GameShaderProgramType::ShipTrianglesTextureHeatOverlay;
+        return ProgramKind::ShipTrianglesTextureHeatOverlay;
     else if (lstr == "ship_triangles_texture_heatoverlay_stress")
-        return GameShaderProgramType::ShipTrianglesTextureHeatOverlayStress;
+        return ProgramKind::ShipTrianglesTextureHeatOverlayStress;
     else if (lstr == "ship_triangles_texture_incandescence")
-        return GameShaderProgramType::ShipTrianglesTextureIncandescence;
+        return ProgramKind::ShipTrianglesTextureIncandescence;
     else if (lstr == "ship_triangles_texture_incandescence_stress")
-        return GameShaderProgramType::ShipTrianglesTextureIncandescenceStress;
+        return ProgramKind::ShipTrianglesTextureIncandescenceStress;
     else if (lstr == "ship_vectors")
-        return GameShaderProgramType::ShipVectors;
+        return ProgramKind::ShipVectors;
     else if (lstr == "sky")
-        return GameShaderProgramType::Sky;
+        return ProgramKind::Sky;
     else if (lstr == "stars")
-        return GameShaderProgramType::Stars;
+        return ProgramKind::Stars;
     else if (lstr == "text")
-        return GameShaderProgramType::Text;
+        return ProgramKind::Text;
     else if (lstr == "texture_notifications")
-        return GameShaderProgramType::TextureNotifications;
+        return ProgramKind::TextureNotifications;
     else if (lstr == "world_border")
-        return GameShaderProgramType::WorldBorder;
+        return ProgramKind::WorldBorder;
     else
         throw GameException("Unrecognized program \"" + str + "\"");
 }
 
-std::string GameShaderProgramTypeToStr(GameShaderProgramType program)
+std::string ProgramKindToStr(ProgramKind program)
 {
     switch (program)
     {
-        case GameShaderProgramType::AABBs:
+        case ProgramKind::AABBs:
             return "AABBs";
-        case GameShaderProgramType::AMBombPreImplosion:
+        case ProgramKind::AMBombPreImplosion:
             return "AMBombPreImplosion";
-        case GameShaderProgramType::CloudsBasic:
+        case ProgramKind::CloudsBasic:
             return "CloudsBasic";
-        case GameShaderProgramType::CloudsDetailed:
+        case ProgramKind::CloudsDetailed:
             return "CloudsDetailed";
-        case GameShaderProgramType::CrossOfLight:
+        case ProgramKind::CrossOfLight:
             return "CrossOfLight";
-        case GameShaderProgramType::FishesBasic:
+        case ProgramKind::FishesBasic:
             return "FishesBasic";
-        case GameShaderProgramType::FishesDetailed:
+        case ProgramKind::FishesDetailed:
             return "FishesDetailed";
-        case GameShaderProgramType::GenericMipMappedTexturesNdc:
+        case ProgramKind::GenericMipMappedTexturesNdc:
             return "GenericMipMappedTexturesNdc";
-        case GameShaderProgramType::InteractiveToolDashedLines:
+        case ProgramKind::InteractiveToolDashedLines:
             return "InteractiveToolDashedLines";
-        case GameShaderProgramType::LandFlatBasic:
+        case ProgramKind::LandFlatBasic:
             return "LandFlatBasic";
-        case GameShaderProgramType::LandFlatDetailed:
+        case ProgramKind::LandFlatDetailed:
             return "LandFlatDetailed";
-        case GameShaderProgramType::LandTextureBasic:
+        case ProgramKind::LandTextureBasic:
             return "LandTextureBasic";
-        case GameShaderProgramType::LandTextureDetailed:
+        case ProgramKind::LandTextureDetailed:
             return "LandTextureDetailed";
-        case GameShaderProgramType::LaserRay:
+        case ProgramKind::LaserRay:
             return "LaserRay";
-        case GameShaderProgramType::Lightning:
+        case ProgramKind::Lightning:
             return "Lightning";
-        case GameShaderProgramType::MultiNotification:
+        case ProgramKind::MultiNotification:
             return "MultiNotification";
-        case GameShaderProgramType::OceanDepthBasic:
+        case ProgramKind::OceanDepthBasic:
             return "OceanDepthBasic";
-        case GameShaderProgramType::OceanDepthDetailedBackground:
+        case ProgramKind::OceanDepthDetailedBackground:
             return "OceanDepthDetailedBackground";
-        case GameShaderProgramType::OceanDepthDetailedForeground:
+        case ProgramKind::OceanDepthDetailedForeground:
             return "OceanDepthDetailedForeground";
-        case GameShaderProgramType::OceanFlatBasic:
+        case ProgramKind::OceanFlatBasic:
             return "OceanFlatBasic";
-        case GameShaderProgramType::OceanFlatDetailedBackground:
+        case ProgramKind::OceanFlatDetailedBackground:
             return "OceanFlatDetailedBackground";
-        case GameShaderProgramType::OceanFlatDetailedForeground:
+        case ProgramKind::OceanFlatDetailedForeground:
             return "OceanFlatDetailedForeground";
-        case GameShaderProgramType::OceanTextureBasic:
+        case ProgramKind::OceanTextureBasic:
             return "OceanTextureBasic";
-        case GameShaderProgramType::OceanTextureDetailedBackground:
+        case ProgramKind::OceanTextureDetailedBackground:
             return "OceanTextureDetailedBackground";
-        case GameShaderProgramType::OceanTextureDetailedForeground:
+        case ProgramKind::OceanTextureDetailedForeground:
             return "OceanTextureDetailedForeground";
-        case GameShaderProgramType::PhysicsProbePanel:
+        case ProgramKind::PhysicsProbePanel:
             return "PhysicsProbePanel";
-        case GameShaderProgramType::Rain:
+        case ProgramKind::Rain:
             return "Rain";
-        case GameShaderProgramType::RectSelection:
+        case ProgramKind::RectSelection:
             return "RectSelection";
-        case GameShaderProgramType::ShipCenters:
+        case ProgramKind::ShipCenters:
             return "ShipCenters";
-        case GameShaderProgramType::ShipCircleHighlights:
+        case ProgramKind::ShipCircleHighlights:
             return "ShipCircleHighlights";
-        case GameShaderProgramType::ShipElectricalElementHighlights:
+        case ProgramKind::ShipElectricalElementHighlights:
             return "ShipElectricalElementHighlights";
-        case GameShaderProgramType::ShipElectricSparks:
+        case ProgramKind::ShipElectricSparks:
             return "ShipElectricSparks";
-        case GameShaderProgramType::ShipExplosions:
+        case ProgramKind::ShipExplosions:
             return "ShipExplosions";
-        case GameShaderProgramType::ShipFlamesBackground:
+        case ProgramKind::ShipFlamesBackground:
             return "ShipFlamesBackground";
-        case GameShaderProgramType::ShipFlamesForeground:
+        case ProgramKind::ShipFlamesForeground:
             return "ShipFlamesForeground";
-        case GameShaderProgramType::ShipFrontierEdges:
+        case ProgramKind::ShipFrontierEdges:
             return "ShipFrontierEdges";
-        case GameShaderProgramType::ShipGenericMipMappedTextures:
+        case ProgramKind::ShipGenericMipMappedTextures:
             return "ShipGenericMipMappedTextures";
-        case GameShaderProgramType::ShipJetEngineFlames:
+        case ProgramKind::ShipJetEngineFlames:
             return "ShipJetEngineFlames";
-        case GameShaderProgramType::ShipNpcsQuadFlat:
+        case ProgramKind::ShipNpcsQuadFlat:
             return "ShipNpcsQuadFlat";
-        case GameShaderProgramType::ShipNpcsQuadWithRoles:
+        case ProgramKind::ShipNpcsQuadWithRoles:
             return "ShipNpcsQuadWithRoles";
-        case GameShaderProgramType::ShipNpcsTexture:
+        case ProgramKind::ShipNpcsTexture:
             return "ShipNpcsTexture";
-        case GameShaderProgramType::ShipPointToPointArrows:
+        case ProgramKind::ShipPointToPointArrows:
             return "ShipPointToPointArrows";
-        case GameShaderProgramType::ShipPointsColor:
+        case ProgramKind::ShipPointsColor:
             return "ShipPointsColor";
-        case GameShaderProgramType::ShipPointsColorStress:
+        case ProgramKind::ShipPointsColorStress:
             return "ShipPointsColorStress";
-        case GameShaderProgramType::ShipPointsColorHeatOverlay:
+        case ProgramKind::ShipPointsColorHeatOverlay:
             return "ShipPointsColorHeatOverlay";
-        case GameShaderProgramType::ShipPointsColorHeatOverlayStress:
+        case ProgramKind::ShipPointsColorHeatOverlayStress:
             return "ShipPointsColorHeatOverlayStress";
-        case GameShaderProgramType::ShipPointsColorIncandescence:
+        case ProgramKind::ShipPointsColorIncandescence:
             return "ShipPointsColorIncandescence";
-        case GameShaderProgramType::ShipPointsColorIncandescenceStress:
+        case ProgramKind::ShipPointsColorIncandescenceStress:
             return "ShipPointsColorIncandescenceStress";
-        case GameShaderProgramType::ShipRopes:
+        case ProgramKind::ShipRopes:
             return "ShipRopes";
-        case GameShaderProgramType::ShipRopesStress:
+        case ProgramKind::ShipRopesStress:
             return "ShipRopesStress";
-        case GameShaderProgramType::ShipRopesHeatOverlay:
+        case ProgramKind::ShipRopesHeatOverlay:
             return "ShipRopesHeatOverlay";
-        case GameShaderProgramType::ShipRopesHeatOverlayStress:
+        case ProgramKind::ShipRopesHeatOverlayStress:
             return "ShipRopesHeatOverlayStress";
-        case GameShaderProgramType::ShipRopesIncandescence:
+        case ProgramKind::ShipRopesIncandescence:
             return "ShipRopesIncandescence";
-        case GameShaderProgramType::ShipRopesIncandescenceStress:
+        case ProgramKind::ShipRopesIncandescenceStress:
             return "ShipRopesIncandescenceStress";
-        case GameShaderProgramType::ShipSparkles:
+        case ProgramKind::ShipSparkles:
             return "ShipSparkles";
-        case GameShaderProgramType::ShipSpringsColor:
+        case ProgramKind::ShipSpringsColor:
             return "ShipSpringsColor";
-        case GameShaderProgramType::ShipSpringsColorStress:
+        case ProgramKind::ShipSpringsColorStress:
             return "ShipSpringsColorStress";
-        case GameShaderProgramType::ShipSpringsColorHeatOverlay:
+        case ProgramKind::ShipSpringsColorHeatOverlay:
             return "ShipSpringsColorHeatOverlay";
-        case GameShaderProgramType::ShipSpringsColorHeatOverlayStress:
+        case ProgramKind::ShipSpringsColorHeatOverlayStress:
             return "ShipSpringsColorHeatOverlayStress";
-        case GameShaderProgramType::ShipSpringsColorIncandescence:
+        case ProgramKind::ShipSpringsColorIncandescence:
             return "ShipSpringsColorIncandescence";
-        case GameShaderProgramType::ShipSpringsColorIncandescenceStress:
+        case ProgramKind::ShipSpringsColorIncandescenceStress:
             return "ShipSpringsColorIncandescenceStress";
-        case GameShaderProgramType::ShipSpringsDecay:
+        case ProgramKind::ShipSpringsDecay:
             return "ShipSpringsDecay";
-        case GameShaderProgramType::ShipSpringsInternalPressure:
+        case ProgramKind::ShipSpringsInternalPressure:
             return "ShipSpringsInternalPressure";
-        case GameShaderProgramType::ShipSpringsStrength:
+        case ProgramKind::ShipSpringsStrength:
             return "ShipSpringsStrength";
-        case GameShaderProgramType::ShipSpringsTexture:
+        case ProgramKind::ShipSpringsTexture:
             return "ShipSpringsTexture";
-        case GameShaderProgramType::ShipSpringsTextureStress:
+        case ProgramKind::ShipSpringsTextureStress:
             return "ShipSpringsTextureStress";
-        case GameShaderProgramType::ShipSpringsTextureHeatOverlay:
+        case ProgramKind::ShipSpringsTextureHeatOverlay:
             return "ShipSpringsTextureHeatOverlay";
-        case GameShaderProgramType::ShipSpringsTextureHeatOverlayStress:
+        case ProgramKind::ShipSpringsTextureHeatOverlayStress:
             return "ShipSpringsTextureHeatOverlayStress";
-        case GameShaderProgramType::ShipSpringsTextureIncandescence:
+        case ProgramKind::ShipSpringsTextureIncandescence:
             return "ShipSpringsTextureIncandescence";
-        case GameShaderProgramType::ShipSpringsTextureIncandescenceStress:
+        case ProgramKind::ShipSpringsTextureIncandescenceStress:
             return "ShipSpringsTextureIncandescenceStress";
-        case GameShaderProgramType::ShipStressedSprings:
+        case ProgramKind::ShipStressedSprings:
             return "ShipStressedSprings";
-        case GameShaderProgramType::ShipTrianglesColor:
+        case ProgramKind::ShipTrianglesColor:
             return "ShipTrianglesColor";
-        case GameShaderProgramType::ShipTrianglesColorStress:
+        case ProgramKind::ShipTrianglesColorStress:
             return "ShipTrianglesColorStress";
-        case GameShaderProgramType::ShipTrianglesColorHeatOverlay:
+        case ProgramKind::ShipTrianglesColorHeatOverlay:
             return "ShipTrianglesColorHeatOverlay";
-        case GameShaderProgramType::ShipTrianglesColorHeatOverlayStress:
+        case ProgramKind::ShipTrianglesColorHeatOverlayStress:
             return "ShipTrianglesColorHeatOverlayStress";
-        case GameShaderProgramType::ShipTrianglesColorIncandescence:
+        case ProgramKind::ShipTrianglesColorIncandescence:
             return "ShipTrianglesColorIncandescence";
-        case GameShaderProgramType::ShipTrianglesColorIncandescenceStress:
+        case ProgramKind::ShipTrianglesColorIncandescenceStress:
             return "ShipTrianglesColorIncandescenceStress";
-        case GameShaderProgramType::ShipTrianglesDecay:
+        case ProgramKind::ShipTrianglesDecay:
             return "ShipTrianglesDecay";
-        case GameShaderProgramType::ShipTrianglesInternalPressure:
+        case ProgramKind::ShipTrianglesInternalPressure:
             return "ShipTrianglesInternalPressure";
-        case GameShaderProgramType::ShipTrianglesStrength:
+        case ProgramKind::ShipTrianglesStrength:
             return "ShipTrianglesStrength";
-        case GameShaderProgramType::ShipTrianglesTexture:
+        case ProgramKind::ShipTrianglesTexture:
             return "ShipTrianglesTexture";
-        case GameShaderProgramType::ShipTrianglesTextureStress:
+        case ProgramKind::ShipTrianglesTextureStress:
             return "ShipTrianglesTextureStress";
-        case GameShaderProgramType::ShipTrianglesTextureHeatOverlay:
+        case ProgramKind::ShipTrianglesTextureHeatOverlay:
             return "ShipTrianglesTextureHeatOverlay";
-        case GameShaderProgramType::ShipTrianglesTextureHeatOverlayStress:
+        case ProgramKind::ShipTrianglesTextureHeatOverlayStress:
             return "ShipTrianglesTextureHeatOverlayStress";
-        case GameShaderProgramType::ShipTrianglesTextureIncandescence:
+        case ProgramKind::ShipTrianglesTextureIncandescence:
             return "ShipTrianglesTextureIncandescence";
-        case GameShaderProgramType::ShipTrianglesTextureIncandescenceStress:
+        case ProgramKind::ShipTrianglesTextureIncandescenceStress:
             return "ShipTrianglesTextureIncandescenceStress";
-        case GameShaderProgramType::ShipVectors:
+        case ProgramKind::ShipVectors:
             return "ShipVectors";
-        case GameShaderProgramType::Sky:
+        case ProgramKind::Sky:
             return "Sky";
-        case GameShaderProgramType::Stars:
+        case ProgramKind::Stars:
             return "Stars";
-        case GameShaderProgramType::Text:
+        case ProgramKind::Text:
             return "Text";
-        case GameShaderProgramType::TextureNotifications:
+        case ProgramKind::TextureNotifications:
             return "TextureNotifications";
-        case GameShaderProgramType::WorldBorder:
+        case ProgramKind::WorldBorder:
             return "WorldBorder";
     }
 
@@ -397,366 +397,366 @@ std::string GameShaderProgramTypeToStr(GameShaderProgramType program)
     throw GameException("Unsupported GameShaderProgramType");
 }
 
-GameShaderProgramParameterType StrToGameShaderProgramParameterType(std::string const & str)
+ProgramParameterKind StrToGameShaderProgramParameterType(std::string const & str)
 {
     if (str == "AtlasTile1Dx")
-        return GameShaderProgramParameterType::AtlasTile1Dx;
+        return ProgramParameterKind::AtlasTile1Dx;
     else if (str == "AtlasTile1LeftBottomTextureCoordinates")
-        return GameShaderProgramParameterType::AtlasTile1LeftBottomTextureCoordinates;
+        return ProgramParameterKind::AtlasTile1LeftBottomTextureCoordinates;
     else if (str == "AtlasTile1Size")
-        return GameShaderProgramParameterType::AtlasTile1Size;
+        return ProgramParameterKind::AtlasTile1Size;
     else if (str == "CrepuscularColor")
-        return GameShaderProgramParameterType::CrepuscularColor;
+        return ProgramParameterKind::CrepuscularColor;
     else if (str == "EffectiveAmbientLightIntensity")
-        return GameShaderProgramParameterType::EffectiveAmbientLightIntensity;
+        return ProgramParameterKind::EffectiveAmbientLightIntensity;
     else if (str == "EffectiveMoonlightColor")
-        return GameShaderProgramParameterType::EffectiveMoonlightColor;
+        return ProgramParameterKind::EffectiveMoonlightColor;
     else if (str == "FlameProgress")
-        return GameShaderProgramParameterType::FlameProgress;
+        return ProgramParameterKind::FlameProgress;
     else if (str == "FlatSkyColor")
-        return GameShaderProgramParameterType::FlatSkyColor;
+        return ProgramParameterKind::FlatSkyColor;
     else if (str == "HeatShift")
-        return GameShaderProgramParameterType::HeatShift;
+        return ProgramParameterKind::HeatShift;
     else if (str == "KaosAdjustment")
-        return GameShaderProgramParameterType::KaosAdjustment;
+        return ProgramParameterKind::KaosAdjustment;
     else if (str == "LampLightColor")
-        return GameShaderProgramParameterType::LampLightColor;
+        return ProgramParameterKind::LampLightColor;
     else if (str == "LampToolAttributes")
-        return GameShaderProgramParameterType::LampToolAttributes;
+        return ProgramParameterKind::LampToolAttributes;
     else if (str == "LandFlatColor")
-        return GameShaderProgramParameterType::LandFlatColor;
+        return ProgramParameterKind::LandFlatColor;
     else if (str == "MatteColor")
-        return GameShaderProgramParameterType::MatteColor;
+        return ProgramParameterKind::MatteColor;
     else if (str == "NoiseStrength")
-        return GameShaderProgramParameterType::NoiseStrength;
+        return ProgramParameterKind::NoiseStrength;
     else if (str == "NpcQuadFlatColor")
-        return GameShaderProgramParameterType::NpcQuadFlatColor;
+        return ProgramParameterKind::NpcQuadFlatColor;
     else if (str == "OceanTransparency")
-        return GameShaderProgramParameterType::OceanTransparency;
+        return ProgramParameterKind::OceanTransparency;
     else if (str == "OceanDepthColorStart")
-        return GameShaderProgramParameterType::OceanDepthColorStart;
+        return ProgramParameterKind::OceanDepthColorStart;
     else if (str == "OceanDepthColorEnd")
-        return GameShaderProgramParameterType::OceanDepthColorEnd;
+        return ProgramParameterKind::OceanDepthColorEnd;
     else if (str == "OceanDepthDarkeningRate")
-        return GameShaderProgramParameterType::OceanDepthDarkeningRate;
+        return ProgramParameterKind::OceanDepthDarkeningRate;
     else if (str == "OceanFlatColor")
-        return GameShaderProgramParameterType::OceanFlatColor;
+        return ProgramParameterKind::OceanFlatColor;
     else if (str == "OrthoMatrix")
-        return GameShaderProgramParameterType::OrthoMatrix;
+        return ProgramParameterKind::OrthoMatrix;
     else if (str == "RainAngle")
-        return GameShaderProgramParameterType::RainAngle;
+        return ProgramParameterKind::RainAngle;
     else if (str == "RainDensity")
-        return GameShaderProgramParameterType::RainDensity;
+        return ProgramParameterKind::RainDensity;
     else if (str == "ShipDepthDarkeningSensitivity")
-        return GameShaderProgramParameterType::ShipDepthDarkeningSensitivity;
+        return ProgramParameterKind::ShipDepthDarkeningSensitivity;
     else if (str == "StarTransparency")
-        return GameShaderProgramParameterType::StarTransparency;
+        return ProgramParameterKind::StarTransparency;
     else if (str == "StressColorMap")
-        return GameShaderProgramParameterType::StressColorMap;
+        return ProgramParameterKind::StressColorMap;
     else if (str == "SunRaysInclination")
-        return GameShaderProgramParameterType::SunRaysInclination;
+        return ProgramParameterKind::SunRaysInclination;
     else if (str == "TextLighteningStrength")
-        return GameShaderProgramParameterType::TextLighteningStrength;
+        return ProgramParameterKind::TextLighteningStrength;
     else if (str == "TextureLighteningStrength")
-        return GameShaderProgramParameterType::TextureLighteningStrength;
+        return ProgramParameterKind::TextureLighteningStrength;
     else if (str == "TextureScaling")
-        return GameShaderProgramParameterType::TextureScaling;
+        return ProgramParameterKind::TextureScaling;
     else if (str == "Time")
-        return GameShaderProgramParameterType::Time;
+        return ProgramParameterKind::Time;
     else if (str == "ViewportSize")
-        return GameShaderProgramParameterType::ViewportSize;
+        return ProgramParameterKind::ViewportSize;
     else if (str == "WaterColor")
-        return GameShaderProgramParameterType::WaterColor;
+        return ProgramParameterKind::WaterColor;
     else if (str == "WaterContrast")
-        return GameShaderProgramParameterType::WaterContrast;
+        return ProgramParameterKind::WaterContrast;
     else if (str == "WaterLevelThreshold")
-        return GameShaderProgramParameterType::WaterLevelThreshold;
+        return ProgramParameterKind::WaterLevelThreshold;
     else if (str == "WidthNdc")
-        return GameShaderProgramParameterType::WidthNdc;
+        return ProgramParameterKind::WidthNdc;
     else if (str == "Zoom")
-        return GameShaderProgramParameterType::Zoom;
+        return ProgramParameterKind::Zoom;
     // Textures
     else if (str == "SharedTexture")
-        return GameShaderProgramParameterType::SharedTexture;
+        return ProgramParameterKind::SharedTexture;
     else if (str == "CloudsAtlasTexture")
-        return GameShaderProgramParameterType::CloudsAtlasTexture;
+        return ProgramParameterKind::CloudsAtlasTexture;
     else if (str == "ExplosionsAtlasTexture")
-        return GameShaderProgramParameterType::ExplosionsAtlasTexture;
+        return ProgramParameterKind::ExplosionsAtlasTexture;
     else if (str == "FishesAtlasTexture")
-        return GameShaderProgramParameterType::FishesAtlasTexture;
+        return ProgramParameterKind::FishesAtlasTexture;
     else if (str == "GenericLinearTexturesAtlasTexture")
-        return GameShaderProgramParameterType::GenericLinearTexturesAtlasTexture;
+        return ProgramParameterKind::GenericLinearTexturesAtlasTexture;
     else if (str == "GenericMipMappedTexturesAtlasTexture")
-        return GameShaderProgramParameterType::GenericMipMappedTexturesAtlasTexture;
+        return ProgramParameterKind::GenericMipMappedTexturesAtlasTexture;
     else if (str == "LandTexture")
-        return GameShaderProgramParameterType::LandTexture;
+        return ProgramParameterKind::LandTexture;
     else if (str == "NoiseTexture")
-        return GameShaderProgramParameterType::NoiseTexture;
+        return ProgramParameterKind::NoiseTexture;
     else if (str == "NpcAtlasTexture")
-        return GameShaderProgramParameterType::NpcAtlasTexture;
+        return ProgramParameterKind::NpcAtlasTexture;
     else if (str == "OceanTexture")
-        return GameShaderProgramParameterType::OceanTexture;
+        return ProgramParameterKind::OceanTexture;
     else
         throw GameException("Unrecognized program parameter \"" + str + "\"");
 }
 
-std::string GameShaderProgramParameterTypeToStr(GameShaderProgramParameterType programParameter)
+std::string GameShaderProgramParameterTypeToStr(ProgramParameterKind programParameter)
 {
     switch (programParameter)
     {
-        case GameShaderProgramParameterType::AtlasTile1Dx:
+        case ProgramParameterKind::AtlasTile1Dx:
             return "AtlasTile1Dx";
-        case GameShaderProgramParameterType::AtlasTile1LeftBottomTextureCoordinates:
+        case ProgramParameterKind::AtlasTile1LeftBottomTextureCoordinates:
             return "AtlasTile1LeftBottomTextureCoordinates";
-        case GameShaderProgramParameterType::AtlasTile1Size:
+        case ProgramParameterKind::AtlasTile1Size:
             return "AtlasTile1Size";
-        case GameShaderProgramParameterType::CrepuscularColor:
+        case ProgramParameterKind::CrepuscularColor:
             return "CrepuscularColor";
-        case GameShaderProgramParameterType::EffectiveAmbientLightIntensity:
+        case ProgramParameterKind::EffectiveAmbientLightIntensity:
             return "EffectiveAmbientLightIntensity";
-        case GameShaderProgramParameterType::EffectiveMoonlightColor:
+        case ProgramParameterKind::EffectiveMoonlightColor:
             return "EffectiveMoonlightColor";
-        case GameShaderProgramParameterType::FlameProgress:
+        case ProgramParameterKind::FlameProgress:
             return "FlameProgress";
-        case GameShaderProgramParameterType::FlatSkyColor:
+        case ProgramParameterKind::FlatSkyColor:
             return "FlatSkyColor";
-        case GameShaderProgramParameterType::HeatShift:
+        case ProgramParameterKind::HeatShift:
             return "HeatShift";
-        case GameShaderProgramParameterType::KaosAdjustment:
+        case ProgramParameterKind::KaosAdjustment:
             return "KaosAdjustment";
-        case GameShaderProgramParameterType::LampLightColor:
+        case ProgramParameterKind::LampLightColor:
             return "LampLightColor";
-        case GameShaderProgramParameterType::LampToolAttributes:
+        case ProgramParameterKind::LampToolAttributes:
             return "LampToolAttributes";
-        case GameShaderProgramParameterType::LandFlatColor:
+        case ProgramParameterKind::LandFlatColor:
             return "LandFlatColor";
-        case GameShaderProgramParameterType::MatteColor:
+        case ProgramParameterKind::MatteColor:
             return "MatteColor";
-        case GameShaderProgramParameterType::NoiseStrength:
+        case ProgramParameterKind::NoiseStrength:
             return "NoiseStrength";
-        case GameShaderProgramParameterType::NpcQuadFlatColor:
+        case ProgramParameterKind::NpcQuadFlatColor:
             return "NpcQuadFlatColor";
-        case GameShaderProgramParameterType::OceanDepthColorStart:
+        case ProgramParameterKind::OceanDepthColorStart:
             return "OceanDepthColorStart";
-        case GameShaderProgramParameterType::OceanDepthColorEnd:
+        case ProgramParameterKind::OceanDepthColorEnd:
             return "OceanDepthColorEnd";
-        case GameShaderProgramParameterType::OceanDepthDarkeningRate:
+        case ProgramParameterKind::OceanDepthDarkeningRate:
             return "OceanDepthDarkeningRate";
-        case GameShaderProgramParameterType::OceanFlatColor:
+        case ProgramParameterKind::OceanFlatColor:
             return "OceanFlatColor";
-        case GameShaderProgramParameterType::OceanTransparency:
+        case ProgramParameterKind::OceanTransparency:
             return "OceanTransparency";
-        case GameShaderProgramParameterType::OrthoMatrix:
+        case ProgramParameterKind::OrthoMatrix:
             return "OrthoMatrix";
-        case GameShaderProgramParameterType::RainAngle:
+        case ProgramParameterKind::RainAngle:
             return "RainAngle";
-        case GameShaderProgramParameterType::RainDensity:
+        case ProgramParameterKind::RainDensity:
             return "RainDensity";
-        case GameShaderProgramParameterType::ShipDepthDarkeningSensitivity:
+        case ProgramParameterKind::ShipDepthDarkeningSensitivity:
             return "ShipDepthDarkeningSensitivity";
-        case GameShaderProgramParameterType::StarTransparency:
+        case ProgramParameterKind::StarTransparency:
             return "StarTransparency";
-        case GameShaderProgramParameterType::StressColorMap:
+        case ProgramParameterKind::StressColorMap:
             return "StressColorMap";
-        case GameShaderProgramParameterType::SunRaysInclination:
+        case ProgramParameterKind::SunRaysInclination:
             return "SunRaysInclination";
-        case GameShaderProgramParameterType::TextLighteningStrength:
+        case ProgramParameterKind::TextLighteningStrength:
             return "TextLighteningStrength";
-        case GameShaderProgramParameterType::TextureLighteningStrength:
+        case ProgramParameterKind::TextureLighteningStrength:
             return "TextureLighteningStrength";
-        case GameShaderProgramParameterType::TextureScaling:
+        case ProgramParameterKind::TextureScaling:
             return "TextureScaling";
-        case GameShaderProgramParameterType::Time:
+        case ProgramParameterKind::Time:
             return "Time";
-        case GameShaderProgramParameterType::ViewportSize:
+        case ProgramParameterKind::ViewportSize:
             return "ViewportSize";
-        case GameShaderProgramParameterType::WaterColor:
+        case ProgramParameterKind::WaterColor:
             return "WaterColor";
-        case GameShaderProgramParameterType::WaterContrast:
+        case ProgramParameterKind::WaterContrast:
             return "WaterContrast";
-        case GameShaderProgramParameterType::WaterLevelThreshold:
+        case ProgramParameterKind::WaterLevelThreshold:
             return "WaterLevelThreshold";
-        case GameShaderProgramParameterType::WidthNdc:
+        case ProgramParameterKind::WidthNdc:
             return "WidthNdc";
-        case GameShaderProgramParameterType::Zoom:
+        case ProgramParameterKind::Zoom:
             return "Zoom";
             // Textures
-        case GameShaderProgramParameterType::SharedTexture:
+        case ProgramParameterKind::SharedTexture:
             return "SharedTexture";
-        case GameShaderProgramParameterType::CloudsAtlasTexture:
+        case ProgramParameterKind::CloudsAtlasTexture:
             return "CloudsAtlasTexture";
-        case GameShaderProgramParameterType::FishesAtlasTexture:
+        case ProgramParameterKind::FishesAtlasTexture:
             return "FishesAtlasTexture";
-        case GameShaderProgramParameterType::ExplosionsAtlasTexture:
+        case ProgramParameterKind::ExplosionsAtlasTexture:
             return "ExplosionsAtlasTexture";
-        case GameShaderProgramParameterType::GenericLinearTexturesAtlasTexture:
+        case ProgramParameterKind::GenericLinearTexturesAtlasTexture:
             return "GenericLinearTexturesAtlasTexture";
-        case GameShaderProgramParameterType::GenericMipMappedTexturesAtlasTexture:
+        case ProgramParameterKind::GenericMipMappedTexturesAtlasTexture:
             return "GenericMipMappedTexturesAtlasTexture";
-        case GameShaderProgramParameterType::LandTexture:
+        case ProgramParameterKind::LandTexture:
             return "LandTexture";
-        case GameShaderProgramParameterType::NoiseTexture:
+        case ProgramParameterKind::NoiseTexture:
             return "NoiseTexture";
-        case GameShaderProgramParameterType::NpcAtlasTexture:
+        case ProgramParameterKind::NpcAtlasTexture:
             return "NpcAtlasTexture";
-        case GameShaderProgramParameterType::OceanTexture:
+        case ProgramParameterKind::OceanTexture:
             return "OceanTexture";
     }
 
     assert(false);
-    throw GameException("Unsupported GameShaderProgramParameterType");
+    throw GameException("Unsupported ProgramParameterKind");
 }
 
-GameShaderVertexAttributeType StrToGameShaderVertexAttributeType(std::string const & str)
+VertexAttributeKind StrToGameShaderVertexAttributeType(std::string const & str)
 {
     // World
     if (Utils::CaseInsensitiveEquals(str, "Sky"))
-        return GameShaderVertexAttributeType::Sky;
+        return VertexAttributeKind::Sky;
     else if (Utils::CaseInsensitiveEquals(str, "Star"))
-        return GameShaderVertexAttributeType::Star;
+        return VertexAttributeKind::Star;
     else if (Utils::CaseInsensitiveEquals(str, "Lightning1"))
-        return GameShaderVertexAttributeType::Lightning1;
+        return VertexAttributeKind::Lightning1;
     else if (Utils::CaseInsensitiveEquals(str, "Lightning2"))
-        return GameShaderVertexAttributeType::Lightning2;
+        return VertexAttributeKind::Lightning2;
     else if (Utils::CaseInsensitiveEquals(str, "Cloud1"))
-        return GameShaderVertexAttributeType::Cloud1;
+        return VertexAttributeKind::Cloud1;
     else if (Utils::CaseInsensitiveEquals(str, "Cloud2"))
-        return GameShaderVertexAttributeType::Cloud2;
+        return VertexAttributeKind::Cloud2;
     else if (Utils::CaseInsensitiveEquals(str, "Cloud3"))
-        return GameShaderVertexAttributeType::Cloud3;
+        return VertexAttributeKind::Cloud3;
     else if (Utils::CaseInsensitiveEquals(str, "Land"))
-        return GameShaderVertexAttributeType::Land;
+        return VertexAttributeKind::Land;
     else if (Utils::CaseInsensitiveEquals(str, "OceanBasic"))
-        return GameShaderVertexAttributeType::OceanBasic;
+        return VertexAttributeKind::OceanBasic;
     else if (Utils::CaseInsensitiveEquals(str, "OceanDetailed1"))
-        return GameShaderVertexAttributeType::OceanDetailed1;
+        return VertexAttributeKind::OceanDetailed1;
     else if (Utils::CaseInsensitiveEquals(str, "OceanDetailed2"))
-        return GameShaderVertexAttributeType::OceanDetailed2;
+        return VertexAttributeKind::OceanDetailed2;
     else if (Utils::CaseInsensitiveEquals(str, "Fish1"))
-        return GameShaderVertexAttributeType::Fish1;
+        return VertexAttributeKind::Fish1;
     else if (Utils::CaseInsensitiveEquals(str, "Fish2"))
-        return GameShaderVertexAttributeType::Fish2;
+        return VertexAttributeKind::Fish2;
     else if (Utils::CaseInsensitiveEquals(str, "Fish3"))
-        return GameShaderVertexAttributeType::Fish3;
+        return VertexAttributeKind::Fish3;
     else if (Utils::CaseInsensitiveEquals(str, "Fish4"))
-        return GameShaderVertexAttributeType::Fish4;
+        return VertexAttributeKind::Fish4;
     else if (Utils::CaseInsensitiveEquals(str, "AMBombPreImplosion1"))
-        return GameShaderVertexAttributeType::AMBombPreImplosion1;
+        return VertexAttributeKind::AMBombPreImplosion1;
     else if (Utils::CaseInsensitiveEquals(str, "AMBombPreImplosion2"))
-        return GameShaderVertexAttributeType::AMBombPreImplosion2;
+        return VertexAttributeKind::AMBombPreImplosion2;
     else if (Utils::CaseInsensitiveEquals(str, "CrossOfLight1"))
-        return GameShaderVertexAttributeType::CrossOfLight1;
+        return VertexAttributeKind::CrossOfLight1;
     else if (Utils::CaseInsensitiveEquals(str, "CrossOfLight2"))
-        return GameShaderVertexAttributeType::CrossOfLight2;
+        return VertexAttributeKind::CrossOfLight2;
     else if (Utils::CaseInsensitiveEquals(str, "AABB1"))
-        return GameShaderVertexAttributeType::AABB1;
+        return VertexAttributeKind::AABB1;
     else if (Utils::CaseInsensitiveEquals(str, "AABB2"))
-        return GameShaderVertexAttributeType::AABB2;
+        return VertexAttributeKind::AABB2;
     else if (Utils::CaseInsensitiveEquals(str, "Rain"))
-        return GameShaderVertexAttributeType::Rain;
+        return VertexAttributeKind::Rain;
     else if (Utils::CaseInsensitiveEquals(str, "WorldBorder"))
-        return GameShaderVertexAttributeType::WorldBorder;
+        return VertexAttributeKind::WorldBorder;
     // Ship
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointAttributeGroup1"))
-        return GameShaderVertexAttributeType::ShipPointAttributeGroup1;
+        return VertexAttributeKind::ShipPointAttributeGroup1;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointAttributeGroup2"))
-        return GameShaderVertexAttributeType::ShipPointAttributeGroup2;
+        return VertexAttributeKind::ShipPointAttributeGroup2;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointColor"))
-        return GameShaderVertexAttributeType::ShipPointColor;
+        return VertexAttributeKind::ShipPointColor;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointTemperature"))
-        return GameShaderVertexAttributeType::ShipPointTemperature;
+        return VertexAttributeKind::ShipPointTemperature;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointStress"))
-        return GameShaderVertexAttributeType::ShipPointStress;
+        return VertexAttributeKind::ShipPointStress;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointAuxiliaryData"))
-        return GameShaderVertexAttributeType::ShipPointAuxiliaryData;
+        return VertexAttributeKind::ShipPointAuxiliaryData;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointFrontierColor"))
-        return GameShaderVertexAttributeType::ShipPointFrontierColor;
+        return VertexAttributeKind::ShipPointFrontierColor;
     else if (Utils::CaseInsensitiveEquals(str, "NpcAttributeGroup1"))
-        return GameShaderVertexAttributeType::NpcAttributeGroup1;
+        return VertexAttributeKind::NpcAttributeGroup1;
     else if (Utils::CaseInsensitiveEquals(str, "NpcAttributeGroup2"))
-        return GameShaderVertexAttributeType::NpcAttributeGroup2;
+        return VertexAttributeKind::NpcAttributeGroup2;
     else if (Utils::CaseInsensitiveEquals(str, "NpcAttributeGroup3"))
-        return GameShaderVertexAttributeType::NpcAttributeGroup3;
+        return VertexAttributeKind::NpcAttributeGroup3;
     else if (Utils::CaseInsensitiveEquals(str, "NpcAttributeGroup4"))
-        return GameShaderVertexAttributeType::NpcAttributeGroup4;
+        return VertexAttributeKind::NpcAttributeGroup4;
     else if (Utils::CaseInsensitiveEquals(str, "ElectricSpark1"))
-        return GameShaderVertexAttributeType::ElectricSpark1;
+        return VertexAttributeKind::ElectricSpark1;
     else if (Utils::CaseInsensitiveEquals(str, "Explosion1"))
-        return GameShaderVertexAttributeType::Explosion1;
+        return VertexAttributeKind::Explosion1;
     else if (Utils::CaseInsensitiveEquals(str, "Explosion2"))
-        return GameShaderVertexAttributeType::Explosion2;
+        return VertexAttributeKind::Explosion2;
     else if (Utils::CaseInsensitiveEquals(str, "Explosion3"))
-        return GameShaderVertexAttributeType::Explosion3;
+        return VertexAttributeKind::Explosion3;
     else if (Utils::CaseInsensitiveEquals(str, "Sparkle1"))
-        return GameShaderVertexAttributeType::Sparkle1;
+        return VertexAttributeKind::Sparkle1;
     else if (Utils::CaseInsensitiveEquals(str, "Sparkle2"))
-        return GameShaderVertexAttributeType::Sparkle2;
+        return VertexAttributeKind::Sparkle2;
     else if (Utils::CaseInsensitiveEquals(str, "ShipGenericMipMappedTexture1"))
-        return GameShaderVertexAttributeType::ShipGenericMipMappedTexture1;
+        return VertexAttributeKind::ShipGenericMipMappedTexture1;
     else if (Utils::CaseInsensitiveEquals(str, "ShipGenericMipMappedTexture2"))
-        return GameShaderVertexAttributeType::ShipGenericMipMappedTexture2;
+        return VertexAttributeKind::ShipGenericMipMappedTexture2;
     else if (Utils::CaseInsensitiveEquals(str, "ShipGenericMipMappedTexture3"))
-        return GameShaderVertexAttributeType::ShipGenericMipMappedTexture3;
+        return VertexAttributeKind::ShipGenericMipMappedTexture3;
     else if (Utils::CaseInsensitiveEquals(str, "Flame1"))
-        return GameShaderVertexAttributeType::Flame1;
+        return VertexAttributeKind::Flame1;
     else if (Utils::CaseInsensitiveEquals(str, "Flame2"))
-        return GameShaderVertexAttributeType::Flame2;
+        return VertexAttributeKind::Flame2;
     else if (Utils::CaseInsensitiveEquals(str, "JetEngineFlame1"))
-        return GameShaderVertexAttributeType::JetEngineFlame1;
+        return VertexAttributeKind::JetEngineFlame1;
     else if (Utils::CaseInsensitiveEquals(str, "JetEngineFlame2"))
-        return GameShaderVertexAttributeType::JetEngineFlame2;
+        return VertexAttributeKind::JetEngineFlame2;
     else if (Utils::CaseInsensitiveEquals(str, "Highlight1"))
-        return GameShaderVertexAttributeType::Highlight1;
+        return VertexAttributeKind::Highlight1;
     else if (Utils::CaseInsensitiveEquals(str, "Highlight2"))
-        return GameShaderVertexAttributeType::Highlight2;
+        return VertexAttributeKind::Highlight2;
     else if (Utils::CaseInsensitiveEquals(str, "Highlight3"))
-        return GameShaderVertexAttributeType::Highlight3;
+        return VertexAttributeKind::Highlight3;
     else if (Utils::CaseInsensitiveEquals(str, "VectorArrow"))
-        return GameShaderVertexAttributeType::VectorArrow;
+        return VertexAttributeKind::VectorArrow;
     else if (Utils::CaseInsensitiveEquals(str, "Center1"))
-        return GameShaderVertexAttributeType::Center1;
+        return VertexAttributeKind::Center1;
     else if (Utils::CaseInsensitiveEquals(str, "Center2"))
-        return GameShaderVertexAttributeType::Center2;
+        return VertexAttributeKind::Center2;
     else if (Utils::CaseInsensitiveEquals(str, "PointToPointArrow1"))
-        return GameShaderVertexAttributeType::PointToPointArrow1;
+        return VertexAttributeKind::PointToPointArrow1;
     else if (Utils::CaseInsensitiveEquals(str, "PointToPointArrow2"))
-        return GameShaderVertexAttributeType::PointToPointArrow2;
+        return VertexAttributeKind::PointToPointArrow2;
     // Notifications
     else if (Utils::CaseInsensitiveEquals(str, "Text1"))
-        return GameShaderVertexAttributeType::Text1;
+        return VertexAttributeKind::Text1;
     else if (Utils::CaseInsensitiveEquals(str, "Text2"))
-        return GameShaderVertexAttributeType::Text2;
+        return VertexAttributeKind::Text2;
     else if (Utils::CaseInsensitiveEquals(str, "TextureNotification1"))
-        return GameShaderVertexAttributeType::TextureNotification1;
+        return VertexAttributeKind::TextureNotification1;
     else if (Utils::CaseInsensitiveEquals(str, "TextureNotification2"))
-        return GameShaderVertexAttributeType::TextureNotification2;
+        return VertexAttributeKind::TextureNotification2;
     else if (Utils::CaseInsensitiveEquals(str, "PhysicsProbePanel1"))
-        return GameShaderVertexAttributeType::PhysicsProbePanel1;
+        return VertexAttributeKind::PhysicsProbePanel1;
     else if (Utils::CaseInsensitiveEquals(str, "PhysicsProbePanel2"))
-        return GameShaderVertexAttributeType::PhysicsProbePanel2;
+        return VertexAttributeKind::PhysicsProbePanel2;
     else if (Utils::CaseInsensitiveEquals(str, "MultiNotification1"))
-        return GameShaderVertexAttributeType::MultiNotification1;
+        return VertexAttributeKind::MultiNotification1;
     else if (Utils::CaseInsensitiveEquals(str, "MultiNotification2"))
-        return GameShaderVertexAttributeType::MultiNotification2;
+        return VertexAttributeKind::MultiNotification2;
     else if (Utils::CaseInsensitiveEquals(str, "MultiNotification3"))
-        return GameShaderVertexAttributeType::MultiNotification3;
+        return VertexAttributeKind::MultiNotification3;
     else if (Utils::CaseInsensitiveEquals(str, "LaserRay1"))
-        return GameShaderVertexAttributeType::LaserRay1;
+        return VertexAttributeKind::LaserRay1;
     else if (Utils::CaseInsensitiveEquals(str, "LaserRay2"))
-        return GameShaderVertexAttributeType::LaserRay2;
+        return VertexAttributeKind::LaserRay2;
     else if (Utils::CaseInsensitiveEquals(str, "RectSelection1"))
-        return GameShaderVertexAttributeType::RectSelection1;
+        return VertexAttributeKind::RectSelection1;
     else if (Utils::CaseInsensitiveEquals(str, "RectSelection2"))
-        return GameShaderVertexAttributeType::RectSelection2;
+        return VertexAttributeKind::RectSelection2;
     else if (Utils::CaseInsensitiveEquals(str, "RectSelection3"))
-        return GameShaderVertexAttributeType::RectSelection3;
+        return VertexAttributeKind::RectSelection3;
     else if (Utils::CaseInsensitiveEquals(str, "InteractiveToolDashedLine1"))
-        return GameShaderVertexAttributeType::InteractiveToolDashedLine1;
+        return VertexAttributeKind::InteractiveToolDashedLine1;
     // Global
     else if (Utils::CaseInsensitiveEquals(str, "GenericMipMappedTextureNdc1"))
-        return GameShaderVertexAttributeType::GenericMipMappedTextureNdc1;
+        return VertexAttributeKind::GenericMipMappedTextureNdc1;
     else if (Utils::CaseInsensitiveEquals(str, "GenericMipMappedTextureNdc2"))
-        return GameShaderVertexAttributeType::GenericMipMappedTextureNdc2;
+        return VertexAttributeKind::GenericMipMappedTextureNdc2;
     else
         throw GameException("Unrecognized vertex attribute \"" + str + "\"");
 }
