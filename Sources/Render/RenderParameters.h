@@ -7,12 +7,10 @@
 
 #include "ViewModel.h"
 
-#include <GameCore/Colors.h>
-#include <GameCore/GameTypes.h>
+#include <Core/Colors.h>
+#include <Core/GameTypes.h>
 
 #include <cstdint>
-
-namespace Render {
 
 /*
  * The entire set of user-controllable settings or calculated parameters
@@ -112,10 +110,9 @@ struct RenderParameters
     bool IsDisplayUnitsSystemDirty;
 
     RenderParameters(
+        FloatSize const & maxWorldSize,
         DisplayLogicalSize const & initialCanvasSize,
         int logicalToPhysicalDisplayFactor);
 
     RenderParameters TakeSnapshotAndClear();
 };
-
-}

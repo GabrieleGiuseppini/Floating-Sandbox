@@ -5,12 +5,11 @@
 ***************************************************************************************/
 #include "RenderParameters.h"
 
-namespace Render {
-
 RenderParameters::RenderParameters(
+	FloatSize const & maxWorldSize,
 	DisplayLogicalSize const & initialCanvasSize,
 	int logicalToPhysicalDisplayFactor)
-	: View(1.0f, vec2f::zero(), initialCanvasSize, logicalToPhysicalDisplayFactor)
+	: View(maxWorldSize, 1.0f, vec2f::zero(), initialCanvasSize, logicalToPhysicalDisplayFactor)
 	, EffectiveAmbientLightIntensity(1.0f) // Calculated
 	// World
 	, FlatSkyColor(0x39, 0xa8, 0xf2)
@@ -113,6 +112,4 @@ RenderParameters RenderParameters::TakeSnapshotAndClear()
 	IsDisplayUnitsSystemDirty = false;
 
 	return copy;
-}
-
 }

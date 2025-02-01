@@ -6,6 +6,10 @@
 set  (RENDER_SOURCES	
 	GameShaderSet.cpp
 	GameShaderSet.h
+	RenderDeviceProperties.h
+	RenderParameters.cpp
+	RenderParameters.h
+	ViewModel.h
 )
 
 source_group(" " FILES ${RENDER_SOURCES})

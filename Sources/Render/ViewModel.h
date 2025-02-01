@@ -5,18 +5,11 @@
 ***************************************************************************************/
 #pragma once
 
-#include "GameParameters.h"
-#include "VisibleWorld.h"
-
-#include <GameCore/GameMath.h>
-#include <GameCore/GameTypes.h>
-#include <GameCore/Log.h>
-#include <GameCore/Vectors.h>
+#include <Core/GameMath.h>
+#include <Core/GameTypes.h>
+#include <Core/Vectors.h>
 
 #include <algorithm>
-
-namespace Render
-{
 
 /*
  * This class encapsulates the management of view and projection parameters.
@@ -30,11 +23,14 @@ public:
 public:
 
     ViewModel(
+        FloatSize const & maxWorldSize,
         float zoom,
         vec2f cameraWorldPosition,
         DisplayLogicalSize const & logicalCanvasSize,
         int logicalToPhysicalPixelFactor)
-        : mZoom(zoom)
+        : mHalfMaxWorldWidth(maxWorldSize.width / 2.0f)
+        , mHalfMaxWorldHeight(maxWorldSize.height / 2.0f)
+        , mZoom(zoom)
         , mCam(cameraWorldPosition)
         , mCanvasLogicalSize(logicalCanvasSize)
         , mCanvasPhysicalSize(
@@ -80,40 +76,40 @@ public:
         // Width
         //
 
-        float constexpr MaxWorldLeft = -GameParameters::HalfMaxWorldWidth;
-        float constexpr MaxWorldRight = GameParameters::HalfMaxWorldWidth;
+        float const maxWorldLeft = -mHalfMaxWorldWidth;
+        float const maxWorldRight = mHalfMaxWorldWidth;
 
         float visibleWorldWidth = CalculateVisibleWorldWidth(clampedZoom);
 
-        if (mCam.x - visibleWorldWidth / 2.0f < MaxWorldLeft)
+        if (mCam.x - visibleWorldWidth / 2.0f < maxWorldLeft)
         {
-            clampedZoom = visibleWorldWidth * clampedZoom / ((mCam.x - MaxWorldLeft) * 2.0f);
+            clampedZoom = visibleWorldWidth * clampedZoom / ((mCam.x - maxWorldLeft) * 2.0f);
             visibleWorldWidth = CalculateVisibleWorldWidth(clampedZoom);
         }
 
-        if (mCam.x + visibleWorldWidth / 2.0f > MaxWorldRight)
+        if (mCam.x + visibleWorldWidth / 2.0f > maxWorldRight)
         {
-            clampedZoom = visibleWorldWidth * clampedZoom / ((MaxWorldRight - mCam.x) * 2.0f);
+            clampedZoom = visibleWorldWidth * clampedZoom / ((maxWorldRight - mCam.x) * 2.0f);
         }
 
         //
         // Height
         //
 
-        float constexpr MaxWorldTop = GameParameters::HalfMaxWorldHeight;
-        float constexpr MaxWorldBottom = -GameParameters::HalfMaxWorldHeight;
+        float const maxWorldTop = mHalfMaxWorldHeight;
+        float const maxWorldBottom = -mHalfMaxWorldHeight;
 
         float visibleWorldHeight = CalculateVisibleWorldHeight(clampedZoom);
 
-        if (mCam.y + visibleWorldHeight / 2.0 > MaxWorldTop)
+        if (mCam.y + visibleWorldHeight / 2.0 > maxWorldTop)
         {
-            clampedZoom = visibleWorldHeight * clampedZoom / ((MaxWorldTop - mCam.y) * 2.0f);
+            clampedZoom = visibleWorldHeight * clampedZoom / ((maxWorldTop - mCam.y) * 2.0f);
             visibleWorldHeight = CalculateVisibleWorldHeight(clampedZoom);
         }
 
-        if (mCam.y - visibleWorldHeight / 2.0 < MaxWorldBottom)
+        if (mCam.y - visibleWorldHeight / 2.0 < maxWorldBottom)
         {
-            clampedZoom = visibleWorldHeight * clampedZoom / ((mCam.y - MaxWorldBottom) * 2.0f);
+            clampedZoom = visibleWorldHeight * clampedZoom / ((mCam.y - maxWorldBottom) * 2.0f);
         }
 
         if (clampedZoom > MaxZoom)
@@ -151,14 +147,14 @@ public:
         vec2f clampedPos = pos;
 
         float newVisibleWorldLeft = clampedPos.x - mVisibleWorld.Width / 2.0f;
-        clampedPos.x += std::max(0.0f, -GameParameters::MaxWorldWidth / 2.0f - newVisibleWorldLeft);
+        clampedPos.x += std::max(0.0f, -mHalfMaxWorldWidth - newVisibleWorldLeft);
         float newVisibleWorldRight = clampedPos.x + mVisibleWorld.Width / 2.0f;
-        clampedPos.x += std::min(0.0f, GameParameters::MaxWorldWidth / 2.0f - newVisibleWorldRight);
+        clampedPos.x += std::min(0.0f, mHalfMaxWorldWidth - newVisibleWorldRight);
 
         float newVisibleWorldTop = clampedPos.y + mVisibleWorld.Height / 2.0f; // Top<->Positive
-        clampedPos.y += std::min(0.0f, GameParameters::MaxWorldHeight / 2.0f - newVisibleWorldTop);
+        clampedPos.y += std::min(0.0f, mHalfMaxWorldHeight - newVisibleWorldTop);
         float newVisibleWorldBottom = clampedPos.y - mVisibleWorld.Height / 2.0f;
-        clampedPos.y += std::max(0.0f, -GameParameters::MaxWorldHeight / 2.0f - newVisibleWorldBottom);
+        clampedPos.y += std::max(0.0f, -mHalfMaxWorldHeight - newVisibleWorldBottom);
 
         return clampedPos;
     }
@@ -305,12 +301,12 @@ public:
         vec2f const worldCoordinates = vec2f(
             Clamp(
                 (static_cast<float>(screenCoordinates.x * mLogicalToPhysicalDisplayFactor) / static_cast<float>(mCanvasPhysicalSize.width) - 0.5f) * mVisibleWorld.Width + mCam.x,
-                -GameParameters::HalfMaxWorldWidth,
-                GameParameters::HalfMaxWorldWidth),
+                -mHalfMaxWorldWidth,
+                mHalfMaxWorldWidth),
             Clamp(
                 (static_cast<float>(screenCoordinates.y * mLogicalToPhysicalDisplayFactor) / static_cast<float>(mCanvasPhysicalSize.height) - 0.5f) * -mVisibleWorld.Height + mCam.y,
-                -GameParameters::HalfMaxWorldHeight,
-                GameParameters::HalfMaxWorldHeight));
+                -mHalfMaxWorldHeight,
+                mHalfMaxWorldHeight));
 
         return worldCoordinates;
     }
@@ -519,6 +515,8 @@ private:
     static float constexpr ZoomHeightConstant = 2.0f * 70.0f; // World height at zoom=1.0
 
     // Primary inputs
+    float const mHalfMaxWorldWidth;
+    float const mHalfMaxWorldHeight;
     float mZoom;
     vec2f mCam; // World coordinates
     DisplayLogicalSize mCanvasLogicalSize;
@@ -533,5 +531,3 @@ private:
     float mWorldToPhysicalDisplayFactor;
     ProjectionMatrix mKernelOrthoMatrix; // Common subset of all ortho matrices
 };
-
-}
