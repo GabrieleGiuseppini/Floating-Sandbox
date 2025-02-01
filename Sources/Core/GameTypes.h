@@ -1425,6 +1425,34 @@ enum class NoiseType : std::uint32_t
 // Rendering
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
+struct TextureCoordinatesQuad
+{
+    float LeftX;
+    float RightX;
+    float BottomY;
+    float TopY;
+
+    TextureCoordinatesQuad FlipH() const
+    {
+        return TextureCoordinatesQuad({
+            RightX,
+            LeftX,
+            BottomY,
+            TopY });
+    }
+};
+
+/*
+ * The positions at which UI elements may be anchored.
+ */
+enum class AnchorPositionType
+{
+    TopLeft,
+    TopRight,
+    BottomLeft,
+    BottomRight
+};
+
 /*
  * The different ship views.
  */

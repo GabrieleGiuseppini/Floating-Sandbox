@@ -5,18 +5,18 @@
 ***************************************************************************************/
 #include "NotificationRenderContext.h"
 
-#include <GameCore/GameWallClock.h>
+#include "GameFontSet.h"
+
+#include <Core/GameWallClock.h>
 
 #include <algorithm>
-
-namespace Render {
 
 float constexpr MarginScreen = 10.0f;
 float constexpr MarginTopScreen = MarginScreen + 25.0f; // Consider menu bar
 
 NotificationRenderContext::NotificationRenderContext(
-    ResourceLocator const & resourceLocator,
-    ShaderManager<ShaderManagerTraits> & shaderManager,
+    IAssetManager const & assetManager,
+    ShaderManager<GameShaderSet::ShaderSet> & shaderManager,
     GlobalRenderContext & globalRenderContext)
     : mGlobalRenderContext(globalRenderContext)
     , mShaderManager(shaderManager)
@@ -26,12 +26,12 @@ NotificationRenderContext::NotificationRenderContext(
     , mGenericLinearTextureAtlasMetadata(globalRenderContext.GetGenericLinearTextureAtlasMetadata())
     , mGenericMipMappedTextureAtlasMetadata(globalRenderContext.GetGenericMipMappedTextureAtlasMetadata())
     // Text
-    , mFontTextureAtlasMetadata()
     , mTextNotificationTypeContexts()
     , mTextVAO()
     , mCurrentTextQuadVertexBufferSize(0)
     , mAllocatedTextQuadVertexBufferSize(0)
     , mTextVBO()
+    , mFontSetMetadata()
     , mFontAtlasTextureHandle()
     // Texture notifications
     , mTextureNotifications()
@@ -63,43 +63,18 @@ NotificationRenderContext::NotificationRenderContext(
     // Load fonts
     //
 
-    std::vector<Font> fonts = Font::LoadAll(
-        resourceLocator,
+    auto fontSet = FontSet<GameFontSet::FontSet>::Load(
+        assetManager,
         [](float, ProgressMessageType) {});
 
-    //
-    // Build font texture atlas
-    //
+    LogMessage("Font texture atlas size: ", fontSet.Atlas.Size);
 
-    std::vector<TextureFrame<FontTextureGroups>> fontTextures;
+    // Store (extracting) font metadata
+    mFontSetMetadata = std::move(fontSet.Metadata);
 
-    for (size_t f = 0; f < fonts.size(); ++f)
-    {
-        TextureFrameMetadata<FontTextureGroups> frameMetadata = TextureFrameMetadata<FontTextureGroups>(
-            fonts[f].Texture.Size,
-            static_cast<float>(fonts[f].Texture.Size.width),
-            static_cast<float>(fonts[f].Texture.Size.height),
-            false,
-            ImageCoordinates(0, 0),
-            vec2f::zero(),
-            TextureFrameId<FontTextureGroups>(
-                FontTextureGroups::Font,
-                static_cast<TextureFrameIndex>(f)),
-            std::to_string(f),
-            std::to_string(f));
+    // Upload font atlas
 
-        fontTextures.emplace_back(
-            frameMetadata,
-            std::move(fonts[f].Texture));
-    }
-
-    auto fontTextureAtlas = TextureAtlasBuilder<FontTextureGroups>::BuildAtlas(
-        std::move(fontTextures),
-        AtlasOptions::None);
-
-    LogMessage("Font texture atlas size: ", fontTextureAtlas.AtlasData.Size.ToString());
-
-    mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
+    mShaderManager.ActivateTexture<GameShaderSet::ProgramParameterKind::SharedTexture>();
 
     glGenTextures(1, &tmpGLuint);
     mFontAtlasTextureHandle = tmpGLuint;
@@ -118,7 +93,7 @@ NotificationRenderContext::NotificationRenderContext(
     CheckOpenGLError();
 
     // Upload texture atlas
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, fontTextureAtlas.AtlasData.Size.width, fontTextureAtlas.AtlasData.Size.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, fontTextureAtlas.AtlasData.Data.get());
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, fontSet.Atlas.Size.width, fontSet.Atlas.Size.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, fontSet.Atlas.Data.get());
     CheckOpenGLError();
 
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -130,8 +105,8 @@ NotificationRenderContext::NotificationRenderContext(
     {
 
         // Set texture parameters
-        mShaderManager.ActivateProgram<ProgramType::Text>();
-        mShaderManager.SetTextureParameters<ProgramType::Text>();
+        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::Text>();
+        mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::Text>();
 
         // Initialize VBO
         glGenBuffers(1, &tmpGLuint);
@@ -147,10 +122,10 @@ NotificationRenderContext::NotificationRenderContext(
         // Describe vertex attributes
         static_assert(sizeof(TextQuadVertex) == (4 + 1) * sizeof(float));
         glBindBuffer(GL_ARRAY_BUFFER, *mTextVBO);
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Text1));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Text1), 4, GL_FLOAT, GL_FALSE, (4 + 1) * sizeof(float), (void*)0);
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Text2));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Text2), 1, GL_FLOAT, GL_FALSE, (4 + 1) * sizeof(float), (void*)(4 * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Text1));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Text1), 4, GL_FLOAT, GL_FALSE, (4 + 1) * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Text2));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Text2), 1, GL_FLOAT, GL_FALSE, (4 + 1) * sizeof(float), (void*)(4 * sizeof(float)));
         CheckOpenGLError();
 
         //
@@ -164,70 +139,19 @@ NotificationRenderContext::NotificationRenderContext(
         glBindVertexArray(0);
     }
 
-    // Initialize font texture atlas metadata
-    for (size_t f = 0; f < fonts.size(); ++f)
-    {
-        auto const & fontTextureFrameMetadata = fontTextureAtlas.Metadata.GetFrameMetadata(
-            TextureFrameId<FontTextureGroups>(
-                FontTextureGroups::Font,
-                static_cast<TextureFrameIndex>(f)));
-
-        // Dimensions of a cell of this font, in the atlas' texture space coordinates
-        float const fontCellWidthAtlasTextureSpace = static_cast<float>(fonts[f].Metadata.GetCellScreenWidth()) / static_cast<float>(fontTextureAtlas.Metadata.GetSize().width);
-        float const fontCellHeightAtlasTextureSpace = static_cast<float>(fonts[f].Metadata.GetCellScreenHeight()) / static_cast<float>(fontTextureAtlas.Metadata.GetSize().height);
-
-        // Coordinates for each character
-        std::array<vec2f, 256> GlyphTextureBottomLefts;
-        std::array<vec2f, 256> GlyphTextureTopRights;
-        for (int c = 0; c < 256; ++c)
-        {
-            // Texture-space left x
-            int const glyphTextureCol = (c - FontMetadata::BaseCharacter) % fonts[f].Metadata.GetGlyphsPerTextureRow();
-            float const glyphLeftAtlasTextureSpace =
-                fontTextureFrameMetadata.TextureCoordinatesBottomLeft.x // Includes dead-center dx already
-                + static_cast<float>(glyphTextureCol) * fontCellWidthAtlasTextureSpace;
-
-            // Texture-space right x
-            float const glyphRightAtlasTextureSpace =
-                glyphLeftAtlasTextureSpace
-                + static_cast<float>(fonts[f].Metadata.GetGlyphScreenWidth(c) - 1) / static_cast<float>(fontTextureAtlas.Metadata.GetSize().width);
-
-            // Texture-space top y
-            // Note: font texture is flipped vertically (top of character is at lower V coordinates)
-            int const glyphTextureRow = (c - FontMetadata::BaseCharacter) / fonts[f].Metadata.GetGlyphsPerTextureRow();
-            float const glyphTopAtlasTextureSpace =
-                fontTextureFrameMetadata.TextureCoordinatesBottomLeft.y // Includes dead-center dx already
-                + static_cast<float>(glyphTextureRow) * fontCellHeightAtlasTextureSpace;
-
-            float const glyphBottomAtlasTextureSpace =
-                glyphTopAtlasTextureSpace
-                + static_cast<float>(fonts[f].Metadata.GetGlyphScreenHeight(c) - 1) / static_cast<float>(fontTextureAtlas.Metadata.GetSize().height);
-
-            GlyphTextureBottomLefts[c] = vec2f(glyphLeftAtlasTextureSpace, glyphBottomAtlasTextureSpace);
-            GlyphTextureTopRights[c] = vec2f(glyphRightAtlasTextureSpace, glyphTopAtlasTextureSpace);
-        }
-
-        // Store
-        mFontTextureAtlasMetadata.emplace_back(
-            vec2f(fontCellWidthAtlasTextureSpace, fontCellHeightAtlasTextureSpace),
-            GlyphTextureBottomLefts,
-            GlyphTextureTopRights,
-            fonts[f].Metadata);
-    }
-
     // Initialize text notification contexts for each type of notification
     {
         // Status text
         mTextNotificationTypeContexts[static_cast<size_t>(TextNotificationType::StatusText)] =
-            TextNotificationTypeContext(&(mFontTextureAtlasMetadata[static_cast<size_t>(FontType::Font0)]));
+            TextNotificationTypeContext(&(mFontSetMetadata[static_cast<size_t>(GameFontSet::FontKind::Font0)]));
 
         // Notification text
         mTextNotificationTypeContexts[static_cast<size_t>(TextNotificationType::NotificationText)] =
-            TextNotificationTypeContext(&(mFontTextureAtlasMetadata[static_cast<size_t>(FontType::Font1)]));
+            TextNotificationTypeContext(&(mFontSetMetadata[static_cast<size_t>(GameFontSet::FontKind::Font1)]));
 
         // Physics probe reading
         mTextNotificationTypeContexts[static_cast<size_t>(TextNotificationType::PhysicsProbeReading)] =
-            TextNotificationTypeContext(&(mFontTextureAtlasMetadata[static_cast<size_t>(FontType::Font2)]));
+            TextNotificationTypeContext(&(mFontSetMetadata[static_cast<size_t>(GameFontSet::FontKind::SevenSegments)]));
     }
 
     //
@@ -236,8 +160,8 @@ NotificationRenderContext::NotificationRenderContext(
 
     {
         // Set texture parameters
-        mShaderManager.ActivateProgram<ProgramType::TextureNotifications>();
-        mShaderManager.SetTextureParameters<ProgramType::TextureNotifications>();
+        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::TextureNotifications>();
+        mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::TextureNotifications>();
 
         // Initialize VAO
         glGenVertexArrays(1, &tmpGLuint);
@@ -251,10 +175,10 @@ NotificationRenderContext::NotificationRenderContext(
         static_assert(sizeof(TextureNotificationVertex) == (4 + 1) * sizeof(float));
         glBindVertexArray(*mTextureNotificationVAO);
         glBindBuffer(GL_ARRAY_BUFFER, *mTextureNotificationVBO);
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::TextureNotification1));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::TextureNotification1), 4, GL_FLOAT, GL_FALSE, (4 + 1) * sizeof(float), (void *)0);
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::TextureNotification2));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::TextureNotification2), 1, GL_FLOAT, GL_FALSE, (4 + 1) * sizeof(float), (void *)(4 * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::TextureNotification1));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::TextureNotification1), 4, GL_FLOAT, GL_FALSE, (4 + 1) * sizeof(float), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::TextureNotification2));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::TextureNotification2), 1, GL_FLOAT, GL_FALSE, (4 + 1) * sizeof(float), (void *)(4 * sizeof(float)));
         CheckOpenGLError();
         glBindVertexArray(0);
     }
@@ -276,17 +200,17 @@ NotificationRenderContext::NotificationRenderContext(
         // Describe vertex attributes
         static_assert(sizeof(PhysicsProbePanelVertex) == 7 * sizeof(float));
         glBindBuffer(GL_ARRAY_BUFFER, *mPhysicsProbePanelVBO);
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::PhysicsProbePanel1));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::PhysicsProbePanel1), 4, GL_FLOAT, GL_FALSE, sizeof(PhysicsProbePanelVertex), (void *)0);
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::PhysicsProbePanel2));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::PhysicsProbePanel2), 3, GL_FLOAT, GL_FALSE, sizeof(PhysicsProbePanelVertex), (void *)(4 * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::PhysicsProbePanel1));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::PhysicsProbePanel1), 4, GL_FLOAT, GL_FALSE, sizeof(PhysicsProbePanelVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::PhysicsProbePanel2));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::PhysicsProbePanel2), 3, GL_FLOAT, GL_FALSE, sizeof(PhysicsProbePanelVertex), (void *)(4 * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
 
         // Set texture parameters
-        mShaderManager.ActivateProgram<ProgramType::PhysicsProbePanel>();
-        mShaderManager.SetTextureParameters<ProgramType::PhysicsProbePanel>();
+        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::PhysicsProbePanel>();
+        mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::PhysicsProbePanel>();
     }
 
     //
@@ -306,10 +230,10 @@ NotificationRenderContext::NotificationRenderContext(
         // Describe vertex attributes
         static_assert(sizeof(LaserCannonVertex) == (4 + 3) * sizeof(float));
         glBindBuffer(GL_ARRAY_BUFFER, *mLaserCannonVBO);
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::GenericMipMappedTextureNdc1));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericMipMappedTextureNdc1), 4, GL_FLOAT, GL_FALSE, sizeof(LaserCannonVertex), (void *)0);
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::GenericMipMappedTextureNdc2));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericMipMappedTextureNdc2), 3, GL_FLOAT, GL_FALSE, sizeof(LaserCannonVertex), (void *)(4 * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::GenericMipMappedTextureNdc1));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::GenericMipMappedTextureNdc1), 4, GL_FLOAT, GL_FALSE, sizeof(LaserCannonVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::GenericMipMappedTextureNdc2));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::GenericMipMappedTextureNdc2), 3, GL_FLOAT, GL_FALSE, sizeof(LaserCannonVertex), (void *)(4 * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -332,17 +256,17 @@ NotificationRenderContext::NotificationRenderContext(
         // Describe vertex attributes
         static_assert(sizeof(LaserRayVertex) == (4 + 1) * sizeof(float));
         glBindBuffer(GL_ARRAY_BUFFER, *mLaserRayVBO);
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::LaserRay1));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::LaserRay1), 4, GL_FLOAT, GL_FALSE, sizeof(LaserRayVertex), (void *)0);
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::LaserRay2));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::LaserRay2), 1, GL_FLOAT, GL_FALSE, sizeof(LaserRayVertex), (void *)(4 * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::LaserRay1));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::LaserRay1), 4, GL_FLOAT, GL_FALSE, sizeof(LaserRayVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::LaserRay2));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::LaserRay2), 1, GL_FLOAT, GL_FALSE, sizeof(LaserRayVertex), (void *)(4 * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
 
         // Set texture parameters
-        mShaderManager.ActivateProgram<ProgramType::LaserRay>();
-        mShaderManager.SetTextureParameters<ProgramType::LaserRay>();
+        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::LaserRay>();
+        mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::LaserRay>();
     }
 
     //
@@ -362,19 +286,19 @@ NotificationRenderContext::NotificationRenderContext(
         // Describe vertex attributes
         static_assert(sizeof(MultiNotificationVertex) == (1 + 8) * sizeof(float));
         glBindBuffer(GL_ARRAY_BUFFER, *mMultiNotificationVBO);
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::MultiNotification1));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::MultiNotification1), 4, GL_FLOAT, GL_FALSE, sizeof(MultiNotificationVertex), (void *)0);
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::MultiNotification2));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::MultiNotification2), 4, GL_FLOAT, GL_FALSE, sizeof(MultiNotificationVertex), (void *)(4 * sizeof(float)));
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::MultiNotification3));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::MultiNotification3), 1, GL_FLOAT, GL_FALSE, sizeof(MultiNotificationVertex), (void *)(8 * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::MultiNotification1));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::MultiNotification1), 4, GL_FLOAT, GL_FALSE, sizeof(MultiNotificationVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::MultiNotification2));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::MultiNotification2), 4, GL_FLOAT, GL_FALSE, sizeof(MultiNotificationVertex), (void *)(4 * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::MultiNotification3));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::MultiNotification3), 1, GL_FLOAT, GL_FALSE, sizeof(MultiNotificationVertex), (void *)(8 * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
 
         // Set texture parameters
-        mShaderManager.ActivateProgram<ProgramType::MultiNotification>();
-        mShaderManager.SetTextureParameters<ProgramType::MultiNotification>();
+        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::MultiNotification>();
+        mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::MultiNotification>();
 
         // Prepare buffer
         mMultiNotificationVertexBuffer.reserve(6 * 4); // Arbitrary
@@ -397,12 +321,12 @@ NotificationRenderContext::NotificationRenderContext(
         // Describe vertex attributes
         static_assert(sizeof(RectSelectionVertex) == (2 + 2 + 2 + 2 + 3 + 1) * sizeof(float));
         glBindBuffer(GL_ARRAY_BUFFER, *mRectSelectionVBO);
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::RectSelection1));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::RectSelection1), 4, GL_FLOAT, GL_FALSE, sizeof(RectSelectionVertex), (void *)0);
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::RectSelection2));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::RectSelection2), 4, GL_FLOAT, GL_FALSE, sizeof(RectSelectionVertex), (void *)(4 * sizeof(float)));
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::RectSelection3));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::RectSelection3), 4, GL_FLOAT, GL_FALSE, sizeof(RectSelectionVertex), (void *)((4 + 4) * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::RectSelection1));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::RectSelection1), 4, GL_FLOAT, GL_FALSE, sizeof(RectSelectionVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::RectSelection2));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::RectSelection2), 4, GL_FLOAT, GL_FALSE, sizeof(RectSelectionVertex), (void *)(4 * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::RectSelection3));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::RectSelection3), 4, GL_FLOAT, GL_FALSE, sizeof(RectSelectionVertex), (void *)((4 + 4) * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -425,8 +349,8 @@ NotificationRenderContext::NotificationRenderContext(
         // Describe vertex attributes
         static_assert(sizeof(InteractiveToolDashedLineVertex) == (2 + 1) * sizeof(float));
         glBindBuffer(GL_ARRAY_BUFFER, *mInteractiveToolDashedLineVBO);
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::InteractiveToolDashedLine1));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::InteractiveToolDashedLine1), (2 + 1), GL_FLOAT, GL_FALSE, sizeof(InteractiveToolDashedLineVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::InteractiveToolDashedLine1));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::InteractiveToolDashedLine1), (2 + 1), GL_FLOAT, GL_FALSE, sizeof(InteractiveToolDashedLineVertex), (void *)0);
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -475,7 +399,7 @@ void NotificationRenderContext::UploadLaserCannon(
     };
 
     auto const & frameMetadata = mGenericMipMappedTextureAtlasMetadata.GetFrameMetadata(
-        TextureFrameId<GenericMipMappedTextureGroups>(GenericMipMappedTextureGroups::LaserCannon, 0));
+        TextureFrameId<GameTextureDatabases::GenericMipMappedTextureGroups>(GameTextureDatabases::GenericMipMappedTextureGroups::LaserCannon, 0));
 
     float const ambientLightSensitivity = frameMetadata.FrameMetadata.HasOwnAmbientLight ? 0.0f : 1.0f;
 
@@ -691,7 +615,7 @@ void NotificationRenderContext::RenderDraw()
     // Set gross noise in the noise texture unit, as all our shaders require that one
     //
 
-    mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture>();
+    mShaderManager.ActivateTexture<GameShaderSet::ProgramParameterKind::NoiseTexture>();
     glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(NoiseType::Gross));
 
     //
@@ -730,12 +654,12 @@ void NotificationRenderContext::ApplyViewModelChanges(RenderParameters const & r
     ViewModel::ProjectionMatrix globalOrthoMatrix;
     renderParameters.View.CalculateGlobalOrthoMatrix(ZFar, ZNear, globalOrthoMatrix);
 
-    mShaderManager.ActivateProgram<ProgramType::MultiNotification>();
-    mShaderManager.SetProgramParameter<ProgramType::MultiNotification, ProgramParameterType::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::MultiNotification>();
+    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::MultiNotification, GameShaderSet::ProgramParameterKind::OrthoMatrix>(
         globalOrthoMatrix);
 
-    mShaderManager.ActivateProgram<ProgramType::RectSelection>();
-    mShaderManager.SetProgramParameter<ProgramType::RectSelection, ProgramParameterType::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::RectSelection>();
+    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::RectSelection, GameShaderSet::ProgramParameterKind::OrthoMatrix>(
         globalOrthoMatrix);
 }
 
@@ -769,12 +693,12 @@ void NotificationRenderContext::ApplyEffectiveAmbientLightIntensityChanges(Rende
 
     float const lighteningStrength = Step(0.5f, 1.0f - renderParameters.EffectiveAmbientLightIntensity);
 
-    mShaderManager.ActivateProgram<ProgramType::Text>();
-    mShaderManager.SetProgramParameter<ProgramType::Text, ProgramParameterType::TextLighteningStrength>(
+    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::Text>();
+    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::Text, GameShaderSet::ProgramParameterKind::TextLighteningStrength>(
         lighteningStrength);
 
-    mShaderManager.ActivateProgram<ProgramType::TextureNotifications>();
-    mShaderManager.SetProgramParameter<ProgramType::TextureNotifications, ProgramParameterType::TextureLighteningStrength>(
+    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::TextureNotifications>();
+    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::TextureNotifications, GameShaderSet::ProgramParameterKind::TextureLighteningStrength>(
         lighteningStrength);
 }
 
@@ -805,11 +729,12 @@ void NotificationRenderContext::ApplyDisplayUnitsSystemChanges(RenderParameters 
         }
     }
 
-    auto const & frameMetadata = mGenericLinearTextureAtlasMetadata.GetFrameMetadata(TextureFrameId<GenericLinearTextureGroups>(GenericLinearTextureGroups::PhysicsProbePanel, frameIndex));
+    auto const & frameMetadata = mGenericLinearTextureAtlasMetadata.GetFrameMetadata(
+        TextureFrameId<GameTextureDatabases::GenericLinearTextureGroups>(GameTextureDatabases::GenericLinearTextureGroups::PhysicsProbePanel, frameIndex));
 
     // Set texture offset in program
-    mShaderManager.ActivateProgram<ProgramType::PhysicsProbePanel>();
-    mShaderManager.SetProgramParameter<ProgramType::PhysicsProbePanel, ProgramParameterType::AtlasTile1LeftBottomTextureCoordinates>(frameMetadata.TextureCoordinatesBottomLeft);
+    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::PhysicsProbePanel>();
+    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::PhysicsProbePanel, GameShaderSet::ProgramParameterKind::AtlasTile1LeftBottomTextureCoordinates>(frameMetadata.TextureCoordinatesBottomLeft);
 }
 
 void NotificationRenderContext::RenderPrepareTextNotifications()
@@ -898,14 +823,14 @@ void NotificationRenderContext::RenderDrawTextNotifications()
         mGlobalRenderContext.GetElementIndices().Bind();
 
         // Activate texture unit
-        mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
+        mShaderManager.ActivateTexture<GameShaderSet::ProgramParameterKind::SharedTexture>();
 
         // Bind font atlas texture
         glBindTexture(GL_TEXTURE_2D, *mFontAtlasTextureHandle);
         CheckOpenGLError();
 
         // Activate program
-        mShaderManager.ActivateProgram<ProgramType::Text>();
+        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::Text>();
 
         // Draw vertices
         assert(0 == (mCurrentTextQuadVertexBufferSize % 4));
@@ -959,7 +884,7 @@ void NotificationRenderContext::RenderDrawTextureNotifications()
     {
         glBindVertexArray(*mTextureNotificationVAO);
 
-        mShaderManager.ActivateProgram<ProgramType::TextureNotifications>();
+        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::TextureNotifications>();
 
         glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mTextureNotificationVertexBuffer.size()));
         CheckOpenGLError();
@@ -976,14 +901,15 @@ void NotificationRenderContext::RenderPreparePhysicsProbePanel()
         // Recalculate NDC dimensions of physics probe panel
         //
 
-        auto const & atlasFrame = mGenericLinearTextureAtlasMetadata.GetFrameMetadata(TextureFrameId<GenericLinearTextureGroups>(GenericLinearTextureGroups::PhysicsProbePanel, 0));
+        auto const & atlasFrame = mGenericLinearTextureAtlasMetadata.GetFrameMetadata(
+            TextureFrameId<GameTextureDatabases::GenericLinearTextureGroups>(GameTextureDatabases::GenericLinearTextureGroups::PhysicsProbePanel, 0));
         vec2f const physicsProbePanelNdcDimensions = vec2f(
             static_cast<float>(atlasFrame.FrameMetadata.Size.width) * mScreenToNdcX,
             static_cast<float>(atlasFrame.FrameMetadata.Size.height) * mScreenToNdcY);
 
         // Set parameters
-        mShaderManager.ActivateProgram<ProgramType::PhysicsProbePanel>();
-        mShaderManager.SetProgramParameter<ProgramType::PhysicsProbePanel, ProgramParameterType::WidthNdc>(
+        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::PhysicsProbePanel>();
+        mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::PhysicsProbePanel, GameShaderSet::ProgramParameterKind::WidthNdc>(
             physicsProbePanelNdcDimensions.x);
 
         //
@@ -1104,7 +1030,7 @@ void NotificationRenderContext::RenderDrawPhysicsProbePanel()
     {
         glBindVertexArray(*mPhysicsProbePanelVAO);
 
-        mShaderManager.ActivateProgram<ProgramType::PhysicsProbePanel>();
+        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::PhysicsProbePanel>();
 
         assert((mPhysicsProbePanelVertexBuffer.size() % 6) == 0);
         glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mPhysicsProbePanelVertexBuffer.size()));
@@ -1135,7 +1061,7 @@ void NotificationRenderContext::RenderDrawLaserCannon()
     {
         glBindVertexArray(*mLaserCannonVAO);
 
-        mShaderManager.ActivateProgram<ProgramType::GenericMipMappedTexturesNdc>();
+        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::GenericMipMappedTexturesNdc>();
 
         // Draw
         assert((mLaserCannonVertexBuffer.size() % 6) == 0);
@@ -1160,9 +1086,9 @@ void NotificationRenderContext::RenderPrepareLaserRay()
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
         // Set time parameter
-        mShaderManager.ActivateProgram<ProgramType::LaserRay>();
-        mShaderManager.SetProgramParameter<ProgramParameterType::Time>(
-            ProgramType::LaserRay,
+        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::LaserRay>();
+        mShaderManager.SetProgramParameter<GameShaderSet::ProgramParameterKind::Time>(
+            GameShaderSet::ProgramKind::LaserRay,
             GameWallClock::GetInstance().NowAsFloat());
     }
 }
@@ -1173,7 +1099,7 @@ void NotificationRenderContext::RenderDrawLaserRay()
     {
         glBindVertexArray(*mLaserRayVAO);
 
-        mShaderManager.ActivateProgram<ProgramType::LaserRay>();
+        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::LaserRay>();
 
         // Draw
         assert((mLaserRayVertexBuffer.size() % 6) == 0);
@@ -1198,9 +1124,9 @@ void NotificationRenderContext::RenderPrepareMultiNotification()
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
         // Set time parameter
-        mShaderManager.ActivateProgram<ProgramType::MultiNotification>();
-        mShaderManager.SetProgramParameter<ProgramParameterType::Time>(
-            ProgramType::MultiNotification,
+        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::MultiNotification>();
+        mShaderManager.SetProgramParameter<GameShaderSet::ProgramParameterKind::Time>(
+            GameShaderSet::ProgramKind::MultiNotification,
             GameWallClock::GetInstance().ContinuousNowAsFloat());
     }
 }
@@ -1211,7 +1137,7 @@ void NotificationRenderContext::RenderDrawMultiNotification()
     {
         glBindVertexArray(*mMultiNotificationVAO);
 
-        mShaderManager.ActivateProgram<ProgramType::MultiNotification>();
+        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::MultiNotification>();
 
         bool doResetBlending = false;
         if (mMultiNotificationVertexBuffer[0].vertexKind == static_cast<float>(MultiNotificationVertex::VertexKindType::BlastToolHalo)
@@ -1261,7 +1187,7 @@ void NotificationRenderContext::RenderDrawRectSelection()
     {
         glBindVertexArray(*mRectSelectionVAO);
 
-        mShaderManager.ActivateProgram<ProgramType::RectSelection>();
+        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::RectSelection>();
 
         // Draw
         assert((mRectSelectionVertexBuffer.size() % 6) == 0);
@@ -1295,7 +1221,7 @@ void NotificationRenderContext::RenderDrawInteractiveToolDashedLines()
         glBindVertexArray(*mInteractiveToolDashedLineVAO);
 
         // Activate program
-        mShaderManager.ActivateProgram<ProgramType::InteractiveToolDashedLines>();
+        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::InteractiveToolDashedLines>();
 
         // Set line width
         glLineWidth(2.0f);
@@ -1308,8 +1234,7 @@ void NotificationRenderContext::RenderDrawInteractiveToolDashedLines()
 
 void NotificationRenderContext::GenerateTextVertices(TextNotificationTypeContext & context) const
 {
-    FontTextureAtlasMetadata const & fontTextureAtlasMetadata = *(context.NotificationFontTextureAtlasMetadata);
-    FontMetadata const & fontMetadata = fontTextureAtlasMetadata.OriginalFontMetadata;
+    FontMetadata const & fontMetadata = *(context.NotificationFontMetadata);
 
     //
     // Reset quad vertices
@@ -1336,8 +1261,8 @@ void NotificationRenderContext::GenerateTextVertices(TextNotificationTypeContext
         //
 
         vec2f linePositionNdc( // Top-left of quads; start with line's offset
-            textLine.ScreenOffset.x * static_cast<float>(fontMetadata.GetCellScreenWidth()) * mScreenToNdcX,
-            -textLine.ScreenOffset.y * static_cast<float>(fontMetadata.GetCellScreenHeight()) * mScreenToNdcY);
+            textLine.ScreenOffset.x * static_cast<float>(fontMetadata.CellSize.width) * mScreenToNdcX,
+            -textLine.ScreenOffset.y * static_cast<float>(fontMetadata.CellSize.height) * mScreenToNdcY);
 
         switch (textLine.Anchor)
         {
@@ -1345,7 +1270,7 @@ void NotificationRenderContext::GenerateTextVertices(TextNotificationTypeContext
             {
                 linePositionNdc += vec2f(
                     -1.f + MarginScreen * mScreenToNdcX,
-                    -1.f + (MarginScreen + static_cast<float>(fontMetadata.GetCellScreenHeight())) * mScreenToNdcY);
+                    -1.f + (MarginScreen + static_cast<float>(fontMetadata.CellSize.height)) * mScreenToNdcY);
 
                 break;
             }
@@ -1449,13 +1374,17 @@ void NotificationRenderContext::GenerateTextVertices(TextNotificationTypeContext
         {
             unsigned char const ch = static_cast<unsigned char>(_ch);
 
-            float const glyphWidthNdc = static_cast<float>(fontTextureAtlasMetadata.OriginalFontMetadata.GetGlyphScreenWidth(ch)) * mScreenToNdcX;
-            float const glyphHeightNdc = static_cast<float>(fontTextureAtlasMetadata.OriginalFontMetadata.GetGlyphScreenHeight(ch)) * mScreenToNdcY;
+            float const glyphWidthNdc = static_cast<float>(fontMetadata.GlyphWidths[ch]) * mScreenToNdcX;
+            float const glyphHeightNdc = static_cast<float>(fontMetadata.CellSize.height) * mScreenToNdcY;
 
-            float const textureULeft = fontTextureAtlasMetadata.GlyphTextureAtlasBottomLefts[ch].x;
-            float const textureURight = fontTextureAtlasMetadata.GlyphTextureAtlasTopRights[ch].x;
-            float const textureVBottom = fontTextureAtlasMetadata.GlyphTextureAtlasBottomLefts[ch].y;
-            float const textureVTop = fontTextureAtlasMetadata.GlyphTextureAtlasTopRights[ch].y;
+            // TODOHERE: use getter @ FontSet
+            unsigned char const tch = (ch < fontMetadata.BaseTextureCharacter)
+                ? '?' - fontMetadata.BaseTextureCharacter
+                : ch - fontMetadata.BaseTextureCharacter;
+            float const textureULeft = fontMetadata.GlyphTextureAtlasBottomLefts[tch].x;
+            float const textureURight = fontMetadata.GlyphTextureAtlasTopRights[tch].x;
+            float const textureVBottom = fontMetadata.GlyphTextureAtlasBottomLefts[tch].y;
+            float const textureVTop = fontMetadata.GlyphTextureAtlasTopRights[tch].y;
 
             // Top-left
             vertices.emplace_back(
@@ -1504,7 +1433,7 @@ void NotificationRenderContext::GenerateTextureNotificationVertices()
         // Populate the texture quad
         //
 
-        TextureAtlasFrameMetadata<GenericLinearTextureGroups> const & frame =
+        TextureAtlasFrameMetadata<GameTextureDatabases::GenericLinearTextureDatabase> const & frame =
             mGenericLinearTextureAtlasMetadata.GetFrameMetadata(textureNotification.FrameId);
 
         ImageSize const & frameSize = frame.FrameMetadata.Size;
@@ -1604,6 +1533,4 @@ void NotificationRenderContext::GenerateTextureNotificationVertices()
             vec2f(frame.TextureCoordinatesTopRight.x, frame.TextureCoordinatesBottomLeft.y),
             textureNotification.Alpha);
     }
-}
-
 }

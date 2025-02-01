@@ -59,8 +59,10 @@ struct FontMetadata final
     char const BaseTextureCharacter;
     ImageSize const CellSize; // Screen coordinates, i.e. pixels
     std::array<std::uint8_t, 256> const GlyphWidths; // For each possible ASCII character, not only the ones in texture
+    // TODO: not needed
     int const GlyphsPerTextureRow;
 
+    // TODO: not needed
     FloatSize CellTextureAtlasSize; // Size of one cell of the font, in texture atlas space coordinates
     std::array<vec2f, 256> GlyphTextureAtlasBottomLefts; // Bottom-left of each glyph, in texture atlas space coordinates
     std::array<vec2f, 256> GlyphTextureAtlasTopRights; // Top-right of each glyph, in texture atlas space coordinates

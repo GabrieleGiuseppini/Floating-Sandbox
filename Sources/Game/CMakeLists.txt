@@ -7,7 +7,6 @@ set  (GAME_SOURCES
 	FileSystem.h
 	GameAssetManager.cpp
 	GameAssetManager.h
-	GameFontSet.h
 )
 
 source_group(" " FILES ${GAME_SOURCES})

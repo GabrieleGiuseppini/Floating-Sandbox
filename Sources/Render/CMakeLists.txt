@@ -3,11 +3,14 @@
 # Render library
 #
 
-set  (RENDER_SOURCES	
+set  (RENDER_SOURCES
+	GameFontSet.h
 	GameShaderSet.cpp
 	GameShaderSet.h
 	GlobalRenderContext.cpp
 	GlobalRenderContext.h
+	NotificationRenderContext.cpp
+	NotificationRenderContext.h
 	RenderDeviceProperties.h
 	RenderParameters.cpp
 	RenderParameters.h

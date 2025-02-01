@@ -5,26 +5,23 @@
 ***************************************************************************************/
 #pragma once
 
-#include "Font.h"
+#include "GameShaderSet.h"
 #include "GlobalRenderContext.h"
 #include "RenderParameters.h"
-#include "ResourceLocator.h"
-#include "ShaderTypes.h"
-#include "TextureAtlas.h"
-#include "TextureTypes.h"
 
-#include <GameOpenGL/ShaderManager.h>
+#include <OpenGLCore/ShaderManager.h>
 
-#include <GameCore/GameTypes.h>
+#include <Core/FontSet.h>
+#include <Core/GameTextureDatabases.h>
+#include <Core/GameTypes.h>
+#include <Core/IAssetManager.h>
+#include <Core/TextureAtlas.h>
 
 #include <array>
 #include <memory>
 #include <optional>
 #include <string>
 #include <vector>
-
-namespace Render
-{
 
 /*
  * This class implements the machinery for rendering UI notifications.
@@ -65,8 +62,8 @@ private:
 public:
 
 	NotificationRenderContext(
-        ResourceLocator const & resourceLocator,
-        ShaderManager<ShaderManagerTraits> & shaderManager,
+        IAssetManager const & assetManager,
+        ShaderManager<GameShaderSet::ShaderSet> & shaderManager,
 		GlobalRenderContext & globalRenderContext);
 
 public:
@@ -136,7 +133,7 @@ public:
 	}
 
 	inline void UploadTextureNotification(
-		TextureFrameId<GenericLinearTextureGroups> const & textureFrameId,
+		TextureFrameId<GameTextureDatabases::GenericLinearTextureGroups> const & textureFrameId,
 		AnchorPositionType anchor,
 		vec2f const & screenOffset, // In texture-size fraction (0.0 -> 1.0)
 		float alpha)
@@ -790,21 +787,18 @@ private:
 	{
 		switch (anchor)
 		{
-			case Render::AnchorPositionType::TopLeft:
+			case AnchorPositionType::TopLeft:
 				return NotificationAnchorPositionType::TopLeft;
-			case Render::AnchorPositionType::TopRight:
+			case AnchorPositionType::TopRight:
 				return NotificationAnchorPositionType::TopRight;
-			case Render::AnchorPositionType::BottomLeft:
+			case AnchorPositionType::BottomLeft:
 				return NotificationAnchorPositionType::BottomLeft;
-			case Render::AnchorPositionType::BottomRight:
+			case AnchorPositionType::BottomRight:
 				return NotificationAnchorPositionType::BottomRight;
 		}
 
 		return NotificationAnchorPositionType::BottomLeft;
 	}
-
-	struct FontTextureAtlasMetadata;
-	struct TextNotificationTypeContext;
 
 	inline void UploadTextStart(TextNotificationType textNotificationType)
 	{
@@ -819,6 +813,8 @@ private:
 		textContext.AreTextLinesDirty = true;
 	}
 
+	struct TextNotificationTypeContext;
+
 	void GenerateTextVertices(TextNotificationTypeContext & context) const;
 
 	void GenerateTextureNotificationVertices();
@@ -827,7 +823,7 @@ private:
 
 	GlobalRenderContext & mGlobalRenderContext;
 
-    ShaderManager<ShaderManagerTraits> & mShaderManager;
+    ShaderManager<GameShaderSet::ShaderSet> & mShaderManager;
 
     float mScreenToNdcX;
     float mScreenToNdcY;
@@ -1106,37 +1102,39 @@ private:
 	// Textures
 	//
 
-	TextureAtlasMetadata<GenericLinearTextureGroups> const & mGenericLinearTextureAtlasMetadata;
-	TextureAtlasMetadata<GenericMipMappedTextureGroups> const & mGenericMipMappedTextureAtlasMetadata;
+	TextureAtlasMetadata<GameTextureDatabases::GenericLinearTextureDatabase> const & mGenericLinearTextureAtlasMetadata;
+	TextureAtlasMetadata<GameTextureDatabases::GenericMipMappedTextureDatabase> const & mGenericMipMappedTextureAtlasMetadata;
 
     //
     // Text notifications
     //
 
 	/*
-	 * Metadata for each font in the single font atlas.
+	 * Describes a vertex of a text quad, with all the information necessary to the shader.
 	 */
-	struct FontTextureAtlasMetadata
+	#pragma pack(push, 1)
+	struct TextQuadVertex
 	{
-		vec2f CellTextureAtlasSize; // Size of one cell of the font, in texture atlas space coordinates
-		std::array<vec2f, 256> GlyphTextureAtlasBottomLefts; // Bottom-left of each glyph, in texture atlas space coordinates
-		std::array<vec2f, 256> GlyphTextureAtlasTopRights; // Top-right of each glyph, in texture atlas space coordinates
-		FontMetadata OriginalFontMetadata;
+		float positionNdcX;
+		float positionNdcY;
+		float textureCoordinateX;
+		float textureCoordinateY;
+		float alpha;
 
-		FontTextureAtlasMetadata(
-			vec2f cellTextureAtlasSize,
-			std::array<vec2f, 256> glyphTextureAtlasBottomLefts,
-			std::array<vec2f, 256> glyphTextureAtlasTopRights,
-			FontMetadata originalFontMetadata)
-			: CellTextureAtlasSize(cellTextureAtlasSize)
-			, GlyphTextureAtlasBottomLefts(std::move(glyphTextureAtlasBottomLefts))
-			, GlyphTextureAtlasTopRights(std::move(glyphTextureAtlasTopRights))
-			, OriginalFontMetadata(originalFontMetadata)
+		TextQuadVertex(
+			float _positionNdcX,
+			float _positionNdcY,
+			float _textureCoordinateX,
+			float _textureCoordinateY,
+			float _alpha)
+			: positionNdcX(_positionNdcX)
+			, positionNdcY(_positionNdcY)
+			, textureCoordinateX(_textureCoordinateX)
+			, textureCoordinateY(_textureCoordinateY)
+			, alpha(_alpha)
 		{}
-
 	};
-
-	std::vector<FontTextureAtlasMetadata> mFontTextureAtlasMetadata; // This vector is storage, allowing for N:1 between contextes and fonts
+	#pragma pack(pop)
 
 	/*
 	 * State per-line-of-text.
@@ -1165,21 +1163,21 @@ private:
 	 */
 	struct TextNotificationTypeContext
 	{
-		FontTextureAtlasMetadata const * NotificationFontTextureAtlasMetadata; // The metadata of the font to be used for this notification type
+		FontMetadata const * NotificationFontMetadata; // The metadata of the font to be used for this notification type
 
 		std::vector<TextLine> TextLines;
 		bool AreTextLinesDirty; // When dirty, we'll re-build the quads for this notification type
 		std::vector<TextQuadVertex> TextQuadVertexBuffer;
 
-		explicit TextNotificationTypeContext(FontTextureAtlasMetadata const * notificationFontTextureAtlasMetadata)
-			: NotificationFontTextureAtlasMetadata(notificationFontTextureAtlasMetadata)
+		explicit TextNotificationTypeContext(FontMetadata const * notificationFontMetadata)
+			: NotificationFontMetadata(notificationFontMetadata)
 			, TextLines()
 			, AreTextLinesDirty(false)
 			, TextQuadVertexBuffer()
 		{}
 
 		TextNotificationTypeContext() // Just to allow array
-			: NotificationFontTextureAtlasMetadata(nullptr)
+			: NotificationFontMetadata(nullptr)
 			, TextLines()
 			, AreTextLinesDirty(false)
 			, TextQuadVertexBuffer()
@@ -1194,6 +1192,7 @@ private:
 	GameOpenGLVBO mTextVBO;
 
 	// Fonts
+	std::vector<FontMetadata> mFontSetMetadata; // Storage for TextNotificationTypeContext
 	GameOpenGLTexture mFontAtlasTextureHandle;
 
 	//
@@ -1202,13 +1201,13 @@ private:
 
 	struct TextureNotification
 	{
-		TextureFrameId<GenericLinearTextureGroups> FrameId;
+		TextureFrameId<GameTextureDatabases::GenericLinearTextureGroups> FrameId;
 		AnchorPositionType Anchor;
 		vec2f ScreenOffset; // In texture-size fraction (0.0 -> 1.0)
 		float Alpha;
 
 		TextureNotification(
-			TextureFrameId<GenericLinearTextureGroups> const & frameId,
+			TextureFrameId<GameTextureDatabases::GenericLinearTextureGroups> const & frameId,
 			AnchorPositionType anchor,
 			vec2f const & screenOffset,
 			float alpha)
@@ -1274,5 +1273,3 @@ private:
 	std::vector<InteractiveToolDashedLineVertex> mInteractiveToolDashedLineVertexBuffer;
 	GameOpenGLVBO mInteractiveToolDashedLineVBO;
 };
-
-}
