@@ -55,31 +55,18 @@ struct BffFont final
  */
 struct FontMetadata final
 {
-    // TODO: see if all still needed
-    char const BaseTextureCharacter;
     ImageSize const CellSize; // Screen coordinates, i.e. pixels
-    std::array<std::uint8_t, 256> const GlyphWidths; // For each possible ASCII character, not only the ones in texture
-    // TODO: not needed
-    int const GlyphsPerTextureRow;
-
-    // TODO: not needed
-    FloatSize CellTextureAtlasSize; // Size of one cell of the font, in texture atlas space coordinates
+    std::array<std::uint8_t, 256> const GlyphWidths; // For each possible ASCII character, not only the ones in texture; in screen coordinates
     std::array<vec2f, 256> GlyphTextureAtlasBottomLefts; // Bottom-left of each glyph, in texture atlas space coordinates
     std::array<vec2f, 256> GlyphTextureAtlasTopRights; // Top-right of each glyph, in texture atlas space coordinates
 
     FontMetadata(
-        char baseTextureCharacter,
         ImageSize const & cellSize,
         std::array<std::uint8_t, 256> const & glyphWidths,
-        int glyphsPerTextureRow,
-        FloatSize const & cellTextureAtlasSize,
         std::array<vec2f, 256> const & glyphTextureAtlasBottomLefts,
         std::array<vec2f, 256> const & glyphTextureAtlasTopRights)
-        : BaseTextureCharacter(baseTextureCharacter)
-        , CellSize(cellSize)
+        : CellSize(cellSize)
         , GlyphWidths(glyphWidths)
-        , GlyphsPerTextureRow(glyphsPerTextureRow)
-        , CellTextureAtlasSize(cellTextureAtlasSize)
         , GlyphTextureAtlasBottomLefts(glyphTextureAtlasBottomLefts)
         , GlyphTextureAtlasTopRights(glyphTextureAtlasTopRights)
     {}

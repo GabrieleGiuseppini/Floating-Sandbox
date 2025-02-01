@@ -1,6 +1,6 @@
 #include <Core/FontSet.h>
 
-#include <Game/GameFontSet.h>
+#include <Render/GameFontSet.h>
 
 #include "gtest/gtest.h"
 
@@ -49,11 +49,8 @@ TEST(FontSetTests, Load)
 
 	ASSERT_EQ(fontSet.Metadata.size(), 3);
 
-	EXPECT_EQ(fontSet.Metadata[0].BaseTextureCharacter, ' ');
 	EXPECT_EQ(fontSet.Metadata[0].CellSize.width, 32);
 	EXPECT_EQ(fontSet.Metadata[0].CellSize.height, 20);
-	EXPECT_EQ(fontSet.Metadata[0].CellTextureAtlasSize.width, 32.0f / ExpectedAtlasSize.width);
-	EXPECT_EQ(fontSet.Metadata[0].CellTextureAtlasSize.height, 20.0f / ExpectedAtlasSize.height);
 
 	float const dx = 0.5f / ExpectedAtlasSize.width;
 

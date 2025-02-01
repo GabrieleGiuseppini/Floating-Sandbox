@@ -1377,14 +1377,10 @@ void NotificationRenderContext::GenerateTextVertices(TextNotificationTypeContext
             float const glyphWidthNdc = static_cast<float>(fontMetadata.GlyphWidths[ch]) * mScreenToNdcX;
             float const glyphHeightNdc = static_cast<float>(fontMetadata.CellSize.height) * mScreenToNdcY;
 
-            // TODOHERE: use getter @ FontSet
-            unsigned char const tch = (ch < fontMetadata.BaseTextureCharacter)
-                ? '?' - fontMetadata.BaseTextureCharacter
-                : ch - fontMetadata.BaseTextureCharacter;
-            float const textureULeft = fontMetadata.GlyphTextureAtlasBottomLefts[tch].x;
-            float const textureURight = fontMetadata.GlyphTextureAtlasTopRights[tch].x;
-            float const textureVBottom = fontMetadata.GlyphTextureAtlasBottomLefts[tch].y;
-            float const textureVTop = fontMetadata.GlyphTextureAtlasTopRights[tch].y;
+            float const textureULeft = fontMetadata.GlyphTextureAtlasBottomLefts[ch].x;
+            float const textureURight = fontMetadata.GlyphTextureAtlasTopRights[ch].x;
+            float const textureVBottom = fontMetadata.GlyphTextureAtlasBottomLefts[ch].y;
+            float const textureVTop = fontMetadata.GlyphTextureAtlasTopRights[ch].y;
 
             // Top-left
             vertices.emplace_back(

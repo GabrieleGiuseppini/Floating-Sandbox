@@ -240,11 +240,8 @@ FontSet<TFontSet> FontSet<TFontSet>::InternalLoad(std::vector<BffFont> && bffFon
 
         // Store
         fontMetadata.emplace_back(
-            bffFonts[f].BaseTextureCharacter,
             bffFonts[f].CellSize,
             bffFonts[f].GlyphWidths,
-            bffFonts[f].GlyphsPerTextureRow,
-            FloatSize(fontCellWidthAtlasTextureSpace, fontCellHeightAtlasTextureSpace),
             GlyphTextureBottomLefts,
             GlyphTextureTopRights);
     }
