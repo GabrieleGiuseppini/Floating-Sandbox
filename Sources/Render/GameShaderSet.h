@@ -10,10 +10,6 @@
 
 namespace GameShaderSet {
 
-//
-// Shaders
-//
-
 enum class ProgramKind
 {
     AABBs = 0,

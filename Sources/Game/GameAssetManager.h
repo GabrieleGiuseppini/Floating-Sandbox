@@ -25,19 +25,19 @@ public:
 	// IAssetManager
 	//
 
-	picojson::value LoadTetureDatabaseSpecification(std::string const & databaseName) override;
-	ImageSize GetTextureDatabaseFrameSize(std::string const & databaseName, std::string const & frameRelativePath) override;
-	RgbaImageData LoadTextureDatabaseFrameRGBA(std::string const & databaseName, std::string const & frameRelativePath) override;
-	std::vector<AssetDescriptor> EnumerateTextureDatabaseFrames(std::string const & databaseName) override;
+	picojson::value LoadTetureDatabaseSpecification(std::string const & databaseName) const override;
+	ImageSize GetTextureDatabaseFrameSize(std::string const & databaseName, std::string const & frameRelativePath) const override;
+	RgbaImageData LoadTextureDatabaseFrameRGBA(std::string const & databaseName, std::string const & frameRelativePath) const override;
+	std::vector<AssetDescriptor> EnumerateTextureDatabaseFrames(std::string const & databaseName) const override;
 
-	picojson::value LoadTetureAtlasSpecification(std::string const & textureDatabaseName) override;
-	RgbaImageData LoadTextureAtlasImageRGBA(std::string const & textureDatabaseName) override;
+	picojson::value LoadTetureAtlasSpecification(std::string const & textureDatabaseName) const override;
+	RgbaImageData LoadTextureAtlasImageRGBA(std::string const & textureDatabaseName) const override;
 
-	std::vector<AssetDescriptor> EnumerateShaders(std::string const & shaderSetName) override;
-	std::string LoadShader(std::string const & shaderSetName, std::string const & shaderRelativePath) override;
+	std::vector<AssetDescriptor> EnumerateShaders(std::string const & shaderSetName) const override;
+	std::string LoadShader(std::string const & shaderSetName, std::string const & shaderRelativePath) const override;
 
-	std::vector<AssetDescriptor> EnumerateFonts(std::string const & fontSetName) override;
-	Buffer<std::uint8_t> LoadFont(std::string const & fontSetName, std::string const & fontRelativePath) override;
+	std::vector<AssetDescriptor> EnumerateFonts(std::string const & fontSetName) const override;
+	Buffer<std::uint8_t> LoadFont(std::string const & fontSetName, std::string const & fontRelativePath) const override;
 
 	//
 	// Platform-specific

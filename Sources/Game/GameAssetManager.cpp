@@ -25,22 +25,22 @@ GameAssetManager::GameAssetManager(std::filesystem::path const & textureRoot)
 {
 }
 
-picojson::value GameAssetManager::LoadTetureDatabaseSpecification(std::string const & databaseName)
+picojson::value GameAssetManager::LoadTetureDatabaseSpecification(std::string const & databaseName) const
 {
     return LoadJson(mTextureRoot / databaseName / "database.json");
 }
 
-ImageSize GameAssetManager::GetTextureDatabaseFrameSize(std::string const & databaseName, std::string const & frameRelativePath)
+ImageSize GameAssetManager::GetTextureDatabaseFrameSize(std::string const & databaseName, std::string const & frameRelativePath) const
 {
     return GetImageSize(mTextureRoot / databaseName / frameRelativePath);
 }
 
-RgbaImageData GameAssetManager::LoadTextureDatabaseFrameRGBA(std::string const & databaseName, std::string const & frameRelativePath)
+RgbaImageData GameAssetManager::LoadTextureDatabaseFrameRGBA(std::string const & databaseName, std::string const & frameRelativePath) const
 {
     return LoadPngImageRgba(mTextureRoot / databaseName / frameRelativePath);
 }
 
-std::vector<IAssetManager::AssetDescriptor> GameAssetManager::EnumerateTextureDatabaseFrames(std::string const & databaseName)
+std::vector<IAssetManager::AssetDescriptor> GameAssetManager::EnumerateTextureDatabaseFrames(std::string const & databaseName) const
 {
     std::vector<AssetDescriptor> frameDescriptors;
 
@@ -70,17 +70,17 @@ std::vector<IAssetManager::AssetDescriptor> GameAssetManager::EnumerateTextureDa
     return frameDescriptors;
 }
 
-picojson::value GameAssetManager::LoadTetureAtlasSpecification(std::string const & textureDatabaseName)
+picojson::value GameAssetManager::LoadTetureAtlasSpecification(std::string const & textureDatabaseName) const
 {
     return LoadJson(mTextureRoot / "Atlases" / MakeAtlasSpecificationFilename(textureDatabaseName));
 }
 
-RgbaImageData GameAssetManager::LoadTextureAtlasImageRGBA(std::string const & textureDatabaseName)
+RgbaImageData GameAssetManager::LoadTextureAtlasImageRGBA(std::string const & textureDatabaseName) const
 {
     return LoadPngImageRgba(mTextureRoot / "Atlases" / MakeAtlasImageFilename(textureDatabaseName));
 }
 
-std::vector<IAssetManager::AssetDescriptor> GameAssetManager::EnumerateShaders(std::string const & shaderSetName)
+std::vector<IAssetManager::AssetDescriptor> GameAssetManager::EnumerateShaders(std::string const & shaderSetName) const
 {
     std::vector<AssetDescriptor> shaderDescriptors;
 
@@ -108,12 +108,12 @@ std::vector<IAssetManager::AssetDescriptor> GameAssetManager::EnumerateShaders(s
     return shaderDescriptors;
 }
 
-std::string GameAssetManager::LoadShader(std::string const & shaderSetName, std::string const & shaderRelativePath)
+std::string GameAssetManager::LoadShader(std::string const & shaderSetName, std::string const & shaderRelativePath) const
 {
     return FileSystem::LoadTextFile(mShaderRoot / shaderSetName / shaderRelativePath);
 }
 
-std::vector<IAssetManager::AssetDescriptor> GameAssetManager::EnumerateFonts(std::string const & fontSetName)
+std::vector<IAssetManager::AssetDescriptor> GameAssetManager::EnumerateFonts(std::string const & fontSetName) const
 {
     std::vector<AssetDescriptor> fontDescriptors;
 
@@ -134,7 +134,7 @@ std::vector<IAssetManager::AssetDescriptor> GameAssetManager::EnumerateFonts(std
     return fontDescriptors;
 }
 
-Buffer<std::uint8_t> GameAssetManager::LoadFont(std::string const & fontSetName, std::string const & fontRelativePath)
+Buffer<std::uint8_t> GameAssetManager::LoadFont(std::string const & fontSetName, std::string const & fontRelativePath) const
 {
     return FileSystem::LoadBinaryFile(mDataRoot / "Fonts" / fontSetName / fontRelativePath);
 }

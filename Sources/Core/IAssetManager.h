@@ -37,20 +37,20 @@ public:
 	};
 
 	// Texture databases
-	virtual picojson::value LoadTetureDatabaseSpecification(std::string const & databaseName) = 0;
-	virtual ImageSize GetTextureDatabaseFrameSize(std::string const & databaseName, std::string const & frameRelativePath) = 0;
-	virtual RgbaImageData LoadTextureDatabaseFrameRGBA(std::string const & databaseName, std::string const & frameRelativePath) = 0;
-	virtual std::vector<AssetDescriptor> EnumerateTextureDatabaseFrames(std::string const & databaseName) = 0;
+	virtual picojson::value LoadTetureDatabaseSpecification(std::string const & databaseName) const = 0;
+	virtual ImageSize GetTextureDatabaseFrameSize(std::string const & databaseName, std::string const & frameRelativePath) const = 0;
+	virtual RgbaImageData LoadTextureDatabaseFrameRGBA(std::string const & databaseName, std::string const & frameRelativePath) const = 0;
+	virtual std::vector<AssetDescriptor> EnumerateTextureDatabaseFrames(std::string const & databaseName) const = 0;
 
 	// Texture atlases
-	virtual picojson::value LoadTetureAtlasSpecification(std::string const & textureDatabaseName) = 0;
-	virtual RgbaImageData LoadTextureAtlasImageRGBA(std::string const & textureDatabaseName) = 0;
+	virtual picojson::value LoadTetureAtlasSpecification(std::string const & textureDatabaseName) const = 0;
+	virtual RgbaImageData LoadTextureAtlasImageRGBA(std::string const & textureDatabaseName) const = 0;
 
 	// Shaders
-	virtual std::vector<AssetDescriptor> EnumerateShaders(std::string const & shaderSetName) = 0;
-	virtual std::string LoadShader(std::string const & shaderSetName, std::string const & shaderRelativePath) = 0;
+	virtual std::vector<AssetDescriptor> EnumerateShaders(std::string const & shaderSetName) const = 0;
+	virtual std::string LoadShader(std::string const & shaderSetName, std::string const & shaderRelativePath) const = 0;
 
 	// Fonts
-	virtual std::vector<AssetDescriptor> EnumerateFonts(std::string const & fontSetName) = 0;
-	virtual Buffer<std::uint8_t> LoadFont(std::string const & fontSetName, std::string const & fontRelativePath) = 0;
+	virtual std::vector<AssetDescriptor> EnumerateFonts(std::string const & fontSetName) const = 0;
+	virtual Buffer<std::uint8_t> LoadFont(std::string const & fontSetName, std::string const & fontRelativePath) const = 0;
 };

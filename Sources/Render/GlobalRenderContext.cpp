@@ -5,13 +5,10 @@
 ***************************************************************************************/
 #include "GlobalRenderContext.h"
 
-#include "TextureDatabase.h"
+#include <Core/Noise.h>
+#include <Core/TextureDatabase.h>
 
-#include <GameCore/Noise.h>
-
-namespace Render {
-
-GlobalRenderContext::GlobalRenderContext(ShaderManager<ShaderManagerTraits> & shaderManager)
+GlobalRenderContext::GlobalRenderContext(ShaderManager<GameShaderSet::ShaderSet> & shaderManager)
     : mShaderManager(shaderManager)
     , mElementIndices(TriangleQuadElementArrayVBO::Create())
     // Textures
@@ -31,24 +28,25 @@ GlobalRenderContext::GlobalRenderContext(ShaderManager<ShaderManagerTraits> & sh
 GlobalRenderContext::~GlobalRenderContext()
 {}
 
-void GlobalRenderContext::InitializeNoiseTextures(ResourceLocator const & resourceLocator)
+void GlobalRenderContext::InitializeNoiseTextures(IAssetManager const & assetManager)
 {
     //
     // Load noise texture database
     //
 
-    auto noiseTextureDatabase = TextureDatabase<Render::NoiseTextureDatabaseTraits>::Load(
-        resourceLocator.GetTexturesRootFolderPath());
+    auto noiseTextureDatabase = TextureDatabase<GameTextureDatabases::NoiseTextureDatabase>::Load(assetManager);
 
     //
     // Load noise frames
     //
 
-    mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture>();
+    mShaderManager.ActivateTexture<GameShaderSet::ProgramParameterKind::NoiseTexture>();
 
     mUploadedNoiseTexturesManager.UploadFrame(
         NoiseType::Gross,
-        noiseTextureDatabase.GetGroup(NoiseTextureGroups::Noise).GetFrameSpecification(static_cast<TextureFrameIndex>(NoiseType::Gross)).LoadFrame().TextureData,
+        noiseTextureDatabase.GetGroup(GameTextureDatabases::NoiseTextureGroups::Noise)
+            .GetFrameSpecification(static_cast<TextureFrameIndex>(NoiseType::Gross))
+            .LoadFrame(assetManager).TextureData,
         GL_RGBA,
         GL_RGBA,
         GL_UNSIGNED_BYTE,
@@ -56,7 +54,9 @@ void GlobalRenderContext::InitializeNoiseTextures(ResourceLocator const & resour
 
     mUploadedNoiseTexturesManager.UploadFrame(
         NoiseType::Fine,
-        noiseTextureDatabase.GetGroup(NoiseTextureGroups::Noise).GetFrameSpecification(static_cast<TextureFrameIndex>(NoiseType::Fine)).LoadFrame().TextureData,
+        noiseTextureDatabase.GetGroup(GameTextureDatabases::NoiseTextureGroups::Noise)
+            .GetFrameSpecification(static_cast<TextureFrameIndex>(NoiseType::Fine))
+            .LoadFrame(assetManager).TextureData,
         GL_RGBA,
         GL_RGBA,
         GL_UNSIGNED_BYTE,
@@ -67,26 +67,26 @@ void GlobalRenderContext::InitializeNoiseTextures(ResourceLocator const & resour
     RegeneratePerlin_8_1024_073_Noise(); // Will upload at firstRenderPrepare
 }
 
-void GlobalRenderContext::InitializeGenericTextures(ResourceLocator const & resourceLocator)
+void GlobalRenderContext::InitializeGenericTextures(IAssetManager const & assetManager)
 {
     //
     // Create generic linear texture atlas
     //
 
     // Load texture database
-    auto genericLinearTextureDatabase = TextureDatabase<Render::GenericLinearTextureTextureDatabaseTraits>::Load(
-        resourceLocator.GetTexturesRootFolderPath());
+    auto genericLinearTextureDatabase = TextureDatabase<GameTextureDatabases::GenericLinearTextureDatabase>::Load(assetManager);
 
     // Create atlas
-    auto genericLinearTextureAtlas = TextureAtlasBuilder<GenericLinearTextureGroups>::BuildAtlas(
+    auto genericLinearTextureAtlas = TextureAtlasBuilder<GameTextureDatabases::GenericLinearTextureDatabase>::BuildAtlas(
         genericLinearTextureDatabase,
-        AtlasOptions::None,
+        TextureAtlasOptions::None,
+        assetManager,
         [](float, ProgressMessageType) {});
 
-    LogMessage("Generic linear texture atlas size: ", genericLinearTextureAtlas.AtlasData.Size.ToString());
+    LogMessage("Generic linear texture atlas size: ", genericLinearTextureAtlas.Image.Size.ToString());
 
     // Activate texture
-    mShaderManager.ActivateTexture<ProgramParameterType::GenericLinearTexturesAtlasTexture>();
+    mShaderManager.ActivateTexture<GameShaderSet::ProgramParameterKind::GenericLinearTexturesAtlasTexture>();
 
     // Create texture OpenGL handle
     GLuint tmpGLuint;
@@ -98,7 +98,7 @@ void GlobalRenderContext::InitializeGenericTextures(ResourceLocator const & reso
     CheckOpenGLError();
 
     // Upload atlas texture
-    GameOpenGL::UploadTexture(std::move(genericLinearTextureAtlas.AtlasData));
+    GameOpenGL::UploadTexture(std::move(genericLinearTextureAtlas.Image));
 
     // Set repeat mode
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -111,14 +111,14 @@ void GlobalRenderContext::InitializeGenericTextures(ResourceLocator const & reso
     CheckOpenGLError();
 
     // Store metadata
-    mGenericLinearTextureAtlasMetadata = std::make_unique<TextureAtlasMetadata<GenericLinearTextureGroups>>(
+    mGenericLinearTextureAtlasMetadata = std::make_unique<TextureAtlasMetadata<GameTextureDatabases::GenericLinearTextureDatabase>>(
         genericLinearTextureAtlas.Metadata);
 
     //
     // Flames
     //
 
-    auto const & fireAtlasFrameMetadata = mGenericLinearTextureAtlasMetadata->GetFrameMetadata(GenericLinearTextureGroups::Fire, 0);
+    auto const & fireAtlasFrameMetadata = mGenericLinearTextureAtlasMetadata->GetFrameMetadata(GameTextureDatabases::GenericLinearTextureGroups::Fire, 0);
 
     vec2f const atlasPixelDx = vec2f(
         1.0f / static_cast<float>(mGenericLinearTextureAtlasMetadata->GetSize().width),
@@ -127,22 +127,22 @@ void GlobalRenderContext::InitializeGenericTextures(ResourceLocator const & reso
     // Note: the below might not be perfect, as TextureCoordinatesBottomLeft includes dx, but TextureSpaceWidth/Height do not
 
     // Set FlamesBackground shader parameters
-    mShaderManager.ActivateProgram<ProgramType::ShipFlamesBackground>();
-    mShaderManager.SetTextureParameters<ProgramType::ShipFlamesBackground>();
+    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipFlamesBackground>();
+    mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::ShipFlamesBackground>();
     // Atlas tile coords, inclusive of extra pixel (for workaround to GL_LINEAR in atlas)
-    mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground, ProgramParameterType::AtlasTile1LeftBottomTextureCoordinates>(
+    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipFlamesBackground, GameShaderSet::ProgramParameterKind::AtlasTile1LeftBottomTextureCoordinates>(
         fireAtlasFrameMetadata.TextureCoordinatesBottomLeft + atlasPixelDx);
-    mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground, ProgramParameterType::AtlasTile1Size>(
+    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipFlamesBackground, GameShaderSet::ProgramParameterKind::AtlasTile1Size>(
         fireAtlasFrameMetadata.TextureSpaceWidth - atlasPixelDx.x * 2.0f,
         fireAtlasFrameMetadata.TextureSpaceHeight - atlasPixelDx.y * 2.0f);
 
     // Set FlamesForeground shader parameters
-    mShaderManager.ActivateProgram<ProgramType::ShipFlamesForeground>();
-    mShaderManager.SetTextureParameters<ProgramType::ShipFlamesForeground>();
+    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipFlamesForeground>();
+    mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::ShipFlamesForeground>();
     // Atlas tile coords, inclusive of extra pixel (for workaround to GL_LINEAR in atlas)
-    mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground, ProgramParameterType::AtlasTile1LeftBottomTextureCoordinates>(
+    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipFlamesForeground, GameShaderSet::ProgramParameterKind::AtlasTile1LeftBottomTextureCoordinates>(
         fireAtlasFrameMetadata.TextureCoordinatesBottomLeft + atlasPixelDx);
-    mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground, ProgramParameterType::AtlasTile1Size>(
+    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipFlamesForeground, GameShaderSet::ProgramParameterKind::AtlasTile1Size>(
         fireAtlasFrameMetadata.TextureSpaceWidth - atlasPixelDx.x * 2.0f,
         fireAtlasFrameMetadata.TextureSpaceHeight - atlasPixelDx.y * 2.0f);
 
@@ -151,19 +151,19 @@ void GlobalRenderContext::InitializeGenericTextures(ResourceLocator const & reso
     //
 
     // Load texture database
-    auto genericMipMappedTextureDatabase = TextureDatabase<Render::GenericMipMappedTextureTextureDatabaseTraits>::Load(
-        resourceLocator.GetTexturesRootFolderPath());
+    auto genericMipMappedTextureDatabase = TextureDatabase<GameTextureDatabases::GenericMipMappedTextureDatabase>::Load(assetManager);
 
     // Create atlas
-    auto genericMipMappedTextureAtlas = TextureAtlasBuilder<GenericMipMappedTextureGroups>::BuildAtlas(
+    auto genericMipMappedTextureAtlas = TextureAtlasBuilder<GameTextureDatabases::GenericMipMappedTextureDatabase>::BuildAtlas(
         genericMipMappedTextureDatabase,
-        AtlasOptions::MipMappable,
+        TextureAtlasOptions::MipMappable,
+        assetManager,
         [](float, ProgressMessageType) {});
 
-    LogMessage("Generic mipmapped texture atlas size: ", genericMipMappedTextureAtlas.AtlasData.Size.ToString());
+    LogMessage("Generic mipmapped texture atlas size: ", genericMipMappedTextureAtlas.Image.Size.ToString());
 
     // Activate texture
-    mShaderManager.ActivateTexture<ProgramParameterType::GenericMipMappedTexturesAtlasTexture>();
+    mShaderManager.ActivateTexture<GameShaderSet::ProgramParameterKind::GenericMipMappedTexturesAtlasTexture>();
 
     // Create texture OpenGL handle
     glGenTextures(1, &tmpGLuint);
@@ -176,7 +176,7 @@ void GlobalRenderContext::InitializeGenericTextures(ResourceLocator const & reso
     // Upload atlas texture
     assert(genericMipMappedTextureAtlas.Metadata.IsSuitableForMipMapping());
     GameOpenGL::UploadMipmappedAtlasTexture(
-        std::move(genericMipMappedTextureAtlas.AtlasData),
+        std::move(genericMipMappedTextureAtlas.Image),
         genericMipMappedTextureAtlas.Metadata.GetMaxDimension());
 
     // Set repeat mode
@@ -190,26 +190,24 @@ void GlobalRenderContext::InitializeGenericTextures(ResourceLocator const & reso
     CheckOpenGLError();
 
     // Store metadata
-    mGenericMipMappedTextureAtlasMetadata = std::make_unique<TextureAtlasMetadata<GenericMipMappedTextureGroups>>(genericMipMappedTextureAtlas.Metadata);
+    mGenericMipMappedTextureAtlasMetadata = std::make_unique<TextureAtlasMetadata<GameTextureDatabases::GenericMipMappedTextureDatabase>>(genericMipMappedTextureAtlas.Metadata);
 
     // Set texture in all shaders that use it
-    mShaderManager.ActivateProgram<ProgramType::GenericMipMappedTexturesNdc>();
-    mShaderManager.SetTextureParameters<ProgramType::GenericMipMappedTexturesNdc>();
-    mShaderManager.ActivateProgram<ProgramType::ShipGenericMipMappedTextures>();
-    mShaderManager.SetTextureParameters<ProgramType::ShipGenericMipMappedTextures>();
+    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::GenericMipMappedTexturesNdc>();
+    mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::GenericMipMappedTexturesNdc>();
+    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipGenericMipMappedTextures>();
+    mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::ShipGenericMipMappedTextures>();
 }
 
-void GlobalRenderContext::InitializeExplosionTextures(ResourceLocator const & resourceLocator)
+void GlobalRenderContext::InitializeExplosionTextures(IAssetManager const & assetManager)
 {
     // Load atlas
-    TextureAtlas<ExplosionTextureGroups> explosionTextureAtlas = TextureAtlas<ExplosionTextureGroups>::Deserialize(
-        ExplosionTextureDatabaseTraits::DatabaseName,
-        resourceLocator.GetTexturesRootFolderPath());
+    auto explosionTextureAtlas = TextureAtlas<GameTextureDatabases::ExplosionTextureDatabase>::Deserialize(assetManager);
 
-    LogMessage("Explosion texture atlas size: ", explosionTextureAtlas.AtlasData.Size.ToString());
+    LogMessage("Explosion texture atlas size: ", explosionTextureAtlas.Image.Size.ToString());
 
     // Activate texture
-    mShaderManager.ActivateTexture<ProgramParameterType::ExplosionsAtlasTexture>();
+    mShaderManager.ActivateTexture<GameShaderSet::ProgramParameterKind::ExplosionsAtlasTexture>();
 
     // Create OpenGL handle
     GLuint tmpGLuint;
@@ -221,7 +219,7 @@ void GlobalRenderContext::InitializeExplosionTextures(ResourceLocator const & re
     CheckOpenGLError();
 
     // Upload atlas texture
-    GameOpenGL::UploadTexture(std::move(explosionTextureAtlas.AtlasData));
+    GameOpenGL::UploadTexture(std::move(explosionTextureAtlas.Image));
 
     // Set repeat mode - we want to clamp, to leverage the fact that
     // all frames are perfectly transparent at the edges
@@ -235,19 +233,19 @@ void GlobalRenderContext::InitializeExplosionTextures(ResourceLocator const & re
     CheckOpenGLError();
 
     // Store metadata
-    mExplosionTextureAtlasMetadata = std::make_unique<TextureAtlasMetadata<ExplosionTextureGroups>>(explosionTextureAtlas.Metadata);
+    mExplosionTextureAtlasMetadata = std::make_unique<TextureAtlasMetadata<GameTextureDatabases::ExplosionTextureDatabase>>(explosionTextureAtlas.Metadata);
 
     // Set texture in ship shaders
-    mShaderManager.ActivateProgram<ProgramType::ShipExplosions>();
-    mShaderManager.SetTextureParameters<ProgramType::ShipExplosions>();
+    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipExplosions>();
+    mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::ShipExplosions>();
 }
 
-void GlobalRenderContext::InitializeNpcTextures(TextureAtlas<NpcTextureGroups> && npcTextureAtlas)
+void GlobalRenderContext::InitializeNpcTextures(TextureAtlas<GameTextureDatabases::NpcTextureDatabase> && npcTextureAtlas)
 {
-    LogMessage("NPC texture atlas size: ", npcTextureAtlas.AtlasData.Size.ToString());
+    LogMessage("NPC texture atlas size: ", npcTextureAtlas.Image.Size.ToString());
 
     // Activate texture
-    mShaderManager.ActivateTexture<ProgramParameterType::NpcAtlasTexture>();
+    mShaderManager.ActivateTexture<GameShaderSet::ProgramParameterKind::NpcAtlasTexture>();
 
     // Create OpenGL handle
     GLuint tmpGLuint;
@@ -261,7 +259,7 @@ void GlobalRenderContext::InitializeNpcTextures(TextureAtlas<NpcTextureGroups> &
     // Upload atlas texture
     assert(npcTextureAtlas.Metadata.IsSuitableForMipMapping());
     GameOpenGL::UploadMipmappedAtlasTexture(
-        std::move(npcTextureAtlas.AtlasData),
+        std::move(npcTextureAtlas.Image),
         npcTextureAtlas.Metadata.GetMaxDimension());
 
     // Set repeat mode - we want to clamp, to leverage the fact that
@@ -276,16 +274,16 @@ void GlobalRenderContext::InitializeNpcTextures(TextureAtlas<NpcTextureGroups> &
     CheckOpenGLError();
 
     // Set texture in ship shaders
-    mShaderManager.ActivateProgram<ProgramType::ShipNpcsTexture>();
-    mShaderManager.SetTextureParameters<ProgramType::ShipNpcsTexture>();
+    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipNpcsTexture>();
+    mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::ShipNpcsTexture>();
 }
 
 void GlobalRenderContext::ProcessParameterChanges(RenderParameters const & renderParameters)
 {
     if (renderParameters.IsEffectiveAmbientLightIntensityDirty)
     {
-        mShaderManager.ActivateProgram<ProgramType::GenericMipMappedTexturesNdc>();
-        mShaderManager.SetProgramParameter<ProgramType::GenericMipMappedTexturesNdc, ProgramParameterType::EffectiveAmbientLightIntensity>(
+        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::GenericMipMappedTexturesNdc>();
+        mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::GenericMipMappedTexturesNdc, GameShaderSet::ProgramParameterKind::EffectiveAmbientLightIntensity>(
             renderParameters.EffectiveAmbientLightIntensity);
     }
 
@@ -293,8 +291,8 @@ void GlobalRenderContext::ProcessParameterChanges(RenderParameters const & rende
     {
         vec3f const effectiveMoonlightColor = renderParameters.EffectiveMoonlightColor.toVec3f();
 
-        mShaderManager.ActivateProgram<ProgramType::GenericMipMappedTexturesNdc>();
-        mShaderManager.SetProgramParameter<ProgramType::GenericMipMappedTexturesNdc, ProgramParameterType::EffectiveMoonlightColor>(
+        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::GenericMipMappedTexturesNdc>();
+        mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::GenericMipMappedTexturesNdc, GameShaderSet::ProgramParameterKind::EffectiveMoonlightColor>(
             effectiveMoonlightColor);
     }
 }
@@ -385,6 +383,4 @@ std::unique_ptr<Buffer2D<float, struct IntegralTag>> GlobalRenderContext::MakePe
     }
 
     return buf;
-}
-
 }

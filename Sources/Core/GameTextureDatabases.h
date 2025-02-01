@@ -13,6 +13,8 @@
 // All the texture databases in the game
 //
 
+namespace GameTextureDatabases {
+
 // Cloud
 
 enum class CloudTextureGroups : uint16_t
@@ -86,14 +88,6 @@ struct NoiseTextureDatabase
         else
             throw GameException("Unrecognized Noise texture group \"" + str + "\"");
     }
-};
-
-enum class NoiseType : uint32_t
-{
-    Gross = 0,
-    Fine = 1,
-    Perlin_4_32_043 = 2,
-    Perlin_8_1024_073 = 3
 };
 
 // Generic Mip-Mapped
@@ -281,3 +275,5 @@ struct NpcTextureDatabase
             throw GameException("Unrecognized NPC texture group \"" + str + "\"");
     }
 };
+
+}

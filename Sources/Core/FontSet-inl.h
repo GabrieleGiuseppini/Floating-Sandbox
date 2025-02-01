@@ -15,7 +15,7 @@
 BffFont BffFont::Load(
     std::string const & fontSetName,
     std::string const & fontRelativePath,
-    IAssetManager & assetManager)
+    IAssetManager const & assetManager)
 {
     static constexpr size_t HeaderSize = 20 + 256;
 
@@ -82,7 +82,7 @@ BffFont BffFont::Load(
 
 template<typename TFontSet>
 FontSet<TFontSet> FontSet<TFontSet>::Load(
-    IAssetManager & assetManager,
+    IAssetManager const & assetManager,
     ProgressCallback const & progressCallback)
 {
     //

@@ -33,7 +33,7 @@ struct BffFont final
     static BffFont Load(
         std::string const & fontSetName,
         std::string const & fontRelativePath,
-        IAssetManager & assetManager);
+        IAssetManager const & assetManager);
 
     BffFont(
         char baseTextureCharacter,
@@ -105,7 +105,7 @@ struct FontSet final
     RgbaImageData Atlas;
 
     static FontSet<TFontSet> Load(
-        IAssetManager & assetManager,
+        IAssetManager const & assetManager,
         ProgressCallback const & progressCallback);
 
     FontSet(

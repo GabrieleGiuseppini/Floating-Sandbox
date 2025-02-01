@@ -128,7 +128,7 @@ struct TextureFrameSpecification
         , RelativePath(relativePath)
     {}
 
-    TextureFrame<TTextureDatabase> LoadFrame(IAssetManager & assetManager) const
+    TextureFrame<TTextureDatabase> LoadFrame(IAssetManager const & assetManager) const
     {
         RgbaImageData imageData = assetManager.LoadTextureDatabaseFrameRGBA(
             TTextureDatabase::DatabaseName,
@@ -177,7 +177,7 @@ public:
         return static_cast<TextureFrameIndex>(mFrameSpecifications.size());
     }
 
-    inline TextureFrame<TTextureDatabase> LoadFrame(TextureFrameIndex frameIndex, IAssetManager & assetManager) const
+    inline TextureFrame<TTextureDatabase> LoadFrame(TextureFrameIndex frameIndex, IAssetManager const & assetManager) const
     {
         return mFrameSpecifications[frameIndex].LoadFrame(assetManager);
     }
@@ -198,7 +198,7 @@ public:
 
     using TTextureGroups = typename TTextureDatabase::TextureGroupsType;
 
-    static TextureDatabase Load(IAssetManager & assetManager);
+    static TextureDatabase Load(IAssetManager const & assetManager);
 
     inline auto const & GetGroups() const
     {

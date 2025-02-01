@@ -6,6 +6,8 @@
 set  (RENDER_SOURCES	
 	GameShaderSet.cpp
 	GameShaderSet.h
+	GlobalRenderContext.cpp
+	GlobalRenderContext.h
 	RenderDeviceProperties.h
 	RenderParameters.cpp
 	RenderParameters.h

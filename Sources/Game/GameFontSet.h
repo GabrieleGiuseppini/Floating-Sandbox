@@ -5,6 +5,9 @@
 ***************************************************************************************/
 #pragma once
 
+#include <Core/GameException.h>
+#include <Core/Utils.h>
+
 #include <cstdint>
 #include <string>
 
@@ -22,19 +25,23 @@ enum class FontKind : std::uint32_t
     _Last = SevenSegments
 };
 
-namespace _detail {
-
-FontKind FontNameToFontKind(std::string const & str);
-
-}
-
 struct FontSet
 {
     using FontKindType = FontKind;
 
     static inline std::string FontSetName = "Game";
 
-    static constexpr auto FontNameToFontKind = _detail::FontNameToFontKind;
+    static FontKind FontNameToFontKind(std::string const & str)
+    {
+        if (Utils::CaseInsensitiveEquals(str, "Font0"))
+            return FontKind::Font0;
+        else if (Utils::CaseInsensitiveEquals(str, "Font1"))
+            return FontKind::Font1;
+        else if (Utils::CaseInsensitiveEquals(str, "SevenSegments"))
+            return FontKind::SevenSegments;
+        else
+            throw GameException("Unrecognized font \"" + str + "\"");
+    }
 };
 
 }

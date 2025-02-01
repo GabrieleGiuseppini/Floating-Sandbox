@@ -208,7 +208,7 @@ public:
 
     std::tuple<picojson::value, RgbaImageData const &> Serialize() const;
 
-    static TextureAtlas Deserialize(IAssetManager & assetManager);
+    static TextureAtlas Deserialize(IAssetManager const & assetManager);
 };
 
 template <typename TTextureDatabase>
@@ -224,7 +224,7 @@ public:
     static TextureAtlas<TTextureDatabase> BuildAtlas(
         TextureDatabase<TTextureDatabase> const & database,
         TextureAtlasOptions options,
-        IAssetManager & assetManager,
+        IAssetManager const & assetManager,
         ProgressCallback const & progressCallback)
     {
         auto frameLoader = [&database, &assetManager](TextureFrameId<TTextureGroups> const & frameId) -> TextureFrame<TTextureDatabase>
@@ -305,7 +305,7 @@ public:
     static TextureAtlas<TTextureDatabase> BuildRegularAtlas(
         TextureDatabase<TTextureDatabase> const & database,
         TextureAtlasOptions options,
-        IAssetManager & assetManager,
+        IAssetManager const & assetManager,
         ProgressCallback const & progressCallback)
     {
         if (!!(options & TextureAtlasOptions::SuppressDuplicates))

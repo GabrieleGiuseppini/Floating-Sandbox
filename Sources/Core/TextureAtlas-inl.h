@@ -202,7 +202,7 @@ std::tuple<picojson::value, RgbaImageData const &> TextureAtlas<TTextureDatabase
 }
 
 template <typename TTextureDatabase>
-TextureAtlas<TTextureDatabase> TextureAtlas<TTextureDatabase>::Deserialize(IAssetManager & assetManager)
+TextureAtlas<TTextureDatabase> TextureAtlas<TTextureDatabase>::Deserialize(IAssetManager const & assetManager)
 {
     //
     // Metadata

@@ -85,7 +85,7 @@ TextureFrameMetadata<TTextureDatabase> TextureFrameMetadata<TTextureDatabase>::D
 }
 
 template <typename TTextureDatabase>
-TextureDatabase<TTextureDatabase> TextureDatabase<TTextureDatabase>::Load(IAssetManager & assetManager)
+TextureDatabase<TTextureDatabase> TextureDatabase<TTextureDatabase>::Load(IAssetManager const & assetManager)
 {
     using TTextureGroups = typename TTextureDatabase::TextureGroupsType;
 

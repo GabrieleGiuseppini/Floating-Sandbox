@@ -5,39 +5,38 @@
 ***************************************************************************************/
 #pragma once
 
+#include "GameShaderSet.h"
 #include "RenderParameters.h"
-#include "ResourceLocator.h"
-#include "ShaderTypes.h"
-#include "TextureAtlas.h"
-#include "TextureTypes.h"
 
-#include <GameOpenGL/GameOpenGL.h>
-#include <GameOpenGL/ShaderManager.h>
-#include <GameOpenGL/TriangleQuadElementArrayVBO.h>
-#include <GameOpenGL/UploadedTextureManager.h>
+#include <OpenGLCore/GameOpenGL.h>
+#include <OpenGLCore/ShaderManager.h>
+#include <OpenGLCore/TriangleQuadElementArrayVBO.h>
+#include <OpenGLCore/UploadedTextureManager.h>
 
-#include <GameCore/Buffer2D.h>
+#include <Core/Buffer2D.h>
+#include <Core/GameTextureDatabases.h>
+#include <Core/GameTypes.h>
+#include <Core/IAssetManager.h>
+#include <Core/TextureAtlas.h>
 
 #include <cassert>
 #include <memory>
-
-namespace Render {
 
 class GlobalRenderContext
 {
 public:
 
-    GlobalRenderContext(ShaderManager<ShaderManagerTraits> & shaderManager);
+    GlobalRenderContext(ShaderManager<GameShaderSet::ShaderSet> & shaderManager);
 
     ~GlobalRenderContext();
 
-    void InitializeNoiseTextures(ResourceLocator const & resourceLocator);
+    void InitializeNoiseTextures(IAssetManager const & assetManager);
 
-    void InitializeGenericTextures(ResourceLocator const & resourceLocator);
+    void InitializeGenericTextures(IAssetManager const & assetManager);
 
-    void InitializeExplosionTextures(ResourceLocator const & resourceLocator);
+    void InitializeExplosionTextures(IAssetManager const & assetManager);
 
-    void InitializeNpcTextures(TextureAtlas<NpcTextureGroups> && npcTextureAtlas);
+    void InitializeNpcTextures(TextureAtlas<GameTextureDatabases::NpcTextureDatabase> && npcTextureAtlas);
 
     void ProcessParameterChanges(RenderParameters const & renderParameters);
 
@@ -53,7 +52,7 @@ public:
         return *mElementIndices;
     }
 
-    inline TextureAtlasMetadata<GenericLinearTextureGroups> const & GetGenericLinearTextureAtlasMetadata() const
+    inline TextureAtlasMetadata<GameTextureDatabases::GenericLinearTextureDatabase> const & GetGenericLinearTextureAtlasMetadata() const
     {
         assert(!!mGenericLinearTextureAtlasMetadata);
         return *mGenericLinearTextureAtlasMetadata;
@@ -65,13 +64,13 @@ public:
         return *mGenericLinearTextureAtlasOpenGLHandle;
     }
 
-    inline TextureAtlasMetadata<GenericMipMappedTextureGroups> const & GetGenericMipMappedTextureAtlasMetadata() const
+    inline TextureAtlasMetadata<GameTextureDatabases::GenericMipMappedTextureDatabase> const & GetGenericMipMappedTextureAtlasMetadata() const
     {
         assert(!!mGenericMipMappedTextureAtlasMetadata);
         return *mGenericMipMappedTextureAtlasMetadata;
     }
 
-    inline TextureAtlasMetadata<ExplosionTextureGroups> const & GetExplosionTextureAtlasMetadata() const
+    inline TextureAtlasMetadata<GameTextureDatabases::ExplosionTextureDatabase> const & GetExplosionTextureAtlasMetadata() const
     {
         assert(!!mExplosionTextureAtlasMetadata);
         return *mExplosionTextureAtlasMetadata;
@@ -96,7 +95,7 @@ private:
 
 private:
 
-    ShaderManager<ShaderManagerTraits> & mShaderManager;
+    ShaderManager<GameShaderSet::ShaderSet> & mShaderManager;
 
     //
     // Global Element indices
@@ -109,13 +108,13 @@ private:
     //
 
     GameOpenGLTexture mGenericLinearTextureAtlasOpenGLHandle;
-    std::unique_ptr<TextureAtlasMetadata<GenericLinearTextureGroups>> mGenericLinearTextureAtlasMetadata;
+    std::unique_ptr<TextureAtlasMetadata<GameTextureDatabases::GenericLinearTextureDatabase>> mGenericLinearTextureAtlasMetadata;
 
     GameOpenGLTexture mGenericMipMappedTextureAtlasOpenGLHandle;
-    std::unique_ptr<TextureAtlasMetadata<GenericMipMappedTextureGroups>> mGenericMipMappedTextureAtlasMetadata;
+    std::unique_ptr<TextureAtlasMetadata<GameTextureDatabases::GenericMipMappedTextureDatabase>> mGenericMipMappedTextureAtlasMetadata;
 
     GameOpenGLTexture mExplosionTextureAtlasOpenGLHandle;
-    std::unique_ptr<TextureAtlasMetadata<ExplosionTextureGroups>> mExplosionTextureAtlasMetadata;
+    std::unique_ptr<TextureAtlasMetadata<GameTextureDatabases::ExplosionTextureDatabase>> mExplosionTextureAtlasMetadata;
 
     GameOpenGLTexture mNpcTextureAtlasOpenGLHandle;
 
@@ -123,5 +122,3 @@ private:
     std::unique_ptr<Buffer2D<float, struct IntegralTag>> mPerlinNoise_4_32_043_ToUpload; // When set, will be uploaded in rendering thread
     std::unique_ptr<Buffer2D<float, struct IntegralTag>> mPerlinNoise_8_1024_073_ToUpload; // When set, will be uploaded in rendering thread
 };
-
-}

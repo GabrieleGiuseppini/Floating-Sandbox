@@ -313,7 +313,7 @@ private:
         GLenum const glError = glGetError();
         if (GL_NO_ERROR != glError)
         {
-            throw GameException("Error setting uniform for parameter \"" + TShaderSet::ProgramParameterTypeToStr(parameter) + "\" on program \"" + TShaderSet::ProgramTypeToStr(program) + "\"");
+            throw GameException("Error setting uniform for parameter \"" + TShaderSet::ProgramParameterKindToStr(parameter) + "\" on program \"" + TShaderSet::ProgramKindToStr(program) + "\"");
         }
     }
 
