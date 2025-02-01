@@ -132,30 +132,42 @@ FontSet<TFontSet> FontSet<TFontSet>::Load(
         throw GameException("The number of loaded fonts does not match the number of expected fonts");
     }
 
+    return InternalLoad(std::move(bffFonts));
+}
+
+enum class DummyFontTextureGroups : uint16_t
+{
+    Font = 0,
+
+    _Last = Font
+};
+
+struct DummyFontTextureDatabase
+{
+    static inline std::string DatabaseName = "Fonts";
+    using TextureGroupsType = DummyFontTextureGroups;
+};
+
+template<typename TFontSet>
+FontSet<TFontSet> FontSet<TFontSet>::InternalLoad(std::vector<BffFont> && bffFonts)
+{
     //
     // Build font texture atlas
     //
 
-    enum class FontTextureGroups : uint16_t
-    {
-        Font = 0,
-
-        _Last = Font
-    };
-
-    std::vector<TextureFrame<FontTextureGroups>> fontTextureFrames;
+    std::vector<TextureFrame<DummyFontTextureDatabase>> fontTextureFrames;
 
     for (size_t f = 0; f < bffFonts.size(); ++f)
     {
-        TextureFrameMetadata<FontTextureGroups> fontTextureFrameMetadata = TextureFrameMetadata<FontTextureGroups>(
+        TextureFrameMetadata<DummyFontTextureDatabase> fontTextureFrameMetadata = TextureFrameMetadata<DummyFontTextureDatabase>(
             bffFonts[f].FontTexture.Size,
             static_cast<float>(bffFonts[f].FontTexture.Size.width),
             static_cast<float>(bffFonts[f].FontTexture.Size.height),
             false,
             ImageCoordinates(0, 0),
             vec2f::zero(),
-            TextureFrameId<FontTextureGroups>(
-                FontTextureGroups::Font,
+            TextureFrameId<DummyFontTextureGroups>(
+                DummyFontTextureGroups::Font,
                 static_cast<TextureFrameIndex>(f)),
             std::to_string(f),
             std::to_string(f));
@@ -165,7 +177,7 @@ FontSet<TFontSet> FontSet<TFontSet>::Load(
             std::move(bffFonts[f].FontTexture));
     }
 
-    auto fontTextureAtlas = TextureAtlasBuilder<FontTextureGroups>::BuildAtlas(
+    auto fontTextureAtlas = TextureAtlasBuilder<DummyFontTextureDatabase>::BuildAtlas(
         std::move(fontTextureFrames),
         TextureAtlasOptions::None);
 
@@ -179,8 +191,8 @@ FontSet<TFontSet> FontSet<TFontSet>::Load(
     for (size_t f = 0; f < bffFonts.size(); ++f)
     {
         auto const & fontTextureFrameMetadata = fontTextureAtlas.Metadata.GetFrameMetadata(
-            TextureFrameId<FontTextureGroups>(
-                FontTextureGroups::Font,
+            TextureFrameId<DummyFontTextureGroups>(
+                DummyFontTextureGroups::Font,
                 static_cast<TextureFrameIndex>(f)));
 
         // Dimensions of a cell of this font, in the atlas' texture space coordinates
@@ -205,7 +217,7 @@ FontSet<TFontSet> FontSet<TFontSet>::Load(
                 + static_cast<float>(glyphTextureCol) * fontCellWidthAtlasTextureSpace;
 
             // Texture-space right x
-            float const glyphWidth = static_cast<int>(bffFonts[f].GlyphWidths[ch]);
+            int const glyphWidth = static_cast<int>(bffFonts[f].GlyphWidths[ch]);
             float const glyphRightAtlasTextureSpace =
                 glyphLeftAtlasTextureSpace
                 + static_cast<float>(glyphWidth - 1) / static_cast<float>(fontTextureAtlas.Metadata.GetSize().width); // Dragons?
@@ -228,16 +240,16 @@ FontSet<TFontSet> FontSet<TFontSet>::Load(
 
         // Store
         fontMetadata.emplace_back(
-            BffFont::BaseTextureCharacter,
+            bffFonts[f].BaseTextureCharacter,
             bffFonts[f].CellSize,
             bffFonts[f].GlyphWidths,
             bffFonts[f].GlyphsPerTextureRow,
-            vec2f(fontCellWidthAtlasTextureSpace, fontCellHeightAtlasTextureSpace),
+            FloatSize(fontCellWidthAtlasTextureSpace, fontCellHeightAtlasTextureSpace),
             GlyphTextureBottomLefts,
             GlyphTextureTopRights);
     }
 
     return FontSet<TFontSet>(
         std::move(fontMetadata),
-        std::move(fontTextureAtlas));
+        std::move(fontTextureAtlas.Image));
 }

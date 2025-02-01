@@ -379,7 +379,7 @@ TEST(TextureAtlasTests, Placement_InAtlasSizeMatchingFrameSize)
     {
         for (int x = 0; x < 12; ++x)
         {
-            auto const c = atlas.AtlasData[{x, y}];
+            auto const c = atlas.Image[{x, y}];
 
             if (x < 4)
             {
@@ -481,7 +481,7 @@ TEST(TextureAtlasTests, Placement_InAtlasSizeLargerThanFrameSize)
     {
         for (int x = 0; x < 12; ++x)
         {
-            auto const c = atlas.AtlasData[{x, y}];
+            auto const c = atlas.Image[{x, y}];
 
             if (x < 4)
             {

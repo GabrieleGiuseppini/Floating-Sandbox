@@ -962,6 +962,37 @@ union Quad final
 #pragma pack(pop)
 
 /*
+ * Float size.
+ */
+
+#pragma pack(push)
+
+struct FloatSize
+{
+    float width;
+    float height;
+
+    constexpr FloatSize(
+        float const & _width,
+        float const & _height)
+        : width(_width)
+        , height(_height)
+    {}
+
+    static constexpr FloatSize zero()
+    {
+        return FloatSize(0.0f, 0.0f);
+    }
+
+    inline bool operator==(FloatSize const & other) const
+    {
+        return width == other.width
+            && height == other.height;
+    }
+
+};
+
+/*
  * Float rectangle.
  */
 
@@ -970,16 +1001,16 @@ union Quad final
 struct FloatRect
 {
     vec2f origin;
-    vec2f size;
+    FloatSize size;
 
     constexpr FloatRect()
         : origin(vec2f::zero())
-        , size(vec2f::zero())
+        , size(FloatSize::zero())
     {}
 
     constexpr FloatRect(
         vec2f const & _origin,
-        vec2f const & _size)
+        FloatSize const & _size)
         : origin(_origin)
         , size(_size)
     {}
@@ -994,8 +1025,8 @@ struct FloatRect
     {
         return origin.x >= container.origin.x
             && origin.y >= container.origin.y
-            && origin.x + size.x <= container.origin.x + container.size.x
-            && origin.y + size.y <= container.origin.y + container.size.y;
+            && origin.x + size.width <= container.origin.x + container.size.width
+            && origin.y + size.height <= container.origin.y + container.size.height;
     }
 
     void UnionWith(FloatRect const & other)
@@ -1004,11 +1035,11 @@ struct FloatRect
             std::min(origin.x, other.origin.x),
             std::min(origin.y, other.origin.y));
 
-        auto const newSize = vec2f(
-            std::max(origin.x + size.x, other.origin.x + other.size.x) - newOrigin.x,
-            std::max(origin.y + size.y, other.origin.y + other.size.y) - newOrigin.y);
+        auto const newSize = FloatSize(
+            std::max(origin.x + size.width, other.origin.x + other.size.width) - newOrigin.x,
+            std::max(origin.y + size.height, other.origin.y + other.size.height) - newOrigin.y);
 
-        assert(newSize.x >= 0 && newSize.y >= 0);
+        assert(newSize.width >= 0 && newSize.height >= 0);
 
         origin = newOrigin;
         size = newSize;
@@ -1020,11 +1051,11 @@ struct FloatRect
             std::max(origin.x, other.origin.x),
             std::max(origin.y, other.origin.y));
 
-        auto const newSize = vec2f(
-            std::min(size.x - (newOrigin.x - origin.x), other.size.x - (newOrigin.x - other.origin.x)),
-            std::min(size.y - (newOrigin.y - origin.y), other.size.y - (newOrigin.y - other.origin.y)));
+        auto const newSize = FloatSize(
+            std::min(size.width - (newOrigin.x - origin.x), other.size.width - (newOrigin.x - other.origin.x)),
+            std::min(size.height - (newOrigin.y - origin.y), other.size.height - (newOrigin.y - other.origin.y)));
 
-        if (newSize.x <= 0 || newSize.y <= 0)
+        if (newSize.width <= 0 || newSize.height <= 0)
         {
             return std::nullopt;
         }
@@ -1039,7 +1070,7 @@ struct FloatRect
     std::string ToString() const
     {
         std::stringstream ss;
-        ss << "(" << origin.x << ", " << origin.y << " -> " << size.x << " x " << size.y << ")";
+        ss << "(" << origin.x << ", " << origin.y << " -> " << size.width << " x " << size.height << ")";
         return ss.str();
     }
 };

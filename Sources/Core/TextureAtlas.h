@@ -193,13 +193,13 @@ public:
     TextureAtlasMetadata<TTextureDatabase> Metadata;
 
     // The image itself
-    RgbaImageData AtlasData;
+    RgbaImageData Image;
 
     TextureAtlas(
         TextureAtlasMetadata<TTextureDatabase> && metadata,
-        RgbaImageData && atlasData)
+        RgbaImageData && image)
         : Metadata(std::move(metadata))
-        , AtlasData(std::move(atlasData))
+        , Image(std::move(image))
     {}
 
     //

@@ -61,7 +61,7 @@ struct FontMetadata final
     std::array<std::uint8_t, 256> const GlyphWidths; // For each possible ASCII character, not only the ones in texture
     int const GlyphsPerTextureRow;
 
-    vec2f CellTextureAtlasSize; // Size of one cell of the font, in texture atlas space coordinates
+    FloatSize CellTextureAtlasSize; // Size of one cell of the font, in texture atlas space coordinates
     std::array<vec2f, 256> GlyphTextureAtlasBottomLefts; // Bottom-left of each glyph, in texture atlas space coordinates
     std::array<vec2f, 256> GlyphTextureAtlasTopRights; // Top-right of each glyph, in texture atlas space coordinates
 
@@ -70,7 +70,7 @@ struct FontMetadata final
         ImageSize const & cellSize,
         std::array<std::uint8_t, 256> const & glyphWidths,
         int glyphsPerTextureRow,
-        vec2f const & cellTextureAtlasSize,
+        FloatSize const & cellTextureAtlasSize,
         std::array<vec2f, 256> const & glyphTextureAtlasBottomLefts,
         std::array<vec2f, 256> const & glyphTextureAtlasTopRights)
         : BaseTextureCharacter(baseTextureCharacter)
@@ -114,6 +114,12 @@ struct FontSet final
         : Metadata(std::move(metadata))
         , Atlas(std::move(atlas))
     {}
+
+private:
+
+    static FontSet<TFontSet> InternalLoad(std::vector<BffFont> && bffFonts);
+
+    friend class FontSetTests_Load_Test;
 };
 
 #include "FontSet-inl.h"
