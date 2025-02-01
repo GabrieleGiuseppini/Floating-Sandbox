@@ -36,6 +36,9 @@ public:
 	std::vector<AssetDescriptor> EnumerateShaders(std::string const & shaderSetName) override;
 	std::string LoadShader(std::string const & shaderSetName, std::string const & shaderRelativePath) override;
 
+	std::vector<AssetDescriptor> EnumerateFonts(std::string const & fontSetName) override;
+	Buffer<std::uint8_t> LoadFont(std::string const & fontSetName, std::string const & fontRelativePath) override;
+
 	//
 	// Platform-specific
 	//

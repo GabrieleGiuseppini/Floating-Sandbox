@@ -80,6 +80,21 @@ std::string TestAssetManager::LoadShader(std::string const & shaderSetName, std:
     return std::string();
 }
 
+std::vector<IAssetManager::AssetDescriptor> TestAssetManager::EnumerateFonts(std::string const & fontSetName)
+{
+    assert(false); // Not needed by tests, so far
+    (void)fontSetName;
+    return std::vector<IAssetManager::AssetDescriptor>();
+}
+
+Buffer<std::uint8_t> TestAssetManager::LoadFont(std::string const & fontSetName, std::string const & fontRelativePath)
+{
+    assert(false); // Not needed by tests, so far
+    (void)fontSetName;
+    (void)fontRelativePath;
+    return Buffer<std::uint8_t>(0);
+}
+
 ////////////////////////////////////
 
 TestTextureDatabase const & TestAssetManager::GetDatabase(std::string const & databaseName)

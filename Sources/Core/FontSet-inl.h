@@ -40,12 +40,6 @@ BffFont BffFont::Load(
         throw GameException("Font \"" + fontSetName + "::" + fontRelativePath + "\" has an unsupported BPP");
     }
 
-    // Make sure base char is as expected
-    if (buffer[19] != BaseCharacter)
-    {
-        throw GameException("Font \"" + fontSetName + "::" + fontRelativePath + "\" has an unsupported base character");
-    }
-
     //
     // Parse
     //
@@ -65,6 +59,9 @@ BffFont BffFont::Load(
     height = *(reinterpret_cast<int const *>(&(buffer[14])));
     ImageSize cellSize(width, height);
 
+    // Read base texture character
+    char const baseTextureCharacter = *(reinterpret_cast<char const *>(&(buffer[19])));
+
     // Read glyph widths
     std::array<uint8_t, 256> glyphWidths;
     std::memcpy(&(glyphWidths[0]), &(buffer[20]), 256);
@@ -76,6 +73,7 @@ BffFont BffFont::Load(
     RgbaImageData texture(textureSize, std::move(textureData));
 
     return BffFont(
+        baseTextureCharacter,
         cellSize,
         glyphWidths,
         textureSize.width / cellSize.width,
@@ -192,38 +190,45 @@ FontSet<TFontSet> FontSet<TFontSet>::Load(
         // Coordinates for each character
         std::array<vec2f, 256> GlyphTextureBottomLefts;
         std::array<vec2f, 256> GlyphTextureTopRights;
-        for (int c = 0; c < 256; ++c)
+        for (int ch = 0; ch < 256; ++ch)
         {
+            assert('?' >= bffFonts[f].BaseTextureCharacter);
+
+            int const cTexture = (ch < bffFonts[f].BaseTextureCharacter)
+                ? static_cast<int>('?' - bffFonts[f].BaseTextureCharacter)
+                : static_cast<int>(ch - bffFonts[f].BaseTextureCharacter);
+
             // Texture-space left x
-            int const glyphTextureCol = (c - BffFont::BaseCharacter) % bffFonts[f].GlyphsPerTextureRow;
+            int const glyphTextureCol = cTexture % bffFonts[f].GlyphsPerTextureRow;
             float const glyphLeftAtlasTextureSpace =
                 fontTextureFrameMetadata.TextureCoordinatesBottomLeft.x // Includes dead-center dx already
                 + static_cast<float>(glyphTextureCol) * fontCellWidthAtlasTextureSpace;
 
             // Texture-space right x
-            float const glyphWidth = static_cast<int>(bffFonts[f].GlyphWidths[static_cast<size_t>(c)]);
+            float const glyphWidth = static_cast<int>(bffFonts[f].GlyphWidths[ch]);
             float const glyphRightAtlasTextureSpace =
                 glyphLeftAtlasTextureSpace
                 + static_cast<float>(glyphWidth - 1) / static_cast<float>(fontTextureAtlas.Metadata.GetSize().width); // Dragons?
 
             // Texture-space top y
             // Note: font texture is flipped vertically (top of character is at lower V coordinates)
-            int const glyphTextureRow = (c - BffFont::BaseCharacter) / bffFonts[f].GlyphsPerTextureRow;
+            int const glyphTextureRow = cTexture / bffFonts[f].GlyphsPerTextureRow;
             float const glyphTopAtlasTextureSpace =
                 fontTextureFrameMetadata.TextureCoordinatesBottomLeft.y // Includes dead-center dx already
                 + static_cast<float>(glyphTextureRow) * fontCellHeightAtlasTextureSpace;
 
+            // Texture-space bottom y
             float const glyphBottomAtlasTextureSpace =
                 glyphTopAtlasTextureSpace
                 + static_cast<float>(bffFonts[f].CellSize.height - 1) / static_cast<float>(fontTextureAtlas.Metadata.GetSize().height); // Dragons?
 
-            GlyphTextureBottomLefts[c] = vec2f(glyphLeftAtlasTextureSpace, glyphBottomAtlasTextureSpace);
-            GlyphTextureTopRights[c] = vec2f(glyphRightAtlasTextureSpace, glyphTopAtlasTextureSpace);
+            GlyphTextureBottomLefts[ch] = vec2f(glyphLeftAtlasTextureSpace, glyphBottomAtlasTextureSpace);
+            GlyphTextureTopRights[ch] = vec2f(glyphRightAtlasTextureSpace, glyphTopAtlasTextureSpace);
         }
 
         // Store
         fontMetadata.emplace_back(
-            BffFont::BaseCharacter,
+            BffFont::BaseTextureCharacter,
             bffFonts[f].CellSize,
             bffFonts[f].GlyphWidths,
             bffFonts[f].GlyphsPerTextureRow,

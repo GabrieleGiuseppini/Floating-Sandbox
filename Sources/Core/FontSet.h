@@ -24,8 +24,7 @@
  */
 struct BffFont final
 {
-    static constexpr char BaseCharacter = ' ';
-
+    char const BaseTextureCharacter;
     ImageSize const CellSize; // Screen coordinates, i.e. pixels
     std::array<std::uint8_t, 256> const GlyphWidths;
     int const GlyphsPerTextureRow;
@@ -37,11 +36,13 @@ struct BffFont final
         IAssetManager & assetManager);
 
     BffFont(
+        char baseTextureCharacter,
         ImageSize const & cellSize,
         std::array<std::uint8_t, 256> const & glyphWidths,
         int glyphsPerTextureRow,
         RgbaImageData && fontTexture)
-        : CellSize(cellSize)
+        : BaseTextureCharacter(baseTextureCharacter)
+        , CellSize(cellSize)
         , GlyphWidths(glyphWidths)
         , GlyphsPerTextureRow(glyphsPerTextureRow)
         , FontTexture(std::move(fontTexture))
@@ -55,9 +56,9 @@ struct BffFont final
 struct FontMetadata final
 {
     // TODO: see if all still needed
-    char const BaseCharacter;
+    char const BaseTextureCharacter;
     ImageSize const CellSize; // Screen coordinates, i.e. pixels
-    std::array<std::uint8_t, 256> const GlyphWidths;
+    std::array<std::uint8_t, 256> const GlyphWidths; // For each possible ASCII character, not only the ones in texture
     int const GlyphsPerTextureRow;
 
     vec2f CellTextureAtlasSize; // Size of one cell of the font, in texture atlas space coordinates
@@ -65,14 +66,14 @@ struct FontMetadata final
     std::array<vec2f, 256> GlyphTextureAtlasTopRights; // Top-right of each glyph, in texture atlas space coordinates
 
     FontMetadata(
-        char baseCharacter,
+        char baseTextureCharacter,
         ImageSize const & cellSize,
         std::array<std::uint8_t, 256> const & glyphWidths,
         int glyphsPerTextureRow,
         vec2f const & cellTextureAtlasSize,
         std::array<vec2f, 256> const & glyphTextureAtlasBottomLefts,
         std::array<vec2f, 256> const & glyphTextureAtlasTopRights)
-        : BaseCharacter(baseCharacter)
+        : BaseTextureCharacter(baseTextureCharacter)
         , CellSize(cellSize)
         , GlyphWidths(glyphWidths)
         , GlyphsPerTextureRow(glyphsPerTextureRow)
@@ -80,6 +81,18 @@ struct FontMetadata final
         , GlyphTextureAtlasBottomLefts(glyphTextureAtlasBottomLefts)
         , GlyphTextureAtlasTopRights(glyphTextureAtlasTopRights)
     {}
+
+    ImageSize CalculateTextLineScreenExtent(
+        char const * text,
+        size_t length) const
+    {
+        uint32_t width = 0;
+
+        for (size_t c = 0; c < length; ++c)
+            width += GlyphWidths[static_cast<size_t>(text[c])];
+
+        return ImageSize(width, CellSize.height);
+    }
 };
 
 /*

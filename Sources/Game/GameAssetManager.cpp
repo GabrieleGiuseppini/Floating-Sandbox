@@ -113,6 +113,32 @@ std::string GameAssetManager::LoadShader(std::string const & shaderSetName, std:
     return FileSystem::LoadTextFile(mShaderRoot / shaderSetName / shaderRelativePath);
 }
 
+std::vector<IAssetManager::AssetDescriptor> GameAssetManager::EnumerateFonts(std::string const & fontSetName)
+{
+    std::vector<AssetDescriptor> fontDescriptors;
+
+    std::filesystem::path const fontSetRootPath = mDataRoot / "Fonts" / fontSetName;
+    for (auto const & entryIt : std::filesystem::recursive_directory_iterator(fontSetRootPath))
+    {
+        if (std::filesystem::is_regular_file(entryIt.path()))
+        {
+            auto const fontPath = entryIt.path();
+            fontDescriptors.push_back(
+                AssetDescriptor{
+                    fontPath.filename().stem().string(),
+                    std::filesystem::relative(fontPath, fontSetRootPath).string()
+                });
+        }
+    }
+
+    return fontDescriptors;
+}
+
+Buffer<std::uint8_t> GameAssetManager::LoadFont(std::string const & fontSetName, std::string const & fontRelativePath)
+{
+    return FileSystem::LoadBinaryFile(mDataRoot / "Fonts" / fontSetName / fontRelativePath);
+}
+
 // Helpers
 
 ImageSize GameAssetManager::GetImageSize(std::filesystem::path const & filePath)
