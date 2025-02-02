@@ -12,6 +12,8 @@ set  (SIMULATION_SOURCES
 	MaterialDatabase.h
 	NpcDatabase.cpp
 	NpcDatabase.h
+	SimulationParameters.cpp
+	SimulationParameters.h
 )
 
 source_group(" " FILES ${SIMULATION_SOURCES})

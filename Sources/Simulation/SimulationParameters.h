@@ -5,17 +5,17 @@
 ***************************************************************************************/
 #pragma once
 
-#include <GameCore/GameTypes.h>
-#include <GameCore/Vectors.h>
+#include <Core/GameTypes.h>
+#include <Core/Vectors.h>
 
 #include <chrono>
 
 /*
  * Parameters that affect the game's physics and its world.
  */
-struct GameParameters
+struct SimulationParameters
 {
-    GameParameters();
+    SimulationParameters();
 
     //
     // The dt of each step

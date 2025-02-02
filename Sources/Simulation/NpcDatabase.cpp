@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #include "NpcDatabase.h"
 
-#include "GameParameters.h"
+#include "SimulationParameters.h"
 
 #include <Core/GameException.h>
 #include <Core/Utils.h>
@@ -225,10 +225,10 @@ NpcDatabase::DefaultHumanTextureGeometryType NpcDatabase::ParseDefaultHumanTextu
     picojson::object const & containerObject)
 {
     // Lengths default to human geometry
-    float headLengthFraction = GameParameters::HumanNpcGeometry::HeadLengthFraction;
-    float torsoLengthFraction = GameParameters::HumanNpcGeometry::TorsoLengthFraction;
-    float armLengthFraction = GameParameters::HumanNpcGeometry::ArmLengthFraction;
-    float legLengthFraction = GameParameters::HumanNpcGeometry::LegLengthFraction;
+    float headLengthFraction = SimulationParameters::HumanNpcGeometry::HeadLengthFraction;
+    float torsoLengthFraction = SimulationParameters::HumanNpcGeometry::TorsoLengthFraction;
+    float armLengthFraction = SimulationParameters::HumanNpcGeometry::ArmLengthFraction;
+    float legLengthFraction = SimulationParameters::HumanNpcGeometry::LegLengthFraction;
 
     // When these are not specified, will default to texture's ratios (unless subkind overrides)
     std::optional<float> headWHRatio;
@@ -239,13 +239,13 @@ NpcDatabase::DefaultHumanTextureGeometryType NpcDatabase::ParseDefaultHumanTextu
     auto const defaultTextureGeometryContainerObject = Utils::GetOptionalJsonObject(containerObject, "default_texture_geometry");
     if (defaultTextureGeometryContainerObject.has_value())
     {
-        headLengthFraction = Utils::GetOptionalJsonMember<float>(*defaultTextureGeometryContainerObject, "head_length_fraction", GameParameters::HumanNpcGeometry::HeadLengthFraction);
+        headLengthFraction = Utils::GetOptionalJsonMember<float>(*defaultTextureGeometryContainerObject, "head_length_fraction", SimulationParameters::HumanNpcGeometry::HeadLengthFraction);
         headWHRatio = Utils::GetOptionalJsonMember<float>(*defaultTextureGeometryContainerObject, "head_wh_ratio");
-        torsoLengthFraction = Utils::GetOptionalJsonMember<float>(*defaultTextureGeometryContainerObject, "torso_length_fraction", GameParameters::HumanNpcGeometry::TorsoLengthFraction);
+        torsoLengthFraction = Utils::GetOptionalJsonMember<float>(*defaultTextureGeometryContainerObject, "torso_length_fraction", SimulationParameters::HumanNpcGeometry::TorsoLengthFraction);
         torsoWHRatio = Utils::GetOptionalJsonMember<float>(*defaultTextureGeometryContainerObject, "torso_wh_ratio");
-        armLengthFraction = Utils::GetOptionalJsonMember<float>(*defaultTextureGeometryContainerObject, "arm_length_fraction", GameParameters::HumanNpcGeometry::ArmLengthFraction);
+        armLengthFraction = Utils::GetOptionalJsonMember<float>(*defaultTextureGeometryContainerObject, "arm_length_fraction", SimulationParameters::HumanNpcGeometry::ArmLengthFraction);
         armWHRatio = Utils::GetOptionalJsonMember<float>(*defaultTextureGeometryContainerObject, "arm_wh_ratio");
-        legLengthFraction = Utils::GetOptionalJsonMember<float>(*defaultTextureGeometryContainerObject, "leg_length_fraction", GameParameters::HumanNpcGeometry::LegLengthFraction);
+        legLengthFraction = Utils::GetOptionalJsonMember<float>(*defaultTextureGeometryContainerObject, "leg_length_fraction", SimulationParameters::HumanNpcGeometry::LegLengthFraction);
         legWHRatio = Utils::GetOptionalJsonMember<float>(*defaultTextureGeometryContainerObject, "leg_wh_ratio");
     }
 

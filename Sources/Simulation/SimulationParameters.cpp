@@ -3,9 +3,9 @@
 * Created:				2018-04-13
 * Copyright:			Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
-#include "GameParameters.h"
+#include "SimulationParameters.h"
 
-GameParameters::GameParameters()
+SimulationParameters::SimulationParameters()
 // Dynamics
     : NumMechanicalDynamicsIterationsAdjustment(1.0f)
     , SpringStiffnessAdjustment(1.0f)
