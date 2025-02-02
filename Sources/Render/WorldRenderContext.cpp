@@ -572,7 +572,9 @@ void WorldRenderContext::InitializeWorldTextures()
     {
         auto const & tfs = mOceanTextureFrameSpecifications[i];
 
-        auto originalTextureImage = PngImageFileTools::LoadImageRgba(tfs.FilePath);
+        auto originalTextureImage = mAssetManager.LoadTextureDatabaseFrameRGBA(
+            GameTextureDatabases::WorldTextureDatabase::DatabaseName,
+            tfs.RelativePath);
         auto textureThumbnail = ImageTools::Resize(
             originalTextureImage,
             originalTextureImage.Size.ShrinkToFit(ThumbnailSize),
@@ -594,7 +596,9 @@ void WorldRenderContext::InitializeWorldTextures()
     {
         auto const & tfs = mLandTextureFrameSpecifications[i];
 
-        auto originalTextureImage = PngImageFileTools::LoadImageRgba(tfs.FilePath);
+        auto originalTextureImage = mAssetManager.LoadTextureDatabaseFrameRGBA(
+            GameTextureDatabases::WorldTextureDatabase::DatabaseName,
+            tfs.RelativePath);
         auto textureThumbnail = ImageTools::Resize(
             originalTextureImage,
             originalTextureImage.Size.ShrinkToFit(ThumbnailSize),
@@ -617,7 +621,7 @@ void WorldRenderContext::InitializeFishTextures()
     auto fishTextureAtlas = TextureAtlasBuilder<GameTextureDatabases::FishTextureDatabase>::BuildAtlas(
         fishTextureDatabase,
         TextureAtlasOptions::MipMappable,
-        assetManager,
+        mAssetManager,
         [](float, ProgressMessageType) {});
 
     LogMessage("Fish texture atlas size: ", fishTextureAtlas.Image.Size);
@@ -1787,7 +1791,7 @@ void WorldRenderContext::ApplyViewModelChanges(RenderParameters const & renderPa
     // Freeze here view cam's y - warped so perspective is more visible at lower y
     //
 
-    mCloudNormalizedViewCamY = 2.0f / (1.0f + std::exp(-12.0f * renderParameters.View.GetCameraWorldPosition().y / GameParameters::HalfMaxWorldHeight)) - 1.0f;
+    mCloudNormalizedViewCamY = 2.0f / (1.0f + std::exp(-12.0f * renderParameters.View.GetCameraWorldPosition().y / renderParameters.View.GetHalfMaxWorldHeight())) - 1.0f;
 
 
     //
@@ -2215,69 +2219,72 @@ void WorldRenderContext::RecalculateWorldBorder(RenderParameters const & renderP
 
     mWorldBorderVertexBuffer.clear();
 
+    float const halfMaxWorldWidth = renderParameters.View.GetHalfMaxWorldWidth();
+    float const halfMaxWorldHeight = renderParameters.View.GetHalfMaxWorldHeight();
+
     // Left
-    if (-GameParameters::HalfMaxWorldWidth + worldBorderWorldSize >= viewModel.GetVisibleWorld().TopLeft.x)
+    if (-halfMaxWorldWidth + worldBorderWorldSize >= viewModel.GetVisibleWorld().TopLeft.x)
     {
         EmplaceWorldBorderQuad(
             // Top-left
-            -GameParameters::HalfMaxWorldWidth,
-            GameParameters::HalfMaxWorldHeight,
+            -halfMaxWorldWidth,
+            halfMaxWorldHeight,
             0.0f,
             1.0f,
             // Bottom-right
-            -GameParameters::HalfMaxWorldWidth + worldBorderWorldSize,
-            -GameParameters::HalfMaxWorldHeight,
+            -halfMaxWorldWidth + worldBorderWorldSize,
+            -halfMaxWorldHeight,
             1.0f,
             1.0f,
             mWorldBorderVertexBuffer);
     }
 
     // Right
-    if (GameParameters::HalfMaxWorldWidth - worldBorderWorldSize <= viewModel.GetVisibleWorld().BottomRight.x)
+    if (halfMaxWorldWidth - worldBorderWorldSize <= viewModel.GetVisibleWorld().BottomRight.x)
     {
         EmplaceWorldBorderQuad(
             // Top-left
-            GameParameters::HalfMaxWorldWidth - worldBorderWorldSize,
-            GameParameters::HalfMaxWorldHeight,
+            halfMaxWorldWidth - worldBorderWorldSize,
+            halfMaxWorldHeight,
             1.0f,
             1.0f,
             // Bottom-right
-            GameParameters::HalfMaxWorldWidth,
-            -GameParameters::HalfMaxWorldHeight,
+            halfMaxWorldWidth,
+            -halfMaxWorldHeight,
             0.0f,
             1.0f,
             mWorldBorderVertexBuffer);
     }
 
     // Top
-    if (GameParameters::HalfMaxWorldHeight - worldBorderWorldSize <= viewModel.GetVisibleWorld().TopLeft.y)
+    if (halfMaxWorldHeight - worldBorderWorldSize <= viewModel.GetVisibleWorld().TopLeft.y)
     {
         EmplaceWorldBorderQuad(
             // Top-left
-            -GameParameters::HalfMaxWorldWidth,
-            GameParameters::HalfMaxWorldHeight,
+            -halfMaxWorldWidth,
+            halfMaxWorldHeight,
             1.0f,
             0.0f,
             // Bottom-right
-            GameParameters::HalfMaxWorldWidth,
-            GameParameters::HalfMaxWorldHeight - worldBorderWorldSize,
+            halfMaxWorldWidth,
+            halfMaxWorldHeight - worldBorderWorldSize,
             1.0f,
             1.0f,
             mWorldBorderVertexBuffer);
     }
 
     // Bottom
-    if (-GameParameters::HalfMaxWorldHeight + worldBorderWorldSize >= viewModel.GetVisibleWorld().BottomRight.y)
+    if (-halfMaxWorldHeight + worldBorderWorldSize >= viewModel.GetVisibleWorld().BottomRight.y)
     {
         EmplaceWorldBorderQuad(
             // Top-left
-            -GameParameters::HalfMaxWorldWidth,
-            -GameParameters::HalfMaxWorldHeight + worldBorderWorldSize,
+            -halfMaxWorldWidth,
+            -halfMaxWorldHeight + worldBorderWorldSize,
             1.0f,
             1.0f,
             // Bottom-right
-            GameParameters::HalfMaxWorldWidth,
-            -GameParameters::HalfMaxWorldHeight,
+            halfMaxWorldWidth,
+            -halfMaxWorldHeight,
             1.0f,
             0.0f,
             mWorldBorderVertexBuffer);

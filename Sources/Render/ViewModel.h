@@ -175,6 +175,16 @@ public:
         return mVisibleWorld;
     }
 
+    float const GetHalfMaxWorldWidth() const
+    {
+        return mHalfMaxWorldWidth;
+    }
+
+    float const GetHalfMaxWorldHeight() const
+    {
+        return mHalfMaxWorldHeight;
+    }
+
     DisplayLogicalSize const & GetCanvasLogicalSize() const
     {
         return mCanvasLogicalSize;
