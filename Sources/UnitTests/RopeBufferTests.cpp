@@ -1,6 +1,6 @@
-#include <Game/RopeBuffer.h>
+#include <Simulation/RopeBuffer.h>
 
-#include "Utils.h"
+#include "TestingUtils.h"
 
 #include "gtest/gtest.h"
 

@@ -41,7 +41,7 @@ set (UNIT_TEST_SOURCES
 	IndexRemapTests.cpp
 	#InstancedElectricalElementSetTests.cpp
 	IntegralSystemTests.cpp
-	#LayerTests.cpp
+	LayerTests.cpp
 	#LayoutHelperTests.cpp
 	main.cpp
 	Matrix2Tests.cpp
@@ -49,7 +49,7 @@ set (UNIT_TEST_SOURCES
 	ParameterSmootherTests.cpp
 	PortableTimepointTests.cpp
 	PrecalculatedFunctionTests.cpp
-	#RopeBufferTests.cpp
+	RopeBufferTests.cpp
 	#SettingsTests.cpp
 	ShaderManagerTests.cpp
 	ShipDefinitionFormatDeSerializerTests.cpp
