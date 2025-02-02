@@ -6,6 +6,7 @@
 
 #include <Game/FileSystem.h>
 
+#include <filesystem>
 #include <map>
 #include <vector>
 
@@ -48,7 +49,7 @@ public:
     std::string LoadShader(std::string const & shaderSetName, std::string const & shaderRelativePath) const override;
 
     std::vector<AssetDescriptor> EnumerateFonts(std::string const & fontSetName) const override;
-    Buffer<std::uint8_t> LoadFont(std::string const & fontSetName, std::string const & fontRelativePath) const override;
+    std::unique_ptr<BinaryReadStream> LoadFont(std::string const & fontSetName, std::string const & fontRelativePath) const override;
 
     picojson::value LoadStructuralMaterialDatabase() const override;
     picojson::value LoadElectricalMaterialDatabase() const override;
@@ -135,7 +136,7 @@ public:
         // Nop
     }
 
-    std::shared_ptr<std::istream> OpenInputStream(std::filesystem::path const & filePath) override
+    std::shared_ptr<std::istream> OpenBinaryInputStream(std::filesystem::path const & filePath) override
     {
         auto it = mFileMap.find(filePath);
         if (it != mFileMap.end())
@@ -149,7 +150,7 @@ public:
         }
     }
 
-    std::shared_ptr<std::ostream> OpenOutputStream(std::filesystem::path const & filePath) override
+    std::shared_ptr<std::ostream> OpenBinaryOutputStream(std::filesystem::path const & filePath) override
     {
         auto streamBuf = std::make_shared<memory_streambuf>();
         mFileMap[filePath].StreamBuf = streamBuf;

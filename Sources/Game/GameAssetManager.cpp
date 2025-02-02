@@ -5,6 +5,7 @@
  ***************************************************************************************/
 #include "GameAssetManager.h"
 
+#include "FileBinaryStreams.h"
 #include "FileSystem.h"
 
 #include <Core/GameException.h>
@@ -134,9 +135,9 @@ std::vector<IAssetManager::AssetDescriptor> GameAssetManager::EnumerateFonts(std
     return fontDescriptors;
 }
 
-Buffer<std::uint8_t> GameAssetManager::LoadFont(std::string const & fontSetName, std::string const & fontRelativePath) const
+std::unique_ptr<BinaryReadStream> GameAssetManager::LoadFont(std::string const & fontSetName, std::string const & fontRelativePath) const
 {
-    return FileSystem::LoadBinaryFile(mDataRoot / "Fonts" / fontSetName / fontRelativePath);
+    return std::make_unique<FileBinaryReadStream>(mDataRoot / "Fonts" / fontSetName / fontRelativePath);
 }
 
 picojson::value GameAssetManager::LoadStructuralMaterialDatabase() const
@@ -163,8 +164,8 @@ picojson::value GameAssetManager::LoadNpcDatabase() const
 
 ImageSize GameAssetManager::GetImageSize(std::filesystem::path const & filePath)
 {
-    auto const buffer = FileSystem::LoadBinaryFile(filePath);
-    return PngTools::GetImageSize(buffer);
+    auto readStream = std::make_unique<FileBinaryReadStream>(filePath);
+    return PngTools::GetImageSize(*readStream);
 }
 
 template<>
@@ -181,30 +182,30 @@ ImageData<rgbColor> GameAssetManager::LoadPngImage<rgbColor>(std::filesystem::pa
 
 RgbaImageData GameAssetManager::LoadPngImageRgba(std::filesystem::path const & filePath)
 {
-    auto const buffer = FileSystem::LoadBinaryFile(filePath);
-    return PngTools::DecodeImageRgba(buffer);
+    auto readStream = std::make_unique<FileBinaryReadStream>(filePath);
+    return PngTools::DecodeImageRgba(*readStream);
 }
 
 RgbImageData GameAssetManager::LoadPngImageRgb(std::filesystem::path const & filePath)
 {
-    auto const buffer = FileSystem::LoadBinaryFile(filePath);
-    return PngTools::DecodeImageRgb(buffer);
+    auto readStream = std::make_unique<FileBinaryReadStream>(filePath);
+    return PngTools::DecodeImageRgb(*readStream);
 }
 
 void GameAssetManager::SavePngImage(
     RgbaImageData const & image,
     std::filesystem::path filePath)
 {
-    auto const buffer = PngTools::EncodeImage(image);
-    FileSystem::SaveBinaryFile(buffer, filePath);
+    auto writeStream = std::make_unique<FileBinaryWriteStream>(filePath);
+    PngTools::EncodeImage(image, *writeStream);
 }
 
 void GameAssetManager::SavePngImage(
     RgbImageData const & image,
     std::filesystem::path filePath)
 {
-    auto const buffer = PngTools::EncodeImage(image);
-    FileSystem::SaveBinaryFile(buffer, filePath);
+    auto writeStream = std::make_unique<FileBinaryWriteStream>(filePath);
+    PngTools::EncodeImage(image, *writeStream);
 }
 
 picojson::value GameAssetManager::LoadJson(std::filesystem::path const & filePath)

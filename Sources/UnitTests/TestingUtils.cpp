@@ -87,12 +87,12 @@ std::vector<IAssetManager::AssetDescriptor> TestAssetManager::EnumerateFonts(std
     return std::vector<IAssetManager::AssetDescriptor>();
 }
 
-Buffer<std::uint8_t> TestAssetManager::LoadFont(std::string const & fontSetName, std::string const & fontRelativePath) const
+std::unique_ptr<BinaryReadStream> TestAssetManager::LoadFont(std::string const & fontSetName, std::string const & fontRelativePath) const
 {
     assert(false); // Not needed by tests, so far
     (void)fontSetName;
     (void)fontRelativePath;
-    return Buffer<std::uint8_t>(0);
+    return nullptr;
 }
 
 picojson::value TestAssetManager::LoadStructuralMaterialDatabase() const
@@ -153,20 +153,19 @@ float DivideByTwo(float value)
     return value / 2.0f;
 }
 
-// TODOTEST
-////StructuralMaterial MakeTestStructuralMaterial(std::string name, rgbColor colorKey)
-////{
-////    return StructuralMaterial(
-////        colorKey,
-////        name,
-////        rgbaColor::zero());
-////}
-////
-////ElectricalMaterial MakeTestElectricalMaterial(std::string name, rgbColor colorKey, bool isInstanced)
-////{
-////    return ElectricalMaterial(
-////        colorKey,
-////        name,
-////        rgbColor::zero(),
-////        isInstanced);
-////}
+StructuralMaterial MakeTestStructuralMaterial(std::string name, rgbColor colorKey)
+{
+    return StructuralMaterial(
+        colorKey,
+        name,
+        rgbaColor::zero());
+}
+
+ElectricalMaterial MakeTestElectricalMaterial(std::string name, rgbColor colorKey, bool isInstanced)
+{
+    return ElectricalMaterial(
+        colorKey,
+        name,
+        rgbColor::zero(),
+        isInstanced);
+}

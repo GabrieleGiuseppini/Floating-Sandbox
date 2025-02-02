@@ -41,7 +41,7 @@ public:
         }
     }
 
-    static std::shared_ptr<std::istream> OpenInputStream(std::filesystem::path const & filePath)
+    static std::shared_ptr<std::istream> OpenBinaryInputStream(std::filesystem::path const & filePath)
     {
         if (std::filesystem::exists(filePath)
             && std::filesystem::is_regular_file(filePath))
@@ -57,7 +57,7 @@ public:
         }
     }
 
-    static std::shared_ptr<std::ostream> OpenOutputStream(std::filesystem::path const & filePath)
+    static std::shared_ptr<std::ostream> OpenBinaryOutputStream(std::filesystem::path const & filePath)
     {
         return std::shared_ptr<std::ostream>(
             new std::ofstream(
@@ -108,48 +108,6 @@ public:
         }
 
         return filePaths;
-    }
-
-    static Buffer<std::uint8_t> LoadBinaryFile(std::filesystem::path const & filePath)
-    {
-        auto fStream = std::ifstream(
-            filePath,
-            std::ios_base::in | std::ios_base::binary);
-        if (!fStream.is_open())
-        {
-            throw GameException("Error opening file \"" + filePath.string() + "\" for reading");
-        }
-
-        fStream.ignore(std::numeric_limits<std::streamsize>::max());
-        std::streamsize length = fStream.gcount();
-        fStream.clear();
-        fStream.seekg(0, std::ios_base::beg);
-
-        Buffer<std::uint8_t> buffer = Buffer<std::uint8_t>(static_cast<size_t>(length));
-        fStream.read(
-            reinterpret_cast<char *>(buffer.data()),
-            length);
-        fStream.close();
-
-        return buffer;
-    }
-
-    static void SaveBinaryFile(
-        Buffer<std::uint8_t> const & buffer,
-        std::filesystem::path const & filepath)
-    {
-        auto fStream = std::ofstream(
-            filepath,
-            std::ios_base::out | std::ios_base::binary);
-        if (!fStream.is_open())
-        {
-            throw GameException("Error opening file \"" + filepath.string() + "\" for writing");
-        }
-
-        fStream.write(
-            reinterpret_cast<char const *>(buffer.data()),
-            buffer.GetSize());
-        fStream.close();
     }
 
     static std::string LoadTextFile(std::filesystem::path const & filePath)
@@ -305,14 +263,14 @@ struct IFileSystem
     /*
      * Opens a file for reading. Returns an empty pointer if the file does not exist.
      */
-    virtual std::shared_ptr<std::istream> OpenInputStream(std::filesystem::path const & filePath) = 0;
+    virtual std::shared_ptr<std::istream> OpenBinaryInputStream(std::filesystem::path const & filePath) = 0;
 
     /*
      * Opens a file for writing. Overwrites the files if it exists already.
      *
      * The file is flushed and closed when the shared pointer goes out of scope.
      */
-    virtual std::shared_ptr<std::ostream> OpenOutputStream(std::filesystem::path const & filePath) = 0;
+    virtual std::shared_ptr<std::ostream> OpenBinaryOutputStream(std::filesystem::path const & filePath) = 0;
 
     /*
      * Returns paths of all files in the specified directory.
@@ -357,14 +315,14 @@ public:
         FileSystem::EnsureDirectoryExists(directoryPath);
     }
 
-    std::shared_ptr<std::istream> OpenInputStream(std::filesystem::path const & filePath) override
+    std::shared_ptr<std::istream> OpenBinaryInputStream(std::filesystem::path const & filePath) override
     {
-        return FileSystem::OpenInputStream(filePath);
+        return FileSystem::OpenBinaryInputStream(filePath);
     }
 
-    std::shared_ptr<std::ostream> OpenOutputStream(std::filesystem::path const & filePath) override
+    std::shared_ptr<std::ostream> OpenBinaryOutputStream(std::filesystem::path const & filePath) override
     {
-        return FileSystem::OpenOutputStream(filePath);
+        return FileSystem::OpenBinaryOutputStream(filePath);
     }
 
     std::vector<std::filesystem::path> ListFiles(std::filesystem::path const & directoryPath) override

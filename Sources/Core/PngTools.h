@@ -4,7 +4,7 @@
 * Copyright:            Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
 
-#include "Buffer.h"
+#include "BinaryStreams.h"
 #include "ImageData.h"
 
 #include <cstdint>
@@ -22,21 +22,19 @@ class PngTools
 {
 public:
 
-    static RgbaImageData DecodeImageRgba(Buffer<std::uint8_t> const & pngImageData);
-    static RgbaImageData DecodeImageRgba(std::uint8_t const * pngImageData, size_t pngImageDataSize);
-    static RgbImageData DecodeImageRgb(Buffer<std::uint8_t> const & pngImageData);
-    static RgbImageData DecodeImageRgb(std::uint8_t const * pngImageData, size_t pngImageDataSize);
+    static RgbaImageData DecodeImageRgba(BinaryReadStream & pngImageData);
+    static RgbImageData DecodeImageRgb(BinaryReadStream & pngImageData);
 
-    static ImageSize GetImageSize(Buffer<std::uint8_t> const & pngImageData);
+    static ImageSize GetImageSize(BinaryReadStream & pngImageData);
 
-    static Buffer<std::uint8_t> EncodeImage(RgbaImageData const & image);
-    static Buffer<std::uint8_t> EncodeImage(RgbImageData const & image);
+    static void EncodeImage(RgbaImageData const & image, BinaryWriteStream & outputStream);
+    static void EncodeImage(RgbImageData const & image, BinaryWriteStream & outputStream);
 
 private:
 
     template<typename TImageData>
-    static TImageData InternalDecodeImage(std::uint8_t const * pngImageData, size_t pngImageDataSize);
+    static TImageData InternalDecodeImage(BinaryReadStream & pngImageData);
 
     template<typename TImageData>
-    static Buffer<std::uint8_t> InternalEncodeImage(TImageData const & image);
+    static void InternalEncodeImage(TImageData const & image, BinaryWriteStream & outputStream);
 };

@@ -9,6 +9,7 @@ set  (SOURCES
 	Algorithms.h
 	BarycentricCoords.cpp
 	BarycentricCoords.h
+	BinaryStreams.h
 	BoundedVector.h
 	Buffer.h
 	Buffer2D.h
@@ -55,6 +56,7 @@ set  (SOURCES
 	Log.cpp
 	Log.h
 	Matrix.h
+	MemoryBinaryStreams.h
 	MemoryStreams.h
 	Noise.cpp
 	Noise.h

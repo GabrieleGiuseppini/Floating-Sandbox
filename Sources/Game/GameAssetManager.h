@@ -37,7 +37,7 @@ public:
 	std::string LoadShader(std::string const & shaderSetName, std::string const & shaderRelativePath) const override;
 
 	std::vector<AssetDescriptor> EnumerateFonts(std::string const & fontSetName) const override;
-	Buffer<std::uint8_t> LoadFont(std::string const & fontSetName, std::string const & fontRelativePath) const override;
+	std::unique_ptr<BinaryReadStream> LoadFont(std::string const & fontSetName, std::string const & fontRelativePath) const override;
 
 	picojson::value LoadStructuralMaterialDatabase() const override;
 	picojson::value LoadElectricalMaterialDatabase() const override;

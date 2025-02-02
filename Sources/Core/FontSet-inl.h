@@ -18,58 +18,62 @@ BffFont BffFont::Load(
     IAssetManager const & assetManager)
 {
     static constexpr size_t HeaderSize = 20 + 256;
+    std::uint8_t header[HeaderSize];
 
     //
     // Load font
     //
 
-    auto const buffer = assetManager.LoadFont(fontSetName, fontRelativePath);
+    auto const readStream = assetManager.LoadFont(fontSetName, fontRelativePath);
+
+    //
+    // Parse header
+    //
+
+    size_t szRead = readStream->Read(header, HeaderSize);
+    if (szRead < HeaderSize)
+    {
+        throw GameException("Font \"" + fontSetName + "::" + fontRelativePath + "\" is not a valid font");
+    }
 
     // Check
-
-    if (buffer.GetSize() < HeaderSize
-        || buffer[0] != 0xBF
-        || buffer[1] != 0xF2)
+    if (header[0] != 0xBF
+        || header[1] != 0xF2)
     {
         throw GameException("Font \"" + fontSetName + "::" + fontRelativePath + "\" is not a valid font");
     }
 
     // Make sure the BPP is as expected
-    if (buffer[18] != 32)
+    if (header[18] != 32)
     {
         throw GameException("Font \"" + fontSetName + "::" + fontRelativePath + "\" has an unsupported BPP");
     }
 
-    //
-    // Parse
-    //
-
     // Read texture image size
-    int width = *(reinterpret_cast<int const *>(&(buffer[2])));
-    int height = *(reinterpret_cast<int const *>(&(buffer[6])));
+    int width = *(reinterpret_cast<int const *>(&(header[2])));
+    int height = *(reinterpret_cast<int const *>(&(header[6])));
     ImageSize textureSize(width, height);
 
-    if (buffer.GetSize() != HeaderSize + textureSize.GetLinearSize() * sizeof(rgbaColor))
-    {
-        throw GameException("Font \"" + fontSetName + "::" + fontRelativePath + "\" is not a valid font");
-    }
-
     // Read cell size
-    width = *(reinterpret_cast<int const *>(&(buffer[10])));
-    height = *(reinterpret_cast<int const *>(&(buffer[14])));
+    width = *(reinterpret_cast<int const *>(&(header[10])));
+    height = *(reinterpret_cast<int const *>(&(header[14])));
     ImageSize cellSize(width, height);
 
     // Read base texture character
-    char const baseTextureCharacter = *(reinterpret_cast<char const *>(&(buffer[19])));
+    char const baseTextureCharacter = *(reinterpret_cast<char const *>(&(header[19])));
 
     // Read glyph widths
     std::array<uint8_t, 256> glyphWidths;
-    std::memcpy(&(glyphWidths[0]), &(buffer[20]), 256);
+    std::memcpy(&(glyphWidths[0]), &(header[20]), 256);
 
     // Read texture image
     size_t const textureByteSize = textureSize.GetLinearSize() * sizeof(rgbaColor);
     std::unique_ptr<rgbaColor[]> textureData = std::make_unique<rgbaColor[]>(textureByteSize);
-    std::memcpy(textureData.get(), &(buffer[HeaderSize]), textureByteSize);
+    szRead = readStream->Read(reinterpret_cast<uint8_t *>(textureData.get()), textureByteSize);
+    if (szRead != textureByteSize)
+    {
+        throw GameException("Font \"" + fontSetName + "::" + fontRelativePath + "\" is not a valid font");
+    }
     RgbaImageData texture(textureSize, std::move(textureData));
 
     return BffFont(

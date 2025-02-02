@@ -19,6 +19,7 @@ set_property(
 set (UNIT_TEST_SOURCES
 	AABBTests.cpp
 	AlgorithmsTests.cpp
+	BinaryStreamsTests.cpp
 	BoundedVectorTests.cpp
 	BufferTests.cpp
 	Buffer2DTests.cpp

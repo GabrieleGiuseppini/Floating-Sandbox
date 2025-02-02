@@ -36,23 +36,17 @@ namespace _detail
 
     struct PngDecodeContext
     {
-        std::uint8_t const * const raw_data_buffer;
-        size_t raw_data_buffer_size;
+        BinaryReadStream & raw_stream;
         png_structp png_ptr;
         png_infop info_ptr;
 
-        png_size_t raw_data_buffer_read_offset;
-
         PngDecodeContext(
-            std::uint8_t const * _raw_data_buffer,
-            size_t _raw_data_buffer_size,
+            BinaryReadStream & _raw_stream,
             png_structp _png_ptr,
             png_infop _info_ptr)
-            : raw_data_buffer(_raw_data_buffer)
-            , raw_data_buffer_size(_raw_data_buffer_size)
+            : raw_stream(_raw_stream)
             , png_ptr(_png_ptr)
             , info_ptr(_info_ptr)
-            , raw_data_buffer_read_offset(0)
         {}
 
         ~PngDecodeContext()
@@ -67,28 +61,15 @@ namespace _detail
         png_size_t read_length)
     {
         auto * png_read_ctx_ptr = reinterpret_cast<PngDecodeContext *>(png_get_io_ptr(png_ptr));
-        png_byte const * const raw_data_src = png_read_ctx_ptr->raw_data_buffer + png_read_ctx_ptr->raw_data_buffer_read_offset;
-
-        // Read
-        memcpy(
-            png_data,
-            raw_data_src,
-            read_length);
-
-        // Advance
-        png_read_ctx_ptr->raw_data_buffer_read_offset += read_length;
+        size_t const szRead = png_read_ctx_ptr->raw_stream.Read(png_data, read_length);
+        if (szRead < read_length)
+        {
+            png_error(png_ptr, "Not enough data");
+        }
     }
 
-    std::unique_ptr<PngDecodeContext> DecodeProlog(std::uint8_t const * pngImageData, size_t pngImageDataSize)
+    std::unique_ptr<PngDecodeContext> DecodeProlog(BinaryReadStream & raw_stream)
     {
-        // Sanity checks
-
-        if (pngImageDataSize <= 8
-            || !png_check_sig(reinterpret_cast<png_const_bytep>(pngImageData), 8))
-        {
-            ThrowErrorDecodingPng();
-        }
-
         // Allocate structs
 
         png_structp png_ptr = png_create_read_struct(
@@ -104,8 +85,7 @@ namespace _detail
         // Create context
 
         auto context = std::make_unique<PngDecodeContext>(
-            pngImageData,
-            pngImageDataSize,
+            raw_stream,
             png_ptr,
             info_ptr);
 
@@ -129,15 +109,15 @@ namespace _detail
 
     struct PngEncodeContext
     {
-        std::vector<std::uint8_t> & raw_data_buffer;
+        BinaryWriteStream & raw_stream;
         png_structp png_ptr;
         png_infop info_ptr;
 
         PngEncodeContext(
-            std::vector<std::uint8_t> & _raw_data_buffer,
+            BinaryWriteStream & _raw_stream,
             png_structp _png_ptr,
             png_infop _info_ptr)
-            : raw_data_buffer(_raw_data_buffer)
+            : raw_stream(_raw_stream)
             , png_ptr(_png_ptr)
             , info_ptr(_info_ptr)
         {}
@@ -154,13 +134,10 @@ namespace _detail
         png_size_t write_length)
     {
         auto * png_write_ctx_ptr = reinterpret_cast<PngEncodeContext *>(png_get_io_ptr(png_ptr));
-        png_write_ctx_ptr->raw_data_buffer.insert(
-            png_write_ctx_ptr->raw_data_buffer.end(),
-            png_data,
-            png_data + write_length);
+        png_write_ctx_ptr->raw_stream.Write(png_data, write_length);
     }
 
-    std::unique_ptr<PngEncodeContext> EncodeProlog(std::vector<std::uint8_t> & buffer)
+    std::unique_ptr<PngEncodeContext> EncodeProlog(BinaryWriteStream & raw_stream)
     {
         // Allocate structs
 
@@ -177,7 +154,7 @@ namespace _detail
         // Create context
 
         auto context = std::make_unique<PngEncodeContext>(
-            buffer,
+            raw_stream,
             png_ptr,
             info_ptr);
 
@@ -189,29 +166,19 @@ namespace _detail
     }
 }
 
-RgbaImageData PngTools::DecodeImageRgba(Buffer<std::uint8_t> const & pngImageData)
+RgbaImageData PngTools::DecodeImageRgba(BinaryReadStream & pngImageData)
 {
-    return InternalDecodeImage<RgbaImageData>(pngImageData.data(), pngImageData.GetSize());
+    return InternalDecodeImage<RgbaImageData>(pngImageData);
 }
 
-RgbaImageData PngTools::DecodeImageRgba(std::uint8_t const * pngImageData, size_t pngImageDataSize)
+RgbImageData PngTools::DecodeImageRgb(BinaryReadStream & pngImageData)
 {
-    return InternalDecodeImage<RgbaImageData>(pngImageData, pngImageDataSize);
+    return InternalDecodeImage<RgbImageData>(pngImageData);
 }
 
-RgbImageData PngTools::DecodeImageRgb(Buffer<std::uint8_t> const & pngImageData)
+ImageSize PngTools::GetImageSize(BinaryReadStream & pngImageData)
 {
-    return InternalDecodeImage<RgbImageData>(pngImageData.data(), pngImageData.GetSize());
-}
-
-RgbImageData PngTools::DecodeImageRgb(std::uint8_t const * pngImageData, size_t pngImageDataSize)
-{
-    return InternalDecodeImage<RgbImageData>(pngImageData, pngImageDataSize);
-}
-
-ImageSize PngTools::GetImageSize(Buffer<std::uint8_t> const & pngImageData)
-{
-    auto context = _detail::DecodeProlog(pngImageData.data(), pngImageData.GetSize());
+    auto context = _detail::DecodeProlog(pngImageData);
 
     // Setup error callback
     if (setjmp(png_jmpbuf(context->png_ptr)))
@@ -246,22 +213,22 @@ ImageSize PngTools::GetImageSize(Buffer<std::uint8_t> const & pngImageData)
         static_cast<int>(height) };
 }
 
-Buffer<std::uint8_t> PngTools::EncodeImage(RgbaImageData const & image)
+void PngTools::EncodeImage(RgbaImageData const & image, BinaryWriteStream & outputStream)
 {
-    return InternalEncodeImage<RgbaImageData>(image);
+    InternalEncodeImage<RgbaImageData>(image, outputStream);
 }
 
-Buffer<std::uint8_t> PngTools::EncodeImage(RgbImageData const & image)
+void PngTools::EncodeImage(RgbImageData const & image, BinaryWriteStream & outputStream)
 {
-    return InternalEncodeImage<RgbImageData>(image);
+    InternalEncodeImage<RgbImageData>(image, outputStream);
 }
 
 ///////////////////////////////////////////////////
 
 template<typename TImageData>
-TImageData PngTools::InternalDecodeImage(std::uint8_t const * pngImageData, size_t pngImageDataSize)
+TImageData PngTools::InternalDecodeImage(BinaryReadStream & pngImageData)
 {
-    auto context = _detail::DecodeProlog(pngImageData, pngImageDataSize);
+    auto context = _detail::DecodeProlog(pngImageData);
 
     //
     // Setup error callback
@@ -603,12 +570,9 @@ TImageData PngTools::InternalDecodeImage(std::uint8_t const * pngImageData, size
 }
 
 template<typename TImageData>
-Buffer<std::uint8_t> PngTools::InternalEncodeImage(TImageData const & image)
+void PngTools::InternalEncodeImage(TImageData const & image, BinaryWriteStream & outputStream)
 {
-    std::vector<std::uint8_t> tmpOutputBuffer;
-    tmpOutputBuffer.reserve(1024 * 1024);
-
-    auto context = _detail::EncodeProlog(tmpOutputBuffer);
+    auto context = _detail::EncodeProlog(outputStream);
 
     // Setup error callback
     if (setjmp(png_jmpbuf(context->png_ptr)))
@@ -668,10 +632,4 @@ Buffer<std::uint8_t> PngTools::InternalEncodeImage(TImageData const & image)
 
     // We are done
     png_write_end(context->png_ptr, context->info_ptr);
-
-    // Convert to buffer
-    Buffer<std::uint8_t> outputBuffer(tmpOutputBuffer.size());
-    std::memcpy(outputBuffer.receive(tmpOutputBuffer.size()), tmpOutputBuffer.data(), tmpOutputBuffer.size() * sizeof(std::uint8_t));
-
-    return outputBuffer;
 }

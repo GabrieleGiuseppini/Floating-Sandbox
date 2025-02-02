@@ -3,7 +3,8 @@
 # Game library
 #
 
-set  (GAME_SOURCES	
+set  (GAME_SOURCES
+	FileBinaryStreams.h
 	FileSystem.h
 	GameAssetManager.cpp
 	GameAssetManager.h
