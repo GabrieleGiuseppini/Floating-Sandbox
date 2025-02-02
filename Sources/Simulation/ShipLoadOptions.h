@@ -9,8 +9,6 @@
 
 #include <picojson.h>
 
-#include <filesystem>
-
 struct ShipLoadOptions
 {
 	bool FlipHorizontally;
