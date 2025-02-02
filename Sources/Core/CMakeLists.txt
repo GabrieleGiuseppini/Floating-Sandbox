@@ -39,7 +39,6 @@ set  (SOURCES
 	GameGeometry.h
 	GameMath.h
 	GameRandomEngine.h
-	GameTextureDatabases.h
 	GameTypes.cpp
 	GameTypes.h
 	GameWallClock.h

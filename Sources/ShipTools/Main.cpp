@@ -6,7 +6,8 @@
 
 #include "Baker.h"
 
-#include <Core/GameTextureDatabases.h>
+#include <Render/GameTextureDatabases.h>
+
 #include <Core/ImageData.h>
 #include <Core/Utils.h>
 

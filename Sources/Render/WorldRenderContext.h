@@ -6,6 +6,7 @@
 #pragma once
 
 #include "GameShaderSet.h"
+#include "GameTextureDatabases.h"
 #include "GlobalRenderContext.h"
 #include "RenderParameters.h"
 #include "ViewModel.h"
@@ -17,7 +18,6 @@
 #include <Core/BoundedVector.h>
 #include <Core/Buffer2D.h>
 #include <Core/Colors.h>
-#include <Core/GameTextureDatabases.h>
 #include <Core/GameTypes.h>
 #include <Core/IAssetManager.h>
 #include <Core/ImageData.h>

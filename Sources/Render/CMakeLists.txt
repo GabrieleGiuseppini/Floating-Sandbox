@@ -7,6 +7,7 @@ set  (RENDER_SOURCES
 	GameFontSet.h
 	GameShaderSet.cpp
 	GameShaderSet.h
+	GameTextureDatabases.h
 	GlobalRenderContext.cpp
 	GlobalRenderContext.h
 	NotificationRenderContext.cpp

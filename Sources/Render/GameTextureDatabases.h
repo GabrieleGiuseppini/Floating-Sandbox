@@ -5,7 +5,8 @@
 ***************************************************************************************/
 #pragma once
 
-#include "Utils.h"
+#include <Core/GameException.h>
+#include <Core/Utils.h>
 
 #include <string>
 

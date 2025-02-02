@@ -6,13 +6,13 @@
 #pragma once
 
 #include "GameShaderSet.h"
+#include "GameTextureDatabases.h"
 #include "GlobalRenderContext.h"
 #include "RenderParameters.h"
 
 #include <OpenGLCore/ShaderManager.h>
 
 #include <Core/FontSet.h>
-#include <Core/GameTextureDatabases.h>
 #include <Core/GameTypes.h>
 #include <Core/IAssetManager.h>
 #include <Core/TextureAtlas.h>

@@ -397,7 +397,7 @@ std::string ProgramKindToStr(ProgramKind program)
     throw GameException("Unsupported GameShaderProgramType");
 }
 
-ProgramParameterKind StrToGameShaderProgramParameterType(std::string const & str)
+ProgramParameterKind StrToProgramParameterKind(std::string const & str)
 {
     if (str == "AtlasTile1Dx")
         return ProgramParameterKind::AtlasTile1Dx;
@@ -500,7 +500,7 @@ ProgramParameterKind StrToGameShaderProgramParameterType(std::string const & str
         throw GameException("Unrecognized program parameter \"" + str + "\"");
 }
 
-std::string GameShaderProgramParameterTypeToStr(ProgramParameterKind programParameter)
+std::string ProgramParameterKindToStr(ProgramParameterKind programParameter)
 {
     switch (programParameter)
     {
@@ -607,7 +607,7 @@ std::string GameShaderProgramParameterTypeToStr(ProgramParameterKind programPara
     throw GameException("Unsupported ProgramParameterKind");
 }
 
-VertexAttributeKind StrToGameShaderVertexAttributeType(std::string const & str)
+VertexAttributeKind StrToVertexAttributeKind(std::string const & str)
 {
     // World
     if (Utils::CaseInsensitiveEquals(str, "Sky"))
