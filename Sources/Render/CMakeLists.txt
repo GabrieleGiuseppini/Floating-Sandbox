@@ -14,6 +14,9 @@ set  (RENDER_SOURCES
 	RenderDeviceProperties.h
 	RenderParameters.cpp
 	RenderParameters.h
+	RenderStatistics.h
+	ShipRenderContext.cpp
+	ShipRenderContext.h
 	ViewModel.h
 	WorldRenderContext.cpp
 	WorldRenderContext.h

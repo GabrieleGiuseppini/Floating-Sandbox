@@ -5,23 +5,22 @@
 ***************************************************************************************/
 #pragma once
 
+#include "GameShaderSet.h"
 #include "GlobalRenderContext.h"
 #include "RenderParameters.h"
-#include "RenderTypes.h"
-#include "ShaderTypes.h"
-#include "ShipDefinition.h"
-#include "TextureAtlas.h"
-#include "TextureTypes.h"
+#include "RenderStatistics.h"
 
-#include <GameOpenGL/GameOpenGL.h>
-#include <GameOpenGL/GameOpenGLMappedBuffer.h>
-#include <GameOpenGL/ShaderManager.h>
+#include <OpenGLCore/GameOpenGL.h>
+#include <OpenGLCore/GameOpenGLMappedBuffer.h>
+#include <OpenGLCore/ShaderManager.h>
 
-#include <GameCore/BoundedVector.h>
-#include <GameCore/GameTypes.h>
-#include <GameCore/ImageData.h>
-#include <GameCore/SysSpecifics.h>
-#include <GameCore/Vectors.h>
+#include <Core/BoundedVector.h>
+#include <Core/GameTextureDatabases.h>
+#include <Core/GameTypes.h>
+#include <Core/ImageData.h>
+#include <Core/SysSpecifics.h>
+#include <Core/TextureAtlas.h>
+#include <Core/Vectors.h>
 
 #include <algorithm>
 #include <array>
@@ -31,8 +30,6 @@
 #include <optional>
 #include <string>
 #include <vector>
-
-namespace Render {
 
 class ShipRenderContext
 {
@@ -52,7 +49,7 @@ public:
         size_t shipCount,
         RgbaImageData exteriorViewImage,
         RgbaImageData interiorViewImage,
-        ShaderManager<ShaderManagerTraits> & shaderManager,
+        ShaderManager<GameShaderSet::ShaderSet> & shaderManager,
         GlobalRenderContext & globalRenderContext,
         RenderParameters const & renderParameters,
         float shipFlameSizeAdjustment,
@@ -828,7 +825,7 @@ public:
     {
         StoreGenericMipMappedTextureRenderSpecification(
             planeId,
-            TextureFrameId<GenericMipMappedTextureGroups>(GenericMipMappedTextureGroups::AirBubble, 0),
+            TextureFrameId<GameTextureDatabases::GenericMipMappedTextureGroups>(GameTextureDatabases::GenericMipMappedTextureGroups::AirBubble, 0),
             position,
             scale,
             angle,
@@ -838,7 +835,7 @@ public:
 
     inline void UploadGenericMipMappedTextureRenderSpecification(
         PlaneId planeId,
-        TextureFrameId<GenericMipMappedTextureGroups> const & textureFrameId,
+        TextureFrameId<GameTextureDatabases::GenericMipMappedTextureGroups> const & textureFrameId,
         vec2f const & position)
     {
         UploadGenericMipMappedTextureRenderSpecification(
@@ -852,7 +849,7 @@ public:
 
     inline void UploadGenericMipMappedTextureRenderSpecification(
         PlaneId planeId,
-        TextureFrameId<GenericMipMappedTextureGroups> const & textureFrameId,
+        TextureFrameId<GameTextureDatabases::GenericMipMappedTextureGroups> const & textureFrameId,
         vec2f const & position,
         float scale,
         vec2f const & rotationBase,
@@ -871,7 +868,7 @@ public:
     inline void UploadGenericMipMappedTextureRenderSpecification(
         PlaneId planeId,
         float personalitySeed,
-        GenericMipMappedTextureGroups textureGroup,
+        GameTextureDatabases::GenericMipMappedTextureGroups textureGroup,
         vec2f const & position,
         float scale,
         float alpha)
@@ -888,7 +885,7 @@ public:
 
         UploadGenericMipMappedTextureRenderSpecification(
             planeId,
-            TextureFrameId<GenericMipMappedTextureGroups>(textureGroup, frameIndex),
+            TextureFrameId<GameTextureDatabases::GenericMipMappedTextureGroups>(textureGroup, frameIndex),
             position,
             scale,
             angleCw,
@@ -897,7 +894,7 @@ public:
 
     inline void UploadGenericMipMappedTextureRenderSpecification(
         PlaneId planeId,
-        TextureFrameId<GenericMipMappedTextureGroups> const & textureFrameId,
+        TextureFrameId<GameTextureDatabases::GenericMipMappedTextureGroups> const & textureFrameId,
         vec2f const & position,
         float scale,
         float angleCw,
@@ -1270,7 +1267,7 @@ private:
     template<typename TVertexBuffer>
     inline void StoreGenericMipMappedTextureRenderSpecification(
         PlaneId planeId,
-        TextureFrameId<GenericMipMappedTextureGroups> const & textureFrameId,
+        TextureFrameId<GameTextureDatabases::GenericMipMappedTextureGroups> const & textureFrameId,
         vec2f const & position,
         float scale,
         float angleCw,
@@ -1348,7 +1345,7 @@ private:
     void RenderDrawElectricSparks(RenderParameters const & renderParameters);
 
     void RenderPrepareFlames();
-    template<ProgramType FlameShaderType>
+    template<GameShaderSet::ProgramKind FlameShaderType>
     void RenderDrawFlames(
         size_t startFlameIndex,
         size_t flameCount,
@@ -1397,9 +1394,8 @@ private:
 
 private:
 
+    ShaderManager<GameShaderSet::ShaderSet> & mShaderManager;
     GlobalRenderContext & mGlobalRenderContext;
-
-    ShaderManager<ShaderManagerTraits> & mShaderManager;
 
 private:
 
@@ -1821,10 +1817,10 @@ private:
     // The shaders to use for ship structures
     //
 
-    ProgramType mShipPointsProgram;
-    ProgramType mShipRopesProgram;
-    ProgramType mShipSpringsProgram;
-    ProgramType mShipTrianglesProgram;
+    GameShaderSet::ProgramKind mShipPointsProgram;
+    GameShaderSet::ProgramKind mShipRopesProgram;
+    GameShaderSet::ProgramKind mShipSpringsProgram;
+    GameShaderSet::ProgramKind mShipTrianglesProgram;
 
     //
     // Textures
@@ -1837,10 +1833,10 @@ private:
     GameOpenGLTexture mShipTextureOpenGLHandle;
     GameOpenGLTexture mStressedSpringTextureOpenGLHandle;
 
-    TextureAtlasMetadata<ExplosionTextureGroups> const & mExplosionTextureAtlasMetadata;
+    TextureAtlasMetadata<GameTextureDatabases::ExplosionTextureDatabase> const & mExplosionTextureAtlasMetadata;
     [[maybe_unused]]
-    TextureAtlasMetadata<GenericLinearTextureGroups> const & mGenericLinearTextureAtlasMetadata;
-    TextureAtlasMetadata<GenericMipMappedTextureGroups> const & mGenericMipMappedTextureAtlasMetadata;
+    TextureAtlasMetadata<GameTextureDatabases::GenericLinearTextureDatabase> const & mGenericLinearTextureAtlasMetadata;
+    TextureAtlasMetadata<GameTextureDatabases::GenericMipMappedTextureDatabase> const & mGenericMipMappedTextureAtlasMetadata;
 
 private:
 
@@ -1857,5 +1853,3 @@ private:
 
     float mVectorFieldLengthMultiplier;
 };
-
-}
