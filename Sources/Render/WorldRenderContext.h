@@ -5,25 +5,24 @@
 ***************************************************************************************/
 #pragma once
 
+#include "GameShaderSet.h"
 #include "GlobalRenderContext.h"
 #include "RenderParameters.h"
-#include "RenderTypes.h"
-#include "ResourceLocator.h"
-#include "ShaderTypes.h"
-#include "TextureAtlas.h"
-#include "TextureTypes.h"
 #include "ViewModel.h"
 
-#include <GameOpenGL/GameOpenGL.h>
-#include <GameOpenGL/ShaderManager.h>
+#include <OpenGLCore/GameOpenGL.h>
+#include <OpenGLCore/ShaderManager.h>
 
-#include <GameCore/AABB.h>
-#include <GameCore/BoundedVector.h>
-#include <GameCore/Buffer2D.h>
-#include <GameCore/Colors.h>
-#include <GameCore/GameTypes.h>
-#include <GameCore/ImageData.h>
-#include <GameCore/Vectors.h>
+#include <Core/AABB.h>
+#include <Core/BoundedVector.h>
+#include <Core/Buffer2D.h>
+#include <Core/Colors.h>
+#include <Core/GameTextureDatabases.h>
+#include <Core/GameTypes.h>
+#include <Core/IAssetManager.h>
+#include <Core/ImageData.h>
+#include <Core/TextureAtlas.h>
+#include <Core/Vectors.h>
 
 #include <array>
 #include <cassert>
@@ -40,16 +39,17 @@ class WorldRenderContext
 public:
 
     WorldRenderContext(
-        ShaderManager<ShaderManagerTraits> & shaderManager,
+        IAssetManager const & assetManager,
+        ShaderManager<GameShaderSet::ShaderSet> & shaderManager,
         GlobalRenderContext & globalRenderContext);
 
     ~WorldRenderContext();
 
-    void InitializeCloudTextures(ResourceLocator const & resourceLocator);
+    void InitializeCloudTextures();
 
-    void InitializeWorldTextures(ResourceLocator const & resourceLocator);
+    void InitializeWorldTextures();
 
-    void InitializeFishTextures(ResourceLocator const & resourceLocator);
+    void InitializeFishTextures();
 
     void OnReset(RenderParameters const & renderParameters);
 
@@ -215,7 +215,7 @@ public:
         size_t const cloudTextureIndex = static_cast<size_t>(cloudId) % mCloudTextureAtlasMetadata->GetAllFramesMetadata().size();
 
         auto const & cloudAtlasFrameMetadata = mCloudTextureAtlasMetadata->GetFrameMetadata(
-            CloudTextureGroups::Cloud,
+            GameTextureDatabases::CloudTextureGroups::Cloud,
             static_cast<TextureFrameIndex>(cloudTextureIndex));
 
         float const aspectRatio = renderParameters.View.GetAspectRatio();
@@ -430,7 +430,7 @@ public:
     void UploadFishesStart(size_t fishCount);
 
     inline void UploadFish(
-        TextureFrameId<FishTextureGroups> const & textureFrameId,
+        TextureFrameId<GameTextureDatabases::FishTextureGroups> const & textureFrameId,
         vec2f const & position, // position of center
         vec2f const & worldSize,
         float angleCw,
@@ -778,9 +778,9 @@ private:
 
 private:
 
+    IAssetManager const & mAssetManager;
+    ShaderManager<GameShaderSet::ShaderSet> & mShaderManager;
     GlobalRenderContext & mGlobalRenderContext;
-
-    ShaderManager<ShaderManagerTraits> & mShaderManager;
 
 private:
 
@@ -1108,23 +1108,23 @@ private:
     // Textures
     //
 
-    std::unique_ptr<TextureAtlasMetadata<CloudTextureGroups>> mCloudTextureAtlasMetadata;
+    std::unique_ptr<TextureAtlasMetadata<GameTextureDatabases::CloudTextureDatabase>> mCloudTextureAtlasMetadata;
     GameOpenGLTexture mCloudTextureAtlasOpenGLHandle;
 
     GameOpenGLTexture mCloudShadowsTextureOpenGLHandle;
     size_t mCloudShadowsTextureSize;
     bool mHasCloudShadowsTextureBeenAllocated;
 
-    std::vector<TextureFrameSpecification<WorldTextureGroups>> mOceanTextureFrameSpecifications;
+    std::vector<TextureFrameSpecification<GameTextureDatabases::WorldTextureDatabase>> mOceanTextureFrameSpecifications;
     GameOpenGLTexture mOceanTextureOpenGLHandle;
 
-    std::vector<TextureFrameSpecification<WorldTextureGroups>> mLandTextureFrameSpecifications;
+    std::vector<TextureFrameSpecification<GameTextureDatabases::WorldTextureDatabase>> mLandTextureFrameSpecifications;
     GameOpenGLTexture mLandTextureOpenGLHandle;
 
-    std::unique_ptr<TextureAtlasMetadata<FishTextureGroups>> mFishTextureAtlasMetadata;
+    std::unique_ptr<TextureAtlasMetadata<GameTextureDatabases::FishTextureDatabase>> mFishTextureAtlasMetadata;
     GameOpenGLTexture mFishTextureAtlasOpenGLHandle;
 
-    TextureAtlasMetadata<GenericLinearTextureGroups> const & mGenericLinearTextureAtlasMetadata;
+    TextureAtlasMetadata<GameTextureDatabases::GenericLinearTextureDatabase> const & mGenericLinearTextureAtlasMetadata;
 
     // Thumbnails
     std::vector<std::pair<std::string, RgbaImageData>> mOceanAvailableThumbnails;

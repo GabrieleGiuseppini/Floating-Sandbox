@@ -18,8 +18,8 @@ NotificationRenderContext::NotificationRenderContext(
     IAssetManager const & assetManager,
     ShaderManager<GameShaderSet::ShaderSet> & shaderManager,
     GlobalRenderContext & globalRenderContext)
-    : mGlobalRenderContext(globalRenderContext)
-    , mShaderManager(shaderManager)
+    : mShaderManager(shaderManager)
+    , mGlobalRenderContext(globalRenderContext)
     , mScreenToNdcX(0.0f) // Will be recalculated
     , mScreenToNdcY(0.0f) // Will be recalculated
     // Textures

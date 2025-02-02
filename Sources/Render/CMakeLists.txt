@@ -15,6 +15,8 @@ set  (RENDER_SOURCES
 	RenderParameters.cpp
 	RenderParameters.h
 	ViewModel.h
+	WorldRenderContext.cpp
+	WorldRenderContext.h
 )
 
 source_group(" " FILES ${RENDER_SOURCES})

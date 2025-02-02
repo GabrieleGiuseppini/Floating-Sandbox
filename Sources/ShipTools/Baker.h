@@ -109,6 +109,6 @@ public:
         assetManager.SaveJson(specificationJson, outputDirectoryPath / GameAssetManager::MakeAtlasSpecificationFilename(TTextureDatabase::DatabaseName));
         assetManager.SavePngImage(atlasImage, outputDirectoryPath / GameAssetManager::MakeAtlasImageFilename(TTextureDatabase::DatabaseName));
 
-        return { textureAtlas.Metadata.GetFrameCount(), textureAtlas.AtlasData.Size };
+        return { textureAtlas.Metadata.GetFrameCount(), textureAtlas.Image.Size };
     }
 };

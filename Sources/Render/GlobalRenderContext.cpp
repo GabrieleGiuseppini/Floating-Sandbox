@@ -8,8 +8,11 @@
 #include <Core/Noise.h>
 #include <Core/TextureDatabase.h>
 
-GlobalRenderContext::GlobalRenderContext(ShaderManager<GameShaderSet::ShaderSet> & shaderManager)
-    : mShaderManager(shaderManager)
+GlobalRenderContext::GlobalRenderContext(
+    IAssetManager const & assetManager,
+    ShaderManager<GameShaderSet::ShaderSet> & shaderManager)
+    : mAssetManager(assetManager)
+    , mShaderManager(shaderManager)
     , mElementIndices(TriangleQuadElementArrayVBO::Create())
     // Textures
     , mGenericLinearTextureAtlasOpenGLHandle()
@@ -28,13 +31,13 @@ GlobalRenderContext::GlobalRenderContext(ShaderManager<GameShaderSet::ShaderSet>
 GlobalRenderContext::~GlobalRenderContext()
 {}
 
-void GlobalRenderContext::InitializeNoiseTextures(IAssetManager const & assetManager)
+void GlobalRenderContext::InitializeNoiseTextures()
 {
     //
     // Load noise texture database
     //
 
-    auto noiseTextureDatabase = TextureDatabase<GameTextureDatabases::NoiseTextureDatabase>::Load(assetManager);
+    auto noiseTextureDatabase = TextureDatabase<GameTextureDatabases::NoiseTextureDatabase>::Load(mAssetManager);
 
     //
     // Load noise frames
@@ -46,7 +49,7 @@ void GlobalRenderContext::InitializeNoiseTextures(IAssetManager const & assetMan
         NoiseType::Gross,
         noiseTextureDatabase.GetGroup(GameTextureDatabases::NoiseTextureGroups::Noise)
             .GetFrameSpecification(static_cast<TextureFrameIndex>(NoiseType::Gross))
-            .LoadFrame(assetManager).TextureData,
+            .LoadFrame(mAssetManager).TextureData,
         GL_RGBA,
         GL_RGBA,
         GL_UNSIGNED_BYTE,
@@ -56,7 +59,7 @@ void GlobalRenderContext::InitializeNoiseTextures(IAssetManager const & assetMan
         NoiseType::Fine,
         noiseTextureDatabase.GetGroup(GameTextureDatabases::NoiseTextureGroups::Noise)
             .GetFrameSpecification(static_cast<TextureFrameIndex>(NoiseType::Fine))
-            .LoadFrame(assetManager).TextureData,
+            .LoadFrame(mAssetManager).TextureData,
         GL_RGBA,
         GL_RGBA,
         GL_UNSIGNED_BYTE,
@@ -67,20 +70,20 @@ void GlobalRenderContext::InitializeNoiseTextures(IAssetManager const & assetMan
     RegeneratePerlin_8_1024_073_Noise(); // Will upload at firstRenderPrepare
 }
 
-void GlobalRenderContext::InitializeGenericTextures(IAssetManager const & assetManager)
+void GlobalRenderContext::InitializeGenericTextures()
 {
     //
     // Create generic linear texture atlas
     //
 
     // Load texture database
-    auto genericLinearTextureDatabase = TextureDatabase<GameTextureDatabases::GenericLinearTextureDatabase>::Load(assetManager);
+    auto genericLinearTextureDatabase = TextureDatabase<GameTextureDatabases::GenericLinearTextureDatabase>::Load(mAssetManager);
 
     // Create atlas
     auto genericLinearTextureAtlas = TextureAtlasBuilder<GameTextureDatabases::GenericLinearTextureDatabase>::BuildAtlas(
         genericLinearTextureDatabase,
         TextureAtlasOptions::None,
-        assetManager,
+        mAssetManager,
         [](float, ProgressMessageType) {});
 
     LogMessage("Generic linear texture atlas size: ", genericLinearTextureAtlas.Image.Size.ToString());
@@ -151,13 +154,13 @@ void GlobalRenderContext::InitializeGenericTextures(IAssetManager const & assetM
     //
 
     // Load texture database
-    auto genericMipMappedTextureDatabase = TextureDatabase<GameTextureDatabases::GenericMipMappedTextureDatabase>::Load(assetManager);
+    auto genericMipMappedTextureDatabase = TextureDatabase<GameTextureDatabases::GenericMipMappedTextureDatabase>::Load(mAssetManager);
 
     // Create atlas
     auto genericMipMappedTextureAtlas = TextureAtlasBuilder<GameTextureDatabases::GenericMipMappedTextureDatabase>::BuildAtlas(
         genericMipMappedTextureDatabase,
         TextureAtlasOptions::MipMappable,
-        assetManager,
+        mAssetManager,
         [](float, ProgressMessageType) {});
 
     LogMessage("Generic mipmapped texture atlas size: ", genericMipMappedTextureAtlas.Image.Size.ToString());
@@ -199,10 +202,10 @@ void GlobalRenderContext::InitializeGenericTextures(IAssetManager const & assetM
     mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::ShipGenericMipMappedTextures>();
 }
 
-void GlobalRenderContext::InitializeExplosionTextures(IAssetManager const & assetManager)
+void GlobalRenderContext::InitializeExplosionTextures()
 {
     // Load atlas
-    auto explosionTextureAtlas = TextureAtlas<GameTextureDatabases::ExplosionTextureDatabase>::Deserialize(assetManager);
+    auto explosionTextureAtlas = TextureAtlas<GameTextureDatabases::ExplosionTextureDatabase>::Deserialize(mAssetManager);
 
     LogMessage("Explosion texture atlas size: ", explosionTextureAtlas.Image.Size.ToString());
 

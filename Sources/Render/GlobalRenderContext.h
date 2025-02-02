@@ -26,15 +26,17 @@ class GlobalRenderContext
 {
 public:
 
-    GlobalRenderContext(ShaderManager<GameShaderSet::ShaderSet> & shaderManager);
+    GlobalRenderContext(
+        IAssetManager const & assetManager,
+        ShaderManager<GameShaderSet::ShaderSet> & shaderManager);
 
     ~GlobalRenderContext();
 
-    void InitializeNoiseTextures(IAssetManager const & assetManager);
+    void InitializeNoiseTextures();
 
-    void InitializeGenericTextures(IAssetManager const & assetManager);
+    void InitializeGenericTextures();
 
-    void InitializeExplosionTextures(IAssetManager const & assetManager);
+    void InitializeExplosionTextures();
 
     void InitializeNpcTextures(TextureAtlas<GameTextureDatabases::NpcTextureDatabase> && npcTextureAtlas);
 
@@ -95,6 +97,7 @@ private:
 
 private:
 
+    IAssetManager const & mAssetManager;
     ShaderManager<GameShaderSet::ShaderSet> & mShaderManager;
 
     //

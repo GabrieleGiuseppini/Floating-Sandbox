@@ -121,21 +121,21 @@ int DoBakeAtlas(int argc, char ** argv)
     std::tuple<size_t, ImageSize> atlasData{ 0, ImageSize(0, 0) };
     if (Utils::CaseInsensitiveEquals(databaseName, "cloud"))
     {
-        atlasData = Baker::BakeAtlas<CloudTextureDatabase>(
+        atlasData = Baker::BakeAtlas<GameTextureDatabases::CloudTextureDatabase>(
             texturesRootDirectoryPath,
             outputDirectoryPath,
             options);
     }
     else if (Utils::CaseInsensitiveEquals(databaseName, "explosion"))
     {
-        atlasData = Baker::BakeAtlas<ExplosionTextureDatabase>(
+        atlasData = Baker::BakeAtlas<GameTextureDatabases::ExplosionTextureDatabase>(
             texturesRootDirectoryPath,
             outputDirectoryPath,
             options);
     }
     else if (Utils::CaseInsensitiveEquals(databaseName, "npc"))
     {
-        atlasData = Baker::BakeAtlas<NpcTextureDatabase>(
+        atlasData = Baker::BakeAtlas<GameTextureDatabases::NpcTextureDatabase>(
             texturesRootDirectoryPath,
             outputDirectoryPath,
             options);

@@ -62,8 +62,8 @@ private:
 public:
 
 	NotificationRenderContext(
-        IAssetManager const & assetManager,
-        ShaderManager<GameShaderSet::ShaderSet> & shaderManager,
+		IAssetManager const & assetManager,
+		ShaderManager<GameShaderSet::ShaderSet> & shaderManager,
 		GlobalRenderContext & globalRenderContext);
 
 public:
@@ -821,9 +821,8 @@ private:
 
 private:
 
-	GlobalRenderContext & mGlobalRenderContext;
-
     ShaderManager<GameShaderSet::ShaderSet> & mShaderManager;
+	GlobalRenderContext & mGlobalRenderContext;
 
     float mScreenToNdcX;
     float mScreenToNdcY;
