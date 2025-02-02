@@ -35,10 +35,23 @@ public:
 		mStream.reset();
 	}
 
+	size_t GetCurrentPosition() const override
+	{
+		return static_cast<size_t>(mStream->tellg());
+	}
+
 	size_t Read(std::uint8_t * buffer, size_t size) override
 	{
 		mStream->read(reinterpret_cast<char *>(buffer), size);
 		return mStream->gcount();
+	}
+
+	size_t Skip(size_t size) override
+	{
+		auto const prePosition = mStream->tellg();
+		mStream->seekg(size, std::ios_base::cur);
+		auto const postPosition = mStream->tellg();
+		return static_cast<size_t>(postPosition - prePosition);
 	}
 
 private:

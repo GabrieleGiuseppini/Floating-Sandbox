@@ -5,15 +5,15 @@
 ***************************************************************************************/
 #include "ShipDefinitionFormatDeSerializer.h"
 
-#include "PngImageFileTools.h"
-
-#include <GameCore/Colors.h>
-#include <GameCore/GameException.h>
-#include <GameCore/GameTypes.h>
-#include <GameCore/ImageTools.h>
-#include <GameCore/Log.h>
-#include <GameCore/PngTools.h>
-#include <GameCore/UserGameException.h>
+#include <Core/Colors.h>
+#include <Core/GameException.h>
+#include <Core/GameTypes.h>
+#include <Core/ImageTools.h>
+#include <Core/Log.h>
+#include <Core/MemoryBinaryStreams.h>
+#include <Core/PngTools.h>
+#include <Core/PortableTimepoint.h>
+#include <Core/UserGameException.h>
 
 #include <algorithm>
 #include <cassert>
@@ -30,7 +30,7 @@ uint8_t constexpr CurrentFileFormatVersion = 1;
 }
 
 ShipDefinition ShipDefinitionFormatDeSerializer::Load(
-    std::filesystem::path const & shipFilePath,
+    BinaryReadStream & shipDefinitionInputStream,
     MaterialDatabase const & materialDatabase)
 {
     DeSerializationBuffer<BigEndianess> buffer(256);
@@ -50,22 +50,22 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
     bool hasSeenTail = false;
 
     Parse(
-        shipFilePath,
-        [&](SectionHeader const & sectionHeader, std::ifstream & inputFile) -> bool
+        shipDefinitionInputStream,
+        [&](SectionHeader const & sectionHeader, BinaryReadStream & inputStream) -> bool
         {
             switch (sectionHeader.Tag)
             {
                 case static_cast<uint32_t>(MainSectionTagType::ShipAttributes) :
                 {
-                    ReadIntoBuffer(inputFile, buffer, sectionHeader.SectionBodySize);
-                    shipAttributes = ReadShipAttributes(shipFilePath, buffer);
+                    ReadIntoBuffer(inputStream, buffer, sectionHeader.SectionBodySize);
+                    shipAttributes = ReadShipAttributes(buffer);
 
                     break;
                 }
 
                 case static_cast<uint32_t>(MainSectionTagType::Metadata) :
                 {
-                    ReadIntoBuffer(inputFile, buffer, sectionHeader.SectionBodySize);
+                    ReadIntoBuffer(inputStream, buffer, sectionHeader.SectionBodySize);
                     shipMetadata = ReadMetadata(buffer);
 
                     break;
@@ -73,7 +73,7 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
 
                 case static_cast<uint32_t>(MainSectionTagType::PhysicsData) :
                 {
-                    ReadIntoBuffer(inputFile, buffer, sectionHeader.SectionBodySize);
+                    ReadIntoBuffer(inputStream, buffer, sectionHeader.SectionBodySize);
                     shipPhysicsData = ReadPhysicsData(buffer);
 
                     break;
@@ -81,7 +81,7 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
 
                 case static_cast<uint32_t>(MainSectionTagType::AutoTexturizationSettings) :
                 {
-                    ReadIntoBuffer(inputFile, buffer, sectionHeader.SectionBodySize);
+                    ReadIntoBuffer(inputStream, buffer, sectionHeader.SectionBodySize);
                     shipAutoTexturizationSettings = ReadAutoTexturizationSettings(buffer);
 
                     break;
@@ -95,7 +95,7 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
                         throw UserGameException(UserGameException::MessageIdType::InvalidShipFile);
                     }
 
-                    ReadIntoBuffer(inputFile, buffer, sectionHeader.SectionBodySize);
+                    ReadIntoBuffer(inputStream, buffer, sectionHeader.SectionBodySize);
                     ReadStructuralLayer(
                         buffer,
                         *shipAttributes,
@@ -113,7 +113,7 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
                         throw UserGameException(UserGameException::MessageIdType::InvalidShipFile);
                     }
 
-                    ReadIntoBuffer(inputFile, buffer, sectionHeader.SectionBodySize);
+                    ReadIntoBuffer(inputStream, buffer, sectionHeader.SectionBodySize);
                     ReadElectricalLayer(
                         buffer,
                         *shipAttributes,
@@ -131,7 +131,7 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
                         throw UserGameException(UserGameException::MessageIdType::InvalidShipFile);
                     }
 
-                    ReadIntoBuffer(inputFile, buffer, sectionHeader.SectionBodySize);
+                    ReadIntoBuffer(inputStream, buffer, sectionHeader.SectionBodySize);
                     ReadRopesLayer(
                         buffer,
                         *shipAttributes,
@@ -143,8 +143,12 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
 
                 case static_cast<uint32_t>(MainSectionTagType::TextureLayer_PNG) :
                 {
-                    ReadIntoBuffer(inputFile, buffer, sectionHeader.SectionBodySize);
-                    RgbaImageData image = ReadPngImage(buffer);
+                    auto const startPos = inputStream.GetCurrentPosition();
+                    RgbaImageData image = ReadPngImage(inputStream);
+                    if (inputStream.GetCurrentPosition() != startPos + sectionHeader.SectionBodySize)
+                    {
+                        throw UserGameException(UserGameException::MessageIdType::InvalidShipFile);
+                    }
 
                     // Make texture out of this image
                     textureLayer = std::make_unique<TextureLayerData>(std::move(image));
@@ -162,7 +166,11 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
                 case static_cast<uint32_t>(MainSectionTagType::Preview_PNG) :
                 {
                     // Ignore and skip section
-                    inputFile.seekg(sectionHeader.SectionBodySize, std::ios_base::cur);
+                    size_t const szSkipped = inputStream.Skip(sectionHeader.SectionBodySize);
+                    if (szSkipped != sectionHeader.SectionBodySize)
+                    {
+                        throw UserGameException(UserGameException::MessageIdType::InvalidShipFile);
+                    }
 
                     break;
                 }
@@ -173,7 +181,11 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
                     LogMessage("WARNING: Unrecognized main section tag ", sectionHeader.Tag);
 
                     // Skip section
-                    inputFile.seekg(sectionHeader.SectionBodySize, std::ios_base::cur);
+                    size_t const szSkipped = inputStream.Skip(sectionHeader.SectionBodySize);
+                    if (szSkipped != sectionHeader.SectionBodySize)
+                    {
+                        throw UserGameException(UserGameException::MessageIdType::InvalidShipFile);
+                    }
 
                     break;
                 }
@@ -205,7 +217,7 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
         shipAutoTexturizationSettings);
 }
 
-ShipPreviewData ShipDefinitionFormatDeSerializer::LoadPreviewData(std::filesystem::path const & shipFilePath)
+ShipPreviewData ShipDefinitionFormatDeSerializer::LoadPreviewData(BinaryReadStream & shipDefinitionInputStream)
 {
     DeSerializationBuffer<BigEndianess> buffer(256);
 
@@ -217,22 +229,22 @@ ShipPreviewData ShipDefinitionFormatDeSerializer::LoadPreviewData(std::filesyste
     std::optional<ShipMetadata> shipMetadata;
 
     Parse(
-        shipFilePath,
-        [&](SectionHeader const & sectionHeader, std::ifstream & inputFile) -> bool
+        shipDefinitionInputStream,
+        [&](SectionHeader const & sectionHeader, BinaryReadStream & inputStream) -> bool
         {
             switch (sectionHeader.Tag)
             {
                 case static_cast<uint32_t>(MainSectionTagType::ShipAttributes):
                 {
-                    ReadIntoBuffer(inputFile, buffer, sectionHeader.SectionBodySize);
-                    shipAttributes = ReadShipAttributes(shipFilePath, buffer);
+                    ReadIntoBuffer(inputStream, buffer, sectionHeader.SectionBodySize);
+                    shipAttributes = ReadShipAttributes(buffer);
 
                     break;
                 }
 
                 case static_cast<uint32_t>(MainSectionTagType::Metadata):
                 {
-                    ReadIntoBuffer(inputFile, buffer, sectionHeader.SectionBodySize);
+                    ReadIntoBuffer(inputStream, buffer, sectionHeader.SectionBodySize);
                     shipMetadata = ReadMetadata(buffer);
 
                     break;
@@ -241,7 +253,11 @@ ShipPreviewData ShipDefinitionFormatDeSerializer::LoadPreviewData(std::filesyste
                 default:
                 {
                     // Skip section
-                    inputFile.seekg(sectionHeader.SectionBodySize, std::ios_base::cur);
+                    size_t const szSkipped = inputStream.Skip(sectionHeader.SectionBodySize);
+                    if (szSkipped != sectionHeader.SectionBodySize)
+                    {
+                        throw UserGameException(UserGameException::MessageIdType::InvalidShipFile);
+                    }
 
                     break;
                 }
@@ -259,16 +275,14 @@ ShipPreviewData ShipDefinitionFormatDeSerializer::LoadPreviewData(std::filesyste
     bool const hasElectricals = shipAttributes->HasElectricalLayer && !shipMetadata->DoHideElectricalsInPreview;
 
     return ShipPreviewData(
-        shipFilePath,
         shipAttributes->ShipSize,
         *shipMetadata,
         isHD,
-        hasElectricals,
-        shipAttributes->LastWriteTime);
+        hasElectricals);
 }
 
 RgbaImageData ShipDefinitionFormatDeSerializer::LoadPreviewImage(
-    std::filesystem::path const & previewFilePath,
+    BinaryReadStream & shipDefinitionInputStream,
     ImageSize const & maxSize)
 {
     DeSerializationBuffer<BigEndianess> buffer(256);
@@ -280,15 +294,19 @@ RgbaImageData ShipDefinitionFormatDeSerializer::LoadPreviewImage(
     std::optional<RgbaImageData> previewImage;
 
     Parse(
-        previewFilePath,
-        [&](SectionHeader const & sectionHeader, std::ifstream & inputFile) -> bool
+        shipDefinitionInputStream,
+        [&](SectionHeader const & sectionHeader, BinaryReadStream & inputStream) -> bool
         {
             switch (sectionHeader.Tag)
             {
                 case static_cast<uint32_t>(MainSectionTagType::TextureLayer_PNG):
                 {
-                    ReadIntoBuffer(inputFile, buffer, sectionHeader.SectionBodySize);
-                    previewImage.emplace(ReadPngImageAndResize(buffer, maxSize));
+                    auto const startPos = inputStream.GetCurrentPosition();
+                    previewImage.emplace(ReadPngImageAndResize(inputStream, maxSize));
+                    if (inputStream.GetCurrentPosition() != startPos + sectionHeader.SectionBodySize)
+                    {
+                        throw UserGameException(UserGameException::MessageIdType::InvalidShipFile);
+                    }
 
                     LogMessage("ShipDefinitionFormatDeSerializer: returning preview from texture layer section");
 
@@ -297,8 +315,12 @@ RgbaImageData ShipDefinitionFormatDeSerializer::LoadPreviewImage(
 
                 case static_cast<uint32_t>(MainSectionTagType::Preview_PNG):
                 {
-                    ReadIntoBuffer(inputFile, buffer, sectionHeader.SectionBodySize);
-                    previewImage.emplace(ReadPngImageAndResize(buffer, maxSize));
+                    auto const startPos = inputStream.GetCurrentPosition();
+                    previewImage.emplace(ReadPngImageAndResize(inputStream, maxSize));
+                    if (inputStream.GetCurrentPosition() != startPos + sectionHeader.SectionBodySize)
+                    {
+                        throw UserGameException(UserGameException::MessageIdType::InvalidShipFile);
+                    }
 
                     LogMessage("ShipDefinitionFormatDeSerializer: returning preview from preview section");
 
@@ -308,7 +330,11 @@ RgbaImageData ShipDefinitionFormatDeSerializer::LoadPreviewImage(
                 default:
                 {
                     // Skip section
-                    inputFile.seekg(sectionHeader.SectionBodySize, std::ios_base::cur);
+                    size_t const szSkipped = inputStream.Skip(sectionHeader.SectionBodySize);
+                    if (szSkipped != sectionHeader.SectionBodySize)
+                    {
+                        throw UserGameException(UserGameException::MessageIdType::InvalidShipFile);
+                    }
 
                     break;
                 }
@@ -327,37 +353,29 @@ RgbaImageData ShipDefinitionFormatDeSerializer::LoadPreviewImage(
 
 void ShipDefinitionFormatDeSerializer::Save(
     ShipDefinition const & shipDefinition,
-    std::filesystem::path const & shipFilePath)
+    Version const & currentGameVersion,
+    BinaryWriteStream & shipDefinitionOutputStream)
 {
     DeSerializationBuffer<BigEndianess> buffer(256);
-
-    //
-    // Open file
-    //
-
-    std::ofstream outputFile = std::ofstream(
-        shipFilePath,
-        std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
 
     //
     // Write header
     //
 
-    AppendFileHeader(outputFile, buffer);
+    AppendFileHeader(shipDefinitionOutputStream, buffer);
 
     //
     // Write ship attributes
     //
 
     ShipAttributes const shipAttributes = ShipAttributes(
-        Version::CurrentVersion(),
+        currentGameVersion,
         shipDefinition.Layers.Size,
         (bool)shipDefinition.Layers.ExteriorTextureLayer,
-        (bool)shipDefinition.Layers.ElectricalLayer,
-        PortableTimepoint::Now());
+        (bool)shipDefinition.Layers.ElectricalLayer);
 
     AppendSection(
-        outputFile,
+        shipDefinitionOutputStream,
         static_cast<std::uint32_t>(MainSectionTagType::ShipAttributes),
         [&]() { return AppendShipAttributes(shipAttributes, buffer); },
         buffer);
@@ -367,7 +385,7 @@ void ShipDefinitionFormatDeSerializer::Save(
     //
 
     AppendSection(
-        outputFile,
+        shipDefinitionOutputStream,
         static_cast<std::uint32_t>(MainSectionTagType::Metadata),
         [&]() { return AppendMetadata(shipDefinition.Metadata, buffer); },
         buffer);
@@ -379,7 +397,7 @@ void ShipDefinitionFormatDeSerializer::Save(
         //
 
         AppendSection(
-            outputFile,
+            shipDefinitionOutputStream,
             static_cast<std::uint32_t>(MainSectionTagType::TextureLayer_PNG),
             [&]() { return AppendPngImage(shipDefinition.Layers.ExteriorTextureLayer->Buffer, buffer); },
             buffer);
@@ -391,7 +409,7 @@ void ShipDefinitionFormatDeSerializer::Save(
         //
 
         AppendSection(
-            outputFile,
+            shipDefinitionOutputStream,
             static_cast<std::uint32_t>(MainSectionTagType::Preview_PNG),
             [&]() { return AppendPngPreview(*shipDefinition.Layers.StructuralLayer, buffer); },
             buffer);
@@ -408,7 +426,7 @@ void ShipDefinitionFormatDeSerializer::Save(
     if (shipDefinition.Layers.StructuralLayer)
     {
         AppendSection(
-            outputFile,
+            shipDefinitionOutputStream,
             static_cast<std::uint32_t>(MainSectionTagType::StructuralLayer),
             [&]() { return AppendStructuralLayer(*shipDefinition.Layers.StructuralLayer, buffer); },
             buffer);
@@ -421,7 +439,7 @@ void ShipDefinitionFormatDeSerializer::Save(
     if (shipDefinition.Layers.ElectricalLayer)
     {
         AppendSection(
-            outputFile,
+            shipDefinitionOutputStream,
             static_cast<std::uint32_t>(MainSectionTagType::ElectricalLayer),
             [&]() { return AppendElectricalLayer(*shipDefinition.Layers.ElectricalLayer, buffer); },
             buffer);
@@ -434,7 +452,7 @@ void ShipDefinitionFormatDeSerializer::Save(
     if (shipDefinition.Layers.RopesLayer)
     {
         AppendSection(
-            outputFile,
+            shipDefinitionOutputStream,
             static_cast<std::uint32_t>(MainSectionTagType::RopesLayer),
             [&]() { return AppendRopesLayer(*shipDefinition.Layers.RopesLayer, buffer); },
             buffer);
@@ -445,7 +463,7 @@ void ShipDefinitionFormatDeSerializer::Save(
     //
 
     AppendSection(
-        outputFile,
+        shipDefinitionOutputStream,
         static_cast<std::uint32_t>(MainSectionTagType::PhysicsData),
         [&]() { return AppendPhysicsData(shipDefinition.PhysicsData, buffer); },
         buffer);
@@ -457,7 +475,7 @@ void ShipDefinitionFormatDeSerializer::Save(
     if (shipDefinition.AutoTexturizationSettings.has_value())
     {
         AppendSection(
-            outputFile,
+            shipDefinitionOutputStream,
             static_cast<std::uint32_t>(MainSectionTagType::AutoTexturizationSettings),
             [&]() { return AppendAutoTexturizationSettings(*shipDefinition.AutoTexturizationSettings, buffer); },
             buffer);
@@ -468,17 +486,10 @@ void ShipDefinitionFormatDeSerializer::Save(
     //
 
     AppendSection(
-        outputFile,
+        shipDefinitionOutputStream,
         static_cast<std::uint32_t>(MainSectionTagType::Tail),
         [&]() { return 0; },
         buffer);
-
-    //
-    // Close file
-    //
-
-    outputFile.flush();
-    outputFile.close();
 }
 
 PasswordHash ShipDefinitionFormatDeSerializer::CalculatePasswordHash(std::string const & password)
@@ -492,7 +503,7 @@ PasswordHash ShipDefinitionFormatDeSerializer::CalculatePasswordHash(std::string
 
 template<typename TSectionBodyAppender>
 void ShipDefinitionFormatDeSerializer::AppendSection(
-    std::ofstream & outputFile,
+    BinaryWriteStream & shipDefinitionOutputStream,
     std::uint32_t tag,
     TSectionBodyAppender const & sectionBodyAppender,
     DeSerializationBuffer<BigEndianess> & buffer)
@@ -512,28 +523,29 @@ void ShipDefinitionFormatDeSerializer::AppendSection(
     buffer.WriteAt(static_cast<std::uint32_t>(sectionBodySize), sectionBodySizeIndex);
 
     // Serialize
-    outputFile.write(reinterpret_cast<char const *>(buffer.GetData()), buffer.GetSize());
+    shipDefinitionOutputStream.Write(buffer.GetData(), buffer.GetSize());
 }
 
 size_t ShipDefinitionFormatDeSerializer::AppendPngImage(
     RgbaImageData const & rawImageData,
     DeSerializationBuffer<BigEndianess> & buffer)
 {
-    auto encodedImage = PngTools::EncodeImage(rawImageData);
+    auto encodedImageOutputStream = MemoryBinaryWriteStream();
+    PngTools::EncodeImage(rawImageData, encodedImageOutputStream);
 
-    size_t const byteSize = encodedImage.GetCurrentPopulatedByteSize();
+    size_t const byteSize = encodedImageOutputStream.GetSize();
     void * targetBuf = reinterpret_cast<void *>(buffer.Receive(byteSize));
-    std::memcpy(targetBuf, encodedImage.data(), byteSize);
+    std::memcpy(targetBuf, encodedImageOutputStream.GetData(), byteSize);
 
     return byteSize;
 }
 
 void ShipDefinitionFormatDeSerializer::AppendFileHeader(
-    std::ofstream & outputFile,
+    BinaryWriteStream & shipDefinitionOutputStream,
     DeSerializationBuffer<BigEndianess> & buffer)
 {
     AppendFileHeader(buffer);
-    outputFile.write(reinterpret_cast<char const *>(buffer.GetData()), buffer.GetSize());
+    shipDefinitionOutputStream.Write(buffer.GetData(), buffer.GetSize());
 }
 
 void ShipDefinitionFormatDeSerializer::AppendFileHeader(DeSerializationBuffer<BigEndianess> & buffer)
@@ -619,9 +631,11 @@ size_t ShipDefinitionFormatDeSerializer::AppendShipAttributes(
 
     // Last write time
     {
+        // Legacy since multi-platform port
+        PortableTimepoint now = PortableTimepoint::Now();
         sectionBodySize += AppendShipAttributesEntry(
             ShipAttributesTagType::LastWriteTime,
-            shipAttributes.LastWriteTime.Value(),
+            now.Value(),
             buffer);
     }
 
@@ -1281,22 +1295,16 @@ size_t ShipDefinitionFormatDeSerializer::AppendPngPreview(
 
 template<typename SectionHandler>
 void ShipDefinitionFormatDeSerializer::Parse(
-    std::filesystem::path const & shipFilePath,
+    BinaryReadStream & shipDefinitionInputStream,
     SectionHandler const & sectionHandler)
 {
     DeSerializationBuffer<BigEndianess> buffer(256);
 
     //
-    // Open file
-    //
-
-    std::ifstream inputFile = OpenFileForRead(shipFilePath);
-
-    //
     // Read header
     //
 
-    ReadFileHeader(inputFile, buffer);
+    ReadFileHeader(shipDefinitionInputStream, buffer);
 
     //
     // Read and process sections
@@ -1305,10 +1313,10 @@ void ShipDefinitionFormatDeSerializer::Parse(
     while (true)
     {
         // Read section header
-        SectionHeader const sectionHeader = ReadSectionHeader(inputFile, buffer);
+        SectionHeader const sectionHeader = ReadSectionHeader(shipDefinitionInputStream, buffer);
 
         // Handle section
-        if (sectionHandler(sectionHeader, inputFile))
+        if (sectionHandler(sectionHeader, shipDefinitionInputStream))
         {
             // We're done
             break;
@@ -1321,56 +1329,34 @@ void ShipDefinitionFormatDeSerializer::Parse(
             break;
         }
     }
-
-    // Close file
-    inputFile.close();
-}
-
-std::ifstream ShipDefinitionFormatDeSerializer::OpenFileForRead(std::filesystem::path const & shipFilePath)
-{
-    return std::ifstream(
-        shipFilePath,
-        std::ios_base::in | std::ios_base::binary);
 }
 
 void ShipDefinitionFormatDeSerializer::ThrowMaterialNotFound(ShipAttributes const & shipAttributes)
 {
-    auto const currentVersion = Version::CurrentVersion();
-    if (currentVersion < shipAttributes.FileFSVersion)
-    {
-        // File was created with newer version
-        throw UserGameException(
-            UserGameException::MessageIdType::LoadShipMaterialNotFoundLaterVersion,
-            { shipAttributes.FileFSVersion.ToMajorMinorPatchString() });
-    }
-    else
-    {
-        throw UserGameException(UserGameException::MessageIdType::LoadShipMaterialNotFoundSameVersion);
-    }
+    throw UserGameException(
+        UserGameException::MessageIdType::LoadShipMaterialNotFound,
+        { shipAttributes.FileFSVersion.ToMajorMinorPatchString() });
 }
 
 void ShipDefinitionFormatDeSerializer::ReadIntoBuffer(
-    std::ifstream & inputFile,
+    BinaryReadStream & shipDefinitionInputStream,
     DeSerializationBuffer<BigEndianess> & buffer,
     size_t size)
 {
     buffer.Reset();
 
-    inputFile.read(
-        reinterpret_cast<char *>(buffer.Receive(size)),
-        size);
-
-    if (!inputFile)
+    size_t const szRead = shipDefinitionInputStream.Read(buffer.Receive(size), size);
+    if (szRead != size)
     {
         throw UserGameException(UserGameException::MessageIdType::InvalidShipFile);
     }
 }
 
 ShipDefinitionFormatDeSerializer::SectionHeader ShipDefinitionFormatDeSerializer::ReadSectionHeader(
-    std::ifstream & inputFile,
+    BinaryReadStream & shipDefinitionInputStream,
     DeSerializationBuffer<BigEndianess> & buffer)
 {
-    ReadIntoBuffer(inputFile, buffer, sizeof(SectionHeader));
+    ReadIntoBuffer(shipDefinitionInputStream, buffer, sizeof(SectionHeader));
     return ReadSectionHeader(buffer, 0);
 }
 
@@ -1390,16 +1376,16 @@ ShipDefinitionFormatDeSerializer::SectionHeader ShipDefinitionFormatDeSerializer
     };
 }
 
-RgbaImageData ShipDefinitionFormatDeSerializer::ReadPngImage(DeSerializationBuffer<BigEndianess> & buffer)
+RgbaImageData ShipDefinitionFormatDeSerializer::ReadPngImage(BinaryReadStream & shipDefinitionInputStream)
 {
-    return PngTools::DecodeImageRgba(buffer.GetData(), buffer.GetSize());
+    return PngTools::DecodeImageRgba(shipDefinitionInputStream);
 }
 
 RgbaImageData ShipDefinitionFormatDeSerializer::ReadPngImageAndResize(
-    DeSerializationBuffer<BigEndianess> & buffer,
+    BinaryReadStream & shipDefinitionInputStream,
     ImageSize const & maxSize)
 {
-    RgbaImageData orig = PngTools::DecodeImageRgba(buffer.GetData(), buffer.GetSize());
+    RgbaImageData orig = PngTools::DecodeImageRgba(shipDefinitionInputStream);
     return ImageTools::Resize(
         orig,
         orig.Size.ShrinkToFit(maxSize),
@@ -1407,16 +1393,13 @@ RgbaImageData ShipDefinitionFormatDeSerializer::ReadPngImageAndResize(
 }
 
 void ShipDefinitionFormatDeSerializer::ReadFileHeader(
-    std::ifstream & inputFile,
+    BinaryReadStream & shipDefinitionInputStream,
     DeSerializationBuffer<BigEndianess> & buffer)
 {
     buffer.Reset();
 
-    inputFile.read(
-        reinterpret_cast<char *>(buffer.Receive(sizeof(FileHeader))),
-        sizeof(FileHeader));
-
-    if (!inputFile)
+    size_t const szRead = shipDefinitionInputStream.Read(buffer.Receive(sizeof(FileHeader)), sizeof(FileHeader));
+    if (szRead != sizeof(FileHeader))
     {
         throw UserGameException(UserGameException::MessageIdType::UnrecognizedShipFile);
     }
@@ -1439,15 +1422,12 @@ void ShipDefinitionFormatDeSerializer::ReadFileHeader(DeSerializationBuffer<BigE
     }
 }
 
-ShipDefinitionFormatDeSerializer::ShipAttributes ShipDefinitionFormatDeSerializer::ReadShipAttributes(
-    std::filesystem::path const & shipFilePath,
-    DeSerializationBuffer<BigEndianess> const & buffer)
+ShipDefinitionFormatDeSerializer::ShipAttributes ShipDefinitionFormatDeSerializer::ReadShipAttributes(DeSerializationBuffer<BigEndianess> const & buffer)
 {
     std::optional<Version> fsVersion;
     std::optional<ShipSpaceSize> shipSize;
     std::optional<bool> hasTextureLayer;
     std::optional<bool> hasElectricalLayer;
-    std::optional<PortableTimepoint> lastWriteTime;
 
     // Read all tags
     for (size_t offset = 0;;)
@@ -1527,8 +1507,6 @@ ShipDefinitionFormatDeSerializer::ShipAttributes ShipDefinitionFormatDeSerialize
                 PortableTimepoint::value_type value;
                 offset += buffer.ReadAt<PortableTimepoint::value_type>(offset, value);
 
-                lastWriteTime.emplace(PortableTimepoint(value));
-
                 break;
             }
 
@@ -1562,17 +1540,11 @@ ShipDefinitionFormatDeSerializer::ShipAttributes ShipDefinitionFormatDeSerialize
         throw UserGameException(UserGameException::MessageIdType::InvalidShipFile);
     }
 
-    if (!lastWriteTime.has_value())
-    {
-        lastWriteTime = PortableTimepoint::FromLastWriteTime(shipFilePath);
-    }
-
     return ShipAttributes(
         *fsVersion,
         *shipSize,
         *hasTextureLayer,
-        *hasElectricalLayer,
-        *lastWriteTime);
+        *hasElectricalLayer);
 }
 
 ShipMetadata ShipDefinitionFormatDeSerializer::ReadMetadata(DeSerializationBuffer<BigEndianess> const & buffer)

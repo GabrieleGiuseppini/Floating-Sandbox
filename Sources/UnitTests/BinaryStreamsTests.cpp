@@ -11,11 +11,14 @@ TEST(BinaryStreams, MemoryBinaryReadStream)
 
     MemoryBinaryReadStream stream(std::move(data));
 
+    EXPECT_EQ(stream.GetCurrentPosition(), 0u);
+
     std::uint8_t buffer[5] = { 0xff, 0xff, 0xff, 0xff, 0xff };
 
     size_t szRead = stream.Read(buffer, 3u);
 
     EXPECT_EQ(szRead, 3u);
+    EXPECT_EQ(stream.GetCurrentPosition(), 3u);
     EXPECT_EQ(buffer[0], 0x00);
     EXPECT_EQ(buffer[1], 0x01);
     EXPECT_EQ(buffer[2], 0x02);
@@ -24,6 +27,7 @@ TEST(BinaryStreams, MemoryBinaryReadStream)
     szRead = stream.Read(buffer, 2u);
 
     EXPECT_EQ(szRead, 1u);
+    EXPECT_EQ(stream.GetCurrentPosition(), 4u);
     EXPECT_EQ(buffer[0], 0x03);
     EXPECT_EQ(buffer[1], 0x01);
 }

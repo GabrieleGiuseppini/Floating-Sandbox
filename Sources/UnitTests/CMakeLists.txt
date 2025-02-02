@@ -52,7 +52,7 @@ set (UNIT_TEST_SOURCES
 	#RopeBufferTests.cpp
 	#SettingsTests.cpp
 	ShaderManagerTests.cpp
-	#ShipDefinitionFormatDeSerializerTests.cpp
+	ShipDefinitionFormatDeSerializerTests.cpp
 	#ShipNameNormalizerTests.cpp
 	#ShipPreviewDirectoryManagerTests.cpp
 	#ShipTests.cpp
@@ -84,6 +84,7 @@ target_link_libraries (UnitTests
 	Game
 	OpenGLCore
 	Render
+	Simulation
 	#GPUCalcLib
 	#ShipBuilderLib
 	#UILib

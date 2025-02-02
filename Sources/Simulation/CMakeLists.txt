@@ -20,8 +20,8 @@ set  (SIMULATION_SOURCES
 	ShipAutoTexturizationSettings.cpp
 	ShipAutoTexturizationSettings.h
 	ShipDefinition.h
-	#ShipDefinitionFormatDeSerializer.cpp
-	#ShipDefinitionFormatDeSerializer.h
+	ShipDefinitionFormatDeSerializer.cpp
+	ShipDefinitionFormatDeSerializer.h
 	ShipLoadOptions.h
 	ShipMetadata.h
 	ShipPhysicsData.h

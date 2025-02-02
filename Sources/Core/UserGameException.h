@@ -19,8 +19,7 @@ public:
 		UnrecognizedShipFile = 1,
 		InvalidShipFile,
 		UnsupportedShipFile,
-		LoadShipMaterialNotFoundLaterVersion,
-		LoadShipMaterialNotFoundSameVersion
+		LoadShipMaterialNotFound
 	};
 
 	MessageIdType const MessageId;

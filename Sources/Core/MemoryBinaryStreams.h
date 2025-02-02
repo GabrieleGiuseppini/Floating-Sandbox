@@ -22,10 +22,22 @@ public:
 		, mReadOffset(0u)
 	{}
 
+	size_t GetCurrentPosition() const override
+	{
+		return mReadOffset;
+	}
+
 	size_t Read(std::uint8_t * buffer, size_t size) override
 	{
 		size_t const szToRead = std::min(size, mData.size() - mReadOffset);
 		std::memcpy(buffer, &(mData[mReadOffset]), szToRead);
+		mReadOffset += szToRead;
+		return szToRead;
+	}
+
+	size_t Skip(size_t size) override
+	{
+		size_t const szToRead = std::min(size, mData.size() - mReadOffset);
 		mReadOffset += szToRead;
 		return szToRead;
 	}

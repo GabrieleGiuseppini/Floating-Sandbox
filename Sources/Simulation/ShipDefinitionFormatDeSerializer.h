@@ -9,16 +9,14 @@
 #include "MaterialDatabase.h"
 #include "ShipDefinition.h"
 #include "ShipPreviewData.h"
-#include "Version.h"
 
-#include <GameCore/DeSerializationBuffer.h>
-#include <GameCore/GameTypes.h>
-#include <GameCore/ImageData.h>
-#include <GameCore/PortableTimepoint.h>
+#include <Core/BinaryStreams.h>
+#include <Core/DeSerializationBuffer.h>
+#include <Core/GameTypes.h>
+#include <Core/ImageData.h>
+#include <Core/Version.h>
 
 #include <cstdint>
-#include <filesystem>
-#include <fstream>
 #include <functional>
 #include <map>
 #include <memory>
@@ -35,18 +33,19 @@ class ShipDefinitionFormatDeSerializer
 public:
 
     static ShipDefinition Load(
-        std::filesystem::path const & shipFilePath,
+        BinaryReadStream & shipDefinitionInputStream,
         MaterialDatabase const & materialDatabase);
 
-    static ShipPreviewData LoadPreviewData(std::filesystem::path const & shipFilePath);
+    static ShipPreviewData LoadPreviewData(BinaryReadStream & shipDefinitionInputStream);
 
     static RgbaImageData LoadPreviewImage(
-        std::filesystem::path const & previewFilePath,
+        BinaryReadStream & shipDefinitionInputStream,
         ImageSize const & maxSize);
 
     static void Save(
         ShipDefinition const & shipDefinition,
-        std::filesystem::path const & shipFilePath);
+        Version const & currentGameVersion,
+        BinaryWriteStream & shipDefinitionOutputStream);
 
     static PasswordHash CalculatePasswordHash(std::string const & password);
 
@@ -77,19 +76,16 @@ private:
         ShipSpaceSize ShipSize;
         bool HasTextureLayer;
         bool HasElectricalLayer;
-        PortableTimepoint LastWriteTime;
 
         ShipAttributes(
             Version fileFSVersion,
             ShipSpaceSize shipSize,
             bool hasTextureLayer,
-            bool hasElectricalLayer,
-            PortableTimepoint lastWriteTime)
+            bool hasElectricalLayer)
             : FileFSVersion(fileFSVersion)
             , ShipSize(shipSize)
             , HasTextureLayer(hasTextureLayer)
             , HasElectricalLayer(hasElectricalLayer)
-            , LastWriteTime(lastWriteTime)
         {}
     };
 
@@ -121,7 +117,7 @@ private:
         ShipSize = MAKE_TAG('S', 'S', 'Z', '1'),
         HasTextureLayer = MAKE_TAG('H', 'T', 'X', '1'),
         HasElectricalLayer = MAKE_TAG('H', 'E', 'L', '1'),
-        LastWriteTime = MAKE_TAG('W', 'R', 'T', '1'),
+        LastWriteTime = MAKE_TAG('W', 'R', 'T', '1'),  // Legacy as of multi-platform rearc
 
         Tail = 0xffffffff
     };
@@ -205,7 +201,7 @@ private:
 
     template<typename TSectionAppender>
     static void AppendSection(
-        std::ofstream & outputFile,
+        BinaryWriteStream & shipDefinitionOutputStream,
         std::uint32_t tag,
         TSectionAppender const & sectionAppender,
         DeSerializationBuffer<BigEndianess> & buffer);
@@ -215,7 +211,7 @@ private:
         DeSerializationBuffer<BigEndianess> & buffer);
 
     static void AppendFileHeader(
-        std::ofstream & outputFile,
+        BinaryWriteStream & shipDefinitionOutputStream,
         DeSerializationBuffer<BigEndianess> & buffer);
 
     static void AppendFileHeader(DeSerializationBuffer<BigEndianess> & buffer);
@@ -296,41 +292,37 @@ private:
 
     template<typename SectionHandler>
     static void Parse(
-        std::filesystem::path const & shipFilePath,
+        BinaryReadStream & shipDefinitionInputStream,
         SectionHandler const & sectionHandler);
-
-    static std::ifstream OpenFileForRead(std::filesystem::path const & shipFilePath);
 
     static void ThrowMaterialNotFound(ShipAttributes const & shipAttributes);
 
     static void ReadIntoBuffer(
-        std::ifstream & inputFile,
+        BinaryReadStream & shipDefinitionInputStream,
         DeSerializationBuffer<BigEndianess> & buffer,
         size_t size);
 
     static SectionHeader ReadSectionHeader(
-        std::ifstream & inputFile,
+        BinaryReadStream & shipDefinitionInputStream,
         DeSerializationBuffer<BigEndianess> & buffer);
 
     static SectionHeader ReadSectionHeader(
         DeSerializationBuffer<BigEndianess> const & buffer,
         size_t offset);
 
-    static RgbaImageData ReadPngImage(DeSerializationBuffer<BigEndianess> & buffer);
+    static RgbaImageData ReadPngImage(BinaryReadStream & shipDefinitionInputStream);
 
     static RgbaImageData ReadPngImageAndResize(
-        DeSerializationBuffer<BigEndianess> & buffer,
+        BinaryReadStream & shipDefinitionInputStream,
         ImageSize const & maxSize);
 
     static void ReadFileHeader(
-        std::ifstream & inputFile,
+        BinaryReadStream & shipDefinitionInputStream,
         DeSerializationBuffer<BigEndianess> & buffer);
 
     static void ReadFileHeader(DeSerializationBuffer<BigEndianess> & buffer);
 
-    static ShipAttributes ReadShipAttributes(
-        std::filesystem::path const & shipFilePath,
-        DeSerializationBuffer<BigEndianess> const & buffer);
+    static ShipAttributes ReadShipAttributes(DeSerializationBuffer<BigEndianess> const & buffer);
 
     static ShipMetadata ReadMetadata(DeSerializationBuffer<BigEndianess> const & buffer);
 
@@ -370,20 +362,14 @@ private:
     friend class ShipDefinitionFormatDeSerializer_StructuralLayerTests_VariousSizes_Uniform_Test;
     friend class ShipDefinitionFormatDeSerializer_StructuralLayerTests_MidSize_Heterogeneous_Test;
     friend class ShipDefinitionFormatDeSerializer_StructuralLayerTests_Nulls_Test;
-    friend class ShipDefinitionFormatDeSerializer_StructuralLayerTests_UnrecognizedMaterial_SameVersion_Test;
-    friend class ShipDefinitionFormatDeSerializer_StructuralLayerTests_UnrecognizedMaterial_LaterVersion_Major_Test;
-    friend class ShipDefinitionFormatDeSerializer_StructuralLayerTests_UnrecognizedMaterial_LaterVersion_Patch_Test;
+    friend class ShipDefinitionFormatDeSerializer_StructuralLayerTests_UnrecognizedMaterial_Test;
     friend class ShipDefinitionFormatDeSerializer_ElectricalLayerTests;
     friend class ShipDefinitionFormatDeSerializer_ElectricalLayerTests_MidSize_NonInstanced_Test;
     friend class ShipDefinitionFormatDeSerializer_ElectricalLayerTests_MidSize_Instanced_Test;
     friend class ShipDefinitionFormatDeSerializer_ElectricalLayerTests_Nulls_Test;
     friend class ShipDefinitionFormatDeSerializer_ElectricalLayerTests_ElectricalPanel_Test;
-    friend class ShipDefinitionFormatDeSerializer_ElectricalLayerTests_UnrecognizedMaterial_SameVersion_Test;
-    friend class ShipDefinitionFormatDeSerializer_ElectricalLayerTests_UnrecognizedMaterial_LaterVersion_Major_Test;
-    friend class ShipDefinitionFormatDeSerializer_ElectricalLayerTests_UnrecognizedMaterial_LaterVersion_Patch_Test;
+    friend class ShipDefinitionFormatDeSerializer_ElectricalLayerTests_UnrecognizedMaterial_Test;
     friend class ShipDefinitionFormatDeSerializer_RopesLayerTests;
     friend class ShipDefinitionFormatDeSerializer_RopesLayerTests_TwoElements_Test;
-    friend class ShipDefinitionFormatDeSerializer_RopesLayerTests_UnrecognizedMaterial_SameVersion_Test;
-    friend class ShipDefinitionFormatDeSerializer_RopesLayerTests_UnrecognizedMaterial_LaterVersion_Major_Test;
-    friend class ShipDefinitionFormatDeSerializer_RopesLayerTests_UnrecognizedMaterial_LaterVersion_Patch_Test;
+    friend class ShipDefinitionFormatDeSerializer_RopesLayerTests_UnrecognizedMaterial_Test;
 };
