@@ -5,8 +5,6 @@
 ***************************************************************************************/
 #include "WorldRenderContext.h"
 
-#include <Core/GameChronometer.h>
-#include <Core/GameException.h>
 #include <Core/GameWallClock.h>
 #include <Core/ImageTools.h>
 #include <Core/Log.h>
