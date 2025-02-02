@@ -5,8 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include <GameCore/GameException.h>
-#include <GameCore/Utils.h>
+#include <Core/Utils.h>
 
 #include <picojson.h>
 

@@ -5,7 +5,7 @@
  ***************************************************************************************/
 #pragma once
 
-#include <GameCore/GameTypes.h>
+#include <Core/GameTypes.h>
 
 #include <picojson.h>
 

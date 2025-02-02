@@ -17,6 +17,12 @@ set  (SIMULATION_SOURCES
 	NpcDatabase.cpp
 	NpcDatabase.h
 	RopeBuffer.h
+	ShipAutoTexturizationSettings.cpp
+	ShipAutoTexturizationSettings.h
+	ShipDefinition.h
+	ShipLoadOptions.h
+	ShipMetadata.h
+	ShipPhysicsData.h
 	SimulationParameters.cpp
 	SimulationParameters.h
 )

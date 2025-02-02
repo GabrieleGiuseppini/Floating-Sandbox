@@ -5,8 +5,8 @@
 ***************************************************************************************/
 #include "ShipAutoTexturizationSettings.h"
 
-#include <GameCore/GameException.h>
-#include <GameCore/Utils.h>
+#include <Core/GameException.h>
+#include <Core/Utils.h>
 
 ShipAutoTexturizationSettings ShipAutoTexturizationSettings::FromJSON(picojson::object const & jsonObject)
 {
