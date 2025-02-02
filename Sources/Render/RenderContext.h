@@ -5,45 +5,39 @@
 ***************************************************************************************/
 #pragma once
 
+#include "GameShaderSet.h"
+#include "GameTextureDatabases.h"
 #include "GlobalRenderContext.h"
 #include "NotificationRenderContext.h"
-#include "PerfStats.h"
+#include "RenderDeviceProperties.h"
 #include "RenderParameters.h"
-#include "RenderTypes.h"
-#include "ResourceLocator.h"
-#include "ShaderTypes.h"
 #include "ShipRenderContext.h"
-#include "TextureAtlas.h"
-#include "TextureTypes.h"
-#include "ViewModel.h"
 #include "WorldRenderContext.h"
 
-#include <GameOpenGL/GameOpenGL.h>
-#include <GameOpenGL/GameOpenGLMappedBuffer.h>
-#include <GameOpenGL/ShaderManager.h>
+#include <OpenGLCore/GameOpenGL.h>
+#include <OpenGLCore/GameOpenGLMappedBuffer.h>
+#include <OpenGLCore/ShaderManager.h>
 
-#include <Game/GameParameters.h>
-#include <Game/RenderDeviceProperties.h>
-
-#include <GameCore/AABB.h>
-#include <GameCore/BoundedVector.h>
-#include <GameCore/Colors.h>
-#include <GameCore/GameTypes.h>
-#include <GameCore/ImageData.h>
-#include <GameCore/ProgressCallback.h>
-#include <GameCore/RunningAverage.h>
-#include <GameCore/SysSpecifics.h>
-#include <GameCore/TaskThread.h>
-#include <GameCore/Vectors.h>
+#include <Core/AABB.h>
+#include <Core/Colors.h>
+#include <Core/GameTypes.h>
+#include <Core/IAssetManager.h>
+#include <Core/ImageData.h>
+#include <Core/PerfStats.h>
+#include <Core/ProgressCallback.h>
+#include <Core/RunningAverage.h>
+#include <Core/SysSpecifics.h>
+#include <Core/TaskThread.h>
+#include <Core/TextureAtlas.h>
+#include <Core/Vectors.h>
 
 #include <array>
+#include <atomic>
 #include <cassert>
 #include <memory>
 #include <optional>
 #include <string>
 #include <vector>
-
-namespace Render {
 
 /*
  * This class is the entry point of the entire rendering subsystem, providing
@@ -60,9 +54,10 @@ public:
 
     RenderContext(
         RenderDeviceProperties const & renderDeviceProperties,
-        Render::TextureAtlas<Render::NpcTextureGroups> && npcTextureAtlas,
+        FloatSize const & maxWorldSize,
+        TextureAtlas<GameTextureDatabases::NpcTextureDatabase> && npcTextureAtlas,
         PerfStats & perfStats,
-        ResourceLocator const & resourceLocator,
+        IAssetManager const & assetManager,
         ProgressCallback const & progressCallback);
 
     ~RenderContext();
@@ -805,6 +800,8 @@ public:
     void AddShip(
         ShipId shipId,
         size_t pointCount,
+        size_t maxEphemeralParticles,
+        size_t maxSpringsPerPoint,
         RgbaImageData exteriorTextureImage,
         RgbaImageData interiorViewImage);
 
@@ -1042,7 +1039,7 @@ public:
     }
 
     inline void UploadFish(
-        TextureFrameId<FishTextureGroups> const & textureFrameId,
+        TextureFrameId<GameTextureDatabases::FishTextureGroups> const & textureFrameId,
         vec2f const & position,
         vec2f const & worldSize,
         float angleCw,
@@ -1200,7 +1197,7 @@ public:
     // next UpdateStart
     inline void UploadShipPointFrontierColorsAsync(
         ShipId shipId,
-        FrontierColor const * colors)
+        ColorWithProgress const * colors)
     {
         assert(shipId >= 0 && shipId < mShips.size());
 
@@ -1286,7 +1283,7 @@ private:
     // Shader manager
     //
 
-    std::unique_ptr<ShaderManager<ShaderManagerTraits>> mShaderManager;
+    std::unique_ptr<ShaderManager<GameShaderSet::ShaderSet>> mShaderManager;
 
     //
     // Child contextes
@@ -1348,5 +1345,3 @@ private:
     PerfStats & mPerfStats;
     std::atomic<RenderStatistics> mRenderStats;
 };
-
-}

@@ -12,8 +12,6 @@
 #include <cstring>
 #include <limits>
 
-namespace Render {
-
 ImageSize constexpr ThumbnailSize(32, 32);
 
 WorldRenderContext::WorldRenderContext(
@@ -2304,6 +2302,4 @@ void WorldRenderContext::RecalculateWorldBorder(RenderParameters const & renderP
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
-}
-
 }

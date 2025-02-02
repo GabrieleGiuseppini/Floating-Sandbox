@@ -5,15 +5,13 @@
 ***************************************************************************************/
 #include "RenderContext.h"
 
-#include <GameCore/GameChronometer.h>
-#include <GameCore/GameException.h>
-#include <GameCore/Log.h>
-#include <GameCore/SysSpecifics.h>
-#include <GameCore/ThreadManager.h>
+#include <Core/GameChronometer.h>
+#include <Core/GameException.h>
+#include <Core/Log.h>
+#include <Core/SysSpecifics.h>
+#include <Core/ThreadManager.h>
 
 #include <cstring>
-
-namespace Render {
 
 namespace /*anonymous*/ {
 
@@ -54,9 +52,10 @@ namespace /*anonymous*/ {
 
 RenderContext::RenderContext(
     RenderDeviceProperties const & renderDeviceProperties,
-    Render::TextureAtlas<Render::NpcTextureGroups> && npcTextureAtlas,
+    FloatSize const & maxWorldSize,
+    TextureAtlas<GameTextureDatabases::NpcTextureDatabase> && npcTextureAtlas,
     PerfStats & perfStats,
-    ResourceLocator const & resourceLocator,
+    IAssetManager const & assetManager,
     ProgressCallback const & progressCallback)
     : mDoInvokeGlFinish(false) // Will be recalculated
     // Thread
@@ -86,6 +85,7 @@ RenderContext::RenderContext(
     , mSwapRenderBuffersFunction(renderDeviceProperties.SwapRenderBuffersFunction)
     // Render parameters
     , mRenderParameters(
+        maxWorldSize,
         renderDeviceProperties.InitialCanvasSize,
         renderDeviceProperties.LogicalToPhysicalDisplayFactor)
     // State
@@ -114,7 +114,7 @@ RenderContext::RenderContext(
             LogMessage("RenderContext: DoInvokeGlFinish=", mDoInvokeGlFinish);
 
             // Initialize the shared texture unit once and for all
-            mShaderManager->ActivateTexture<ProgramParameterType::SharedTexture>();
+            mShaderManager->ActivateTexture<GameShaderSet::ProgramParameterKind::SharedTexture>();
             glEnable(GL_TEXTURE_1D);
             glEnable(GL_TEXTURE_2D);
 
@@ -150,7 +150,7 @@ RenderContext::RenderContext(
 
             LogMessage("Initializing shaders...");
 
-            mShaderManager = ShaderManager<ShaderManagerTraits>::CreateInstance(resourceLocator.GetGameShadersRootPath());
+            mShaderManager = ShaderManager<GameShaderSet::ShaderSet>::CreateInstance(assetManager);
 
             LogMessage("...shaders initialized.");
         });
@@ -160,9 +160,9 @@ RenderContext::RenderContext(
     mRenderThread.RunSynchronously(
         [&]()
         {
-            mGlobalRenderContext = std::make_unique<GlobalRenderContext>(*mShaderManager);
+            mGlobalRenderContext = std::make_unique<GlobalRenderContext>(assetManager , *mShaderManager);
 
-            mGlobalRenderContext->InitializeNoiseTextures(resourceLocator);
+            mGlobalRenderContext->InitializeNoiseTextures();
         });
 
     progressCallback(0.15f, ProgressMessageType::LoadingGenericTextures);
@@ -170,7 +170,7 @@ RenderContext::RenderContext(
     mRenderThread.RunSynchronously(
         [&]()
         {
-            mGlobalRenderContext->InitializeGenericTextures(resourceLocator);
+            mGlobalRenderContext->InitializeGenericTextures();
         });
 
     progressCallback(0.2f, ProgressMessageType::LoadingExplosionTextureAtlas);
@@ -178,7 +178,7 @@ RenderContext::RenderContext(
     mRenderThread.RunSynchronously(
         [&]()
         {
-            mGlobalRenderContext->InitializeExplosionTextures(resourceLocator);
+            mGlobalRenderContext->InitializeExplosionTextures();
         });
 
     mRenderThread.RunSynchronously(
@@ -191,6 +191,7 @@ RenderContext::RenderContext(
         [&]()
         {
             mWorldRenderContext = std::make_unique<WorldRenderContext>(
+                assetManager,
                 *mShaderManager,
                 *mGlobalRenderContext);
         });
@@ -200,7 +201,7 @@ RenderContext::RenderContext(
     mRenderThread.RunSynchronously(
         [&]()
         {
-            mWorldRenderContext->InitializeCloudTextures(resourceLocator);
+            mWorldRenderContext->InitializeCloudTextures();
         });
 
     progressCallback(0.65f, ProgressMessageType::LoadingFishTextureAtlas);
@@ -208,7 +209,7 @@ RenderContext::RenderContext(
     mRenderThread.RunSynchronously(
         [&]()
         {
-            mWorldRenderContext->InitializeFishTextures(resourceLocator);
+            mWorldRenderContext->InitializeFishTextures();
         });
 
     progressCallback(0.7f, ProgressMessageType::LoadingWorldTextures);
@@ -216,7 +217,7 @@ RenderContext::RenderContext(
     mRenderThread.RunSynchronously(
         [&]()
         {
-            mWorldRenderContext->InitializeWorldTextures(resourceLocator);
+            mWorldRenderContext->InitializeWorldTextures();
         });
 
     progressCallback(0.8f, ProgressMessageType::LoadingFonts);
@@ -229,7 +230,7 @@ RenderContext::RenderContext(
             //
 
             mNotificationRenderContext = std::make_unique<NotificationRenderContext>(
-                resourceLocator,
+                assetManager,
                 *mShaderManager,
                 *mGlobalRenderContext);
         });
@@ -339,6 +340,8 @@ void RenderContext::ValidateShipTexture(RgbaImageData const & texture) const
 void RenderContext::AddShip(
     ShipId shipId,
     size_t pointCount,
+    size_t maxEphemeralParticles,
+    size_t maxSpringsPerPoint,
     RgbaImageData exteriorTextureImage,
     RgbaImageData interiorViewImage)
 {
@@ -371,6 +374,8 @@ void RenderContext::AddShip(
                 new ShipRenderContext(
                     shipId,
                     pointCount,
+                    maxEphemeralParticles,
+                    maxSpringsPerPoint,
                     newShipCount,
                     std::move(exteriorTextureImage),
                     std::move(interiorViewImage),
@@ -434,7 +439,7 @@ void RenderContext::UpdateStart()
         mLastRenderUploadEndCompletionIndicator->Wait();
         mLastRenderUploadEndCompletionIndicator.reset();
 
-        mPerfStats.TotalWaitForRenderUploadDuration.Update(GameChronometer::now() - waitStart);
+        mPerfStats.Update<PerfMeasurement::TotalWaitForRenderUpload>(GameChronometer::now() - waitStart);
     }
 }
 
@@ -463,7 +468,7 @@ void RenderContext::UploadStart()
         mLastRenderDrawCompletionIndicator->Wait();
         mLastRenderDrawCompletionIndicator.reset();
 
-        mPerfStats.TotalWaitForRenderDrawDuration.Update(GameChronometer::now() - waitStart);
+        mPerfStats.Update<PerfMeasurement::TotalWaitForRenderDraw>(GameChronometer::now() - waitStart);
     }
 
     mWorldRenderContext->UploadStart();
@@ -524,7 +529,7 @@ void RenderContext::Draw()
             {
                 if (lampToolToSet)
                 {
-                    mShaderManager->SetProgramParameterInAllShaders<ProgramParameterType::LampToolAttributes>(*lampToolToSet);
+                    mShaderManager->SetProgramParameterInAllShaders<GameShaderSet::ProgramParameterKind::LampToolAttributes>(*lampToolToSet);
                 }
 
                 mGlobalRenderContext->RenderPrepareStart();
@@ -559,7 +564,7 @@ void RenderContext::Draw()
                 mGlobalRenderContext->RenderPrepareEnd(); // Updates global element indices
 
                 // Update stats
-                mPerfStats.TotalUploadRenderDrawDuration.Update(GameChronometer::now() - startTime);
+                mPerfStats.Update<PerfMeasurement::TotalUploadRenderDraw>(GameChronometer::now() - startTime);
             }
 
             //
@@ -624,7 +629,7 @@ void RenderContext::Draw()
             mSwapRenderBuffersFunction();
 
             // Update stats
-            mPerfStats.TotalRenderDrawDuration.Update(GameChronometer::now() - startTime);
+            mPerfStats.Update<PerfMeasurement::TotalRenderDraw>(GameChronometer::now() - startTime);
             mRenderStats.store(renderStats);
         });
 
@@ -727,6 +732,4 @@ vec3f RenderContext::CalculateShipWaterColor() const
             return mShipDefaultWaterColor.toVec3f();
         }
     }
-}
-
 }

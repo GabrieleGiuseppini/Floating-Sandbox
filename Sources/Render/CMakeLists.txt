@@ -12,6 +12,8 @@ set  (RENDER_SOURCES
 	GlobalRenderContext.h
 	NotificationRenderContext.cpp
 	NotificationRenderContext.h
+	RenderContext.cpp
+	RenderContext.h
 	RenderDeviceProperties.h
 	RenderParameters.cpp
 	RenderParameters.h

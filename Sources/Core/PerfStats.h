@@ -124,9 +124,16 @@ struct PerfStats
         Reset();
     }
 
-    Ratio const & GetMeasurement(PerfMeasurement m) const
+    template<PerfMeasurement PM>
+    Ratio const & GetMeasurement() const
     {
-        return mMeasurements[static_cast<std::size_t>(m)];
+        return mMeasurements[static_cast<std::size_t>(PM)];
+    }
+
+    template<PerfMeasurement PM>
+    void Update(GameChronometer::duration duration)
+    {
+        mMeasurements[static_cast<std::size_t>(PM)].Update(duration);
     }
 
     void Reset()
@@ -134,7 +141,7 @@ struct PerfStats
         std::for_each(
             mMeasurements.begin(),
             mMeasurements.end(),
-            [](auto & m) { m.Reset; });
+            [](auto & m) { m.Reset(); });
     }
 
     PerfStats & operator=(PerfStats const & other) = default;

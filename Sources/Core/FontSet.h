@@ -30,7 +30,7 @@ struct BffFont final
     int const GlyphsPerTextureRow;
     RgbaImageData FontTexture;
 
-    static BffFont Load(
+    static inline BffFont Load(
         std::string const & fontSetName,
         std::string const & fontRelativePath,
         IAssetManager const & assetManager);

@@ -12,7 +12,7 @@
 #include <unordered_set>
 
 template<typename TShaderSet>
-ShaderManager<TShaderSet>::ShaderManager(IAssetManager & assetManager)
+ShaderManager<TShaderSet>::ShaderManager(IAssetManager const & assetManager)
 {
     //
     // Load all shader files
@@ -27,7 +27,7 @@ ShaderManager<TShaderSet>::ShaderManager(IAssetManager & assetManager)
 
         #define IncludeExtension ".glsl"
         shaderSources[shaderDescriptor.Name] = std::make_pair<bool, std::string>(
-            shaderDescriptor.RelativePath.find(IncludeExtension, shaderDescriptor.RelativePath.size() - IncludeExtension.size()) != std::string::npos,
+            shaderDescriptor.RelativePath.find(IncludeExtension, shaderDescriptor.RelativePath.size() - sizeof(IncludeExtension)) != std::string::npos,
             assetManager.LoadShader(TShaderSet::ShaderSetName, shaderDescriptor.RelativePath));
     }
 
@@ -50,11 +50,11 @@ ShaderManager<TShaderSet>::ShaderManager(IAssetManager & assetManager)
     // Verify all expected programs have been loaded
     //
 
-    for (uint32_t i = 0; i <= static_cast<uint32_t>(TShaderSet::ProgramKind::_Last); ++i)
+    for (uint32_t i = 0; i <= static_cast<uint32_t>(TShaderSet::ProgramKindType::_Last); ++i)
     {
         if (i >= mPrograms.size() || !(mPrograms[i].OpenGLHandle))
         {
-            throw GameException("Cannot find GLSL source file for program \"" + TShaderSet::ProgramTypeToStr(static_cast<typename TShaderSet::ProgramKind>(i)) + "\"");
+            throw GameException("Cannot find GLSL source file for program \"" + TShaderSet::ProgramKindToStr(static_cast<typename TShaderSet::ProgramKindType>(i)) + "\"");
         }
     }
 }
@@ -68,8 +68,8 @@ void ShaderManager<TShaderSet>::CompileShader(
     try
     {
         // Get the program type
-        typename TShaderSet::ProgramKind const program = TShaderSet::ShaderNameToProgramType(shaderName);
-        std::string const programName = TShaderSet::ProgramTypeToStr(program);
+        typename TShaderSet::ProgramKindType const program = TShaderSet::ShaderNameToProgramKind(shaderName);
+        std::string const programName = TShaderSet::ProgramKindToStr(program);
 
         // Make sure we have room for it
         size_t programIndex = static_cast<size_t>(program);
@@ -161,7 +161,7 @@ void ShaderManager<TShaderSet>::CompileShader(
 
         for (auto const & parameterName : parameterNames)
         {
-            typename TShaderSet::ProgramParameterKind programParameter = TShaderSet::StrToProgramParameterType(parameterName);
+            typename TShaderSet::ProgramParameterKindType programParameter = TShaderSet::StrToProgramParameterKind(parameterName);
             size_t programParameterIndex = static_cast<size_t>(programParameter);
 
             //
@@ -177,7 +177,7 @@ void ShaderManager<TShaderSet>::CompileShader(
             // Get and store
             mPrograms[programIndex].UniformLocations[programParameterIndex] = GameOpenGL::GetParameterLocation(
                 mPrograms[programIndex].OpenGLHandle,
-                "param" + TShaderSet::ProgramParameterTypeToStr(programParameter));
+                "param" + TShaderSet::ProgramParameterKindToStr(programParameter));
 
             //
             // Store in ProgramParameter->Program index
@@ -452,7 +452,7 @@ std::set<std::string> ShaderManager<TShaderSet>::ExtractParameterNames(GameOpenG
         }
 
         // Lookup the parameter name - just as a sanity check
-        TShaderSet::StrToProgramParameterType(parameterName);
+        TShaderSet::StrToProgramParameterKind(parameterName);
 
         // Store it, making sure it's not specified more than once
         if (!parameterNames.insert(parameterName).second

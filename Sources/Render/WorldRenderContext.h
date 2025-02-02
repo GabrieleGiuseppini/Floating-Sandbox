@@ -32,8 +32,6 @@
 #include <string>
 #include <vector>
 
-namespace Render {
-
 class WorldRenderContext
 {
 public:
@@ -1137,5 +1135,3 @@ private:
     float mSunRaysInclination;
     bool mIsSunRaysInclinationDirty;
 };
-
-}

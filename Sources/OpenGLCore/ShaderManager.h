@@ -33,7 +33,7 @@ private:
 
 public:
 
-    static std::unique_ptr<ShaderManager> CreateInstance(IAssetManager & assetManager)
+    static std::unique_ptr<ShaderManager> CreateInstance(IAssetManager const & assetManager)
     {
         return std::unique_ptr<ShaderManager>(
             new ShaderManager(assetManager));
@@ -319,7 +319,7 @@ private:
 
 private:
 
-    explicit ShaderManager(IAssetManager & assetManager);
+    explicit ShaderManager(IAssetManager const & assetManager);
 
     void CompileShader(
         std::string const & shaderName,
