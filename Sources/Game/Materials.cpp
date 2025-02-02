@@ -5,9 +5,7 @@
  ***************************************************************************************/
 #include "Materials.h"
 
-#include "GameParameters.h"
-
-#include <GameCore/Utils.h>
+#include <Core/Utils.h>
 
 #include <sstream>
 

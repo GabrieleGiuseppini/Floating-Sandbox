@@ -48,8 +48,8 @@ public:
     }
 
     /*
-     * Sets all the texture parameters (identified as such by belonging to our ProgramParameterType's _Texture range)
-     * in the specified (template argument) shader to the corresponding texture unit (identified via the integral value of that ProgramParameterType).
+     * Sets all the texture parameters (identified as such by belonging to our ProgramParameterKind's _Texture range)
+     * in the specified (template argument) shader to the corresponding texture unit (identified via the integral value of that ProgramParameterKind).
      */
     template <typename TShaderSet::ProgramKindType Program>
     inline void SetTextureParameters()
@@ -352,7 +352,7 @@ private:
     std::vector<ProgramInfo> mPrograms;
 
     // For each parameter, all programs including it;
-    // indexed by ProgramParameterType
+    // indexed by ProgramParameterKind
     std::vector<std::vector<typename TShaderSet::ProgramKindType>> mProgramsByProgramParameter;
 
 private:

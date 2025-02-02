@@ -5,10 +5,10 @@
  ***************************************************************************************/
 #pragma once
 
-#include <GameCore/Colors.h>
-#include <GameCore/GameException.h>
-#include <GameCore/GameTypes.h>
-#include <GameCore/Vectors.h>
+#include <Core/Colors.h>
+#include <Core/GameException.h>
+#include <Core/GameTypes.h>
+#include <Core/Vectors.h>
 
 #include <picojson.h>
 
