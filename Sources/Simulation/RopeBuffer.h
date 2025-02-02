@@ -7,7 +7,7 @@
 
 #include "LayerElements.h"
 
-#include <GameCore/GameTypes.h>
+#include <Core/GameTypes.h>
 
 #include <algorithm>
 #include <vector>

@@ -9,10 +9,10 @@
 #include "LayerElements.h"
 #include "RopeBuffer.h"
 
-#include <GameCore/Buffer2D.h>
-#include <GameCore/Colors.h>
-#include <GameCore/GameTypes.h>
-#include <GameCore/ImageData.h>
+#include <Core/Buffer2D.h>
+#include <Core/Colors.h>
+#include <Core/GameTypes.h>
+#include <Core/ImageData.h>
 
 #include <cassert>
 #include <memory>

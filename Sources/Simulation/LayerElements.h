@@ -7,8 +7,8 @@
 
 #include "Materials.h"
 
-#include <GameCore/Colors.h>
-#include <GameCore/GameTypes.h>
+#include <Core/Colors.h>
+#include <Core/GameTypes.h>
 
 #include <cassert>
 

@@ -4,14 +4,19 @@
 #
 
 set  (SIMULATION_SOURCES
+	ElectricalPanel.h
 	FishSpeciesDatabase.cpp
 	FishSpeciesDatabase.h
+	LayerElements.h
+	Layers.cpp
+        Layers.h
 	Materials.cpp
 	Materials.h
 	MaterialDatabase.cpp
 	MaterialDatabase.h
 	NpcDatabase.cpp
 	NpcDatabase.h
+	RopeBuffer.h
 	SimulationParameters.cpp
 	SimulationParameters.h
 )
