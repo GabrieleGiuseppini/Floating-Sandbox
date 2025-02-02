@@ -95,6 +95,30 @@ Buffer<std::uint8_t> TestAssetManager::LoadFont(std::string const & fontSetName,
     return Buffer<std::uint8_t>(0);
 }
 
+picojson::value TestAssetManager::LoadStructuralMaterialDatabase() const
+{
+    assert(false); // Not needed by tests, so far
+    return picojson::value();
+}
+
+picojson::value TestAssetManager::LoadElectricalMaterialDatabase() const
+{
+    assert(false); // Not needed by tests, so far
+    return picojson::value();
+}
+
+picojson::value TestAssetManager::LoadFishSpeciesDatabase() const
+{
+    assert(false); // Not needed by tests, so far
+    return picojson::value();
+}
+
+picojson::value TestAssetManager::LoadNpcDatabase() const
+{
+    assert(false); // Not needed by tests, so far
+    return picojson::value();
+}
+
 ////////////////////////////////////
 
 TestTextureDatabase const & TestAssetManager::GetDatabase(std::string const & databaseName) const

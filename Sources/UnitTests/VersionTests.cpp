@@ -1,10 +1,11 @@
-#include <Game/Version.h>
+#include <Core/Version.h>
+#include <Game/GameVersion.h>
 
 #include "gtest/gtest.h"
 
 TEST(VersionTests, CurrentVersion)
 {
-    EXPECT_EQ(Version::CurrentVersion().ToString(), APPLICATION_VERSION_LONG_STR);
+    EXPECT_EQ(GameVersion.ToString(), APPLICATION_VERSION_LONG_STR);
 }
 
 TEST(VersionTests, Operators)

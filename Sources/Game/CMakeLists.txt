@@ -7,6 +7,7 @@ set  (GAME_SOURCES
 	FileSystem.h
 	GameAssetManager.cpp
 	GameAssetManager.h
+	GameVersion.h
 )
 
 source_group(" " FILES ${GAME_SOURCES})

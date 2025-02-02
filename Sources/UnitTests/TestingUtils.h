@@ -2,9 +2,9 @@
 #include <Core/ImageData.h>
 #include <Core/MemoryStreams.h>
 
+#include <Simulation/Materials.h>
+
 #include <Game/FileSystem.h>
-// TODOTEST
-//#include <Game/Materials.h>
 
 #include <map>
 #include <vector>
@@ -49,6 +49,11 @@ public:
 
     std::vector<AssetDescriptor> EnumerateFonts(std::string const & fontSetName) const override;
     Buffer<std::uint8_t> LoadFont(std::string const & fontSetName, std::string const & fontRelativePath) const override;
+
+    picojson::value LoadStructuralMaterialDatabase() const override;
+    picojson::value LoadElectricalMaterialDatabase() const override;
+    picojson::value LoadFishSpeciesDatabase() const override;
+    picojson::value LoadNpcDatabase() const override;
 
 private:
 
@@ -230,6 +235,5 @@ public:
 
 float DivideByTwo(float value);
 
-// TODOTEST
-//StructuralMaterial MakeTestStructuralMaterial(std::string name, rgbColor colorKey);
-//ElectricalMaterial MakeTestElectricalMaterial(std::string name, rgbColor colorKey, bool isInstanced = false);
+StructuralMaterial MakeTestStructuralMaterial(std::string name, rgbColor colorKey);
+ElectricalMaterial MakeTestElectricalMaterial(std::string name, rgbColor colorKey, bool isInstanced = false);

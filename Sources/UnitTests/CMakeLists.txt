@@ -70,7 +70,7 @@ set (UNIT_TEST_SOURCES
 	UniqueBufferTests.cpp
 	UtilsTests.cpp
 	VectorsTests.cpp
-	#VersionTests.cpp
+	VersionTests.cpp
 )
 
 source_group(" " FILES ${UNIT_TEST_SOURCES})

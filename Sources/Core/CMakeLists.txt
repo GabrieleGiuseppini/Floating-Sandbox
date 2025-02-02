@@ -91,6 +91,7 @@ set  (SOURCES
 	Utils.h
 	Vectors.cpp
 	Vectors.h
+	Version.h
 )
 
 source_group(" " FILES ${SOURCES})
