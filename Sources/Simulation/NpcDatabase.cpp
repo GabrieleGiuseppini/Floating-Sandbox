@@ -7,8 +7,8 @@
 
 #include "GameParameters.h"
 
-#include <GameCore/GameException.h>
-#include <GameCore/Utils.h>
+#include <Core/GameException.h>
+#include <Core/Utils.h>
 
 static char HeadFKeyName[] = "head_f";
 static char HeadBKeyName[] = "head_b";
@@ -24,11 +24,11 @@ static char LegBKeyName[] = "leg_b";
 static char LegSKeyName[] = "leg_s";
 
 NpcDatabase NpcDatabase::Load(
-    ResourceLocator const & resourceLocator,
+    IAssetManager const & assetManager,
     MaterialDatabase const & materialDatabase,
-    Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas)
+    TextureAtlas<GameTextureDatabases::NpcTextureDatabase> const & npcTextureAtlas)
 {
-    picojson::value const root = Utils::ParseJSONFile(resourceLocator.GetNpcDatabaseFilePath());
+    picojson::value const root = assetManager.LoadNpcDatabase();
     if (!root.is<picojson::object>())
     {
         throw GameException("NPC database is not a JSON object");
@@ -173,7 +173,7 @@ NpcDatabase::HumanSubKind NpcDatabase::ParseHumanSubKind(
     ParticleAttributesType const & globalHeadParticleAttributes,
     ParticleAttributesType const & globalFeetParticleAttributes,
     DefaultHumanTextureGeometryType const & defaultTextureGeometry,
-    Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas)
+    TextureAtlas<GameTextureDatabases::NpcTextureDatabase> const & npcTextureAtlas)
 {
     std::string const name = Utils::GetMandatoryJsonMember<std::string>(subKindObject, "name");
     NpcHumanRoleType const role = StrToNpcHumanRoleType(Utils::GetMandatoryJsonMember<std::string>(subKindObject, "role"));
@@ -265,7 +265,7 @@ NpcDatabase::HumanTextureGeometryType NpcDatabase::ParseHumanTextureGeometry(
     picojson::object const & containerObject,
     DefaultHumanTextureGeometryType const & defaults,
     picojson::object const & textureFilenameStemsContainerObject,
-    Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas,
+    TextureAtlas<GameTextureDatabases::NpcTextureDatabase> const & npcTextureAtlas,
     std::string const & subKindName)
 {
     auto const textureGeometryContainerObject = Utils::GetOptionalJsonObject(containerObject, "texture_geometry_overrides");
@@ -364,7 +364,7 @@ NpcDatabase::HumanTextureGeometryType NpcDatabase::ParseHumanTextureGeometry(
 ImageSize NpcDatabase::GetFrameSize(
     picojson::object const & containerObject,
     std::string const & frameNameMemberName,
-    Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas)
+    TextureAtlas<GameTextureDatabases::NpcTextureDatabase> const & npcTextureAtlas)
 {
     std::string const & frameFilenameStem = Utils::GetMandatoryJsonMember<std::string>(containerObject, frameNameMemberName);
     auto const & atlasFrameMetadata = npcTextureAtlas.Metadata.GetFrameMetadata(frameFilenameStem);
@@ -374,7 +374,7 @@ ImageSize NpcDatabase::GetFrameSize(
 NpcDatabase::FurnitureSubKind NpcDatabase::ParseFurnitureSubKind(
     picojson::object const & subKindObject,
     MaterialDatabase const & materialDatabase,
-    Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas)
+    TextureAtlas<GameTextureDatabases::NpcTextureDatabase> const & npcTextureAtlas)
 {
     std::string const name = Utils::GetMandatoryJsonMember<std::string>(subKindObject, "name");
     NpcFurnitureRoleType const role = StrToNpcFurnitureRoleType(Utils::GetMandatoryJsonMember<std::string>(subKindObject, "role"));
@@ -474,7 +474,7 @@ NpcDatabase::FurnitureSubKind NpcDatabase::ParseFurnitureSubKind(
             defaultParticleAttributes);
     }
 
-    Render::TextureCoordinatesQuad textureCoordinatesQuad = Render::TextureCoordinatesQuad({
+    TextureCoordinatesQuad textureCoordinatesQuad = TextureCoordinatesQuad({
         atlasFrameMetadata.TextureCoordinatesBottomLeft.x,
         atlasFrameMetadata.TextureCoordinatesTopRight.x,
         atlasFrameMetadata.TextureCoordinatesBottomLeft.y,
@@ -538,14 +538,14 @@ NpcDatabase::ParticleAttributesType NpcDatabase::MakeDefaultParticleAttributes(S
     };
 }
 
-Render::TextureCoordinatesQuad NpcDatabase::ParseTextureCoordinatesQuad(
+TextureCoordinatesQuad NpcDatabase::ParseTextureCoordinatesQuad(
     picojson::object const & containerObject,
     std::string const & memberName,
-    Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas)
+    TextureAtlas<GameTextureDatabases::NpcTextureDatabase> const & npcTextureAtlas)
 {
     std::string const & frameFilenameStem = Utils::GetMandatoryJsonMember<std::string>(containerObject, memberName);
     auto const & atlasFrameMetadata = npcTextureAtlas.Metadata.GetFrameMetadata(frameFilenameStem);
-    return Render::TextureCoordinatesQuad({
+    return TextureCoordinatesQuad({
         atlasFrameMetadata.TextureCoordinatesBottomLeft.x,
         atlasFrameMetadata.TextureCoordinatesTopRight.x,
         atlasFrameMetadata.TextureCoordinatesBottomLeft.y,

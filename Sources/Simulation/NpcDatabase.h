@@ -7,12 +7,12 @@
 
 #include "MaterialDatabase.h"
 #include "Materials.h"
-#include "RenderTypes.h"
-#include "ResourceLocator.h"
-#include "TextureAtlas.h"
-#include "TextureTypes.h"
 
-#include <GameCore/GameTypes.h>
+#include <Render/GameTextureDatabases.h>
+
+#include <Core/GameTypes.h>
+#include <Core/IAssetManager.h>
+#include <Core/TextureAtlas.h>
 
 #include <array>
 #include <cassert>
@@ -62,21 +62,21 @@ public:
 
     struct HumanTextureFramesType
     {
-        Render::TextureCoordinatesQuad HeadFront;
-        Render::TextureCoordinatesQuad HeadBack;
-        Render::TextureCoordinatesQuad HeadSide;
+        TextureCoordinatesQuad HeadFront;
+        TextureCoordinatesQuad HeadBack;
+        TextureCoordinatesQuad HeadSide;
 
-        Render::TextureCoordinatesQuad TorsoFront;
-        Render::TextureCoordinatesQuad TorsoBack;
-        Render::TextureCoordinatesQuad TorsoSide;
+        TextureCoordinatesQuad TorsoFront;
+        TextureCoordinatesQuad TorsoBack;
+        TextureCoordinatesQuad TorsoSide;
 
-        Render::TextureCoordinatesQuad ArmFront;
-        Render::TextureCoordinatesQuad ArmBack;
-        Render::TextureCoordinatesQuad ArmSide;
+        TextureCoordinatesQuad ArmFront;
+        TextureCoordinatesQuad ArmBack;
+        TextureCoordinatesQuad ArmSide;
 
-        Render::TextureCoordinatesQuad LegFront;
-        Render::TextureCoordinatesQuad LegBack;
-        Render::TextureCoordinatesQuad LegSide;
+        TextureCoordinatesQuad LegFront;
+        TextureCoordinatesQuad LegBack;
+        TextureCoordinatesQuad LegSide;
     };
 
 public:
@@ -88,9 +88,9 @@ public:
     NpcDatabase & operator=(NpcDatabase && other) = default;
 
     static NpcDatabase Load(
-        ResourceLocator const & resourceLocator,
+        IAssetManager const & assetManager,
         MaterialDatabase const & materialDatabase,
-        Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas);
+        TextureAtlas<GameTextureDatabases::NpcTextureDatabase> const & npcTextureAtlas);
 
     // Humans
 
@@ -197,7 +197,7 @@ public:
         return mFurnitureSubKinds.at(subKindId).Geometry;
     }
 
-    Render::TextureCoordinatesQuad const & GetFurnitureTextureCoordinatesQuad(NpcSubKindIdType subKindId) const
+    TextureCoordinatesQuad const & GetFurnitureTextureCoordinatesQuad(NpcSubKindIdType subKindId) const
     {
         return mFurnitureSubKinds.at(subKindId).TextureCoordinatesQuad;
     }
@@ -236,7 +236,7 @@ private:
 
         FurnitureGeometryType Geometry;
 
-        Render::TextureCoordinatesQuad TextureCoordinatesQuad;
+        TextureCoordinatesQuad TextureCoordinatesQuad;
     };
 
 private:
@@ -281,7 +281,7 @@ private:
         ParticleAttributesType const & globalHeadParticleAttributes,
         ParticleAttributesType const & globalFeetParticleAttributes,
         DefaultHumanTextureGeometryType const & defaultTextureGeometry,
-        Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas);
+        TextureAtlas<GameTextureDatabases::NpcTextureDatabase> const & npcTextureAtlas);
 
     static DefaultHumanTextureGeometryType ParseDefaultHumanTextureGeometry(
         picojson::object const & containerObject);
@@ -290,18 +290,18 @@ private:
         picojson::object const & containerObject,
         DefaultHumanTextureGeometryType const & defaults,
         picojson::object const & textureFilenameStemsContainerObject,
-        Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas,
+        TextureAtlas<GameTextureDatabases::NpcTextureDatabase> const & npcTextureAtlas,
         std::string const & subKindName);
 
     static ImageSize GetFrameSize(
         picojson::object const & containerObject,
         std::string const & frameNameMemberName,
-        Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas);
+        TextureAtlas<GameTextureDatabases::NpcTextureDatabase> const & npcTextureAtlas);
 
     static FurnitureSubKind ParseFurnitureSubKind(
         picojson::object const & subKindObject,
         MaterialDatabase const & materialDatabase,
-        Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas);
+        TextureAtlas<GameTextureDatabases::NpcTextureDatabase> const & npcTextureAtlas);
 
     static ParticleAttributesType MakeParticleAttributes(
         picojson::object const & containerObject,
@@ -314,10 +314,10 @@ private:
 
     static ParticleAttributesType MakeDefaultParticleAttributes(StructuralMaterial const & baseMaterial);
 
-    static Render::TextureCoordinatesQuad ParseTextureCoordinatesQuad(
+    static TextureCoordinatesQuad ParseTextureCoordinatesQuad(
         picojson::object const & containerObject,
         std::string const & memberName,
-        Render::TextureAtlas<Render::NpcTextureGroups> const & npcTextureAtlas);
+        TextureAtlas<GameTextureDatabases::NpcTextureDatabase> const & npcTextureAtlas);
 
     template<typename TNpcSubKindContainer, typename TNpcRoleType>
     static std::vector<std::tuple<NpcSubKindIdType, std::string>> GetSubKinds(

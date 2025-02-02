@@ -141,12 +141,22 @@ Buffer<std::uint8_t> GameAssetManager::LoadFont(std::string const & fontSetName,
 
 picojson::value GameAssetManager::LoadStructuralMaterialDatabase() const
 {
-    return LoadJson(mDataRoot / "materials_structural.json");
+    return LoadJson(mDataRoot / "Misc" / "materials_structural.json");
 }
 
 picojson::value GameAssetManager::LoadElectricalMaterialDatabase() const
 {
-    return LoadJson(mDataRoot / "materials_electrical.json");
+    return LoadJson(mDataRoot / "Misc" / "materials_electrical.json");
+}
+
+picojson::value GameAssetManager::LoadFishSpeciesDatabase() const
+{
+    return LoadJson(mDataRoot / "Misc" / "fish_species.json");
+}
+
+picojson::value GameAssetManager::LoadNpcDatabase() const
+{
+    return LoadJson(mDataRoot / "Misc" / "npcs.json");
 }
 
 // Helpers

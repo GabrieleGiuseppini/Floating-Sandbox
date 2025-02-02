@@ -41,6 +41,9 @@ public:
 
 	picojson::value LoadStructuralMaterialDatabase() const override;
 	picojson::value LoadElectricalMaterialDatabase() const override;
+	picojson::value LoadFishSpeciesDatabase() const override;
+	picojson::value LoadNpcDatabase() const override;
+
 
 	//
 	// Platform-specific

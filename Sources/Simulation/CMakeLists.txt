@@ -3,11 +3,15 @@
 # Simulation library
 #
 
-set  (SIMULATION_SOURCES	
+set  (SIMULATION_SOURCES
+	FishSpeciesDatabase.cpp
+	FishSpeciesDatabase.h
 	Materials.cpp
 	Materials.h
 	MaterialDatabase.cpp
 	MaterialDatabase.h
+	NpcDatabase.cpp
+	NpcDatabase.h
 )
 
 source_group(" " FILES ${SIMULATION_SOURCES})

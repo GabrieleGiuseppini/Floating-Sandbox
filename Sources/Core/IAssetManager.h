@@ -57,4 +57,6 @@ public:
 	// Misc databases
 	virtual picojson::value LoadStructuralMaterialDatabase() const = 0;
 	virtual picojson::value LoadElectricalMaterialDatabase() const = 0;
+	virtual picojson::value LoadFishSpeciesDatabase() const = 0;
+	virtual picojson::value LoadNpcDatabase() const = 0;
 };

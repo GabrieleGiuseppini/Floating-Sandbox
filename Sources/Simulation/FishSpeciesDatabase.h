@@ -5,10 +5,9 @@
  ***************************************************************************************/
 #pragma once
 
-#include "ResourceLocator.h"
-
-#include <GameCore/GameTypes.h>
-#include <GameCore/Vectors.h>
+#include <Core/GameTypes.h>
+#include <Core/IAssetManager.h>
+#include <Core/Vectors.h>
 
 #include <picojson.h>
 
@@ -72,12 +71,7 @@ public:
     FishSpeciesDatabase & operator=(FishSpeciesDatabase const & other) = delete;
     FishSpeciesDatabase & operator=(FishSpeciesDatabase && other) = default;
 
-    static FishSpeciesDatabase Load(ResourceLocator const & resourceLocator)
-    {
-        return Load(resourceLocator.GetFishSpeciesDatabaseFilePath());
-    }
-
-    static FishSpeciesDatabase Load(std::filesystem::path fishSpeciesDatabaseFilePath);
+    static FishSpeciesDatabase Load(IAssetManager const & assetManager);
 
     size_t GetFishSpeciesCount() const
     {

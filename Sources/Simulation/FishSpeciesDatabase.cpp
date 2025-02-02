@@ -5,13 +5,13 @@
  ***************************************************************************************/
 #include "FishSpeciesDatabase.h"
 
-#include <GameCore/Utils.h>
+#include <Core/Utils.h>
 
 #include <set>
 
-FishSpeciesDatabase FishSpeciesDatabase::Load(std::filesystem::path fishSpeciesDatabaseFilePath)
+FishSpeciesDatabase FishSpeciesDatabase::Load(IAssetManager const & assetManager)
 {
-    picojson::value const root = Utils::ParseJSONFile(fishSpeciesDatabaseFilePath);
+    picojson::value const root = assetManager.LoadFishSpeciesDatabase();
 
     if (!root.is<picojson::array>())
     {
