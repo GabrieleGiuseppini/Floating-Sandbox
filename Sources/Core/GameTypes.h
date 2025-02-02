@@ -1443,6 +1443,26 @@ struct TextureCoordinatesQuad
 };
 
 /*
+ * A color together with a progress float.
+ *
+ * Used as-is in shaders.
+ */
+#pragma pack(push, 1)
+struct ColorWithProgress
+{
+    vec3f BaseColor;
+    float Progress;
+
+    ColorWithProgress(
+        vec3f baseColor,
+        float progress)
+        : BaseColor(baseColor)
+        , Progress(progress)
+    {}
+};
+#pragma pack(pop)
+
+/*
  * The positions at which UI elements may be anchored.
  */
 enum class AnchorPositionType

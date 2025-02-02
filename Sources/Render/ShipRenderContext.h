@@ -47,6 +47,8 @@ public:
         ShipId shipId,
         size_t pointCount,
         size_t shipCount,
+        size_t maxEphemeralParticles,
+        size_t maxSpringsPerPoint,
         RgbaImageData exteriorViewImage,
         RgbaImageData interiorViewImage,
         ShaderManager<GameShaderSet::ShaderSet> & shaderManager,
@@ -126,7 +128,7 @@ public:
         size_t startDst,
         size_t count);
 
-    void UploadPointFrontierColors(FrontierColor const * colors);
+    void UploadPointFrontierColors(ColorWithProgress const * colors);
 
     //
     // Elements
@@ -1278,7 +1280,7 @@ private:
         // Populate the texture quad
         //
 
-        TextureAtlasFrameMetadata<GenericMipMappedTextureGroups> const & frame =
+        TextureAtlasFrameMetadata<GameTextureDatabases::GenericMipMappedTextureDatabase> const & frame =
             mGenericMipMappedTextureAtlasMetadata.GetFrameMetadata(textureFrameId);
 
         float const leftX = -frame.FrameMetadata.AnchorCenterWorld.x;

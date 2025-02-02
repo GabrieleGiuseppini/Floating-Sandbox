@@ -16,6 +16,8 @@ ShipRenderContext::ShipRenderContext(
     ShipId shipId,
     size_t pointCount,
     size_t shipCount,
+    size_t maxEphemeralParticles,
+    size_t maxSpringsPerPoint,
     RgbaImageData exteriorViewImage,
     RgbaImageData interiorViewImage,
     ShaderManager<GameShaderSet::ShaderSet> & shaderManager,
@@ -207,7 +209,7 @@ ShipRenderContext::ShipRenderContext(
 
     mPointFrontierColorVBO = vbos[6];
     glBindBuffer(GL_ARRAY_BUFFER, *mPointFrontierColorVBO);
-    glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(FrontierColor), nullptr, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(ColorWithProgress), nullptr, GL_STATIC_DRAW);
 
     mStressedSpringElementVBO = vbos[7];
     mStressedSpringElementBuffer.reserve(1024); // Arbitrary
@@ -249,8 +251,8 @@ ShipRenderContext::ShipRenderContext(
     mElementVBO = tmpGLuint;
 
     mPointElementBuffer.reserve(pointCount);
-    mEphemeralPointElementBuffer.reset(GameParameters::MaxEphemeralParticles);
-    mSpringElementBuffer.reserve(pointCount * GameParameters::MaxSpringsPerPoint);
+    mEphemeralPointElementBuffer.reset(maxEphemeralParticles);
+    mSpringElementBuffer.reserve(pointCount * maxSpringsPerPoint);
     mRopeElementBuffer.reserve(pointCount); // Arbitrary
     // Nothing for mTriangleElementBuffer, will resize as needed
 
@@ -301,8 +303,8 @@ ShipRenderContext::ShipRenderContext(
 
         glBindBuffer(GL_ARRAY_BUFFER, *mPointFrontierColorVBO);
         glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::ShipPointFrontierColor));
-        static_assert(sizeof(FrontierColor) == 4 * sizeof(float));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::ShipPointFrontierColor), 4, GL_FLOAT, GL_FALSE, sizeof(FrontierColor), (void *)(0));
+        static_assert(sizeof(ColorWithProgress) == 4 * sizeof(float));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::ShipPointFrontierColor), 4, GL_FLOAT, GL_FALSE, sizeof(ColorWithProgress), (void *)(0));
         CheckOpenGLError();
 
         //
@@ -540,7 +542,7 @@ ShipRenderContext::ShipRenderContext(
         // Initialize buffers
         //
 
-        mGenericMipMappedTextureAirBubbleVertexBuffer.reset(GameParameters::MaxEphemeralParticles * 4);
+        mGenericMipMappedTextureAirBubbleVertexBuffer.reset(maxEphemeralParticles * 4);
     }
 
 
@@ -940,7 +942,7 @@ void ShipRenderContext::UploadPointAuxiliaryData(
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void ShipRenderContext::UploadPointFrontierColors(FrontierColor const * colors)
+void ShipRenderContext::UploadPointFrontierColors(ColorWithProgress const * colors)
 {
     // Uploaded sparingly
 
@@ -948,7 +950,7 @@ void ShipRenderContext::UploadPointFrontierColors(FrontierColor const * colors)
 
     glBindBuffer(GL_ARRAY_BUFFER, *mPointFrontierColorVBO);
 
-    glBufferSubData(GL_ARRAY_BUFFER, 0, mPointCount * sizeof(FrontierColor), colors);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, mPointCount * sizeof(ColorWithProgress), colors);
     CheckOpenGLError();
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
