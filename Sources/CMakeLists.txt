@@ -3,6 +3,7 @@ add_subdirectory(Core)
 add_subdirectory(Game)
 add_subdirectory(OpenGLCore)
 add_subdirectory(Render)
+add_subdirectory(Simulation)
 add_subdirectory(ShipTools)
 add_subdirectory(UnitTests)
 

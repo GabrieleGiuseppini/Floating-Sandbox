@@ -139,6 +139,16 @@ Buffer<std::uint8_t> GameAssetManager::LoadFont(std::string const & fontSetName,
     return FileSystem::LoadBinaryFile(mDataRoot / "Fonts" / fontSetName / fontRelativePath);
 }
 
+picojson::value GameAssetManager::LoadStructuralMaterialDatabase() const
+{
+    return LoadJson(mDataRoot / "materials_structural.json");
+}
+
+picojson::value GameAssetManager::LoadElectricalMaterialDatabase() const
+{
+    return LoadJson(mDataRoot / "materials_electrical.json");
+}
+
 // Helpers
 
 ImageSize GameAssetManager::GetImageSize(std::filesystem::path const & filePath)
@@ -189,7 +199,14 @@ void GameAssetManager::SavePngImage(
 
 picojson::value GameAssetManager::LoadJson(std::filesystem::path const & filePath)
 {
-    return Utils::ParseJSONString(FileSystem::LoadTextFile(filePath));
+    try
+    {
+        return Utils::ParseJSONString(FileSystem::LoadTextFile(filePath));
+    }
+    catch (GameException const & ex)
+    {
+        throw GameException("Error loading \"" + filePath.filename().string() + "\": " + ex.what());
+    }
 }
 
 void GameAssetManager::SaveJson(

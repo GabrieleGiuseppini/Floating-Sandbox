@@ -5,11 +5,11 @@
 ***************************************************************************************/
 #include "MaterialDatabase.h"
 
-#include <GameCore/Log.h>
+#include <Core/Log.h>
 
 #include <algorithm>
 
-MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirectory)
+MaterialDatabase MaterialDatabase::Load(IAssetManager const & assetManager)
 {
     //
     // Structural
@@ -24,8 +24,7 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
         uniqueStructuralMaterials[i].second = nullptr;
 
     // Load file
-    picojson::value const structuralMaterialsRoot = Utils::ParseJSONFile(
-        materialsRootDirectory / "materials_structural.json");
+    picojson::value const structuralMaterialsRoot = assetManager.LoadStructuralMaterialDatabase();
 
     if (!structuralMaterialsRoot.is<picojson::object>())
     {
@@ -224,8 +223,7 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
     MaterialColorMap<ElectricalMaterial> electricalMaterialColorMap;
     std::map<MaterialColorKey, ElectricalMaterial const *, InstancedColorKeyComparer> instancedElectricalMaterialMap;
 
-    picojson::value const electricalMaterialsRoot = Utils::ParseJSONFile(
-        materialsRootDirectory / "materials_electrical.json");
+    picojson::value const electricalMaterialsRoot = assetManager.LoadElectricalMaterialDatabase();
 
     if (!electricalMaterialsRoot.is<picojson::object>())
     {

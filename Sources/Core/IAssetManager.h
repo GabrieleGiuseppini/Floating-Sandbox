@@ -53,4 +53,8 @@ public:
 	// Fonts
 	virtual std::vector<AssetDescriptor> EnumerateFonts(std::string const & fontSetName) const = 0;
 	virtual Buffer<std::uint8_t> LoadFont(std::string const & fontSetName, std::string const & fontRelativePath) const = 0;
+
+	// Misc databases
+	virtual picojson::value LoadStructuralMaterialDatabase() const = 0;
+	virtual picojson::value LoadElectricalMaterialDatabase() const = 0;
 };

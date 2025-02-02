@@ -6,18 +6,17 @@
 #pragma once
 
 #include "Materials.h"
-#include "ResourceLocator.h"
 
-#include <GameCore/Colors.h>
-#include <GameCore/GameException.h>
-#include <GameCore/GameTypes.h>
-#include <GameCore/Utils.h>
+#include <Core/Colors.h>
+#include <Core/GameException.h>
+#include <Core/GameTypes.h>
+#include <Core/IAssetManager.h>
+#include <Core/Utils.h>
 
 #include <picojson.h>
 
 #include <cassert>
 #include <cstdint>
-#include <functional>
 #include <map>
 #include <optional>
 #include <string>
@@ -116,12 +115,7 @@ public:
     MaterialDatabase & operator=(MaterialDatabase const & other) = delete;
     MaterialDatabase & operator=(MaterialDatabase && other) = default;
 
-    static MaterialDatabase Load(ResourceLocator const & resourceLocator)
-    {
-        return Load(resourceLocator.GetMaterialDatabaseRootFilePath());
-    }
-
-    static MaterialDatabase Load(std::filesystem::path materialsRootDirectory);
+    static MaterialDatabase Load(IAssetManager const & assetManager);
 
     StructuralMaterial const * FindStructuralMaterial(MaterialColorKey const & colorKey) const
     {

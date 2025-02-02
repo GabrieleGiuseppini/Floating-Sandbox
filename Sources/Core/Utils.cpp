@@ -44,7 +44,7 @@ picojson::value Utils::ParseJSONString(std::string const & jsonString)
         std::string const parseError = picojson::parse(jsonContent, RemoveJSONComments(jsonString));
         if (!parseError.empty())
         {
-            throw GameException("Error parsing JSON string: " + parseError);
+            throw GameException("Error parsing JSON: " + parseError);
         }
     }
 

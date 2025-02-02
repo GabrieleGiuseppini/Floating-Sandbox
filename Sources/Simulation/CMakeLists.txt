@@ -1,0 +1,24 @@
+
+#
+# Simulation library
+#
+
+set  (SIMULATION_SOURCES	
+	Materials.cpp
+	Materials.h
+	MaterialDatabase.cpp
+	MaterialDatabase.h
+)
+
+source_group(" " FILES ${SIMULATION_SOURCES})
+
+add_library (Simulation ${SIMULATION_SOURCES})
+
+target_include_directories(Simulation PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(Simulation PUBLIC ${PICOJSON_INCLUDE_DIRS})
+target_include_directories(Simulation INTERFACE ..)
+
+target_link_libraries (Simulation
+	Core
+	Render
+	${ADDITIONAL_LIBRARIES})
