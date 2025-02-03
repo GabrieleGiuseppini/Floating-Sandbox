@@ -1012,7 +1012,7 @@ TEST(ShipDefinitionFormatDeSerializer, Roundtrip)
                 colorKey,
                 "Material " + std::to_string(i),
                 colorKey,
-                i >= 100));
+                i == 1));
     }
 
     // Linearize materials
@@ -1030,8 +1030,11 @@ TEST(ShipDefinitionFormatDeSerializer, Roundtrip)
     ElectricalLayerData sourceElectricalLayer(shipSize);
     for (size_t i = 0; i < sourceElectricalLayer.Buffer.Size.GetLinearSize(); ++i)
     {
-        sourceElectricalLayer.Buffer.Data[i] = ElectricalElement(electricalMaterials[i % 100], NoneElectricalElementInstanceIndex);
+        sourceElectricalLayer.Buffer.Data[i] = ElectricalElement(electricalMaterials[i % 100], i == 1 ? 22 : NoneElectricalElementInstanceIndex);
     }
+
+    sourceElectricalLayer.Panel = ElectricalPanel();
+    sourceElectricalLayer.Panel.Add(22, ElectricalPanel::ElementMetadata(std::nullopt, "FOO", true));
 
     //
     // Ropes
@@ -1115,10 +1118,42 @@ TEST(ShipDefinitionFormatDeSerializer, Roundtrip)
     ASSERT_EQ(sd.Layers.StructuralLayer->Buffer.Size, shipSize);
     for (size_t i = 0; i < shipSize.GetLinearSize(); ++i)
     {
-        EXPECT_EQ(sourceStructuralLayer.Buffer.Data[i].Material, structuralMaterials[i % structuralMaterials.size()]);
+        EXPECT_EQ(sd.Layers.StructuralLayer->Buffer.Data[i].Material->ColorKey, structuralMaterials[i % structuralMaterials.size()]->ColorKey);
     }
 
-    // TODOHERE
+    ASSERT_TRUE(sd.Layers.ElectricalLayer);
+    ASSERT_EQ(sd.Layers.ElectricalLayer->Buffer.Size, shipSize);
+    for (size_t i = 0; i < shipSize.GetLinearSize(); ++i)
+    {
+        ASSERT_NE(sd.Layers.ElectricalLayer->Buffer.Data[i].Material, nullptr);
+        EXPECT_EQ(sd.Layers.ElectricalLayer->Buffer.Data[i].Material->ColorKey, electricalMaterials[i % 100]->ColorKey);
+        EXPECT_EQ(sd.Layers.ElectricalLayer->Buffer.Data[i].InstanceIndex, sourceElectricalLayer.Buffer.Data[i].InstanceIndex);
+    }
+    ASSERT_EQ(sd.Layers.ElectricalLayer->Panel.GetSize(), 1u);
+    ASSERT_TRUE(sd.Layers.ElectricalLayer->Panel.Contains(22));
+    EXPECT_EQ(sd.Layers.ElectricalLayer->Panel[22].PanelCoordinates, std::nullopt);
+    EXPECT_EQ(sd.Layers.ElectricalLayer->Panel[22].Label, "FOO");
+    EXPECT_EQ(sd.Layers.ElectricalLayer->Panel[22].IsHidden, true);
+
+    ASSERT_TRUE(sd.Layers.RopesLayer);
+    EXPECT_EQ(sd.Layers.RopesLayer->Buffer.GetSize(), shipSize);
+    ASSERT_EQ(sd.Layers.RopesLayer->Buffer.GetElementCount(), 2u);
+    EXPECT_EQ(sd.Layers.RopesLayer->Buffer[0].StartCoords, sourceRopesLayer.Buffer[0].StartCoords);
+    EXPECT_EQ(sd.Layers.RopesLayer->Buffer[0].EndCoords, sourceRopesLayer.Buffer[0].EndCoords);
+    ASSERT_NE(sd.Layers.RopesLayer->Buffer[0].Material, nullptr);
+    EXPECT_EQ(sd.Layers.RopesLayer->Buffer[0].Material->ColorKey, structuralMaterials[0]->ColorKey);
+    EXPECT_EQ(sd.Layers.RopesLayer->Buffer[0].RenderColor, sourceRopesLayer.Buffer[0].RenderColor);
+    EXPECT_EQ(sd.Layers.RopesLayer->Buffer[1].StartCoords, sourceRopesLayer.Buffer[1].StartCoords);
+    EXPECT_EQ(sd.Layers.RopesLayer->Buffer[1].EndCoords, sourceRopesLayer.Buffer[1].EndCoords);
+    ASSERT_NE(sd.Layers.RopesLayer->Buffer[1].Material, nullptr);
+    EXPECT_EQ(sd.Layers.RopesLayer->Buffer[1].Material->ColorKey, structuralMaterials[1]->ColorKey);
+    EXPECT_EQ(sd.Layers.RopesLayer->Buffer[1].RenderColor, sourceRopesLayer.Buffer[1].RenderColor);
+
+    ASSERT_TRUE(sd.Layers.ExteriorTextureLayer);
+    EXPECT_EQ(sd.Layers.ExteriorTextureLayer->Buffer.Size, sourceExteriorTexture.Size);
+    // TODO
+
+    // TODOHERE: InteriorTextureLayer
 
     // Metadata
 
