@@ -82,6 +82,12 @@ public:
 		std::memcpy(&(mData[oldSize]), buffer, size);
 	}
 
+	MemoryBinaryReadStream MakeReadStreamCopy() const
+	{
+		std::vector<std::uint8_t> copy = mData;
+		return MemoryBinaryReadStream(std::move(copy));
+	}
+
 private:
 
 	std::vector<std::uint8_t> mData;

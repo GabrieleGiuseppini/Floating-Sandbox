@@ -310,10 +310,13 @@ private:
         DeSerializationBuffer<BigEndianess> const & buffer,
         size_t offset);
 
-    static RgbaImageData ReadPngImage(BinaryReadStream & shipDefinitionInputStream);
+    static RgbaImageData ReadPngImage(
+        BinaryReadStream & shipDefinitionInputStream,
+        size_t imageDataSize);
 
     static RgbaImageData ReadPngImageAndResize(
         BinaryReadStream & shipDefinitionInputStream,
+        size_t imageDataSize,
         ImageSize const & maxSize);
 
     static void ReadFileHeader(

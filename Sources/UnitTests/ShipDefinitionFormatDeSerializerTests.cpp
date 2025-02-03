@@ -1,5 +1,6 @@
 #include <Simulation/ShipDefinitionFormatDeSerializer.h>
 
+#include <Core/MemoryBinaryStreams.h>
 #include <Core/UserGameException.h>
 #include <Core/Version.h>
 
@@ -950,4 +951,202 @@ TEST_F(ShipDefinitionFormatDeSerializer_RopesLayerTests, UnrecognizedMaterial)
         EXPECT_EQ(exc.MessageId, UserGameException::MessageIdType::LoadShipMaterialNotFound);
         EXPECT_EQ(exc.Parameters[0], fileFSVersion.ToMajorMinorPatchString());
     }
+}
+
+TEST(ShipDefinitionFormatDeSerializer, Roundtrip)
+{
+    ShipSpaceSize const shipSize(4, 2);
+
+    //
+    // Structural
+    //
+
+    std::map<MaterialColorKey, StructuralMaterial> TestStructuralMaterialMap;
+    for (std::uint8_t i = 0; i < 250; ++i)
+    {
+        MaterialColorKey colorKey(
+            i + 2,
+            i + 1,
+            i);
+
+        TestStructuralMaterialMap.try_emplace(
+            colorKey,
+            StructuralMaterial(
+                colorKey,
+                "Material " + std::to_string(i),
+                rgbaColor(colorKey, 255)));
+    }
+
+    // Linearize
+    std::vector<StructuralMaterial const *> structuralMaterials;
+    std::transform(
+        TestStructuralMaterialMap.cbegin(),
+        TestStructuralMaterialMap.cend(),
+        std::back_inserter(structuralMaterials),
+        [](auto const & entry)
+        {
+            return &(entry.second);
+        });
+
+    StructuralLayerData sourceStructuralLayer(shipSize);
+    for (size_t i = 0; i < sourceStructuralLayer.Buffer.Size.GetLinearSize(); ++i)
+    {
+        sourceStructuralLayer.Buffer.Data[i].Material = structuralMaterials[i % structuralMaterials.size()];
+    }
+
+    //
+    // Electrical
+    //
+
+    std::map<MaterialColorKey, ElectricalMaterial> TestElectricalMaterialMap;
+    for (std::uint8_t i = 0; i < 200; ++i)
+    {
+        MaterialColorKey colorKey(
+            i + 2,
+            i + 1,
+            i);
+
+        TestElectricalMaterialMap.try_emplace(
+            colorKey,
+            ElectricalMaterial(
+                colorKey,
+                "Material " + std::to_string(i),
+                colorKey,
+                i >= 100));
+    }
+
+    // Linearize materials
+    std::vector<ElectricalMaterial const *> electricalMaterials;
+    std::transform(
+        TestElectricalMaterialMap.cbegin(),
+        TestElectricalMaterialMap.cend(),
+        std::back_inserter(electricalMaterials),
+        [](auto const & entry)
+        {
+            return &(entry.second);
+        });
+
+    // Populate electrical layer with non-instanced materials
+    ElectricalLayerData sourceElectricalLayer(shipSize);
+    for (size_t i = 0; i < sourceElectricalLayer.Buffer.Size.GetLinearSize(); ++i)
+    {
+        sourceElectricalLayer.Buffer.Data[i] = ElectricalElement(electricalMaterials[i % 100], NoneElectricalElementInstanceIndex);
+    }
+
+    //
+    // Ropes
+    //
+
+    // Populate ropes layer
+    RopesLayerData sourceRopesLayer(shipSize);
+    sourceRopesLayer.Buffer.EmplaceBack(
+        ShipSpaceCoordinates(0, 1),
+        ShipSpaceCoordinates(90, 91),
+        structuralMaterials[0],
+        rgbaColor(0x02, 0x11, 0x90, 0xfe));
+    sourceRopesLayer.Buffer.EmplaceBack(
+        ShipSpaceCoordinates(200, 201),
+        ShipSpaceCoordinates(100010, 100011),
+        structuralMaterials[1],
+        rgbaColor(0xff, 0xff, 0xff, 0xff));
+
+    //
+    // Exterior layer
+    //
+
+    RgbaImageData sourceExteriorTexture(ImageSize(4, 4));
+    for (int x = 0; x < sourceExteriorTexture.Size.width; ++x)
+    {
+        for (int y = 0; y < sourceExteriorTexture.Size.height; ++y)
+        {
+            sourceExteriorTexture[{x, y}] = rgbaColor(0, 0, 0x80, 0xff);
+        }
+    }
+
+    TextureLayerData sourceExteriorLayer(sourceExteriorTexture.Clone());
+
+    //
+    // Interior layer
+    //
+
+    // TODOHERE
+
+    //
+    // Serialize
+    //
+
+    ShipLayers layers(
+        shipSize,
+        std::make_unique<StructuralLayerData>(sourceStructuralLayer.Clone()),
+        std::make_unique<ElectricalLayerData>(sourceElectricalLayer.Clone()),
+        std::make_unique<RopesLayerData>(sourceRopesLayer.Clone()),
+        std::make_unique<TextureLayerData>(sourceExteriorTexture.Clone()),
+        nullptr); // TODO
+
+    ShipDefinition shipDefinition = ShipDefinition(
+        std::move(layers),
+        ShipMetadata("TestShipName"),
+        ShipPhysicsData(vec2f(242.0f, -242.0f), 2420.0f),
+        ShipAutoTexturizationSettings(ShipAutoTexturizationModeType::MaterialTextures, 10.0f, 0.5f));
+
+    MemoryBinaryWriteStream outputStream;
+    ShipDefinitionFormatDeSerializer::Save(
+        shipDefinition,
+        Version(1, 2, 3, 4),
+        outputStream);
+
+    //
+    // Deserialize whole
+    //
+
+    MaterialDatabase const materialDatabase = MaterialDatabase::Make(structuralMaterials, electricalMaterials);
+
+    auto inputStream1 = outputStream.MakeReadStreamCopy();
+
+    ShipDefinition const sd = ShipDefinitionFormatDeSerializer::Load(
+        inputStream1,
+        materialDatabase);
+
+    // Layers
+
+    EXPECT_EQ(sd.Layers.Size, shipSize);
+
+    ASSERT_TRUE(sd.Layers.StructuralLayer);
+    ASSERT_EQ(sd.Layers.StructuralLayer->Buffer.Size, shipSize);
+    for (size_t i = 0; i < shipSize.GetLinearSize(); ++i)
+    {
+        EXPECT_EQ(sourceStructuralLayer.Buffer.Data[i].Material, structuralMaterials[i % structuralMaterials.size()]);
+    }
+
+    // TODOHERE
+
+    // Metadata
+
+    // TODO
+
+    // Physics Data
+
+    // TODO
+
+    // Auto-texturization settings
+
+    // TODO
+
+    // TODOHERE: verify, detailed
+
+    //
+    // Deserialize preview data
+    //
+
+    auto inputStream2 = outputStream.MakeReadStreamCopy();
+
+    // TODOHERE
+
+    //
+    // Deserialize preview image
+    //
+
+    auto inputStream3 = outputStream.MakeReadStreamCopy();
+
+    // TODOHERE
 }

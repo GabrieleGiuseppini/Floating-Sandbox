@@ -9,6 +9,7 @@
 #include "PngTools.h"
 
 #include <cstring>
+#include <vector>
 
 #ifdef _MSC_VER
 #pragma warning( disable: 4611 )  // Interaction between setjmp and C++ is not portable

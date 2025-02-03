@@ -143,12 +143,7 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
 
                 case static_cast<uint32_t>(MainSectionTagType::TextureLayer_PNG) :
                 {
-                    auto const startPos = inputStream.GetCurrentPosition();
-                    RgbaImageData image = ReadPngImage(inputStream);
-                    if (inputStream.GetCurrentPosition() != startPos + sectionHeader.SectionBodySize)
-                    {
-                        throw UserGameException(UserGameException::MessageIdType::InvalidShipFile);
-                    }
+                    RgbaImageData image = ReadPngImage(inputStream, sectionHeader.SectionBodySize);
 
                     // Make texture out of this image
                     textureLayer = std::make_unique<TextureLayerData>(std::move(image));
@@ -301,12 +296,7 @@ RgbaImageData ShipDefinitionFormatDeSerializer::LoadPreviewImage(
             {
                 case static_cast<uint32_t>(MainSectionTagType::TextureLayer_PNG):
                 {
-                    auto const startPos = inputStream.GetCurrentPosition();
-                    previewImage.emplace(ReadPngImageAndResize(inputStream, maxSize));
-                    if (inputStream.GetCurrentPosition() != startPos + sectionHeader.SectionBodySize)
-                    {
-                        throw UserGameException(UserGameException::MessageIdType::InvalidShipFile);
-                    }
+                    previewImage.emplace(ReadPngImageAndResize(inputStream, sectionHeader.SectionBodySize, maxSize));
 
                     LogMessage("ShipDefinitionFormatDeSerializer: returning preview from texture layer section");
 
@@ -315,12 +305,7 @@ RgbaImageData ShipDefinitionFormatDeSerializer::LoadPreviewImage(
 
                 case static_cast<uint32_t>(MainSectionTagType::Preview_PNG):
                 {
-                    auto const startPos = inputStream.GetCurrentPosition();
-                    previewImage.emplace(ReadPngImageAndResize(inputStream, maxSize));
-                    if (inputStream.GetCurrentPosition() != startPos + sectionHeader.SectionBodySize)
-                    {
-                        throw UserGameException(UserGameException::MessageIdType::InvalidShipFile);
-                    }
+                    previewImage.emplace(ReadPngImageAndResize(inputStream, sectionHeader.SectionBodySize, maxSize));
 
                     LogMessage("ShipDefinitionFormatDeSerializer: returning preview from preview section");
 
@@ -1376,16 +1361,32 @@ ShipDefinitionFormatDeSerializer::SectionHeader ShipDefinitionFormatDeSerializer
     };
 }
 
-RgbaImageData ShipDefinitionFormatDeSerializer::ReadPngImage(BinaryReadStream & shipDefinitionInputStream)
+RgbaImageData ShipDefinitionFormatDeSerializer::ReadPngImage(
+    BinaryReadStream & shipDefinitionInputStream,
+    size_t imageDataSize)
 {
-    return PngTools::DecodeImageRgba(shipDefinitionInputStream);
+    auto const startPos = shipDefinitionInputStream.GetCurrentPosition();
+
+    RgbaImageData image = PngTools::DecodeImageRgba(shipDefinitionInputStream);
+
+    if (shipDefinitionInputStream.GetCurrentPosition() < startPos + imageDataSize)
+    {
+        shipDefinitionInputStream.Skip(startPos + imageDataSize - shipDefinitionInputStream.GetCurrentPosition());
+    }
+    else if (shipDefinitionInputStream.GetCurrentPosition() > startPos + imageDataSize)
+    {
+        throw UserGameException(UserGameException::MessageIdType::InvalidShipFile);
+    }
+
+    return image;
 }
 
 RgbaImageData ShipDefinitionFormatDeSerializer::ReadPngImageAndResize(
     BinaryReadStream & shipDefinitionInputStream,
+    size_t imageDataSize,
     ImageSize const & maxSize)
 {
-    RgbaImageData orig = PngTools::DecodeImageRgba(shipDefinitionInputStream);
+    RgbaImageData orig = ReadPngImage(shipDefinitionInputStream, imageDataSize);
     return ImageTools::Resize(
         orig,
         orig.Size.ShrinkToFit(maxSize),

@@ -117,6 +117,11 @@ public:
 
     static MaterialDatabase Load(IAssetManager const & assetManager);
 
+    // For unit tests
+    static MaterialDatabase Make(
+        std::vector<StructuralMaterial const *> const & structuralMaterials,
+        std::vector<ElectricalMaterial const *> const & electricalMaterials);
+
     StructuralMaterial const * FindStructuralMaterial(MaterialColorKey const & colorKey) const
     {
         if (auto const srchIt = mStructuralMaterialColorMap.find(colorKey);

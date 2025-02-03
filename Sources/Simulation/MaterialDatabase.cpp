@@ -357,6 +357,74 @@ MaterialDatabase MaterialDatabase::Load(IAssetManager const & assetManager)
         std::move(electricalMaterialPalette));
 }
 
+MaterialDatabase MaterialDatabase::Make(
+    std::vector<StructuralMaterial const *> const & structuralMaterials,
+    std::vector<ElectricalMaterial const *> const & electricalMaterials)
+{
+    //
+    // Structural
+    //
+
+    MaterialColorMap<StructuralMaterial> structuralMaterialColorMap;
+    MaterialNameMap<StructuralMaterial> structuralMaterialNameMap;
+
+    for (auto s : structuralMaterials)
+    {
+        auto [_1, isInserted1] = structuralMaterialColorMap.insert({ s->ColorKey, *s });
+        assert(isInserted1);
+        (void)_1;
+        (void)isInserted1;
+
+        auto [_2, isInserted2] = structuralMaterialNameMap.insert({ s->Name, s->ColorKey });
+        assert(isInserted2);
+        (void)_2;
+        (void)isInserted2;
+    }
+
+    UniqueStructuralMaterialsArray uniqueStructuralMaterials;
+    for (size_t i = 0; i < uniqueStructuralMaterials.size(); ++i)
+        uniqueStructuralMaterials[i].second = nullptr;
+
+    Palette<StructuralMaterial> structuralMaterialPalette;
+    Palette<StructuralMaterial> ropeMaterialPalette;
+
+    //
+    // Electrical
+    //
+
+    MaterialColorMap<ElectricalMaterial> electricalMaterialColorMap;
+    std::map<MaterialColorKey, ElectricalMaterial const *, InstancedColorKeyComparer> instancedElectricalMaterialMap;
+
+    for (auto e : electricalMaterials)
+    {
+        auto [_1, isInserted1] = electricalMaterialColorMap.insert({ e->ColorKey, *e });
+        assert(isInserted1);
+        (void)_1;
+        (void)isInserted1;
+
+        if (e->IsInstanced)
+        {
+            auto [_2, isInserted2] = instancedElectricalMaterialMap.insert({ e->ColorKey, e });
+            assert(isInserted2);
+            (void)_2;
+            (void)isInserted2;
+        }
+    }
+
+    Palette<ElectricalMaterial> electricalMaterialPalette;
+
+    return MaterialDatabase(
+        std::move(structuralMaterialColorMap),
+        std::move(structuralMaterialNameMap),
+        uniqueStructuralMaterials,
+        std::move(structuralMaterialPalette),
+        std::move(ropeMaterialPalette),
+        1000.0f,
+        std::move(electricalMaterialColorMap),
+        std::move(instancedElectricalMaterialMap),
+        std::move(electricalMaterialPalette));
+}
+
 ///////////////////////////////////////////////////////////////////////
 
 template<typename TMaterial>
