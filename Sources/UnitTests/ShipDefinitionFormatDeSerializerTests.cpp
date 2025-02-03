@@ -1151,23 +1151,32 @@ TEST(ShipDefinitionFormatDeSerializer, Roundtrip)
 
     ASSERT_TRUE(sd.Layers.ExteriorTextureLayer);
     EXPECT_EQ(sd.Layers.ExteriorTextureLayer->Buffer.Size, sourceExteriorTexture.Size);
-    // TODO
+    for (int x = 0; x < sourceExteriorTexture.Size.width; ++x)
+    {
+        for (int y = 0; y < sourceExteriorTexture.Size.height; ++y)
+        {
+            auto const c = typename RgbaImageData::coordinates_type(x, y);
+            EXPECT_EQ(sd.Layers.ExteriorTextureLayer->Buffer[c], sourceExteriorTexture[c]);
+        }
+    }
 
     // TODOHERE: InteriorTextureLayer
 
     // Metadata
 
-    // TODO
+    EXPECT_EQ(sd.Metadata.ShipName, shipDefinition.Metadata.ShipName);
 
     // Physics Data
 
-    // TODO
+    EXPECT_EQ(sd.PhysicsData.Offset, shipDefinition.PhysicsData.Offset);
+    EXPECT_EQ(sd.PhysicsData.InternalPressure, shipDefinition.PhysicsData.InternalPressure);
 
     // Auto-texturization settings
 
-    // TODO
-
-    // TODOHERE: verify, detailed
+    ASSERT_TRUE(sd.AutoTexturizationSettings.has_value());
+    EXPECT_EQ(sd.AutoTexturizationSettings->Mode, shipDefinition.AutoTexturizationSettings->Mode);
+    EXPECT_EQ(sd.AutoTexturizationSettings->MaterialTextureMagnification, shipDefinition.AutoTexturizationSettings->MaterialTextureMagnification);
+    EXPECT_EQ(sd.AutoTexturizationSettings->MaterialTextureTransparency, shipDefinition.AutoTexturizationSettings->MaterialTextureTransparency);
 
     //
     // Deserialize preview data
@@ -1175,7 +1184,12 @@ TEST(ShipDefinitionFormatDeSerializer, Roundtrip)
 
     auto inputStream2 = outputStream.MakeReadStreamCopy();
 
-    // TODOHERE
+    ShipPreviewData previewData = ShipDefinitionFormatDeSerializer::LoadPreviewData(inputStream2);
+
+    EXPECT_EQ(previewData.ShipSize, shipSize);
+    EXPECT_EQ(previewData.Metadata.ShipName, shipDefinition.Metadata.ShipName);
+    EXPECT_EQ(previewData.IsHD, true);
+    EXPECT_EQ(previewData.HasElectricals, true);
 
     //
     // Deserialize preview image
@@ -1183,5 +1197,15 @@ TEST(ShipDefinitionFormatDeSerializer, Roundtrip)
 
     auto inputStream3 = outputStream.MakeReadStreamCopy();
 
-    // TODOHERE
+    RgbaImageData previewImage = ShipDefinitionFormatDeSerializer::LoadPreviewImage(inputStream3, sourceExteriorTexture.Size);
+
+    ASSERT_EQ(previewImage.Size, sourceExteriorTexture.Size);
+    for (int x = 0; x < sourceExteriorTexture.Size.width; ++x)
+    {
+        for (int y = 0; y < sourceExteriorTexture.Size.height; ++y)
+        {
+            auto const c = typename RgbaImageData::coordinates_type(x, y);
+            EXPECT_EQ(previewImage[c], sourceExteriorTexture[c]);
+        }
+    }
 }
