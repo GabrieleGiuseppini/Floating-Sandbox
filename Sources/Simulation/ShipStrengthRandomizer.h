@@ -7,9 +7,9 @@
 
 #include "ShipFactoryTypes.h"
 
-#include <GameCore/IndexRemap.h>
-#include <GameCore/Matrix.h>
-#include <GameCore/Vectors.h>
+#include <Core/IndexRemap.h>
+#include <Core/Matrix.h>
+#include <Core/Vectors.h>
 
 #include <cstdint>
 #include <limits>

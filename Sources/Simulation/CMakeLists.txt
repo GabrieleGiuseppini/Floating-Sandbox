@@ -22,10 +22,13 @@ set  (SIMULATION_SOURCES
 	ShipDefinition.h
 	ShipDefinitionFormatDeSerializer.cpp
 	ShipDefinitionFormatDeSerializer.h
+	ShipFactoryTypes.h
 	ShipLoadOptions.h
 	ShipMetadata.h
 	ShipPhysicsData.h
 	ShipPreviewData.h
+	ShipStrengthRandomizer.cpp
+	ShipStrengthRandomizer.h
 	SimulationParameters.cpp
 	SimulationParameters.h
 )

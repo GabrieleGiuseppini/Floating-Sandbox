@@ -7,10 +7,10 @@
 
 #include "Materials.h"
 
-#include <GameCore/FixedSizeVector.h>
-#include <GameCore/GameTypes.h>
-#include <GameCore/Matrix.h>
-#include <GameCore/Vectors.h>
+#include <Core/FixedSizeVector.h>
+#include <Core/GameTypes.h>
+#include <Core/Matrix.h>
+#include <Core/Vectors.h>
 
 #include <algorithm>
 #include <array>

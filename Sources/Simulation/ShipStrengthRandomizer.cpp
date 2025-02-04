@@ -5,8 +5,8 @@
 ***************************************************************************************/
 #include "ShipStrengthRandomizer.h"
 
-#include <GameCore/GameChronometer.h>
-#include <GameCore/Log.h>
+#include <Core/GameChronometer.h>
+#include <Core/Log.h>
 
 #include <chrono>
 #include <random>
