@@ -5,7 +5,7 @@
  ***************************************************************************************/
 #include "Settings.h"
 
-#include <GameCore/Colors.h>
+#include <Core/Colors.h>
 
 #include <regex>
 
@@ -65,24 +65,56 @@ void SettingsStorage::Delete(PersistedSettingsKey const & settingsKey)
     }
 }
 
-std::shared_ptr<std::istream> SettingsStorage::OpenInputStream(
+std::unique_ptr<BinaryReadStream> SettingsStorage::OpenBinaryInputStream(
     PersistedSettingsKey const & settingsKey,
     std::string const & streamName,
     std::string const & extension) const
 {
-    return mFileSystem->OpenInputStream(
+    auto const filePath = MakeFilePath(settingsKey, streamName, extension);
+    if (mFileSystem->Exists(filePath))
+    {
+        return mFileSystem->OpenBinaryInputStream(filePath);
+    }
+    else
+    {
+        return nullptr;
+    }
+}
+
+std::unique_ptr<TextReadStream> SettingsStorage::OpenTextInputStream(
+    PersistedSettingsKey const & settingsKey,
+    std::string const & streamName,
+    std::string const & extension) const
+{
+    auto const filePath = MakeFilePath(settingsKey, streamName, extension);
+    if (mFileSystem->Exists(filePath))
+    {
+        return mFileSystem->OpenTextInputStream(filePath);
+    }
+    else
+    {
+        return nullptr;
+    }
+}
+
+std::unique_ptr<BinaryWriteStream> SettingsStorage::OpenBinaryOutputStream(
+    PersistedSettingsKey const & settingsKey,
+    std::string const & streamName,
+    std::string const & extension)
+{
+    return mFileSystem->OpenBinaryOutputStream(
         MakeFilePath(
             settingsKey,
             streamName,
             extension));
 }
 
-std::shared_ptr<std::ostream> SettingsStorage::OpenOutputStream(
+std::unique_ptr<TextWriteStream> SettingsStorage::OpenTextOutputStream(
     PersistedSettingsKey const & settingsKey,
     std::string const & streamName,
     std::string const & extension)
 {
-    return mFileSystem->OpenOutputStream(
+    return mFileSystem->OpenTextOutputStream(
         MakeFilePath(
             settingsKey,
             streamName,
@@ -113,9 +145,7 @@ void SettingsStorage::ListSettings(
                 std::string settingsName = filenameMatch[1].str();
 
                 // Extract description
-
-                auto is = mFileSystem->OpenInputStream(filepath);
-                auto settingsValue = Utils::ParseJSONStream(*is);
+                auto settingsValue = Utils::ParseJSONString(mFileSystem->OpenTextInputStream(filepath)->ReadAll());
                 if (!settingsValue.is<picojson::object>())
                 {
                     throw GameException("JSON settings could not be loaded: root value is not an object");
@@ -176,7 +206,7 @@ SettingsSerializationContext::SettingsSerializationContext(
     mStorage.Delete(mSettingsKey);
 
     // Prepare json
-    mSettingsJson["version"] = picojson::value(Version::CurrentVersion().ToString());
+    mSettingsJson["version"] = picojson::value(GameVersion.ToString());
     mSettingsJson["description"] = picojson::value(description);
     mSettingsJson["settings"] = picojson::value(picojson::object());
 
@@ -191,12 +221,12 @@ SettingsSerializationContext::~SettingsSerializationContext()
 
     std::string const settingsJson = picojson::value(mSettingsJson).serialize(true);
 
-    auto os = mStorage.OpenOutputStream(
+    auto os = mStorage.OpenTextOutputStream(
         mSettingsKey,
         SettingsStreamName,
         SettingsExtension);
 
-    *os << settingsJson;
+    os->Write(settingsJson);
 }
 
 SettingsDeserializationContext::SettingsDeserializationContext(
@@ -205,18 +235,17 @@ SettingsDeserializationContext::SettingsDeserializationContext(
     : mSettingsKey(settingsKey)
     , mStorage(storage)
     , mSettingsRoot()
-    , mSettingsVersion(Version::CurrentVersion())
+    , mSettingsVersion(GameVersion)
 {
     //
     // Load JSON
     //
 
-    auto is = mStorage.OpenInputStream(
-        mSettingsKey,
-        SettingsStreamName,
-        SettingsExtension);
-
-    auto settingsValue = Utils::ParseJSONStream(*is);
+    auto settingsValue = Utils::ParseJSONString(
+        mStorage.OpenTextInputStream(
+            mSettingsKey,
+            SettingsStreamName,
+            SettingsExtension)->ReadAll());
     if (!settingsValue.is<picojson::object>())
     {
         throw GameException("JSON settings could not be loaded: root value is not an object");

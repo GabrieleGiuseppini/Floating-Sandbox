@@ -6,11 +6,10 @@
 #pragma once
 
 #include "FileSystem.h"
+#include "GameVersion.h"
 
-#include <Game/Version.h>
-
-#include <GameCore/Log.h>
-#include <GameCore/Utils.h>
+#include <Core/Streams.h>
+#include <Core/Utils.h>
 
 #include <picojson.h>
 
@@ -18,7 +17,6 @@
 #include <cassert>
 #include <chrono>
 #include <functional>
-#include <iostream>
 #include <memory>
 #include <optional>
 #include <typeinfo>
@@ -132,12 +130,24 @@ public:
 
     void Delete(PersistedSettingsKey const & settingsKey);
 
-    std::shared_ptr<std::istream> OpenInputStream(
+    // Returns nullptr if file does not exist
+    std::unique_ptr<BinaryReadStream> OpenBinaryInputStream(
         PersistedSettingsKey const & settingsKey,
         std::string const & streamName,
         std::string const & extension) const;
 
-    std::shared_ptr<std::ostream> OpenOutputStream(
+    // Returns nullptr if file does not exist
+    std::unique_ptr<TextReadStream> OpenTextInputStream(
+        PersistedSettingsKey const & settingsKey,
+        std::string const & streamName,
+        std::string const & extension) const;
+
+    std::unique_ptr<BinaryWriteStream> OpenBinaryOutputStream(
+        PersistedSettingsKey const & settingsKey,
+        std::string const & streamName,
+        std::string const & extension);
+
+    std::unique_ptr<TextWriteStream> OpenTextOutputStream(
         PersistedSettingsKey const & settingsKey,
         std::string const & streamName,
         std::string const & extension);
@@ -186,11 +196,18 @@ public:
         return *mSettingsRoot;
     }
 
-    std::shared_ptr<std::ostream> GetNamedStream(
+    std::unique_ptr<BinaryWriteStream> GetNamedBinaryOutputStream(
         std::string const & streamName,
         std::string const & extension)
     {
-        return mStorage.OpenOutputStream(mSettingsKey, streamName, extension);
+        return mStorage.OpenBinaryOutputStream(mSettingsKey, streamName, extension);
+    }
+
+    std::unique_ptr<TextWriteStream> GetNamedTextOutputStream(
+        std::string const & streamName,
+        std::string const & extension)
+    {
+        return mStorage.OpenTextOutputStream(mSettingsKey, streamName, extension);
     }
 
 private:
@@ -220,11 +237,18 @@ public:
         return mSettingsVersion;
     }
 
-    std::shared_ptr<std::istream> GetNamedStream(
+    std::unique_ptr<BinaryReadStream> GetNamedBinaryInputStream(
         std::string const & streamName,
         std::string const & extension) const
     {
-        return mStorage.OpenInputStream(mSettingsKey, streamName, extension);
+        return mStorage.OpenBinaryInputStream(mSettingsKey, streamName, extension);
+    }
+
+    std::unique_ptr<TextReadStream> GetNamedTextInputStream(
+        std::string const & streamName,
+        std::string const & extension) const
+    {
+        return mStorage.OpenTextInputStream(mSettingsKey, streamName, extension);
     }
 
 private:

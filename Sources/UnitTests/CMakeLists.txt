@@ -48,7 +48,7 @@ set (UNIT_TEST_SOURCES
 	PortableTimepointTests.cpp
 	PrecalculatedFunctionTests.cpp
 	RopeBufferTests.cpp
-	#SettingsTests.cpp
+	SettingsTests.cpp
 	ShaderManagerTests.cpp
 	ShipDefinitionFormatDeSerializerTests.cpp
 	#ShipNameNormalizerTests.cpp

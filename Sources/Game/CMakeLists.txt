@@ -9,6 +9,8 @@ set  (GAME_SOURCES
 	GameAssetManager.cpp
 	GameAssetManager.h
 	GameVersion.h
+	Settings.cpp
+	Settings.h
 )
 
 source_group(" " FILES ${GAME_SOURCES})

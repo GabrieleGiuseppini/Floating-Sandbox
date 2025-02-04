@@ -129,6 +129,7 @@ private:
 
         std::string & mData;
     };
+
 public:
 
     struct FileInfo
@@ -139,6 +140,7 @@ public:
     };
 
     using FileMap = std::map<std::filesystem::path, FileInfo>;
+
 
     TestFileSystem()
         : mFileMap()
@@ -222,30 +224,20 @@ public:
 
     std::unique_ptr<BinaryWriteStream> OpenBinaryOutputStream(std::filesystem::path const & filePath) override
     {
-        auto it = mFileMap.find(filePath);
-        if (it != mFileMap.end())
-        {
-            mFileMap.erase(it);
-        }
+        FileInfo & fi = mFileMap[filePath];
+        fi.BinaryContent.clear();
+        fi.LastModified = std::filesystem::file_time_type::clock::now();
 
-        it->second.BinaryContent.clear();
-        it->second.LastModified = std::filesystem::file_time_type::clock::now();
-
-        return std::make_unique<TestMemoryBinaryWriteStream>(it->second.BinaryContent);
+        return std::make_unique<TestMemoryBinaryWriteStream>(fi.BinaryContent);
     }
 
     std::unique_ptr<TextWriteStream> OpenTextOutputStream(std::filesystem::path const & filePath) override
     {
-        auto it = mFileMap.find(filePath);
-        if (it != mFileMap.end())
-        {
-            mFileMap.erase(it);
-        }
+        FileInfo & fi = mFileMap[filePath];
+        fi.TextContent.clear();
+        fi.LastModified = std::filesystem::file_time_type::clock::now();
 
-        it->second.TextContent.clear();
-        it->second.LastModified = std::filesystem::file_time_type::clock::now();
-
-        return std::make_unique<TestMemoryTextWriteStream>(it->second.TextContent);
+        return std::make_unique<TestMemoryTextWriteStream>(fi.TextContent);
     }
 
     std::vector<std::filesystem::path> ListFiles(std::filesystem::path const & directoryPath) override
@@ -314,8 +306,10 @@ public:
     MOCK_METHOD1(Exists, bool(std::filesystem::path const & path));
     MOCK_METHOD1(GetLastModifiedTime, std::filesystem::file_time_type(std::filesystem::path const & path));
     MOCK_METHOD1(EnsureDirectoryExists, void(std::filesystem::path const & directoryPath));
-    MOCK_METHOD1(OpenOutputStream, std::shared_ptr<std::ostream>(std::filesystem::path const & filePath));
-    MOCK_METHOD1(OpenInputStream, std::shared_ptr<std::istream>(std::filesystem::path const & filePath));
+    MOCK_METHOD1(OpenBinaryOutputStream, std::unique_ptr<BinaryWriteStream>(std::filesystem::path const & filePath));
+    MOCK_METHOD1(OpenTextOutputStream, std::unique_ptr<TextWriteStream>(std::filesystem::path const & filePath));
+    MOCK_METHOD1(OpenBinaryInputStream, std::unique_ptr<BinaryReadStream>(std::filesystem::path const & filePath));
+    MOCK_METHOD1(OpenTextInputStream, std::unique_ptr<TextReadStream>(std::filesystem::path const & filePath));
     MOCK_METHOD1(ListFiles, std::vector<std::filesystem::path>(std::filesystem::path const & directoryPath));
     MOCK_METHOD1(DeleteFile, void(std::filesystem::path const & filePath));
     MOCK_METHOD2(RenameFile, void(std::filesystem::path const & oldFilePath, std::filesystem::path const & newFilePath));

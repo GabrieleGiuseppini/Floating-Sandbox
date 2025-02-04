@@ -1,8 +1,8 @@
 #include <Game/Settings.h>
 
-#include <GameCore/Utils.h>
+#include <Core/Utils.h>
 
-#include "Utils.h"
+#include "TestingUtils.h"
 
 #include <picojson.h>
 
@@ -45,8 +45,8 @@ void SettingSerializer::Serialize<CustomValue>(
     std::string const & settingName,
     CustomValue const & value)
 {
-    auto os = context.GetNamedStream(settingName, "bin");
-    *os << value.Str + ":" + std::to_string(value.Int);
+    auto os = context.GetNamedTextOutputStream(settingName, "bin");
+    os->Write(value.Str + ":" + std::to_string(value.Int));
 }
 
 template<>
@@ -55,12 +55,10 @@ bool SettingSerializer::Deserialize<CustomValue>(
     std::string const & settingName,
     CustomValue & value)
 {
-    auto const is = context.GetNamedStream(settingName, "bin");
-
+    auto const is = context.GetNamedTextInputStream(settingName, "bin");
     if (!!is)
     {
-        std::string tmp;
-        *is >> tmp;
+        std::string tmp = is->ReadAll();
 
         auto pos = tmp.find(':');
         assert(pos != std::string::npos);
@@ -526,7 +524,7 @@ TEST(SettingsTests, Serialization_Settings_AllDirty)
     // Version
     ASSERT_EQ(1u, settingsRootObject.count("version"));
     ASSERT_TRUE(settingsRootObject["version"].is<std::string>());
-    EXPECT_EQ(Version::CurrentVersion().ToString(), settingsRootObject["version"].get<std::string>());
+    EXPECT_EQ(GameVersion.ToString(), settingsRootObject["version"].get<std::string>());
 
     // Description
     ASSERT_EQ(1u, settingsRootObject.count("description"));
@@ -622,7 +620,7 @@ TEST(SettingsTests, Serialization_Settings_AllClean)
     // Version
     ASSERT_EQ(1u, settingsRootObject.count("version"));
     ASSERT_TRUE(settingsRootObject["version"].is<std::string>());
-    EXPECT_EQ(Version::CurrentVersion().ToString(), settingsRootObject["version"].get<std::string>());
+    EXPECT_EQ(GameVersion.ToString(), settingsRootObject["version"].get<std::string>());
 
     // Description
     ASSERT_EQ(1u, settingsRootObject.count("description"));
@@ -687,7 +685,7 @@ TEST(SettingsTests, Serialization_SerializesOnlyDirtySettings)
     // Version
     ASSERT_EQ(1u, settingsRootObject.count("version"));
     ASSERT_TRUE(settingsRootObject["version"].is<std::string>());
-    EXPECT_EQ(Version::CurrentVersion().ToString(), settingsRootObject["version"].get<std::string>());
+    EXPECT_EQ(GameVersion.ToString(), settingsRootObject["version"].get<std::string>());
 
     // Description
     ASSERT_EQ(1u, settingsRootObject.count("description"));
