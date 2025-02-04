@@ -1,135 +1,162 @@
 /***************************************************************************************
-* Original Author:      Gabriele Giuseppini
-* Created:              2019-10-05
-* Copyright:            Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
+* Original Author:		Gabriele Giuseppini
+* Created:				2025-02-02
+* Copyright:			Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
 #pragma once
 
-#include <array>
-#include <cassert>
-#include <cstdint>
+#include "Streams.h"
+
 #include <cstring>
-#include <streambuf>
+#include <sstream>
 #include <vector>
 
-class memory_streambuf final : public std::streambuf
+/*
+ * Implementation of BinaryReadStream for in-memory streams.
+ */
+class MemoryBinaryReadStream final : public BinaryReadStream
 {
 public:
 
-    memory_streambuf()
-        : mStreamBuffer()
-    {
-    }
+	MemoryBinaryReadStream(std::vector<std::uint8_t> && data)
+		: mData(std::move(data))
+		, mReadOffset(0u)
+	{}
 
-    memory_streambuf(std::string const & initString)
-        : memory_streambuf()
-    {
-        mStreamBuffer.resize(initString.size());
-        initString.copy(mStreamBuffer.data(), initString.size());
+	size_t GetCurrentPosition() override
+	{
+		return mReadOffset;
+	}
 
-        rewind();
-    }
+	size_t Read(std::uint8_t * buffer, size_t size) override
+	{
+		size_t const szToRead = std::min(size, mData.size() - mReadOffset);
+		std::memcpy(buffer, &(mData[mReadOffset]), szToRead);
+		mReadOffset += szToRead;
+		return szToRead;
+	}
 
-    memory_streambuf(char * initData, size_t initDataSize)
-        : memory_streambuf()
-    {
-        mStreamBuffer.resize(initDataSize);
-        std::memcpy(mStreamBuffer.data(), initData, initDataSize);
-
-        rewind();
-    }
-
-    char const * data() const
-    {
-        return mStreamBuffer.data();
-    }
-
-    std::size_t size() const
-    {
-        return mStreamBuffer.size();
-    }
-
-    void rewind()
-    {
-        this->setg(mStreamBuffer.data(), mStreamBuffer.data(), mStreamBuffer.data() + mStreamBuffer.size());
-        this->setp(nullptr, nullptr);
-    }
+	size_t Skip(size_t size) override
+	{
+		size_t const szToRead = std::min(size, mData.size() - mReadOffset);
+		mReadOffset += szToRead;
+		return szToRead;
+	}
 
 private:
 
-    std::streambuf::int_type overflow(std::streambuf::int_type ch) override
-    {
-        assert(ch != EOF);
+	std::vector<std::uint8_t> const mData;
+	size_t mReadOffset;
+};
 
-        // Save current offset, as we need to provide
-        // pointers again due to std:vector possibly re-allocating
-        auto const consumedSoFar = this->gptr() - this->eback();
+/*
+ * Implementation of TextReadStream for in-memory streams.
+ */
+class MemoryTextReadStream final : public TextReadStream
+{
+public:
 
-        // Store new char
-        mStreamBuffer.push_back(static_cast<char>(ch));
+	MemoryTextReadStream(std::string && data)
+		: mData(std::move(data))
+	{}
 
-        // Set new get pointers
-        this->setg(mStreamBuffer.data(), mStreamBuffer.data() + consumedSoFar, mStreamBuffer.data() + mStreamBuffer.size());
+	std::string ReadAll() override
+	{
+		return mData;
+	}
 
-        return ch;
-    }
+	std::vector<std::string> ReadAllLines() override
+	{
+		std::vector<std::string> lines;
 
-    std::streambuf::int_type underflow() override
-    {
-        return EOF;
-    }
+		std::stringstream ss(mData);
+		std::string line;
+		while (std::getline(ss, line))
+		{
+			lines.emplace_back(line);
+		}
 
-    std::streampos seekpos(
-        std::streampos pos,
-        std::ios_base::openmode /*which*/) override
-    {
-        if (pos < 0 || pos > static_cast<std::streampos>(mStreamBuffer.size()))
-            return std::streampos(-1);
-
-        this->setg(mStreamBuffer.data(), mStreamBuffer.data() + static_cast<size_t>(pos), mStreamBuffer.data() + mStreamBuffer.size());
-        this->setp(nullptr, nullptr);
-
-        return pos;
-    }
-
-    std::streampos seekoff(
-        std::streamoff off,
-        std::ios_base::seekdir way,
-        std::ios_base::openmode /*which*/) override
-    {
-        if (way == std::ios_base::beg)
-        {
-            if (this->eback() + off > this->egptr())
-                return std::streampos(-1);
-
-            this->setg(mStreamBuffer.data(), this->eback() + off, mStreamBuffer.data() + mStreamBuffer.size());
-            this->setp(nullptr, nullptr);
-        }
-        else if (way == std::ios_base::cur)
-        {
-            if (this->gptr() + off > this->egptr())
-                return std::streampos(-1);
-
-            this->setg(mStreamBuffer.data(), this->gptr() + off, mStreamBuffer.data() + mStreamBuffer.size());
-            this->setp(nullptr, nullptr);
-        }
-        else if (way == std::ios_base::end)
-        {
-            if (this->egptr() + off < this->eback())
-                return std::streampos(-1);
-
-            this->setg(mStreamBuffer.data(), this->egptr() + off, mStreamBuffer.data() + mStreamBuffer.size());
-            this->setp(nullptr, nullptr);
-        }
-        else
-        {
-            return std::streampos(-1);
-        }
-
-        return std::streampos(this->gptr() - this->eback());
-    }
+		return lines;
+	}
 
 private:
 
-    std::vector<char> mStreamBuffer;
+	std::string const mData;
+};
+
+/*
+ * Implementation of BinaryWriteStream for in-memory streams.
+ */
+class MemoryBinaryWriteStream final : public BinaryWriteStream
+{
+public:
+
+	MemoryBinaryWriteStream()
+		: mData()
+	{}
+
+	MemoryBinaryWriteStream(size_t capacity)
+		: mData()
+	{
+		mData.reserve(capacity);
+	}
+
+	std::uint8_t const * GetData() const
+	{
+		return mData.data();
+	}
+
+	size_t GetSize() const
+	{
+		return mData.size();
+	}
+
+	void Write(std::uint8_t const * buffer, size_t size) override
+	{
+		size_t const oldSize = mData.size();
+		mData.resize(mData.size() + size);
+		std::memcpy(&(mData[oldSize]), buffer, size);
+	}
+
+	MemoryBinaryReadStream MakeReadStreamCopy() const
+	{
+		std::vector<std::uint8_t> copy = mData;
+		return MemoryBinaryReadStream(std::move(copy));
+	}
+
+private:
+
+	std::vector<std::uint8_t> mData;
+};
+
+/*
+ * Implementation of TetWriteStream for in-memory streams.
+ */
+class MemoryTextWriteStream final : public TextWriteStream
+{
+public:
+
+	MemoryTextWriteStream()
+		: mData()
+	{}
+
+	std::string const & GetData() const
+	{
+		return mData;
+	}
+
+	void Write(std::string const & content) override
+	{
+		mData += content;
+	}
+
+	MemoryTextReadStream MakeReadStreamCopy() const
+	{
+		std::string copy = mData;
+		return MemoryTextReadStream(std::move(copy));
+	}
+
+private:
+
+	std::string mData;
 };

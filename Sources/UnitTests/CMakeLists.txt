@@ -19,7 +19,6 @@ set_property(
 set (UNIT_TEST_SOURCES
 	AABBTests.cpp
 	AlgorithmsTests.cpp
-	BinaryStreamsTests.cpp
 	BoundedVectorTests.cpp
 	BufferTests.cpp
 	Buffer2DTests.cpp
@@ -45,7 +44,6 @@ set (UNIT_TEST_SOURCES
 	#LayoutHelperTests.cpp
 	main.cpp
 	Matrix2Tests.cpp
-	MemoryStreamsTests.cpp
 	ParameterSmootherTests.cpp
 	PortableTimepointTests.cpp
 	PrecalculatedFunctionTests.cpp
@@ -57,6 +55,7 @@ set (UNIT_TEST_SOURCES
 	#ShipPreviewDirectoryManagerTests.cpp
 	#ShipTests.cpp
 	#SliderCoreTests.cpp
+	StreamsTests.cpp
 	StrongTypeDefTests.cpp
 	SysSpecificsTests.cpp
 	TaskThreadTests.cpp

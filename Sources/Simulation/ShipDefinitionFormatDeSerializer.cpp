@@ -10,7 +10,7 @@
 #include <Core/GameTypes.h>
 #include <Core/ImageTools.h>
 #include <Core/Log.h>
-#include <Core/MemoryBinaryStreams.h>
+#include <Core/MemoryStreams.h>
 #include <Core/PngTools.h>
 #include <Core/PortableTimepoint.h>
 #include <Core/UserGameException.h>

@@ -4,7 +4,7 @@
 #
 
 set  (GAME_SOURCES
-	FileBinaryStreams.h
+	FileStreams.h
 	FileSystem.h
 	GameAssetManager.cpp
 	GameAssetManager.h

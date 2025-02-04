@@ -10,10 +10,10 @@
 #include "ShipDefinition.h"
 #include "ShipPreviewData.h"
 
-#include <Core/BinaryStreams.h>
 #include <Core/DeSerializationBuffer.h>
 #include <Core/GameTypes.h>
 #include <Core/ImageData.h>
+#include <Core/Streams.h>
 #include <Core/Version.h>
 
 #include <cstdint>

@@ -63,11 +63,78 @@ private:
 
 class TestFileSystem : public IFileSystem
 {
+private:
+
+    class TestMemoryBinaryWriteStream final : public BinaryWriteStream
+    {
+    public:
+
+        TestMemoryBinaryWriteStream(std::vector<std::uint8_t> & data)
+            : mData(data)
+        {}
+
+        std::uint8_t const * GetData() const
+        {
+            return mData.data();
+        }
+
+        size_t GetSize() const
+        {
+            return mData.size();
+        }
+
+        void Write(std::uint8_t const * buffer, size_t size) override
+        {
+            size_t const oldSize = mData.size();
+            mData.resize(mData.size() + size);
+            std::memcpy(&(mData[oldSize]), buffer, size);
+        }
+
+        MemoryBinaryReadStream MakeReadStreamCopy() const
+        {
+            std::vector<std::uint8_t> copy = mData;
+            return MemoryBinaryReadStream(std::move(copy));
+        }
+
+    private:
+
+        std::vector<std::uint8_t> & mData;
+    };
+
+    class TestMemoryTextWriteStream final : public TextWriteStream
+    {
+    public:
+
+        TestMemoryTextWriteStream(std::string & data)
+            : mData(data)
+        {}
+
+        std::string const & GetData() const
+        {
+            return mData;
+        }
+
+        void Write(std::string const & content) override
+        {
+            mData += content;
+        }
+
+        MemoryTextReadStream MakeReadStreamCopy() const
+        {
+            std::string copy = mData;
+            return MemoryTextReadStream(std::move(copy));
+        }
+
+    private:
+
+        std::string & mData;
+    };
 public:
 
     struct FileInfo
     {
-        std::shared_ptr<memory_streambuf> StreamBuf;
+        std::vector<std::uint8_t> BinaryContent;
+        std::string TextContent;
         std::filesystem::file_time_type LastModified;
     };
 
@@ -88,7 +155,7 @@ public:
         std::filesystem::file_time_type lastModified = std::filesystem::file_time_type::clock::now())
     {
         auto & fileInfoEntry = mFileMap[testFilePath];
-        fileInfoEntry.StreamBuf = std::make_shared<memory_streambuf>(content);
+        fileInfoEntry.TextContent = content;
         fileInfoEntry.LastModified = lastModified;
     }
 
@@ -100,14 +167,7 @@ public:
             throw std::logic_error("File path '" + testFilePath.string() + "' does not exist in test file system");
         }
 
-        if (!it->second.StreamBuf)
-        {
-            throw std::logic_error("GetTestFileContents() invoked for file with no stream: " + testFilePath.string());
-        }
-
-        return std::string(
-            it->second.StreamBuf->data(),
-            it->second.StreamBuf->size());
+        return it->second.TextContent;
     }
 
     ///////////////////////////////////////////////////////////
@@ -136,27 +196,56 @@ public:
         // Nop
     }
 
-    std::shared_ptr<std::istream> OpenBinaryInputStream(std::filesystem::path const & filePath) override
+    std::unique_ptr<BinaryReadStream> OpenBinaryInputStream(std::filesystem::path const & filePath) override
+    {
+        auto it = mFileMap.find(filePath);
+        if (it == mFileMap.end())
+        {
+            throw std::logic_error("File path '" + filePath.string() + "' does not exist in test file system");
+        }
+
+        std::vector<std::uint8_t> copy = it->second.BinaryContent;
+        return std::make_unique<MemoryBinaryReadStream>(std::move(copy));
+    }
+
+    std::unique_ptr<TextReadStream> OpenTextInputStream(std::filesystem::path const & filePath) override
+    {
+        auto it = mFileMap.find(filePath);
+        if (it == mFileMap.end())
+        {
+            throw std::logic_error("File path '" + filePath.string() + "' does not exist in test file system");
+        }
+
+        std::string copy = it->second.TextContent;
+        return std::make_unique<MemoryTextReadStream>(std::move(copy));
+    }
+
+    std::unique_ptr<BinaryWriteStream> OpenBinaryOutputStream(std::filesystem::path const & filePath) override
     {
         auto it = mFileMap.find(filePath);
         if (it != mFileMap.end())
         {
-            it->second.StreamBuf->rewind();
-            return std::make_shared<std::istream>(it->second.StreamBuf.get());
+            mFileMap.erase(it);
         }
-        else
-        {
-            return std::shared_ptr<std::istream>();
-        }
+
+        it->second.BinaryContent.clear();
+        it->second.LastModified = std::filesystem::file_time_type::clock::now();
+
+        return std::make_unique<TestMemoryBinaryWriteStream>(it->second.BinaryContent);
     }
 
-    std::shared_ptr<std::ostream> OpenBinaryOutputStream(std::filesystem::path const & filePath) override
+    std::unique_ptr<TextWriteStream> OpenTextOutputStream(std::filesystem::path const & filePath) override
     {
-        auto streamBuf = std::make_shared<memory_streambuf>();
-        mFileMap[filePath].StreamBuf = streamBuf;
-        mFileMap[filePath].LastModified = std::filesystem::file_time_type::clock::now();
+        auto it = mFileMap.find(filePath);
+        if (it != mFileMap.end())
+        {
+            mFileMap.erase(it);
+        }
 
-        return std::make_shared<std::ostream>(streamBuf.get());
+        it->second.TextContent.clear();
+        it->second.LastModified = std::filesystem::file_time_type::clock::now();
+
+        return std::make_unique<TestMemoryTextWriteStream>(it->second.TextContent);
     }
 
     std::vector<std::filesystem::path> ListFiles(std::filesystem::path const & directoryPath) override

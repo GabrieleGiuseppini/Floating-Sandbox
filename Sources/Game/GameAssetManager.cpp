@@ -5,12 +5,12 @@
  ***************************************************************************************/
 #include "GameAssetManager.h"
 
-#include "FileBinaryStreams.h"
-#include "FileSystem.h"
+#include "FileStreams.h"
 
 #include <Core/GameException.h>
 #include <Core/Log.h>
 #include <Core/PngTools.h>
+#include <Core/Streams.h>
 #include <Core/Utils.h>
 
 GameAssetManager::GameAssetManager(std::string const & argv0)
@@ -111,7 +111,7 @@ std::vector<IAssetManager::AssetDescriptor> GameAssetManager::EnumerateShaders(s
 
 std::string GameAssetManager::LoadShader(std::string const & shaderSetName, std::string const & shaderRelativePath) const
 {
-    return FileSystem::LoadTextFile(mShaderRoot / shaderSetName / shaderRelativePath);
+    return FileTextReadStream(mShaderRoot / shaderSetName / shaderRelativePath).ReadAll();
 }
 
 std::vector<IAssetManager::AssetDescriptor> GameAssetManager::EnumerateFonts(std::string const & fontSetName) const
@@ -212,7 +212,7 @@ picojson::value GameAssetManager::LoadJson(std::filesystem::path const & filePat
 {
     try
     {
-        return Utils::ParseJSONString(FileSystem::LoadTextFile(filePath));
+        return Utils::ParseJSONString(FileTextReadStream(filePath).ReadAll());
     }
     catch (GameException const & ex)
     {
@@ -225,5 +225,5 @@ void GameAssetManager::SaveJson(
     std::filesystem::path const & filePath)
 {
     std::string serializedJson = json.serialize(true);
-    FileSystem::SaveTextFile(serializedJson, filePath);
+    FileTextWriteStream(filePath).Write(serializedJson);
 }

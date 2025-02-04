@@ -5,9 +5,11 @@
  ***************************************************************************************/
 #pragma once
 
-#include <Core/Buffer.h>
+#include "FileStreams.h"
+
 #include <Core/GameException.h>
 #include <Core/Log.h>
+#include <Core/Streams.h>
 #include <Core/Utils.h>
 
 #include <filesystem>
@@ -39,35 +41,6 @@ public:
         {
             std::filesystem::create_directories(directoryPath);
         }
-    }
-
-    static std::shared_ptr<std::istream> OpenBinaryInputStream(std::filesystem::path const & filePath)
-    {
-        if (std::filesystem::exists(filePath)
-            && std::filesystem::is_regular_file(filePath))
-        {
-            return std::shared_ptr<std::ifstream>(
-                new std::ifstream(
-                    filePath,
-                    std::ios_base::in | std::ios_base::binary));
-        }
-        else
-        {
-            return std::unique_ptr<std::istream>();
-        }
-    }
-
-    static std::shared_ptr<std::ostream> OpenBinaryOutputStream(std::filesystem::path const & filePath)
-    {
-        return std::shared_ptr<std::ostream>(
-            new std::ofstream(
-                filePath,
-                std::ios_base::out | std::ios_base::binary | std::ios_base::trunc),
-            [](std::ostream * os)
-            {
-                os->flush();
-                delete os;
-            });
     }
 
     static std::vector<std::filesystem::path> ListFiles(std::filesystem::path const & directoryPath)
@@ -108,67 +81,6 @@ public:
         }
 
         return filePaths;
-    }
-
-    static std::string LoadTextFile(std::filesystem::path const & filePath)
-    {
-        std::ifstream file(filePath.string(), std::ios::in);
-        if (!file.is_open())
-        {
-            throw GameException("Cannot open file \"" + filePath.string() + "\" for reading");
-        }
-
-        std::stringstream ss;
-        ss << file.rdbuf();
-
-        std::string content = ss.str();
-
-        // For some reason, the preferences file sometimes is made of all null characters
-        content.erase(
-            std::find(content.begin(), content.end(), '\0'),
-            content.end());
-
-        return content;
-    }
-
-    static std::vector<std::string> LoadTextFileLines(std::filesystem::path const & filePath)
-    {
-        std::ifstream file(filePath.string(), std::ios::in);
-        if (!file.is_open())
-        {
-            throw GameException("Cannot open file \"" + filePath.string() + "\" for reading");
-        }
-
-        std::string line;
-        std::vector<std::string> lines;
-        while (std::getline(file, line))
-        {
-            lines.emplace_back(line);
-        }
-
-        return lines;
-    }
-
-    static void SaveTextFile(
-        std::string const & content,
-        std::filesystem::path const & filePath)
-    {
-        // Make sure directory exists
-        EnsureDirectoryExists(filePath.parent_path());
-
-        // Open file
-        std::ofstream outputFile(filePath, std::ios_base::out | std::ios_base::trunc);
-        if (!outputFile.is_open())
-        {
-            throw GameException("Cannot open file \"" + filePath.string() + "\" for writing");
-        }
-
-        // Dump
-        outputFile << content;
-
-        // Close
-        outputFile.flush();
-        outputFile.close();
     }
 
     static void DeleteFile(std::filesystem::path const & filePath)
@@ -261,16 +173,26 @@ struct IFileSystem
     virtual void EnsureDirectoryExists(std::filesystem::path const & directoryPath) = 0;
 
     /*
-     * Opens a file for reading. Returns an empty pointer if the file does not exist.
+     * Opens a binary file for reading. Throws if the file does not exist.
      */
-    virtual std::shared_ptr<std::istream> OpenBinaryInputStream(std::filesystem::path const & filePath) = 0;
+    virtual std::unique_ptr<BinaryReadStream> OpenBinaryInputStream(std::filesystem::path const & filePath) = 0;
 
     /*
-     * Opens a file for writing. Overwrites the files if it exists already.
-     *
-     * The file is flushed and closed when the shared pointer goes out of scope.
+     * Opens a text file for reading. Throws if the file does not exist.
      */
-    virtual std::shared_ptr<std::ostream> OpenBinaryOutputStream(std::filesystem::path const & filePath) = 0;
+    virtual std::unique_ptr<TextReadStream> OpenTextInputStream(std::filesystem::path const & filePath) = 0;
+
+    /*
+     * Opens a binary file for writing. Overwrites the files if it exists already.
+     * Also ensures the directory exists.
+     */
+    virtual std::unique_ptr<BinaryWriteStream> OpenBinaryOutputStream(std::filesystem::path const & filePath) = 0;
+
+    /*
+     * Opens a text file for writing. Overwrites the files if it exists already.
+     * Also ensures the directory exists.
+     */
+    virtual std::unique_ptr<TextWriteStream> OpenTextOutputStream(std::filesystem::path const & filePath) = 0;
 
     /*
      * Returns paths of all files in the specified directory.
@@ -315,14 +237,24 @@ public:
         FileSystem::EnsureDirectoryExists(directoryPath);
     }
 
-    std::shared_ptr<std::istream> OpenBinaryInputStream(std::filesystem::path const & filePath) override
+    std::unique_ptr<BinaryReadStream> OpenBinaryInputStream(std::filesystem::path const & filePath) override
     {
-        return FileSystem::OpenBinaryInputStream(filePath);
+        return std::make_unique<FileBinaryReadStream>(filePath);
     }
 
-    std::shared_ptr<std::ostream> OpenBinaryOutputStream(std::filesystem::path const & filePath) override
+    std::unique_ptr<TextReadStream> OpenTextInputStream(std::filesystem::path const & filePath) override
     {
-        return FileSystem::OpenBinaryOutputStream(filePath);
+        return std::make_unique<FileTextReadStream>(filePath);
+    }
+
+    std::unique_ptr<BinaryWriteStream> OpenBinaryOutputStream(std::filesystem::path const & filePath) override
+    {
+        return std::make_unique<FileBinaryWriteStream>(filePath);
+    }
+
+    std::unique_ptr<TextWriteStream> OpenTextOutputStream(std::filesystem::path const & filePath) override
+    {
+        return std::make_unique<FileTextWriteStream>(filePath);
     }
 
     std::vector<std::filesystem::path> ListFiles(std::filesystem::path const & directoryPath) override

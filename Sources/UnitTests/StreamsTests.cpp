@@ -1,9 +1,9 @@
-#include <Core/BinaryStreams.h>
-#include <Core/MemoryBinaryStreams.h>
+#include <Core/Streams.h>
+#include <Core/MemoryStreams.h>
 
 #include "gtest/gtest.h"
 
-TEST(BinaryStreams, MemoryBinaryReadStream)
+TEST(Streams, MemoryBinaryReadStream)
 {
     std::vector<std::uint8_t> data{
         0x00, 0x01, 0x02, 0x03
@@ -32,7 +32,34 @@ TEST(BinaryStreams, MemoryBinaryReadStream)
     EXPECT_EQ(buffer[1], 0x01);
 }
 
-TEST(BinaryStreams, MemoryBinaryWriteStream)
+TEST(Streams, MemoryTextReadStream_ReadAll)
+{
+    std::string data = " Hello\nWorld\r\nOut There! ";
+
+    std::string copy = data;
+    MemoryTextReadStream stream(std::move(copy));
+
+    std::string read = stream.ReadAll();
+
+    EXPECT_EQ(read, data);
+}
+
+TEST(Streams, MemoryTextReadStream_ReadAllLines)
+{
+    std::string data = " Hello\nWorld\r\nOut There! ";
+
+    std::string copy = data;
+    MemoryTextReadStream stream(std::move(copy));
+
+    std::vector<std::string> read = stream.ReadAllLines();
+
+    ASSERT_EQ(read.size(), 3);
+    EXPECT_EQ(read[0], " Hello");
+    EXPECT_EQ(read[1], "World\r");
+    EXPECT_EQ(read[2], "Out There! ");
+}
+
+TEST(Streams, MemoryBinaryWriteStream)
 {
     MemoryBinaryWriteStream stream;
 
@@ -54,4 +81,14 @@ TEST(BinaryStreams, MemoryBinaryWriteStream)
     EXPECT_EQ(stream.GetData()[1], 0x01);
     EXPECT_EQ(stream.GetData()[2], 0x02);
     EXPECT_EQ(stream.GetData()[3], 0x01);
+}
+
+TEST(Streams, MemoryTextWriteStream)
+{
+    MemoryTextWriteStream stream;
+
+    stream.Write(" Hello\n");
+    stream.Write(" World\r\n! ");
+
+    EXPECT_EQ(stream.GetData(), " Hello\n World\r\n! ");
 }

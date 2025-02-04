@@ -4,7 +4,7 @@
 * Copyright:            Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
 
-#include "BinaryStreams.h"
+#include "Streams.h"
 #include "ImageData.h"
 
 #include <cstdint>

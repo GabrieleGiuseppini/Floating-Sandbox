@@ -1,6 +1,6 @@
 #include <Simulation/ShipDefinitionFormatDeSerializer.h>
 
-#include <Core/MemoryBinaryStreams.h>
+#include <Core/MemoryStreams.h>
 #include <Core/UserGameException.h>
 #include <Core/Version.h>
 

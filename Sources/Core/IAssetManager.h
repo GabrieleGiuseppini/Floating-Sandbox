@@ -5,8 +5,8 @@
 ***************************************************************************************/
 #pragma once
 
-#include "BinaryStreams.h"
 #include "ImageData.h"
+#include "Streams.h"
 
 #include <picojson.h>
 
