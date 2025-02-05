@@ -5,16 +5,13 @@
 ***************************************************************************************/
 #pragma once
 
-#include "RenderContext.h"
+#include <Render/RenderContext.h>
 
-#include <GameCore/Colors.h>
-#include <GameCore/GameTypes.h>
-#include <GameCore/Vectors.h>
+#include <Core/Colors.h>
+#include <Core/GameTypes.h>
+#include <Core/Vectors.h>
 
 #include <vector>
-
-namespace Physics
-{
 
 class ShipOverlays
 {
@@ -63,7 +60,7 @@ public:
 
     void Upload(
         ShipId shipId,
-        Render::RenderContext & renderContext);
+        RenderContext & renderContext);
 
 public:
 
@@ -111,5 +108,3 @@ private:
 
     bool mutable mIsPointToPointArrowsBufferDirty;
 };
-
-}

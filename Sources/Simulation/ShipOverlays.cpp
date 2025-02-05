@@ -8,11 +8,9 @@
 #include <algorithm>
 #include <cassert>
 
-namespace Physics {
-
 void ShipOverlays::Upload(
     ShipId shipId,
-    Render::RenderContext & renderContext)
+    RenderContext & renderContext)
 {
     auto & shipRenderContext = renderContext.GetShipRenderContext(shipId);
     auto const & viewModel = renderContext.GetViewModel();
@@ -82,6 +80,4 @@ void ShipOverlays::Upload(
             mIsPointToPointArrowsBufferDirty = false;
         }
     }
-}
-
 }

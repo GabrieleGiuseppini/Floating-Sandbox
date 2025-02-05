@@ -28,6 +28,8 @@ set  (SIMULATION_SOURCES
 	ShipFactoryTypes.h
 	ShipLoadOptions.h
 	ShipMetadata.h
+	ShipOverlays.cpp
+	ShipOverlays.h
 	ShipPhysicsData.h
 	ShipPreviewData.h
 	ShipStrengthRandomizer.cpp
