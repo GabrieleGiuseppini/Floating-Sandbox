@@ -3,14 +3,11 @@
 * Created:				2019-10-12
 * Copyright:			Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
-#include "OceanFloorTerrain.h"
+#include "OceanFloorHeightMap.h"
 
-#include "GameParameters.h"
-#include "PngImageFileTools.h"
+#include "SimulationParameters.h"
 
 #include <cmath>
-
-size_t OceanFloorTerrain::Size = GameParameters::OceanFloorTerrainSamples<size_t>;
 
 namespace /* anonymous */ {
 
@@ -36,22 +33,22 @@ namespace /* anonymous */ {
     }
 }
 
-OceanFloorTerrain OceanFloorTerrain::LoadFromImage(std::filesystem::path const & imageFilePath)
-{
-    unique_buffer<float> terrainBuffer(GameParameters::OceanFloorTerrainSamples<size_t>);
+size_t OceanFloorHeightMap::Size = SimulationParameters::OceanFloorTerrainSamples<size_t>;
 
-    // Load image
-    RgbImageData oceanFloorImage = PngImageFileTools::LoadImageRgb(imageFilePath);
-    float const halfHeight = static_cast<float>(oceanFloorImage.Size.height) / 2.0f;
+OceanFloorHeightMap OceanFloorHeightMap::LoadFromImage(RgbImageData const & imageData)
+{
+    unique_buffer<float> terrainBuffer(Size);
+
+    float const imageHalfHeight = static_cast<float>(imageData.Size.height) / 2.0f;
 
     // Calculate SampleI->WorldX factor, i.e. world width between two samples
-    float constexpr Dx = GameParameters::MaxWorldWidth / GameParameters::OceanFloorTerrainSamples<float>;
+    float constexpr Dx = SimulationParameters::MaxWorldWidth / SimulationParameters::OceanFloorTerrainSamples<float>;
 
     // Calculate WorldX->ImageX factor: we want the entire width of this image to fit the entire
     // world width (by stretching or compressing)
-    float const worldXToImageX = static_cast<float>(oceanFloorImage.Size.width) / GameParameters::MaxWorldWidth;
+    float const worldXToImageX = static_cast<float>(imageData.Size.width) / SimulationParameters::MaxWorldWidth;
 
-    for (size_t s = 0; s < GameParameters::OceanFloorTerrainSamples<size_t>; ++s)
+    for (size_t s = 0; s < Size; ++s)
     {
         // Calculate pixel X
         float const worldX = static_cast<float>(s) * Dx;
@@ -63,16 +60,16 @@ OceanFloorTerrain OceanFloorTerrain::LoadFromImage(std::filesystem::path const &
         int const imageXI = static_cast<int>(std::floor(imageX));
         float const imageXIF = imageX - static_cast<float>(imageXI);
 
-        assert(imageXI >= 0 && imageXI < oceanFloorImage.Size.width);
+        assert(imageXI >= 0 && imageXI < imageData.Size.width);
 
         // Find topmost Y's at this image X
         //      Y=H at topmost => s=H/2, Y=0 if nothing found => s=-H/2
-        float const sampleValue = static_cast<float>(GetTopmostY(oceanFloorImage, imageXI)) - halfHeight;
+        float const sampleValue = static_cast<float>(GetTopmostY(imageData, imageXI)) - imageHalfHeight;
 
-        if (imageXI < oceanFloorImage.Size.width - 1)
+        if (imageXI < imageData.Size.width - 1)
         {
             // Interpolate with next pixel
-            float const sampleValue2 = static_cast<float>(GetTopmostY(oceanFloorImage, imageXI + 1)) - halfHeight;
+            float const sampleValue2 = static_cast<float>(GetTopmostY(imageData, imageXI + 1)) - imageHalfHeight;
 
             // Store sample
             terrainBuffer[s] =
@@ -86,19 +83,19 @@ OceanFloorTerrain OceanFloorTerrain::LoadFromImage(std::filesystem::path const &
         }
     }
 
-    return OceanFloorTerrain(std::move(terrainBuffer));
+    return OceanFloorHeightMap(std::move(terrainBuffer));
 }
 
-OceanFloorTerrain OceanFloorTerrain::LoadFromStream(std::istream & is)
+OceanFloorHeightMap OceanFloorHeightMap::LoadFromStream(BinaryReadStream & inputStream)
 {
-    unique_buffer<float> terrainBuffer(GameParameters::OceanFloorTerrainSamples<size_t>);
+    unique_buffer<float> terrainBuffer(Size);
 
-    is.read(reinterpret_cast<char *>(terrainBuffer.get()), terrainBuffer.size() * sizeof(float));
+    inputStream.Read(reinterpret_cast<std::uint8_t *>(terrainBuffer.get()), terrainBuffer.size() * sizeof(float));
 
-    return OceanFloorTerrain(std::move(terrainBuffer));
+    return OceanFloorHeightMap(std::move(terrainBuffer));
 }
 
-void OceanFloorTerrain::SaveToStream(std::ostream & os) const
+void OceanFloorHeightMap::SaveToStream(BinaryWriteStream & outputStream) const
 {
-    os.write(reinterpret_cast<char const *>(mTerrainBuffer.get()), mTerrainBuffer.size() * sizeof(float));
+    outputStream.Write(reinterpret_cast<std::uint8_t const *>(mTerrainBuffer.get()), mTerrainBuffer.size() * sizeof(float));
 }

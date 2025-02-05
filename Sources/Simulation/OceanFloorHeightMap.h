@@ -5,75 +5,74 @@
 ***************************************************************************************/
 #pragma once
 
-#include <GameCore/UniqueBuffer.h>
-
-#include <filesystem>
-#include <iostream>
+#include <Core/ImageData.h>
+#include <Core/Streams.h>
+#include <Core/UniqueBuffer.h>
 
 /*
  * This class represents the user-modifiable component of the ocean floor.
  *
- * The class bridges between the physics and the settings infrastructure.
+ * The class is a value (data) object.
  */
-class OceanFloorTerrain
+class OceanFloorHeightMap
 {
 public:
 
-    static OceanFloorTerrain LoadFromImage(std::filesystem::path const & imageFilePath);
+    static OceanFloorHeightMap LoadFromImage(RgbImageData const & imageData);
 
-    static OceanFloorTerrain LoadFromStream(std::istream & is);
+    static OceanFloorHeightMap LoadFromStream(BinaryReadStream & inputStream);
 
 public:
 
-    OceanFloorTerrain()
+    OceanFloorHeightMap()
         : mTerrainBuffer(Size)
     {
         mTerrainBuffer.fill(0.0f);
     }
 
-    explicit OceanFloorTerrain(unique_buffer<float> const & terrainBuffer)
+    explicit OceanFloorHeightMap(unique_buffer<float> const & terrainBuffer)
         : mTerrainBuffer(terrainBuffer)
     {
         assert(mTerrainBuffer.size() == Size);
     }
 
-    explicit OceanFloorTerrain(unique_buffer<float> && terrainBuffer)
+    explicit OceanFloorHeightMap(unique_buffer<float> && terrainBuffer)
         : mTerrainBuffer(std::move(terrainBuffer))
     {
         assert(mTerrainBuffer.size() == Size);
     }
 
-    OceanFloorTerrain(OceanFloorTerrain const & other) = default;
-    OceanFloorTerrain(OceanFloorTerrain && other) = default;
+    OceanFloorHeightMap(OceanFloorHeightMap const & other) = default;
+    OceanFloorHeightMap(OceanFloorHeightMap && other) = default;
 
-    OceanFloorTerrain & operator=(OceanFloorTerrain const & other) = default;
-    OceanFloorTerrain & operator=(OceanFloorTerrain && other) = default;
+    OceanFloorHeightMap & operator=(OceanFloorHeightMap const & other) = default;
+    OceanFloorHeightMap & operator=(OceanFloorHeightMap && other) = default;
 
-    bool operator==(OceanFloorTerrain const & other) const
+    bool operator==(OceanFloorHeightMap const & other) const
     {
         return mTerrainBuffer == other.mTerrainBuffer;
     }
 
-	friend OceanFloorTerrain operator+(
-		OceanFloorTerrain lhs,
-		OceanFloorTerrain const & rhs)
+	friend OceanFloorHeightMap operator+(
+        OceanFloorHeightMap lhs,
+        OceanFloorHeightMap const & rhs)
 	{
 		lhs.mTerrainBuffer += rhs.mTerrainBuffer;
 
 		return lhs;
 	}
 
-	friend OceanFloorTerrain operator-(
-		OceanFloorTerrain lhs,
-		OceanFloorTerrain const & rhs)
+	friend OceanFloorHeightMap operator-(
+        OceanFloorHeightMap lhs,
+        OceanFloorHeightMap const & rhs)
 	{
 		lhs.mTerrainBuffer -= rhs.mTerrainBuffer;
 
 		return lhs;
 	}
 
-	friend OceanFloorTerrain operator*(
-		OceanFloorTerrain lhs,
+	friend OceanFloorHeightMap operator*(
+        OceanFloorHeightMap lhs,
 		float rhs)
 	{
 		lhs.mTerrainBuffer *= rhs;
@@ -81,8 +80,8 @@ public:
 		return lhs;
 	}
 
-	friend OceanFloorTerrain operator/(
-		OceanFloorTerrain lhs,
+	friend OceanFloorHeightMap operator/(
+        OceanFloorHeightMap lhs,
 		float rhs)
 	{
 		lhs.mTerrainBuffer /= rhs;
@@ -100,7 +99,7 @@ public:
         return mTerrainBuffer[index];
     }
 
-    void SaveToStream(std::ostream & os) const;
+    void SaveToStream(BinaryWriteStream & outputStream) const;
 
 private:
 

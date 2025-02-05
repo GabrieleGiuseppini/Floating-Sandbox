@@ -17,6 +17,8 @@ set  (SIMULATION_SOURCES
 	MaterialDatabase.h
 	NpcDatabase.cpp
 	NpcDatabase.h
+	OceanFloorHeightMap.cpp
+	OceanFloorHeightMap.h
 	RopeBuffer.h
 	ShipAutoTexturizationSettings.cpp
 	ShipAutoTexturizationSettings.h
