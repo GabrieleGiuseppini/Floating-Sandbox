@@ -5,9 +5,11 @@
 ***************************************************************************************/
 #pragma once
 
-#include "GameParameters.h"
+#include "Physics.h"
 
-#include <GameCore/GameMath.h>
+#include "../SimulationParameters.h"
+
+#include <Core/GameMath.h>
 
 #include <cmath>
 #include <optional>
@@ -24,56 +26,56 @@ public:
 
     static float CalculateAirDensity(
         float airTemperature,
-        GameParameters const & gameParameters)
+        SimulationParameters const & simulationParameters)
     {
-        return GameParameters::AirMass
-            / (1.0f + GameParameters::AirThermalExpansionCoefficient * (airTemperature - GameParameters::Temperature0))
-            * gameParameters.AirDensityAdjustment;
+        return SimulationParameters::AirMass
+            / (1.0f + SimulationParameters::AirThermalExpansionCoefficient * (airTemperature - SimulationParameters::Temperature0))
+            * simulationParameters.AirDensityAdjustment;
     }
 
     static float CalculateWaterDensity(
         float waterTemperature,
-        GameParameters const & gameParameters)
+        SimulationParameters const & simulationParameters)
     {
-        return GameParameters::WaterMass
-            / (1.0f + GameParameters::WaterThermalExpansionCoefficient * (waterTemperature - GameParameters::Temperature0))
-            * gameParameters.WaterDensityAdjustment;
+        return SimulationParameters::WaterMass
+            / (1.0f + SimulationParameters::WaterThermalExpansionCoefficient * (waterTemperature - SimulationParameters::Temperature0))
+            * simulationParameters.WaterDensityAdjustment;
     }
 
     // Calculates the ideal pressure at the bottom of 1 cubic meter of water at this temperature,
     // in the void
     static float CalculateVolumetricWaterPressure(
         float waterTemperature,
-        GameParameters const & gameParameters)
+        SimulationParameters const & simulationParameters)
     {
-        return CalculateWaterDensity(waterTemperature, gameParameters)
-            * GameParameters::GravityMagnitude;
+        return CalculateWaterDensity(waterTemperature, simulationParameters)
+            * SimulationParameters::GravityMagnitude;
     }
 
     // Calculates the pressure exherted by the 1m2 column of air at the given y
     static float CalculateAirColumnPressureAt(
         float y,
         float airDensity,
-        GameParameters const & /*gameParameters*/)
+        SimulationParameters const & /*simulationParameters*/)
     {
         // While the real barometric formula is exponential, here we simplify it as linear:
         //      - Pressure is zero at y = MaxWorldHeight+10%
         //      - Pressure is AirPressureAtSeaLevel at y = 0
         float const seaLevelPressure =
-            GameParameters::AirPressureAtSeaLevel
-            * (airDensity / GameParameters::AirMass); // Adjust for density, assuming linear relationship
+            SimulationParameters::AirPressureAtSeaLevel
+            * (airDensity / SimulationParameters::AirMass); // Adjust for density, assuming linear relationship
         return seaLevelPressure
-            * (GameParameters::HalfMaxWorldHeight * 1.1f - y) / (GameParameters::HalfMaxWorldHeight * 1.1f);
+            * (SimulationParameters::HalfMaxWorldHeight * 1.1f - y) / (SimulationParameters::HalfMaxWorldHeight * 1.1f);
     }
 
     // Calculates the pressure exherted by a 1m2 column of water of the given height
     static float CalculateWaterColumnPressure(
         float height,
         float waterDensity,
-        GameParameters const & /*gameParameters*/)
+        SimulationParameters const & /*simulationParameters*/)
     {
         return waterDensity * height // Volume
-            * GameParameters::GravityMagnitude;
+            * SimulationParameters::GravityMagnitude;
     }
 
     // Calculates the total (air above + water) pressure at the given y, in N/m2 (Pa)
@@ -82,17 +84,17 @@ public:
         float oceanSurfaceY,
         float airDensity,
         float waterDensity,
-        GameParameters const & gameParameters)
+        SimulationParameters const & simulationParameters)
     {
         float const airPressure = CalculateAirColumnPressureAt(
             std::max(y, oceanSurfaceY),
             airDensity,
-            gameParameters);
+            simulationParameters);
 
         float const waterPressure = CalculateWaterColumnPressure(
             std::max(oceanSurfaceY - y, 0.0f),
             waterDensity,
-            gameParameters);
+            simulationParameters);
 
         return airPressure + waterPressure;
     }

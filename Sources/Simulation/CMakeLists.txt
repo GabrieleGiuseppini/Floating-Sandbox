@@ -39,9 +39,20 @@ set  (SIMULATION_SOURCES
 	SimulationParameters.h
 )
 
-source_group(" " FILES ${SIMULATION_SOURCES})
+set  (PHYSICS_SOURCES
+	Physics/Formulae.h
+	Physics/IShipPhysicsHandler.h
+	Physics/Physics.h
+	Physics/Storm.cpp
+	Physics/Storm.h
+	Physics/Wind.cpp
+	Physics/Wind.h
+)
 
-add_library (Simulation ${SIMULATION_SOURCES})
+source_group(" " FILES ${SIMULATION_SOURCES})
+source_group("Physics" FILES ${PHYSICS_SOURCES})
+
+add_library (Simulation ${SIMULATION_SOURCES} ${PHYSICS_SOURCES})
 
 target_include_directories(Simulation PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(Simulation PUBLIC ${PICOJSON_INCLUDE_DIRS})

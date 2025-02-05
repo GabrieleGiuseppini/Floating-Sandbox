@@ -7,12 +7,12 @@
 
 #include "Physics.h"
 
-#include "GameEventDispatcher.h"
-#include "GameParameters.h"
+#include "../SimulationEventDispatcher.h"
+#include "../SimulationParameters.h"
 
-#include <GameCore/GameMath.h>
-#include <GameCore/GameWallClock.h>
-#include <GameCore/RunningAverage.h>
+#include <Core/GameMath.h>
+#include <Core/GameWallClock.h>
+#include <Core/RunningAverage.h>
 
 #include <optional>
 
@@ -52,17 +52,17 @@ public:
 
 public:
 
-    Wind(std::shared_ptr<GameEventDispatcher> gameEventDispatcher);
+    Wind(std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher);
 
     void SetSilence(float silenceAmount);
 
     void Update(
         Storm::Parameters const & stormParameters,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void UpdateEnd();
 
-    void Upload(Render::RenderContext & renderContext) const;
+    void Upload(RenderContext & renderContext) const;
 
     /*
      * Returns the (signed) base speed magnitude - i.e. the magnitude of the unmodulated
@@ -104,7 +104,7 @@ public:
     }
 
     /*
-     * Sets the current radial wind field. 
+     * Sets the current radial wind field.
      * Will be wiped at the end of the update cycle.
      */
     void SetRadialWindField(RadialWindField const & radialWindField)
@@ -118,11 +118,11 @@ private:
 
     void RecalculateParameters(
         Storm::Parameters const & stormParameters,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
 private:
 
-    std::shared_ptr<GameEventDispatcher> mGameEventHandler;
+    std::shared_ptr<SimulationEventDispatcher> mSimulationEventHandler;
 
     //
     // Pre-calculated parameters

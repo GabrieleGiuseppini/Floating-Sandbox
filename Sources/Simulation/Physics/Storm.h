@@ -5,12 +5,13 @@
 ***************************************************************************************/
 #pragma once
 
-#include "GameEventDispatcher.h"
-#include "GameParameters.h"
-#include "RenderContext.h"
+#include "../SimulationEventDispatcher.h"
+#include "../SimulationParameters.h"
 
-#include <GameCore/GameWallClock.h>
-#include <GameCore/Vectors.h>
+#include <Render/RenderContext.h>
+
+#include <Core/GameWallClock.h>
+#include <Core/Vectors.h>
 
 #include <memory>
 #include <list>
@@ -26,11 +27,11 @@ public:
 
 	Storm(
 		World & parentWorld,
-		std::shared_ptr<GameEventDispatcher> gameEventDispatcher);
+		std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher);
 
-    void Update(GameParameters const & gameParameters);
+    void Update(SimulationParameters const & simulationParameters);
 
-    void Upload(Render::RenderContext & renderContext) const;
+    void Upload(RenderContext & renderContext) const;
 
 public:
 
@@ -70,13 +71,13 @@ public:
 
     void TriggerStorm();
 
-	void TriggerLightning(GameParameters const & gameParameters);
+	void TriggerLightning(SimulationParameters const & simulationParameters);
 
 private:
 
 	void RecalculateCoefficients(
 		GameWallClock::time_point now,
-		GameParameters const & gameParameters);
+		SimulationParameters const & simulationParameters);
 
 	static GameWallClock::time_point CalculateNextStormTimestamp(
 		GameWallClock::time_point lastTimestamp,
@@ -91,13 +92,13 @@ private:
 		vec2f const & targetWorldPosition);
 	void UpdateLightnings(
 		GameWallClock::time_point now,
-		GameParameters const & gameParameters);
-	void UploadLightnings(Render::RenderContext & renderContext) const;
+		SimulationParameters const & simulationParameters);
+	void UploadLightnings(RenderContext & renderContext) const;
 
 private:
 
 	World & mParentWorld;
-	std::shared_ptr<GameEventDispatcher> mGameEventHandler;
+	std::shared_ptr<SimulationEventDispatcher> mSimulationEventHandler;
 
 	//
 	// Lightning state machine

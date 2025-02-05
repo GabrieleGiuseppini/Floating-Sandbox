@@ -5,10 +5,12 @@
 ***************************************************************************************/
 #pragma once
 
-#include "GameParameters.h"
+#include "../SimulationParameters.h"
 
-#include <GameCore/GameTypes.h>
-#include <GameCore/Vectors.h>
+#include <Core/GameTypes.h>
+#include <Core/Vectors.h>
+
+namespace Physics {
 
 /*
  * The interface presented by the Ship to its subordinate elements.
@@ -43,7 +45,7 @@ struct IShipPhysicsHandler
         bool generateDebris,
         bool fireDestroyEvent,
         float currentSimulationTime,
-        GameParameters const & gameParameters) = 0;
+        SimulationParameters const & simulationParameters) = 0;
 
     /*
      * Invoked whenever a point is irrevocably modified, including when it is being detached,
@@ -90,7 +92,7 @@ struct IShipPhysicsHandler
         ElementIndex springElementIndex,
         bool destroyAllTriangles,
         float currentSimulationTime,
-        GameParameters const & gameParameters) = 0;
+        SimulationParameters const & simulationParameters) = 0;
 
     /*
      * Invoked whenever a spring is restored.
@@ -104,7 +106,7 @@ struct IShipPhysicsHandler
      */
     virtual void HandleSpringRestore(
         ElementIndex springElementIndex,
-        GameParameters const & gameParameters) = 0;
+        SimulationParameters const & simulationParameters) = 0;
 
     /*
      * Invoked whenever a triangle is destroyed.
@@ -145,7 +147,7 @@ struct IShipPhysicsHandler
         ElementIndex pointIndex,
         ElectricalElementDestroySpecializationType specialization,
         float currentSimulationTime,
-        GameParameters const & gameParameters) = 0;
+        SimulationParameters const & simulationParameters) = 0;
 
     /*
      * Invoked whenever an electrical element is restored.
@@ -173,23 +175,23 @@ struct IShipPhysicsHandler
         float blastHeatRadius, // m
         float renderRadiusOffset, // On top of blast force radius
         ExplosionType explosionType,
-        GameParameters const & gameParameters) = 0;
+        SimulationParameters const & simulationParameters) = 0;
 
     virtual void DoAntiMatterBombPreimplosion(
         vec2f const & centerPosition,
         float sequenceProgress,
         float radius,
-        GameParameters const & gameParameters) = 0;
+        SimulationParameters const & simulationParameters) = 0;
 
     virtual void DoAntiMatterBombImplosion(
         vec2f const & centerPosition,
         float sequenceProgress,
-        GameParameters const & gameParameters) = 0;
+        SimulationParameters const & simulationParameters) = 0;
 
     virtual void DoAntiMatterBombExplosion(
         vec2f const & centerPosition,
         float sequenceProgress,
-        GameParameters const & gameParameters) = 0;
+        SimulationParameters const & simulationParameters) = 0;
 
     virtual void HandleWatertightDoorUpdated(
         ElementIndex pointElementIndex,
@@ -199,5 +201,7 @@ struct IShipPhysicsHandler
         ElementIndex pointElementIndex,
         float strength,
         float currentSimulationTime,
-        GameParameters const & gameParameters) = 0;
+        SimulationParameters const & simulationParameters) = 0;
 };
+
+}

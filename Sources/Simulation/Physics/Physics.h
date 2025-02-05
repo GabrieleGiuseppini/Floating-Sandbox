@@ -27,7 +27,7 @@ namespace Physics
 	class World;
 }
 
-#include <GameCore/ElementContainer.h>
+#include <Core/ElementContainer.h>
 
 #include "IShipPhysicsHandler.h"
 
@@ -36,29 +36,30 @@ namespace Physics
 
 #include "Formulae.h"
 
-#include "Points.h"
-#include "Springs.h"
-#include "Triangles.h"
-#include "ElectricalElements.h"
-#include "Frontiers.h"
-#include "NpcSimulation/NpcParticles.h"
-
-#include "Clouds.h"
-#include "Fishes.h"
-#include "Stars.h"
-#include "OceanFloor.h"
-#include "OceanSurface.h"
+//// TODOTEST
+//#include "Points.h"
+//#include "Springs.h"
+//#include "Triangles.h"
+//#include "ElectricalElements.h"
+//#include "Frontiers.h"
+//#include "NpcSimulation/NpcParticles.h"
+//
+//#include "Clouds.h"
+//#include "Fishes.h"
+//#include "Stars.h"
+//#include "OceanFloor.h"
+//#include "OceanSurface.h"
 #include "World.h"
-
-#include "Gadget.h"
-#include "AntiMatterBombGadget.h"
-#include "FireExtinguishingBombGadget.h"
-#include "ImpactBombGadget.h"
-#include "PhysicsProbeGadget.h"
-#include "RCBombGadget.h"
-#include "TimerBombGadget.h"
-#include "Gadgets.h"
-#include "PinnedPoints.h"
-#include "Ship.h"
-
-#include "NpcSimulation/Npcs.h"
+//
+//#include "Gadget.h"
+//#include "AntiMatterBombGadget.h"
+//#include "FireExtinguishingBombGadget.h"
+//#include "ImpactBombGadget.h"
+//#include "PhysicsProbeGadget.h"
+//#include "RCBombGadget.h"
+//#include "TimerBombGadget.h"
+//#include "Gadgets.h"
+//#include "PinnedPoints.h"
+//#include "Ship.h"
+//
+//#include "NpcSimulation/Npcs.h"

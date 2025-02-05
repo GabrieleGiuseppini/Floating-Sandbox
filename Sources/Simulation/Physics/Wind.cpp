@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #include "Physics.h"
 
-#include <GameCore/GameRandomEngine.h>
+#include <Core/GameRandomEngine.h>
 
 #include <limits>
 
@@ -18,8 +18,8 @@ float constexpr GustRate = 1.0f;
 float constexpr PoissonSampleRate = 4.0f;
 float constexpr PoissonSampleDeltaT = 1.0f / PoissonSampleRate;
 
-Wind::Wind(std::shared_ptr<GameEventDispatcher> gameEventDispatcher)
-    : mGameEventHandler(std::move(gameEventDispatcher))
+Wind::Wind(std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher)
+    : mSimulationEventHandler(std::move(simulationEventDispatcher))
     // Pre-calculated parameters
     , mZeroSpeedMagnitude(0.0f)
     , mBaseSpeedMagnitude(0.0f)
@@ -53,24 +53,24 @@ void Wind::SetSilence(float silenceAmount)
 
 void Wind::Update(
     Storm::Parameters const & stormParameters,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     //
     // Check whether parameters have changed
     //
 
-    if (gameParameters.DoModulateWind != mCurrentDoModulateWindParameter
-        || gameParameters.WindSpeedBase != mCurrentSpeedBaseParameter
-        || gameParameters.WindSpeedMaxFactor != mCurrentSpeedMaxFactorParameter
-        || gameParameters.WindGustFrequencyAdjustment != mCurrentGustFrequencyAdjustmentParameter
+    if (simulationParameters.DoModulateWind != mCurrentDoModulateWindParameter
+        || simulationParameters.WindSpeedBase != mCurrentSpeedBaseParameter
+        || simulationParameters.WindSpeedMaxFactor != mCurrentSpeedMaxFactorParameter
+        || simulationParameters.WindGustFrequencyAdjustment != mCurrentGustFrequencyAdjustmentParameter
         || stormParameters.WindSpeed != mCurrentStormWindSpeedParameter)
     {
-        RecalculateParameters(stormParameters, gameParameters);
+        RecalculateParameters(stormParameters, simulationParameters);
 
-        mCurrentDoModulateWindParameter = gameParameters.DoModulateWind;
-        mCurrentSpeedBaseParameter = gameParameters.WindSpeedBase;
-        mCurrentSpeedMaxFactorParameter = gameParameters.WindSpeedMaxFactor;
-        mCurrentGustFrequencyAdjustmentParameter = gameParameters.WindGustFrequencyAdjustment;
+        mCurrentDoModulateWindParameter = simulationParameters.DoModulateWind;
+        mCurrentSpeedBaseParameter = simulationParameters.WindSpeedBase;
+        mCurrentSpeedMaxFactorParameter = simulationParameters.WindSpeedMaxFactor;
+        mCurrentGustFrequencyAdjustmentParameter = simulationParameters.WindGustFrequencyAdjustment;
         mCurrentStormWindSpeedParameter = stormParameters.WindSpeed;
     }
 
@@ -292,13 +292,13 @@ void Wind::Update(
 
     // Update average and store current speed
     mCurrentWindSpeed =
-        GameParameters::WindDirection
+        SimulationParameters::WindDirection
         * mCurrentWindSpeedMagnitudeRunningAverage.Update(
             mCurrentRawWindSpeedMagnitude
             * (1.0f - mCurrentSilenceAmount));
 
     // Publish interesting quantities for probes
-    mGameEventHandler->OnWindSpeedUpdated(
+    mSimulationEventHandler->OnWindSpeedUpdated(
         mZeroSpeedMagnitude,
         mBaseSpeedMagnitude,
         mBaseAndStormSpeedMagnitude,
@@ -312,7 +312,7 @@ void Wind::UpdateEnd()
     mCurrentRadialWindField.reset();
 }
 
-void Wind::Upload(Render::RenderContext & renderContext) const
+void Wind::Upload(RenderContext & renderContext) const
 {
     renderContext.UploadWind(mCurrentWindSpeed);
 }
@@ -325,21 +325,21 @@ GameWallClock::duration Wind::ChooseDuration(float minSeconds, float maxSeconds)
 
 void Wind::RecalculateParameters(
     Storm::Parameters const & stormParameters,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
-	mZeroSpeedMagnitude = (gameParameters.WindSpeedBase >= 0.0f)
+	mZeroSpeedMagnitude = (simulationParameters.WindSpeedBase >= 0.0f)
 		? stormParameters.WindSpeed
 		: -stormParameters.WindSpeed;
-    mBaseSpeedMagnitude = gameParameters.WindSpeedBase;
-    mBaseAndStormSpeedMagnitude = (gameParameters.WindSpeedBase >= 0.0f)
+    mBaseSpeedMagnitude = simulationParameters.WindSpeedBase;
+    mBaseAndStormSpeedMagnitude = (simulationParameters.WindSpeedBase >= 0.0f)
         ? mBaseSpeedMagnitude + stormParameters.WindSpeed
         : mBaseSpeedMagnitude - stormParameters.WindSpeed;
-    mMaxSpeedMagnitude = mBaseAndStormSpeedMagnitude * gameParameters.WindSpeedMaxFactor;
+    mMaxSpeedMagnitude = mBaseAndStormSpeedMagnitude * simulationParameters.WindSpeedMaxFactor;
     mPreMaxSpeedMagnitude = mBaseAndStormSpeedMagnitude + (mMaxSpeedMagnitude - mBaseAndStormSpeedMagnitude) / 8.0f;
 
     // We want GustRate gusts every 1 seconds, and in 1 second we perform PoissonSampleRate samplings,
     // hence we want 1/PoissonSampleRate gusts per sample interval
-    mGustCdf = 1.0f - exp(-GustRate / (PoissonSampleRate * gameParameters.WindGustFrequencyAdjustment));
+    mGustCdf = 1.0f - exp(-GustRate / (PoissonSampleRate * simulationParameters.WindGustFrequencyAdjustment));
 }
 
 }
