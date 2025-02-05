@@ -7,9 +7,8 @@
 
 #include "ElectricalPanel.h"
 #include "Materials.h"
-#include "ShipMetadata.h"
 
-#include <GameCore/GameTypes.h>
+#include <Core/GameTypes.h>
 
 #include <optional>
 
@@ -20,37 +19,7 @@
  * only care about a subset of the events.
  */
 
-struct ILifecycleGameEventHandler
-{
-    virtual void OnGameReset()
-    {
-        // Default-implemented
-    }
-
-    virtual void OnShipLoaded(
-        ShipId /*id*/,
-        ShipMetadata const & /*shipMetadata*/)
-    {
-        // Default-implemented
-    }
-
-    virtual void OnSinkingBegin(ShipId /*shipId*/)
-    {
-        // Default-implemented
-    }
-
-    virtual void OnSinkingEnd(ShipId /*shipId*/)
-    {
-        // Default-implemented
-    }
-
-    virtual void OnShipRepaired(ShipId /*shipId*/)
-    {
-        // Default-implemented
-    }
-};
-
-struct IStructuralGameEventHandler
+struct IStructuralShipEventHandler
 {
     virtual void OnStress(
         StructuralMaterial const & /*structuralMaterial*/,
@@ -76,42 +45,225 @@ struct IStructuralGameEventHandler
         // Default-implemented
     }
 
-    virtual void OnLampBroken(
+    virtual void OnDestroy(
+        StructuralMaterial const & /*structuralMaterial*/,
         bool /*isUnderwater*/,
         unsigned int /*size*/)
     {
         // Default-implemented
     }
 
-    virtual void OnLampExploded(
+    virtual void OnSpringRepaired(
+        StructuralMaterial const & /*structuralMaterial*/,
         bool /*isUnderwater*/,
         unsigned int /*size*/)
     {
         // Default-implemented
     }
 
-    virtual void OnLampImploded(
+    virtual void OnTriangleRepaired(
+        StructuralMaterial const & /*structuralMaterial*/,
         bool /*isUnderwater*/,
+        unsigned int /*size*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnSawed(
+        bool /*isMetal*/,
+        unsigned int /*size*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnLaserCut(
         unsigned int /*size*/)
     {
         // Default-implemented
     }
 };
 
-struct IWavePhenomenaGameEventHandler
+struct IGenericShipEventHandler
+{
+    virtual void OnSinkingBegin(ShipId /*shipId*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnSinkingEnd(ShipId /*shipId*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnShipRepaired(ShipId /*shipId*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnPinToggled(
+        bool /*isPinned*/,
+        bool /*isUnderwater*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnWaterTaken(float /*waterTaken*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnWaterSplashed(float /*waterSplashed*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnWaterDisplaced(float /*waterDisplacedMagnitude*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnAirBubbleSurfaced(unsigned int /*size*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnWaterReaction(
+        bool /*isUnderwater*/,
+        unsigned int /*size*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnWaterReactionExplosion(
+        bool /*isUnderwater*/,
+        unsigned int /*size*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnPhysicsProbeReading(
+        vec2f const & /*velocity*/,
+        float /*temperature*/,
+        float /*depth*/,
+        float /*pressure*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnCustomProbe(
+        std::string const & /*name*/,
+        float /*value*/)
+    {
+        // Default-implemented
+    }
+
+    //
+    // Gadgets
+    //
+
+    virtual void OnGadgetPlaced(
+        GlobalGadgetId /*gadgetId*/,
+        GadgetType /*gadgetType*/,
+        bool /*isUnderwater*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnGadgetRemoved(
+        GlobalGadgetId /*gadgetId*/,
+        GadgetType /*gadgetType*/,
+        std::optional<bool> /*isUnderwater*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnBombExplosion(
+        GadgetType /*gadgetType*/,
+        bool /*isUnderwater*/,
+        unsigned int /*size*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnRCBombPing(
+        bool /*isUnderwater*/,
+        unsigned int /*size*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnTimerBombFuse(
+        GlobalGadgetId /*gadgetId*/,
+        std::optional<bool> /*isFast*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnTimerBombDefused(
+        bool /*isUnderwater*/,
+        unsigned int /*size*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnAntiMatterBombContained(
+        GlobalGadgetId /*gadgetId*/,
+        bool /*isContained*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnAntiMatterBombPreImploding()
+    {
+        // Default-implemented
+    }
+
+    virtual void OnAntiMatterBombImploding()
+    {
+        // Default-implemented
+    }
+
+    // Misc
+
+    virtual void OnWatertightDoorOpened(
+        bool /*isUnderwater*/,
+        unsigned int /*size*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnWatertightDoorClosed(
+        bool /*isUnderwater*/,
+        unsigned int /*size*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnFishCountUpdated(size_t /*count*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnPhysicsProbePanelOpened()
+    {
+        // Default-implemented
+    }
+
+    virtual void OnPhysicsProbePanelClosed()
+    {
+        // Default-implemented
+    }
+};
+
+struct IWavePhenomenaEventHandler
 {
     virtual void OnTsunami(float /*x*/)
     {
         // Default-implemented
     }
-
-    virtual void OnTsunamiNotification(float /*x*/)
-    {
-        // Default-implemented
-    }
 };
 
-struct ICombustionGameEventHandler
+struct ICombustionEventHandler
 {
     virtual void OnPointCombustionBegin()
     {
@@ -136,20 +288,8 @@ struct ICombustionGameEventHandler
     }
 };
 
-struct IStatisticsGameEventHandler
+struct ISimulationStatisticsEventHandler
 {
-    virtual void OnFrameRateUpdated(
-        float /*immediateFps*/,
-        float /*averageFps*/)
-    {
-        // Default-implemented
-    }
-
-    virtual void OnCurrentUpdateDurationUpdated(float /*currentUpdateDuration*/)
-    {
-        // Default-implemented
-    }
-
     virtual void OnStaticPressureUpdated(
         float /*netForce*/,
         float /*complexity*/)
@@ -158,7 +298,7 @@ struct IStatisticsGameEventHandler
     }
 };
 
-struct IAtmosphereGameEventHandler
+struct IAtmosphereEventHandler
 {
     virtual void OnStormBegin()
     {
@@ -202,8 +342,29 @@ struct IAtmosphereGameEventHandler
     }
 };
 
-struct IElectricalElementGameEventHandler
+struct IElectricalElementEventHandler
 {
+    virtual void OnLampBroken(
+        bool /*isUnderwater*/,
+        unsigned int /*size*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnLampExploded(
+        bool /*isUnderwater*/,
+        unsigned int /*size*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnLampImploded(
+        bool /*isUnderwater*/,
+        unsigned int /*size*/)
+    {
+        // Default-implemented
+    }
+
     virtual void OnLightFlicker(
         DurationShortLongType /*duration*/,
         bool /*isUnderwater*/,
@@ -375,7 +536,7 @@ struct IElectricalElementGameEventHandler
     }
 };
 
-struct INpcGameEventHandler
+struct INpcEventHandler
 {
     virtual void OnNpcSelectionChanged(
         std::optional<NpcId> /*selectedNpc*/)
@@ -392,220 +553,6 @@ struct INpcGameEventHandler
     virtual void OnHumanNpcCountsUpdated(
         size_t /*insideShipCount*/,
         size_t /*outsideShipCount*/)
-    {
-        // Default-implemented
-    }
-};
-
-struct IGenericGameEventHandler
-{
-    virtual void OnDestroy(
-        StructuralMaterial const & /*structuralMaterial*/,
-        bool /*isUnderwater*/,
-        unsigned int /*size*/)
-    {
-        // Default-implemented
-    }
-
-    virtual void OnSpringRepaired(
-        StructuralMaterial const & /*structuralMaterial*/,
-        bool /*isUnderwater*/,
-        unsigned int /*size*/)
-    {
-        // Default-implemented
-    }
-
-    virtual void OnTriangleRepaired(
-        StructuralMaterial const & /*structuralMaterial*/,
-        bool /*isUnderwater*/,
-        unsigned int /*size*/)
-    {
-        // Default-implemented
-    }
-
-    virtual void OnSawed(
-        bool /*isMetal*/,
-        unsigned int /*size*/)
-    {
-        // Default-implemented
-    }
-
-    virtual void OnLaserCut(
-        unsigned int /*size*/)
-    {
-        // Default-implemented
-    }
-
-    virtual void OnPinToggled(
-        bool /*isPinned*/,
-        bool /*isUnderwater*/)
-    {
-        // Default-implemented
-    }
-
-    virtual void OnWaterTaken(float /*waterTaken*/)
-    {
-        // Default-implemented
-    }
-
-    virtual void OnWaterSplashed(float /*waterSplashed*/)
-    {
-        // Default-implemented
-    }
-
-    virtual void OnWaterDisplaced(float /*waterDisplacedMagnitude*/)
-    {
-        // Default-implemented
-    }
-
-    virtual void OnAirBubbleSurfaced(unsigned int /*size*/)
-    {
-        // Default-implemented
-    }
-
-    virtual void OnWaterReaction(
-        bool /*isUnderwater*/,
-        unsigned int /*size*/)
-    {
-        // Default-implemented
-    }
-
-    virtual void OnWaterReactionExplosion(
-        bool /*isUnderwater*/,
-        unsigned int /*size*/)
-    {
-        // Default-implemented
-    }
-
-    virtual void OnSilenceStarted()
-    {
-        // Default-implemented
-    }
-
-    virtual void OnSilenceLifted()
-    {
-        // Default-implemented
-    }
-
-    virtual void OnPhysicsProbeReading(
-        vec2f const & /*velocity*/,
-        float /*temperature*/,
-        float /*depth*/,
-        float /*pressure*/)
-    {
-        // Default-implemented
-    }
-
-    virtual void OnCustomProbe(
-        std::string const & /*name*/,
-        float /*value*/)
-    {
-        // Default-implemented
-    }
-
-    //
-    // Gadgets
-    //
-
-    virtual void OnGadgetPlaced(
-        GlobalGadgetId /*gadgetId*/,
-        GadgetType /*gadgetType*/,
-        bool /*isUnderwater*/)
-    {
-        // Default-implemented
-    }
-
-    virtual void OnGadgetRemoved(
-        GlobalGadgetId /*gadgetId*/,
-        GadgetType /*gadgetType*/,
-        std::optional<bool> /*isUnderwater*/)
-    {
-        // Default-implemented
-    }
-
-    virtual void OnBombExplosion(
-        GadgetType /*gadgetType*/,
-        bool /*isUnderwater*/,
-        unsigned int /*size*/)
-    {
-        // Default-implemented
-    }
-
-    virtual void OnRCBombPing(
-        bool /*isUnderwater*/,
-        unsigned int /*size*/)
-    {
-        // Default-implemented
-    }
-
-    virtual void OnTimerBombFuse(
-        GlobalGadgetId /*gadgetId*/,
-        std::optional<bool> /*isFast*/)
-    {
-        // Default-implemented
-    }
-
-    virtual void OnTimerBombDefused(
-        bool /*isUnderwater*/,
-        unsigned int /*size*/)
-    {
-        // Default-implemented
-    }
-
-    virtual void OnAntiMatterBombContained(
-        GlobalGadgetId /*gadgetId*/,
-        bool /*isContained*/)
-    {
-        // Default-implemented
-    }
-
-    virtual void OnAntiMatterBombPreImploding()
-    {
-        // Default-implemented
-    }
-
-    virtual void OnAntiMatterBombImploding()
-    {
-        // Default-implemented
-    }
-
-    // Misc
-
-    virtual void OnWatertightDoorOpened(
-        bool /*isUnderwater*/,
-        unsigned int /*size*/)
-    {
-        // Default-implemented
-    }
-
-    virtual void OnWatertightDoorClosed(
-        bool /*isUnderwater*/,
-        unsigned int /*size*/)
-    {
-        // Default-implemented
-    }
-
-    virtual void OnFishCountUpdated(size_t /*count*/)
-    {
-        // Default-implemented
-    }
-
-    virtual void OnPhysicsProbePanelOpened()
-    {
-        // Default-implemented
-    }
-
-    virtual void OnPhysicsProbePanelClosed()
-    {
-        // Default-implemented
-    }
-};
-
-struct IControlGameEventHandler
-{
-    // Published at each change of auto-focus target
-    virtual void OnAutoFocusTargetChanged(
-        std::optional<AutoFocusTargetKindType> /*autoFocusTarget*/)
     {
         // Default-implemented
     }

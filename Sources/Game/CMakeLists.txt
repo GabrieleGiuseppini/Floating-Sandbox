@@ -8,7 +8,9 @@ set  (GAME_SOURCES
 	FileSystem.h
 	GameAssetManager.cpp
 	GameAssetManager.h
+	GameEventDispatcher.h
 	GameVersion.h
+	IGameEventHandlers.h
 	Settings.cpp
 	Settings.h
 )

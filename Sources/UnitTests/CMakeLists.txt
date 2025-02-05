@@ -32,8 +32,7 @@ set (UNIT_TEST_SOURCES
 	FinalizerTests.cpp
 	FixedSizeVectorTests.cpp
 	FloatingPointTests.cpp
-	FontSetTests.cpp
-	#GameEventDispatcherTests.cpp
+	FontSetTests.cpp	
 	GameGeometryTests.cpp
 	GameMathTests.cpp
 	ImageToolsTests.cpp
@@ -54,6 +53,7 @@ set (UNIT_TEST_SOURCES
 	#ShipNameNormalizerTests.cpp
 	#ShipPreviewDirectoryManagerTests.cpp
 	#ShipTests.cpp
+	SimulationEventDispatcherTests.cpp
 	#SliderCoreTests.cpp
 	StreamsTests.cpp
 	StrongTypeDefTests.cpp

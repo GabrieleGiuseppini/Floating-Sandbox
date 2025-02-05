@@ -1,12 +1,12 @@
-#include <Game/GameEventDispatcher.h>
+#include <Simulation/SimulationEventDispatcher.h>
 
-#include "Utils.h"
+#include "TestingUtils.h"
 
 #include "gmock/gmock.h"
 
-class _MockGameEventHandler
-    : public IStructuralGameEventHandler
-    , public ILifecycleGameEventHandler
+class _MockSimulationEventHandler
+    : public IStructuralShipEventHandler
+    , public IGenericShipEventHandler
 {
 public:
 
@@ -17,16 +17,16 @@ public:
 
 using namespace ::testing;
 
-using MockHandler = StrictMock<_MockGameEventHandler>;
+using MockHandler = StrictMock<_MockSimulationEventHandler>;
 
 /////////////////////////////////////////////////////////////////
 
-TEST(GameEventDispatcherTests, Aggregates_OnStress)
+TEST(SimulationEventDispatcherTests, Aggregates_OnStress)
 {
     MockHandler handler;
 
-    GameEventDispatcher dispatcher;
-    dispatcher.RegisterStructuralEventHandler(&handler);
+    SimulationEventDispatcher dispatcher;
+    dispatcher.RegisterStructuralShipEventHandler(&handler);
 
     StructuralMaterial sm = MakeTestStructuralMaterial("Foo", rgbColor(1, 2, 3));
 
@@ -44,12 +44,12 @@ TEST(GameEventDispatcherTests, Aggregates_OnStress)
     Mock::VerifyAndClear(&handler);
 }
 
-TEST(GameEventDispatcherTests, Aggregates_OnStress_MultipleKeys)
+TEST(SimulationEventDispatcherTests, Aggregates_OnStress_MultipleKeys)
 {
     MockHandler handler;
 
-    GameEventDispatcher dispatcher;
-    dispatcher.RegisterStructuralEventHandler(&handler);
+    SimulationEventDispatcher dispatcher;
+    dispatcher.RegisterStructuralShipEventHandler(&handler);
 
     StructuralMaterial sm1 = MakeTestStructuralMaterial("Foo1", rgbColor(1, 2, 3));
 
@@ -76,12 +76,12 @@ TEST(GameEventDispatcherTests, Aggregates_OnStress_MultipleKeys)
     Mock::VerifyAndClear(&handler);
 }
 
-TEST(GameEventDispatcherTests, OnSinkingBegin)
+TEST(SimulationEventDispatcherTests, OnSinkingBegin)
 {
     MockHandler handler;
 
-    GameEventDispatcher dispatcher;
-    dispatcher.RegisterLifecycleEventHandler(&handler);
+    SimulationEventDispatcher dispatcher;
+    dispatcher.RegisterGenericShipEventHandler(&handler);
 
     EXPECT_CALL(handler, OnSinkingBegin(7)).Times(1);
 
@@ -90,12 +90,12 @@ TEST(GameEventDispatcherTests, OnSinkingBegin)
     Mock::VerifyAndClear(&handler);
 }
 
-TEST(GameEventDispatcherTests, OnSinkingBegin_MultipleShips)
+TEST(SimulationEventDispatcherTests, OnSinkingBegin_MultipleShips)
 {
     MockHandler handler;
 
-    GameEventDispatcher dispatcher;
-    dispatcher.RegisterLifecycleEventHandler(&handler);
+    SimulationEventDispatcher dispatcher;
+    dispatcher.RegisterGenericShipEventHandler(&handler);
 
     EXPECT_CALL(handler, OnSinkingBegin(3)).Times(1);
     EXPECT_CALL(handler, OnSinkingBegin(7)).Times(1);
@@ -106,12 +106,12 @@ TEST(GameEventDispatcherTests, OnSinkingBegin_MultipleShips)
     Mock::VerifyAndClear(&handler);
 }
 
-TEST(GameEventDispatcherTests, ClearsStateAtUpdate)
+TEST(SimulationEventDispatcherTests, ClearsStateAtUpdate)
 {
     MockHandler handler;
 
-    GameEventDispatcher dispatcher;
-    dispatcher.RegisterStructuralEventHandler(&handler);
+    SimulationEventDispatcher dispatcher;
+    dispatcher.RegisterStructuralShipEventHandler(&handler);
 
     StructuralMaterial sm = MakeTestStructuralMaterial("Foo", rgbColor(1, 2, 3));
 

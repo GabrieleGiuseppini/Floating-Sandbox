@@ -7,6 +7,7 @@ set  (SIMULATION_SOURCES
 	ElectricalPanel.h
 	FishSpeciesDatabase.cpp
 	FishSpeciesDatabase.h
+	ISimulationEventHandlers.h
 	LayerElements.h
 	Layers.cpp
         Layers.h
@@ -29,6 +30,7 @@ set  (SIMULATION_SOURCES
 	ShipPreviewData.h
 	ShipStrengthRandomizer.cpp
 	ShipStrengthRandomizer.h
+	SimulationEventDispatcher.h
 	SimulationParameters.cpp
 	SimulationParameters.h
 )
