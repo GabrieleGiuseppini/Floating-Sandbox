@@ -25,7 +25,7 @@ set (UNIT_TEST_SOURCES
 	CircularListTests.cpp
 	ColorsTests.cpp
 	DeSerializationBufferTests.cpp
-	#ElectricalPanelTests.cpp
+	ElectricalPanelTests.cpp
 	EndianTests.cpp
 	EnumFlagsTests.cpp
 	FileSystemTests.cpp

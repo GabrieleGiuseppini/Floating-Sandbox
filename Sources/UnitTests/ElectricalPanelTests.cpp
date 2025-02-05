@@ -1,4 +1,4 @@
-#include <Game/ElectricalPanel.h>
+#include <Simulation/ElectricalPanel.h>
 
 #include "gtest/gtest.h"
 
