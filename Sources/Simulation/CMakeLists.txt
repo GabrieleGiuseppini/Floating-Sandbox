@@ -41,10 +41,14 @@ set  (SIMULATION_SOURCES
 )
 
 set  (PHYSICS_SOURCES
+	Physics/AntiMatterBombGadget.cpp
+	Physics/AntiMatterBombGadget.h
 	Physics/Clouds.cpp
 	Physics/Clouds.h
 	Physics/ElectricalElements.cpp
 	Physics/ElectricalElements.h
+	Physics/FireExtinguishingBombGadget.cpp
+	Physics/FireExtinguishingBombGadget.h
 	Physics/Fishes.cpp
 	Physics/Fishes.h
 	Physics/Formulae.h
@@ -53,6 +57,8 @@ set  (PHYSICS_SOURCES
 	Physics/Gadget.h
 	Physics/Gadgets.cpp
 	Physics/Gadgets.h
+	Physics/ImpactBombGadget.cpp
+	Physics/ImpactBombGadget.h
 	Physics/IShipPhysicsHandler.h
 	Physics/Npcs/NpcParticles.cpp
 	Physics/Npcs/NpcParticles.h
@@ -65,14 +71,20 @@ set  (PHYSICS_SOURCES
 	Physics/OceanSurface.cpp
 	Physics/OceanSurface.h
 	Physics/Physics.h
+	Physics/PhysicsProbeGadget.cpp
+	Physics/PhysicsProbeGadget.h
 	Physics/Points.cpp
 	Physics/Points.h
+	Physics/RCBombGadget.cpp
+	Physics/RCBombGadget.h
 	Physics/Springs.cpp
 	Physics/Springs.h
 	Physics/Stars.cpp
 	Physics/Stars.h
 	Physics/Storm.cpp
 	Physics/Storm.h
+	Physics/TimerBombGadget.cpp
+	Physics/TimerBombGadget.h
 	Physics/Triangles.cpp
 	Physics/Triangles.h
 	Physics/Wind.cpp

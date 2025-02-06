@@ -5,7 +5,9 @@
 ***************************************************************************************/
 #include "Physics.h"
 
-#include <GameCore/GameRandomEngine.h>
+#include <Render/GameTextureDatabases.h>
+
+#include <Core/GameRandomEngine.h>
 
 namespace Physics {
 
@@ -13,7 +15,7 @@ RCBombGadget::RCBombGadget(
     GlobalGadgetId id,
     ElementIndex pointIndex,
     World & parentWorld,
-    std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
+    std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher,
     IShipPhysicsHandler & shipPhysicsHandler,
     Points & shipPoints,
     Springs & shipSprings)
@@ -22,7 +24,7 @@ RCBombGadget::RCBombGadget(
         GadgetType::RCBomb,
         pointIndex,
         parentWorld,
-        std::move(gameEventDispatcher),
+        std::move(simulationEventDispatcher),
         shipPhysicsHandler,
         shipPoints,
         shipSprings)
@@ -40,7 +42,7 @@ bool RCBombGadget::Update(
     GameWallClock::time_point currentWallClockTime,
     float currentSimulationTime,
     Storm::Parameters const & /*stormParameters*/,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     switch (mState)
     {
@@ -59,7 +61,7 @@ bool RCBombGadget::Update(
 
                     ++mPingOnStepCounter;
 
-                    mGameEventHandler->OnRCBombPing(
+                    mSimulationEventHandler->OnRCBombPing(
                         mShipPoints.IsCachedUnderwater(mPointIndex),
                         1);
 
@@ -83,10 +85,10 @@ bool RCBombGadget::Update(
             else
             {
                 // Check if any of the spring endpoints has reached the trigger temperature
-                if (mShipPoints.GetTemperature(mPointIndex) > GameParameters::BombsTemperatureTrigger)
+                if (mShipPoints.GetTemperature(mPointIndex) > SimulationParameters::BombsTemperatureTrigger)
                 {
                     // Triggered!
-                    Detonate(currentSimulationTime, gameParameters);
+                    Detonate(currentSimulationTime, simulationParameters);
                 }
             }
 
@@ -109,22 +111,22 @@ bool RCBombGadget::Update(
 
                 // Blast force
                 float const blastForce =
-                    GameParameters::BaseBombBlastForce
+                    SimulationParameters::BaseBombBlastForce
                     * 55.0f // Bomb-specific multiplier
-                    * (gameParameters.IsUltraViolentMode
-                        ? std::min(gameParameters.BombBlastForceAdjustment * 10.0f, GameParameters::MaxBombBlastForceAdjustment * 2.0f)
-                        : gameParameters.BombBlastForceAdjustment);
+                    * (simulationParameters.IsUltraViolentMode
+                        ? std::min(simulationParameters.BombBlastForceAdjustment * 10.0f, SimulationParameters::MaxBombBlastForceAdjustment * 2.0f)
+                        : simulationParameters.BombBlastForceAdjustment);
 
                 // Blast radius
-                float const blastRadius = gameParameters.IsUltraViolentMode
-                    ? std::min(gameParameters.BombBlastRadius * 10.0f, GameParameters::MaxBombBlastRadius * 2.0f)
-                    : gameParameters.BombBlastRadius;
+                float const blastRadius = simulationParameters.IsUltraViolentMode
+                    ? std::min(simulationParameters.BombBlastRadius * 10.0f, SimulationParameters::MaxBombBlastRadius * 2.0f)
+                    : simulationParameters.BombBlastRadius;
 
                 // Blast heat
                 float const blastHeat =
-                    gameParameters.BombBlastHeat
+                    simulationParameters.BombBlastHeat
                     * 0.8f // Bomb-specific multiplier
-                    * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+                    * (simulationParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
                 // Start explosion
                 mShipPhysicsHandler.StartExplosion(
@@ -137,10 +139,10 @@ bool RCBombGadget::Update(
                     blastRadius,
                     8.0f, // Radius offset spectacularization
                     ExplosionType::Deflagration,
-                    gameParameters);
+                    simulationParameters);
 
                 // Notify explosion
-                mGameEventHandler->OnBombExplosion(
+                mSimulationEventHandler->OnBombExplosion(
                     GadgetType::RCBomb,
                     mShipPoints.IsCachedUnderwater(mPointIndex),
                     1);
@@ -192,7 +194,7 @@ bool RCBombGadget::Update(
 
 void RCBombGadget::Upload(
     ShipId shipId,
-    Render::RenderContext & renderContext) const
+    RenderContext & renderContext) const
 {
     auto & shipRenderContext = renderContext.GetShipRenderContext(shipId);
 
@@ -202,7 +204,7 @@ void RCBombGadget::Upload(
         {
             shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                 GetPlaneId(),
-                TextureFrameId(Render::GenericMipMappedTextureGroups::RcBomb, 0),
+                TextureFrameId(GameTextureDatabases::GenericMipMappedTextureGroups::RcBomb, 0),
                 GetPosition(),
                 1.0,
                 GetRotationBaseAxis(),
@@ -216,7 +218,7 @@ void RCBombGadget::Upload(
         {
             shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                 GetPlaneId(),
-                TextureFrameId(Render::GenericMipMappedTextureGroups::RcBomb, 0),
+                TextureFrameId(GameTextureDatabases::GenericMipMappedTextureGroups::RcBomb, 0),
                 GetPosition(),
                 1.0,
                 GetRotationBaseAxis(),
@@ -225,7 +227,7 @@ void RCBombGadget::Upload(
 
             shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                 GetPlaneId(),
-                TextureFrameId(Render::GenericMipMappedTextureGroups::RcBombPing, (mPingOnStepCounter - 1) % PingFramesCount),
+                TextureFrameId(GameTextureDatabases::GenericMipMappedTextureGroups::RcBombPing, (mPingOnStepCounter - 1) % PingFramesCount),
                 GetPosition(),
                 1.0,
                 GetRotationBaseAxis(),
@@ -239,7 +241,7 @@ void RCBombGadget::Upload(
         {
             shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                 GetPlaneId(),
-                TextureFrameId(Render::GenericMipMappedTextureGroups::RcBomb, 0),
+                TextureFrameId(GameTextureDatabases::GenericMipMappedTextureGroups::RcBomb, 0),
                 GetPosition(),
                 1.0,
                 GetRotationBaseAxis(),
@@ -248,7 +250,7 @@ void RCBombGadget::Upload(
 
             shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                 GetPlaneId(),
-                TextureFrameId(Render::GenericMipMappedTextureGroups::RcBombPing, (mPingOnStepCounter - 1) % PingFramesCount),
+                TextureFrameId(GameTextureDatabases::GenericMipMappedTextureGroups::RcBombPing, (mPingOnStepCounter - 1) % PingFramesCount),
                 GetPosition(),
                 1.0,
                 GetRotationBaseAxis(),
@@ -267,7 +269,7 @@ void RCBombGadget::Upload(
 
             shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                 mExplosionPlaneId,
-                TextureFrameId(Render::GenericMipMappedTextureGroups::RcBomb, 0),
+                TextureFrameId(GameTextureDatabases::GenericMipMappedTextureGroups::RcBomb, 0),
                 mExplosionPosition,
                 1.0f, // Scale
                 GetRotationBaseAxis(),
@@ -287,7 +289,7 @@ void RCBombGadget::Upload(
 
 void RCBombGadget::Detonate(
     float /*currentSimulationTime*/,
-    GameParameters const & /*gameParameters*/)
+    SimulationParameters const & /*simulationParameters*/)
 {
     if (State::IdlePingOff == mState
         || State::IdlePingOn == mState)

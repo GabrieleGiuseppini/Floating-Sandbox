@@ -5,7 +5,9 @@
 ***************************************************************************************/
 #include "Physics.h"
 
-#include <GameCore/GameRandomEngine.h>
+#include <Render/GameTextureDatabases.h>
+
+#include <Core/GameRandomEngine.h>
 
 namespace Physics {
 
@@ -13,7 +15,7 @@ FireExtinguishingBombGadget::FireExtinguishingBombGadget(
     GlobalGadgetId id,
     ElementIndex pointIndex,
     World & parentWorld,
-    std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
+    std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher,
     IShipPhysicsHandler & shipPhysicsHandler,
     Points & shipPoints,
     Springs & shipSprings)
@@ -22,7 +24,7 @@ FireExtinguishingBombGadget::FireExtinguishingBombGadget(
         GadgetType::FireExtinguishingBomb,
         pointIndex,
         parentWorld,
-        std::move(gameEventDispatcher),
+        std::move(simulationEventDispatcher),
         shipPhysicsHandler,
         shipPoints,
         shipSprings)
@@ -37,7 +39,7 @@ bool FireExtinguishingBombGadget::Update(
     GameWallClock::time_point /*currentWallClockTime*/,
     float currentSimulationTime,
     Storm::Parameters const & /*stormParameters*/,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     switch (mState)
     {
@@ -47,7 +49,7 @@ bool FireExtinguishingBombGadget::Update(
             if (mShipPoints.IsBurning(mPointIndex))
             {
                 // Triggered!
-                Detonate(currentSimulationTime, gameParameters);
+                Detonate(currentSimulationTime, simulationParameters);
             }
 
             return true;
@@ -82,7 +84,7 @@ bool FireExtinguishingBombGadget::Update(
 
 void FireExtinguishingBombGadget::Upload(
     ShipId shipId,
-    Render::RenderContext & renderContext) const
+    RenderContext & renderContext) const
 {
     auto & shipRenderContext = renderContext.GetShipRenderContext(shipId);
 
@@ -92,7 +94,7 @@ void FireExtinguishingBombGadget::Upload(
         {
             shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                 GetPlaneId(),
-                TextureFrameId(Render::GenericMipMappedTextureGroups::FireExtinguishingBomb, 0),
+                TextureFrameId(GameTextureDatabases::GenericMipMappedTextureGroups::FireExtinguishingBomb, 0),
                 GetPosition(),
                 1.0,
                 GetRotationBaseAxis(),
@@ -111,7 +113,7 @@ void FireExtinguishingBombGadget::Upload(
 
             shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                 mExplosionPlaneId,
-                TextureFrameId(Render::GenericMipMappedTextureGroups::FireExtinguishingBomb, 0),
+                TextureFrameId(GameTextureDatabases::GenericMipMappedTextureGroups::FireExtinguishingBomb, 0),
                 mExplosionPosition,
                 1.0f, // Scale
                 GetRotationBaseAxis(),
@@ -131,7 +133,7 @@ void FireExtinguishingBombGadget::Upload(
 
 void FireExtinguishingBombGadget::Detonate(
     float currentSimulationTime,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     if (State::Idle == mState)
     {
@@ -146,18 +148,18 @@ void FireExtinguishingBombGadget::Detonate(
 
         // Blast force
         float const blastForce =
-            GameParameters::BaseBombBlastForce
+            SimulationParameters::BaseBombBlastForce
             * 7.0f // Bomb-specific multiplier (very low, just for NPC scenics)
-            * (gameParameters.IsUltraViolentMode
-                ? std::min(gameParameters.BombBlastForceAdjustment * 10.0f, GameParameters::MaxBombBlastForceAdjustment * 2.0f)
-                : gameParameters.BombBlastForceAdjustment);
+            * (simulationParameters.IsUltraViolentMode
+                ? std::min(simulationParameters.BombBlastForceAdjustment * 10.0f, SimulationParameters::MaxBombBlastForceAdjustment * 2.0f)
+                : simulationParameters.BombBlastForceAdjustment);
 
         // Blast radius
         float const blastForceRadius =
             (
-                gameParameters.IsUltraViolentMode
-                ? std::min(gameParameters.BombBlastRadius * 10.0f, GameParameters::MaxBombBlastRadius * 2.0f)
-                : gameParameters.BombBlastRadius
+                simulationParameters.IsUltraViolentMode
+                ? std::min(simulationParameters.BombBlastRadius * 10.0f, SimulationParameters::MaxBombBlastRadius * 2.0f)
+                : simulationParameters.BombBlastRadius
             )
             * 0.3f; // Bomb-specific multiplier
 
@@ -169,9 +171,9 @@ void FireExtinguishingBombGadget::Detonate(
         // Note: also used for extinguish radius
         float const blastHeatRadius =
             (
-                gameParameters.IsUltraViolentMode
-                ? std::min(gameParameters.BombBlastRadius * 10.0f, GameParameters::MaxBombBlastRadius * 2.0f)
-                : gameParameters.BombBlastRadius
+                simulationParameters.IsUltraViolentMode
+                ? std::min(simulationParameters.BombBlastRadius * 10.0f, SimulationParameters::MaxBombBlastRadius * 2.0f)
+                : simulationParameters.BombBlastRadius
             )
             * 3.2f; // Bomb-specific multiplier
 
@@ -186,10 +188,10 @@ void FireExtinguishingBombGadget::Detonate(
             blastHeatRadius,
             blastHeatRadius - blastForceRadius + 3.0f, // Render radius to equal heat (extinguishing) radius, plus magic offset
             ExplosionType::FireExtinguishing,
-            gameParameters);
+            simulationParameters);
 
         // Notify explosion
-        mGameEventHandler->OnBombExplosion(
+        mSimulationEventHandler->OnBombExplosion(
             GadgetType::FireExtinguishingBomb,
             mShipPoints.IsCachedUnderwater(mPointIndex),
             1);

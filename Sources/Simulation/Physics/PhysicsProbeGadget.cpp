@@ -5,7 +5,9 @@
 ***************************************************************************************/
 #include "Physics.h"
 
-#include <GameCore/GameRandomEngine.h>
+#include <Render/GameTextureDatabases.h>
+
+#include <Core/GameRandomEngine.h>
 
 namespace Physics {
 
@@ -13,7 +15,7 @@ PhysicsProbeGadget::PhysicsProbeGadget(
     GlobalGadgetId id,
     ElementIndex pointIndex,
     World & parentWorld,
-    std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
+    std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher,
     IShipPhysicsHandler & shipPhysicsHandler,
     Points & shipPoints,
     Springs & shipSprings)
@@ -22,7 +24,7 @@ PhysicsProbeGadget::PhysicsProbeGadget(
         GadgetType::PhysicsProbe,
         pointIndex,
         parentWorld,
-        std::move(gameEventDispatcher),
+        std::move(simulationEventDispatcher),
         shipPhysicsHandler,
         shipPoints,
         shipSprings)
@@ -35,7 +37,7 @@ bool PhysicsProbeGadget::Update(
     GameWallClock::time_point currentWallClockTime,
     float /*currentSimulationTime*/,
     Storm::Parameters const & /*stormParameters*/,
-    GameParameters const & /*gameParameters*/)
+    SimulationParameters const & /*simulationParameters*/)
 {
     switch (mState)
     {
@@ -53,7 +55,7 @@ bool PhysicsProbeGadget::Update(
                 mNextStateTransitionTimePoint = currentWallClockTime + PingOnInterval;
 
                 // Emit reading
-                mGameEventHandler->OnPhysicsProbeReading(
+                mSimulationEventHandler->OnPhysicsProbeReading(
                     mShipPoints.GetVelocity(mPointIndex),
                     mShipPoints.GetTemperature(mPointIndex),
                     mParentWorld.GetOceanSurface().GetDepth(mShipPoints.GetPosition(mPointIndex)),
@@ -87,7 +89,7 @@ bool PhysicsProbeGadget::Update(
 
 void PhysicsProbeGadget::Upload(
     ShipId shipId,
-    Render::RenderContext & renderContext) const
+    RenderContext & renderContext) const
 {
     auto & shipRenderContext = renderContext.GetShipRenderContext(shipId);
 
@@ -97,7 +99,7 @@ void PhysicsProbeGadget::Upload(
         {
             shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                 GetPlaneId(),
-                TextureFrameId(Render::GenericMipMappedTextureGroups::PhysicsProbe, 0),
+                TextureFrameId(GameTextureDatabases::GenericMipMappedTextureGroups::PhysicsProbe, 0),
                 GetPosition(),
                 1.0,
                 GetRotationBaseAxis(),
@@ -111,7 +113,7 @@ void PhysicsProbeGadget::Upload(
         {
             shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                 GetPlaneId(),
-                TextureFrameId(Render::GenericMipMappedTextureGroups::PhysicsProbe, 0),
+                TextureFrameId(GameTextureDatabases::GenericMipMappedTextureGroups::PhysicsProbe, 0),
                 GetPosition(),
                 1.0,
                 GetRotationBaseAxis(),
@@ -120,7 +122,7 @@ void PhysicsProbeGadget::Upload(
 
             shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                 GetPlaneId(),
-                TextureFrameId(Render::GenericMipMappedTextureGroups::PhysicsProbePing, 0),
+                TextureFrameId(GameTextureDatabases::GenericMipMappedTextureGroups::PhysicsProbePing, 0),
                 GetPosition(),
                 1.0,
                 GetRotationBaseAxis(),

@@ -26,21 +26,21 @@ public:
         GlobalGadgetId id,
         ElementIndex pointIndex,
         World & parentWorld,
-        std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
+        std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher,
         IShipPhysicsHandler & shipPhysicsHandler,
         Points & shipPoints,
         Springs & shipSprings);
 
     virtual float GetMass() const override
     {
-        return GameParameters::BombMass;
+        return SimulationParameters::BombMass;
     }
 
     virtual bool Update(
         GameWallClock::time_point currentWallClockTime,
         float currentSimulationTime,
         Storm::Parameters const & stormParameters,
-        GameParameters const & gameParameters) override;
+        SimulationParameters const & simulationParameters) override;
 
     virtual bool MayBeRemoved() const override
     {
@@ -53,20 +53,20 @@ public:
         // Stop containment if it's in containment
         if (State::Contained_1 == mState)
         {
-            mGameEventHandler->OnAntiMatterBombContained(mId, false);
+            mSimulationEventHandler->OnAntiMatterBombContained(mId, false);
         }
     }
 
     virtual void OnNeighborhoodDisturbed(
         float /*currentSimulationTime*/,
-        GameParameters const & /*gameParameters*/) override
+        SimulationParameters const & /*simulationParameters*/) override
     {
         Detonate();
     }
 
     virtual void Upload(
         ShipId shipId,
-        Render::RenderContext & renderContext) const override;
+        RenderContext & renderContext) const override;
 
     void Detonate();
 

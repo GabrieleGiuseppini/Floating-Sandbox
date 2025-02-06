@@ -5,7 +5,9 @@
 ***************************************************************************************/
 #include "Physics.h"
 
-#include <GameCore/GameRandomEngine.h>
+#include <Render/GameTextureDatabases.h>
+
+#include <Core/GameRandomEngine.h>
 
 namespace Physics {
 
@@ -13,7 +15,7 @@ ImpactBombGadget::ImpactBombGadget(
     GlobalGadgetId id,
     ElementIndex pointIndex,
     World & parentWorld,
-    std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
+    std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher,
     IShipPhysicsHandler & shipPhysicsHandler,
     Points & shipPoints,
     Springs & shipSprings)
@@ -22,7 +24,7 @@ ImpactBombGadget::ImpactBombGadget(
         GadgetType::ImpactBomb,
         pointIndex,
         parentWorld,
-        std::move(gameEventDispatcher),
+        std::move(simulationEventDispatcher),
         shipPhysicsHandler,
         shipPoints,
         shipSprings)
@@ -37,14 +39,14 @@ bool ImpactBombGadget::Update(
     GameWallClock::time_point /*currentWallClockTime*/,
     float currentSimulationTime,
     Storm::Parameters const & /*stormParameters*/,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     switch (mState)
     {
         case State::Idle:
         {
             // Check if our particle has reached the trigger temperature
-            if (mShipPoints.GetTemperature(mPointIndex) > GameParameters::BombsTemperatureTrigger)
+            if (mShipPoints.GetTemperature(mPointIndex) > SimulationParameters::BombsTemperatureTrigger)
             {
                 // Triggered...
                 mState = State::TriggeringExplosion;
@@ -66,22 +68,22 @@ bool ImpactBombGadget::Update(
 
             // Blast force
             float const blastForce =
-                GameParameters::BaseBombBlastForce
+                SimulationParameters::BaseBombBlastForce
                 * 40.0f // Bomb-specific multiplier
-                * (gameParameters.IsUltraViolentMode
-                    ? std::min(gameParameters.BombBlastForceAdjustment * 10.0f, GameParameters::MaxBombBlastForceAdjustment * 2.0f)
-                    : gameParameters.BombBlastForceAdjustment);
+                * (simulationParameters.IsUltraViolentMode
+                    ? std::min(simulationParameters.BombBlastForceAdjustment * 10.0f, SimulationParameters::MaxBombBlastForceAdjustment * 2.0f)
+                    : simulationParameters.BombBlastForceAdjustment);
 
             // Blast radius
-            float const blastRadius = gameParameters.IsUltraViolentMode
-                ? std::min(gameParameters.BombBlastRadius * 10.0f, GameParameters::MaxBombBlastRadius * 2.0f)
-                : gameParameters.BombBlastRadius;
+            float const blastRadius = simulationParameters.IsUltraViolentMode
+                ? std::min(simulationParameters.BombBlastRadius * 10.0f, SimulationParameters::MaxBombBlastRadius * 2.0f)
+                : simulationParameters.BombBlastRadius;
 
             // Blast heat
             float const blastHeat =
-                gameParameters.BombBlastHeat
+                simulationParameters.BombBlastHeat
                 * 1.2f // Bomb-specific multiplier
-                * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+                * (simulationParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
             // Start explosion
             mShipPhysicsHandler.StartExplosion(
@@ -94,10 +96,10 @@ bool ImpactBombGadget::Update(
                 blastRadius,
                 7.0f, // Radius offset spectacularization
                 ExplosionType::Deflagration,
-                gameParameters);
+                simulationParameters);
 
             // Notify explosion
-            mGameEventHandler->OnBombExplosion(
+            mSimulationEventHandler->OnBombExplosion(
                 GadgetType::ImpactBomb,
                 mShipPoints.IsCachedUnderwater(mPointIndex),
                 1);
@@ -140,7 +142,7 @@ bool ImpactBombGadget::Update(
 
 void ImpactBombGadget::Upload(
     ShipId shipId,
-    Render::RenderContext & renderContext) const
+    RenderContext & renderContext) const
 {
     auto & shipRenderContext = renderContext.GetShipRenderContext(shipId);
 
@@ -151,7 +153,7 @@ void ImpactBombGadget::Upload(
         {
             shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                 GetPlaneId(),
-                TextureFrameId(Render::GenericMipMappedTextureGroups::ImpactBomb, 0),
+                TextureFrameId(GameTextureDatabases::GenericMipMappedTextureGroups::ImpactBomb, 0),
                 GetPosition(),
                 1.0,
                 GetRotationBaseAxis(),
@@ -170,7 +172,7 @@ void ImpactBombGadget::Upload(
 
             shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                 mExplosionPlaneId,
-                TextureFrameId(Render::GenericMipMappedTextureGroups::ImpactBomb, 0),
+                TextureFrameId(GameTextureDatabases::GenericMipMappedTextureGroups::ImpactBomb, 0),
                 mExplosionPosition,
                 1.0f, // Scale
                 GetRotationBaseAxis(),

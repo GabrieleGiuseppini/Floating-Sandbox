@@ -5,7 +5,9 @@
 ***************************************************************************************/
 #include "Physics.h"
 
-#include <GameCore/GameRandomEngine.h>
+#include <Render/GameTextureDatabases.h>
+
+#include <Core/GameRandomEngine.h>
 
 namespace Physics {
 
@@ -13,7 +15,7 @@ TimerBombGadget::TimerBombGadget(
     GlobalGadgetId id,
     ElementIndex pointIndex,
     World & parentWorld,
-    std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
+    std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher,
     IShipPhysicsHandler & shipPhysicsHandler,
     Points & shipPoints,
     Springs & shipSprings)
@@ -22,7 +24,7 @@ TimerBombGadget::TimerBombGadget(
         GadgetType::TimerBomb,
         pointIndex,
         parentWorld,
-        std::move(gameEventDispatcher),
+        std::move(simulationEventDispatcher),
         shipPhysicsHandler,
         shipPoints,
         shipSprings)
@@ -37,7 +39,7 @@ TimerBombGadget::TimerBombGadget(
     , mExplosionPlaneId(NonePlaneId)
 {
     // Notify start slow fuse
-    mGameEventHandler->OnTimerBombFuse(
+    mSimulationEventHandler->OnTimerBombFuse(
         mId,
         false);
 }
@@ -46,7 +48,7 @@ bool TimerBombGadget::Update(
     GameWallClock::time_point currentWallClockTime,
     float currentSimulationTime,
     Storm::Parameters const & stormParameters,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     switch (mState)
     {
@@ -67,17 +69,17 @@ bool TimerBombGadget::Update(
                 mShipPoints.CreateEphemeralParticleHeavySmoke(
                     GetPosition() + vec2f(0.0f, FuseVerticalOffset),
                     bombDepth - FuseVerticalOffset,
-                    gameParameters.AirTemperature + stormParameters.AirTemperatureDelta + 300.0f,
+                    simulationParameters.AirTemperature + stormParameters.AirTemperatureDelta + 300.0f,
                     currentSimulationTime,
                     GetPlaneId(),
-                    gameParameters);
+                    simulationParameters);
 
                 // Transition to defusing
                 mState = State::Defusing;
 
                 // Notify
-                mGameEventHandler->OnTimerBombFuse(mId, std::nullopt);
-                mGameEventHandler->OnTimerBombDefused(true, 1);
+                mSimulationEventHandler->OnTimerBombFuse(mId, std::nullopt);
+                mSimulationEventHandler->OnTimerBombDefused(true, 1);
 
                 // Schedule next transition
                 mNextStateTransitionTimePoint = currentWallClockTime + DefusingInterval / DefuseStepsCount;
@@ -93,7 +95,7 @@ bool TimerBombGadget::Update(
 
                     mState = State::DetonationLeadIn;
 
-                    mGameEventHandler->OnTimerBombFuse(mId, std::nullopt);
+                    mSimulationEventHandler->OnTimerBombFuse(mId, std::nullopt);
 
                     // Schedule next transition
                     mNextStateTransitionTimePoint = currentWallClockTime + DetonationLeadInToExplosionInterval;
@@ -113,7 +115,7 @@ bool TimerBombGadget::Update(
             else if (mState == State::SlowFuseBurning)
             {
                 // Check if our particle has reached the trigger temperature
-                if (mShipPoints.GetTemperature(mPointIndex) > GameParameters::BombsTemperatureTrigger)
+                if (mShipPoints.GetTemperature(mPointIndex) > SimulationParameters::BombsTemperatureTrigger)
                 {
                     // Triggered!
 
@@ -149,22 +151,22 @@ bool TimerBombGadget::Update(
 
                 // Blast force
                 float const blastForce =
-                    GameParameters::BaseBombBlastForce
+                    SimulationParameters::BaseBombBlastForce
                     * 80.0f // Bomb-specific multiplier
-                    * (gameParameters.IsUltraViolentMode
-                        ? std::min(gameParameters.BombBlastForceAdjustment * 10.0f, GameParameters::MaxBombBlastForceAdjustment * 2.0f)
-                        : gameParameters.BombBlastForceAdjustment);
+                    * (simulationParameters.IsUltraViolentMode
+                        ? std::min(simulationParameters.BombBlastForceAdjustment * 10.0f, SimulationParameters::MaxBombBlastForceAdjustment * 2.0f)
+                        : simulationParameters.BombBlastForceAdjustment);
 
                 // Blast radius
-                float const blastRadius = gameParameters.IsUltraViolentMode
-                    ? std::min(gameParameters.BombBlastRadius * 10.0f, GameParameters::MaxBombBlastRadius * 2.0f)
-                    : gameParameters.BombBlastRadius;
+                float const blastRadius = simulationParameters.IsUltraViolentMode
+                    ? std::min(simulationParameters.BombBlastRadius * 10.0f, SimulationParameters::MaxBombBlastRadius * 2.0f)
+                    : simulationParameters.BombBlastRadius;
 
                 // Blast heat
                 float const blastHeat =
-                    gameParameters.BombBlastHeat
+                    simulationParameters.BombBlastHeat
                     * 1.0f // Bomb-specific multiplier
-                    * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+                    * (simulationParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
                 // Start explosion
                 mShipPhysicsHandler.StartExplosion(
@@ -177,10 +179,10 @@ bool TimerBombGadget::Update(
                     blastRadius,
                     10.0f, // Radius offset spectacularization
                     ExplosionType::Deflagration,
-                    gameParameters);
+                    simulationParameters);
 
                 // Notify explosion
-                mGameEventHandler->OnBombExplosion(
+                mSimulationEventHandler->OnBombExplosion(
                     GadgetType::TimerBomb,
                     mShipPoints.IsCachedUnderwater(mPointIndex),
                     1);
@@ -258,7 +260,7 @@ bool TimerBombGadget::Update(
 
 void TimerBombGadget::OnNeighborhoodDisturbed(
     float /*currentSimulationTime*/,
-    GameParameters const & /*gameParameters*/)
+    SimulationParameters const & /*simulationParameters*/)
 {
     if (State::SlowFuseBurning == mState
         || State::Defused == mState)
@@ -273,7 +275,7 @@ void TimerBombGadget::OnNeighborhoodDisturbed(
 
 void TimerBombGadget::Upload(
     ShipId shipId,
-    Render::RenderContext & renderContext) const
+    RenderContext & renderContext) const
 {
     auto & shipRenderContext = renderContext.GetShipRenderContext(shipId);
 
@@ -285,7 +287,7 @@ void TimerBombGadget::Upload(
             // Render bomb
             shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                 GetPlaneId(),
-                TextureFrameId(Render::GenericMipMappedTextureGroups::TimerBomb, mFuseStepCounter / FuseFramesPerFuseLengthCount),
+                TextureFrameId(GameTextureDatabases::GenericMipMappedTextureGroups::TimerBomb, mFuseStepCounter / FuseFramesPerFuseLengthCount),
                 GetPosition(),
                 1.0,
                 GetRotationBaseAxis(),
@@ -295,7 +297,7 @@ void TimerBombGadget::Upload(
             // Render fuse
             shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                 GetPlaneId(),
-                TextureFrameId(Render::GenericMipMappedTextureGroups::TimerBombFuse, mFuseFlameFrameIndex),
+                TextureFrameId(GameTextureDatabases::GenericMipMappedTextureGroups::TimerBombFuse, mFuseFlameFrameIndex),
                 GetPosition(),
                 1.0,
                 GetRotationBaseAxis(),
@@ -317,7 +319,7 @@ void TimerBombGadget::Upload(
             // Render bomb
             shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                 GetPlaneId(),
-                TextureFrameId(Render::GenericMipMappedTextureGroups::TimerBomb, FuseLengthStepCount),
+                TextureFrameId(GameTextureDatabases::GenericMipMappedTextureGroups::TimerBomb, FuseLengthStepCount),
                 shakenPosition,
                 1.0,
                 GetRotationBaseAxis(),
@@ -332,7 +334,7 @@ void TimerBombGadget::Upload(
             // Render bomb
             shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                 GetPlaneId(),
-                TextureFrameId(Render::GenericMipMappedTextureGroups::TimerBomb, mFuseStepCounter / FuseFramesPerFuseLengthCount),
+                TextureFrameId(GameTextureDatabases::GenericMipMappedTextureGroups::TimerBomb, mFuseStepCounter / FuseFramesPerFuseLengthCount),
                 GetPosition(),
                 1.0f,
                 GetRotationBaseAxis(),
@@ -347,7 +349,7 @@ void TimerBombGadget::Upload(
             // Render inert bomb
             shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                 GetPlaneId(),
-                TextureFrameId(Render::GenericMipMappedTextureGroups::TimerBomb, mFuseStepCounter / FuseFramesPerFuseLengthCount),
+                TextureFrameId(GameTextureDatabases::GenericMipMappedTextureGroups::TimerBomb, mFuseStepCounter / FuseFramesPerFuseLengthCount),
                 GetPosition(),
                 1.0f,
                 GetRotationBaseAxis(),
@@ -367,7 +369,7 @@ void TimerBombGadget::Upload(
             // Render disappearing bomb
             shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                 mExplosionPlaneId,
-                TextureFrameId(Render::GenericMipMappedTextureGroups::TimerBomb, mFuseStepCounter / FuseFramesPerFuseLengthCount),
+                TextureFrameId(GameTextureDatabases::GenericMipMappedTextureGroups::TimerBomb, mFuseStepCounter / FuseFramesPerFuseLengthCount),
                 mExplosionPosition,
                 1.0f, // Scale
                 GetRotationBaseAxis(),
@@ -397,7 +399,7 @@ void TimerBombGadget::TransitionToFastFusing(GameWallClock::time_point currentWa
     }
 
     // Notify fast fuse
-    mGameEventHandler->OnTimerBombFuse(
+    mSimulationEventHandler->OnTimerBombFuse(
         mId,
         true);
 

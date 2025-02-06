@@ -26,21 +26,21 @@ public:
         GlobalGadgetId id,
         ElementIndex pointIndex,
         World & parentWorld,
-        std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
+        std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher,
         IShipPhysicsHandler & shipPhysicsHandler,
         Points & shipPoints,
         Springs & shipSprings);
 
     virtual float GetMass() const override
     {
-        return GameParameters::BombMass;
+        return SimulationParameters::BombMass;
     }
 
     virtual bool Update(
         GameWallClock::time_point currentWallClockTime,
         float currentSimulationTime,
         Storm::Parameters const & stormParameters,
-        GameParameters const & gameParameters) override;
+        SimulationParameters const & simulationParameters) override;
 
     virtual bool MayBeRemoved() const override
     {
@@ -54,18 +54,18 @@ public:
 
     virtual void OnNeighborhoodDisturbed(
         float currentSimulationTime,
-        GameParameters const & gameParameters) override
+        SimulationParameters const & simulationParameters) override
     {
-        Detonate(currentSimulationTime, gameParameters);
+        Detonate(currentSimulationTime, simulationParameters);
     }
 
     virtual void Upload(
         ShipId shipId,
-        Render::RenderContext & renderContext) const override;
+        RenderContext & renderContext) const override;
 
     void Detonate(
         float currentSimulationTime,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
 private:
 
@@ -107,7 +107,7 @@ private:
 
         ++mPingOnStepCounter;
 
-        mGameEventHandler->OnRCBombPing(
+        mSimulationEventHandler->OnRCBombPing(
             mParentWorld.GetOceanSurface().IsUnderwater(GetPosition()),
             1);
 

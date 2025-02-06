@@ -51,14 +51,14 @@ namespace Physics
 #include "World.h"
 //
 #include "Gadget.h"
-//// TODOTEST
-//#include "AntiMatterBombGadget.h"
-//#include "FireExtinguishingBombGadget.h"
-//#include "ImpactBombGadget.h"
-//#include "PhysicsProbeGadget.h"
-//#include "RCBombGadget.h"
-//#include "TimerBombGadget.h"
+#include "AntiMatterBombGadget.h"
+#include "FireExtinguishingBombGadget.h"
+#include "ImpactBombGadget.h"
+#include "PhysicsProbeGadget.h"
+#include "RCBombGadget.h"
+#include "TimerBombGadget.h"
 #include "Gadgets.h"
+//// TODOTEST
 //#include "PinnedPoints.h"
 //#include "Ship.h"
 //

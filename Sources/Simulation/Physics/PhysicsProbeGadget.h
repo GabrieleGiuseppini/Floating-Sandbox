@@ -26,7 +26,7 @@ public:
         GlobalGadgetId id,
         ElementIndex pointIndex,
         World & parentWorld,
-        std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
+        std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher,
         IShipPhysicsHandler & shipPhysicsHandler,
         Points & shipPoints,
         Springs & shipSprings);
@@ -41,7 +41,7 @@ public:
         GameWallClock::time_point currentWallClockTime,
         float currentSimulationTime,
         Storm::Parameters const & stormParameters,
-        GameParameters const & gameParameters) override;
+        SimulationParameters const & simulationParameters) override;
 
     virtual bool MayBeRemoved() const override
     {
@@ -55,14 +55,14 @@ public:
 
     virtual void OnNeighborhoodDisturbed(
         float /*currentSimulationTime*/,
-        GameParameters const & /*gameParameters*/) override
+        SimulationParameters const & /*simulationParameters*/) override
     {
         // Doe niets
     }
 
     virtual void Upload(
         ShipId shipId,
-        Render::RenderContext & renderContext) const override;
+        RenderContext & renderContext) const override;
 
 private:
 
