@@ -5,8 +5,8 @@
  ***************************************************************************************/
 #include "../Physics.h"
 
-#include <GameCore/Conversions.h>
-#include <GameCore/GameMath.h>
+#include <Core/Conversions.h>
+#include <Core/GameMath.h>
 
 #include <array>
 #include <limits>
@@ -319,7 +319,7 @@ Npcs::StateType::RegimeType Npcs::CalculateRegime(StateType const & npc)
 void Npcs::UpdateNpcPhysics(
     float currentSimulationTime,
     Storm::Parameters const & stormParameters,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     LogNpcDebug("----------------------------------");
     LogNpcDebug("----------------------------------");
@@ -345,13 +345,13 @@ void Npcs::UpdateNpcPhysics(
 
     // Calculate all physics constants needed for physics update
 
-    float const effectiveAirTemperature = gameParameters.AirTemperature + stormParameters.AirTemperatureDelta;
+    float const effectiveAirTemperature = simulationParameters.AirTemperature + stormParameters.AirTemperatureDelta;
 
     float const effectiveAirDensity = Formulae::CalculateAirDensity(
         effectiveAirTemperature,
-        gameParameters);
+        simulationParameters);
 
-    float const effectiveWaterTemperature = gameParameters.WaterTemperature; // Cheap, no thermoclyne
+    float const effectiveWaterTemperature = simulationParameters.WaterTemperature; // Cheap, no thermoclyne
 
     vec2f const globalWindForce = Formulae::WindSpeedToForceDensity(
         Conversions::KmhToMs(mParentWorld.GetCurrentWindSpeed()),
@@ -360,7 +360,7 @@ void Npcs::UpdateNpcPhysics(
     ////// FUTUREWORK
     ////float const effectiveWaterDensity = Formulae::CalculateWaterDensity(
     ////    effectiveWaterTemperature,
-    ////    gameParameters);
+    ////    simulationParameters);
 
     // Visit all NPCs
 
@@ -466,7 +466,7 @@ void Npcs::UpdateNpcPhysics(
                         particleTemperature =
                             oldTemperature
                             + (totalMeshTemperature - oldTemperature)
-                            * GameParameters::NpcConstrainedTemperatureTransferRate * gameParameters.HeatDissipationAdjustment;
+                            * SimulationParameters::NpcConstrainedTemperatureTransferRate * simulationParameters.HeatDissipationAdjustment;
                     }
                     else
                     {
@@ -494,10 +494,10 @@ void Npcs::UpdateNpcPhysics(
                         particleTemperature =
                             oldTemperature
                             + (ambientTemperature - oldTemperature)
-                            * (GameParameters::NpcFreeAirTemperatureTransferRate
-                                + (GameParameters::NpcFreeWaterTemperatureTransferRate - GameParameters::NpcFreeAirTemperatureTransferRate) * particleWaterness
+                            * (SimulationParameters::NpcFreeAirTemperatureTransferRate
+                                + (SimulationParameters::NpcFreeWaterTemperatureTransferRate - SimulationParameters::NpcFreeAirTemperatureTransferRate) * particleWaterness
                               )
-                            * gameParameters.HeatDissipationAdjustment;
+                            * simulationParameters.HeatDissipationAdjustment;
                     }
 
                     //
@@ -515,7 +515,7 @@ void Npcs::UpdateNpcPhysics(
                         isOneNpcParticleInBurningMesh = true;
                     }
 
-                    if (particleTemperature >= mParticles.GetMaterial(particle.ParticleIndex).IgnitionTemperature * gameParameters.IgnitionTemperatureAdjustment)
+                    if (particleTemperature >= mParticles.GetMaterial(particle.ParticleIndex).IgnitionTemperature * simulationParameters.IgnitionTemperatureAdjustment)
                     {
                         oneNpcParticleAboveIgnitionTemperature = particle.ParticleIndex;
                     }
@@ -571,7 +571,7 @@ void Npcs::UpdateNpcPhysics(
                         1.0f,
                         3.0f,
                         currentSimulationTime,
-                        gameParameters);
+                        simulationParameters);
                 }
                 else if (oneNpcParticleAboveWaterReactionThreshold != NoneElementIndex)
                 {
@@ -579,11 +579,11 @@ void Npcs::UpdateNpcPhysics(
 
                     float const blastRadius =
                         3.0f // Magic number
-                        * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
+                        * (simulationParameters.IsUltraViolentMode ? 4.0f : 1.0f);
 
                     float const blastHeat =
-                        GameParameters::WaterReactionHeat
-                        * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+                        SimulationParameters::WaterReactionHeat
+                        * (simulationParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
                     TriggerExplosion(
                         *npcState,
@@ -595,7 +595,7 @@ void Npcs::UpdateNpcPhysics(
                         5.0f,
                         ExplosionType::Sodium,
                         currentSimulationTime,
-                        gameParameters);
+                        simulationParameters);
                 }
                 else
                 {
@@ -744,7 +744,7 @@ void Npcs::UpdateNpcPhysics(
                     *npcState,
                     static_cast<int>(p),
                     globalWindForce,
-                    gameParameters);
+                    simulationParameters);
             }
 
             assert(npcState->IsActive());
@@ -766,7 +766,7 @@ void Npcs::UpdateNpcPhysics(
                     static_cast<int>(p),
                     homeShip,
                     currentSimulationTime,
-                    gameParameters);
+                    simulationParameters);
 
                 if (!npcState->IsActive())
                     break;
@@ -775,7 +775,7 @@ void Npcs::UpdateNpcPhysics(
                     *npcState,
                     static_cast<int>(p),
                     homeShip,
-                    gameParameters);
+                    simulationParameters);
 
                 if (npcState->CurrentRegime == StateType::RegimeType::Free)
                 {
@@ -785,7 +785,7 @@ void Npcs::UpdateNpcPhysics(
                         static_cast<int>(p),
                         homeShip,
                         currentSimulationTime,
-                        gameParameters);
+                        simulationParameters);
                 }
             }
 
@@ -797,7 +797,7 @@ void Npcs::UpdateNpcPhysics(
                 MaintainNpcUnfolded(
                     *npcState,
                     homeShip,
-                    gameParameters);
+                    simulationParameters);
             }
         }
     }
@@ -805,7 +805,7 @@ void Npcs::UpdateNpcPhysics(
 
 void Npcs::UpdateNpcBehavior(
     float currentSimulationTime,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     LogNpcDebug("----------------------------------");
     LogNpcDebug("----------------------------------");
@@ -828,7 +828,7 @@ void Npcs::UpdateNpcBehavior(
                     UpdateFurniture(
                         *npcState,
                         currentSimulationTime,
-                        gameParameters);
+                        simulationParameters);
 
                     UpdateFurnitureNpcAnimation(
                         *npcState,
@@ -842,7 +842,7 @@ void Npcs::UpdateNpcBehavior(
                     UpdateHuman(
                         *npcState,
                         currentSimulationTime,
-                        gameParameters);
+                        simulationParameters);
 
                     UpdateHumanNpcAnimation(
                         *npcState,
@@ -941,7 +941,7 @@ void Npcs::UpdateNpcParticlePhysics(
     int npcParticleOrdinal,
     Ship & homeShip,
     float currentSimulationTime,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     //
     // Here be dragons!
@@ -952,7 +952,7 @@ void Npcs::UpdateNpcParticlePhysics(
     LogNpcDebug("----------------------------------");
     LogNpcDebug("  Particle ", npcParticleOrdinal);
 
-    float constexpr dt = GameParameters::SimulationStepTimeDuration<float>;
+    float constexpr dt = SimulationParameters::SimulationStepTimeDuration<float>;
     float const particleMass = mParticles.GetMass(npcParticle.ParticleIndex);
 
     vec2f const particleStartAbsolutePosition = mParticles.GetPosition(npcParticle.ParticleIndex);
@@ -977,7 +977,7 @@ void Npcs::UpdateNpcParticlePhysics(
         vec2f const physicalForces = CalculateNpcParticleDefinitiveForces(
             npc,
             npcParticleOrdinal,
-            gameParameters);
+            simulationParameters);
 
         physicsDeltaPos = mParticles.GetVelocity(npcParticle.ParticleIndex) * dt + (physicalForces / particleMass) * dt * dt;
 
@@ -1512,8 +1512,8 @@ void Npcs::UpdateNpcParticlePhysics(
                     // to prevent walking on floors that are too steep
                     //
                     // Note: walkDir.y is sin(slope angle between horiz and dir)
-                    float constexpr NeighborhoodWidth = 1.0f - GameParameters::MaxHumanNpcWalkSinSlopeUp;
-                    float constexpr ResistanceSinSlopeStart = GameParameters::MaxHumanNpcWalkSinSlopeUp - NeighborhoodWidth / 2.0f;
+                    float constexpr NeighborhoodWidth = 1.0f - SimulationParameters::MaxHumanNpcWalkSinSlopeUp;
+                    float constexpr ResistanceSinSlopeStart = SimulationParameters::MaxHumanNpcWalkSinSlopeUp - NeighborhoodWidth / 2.0f;
                     if (walkDir.y >= ResistanceSinSlopeStart) // walkDir.y is component along vertical, pointing up
                     {
                         float const y2 = (walkDir.y - ResistanceSinSlopeStart) / NeighborhoodWidth;
@@ -1625,7 +1625,7 @@ void Npcs::UpdateNpcParticlePhysics(
                     homeShip,
                     mParticles,
                     currentSimulationTime,
-                    gameParameters);
+                    simulationParameters);
 
                 if (npcParticle.ConstrainedState.has_value())
                 {
@@ -1803,7 +1803,7 @@ void Npcs::UpdateNpcParticlePhysics(
                     homeShip,
                     mParticles,
                     currentSimulationTime,
-                    gameParameters);
+                    simulationParameters);
 
                 if (npcParticle.ConstrainedState.has_value())
                 {
@@ -1860,7 +1860,7 @@ void Npcs::UpdateNpcParticlePhysics(
     {
         // Publish final velocities
 
-        vec2f const particleVelocity = (mParticles.GetPosition(npcParticle.ParticleIndex) - particleStartAbsolutePosition) / GameParameters::SimulationStepTimeDuration<float>;
+        vec2f const particleVelocity = (mParticles.GetPosition(npcParticle.ParticleIndex) - particleStartAbsolutePosition) / SimulationParameters::SimulationStepTimeDuration<float>;
 
         mGameEventHandler->OnCustomProbe("VelX", particleVelocity.x);
         mGameEventHandler->OnCustomProbe("VelY", particleVelocity.y);
@@ -1872,7 +1872,7 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
     StateType const & npc,
     int npcParticleOrdinal,
     vec2f const & globalWindForce,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     auto & npcParticle = npc.ParticleMesh.Particles[npcParticleOrdinal];
 
@@ -1883,13 +1883,13 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
     float const particleMass = mParticles.GetMass(npcParticle.ParticleIndex);
     vec2f const & particlePosition = mParticles.GetPosition(npcParticle.ParticleIndex);
     float const effectiveParticleWindReceptivity = std::min(
-        mParticles.GetMaterial(npcParticle.ParticleIndex).WindReceptivity * gameParameters.NpcWindReceptivityAdjustment,
+        mParticles.GetMaterial(npcParticle.ParticleIndex).WindReceptivity * simulationParameters.NpcWindReceptivityAdjustment,
         1.0f);
 
     // 1. World forces - gravity
 
     vec2f preliminaryForces =
-        GameParameters::Gravity
+        SimulationParameters::Gravity
 #ifdef IN_BARYLAB
         * mCurrentGravityAdjustment
 #endif
@@ -1966,7 +1966,7 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
             // (because heavy particles should practically not move)
             preliminaryForces +=
                 absoluteVelocityDelta
-                / GameParameters::SimulationStepTimeDuration<float>
+                / SimulationParameters::SimulationStepTimeDuration<float>
                 * anyWaterness // Mess with velocity only if enough water
                 * (1.0f - SmoothStep(0.0f, 0.9f, waterVelocityDir.y)) // Lower acceleration with verticality - water close to surface pushes up and we don't like that
                 * std::min(particleMass, 35.0f); // This magic number is to ensure the numbers above perform OK on the reference human particles
@@ -1990,7 +1990,7 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
                     - BuoyancyInterfaceWidth * 0.81f
                     +
                     (mParticles.GetPosition(npc.ParticleMesh.Particles[0].ParticleIndex).y - particlePosition.y)
-                    * GameParameters::HumanNpcGeometry::HeadLengthFraction;
+                    * SimulationParameters::HumanNpcGeometry::HeadLengthFraction;
             }
 
             float const waterHeight = mParentWorld.GetOceanSurface().GetHeightAt(testParticlePosition.x);
@@ -2008,7 +2008,7 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
             // proportional to (signed) vertical velocity
 
             float const verticalVelocity = mParticles.GetVelocity(npcParticle.ParticleIndex).y;
-            float const particleDepthBefore = waterHeight - (particlePosition.y - verticalVelocity * GameParameters::SimulationStepTimeDuration<float>);
+            float const particleDepthBefore = waterHeight - (particlePosition.y - verticalVelocity * SimulationParameters::SimulationStepTimeDuration<float>);
             if (particleDepth * particleDepthBefore < 0.0f) // Check if we've just entered/left the air-water interface
             {
                 float const waveDisplacement =
@@ -2039,9 +2039,9 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
             // Differently than with the ship, with NPCs too-high linear drag forces cause growing oscillations in
             // the mesh (even in the absence of spring damper forces!); so we clamp here to a tenth of the theoretical
             // max that doesn't cause a V inversion (10 is determined empirically)
-            float const maxC = particleMass / GameParameters::SimulationStepTimeDuration<float>;
+            float const maxC = particleMass / SimulationParameters::SimulationStepTimeDuration<float>;
             float const c = std::min(
-                GameParameters::WaterFrictionDragCoefficient * gameParameters.WaterFrictionDragAdjustment,
+                SimulationParameters::WaterFrictionDragCoefficient * simulationParameters.WaterFrictionDragAdjustment,
                 maxC / 10.0f);
 
             preliminaryForces +=
@@ -2136,9 +2136,9 @@ void Npcs::CalculateNpcParticleSpringForces(StateType const & npc)
 vec2f Npcs::CalculateNpcParticleDefinitiveForces(
     StateType const & npc,
     int npcParticleOrdinal,
-    GameParameters const & gameParameters) const
+    SimulationParameters const & simulationParameters) const
 {
-    float constexpr dt = GameParameters::SimulationStepTimeDuration<float>;
+    float constexpr dt = SimulationParameters::SimulationStepTimeDuration<float>;
 
     auto & npcParticle = npc.ParticleMesh.Particles[npcParticleOrdinal];
 
@@ -2185,7 +2185,7 @@ vec2f Npcs::CalculateNpcParticleDefinitiveForces(
         vec2f const idealHeadPosition = feetPosition + vec2f(0.0f, npc.ParticleMesh.Springs[0].RestLength);
 
         float const stiffnessCoefficient =
-            gameParameters.HumanNpcEquilibriumTorqueStiffnessCoefficient
+            simulationParameters.HumanNpcEquilibriumTorqueStiffnessCoefficient
             + std::min(npc.KindSpecificState.HumanNpcState.ResultantPanicLevel, 1.0f) * 0.0005f;
 
         float const force1Magnitude =
@@ -2199,7 +2199,7 @@ vec2f Npcs::CalculateNpcParticleDefinitiveForces(
         vec2f const relativeVelocity = mParticles.GetVelocity(secondaryParticleIndex) - mParticles.GetVelocity(primaryParticleIndex);
         float const orthoRelativeVelocity = relativeVelocity.dot(radialDir);
 
-        float const dampCoefficient = gameParameters.HumanNpcEquilibriumTorqueDampingCoefficient;
+        float const dampCoefficient = simulationParameters.HumanNpcEquilibriumTorqueDampingCoefficient;
 
         float const force2Magnitude =
             -orthoRelativeVelocity
@@ -2297,7 +2297,7 @@ float Npcs::CalculateParticleBuoyancyFactor(
 )
 {
     float const buoyancyFactor =
-        GameParameters::GravityMagnitude * 1000.0f
+        SimulationParameters::GravityMagnitude * 1000.0f
         * (sizeMultiplier * sizeMultiplier) // 2D "volume" adjustment
         * baseBuoyancyVolumeFill
 #ifdef IN_BARYLAB
@@ -2386,7 +2386,7 @@ void Npcs::CalculateSprings(
     NpcParticles const & particles,
     StateType::ParticleMeshType & mesh)
 {
-    float constexpr dt = GameParameters::SimulationStepTimeDuration<float>;
+    float constexpr dt = SimulationParameters::SimulationStepTimeDuration<float>;
 
     for (auto & spring : mesh.Springs)
     {
@@ -2434,7 +2434,7 @@ float Npcs::CalculateSpringLength(
 
 void Npcs::RecalculateGlobalDampingFactor()
 {
-    mGlobalDampingFactor = 1.0f - GameParameters::NpcDamping * mCurrentGlobalDampingAdjustment;
+    mGlobalDampingFactor = 1.0f - SimulationParameters::NpcDamping * mCurrentGlobalDampingAdjustment;
 }
 
 void Npcs::UpdateNpcParticle_BeingPlaced(
@@ -2512,7 +2512,7 @@ void Npcs::UpdateNpcParticle_BeingPlaced(
         // Update physics
         //
 
-        float constexpr dt = GameParameters::SimulationStepTimeDuration<float>;
+        float constexpr dt = SimulationParameters::SimulationStepTimeDuration<float>;
 
         // Update position
         particles.SetPosition(
@@ -2524,7 +2524,7 @@ void Npcs::UpdateNpcParticle_BeingPlaced(
         // Note: we clamp it exactly as the anchor's is clamped
         particles.SetVelocity(
             npcParticle.ParticleIndex,
-            (physicsDeltaPos / dt * mGlobalDampingFactor).clamp_length_upper(GameParameters::MaxNpcToolMoveVelocityMagnitude));
+            (physicsDeltaPos / dt * mGlobalDampingFactor).clamp_length_upper(SimulationParameters::MaxNpcToolMoveVelocityMagnitude));
     }
 }
 
@@ -2534,7 +2534,7 @@ void Npcs::UpdateNpcParticle_Free(
     vec2f const & endPosition,
     NpcParticles & particles) const
 {
-    float constexpr dt = GameParameters::SimulationStepTimeDuration<float>;
+    float constexpr dt = SimulationParameters::SimulationStepTimeDuration<float>;
 
     assert(!particle.ConstrainedState.has_value());
 
@@ -2567,7 +2567,7 @@ Npcs::ConstrainedNonInertialOutcome Npcs::UpdateNpcParticle_ConstrainedNonInerti
     Ship & homeShip,
     NpcParticles & particles,
     float currentSimulationTime,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     auto & npcParticle = npc.ParticleMesh.Particles[npcParticleOrdinal];
     assert(npcParticle.ConstrainedState.has_value());
@@ -2780,7 +2780,7 @@ Npcs::ConstrainedNonInertialOutcome Npcs::UpdateNpcParticle_ConstrainedNonInerti
                 homeShip,
                 particles,
                 currentSimulationTime,
-                gameParameters);
+                simulationParameters);
 
             // Terminate
             return ConstrainedNonInertialOutcome::MakeStopOutcome(edgeTraveled, true);
@@ -2804,7 +2804,7 @@ float Npcs::UpdateNpcParticle_ConstrainedInertial(
     Ship & homeShip,
     NpcParticles & particles,
     float currentSimulationTime,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     auto & npcParticle = npc.ParticleMesh.Particles[npcParticleOrdinal];
     assert(npcParticle.ConstrainedState.has_value());
@@ -2845,7 +2845,7 @@ float Npcs::UpdateNpcParticle_ConstrainedInertial(
 
             // Use whole time quantum for velocity, as particleStartAbsolutePosition is fixed at t0
             vec2f const totalAbsoluteTraveledVector = segmentTrajectoryEndAbsolutePosition - particleStartAbsolutePosition;
-            vec2f const relativeVelocity = totalAbsoluteTraveledVector / GameParameters::SimulationStepTimeDuration<float> - meshVelocity;
+            vec2f const relativeVelocity = totalAbsoluteTraveledVector / SimulationParameters::SimulationStepTimeDuration<float> - meshVelocity;
 
             // Do not damp velocity if we're trying to maintain equilibrium
             vec2f const absoluteVelocity =
@@ -2989,7 +2989,7 @@ float Npcs::UpdateNpcParticle_ConstrainedInertial(
                 homeShip,
                 particles,
                 currentSimulationTime,
-                gameParameters);
+                simulationParameters);
 
             // Remember that - at least for this frame - we are non-inertial on this floor
             //
@@ -3407,7 +3407,7 @@ Npcs::ProbeWalkResult Npcs::ProbeWalkAhead(
             " hasBounceableFloor=", result.FirstBounceableFloor.has_value() ? "T" : "F",
             " hasFirstTriangleInterior=", result.FirstTriangleInterior.has_value() ? "T" : "F");
 
-        assert(iIter < GameParameters::MaxSpringsPerPoint); // Detect and debug-break on infinite loops
+        assert(iIter < SimulationParameters::MaxSpringsPerPoint); // Detect and debug-break on infinite loops
 
         // Pre-conditions: we are at this vertex
         assert(currentBCoords.BCoords[vertexOrdinal] == 1.0f);
@@ -3489,8 +3489,8 @@ Npcs::ProbeWalkResult Npcs::ProbeWalkAhead(
                 crossedEdgeDir.x < 0.0f
                 && (
                     (orientation == RotationDirectionType::CounterClockwise)
-                    ? (GameParameters::MinHumanNpcWalkSinSlopeDown <= crossedEdgeDir.y && crossedEdgeDir.y <= GameParameters::MaxHumanNpcWalkSinSlopeUp)
-                    : (GameParameters::MinHumanNpcWalkSinSlopeDown <= -crossedEdgeDir.y && -crossedEdgeDir.y <= GameParameters::MaxHumanNpcWalkSinSlopeUp)
+                    ? (SimulationParameters::MinHumanNpcWalkSinSlopeDown <= crossedEdgeDir.y && crossedEdgeDir.y <= SimulationParameters::MaxHumanNpcWalkSinSlopeUp)
+                    : (SimulationParameters::MinHumanNpcWalkSinSlopeDown <= -crossedEdgeDir.y && -crossedEdgeDir.y <= SimulationParameters::MaxHumanNpcWalkSinSlopeUp)
                 );
 
             LogNpcDebug("          Edge is ", isViable ? "viable" : "non-viable", " (edgeDir=", crossedEdgeDir, ")");
@@ -3782,7 +3782,7 @@ void Npcs::BounceConstrainedNpcParticle(
     Ship & homeShip,
     NpcParticles & particles,
     float currentSimulationTime,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     auto & npcParticle = npc.ParticleMesh.Particles[npcParticleOrdinal];
     assert(npcParticle.ConstrainedState.has_value());
@@ -3834,7 +3834,7 @@ void Npcs::BounceConstrainedNpcParticle(
 
         // Calculate normal reponse: Vn' = -e*Vn (e = elasticity, [0.0 - 1.0])
         float const elasticityCoefficient = Clamp(
-            (particles.GetMaterial(npcParticle.ParticleIndex).ElasticityCoefficient + meshMaterial.ElasticityCoefficient) / 2.0f * gameParameters.ElasticityAdjustment,
+            (particles.GetMaterial(npcParticle.ParticleIndex).ElasticityCoefficient + meshMaterial.ElasticityCoefficient) / 2.0f * simulationParameters.ElasticityAdjustment,
             0.0f, 1.0f);
         vec2f const normalResponse =
             -normalVelocity
@@ -3881,7 +3881,7 @@ void Npcs::BounceConstrainedNpcParticle(
             vec2f const impartedForce =
                 (normalVelocity - normalResponse) // normalVelocity is directed outside of triangle
                 * mParticles.GetMass(npcParticle.ParticleIndex)
-                / GameParameters::SimulationStepTimeDuration<float>
+                / SimulationParameters::SimulationStepTimeDuration<float>
                 * 0.2f; // Magic damper
 
             // Divide among two vertices
@@ -3909,7 +3909,7 @@ void Npcs::BounceConstrainedNpcParticle(
             normalResponse,
             floorEdgeNormal,
             currentSimulationTime,
-            gameParameters);
+            simulationParameters);
     }
     else
     {
@@ -3934,7 +3934,7 @@ void Npcs::OnImpact(
     vec2f const & responseNormalVelocity,
     vec2f const & bounceEdgeNormal, // Pointing outside of triangle
     float currentSimulationTime,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     LogNpcDebug("    OnImpact(mag=", impactNormalVelocity.length(), ", bounceEdgeNormal=", bounceEdgeNormal, ")");
 
@@ -3973,7 +3973,7 @@ void Npcs::OnImpact(
             impactMultiplier,
             3.0f,
             currentSimulationTime,
-            gameParameters);
+            simulationParameters);
     }
     else if (impactMagnitude >= NotificationImpactMagnitudeThreshold)
     {
@@ -3995,7 +3995,7 @@ void Npcs::TriggerParticleExplosionWithMaterialProperties(
     float multiplier,
     float renderRadiusOffset,
     float currentSimulationTime,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     bool const isFireExtinguishingExplosion = (mParticles.GetMaterial(npcParticleIndex).CombustionType == StructuralMaterial::MaterialCombustionType::FireExtinguishingExplosion);
 
@@ -4007,17 +4007,17 @@ void Npcs::TriggerParticleExplosionWithMaterialProperties(
     float const blastForceRadius =
         mParticles.GetMaterial(npcParticleIndex).ExplosiveCombustionForceRadius
         * multiplier * multiplier
-        * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
+        * (simulationParameters.IsUltraViolentMode ? 4.0f : 1.0f);
 
     float const blastHeat =
         mParticles.GetMaterial(npcParticleIndex).ExplosiveCombustionHeat
-        * gameParameters.CombustionHeatAdjustment
-        * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+        * simulationParameters.CombustionHeatAdjustment
+        * (simulationParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
     float const blastHeatRadius =
         mParticles.GetMaterial(npcParticleIndex).ExplosiveCombustionHeatRadius
         * (isFireExtinguishingExplosion ? 1.0f : multiplier * multiplier)
-        * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
+        * (simulationParameters.IsUltraViolentMode ? 4.0f : 1.0f);
 
     float const actualRenderRadiusOffset = isFireExtinguishingExplosion
         ? blastHeatRadius - blastForceRadius + renderRadiusOffset // Render radius to equal heat (extinguishing) radius, plus offset
@@ -4035,7 +4035,7 @@ void Npcs::TriggerParticleExplosionWithMaterialProperties(
             ? ExplosionType::FireExtinguishing
             : ExplosionType::Combustion,
         currentSimulationTime,
-        gameParameters);
+        simulationParameters);
 }
 
 void Npcs::TriggerExplosion(
@@ -4048,7 +4048,7 @@ void Npcs::TriggerExplosion(
     float renderRadiusOffset,
     ExplosionType explosionType,
     float currentSimulationTime,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     //
     // Start explosion
@@ -4067,7 +4067,7 @@ void Npcs::TriggerExplosion(
         blastHeatRadius,
         renderRadiusOffset,
         explosionType,
-        gameParameters);
+        simulationParameters);
 
     //
     // Notify
@@ -4149,7 +4149,7 @@ void Npcs::TriggerExplosion(
 void Npcs::MaintainNpcUnfolded(
     StateType & npc,
     Ship const & homeShip,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     //
     // Unfold if folded quad (fight long strides)
@@ -4222,7 +4222,7 @@ void Npcs::MaintainNpcUnfolded(
                         npc,
                         static_cast<int>(p),
                         homeShip,
-                        gameParameters);
+                        simulationParameters);
                 }
             }
         }
@@ -4234,7 +4234,7 @@ void Npcs::MaintainOverLand(
     int npcParticleOrdinal,
     Ship const & homeShip,
     float currentSimulationTime,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     ElementIndex const p = npc.ParticleMesh.Particles[npcParticleOrdinal].ParticleIndex;
     auto const & pos = mParticles.GetPosition(p);
@@ -4271,7 +4271,7 @@ void Npcs::MaintainOverLand(
 
             // Calculate normal reponse: Vn' = -e*Vn (e = elasticity, [0.0 - 1.0])
             float const elasticityFactor = Clamp(
-                (mParticles.GetMaterial(p).ElasticityCoefficient + gameParameters.OceanFloorElasticityCoefficient) / 2.0f * gameParameters.ElasticityAdjustment,
+                (mParticles.GetMaterial(p).ElasticityCoefficient + simulationParameters.OceanFloorElasticityCoefficient) / 2.0f * simulationParameters.ElasticityAdjustment,
                 0.0f, 1.0f);
             vec2f const normalResponse =
                 normalVelocity
@@ -4288,7 +4288,7 @@ void Npcs::MaintainOverLand(
 
             // Move point back along its velocity direction (i.e. towards where it was in the previous step,
             // which is guaranteed to be more towards the outside)
-            vec2f deltaPos = particleVelocity * gameParameters.SimulationStepTimeDuration<float>;
+            vec2f deltaPos = particleVelocity * simulationParameters.SimulationStepTimeDuration<float>;
             mParticles.SetPosition(
                 p,
                 pos - deltaPos);
@@ -4310,7 +4310,7 @@ void Npcs::MaintainOverLand(
                 -seaFloorAntiNormal.to_perpendicular(),
                 normalResponse,
                 currentSimulationTime,
-                gameParameters);
+                simulationParameters);
         }
 
         // Become free - so to avoid bouncing back and forth

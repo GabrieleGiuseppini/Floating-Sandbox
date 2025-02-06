@@ -5,9 +5,9 @@
 ***************************************************************************************/
 #include "../Physics.h"
 
-#include <GameCore/GameException.h>
-#include <GameCore/GameRandomEngine.h>
-#include <GameCore/Log.h>
+#include <Core/GameException.h>
+#include <Core/GameRandomEngine.h>
+#include <Core/Log.h>
 
 namespace Physics {
 
@@ -37,7 +37,7 @@ ElementIndex NpcParticles::Add(
     mPreliminaryForcesBuffer[p] = vec2f::zero();
     mExternalForcesBuffer[p] = vec2f::zero();
 
-    mTemperatureBuffer[p] = GameParameters::Temperature0;
+    mTemperatureBuffer[p] = SimulationParameters::Temperature0;
 
     mMeshWaternessBuffer[p] = 0.0f;
     mMeshWaterVelocityBuffer[p] = vec2f::zero();

@@ -41,15 +41,15 @@ namespace Physics
 #include "Triangles.h"
 #include "ElectricalElements.h"
 #include "Frontiers.h"
-//// TODOTEST
-//#include "NpcSimulation/NpcParticles.h"
+#include "Npcs/NpcParticles.h"
 //
+//// TODOTEST
 //#include "Clouds.h"
 //#include "Fishes.h"
 //#include "Stars.h"
 //#include "OceanFloor.h"
 //#include "OceanSurface.h"
-#include "World.h"
+//#include "World.h"
 //
 //#include "Gadget.h"
 //#include "AntiMatterBombGadget.h"
@@ -62,4 +62,4 @@ namespace Physics
 //#include "PinnedPoints.h"
 //#include "Ship.h"
 //
-//#include "NpcSimulation/Npcs.h"
+#include "Npcs/Npcs.h"

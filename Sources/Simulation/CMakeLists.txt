@@ -46,6 +46,12 @@ set  (PHYSICS_SOURCES
 	Physics/Frontiers.cpp
 	Physics/Frontiers.h
 	Physics/IShipPhysicsHandler.h
+	Physics/Npcs/NpcParticles.cpp
+	Physics/Npcs/NpcParticles.h
+	Physics/Npcs/Npcs.cpp
+	Physics/Npcs/Npcs.h
+	Physics/Npcs/Npcs_HumanSimulation.cpp
+	Physics/Npcs/Npcs_Simulation.cpp
 	Physics/Physics.h
 	Physics/Points.cpp
 	Physics/Points.h

@@ -5,26 +5,24 @@
 ***************************************************************************************/
 #pragma once
 
-#include "../GameEventDispatcher.h"
-#include "../GameParameters.h"
-#include "../NpcDatabase.h"
-#include "../Physics.h"
-#include "../RenderContext.h"
-#include "../RenderTypes.h"
-#include "../VisibleWorld.h"
+#include "../../NpcDatabase.h"
+#include "../../SimulationEventDispatcher.h"
+#include "../../SimulationParameters.h"
 
-#include <GameCore/BarycentricCoords.h>
-#include <GameCore/ElementIndexRangeIterator.h>
-#include <GameCore/EnumFlags.h>
-#include <GameCore/FixedSizeVector.h>
-#include <GameCore/GameGeometry.h>
-#include <GameCore/GameRandomEngine.h>
-#include <GameCore/GameTypes.h>
-#include <GameCore/GameWallClock.h>
-#include <GameCore/Log.h>
-#include <GameCore/StrongTypeDef.h>
-#include <GameCore/SysSpecifics.h>
-#include <GameCore/Vectors.h>
+#include <Render/RenderContext.h>
+
+#include <Core/BarycentricCoords.h>
+#include <Core/ElementIndexRangeIterator.h>
+#include <Core/EnumFlags.h>
+#include <Core/FixedSizeVector.h>
+#include <Core/GameGeometry.h>
+#include <Core/GameRandomEngine.h>
+#include <Core/GameTypes.h>
+#include <Core/GameWallClock.h>
+#include <Core/Log.h>
+#include <Core/StrongTypeDef.h>
+#include <Core/SysSpecifics.h>
+#include <Core/Vectors.h>
 
 #include <algorithm>
 #include <cassert>
@@ -212,9 +210,9 @@ private:
 
 		struct ParticleMeshType final
 		{
-			FixedSizeVector<NpcParticleStateType, GameParameters::MaxParticlesPerNpc> Particles;
+			FixedSizeVector<NpcParticleStateType, SimulationParameters::MaxParticlesPerNpc> Particles;
 
-			FixedSizeVector<NpcSpringStateType, GameParameters::MaxSpringsPerNpc> Springs;
+			FixedSizeVector<NpcSpringStateType, SimulationParameters::MaxSpringsPerNpc> Springs;
 		};
 
 		union KindSpecificStateType
@@ -224,7 +222,7 @@ private:
 				NpcSubKindIdType const SubKindId;
 				NpcFurnitureRoleType const Role;
 
-				Render::TextureCoordinatesQuad const TextureCoordinatesQuad;
+				TextureCoordinatesQuad const TextureQuad;
 				float CurrentFaceDirectionX; // [-1.0f, 0.0f, 1.0f]
 
 				enum class BehaviorType
@@ -283,12 +281,12 @@ private:
 				FurnitureNpcStateType(
 					NpcSubKindIdType subKindId,
 					NpcFurnitureRoleType role,
-					Render::TextureCoordinatesQuad const & textureCoordinatesQuad,
+					TextureCoordinatesQuad const & textureQuad,
 					BehaviorType initialBehavior,
 					float currentSimulationTime)
 					: SubKindId(subKindId)
 					, Role(role)
-					, TextureCoordinatesQuad(textureCoordinatesQuad)
+					, TextureQuad(textureQuad)
 					, CurrentFaceDirectionX(1.0f)
 					// Animation
 					, AnimationState()
@@ -1100,21 +1098,21 @@ public:
 	Npcs(
 		Physics::World & parentWorld,
 		NpcDatabase const & npcDatabase,
-		std::shared_ptr<GameEventDispatcher> gameEventHandler,
-		GameParameters const & gameParameters);
+		std::shared_ptr<SimulationEventDispatcher> gameEventHandler,
+		SimulationParameters const & simulationParameters);
 
 	void Update(
 		float currentSimulationTime,
 		Storm::Parameters const & stormParameters,
-		GameParameters const & gameParameters);
+		SimulationParameters const & simulationParameters);
 
 	void UpdateEnd();
 
-	void Upload(Render::RenderContext & renderContext) const;
+	void Upload(RenderContext & renderContext) const;
 
 	void UploadFlames(
 		ShipId shipId,
-		Render::ShipRenderContext & shipRenderContext) const;
+		ShipRenderContext & shipRenderContext) const;
 
 	///////////////////////////////
 
@@ -1156,7 +1154,7 @@ public:
 	std::optional<PickedNpc> ProbeNpcAt(
 		vec2f const & position,
 		float radius,
-		GameParameters const & gameParameters) const;
+		SimulationParameters const & simulationParameters) const;
 
 	std::vector<NpcId> ProbeNpcsInRect(
 		vec2f const & corner1,
@@ -1205,7 +1203,7 @@ public:
 		NpcKindType kind,
 		VisibleWorld const & visibleWorld,
 		float currentSimulationTime,
-		GameParameters const & gameParameters);
+		SimulationParameters const & simulationParameters);
 
 	void TurnaroundNpc(NpcId id);
 
@@ -1244,7 +1242,7 @@ public:
 		std::optional<ConnectedComponentId> connectedComponent,
 		vec2f const & moveOffset,
 		vec2f const & inertialVelocity,
-		GameParameters const & gameParameters);
+		SimulationParameters const & simulationParameters);
 
 	void RotateShipBy(
 		ShipId shipId,
@@ -1252,7 +1250,7 @@ public:
 		float angle,
 		vec2f const & center,
 		float inertialAngle,
-		GameParameters const & gameParameters);
+		SimulationParameters const & simulationParameters);
 
 	bool DestroyAt(
 		ShipId shipId,
@@ -1260,28 +1258,28 @@ public:
 		float radius,
 		SessionId const & sessionId,
 		float currentSimulationTime,
-		GameParameters const & gameParameters);
+		SimulationParameters const & simulationParameters);
 
 	bool ApplyHeatBlasterAt(
 		ShipId shipId,
 		vec2f const & targetPos,
 		HeatBlasterActionType action,
 		float radius,
-		GameParameters const & gameParameters);
+		SimulationParameters const & simulationParameters);
 
 	bool ExtinguishFireAt(
 		ShipId shipId,
 		vec2f const & targetPos,
 		float strengthMultiplier,
 		float radius,
-		GameParameters const & gameParameters);
+		SimulationParameters const & simulationParameters);
 
 	void ApplyLaserCannonThrough(
 		ShipId shipId,
 		vec2f const & startPos,
 		vec2f const & endPos,
 		float strength,
-		GameParameters const & gameParameters);
+		SimulationParameters const & simulationParameters);
 
 	void DrawTo(
 		vec2f const & targetPos,
@@ -1299,25 +1297,25 @@ public:
 		float blastHeat, // KJ/s
 		float blastHeatRadius, // m
 		ExplosionType explosionType,
-		GameParameters const & gameParameters);
+		SimulationParameters const & simulationParameters);
 
 	void ApplyAntiMatterBombPreimplosion(
 		ShipId shipId,
 		vec2f const & centerPosition,
 		float radius,
 		float radiusThickness,
-		GameParameters const & gameParameters);
+		SimulationParameters const & simulationParameters);
 
 	void ApplyAntiMatterBombImplosion(
 		ShipId shipId,
 		vec2f const & centerPosition,
 		float sequenceProgress,
-		GameParameters const & gameParameters);
+		SimulationParameters const & simulationParameters);
 
 	void ApplyAntiMatterBombExplosion(
 		ShipId shipId,
 		vec2f const & centerPosition,
-		GameParameters const & gameParameters);
+		SimulationParameters const & simulationParameters);
 
 	void OnShipTriangleDestroyed(
 		ShipId shipId,
@@ -1552,14 +1550,14 @@ private:
 
 	void RenderNpc(
 		StateType const & npc,
-		Render::RenderContext & renderContext,
-		Render::ShipRenderContext & shipRenderContext) const;
+		RenderContext & renderContext,
+		ShipRenderContext & shipRenderContext) const;
 
 	template<NpcRenderModeType RenderMode>
 	void RenderNpc(
 		StateType const & npc,
-		Render::RenderContext & renderContext,
-		Render::ShipRenderContext & shipRenderContext) const;
+		RenderContext & renderContext,
+		ShipRenderContext & shipRenderContext) const;
 
 	void UpdateFurnitureNpcAnimation(
 		StateType & npc,
@@ -1610,11 +1608,11 @@ private:
 	void UpdateNpcPhysics(
 		float currentSimulationTime,
 		Storm::Parameters const & stormParameters,
-		GameParameters const & gameParameters);
+		SimulationParameters const & simulationParameters);
 
 	void UpdateNpcBehavior(
 		float currentSimulationTime,
-		GameParameters const & gameParameters);
+		SimulationParameters const & simulationParameters);
 
 	void UpdateNpcsEnd();
 
@@ -1623,20 +1621,20 @@ private:
 		int npcParticleOrdinal,
 		Ship & homeShip,
 		float currentSimulationTime,
-		GameParameters const & gameParameters);
+		SimulationParameters const & simulationParameters);
 
 	inline void CalculateNpcParticlePreliminaryForces(
 		StateType const & npc,
 		int npcParticleOrdinal,
 		vec2f const & globalWindForce,
-		GameParameters const & gameParameters);
+		SimulationParameters const & simulationParameters);
 
 	inline void CalculateNpcParticleSpringForces(StateType const & npc);
 
 	inline vec2f CalculateNpcParticleDefinitiveForces(
 		StateType const & npc,
 		int npcParticleOrdinal,
-		GameParameters const & gameParameters) const;
+		SimulationParameters const & simulationParameters) const;
 
 	void RecalculateSizeAndMassParameters();
 
@@ -1752,7 +1750,7 @@ private:
 		Ship & homeShip,
 		NpcParticles & particles,
 		float currentSimulationTime,
-		GameParameters const & gameParameters);
+		SimulationParameters const & simulationParameters);
 
 	float UpdateNpcParticle_ConstrainedInertial(
 		StateType & npc,
@@ -1767,7 +1765,7 @@ private:
 		Ship & homeShip,
 		NpcParticles & particles,
 		float currentSimulationTime,
-		GameParameters const & gameParameters);
+		SimulationParameters const & simulationParameters);
 
 	struct NavigateVertexOutcome
 	{
@@ -1848,8 +1846,8 @@ private:
 			{}
 		};
 
-		FixedSizeVector<AbsoluteTriangleBCoordsAndEdge, GameParameters::MaxSpringsPerPoint> FloorCandidatesEasySlope;
-		FixedSizeVector<AbsoluteTriangleBCoordsAndEdge, GameParameters::MaxSpringsPerPoint> FloorCandidatesHardSlope;
+		FixedSizeVector<AbsoluteTriangleBCoordsAndEdge, SimulationParameters::MaxSpringsPerPoint> FloorCandidatesEasySlope;
+		FixedSizeVector<AbsoluteTriangleBCoordsAndEdge, SimulationParameters::MaxSpringsPerPoint> FloorCandidatesHardSlope;
 		std::optional<AbsoluteTriangleBCoordsAndEdge> FirstBounceableFloor;
 		std::optional<AbsoluteTriangleBCoords> FirstTriangleInterior;
 	};
@@ -1884,7 +1882,7 @@ private:
 		Ship & homeShip,
 		NpcParticles & particles,
 		float currentSimulationTime,
-		GameParameters const & gameParameters);
+		SimulationParameters const & simulationParameters);
 
 	void OnImpact(
 		StateType & npc,
@@ -1894,7 +1892,7 @@ private:
 		vec2f const & responseNormalVelocity,
 		vec2f const & bounceEdgeNormal,
 		float currentSimulationTime,
-		GameParameters const & gameParameters);
+		SimulationParameters const & simulationParameters);
 
 	void TriggerParticleExplosionWithMaterialProperties(
 		StateType & npc,
@@ -1902,7 +1900,7 @@ private:
 		float multiplier,
 		float renderRadiusOffset,
 		float currentSimulationTime,
-		GameParameters const & gameParameters);
+		SimulationParameters const & simulationParameters);
 
 	void TriggerExplosion(
 		StateType & npc,
@@ -1914,7 +1912,7 @@ private:
 		float renderRadiusOffset,
 		ExplosionType explosionType,
 		float currentSimulationTime,
-		GameParameters const & gameParameters);
+		SimulationParameters const & simulationParameters);
 
 	template<bool DoExtinguishFire>
 	inline void InternalApplyBlast(
@@ -1928,23 +1926,23 @@ private:
 	void MaintainNpcUnfolded(
 		StateType & npc,
 		Ship const & homeShip,
-		GameParameters const & gameParameters);
+		SimulationParameters const & simulationParameters);
 
 	inline void MaintainInWorldBounds(
 		StateType & npc,
 		int npcParticleOrdinal,
 		Ship const & homeShip,
-		GameParameters const & gameParameters)
+		SimulationParameters const & simulationParameters)
 	{
-		float constexpr MaxWorldLeft = -GameParameters::HalfMaxWorldWidth;
-		float constexpr MaxWorldRight = GameParameters::HalfMaxWorldWidth;
+		float constexpr MaxWorldLeft = -SimulationParameters::HalfMaxWorldWidth;
+		float constexpr MaxWorldRight = SimulationParameters::HalfMaxWorldWidth;
 
-		float constexpr MaxWorldTop = GameParameters::HalfMaxWorldHeight;
-		float constexpr MaxWorldBottom = -GameParameters::HalfMaxWorldHeight;
+		float constexpr MaxWorldTop = SimulationParameters::HalfMaxWorldHeight;
+		float constexpr MaxWorldBottom = -SimulationParameters::HalfMaxWorldHeight;
 
 		// Elasticity of the bounce against world boundaries
 		//  - We use the ocean floor's elasticity for convenience
-		float const elasticity = gameParameters.OceanFloorElasticityCoefficient * gameParameters.ElasticityAdjustment;
+		float const elasticity = simulationParameters.OceanFloorElasticityCoefficient * simulationParameters.ElasticityAdjustment;
 
 		// We clamp velocity to damp system instabilities at extreme events
 		static constexpr float MaxBounceVelocity = 150.0f; // Magic number
@@ -2011,7 +2009,7 @@ private:
 		int npcParticleOrdinal,
 		Ship const & homeShip,
 		float currentSimulationTime,
-		GameParameters const & gameParameters);
+		SimulationParameters const & simulationParameters);
 
 	static bool IsEdgeFloorToParticle(
 		ElementIndex triangleElementIndex,
@@ -2223,7 +2221,7 @@ private:
 
 	static float CalculateVerticalAlignment(vec2f const & vector)
 	{
-		return vector.normalise().dot(GameParameters::GravityDir);
+		return vector.normalise().dot(SimulationParameters::GravityDir);
 	}
 
 	static float CalculateSpringVerticalAlignment(ElementIndex primaryParticleIndex, ElementIndex secondaryParticleIndex, NpcParticles const & particles)
@@ -2240,12 +2238,12 @@ private:
 	void UpdateFurniture(
 		StateType & npc,
 		float currentSimulationTime,
-		GameParameters const & gameParameters);
+		SimulationParameters const & simulationParameters);
 
 	void UpdateHuman(
 		StateType & npc,
 		float currentSimulationTime,
-		GameParameters const & gameParameters);
+		SimulationParameters const & simulationParameters);
 
 	inline bool CheckAndMaintainHumanEquilibrium(
 		ElementIndex primaryParticleIndex,
@@ -2253,13 +2251,13 @@ private:
 		StateType::KindSpecificStateType::HumanNpcStateType & humanState,
 		bool doMaintainEquilibrium,
 		NpcParticles & particles,
-		GameParameters const & gameParameters);
+		SimulationParameters const & simulationParameters);
 
 	inline void RunWalkingHumanStateMachine(
 		StateType::KindSpecificStateType::HumanNpcStateType & humanState,
 		StateType::NpcParticleStateType const & primaryParticleState,
 		Ship const & homeShip,
-		GameParameters const & gameParameters);
+		SimulationParameters const & simulationParameters);
 
 	void OnHumanImpact(
 		StateType & npc,
@@ -2298,7 +2296,7 @@ private:
 			humanState.CurrentBehaviorState.Constrained_Walking.CurrentWalkMagnitude // Note that this is the only one that might be zero
 			* mCurrentHumanNpcWalkingSpeedAdjustment
 			* (1.0f + std::min(humanState.ResultantPanicLevel, 1.0f) * 3.0f),
-			GameParameters::MaxHumanNpcTotalWalkingSpeedAdjustment); // Absolute cap
+			SimulationParameters::MaxHumanNpcTotalWalkingSpeedAdjustment); // Absolute cap
 	}
 
 private:
@@ -2324,7 +2322,7 @@ private:
 
 	World & mParentWorld;
 	NpcDatabase const & mNpcDatabase;
-	std::shared_ptr<GameEventDispatcher> mGameEventHandler;
+	std::shared_ptr<SimulationEventDispatcher> mGameEventHandler;
 	size_t const mMaxNpcs;
 
 	//

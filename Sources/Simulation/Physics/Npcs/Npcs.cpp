@@ -5,10 +5,9 @@
 ***************************************************************************************/
 #include "../Physics.h"
 
-#include "../StockColors.h"
-
-#include <GameCore/Colors.h>
-#include <GameCore/GameGeometry.h>
+#include <Core/Colors.h>
+#include <Core/GameGeometry.h>
+#include <Core/StockColors.h>
 
 #ifdef _MSC_VER
 #pragma warning(disable : 4324) // std::optional of StateType gets padded because of alignment requirements
@@ -21,16 +20,16 @@ float constexpr ParticleSize = 0.30f; // For rendering, mostly - given that part
 Npcs::Npcs(
     Physics::World & parentWorld,
     NpcDatabase const & npcDatabase,
-    std::shared_ptr<GameEventDispatcher> gameEventHandler,
-    GameParameters const & gameParameters)
+    std::shared_ptr<SimulationEventDispatcher> gameEventHandler,
+    SimulationParameters const & simulationParameters)
     : mParentWorld(parentWorld)
     , mNpcDatabase(npcDatabase)
     , mGameEventHandler(std::move(gameEventHandler))
-    , mMaxNpcs(gameParameters.MaxNpcs)
+    , mMaxNpcs(simulationParameters.MaxNpcs)
     // Container
     , mStateBuffer()
     , mShips()
-    , mParticles(static_cast<ElementCount>(mMaxNpcs * GameParameters::MaxParticlesPerNpc))
+    , mParticles(static_cast<ElementCount>(mMaxNpcs * SimulationParameters::MaxParticlesPerNpc))
     // State
     , mCurrentSimulationSequenceNumber()
     , mCurrentlySelectedNpc()
@@ -187,7 +186,7 @@ Main principles:
 void Npcs::Update(
     float currentSimulationTime,
     Storm::Parameters const & stormParameters,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     //
     // Check invariants
@@ -199,49 +198,49 @@ void Npcs::Update(
     // Update parameters
     //
 
-    if (gameParameters.GlobalDampingAdjustment != mCurrentGlobalDampingAdjustment)
+    if (simulationParameters.GlobalDampingAdjustment != mCurrentGlobalDampingAdjustment)
     {
-        mCurrentGlobalDampingAdjustment = gameParameters.GlobalDampingAdjustment;
+        mCurrentGlobalDampingAdjustment = simulationParameters.GlobalDampingAdjustment;
 
         RecalculateGlobalDampingFactor();
     }
 
-    if (gameParameters.NpcSizeMultiplier != mCurrentSizeMultiplier
-        || gameParameters.NpcSpringReductionFractionAdjustment != mCurrentSpringReductionFractionAdjustment
-        || gameParameters.NpcSpringDampingCoefficientAdjustment != mCurrentSpringDampingCoefficientAdjustment
+    if (simulationParameters.NpcSizeMultiplier != mCurrentSizeMultiplier
+        || simulationParameters.NpcSpringReductionFractionAdjustment != mCurrentSpringReductionFractionAdjustment
+        || simulationParameters.NpcSpringDampingCoefficientAdjustment != mCurrentSpringDampingCoefficientAdjustment
 #ifdef IN_BARYLAB
-        || gameParameters.MassAdjustment != mCurrentMassAdjustment
-        || gameParameters.BuoyancyAdjustment != mCurrentBuoyancyAdjustment
-        || gameParameters.GravityAdjustment != mCurrentGravityAdjustment
+        || simulationParameters.MassAdjustment != mCurrentMassAdjustment
+        || simulationParameters.BuoyancyAdjustment != mCurrentBuoyancyAdjustment
+        || simulationParameters.GravityAdjustment != mCurrentGravityAdjustment
 #endif
         )
     {
-        mCurrentSizeMultiplier = gameParameters.NpcSizeMultiplier;
-        mCurrentSpringReductionFractionAdjustment = gameParameters.NpcSpringReductionFractionAdjustment;
-        mCurrentSpringDampingCoefficientAdjustment = gameParameters.NpcSpringDampingCoefficientAdjustment;
+        mCurrentSizeMultiplier = simulationParameters.NpcSizeMultiplier;
+        mCurrentSpringReductionFractionAdjustment = simulationParameters.NpcSpringReductionFractionAdjustment;
+        mCurrentSpringDampingCoefficientAdjustment = simulationParameters.NpcSpringDampingCoefficientAdjustment;
 #ifdef IN_BARYLAB
-        mCurrentMassAdjustment = gameParameters.MassAdjustment;
-        mCurrentBuoyancyAdjustment = gameParameters.BuoyancyAdjustment;
-        mCurrentGravityAdjustment = gameParameters.GravityAdjustment;
+        mCurrentMassAdjustment = simulationParameters.MassAdjustment;
+        mCurrentBuoyancyAdjustment = simulationParameters.BuoyancyAdjustment;
+        mCurrentGravityAdjustment = simulationParameters.GravityAdjustment;
 #endif
 
         RecalculateSizeAndMassParameters();
     }
 
-    if (gameParameters.StaticFrictionAdjustment != mCurrentStaticFrictionAdjustment
-        || gameParameters.KineticFrictionAdjustment != mCurrentKineticFrictionAdjustment
-        || gameParameters.NpcFrictionAdjustment != mCurrentNpcFrictionAdjustment)
+    if (simulationParameters.StaticFrictionAdjustment != mCurrentStaticFrictionAdjustment
+        || simulationParameters.KineticFrictionAdjustment != mCurrentKineticFrictionAdjustment
+        || simulationParameters.NpcFrictionAdjustment != mCurrentNpcFrictionAdjustment)
     {
-        mCurrentStaticFrictionAdjustment = gameParameters.StaticFrictionAdjustment;
-        mCurrentKineticFrictionAdjustment = gameParameters.KineticFrictionAdjustment;
-        mCurrentNpcFrictionAdjustment = gameParameters.NpcFrictionAdjustment;
+        mCurrentStaticFrictionAdjustment = simulationParameters.StaticFrictionAdjustment;
+        mCurrentKineticFrictionAdjustment = simulationParameters.KineticFrictionAdjustment;
+        mCurrentNpcFrictionAdjustment = simulationParameters.NpcFrictionAdjustment;
 
         RecalculateFrictionTotalAdjustments();
     }
 
-    if (gameParameters.HumanNpcWalkingSpeedAdjustment != mCurrentHumanNpcWalkingSpeedAdjustment)
+    if (simulationParameters.HumanNpcWalkingSpeedAdjustment != mCurrentHumanNpcWalkingSpeedAdjustment)
     {
-        mCurrentHumanNpcWalkingSpeedAdjustment = gameParameters.HumanNpcWalkingSpeedAdjustment;
+        mCurrentHumanNpcWalkingSpeedAdjustment = simulationParameters.HumanNpcWalkingSpeedAdjustment;
     }
 
     //
@@ -251,9 +250,9 @@ void Npcs::Update(
     // Advance the current simulation sequence
     ++mCurrentSimulationSequenceNumber;
 
-    UpdateNpcPhysics(currentSimulationTime, stormParameters, gameParameters);
+    UpdateNpcPhysics(currentSimulationTime, stormParameters, simulationParameters);
 
-    UpdateNpcBehavior(currentSimulationTime, gameParameters);
+    UpdateNpcBehavior(currentSimulationTime, simulationParameters);
 
     //
     // Decays
@@ -281,7 +280,7 @@ void Npcs::UpdateEnd()
     UpdateNpcsEnd();
 }
 
-void Npcs::Upload(Render::RenderContext & renderContext) const
+void Npcs::Upload(RenderContext & renderContext) const
 {
 #ifdef IN_BARYLAB
     if (renderContext.GetNpcRenderMode() == NpcRenderModeType::Physical)
@@ -293,7 +292,7 @@ void Npcs::Upload(Render::RenderContext & renderContext) const
         {
             if (mShips[shipId].has_value())
             {
-                Render::ShipRenderContext & shipRenderContext = renderContext.GetShipRenderContext(shipId);
+                ShipRenderContext & shipRenderContext = renderContext.GetShipRenderContext(shipId);
 
                 for (NpcId const npcId : mShips[shipId]->Npcs)
                 {
@@ -394,7 +393,7 @@ void Npcs::Upload(Render::RenderContext & renderContext) const
 
 void Npcs::UploadFlames(
     ShipId shipId,
-    Render::ShipRenderContext & shipRenderContext) const
+    ShipRenderContext & shipRenderContext) const
 {
     size_t const s = static_cast<size_t>(shipId);
 
@@ -1025,8 +1024,8 @@ std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> Npcs::BeginPl
 
     float const baseHeight =
         GameRandomEngine::GetInstance().GenerateNormalReal(
-            GameParameters::HumanNpcGeometry::BodyLengthMean,
-            GameParameters::HumanNpcGeometry::BodyLengthStdDev)
+            SimulationParameters::HumanNpcGeometry::BodyLengthMean,
+            SimulationParameters::HumanNpcGeometry::BodyLengthStdDev)
         * mNpcDatabase.GetHumanSizeMultiplier(*subKind);
 
     float const height = CalculateSpringLength(baseHeight, mCurrentSizeMultiplier);
@@ -1144,8 +1143,8 @@ std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> Npcs::BeginPl
         // Narrow
         widthMultiplier = 1.0f -
             std::min(
-                std::abs(GameRandomEngine::GetInstance().GenerateNormalReal(0.0f, GameParameters::HumanNpcGeometry::BodyWidthNarrowMultiplierStdDev)),
-                1.8f * GameParameters::HumanNpcGeometry::BodyWidthNarrowMultiplierStdDev)
+                std::abs(GameRandomEngine::GetInstance().GenerateNormalReal(0.0f, SimulationParameters::HumanNpcGeometry::BodyWidthNarrowMultiplierStdDev)),
+                1.8f * SimulationParameters::HumanNpcGeometry::BodyWidthNarrowMultiplierStdDev)
             * mNpcDatabase.GetHumanBodyWidthRandomizationSensitivity(*subKind);
     }
     else
@@ -1153,8 +1152,8 @@ std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> Npcs::BeginPl
         // Wide
         widthMultiplier = 1.0f +
             std::min(
-                std::abs(GameRandomEngine::GetInstance().GenerateNormalReal(0.0f, GameParameters::HumanNpcGeometry::BodyWidthWideMultiplierStdDev)),
-                2.3f * GameParameters::HumanNpcGeometry::BodyWidthWideMultiplierStdDev)
+                std::abs(GameRandomEngine::GetInstance().GenerateNormalReal(0.0f, SimulationParameters::HumanNpcGeometry::BodyWidthWideMultiplierStdDev)),
+                2.3f * SimulationParameters::HumanNpcGeometry::BodyWidthWideMultiplierStdDev)
             * mNpcDatabase.GetHumanBodyWidthRandomizationSensitivity(*subKind);
     }
 
@@ -1215,9 +1214,9 @@ std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> Npcs::BeginPl
 std::optional<PickedNpc> Npcs::ProbeNpcAt(
     vec2f const & position,
     float radius,
-    GameParameters const & gameParameters) const
+    SimulationParameters const & simulationParameters) const
 {
-    float const squareSearchRadius = radius * radius * gameParameters.NpcSizeMultiplier;
+    float const squareSearchRadius = radius * radius * simulationParameters.NpcSizeMultiplier;
 
     struct NearestNpcType
     {
@@ -1576,7 +1575,7 @@ std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> Npcs::AddNpcGroup
     NpcKindType kind,
     VisibleWorld const & visibleWorld,
     float currentSimulationTime,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     //
     // Choose a ship
@@ -1721,11 +1720,11 @@ std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> Npcs::AddNpcGroup
 
     // Triangles already chosen - we'll try to avoid cramming multiple NPCs in the same triangle
     std::vector<ElementIndex> alreadyChosenTriangles;
-    alreadyChosenTriangles.reserve(gameParameters.NpcsPerGroup);
+    alreadyChosenTriangles.reserve(simulationParameters.NpcsPerGroup);
 
     size_t nNpcsAdded = 0;
     NpcId firstNpcId;
-    for (; nNpcsAdded < gameParameters.NpcsPerGroup; ++nNpcsAdded)
+    for (; nNpcsAdded < simulationParameters.NpcsPerGroup; ++nNpcsAdded)
     {
         //
         // Decide sub-kind
@@ -1825,7 +1824,7 @@ std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> Npcs::AddNpcGroup
                 // Position is of feet
 
                 float const height = CalculateSpringLength(
-                    GameParameters::HumanNpcGeometry::BodyLengthMean * mNpcDatabase.GetHumanSizeMultiplier(subKind),
+                    SimulationParameters::HumanNpcGeometry::BodyLengthMean * mNpcDatabase.GetHumanSizeMultiplier(subKind),
                     mCurrentSizeMultiplier);
 
                 placementOutcome = BeginPlaceNewHumanNpc(
@@ -2036,12 +2035,12 @@ void Npcs::MoveShipBy(
     std::optional<ConnectedComponentId> connectedComponent,
     vec2f const & moveOffset,
     vec2f const & inertialVelocity,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     vec2f const actualInertialVelocity =
         inertialVelocity
-        * gameParameters.MoveToolInertia
-        * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
+        * simulationParameters.MoveToolInertia
+        * (simulationParameters.IsUltraViolentMode ? 5.0f : 1.0f);
 
     assert(mShips[shipId].has_value());
     auto const & homeShip = mShips[shipId]->HomeShip;
@@ -2074,7 +2073,7 @@ void Npcs::MoveShipBy(
                         *mStateBuffer[npcId],
                         static_cast<int>(particleOrdinal),
                         homeShip,
-                        gameParameters);
+                        simulationParameters);
                 }
             }
         }
@@ -2087,14 +2086,14 @@ void Npcs::RotateShipBy(
     float angle,
     vec2f const & center,
     float inertialAngle,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     vec2f const rotX(cos(angle), sin(angle));
     vec2f const rotY(-sin(angle), cos(angle));
 
     float const inertiaMagnitude =
-        gameParameters.MoveToolInertia
-        * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
+        simulationParameters.MoveToolInertia
+        * (simulationParameters.IsUltraViolentMode ? 5.0f : 1.0f);
 
     vec2f const inertialRotX(cos(inertialAngle), sin(inertialAngle));
     vec2f const inertialRotY(-sin(inertialAngle), cos(inertialAngle));
@@ -2133,7 +2132,7 @@ void Npcs::RotateShipBy(
                         *mStateBuffer[npcId],
                         static_cast<int>(particleOrdinal),
                         homeShip,
-                        gameParameters);
+                        simulationParameters);
                 }
             }
         }
@@ -2146,7 +2145,7 @@ bool Npcs::DestroyAt(
     float radius,
     SessionId const & sessionId,
     float currentSimulationTime,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     bool hasFoundNpc = false;
 
@@ -2195,17 +2194,17 @@ bool Npcs::DestroyAt(
                     float const blastForceRadius =
                         mParticles.GetMaterial(explosiveParticleInRadius).ExplosiveCombustionForceRadius
                         * 0.5f // Magic number - lower radius with Smash
-                        * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
+                        * (simulationParameters.IsUltraViolentMode ? 4.0f : 1.0f);
 
                     float const blastHeat =
                         mParticles.GetMaterial(explosiveParticleInRadius).ExplosiveCombustionHeat
-                        * gameParameters.CombustionHeatAdjustment
-                        * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+                        * simulationParameters.CombustionHeatAdjustment
+                        * (simulationParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
                     float const blastHeatRadius =
                         mParticles.GetMaterial(explosiveParticleInRadius).ExplosiveCombustionHeatRadius
                         * 0.5f // Magic number - lower radius with Smash
-                        * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
+                        * (simulationParameters.IsUltraViolentMode ? 4.0f : 1.0f);
 
                     TriggerExplosion(
                         *npc,
@@ -2217,7 +2216,7 @@ bool Npcs::DestroyAt(
                         5.0f,
                         ExplosionType::Combustion,
                         currentSimulationTime,
-                        gameParameters);
+                        simulationParameters);
                 }
                 else
                 {
@@ -2272,13 +2271,13 @@ bool Npcs::ApplyHeatBlasterAt(
     vec2f const & targetPos,
     HeatBlasterActionType action,
     float radius,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     // Q = q*dt
     float const heatBlasterHeat =
-        gameParameters.HeatBlasterHeatFlow * 1000.0f // KJoule->Joule
-        * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f)
-        * GameParameters::SimulationStepTimeDuration<float>
+        simulationParameters.HeatBlasterHeatFlow * 1000.0f // KJoule->Joule
+        * (simulationParameters.IsUltraViolentMode ? 10.0f : 1.0f)
+        * SimulationParameters::SimulationStepTimeDuration<float>
         * (action == HeatBlasterActionType::Cool ? -1.0f : 1.0f); // Heat vs. Cool
 
     float const squareRadius = radius * radius;
@@ -2333,14 +2332,14 @@ bool Npcs::ExtinguishFireAt(
     vec2f const & targetPos,
     float strengthMultiplier,
     float radius,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     float const squareRadius = radius * radius;
 
     float const heatRemoved =
-        GameParameters::FireExtinguisherHeatRemoved
+        SimulationParameters::FireExtinguisherHeatRemoved
         * 0.3f // NPC adjustment
-        * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f)
+        * (simulationParameters.IsUltraViolentMode ? 10.0f : 1.0f)
         * strengthMultiplier;
 
     bool atLeastOneParticleFound = false;
@@ -2384,14 +2383,14 @@ void Npcs::ApplyLaserCannonThrough(
     vec2f const & startPos,
     vec2f const & endPos,
     float strength,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     // Q = q*dt
     float const effectiveLaserHeat =
-        gameParameters.LaserRayHeatFlow * 1000.0f // KJoule->Joule
+        simulationParameters.LaserRayHeatFlow * 1000.0f // KJoule->Joule
         * 0.1f // NPC adjustment
-        * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f)
-        * GameParameters::SimulationStepTimeDuration<float>
+        * (simulationParameters.IsUltraViolentMode ? 10.0f : 1.0f)
+        * SimulationParameters::SimulationStepTimeDuration<float>
         * (1.0f + (strength - 1.0f) * 4.0f);
 
     VisitNpcParticlesForInteraction(
@@ -2401,7 +2400,7 @@ void Npcs::ApplyLaserCannonThrough(
             auto const particleIndex = npcParticle.ParticleIndex;
             float const distance = Geometry::Segment::DistanceToPoint(startPos, endPos, mParticles.GetPosition(particleIndex));
 
-            if (distance < GameParameters::LaserRayRadius)
+            if (distance < SimulationParameters::LaserRayRadius)
             {
                 //
                 // Inject/remove heat at this point
@@ -2485,7 +2484,7 @@ void Npcs::ApplyBlast(
     float blastHeat, // KJ/s
     float blastHeatRadius, // ms
     ExplosionType explosionType,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     // The blast parameter is for damage to the ship; here we want a lower
     // force and a larger radius - as if only caused by air - and thus we
@@ -2494,8 +2493,8 @@ void Npcs::ApplyBlast(
 
     float const actualBlastForceRadius =
         blastForceRadius
-        * GameParameters::NpcBasePassiveBlastRadiusMultiplier
-        * gameParameters.NpcPassiveBlastRadiusAdjustment;
+        * SimulationParameters::NpcBasePassiveBlastRadiusMultiplier
+        * simulationParameters.NpcPassiveBlastRadiusAdjustment;
 
     float const actualBlastAcceleration =
         blastForceMagnitude
@@ -2504,8 +2503,8 @@ void Npcs::ApplyBlast(
 
     float const actualBlastHeatRadius =
         blastHeatRadius
-        * GameParameters::NpcBasePassiveBlastRadiusMultiplier
-        * gameParameters.NpcPassiveBlastRadiusAdjustment;
+        * SimulationParameters::NpcBasePassiveBlastRadiusMultiplier
+        * simulationParameters.NpcPassiveBlastRadiusAdjustment;
 
     if (explosionType != ExplosionType::FireExtinguishing)
     {
@@ -2610,11 +2609,11 @@ void Npcs::ApplyAntiMatterBombPreimplosion(
     vec2f const & centerPosition,
     float radius,
     float radiusThickness,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     float const strength =
         8000.0f // Magic number
-        * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
+        * (simulationParameters.IsUltraViolentMode ? 5.0f : 1.0f);
 
     VisitNpcParticlesForInteraction(
         shipId,
@@ -2640,13 +2639,13 @@ void Npcs::ApplyAntiMatterBombImplosion(
     ShipId shipId,
     vec2f const & centerPosition,
     float sequenceProgress,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     float const strength =
         (sequenceProgress * sequenceProgress)
-        * gameParameters.AntiMatterBombImplosionStrength
+        * simulationParameters.AntiMatterBombImplosionStrength
         * 3000.0f // Magic number
-        * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
+        * (simulationParameters.IsUltraViolentMode ? 5.0f : 1.0f);
 
     VisitNpcParticlesForInteraction(
         shipId,
@@ -2681,11 +2680,11 @@ void Npcs::ApplyAntiMatterBombImplosion(
 void Npcs::ApplyAntiMatterBombExplosion(
     ShipId shipId,
     vec2f const & centerPosition,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     float const strength =
         30000.0f // Magic number
-        * (gameParameters.IsUltraViolentMode ? 50.0f : 1.0f);
+        * (simulationParameters.IsUltraViolentMode ? 50.0f : 1.0f);
 
     VisitNpcParticlesForInteraction(
         shipId,
@@ -3337,7 +3336,7 @@ void Npcs::InternalMoveNpcBy(
     auto & npc = *mStateBuffer[id];
 
     // Calculate absolute velocity for this delta movement - we want it clamped
-    vec2f const targetAbsoluteVelocity = (deltaAnchorPosition / GameParameters::SimulationStepTimeDuration<float> *mGlobalDampingFactor).clamp_length_upper(GameParameters::MaxNpcToolMoveVelocityMagnitude);
+    vec2f const targetAbsoluteVelocity = (deltaAnchorPosition / SimulationParameters::SimulationStepTimeDuration<float> *mGlobalDampingFactor).clamp_length_upper(SimulationParameters::MaxNpcToolMoveVelocityMagnitude);
 
     // Move particles
     for (size_t p = 0; p < npc.ParticleMesh.Particles.size(); ++p)
@@ -3802,8 +3801,8 @@ void Npcs::PublishHumanNpcStats()
 
 void Npcs::RenderNpc(
     StateType const & npc,
-    Render::RenderContext & renderContext,
-    Render::ShipRenderContext & shipRenderContext) const
+    RenderContext & renderContext,
+    ShipRenderContext & shipRenderContext) const
 {
     switch (renderContext.GetNpcRenderMode())
     {
@@ -3839,8 +3838,8 @@ void Npcs::RenderNpc(
 template<NpcRenderModeType RenderMode>
 void Npcs::RenderNpc(
     StateType const & npc,
-    Render::RenderContext & renderContext,
-    Render::ShipRenderContext & shipRenderContext) const
+    RenderContext & renderContext,
+    ShipRenderContext & shipRenderContext) const
 {
     assert(mShips[npc.CurrentShipId].has_value());
 
@@ -3902,63 +3901,63 @@ void Npcs::RenderNpc(
 
             vec2f const legTop = feetPosition
                 + actualBodyVector
-                    * (IsTextureMode ? humanNpcState.TextureGeometry.LegLengthFraction : GameParameters::HumanNpcGeometry::LegLengthFraction)
+                    * (IsTextureMode ? humanNpcState.TextureGeometry.LegLengthFraction : SimulationParameters::HumanNpcGeometry::LegLengthFraction)
                     * animationState.CrotchHeightMultiplier;
-            vec2f const torsoBottom = legTop - actualBodyVector * (GameParameters::HumanNpcGeometry::LegLengthFraction / 20.0f); // Magic hip
+            vec2f const torsoBottom = legTop - actualBodyVector * (SimulationParameters::HumanNpcGeometry::LegLengthFraction / 20.0f); // Magic hip
             vec2f const torsoTop = legTop
                 + actualBodyVector
-                    * (IsTextureMode ? humanNpcState.TextureGeometry.TorsoLengthFraction : GameParameters::HumanNpcGeometry::TorsoLengthFraction);
+                    * (IsTextureMode ? humanNpcState.TextureGeometry.TorsoLengthFraction : SimulationParameters::HumanNpcGeometry::TorsoLengthFraction);
             vec2f const headBottom = torsoTop;
-            vec2f const armTop = headBottom - actualBodyVector * (GameParameters::HumanNpcGeometry::ArmLengthFraction / 8.0f); // Magic shoulder
+            vec2f const armTop = headBottom - actualBodyVector * (SimulationParameters::HumanNpcGeometry::ArmLengthFraction / 8.0f); // Magic shoulder
             vec2f const headTop = headBottom
                 + actualBodyVector
-                    * (IsTextureMode ? humanNpcState.TextureGeometry.HeadLengthFraction : GameParameters::HumanNpcGeometry::HeadLengthFraction);
+                    * (IsTextureMode ? humanNpcState.TextureGeometry.HeadLengthFraction : SimulationParameters::HumanNpcGeometry::HeadLengthFraction);
 
             float const adjustedIdealHumanHeight = npc.ParticleMesh.Springs[0].RestLength;
 
             float const headWidthMultiplier = 1.0f + (humanNpcState.WidthMultipier - 1.0f) * 0.5f; // Head doesn'w widen/narrow like body does
             float const headWidthFraction = IsTextureMode
                 ? humanNpcState.TextureGeometry.HeadLengthFraction * humanNpcState.TextureGeometry.HeadWHRatio
-                : GameParameters::HumanNpcGeometry::QuadModeHeadWidthFraction;
+                : SimulationParameters::HumanNpcGeometry::QuadModeHeadWidthFraction;
             float const halfHeadW = (adjustedIdealHumanHeight * headWidthFraction * headWidthMultiplier) / 2.0f;
 
             float const torsoWidthFraction = IsTextureMode
                 ? humanNpcState.TextureGeometry.TorsoLengthFraction * humanNpcState.TextureGeometry.TorsoWHRatio
-                : GameParameters::HumanNpcGeometry::QuadModeTorsoWidthFraction;
+                : SimulationParameters::HumanNpcGeometry::QuadModeTorsoWidthFraction;
             float const halfTorsoW = (adjustedIdealHumanHeight * torsoWidthFraction * humanNpcState.WidthMultipier) / 2.0f;
 
             float const leftArmLength =
                 adjustedIdealHumanHeight
-                * (IsTextureMode ? humanNpcState.TextureGeometry.ArmLengthFraction : GameParameters::HumanNpcGeometry::ArmLengthFraction)
+                * (IsTextureMode ? humanNpcState.TextureGeometry.ArmLengthFraction : SimulationParameters::HumanNpcGeometry::ArmLengthFraction)
                 * animationState.LimbLengthMultipliers.LeftArm;
             float const rightArmLength =
                 adjustedIdealHumanHeight
-                * (IsTextureMode ? humanNpcState.TextureGeometry.ArmLengthFraction : GameParameters::HumanNpcGeometry::ArmLengthFraction)
+                * (IsTextureMode ? humanNpcState.TextureGeometry.ArmLengthFraction : SimulationParameters::HumanNpcGeometry::ArmLengthFraction)
                 * animationState.LimbLengthMultipliers.RightArm;
 
             float const armWidthFraction = IsTextureMode
                 ? humanNpcState.TextureGeometry.ArmLengthFraction * humanNpcState.TextureGeometry.ArmWHRatio
-                : GameParameters::HumanNpcGeometry::QuadModeArmWidthFraction;
+                : SimulationParameters::HumanNpcGeometry::QuadModeArmWidthFraction;
             float const halfArmW = (adjustedIdealHumanHeight * armWidthFraction * humanNpcState.WidthMultipier) / 2.0f;
 
             float const leftLegLength =
                 adjustedIdealHumanHeight
-                * (IsTextureMode ? humanNpcState.TextureGeometry.LegLengthFraction : GameParameters::HumanNpcGeometry::LegLengthFraction)
+                * (IsTextureMode ? humanNpcState.TextureGeometry.LegLengthFraction : SimulationParameters::HumanNpcGeometry::LegLengthFraction)
                 * animationState.LimbLengthMultipliers.LeftLeg;
             float const rightLegLength =
                 adjustedIdealHumanHeight
-                * (IsTextureMode ? humanNpcState.TextureGeometry.LegLengthFraction : GameParameters::HumanNpcGeometry::LegLengthFraction)
+                * (IsTextureMode ? humanNpcState.TextureGeometry.LegLengthFraction : SimulationParameters::HumanNpcGeometry::LegLengthFraction)
                 * animationState.LimbLengthMultipliers.RightLeg;
 
             float const legWidthFraction = IsTextureMode
                 ? humanNpcState.TextureGeometry.LegLengthFraction * humanNpcState.TextureGeometry.LegWHRatio
-                : GameParameters::HumanNpcGeometry::QuadModeLegWidthFraction;
+                : SimulationParameters::HumanNpcGeometry::QuadModeLegWidthFraction;
             float const halfLegW = (adjustedIdealHumanHeight * legWidthFraction * humanNpcState.WidthMultipier) / 2.0f;
 
             // Prepare texture coords for quad mode
             float const x = humanNpcState.CurrentFaceDirectionX + humanNpcState.CurrentFaceOrientation;
             assert(x == -1.0f || x == 1.0f);
-            Render::TextureCoordinatesQuad quadModeTextureCoordinates = {
+            TextureCoordinatesQuad quadModeTextureQuad = {
                 -x, x,
                 -1.0f, 1.0f
             };
@@ -3991,7 +3990,7 @@ void Npcs::RenderNpc(
                             staticAttribs);
                     else
                         shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
-                            quadModeTextureCoordinates,
+                            quadModeTextureQuad,
                             upperLight,
                             staticAttribs,
                             npc.RenderColor);
@@ -4025,7 +4024,7 @@ void Npcs::RenderNpc(
                                 staticAttribs);
                         else
                             shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
-                                quadModeTextureCoordinates,
+                                quadModeTextureQuad,
                                 upperLight,
                                 staticAttribs,
                                 npc.RenderColor);
@@ -4048,7 +4047,7 @@ void Npcs::RenderNpc(
                                 staticAttribs);
                         else
                             shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
-                                quadModeTextureCoordinates,
+                                quadModeTextureQuad,
                                 upperLight,
                                 staticAttribs,
                                 npc.RenderColor);
@@ -4071,7 +4070,7 @@ void Npcs::RenderNpc(
                                 staticAttribs);
                         else
                             shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
-                                quadModeTextureCoordinates,
+                                quadModeTextureQuad,
                                 lowerLight,
                                 staticAttribs,
                                 npc.RenderColor);
@@ -4094,7 +4093,7 @@ void Npcs::RenderNpc(
                                 staticAttribs);
                         else
                             shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
-                                quadModeTextureCoordinates,
+                                quadModeTextureQuad,
                                 lowerLight,
                                 staticAttribs,
                                 npc.RenderColor);
@@ -4121,7 +4120,7 @@ void Npcs::RenderNpc(
                                 staticAttribs);
                         else
                             shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
-                                quadModeTextureCoordinates,
+                                quadModeTextureQuad,
                                 upperLight,
                                 staticAttribs,
                                 npc.RenderColor);
@@ -4144,7 +4143,7 @@ void Npcs::RenderNpc(
                                 staticAttribs);
                         else
                             shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
-                                quadModeTextureCoordinates,
+                                quadModeTextureQuad,
                                 upperLight,
                                 staticAttribs,
                                 npc.RenderColor);
@@ -4167,7 +4166,7 @@ void Npcs::RenderNpc(
                                 staticAttribs);
                         else
                             shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
-                                quadModeTextureCoordinates,
+                                quadModeTextureQuad,
                                 lowerLight,
                                 staticAttribs,
                                 npc.RenderColor);
@@ -4190,7 +4189,7 @@ void Npcs::RenderNpc(
                                 staticAttribs);
                         else
                             shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
-                                quadModeTextureCoordinates,
+                                quadModeTextureQuad,
                                 lowerLight,
                                 staticAttribs,
                                 npc.RenderColor);
@@ -4213,7 +4212,7 @@ void Npcs::RenderNpc(
                             staticAttribs);
                     else
                         shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
-                            quadModeTextureCoordinates,
+                            quadModeTextureQuad,
                             upperLight,
                             staticAttribs,
                             npc.RenderColor);
@@ -4228,7 +4227,7 @@ void Npcs::RenderNpc(
                 struct TextureQuad
                 {
                     Quad Position;
-                    Render::TextureCoordinatesQuad TextureCoords;
+                    TextureCoordinatesQuad TextureQuad;
 
                     TextureQuad() = default;
                 };
@@ -4265,28 +4264,28 @@ void Npcs::RenderNpc(
                         ? (humanNpcState.TextureFrames.LegSide.TopY - animationState.UpperLegLengthFraction * (humanNpcState.TextureFrames.LegSide.TopY - humanNpcState.TextureFrames.LegSide.BottomY))
                         : 1.0f - animationState.UpperLegLengthFraction * 2.0f;
 
-                    Render::TextureCoordinatesQuad const upperLegTextureQuad = IsTextureMode
-                        ? Render::TextureCoordinatesQuad({
+                    TextureCoordinatesQuad const upperLegTextureQuad = IsTextureMode
+                        ? TextureCoordinatesQuad({
                             humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.LegSide.LeftX : humanNpcState.TextureFrames.LegSide.RightX,
                             humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.LegSide.RightX : humanNpcState.TextureFrames.LegSide.LeftX,
                             kneeTextureY,
                             humanNpcState.TextureFrames.LegSide.TopY })
-                        : Render::TextureCoordinatesQuad({
-                            quadModeTextureCoordinates.LeftX,
-                            quadModeTextureCoordinates.RightX,
+                        : TextureCoordinatesQuad({
+                            quadModeTextureQuad.LeftX,
+                            quadModeTextureQuad.RightX,
                             kneeTextureY,
                             1.0f });
 
 
-                    Render::TextureCoordinatesQuad const lowerLegTextureQuad = IsTextureMode
-                        ? Render::TextureCoordinatesQuad({
+                    TextureCoordinatesQuad const lowerLegTextureQuad = IsTextureMode
+                        ? TextureCoordinatesQuad({
                             humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.LegSide.LeftX : humanNpcState.TextureFrames.LegSide.RightX,
                             humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.LegSide.RightX : humanNpcState.TextureFrames.LegSide.LeftX,
                             humanNpcState.TextureFrames.LegSide.BottomY,
                             kneeTextureY })
-                        : Render::TextureCoordinatesQuad({
-                            quadModeTextureCoordinates.LeftX,
-                            quadModeTextureCoordinates.RightX,
+                        : TextureCoordinatesQuad({
+                            quadModeTextureQuad.LeftX,
+                            quadModeTextureQuad.RightX,
                             -1.0f,
                             kneeTextureY });
 
@@ -4360,7 +4359,7 @@ void Npcs::RenderNpc(
                             halfLegW),
                         IsTextureMode
                             ? humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.LegSide : humanNpcState.TextureFrames.LegSide.FlipH()
-                            : quadModeTextureCoordinates
+                            : quadModeTextureQuad
                     };
 
                     rightUpperLegQuad = {
@@ -4371,7 +4370,7 @@ void Npcs::RenderNpc(
                             halfLegW),
                         IsTextureMode
                             ? humanNpcState.CurrentFaceDirectionX > 0.0f ? humanNpcState.TextureFrames.LegSide : humanNpcState.TextureFrames.LegSide.FlipH()
-                            : quadModeTextureCoordinates
+                            : quadModeTextureQuad
                     };
                 }
 
@@ -4428,7 +4427,7 @@ void Npcs::RenderNpc(
                                 staticAttribs);
                         else
                             shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
-                                quadModeTextureCoordinates,
+                                quadModeTextureQuad,
                                 upperLight,
                                 staticAttribs,
                                 npc.RenderColor);
@@ -4485,7 +4484,7 @@ void Npcs::RenderNpc(
                                 staticAttribs);
                         else
                             shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
-                                quadModeTextureCoordinates,
+                                quadModeTextureQuad,
                                 upperLight,
                                 staticAttribs,
                                 npc.RenderColor);
@@ -4508,7 +4507,7 @@ void Npcs::RenderNpc(
                             staticAttribs);
                     else
                         shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
-                            quadModeTextureCoordinates,
+                            quadModeTextureQuad,
                             upperLight,
                             staticAttribs,
                             npc.RenderColor);
@@ -4530,7 +4529,7 @@ void Npcs::RenderNpc(
                             staticAttribs);
                     else
                         shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
-                            quadModeTextureCoordinates,
+                            quadModeTextureQuad,
                             upperLight,
                             staticAttribs,
                             npc.RenderColor);
@@ -4589,7 +4588,7 @@ void Npcs::RenderNpc(
                                 staticAttribs);
                         else
                             shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
-                                quadModeTextureCoordinates,
+                                quadModeTextureQuad,
                                 upperLight,
                                 staticAttribs,
                                 npc.RenderColor);
@@ -4646,7 +4645,7 @@ void Npcs::RenderNpc(
                                 staticAttribs);
                         else
                             shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
-                                quadModeTextureCoordinates,
+                                quadModeTextureQuad,
                                 upperLight,
                                 staticAttribs,
                                 npc.RenderColor);
@@ -4687,16 +4686,16 @@ void Npcs::RenderNpc(
                 animationState.RemovalProgress
             };
 
-            Render::TextureCoordinatesQuad textureCoords;
+            TextureCoordinatesQuad textureQuad;
             if constexpr (RenderMode == NpcRenderModeType::Texture)
             {
-                textureCoords = furnitureNpcState.CurrentFaceDirectionX > 0.0f ?
-                    furnitureNpcState.TextureCoordinatesQuad
-                    : furnitureNpcState.TextureCoordinatesQuad.FlipH();
+                textureQuad = furnitureNpcState.CurrentFaceDirectionX > 0.0f ?
+                    furnitureNpcState.TextureQuad
+                    : furnitureNpcState.TextureQuad.FlipH();
             }
             else
             {
-                textureCoords = {
+                textureQuad = {
                     -furnitureNpcState.CurrentFaceDirectionX, furnitureNpcState.CurrentFaceDirectionX,
                     -1.0f, 1.0f
                 };
@@ -4719,12 +4718,12 @@ void Npcs::RenderNpc(
 
                 if constexpr (RenderMode == NpcRenderModeType::Texture)
                     shipRenderContext.UploadNpcTextureAttributes(
-                        textureCoords,
+                        textureQuad,
                         light,
                         staticAttribs);
                 else
                     shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
-                        textureCoords,
+                        textureQuad,
                         light,
                         staticAttribs,
                         npc.RenderColor);
@@ -4899,7 +4898,7 @@ void Npcs::UpdateHumanNpcAnimation(
     // Angle of human wrt edge until which arm is angled to the max
     // (extent of early stage during rising)
     float constexpr MaxHumanEdgeAngleForArms = 0.40489178628508342331207292900944f;
-    //static_assert(MaxHumanEdgeAngleForArms == std::atanf(GameParameters::HumanNpcGeometry::ArmLengthFraction / (1.0f - GameParameters::HumanNpcGeometry::HeadLengthFraction)));
+    //static_assert(MaxHumanEdgeAngleForArms == std::atanf(SimulationParameters::HumanNpcGeometry::ArmLengthFraction / (1.0f - SimulationParameters::HumanNpcGeometry::HeadLengthFraction)));
 
     switch (humanNpcState.CurrentBehavior)
     {
@@ -5170,11 +5169,11 @@ void Npcs::UpdateHumanNpcAnimation(
             // Add some dependency on walking speed
             float const actualWalkingSpeed = CalculateActualHumanWalkingAbsoluteSpeed(humanNpcState);
             float const MaxLegAngle =
-                0.41f // std::atanf((GameParameters::HumanNpcGeometry::StepLengthFraction / 2.0f) / GameParameters::HumanNpcGeometry::LegLengthFraction)
+                0.41f // std::atanf((SimulationParameters::HumanNpcGeometry::StepLengthFraction / 2.0f) / SimulationParameters::HumanNpcGeometry::LegLengthFraction)
                 * std::sqrt(actualWalkingSpeed * 0.9f);
 
             adjustedStandardHumanHeight = npc.ParticleMesh.Springs[0].RestLength;
-            float const stepLength = GameParameters::HumanNpcGeometry::StepLengthFraction * adjustedStandardHumanHeight;
+            float const stepLength = SimulationParameters::HumanNpcGeometry::StepLengthFraction * adjustedStandardHumanHeight;
             float const distance =
                 humanNpcState.TotalDistanceTraveledOnEdgeSinceStateTransition
                 + 0.3f * humanNpcState.TotalDistanceTraveledOffEdgeSinceStateTransition;
@@ -5423,7 +5422,7 @@ void Npcs::UpdateHumanNpcAnimation(
 
             // Arms: always up, unless horizontal or foot on the floor, in which case PI/2
 
-            float const horizontality = std::abs(actualBodyDir.dot(GameParameters::GravityDir));
+            float const horizontality = std::abs(actualBodyDir.dot(SimulationParameters::GravityDir));
 
             float constexpr exceptionAngle = Pi<float> / 1.5f;
             float const armAngle = (primaryContrainedState.has_value() && primaryContrainedState->CurrentVirtualFloor.has_value())
@@ -5524,7 +5523,7 @@ void Npcs::UpdateHumanNpcAnimation(
 
             // Advance animation elapsed with variable speed
             float const panicAccelerator = 1.0f + std::min(humanNpcState.ResultantPanicLevel, 2.0f) * 2.0f;
-            animationState.AnimationElapsed += GameParameters::SimulationStepTimeDuration<float> * panicAccelerator;
+            animationState.AnimationElapsed += SimulationParameters::SimulationStepTimeDuration<float> * panicAccelerator;
 
             break;
         }
@@ -5630,7 +5629,7 @@ void Npcs::UpdateHumanNpcAnimation(
 
             // Advance animation elapsed with variable speed
             float const panicAccelerator = 1.0f + std::min(humanNpcState.ResultantPanicLevel, 2.0f) * 2.0f;
-            animationState.AnimationElapsed += GameParameters::SimulationStepTimeDuration<float> *panicAccelerator;
+            animationState.AnimationElapsed += SimulationParameters::SimulationStepTimeDuration<float> *panicAccelerator;
 
             break;
         }
@@ -5682,7 +5681,7 @@ void Npcs::UpdateHumanNpcAnimation(
 
             // Advance animation elapsed with variable speed
             float const panicAccelerator = 1.0f + std::min(humanNpcState.ResultantPanicLevel, 2.0f) * 2.0f;
-            animationState.AnimationElapsed += GameParameters::SimulationStepTimeDuration<float> *panicAccelerator;
+            animationState.AnimationElapsed += SimulationParameters::SimulationStepTimeDuration<float> *panicAccelerator;
 
             break;
         }
@@ -5901,8 +5900,8 @@ void Npcs::UpdateHumanNpcAnimation(
 
                 float constexpr MaxLengthMultiplier = 1.4f;
 
-                float const adjustedStandardLegLength = GameParameters::HumanNpcGeometry::LegLengthFraction * adjustedStandardHumanHeight;
-                vec2f const crotchPosition = feetPosition - actualBodyVector * (GameParameters::HumanNpcGeometry::LegLengthFraction * targetCrotchHeightMultiplier);
+                float const adjustedStandardLegLength = SimulationParameters::HumanNpcGeometry::LegLengthFraction * adjustedStandardHumanHeight;
+                vec2f const crotchPosition = feetPosition - actualBodyVector * (SimulationParameters::HumanNpcGeometry::LegLengthFraction * targetCrotchHeightMultiplier);
 
                 // leg*1 is crotchPosition
                 float const numerator = (edgp1.y - crotchPosition.y) * (edgp2.x - edgp1.x) + (crotchPosition.x - edgp1.x) * (edgp2.y - edgp1.y);

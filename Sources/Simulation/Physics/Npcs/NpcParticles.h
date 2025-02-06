@@ -5,16 +5,16 @@
 ***************************************************************************************/
 #pragma once
 
-#include "../GameParameters.h"
-#include "../Materials.h"
+#include "../../Materials.h"
+#include "../../SimulationParameters.h"
 
-#include <GameCore/Buffer.h>
-#include <GameCore/Colors.h>
-#include <GameCore/ElementContainer.h>
-#include <GameCore/ElementIndexRangeIterator.h>
-#include <GameCore/GameTypes.h>
-#include <GameCore/SysSpecifics.h>
-#include <GameCore/Vectors.h>
+#include <Core/Buffer.h>
+#include <Core/Colors.h>
+#include <Core/ElementContainer.h>
+#include <Core/ElementIndexRangeIterator.h>
+#include <Core/GameTypes.h>
+#include <Core/SysSpecifics.h>
+#include <Core/Vectors.h>
 
 #include <algorithm>
 #include <cassert>

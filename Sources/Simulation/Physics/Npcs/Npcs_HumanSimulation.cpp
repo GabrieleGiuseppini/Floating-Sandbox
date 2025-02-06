@@ -3,10 +3,10 @@
  * Created:				2023-10-20
  * Copyright:			Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
  ***************************************************************************************/
-#include "Physics.h"
+#include "../Physics.h"
 
-#include <GameCore/GameMath.h>
-#include <GameCore/GameRandomEngine.h>
+#include <Core/GameMath.h>
+#include <Core/GameRandomEngine.h>
 
 #include <cmath>
 
@@ -43,7 +43,7 @@ Npcs::StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType Npcs::Ca
 void Npcs::UpdateFurniture(
 	StateType & npc,
 	float currentSimulationTime,
-	GameParameters const & /*gameParameters*/)
+	SimulationParameters const & /*simulationParameters*/)
 {
 	assert(npc.Kind == NpcKindType::Furniture);
 	auto & furnitureState = npc.KindSpecificState.FurnitureNpcState;
@@ -96,7 +96,7 @@ void Npcs::UpdateFurniture(
 void Npcs::UpdateHuman(
 	StateType & npc,
 	float currentSimulationTime,
-	GameParameters const & gameParameters)
+	SimulationParameters const & simulationParameters)
 {
 	assert(npc.ParticleMesh.Particles.size() == 2);
 	auto & primaryParticleState = npc.ParticleMesh.Particles[0];
@@ -1002,7 +1002,7 @@ void Npcs::UpdateHuman(
 					humanState,
 					areFeetOnFloor, // doMaintainEquilibrium
 					mParticles,
-					gameParameters))
+					simulationParameters))
 			{
 				// Transition to aerial/falling, depending on whether we're on an edge
 
@@ -1196,7 +1196,7 @@ void Npcs::UpdateHuman(
 						humanState,
 						primaryParticleState,
 						homeShip,
-						gameParameters);
+						simulationParameters);
 				}
 
 #ifdef BARYLAB_PROBING
@@ -1711,11 +1711,11 @@ void Npcs::UpdateHuman(
 			{
 				homeShip.SpawnAirBubble(
 					mParticles.GetPosition(secondaryParticleState.ParticleIndex),
-					GameParameters::NpcAirBubbleFinalScale,
+					SimulationParameters::NpcAirBubbleFinalScale,
 					mParticles.GetTemperature(secondaryParticleState.ParticleIndex), // Head temperature
 					currentSimulationTime,
 					npc.CurrentPlaneId,
-					gameParameters);
+					simulationParameters);
 
 				// Calculate next emission timestamp
 				nextBubbleSimulationTime =
@@ -1872,7 +1872,7 @@ void Npcs::UpdateHuman(
 					//
 
 					float const levitationDepth = std::max(1.0f - (relElapsed * relElapsed) / (HumanRemovalLevitationDuration * HumanRemovalLevitationDuration), 0.0f);
-					vec2f const upTraslation = vec2f(0.0f, GameParameters::SimulationStepTimeDuration<float> / HumanRemovalLevitationDuration * levitationDepth);
+					vec2f const upTraslation = vec2f(0.0f, SimulationParameters::SimulationStepTimeDuration<float> / HumanRemovalLevitationDuration * levitationDepth);
 					feetPosition += upTraslation;
 					headPosition += upTraslation;
 
@@ -1967,7 +1967,7 @@ bool Npcs::CheckAndMaintainHumanEquilibrium(
 	StateType::KindSpecificStateType::HumanNpcStateType & humanState,
 	bool doMaintainEquilibrium,
 	NpcParticles & particles,
-	GameParameters const & /*gameParameters*/)
+	SimulationParameters const & /*simulationParameters*/)
 {
 	//
 	// Make sure we are not falling out of equilibrium
@@ -2031,7 +2031,7 @@ void Npcs::RunWalkingHumanStateMachine(
 	StateType::KindSpecificStateType::HumanNpcStateType & humanState,
 	StateType::NpcParticleStateType const & primaryParticleState,
 	Ship const & /*homeShip*/, // Will come useful when we'll *plan* the walk
-	GameParameters const & /*gameParameters*/)
+	SimulationParameters const & /*simulationParameters*/)
 {
 	assert(primaryParticleState.ConstrainedState.has_value());
 	assert(humanState.CurrentBehavior == StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::Constrained_Walking);
