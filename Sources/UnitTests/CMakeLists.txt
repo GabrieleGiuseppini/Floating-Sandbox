@@ -78,6 +78,8 @@ source_group(" " FILES ${UNIT_TEST_SOURCES})
 add_executable (UnitTests ${UNIT_TEST_SOURCES})
 add_test (UnitTests UnitTests)
 
+target_include_directories(UnitTests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+
 target_link_libraries (UnitTests
 	Core
 	Game

@@ -99,7 +99,7 @@ source_group(" " FILES ${SOURCES})
 
 add_library (Core ${SOURCES})
 
-target_include_directories(Core PRIVATE ${PNG_PNG_INCLUDE_DIR})
+target_include_directories(Core PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${PNG_PNG_INCLUDE_DIR})
 target_include_directories(Core PUBLIC ${PICOJSON_INCLUDE_DIRS})
 target_include_directories(Core INTERFACE ..)
 

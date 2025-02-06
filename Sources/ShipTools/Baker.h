@@ -8,7 +8,7 @@
 #include <Core/TextureDatabase.h>
 #include <Core/Utils.h>
 
-#include <Game/FileSystem.h>
+#include <Game/FileStreams.h>
 #include <Game/GameAssetManager.h>
 
 #include <filesystem>
@@ -29,7 +29,7 @@ public:
 
         static AtlasBakingOptions Deserialize(std::filesystem::path const & optionsJsonFilePath)
         {
-            picojson::object rootJsonObject = Utils::GetJsonValueAsObject(Utils::ParseJSONString(FileSystem::LoadTextFile(optionsJsonFilePath)), "root");
+            picojson::object rootJsonObject = Utils::GetJsonValueAsObject(Utils::ParseJSONString(FileTextReadStream(optionsJsonFilePath).ReadAll()), "root");
 
             bool alphaPreMultiply = Utils::GetMandatoryJsonMember<bool>(rootJsonObject, "alphaPreMultiply");
             bool mipMappable = Utils::GetMandatoryJsonMember<bool>(rootJsonObject, "mipMappable");
