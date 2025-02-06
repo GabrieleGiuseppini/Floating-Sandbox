@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include "ShipLoadOptions.h"
+#include <Simulation/ShipLoadOptions.h>
 
 #include <filesystem>
 

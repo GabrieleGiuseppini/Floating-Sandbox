@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include "RenderContext.h"
+#include <Render/RenderContext.h>
 
 #include <chrono>
 #include <deque>
@@ -27,7 +27,7 @@ public:
 
 	void Update(float simulationTime);
 
-	void RenderUpload(Render::NotificationRenderContext & notificationRenderContext);
+	void RenderUpload(NotificationRenderContext & notificationRenderContext);
 
 	void Reset();
 

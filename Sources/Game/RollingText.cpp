@@ -139,7 +139,7 @@ void RollingText::Update(float simulationTime)
 	}
 }
 
-void RollingText::RenderUpload(Render::NotificationRenderContext & notificationRenderContext)
+void RollingText::RenderUpload(NotificationRenderContext & notificationRenderContext)
 {
 	if (mIsDirty)
 	{
@@ -156,7 +156,7 @@ void RollingText::RenderUpload(Render::NotificationRenderContext & notificationR
 
 			notificationRenderContext.UploadNotificationTextLine(
 				line.Text,
-				Render::AnchorPositionType::TopRight,
+				AnchorPositionType::TopRight,
 				vec2f(0.0f, static_cast<float>(MaxLines) - yOffset),
 				alpha);
 		}

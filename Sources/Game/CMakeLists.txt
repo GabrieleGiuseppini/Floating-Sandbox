@@ -11,8 +11,11 @@ set  (GAME_SOURCES
 	GameEventDispatcher.h
 	GameVersion.h
 	IGameEventHandlers.h
+	RollingText.cpp
+	RollingText.h
 	Settings.cpp
 	Settings.h
+	ShipLoadSpecifications.h
 )
 
 source_group(" " FILES ${GAME_SOURCES})
