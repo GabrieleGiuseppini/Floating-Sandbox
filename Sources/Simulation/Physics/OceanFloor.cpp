@@ -14,9 +14,9 @@ namespace Physics {
 template<typename T>
 static constexpr T RenderSlices = 500;
 
-OceanFloor::OceanFloor(OceanFloorTerrain && terrain)
+OceanFloor::OceanFloor(OceanFloorHeightMap && heightMap)
     : mBumpProfile(SamplesCount)
-    , mTerrain(std::move(terrain))
+    , mHeightMap(std::move(heightMap))
     // Regarding the number of samples:
     //  - The sample index for x==max (HalfMaxWorldWidth) is SamplesCount - 1
     //  - To allow for our "rough check" at x==max, we need an addressable value for sample[SamplesCount].SampleValue
@@ -36,24 +36,24 @@ OceanFloor::OceanFloor(OceanFloorTerrain && terrain)
     CalculateResultantSampleValues();
 }
 
-void OceanFloor::SetTerrain(OceanFloorTerrain const & terrain)
+void OceanFloor::SetHeightMap(OceanFloorHeightMap const & heightMap)
 {
     // Update terrain
-    mTerrain = terrain;
+    mHeightMap = heightMap;
 
     // Recalculate samples
     CalculateResultantSampleValues();
 }
 
-void OceanFloor::Update(GameParameters const & gameParameters)
+void OceanFloor::Update(SimulationParameters const & simulationParameters)
 {
     bool doRecalculateSamples = false;
 
     // Check whether we need to recalculate the bump profile
-    if (gameParameters.OceanFloorBumpiness != mCurrentOceanFloorBumpiness)
+    if (simulationParameters.OceanFloorBumpiness != mCurrentOceanFloorBumpiness)
     {
         // Update current game parameters
-        mCurrentOceanFloorBumpiness = gameParameters.OceanFloorBumpiness;
+        mCurrentOceanFloorBumpiness = simulationParameters.OceanFloorBumpiness;
 
         // Recalculate bump profile
         CalculateBumpProfile();
@@ -63,12 +63,12 @@ void OceanFloor::Update(GameParameters const & gameParameters)
 
     // Check whether we need to recalculate the samples
     if (doRecalculateSamples
-        || gameParameters.SeaDepth != mCurrentSeaDepth
-        || gameParameters.OceanFloorDetailAmplification != mCurrentOceanFloorDetailAmplification)
+        || simulationParameters.SeaDepth != mCurrentSeaDepth
+        || simulationParameters.OceanFloorDetailAmplification != mCurrentOceanFloorDetailAmplification)
     {
         // Update current game parameters
-        mCurrentSeaDepth = gameParameters.SeaDepth;
-        mCurrentOceanFloorDetailAmplification = gameParameters.OceanFloorDetailAmplification;
+        mCurrentSeaDepth = simulationParameters.SeaDepth;
+        mCurrentOceanFloorDetailAmplification = simulationParameters.OceanFloorDetailAmplification;
 
         // Recalculate samples
         CalculateResultantSampleValues();
@@ -76,16 +76,16 @@ void OceanFloor::Update(GameParameters const & gameParameters)
 }
 
 void OceanFloor::Upload(
-    GameParameters const & /*gameParameters*/,
-    Render::RenderContext & renderContext) const
+    SimulationParameters const & /*simulationParameters*/,
+    RenderContext & renderContext) const
 {
     //
     // We want to upload at most RenderSlices slices
     //
 
     // Find index of leftmost sample, and its corresponding world X
-    auto const sampleIndex = FastTruncateToArchInt((renderContext.GetVisibleWorld().TopLeft.x + GameParameters::HalfMaxWorldWidth) / Dx);
-    float sampleIndexX = -GameParameters::HalfMaxWorldWidth + (Dx * sampleIndex);
+    auto const sampleIndex = FastTruncateToArchInt((renderContext.GetVisibleWorld().TopLeft.x + SimulationParameters::HalfMaxWorldWidth) / Dx);
+    float sampleIndexX = -SimulationParameters::HalfMaxWorldWidth + (Dx * sampleIndex);
 
     // Calculate number of samples required to cover screen from leftmost sample
     // up to the visible world right (included)
@@ -107,7 +107,7 @@ void OceanFloor::Upload(
         // quad side must be at the end of the width
         for (size_t s = 0;
             s <= RenderSlices<size_t>;
-            ++s, sampleIndexX = std::min(sampleIndexX + sliceDx, GameParameters::HalfMaxWorldWidth))
+            ++s, sampleIndexX = std::min(sampleIndexX + sliceDx, SimulationParameters::HalfMaxWorldWidth))
         {
             renderContext.UploadLand(
                 sampleIndexX,
@@ -178,7 +178,7 @@ std::optional<bool> OceanFloor::AdjustTo(
     // Calculate left first sample index, minimizing error
     //
 
-    float const sampleIndexF = (leftX + GameParameters::HalfMaxWorldWidth) / Dx;
+    float const sampleIndexF = (leftX + SimulationParameters::HalfMaxWorldWidth) / Dx;
 
     auto const sampleIndex = FastTruncateToArchInt(sampleIndexF + 0.5f);
 
@@ -217,14 +217,14 @@ void OceanFloor::DisplaceAt(
     float x,
     float yOffset)
 {
-    assert(x >= -GameParameters::HalfMaxWorldWidth && x <= GameParameters::HalfMaxWorldWidth);
+    assert(x >= -SimulationParameters::HalfMaxWorldWidth && x <= SimulationParameters::HalfMaxWorldWidth);
 
     //
     // Find sample index
     //
 
     // Fractional index in the sample array
-    float const sampleIndexF = (x + GameParameters::HalfMaxWorldWidth) / Dx;
+    float const sampleIndexF = (x + SimulationParameters::HalfMaxWorldWidth) / Dx;
 
     // Integral part
     auto const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
@@ -241,13 +241,13 @@ void OceanFloor::DisplaceAt(
 
     // Left
     float lYOffset = yOffset * (1.0f - sampleIndexDx);
-    SetTerrainHeight(sampleIndexI, mTerrain[sampleIndexI] + lYOffset);
+    SetTerrainHeight(sampleIndexI, mHeightMap[sampleIndexI] + lYOffset);
 
     // Right
     if (static_cast<size_t>(sampleIndexI) < SamplesCount - 1)
     {
         float rYOffset = yOffset * sampleIndexDx;
-        SetTerrainHeight(sampleIndexI + 1, mTerrain[sampleIndexI + 1] + rYOffset);
+        SetTerrainHeight(sampleIndexI + 1, mHeightMap[sampleIndexI + 1] + rYOffset);
     }
 }
 
@@ -260,7 +260,7 @@ void OceanFloor::SetTerrainHeight(
     assert(sampleIndex >= 0 && sampleIndex < SamplesCount);
 
     // Update terrain
-    mTerrain[sampleIndex] = terrainHeight;
+    mHeightMap[sampleIndex] = terrainHeight;
 
     // Recalculate sample value
     float const newSampleValue = CalculateResultantSampleValue(sampleIndex);
@@ -289,7 +289,7 @@ void OceanFloor::CalculateBumpProfile()
     static constexpr float BumpFrequency2 = 0.015f;
     static constexpr float BumpFrequency3 = 0.001f;
 
-    float x = -GameParameters::HalfMaxWorldWidth;
+    float x = -SimulationParameters::HalfMaxWorldWidth;
     for (size_t i = 0; i < SamplesCount; ++i, x += Dx)
     {
         float const c1 = sinf(x * BumpFrequency1) * 10.f;

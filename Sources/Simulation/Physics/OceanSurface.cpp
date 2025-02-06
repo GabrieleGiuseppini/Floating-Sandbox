@@ -5,9 +5,9 @@
 ***************************************************************************************/
 #include "Physics.h"
 
-#include <GameCore/Algorithms.h>
-#include <GameCore/GameRandomEngine.h>
-#include <GameCore/GameWallClock.h>
+#include <Core/Algorithms.h>
+#include <Core/GameRandomEngine.h>
+#include <Core/GameWallClock.h>
 
 #include <algorithm>
 #include <chrono>
@@ -27,9 +27,9 @@ static std::chrono::seconds constexpr RogueWaveGracePeriod(5);
 
 OceanSurface::OceanSurface(
     World & parentWorld,
-    std::shared_ptr<GameEventDispatcher> gameEventDispatcher)
+    std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher)
     : mParentWorld(parentWorld)
-    , mGameEventHandler(std::move(gameEventDispatcher))
+    , mSimulationEventHandler(std::move(simulationEventDispatcher))
     ////////
     , mBasalWaveAmplitude1(0.0f)
     , mBasalWaveAmplitude2(0.0f)
@@ -80,7 +80,7 @@ OceanSurface::OceanSurface(
 void OceanSurface::Update(
     float currentSimulationTime,
     Wind const & wind,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     auto const now = GameWallClock::GetInstance().Now();
 
@@ -89,17 +89,17 @@ void OceanSurface::Update(
     //
 
     if (mWindBaseAndStormSpeedMagnitude != wind.GetBaseAndStormSpeedMagnitude()
-        || mBasalWaveHeightAdjustment != gameParameters.BasalWaveHeightAdjustment
-        || mBasalWaveLengthAdjustment != gameParameters.BasalWaveLengthAdjustment
-        || mBasalWaveSpeedAdjustment != gameParameters.BasalWaveSpeedAdjustment)
+        || mBasalWaveHeightAdjustment != simulationParameters.BasalWaveHeightAdjustment
+        || mBasalWaveLengthAdjustment != simulationParameters.BasalWaveLengthAdjustment
+        || mBasalWaveSpeedAdjustment != simulationParameters.BasalWaveSpeedAdjustment)
     {
-        RecalculateWaveCoefficients(wind, gameParameters);
+        RecalculateWaveCoefficients(wind, simulationParameters);
     }
 
-    if (mTsunamiRate != gameParameters.TsunamiRate
-        || mRogueWaveRate != gameParameters.RogueWaveRate)
+    if (mTsunamiRate != simulationParameters.TsunamiRate
+        || mRogueWaveRate != simulationParameters.RogueWaveRate)
     {
-        RecalculateAbnormalWaveTimestamps(gameParameters);
+        RecalculateAbnormalWaveTimestamps(simulationParameters);
     }
 
     //
@@ -140,7 +140,7 @@ void OceanSurface::Update(
             // Reset automatically-generated tsunamis
             mNextTsunamiTimestamp = CalculateNextAbnormalWaveTimestamp(
                 now,
-                gameParameters.TsunamiRate,
+                simulationParameters.TsunamiRate,
                 TsunamiGracePeriod);
 
             // Tell world
@@ -182,7 +182,7 @@ void OceanSurface::Update(
             // Reset automatically-generated rogue waves
             mNextRogueWaveTimestamp = CalculateNextAbnormalWaveTimestamp(
                 now,
-                gameParameters.RogueWaveRate,
+                simulationParameters.RogueWaveRate,
                 RogueWaveGracePeriod);
         }
     }
@@ -213,8 +213,8 @@ void OceanSurface::Update(
                 / 10.0f // Magic number
                 * SignStep(0.0f, -radialWindField->SourcePos.y);
 
-            DisplaceAt(std::max(radialWindField->SourcePos.x - horizontalDistance, -GameParameters::HalfMaxWorldWidth), displacementMagnitude);
-            DisplaceAt(std::min(radialWindField->SourcePos.x + horizontalDistance, GameParameters::HalfMaxWorldWidth), displacementMagnitude);
+            DisplaceAt(std::max(radialWindField->SourcePos.x - horizontalDistance, -SimulationParameters::HalfMaxWorldWidth), displacementMagnitude);
+            DisplaceAt(std::min(radialWindField->SourcePos.x + horizontalDistance, SimulationParameters::HalfMaxWorldWidth), displacementMagnitude);
         }
     }
 
@@ -232,7 +232,7 @@ void OceanSurface::Update(
 
     ApplyDampingBoundaryConditions();
 
-    UpdateFields(gameParameters);
+    UpdateFields(simulationParameters);
 
     // Note: field advection does not seem to improve the simulation in any visible way
     // AdvectFields();
@@ -244,7 +244,7 @@ void OceanSurface::Update(
     GenerateSamples(
         currentSimulationTime,
         wind,
-        gameParameters);
+        simulationParameters);
 
     //
     // 5. Reset Interactive Waves
@@ -253,7 +253,7 @@ void OceanSurface::Update(
     ResetInteractiveWaves();
 }
 
-void OceanSurface::Upload(Render::RenderContext & renderContext) const
+void OceanSurface::Upload(RenderContext & renderContext) const
 {
     switch (renderContext.GetOceanRenderDetail())
     {
@@ -297,8 +297,8 @@ void OceanSurface::ApplyThanosSnap(
     float leftFrontX,
     float rightFrontX)
 {
-    auto const sweIndexLeft = SWEBufferPrefixSize + ToSampleIndex(std::max(leftFrontX, -GameParameters::HalfMaxWorldWidth));
-    auto const sweIndexRight = SWEBufferPrefixSize + ToSampleIndex(std::min(rightFrontX, GameParameters::HalfMaxWorldWidth));
+    auto const sweIndexLeft = SWEBufferPrefixSize + ToSampleIndex(std::max(leftFrontX, -SimulationParameters::HalfMaxWorldWidth));
+    auto const sweIndexRight = SWEBufferPrefixSize + ToSampleIndex(std::min(rightFrontX, SimulationParameters::HalfMaxWorldWidth));
 
     float constexpr WaterDepression =
         0.1f // Magic number
@@ -327,8 +327,8 @@ void OceanSurface::TriggerTsunami(float currentSimulationTime)
 {
     // Choose X
     float const centerX = GameRandomEngine::GetInstance().GenerateUniformReal(
-        -GameParameters::HalfMaxWorldWidth * 4.0f / 5.0f,
-        GameParameters::HalfMaxWorldWidth * 4.0f / 5.0f);
+        -SimulationParameters::HalfMaxWorldWidth * 4.0f / 5.0f,
+        SimulationParameters::HalfMaxWorldWidth * 4.0f / 5.0f);
 
     // Choose height
     float const tsunamiRelativeHeight = GameRandomEngine::GetInstance().GenerateUniformReal(MaxInteractiveWaveAbsRelativeHeight * 0.6f, MaxInteractiveWaveAbsRelativeHeight * 0.85f);
@@ -341,8 +341,8 @@ void OceanSurface::TriggerTsunami(float currentSimulationTime)
         currentSimulationTime);
 
     // Fire tsunami event
-    assert(mGameEventHandler);
-    mGameEventHandler->OnTsunami(centerX);
+    assert(mSimulationEventHandler);
+    mSimulationEventHandler->OnTsunami(centerX);
 }
 
 void OceanSurface::TriggerRogueWave(
@@ -354,12 +354,12 @@ void OceanSurface::TriggerRogueWave(
     if (wind.GetBaseAndStormSpeedMagnitude() >= 0.0f)
     {
         // Left locus
-        centerX = -GameParameters::HalfMaxWorldWidth;
+        centerX = -SimulationParameters::HalfMaxWorldWidth;
     }
     else
     {
         // Right locus
-        centerX = GameParameters::HalfMaxWorldWidth;
+        centerX = SimulationParameters::HalfMaxWorldWidth;
     }
 
     // Choose height
@@ -376,7 +376,7 @@ void OceanSurface::TriggerRogueWave(
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 template<OceanRenderDetailType DetailType>
-void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
+void OceanSurface::InternalUpload(RenderContext & renderContext) const
 {
     static_assert(DetailType == OceanRenderDetailType::Basic || DetailType == OceanRenderDetailType::Detailed);
 
@@ -390,8 +390,8 @@ void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
     //
 
     // Find index of leftmost sample, and its corresponding world X
-    auto const leftmostSampleIndex = FastTruncateToArchInt((renderContext.GetVisibleWorld().TopLeft.x + GameParameters::HalfMaxWorldWidth) / Dx);
-    float sampleIndexWorldX = -GameParameters::HalfMaxWorldWidth + (Dx * leftmostSampleIndex);
+    auto const leftmostSampleIndex = FastTruncateToArchInt((renderContext.GetVisibleWorld().TopLeft.x + SimulationParameters::HalfMaxWorldWidth) / Dx);
+    float sampleIndexWorldX = -SimulationParameters::HalfMaxWorldWidth + (Dx * leftmostSampleIndex);
 
     // Calculate number of samples required to cover screen from leftmost sample
     // up to the visible world right (included)
@@ -418,7 +418,7 @@ void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
         {
             for (size_t s = 0;
                 s <= RenderSlices<size_t>;
-                ++s, sampleIndexWorldX = std::min(sampleIndexWorldX + sliceDx, GameParameters::HalfMaxWorldWidth))
+                ++s, sampleIndexWorldX = std::min(sampleIndexWorldX + sliceDx, SimulationParameters::HalfMaxWorldWidth))
             {
                 renderContext.UploadOceanBasic(
                     sampleIndexWorldX,
@@ -434,11 +434,11 @@ void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
                 // between that sample and the next
                 //
 
-                assert(sampleIndexWorldX >= -GameParameters::HalfMaxWorldWidth
-                    && sampleIndexWorldX <= GameParameters::HalfMaxWorldWidth + 1.0f); // Allow for compounding inaccuracies
+                assert(sampleIndexWorldX >= -SimulationParameters::HalfMaxWorldWidth
+                    && sampleIndexWorldX <= SimulationParameters::HalfMaxWorldWidth + 1.0f); // Allow for compounding inaccuracies
 
                 // Fractional index in the sample array
-                float const sampleIndexF = (sampleIndexWorldX + GameParameters::HalfMaxWorldWidth) / Dx;
+                float const sampleIndexF = (sampleIndexWorldX + SimulationParameters::HalfMaxWorldWidth) / Dx;
 
                 // Integral part
                 auto const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
@@ -570,7 +570,7 @@ void OceanSurface::InternalUpload(Render::RenderContext & renderContext) const
 
 void OceanSurface::RecalculateWaveCoefficients(
     Wind const & wind,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     //
     // Basal waves
@@ -594,7 +594,7 @@ void OceanSurface::RecalculateWaveCoefficients(
           + 1.039702f
         : 0.0f;
 
-    mBasalWaveAmplitude1 = basalWaveHeightBase / 2.0f * gameParameters.BasalWaveHeightAdjustment;
+    mBasalWaveAmplitude1 = basalWaveHeightBase / 2.0f * simulationParameters.BasalWaveHeightAdjustment;
     mBasalWaveAmplitude2 = 0.75f * mBasalWaveAmplitude1;
 
     // Wavelength
@@ -605,7 +605,7 @@ void OceanSurface::RecalculateWaveCoefficients(
         -738512.1f
         + 738525.2f * exp(0.00001895026f * (2.0f * mBasalWaveAmplitude1));
 
-    float const basalWaveLength = basalWaveLengthBase * gameParameters.BasalWaveLengthAdjustment;
+    float const basalWaveLength = basalWaveLengthBase * simulationParameters.BasalWaveLengthAdjustment;
 
     assert(basalWaveLength != 0.0f);
     mBasalWaveNumber1 = baseWindSpeedSign * 2.0f * Pi<float> / basalWaveLength;
@@ -620,8 +620,8 @@ void OceanSurface::RecalculateWaveCoefficients(
         17.91851f
         - 15.52928f * exp(-0.006572834f * basalWaveLength);
 
-    assert(gameParameters.BasalWaveSpeedAdjustment != 0.0f);
-    float const basalWavePeriod = basalWavePeriodBase / gameParameters.BasalWaveSpeedAdjustment;
+    assert(simulationParameters.BasalWaveSpeedAdjustment != 0.0f);
+    float const basalWavePeriod = basalWavePeriodBase / simulationParameters.BasalWaveSpeedAdjustment;
 
     assert(basalWavePeriod != 0.0f);
     mBasalWaveAngularVelocity1 = 2.0f * Pi<float> / basalWavePeriod;
@@ -645,18 +645,18 @@ void OceanSurface::RecalculateWaveCoefficients(
     //
 
     mWindBaseAndStormSpeedMagnitude = wind.GetBaseAndStormSpeedMagnitude();
-    mBasalWaveHeightAdjustment = gameParameters.BasalWaveHeightAdjustment;
-    mBasalWaveLengthAdjustment = gameParameters.BasalWaveLengthAdjustment;
-    mBasalWaveSpeedAdjustment = gameParameters.BasalWaveSpeedAdjustment;
+    mBasalWaveHeightAdjustment = simulationParameters.BasalWaveHeightAdjustment;
+    mBasalWaveLengthAdjustment = simulationParameters.BasalWaveLengthAdjustment;
+    mBasalWaveSpeedAdjustment = simulationParameters.BasalWaveSpeedAdjustment;
 }
 
-void OceanSurface::RecalculateAbnormalWaveTimestamps(GameParameters const & gameParameters)
+void OceanSurface::RecalculateAbnormalWaveTimestamps(SimulationParameters const & simulationParameters)
 {
-    if (gameParameters.TsunamiRate.count() > 0)
+    if (simulationParameters.TsunamiRate.count() > 0)
     {
         mNextTsunamiTimestamp = CalculateNextAbnormalWaveTimestamp(
             mLastTsunamiTimestamp,
-            gameParameters.TsunamiRate,
+            simulationParameters.TsunamiRate,
             TsunamiGracePeriod);
     }
     else
@@ -664,11 +664,11 @@ void OceanSurface::RecalculateAbnormalWaveTimestamps(GameParameters const & game
         mNextTsunamiTimestamp = GameWallClock::time_point::max();
     }
 
-    if (gameParameters.RogueWaveRate.count() > 0)
+    if (simulationParameters.RogueWaveRate.count() > 0)
     {
         mNextRogueWaveTimestamp = CalculateNextAbnormalWaveTimestamp(
             mLastRogueWaveTimestamp,
-            gameParameters.RogueWaveRate,
+            simulationParameters.RogueWaveRate,
             RogueWaveGracePeriod);
     }
     else
@@ -681,8 +681,8 @@ void OceanSurface::RecalculateAbnormalWaveTimestamps(GameParameters const & game
     // Store new parameter values that we are now current with
     //
 
-    mTsunamiRate = gameParameters.TsunamiRate;
-    mRogueWaveRate = gameParameters.RogueWaveRate;
+    mTsunamiRate = simulationParameters.TsunamiRate;
+    mRogueWaveRate = simulationParameters.RogueWaveRate;
 }
 
 template<typename TRateDuration, typename TGraceDuration>
@@ -824,7 +824,7 @@ void OceanSurface::ApplyDampingBoundaryConditions()
     }
 }
 
-void OceanSurface::UpdateFields(GameParameters const & gameParameters)
+void OceanSurface::UpdateFields(SimulationParameters const & simulationParameters)
 {
     //
     // SWE Update
@@ -837,10 +837,10 @@ void OceanSurface::UpdateFields(GameParameters const & gameParameters)
     //                 H[i] has V[i] at its left and V[i+1] at its right
     //
 
-    float constexpr G = GameParameters::GravityMagnitude;
-    float constexpr Dt = GameParameters::SimulationStepTimeDuration<float>;
-    float const previousVWeight1 = 1.0f - gameParameters.WaveSmoothnessAdjustment;
-    float const previousVWeight2 = gameParameters.WaveSmoothnessAdjustment / 2.0f; // Includes /2 for average
+    float constexpr G = SimulationParameters::GravityMagnitude;
+    float constexpr Dt = SimulationParameters::SimulationStepTimeDuration<float>;
+    float const previousVWeight1 = 1.0f - simulationParameters.WaveSmoothnessAdjustment;
+    float const previousVWeight2 = simulationParameters.WaveSmoothnessAdjustment / 2.0f; // Includes /2 for average
 
     float * const restrict heightField = mSWEHeightField.data() + SWEBufferAlignmentPrefixSize;
     float * const restrict velocityField = mSWEVelocityField.data() + SWEBufferAlignmentPrefixSize;
@@ -874,7 +874,7 @@ void OceanSurface::AdvectFields()
     // that position according to its current velocity.
     //
 
-    float constexpr Dt = GameParameters::SimulationStepTimeDuration<float>;
+    float constexpr Dt = SimulationParameters::SimulationStepTimeDuration<float>;
 
     // Height field
 
@@ -947,7 +947,7 @@ void OceanSurface::AdvectFields()
 void OceanSurface::GenerateSamples(
     float currentSimulationTime,
     Wind const & wind,
-    GameParameters const & /*gameParameters*/)
+    SimulationParameters const & /*simulationParameters*/)
 {
     //
     // Sample values are a combination of:
@@ -985,7 +985,7 @@ void OceanSurface::GenerateSamples(
     // Generate samples
     //
 
-    float const x = -GameParameters::HalfMaxWorldWidth;
+    float const x = -SimulationParameters::HalfMaxWorldWidth;
 
     float const basalWave2AmplitudeCoeff =
         (mBasalWaveAmplitude1 != 0.0f)

@@ -43,12 +43,12 @@ namespace Physics
 #include "Frontiers.h"
 #include "Npcs/NpcParticles.h"
 //
+#include "Clouds.h"
+#include "Fishes.h"
+#include "Stars.h"
+#include "OceanFloor.h"
+#include "OceanSurface.h"
 //// TODOTEST
-//#include "Clouds.h"
-//#include "Fishes.h"
-//#include "Stars.h"
-//#include "OceanFloor.h"
-//#include "OceanSurface.h"
 //#include "World.h"
 //
 //#include "Gadget.h"

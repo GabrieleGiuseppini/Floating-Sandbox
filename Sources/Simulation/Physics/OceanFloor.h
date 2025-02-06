@@ -7,11 +7,11 @@
 
 #include "Physics.h"
 
-#include "GameParameters.h"
-#include "OceanFloorTerrain.h"
+#include "../OceanFloorHeightMap.h"
+#include "../SimulationParameters.h"
 
-#include <GameCore/GameMath.h>
-#include <GameCore/UniqueBuffer.h>
+#include <Core/GameMath.h>
+#include <Core/UniqueBuffer.h>
 
 #include <memory>
 #include <optional>
@@ -23,20 +23,20 @@ class OceanFloor
 {
 public:
 
-    OceanFloor(OceanFloorTerrain && terrain);
+    OceanFloor(OceanFloorHeightMap && heightMap);
 
-    OceanFloorTerrain const & GetTerrain() const
+    OceanFloorHeightMap const & GetHeightMap() const
     {
-        return mTerrain;
+        return mHeightMap;
     }
 
-    void SetTerrain(OceanFloorTerrain const & terrain);
+    void SetHeightMap(OceanFloorHeightMap const & heightMap);
 
-    void Update(GameParameters const & gameParameters);
+    void Update(SimulationParameters const & simulationParameters);
 
     void Upload(
-        GameParameters const & gameParameters,
-        Render::RenderContext & renderContext) const;
+        SimulationParameters const & simulationParameters,
+        RenderContext & renderContext) const;
 
 public:
 
@@ -55,14 +55,14 @@ public:
      */
     inline float GetHeightAt(float x) const noexcept
     {
-        assert(x >= -GameParameters::HalfMaxWorldWidth && x <= GameParameters::HalfMaxWorldWidth);
+        assert(x >= -SimulationParameters::HalfMaxWorldWidth && x <= SimulationParameters::HalfMaxWorldWidth);
 
         //
         // Find sample index and interpolate in-between that sample and the next
         //
 
         // Fractional index in the sample array
-        float const sampleIndexF = (x + GameParameters::HalfMaxWorldWidth) / Dx;
+        float const sampleIndexF = (x + SimulationParameters::HalfMaxWorldWidth) / Dx;
 
         // Integral part
         register_int const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
@@ -82,14 +82,14 @@ public:
      */
     inline std::tuple<bool, float, register_int> GetHeightIfUnderneathAt(float x, float y) const noexcept
     {
-        assert(x >= -GameParameters::HalfMaxWorldWidth && x <= GameParameters::HalfMaxWorldWidth);
+        assert(x >= -SimulationParameters::HalfMaxWorldWidth && x <= SimulationParameters::HalfMaxWorldWidth);
 
         //
         // Find sample index and interpolate in-between that sample and the next
         //
 
         // Fractional index in the sample array
-        float const sampleIndexF = (x + GameParameters::HalfMaxWorldWidth) / Dx;
+        float const sampleIndexF = (x + SimulationParameters::HalfMaxWorldWidth) / Dx;
 
         // Integral part
         register_int const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
@@ -141,7 +141,7 @@ private:
         return
             -mCurrentSeaDepth
             + mBumpProfile[sampleIndex]
-            + mTerrain[sampleIndex] * mCurrentOceanFloorDetailAmplification;
+            + mHeightMap[sampleIndex] * mCurrentOceanFloorDetailAmplification;
     }
 
 private:
@@ -152,17 +152,17 @@ private:
 
     // The terrain (user-provided component of seafloor);
     // one value for each sample
-    OceanFloorTerrain mTerrain;
+    OceanFloorHeightMap mHeightMap;
 
     //
     // Pre-calculated samples, i.e. world y of ocean floor at the sample's x
     //
 
     // The number of samples
-    static constexpr size_t SamplesCount = GameParameters::OceanFloorTerrainSamples<size_t>;
+    static constexpr size_t SamplesCount = SimulationParameters::OceanFloorTerrainSamples<size_t>;
 
     // The x step of the samples
-    static constexpr float Dx = GameParameters::MaxWorldWidth / static_cast<float>(SamplesCount - 1);
+    static constexpr float Dx = SimulationParameters::MaxWorldWidth / static_cast<float>(SamplesCount - 1);
 
     // What we store for each sample
     struct Sample

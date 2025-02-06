@@ -5,13 +5,14 @@
 ***************************************************************************************/
 #pragma once
 
-#include "GameParameters.h"
-#include "RenderContext.h"
+#include "../SimulationParameters.h"
 
-#include <GameCore/Buffer.h>
-#include <GameCore/GameMath.h>
-#include <GameCore/GameRandomEngine.h>
-#include <GameCore/PrecalculatedFunction.h>
+#include <Render/RenderContext.h>
+
+#include <Core/Buffer.h>
+#include <Core/GameMath.h>
+#include <Core/GameRandomEngine.h>
+#include <Core/PrecalculatedFunction.h>
 
 #include <cmath>
 #include <memory>
@@ -33,9 +34,9 @@ public:
         float currentSimulationTime,
         float baseAndStormSpeedMagnitude,
         Storm::Parameters const & stormParameters,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
-    void Upload(Render::RenderContext & renderContext) const;
+    void Upload(RenderContext & renderContext) const;
 
 private:
 
@@ -85,13 +86,13 @@ private:
 
         inline void Update(float globalCloudSpeed)
         {
-            float const dx = mLinearSpeedX * globalCloudSpeed * GameParameters::SimulationStepTimeDuration<float>;
+            float const dx = mLinearSpeedX * globalCloudSpeed * SimulationParameters::SimulationStepTimeDuration<float>;
 
             // Update position
             X += dx;
 
             // Update progress: mix of time and traveled step
-            VolumetricGrowthProgress += GameParameters::SimulationStepTimeDuration<float> + std::abs(dx) * 3.5f;
+            VolumetricGrowthProgress += SimulationParameters::SimulationStepTimeDuration<float> + std::abs(dx) * 3.5f;
         }
 
     private:

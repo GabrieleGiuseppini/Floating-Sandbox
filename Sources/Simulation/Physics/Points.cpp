@@ -675,7 +675,7 @@ void Points::DestroyEphemeralParticle(
     mShipPhysicsHandler->HandleEphemeralParticleDestroy(pointElementIndex);
 
     // Fire destroy event
-    mGameEventHandler->OnDestroy(
+    mSimulationEventHandler->OnDestroy(
         GetStructuralMaterial(pointElementIndex),
         mParentWorld.GetOceanSurface().IsUnderwater(GetPosition(pointElementIndex)),
         1u);
@@ -867,7 +867,7 @@ void Points::UpdateCombustionLowFrequency(
                 mCombustionStateBuffer[pointIndex].State = CombustionState::StateType::Extinguishing_Consumed;
 
                 // Notify combustion end
-                mGameEventHandler->OnPointCombustionEnd();
+                mSimulationEventHandler->OnPointCombustionEnd();
             }
             else if (GameRandomEngine::GetInstance().GenerateUniformBoolean(rainExtinguishCdf))
             {
@@ -927,7 +927,7 @@ void Points::UpdateCombustionLowFrequency(
                 waterReactivityState.ExplosionTimestamp = currentWallClockTime + 2.0f;
 
                 // Notify water reaction
-                mGameEventHandler->OnWaterReaction(
+                mSimulationEventHandler->OnWaterReaction(
                     IsCachedUnderwater(pointIndex),
                     1);
             }
@@ -1018,7 +1018,7 @@ void Points::UpdateCombustionLowFrequency(
                 pointIndex);
 
             // Notify
-            mGameEventHandler->OnPointCombustionBegin();
+            mSimulationEventHandler->OnPointCombustionBegin();
         }
     }
 
@@ -1090,7 +1090,7 @@ void Points::UpdateCombustionLowFrequency(
                 simulationParameters);
 
             // Notify explosion
-            mGameEventHandler->OnCombustionExplosion(
+            mSimulationEventHandler->OnCombustionExplosion(
                 IsCachedUnderwater(pointIndex),
                 1);
 
@@ -1155,7 +1155,7 @@ void Points::UpdateCombustionLowFrequency(
                 simulationParameters);
 
             // Notify explosion
-            mGameEventHandler->OnWaterReactionExplosion(
+            mSimulationEventHandler->OnWaterReactionExplosion(
                 IsCachedUnderwater(pointIndex),
                 1);
 
@@ -1553,7 +1553,7 @@ void Points::UpdateEphemeralParticles(
                                     // Magnitude is lower with depth and higher with scale
                                     (oceanFloorDisplacementAtAirBubbleSurfacingSurfaceOffset - depth) * state.FinalScale * 3.75f); // Magic number
 
-                                mGameEventHandler->OnAirBubbleSurfaced(1);
+                                mSimulationEventHandler->OnAirBubbleSurfaced(1);
                             }
                         }
                     }

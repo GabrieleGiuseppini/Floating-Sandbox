@@ -5,17 +5,17 @@
 ***************************************************************************************/
 #pragma once
 
-#include "FishSpeciesDatabase.h"
-#include "GameEventDispatcher.h"
-#include "GameParameters.h"
-#include "RenderContext.h"
-#include "RenderTypes.h"
-#include "VisibleWorld.h"
+#include "../FishSpeciesDatabase.h"
+#include "../SimulationEventDispatcher.h"
+#include "../SimulationParameters.h"
 
-#include <GameCore/AABBSet.h>
-#include <GameCore/GameTypes.h>
-#include <GameCore/GameWallClock.h>
-#include <GameCore/Vectors.h>
+#include <Render/GameTextureDatabases.h>
+#include <Render/RenderContext.h>
+
+#include <Core/AABBSet.h>
+#include <Core/GameTypes.h>
+#include <Core/GameWallClock.h>
+#include <Core/Vectors.h>
 
 #include <chrono>
 #include <memory>
@@ -32,17 +32,17 @@ public:
 
     explicit Fishes(
         FishSpeciesDatabase const & fishSpeciesDatabase,
-        std::shared_ptr<GameEventDispatcher> gameEventDispatcher);
+        std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher);
 
     void Update(
         float currentSimulationTime,
         OceanSurface & oceanSurface,
         OceanFloor const & oceanFloor,
-        GameParameters const & gameParameters,
+        SimulationParameters const & simulationParameters,
         VisibleWorld const & visibleWorld,
         Geometry::AABBSet const & aabbSet);
 
-    void Upload(Render::RenderContext & renderContext) const;
+    void Upload(RenderContext & renderContext) const;
 
 public:
 
@@ -151,7 +151,7 @@ private:
         bool IsInFreefall;
 
         // The texture frame for this fish
-        TextureFrameId<Render::FishTextureGroups> RenderTextureFrameId;
+        TextureFrameId<GameTextureDatabases::FishTextureGroups> RenderTextureFrameId;
 
         Fish(
             FishShoalId shoalId,
@@ -161,7 +161,7 @@ private:
             vec2f const & targetVelocity,
             float headOffset,
             float initialTailProgressPhase,
-            TextureFrameId<Render::FishTextureGroups> renderTextureFrameId)
+            TextureFrameId<GameTextureDatabases::FishTextureGroups> renderTextureFrameId)
             : ShoalId(shoalId)
             , PersonalitySeed(personalitySeed)
             , CurrentPosition(initialPosition)
@@ -225,35 +225,35 @@ private:
         OceanSurface & oceanSurface,
         OceanFloor const & oceanFloor,
         Geometry::AABBSet const & aabbSet,
-        GameParameters const & gameParameters,
+        SimulationParameters const & simulationParameters,
         VisibleWorld const & visibleWorld);
 
-    void UpdateInteractions(GameParameters const & gameParameters);
+    void UpdateInteractions(SimulationParameters const & simulationParameters);
 
     void UpdateDynamics(
         float currentSimulationTime,
         OceanSurface & oceanSurface,
         OceanFloor const & oceanFloor,
         Geometry::AABBSet const & aabbSet,
-        GameParameters const & gameParameters,
+        SimulationParameters const & simulationParameters,
         VisibleWorld const & visibleWorld);
 
     void UpdateShoaling(
         float currentSimulationTime,
-        GameParameters const & gameParameters,
+        SimulationParameters const & simulationParameters,
         VisibleWorld const & visibleWorld);
 
     void EnactDisturbance(
         vec2f const & worldCoordinates,
         float worldRadius,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void EnactAttraction(
         vec2f const & worldCoordinates,
         float worldRadius,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
-    void EnactWidespreadPanic(GameParameters const & gameParameters);
+    void EnactWidespreadPanic(SimulationParameters const & simulationParameters);
 
     inline static vec2f ChoosePosition(
         vec2f const & averagePosition,
@@ -277,12 +277,12 @@ private:
         vec2f const & direction,
         FishSpecies const & species,
         float personalitySeed,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
 private:
 
     FishSpeciesDatabase const & mFishSpeciesDatabase;
-    std::shared_ptr<GameEventDispatcher> mGameEventHandler;
+    std::shared_ptr<SimulationEventDispatcher> mSimulationEventHandler;
 
     // Shoals never move around in this vector
     std::vector<FishShoal> mFishShoals;

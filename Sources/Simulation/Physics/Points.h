@@ -587,7 +587,7 @@ public:
         ElementCount shipPointCount,
         World & parentWorld,
         MaterialDatabase const & materialDatabase,
-        std::shared_ptr<SimulationEventDispatcher> gameEventDispatcher,
+        std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher,
         SimulationParameters const & simulationParameters)
         : ElementContainer(make_aligned_float_element_count(shipPointCount) + SimulationParameters::MaxEphemeralParticles)
         //////////////////////////////////
@@ -690,7 +690,7 @@ public:
         //
         , mParentWorld(parentWorld)
         , mMaterialDatabase(materialDatabase)
-        , mGameEventHandler(std::move(gameEventDispatcher))
+        , mSimulationEventHandler(std::move(simulationEventDispatcher))
         , mShipPhysicsHandler(nullptr)
         , mHaveWholeBuffersBeenUploadedOnce(false)
         , mCurrentNumMechanicalDynamicsIterations(simulationParameters.NumMechanicalDynamicsIterations<float>())
@@ -1699,7 +1699,7 @@ public:
         if (combustionState == CombustionState::StateType::Developing_1
             || combustionState == CombustionState::StateType::Developing_2
             || combustionState == CombustionState::StateType::Burning)
-            mGameEventHandler->OnPointCombustionEnd();
+            mSimulationEventHandler->OnPointCombustionEnd();
 
         // Transition
         mCombustionStateBuffer[pointElementIndex].State = isWater
@@ -1707,7 +1707,7 @@ public:
             : CombustionState::StateType::Extinguishing_SmotheredRain;
 
         // Notify sizzling
-        mGameEventHandler->OnCombustionSmothered();
+        mSimulationEventHandler->OnCombustionSmothered();
     }
 
     void AddHeat(
@@ -2429,7 +2429,7 @@ private:
 
     World & mParentWorld;
     MaterialDatabase const & mMaterialDatabase;
-    std::shared_ptr<SimulationEventDispatcher> const mGameEventHandler;
+    std::shared_ptr<SimulationEventDispatcher> const mSimulationEventHandler;
     IShipPhysicsHandler * mShipPhysicsHandler;
 
     // Flag remembering whether or not we've uploaded *entire*

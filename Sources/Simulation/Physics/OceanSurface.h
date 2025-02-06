@@ -5,15 +5,15 @@
 ***************************************************************************************/
 #pragma once
 
-#include "GameEventDispatcher.h"
-#include "GameParameters.h"
+#include "../SimulationEventDispatcher.h"
+#include "../SimulationParameters.h"
 
-#include <GameCore/Buffer.h>
-#include <GameCore/GameMath.h>
-#include <GameCore/PrecalculatedFunction.h>
-#include <GameCore/RunningAverage.h>
-#include <GameCore/StrongTypeDef.h>
-#include <GameCore/SysSpecifics.h>
+#include <Core/Buffer.h>
+#include <Core/GameMath.h>
+#include <Core/PrecalculatedFunction.h>
+#include <Core/RunningAverage.h>
+#include <Core/StrongTypeDef.h>
+#include <Core/SysSpecifics.h>
 
 #include <memory>
 #include <optional>
@@ -27,14 +27,14 @@ public:
 
     OceanSurface(
         World & parentWorld,
-        std::shared_ptr<GameEventDispatcher> gameEventDispatcher);
+        std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher);
 
     void Update(
         float currentSimulationTime,
         Wind const & wind,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
-    void Upload(Render::RenderContext & renderContext) const;
+    void Upload(RenderContext & renderContext) const;
 
 public:
 
@@ -43,14 +43,14 @@ public:
      */
     float GetHeightAt(float x) const noexcept
     {
-        assert(x >= -GameParameters::HalfMaxWorldWidth && x <= GameParameters::HalfMaxWorldWidth);
+        assert(x >= -SimulationParameters::HalfMaxWorldWidth && x <= SimulationParameters::HalfMaxWorldWidth);
 
         //
         // Find sample index and interpolate in-between that sample and the next
         //
 
         // Fractional index in the sample array
-        float const sampleIndexF = (x + GameParameters::HalfMaxWorldWidth) / Dx;
+        float const sampleIndexF = (x + SimulationParameters::HalfMaxWorldWidth) / Dx;
 
         // Integral part
         register_int const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
@@ -86,14 +86,14 @@ public:
      */
     inline vec2f GetNormalAt(float x) const noexcept
     {
-        assert(x >= -GameParameters::HalfMaxWorldWidth && x <= GameParameters::HalfMaxWorldWidth);
+        assert(x >= -SimulationParameters::HalfMaxWorldWidth && x <= SimulationParameters::HalfMaxWorldWidth);
 
         //
         // Find sample index and use delta from next sample
         //
 
         // Fractional index in the sample array
-        float const sampleIndexF = (x + GameParameters::HalfMaxWorldWidth) / Dx;
+        float const sampleIndexF = (x + SimulationParameters::HalfMaxWorldWidth) / Dx;
 
         // Integral part
         register_int const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
@@ -113,10 +113,10 @@ public:
         float const x,
         float const yOffset)
     {
-        assert(x >= -GameParameters::HalfMaxWorldWidth && x <= GameParameters::HalfMaxWorldWidth);
+        assert(x >= -SimulationParameters::HalfMaxWorldWidth && x <= SimulationParameters::HalfMaxWorldWidth);
 
         // Fractional index in the sample array - smack in the center
-        float const sampleIndexF = (x + GameParameters::HalfMaxWorldWidth + Dx / 2.0f) / Dx;
+        float const sampleIndexF = (x + SimulationParameters::HalfMaxWorldWidth + Dx / 2.0f) / Dx;
 
         // Integral part
         register_int const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
@@ -144,12 +144,12 @@ public:
 private:
 
     template<OceanRenderDetailType DetailType>
-    void InternalUpload(Render::RenderContext & renderContext) const;
+    void InternalUpload(RenderContext & renderContext) const;
 
     static inline auto ToSampleIndex(float x) noexcept
     {
         // Calculate sample index, minimizing error
-        float const sampleIndexF = (x + GameParameters::HalfMaxWorldWidth) / Dx;
+        float const sampleIndexF = (x + SimulationParameters::HalfMaxWorldWidth) / Dx;
         register_int const sampleIndexI = FastTruncateToArchInt(sampleIndexF + 0.5f);
         assert(sampleIndexI >= 0 && sampleIndexI < SamplesCount);
 
@@ -158,9 +158,9 @@ private:
 
     void RecalculateWaveCoefficients(
         Wind const & wind,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
-    void RecalculateAbnormalWaveTimestamps(GameParameters const & gameParameters);
+    void RecalculateAbnormalWaveTimestamps(SimulationParameters const & simulationParameters);
 
     template<typename TRateDuration, typename TGraceDuration>
     static GameWallClock::time_point CalculateNextAbnormalWaveTimestamp(
@@ -180,21 +180,21 @@ private:
 
     void SmoothDeltaBufferIntoHeightField();
 
-    void ApplyDampingBoundaryConditions();    
+    void ApplyDampingBoundaryConditions();
 
-    void UpdateFields(GameParameters const & gameParameters);
+    void UpdateFields(SimulationParameters const & simulationParameters);
 
     void AdvectFields();
 
     void GenerateSamples(
         float currentSimulationTime,
         Wind const & wind,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
 private:
 
     World & mParentWorld;
-    std::shared_ptr<GameEventDispatcher> mGameEventHandler;
+    std::shared_ptr<SimulationEventDispatcher> mSimulationEventHandler;
 
     // Smoothing of wind incisiveness
     RunningAverage<15> mWindIncisivenessRunningAverage;
@@ -251,7 +251,7 @@ private:
     static size_t constexpr SamplesCount = 16384;
 
     // The x step of the samples
-    static float constexpr Dx = GameParameters::MaxWorldWidth / static_cast<float>(SamplesCount - 1);
+    static float constexpr Dx = SimulationParameters::MaxWorldWidth / static_cast<float>(SamplesCount - 1);
 
     // What we store for each sample
     struct Sample
@@ -299,7 +299,7 @@ private:
     //
 
     // Absolute desired height of SWE field; continuously updated during interacting
-    Buffer<float> mInteractiveWaveTargetHeight; 
+    Buffer<float> mInteractiveWaveTargetHeight;
 
     // We reach target height by this "growth coefficient" (fraction) of the remaining height;
     // this is basically the strength with which we pull the SWE height field.
@@ -343,7 +343,7 @@ private:
     Buffer<float> mDeltaHeightBuffer;
 
 private:
-    
+
     //
     // Abnormal waves
     //

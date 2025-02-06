@@ -465,7 +465,7 @@ public:
         ElementCount lampElementCount,
         ShipId shipId,
         World & parentWorld,
-        std::shared_ptr<SimulationEventDispatcher> gameEventDispatcher,
+        std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher,
         SimulationParameters const & simulationParameters)
         : ElementContainer(allElementCount)
         //////////////////////////////////
@@ -502,7 +502,7 @@ public:
         //////////////////////////////////
         , mShipId(shipId)
         , mParentWorld(parentWorld)
-        , mGameEventHandler(std::move(gameEventDispatcher))
+        , mSimulationEventHandler(std::move(simulationEventDispatcher))
         , mShipPhysicsHandler(nullptr)
         , mAutomaticConductivityTogglingElements()
         , mSources()
@@ -964,7 +964,7 @@ private:
 
     ShipId const mShipId;
     World & mParentWorld;
-    std::shared_ptr<SimulationEventDispatcher> const mGameEventHandler;
+    std::shared_ptr<SimulationEventDispatcher> const mSimulationEventHandler;
     IShipPhysicsHandler * mShipPhysicsHandler;
 
     // Indices of specific types in this container - just a shortcut

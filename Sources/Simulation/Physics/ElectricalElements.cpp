@@ -268,7 +268,7 @@ void ElectricalElements::Add(
 
 void ElectricalElements::AnnounceInstancedElements()
 {
-    mGameEventHandler->OnElectricalElementAnnouncementsBegin();
+    mSimulationEventHandler->OnElectricalElementAnnouncementsBegin();
 
     for (auto elementIndex : *this)
     {
@@ -279,7 +279,7 @@ void ElectricalElements::AnnounceInstancedElements()
             case ElectricalMaterial::ElectricalElementType::Engine:
             {
                 // Announce engine as EngineMonitor
-                mGameEventHandler->OnEngineMonitorCreated(
+                mSimulationEventHandler->OnEngineMonitorCreated(
                     GlobalElectricalElementId(mShipId, elementIndex),
                     mInstanceInfos[elementIndex].InstanceIndex,
                     mElementStateBuffer[elementIndex].Engine.CurrentThrustMagnitude,
@@ -292,7 +292,7 @@ void ElectricalElements::AnnounceInstancedElements()
 
             case ElectricalMaterial::ElectricalElementType::EngineController:
             {
-                mGameEventHandler->OnEngineControllerCreated(
+                mSimulationEventHandler->OnEngineControllerCreated(
                     GlobalElectricalElementId(mShipId, elementIndex),
                     mInstanceInfos[elementIndex].InstanceIndex,
                     *mMaterialBuffer[elementIndex],
@@ -306,7 +306,7 @@ void ElectricalElements::AnnounceInstancedElements()
                 // Announce generators that are instanced as power probes
                 if (mInstanceInfos[elementIndex].InstanceIndex != NoneElectricalElementInstanceIndex)
                 {
-                    mGameEventHandler->OnPowerProbeCreated(
+                    mSimulationEventHandler->OnPowerProbeCreated(
                         GlobalElectricalElementId(mShipId, elementIndex),
                         mInstanceInfos[elementIndex].InstanceIndex,
                         PowerProbeType::Generator,
@@ -336,7 +336,7 @@ void ElectricalElements::AnnounceInstancedElements()
                     }
                 }
 
-                mGameEventHandler->OnSwitchCreated(
+                mSimulationEventHandler->OnSwitchCreated(
                     GlobalElectricalElementId(mShipId, elementIndex),
                     mInstanceInfos[elementIndex].InstanceIndex,
                     switchType,
@@ -349,7 +349,7 @@ void ElectricalElements::AnnounceInstancedElements()
 
             case ElectricalMaterial::ElectricalElementType::PowerMonitor:
             {
-                mGameEventHandler->OnPowerProbeCreated(
+                mSimulationEventHandler->OnPowerProbeCreated(
                     GlobalElectricalElementId(mShipId, elementIndex),
                     mInstanceInfos[elementIndex].InstanceIndex,
                     PowerProbeType::PowerMonitor,
@@ -363,7 +363,7 @@ void ElectricalElements::AnnounceInstancedElements()
             case ElectricalMaterial::ElectricalElementType::ShipSound:
             {
                 // Ships sounds announce themselves as switches
-                mGameEventHandler->OnSwitchCreated(
+                mSimulationEventHandler->OnSwitchCreated(
                     GlobalElectricalElementId(mShipId, elementIndex),
                     mInstanceInfos[elementIndex].InstanceIndex,
                     SwitchType::ShipSoundSwitch,
@@ -376,7 +376,7 @@ void ElectricalElements::AnnounceInstancedElements()
 
             case ElectricalMaterial::ElectricalElementType::WaterPump:
             {
-                mGameEventHandler->OnWaterPumpCreated(
+                mSimulationEventHandler->OnWaterPumpCreated(
                     GlobalElectricalElementId(mShipId, elementIndex),
                     mInstanceInfos[elementIndex].InstanceIndex,
                     mElementStateBuffer[elementIndex].WaterPump.CurrentNormalizedForce,
@@ -391,7 +391,7 @@ void ElectricalElements::AnnounceInstancedElements()
                 // Announce water-sensing switches that are instanced as switches
                 if (mInstanceInfos[elementIndex].InstanceIndex != NoneElectricalElementInstanceIndex)
                 {
-                    mGameEventHandler->OnSwitchCreated(
+                    mSimulationEventHandler->OnSwitchCreated(
                         GlobalElectricalElementId(mShipId, elementIndex),
                         mInstanceInfos[elementIndex].InstanceIndex,
                         SwitchType::AutomaticSwitch,
@@ -407,7 +407,7 @@ void ElectricalElements::AnnounceInstancedElements()
             {
                 assert(!mElementStateBuffer[elementIndex].WatertightDoor.IsActivated);
 
-                mGameEventHandler->OnWatertightDoorCreated(
+                mSimulationEventHandler->OnWatertightDoorCreated(
                     GlobalElectricalElementId(mShipId, elementIndex),
                     mInstanceInfos[elementIndex].InstanceIndex,
                     mElementStateBuffer[elementIndex].WatertightDoor.DefaultIsOpen,
@@ -429,7 +429,7 @@ void ElectricalElements::AnnounceInstancedElements()
         }
     }
 
-    mGameEventHandler->OnElectricalElementAnnouncementsEnd();
+    mSimulationEventHandler->OnElectricalElementAnnouncementsEnd();
 }
 
 void ElectricalElements::HighlightElectricalElement(
@@ -586,7 +586,7 @@ void ElectricalElements::SetEngineControllerState(
         state.CurrentValue = controllerValue;
 
         // Notify
-        mGameEventHandler->OnEngineControllerUpdated(
+        mSimulationEventHandler->OnEngineControllerUpdated(
             electricalElementId,
             *mMaterialBuffer[elementIndex],
             oldValue,
@@ -620,7 +620,7 @@ void ElectricalElements::Destroy(
             if (mElementStateBuffer[electricalElementIndex].Engine.LastPublishedAbsRpm != 0.0f
                 || mElementStateBuffer[electricalElementIndex].Engine.LastPublishedThrustMagnitude != 0.0f)
             {
-                mGameEventHandler->OnEngineMonitorUpdated(
+                mSimulationEventHandler->OnEngineMonitorUpdated(
                     GlobalElectricalElementId(mShipId, electricalElementIndex),
                     0.0f,
                     0.0f);
@@ -634,7 +634,7 @@ void ElectricalElements::Destroy(
             mElementStateBuffer[electricalElementIndex].EngineController.IsPowered = false;
 
             // Publish disable
-            mGameEventHandler->OnEngineControllerEnabled(
+            mSimulationEventHandler->OnEngineControllerEnabled(
                 GlobalElectricalElementId(
                     mShipId,
                     electricalElementIndex),
@@ -653,7 +653,7 @@ void ElectricalElements::Destroy(
                 // See whether we need to publish a power probe change
                 if (mInstanceInfos[electricalElementIndex].InstanceIndex != NoneElectricalElementInstanceIndex)
                 {
-                    mGameEventHandler->OnPowerProbeToggled(
+                    mSimulationEventHandler->OnPowerProbeToggled(
                         GlobalElectricalElementId(mShipId, electricalElementIndex),
                         ElectricalState::Off);
                 }
@@ -665,7 +665,7 @@ void ElectricalElements::Destroy(
         case ElectricalMaterial::ElectricalElementType::InteractiveSwitch:
         {
             // Publish disable
-            mGameEventHandler->OnSwitchEnabled(
+            mSimulationEventHandler->OnSwitchEnabled(
                 GlobalElectricalElementId(
                     mShipId,
                     electricalElementIndex),
@@ -717,7 +717,7 @@ void ElectricalElements::Destroy(
             {
                 mElementStateBuffer[electricalElementIndex].PowerMonitor.IsPowered = false;
 
-                mGameEventHandler->OnPowerProbeToggled(
+                mSimulationEventHandler->OnPowerProbeToggled(
                     GlobalElectricalElementId(mShipId, electricalElementIndex),
                     ElectricalState::Off);
             }
@@ -733,7 +733,7 @@ void ElectricalElements::Destroy(
                 mElementStateBuffer[electricalElementIndex].ShipSound.IsPlaying = false;
 
                 // Publish state change
-                mGameEventHandler->OnShipSoundUpdated(
+                mSimulationEventHandler->OnShipSoundUpdated(
                     GlobalElectricalElementId(mShipId, electricalElementIndex),
                     *mMaterialBuffer[electricalElementIndex],
                     false,
@@ -741,7 +741,7 @@ void ElectricalElements::Destroy(
             }
 
             // Publish disable
-            mGameEventHandler->OnSwitchEnabled(GlobalElectricalElementId(mShipId, electricalElementIndex), false);
+            mSimulationEventHandler->OnSwitchEnabled(GlobalElectricalElementId(mShipId, electricalElementIndex), false);
 
             break;
         }
@@ -754,7 +754,7 @@ void ElectricalElements::Destroy(
             // publish an electrical element state update
 
             // Publish disable
-            mGameEventHandler->OnWaterPumpEnabled(
+            mSimulationEventHandler->OnWaterPumpEnabled(
                 GlobalElectricalElementId(
                     mShipId,
                     electricalElementIndex),
@@ -769,7 +769,7 @@ void ElectricalElements::Destroy(
             if (mInstanceInfos[electricalElementIndex].InstanceIndex != NoneElectricalElementInstanceIndex)
             {
                 // Publish disable
-                mGameEventHandler->OnSwitchEnabled(
+                mSimulationEventHandler->OnSwitchEnabled(
                     GlobalElectricalElementId(
                         mShipId,
                         electricalElementIndex),
@@ -793,13 +793,13 @@ void ElectricalElements::Destroy(
                 mShipPhysicsHandler->HandleWatertightDoorUpdated(GetPointIndex(electricalElementIndex), watertightDoorState.IsOpen());
 
                 // Publish state change
-                mGameEventHandler->OnWatertightDoorUpdated(
+                mSimulationEventHandler->OnWatertightDoorUpdated(
                     GlobalElectricalElementId(mShipId, electricalElementIndex),
                     watertightDoorState.IsOpen());
             }
 
             // Publish disable
-            mGameEventHandler->OnWatertightDoorEnabled(GlobalElectricalElementId(mShipId, electricalElementIndex), false);
+            mSimulationEventHandler->OnWatertightDoorEnabled(GlobalElectricalElementId(mShipId, electricalElementIndex), false);
 
             break;
         }
@@ -857,7 +857,7 @@ void ElectricalElements::Restore(ElementIndex electricalElementIndex)
         case ElectricalMaterial::ElectricalElementType::EngineController:
         {
             // Notify enabling
-            mGameEventHandler->OnEngineControllerEnabled(GlobalElectricalElementId(mShipId, electricalElementIndex), true);
+            mSimulationEventHandler->OnEngineControllerEnabled(GlobalElectricalElementId(mShipId, electricalElementIndex), true);
 
             break;
         }
@@ -884,7 +884,7 @@ void ElectricalElements::Restore(ElementIndex electricalElementIndex)
         case ElectricalMaterial::ElectricalElementType::InteractiveSwitch:
         {
             // Notify enabling
-            mGameEventHandler->OnSwitchEnabled(GlobalElectricalElementId(mShipId, electricalElementIndex), true);
+            mSimulationEventHandler->OnSwitchEnabled(GlobalElectricalElementId(mShipId, electricalElementIndex), true);
 
             break;
         }
@@ -902,7 +902,7 @@ void ElectricalElements::Restore(ElementIndex electricalElementIndex)
         case ElectricalMaterial::ElectricalElementType::ShipSound:
         {
             // Notify enabling
-            mGameEventHandler->OnSwitchEnabled(GlobalElectricalElementId(mShipId, electricalElementIndex), true);
+            mSimulationEventHandler->OnSwitchEnabled(GlobalElectricalElementId(mShipId, electricalElementIndex), true);
 
             // Nothing else to do: at the next UpdateSinks() that makes this sound work, there will be a state change
 
@@ -914,7 +914,7 @@ void ElectricalElements::Restore(ElementIndex electricalElementIndex)
         case ElectricalMaterial::ElectricalElementType::WaterPump:
         {
             // Notify enabling
-            mGameEventHandler->OnWaterPumpEnabled(GlobalElectricalElementId(mShipId, electricalElementIndex), true);
+            mSimulationEventHandler->OnWaterPumpEnabled(GlobalElectricalElementId(mShipId, electricalElementIndex), true);
 
             // Nothing else to do: at the next UpdateSinks() that makes this pump work, there will be a state change
 
@@ -929,7 +929,7 @@ void ElectricalElements::Restore(ElementIndex electricalElementIndex)
             if (mInstanceInfos[electricalElementIndex].InstanceIndex != NoneElectricalElementInstanceIndex)
             {
                 // Publish disable
-                mGameEventHandler->OnSwitchEnabled(
+                mSimulationEventHandler->OnSwitchEnabled(
                     GlobalElectricalElementId(
                         mShipId,
                         electricalElementIndex),
@@ -942,7 +942,7 @@ void ElectricalElements::Restore(ElementIndex electricalElementIndex)
         case ElectricalMaterial::ElectricalElementType::WatertightDoor:
         {
             // Notify enabling
-            mGameEventHandler->OnWatertightDoorEnabled(GlobalElectricalElementId(mShipId, electricalElementIndex), true);
+            mSimulationEventHandler->OnWatertightDoorEnabled(GlobalElectricalElementId(mShipId, electricalElementIndex), true);
 
             // Nothing else to do: the last status we've announced is for !Activated (we did at Destroy);
             // at the next UpdateSinks() that makes this door work, there will be a state change
@@ -1192,7 +1192,7 @@ void ElectricalElements::InternalSetSwitchState(
         // Notify switch toggled
         if (mInstanceInfos[elementIndex].InstanceIndex != NoneElectricalElementInstanceIndex)
         {
-            mGameEventHandler->OnSwitchToggled(
+            mSimulationEventHandler->OnSwitchToggled(
                 GlobalElectricalElementId(mShipId, elementIndex),
                 switchState);
         }
@@ -1600,7 +1600,7 @@ void ElectricalElements::UpdateSourcesAndPropagation(
                         if (mInstanceInfos[sourceElementIndex].InstanceIndex != NoneElectricalElementInstanceIndex)
                         {
                             // Notify
-                            mGameEventHandler->OnPowerProbeToggled(
+                            mSimulationEventHandler->OnPowerProbeToggled(
                                 GlobalElectricalElementId(mShipId, sourceElementIndex),
                                 static_cast<ElectricalState>(isProducingCurrent));
 
@@ -1933,7 +1933,7 @@ void ElectricalElements::UpdateSinks(
                             mElementStateBuffer[sinkElementIndex].PowerMonitor.IsPowered = false;
 
                             // Notify
-                            mGameEventHandler->OnPowerProbeToggled(
+                            mSimulationEventHandler->OnPowerProbeToggled(
                                 GlobalElectricalElementId(mShipId, sinkElementIndex),
                                 ElectricalState::Off);
 
@@ -1955,7 +1955,7 @@ void ElectricalElements::UpdateSinks(
                             mElementStateBuffer[sinkElementIndex].PowerMonitor.IsPowered = true;
 
                             // Notify
-                            mGameEventHandler->OnPowerProbeToggled(
+                            mSimulationEventHandler->OnPowerProbeToggled(
                                 GlobalElectricalElementId(mShipId, sinkElementIndex),
                                 ElectricalState::On);
 
@@ -1990,7 +1990,7 @@ void ElectricalElements::UpdateSinks(
                             state.IsPlaying = false;
 
                             // Notify sound
-                            mGameEventHandler->OnShipSoundUpdated(
+                            mSimulationEventHandler->OnShipSoundUpdated(
                                 GlobalElectricalElementId(mShipId, sinkElementIndex),
                                 *(mMaterialBuffer[sinkElementIndex]),
                                 false,
@@ -2015,7 +2015,7 @@ void ElectricalElements::UpdateSinks(
                             state.IsPlaying = true;
 
                             // Notify sound
-                            mGameEventHandler->OnShipSoundUpdated(
+                            mSimulationEventHandler->OnShipSoundUpdated(
                                 GlobalElectricalElementId(mShipId, sinkElementIndex),
                                 *(mMaterialBuffer[sinkElementIndex]),
                                 true,
@@ -2267,7 +2267,7 @@ void ElectricalElements::UpdateSinks(
                 if (waterPumpState.CurrentNormalizedForce != waterPumpState.LastPublishedNormalizedForce)
                 {
                     // Notify
-                    mGameEventHandler->OnWaterPumpUpdated(
+                    mSimulationEventHandler->OnWaterPumpUpdated(
                         GlobalElectricalElementId(mShipId, sinkElementIndex),
                         waterPumpState.CurrentNormalizedForce);
 
@@ -2331,7 +2331,7 @@ void ElectricalElements::UpdateSinks(
                         mShipPhysicsHandler->HandleWatertightDoorUpdated(pointIndex, watertightDoorState.IsOpen());
 
                         // Publish state change
-                        mGameEventHandler->OnWatertightDoorUpdated(
+                        mSimulationEventHandler->OnWatertightDoorUpdated(
                             GlobalElectricalElementId(mShipId, sinkElementIndex),
                             watertightDoorState.IsOpen());
 
@@ -2495,7 +2495,7 @@ void ElectricalElements::UpdateSinks(
                 || engineState.CurrentAbsRpm != engineState.LastPublishedAbsRpm)
             {
                 // Notify
-                mGameEventHandler->OnEngineMonitorUpdated(
+                mSimulationEventHandler->OnEngineMonitorUpdated(
                     GlobalElectricalElementId(mShipId, engineSinkElementIndex),
                     engineState.CurrentThrustMagnitude,
                     engineState.CurrentAbsRpm);
@@ -2804,7 +2804,7 @@ void ElectricalElements::RunLampStateMachine(
 
                     mAvailableLightBuffer[elementLampIndex] = 1.f;
 
-                    mGameEventHandler->OnLightFlicker(
+                    mSimulationEventHandler->OnLightFlicker(
                         DurationShortLongType::Short,
                         points.IsCachedUnderwater(pointIndex),
                         1);
@@ -2858,7 +2858,7 @@ void ElectricalElements::RunLampStateMachine(
 
                     mAvailableLightBuffer[elementLampIndex] = 1.f;
 
-                    mGameEventHandler->OnLightFlicker(
+                    mSimulationEventHandler->OnLightFlicker(
                         DurationShortLongType::Short,
                         points.IsCachedUnderwater(pointIndex),
                         1);
@@ -2880,7 +2880,7 @@ void ElectricalElements::RunLampStateMachine(
 
                     mAvailableLightBuffer[elementLampIndex] = 1.f;
 
-                    mGameEventHandler->OnLightFlicker(
+                    mSimulationEventHandler->OnLightFlicker(
                         DurationShortLongType::Long,
                         points.IsCachedUnderwater(pointIndex),
                         1);
@@ -2921,7 +2921,7 @@ void ElectricalElements::RunLampStateMachine(
                 // Publish event (for sound)
                 if (lamp.SubStateCounter == 7)
                 {
-                    mGameEventHandler->OnLightFlicker(
+                    mSimulationEventHandler->OnLightFlicker(
                         DurationShortLongType::Short,
                         points.IsCachedUnderwater(pointIndex),
                         1);
@@ -2960,7 +2960,7 @@ void ElectricalElements::RunLampStateMachine(
                 mAvailableLightBuffer[elementLampIndex] = 1.f;
 
                 // Notify flicker event, so we play light-on sound
-                mGameEventHandler->OnLightFlicker(
+                mSimulationEventHandler->OnLightFlicker(
                     DurationShortLongType::Short,
                     points.IsCachedUnderwater(pointIndex),
                     1);

@@ -52,7 +52,7 @@ void Clouds::Update(
     float /*currentSimulationTime*/,
     float baseAndStormSpeedMagnitude,
     Storm::Parameters const & stormParameters,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     float const windSign = baseAndStormSpeedMagnitude < 0.0f ? -1.0f : 1.0f;
 
@@ -61,15 +61,15 @@ void Clouds::Update(
     //
 
     // Resize clouds vector
-    if (mClouds.size() > gameParameters.NumberOfClouds)
+    if (mClouds.size() > simulationParameters.NumberOfClouds)
     {
         // Trim off some clouds
-        mClouds.resize(gameParameters.NumberOfClouds);
+        mClouds.resize(simulationParameters.NumberOfClouds);
     }
-    else if (mClouds.size() < gameParameters.NumberOfClouds)
+    else if (mClouds.size() < simulationParameters.NumberOfClouds)
     {
         // Add some clouds
-        for (size_t c = mClouds.size(); c < gameParameters.NumberOfClouds; ++c)
+        for (size_t c = mClouds.size(); c < simulationParameters.NumberOfClouds; ++c)
         {
             uint32_t const cloudId = mLastCloudId++;
 
@@ -229,7 +229,7 @@ void Clouds::Update(
     }
 }
 
-void Clouds::Upload(Render::RenderContext & renderContext) const
+void Clouds::Upload(RenderContext & renderContext) const
 {
     //
     // Upload clouds

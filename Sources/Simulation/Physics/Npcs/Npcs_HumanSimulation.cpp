@@ -257,7 +257,7 @@ void Npcs::UpdateHuman(
 #ifdef BARYLAB_PROBING
 				if (npc.Id == mCurrentlySelectedNpc)
 				{
-					mGameEventHandler->OnHumanNpcBehaviorChanged("Constrained_Falling");
+					mSimulationEventHandler->OnHumanNpcBehaviorChanged("Constrained_Falling");
 				}
 #endif
 
@@ -286,7 +286,7 @@ void Npcs::UpdateHuman(
 #ifdef BARYLAB_PROBING
 				if (npc.Id == mCurrentlySelectedNpc)
 				{
-					mGameEventHandler->OnHumanNpcBehaviorChanged("Constrained_Rising");
+					mSimulationEventHandler->OnHumanNpcBehaviorChanged("Constrained_Rising");
 				}
 #endif
 
@@ -306,7 +306,7 @@ void Npcs::UpdateHuman(
 #ifdef BARYLAB_PROBING
 				if (npc.Id == mCurrentlySelectedNpc)
 				{
-					mGameEventHandler->OnHumanNpcBehaviorChanged("Constrained_InWater");
+					mSimulationEventHandler->OnHumanNpcBehaviorChanged("Constrained_InWater");
 				}
 #endif
 
@@ -375,7 +375,7 @@ void Npcs::UpdateHuman(
 #ifdef BARYLAB_PROBING
 				if (npc.Id == mCurrentlySelectedNpc)
 				{
-					mGameEventHandler->OnHumanNpcBehaviorChanged("Constrained_PreRising");
+					mSimulationEventHandler->OnHumanNpcBehaviorChanged("Constrained_PreRising");
 				}
 #endif
 
@@ -408,7 +408,7 @@ void Npcs::UpdateHuman(
 #ifdef BARYLAB_PROBING
 					if (npc.Id == mCurrentlySelectedNpc)
 					{
-						mGameEventHandler->OnHumanNpcBehaviorChanged("Constrained_Aerial");
+						mSimulationEventHandler->OnHumanNpcBehaviorChanged("Constrained_Aerial");
 					}
 #endif
 
@@ -510,7 +510,7 @@ void Npcs::UpdateHuman(
 #ifdef BARYLAB_PROBING
 					if (npc.Id == mCurrentlySelectedNpc)
 					{
-						mGameEventHandler->OnHumanNpcBehaviorChanged("Constrained_PreRising");
+						mSimulationEventHandler->OnHumanNpcBehaviorChanged("Constrained_PreRising");
 					}
 #endif
 				}
@@ -543,7 +543,7 @@ void Npcs::UpdateHuman(
 #ifdef BARYLAB_PROBING
 					if (npc.Id == mCurrentlySelectedNpc)
 					{
-						mGameEventHandler->OnHumanNpcBehaviorChanged("Constrained_Aerial");
+						mSimulationEventHandler->OnHumanNpcBehaviorChanged("Constrained_Aerial");
 					}
 #endif
 
@@ -623,7 +623,7 @@ void Npcs::UpdateHuman(
 #ifdef BARYLAB_PROBING
 				if (npc.Id == mCurrentlySelectedNpc)
 				{
-					mGameEventHandler->OnHumanNpcBehaviorChanged("Constrained_Rising");
+					mSimulationEventHandler->OnHumanNpcBehaviorChanged("Constrained_Rising");
 				}
 #endif
 
@@ -655,7 +655,7 @@ void Npcs::UpdateHuman(
 #ifdef BARYLAB_PROBING
 					if (npc.Id == mCurrentlySelectedNpc)
 					{
-						mGameEventHandler->OnHumanNpcBehaviorChanged("Constrained_Aerial");
+						mSimulationEventHandler->OnHumanNpcBehaviorChanged("Constrained_Aerial");
 					}
 #endif
 
@@ -702,7 +702,7 @@ void Npcs::UpdateHuman(
 #ifdef BARYLAB_PROBING
 				if (npc.Id == mCurrentlySelectedNpc)
 				{
-					mGameEventHandler->OnHumanNpcBehaviorChanged("Constrained_Dancing_Repaired");
+					mSimulationEventHandler->OnHumanNpcBehaviorChanged("Constrained_Dancing_Repaired");
 				}
 #endif
 
@@ -735,7 +735,7 @@ void Npcs::UpdateHuman(
 #ifdef BARYLAB_PROBING
 						if (npc.Id == mCurrentlySelectedNpc)
 						{
-							mGameEventHandler->OnHumanNpcBehaviorChanged("Constrained_Electrified");
+							mSimulationEventHandler->OnHumanNpcBehaviorChanged("Constrained_Electrified");
 						}
 #endif
 
@@ -864,7 +864,7 @@ void Npcs::UpdateHuman(
 #ifdef BARYLAB_PROBING
 					if (npc.Id == mCurrentlySelectedNpc)
 					{
-						mGameEventHandler->OnHumanNpcBehaviorChanged("Constrained_WalkingUndecided");
+						mSimulationEventHandler->OnHumanNpcBehaviorChanged("Constrained_WalkingUndecided");
 					}
 #endif
 				}
@@ -883,7 +883,7 @@ void Npcs::UpdateHuman(
 #ifdef BARYLAB_PROBING
 					if (npc.Id == mCurrentlySelectedNpc)
 					{
-						mGameEventHandler->OnHumanNpcBehaviorChanged("Constrained_Walking");
+						mSimulationEventHandler->OnHumanNpcBehaviorChanged("Constrained_Walking");
 					}
 #endif
 				}
@@ -1028,7 +1028,7 @@ void Npcs::UpdateHuman(
 #ifdef BARYLAB_PROBING
 					if (npc.Id == mCurrentlySelectedNpc)
 					{
-						mGameEventHandler->OnHumanNpcBehaviorChanged("Constrained_Falling");
+						mSimulationEventHandler->OnHumanNpcBehaviorChanged("Constrained_Falling");
 					}
 #endif
 				}
@@ -1041,7 +1041,7 @@ void Npcs::UpdateHuman(
 #ifdef BARYLAB_PROBING
 					if (npc.Id == mCurrentlySelectedNpc)
 					{
-						mGameEventHandler->OnHumanNpcBehaviorChanged("Constrained_Aerial");
+						mSimulationEventHandler->OnHumanNpcBehaviorChanged("Constrained_Aerial");
 					}
 #endif
 				}
@@ -1072,7 +1072,7 @@ void Npcs::UpdateHuman(
 #ifdef BARYLAB_PROBING
 					if (npc.Id == mCurrentlySelectedNpc)
 					{
-						mGameEventHandler->OnHumanNpcBehaviorChanged("Constrained_Equilibrium");
+						mSimulationEventHandler->OnHumanNpcBehaviorChanged("Constrained_Equilibrium");
 					}
 #endif
 					break;
@@ -1169,7 +1169,7 @@ void Npcs::UpdateHuman(
 #ifdef BARYLAB_PROBING
 										if (npc.Id == mCurrentlySelectedNpc)
 										{
-											mGameEventHandler->OnHumanNpcBehaviorChanged("Constrained_WalkingUndecided");
+											mSimulationEventHandler->OnHumanNpcBehaviorChanged("Constrained_WalkingUndecided");
 										}
 #endif
 
@@ -1224,7 +1224,7 @@ void Npcs::UpdateHuman(
 #ifdef BARYLAB_PROBING
 					if (npc.Id == mCurrentlySelectedNpc)
 					{
-						mGameEventHandler->OnHumanNpcBehaviorChanged("Constrained_Equilibrium");
+						mSimulationEventHandler->OnHumanNpcBehaviorChanged("Constrained_Equilibrium");
 					}
 #endif
 					break;
@@ -1266,7 +1266,7 @@ void Npcs::UpdateHuman(
 #ifdef BARYLAB_PROBING
 				if (npc.Id == mCurrentlySelectedNpc)
 				{
-					mGameEventHandler->OnHumanNpcBehaviorChanged("Constrained_Aerial");
+					mSimulationEventHandler->OnHumanNpcBehaviorChanged("Constrained_Aerial");
 				}
 #endif
 
@@ -1301,7 +1301,7 @@ void Npcs::UpdateHuman(
 #ifdef BARYLAB_PROBING
 					if (npc.Id == mCurrentlySelectedNpc)
 					{
-						mGameEventHandler->OnHumanNpcBehaviorChanged("Constrained_Swimming");
+						mSimulationEventHandler->OnHumanNpcBehaviorChanged("Constrained_Swimming");
 					}
 #endif
 
@@ -1353,7 +1353,7 @@ void Npcs::UpdateHuman(
 #ifdef BARYLAB_PROBING
 				if (npc.Id == mCurrentlySelectedNpc)
 				{
-					mGameEventHandler->OnHumanNpcBehaviorChanged("Constrained_KnockedOut");
+					mSimulationEventHandler->OnHumanNpcBehaviorChanged("Constrained_KnockedOut");
 				}
 #endif
 
@@ -1378,7 +1378,7 @@ void Npcs::UpdateHuman(
 #ifdef BARYLAB_PROBING
 				if (npc.Id == mCurrentlySelectedNpc)
 				{
-					mGameEventHandler->OnHumanNpcBehaviorChanged("Constrained_KnockedOut");
+					mSimulationEventHandler->OnHumanNpcBehaviorChanged("Constrained_KnockedOut");
 				}
 #endif
 
@@ -1398,7 +1398,7 @@ void Npcs::UpdateHuman(
 #ifdef BARYLAB_PROBING
 				if (npc.Id == mCurrentlySelectedNpc)
 				{
-					mGameEventHandler->OnHumanNpcBehaviorChanged("Free_InWater");
+					mSimulationEventHandler->OnHumanNpcBehaviorChanged("Free_InWater");
 				}
 #endif
 
@@ -1441,7 +1441,7 @@ void Npcs::UpdateHuman(
 #ifdef BARYLAB_PROBING
 				if (npc.Id == mCurrentlySelectedNpc)
 				{
-					mGameEventHandler->OnHumanNpcBehaviorChanged("Free_KnockedOut");
+					mSimulationEventHandler->OnHumanNpcBehaviorChanged("Free_KnockedOut");
 				}
 #endif
 
@@ -1462,7 +1462,7 @@ void Npcs::UpdateHuman(
 #ifdef BARYLAB_PROBING
 				if (npc.Id == mCurrentlySelectedNpc)
 				{
-					mGameEventHandler->OnHumanNpcBehaviorChanged("Constrained_KnockedOut");
+					mSimulationEventHandler->OnHumanNpcBehaviorChanged("Constrained_KnockedOut");
 				}
 #endif
 
@@ -1502,7 +1502,7 @@ void Npcs::UpdateHuman(
 #ifdef BARYLAB_PROBING
 				if (npc.Id == mCurrentlySelectedNpc)
 				{
-					mGameEventHandler->OnHumanNpcBehaviorChanged("Free_InWater");
+					mSimulationEventHandler->OnHumanNpcBehaviorChanged("Free_InWater");
 				}
 #endif
 
@@ -1545,7 +1545,7 @@ void Npcs::UpdateHuman(
 #ifdef BARYLAB_PROBING
 				if (npc.Id == mCurrentlySelectedNpc)
 				{
-					mGameEventHandler->OnHumanNpcBehaviorChanged("Free_Aerial");
+					mSimulationEventHandler->OnHumanNpcBehaviorChanged("Free_Aerial");
 				}
 #endif
 
@@ -1569,7 +1569,7 @@ void Npcs::UpdateHuman(
 #ifdef BARYLAB_PROBING
 				if (npc.Id == mCurrentlySelectedNpc)
 				{
-					mGameEventHandler->OnHumanNpcBehaviorChanged("Constrained_KnockedOut");
+					mSimulationEventHandler->OnHumanNpcBehaviorChanged("Constrained_KnockedOut");
 				}
 #endif
 
@@ -1589,7 +1589,7 @@ void Npcs::UpdateHuman(
 #ifdef BARYLAB_PROBING
 				if (npc.Id == mCurrentlySelectedNpc)
 				{
-					mGameEventHandler->OnHumanNpcBehaviorChanged("Free_Aerial");
+					mSimulationEventHandler->OnHumanNpcBehaviorChanged("Free_Aerial");
 				}
 #endif
 
@@ -1659,7 +1659,7 @@ void Npcs::UpdateHuman(
 #ifdef BARYLAB_PROBING
 					if (npc.Id == mCurrentlySelectedNpc)
 					{
-						mGameEventHandler->OnHumanNpcBehaviorChanged("Free_Swimming");
+						mSimulationEventHandler->OnHumanNpcBehaviorChanged("Free_Swimming");
 					}
 #endif
 
@@ -1690,7 +1690,7 @@ void Npcs::UpdateHuman(
 #ifdef BARYLAB_PROBING
 					if (npc.Id == mCurrentlySelectedNpc)
 					{
-						mGameEventHandler->OnHumanNpcBehaviorChanged("Free_InWater");
+						mSimulationEventHandler->OnHumanNpcBehaviorChanged("Free_InWater");
 					}
 #endif
 
@@ -1746,7 +1746,7 @@ void Npcs::UpdateHuman(
 #ifdef BARYLAB_PROBING
 					if (npc.Id == mCurrentlySelectedNpc)
 					{
-						mGameEventHandler->OnHumanNpcBehaviorChanged("Free_KnockedOut");
+						mSimulationEventHandler->OnHumanNpcBehaviorChanged("Free_KnockedOut");
 					}
 #endif
 				}
@@ -1757,7 +1757,7 @@ void Npcs::UpdateHuman(
 #ifdef BARYLAB_PROBING
 					if (npc.Id == mCurrentlySelectedNpc)
 					{
-						mGameEventHandler->OnHumanNpcBehaviorChanged("Constrained_KnockedOut");
+						mSimulationEventHandler->OnHumanNpcBehaviorChanged("Constrained_KnockedOut");
 					}
 #endif
 				}
@@ -1956,7 +1956,7 @@ void Npcs::UpdateHuman(
 #ifdef BARYLAB_PROBING
 	if (npc.Id == mCurrentlySelectedNpc)
 	{
-		mGameEventHandler->OnHumanNpcStateQuantityChanged(publishStateQuantity);
+		mSimulationEventHandler->OnHumanNpcStateQuantityChanged(publishStateQuantity);
 	}
 #endif
 }
@@ -2237,7 +2237,7 @@ void Npcs::TransitionHumanBehaviorToFree(
 #ifdef BARYLAB_PROBING
 		if (npc.Id == mCurrentlySelectedNpc)
 		{
-			mGameEventHandler->OnHumanNpcBehaviorChanged("Free_InWater");
+			mSimulationEventHandler->OnHumanNpcBehaviorChanged("Free_InWater");
 		}
 #endif
 	}
@@ -2248,7 +2248,7 @@ void Npcs::TransitionHumanBehaviorToFree(
 #ifdef BARYLAB_PROBING
 		if (npc.Id == mCurrentlySelectedNpc)
 		{
-			mGameEventHandler->OnHumanNpcBehaviorChanged("Free_Aerial");
+			mSimulationEventHandler->OnHumanNpcBehaviorChanged("Free_Aerial");
 		}
 #endif
 	}

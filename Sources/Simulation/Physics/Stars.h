@@ -5,8 +5,9 @@
 ***************************************************************************************/
 #pragma once
 
-#include "GameParameters.h"
-#include "RenderContext.h"
+#include "../SimulationParameters.h"
+
+#include <Render/RenderContext.h>
 
 #include <memory>
 #include <optional>
@@ -22,9 +23,9 @@ public:
 
     void Update(
         float currentSimulationTime,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
-    void Upload(Render::RenderContext & renderContext) const;
+    void Upload(RenderContext & renderContext) const;
 
 private:
 

@@ -123,7 +123,7 @@ public:
         ElementCount elementCount,
         ElementCount perfectSquareCount,
         World & parentWorld,
-        std::shared_ptr<SimulationEventDispatcher> gameEventDispatcher,
+        std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher,
         SimulationParameters const & simulationParameters)
         : ElementContainer(elementCount)
         , mPerfectSquareCount(perfectSquareCount)
@@ -157,7 +157,7 @@ public:
         // Container
         //////////////////////////////////
         , mParentWorld(parentWorld)
-        , mGameEventHandler(std::move(gameEventDispatcher))
+        , mSimulationEventHandler(std::move(simulationEventDispatcher))
         , mShipPhysicsHandler(nullptr)
         , mCurrentNumMechanicalDynamicsIterations(simulationParameters.NumMechanicalDynamicsIterations<float>())
         , mCurrentStrengthIterationsAdjustment(CalculateSpringStrengthIterationsAdjustment(mCurrentNumMechanicalDynamicsIterations))
@@ -675,7 +675,7 @@ private:
     //////////////////////////////////////////////////////////
 
     World & mParentWorld;
-    std::shared_ptr<SimulationEventDispatcher> const mGameEventHandler;
+    std::shared_ptr<SimulationEventDispatcher> const mSimulationEventHandler;
     IShipPhysicsHandler * mShipPhysicsHandler;
 
     // The game parameter values that we are current with; changes

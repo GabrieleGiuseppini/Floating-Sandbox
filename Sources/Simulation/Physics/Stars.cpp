@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #include "Physics.h"
 
-#include <GameCore/GameRandomEngine.h>
+#include <Core/GameRandomEngine.h>
 
 #include <cassert>
 #include <limits>
@@ -23,15 +23,15 @@ Stars::Stars()
 
 void Stars::Update(
     float currentSimulationTime,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     //
     // 1. See if we have to update the number of stars
     //
 
-    if (mStars.size() != gameParameters.NumberOfStars)
+    if (mStars.size() != simulationParameters.NumberOfStars)
     {
-        RegenerateStars(gameParameters.NumberOfStars);
+        RegenerateStars(simulationParameters.NumberOfStars);
 
         // Clear state machine
         mCurrentMovingStarState.reset();
@@ -79,7 +79,7 @@ void Stars::Update(
     }
 }
 
-void Stars::Upload(Render::RenderContext & renderContext) const
+void Stars::Upload(RenderContext & renderContext) const
 {
     if (mStarCountDirtyForRendering.has_value())
     {

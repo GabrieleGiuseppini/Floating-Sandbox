@@ -40,8 +40,12 @@ set  (SIMULATION_SOURCES
 )
 
 set  (PHYSICS_SOURCES
+	Physics/Clouds.cpp
+	Physics/Clouds.h
 	Physics/ElectricalElements.cpp
 	Physics/ElectricalElements.h
+	Physics/Fishes.cpp
+	Physics/Fishes.h
 	Physics/Formulae.h
 	Physics/Frontiers.cpp
 	Physics/Frontiers.h
@@ -52,11 +56,17 @@ set  (PHYSICS_SOURCES
 	Physics/Npcs/Npcs.h
 	Physics/Npcs/Npcs_HumanSimulation.cpp
 	Physics/Npcs/Npcs_Simulation.cpp
+	Physics/OceanFloor.cpp
+	Physics/OceanFloor.h
+	Physics/OceanSurface.cpp
+	Physics/OceanSurface.h
 	Physics/Physics.h
 	Physics/Points.cpp
 	Physics/Points.h
 	Physics/Springs.cpp
 	Physics/Springs.h
+	Physics/Stars.cpp
+	Physics/Stars.h
 	Physics/Storm.cpp
 	Physics/Storm.h
 	Physics/Triangles.cpp

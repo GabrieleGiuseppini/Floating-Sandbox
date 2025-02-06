@@ -663,7 +663,7 @@ void Npcs::UpdateNpcPhysics(
                         shipNpcs.BurningNpcs.push_back(npcState->Id);
 
                         // Emit event
-                        mGameEventHandler->OnPointCombustionBegin();
+                        mSimulationEventHandler->OnPointCombustionBegin();
                     }
 
                     // Update flame progress
@@ -694,7 +694,7 @@ void Npcs::UpdateNpcPhysics(
                         shipNpcs.BurningNpcs.erase(npcIt);
 
                         // Emit event
-                        mGameEventHandler->OnPointCombustionEnd();
+                        mSimulationEventHandler->OnPointCombustionEnd();
                     }
                 }
             }
@@ -1862,8 +1862,8 @@ void Npcs::UpdateNpcParticlePhysics(
 
         vec2f const particleVelocity = (mParticles.GetPosition(npcParticle.ParticleIndex) - particleStartAbsolutePosition) / SimulationParameters::SimulationStepTimeDuration<float>;
 
-        mGameEventHandler->OnCustomProbe("VelX", particleVelocity.x);
-        mGameEventHandler->OnCustomProbe("VelY", particleVelocity.y);
+        mSimulationEventHandler->OnCustomProbe("VelX", particleVelocity.x);
+        mSimulationEventHandler->OnCustomProbe("VelY", particleVelocity.y);
     }
 #endif
 }
@@ -3982,7 +3982,7 @@ void Npcs::OnImpact(
         float const responseMagnitude = responseNormalVelocity.length();
         float const dissipatedKineticEnergy = 0.5f * mParticles.GetMass(npcParticleIndex) * (impactMagnitude * impactMagnitude - responseMagnitude * responseMagnitude);
 
-        mGameEventHandler->OnImpact(
+        mSimulationEventHandler->OnImpact(
             mParticles.GetMaterial(npcParticleIndex),
             mParticles.GetAnyWaterness(npcParticleIndex) >= 0.5f,
             dissipatedKineticEnergy);
@@ -4079,7 +4079,7 @@ void Npcs::TriggerExplosion(
     {
         case ExplosionType::Combustion:
         {
-            mGameEventHandler->OnCombustionExplosion(
+            mSimulationEventHandler->OnCombustionExplosion(
                 isUnderwater,
                 1);
 
@@ -4088,7 +4088,7 @@ void Npcs::TriggerExplosion(
 
         case ExplosionType::Deflagration:
         {
-            mGameEventHandler->OnBombExplosion(
+            mSimulationEventHandler->OnBombExplosion(
                 GadgetType::ImpactBomb, // Arbitrarily
                 isUnderwater,
                 1);
@@ -4098,7 +4098,7 @@ void Npcs::TriggerExplosion(
 
         case ExplosionType::FireExtinguishing:
         {
-            mGameEventHandler->OnBombExplosion(
+            mSimulationEventHandler->OnBombExplosion(
                 GadgetType::FireExtinguishingBomb, // Arbitrarily
                 isUnderwater,
                 1);
@@ -4108,7 +4108,7 @@ void Npcs::TriggerExplosion(
 
         case ExplosionType::Sodium:
         {
-            mGameEventHandler->OnWaterReactionExplosion(
+            mSimulationEventHandler->OnWaterReactionExplosion(
                 isUnderwater,
                 1);
 
