@@ -36,12 +36,12 @@ namespace Physics
 
 #include "Formulae.h"
 
+#include "Points.h"
+#include "Springs.h"
+#include "Triangles.h"
+#include "ElectricalElements.h"
+#include "Frontiers.h"
 //// TODOTEST
-//#include "Points.h"
-//#include "Springs.h"
-//#include "Triangles.h"
-//#include "ElectricalElements.h"
-//#include "Frontiers.h"
 //#include "NpcSimulation/NpcParticles.h"
 //
 //#include "Clouds.h"

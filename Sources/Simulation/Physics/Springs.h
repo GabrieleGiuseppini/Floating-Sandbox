@@ -5,16 +5,17 @@
 ***************************************************************************************/
 #pragma once
 
-#include "GameEventDispatcher.h"
-#include "GameParameters.h"
+#include "../SimulationEventDispatcher.h"
+#include "../SimulationParameters.h"
 #include "Materials.h"
-#include "RenderContext.h"
 
-#include <GameCore/Buffer.h>
-#include <GameCore/BufferAllocator.h>
-#include <GameCore/ElementContainer.h>
-#include <GameCore/EnumFlags.h>
-#include <GameCore/FixedSizeVector.h>
+#include <Render/RenderContext.h>
+
+#include <Core/Buffer.h>
+#include <Core/BufferAllocator.h>
+#include <Core/ElementContainer.h>
+#include <Core/EnumFlags.h>
+#include <Core/FixedSizeVector.h>
 
 #include <cassert>
 #include <functional>
@@ -122,8 +123,8 @@ public:
         ElementCount elementCount,
         ElementCount perfectSquareCount,
         World & parentWorld,
-        std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-        GameParameters const & gameParameters)
+        std::shared_ptr<SimulationEventDispatcher> gameEventDispatcher,
+        SimulationParameters const & simulationParameters)
         : ElementContainer(elementCount)
         , mPerfectSquareCount(perfectSquareCount)
         //////////////////////////////////
@@ -158,12 +159,12 @@ public:
         , mParentWorld(parentWorld)
         , mGameEventHandler(std::move(gameEventDispatcher))
         , mShipPhysicsHandler(nullptr)
-        , mCurrentNumMechanicalDynamicsIterations(gameParameters.NumMechanicalDynamicsIterations<float>())
+        , mCurrentNumMechanicalDynamicsIterations(simulationParameters.NumMechanicalDynamicsIterations<float>())
         , mCurrentStrengthIterationsAdjustment(CalculateSpringStrengthIterationsAdjustment(mCurrentNumMechanicalDynamicsIterations))
-        , mCurrentSpringStiffnessAdjustment(gameParameters.SpringStiffnessAdjustment)
-        , mCurrentSpringDampingAdjustment(gameParameters.SpringDampingAdjustment)
-        , mCurrentSpringStrengthAdjustment(gameParameters.SpringStrengthAdjustment)
-        , mCurrentMeltingTemperatureAdjustment(gameParameters.MeltingTemperatureAdjustment)
+        , mCurrentSpringStiffnessAdjustment(simulationParameters.SpringStiffnessAdjustment)
+        , mCurrentSpringDampingAdjustment(simulationParameters.SpringDampingAdjustment)
+        , mCurrentSpringStrengthAdjustment(simulationParameters.SpringStrengthAdjustment)
+        , mCurrentMeltingTemperatureAdjustment(simulationParameters.MeltingTemperatureAdjustment)
         , mFloatBufferAllocator(mBufferElementCount)
         , mVec2fBufferAllocator(mBufferElementCount)
     {
@@ -189,16 +190,16 @@ public:
         ElementIndex springElementIndex,
         DestroyOptions destroyOptions,
         float currentSimulationTime,
-        GameParameters const & gameParameters,
+        SimulationParameters const & simulationParameters,
         Points const & points);
 
     void Restore(
         ElementIndex springElementIndex,
-        GameParameters const & gameParameters,
+        SimulationParameters const & simulationParameters,
         Points const & points);
 
     void UpdateForGameParameters(
-        GameParameters const & gameParameters,
+        SimulationParameters const & simulationParameters,
         Points const & points);
 
     void UpdateForDecayAndTemperature(
@@ -239,7 +240,7 @@ public:
      */
     void UpdateForStrains(
         float currentSimulationTime,
-        GameParameters const & gameParameters,
+        SimulationParameters const & simulationParameters,
         Points & points,
         StressRenderModeType stressRenderMode);
 
@@ -249,11 +250,11 @@ public:
 
     void UploadElements(
         ShipId shipId,
-        Render::RenderContext & renderContext) const;
+        RenderContext & renderContext) const;
 
     void UploadStressedSpringElements(
         ShipId shipId,
-        Render::RenderContext & renderContext) const;
+        RenderContext & renderContext) const;
 
 public:
 
@@ -591,7 +592,7 @@ private:
     template<bool DoUpdateStress>
     inline void InternalUpdateForStrains(
         float currentSimulationTime,
-        GameParameters const & gameParameters,
+        SimulationParameters const & simulationParameters,
         Points & points);
 
     void UpdateCoefficientsForPartition(
@@ -674,7 +675,7 @@ private:
     //////////////////////////////////////////////////////////
 
     World & mParentWorld;
-    std::shared_ptr<GameEventDispatcher> const mGameEventHandler;
+    std::shared_ptr<SimulationEventDispatcher> const mGameEventHandler;
     IShipPhysicsHandler * mShipPhysicsHandler;
 
     // The game parameter values that we are current with; changes

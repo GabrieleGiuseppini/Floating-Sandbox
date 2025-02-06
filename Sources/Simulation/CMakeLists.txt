@@ -40,11 +40,21 @@ set  (SIMULATION_SOURCES
 )
 
 set  (PHYSICS_SOURCES
+	Physics/ElectricalElements.cpp
+	Physics/ElectricalElements.h
 	Physics/Formulae.h
+	Physics/Frontiers.cpp
+	Physics/Frontiers.h
 	Physics/IShipPhysicsHandler.h
 	Physics/Physics.h
+	Physics/Points.cpp
+	Physics/Points.h
+	Physics/Springs.cpp
+	Physics/Springs.h
 	Physics/Storm.cpp
 	Physics/Storm.h
+	Physics/Triangles.cpp
+	Physics/Triangles.h
 	Physics/Wind.cpp
 	Physics/Wind.h
 )

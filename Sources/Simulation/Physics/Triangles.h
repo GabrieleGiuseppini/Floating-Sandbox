@@ -5,13 +5,14 @@
 ***************************************************************************************/
 #pragma once
 
-#include "GameParameters.h"
-#include "RenderContext.h"
+#include "../SimulationParameters.h"
 
-#include <GameCore/Buffer.h>
-#include <GameCore/ElementContainer.h>
-#include <GameCore/FixedSizeVector.h>
-#include <GameCore/GameGeometry.h>
+#include <Render/RenderContext.h>
+
+#include <Core/Buffer.h>
+#include <Core/ElementContainer.h>
+#include <Core/FixedSizeVector.h>
+#include <Core/GameGeometry.h>
 
 #include <algorithm>
 #include <array>
@@ -156,7 +157,7 @@ public:
         ShipId shipId,
         TIndices & planeIndices,
         Points const & points,
-        Render::RenderContext & renderContext) const
+        RenderContext & renderContext) const
     {
         auto & shipRenderContext = renderContext.GetShipRenderContext(shipId);
 

@@ -5,12 +5,12 @@
 ***************************************************************************************/
 #pragma once
 
-#include "GameParameters.h"
-#include "RenderContext.h"
-#include "RenderTypes.h"
+#include "../SimulationParameters.h"
 
-#include <GameCore/AABB.h>
-#include <GameCore/Buffer.h>
+#include <Render/RenderContext.h>
+
+#include <Core/AABB.h>
+#include <Core/Buffer.h>
 
 #include <array>
 #include <optional>
@@ -76,7 +76,7 @@ public:
         , mFrontierEdges(mEdgeCount, 0, FrontierEdge())
         , mFrontiers()
         , mFrontierIds()
-        , mPointColors(pointCount, 0, Render::FrontierColor(vec3f::zero(), 0.0f))
+        , mPointColors(pointCount, 0, ColorWithProgress(vec3f::zero(), 0.0f))
         , mCurrentVisitSequenceNumber()
         , mIsDirtyForRendering(true)
     {}
@@ -108,7 +108,7 @@ public:
 
     void Upload(
         ShipId shipId,
-        Render::RenderContext & renderContext);
+        RenderContext & renderContext);
 
 #ifdef _DEBUG
     void VerifyInvariants(
@@ -290,7 +290,7 @@ private:
 
     // Frontier coloring info.
     // Cardinality: points
-    Buffer<Render::FrontierColor> mPointColors;
+    Buffer<ColorWithProgress> mPointColors;
 
     // The visit number used to mark edges as visited during the
     // region/frontier check

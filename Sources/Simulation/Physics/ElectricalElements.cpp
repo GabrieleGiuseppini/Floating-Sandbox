@@ -5,8 +5,8 @@
 ***************************************************************************************/
 #include "Physics.h"
 
-#include <GameCore/GameGeometry.h>
-#include <GameCore/GameRandomEngine.h>
+#include <Core/GameGeometry.h>
+#include <Core/GameRandomEngine.h>
 
 #include <cmath>
 #include <queue>
@@ -553,7 +553,7 @@ void ElectricalElements::SetSwitchState(
     GlobalElectricalElementId electricalElementId,
     ElectricalState switchState,
     Points & points,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     assert(electricalElementId.GetShipId() == mShipId);
 
@@ -561,13 +561,13 @@ void ElectricalElements::SetSwitchState(
         electricalElementId.GetLocalObjectId(),
         switchState,
         points,
-        gameParameters);
+        simulationParameters);
 }
 
 void ElectricalElements::SetEngineControllerState(
     GlobalElectricalElementId electricalElementId,
     float controllerValue,
-    GameParameters const & /*gameParameters*/)
+    SimulationParameters const & /*simulationParameters*/)
 {
     assert(controllerValue >= -1.0f && controllerValue <= 1.0f);
 
@@ -598,7 +598,7 @@ void ElectricalElements::Destroy(
     ElementIndex electricalElementIndex,
     DestroyReason reason,
     float currentSimulationTime,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     assert(
         (reason != DestroyReason::LampExplosion && reason != DestroyReason::LampImplosion)
@@ -820,7 +820,7 @@ void ElectricalElements::Destroy(
         pointIndex,
         destroySpecializationType,
         currentSimulationTime,
-        gameParameters);
+        simulationParameters);
 
     // Remember that connectivity structure has changed during this step
     mHasConnectivityStructureChangedInCurrentStep = true;
@@ -984,7 +984,7 @@ void ElectricalElements::OnPhysicalStructureChanged(Points const & points)
 void ElectricalElements::OnElectricSpark(
     ElementIndex electricalElementIndex,
     float currentSimulationTime,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     if (!IsDeleted(electricalElementIndex))
     {
@@ -1027,7 +1027,7 @@ void ElectricalElements::OnElectricSpark(
                             electricalElementIndex,
                             DestroyReason::LampExplosion,
                             currentSimulationTime,
-                            gameParameters);
+                            simulationParameters);
                     }
                     else
                     {
@@ -1048,14 +1048,14 @@ void ElectricalElements::OnElectricSpark(
     }
 }
 
-void ElectricalElements::UpdateForGameParameters(GameParameters const & gameParameters)
+void ElectricalElements::UpdateForGameParameters(SimulationParameters const & simulationParameters)
 {
     //
     // Recalculate lamp coefficients, if needed
     //
 
-    if (gameParameters.LightSpreadAdjustment != mCurrentLightSpreadAdjustment
-        || gameParameters.LuminiscenceAdjustment != mCurrentLuminiscenceAdjustment)
+    if (simulationParameters.LightSpreadAdjustment != mCurrentLightSpreadAdjustment
+        || simulationParameters.LuminiscenceAdjustment != mCurrentLuminiscenceAdjustment)
     {
         for (size_t l = 0; l < mLamps.size(); ++l)
         {
@@ -1063,13 +1063,13 @@ void ElectricalElements::UpdateForGameParameters(GameParameters const & gamePara
 
             CalculateLampCoefficients(
                 lampElementIndex,
-                gameParameters.LightSpreadAdjustment,
-                gameParameters.LuminiscenceAdjustment);
+                simulationParameters.LightSpreadAdjustment,
+                simulationParameters.LuminiscenceAdjustment);
         }
 
         // Remember new parameters
-        mCurrentLightSpreadAdjustment = gameParameters.LightSpreadAdjustment;
-        mCurrentLuminiscenceAdjustment = gameParameters.LuminiscenceAdjustment;
+        mCurrentLightSpreadAdjustment = simulationParameters.LightSpreadAdjustment;
+        mCurrentLuminiscenceAdjustment = simulationParameters.LuminiscenceAdjustment;
     }
 }
 
@@ -1082,7 +1082,7 @@ void ElectricalElements::Update(
     float effectiveAirDensity,
     float effectiveWaterDensity,
     Storm::Parameters const & stormParameters,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     //
     // 1. Update engine conductivity
@@ -1105,7 +1105,7 @@ void ElectricalElements::Update(
     UpdateAutomaticConductivityToggles(
         currentSimulationTime,
         points,
-        gameParameters);
+        simulationParameters);
 
     //
     // 3. Update sources and connectivity
@@ -1118,7 +1118,7 @@ void ElectricalElements::Update(
         currentSimulationTime,
         newConnectivityVisitSequenceNumber,
         points,
-        gameParameters);
+        simulationParameters);
 
     //
     // 4. Update sinks (including engines)
@@ -1134,11 +1134,11 @@ void ElectricalElements::Update(
         effectiveAirDensity,
         effectiveWaterDensity,
         stormParameters,
-        gameParameters);
+        simulationParameters);
 }
 
 void ElectricalElements::Upload(
-    Render::ShipRenderContext & shipRenderContext,
+    ShipRenderContext & shipRenderContext,
     Points const & points) const
 {
     //
@@ -1181,7 +1181,7 @@ void ElectricalElements::InternalSetSwitchState(
     ElementIndex elementIndex,
     ElectricalState switchState,
     Points & points,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     // Make sure it's a state change
     if (static_cast<bool>(switchState) != mConductivityBuffer[elementIndex].ConductsElectricity)
@@ -1198,7 +1198,7 @@ void ElectricalElements::InternalSetSwitchState(
         }
 
         // Show notifications - for some types only
-        if (gameParameters.DoShowElectricalNotifications
+        if (simulationParameters.DoShowElectricalNotifications
             && (mMaterialTypeBuffer[elementIndex] == ElectricalMaterial::ElectricalElementType::InteractiveSwitch
                 || mMaterialTypeBuffer[elementIndex] == ElectricalMaterial::ElectricalElementType::WaterSensingSwitch))
         {
@@ -1426,7 +1426,7 @@ void ElectricalElements::UpdateEngineConductivity(
 void ElectricalElements::UpdateAutomaticConductivityToggles(
     float currentSimulationTime,
     Points & points,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     //
     // Visit all non-deleted elements that change their conductivity automatically,
@@ -1463,7 +1463,7 @@ void ElectricalElements::UpdateAutomaticConductivityToggles(
                             elementIndex,
                             static_cast<ElectricalState>(!mConductivityBuffer[elementIndex].MaterialConductsElectricity),
                             points,
-                            gameParameters);
+                            simulationParameters);
 
                         // Start grace period
                         waterSensingSwitchState.GracePeriodEndSimulationTime = currentSimulationTime + GracePeriodInterval;
@@ -1476,7 +1476,7 @@ void ElectricalElements::UpdateAutomaticConductivityToggles(
                             elementIndex,
                             static_cast<ElectricalState>(mConductivityBuffer[elementIndex].MaterialConductsElectricity),
                             points,
-                            gameParameters);
+                            simulationParameters);
 
                         // Start grace period
                         waterSensingSwitchState.GracePeriodEndSimulationTime = currentSimulationTime + GracePeriodInterval;
@@ -1500,7 +1500,7 @@ void ElectricalElements::UpdateSourcesAndPropagation(
     float currentSimulationTime,
     SequenceNumber newConnectivityVisitSequenceNumber,
     Points & points,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     //
     // Visit electrical graph starting from sources, and propagate connectivity state
@@ -1605,7 +1605,7 @@ void ElectricalElements::UpdateSourcesAndPropagation(
                                 static_cast<ElectricalState>(isProducingCurrent));
 
                             // Show notifications
-                            if (gameParameters.DoShowElectricalNotifications)
+                            if (simulationParameters.DoShowElectricalNotifications)
                             {
                                 HighlightElectricalElement(sourceElementIndex, points);
                             }
@@ -1668,8 +1668,8 @@ void ElectricalElements::UpdateSourcesAndPropagation(
 
                 points.AddHeat(sourcePointIndex,
                     mMaterialHeatGeneratedBuffer[sourceElementIndex]
-                    * gameParameters.ElectricalElementHeatProducedAdjustment
-                    * GameParameters::SimulationStepTimeDuration<float>);
+                    * simulationParameters.ElectricalElementHeatProducedAdjustment
+                    * SimulationParameters::SimulationStepTimeDuration<float>);
             }
         }
     }
@@ -1683,7 +1683,7 @@ void ElectricalElements::UpdateSinks(
     float effectiveAirDensity,
     float effectiveWaterDensity,
     Storm::Parameters const & stormParameters,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     //
     // Visit all sinks and run their state machine
@@ -1700,7 +1700,7 @@ void ElectricalElements::UpdateSinks(
 
     // Smoke temperature: same of air, plus extra
     float const effectiveSmokeTemperature =
-        gameParameters.AirTemperature
+        simulationParameters.AirTemperature
         + stormParameters.AirTemperatureDelta
         + 200.0f; // To ensure buoyancy
 
@@ -1773,7 +1773,7 @@ void ElectricalElements::UpdateSinks(
                                 controllerRpm = controllerState.CurrentValue;
 
                                 // Thrust magnitude: 0, 0, 1/N, ..., 1
-                                float constexpr ThrottleIdleFraction = GameParameters::EngineControllerJetThrottleIdleFraction;
+                                float constexpr ThrottleIdleFraction = SimulationParameters::EngineControllerJetThrottleIdleFraction;
                                 if (controllerState.CurrentValue > ThrottleIdleFraction)
                                 {
                                     controllerThrustMagnitude = (controllerState.CurrentValue - ThrottleIdleFraction) / (1.0f - ThrottleIdleFraction);
@@ -1807,7 +1807,7 @@ void ElectricalElements::UpdateSinks(
                                 controllerRpm = controllerState.CurrentValue;
 
                                 // Thrust magnitude: 0, 0, 1/N, ..., 1
-                                float constexpr TelegraphIdleFraction = 1.0f / static_cast<float>(GameParameters::EngineControllerTelegraphDegreesOfFreedom / 2);
+                                float constexpr TelegraphIdleFraction = 1.0f / static_cast<float>(SimulationParameters::EngineControllerTelegraphDegreesOfFreedom / 2);
                                 if (controllerState.CurrentValue > TelegraphIdleFraction)
                                 {
                                     controllerThrustMagnitude = (controllerState.CurrentValue - TelegraphIdleFraction) / (1.0f - TelegraphIdleFraction);
@@ -1860,8 +1860,8 @@ void ElectricalElements::UpdateSinks(
                                 mParentWorld.GetOceanSurface().GetHeightAt(pointPosition.x),
                                 effectiveAirDensity,
                                 effectiveWaterDensity,
-                                gameParameters)
-                            * gameParameters.StaticPressureForceAdjustment;
+                                simulationParameters)
+                            * simulationParameters.StaticPressureForceAdjustment;
 
                         // Check against lamp's limit
                         if (totalExternalPressure >= mElementStateBuffer[sinkElementIndex].Lamp.ExternalPressureBreakageThreshold)
@@ -1881,7 +1881,7 @@ void ElectricalElements::UpdateSinks(
                         currentWallClockTime,
                         currentSimulationTime,
                         points,
-                        gameParameters);
+                        simulationParameters);
 
                     isProducingHeat = (GetAvailableLight(sinkElementIndex) > 0.0f);
                 }
@@ -1938,7 +1938,7 @@ void ElectricalElements::UpdateSinks(
                                 ElectricalState::Off);
 
                             // Show notifications
-                            if (gameParameters.DoShowElectricalNotifications)
+                            if (simulationParameters.DoShowElectricalNotifications)
                             {
                                 HighlightElectricalElement(sinkElementIndex, points);
                             }
@@ -1960,7 +1960,7 @@ void ElectricalElements::UpdateSinks(
                                 ElectricalState::On);
 
                             // Show notifications
-                            if (gameParameters.DoShowElectricalNotifications)
+                            if (simulationParameters.DoShowElectricalNotifications)
                             {
                                 HighlightElectricalElement(sinkElementIndex, points);
                             }
@@ -1997,7 +1997,7 @@ void ElectricalElements::UpdateSinks(
                                 false); // Irrelevant
 
                             // Show notifications
-                            if (gameParameters.DoShowElectricalNotifications)
+                            if (simulationParameters.DoShowElectricalNotifications)
                             {
                                 HighlightElectricalElement(sinkElementIndex, points);
                             }
@@ -2098,7 +2098,7 @@ void ElectricalElements::UpdateSinks(
                             }
 
                             // Show notifications
-                            if (gameParameters.DoShowElectricalNotifications)
+                            if (simulationParameters.DoShowElectricalNotifications)
                             {
                                 HighlightElectricalElement(sinkElementIndex, points);
                             }
@@ -2147,7 +2147,7 @@ void ElectricalElements::UpdateSinks(
                             mElementStateBuffer[sinkElementIndex].SmokeEmitter.NextEmissionSimulationTimestamp =
                                 currentSimulationTime
                                 + GameRandomEngine::GetInstance().GenerateExponentialReal(
-                                gameParameters.SmokeEmissionDensityAdjustment
+                                simulationParameters.SmokeEmissionDensityAdjustment
                                 / mElementStateBuffer[sinkElementIndex].SmokeEmitter.EmissionRate);
                         }
 
@@ -2170,7 +2170,7 @@ void ElectricalElements::UpdateSinks(
                                 smokeTemperature,
                                 currentSimulationTime,
                                 points.GetPlaneId(emitterPointIndex),
-                                gameParameters);
+                                simulationParameters);
 
                             // Make sure we re-calculate the next emission timestamp
                             mElementStateBuffer[sinkElementIndex].SmokeEmitter.NextEmissionSimulationTimestamp = 0.0f;
@@ -2205,7 +2205,7 @@ void ElectricalElements::UpdateSinks(
                             waterPumpState.TargetNormalizedForce = 0.0f;
 
                             // Show notifications
-                            if (gameParameters.DoShowElectricalNotifications)
+                            if (simulationParameters.DoShowElectricalNotifications)
                             {
                                 HighlightElectricalElement(sinkElementIndex, points);
                             }
@@ -2230,7 +2230,7 @@ void ElectricalElements::UpdateSinks(
                             isProducingHeat = true;
 
                             // Show notifications
-                            if (gameParameters.DoShowElectricalNotifications)
+                            if (simulationParameters.DoShowElectricalNotifications)
                             {
                                 HighlightElectricalElement(sinkElementIndex, points);
                             }
@@ -2336,7 +2336,7 @@ void ElectricalElements::UpdateSinks(
                             watertightDoorState.IsOpen());
 
                         // Show notifications
-                        if (gameParameters.DoShowElectricalNotifications)
+                        if (simulationParameters.DoShowElectricalNotifications)
                         {
                             HighlightElectricalElement(sinkElementIndex, points);
                         }
@@ -2361,8 +2361,8 @@ void ElectricalElements::UpdateSinks(
         {
             points.AddHeat(GetPointIndex(sinkElementIndex),
                 mMaterialHeatGeneratedBuffer[sinkElementIndex]
-                * gameParameters.ElectricalElementHeatProducedAdjustment
-                * GameParameters::SimulationStepTimeDuration<float>);
+                * simulationParameters.ElectricalElementHeatProducedAdjustment
+                * SimulationParameters::SimulationStepTimeDuration<float>);
         }
     }
 
@@ -2435,7 +2435,7 @@ void ElectricalElements::UpdateSinks(
                 }
             }
             // Other engine types: do not work overwater (unless allowed)
-            else if (!gameParameters.DoEnginesWorkAboveWater)
+            else if (!simulationParameters.DoEnginesWorkAboveWater)
             {
                 if (!points.IsCachedUnderwater(enginePointIndex))
                 {
@@ -2481,7 +2481,7 @@ void ElectricalElements::UpdateSinks(
                 engineState.CurrentThrustDir
                 * engineState.CurrentThrustMagnitude
                 * engineState.ThrustCapacity
-                * gameParameters.EngineThrustAdjustment;
+                * simulationParameters.EngineThrustAdjustment;
 
             // Apply force to point
             points.AddStaticForce(enginePointIndex, thrustForce);
@@ -2506,7 +2506,7 @@ void ElectricalElements::UpdateSinks(
             }
 
             // Eventually show notifications - only if moving between zero and non-zero RPM
-            if (gameParameters.DoShowElectricalNotifications)
+            if (simulationParameters.DoShowElectricalNotifications)
             {
                 if ((targetRpm != 0.0f && engineState.LastHighlightedRpm == 0.0)
                     || (targetRpm == 0.0f && engineState.LastHighlightedRpm != 0.0))
@@ -2524,8 +2524,8 @@ void ElectricalElements::UpdateSinks(
             points.AddHeat(enginePointIndex,
                 mMaterialHeatGeneratedBuffer[engineSinkElementIndex]
                 * engineState.CurrentAbsRpm
-                * gameParameters.ElectricalElementHeatProducedAdjustment
-                * GameParameters::SimulationStepTimeDuration<float>);
+                * simulationParameters.ElectricalElementHeatProducedAdjustment
+                * SimulationParameters::SimulationStepTimeDuration<float>);
 
             //
             // Update engine conductivity
@@ -2556,7 +2556,7 @@ void ElectricalElements::UpdateSinks(
                     -engineState.CurrentThrustDir
                     * targetRpm
                     * enginePowerScale
-                    * gameParameters.EngineThrustAdjustment;
+                    * simulationParameters.EngineThrustAdjustment;
 
                 engineState.CurrentJetEngineFlameVector =
                     engineState.CurrentJetEngineFlameVector
@@ -2584,7 +2584,7 @@ void ElectricalElements::UpdateSinks(
                     && engineDepth > 0.0f)
                 {
                     // Generate wake particles
-                    if (gameParameters.DoGenerateEngineWakeParticles)
+                    if (simulationParameters.DoGenerateEngineWakeParticles)
                     {
                         auto const planeId = points.GetPlaneId(enginePointIndex);
 
@@ -2610,17 +2610,17 @@ void ElectricalElements::UpdateSinks(
                                 engineDepth,
                                 currentSimulationTime,
                                 planeId,
-                                gameParameters);
+                                simulationParameters);
                         }
                     }
 
                     // Displace ocean surface
-                    if (gameParameters.DoDisplaceWater)
+                    if (simulationParameters.DoDisplaceWater)
                     {
                         // Offset from engine due to thrust - along the thrust direction
                         vec2f const engineOffset =
                             -thrustForce
-                            * GameParameters::SimulationStepTimeDuration<float> *GameParameters::SimulationStepTimeDuration<float>
+                            * SimulationParameters::SimulationStepTimeDuration<float> *SimulationParameters::SimulationStepTimeDuration<float>
                             *0.025f;
 
                         vec2f const engineOffsetedPosition = enginePosition + engineOffset;
@@ -2662,7 +2662,7 @@ void ElectricalElements::RunLampStateMachine(
     GameWallClock::time_point currentWallClockTime,
     float currentSimulationTime,
     Points & points,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     float constexpr LampWetFailureWaterHighWatermark = 0.1f;
     float constexpr LampWetFailureWaterLowWatermark = 0.055f;
@@ -2997,7 +2997,7 @@ void ElectricalElements::RunLampStateMachine(
                 elementLampIndex,
                 ElectricalElements::DestroyReason::LampImplosion,
                 currentSimulationTime,
-                gameParameters);
+                simulationParameters);
 
             break;
         }

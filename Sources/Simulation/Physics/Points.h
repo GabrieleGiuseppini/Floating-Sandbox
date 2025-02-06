@@ -5,24 +5,26 @@
 ***************************************************************************************/
 #pragma once
 
-#include "GameEventDispatcher.h"
-#include "GameParameters.h"
-#include "MaterialDatabase.h"
-#include "Materials.h"
-#include "RenderContext.h"
+#include "../SimulationEventDispatcher.h"
+#include "../SimulationParameters.h"
+#include "../MaterialDatabase.h"
+#include "../Materials.h"
 
-#include <GameCore/AABB.h>
-#include <GameCore/Buffer.h>
-#include <GameCore/BufferAllocator.h>
-#include <GameCore/ElementContainer.h>
-#include <GameCore/ElementIndexRangeIterator.h>
-#include <GameCore/EnumFlags.h>
-#include <GameCore/FixedSizeVector.h>
-#include <GameCore/GameMath.h>
-#include <GameCore/GameRandomEngine.h>
-#include <GameCore/GameTypes.h>
-#include <GameCore/GameWallClock.h>
-#include <GameCore/Vectors.h>
+#include <Render/GameTextureDatabases.h>
+#include <Render/RenderContext.h>
+
+#include <Core/AABB.h>
+#include <Core/Buffer.h>
+#include <Core/BufferAllocator.h>
+#include <Core/ElementContainer.h>
+#include <Core/ElementIndexRangeIterator.h>
+#include <Core/EnumFlags.h>
+#include <Core/FixedSizeVector.h>
+#include <Core/GameMath.h>
+#include <Core/GameRandomEngine.h>
+#include <Core/GameTypes.h>
+#include <Core/GameWallClock.h>
+#include <Core/Vectors.h>
 
 #include <algorithm>
 #include <cassert>
@@ -84,7 +86,7 @@ public:
      */
     struct ConnectedSpringsVector
     {
-        FixedSizeVector<ConnectedSpring, GameParameters::MaxSpringsPerPoint> ConnectedSprings;
+        FixedSizeVector<ConnectedSpring, SimulationParameters::MaxSpringsPerPoint> ConnectedSprings;
         size_t OwnedConnectedSpringsCount;
 
         ConnectedSpringsVector()
@@ -356,14 +358,14 @@ private:
                 Fast
             };
 
-            Render::GenericMipMappedTextureGroups TextureGroup;
+            GameTextureDatabases::GenericMipMappedTextureGroups TextureGroup;
             GrowthType Growth;
             float PersonalitySeed;
             float LifetimeProgress;
             float ScaleProgress;
 
             SmokeState()
-                : TextureGroup(Render::GenericMipMappedTextureGroups::SmokeLight) // Arbitrary
+                : TextureGroup(GameTextureDatabases::GenericMipMappedTextureGroups::SmokeLight) // Arbitrary
                 , Growth(GrowthType::Slow) // Arbitrary
                 , PersonalitySeed(0.0f)
                 , LifetimeProgress(0.0f)
@@ -371,7 +373,7 @@ private:
             {}
 
             SmokeState(
-                Render::GenericMipMappedTextureGroups textureGroup,
+                GameTextureDatabases::GenericMipMappedTextureGroups textureGroup,
                 GrowthType growth,
                 float personalitySeed)
                 : TextureGroup(textureGroup)
@@ -463,7 +465,7 @@ private:
      */
     struct ConnectedTrianglesVector
     {
-        FixedSizeVector<ElementIndex, GameParameters::MaxTrianglesPerPoint> ConnectedTriangles;
+        FixedSizeVector<ElementIndex, SimulationParameters::MaxTrianglesPerPoint> ConnectedTriangles;
         size_t OwnedConnectedTrianglesCount;
 
         ConnectedTrianglesVector()
@@ -585,9 +587,9 @@ public:
         ElementCount shipPointCount,
         World & parentWorld,
         MaterialDatabase const & materialDatabase,
-        std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-        GameParameters const & gameParameters)
-        : ElementContainer(make_aligned_float_element_count(shipPointCount) + GameParameters::MaxEphemeralParticles)
+        std::shared_ptr<SimulationEventDispatcher> gameEventDispatcher,
+        SimulationParameters const & simulationParameters)
+        : ElementContainer(make_aligned_float_element_count(shipPointCount) + SimulationParameters::MaxEphemeralParticles)
         //////////////////////////////////
         // Buffers
         //////////////////////////////////
@@ -683,7 +685,7 @@ public:
         //////////////////////////////////
         , mRawShipPointCount(shipPointCount)
         , mAlignedShipPointCount(make_aligned_float_element_count(shipPointCount))
-        , mEphemeralPointCount(GameParameters::MaxEphemeralParticles)
+        , mEphemeralPointCount(SimulationParameters::MaxEphemeralParticles)
         , mAllPointCount(mAlignedShipPointCount + mEphemeralPointCount)
         //
         , mParentWorld(parentWorld)
@@ -691,14 +693,14 @@ public:
         , mGameEventHandler(std::move(gameEventDispatcher))
         , mShipPhysicsHandler(nullptr)
         , mHaveWholeBuffersBeenUploadedOnce(false)
-        , mCurrentNumMechanicalDynamicsIterations(gameParameters.NumMechanicalDynamicsIterations<float>())
-        , mCurrentElasticityAdjustment(gameParameters.ElasticityAdjustment)
-        , mCurrentStaticFrictionAdjustment(gameParameters.StaticFrictionAdjustment)
-        , mCurrentKineticFrictionAdjustment(gameParameters.KineticFrictionAdjustment)
-        , mCurrentOceanFloorElasticityCoefficient(gameParameters.OceanFloorElasticityCoefficient)
-        , mCurrentOceanFloorFrictionCoefficient(gameParameters.OceanFloorFrictionCoefficient)
-        , mCurrentCumulatedIntakenWaterThresholdForAirBubbles(GameParameters::AirBubblesDensityToCumulatedIntakenWater(gameParameters.AirBubblesDensity))
-        , mCurrentCombustionSpeedAdjustment(gameParameters.CombustionSpeedAdjustment)
+        , mCurrentNumMechanicalDynamicsIterations(simulationParameters.NumMechanicalDynamicsIterations<float>())
+        , mCurrentElasticityAdjustment(simulationParameters.ElasticityAdjustment)
+        , mCurrentStaticFrictionAdjustment(simulationParameters.StaticFrictionAdjustment)
+        , mCurrentKineticFrictionAdjustment(simulationParameters.KineticFrictionAdjustment)
+        , mCurrentOceanFloorElasticityCoefficient(simulationParameters.OceanFloorElasticityCoefficient)
+        , mCurrentOceanFloorFrictionCoefficient(simulationParameters.OceanFloorFrictionCoefficient)
+        , mCurrentCumulatedIntakenWaterThresholdForAirBubbles(SimulationParameters::AirBubblesDensityToCumulatedIntakenWater(simulationParameters.AirBubblesDensity))
+        , mCurrentCombustionSpeedAdjustment(simulationParameters.CombustionSpeedAdjustment)
         , mFloatBufferAllocator(mBufferElementCount)
         , mVec2fBufferAllocator(mBufferElementCount)
         , mCombustionIgnitionCandidates(mRawShipPointCount)
@@ -716,7 +718,7 @@ public:
         mDynamicForceBuffers.emplace_back(mBufferElementCount, shipPointCount, vec2f::zero());
         mDynamicForceRawBuffers.emplace_back(reinterpret_cast<float *>(mDynamicForceBuffers[0].data()));
 
-        CalculateCombustionDecayParameters(mCurrentCombustionSpeedAdjustment, GameParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>);
+        CalculateCombustionDecayParameters(mCurrentCombustionSpeedAdjustment, SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>);
     }
 
     Points(Points && other) = default;
@@ -817,17 +819,17 @@ public:
         float temperature,
         float currentSimulationTime,
         PlaneId planeId,
-        GameParameters const & gameParameters)
+        SimulationParameters const & simulationParameters)
     {
         CreateEphemeralParticleSmoke(
-            Render::GenericMipMappedTextureGroups::SmokeLight,
+            GameTextureDatabases::GenericMipMappedTextureGroups::SmokeLight,
             EphemeralState::SmokeState::GrowthType::Slow,
             position,
             depth,
             temperature,
             currentSimulationTime,
             planeId,
-            gameParameters);
+            simulationParameters);
     }
 
     void CreateEphemeralParticleHeavySmoke(
@@ -836,28 +838,28 @@ public:
         float temperature,
         float currentSimulationTime,
         PlaneId planeId,
-        GameParameters const & gameParameters)
+        SimulationParameters const & simulationParameters)
     {
         CreateEphemeralParticleSmoke(
-            Render::GenericMipMappedTextureGroups::SmokeDark,
+            GameTextureDatabases::GenericMipMappedTextureGroups::SmokeDark,
             EphemeralState::SmokeState::GrowthType::Fast,
             position,
             depth,
             temperature,
             currentSimulationTime,
             planeId,
-            gameParameters);
+            simulationParameters);
     }
 
     void CreateEphemeralParticleSmoke(
-        Render::GenericMipMappedTextureGroups textureGroup,
+        GameTextureDatabases::GenericMipMappedTextureGroups textureGroup,
         EphemeralState::SmokeState::GrowthType growth,
         vec2f const & position,
         float depth,
         float temperature,
         float currentSimulationTime,
         PlaneId planeId,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void CreateEphemeralParticleSparkle(
         vec2f const & position,
@@ -874,7 +876,7 @@ public:
         float depth,
         float currentSimulationTime,
         PlaneId planeId,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void DestroyEphemeralParticle(
         ElementIndex pointElementIndex);
@@ -884,7 +886,7 @@ public:
         vec2f const & detachVelocity,
         DetachOptions detachOptions,
         float currentSimulationTime,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void Restore(
         ElementIndex pointElementIndex,
@@ -892,7 +894,7 @@ public:
 
     void OnOrphaned(ElementIndex pointElementIndex);
 
-    void UpdateForGameParameters(GameParameters const & gameParameters);
+    void UpdateForGameParameters(SimulationParameters const & simulationParameters);
 
     void UpdateCombustionLowFrequency(
         ElementIndex pointOffset,
@@ -900,20 +902,20 @@ public:
         GameWallClock::float_time currentWallClockTime,
         float currentSimulationTime,
         Storm::Parameters const & stormParameters,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void UpdateCombustionHighFrequency(
         float currentSimulationTime,
         float dt,
         vec2f const & globalWindSpeed,
         std::optional<Wind::RadialWindField> const & radialWindField,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void ReorderBurningPointsForDepth();
 
     void UpdateEphemeralParticles(
         float currentSimulationTime,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void UpdateHighlights(GameWallClock::float_time currentWallClockTime);
 
@@ -942,30 +944,30 @@ public:
 
     void UploadAttributes(
         ShipId shipId,
-        Render::RenderContext & renderContext) const;
+        RenderContext & renderContext) const;
 
     void UploadNonEphemeralPointElements(
         ShipId shipId,
-        Render::RenderContext & renderContext) const;
+        RenderContext & renderContext) const;
 
     size_t GetBurningPointCount() const
     {
         return mBurningPoints.size();
     }
 
-    void UploadFlames(Render::ShipRenderContext & shipRenderContext) const;
+    void UploadFlames(ShipRenderContext & shipRenderContext) const;
 
     void UploadVectors(
         ShipId shipId,
-        Render::RenderContext & renderContext) const;
+        RenderContext & renderContext) const;
 
     void UploadEphemeralParticles(
         ShipId shipId,
-        Render::RenderContext & renderContext) const;
+        RenderContext & renderContext) const;
 
     void UploadHighlights(
         ShipId shipId,
-        Render::RenderContext & renderContext) const;
+        RenderContext & renderContext) const;
 
 public:
 
@@ -1236,7 +1238,7 @@ public:
         return mMassBuffer[pointElementIndex];
     }
 
-    void UpdateMasses(GameParameters const & gameParameters);
+    void UpdateMasses(SimulationParameters const & simulationParameters);
 
     float GetStrength(ElementIndex pointElementIndex) const
     {
@@ -2156,8 +2158,8 @@ private:
         float numMechanicalDynamicsIterations,
         float isPinnedCoefficient)
     {
-        return GameParameters::MechanicalSimulationStepTimeDuration<float>(numMechanicalDynamicsIterations)
-            * GameParameters::MechanicalSimulationStepTimeDuration<float>(numMechanicalDynamicsIterations)
+        return SimulationParameters::MechanicalSimulationStepTimeDuration<float>(numMechanicalDynamicsIterations)
+            * SimulationParameters::MechanicalSimulationStepTimeDuration<float>(numMechanicalDynamicsIterations)
             * isPinnedCoefficient;
     }
 
@@ -2166,12 +2168,12 @@ private:
         float thermalExpansionCoefficient)
     {
         float const coefficient1 =
-            GameParameters::GravityMagnitude
+            SimulationParameters::GravityMagnitude
             * buoyancyVolumeFill
-            * (1.0f - thermalExpansionCoefficient * GameParameters::Temperature0);
+            * (1.0f - thermalExpansionCoefficient * SimulationParameters::Temperature0);
 
         float const coefficient2 =
-            GameParameters::GravityMagnitude
+            SimulationParameters::GravityMagnitude
             * buoyancyVolumeFill
             * thermalExpansionCoefficient;
 
@@ -2427,7 +2429,7 @@ private:
 
     World & mParentWorld;
     MaterialDatabase const & mMaterialDatabase;
-    std::shared_ptr<GameEventDispatcher> const mGameEventHandler;
+    std::shared_ptr<SimulationEventDispatcher> const mGameEventHandler;
     IShipPhysicsHandler * mShipPhysicsHandler;
 
     // Flag remembering whether or not we've uploaded *entire*

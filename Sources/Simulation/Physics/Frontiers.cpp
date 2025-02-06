@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #include "Physics.h"
 
-#include <GameCore/GameDebug.h>
+#include <Core/GameDebug.h>
 
 #include <algorithm>
 #include <array>
@@ -592,7 +592,7 @@ void Frontiers::HandleTriangleRestore(
 
 void Frontiers::Upload(
     ShipId shipId,
-    Render::RenderContext & renderContext)
+    RenderContext & renderContext)
 {
     if (renderContext.GetShowFrontiers()
         && mIsDirtyForRendering)
@@ -1583,8 +1583,8 @@ void Frontiers::RegeneratePointColors()
 
             do
             {
-                mPointColors[mFrontierEdges[edgeIndex].PointAIndex].frontierBaseColor = baseColor;
-                mPointColors[mFrontierEdges[edgeIndex].PointAIndex].positionalProgress = positionalProgress;
+                mPointColors[mFrontierEdges[edgeIndex].PointAIndex].BaseColor = baseColor;
+                mPointColors[mFrontierEdges[edgeIndex].PointAIndex].Progress = positionalProgress;
 
                 // Advance
                 edgeIndex = mFrontierEdges[edgeIndex].NextEdgeIndex;

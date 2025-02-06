@@ -5,8 +5,8 @@
 ***************************************************************************************/
 #include "Physics.h"
 
-#include <GameCore/Log.h>
-#include <GameCore/PrecalculatedFunction.h>
+#include <Core/Log.h>
+#include <Core/PrecalculatedFunction.h>
 
 #include <cmath>
 #include <limits>
@@ -58,7 +58,7 @@ void Points::Add(
         structuralMaterial.ElasticityCoefficient,
         structuralMaterial.StaticFrictionCoefficient,
         structuralMaterial.KineticFrictionCoefficient));
-    mAirWaterInterfaceInverseWidthBuffer.emplace_back(1.0f / GameParameters::ShipParticleAirWaterInterfaceWidth);
+    mAirWaterInterfaceInverseWidthBuffer.emplace_back(1.0f / SimulationParameters::ShipParticleAirWaterInterfaceWidth);
     mBuoyancyCoefficientsBuffer.emplace_back(CalculateBuoyancyCoefficients(
         structuralMaterial.BuoyancyVolumeFill,
         structuralMaterial.ThermalExpansionCoefficient));
@@ -83,7 +83,7 @@ void Points::Add(
     mTotalFactoryWetPoints += (water > 0.0f ? 1 : 0);
 
     // Heat dynamics
-    mTemperatureBuffer.emplace_back(GameParameters::Temperature0);
+    mTemperatureBuffer.emplace_back(SimulationParameters::Temperature0);
     assert(structuralMaterial.GetHeatCapacity() > 0.0f);
     mMaterialHeatCapacityReciprocalBuffer.emplace_back(1.0f / structuralMaterial.GetHeatCapacity());
     mMaterialThermalExpansionCoefficientBuffer.emplace_back(structuralMaterial.ThermalExpansionCoefficient);
@@ -183,7 +183,7 @@ void Points::CreateEphemeralParticleAirBubble(
         airStructuralMaterial.ElasticityCoefficient,
         airStructuralMaterial.StaticFrictionCoefficient,
         airStructuralMaterial.KineticFrictionCoefficient);
-    mAirWaterInterfaceInverseWidthBuffer[pointIndex] = 1.0f / GameParameters::AirBubbleParticleAirWaterInterfaceWidth;
+    mAirWaterInterfaceInverseWidthBuffer[pointIndex] = 1.0f / SimulationParameters::AirBubbleParticleAirWaterInterfaceWidth;
     mBuoyancyCoefficientsBuffer[pointIndex] = CalculateBuoyancyCoefficients(
         airBubbleBuoyancyVolumeFill,
         airStructuralMaterial.ThermalExpansionCoefficient);
@@ -265,7 +265,7 @@ void Points::CreateEphemeralParticleDebris(
     //mDecayBuffer[pointIndex] = 1.0f;
     mPinningCoefficientBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
-    mAirWaterInterfaceInverseWidthBuffer[pointIndex] = 1.0f / GameParameters::ShipParticleAirWaterInterfaceWidth;
+    mAirWaterInterfaceInverseWidthBuffer[pointIndex] = 1.0f / SimulationParameters::ShipParticleAirWaterInterfaceWidth;
     mBuoyancyCoefficientsBuffer[pointIndex] = BuoyancyCoefficients(0.0f, 0.0f); // No buoyancy
     mCachedDepthBuffer[pointIndex] = depth;
 
@@ -277,7 +277,7 @@ void Points::CreateEphemeralParticleDebris(
     assert(!mLeakingCompositeBuffer[pointIndex].IsCumulativelyLeaking);
     //mLeakingCompositeBuffer[pointIndex] = LeakingComposite(false);
 
-    mTemperatureBuffer[pointIndex] = GameParameters::Temperature0;
+    mTemperatureBuffer[pointIndex] = SimulationParameters::Temperature0;
     assert(structuralMaterial.GetHeatCapacity() > 0.0f);
     mMaterialHeatCapacityReciprocalBuffer[pointIndex] = 1.0f / structuralMaterial.GetHeatCapacity();
     //mMaterialThermalExpansionCoefficientBuffer[pointIndex] = structuralMaterial.ThermalExpansionCoefficient;
@@ -314,14 +314,14 @@ void Points::CreateEphemeralParticleDebris(
 }
 
 void Points::CreateEphemeralParticleSmoke(
-    Render::GenericMipMappedTextureGroups textureGroup,
+    GameTextureDatabases::GenericMipMappedTextureGroups textureGroup,
     EphemeralState::SmokeState::GrowthType growth,
     vec2f const & position,
     float depth,
     float temperature,
     float currentSimulationTime,
     PlaneId planeId,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     // Get a free slot (or steal one)
     auto pointIndex = FindFreeEphemeralParticle(currentSimulationTime, true);
@@ -329,10 +329,10 @@ void Points::CreateEphemeralParticleSmoke(
 
     // Choose a lifetime
     float const maxSimulationLifetime =
-        gameParameters.SmokeParticleLifetimeAdjustment
+        simulationParameters.SmokeParticleLifetimeAdjustment
         * GameRandomEngine::GetInstance().GenerateUniformReal(
-            GameParameters::MinSmokeParticlesLifetime,
-            GameParameters::MaxSmokeParticlesLifetime);
+            SimulationParameters::MinSmokeParticlesLifetime,
+            SimulationParameters::MaxSmokeParticlesLifetime);
 
     //
     // Store attributes
@@ -363,7 +363,7 @@ void Points::CreateEphemeralParticleSmoke(
         airStructuralMaterial.ElasticityCoefficient,
         airStructuralMaterial.StaticFrictionCoefficient,
         airStructuralMaterial.KineticFrictionCoefficient);
-    mAirWaterInterfaceInverseWidthBuffer[pointIndex] = 1.0f / GameParameters::ShipParticleAirWaterInterfaceWidth;
+    mAirWaterInterfaceInverseWidthBuffer[pointIndex] = 1.0f / SimulationParameters::ShipParticleAirWaterInterfaceWidth;
     mBuoyancyCoefficientsBuffer[pointIndex] = CalculateBuoyancyCoefficients(
         airStructuralMaterial.BuoyancyVolumeFill,
         airStructuralMaterial.ThermalExpansionCoefficient);
@@ -444,7 +444,7 @@ void Points::CreateEphemeralParticleSparkle(
     //mDecayBuffer[pointIndex] = 1.0f;
     mPinningCoefficientBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
-    mAirWaterInterfaceInverseWidthBuffer[pointIndex] = 1.0f / GameParameters::ShipParticleAirWaterInterfaceWidth;
+    mAirWaterInterfaceInverseWidthBuffer[pointIndex] = 1.0f / SimulationParameters::ShipParticleAirWaterInterfaceWidth;
     mBuoyancyCoefficientsBuffer[pointIndex] = BuoyancyCoefficients(0.0f, 0.0f); // No buoyancy
     mCachedDepthBuffer[pointIndex] = depth;
 
@@ -456,7 +456,7 @@ void Points::CreateEphemeralParticleSparkle(
     assert(!mLeakingCompositeBuffer[pointIndex].IsCumulativelyLeaking);
     //mLeakingCompositeBuffer[pointIndex] = LeakingComposite(false);
 
-    mTemperatureBuffer[pointIndex] = GameParameters::Temperature0;
+    mTemperatureBuffer[pointIndex] = SimulationParameters::Temperature0;
     assert(structuralMaterial.GetHeatCapacity() > 0.0f);
     mMaterialHeatCapacityReciprocalBuffer[pointIndex] = 1.0f / structuralMaterial.GetHeatCapacity();
     //mMaterialThermalExpansionCoefficientBuffer[pointIndex] = structuralMaterial.ThermalExpansionCoefficient;
@@ -492,7 +492,7 @@ void Points::CreateEphemeralParticleWakeBubble(
     float depth,
     float currentSimulationTime,
     PlaneId planeId,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     // Get a free slot (but don't steal one)
     auto pointIndex = FindFreeEphemeralParticle(currentSimulationTime, false);
@@ -528,7 +528,7 @@ void Points::CreateEphemeralParticleWakeBubble(
         waterStructuralMaterial.ElasticityCoefficient,
         waterStructuralMaterial.StaticFrictionCoefficient,
         waterStructuralMaterial.KineticFrictionCoefficient);
-    mAirWaterInterfaceInverseWidthBuffer[pointIndex] = 1.0f / GameParameters::ShipParticleAirWaterInterfaceWidth;
+    mAirWaterInterfaceInverseWidthBuffer[pointIndex] = 1.0f / SimulationParameters::ShipParticleAirWaterInterfaceWidth;
     mBuoyancyCoefficientsBuffer[pointIndex] = CalculateBuoyancyCoefficients(
         waterStructuralMaterial.BuoyancyVolumeFill,
         waterStructuralMaterial.ThermalExpansionCoefficient);
@@ -542,7 +542,7 @@ void Points::CreateEphemeralParticleWakeBubble(
     assert(!mLeakingCompositeBuffer[pointIndex].IsCumulativelyLeaking);
     //mLeakingCompositeBuffer[pointIndex] = LeakingComposite(false);
 
-    mTemperatureBuffer[pointIndex] = gameParameters.WaterTemperature;
+    mTemperatureBuffer[pointIndex] = simulationParameters.WaterTemperature;
     assert(waterStructuralMaterial.GetHeatCapacity() > 0.0f);
     mMaterialHeatCapacityReciprocalBuffer[pointIndex] = 1.0f / waterStructuralMaterial.GetHeatCapacity();
     mMaterialThermalExpansionCoefficientBuffer[pointIndex] = waterStructuralMaterial.ThermalExpansionCoefficient;
@@ -580,7 +580,7 @@ void Points::Detach(
     vec2f const & velocity,
     DetachOptions detachOptions,
     float currentSimulationTime,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     // We don't detach ephemeral points
     assert(pointElementIndex < mAlignedShipPointCount);
@@ -592,7 +592,7 @@ void Points::Detach(
         !!(detachOptions & Points::DetachOptions::GenerateDebris),
         !!(detachOptions & Points::DetachOptions::FireDestroyEvent),
         currentSimulationTime,
-        gameParameters);
+        simulationParameters);
 
     // Imprint velocity, unless the point is pinned
     if (!IsPinned(pointElementIndex))
@@ -684,13 +684,13 @@ void Points::DestroyEphemeralParticle(
     ExpireEphemeralParticle(pointElementIndex);
 }
 
-void Points::UpdateForGameParameters(GameParameters const & gameParameters)
+void Points::UpdateForGameParameters(SimulationParameters const & simulationParameters)
 {
     //
     // Check parameter changes
     //
 
-    float const numMechanicalDynamicsIterations = gameParameters.NumMechanicalDynamicsIterations<float>();
+    float const numMechanicalDynamicsIterations = simulationParameters.NumMechanicalDynamicsIterations<float>();
     if (numMechanicalDynamicsIterations != mCurrentNumMechanicalDynamicsIterations)
     {
         // Recalc integration factor time coefficients
@@ -705,11 +705,11 @@ void Points::UpdateForGameParameters(GameParameters const & gameParameters)
         mCurrentNumMechanicalDynamicsIterations = numMechanicalDynamicsIterations;
     }
 
-    float const elasticityAdjustment = gameParameters.ElasticityAdjustment;
-    float const staticFrictionAdjustment = gameParameters.StaticFrictionAdjustment;
-    float const kineticFrictionAdjustment = gameParameters.KineticFrictionAdjustment;
-    float const oceanFloorElasticityCoefficient = gameParameters.OceanFloorElasticityCoefficient;
-    float const oceanFloorFrictionCoefficient = gameParameters.OceanFloorFrictionCoefficient;
+    float const elasticityAdjustment = simulationParameters.ElasticityAdjustment;
+    float const staticFrictionAdjustment = simulationParameters.StaticFrictionAdjustment;
+    float const kineticFrictionAdjustment = simulationParameters.KineticFrictionAdjustment;
+    float const oceanFloorElasticityCoefficient = simulationParameters.OceanFloorElasticityCoefficient;
+    float const oceanFloorFrictionCoefficient = simulationParameters.OceanFloorFrictionCoefficient;
     if (elasticityAdjustment != mCurrentElasticityAdjustment
         || staticFrictionAdjustment != mCurrentStaticFrictionAdjustment
         || kineticFrictionAdjustment != mCurrentKineticFrictionAdjustment
@@ -741,7 +741,7 @@ void Points::UpdateForGameParameters(GameParameters const & gameParameters)
         mCurrentKineticFrictionAdjustment = kineticFrictionAdjustment;
     }
 
-    float const cumulatedIntakenWaterThresholdForAirBubbles = GameParameters::AirBubblesDensityToCumulatedIntakenWater(gameParameters.AirBubblesDensity);
+    float const cumulatedIntakenWaterThresholdForAirBubbles = SimulationParameters::AirBubblesDensityToCumulatedIntakenWater(simulationParameters.AirBubblesDensity);
     if (cumulatedIntakenWaterThresholdForAirBubbles != mCurrentCumulatedIntakenWaterThresholdForAirBubbles)
     {
         // Randomize cumulated water intaken for each leaking point
@@ -757,11 +757,11 @@ void Points::UpdateForGameParameters(GameParameters const & gameParameters)
         mCurrentCumulatedIntakenWaterThresholdForAirBubbles = cumulatedIntakenWaterThresholdForAirBubbles;
     }
 
-    float const combustionSpeedAdjustment = gameParameters.CombustionSpeedAdjustment;
+    float const combustionSpeedAdjustment = simulationParameters.CombustionSpeedAdjustment;
     if (combustionSpeedAdjustment != mCurrentCombustionSpeedAdjustment)
     {
         // Recalc combustion decay parameters
-        CalculateCombustionDecayParameters(combustionSpeedAdjustment, GameParameters::GameParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>);
+        CalculateCombustionDecayParameters(combustionSpeedAdjustment, SimulationParameters::SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>);
 
         // Remember the new value
         mCurrentCombustionSpeedAdjustment = combustionSpeedAdjustment;
@@ -774,7 +774,7 @@ void Points::UpdateCombustionLowFrequency(
     GameWallClock::float_time currentWallClockTime,
     float currentSimulationTime,
     Storm::Parameters const & stormParameters,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     /////////////////////////////////////////////////////////////////////////////
     // Take care of following:
@@ -816,13 +816,13 @@ void Points::UpdateCombustionLowFrequency(
             //
 
             float const effectiveIgnitionTemperature =
-                mMaterialIgnitionTemperatureBuffer[pointIndex] * gameParameters.IgnitionTemperatureAdjustment;
+                mMaterialIgnitionTemperatureBuffer[pointIndex] * simulationParameters.IgnitionTemperatureAdjustment;
 
             // Note: we don't check for rain on purpose: we allow flames to develop even if it rains,
             // we'll eventually smother them later
-            if (GetTemperature(pointIndex) >= effectiveIgnitionTemperature + GameParameters::IgnitionTemperatureHighWatermark
-                && GetWater(pointIndex) < GameParameters::SmotheringWaterLowWatermark
-                && GetDecay(pointIndex) > GameParameters::SmotheringDecayHighWatermark)
+            if (GetTemperature(pointIndex) >= effectiveIgnitionTemperature + SimulationParameters::IgnitionTemperatureHighWatermark
+                && GetWater(pointIndex) < SimulationParameters::SmotheringWaterLowWatermark
+                && GetDecay(pointIndex) > SimulationParameters::SmotheringDecayHighWatermark)
             {
                 auto const combustionType = mMaterialCombustionTypeBuffer[pointIndex];
 
@@ -855,10 +855,10 @@ void Points::UpdateCombustionLowFrequency(
             // ...for temperature or decay or rain: we check it here
 
             float const effectiveIgnitionTemperature =
-                mMaterialIgnitionTemperatureBuffer[pointIndex] * gameParameters.IgnitionTemperatureAdjustment;
+                mMaterialIgnitionTemperatureBuffer[pointIndex] * simulationParameters.IgnitionTemperatureAdjustment;
 
-            if (GetTemperature(pointIndex) <= (effectiveIgnitionTemperature + GameParameters::IgnitionTemperatureLowWatermark)
-                || GetDecay(pointIndex) < GameParameters::SmotheringDecayLowWatermark)
+            if (GetTemperature(pointIndex) <= (effectiveIgnitionTemperature + SimulationParameters::IgnitionTemperatureLowWatermark)
+                || GetDecay(pointIndex) < SimulationParameters::SmotheringDecayLowWatermark)
             {
                 //
                 // Transition to Extinguishing - by consumption
@@ -879,7 +879,7 @@ void Points::UpdateCombustionLowFrequency(
 
                 // Lower heat or we'll start burning again (the trigger condition for smothering here
                 // is merely the presence of rain, not the temperature)
-                mTemperatureBuffer[pointIndex] = effectiveIgnitionTemperature + 1.5f * GameParameters::IgnitionTemperatureLowWatermark;
+                mTemperatureBuffer[pointIndex] = effectiveIgnitionTemperature + 1.5f * SimulationParameters::IgnitionTemperatureLowWatermark;
             }
             else
             {
@@ -956,8 +956,8 @@ void Points::UpdateCombustionLowFrequency(
         size_t const maxIgnitionPoints = std::min(
             std::min(
                 size_t(4) + GameRandomEngine::GetInstance().Choose(size_t(6)), // 4->9
-                mBurningPoints.size() < gameParameters.MaxBurningParticlesPerShip
-                ? static_cast<size_t>(gameParameters.MaxBurningParticlesPerShip) - mBurningPoints.size()
+                mBurningPoints.size() < simulationParameters.MaxBurningParticlesPerShip
+                ? static_cast<size_t>(simulationParameters.MaxBurningParticlesPerShip) - mBurningPoints.size()
                 : size_t(0)),
             mCombustionIgnitionCandidates.size());
 
@@ -1061,16 +1061,16 @@ void Points::UpdateCombustionLowFrequency(
 
             float const blastForceRadius =
                 mMaterialsBuffer[pointIndex].Structural->ExplosiveCombustionForceRadius
-                * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
+                * (simulationParameters.IsUltraViolentMode ? 4.0f : 1.0f);
 
             float const blastHeat =
                 mMaterialsBuffer[pointIndex].Structural->ExplosiveCombustionHeat
-                * gameParameters.CombustionHeatAdjustment
-                * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+                * simulationParameters.CombustionHeatAdjustment
+                * (simulationParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
             float const blastHeatRadius =
                 mMaterialsBuffer[pointIndex].Structural->ExplosiveCombustionHeatRadius
-                * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
+                * (simulationParameters.IsUltraViolentMode ? 4.0f : 1.0f);
 
             // Start explosion
             mShipPhysicsHandler->StartExplosion(
@@ -1087,7 +1087,7 @@ void Points::UpdateCombustionLowFrequency(
                 isFireExtinguishing
                     ? ExplosionType::FireExtinguishing
                     : ExplosionType::Combustion,
-                gameParameters);
+                simulationParameters);
 
             // Notify explosion
             mGameEventHandler->OnCombustionExplosion(
@@ -1122,12 +1122,12 @@ void Points::UpdateCombustionLowFrequency(
         // Calculate explosion parameters
 
         float const blastHeat =
-            GameParameters::WaterReactionHeat
-            * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+            SimulationParameters::WaterReactionHeat
+            * (simulationParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
         float const blastRadius =
             5.0f // Magic number
-            * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
+            * (simulationParameters.IsUltraViolentMode ? 4.0f : 1.0f);
 
         float const blastForce = 3000000.0f; // Magic number
 
@@ -1152,7 +1152,7 @@ void Points::UpdateCombustionLowFrequency(
                 blastRadius,
                 5.0f, // Render radius offset
                 ExplosionType::Sodium,
-                gameParameters);
+                simulationParameters);
 
             // Notify explosion
             mGameEventHandler->OnWaterReactionExplosion(
@@ -1170,7 +1170,7 @@ void Points::UpdateCombustionHighFrequency(
     float dt,
     vec2f const & globalWindSpeed,
     std::optional<Wind::RadialWindField> const & radialWindField,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     //
     // For all burning points, take care of following:
@@ -1184,9 +1184,9 @@ void Points::UpdateCombustionHighFrequency(
 
     // Heat generated by combustion in this step
     float const effectiveCombustionHeat =
-        GameParameters::CombustionHeat
+        SimulationParameters::CombustionHeat
         * dt
-        * gameParameters.CombustionHeatAdjustment;
+        * simulationParameters.CombustionHeatAdjustment;
 
     // Points that are not burning anymore after this step
     assert(mStoppedBurningPoints.empty());
@@ -1210,7 +1210,7 @@ void Points::UpdateCombustionHighFrequency(
             || currentState == CombustionState::StateType::Burning
             || currentState == CombustionState::StateType::Extinguishing_Consumed)
             && (IsCachedUnderwater(pointIndex)
-                || GetWater(pointIndex) > GameParameters::SmotheringWaterHighWatermark))
+                || GetWater(pointIndex) > SimulationParameters::SmotheringWaterHighWatermark))
         {
             //
             // Transition to Extinguishing - by smothering for water
@@ -1229,7 +1229,7 @@ void Points::UpdateCombustionHighFrequency(
             // This point
             mTemperatureBuffer[pointIndex] =
                 mMaterialIgnitionTemperatureBuffer[pointIndex]
-                * gameParameters.IgnitionTemperatureAdjustment
+                * simulationParameters.IgnitionTemperatureAdjustment
                 * 1.1f;
 
             // Neighbors
@@ -1241,7 +1241,7 @@ void Points::UpdateCombustionHighFrequency(
                 // 0.9 + 1.0*(1 - cos(theta)): 2.9 N, 0.9 S, 1.9 W and E
                 vec2f const springDir = (GetPosition(otherEndpointIndex) - pointPosition).normalise();
                 float const dirAlpha =
-                    (0.9f + 1.0f * (1.0f - springDir.dot(GameParameters::GravityDir)));
+                    (0.9f + 1.0f * (1.0f - springDir.dot(SimulationParameters::GravityDir)));
                 // No normalization: when using normalization flame does not propagate along rope
 
                 // Add heat to the neighbor, diminishing with the neighbor's decay
@@ -1274,9 +1274,9 @@ void Points::UpdateCombustionHighFrequency(
                 pointCombustionState.NextSmokeEmissionSimulationTimestamp =
                     currentSimulationTime
                     + GameRandomEngine::GetInstance().GenerateExponentialReal(
-                        gameParameters.SmokeEmissionDensityAdjustment
+                        simulationParameters.SmokeEmissionDensityAdjustment
                         * pointCombustionState.FlameDevelopment
-                        / 1.5f); // CODEWORK: replace with Material's properties, precalc'd with gameParameters.SmokeEmissionDensityAdjustment
+                        / 1.5f); // CODEWORK: replace with Material's properties, precalc'd with simulationParameters.SmokeEmissionDensityAdjustment
             }
 
             // See if it's time to emit smoke
@@ -1292,7 +1292,7 @@ void Points::UpdateCombustionHighFrequency(
                     GetTemperature(pointIndex),
                     currentSimulationTime,
                     GetPlaneId(pointIndex),
-                    gameParameters);
+                    simulationParameters);
 
                 // Make sure we re-calculate the next emission timestamp
                 pointCombustionState.NextSmokeEmissionSimulationTimestamp = 0.0f;
@@ -1471,16 +1471,16 @@ void Points::ReorderBurningPointsForDepth()
 
 void Points::UpdateEphemeralParticles(
     float currentSimulationTime,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     // Transformation from desired velocity impulse to force
     float const randomWalkVelocityImpulseToForceCoefficient =
-        GameParameters::AirMass
-        / gameParameters.SimulationStepTimeDuration<float>;
+        SimulationParameters::AirMass
+        / simulationParameters.SimulationStepTimeDuration<float>;
 
     // Ocean surface displacement at bubbles surfacing
     float const oceanFloorDisplacementAtAirBubbleSurfacingSurfaceOffset =
-        (gameParameters.DoDisplaceWater ? 1.0f : 0.0f)
+        (simulationParameters.DoDisplaceWater ? 1.0f : 0.0f)
         * 1.0f;
 
     // Visit all ephemeral particles
@@ -1763,7 +1763,7 @@ void Points::ColorPointForDebugging(
 
 void Points::UploadAttributes(
     ShipId shipId,
-    Render::RenderContext & renderContext) const
+    RenderContext & renderContext) const
 {
     auto & shipRenderContext = renderContext.GetShipRenderContext(shipId);
 
@@ -1905,7 +1905,7 @@ void Points::UploadAttributes(
 
 void Points::UploadNonEphemeralPointElements(
     ShipId shipId,
-    Render::RenderContext & renderContext) const
+    RenderContext & renderContext) const
 {
     bool const doUploadAllPoints = (DebugShipRenderModeType::Points == renderContext.GetDebugShipRenderMode());
 
@@ -1921,7 +1921,7 @@ void Points::UploadNonEphemeralPointElements(
     }
 }
 
-void Points::UploadFlames(Render::ShipRenderContext & shipRenderContext) const
+void Points::UploadFlames(ShipRenderContext & shipRenderContext) const
 {
     //
     // Flames are uploaded in this order:
@@ -1966,7 +1966,7 @@ void Points::UploadFlames(Render::ShipRenderContext & shipRenderContext) const
 
 void Points::UploadVectors(
     ShipId shipId,
-    Render::RenderContext & renderContext) const
+    RenderContext & renderContext) const
 {
     auto & shipRenderContext = renderContext.GetShipRenderContext(shipId);
 
@@ -2057,7 +2057,7 @@ void Points::UploadVectors(
 
 void Points::UploadEphemeralParticles(
     ShipId shipId,
-    Render::RenderContext & renderContext) const
+    RenderContext & renderContext) const
 {
     //
     // Upload points and/or textures
@@ -2147,7 +2147,7 @@ void Points::UploadEphemeralParticles(
 
                 shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
                     GetPlaneId(pointIndex),
-                    TextureFrameId(Render::GenericMipMappedTextureGroups::EngineWake, 0),
+                    TextureFrameId(GameTextureDatabases::GenericMipMappedTextureGroups::EngineWake, 0),
                     GetPosition(pointIndex),
                     0.10f + 1.22f * state.Progress, // Scale, magic formula
                     mRandomNormalizedUniformFloatBuffer[pointIndex] * 2.0f * Pi<float>, // Angle
@@ -2176,7 +2176,7 @@ void Points::UploadEphemeralParticles(
 
 void Points::UploadHighlights(
     ShipId shipId,
-    Render::RenderContext & renderContext) const
+    RenderContext & renderContext) const
 {
     auto & shipRenderContext = renderContext.GetShipRenderContext(shipId);
 
@@ -2221,7 +2221,7 @@ void Points::AugmentMaterialMass(
     }
 }
 
-void Points::UpdateMasses(GameParameters const & gameParameters)
+void Points::UpdateMasses(SimulationParameters const & simulationParameters)
 {
     //
     // Update:
@@ -2229,7 +2229,7 @@ void Points::UpdateMasses(GameParameters const & gameParameters)
     //  - Integration factor: integration factor time coefficient / current mass
     //
 
-    float const densityAdjustedWaterMass = Formulae::CalculateWaterDensity(gameParameters.WaterTemperature, gameParameters);
+    float const densityAdjustedWaterMass = Formulae::CalculateWaterDensity(simulationParameters.WaterTemperature, simulationParameters);
 
     float const * restrict const augmentedMaterialMassBuffer = mAugmentedMaterialMassBuffer.data();
     float const * restrict const transientAdditionalMassBuffer = mTransientAdditionalMassBuffer.data();
@@ -2280,7 +2280,7 @@ void Points::CalculateCombustionDecayParameters(
     //  * The largest mass (2400Kg) decays (reaches 0.5) in a ton of (simulation) seconds => alpha = 0.9998
     //
     // The constraints above are expressed with the following formulas:
-    //  n = t / (gameParameters.CombustionSpeedAdjustment * dt)
+    //  n = t / (simulationParameters.CombustionSpeedAdjustment * dt)
     //  alpha_i ^ n_i = 0.5
     //
 

@@ -5,13 +5,13 @@
 ***************************************************************************************/
 #pragma once
 
-#include "ElectricalPanel.h"
-#include "Materials.h"
+#include "../ElectricalPanel.h"
+#include "../Materials.h"
 
-#include <GameCore/Buffer.h>
-#include <GameCore/ElementContainer.h>
-#include <GameCore/FixedSizeVector.h>
-#include <GameCore/GameWallClock.h>
+#include <Core/Buffer.h>
+#include <Core/ElementContainer.h>
+#include <Core/FixedSizeVector.h>
+#include <Core/GameWallClock.h>
 
 #include <cassert>
 #include <chrono>
@@ -465,8 +465,8 @@ public:
         ElementCount lampElementCount,
         ShipId shipId,
         World & parentWorld,
-        std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-        GameParameters const & gameParameters)
+        std::shared_ptr<SimulationEventDispatcher> gameEventDispatcher,
+        SimulationParameters const & simulationParameters)
         : ElementContainer(allElementCount)
         //////////////////////////////////
         // Buffers
@@ -481,8 +481,8 @@ public:
         , mMaterialLuminiscenceBuffer(mBufferElementCount, mElementCount, 0.0f)
         , mMaterialLightColorBuffer(mBufferElementCount, mElementCount, vec4f::zero())
         , mMaterialLightSpreadBuffer(mBufferElementCount, mElementCount, 0.0f)
-        , mConnectedElectricalElementsBuffer(mBufferElementCount, mElementCount, FixedSizeVector<ElementIndex, GameParameters::MaxSpringsPerPoint>())
-        , mConductingConnectedElectricalElementsBuffer(mBufferElementCount, mElementCount, FixedSizeVector<ElementIndex, GameParameters::MaxSpringsPerPoint>())
+        , mConnectedElectricalElementsBuffer(mBufferElementCount, mElementCount, FixedSizeVector<ElementIndex, SimulationParameters::MaxSpringsPerPoint>())
+        , mConductingConnectedElectricalElementsBuffer(mBufferElementCount, mElementCount, FixedSizeVector<ElementIndex, SimulationParameters::MaxSpringsPerPoint>())
         , mElementStateBuffer(mBufferElementCount, mElementCount, ElementState::CableState())
         , mEngineGroupStates()
         , mAvailableLightBuffer(mBufferElementCount, mElementCount, 0.0f)
@@ -511,8 +511,8 @@ public:
         , mEngineControllers()
         , mEngines()
         , mJetEnginesSortedByPlaneId()
-        , mCurrentLightSpreadAdjustment(gameParameters.LightSpreadAdjustment)
-        , mCurrentLuminiscenceAdjustment(gameParameters.LuminiscenceAdjustment)
+        , mCurrentLightSpreadAdjustment(simulationParameters.LightSpreadAdjustment)
+        , mCurrentLuminiscenceAdjustment(simulationParameters.LuminiscenceAdjustment)
         , mHasConnectivityStructureChangedInCurrentStep(true)
         , mPowerFailureReasonInCurrentStep()
     {
@@ -567,18 +567,18 @@ public:
         GlobalElectricalElementId electricalElementId,
         ElectricalState switchState,
         Points & points,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void SetEngineControllerState(
         GlobalElectricalElementId electricalElementId,
         float controllerValue,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void Destroy(
         ElementIndex electricalElementIndex,
         DestroyReason reason,
         float currentSimulationTime,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void Restore(ElementIndex electricalElementIndex);
 
@@ -587,9 +587,9 @@ public:
     void OnElectricSpark(
         ElementIndex electricalElementIndex,
         float currentSimulationTime,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
-    void UpdateForGameParameters(GameParameters const & gameParameters);
+    void UpdateForGameParameters(SimulationParameters const & simulationParameters);
 
     void Update(
         GameWallClock::time_point currentWallClockTime,
@@ -600,10 +600,10 @@ public:
         float effectiveAirDensity,
         float effectiveWaterDensity,
         Storm::Parameters const & stormParameters,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void Upload(
-        Render::ShipRenderContext & shipRenderContext,
+        ShipRenderContext & shipRenderContext,
         Points const & points) const;
 
 public:
@@ -803,7 +803,7 @@ private:
         ElementIndex elementIndex,
         ElectricalState switchState,
         Points & points,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void InternalChangeConductivity(
         ElementIndex elementIndex,
@@ -817,13 +817,13 @@ private:
     void UpdateAutomaticConductivityToggles(
         float currentSimulationTime,
         Points & points,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void UpdateSourcesAndPropagation(
         float currentSimulationTime,
         SequenceNumber newConnectivityVisitSequenceNumber,
         Points & points,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void UpdateSinks(
         GameWallClock::time_point currentWallClockTime,
@@ -833,7 +833,7 @@ private:
         float effectiveAirDensity,
         float effectiveWaterDensity,
         Storm::Parameters const & stormParameters,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void RunLampStateMachine(
         bool isConnectedToPower,
@@ -842,7 +842,7 @@ private:
         GameWallClock::time_point currentWallClockTime,
         float currentSimulationTime,
         Points & points,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     bool CheckWetFailureTime(
         ElementState::LampState & lamp,
@@ -924,10 +924,10 @@ private:
     Buffer<float> mMaterialLightSpreadBuffer;
 
     // Currently-connected elements - changes with structural changes
-    Buffer<FixedSizeVector<ElementIndex, GameParameters::MaxSpringsPerPoint>> mConnectedElectricalElementsBuffer;
+    Buffer<FixedSizeVector<ElementIndex, SimulationParameters::MaxSpringsPerPoint>> mConnectedElectricalElementsBuffer;
 
     // Currently-conducting and connected elements - changes with structural changes and toggles
-    Buffer<FixedSizeVector<ElementIndex, GameParameters::MaxSpringsPerPoint>> mConductingConnectedElectricalElementsBuffer;
+    Buffer<FixedSizeVector<ElementIndex, SimulationParameters::MaxSpringsPerPoint>> mConductingConnectedElectricalElementsBuffer;
 
     // Element state
     Buffer<ElementState> mElementStateBuffer;
@@ -964,7 +964,7 @@ private:
 
     ShipId const mShipId;
     World & mParentWorld;
-    std::shared_ptr<GameEventDispatcher> const mGameEventHandler;
+    std::shared_ptr<SimulationEventDispatcher> const mGameEventHandler;
     IShipPhysicsHandler * mShipPhysicsHandler;
 
     // Indices of specific types in this container - just a shortcut

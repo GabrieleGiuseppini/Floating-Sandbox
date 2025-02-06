@@ -101,7 +101,7 @@ void Springs::Destroy(
     ElementIndex springElementIndex,
     DestroyOptions destroyOptions,
     float currentSimulationTime,
-    GameParameters const & gameParameters,
+    SimulationParameters const & simulationParameters,
     Points const & points)
 {
     assert(!IsDeleted(springElementIndex));
@@ -112,7 +112,7 @@ void Springs::Destroy(
         springElementIndex,
         !!(destroyOptions & Springs::DestroyOptions::DestroyAllTriangles),
         currentSimulationTime,
-        gameParameters);
+        simulationParameters);
 
     // Fire spring break event, unless told otherwise
     if (!!(destroyOptions & Springs::DestroyOptions::FireBreakEvent))
@@ -135,7 +135,7 @@ void Springs::Destroy(
 
 void Springs::Restore(
     ElementIndex springElementIndex,
-    GameParameters const & gameParameters,
+    SimulationParameters const & simulationParameters,
     Points const & points)
 {
     assert(IsDeleted(springElementIndex));
@@ -152,26 +152,26 @@ void Springs::Restore(
     assert(nullptr != mShipPhysicsHandler);
     mShipPhysicsHandler->HandleSpringRestore(
         springElementIndex,
-        gameParameters);
+        simulationParameters);
 }
 
 void Springs::UpdateForGameParameters(
-    GameParameters const & gameParameters,
+    SimulationParameters const & simulationParameters,
     Points const & points)
 {
-    if (gameParameters.NumMechanicalDynamicsIterations<float>() != mCurrentNumMechanicalDynamicsIterations
-        || gameParameters.SpringStiffnessAdjustment != mCurrentSpringStiffnessAdjustment
-        || gameParameters.SpringDampingAdjustment != mCurrentSpringDampingAdjustment
-        || gameParameters.SpringStrengthAdjustment != mCurrentSpringStrengthAdjustment
-        || gameParameters.MeltingTemperatureAdjustment != mCurrentMeltingTemperatureAdjustment)
+    if (simulationParameters.NumMechanicalDynamicsIterations<float>() != mCurrentNumMechanicalDynamicsIterations
+        || simulationParameters.SpringStiffnessAdjustment != mCurrentSpringStiffnessAdjustment
+        || simulationParameters.SpringDampingAdjustment != mCurrentSpringDampingAdjustment
+        || simulationParameters.SpringStrengthAdjustment != mCurrentSpringStrengthAdjustment
+        || simulationParameters.MeltingTemperatureAdjustment != mCurrentMeltingTemperatureAdjustment)
     {
         // Update our version of the parameters
-        mCurrentNumMechanicalDynamicsIterations = gameParameters.NumMechanicalDynamicsIterations<float>();
+        mCurrentNumMechanicalDynamicsIterations = simulationParameters.NumMechanicalDynamicsIterations<float>();
         mCurrentStrengthIterationsAdjustment = CalculateSpringStrengthIterationsAdjustment(mCurrentNumMechanicalDynamicsIterations);
-        mCurrentSpringStiffnessAdjustment = gameParameters.SpringStiffnessAdjustment;
-        mCurrentSpringDampingAdjustment = gameParameters.SpringDampingAdjustment;
-        mCurrentSpringStrengthAdjustment = gameParameters.SpringStrengthAdjustment;
-        mCurrentMeltingTemperatureAdjustment = gameParameters.MeltingTemperatureAdjustment;
+        mCurrentSpringStiffnessAdjustment = simulationParameters.SpringStiffnessAdjustment;
+        mCurrentSpringDampingAdjustment = simulationParameters.SpringDampingAdjustment;
+        mCurrentSpringStrengthAdjustment = simulationParameters.SpringStrengthAdjustment;
+        mCurrentMeltingTemperatureAdjustment = simulationParameters.MeltingTemperatureAdjustment;
 
         // Recalc whole
         UpdateCoefficientsForPartition(
@@ -182,7 +182,7 @@ void Springs::UpdateForGameParameters(
 
 void Springs::UploadElements(
     ShipId shipId,
-    Render::RenderContext & renderContext) const
+    RenderContext & renderContext) const
 {
     // Either upload all springs, or just the edge springs
     bool const doUploadAllSprings =
@@ -222,7 +222,7 @@ void Springs::UploadElements(
 
 void Springs::UploadStressedSpringElements(
     ShipId shipId,
-    Render::RenderContext & renderContext) const
+    RenderContext & renderContext) const
 {
     auto & shipRenderContext = renderContext.GetShipRenderContext(shipId);
 
@@ -242,17 +242,17 @@ void Springs::UploadStressedSpringElements(
 
 void Springs::UpdateForStrains(
     float currentSimulationTime,
-    GameParameters const & gameParameters,
+    SimulationParameters const & simulationParameters,
     Points & points,
     StressRenderModeType stressRenderMode)
 {
     if (stressRenderMode == StressRenderModeType::None)
     {
-        InternalUpdateForStrains<false>(currentSimulationTime, gameParameters, points);
+        InternalUpdateForStrains<false>(currentSimulationTime, simulationParameters, points);
     }
     else
     {
-        InternalUpdateForStrains<true>(currentSimulationTime, gameParameters, points);
+        InternalUpdateForStrains<true>(currentSimulationTime, simulationParameters, points);
     }
 }
 
@@ -261,7 +261,7 @@ void Springs::UpdateForStrains(
 template<bool DoUpdateStress>
 void Springs::InternalUpdateForStrains(
     float currentSimulationTime,
-    GameParameters const & gameParameters,
+    SimulationParameters const & simulationParameters,
     Points & points)
 {
     float constexpr StrainLowWatermark = 0.08f; // Less than this multiplier to become non-stressed
@@ -292,7 +292,7 @@ void Springs::InternalUpdateForStrains(
                     DestroyOptions::FireBreakEvent // Notify Break
                     | DestroyOptions::DestroyAllTriangles,
                     currentSimulationTime,
-                    gameParameters,
+                    simulationParameters,
                     points);
             }
             else
@@ -389,7 +389,7 @@ void Springs::inline_UpdateCoefficients(
         (points.GetAugmentedMaterialMass(endpointAIndex) * points.GetAugmentedMaterialMass(endpointBIndex))
         / (points.GetAugmentedMaterialMass(endpointAIndex) + points.GetAugmentedMaterialMass(endpointBIndex));
 
-    float const dt = GameParameters::SimulationStepTimeDuration<float> / mCurrentNumMechanicalDynamicsIterations;
+    float const dt = SimulationParameters::SimulationStepTimeDuration<float> / mCurrentNumMechanicalDynamicsIterations;
 
     // Note: in 1.14 the spring temperature was the average of the two points.
     // Differences in temperature between adjacent points made it so that springs'
@@ -442,7 +442,7 @@ void Springs::inline_UpdateCoefficients(
 
     // Our desired stiffness coefficient
     float const desiredStiffnessCoefficient =
-        GameParameters::SpringReductionFraction
+        SimulationParameters::SpringReductionFraction
         * GetMaterialStiffness(springIndex)
         * mCurrentSpringStiffnessAdjustment
         * massFactor
@@ -474,7 +474,7 @@ void Springs::inline_UpdateCoefficients(
     //
 
     mDampingCoefficientBuffer[springIndex] =
-        GameParameters::SpringDampingCoefficient
+        SimulationParameters::SpringDampingCoefficient
         * mCurrentSpringDampingAdjustment
         * massFactor
         / dt;
