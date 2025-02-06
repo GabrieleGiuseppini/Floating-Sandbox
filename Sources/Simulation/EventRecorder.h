@@ -5,8 +5,8 @@
 ***************************************************************************************/
 #pragma once
 
-#include <GameCore/GameTypes.h>
-#include <GameCore/Vectors.h>
+#include <Core/GameTypes.h>
+#include <Core/Vectors.h>
 
 #include <cstdint>
 #include <functional>

@@ -48,9 +48,9 @@ namespace Physics
 #include "Stars.h"
 #include "OceanFloor.h"
 #include "OceanSurface.h"
-//// TODOTEST
-//#include "World.h"
+#include "World.h"
 //
+//// TODOTEST
 //#include "Gadget.h"
 //#include "AntiMatterBombGadget.h"
 //#include "FireExtinguishingBombGadget.h"

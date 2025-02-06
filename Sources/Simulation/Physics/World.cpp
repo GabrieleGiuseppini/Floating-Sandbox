@@ -5,7 +5,7 @@
  ***************************************************************************************/
 #include "Physics.h"
 
-#include <GameCore/GameRandomEngine.h>
+#include <Core/GameRandomEngine.h>
 
 #include <algorithm>
 #include <cassert>
@@ -13,37 +13,37 @@
 namespace Physics {
 
 World::World(
-    OceanFloorTerrain && oceanFloorTerrain,
+    OceanFloorHeightMap && oceanFloorHeightMap,
     bool areCloudShadowsEnabled,
     FishSpeciesDatabase const & fishSpeciesDatabase,
     NpcDatabase const & npcDatabase,
-    std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-    GameParameters const & gameParameters,
+    std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher,
+    SimulationParameters const & simulationParameters,
     VisibleWorld const & /*visibleWorld*/)
     : mCurrentSimulationTime(0.0f)
     //
-    , mGameEventHandler(std::move(gameEventDispatcher))
+    , mSimulationEventHandler(std::move(simulationEventDispatcher))
     , mEventRecorder(nullptr)
     //
     , mAllShips()
     , mStars()
-    , mStorm(*this, mGameEventHandler)
-    , mWind(mGameEventHandler)
+    , mStorm(*this, mSimulationEventHandler)
+    , mWind(mSimulationEventHandler)
     , mClouds(areCloudShadowsEnabled)
-    , mOceanSurface(*this, mGameEventHandler)
-    , mOceanFloor(std::move(oceanFloorTerrain))
-    , mFishes(fishSpeciesDatabase, mGameEventHandler)
-    , mNpcs(std::make_unique<Npcs>(*this, npcDatabase, mGameEventHandler, gameParameters))
+    , mOceanSurface(*this, mSimulationEventHandler)
+    , mOceanFloor(std::move(oceanFloorHeightMap))
+    , mFishes(fishSpeciesDatabase, mSimulationEventHandler)
+    , mNpcs(std::make_unique<Npcs>(*this, npcDatabase, mSimulationEventHandler, simulationParameters))
     //
     , mAllShipAABBs()
 {
     // Initialize world pieces that need to be initialized now
-    mStars.Update(mCurrentSimulationTime, gameParameters);
-    mStorm.Update(gameParameters);
-    mWind.Update(mStorm.GetParameters(), gameParameters);
-    mClouds.Update(mCurrentSimulationTime, mWind.GetBaseAndStormSpeedMagnitude(), mStorm.GetParameters(), gameParameters);
-    mOceanSurface.Update(mCurrentSimulationTime, mWind, gameParameters);
-    mOceanFloor.Update(gameParameters);
+    mStars.Update(mCurrentSimulationTime, simulationParameters);
+    mStorm.Update(simulationParameters);
+    mWind.Update(mStorm.GetParameters(), simulationParameters);
+    mClouds.Update(mCurrentSimulationTime, mWind.GetBaseAndStormSpeedMagnitude(), mStorm.GetParameters(), simulationParameters);
+    mOceanSurface.Update(mCurrentSimulationTime, mWind, simulationParameters);
+    mOceanFloor.Update(simulationParameters);
 }
 
 ShipId World::GetNextShipId() const
@@ -95,11 +95,11 @@ void World::SetEventRecorder(EventRecorder * eventRecorder)
 
 void World::ReplayRecordedEvent(
     RecordedEvent const & event,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     for (auto & ship : mAllShips)
     {
-        if (ship->ReplayRecordedEvent(event, gameParameters))
+        if (ship->ReplayRecordedEvent(event, simulationParameters))
         {
             break;
         }
@@ -134,7 +134,7 @@ void World::OnBlast(
     float blastHeat, // KJ/s
     float blastHeatRadius, // m
     ExplosionType explosionType,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     //
     // Blast NPCs
@@ -148,13 +148,13 @@ void World::OnBlast(
         blastHeat,
         blastHeatRadius,
         explosionType,
-        gameParameters);
+        simulationParameters);
 
     //
     // Blast ocean surface displacement
     //
 
-    if (gameParameters.DoDisplaceWater)
+    if (simulationParameters.DoDisplaceWater)
     {
         // Explosion depth (positive when underwater)
         float const explosionDepth = mOceanSurface.GetDepth(centerPosition);
@@ -212,13 +212,13 @@ void World::OnBlast(
 void World::PickConnectedComponentToMove(
     vec2f const & pickPosition,
     std::optional<GlobalConnectedComponentId> & connectedComponentId,
-    GameParameters const & gameParameters) const
+    SimulationParameters const & simulationParameters) const
 {
     for (auto & ship : mAllShips)
     {
         auto candidateConnectedComponentId = ship->PickConnectedComponentToMove(
             pickPosition,
-            gameParameters);
+            simulationParameters);
 
         if (!!candidateConnectedComponentId)
         {
@@ -234,7 +234,7 @@ void World::MoveBy(
     GlobalConnectedComponentId connectedComponentId,
     vec2f const & moveOffset,
     vec2f const & inertialVelocity,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     auto const shipId = connectedComponentId.GetShipId();
     assert(shipId >= 0 && shipId < mAllShips.size());
@@ -244,7 +244,7 @@ void World::MoveBy(
         connectedComponentId.GetLocalObjectId(),
         moveOffset,
         inertialVelocity,
-        gameParameters);
+        simulationParameters);
 
     // NPCs
     mNpcs->MoveShipBy(
@@ -252,14 +252,14 @@ void World::MoveBy(
         connectedComponentId.GetLocalObjectId(),
         moveOffset,
         inertialVelocity,
-        gameParameters);
+        simulationParameters);
 }
 
 void World::MoveBy(
     ShipId shipId,
     vec2f const & moveOffset,
     vec2f const & inertialVelocity,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     assert(shipId >= 0 && shipId < mAllShips.size());
 
@@ -267,7 +267,7 @@ void World::MoveBy(
     mAllShips[shipId]->MoveBy(
         moveOffset,
         inertialVelocity,
-        gameParameters);
+        simulationParameters);
 
     // NPCs
     mNpcs->MoveShipBy(
@@ -275,7 +275,7 @@ void World::MoveBy(
         std::nullopt,
         moveOffset,
         inertialVelocity,
-        gameParameters);
+        simulationParameters);
 }
 
 void World::RotateBy(
@@ -283,7 +283,7 @@ void World::RotateBy(
     float angle,
     vec2f const & center,
     float inertialAngle,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     auto const shipId = connectedComponentId.GetShipId();
     assert(shipId >= 0 && shipId < mAllShips.size());
@@ -293,7 +293,7 @@ void World::RotateBy(
         angle,
         center,
         inertialAngle,
-        gameParameters);
+        simulationParameters);
 
     mNpcs->RotateShipBy(
         shipId,
@@ -301,7 +301,7 @@ void World::RotateBy(
         angle,
         center,
         inertialAngle,
-        gameParameters);
+        simulationParameters);
 }
 
 void World::RotateBy(
@@ -309,7 +309,7 @@ void World::RotateBy(
     float angle,
     vec2f const & center,
     float inertialAngle,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     assert(shipId >= 0 && shipId < mAllShips.size());
 
@@ -317,7 +317,7 @@ void World::RotateBy(
         angle,
         center,
         inertialAngle,
-        gameParameters);
+        simulationParameters);
 
     mNpcs->RotateShipBy(
         shipId,
@@ -325,7 +325,7 @@ void World::RotateBy(
         angle,
         center,
         inertialAngle,
-        gameParameters);
+        simulationParameters);
 }
 
 void World::MoveGrippedBy(
@@ -333,7 +333,7 @@ void World::MoveGrippedBy(
     float const gripRadius,
     vec2f const & moveOffset,
     vec2f const & inertialWorldOffset,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     for (auto & ship : mAllShips)
     {
@@ -341,8 +341,8 @@ void World::MoveGrippedBy(
             gripCenter,
             gripRadius,
             moveOffset,
-            inertialWorldOffset / GameParameters::SimulationStepTimeDuration<float>,
-            gameParameters);
+            inertialWorldOffset / SimulationParameters::SimulationStepTimeDuration<float>,
+            simulationParameters);
     }
 }
 
@@ -351,7 +351,7 @@ void World::RotateGrippedBy(
     float const gripRadius,
     float angle,
     float inertialAngle,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     for (auto & ship : mAllShips)
     {
@@ -360,27 +360,27 @@ void World::RotateGrippedBy(
             gripRadius,
             angle,
             inertialAngle,
-            gameParameters);
+            simulationParameters);
     }
 }
 
-void World::EndMoveGrippedBy(GameParameters const & gameParameters)
+void World::EndMoveGrippedBy(SimulationParameters const & simulationParameters)
 {
     for (auto & ship : mAllShips)
     {
-        ship->EndMoveGrippedBy(gameParameters);
+        ship->EndMoveGrippedBy(simulationParameters);
     }
 }
 
 std::optional<GlobalElementId> World::PickObjectForPickAndPull(
     vec2f const & pickPosition,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     for (auto & ship : mAllShips)
     {
         auto elementIndex = ship->PickObjectForPickAndPull(
             pickPosition,
-            gameParameters);
+            simulationParameters);
 
         if (elementIndex.has_value())
         {
@@ -395,7 +395,7 @@ std::optional<GlobalElementId> World::PickObjectForPickAndPull(
 void World::Pull(
     GlobalElementId elementId,
     vec2f const & target,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     auto const shipId = elementId.GetShipId();
     assert(shipId >= 0 && shipId < mAllShips.size());
@@ -403,19 +403,19 @@ void World::Pull(
     mAllShips[shipId]->Pull(
         elementId.GetLocalObjectId(),
         target,
-        gameParameters);
+        simulationParameters);
 }
 
 void World::DestroyAt(
     vec2f const & targetPos,
     float radiusMultiplier,
     SessionId const & sessionId,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     float const radius =
-        gameParameters.DestroyRadius
+        simulationParameters.DestroyRadius
         * radiusMultiplier
-        * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+        * (simulationParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
     // Ships
     for (auto & ship : mAllShips)
@@ -425,7 +425,7 @@ void World::DestroyAt(
             radius,
             sessionId,
             mCurrentSimulationTime,
-            gameParameters);
+            simulationParameters);
     }
 
     // NPCs
@@ -435,7 +435,7 @@ void World::DestroyAt(
         radius,
         sessionId,
         mCurrentSimulationTime,
-        gameParameters);
+        simulationParameters);
 
     // Scare fishes at bit
     mFishes.DisturbAt(
@@ -448,7 +448,7 @@ void World::RepairAt(
     vec2f const & targetPos,
     float radiusMultiplier,
     SequenceNumber repairStepId,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     for (auto & ship : mAllShips)
     {
@@ -457,7 +457,7 @@ void World::RepairAt(
             radiusMultiplier,
             repairStepId,
             mCurrentSimulationTime,
-            gameParameters);
+            simulationParameters);
     }
 }
 
@@ -465,7 +465,7 @@ bool World::SawThrough(
     vec2f const & startPos,
     vec2f const & endPos,
     bool isFirstSegment,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     bool atLeastOneCut = false;
 
@@ -476,7 +476,7 @@ bool World::SawThrough(
             endPos,
             isFirstSegment,
             mCurrentSimulationTime,
-            gameParameters);
+            simulationParameters);
 
         atLeastOneCut |= isCut;
     }
@@ -488,7 +488,7 @@ bool World::ApplyHeatBlasterAt(
     vec2f const & targetPos,
     HeatBlasterActionType action,
     float radius,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     bool atLeastOneShipApplied = false;
 
@@ -498,7 +498,7 @@ bool World::ApplyHeatBlasterAt(
             targetPos,
             action,
             radius,
-            gameParameters);
+            simulationParameters);
 
         atLeastOneShipApplied |= isApplied;
     }
@@ -509,7 +509,7 @@ bool World::ApplyHeatBlasterAt(
         targetPos,
         action,
         radius,
-        gameParameters);
+        simulationParameters);
 
     return (atLeastOneShipApplied || atLeastOneNpcApplied);
 }
@@ -518,7 +518,7 @@ bool World::ExtinguishFireAt(
     vec2f const & targetPos,
     float strengthMultiplier,
     float radius,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     bool atLeastOneShipApplied = false;
 
@@ -528,7 +528,7 @@ bool World::ExtinguishFireAt(
             targetPos,
             strengthMultiplier,
             radius,
-            gameParameters);
+            simulationParameters);
 
         atLeastOneShipApplied |= isApplied;
     }
@@ -539,7 +539,7 @@ bool World::ExtinguishFireAt(
         targetPos,
         strengthMultiplier,
         radius,
-        gameParameters);
+        simulationParameters);
 
     return (atLeastOneShipApplied || atLeastOneNpcApplied);
 }
@@ -548,14 +548,14 @@ void World::ApplyBlastAt(
     vec2f const & targetPos,
     float radius,
     float forceMultiplier,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     // Calculate blast force magnitude
     float const blastForceMagnitude =
         75.0f * 50000.0f // Magic number
         * forceMultiplier
-        * gameParameters.BlastToolForceAdjustment
-        * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
+        * simulationParameters.BlastToolForceAdjustment
+        * (simulationParameters.IsUltraViolentMode ? 5.0f : 1.0f);
 
     for (auto & ship : mAllShips)
     {
@@ -563,7 +563,7 @@ void World::ApplyBlastAt(
             targetPos,
             radius,
             blastForceMagnitude,
-            gameParameters);
+            simulationParameters);
     }
 
     // Apply side-effects
@@ -575,14 +575,14 @@ void World::ApplyBlastAt(
         0.0f, // No heat
         0.0f, // No heat
         ExplosionType::Deflagration, // Arbitrary - this gives us side effects we want (forces)
-        gameParameters);
+        simulationParameters);
 }
 
 bool World::ApplyElectricSparkAt(
     vec2f const & targetPos,
     std::uint64_t counter,
     float lengthMultiplier,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     bool atLeastOneShipApplied = false;
 
@@ -593,7 +593,7 @@ bool World::ApplyElectricSparkAt(
             counter,
             lengthMultiplier,
             mCurrentSimulationTime,
-            gameParameters);
+            simulationParameters);
 
         atLeastOneShipApplied |= isApplied;
     }
@@ -607,15 +607,15 @@ void World::ApplyRadialWindFrom(
     float preFrontWindSpeed, // m/s
     float mainFrontRadius,
     float mainFrontWindSpeed, // m/s
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     //
     // Store in Wind, after translating
     //
 
     float const effectiveAirDensity = Formulae::CalculateAirDensity(
-        gameParameters.AirTemperature,
-        gameParameters);
+        simulationParameters.AirTemperature,
+        simulationParameters);
 
     // Convert to wind force
 
@@ -636,7 +636,7 @@ bool World::ApplyLaserCannonThrough(
     vec2f const & startPos,
     vec2f const & endPos,
     float strength,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     bool atLeastOneShipCut = false;
 
@@ -648,7 +648,7 @@ bool World::ApplyLaserCannonThrough(
             endPos,
             strength,
             mCurrentSimulationTime,
-            gameParameters);
+            simulationParameters);
 
         atLeastOneShipCut |= isCut;
     }
@@ -659,7 +659,7 @@ bool World::ApplyLaserCannonThrough(
         startPos,
         endPos,
         strength,
-        gameParameters);
+        simulationParameters);
 
     return atLeastOneShipCut;
 }
@@ -667,16 +667,16 @@ bool World::ApplyLaserCannonThrough(
 void World::DrawTo(
     vec2f const & targetPos,
     float strengthFraction,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     // Calculate draw force
     float const strength =
-        GameParameters::DrawForce
+        SimulationParameters::DrawForce
         * strengthFraction
-        * (gameParameters.IsUltraViolentMode ? 20.0f : 1.0f);
+        * (simulationParameters.IsUltraViolentMode ? 20.0f : 1.0f);
 
     // Apply to ships
-    if (gameParameters.DoApplyPhysicsToolsToShips)
+    if (simulationParameters.DoApplyPhysicsToolsToShips)
     {
         for (auto & ship : mAllShips)
         {
@@ -687,7 +687,7 @@ void World::DrawTo(
     }
 
     // Apply to NPCs
-    if (gameParameters.DoApplyPhysicsToolsToNpcs)
+    if (simulationParameters.DoApplyPhysicsToolsToNpcs)
     {
         assert(mNpcs);
         mNpcs->DrawTo(
@@ -699,16 +699,16 @@ void World::DrawTo(
 void World::SwirlAt(
     vec2f const & targetPos,
     float strengthFraction,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     // Calculate swirl strength
     float const strength =
-        GameParameters::SwirlForce
+        SimulationParameters::SwirlForce
         * strengthFraction
-        * (gameParameters.IsUltraViolentMode ? 20.0f : 1.0f);
+        * (simulationParameters.IsUltraViolentMode ? 20.0f : 1.0f);
 
     // Apply to ships
-    if (gameParameters.DoApplyPhysicsToolsToShips)
+    if (simulationParameters.DoApplyPhysicsToolsToShips)
     {
         for (auto & ship : mAllShips)
         {
@@ -719,7 +719,7 @@ void World::SwirlAt(
     }
 
     // Apply to NPCs
-    if (gameParameters.DoApplyPhysicsToolsToNpcs)
+    if (simulationParameters.DoApplyPhysicsToolsToNpcs)
     {
         assert(mNpcs);
         mNpcs->SwirlAt(
@@ -730,12 +730,12 @@ void World::SwirlAt(
 
 void World::TogglePinAt(
     vec2f const & targetPos,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     // Stop at first ship that successfully pins or unpins a point
     for (auto it = mAllShips.rbegin(); it != mAllShips.rend(); ++it)
     {
-        if ((*it)->TogglePinAt(targetPos, gameParameters))
+        if ((*it)->TogglePinAt(targetPos, simulationParameters))
         {
             // Found!
             return;
@@ -757,7 +757,7 @@ void World::RemoveAllPins()
 std::optional<ToolApplicationLocus> World::InjectPressureAt(
     vec2f const & targetPos,
     float pressureQuantityMultiplier,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     // Stop at first ship that successfully injects pressure
     for (auto it = mAllShips.rbegin(); it != mAllShips.rend(); ++it)
@@ -765,7 +765,7 @@ std::optional<ToolApplicationLocus> World::InjectPressureAt(
         auto const applicationLocus = (*it)->InjectPressureAt(
             targetPos,
             pressureQuantityMultiplier,
-            gameParameters);
+            simulationParameters);
 
         if (applicationLocus.has_value())
         {
@@ -784,7 +784,7 @@ std::optional<ToolApplicationLocus> World::InjectPressureAt(
         auto const applicationLocus = (*it)->InjectBubblesAt(
             targetPos,
             mCurrentSimulationTime,
-            gameParameters);
+            simulationParameters);
 
         if (applicationLocus.has_value())
         {
@@ -802,7 +802,7 @@ std::optional<ToolApplicationLocus> World::InjectPressureAt(
 bool World::FloodAt(
     vec2f const & targetPos,
     float waterQuantityMultiplier,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     // Flood all ships
     bool anyHasFlooded = false;
@@ -811,7 +811,7 @@ bool World::FloodAt(
         bool hasFlooded = ship->FloodAt(
             targetPos,
             waterQuantityMultiplier,
-            gameParameters);
+            simulationParameters);
 
         anyHasFlooded |= hasFlooded;
     }
@@ -821,12 +821,12 @@ bool World::FloodAt(
 
 void World::ToggleAntiMatterBombAt(
     vec2f const & targetPos,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     // Stop at first ship that successfully places or removes a bomb
     for (auto it = mAllShips.rbegin(); it != mAllShips.rend(); ++it)
     {
-        if ((*it)->ToggleAntiMatterBombAt(targetPos, gameParameters))
+        if ((*it)->ToggleAntiMatterBombAt(targetPos, simulationParameters))
         {
             // Found!
             return;
@@ -839,12 +839,12 @@ void World::ToggleAntiMatterBombAt(
 
 void World::ToggleFireExtinguishingBombAt(
     vec2f const & targetPos,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     // Stop at first ship that successfully places or removes a bomb
     for (auto it = mAllShips.rbegin(); it != mAllShips.rend(); ++it)
     {
-        if ((*it)->ToggleFireExtinguishingBombAt(targetPos, gameParameters))
+        if ((*it)->ToggleFireExtinguishingBombAt(targetPos, simulationParameters))
         {
             // Found!
             return;
@@ -857,12 +857,12 @@ void World::ToggleFireExtinguishingBombAt(
 
 void World::ToggleImpactBombAt(
     vec2f const & targetPos,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     // Stop at first ship that successfully places or removes a bomb
     for (auto it = mAllShips.rbegin(); it != mAllShips.rend(); ++it)
     {
-        if ((*it)->ToggleImpactBombAt(targetPos, gameParameters))
+        if ((*it)->ToggleImpactBombAt(targetPos, simulationParameters))
         {
             // Found!
             return;
@@ -875,7 +875,7 @@ void World::ToggleImpactBombAt(
 
 std::optional<bool> World::TogglePhysicsProbeAt(
     vec2f const & targetPos,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     // Stop at first ship that successfully places or removes a probe
     size_t iShip = mAllShips.size();
@@ -883,7 +883,7 @@ std::optional<bool> World::TogglePhysicsProbeAt(
     {
         --iShip;
 
-        auto result = mAllShips[iShip]->TogglePhysicsProbeAt(targetPos, gameParameters);
+        auto result = mAllShips[iShip]->TogglePhysicsProbeAt(targetPos, simulationParameters);
         if (result.has_value())
         {
             // The probe has been placed or removed on this ship
@@ -912,12 +912,12 @@ std::optional<bool> World::TogglePhysicsProbeAt(
 
 void World::ToggleRCBombAt(
     vec2f const & targetPos,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     // Stop at first ship that successfully places or removes a bomb
     for (auto it = mAllShips.rbegin(); it != mAllShips.rend(); ++it)
     {
-        if ((*it)->ToggleRCBombAt(targetPos, gameParameters))
+        if ((*it)->ToggleRCBombAt(targetPos, simulationParameters))
         {
             // Found!
             return;
@@ -930,12 +930,12 @@ void World::ToggleRCBombAt(
 
 void World::ToggleTimerBombAt(
     vec2f const & targetPos,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     // Stop at first ship that successfully places or removes a bomb
     for (auto it = mAllShips.rbegin(); it != mAllShips.rend(); ++it)
     {
-        if ((*it)->ToggleTimerBombAt(targetPos, gameParameters))
+        if ((*it)->ToggleTimerBombAt(targetPos, simulationParameters))
         {
             // Found!
             return;
@@ -946,11 +946,11 @@ void World::ToggleTimerBombAt(
     }
 }
 
-void World::DetonateRCBombs(GameParameters const & gameParameters)
+void World::DetonateRCBombs(SimulationParameters const & simulationParameters)
 {
     for (auto const & ship : mAllShips)
     {
-        ship->DetonateRCBombs(mCurrentSimulationTime, gameParameters);
+        ship->DetonateRCBombs(mCurrentSimulationTime, simulationParameters);
     }
 }
 
@@ -983,7 +983,7 @@ std::optional<bool> World::AdjustOceanFloorTo(
 bool World::ScrubThrough(
     vec2f const & startPos,
     vec2f const & endPos,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     // Scrub all ships
     bool anyHasScrubbed = false;
@@ -992,7 +992,7 @@ bool World::ScrubThrough(
         bool const hasScrubbed = ship->ScrubThrough(
             startPos,
             endPos,
-            gameParameters);
+            simulationParameters);
 
         anyHasScrubbed |= hasScrubbed;
     }
@@ -1003,7 +1003,7 @@ bool World::ScrubThrough(
 bool World::RotThrough(
     vec2f const & startPos,
     vec2f const & endPos,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     // Rot all ships
     bool anyHasRotted = false;
@@ -1012,7 +1012,7 @@ bool World::RotThrough(
         bool const hasRotted = ship->RotThrough(
             startPos,
             endPos,
-            gameParameters);
+            simulationParameters);
 
         anyHasRotted |= hasRotted;
     }
@@ -1026,7 +1026,7 @@ void World::ApplyThanosSnap(
     float leftFrontX,
     float rightFrontX,
     bool isSparseMode,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     // Apply to all ships
     for (auto & ship : mAllShips)
@@ -1038,7 +1038,7 @@ void World::ApplyThanosSnap(
             rightFrontX,
             isSparseMode,
             mCurrentSimulationTime,
-            gameParameters);
+            simulationParameters);
     }
 
     // Apply to ocean surface
@@ -1117,12 +1117,12 @@ std::optional<vec2f> World::FindSuitableLightningTarget() const
 
 void World::ApplyLightning(
     vec2f const & targetPos,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     // Apply to all ships
     for (auto & ship : mAllShips)
     {
-        ship->ApplyLightning(targetPos, mCurrentSimulationTime, gameParameters);
+        ship->ApplyLightning(targetPos, mCurrentSimulationTime, simulationParameters);
     }
 
     // Apply to fishes
@@ -1144,9 +1144,9 @@ void World::TriggerStorm()
     mStorm.TriggerStorm();
 }
 
-void World::TriggerLightning(GameParameters const & gameParameters)
+void World::TriggerLightning(SimulationParameters const & simulationParameters)
 {
-    mStorm.TriggerLightning(gameParameters);
+    mStorm.TriggerLightning(simulationParameters);
 }
 
 void World::TriggerRogueWave()
@@ -1167,7 +1167,7 @@ void World::HighlightElectricalElement(GlobalElectricalElementId electricalEleme
 void World::SetSwitchState(
     GlobalElectricalElementId electricalElementId,
     ElectricalState switchState,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     auto const shipId = electricalElementId.GetShipId();
     assert(shipId >= 0 && shipId < mAllShips.size());
@@ -1175,13 +1175,13 @@ void World::SetSwitchState(
     mAllShips[shipId]->SetSwitchState(
         electricalElementId,
         switchState,
-        gameParameters);
+        simulationParameters);
 }
 
 void World::SetEngineControllerState(
     GlobalElectricalElementId electricalElementId,
     float controllerValue,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     auto const shipId = electricalElementId.GetShipId();
     assert(shipId >= 0 && shipId < mAllShips.size());
@@ -1189,7 +1189,7 @@ void World::SetEngineControllerState(
     mAllShips[shipId]->SetEngineControllerState(
         electricalElementId,
         controllerValue,
-        gameParameters);
+        simulationParameters);
 }
 
 void World::SetSilence(float silenceAmount)
@@ -1248,13 +1248,13 @@ std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> World::BeginP
 std::optional<PickedNpc> World::ProbeNpcAt(
     vec2f const & position,
     float radius,
-    GameParameters const & gameParameters) const
+    SimulationParameters const & simulationParameters) const
 {
     assert(mNpcs);
     return mNpcs->ProbeNpcAt(
         position,
         radius,
-        gameParameters);
+        simulationParameters);
 }
 
 std::vector<NpcId> World::ProbeNpcsInRect(
@@ -1347,10 +1347,10 @@ void World::AbortNewNpc(NpcId id)
 std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> World::AddNpcGroup(
     NpcKindType kind,
     VisibleWorld const & visibleWorld,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     assert(mNpcs);
-    return mNpcs->AddNpcGroup(kind, visibleWorld, mCurrentSimulationTime, gameParameters);
+    return mNpcs->AddNpcGroup(kind, visibleWorld, mCurrentSimulationTime, simulationParameters);
 }
 
 void World::TurnaroundNpc(NpcId id)
@@ -1426,14 +1426,14 @@ bool World::RestoreTriangle(GlobalElementId triangleId)
 //////////////////////////////////////////////////////////////////////////////
 
 void World::Update(
-    GameParameters const & gameParameters,
+    SimulationParameters const & simulationParameters,
     VisibleWorld const & visibleWorld,
     StressRenderModeType stressRenderMode,
     ThreadManager & threadManager,
     PerfStats & perfStats)
 {
     // Update current time
-    mCurrentSimulationTime += GameParameters::SimulationStepTimeDuration<float>;
+    mCurrentSimulationTime += SimulationParameters::SimulationStepTimeDuration<float>;
 
     // Prepare all AABBs
     mAllShipAABBs.Clear();
@@ -1442,24 +1442,24 @@ void World::Update(
     // Update all subsystems
     //
 
-    mStars.Update(mCurrentSimulationTime, gameParameters);
+    mStars.Update(mCurrentSimulationTime, simulationParameters);
 
-    mStorm.Update(gameParameters);
+    mStorm.Update(simulationParameters);
 
-    mWind.Update(mStorm.GetParameters(), gameParameters);
+    mWind.Update(mStorm.GetParameters(), simulationParameters);
 
-    mClouds.Update(mCurrentSimulationTime, mWind.GetBaseAndStormSpeedMagnitude(), mStorm.GetParameters(), gameParameters);
+    mClouds.Update(mCurrentSimulationTime, mWind.GetBaseAndStormSpeedMagnitude(), mStorm.GetParameters(), simulationParameters);
 
-    mOceanSurface.Update(mCurrentSimulationTime, mWind, gameParameters);
+    mOceanSurface.Update(mCurrentSimulationTime, mWind, simulationParameters);
 
-    mOceanFloor.Update(gameParameters);
+    mOceanFloor.Update(simulationParameters);
 
     for (auto & ship : mAllShips)
     {
         ship->Update(
             mCurrentSimulationTime,
             mStorm.GetParameters(),
-            gameParameters,
+            simulationParameters,
             stressRenderMode,
             mAllShipAABBs,
             threadManager,
@@ -1470,17 +1470,17 @@ void World::Update(
         auto const startTime = std::chrono::steady_clock::now();
 
         assert(mNpcs);
-        mNpcs->Update(mCurrentSimulationTime, mStorm.GetParameters(), gameParameters);
+        mNpcs->Update(mCurrentSimulationTime, mStorm.GetParameters(), simulationParameters);
 
-        perfStats.TotalNpcUpdateDuration.Update(std::chrono::steady_clock::now() - startTime);
+        perfStats.Update<PerfMeasurement::TotalNpcUpdate>(std::chrono::steady_clock::now() - startTime);
     }
 
     {
         auto const startTime = std::chrono::steady_clock::now();
 
-        mFishes.Update(mCurrentSimulationTime, mOceanSurface, mOceanFloor, gameParameters, visibleWorld, mAllShipAABBs);
+        mFishes.Update(mCurrentSimulationTime, mOceanSurface, mOceanFloor, simulationParameters, visibleWorld, mAllShipAABBs);
 
-        perfStats.TotalFishUpdateDuration.Update(std::chrono::steady_clock::now() - startTime);
+        perfStats.Update<PerfMeasurement::TotalFishUpdate>(std::chrono::steady_clock::now() - startTime);
     }
 
     //
@@ -1498,8 +1498,8 @@ void World::Update(
 }
 
 void World::RenderUpload(
-    GameParameters const & gameParameters,
-    Render::RenderContext & renderContext)
+    SimulationParameters const & simulationParameters,
+    RenderContext & renderContext)
 {
     mStars.Upload(renderContext);
 
@@ -1509,7 +1509,7 @@ void World::RenderUpload(
 
     mClouds.Upload(renderContext);
 
-    mOceanFloor.Upload(gameParameters, renderContext);
+    mOceanFloor.Upload(simulationParameters, renderContext);
 
     mOceanSurface.Upload(renderContext);
 

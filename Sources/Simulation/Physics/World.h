@@ -5,24 +5,25 @@
  ***************************************************************************************/
 #pragma once
 
-#include "EventRecorder.h"
-#include "FishSpeciesDatabase.h"
-#include "GameEventDispatcher.h"
-#include "GameParameters.h"
-#include "NpcDatabase.h"
-#include "PerfStats.h"
 #include "Physics.h"
-#include "RenderContext.h"
-#include "ResourceLocator.h"
-#include "ShipDefinition.h"
-#include "VisibleWorld.h"
 
-#include <GameCore/AABBSet.h>
-#include <GameCore/GameChronometer.h>
-#include <GameCore/GameTypes.h>
-#include <GameCore/ImageData.h>
-#include <GameCore/ThreadManager.h>
-#include <GameCore/Vectors.h>
+#include "../EventRecorder.h"
+#include "../FishSpeciesDatabase.h"
+#include "../NpcDatabase.h"
+#include "../ShipDefinition.h"
+#include "../SimulationEventDispatcher.h"
+#include "../SimulationParameters.h"
+
+#include <Render/RenderContext.h>
+
+#include <Core/AABBSet.h>
+#include <Core/GameChronometer.h>
+#include <Core/GameTypes.h>
+#include <Core/IAssetManager.h>
+#include <Core/ImageData.h>
+#include <Core/PerfStats.h>
+#include <Core/ThreadManager.h>
+#include <Core/Vectors.h>
 
 #include <chrono>
 #include <cstdint>
@@ -39,12 +40,12 @@ class World
 public:
 
     World(
-        OceanFloorTerrain && oceanFloorTerrain,
+        OceanFloorHeightMap && oceanFloorHeightMap,
         bool areCloudShadowsEnabled,
         FishSpeciesDatabase const & fishSpeciesDatabase,
         NpcDatabase const & npcDatabase,
-        std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-        GameParameters const & gameParameters,
+        std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher,
+        SimulationParameters const & simulationParameters,
         VisibleWorld const & visibleWorld);
 
     ShipId GetNextShipId() const;
@@ -57,7 +58,7 @@ public:
 
     void ReplayRecordedEvent(
         RecordedEvent const & event,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     float GetCurrentSimulationTime() const
     {
@@ -127,14 +128,14 @@ public:
         return mOceanFloor;
     }
 
-    inline void SetOceanFloorTerrain(OceanFloorTerrain const & oceanFloorTerrain)
+    inline void SetOceanFloorTerrain(OceanFloorHeightMap const & oceanFloorHeightMap)
     {
-        mOceanFloor.SetTerrain(oceanFloorTerrain);
+        mOceanFloor.SetHeightMap(oceanFloorHeightMap);
     }
 
-    inline OceanFloorTerrain const & GetOceanFloorTerrain() const
+    inline OceanFloorHeightMap const & GetOceanFloorHeightMap() const
     {
-        return mOceanFloor.GetTerrain();
+        return mOceanFloor.GetHeightMap();
     }
 
     // Km/h
@@ -157,7 +158,7 @@ public:
         float blastHeat, // KJ/s
         float blastHeatRadius, // m
         ExplosionType explosionType,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     //
     // Interactions
@@ -166,100 +167,100 @@ public:
     void PickConnectedComponentToMove(
         vec2f const & pickPosition,
         std::optional<GlobalConnectedComponentId> & connectedComponentId,
-        GameParameters const & gameParameters) const;
+        SimulationParameters const & simulationParameters) const;
 
     void MoveBy(
         GlobalConnectedComponentId connectedComponentId,
         vec2f const & moveOffset,
         vec2f const & inertialVelocity,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void MoveBy(
         ShipId shipId,
         vec2f const & moveOffset,
         vec2f const & inertialVelocity,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void RotateBy(
         GlobalConnectedComponentId connectedComponentId,
         float angle,
         vec2f const & center,
         float inertialAngle,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void RotateBy(
         ShipId shipId,
         float angle,
         vec2f const & center,
         float inertialAngle,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void MoveGrippedBy(
         vec2f const & gripCenter,
         float const gripRadius,
         vec2f const & moveOffset,
         vec2f const & inertialWorldOffset,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void RotateGrippedBy(
         vec2f const & gripCenter,
         float const gripRadius,
         float angle,
         float inertialAngle,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
-    void EndMoveGrippedBy(GameParameters const & gameParameters);
+    void EndMoveGrippedBy(SimulationParameters const & simulationParameters);
 
     std::optional<GlobalElementId> PickObjectForPickAndPull(
         vec2f const & pickPosition,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void Pull(
         GlobalElementId elementId,
         vec2f const & target,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void DestroyAt(
         vec2f const & targetPos,
         float radiusMultiplier,
         SessionId const & sessionId,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void RepairAt(
         vec2f const & targetPos,
         float radiusMultiplier,
         SequenceNumber repairStepId,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     bool SawThrough(
         vec2f const & startPos,
         vec2f const & endPos,
         bool isFirstSegment,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     bool ApplyHeatBlasterAt(
         vec2f const & targetPos,
         HeatBlasterActionType action,
         float radius,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     bool ExtinguishFireAt(
         vec2f const & targetPos,
         float strengthMultiplier,
         float radius,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void ApplyBlastAt(
         vec2f const & targetPos,
         float radius,
         float forceMultiplier,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     bool ApplyElectricSparkAt(
         vec2f const & targetPos,
         std::uint64_t counter,
         float lengthMultiplier,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void ApplyRadialWindFrom(
         vec2f const & sourcePos,
@@ -267,66 +268,66 @@ public:
         float preFrontWindSpeed, // m/s
         float mainFrontRadius,
         float mainFrontWindSpeed, // m/s
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     bool ApplyLaserCannonThrough(
         vec2f const & startPos,
         vec2f const & endPos,
         float strength,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void DrawTo(
         vec2f const & targetPos,
         float strengthFraction,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void SwirlAt(
         vec2f const & targetPos,
         float strengthFraction,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void TogglePinAt(
         vec2f const & targetPos,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void RemoveAllPins();
 
     std::optional<ToolApplicationLocus> InjectPressureAt(
         vec2f const & targetPos,
         float pressureQuantityMultiplier,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     bool FloodAt(
         vec2f const & targetPos,
         float waterQuantityMultiplier,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void ToggleAntiMatterBombAt(
         vec2f const & targetPos,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void ToggleFireExtinguishingBombAt(
         vec2f const & targetPos,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void ToggleImpactBombAt(
         vec2f const & targetPos,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     std::optional<bool> TogglePhysicsProbeAt(
         vec2f const & targetPos,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void ToggleRCBombAt(
         vec2f const & targetPos,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void ToggleTimerBombAt(
         vec2f const & targetPos,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void DetonateRCBombs(
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void DetonateAntiMatterBombs();
 
@@ -343,12 +344,12 @@ public:
     bool ScrubThrough(
         vec2f const & startPos,
         vec2f const & endPos,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     bool RotThrough(
         vec2f const & startPos,
         vec2f const & endPos,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void ApplyThanosSnap(
         float centerX,
@@ -356,7 +357,7 @@ public:
         float leftFrontX,
         float rightFrontX,
         bool isSparseMode,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     std::optional<GlobalElementId> GetNearestPointAt(
         vec2f const & targetPos,
@@ -374,7 +375,7 @@ public:
 
     void ApplyLightning(
         vec2f const & targetPos,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void TriggerTsunami();
 
@@ -382,19 +383,19 @@ public:
 
     void TriggerStorm();
 
-    void TriggerLightning(GameParameters const & gameParameters);
+    void TriggerLightning(SimulationParameters const & simulationParameters);
 
     void HighlightElectricalElement(GlobalElectricalElementId electricalElementId);
 
     void SetSwitchState(
         GlobalElectricalElementId electricalElementId,
         ElectricalState switchState,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void SetEngineControllerState(
         GlobalElectricalElementId electricalElementId,
         float controllerValue,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void SetSilence(float silenceAmount);
 
@@ -423,7 +424,7 @@ public:
     std::optional<PickedNpc> ProbeNpcAt(
         vec2f const & position,
         float radius,
-        GameParameters const & gameParameters) const;
+        SimulationParameters const & simulationParameters) const;
 
     std::vector<NpcId> ProbeNpcsInRect(
         vec2f const & corner1,
@@ -461,7 +462,7 @@ public:
     std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> AddNpcGroup(
         NpcKindType kind,
         VisibleWorld const & visibleWorld,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void TurnaroundNpc(NpcId id);
 
@@ -490,15 +491,15 @@ public:
 public:
 
     void Update(
-        GameParameters const & gameParameters,
+        SimulationParameters const & simulationParameters,
         VisibleWorld const & visibleWorld,
         StressRenderModeType stressRenderMode,
         ThreadManager & threadManager,
         PerfStats & perfStats);
 
     void RenderUpload(
-        GameParameters const & gameParameters,
-        Render::RenderContext & renderContext);
+        SimulationParameters const & simulationParameters,
+        RenderContext & renderContext);
 
 private:
 
@@ -506,7 +507,7 @@ private:
     float mCurrentSimulationTime;
 
     // The game event handler
-    std::shared_ptr<GameEventDispatcher> mGameEventHandler;
+    std::shared_ptr<SimulationEventDispatcher> mSimulationEventHandler;
 
     // The current event recorder (if any)
     EventRecorder * mEventRecorder;

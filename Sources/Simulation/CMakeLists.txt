@@ -5,6 +5,7 @@
 
 set  (SIMULATION_SOURCES
 	ElectricalPanel.h
+	EventRecorder.h
 	FishSpeciesDatabase.cpp
 	FishSpeciesDatabase.h
 	ISimulationEventHandlers.h
@@ -73,6 +74,8 @@ set  (PHYSICS_SOURCES
 	Physics/Triangles.h
 	Physics/Wind.cpp
 	Physics/Wind.h
+	Physics/World.cpp
+	Physics/World.h
 )
 
 source_group(" " FILES ${SIMULATION_SOURCES})
