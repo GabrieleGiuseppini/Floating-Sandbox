@@ -5,14 +5,16 @@
 ***************************************************************************************/
 #pragma once
 
-#include "GameEventDispatcher.h"
-#include "GameParameters.h"
 #include "Physics.h"
-#include "RenderContext.h"
 
-#include <GameCore/GameTypes.h>
-#include <GameCore/GameWallClock.h>
-#include <GameCore/Vectors.h>
+#include "../SimulationEventDispatcher.h"
+#include "../SimulationParameters.h"
+
+#include <Render/RenderContext.h>
+
+#include <Core/GameTypes.h>
+#include <Core/GameWallClock.h>
+#include <Core/Vectors.h>
 
 #include <cassert>
 #include <functional>
@@ -63,7 +65,7 @@ public:
         GameWallClock::time_point currentWallClockTime,
         float currentSimulationTime,
         Storm::Parameters const & stormParameters,
-        GameParameters const & gameParameters) = 0;
+        SimulationParameters const & simulationParameters) = 0;
 
     /*
      * Checks whether the gadget is in a state that allows it to be removed.
@@ -80,14 +82,14 @@ public:
      */
     virtual void OnNeighborhoodDisturbed(
         float currentSimulationTime,
-        GameParameters const & gameParameters) = 0;
+        SimulationParameters const & simulationParameters) = 0;
 
     /*
      * Uploads rendering information to the render context.
      */
     virtual void Upload(
         ShipId shipId,
-        Render::RenderContext & renderContext) const = 0;
+        RenderContext & renderContext) const = 0;
 
     /*
      * Invoked when the spring tracked by the gadget is destroyed.
@@ -137,7 +139,7 @@ protected:
         GadgetType type,
         ElementIndex pointIndex,
         World & parentWorld,
-        std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
+        std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher,
         IShipPhysicsHandler & shipPhysicsHandler,
         Points & shipPoints,
         Springs & shipSprings)
@@ -145,7 +147,7 @@ protected:
         , mType(type)
         , mPointIndex(pointIndex)
         , mParentWorld(parentWorld)
-        , mGameEventHandler(std::move(gameEventDispatcher))
+        , mSimulationEventHandler(std::move(simulationEventDispatcher))
         , mShipPhysicsHandler(shipPhysicsHandler)
         , mShipPoints(shipPoints)
         , mShipSprings(shipSprings)
@@ -222,7 +224,7 @@ protected:
     World & mParentWorld;
 
     // The game event handler
-    std::shared_ptr<GameEventDispatcher> mGameEventHandler;
+    std::shared_ptr<SimulationEventDispatcher> mSimulationEventHandler;
 
     // The handler to invoke for acting on the ship
     IShipPhysicsHandler & mShipPhysicsHandler;

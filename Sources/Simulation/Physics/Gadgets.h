@@ -5,15 +5,17 @@
 ***************************************************************************************/
 #pragma once
 
-#include "GameEventDispatcher.h"
-#include "GameParameters.h"
 #include "Physics.h"
-#include "RenderContext.h"
 
-#include <GameCore/CircularList.h>
-#include <GameCore/GameTypes.h>
-#include <GameCore/StrongTypeDef.h>
-#include <GameCore/Vectors.h>
+#include "../SimulationEventDispatcher.h"
+#include "../SimulationParameters.h"
+
+#include <Render/RenderContext.h>
+
+#include <Core/CircularList.h>
+#include <Core/GameTypes.h>
+#include <Core/StrongTypeDef.h>
+#include <Core/Vectors.h>
 
 #include <functional>
 #include <memory>
@@ -34,13 +36,13 @@ public:
     Gadgets(
         World & parentWorld,
         ShipId shipId,
-        std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
+        std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher,
         IShipPhysicsHandler & shipPhysicsHandler,
         Points & shipPoints,
         Springs & shipSprings)
         : mParentWorld(parentWorld)
         , mShipId(shipId)
-        , mGameEventHandler(std::move(gameEventDispatcher))
+        , mSimulationEventHandler(std::move(simulationEventDispatcher))
         , mShipPhysicsHandler(shipPhysicsHandler)
         , mShipPoints(shipPoints)
         , mShipSprings(shipSprings)
@@ -56,77 +58,77 @@ public:
         GameWallClock::time_point currentWallClockTime,
         float currentSimulationTime,
         Storm::Parameters const & stormParameters,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void OnPointDetached(
         ElementIndex pointElementIndex,
         float currentSimulationTime,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void OnSpringDestroyed(
         ElementIndex springElementIndex,
         float currentSimulationTime,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void OnElectricSpark(
         ElementIndex pointElementIndex,
         float currentSimulationTime,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     bool ToggleAntiMatterBombAt(
         vec2f const & targetPos,
-        GameParameters const & gameParameters)
+        SimulationParameters const & simulationParameters)
     {
         return ToggleGadgetAt<AntiMatterBombGadget>(
             targetPos,
-            gameParameters);
+            simulationParameters);
     }
 
     bool ToggleFireExtinguishingBombAt(
         vec2f const & targetPos,
-        GameParameters const & gameParameters)
+        SimulationParameters const & simulationParameters)
     {
         return ToggleGadgetAt<FireExtinguishingBombGadget>(
             targetPos,
-            gameParameters);
+            simulationParameters);
     }
 
     bool ToggleImpactBombAt(
         vec2f const & targetPos,
-        GameParameters const & gameParameters)
+        SimulationParameters const & simulationParameters)
     {
         return ToggleGadgetAt<ImpactBombGadget>(
             targetPos,
-            gameParameters);
+            simulationParameters);
     }
 
     std::optional<bool> TogglePhysicsProbeAt(
         vec2f const & targetPos,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void RemovePhysicsProbe();
 
     bool ToggleRCBombAt(
         vec2f const & targetPos,
-        GameParameters const & gameParameters)
+        SimulationParameters const & simulationParameters)
     {
         return ToggleGadgetAt<RCBombGadget>(
             targetPos,
-            gameParameters);
+            simulationParameters);
     }
 
     bool ToggleTimerBombAt(
         vec2f const & targetPos,
-        GameParameters const & gameParameters)
+        SimulationParameters const & simulationParameters)
     {
         return ToggleGadgetAt<TimerBombGadget>(
             targetPos,
-            gameParameters);
+            simulationParameters);
     }
 
     void DetonateRCBombs(
         float currentSimulationTime,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void DetonateAntiMatterBombs();
 
@@ -136,7 +138,7 @@ public:
 
     void Upload(
         ShipId shipId,
-        Render::RenderContext & renderContext) const;
+        RenderContext & renderContext) const;
 
 private:
 
@@ -151,7 +153,7 @@ private:
                 GlobalGadgetId(mShipId, mNextLocalGadgetId++),
                 pointIndex,
                 mParentWorld,
-                mGameEventHandler,
+                mSimulationEventHandler,
                 mShipPhysicsHandler,
                 mShipPoints,
                 mShipSprings));
@@ -166,7 +168,7 @@ private:
         if (doNotify)
         {
             // Notify
-            mGameEventHandler->OnGadgetPlaced(
+            mSimulationEventHandler->OnGadgetPlaced(
                 gadget->GetId(),
                 gadget->GetType(),
                 mParentWorld.GetOceanSurface().IsUnderwater(
@@ -192,7 +194,7 @@ private:
         if (doNotify)
         {
             // Notify removal
-            mGameEventHandler->OnGadgetRemoved(
+            mSimulationEventHandler->OnGadgetRemoved(
                 gadget.GetId(),
                 gadget.GetType(),
                 mParentWorld.GetOceanSurface().IsUnderwater(gadget.GetPosition()));
@@ -202,9 +204,9 @@ private:
     template <typename TGadget>
     bool ToggleGadgetAt(
         vec2f const & targetPos,
-        GameParameters const & gameParameters)
+        SimulationParameters const & simulationParameters)
     {
-        float const squareSearchRadius = gameParameters.ToolSearchRadius * gameParameters.ToolSearchRadius;
+        float const squareSearchRadius = simulationParameters.ToolSearchRadius * simulationParameters.ToolSearchRadius;
 
         //
         // See first if there's a gadget within the search radius, most recent first;
@@ -306,7 +308,7 @@ private:
     ShipId const mShipId;
 
     // The game event handler
-    std::shared_ptr<GameEventDispatcher> mGameEventHandler;
+    std::shared_ptr<SimulationEventDispatcher> mSimulationEventHandler;
 
     // The handler to invoke for acting on the ship
     IShipPhysicsHandler & mShipPhysicsHandler;
@@ -318,7 +320,7 @@ private:
     Springs & mShipSprings;
 
     // The current set of gadgets, excluding physics probe gadget
-    CircularList<std::unique_ptr<Gadget>, GameParameters::MaxGadgets> mCurrentGadgets;
+    CircularList<std::unique_ptr<Gadget>, SimulationParameters::MaxGadgets> mCurrentGadgets;
 
     // The current physics probe gadget
     std::unique_ptr<Gadget> mCurrentPhysicsProbeGadget;

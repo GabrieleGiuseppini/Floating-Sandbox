@@ -50,6 +50,9 @@ set  (PHYSICS_SOURCES
 	Physics/Formulae.h
 	Physics/Frontiers.cpp
 	Physics/Frontiers.h
+	Physics/Gadget.h
+	Physics/Gadgets.cpp
+	Physics/Gadgets.h
 	Physics/IShipPhysicsHandler.h
 	Physics/Npcs/NpcParticles.cpp
 	Physics/Npcs/NpcParticles.h

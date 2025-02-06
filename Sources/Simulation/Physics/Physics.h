@@ -50,15 +50,15 @@ namespace Physics
 #include "OceanSurface.h"
 #include "World.h"
 //
+#include "Gadget.h"
 //// TODOTEST
-//#include "Gadget.h"
 //#include "AntiMatterBombGadget.h"
 //#include "FireExtinguishingBombGadget.h"
 //#include "ImpactBombGadget.h"
 //#include "PhysicsProbeGadget.h"
 //#include "RCBombGadget.h"
 //#include "TimerBombGadget.h"
-//#include "Gadgets.h"
+#include "Gadgets.h"
 //#include "PinnedPoints.h"
 //#include "Ship.h"
 //
