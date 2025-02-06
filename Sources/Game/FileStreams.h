@@ -10,6 +10,7 @@
 
 #include <filesystem>
 #include <fstream>
+#include <sstream>
 
 /*
  * Implementation of BinaryReadStream for file streams.
@@ -79,8 +80,9 @@ public:
 
 	std::string ReadAll() override
 	{
-		std::string content;
-		mStream >> content;
+		std::stringstream ss;
+		ss << mStream.rdbuf();
+		std::string content = ss.str();
 
 		// For some reason, the preferences file sometimes is made of all null characters
 		content.erase(
