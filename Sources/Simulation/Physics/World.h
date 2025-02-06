@@ -19,7 +19,6 @@
 #include <Core/AABBSet.h>
 #include <Core/GameChronometer.h>
 #include <Core/GameTypes.h>
-#include <Core/IAssetManager.h>
 #include <Core/ImageData.h>
 #include <Core/PerfStats.h>
 #include <Core/ThreadManager.h>
