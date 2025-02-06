@@ -5,13 +5,15 @@
 ***************************************************************************************/
 #pragma once
 
-#include "GameEventDispatcher.h"
-#include "GameParameters.h"
 #include "Physics.h"
-#include "RenderContext.h"
 
-#include <GameCore/CircularList.h>
-#include <GameCore/Vectors.h>
+#include "../SimulationEventDispatcher.h"
+#include "../SimulationParameters.h"
+
+#include <Render/RenderContext.h>
+
+#include <Core/CircularList.h>
+#include <Core/Vectors.h>
 
 #include <memory>
 
@@ -29,10 +31,10 @@ public:
 
     PinnedPoints(
         World & parentWorld,
-        std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
+        std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher,
         Points & shipPoints)
         : mParentWorld(parentWorld)
-        , mGameEventHandler(std::move(gameEventDispatcher))
+        , mSimulationEventHandler(std::move(simulationEventDispatcher))
         , mShipPoints(shipPoints)
         , mCurrentPinnedPoints()
     {
@@ -42,9 +44,9 @@ public:
 
     bool ToggleAt(
         vec2f const & targetPos,
-        GameParameters const & gameParameters)
+        SimulationParameters const & simulationParameters)
     {
-        float const squareSearchRadius = gameParameters.ToolSearchRadius * gameParameters.ToolSearchRadius;
+        float const squareSearchRadius = simulationParameters.ToolSearchRadius * simulationParameters.ToolSearchRadius;
 
         //
         // See first if there's a pinned point within the search radius, most recent first;
@@ -67,7 +69,7 @@ public:
                 mCurrentPinnedPoints.erase(it);
 
                 // Notify
-                mGameEventHandler->OnPinToggled(
+                mSimulationEventHandler->OnPinToggled(
                     false,
                     mParentWorld.GetOceanSurface().IsUnderwater(mShipPoints.GetPosition(*it)));
 
@@ -125,7 +127,7 @@ public:
                 nearestUnpinnedPointIndex);
 
             // Notify
-            mGameEventHandler->OnPinToggled(
+            mSimulationEventHandler->OnPinToggled(
                 true,
                 mParentWorld.GetOceanSurface().IsUnderwater(mShipPoints.GetPosition(nearestUnpinnedPointIndex)));
 
@@ -147,7 +149,7 @@ public:
             mShipPoints.Unpin(*it);
 
             // Notify
-            mGameEventHandler->OnPinToggled(
+            mSimulationEventHandler->OnPinToggled(
                 false,
                 mParentWorld.GetOceanSurface().IsUnderwater(mShipPoints.GetPosition(*it)));
         }
@@ -161,7 +163,7 @@ public:
 
     void Upload(
         ShipId shipId,
-        Render::RenderContext & renderContext) const;
+        RenderContext & renderContext) const;
 
 private:
 
@@ -169,13 +171,13 @@ private:
     World & mParentWorld;
 
     // The game event handler
-    std::shared_ptr<GameEventDispatcher> mGameEventHandler;
+    std::shared_ptr<SimulationEventDispatcher> mSimulationEventHandler;
 
     // The container of all the ship's points
     Points & mShipPoints;
 
     // The current set of pinned points
-    CircularList<ElementIndex, GameParameters::MaxPinnedPoints> mCurrentPinnedPoints;
+    CircularList<ElementIndex, SimulationParameters::MaxPinnedPoints> mCurrentPinnedPoints;
 };
 
 }

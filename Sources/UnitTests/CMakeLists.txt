@@ -52,7 +52,7 @@ set (UNIT_TEST_SOURCES
 	ShipDefinitionFormatDeSerializerTests.cpp
 	#ShipNameNormalizerTests.cpp
 	#ShipPreviewDirectoryManagerTests.cpp
-	#ShipTests.cpp
+	#ShipTests.cpp  # Needs a lot of rework
 	SimulationEventDispatcherTests.cpp
 	#SliderCoreTests.cpp
 	StreamsTests.cpp

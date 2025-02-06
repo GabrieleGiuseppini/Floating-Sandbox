@@ -5,11 +5,11 @@
 ***************************************************************************************/
 #pragma once
 
-#include "RenderContext.h"
+#include <Render/RenderContext.h>
 
-#include <GameCore/Buffer.h>
-#include <GameCore/BufferAllocator.h>
-#include <GameCore/Vectors.h>
+#include <Core/Buffer.h>
+#include <Core/BufferAllocator.h>
+#include <Core/Vectors.h>
 
 #include <vector>
 
@@ -32,14 +32,14 @@ public:
         float currentSimulationTime,
         Points const & points,
         Springs const & springs,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void Update();
 
     void Upload(
         Points const & points,
         ShipId shipId,
-        Render::RenderContext & renderContext) const;
+        RenderContext & renderContext) const;
 
 private:
 
@@ -50,7 +50,7 @@ private:
         float currentSimulationTime,
         Points const & points,
         Springs const & springs,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
 private:
 

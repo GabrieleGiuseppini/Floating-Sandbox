@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #include "Physics.h"
 
+#include <Render/GameTextureDatabases.h>
+
 namespace Physics {
 
 void PinnedPoints::OnEphemeralParticleDestroyed(ElementIndex pointElementIndex)
@@ -27,7 +29,7 @@ void PinnedPoints::OnEphemeralParticleDestroyed(ElementIndex pointElementIndex)
 
 void PinnedPoints::Upload(
     ShipId shipId,
-    Render::RenderContext & renderContext) const
+    RenderContext & renderContext) const
 {
     auto & shipRenderContext = renderContext.GetShipRenderContext(shipId);
 
@@ -37,7 +39,7 @@ void PinnedPoints::Upload(
 
         shipRenderContext.UploadGenericMipMappedTextureRenderSpecification(
             mShipPoints.GetPlaneId(pinnedPointIndex),
-            TextureFrameId(Render::GenericMipMappedTextureGroups::PinnedPoint, 0),
+            TextureFrameId(GameTextureDatabases::GenericMipMappedTextureGroups::PinnedPoint, 0),
             mShipPoints.GetPosition(pinnedPointIndex));
     }
 }

@@ -5,13 +5,13 @@
  ***************************************************************************************/
 #include "Physics.h"
 
-#include <GameCore/AABB.h>
-#include <GameCore/GameDebug.h>
-#include <GameCore/GameGeometry.h>
-#include <GameCore/GameMath.h>
-#include <GameCore/GameRandomEngine.h>
-#include <GameCore/GameWallClock.h>
-#include <GameCore/Log.h>
+#include <Core/AABB.h>
+#include <Core/GameDebug.h>
+#include <Core/GameGeometry.h>
+#include <Core/GameMath.h>
+#include <Core/GameRandomEngine.h>
+#include <Core/GameWallClock.h>
+#include <Core/Log.h>
 
 #include <algorithm>
 #include <cassert>
@@ -32,13 +32,13 @@ namespace Physics {
 
 std::optional<ConnectedComponentId> Ship::PickConnectedComponentToMove(
     vec2f const & pickPosition,
-    GameParameters const & gameParameters) const
+    SimulationParameters const & simulationParameters) const
 {
     //
     // Find closest non-ephemeral point within the radius
     //
 
-    float const squareSearchRadius = gameParameters.ToolSearchRadius * gameParameters.ToolSearchRadius;
+    float const squareSearchRadius = simulationParameters.ToolSearchRadius * simulationParameters.ToolSearchRadius;
 
     // Separate orphaned and non-orphaned points; we'll choose
     // orphaned when there are no non-orphaned
@@ -86,12 +86,12 @@ void Ship::MoveBy(
     ConnectedComponentId connectedComponentId,
     vec2f const & moveOffset,
     vec2f const & inertialVelocity,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     vec2f const actualInertialVelocity =
         inertialVelocity
-        * gameParameters.MoveToolInertia
-        * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
+        * simulationParameters.MoveToolInertia
+        * (simulationParameters.IsUltraViolentMode ? 5.0f : 1.0f);
 
     // Move all points (ephemeral and non-ephemeral) that belong to the same connected component
     for (auto const p : mPoints)
@@ -112,18 +112,18 @@ void Ship::MoveBy(
         }
     }
 
-    TrimForWorldBounds(gameParameters);
+    TrimForWorldBounds(simulationParameters);
 }
 
 void Ship::MoveBy(
     vec2f const & moveOffset,
     vec2f const & inertialVelocity,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     vec2f const actualInertialVelocity =
         inertialVelocity
-        * gameParameters.MoveToolInertia
-        * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
+        * simulationParameters.MoveToolInertia
+        * (simulationParameters.IsUltraViolentMode ? 5.0f : 1.0f);
 
     vec2f * const restrict positionBuffer = mPoints.GetPositionBufferAsVec2();
     vec2f * const restrict velocityBuffer = mPoints.GetVelocityBufferAsVec2();
@@ -142,7 +142,7 @@ void Ship::MoveBy(
         dynamicForceBuffer[p] = vec2f::zero();
     }
 
-    TrimForWorldBounds(gameParameters);
+    TrimForWorldBounds(simulationParameters);
 }
 
 void Ship::RotateBy(
@@ -150,14 +150,14 @@ void Ship::RotateBy(
     float angle,
     vec2f const & center,
     float inertialAngle,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     vec2f const rotX(cos(angle), sin(angle));
     vec2f const rotY(-sin(angle), cos(angle));
 
     float const inertiaMagnitude =
-        gameParameters.MoveToolInertia
-        * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
+        simulationParameters.MoveToolInertia
+        * (simulationParameters.IsUltraViolentMode ? 5.0f : 1.0f);
 
     vec2f const inertialRotX(cos(inertialAngle), sin(inertialAngle));
     vec2f const inertialRotY(-sin(inertialAngle), cos(inertialAngle));
@@ -184,21 +184,21 @@ void Ship::RotateBy(
         }
     }
 
-    TrimForWorldBounds(gameParameters);
+    TrimForWorldBounds(simulationParameters);
 }
 
 void Ship::RotateBy(
     float angle,
     vec2f const & center,
     float inertialAngle,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     vec2f const rotX(cos(angle), sin(angle));
     vec2f const rotY(-sin(angle), cos(angle));
 
     float const inertiaMagnitude =
-        gameParameters.MoveToolInertia
-        * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
+        simulationParameters.MoveToolInertia
+        * (simulationParameters.IsUltraViolentMode ? 5.0f : 1.0f);
 
     vec2f const inertialRotX(cos(inertialAngle), sin(inertialAngle));
     vec2f const inertialRotY(-sin(inertialAngle), cos(inertialAngle));
@@ -224,7 +224,7 @@ void Ship::RotateBy(
         dynamicForceBuffer[p] = vec2f::zero();
     }
 
-    TrimForWorldBounds(gameParameters);
+    TrimForWorldBounds(simulationParameters);
 }
 
 void Ship::MoveGrippedBy(
@@ -232,14 +232,14 @@ void Ship::MoveGrippedBy(
     float const gripRadius,
     vec2f const & moveOffset,
     vec2f const & inertialVelocity,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     float const squareAugmentedGripRadius =
-        (gripRadius * (1.0f + GameParameters::GripToolRadiusTransitionWidthFraction / 2.0f))
-        * (gripRadius * (1.0f + GameParameters::GripToolRadiusTransitionWidthFraction / 2.0f));
+        (gripRadius * (1.0f + SimulationParameters::GripToolRadiusTransitionWidthFraction / 2.0f))
+        * (gripRadius * (1.0f + SimulationParameters::GripToolRadiusTransitionWidthFraction / 2.0f));
 
     // Water velocity is actual movement
-    vec2f const impartedWaterVelocity = moveOffset / GameParameters::SimulationStepTimeDuration<float>;
+    vec2f const impartedWaterVelocity = moveOffset / SimulationParameters::SimulationStepTimeDuration<float>;
 
     vec2f * const restrict positionBuffer = mPoints.GetPositionBufferAsVec2();
     vec2f * const restrict velocityBuffer = mPoints.GetVelocityBufferAsVec2();
@@ -257,7 +257,7 @@ void Ship::MoveGrippedBy(
             // Scale based on distance (1.0 at center, 0.0 at border)
             float const scale = (
                 1.0f - LinearStep(
-                    1.0f - GameParameters::GripToolRadiusTransitionWidthFraction,
+                    1.0f - SimulationParameters::GripToolRadiusTransitionWidthFraction,
                     1.0f,
                     std::sqrtf(squarePointRadius / squareAugmentedGripRadius))
                 )
@@ -280,7 +280,7 @@ void Ship::MoveGrippedBy(
     }
 
     // The promise is that we leave every particle within world bounds
-    TrimForWorldBounds(gameParameters);
+    TrimForWorldBounds(simulationParameters);
 }
 
 void Ship::RotateGrippedBy(
@@ -288,11 +288,11 @@ void Ship::RotateGrippedBy(
     float const gripRadius,
     float angle,
     float inertialAngle,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     float const squareAugmentedGripRadius =
-        (gripRadius * (1.0f + GameParameters::GripToolRadiusTransitionWidthFraction / 2.0f))
-        * (gripRadius * (1.0f + GameParameters::GripToolRadiusTransitionWidthFraction / 2.0f));
+        (gripRadius * (1.0f + SimulationParameters::GripToolRadiusTransitionWidthFraction / 2.0f))
+        * (gripRadius * (1.0f + SimulationParameters::GripToolRadiusTransitionWidthFraction / 2.0f));
 
     vec2f const rotX(cos(angle), sin(angle));
     vec2f const rotY(-sin(angle), cos(angle));
@@ -316,7 +316,7 @@ void Ship::RotateGrippedBy(
             // Scale based on distance (1.0 at center, 0.0 at border)
             float const scale = (
                 1.0f - LinearStep(
-                    1.0f - GameParameters::GripToolRadiusTransitionWidthFraction,
+                    1.0f - SimulationParameters::GripToolRadiusTransitionWidthFraction,
                     1.0f,
                     std::sqrtf(squarePointRadius / squareAugmentedGripRadius))
                 )
@@ -326,10 +326,10 @@ void Ship::RotateGrippedBy(
             vec2f const newPosition = vec2f(centeredPos.dot(rotX), centeredPos.dot(rotY)) + gripCenter;
             positionBuffer[p] = positionBuffer[p] * (1.0f - scale) + newPosition * scale;
 
-            vec2f const linearInertialVelocity = (vec2f(centeredPos.dot(inertialRotX), centeredPos.dot(inertialRotY)) - centeredPos) / GameParameters::SimulationStepTimeDuration<float>;
+            vec2f const linearInertialVelocity = (vec2f(centeredPos.dot(inertialRotX), centeredPos.dot(inertialRotY)) - centeredPos) / SimulationParameters::SimulationStepTimeDuration<float>;
             velocityBuffer[p] = velocityBuffer[p] * (1.0f - scale) + linearInertialVelocity * scale;
 
-            vec2f const impartedLinearWaterVelocity = (vec2f(centeredPos.dot(rotX), centeredPos.dot(rotY)) - centeredPos) / GameParameters::SimulationStepTimeDuration<float>;
+            vec2f const impartedLinearWaterVelocity = (vec2f(centeredPos.dot(rotX), centeredPos.dot(rotY)) - centeredPos) / SimulationParameters::SimulationStepTimeDuration<float>;
             waterVelocityBuffer[p] = waterVelocityBuffer[p] * (1.0f - scale) - impartedLinearWaterVelocity * scale;
 
             // Zero-out already-existing forces
@@ -345,10 +345,10 @@ void Ship::RotateGrippedBy(
     }
 
     // The promise is that we leave every particle within world bounds
-    TrimForWorldBounds(gameParameters);
+    TrimForWorldBounds(simulationParameters);
 }
 
-void Ship::EndMoveGrippedBy(GameParameters const & /*gameParameters*/)
+void Ship::EndMoveGrippedBy(SimulationParameters const & /*simulationParameters*/)
 {
     // Reset forces receptivities
     for (auto const p : mPoints.RawShipPoints())
@@ -359,7 +359,7 @@ void Ship::EndMoveGrippedBy(GameParameters const & /*gameParameters*/)
 
 std::optional<ElementIndex> Ship::PickObjectForPickAndPull(
     vec2f const & pickPosition,
-    GameParameters const & /*gameParameters*/)
+    SimulationParameters const & /*simulationParameters*/)
 {
     //
     // Find closest point - of any type - within the search radius
@@ -393,7 +393,7 @@ std::optional<ElementIndex> Ship::PickObjectForPickAndPull(
 void Ship::Pull(
     ElementIndex pointElementIndex,
     vec2f const & target,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     //
     //
@@ -415,14 +415,14 @@ void Ship::Pull(
     //
 
     float const triangularCoeff =
-        (gameParameters.NumMechanicalDynamicsIterations<float>() * (gameParameters.NumMechanicalDynamicsIterations<float>() + 1.0f))
+        (simulationParameters.NumMechanicalDynamicsIterations<float>() * (simulationParameters.NumMechanicalDynamicsIterations<float>() + 1.0f))
         / 2.0f;
 
     float const forceStiffness =
         mPoints.GetMass(pointElementIndex)
-        / (gameParameters.MechanicalSimulationStepTimeDuration<float>() * gameParameters.MechanicalSimulationStepTimeDuration<float>())
+        / (simulationParameters.MechanicalSimulationStepTimeDuration<float>() * simulationParameters.MechanicalSimulationStepTimeDuration<float>())
         / triangularCoeff
-        * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
+        * (simulationParameters.IsUltraViolentMode ? 4.0f : 1.0f);
 
     // Queue interaction
     mQueuedInteractions.emplace_back(
@@ -485,7 +485,7 @@ bool Ship::DestroyAt(
     float radius,
     SessionId const & /*sessionId*/,
     float currentSimulationTime,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     bool hasDestroyed = false;
 
@@ -494,15 +494,15 @@ bool Ship::DestroyAt(
         {
             // Choose a detach velocity - using the same distribution as Debris
             vec2f const detachVelocity = GameRandomEngine::GetInstance().GenerateUniformRadialVector(
-                GameParameters::MinDebrisParticlesVelocity,
-                GameParameters::MaxDebrisParticlesVelocity);
+                SimulationParameters::MinDebrisParticlesVelocity,
+                SimulationParameters::MaxDebrisParticlesVelocity);
 
             // Detach
             DetachPointForDestroy(
                 pointIndex,
                 detachVelocity,
                 currentSimulationTime,
-                gameParameters);
+                simulationParameters);
 
             // Record event, if requested to
             if (mEventRecorder != nullptr)
@@ -597,7 +597,7 @@ bool Ship::SawThrough(
     vec2f const & endPos,
     bool isFirstSegment,
     float currentSimulationTime,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     //
     // Find all springs that intersect the saw segment
@@ -626,7 +626,7 @@ bool Ship::SawThrough(
                     Springs::DestroyOptions::FireBreakEvent
                     | Springs::DestroyOptions::DestroyOnlyConnectedTriangle,
                     currentSimulationTime,
-                    gameParameters,
+                    simulationParameters,
                     mPoints);
 
                 bool const isMetal =
@@ -640,7 +640,7 @@ bool Ship::SawThrough(
                         adjustedStartPos,
                         endPos,
                         currentSimulationTime,
-                        gameParameters);
+                        simulationParameters);
                 }
 
                 // Remember we have sawed this material
@@ -653,8 +653,8 @@ bool Ship::SawThrough(
     }
 
     // Notify (including zero)
-    mGameEventHandler->OnSawed(true, metalsSawed);
-    mGameEventHandler->OnSawed(false, nonMetalsSawed);
+    mSimulationEventHandler->OnSawed(true, metalsSawed);
+    mSimulationEventHandler->OnSawed(false, nonMetalsSawed);
 
     return (metalsSawed > 0 || nonMetalsSawed > 0);
 }
@@ -663,13 +663,13 @@ bool Ship::ApplyHeatBlasterAt(
     vec2f const & targetPos,
     HeatBlasterActionType action,
     float radius,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     // Q = q*dt
     float const heatBlasterHeat =
-        gameParameters.HeatBlasterHeatFlow * 1000.0f // KJoule->Joule
-        * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f)
-        * GameParameters::SimulationStepTimeDuration<float>
+        simulationParameters.HeatBlasterHeatFlow * 1000.0f // KJoule->Joule
+        * (simulationParameters.IsUltraViolentMode ? 10.0f : 1.0f)
+        * SimulationParameters::SimulationStepTimeDuration<float>
         * (action == HeatBlasterActionType::Cool ? -1.0f : 1.0f); // Heat vs. Cool
 
     float const squareRadius = radius * radius;
@@ -717,13 +717,13 @@ bool Ship::ExtinguishFireAt(
     vec2f const & targetPos,
     float strengthMultiplier,
     float radius,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     float const squareRadius = radius * radius;
 
     float const heatRemoved =
-        GameParameters::FireExtinguisherHeatRemoved
-        * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f)
+        SimulationParameters::FireExtinguisherHeatRemoved
+        * (simulationParameters.IsUltraViolentMode ? 10.0f : 1.0f)
         * strengthMultiplier;
 
     // Search for burning points within the radius
@@ -772,7 +772,7 @@ void Ship::ApplyBlastAt(
     vec2f const & targetPos,
     float radius,
     float forceMagnitude,
-    GameParameters const & /*gameParameters*/)
+    SimulationParameters const & /*simulationParameters*/)
 {
     // Queue interaction
     mQueuedInteractions.emplace_back(
@@ -784,7 +784,7 @@ void Ship::ApplyBlastAt(
 
 void Ship::ApplyBlastAt(
     Interaction::ArgumentsUnion::BlastArguments const & args,
-    GameParameters const & /*gameParameters*/)
+    SimulationParameters const & /*simulationParameters*/)
 {
     float const squareRadius = args.Radius * args.Radius;
 
@@ -815,7 +815,7 @@ bool Ship::ApplyElectricSparkAt(
     std::uint64_t counter,
     float lengthMultiplier,
     float currentSimulationTime,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     return mElectricSparks.ApplySparkAt(
         targetPos,
@@ -824,7 +824,7 @@ bool Ship::ApplyElectricSparkAt(
         currentSimulationTime,
         mPoints,
         mSprings,
-        gameParameters);
+        simulationParameters);
 }
 
 bool Ship::ApplyLaserCannonThrough(
@@ -832,7 +832,7 @@ bool Ship::ApplyLaserCannonThrough(
     vec2f const & endPos,
     float strength,
     float currentSimulationTime,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     //
     // Cut all springs that intersect the stride with a probability inversely proportional to their mass
@@ -860,7 +860,7 @@ bool Ship::ApplyLaserCannonThrough(
                     Springs::DestroyOptions::DoNotFireBreakEvent
                     | Springs::DestroyOptions::DestroyOnlyConnectedTriangle,
                     currentSimulationTime,
-                    gameParameters,
+                    simulationParameters,
                     mPoints);
 
                 ++cutCount;
@@ -874,15 +874,15 @@ bool Ship::ApplyLaserCannonThrough(
 
     // Q = q*dt
     float const effectiveLaserHeat =
-        gameParameters.LaserRayHeatFlow * 1000.0f // KJoule->Joule
-        * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f)
-        * GameParameters::SimulationStepTimeDuration<float>
+        simulationParameters.LaserRayHeatFlow * 1000.0f // KJoule->Joule
+        * (simulationParameters.IsUltraViolentMode ? 10.0f : 1.0f)
+        * SimulationParameters::SimulationStepTimeDuration<float>
         * (1.0f + (strength - 1.0f) * 4.0f);
 
     for (auto p : mPoints)
     {
         float const distance = Geometry::Segment::DistanceToPoint(startPos, endPos, mPoints.GetPosition(p));
-        if (distance < GameParameters::LaserRayRadius)
+        if (distance < SimulationParameters::LaserRayRadius)
         {
             //
             // Inject/remove heat at this point
@@ -892,7 +892,7 @@ bool Ship::ApplyLaserCannonThrough(
         }
     }
 
-    mGameEventHandler->OnLaserCut(cutCount);
+    mSimulationEventHandler->OnLaserCut(cutCount);
 
     return cutCount > 0;
 }
@@ -961,11 +961,11 @@ void Ship::SwirlAt(Interaction::ArgumentsUnion::SwirlArguments const & args)
 
 bool Ship::TogglePinAt(
     vec2f const & targetPos,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     return mPinnedPoints.ToggleAt(
         targetPos,
-        gameParameters);
+        simulationParameters);
 }
 
 void Ship::RemoveAllPins()
@@ -976,11 +976,11 @@ void Ship::RemoveAllPins()
 std::optional<ToolApplicationLocus> Ship::InjectBubblesAt(
     vec2f const & targetPos,
     float currentSimulationTime,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     vec2f const position = targetPos.clamp(
-        -GameParameters::HalfMaxWorldWidth, GameParameters::HalfMaxWorldWidth,
-        -GameParameters::HalfMaxWorldHeight, GameParameters::HalfMaxWorldHeight);
+        -SimulationParameters::HalfMaxWorldWidth, SimulationParameters::HalfMaxWorldWidth,
+        -SimulationParameters::HalfMaxWorldHeight, SimulationParameters::HalfMaxWorldHeight);
 
     if (float const depth = mParentWorld.GetOceanSurface().GetDepth(position);
         depth > 0.0f)
@@ -988,11 +988,11 @@ std::optional<ToolApplicationLocus> Ship::InjectBubblesAt(
         InternalSpawnAirBubble(
             position,
             depth,
-            GameParameters::ShipAirBubbleFinalScale,
-            GameParameters::Temperature0,
+            SimulationParameters::ShipAirBubbleFinalScale,
+            SimulationParameters::Temperature0,
             currentSimulationTime,
             mMaxMaxPlaneId,
-            gameParameters);
+            simulationParameters);
 
         return ToolApplicationLocus::World | ToolApplicationLocus::UnderWater;
     }
@@ -1005,15 +1005,15 @@ std::optional<ToolApplicationLocus> Ship::InjectBubblesAt(
 std::optional<ToolApplicationLocus> Ship::InjectPressureAt(
     vec2f const & targetPos,
     float pressureQuantityMultiplier,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     // Delta quantity of pressure, added or removed;
     // actual quantity removed depends on pre-existing pressure
     float const quantityOfPressureDelta =
-        gameParameters.InjectPressureQuantity // Number of atm
-        * GameParameters::AirPressureAtSeaLevel // Pressure of 1 atm
+        simulationParameters.InjectPressureQuantity // Number of atm
+        * SimulationParameters::AirPressureAtSeaLevel // Pressure of 1 atm
         * pressureQuantityMultiplier
-        * (gameParameters.IsUltraViolentMode ? 1000.0f : 1.0f);
+        * (simulationParameters.IsUltraViolentMode ? 1000.0f : 1.0f);
 
     //
     // Find closest (non-ephemeral) non-hull point in the radius
@@ -1116,19 +1116,19 @@ std::optional<ToolApplicationLocus> Ship::InjectPressureAt(
 bool Ship::FloodAt(
     vec2f const & targetPos,
     float waterQuantityMultiplier,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
-    float const searchRadius = gameParameters.FloodRadius;
+    float const searchRadius = simulationParameters.FloodRadius;
 
     // Delta quantity of water, added or removed;
     // actual quantity removed depends on pre-existing water
     float const quantityOfWaterDelta =
-        gameParameters.FloodQuantity
+        simulationParameters.FloodQuantity
         * waterQuantityMultiplier
-        * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+        * (simulationParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
     // Multiplier to get internal pressure delta from water delta
-    float const volumetricWaterPressure = Formulae::CalculateVolumetricWaterPressure(gameParameters.WaterTemperature, gameParameters);
+    float const volumetricWaterPressure = Formulae::CalculateVolumetricWaterPressure(simulationParameters.WaterTemperature, simulationParameters);
 
     //
     // Find the (non-ephemeral) non-hull points in the radius
@@ -1175,38 +1175,38 @@ bool Ship::FloodAt(
 
 bool Ship::ToggleAntiMatterBombAt(
     vec2f const & targetPos,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     return mGadgets.ToggleAntiMatterBombAt(
         targetPos,
-        gameParameters);
+        simulationParameters);
 }
 
 bool Ship::ToggleFireExtinguishingBombAt(
     vec2f const & targetPos,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     return mGadgets.ToggleFireExtinguishingBombAt(
         targetPos,
-        gameParameters);
+        simulationParameters);
 }
 
 bool Ship::ToggleImpactBombAt(
     vec2f const & targetPos,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     return mGadgets.ToggleImpactBombAt(
         targetPos,
-        gameParameters);
+        simulationParameters);
 }
 
 std::optional<bool> Ship::TogglePhysicsProbeAt(
     vec2f const & targetPos,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     return mGadgets.TogglePhysicsProbeAt(
         targetPos,
-        gameParameters);
+        simulationParameters);
 }
 
 void Ship::RemovePhysicsProbe()
@@ -1216,27 +1216,27 @@ void Ship::RemovePhysicsProbe()
 
 bool Ship::ToggleRCBombAt(
     vec2f const & targetPos,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     return mGadgets.ToggleRCBombAt(
         targetPos,
-        gameParameters);
+        simulationParameters);
 }
 
 bool Ship::ToggleTimerBombAt(
     vec2f const & targetPos,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     return mGadgets.ToggleTimerBombAt(
         targetPos,
-        gameParameters);
+        simulationParameters);
 }
 
 void Ship::DetonateRCBombs(
     float currentSimulationTime,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
-    mGadgets.DetonateRCBombs(currentSimulationTime, gameParameters);
+    mGadgets.DetonateRCBombs(currentSimulationTime, simulationParameters);
 }
 
 void Ship::DetonateAntiMatterBombs()
@@ -1247,9 +1247,9 @@ void Ship::DetonateAntiMatterBombs()
 bool Ship::ScrubThrough(
     vec2f const & startPos,
     vec2f const & endPos,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
-    float const scrubRadius = gameParameters.ScrubRotToolRadius;
+    float const scrubRadius = simulationParameters.ScrubRotToolRadius;
 
     //
     // Find all points in the radius of the segment
@@ -1310,11 +1310,11 @@ bool Ship::ScrubThrough(
 bool Ship::RotThrough(
     vec2f const & startPos,
     vec2f const & endPos,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
-    float const rotRadius = gameParameters.ScrubRotToolRadius; // Yes, using the same for symmetry
+    float const rotRadius = simulationParameters.ScrubRotToolRadius; // Yes, using the same for symmetry
 
-    float const decayCoeffMultiplier = gameParameters.IsUltraViolentMode
+    float const decayCoeffMultiplier = simulationParameters.IsUltraViolentMode
         ? 2.5f
         : 1.0f;
 
@@ -1386,7 +1386,7 @@ void Ship::ApplyThanosSnap(
     float rightFrontX,
     bool isSparseMode,
     float currentSimulationTime,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     // Calculate direction
     float leftX, rightX;
@@ -1442,7 +1442,7 @@ void Ship::ApplyThanosSnap(
                     mPoints.GetVelocity(pointIndex) + detachVelocity,
                     Points::DetachOptions::None,
                     currentSimulationTime,
-                    gameParameters);
+                    simulationParameters);
 
                 // Set decay to min, so that debris gets darkened
                 mPoints.SetDecay(pointIndex, 0.0f);
@@ -1620,17 +1620,17 @@ std::optional<vec2f> Ship::FindSuitableLightningTarget() const
 void Ship::ApplyLightning(
     vec2f const & targetPos,
     float currentSimulationTime,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     float const searchRadius =
-        gameParameters.LightningBlastRadius
-        * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+        simulationParameters.LightningBlastRadius
+        * (simulationParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
     // Note: we don't consider the simulation dt here as the lightning touch-down
     // happens in one frame only, rather than being splattered across multiple frames
     float const lightningHeat =
-        gameParameters.LightningBlastHeat * 1000.0f // KJoule->Joule
-        * (gameParameters.IsUltraViolentMode ? 8.0f : 1.0f);
+        simulationParameters.LightningBlastHeat * 1000.0f // KJoule->Joule
+        * (simulationParameters.IsUltraViolentMode ? 8.0f : 1.0f);
 
     //
     // Find the (non-ephemeral) points in the radius
@@ -1666,8 +1666,8 @@ void Ship::ApplyLightning(
 
                 // Choose a detach velocity - using the same distribution as Debris
                 vec2f detachVelocity = GameRandomEngine::GetInstance().GenerateUniformRadialVector(
-                    GameParameters::MinDebrisParticlesVelocity,
-                    GameParameters::MaxDebrisParticlesVelocity);
+                    SimulationParameters::MinDebrisParticlesVelocity,
+                    SimulationParameters::MaxDebrisParticlesVelocity);
 
                 // Detach
                 mPoints.Detach(
@@ -1675,16 +1675,16 @@ void Ship::ApplyLightning(
                     detachVelocity,
                     Points::DetachOptions::GenerateDebris,
                     currentSimulationTime,
-                    gameParameters);
+                    simulationParameters);
 
                 // Generate sparkles
                 InternalSpawnSparklesForLightning(
                     pointIndex,
                     currentSimulationTime,
-                    gameParameters);
+                    simulationParameters);
 
                 // Notify
-                mGameEventHandler->OnLightningHit(mPoints.GetStructuralMaterial(pointIndex));
+                mSimulationEventHandler->OnLightningHit(mPoints.GetStructuralMaterial(pointIndex));
 
                 wasDestroyed = true;
             }
@@ -1729,7 +1729,7 @@ void Ship::HighlightElectricalElement(GlobalElectricalElementId electricalElemen
 void Ship::SetSwitchState(
     GlobalElectricalElementId electricalElementId,
     ElectricalState switchState,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     assert(electricalElementId.GetShipId() == mId);
 
@@ -1737,20 +1737,20 @@ void Ship::SetSwitchState(
         electricalElementId,
         switchState,
         mPoints,
-        gameParameters);
+        simulationParameters);
 }
 
 void Ship::SetEngineControllerState(
     GlobalElectricalElementId electricalElementId,
     float controllerValue,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     assert(electricalElementId.GetShipId() == mId);
 
     mElectricalElements.SetEngineControllerState(
         electricalElementId,
         controllerValue,
-        gameParameters);
+        simulationParameters);
 }
 
 void Ship::SpawnAirBubble(
@@ -1759,7 +1759,7 @@ void Ship::SpawnAirBubble(
     float temperature,
     float currentSimulationTime,
     PlaneId planeId,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     InternalSpawnAirBubble(
         position,
@@ -1768,7 +1768,7 @@ void Ship::SpawnAirBubble(
         temperature,
         currentSimulationTime,
         planeId,
-        gameParameters);
+        simulationParameters);
 }
 
 bool Ship::DestroyTriangle(ElementIndex triangleIndex)

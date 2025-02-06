@@ -1,6 +1,7 @@
-#include <GameLib/GameEventDispatcher.h>
-#include <GameLib/GameParameters.h>
-#include <GameLib/Physics.h>
+#include <Simulation/Materials.h>
+#include <Simulation/Physics/Physics.h>
+#include <Simulation/SimulationEventDispatcher.h>
+#include <Simulation/SimulationParameters.h>
 
 #include <initializer_list>
 #include <iterator>
@@ -14,7 +15,7 @@ class ShipTests : public ::testing::Test
 {
     virtual void SetUp() override
     {
-        std::shared_ptr<GameEventDispatcher> dispatcher = std::make_shared<GameEventDispatcher>();
+        std::shared_ptr<SimulationEventDispatcher> dispatcher = std::make_shared<SimulationEventDispatcher>();
         mWorld = std::make_unique<Physics::World>(dispatcher);
     }
 
@@ -24,7 +25,7 @@ class ShipTests : public ::testing::Test
 
 protected:
 
-	static MaterialDatabase MakeMaterials(std::vector<Material> && materials)	
+	static MaterialDatabase MakeMaterials(std::vector<Material> && materials)
 	{
 		std::vector<std::unique_ptr<Material const>> res;
 		for (Material const & m : materials)
@@ -64,7 +65,7 @@ TEST_F(ShipTests, BuildsPoints_OnePoint)
 	auto ship = Physics::Ship::Create(
         0,
 		mWorld.get(),
-        ShipDefinition(       
+        ShipDefinition(
             ImageData(4, 5, std::unique_ptr<unsigned char const []>(imageData)),
             std::nullopt,
             "Test",
@@ -172,7 +173,7 @@ TEST_F(ShipTests, BuildsPoints_EmptyShip)
 }
 
 ///////////////////////////////////////////////////////////////////////
-// Springs 
+// Springs
 ///////////////////////////////////////////////////////////////////////
 
 TEST_F(ShipTests, BuildsSprings_OneSpring)
@@ -218,7 +219,7 @@ TEST_F(ShipTests, BuildsSprings_OneSpring)
 }
 
 ///////////////////////////////////////////////////////////////////////
-// Triangles 
+// Triangles
 ///////////////////////////////////////////////////////////////////////
 
 TEST_F(ShipTests, BuildsTriangles_OneTriangle)
@@ -343,7 +344,7 @@ TEST_F(ShipTests, DestroyAt)
     //
 
 	ship->DestroyAt(
-        vec2f(-1.0f, 2.0f), 
+        vec2f(-1.0f, 2.0f),
         0.1f,
         gameParameters);
 
@@ -357,7 +358,7 @@ TEST_F(ShipTests, DestroyAt)
 }
 
 ///////////////////////////////////////////////////////////////////////
-// Lamps 
+// Lamps
 ///////////////////////////////////////////////////////////////////////
 
 TEST_F(ShipTests, BuildsLamps_OneLamp)

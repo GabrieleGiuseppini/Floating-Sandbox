@@ -73,10 +73,21 @@ set  (PHYSICS_SOURCES
 	Physics/Physics.h
 	Physics/PhysicsProbeGadget.cpp
 	Physics/PhysicsProbeGadget.h
+	Physics/PinnedPoints.cpp
+	Physics/PinnedPoints.h
 	Physics/Points.cpp
 	Physics/Points.h
 	Physics/RCBombGadget.cpp
 	Physics/RCBombGadget.h
+	Physics/Ship.cpp
+	Physics/Ship.h
+	Physics/Ship_Interactions.cpp
+	Physics/Ship_Interactions_Repair.cpp
+	Physics/Ship_SpringRelaxation.cpp
+	Physics/Ship_StateMachines.cpp
+	Physics/Ship_StateMachines.h
+	Physics/ShipElectricSparks.cpp
+	Physics/ShipElectricSparks.h
 	Physics/Springs.cpp
 	Physics/Springs.h
 	Physics/Stars.cpp

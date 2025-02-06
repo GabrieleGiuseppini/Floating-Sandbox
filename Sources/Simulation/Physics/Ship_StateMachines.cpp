@@ -7,7 +7,7 @@
 
 #include "Ship_StateMachines.h"
 
-#include <GameCore/GameRandomEngine.h>
+#include <Core/GameRandomEngine.h>
 
 #include <cassert>
 
@@ -16,7 +16,7 @@ namespace Physics {
 bool Ship::UpdateExplosionStateMachine(
     ExplosionStateMachine & explosionStateMachine,
     float currentSimulationTime,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     //
     // Update progress
@@ -24,8 +24,8 @@ bool Ship::UpdateExplosionStateMachine(
 
     float const elapsed = currentSimulationTime - explosionStateMachine.StartSimulationTime;
 
-    float const explosionBlastForceProgress = elapsed / GameParameters::ExplosionBlastForceDuration;
-    explosionStateMachine.CurrentRenderProgress = elapsed / GameParameters::ExplosionRenderDuration;
+    float const explosionBlastForceProgress = elapsed / SimulationParameters::ExplosionBlastForceDuration;
+    explosionStateMachine.CurrentRenderProgress = elapsed / SimulationParameters::ExplosionRenderDuration;
 
     if (explosionBlastForceProgress > 1.0f && explosionStateMachine.CurrentRenderProgress > 1.0f)
     {
@@ -43,7 +43,7 @@ bool Ship::UpdateExplosionStateMachine(
                 explosionStateMachine,
                 explosionBlastForceProgress,
                 currentSimulationTime,
-                gameParameters);
+                simulationParameters);
         }
         else
         {
@@ -51,7 +51,7 @@ bool Ship::UpdateExplosionStateMachine(
                 explosionStateMachine,
                 explosionBlastForceProgress,
                 currentSimulationTime,
-                gameParameters);
+                simulationParameters);
         }
     }
 
@@ -65,7 +65,7 @@ void Ship::InternalUpdateExplosionStateMachine(
     ExplosionStateMachine & explosionStateMachine,
     float explosionBlastForceProgress,
     float currentSimulationTime,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     //
     // Update explosion
@@ -99,7 +99,7 @@ void Ship::InternalUpdateExplosionStateMachine(
     // Q = q*dt
     float const blastHeat =
         explosionStateMachine.BlastHeat * 1000.0f // KJoule->Joule
-        * GameParameters::SimulationStepTimeDuration<float>;
+        * SimulationParameters::SimulationStepTimeDuration<float>;
 
     float nearestStructuralPointSquareDistance = std::numeric_limits<float>::max();
     ElementIndex nearestStructuralPointIndex = NoneElementIndex;
@@ -195,8 +195,8 @@ void Ship::InternalUpdateExplosionStateMachine(
 
         // Choose a detach velocity - using the same distribution as Debris
         vec2f const detachVelocity = GameRandomEngine::GetInstance().GenerateUniformRadialVector(
-            GameParameters::MinDebrisParticlesVelocity,
-            GameParameters::MaxDebrisParticlesVelocity);
+            SimulationParameters::MinDebrisParticlesVelocity,
+            SimulationParameters::MaxDebrisParticlesVelocity);
 
         // Detach point
         mPoints.Detach(
@@ -205,7 +205,7 @@ void Ship::InternalUpdateExplosionStateMachine(
             Points::DetachOptions::GenerateDebris
             | Points::DetachOptions::FireDestroyEvent,
             currentSimulationTime,
-            gameParameters);
+            simulationParameters);
     }
 
     //
@@ -220,12 +220,12 @@ void Ship::InternalUpdateExplosionStateMachine(
         explosionStateMachine.BlastHeat,
         blastHeatRadius,
         explosionStateMachine.Type,
-        gameParameters);
+        simulationParameters);
 }
 
 void Ship::UploadExplosionStateMachine(
     ExplosionStateMachine const & explosionStateMachine,
-    Render::RenderContext & renderContext)
+    RenderContext & renderContext)
 {
     if (explosionStateMachine.CurrentRenderProgress <= 1.0f)
     {
@@ -245,7 +245,7 @@ void Ship::UploadExplosionStateMachine(
 
 void Ship::UpdateStateMachines(
     float currentSimulationTime,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     for (auto smIt = mStateMachines.begin(); smIt != mStateMachines.end(); /* incremented in loop */)
     {
@@ -258,7 +258,7 @@ void Ship::UpdateStateMachines(
                 isExpired = UpdateExplosionStateMachine(
                     dynamic_cast<ExplosionStateMachine &>(*(*smIt)),
                     currentSimulationTime,
-                    gameParameters);
+                    simulationParameters);
 
                 break;
             }
@@ -271,7 +271,7 @@ void Ship::UpdateStateMachines(
     }
 }
 
-void Ship::UploadStateMachines(Render::RenderContext & renderContext)
+void Ship::UploadStateMachines(RenderContext & renderContext)
 {
     for (auto const & sm : mStateMachines)
     {

@@ -3855,7 +3855,7 @@ void Npcs::RenderNpc(
             auto const & animationState = humanNpcState.AnimationState;
 
             // Prepare static attributes
-            Render::ShipRenderContext::NpcStaticAttributes staticAttribs{
+            ShipRenderContext::NpcStaticAttributes staticAttribs{
                 (npc.CurrentRegime == StateType::RegimeType::BeingPlaced)
                     ? static_cast<float>(mShips[npc.CurrentShipId]->HomeShip.GetMaxPlaneId())
                     : static_cast<float>(npc.CurrentPlaneId),
@@ -4227,7 +4227,7 @@ void Npcs::RenderNpc(
                 struct TextureQuad
                 {
                     Quad Position;
-                    TextureCoordinatesQuad TextureQuad;
+                    TextureCoordinatesQuad TextureCoords;
 
                     TextureQuad() = default;
                 };
@@ -4664,7 +4664,7 @@ void Npcs::RenderNpc(
                     actualBodyVDir,
                     halfTorsoW * 2.0f,
                     actualBodyLength,
-                    Render::StockColors::Red1,
+                    StockColors::Red1,
                     GameWallClock::GetInstance().ElapsedAsFloat(mCurrentlySelectedNpcWallClockTimestamp));
             }
 
@@ -4677,7 +4677,7 @@ void Npcs::RenderNpc(
             auto const & animationState = furnitureNpcState.AnimationState;
 
             // Prepare static attributes
-            Render::ShipRenderContext::NpcStaticAttributes staticAttribs{
+            ShipRenderContext::NpcStaticAttributes staticAttribs{
                 (npc.CurrentRegime == StateType::RegimeType::BeingPlaced)
                     ? static_cast<float>(mShips[npc.CurrentShipId]->HomeShip.GetMaxPlaneId())
                     : static_cast<float>(npc.CurrentPlaneId),
@@ -4746,12 +4746,12 @@ void Npcs::RenderNpc(
                     quad.V.BottomRight = vec2f(position.x + ParticleHalfWidth, position.y - ParticleHalfWidth);
                     if constexpr (RenderMode == NpcRenderModeType::Texture)
                         shipRenderContext.UploadNpcTextureAttributes(
-                            textureCoords,
+                            textureQuad,
                             light,
                             staticAttribs);
                     else
                         shipRenderContext.UploadNpcQuadAttributes<RenderMode>(
-                            textureCoords,
+                            textureQuad,
                             light,
                             staticAttribs,
                             npc.RenderColor);
@@ -4802,7 +4802,7 @@ void Npcs::RenderNpc(
                     verticalDir,
                     width,
                     height,
-                    Render::StockColors::Red1,
+                    StockColors::Red1,
                     GameWallClock::GetInstance().ElapsedAsFloat(mCurrentlySelectedNpcWallClockTimestamp));
             }
 

@@ -58,8 +58,7 @@ namespace Physics
 #include "RCBombGadget.h"
 #include "TimerBombGadget.h"
 #include "Gadgets.h"
-//// TODOTEST
-//#include "PinnedPoints.h"
-//#include "Ship.h"
+#include "PinnedPoints.h"
+#include "Ship.h"
 //
 #include "Npcs/Npcs.h"

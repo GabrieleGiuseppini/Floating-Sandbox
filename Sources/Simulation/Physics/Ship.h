@@ -5,24 +5,27 @@
  ***************************************************************************************/
 #pragma once
 
-#include "EventRecorder.h"
-#include "GameEventDispatcher.h"
-#include "GameParameters.h"
-#include "MaterialDatabase.h"
 #include "Physics.h"
-#include "PerfStats.h"
-#include "RenderContext.h"
-#include "ShipDefinition.h"
-#include "ShipElectricSparks.h"
-#include "ShipOverlays.h"
 
-#include <GameCore/AABBSet.h>
-#include <GameCore/Buffer.h>
-#include <GameCore/GameTypes.h>
-#include <GameCore/ImageData.h>
-#include <GameCore/RunningAverage.h>
-#include <GameCore/ThreadManager.h>
-#include <GameCore/Vectors.h>
+#include "ShipElectricSparks.h"
+
+#include "../EventRecorder.h"
+#include "../MaterialDatabase.h"
+#include "../ShipDefinition.h"
+#include "../ShipOverlays.h"
+#include "../SimulationEventDispatcher.h"
+#include "../SimulationParameters.h"
+
+#include <Render/RenderContext.h>
+
+#include <Core/AABBSet.h>
+#include <Core/Buffer.h>
+#include <Core/GameTypes.h>
+#include <Core/ImageData.h>
+#include <Core/PerfStats.h>
+#include <Core/RunningAverage.h>
+#include <Core/ThreadManager.h>
+#include <Core/Vectors.h>
 
 #include <list>
 #include <memory>
@@ -40,7 +43,7 @@ public:
         ShipId id,
         World & parentWorld,
         MaterialDatabase const & materialDatabase,
-        std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
+        std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher,
         Points && points,
         Springs && springs,
         Triangles && triangles,
@@ -85,12 +88,12 @@ public:
 
     bool ReplayRecordedEvent(
         RecordedEvent const & event,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void Update(
         float currentSimulationTime,
 		Storm::Parameters const & stormParameters,
-        GameParameters const & gameParameters,
+        SimulationParameters const & simulationParameters,
         StressRenderModeType stressRenderMode,
         Geometry::AABBSet & externalAabbSet,
         ThreadManager & threadManager,
@@ -98,7 +101,7 @@ public:
 
     void UpdateEnd();
 
-    void RenderUpload(Render::RenderContext & renderContext);
+    void RenderUpload(RenderContext & renderContext);
 
 public:
 
@@ -110,109 +113,109 @@ public:
 
     std::optional<ConnectedComponentId> PickConnectedComponentToMove(
         vec2f const & pickPosition,
-        GameParameters const & gameParameters) const;
+        SimulationParameters const & simulationParameters) const;
 
     void MoveBy(
         ConnectedComponentId connectedComponentId,
         vec2f const & moveOffset,
         vec2f const & inertialVelocity,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void MoveBy(
         vec2f const & moveOffset,
         vec2f const & inertialVelocity,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void RotateBy(
         ConnectedComponentId connectedComponentId,
         float angle,
         vec2f const & center,
         float inertialAngle,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void RotateBy(
         float angle,
         vec2f const & center,
         float inertialAngle,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void MoveGrippedBy(
         vec2f const & gripCenter,
         float const gripRadius,
         vec2f const & moveOffset,
         vec2f const & inertialVelocity,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void RotateGrippedBy(
         vec2f const & gripCenter,
         float const gripRadius,
         float angle,
         float inertialAngle,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
-    void EndMoveGrippedBy(GameParameters const & gameParameters);
+    void EndMoveGrippedBy(SimulationParameters const & simulationParameters);
 
     std::optional<ElementIndex> PickObjectForPickAndPull(
         vec2f const & pickPosition,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void Pull(
         ElementIndex pointElementIndex,
         vec2f const & target,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     bool DestroyAt(
         vec2f const & targetPos,
         float radius,
         SessionId const & sessionId,
         float currentSimulationTime,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void RepairAt(
         vec2f const & targetPos,
         float radiusMultiplier,
         SequenceNumber repairStepId,
         float currentSimulationTime,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     bool SawThrough(
         vec2f const & startPos,
         vec2f const & endPos,
         bool isFirstSegment,
         float currentSimulationTime,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     bool ApplyHeatBlasterAt(
         vec2f const & targetPos,
         HeatBlasterActionType action,
         float radius,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     bool ExtinguishFireAt(
         vec2f const & targetPos,
         float strengthMultiplier,
         float radius,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void ApplyBlastAt(
         vec2f const & targetPos,
         float radius,
         float forceMagnitude,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     bool ApplyElectricSparkAt(
         vec2f const & targetPos,
         std::uint64_t counter,
         float lengthMultiplier,
         float currentSimulationTime,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     bool ApplyLaserCannonThrough(
         vec2f const & startPos,
         vec2f const & endPos,
         float strength,
         float currentSimulationTime,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void DrawTo(
         vec2f const & targetPos,
@@ -224,66 +227,66 @@ public:
 
     bool TogglePinAt(
         vec2f const & targetPos,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void RemoveAllPins();
 
     std::optional<ToolApplicationLocus> InjectBubblesAt(
         vec2f const & targetPos,
         float currentSimulationTime,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     std::optional<ToolApplicationLocus> InjectPressureAt(
         vec2f const & targetPos,
         float pressureQuantityMultiplier,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     bool FloodAt(
         vec2f const & targetPos,
         float waterQuantityMultiplier,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     bool ToggleAntiMatterBombAt(
         vec2f const & targetPos,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     bool ToggleFireExtinguishingBombAt(
         vec2f const & targetPos,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     bool ToggleImpactBombAt(
         vec2f const & targetPos,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     std::optional<bool> TogglePhysicsProbeAt(
         vec2f const & targetPos,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void RemovePhysicsProbe();
 
     bool ToggleRCBombAt(
         vec2f const & targetPos,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     bool ToggleTimerBombAt(
         vec2f const & targetPos,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void DetonateRCBombs(
         float currentSimulationTime,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void DetonateAntiMatterBombs();
 
     bool ScrubThrough(
         vec2f const & startPos,
         vec2f const & endPos,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     bool RotThrough(
         vec2f const & startPos,
         vec2f const & endPos,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void ApplyThanosSnap(
         float centerX,
@@ -292,7 +295,7 @@ public:
         float rightFrontX,
         bool isSparseMode,
         float currentSimulationTime,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     ElementIndex GetNearestPointAt(
         vec2f const & targetPos,
@@ -307,19 +310,19 @@ public:
 	void ApplyLightning(
 		vec2f const & targetPos,
 		float currentSimulationTime,
-		GameParameters const & gameParameters);
+		SimulationParameters const & simulationParameters);
 
     void HighlightElectricalElement(GlobalElectricalElementId electricalElementId);
 
     void SetSwitchState(
         GlobalElectricalElementId electricalElementId,
         ElectricalState switchState,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void SetEngineControllerState(
         GlobalElectricalElementId electricalElementId,
         float controllerValue,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void SpawnAirBubble(
         vec2f const & position,
@@ -327,7 +330,7 @@ public:
         float temperature,
         float currentSimulationTime,
         PlaneId planeId,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     bool DestroyTriangle(ElementIndex triangleIndex);
 
@@ -462,7 +465,7 @@ private:
 
     std::list<Interaction> mQueuedInteractions;
 
-    void ApplyBlastAt(Interaction::ArgumentsUnion::BlastArguments const & args, GameParameters const & gameParameters);
+    void ApplyBlastAt(Interaction::ArgumentsUnion::BlastArguments const & args, SimulationParameters const & simulationParameters);
 
     void DrawTo(Interaction::ArgumentsUnion::DrawArguments const & args);
 
@@ -478,45 +481,45 @@ private:
 
     // Mechanical
 
-    void ApplyQueuedInteractionForces(GameParameters const & gameParameters);
+    void ApplyQueuedInteractionForces(SimulationParameters const & simulationParameters);
 
     void ApplyWorldForces(
         float effectiveAirDensity,
         float effectiveWaterDensity,
-        GameParameters const & gameParameters,
+        SimulationParameters const & simulationParameters,
         Geometry::AABBSet & externalAabbSet);
 
     void ApplyWorldParticleForces(
         float effectiveAirDensity,
         float effectiveWaterDensity,
         Buffer<float> & newCachedPointDepths,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     template<bool DoDisplaceWater>
     void ApplyWorldSurfaceForces(
         float effectiveAirDensity,
         float effectiveWaterDensity,
         Buffer<float> & newCachedPointDepths,
-        GameParameters const & gameParameters,
+        SimulationParameters const & simulationParameters,
         Geometry::AABBSet & externalAabbSet);
 
     void ApplyStaticPressureForces(
         float effectiveAirDensity,
         float effectiveWaterDensity,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void ApplyStaticPressureForces(
         Frontiers::Frontier const & frontier,
         float effectiveAirDensity,
         float effectiveWaterDensity,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
-    void RecalculateSpringRelaxationParallelism(size_t simulationParallelism, GameParameters const & gameParameters);
+    void RecalculateSpringRelaxationParallelism(size_t simulationParallelism, SimulationParameters const & simulationParameters);
     void RecalculateSpringRelaxationSpringForcesParallelism(size_t simulationParallelism);
-    void RecalculateSpringRelaxationIntegrationAndSeaFloorCollisionParallelism(size_t simulationParallelism, GameParameters const & gameParameters);
+    void RecalculateSpringRelaxationIntegrationAndSeaFloorCollisionParallelism(size_t simulationParallelism, SimulationParameters const & simulationParameters);
 
     void RunSpringRelaxationAndDynamicForcesIntegration(
-        GameParameters const & gameParameters,
+        SimulationParameters const & simulationParameters,
         ThreadManager & threadManager);
 
     void ApplySpringsForces(
@@ -527,21 +530,21 @@ private:
     inline void IntegrateAndResetDynamicForces(
         ElementIndex startPointIndex,
         ElementIndex endPointIndex,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
-    inline float CalculateIntegrationVelocityFactor(float dt, GameParameters const & gameParameters) const;
-    inline void IntegrateAndResetDynamicForces_1(ElementIndex startPointIndex, ElementIndex endPointIndex, GameParameters const & gameParameters);
-    inline void IntegrateAndResetDynamicForces_2(ElementIndex startPointIndex, ElementIndex endPointIndex, GameParameters const & gameParameters);
-    inline void IntegrateAndResetDynamicForces_3(ElementIndex startPointIndex, ElementIndex endPointIndex, GameParameters const & gameParameters);
-    inline void IntegrateAndResetDynamicForces_4(ElementIndex startPointIndex, ElementIndex endPointIndex, GameParameters const & gameParameters);
-    inline void IntegrateAndResetDynamicForces_N(size_t parallelism, ElementIndex startPointIndex, ElementIndex endPointIndex, GameParameters const & gameParameters);
+    inline float CalculateIntegrationVelocityFactor(float dt, SimulationParameters const & simulationParameters) const;
+    inline void IntegrateAndResetDynamicForces_1(ElementIndex startPointIndex, ElementIndex endPointIndex, SimulationParameters const & simulationParameters);
+    inline void IntegrateAndResetDynamicForces_2(ElementIndex startPointIndex, ElementIndex endPointIndex, SimulationParameters const & simulationParameters);
+    inline void IntegrateAndResetDynamicForces_3(ElementIndex startPointIndex, ElementIndex endPointIndex, SimulationParameters const & simulationParameters);
+    inline void IntegrateAndResetDynamicForces_4(ElementIndex startPointIndex, ElementIndex endPointIndex, SimulationParameters const & simulationParameters);
+    inline void IntegrateAndResetDynamicForces_N(size_t parallelism, ElementIndex startPointIndex, ElementIndex endPointIndex, SimulationParameters const & simulationParameters);
 
     void HandleCollisionsWithSeaFloor(
         ElementIndex startPointIndex,
         ElementIndex endPointIndex,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
-    void TrimForWorldBounds(GameParameters const & gameParameters);
+    void TrimForWorldBounds(SimulationParameters const & simulationParameters);
 
     // Pressure and water
 
@@ -550,13 +553,13 @@ private:
         float effectiveWaterDensity,
         float currentSimulationTime,
         Storm::Parameters const & stormParameters,
-        GameParameters const & gameParameters,
+        SimulationParameters const & simulationParameters,
         float & waterTakenInStep);
 
-    void EqualizeInternalPressure(GameParameters const & gameParameters);
+    void EqualizeInternalPressure(SimulationParameters const & simulationParameters);
 
     void UpdateWaterVelocities(
-        GameParameters const & gameParameters,
+        SimulationParameters const & simulationParameters,
         float & waterSplashed);
 
     void UpdateSinking(float currentSimulationTime);
@@ -566,7 +569,7 @@ private:
     void RecalculateLightDiffusionParallelism(size_t simulationParallelism);
 
     void DiffuseLight(
-        GameParameters const & gameParameters,
+        SimulationParameters const & simulationParameters,
         ThreadManager & threadManager);
 
     // Heat
@@ -575,7 +578,7 @@ private:
         float currentSimulationTime,
         float dt,
 		Storm::Parameters const & stormParameters,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     // Misc
 
@@ -583,13 +586,13 @@ private:
         ElementIndex partition,
         ElementIndex partitionCount,
         float currentSimulationTime,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void UpdateStateMachines(
         float currentSimulationTime,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
-    void UploadStateMachines(Render::RenderContext & renderContext);
+    void UploadStateMachines(RenderContext & renderContext);
 
 private:
 
@@ -600,7 +603,7 @@ private:
     /////////////////////////////////////////////////////////////////////////
 
     inline void UpdateForSimulationParallelism(
-        GameParameters const & gameParameters,
+        SimulationParameters const & simulationParameters,
         ThreadManager & threadManager);
 
     void RunConnectivityVisit();
@@ -626,25 +629,25 @@ private:
         float temperature,
         float currentSimulationTime,
         PlaneId planeId,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void InternalSpawnDebris(
         ElementIndex sourcePointElementIndex,
         StructuralMaterial const & debrisStructuralMaterial,
         float currentSimulationTime,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     void InternalSpawnSparklesForCut(
         ElementIndex springElementIndex,
         vec2f const & cutDirectionStartPos,
         vec2f const & cutDirectionEndPos,
         float currentSimulationTime,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
 	void InternalSpawnSparklesForLightning(
 		ElementIndex pointElementIndex,
 		float currentSimulationTime,
-		GameParameters const & gameParameters);
+		SimulationParameters const & simulationParameters);
 
     inline size_t GetPointConnectedComponentSize(ElementIndex pointIndex) const noexcept
     {
@@ -659,7 +662,7 @@ private:
         ElementIndex pointIndex,
         vec2f const & detachVelocity,
         float currentSimulationTime,
-        GameParameters const & gameParameters)
+        SimulationParameters const & simulationParameters)
     {
         mPoints.Detach(
             pointIndex,
@@ -667,7 +670,7 @@ private:
             Points::DetachOptions::GenerateDebris
             | Points::DetachOptions::FireDestroyEvent,
             currentSimulationTime,
-            gameParameters);
+            simulationParameters);
     }
 
 public:
@@ -681,7 +684,7 @@ public:
         bool generateDebris,
         bool fireDestroyEvent,
         float currentSimulationTime,
-        GameParameters const & gameParameters) override;
+        SimulationParameters const & simulationParameters) override;
 
     void HandlePointDamaged(ElementIndex pointElementIndex) override;
 
@@ -696,11 +699,11 @@ public:
         ElementIndex springElementIndex,
         bool destroyAllTriangles,
         float currentSimulationTime,
-        GameParameters const & gameParameters) override;
+        SimulationParameters const & simulationParameters) override;
 
     void HandleSpringRestore(
         ElementIndex springElementIndex,
-        GameParameters const & gameParameters) override;
+        SimulationParameters const & simulationParameters) override;
 
     void HandleTriangleDestroy(ElementIndex triangleElementIndex) override;
 
@@ -711,7 +714,7 @@ public:
         ElementIndex pointIndex,
         ElectricalElementDestroySpecializationType specialization,
         float currentSimulationTime,
-        GameParameters const & gameParameters) override;
+        SimulationParameters const & simulationParameters) override;
 
     void HandleElectricalElementRestore(ElementIndex electricalElementIndex) override;
 
@@ -725,23 +728,23 @@ public:
         float blastHeatRadius,
         float renderRadiusOffset,
         ExplosionType explosionType,
-        GameParameters const & gameParameters) override;
+        SimulationParameters const & simulationParameters) override;
 
     void DoAntiMatterBombPreimplosion(
         vec2f const & centerPosition,
         float sequenceProgress,
         float radius,
-        GameParameters const & gameParameters) override;
+        SimulationParameters const & simulationParameters) override;
 
     void DoAntiMatterBombImplosion(
         vec2f const & centerPosition,
         float sequenceProgress,
-        GameParameters const & gameParameters) override;
+        SimulationParameters const & simulationParameters) override;
 
     void DoAntiMatterBombExplosion(
         vec2f const & centerPosition,
         float sequenceProgress,
-        GameParameters const & gameParameters) override;
+        SimulationParameters const & simulationParameters) override;
 
     void HandleWatertightDoorUpdated(
         ElementIndex pointElementIndex,
@@ -751,7 +754,7 @@ public:
         ElementIndex pointElementIndex,
         float strength,
         float currentSimulationTime,
-        GameParameters const & gameParameters) override;
+        SimulationParameters const & simulationParameters) override;
 
 private:
 
@@ -789,18 +792,18 @@ private:
     inline bool UpdateExplosionStateMachine(
         ExplosionStateMachine & explosionStateMachine,
         float currentSimulationTime,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     template<bool DoExtinguishFire, bool DoDetachNearestPoint>
     inline void InternalUpdateExplosionStateMachine(
         ExplosionStateMachine & explosionStateMachine,
         float explosionBlastForceProgress,
         float currentSimulationTime,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     inline void UploadExplosionStateMachine(
         ExplosionStateMachine const & explosionStateMachine,
-        Render::RenderContext & renderContext);
+        RenderContext & renderContext);
 
     std::list<std::unique_ptr<StateMachine>> mStateMachines;
 
@@ -820,21 +823,21 @@ private:
         float squareSearchRadius,
         SequenceNumber repairStepId,
         float currentSimulationTime,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
     bool RepairFromAttractor(
         ElementIndex attractorPointIndex,
         float repairStrength,
         SequenceNumber repairStepId,
         float currentSimulationTime,
-        GameParameters const & gameParameters);
+        SimulationParameters const & simulationParameters);
 
 private:
 
     ShipId const mId;
     World & mParentWorld;
     MaterialDatabase const & mMaterialDatabase;
-    std::shared_ptr<GameEventDispatcher> mGameEventHandler;
+    std::shared_ptr<SimulationEventDispatcher> mSimulationEventHandler;
     EventRecorder * mEventRecorder;
 
     // All the ship elements - never removed, the repositories maintain their own size forever

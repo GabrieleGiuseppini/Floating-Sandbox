@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #include "Physics.h"
 
-#include <GameCore/GameRandomEngine.h>
+#include <Core/GameRandomEngine.h>
 
 #include <algorithm>
 #include <cassert>
@@ -32,7 +32,7 @@ bool ShipElectricSparks::ApplySparkAt(
     float currentSimulationTime,
     Points const & points,
     Springs const & springs,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     //
     // Find closest point, and check whether there _is_ actually a closest point
@@ -61,7 +61,7 @@ bool ShipElectricSparks::ApplySparkAt(
             currentSimulationTime,
             points,
             springs,
-            gameParameters);
+            simulationParameters);
 
         return true;
     }
@@ -85,7 +85,7 @@ void ShipElectricSparks::Update()
 void ShipElectricSparks::Upload(
     Points const & points,
     ShipId shipId,
-    Render::RenderContext & renderContext) const
+    RenderContext & renderContext) const
 {
     auto & shipRenderContext = renderContext.GetShipRenderContext(shipId);
 
@@ -120,7 +120,7 @@ void ShipElectricSparks::PropagateSparks(
     float currentSimulationTime,
     Points const & points,
     Springs const & springs,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     //
     // This algorithm works by running a number of "expansions" at each iteration,
@@ -138,7 +138,7 @@ void ShipElectricSparks::PropagateSparks(
     float const maxEquivalentPathLength =
         17.0f // Magic number: max length of arc without tool modifier and default settings
         * lengthMultiplier
-        * (gameParameters.IsUltraViolentMode ? 2.0f : 1.0f);
+        * (simulationParameters.IsUltraViolentMode ? 2.0f : 1.0f);
 
     // The information associated with a point that the next expansion will start from
     struct SparkPointToVisit
@@ -209,7 +209,7 @@ void ShipElectricSparks::PropagateSparks(
         initialPointIndex,
         initialPointSize, // strength
         currentSimulationTime,
-        gameParameters);
+        simulationParameters);
 
     mPointElectrificationCounter[initialPointIndex] = counter;
 
@@ -294,7 +294,7 @@ void ShipElectricSparks::PropagateSparks(
                 targetEndpointIndex,
                 endSize, // strength
                 currentSimulationTime,
-                gameParameters);
+                simulationParameters);
 
             // Remember the point is electrified now
             assert(mPointElectrificationCounter[targetEndpointIndex] != counter);
@@ -528,7 +528,7 @@ void ShipElectricSparks::PropagateSparks(
                         targetEndpointIndex,
                         startSize, // strength
                         currentSimulationTime,
-                        gameParameters);
+                        simulationParameters);
 
                     // Remember this point is not electrified
                     mPointElectrificationCounter[targetEndpointIndex] = counter;

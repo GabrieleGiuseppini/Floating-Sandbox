@@ -4,8 +4,8 @@
  * Copyright:			Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
  ***************************************************************************************/
 
-#include <GameCore/GameRandomEngine.h>
-#include <GameCore/GameTypes.h>
+#include <Core/GameRandomEngine.h>
+#include <Core/GameTypes.h>
 
 namespace Physics {
 

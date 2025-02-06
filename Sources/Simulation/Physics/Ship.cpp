@@ -7,14 +7,14 @@
 
 #include "Ship_StateMachines.h"
 
-#include <GameCore/AABB.h>
-#include <GameCore/Algorithms.h>
-#include <GameCore/Conversions.h>
-#include <GameCore/GameDebug.h>
-#include <GameCore/GameMath.h>
-#include <GameCore/GameRandomEngine.h>
-#include <GameCore/Log.h>
-#include <GameCore/SysSpecifics.h>
+#include <Core/AABB.h>
+#include <Core/Algorithms.h>
+#include <Core/Conversions.h>
+#include <Core/GameDebug.h>
+#include <Core/GameMath.h>
+#include <Core/GameRandomEngine.h>
+#include <Core/Log.h>
+#include <Core/SysSpecifics.h>
 
 #include <algorithm>
 #include <array>
@@ -52,7 +52,7 @@ static int constexpr CombustionStateMachineSlowStep4 = 29;
 static int constexpr SpringDecayAndTemperatureStep4 = 32;
 static int constexpr RotPointsStep4 = 35;
 
-static_assert(RotPointsStep4 < GameParameters::ParticleUpdateLowFrequencyPeriod);
+static_assert(RotPointsStep4 < SimulationParameters::ParticleUpdateLowFrequencyPeriod);
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -74,7 +74,7 @@ Ship::Ship(
     ShipId id,
     World & parentWorld,
     MaterialDatabase const & materialDatabase,
-    std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
+    std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher,
     Points && points,
     Springs && springs,
     Triangles && triangles,
@@ -84,7 +84,7 @@ Ship::Ship(
     : mId(id)
     , mParentWorld(parentWorld)
     , mMaterialDatabase(materialDatabase)
-    , mGameEventHandler(std::move(gameEventDispatcher))
+    , mSimulationEventHandler(std::move(simulationEventDispatcher))
     , mEventRecorder(nullptr)
     , mPoints(std::move(points))
     , mSprings(std::move(springs))
@@ -94,12 +94,12 @@ Ship::Ship(
     , mInteriorTextureImage(std::move(interiorTextureImage))
     , mPinnedPoints(
         mParentWorld,
-        mGameEventHandler,
+        mSimulationEventHandler,
         mPoints)
     , mGadgets(
         mParentWorld,
         mId,
-        mGameEventHandler,
+        mSimulationEventHandler,
         *this,
         mPoints,
         mSprings)
@@ -191,7 +191,7 @@ void Ship::SetEventRecorder(EventRecorder * eventRecorder)
 
 bool Ship::ReplayRecordedEvent(
     RecordedEvent const & event,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     if (event.GetType() == RecordedEvent::RecordedEventType::PointDetachForDestroy)
     {
@@ -201,7 +201,7 @@ bool Ship::ReplayRecordedEvent(
             detachEvent.GetPointIndex(),
             detachEvent.GetDetachVelocity(),
             detachEvent.GetSimulationTime(),
-            gameParameters);
+            simulationParameters);
     }
 
     return false;
@@ -210,7 +210,7 @@ bool Ship::ReplayRecordedEvent(
 void Ship::Update(
     float currentSimulationTime,
     Storm::Parameters const & stormParameters,
-    GameParameters const & gameParameters,
+    SimulationParameters const & simulationParameters,
     StressRenderModeType stressRenderMode,
     Geometry::AABBSet & externalAabbSet,
     ThreadManager & threadManager,
@@ -244,17 +244,17 @@ void Ship::Update(
     ///////////////////////////////////////////////////////////////////
 
     mPoints.UpdateForGameParameters(
-        gameParameters);
+        simulationParameters);
 
     mSprings.UpdateForGameParameters(
-        gameParameters,
+        simulationParameters,
         mPoints);
 
     mElectricalElements.UpdateForGameParameters(
-        gameParameters);
+        simulationParameters);
 
     UpdateForSimulationParallelism(
-        gameParameters,
+        simulationParameters,
         threadManager);
 
     ///////////////////////////////////////////////////////////////////
@@ -262,12 +262,12 @@ void Ship::Update(
     ///////////////////////////////////////////////////////////////////
 
     float const effectiveAirDensity = Formulae::CalculateAirDensity(
-        gameParameters.AirTemperature + stormParameters.AirTemperatureDelta,
-        gameParameters);
+        simulationParameters.AirTemperature + stormParameters.AirTemperatureDelta,
+        simulationParameters);
 
     float const effectiveWaterDensity = Formulae::CalculateWaterDensity(
-        gameParameters.WaterTemperature,
-        gameParameters);
+        simulationParameters.WaterTemperature,
+        simulationParameters);
 
     ///////////////////////////////////////////////////////////////////
     // Recalculate current masses and everything else that derives from them
@@ -275,7 +275,7 @@ void Ship::Update(
 
     // - Inputs: Water, AugmentedMaterialMass
     // - Outputs: Mass
-    mPoints.UpdateMasses(gameParameters);
+    mPoints.UpdateMasses(simulationParameters);
 
     ///////////////////////////////////////////////////////////////////
     // Run spring relaxation iterations, together with integration
@@ -285,9 +285,9 @@ void Ship::Update(
     {
         auto const springsStartTime = std::chrono::steady_clock::now();
 
-        RunSpringRelaxationAndDynamicForcesIntegration(gameParameters, threadManager);
+        RunSpringRelaxationAndDynamicForcesIntegration(simulationParameters, threadManager);
 
-        perfStats.TotalShipsSpringsUpdateDuration.Update(std::chrono::steady_clock::now() - springsStartTime);
+        perfStats.Update<PerfMeasurement::TotalShipsSpringsUpdate>(std::chrono::steady_clock::now() - springsStartTime);
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -296,7 +296,7 @@ void Ship::Update(
 
     // - Inputs: Position
     // - Outputs: Position, Velocity
-    TrimForWorldBounds(gameParameters);
+    TrimForWorldBounds(simulationParameters);
 
     // We're done with changing positions for the rest of the Update() loop
 #ifdef _DEBUG
@@ -324,7 +324,7 @@ void Ship::Update(
     // - Fires events, updates frontiers
     mSprings.UpdateForStrains(
         currentSimulationTime,
-        gameParameters,
+        simulationParameters,
         mPoints,
         stressRenderMode);
 
@@ -339,7 +339,7 @@ void Ship::Update(
     // step
     ///////////////////////////////////////////////////////////////////
 
-    ApplyQueuedInteractionForces(gameParameters);
+    ApplyQueuedInteractionForces(simulationParameters);
 
     ///////////////////////////////////////////////////////////////////
     // Apply world forces
@@ -351,7 +351,7 @@ void Ship::Update(
     ApplyWorldForces(
         effectiveAirDensity,
         effectiveWaterDensity,
-        gameParameters,
+        simulationParameters,
         externalAabbSet);
 
     // Cached depths are valid from now on --------------------------->
@@ -363,33 +363,33 @@ void Ship::Update(
     // - Inputs: Position, Water, IsLeaking
     // - Output: Decay
 
-    if (mCurrentSimulationSequenceNumber.IsStepOf(RotPointsStep1, GameParameters::ParticleUpdateLowFrequencyPeriod))
+    if (mCurrentSimulationSequenceNumber.IsStepOf(RotPointsStep1, SimulationParameters::ParticleUpdateLowFrequencyPeriod))
     {
         RotPoints(
             0, 4,
             currentSimulationTime,
-            gameParameters);
+            simulationParameters);
     }
-    else if (mCurrentSimulationSequenceNumber.IsStepOf(RotPointsStep2, GameParameters::ParticleUpdateLowFrequencyPeriod))
+    else if (mCurrentSimulationSequenceNumber.IsStepOf(RotPointsStep2, SimulationParameters::ParticleUpdateLowFrequencyPeriod))
     {
         RotPoints(
             1, 4,
             currentSimulationTime,
-            gameParameters);
+            simulationParameters);
     }
-    else if (mCurrentSimulationSequenceNumber.IsStepOf(RotPointsStep3, GameParameters::ParticleUpdateLowFrequencyPeriod))
+    else if (mCurrentSimulationSequenceNumber.IsStepOf(RotPointsStep3, SimulationParameters::ParticleUpdateLowFrequencyPeriod))
     {
         RotPoints(
             2, 4,
             currentSimulationTime,
-            gameParameters);
+            simulationParameters);
     }
-    else if (mCurrentSimulationSequenceNumber.IsStepOf(RotPointsStep4, GameParameters::ParticleUpdateLowFrequencyPeriod))
+    else if (mCurrentSimulationSequenceNumber.IsStepOf(RotPointsStep4, SimulationParameters::ParticleUpdateLowFrequencyPeriod))
     {
         RotPoints(
             3, 4,
             currentSimulationTime,
-            gameParameters);
+            simulationParameters);
     }
 
     /////////////////////////////////////////////////////////////////
@@ -402,7 +402,7 @@ void Ship::Update(
         currentWallClockTime,
         currentSimulationTime,
         stormParameters,
-        gameParameters);
+        simulationParameters);
 
     ///////////////////////////////////////////////////////////////////
     // Update state machines
@@ -410,7 +410,7 @@ void Ship::Update(
 
     // - Outputs:   Non-spring forces, temperature
     //              Point Detach, Debris generation
-    UpdateStateMachines(currentSimulationTime, gameParameters);
+    UpdateStateMachines(currentSimulationTime, simulationParameters);
 
     /////////////////////////////////////////////////////////////////
     // Update water dynamics - may generate ephemeral particles
@@ -431,11 +431,11 @@ void Ship::Update(
             effectiveWaterDensity,
             currentSimulationTime,
             stormParameters,
-            gameParameters,
+            simulationParameters,
             waterTakenInStep);
 
         // Notify intaken water
-        mGameEventHandler->OnWaterTaken(waterTakenInStep);
+        mSimulationEventHandler->OnWaterTaken(waterTakenInStep);
     }
 
     ///////////////////////////////
@@ -455,10 +455,10 @@ void Ship::Update(
 
             // - Inputs: Position, Water, WaterVelocity, WaterMomentum, ConnectedSprings
             // - Outpus: Water, WaterVelocity, WaterMomentum
-            UpdateWaterVelocities(gameParameters, waterSplashedInStep);
+            UpdateWaterVelocities(simulationParameters, waterSplashedInStep);
 
             // Notify
-            mGameEventHandler->OnWaterSplashed(waterSplashedInStep);
+            mSimulationEventHandler->OnWaterSplashed(waterSplashedInStep);
         });
 
     parallelTasks.emplace_back(
@@ -470,20 +470,20 @@ void Ship::Update(
 
             // - Inputs: InternalPressure, ConnectedSprings
             // - Outpus: InternalPressure
-            EqualizeInternalPressure(gameParameters);
+            EqualizeInternalPressure(simulationParameters);
 
             //
             // Apply static pressure forces (Cost: 10)
             //
 
-            if (gameParameters.StaticPressureForceAdjustment > 0.0f)
+            if (simulationParameters.StaticPressureForceAdjustment > 0.0f)
             {
                 // - Inputs: frontiers, P.Position, P.InternalPressure
                 // - Outputs: P.DynamicForces
                 ApplyStaticPressureForces(
                     effectiveAirDensity,
                     effectiveWaterDensity,
-                    gameParameters);
+                    simulationParameters);
             }
 
             //
@@ -494,15 +494,15 @@ void Ship::Update(
             // - Outputs: P.Temperature
             PropagateHeat(
                 currentSimulationTime,
-                GameParameters::SimulationStepTimeDuration<float>,
+                SimulationParameters::SimulationStepTimeDuration<float>,
                 stormParameters,
-                gameParameters);
+                simulationParameters);
         });
 
     threadManager.GetSimulationThreadPool().RunAndClear(parallelTasks);
 
     // Publish static pressure stats
-    mGameEventHandler->OnStaticPressureUpdated(
+    mSimulationEventHandler->OnStaticPressureUpdated(
         mStaticPressureNetForceMagnitudeCount != 0.0f ? mStaticPressureNetForceMagnitudeSum / mStaticPressureNetForceMagnitudeCount : 0.0f,
         mStaticPressureIterationsCount != 0.0f ? mStaticPressureIterationsPercentagesSum / mStaticPressureIterationsCount : 0.0f);
 
@@ -514,7 +514,7 @@ void Ship::Update(
     // Run sinking/unsinking detection
     //
 
-    if (mCurrentSimulationSequenceNumber.IsStepOf(UpdateSinkingStep, GameParameters::ParticleUpdateLowFrequencyPeriod))
+    if (mCurrentSimulationSequenceNumber.IsStepOf(UpdateSinkingStep, SimulationParameters::ParticleUpdateLowFrequencyPeriod))
     {
         UpdateSinking(currentSimulationTime);
     }
@@ -539,7 +539,7 @@ void Ship::Update(
         effectiveAirDensity,
         effectiveWaterDensity,
         stormParameters,
-        gameParameters);
+        simulationParameters);
 
     //
     // Diffuse light
@@ -549,14 +549,14 @@ void Ship::Update(
     //      - EL.AvailableLight depends on electricals which depend on water
     // - Outputs: P.Light
     DiffuseLight(
-        gameParameters,
+        simulationParameters,
         threadManager);
 
     //
     // Update slow combustion state machine
     //
 
-    if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowStep1, GameParameters::ParticleUpdateLowFrequencyPeriod))
+    if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowStep1, SimulationParameters::ParticleUpdateLowFrequencyPeriod))
     {
         mPoints.UpdateCombustionLowFrequency(
             0,
@@ -564,9 +564,9 @@ void Ship::Update(
             currentWallClockTimeFloat,
             currentSimulationTime,
             stormParameters,
-            gameParameters);
+            simulationParameters);
     }
-    else if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowStep2, GameParameters::ParticleUpdateLowFrequencyPeriod))
+    else if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowStep2, SimulationParameters::ParticleUpdateLowFrequencyPeriod))
     {
         mPoints.UpdateCombustionLowFrequency(
             1,
@@ -574,9 +574,9 @@ void Ship::Update(
             currentWallClockTimeFloat,
             currentSimulationTime,
             stormParameters,
-            gameParameters);
+            simulationParameters);
     }
-    else if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowStep3, GameParameters::ParticleUpdateLowFrequencyPeriod))
+    else if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowStep3, SimulationParameters::ParticleUpdateLowFrequencyPeriod))
     {
         mPoints.UpdateCombustionLowFrequency(
             2,
@@ -584,9 +584,9 @@ void Ship::Update(
             currentWallClockTimeFloat,
             currentSimulationTime,
             stormParameters,
-            gameParameters);
+            simulationParameters);
     }
-    else if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowStep4, GameParameters::ParticleUpdateLowFrequencyPeriod))
+    else if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowStep4, SimulationParameters::ParticleUpdateLowFrequencyPeriod))
     {
         mPoints.UpdateCombustionLowFrequency(
             3,
@@ -594,7 +594,7 @@ void Ship::Update(
             currentWallClockTimeFloat,
             currentSimulationTime,
             stormParameters,
-            gameParameters);
+            simulationParameters);
     }
 
     //
@@ -603,10 +603,10 @@ void Ship::Update(
 
     mPoints.UpdateCombustionHighFrequency(
         currentSimulationTime,
-        GameParameters::SimulationStepTimeDuration<float>,
+        SimulationParameters::SimulationStepTimeDuration<float>,
         mParentWorld.GetCurrentWindSpeed(),
         mParentWorld.GetCurrentRadialWindField(),
-        gameParameters);
+        simulationParameters);
 
     //
     // Update highlights
@@ -624,25 +624,25 @@ void Ship::Update(
     // Update spring parameters
     ///////////////////////////////////////////////////////////////////
 
-    if (mCurrentSimulationSequenceNumber.IsStepOf(SpringDecayAndTemperatureStep1, GameParameters::ParticleUpdateLowFrequencyPeriod))
+    if (mCurrentSimulationSequenceNumber.IsStepOf(SpringDecayAndTemperatureStep1, SimulationParameters::ParticleUpdateLowFrequencyPeriod))
     {
         mSprings.UpdateForDecayAndTemperature(
             0, 4,
             mPoints);
     }
-    else if (mCurrentSimulationSequenceNumber.IsStepOf(SpringDecayAndTemperatureStep2, GameParameters::ParticleUpdateLowFrequencyPeriod))
+    else if (mCurrentSimulationSequenceNumber.IsStepOf(SpringDecayAndTemperatureStep2, SimulationParameters::ParticleUpdateLowFrequencyPeriod))
     {
         mSprings.UpdateForDecayAndTemperature(
             1, 4,
             mPoints);
     }
-    else if (mCurrentSimulationSequenceNumber.IsStepOf(SpringDecayAndTemperatureStep3, GameParameters::ParticleUpdateLowFrequencyPeriod))
+    else if (mCurrentSimulationSequenceNumber.IsStepOf(SpringDecayAndTemperatureStep3, SimulationParameters::ParticleUpdateLowFrequencyPeriod))
     {
         mSprings.UpdateForDecayAndTemperature(
             2, 4,
             mPoints);
     }
-    else if (mCurrentSimulationSequenceNumber.IsStepOf(SpringDecayAndTemperatureStep4, GameParameters::ParticleUpdateLowFrequencyPeriod))
+    else if (mCurrentSimulationSequenceNumber.IsStepOf(SpringDecayAndTemperatureStep4, SimulationParameters::ParticleUpdateLowFrequencyPeriod))
     {
         mSprings.UpdateForDecayAndTemperature(
             3, 4,
@@ -655,7 +655,7 @@ void Ship::Update(
 
     mPoints.UpdateEphemeralParticles(
         currentSimulationTime,
-        gameParameters);
+        simulationParameters);
 
     ///////////////////////////////////////////////////////////////////
     // Update cleanup
@@ -694,7 +694,7 @@ void Ship::UpdateEnd()
     mPoints.ResetIsElectrifiedBuffer();
 }
 
-void Ship::RenderUpload(Render::RenderContext & renderContext)
+void Ship::RenderUpload(RenderContext & renderContext)
 {
     //
     // Run all tasks that need to run when connectivity has changed
@@ -941,7 +941,7 @@ void Ship::Finalize()
 // Mechanical Dynamics
 ///////////////////////////////////////////////////////////////////////////////////
 
-void Ship::ApplyQueuedInteractionForces(GameParameters const & gameParameters)
+void Ship::ApplyQueuedInteractionForces(SimulationParameters const & simulationParameters)
 {
     for (auto const & interaction : mQueuedInteractions)
     {
@@ -949,7 +949,7 @@ void Ship::ApplyQueuedInteractionForces(GameParameters const & gameParameters)
         {
             case Interaction::InteractionType::Blast:
             {
-                ApplyBlastAt(interaction.Arguments.Blast, gameParameters);
+                ApplyBlastAt(interaction.Arguments.Blast, simulationParameters);
 
                 break;
             }
@@ -983,7 +983,7 @@ void Ship::ApplyQueuedInteractionForces(GameParameters const & gameParameters)
 void Ship::ApplyWorldForces(
     float effectiveAirDensity,
     float effectiveWaterDensity,
-    GameParameters const & gameParameters,
+    SimulationParameters const & simulationParameters,
     Geometry::AABBSet & externalAabbSet)
 {
     // New buffer to which new cached depths will be written to
@@ -993,16 +993,16 @@ void Ship::ApplyWorldForces(
     // Particle forces
     //
 
-    ApplyWorldParticleForces(effectiveAirDensity, effectiveWaterDensity, *newCachedPointDepths, gameParameters);
+    ApplyWorldParticleForces(effectiveAirDensity, effectiveWaterDensity, *newCachedPointDepths, simulationParameters);
 
     //
     // Surface forces
     //
 
-    if (gameParameters.DoDisplaceWater)
-        ApplyWorldSurfaceForces<true>(effectiveAirDensity, effectiveWaterDensity, *newCachedPointDepths, gameParameters, externalAabbSet);
+    if (simulationParameters.DoDisplaceWater)
+        ApplyWorldSurfaceForces<true>(effectiveAirDensity, effectiveWaterDensity, *newCachedPointDepths, simulationParameters, externalAabbSet);
     else
-        ApplyWorldSurfaceForces<false>(effectiveAirDensity, effectiveWaterDensity, *newCachedPointDepths, gameParameters, externalAabbSet);
+        ApplyWorldSurfaceForces<false>(effectiveAirDensity, effectiveWaterDensity, *newCachedPointDepths, simulationParameters, externalAabbSet);
 
     // Commit new particle depth buffer
     mPoints.SwapCachedDepthBuffer(*newCachedPointDepths);
@@ -1012,7 +1012,7 @@ void Ship::ApplyWorldParticleForces(
     float effectiveAirDensity,
     float effectiveWaterDensity,
     Buffer<float> & newCachedPointDepths,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     // Global wind force
     vec2f const globalWindForce = Formulae::WindSpeedToForceDensity(
@@ -1021,13 +1021,13 @@ void Ship::ApplyWorldParticleForces(
 
     // Abovewater points feel this amount of air drag, due to friction
     float const airFrictionDragCoefficient =
-        GameParameters::AirFrictionDragCoefficient
-        * gameParameters.AirFrictionDragAdjustment;
+        SimulationParameters::AirFrictionDragCoefficient
+        * simulationParameters.AirFrictionDragAdjustment;
 
     // Underwater points feel this amount of water drag, due to friction
     float const waterFrictionDragCoefficient =
-        GameParameters::WaterFrictionDragCoefficient
-        * gameParameters.WaterFrictionDragAdjustment;
+        SimulationParameters::WaterFrictionDragCoefficient
+        * simulationParameters.WaterFrictionDragAdjustment;
 
     OceanSurface const & oceanSurface = mParentWorld.GetOceanSurface();
 
@@ -1064,7 +1064,7 @@ void Ship::ApplyWorldParticleForces(
         //
 
         staticForce +=
-            gameParameters.Gravity
+            simulationParameters.Gravity
             * mPoints.GetMass(pointIndex); // Material + Augmentation + Water
 
         //
@@ -1156,7 +1156,7 @@ void Ship::ApplyWorldSurfaceForces(
     float effectiveAirDensity,
     float effectiveWaterDensity,
     Buffer<float> & newCachedPointDepths,
-    GameParameters const & gameParameters,
+    SimulationParameters const & simulationParameters,
     Geometry::AABBSet & externalAabbSet)
 {
     float totalWaterDisplacementMagnitude = 0.0f;
@@ -1167,23 +1167,23 @@ void Ship::ApplyWorldSurfaceForces(
 
     // Abovewater points feel this amount of air drag, due to pressure
     float const airPressureDragCoefficient =
-        GameParameters::AirPressureDragCoefficient
-        * gameParameters.AirPressureDragAdjustment
-        * (effectiveAirDensity / GameParameters::AirMass);
+        SimulationParameters::AirPressureDragCoefficient
+        * simulationParameters.AirPressureDragAdjustment
+        * (effectiveAirDensity / SimulationParameters::AirMass);
 
     // Underwater points feel this amount of water drag, due to pressure
     float const waterPressureDragCoefficient =
-        GameParameters::WaterPressureDragCoefficient
-        * gameParameters.WaterPressureDragAdjustment
-        * (effectiveWaterDensity / GameParameters::WaterMass);
+        SimulationParameters::WaterPressureDragCoefficient
+        * simulationParameters.WaterPressureDragAdjustment
+        * (effectiveWaterDensity / SimulationParameters::WaterMass);
 
     //
     // Water impact constants
     //
 
     float const waterImpactForceCoefficient =
-        gameParameters.WaterImpactForceAdjustment
-        * (effectiveWaterDensity / GameParameters::WaterMass); // Denser water, denser impact
+        simulationParameters.WaterImpactForceAdjustment
+        * (effectiveWaterDensity / SimulationParameters::WaterMass); // Denser water, denser impact
 
     //
     // Water displacement constants
@@ -1194,8 +1194,8 @@ void Ship::ApplyWorldSurfaceForces(
 
     // Linear portion
     float const wdmLinearSlope =
-        GameParameters::SimulationStepTimeDuration<float> * 6.0f // Magic number
-        * gameParameters.WaterDisplacementWaveHeightAdjustment;
+        SimulationParameters::SimulationStepTimeDuration<float> * 6.0f // Magic number
+        * simulationParameters.WaterDisplacementWaveHeightAdjustment;
 
     // Quadratic portion: y = ax^2 + bx, with constraints:
     //  y(0) = 0
@@ -1293,7 +1293,7 @@ void Ship::ApplyWorldSurfaceForces(
                 // Max drag force magnitude: m * (V dot Nn) / dt
                 float const maxDragForceMagnitude =
                     mPoints.GetMass(thisPointIndex) * velocityMagnitudeAlongNormal
-                    / GameParameters::SimulationStepTimeDuration<float>;
+                    / SimulationParameters::SimulationStepTimeDuration<float>;
 
                 // Calculate drag coefficient: air or water, with soft transition
                 // to avoid discontinuities in drag force close to the air-water interface
@@ -1455,14 +1455,14 @@ void Ship::ApplyWorldSurfaceForces(
 
     if constexpr (DoDisplaceWater)
     {
-        mGameEventHandler->OnWaterDisplaced(totalWaterDisplacementMagnitude);
+        mSimulationEventHandler->OnWaterDisplaced(totalWaterDisplacementMagnitude);
     }
 }
 
 void Ship::ApplyStaticPressureForces(
     float effectiveAirDensity,
     float effectiveWaterDensity,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     //
     // At this moment, dynamic forces are all zero - we are the first populating those
@@ -1494,7 +1494,7 @@ void Ship::ApplyStaticPressureForces(
                 frontier,
                 effectiveAirDensity,
                 effectiveWaterDensity,
-                gameParameters);
+                simulationParameters);
         }
     }
 }
@@ -1503,7 +1503,7 @@ void Ship::ApplyStaticPressureForces(
     Frontiers::Frontier const & frontier,
     float effectiveAirDensity,
     float effectiveWaterDensity,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     //
     // The hydrostatic pressure force acting on point P, between edges
@@ -1549,7 +1549,7 @@ void Ship::ApplyStaticPressureForces(
         oceanSurfaceY,
         effectiveAirDensity,
         effectiveWaterDensity,
-        gameParameters);
+        simulationParameters);
 
     assert(totalExternalPressure != 0.0f); // Air pressure is never zero
 
@@ -1562,9 +1562,9 @@ void Ship::ApplyStaticPressureForces(
     float const hydrostaticPressureCounterbalanceAdjustmentFactor =
         1.0f / totalExternalPressure
         * (1.0f - SmoothStep(
-            GameParameters::HalfMaxWorldHeight,
-            GameParameters::HalfMaxWorldHeight * 2.0f,
-            depth + (1.0f - gameParameters.HydrostaticPressureCounterbalanceAdjustment) * GameParameters::HalfMaxWorldHeight * 2.0f) * Step(0.0f, depth));
+            SimulationParameters::HalfMaxWorldHeight,
+            SimulationParameters::HalfMaxWorldHeight * 2.0f,
+            depth + (1.0f - simulationParameters.HydrostaticPressureCounterbalanceAdjustment) * SimulationParameters::HalfMaxWorldHeight * 2.0f) * Step(0.0f, depth));
 
     //
     // 1. Calculate geometry of forces and populate interim buffer
@@ -1789,7 +1789,7 @@ void Ship::ApplyStaticPressureForces(
 
     float const forceMultiplier =
         totalExternalPressure
-        * gameParameters.StaticPressureForceAdjustment
+        * simulationParameters.StaticPressureForceAdjustment
         * mRepairGracePeriodMultiplier; // Static pressure hinders the repair process
 
     size_t const particleCount = mStaticPressureBuffer.GetCurrentPopulatedSize();
@@ -1804,7 +1804,7 @@ void Ship::ApplyStaticPressureForces(
 void Ship::HandleCollisionsWithSeaFloor(
     ElementIndex startPointIndex,
     ElementIndex endPointIndex,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     //
     // Note: this implementation of friction imparts directly displacement and velocity,
@@ -1812,12 +1812,12 @@ void Ship::HandleCollisionsWithSeaFloor(
     // independent from the force against the surface
     //
 
-    float const dt = gameParameters.MechanicalSimulationStepTimeDuration<float>();
+    float const dt = simulationParameters.MechanicalSimulationStepTimeDuration<float>();
 
     OceanFloor const & oceanFloor = mParentWorld.GetOceanFloor();
 
-    float const siltingFactor1 = gameParameters.OceanFloorSiltHardness;
-    float const siltingFactor2 = 1.0f - gameParameters.OceanFloorSiltHardness;
+    float const siltingFactor1 = simulationParameters.OceanFloorSiltHardness;
+    float const siltingFactor2 = 1.0f - simulationParameters.OceanFloorSiltHardness;
 
     for (ElementIndex pointIndex = startPointIndex; pointIndex < endPointIndex; ++pointIndex)
     {
@@ -1827,7 +1827,7 @@ void Ship::HandleCollisionsWithSeaFloor(
         //
         // At this moment the point might be outside of world boundaries,
         // so better clamp its x before sampling ocean floor height
-        float const clampedX = Clamp(position.x, -GameParameters::HalfMaxWorldWidth, GameParameters::HalfMaxWorldWidth);
+        float const clampedX = Clamp(position.x, -SimulationParameters::HalfMaxWorldWidth, SimulationParameters::HalfMaxWorldWidth);
         auto const [isUnderneathFloor, oceanFloorHeight, integralIndex] = oceanFloor.GetHeightIfUnderneathAt(clampedX, position.y);
         if (isUnderneathFloor)
         {
@@ -1906,17 +1906,17 @@ void Ship::HandleCollisionsWithSeaFloor(
     }
 }
 
-void Ship::TrimForWorldBounds(GameParameters const & gameParameters)
+void Ship::TrimForWorldBounds(SimulationParameters const & simulationParameters)
 {
-    float constexpr MaxWorldLeft = -GameParameters::HalfMaxWorldWidth;
-    float constexpr MaxWorldRight = GameParameters::HalfMaxWorldWidth;
+    float constexpr MaxWorldLeft = -SimulationParameters::HalfMaxWorldWidth;
+    float constexpr MaxWorldRight = SimulationParameters::HalfMaxWorldWidth;
 
-    float constexpr MaxWorldTop = GameParameters::HalfMaxWorldHeight;
-    float constexpr MaxWorldBottom = -GameParameters::HalfMaxWorldHeight;
+    float constexpr MaxWorldTop = SimulationParameters::HalfMaxWorldHeight;
+    float constexpr MaxWorldBottom = -SimulationParameters::HalfMaxWorldHeight;
 
     // Elasticity of the bounce against world boundaries
     //  - We use the ocean floor's elasticity for convenience
-    float const elasticity = gameParameters.OceanFloorElasticityCoefficient * gameParameters.ElasticityAdjustment;
+    float const elasticity = simulationParameters.OceanFloorElasticityCoefficient * simulationParameters.ElasticityAdjustment;
 
     // We clamp velocity to damp system instabilities at extreme events
     static constexpr float MaxBounceVelocity = 150.0f; // Magic number
@@ -1983,7 +1983,7 @@ void Ship::UpdatePressureAndWaterInflow(
     float effectiveWaterDensity,
     float currentSimulationTime,
     Storm::Parameters const & stormParameters,
-    GameParameters const & gameParameters,
+    SimulationParameters const & simulationParameters,
     float & waterTakenInStep)
 {
     //
@@ -1994,23 +1994,23 @@ void Ship::UpdatePressureAndWaterInflow(
     //
 
     // Multiplier to get internal pressure delta from water delta
-    float const volumetricWaterPressure = Formulae::CalculateVolumetricWaterPressure(gameParameters.WaterTemperature, gameParameters);
+    float const volumetricWaterPressure = Formulae::CalculateVolumetricWaterPressure(simulationParameters.WaterTemperature, simulationParameters);
 
     // Equivalent depth of a point when it's exposed to rain
     float const rainEquivalentWaterHeight =
         stormParameters.RainQuantity // m/h
         / 3600.0f // -> m/s
-        * GameParameters::SimulationStepTimeDuration<float> // -> m/step
-        * gameParameters.RainFloodAdjustment;
+        * SimulationParameters::SimulationStepTimeDuration<float> // -> m/step
+        * simulationParameters.RainFloodAdjustment;
 
     float const waterPumpPowerMultiplier =
-        gameParameters.WaterPumpPowerAdjustment
-        * (gameParameters.IsUltraViolentMode ? 20.0f : 1.0f);
+        simulationParameters.WaterPumpPowerAdjustment
+        * (simulationParameters.IsUltraViolentMode ? 20.0f : 1.0f);
 
-    bool const doGenerateAirBubbles = (gameParameters.AirBubblesDensity != 0.0f);
+    bool const doGenerateAirBubbles = (simulationParameters.AirBubblesDensity != 0.0f);
 
     float const cumulatedIntakenWaterThresholdForAirBubbles =
-        GameParameters::AirBubblesDensityToCumulatedIntakenWater(gameParameters.AirBubblesDensity);
+        SimulationParameters::AirBubblesDensityToCumulatedIntakenWater(simulationParameters.AirBubblesDensity);
 
     for (auto pointIndex : mPoints.RawShipPoints())
     {
@@ -2062,12 +2062,12 @@ void Ship::UpdatePressureAndWaterInflow(
                     if (externalWaterHeight >= internalWaterHeight)
                     {
                         // Incoming water
-                        incomingWaterVelocity_Structural = sqrtf(2.0f * GameParameters::GravityMagnitude * (externalWaterHeight - internalWaterHeight));
+                        incomingWaterVelocity_Structural = sqrtf(2.0f * SimulationParameters::GravityMagnitude * (externalWaterHeight - internalWaterHeight));
                     }
                     else
                     {
                         // Outgoing water
-                        incomingWaterVelocity_Structural = -sqrtf(2.0f * GameParameters::GravityMagnitude * (internalWaterHeight - externalWaterHeight));
+                        incomingWaterVelocity_Structural = -sqrtf(2.0f * SimulationParameters::GravityMagnitude * (internalWaterHeight - externalWaterHeight));
                     }
 
                     //
@@ -2078,9 +2078,9 @@ void Ship::UpdatePressureAndWaterInflow(
 
                     float deltaWater_Structural =
                         incomingWaterVelocity_Structural
-                        * GameParameters::SimulationStepTimeDuration<float>
+                        * SimulationParameters::SimulationStepTimeDuration<float>
                         * mPoints.GetMaterialWaterIntake(pointIndex)
-                        * gameParameters.WaterIntakeAdjustment;
+                        * simulationParameters.WaterIntakeAdjustment;
 
                     //
                     // 1.3) Update water
@@ -2118,7 +2118,7 @@ void Ship::UpdatePressureAndWaterInflow(
                         mPoints.GetPosition(pointIndex).y + pointDepth, // oceanSurfaceY
                         effectiveAirDensity,
                         effectiveWaterDensity,
-                        gameParameters);
+                        simulationParameters);
 
                     mPoints.SetInternalPressure(
                         pointIndex,
@@ -2188,11 +2188,11 @@ void Ship::UpdatePressureAndWaterInflow(
                     InternalSpawnAirBubble(
                         mPoints.GetPosition(pointIndex),
                         pointDepth,
-                        GameParameters::ShipAirBubbleFinalScale,
+                        SimulationParameters::ShipAirBubbleFinalScale,
                         mPoints.GetTemperature(pointIndex),
                         currentSimulationTime,
                         mPoints.GetPlaneId(pointIndex),
-                        gameParameters);
+                        simulationParameters);
                 }
 
                 // Consume all cumulated water
@@ -2211,10 +2211,10 @@ void Ship::UpdatePressureAndWaterInflow(
     }
 }
 
-void Ship::EqualizeInternalPressure(GameParameters const & /*gameParameters*/)
+void Ship::EqualizeInternalPressure(SimulationParameters const & /*simulationParameters*/)
 {
     // Local cache of indices of other endpoints
-    FixedSizeVector<ElementIndex, GameParameters::MaxSpringsPerPoint> otherEndpoints;
+    FixedSizeVector<ElementIndex, SimulationParameters::MaxSpringsPerPoint> otherEndpoints;
 
     //
     // For each (non-ephemeral) point, equalize its internal pressure with its
@@ -2302,7 +2302,7 @@ void Ship::EqualizeInternalPressure(GameParameters const & /*gameParameters*/)
 }
 
 void Ship::UpdateWaterVelocities(
-    GameParameters const & gameParameters,
+    SimulationParameters const & simulationParameters,
     float & waterSplashed)
 {
     //
@@ -2325,13 +2325,13 @@ void Ship::UpdateWaterVelocities(
     // Weights of outbound water flows along each spring, including impermeable ones;
     // set to zero for springs whose resultant scalar water velocities are
     // directed towards the point being visited
-    std::array<float, GameParameters::MaxSpringsPerPoint> springOutboundWaterFlowWeights;
+    std::array<float, SimulationParameters::MaxSpringsPerPoint> springOutboundWaterFlowWeights;
 
     // Total weight
     float totalOutboundWaterFlowWeight;
 
     // Resultant water velocities along each spring
-    std::array<vec2f, GameParameters::MaxSpringsPerPoint> springOutboundWaterVelocities;
+    std::array<vec2f, SimulationParameters::MaxSpringsPerPoint> springOutboundWaterVelocities;
 
     //
     // Precalculate point "freeness factors", i.e. how much each point's
@@ -2371,7 +2371,7 @@ void Ship::UpdateWaterVelocities(
         // WaterCrazyness=0   -> alpha=1
         // WaterCrazyness=0.5 -> alpha=0.5 + 0.5*Wh
         // WaterCrazyness=1   -> alpha=Wh
-        float const alphaCrazyness = 1.0f + gameParameters.WaterCrazyness * (oldPointWaterBufferData[pointIndex] - 1.0f);
+        float const alphaCrazyness = 1.0f + simulationParameters.WaterCrazyness * (oldPointWaterBufferData[pointIndex] - 1.0f);
 
         // Count of non-hull free and drowned neighbor points
         float pointSplashNeighbors = 0.0f;
@@ -2410,12 +2410,12 @@ void Ship::UpdateWaterVelocities(
             if (dwy >= 0.0f)
             {
                 // Gained velocity goes from point to other endpoint
-                bernoulliVelocityAlongSpring = sqrtf(2.0f * GameParameters::GravityMagnitude * dwy);
+                bernoulliVelocityAlongSpring = sqrtf(2.0f * SimulationParameters::GravityMagnitude * dwy);
             }
             else
             {
                 // Gained velocity goes from other endpoint to point
-                bernoulliVelocityAlongSpring = -sqrtf(2.0f * GameParameters::GravityMagnitude * -dwy);
+                bernoulliVelocityAlongSpring = -sqrtf(2.0f * SimulationParameters::GravityMagnitude * -dwy);
             }
 
             // Resultant scalar velocity along spring; outbound only, as
@@ -2466,7 +2466,7 @@ void Ship::UpdateWaterVelocities(
         {
             waterQuantityNormalizationFactor =
                 oldPointWaterBufferData[pointIndex]
-                * mPoints.GetMaterialWaterDiffusionSpeed(pointIndex) * gameParameters.WaterDiffusionSpeedAdjustment
+                * mPoints.GetMaterialWaterDiffusionSpeed(pointIndex) * simulationParameters.WaterDiffusionSpeedAdjustment
                 / totalOutboundWaterFlowWeight;
         }
 
@@ -2624,7 +2624,7 @@ void Ship::UpdateSinking(float currentSimulationTime)
         {
             // Started sinking
             mParentWorld.GetNpcs().OnShipStartedSinking(mId, currentSimulationTime); // Tell NPCs
-            mGameEventHandler->OnSinkingBegin(mId);
+            mSimulationEventHandler->OnSinkingBegin(mId);
             mIsSinking = true;
         }
     }
@@ -2633,7 +2633,7 @@ void Ship::UpdateSinking(float currentSimulationTime)
         if (wetPointCount < mPoints.GetRawShipPointCount() * 1 / 10 + mPoints.GetTotalFactoryWetPoints()) // Low watermark
         {
             // Stopped sinking
-            mGameEventHandler->OnSinkingEnd(mId);
+            mSimulationEventHandler->OnSinkingEnd(mId);
             mIsSinking = false;
         }
     }
@@ -2701,7 +2701,7 @@ void Ship::RecalculateLightDiffusionParallelism(size_t simulationParallelism)
 }
 
 void Ship::DiffuseLight(
-    GameParameters const & gameParameters,
+    SimulationParameters const & simulationParameters,
     ThreadManager & threadManager)
 {
     //
@@ -2711,7 +2711,7 @@ void Ship::DiffuseLight(
 
     // Shortcut
     if (mElectricalElements.Lamps().empty()
-        || (gameParameters.LuminiscenceAdjustment == 0.0f && mLastLuminiscenceAdjustmentDiffused == 0.0f))
+        || (simulationParameters.LuminiscenceAdjustment == 0.0f && mLastLuminiscenceAdjustmentDiffused == 0.0f))
     {
         return;
     }
@@ -2744,7 +2744,7 @@ void Ship::DiffuseLight(
     threadManager.GetSimulationThreadPool().Run(mLightDiffusionTasks);
 
     // Remember that we've diffused light with this luminiscence adjustment
-    mLastLuminiscenceAdjustmentDiffused = gameParameters.LuminiscenceAdjustment;
+    mLastLuminiscenceAdjustmentDiffused = simulationParameters.LuminiscenceAdjustment;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -2755,7 +2755,7 @@ void Ship::PropagateHeat(
     float /*currentSimulationTime*/,
     float dt,
     Storm::Parameters const & stormParameters,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     //
     // Propagate temperature (via heat), and dissipate temperature
@@ -2767,7 +2767,7 @@ void Ship::PropagateHeat(
     float * restrict const newPointTemperatureBufferData = mPoints.GetTemperatureBufferAsFloat();
 
     // Outbound heat flows along each spring
-    std::array<float, GameParameters::MaxSpringsPerPoint> springOutboundHeatFlows;
+    std::array<float, SimulationParameters::MaxSpringsPerPoint> springOutboundHeatFlows;
 
     //
     // Visit all non-ephemeral points
@@ -2797,7 +2797,7 @@ void Ship::PropagateHeat(
             //
             // q = Ki * (Tp - Tpi) * dt / Li
             float const outgoingHeatFlow =
-                mSprings.GetMaterialThermalConductivity(cs.SpringIndex) * gameParameters.ThermalConductivityAdjustment
+                mSprings.GetMaterialThermalConductivity(cs.SpringIndex) * simulationParameters.ThermalConductivityAdjustment
                 * std::max(pointTemperature - oldPointTemperatureBufferData[cs.OtherEndpointIndex], 0.0f) // DeltaT, positive if going out
                 * dt
                 / mSprings.GetFactoryRestLength(cs.SpringIndex);
@@ -2857,26 +2857,26 @@ void Ship::PropagateHeat(
     //
 
     float const effectiveWaterConvectiveHeatTransferCoefficient =
-        GameParameters::WaterConvectiveHeatTransferCoefficient
+        SimulationParameters::WaterConvectiveHeatTransferCoefficient
         * dt
-        * gameParameters.HeatDissipationAdjustment
+        * simulationParameters.HeatDissipationAdjustment
         * 2.0f; // We exaggerate a bit to take into account water wetting the material and thus making it more difficult for fire to re-kindle
 
     // Water temperature
     // We approximate the thermocline as a linear decrease of
     // temperature: 15 degrees in MaxSeaDepth meters
-    float const surfaceWaterTemperature = gameParameters.WaterTemperature;
-    float constexpr ThermoclineSlope = -15.0f / GameParameters::MaxSeaDepth;
+    float const surfaceWaterTemperature = simulationParameters.WaterTemperature;
+    float constexpr ThermoclineSlope = -15.0f / SimulationParameters::MaxSeaDepth;
 
     // We include rain in air
     float const effectiveAirConvectiveHeatTransferCoefficient =
-        GameParameters::AirConvectiveHeatTransferCoefficient
+        SimulationParameters::AirConvectiveHeatTransferCoefficient
         * dt
-        * gameParameters.HeatDissipationAdjustment
+        * simulationParameters.HeatDissipationAdjustment
         + FastPow(stormParameters.RainDensity, 0.3f) * effectiveWaterConvectiveHeatTransferCoefficient;
 
     float const airTemperature =
-        gameParameters.AirTemperature
+        simulationParameters.AirTemperature
         + stormParameters.AirTemperatureDelta;
 
     // We also include ephemeral points, as they may be heated
@@ -2887,7 +2887,7 @@ void Ship::PropagateHeat(
         float heatLost; // Heat lost in this time quantum (positive when outgoing)
 
         if (mPoints.IsCachedUnderwater(pointIndex)
-            || mPoints.GetWater(pointIndex) > GameParameters::SmotheringWaterHighWatermark)
+            || mPoints.GetWater(pointIndex) > SimulationParameters::SmotheringWaterHighWatermark)
         {
             // Dissipation in water
             float const waterTemperature = surfaceWaterTemperature - Clamp(mPoints.GetPosition(pointIndex).y * ThermoclineSlope, 0.0f, surfaceWaterTemperature);
@@ -2926,9 +2926,9 @@ void Ship::RotPoints(
     ElementIndex partition,
     ElementIndex partitionCount,
     float /*currentSimulationTime*/,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
-    if (gameParameters.RotAcceler8r == 0.0f)
+    if (simulationParameters.RotAcceler8r == 0.0f)
     {
         // Disable rotting altogether
         return;
@@ -2968,14 +2968,14 @@ void Ship::RotPoints(
     //      x_uw = (1-a_uw)/(a_uw - a_uw_fl)
     //
 
-    float constexpr Ns = 20.0f * 60.0f / GameParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
+    float constexpr Ns = 20.0f * 60.0f / SimulationParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>;
 
-    float const a_uw = gameParameters.RotAcceler8r != 0.0f
-        ? powf(0.75f, gameParameters.RotAcceler8r / Ns) // a_uw = 0.75 ^ (1/Ns)
+    float const a_uw = simulationParameters.RotAcceler8r != 0.0f
+        ? powf(0.75f, simulationParameters.RotAcceler8r / Ns) // a_uw = 0.75 ^ (1/Ns)
         : 1.0f;
 
-    float const a_uw_fl = gameParameters.RotAcceler8r != 0.0f
-        ? powf(0.25f, gameParameters.RotAcceler8r / Ns) // a_uw = 0.25 ^ (1/Ns)
+    float const a_uw_fl = simulationParameters.RotAcceler8r != 0.0f
+        ? powf(0.25f, simulationParameters.RotAcceler8r / Ns) // a_uw = 0.25 ^ (1/Ns)
         : 1.0f;
 
     float const x_uw = (1.0f - a_uw) / (a_uw - a_uw_fl);
@@ -3014,14 +3014,14 @@ void Ship::RotPoints(
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 void Ship::UpdateForSimulationParallelism(
-    GameParameters const & gameParameters,
+    SimulationParameters const & simulationParameters,
     ThreadManager & threadManager)
 {
     size_t const simulationParallelism = threadManager.GetSimulationParallelism();
     if (simulationParallelism != mCurrentSimulationParallelism)
     {
         // Re-calculate spring relaxation parallelism
-        RecalculateSpringRelaxationParallelism(simulationParallelism, gameParameters);
+        RecalculateSpringRelaxationParallelism(simulationParallelism, simulationParameters);
 
         // Re-calculate light diffusion parallelism
         RecalculateLightDiffusionParallelism(simulationParallelism);
@@ -3274,12 +3274,12 @@ void Ship::InternalSpawnAirBubble(
     float temperature,
     float currentSimulationTime,
     PlaneId planeId,
-    GameParameters const & /*gameParameters*/)
+    SimulationParameters const & /*simulationParameters*/)
 {
     std::uint64_t constexpr PhasePeriod = 10;
     float const phase = static_cast<float>((mAirBubblesCreatedCount++) % PhasePeriod) / static_cast<float>(PhasePeriod);
 
-    float const endVortexAmplitude = 4.0f * finalScale / GameParameters::ShipAirBubbleFinalScale; // We want 4 for ship
+    float const endVortexAmplitude = 4.0f * finalScale / SimulationParameters::ShipAirBubbleFinalScale; // We want 4 for ship
     float const startVortexAmplitude = endVortexAmplitude / 40.0f;
     float const vortexAmplitude =
         (startVortexAmplitude + (endVortexAmplitude - startVortexAmplitude) * phase)
@@ -3310,12 +3310,12 @@ void Ship::InternalSpawnDebris(
     ElementIndex sourcePointElementIndex,
     StructuralMaterial const & debrisStructuralMaterial,
     float currentSimulationTime,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
-    if (gameParameters.DoGenerateDebris)
+    if (simulationParameters.DoGenerateDebris)
     {
         unsigned int const debrisParticleCount = GameRandomEngine::GetInstance().GenerateUniformInteger(
-            GameParameters::MinDebrisParticlesPerEvent, GameParameters::MaxDebrisParticlesPerEvent);
+            SimulationParameters::MinDebrisParticlesPerEvent, SimulationParameters::MaxDebrisParticlesPerEvent);
 
         auto const pointPosition = mPoints.GetPosition(sourcePointElementIndex);
         auto const pointDepth = mParentWorld.GetOceanSurface().GetDepth(pointPosition);
@@ -3326,13 +3326,13 @@ void Ship::InternalSpawnDebris(
         {
             // Choose velocity
             vec2f const velocity = GameRandomEngine::GetInstance().GenerateUniformRadialVector(
-                GameParameters::MinDebrisParticlesVelocity,
-                GameParameters::MaxDebrisParticlesVelocity);
+                SimulationParameters::MinDebrisParticlesVelocity,
+                SimulationParameters::MaxDebrisParticlesVelocity);
 
             // Choose a lifetime
             float const maxLifetime = GameRandomEngine::GetInstance().GenerateUniformReal(
-                GameParameters::MinDebrisParticlesLifetime,
-                GameParameters::MaxDebrisParticlesLifetime);
+                SimulationParameters::MinDebrisParticlesLifetime,
+                SimulationParameters::MaxDebrisParticlesLifetime);
 
             mPoints.CreateEphemeralParticleDebris(
                 pointPosition,
@@ -3352,9 +3352,9 @@ void Ship::InternalSpawnSparklesForCut(
     vec2f const & cutDirectionStartPos,
     vec2f const & cutDirectionEndPos,
     float currentSimulationTime,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
-    if (gameParameters.DoGenerateSparklesForCuts)
+    if (simulationParameters.DoGenerateSparklesForCuts)
     {
         vec2f const sparklePosition = mSprings.GetMidpointPosition(springElementIndex, mPoints);
 
@@ -3362,7 +3362,7 @@ void Ship::InternalSpawnSparklesForCut(
 
         // Velocity magnitude
         float const velocityMagnitude = GameRandomEngine::GetInstance().GenerateUniformReal(
-            GameParameters::MinSparkleParticlesForCutVelocity, GameParameters::MaxSparkleParticlesForCutVelocity);
+            SimulationParameters::MinSparkleParticlesForCutVelocity, SimulationParameters::MaxSparkleParticlesForCutVelocity);
 
         // Velocity angle: gaussian centered around direction opposite to cut direction
         float const centralAngleCW = (cutDirectionStartPos - cutDirectionEndPos).angleCw();
@@ -3370,8 +3370,8 @@ void Ship::InternalSpawnSparklesForCut(
 
         // Choose a lifetime
         float const maxLifetime = GameRandomEngine::GetInstance().GenerateUniformReal(
-            GameParameters::MinSparkleParticlesForCutLifetime,
-            GameParameters::MaxSparkleParticlesForCutLifetime);
+            SimulationParameters::MinSparkleParticlesForCutLifetime,
+            SimulationParameters::MaxSparkleParticlesForCutLifetime);
 
         // Create sparkle
         mPoints.CreateEphemeralParticleSparkle(
@@ -3388,14 +3388,14 @@ void Ship::InternalSpawnSparklesForCut(
 void Ship::InternalSpawnSparklesForLightning(
     ElementIndex pointElementIndex,
     float currentSimulationTime,
-    GameParameters const & /*gameParameters*/)
+    SimulationParameters const & /*simulationParameters*/)
 {
     //
     // Choose number of particles
     //
 
     unsigned int const sparkleParticleCount = GameRandomEngine::GetInstance().GenerateUniformInteger(
-        GameParameters::MinSparkleParticlesForLightningEvent, GameParameters::MaxSparkleParticlesForLightningEvent);
+        SimulationParameters::MinSparkleParticlesForLightningEvent, SimulationParameters::MaxSparkleParticlesForLightningEvent);
 
     //
     // Create particles
@@ -3409,15 +3409,15 @@ void Ship::InternalSpawnSparklesForLightning(
     {
         // Velocity magnitude
         float const velocityMagnitude = GameRandomEngine::GetInstance().GenerateUniformReal(
-            GameParameters::MinSparkleParticlesForLightningVelocity, GameParameters::MaxSparkleParticlesForLightningVelocity);
+            SimulationParameters::MinSparkleParticlesForLightningVelocity, SimulationParameters::MaxSparkleParticlesForLightningVelocity);
 
         // Velocity angle: uniform
         float const velocityAngleCw = GameRandomEngine::GetInstance().GenerateUniformReal(0.0f, 2.0f * Pi<float>);
 
         // Choose a lifetime
         float const maxLifetime = GameRandomEngine::GetInstance().GenerateUniformReal(
-                GameParameters::MinSparkleParticlesForLightningLifetime,
-                GameParameters::MaxSparkleParticlesForLightningLifetime);
+                SimulationParameters::MinSparkleParticlesForLightningLifetime,
+                SimulationParameters::MaxSparkleParticlesForLightningLifetime);
 
         // Create sparkle
         mPoints.CreateEphemeralParticleSparkle(
@@ -3440,7 +3440,7 @@ void Ship::HandlePointDetach(
     bool generateDebris,
     bool fireDestroyEvent,
     float currentSimulationTime,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     bool hasAnythingBeenDestroyed = false;
 
@@ -3460,7 +3460,7 @@ void Ship::HandlePointDetach(
             Springs::DestroyOptions::DoNotFireBreakEvent // We're already firing the Destroy event for the point
             | Springs::DestroyOptions::DestroyAllTriangles, // Destroy all triangles connected to each endpoint
             currentSimulationTime,
-            gameParameters,
+            simulationParameters,
             mPoints);
 
         hasAnythingBeenDestroyed = true;
@@ -3494,7 +3494,7 @@ void Ship::HandlePointDetach(
                 electricalElementIndex,
                 fireDestroyEvent ? ElectricalElements::DestroyReason::Other : ElectricalElements::DestroyReason::SilentRemoval,
                 currentSimulationTime,
-                gameParameters);
+                simulationParameters);
 
             hasAnythingBeenDestroyed = true;
         }
@@ -3506,7 +3506,7 @@ void Ship::HandlePointDetach(
         mGadgets.OnPointDetached(
             pointElementIndex,
             currentSimulationTime,
-            gameParameters);
+            simulationParameters);
 
         if (generateDebris)
         {
@@ -3515,13 +3515,13 @@ void Ship::HandlePointDetach(
                 pointElementIndex,
                 mPoints.GetStructuralMaterial(pointElementIndex),
                 currentSimulationTime,
-                gameParameters);
+                simulationParameters);
         }
 
         if (fireDestroyEvent)
         {
             // Notify destroy
-            mGameEventHandler->OnDestroy(
+            mSimulationEventHandler->OnDestroy(
                 mPoints.GetStructuralMaterial(pointElementIndex),
                 mParentWorld.GetOceanSurface().IsUnderwater(mPoints.GetPosition(pointElementIndex)),
                 1);
@@ -3569,7 +3569,7 @@ void Ship::HandlePointRestore(
     if (mDamagedPointsCount == 0 && mBrokenSpringsCount == 0 && mBrokenTrianglesCount == 0)
     {
         mParentWorld.GetNpcs().OnShipRepaired(mId, currentSimulationTime); // Tell NPCs
-        mGameEventHandler->OnShipRepaired(mId);
+        mSimulationEventHandler->OnShipRepaired(mId);
     }
 }
 
@@ -3577,7 +3577,7 @@ void Ship::HandleSpringDestroy(
     ElementIndex springElementIndex,
     bool destroyAllTriangles,
     float currentSimulationTime,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     auto const pointAIndex = mSprings.GetEndpointAIndex(springElementIndex);
     auto const pointBIndex = mSprings.GetEndpointBIndex(springElementIndex);
@@ -3663,7 +3663,7 @@ void Ship::HandleSpringDestroy(
     mGadgets.OnSpringDestroyed(
         springElementIndex,
         currentSimulationTime,
-        gameParameters);
+        simulationParameters);
 
     // Remember our structure is now dirty
     mIsStructureDirty = true;
@@ -3674,7 +3674,7 @@ void Ship::HandleSpringDestroy(
 
 void Ship::HandleSpringRestore(
     ElementIndex springElementIndex,
-    GameParameters const & /*gameParameters*/)
+    SimulationParameters const & /*simulationParameters*/)
 {
     auto const pointAIndex = mSprings.GetEndpointAIndex(springElementIndex);
     auto const pointBIndex = mSprings.GetEndpointBIndex(springElementIndex);
@@ -3723,7 +3723,7 @@ void Ship::HandleSpringRestore(
 
     // Fire event - using point A's properties (quite arbitrarily)
     auto const endpointAIndex = mSprings.GetEndpointAIndex(springElementIndex);
-    mGameEventHandler->OnSpringRepaired(
+    mSimulationEventHandler->OnSpringRepaired(
         mPoints.GetStructuralMaterial(endpointAIndex),
         mParentWorld.GetOceanSurface().IsUnderwater(mPoints.GetPosition(endpointAIndex)),
         1);
@@ -3738,7 +3738,7 @@ void Ship::HandleSpringRestore(
     // Notify if we've just completely restored the ship
     if (mDamagedPointsCount == 0 && mBrokenSpringsCount == 0 && mBrokenTrianglesCount == 0)
     {
-        mGameEventHandler->OnShipRepaired(mId);
+        mSimulationEventHandler->OnShipRepaired(mId);
     }
 }
 
@@ -3830,7 +3830,7 @@ void Ship::HandleTriangleRestore(ElementIndex triangleElementIndex)
 
     // Fire event - using point A's properties (quite arbitrarily)
     auto const endpointAIndex = mTriangles.GetPointAIndex(triangleElementIndex);
-    mGameEventHandler->OnTriangleRepaired(
+    mSimulationEventHandler->OnTriangleRepaired(
         mPoints.GetStructuralMaterial(endpointAIndex),
         mParentWorld.GetOceanSurface().IsUnderwater(mPoints.GetPosition(endpointAIndex)),
         1);
@@ -3845,7 +3845,7 @@ void Ship::HandleTriangleRestore(ElementIndex triangleElementIndex)
     // Notify if we've just completely restored the ship
     if (mDamagedPointsCount == 0 && mBrokenSpringsCount == 0 && mBrokenTrianglesCount == 0)
     {
-        mGameEventHandler->OnShipRepaired(mId);
+        mSimulationEventHandler->OnShipRepaired(mId);
     }
 }
 
@@ -3854,7 +3854,7 @@ void Ship::HandleElectricalElementDestroy(
     ElementIndex pointElementIndex,
     ElectricalElementDestroySpecializationType specialization,
     float currentSimulationTime,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     //
     // For all of the connected electrical elements: remove electrical connections
@@ -3885,7 +3885,7 @@ void Ship::HandleElectricalElementDestroy(
     {
         case ElectricalElementDestroySpecializationType::Lamp:
         {
-            mGameEventHandler->OnLampBroken(
+            mSimulationEventHandler->OnLampBroken(
                 mParentWorld.GetOceanSurface().IsUnderwater(mPoints.GetPosition(pointElementIndex)),
                 1);
 
@@ -3898,9 +3898,9 @@ void Ship::HandleElectricalElementDestroy(
                 pointElementIndex,
                 mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Glass),
                 currentSimulationTime,
-                gameParameters);
+                simulationParameters);
 
-            mGameEventHandler->OnLampExploded(
+            mSimulationEventHandler->OnLampExploded(
                 mParentWorld.GetOceanSurface().IsUnderwater(mPoints.GetPosition(pointElementIndex)),
                 1);
 
@@ -3909,7 +3909,7 @@ void Ship::HandleElectricalElementDestroy(
 
         case ElectricalElementDestroySpecializationType::LampImplosion:
         {
-            mGameEventHandler->OnLampImploded(
+            mSimulationEventHandler->OnLampImploded(
                 mParentWorld.GetOceanSurface().IsUnderwater(mPoints.GetPosition(pointElementIndex)),
                 1);
 
@@ -3961,7 +3961,7 @@ void Ship::StartExplosion(
     float blastHeatRadius,
     float renderRadiusOffset,
     ExplosionType explosionType,
-    GameParameters const & /*gameParameters*/)
+    SimulationParameters const & /*simulationParameters*/)
 {
     // Queue state machine
     mStateMachines.push_back(
@@ -3981,7 +3981,7 @@ void Ship::DoAntiMatterBombPreimplosion(
     vec2f const & centerPosition,
     float /*sequenceProgress*/,
     float radius,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     float constexpr RadiusThickness = 10.0f; // Thickness of radius, magic number
 
@@ -3989,7 +3989,7 @@ void Ship::DoAntiMatterBombPreimplosion(
     {
         float const strength =
             130000.0f // Magic number
-            * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
+            * (simulationParameters.IsUltraViolentMode ? 5.0f : 1.0f);
 
         for (auto pointIndex : mPoints)
         {
@@ -4015,7 +4015,7 @@ void Ship::DoAntiMatterBombPreimplosion(
         centerPosition,
         radius,
         RadiusThickness,
-        gameParameters);
+        simulationParameters);
 
     // Scare fishes
     mParentWorld.DisturbOceanAt(
@@ -4027,15 +4027,15 @@ void Ship::DoAntiMatterBombPreimplosion(
 void Ship::DoAntiMatterBombImplosion(
     vec2f const & centerPosition,
     float sequenceProgress,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     // Apply the force field
     {
         float const strength =
             (sequenceProgress * sequenceProgress)
-            * gameParameters.AntiMatterBombImplosionStrength
+            * simulationParameters.AntiMatterBombImplosionStrength
             * 10000.0f // Magic number
-            * (gameParameters.IsUltraViolentMode ? 50.0f : 1.0f);
+            * (simulationParameters.IsUltraViolentMode ? 50.0f : 1.0f);
 
         for (auto pointIndex : mPoints)
         {
@@ -4070,13 +4070,13 @@ void Ship::DoAntiMatterBombImplosion(
         mId,
         centerPosition,
         sequenceProgress,
-        gameParameters);
+        simulationParameters);
 }
 
 void Ship::DoAntiMatterBombExplosion(
     vec2f const & centerPosition,
     float sequenceProgress,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     //
     // Single explosion peak at progress=0.0
@@ -4092,7 +4092,7 @@ void Ship::DoAntiMatterBombExplosion(
 
             float const strength =
                 30000.0f // Magic number
-                * (gameParameters.IsUltraViolentMode ? 50.0f : 1.0f);
+                * (simulationParameters.IsUltraViolentMode ? 50.0f : 1.0f);
 
             for (auto pointIndex : mPoints)
             {
@@ -4109,7 +4109,7 @@ void Ship::DoAntiMatterBombExplosion(
         mParentWorld.GetNpcs().ApplyAntiMatterBombExplosion(
             mId,
             centerPosition,
-            gameParameters);
+            simulationParameters);
 
         // Scare fishes
         mParentWorld.DisturbOceanAt(
@@ -4137,7 +4137,7 @@ void Ship::HandleWatertightDoorUpdated(
         mPoints.SetWater(pointElementIndex, 0.0f);
 
         // Fire event
-        mGameEventHandler->OnWatertightDoorClosed(
+        mSimulationEventHandler->OnWatertightDoorClosed(
             mParentWorld.GetOceanSurface().IsUnderwater(mPoints.GetPosition(pointElementIndex)),
             1);
     }
@@ -4148,7 +4148,7 @@ void Ship::HandleWatertightDoorUpdated(
         //
 
         // Fire event
-        mGameEventHandler->OnWatertightDoorOpened(
+        mSimulationEventHandler->OnWatertightDoorOpened(
             mParentWorld.GetOceanSurface().IsUnderwater(mPoints.GetPosition(pointElementIndex)),
             1);
     }
@@ -4158,7 +4158,7 @@ void Ship::HandleElectricSpark(
     ElementIndex pointElementIndex,
     float strength,
     float currentSimulationTime,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     //
     // Electrification
@@ -4173,7 +4173,7 @@ void Ship::HandleElectricSpark(
     float const heat =
         10.0f * 1000.0f // KJoule->Joule
         * strength
-        * (gameParameters.IsUltraViolentMode ? 15.0f : 1.0f);
+        * (simulationParameters.IsUltraViolentMode ? 15.0f : 1.0f);
 
     // Calc temperature delta
     // T = Q/HeatCapacity
@@ -4191,7 +4191,7 @@ void Ship::HandleElectricSpark(
     //
 
     float const rotCoefficient =
-        (gameParameters.IsUltraViolentMode ? 0.99f : 0.9995f)
+        (simulationParameters.IsUltraViolentMode ? 0.99f : 0.9995f)
         + (1.0f - strength) * 0.0003f;
 
     mPoints.SetDecay(
@@ -4208,7 +4208,7 @@ void Ship::HandleElectricSpark(
         mElectricalElements.OnElectricSpark(
             electricalElementIndex,
             currentSimulationTime,
-            gameParameters);
+            simulationParameters);
     }
 
     //
@@ -4218,7 +4218,7 @@ void Ship::HandleElectricSpark(
     mGadgets.OnElectricSpark(
         pointElementIndex,
         currentSimulationTime,
-        gameParameters);
+        simulationParameters);
 }
 
 #ifdef _DEBUG
@@ -4231,8 +4231,8 @@ void Ship::VerifyInvariants()
     for (auto p : mPoints)
     {
         auto const & pos = mPoints.GetPosition(p);
-        Verify(pos.x >= -GameParameters::HalfMaxWorldWidth && pos.x <= GameParameters::HalfMaxWorldWidth);
-        Verify(pos.y >= -GameParameters::HalfMaxWorldHeight && pos.y <= GameParameters::HalfMaxWorldHeight);
+        Verify(pos.x >= -SimulationParameters::HalfMaxWorldWidth && pos.x <= SimulationParameters::HalfMaxWorldWidth);
+        Verify(pos.y >= -SimulationParameters::HalfMaxWorldHeight && pos.y <= SimulationParameters::HalfMaxWorldHeight);
     }
 
     //

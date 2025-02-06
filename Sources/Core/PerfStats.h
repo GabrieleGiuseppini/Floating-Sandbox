@@ -154,7 +154,7 @@ private:
     std::vector<Ratio> mMeasurements;
 };
 
-PerfStats operator-(PerfStats const & lhs, PerfStats const & rhs)
+inline PerfStats operator-(PerfStats const & lhs, PerfStats const & rhs)
 {
     PerfStats perfStats;
 

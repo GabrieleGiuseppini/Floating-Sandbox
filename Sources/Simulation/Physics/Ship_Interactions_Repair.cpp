@@ -5,8 +5,8 @@
  ***************************************************************************************/
 #include "Physics.h"
 
-#include <GameCore/GameMath.h>
-#include <GameCore/Log.h>
+#include <Core/GameMath.h>
+#include <Core/Log.h>
 
 #include <cassert>
 #include <deque>
@@ -18,10 +18,10 @@ void Ship::RepairAt(
     float radiusMultiplier,
     SequenceNumber repairStepId,
     float currentSimulationTime,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     float const searchRadius =
-        gameParameters.RepairRadius
+        simulationParameters.RepairRadius
         * radiusMultiplier;
 
     float const squareSearchRadius = searchRadius * searchRadius;
@@ -66,7 +66,7 @@ void Ship::RepairAt(
                 squareSearchRadius,
                 repairStepId,
                 currentSimulationTime,
-                gameParameters);
+                simulationParameters);
         }
     }
 
@@ -84,7 +84,7 @@ void Ship::RepairAt(
             squareSearchRadius,
             repairStepId,
             currentSimulationTime,
-            gameParameters);
+            simulationParameters);
     }
 
     //
@@ -280,8 +280,8 @@ void Ship::StraightenOneSpringChains(ElementIndex pointIndex)
                 mPoints.SetPosition(
                     otherEndpointIndex,
                     targetOtherEndpointPosition.clamp(
-                        -GameParameters::HalfMaxWorldWidth, GameParameters::HalfMaxWorldWidth,
-                        -GameParameters::HalfMaxWorldHeight, GameParameters::HalfMaxWorldHeight));
+                        -SimulationParameters::HalfMaxWorldWidth, SimulationParameters::HalfMaxWorldWidth,
+                        -SimulationParameters::HalfMaxWorldHeight, SimulationParameters::HalfMaxWorldHeight));
             }
         }
     }
@@ -344,8 +344,8 @@ void Ship::StraightenTwoSpringChains(ElementIndex pointIndex)
             mPoints.SetPosition(
                 pointIndex,
                 newPPosition.clamp(
-                    -GameParameters::HalfMaxWorldWidth, GameParameters::HalfMaxWorldWidth,
-                    -GameParameters::HalfMaxWorldHeight, GameParameters::HalfMaxWorldHeight));
+                    -SimulationParameters::HalfMaxWorldWidth, SimulationParameters::HalfMaxWorldWidth,
+                    -SimulationParameters::HalfMaxWorldHeight, SimulationParameters::HalfMaxWorldHeight));
         }
     }
 }
@@ -356,7 +356,7 @@ bool Ship::TryRepairAndPropagateFromPoint(
     float squareSearchRadius,
     SequenceNumber repairStepId,
     float currentSimulationTime,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     bool hasRepairedAnything = false;
 
@@ -397,7 +397,7 @@ bool Ship::TryRepairAndPropagateFromPoint(
                 float const squareRadius = (mPoints.GetPosition(pointIndex) - targetPos).squareLength();
                 float const repairStrength =
                     (1.0f - (squareRadius / squareSearchRadius) * (squareRadius / squareSearchRadius))
-                    * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+                    * (simulationParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
                 // Repair from this point
                 bool const hasRepaired = RepairFromAttractor(
@@ -405,7 +405,7 @@ bool Ship::TryRepairAndPropagateFromPoint(
                     repairStrength,
                     repairStepId,
                     currentSimulationTime,
-                    gameParameters);
+                    simulationParameters);
 
                 hasRepairedAnything |= hasRepaired;
             }
@@ -451,7 +451,7 @@ bool Ship::RepairFromAttractor(
     float repairStrength,
     SequenceNumber repairStepId,
     float currentSimulationTime,
-    GameParameters const & gameParameters)
+    SimulationParameters const & simulationParameters)
 {
     // Tolerance to distance: the minimum distance between the endpoint
     // of a broken spring and its target position, below which we restore
@@ -718,8 +718,8 @@ bool Ship::RepairFromAttractor(
                         int constexpr MaxSimulatedFrames = 5 * 64; // 5 simulated seconds at 64fps
 
                         movementSmoothing =
-                            SmoothStep(0.0f, 20.0f / gameParameters.RepairSpeedAdjustment, displacementMagnitude)
-                            * (0.15f + 0.35f * SmoothStep(0.0f, static_cast<float>(MaxSimulatedFrames) / gameParameters.RepairSpeedAdjustment, static_cast<float>(attracteeDurationSteps)));
+                            SmoothStep(0.0f, 20.0f / simulationParameters.RepairSpeedAdjustment, displacementMagnitude)
+                            * (0.15f + 0.35f * SmoothStep(0.0f, static_cast<float>(MaxSimulatedFrames) / simulationParameters.RepairSpeedAdjustment, static_cast<float>(attracteeDurationSteps)));
 
                         if (attracteeDurationSteps >= MaxSimulatedFrames
                             && (attracteeDurationSteps % 32) == 0)
@@ -743,7 +743,7 @@ bool Ship::RepairFromAttractor(
 
                         movementSmoothing = SmoothStep(
                             0.0f,
-                            static_cast<float>(MaxSimulatedFrames) * timeAdjustment / gameParameters.RepairSpeedAdjustment,
+                            static_cast<float>(MaxSimulatedFrames) * timeAdjustment / simulationParameters.RepairSpeedAdjustment,
                             static_cast<float>(attracteeDurationSteps));
 
                         if (attracteeDurationSteps >= MaxSimulatedFrames
@@ -779,8 +779,8 @@ bool Ship::RepairFromAttractor(
                     mPoints.SetPosition(attracteePointIndex,
                         (mPoints.GetPosition(attracteePointIndex) + movementDir * movementMagnitude)
                         .clamp(
-                            -GameParameters::HalfMaxWorldWidth, GameParameters::HalfMaxWorldWidth,
-                            -GameParameters::HalfMaxWorldHeight, GameParameters::HalfMaxWorldHeight));
+                            -SimulationParameters::HalfMaxWorldWidth, SimulationParameters::HalfMaxWorldWidth,
+                            -SimulationParameters::HalfMaxWorldHeight, SimulationParameters::HalfMaxWorldHeight));
 
                     // Update displacement with move
                     displacementMagnitude -= movementMagnitude;
@@ -791,7 +791,7 @@ bool Ship::RepairFromAttractor(
                         movementDir
                         * ((movementMagnitude < 0.0f) ? -1.0f : 1.0f)
                         * std::pow(std::abs(movementMagnitude), 0.2f)
-                        / GameParameters::SimulationStepTimeDuration<float>
+                        / SimulationParameters::SimulationStepTimeDuration<float>
                         * 0.5f;
                     float constexpr InertialFraction = 0.65f;
                     mPoints.SetVelocity(attracteePointIndex,
@@ -814,7 +814,7 @@ bool Ship::RepairFromAttractor(
                     // Restore the spring
                     mSprings.Restore(
                         fcs.SpringIndex,
-                        gameParameters,
+                        simulationParameters,
                         mPoints);
 
                     assert(!mSprings.IsDeleted(fcs.SpringIndex));
