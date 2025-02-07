@@ -5,12 +5,13 @@
 ***************************************************************************************/
 #pragma once
 
+#include "EnhancedShipPreviewData.h"
 #include "FileSystem.h"
-#include "ShipDefinition.h"
-#include "ShipPreviewData.h"
 #include "ShipPreviewImageDatabase.h"
 
-#include <GameCore/ImageData.h>
+#include <Simulation/ShipDefinition.h>
+
+#include <Core/ImageData.h>
 
 #include <filesystem>
 #include <map>
@@ -29,7 +30,7 @@ public:
         std::shared_ptr<IFileSystem> fileSystem);
 
     RgbaImageData LoadPreviewImage(
-        ShipPreviewData const & shipPreview,
+        EnhancedShipPreviewData const & shipPreview,
         ImageSize const & maxImageSize);
 
     void Commit(bool isVisitCompleted);

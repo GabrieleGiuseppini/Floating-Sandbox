@@ -51,7 +51,7 @@ set (UNIT_TEST_SOURCES
 	ShaderManagerTests.cpp
 	ShipDefinitionFormatDeSerializerTests.cpp
 	#ShipNameNormalizerTests.cpp
-	#ShipPreviewDirectoryManagerTests.cpp
+	ShipPreviewDirectoryManagerTests.cpp
 	#ShipTests.cpp  # Needs a lot of rework
 	SimulationEventDispatcherTests.cpp
 	#SliderCoreTests.cpp

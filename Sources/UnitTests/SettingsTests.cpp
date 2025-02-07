@@ -524,7 +524,7 @@ TEST(SettingsTests, Serialization_Settings_AllDirty)
     // Version
     ASSERT_EQ(1u, settingsRootObject.count("version"));
     ASSERT_TRUE(settingsRootObject["version"].is<std::string>());
-    EXPECT_EQ(GameVersion.ToString(), settingsRootObject["version"].get<std::string>());
+    EXPECT_EQ(CurrentGameVersion.ToString(), settingsRootObject["version"].get<std::string>());
 
     // Description
     ASSERT_EQ(1u, settingsRootObject.count("description"));
@@ -620,7 +620,7 @@ TEST(SettingsTests, Serialization_Settings_AllClean)
     // Version
     ASSERT_EQ(1u, settingsRootObject.count("version"));
     ASSERT_TRUE(settingsRootObject["version"].is<std::string>());
-    EXPECT_EQ(GameVersion.ToString(), settingsRootObject["version"].get<std::string>());
+    EXPECT_EQ(CurrentGameVersion.ToString(), settingsRootObject["version"].get<std::string>());
 
     // Description
     ASSERT_EQ(1u, settingsRootObject.count("description"));
@@ -685,7 +685,7 @@ TEST(SettingsTests, Serialization_SerializesOnlyDirtySettings)
     // Version
     ASSERT_EQ(1u, settingsRootObject.count("version"));
     ASSERT_TRUE(settingsRootObject["version"].is<std::string>());
-    EXPECT_EQ(GameVersion.ToString(), settingsRootObject["version"].get<std::string>());
+    EXPECT_EQ(CurrentGameVersion.ToString(), settingsRootObject["version"].get<std::string>());
 
     // Description
     ASSERT_EQ(1u, settingsRootObject.count("description"));

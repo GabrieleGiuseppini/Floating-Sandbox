@@ -7,7 +7,7 @@
 
 #include "ShipDeSerializer.h"
 
-#include <GameCore/Log.h>
+#include <Core/Log.h>
 
 #include <algorithm>
 #include <chrono>
@@ -18,7 +18,7 @@ std::unique_ptr<ShipPreviewDirectoryManager> ShipPreviewDirectoryManager::Create
 {
     return Create(
         directoryPath,
-        std::make_shared<FileSystem>());
+        std::make_shared<FileSystemImpl>());
 }
 
 std::unique_ptr<ShipPreviewDirectoryManager> ShipPreviewDirectoryManager::Create(
@@ -33,7 +33,7 @@ std::unique_ptr<ShipPreviewDirectoryManager> ShipPreviewDirectoryManager::Create
 }
 
 RgbaImageData ShipPreviewDirectoryManager::LoadPreviewImage(
-    ShipPreviewData const & previewData,
+    EnhancedShipPreviewData const & previewData,
     ImageSize const & maxImageSize)
 {
     auto const previewImageFilename = previewData.PreviewFilePath.filename();

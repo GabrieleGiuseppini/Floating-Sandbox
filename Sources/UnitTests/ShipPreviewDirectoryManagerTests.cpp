@@ -1,6 +1,6 @@
 #include <Game/ShipPreviewDirectoryManager.h>
 
-#include "Utils.h"
+#include "TestingUtils.h"
 
 #include <iomanip>
 #include <sstream>

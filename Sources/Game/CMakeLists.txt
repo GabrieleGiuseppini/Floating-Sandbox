@@ -21,6 +21,8 @@ set  (GAME_SOURCES
 	ShipLegacyFormatDeSerializer.cpp
 	ShipLegacyFormatDeSerializer.h
 	ShipLoadSpecifications.h
+	ShipPreviewDirectoryManager.cpp
+	ShipPreviewDirectoryManager.h
 	ShipPreviewImageDatabase.cpp
 	ShipPreviewImageDatabase.h
 )

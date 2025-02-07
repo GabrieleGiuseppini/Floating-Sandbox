@@ -5,7 +5,7 @@
 
 TEST(VersionTests, CurrentVersion)
 {
-    EXPECT_EQ(GameVersion.ToString(), APPLICATION_VERSION_LONG_STR);
+    EXPECT_EQ(CurrentGameVersion.ToString(), APPLICATION_VERSION_LONG_STR);
 }
 
 TEST(VersionTests, Operators)
