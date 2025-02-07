@@ -26,7 +26,11 @@ set  (SIMULATION_SOURCES
 	ShipDefinition.h
 	ShipDefinitionFormatDeSerializer.cpp
 	ShipDefinitionFormatDeSerializer.h
+	ShipFactory.cpp
+	ShipFactory.h
 	ShipFactoryTypes.h
+	ShipFloorplanizer.cpp
+	ShipFloorplanizer.h
 	ShipLoadOptions.h
 	ShipMetadata.h
 	ShipOverlays.cpp
@@ -35,6 +39,8 @@ set  (SIMULATION_SOURCES
 	ShipPreviewData.h
 	ShipStrengthRandomizer.cpp
 	ShipStrengthRandomizer.h
+	ShipTexturizer.cpp
+	ShipTexturizer.h
 	SimulationEventDispatcher.h
 	SimulationParameters.cpp
 	SimulationParameters.h

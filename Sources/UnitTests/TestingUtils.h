@@ -42,6 +42,9 @@ public:
     RgbaImageData LoadTextureDatabaseFrameRGBA(std::string const & databaseName, std::string const & frameRelativePath) const override;
     std::vector<AssetDescriptor> EnumerateTextureDatabaseFrames(std::string const & databaseName) const override;
 
+    std::string GetMaterialTextureRelativePath(std::string const & materialTextureName) const override;
+    RgbImageData LoadMaterialTexture(std::string const & frameRelativePath) const override;
+
     picojson::value LoadTetureAtlasSpecification(std::string const & textureDatabaseName) const override;
     RgbaImageData LoadTextureAtlasImageRGBA(std::string const & textureDatabaseName) const override;
 

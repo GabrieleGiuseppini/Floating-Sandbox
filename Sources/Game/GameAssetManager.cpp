@@ -71,6 +71,27 @@ std::vector<IAssetManager::AssetDescriptor> GameAssetManager::EnumerateTextureDa
     return frameDescriptors;
 }
 
+std::string GameAssetManager::GetMaterialTextureRelativePath(std::string const & materialTextureName) const
+{
+    std::filesystem::path const materialTexturesRootPath = MakeMaterialTexturesRootPath();
+    std::filesystem::path const fullPath = materialTexturesRootPath / (materialTextureName + ".png");
+
+    // Make sure file exists
+    if (!std::filesystem::exists(fullPath)
+        || !std::filesystem::is_regular_file(fullPath))
+    {
+        throw GameException(
+            "Cannot find material texture file for texture name \"" + materialTextureName + "\"");
+    }
+
+    return std::filesystem::relative(fullPath, materialTexturesRootPath).string();
+}
+
+RgbImageData GameAssetManager::LoadMaterialTexture(std::string const & frameRelativePath) const
+{
+    return LoadPngImageRgb(MakeMaterialTexturesRootPath() / frameRelativePath);
+}
+
 picojson::value GameAssetManager::LoadTetureAtlasSpecification(std::string const & textureDatabaseName) const
 {
     return LoadJson(mTextureRoot / "Atlases" / MakeAtlasSpecificationFilename(textureDatabaseName));

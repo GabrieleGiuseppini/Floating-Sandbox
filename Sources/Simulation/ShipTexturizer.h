@@ -7,16 +7,15 @@
 
 #include "Layers.h"
 #include "MaterialDatabase.h"
-#include "Physics.h"
-#include "ResourceLocator.h"
+#include "Physics/Physics.h"
 #include "ShipAutoTexturizationSettings.h"
 
-#include <GameCore/GameTypes.h>
-#include <GameCore/ImageData.h>
-#include <GameCore/Vectors.h>
+#include <Core/GameTypes.h>
+#include <Core/IAssetManager.h>
+#include <Core/ImageData.h>
+#include <Core/Vectors.h>
 
 #include <cassert>
-#include <filesystem>
 #include <optional>
 #include <unordered_map>
 
@@ -30,7 +29,7 @@ public:
 
     ShipTexturizer(
         MaterialDatabase const & materialDatabase,
-        ResourceLocator const & resourceLocator);
+        IAssetManager & assetManager);
 
     static int CalculateHighDefinitionTextureMagnificationFactor(
         ShipSpaceSize const & shipSize,
@@ -39,14 +38,16 @@ public:
     RgbaImageData MakeAutoTexture(
         StructuralLayerData const & structuralLayer,
         std::optional<ShipAutoTexturizationSettings> const & settings,
-        int maxTextureSize) const;
+        int maxTextureSize,
+        IAssetManager & assetManager) const;
 
     void AutoTexturizeInto(
         StructuralLayerData const & structuralLayer,
         ShipSpaceRect const & structuralLayerRegion,
         RgbaImageData & targetTextureImage,
         int magnificationFactor,
-        ShipAutoTexturizationSettings const & settings) const;
+        ShipAutoTexturizationSettings const & settings,
+        IAssetManager & assetManager) const;
 
     RgbaImageData MakeInteriorViewTexture(
         Physics::Triangles const & triangles,
@@ -109,9 +110,9 @@ private:
 
 private:
 
-    static std::unordered_map<std::string, std::filesystem::path> MakeMaterialTextureNameToTextureFilePathMap(
+    static std::unordered_map<std::string, std::string> MakeMaterialTextureNameToTextureRelativePathMap(
         MaterialDatabase const & materialDatabase,
-        ResourceLocator const & resourceLocator);
+        IAssetManager & assetManager);
 
     static float MaterialTextureMagnificationToPixelConversionFactor(float magnification);
 
@@ -119,9 +120,12 @@ private:
         std::optional<ShipAutoTexturizationSettings> const & settings,
         ImageSize const & sampleSize,
         rgbaColor const & renderColor,
-        std::optional<std::string> const & textureName) const;
+        std::optional<std::string> const & textureName,
+        IAssetManager & assetManager) const;
 
-    inline Vec2fImageData const & GetMaterialTexture(std::optional<std::string> const & textureName) const;
+    inline Vec2fImageData const & GetMaterialTexture(
+        std::optional<std::string> const & textureName,
+        IAssetManager & assetManager) const;
 
     void ResetMaterialTextureCacheUseCounts() const;
 
@@ -180,7 +184,7 @@ private:
     // Material textures
     //
 
-    std::unordered_map<std::string, std::filesystem::path> const mMaterialTextureNameToTextureFilePathMap;
+    std::unordered_map<std::string, std::string> const mMaterialTextureNameToTextureRelativePathMap;
 
     struct CachedTexture
     {

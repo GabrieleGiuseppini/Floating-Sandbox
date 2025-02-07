@@ -51,6 +51,20 @@ std::vector<IAssetManager::AssetDescriptor> TestAssetManager::EnumerateTextureDa
     return assetDescriptors;
 }
 
+std::string TestAssetManager::GetMaterialTextureRelativePath(std::string const & materialTextureName) const
+{
+    assert(false); // Not needed by tests, so far
+    (void)materialTextureName;
+    return "";
+}
+
+RgbImageData TestAssetManager::LoadMaterialTexture(std::string const & frameRelativePath) const
+{
+    assert(false); // Not needed by tests, so far
+    (void)frameRelativePath;
+    return RgbImageData(0, 0);
+}
+
 picojson::value TestAssetManager::LoadTetureAtlasSpecification(std::string const & textureDatabaseName) const
 {
     assert(false); // Not needed by tests, so far

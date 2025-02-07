@@ -5,12 +5,10 @@
 ***************************************************************************************/
 #include "ShipTexturizer.h"
 
-#include "PngImageFileTools.h"
-
-#include <GameCore/GameChronometer.h>
-#include <GameCore/GameException.h>
-#include <GameCore/GameMath.h>
-#include <GameCore/Log.h>
+#include <Core/GameChronometer.h>
+#include <Core/GameException.h>
+#include <Core/GameMath.h>
+#include <Core/Log.h>
 
 #include <algorithm>
 #include <chrono>
@@ -45,11 +43,11 @@ namespace /*anonymous*/ {
 
 ShipTexturizer::ShipTexturizer(
     MaterialDatabase const & materialDatabase,
-    ResourceLocator const & resourceLocator)
+    IAssetManager & assetManager)
     : mSharedSettings() // Default settings
     , mDoForceSharedSettingsOntoShipSettings(false)
-    , mMaterialTextureNameToTextureFilePathMap(
-        MakeMaterialTextureNameToTextureFilePathMap(materialDatabase, resourceLocator))
+    , mMaterialTextureNameToTextureRelativePathMap(
+        MakeMaterialTextureNameToTextureRelativePathMap(materialDatabase, assetManager))
     , mMaterialTextureCache()
 {
 }
@@ -75,7 +73,8 @@ int ShipTexturizer::CalculateHighDefinitionTextureMagnificationFactor(
 RgbaImageData ShipTexturizer::MakeAutoTexture(
     StructuralLayerData const & structuralLayer,
     std::optional<ShipAutoTexturizationSettings> const & settings,
-    int maxTextureSize) const
+    int maxTextureSize,
+    IAssetManager & assetManager) const
 {
     auto const startTime = GameChronometer::now();
 
@@ -103,7 +102,8 @@ RgbaImageData ShipTexturizer::MakeAutoTexture(
         ShipSpaceRect({ 0, 0 }, shipSize), // Whole quad
         texture,
         magnificationFactor,
-        actualSettings);
+        actualSettings,
+        assetManager);
 
     LogMessage("ShipTexturizer: completed auto-texturization:",
         " shipSize=", shipSize, " textureSize=", textureSize,
@@ -117,7 +117,8 @@ void ShipTexturizer::AutoTexturizeInto(
     ShipSpaceRect const & structuralLayerRegion,
     RgbaImageData & targetTextureImage,
     int magnificationFactor,
-    ShipAutoTexturizationSettings const & settings) const
+    ShipAutoTexturizationSettings const & settings,
+    IAssetManager & assetManager) const
 {
     //
     // Prepare constants
@@ -204,7 +205,7 @@ void ShipTexturizer::AutoTexturizeInto(
 
                 // Get bump map texture
                 assert(structuralMaterial != nullptr);
-                Vec2fImageData const & materialTexture = GetMaterialTexture(structuralMaterial->MaterialTextureName);
+                Vec2fImageData const & materialTexture = GetMaterialTexture(structuralMaterial->MaterialTextureName, assetManager);
 
                 //
                 // Prepare bilinear interpolation along X
@@ -599,26 +600,17 @@ void ShipTexturizer::RenderShipInto(
 
 ///////////////////////////////////////////////////////////////////////////////////
 
-std::unordered_map<std::string, std::filesystem::path> ShipTexturizer::MakeMaterialTextureNameToTextureFilePathMap(
+std::unordered_map<std::string, std::string> ShipTexturizer::MakeMaterialTextureNameToTextureRelativePathMap(
     MaterialDatabase const & materialDatabase,
-    ResourceLocator const & resourceLocator)
+    IAssetManager & assetManager)
 {
-    std::unordered_map<std::string, std::filesystem::path> materialTextureNameToTextureFilePath;
+    std::unordered_map<std::string, std::string> materialTextureNameToTextureRelativePath;
 
     // Add "none" entry
     {
-        std::filesystem::path const materialTextureFilePath = resourceLocator.GetMaterialTextureFilePath(MaterialTextureNameNone);
+        std::string const materialTextureRelativePath = assetManager.GetMaterialTextureRelativePath(MaterialTextureNameNone);
 
-        // Make sure file exists
-        if (!std::filesystem::exists(materialTextureFilePath)
-            || !std::filesystem::is_regular_file(materialTextureFilePath))
-        {
-            throw GameException(
-                "Cannot find material texture file for texture name \"" + MaterialTextureNameNone + "\"");
-        }
-
-        // Store mapping
-        materialTextureNameToTextureFilePath[MaterialTextureNameNone] = materialTextureFilePath;
+        materialTextureNameToTextureRelativePath[MaterialTextureNameNone] = materialTextureRelativePath;
     }
 
     // Add entries for all materials
@@ -631,28 +623,18 @@ std::unordered_map<std::string, std::filesystem::path> ShipTexturizer::MakeMater
                 if (material.MaterialTextureName.has_value())
                 {
                     std::string const & materialTextureName = *material.MaterialTextureName;
-                    if (materialTextureNameToTextureFilePath.count(materialTextureName) == 0)
+                    if (materialTextureNameToTextureRelativePath.count(materialTextureName) == 0)
                     {
-                        std::filesystem::path const materialTextureFilePath = resourceLocator.GetMaterialTextureFilePath(materialTextureName);
+                        std::string const materialTextureRelativePath = assetManager.GetMaterialTextureRelativePath(materialTextureName);
 
-                        // Make sure file exists
-                        if (!std::filesystem::exists(materialTextureFilePath)
-                            || !std::filesystem::is_regular_file(materialTextureFilePath))
-                        {
-                            throw GameException(
-                                "Cannot find material texture file for texture name \"" + materialTextureName + "\""
-                                + " specified for material \"" + material.Name + "\"");
-                        }
-
-                        // Store mapping
-                        materialTextureNameToTextureFilePath[materialTextureName] = materialTextureFilePath;
+                        materialTextureNameToTextureRelativePath[materialTextureName] = materialTextureRelativePath;
                     }
                 }
             }
         }
     }
 
-    return materialTextureNameToTextureFilePath;
+    return materialTextureNameToTextureRelativePath;
 }
 
 float ShipTexturizer::MaterialTextureMagnificationToPixelConversionFactor(float magnification)
@@ -665,7 +647,8 @@ RgbaImageData ShipTexturizer::MakeMaterialTextureSample(
     std::optional<ShipAutoTexturizationSettings> const & settings,
     ImageSize const & sampleSize,
     rgbaColor const & renderColor,
-    std::optional<std::string> const & textureName) const
+    std::optional<std::string> const & textureName,
+    IAssetManager & assetManager) const
 {
     assert(sampleSize.width >= 2); // We'll split the width in half
 
@@ -678,7 +661,7 @@ RgbaImageData ShipTexturizer::MakeMaterialTextureSample(
     auto sampleData = std::make_unique<rgbaColor[]>(sampleSize.GetLinearSize());
 
     // Get bump map texture and render color
-    Vec2fImageData const & materialTexture = GetMaterialTexture(textureName);
+    Vec2fImageData const & materialTexture = GetMaterialTexture(textureName, assetManager);
     vec3f const renderPixelColorF = renderColor.toVec3f();
 
     // Calculate constants
@@ -719,7 +702,9 @@ RgbaImageData ShipTexturizer::MakeMaterialTextureSample(
     return RgbaImageData(sampleSize, std::move(sampleData));
 }
 
-ShipTexturizer::Vec2fImageData const & ShipTexturizer::GetMaterialTexture(std::optional<std::string> const & textureName) const
+ShipTexturizer::Vec2fImageData const & ShipTexturizer::GetMaterialTexture(
+    std::optional<std::string> const & textureName,
+    IAssetManager & assetManager) const
 {
     std::string const actualTextureName = textureName.value_or(MaterialTextureNameNone);
 
@@ -741,8 +726,8 @@ ShipTexturizer::Vec2fImageData const & ShipTexturizer::GetMaterialTexture(std::o
         }
 
         // Load texture
-        assert(mMaterialTextureNameToTextureFilePathMap.count(actualTextureName) > 0);
-        RgbImageData texture = PngImageFileTools::LoadImageRgb(mMaterialTextureNameToTextureFilePathMap.at(actualTextureName));
+        assert(mMaterialTextureNameToTextureRelativePathMap.count(actualTextureName) > 0);
+        RgbImageData texture = assetManager.LoadMaterialTexture(mMaterialTextureNameToTextureRelativePathMap.at(actualTextureName));
 
         // Convert to vec2f
         auto const pixelCount = texture.Size.GetLinearSize();

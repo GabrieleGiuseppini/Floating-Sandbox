@@ -7,14 +7,14 @@
 ***************************************************************************************/
 #include "ShipFactory.h"
 
-#include "Formulae.h"
+#include "Physics/Formulae.h"
 #include "ShipFloorplanizer.h"
 
-#include <GameCore/GameChronometer.h>
-#include <GameCore/GameDebug.h>
-#include <GameCore/GameMath.h>
-#include <GameCore/ImageTools.h>
-#include <GameCore/Log.h>
+#include <Core/GameChronometer.h>
+#include <Core/GameDebug.h>
+#include <Core/GameMath.h>
+#include <Core/ImageTools.h>
+#include <Core/Log.h>
 
 #include <algorithm>
 #include <cassert>
@@ -36,8 +36,9 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData, RgbaImageData> ShipFac
     MaterialDatabase const & materialDatabase,
     ShipTexturizer const & shipTexturizer,
     ShipStrengthRandomizer const & shipStrengthRandomizer,
-    std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-    GameParameters const & gameParameters)
+    std::shared_ptr<SimulationEventDispatcher> & simulationEventDispatcher,
+    IAssetManager & assetManager,
+    SimulationParameters const & simulationParameters)
 {
     auto const totalStartTime = GameChronometer::now();
 
@@ -340,8 +341,8 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData, RgbaImageData> ShipFac
         pointInfos2,
         parentWorld,
         materialDatabase,
-        gameEventDispatcher,
-        gameParameters,
+        simulationEventDispatcher,
+        simulationParameters,
         shipDefinition.PhysicsData);
 
     //
@@ -353,8 +354,8 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData, RgbaImageData> ShipFac
         perfectSquareCount,
         points,
         parentWorld,
-        gameEventDispatcher,
-        gameParameters);
+        simulationEventDispatcher,
+        simulationParameters);
 
     //
     // Create Triangles for all ShipFactoryTriangle's
@@ -383,8 +384,8 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData, RgbaImageData> ShipFac
         shipLoadOptions.Rotate90CW,
         shipId,
         parentWorld,
-        gameEventDispatcher,
-        gameParameters);
+        simulationEventDispatcher,
+        simulationParameters);
 
     //
     // Create frontiers
@@ -404,7 +405,8 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData, RgbaImageData> ShipFac
         : shipTexturizer.MakeAutoTexture(
             *shipDefinition.Layers.StructuralLayer,
             shipDefinition.AutoTexturizationSettings, // Auto-texturize
-            ShipTexturizer::MaxHighDefinitionTextureSize);
+            ShipTexturizer::MaxHighDefinitionTextureSize,
+            assetManager);
 
     //
     // Create interior texture
@@ -418,7 +420,8 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData, RgbaImageData> ShipFac
                 ShipAutoTexturizationModeType::MaterialTextures,
                 0.15f,
                 0.65f),
-            ShipTexturizer::MaxHighDefinitionTextureSize);
+            ShipTexturizer::MaxHighDefinitionTextureSize,
+            assetManager);
 
     // Whiteout
     ImageTools::BlendWithColor(
@@ -458,7 +461,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData, RgbaImageData> ShipFac
         shipId,
         parentWorld,
         materialDatabase,
-        std::move(gameEventDispatcher),
+        simulationEventDispatcher,
         std::move(points),
         std::move(springs),
         std::move(triangles),
@@ -1873,22 +1876,22 @@ std::tuple<Physics::Points, std::set<ElectricalElementInstanceIndex>> ShipFactor
     std::vector<ShipFactoryPoint> const & pointInfos2,
     World & parentWorld,
     MaterialDatabase const & materialDatabase,
-    std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-    GameParameters const & gameParameters,
+    std::shared_ptr<SimulationEventDispatcher> & simulationEventDispatcher,
+    SimulationParameters const & simulationParameters,
     ShipPhysicsData const & physicsData)
 {
     Physics::Points points(
         static_cast<ElementIndex>(pointInfos2.size()),
         parentWorld,
         materialDatabase,
-        std::move(gameEventDispatcher),
-        gameParameters);
+        simulationEventDispatcher,
+        simulationParameters);
 
     std::set<ElectricalElementInstanceIndex> allElectricalElementInstanceIndices;
 
     float const internalPressure =
         physicsData.InternalPressure // Default internal pressure is 1atm
-        * GameParameters::AirPressureAtSeaLevel; // The ship's (initial) internal pressure is just relative to a constant 1 atm
+        * SimulationParameters::AirPressureAtSeaLevel; // The ship's (initial) internal pressure is just relative to a constant 1 atm
 
     ElementIndex electricalElementCounter = 0;
     for (size_t p = 0; p < pointInfos2.size(); ++p)
@@ -1943,15 +1946,15 @@ Physics::Springs ShipFactory::CreateSprings(
     ElementCount perfectSquareCount,
     Physics::Points & points,
     Physics::World & parentWorld,
-    std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-    GameParameters const & gameParameters)
+    std::shared_ptr<SimulationEventDispatcher> & simulationEventDispatcher,
+    SimulationParameters const & simulationParameters)
 {
     Physics::Springs springs(
         static_cast<ElementIndex>(springInfos2.size()),
         perfectSquareCount,
         parentWorld,
-        std::move(gameEventDispatcher),
-        gameParameters);
+        simulationEventDispatcher,
+        simulationParameters);
 
     for (ElementIndex s = 0; s < springInfos2.size(); ++s)
     {
@@ -2111,8 +2114,8 @@ ElectricalElements ShipFactory::CreateElectricalElements(
     bool rotate90CW,
     ShipId shipId,
     Physics::World & parentWorld,
-    std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-    GameParameters const & gameParameters)
+    std::shared_ptr<SimulationEventDispatcher> & simulationEventDispatcher,
+    SimulationParameters const & simulationParameters)
 {
     assert(points.GetRawShipPointCount() == pointInfos2.size());
 
@@ -2188,8 +2191,8 @@ ElectricalElements ShipFactory::CreateElectricalElements(
         lampElementCount,
         shipId,
         parentWorld,
-        gameEventDispatcher,
-        gameParameters);
+        simulationEventDispatcher,
+        simulationParameters);
 
     for (auto const & elementInfo : electricalElementInfos)
     {

@@ -6,17 +6,18 @@
 #pragma once
 
 #include "ElectricalPanel.h"
-#include "GameParameters.h"
 #include "MaterialDatabase.h"
-#include "Physics.h"
+#include "Physics/Physics.h"
 #include "ShipDefinition.h"
 #include "ShipFactoryTypes.h"
 #include "ShipLoadOptions.h"
 #include "ShipStrengthRandomizer.h"
 #include "ShipTexturizer.h"
+#include "SimulationEventDispatcher.h"
+#include "SimulationParameters.h"
 
-#include <GameCore/GameTypes.h>
-#include <GameCore/IndexRemap.h>
+#include <Core/GameTypes.h>
+#include <Core/IndexRemap.h>
 
 #include <algorithm>
 #include <cstdint>
@@ -45,8 +46,9 @@ public:
         MaterialDatabase const & materialDatabase,
         ShipTexturizer const & shipTexturizer,
         ShipStrengthRandomizer const & shipStrengthRandomizer,
-        std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-        GameParameters const & gameParameters);
+        std::shared_ptr<SimulationEventDispatcher> & simulationEventDispatcher,
+        IAssetManager & assetManager,
+        SimulationParameters const & simulationParameters);
 
 private:
 
@@ -161,8 +163,8 @@ private:
         std::vector<ShipFactoryPoint> const & pointInfos2,
         Physics::World & parentWorld,
         MaterialDatabase const & materialDatabase,
-        std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-        GameParameters const & gameParameters,
+        std::shared_ptr<SimulationEventDispatcher> & simulationEventDispatcher,
+        SimulationParameters const & simulationParameters,
         ShipPhysicsData const & physicsData);
 
     static Physics::Springs CreateSprings(
@@ -170,8 +172,8 @@ private:
         ElementCount perfectSquareCount,
         Physics::Points & points,
         Physics::World & parentWorld,
-        std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-        GameParameters const & gameParameters);
+        std::shared_ptr<SimulationEventDispatcher> & simulationEventDispatcher,
+        SimulationParameters const & simulationParameters);
 
     static Physics::Triangles CreateTriangles(
         std::vector<ShipFactoryTriangle> const & triangleInfos2,
@@ -190,8 +192,8 @@ private:
         bool rotate90CW,
         ShipId shipId,
         Physics::World & parentWorld,
-        std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-        GameParameters const & gameParameters);
+        std::shared_ptr<SimulationEventDispatcher> & simulationEventDispatcher,
+        SimulationParameters const & simulationParameters);
 
     static Physics::Frontiers CreateFrontiers(
         std::vector<ShipFactoryFrontier> const & shipFactoryFrontiers,

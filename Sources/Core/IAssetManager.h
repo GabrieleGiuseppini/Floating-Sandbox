@@ -43,6 +43,10 @@ public:
 	virtual RgbaImageData LoadTextureDatabaseFrameRGBA(std::string const & databaseName, std::string const & frameRelativePath) const = 0;
 	virtual std::vector<AssetDescriptor> EnumerateTextureDatabaseFrames(std::string const & databaseName) const = 0;
 
+	// Material textures
+	virtual std::string GetMaterialTextureRelativePath(std::string const & materialTextureName) const = 0;
+	virtual RgbImageData LoadMaterialTexture(std::string const & frameRelativePath) const = 0;
+
 	// Texture atlases
 	virtual picojson::value LoadTetureAtlasSpecification(std::string const & textureDatabaseName) const = 0;
 	virtual RgbaImageData LoadTextureAtlasImageRGBA(std::string const & textureDatabaseName) const = 0;

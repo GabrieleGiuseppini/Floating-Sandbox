@@ -7,8 +7,8 @@
 
 #include "ShipFactoryTypes.h"
 
-#include <GameCore/GameTypes.h>
-#include <GameCore/IndexRemap.h>
+#include <Core/GameTypes.h>
+#include <Core/IndexRemap.h>
 
 #include <array>
 #include <unordered_set>
