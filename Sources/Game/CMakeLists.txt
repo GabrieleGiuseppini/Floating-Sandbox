@@ -21,6 +21,8 @@ set  (GAME_SOURCES
 	ShipLegacyFormatDeSerializer.cpp
 	ShipLegacyFormatDeSerializer.h
 	ShipLoadSpecifications.h
+	ShipPreviewImageDatabase.cpp
+	ShipPreviewImageDatabase.h
 )
 
 source_group(" " FILES ${GAME_SOURCES})

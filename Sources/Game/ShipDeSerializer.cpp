@@ -95,7 +95,7 @@ void ShipDeSerializer::SaveShip(
     auto outputStream = FileBinaryWriteStream(shipFilePath);
     ShipDefinitionFormatDeSerializer::Save(
         shipDefinition,
-        GameVersion,
+        CurrentGameVersion,
         outputStream);
 }
 

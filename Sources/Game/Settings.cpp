@@ -206,7 +206,7 @@ SettingsSerializationContext::SettingsSerializationContext(
     mStorage.Delete(mSettingsKey);
 
     // Prepare json
-    mSettingsJson["version"] = picojson::value(GameVersion.ToString());
+    mSettingsJson["version"] = picojson::value(CurrentGameVersion.ToString());
     mSettingsJson["description"] = picojson::value(description);
     mSettingsJson["settings"] = picojson::value(picojson::object());
 
@@ -235,7 +235,7 @@ SettingsDeserializationContext::SettingsDeserializationContext(
     : mSettingsKey(settingsKey)
     , mStorage(storage)
     , mSettingsRoot()
-    , mSettingsVersion(GameVersion)
+    , mSettingsVersion(CurrentGameVersion)
 {
     //
     // Load JSON

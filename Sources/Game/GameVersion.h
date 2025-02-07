@@ -41,7 +41,7 @@ inline std::string ApplicationName = APPLICATION_NAME;
 
 //////////////////////////////////////////////////////////////
 
-Version constexpr GameVersion = Version(
+Version constexpr CurrentGameVersion = Version(
     APPLICATION_VERSION_MAJOR,
     APPLICATION_VERSION_MINOR,
     APPLICATION_VERSION_PATCH,

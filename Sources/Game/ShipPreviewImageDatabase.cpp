@@ -5,8 +5,8 @@
 ***************************************************************************************/
 #include "ShipPreviewImageDatabase.h"
 
-#include <GameCore/GameException.h>
-#include <GameCore/Log.h>
+#include <Core/GameException.h>
+#include <Core/Log.h>
 
 #include <limits>
 #include <utility>
@@ -126,7 +126,9 @@ PersistedShipPreviewImageDatabase PersistedShipPreviewImageDatabase::Load(
         if (fileSystem->Exists(databaseFilePath))
         {
             // Open file
-            databaseFileStream = fileSystem->OpenInputStream(databaseFilePath);
+            databaseFileStream = std::make_shared<std::ifstream>(
+                databaseFilePath,
+                std::ios_base::in | std::ios_base::binary);
             databaseFileStream->exceptions(std::ifstream::failbit | std::ifstream::badbit | std::ifstream::eofbit);
 
             // Load and check header
@@ -140,7 +142,7 @@ PersistedShipPreviewImageDatabase PersistedShipPreviewImageDatabase::Load(
                     throw std::runtime_error("Database file is not recognized");
                 }
 
-                if (header.GameVersion > Version::CurrentVersion())
+                if (header.DBGameVersion > CurrentGameVersion)
                 {
                     throw std::runtime_error("Database file was generated on a more recent version of the simulator");
                 }
@@ -341,11 +343,19 @@ bool NewShipPreviewImageDatabase::Commit(
             {
                 // Open file
 
-                outputStream = mFileSystem->OpenOutputStream(databaseFilePath);
+                outputStream = std::shared_ptr<std::ostream>(
+                    new std::ofstream(
+                        databaseFilePath,
+                        std::ios_base::out | std::ios_base::binary | std::ios_base::trunc),
+                    [](std::ostream * os)
+                    {
+                        os->flush();
+                        delete os;
+                    });
 
                 // Write header
 
-                DatabaseStructure::FileHeader header(Version::CurrentVersion());
+                DatabaseStructure::FileHeader header(CurrentGameVersion);
 
                 WriteFromData(
                     *outputStream,

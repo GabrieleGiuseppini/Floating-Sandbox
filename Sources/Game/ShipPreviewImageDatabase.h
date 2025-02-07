@@ -6,9 +6,9 @@
 #pragma once
 
 #include "FileSystem.h"
-#include "Version.h"
+#include "GameVersion.h"
 
-#include <GameCore/ImageData.h>
+#include <Core/ImageData.h>
 
 #include <array>
 #include <cstdint>
@@ -34,11 +34,11 @@ protected:
             static std::array<char, 32> constexpr StockTitle{ 'F', 'L', 'O', 'A', 'T', 'I', 'N', 'G', ' ', 'S', 'A', 'N', 'D', 'B', 'O', 'X', ' ', 'S', 'H', 'I', 'P', ' ', 'P', 'R', 'E', 'V', 'I', 'E', 'W', ' ', 'D', 'B' };
 
             std::array<char, 32> Title;
-            Version GameVersion;
+            Version DBGameVersion;
             size_t SizeOfSizeT;
 
             FileHeader(Version gameVersion)
-                : GameVersion(gameVersion)
+                : DBGameVersion(gameVersion)
                 , SizeOfSizeT(sizeof(size_t))
             {
                 std::memcpy(Title.data(), StockTitle.data(), Title.size());
