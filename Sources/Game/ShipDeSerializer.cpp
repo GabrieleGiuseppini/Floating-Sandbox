@@ -5,11 +5,15 @@
 ***************************************************************************************/
 #include "ShipDeSerializer.h"
 
-#include "PngImageFileTools.h"
-#include "ShipDefinitionFormatDeSerializer.h"
+#include "FileStreams.h"
+#include "FileSystem.h"
+#include "GameAssetManager.h"
+#include "GameVersion.h"
 #include "ShipLegacyFormatDeSerializer.h"
 
-#include <GameCore/GameException.h>
+#include <Simulation/ShipDefinitionFormatDeSerializer.h>
+
+#include <Core/GameException.h>
 
 #include <memory>
 
@@ -24,7 +28,8 @@ ShipDefinition ShipDeSerializer::LoadShip(
 {
     if (IsShipDefinitionFile(shipFilePath))
     {
-        return ShipDefinitionFormatDeSerializer::Load(shipFilePath, materialDatabase);
+        auto inputStream = FileBinaryReadStream(shipFilePath);
+        return ShipDefinitionFormatDeSerializer::Load(inputStream, materialDatabase);
     }
     else if (IsImageDefinitionFile(shipFilePath))
     {
@@ -40,11 +45,19 @@ ShipDefinition ShipDeSerializer::LoadShip(
     }
 }
 
-ShipPreviewData ShipDeSerializer::LoadShipPreviewData(std::filesystem::path const & shipFilePath)
+EnhancedShipPreviewData ShipDeSerializer::LoadShipPreviewData(std::filesystem::path const & shipFilePath)
 {
     if (IsShipDefinitionFile(shipFilePath))
     {
-        return ShipDefinitionFormatDeSerializer::LoadPreviewData(shipFilePath);
+        auto inputStream = FileBinaryReadStream(shipFilePath);
+        auto const shipPreviewData = ShipDefinitionFormatDeSerializer::LoadPreviewData(inputStream);
+        return EnhancedShipPreviewData(
+            shipFilePath,
+            shipPreviewData.ShipSize,
+            shipPreviewData.Metadata,
+            shipPreviewData.IsHD,
+            shipPreviewData.HasElectricals,
+            PortableTimepoint::FromTime(FileSystem::GetLastModifiedTime(shipFilePath)));
     }
     else if (IsImageDefinitionFile(shipFilePath))
     {
@@ -61,21 +74,29 @@ ShipPreviewData ShipDeSerializer::LoadShipPreviewData(std::filesystem::path cons
 }
 
 RgbaImageData ShipDeSerializer::LoadShipPreviewImage(
-    ShipPreviewData const & previewData,
+    EnhancedShipPreviewData const & previewData,
     ImageSize const & maxSize)
 {
-    return IsShipDefinitionFile(previewData.PreviewFilePath)
-        ? ShipDefinitionFormatDeSerializer::LoadPreviewImage(previewData.PreviewFilePath, maxSize)
-        : ShipLegacyFormatDeSerializer::LoadPreviewImage(previewData.PreviewFilePath, maxSize);
+    if (IsShipDefinitionFile(previewData.PreviewFilePath))
+    {
+        auto inputStream = FileBinaryReadStream(previewData.PreviewFilePath);
+        return ShipDefinitionFormatDeSerializer::LoadPreviewImage(inputStream, maxSize);
+    }
+    else
+    {
+        return ShipLegacyFormatDeSerializer::LoadPreviewImage(previewData.PreviewFilePath, maxSize);
+    }
 }
 
 void ShipDeSerializer::SaveShip(
     ShipDefinition const & shipDefinition,
     std::filesystem::path const & shipFilePath)
 {
+    auto outputStream = FileBinaryWriteStream(shipFilePath);
     ShipDefinitionFormatDeSerializer::Save(
         shipDefinition,
-        shipFilePath);
+        GameVersion,
+        outputStream);
 }
 
 void ShipDeSerializer::SaveStructuralLayerImage(
@@ -98,7 +119,7 @@ void ShipDeSerializer::SaveStructuralLayerImage(
         }
     }
 
-    PngImageFileTools::SavePngImage(
+    GameAssetManager::SavePngImage(
         structuralLayerImage,
         shipFilePath);
 }

@@ -5,11 +5,12 @@
 ***************************************************************************************/
 #include "ShipLegacyFormatDeSerializer.h"
 
-#include "PngImageFileTools.h"
+#include "FileSystem.h"
+#include "GameAssetManager.h"
 
-#include <GameCore/GameException.h>
-#include <GameCore/ImageTools.h>
-#include <GameCore/Utils.h>
+#include <Core/GameException.h>
+#include <Core/ImageTools.h>
+#include <Core/Utils.h>
 
 #include <memory>
 
@@ -47,20 +48,20 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadShipFromLegacyShpShipDefinition
         materialDatabase);
 }
 
-ShipPreviewData ShipLegacyFormatDeSerializer::LoadShipPreviewDataFromImageDefinition(std::filesystem::path const & imageDefinitionFilePath)
+EnhancedShipPreviewData ShipLegacyFormatDeSerializer::LoadShipPreviewDataFromImageDefinition(std::filesystem::path const & imageDefinitionFilePath)
 {
-    auto const imageSize = PngImageFileTools::GetImageSize(imageDefinitionFilePath);
+    auto const imageSize = GameAssetManager::GetImageSize(imageDefinitionFilePath);
 
-    return ShipPreviewData(
+    return EnhancedShipPreviewData(
         imageDefinitionFilePath,
         ShipSpaceSize(imageSize.width, imageSize.height),
         ShipMetadata(imageDefinitionFilePath.stem().string()),
         false, // isHD
         false, // hasElectricals
-        PortableTimepoint::FromLastWriteTime(imageDefinitionFilePath));
+        PortableTimepoint::FromTime(FileSystem::GetLastModifiedTime(imageDefinitionFilePath)));
 }
 
-ShipPreviewData ShipLegacyFormatDeSerializer::LoadShipPreviewDataFromLegacyShpShipDefinition(std::filesystem::path const & shipFilePath)
+EnhancedShipPreviewData ShipLegacyFormatDeSerializer::LoadShipPreviewDataFromLegacyShpShipDefinition(std::filesystem::path const & shipFilePath)
 {
     JsonDefinition const & jsonDefinition = LoadLegacyShpShipDefinitionJson(shipFilePath);
 
@@ -86,22 +87,22 @@ ShipPreviewData ShipLegacyFormatDeSerializer::LoadShipPreviewDataFromLegacyShpSh
     if (!jsonDefinition.Metadata.DoHideElectricalsInPreview)
         hasElectricals = jsonDefinition.ElectricalLayerImageFilePath.has_value();
 
-    ImageSize const structuralImageSize = PngImageFileTools::GetImageSize(jsonDefinition.StructuralLayerImageFilePath);
+    ImageSize const structuralImageSize = GameAssetManager::GetImageSize(jsonDefinition.StructuralLayerImageFilePath);
 
-    return ShipPreviewData(
+    return EnhancedShipPreviewData(
         previewImageFilePath,
         ShipSpaceSize(structuralImageSize.width, structuralImageSize.height), // Ship size is from structural image
         jsonDefinition.Metadata,
         isHD,
         hasElectricals,
-        PortableTimepoint::FromLastWriteTime(shipFilePath));
+        PortableTimepoint::FromTime(FileSystem::GetLastModifiedTime(shipFilePath)));
 }
 
 RgbaImageData ShipLegacyFormatDeSerializer::LoadPreviewImage(
     std::filesystem::path const & previewFilePath,
     ImageSize const & maxSize)
 {
-    RgbaImageData originalPreviewImage = PngImageFileTools::LoadImageRgba(previewFilePath);
+    RgbaImageData originalPreviewImage = GameAssetManager::LoadPngImageRgba(previewFilePath);
     RgbaImageData previewImage = ImageTools::Resize(
         originalPreviewImage,
         originalPreviewImage.Size.ShrinkToFit(maxSize),
@@ -117,7 +118,7 @@ ShipLegacyFormatDeSerializer::JsonDefinition ShipLegacyFormatDeSerializer::LoadL
 {
     std::filesystem::path const basePath = shipFilePath.parent_path();
 
-    picojson::value root = Utils::ParseJSONFile(shipFilePath.string());
+    picojson::value root = GameAssetManager::LoadJson(shipFilePath);
     if (!root.is<picojson::object>())
     {
         throw GameException("Ship definition file \"" + shipFilePath.string() + "\" does not contain a JSON object");
@@ -307,7 +308,7 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImageFilePaths(
     // Load images
     //
 
-    RgbImageData structuralLayerImage = PngImageFileTools::LoadImageRgb(structuralLayerImageFilePath);
+    RgbImageData structuralLayerImage = GameAssetManager::LoadPngImageRgb(structuralLayerImageFilePath);
 
     std::optional<RgbImageData> electricalLayerImage;
     if (electricalLayerImageFilePath.has_value())
@@ -315,7 +316,7 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImageFilePaths(
         try
         {
             electricalLayerImage.emplace(
-                PngImageFileTools::LoadImageRgb(*electricalLayerImageFilePath));
+                GameAssetManager::LoadPngImageRgb(*electricalLayerImageFilePath));
         }
         catch (GameException const & gex)
         {
@@ -329,7 +330,7 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImageFilePaths(
         try
         {
             ropesLayerImage.emplace(
-                PngImageFileTools::LoadImageRgb(*ropesLayerImageFilePath));
+                GameAssetManager::LoadPngImageRgb(*ropesLayerImageFilePath));
         }
         catch (GameException const & gex)
         {
@@ -343,7 +344,7 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImageFilePaths(
         try
         {
             textureLayerImage.emplace(
-                PngImageFileTools::LoadImageRgba(*textureLayerImageFilePath));
+                GameAssetManager::LoadPngImageRgba(*textureLayerImageFilePath));
         }
         catch (GameException const & gex)
         {

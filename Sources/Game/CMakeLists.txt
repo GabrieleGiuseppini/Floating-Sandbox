@@ -4,6 +4,7 @@
 #
 
 set  (GAME_SOURCES
+	EnhancedShipPreviewData.h
 	FileStreams.h
 	FileSystem.h
 	GameAssetManager.cpp
@@ -15,6 +16,10 @@ set  (GAME_SOURCES
 	RollingText.h
 	Settings.cpp
 	Settings.h
+	ShipDeSerializer.cpp
+	ShipDeSerializer.h
+	ShipLegacyFormatDeSerializer.cpp
+	ShipLegacyFormatDeSerializer.h
 	ShipLoadSpecifications.h
 )
 

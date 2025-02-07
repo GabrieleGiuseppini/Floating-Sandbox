@@ -5,19 +5,21 @@
 ***************************************************************************************/
 #pragma once
 
-#include "Layers.h"
-#include "MaterialDatabase.h"
-#include "ShipDefinition.h"
-#include "ShipPreviewData.h"
+#include "EnhancedShipPreviewData.h"
 
-#include <GameCore/ImageData.h>
+#include <Simulation/Layers.h>
+#include <Simulation/MaterialDatabase.h>
+#include <Simulation/ShipDefinition.h>
+
+#include <Core/ImageData.h>
 
 #include <cstdint>
 #include <filesystem>
 #include <optional>
 
 /*
- * All the logic to load and save ships from and to files.
+ * All the logic to load and save ships from and to files, both legacy definition format
+ * and new (standard) definition format.
  */
 class ShipDeSerializer
 {
@@ -51,10 +53,10 @@ public:
         std::filesystem::path const & shipFilePath,
         MaterialDatabase const & materialDatabase);
 
-    static ShipPreviewData LoadShipPreviewData(std::filesystem::path const & shipFilePath);
+    static EnhancedShipPreviewData LoadShipPreviewData(std::filesystem::path const & shipFilePath);
 
     static RgbaImageData LoadShipPreviewImage(
-        ShipPreviewData const & previewData,
+        EnhancedShipPreviewData const & previewData,
         ImageSize const & maxSize);
 
     static void SaveShip(

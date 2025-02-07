@@ -5,12 +5,13 @@
 ***************************************************************************************/
 #pragma once
 
-#include "ElectricalPanel.h"
-#include "MaterialDatabase.h"
-#include "ShipDefinition.h"
-#include "ShipPreviewData.h"
+#include <EnhancedShipPreviewData.h>
 
-#include <GameCore/ImageData.h>
+#include <Simulation/ElectricalPanel.h>
+#include <Simulation/MaterialDatabase.h>
+#include <Simulation/ShipDefinition.h>
+
+#include <Core/ImageData.h>
 
 #include <cstdint>
 #include <filesystem>
@@ -31,9 +32,9 @@ public:
         std::filesystem::path const & shipFilePath,
         MaterialDatabase const & materialDatabase);
 
-    static ShipPreviewData LoadShipPreviewDataFromImageDefinition(std::filesystem::path const & imageDefinitionFilePath);
+    static EnhancedShipPreviewData LoadShipPreviewDataFromImageDefinition(std::filesystem::path const & imageDefinitionFilePath);
 
-    static ShipPreviewData LoadShipPreviewDataFromLegacyShpShipDefinition(std::filesystem::path const & shipFilePath);
+    static EnhancedShipPreviewData LoadShipPreviewDataFromLegacyShpShipDefinition(std::filesystem::path const & shipFilePath);
 
     static RgbaImageData LoadPreviewImage(
         std::filesystem::path const & previewFilePath,
