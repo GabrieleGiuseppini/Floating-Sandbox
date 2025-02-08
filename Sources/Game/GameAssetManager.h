@@ -47,10 +47,73 @@ public:
 	picojson::value LoadFishSpeciesDatabase() const override;
 	picojson::value LoadNpcDatabase() const override;
 
-
 	//
 	// Platform-specific
 	//
+
+	// Ships
+
+	std::filesystem::path GetInstalledShipFolderPath() const;
+
+	std::filesystem::path GetDefaultShipDefinitionFilePath() const;
+
+	std::filesystem::path GetFallbackShipDefinitionFilePath() const;
+
+	std::filesystem::path GetApril1stShipDefinitionFilePath() const;
+
+	std::filesystem::path GetHolidaysShipDefinitionFilePath() const;
+
+	// Music
+
+	std::vector<std::string> GetMusicNames() const;
+
+	std::filesystem::path GetMusicFilePath(std::string const & musicName) const;
+
+	// Sounds
+
+	std::vector<std::string> GetSoundNames() const;
+
+	std::filesystem::path GetSoundFilePath(std::string const & soundName) const;
+
+	// UI Resources
+
+	std::filesystem::path GetCursorFilePath(std::string const & cursorName) const;
+
+	std::filesystem::path GetIconFilePath(std::string const & iconName) const;
+
+	std::filesystem::path GetArtFilePath(std::string const & artName) const;
+
+	std::filesystem::path GetBitmapFilePath(std::string const & bitmapName) const;
+
+	std::vector<std::filesystem::path> GetBitmapFilePaths(std::string const & bitmapNamePattern) const;
+
+	// Theme Settings
+
+	std::filesystem::path GetThemeSettingsRootFilePath() const;
+
+	// Ship
+
+	std::filesystem::path GetDefaultOceanFloorTerrainFilePath() const;
+
+	std::filesystem::path GetShipNamePrefixListFilePath() const;
+
+	// Help
+
+	std::filesystem::path GetStartupTipFilePath(
+		std::string const & desiredLanguageIdentifier,
+		std::string const & defaultLanguageIdentifier) const;
+
+	std::filesystem::path GetHelpFilePath(
+		std::string const & desiredLanguageIdentifier,
+		std::string const & defaultLanguageIdentifier) const;
+
+	// Localization
+
+	std::filesystem::path GetLanguagesRootPath() const;
+
+	// Boot settings
+
+	std::filesystem::path GetBootSettingsFilePath() const;
 
 	// Helpers
 
@@ -94,7 +157,9 @@ private:
 
 private:
 
+	std::filesystem::path const mGameRoot;
 	std::filesystem::path const mDataRoot;
+	std::filesystem::path const mResourcesRoot;
 	std::filesystem::path const mTextureRoot;
 	std::filesystem::path const mShaderRoot;
 };

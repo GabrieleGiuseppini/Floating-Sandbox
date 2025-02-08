@@ -6,6 +6,7 @@
 #include "GameAssetManager.h"
 
 #include "FileStreams.h"
+#include "FileSystem.h"
 
 #include <Core/GameException.h>
 #include <Core/Log.h>
@@ -13,8 +14,12 @@
 #include <Core/Streams.h>
 #include <Core/Utils.h>
 
+#include <regex>
+
 GameAssetManager::GameAssetManager(std::string const & argv0)
-	: mDataRoot(std::filesystem::canonical(std::filesystem::path(argv0)).parent_path() / "Data")
+	: mGameRoot(std::filesystem::canonical(std::filesystem::path(argv0)).parent_path())
+    , mDataRoot(mGameRoot / "Data")
+    , mResourcesRoot(mGameRoot / "Resources")
 	, mTextureRoot(mDataRoot / "Textures")
     , mShaderRoot(mDataRoot / "Shaders")
 {
@@ -181,7 +186,213 @@ picojson::value GameAssetManager::LoadNpcDatabase() const
     return LoadJson(mDataRoot / "Misc" / "npcs.json");
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////
+// Ships
+////////////////////////////////////////////////////////////////////////////////////////////
+
+std::filesystem::path GameAssetManager::GetInstalledShipFolderPath() const
+{
+    return mGameRoot / "Ships";
+}
+
+std::filesystem::path GameAssetManager::GetDefaultShipDefinitionFilePath() const
+{
+    std::filesystem::path defaultShipDefinitionFilePath = GetInstalledShipFolderPath() / "default_ship.shp2";
+    if (!std::filesystem::exists(defaultShipDefinitionFilePath))
+    {
+        defaultShipDefinitionFilePath = GetInstalledShipFolderPath() / "default_ship.png";
+    }
+
+    return defaultShipDefinitionFilePath;
+}
+
+std::filesystem::path GameAssetManager::GetFallbackShipDefinitionFilePath() const
+{
+    return mDataRoot / "Built-in Ships" / "fallback_ship.png";
+}
+
+std::filesystem::path GameAssetManager::GetApril1stShipDefinitionFilePath() const
+{
+    return mDataRoot / "Built-in Ships" / "Floating Sandbox Logo.shp";
+}
+
+std::filesystem::path GameAssetManager::GetHolidaysShipDefinitionFilePath() const
+{
+    return mDataRoot / "Built-in Ships" / "R.M.S. Titanic (on Holidays).shp";
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////
+// Music
+////////////////////////////////////////////////////////////////////////////////////////////
+
+std::vector<std::string> GameAssetManager::GetMusicNames() const
+{
+    std::vector<std::string> filenames;
+    for (auto const & entryIt : std::filesystem::directory_iterator(mDataRoot / "Music"))
+    {
+        if (std::filesystem::is_regular_file(entryIt.path()))
+        {
+            filenames.push_back(entryIt.path().stem().string());
+        }
+    }
+
+    return filenames;
+}
+
+std::filesystem::path GameAssetManager::GetMusicFilePath(std::string const & musicName) const
+{
+    return mDataRoot / "Music" / (musicName + ".ogg");
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////
+// Sounds
+////////////////////////////////////////////////////////////////////////////////////////////
+
+std::vector<std::string> GameAssetManager::GetSoundNames() const
+{
+    std::vector<std::string> filenames;
+    for (auto const & entryIt : std::filesystem::directory_iterator(mDataRoot / "Sounds"))
+    {
+        if (std::filesystem::is_regular_file(entryIt.path()))
+        {
+            filenames.push_back(entryIt.path().stem().string());
+        }
+    }
+
+    return filenames;
+}
+
+std::filesystem::path GameAssetManager::GetSoundFilePath(std::string const & soundName) const
+{
+    return mDataRoot / "Sounds" / (soundName + ".flac");
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////
+// UI Resources
+////////////////////////////////////////////////////////////////////////////////////////////
+
+std::filesystem::path GameAssetManager::GetCursorFilePath(std::string const & cursorName) const
+{
+    return mResourcesRoot / (cursorName + ".png");
+}
+
+std::filesystem::path GameAssetManager::GetIconFilePath(std::string const & iconName) const
+{
+    return mResourcesRoot / (iconName + ".png");
+}
+
+std::filesystem::path GameAssetManager::GetArtFilePath(std::string const & artName) const
+{
+    return mResourcesRoot / (artName + ".png");
+}
+
+std::filesystem::path GameAssetManager::GetBitmapFilePath(std::string const & bitmapName) const
+{
+    return mResourcesRoot / (bitmapName + ".png");
+}
+
+std::vector<std::filesystem::path> GameAssetManager::GetBitmapFilePaths(std::string const & bitmapNamePattern) const
+{
+    std::regex const searchRe = FileSystem::MakeFilenameMatchRegex(bitmapNamePattern);
+
+    std::vector<std::filesystem::path> filepaths;
+    for (auto const & entryIt : std::filesystem::directory_iterator(mResourcesRoot))
+    {
+        if (std::filesystem::is_regular_file(entryIt.path())
+            && entryIt.path().extension().string() == ".png"
+            && std::regex_match(entryIt.path().stem().string(), searchRe))
+        {
+            filepaths.push_back(entryIt.path());
+        }
+    }
+
+    return filepaths;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////
+// Theme Settings
+////////////////////////////////////////////////////////////////////////////////////////////
+
+std::filesystem::path GameAssetManager::GetThemeSettingsRootFilePath() const
+{
+    return mDataRoot / "Themes" / "Settings";
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////
+// Ship
+////////////////////////////////////////////////////////////////////////////////////////////
+
+std::filesystem::path GameAssetManager::GetDefaultOceanFloorTerrainFilePath() const
+{
+    return mDataRoot / "Misc" / "default_ocean_floor_terrain.png";
+}
+
+std::filesystem::path GameAssetManager::GetShipNamePrefixListFilePath() const
+{
+    return mDataRoot / "Misc" / "ship_name_prefixes.txt";
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////
+// Localization
+////////////////////////////////////////////////////////////////////////////////////////////
+
+std::filesystem::path GameAssetManager::GetLanguagesRootPath() const
+{
+    return mDataRoot / "Languages";
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////
+// Boot settings
+////////////////////////////////////////////////////////////////////////////////////////////
+
+std::filesystem::path GameAssetManager::GetBootSettingsFilePath() const
+{
+    return mGameRoot / "boot_settings.json";
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////
+// Help
+////////////////////////////////////////////////////////////////////////////////////////////
+
+std::filesystem::path GameAssetManager::GetStartupTipFilePath(
+    std::string const & desiredLanguageIdentifier,
+    std::string const & defaultLanguageIdentifier) const
+{
+    static std::filesystem::path const Filename = std::filesystem::path("startup_tip.html");
+
+    std::filesystem::path localPath = GetLanguagesRootPath() / desiredLanguageIdentifier / Filename;
+
+    if (!std::filesystem::exists(localPath))
+    {
+        LogMessage("WARNING: cannot find startup tip file for language \"", desiredLanguageIdentifier, "\"");
+
+        localPath = GetLanguagesRootPath() / defaultLanguageIdentifier / Filename;
+    }
+
+    return localPath;
+}
+
+std::filesystem::path GameAssetManager::GetHelpFilePath(
+    std::string const & desiredLanguageIdentifier,
+    std::string const & defaultLanguageIdentifier) const
+{
+    static std::filesystem::path const Filename = std::filesystem::path("help.html");
+
+    std::filesystem::path localPath = GetLanguagesRootPath() / desiredLanguageIdentifier / Filename;
+
+    if (!std::filesystem::exists(localPath))
+    {
+        LogMessage("WARNING: cannot find help file for language \"", desiredLanguageIdentifier, "\"");
+
+        localPath = GetLanguagesRootPath() / defaultLanguageIdentifier / Filename;
+    }
+
+    return localPath;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////
 // Helpers
+////////////////////////////////////////////////////////////////////////////////////////////
 
 ImageSize GameAssetManager::GetImageSize(std::filesystem::path const & filePath)
 {
