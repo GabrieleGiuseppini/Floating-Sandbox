@@ -4,6 +4,8 @@
 #
 
 set  (GAME_SOURCES
+	ComputerCalibration.cpp
+	ComputerCalibration.h
 	EnhancedShipPreviewData.h
 	FileStreams.h
 	FileSystem.h
@@ -12,6 +14,8 @@ set  (GAME_SOURCES
 	GameEventDispatcher.h
 	GameVersion.h
 	IGameEventHandlers.h
+	NotificationLayer.cpp
+	NotificationLayer.h
 	RollingText.cpp
 	RollingText.h
 	Settings.cpp

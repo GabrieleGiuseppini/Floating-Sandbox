@@ -5,12 +5,14 @@
 ***************************************************************************************/
 #pragma once
 
-#include "GameEventDispatcher.h"
-#include "PerfStats.h"
-#include "RenderContext.h"
 #include "RollingText.h"
 
-#include <GameCore/GameTypes.h>
+#include <Simulation/SimulationEventDispatcher.h>
+
+#include <Render/RenderContext.h>
+
+#include <Core/GameTypes.h>
+#include <Core/PerfStats.h>
 
 #include <array>
 #include <chrono>
@@ -19,7 +21,7 @@
 #include <string>
 #include <vector>
 
-class NotificationLayer final : private IGenericGameEventHandler
+class NotificationLayer final : private IGenericShipEventHandler
 {
 public:
 
@@ -30,7 +32,7 @@ public:
 		bool isAutoFocusOn,
 		bool isShiftOn,
 		UnitsSystem displayUnitsSystem,
-		GameEventDispatcher & gameEventHandler);
+		SimulationEventDispatcher & simulationEventDispatcher);
 
 	bool IsStatusTextEnabled() const { return mIsStatusTextEnabled; }
 	void SetStatusTextEnabled(bool isEnabled);
@@ -47,7 +49,7 @@ public:
         bool isPaused,
         float zoom,
         vec2f const & camera,
-        Render::RenderStatistics renderStats);
+        RenderStatistics renderStats);
 
 	void PublishNotificationText(
 		std::string const & text,
@@ -166,7 +168,7 @@ public:
 		float now,
 		float currentSimulationTime);
 
-	void RenderUpload(Render::RenderContext & renderContext);
+	void RenderUpload(RenderContext & renderContext);
 
 private:
 
@@ -186,13 +188,13 @@ private:
 		std::string & line,
 		bool isEnabled,
 		int & effectiveOrdinal,
-		Render::NotificationRenderContext & notificationRenderContext);
+		NotificationRenderContext & notificationRenderContext);
 
 	void RegeneratePhysicsProbeReadingStrings();
 
 private:
 
-	GameEventDispatcher & mGameEventHandler;
+	SimulationEventDispatcher & mSimulationEventHandler;
 
 	//
 	// Status text

@@ -5,12 +5,12 @@
  ***************************************************************************************/
 #include "ComputerCalibration.h"
 
-#include <GameOpenGL/GameOpenGL.h>
+#include <OpenGLCore/GameOpenGL.h>
 
-#include <GameCore/GameMath.h>
-#include <GameCore/Log.h>
-#include <GameCore/ThreadManager.h>
-#include <GameCore/Vectors.h>
+#include <Core/GameMath.h>
+#include <Core/Log.h>
+#include <Core/ThreadManager.h>
+#include <Core/Vectors.h>
 
 #include <chrono>
 #include <cmath>
@@ -58,8 +58,8 @@ ComputerCalibrationScore ComputerCalibrator::Calibrate()
 
 void ComputerCalibrator::TuneGame(
     ComputerCalibrationScore const & score,
-    GameParameters & gameParameters,
-    Render::RenderContext & renderContext)
+    SimulationParameters & simulationParameters,
+    RenderContext & renderContext)
 {
     //
     // This is the algorithm that decides settings based on the computer
@@ -73,7 +73,7 @@ void ComputerCalibrator::TuneGame(
         renderContext.SetOceanRenderDetail(OceanRenderDetailType::Basic);
 
         // Flames require CPU as well as GPU
-        gameParameters.MaxBurningParticlesPerShip = 112;
+        simulationParameters.MaxBurningParticlesPerShip = 112;
     }
 
     if (score.NormalizedGfxScore < 0.1f)

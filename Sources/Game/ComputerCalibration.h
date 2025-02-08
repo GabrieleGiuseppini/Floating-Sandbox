@@ -5,8 +5,9 @@
  ***************************************************************************************/
 #pragma once
 
-#include "GameParameters.h"
-#include "RenderContext.h"
+#include <Simulation/SimulationParameters.h>
+
+#include <Render/RenderContext.h>
 
 struct ComputerCalibrationScore
 {
@@ -29,8 +30,8 @@ public:
 
     static void TuneGame(
         ComputerCalibrationScore const & score,
-        GameParameters & gameParameters,
-        Render::RenderContext & renderContext);
+        SimulationParameters & simulationParameters,
+        RenderContext & renderContext);
 
 private:
 

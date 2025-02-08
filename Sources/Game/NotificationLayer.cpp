@@ -5,8 +5,12 @@
 ***************************************************************************************/
 #include "NotificationLayer.h"
 
-#include <GameCore/Conversions.h>
-#include <GameCore/GameWallClock.h>
+#include <Simulation/SimulationParameters.h>
+
+#include <Render/GameTextureDatabases.h>
+
+#include <Core/Conversions.h>
+#include <Core/GameWallClock.h>
 
 #include <cassert>
 #include <iomanip>
@@ -21,8 +25,8 @@ NotificationLayer::NotificationLayer(
 	bool isAutoFocusOn,
 	bool isShiftOn,
 	UnitsSystem displayUnitsSystem,
-	GameEventDispatcher & gameEventHandler)
-    : mGameEventHandler(gameEventHandler)
+	SimulationEventDispatcher & simulationEventDispatcher)
+    : mSimulationEventHandler(simulationEventDispatcher)
 	// StatusText
 	, mIsStatusTextEnabled(true)
 	, mIsExtendedStatusTextEnabled(false)
@@ -45,7 +49,7 @@ NotificationLayer::NotificationLayer(
 	// Display units system
 	, mDisplayUnitsSystem(displayUnitsSystem)
 {
-	mGameEventHandler.RegisterGenericEventHandler(this);
+	mSimulationEventHandler.RegisterGenericShipEventHandler(this);
 }
 
 void NotificationLayer::SetStatusTextEnabled(bool isEnabled)
@@ -73,7 +77,7 @@ void NotificationLayer::SetStatusTexts(
     bool isPaused,
     float zoom,
     vec2f const & camera,
-    Render::RenderStatistics renderStats)
+    RenderStatistics renderStats)
 {
     int elapsedSecondsGameInt = static_cast<int>(roundf(elapsedGameSeconds.count()));
     int minutesGame = elapsedSecondsGameInt / 60;
@@ -109,22 +113,22 @@ void NotificationLayer::SetStatusTexts(
 		{
 			ss.fill('0');
 
-			float const totalNetUpdate = lastDeltaPerfStats.TotalNetUpdateDuration.ToRatio<std::chrono::milliseconds>();
+			float const totalNetUpdate = lastDeltaPerfStats.GetMeasurement<PerfMeasurement::TotalNetUpdate>().ToRatio<std::chrono::milliseconds>();
 			float const shipsSpringsUpdatePercent = (totalNetUpdate != 0.0f)
-				? lastDeltaPerfStats.TotalShipsSpringsUpdateDuration.ToRatio<std::chrono::milliseconds>() * 100.0f / totalNetUpdate
+				? lastDeltaPerfStats.GetMeasurement<PerfMeasurement::TotalShipsSpringsUpdate>().ToRatio<std::chrono::milliseconds>() * 100.0f / totalNetUpdate
 				: 0.0f;
 			float const npcsUpdatePercent = (totalNetUpdate != 0.0f)
-				? lastDeltaPerfStats.TotalNpcUpdateDuration.ToRatio<std::chrono::milliseconds>() * 100.0f / totalNetUpdate
+				? lastDeltaPerfStats.GetMeasurement<PerfMeasurement::TotalNpcUpdate>().ToRatio<std::chrono::milliseconds>() * 100.0f / totalNetUpdate
 				: 0.0f;
 
 			ss << std::fixed
 				<< std::setprecision(2)
-				<< "UPD:" << totalPerfStats.TotalUpdateDuration.ToRatio<std::chrono::milliseconds>() << "MS"
-				<< " (W=" << lastDeltaPerfStats.TotalWaitForRenderUploadDuration.ToRatio<std::chrono::milliseconds>() << "MS +"
+				<< "UPD:" << totalPerfStats.GetMeasurement<PerfMeasurement::TotalUpdate>().ToRatio<std::chrono::milliseconds>() << "MS"
+				<< " (W=" << lastDeltaPerfStats.GetMeasurement<PerfMeasurement::TotalWaitForRenderUpload>().ToRatio<std::chrono::milliseconds>() << "MS +"
 				<< " " << totalNetUpdate << "MS"
 				<< " (S=" << shipsSpringsUpdatePercent << "%) (N=" << npcsUpdatePercent << "%))"
-				<< " UPL:(W=" << lastDeltaPerfStats.TotalWaitForRenderDrawDuration.ToRatio<std::chrono::milliseconds>() << "MS +"
-				<< " " << lastDeltaPerfStats.TotalNetRenderUploadDuration.ToRatio<std::chrono::milliseconds>() << "MS)"
+				<< " UPL:(W=" << lastDeltaPerfStats.GetMeasurement<PerfMeasurement::TotalWaitForRenderDraw>().ToRatio<std::chrono::milliseconds>() << "MS +"
+				<< " " << lastDeltaPerfStats.GetMeasurement<PerfMeasurement::TotalNetRenderUpload>().ToRatio<std::chrono::milliseconds>() << "MS)"
 				;
 
 			mStatusTextLines[1] = ss.str();
@@ -137,10 +141,10 @@ void NotificationLayer::SetStatusTexts(
 
 			ss << std::fixed
 				<< std::setprecision(2)
-				<< "RND:" << totalPerfStats.TotalRenderDrawDuration.ToRatio<std::chrono::milliseconds>() << "MS"
-				<< " (" << lastDeltaPerfStats.TotalRenderDrawDuration.ToRatio<std::chrono::milliseconds>() << "MS)"
-				<< " (UPL=" << lastDeltaPerfStats.TotalUploadRenderDrawDuration.ToRatio<std::chrono::milliseconds>() << "MS"
-				<< " MT=" << lastDeltaPerfStats.TotalMainThreadRenderDrawDuration.ToRatio<std::chrono::milliseconds>() << "MS)"
+				<< "RND:" << totalPerfStats.GetMeasurement<PerfMeasurement::TotalRenderDraw>().ToRatio<std::chrono::milliseconds>() << "MS"
+				<< " (" << lastDeltaPerfStats.GetMeasurement<PerfMeasurement::TotalRenderDraw>().ToRatio<std::chrono::milliseconds>() << "MS)"
+				<< " (UPL=" << lastDeltaPerfStats.GetMeasurement<PerfMeasurement::TotalUploadRenderDraw>().ToRatio<std::chrono::milliseconds>() << "MS"
+				<< " MT=" << lastDeltaPerfStats.GetMeasurement<PerfMeasurement::TotalMainThreadRenderDraw>().ToRatio<std::chrono::milliseconds>() << "MS)"
 				;
 
 			mStatusTextLines[2] = ss.str();
@@ -317,7 +321,7 @@ void NotificationLayer::Update(
 			{
 				// First update for opening...
 				// ...emit event then
-				mGameEventHandler.OnPhysicsProbePanelOpened();
+				mSimulationEventHandler.OnPhysicsProbePanelOpened();
 			}
 
 			// Calculate new open
@@ -341,7 +345,7 @@ void NotificationLayer::Update(
 				mArePhysicsProbeReadingStringsDirty = true;
 
 				// ...emit panel closed event
-				mGameEventHandler.OnPhysicsProbePanelClosed();
+				mSimulationEventHandler.OnPhysicsProbePanelClosed();
 			}
 
 			// Calculate new open
@@ -381,7 +385,7 @@ void NotificationLayer::Update(
 	mInteractiveToolDashedLineToRender1.clear();
 }
 
-void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
+void NotificationLayer::RenderUpload(RenderContext & renderContext)
 {
 	auto & notificationRenderContext = renderContext.GetNoficationRenderContext();
 
@@ -424,8 +428,8 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 		if (mIsAutoFocusOn)
 		{
 			notificationRenderContext.UploadTextureNotification(
-				TextureFrameId(Render::GenericLinearTextureGroups::AutoFocusNotification, 0),
-				Render::AnchorPositionType::BottomRight,
+				TextureFrameId(GameTextureDatabases::GenericLinearTextureGroups::AutoFocusNotification, 0),
+				AnchorPositionType::BottomRight,
 				vec2f(0.0f, 0.0f),
 				1.0f);
 		}
@@ -433,8 +437,8 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 		if (mIsSoundMuteIndicatorOn)
 		{
 			notificationRenderContext.UploadTextureNotification(
-				TextureFrameId(Render::GenericLinearTextureGroups::SoundMuteNotification, 0),
-				Render::AnchorPositionType::BottomRight,
+				TextureFrameId(GameTextureDatabases::GenericLinearTextureGroups::SoundMuteNotification, 0),
+				AnchorPositionType::BottomRight,
 				vec2f(-1.5f, 0.0f),
 				1.0f);
 		}
@@ -442,8 +446,8 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 		if (mIsShiftOn)
 		{
 			notificationRenderContext.UploadTextureNotification(
-				TextureFrameId(Render::GenericLinearTextureGroups::ShiftNotification, 0),
-				Render::AnchorPositionType::BottomRight,
+				TextureFrameId(GameTextureDatabases::GenericLinearTextureGroups::ShiftNotification, 0),
+				AnchorPositionType::BottomRight,
 				vec2f(-3.0f, 0.0f),
 				1.0f);
 		}
@@ -451,8 +455,8 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 		if (mIsUltraViolentModeIndicatorOn)
 		{
 			notificationRenderContext.UploadTextureNotification(
-				TextureFrameId(Render::GenericLinearTextureGroups::UVModeNotification, 0),
-				Render::AnchorPositionType::BottomRight,
+				TextureFrameId(GameTextureDatabases::GenericLinearTextureGroups::UVModeNotification, 0),
+				AnchorPositionType::BottomRight,
 				vec2f(0.0f, -1.5f),
 				1.0f);
 		}
@@ -460,8 +464,8 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 		if (mIsDayLightCycleOn)
 		{
 			notificationRenderContext.UploadTextureNotification(
-				TextureFrameId(Render::GenericLinearTextureGroups::DayLightCycleNotification, 0),
-				Render::AnchorPositionType::BottomRight,
+				TextureFrameId(GameTextureDatabases::GenericLinearTextureGroups::DayLightCycleNotification, 0),
+				AnchorPositionType::BottomRight,
 				vec2f(-1.5f, -1.5f),
 				1.0f);
 		}
@@ -593,7 +597,7 @@ void NotificationLayer::UploadStatusTextLine(
 	std::string & line,
 	bool isEnabled,
 	int & effectiveOrdinal,
-	Render::NotificationRenderContext & notificationRenderContext)
+	NotificationRenderContext & notificationRenderContext)
 {
 	if (isEnabled)
 	{
@@ -607,7 +611,7 @@ void NotificationLayer::UploadStatusTextLine(
 
 		notificationRenderContext.UploadStatusTextLine(
 			line,
-			Render::AnchorPositionType::TopLeft,
+			AnchorPositionType::TopLeft,
 			screenOffset,
 			1.0f);
 	}
@@ -631,7 +635,7 @@ void NotificationLayer::RegeneratePhysicsProbeReadingStrings()
 				v = mPhysicsProbeReading.Speed;
 				t = mPhysicsProbeReading.Temperature - 273.15f;
 				d = mPhysicsProbeReading.Depth;
-				p = mPhysicsProbeReading.Pressure / GameParameters::AirPressureAtSeaLevel;
+				p = mPhysicsProbeReading.Pressure / SimulationParameters::AirPressureAtSeaLevel;
 				break;
 			}
 
@@ -640,7 +644,7 @@ void NotificationLayer::RegeneratePhysicsProbeReadingStrings()
 				v = mPhysicsProbeReading.Speed;
 				t = mPhysicsProbeReading.Temperature;
 				d = mPhysicsProbeReading.Depth;
-				p = mPhysicsProbeReading.Pressure / GameParameters::AirPressureAtSeaLevel;
+				p = mPhysicsProbeReading.Pressure / SimulationParameters::AirPressureAtSeaLevel;
 				break;
 			}
 
