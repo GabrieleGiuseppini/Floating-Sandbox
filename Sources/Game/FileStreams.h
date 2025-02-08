@@ -33,9 +33,23 @@ public:
 		mStream.close();
 	}
 
+	size_t GetSize() override
+	{
+		auto const currentPos = mStream.tellg();
+		mStream.seekg(0, std::ios::end);
+		auto const size = mStream.tellg();
+		mStream.seekg(currentPos);
+		return size;
+	}
+
 	size_t GetCurrentPosition() override
 	{
 		return static_cast<size_t>(mStream.tellg());
+	}
+
+	void SetPosition(size_t offset) override
+	{
+		mStream.seekg(offset, std::ios_base::beg);
 	}
 
 	size_t Read(std::uint8_t * buffer, size_t size) override

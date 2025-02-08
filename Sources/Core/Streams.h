@@ -18,7 +18,11 @@ public:
 
 	virtual ~BinaryReadStream() = default;
 
+	virtual size_t GetSize() = 0;
+
 	virtual size_t GetCurrentPosition() = 0;
+
+	virtual void SetPosition(size_t offset) = 0;
 
 	virtual size_t Read(std::uint8_t * buffer, size_t size) = 0;
 

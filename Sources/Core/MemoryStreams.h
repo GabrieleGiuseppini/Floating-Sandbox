@@ -23,9 +23,19 @@ public:
 		, mReadOffset(0u)
 	{}
 
+	size_t GetSize() override
+	{
+		return mData.size();
+	}
+
 	size_t GetCurrentPosition() override
 	{
 		return mReadOffset;
+	}
+
+	void SetPosition(size_t offset) override
+	{
+		mReadOffset = std::min(offset, mData.size());
 	}
 
 	size_t Read(std::uint8_t * buffer, size_t size) override

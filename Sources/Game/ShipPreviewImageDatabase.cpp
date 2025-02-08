@@ -15,7 +15,7 @@ void ShipPreviewImageDatabase::SerializeIndexEntry(
     ByteBuffer & buffer,
     std::filesystem::path const & filename,
     std::filesystem::file_time_type lastModified,
-    std::istream::pos_type position,
+    size_t position,
     size_t size,
     ImageSize dimensions)
 {
@@ -56,7 +56,7 @@ size_t ShipPreviewImageDatabase::DeserializeIndexEntry(
     size_t bufferIndex,
     std::filesystem::path & filename,
     std::filesystem::file_time_type & lastModified,
-    std::istream::pos_type & position,
+    size_t & position,
     size_t & size,
     ImageSize & dimensions)
 {
@@ -73,7 +73,7 @@ size_t ShipPreviewImageDatabase::DeserializeIndexEntry(
     dimensions = indexEntry.Dimensions;
 
     std::string filenameString = std::string(
-        &(buffer[bufferIndex + sizeof(DatabaseStructure::IndexEntry)]),
+        reinterpret_cast<char const *>(&(buffer[bufferIndex + sizeof(DatabaseStructure::IndexEntry)])),
         indexEntry.FilenameLength);
 
     filename = std::filesystem::path(filenameString);
@@ -82,20 +82,20 @@ size_t ShipPreviewImageDatabase::DeserializeIndexEntry(
 }
 
 size_t ShipPreviewImageDatabase::SerializePreviewImage(
-    std::ostream & outputFile,
+    BinaryWriteStream & outputFile,
     RgbaImageData const & previewImage)
 {
     auto const previewImageByteSize = previewImage.GetByteSize();
 
-    outputFile.write(
-        reinterpret_cast<char *>(previewImage.Data.get()),
+    outputFile.Write(
+        reinterpret_cast<std::uint8_t const *>(previewImage.Data.get()),
         previewImageByteSize);
 
     return previewImageByteSize;
 }
 
 RgbaImageData ShipPreviewImageDatabase::DeserializePreviewImage(
-    std::istream & inputFile,
+    BinaryReadStream & inputFile,
     size_t size,
     ImageSize dimensions)
 {
@@ -103,7 +103,7 @@ RgbaImageData ShipPreviewImageDatabase::DeserializePreviewImage(
     std::unique_ptr<rgbaColor[]> buffer = std::make_unique<rgbaColor[]>(size);
 
     // Read
-    inputFile.read(reinterpret_cast<char *>(buffer.get()), size);
+    inputFile.Read(reinterpret_cast<std::uint8_t *>(buffer.get()), size);
 
     // Make image
     return RgbaImageData(
@@ -119,32 +119,29 @@ PersistedShipPreviewImageDatabase PersistedShipPreviewImageDatabase::Load(
 {
     try
     {
-        std::shared_ptr<std::istream> databaseFileStream;
+        std::unique_ptr<BinaryReadStream> databaseFileStream;
         std::map<std::filesystem::path, PreviewImageInfo> index;
 
         // Check if database file exists
         if (fileSystem->Exists(databaseFilePath))
         {
             // Open file
-            databaseFileStream = std::make_shared<std::ifstream>(
-                databaseFilePath,
-                std::ios_base::in | std::ios_base::binary);
-            databaseFileStream->exceptions(std::ifstream::failbit | std::ifstream::badbit | std::ifstream::eofbit);
+            databaseFileStream = fileSystem->OpenBinaryInputStream(databaseFilePath);
 
             // Load and check header
             {
                 DatabaseStructure::FileHeader header(Version::Zero());
-                databaseFileStream->read(reinterpret_cast<char *>(&header), sizeof(DatabaseStructure::FileHeader));
+                size_t szRead = databaseFileStream->Read(reinterpret_cast<std::uint8_t *>(&header), sizeof(DatabaseStructure::FileHeader));
 
-                if (!databaseFileStream->good()
+                if (szRead != sizeof(DatabaseStructure::FileHeader)
                     || 0 != strncmp(header.Title.data(), DatabaseStructure::FileHeader::StockTitle.data(), header.Title.size()))
                 {
                     throw std::runtime_error("Database file is not recognized");
                 }
 
-                if (header.DBGameVersion > CurrentGameVersion)
+                if (header.DBGameVersion != CurrentGameVersion)
                 {
-                    throw std::runtime_error("Database file was generated on a more recent version of the simulator");
+                    throw std::runtime_error("Database file was generated on a different version of the simulator");
                 }
 
                 if (header.SizeOfSizeT != sizeof(size_t))
@@ -155,18 +152,26 @@ PersistedShipPreviewImageDatabase PersistedShipPreviewImageDatabase::Load(
 
             // Read and populate index
             {
-                // Move to beginning of tail
-                databaseFileStream->seekg(-static_cast<std::streampos>(sizeof(DatabaseStructure::FileTrailer)), std::ios_base::end);
+                // Get file size
+                size_t const totalFileSize = databaseFileStream->GetSize();
 
-                // Save end index position
-                auto const endIndexPosition = databaseFileStream->tellg();
+                // Calculate end index position
+                if (totalFileSize < sizeof(DatabaseStructure::FileTrailer))
+                {
+                    throw std::runtime_error("Database file is too small");
+                }
+                auto const endIndexPosition = totalFileSize - sizeof(DatabaseStructure::FileTrailer);
+
+                // Move to beginning of tail
+                databaseFileStream->SetPosition(endIndexPosition);
 
                 // Read tail
                 DatabaseStructure::FileTrailer trailer(0);
-                databaseFileStream->read(reinterpret_cast<char *>(&trailer), sizeof(DatabaseStructure::FileTrailer));
-
-                // Save total file size
-                auto const totalFileSize = databaseFileStream->tellg();
+                size_t szRead = databaseFileStream->Read(reinterpret_cast<std::uint8_t *>(&trailer), sizeof(DatabaseStructure::FileTrailer));
+                if (szRead != sizeof(DatabaseStructure::FileTrailer))
+                {
+                    throw std::runtime_error("Database file is too small");
+                }
 
                 // Check tail
                 if (trailer.IndexOffset >= totalFileSize
@@ -176,17 +181,21 @@ PersistedShipPreviewImageDatabase PersistedShipPreviewImageDatabase::Load(
                 }
 
                 // Move to beginning of index
-                databaseFileStream->seekg(trailer.IndexOffset, std::ios_base::beg);
+                databaseFileStream->SetPosition(trailer.IndexOffset);
 
                 // Load index
                 {
                     size_t const indexSize = static_cast<size_t>(endIndexPosition - trailer.IndexOffset);
 
                     // Alloc buffer
-                    std::vector<char> indexBuffer(indexSize);
+                    ByteBuffer indexBuffer(indexSize);
 
                     // Read whole index
-                    databaseFileStream->read(indexBuffer.data(), indexBuffer.size());
+                    szRead = databaseFileStream->Read(indexBuffer.data(), indexBuffer.size());
+                    if (szRead != indexBuffer.size())
+                    {
+                        throw std::runtime_error("Database index is too small");
+                    }
 
                     // Deserialize entries
                     for (size_t indexOffset = 0; indexOffset != indexSize; /* incremented in loop */)
@@ -198,7 +207,7 @@ PersistedShipPreviewImageDatabase PersistedShipPreviewImageDatabase::Load(
 
                         std::filesystem::path filename;
                         std::filesystem::file_time_type lastModified;
-                        std::istream::pos_type position;
+                        size_t position;
                         size_t size;
                         ImageSize dimensions(0, 0);
 
@@ -260,7 +269,7 @@ std::optional<RgbaImageData> PersistedShipPreviewImageDatabase::TryGetPreviewIma
 
         // Position to the preview
         assert(!!mDatabaseFileStream);
-        mDatabaseFileStream->seekg(cachedFileIt->second.Position);
+        mDatabaseFileStream->SetPosition(cachedFileIt->second.Position);
 
         // Read preview
         return DeserializePreviewImage(
@@ -334,32 +343,23 @@ bool NewShipPreviewImageDatabase::Commit(
     // Prepare output stream
     //
 
-    std::shared_ptr<std::ostream> outputStream;
+    std::unique_ptr<BinaryWriteStream> outputStream;
 
     auto const getOutputStream =
-        [&]() -> std::ostream &
+        [&]() -> BinaryWriteStream &
         {
             if (!outputStream)
             {
                 // Open file
 
-                outputStream = std::shared_ptr<std::ostream>(
-                    new std::ofstream(
-                        databaseFilePath,
-                        std::ios_base::out | std::ios_base::binary | std::ios_base::trunc),
-                    [](std::ostream * os)
-                    {
-                        os->flush();
-                        delete os;
-                    });
+                outputStream = mFileSystem->OpenBinaryOutputStream(databaseFilePath);
 
                 // Write header
 
                 DatabaseStructure::FileHeader header(CurrentGameVersion);
-
                 WriteFromData(
                     *outputStream,
-                    reinterpret_cast<char *>(&header),
+                    reinterpret_cast<std::uint8_t *>(&header),
                     sizeof(DatabaseStructure::FileHeader));
             }
 
@@ -370,7 +370,7 @@ bool NewShipPreviewImageDatabase::Commit(
     // 1) Process new index elements vs old index elements
     //
 
-    std::istream::pos_type currentNewDbPreviewImageOffset = DatabaseStructure::PreviewImageStartOffset;
+    size_t currentNewDbPreviewImageOffset = DatabaseStructure::PreviewImageStartOffset;
 
     auto newDbIt = mIndex.cbegin();
     auto oldDbIt = oldDatabase.mIndex.cbegin();
@@ -419,8 +419,8 @@ bool NewShipPreviewImageDatabase::Commit(
         // Calc longest streak of old preview images matching new preview images
         //
 
-        std::streampos copyOldDbStartOffset = oldDbIt->second.Position;
-        std::streampos copyOldDbEndOffset = copyOldDbStartOffset;
+        std::size_t copyOldDbStartOffset = oldDbIt->second.Position;
+        std::size_t copyOldDbEndOffset = copyOldDbStartOffset;
 
         for (; oldDbIt != oldDatabase.mIndex.cend() && newDbIt != mIndex.cend(); ++oldDbIt, ++newDbIt)
         {
@@ -453,7 +453,7 @@ bool NewShipPreviewImageDatabase::Commit(
 
         if (oldDbIt == oldDatabase.mIndex.cend() && newDbIt == mIndex.cend()
             && mIndex.size() == oldDatabase.mIndex.size()
-            && copyOldDbStartOffset == static_cast<std::streampos>(DatabaseStructure::PreviewImageStartOffset))
+            && copyOldDbStartOffset == DatabaseStructure::PreviewImageStartOffset)
         {
             // New DB is exactly like old DB...
             // ...nothing to commit
@@ -548,7 +548,7 @@ bool NewShipPreviewImageDatabase::Commit(
 
     WriteFromData(
         getOutputStream(),
-        reinterpret_cast<char *>(&trailer),
+        reinterpret_cast<std::uint8_t *>(&trailer),
         sizeof(DatabaseStructure::FileTrailer));
 
     // Close output file
@@ -558,29 +558,29 @@ bool NewShipPreviewImageDatabase::Commit(
 }
 
 void NewShipPreviewImageDatabase::WriteFromOldDatabase(
-    std::ostream & newDatabaseFile,
-    std::istream & oldDatabaseFile,
-    std::istream::pos_type startOffset,
+    BinaryWriteStream & newDatabaseFile,
+    BinaryReadStream & oldDatabaseFile,
+    size_t startOffset,
     size_t size) const
 {
     size_t constexpr BlockSize = 4 * 1024 * 1024;
 
-    std::vector<char> copyBuffer(BlockSize);
+    std::vector<std::uint8_t> copyBuffer(BlockSize);
 
-    oldDatabaseFile.seekg(startOffset);
+    oldDatabaseFile.SetPosition(startOffset);
 
     for (size_t copied = 0; copied < size; copied += BlockSize)
     {
         auto const toCopy = (size - copied) >= BlockSize ? BlockSize : (size - copied);
-        oldDatabaseFile.read(copyBuffer.data(), toCopy);
-        newDatabaseFile.write(copyBuffer.data(), toCopy);
+        oldDatabaseFile.Read(copyBuffer.data(), toCopy);
+        newDatabaseFile.Write(copyBuffer.data(), toCopy);
     }
 }
 
 void NewShipPreviewImageDatabase::WriteFromData(
-    std::ostream & newDatabaseFile,
-    char const * data,
+    BinaryWriteStream & newDatabaseFile,
+    std::uint8_t const * data,
     size_t size) const
 {
-    newDatabaseFile.write(data, size);
+    newDatabaseFile.Write(data, size);
 }

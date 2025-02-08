@@ -9,12 +9,12 @@
 #include "GameVersion.h"
 
 #include <Core/ImageData.h>
+#include <Core/Streams.h>
 
 #include <array>
 #include <cstdint>
 #include <cstring>
 #include <filesystem>
-#include <fstream>
 #include <map>
 #include <memory>
 #include <optional>
@@ -48,7 +48,7 @@ protected:
         struct IndexEntry
         {
             std::filesystem::file_time_type LastModified;
-            std::istream::pos_type Position;
+            size_t Position;
             size_t Size;
             ImageSize Dimensions;
             StringSizeType FilenameLength;
@@ -63,10 +63,10 @@ protected:
         {
             static std::array<char, 32> constexpr StockTitle{ 'T', 'A', 'I', 'L', 'T', 'A', 'I', 'L', 'T', 'A', 'I', 'L', 'T', 'A', 'I', 'L', 'T', 'A', 'I', 'L', 'T', 'A', 'I', 'L', 'T', 'A', 'I', 'L', 'T', 'A', 'I', 'L' };
 
-            std::istream::pos_type IndexOffset;
+            size_t IndexOffset;
             std::array<char, 32> Title;
 
-            FileTrailer(std::istream::pos_type indexOffset)
+            explicit FileTrailer(size_t indexOffset)
                 : IndexOffset(indexOffset)
             {
                 std::memcpy(Title.data(), StockTitle.data(), Title.size());
@@ -79,13 +79,13 @@ protected:
 
     static constexpr size_t EstimatedIndexEntrySize = sizeof(DatabaseStructure) + 40;
 
-    using ByteBuffer = std::vector<char>;
+    using ByteBuffer = std::vector<std::uint8_t>;
 
     static void SerializeIndexEntry(
         ByteBuffer & buffer,
         std::filesystem::path const & filename,
         std::filesystem::file_time_type lastModified,
-        std::istream::pos_type position,
+        size_t position,
         size_t size,
         ImageSize dimensions);
 
@@ -94,16 +94,16 @@ protected:
         size_t bufferIndex,
         std::filesystem::path & filename,
         std::filesystem::file_time_type & lastModified,
-        std::istream::pos_type & position,
+        size_t & position,
         size_t & size,
         ImageSize & dimensions);
 
     static size_t SerializePreviewImage(
-        std::ostream & outputFile,
+        BinaryWriteStream & outputFile,
         RgbaImageData const & previewImage);
 
     static RgbaImageData DeserializePreviewImage(
-        std::istream & inputFile,
+        BinaryReadStream & inputFile,
         size_t size,
         ImageSize dimensions);
 };
@@ -134,7 +134,7 @@ private:
     struct PreviewImageInfo;
 
     PersistedShipPreviewImageDatabase(
-        std::shared_ptr<std::istream> && databaseFileStream,
+        std::unique_ptr<BinaryReadStream> && databaseFileStream,
         std::map<std::filesystem::path, PreviewImageInfo> && index,
         std::shared_ptr<IFileSystem> && mFileSystem)
         : mFileSystem(std::move(mFileSystem))
@@ -148,18 +148,18 @@ private:
 
     std::shared_ptr<IFileSystem> mFileSystem;
 
-    std::shared_ptr<std::istream> mDatabaseFileStream;
+    std::unique_ptr<BinaryReadStream> mDatabaseFileStream;
 
     struct PreviewImageInfo
     {
         std::filesystem::file_time_type LastModified;
-        std::istream::pos_type Position;
+        size_t Position;
         size_t Size;
         ImageSize Dimensions;
 
         PreviewImageInfo(
             std::filesystem::file_time_type lastModified,
-            std::istream::pos_type position,
+            size_t position,
             size_t size,
             ImageSize dimensions)
             : LastModified(lastModified)
@@ -220,14 +220,14 @@ public:
 private:
 
     void WriteFromOldDatabase(
-        std::ostream & newDatabaseFile,
-        std::istream & oldDatabaseFile,
-        std::istream::pos_type startOffset,
+        BinaryWriteStream & newDatabaseFile,
+        BinaryReadStream & oldDatabaseFile,
+        size_t startOffset,
         size_t size) const;
 
     void WriteFromData(
-        std::ostream & newDatabaseFile,
-        char const * data,
+        BinaryWriteStream & newDatabaseFile,
+        std::uint8_t const * data,
         size_t size) const;
 
 private:
