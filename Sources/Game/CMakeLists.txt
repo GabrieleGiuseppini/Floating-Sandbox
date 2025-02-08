@@ -25,6 +25,8 @@ set  (GAME_SOURCES
 	ShipPreviewDirectoryManager.h
 	ShipPreviewImageDatabase.cpp
 	ShipPreviewImageDatabase.h
+	ViewManager.cpp
+	ViewManager.h
 )
 
 source_group(" " FILES ${GAME_SOURCES})

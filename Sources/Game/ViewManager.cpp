@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #include "ViewManager.h"
 
-#include <GameCore/GameMath.h>
+#include <Core/GameMath.h>
 
 #include <cassert>
 
@@ -13,11 +13,8 @@ float constexpr NdcFractionZoomTarget = 0.7f; // Fraction of the [0, 2] NDC spac
 
 float constexpr SmootherTerminationThreshold = 0.00005f; // How close to target we stop smoothing
 
-ViewManager::ViewManager(
-    Render::RenderContext & renderContext,
-    GameEventDispatcher & gameEventDispatcher)
+ViewManager::ViewManager(RenderContext & renderContext)
     : mRenderContext(renderContext)
-    , mGameEventHandler(gameEventDispatcher)
     // Defaults
     , mCameraSpeedAdjustment(1.0f)
     , mDoAutoFocusOnShipLoad(true)

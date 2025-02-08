@@ -5,12 +5,11 @@
 ***************************************************************************************/
 #pragma once
 
-#include "GameEventDispatcher.h"
-#include "RenderContext.h"
+#include <Render/RenderContext.h>
 
-#include <GameCore/AABBSet.h>
-#include <GameCore/ParameterSmoother.h>
-#include <GameCore/Vectors.h>
+#include <Core/AABBSet.h>
+#include <Core/ParameterSmoother.h>
+#include <Core/Vectors.h>
 
 #include <optional>
 
@@ -18,9 +17,7 @@ class ViewManager
 {
 public:
 
-    ViewManager(
-        Render::RenderContext & renderContext,
-        GameEventDispatcher & gameEventDispatcher);
+    explicit ViewManager(RenderContext & renderContext);
 
     float GetCameraSpeedAdjustment() const;
     void SetCameraSpeedAdjustment(float value);
@@ -77,8 +74,7 @@ private:
 
 private:
 
-    Render::RenderContext & mRenderContext;
-    GameEventDispatcher & mGameEventHandler;
+    RenderContext & mRenderContext;
 
     float mCameraSpeedAdjustment; // Storage
     bool mDoAutoFocusOnShipLoad; // Storage
