@@ -1,6 +1,6 @@
-#include <GameCore/GameTypes.h>
-#include <GameCore/SysSpecifics.h>
-#include <GameCore/Vectors.h>
+#include <Core/GameTypes.h>
+#include <Core/SysSpecifics.h>
+#include <Core/Vectors.h>
 
 #include <vector>
 

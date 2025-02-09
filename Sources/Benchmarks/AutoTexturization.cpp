@@ -1,11 +1,11 @@
-#include <Game/ShipTexturizer.h>
+#include <Game/GameAssetManager.h>
 
-#include <Game/Layers.h>
-#include <Game/MaterialDatabase.h>
-#include <Game/ResourceLocator.h>
+#include <Simulation/Layers.h>
+#include <Simulation/MaterialDatabase.h>
+#include <Simulation/ShipTexturizer.h>
 
-#include <GameCore/ImageData.h>
-#include <GameCore/GameTypes.h>
+#include <Core/ImageData.h>
+#include <Core/GameTypes.h>
 
 #include <benchmark/benchmark.h>
 
@@ -20,9 +20,9 @@ static constexpr size_t Repetitions = 10;
 //
 static void AutoTexturization_AutoTexturizeInto(benchmark::State& state)
 {
-    ResourceLocator const resourceLocator = ResourceLocator(std::filesystem::current_path());
-    MaterialDatabase const materialDatabase = MaterialDatabase::Load(resourceLocator.GetMaterialDatabaseRootFilePath());
-    ShipTexturizer texturizer(materialDatabase, resourceLocator);
+    GameAssetManager const gameAssetManager = GameAssetManager((std::filesystem::current_path() / "Data").string());
+    MaterialDatabase const materialDatabase = MaterialDatabase::Load(gameAssetManager);
+    ShipTexturizer texturizer(materialDatabase, gameAssetManager);
 
     // Create structural layer
     StructuralLayerData structuralLayer(StructureSize);
@@ -71,7 +71,8 @@ static void AutoTexturization_AutoTexturizeInto(benchmark::State& state)
                 ShipSpaceRect({ 0, 0 }, StructureSize),
                 targetTextureImage,
                 magnificationFactor,
-                settings);
+                settings,
+                gameAssetManager);
         }
     }
 }
@@ -83,9 +84,9 @@ BENCHMARK(AutoTexturization_AutoTexturizeInto);
 //
 static void AutoTexturization_RenderShipInto(benchmark::State & state)
 {
-    ResourceLocator const resourceLocator = ResourceLocator(std::filesystem::current_path());
-    MaterialDatabase const materialDatabase = MaterialDatabase::Load(resourceLocator.GetMaterialDatabaseRootFilePath());
-    ShipTexturizer texturizer(materialDatabase, resourceLocator);
+    GameAssetManager const gameAssetManager = GameAssetManager((std::filesystem::current_path() / "Data").string());
+    MaterialDatabase const materialDatabase = MaterialDatabase::Load(gameAssetManager);
+    ShipTexturizer texturizer(materialDatabase, gameAssetManager);
 
     // Create structural layer
     StructuralLayerData structuralLayer(StructureSize);

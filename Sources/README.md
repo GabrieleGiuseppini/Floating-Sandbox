@@ -82,7 +82,7 @@ Unit tests for some important functionalities of the game, which would be otherw
 
 ## Benchmarks
 
-Guess what - benchmarks to test performance of alternative implementations of various algorithms.
+Various benchmarks that I have developed over the years to test performance of alternative implementations of various algorithms, or to verify performance improvements.
 
 ## GPUCalc, GPUCalcTest
 

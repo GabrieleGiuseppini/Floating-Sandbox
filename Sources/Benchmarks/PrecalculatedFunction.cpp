@@ -1,6 +1,6 @@
 #include "Utils.h"
 
-#include <GameCore/PrecalculatedFunction.h>
+#include <Core/PrecalculatedFunction.h>
 
 #include <benchmark/benchmark.h>
 

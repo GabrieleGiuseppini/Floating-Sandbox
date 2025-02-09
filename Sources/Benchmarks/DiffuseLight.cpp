@@ -1,6 +1,6 @@
-#include <GameCore/Algorithms.h>
-
 #include "Utils.h"
+
+#include <Core/Algorithms.h>
 
 #include <benchmark/benchmark.h>
 
@@ -61,7 +61,7 @@ static void DiffuseLight_Vectorized(benchmark::State & state)
             0,
             ElementIndex(pointsSize),
             pointPositions.get(),
-            pointPlaneIds.get(),            
+            pointPlaneIds.get(),
             lampPositions.get(),
             lampPlaneIds.get(),
             lampDistanceCoeffs.get(),

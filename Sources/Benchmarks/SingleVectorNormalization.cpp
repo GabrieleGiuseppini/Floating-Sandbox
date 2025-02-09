@@ -1,8 +1,8 @@
 #include "Utils.h"
 
-#include <GameCore/Algorithms.h>
-#include <GameCore/SysSpecifics.h>
-#include <GameCore/Vectors.h>
+#include <Core/Algorithms.h>
+#include <Core/SysSpecifics.h>
+#include <Core/Vectors.h>
 
 #include <benchmark/benchmark.h>
 

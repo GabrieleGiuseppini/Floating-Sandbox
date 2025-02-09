@@ -9,7 +9,7 @@ add_subdirectory(UILib)
 add_subdirectory(UnitTests)
 
 # TODO: others
-# TODO
-#if(FS_BUILD_BENCHMARKS)
-#	add_subdirectory(Benchmarks)
-#endif()
+
+if(FS_BUILD_BENCHMARKS)
+	add_subdirectory(Benchmarks)
+endif()

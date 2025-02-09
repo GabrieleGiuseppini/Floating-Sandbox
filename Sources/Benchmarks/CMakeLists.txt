@@ -19,13 +19,14 @@ source_group(" " FILES ${BENCHMARK_SOURCES})
 add_executable (Benchmarks ${BENCHMARK_SOURCES})
 
 target_include_directories(Benchmarks PRIVATE .)
-target_link_libraries (Benchmarks        
-        GameLib
-	GameCoreLib
-        GPUCalcLib
-        ${OPENGL_LIBRARIES}
+target_link_libraries (Benchmarks
+	Core
+        Game
+	Simulation
+        #GPUCalcLib        
         benchmark::benchmark
         benchmark::benchmark_main
+	${OPENGL_LIBRARIES}
         ${ADDITIONAL_LIBRARIES})
 
 

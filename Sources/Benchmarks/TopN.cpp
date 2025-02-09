@@ -1,8 +1,8 @@
 #include "Utils.h"
 
-#include <GameCore/BoundedVector.h>
-#include <GameCore/TemporallyCoherentPriorityQueue.h>
-#include <GameCore/TruncatedPriorityQueue.h>
+#include <Core/BoundedVector.h>
+#include <Core/TemporallyCoherentPriorityQueue.h>
+#include <Core/TruncatedPriorityQueue.h>
 
 #include <benchmark/benchmark.h>
 
