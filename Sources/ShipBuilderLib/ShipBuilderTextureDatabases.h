@@ -5,8 +5,8 @@
 ***************************************************************************************/
 #pragma once
 
-#include <GameCore/GameException.h>
-#include <GameCore/Utils.h>
+#include <Core/GameException.h>
+#include <Core/Utils.h>
 
 #include <cstdint>
 #include <string>
@@ -30,12 +30,12 @@ struct MipMappedTextureTextureDatabaseTraits
 {
     static inline std::string DatabaseName = "ShipBuilderMipMappedTexture";
 
-    using TextureGroups = MipMappedTextureGroups;
+    using TextureGroupsType = MipMappedTextureGroups;
 
-    static TextureGroups StrToTextureGroup(std::string const & str)
+    static TextureGroupsType StrToTextureGroup(std::string const & str)
     {
         if (Utils::CaseInsensitiveEquals(str, "WaterlineMarker"))
-            return TextureGroups::WaterlineMarker;
+            return MipMappedTextureGroups::WaterlineMarker;
         else
             throw GameException("Unrecognized MipMappedTexture texture group \"" + str + "\"");
     }

@@ -8,7 +8,7 @@
 #include "IUserInterface.h"
 #include "ShipBuilderTypes.h"
 
-#include <Game/Layers.h>
+#include <Simulation/Layers.h>
 
 #include <optional>
 

@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include <GameOpenGL/GameOpenGL.h>
+#include <OpenGLCore/GameOpenGL.h>
 
 #include <cstdint>
 #include <string>
@@ -16,7 +16,7 @@ namespace ShipBuilder {
 // Shaders
 //
 
-enum class ProgramType
+enum class ProgramKind
 {
     Canvas = 0,
     CircleOverlay,
@@ -33,11 +33,16 @@ enum class ProgramType
     _Last = Waterline
 };
 
-ProgramType ShaderFilenameToProgramType(std::string const & str);
+namespace _detail
+{
 
-std::string ProgramTypeToStr(ProgramType program);
+ProgramKind ShaderNameToProgramKind(std::string const & str);
 
-enum class ProgramParameterType : uint8_t
+std::string ProgramKindToStr(ProgramKind program);
+
+}
+
+enum class ProgramParameterKind : uint8_t
 {
     CanvasBackgroundColor = 0,
     Opacity,
@@ -56,14 +61,19 @@ enum class ProgramParameterType : uint8_t
     _LastTexture = TextureUnit1
 };
 
-ProgramParameterType StrToProgramParameterType(std::string const & str);
+namespace _detail
+{
 
-std::string ProgramParameterTypeToStr(ProgramParameterType programParameter);
+ProgramParameterKind StrToProgramParameterKind(std::string const & str);
+
+std::string ProgramParameterKindToStr(ProgramParameterKind programParameter);
+
+}
 
 /*
  * This enum serves merely to associate a vertex attribute index to each vertex attribute name.
  */
-enum class VertexAttributeType : GLuint
+enum class VertexAttributeKind : GLuint
 {
     Canvas = 0,
 
@@ -93,19 +103,26 @@ enum class VertexAttributeType : GLuint
     Waterline2 = 1
 };
 
-VertexAttributeType StrToVertexAttributeType(std::string const & str);
-
-struct ShaderManagerTraits
+namespace _detail
 {
-    using ProgramType = ShipBuilder::ProgramType;
-    using ProgramParameterType = ShipBuilder::ProgramParameterType;
-    using VertexAttributeType = ShipBuilder::VertexAttributeType;
 
-    static constexpr auto ShaderFilenameToProgramType = ShipBuilder::ShaderFilenameToProgramType;
-    static constexpr auto ProgramTypeToStr = ShipBuilder::ProgramTypeToStr;
-    static constexpr auto StrToProgramParameterType = ShipBuilder::StrToProgramParameterType;
-    static constexpr auto ProgramParameterTypeToStr = ShipBuilder::ProgramParameterTypeToStr;
-    static constexpr auto StrToVertexAttributeType = ShipBuilder::StrToVertexAttributeType;
+VertexAttributeKind StrToVertexAttributeKind(std::string const & str);
+
+}
+
+struct ShaderSet
+{
+    using ProgramKindType = ShipBuilder::ProgramKind;
+    using ProgramParameterKindType = ShipBuilder::ProgramParameterKind;
+    using VertexAttributeKindType = ShipBuilder::VertexAttributeKind;
+
+    static inline std::string ShaderSetName = "ShipBuilder";
+
+    static constexpr auto ShaderNameToProgramKind = _detail::ShaderNameToProgramKind;
+    static constexpr auto ProgramKindToStr = _detail::ProgramKindToStr;
+    static constexpr auto StrToProgramParameterKind = _detail::StrToProgramParameterKind;
+    static constexpr auto ProgramParameterKindToStr = _detail::ProgramParameterKindToStr;
+    static constexpr auto StrToVertexAttributeKind = _detail::StrToVertexAttributeKind;
 };
 
 }

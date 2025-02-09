@@ -3,168 +3,168 @@
 * Created:              2021-08-28
 * Copyright:            Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
-#include "ShaderTypes.h"
+#include "ShipBuilderShaderSets.h"
 
-#include <GameCore/GameException.h>
-#include <GameCore/Utils.h>
+#include <Core/GameException.h>
+#include <Core/Utils.h>
 
 #include <cassert>
 
-namespace ShipBuilder {
+namespace ShipBuilder::_detail {
 
-ProgramType ShaderFilenameToProgramType(std::string const & str)
+ProgramKind ShaderFilenameToProgramKind(std::string const & str)
 {
     std::string lstr = Utils::ToLower(str);
     if (lstr == "canvas")
-        return ProgramType::Canvas;
+        return ProgramKind::Canvas;
     else if (lstr == "circle_overlay")
-        return ProgramType::CircleOverlay;
+        return ProgramKind::CircleOverlay;
     else if (lstr == "dashed_line_overlay")
-        return ProgramType::DashedLineOverlay;
+        return ProgramKind::DashedLineOverlay;
     else if (lstr == "grid")
-        return ProgramType::Grid;
+        return ProgramKind::Grid;
     else if (lstr == "matte")
-        return ProgramType::Matte;
+        return ProgramKind::Matte;
     else if (lstr == "mipmapped_texture_quad")
-        return ProgramType::MipMappedTextureQuad;
+        return ProgramKind::MipMappedTextureQuad;
     else if (lstr == "rect_overlay")
-        return ProgramType::RectOverlay;
+        return ProgramKind::RectOverlay;
     else if (lstr == "structure_mesh")
-        return ProgramType::StructureMesh;
+        return ProgramKind::StructureMesh;
     else if (lstr == "texture")
-        return ProgramType::Texture;
+        return ProgramKind::Texture;
     else if (lstr == "texture_ndc")
-        return ProgramType::TextureNdc;
+        return ProgramKind::TextureNdc;
     else if (lstr == "waterline")
-        return ProgramType::Waterline;
+        return ProgramKind::Waterline;
     else
         throw GameException("Unrecognized program \"" + str + "\"");
 }
 
-std::string ProgramTypeToStr(ProgramType program)
+std::string ProgramKindToStr(ProgramKind program)
 {
     switch (program)
     {
-        case ProgramType::Canvas:
+        case ProgramKind::Canvas:
             return "Canvas";
-        case ProgramType::CircleOverlay:
+        case ProgramKind::CircleOverlay:
             return "CircleOverlay";
-        case ProgramType::DashedLineOverlay:
+        case ProgramKind::DashedLineOverlay:
             return "CircleOverlay";
-        case ProgramType::Grid:
+        case ProgramKind::Grid:
             return "Grid";
-        case ProgramType::MipMappedTextureQuad:
+        case ProgramKind::MipMappedTextureQuad:
             return "MipMappedTextureQuad";
-        case ProgramType::RectOverlay:
+        case ProgramKind::RectOverlay:
             return "RectOverlay";
-        case ProgramType::Matte:
+        case ProgramKind::Matte:
             return "Matte";
-        case ProgramType::StructureMesh:
+        case ProgramKind::StructureMesh:
             return "StructureMesh";
-        case ProgramType::Texture:
+        case ProgramKind::Texture:
             return "Texture";
-        case ProgramType::TextureNdc:
+        case ProgramKind::TextureNdc:
             return "TextureNdc";
-        case ProgramType::Waterline:
+        case ProgramKind::Waterline:
             return "Waterline";
     }
 
     assert(false);
-    throw GameException("Unsupported ProgramType");
+    throw GameException("Unsupported ProgramKind");
 }
 
-ProgramParameterType StrToProgramParameterType(std::string const & str)
+ProgramParameterKind StrToProgramParameterKind(std::string const & str)
 {
     if (str == "CanvasBackgroundColor")
-        return ProgramParameterType::CanvasBackgroundColor;
+        return ProgramParameterKind::CanvasBackgroundColor;
     else if (str == "Opacity")
-        return ProgramParameterType::Opacity;
+        return ProgramParameterKind::Opacity;
     else if (str == "OrthoMatrix")
-        return ProgramParameterType::OrthoMatrix;
+        return ProgramParameterKind::OrthoMatrix;
     else if (str == "PixelsPerShipParticle")
-        return ProgramParameterType::PixelsPerShipParticle;
+        return ProgramParameterKind::PixelsPerShipParticle;
     else if (str == "PixelSize")
-        return ProgramParameterType::PixelSize;
+        return ProgramParameterKind::PixelSize;
     else if (str == "PixelStep")
-        return ProgramParameterType::PixelStep;
+        return ProgramParameterKind::PixelStep;
     else if (str == "ShipParticleTextureSize")
-        return ProgramParameterType::ShipParticleTextureSize;
+        return ProgramParameterKind::ShipParticleTextureSize;
     else if (str == "BackgroundTextureUnit")
-        return ProgramParameterType::BackgroundTextureUnit;
+        return ProgramParameterKind::BackgroundTextureUnit;
     else if (str == "MipMappedTexturesAtlasTexture")
-        return ProgramParameterType::MipMappedTexturesAtlasTexture;
+        return ProgramParameterKind::MipMappedTexturesAtlasTexture;
     else if (str == "TextureUnit1")
-        return ProgramParameterType::TextureUnit1;
+        return ProgramParameterKind::TextureUnit1;
     else
         throw GameException("Unrecognized program parameter \"" + str + "\"");
 }
 
-std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
+std::string ProgramParameterKindToStr(ProgramParameterKind programParameter)
 {
     switch (programParameter)
     {
-        case ProgramParameterType::CanvasBackgroundColor:
+        case ProgramParameterKind::CanvasBackgroundColor:
             return "CanvasBackgroundColor";
-        case ProgramParameterType::Opacity:
+        case ProgramParameterKind::Opacity:
             return "Opacity";
-        case ProgramParameterType::OrthoMatrix:
+        case ProgramParameterKind::OrthoMatrix:
             return "OrthoMatrix";
-        case ProgramParameterType::PixelsPerShipParticle:
+        case ProgramParameterKind::PixelsPerShipParticle:
             return "PixelsPerShipParticle";
-        case ProgramParameterType::PixelSize:
+        case ProgramParameterKind::PixelSize:
             return "PixelSize";
-        case ProgramParameterType::PixelStep:
+        case ProgramParameterKind::PixelStep:
             return "PixelStep";
-        case ProgramParameterType::ShipParticleTextureSize:
+        case ProgramParameterKind::ShipParticleTextureSize:
             return "ShipParticleTextureSize";
-        case ProgramParameterType::BackgroundTextureUnit:
+        case ProgramParameterKind::BackgroundTextureUnit:
             return "BackgroundTextureUnit";
-        case ProgramParameterType::MipMappedTexturesAtlasTexture:
+        case ProgramParameterKind::MipMappedTexturesAtlasTexture:
             return "MipMappedTexturesAtlasTexture";
-        case ProgramParameterType::TextureUnit1:
+        case ProgramParameterKind::TextureUnit1:
             return "TextureUnit1";
     }
 
     assert(false);
-    throw GameException("Unsupported ProgramParameterType");
+    throw GameException("Unsupported ProgramParameterKind");
 }
 
-VertexAttributeType StrToVertexAttributeType(std::string const & str)
+VertexAttributeKind StrToVertexAttributeKind(std::string const & str)
 {
     if (Utils::CaseInsensitiveEquals(str, "Canvas"))
-        return VertexAttributeType::Canvas;
+        return VertexAttributeKind::Canvas;
     else if (Utils::CaseInsensitiveEquals(str, "CircleOverlay1"))
-        return VertexAttributeType::CircleOverlay1;
+        return VertexAttributeKind::CircleOverlay1;
     else if (Utils::CaseInsensitiveEquals(str, "CircleOverlay2"))
-        return VertexAttributeType::CircleOverlay2;
+        return VertexAttributeKind::CircleOverlay2;
     else if (Utils::CaseInsensitiveEquals(str, "DashedLineOverlay1"))
-        return VertexAttributeType::DashedLineOverlay1;
+        return VertexAttributeKind::DashedLineOverlay1;
     else if (Utils::CaseInsensitiveEquals(str, "DashedLineOverlay2"))
-        return VertexAttributeType::DashedLineOverlay2;
+        return VertexAttributeKind::DashedLineOverlay2;
     else if (Utils::CaseInsensitiveEquals(str, "DebugRegionOverlay1"))
-        return VertexAttributeType::DebugRegionOverlay1;
+        return VertexAttributeKind::DebugRegionOverlay1;
     else if (Utils::CaseInsensitiveEquals(str, "DebugRegionOverlay2"))
-        return VertexAttributeType::DebugRegionOverlay2;
+        return VertexAttributeKind::DebugRegionOverlay2;
     else if (Utils::CaseInsensitiveEquals(str, "Grid1"))
-        return VertexAttributeType::Grid1;
+        return VertexAttributeKind::Grid1;
     else if (Utils::CaseInsensitiveEquals(str, "Grid2"))
-        return VertexAttributeType::Grid2;
+        return VertexAttributeKind::Grid2;
     else if (Utils::CaseInsensitiveEquals(str, "Matte1"))
-        return VertexAttributeType::Matte1;
+        return VertexAttributeKind::Matte1;
     else if (Utils::CaseInsensitiveEquals(str, "Matte2"))
-        return VertexAttributeType::Matte2;
+        return VertexAttributeKind::Matte2;
     else if (Utils::CaseInsensitiveEquals(str, "RectOverlay1"))
-        return VertexAttributeType::RectOverlay1;
+        return VertexAttributeKind::RectOverlay1;
     else if (Utils::CaseInsensitiveEquals(str, "RectOverlay2"))
-        return VertexAttributeType::RectOverlay2;
+        return VertexAttributeKind::RectOverlay2;
     else if (Utils::CaseInsensitiveEquals(str, "Texture"))
-        return VertexAttributeType::Texture;
+        return VertexAttributeKind::Texture;
     else if (Utils::CaseInsensitiveEquals(str, "TextureNdc"))
-        return VertexAttributeType::TextureNdc;
+        return VertexAttributeKind::TextureNdc;
     else if (Utils::CaseInsensitiveEquals(str, "Waterline1"))
-        return VertexAttributeType::Waterline1;
+        return VertexAttributeKind::Waterline1;
     else if (Utils::CaseInsensitiveEquals(str, "Waterline2"))
-        return VertexAttributeType::Waterline2;
+        return VertexAttributeKind::Waterline2;
     else
         throw GameException("Unrecognized vertex attribute \"" + str + "\"");
 }

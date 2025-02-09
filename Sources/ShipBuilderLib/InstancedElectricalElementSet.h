@@ -5,9 +5,9 @@
 ***************************************************************************************/
 #pragma once
 
-#include <Game/Materials.h>
+#include <Simulation/Materials.h>
 
-#include <GameCore/GameTypes.h>
+#include <Core/GameTypes.h>
 
 #include <cstdint>
 #include <map>

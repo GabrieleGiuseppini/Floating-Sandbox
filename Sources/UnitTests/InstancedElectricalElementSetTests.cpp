@@ -1,6 +1,6 @@
 #include <ShipBuilderLib/InstancedElectricalElementSet.h>
 
-#include "Utils.h"
+#include "TestingUtils.h"
 
 #include "gtest/gtest.h"
 

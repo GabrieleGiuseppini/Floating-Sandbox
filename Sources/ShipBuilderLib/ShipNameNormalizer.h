@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include <Game/ResourceLocator.h>
+#include <Game/GameAssetManager.h>
 
 #include <string>
 #include <unordered_map>
@@ -17,7 +17,7 @@ class ShipNameNormalizer
 {
 public:
 
-    explicit ShipNameNormalizer(ResourceLocator const & resourceLocator);
+    explicit ShipNameNormalizer(GameAssetManager const & gameAssetManager);
 
     explicit ShipNameNormalizer(std::vector<std::string> && prefixes);
 

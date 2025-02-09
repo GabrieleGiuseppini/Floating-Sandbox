@@ -37,7 +37,7 @@ set (UNIT_TEST_SOURCES
 	GameMathTests.cpp
 	ImageToolsTests.cpp
 	IndexRemapTests.cpp
-	#InstancedElectricalElementSetTests.cpp
+	InstancedElectricalElementSetTests.cpp
 	IntegralSystemTests.cpp
 	LayerTests.cpp
 	LayoutHelperTests.cpp
@@ -50,7 +50,7 @@ set (UNIT_TEST_SOURCES
 	SettingsTests.cpp
 	ShaderManagerTests.cpp
 	ShipDefinitionFormatDeSerializerTests.cpp
-	#ShipNameNormalizerTests.cpp
+	ShipNameNormalizerTests.cpp
 	ShipPreviewDirectoryManagerTests.cpp
 	#ShipTests.cpp  # Needs a lot of rework
 	SimulationEventDispatcherTests.cpp
@@ -86,7 +86,7 @@ target_link_libraries (UnitTests
 	OpenGLCore
 	Render
 	Simulation
-	#ShipBuilderLib
+	ShipBuilderLib
 	UILib	
 	gmock
 	gtest

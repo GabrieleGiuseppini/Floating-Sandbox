@@ -5,8 +5,10 @@
 ***************************************************************************************/
 #include "ShipNameNormalizer.h"
 
-#include <GameCore/GameException.h>
-#include <GameCore/Utils.h>
+#include <Game/FileStreams.h>
+
+#include <Core/GameException.h>
+#include <Core/Utils.h>
 
 #include <cassert>
 #include <cctype>
@@ -14,8 +16,8 @@
 
 namespace ShipBuilder {
 
-ShipNameNormalizer::ShipNameNormalizer(ResourceLocator const & resourceLocator)
-    : ShipNameNormalizer(Utils::LoadTextFileLines(resourceLocator.GetShipNamePrefixListFilePath()))
+ShipNameNormalizer::ShipNameNormalizer(GameAssetManager const & gameAssetManager)
+    : ShipNameNormalizer(FileTextReadStream(gameAssetManager.GetShipNamePrefixListFilePath()).ReadAllLines())
 {
 }
 

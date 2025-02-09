@@ -7,12 +7,12 @@
 
 #include "ShipBuilderTypes.h"
 
-#include <Game/Layers.h>
-#include <Game/ShipAutoTexturizationSettings.h>
-#include <Game/ShipMetadata.h>
-#include <Game/ShipPhysicsData.h>
+#include <Simulation/Layers.h>
+#include <Simulation/ShipAutoTexturizationSettings.h>
+#include <Simulation/ShipMetadata.h>
+#include <Simulation/ShipPhysicsData.h>
 
-#include <GameCore/GameTypes.h>
+#include <Core/GameTypes.h>
 
 #include <optional>
 
