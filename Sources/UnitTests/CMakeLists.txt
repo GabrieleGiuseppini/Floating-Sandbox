@@ -40,7 +40,7 @@ set (UNIT_TEST_SOURCES
 	#InstancedElectricalElementSetTests.cpp
 	IntegralSystemTests.cpp
 	LayerTests.cpp
-	#LayoutHelperTests.cpp
+	LayoutHelperTests.cpp
 	main.cpp
 	Matrix2Tests.cpp
 	ParameterSmootherTests.cpp
@@ -54,7 +54,7 @@ set (UNIT_TEST_SOURCES
 	ShipPreviewDirectoryManagerTests.cpp
 	#ShipTests.cpp  # Needs a lot of rework
 	SimulationEventDispatcherTests.cpp
-	#SliderCoreTests.cpp
+	SliderCoreTests.cpp
 	StreamsTests.cpp
 	StrongTypeDefTests.cpp
 	SysSpecificsTests.cpp
@@ -86,12 +86,11 @@ target_link_libraries (UnitTests
 	OpenGLCore
 	Render
 	Simulation
-	#GPUCalcLib
 	#ShipBuilderLib
-	#UILib
-	${OPENGL_LIBRARIES}
+	UILib	
 	gmock
 	gtest
+	#${OPENGL_LIBRARIES}
 	${ADDITIONAL_LIBRARIES})
 
 #

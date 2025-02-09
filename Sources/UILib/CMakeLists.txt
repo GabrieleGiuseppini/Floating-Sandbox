@@ -55,6 +55,6 @@ target_include_directories(UILib PRIVATE .)
 target_include_directories(UILib PRIVATE ${wxWidgets_INCLUDE_DIRS})
 target_compile_definitions(UILib PRIVATE "${wxWidgets_DEFINITIONS}")
 target_link_libraries (UILib
-	GameCoreLib
+	Core
 	${wxWidgets_LIBRARIES}
 	${ADDITIONAL_LIBRARIES})

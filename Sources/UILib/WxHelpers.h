@@ -5,10 +5,10 @@
 ***************************************************************************************/
 #pragma once
 
-#include <Game/ResourceLocator.h>
+#include <Game/GameAssetManager.h>
 
-#include <GameCore/Colors.h>
-#include <GameCore/ImageData.h>
+#include <Core/Colors.h>
+#include <Core/ImageData.h>
 
 #include <wx/bitmap.h>
 #include <wx/cursor.h>
@@ -26,14 +26,14 @@ namespace WxHelpers
 {
     wxBitmap LoadBitmap(
         std::string const & bitmapName,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
     wxBitmap LoadBitmap(std::filesystem::path const & bitmapFilePath);
 
     wxBitmap LoadBitmap(
         std::string const & bitmapName,
         ImageSize const & size,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
     wxBitmap MakeBitmap(RgbaImageData const & imageData);
 
@@ -55,13 +55,13 @@ namespace WxHelpers
         std::string const & cursorName,
         int hotspotX,
         int hotspotY,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
     wxImage LoadCursorImage(
         std::string const & cursorName,
         int hotspotX,
         int hotspotY,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
     wxImage RetintCursorImage(
         wxImage const & src,

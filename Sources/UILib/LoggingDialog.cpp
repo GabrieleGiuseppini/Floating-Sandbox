@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #include "LoggingDialog.h"
 
-#include <GameCore/Log.h>
+#include <Core/Log.h>
 
 #include <wx/clipbrd.h>
 #include <wx/settings.h>

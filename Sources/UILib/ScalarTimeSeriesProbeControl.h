@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include <GameCore/CircularList.h>
+#include <Core/CircularList.h>
 
 #include <wx/wx.h>
 

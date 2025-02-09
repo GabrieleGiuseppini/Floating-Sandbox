@@ -7,7 +7,7 @@
 
 #include "StandardSystemPaths.h"
 
-#include <GameCore/Log.h>
+#include <Core/Log.h>
 
 #include <UILib/ShipDescriptionDialog.h>
 #include <UILib/WxHelpers.h>
@@ -21,13 +21,13 @@ constexpr int MaxDirComboWidth = 650;
 template<ShipLoadDialogUsageType TUsageType>
 ShipLoadDialog<TUsageType>::ShipLoadDialog(
     wxWindow * parent,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
     : mParent(parent)
-    , mResourceLocator(resourceLocator)
+    , mResourceLocator(gameAssetManager)
     ///
     , mPasswordProtectionInfoDialog(nullptr)
     ///
-    , mStandardInstalledShipFolderPath(resourceLocator.GetInstalledShipFolderPath())
+    , mStandardInstalledShipFolderPath(gameAssetManager.GetInstalledShipFolderPath())
     , mUserShipFolderPath(StandardSystemPaths::GetInstance().GetUserShipFolderPath())
 {
     Create(
@@ -51,12 +51,12 @@ ShipLoadDialog<TUsageType>::ShipLoadDialog(
     // Bitmaps
     //
 
-    mSortByNameIcon = WxHelpers::LoadBitmap("sort_by_name_button", resourceLocator);
-    mSortByLastModifiedIcon = WxHelpers::LoadBitmap("sort_by_time_button", resourceLocator);
-    mSortByYearBuiltIcon = WxHelpers::LoadBitmap("sort_by_year_button", resourceLocator);
-    mSortByFeaturesIcon = WxHelpers::LoadBitmap("sort_by_features_button", resourceLocator);
-    mSortAscendingIcon = WxHelpers::LoadBitmap("arrow_down_medium", resourceLocator);
-    mSortDescendingIcon = WxHelpers::LoadBitmap("arrow_up_medium", resourceLocator);
+    mSortByNameIcon = WxHelpers::LoadBitmap("sort_by_name_button", gameAssetManager);
+    mSortByLastModifiedIcon = WxHelpers::LoadBitmap("sort_by_time_button", gameAssetManager);
+    mSortByYearBuiltIcon = WxHelpers::LoadBitmap("sort_by_year_button", gameAssetManager);
+    mSortByFeaturesIcon = WxHelpers::LoadBitmap("sort_by_features_button", gameAssetManager);
+    mSortAscendingIcon = WxHelpers::LoadBitmap("arrow_down_medium", gameAssetManager);
+    mSortDescendingIcon = WxHelpers::LoadBitmap("arrow_up_medium", gameAssetManager);
 
     //
     // Layout controls
@@ -106,7 +106,7 @@ ShipLoadDialog<TUsageType>::ShipLoadDialog(
 
                 // Info button
                 {
-                    mInfoButton = new wxBitmapButton(this, wxID_ANY, WxHelpers::LoadBitmap("info", resourceLocator), wxDefaultPosition, wxDefaultSize);
+                    mInfoButton = new wxBitmapButton(this, wxID_ANY, WxHelpers::LoadBitmap("info", gameAssetManager), wxDefaultPosition, wxDefaultSize);
                     mInfoButton->SetToolTip(_("See ship information"));
                     mInfoButton->Bind(wxEVT_BUTTON, &ShipLoadDialog::OnInfoButtonClicked, this);
 
@@ -125,7 +125,7 @@ ShipLoadDialog<TUsageType>::ShipLoadDialog(
                     {
                         mFlipHButton = new BitmapToggleButton(
                             this,
-                            resourceLocator.GetBitmapFilePath("flip_h_small"),
+                            gameAssetManager.GetBitmapFilePath("flip_h_small"),
                             [](bool) {},
                             _("Flip ship horizontally when loaded"));
 
@@ -140,7 +140,7 @@ ShipLoadDialog<TUsageType>::ShipLoadDialog(
                     {
                         mFlipVButton = new BitmapToggleButton(
                             this,
-                            resourceLocator.GetBitmapFilePath("flip_v_small"),
+                            gameAssetManager.GetBitmapFilePath("flip_v_small"),
                             [](bool) {},
                             _("Flip ship vertically when loaded"));
 
@@ -155,7 +155,7 @@ ShipLoadDialog<TUsageType>::ShipLoadDialog(
                     {
                         mRotate90CWButton = new BitmapToggleButton(
                             this,
-                            resourceLocator.GetBitmapFilePath("rotate_90_cw_small"),
+                            gameAssetManager.GetBitmapFilePath("rotate_90_cw_small"),
                             [](bool) {},
                             _("Rotate ship 90 degrees clockwise when loaded"));
 
@@ -178,7 +178,7 @@ ShipLoadDialog<TUsageType>::ShipLoadDialog(
 
                             hSizer->AddSpacer(15);
 
-                            auto icon = new wxStaticBitmap(mPasswordProtectionInfoDialog, wxID_ANY, WxHelpers::LoadBitmap("protected_medium", resourceLocator));
+                            auto icon = new wxStaticBitmap(mPasswordProtectionInfoDialog, wxID_ANY, WxHelpers::LoadBitmap("protected_medium", gameAssetManager));
                             hSizer->Add(icon, 0, wxALIGN_CENTER_VERTICAL | wxALL, 8);
 
                             auto label = new wxStaticText(mPasswordProtectionInfoDialog, wxID_ANY, _("This ship is password-protected for editing."), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
@@ -189,7 +189,7 @@ ShipLoadDialog<TUsageType>::ShipLoadDialog(
                             mPasswordProtectionInfoDialog->SetSizerAndFit(hSizer);
                         }
 
-                        mPasswordProtectedButton = new wxBitmapButton(this, wxID_ANY, WxHelpers::LoadBitmap("protected_small", resourceLocator), wxDefaultPosition, wxDefaultSize);
+                        mPasswordProtectedButton = new wxBitmapButton(this, wxID_ANY, WxHelpers::LoadBitmap("protected_small", gameAssetManager), wxDefaultPosition, wxDefaultSize);
                         mPasswordProtectedButton->SetToolTip(_("Indicates whether the ship is password-protected"));
                         mPasswordProtectedButton->Bind(wxEVT_BUTTON,
                             [this](wxCommandEvent &)
@@ -393,7 +393,7 @@ ShipLoadDialog<TUsageType>::ShipLoadDialog(
             // Standard HomeDir button
             {
                 wxBitmapButton * homeDirButton = new wxBitmapButton(this, wxID_ANY,
-                    WxHelpers::LoadBitmap("home", resourceLocator), wxDefaultPosition, wxDefaultSize);
+                    WxHelpers::LoadBitmap("home", gameAssetManager), wxDefaultPosition, wxDefaultSize);
                 homeDirButton->SetToolTip(_("Go to the default Ships folder"));
                 homeDirButton->Bind(wxEVT_BUTTON, &ShipLoadDialog::OnStandardHomeDirButtonClicked, this);
 
@@ -405,7 +405,7 @@ ShipLoadDialog<TUsageType>::ShipLoadDialog(
             // User HomeDir button
             {
                 wxBitmapButton * homeDirButton = new wxBitmapButton(this, wxID_ANY,
-                    WxHelpers::LoadBitmap("home_user", resourceLocator), wxDefaultPosition, wxDefaultSize);
+                    WxHelpers::LoadBitmap("home_user", gameAssetManager), wxDefaultPosition, wxDefaultSize);
                 homeDirButton->SetToolTip(_("Go to your Ships folder"));
                 homeDirButton->Bind(wxEVT_BUTTON, &ShipLoadDialog::OnUserHomeDirButtonClicked, this);
 
@@ -429,7 +429,7 @@ ShipLoadDialog<TUsageType>::ShipLoadDialog(
             buttonsSizer->AddSpacer(10);
 
             mLoadRandomButton = new wxBitmapButton(this, wxID_ANY,
-                WxHelpers::LoadBitmap("load_random_ship_icon", resourceLocator), wxDefaultPosition, wxDefaultSize);
+                WxHelpers::LoadBitmap("load_random_ship_icon", gameAssetManager), wxDefaultPosition, wxDefaultSize);
             mLoadRandomButton->SetToolTip(_("Load a random ship"));
             mLoadRandomButton->Bind(wxEVT_BUTTON, &ShipLoadDialog::OnLoadRandomButton, this);
             buttonsSizer->Add(mLoadRandomButton, 0);

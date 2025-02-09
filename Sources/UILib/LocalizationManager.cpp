@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #include "LocalizationManager.h"
 
-#include <GameCore/Log.h>
+#include <Core/Log.h>
 
 #include <algorithm>
 #include <filesystem>
@@ -16,10 +16,10 @@ static std::string const TranslationsDomainName = "ui_strings";
 
 std::unique_ptr<LocalizationManager> LocalizationManager::CreateInstance(
     std::optional<std::string> desiredLanguageIdentifier,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
 {
     // Create list of available languages
-    auto availableLanguages = MakeAvailableLanguages(resourceLocator);
+    auto availableLanguages = MakeAvailableLanguages(gameAssetManager);
 
     // See desired language
     std::optional<LanguageInfo> desiredLanguageInfo;
@@ -61,7 +61,7 @@ std::unique_ptr<LocalizationManager> LocalizationManager::CreateInstance(
     else
     {
         // Add the catalog path
-        locale->AddCatalogLookupPathPrefix(resourceLocator.GetLanguagesRootPath().string());
+        locale->AddCatalogLookupPathPrefix(gameAssetManager.GetLanguagesRootPath().string());
 
         // Add the standard wxWidgets catalog
         if (auto const translations = wxTranslations::Get();
@@ -148,15 +148,9 @@ wxString LocalizationManager::MakeErrorMessage(UserGameException const & excepti
             break;
         }
 
-        case UserGameException::MessageIdType::LoadShipMaterialNotFoundLaterVersion:
+        case UserGameException::MessageIdType::LoadShipMaterialNotFound:
         {
-            errorMessage = _("This ship cannot be loaded because it has unrecognized materials from a newer release. Upgrade Floating Sandbox to at least Floating Sandbox %1.");
-            break;
-        }
-
-        case UserGameException::MessageIdType::LoadShipMaterialNotFoundSameVersion:
-        {
-            errorMessage = _("This ship cannot be loaded because it has unrecognized materials - it was likely created with a non-standard release of Floating Sandbox.");
+            errorMessage = _("This ship cannot be loaded because it has unrecognized materials - it was likely created with a different version of Floating Sandbox or with a non-standard release.");
             break;
         }
     }
@@ -178,7 +172,7 @@ std::string LocalizationManager::MakeLanguageIdentifier(wxString const & canonic
     return canonicalLanguageName.BeforeFirst('_').ToStdString();
 }
 
-std::vector<LocalizationManager::LanguageInfo> LocalizationManager::MakeAvailableLanguages(ResourceLocator const & resourceLocator)
+std::vector<LocalizationManager::LanguageInfo> LocalizationManager::MakeAvailableLanguages(GameAssetManager const & gameAssetManager)
 {
     std::vector<LanguageInfo> languages;
 
@@ -186,7 +180,7 @@ std::vector<LocalizationManager::LanguageInfo> LocalizationManager::MakeAvailabl
     // Enumerate all directories under our "languages" root
     //
 
-    for (auto const & entryIt : std::filesystem::directory_iterator(resourceLocator.GetLanguagesRootPath()))
+    for (auto const & entryIt : std::filesystem::directory_iterator(gameAssetManager.GetLanguagesRootPath()))
     {
         if (std::filesystem::is_directory(entryIt.path()))
         {

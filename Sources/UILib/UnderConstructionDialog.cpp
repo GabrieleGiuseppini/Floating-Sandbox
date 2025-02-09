@@ -12,7 +12,7 @@
 
 UnderConstructionDialog::UnderConstructionDialog(
     wxWindow * parent,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
 {
 	Create(
         parent,
@@ -25,7 +25,7 @@ UnderConstructionDialog::UnderConstructionDialog(
     wxBoxSizer * dialogVSizer = new wxBoxSizer(wxVERTICAL);
 
     {
-        auto temp = new wxStaticBitmap(this, wxID_ANY, WxHelpers::LoadBitmap("under_construction_large", resourceLocator));
+        auto temp = new wxStaticBitmap(this, wxID_ANY, WxHelpers::LoadBitmap("under_construction_large", gameAssetManager));
         dialogVSizer->Add(temp, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 0);
     }
 
@@ -36,8 +36,8 @@ UnderConstructionDialog::UnderConstructionDialog(
 
 void UnderConstructionDialog::Show(
     wxWindow * parent,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
 {
-    UnderConstructionDialog dlg(parent, resourceLocator);
+    UnderConstructionDialog dlg(parent, gameAssetManager);
     dlg.ShowModal();
 }

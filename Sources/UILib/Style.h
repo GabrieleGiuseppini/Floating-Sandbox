@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include <GameCore/Colors.h>
+#include <Core/Colors.h>
 
 namespace Style
 {

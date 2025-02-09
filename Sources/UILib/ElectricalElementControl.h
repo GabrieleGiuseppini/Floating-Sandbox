@@ -5,11 +5,11 @@
 ***************************************************************************************/
 #pragma once
 
-#include <Game/GameParameters.h>
+#include <Simulation/SimulationParameters.h>
 
-#include <GameCore/GameTypes.h>
-#include <GameCore/Log.h>
-#include <GameCore/Vectors.h>
+#include <Core/GameTypes.h>
+#include <Core/Log.h>
+#include <Core/Vectors.h>
 
 #include <wx/bitmap.h>
 #include <wx/cursor.h>
@@ -667,7 +667,7 @@ private:
 
     using TelegraphValue = unsigned int; // Between 0 and EngineControllerTelegraphDegreesOfFreedom
 
-    static TelegraphValue constexpr MaxTelegraphValue = static_cast<TelegraphValue>(GameParameters::EngineControllerTelegraphDegreesOfFreedom - 1);
+    static TelegraphValue constexpr MaxTelegraphValue = static_cast<TelegraphValue>(SimulationParameters::EngineControllerTelegraphDegreesOfFreedom - 1);
 
 public:
 
@@ -693,7 +693,7 @@ public:
         , mCenterPoint(static_cast<float>(centerPoint.x), static_cast<float>(centerPoint.y))
         , mHand0CCWAngle(hand0CCWAngle)
         , mHandMaxCCWAngle(handMaxCCWAngle)
-        , mSectorAngle(std::abs(mHandMaxCCWAngle - mHand0CCWAngle) / static_cast<float>(GameParameters::EngineControllerTelegraphDegreesOfFreedom))
+        , mSectorAngle(std::abs(mHandMaxCCWAngle - mHand0CCWAngle) / static_cast<float>(SimulationParameters::EngineControllerTelegraphDegreesOfFreedom))
         , mOnControllerUpdated(std::move(onControllerUpdated))
         //
         , mCurrentValue(ControllerValueToTelegraphValue(currentValue))
@@ -701,7 +701,7 @@ public:
         , mIsLeftMouseDown(false)
         , mIsMouseCaptured(false)
     {
-        assert(mHandImages.size() == GameParameters::EngineControllerTelegraphDegreesOfFreedom);
+        assert(mHandImages.size() == SimulationParameters::EngineControllerTelegraphDegreesOfFreedom);
 
         mImagePanel->SetCursor(cursor);
 
@@ -770,14 +770,14 @@ private:
         // EngineControllerTelegraphDegreesOfFreedom / 2 -> 0.0
         // MaxValue (EngineControllerTelegraphDegreesOfFreedom - 1) -> 1.0
 
-        return (static_cast<float>(telegraphValue) - static_cast<float>(GameParameters::EngineControllerTelegraphDegreesOfFreedom / 2))
-            / static_cast<float>(GameParameters::EngineControllerTelegraphDegreesOfFreedom / 2);
+        return (static_cast<float>(telegraphValue) - static_cast<float>(SimulationParameters::EngineControllerTelegraphDegreesOfFreedom / 2))
+            / static_cast<float>(SimulationParameters::EngineControllerTelegraphDegreesOfFreedom / 2);
     }
 
     TelegraphValue ControllerValueToTelegraphValue(float controllerValue) const
     {
-        return static_cast<TelegraphValue>(controllerValue * static_cast<float>(GameParameters::EngineControllerTelegraphDegreesOfFreedom / 2))
-            + static_cast<TelegraphValue>(GameParameters::EngineControllerTelegraphDegreesOfFreedom / 2);
+        return static_cast<TelegraphValue>(controllerValue * static_cast<float>(SimulationParameters::EngineControllerTelegraphDegreesOfFreedom / 2))
+            + static_cast<TelegraphValue>(SimulationParameters::EngineControllerTelegraphDegreesOfFreedom / 2);
     }
 
 private:

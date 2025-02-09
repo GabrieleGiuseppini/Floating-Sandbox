@@ -5,9 +5,9 @@
 ***************************************************************************************/
 #pragma once
 
-#include <Game/ResourceLocator.h>
+#include <Game/GameAssetManager.h>
 
-#include <GameCore/UserGameException.h>
+#include <Core/UserGameException.h>
 
 #include <wx/intl.h>
 
@@ -40,7 +40,7 @@ public:
 
     static std::unique_ptr<LocalizationManager> CreateInstance(
         std::optional<std::string> desiredLanguageIdentifier,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
     /*
      * Returns the desired UI language - which is enforced only at startup.
@@ -99,7 +99,7 @@ private:
 
     static std::string MakeLanguageIdentifier(wxString const & canonicalLanguageName);
 
-    static std::vector<LanguageInfo> MakeAvailableLanguages(ResourceLocator const & resourceLocator);
+    static std::vector<LanguageInfo> MakeAvailableLanguages(GameAssetManager const & gameAssetManager);
 
     static LanguageInfo MakeDefaultLanguage();
 

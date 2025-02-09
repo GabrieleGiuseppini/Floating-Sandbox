@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #include "ImageLoader.h"
 
-#include <Game/PngImageFileTools.h>
+#include <Game/GameAssetManager.h>
 
 #include <wx/bitmap.h>
 #include <wx/image.h>
@@ -53,7 +53,7 @@ RgbaImageData LoadImageRgba(std::filesystem::path const & filepath)
 	else
 	{
 		assert(filepath.extension() == ".png");
-		return PngImageFileTools::LoadImageRgba(filepath);
+		return GameAssetManager::LoadPngImageRgba(filepath);
 	}
 }
 

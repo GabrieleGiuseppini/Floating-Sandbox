@@ -7,7 +7,7 @@
 
 #include "ShipPreviewWindow.h"
 
-#include <Game/ResourceLocator.h>
+#include <Game/GameAssetManager.h>
 #include <Game/ShipLoadSpecifications.h>
 
 #include <UILib/BitmapButton.h>
@@ -37,7 +37,7 @@ public:
 
     ShipLoadDialog(
         wxWindow* parent,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
     virtual ~ShipLoadDialog();
 
@@ -102,7 +102,7 @@ private:
 private:
 
     wxWindow * const mParent;
-    ResourceLocator const & mResourceLocator;
+    GameAssetManager const & mResourceLocator;
 
     wxBitmap mSortByNameIcon;
     wxBitmap mSortByLastModifiedIcon;

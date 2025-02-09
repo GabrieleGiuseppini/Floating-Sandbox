@@ -7,8 +7,9 @@
 
 #include "TextValidators.h"
 
-#include <GameCore/ISliderCore.h>
 #include <UILib/WxHelpers.h>
+
+#include <Core/ISliderCore.h>
 
 #include <wx/bitmap.h>
 #include <wx/slider.h>

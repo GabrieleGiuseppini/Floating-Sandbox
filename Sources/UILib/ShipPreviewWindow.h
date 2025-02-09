@@ -5,12 +5,12 @@
 ***************************************************************************************/
 #pragma once
 
-#include <Game/ResourceLocator.h>
-#include <Game/ShipPreviewData.h>
+#include <Game/EnhancedShipPreviewData.h>
+#include <Game/GameAssetManager.h>
 
-#include <GameCore/ImageData.h>
-#include <GameCore/PortableTimepoint.h>
-#include <GameCore/StrongTypeDef.h>
+#include <Core/ImageData.h>
+#include <Core/PortableTimepoint.h>
+#include <Core/StrongTypeDef.h>
 
 #include <wx/timer.h>
 #include <wx/wx.h>
@@ -203,7 +203,7 @@ public:
 
     ShipPreviewWindow(
         wxWindow* parent,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
     virtual ~ShipPreviewWindow();
 
@@ -540,7 +540,7 @@ private:
 
         static std::unique_ptr<ThreadToPanelMessage> MakePreviewReadyMessage(
             ShipFileId_t shipFileId,
-            ShipPreviewData && shipPreviewData,
+            EnhancedShipPreviewData && shipPreviewData,
             RgbaImageData && shipPreviewImage)
         {
             std::unique_ptr<ThreadToPanelMessage> msg(new ThreadToPanelMessage(MessageType::PreviewReady));
@@ -593,7 +593,7 @@ private:
             return *mShipFileId;
         }
 
-        ShipPreviewData const & GetShipPreviewData()
+        EnhancedShipPreviewData const & GetShipPreviewData()
         {
             return *mShipPreviewData;
         }
@@ -619,7 +619,7 @@ private:
         std::optional<DirectorySnapshot> mDirectorySnapshot;
         std::string mErrorMessage;
         std::optional<ShipFileId_t> mShipFileId;
-        std::optional<ShipPreviewData> mShipPreviewData;
+        std::optional<EnhancedShipPreviewData> mShipPreviewData;
         std::optional<RgbaImageData> mShipPreviewImage;
     };
 

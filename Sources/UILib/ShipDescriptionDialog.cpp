@@ -16,7 +16,7 @@ ShipDescriptionDialog::ShipDescriptionDialog(
     wxWindow* parent,
     ShipMetadata const & shipMetadata,
     bool isAutomatic,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
     : mShowDescriptionsUserPreference(std::nullopt)
 {
     Create(
@@ -28,7 +28,7 @@ ShipDescriptionDialog::ShipDescriptionDialog(
         wxBORDER_SUNKEN | wxSTAY_ON_TOP);
 
     auto const backgroundBitmap = wxBitmap(
-        resourceLocator.GetBitmapFilePath("ship_description_background").string(),
+        gameAssetManager.GetBitmapFilePath("ship_description_background").string(),
         wxBITMAP_TYPE_PNG);
 
     SetBackgroundBitmap(backgroundBitmap);

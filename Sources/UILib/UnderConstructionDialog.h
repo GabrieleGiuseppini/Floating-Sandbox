@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include <Game/ResourceLocator.h>
+#include <Game/GameAssetManager.h>
 
 #include <wx/dialog.h>
 
@@ -13,9 +13,9 @@ class UnderConstructionDialog : public wxDialog
 {
 public:
 
-	static void Show(wxWindow * parent, ResourceLocator const & resourceLocator);
+	static void Show(wxWindow * parent, GameAssetManager const & gameAssetManager);
 
 private:
 
-	UnderConstructionDialog(wxWindow * parent, ResourceLocator const & resourceLocator);
+	UnderConstructionDialog(wxWindow * parent, GameAssetManager const & gameAssetManager);
 };

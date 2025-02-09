@@ -7,7 +7,7 @@
 
 #include "Style.h"
 
-#include <GameCore/GameException.h>
+#include <Core/GameException.h>
 
 #include <wx/rawbmp.h>
 
@@ -17,9 +17,9 @@
 
 wxBitmap WxHelpers::LoadBitmap(
     std::string const & bitmapName,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
 {
-    return WxHelpers::LoadBitmap(resourceLocator.GetBitmapFilePath(bitmapName));
+    return WxHelpers::LoadBitmap(gameAssetManager.GetBitmapFilePath(bitmapName));
 }
 
 wxBitmap WxHelpers::LoadBitmap(std::filesystem::path const & bitmapFilePath)
@@ -36,14 +36,14 @@ wxBitmap WxHelpers::LoadBitmap(std::filesystem::path const & bitmapFilePath)
 wxBitmap WxHelpers::LoadBitmap(
     std::string const & bitmapName,
     ImageSize const & size,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
 {
     if (size.width == 0 || size.height == 0)
     {
         throw std::runtime_error("Cannot create bitmap with one zero dimension");
     }
 
-    wxImage image(resourceLocator.GetBitmapFilePath(bitmapName).string(), wxBITMAP_TYPE_PNG);
+    wxImage image(gameAssetManager.GetBitmapFilePath(bitmapName).string(), wxBITMAP_TYPE_PNG);
     image.Rescale(size.width, size.height, wxIMAGE_QUALITY_HIGH);
     return wxBitmap(image);
 }
@@ -392,13 +392,13 @@ wxCursor WxHelpers::LoadCursor(
     std::string const & cursorName,
     int hotspotX,
     int hotspotY,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
 {
     wxImage img = LoadCursorImage(
         cursorName,
         hotspotX,
         hotspotY,
-        resourceLocator);
+        gameAssetManager);
 
     return wxCursor(img);
 }
@@ -407,9 +407,9 @@ wxImage WxHelpers::LoadCursorImage(
     std::string const & cursorName,
     int hotspotX,
     int hotspotY,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
 {
-    auto filepath = resourceLocator.GetCursorFilePath(cursorName);
+    auto filepath = gameAssetManager.GetCursorFilePath(cursorName);
     auto bmp = wxBitmap(filepath.string(), wxBITMAP_TYPE_PNG);
 
     wxImage img = bmp.ConvertToImage();

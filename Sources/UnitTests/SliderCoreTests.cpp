@@ -1,10 +1,10 @@
-#include <GameCore/ExponentialSliderCore.h>
-#include <GameCore/FixedSetSliderCore.h>
-#include <GameCore/FixedTickSliderCore.h>
-#include <GameCore/IntegralLinearSliderCore.h>
-#include <GameCore/LinearSliderCore.h>
+#include <Core/ExponentialSliderCore.h>
+#include <Core/FixedSetSliderCore.h>
+#include <Core/FixedTickSliderCore.h>
+#include <Core/IntegralLinearSliderCore.h>
+#include <Core/LinearSliderCore.h>
 
-#include "Utils.h"
+#include "TestingUtils.h"
 
 #include "gtest/gtest.h"
 

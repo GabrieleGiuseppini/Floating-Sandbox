@@ -7,15 +7,14 @@
 
 #include <UILib/WxHelpers.h>
 
-#include <GameCore/Conversions.h>
-#include <GameCore/GameRandomEngine.h>
-#include <Game/PngImageFileTools.h>
 #include <Game/ShipDeSerializer.h>
 #include <Game/ShipPreviewDirectoryManager.h>
 
-#include <GameCore/GameException.h>
-#include <GameCore/ImageTools.h>
-#include <GameCore/Log.h>
+#include <Core/Conversions.h>
+#include <Core/GameRandomEngine.h>
+#include <Core/GameException.h>
+#include <Core/ImageTools.h>
+#include <Core/Log.h>
 
 #include <algorithm>
 #include <limits>
@@ -25,7 +24,7 @@ wxDEFINE_EVENT(fsEVT_SHIP_FILE_CHOSEN, ShipPreviewWindow::fsShipFileChosenEvent)
 
 ShipPreviewWindow::ShipPreviewWindow(
     wxWindow* parent,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
     : wxScrolled<wxWindow>(
         parent,
         wxID_ANY,
@@ -40,11 +39,11 @@ ShipPreviewWindow::ShipPreviewWindow(
     , mRows(0)
     , mColumnWidth(0)
     , mExpandedHorizontalMargin(0)
-    , mWaitBitmap(WxHelpers::MakeBitmap(PngImageFileTools::LoadImageRgba(resourceLocator.GetBitmapFilePath("ship_preview_wait"))))
-    , mErrorBitmap(WxHelpers::MakeBitmap(PngImageFileTools::LoadImageRgba(resourceLocator.GetBitmapFilePath("ship_preview_error"))))
-    , mPreviewRibbonBatteryBitmap(WxHelpers::MakeBitmap(PngImageFileTools::LoadImageRgba(resourceLocator.GetBitmapFilePath("ship_preview_ribbon_battery"))))
-    , mPreviewRibbonHDBitmap(WxHelpers::MakeBitmap(PngImageFileTools::LoadImageRgba(resourceLocator.GetBitmapFilePath("ship_preview_ribbon_hd"))))
-    , mPreviewRibbonBatteryAndHDBitmap(WxHelpers::MakeBitmap(PngImageFileTools::LoadImageRgba(resourceLocator.GetBitmapFilePath("ship_preview_ribbon_battery_and_hd"))))
+    , mWaitBitmap(WxHelpers::MakeBitmap(GameAssetManager::LoadPngImageRgba(gameAssetManager.GetBitmapFilePath("ship_preview_wait"))))
+    , mErrorBitmap(WxHelpers::MakeBitmap(GameAssetManager::LoadPngImageRgba(gameAssetManager.GetBitmapFilePath("ship_preview_error"))))
+    , mPreviewRibbonBatteryBitmap(WxHelpers::MakeBitmap(GameAssetManager::LoadPngImageRgba(gameAssetManager.GetBitmapFilePath("ship_preview_ribbon_battery"))))
+    , mPreviewRibbonHDBitmap(WxHelpers::MakeBitmap(GameAssetManager::LoadPngImageRgba(gameAssetManager.GetBitmapFilePath("ship_preview_ribbon_hd"))))
+    , mPreviewRibbonBatteryAndHDBitmap(WxHelpers::MakeBitmap(GameAssetManager::LoadPngImageRgba(gameAssetManager.GetBitmapFilePath("ship_preview_ribbon_battery_and_hd"))))
     //
     , mPollQueueTimer()
     , mInfoTiles()
@@ -438,7 +437,7 @@ void ShipPreviewWindow::OnPollQueueTimer(wxTimerEvent & /*event*/)
 
                 auto & infoTile = mInfoTiles[infoTileIndex];
 
-                ShipPreviewData const & shipPreviewData = message->GetShipPreviewData();
+                EnhancedShipPreviewData const & shipPreviewData = message->GetShipPreviewData();
 
                 infoTile.Bitmap = MakeBitmap(message->GetShipPreviewImage());
                 infoTile.IsHD = shipPreviewData.IsHD;

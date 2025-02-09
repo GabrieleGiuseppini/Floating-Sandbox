@@ -286,7 +286,7 @@ void EngineControllerJetEngineThrottleElectricalElementControl::OnKeyboardShortc
             // Up
             if (mCurrentValue == 0.0f)
             {
-                mCurrentValue = GameParameters::EngineControllerJetThrottleIdleFraction;
+                mCurrentValue = SimulationParameters::EngineControllerJetThrottleIdleFraction;
             }
             else
             {
@@ -296,11 +296,11 @@ void EngineControllerJetEngineThrottleElectricalElementControl::OnKeyboardShortc
         else
         {
             // Down
-            if (mCurrentValue > GameParameters::EngineControllerJetThrottleIdleFraction)
+            if (mCurrentValue > SimulationParameters::EngineControllerJetThrottleIdleFraction)
             {
-                mCurrentValue = std::max(mCurrentValue - ControllerValueStep, GameParameters::EngineControllerJetThrottleIdleFraction);
+                mCurrentValue = std::max(mCurrentValue - ControllerValueStep, SimulationParameters::EngineControllerJetThrottleIdleFraction);
             }
-            else if (mCurrentValue == GameParameters::EngineControllerJetThrottleIdleFraction)
+            else if (mCurrentValue == SimulationParameters::EngineControllerJetThrottleIdleFraction)
             {
                 mCurrentValue = 0.0f;
             }
@@ -390,7 +390,7 @@ void EngineControllerJetEngineThrottleElectricalElementControl::OnMouseMove(wxMo
             if (yStride > IdleThreshold)
             {
                 // Go to Idle
-                mCurrentValue = GameParameters::EngineControllerJetThrottleIdleFraction;
+                mCurrentValue = SimulationParameters::EngineControllerJetThrottleIdleFraction;
                 mOnControllerUpdated(mCurrentValue);
 
                 // Transition state
@@ -400,7 +400,7 @@ void EngineControllerJetEngineThrottleElectricalElementControl::OnMouseMove(wxMo
                 Refresh();
             }
         }
-        else if (mCurrentValue == GameParameters::EngineControllerJetThrottleIdleFraction)
+        else if (mCurrentValue == SimulationParameters::EngineControllerJetThrottleIdleFraction)
         {
             // At Idle
 
@@ -432,7 +432,7 @@ void EngineControllerJetEngineThrottleElectricalElementControl::OnMouseMove(wxMo
         else
         {
             // Free
-            assert(mCurrentValue > GameParameters::EngineControllerJetThrottleIdleFraction);
+            assert(mCurrentValue > SimulationParameters::EngineControllerJetThrottleIdleFraction);
 
             if (yStride > 0)
             {
@@ -449,8 +449,8 @@ void EngineControllerJetEngineThrottleElectricalElementControl::OnMouseMove(wxMo
             {
                 // Move down towards Idle
                 float const newValue = mCurrentValue + HandleStrideToControllerValueOffset(yStride);
-                mCurrentValue = std::max(newValue, GameParameters::EngineControllerJetThrottleIdleFraction);
-                if (mCurrentValue == GameParameters::EngineControllerJetThrottleIdleFraction)
+                mCurrentValue = std::max(newValue, SimulationParameters::EngineControllerJetThrottleIdleFraction);
+                if (mCurrentValue == SimulationParameters::EngineControllerJetThrottleIdleFraction)
                 {
                     // Go to Idle...
 

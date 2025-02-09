@@ -5,8 +5,8 @@
 ***************************************************************************************/
 #pragma once
 
-#include <GameCore/GameTypes.h>
-#include <GameCore/Log.h>
+#include <Core/GameTypes.h>
+#include <Core/Log.h>
 
 #include <algorithm>
 #include <cassert>

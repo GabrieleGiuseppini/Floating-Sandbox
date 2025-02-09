@@ -5,8 +5,9 @@
 ***************************************************************************************/
 #pragma once
 
-#include <Game/ResourceLocator.h>
-#include <Game/ShipMetadata.h>
+#include <Game/GameAssetManager.h>
+
+#include <Simulation/ShipMetadata.h>
 
 #include <wx/custombgwin.h>
 #include <wx/dialog.h>
@@ -21,7 +22,7 @@ public:
         wxWindow* parent,
         ShipMetadata const & shipMetadata,
         bool isAutomatic,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
     virtual ~ShipDescriptionDialog();
 
