@@ -7,12 +7,15 @@
 
 #include "ComputerCalibration.h"
 #include "ShipDeSerializer.h"
-#include "TextureAtlas.h"
-#include "TextureTypes.h"
 
-#include <GameCore/Conversions.h>
-#include <GameCore/GameMath.h>
-#include <GameCore/Log.h>
+#include <Simulation/ShipFactory.h>
+
+#include <Render/GameTextureDatabases.h>
+
+#include <Core/Conversions.h>
+#include <Core/GameMath.h>
+#include <Core/Log.h>
+#include <Core/TextureAtlas.h>
 
 #include <ctime>
 #include <iomanip>
@@ -20,25 +23,26 @@
 
 std::unique_ptr<GameController> GameController::Create(
     RenderDeviceProperties const & renderDeviceProperties,
-    ResourceLocator const & resourceLocator,
+    GameAssetManager const & gameAssetManager,
     ProgressCallback const & progressCallback)
 {
     // Load material database
-    MaterialDatabase materialDatabase = MaterialDatabase::Load(resourceLocator);
+    MaterialDatabase materialDatabase = MaterialDatabase::Load(gameAssetManager);
 
     // Load fish species database
-    FishSpeciesDatabase fishSpeciesDatabase = FishSpeciesDatabase::Load(resourceLocator);
+    FishSpeciesDatabase fishSpeciesDatabase = FishSpeciesDatabase::Load(gameAssetManager);
 
     // Load NPC teture atlas
-    auto npcTextureAtlas = Render::TextureAtlas<Render::NpcTextureGroups>::Deserialize(
-        Render::NpcTextureDatabaseTraits::DatabaseName,
-        resourceLocator.GetTexturesRootFolderPath());
+    auto npcTextureAtlas = TextureAtlas<GameTextureDatabases::NpcTextureDatabase>::Deserialize(gameAssetManager);
 
     // Load NPC database
     NpcDatabase npcDatabase = NpcDatabase::Load(
-        resourceLocator,
+        gameAssetManager,
         materialDatabase,
         npcTextureAtlas);
+
+    // Create simulation event dispatcher
+    auto simulationEventDispatcher = std::make_shared<SimulationEventDispatcher>();
 
     // Create game event dispatcher
     auto gameEventDispatcher = std::make_shared<GameEventDispatcher>();
@@ -47,11 +51,12 @@ std::unique_ptr<GameController> GameController::Create(
     std::unique_ptr<PerfStats> perfStats = std::make_unique<PerfStats>();
 
     // Create render context
-    std::unique_ptr<Render::RenderContext> renderContext = std::make_unique<Render::RenderContext>(
+    std::unique_ptr<RenderContext> renderContext = std::make_unique<RenderContext>(
         renderDeviceProperties,
+        FloatSize(SimulationParameters::MaxWorldWidth, SimulationParameters::MaxWorldHeight),
         std::move(npcTextureAtlas),
         *perfStats,
-        resourceLocator,
+        gameAssetManager,
         [&progressCallback](float progress, ProgressMessageType message)
         {
             progressCallback(0.9f * progress, message);
@@ -64,23 +69,25 @@ std::unique_ptr<GameController> GameController::Create(
     return std::unique_ptr<GameController>(
         new GameController(
             std::move(renderContext),
+            std::move(simulationEventDispatcher),
             std::move(gameEventDispatcher),
             std::move(perfStats),
             std::move(fishSpeciesDatabase),
             std::move(npcDatabase),
             std::move(materialDatabase),
-            resourceLocator,
+            gameAssetManager,
             progressCallback));
 }
 
 GameController::GameController(
-    std::unique_ptr<Render::RenderContext> renderContext,
+    std::unique_ptr<RenderContext> renderContext,
+    std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     std::unique_ptr<PerfStats> perfStats,
     FishSpeciesDatabase && fishSpeciesDatabase,
     NpcDatabase && npcDatabase,
     MaterialDatabase && materialDatabase,
-    ResourceLocator const & resourceLocator,
+    GameAssetManager const & gameAssetManager,
     ProgressCallback const & progressCallback)
     // State machines
     : mTsunamiNotificationStateMachine()
@@ -93,9 +100,9 @@ GameController::GameController(
     , mMaterialDatabase(std::move(materialDatabase))
     // Ship factory
     , mShipStrengthRandomizer()
-    , mShipTexturizer(mMaterialDatabase, resourceLocator)
+    , mShipTexturizer(mMaterialDatabase, gameAssetManager)
     // State
-    , mGameParameters()
+    , mSimulationParameters()
     , mIsFrozen(false)
     , mIsPaused(false)
     , mIsPulseUpdateSet(false)
@@ -110,17 +117,17 @@ GameController::GameController(
     , mRenderContext(std::move(renderContext))
     , mGameEventDispatcher(std::move(gameEventDispatcher))
     , mNotificationLayer(
-        mGameParameters.IsUltraViolentMode,
+        mSimulationParameters.IsUltraViolentMode,
         false /*isSoundMuted; loaded value will come later*/,
-        mGameParameters.DoDayLightCycle,
+        mSimulationParameters.DoDayLightCycle,
         false /*isAutoFocusOn; loaded value will come later*/,
         mIsShiftOn,
         mRenderContext->GetDisplayUnitsSystem(),
-        *mGameEventDispatcher)
+        *mSimulationEventDispatcher)
     , mThreadManager(
         mRenderContext->IsRenderingMultiThreaded(),
         8) // We start "zuinig", as we do not want to pay a ThreadPool price for too many threads
-    , mViewManager(*mRenderContext, *mGameEventDispatcher)
+    , mViewManager(*mRenderContext)
     // Smoothing
     , mFloatParameterSmoothers()
     // Stats
@@ -138,18 +145,18 @@ GameController::GameController(
 
     // Create world
     mWorld = std::make_unique<Physics::World>(
-        OceanFloorTerrain::LoadFromImage(resourceLocator.GetDefaultOceanFloorTerrainFilePath()),
+        OceanFloorHeightMap::LoadFromImage(gameAssetManager.LoadPngImageRgb(gameAssetManager.GetDefaultOceanFloorHeightMapFilePath())),
         CalculateAreCloudShadowsEnabled(mRenderContext->GetOceanRenderDetail()),
         mFishSpeciesDatabase,
         mNpcDatabase,
-        mGameEventDispatcher,
-        mGameParameters,
+        mSimulationEventDispatcher,
+        mSimulationParameters,
         mRenderContext->GetVisibleWorld());
 
     // Register ourselves as event handler for the events we care about
-    mGameEventDispatcher->RegisterLifecycleEventHandler(this);
-    mGameEventDispatcher->RegisterNpcEventHandler(this);
-    mGameEventDispatcher->RegisterWavePhenomenaEventHandler(this);
+    mSimulationEventDispatcher->RegisterGenericShipEventHandler(this);
+    mSimulationEventDispatcher->RegisterWavePhenomenaEventHandler(this);
+    mSimulationEventDispatcher->RegisterNpcEventHandler(this);
 
     //
     // Initialize parameter smoothers
@@ -162,11 +169,11 @@ GameController::GameController(
     mFloatParameterSmoothers.emplace_back(
         [this]() -> float const &
         {
-            return this->mGameParameters.SpringStiffnessAdjustment;
+            return this->mSimulationParameters.SpringStiffnessAdjustment;
         },
         [this](float const & value)
         {
-            this->mGameParameters.SpringStiffnessAdjustment = value;
+            this->mSimulationParameters.SpringStiffnessAdjustment = value;
         },
         GenericParameterConvergenceFactor,
         GenericParameterTerminationThreshold);
@@ -175,11 +182,11 @@ GameController::GameController(
     mFloatParameterSmoothers.emplace_back(
         [this]() -> float const &
         {
-            return this->mGameParameters.SpringStrengthAdjustment;
+            return this->mSimulationParameters.SpringStrengthAdjustment;
         },
         [this](float const & value)
         {
-            this->mGameParameters.SpringStrengthAdjustment = value;
+            this->mSimulationParameters.SpringStrengthAdjustment = value;
         },
         GenericParameterConvergenceFactor,
         GenericParameterTerminationThreshold);
@@ -188,11 +195,11 @@ GameController::GameController(
     mFloatParameterSmoothers.emplace_back(
         [this]() -> float const &
         {
-            return this->mGameParameters.SeaDepth;
+            return this->mSimulationParameters.SeaDepth;
         },
         [this](float const & value)
         {
-            this->mGameParameters.SeaDepth = value;
+            this->mSimulationParameters.SeaDepth = value;
         },
         GenericParameterConvergenceFactor,
         GenericParameterTerminationThreshold);
@@ -201,11 +208,11 @@ GameController::GameController(
     mFloatParameterSmoothers.emplace_back(
         [this]() -> float const &
         {
-            return this->mGameParameters.OceanFloorBumpiness;
+            return this->mSimulationParameters.OceanFloorBumpiness;
         },
         [this](float const & value)
         {
-            this->mGameParameters.OceanFloorBumpiness = value;
+            this->mSimulationParameters.OceanFloorBumpiness = value;
         },
         GenericParameterConvergenceFactor,
         GenericParameterTerminationThreshold);
@@ -214,11 +221,11 @@ GameController::GameController(
     mFloatParameterSmoothers.emplace_back(
         [this]() -> float const &
         {
-            return this->mGameParameters.OceanFloorDetailAmplification;
+            return this->mSimulationParameters.OceanFloorDetailAmplification;
         },
         [this](float const & value)
         {
-            this->mGameParameters.OceanFloorDetailAmplification = value;
+            this->mSimulationParameters.OceanFloorDetailAmplification = value;
         },
         GenericParameterConvergenceFactor,
         GenericParameterTerminationThreshold);
@@ -240,11 +247,11 @@ GameController::GameController(
     mFloatParameterSmoothers.emplace_back(
         [this]() -> float const &
         {
-            return this->mGameParameters.BasalWaveHeightAdjustment;
+            return this->mSimulationParameters.BasalWaveHeightAdjustment;
         },
         [this](float const & value)
         {
-            this->mGameParameters.BasalWaveHeightAdjustment = value;
+            this->mSimulationParameters.BasalWaveHeightAdjustment = value;
         },
         GenericParameterConvergenceFactor,
         GenericParameterTerminationThreshold);
@@ -253,11 +260,11 @@ GameController::GameController(
     mFloatParameterSmoothers.emplace_back(
         [this]() -> float const &
         {
-            return this->mGameParameters.FishSizeMultiplier;
+            return this->mSimulationParameters.FishSizeMultiplier;
         },
         [this](float const & value)
         {
-            this->mGameParameters.FishSizeMultiplier = value;
+            this->mSimulationParameters.FishSizeMultiplier = value;
         },
         GenericParameterConvergenceFactor,
         GenericParameterTerminationThreshold);
@@ -266,11 +273,11 @@ GameController::GameController(
     mFloatParameterSmoothers.emplace_back(
         [this]() -> float const &
         {
-            return this->mGameParameters.NpcSizeMultiplier;
+            return this->mSimulationParameters.NpcSizeMultiplier;
         },
         [this](float const & value)
         {
-            this->mGameParameters.NpcSizeMultiplier = value;
+            this->mSimulationParameters.NpcSizeMultiplier = value;
         },
         GenericParameterConvergenceFactor,
         GenericParameterTerminationThreshold);
@@ -283,7 +290,7 @@ GameController::GameController(
 
     auto const & score = ComputerCalibrator::Calibrate();
 
-    ComputerCalibrator::TuneGame(score, mGameParameters, *mRenderContext);
+    ComputerCalibrator::TuneGame(score, mSimulationParameters, *mRenderContext);
 
     //
     // Reconcialiate notifications with startup parameters
@@ -303,17 +310,23 @@ void GameController::RebindOpenGLContext()
     mRenderContext->RebindContext();
 }
 
-ShipMetadata GameController::ResetAndLoadShip(ShipLoadSpecifications const & loadSpecs)
+ShipMetadata GameController::ResetAndLoadShip(
+    ShipLoadSpecifications const & loadSpecs,
+    IAssetManager const & assetManager)
 {
-    return InternalResetAndLoadShip(loadSpecs);
+    return InternalResetAndLoadShip(loadSpecs, assetManager);
 }
 
-ShipMetadata GameController::ResetAndReloadShip(ShipLoadSpecifications const & loadSpecs)
+ShipMetadata GameController::ResetAndReloadShip(
+    ShipLoadSpecifications const & loadSpecs,
+    IAssetManager const & assetManager)
 {
-    return InternalResetAndLoadShip(loadSpecs);
+    return InternalResetAndLoadShip(loadSpecs, assetManager);
 }
 
-ShipMetadata GameController::AddShip(ShipLoadSpecifications const & loadSpecs)
+ShipMetadata GameController::AddShip(
+    ShipLoadSpecifications const & loadSpecs,
+    IAssetManager const & assetManager)
 {
     // Load ship definition
     auto shipDefinition = ShipDeSerializer::LoadShip(loadSpecs.DefinitionFilepath, mMaterialDatabase);
@@ -341,8 +354,9 @@ ShipMetadata GameController::AddShip(ShipLoadSpecifications const & loadSpecs)
         mMaterialDatabase,
         mShipTexturizer,
         mShipStrengthRandomizer,
-        mGameEventDispatcher,
-        mGameParameters);
+        mSimulationEventDispatcher,
+        assetManager,
+        mSimulationParameters);
 
     //
     // No errors, so we may continue
@@ -426,7 +440,7 @@ void GameController::RunGameIteration()
 
         assert(!!mWorld);
         mWorld->Update(
-            mGameParameters,
+            mSimulationParameters,
             mRenderContext->GetVisibleWorld(),
             mRenderContext->GetStressRenderMode(),
             mThreadManager,
@@ -448,8 +462,8 @@ void GameController::RunGameIteration()
         // Tell RenderContext we've finished an update
         mRenderContext->UpdateEnd();
 
-        mTotalPerfStats->TotalNetUpdateDuration.Update(GameChronometer::now() - netStartTime);
-        mTotalPerfStats->TotalUpdateDuration.Update(GameChronometer::now() - startTime);
+        mTotalPerfStats->Update<PerfMeasurement::TotalNetUpdate>(GameChronometer::now() - netStartTime);
+        mTotalPerfStats->Update < PerfMeasurement::TotalUpdate>(GameChronometer::now() - startTime);
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -476,7 +490,7 @@ void GameController::RunGameIteration()
 
         assert(!!mWorld);
         mWorld->RenderUpload(
-            mGameParameters,
+            mSimulationParameters,
             *mRenderContext);
 
         //
@@ -487,7 +501,7 @@ void GameController::RunGameIteration()
 
         mRenderContext->UploadEnd();
 
-        mTotalPerfStats->TotalNetRenderUploadDuration.Update(GameChronometer::now() - netStartTime);
+        mTotalPerfStats->Update<PerfMeasurement::TotalNetRenderUpload>(GameChronometer::now() - netStartTime);
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -500,7 +514,7 @@ void GameController::RunGameIteration()
         // Render
         mRenderContext->Draw();
 
-        mTotalPerfStats->TotalMainThreadRenderDrawDuration.Update(GameChronometer::now() - startTime);
+        mTotalPerfStats->Update<PerfMeasurement::TotalMainThreadRenderDraw>(GameChronometer::now() - startTime);
     }
 
     // Tell RenderContext we've finished a rendering cycle
@@ -568,7 +582,7 @@ void GameController::ReplayRecordedEvent(RecordedEvent const & event)
 {
     mWorld->ReplayRecordedEvent(
         event,
-        mGameParameters); // NOTE: using now's game parameters...but we don't want to capture these in the recorded event (at least at this moment)
+        mSimulationParameters); // NOTE: using now's game parameters...but we don't want to capture these in the recorded event (at least at this moment)
 }
 
 /////////////////////////////////////////////////////////////
@@ -696,7 +710,7 @@ void GameController::PickObjectToMove(
     mWorld->PickConnectedComponentToMove(
         worldCoordinates,
         connectedComponentId,
-        mGameParameters);
+        mSimulationParameters);
 }
 
 std::optional<GlobalElementId> GameController::PickObjectForPickAndPull(DisplayLogicalCoordinates const & screenCoordinates)
@@ -707,7 +721,7 @@ std::optional<GlobalElementId> GameController::PickObjectForPickAndPull(DisplayL
     assert(!!mWorld);
     return mWorld->PickObjectForPickAndPull(
         worldCoordinates,
-        mGameParameters);
+        mSimulationParameters);
 }
 
 void GameController::Pull(
@@ -721,7 +735,7 @@ void GameController::Pull(
     mWorld->Pull(
         elementId,
         worldCoordinates,
-        mGameParameters);
+        mSimulationParameters);
 }
 
 void GameController::PickObjectToMove(
@@ -753,7 +767,7 @@ void GameController::MoveBy(
         connectedComponentId,
         worldOffset,
         inertialVelocity,
-        mGameParameters);
+        mSimulationParameters);
 }
 
 void GameController::MoveBy(
@@ -770,7 +784,7 @@ void GameController::MoveBy(
         shipId,
         worldOffset,
         inertialVelocity,
-        mGameParameters);
+        mSimulationParameters);
 }
 
 void GameController::RotateBy(
@@ -799,7 +813,7 @@ void GameController::RotateBy(
         angle,
         worldCenter,
         inertialAngle,
-        mGameParameters);
+        mSimulationParameters);
 }
 
 void GameController::RotateBy(
@@ -827,7 +841,7 @@ void GameController::RotateBy(
         angle,
         worldCenter,
         inertialAngle,
-        mGameParameters);
+        mSimulationParameters);
 }
 
 std::tuple<vec2f, float> GameController::SetupMoveGrippedBy(
@@ -861,7 +875,7 @@ void GameController::MoveGrippedBy(
         worldGripRadius,
         worldOffset,
         inertialWorldOffset,
-        mGameParameters);
+        mSimulationParameters);
 
     // Notify
     mNotificationLayer.SetGripCircle(
@@ -892,7 +906,7 @@ void GameController::RotateGrippedBy(
         worldGripRadius,
         angle,
         inertialAngle,
-        mGameParameters);
+        mSimulationParameters);
 
     // Notify
     mNotificationLayer.SetGripCircle(
@@ -904,7 +918,7 @@ void GameController::EndMoveGrippedBy()
 {
     // Apply action
     assert(!!mWorld);
-    mWorld->EndMoveGrippedBy(mGameParameters);
+    mWorld->EndMoveGrippedBy(mSimulationParameters);
 }
 
 void GameController::DestroyAt(
@@ -920,7 +934,7 @@ void GameController::DestroyAt(
         worldCoordinates,
         radiusMultiplier,
         sessionId,
-        mGameParameters);
+        mSimulationParameters);
 }
 
 void GameController::RepairAt(
@@ -936,7 +950,7 @@ void GameController::RepairAt(
         worldCoordinates,
         radiusMultiplier,
         repairStepId,
-        mGameParameters);
+        mSimulationParameters);
 }
 
 bool GameController::SawThrough(
@@ -953,7 +967,7 @@ bool GameController::SawThrough(
         startWorldCoordinates,
         endWorldCoordinates,
         isFirstSegment,
-        mGameParameters);
+        mSimulationParameters);
 }
 
 bool GameController::ApplyHeatBlasterAt(
@@ -963,8 +977,8 @@ bool GameController::ApplyHeatBlasterAt(
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
     // Calculate radius
-    float radius = mGameParameters.HeatBlasterRadius;
-    if (mGameParameters.IsUltraViolentMode)
+    float radius = mSimulationParameters.HeatBlasterRadius;
+    if (mSimulationParameters.IsUltraViolentMode)
     {
         radius *= 5.0f;
     }
@@ -975,7 +989,7 @@ bool GameController::ApplyHeatBlasterAt(
         worldCoordinates,
         action,
         radius,
-        mGameParameters);
+        mSimulationParameters);
 
     if (isApplied)
     {
@@ -999,8 +1013,8 @@ bool GameController::ExtinguishFireAt(
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
     // Calculate radius
-    float radius = mGameParameters.FireExtinguisherRadius;
-    if (mGameParameters.IsUltraViolentMode)
+    float radius = mSimulationParameters.FireExtinguisherRadius;
+    if (mSimulationParameters.IsUltraViolentMode)
     {
         radius *= 5.0f;
     }
@@ -1011,7 +1025,7 @@ bool GameController::ExtinguishFireAt(
         worldCoordinates,
         strengthMultiplier,
         radius,
-        mGameParameters);
+        mSimulationParameters);
 
     if (isApplied)
     {
@@ -1035,9 +1049,9 @@ void GameController::ApplyBlastAt(
 
     // Calculate radius
     float const radius =
-        mGameParameters.BlastToolRadius
+        mSimulationParameters.BlastToolRadius
         * radiusMultiplier
-        * (mGameParameters.IsUltraViolentMode ? 2.5f : 1.0f);
+        * (mSimulationParameters.IsUltraViolentMode ? 2.5f : 1.0f);
 
     // Apply action
     assert(!!mWorld);
@@ -1045,7 +1059,7 @@ void GameController::ApplyBlastAt(
         worldCoordinates,
         radius,
         forceMultiplier,
-        mGameParameters);
+        mSimulationParameters);
 
     // Draw notification (one frame only)
     mNotificationLayer.SetBlastToolHalo(
@@ -1068,7 +1082,7 @@ bool GameController::ApplyElectricSparkAt(
         worldCoordinates,
         counter,
         lengthMultiplier,
-        mGameParameters);
+        mSimulationParameters);
 }
 
 void GameController::ApplyRadialWindFrom(
@@ -1082,8 +1096,8 @@ void GameController::ApplyRadialWindFrom(
 
     // Calculate wind speed, in m/s
     float const effectiveBaseWindSpeed =
-        Conversions::KmhToMs(mGameParameters.WindMakerToolWindSpeed)
-        * (mGameParameters.IsUltraViolentMode ? 3.5f : 1.0f);
+        Conversions::KmhToMs(mSimulationParameters.WindMakerToolWindSpeed)
+        * (mSimulationParameters.IsUltraViolentMode ? 3.5f : 1.0f);
     float const preFrontWindSpeed = effectiveBaseWindSpeed * preFrontIntensityMultiplier;
     float const mainFrontWindSpeed = effectiveBaseWindSpeed * mainFrontIntensityMultiplier;
 
@@ -1099,7 +1113,7 @@ void GameController::ApplyRadialWindFrom(
         preFrontWindSpeed,
         mainFrontRadius,
         mainFrontWindSpeed,
-        mGameParameters);
+        mSimulationParameters);
 
     // Draw notification (one frame only)
     mNotificationLayer.SetWindSphere(
@@ -1128,7 +1142,7 @@ bool GameController::ApplyLaserCannonThrough(
             startWorld,
             endWorld,
             *strength,
-            mGameParameters);
+            mSimulationParameters);
     }
 
     // Draw notification at end (one frame only)
@@ -1150,7 +1164,7 @@ void GameController::DrawTo(
     mWorld->DrawTo(
         worldCoordinates,
         strengthFraction,
-        mGameParameters);
+        mSimulationParameters);
 }
 
 void GameController::SwirlAt(
@@ -1164,7 +1178,7 @@ void GameController::SwirlAt(
     mWorld->SwirlAt(
         worldCoordinates,
         strengthFraction,
-        mGameParameters);
+        mSimulationParameters);
 }
 
 void GameController::TogglePinAt(DisplayLogicalCoordinates const & screenCoordinates)
@@ -1175,7 +1189,7 @@ void GameController::TogglePinAt(DisplayLogicalCoordinates const & screenCoordin
     assert(!!mWorld);
     mWorld->TogglePinAt(
         worldCoordinates,
-        mGameParameters);
+        mSimulationParameters);
 }
 
 void GameController::RemoveAllPins()
@@ -1196,7 +1210,7 @@ std::optional<ToolApplicationLocus> GameController::InjectPressureAt(
     auto const applicationLocus = mWorld->InjectPressureAt(
         worldCoordinates,
         pressureQuantityMultiplier,
-        mGameParameters);
+        mSimulationParameters);
 
     if (applicationLocus.has_value()
         && (*applicationLocus & ToolApplicationLocus::Ship) == ToolApplicationLocus::Ship)
@@ -1221,7 +1235,7 @@ bool GameController::FloodAt(
     return mWorld->FloodAt(
         worldCoordinates,
         waterQuantityMultiplier,
-        mGameParameters);
+        mSimulationParameters);
 }
 
 void GameController::ToggleAntiMatterBombAt(DisplayLogicalCoordinates const & screenCoordinates)
@@ -1232,7 +1246,7 @@ void GameController::ToggleAntiMatterBombAt(DisplayLogicalCoordinates const & sc
     assert(!!mWorld);
     mWorld->ToggleAntiMatterBombAt(
         worldCoordinates,
-        mGameParameters);
+        mSimulationParameters);
 }
 
 void GameController::ToggleFireExtinguishingBombAt(DisplayLogicalCoordinates const & screenCoordinates)
@@ -1243,7 +1257,7 @@ void GameController::ToggleFireExtinguishingBombAt(DisplayLogicalCoordinates con
     assert(!!mWorld);
     mWorld->ToggleFireExtinguishingBombAt(
         worldCoordinates,
-        mGameParameters);
+        mSimulationParameters);
 }
 
 void GameController::ToggleImpactBombAt(DisplayLogicalCoordinates const & screenCoordinates)
@@ -1254,7 +1268,7 @@ void GameController::ToggleImpactBombAt(DisplayLogicalCoordinates const & screen
     assert(!!mWorld);
     mWorld->ToggleImpactBombAt(
         worldCoordinates,
-        mGameParameters);
+        mSimulationParameters);
 }
 
 void GameController::TogglePhysicsProbeAt(DisplayLogicalCoordinates const & screenCoordinates)
@@ -1265,7 +1279,7 @@ void GameController::TogglePhysicsProbeAt(DisplayLogicalCoordinates const & scre
     assert(!!mWorld);
     auto const toggleResult = mWorld->TogglePhysicsProbeAt(
         worldCoordinates,
-        mGameParameters);
+        mSimulationParameters);
 
     // Tell physics probe panel whether we've removed or added a probe
     if (toggleResult.has_value())
@@ -1282,7 +1296,7 @@ void GameController::ToggleRCBombAt(DisplayLogicalCoordinates const & screenCoor
     assert(!!mWorld);
     mWorld->ToggleRCBombAt(
         worldCoordinates,
-        mGameParameters);
+        mSimulationParameters);
 }
 
 void GameController::ToggleTimerBombAt(DisplayLogicalCoordinates const & screenCoordinates)
@@ -1293,14 +1307,14 @@ void GameController::ToggleTimerBombAt(DisplayLogicalCoordinates const & screenC
     assert(!!mWorld);
     mWorld->ToggleTimerBombAt(
         worldCoordinates,
-        mGameParameters);
+        mSimulationParameters);
 }
 
 void GameController::DetonateRCBombs()
 {
     // Apply action
     assert(!!mWorld);
-    mWorld->DetonateRCBombs(mGameParameters);
+    mWorld->DetonateRCBombs(mSimulationParameters);
 }
 
 void GameController::DetonateAntiMatterBombs()
@@ -1346,7 +1360,7 @@ bool GameController::ScrubThrough(
     return mWorld->ScrubThrough(
         startWorldCoordinates,
         endWorldCoordinates,
-        mGameParameters);
+        mSimulationParameters);
 }
 
 bool GameController::RotThrough(
@@ -1361,7 +1375,7 @@ bool GameController::RotThrough(
     return mWorld->RotThrough(
         startWorldCoordinates,
         endWorldCoordinates,
-        mGameParameters);
+        mSimulationParameters);
 }
 
 void GameController::ApplyThanosSnapAt(
@@ -1489,7 +1503,7 @@ std::optional<PickedNpc> GameController::ProbeNpcAt(DisplayLogicalCoordinates co
     return mWorld->ProbeNpcAt(
         worldCoordinates,
         npcProbeSearchRadius,
-        mGameParameters);
+        mSimulationParameters);
 }
 
 std::vector<NpcId> GameController::ProbeNpcsInRect(
@@ -1590,7 +1604,7 @@ void GameController::AddNpcGroup(NpcKindType kind)
     auto const result = mWorld->AddNpcGroup(
         kind,
         mRenderContext->GetVisibleWorld(),
-        mGameParameters);
+        mSimulationParameters);
 
     auto const & pickedNpcId = std::get<0>(result);
     if (pickedNpcId.has_value())
@@ -1714,7 +1728,7 @@ void GameController::TriggerStorm()
 void GameController::TriggerLightning()
 {
     assert(!!mWorld);
-    mWorld->TriggerLightning(mGameParameters);
+    mWorld->TriggerLightning(mSimulationParameters);
 }
 
 void GameController::HighlightElectricalElement(GlobalElectricalElementId electricalElementId)
@@ -1731,7 +1745,7 @@ void GameController::SetSwitchState(
     mWorld->SetSwitchState(
         electricalElementId,
         switchState,
-        mGameParameters);
+        mSimulationParameters);
 }
 
 void GameController::SetEngineControllerState(
@@ -1742,7 +1756,7 @@ void GameController::SetEngineControllerState(
     mWorld->SetEngineControllerState(
         electricalElementId,
         controllerValue,
-        mGameParameters);
+        mSimulationParameters);
 }
 
 bool GameController::DestroyTriangle(GlobalElementId triangleId)
@@ -1781,25 +1795,25 @@ void GameController::PanToWorldEnd(int side)
     {
         case 0:
         {
-            mViewManager.PanToWorldX(-GameParameters::HalfMaxWorldWidth);
+            mViewManager.PanToWorldX(-SimulationParameters::HalfMaxWorldWidth);
             break;
         }
 
         case 1:
         {
-            mViewManager.PanToWorldX(GameParameters::HalfMaxWorldWidth);
+            mViewManager.PanToWorldX(SimulationParameters::HalfMaxWorldWidth);
             break;
         }
 
         case 2:
         {
-            mViewManager.PanToWorldY(GameParameters::HalfMaxWorldHeight);
+            mViewManager.PanToWorldY(SimulationParameters::HalfMaxWorldHeight);
             break;
         }
 
         default:
         {
-            mViewManager.PanToWorldY(-GameParameters::HalfMaxWorldHeight);
+            mViewManager.PanToWorldY(-SimulationParameters::HalfMaxWorldHeight);
             break;
         }
     }
@@ -1902,7 +1916,7 @@ void GameController::SetTimeOfDay(float value)
 
 void GameController::SetDoDayLightCycle(bool value)
 {
-    mGameParameters.DoDayLightCycle = value;
+    mSimulationParameters.DoDayLightCycle = value;
 
     if (value)
     {
@@ -1952,7 +1966,9 @@ void GameController::OnHumanNpcCountsUpdated(
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
-ShipMetadata GameController::InternalResetAndLoadShip(ShipLoadSpecifications const & loadSpecs)
+ShipMetadata GameController::InternalResetAndLoadShip(
+    ShipLoadSpecifications const & loadSpecs,
+    IAssetManager const & assetManager)
 {
     assert(!!mWorld);
 
@@ -1970,12 +1986,12 @@ ShipMetadata GameController::InternalResetAndLoadShip(ShipLoadSpecifications con
 
     // Create a new world
     auto newWorld = std::make_unique<Physics::World>(
-        OceanFloorTerrain(mWorld->GetOceanFloorTerrain()),
+        OceanFloorHeightMap(mWorld->GetOceanFloorHeightMap()),
         CalculateAreCloudShadowsEnabled(mRenderContext->GetOceanRenderDetail()),
         mFishSpeciesDatabase,
         mNpcDatabase,
-        mGameEventDispatcher,
-        mGameParameters,
+        mSimulationEventDispatcher,
+        mSimulationParameters,
         mRenderContext->GetVisibleWorld());
 
     // Produce ship
@@ -1988,8 +2004,9 @@ ShipMetadata GameController::InternalResetAndLoadShip(ShipLoadSpecifications con
         mMaterialDatabase,
         mShipTexturizer,
         mShipStrengthRandomizer,
-        mGameEventDispatcher,
-        mGameParameters);
+        mSimulationEventDispatcher,
+        assetManager,
+        mSimulationParameters);
 
     //
     // No errors, so we may continue
@@ -2050,6 +2067,8 @@ void GameController::InternalAddShip(
     mRenderContext->AddShip(
         shipId,
         mWorld->GetShipPointCount(shipId),
+        SimulationParameters::MaxEphemeralParticles,
+        SimulationParameters::MaxSpringsPerPoint,
         std::move(exteriorTextureImage),
         std::move(interiorViewImage));
 
@@ -2102,7 +2121,7 @@ void GameController::PublishStats(std::chrono::steady_clock::time_point nowReal)
 
     // Publish update time
     assert(!!mGameEventDispatcher);
-    mGameEventDispatcher->OnCurrentUpdateDurationUpdated(lastDeltaPerfStats.TotalUpdateDuration.ToRatio<std::chrono::milliseconds>());
+    mGameEventDispatcher->OnCurrentUpdateDurationUpdated(lastDeltaPerfStats.GetMeasurement<PerfMeasurement::TotalUpdate>().ToRatio<std::chrono::milliseconds>());
 
     // Update status text
     mNotificationLayer.SetStatusTexts(

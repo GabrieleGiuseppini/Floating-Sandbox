@@ -37,7 +37,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData, RgbaImageData> ShipFac
     ShipTexturizer const & shipTexturizer,
     ShipStrengthRandomizer const & shipStrengthRandomizer,
     std::shared_ptr<SimulationEventDispatcher> & simulationEventDispatcher,
-    IAssetManager & assetManager,
+    IAssetManager const & assetManager,
     SimulationParameters const & simulationParameters)
 {
     auto const totalStartTime = GameChronometer::now();

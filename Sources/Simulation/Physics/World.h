@@ -127,14 +127,14 @@ public:
         return mOceanFloor;
     }
 
-    inline void SetOceanFloorTerrain(OceanFloorHeightMap const & oceanFloorHeightMap)
-    {
-        mOceanFloor.SetHeightMap(oceanFloorHeightMap);
-    }
-
     inline OceanFloorHeightMap const & GetOceanFloorHeightMap() const
     {
         return mOceanFloor.GetHeightMap();
+    }
+
+    inline void SetOceanFloorHeightMap(OceanFloorHeightMap const & oceanFloorHeightMap)
+    {
+        mOceanFloor.SetHeightMap(oceanFloorHeightMap);
     }
 
     // Km/h

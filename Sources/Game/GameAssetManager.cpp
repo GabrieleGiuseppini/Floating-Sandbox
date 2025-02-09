@@ -326,9 +326,9 @@ std::filesystem::path GameAssetManager::GetThemeSettingsRootFilePath() const
 // Ship
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-std::filesystem::path GameAssetManager::GetDefaultOceanFloorTerrainFilePath() const
+std::filesystem::path GameAssetManager::GetDefaultOceanFloorHeightMapFilePath() const
 {
-    return mDataRoot / "Misc" / "default_ocean_floor_terrain.png";
+    return mDataRoot / "Misc" / "default_ocean_floor_height_map.png";
 }
 
 std::filesystem::path GameAssetManager::GetShipNamePrefixListFilePath() const

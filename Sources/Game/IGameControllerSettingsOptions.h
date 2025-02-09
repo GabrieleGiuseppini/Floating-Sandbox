@@ -5,16 +5,14 @@
 ***************************************************************************************/
 #pragma once
 
-#include "OceanFloorTerrain.h"
+#include <Simulation/OceanFloorHeightMap.h>
 
-#include <GameCore/Colors.h>
-#include <GameCore/GameTypes.h>
-#include <GameCore/ImageData.h>
-#include <GameCore/UniqueBuffer.h>
-#include <GameCore/Vectors.h>
+#include <Core/Colors.h>
+#include <Core/GameTypes.h>
+#include <Core/ImageData.h>
+#include <Core/Vectors.h>
 
-#include <filesystem>
-#include <optional>
+#include <chrono>
 #include <string>
 #include <vector>
 

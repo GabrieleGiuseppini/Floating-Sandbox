@@ -93,7 +93,7 @@ public:
 
 	// Ship
 
-	std::filesystem::path GetDefaultOceanFloorTerrainFilePath() const;
+	std::filesystem::path GetDefaultOceanFloorHeightMapFilePath() const;
 
 	std::filesystem::path GetShipNamePrefixListFilePath() const;
 

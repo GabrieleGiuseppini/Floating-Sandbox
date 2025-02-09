@@ -5,9 +5,9 @@
 ***************************************************************************************/
 #pragma once
 
+#include "../Materials.h"
 #include "../SimulationEventDispatcher.h"
 #include "../SimulationParameters.h"
-#include "Materials.h"
 
 #include <Render/RenderContext.h>
 

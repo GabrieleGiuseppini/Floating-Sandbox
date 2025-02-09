@@ -5,21 +5,22 @@
 ***************************************************************************************/
 #pragma once
 
-#include "EventRecorder.h"
+#include "GameAssetManager.h"
 #include "IGameEventHandlers.h"
-#include "ResourceLocator.h"
-#include "ShipAutoTexturizationSettings.h"
 #include "ShipLoadSpecifications.h"
-#include "ShipMetadata.h"
 
-#include <GameCore/Colors.h>
-#include <GameCore/GameTypes.h>
-#include <GameCore/ImageData.h>
-#include <GameCore/UniqueBuffer.h>
-#include <GameCore/Vectors.h>
+#include <Simulation/EventRecorder.h>
+#include <Simulation/ISimulationEventHandlers.h>
+#include <Simulation/ShipAutoTexturizationSettings.h>
+#include <Simulation/ShipMetadata.h>
+
+#include <Core/Colors.h>
+#include <Core/GameTypes.h>
+#include <Core/IAssetManager.h>
+#include <Core/ImageData.h>
+#include <Core/Vectors.h>
 
 #include <chrono>
-#include <filesystem>
 #include <functional>
 #include <string>
 #include <vector>
@@ -32,20 +33,20 @@ struct IGameController
     virtual ~IGameController()
     {}
 
-    virtual void RegisterLifecycleEventHandler(ILifecycleGameEventHandler * handler) = 0;
-    virtual void RegisterStructuralEventHandler(IStructuralGameEventHandler * handler) = 0;
-    virtual void RegisterWavePhenomenaEventHandler(IWavePhenomenaGameEventHandler * handler) = 0;
-    virtual void RegisterCombustionEventHandler(ICombustionGameEventHandler * handler) = 0;
-    virtual void RegisterStatisticsEventHandler(IStatisticsGameEventHandler * handler) = 0;
-    virtual void RegisterAtmosphereEventHandler(IAtmosphereGameEventHandler * handler) = 0;
-    virtual void RegisterElectricalElementEventHandler(IElectricalElementGameEventHandler * handler) = 0;
-    virtual void RegisterNpcEventHandler(INpcGameEventHandler * handler) = 0;
-    virtual void RegisterGenericEventHandler(IGenericGameEventHandler * handler) = 0;
-    virtual void RegisterControlEventHandler(IControlGameEventHandler * handler) = 0;
+    virtual void RegisterStructuralShipEventHandler(IStructuralShipEventHandler * handler) = 0;
+    virtual void RegisterGenericShipEventHandler(IGenericShipEventHandler * handler) = 0;
+    virtual void RegisterWavePhenomenaEventHandler(IWavePhenomenaEventHandler * handler) = 0;
+    virtual void RegisterCombustionEventHandler(ICombustionEventHandler * handler) = 0;
+    virtual void RegisterSimulationStatisticsEventHandler(ISimulationStatisticsEventHandler * handler) = 0;
+    virtual void RegisterAtmosphereEventHandler(IAtmosphereEventHandler * handler) = 0;
+    virtual void RegisterElectricalElementEventHandler(IElectricalElementEventHandler * handler) = 0;
+    virtual void RegisterNpcEventHandler(INpcEventHandler * handler) = 0;
+    virtual void RegisterGameEventHandler(IGameEventHandler * handler) = 0;
+    virtual void RegisterGameStatisticsEventHandler(IGameStatisticsEventHandler * handler) = 0;
 
-    virtual ShipMetadata ResetAndLoadShip(ShipLoadSpecifications const & loadSpecs) = 0;
-    virtual ShipMetadata ResetAndReloadShip(ShipLoadSpecifications const & loadSpecs) = 0;
-    virtual ShipMetadata AddShip(ShipLoadSpecifications const & loadSpecs) = 0;
+    virtual ShipMetadata ResetAndLoadShip(ShipLoadSpecifications const & loadSpecs, IAssetManager const & assetManager) = 0;
+    virtual ShipMetadata ResetAndReloadShip(ShipLoadSpecifications const & loadSpecs, IAssetManager const & assetManager) = 0;
+    virtual ShipMetadata AddShip(ShipLoadSpecifications const & loadSpecs, IAssetManager const & assetManager) = 0;
 
     virtual RgbImageData TakeScreenshot() = 0;
 

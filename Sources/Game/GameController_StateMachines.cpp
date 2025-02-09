@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #include "GameController.h"
 
-#include <GameCore/GameMath.h>
+#include <Core/GameMath.h>
 
 #include <cassert>
 #include <cmath>
@@ -17,7 +17,7 @@
 struct GameController::TsunamiNotificationStateMachine
 {
     TsunamiNotificationStateMachine(
-		std::shared_ptr<Render::RenderContext> renderContext,
+		std::shared_ptr<RenderContext> renderContext,
 		NotificationLayer & notificationLayer);
 
     ~TsunamiNotificationStateMachine();
@@ -29,7 +29,7 @@ struct GameController::TsunamiNotificationStateMachine
 
 private:
 
-    std::shared_ptr<Render::RenderContext> mRenderContext;
+    std::shared_ptr<RenderContext> mRenderContext;
     NotificationLayer & mNotificationLayer;
 
     enum class StateType
@@ -50,7 +50,7 @@ void GameController::TsunamiNotificationStateMachineDeleter::operator()(TsunamiN
 }
 
 GameController::TsunamiNotificationStateMachine::TsunamiNotificationStateMachine(
-    std::shared_ptr<Render::RenderContext> renderContext,
+    std::shared_ptr<RenderContext> renderContext,
     NotificationLayer & notificationLayer)
     : mRenderContext(std::move(renderContext))
 	, mNotificationLayer(notificationLayer)
@@ -207,7 +207,7 @@ void GameController::StartThanosSnapStateMachine(
     else
     {
         // If full, make room for this latest arrival
-        if (mThanosSnapStateMachines.size() == GameParameters::MaxThanosSnaps)
+        if (mThanosSnapStateMachines.size() == SimulationParameters::MaxThanosSnaps)
             mThanosSnapStateMachines.erase(mThanosSnapStateMachines.cbegin());
     }
 
@@ -231,7 +231,7 @@ bool GameController::UpdateThanosSnapStateMachine(
     //
 
     float constexpr AdvancingWaveSpeed = 25.0f; // m/s
-    float constexpr SliceWidth = AdvancingWaveSpeed * GameParameters::SimulationStepTimeDuration<float>;
+    float constexpr SliceWidth = AdvancingWaveSpeed * SimulationParameters::SimulationStepTimeDuration<float>;
 
     float const radius =
         (currentSimulationTime - stateMachine.StartSimulationTimestamp)
@@ -245,7 +245,7 @@ bool GameController::UpdateThanosSnapStateMachine(
 
     float const leftOuterEdgeX = stateMachine.CenterX - radius;
     float const leftInnerEdgeX = leftOuterEdgeX + SliceWidth / 2.0f;
-    if (leftInnerEdgeX > -GameParameters::HalfMaxWorldWidth)
+    if (leftInnerEdgeX > -SimulationParameters::HalfMaxWorldWidth)
     {
         mWorld->ApplyThanosSnap(
             stateMachine.CenterX,
@@ -253,14 +253,14 @@ bool GameController::UpdateThanosSnapStateMachine(
             leftOuterEdgeX,
             leftInnerEdgeX,
             stateMachine.IsSparseMode,
-            mGameParameters);
+            mSimulationParameters);
 
         hasAppliedWave = true;
     }
 
     float const rightOuterEdgeX = stateMachine.CenterX + radius;
     float const rightInnerEdgeX = rightOuterEdgeX - SliceWidth / 2.0f;
-    if (rightInnerEdgeX < GameParameters::HalfMaxWorldWidth)
+    if (rightInnerEdgeX < SimulationParameters::HalfMaxWorldWidth)
     {
         mWorld->ApplyThanosSnap(
             stateMachine.CenterX,
@@ -268,7 +268,7 @@ bool GameController::UpdateThanosSnapStateMachine(
             rightInnerEdgeX,
             rightOuterEdgeX,
             stateMachine.IsSparseMode,
-            mGameParameters);
+            mSimulationParameters);
 
         hasAppliedWave = true;
     }
@@ -283,7 +283,7 @@ bool GameController::UpdateThanosSnapStateMachine(
 struct GameController::DayLightCycleStateMachine
 {
     DayLightCycleStateMachine(
-        GameParameters const & gameParameters,
+        SimulationParameters const & gameParameters,
         IGameControllerSettings & gameControllerSettings);
 
     ~DayLightCycleStateMachine();
@@ -295,7 +295,7 @@ struct GameController::DayLightCycleStateMachine
 
 private:
 
-    GameParameters const & mGameParameters;
+    SimulationParameters const & mSimulationParameters;
     IGameControllerSettings & mGameControllerSettings;
 
     enum class StateType
@@ -315,9 +315,9 @@ void GameController::DayLightCycleStateMachineDeleter::operator()(DayLightCycleS
 }
 
 GameController::DayLightCycleStateMachine::DayLightCycleStateMachine(
-    GameParameters const & gameParameters,
+    SimulationParameters const & gameParameters,
     IGameControllerSettings & gameControllerSettings)
-    : mGameParameters(gameParameters)
+    : mSimulationParameters(gameParameters)
     , mGameControllerSettings(gameControllerSettings)
     , mCurrentState(StateType::SunSetting)
     , mLastChangeTimestamp(GameWallClock::GetInstance().NowAsFloat())
@@ -350,7 +350,7 @@ void GameController::DayLightCycleStateMachine::Update()
     auto const elapsedFraction = GameWallClock::Progress(
         now,
         mLastChangeTimestamp,
-        mGameParameters.DayLightCycleDuration)
+        mSimulationParameters.DayLightCycleDuration)
         * 2.0f;
 
     // Calculate new time of day
@@ -391,7 +391,7 @@ void GameController::StartDayLightCycleStateMachine()
         // Start state machine
         mDayLightCycleStateMachine.reset(
             new DayLightCycleStateMachine(
-                mGameParameters,
+                mSimulationParameters,
                 *this));
 
         mNotificationLayer.SetDayLightCycleIndicator(true);

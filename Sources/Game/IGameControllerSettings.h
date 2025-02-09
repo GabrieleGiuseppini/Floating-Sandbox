@@ -5,17 +5,14 @@
 ***************************************************************************************/
 #pragma once
 
-#include "OceanFloorTerrain.h"
+#include <Simulation/OceanFloorHeightMap.h>
 
-#include <GameCore/Colors.h>
-#include <GameCore/GameTypes.h>
-#include <GameCore/ImageData.h>
-#include <GameCore/UniqueBuffer.h>
-#include <GameCore/Vectors.h>
+#include <Core/Colors.h>
+#include <Core/GameTypes.h>
+#include <Core/ImageData.h>
+#include <Core/Vectors.h>
 
 #include <chrono>
-#include <filesystem>
-#include <optional>
 #include <string>
 #include <vector>
 
@@ -259,8 +256,8 @@ struct IGameControllerSettings
 
     // Misc
 
-    virtual OceanFloorTerrain const & GetOceanFloorTerrain() const = 0;
-    virtual void SetOceanFloorTerrain(OceanFloorTerrain const & value) = 0;
+    virtual OceanFloorHeightMap const & GetOceanFloorHeightMap() const = 0;
+    virtual void SetOceanFloorHeightMap(OceanFloorHeightMap const & value) = 0;
 
     virtual float GetSeaDepth() const = 0;
     virtual void SetSeaDepth(float value) = 0;

@@ -29,9 +29,9 @@ source_group(" " FILES ${RENDER_SOURCES})
 
 add_library (Render ${RENDER_SOURCES})
 
-target_include_directories(Game PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-target_include_directories(Game PUBLIC ${PICOJSON_INCLUDE_DIRS})
-target_include_directories(Game INTERFACE ..)
+target_include_directories(Render PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(Render PUBLIC ${PICOJSON_INCLUDE_DIRS})
+target_include_directories(Render INTERFACE ..)
 
 target_link_libraries (Render
 	Core

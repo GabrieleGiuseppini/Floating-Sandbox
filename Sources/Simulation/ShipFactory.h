@@ -47,7 +47,7 @@ public:
         ShipTexturizer const & shipTexturizer,
         ShipStrengthRandomizer const & shipStrengthRandomizer,
         std::shared_ptr<SimulationEventDispatcher> & simulationEventDispatcher,
-        IAssetManager & assetManager,
+        IAssetManager const & assetManager,
         SimulationParameters const & simulationParameters);
 
 private:

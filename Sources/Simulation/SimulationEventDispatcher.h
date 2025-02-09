@@ -973,7 +973,7 @@ public:
         mCombustionSinks.push_back(sink);
     }
 
-    void RegisterSimulatioStatisticsEventHandler(ISimulationStatisticsEventHandler * sink)
+    void RegisterSimulationStatisticsEventHandler(ISimulationStatisticsEventHandler * sink)
     {
         mSimulationStatisticsSinks.push_back(sink);
     }

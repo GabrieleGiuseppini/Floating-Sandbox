@@ -11,8 +11,14 @@ set  (GAME_SOURCES
 	FileSystem.h
 	GameAssetManager.cpp
 	GameAssetManager.h
+	GameController.cpp
+	GameController.h
+	GameController_StateMachines.cpp
 	GameEventDispatcher.h
 	GameVersion.h
+	IGameController.h
+	IGameControllerSettings.h
+	IGameControllerSettingsOptions.h
 	IGameEventHandlers.h
 	NotificationLayer.cpp
 	NotificationLayer.h

@@ -43,7 +43,7 @@ namespace /*anonymous*/ {
 
 ShipTexturizer::ShipTexturizer(
     MaterialDatabase const & materialDatabase,
-    IAssetManager & assetManager)
+    IAssetManager const & assetManager)
     : mSharedSettings() // Default settings
     , mDoForceSharedSettingsOntoShipSettings(false)
     , mMaterialTextureNameToTextureRelativePathMap(
@@ -74,7 +74,7 @@ RgbaImageData ShipTexturizer::MakeAutoTexture(
     StructuralLayerData const & structuralLayer,
     std::optional<ShipAutoTexturizationSettings> const & settings,
     int maxTextureSize,
-    IAssetManager & assetManager) const
+    IAssetManager const & assetManager) const
 {
     auto const startTime = GameChronometer::now();
 
@@ -118,7 +118,7 @@ void ShipTexturizer::AutoTexturizeInto(
     RgbaImageData & targetTextureImage,
     int magnificationFactor,
     ShipAutoTexturizationSettings const & settings,
-    IAssetManager & assetManager) const
+    IAssetManager const & assetManager) const
 {
     //
     // Prepare constants
@@ -602,7 +602,7 @@ void ShipTexturizer::RenderShipInto(
 
 std::unordered_map<std::string, std::string> ShipTexturizer::MakeMaterialTextureNameToTextureRelativePathMap(
     MaterialDatabase const & materialDatabase,
-    IAssetManager & assetManager)
+    IAssetManager const & assetManager)
 {
     std::unordered_map<std::string, std::string> materialTextureNameToTextureRelativePath;
 
@@ -648,7 +648,7 @@ RgbaImageData ShipTexturizer::MakeMaterialTextureSample(
     ImageSize const & sampleSize,
     rgbaColor const & renderColor,
     std::optional<std::string> const & textureName,
-    IAssetManager & assetManager) const
+    IAssetManager const & assetManager) const
 {
     assert(sampleSize.width >= 2); // We'll split the width in half
 
@@ -704,7 +704,7 @@ RgbaImageData ShipTexturizer::MakeMaterialTextureSample(
 
 ShipTexturizer::Vec2fImageData const & ShipTexturizer::GetMaterialTexture(
     std::optional<std::string> const & textureName,
-    IAssetManager & assetManager) const
+    IAssetManager const & assetManager) const
 {
     std::string const actualTextureName = textureName.value_or(MaterialTextureNameNone);
 

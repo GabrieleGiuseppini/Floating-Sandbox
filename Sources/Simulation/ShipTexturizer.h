@@ -29,7 +29,7 @@ public:
 
     ShipTexturizer(
         MaterialDatabase const & materialDatabase,
-        IAssetManager & assetManager);
+        IAssetManager const & assetManager);
 
     static int CalculateHighDefinitionTextureMagnificationFactor(
         ShipSpaceSize const & shipSize,
@@ -39,7 +39,7 @@ public:
         StructuralLayerData const & structuralLayer,
         std::optional<ShipAutoTexturizationSettings> const & settings,
         int maxTextureSize,
-        IAssetManager & assetManager) const;
+        IAssetManager const & assetManager) const;
 
     void AutoTexturizeInto(
         StructuralLayerData const & structuralLayer,
@@ -47,7 +47,7 @@ public:
         RgbaImageData & targetTextureImage,
         int magnificationFactor,
         ShipAutoTexturizationSettings const & settings,
-        IAssetManager & assetManager) const;
+        IAssetManager const & assetManager) const;
 
     RgbaImageData MakeInteriorViewTexture(
         Physics::Triangles const & triangles,
@@ -112,7 +112,7 @@ private:
 
     static std::unordered_map<std::string, std::string> MakeMaterialTextureNameToTextureRelativePathMap(
         MaterialDatabase const & materialDatabase,
-        IAssetManager & assetManager);
+        IAssetManager const & assetManager);
 
     static float MaterialTextureMagnificationToPixelConversionFactor(float magnification);
 
@@ -121,11 +121,11 @@ private:
         ImageSize const & sampleSize,
         rgbaColor const & renderColor,
         std::optional<std::string> const & textureName,
-        IAssetManager & assetManager) const;
+        IAssetManager const & assetManager) const;
 
     inline Vec2fImageData const & GetMaterialTexture(
         std::optional<std::string> const & textureName,
-        IAssetManager & assetManager) const;
+        IAssetManager const & assetManager) const;
 
     void ResetMaterialTextureCacheUseCounts() const;
 
