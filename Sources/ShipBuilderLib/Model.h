@@ -7,9 +7,9 @@
 
 #include "ShipBuilderTypes.h"
 
-#include <Game/Layers.h>
-#include <Game/Materials.h>
-#include <Game/ShipDefinition.h>
+#include <Simulation/Layers.h>
+#include <Simulation/Materials.h>
+#include <Simulation/ShipDefinition.h>
 
 #include <algorithm>
 #include <array>

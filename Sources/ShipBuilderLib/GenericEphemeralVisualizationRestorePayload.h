@@ -5,9 +5,9 @@
 ***************************************************************************************/
 #pragma once
 
-#include <GameCore/GameTypes.h>
+#include <Simulation/Layers.h>
 
-#include <Game/Layers.h>
+#include <Core/GameTypes.h>
 
 #include <optional>
 #include <vector>

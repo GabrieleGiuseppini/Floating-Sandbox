@@ -5,8 +5,6 @@
 ***************************************************************************************/
 #include "Model.h"
 
-#include <Game/MaterialDatabase.h>
-
 namespace ShipBuilder {
 
 Model::Model(
