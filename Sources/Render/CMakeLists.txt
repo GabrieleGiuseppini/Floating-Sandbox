@@ -4,9 +4,9 @@
 #
 
 set  (RENDER_SOURCES
-	GameFontSet.h
-	GameShaderSet.cpp
-	GameShaderSet.h
+	GameFontSets.h
+	GameShaderSets.cpp
+	GameShaderSets.h
 	GameTextureDatabases.h
 	GlobalRenderContext.cpp
 	GlobalRenderContext.h

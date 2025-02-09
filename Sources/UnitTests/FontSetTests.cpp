@@ -1,6 +1,6 @@
 #include <Core/FontSet.h>
 
-#include <Render/GameFontSet.h>
+#include <Render/GameFontSets.h>
 
 #include "gtest/gtest.h"
 
@@ -34,7 +34,7 @@ TEST(FontSetTests, Load)
 	// Load
 	//
 
-	FontSet<GameFontSet::FontSet> fontSet = FontSet<GameFontSet::FontSet>::InternalLoad(std::move(bffFonts));
+	FontSet<GameFontSets::FontSet> fontSet = FontSet<GameFontSets::FontSet>::InternalLoad(std::move(bffFonts));
 
 	//
 	// Verify

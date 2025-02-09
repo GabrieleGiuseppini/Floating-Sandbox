@@ -8,7 +8,7 @@
 #include <cstdint>
 #include <string>
 
-namespace GameShaderSet {
+namespace GameShaderSets {
 
 enum class ProgramKind
 {

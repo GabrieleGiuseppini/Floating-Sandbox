@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include "GameShaderSet.h"
+#include "GameShaderSets.h"
 #include "GameTextureDatabases.h"
 #include "GlobalRenderContext.h"
 #include "RenderParameters.h"
@@ -51,7 +51,7 @@ public:
         size_t maxSpringsPerPoint,
         RgbaImageData exteriorViewImage,
         RgbaImageData interiorViewImage,
-        ShaderManager<GameShaderSet::ShaderSet> & shaderManager,
+        ShaderManager<GameShaderSets::ShaderSet> & shaderManager,
         GlobalRenderContext & globalRenderContext,
         RenderParameters const & renderParameters,
         float shipFlameSizeAdjustment,
@@ -1347,7 +1347,7 @@ private:
     void RenderDrawElectricSparks(RenderParameters const & renderParameters);
 
     void RenderPrepareFlames();
-    template<GameShaderSet::ProgramKind FlameShaderType>
+    template<GameShaderSets::ProgramKind FlameShaderType>
     void RenderDrawFlames(
         size_t startFlameIndex,
         size_t flameCount,
@@ -1396,7 +1396,7 @@ private:
 
 private:
 
-    ShaderManager<GameShaderSet::ShaderSet> & mShaderManager;
+    ShaderManager<GameShaderSets::ShaderSet> & mShaderManager;
     GlobalRenderContext & mGlobalRenderContext;
 
 private:
@@ -1819,10 +1819,10 @@ private:
     // The shaders to use for ship structures
     //
 
-    GameShaderSet::ProgramKind mShipPointsProgram;
-    GameShaderSet::ProgramKind mShipRopesProgram;
-    GameShaderSet::ProgramKind mShipSpringsProgram;
-    GameShaderSet::ProgramKind mShipTrianglesProgram;
+    GameShaderSets::ProgramKind mShipPointsProgram;
+    GameShaderSets::ProgramKind mShipRopesProgram;
+    GameShaderSets::ProgramKind mShipSpringsProgram;
+    GameShaderSets::ProgramKind mShipTrianglesProgram;
 
     //
     // Textures

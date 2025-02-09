@@ -3,14 +3,14 @@
 * Created:              2018-10-08
 * Copyright:            Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
-#include "GameShaderSet.h"
+#include "GameShaderSets.h"
 
 #include <Core/GameException.h>
 #include <Core/Utils.h>
 
 #include <cassert>
 
-namespace GameShaderSet::_detail {
+namespace GameShaderSets::_detail {
 
 ProgramKind ShaderNameToProgramKind(std::string const & str)
 {

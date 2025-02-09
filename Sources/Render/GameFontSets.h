@@ -11,7 +11,7 @@
 #include <cstdint>
 #include <string>
 
-namespace GameFontSet {
+namespace GameFontSets {
 
 /*
  * The different types of fonts.

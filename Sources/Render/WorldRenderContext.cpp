@@ -16,7 +16,7 @@ ImageSize constexpr ThumbnailSize(32, 32);
 
 WorldRenderContext::WorldRenderContext(
     IAssetManager const & assetManager,
-    ShaderManager<GameShaderSet::ShaderSet> & shaderManager,
+    ShaderManager<GameShaderSets::ShaderSet> & shaderManager,
     GlobalRenderContext & globalRenderContext)
     : mAssetManager(assetManager)
     , mShaderManager(shaderManager)
@@ -135,8 +135,8 @@ WorldRenderContext::WorldRenderContext(
 
         // Describe vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, *mSkyVBO);
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Sky));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Sky), 2, GL_FLOAT, GL_FALSE, sizeof(SkyVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Sky));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Sky), 2, GL_FLOAT, GL_FALSE, sizeof(SkyVertex), (void *)0);
         CheckOpenGLError();
 
         // Upload whole screen NDC quad
@@ -157,8 +157,8 @@ WorldRenderContext::WorldRenderContext(
         glBindVertexArray(0);
 
         // Set texture parameters
-        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::Sky>();
-        mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::Sky>();
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::Sky>();
+        mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::Sky>();
     }
 
 
@@ -174,8 +174,8 @@ WorldRenderContext::WorldRenderContext(
 
     // Describe vertex attributes
     glBindBuffer(GL_ARRAY_BUFFER, *mStarVBO);
-    glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Star));
-    glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Star), 3, GL_FLOAT, GL_FALSE, sizeof(StarVertex), (void *)0);
+    glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Star));
+    glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Star), 3, GL_FLOAT, GL_FALSE, sizeof(StarVertex), (void *)0);
     CheckOpenGLError();
 
     glBindVertexArray(0);
@@ -193,17 +193,17 @@ WorldRenderContext::WorldRenderContext(
 
     // Describe vertex attributes
     glBindBuffer(GL_ARRAY_BUFFER, *mLightningVBO);
-    glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Lightning1));
-    glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Lightning1), 4, GL_FLOAT, GL_FALSE, sizeof(LightningVertex), (void *)0);
-    glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Lightning2));
-    glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Lightning2), 3, GL_FLOAT, GL_FALSE, sizeof(LightningVertex), (void *)(4 * sizeof(float)));
+    glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Lightning1));
+    glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Lightning1), 4, GL_FLOAT, GL_FALSE, sizeof(LightningVertex), (void *)0);
+    glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Lightning2));
+    glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Lightning2), 3, GL_FLOAT, GL_FALSE, sizeof(LightningVertex), (void *)(4 * sizeof(float)));
     CheckOpenGLError();
 
     glBindVertexArray(0);
 
     // Set texture parameters
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::Lightning>();
-    mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::Lightning>();
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::Lightning>();
+    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::Lightning>();
 
 
     //
@@ -219,12 +219,12 @@ WorldRenderContext::WorldRenderContext(
     // Describe vertex attributes
     static_assert(sizeof(CloudVertex) == (4 + 4 + 1) * sizeof(float));
     glBindBuffer(GL_ARRAY_BUFFER, *mCloudVBO);
-    glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Cloud1));
-    glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Cloud1), 4, GL_FLOAT, GL_FALSE, sizeof(CloudVertex), (void *)0);
-    glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Cloud2));
-    glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Cloud2), 4, GL_FLOAT, GL_FALSE, sizeof(CloudVertex), (void *)(4 * sizeof(float)));
-    glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Cloud3));
-    glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Cloud3), 1, GL_FLOAT, GL_FALSE, sizeof(CloudVertex), (void *)((4 + 4) * sizeof(float)));
+    glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Cloud1));
+    glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Cloud1), 4, GL_FLOAT, GL_FALSE, sizeof(CloudVertex), (void *)0);
+    glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Cloud2));
+    glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Cloud2), 4, GL_FLOAT, GL_FALSE, sizeof(CloudVertex), (void *)(4 * sizeof(float)));
+    glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Cloud3));
+    glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Cloud3), 1, GL_FLOAT, GL_FALSE, sizeof(CloudVertex), (void *)((4 + 4) * sizeof(float)));
     CheckOpenGLError();
 
     // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
@@ -246,17 +246,17 @@ WorldRenderContext::WorldRenderContext(
 
     // Describe vertex attributes
     glBindBuffer(GL_ARRAY_BUFFER, *mLandSegmentVBO);
-    glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Land));
-    glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Land), 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
+    glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Land));
+    glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Land), 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
     CheckOpenGLError();
 
     glBindVertexArray(0);
 
     // Set (noise) texture parameters
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::LandFlatDetailed>();
-    mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::LandFlatDetailed>();
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::LandTextureDetailed>();
-    mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::LandTextureDetailed>();
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::LandFlatDetailed>();
+    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::LandFlatDetailed>();
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::LandTextureDetailed>();
+    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::LandTextureDetailed>();
 
 
     //
@@ -272,17 +272,17 @@ WorldRenderContext::WorldRenderContext(
     // Describe vertex attributes
     static_assert(sizeof(OceanBasicSegment) == 3 * 2 * sizeof(float));
     glBindBuffer(GL_ARRAY_BUFFER, *mOceanBasicSegmentVBO);
-    glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::OceanBasic));
-    glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::OceanBasic), (2 + 1), GL_FLOAT, GL_FALSE, sizeof(OceanBasicSegment) / 2, (void *)0);
+    glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::OceanBasic));
+    glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::OceanBasic), (2 + 1), GL_FLOAT, GL_FALSE, sizeof(OceanBasicSegment) / 2, (void *)0);
     CheckOpenGLError();
 
     glBindVertexArray(0);
 
     // Set texture parameters
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanDepthBasic>();
-    mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::OceanDepthBasic>();
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanTextureBasic>();
-    mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::OceanTextureBasic>();
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanDepthBasic>();
+    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::OceanDepthBasic>();
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanTextureBasic>();
+    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::OceanTextureBasic>();
 
 
 
@@ -299,30 +299,30 @@ WorldRenderContext::WorldRenderContext(
     // Describe vertex attributes
     static_assert(sizeof(OceanDetailedSegment) / 2 == 7 * sizeof(float));
     glBindBuffer(GL_ARRAY_BUFFER, *mOceanDetailedSegmentVBO);
-    glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::OceanDetailed1));
-    glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::OceanDetailed1), 3, GL_FLOAT, GL_FALSE, sizeof(OceanDetailedSegment) / 2, (void *)0);
-    glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::OceanDetailed2));
-    glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::OceanDetailed2), 4, GL_FLOAT, GL_FALSE, sizeof(OceanDetailedSegment) / 2, (void *)(3 * sizeof(float)));
+    glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::OceanDetailed1));
+    glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::OceanDetailed1), 3, GL_FLOAT, GL_FALSE, sizeof(OceanDetailedSegment) / 2, (void *)0);
+    glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::OceanDetailed2));
+    glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::OceanDetailed2), 4, GL_FLOAT, GL_FALSE, sizeof(OceanDetailedSegment) / 2, (void *)(3 * sizeof(float)));
     CheckOpenGLError();
 
     glBindVertexArray(0);
 
     // Set texture parameters
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanFlatDetailedBackground>();
-    mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::OceanFlatDetailedBackground>();
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanFlatDetailedForeground>();
-    mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::OceanFlatDetailedForeground>();
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanFlatDetailedBackground>();
+    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::OceanFlatDetailedBackground>();
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanFlatDetailedForeground>();
+    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::OceanFlatDetailedForeground>();
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanDepthDetailedBackground>();
-    mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::OceanDepthDetailedBackground>();
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanDepthDetailedForeground>();
-    mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::OceanDepthDetailedForeground>();
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanDepthDetailedBackground>();
+    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::OceanDepthDetailedBackground>();
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanDepthDetailedForeground>();
+    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::OceanDepthDetailedForeground>();
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanTextureDetailedBackground>();
-    mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::OceanTextureDetailedBackground>();
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanTextureDetailedForeground>();
-    mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::OceanTextureDetailedForeground>();
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanTextureDetailedBackground>();
+    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::OceanTextureDetailedBackground>();
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanTextureDetailedForeground>();
+    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::OceanTextureDetailedForeground>();
 
     //
     // Initialize Fish VAO
@@ -337,14 +337,14 @@ WorldRenderContext::WorldRenderContext(
     // Describe vertex attributes
     static_assert(sizeof(FishVertex) == 14 * sizeof(float));
     glBindBuffer(GL_ARRAY_BUFFER, *mFishVBO);
-    glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Fish1));
-    glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Fish1), 4, GL_FLOAT, GL_FALSE, sizeof(FishVertex), (void *)0);
-    glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Fish2));
-    glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Fish2), 4, GL_FLOAT, GL_FALSE, sizeof(FishVertex), (void *)(4 * sizeof(float)));
-    glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Fish3));
-    glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Fish3), 4, GL_FLOAT, GL_FALSE, sizeof(FishVertex), (void *)(8 * sizeof(float)));
-    glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Fish4));
-    glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Fish4), 2, GL_FLOAT, GL_FALSE, sizeof(FishVertex), (void *)(12 * sizeof(float)));
+    glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Fish1));
+    glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Fish1), 4, GL_FLOAT, GL_FALSE, sizeof(FishVertex), (void *)0);
+    glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Fish2));
+    glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Fish2), 4, GL_FLOAT, GL_FALSE, sizeof(FishVertex), (void *)(4 * sizeof(float)));
+    glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Fish3));
+    glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Fish3), 4, GL_FLOAT, GL_FALSE, sizeof(FishVertex), (void *)(8 * sizeof(float)));
+    glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Fish4));
+    glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Fish4), 2, GL_FLOAT, GL_FALSE, sizeof(FishVertex), (void *)(12 * sizeof(float)));
     CheckOpenGLError();
 
     // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
@@ -366,10 +366,10 @@ WorldRenderContext::WorldRenderContext(
 
     // Describe vertex attributes
     glBindBuffer(GL_ARRAY_BUFFER, *mAMBombPreImplosionVBO);
-    glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::AMBombPreImplosion1));
-    glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::AMBombPreImplosion1), 4, GL_FLOAT, GL_FALSE, sizeof(AMBombPreImplosionVertex), (void *)0);
-    glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::AMBombPreImplosion2));
-    glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::AMBombPreImplosion2), 2, GL_FLOAT, GL_FALSE, sizeof(AMBombPreImplosionVertex), (void *)(4 * sizeof(float)));
+    glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::AMBombPreImplosion1));
+    glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::AMBombPreImplosion1), 4, GL_FLOAT, GL_FALSE, sizeof(AMBombPreImplosionVertex), (void *)0);
+    glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::AMBombPreImplosion2));
+    glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::AMBombPreImplosion2), 2, GL_FLOAT, GL_FALSE, sizeof(AMBombPreImplosionVertex), (void *)(4 * sizeof(float)));
     CheckOpenGLError();
 
     glBindVertexArray(0);
@@ -387,10 +387,10 @@ WorldRenderContext::WorldRenderContext(
 
     // Describe vertex attributes
     glBindBuffer(GL_ARRAY_BUFFER, *mCrossOfLightVBO);
-    glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::CrossOfLight1));
-    glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::CrossOfLight1), 4, GL_FLOAT, GL_FALSE, sizeof(CrossOfLightVertex), (void *)0);
-    glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::CrossOfLight2));
-    glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::CrossOfLight2), 1, GL_FLOAT, GL_FALSE, sizeof(CrossOfLightVertex), (void *)(4 * sizeof(float)));
+    glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::CrossOfLight1));
+    glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::CrossOfLight1), 4, GL_FLOAT, GL_FALSE, sizeof(CrossOfLightVertex), (void *)0);
+    glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::CrossOfLight2));
+    glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::CrossOfLight2), 1, GL_FLOAT, GL_FALSE, sizeof(CrossOfLightVertex), (void *)(4 * sizeof(float)));
     CheckOpenGLError();
 
     glBindVertexArray(0);
@@ -409,10 +409,10 @@ WorldRenderContext::WorldRenderContext(
     // Describe vertex attributes
     static_assert(sizeof(AABBVertex) == 6 * sizeof(float));
     glBindBuffer(GL_ARRAY_BUFFER, *mAABBVBO);
-    glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::AABB1));
-    glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::AABB1), 4, GL_FLOAT, GL_FALSE, sizeof(AABBVertex), (void *)0);
-    glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::AABB2));
-    glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::AABB2), 2, GL_FLOAT, GL_FALSE, sizeof(AABBVertex), (void *)(4 * sizeof(float)));
+    glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::AABB1));
+    glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::AABB1), 4, GL_FLOAT, GL_FALSE, sizeof(AABBVertex), (void *)0);
+    glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::AABB2));
+    glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::AABB2), 2, GL_FLOAT, GL_FALSE, sizeof(AABBVertex), (void *)(4 * sizeof(float)));
     CheckOpenGLError();
 
     glBindVertexArray(0);
@@ -432,8 +432,8 @@ WorldRenderContext::WorldRenderContext(
 
         // Describe vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, *mRainVBO);
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Rain));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Rain), 2, GL_FLOAT, GL_FALSE, sizeof(RainVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Rain));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Rain), 2, GL_FLOAT, GL_FALSE, sizeof(RainVertex), (void *)0);
         CheckOpenGLError();
 
         // Upload whole screen NDC quad
@@ -467,8 +467,8 @@ WorldRenderContext::WorldRenderContext(
 
     // Describe vertex attributes
     glBindBuffer(GL_ARRAY_BUFFER, *mWorldBorderVBO);
-    glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::WorldBorder));
-    glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::WorldBorder), 4, GL_FLOAT, GL_FALSE, sizeof(WorldBorderVertex), (void *)0);
+    glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::WorldBorder));
+    glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::WorldBorder), 4, GL_FLOAT, GL_FALSE, sizeof(WorldBorderVertex), (void *)0);
     CheckOpenGLError();
 
     glBindVertexArray(0);
@@ -482,7 +482,7 @@ WorldRenderContext::WorldRenderContext(
         mCloudShadowsTextureOpenGLHandle = tmpGLuint;
 
         // Bind texture
-        mShaderManager.ActivateTexture<GameShaderSet::ProgramParameterKind::SharedTexture>();
+        mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::SharedTexture>();
         glBindTexture(GL_TEXTURE_1D, *mCloudShadowsTextureOpenGLHandle);
         CheckOpenGLError();
 
@@ -503,7 +503,7 @@ WorldRenderContext::WorldRenderContext(
     // Set generic linear texture in our shaders
     //
 
-    mShaderManager.ActivateTexture<GameShaderSet::ProgramParameterKind::GenericLinearTexturesAtlasTexture>();
+    mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::GenericLinearTexturesAtlasTexture>();
 
     glBindTexture(GL_TEXTURE_2D, globalRenderContext.GetGenericLinearTextureAtlasOpenGLHandle());
     CheckOpenGLError();
@@ -520,7 +520,7 @@ void WorldRenderContext::InitializeCloudTextures()
 
     LogMessage("Cloud texture atlas size: ", cloudTextureAtlas.Image.Size);
 
-    mShaderManager.ActivateTexture<GameShaderSet::ProgramParameterKind::CloudsAtlasTexture>();
+    mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::CloudsAtlasTexture>();
 
     // Create OpenGL handle
     GLuint tmpGLuint;
@@ -548,10 +548,10 @@ void WorldRenderContext::InitializeCloudTextures()
     mCloudTextureAtlasMetadata = std::make_unique<TextureAtlasMetadata<GameTextureDatabases::CloudTextureDatabase>>(cloudTextureAtlas.Metadata);
 
     // Set textures in shader
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::CloudsBasic>();
-    mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::CloudsBasic>();
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::CloudsDetailed>();
-    mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::CloudsDetailed>();
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::CloudsBasic>();
+    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::CloudsBasic>();
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::CloudsDetailed>();
+    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::CloudsDetailed>();
 }
 
 void WorldRenderContext::InitializeWorldTextures()
@@ -622,7 +622,7 @@ void WorldRenderContext::InitializeFishTextures()
 
     LogMessage("Fish texture atlas size: ", fishTextureAtlas.Image.Size);
 
-    mShaderManager.ActivateTexture<GameShaderSet::ProgramParameterKind::FishesAtlasTexture>();
+    mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::FishesAtlasTexture>();
 
     // Create OpenGL handle
     GLuint tmpGLuint;
@@ -653,10 +653,10 @@ void WorldRenderContext::InitializeFishTextures()
     mFishTextureAtlasMetadata = std::make_unique<TextureAtlasMetadata<GameTextureDatabases::FishTextureDatabase>>(fishTextureAtlas.Metadata);
 
     // Set textures in shader
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::FishesBasic>();
-    mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::FishesBasic>();
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::FishesDetailed>();
-    mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::FishesDetailed>();
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::FishesBasic>();
+    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::FishesBasic>();
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::FishesDetailed>();
+    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::FishesDetailed>();
 }
 
 void WorldRenderContext::OnReset(RenderParameters const & renderParameters)
@@ -746,7 +746,7 @@ void WorldRenderContext::UploadCloudShadows(
 {
     // We've been invoked on the render thread
 
-    mShaderManager.ActivateTexture<GameShaderSet::ProgramParameterKind::SharedTexture>();
+    mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::SharedTexture>();
     glBindTexture(GL_TEXTURE_1D, *mCloudShadowsTextureOpenGLHandle);
     if (!mHasCloudShadowsTextureBeenAllocated)
     {
@@ -926,7 +926,7 @@ void WorldRenderContext::RenderDrawSky(RenderParameters const & renderParameters
 
         glBindVertexArray(*mSkyVAO);
 
-        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::Sky>();
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::Sky>();
 
         glDrawArrays(GL_TRIANGLES, 0, 6);
         CheckOpenGLError();
@@ -949,7 +949,7 @@ void WorldRenderContext::RenderDrawStars(RenderParameters const & /*renderParame
     {
         glBindVertexArray(*mStarVAO);
 
-        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::Stars>();
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::Stars>();
 
         glPointSize(0.5f);
 
@@ -1033,14 +1033,14 @@ void WorldRenderContext::RenderDrawCloudsAndBackgroundLightnings(RenderParameter
 
         if (areCloudsHighQuality)
         {
-            mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::CloudsDetailed>();
+            mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::CloudsDetailed>();
 
-            mShaderManager.ActivateTexture<GameShaderSet::ProgramParameterKind::NoiseTexture>();
+            mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::NoiseTexture>();
             glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(NoiseType::Perlin_4_32_043));
         }
         else
         {
-            mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::CloudsBasic>();
+            mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::CloudsBasic>();
         }
 
         if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Wireframe)
@@ -1065,9 +1065,9 @@ void WorldRenderContext::RenderDrawCloudsAndBackgroundLightnings(RenderParameter
     {
         glBindVertexArray(*mLightningVAO);
 
-        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::Lightning>();
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::Lightning>();
 
-        mShaderManager.ActivateTexture<GameShaderSet::ProgramParameterKind::NoiseTexture>();
+        mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::NoiseTexture>();
         glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(NoiseType::Gross));
 
         glDrawArrays(GL_TRIANGLES,
@@ -1090,14 +1090,14 @@ void WorldRenderContext::RenderDrawCloudsAndBackgroundLightnings(RenderParameter
 
         if (areCloudsHighQuality)
         {
-            mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::CloudsDetailed>();
+            mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::CloudsDetailed>();
 
-            mShaderManager.ActivateTexture<GameShaderSet::ProgramParameterKind::NoiseTexture>();
+            mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::NoiseTexture>();
             glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(NoiseType::Perlin_4_32_043));
         }
         else
         {
-            mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::CloudsBasic>();
+            mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::CloudsBasic>();
         }
 
         if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Wireframe)
@@ -1178,33 +1178,33 @@ void WorldRenderContext::RenderPrepareOcean(RenderParameters const & renderParam
 
     if (mIsSunRaysInclinationDirty)
     {
-        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanDepthDetailedBackground>();
-        mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::OceanDepthDetailedBackground, GameShaderSet::ProgramParameterKind::SunRaysInclination>(
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanDepthDetailedBackground>();
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanDepthDetailedBackground, GameShaderSets::ProgramParameterKind::SunRaysInclination>(
             mSunRaysInclination);
 
-        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanDepthDetailedForeground>();
-        mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::OceanDepthDetailedForeground, GameShaderSet::ProgramParameterKind::SunRaysInclination>(
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanDepthDetailedForeground>();
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanDepthDetailedForeground, GameShaderSets::ProgramParameterKind::SunRaysInclination>(
             mSunRaysInclination);
 
-        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanFlatDetailedBackground>();
-        mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::OceanFlatDetailedBackground, GameShaderSet::ProgramParameterKind::SunRaysInclination>(
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanFlatDetailedBackground>();
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanFlatDetailedBackground, GameShaderSets::ProgramParameterKind::SunRaysInclination>(
             mSunRaysInclination);
 
-        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanFlatDetailedForeground>();
-        mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::OceanFlatDetailedForeground, GameShaderSet::ProgramParameterKind::SunRaysInclination>(
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanFlatDetailedForeground>();
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanFlatDetailedForeground, GameShaderSets::ProgramParameterKind::SunRaysInclination>(
             mSunRaysInclination);
 
-        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanTextureDetailedBackground>();
-        mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::OceanTextureDetailedBackground, GameShaderSet::ProgramParameterKind::SunRaysInclination>(
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanTextureDetailedBackground>();
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanTextureDetailedBackground, GameShaderSets::ProgramParameterKind::SunRaysInclination>(
             mSunRaysInclination);
 
-        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanTextureDetailedForeground>();
-        mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::OceanTextureDetailedForeground, GameShaderSet::ProgramParameterKind::SunRaysInclination>(
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanTextureDetailedForeground>();
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanTextureDetailedForeground, GameShaderSets::ProgramParameterKind::SunRaysInclination>(
             mSunRaysInclination);
 
 
-        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::FishesDetailed>();
-        mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::FishesDetailed, GameShaderSet::ProgramParameterKind::SunRaysInclination>(
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::FishesDetailed>();
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::FishesDetailed, GameShaderSets::ProgramParameterKind::SunRaysInclination>(
             mSunRaysInclination);
 
 
@@ -1226,11 +1226,11 @@ void WorldRenderContext::RenderDrawOcean(bool opaquely, RenderParameters const &
             {
                 case OceanRenderModeType::Depth:
                 {
-                    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanDepthBasic>();
-                    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::OceanDepthBasic, GameShaderSet::ProgramParameterKind::OceanTransparency>(
+                    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanDepthBasic>();
+                    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanDepthBasic, GameShaderSets::ProgramParameterKind::OceanTransparency>(
                         transparency);
 
-                    mShaderManager.ActivateTexture<GameShaderSet::ProgramParameterKind::NoiseTexture>();
+                    mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::NoiseTexture>();
                     glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(NoiseType::Fine));
 
                     break;
@@ -1238,8 +1238,8 @@ void WorldRenderContext::RenderDrawOcean(bool opaquely, RenderParameters const &
 
                 case OceanRenderModeType::Flat:
                 {
-                    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanFlatBasic>();
-                    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::OceanFlatBasic, GameShaderSet::ProgramParameterKind::OceanTransparency>(
+                    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanFlatBasic>();
+                    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanFlatBasic, GameShaderSets::ProgramParameterKind::OceanTransparency>(
                         transparency);
 
                     break;
@@ -1247,8 +1247,8 @@ void WorldRenderContext::RenderDrawOcean(bool opaquely, RenderParameters const &
 
                 case OceanRenderModeType::Texture:
                 {
-                    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanTextureBasic>();
-                    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::OceanTextureBasic, GameShaderSet::ProgramParameterKind::OceanTransparency>(
+                    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanTextureBasic>();
+                    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanTextureBasic, GameShaderSets::ProgramParameterKind::OceanTransparency>(
                         transparency);
 
                     break;
@@ -1267,7 +1267,7 @@ void WorldRenderContext::RenderDrawOcean(bool opaquely, RenderParameters const &
         {
             // Bind cloud shadows texture
 
-            mShaderManager.ActivateTexture<GameShaderSet::ProgramParameterKind::SharedTexture>();
+            mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::SharedTexture>();
             glBindTexture(GL_TEXTURE_1D, *mCloudShadowsTextureOpenGLHandle);
 
             // Draw background if drawing opaquely, else foreground
@@ -1278,14 +1278,14 @@ void WorldRenderContext::RenderDrawOcean(bool opaquely, RenderParameters const &
             {
                 case OceanRenderModeType::Depth:
                 {
-                    GameShaderSet::ProgramKind const oceanShader = opaquely ? GameShaderSet::ProgramKind::OceanDepthDetailedBackground : GameShaderSet::ProgramKind::OceanDepthDetailedForeground;
+                    GameShaderSets::ProgramKind const oceanShader = opaquely ? GameShaderSets::ProgramKind::OceanDepthDetailedBackground : GameShaderSets::ProgramKind::OceanDepthDetailedForeground;
 
                     mShaderManager.ActivateProgram(oceanShader);
-                    mShaderManager.SetProgramParameter<GameShaderSet::ProgramParameterKind::OceanTransparency>(
+                    mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::OceanTransparency>(
                         oceanShader,
                         transparency);
 
-                    mShaderManager.ActivateTexture<GameShaderSet::ProgramParameterKind::NoiseTexture>();
+                    mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::NoiseTexture>();
                     glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(NoiseType::Fine));
 
                     break;
@@ -1293,14 +1293,14 @@ void WorldRenderContext::RenderDrawOcean(bool opaquely, RenderParameters const &
 
                 case OceanRenderModeType::Flat:
                 {
-                    GameShaderSet::ProgramKind const oceanShader = opaquely ? GameShaderSet::ProgramKind::OceanFlatDetailedBackground : GameShaderSet::ProgramKind::OceanFlatDetailedForeground;
+                    GameShaderSets::ProgramKind const oceanShader = opaquely ? GameShaderSets::ProgramKind::OceanFlatDetailedBackground : GameShaderSets::ProgramKind::OceanFlatDetailedForeground;
 
                     mShaderManager.ActivateProgram(oceanShader);
-                    mShaderManager.SetProgramParameter<GameShaderSet::ProgramParameterKind::OceanTransparency>(
+                    mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::OceanTransparency>(
                         oceanShader,
                         transparency);
 
-                    mShaderManager.ActivateTexture<GameShaderSet::ProgramParameterKind::NoiseTexture>();
+                    mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::NoiseTexture>();
                     glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(NoiseType::Fine));
 
                     break;
@@ -1308,10 +1308,10 @@ void WorldRenderContext::RenderDrawOcean(bool opaquely, RenderParameters const &
 
                 case OceanRenderModeType::Texture:
                 {
-                    GameShaderSet::ProgramKind const oceanShader = opaquely ? GameShaderSet::ProgramKind::OceanTextureDetailedBackground : GameShaderSet::ProgramKind::OceanTextureDetailedForeground;
+                    GameShaderSets::ProgramKind const oceanShader = opaquely ? GameShaderSets::ProgramKind::OceanTextureDetailedBackground : GameShaderSets::ProgramKind::OceanTextureDetailedForeground;
 
                     mShaderManager.ActivateProgram(oceanShader);
-                    mShaderManager.SetProgramParameter<GameShaderSet::ProgramParameterKind::OceanTransparency>(
+                    mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::OceanTransparency>(
                         oceanShader,
                         transparency);
 
@@ -1378,18 +1378,18 @@ void WorldRenderContext::RenderDrawOceanFloor(RenderParameters const & renderPar
         case LandRenderModeType::Flat:
         {
             if (isHighQuality)
-                mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::LandFlatDetailed>();
+                mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::LandFlatDetailed>();
             else
-                mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::LandFlatBasic>();
+                mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::LandFlatBasic>();
             break;
         }
 
         case LandRenderModeType::Texture:
         {
             if (isHighQuality)
-                mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::LandTextureDetailed>();
+                mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::LandTextureDetailed>();
             else
-                mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::LandTextureBasic>();
+                mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::LandTextureBasic>();
             break;
         }
     }
@@ -1397,7 +1397,7 @@ void WorldRenderContext::RenderDrawOceanFloor(RenderParameters const & renderPar
     if (isHighQuality)
     {
         // Activate noise texture
-        mShaderManager.ActivateTexture<GameShaderSet::ProgramParameterKind::NoiseTexture>();
+        mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::NoiseTexture>();
         glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(NoiseType::Perlin_8_1024_073));
     }
 
@@ -1444,23 +1444,23 @@ void WorldRenderContext::RenderDrawFishes(RenderParameters const & renderParamet
         {
             case OceanRenderDetailType::Basic:
             {
-                mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::FishesBasic>();
+                mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::FishesBasic>();
 
                 break;
             }
 
             case OceanRenderDetailType::Detailed:
             {
-                mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::FishesDetailed>();
+                mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::FishesDetailed>();
 
-                mShaderManager.ActivateTexture<GameShaderSet::ProgramParameterKind::SharedTexture>();
+                mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::SharedTexture>();
                 glBindTexture(GL_TEXTURE_1D, *mCloudShadowsTextureOpenGLHandle);
 
                 break;
             }
         }
 
-        mShaderManager.ActivateTexture<GameShaderSet::ProgramParameterKind::NoiseTexture>();
+        mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::NoiseTexture>();
         glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(NoiseType::Fine));
 
         glDrawElements(
@@ -1505,7 +1505,7 @@ void WorldRenderContext::RenderDrawAMBombPreImplosions(RenderParameters const & 
     {
         glBindVertexArray(*mAMBombPreImplosionVAO);
 
-        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::AMBombPreImplosion>();
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::AMBombPreImplosion>();
 
         assert((mAMBombPreImplosionVertexBuffer.size() % 6) == 0);
         glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mAMBombPreImplosionVertexBuffer.size()));
@@ -1545,7 +1545,7 @@ void WorldRenderContext::RenderDrawCrossesOfLight(RenderParameters const & /*ren
     {
         glBindVertexArray(*mCrossOfLightVAO);
 
-        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::CrossOfLight>();
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::CrossOfLight>();
 
         assert((mCrossOfLightVertexBuffer.size() % 6) == 0);
         glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mCrossOfLightVertexBuffer.size()));
@@ -1560,9 +1560,9 @@ void WorldRenderContext::RenderDrawForegroundLightnings(RenderParameters const &
     {
         glBindVertexArray(*mLightningVAO);
 
-        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::Lightning>();
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::Lightning>();
 
-        mShaderManager.ActivateTexture<GameShaderSet::ProgramParameterKind::NoiseTexture>();
+        mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::NoiseTexture>();
         glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(NoiseType::Gross));
 
         glDrawArrays(GL_TRIANGLES,
@@ -1578,14 +1578,14 @@ void WorldRenderContext::RenderPrepareRain(RenderParameters const & /*renderPara
 {
     if (mIsRainDensityDirty || mRainDensity != 0.0f)
     {
-        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::Rain>();
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::Rain>();
 
         if (mIsRainDensityDirty)
         {
             float const actualRainDensity = std::sqrt(mRainDensity); // Focus
 
             // Set parameter
-            mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::Rain, GameShaderSet::ProgramParameterKind::RainDensity>(
+            mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::Rain, GameShaderSets::ProgramParameterKind::RainDensity>(
                 actualRainDensity);
 
             mIsRainDensityDirty = false; // Uploaded
@@ -1601,7 +1601,7 @@ void WorldRenderContext::RenderPrepareRain(RenderParameters const & /*renderPara
                 * 0.8f;
 
             // Set parameter
-            mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::Rain, GameShaderSet::ProgramParameterKind::RainAngle>(
+            mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::Rain, GameShaderSets::ProgramParameterKind::RainAngle>(
                 rainAngle);
 
             mIsRainWindSpeedMagnitudeDirty = false; // Uploaded
@@ -1610,8 +1610,8 @@ void WorldRenderContext::RenderPrepareRain(RenderParameters const & /*renderPara
         if (mRainDensity != 0.0f)
         {
             // Set time parameter
-            mShaderManager.SetProgramParameter<GameShaderSet::ProgramParameterKind::Time>(
-                GameShaderSet::ProgramKind::Rain,
+            mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::Time>(
+                GameShaderSets::ProgramKind::Rain,
                 GameWallClock::GetInstance().NowAsFloat());
         }
     }
@@ -1623,7 +1623,7 @@ void WorldRenderContext::RenderDrawRain(RenderParameters const & /*renderParamet
     {
         glBindVertexArray(*mRainVAO);
 
-        mShaderManager.ActivateProgram(GameShaderSet::ProgramKind::Rain);
+        mShaderManager.ActivateProgram(GameShaderSets::ProgramKind::Rain);
 
         glDrawArrays(GL_TRIANGLES, 0, 6);
         CheckOpenGLError();
@@ -1663,7 +1663,7 @@ void WorldRenderContext::RenderDrawAABBs(RenderParameters const & /*renderParame
     {
         glBindVertexArray(*mAABBVAO);
 
-        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::AABBs>();
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::AABBs>();
 
         glLineWidth(2.0f);
 
@@ -1684,7 +1684,7 @@ void WorldRenderContext::RenderDrawWorldBorder(RenderParameters const & /*render
 
         glBindVertexArray(*mWorldBorderVAO);
 
-        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::WorldBorder>();
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::WorldBorder>();
 
         assert((mWorldBorderVertexBuffer.size() % 6) == 0);
         glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mWorldBorderVertexBuffer.size()));
@@ -1707,80 +1707,80 @@ void WorldRenderContext::ApplyViewModelChanges(RenderParameters const & renderPa
     ViewModel::ProjectionMatrix globalOrthoMatrix;
     renderParameters.View.CalculateGlobalOrthoMatrix(ZFar, ZNear, globalOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::LandFlatBasic>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::LandFlatBasic, GameShaderSet::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::LandFlatBasic>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::LandFlatBasic, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         globalOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::LandFlatDetailed>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::LandFlatDetailed, GameShaderSet::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::LandFlatDetailed>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::LandFlatDetailed, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         globalOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::LandTextureBasic>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::LandTextureBasic, GameShaderSet::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::LandTextureBasic>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::LandTextureBasic, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         globalOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::LandTextureDetailed>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::LandTextureDetailed, GameShaderSet::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::LandTextureDetailed>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::LandTextureDetailed, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         globalOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanDepthBasic>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::OceanDepthBasic, GameShaderSet::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanDepthBasic>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanDepthBasic, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         globalOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanDepthDetailedBackground>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::OceanDepthDetailedBackground, GameShaderSet::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanDepthDetailedBackground>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanDepthDetailedBackground, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         globalOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanDepthDetailedForeground>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::OceanDepthDetailedForeground, GameShaderSet::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanDepthDetailedForeground>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanDepthDetailedForeground, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         globalOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanFlatBasic>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::OceanFlatBasic, GameShaderSet::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanFlatBasic>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanFlatBasic, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         globalOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanFlatDetailedBackground>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::OceanFlatDetailedBackground, GameShaderSet::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanFlatDetailedBackground>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanFlatDetailedBackground, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         globalOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanFlatDetailedForeground>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::OceanFlatDetailedForeground, GameShaderSet::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanFlatDetailedForeground>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanFlatDetailedForeground, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         globalOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanTextureBasic>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::OceanTextureBasic, GameShaderSet::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanTextureBasic>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanTextureBasic, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         globalOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanTextureDetailedBackground>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::OceanTextureDetailedBackground, GameShaderSet::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanTextureDetailedBackground>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanTextureDetailedBackground, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         globalOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanTextureDetailedForeground>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::OceanTextureDetailedForeground, GameShaderSet::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanTextureDetailedForeground>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanTextureDetailedForeground, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         globalOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::FishesBasic>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::FishesBasic, GameShaderSet::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::FishesBasic>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::FishesBasic, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         globalOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::FishesDetailed>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::FishesDetailed, GameShaderSet::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::FishesDetailed>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::FishesDetailed, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         globalOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::AMBombPreImplosion>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::AMBombPreImplosion, GameShaderSet::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::AMBombPreImplosion>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::AMBombPreImplosion, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         globalOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::CrossOfLight>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::CrossOfLight, GameShaderSet::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::CrossOfLight>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::CrossOfLight, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         globalOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::AABBs>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::AABBs, GameShaderSet::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::AABBs>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::AABBs, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         globalOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::WorldBorder>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::WorldBorder, GameShaderSet::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::WorldBorder>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::WorldBorder, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         globalOrthoMatrix);
 
     //
@@ -1807,11 +1807,11 @@ void WorldRenderContext::ApplyCanvasSizeChanges(RenderParameters const & renderP
         static_cast<float>(view.GetCanvasPhysicalSize().width),
         static_cast<float>(view.GetCanvasPhysicalSize().height));
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::CrossOfLight>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::CrossOfLight, GameShaderSet::ProgramParameterKind::ViewportSize>(viewportSize);
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::CrossOfLight>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::CrossOfLight, GameShaderSets::ProgramParameterKind::ViewportSize>(viewportSize);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::Rain>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::Rain, GameShaderSet::ProgramParameterKind::ViewportSize>(viewportSize);
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::Rain>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::Rain, GameShaderSets::ProgramParameterKind::ViewportSize>(viewportSize);
 }
 
 void WorldRenderContext::ApplyEffectiveAmbientLightIntensityChanges(RenderParameters const & renderParameters)
@@ -1820,92 +1820,92 @@ void WorldRenderContext::ApplyEffectiveAmbientLightIntensityChanges(RenderParame
 
     // Set parameters in all programs
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::Sky>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::Sky, GameShaderSet::ProgramParameterKind::EffectiveAmbientLightIntensity>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::Sky>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::Sky, GameShaderSets::ProgramParameterKind::EffectiveAmbientLightIntensity>(
         renderParameters.EffectiveAmbientLightIntensity);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::Stars>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::Stars, GameShaderSet::ProgramParameterKind::StarTransparency>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::Stars>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::Stars, GameShaderSets::ProgramParameterKind::StarTransparency>(
         pow(std::max(0.0f, 1.0f - renderParameters.EffectiveAmbientLightIntensity), 3.0f));
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::CloudsBasic>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::CloudsBasic, GameShaderSet::ProgramParameterKind::EffectiveAmbientLightIntensity>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::CloudsBasic>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::CloudsBasic, GameShaderSets::ProgramParameterKind::EffectiveAmbientLightIntensity>(
         renderParameters.EffectiveAmbientLightIntensity);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::CloudsDetailed>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::CloudsDetailed, GameShaderSet::ProgramParameterKind::EffectiveAmbientLightIntensity>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::CloudsDetailed>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::CloudsDetailed, GameShaderSets::ProgramParameterKind::EffectiveAmbientLightIntensity>(
         renderParameters.EffectiveAmbientLightIntensity);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::Lightning>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::Lightning, GameShaderSet::ProgramParameterKind::EffectiveAmbientLightIntensity>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::Lightning>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::Lightning, GameShaderSets::ProgramParameterKind::EffectiveAmbientLightIntensity>(
         renderParameters.EffectiveAmbientLightIntensity);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::LandFlatBasic>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::LandFlatBasic, GameShaderSet::ProgramParameterKind::EffectiveAmbientLightIntensity>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::LandFlatBasic>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::LandFlatBasic, GameShaderSets::ProgramParameterKind::EffectiveAmbientLightIntensity>(
         renderParameters.EffectiveAmbientLightIntensity);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::LandFlatDetailed>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::LandFlatDetailed, GameShaderSet::ProgramParameterKind::EffectiveAmbientLightIntensity>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::LandFlatDetailed>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::LandFlatDetailed, GameShaderSets::ProgramParameterKind::EffectiveAmbientLightIntensity>(
         renderParameters.EffectiveAmbientLightIntensity);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::LandTextureBasic>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::LandTextureBasic, GameShaderSet::ProgramParameterKind::EffectiveAmbientLightIntensity>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::LandTextureBasic>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::LandTextureBasic, GameShaderSets::ProgramParameterKind::EffectiveAmbientLightIntensity>(
         renderParameters.EffectiveAmbientLightIntensity);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::LandTextureDetailed>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::LandTextureDetailed, GameShaderSet::ProgramParameterKind::EffectiveAmbientLightIntensity>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::LandTextureDetailed>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::LandTextureDetailed, GameShaderSets::ProgramParameterKind::EffectiveAmbientLightIntensity>(
         renderParameters.EffectiveAmbientLightIntensity);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanDepthBasic>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::OceanDepthBasic, GameShaderSet::ProgramParameterKind::EffectiveAmbientLightIntensity>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanDepthBasic>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanDepthBasic, GameShaderSets::ProgramParameterKind::EffectiveAmbientLightIntensity>(
         renderParameters.EffectiveAmbientLightIntensity);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanDepthDetailedBackground>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::OceanDepthDetailedBackground, GameShaderSet::ProgramParameterKind::EffectiveAmbientLightIntensity>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanDepthDetailedBackground>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanDepthDetailedBackground, GameShaderSets::ProgramParameterKind::EffectiveAmbientLightIntensity>(
         renderParameters.EffectiveAmbientLightIntensity);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanDepthDetailedForeground>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::OceanDepthDetailedForeground, GameShaderSet::ProgramParameterKind::EffectiveAmbientLightIntensity>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanDepthDetailedForeground>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanDepthDetailedForeground, GameShaderSets::ProgramParameterKind::EffectiveAmbientLightIntensity>(
         renderParameters.EffectiveAmbientLightIntensity);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanFlatBasic>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::OceanFlatBasic, GameShaderSet::ProgramParameterKind::EffectiveAmbientLightIntensity>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanFlatBasic>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanFlatBasic, GameShaderSets::ProgramParameterKind::EffectiveAmbientLightIntensity>(
         renderParameters.EffectiveAmbientLightIntensity);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanFlatDetailedBackground>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::OceanFlatDetailedBackground, GameShaderSet::ProgramParameterKind::EffectiveAmbientLightIntensity>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanFlatDetailedBackground>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanFlatDetailedBackground, GameShaderSets::ProgramParameterKind::EffectiveAmbientLightIntensity>(
         renderParameters.EffectiveAmbientLightIntensity);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanFlatDetailedForeground>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::OceanFlatDetailedForeground, GameShaderSet::ProgramParameterKind::EffectiveAmbientLightIntensity>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanFlatDetailedForeground>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanFlatDetailedForeground, GameShaderSets::ProgramParameterKind::EffectiveAmbientLightIntensity>(
         renderParameters.EffectiveAmbientLightIntensity);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanTextureBasic>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::OceanTextureBasic, GameShaderSet::ProgramParameterKind::EffectiveAmbientLightIntensity>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanTextureBasic>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanTextureBasic, GameShaderSets::ProgramParameterKind::EffectiveAmbientLightIntensity>(
         renderParameters.EffectiveAmbientLightIntensity);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanTextureDetailedBackground>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::OceanTextureDetailedBackground, GameShaderSet::ProgramParameterKind::EffectiveAmbientLightIntensity>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanTextureDetailedBackground>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanTextureDetailedBackground, GameShaderSets::ProgramParameterKind::EffectiveAmbientLightIntensity>(
         renderParameters.EffectiveAmbientLightIntensity);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanTextureDetailedForeground>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::OceanTextureDetailedForeground, GameShaderSet::ProgramParameterKind::EffectiveAmbientLightIntensity>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanTextureDetailedForeground>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanTextureDetailedForeground, GameShaderSets::ProgramParameterKind::EffectiveAmbientLightIntensity>(
         renderParameters.EffectiveAmbientLightIntensity);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::FishesBasic>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::FishesBasic, GameShaderSet::ProgramParameterKind::EffectiveAmbientLightIntensity>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::FishesBasic>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::FishesBasic, GameShaderSets::ProgramParameterKind::EffectiveAmbientLightIntensity>(
         renderParameters.EffectiveAmbientLightIntensity);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::FishesDetailed>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::FishesDetailed, GameShaderSet::ProgramParameterKind::EffectiveAmbientLightIntensity>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::FishesDetailed>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::FishesDetailed, GameShaderSets::ProgramParameterKind::EffectiveAmbientLightIntensity>(
         renderParameters.EffectiveAmbientLightIntensity);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::Rain>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::Rain, GameShaderSet::ProgramParameterKind::EffectiveAmbientLightIntensity>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::Rain>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::Rain, GameShaderSets::ProgramParameterKind::EffectiveAmbientLightIntensity>(
         renderParameters.EffectiveAmbientLightIntensity);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::WorldBorder>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::WorldBorder, GameShaderSet::ProgramParameterKind::EffectiveAmbientLightIntensity>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::WorldBorder>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::WorldBorder, GameShaderSets::ProgramParameterKind::EffectiveAmbientLightIntensity>(
         renderParameters.EffectiveAmbientLightIntensity);
 }
 
@@ -1918,80 +1918,80 @@ void WorldRenderContext::ApplySkyChanges(RenderParameters const & renderParamete
     vec3f const effectiveMoonlightColor = renderParameters.EffectiveMoonlightColor.toVec3f();
 
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::Sky>();
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::Sky>();
 
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::Sky, GameShaderSet::ProgramParameterKind::CrepuscularColor>(
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::Sky, GameShaderSets::ProgramParameterKind::CrepuscularColor>(
         renderParameters.CrepuscularColor.toVec3f());
 
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::Sky, GameShaderSet::ProgramParameterKind::FlatSkyColor>(
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::Sky, GameShaderSets::ProgramParameterKind::FlatSkyColor>(
         renderParameters.FlatSkyColor.toVec3f());
 
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::Sky, GameShaderSet::ProgramParameterKind::EffectiveMoonlightColor>(
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::Sky, GameShaderSets::ProgramParameterKind::EffectiveMoonlightColor>(
         effectiveMoonlightColor);
 
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::CloudsBasic>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::CloudsBasic, GameShaderSet::ProgramParameterKind::EffectiveMoonlightColor>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::CloudsBasic>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::CloudsBasic, GameShaderSets::ProgramParameterKind::EffectiveMoonlightColor>(
         effectiveMoonlightColor);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::CloudsDetailed>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::CloudsDetailed, GameShaderSet::ProgramParameterKind::EffectiveMoonlightColor>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::CloudsDetailed>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::CloudsDetailed, GameShaderSets::ProgramParameterKind::EffectiveMoonlightColor>(
         effectiveMoonlightColor);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanFlatBasic>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::OceanFlatBasic, GameShaderSet::ProgramParameterKind::EffectiveMoonlightColor>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanFlatBasic>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanFlatBasic, GameShaderSets::ProgramParameterKind::EffectiveMoonlightColor>(
         effectiveMoonlightColor);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanFlatDetailedBackground>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::OceanFlatDetailedBackground, GameShaderSet::ProgramParameterKind::EffectiveMoonlightColor>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanFlatDetailedBackground>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanFlatDetailedBackground, GameShaderSets::ProgramParameterKind::EffectiveMoonlightColor>(
         effectiveMoonlightColor);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanFlatDetailedForeground>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::OceanFlatDetailedForeground, GameShaderSet::ProgramParameterKind::EffectiveMoonlightColor>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanFlatDetailedForeground>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanFlatDetailedForeground, GameShaderSets::ProgramParameterKind::EffectiveMoonlightColor>(
         effectiveMoonlightColor);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanDepthBasic>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::OceanDepthBasic, GameShaderSet::ProgramParameterKind::EffectiveMoonlightColor>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanDepthBasic>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanDepthBasic, GameShaderSets::ProgramParameterKind::EffectiveMoonlightColor>(
         effectiveMoonlightColor);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanDepthDetailedBackground>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::OceanDepthDetailedBackground, GameShaderSet::ProgramParameterKind::EffectiveMoonlightColor>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanDepthDetailedBackground>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanDepthDetailedBackground, GameShaderSets::ProgramParameterKind::EffectiveMoonlightColor>(
         effectiveMoonlightColor);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanDepthDetailedForeground>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::OceanDepthDetailedForeground, GameShaderSet::ProgramParameterKind::EffectiveMoonlightColor>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanDepthDetailedForeground>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanDepthDetailedForeground, GameShaderSets::ProgramParameterKind::EffectiveMoonlightColor>(
         effectiveMoonlightColor);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanTextureBasic>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::OceanTextureBasic, GameShaderSet::ProgramParameterKind::EffectiveMoonlightColor>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanTextureBasic>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanTextureBasic, GameShaderSets::ProgramParameterKind::EffectiveMoonlightColor>(
         effectiveMoonlightColor);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanTextureDetailedBackground>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::OceanTextureDetailedBackground, GameShaderSet::ProgramParameterKind::EffectiveMoonlightColor>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanTextureDetailedBackground>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanTextureDetailedBackground, GameShaderSets::ProgramParameterKind::EffectiveMoonlightColor>(
         effectiveMoonlightColor);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanTextureDetailedForeground>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::OceanTextureDetailedForeground, GameShaderSet::ProgramParameterKind::EffectiveMoonlightColor>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanTextureDetailedForeground>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanTextureDetailedForeground, GameShaderSets::ProgramParameterKind::EffectiveMoonlightColor>(
         effectiveMoonlightColor);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::LandFlatBasic>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::LandFlatBasic, GameShaderSet::ProgramParameterKind::EffectiveMoonlightColor>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::LandFlatBasic>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::LandFlatBasic, GameShaderSets::ProgramParameterKind::EffectiveMoonlightColor>(
         effectiveMoonlightColor);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::LandFlatDetailed>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::LandFlatDetailed, GameShaderSet::ProgramParameterKind::EffectiveMoonlightColor>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::LandFlatDetailed>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::LandFlatDetailed, GameShaderSets::ProgramParameterKind::EffectiveMoonlightColor>(
         effectiveMoonlightColor);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::LandTextureBasic>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::LandTextureBasic, GameShaderSet::ProgramParameterKind::EffectiveMoonlightColor>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::LandTextureBasic>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::LandTextureBasic, GameShaderSets::ProgramParameterKind::EffectiveMoonlightColor>(
         effectiveMoonlightColor);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::LandTextureDetailed>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::LandTextureDetailed, GameShaderSet::ProgramParameterKind::EffectiveMoonlightColor>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::LandTextureDetailed>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::LandTextureDetailed, GameShaderSets::ProgramParameterKind::EffectiveMoonlightColor>(
         effectiveMoonlightColor);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::Rain>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::Rain, GameShaderSet::ProgramParameterKind::EffectiveMoonlightColor>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::Rain>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::Rain, GameShaderSets::ProgramParameterKind::EffectiveMoonlightColor>(
         effectiveMoonlightColor);
 }
 
@@ -2001,7 +2001,7 @@ void WorldRenderContext::ApplyOceanDepthDarkeningRateChanges(RenderParameters co
 
     float const rate = renderParameters.OceanDepthDarkeningRate / 50.0f;
 
-    mShaderManager.SetProgramParameterInAllShaders<GameShaderSet::ProgramParameterKind::OceanDepthDarkeningRate>(rate);
+    mShaderManager.SetProgramParameterInAllShaders<GameShaderSets::ProgramParameterKind::OceanDepthDarkeningRate>(rate);
 }
 
 void WorldRenderContext::ApplyOceanRenderParametersChanges(RenderParameters const & renderParameters)
@@ -2010,36 +2010,36 @@ void WorldRenderContext::ApplyOceanRenderParametersChanges(RenderParameters cons
 
     vec3f const depthColorStart = renderParameters.DepthOceanColorStart.toVec3f();
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanDepthBasic>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::OceanDepthBasic, GameShaderSet::ProgramParameterKind::OceanDepthColorStart>(depthColorStart);
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanDepthBasic>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanDepthBasic, GameShaderSets::ProgramParameterKind::OceanDepthColorStart>(depthColorStart);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanDepthDetailedBackground>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::OceanDepthDetailedBackground, GameShaderSet::ProgramParameterKind::OceanDepthColorStart>(depthColorStart);
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanDepthDetailedBackground>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanDepthDetailedBackground, GameShaderSets::ProgramParameterKind::OceanDepthColorStart>(depthColorStart);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanDepthDetailedForeground>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::OceanDepthDetailedForeground, GameShaderSet::ProgramParameterKind::OceanDepthColorStart>(depthColorStart);
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanDepthDetailedForeground>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanDepthDetailedForeground, GameShaderSets::ProgramParameterKind::OceanDepthColorStart>(depthColorStart);
 
     vec3f const depthColorEnd = renderParameters.DepthOceanColorEnd.toVec3f();
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanDepthBasic>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::OceanDepthBasic, GameShaderSet::ProgramParameterKind::OceanDepthColorEnd>(depthColorEnd);
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanDepthBasic>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanDepthBasic, GameShaderSets::ProgramParameterKind::OceanDepthColorEnd>(depthColorEnd);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanDepthDetailedBackground>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::OceanDepthDetailedBackground, GameShaderSet::ProgramParameterKind::OceanDepthColorEnd>(depthColorEnd);
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanDepthDetailedBackground>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanDepthDetailedBackground, GameShaderSets::ProgramParameterKind::OceanDepthColorEnd>(depthColorEnd);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanDepthDetailedForeground>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::OceanDepthDetailedForeground, GameShaderSet::ProgramParameterKind::OceanDepthColorEnd>(depthColorEnd);
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanDepthDetailedForeground>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanDepthDetailedForeground, GameShaderSets::ProgramParameterKind::OceanDepthColorEnd>(depthColorEnd);
 
     vec3f const flatColor = renderParameters.FlatOceanColor.toVec3f();
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanFlatBasic>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::OceanFlatBasic, GameShaderSet::ProgramParameterKind::OceanFlatColor>(flatColor);
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanFlatBasic>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanFlatBasic, GameShaderSets::ProgramParameterKind::OceanFlatColor>(flatColor);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanFlatDetailedBackground>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::OceanFlatDetailedBackground, GameShaderSet::ProgramParameterKind::OceanFlatColor>(flatColor);
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanFlatDetailedBackground>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanFlatDetailedBackground, GameShaderSets::ProgramParameterKind::OceanFlatColor>(flatColor);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanFlatDetailedForeground>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::OceanFlatDetailedForeground, GameShaderSet::ProgramParameterKind::OceanFlatColor>(flatColor);
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanFlatDetailedForeground>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanFlatDetailedForeground, GameShaderSets::ProgramParameterKind::OceanFlatColor>(flatColor);
 }
 
 void WorldRenderContext::ApplyOceanTextureIndexChanges(RenderParameters const & renderParameters)
@@ -2058,7 +2058,7 @@ void WorldRenderContext::ApplyOceanTextureIndexChanges(RenderParameters const & 
     auto oceanTextureFrame = mOceanTextureFrameSpecifications[clampedOceanTextureIndex].LoadFrame(mAssetManager);
 
     // Activate texture
-    mShaderManager.ActivateTexture<GameShaderSet::ProgramParameterKind::OceanTexture>();
+    mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::OceanTexture>();
 
     // Create texture
     GLuint tmpGLuint;
@@ -2086,18 +2086,18 @@ void WorldRenderContext::ApplyOceanTextureIndexChanges(RenderParameters const & 
 
     // Set texture and texture parameters in shaders
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanTextureBasic>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::OceanTextureBasic, GameShaderSet::ProgramParameterKind::TextureScaling>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanTextureBasic>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanTextureBasic, GameShaderSets::ProgramParameterKind::TextureScaling>(
         1.0f / oceanTextureFrame.Metadata.WorldWidth,
         1.0f / oceanTextureFrame.Metadata.WorldHeight);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanTextureDetailedBackground>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::OceanTextureDetailedBackground, GameShaderSet::ProgramParameterKind::TextureScaling>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanTextureDetailedBackground>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanTextureDetailedBackground, GameShaderSets::ProgramParameterKind::TextureScaling>(
         1.0f / oceanTextureFrame.Metadata.WorldWidth,
         1.0f / oceanTextureFrame.Metadata.WorldHeight);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::OceanTextureDetailedForeground>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::OceanTextureDetailedForeground, GameShaderSet::ProgramParameterKind::TextureScaling>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanTextureDetailedForeground>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanTextureDetailedForeground, GameShaderSets::ProgramParameterKind::TextureScaling>(
         1.0f / oceanTextureFrame.Metadata.WorldWidth,
         1.0f / oceanTextureFrame.Metadata.WorldHeight);
 }
@@ -2108,11 +2108,11 @@ void WorldRenderContext::ApplyLandRenderParametersChanges(RenderParameters const
 
     vec3f const flatColor = renderParameters.FlatLandColor.toVec3f();
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::LandFlatBasic>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::LandFlatBasic, GameShaderSet::ProgramParameterKind::LandFlatColor>(flatColor);
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::LandFlatBasic>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::LandFlatBasic, GameShaderSets::ProgramParameterKind::LandFlatColor>(flatColor);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::LandFlatDetailed>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::LandFlatDetailed, GameShaderSet::ProgramParameterKind::LandFlatColor>(flatColor);
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::LandFlatDetailed>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::LandFlatDetailed, GameShaderSets::ProgramParameterKind::LandFlatColor>(flatColor);
 }
 
 void WorldRenderContext::ApplyLandTextureIndexChanges(RenderParameters const & renderParameters)
@@ -2131,7 +2131,7 @@ void WorldRenderContext::ApplyLandTextureIndexChanges(RenderParameters const & r
     auto landTextureFrame = mLandTextureFrameSpecifications[clampedLandTextureIndex].LoadFrame(mAssetManager);
 
     // Activate texture
-    mShaderManager.ActivateTexture<GameShaderSet::ProgramParameterKind::LandTexture>();
+    mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::LandTexture>();
 
     // Create texture
     GLuint tmpGLuint;
@@ -2159,17 +2159,17 @@ void WorldRenderContext::ApplyLandTextureIndexChanges(RenderParameters const & r
 
     // Set texture and texture parameters in all texture shaders
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::LandTextureBasic>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::LandTextureBasic, GameShaderSet::ProgramParameterKind::TextureScaling>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::LandTextureBasic>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::LandTextureBasic, GameShaderSets::ProgramParameterKind::TextureScaling>(
         1.0f / landTextureFrame.Metadata.WorldWidth,
         1.0f / landTextureFrame.Metadata.WorldHeight);
-    mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::LandTextureBasic>();
+    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::LandTextureBasic>();
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::LandTextureDetailed>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::LandTextureDetailed, GameShaderSet::ProgramParameterKind::TextureScaling>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::LandTextureDetailed>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::LandTextureDetailed, GameShaderSets::ProgramParameterKind::TextureScaling>(
         1.0f / landTextureFrame.Metadata.WorldWidth,
         1.0f / landTextureFrame.Metadata.WorldHeight);
-    mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::LandTextureDetailed>();
+    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::LandTextureDetailed>();
 }
 
 template <typename TVertexBuffer>

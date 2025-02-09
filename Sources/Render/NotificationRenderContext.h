@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include "GameShaderSet.h"
+#include "GameShaderSets.h"
 #include "GameTextureDatabases.h"
 #include "GlobalRenderContext.h"
 #include "RenderParameters.h"
@@ -63,7 +63,7 @@ public:
 
 	NotificationRenderContext(
 		IAssetManager const & assetManager,
-		ShaderManager<GameShaderSet::ShaderSet> & shaderManager,
+		ShaderManager<GameShaderSets::ShaderSet> & shaderManager,
 		GlobalRenderContext & globalRenderContext);
 
 public:
@@ -821,7 +821,7 @@ private:
 
 private:
 
-    ShaderManager<GameShaderSet::ShaderSet> & mShaderManager;
+    ShaderManager<GameShaderSets::ShaderSet> & mShaderManager;
 	GlobalRenderContext & mGlobalRenderContext;
 
     float mScreenToNdcX;

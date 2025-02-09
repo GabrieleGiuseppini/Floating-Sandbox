@@ -20,7 +20,7 @@ ShipRenderContext::ShipRenderContext(
     size_t maxSpringsPerPoint,
     RgbaImageData exteriorViewImage,
     RgbaImageData interiorViewImage,
-    ShaderManager<GameShaderSet::ShaderSet> & shaderManager,
+    ShaderManager<GameShaderSets::ShaderSet> & shaderManager,
     GlobalRenderContext & globalRenderContext,
     RenderParameters const & renderParameters,
     float shipFlameSizeAdjustment,
@@ -139,10 +139,10 @@ ShipRenderContext::ShipRenderContext(
     , mCenterVAO()
     , mPointToPointArrowVAO()
     // Ship structure programs
-    , mShipPointsProgram(GameShaderSet::ProgramKind::ShipPointsColor) // Will be recalculated
-    , mShipRopesProgram(GameShaderSet::ProgramKind::ShipRopes) // Will be recalculated
-    , mShipSpringsProgram(GameShaderSet::ProgramKind::ShipSpringsColor) // Will be recalculated
-    , mShipTrianglesProgram(GameShaderSet::ProgramKind::ShipTrianglesColor) // Will be recalculated
+    , mShipPointsProgram(GameShaderSets::ProgramKind::ShipPointsColor) // Will be recalculated
+    , mShipRopesProgram(GameShaderSets::ProgramKind::ShipRopes) // Will be recalculated
+    , mShipSpringsProgram(GameShaderSets::ProgramKind::ShipSpringsColor) // Will be recalculated
+    , mShipTrianglesProgram(GameShaderSets::ProgramKind::ShipTrianglesColor) // Will be recalculated
     // Textures
     , mExteriorViewImage(std::move(exteriorViewImage))
     , mInteriorViewImage(std::move(interiorViewImage))
@@ -272,39 +272,39 @@ ShipRenderContext::ShipRenderContext(
         //
 
         glBindBuffer(GL_ARRAY_BUFFER, *mPointAttributeGroup1VBO);
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::ShipPointAttributeGroup1));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::ShipPointAttributeGroup1), 4, GL_FLOAT, GL_FALSE, sizeof(vec4f), (void*)(0));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::ShipPointAttributeGroup1));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::ShipPointAttributeGroup1), 4, GL_FLOAT, GL_FALSE, sizeof(vec4f), (void*)(0));
         CheckOpenGLError();
 
         glBindBuffer(GL_ARRAY_BUFFER, *mPointAttributeGroup2VBO);
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::ShipPointAttributeGroup2));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::ShipPointAttributeGroup2), 4, GL_FLOAT, GL_FALSE, sizeof(vec4f), (void*)(0));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::ShipPointAttributeGroup2));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::ShipPointAttributeGroup2), 4, GL_FLOAT, GL_FALSE, sizeof(vec4f), (void*)(0));
         CheckOpenGLError();
 
         glBindBuffer(GL_ARRAY_BUFFER, *mPointColorVBO);
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::ShipPointColor));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::ShipPointColor), 4, GL_FLOAT, GL_FALSE, sizeof(vec4f), (void*)(0));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::ShipPointColor));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::ShipPointColor), 4, GL_FLOAT, GL_FALSE, sizeof(vec4f), (void*)(0));
         CheckOpenGLError();
 
         glBindBuffer(GL_ARRAY_BUFFER, *mPointTemperatureVBO);
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::ShipPointTemperature));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::ShipPointTemperature), 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)(0));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::ShipPointTemperature));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::ShipPointTemperature), 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)(0));
         CheckOpenGLError();
 
         glBindBuffer(GL_ARRAY_BUFFER, *mPointStressVBO);
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::ShipPointStress));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::ShipPointStress), 1, GL_FLOAT, GL_FALSE, sizeof(float), (void *)(0));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::ShipPointStress));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::ShipPointStress), 1, GL_FLOAT, GL_FALSE, sizeof(float), (void *)(0));
         CheckOpenGLError();
 
         glBindBuffer(GL_ARRAY_BUFFER, *mPointAuxiliaryDataVBO);
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::ShipPointAuxiliaryData));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::ShipPointAuxiliaryData), 1, GL_FLOAT, GL_FALSE, sizeof(float), (void *)(0));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::ShipPointAuxiliaryData));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::ShipPointAuxiliaryData), 1, GL_FLOAT, GL_FALSE, sizeof(float), (void *)(0));
         CheckOpenGLError();
 
         glBindBuffer(GL_ARRAY_BUFFER, *mPointFrontierColorVBO);
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::ShipPointFrontierColor));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::ShipPointFrontierColor));
         static_assert(sizeof(ColorWithProgress) == 4 * sizeof(float));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::ShipPointFrontierColor), 4, GL_FLOAT, GL_FALSE, sizeof(ColorWithProgress), (void *)(0));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::ShipPointFrontierColor), 4, GL_FLOAT, GL_FALSE, sizeof(ColorWithProgress), (void *)(0));
         CheckOpenGLError();
 
         //
@@ -331,16 +331,16 @@ ShipRenderContext::ShipRenderContext(
         {
             glBindBuffer(GL_ARRAY_BUFFER, *mNpcPositionVBO);
             static_assert(sizeof(Quad::V.TopLeft) == (2) * sizeof(float));
-            glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::NpcAttributeGroup1));
-            glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::NpcAttributeGroup1), 2, GL_FLOAT, GL_FALSE, sizeof(Quad::V.TopLeft), (void *)(0));
+            glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::NpcAttributeGroup1));
+            glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::NpcAttributeGroup1), 2, GL_FLOAT, GL_FALSE, sizeof(Quad::V.TopLeft), (void *)(0));
             CheckOpenGLError();
 
             glBindBuffer(GL_ARRAY_BUFFER, *mNpcAttributesVertexVBO);
             static_assert(sizeof(NpcAttributesVertex) == (4 + 2 + 1) * sizeof(float));
-            glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::NpcAttributeGroup2));
-            glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::NpcAttributeGroup2), 4, GL_FLOAT, GL_FALSE, sizeof(NpcAttributesVertex), (void *)(0));
-            glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::NpcAttributeGroup3));
-            glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::NpcAttributeGroup3), 3, GL_FLOAT, GL_FALSE, sizeof(NpcAttributesVertex), (void *)(4 * sizeof(float)));
+            glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::NpcAttributeGroup2));
+            glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::NpcAttributeGroup2), 4, GL_FLOAT, GL_FALSE, sizeof(NpcAttributesVertex), (void *)(0));
+            glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::NpcAttributeGroup3));
+            glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::NpcAttributeGroup3), 3, GL_FLOAT, GL_FALSE, sizeof(NpcAttributesVertex), (void *)(4 * sizeof(float)));
             CheckOpenGLError();
 
             //
@@ -370,8 +370,8 @@ ShipRenderContext::ShipRenderContext(
 
         glBindBuffer(GL_ARRAY_BUFFER, *mNpcQuadRoleVertexVBO);
         static_assert(sizeof(NpcQuadRoleVertex) == (3) * sizeof(float));
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::NpcAttributeGroup4));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::NpcAttributeGroup4), 3, GL_FLOAT, GL_FALSE, sizeof(NpcQuadRoleVertex), (void *)(0));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::NpcAttributeGroup4));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::NpcAttributeGroup4), 3, GL_FLOAT, GL_FALSE, sizeof(NpcQuadRoleVertex), (void *)(0));
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -391,8 +391,8 @@ ShipRenderContext::ShipRenderContext(
         // Describe vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, *mElectricSparkVBO);
         static_assert(sizeof(ElectricSparkVertex) == (2 + 1 + 1) * sizeof(float));
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::ElectricSpark1));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::ElectricSpark1), 4, GL_FLOAT, GL_FALSE, sizeof(ElectricSparkVertex), (void *)(0));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::ElectricSpark1));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::ElectricSpark1), 4, GL_FLOAT, GL_FALSE, sizeof(ElectricSparkVertex), (void *)(0));
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -412,10 +412,10 @@ ShipRenderContext::ShipRenderContext(
         // Describe vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, *mFlameVBO);
         static_assert(sizeof(FlameVertex) == (4 + 3) * sizeof(float));
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Flame1));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Flame1), 4, GL_FLOAT, GL_FALSE, sizeof(FlameVertex), (void*)0);
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Flame2));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Flame2), 3, GL_FLOAT, GL_FALSE, sizeof(FlameVertex), (void*)((4) * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Flame1));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Flame1), 4, GL_FLOAT, GL_FALSE, sizeof(FlameVertex), (void*)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Flame2));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Flame2), 3, GL_FLOAT, GL_FALSE, sizeof(FlameVertex), (void*)((4) * sizeof(float)));
         CheckOpenGLError();
 
         // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
@@ -426,10 +426,10 @@ ShipRenderContext::ShipRenderContext(
     }
 
     // Set texture parameters
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipFlamesBackground>();
-    mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::ShipFlamesBackground>();
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipFlamesForeground>();
-    mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::ShipFlamesForeground>();
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipFlamesBackground>();
+    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipFlamesBackground>();
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipFlamesForeground>();
+    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipFlamesForeground>();
 
 
     //
@@ -445,18 +445,18 @@ ShipRenderContext::ShipRenderContext(
         // Describe vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, *mJetEngineFlameVBO);
         static_assert(sizeof(JetEngineFlameVertex) == (4 + 2) * sizeof(float));
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::JetEngineFlame1));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::JetEngineFlame1), 4, GL_FLOAT, GL_FALSE, sizeof(JetEngineFlameVertex), (void *)0);
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::JetEngineFlame2));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::JetEngineFlame2), 2, GL_FLOAT, GL_FALSE, sizeof(JetEngineFlameVertex), (void *)((4) * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::JetEngineFlame1));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::JetEngineFlame1), 4, GL_FLOAT, GL_FALSE, sizeof(JetEngineFlameVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::JetEngineFlame2));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::JetEngineFlame2), 2, GL_FLOAT, GL_FALSE, sizeof(JetEngineFlameVertex), (void *)((4) * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
     }
 
     // Set texture parameters
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipJetEngineFlames>();
-    mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::ShipJetEngineFlames>();
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipJetEngineFlames>();
+    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipJetEngineFlames>();
 
 
     //
@@ -472,12 +472,12 @@ ShipRenderContext::ShipRenderContext(
         // Describe vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, *mExplosionVBO);
         static_assert(sizeof(ExplosionVertex) == (4 + 4 + 3) * sizeof(float));
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Explosion1));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Explosion1), 4, GL_FLOAT, GL_FALSE, sizeof(ExplosionVertex), (void*)0);
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Explosion2));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Explosion2), 4, GL_FLOAT, GL_FALSE, sizeof(ExplosionVertex), (void*)((4) * sizeof(float)));
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Explosion3));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Explosion3), 3, GL_FLOAT, GL_FALSE, sizeof(ExplosionVertex), (void*)((4 + 4) * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Explosion1));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Explosion1), 4, GL_FLOAT, GL_FALSE, sizeof(ExplosionVertex), (void*)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Explosion2));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Explosion2), 4, GL_FLOAT, GL_FALSE, sizeof(ExplosionVertex), (void*)((4) * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Explosion3));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Explosion3), 3, GL_FLOAT, GL_FALSE, sizeof(ExplosionVertex), (void*)((4 + 4) * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -497,10 +497,10 @@ ShipRenderContext::ShipRenderContext(
         // Describe vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, *mSparkleVBO);
         static_assert(sizeof(SparkleVertex) == (4 + 2) * sizeof(float));
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Sparkle1));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Sparkle1), 4, GL_FLOAT, GL_FALSE, sizeof(SparkleVertex), (void *)0);
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Sparkle2));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Sparkle2), 2, GL_FLOAT, GL_FALSE, sizeof(SparkleVertex), (void *)((4) * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Sparkle1));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Sparkle1), 4, GL_FLOAT, GL_FALSE, sizeof(SparkleVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Sparkle2));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Sparkle2), 2, GL_FLOAT, GL_FALSE, sizeof(SparkleVertex), (void *)((4) * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -520,12 +520,12 @@ ShipRenderContext::ShipRenderContext(
         // Describe vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, *mGenericMipMappedTextureVBO);
         static_assert(sizeof(GenericTextureVertex) == (4 + 4 + 3) * sizeof(float));
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::ShipGenericMipMappedTexture1));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::ShipGenericMipMappedTexture1), 4, GL_FLOAT, GL_FALSE, sizeof(GenericTextureVertex), (void*)0);
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::ShipGenericMipMappedTexture2));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::ShipGenericMipMappedTexture2), 4, GL_FLOAT, GL_FALSE, sizeof(GenericTextureVertex), (void*)((4) * sizeof(float)));
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::ShipGenericMipMappedTexture3));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::ShipGenericMipMappedTexture3), 3, GL_FLOAT, GL_FALSE, sizeof(GenericTextureVertex), (void*)((4 + 4) * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::ShipGenericMipMappedTexture1));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::ShipGenericMipMappedTexture1), 4, GL_FLOAT, GL_FALSE, sizeof(GenericTextureVertex), (void*)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::ShipGenericMipMappedTexture2));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::ShipGenericMipMappedTexture2), 4, GL_FLOAT, GL_FALSE, sizeof(GenericTextureVertex), (void*)((4) * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::ShipGenericMipMappedTexture3));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::ShipGenericMipMappedTexture3), 3, GL_FLOAT, GL_FALSE, sizeof(GenericTextureVertex), (void*)((4 + 4) * sizeof(float)));
         CheckOpenGLError();
 
         //
@@ -559,12 +559,12 @@ ShipRenderContext::ShipRenderContext(
         // Describe vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, *mHighlightVBO);
         static_assert(sizeof(HighlightVertex) == (2 + 2 + 3 + 1 + 1) * sizeof(float));
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Highlight1));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Highlight1), 4, GL_FLOAT, GL_FALSE, sizeof(HighlightVertex), (void *)((0) * sizeof(float)));
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Highlight2));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Highlight2), 4, GL_FLOAT, GL_FALSE, sizeof(HighlightVertex), (void *)((4) * sizeof(float)));
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Highlight3));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Highlight3), 1, GL_FLOAT, GL_FALSE, sizeof(HighlightVertex), (void *)((4 + 4) * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Highlight1));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Highlight1), 4, GL_FLOAT, GL_FALSE, sizeof(HighlightVertex), (void *)((0) * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Highlight2));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Highlight2), 4, GL_FLOAT, GL_FALSE, sizeof(HighlightVertex), (void *)((4) * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Highlight3));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Highlight3), 1, GL_FLOAT, GL_FALSE, sizeof(HighlightVertex), (void *)((4 + 4) * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -584,8 +584,8 @@ ShipRenderContext::ShipRenderContext(
 
         // Describe vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, *mVectorArrowVBO);
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::VectorArrow));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::VectorArrow), 3, GL_FLOAT, GL_FALSE, sizeof(vec3f), (void*)(0));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::VectorArrow));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::VectorArrow), 3, GL_FLOAT, GL_FALSE, sizeof(vec3f), (void*)(0));
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -606,10 +606,10 @@ ShipRenderContext::ShipRenderContext(
         // Describe vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, *mCenterVBO);
         static_assert(sizeof(CenterVertex) == (2 + 2 + 1) * sizeof(float));
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Center1));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Center1), 4, GL_FLOAT, GL_FALSE, sizeof(CenterVertex), (void *)(0));
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Center2));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Center2), 1, GL_FLOAT, GL_FALSE, sizeof(CenterVertex), (void *)((2 + 2) * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Center1));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Center1), 4, GL_FLOAT, GL_FALSE, sizeof(CenterVertex), (void *)(0));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Center2));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Center2), 1, GL_FLOAT, GL_FALSE, sizeof(CenterVertex), (void *)((2 + 2) * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -630,10 +630,10 @@ ShipRenderContext::ShipRenderContext(
         // Describe vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, *mPointToPointArrowVBO);
         static_assert(sizeof(PointToPointArrowVertex) == (2 + 1 + 3) * sizeof(float));
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::PointToPointArrow1));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::PointToPointArrow1), 3, GL_FLOAT, GL_FALSE, sizeof(PointToPointArrowVertex), (void *)(0));
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::PointToPointArrow2));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::PointToPointArrow2), 3, GL_FLOAT, GL_FALSE, sizeof(PointToPointArrowVertex), (void *)((3) * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::PointToPointArrow1));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::PointToPointArrow1), 3, GL_FLOAT, GL_FALSE, sizeof(PointToPointArrowVertex), (void *)(0));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::PointToPointArrow2));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::PointToPointArrow2), 3, GL_FLOAT, GL_FALSE, sizeof(PointToPointArrowVertex), (void *)((3) * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -648,7 +648,7 @@ ShipRenderContext::ShipRenderContext(
         mStressedSpringTextureOpenGLHandle = tmpGLuint;
 
         // Bind texture
-        mShaderManager.ActivateTexture<GameShaderSet::ProgramParameterKind::SharedTexture>();
+        mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::SharedTexture>();
         glBindTexture(GL_TEXTURE_2D, *mStressedSpringTextureOpenGLHandle);
         CheckOpenGLError();
 
@@ -1430,8 +1430,8 @@ void ShipRenderContext::RenderPrepare(RenderParameters const & renderParameters)
         // Set progress
         //
 
-        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipFrontierEdges>();
-        mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipFrontierEdges, GameShaderSet::ProgramParameterKind::Time>(GameWallClock::GetInstance().ContinuousNowAsFloat());
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipFrontierEdges>();
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipFrontierEdges, GameShaderSets::ProgramParameterKind::Time>(GameWallClock::GetInstance().ContinuousNowAsFloat());
     }
 
     //
@@ -1499,7 +1499,7 @@ void ShipRenderContext::RenderDraw(
     // Set gross noise in the noise texture unit, as all our shaders require that one
     //
 
-    mShaderManager.ActivateTexture<GameShaderSet::ProgramParameterKind::NoiseTexture>();
+    mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::NoiseTexture>();
     glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(NoiseType::Gross));
 
     //
@@ -1508,7 +1508,7 @@ void ShipRenderContext::RenderDraw(
 
     if (renderParameters.DrawFlames)
     {
-        RenderDrawFlames<GameShaderSet::ProgramKind::ShipFlamesBackground>(
+        RenderDrawFlames<GameShaderSets::ProgramKind::ShipFlamesBackground>(
             0,
             mFlameBackgroundCount,
             renderStats);
@@ -1536,7 +1536,7 @@ void ShipRenderContext::RenderDraw(
 
         assert(!!mShipTextureOpenGLHandle);
 
-        mShaderManager.ActivateTexture<GameShaderSet::ProgramParameterKind::SharedTexture>();
+        mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::SharedTexture>();
         glBindTexture(GL_TEXTURE_2D, *mShipTextureOpenGLHandle);
 
         //
@@ -1559,15 +1559,15 @@ void ShipRenderContext::RenderDraw(
         {
             if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Decay)
             {
-                mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipTrianglesDecay>();
+                mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipTrianglesDecay>();
             }
             else if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::InternalPressure)
             {
-                mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipTrianglesInternalPressure>();
+                mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipTrianglesInternalPressure>();
             }
             else if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Strength)
             {
-                mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipTrianglesStrength>();
+                mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipTrianglesStrength>();
             }
             else
             {
@@ -1639,15 +1639,15 @@ void ShipRenderContext::RenderDraw(
         {
             if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Decay)
             {
-                mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipSpringsDecay>();
+                mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipSpringsDecay>();
             }
             else if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::InternalPressure)
             {
-                mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipSpringsInternalPressure>();
+                mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipSpringsInternalPressure>();
             }
             else if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Strength)
             {
-                mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipSpringsStrength>();
+                mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipSpringsStrength>();
             }
             else
             {
@@ -1671,13 +1671,13 @@ void ShipRenderContext::RenderDraw(
         if (renderParameters.ShowStressedSprings
             && !mStressedSpringElementBuffer.empty())
         {
-            mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipStressedSprings>();
+            mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipStressedSprings>();
 
             // Bind stressed spring element VBO
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mStressedSpringElementVBO);
 
             // Bind stressed spring texture
-            mShaderManager.ActivateTexture<GameShaderSet::ProgramParameterKind::SharedTexture>();
+            mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::SharedTexture>();
             glBindTexture(GL_TEXTURE_2D, *mStressedSpringTextureOpenGLHandle);
             CheckOpenGLError();
 
@@ -1699,7 +1699,7 @@ void ShipRenderContext::RenderDraw(
         if (renderParameters.ShowFrontiers
             && !mFrontierEdgeElementBuffer.empty())
         {
-            mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipFrontierEdges>();
+            mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipFrontierEdges>();
 
             glLineWidth(4.2f);
 
@@ -1772,7 +1772,7 @@ void ShipRenderContext::RenderDraw(
 
     if (renderParameters.DrawFlames)
     {
-        RenderDrawFlames<GameShaderSet::ProgramKind::ShipFlamesForeground>(
+        RenderDrawFlames<GameShaderSets::ProgramKind::ShipFlamesForeground>(
             mFlameBackgroundCount,
             mFlameForegroundCount,
             renderStats);
@@ -1908,21 +1908,21 @@ void ShipRenderContext::RenderDrawNpcs(RenderParameters const & renderParameters
             case NpcRenderModeType::Texture:
             {
                 glBindVertexArray(*mNpcTextureAndQuadFlatVAO);
-                mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipNpcsTexture>();
+                mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipNpcsTexture>();
                 break;
             }
 
             case NpcRenderModeType::QuadWithRoles:
             {
                 glBindVertexArray(*mNpcQuadWithRolesVAO);
-                mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipNpcsQuadWithRoles>();
+                mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipNpcsQuadWithRoles>();
                 break;
             }
 
             case NpcRenderModeType::QuadFlat:
             {
                 glBindVertexArray(*mNpcTextureAndQuadFlatVAO);
-                mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipNpcsQuadFlat>();
+                mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipNpcsQuadFlat>();
                 break;
             }
         }
@@ -1974,7 +1974,7 @@ void ShipRenderContext::RenderDrawElectricSparks(RenderParameters const & render
     {
         glBindVertexArray(*mElectricSparkVAO);
 
-        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipElectricSparks>();
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipElectricSparks>();
 
         if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Wireframe)
             glLineWidth(0.1f);
@@ -2022,15 +2022,15 @@ void ShipRenderContext::RenderPrepareFlames()
     {
         float const flameProgress = GameWallClock::GetInstance().NowAsFloat() * 0.345f;
 
-        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipFlamesBackground>();
-        mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipFlamesBackground, GameShaderSet::ProgramParameterKind::FlameProgress>(flameProgress);
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipFlamesBackground>();
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipFlamesBackground, GameShaderSets::ProgramParameterKind::FlameProgress>(flameProgress);
 
-        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipFlamesForeground>();
-        mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipFlamesForeground, GameShaderSet::ProgramParameterKind::FlameProgress>(flameProgress);
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipFlamesForeground>();
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipFlamesForeground, GameShaderSets::ProgramParameterKind::FlameProgress>(flameProgress);
     }
 }
 
-template<GameShaderSet::ProgramKind FlameShaderType>
+template<GameShaderSets::ProgramKind FlameShaderType>
 void ShipRenderContext::RenderDrawFlames(
     size_t startFlameIndex,
     size_t flameCount,
@@ -2092,8 +2092,8 @@ void ShipRenderContext::RenderPrepareJetEngineFlames()
 
         float const flameProgress = GameWallClock::GetInstance().NowAsFloat();
 
-        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipJetEngineFlames>();
-        mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipJetEngineFlames, GameShaderSet::ProgramParameterKind::FlameProgress>(flameProgress);
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipJetEngineFlames>();
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipJetEngineFlames, GameShaderSets::ProgramParameterKind::FlameProgress>(flameProgress);
     }
 }
 
@@ -2103,7 +2103,7 @@ void ShipRenderContext::RenderDrawJetEngineFlames()
     {
         glBindVertexArray(*mJetEngineFlameVAO);
 
-        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipJetEngineFlames>();
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipJetEngineFlames>();
 
         assert(0 == (mJetEngineFlameVertexBuffer.size() % 6));
         glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mJetEngineFlameVertexBuffer.size()));
@@ -2143,7 +2143,7 @@ void ShipRenderContext::RenderDrawSparkles(RenderParameters const & renderParame
     {
         glBindVertexArray(*mSparkleVAO);
 
-        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipSparkles>();
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipSparkles>();
 
         if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Wireframe)
             glLineWidth(0.1f);
@@ -2235,7 +2235,7 @@ void ShipRenderContext::RenderDrawGenericMipMappedTextures(
         // Intel bug: cannot associate with VAO
         mGlobalRenderContext.GetElementIndices().Bind();
 
-        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipGenericMipMappedTextures>();
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipGenericMipMappedTextures>();
 
         if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Wireframe)
             glLineWidth(0.1f);
@@ -2306,7 +2306,7 @@ void ShipRenderContext::RenderDrawExplosions(RenderParameters const & renderPara
     {
         glBindVertexArray(*mExplosionVAO);
 
-        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipExplosions>();
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipExplosions>();
 
         if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Wireframe)
             glLineWidth(0.1f);
@@ -2358,13 +2358,13 @@ void ShipRenderContext::RenderDrawHighlights(RenderParameters const & renderPara
             {
                 case HighlightModeType::Circle:
                 {
-                    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipCircleHighlights>();
+                    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipCircleHighlights>();
                     break;
                 }
 
                 case HighlightModeType::ElectricalElement:
                 {
-                    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipElectricalElementHighlights>();
+                    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipElectricalElementHighlights>();
                     break;
                 }
 
@@ -2396,9 +2396,9 @@ void ShipRenderContext::RenderPrepareVectorArrows(RenderParameters const & /*ren
 
         if (mIsVectorArrowColorDirty)
         {
-            mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipVectors>();
+            mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipVectors>();
 
-            mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipVectors, GameShaderSet::ProgramParameterKind::MatteColor>(mVectorArrowColor);
+            mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipVectors, GameShaderSets::ProgramParameterKind::MatteColor>(mVectorArrowColor);
 
             mIsVectorArrowColorDirty = false;
         }
@@ -2430,7 +2430,7 @@ void ShipRenderContext::RenderDrawVectorArrows(RenderParameters const & /*render
     {
         glBindVertexArray(*mVectorArrowVAO);
 
-        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipVectors>();
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipVectors>();
 
         glLineWidth(1.0f);
 
@@ -2476,7 +2476,7 @@ void ShipRenderContext::RenderDrawCenters(RenderParameters const & renderParamet
     {
         glBindVertexArray(*mCenterVAO);
 
-        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipCenters>();
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipCenters>();
 
         if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Wireframe)
             glLineWidth(0.1f);
@@ -2524,7 +2524,7 @@ void ShipRenderContext::RenderDrawPointToPointArrows(RenderParameters const & /*
     {
         glBindVertexArray(*mPointToPointArrowVAO);
 
-        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipPointToPointArrows>();
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipPointToPointArrows>();
 
         glLineWidth(0.5f);
 
@@ -2553,7 +2553,7 @@ void ShipRenderContext::ApplyShipViewModeChanges(RenderParameters const & render
     mShipTextureOpenGLHandle = tmpGLuint;
 
     // Bind texture
-    mShaderManager.ActivateTexture<GameShaderSet::ProgramParameterKind::SharedTexture>();
+    mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::SharedTexture>();
     glBindTexture(GL_TEXTURE_2D, *mShipTextureOpenGLHandle);
     CheckOpenGLError();
 
@@ -2586,30 +2586,30 @@ void ShipRenderContext::ApplyShipViewModeChanges(RenderParameters const & render
     }
 
     // Set texture parameter in shaders
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipSpringsTexture>();
-    mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::ShipSpringsTexture>();
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipSpringsTextureStress>();
-    mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::ShipSpringsTextureStress>();
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipSpringsTextureHeatOverlay>();
-    mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::ShipSpringsTextureHeatOverlay>();
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipSpringsTextureHeatOverlayStress>();
-    mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::ShipSpringsTextureHeatOverlayStress>();
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipSpringsTextureIncandescence>();
-    mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::ShipSpringsTextureIncandescence>();
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipSpringsTextureIncandescenceStress>();
-    mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::ShipSpringsTextureIncandescenceStress>();
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipTrianglesTexture>();
-    mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::ShipTrianglesTexture>();
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipTrianglesTextureStress>();
-    mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::ShipTrianglesTextureStress>();
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipTrianglesTextureHeatOverlay>();
-    mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::ShipTrianglesTextureHeatOverlay>();
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipTrianglesTextureHeatOverlayStress>();
-    mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::ShipTrianglesTextureHeatOverlayStress>();
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipTrianglesTextureIncandescence>();
-    mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::ShipTrianglesTextureIncandescence>();
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipTrianglesTextureIncandescenceStress>();
-    mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::ShipTrianglesTextureIncandescenceStress>();
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipSpringsTexture>();
+    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipSpringsTexture>();
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipSpringsTextureStress>();
+    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipSpringsTextureStress>();
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipSpringsTextureHeatOverlay>();
+    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipSpringsTextureHeatOverlay>();
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipSpringsTextureHeatOverlayStress>();
+    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipSpringsTextureHeatOverlayStress>();
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipSpringsTextureIncandescence>();
+    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipSpringsTextureIncandescence>();
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipSpringsTextureIncandescenceStress>();
+    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipSpringsTextureIncandescenceStress>();
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipTrianglesTexture>();
+    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipTrianglesTexture>();
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipTrianglesTextureStress>();
+    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipTrianglesTextureStress>();
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipTrianglesTextureHeatOverlay>();
+    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipTrianglesTextureHeatOverlay>();
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipTrianglesTextureHeatOverlayStress>();
+    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipTrianglesTextureHeatOverlayStress>();
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipTrianglesTextureIncandescence>();
+    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipTrianglesTextureIncandescence>();
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipTrianglesTextureIncandescenceStress>();
+    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::ShipTrianglesTextureIncandescenceStress>();
 
     // Unbind texture
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -2669,7 +2669,7 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
         shipOrthoMatrix);
 
     mShaderManager.ActivateProgram(mShipRopesProgram);
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         mShipRopesProgram,
         shipOrthoMatrix);
 
@@ -2687,8 +2687,8 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
         NLayers,
         shipOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipFlamesBackground>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipFlamesBackground, GameShaderSet::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipFlamesBackground>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipFlamesBackground, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         shipOrthoMatrix);
 
     //
@@ -2706,20 +2706,20 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
         shipOrthoMatrix);
 
     mShaderManager.ActivateProgram(mShipSpringsProgram);
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         mShipSpringsProgram,
         shipOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipSpringsDecay>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipSpringsDecay, GameShaderSet::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipSpringsDecay>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipSpringsDecay, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         shipOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipSpringsInternalPressure>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipSpringsInternalPressure, GameShaderSet::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipSpringsInternalPressure>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipSpringsInternalPressure, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         shipOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipSpringsStrength>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipSpringsStrength, GameShaderSet::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipSpringsStrength>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipSpringsStrength, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         shipOrthoMatrix);
 
     //
@@ -2737,20 +2737,20 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
         shipOrthoMatrix);
 
     mShaderManager.ActivateProgram(mShipTrianglesProgram);
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         mShipTrianglesProgram,
         shipOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipTrianglesDecay>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipTrianglesDecay, GameShaderSet::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipTrianglesDecay>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipTrianglesDecay, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         shipOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipTrianglesInternalPressure>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipTrianglesInternalPressure, GameShaderSet::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipTrianglesInternalPressure>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipTrianglesInternalPressure, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         shipOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipTrianglesStrength>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipTrianglesStrength, GameShaderSet::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipTrianglesStrength>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipTrianglesStrength, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         shipOrthoMatrix);
 
     //
@@ -2767,12 +2767,12 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
         NLayers,
         shipOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipStressedSprings>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipStressedSprings, GameShaderSet::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipStressedSprings>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipStressedSprings, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         shipOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipFrontierEdges>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipFrontierEdges, GameShaderSet::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipFrontierEdges>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipFrontierEdges, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         shipOrthoMatrix);
 
     //
@@ -2790,7 +2790,7 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
         shipOrthoMatrix);
 
     mShaderManager.ActivateProgram(mShipPointsProgram);
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         mShipPointsProgram,
         shipOrthoMatrix);
 
@@ -2808,12 +2808,12 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
         NLayers,
         shipOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipElectricSparks>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipElectricSparks, GameShaderSet::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipElectricSparks>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipElectricSparks, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         shipOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipSparkles>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipSparkles, GameShaderSet::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipSparkles>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipSparkles, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         shipOrthoMatrix);
 
     //
@@ -2830,8 +2830,8 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
         NLayers,
         shipOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipGenericMipMappedTextures>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipGenericMipMappedTextures, GameShaderSet::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipGenericMipMappedTextures>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipGenericMipMappedTextures, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         shipOrthoMatrix);
 
     //
@@ -2848,12 +2848,12 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
         NLayers,
         shipOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipFlamesForeground>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipFlamesForeground, GameShaderSet::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipFlamesForeground>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipFlamesForeground, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         shipOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipJetEngineFlames>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipJetEngineFlames, GameShaderSet::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipJetEngineFlames>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipJetEngineFlames, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         shipOrthoMatrix);
 
     //
@@ -2870,16 +2870,16 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
         NLayers,
         shipOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipNpcsTexture>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipNpcsTexture, GameShaderSet::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipNpcsTexture>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipNpcsTexture, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         shipOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipNpcsQuadWithRoles>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipNpcsQuadWithRoles, GameShaderSet::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipNpcsQuadWithRoles>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipNpcsQuadWithRoles, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         shipOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipNpcsQuadFlat>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipNpcsQuadFlat, GameShaderSet::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipNpcsQuadFlat>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipNpcsQuadFlat, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         shipOrthoMatrix);
 
     //
@@ -2896,8 +2896,8 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
         NLayers,
         shipOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipExplosions>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipExplosions, GameShaderSet::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipExplosions>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipExplosions, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         shipOrthoMatrix);
 
     //
@@ -2914,16 +2914,16 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
         NLayers,
         shipOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipElectricalElementHighlights>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipElectricalElementHighlights, GameShaderSet::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipElectricalElementHighlights>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipElectricalElementHighlights, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         shipOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipCircleHighlights>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipCircleHighlights, GameShaderSet::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipCircleHighlights>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipCircleHighlights, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         shipOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipCenters>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipCenters, GameShaderSet::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipCenters>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipCenters, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         shipOrthoMatrix);
 
     //
@@ -2940,12 +2940,12 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
         NLayers,
         shipOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipVectors>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipVectors, GameShaderSet::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipVectors>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipVectors, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         shipOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipPointToPointArrows>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipPointToPointArrows, GameShaderSet::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipPointToPointArrows>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipPointToPointArrows, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         shipOrthoMatrix);
 }
 
@@ -2962,70 +2962,70 @@ void ShipRenderContext::ApplyEffectiveAmbientLightIntensityChanges(RenderParamet
     if (renderParameters.HeatRenderMode != HeatRenderModeType::HeatOverlay)
     {
         mShaderManager.ActivateProgram(mShipPointsProgram);
-        mShaderManager.SetProgramParameter<GameShaderSet::ProgramParameterKind::EffectiveAmbientLightIntensity>(
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::EffectiveAmbientLightIntensity>(
             mShipPointsProgram,
             effectiveAmbientLightIntensityParamValue);
 
         mShaderManager.ActivateProgram(mShipRopesProgram);
-        mShaderManager.SetProgramParameter<GameShaderSet::ProgramParameterKind::EffectiveAmbientLightIntensity>(
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::EffectiveAmbientLightIntensity>(
             mShipRopesProgram,
             effectiveAmbientLightIntensityParamValue);
 
         mShaderManager.ActivateProgram(mShipSpringsProgram);
-        mShaderManager.SetProgramParameter<GameShaderSet::ProgramParameterKind::EffectiveAmbientLightIntensity>(
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::EffectiveAmbientLightIntensity>(
             mShipSpringsProgram,
             effectiveAmbientLightIntensityParamValue);
 
         mShaderManager.ActivateProgram(mShipTrianglesProgram);
-        mShaderManager.SetProgramParameter<GameShaderSet::ProgramParameterKind::EffectiveAmbientLightIntensity>(
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::EffectiveAmbientLightIntensity>(
             mShipTrianglesProgram,
             effectiveAmbientLightIntensityParamValue);
     }
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipSpringsDecay>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipSpringsDecay, GameShaderSet::ProgramParameterKind::EffectiveAmbientLightIntensity>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipSpringsDecay>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipSpringsDecay, GameShaderSets::ProgramParameterKind::EffectiveAmbientLightIntensity>(
         effectiveAmbientLightIntensityParamValue);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipSpringsInternalPressure>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipSpringsInternalPressure, GameShaderSet::ProgramParameterKind::EffectiveAmbientLightIntensity>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipSpringsInternalPressure>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipSpringsInternalPressure, GameShaderSets::ProgramParameterKind::EffectiveAmbientLightIntensity>(
         effectiveAmbientLightIntensityParamValue);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipSpringsStrength>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipSpringsStrength, GameShaderSet::ProgramParameterKind::EffectiveAmbientLightIntensity>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipSpringsStrength>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipSpringsStrength, GameShaderSets::ProgramParameterKind::EffectiveAmbientLightIntensity>(
         effectiveAmbientLightIntensityParamValue);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipTrianglesDecay>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipTrianglesDecay, GameShaderSet::ProgramParameterKind::EffectiveAmbientLightIntensity>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipTrianglesDecay>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipTrianglesDecay, GameShaderSets::ProgramParameterKind::EffectiveAmbientLightIntensity>(
         effectiveAmbientLightIntensityParamValue);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipTrianglesInternalPressure>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipTrianglesInternalPressure, GameShaderSet::ProgramParameterKind::EffectiveAmbientLightIntensity>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipTrianglesInternalPressure>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipTrianglesInternalPressure, GameShaderSets::ProgramParameterKind::EffectiveAmbientLightIntensity>(
         effectiveAmbientLightIntensityParamValue);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipTrianglesStrength>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipTrianglesStrength, GameShaderSet::ProgramParameterKind::EffectiveAmbientLightIntensity>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipTrianglesStrength>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipTrianglesStrength, GameShaderSets::ProgramParameterKind::EffectiveAmbientLightIntensity>(
         effectiveAmbientLightIntensityParamValue);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipNpcsQuadFlat>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipNpcsQuadFlat, GameShaderSet::ProgramParameterKind::EffectiveAmbientLightIntensity>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipNpcsQuadFlat>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipNpcsQuadFlat, GameShaderSets::ProgramParameterKind::EffectiveAmbientLightIntensity>(
         effectiveAmbientLightIntensityParamValue);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipNpcsQuadWithRoles>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipNpcsQuadWithRoles, GameShaderSet::ProgramParameterKind::EffectiveAmbientLightIntensity>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipNpcsQuadWithRoles>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipNpcsQuadWithRoles, GameShaderSets::ProgramParameterKind::EffectiveAmbientLightIntensity>(
         effectiveAmbientLightIntensityParamValue);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipNpcsTexture>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipNpcsTexture, GameShaderSet::ProgramParameterKind::EffectiveAmbientLightIntensity>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipNpcsTexture>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipNpcsTexture, GameShaderSets::ProgramParameterKind::EffectiveAmbientLightIntensity>(
         effectiveAmbientLightIntensityParamValue);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipGenericMipMappedTextures>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipGenericMipMappedTextures, GameShaderSet::ProgramParameterKind::EffectiveAmbientLightIntensity>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipGenericMipMappedTextures>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipGenericMipMappedTextures, GameShaderSets::ProgramParameterKind::EffectiveAmbientLightIntensity>(
         effectiveAmbientLightIntensityParamValue);
 }
 
 void ShipRenderContext::ApplyDepthDarkeningSensitivityChanges(RenderParameters const & renderParameters)
 {
-    mShaderManager.SetProgramParameterInAllShaders<GameShaderSet::ProgramParameterKind::ShipDepthDarkeningSensitivity>(renderParameters.ShipDepthDarkeningSensitivity);
+    mShaderManager.SetProgramParameterInAllShaders<GameShaderSets::ProgramParameterKind::ShipDepthDarkeningSensitivity>(renderParameters.ShipDepthDarkeningSensitivity);
 }
 
 void ShipRenderContext::ApplySkyChanges(RenderParameters const & renderParameters)
@@ -3035,28 +3035,28 @@ void ShipRenderContext::ApplySkyChanges(RenderParameters const & renderParameter
     if (renderParameters.HeatRenderMode != HeatRenderModeType::HeatOverlay)
     {
         mShaderManager.ActivateProgram(mShipPointsProgram);
-        mShaderManager.SetProgramParameter<GameShaderSet::ProgramParameterKind::EffectiveMoonlightColor>(
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::EffectiveMoonlightColor>(
             mShipPointsProgram,
             effectiveMoonlightColor);
 
         mShaderManager.ActivateProgram(mShipRopesProgram);
-        mShaderManager.SetProgramParameter<GameShaderSet::ProgramParameterKind::EffectiveMoonlightColor>(
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::EffectiveMoonlightColor>(
             mShipRopesProgram,
             effectiveMoonlightColor);
 
         mShaderManager.ActivateProgram(mShipSpringsProgram);
-        mShaderManager.SetProgramParameter<GameShaderSet::ProgramParameterKind::EffectiveMoonlightColor>(
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::EffectiveMoonlightColor>(
             mShipSpringsProgram,
             effectiveMoonlightColor);
 
         mShaderManager.ActivateProgram(mShipTrianglesProgram);
-        mShaderManager.SetProgramParameter<GameShaderSet::ProgramParameterKind::EffectiveMoonlightColor>(
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::EffectiveMoonlightColor>(
             mShipTrianglesProgram,
             effectiveMoonlightColor);
     }
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipGenericMipMappedTextures>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipGenericMipMappedTextures, GameShaderSet::ProgramParameterKind::EffectiveMoonlightColor>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipGenericMipMappedTextures>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipGenericMipMappedTextures, GameShaderSets::ProgramParameterKind::EffectiveMoonlightColor>(
         effectiveMoonlightColor);
 }
 
@@ -3069,36 +3069,36 @@ void ShipRenderContext::ApplyFlatLampLightColorChanges(RenderParameters const & 
     vec3f const lampLightColor = renderParameters.FlatLampLightColor.toVec3f();
 
     mShaderManager.ActivateProgram(mShipPointsProgram);
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramParameterKind::LampLightColor>(
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::LampLightColor>(
         mShipPointsProgram,
         lampLightColor);
 
     mShaderManager.ActivateProgram(mShipRopesProgram);
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramParameterKind::LampLightColor>(
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::LampLightColor>(
         mShipRopesProgram,
         lampLightColor);
 
     mShaderManager.ActivateProgram(mShipSpringsProgram);
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramParameterKind::LampLightColor>(
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::LampLightColor>(
         mShipSpringsProgram,
         lampLightColor);
 
     mShaderManager.ActivateProgram(mShipTrianglesProgram);
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramParameterKind::LampLightColor>(
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::LampLightColor>(
         mShipTrianglesProgram,
         lampLightColor);
 
 
-    mShaderManager.ActivateProgram(GameShaderSet::ProgramKind::ShipNpcsQuadFlat);
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipNpcsQuadFlat, GameShaderSet::ProgramParameterKind::LampLightColor>(
+    mShaderManager.ActivateProgram(GameShaderSets::ProgramKind::ShipNpcsQuadFlat);
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipNpcsQuadFlat, GameShaderSets::ProgramParameterKind::LampLightColor>(
         lampLightColor);
 
-    mShaderManager.ActivateProgram(GameShaderSet::ProgramKind::ShipNpcsQuadWithRoles);
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipNpcsQuadWithRoles, GameShaderSet::ProgramParameterKind::LampLightColor>(
+    mShaderManager.ActivateProgram(GameShaderSets::ProgramKind::ShipNpcsQuadWithRoles);
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipNpcsQuadWithRoles, GameShaderSets::ProgramParameterKind::LampLightColor>(
         lampLightColor);
 
-    mShaderManager.ActivateProgram(GameShaderSet::ProgramKind::ShipNpcsTexture);
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipNpcsTexture, GameShaderSet::ProgramParameterKind::LampLightColor>(
+    mShaderManager.ActivateProgram(GameShaderSets::ProgramKind::ShipNpcsTexture);
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipNpcsTexture, GameShaderSets::ProgramParameterKind::LampLightColor>(
         lampLightColor);
 }
 
@@ -3108,12 +3108,12 @@ void ShipRenderContext::ApplyShipFlameRenderParameterChanges(RenderParameters co
     // Set parameters in all affected programs
     //
 
-    mShaderManager.ActivateProgram(GameShaderSet::ProgramKind::ShipFlamesBackground);
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipFlamesBackground, GameShaderSet::ProgramParameterKind::KaosAdjustment>(
+    mShaderManager.ActivateProgram(GameShaderSets::ProgramKind::ShipFlamesBackground);
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipFlamesBackground, GameShaderSets::ProgramParameterKind::KaosAdjustment>(
         renderParameters.ShipFlameKaosAdjustment);
 
-    mShaderManager.ActivateProgram(GameShaderSet::ProgramKind::ShipFlamesForeground);
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipFlamesForeground, GameShaderSet::ProgramParameterKind::KaosAdjustment>(
+    mShaderManager.ActivateProgram(GameShaderSets::ProgramKind::ShipFlamesForeground);
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipFlamesForeground, GameShaderSets::ProgramParameterKind::KaosAdjustment>(
         renderParameters.ShipFlameKaosAdjustment);
 }
 
@@ -3128,22 +3128,22 @@ void ShipRenderContext::ApplyWaterColorChanges(RenderParameters const & renderPa
     if (renderParameters.HeatRenderMode != HeatRenderModeType::HeatOverlay)
     {
         mShaderManager.ActivateProgram(mShipPointsProgram);
-        mShaderManager.SetProgramParameter<GameShaderSet::ProgramParameterKind::WaterColor>(
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::WaterColor>(
             mShipPointsProgram,
             waterColor);
 
         mShaderManager.ActivateProgram(mShipRopesProgram);
-        mShaderManager.SetProgramParameter<GameShaderSet::ProgramParameterKind::WaterColor>(
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::WaterColor>(
             mShipRopesProgram,
             waterColor);
 
         mShaderManager.ActivateProgram(mShipSpringsProgram);
-        mShaderManager.SetProgramParameter<GameShaderSet::ProgramParameterKind::WaterColor>(
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::WaterColor>(
             mShipSpringsProgram,
             waterColor);
 
         mShaderManager.ActivateProgram(mShipTrianglesProgram);
-        mShaderManager.SetProgramParameter<GameShaderSet::ProgramParameterKind::WaterColor>(
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::WaterColor>(
             mShipTrianglesProgram,
             waterColor);
     }
@@ -3158,22 +3158,22 @@ void ShipRenderContext::ApplyWaterContrastChanges(RenderParameters const & rende
     if (renderParameters.HeatRenderMode != HeatRenderModeType::HeatOverlay)
     {
         mShaderManager.ActivateProgram(mShipPointsProgram);
-        mShaderManager.SetProgramParameter<GameShaderSet::ProgramParameterKind::WaterContrast>(
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::WaterContrast>(
             mShipPointsProgram,
             renderParameters.ShipWaterContrast);
 
         mShaderManager.ActivateProgram(mShipRopesProgram);
-        mShaderManager.SetProgramParameter<GameShaderSet::ProgramParameterKind::WaterContrast>(
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::WaterContrast>(
             mShipRopesProgram,
             renderParameters.ShipWaterContrast);
 
         mShaderManager.ActivateProgram(mShipSpringsProgram);
-        mShaderManager.SetProgramParameter<GameShaderSet::ProgramParameterKind::WaterContrast>(
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::WaterContrast>(
             mShipSpringsProgram,
             renderParameters.ShipWaterContrast);
 
         mShaderManager.ActivateProgram(mShipTrianglesProgram);
-        mShaderManager.SetProgramParameter<GameShaderSet::ProgramParameterKind::WaterContrast>(
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::WaterContrast>(
             mShipTrianglesProgram,
             renderParameters.ShipWaterContrast);
     }
@@ -3191,22 +3191,22 @@ void ShipRenderContext::ApplyWaterLevelOfDetailChanges(RenderParameters const & 
     if (renderParameters.HeatRenderMode != HeatRenderModeType::HeatOverlay)
     {
         mShaderManager.ActivateProgram(mShipPointsProgram);
-        mShaderManager.SetProgramParameter<GameShaderSet::ProgramParameterKind::WaterLevelThreshold>(
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::WaterLevelThreshold>(
             mShipPointsProgram,
             waterLevelThreshold);
 
         mShaderManager.ActivateProgram(mShipRopesProgram);
-        mShaderManager.SetProgramParameter<GameShaderSet::ProgramParameterKind::WaterLevelThreshold>(
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::WaterLevelThreshold>(
             mShipRopesProgram,
             waterLevelThreshold);
 
         mShaderManager.ActivateProgram(mShipSpringsProgram);
-        mShaderManager.SetProgramParameter<GameShaderSet::ProgramParameterKind::WaterLevelThreshold>(
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::WaterLevelThreshold>(
             mShipSpringsProgram,
             waterLevelThreshold);
 
         mShaderManager.ActivateProgram(mShipTrianglesProgram);
-        mShaderManager.SetProgramParameter<GameShaderSet::ProgramParameterKind::WaterLevelThreshold>(
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::WaterLevelThreshold>(
             mShipTrianglesProgram,
             waterLevelThreshold);
     }
@@ -3225,22 +3225,22 @@ void ShipRenderContext::ApplyHeatSensitivityChanges(RenderParameters const & ren
     if (renderParameters.HeatRenderMode != HeatRenderModeType::None)
     {
         mShaderManager.ActivateProgram(mShipPointsProgram);
-        mShaderManager.SetProgramParameter<GameShaderSet::ProgramParameterKind::HeatShift>(
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::HeatShift>(
             mShipPointsProgram,
             heatShift);
 
         mShaderManager.ActivateProgram(mShipRopesProgram);
-        mShaderManager.SetProgramParameter<GameShaderSet::ProgramParameterKind::HeatShift>(
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::HeatShift>(
             mShipRopesProgram,
             heatShift);
 
         mShaderManager.ActivateProgram(mShipSpringsProgram);
-        mShaderManager.SetProgramParameter<GameShaderSet::ProgramParameterKind::HeatShift>(
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::HeatShift>(
             mShipSpringsProgram,
             heatShift);
 
         mShaderManager.ActivateProgram(mShipTrianglesProgram);
-        mShaderManager.SetProgramParameter<GameShaderSet::ProgramParameterKind::HeatShift>(
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::HeatShift>(
             mShipTrianglesProgram,
             heatShift);
     }
@@ -3315,31 +3315,31 @@ void ShipRenderContext::ApplyStressRenderModeChanges(RenderParameters const & re
         }
     }
 
-    static std::array<GameShaderSet::ProgramKind, 18> constexpr StressColorMapPrograms{
-        GameShaderSet::ProgramKind::ShipPointsColorStress,
-        GameShaderSet::ProgramKind::ShipPointsColorHeatOverlayStress,
-        GameShaderSet::ProgramKind::ShipPointsColorIncandescenceStress,
-        GameShaderSet::ProgramKind::ShipRopesStress,
-        GameShaderSet::ProgramKind::ShipRopesHeatOverlayStress,
-        GameShaderSet::ProgramKind::ShipRopesIncandescenceStress,
-        GameShaderSet::ProgramKind::ShipSpringsColorStress,
-        GameShaderSet::ProgramKind::ShipSpringsColorHeatOverlayStress,
-        GameShaderSet::ProgramKind::ShipSpringsColorIncandescenceStress,
-        GameShaderSet::ProgramKind::ShipSpringsTextureStress,
-        GameShaderSet::ProgramKind::ShipSpringsTextureHeatOverlayStress,
-        GameShaderSet::ProgramKind::ShipSpringsTextureIncandescenceStress,
-        GameShaderSet::ProgramKind::ShipTrianglesColorStress,
-        GameShaderSet::ProgramKind::ShipTrianglesColorHeatOverlayStress,
-        GameShaderSet::ProgramKind::ShipTrianglesColorIncandescenceStress,
-        GameShaderSet::ProgramKind::ShipTrianglesTextureStress,
-        GameShaderSet::ProgramKind::ShipTrianglesTextureHeatOverlayStress,
-        GameShaderSet::ProgramKind::ShipTrianglesTextureIncandescenceStress
+    static std::array<GameShaderSets::ProgramKind, 18> constexpr StressColorMapPrograms{
+        GameShaderSets::ProgramKind::ShipPointsColorStress,
+        GameShaderSets::ProgramKind::ShipPointsColorHeatOverlayStress,
+        GameShaderSets::ProgramKind::ShipPointsColorIncandescenceStress,
+        GameShaderSets::ProgramKind::ShipRopesStress,
+        GameShaderSets::ProgramKind::ShipRopesHeatOverlayStress,
+        GameShaderSets::ProgramKind::ShipRopesIncandescenceStress,
+        GameShaderSets::ProgramKind::ShipSpringsColorStress,
+        GameShaderSets::ProgramKind::ShipSpringsColorHeatOverlayStress,
+        GameShaderSets::ProgramKind::ShipSpringsColorIncandescenceStress,
+        GameShaderSets::ProgramKind::ShipSpringsTextureStress,
+        GameShaderSets::ProgramKind::ShipSpringsTextureHeatOverlayStress,
+        GameShaderSets::ProgramKind::ShipSpringsTextureIncandescenceStress,
+        GameShaderSets::ProgramKind::ShipTrianglesColorStress,
+        GameShaderSets::ProgramKind::ShipTrianglesColorHeatOverlayStress,
+        GameShaderSets::ProgramKind::ShipTrianglesColorIncandescenceStress,
+        GameShaderSets::ProgramKind::ShipTrianglesTextureStress,
+        GameShaderSets::ProgramKind::ShipTrianglesTextureHeatOverlayStress,
+        GameShaderSets::ProgramKind::ShipTrianglesTextureIncandescenceStress
     };
 
     for (auto program : StressColorMapPrograms)
     {
         mShaderManager.ActivateProgram(program);
-        mShaderManager.SetProgramParameterVec4fArray<GameShaderSet::ProgramParameterKind::StressColorMap>(
+        mShaderManager.SetProgramParameterVec4fArray<GameShaderSets::ProgramParameterKind::StressColorMap>(
             program,
             stressColorMap,
             12);
@@ -3349,8 +3349,8 @@ void ShipRenderContext::ApplyStressRenderModeChanges(RenderParameters const & re
 void ShipRenderContext::ApplyNpcRenderModeChanges(RenderParameters const & renderParameters)
 {
     // Set parameter in program
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::ShipNpcsQuadFlat>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::ShipNpcsQuadFlat, GameShaderSet::ProgramParameterKind::NpcQuadFlatColor>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipNpcsQuadFlat>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipNpcsQuadFlat, GameShaderSets::ProgramParameterKind::NpcQuadFlatColor>(
         renderParameters.NpcQuadFlatColor.toVec3f());
 }
 
@@ -3372,17 +3372,17 @@ void ShipRenderContext::SelectShipPrograms(RenderParameters const & renderParame
             {
                 if (!doStress)
                 {
-                    mShipPointsProgram = GameShaderSet::ProgramKind::ShipPointsColorHeatOverlay;
-                    mShipRopesProgram = GameShaderSet::ProgramKind::ShipRopesHeatOverlay;
-                    mShipSpringsProgram = GameShaderSet::ProgramKind::ShipSpringsTextureHeatOverlay;
-                    mShipTrianglesProgram = GameShaderSet::ProgramKind::ShipTrianglesTextureHeatOverlay;
+                    mShipPointsProgram = GameShaderSets::ProgramKind::ShipPointsColorHeatOverlay;
+                    mShipRopesProgram = GameShaderSets::ProgramKind::ShipRopesHeatOverlay;
+                    mShipSpringsProgram = GameShaderSets::ProgramKind::ShipSpringsTextureHeatOverlay;
+                    mShipTrianglesProgram = GameShaderSets::ProgramKind::ShipTrianglesTextureHeatOverlay;
                 }
                 else
                 {
-                    mShipPointsProgram = GameShaderSet::ProgramKind::ShipPointsColorHeatOverlayStress;
-                    mShipRopesProgram = GameShaderSet::ProgramKind::ShipRopesHeatOverlayStress;
-                    mShipSpringsProgram = GameShaderSet::ProgramKind::ShipSpringsTextureHeatOverlayStress;
-                    mShipTrianglesProgram = GameShaderSet::ProgramKind::ShipTrianglesTextureHeatOverlayStress;
+                    mShipPointsProgram = GameShaderSets::ProgramKind::ShipPointsColorHeatOverlayStress;
+                    mShipRopesProgram = GameShaderSets::ProgramKind::ShipRopesHeatOverlayStress;
+                    mShipSpringsProgram = GameShaderSets::ProgramKind::ShipSpringsTextureHeatOverlayStress;
+                    mShipTrianglesProgram = GameShaderSets::ProgramKind::ShipTrianglesTextureHeatOverlayStress;
                 }
 
                 break;
@@ -3392,17 +3392,17 @@ void ShipRenderContext::SelectShipPrograms(RenderParameters const & renderParame
             {
                 if (!doStress)
                 {
-                    mShipPointsProgram = GameShaderSet::ProgramKind::ShipPointsColorIncandescence;
-                    mShipRopesProgram = GameShaderSet::ProgramKind::ShipRopesIncandescence;
-                    mShipSpringsProgram = GameShaderSet::ProgramKind::ShipSpringsTextureIncandescence;
-                    mShipTrianglesProgram = GameShaderSet::ProgramKind::ShipTrianglesTextureIncandescence;
+                    mShipPointsProgram = GameShaderSets::ProgramKind::ShipPointsColorIncandescence;
+                    mShipRopesProgram = GameShaderSets::ProgramKind::ShipRopesIncandescence;
+                    mShipSpringsProgram = GameShaderSets::ProgramKind::ShipSpringsTextureIncandescence;
+                    mShipTrianglesProgram = GameShaderSets::ProgramKind::ShipTrianglesTextureIncandescence;
                 }
                 else
                 {
-                    mShipPointsProgram = GameShaderSet::ProgramKind::ShipPointsColorIncandescenceStress;
-                    mShipRopesProgram = GameShaderSet::ProgramKind::ShipRopesIncandescenceStress;
-                    mShipSpringsProgram = GameShaderSet::ProgramKind::ShipSpringsTextureIncandescenceStress;
-                    mShipTrianglesProgram = GameShaderSet::ProgramKind::ShipTrianglesTextureIncandescenceStress;
+                    mShipPointsProgram = GameShaderSets::ProgramKind::ShipPointsColorIncandescenceStress;
+                    mShipRopesProgram = GameShaderSets::ProgramKind::ShipRopesIncandescenceStress;
+                    mShipSpringsProgram = GameShaderSets::ProgramKind::ShipSpringsTextureIncandescenceStress;
+                    mShipTrianglesProgram = GameShaderSets::ProgramKind::ShipTrianglesTextureIncandescenceStress;
                 }
 
                 break;
@@ -3412,17 +3412,17 @@ void ShipRenderContext::SelectShipPrograms(RenderParameters const & renderParame
             {
                 if (!doStress)
                 {
-                    mShipPointsProgram = GameShaderSet::ProgramKind::ShipPointsColor;
-                    mShipRopesProgram = GameShaderSet::ProgramKind::ShipRopes;
-                    mShipSpringsProgram = GameShaderSet::ProgramKind::ShipSpringsTexture;
-                    mShipTrianglesProgram = GameShaderSet::ProgramKind::ShipTrianglesTexture;
+                    mShipPointsProgram = GameShaderSets::ProgramKind::ShipPointsColor;
+                    mShipRopesProgram = GameShaderSets::ProgramKind::ShipRopes;
+                    mShipSpringsProgram = GameShaderSets::ProgramKind::ShipSpringsTexture;
+                    mShipTrianglesProgram = GameShaderSets::ProgramKind::ShipTrianglesTexture;
                 }
                 else
                 {
-                    mShipPointsProgram = GameShaderSet::ProgramKind::ShipPointsColorStress;
-                    mShipRopesProgram = GameShaderSet::ProgramKind::ShipRopesStress;
-                    mShipSpringsProgram = GameShaderSet::ProgramKind::ShipSpringsTextureStress;
-                    mShipTrianglesProgram = GameShaderSet::ProgramKind::ShipTrianglesTextureStress;
+                    mShipPointsProgram = GameShaderSets::ProgramKind::ShipPointsColorStress;
+                    mShipRopesProgram = GameShaderSets::ProgramKind::ShipRopesStress;
+                    mShipSpringsProgram = GameShaderSets::ProgramKind::ShipSpringsTextureStress;
+                    mShipTrianglesProgram = GameShaderSets::ProgramKind::ShipTrianglesTextureStress;
                 }
 
                 break;
@@ -3438,17 +3438,17 @@ void ShipRenderContext::SelectShipPrograms(RenderParameters const & renderParame
             {
                 if (!doStress)
                 {
-                    mShipPointsProgram = GameShaderSet::ProgramKind::ShipPointsColorHeatOverlay;
-                    mShipRopesProgram = GameShaderSet::ProgramKind::ShipRopesHeatOverlay;
-                    mShipSpringsProgram = GameShaderSet::ProgramKind::ShipSpringsColorHeatOverlay;
-                    mShipTrianglesProgram = GameShaderSet::ProgramKind::ShipTrianglesColorHeatOverlay;
+                    mShipPointsProgram = GameShaderSets::ProgramKind::ShipPointsColorHeatOverlay;
+                    mShipRopesProgram = GameShaderSets::ProgramKind::ShipRopesHeatOverlay;
+                    mShipSpringsProgram = GameShaderSets::ProgramKind::ShipSpringsColorHeatOverlay;
+                    mShipTrianglesProgram = GameShaderSets::ProgramKind::ShipTrianglesColorHeatOverlay;
                 }
                 else
                 {
-                    mShipPointsProgram = GameShaderSet::ProgramKind::ShipPointsColorHeatOverlayStress;
-                    mShipRopesProgram = GameShaderSet::ProgramKind::ShipRopesHeatOverlayStress;
-                    mShipSpringsProgram = GameShaderSet::ProgramKind::ShipSpringsColorHeatOverlayStress;
-                    mShipTrianglesProgram = GameShaderSet::ProgramKind::ShipTrianglesColorHeatOverlayStress;
+                    mShipPointsProgram = GameShaderSets::ProgramKind::ShipPointsColorHeatOverlayStress;
+                    mShipRopesProgram = GameShaderSets::ProgramKind::ShipRopesHeatOverlayStress;
+                    mShipSpringsProgram = GameShaderSets::ProgramKind::ShipSpringsColorHeatOverlayStress;
+                    mShipTrianglesProgram = GameShaderSets::ProgramKind::ShipTrianglesColorHeatOverlayStress;
                 }
 
                 break;
@@ -3458,17 +3458,17 @@ void ShipRenderContext::SelectShipPrograms(RenderParameters const & renderParame
             {
                 if (!doStress)
                 {
-                    mShipPointsProgram = GameShaderSet::ProgramKind::ShipPointsColorIncandescence;
-                    mShipRopesProgram = GameShaderSet::ProgramKind::ShipRopesIncandescence;
-                    mShipSpringsProgram = GameShaderSet::ProgramKind::ShipSpringsColorIncandescence;
-                    mShipTrianglesProgram = GameShaderSet::ProgramKind::ShipTrianglesColorIncandescence;
+                    mShipPointsProgram = GameShaderSets::ProgramKind::ShipPointsColorIncandescence;
+                    mShipRopesProgram = GameShaderSets::ProgramKind::ShipRopesIncandescence;
+                    mShipSpringsProgram = GameShaderSets::ProgramKind::ShipSpringsColorIncandescence;
+                    mShipTrianglesProgram = GameShaderSets::ProgramKind::ShipTrianglesColorIncandescence;
                 }
                 else
                 {
-                    mShipPointsProgram = GameShaderSet::ProgramKind::ShipPointsColorIncandescenceStress;
-                    mShipRopesProgram = GameShaderSet::ProgramKind::ShipRopesIncandescenceStress;
-                    mShipSpringsProgram = GameShaderSet::ProgramKind::ShipSpringsColorIncandescenceStress;
-                    mShipTrianglesProgram = GameShaderSet::ProgramKind::ShipTrianglesColorIncandescenceStress;
+                    mShipPointsProgram = GameShaderSets::ProgramKind::ShipPointsColorIncandescenceStress;
+                    mShipRopesProgram = GameShaderSets::ProgramKind::ShipRopesIncandescenceStress;
+                    mShipSpringsProgram = GameShaderSets::ProgramKind::ShipSpringsColorIncandescenceStress;
+                    mShipTrianglesProgram = GameShaderSets::ProgramKind::ShipTrianglesColorIncandescenceStress;
                 }
 
                 break;
@@ -3478,17 +3478,17 @@ void ShipRenderContext::SelectShipPrograms(RenderParameters const & renderParame
             {
                 if (!doStress)
                 {
-                    mShipPointsProgram = GameShaderSet::ProgramKind::ShipPointsColor;
-                    mShipRopesProgram = GameShaderSet::ProgramKind::ShipRopes;
-                    mShipSpringsProgram = GameShaderSet::ProgramKind::ShipSpringsColor;
-                    mShipTrianglesProgram = GameShaderSet::ProgramKind::ShipTrianglesColor;
+                    mShipPointsProgram = GameShaderSets::ProgramKind::ShipPointsColor;
+                    mShipRopesProgram = GameShaderSets::ProgramKind::ShipRopes;
+                    mShipSpringsProgram = GameShaderSets::ProgramKind::ShipSpringsColor;
+                    mShipTrianglesProgram = GameShaderSets::ProgramKind::ShipTrianglesColor;
                 }
                 else
                 {
-                    mShipPointsProgram = GameShaderSet::ProgramKind::ShipPointsColorStress;
-                    mShipRopesProgram = GameShaderSet::ProgramKind::ShipRopesStress;
-                    mShipSpringsProgram = GameShaderSet::ProgramKind::ShipSpringsColorStress;
-                    mShipTrianglesProgram = GameShaderSet::ProgramKind::ShipTrianglesColorStress;
+                    mShipPointsProgram = GameShaderSets::ProgramKind::ShipPointsColorStress;
+                    mShipRopesProgram = GameShaderSets::ProgramKind::ShipRopesStress;
+                    mShipSpringsProgram = GameShaderSets::ProgramKind::ShipSpringsColorStress;
+                    mShipTrianglesProgram = GameShaderSets::ProgramKind::ShipTrianglesColorStress;
                 }
 
                 break;

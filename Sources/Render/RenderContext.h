@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include "GameShaderSet.h"
+#include "GameShaderSets.h"
 #include "GameTextureDatabases.h"
 #include "GlobalRenderContext.h"
 #include "NotificationRenderContext.h"
@@ -1283,7 +1283,7 @@ private:
     // Shader manager
     //
 
-    std::unique_ptr<ShaderManager<GameShaderSet::ShaderSet>> mShaderManager;
+    std::unique_ptr<ShaderManager<GameShaderSets::ShaderSet>> mShaderManager;
 
     //
     // Child contextes

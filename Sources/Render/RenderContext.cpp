@@ -114,7 +114,7 @@ RenderContext::RenderContext(
             LogMessage("RenderContext: DoInvokeGlFinish=", mDoInvokeGlFinish);
 
             // Initialize the shared texture unit once and for all
-            mShaderManager->ActivateTexture<GameShaderSet::ProgramParameterKind::SharedTexture>();
+            mShaderManager->ActivateTexture<GameShaderSets::ProgramParameterKind::SharedTexture>();
             glEnable(GL_TEXTURE_1D);
             glEnable(GL_TEXTURE_2D);
 
@@ -150,7 +150,7 @@ RenderContext::RenderContext(
 
             LogMessage("Initializing shaders...");
 
-            mShaderManager = ShaderManager<GameShaderSet::ShaderSet>::CreateInstance(assetManager);
+            mShaderManager = ShaderManager<GameShaderSets::ShaderSet>::CreateInstance(assetManager);
 
             LogMessage("...shaders initialized.");
         });
@@ -529,7 +529,7 @@ void RenderContext::Draw()
             {
                 if (lampToolToSet)
                 {
-                    mShaderManager->SetProgramParameterInAllShaders<GameShaderSet::ProgramParameterKind::LampToolAttributes>(*lampToolToSet);
+                    mShaderManager->SetProgramParameterInAllShaders<GameShaderSets::ProgramParameterKind::LampToolAttributes>(*lampToolToSet);
                 }
 
                 mGlobalRenderContext->RenderPrepareStart();

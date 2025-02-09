@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include "GameShaderSet.h"
+#include "GameShaderSets.h"
 #include "GameTextureDatabases.h"
 #include "GlobalRenderContext.h"
 #include "RenderParameters.h"
@@ -38,7 +38,7 @@ public:
 
     WorldRenderContext(
         IAssetManager const & assetManager,
-        ShaderManager<GameShaderSet::ShaderSet> & shaderManager,
+        ShaderManager<GameShaderSets::ShaderSet> & shaderManager,
         GlobalRenderContext & globalRenderContext);
 
     ~WorldRenderContext();
@@ -777,7 +777,7 @@ private:
 private:
 
     IAssetManager const & mAssetManager;
-    ShaderManager<GameShaderSet::ShaderSet> & mShaderManager;
+    ShaderManager<GameShaderSets::ShaderSet> & mShaderManager;
     GlobalRenderContext & mGlobalRenderContext;
 
 private:

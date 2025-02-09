@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #include "NotificationRenderContext.h"
 
-#include "GameFontSet.h"
+#include "GameFontSets.h"
 
 #include <Core/GameWallClock.h>
 
@@ -16,7 +16,7 @@ float constexpr MarginTopScreen = MarginScreen + 25.0f; // Consider menu bar
 
 NotificationRenderContext::NotificationRenderContext(
     IAssetManager const & assetManager,
-    ShaderManager<GameShaderSet::ShaderSet> & shaderManager,
+    ShaderManager<GameShaderSets::ShaderSet> & shaderManager,
     GlobalRenderContext & globalRenderContext)
     : mShaderManager(shaderManager)
     , mGlobalRenderContext(globalRenderContext)
@@ -63,7 +63,7 @@ NotificationRenderContext::NotificationRenderContext(
     // Load fonts
     //
 
-    auto fontSet = FontSet<GameFontSet::FontSet>::Load(
+    auto fontSet = FontSet<GameFontSets::FontSet>::Load(
         assetManager,
         [](float, ProgressMessageType) {});
 
@@ -74,7 +74,7 @@ NotificationRenderContext::NotificationRenderContext(
 
     // Upload font atlas
 
-    mShaderManager.ActivateTexture<GameShaderSet::ProgramParameterKind::SharedTexture>();
+    mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::SharedTexture>();
 
     glGenTextures(1, &tmpGLuint);
     mFontAtlasTextureHandle = tmpGLuint;
@@ -105,8 +105,8 @@ NotificationRenderContext::NotificationRenderContext(
     {
 
         // Set texture parameters
-        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::Text>();
-        mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::Text>();
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::Text>();
+        mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::Text>();
 
         // Initialize VBO
         glGenBuffers(1, &tmpGLuint);
@@ -122,10 +122,10 @@ NotificationRenderContext::NotificationRenderContext(
         // Describe vertex attributes
         static_assert(sizeof(TextQuadVertex) == (4 + 1) * sizeof(float));
         glBindBuffer(GL_ARRAY_BUFFER, *mTextVBO);
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Text1));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Text1), 4, GL_FLOAT, GL_FALSE, (4 + 1) * sizeof(float), (void*)0);
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Text2));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::Text2), 1, GL_FLOAT, GL_FALSE, (4 + 1) * sizeof(float), (void*)(4 * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Text1));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Text1), 4, GL_FLOAT, GL_FALSE, (4 + 1) * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Text2));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::Text2), 1, GL_FLOAT, GL_FALSE, (4 + 1) * sizeof(float), (void*)(4 * sizeof(float)));
         CheckOpenGLError();
 
         //
@@ -143,15 +143,15 @@ NotificationRenderContext::NotificationRenderContext(
     {
         // Status text
         mTextNotificationTypeContexts[static_cast<size_t>(TextNotificationType::StatusText)] =
-            TextNotificationTypeContext(&(mFontSetMetadata[static_cast<size_t>(GameFontSet::FontKind::Font0)]));
+            TextNotificationTypeContext(&(mFontSetMetadata[static_cast<size_t>(GameFontSets::FontKind::Font0)]));
 
         // Notification text
         mTextNotificationTypeContexts[static_cast<size_t>(TextNotificationType::NotificationText)] =
-            TextNotificationTypeContext(&(mFontSetMetadata[static_cast<size_t>(GameFontSet::FontKind::Font1)]));
+            TextNotificationTypeContext(&(mFontSetMetadata[static_cast<size_t>(GameFontSets::FontKind::Font1)]));
 
         // Physics probe reading
         mTextNotificationTypeContexts[static_cast<size_t>(TextNotificationType::PhysicsProbeReading)] =
-            TextNotificationTypeContext(&(mFontSetMetadata[static_cast<size_t>(GameFontSet::FontKind::SevenSegments)]));
+            TextNotificationTypeContext(&(mFontSetMetadata[static_cast<size_t>(GameFontSets::FontKind::SevenSegments)]));
     }
 
     //
@@ -160,8 +160,8 @@ NotificationRenderContext::NotificationRenderContext(
 
     {
         // Set texture parameters
-        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::TextureNotifications>();
-        mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::TextureNotifications>();
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::TextureNotifications>();
+        mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::TextureNotifications>();
 
         // Initialize VAO
         glGenVertexArrays(1, &tmpGLuint);
@@ -175,10 +175,10 @@ NotificationRenderContext::NotificationRenderContext(
         static_assert(sizeof(TextureNotificationVertex) == (4 + 1) * sizeof(float));
         glBindVertexArray(*mTextureNotificationVAO);
         glBindBuffer(GL_ARRAY_BUFFER, *mTextureNotificationVBO);
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::TextureNotification1));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::TextureNotification1), 4, GL_FLOAT, GL_FALSE, (4 + 1) * sizeof(float), (void *)0);
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::TextureNotification2));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::TextureNotification2), 1, GL_FLOAT, GL_FALSE, (4 + 1) * sizeof(float), (void *)(4 * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::TextureNotification1));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::TextureNotification1), 4, GL_FLOAT, GL_FALSE, (4 + 1) * sizeof(float), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::TextureNotification2));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::TextureNotification2), 1, GL_FLOAT, GL_FALSE, (4 + 1) * sizeof(float), (void *)(4 * sizeof(float)));
         CheckOpenGLError();
         glBindVertexArray(0);
     }
@@ -200,17 +200,17 @@ NotificationRenderContext::NotificationRenderContext(
         // Describe vertex attributes
         static_assert(sizeof(PhysicsProbePanelVertex) == 7 * sizeof(float));
         glBindBuffer(GL_ARRAY_BUFFER, *mPhysicsProbePanelVBO);
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::PhysicsProbePanel1));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::PhysicsProbePanel1), 4, GL_FLOAT, GL_FALSE, sizeof(PhysicsProbePanelVertex), (void *)0);
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::PhysicsProbePanel2));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::PhysicsProbePanel2), 3, GL_FLOAT, GL_FALSE, sizeof(PhysicsProbePanelVertex), (void *)(4 * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::PhysicsProbePanel1));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::PhysicsProbePanel1), 4, GL_FLOAT, GL_FALSE, sizeof(PhysicsProbePanelVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::PhysicsProbePanel2));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::PhysicsProbePanel2), 3, GL_FLOAT, GL_FALSE, sizeof(PhysicsProbePanelVertex), (void *)(4 * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
 
         // Set texture parameters
-        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::PhysicsProbePanel>();
-        mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::PhysicsProbePanel>();
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::PhysicsProbePanel>();
+        mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::PhysicsProbePanel>();
     }
 
     //
@@ -230,10 +230,10 @@ NotificationRenderContext::NotificationRenderContext(
         // Describe vertex attributes
         static_assert(sizeof(LaserCannonVertex) == (4 + 3) * sizeof(float));
         glBindBuffer(GL_ARRAY_BUFFER, *mLaserCannonVBO);
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::GenericMipMappedTextureNdc1));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::GenericMipMappedTextureNdc1), 4, GL_FLOAT, GL_FALSE, sizeof(LaserCannonVertex), (void *)0);
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::GenericMipMappedTextureNdc2));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::GenericMipMappedTextureNdc2), 3, GL_FLOAT, GL_FALSE, sizeof(LaserCannonVertex), (void *)(4 * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::GenericMipMappedTextureNdc1));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::GenericMipMappedTextureNdc1), 4, GL_FLOAT, GL_FALSE, sizeof(LaserCannonVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::GenericMipMappedTextureNdc2));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::GenericMipMappedTextureNdc2), 3, GL_FLOAT, GL_FALSE, sizeof(LaserCannonVertex), (void *)(4 * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -256,17 +256,17 @@ NotificationRenderContext::NotificationRenderContext(
         // Describe vertex attributes
         static_assert(sizeof(LaserRayVertex) == (4 + 1) * sizeof(float));
         glBindBuffer(GL_ARRAY_BUFFER, *mLaserRayVBO);
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::LaserRay1));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::LaserRay1), 4, GL_FLOAT, GL_FALSE, sizeof(LaserRayVertex), (void *)0);
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::LaserRay2));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::LaserRay2), 1, GL_FLOAT, GL_FALSE, sizeof(LaserRayVertex), (void *)(4 * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::LaserRay1));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::LaserRay1), 4, GL_FLOAT, GL_FALSE, sizeof(LaserRayVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::LaserRay2));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::LaserRay2), 1, GL_FLOAT, GL_FALSE, sizeof(LaserRayVertex), (void *)(4 * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
 
         // Set texture parameters
-        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::LaserRay>();
-        mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::LaserRay>();
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::LaserRay>();
+        mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::LaserRay>();
     }
 
     //
@@ -286,19 +286,19 @@ NotificationRenderContext::NotificationRenderContext(
         // Describe vertex attributes
         static_assert(sizeof(MultiNotificationVertex) == (1 + 8) * sizeof(float));
         glBindBuffer(GL_ARRAY_BUFFER, *mMultiNotificationVBO);
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::MultiNotification1));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::MultiNotification1), 4, GL_FLOAT, GL_FALSE, sizeof(MultiNotificationVertex), (void *)0);
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::MultiNotification2));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::MultiNotification2), 4, GL_FLOAT, GL_FALSE, sizeof(MultiNotificationVertex), (void *)(4 * sizeof(float)));
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::MultiNotification3));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::MultiNotification3), 1, GL_FLOAT, GL_FALSE, sizeof(MultiNotificationVertex), (void *)(8 * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::MultiNotification1));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::MultiNotification1), 4, GL_FLOAT, GL_FALSE, sizeof(MultiNotificationVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::MultiNotification2));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::MultiNotification2), 4, GL_FLOAT, GL_FALSE, sizeof(MultiNotificationVertex), (void *)(4 * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::MultiNotification3));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::MultiNotification3), 1, GL_FLOAT, GL_FALSE, sizeof(MultiNotificationVertex), (void *)(8 * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
 
         // Set texture parameters
-        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::MultiNotification>();
-        mShaderManager.SetTextureParameters<GameShaderSet::ProgramKind::MultiNotification>();
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::MultiNotification>();
+        mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::MultiNotification>();
 
         // Prepare buffer
         mMultiNotificationVertexBuffer.reserve(6 * 4); // Arbitrary
@@ -321,12 +321,12 @@ NotificationRenderContext::NotificationRenderContext(
         // Describe vertex attributes
         static_assert(sizeof(RectSelectionVertex) == (2 + 2 + 2 + 2 + 3 + 1) * sizeof(float));
         glBindBuffer(GL_ARRAY_BUFFER, *mRectSelectionVBO);
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::RectSelection1));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::RectSelection1), 4, GL_FLOAT, GL_FALSE, sizeof(RectSelectionVertex), (void *)0);
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::RectSelection2));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::RectSelection2), 4, GL_FLOAT, GL_FALSE, sizeof(RectSelectionVertex), (void *)(4 * sizeof(float)));
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::RectSelection3));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::RectSelection3), 4, GL_FLOAT, GL_FALSE, sizeof(RectSelectionVertex), (void *)((4 + 4) * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::RectSelection1));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::RectSelection1), 4, GL_FLOAT, GL_FALSE, sizeof(RectSelectionVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::RectSelection2));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::RectSelection2), 4, GL_FLOAT, GL_FALSE, sizeof(RectSelectionVertex), (void *)(4 * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::RectSelection3));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::RectSelection3), 4, GL_FLOAT, GL_FALSE, sizeof(RectSelectionVertex), (void *)((4 + 4) * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -349,8 +349,8 @@ NotificationRenderContext::NotificationRenderContext(
         // Describe vertex attributes
         static_assert(sizeof(InteractiveToolDashedLineVertex) == (2 + 1) * sizeof(float));
         glBindBuffer(GL_ARRAY_BUFFER, *mInteractiveToolDashedLineVBO);
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::InteractiveToolDashedLine1));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSet::VertexAttributeKind::InteractiveToolDashedLine1), (2 + 1), GL_FLOAT, GL_FALSE, sizeof(InteractiveToolDashedLineVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::InteractiveToolDashedLine1));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::InteractiveToolDashedLine1), (2 + 1), GL_FLOAT, GL_FALSE, sizeof(InteractiveToolDashedLineVertex), (void *)0);
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -615,7 +615,7 @@ void NotificationRenderContext::RenderDraw()
     // Set gross noise in the noise texture unit, as all our shaders require that one
     //
 
-    mShaderManager.ActivateTexture<GameShaderSet::ProgramParameterKind::NoiseTexture>();
+    mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::NoiseTexture>();
     glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(NoiseType::Gross));
 
     //
@@ -654,12 +654,12 @@ void NotificationRenderContext::ApplyViewModelChanges(RenderParameters const & r
     ViewModel::ProjectionMatrix globalOrthoMatrix;
     renderParameters.View.CalculateGlobalOrthoMatrix(ZFar, ZNear, globalOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::MultiNotification>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::MultiNotification, GameShaderSet::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::MultiNotification>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::MultiNotification, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         globalOrthoMatrix);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::RectSelection>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::RectSelection, GameShaderSet::ProgramParameterKind::OrthoMatrix>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::RectSelection>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::RectSelection, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         globalOrthoMatrix);
 }
 
@@ -693,12 +693,12 @@ void NotificationRenderContext::ApplyEffectiveAmbientLightIntensityChanges(Rende
 
     float const lighteningStrength = Step(0.5f, 1.0f - renderParameters.EffectiveAmbientLightIntensity);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::Text>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::Text, GameShaderSet::ProgramParameterKind::TextLighteningStrength>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::Text>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::Text, GameShaderSets::ProgramParameterKind::TextLighteningStrength>(
         lighteningStrength);
 
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::TextureNotifications>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::TextureNotifications, GameShaderSet::ProgramParameterKind::TextureLighteningStrength>(
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::TextureNotifications>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::TextureNotifications, GameShaderSets::ProgramParameterKind::TextureLighteningStrength>(
         lighteningStrength);
 }
 
@@ -733,8 +733,8 @@ void NotificationRenderContext::ApplyDisplayUnitsSystemChanges(RenderParameters 
         TextureFrameId<GameTextureDatabases::GenericLinearTextureGroups>(GameTextureDatabases::GenericLinearTextureGroups::PhysicsProbePanel, frameIndex));
 
     // Set texture offset in program
-    mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::PhysicsProbePanel>();
-    mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::PhysicsProbePanel, GameShaderSet::ProgramParameterKind::AtlasTile1LeftBottomTextureCoordinates>(frameMetadata.TextureCoordinatesBottomLeft);
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::PhysicsProbePanel>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::PhysicsProbePanel, GameShaderSets::ProgramParameterKind::AtlasTile1LeftBottomTextureCoordinates>(frameMetadata.TextureCoordinatesBottomLeft);
 }
 
 void NotificationRenderContext::RenderPrepareTextNotifications()
@@ -823,14 +823,14 @@ void NotificationRenderContext::RenderDrawTextNotifications()
         mGlobalRenderContext.GetElementIndices().Bind();
 
         // Activate texture unit
-        mShaderManager.ActivateTexture<GameShaderSet::ProgramParameterKind::SharedTexture>();
+        mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::SharedTexture>();
 
         // Bind font atlas texture
         glBindTexture(GL_TEXTURE_2D, *mFontAtlasTextureHandle);
         CheckOpenGLError();
 
         // Activate program
-        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::Text>();
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::Text>();
 
         // Draw vertices
         assert(0 == (mCurrentTextQuadVertexBufferSize % 4));
@@ -884,7 +884,7 @@ void NotificationRenderContext::RenderDrawTextureNotifications()
     {
         glBindVertexArray(*mTextureNotificationVAO);
 
-        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::TextureNotifications>();
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::TextureNotifications>();
 
         glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mTextureNotificationVertexBuffer.size()));
         CheckOpenGLError();
@@ -908,8 +908,8 @@ void NotificationRenderContext::RenderPreparePhysicsProbePanel()
             static_cast<float>(atlasFrame.FrameMetadata.Size.height) * mScreenToNdcY);
 
         // Set parameters
-        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::PhysicsProbePanel>();
-        mShaderManager.SetProgramParameter<GameShaderSet::ProgramKind::PhysicsProbePanel, GameShaderSet::ProgramParameterKind::WidthNdc>(
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::PhysicsProbePanel>();
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::PhysicsProbePanel, GameShaderSets::ProgramParameterKind::WidthNdc>(
             physicsProbePanelNdcDimensions.x);
 
         //
@@ -1030,7 +1030,7 @@ void NotificationRenderContext::RenderDrawPhysicsProbePanel()
     {
         glBindVertexArray(*mPhysicsProbePanelVAO);
 
-        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::PhysicsProbePanel>();
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::PhysicsProbePanel>();
 
         assert((mPhysicsProbePanelVertexBuffer.size() % 6) == 0);
         glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mPhysicsProbePanelVertexBuffer.size()));
@@ -1061,7 +1061,7 @@ void NotificationRenderContext::RenderDrawLaserCannon()
     {
         glBindVertexArray(*mLaserCannonVAO);
 
-        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::GenericMipMappedTexturesNdc>();
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::GenericMipMappedTexturesNdc>();
 
         // Draw
         assert((mLaserCannonVertexBuffer.size() % 6) == 0);
@@ -1086,9 +1086,9 @@ void NotificationRenderContext::RenderPrepareLaserRay()
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
         // Set time parameter
-        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::LaserRay>();
-        mShaderManager.SetProgramParameter<GameShaderSet::ProgramParameterKind::Time>(
-            GameShaderSet::ProgramKind::LaserRay,
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::LaserRay>();
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::Time>(
+            GameShaderSets::ProgramKind::LaserRay,
             GameWallClock::GetInstance().NowAsFloat());
     }
 }
@@ -1099,7 +1099,7 @@ void NotificationRenderContext::RenderDrawLaserRay()
     {
         glBindVertexArray(*mLaserRayVAO);
 
-        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::LaserRay>();
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::LaserRay>();
 
         // Draw
         assert((mLaserRayVertexBuffer.size() % 6) == 0);
@@ -1124,9 +1124,9 @@ void NotificationRenderContext::RenderPrepareMultiNotification()
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
         // Set time parameter
-        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::MultiNotification>();
-        mShaderManager.SetProgramParameter<GameShaderSet::ProgramParameterKind::Time>(
-            GameShaderSet::ProgramKind::MultiNotification,
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::MultiNotification>();
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::Time>(
+            GameShaderSets::ProgramKind::MultiNotification,
             GameWallClock::GetInstance().ContinuousNowAsFloat());
     }
 }
@@ -1137,7 +1137,7 @@ void NotificationRenderContext::RenderDrawMultiNotification()
     {
         glBindVertexArray(*mMultiNotificationVAO);
 
-        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::MultiNotification>();
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::MultiNotification>();
 
         bool doResetBlending = false;
         if (mMultiNotificationVertexBuffer[0].vertexKind == static_cast<float>(MultiNotificationVertex::VertexKindType::BlastToolHalo)
@@ -1187,7 +1187,7 @@ void NotificationRenderContext::RenderDrawRectSelection()
     {
         glBindVertexArray(*mRectSelectionVAO);
 
-        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::RectSelection>();
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::RectSelection>();
 
         // Draw
         assert((mRectSelectionVertexBuffer.size() % 6) == 0);
@@ -1221,7 +1221,7 @@ void NotificationRenderContext::RenderDrawInteractiveToolDashedLines()
         glBindVertexArray(*mInteractiveToolDashedLineVAO);
 
         // Activate program
-        mShaderManager.ActivateProgram<GameShaderSet::ProgramKind::InteractiveToolDashedLines>();
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::InteractiveToolDashedLines>();
 
         // Set line width
         glLineWidth(2.0f);
