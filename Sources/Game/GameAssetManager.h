@@ -83,9 +83,9 @@ public:
 
 	std::filesystem::path GetArtFilePath(std::string const & artName) const;
 
-	std::filesystem::path GetBitmapFilePath(std::string const & bitmapName) const;
+	std::filesystem::path GetPngImageFilePath(std::string const & pngImageName) const;
 
-	std::vector<std::filesystem::path> GetBitmapFilePaths(std::string const & bitmapNamePattern) const;
+	std::vector<std::filesystem::path> GetPngImageFilePaths(std::string const & pngImageNamePattern) const;
 
 	// Theme Settings
 

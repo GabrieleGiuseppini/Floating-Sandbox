@@ -125,7 +125,7 @@ ShipLoadDialog<TUsageType>::ShipLoadDialog(
                     {
                         mFlipHButton = new BitmapToggleButton(
                             this,
-                            gameAssetManager.GetBitmapFilePath("flip_h_small"),
+                            gameAssetManager.GetPngImageFilePath("flip_h_small"),
                             [](bool) {},
                             _("Flip ship horizontally when loaded"));
 
@@ -140,7 +140,7 @@ ShipLoadDialog<TUsageType>::ShipLoadDialog(
                     {
                         mFlipVButton = new BitmapToggleButton(
                             this,
-                            gameAssetManager.GetBitmapFilePath("flip_v_small"),
+                            gameAssetManager.GetPngImageFilePath("flip_v_small"),
                             [](bool) {},
                             _("Flip ship vertically when loaded"));
 
@@ -155,7 +155,7 @@ ShipLoadDialog<TUsageType>::ShipLoadDialog(
                     {
                         mRotate90CWButton = new BitmapToggleButton(
                             this,
-                            gameAssetManager.GetBitmapFilePath("rotate_90_cw_small"),
+                            gameAssetManager.GetPngImageFilePath("rotate_90_cw_small"),
                             [](bool) {},
                             _("Rotate ship 90 degrees clockwise when loaded"));
 

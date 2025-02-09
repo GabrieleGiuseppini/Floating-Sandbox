@@ -290,14 +290,14 @@ std::filesystem::path GameAssetManager::GetArtFilePath(std::string const & artNa
     return mResourcesRoot / (artName + ".png");
 }
 
-std::filesystem::path GameAssetManager::GetBitmapFilePath(std::string const & bitmapName) const
+std::filesystem::path GameAssetManager::GetPngImageFilePath(std::string const & pngImageName) const
 {
-    return mResourcesRoot / (bitmapName + ".png");
+    return mResourcesRoot / (pngImageName + ".png");
 }
 
-std::vector<std::filesystem::path> GameAssetManager::GetBitmapFilePaths(std::string const & bitmapNamePattern) const
+std::vector<std::filesystem::path> GameAssetManager::GetPngImageFilePaths(std::string const & ngImageNamePattern) const
 {
-    std::regex const searchRe = FileSystem::MakeFilenameMatchRegex(bitmapNamePattern);
+    std::regex const searchRe = FileSystem::MakeFilenameMatchRegex(ngImageNamePattern);
 
     std::vector<std::filesystem::path> filepaths;
     for (auto const & entryIt : std::filesystem::directory_iterator(mResourcesRoot))

@@ -19,7 +19,7 @@ wxBitmap WxHelpers::LoadBitmap(
     std::string const & bitmapName,
     GameAssetManager const & gameAssetManager)
 {
-    return WxHelpers::LoadBitmap(gameAssetManager.GetBitmapFilePath(bitmapName));
+    return WxHelpers::LoadBitmap(gameAssetManager.GetPngImageFilePath(bitmapName));
 }
 
 wxBitmap WxHelpers::LoadBitmap(std::filesystem::path const & bitmapFilePath)
@@ -43,7 +43,7 @@ wxBitmap WxHelpers::LoadBitmap(
         throw std::runtime_error("Cannot create bitmap with one zero dimension");
     }
 
-    wxImage image(gameAssetManager.GetBitmapFilePath(bitmapName).string(), wxBITMAP_TYPE_PNG);
+    wxImage image(gameAssetManager.GetPngImageFilePath(bitmapName).string(), wxBITMAP_TYPE_PNG);
     image.Rescale(size.width, size.height, wxIMAGE_QUALITY_HIGH);
     return wxBitmap(image);
 }

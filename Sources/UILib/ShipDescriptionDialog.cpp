@@ -28,7 +28,7 @@ ShipDescriptionDialog::ShipDescriptionDialog(
         wxBORDER_SUNKEN | wxSTAY_ON_TOP);
 
     auto const backgroundBitmap = wxBitmap(
-        gameAssetManager.GetBitmapFilePath("ship_description_background").string(),
+        gameAssetManager.GetPngImageFilePath("ship_description_background").string(),
         wxBITMAP_TYPE_PNG);
 
     SetBackgroundBitmap(backgroundBitmap);
