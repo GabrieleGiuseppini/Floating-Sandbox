@@ -34,10 +34,10 @@ set (SHIPBUILDER_LIB_SOURCES
 	#View.cpp
 	#View.h
 	ViewModel.h
-	#WaterlineAnalyzer.cpp
-	#WaterlineAnalyzer.h
-	#WorkbenchState.cpp
-	#WorkbenchState.h
+	WaterlineAnalyzer.cpp
+	WaterlineAnalyzer.h
+	WorkbenchState.cpp
+	WorkbenchState.h
 )
 
 set (UI_SOURCES

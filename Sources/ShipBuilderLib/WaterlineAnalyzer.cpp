@@ -5,7 +5,7 @@
  ***************************************************************************************/
 #include "WaterlineAnalyzer.h"
 
-#include <GameCore/GameMath.h>
+#include <Core/GameMath.h>
 
 #include <cassert>
 #include <limits>

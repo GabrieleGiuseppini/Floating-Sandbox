@@ -9,11 +9,11 @@
 #include "IUserInterface.h"
 #include "ShipBuilderTypes.h"
 
-#include <Game/Materials.h>
-#include <Game/MaterialDatabase.h>
+#include <Simulation/Materials.h>
+#include <Simulation/MaterialDatabase.h>
 
-#include <GameCore/Colors.h>
-#include <GameCore/GameTypes.h>
+#include <Core/Colors.h>
+#include <Core/GameTypes.h>
 
 #include <picojson.h>
 

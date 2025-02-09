@@ -7,9 +7,8 @@
 
 #include <UILib/StandardSystemPaths.h>
 
-#include <Game/Version.h>
-
-#include <GameCore/Utils.h>
+#include <Game/GameAssetManager.h>
+#include <Game/GameVersion.h>
 
 #include <cassert>
 
@@ -135,7 +134,7 @@ std::optional<picojson::object> WorkbenchState::LoadPreferencesRootObject()
 
     if (std::filesystem::exists(preferencesFilePath))
     {
-        auto const preferencesRootValue = Utils::ParseJSONFile(preferencesFilePath);
+        auto const preferencesRootValue = GameAssetManager::LoadJson(preferencesFilePath);
 
         if (preferencesRootValue.is<picojson::object>())
         {
@@ -218,7 +217,7 @@ void WorkbenchState::SavePreferences() const
     picojson::object preferencesRootObject;
 
     // Add version
-    preferencesRootObject["version"] = picojson::value(Version::CurrentVersion().ToString());
+    preferencesRootObject["version"] = picojson::value(CurrentGameVersion.ToString());
 
     // Add display units system
     preferencesRootObject["display_units_system"] = picojson::value(static_cast<std::int64_t>(mDisplayUnitsSystem));
@@ -238,7 +237,7 @@ void WorkbenchState::SavePreferences() const
     preferencesRootObject["canvas_background_color"] = picojson::value(mCanvasBackgroundColor.toString());
 
     // Save
-    Utils::SaveJSONFile(
+    GameAssetManager::SaveJson(
         picojson::value(preferencesRootObject),
         GetPreferencesFilePath());
 }
