@@ -22,7 +22,7 @@ set (SHIPBUILDER_LIB_SOURCES
 	ModelValidationSession.cpp
 	ModelValidationSession.h
 	OpenGLManager.h
-	#SelectionManager.h
+	SelectionManager.h
 	ShipBuilderShaderSets.cpp
 	ShipBuilderShaderSets.h
 	ShipBuilderTextureDatabases.h
