@@ -2611,7 +2611,9 @@ void ModelController::SetInteriorTextureLayerVisualizationMode(InteriorTextureLa
     }
 }
 
-void ModelController::UpdateVisualizations(View & view)
+void ModelController::UpdateVisualizations(
+    View & view,
+    GameAssetManager const & gameAssetManager)
 {
     //
     // Update and upload visualizations that are dirty, and
@@ -2644,7 +2646,7 @@ void ModelController::UpdateVisualizations(View & view)
         if (mDirtyGameVisualizationRegion.has_value())
         {
             // Update visualization
-            ImageRect const dirtyTextureRegion = UpdateGameVisualization(*mDirtyGameVisualizationRegion);
+            ImageRect const dirtyTextureRegion = UpdateGameVisualization(*mDirtyGameVisualizationRegion, gameAssetManager);
 
             // Upload visualization
             if (dirtyTextureRegion != ImageRect(mGameVisualizationTexture->Size))
@@ -3812,7 +3814,9 @@ void ModelController::RegisterDirtyVisualization(TRect const & region)
     }
 }
 
-ImageRect ModelController::UpdateGameVisualization(ShipSpaceRect const & region)
+ImageRect ModelController::UpdateGameVisualization(
+    ShipSpaceRect const & region,
+    GameAssetManager const & gameAssetManager)
 {
     //
     // 1. Prepare source of triangularized rendering
@@ -3832,7 +3836,8 @@ ImageRect ModelController::UpdateGameVisualization(ShipSpaceRect const & region)
             region,
             *mGameVisualizationAutoTexturizationTexture,
             mGameVisualizationTextureMagnificationFactor,
-            settings);
+            settings,
+            gameAssetManager);
 
         sourceTexture = mGameVisualizationAutoTexturizationTexture.get();
     }

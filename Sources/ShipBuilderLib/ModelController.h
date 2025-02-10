@@ -14,14 +14,16 @@
 #include "ShipBuilderTypes.h"
 #include "View.h"
 
-#include <Game/Layers.h>
-#include <Game/Materials.h>
-#include <Game/ShipDefinition.h>
-#include <Game/ShipTexturizer.h>
+#include <Game/GameAssetManager.h>
 
-#include <GameCore/Finalizer.h>
-#include <GameCore/GameTypes.h>
-#include <GameCore/ImageData.h>
+#include <Simulation/Layers.h>
+#include <Simulation/Materials.h>
+#include <Simulation/ShipDefinition.h>
+#include <Simulation/ShipTexturizer.h>
+
+#include <Core/Finalizer.h>
+#include <Core/GameTypes.h>
+#include <Core/ImageData.h>
 
 #include <array>
 #include <functional>
@@ -546,7 +548,9 @@ public:
 
     void SetInteriorTextureLayerVisualizationMode(InteriorTextureLayerVisualizationModeType mode);
 
-    void UpdateVisualizations(View & view);
+    void UpdateVisualizations(
+        View & view,
+        GameAssetManager const & gameAssetManager);
 
 private:
 
@@ -681,7 +685,9 @@ private:
     template<VisualizationType TVisualization, typename TRect>
     void RegisterDirtyVisualization(TRect const & region);
 
-    ImageRect UpdateGameVisualization(ShipSpaceRect const & region);
+    ImageRect UpdateGameVisualization(
+        ShipSpaceRect const & region,
+        GameAssetManager const & gameAssetManager);
 
     ImageRect UpdateStructuralLayerVisualization(ShipSpaceRect const & region);
 

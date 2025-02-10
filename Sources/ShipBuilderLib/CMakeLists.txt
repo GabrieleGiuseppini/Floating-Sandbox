@@ -16,8 +16,8 @@ set (SHIPBUILDER_LIB_SOURCES
 	#MainFrame.h
 	Model.cpp
 	Model.h
-	#ModelController.cpp
-	#ModelController.h
+	ModelController.cpp
+	ModelController.h
 	ModelValidationResults.h
 	ModelValidationSession.cpp
 	ModelValidationSession.h
