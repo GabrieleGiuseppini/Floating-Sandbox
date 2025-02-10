@@ -5,10 +5,10 @@
 ***************************************************************************************/
 #include "View.h"
 
-#include <GameCore/GameException.h>
-#include <GameCore/GameMath.h>
-#include <GameCore/Log.h>
-#include <GameCore/SysSpecifics.h>
+#include <Core/GameException.h>
+#include <Core/GameMath.h>
+#include <Core/Log.h>
+#include <Core/SysSpecifics.h>
 
 namespace ShipBuilder {
 
@@ -25,7 +25,7 @@ View::View(
     int logicalToPhysicalPixelFactor,
     OpenGLManager & openGLManager,
     std::function<void()> swapRenderBuffersFunction,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
     : mOpenGLContext()
     , mViewModel(
         shipSpaceSize,
@@ -37,7 +37,7 @@ View::View(
     , mBackgroundTextureSize()
     , mHasGameVisualization(false)
     , mHasStructuralLayerVisualization(false)
-    , mStructuralLayerVisualizationShader(ProgramType::Texture) // Will be overwritten
+    , mStructuralLayerVisualizationShader(ProgramKind::Texture) // Will be overwritten
     , mHasElectricalLayerVisualization(false)
     , mRopeCount(false)
     , mHasExteriorTextureLayerVisualization(false)
@@ -92,17 +92,17 @@ View::View(
     // Load shader manager
     //
 
-    mShaderManager = ShaderManager<ShaderManagerTraits>::CreateInstance(resourceLocator.GetShipBuilderShadersRootPath());
+    mShaderManager = ShaderManager<ShaderSet>::CreateInstance(gameAssetManager);
 
     // Set texture samplers in programs
-    mShaderManager->ActivateProgram<ProgramType::MipMappedTextureQuad>();
-    mShaderManager->SetTextureParameters<ProgramType::MipMappedTextureQuad>();
-    mShaderManager->ActivateProgram<ProgramType::StructureMesh>();
-    mShaderManager->SetTextureParameters<ProgramType::StructureMesh>();
-    mShaderManager->ActivateProgram<ProgramType::Texture>();
-    mShaderManager->SetTextureParameters<ProgramType::Texture>();
-    mShaderManager->ActivateProgram<ProgramType::TextureNdc>();
-    mShaderManager->SetTextureParameters<ProgramType::TextureNdc>();
+    mShaderManager->ActivateProgram<ProgramKind::MipMappedTextureQuad>();
+    mShaderManager->SetTextureParameters<ProgramKind::MipMappedTextureQuad>();
+    mShaderManager->ActivateProgram<ProgramKind::StructureMesh>();
+    mShaderManager->SetTextureParameters<ProgramKind::StructureMesh>();
+    mShaderManager->ActivateProgram<ProgramKind::Texture>();
+    mShaderManager->SetTextureParameters<ProgramKind::Texture>();
+    mShaderManager->ActivateProgram<ProgramKind::TextureNdc>();
+    mShaderManager->SetTextureParameters<ProgramKind::TextureNdc>();
 
     //
     // Create mipmapped texture atlas
@@ -110,19 +110,19 @@ View::View(
 
     {
         // Load texture database
-        auto mipmappedTextureDatabase = Render::TextureDatabase<MipMappedTextureTextureDatabaseTraits>::Load(
-            resourceLocator.GetTexturesRootFolderPath());
+        auto mipmappedTextureDatabase = TextureDatabase<MipMappedTextureDatabase>::Load(gameAssetManager);
 
         // Create atlas
-        auto mipmappedTextureAtlas = Render::TextureAtlasBuilder<MipMappedTextureGroups>::BuildAtlas(
+        auto mipmappedTextureAtlas = TextureAtlasBuilder<MipMappedTextureDatabase>::BuildAtlas(
             mipmappedTextureDatabase,
-            Render::AtlasOptions::MipMappable,
+            TextureAtlasOptions::MipMappable,
+            gameAssetManager,
             [](float, ProgressMessageType) {});
 
-        LogMessage("ShipBuilder mipmapped texture atlas size: ", mipmappedTextureAtlas.AtlasData.Size.ToString());
+        LogMessage("ShipBuilder mipmapped texture atlas size: ", mipmappedTextureAtlas.Image.Size.ToString());
 
         // Activate texture
-        mShaderManager->ActivateTexture<ProgramParameterType::MipMappedTexturesAtlasTexture>();
+        mShaderManager->ActivateTexture<ProgramParameterKind::MipMappedTexturesAtlasTexture>();
 
         // Create texture OpenGL handle
         GLuint tmpGLuint;
@@ -136,7 +136,7 @@ View::View(
         // Upload atlas texture
         assert(mipmappedTextureAtlas.Metadata.IsSuitableForMipMapping());
         GameOpenGL::UploadMipmappedAtlasTexture(
-            std::move(mipmappedTextureAtlas.AtlasData),
+            std::move(mipmappedTextureAtlas.Image),
             mipmappedTextureAtlas.Metadata.GetMaxDimension());
 
         // Set repeat mode
@@ -150,7 +150,7 @@ View::View(
         CheckOpenGLError();
 
         // Store metadata
-        mMipMappedTextureAtlasMetadata = std::make_unique<Render::TextureAtlasMetadata<MipMappedTextureGroups>>(
+        mMipMappedTextureAtlasMetadata = std::make_unique<TextureAtlasMetadata<MipMappedTextureDatabase>>(
             mipmappedTextureAtlas.Metadata);
     }
 
@@ -170,7 +170,7 @@ View::View(
         mBackgroundTexture = tmpGLuint;
 
         // Configure texture
-        mShaderManager->ActivateTexture<ProgramParameterType::BackgroundTextureUnit>();
+        mShaderManager->ActivateTexture<ProgramParameterKind::BackgroundTextureUnit>();
         glBindTexture(GL_TEXTURE_2D, *mBackgroundTexture);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -194,8 +194,8 @@ View::View(
 
         // Describe vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, *mBackgroundTextureVBO);
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::TextureNdc));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::TextureNdc), 4, GL_FLOAT, GL_FALSE, sizeof(TextureNdcVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeKind::TextureNdc));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeKind::TextureNdc), 4, GL_FLOAT, GL_FALSE, sizeof(TextureNdcVertex), (void *)0);
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -220,8 +220,8 @@ View::View(
 
         // Describe vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, *mCanvasVBO);
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Canvas));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Canvas), 4, GL_FLOAT, GL_FALSE, sizeof(CanvasVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeKind::Canvas));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeKind::Canvas), 4, GL_FLOAT, GL_FALSE, sizeof(CanvasVertex), (void *)0);
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -243,7 +243,7 @@ View::View(
         mGameVisualizationTexture = tmpGLuint;
 
         // Configure texture
-        mShaderManager->ActivateTexture<ProgramParameterType::TextureUnit1>();
+        mShaderManager->ActivateTexture<ProgramParameterKind::TextureUnit1>();
         glBindTexture(GL_TEXTURE_2D, *mGameVisualizationTexture);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -268,8 +268,8 @@ View::View(
         // Describe vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, *mGameVisualizationVBO);
         static_assert(sizeof(TextureVertex) == (4) * sizeof(float));
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Texture));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Texture), 4, GL_FLOAT, GL_FALSE, sizeof(TextureVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeKind::Texture));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeKind::Texture), 4, GL_FLOAT, GL_FALSE, sizeof(TextureVertex), (void *)0);
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -291,7 +291,7 @@ View::View(
         mStructuralLayerVisualizationTexture = tmpGLuint;
 
         // Configure texture
-        mShaderManager->ActivateTexture<ProgramParameterType::TextureUnit1>();
+        mShaderManager->ActivateTexture<ProgramParameterKind::TextureUnit1>();
         glBindTexture(GL_TEXTURE_2D, *mStructuralLayerVisualizationTexture);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -315,8 +315,8 @@ View::View(
 
         // Describe vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, *mStructuralLayerVisualizationVBO);
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Texture));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Texture), 4, GL_FLOAT, GL_FALSE, sizeof(TextureVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeKind::Texture));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeKind::Texture), 4, GL_FLOAT, GL_FALSE, sizeof(TextureVertex), (void *)0);
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -338,7 +338,7 @@ View::View(
         mElectricalLayerVisualizationTexture = tmpGLuint;
 
         // Configure texture
-        mShaderManager->ActivateTexture<ProgramParameterType::TextureUnit1>();
+        mShaderManager->ActivateTexture<ProgramParameterKind::TextureUnit1>();
         glBindTexture(GL_TEXTURE_2D, *mElectricalLayerVisualizationTexture);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -362,8 +362,8 @@ View::View(
 
         // Describe vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, *mElectricalLayerVisualizationVBO);
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Texture));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Texture), 4, GL_FLOAT, GL_FALSE, sizeof(TextureVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeKind::Texture));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeKind::Texture), 4, GL_FLOAT, GL_FALSE, sizeof(TextureVertex), (void *)0);
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -389,10 +389,10 @@ View::View(
         // Describe vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, *mRopesVBO);
         static_assert(sizeof(RopeVertex) == (2 + 4) * sizeof(float));
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Matte1));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Matte1), 2, GL_FLOAT, GL_FALSE, sizeof(RopeVertex), (void *)(0));
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Matte2));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Matte2), 4, GL_FLOAT, GL_FALSE, sizeof(RopeVertex), (void *)(2 * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeKind::Matte1));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeKind::Matte1), 2, GL_FLOAT, GL_FALSE, sizeof(RopeVertex), (void *)(0));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeKind::Matte2));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeKind::Matte2), 4, GL_FLOAT, GL_FALSE, sizeof(RopeVertex), (void *)(2 * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -414,7 +414,7 @@ View::View(
         mExteriorTextureLayerVisualizationTexture = tmpGLuint;
 
         // Configure texture
-        mShaderManager->ActivateTexture<ProgramParameterType::TextureUnit1>();
+        mShaderManager->ActivateTexture<ProgramParameterKind::TextureUnit1>();
         glBindTexture(GL_TEXTURE_2D, *mExteriorTextureLayerVisualizationTexture);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -438,8 +438,8 @@ View::View(
 
         // Describe vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, *mExteriorTextureLayerVisualizationVBO);
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Texture));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Texture), 4, GL_FLOAT, GL_FALSE, sizeof(TextureVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeKind::Texture));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeKind::Texture), 4, GL_FLOAT, GL_FALSE, sizeof(TextureVertex), (void *)0);
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -461,7 +461,7 @@ View::View(
         mInteriorTextureLayerVisualizationTexture = tmpGLuint;
 
         // Configure texture
-        mShaderManager->ActivateTexture<ProgramParameterType::TextureUnit1>();
+        mShaderManager->ActivateTexture<ProgramParameterKind::TextureUnit1>();
         glBindTexture(GL_TEXTURE_2D, *mInteriorTextureLayerVisualizationTexture);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -485,8 +485,8 @@ View::View(
 
         // Describe vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, *mInteriorTextureLayerVisualizationVBO);
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Texture));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Texture), 4, GL_FLOAT, GL_FALSE, sizeof(TextureVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeKind::Texture));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeKind::Texture), 4, GL_FLOAT, GL_FALSE, sizeof(TextureVertex), (void *)0);
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -516,10 +516,10 @@ View::View(
         // Describe vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, *mGridVBO);
         static_assert(sizeof(GridVertex) == (2 + 2 + 1) * sizeof(float));
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Grid1));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Grid1), 4, GL_FLOAT, GL_FALSE, sizeof(GridVertex), (void *)0);
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Grid2));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Grid2), 1, GL_FLOAT, GL_FALSE, sizeof(GridVertex), (void *)(4 * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeKind::Grid1));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeKind::Grid1), 4, GL_FLOAT, GL_FALSE, sizeof(GridVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeKind::Grid2));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeKind::Grid2), 1, GL_FLOAT, GL_FALSE, sizeof(GridVertex), (void *)(4 * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -545,10 +545,10 @@ View::View(
         // Describe vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, *mDebugRegionOverlayVBO);
         static_assert(sizeof(DebugRegionOverlayVertex) == (2 + 4) * sizeof(float));
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Matte1));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Matte1), 2, GL_FLOAT, GL_FALSE, sizeof(DebugRegionOverlayVertex), (void *)(0));
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Matte2));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Matte2), 4, GL_FLOAT, GL_FALSE, sizeof(DebugRegionOverlayVertex), (void *)(2 * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeKind::Matte1));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeKind::Matte1), 2, GL_FLOAT, GL_FALSE, sizeof(DebugRegionOverlayVertex), (void *)(0));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeKind::Matte2));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeKind::Matte2), 4, GL_FLOAT, GL_FALSE, sizeof(DebugRegionOverlayVertex), (void *)(2 * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -574,10 +574,10 @@ View::View(
         // Describe vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, *mCircleOverlayVBO);
         static_assert(sizeof(CircleOverlayVertex) == (4 + 3) * sizeof(float));
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::CircleOverlay1));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::CircleOverlay1), 4, GL_FLOAT, GL_FALSE, sizeof(CircleOverlayVertex), (void *)0);
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::CircleOverlay2));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::CircleOverlay2), 3, GL_FLOAT, GL_FALSE, sizeof(CircleOverlayVertex), (void *)(4 * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeKind::CircleOverlay1));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeKind::CircleOverlay1), 4, GL_FLOAT, GL_FALSE, sizeof(CircleOverlayVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeKind::CircleOverlay2));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeKind::CircleOverlay2), 3, GL_FLOAT, GL_FALSE, sizeof(CircleOverlayVertex), (void *)(4 * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -603,10 +603,10 @@ View::View(
         // Describe vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, *mRectOverlayVBO);
         static_assert(sizeof(RectOverlayVertex) == (4 + 3) * sizeof(float));
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::RectOverlay1));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::RectOverlay1), 4, GL_FLOAT, GL_FALSE, sizeof(RectOverlayVertex), (void *)0);
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::RectOverlay2));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::RectOverlay2), 3, GL_FLOAT, GL_FALSE, sizeof(RectOverlayVertex), (void *)(4 * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeKind::RectOverlay1));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeKind::RectOverlay1), 4, GL_FLOAT, GL_FALSE, sizeof(RectOverlayVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeKind::RectOverlay2));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeKind::RectOverlay2), 3, GL_FLOAT, GL_FALSE, sizeof(RectOverlayVertex), (void *)(4 * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -632,10 +632,10 @@ View::View(
         // Describe vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, *mDashedLineOverlayVBO);
         static_assert(sizeof(DashedLineOverlayVertex) == (3 + 3) * sizeof(float));
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::DashedLineOverlay1));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::DashedLineOverlay1), 3, GL_FLOAT, GL_FALSE, sizeof(DashedLineOverlayVertex), (void *)0);
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::DashedLineOverlay2));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::DashedLineOverlay2), 3, GL_FLOAT, GL_FALSE, sizeof(DashedLineOverlayVertex), (void *)(3 * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeKind::DashedLineOverlay1));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeKind::DashedLineOverlay1), 3, GL_FLOAT, GL_FALSE, sizeof(DashedLineOverlayVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeKind::DashedLineOverlay2));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeKind::DashedLineOverlay2), 3, GL_FLOAT, GL_FALSE, sizeof(DashedLineOverlayVertex), (void *)(3 * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -661,10 +661,10 @@ View::View(
         // Describe vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, *mDashedRectangleOverlayVBO);
         static_assert(sizeof(DashedLineOverlayVertex) == (3 + 3) * sizeof(float));
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::DashedLineOverlay1));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::DashedLineOverlay1), 3, GL_FLOAT, GL_FALSE, sizeof(DashedLineOverlayVertex), (void *)0);
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::DashedLineOverlay2));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::DashedLineOverlay2), 3, GL_FLOAT, GL_FALSE, sizeof(DashedLineOverlayVertex), (void *)(3 * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeKind::DashedLineOverlay1));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeKind::DashedLineOverlay1), 3, GL_FLOAT, GL_FALSE, sizeof(DashedLineOverlayVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeKind::DashedLineOverlay2));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeKind::DashedLineOverlay2), 3, GL_FLOAT, GL_FALSE, sizeof(DashedLineOverlayVertex), (void *)(3 * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -690,8 +690,8 @@ View::View(
         // Describe vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, *mWaterlineMarkersVBO);
         static_assert(sizeof(TextureVertex) == (4) * sizeof(float));
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Texture));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Texture), 4, GL_FLOAT, GL_FALSE, sizeof(TextureVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeKind::Texture));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeKind::Texture), 4, GL_FLOAT, GL_FALSE, sizeof(TextureVertex), (void *)0);
         CheckOpenGLError();
 
         // Allocate buffer for both markers
@@ -719,10 +719,10 @@ View::View(
         // Describe vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, *mWaterlineVBO);
         static_assert(sizeof(WaterlineVertex) == (2 + 2 + 2) * sizeof(float));
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Waterline1));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Waterline1), 4, GL_FLOAT, GL_FALSE, sizeof(WaterlineVertex), (void *)0);
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Waterline2));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Waterline2), 2, GL_FLOAT, GL_FALSE, sizeof(WaterlineVertex), (void *)(4 * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeKind::Waterline1));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeKind::Waterline1), 4, GL_FLOAT, GL_FALSE, sizeof(WaterlineVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeKind::Waterline2));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeKind::Waterline2), 2, GL_FLOAT, GL_FALSE, sizeof(WaterlineVertex), (void *)(4 * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -739,8 +739,8 @@ View::View(
 
 void View::SetCanvasBackgroundColor(rgbColor const & color)
 {
-    mShaderManager->ActivateProgram<ProgramType::Canvas>();
-    mShaderManager->SetProgramParameter<ProgramType::Canvas, ProgramParameterType::CanvasBackgroundColor>(color.toVec3f());
+    mShaderManager->ActivateProgram<ProgramKind::Canvas>();
+    mShaderManager->SetProgramParameter<ProgramKind::Canvas, ProgramParameterKind::CanvasBackgroundColor>(color.toVec3f());
 }
 
 void View::EnableVisualGrid(bool doEnable)
@@ -852,13 +852,13 @@ void View::SetStructuralLayerVisualizationDrawMode(StructuralLayerVisualizationD
     {
         case StructuralLayerVisualizationDrawMode::MeshMode:
         {
-            mStructuralLayerVisualizationShader = ProgramType::StructureMesh;
+            mStructuralLayerVisualizationShader = ProgramKind::StructureMesh;
             break;
         }
 
         case StructuralLayerVisualizationDrawMode::PixelMode:
         {
-            mStructuralLayerVisualizationShader = ProgramType::Texture;
+            mStructuralLayerVisualizationShader = ProgramKind::Texture;
             break;
         }
     }
@@ -1519,14 +1519,14 @@ void View::Render()
     if (mBackgroundTextureSize.has_value())
     {
         // Set this texture in the shader's sampler
-        mShaderManager->ActivateTexture<ProgramParameterType::BackgroundTextureUnit>();
+        mShaderManager->ActivateTexture<ProgramParameterKind::BackgroundTextureUnit>();
         glBindTexture(GL_TEXTURE_2D, *mBackgroundTexture);
 
         // Bind VAO
         glBindVertexArray(*mBackgroundTextureVAO);
 
         // Activate program
-        mShaderManager->ActivateProgram<ProgramType::TextureNdc>();
+        mShaderManager->ActivateProgram<ProgramKind::TextureNdc>();
 
         // Draw
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
@@ -1545,7 +1545,7 @@ void View::Render()
         glBindVertexArray(*mCanvasVAO);
 
         // Activate program
-        mShaderManager->ActivateProgram<ProgramType::Canvas>();
+        mShaderManager->ActivateProgram<ProgramKind::Canvas>();
 
         // Draw
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
@@ -1649,7 +1649,7 @@ void View::Render()
         glBindVertexArray(*mGridVAO);
 
         // Activate program
-        mShaderManager->ActivateProgram<ProgramType::Grid>();
+        mShaderManager->ActivateProgram<ProgramKind::Grid>();
 
         // Draw
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
@@ -1663,7 +1663,7 @@ void View::Render()
         glBindVertexArray(*mCircleOverlayVAO);
 
         // Activate program
-        mShaderManager->ActivateProgram<ProgramType::CircleOverlay>();
+        mShaderManager->ActivateProgram<ProgramKind::CircleOverlay>();
 
         // Draw
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
@@ -1677,7 +1677,7 @@ void View::Render()
         glBindVertexArray(*mRectOverlayVAO);
 
         // Activate program
-        mShaderManager->ActivateProgram<ProgramType::RectOverlay>();
+        mShaderManager->ActivateProgram<ProgramKind::RectOverlay>();
 
         // Draw
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
@@ -1691,10 +1691,10 @@ void View::Render()
         glBindVertexArray(*mDashedLineOverlayVAO);
 
         // Activate program
-        mShaderManager->ActivateProgram<ProgramType::DashedLineOverlay>();
+        mShaderManager->ActivateProgram<ProgramKind::DashedLineOverlay>();
 
         // Set pixel step
-        mShaderManager->SetProgramParameter<ProgramType::DashedLineOverlay, ProgramParameterType::PixelStep>(DashedLineOverlayPixelStep);
+        mShaderManager->SetProgramParameter<ProgramKind::DashedLineOverlay, ProgramParameterKind::PixelStep>(DashedLineOverlayPixelStep);
 
         // Set line width
         glLineWidth(1.5f);
@@ -1711,10 +1711,10 @@ void View::Render()
         glBindVertexArray(*mDashedRectangleOverlayVAO);
 
         // Activate program
-        mShaderManager->ActivateProgram<ProgramType::DashedLineOverlay>();
+        mShaderManager->ActivateProgram<ProgramKind::DashedLineOverlay>();
 
         // Set pixel step
-        mShaderManager->SetProgramParameter<ProgramType::DashedLineOverlay, ProgramParameterType::PixelStep>(DashedRectangleOverlayPixelStep);
+        mShaderManager->SetProgramParameter<ProgramKind::DashedLineOverlay, ProgramParameterKind::PixelStep>(DashedRectangleOverlayPixelStep);
 
         // Set line width
         glLineWidth(1.0f);
@@ -1731,7 +1731,7 @@ void View::Render()
         glBindVertexArray(*mWaterlineVAO);
 
         // Activate program
-        mShaderManager->ActivateProgram<ProgramType::Waterline>();
+        mShaderManager->ActivateProgram<ProgramKind::Waterline>();
 
         // Draw
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
@@ -1745,7 +1745,7 @@ void View::Render()
         glBindVertexArray(*mWaterlineMarkersVAO);
 
         // Activate program
-        mShaderManager->ActivateProgram<ProgramType::MipMappedTextureQuad>();
+        mShaderManager->ActivateProgram<ProgramKind::MipMappedTextureQuad>();
 
         int const first = mHasCenterOfBuoyancyWaterlineMarker ? 0 : 6;
         int count = 0;
@@ -1770,10 +1770,10 @@ void View::Render()
         glBindVertexArray(*mDebugRegionOverlayVAO);
 
         // Activate program
-        mShaderManager->ActivateProgram<ProgramType::Matte>();
+        mShaderManager->ActivateProgram<ProgramKind::Matte>();
 
         // Set opacity
-        mShaderManager->SetProgramParameter<ProgramType::Matte, ProgramParameterType::Opacity>(1.0f);
+        mShaderManager->SetProgramParameter<ProgramKind::Matte, ProgramParameterKind::Opacity>(1.0f);
 
         // Set line width
         glLineWidth(1.5f);
@@ -1831,44 +1831,44 @@ void View::OnViewModelUpdated()
 
     auto const orthoMatrix = mViewModel.GetOrthoMatrix();
 
-    mShaderManager->ActivateProgram<ProgramType::Canvas>();
-    mShaderManager->SetProgramParameter<ProgramType::Canvas, ProgramParameterType::OrthoMatrix>(
+    mShaderManager->ActivateProgram<ProgramKind::Canvas>();
+    mShaderManager->SetProgramParameter<ProgramKind::Canvas, ProgramParameterKind::OrthoMatrix>(
         orthoMatrix);
 
-    mShaderManager->ActivateProgram<ProgramType::CircleOverlay>();
-    mShaderManager->SetProgramParameter<ProgramType::CircleOverlay, ProgramParameterType::OrthoMatrix>(
+    mShaderManager->ActivateProgram<ProgramKind::CircleOverlay>();
+    mShaderManager->SetProgramParameter<ProgramKind::CircleOverlay, ProgramParameterKind::OrthoMatrix>(
         orthoMatrix);
 
-    mShaderManager->ActivateProgram<ProgramType::DashedLineOverlay>();
-    mShaderManager->SetProgramParameter<ProgramType::DashedLineOverlay, ProgramParameterType::OrthoMatrix>(
+    mShaderManager->ActivateProgram<ProgramKind::DashedLineOverlay>();
+    mShaderManager->SetProgramParameter<ProgramKind::DashedLineOverlay, ProgramParameterKind::OrthoMatrix>(
         orthoMatrix);
 
-    mShaderManager->ActivateProgram<ProgramType::Grid>();
-    mShaderManager->SetProgramParameter<ProgramType::Grid, ProgramParameterType::OrthoMatrix>(
+    mShaderManager->ActivateProgram<ProgramKind::Grid>();
+    mShaderManager->SetProgramParameter<ProgramKind::Grid, ProgramParameterKind::OrthoMatrix>(
         orthoMatrix);
 
-    mShaderManager->ActivateProgram<ProgramType::Matte>();
-    mShaderManager->SetProgramParameter<ProgramType::Matte, ProgramParameterType::OrthoMatrix>(
+    mShaderManager->ActivateProgram<ProgramKind::Matte>();
+    mShaderManager->SetProgramParameter<ProgramKind::Matte, ProgramParameterKind::OrthoMatrix>(
         orthoMatrix);
 
-    mShaderManager->ActivateProgram<ProgramType::MipMappedTextureQuad>();
-    mShaderManager->SetProgramParameter<ProgramType::MipMappedTextureQuad, ProgramParameterType::OrthoMatrix>(
+    mShaderManager->ActivateProgram<ProgramKind::MipMappedTextureQuad>();
+    mShaderManager->SetProgramParameter<ProgramKind::MipMappedTextureQuad, ProgramParameterKind::OrthoMatrix>(
         orthoMatrix);
 
-    mShaderManager->ActivateProgram<ProgramType::RectOverlay>();
-    mShaderManager->SetProgramParameter<ProgramType::RectOverlay, ProgramParameterType::OrthoMatrix>(
+    mShaderManager->ActivateProgram<ProgramKind::RectOverlay>();
+    mShaderManager->SetProgramParameter<ProgramKind::RectOverlay, ProgramParameterKind::OrthoMatrix>(
         orthoMatrix);
 
-    mShaderManager->ActivateProgram<ProgramType::StructureMesh>();
-    mShaderManager->SetProgramParameter<ProgramType::StructureMesh, ProgramParameterType::OrthoMatrix>(
+    mShaderManager->ActivateProgram<ProgramKind::StructureMesh>();
+    mShaderManager->SetProgramParameter<ProgramKind::StructureMesh, ProgramParameterKind::OrthoMatrix>(
         orthoMatrix);
 
-    mShaderManager->ActivateProgram<ProgramType::Texture>();
-    mShaderManager->SetProgramParameter<ProgramType::Texture, ProgramParameterType::OrthoMatrix>(
+    mShaderManager->ActivateProgram<ProgramKind::Texture>();
+    mShaderManager->SetProgramParameter<ProgramKind::Texture, ProgramParameterKind::OrthoMatrix>(
         orthoMatrix);
 
-    mShaderManager->ActivateProgram<ProgramType::Waterline>();
-    mShaderManager->SetProgramParameter<ProgramType::Waterline, ProgramParameterType::OrthoMatrix>(
+    mShaderManager->ActivateProgram<ProgramKind::Waterline>();
+    mShaderManager->SetProgramParameter<ProgramKind::Waterline, ProgramParameterKind::OrthoMatrix>(
         orthoMatrix);
 }
 
@@ -1887,9 +1887,9 @@ void View::UpdateStructuralLayerVisualizationParameters()
         1.0f / shipWidth,
         1.0f / shipHeight);
 
-    mShaderManager->ActivateProgram<ProgramType::StructureMesh>();
-    mShaderManager->SetProgramParameter<ProgramType::StructureMesh, ProgramParameterType::PixelsPerShipParticle>(pixelsPerShipParticle.x, pixelsPerShipParticle.y);
-    mShaderManager->SetProgramParameter<ProgramType::StructureMesh, ProgramParameterType::ShipParticleTextureSize>(shipParticleTextureSize.x, shipParticleTextureSize.y);
+    mShaderManager->ActivateProgram<ProgramKind::StructureMesh>();
+    mShaderManager->SetProgramParameter<ProgramKind::StructureMesh, ProgramParameterKind::PixelsPerShipParticle>(pixelsPerShipParticle.x, pixelsPerShipParticle.y);
+    mShaderManager->SetProgramParameter<ProgramKind::StructureMesh, ProgramParameterKind::ShipParticleTextureSize>(shipParticleTextureSize.x, shipParticleTextureSize.y);
 }
 
 void View::UpdateBackgroundTexture(ImageSize const & textureSize)
@@ -1990,8 +1990,8 @@ void View::UpdateCanvas()
         1.0f / canvasPhysSize.width,
         1.0f / canvasPhysSize.height);
 
-    mShaderManager->ActivateProgram<ProgramType::Canvas>();
-    mShaderManager->SetProgramParameter<ProgramType::Canvas, ProgramParameterType::PixelSize>(pixelSize.x, pixelSize.y);
+    mShaderManager->ActivateProgram<ProgramKind::Canvas>();
+    mShaderManager->SetProgramParameter<ProgramKind::Canvas, ProgramParameterKind::PixelSize>(pixelSize.x, pixelSize.y);
 }
 
 void View::UpdateGrid()
@@ -2049,8 +2049,8 @@ void View::UpdateGrid()
 
     float const pixelStepSize = mViewModel.CalculateGridPhysicalPixelStepSize();
 
-    mShaderManager->ActivateProgram<ProgramType::Grid>();
-    mShaderManager->SetProgramParameter<ProgramType::Grid, ProgramParameterType::PixelStep>(
+    mShaderManager->ActivateProgram<ProgramKind::Grid>();
+    mShaderManager->SetProgramParameter<ProgramKind::Grid, ProgramParameterKind::PixelStep>(
         pixelStepSize);
 }
 
@@ -2112,8 +2112,8 @@ void View::UpdateCircleOverlay()
         1.0f / std::max(shipParticlePhysSize.width, 1),
         1.0f / std::max(shipParticlePhysSize.height, 1));
 
-    mShaderManager->ActivateProgram<ProgramType::CircleOverlay>();
-    mShaderManager->SetProgramParameter<ProgramType::CircleOverlay, ProgramParameterType::PixelSize>(pixelSize.x, pixelSize.y);
+    mShaderManager->ActivateProgram<ProgramKind::CircleOverlay>();
+    mShaderManager->SetProgramParameter<ProgramKind::CircleOverlay, ProgramParameterKind::PixelSize>(pixelSize.x, pixelSize.y);
 }
 
 void View::UpdateRectOverlay()
@@ -2236,8 +2236,8 @@ void View::UpdateRectOverlay()
         1.0f / std::max(rectPhysSize.x, 1.0f),
         1.0f / std::max(rectPhysSize.y, 1.0f));
 
-    mShaderManager->ActivateProgram<ProgramType::RectOverlay>();
-    mShaderManager->SetProgramParameter<ProgramType::RectOverlay, ProgramParameterType::PixelSize>(pixelSize.x, pixelSize.y);
+    mShaderManager->ActivateProgram<ProgramKind::RectOverlay>();
+    mShaderManager->SetProgramParameter<ProgramKind::RectOverlay, ProgramParameterKind::PixelSize>(pixelSize.x, pixelSize.y);
 }
 
 void View::UpdateDashedLineOverlay()
@@ -2444,17 +2444,17 @@ void View::UploadDebugRegionOverlayVertexBuffer()
 void View::RenderGameVisualization()
 {
     // Set this texture in the shader's sampler
-    mShaderManager->ActivateTexture<ProgramParameterType::TextureUnit1>();
+    mShaderManager->ActivateTexture<ProgramParameterKind::TextureUnit1>();
     glBindTexture(GL_TEXTURE_2D, *mGameVisualizationTexture);
 
     // Bind VAO
     glBindVertexArray(*mGameVisualizationVAO);
 
     // Activate program
-    mShaderManager->ActivateProgram<ProgramType::Texture>();
+    mShaderManager->ActivateProgram<ProgramKind::Texture>();
 
     // Set opacity
-    mShaderManager->SetProgramParameter<ProgramType::Texture, ProgramParameterType::Opacity>(
+    mShaderManager->SetProgramParameter<ProgramKind::Texture, ProgramParameterKind::Opacity>(
         mPrimaryVisualization == VisualizationType::Game ? 1.0f : mOtherVisualizationsOpacity);
 
     // Draw
@@ -2465,7 +2465,7 @@ void View::RenderGameVisualization()
 void View::RenderStructuralLayerVisualization()
 {
     // Set this texture in the shader's sampler
-    mShaderManager->ActivateTexture<ProgramParameterType::TextureUnit1>();
+    mShaderManager->ActivateTexture<ProgramParameterKind::TextureUnit1>();
     glBindTexture(GL_TEXTURE_2D, *mStructuralLayerVisualizationTexture);
 
     // Bind VAO
@@ -2475,7 +2475,7 @@ void View::RenderStructuralLayerVisualization()
     mShaderManager->ActivateProgram(mStructuralLayerVisualizationShader);
 
     // Set opacity
-    mShaderManager->SetProgramParameter<ProgramParameterType::Opacity>(
+    mShaderManager->SetProgramParameter<ProgramParameterKind::Opacity>(
         mStructuralLayerVisualizationShader,
         mPrimaryVisualization == VisualizationType::StructuralLayer ? 1.0f : mOtherVisualizationsOpacity);
 
@@ -2487,17 +2487,17 @@ void View::RenderStructuralLayerVisualization()
 void View::RenderElectricalLayerVisualization()
 {
     // Set this texture in the shader's sampler
-    mShaderManager->ActivateTexture<ProgramParameterType::TextureUnit1>();
+    mShaderManager->ActivateTexture<ProgramParameterKind::TextureUnit1>();
     glBindTexture(GL_TEXTURE_2D, *mElectricalLayerVisualizationTexture);
 
     // Bind VAO
     glBindVertexArray(*mElectricalLayerVisualizationVAO);
 
     // Activate program
-    mShaderManager->ActivateProgram<ProgramType::Texture>();
+    mShaderManager->ActivateProgram<ProgramKind::Texture>();
 
     // Set opacity
-    mShaderManager->SetProgramParameter<ProgramType::Texture, ProgramParameterType::Opacity>(
+    mShaderManager->SetProgramParameter<ProgramKind::Texture, ProgramParameterKind::Opacity>(
         mPrimaryVisualization == VisualizationType::ElectricalLayer ? 1.0f : mOtherVisualizationsOpacity);
 
     // Draw
@@ -2511,10 +2511,10 @@ void View::RenderRopesLayerVisualization()
     glBindVertexArray(*mRopesVAO);
 
     // Activate program
-    mShaderManager->ActivateProgram<ProgramType::Matte>();
+    mShaderManager->ActivateProgram<ProgramKind::Matte>();
 
     // Set opacity
-    mShaderManager->SetProgramParameter<ProgramType::Matte, ProgramParameterType::Opacity>(
+    mShaderManager->SetProgramParameter<ProgramKind::Matte, ProgramParameterKind::Opacity>(
         mPrimaryVisualization == VisualizationType::RopesLayer ? 1.0f : mOtherVisualizationsOpacity);
 
     // Set line width
@@ -2528,17 +2528,17 @@ void View::RenderRopesLayerVisualization()
 void View::RenderExteriorTextureLayerVisualization()
 {
     // Set this texture in the shader's sampler
-    mShaderManager->ActivateTexture<ProgramParameterType::TextureUnit1>();
+    mShaderManager->ActivateTexture<ProgramParameterKind::TextureUnit1>();
     glBindTexture(GL_TEXTURE_2D, *mExteriorTextureLayerVisualizationTexture);
 
     // Bind VAO
     glBindVertexArray(*mExteriorTextureLayerVisualizationVAO);
 
     // Activate program
-    mShaderManager->ActivateProgram<ProgramType::Texture>();
+    mShaderManager->ActivateProgram<ProgramKind::Texture>();
 
     // Set opacity
-    mShaderManager->SetProgramParameter<ProgramType::Texture, ProgramParameterType::Opacity>(
+    mShaderManager->SetProgramParameter<ProgramKind::Texture, ProgramParameterKind::Opacity>(
         mPrimaryVisualization == VisualizationType::ExteriorTextureLayer ? 1.0f : mOtherVisualizationsOpacity);
 
     // Draw
@@ -2549,17 +2549,17 @@ void View::RenderExteriorTextureLayerVisualization()
 void View::RenderInteriorTextureLayerVisualization()
 {
     // Set this texture in the shader's sampler
-    mShaderManager->ActivateTexture<ProgramParameterType::TextureUnit1>();
+    mShaderManager->ActivateTexture<ProgramParameterKind::TextureUnit1>();
     glBindTexture(GL_TEXTURE_2D, *mInteriorTextureLayerVisualizationTexture);
 
     // Bind VAO
     glBindVertexArray(*mInteriorTextureLayerVisualizationVAO);
 
     // Activate program
-    mShaderManager->ActivateProgram<ProgramType::Texture>();
+    mShaderManager->ActivateProgram<ProgramKind::Texture>();
 
     // Set opacity
-    mShaderManager->SetProgramParameter<ProgramType::Texture, ProgramParameterType::Opacity>(
+    mShaderManager->SetProgramParameter<ProgramKind::Texture, ProgramParameterKind::Opacity>(
         mPrimaryVisualization == VisualizationType::InteriorTextureLayer ? 1.0f : mOtherVisualizationsOpacity);
 
     // Draw

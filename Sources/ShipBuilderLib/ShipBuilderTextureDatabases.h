@@ -26,7 +26,7 @@ enum class MipMappedTextureGroups : uint16_t
     _Last = WaterlineMarker
 };
 
-struct MipMappedTextureTextureDatabaseTraits
+struct MipMappedTextureDatabase
 {
     static inline std::string DatabaseName = "ShipBuilderMipMappedTexture";
 

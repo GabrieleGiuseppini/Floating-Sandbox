@@ -6,20 +6,21 @@
 #pragma once
 
 #include "OpenGLManager.h"
-#include "ShaderTypes.h"
+#include "ShipBuilderShaderSets.h"
+#include "ShipBuilderTextureDatabases.h"
 #include "ShipBuilderTypes.h"
-#include "TextureTypes.h"
 #include "ViewModel.h"
 
-#include <Game/Layers.h>
-#include <Game/ResourceLocator.h>
-#include <Game/TextureAtlas.h>
+#include <Game/GameAssetManager.h>
 
-#include <GameCore/Colors.h>
-#include <GameCore/ImageData.h>
+#include <Simulation/Layers.h>
 
-#include <GameOpenGL/GameOpenGL.h>
-#include <GameOpenGL/ShaderManager.h>
+#include <OpenGLCore/GameOpenGL.h>
+#include <OpenGLCore/ShaderManager.h>
+
+#include <Core/Colors.h>
+#include <Core/ImageData.h>
+#include <Core/TextureAtlas.h>
 
 #include <array>
 #include <functional>
@@ -50,7 +51,7 @@ public:
         int logicalToPhysicalPixelFactor,
         OpenGLManager & openGLManager,
         std::function<void()> swapRenderBuffersFunction,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
     ViewModel const & GetViewModel() const
     {
@@ -382,7 +383,7 @@ private:
 
     std::unique_ptr<OpenGLContext> mOpenGLContext; // Just placeholder
     ViewModel mViewModel;
-    std::unique_ptr<ShaderManager<ShaderManagerTraits>> mShaderManager;
+    std::unique_ptr<ShaderManager<ShaderSet>> mShaderManager;
     std::function<void()> const mSwapRenderBuffersFunction;
 
     //
@@ -583,7 +584,7 @@ private:
     GameOpenGLVBO mStructuralLayerVisualizationVBO;
     GameOpenGLTexture mStructuralLayerVisualizationTexture;
     bool mHasStructuralLayerVisualization;
-    ProgramType mStructuralLayerVisualizationShader;
+    ProgramKind mStructuralLayerVisualizationShader;
 
     // Electrical layer visualization
     GameOpenGLVAO mElectricalLayerVisualizationVAO;
@@ -661,7 +662,7 @@ private:
     //
 
     GameOpenGLTexture mMipMappedTextureAtlasOpenGLHandle;
-    std::unique_ptr<Render::TextureAtlasMetadata<MipMappedTextureGroups>> mMipMappedTextureAtlasMetadata;
+    std::unique_ptr<TextureAtlasMetadata<MipMappedTextureDatabase>> mMipMappedTextureAtlasMetadata;
 
     //
     // Settings from outside

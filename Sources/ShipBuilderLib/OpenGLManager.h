@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include <GameOpenGL/GameOpenGL.h>
+#include <OpenGLCore/GameOpenGL.h>
 
 #include <wx/glcanvas.h> // Need to include this *after* our glad.h has been included, so that wxGLCanvas ends
                          // up *not* including the system's OpenGL header but glad's instead

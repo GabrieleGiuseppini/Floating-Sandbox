@@ -8,9 +8,9 @@
 #include "Model.h"
 #include "ModelValidationResults.h"
 
-#include <GameCore/Buffer2D.h>
-#include <GameCore/Finalizer.h>
-#include <GameCore/GameTypes.h>
+#include <Core/Buffer2D.h>
+#include <Core/Finalizer.h>
+#include <Core/GameTypes.h>
 
 #include <functional>
 #include <optional>

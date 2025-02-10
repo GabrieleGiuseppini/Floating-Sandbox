@@ -18,10 +18,10 @@ set (SHIPBUILDER_LIB_SOURCES
 	Model.h
 	#ModelController.cpp
 	#ModelController.h
-	#ModelValidationResults.h
-	#ModelValidationSession.cpp
-	#ModelValidationSession.h
-	#OpenGLManager.h
+	ModelValidationResults.h
+	ModelValidationSession.cpp
+	ModelValidationSession.h
+	OpenGLManager.h
 	#SelectionManager.h
 	ShipBuilderShaderSets.cpp
 	ShipBuilderShaderSets.h
@@ -31,8 +31,8 @@ set (SHIPBUILDER_LIB_SOURCES
 	ShipNameNormalizer.h
 	UndoStack.cpp
 	UndoStack.h
-	#View.cpp
-	#View.h
+	View.cpp
+	View.h
 	ViewModel.h
 	WaterlineAnalyzer.cpp
 	WaterlineAnalyzer.h
