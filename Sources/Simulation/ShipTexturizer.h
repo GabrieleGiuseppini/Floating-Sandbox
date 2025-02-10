@@ -66,13 +66,15 @@ public:
     RgbaImageData MakeMaterialTextureSample(
         std::optional<ShipAutoTexturizationSettings> const & settings,
         ImageSize const & sampleSize,
-        TMaterial const & material) const
+        TMaterial const & material,
+        IAssetManager const & assetManager) const
     {
         return MakeMaterialTextureSample(
             settings,
             sampleSize,
             material.RenderColor,
-            material.MaterialTextureName);
+            material.MaterialTextureName,
+            assetManager);
     }
 
     //

@@ -990,6 +990,19 @@ struct FloatSize
             && height == other.height;
     }
 
+    inline constexpr FloatSize operator/(float other) const
+    {
+        return FloatSize(
+            width / other,
+            height / other);
+    }
+
+    inline vec2i to_vec2i_round() const
+    {
+        return vec2i(
+            static_cast<int>(std::roundf(width)),
+            static_cast<int>(std::roundf(height)));
+    }
 };
 
 /*
