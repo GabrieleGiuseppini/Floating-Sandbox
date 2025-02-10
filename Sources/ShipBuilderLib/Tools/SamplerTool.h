@@ -9,9 +9,10 @@
 
 #include <UILib/WxHelpers.h>
 
+#include <Game/GameAssetManager.h>
+
 #include <Simulation/Layers.h>
 #include <Simulation/Materials.h>
-#include <Simulation/GameAssetManager.h>
 
 #include <Core/GameTypes.h>
 

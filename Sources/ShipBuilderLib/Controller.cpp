@@ -18,8 +18,6 @@
 #include "Tools/TextureEraserTool.h"
 #include "Tools/TextureMagicWandTool.h"
 
-#include <Game/PngImageFileTools.h>
-
 #include <cassert>
 
 namespace ShipBuilder {
@@ -30,7 +28,7 @@ std::unique_ptr<Controller> Controller::CreateNew(
     WorkbenchState & workbenchState,
     IUserInterface & userInterface,
     ShipTexturizer const & shipTexturizer,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & resourceLocator)
 {
     auto modelController = ModelController::CreateNew(
         workbenchState.GetNewShipSize(),
@@ -54,7 +52,7 @@ std::unique_ptr<Controller> Controller::CreateForShip(
     WorkbenchState & workbenchState,
     IUserInterface & userInterface,
     ShipTexturizer const & shipTexturizer,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & resourceLocator)
 {
     auto modelController = ModelController::CreateForShip(
         std::move(shipDefinition),
@@ -76,14 +74,14 @@ Controller::Controller(
     OpenGLManager & openGLManager,
     WorkbenchState & workbenchState,
     IUserInterface & userInterface,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & resourceLocator)
     : mView()
     , mModelController(std::move(modelController))
     , mUndoStack()
     , mSelectionManager(userInterface)
     , mWorkbenchState(workbenchState)
     , mUserInterface(userInterface)
-    , mResourceLocator(resourceLocator)
+    , mGameAssetManager(resourceLocator)
     // State
     , mCurrentTool()
     , mCurrentToolTypePerLayer({ToolType::StructuralPencil, ToolType::ElectricalPencil, ToolType::RopePencil, ToolType::ExteriorTextureEraser, ToolType::InteriorTextureEraser})
@@ -105,11 +103,11 @@ Controller::Controller(
         {
             mUserInterface.SwapRenderBuffers();
         },
-        mResourceLocator);
+        mGameAssetManager);
 
     mView->UploadBackgroundTexture(
-        PngImageFileTools::LoadImageRgba(
-            mResourceLocator.GetBitmapFilePath("shipbuilder_background")));
+        GameAssetManager::LoadPngImageRgba(
+            mGameAssetManager.GetPngImageFilePath("shipbuilder_background")));
 
     // Set ideal zoom
     mView->SetZoom(mView->CalculateIdealZoom());
@@ -143,7 +141,7 @@ Controller::Controller(
     InternalUpdateModelControllerVisualizationModes();
 
     // Upload layers' visualizations
-    mModelController->UpdateVisualizations(*mView);
+    mModelController->UpdateVisualizations(*mView, mGameAssetManager);
 
     // Notify macro properties
     NotifyModelMacroPropertiesUpdated();
@@ -358,7 +356,7 @@ void Controller::RestoreStructuralLayerRegionBackupForUndo(
     NotifyModelMacroPropertiesUpdated();
 
     // Refresh model visualization
-    mModelController->UpdateVisualizations(*mView);
+    mModelController->UpdateVisualizations(*mView, mGameAssetManager);
     mUserInterface.RefreshView();
 }
 
@@ -381,7 +379,7 @@ void Controller::RestoreStructuralLayerForUndo(std::unique_ptr<StructuralLayerDa
     NotifyModelMacroPropertiesUpdated();
 
     // Refresh model visualizations
-    mModelController->UpdateVisualizations(*mView);
+    mModelController->UpdateVisualizations(*mView, mGameAssetManager);
     mUserInterface.RefreshView();
 }
 
@@ -429,7 +427,7 @@ void Controller::RestoreElectricalLayerRegionBackupForUndo(
     mUserInterface.OnElectricalLayerInstancedElementSetChanged(mModelController->GetInstancedElectricalElementSet());
 
     // Refresh model visualizations
-    mModelController->UpdateVisualizations(*mView);
+    mModelController->UpdateVisualizations(*mView, mGameAssetManager);
     mUserInterface.RefreshView();
 }
 
@@ -455,7 +453,7 @@ void Controller::RestoreElectricalLayerForUndo(std::unique_ptr<ElectricalLayerDa
     mUserInterface.OnElectricalLayerInstancedElementSetChanged(mModelController->GetInstancedElectricalElementSet());
 
     // Refresh model visualizations
-    mModelController->UpdateVisualizations(*mView);
+    mModelController->UpdateVisualizations(*mView, mGameAssetManager);
     mUserInterface.RefreshView();
 }
 
@@ -534,7 +532,7 @@ void Controller::RestoreRopesLayerRegionBackupForUndo(
     NotifyModelMacroPropertiesUpdated();
 
     // Refresh model visualizations
-    mModelController->UpdateVisualizations(*mView);
+    mModelController->UpdateVisualizations(*mView, mGameAssetManager);
     mUserInterface.RefreshView();
 
 }
@@ -558,7 +556,7 @@ void Controller::RestoreRopesLayerForUndo(std::unique_ptr<RopesLayerData> ropesL
     NotifyModelMacroPropertiesUpdated();
 
     // Refresh model visualizations
-    mModelController->UpdateVisualizations(*mView);
+    mModelController->UpdateVisualizations(*mView, mGameAssetManager);
     mUserInterface.RefreshView();
 }
 
@@ -594,7 +592,7 @@ void Controller::RestoreExteriorTextureLayerRegionBackupForUndo(
     NotifyModelMacroPropertiesUpdated();
 
     // Refresh model visualizations
-    mModelController->UpdateVisualizations(*mView);
+    mModelController->UpdateVisualizations(*mView, mGameAssetManager);
     mUserInterface.RefreshView();
 }
 
@@ -618,7 +616,7 @@ void Controller::RestoreExteriorTextureLayerForUndo(
     InternalUpdateModelControllerVisualizationModes();
 
     // Refresh model visualizations
-    mModelController->UpdateVisualizations(*mView);
+    mModelController->UpdateVisualizations(*mView, mGameAssetManager);
     mUserInterface.RefreshView();
 }
 
@@ -652,7 +650,7 @@ void Controller::RestoreInteriorTextureLayerRegionBackupForUndo(
     NotifyModelMacroPropertiesUpdated();
 
     // Refresh model visualizations
-    mModelController->UpdateVisualizations(*mView);
+    mModelController->UpdateVisualizations(*mView, mGameAssetManager);
     mUserInterface.RefreshView();
 }
 
@@ -672,7 +670,7 @@ void Controller::RestoreInteriorTextureLayerForUndo(std::unique_ptr<TextureLayer
     InternalUpdateModelControllerVisualizationModes();
 
     // Refresh model visualizations
-    mModelController->UpdateVisualizations(*mView);
+    mModelController->UpdateVisualizations(*mView, mGameAssetManager);
     mUserInterface.RefreshView();
 }
 
@@ -745,7 +743,7 @@ void Controller::RestoreAllLayersForUndo(
     NotifyModelMacroPropertiesUpdated();
 
     // Refresh model visualizations
-    mModelController->UpdateVisualizations(*mView);
+    mModelController->UpdateVisualizations(*mView, mGameAssetManager);
     mUserInterface.RefreshView();
 }
 
@@ -758,7 +756,7 @@ void Controller::Restore(GenericUndoPayload && undoPayload)
     NotifyModelMacroPropertiesUpdated();
 
     // Refresh model visualizations
-    mModelController->UpdateVisualizations(*mView);
+    mModelController->UpdateVisualizations(*mView, mGameAssetManager);
     mUserInterface.RefreshView();
 }
 
@@ -931,7 +929,7 @@ void Controller::Paste()
                 std::move(clipboardClone),
                 mWorkbenchState.GetPasteIsTransparent(),
                 *this,
-                mResourceLocator);
+                mGameAssetManager);
 
             break;
         }
@@ -942,7 +940,7 @@ void Controller::Paste()
                 std::move(clipboardClone),
                 mWorkbenchState.GetPasteIsTransparent(),
                 *this,
-                mResourceLocator);
+                mGameAssetManager);
 
             break;
         }
@@ -953,7 +951,7 @@ void Controller::Paste()
                 std::move(clipboardClone),
                 mWorkbenchState.GetPasteIsTransparent(),
                 *this,
-                mResourceLocator);
+                mGameAssetManager);
 
             break;
         }
@@ -964,7 +962,7 @@ void Controller::Paste()
                 std::move(clipboardClone),
                 mWorkbenchState.GetPasteIsTransparent(),
                 *this,
-                mResourceLocator);
+                mGameAssetManager);
 
             break;
         }
@@ -975,7 +973,7 @@ void Controller::Paste()
                 std::move(clipboardClone),
                 mWorkbenchState.GetPasteIsTransparent(),
                 *this,
-                mResourceLocator);
+                mGameAssetManager);
 
             break;
         }
@@ -1123,7 +1121,7 @@ void Controller::LayerChangeEpilog(std::vector<LayerType> dirtyLayers)
 
     // Refresh visualization
     assert(mView);
-    mModelController->UpdateVisualizations(*mView);
+    mModelController->UpdateVisualizations(*mView, mGameAssetManager);
     mUserInterface.RefreshView();
 }
 
@@ -1213,7 +1211,7 @@ void Controller::SetGameVisualizationMode(GameVisualizationModeType mode)
     InternalUpdateModelControllerVisualizationModes();
 
     // Refresh model visualizations
-    mModelController->UpdateVisualizations(*mView);
+    mModelController->UpdateVisualizations(*mView, mGameAssetManager);
     mUserInterface.RefreshView();
 }
 
@@ -1228,7 +1226,7 @@ void Controller::SetStructuralLayerVisualizationMode(StructuralLayerVisualizatio
     InternalUpdateModelControllerVisualizationModes();
 
     // Refresh model visualizations
-    mModelController->UpdateVisualizations(*mView);
+    mModelController->UpdateVisualizations(*mView, mGameAssetManager);
     mUserInterface.RefreshView();
 }
 
@@ -1243,7 +1241,7 @@ void Controller::SetElectricalLayerVisualizationMode(ElectricalLayerVisualizatio
     InternalUpdateModelControllerVisualizationModes();
 
     // Refresh model visualizations
-    mModelController->UpdateVisualizations(*mView);
+    mModelController->UpdateVisualizations(*mView, mGameAssetManager);
     mUserInterface.RefreshView();
 }
 
@@ -1258,7 +1256,7 @@ void Controller::SetRopesLayerVisualizationMode(RopesLayerVisualizationModeType 
     InternalUpdateModelControllerVisualizationModes();
 
     // Refresh model visualizations
-    mModelController->UpdateVisualizations(*mView);
+    mModelController->UpdateVisualizations(*mView, mGameAssetManager);
     mUserInterface.RefreshView();
 }
 
@@ -1273,7 +1271,7 @@ void Controller::SetExteriorTextureLayerVisualizationMode(ExteriorTextureLayerVi
     InternalUpdateModelControllerVisualizationModes();
 
     // Refresh model visualizations
-    mModelController->UpdateVisualizations(*mView);
+    mModelController->UpdateVisualizations(*mView, mGameAssetManager);
     mUserInterface.RefreshView();
 }
 
@@ -1288,7 +1286,7 @@ void Controller::SetInteriorTextureLayerVisualizationMode(InteriorTextureLayerVi
     InternalUpdateModelControllerVisualizationModes();
 
     // Refresh model visualizations
-    mModelController->UpdateVisualizations(*mView);
+    mModelController->UpdateVisualizations(*mView, mGameAssetManager);
     mUserInterface.RefreshView();
 }
 
@@ -1993,7 +1991,7 @@ void Controller::InternalSetShipProperties(
             mModelController->ForceWholeGameVisualizationRefresh();
 
             // Refresh model visualizations
-            mModelController->UpdateVisualizations(*mView);
+            mModelController->UpdateVisualizations(*mView, mGameAssetManager);
             mUserInterface.RefreshView();
         }
     }
@@ -2197,119 +2195,119 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
         {
             return std::make_unique<ElectricalEraserTool>(
                 *this,
-                mResourceLocator);
+                mGameAssetManager);
         }
 
         case ToolType::ElectricalLine:
         {
             return std::make_unique<ElectricalLineTool>(
                 *this,
-                mResourceLocator);
+                mGameAssetManager);
         }
 
         case ToolType::ElectricalPencil:
         {
             return std::make_unique<ElectricalPencilTool>(
                 *this,
-                mResourceLocator);
+                mGameAssetManager);
         }
 
         case ToolType::ElectricalSampler:
         {
             return std::make_unique<ElectricalSamplerTool>(
                 *this,
-                mResourceLocator);
+                mGameAssetManager);
         }
 
         case ToolType::StructuralEraser:
         {
             return std::make_unique<StructuralEraserTool>(
                 *this,
-                mResourceLocator);
+                mGameAssetManager);
         }
 
         case ToolType::StructuralFlood:
         {
             return std::make_unique<StructuralFloodTool>(
                 *this,
-                mResourceLocator);
+                mGameAssetManager);
         }
 
         case ToolType::StructuralLine:
         {
             return std::make_unique<StructuralLineTool>(
                 *this,
-                mResourceLocator);
+                mGameAssetManager);
         }
 
         case ToolType::StructuralMeasuringTapeTool:
         {
             return std::make_unique<MeasuringTapeTool>(
                 *this,
-                mResourceLocator);
+                mGameAssetManager);
         }
 
         case ToolType::StructuralPencil:
         {
             return std::make_unique<StructuralPencilTool>(
                 *this,
-                mResourceLocator);
+                mGameAssetManager);
         }
 
         case ToolType::StructuralSampler:
         {
             return std::make_unique<StructuralSamplerTool>(
                 *this,
-                mResourceLocator);
+                mGameAssetManager);
         }
 
         case ToolType::RopePencil:
         {
             return std::make_unique<RopePencilTool>(
                 *this,
-                mResourceLocator);
+                mGameAssetManager);
         }
 
         case ToolType::RopeEraser:
         {
             return std::make_unique<RopeEraserTool>(
                 *this,
-                mResourceLocator);
+                mGameAssetManager);
         }
 
         case ToolType::RopeSampler:
         {
             return std::make_unique<RopeSamplerTool>(
                 *this,
-                mResourceLocator);
+                mGameAssetManager);
         }
 
         case ToolType::ExteriorTextureEraser:
         {
             return std::make_unique<ExteriorTextureEraserTool>(
                 *this,
-                mResourceLocator);
+                mGameAssetManager);
         }
 
         case ToolType::ExteriorTextureMagicWand:
         {
             return std::make_unique<ExteriorTextureMagicWandTool>(
                 *this,
-                mResourceLocator);
+                mGameAssetManager);
         }
 
         case ToolType::InteriorTextureEraser:
         {
             return std::make_unique<InteriorTextureEraserTool>(
                 *this,
-                mResourceLocator);
+                mGameAssetManager);
         }
 
         case ToolType::InteriorTextureMagicWand:
         {
             return std::make_unique<InteriorTextureMagicWandTool>(
                 *this,
-                mResourceLocator);
+                mGameAssetManager);
         }
 
         case ToolType::StructuralSelection:
@@ -2317,7 +2315,7 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
             return std::make_unique<StructuralSelectionTool>(
                 *this,
                 mSelectionManager,
-                mResourceLocator);
+                mGameAssetManager);
         }
 
         case ToolType::ElectricalSelection:
@@ -2325,7 +2323,7 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
             return std::make_unique<ElectricalSelectionTool>(
                 *this,
                 mSelectionManager,
-                mResourceLocator);
+                mGameAssetManager);
         }
 
         case ToolType::RopeSelection:
@@ -2333,7 +2331,7 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
             return std::make_unique<RopeSelectionTool>(
                 *this,
                 mSelectionManager,
-                mResourceLocator);
+                mGameAssetManager);
         }
 
         case ToolType::ExteriorTextureSelection:
@@ -2341,7 +2339,7 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
             return std::make_unique<ExteriorTextureSelectionTool>(
                 *this,
                 mSelectionManager,
-                mResourceLocator);
+                mGameAssetManager);
         }
 
         case ToolType::InteriorTextureSelection:
@@ -2349,7 +2347,7 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
             return std::make_unique<InteriorTextureSelectionTool>(
                 *this,
                 mSelectionManager,
-                mResourceLocator);
+                mGameAssetManager);
         }
 
         case ToolType::StructuralPaste:
@@ -2367,7 +2365,7 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
         {
             return std::make_unique<StructuralRectangleTool>(
                 *this,
-                mResourceLocator);
+                mGameAssetManager);
         }
     }
 

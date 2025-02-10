@@ -17,12 +17,13 @@
 #include "WorkbenchState.h"
 #include "Tools/Tool.h"
 
-#include <Game/Layers.h>
-#include <Game/ResourceLocator.h>
-#include <Game/ShipDefinition.h>
-#include <Game/ShipTexturizer.h>
+#include <Game/GameAssetManager.h>
 
-#include <GameCore/Finalizer.h>
+#include <Simulation/Layers.h>
+#include <Simulation/ShipDefinition.h>
+#include <Simulation/ShipTexturizer.h>
+
+#include <Core/Finalizer.h>
 
 #include <memory>
 #include <optional>
@@ -55,7 +56,7 @@ public:
         WorkbenchState & workbenchState,
         IUserInterface & userInterface,
         ShipTexturizer const & shipTexturizer,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & resourceLocator);
 
     static std::unique_ptr<Controller> CreateForShip(
         ShipDefinition && shipDefinition,
@@ -63,7 +64,7 @@ public:
         WorkbenchState & workbenchState,
         IUserInterface & userInterface,
         ShipTexturizer const & shipTexturizer,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & resourceLocator);
 
     IModelObservable const & GetModelObservable() const
     {
@@ -320,7 +321,7 @@ private:
         OpenGLManager & openGLManager,
         WorkbenchState & workbenchState,
         IUserInterface & userInterface,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & resourceLocator);
 
     template<LayerType TLayerType, typename ... TArgs>
     void InternalSetLayer(wxString actionTitle, TArgs&& ... args);
@@ -390,7 +391,7 @@ private:
     WorkbenchState & mWorkbenchState;
     IUserInterface & mUserInterface;
 
-    ResourceLocator const & mResourceLocator;
+    GameAssetManager const & mGameAssetManager;
 
     //
     // State
