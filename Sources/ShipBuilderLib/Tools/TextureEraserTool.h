@@ -7,11 +7,12 @@
 
 #include "Tool.h"
 
-#include <Game/Layers.h>
-#include <Game/Materials.h>
-#include <Game/ResourceLocator.h>
+#include <Game/GameAssetManager.h>
 
-#include <GameCore/GameTypes.h>
+#include <Simulation/Layers.h>
+#include <Simulation/Materials.h>
+
+#include <Core/GameTypes.h>
 
 #include <memory>
 #include <optional>
@@ -39,7 +40,7 @@ protected:
     TextureEraserTool(
         ToolType toolType,
         Controller & controller,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
 private:
 
@@ -106,7 +107,7 @@ public:
 
     ExteriorTextureEraserTool(
         Controller & controller,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 };
 
 class InteriorTextureEraserTool final : public TextureEraserTool<LayerType::InteriorTexture>
@@ -115,7 +116,7 @@ public:
 
     InteriorTextureEraserTool(
         Controller & controller,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 };
 
 }

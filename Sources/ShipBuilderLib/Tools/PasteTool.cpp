@@ -7,7 +7,7 @@
 
 #include "../Controller.h"
 
-#include "GameCore/GameMath.h"
+#include "Core/GameMath.h"
 
 #include <cmath>
 
@@ -17,65 +17,65 @@ StructuralPasteTool::StructuralPasteTool(
     ShipLayers && pasteRegion,
     bool isTransparent,
     Controller & controller,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
     : PasteTool(
         std::move(pasteRegion),
         isTransparent,
         ToolType::StructuralPaste,
         controller,
-        resourceLocator)
+        gameAssetManager)
 {}
 
 ElectricalPasteTool::ElectricalPasteTool(
     ShipLayers && pasteRegion,
     bool isTransparent,
     Controller & controller,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
     : PasteTool(
         std::move(pasteRegion),
         isTransparent,
         ToolType::ElectricalPaste,
         controller,
-        resourceLocator)
+        gameAssetManager)
 {}
 
 RopePasteTool::RopePasteTool(
     ShipLayers && pasteRegion,
     bool isTransparent,
     Controller & controller,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
     : PasteTool(
         std::move(pasteRegion),
         isTransparent,
         ToolType::RopePaste,
         controller,
-        resourceLocator)
+        gameAssetManager)
 {}
 
 ExteriorTexturePasteTool::ExteriorTexturePasteTool(
     ShipLayers && pasteRegion,
     bool isTransparent,
     Controller & controller,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
     : PasteTool(
         std::move(pasteRegion),
         isTransparent,
         ToolType::ExteriorTexturePaste,
         controller,
-        resourceLocator)
+        gameAssetManager)
 {}
 
 InteriorTexturePasteTool::InteriorTexturePasteTool(
     ShipLayers && pasteRegion,
     bool isTransparent,
     Controller & controller,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
     : PasteTool(
         std::move(pasteRegion),
         isTransparent,
         ToolType::InteriorTexturePaste,
         controller,
-        resourceLocator)
+        gameAssetManager)
 {}
 
 PasteTool::PasteTool(
@@ -83,7 +83,7 @@ PasteTool::PasteTool(
     bool isTransparent,
     ToolType toolType,
     Controller & controller,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
     : Tool(
         toolType,
         controller)
@@ -91,7 +91,7 @@ PasteTool::PasteTool(
     , mPendingSessionData()
     , mDragSessionData()
 {
-    SetCursor(WxHelpers::LoadCursorImage("pan_cursor", 16, 16, resourceLocator));
+    SetCursor(WxHelpers::LoadCursorImage("pan_cursor", 16, 16, gameAssetManager));
 
     // Begin pending session
     mPendingSessionData.emplace(

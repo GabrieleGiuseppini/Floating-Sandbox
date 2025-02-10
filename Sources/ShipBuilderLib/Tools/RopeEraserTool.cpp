@@ -15,7 +15,7 @@ namespace ShipBuilder {
 
 RopeEraserTool::RopeEraserTool(
     Controller & controller,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
     : Tool(
         ToolType::RopeEraser,
         controller)
@@ -23,7 +23,7 @@ RopeEraserTool::RopeEraserTool(
     , mHasOverlay(false)
     , mEngagementData()
 {
-    SetCursor(WxHelpers::LoadCursorImage("eraser_cursor", 8, 27, resourceLocator));
+    SetCursor(WxHelpers::LoadCursorImage("eraser_cursor", 8, 27, gameAssetManager));
 
     // Check if we draw the overlay right away
     auto const mouseShipCoordinates = GetCurrentMouseShipCoordinatesIfInShip();

@@ -7,9 +7,9 @@
 
 #include "../Controller.h"
 
-#include <GameCore/GameGeometry.h>
-
 #include <UILib/WxHelpers.h>
+
+#include <Core/GameGeometry.h>
 
 #include <type_traits>
 
@@ -17,27 +17,27 @@ namespace ShipBuilder {
 
 ExteriorTextureEraserTool::ExteriorTextureEraserTool(
     Controller & controller,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
     : TextureEraserTool(
         ToolType::ExteriorTextureEraser,
         controller,
-        resourceLocator)
+        gameAssetManager)
 {}
 
 InteriorTextureEraserTool::InteriorTextureEraserTool(
     Controller & controller,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
     : TextureEraserTool(
         ToolType::InteriorTextureEraser,
         controller,
-        resourceLocator)
+        gameAssetManager)
 {}
 
 template<LayerType TLayerType>
 TextureEraserTool<TLayerType>::TextureEraserTool(
     ToolType toolType,
     Controller & controller,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
     : Tool(
         toolType,
         controller)
@@ -46,7 +46,7 @@ TextureEraserTool<TLayerType>::TextureEraserTool(
     , mEngagementData()
     , mIsShiftDown(false)
 {
-    SetCursor(WxHelpers::LoadCursorImage("eraser_cursor", 8, 27, resourceLocator));
+    SetCursor(WxHelpers::LoadCursorImage("eraser_cursor", 8, 27, gameAssetManager));
 
     //
     // Do initial visualization

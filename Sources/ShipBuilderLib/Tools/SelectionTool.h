@@ -9,9 +9,9 @@
 
 #include "../SelectionManager.h"
 
-#include <Game/ResourceLocator.h>
+#include <Game/GameAssetManager.h>
 
-#include <GameCore/GameTypes.h>
+#include <Core/GameTypes.h>
 
 #include <wx/image.h>
 
@@ -48,7 +48,7 @@ protected:
         ToolType toolType,
         Controller & controller,
         SelectionManager & selectionManager,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
 private:
 
@@ -93,7 +93,7 @@ public:
     StructuralSelectionTool(
         Controller & controller,
         SelectionManager & selectionManager,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 };
 
 class ElectricalSelectionTool final : public SelectionTool
@@ -103,7 +103,7 @@ public:
     ElectricalSelectionTool(
         Controller & controller,
         SelectionManager & selectionManager,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 };
 
 class RopeSelectionTool final : public SelectionTool
@@ -113,7 +113,7 @@ public:
     RopeSelectionTool(
         Controller & controller,
         SelectionManager & selectionManager,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 };
 
 class ExteriorTextureSelectionTool final : public SelectionTool
@@ -123,7 +123,7 @@ public:
     ExteriorTextureSelectionTool(
         Controller & controller,
         SelectionManager & selectionManager,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 };
 
 class InteriorTextureSelectionTool final : public SelectionTool
@@ -133,7 +133,7 @@ public:
     InteriorTextureSelectionTool(
         Controller & controller,
         SelectionManager & selectionManager,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 };
 
 }

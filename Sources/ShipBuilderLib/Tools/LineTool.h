@@ -7,14 +7,15 @@
 
 #include "Tool.h"
 
-#include <Game/Layers.h>
-#include <Game/Materials.h>
-#include <Game/ResourceLocator.h>
+#include <Game/GameAssetManager.h>
 
-#include <GameCore/Finalizer.h>
-#include <GameCore/GameGeometry.h>
-#include <GameCore/GameTypes.h>
-#include <GameCore/StrongTypeDef.h>
+#include <Simulation/Layers.h>
+#include <Simulation/Materials.h>
+
+#include <Core/Finalizer.h>
+#include <Core/GameGeometry.h>
+#include <Core/GameTypes.h>
+#include <Core/StrongTypeDef.h>
 
 #include <memory>
 #include <optional>
@@ -42,7 +43,7 @@ protected:
     LineTool(
         ToolType toolType,
         Controller & controller,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
 private:
 
@@ -56,7 +57,7 @@ private:
         ShipSpaceCoordinates const & mouseCoordinates,
         MaterialPlaneType plane);
 
-    void EndEngagement(ShipSpaceCoordinates const & mouseCoordinates);    
+    void EndEngagement(ShipSpaceCoordinates const & mouseCoordinates);
 
     void DoEphemeralVisualization(ShipSpaceCoordinates const & mouseCoordinates);
 
@@ -121,7 +122,7 @@ public:
 
     StructuralLineTool(
         Controller & controller,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 };
 
 class ElectricalLineTool : public LineTool<LayerType::Electrical>
@@ -130,7 +131,7 @@ public:
 
     ElectricalLineTool(
         Controller & controller,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 };
 
 }

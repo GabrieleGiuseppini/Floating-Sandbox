@@ -24,7 +24,7 @@ namespace ShipBuilder {
 
 RopePencilTool::RopePencilTool(
     Controller & controller,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
     : Tool(
         ToolType::RopePencil,
         controller)
@@ -32,7 +32,7 @@ RopePencilTool::RopePencilTool(
     , mHasOverlay(false)
     , mEngagementData()
 {
-    SetCursor(WxHelpers::LoadCursorImage("pencil_cursor", 2, 22, resourceLocator));
+    SetCursor(WxHelpers::LoadCursorImage("pencil_cursor", 2, 22, gameAssetManager));
 
     // Check if should act right away
     auto const mouseShipCoordinates = GetCurrentMouseShipCoordinatesIfInShip();

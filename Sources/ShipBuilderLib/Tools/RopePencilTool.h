@@ -7,11 +7,12 @@
 
 #include "Tool.h"
 
-#include <Game/Layers.h>
-#include <Game/Materials.h>
-#include <Game/ResourceLocator.h>
+#include <Game/GameAssetManager.h>
 
-#include <GameCore/GameTypes.h>
+#include <Simulation/Layers.h>
+#include <Simulation/Materials.h>
+
+#include <Core/GameTypes.h>
 
 #include <memory>
 #include <optional>
@@ -24,7 +25,7 @@ public:
 
     RopePencilTool(
         Controller & controller,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
     virtual ~RopePencilTool();
 
@@ -101,7 +102,7 @@ private:
     };
 
     // Engagement data - when set, it means we're engaged;
-    // "being engaged" for this tool basically means that 
+    // "being engaged" for this tool basically means that
     // the mouse button is down
     std::optional<EngagementData> mEngagementData;
 };

@@ -13,23 +13,23 @@ namespace ShipBuilder {
 
 StructuralFloodTool::StructuralFloodTool(
     Controller & controller,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
     : FloodTool(
         ToolType::StructuralFlood,
         controller,
-        resourceLocator)
+        gameAssetManager)
 {}
 
 template<LayerType TLayerType>
 FloodTool<TLayerType>::FloodTool(
     ToolType toolType,
     Controller & controller,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
     : Tool(
         toolType,
         controller)
 {
-    SetCursor(WxHelpers::LoadCursorImage("flood_tool_cursor", 12, 29, resourceLocator));
+    SetCursor(WxHelpers::LoadCursorImage("flood_tool_cursor", 12, 29, gameAssetManager));
 
     mController.BroadcastSampledInformationUpdatedAt(ScreenToShipSpace(GetCurrentMouseCoordinates()), TLayerType);
 }

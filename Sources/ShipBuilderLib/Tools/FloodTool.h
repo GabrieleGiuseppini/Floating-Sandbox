@@ -7,14 +7,15 @@
 
 #include "Tool.h"
 
-#include <Game/Layers.h>
-#include <Game/Materials.h>
-#include <Game/ResourceLocator.h>
-
 #include <UILib/WxHelpers.h>
 
-#include <GameCore/GameTypes.h>
-#include <GameCore/StrongTypeDef.h>
+#include <Game/GameAssetManager.h>
+
+#include <Simulation/Layers.h>
+#include <Simulation/Materials.h>
+
+#include <Core/GameTypes.h>
+#include <Core/StrongTypeDef.h>
 
 #include <memory>
 #include <optional>
@@ -42,7 +43,7 @@ protected:
     FloodTool(
         ToolType toolType,
         Controller & controller,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
 private:
 
@@ -63,7 +64,7 @@ public:
 
     StructuralFloodTool(
         Controller & controller,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 };
 
 }

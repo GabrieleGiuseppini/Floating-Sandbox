@@ -9,9 +9,9 @@
 
 #include "../GenericEphemeralVisualizationRestorePayload.h"
 
-#include <Game/ResourceLocator.h>
+#include <Game/GameAssetManager.h>
 
-#include <GameCore/GameTypes.h>
+#include <Core/GameTypes.h>
 
 #include <optional>
 
@@ -23,7 +23,7 @@ public:
 
     StructuralRectangleTool(
         Controller & controller,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
     ~StructuralRectangleTool();
 

@@ -13,14 +13,14 @@ namespace ShipBuilder {
 
 StructuralRectangleTool::StructuralRectangleTool(
     Controller & controller,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
     : Tool(
         ToolType::StructuralRectangle,
         controller)
     , mEngagementData()
     , mIsShiftDown(false)
 {
-    SetCursor(WxHelpers::LoadCursorImage("crosshair_cursor", 15, 15, resourceLocator));
+    SetCursor(WxHelpers::LoadCursorImage("crosshair_cursor", 15, 15, gameAssetManager));
 }
 
 StructuralRectangleTool::~StructuralRectangleTool()

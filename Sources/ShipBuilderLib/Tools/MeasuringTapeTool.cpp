@@ -9,13 +9,13 @@
 
 #include <UILib/WxHelpers.h>
 
-#include <GameCore/GameMath.h>
+#include <Core/GameMath.h>
 
 namespace ShipBuilder {
 
 MeasuringTapeTool::MeasuringTapeTool(
     Controller & controller,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
     : Tool(
         ToolType::StructuralMeasuringTapeTool,
         controller)
@@ -23,7 +23,7 @@ MeasuringTapeTool::MeasuringTapeTool(
     , mHasOverlay(false)
     , mEngagementData()
 {
-    SetCursor(WxHelpers::LoadCursorImage("measuring_tape_cursor", 0, 25, resourceLocator));
+    SetCursor(WxHelpers::LoadCursorImage("measuring_tape_cursor", 0, 25, gameAssetManager));
 
     // Check if we draw the overlay right away
     auto const mouseShipCoords = GetCurrentMouseShipCoordinatesIfInShip();

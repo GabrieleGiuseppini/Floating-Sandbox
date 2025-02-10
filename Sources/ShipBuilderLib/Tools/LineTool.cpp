@@ -15,27 +15,27 @@ namespace ShipBuilder {
 
 StructuralLineTool::StructuralLineTool(
     Controller & controller,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
     : LineTool(
         ToolType::StructuralLine,
         controller,
-        resourceLocator)
+        gameAssetManager)
 {}
 
 ElectricalLineTool::ElectricalLineTool(
     Controller & controller,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
     : LineTool(
         ToolType::ElectricalLine,
         controller,
-        resourceLocator)
+        gameAssetManager)
 {}
 
 template<LayerType TLayer>
 LineTool<TLayer>::LineTool(
     ToolType toolType,
     Controller & controller,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
     : Tool(
         toolType,
         controller)
@@ -44,7 +44,7 @@ LineTool<TLayer>::LineTool(
     , mEngagementData()
     , mIsShiftDown(false)
 {
-    wxImage cursorImage = WxHelpers::LoadCursorImage("crosshair_cursor", 15, 15, resourceLocator);
+    wxImage cursorImage = WxHelpers::LoadCursorImage("crosshair_cursor", 15, 15, gameAssetManager);
     SetCursor(cursorImage);
 
     // Check if we need to immediately do an ephemeral visualization

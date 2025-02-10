@@ -13,41 +13,41 @@ namespace ShipBuilder {
 
 StructuralSamplerTool::StructuralSamplerTool(
     Controller & controller,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
     : SamplerTool(
         ToolType::StructuralSampler,
         controller,
-        resourceLocator)
+        gameAssetManager)
 {}
 
 ElectricalSamplerTool::ElectricalSamplerTool(
     Controller & controller,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
     : SamplerTool(
         ToolType::ElectricalSampler,
         controller,
-        resourceLocator)
+        gameAssetManager)
 {}
 
 RopeSamplerTool::RopeSamplerTool(
     Controller & controller,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
     : SamplerTool(
         ToolType::RopeSampler,
         controller,
-        resourceLocator)
+        gameAssetManager)
 {}
 
 template<LayerType TLayerType>
 SamplerTool<TLayerType>::SamplerTool(
     ToolType toolType,
     Controller & controller,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
     : Tool(
         toolType,
         controller)
 {
-    SetCursor(WxHelpers::LoadCursorImage("sampler_cursor", 1, 30, resourceLocator));
+    SetCursor(WxHelpers::LoadCursorImage("sampler_cursor", 1, 30, gameAssetManager));
 
     // See if should sample right away
     auto const mouseShipCoordinates = GetCurrentMouseShipCoordinatesIfInWorkCanvas();

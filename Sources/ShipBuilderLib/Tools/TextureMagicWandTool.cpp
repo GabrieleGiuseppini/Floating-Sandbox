@@ -13,32 +13,32 @@ namespace ShipBuilder {
 
 ExteriorTextureMagicWandTool::ExteriorTextureMagicWandTool(
     Controller & controller,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
     : TextureMagicWandTool(
         ToolType::ExteriorTextureMagicWand,
         controller,
-        resourceLocator)
+        gameAssetManager)
 {}
 
 InteriorTextureMagicWandTool::InteriorTextureMagicWandTool(
     Controller & controller,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
     : TextureMagicWandTool(
         ToolType::ExteriorTextureMagicWand,
         controller,
-        resourceLocator)
+        gameAssetManager)
 {}
 
 template<LayerType TLayerType>
 TextureMagicWandTool<TLayerType>::TextureMagicWandTool(
     ToolType toolType,
     Controller & controller,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
     : Tool(
         toolType,
         controller)
 {
-    SetCursor(WxHelpers::LoadCursorImage("magic_wand_cursor", 8, 8, resourceLocator));
+    SetCursor(WxHelpers::LoadCursorImage("magic_wand_cursor", 8, 8, gameAssetManager));
 }
 
 template<LayerType TLayerType>

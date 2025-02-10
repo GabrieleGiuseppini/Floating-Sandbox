@@ -7,13 +7,13 @@
 
 #include "Tool.h"
 
-#include <Game/Layers.h>
-#include <Game/Materials.h>
-#include <Game/ResourceLocator.h>
-
 #include <UILib/WxHelpers.h>
 
-#include <GameCore/GameTypes.h>
+#include <Simulation/Layers.h>
+#include <Simulation/Materials.h>
+#include <Simulation/GameAssetManager.h>
+
+#include <Core/GameTypes.h>
 
 #include <memory>
 #include <optional>
@@ -41,7 +41,7 @@ protected:
     SamplerTool(
         ToolType toolType,
         Controller & controller,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
 private:
 
@@ -62,7 +62,7 @@ public:
 
     StructuralSamplerTool(
         Controller & controller,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 };
 
 class ElectricalSamplerTool : public SamplerTool<LayerType::Electrical>
@@ -71,7 +71,7 @@ public:
 
     ElectricalSamplerTool(
         Controller & controller,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 };
 
 class RopeSamplerTool : public SamplerTool<LayerType::Ropes>
@@ -80,7 +80,7 @@ public:
 
     RopeSamplerTool(
         Controller & controller,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 };
 
 }

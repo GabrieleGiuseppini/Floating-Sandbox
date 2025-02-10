@@ -7,9 +7,9 @@
 
 #include "../Controller.h"
 
-#include <GameCore/GameGeometry.h>
-
 #include <UILib/WxHelpers.h>
+
+#include <Core/GameGeometry.h>
 
 #include <type_traits>
 
@@ -17,45 +17,45 @@ namespace ShipBuilder {
 
 StructuralPencilTool::StructuralPencilTool(
     Controller & controller,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
     : PencilTool(
         ToolType::StructuralPencil,
         controller,
-        resourceLocator)
+        gameAssetManager)
 {}
 
 ElectricalPencilTool::ElectricalPencilTool(
     Controller & controller,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
     : PencilTool(
         ToolType::ElectricalPencil,
         controller,
-        resourceLocator)
+        gameAssetManager)
 {}
 
 StructuralEraserTool::StructuralEraserTool(
     Controller & controller,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
     : PencilTool(
         ToolType::StructuralEraser,
         controller,
-        resourceLocator)
+        gameAssetManager)
 {}
 
 ElectricalEraserTool::ElectricalEraserTool(
     Controller & controller,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
     : PencilTool(
         ToolType::ElectricalEraser,
         controller,
-        resourceLocator)
+        gameAssetManager)
 {}
 
 template<LayerType TLayer, bool IsEraser>
 PencilTool<TLayer, IsEraser>::PencilTool(
     ToolType toolType,
     Controller & controller,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
     : Tool(
         toolType,
         controller)
@@ -67,11 +67,11 @@ PencilTool<TLayer, IsEraser>::PencilTool(
     wxImage cursorImage;
     if constexpr (IsEraser)
     {
-        cursorImage = WxHelpers::LoadCursorImage("eraser_cursor", 8, 27, resourceLocator);
+        cursorImage = WxHelpers::LoadCursorImage("eraser_cursor", 8, 27, gameAssetManager);
     }
     else
     {
-        cursorImage = WxHelpers::LoadCursorImage("pencil_cursor", 2, 22, resourceLocator);
+        cursorImage = WxHelpers::LoadCursorImage("pencil_cursor", 2, 22, gameAssetManager);
     }
 
     SetCursor(cursorImage);

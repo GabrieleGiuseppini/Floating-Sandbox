@@ -7,12 +7,13 @@
 
 #include "Tool.h"
 
-#include <Game/Layers.h>
-#include <Game/Materials.h>
-#include <Game/ResourceLocator.h>
+#include <Game/GameAssetManager.h>
 
-#include <GameCore/GameTypes.h>
-#include <GameCore/StrongTypeDef.h>
+#include <Simulation/Layers.h>
+#include <Simulation/Materials.h>
+
+#include <Core/GameTypes.h>
+#include <Core/StrongTypeDef.h>
 
 #include <memory>
 #include <optional>
@@ -40,7 +41,7 @@ protected:
     PencilTool(
         ToolType toolType,
         Controller & controller,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
 private:
 
@@ -56,7 +57,7 @@ private:
 
     void DoEdit(ShipSpaceCoordinates const & mouseCoordinates);
 
-    void EndEngagement();    
+    void EndEngagement();
 
     void DoTempVisualization(ShipSpaceRect const & affectedRect);
 
@@ -122,7 +123,7 @@ public:
 
     StructuralPencilTool(
         Controller & controller,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 };
 
 class ElectricalPencilTool : public PencilTool<LayerType::Electrical, false>
@@ -131,7 +132,7 @@ public:
 
     ElectricalPencilTool(
         Controller & controller,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 };
 
 class StructuralEraserTool : public PencilTool<LayerType::Structural, true>
@@ -140,7 +141,7 @@ public:
 
     StructuralEraserTool(
         Controller & controller,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 };
 
 class ElectricalEraserTool : public PencilTool<LayerType::Electrical, true>
@@ -149,7 +150,7 @@ public:
 
     ElectricalEraserTool(
         Controller & controller,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 };
 
 }

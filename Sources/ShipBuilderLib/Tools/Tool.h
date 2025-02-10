@@ -7,7 +7,7 @@
 
 #include "../ShipBuilderTypes.h"
 
-#include <GameCore/GameTypes.h>
+#include <Core/GameTypes.h>
 
 #include <wx/image.h>
 

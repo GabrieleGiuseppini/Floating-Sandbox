@@ -12,10 +12,11 @@
 
 #include <UILib/WxHelpers.h>
 
-#include <Game/Layers.h>
-#include <Game/ResourceLocator.h>
+#include <Game/GameAssetManager.h>
 
-#include <GameCore/GameTypes.h>
+#include <Simulation/Layers.h>
+
+#include <Core/GameTypes.h>
 
 #include <memory>
 #include <optional>
@@ -58,7 +59,7 @@ protected:
         bool isTransparent,
         ToolType toolType,
         Controller & controller,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
 private:
 
@@ -134,7 +135,7 @@ public:
         ShipLayers && pasteRegion,
         bool isTransparent,
         Controller & controller,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 };
 
 class ElectricalPasteTool : public PasteTool
@@ -145,7 +146,7 @@ public:
         ShipLayers && pasteRegion,
         bool isTransparent,
         Controller & controller,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 };
 
 class RopePasteTool : public PasteTool
@@ -156,7 +157,7 @@ public:
         ShipLayers && pasteRegion,
         bool isTransparent,
         Controller & controller,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 };
 
 class ExteriorTexturePasteTool : public PasteTool
@@ -167,7 +168,7 @@ public:
         ShipLayers && pasteRegion,
         bool isTransparent,
         Controller & controller,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 };
 
 class InteriorTexturePasteTool : public PasteTool
@@ -178,7 +179,7 @@ public:
         ShipLayers && pasteRegion,
         bool isTransparent,
         Controller & controller,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 };
 
 }

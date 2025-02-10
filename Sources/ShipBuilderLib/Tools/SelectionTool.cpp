@@ -14,63 +14,63 @@ namespace ShipBuilder {
 StructuralSelectionTool::StructuralSelectionTool(
     Controller & controller,
     SelectionManager & selectionManager,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
     : SelectionTool(
         ToolType::StructuralSelection,
         controller,
         selectionManager,
-        resourceLocator)
+        gameAssetManager)
 {}
 
 ElectricalSelectionTool::ElectricalSelectionTool(
     Controller & controller,
     SelectionManager & selectionManager,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
     : SelectionTool(
         ToolType::ElectricalSelection,
         controller,
         selectionManager,
-        resourceLocator)
+        gameAssetManager)
 {}
 
 RopeSelectionTool::RopeSelectionTool(
     Controller & controller,
     SelectionManager & selectionManager,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
     : SelectionTool(
         ToolType::RopeSelection,
         controller,
         selectionManager,
-        resourceLocator)
+        gameAssetManager)
 {}
 
 ExteriorTextureSelectionTool::ExteriorTextureSelectionTool(
     Controller & controller,
     SelectionManager & selectionManager,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
     : SelectionTool(
         ToolType::ExteriorTextureSelection,
         controller,
         selectionManager,
-        resourceLocator)
+        gameAssetManager)
 {}
 
 InteriorTextureSelectionTool::InteriorTextureSelectionTool(
     Controller & controller,
     SelectionManager & selectionManager,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
     : SelectionTool(
         ToolType::InteriorTextureSelection,
         controller,
         selectionManager,
-        resourceLocator)
+        gameAssetManager)
 {}
 
 SelectionTool::SelectionTool(
     ToolType toolType,
     Controller & controller,
     SelectionManager & selectionManager,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
     : Tool(
         toolType,
         controller)
@@ -78,8 +78,8 @@ SelectionTool::SelectionTool(
     , mCurrentSelection()
     , mEngagementData()
     , mIsShiftDown(false)
-    , mPointerCursor(WxHelpers::LoadCursorImage("selection_cursor", 11, 11, resourceLocator))
-    , mBaseCornerCursor(WxHelpers::LoadCursorImage("corner_cursor", 15, 15, resourceLocator))
+    , mPointerCursor(WxHelpers::LoadCursorImage("selection_cursor", 11, 11, gameAssetManager))
+    , mBaseCornerCursor(WxHelpers::LoadCursorImage("corner_cursor", 15, 15, gameAssetManager))
 {
     SetCursor(mPointerCursor);
 }

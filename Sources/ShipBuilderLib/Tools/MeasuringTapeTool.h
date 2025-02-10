@@ -7,9 +7,9 @@
 
 #include "Tool.h"
 
-#include <Game/ResourceLocator.h>
+#include <Game/GameAssetManager.h>
 
-#include <GameCore/GameTypes.h>
+#include <Core/GameTypes.h>
 
 #include <memory>
 
@@ -21,7 +21,7 @@ public:
 
     MeasuringTapeTool(
         Controller & controller,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
     virtual ~MeasuringTapeTool();
 
@@ -42,7 +42,7 @@ private:
 
     void DoAction(ShipSpaceCoordinates const & coords);
 
-    void StopEngagement();    
+    void StopEngagement();
 
     void UpdateOverlay(ShipSpaceCoordinates const & coords);
 

@@ -79,32 +79,32 @@ set (UI_SOURCES
 )
 
 set (TOOLS_SOURCES
-	#Tools/FloodTool.cpp
-	#Tools/FloodTool.h
-	#Tools/LineTool.cpp
-	#Tools/LineTool.h
-	#Tools/MeasuringTapeTool.cpp
-	#Tools/MeasuringTapeTool.h
-	#Tools/PasteTool.cpp
-	#Tools/PasteTool.h
-	#Tools/PencilTool.cpp
-	#Tools/PencilTool.h
-	#Tools/RopeEraserTool.cpp
-	#Tools/RopeEraserTool.h
-	#Tools/RopePencilTool.cpp
-	#Tools/RopePencilTool.h
-	#Tools/SamplerTool.cpp
-	#Tools/SamplerTool.h
-	#Tools/SelectionTool.cpp
-	#Tools/SelectionTool.h
-	#Tools/StructuralRectangleTool.cpp
-	#Tools/StructuralRectangleTool.h
-	#Tools/TextureEraserTool.cpp
-	#Tools/TextureEraserTool.h
-	#Tools/TextureMagicWandTool.cpp
-	#Tools/TextureMagicWandTool.h
-	#Tools/Tool.cpp
-	#Tools/Tool.h
+	Tools/FloodTool.cpp
+	Tools/FloodTool.h
+	Tools/LineTool.cpp
+	Tools/LineTool.h
+	Tools/MeasuringTapeTool.cpp
+	Tools/MeasuringTapeTool.h
+	Tools/PasteTool.cpp
+	Tools/PasteTool.h
+	Tools/PencilTool.cpp
+	Tools/PencilTool.h
+	Tools/RopeEraserTool.cpp
+	Tools/RopeEraserTool.h
+	Tools/RopePencilTool.cpp
+	Tools/RopePencilTool.h
+	Tools/SamplerTool.cpp
+	Tools/SamplerTool.h
+	Tools/SelectionTool.cpp
+	Tools/SelectionTool.h
+	Tools/StructuralRectangleTool.cpp
+	Tools/StructuralRectangleTool.h
+	Tools/TextureEraserTool.cpp
+	Tools/TextureEraserTool.h
+	Tools/TextureMagicWandTool.cpp
+	Tools/TextureMagicWandTool.h
+	Tools/Tool.cpp
+	Tools/Tool.h
 )
 
 source_group(" " FILES ${SHIPBUILDER_LIB_SOURCES})

@@ -7,7 +7,7 @@
 
 #include "Tool.h"
 
-#include <Game/ResourceLocator.h>
+#include <Game/GameAssetManager.h>
 
 namespace ShipBuilder {
 
@@ -32,7 +32,7 @@ protected:
     TextureMagicWandTool(
         ToolType toolType,
         Controller & controller,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
 private:
 
@@ -45,7 +45,7 @@ public:
 
     ExteriorTextureMagicWandTool(
         Controller & controller,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 };
 
 class InteriorTextureMagicWandTool final : public TextureMagicWandTool<LayerType::InteriorTexture>
@@ -54,7 +54,7 @@ public:
 
     InteriorTextureMagicWandTool(
         Controller & controller,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 };
 
 
