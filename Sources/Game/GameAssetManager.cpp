@@ -460,8 +460,7 @@ void GameAssetManager::SaveJson(
     picojson::value const & json,
     std::filesystem::path const & filePath)
 {
-    std::string serializedJson = json.serialize(true);
-    FileTextWriteStream(filePath).Write(serializedJson);
+    SaveTextFile(json.serialize(true), filePath);
 }
 
 void GameAssetManager::SaveTextFile(
