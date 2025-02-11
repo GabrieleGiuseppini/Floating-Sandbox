@@ -1,5 +1,5 @@
-
 add_subdirectory(Core)
+add_subdirectory(FloatingSandbox)
 add_subdirectory(Game)
 add_subdirectory(OpenGLCore)
 add_subdirectory(Render)

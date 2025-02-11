@@ -39,6 +39,8 @@ target_link_libraries (ShipBuilder
 	${OPENGL_LIBRARIES}
 	${wxWidgets_LIBRARIES}
 	${JPEG_LIBRARY}
+	${PNG_LIBRARY}
+	${ZLIB_LIBRARY}
 	${ADDITIONAL_LIBRARIES})
 
 

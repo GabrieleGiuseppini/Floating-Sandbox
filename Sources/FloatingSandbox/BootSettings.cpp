@@ -5,9 +5,10 @@
 ***************************************************************************************/
 #include "BootSettings.h"
 
-#include "Version.h"
+#include <Game/GameAssetManager.h>
+#include <Game/GameVersion.h>
 
-#include <GameCore/Utils.h>
+#include <Core/Utils.h>
 
 BootSettings BootSettings::Load(std::filesystem::path const & filePath)
 {
@@ -15,13 +16,13 @@ BootSettings BootSettings::Load(std::filesystem::path const & filePath)
 
     try
     {
-        auto const rootValue = Utils::ParseJSONFile(filePath);
+        auto const rootValue = GameAssetManager::LoadJson(filePath);
         if (rootValue.is<picojson::object>())
         {
             auto const rootObject = rootValue.get<picojson::object>();
 
             auto const version = Utils::GetMandatoryJsonMember<std::string>(rootObject, "version");
-            if (version == Version::CurrentVersion().ToString()) // Boot settings are only valid on the version they're created for
+            if (version == CurrentGameVersion.ToString()) // Boot settings are only valid on the version they're created for
             {
                 settings.DoForceNoGlFinish = Utils::GetOptionalJsonMember<bool>(rootObject, "force_no_glfinish");
                 settings.DoForceNoMultithreadedRendering = Utils::GetOptionalJsonMember<bool>(rootObject, "force_no_multithreaded_rendering");
@@ -42,7 +43,7 @@ void BootSettings::Save(
 {
     picojson::object rootObject;
 
-    rootObject["version"] = picojson::value(Version::CurrentVersion().ToString());
+    rootObject["version"] = picojson::value(CurrentGameVersion.ToString());
 
     if (settings.DoForceNoGlFinish.has_value())
         rootObject["force_no_glfinish"] = picojson::value(*(settings.DoForceNoGlFinish));
@@ -51,7 +52,7 @@ void BootSettings::Save(
         rootObject["force_no_multithreaded_rendering"] = picojson::value(*(settings.DoForceNoMultithreadedRendering));
 
     // Save
-    Utils::SaveJSONFile(
+    GameAssetManager::SaveJson(
         picojson::value(rootObject),
         filePath);
 }

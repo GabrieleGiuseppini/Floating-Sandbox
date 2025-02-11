@@ -4,62 +4,64 @@
 #
 
 set  (FLOATING_SANDBOX_SOURCES
-	AudioController.h
-	EventTickerPanel.cpp
-	EventTickerPanel.h
-	GLCanvas.h
-	MainApp.cpp
-	MainFrame.cpp
-	MainFrame.h
-	Music.cpp
-	Music.h
-	MusicController.cpp
-	MusicController.h
-	ProbePanel.cpp
-	ProbePanel.h
-	SettingsManager.cpp
-	SettingsManager.h
-	SoundController.cpp
-	SoundController.h
-	Sounds.cpp
-	Sounds.h
-	SwitchboardPanel.cpp
-	SwitchboardPanel.h
-	ToolController.cpp
-	ToolController.h
-	Tools.cpp
-	Tools.h
-	UIPreferencesManager.cpp
-	UIPreferencesManager.h
-	UnhandledExceptionHandler.cpp
-	UnhandledExceptionHandler.h
-	UpdateChecker.cpp
-	UpdateChecker.h
+	#AudioController.h
+	BootSettings.cpp
+	BootSettings.h
+	#EventTickerPanel.cpp
+	#EventTickerPanel.h
+	#GLCanvas.h
+	#MainApp.cpp
+	#MainFrame.cpp
+	#MainFrame.h
+	#Music.cpp
+	#Music.h
+	#MusicController.cpp
+	#MusicController.h
+	#ProbePanel.cpp
+	#ProbePanel.h
+	#SettingsManager.cpp
+	#SettingsManager.h
+	#SoundController.cpp
+	#SoundController.h
+	#Sounds.cpp
+	#Sounds.h
+	#SwitchboardPanel.cpp
+	#SwitchboardPanel.h
+	#ToolController.cpp
+	#ToolController.h
+	#Tools.cpp
+	#Tools.h
+	#UIPreferencesManager.cpp
+	#UIPreferencesManager.h
+	#UnhandledExceptionHandler.cpp
+	#UnhandledExceptionHandler.h
+	#UpdateChecker.cpp
+	#UpdateChecker.h
 )
 
 set  (DIALOGS_SOURCES
-	AboutDialog.cpp
-	AboutDialog.h
-	BootSettingsDialog.cpp
-	BootSettingsDialog.h
-	CheckForUpdatesDialog.cpp
-	CheckForUpdatesDialog.h
-	CreditsPanel.cpp
-	CreditsPanel.h
-	DebugDialog.cpp
-	DebugDialog.h
-	HelpDialog.cpp
-	HelpDialog.h
-	NewVersionDisplayDialog.cpp
-	NewVersionDisplayDialog.h
-	PreferencesDialog.cpp
-	PreferencesDialog.h
-	SettingsDialog.cpp
-	SettingsDialog.h
-	SplashScreenDialog.cpp
-	SplashScreenDialog.h
-	StartupTipDialog.cpp
-	StartupTipDialog.h
+	#AboutDialog.cpp
+	#AboutDialog.h
+	#BootSettingsDialog.cpp
+	#BootSettingsDialog.h
+	#CheckForUpdatesDialog.cpp
+	#CheckForUpdatesDialog.h
+	#CreditsPanel.cpp
+	#CreditsPanel.h
+	#DebugDialog.cpp
+	#DebugDialog.h
+	#HelpDialog.cpp
+	#HelpDialog.h
+	#NewVersionDisplayDialog.cpp
+	#NewVersionDisplayDialog.h
+	#PreferencesDialog.cpp
+	#PreferencesDialog.h
+	#SettingsDialog.cpp
+	#SettingsDialog.h
+	#SplashScreenDialog.cpp
+	#SplashScreenDialog.h
+	#StartupTipDialog.cpp
+	#StartupTipDialog.h
 )
 
 set(RESOURCE_FILES "")
@@ -86,10 +88,9 @@ target_include_directories(FloatingSandbox PRIVATE .)
 target_include_directories(FloatingSandbox PRIVATE ${wxWidgets_INCLUDE_DIRS})
 target_compile_definitions(FloatingSandbox PRIVATE "${wxWidgets_DEFINITIONS}")
 target_link_libraries (FloatingSandbox PRIVATE
-	GameCoreLib
-	GameLib
-	GameOpenGLLib
-	GPUCalcLib
+	Core
+	Game
+	OpenGLCore
 	ShipBuilderLib
 	UILib
 	sfml-audio
@@ -97,6 +98,9 @@ target_link_libraries (FloatingSandbox PRIVATE
 	sfml-system
 	${OPENGL_LIBRARIES}
 	${wxWidgets_LIBRARIES}
+	${JPEG_LIBRARY}
+	${PNG_LIBRARY}
+	${ZLIB_LIBRARY}
 	${ADDITIONAL_LIBRARIES})
 
 
