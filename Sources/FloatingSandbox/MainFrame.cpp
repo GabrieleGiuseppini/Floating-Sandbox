@@ -5,23 +5,21 @@
  ***************************************************************************************/
 #include "MainFrame.h"
 
-#include "AboutDialog.h"
-#include "BootSettingsDialog.h"
-#include "CheckForUpdatesDialog.h"
-#include "NewVersionDisplayDialog.h"
-#include "StartupTipDialog.h"
+#include "BootSettings.h"
+#include "UI/AboutDialog.h"
+#include "UI/BootSettingsDialog.h"
+#include "UI/CheckForUpdatesDialog.h"
+#include "UI/NewVersionDisplayDialog.h"
+#include "UI/StartupTipDialog.h"
 
 #include <UILib/StandardSystemPaths.h>
 #include <UILib/ShipDescriptionDialog.h>
 #include <UILib/WxHelpers.h>
 
-#include <Game/BootSettings.h>
-#include <Game/PngImageFileTools.h>
-#include <Game/Version.h>
+#include <Game/GameVersion.h>
 
-#include <GameCore/GameException.h>
-#include <GameCore/Log.h>
-#include <GameCore/Utils.h>
+#include <Core/GameException.h>
+#include <Core/Log.h>
 
 #include <wx/intl.h>
 #include <wx/msgdlg.h>
@@ -108,11 +106,11 @@ long const ID_CHECK_UPDATES_TIMER = wxNewId();
 MainFrame::MainFrame(
     wxApp * mainApp,
     std::optional<std::filesystem::path> initialShipFilePath,
-    ResourceLocator const & resourceLocator,
+    GameAssetManager const & gameAssetManager,
     LocalizationManager & localizationManager)
     : mMainApp(mainApp)
     , mShipBuilderMainFrame()
-    , mResourceLocator(resourceLocator)
+    , mGameAssetManager(gameAssetManager)
     , mLocalizationManager(localizationManager)
     , mGameController()
     , mSoundController()
@@ -127,7 +125,6 @@ MainFrame::MainFrame(
     , mCurrentOpenGLCanvas(nullptr)
     // UI members checked for existance
     , mProbePanel(nullptr)
-    , mEventTickerPanel(nullptr)
     , mElectricalPanel(nullptr)
     // State
     , mInitialShipFilePath(initialShipFilePath)
@@ -689,11 +686,6 @@ MainFrame::MainFrame(
             optionsMenu->Append(openLogWindowMenuItem);
             Connect(ID_OPEN_LOG_WINDOW_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnOpenLogWindowMenuItemSelected);
 
-            mShowEventTickerMenuItem = new wxMenuItem(optionsMenu, ID_SHOW_EVENT_TICKER_MENUITEM, _("Show Event Ticker") + wxS("\tCtrl+E"), wxEmptyString, wxITEM_CHECK);
-            optionsMenu->Append(mShowEventTickerMenuItem);
-            Connect(ID_SHOW_EVENT_TICKER_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnShowEventTickerMenuItemSelected);
-            mShowEventTickerMenuItem->Check(false);
-
             mShowProbePanelMenuItem = new wxMenuItem(optionsMenu, ID_SHOW_PROBE_PANEL_MENUITEM, _("Show Probe Panel") + wxS("\tCtrl+P"), wxEmptyString, wxITEM_CHECK);
             optionsMenu->Append(mShowProbePanelMenuItem);
             Connect(ID_SHOW_PROBE_PANEL_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnShowProbePanelMenuItemSelected);
@@ -806,18 +798,6 @@ MainFrame::MainFrame(
     mMainPanelSizer->Add(mProbePanel, 0, wxEXPAND); // Expand horizontally
 
     mMainPanelSizer->Hide(mProbePanel);
-
-
-
-    //
-    // Event ticker panel
-    //
-
-    mEventTickerPanel = new EventTickerPanel(mMainPanel);
-
-    mMainPanelSizer->Add(mEventTickerPanel, 0, wxEXPAND); // Expand horizontally
-
-    mMainPanelSizer->Hide(mEventTickerPanel);
 
 
 
@@ -965,7 +945,7 @@ void MainFrame::OnSecretTypingBootSettings()
 {
     BootSettingsDialog dlg(
         this,
-        mResourceLocator);
+        mGameAssetManager);
 
     dlg.ShowModal();
 }
@@ -987,11 +967,11 @@ void MainFrame::OnSecretTypingLoadBuiltInShip(int ship)
 {
     std::filesystem::path builtInShipFilePath;
     if (ship == 2)
-        builtInShipFilePath = mResourceLocator.GetApril1stShipDefinitionFilePath();
+        builtInShipFilePath = mGameAssetManager.GetApril1stShipDefinitionFilePath();
     else if (ship ==3)
-        builtInShipFilePath = mResourceLocator.GetHolidaysShipDefinitionFilePath();
+        builtInShipFilePath = mGameAssetManager.GetHolidaysShipDefinitionFilePath();
     else
-        builtInShipFilePath = mResourceLocator.GetFallbackShipDefinitionFilePath();
+        builtInShipFilePath = mGameAssetManager.GetFallbackShipDefinitionFilePath();
 
     LoadShip(ShipLoadSpecifications(builtInShipFilePath), false);
 }
@@ -1013,7 +993,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     // Load boot settings
     //
 
-    auto const bootSettings = BootSettings::Load(mResourceLocator.GetBootSettingsFilePath());
+    auto const bootSettings = BootSettings::Load(mGameAssetManager.GetBootSettingsFilePath());
 
 
     //
@@ -1024,7 +1004,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 
     try
     {
-        splash = std::make_unique<SplashScreenDialog>(mResourceLocator);
+        splash = std::make_unique<SplashScreenDialog>(mGameAssetManager);
     }
     catch (std::exception const & e)
     {
@@ -1082,7 +1062,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 
                     //LogMessage("TODOTEST: ...buffers swapped.");
                 }),
-            mResourceLocator,
+            mGameAssetManager,
             [this, &splash](float progress, ProgressMessageType message)
             {
                 // 0.0 -> 0.3
@@ -1111,7 +1091,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     try
     {
         mSoundController = std::make_unique<SoundController>(
-            mResourceLocator,
+            mGameAssetManager,
             [&splash, this](float progress, ProgressMessageType message)
             {
                 // 0.3 -> 0.7
@@ -1140,7 +1120,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     try
     {
         mMusicController = std::make_unique<MusicController>(
-            mResourceLocator,
+            mGameAssetManager,
             [&splash, this](float progress, ProgressMessageType message)
             {
                 // 0.7 -> 0.75
@@ -1169,7 +1149,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     mSettingsManager = std::make_unique<SettingsManager>(
         *mGameController,
         *mSoundController,
-        mResourceLocator.GetThemeSettingsRootFilePath(),
+        mGameAssetManager.GetThemeSettingsRootFilePath(),
         StandardSystemPaths::GetInstance().GetUserGameSettingsRootFolderPath());
 
     // Enable "Reload Last Modified Settings" menu if we have last-modified settings
@@ -1200,7 +1180,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
         *mGameController,
         *mSoundController,
         *mUIPreferencesManager,
-        mResourceLocator,
+        mGameAssetManager,
         [&splash, this](float progress, ProgressMessageType message)
         {
             // 0.75 -> 0.85
@@ -1225,7 +1205,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
             mMainGLCanvas,
             *mGameController,
             *mSoundController,
-            mResourceLocator);
+            mGameAssetManager);
     }
     catch (std::exception const & e)
     {
@@ -1259,7 +1239,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
             mShipBuilderMainFrame = std::make_unique<ShipBuilder::MainFrame>(
                 mMainApp,
                 GetIcon(),
-                mResourceLocator,
+                mGameAssetManager,
                 mLocalizationManager,
                 mGameController->GetMaterialDatabase(),
                 mGameController->GetShipTexturizer(),
@@ -1300,7 +1280,6 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 
     this->RegisterEventHandler(*mGameController);
     mProbePanel->RegisterEventHandler(*mGameController);
-    mEventTickerPanel->RegisterEventHandler(*mGameController);
     mElectricalPanel->RegisterEventHandler(*mGameController);
     mSoundController->RegisterEventHandler(*mGameController);
     mMusicController->RegisterEventHandler(*mGameController);
@@ -1342,21 +1321,21 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     if (!startupShipLoadSpecs.has_value())
     {
         // Use default ship
-        startupShipLoadSpecs.emplace(ChooseDefaultShip(mResourceLocator));
+        startupShipLoadSpecs.emplace(ChooseDefaultShip(mGameAssetManager));
     }
 
     assert(startupShipLoadSpecs.has_value());
 
     if (!std::filesystem::exists(startupShipLoadSpecs->DefinitionFilepath))
     {
-        startupShipLoadSpecs.emplace(mResourceLocator.GetFallbackShipDefinitionFilePath());
+        startupShipLoadSpecs.emplace(mGameAssetManager.GetFallbackShipDefinitionFilePath());
     }
 
     assert(startupShipLoadSpecs.has_value());
 
     try
     {
-        mGameController->AddShip(*startupShipLoadSpecs);
+        mGameController->AddShip(*startupShipLoadSpecs, mGameAssetManager);
 
         // Succeeded
         OnShipLoaded(*startupShipLoadSpecs);
@@ -1727,7 +1706,7 @@ void MainFrame::OnLoadShipMenuItemSelected(wxCommandEvent & /*event*/)
     {
         mShipLoadDialog = std::make_unique<ShipLoadDialog<ShipLoadDialogUsageType::ForGame>>(
             this,
-            mResourceLocator);
+            mGameAssetManager);
     }
 
     // Open dialog
@@ -1836,7 +1815,7 @@ void MainFrame::OnSaveScreenshotMenuItemSelected(wxCommandEvent & /*event*/)
 
         try
         {
-            PngImageFileTools::SavePngImage(
+            GameAssetManager::SavePngImage(
                 screenshotImage,
                 screenshotFilePath);
         }
@@ -2016,7 +1995,7 @@ void MainFrame::OnOpenSettingsWindowMenuItemSelected(wxCommandEvent & /*event*/)
             this,
             *mSettingsManager,
             *mGameController,
-            mResourceLocator);
+            mGameAssetManager);
     }
 
     mSettingsDialog->Open();
@@ -2062,7 +2041,7 @@ void MainFrame::OnOpenPreferencesWindowMenuItemSelected(wxCommandEvent & /*event
             {
                 this->ReloadCurrentShip();
             },
-            mResourceLocator);
+            mGameAssetManager);
     }
 
     mPreferencesDialog->Open();
@@ -2076,22 +2055,6 @@ void MainFrame::OnOpenLogWindowMenuItemSelected(wxCommandEvent & /*event*/)
     }
 
     mLoggingDialog->Open();
-}
-
-void MainFrame::OnShowEventTickerMenuItemSelected(wxCommandEvent & /*event*/)
-{
-    assert(!!mEventTickerPanel);
-
-    if (mShowEventTickerMenuItem->IsChecked())
-    {
-        mMainPanelSizer->Show(mEventTickerPanel);
-    }
-    else
-    {
-        mMainPanelSizer->Hide(mEventTickerPanel);
-    }
-
-    mMainPanelSizer->Layout();
 }
 
 void MainFrame::OnShowProbePanelMenuItemSelected(wxCommandEvent & /*event*/)
@@ -2150,7 +2113,7 @@ void MainFrame::OnHelpMenuItemSelected(wxCommandEvent & /*event*/)
     {
         mHelpDialog = std::make_unique<HelpDialog>(
             this,
-            mResourceLocator,
+            mGameAssetManager,
             mLocalizationManager);
     }
 
@@ -2216,7 +2179,7 @@ void MainFrame::RunGameIteration()
             // Check completed...
             // ...check if it's an interesting new version
             if (outcome->OutcomeType == UpdateChecker::UpdateCheckOutcomeType::HasVersion
-                && *(outcome->LatestVersion) > Version::CurrentVersion()
+                && *(outcome->LatestVersion) > CurrentGameVersion
                 && !mUIPreferencesManager->IsUpdateBlacklisted(*(outcome->LatestVersion)))
             {
                 //
@@ -2284,10 +2247,6 @@ void MainFrame::RunGameIteration()
         assert(!!mProbePanel);
         mProbePanel->UpdateSimulation();
 
-        // Update event ticker
-        assert(!!mEventTickerPanel);
-        mEventTickerPanel->UpdateSimulation();
-
         // Update electrical panel
         assert(!!mElectricalPanel);
         mElectricalPanel->UpdateSimulation();
@@ -2325,7 +2284,7 @@ void MainFrame::RunGameIteration()
             StartupTipDialog startupTipDialog(
                 this,
                 *mUIPreferencesManager,
-                mResourceLocator,
+                mGameAssetManager,
                 mLocalizationManager);
 
             startupTipDialog.ShowModal();
@@ -2968,7 +2927,7 @@ void MainFrame::RebuildNpcMenus()
     }
 }
 
-std::filesystem::path MainFrame::ChooseDefaultShip(ResourceLocator const & resourceLocator)
+std::filesystem::path MainFrame::ChooseDefaultShip(GameAssetManager const & gameAssetManager)
 {
     //
     // Decide default ship based on day
@@ -2978,13 +2937,13 @@ std::filesystem::path MainFrame::ChooseDefaultShip(ResourceLocator const & resou
     auto const tm = std::localtime(&now_c);
 
     if (tm->tm_mon == 0 && tm->tm_mday == 17)  // Jan 17: Floating Sandbox's birthday
-        return resourceLocator.GetFallbackShipDefinitionFilePath();
+        return gameAssetManager.GetFallbackShipDefinitionFilePath();
     else if (tm->tm_mon == 3 && tm->tm_mday == 1)  // April 1
-        return resourceLocator.GetApril1stShipDefinitionFilePath();
+        return gameAssetManager.GetApril1stShipDefinitionFilePath();
     else if (tm->tm_mon == 11 && tm->tm_mday >= 24) // Winter holidays
-        return resourceLocator.GetHolidaysShipDefinitionFilePath();
+        return gameAssetManager.GetHolidaysShipDefinitionFilePath();
     else
-        return resourceLocator.GetDefaultShipDefinitionFilePath(); // Just default
+        return gameAssetManager.GetDefaultShipDefinitionFilePath(); // Just default
 }
 
 void MainFrame::LoadShip(
@@ -3014,7 +2973,7 @@ void MainFrame::LoadShip(
     {
         // Load
         assert(mGameController);
-        auto const shipMetadata = mGameController->ResetAndLoadShip(loadSpecs);
+        auto const shipMetadata = mGameController->ResetAndLoadShip(loadSpecs, mGameAssetManager);
 
         // Succeeded
         OnShipLoaded(loadSpecs);
@@ -3028,7 +2987,7 @@ void MainFrame::LoadShip(
                 this,
                 shipMetadata,
                 true,
-                mResourceLocator);
+                mGameAssetManager);
 
             shipDescriptionDialog.ShowModal();
 
@@ -3161,7 +3120,7 @@ void MainFrame::SwitchFromShipBuilder(std::optional<std::filesystem::path> shipF
         }
         else
         {
-            ShipLoadSpecifications loadSpecs(ChooseDefaultShip(mResourceLocator));
+            ShipLoadSpecifications loadSpecs(ChooseDefaultShip(mGameAssetManager));
             LoadShip(loadSpecs, false);
         }
     }
@@ -3173,7 +3132,7 @@ void MainFrame::SwitchFromShipBuilder(std::optional<std::filesystem::path> shipF
 std::tuple<wxBitmap, wxBitmap> MainFrame::MakeMenuBitmaps(std::string const & iconName) const
 {
     auto img = wxImage(
-        mResourceLocator.GetIconFilePath(iconName).string(),
+        mGameAssetManager.GetIconFilePath(iconName).string(),
         wxBITMAP_TYPE_PNG);
     img.Rescale(16, 16, wxIMAGE_QUALITY_HIGH);
     auto img2 = WxHelpers::RetintCursorImage(img, rgbColor(0x00, 0x90, 0x00));

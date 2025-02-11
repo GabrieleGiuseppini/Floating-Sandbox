@@ -5,19 +5,19 @@
  ***************************************************************************************/
 #pragma once
 
-#include "DebugDialog.h"
-#include "EventTickerPanel.h"
-#include "HelpDialog.h"
 #include "MusicController.h"
-#include "PreferencesDialog.h"
-#include "ProbePanel.h"
-#include "SettingsDialog.h"
 #include "SettingsManager.h"
 #include "SoundController.h"
-#include "SwitchboardPanel.h"
 #include "ToolController.h"
 #include "UIPreferencesManager.h"
 #include "UpdateChecker.h"
+
+#include "UI/DebugDialog.h"
+#include "UI/HelpDialog.h"
+#include "UI/PreferencesDialog.h"
+#include "UI/ProbePanel.h"
+#include "UI/SettingsDialog.h"
+#include "UI/SwitchboardPanel.h"
 
 #include <ShipBuilderLib/MainFrame.h>
 
@@ -26,12 +26,12 @@
 #include <UILib/ShipLoadDialog.h>
 #include <UILib/UnFocusablePanel.h>
 
+#include <Game/GameAssetManager.h>
 #include <Game/GameController.h>
 #include <Game/IGameEventHandlers.h>
-#include <Game/ResourceLocator.h>
 #include <Game/ShipLoadSpecifications.h>
 
-#include "SplashScreenDialog.h" // Need to include this (which includes wxGLCanvas) *after* our glad.h has been included,
+#include "UI/SplashScreenDialog.h" // Need to include this (which includes wxGLCanvas) *after* our glad.h has been included,
  // so that wxGLCanvas ends up *not* including the system's OpenGL header but glad's instead
 
 #include <wx/frame.h>
@@ -52,18 +52,17 @@
  */
 class MainFrame final
     : public wxFrame
-    , public ILifecycleGameEventHandler
-    , public IAtmosphereGameEventHandler
-    , public INpcGameEventHandler
-    , public IGenericGameEventHandler
-    , public IControlGameEventHandler
+    , public IGenericShipEventHandler
+    , public IAtmosphereEventHandler
+    , public INpcEventHandler
+    , public IGameEventHandler
 {
 public:
 
     MainFrame(
         wxApp * mainApp,
         std::optional<std::filesystem::path> initialShipFilePath,
-        ResourceLocator const & resourceLocator,
+        GameAssetManager const & gameAssetManager,
         LocalizationManager & localizationManager);
 
     ~MainFrame();
@@ -91,8 +90,8 @@ private:
     // Helpers
     //
 
-    ResourceLocator const& mResourceLocator;
-    LocalizationManager& mLocalizationManager;
+    GameAssetManager const & mGameAssetManager;
+    LocalizationManager & mLocalizationManager;
     std::unique_ptr<GameController> mGameController;
     std::unique_ptr<SoundController> mSoundController;
     std::unique_ptr<MusicController> mMusicController;
@@ -150,7 +149,6 @@ private:
     wxMenuItem * mDeselectNpcMenuItem;
 
     wxMenuItem * mReloadLastModifiedSettingsMenuItem;
-    wxMenuItem * mShowEventTickerMenuItem;
     wxMenuItem * mShowProbePanelMenuItem;
     wxMenuItem * mShowStatusTextMenuItem;
     wxMenuItem * mShowExtendedStatusTextMenuItem;
@@ -158,7 +156,6 @@ private:
     wxMenuItem * mNormalScreenMenuItem;
     wxMenuItem * mMuteMenuItem;
     ProbePanel * mProbePanel;
-    EventTickerPanel * mEventTickerPanel;
     SwitchboardPanel * mElectricalPanel;
 
     std::vector<std::tuple<ToolType, wxMenuItem *>> mNonNpcToolMenuItems;
@@ -247,7 +244,6 @@ private:
     void OnReloadLastModifiedSettingsMenuItem(wxCommandEvent & event);
     void OnOpenPreferencesWindowMenuItemSelected(wxCommandEvent & event);
     void OnOpenLogWindowMenuItemSelected(wxCommandEvent & event);
-    void OnShowEventTickerMenuItemSelected(wxCommandEvent & event);
     void OnShowProbePanelMenuItemSelected(wxCommandEvent & event);
     void OnShowStatusTextMenuItemSelected(wxCommandEvent & event);
     void OnShowExtendedStatusTextMenuItemSelected(wxCommandEvent & event);
@@ -266,33 +262,10 @@ private:
 
     void RegisterEventHandler(IGameController & gameController)
     {
-        gameController.RegisterLifecycleEventHandler(this);
+        gameController.RegisterGenericShipEventHandler(this);
         gameController.RegisterAtmosphereEventHandler(this);
         gameController.RegisterNpcEventHandler(this);
-        gameController.RegisterGenericEventHandler(this);
-        gameController.RegisterControlEventHandler(this);
-    }
-
-    void OnGameReset() override
-    {
-        // Refresh title bar
-        mCurrentShipTitles.clear();
-        UpdateFrameTitle();
-    }
-
-    void OnShipLoaded(
-        unsigned int /*id*/,
-        ShipMetadata const & shipMetadata) override
-    {
-        std::string shipTitle = shipMetadata.ShipName;
-        if (shipMetadata.Author.has_value())
-            shipTitle += " - by " + *shipMetadata.Author;
-        if (shipMetadata.ArtCredits.has_value())
-            shipTitle += "; art by " + *shipMetadata.ArtCredits;
-
-        mCurrentShipTitles.push_back(shipTitle);
-
-        UpdateFrameTitle();
+        gameController.RegisterGameEventHandler(this);
     }
 
     void OnStormBegin() override
@@ -356,6 +329,28 @@ private:
     void OnNpcSelectionChanged(std::optional<NpcId> selectedNpc) override
     {
         ReconciliateUIWithNpcSelection(selectedNpc.has_value());
+    }
+
+    void OnGameReset() override
+    {
+        // Refresh title bar
+        mCurrentShipTitles.clear();
+        UpdateFrameTitle();
+    }
+
+    void OnShipLoaded(
+        unsigned int /*id*/,
+        ShipMetadata const & shipMetadata) override
+    {
+        std::string shipTitle = shipMetadata.ShipName;
+        if (shipMetadata.Author.has_value())
+            shipTitle += " - by " + *shipMetadata.Author;
+        if (shipMetadata.ArtCredits.has_value())
+            shipTitle += "; art by " + *shipMetadata.ArtCredits;
+
+        mCurrentShipTitles.push_back(shipTitle);
+
+        UpdateFrameTitle();
     }
 
     void OnAutoFocusTargetChanged(std::optional<AutoFocusTargetKindType> target) override
@@ -433,7 +428,7 @@ private:
 
     void RebuildNpcMenus();
 
-    static std::filesystem::path ChooseDefaultShip(ResourceLocator const & resourceLocator);
+    static std::filesystem::path ChooseDefaultShip(GameAssetManager const & gameAssetManager);
 
     void LoadShip(
         ShipLoadSpecifications const & loadSpecs,

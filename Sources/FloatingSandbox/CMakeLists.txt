@@ -9,8 +9,8 @@ set  (FLOATING_SANDBOX_SOURCES
 	BootSettings.h
 	GLCanvas.h
 	#MainApp.cpp
-	#MainFrame.cpp
-	#MainFrame.h
+	MainFrame.cpp
+	MainFrame.h
 	Music.cpp
 	Music.h
 	MusicController.cpp
@@ -34,9 +34,6 @@ set  (FLOATING_SANDBOX_SOURCES
 )
 
 set  (UI_SOURCES
-	UI/EventTickerPanel.cpp
-	UI/EventTickerPanel.h
-
 	UI/AboutDialog.cpp
 	UI/AboutDialog.h
 	UI/BootSettingsDialog.cpp
