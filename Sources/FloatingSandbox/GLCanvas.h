@@ -7,7 +7,7 @@
 
 #include <wx/glcanvas.h>
 
-#include <GameCore/Log.h>
+#include <Core/Log.h>
 
 /*
  * Our own GLCanvas that comes with the attributes we require for canvasses.

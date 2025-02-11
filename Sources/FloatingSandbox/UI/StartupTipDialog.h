@@ -5,11 +5,11 @@
 ***************************************************************************************/
 #pragma once
 
-#include "UIPreferencesManager.h"
+#include "../UIPreferencesManager.h"
 
 #include <UILib/LocalizationManager.h>
 
-#include <Game/ResourceLocator.h>
+#include <Game/GameAssetManager.h>
 
 #include <wx/dialog.h>
 
@@ -22,7 +22,7 @@ public:
     StartupTipDialog(
         wxWindow * parent,
         UIPreferencesManager & uiPreferencesManager,
-        ResourceLocator const & resourceLocator,
+        GameAssetManager const & gameAssetManager,
         LocalizationManager const & localizationManager);
 
     virtual ~StartupTipDialog();

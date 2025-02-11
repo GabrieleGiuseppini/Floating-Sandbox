@@ -5,11 +5,11 @@
 ***************************************************************************************/
 #pragma once
 
-#include "GLCanvas.h"
+#include "../GLCanvas.h"
 
-#include <Game/ResourceLocator.h>
+#include <Game/GameAssetManager.h>
 
-#include <GameCore/ProgressCallback.h>
+#include <Core/ProgressCallback.h>
 
 #include <wx/arrstr.h>
 #include <wx/frame.h>
@@ -24,7 +24,7 @@ class SplashScreenDialog : public wxFrame
 {
 public:
 
-	SplashScreenDialog(ResourceLocator const & resourceLocator);
+	SplashScreenDialog(GameAssetManager const & gameAssetManager);
 
 	virtual ~SplashScreenDialog();
 

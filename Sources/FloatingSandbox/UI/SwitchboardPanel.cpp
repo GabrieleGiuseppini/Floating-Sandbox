@@ -8,9 +8,7 @@
 #include <UILib/LayoutHelper.h>
 #include <UILib/WxHelpers.h>
 
-#include <Game/PngImageFileTools.h>
-
-#include <GameCore/ImageTools.h>
+#include <Core/ImageTools.h>
 
 #include <wx/clntdata.h>
 #include <wx/cursor.h>
@@ -29,7 +27,7 @@ SwitchboardPanel * SwitchboardPanel::Create(
     IGameController & gameController,
     SoundController & soundController,
     UIPreferencesManager & uiPreferencesManager,
-    ResourceLocator const & resourceLocator,
+    GameAssetManager const & gameAssetManager,
     ProgressCallback const & progressCallback)
 {
     return new SwitchboardPanel(
@@ -38,7 +36,7 @@ SwitchboardPanel * SwitchboardPanel::Create(
         gameController,
         soundController,
         uiPreferencesManager,
-        resourceLocator,
+        gameAssetManager,
         progressCallback);
 }
 
@@ -48,7 +46,7 @@ SwitchboardPanel::SwitchboardPanel(
     IGameController & gameController,
     SoundController & soundController,
     UIPreferencesManager & uiPreferencesManager,
-    ResourceLocator const & resourceLocator,
+    GameAssetManager const & gameAssetManager,
     ProgressCallback const & progressCallback)
     : mShowingMode(ShowingMode::NotShowing)
     , mLeaveWindowTimer()
@@ -83,7 +81,7 @@ SwitchboardPanel::SwitchboardPanel(
 
     progressCallback(progressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
 
-    auto backgroundBitmapFilepaths = resourceLocator.GetBitmapFilePaths("switchboard_background_*");
+    auto backgroundBitmapFilepaths = gameAssetManager.GetPngImageFilePaths("switchboard_background_*");
     if (backgroundBitmapFilepaths.empty())
     {
         throw GameException("There are no switchboard background bitmaps available");
@@ -106,7 +104,7 @@ SwitchboardPanel::SwitchboardPanel(
 
             for (auto const & backgroundBitmapFilepath : backgroundBitmapFilepaths)
             {
-                auto backgroundImage = PngImageFileTools::LoadImageRgba(backgroundBitmapFilepath);
+                auto backgroundImage = GameAssetManager::LoadPngImageRgba(backgroundBitmapFilepath);
                 auto backgroundBitmapThumb1 = ImageTools::Resize(
                     backgroundImage,
                     backgroundImage.Size.ScaleToWidth(128),
@@ -149,13 +147,13 @@ SwitchboardPanel::SwitchboardPanel(
         "switch_cursor_up",
         8,
         9,
-        resourceLocator);
+        gameAssetManager);
 
     mPassiveCursor = WxHelpers::LoadCursor(
         "question_mark_cursor_up",
         16,
         16,
-        resourceLocator);
+        gameAssetManager);
 
     //
     // Load bitmaps
@@ -168,102 +166,102 @@ SwitchboardPanel::SwitchboardPanel(
         progressSteps += 1.0f; // 1.0f
         progressCallback(progressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
 
-        mAutomaticSwitchOnEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("automatic_switch_on_enabled").string(), wxBITMAP_TYPE_PNG);
-        mAutomaticSwitchOffEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("automatic_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
-        mAutomaticSwitchOnDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("automatic_switch_on_disabled").string(), wxBITMAP_TYPE_PNG);
-        mAutomaticSwitchOffDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("automatic_switch_off_disabled").string(), wxBITMAP_TYPE_PNG);
+        mAutomaticSwitchOnEnabledBitmap.LoadFile(gameAssetManager.GetPngImageFilePath("automatic_switch_on_enabled").string(), wxBITMAP_TYPE_PNG);
+        mAutomaticSwitchOffEnabledBitmap.LoadFile(gameAssetManager.GetPngImageFilePath("automatic_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
+        mAutomaticSwitchOnDisabledBitmap.LoadFile(gameAssetManager.GetPngImageFilePath("automatic_switch_on_disabled").string(), wxBITMAP_TYPE_PNG);
+        mAutomaticSwitchOffDisabledBitmap.LoadFile(gameAssetManager.GetPngImageFilePath("automatic_switch_off_disabled").string(), wxBITMAP_TYPE_PNG);
         mMinBitmapSize.DecTo(mAutomaticSwitchOnEnabledBitmap.GetSize());
 
         progressSteps += 1.0f; // 2.0f
         progressCallback(progressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
 
-        mInteractivePushSwitchOnEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("interactive_push_switch_on_enabled").string(), wxBITMAP_TYPE_PNG);
-        mInteractivePushSwitchOffEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("interactive_push_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
-        mInteractivePushSwitchOnDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("interactive_push_switch_on_disabled").string(), wxBITMAP_TYPE_PNG);
-        mInteractivePushSwitchOffDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("interactive_push_switch_off_disabled").string(), wxBITMAP_TYPE_PNG);
+        mInteractivePushSwitchOnEnabledBitmap.LoadFile(gameAssetManager.GetPngImageFilePath("interactive_push_switch_on_enabled").string(), wxBITMAP_TYPE_PNG);
+        mInteractivePushSwitchOffEnabledBitmap.LoadFile(gameAssetManager.GetPngImageFilePath("interactive_push_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
+        mInteractivePushSwitchOnDisabledBitmap.LoadFile(gameAssetManager.GetPngImageFilePath("interactive_push_switch_on_disabled").string(), wxBITMAP_TYPE_PNG);
+        mInteractivePushSwitchOffDisabledBitmap.LoadFile(gameAssetManager.GetPngImageFilePath("interactive_push_switch_off_disabled").string(), wxBITMAP_TYPE_PNG);
         mMinBitmapSize.DecTo(mInteractivePushSwitchOnEnabledBitmap.GetSize());
 
         progressSteps += 1.0f; // 3.0f
         progressCallback(progressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
 
-        mInteractiveToggleSwitchOnEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("interactive_toggle_switch_on_enabled").string(), wxBITMAP_TYPE_PNG);
-        mInteractiveToggleSwitchOffEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("interactive_toggle_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
-        mInteractiveToggleSwitchOnDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("interactive_toggle_switch_on_disabled").string(), wxBITMAP_TYPE_PNG);
-        mInteractiveToggleSwitchOffDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("interactive_toggle_switch_off_disabled").string(), wxBITMAP_TYPE_PNG);
+        mInteractiveToggleSwitchOnEnabledBitmap.LoadFile(gameAssetManager.GetPngImageFilePath("interactive_toggle_switch_on_enabled").string(), wxBITMAP_TYPE_PNG);
+        mInteractiveToggleSwitchOffEnabledBitmap.LoadFile(gameAssetManager.GetPngImageFilePath("interactive_toggle_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
+        mInteractiveToggleSwitchOnDisabledBitmap.LoadFile(gameAssetManager.GetPngImageFilePath("interactive_toggle_switch_on_disabled").string(), wxBITMAP_TYPE_PNG);
+        mInteractiveToggleSwitchOffDisabledBitmap.LoadFile(gameAssetManager.GetPngImageFilePath("interactive_toggle_switch_off_disabled").string(), wxBITMAP_TYPE_PNG);
         mMinBitmapSize.DecTo(mInteractiveToggleSwitchOnEnabledBitmap.GetSize());
 
         progressSteps += 1.0f; // 4.0f
         progressCallback(progressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
 
-        mShipSoundSwitchOnEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("ship_sound_switch_on_enabled").string(), wxBITMAP_TYPE_PNG);
-        mShipSoundSwitchOffEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("ship_sound_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
-        mShipSoundSwitchOnDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("ship_sound_switch_on_disabled").string(), wxBITMAP_TYPE_PNG);
-        mShipSoundSwitchOffDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("ship_sound_switch_off_disabled").string(), wxBITMAP_TYPE_PNG);
+        mShipSoundSwitchOnEnabledBitmap.LoadFile(gameAssetManager.GetPngImageFilePath("ship_sound_switch_on_enabled").string(), wxBITMAP_TYPE_PNG);
+        mShipSoundSwitchOffEnabledBitmap.LoadFile(gameAssetManager.GetPngImageFilePath("ship_sound_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
+        mShipSoundSwitchOnDisabledBitmap.LoadFile(gameAssetManager.GetPngImageFilePath("ship_sound_switch_on_disabled").string(), wxBITMAP_TYPE_PNG);
+        mShipSoundSwitchOffDisabledBitmap.LoadFile(gameAssetManager.GetPngImageFilePath("ship_sound_switch_off_disabled").string(), wxBITMAP_TYPE_PNG);
         mMinBitmapSize.DecTo(mShipSoundSwitchOnEnabledBitmap.GetSize());
 
         progressSteps += 1.0f; // 5.0f
         progressCallback(progressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
 
-        mPowerMonitorOnBitmap.LoadFile(resourceLocator.GetBitmapFilePath("power_monitor_on").string(), wxBITMAP_TYPE_PNG);
-        mPowerMonitorOffBitmap.LoadFile(resourceLocator.GetBitmapFilePath("power_monitor_off").string(), wxBITMAP_TYPE_PNG);
+        mPowerMonitorOnBitmap.LoadFile(gameAssetManager.GetPngImageFilePath("power_monitor_on").string(), wxBITMAP_TYPE_PNG);
+        mPowerMonitorOffBitmap.LoadFile(gameAssetManager.GetPngImageFilePath("power_monitor_off").string(), wxBITMAP_TYPE_PNG);
         mMinBitmapSize.DecTo(mPowerMonitorOnBitmap.GetSize());
 
         progressSteps += 1.0f; // 6.0f
         progressCallback(progressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
 
-        mWatertightDoorOpenEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("watertight_door_open_enabled").string(), wxBITMAP_TYPE_PNG);
-        mWatertightDoorClosedEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("watertight_door_closed_enabled").string(), wxBITMAP_TYPE_PNG);
-        mWatertightDoorOpenDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("watertight_door_open_disabled").string(), wxBITMAP_TYPE_PNG);
-        mWatertightDoorClosedDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("watertight_door_closed_disabled").string(), wxBITMAP_TYPE_PNG);
+        mWatertightDoorOpenEnabledBitmap.LoadFile(gameAssetManager.GetPngImageFilePath("watertight_door_open_enabled").string(), wxBITMAP_TYPE_PNG);
+        mWatertightDoorClosedEnabledBitmap.LoadFile(gameAssetManager.GetPngImageFilePath("watertight_door_closed_enabled").string(), wxBITMAP_TYPE_PNG);
+        mWatertightDoorOpenDisabledBitmap.LoadFile(gameAssetManager.GetPngImageFilePath("watertight_door_open_disabled").string(), wxBITMAP_TYPE_PNG);
+        mWatertightDoorClosedDisabledBitmap.LoadFile(gameAssetManager.GetPngImageFilePath("watertight_door_closed_disabled").string(), wxBITMAP_TYPE_PNG);
         mMinBitmapSize.DecTo(mWatertightDoorOpenEnabledBitmap.GetSize());
 
         progressSteps += 1.0f; // 7.0f
         progressCallback(progressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
 
-        mGauge0100Bitmap.LoadFile(resourceLocator.GetBitmapFilePath("gauge_0-100").string(), wxBITMAP_TYPE_PNG);
-        mGaugeRpmBitmap.LoadFile(resourceLocator.GetBitmapFilePath("gauge_rpm").string(), wxBITMAP_TYPE_PNG);
-        mGaugeVoltsBitmap.LoadFile(resourceLocator.GetBitmapFilePath("gauge_volts").string(), wxBITMAP_TYPE_PNG);
-        mGaugeJetEngineBitmap.LoadFile(resourceLocator.GetBitmapFilePath("gauge_jet").string(), wxBITMAP_TYPE_PNG);
+        mGauge0100Bitmap.LoadFile(gameAssetManager.GetPngImageFilePath("gauge_0-100").string(), wxBITMAP_TYPE_PNG);
+        mGaugeRpmBitmap.LoadFile(gameAssetManager.GetPngImageFilePath("gauge_rpm").string(), wxBITMAP_TYPE_PNG);
+        mGaugeVoltsBitmap.LoadFile(gameAssetManager.GetPngImageFilePath("gauge_volts").string(), wxBITMAP_TYPE_PNG);
+        mGaugeJetEngineBitmap.LoadFile(gameAssetManager.GetPngImageFilePath("gauge_jet").string(), wxBITMAP_TYPE_PNG);
         mMinBitmapSize.DecTo(mGaugeRpmBitmap.GetSize());
 
         progressSteps += 1.0f; // 8.0f
         progressCallback(progressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
 
-        mEngineControllerTelegraphBackgroundEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("telegraph_background_enabled").string(), wxBITMAP_TYPE_PNG);
-        mEngineControllerTelegraphBackgroundDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("telegraph_background_disabled").string(), wxBITMAP_TYPE_PNG);
-        mEngineControllerTelegraphHandBitmaps.emplace_back(resourceLocator.GetBitmapFilePath("telegraph_hand_0").string(), wxBITMAP_TYPE_PNG);
-        mEngineControllerTelegraphHandBitmaps.emplace_back(resourceLocator.GetBitmapFilePath("telegraph_hand_1").string(), wxBITMAP_TYPE_PNG);
-        mEngineControllerTelegraphHandBitmaps.emplace_back(resourceLocator.GetBitmapFilePath("telegraph_hand_2").string(), wxBITMAP_TYPE_PNG);
-        mEngineControllerTelegraphHandBitmaps.emplace_back(resourceLocator.GetBitmapFilePath("telegraph_hand_3").string(), wxBITMAP_TYPE_PNG);
-        mEngineControllerTelegraphHandBitmaps.emplace_back(resourceLocator.GetBitmapFilePath("telegraph_hand_4").string(), wxBITMAP_TYPE_PNG);
-        mEngineControllerTelegraphHandBitmaps.emplace_back(resourceLocator.GetBitmapFilePath("telegraph_hand_5").string(), wxBITMAP_TYPE_PNG);
-        mEngineControllerTelegraphHandBitmaps.emplace_back(resourceLocator.GetBitmapFilePath("telegraph_hand_6").string(), wxBITMAP_TYPE_PNG);
-        mEngineControllerTelegraphHandBitmaps.emplace_back(resourceLocator.GetBitmapFilePath("telegraph_hand_7").string(), wxBITMAP_TYPE_PNG);
-        mEngineControllerTelegraphHandBitmaps.emplace_back(resourceLocator.GetBitmapFilePath("telegraph_hand_8").string(), wxBITMAP_TYPE_PNG);
-        mEngineControllerTelegraphHandBitmaps.emplace_back(resourceLocator.GetBitmapFilePath("telegraph_hand_9").string(), wxBITMAP_TYPE_PNG);
-        mEngineControllerTelegraphHandBitmaps.emplace_back(resourceLocator.GetBitmapFilePath("telegraph_hand_10").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerTelegraphBackgroundEnabledBitmap.LoadFile(gameAssetManager.GetPngImageFilePath("telegraph_background_enabled").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerTelegraphBackgroundDisabledBitmap.LoadFile(gameAssetManager.GetPngImageFilePath("telegraph_background_disabled").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerTelegraphHandBitmaps.emplace_back(gameAssetManager.GetPngImageFilePath("telegraph_hand_0").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerTelegraphHandBitmaps.emplace_back(gameAssetManager.GetPngImageFilePath("telegraph_hand_1").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerTelegraphHandBitmaps.emplace_back(gameAssetManager.GetPngImageFilePath("telegraph_hand_2").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerTelegraphHandBitmaps.emplace_back(gameAssetManager.GetPngImageFilePath("telegraph_hand_3").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerTelegraphHandBitmaps.emplace_back(gameAssetManager.GetPngImageFilePath("telegraph_hand_4").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerTelegraphHandBitmaps.emplace_back(gameAssetManager.GetPngImageFilePath("telegraph_hand_5").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerTelegraphHandBitmaps.emplace_back(gameAssetManager.GetPngImageFilePath("telegraph_hand_6").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerTelegraphHandBitmaps.emplace_back(gameAssetManager.GetPngImageFilePath("telegraph_hand_7").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerTelegraphHandBitmaps.emplace_back(gameAssetManager.GetPngImageFilePath("telegraph_hand_8").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerTelegraphHandBitmaps.emplace_back(gameAssetManager.GetPngImageFilePath("telegraph_hand_9").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerTelegraphHandBitmaps.emplace_back(gameAssetManager.GetPngImageFilePath("telegraph_hand_10").string(), wxBITMAP_TYPE_PNG);
 
         progressSteps += 1.0f; // 9.0f
         progressCallback(progressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
 
-        mEngineControllerJetThrottleBackgroundEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("jet_throttle_background_enabled").string(), wxBITMAP_TYPE_PNG);
-        mEngineControllerJetThrottleBackgroundDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("jet_throttle_background_disabled").string(), wxBITMAP_TYPE_PNG);
-        mEngineControllerJetThrottleHandleEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("jet_throttle_handle_enabled").string(), wxBITMAP_TYPE_PNG);
-        mEngineControllerJetThrottleHandleDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("jet_throttle_handle_disabled").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerJetThrottleBackgroundEnabledBitmap.LoadFile(gameAssetManager.GetPngImageFilePath("jet_throttle_background_enabled").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerJetThrottleBackgroundDisabledBitmap.LoadFile(gameAssetManager.GetPngImageFilePath("jet_throttle_background_disabled").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerJetThrottleHandleEnabledBitmap.LoadFile(gameAssetManager.GetPngImageFilePath("jet_throttle_handle_enabled").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerJetThrottleHandleDisabledBitmap.LoadFile(gameAssetManager.GetPngImageFilePath("jet_throttle_handle_disabled").string(), wxBITMAP_TYPE_PNG);
 
         progressSteps += 1.0f; // 10.0f
         progressCallback(progressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
 
-        mEngineControllerJetThrustOnEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("thrust_button_on_enabled").string(), wxBITMAP_TYPE_PNG);
-        mEngineControllerJetThrustOffEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("thrust_button_off_enabled").string(), wxBITMAP_TYPE_PNG);
-        mEngineControllerJetThrustOnDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("thrust_button_on_disabled").string(), wxBITMAP_TYPE_PNG);
-        mEngineControllerJetThrustOffDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("thrust_button_off_disabled").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerJetThrustOnEnabledBitmap.LoadFile(gameAssetManager.GetPngImageFilePath("thrust_button_on_enabled").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerJetThrustOffEnabledBitmap.LoadFile(gameAssetManager.GetPngImageFilePath("thrust_button_off_enabled").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerJetThrustOnDisabledBitmap.LoadFile(gameAssetManager.GetPngImageFilePath("thrust_button_on_disabled").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerJetThrustOffDisabledBitmap.LoadFile(gameAssetManager.GetPngImageFilePath("thrust_button_off_disabled").string(), wxBITMAP_TYPE_PNG);
 
         progressSteps += 1.0f; // 11.0f
         progressCallback(progressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
 
-        dockCheckboxCheckedBitmap.LoadFile(resourceLocator.GetBitmapFilePath("electrical_panel_dock_pin_down").string(), wxBITMAP_TYPE_PNG);
-        dockCheckboxUncheckedBitmap.LoadFile(resourceLocator.GetBitmapFilePath("electrical_panel_dock_pin_up").string(), wxBITMAP_TYPE_PNG);
+        dockCheckboxCheckedBitmap.LoadFile(gameAssetManager.GetPngImageFilePath("electrical_panel_dock_pin_down").string(), wxBITMAP_TYPE_PNG);
+        dockCheckboxUncheckedBitmap.LoadFile(gameAssetManager.GetPngImageFilePath("electrical_panel_dock_pin_up").string(), wxBITMAP_TYPE_PNG);
 
         progressSteps += 1.0f; // 12.0f
         progressCallback(progressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);

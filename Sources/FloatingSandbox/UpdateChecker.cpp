@@ -5,8 +5,10 @@
 ***************************************************************************************/
 #include "UpdateChecker.h"
 
-#include <GameCore/Log.h>
-#include <GameCore/Utils.h>
+#include <Game/GameVersion.h>
+
+#include <Core/Log.h>
+#include <Core/Utils.h>
 
 #include <SFML/Network/Http.hpp>
 
@@ -66,6 +68,7 @@ void UpdateChecker::WorkerThread()
     {
         std::string changesFileContent;
 
+        // FOR TESTING
         ////{
         ////    std::this_thread::sleep_for(std::chrono::seconds(2));
         ////    std::ifstream f("C:\\Users\\Neurodancer\\source\\repos\\Floating-Sandbox\\changes.txt");
@@ -79,7 +82,7 @@ void UpdateChecker::WorkerThread()
             sf::Http http;
             http.setHost(UpdateHost);
             sf::Http::Request request(UpdateUrl);
-            request.setField("Referer", Version::CurrentVersion().ToString());
+            request.setField("Referer", CurrentGameVersion.ToString());
 
             // Send the request and check the response
             sf::Http::Response response = http.sendRequest(request, sf::seconds(5.0f));

@@ -5,7 +5,9 @@
  ***************************************************************************************/
 #include "CheckForUpdatesDialog.h"
 
-#include <GameCore/Log.h>
+#include <Game/GameVersion.h>
+
+#include <Core/Log.h>
 
 #include <wx/gbsizer.h>
 #include <wx/stattext.h>
@@ -142,7 +144,7 @@ void CheckForUpdatesDialog::OnCheckCompletionTimer(wxTimerEvent & /*event*/)
             {
                 case UpdateChecker::UpdateCheckOutcomeType::HasVersion:
                 {
-                    if (*(outcome->LatestVersion) > Version::CurrentVersion())
+                    if (*(outcome->LatestVersion) > CurrentGameVersion)
                     {
                         // Tell the caller to display the new version
                         mHasVersionOutcome = outcome;
@@ -161,7 +163,7 @@ void CheckForUpdatesDialog::OnCheckCompletionTimer(wxTimerEvent & /*event*/)
                             "The latest available version is %s, and you are running version %s;"
                             " there are no new updates..."),
                             outcome->LatestVersion->ToMajorMinorPatchString().c_str(),
-                            Version::CurrentVersion().ToMajorMinorPatchString().c_str());
+                            CurrentGameVersion.ToMajorMinorPatchString().c_str());
 
                         ShowNoUpdateMessage(message);
                     }

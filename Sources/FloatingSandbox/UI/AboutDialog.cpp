@@ -7,9 +7,9 @@
 
 #include "CreditsPanel.h"
 
-#include <Game/Version.h>
+#include <Game/GameVersion.h>
 
-#include <GameCore/SysSpecifics.h>
+#include <Core/SysSpecifics.h>
 
 #include <wx/sizer.h>
 

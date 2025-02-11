@@ -11,7 +11,7 @@
 #include <UILib/SliderControl.h>
 
 #include <Game/IGameControllerSettingsOptions.h>
-#include <Game/ResourceLocator.h>
+#include <Game/GameAssetManager.h>
 #include <Game/Settings.h>
 
 #include <wx/bitmap.h>
@@ -35,7 +35,7 @@ public:
         wxWindow * parent,
         SettingsManager & settingsManager,
         IGameControllerSettingsOptions & gameControllerSettingsOptions,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
     virtual ~SettingsDialog();
 
@@ -258,13 +258,13 @@ private:
     void DoCancel();
     void DoClose();
 
-    void PopulateMechanicsAndThermodynamicsPanel(wxPanel * panel, ResourceLocator const & resourceLocator);
+    void PopulateMechanicsAndThermodynamicsPanel(wxPanel * panel, GameAssetManager const & gameAssetManager);
     void PopulateWaterAndOceanPanel(wxPanel * panel);
     void PopulateWindAndWavesPanel(wxPanel * panel);
     void PopulateAirAndSkyPanel(wxPanel * panel);
     void PopulateLightsElectricalFishesNpcsPanel(wxPanel * panel);
-    void PopulateDestructiveToolsPanel(wxPanel * panel, ResourceLocator const & resourceLocator);
-    void PopulateOtherToolsPanel(wxPanel * panel, ResourceLocator const & resourceLocator);
+    void PopulateDestructiveToolsPanel(wxPanel * panel, GameAssetManager const & gameAssetManager);
+    void PopulateOtherToolsPanel(wxPanel * panel, GameAssetManager const & gameAssetManager);
     void PopulateRenderingPanel(wxPanel * panel);
     void PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel);
     void PopulateSettingsManagementPanel(wxPanel * panel);
@@ -289,7 +289,7 @@ private:
     wxSizer * MakeToolVerticalStripIcons(
         wxWindow * parent,
         std::vector<std::string> && iconNames,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
 private:
 

@@ -5,12 +5,12 @@
  ***************************************************************************************/
 #pragma once
 
-#include "UIPreferencesManager.h"
-
-#include <Game/ResourceLocator.h>
+#include "../UIPreferencesManager.h"
 
 #include <UILib/LocalizationManager.h>
 #include <UILib/SliderControl.h>
+
+#include <Game/GameAssetManager.h>
 
 #include <wx/bitmap.h>
 #include <wx/combobox.h>
@@ -31,7 +31,7 @@ public:
         UIPreferencesManager & uiPreferencesManager,
         std::function<void()> onChangeCallback,
         std::function<void()> shipResetCallback,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
     virtual ~PreferencesDialog();
 

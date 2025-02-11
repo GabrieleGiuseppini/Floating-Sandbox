@@ -5,8 +5,8 @@
 ***************************************************************************************/
 #pragma once
 
-#include "SoundController.h"
-#include "UIPreferencesManager.h"
+#include "../SoundController.h"
+#include "../UIPreferencesManager.h"
 
 #include <UILib/BitmappedCheckbox.h>
 #include <UILib/ElectricalElementControl.h>
@@ -15,9 +15,9 @@
 
 #include <Game/IGameController.h>
 #include <Game/IGameEventHandlers.h>
-#include <Game/ResourceLocator.h>
+#include <Game/GameAssetManager.h>
 
-#include <GameCore/ProgressCallback.h>
+#include <Core/ProgressCallback.h>
 
 #include <wx/bitmap.h>
 #include <wx/bmpcbox.h>
@@ -38,8 +38,7 @@ class SwitchPanel;
 
 class SwitchboardPanel final
     : public wxCustomBackgroundWindow<UnFocusablePanel>
-    , public ILifecycleGameEventHandler
-    , public IElectricalElementGameEventHandler
+    , public IElectricalElementEventHandler
 {
 public:
 
@@ -49,7 +48,7 @@ public:
         IGameController & gameController,
         SoundController & soundController,
         UIPreferencesManager & uiPreferencesManager,
-        ResourceLocator const & resourceLocator,
+        GameAssetManager const & gameAssetManager,
         ProgressCallback const & progressCallback);
 
     ~SwitchboardPanel();
@@ -78,7 +77,6 @@ public:
 
     void RegisterEventHandler(IGameController & gameController)
     {
-        gameController.RegisterLifecycleEventHandler(this);
         gameController.RegisterElectricalElementEventHandler(this);
     }
 
@@ -181,7 +179,7 @@ private:
         IGameController & gameController,
         SoundController & soundController,
         UIPreferencesManager & uiPreferencesManager,
-        ResourceLocator const & resourceLocator,
+        GameAssetManager const & gameAssetManager,
         ProgressCallback const & progressCallback);
 
     void MakeSwitchPanel();

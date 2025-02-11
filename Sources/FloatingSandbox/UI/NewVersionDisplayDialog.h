@@ -5,9 +5,9 @@
 ***************************************************************************************/
 #pragma once
 
-#include "UIPreferencesManager.h"
+#include "../UIPreferencesManager.h"
 
-#include <Game/Version.h>
+#include <Core/Version.h>
 
 #include <wx/dialog.h>
 #include <wx/wxhtml.h>

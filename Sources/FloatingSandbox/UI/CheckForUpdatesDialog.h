@@ -5,7 +5,7 @@
  ***************************************************************************************/
 #pragma once
 
-#include "UpdateChecker.h"
+#include "../UpdateChecker.h"
 
 #include <wx/gauge.h>
 #include <wx/panel.h>

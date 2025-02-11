@@ -5,8 +5,9 @@
 ***************************************************************************************/
 #pragma once
 
-#include <Game/BootSettings.h>
-#include <Game/ResourceLocator.h>
+#include "BootSettings.h"
+
+#include <Game/GameAssetManager.h>
 
 #include <wx/radiobut.h>
 #include <wx/dialog.h>
@@ -17,7 +18,7 @@ public:
 
     BootSettingsDialog(
         wxWindow* parent,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
     virtual ~BootSettingsDialog();
 
@@ -37,5 +38,5 @@ private:
 
 private:
 
-    ResourceLocator const & mResourceLocator;
+    GameAssetManager const & mGameAssetManager;
 };

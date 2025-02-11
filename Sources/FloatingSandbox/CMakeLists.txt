@@ -9,7 +9,7 @@ set  (FLOATING_SANDBOX_SOURCES
 	BootSettings.h
 	#EventTickerPanel.cpp
 	#EventTickerPanel.h
-	#GLCanvas.h
+	GLCanvas.h
 	#MainApp.cpp
 	#MainFrame.cpp
 	#MainFrame.h
@@ -17,51 +17,51 @@ set  (FLOATING_SANDBOX_SOURCES
 	Music.h
 	MusicController.cpp
 	MusicController.h
-	#ProbePanel.cpp
-	#ProbePanel.h
 	SettingsManager.cpp
 	SettingsManager.h
 	SoundController.cpp
 	SoundController.h
 	Sounds.cpp
 	Sounds.h
-	#SwitchboardPanel.cpp
-	#SwitchboardPanel.h
 	#ToolController.cpp
 	#ToolController.h
 	#Tools.cpp
 	#Tools.h
-	#UIPreferencesManager.cpp
-	#UIPreferencesManager.h
+	UIPreferencesManager.cpp
+	UIPreferencesManager.h
 	#UnhandledExceptionHandler.cpp
 	#UnhandledExceptionHandler.h
-	#UpdateChecker.cpp
-	#UpdateChecker.h
+	UpdateChecker.cpp
+	UpdateChecker.h
 )
 
-set  (DIALOGS_SOURCES
-	#AboutDialog.cpp
-	#AboutDialog.h
-	#BootSettingsDialog.cpp
-	#BootSettingsDialog.h
-	#CheckForUpdatesDialog.cpp
-	#CheckForUpdatesDialog.h
-	#CreditsPanel.cpp
-	#CreditsPanel.h
-	#DebugDialog.cpp
-	#DebugDialog.h
-	#HelpDialog.cpp
-	#HelpDialog.h
-	#NewVersionDisplayDialog.cpp
-	#NewVersionDisplayDialog.h
-	#PreferencesDialog.cpp
-	#PreferencesDialog.h
-	#SettingsDialog.cpp
-	#SettingsDialog.h
-	#SplashScreenDialog.cpp
-	#SplashScreenDialog.h
-	#StartupTipDialog.cpp
-	#StartupTipDialog.h
+set  (UI_SOURCES
+	UI/AboutDialog.cpp
+	UI/AboutDialog.h
+	UI/BootSettingsDialog.cpp
+	UI/BootSettingsDialog.h
+	UI/CheckForUpdatesDialog.cpp
+	UI/CheckForUpdatesDialog.h
+	UI/CreditsPanel.cpp
+	UI/CreditsPanel.h
+	UI/DebugDialog.cpp
+	UI/DebugDialog.h
+	UI/HelpDialog.cpp
+	UI/HelpDialog.h
+	UI/NewVersionDisplayDialog.cpp
+	UI/NewVersionDisplayDialog.h
+	UI/PreferencesDialog.cpp
+	UI/PreferencesDialog.h
+	UI/ProbePanel.cpp
+	UI/ProbePanel.h
+	UI/SettingsDialog.cpp
+	UI/SettingsDialog.h
+	UI/SplashScreenDialog.cpp
+	UI/SplashScreenDialog.h
+	UI/StartupTipDialog.cpp
+	UI/StartupTipDialog.h
+	UI/SwitchboardPanel.cpp
+	UI/SwitchboardPanel.h
 )
 
 set(RESOURCE_FILES "")
@@ -77,10 +77,10 @@ else()
 endif()
 
 source_group(" " FILES ${FLOATING_SANDBOX_SOURCES})
-source_group("Dialogs" FILES ${DIALOGS_SOURCES})
+source_group("UI" FILES ${UI_SOURCES})
 source_group("Resources" FILES ${RESOURCE_FILES})
 
-add_executable (FloatingSandbox ${FLOATING_SANDBOX_SOURCES} ${DIALOGS_SOURCES} ${RESOURCE_FILES})
+add_executable (FloatingSandbox ${FLOATING_SANDBOX_SOURCES} ${UI_SOURCES} ${RESOURCE_FILES})
 
 include(${wxWidgets_USE_FILE})
 

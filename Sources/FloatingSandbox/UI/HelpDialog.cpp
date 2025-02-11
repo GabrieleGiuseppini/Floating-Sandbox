@@ -13,7 +13,7 @@
 
 HelpDialog::HelpDialog(
     wxWindow * parent,
-    ResourceLocator const & resourceLocator,
+    GameAssetManager const & gameAssetManager,
     LocalizationManager const & localizationManager)
     : wxDialog(parent, wxID_ANY, _("Help"))
 {
@@ -28,7 +28,7 @@ HelpDialog::HelpDialog(
 
     html->SetBorders(0);
     html->LoadPage(
-        resourceLocator.GetHelpFilePath(
+        gameAssetManager.GetHelpFilePath(
             localizationManager.GetEnforcedLanguageIdentifier(),
             localizationManager.GetDefaultLanguageIdentifier()).string());
     html->SetSize(

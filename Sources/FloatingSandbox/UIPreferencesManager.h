@@ -12,9 +12,9 @@
 
 #include <Game/IGameController.h>
 #include <Game/ShipLoadSpecifications.h>
-#include <Game/Version.h>
 
-#include <GameCore/GameTypes.h>
+#include <Core/GameTypes.h>
+#include <Core/Version.h>
 
 #include <algorithm>
 #include <cassert>

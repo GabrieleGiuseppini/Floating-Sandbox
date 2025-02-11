@@ -7,7 +7,7 @@
 
 #include <UILib/LocalizationManager.h>
 
-#include <Game/ResourceLocator.h>
+#include <Game/GameAssetManager.h>
 
 #include <wx/dialog.h>
 
@@ -17,7 +17,7 @@ public:
 
     HelpDialog(
         wxWindow* parent,
-        ResourceLocator const & resourceLocator,
+        GameAssetManager const & gameAssetManager,
         LocalizationManager const & localizationManager);
 
 	virtual ~HelpDialog();

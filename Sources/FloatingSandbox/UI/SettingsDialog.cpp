@@ -7,11 +7,11 @@
 
 #include <UILib/WxHelpers.h>
 
-#include <GameCore/ExponentialSliderCore.h>
-#include <GameCore/FixedTickSliderCore.h>
-#include <GameCore/IntegralLinearSliderCore.h>
-#include <GameCore/LinearSliderCore.h>
-#include <GameCore/Log.h>
+#include <Core/ExponentialSliderCore.h>
+#include <Core/FixedTickSliderCore.h>
+#include <Core/IntegralLinearSliderCore.h>
+#include <Core/LinearSliderCore.h>
+#include <Core/Log.h>
 
 #include <wx/gbsizer.h>
 #include <wx/intl.h>
@@ -73,7 +73,7 @@ SettingsDialog::SettingsDialog(
     wxWindow * parent,
     SettingsManager & settingsManager,
     IGameControllerSettingsOptions & gameControllerSettingsOptions,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
     : mParent(parent)
     , mSettingsManager(settingsManager)
     , mGameControllerSettingsOptions(gameControllerSettingsOptions)
@@ -122,7 +122,7 @@ SettingsDialog::SettingsDialog(
     //
 
     mWarningIcon = std::make_unique<wxBitmap>(
-        resourceLocator.GetIconFilePath("warning_icon").string(),
+        gameAssetManager.GetIconFilePath("warning_icon").string(),
         wxBITMAP_TYPE_PNG);
 
     //
@@ -145,7 +145,7 @@ SettingsDialog::SettingsDialog(
     {
         wxPanel * panel = new wxPanel(notebook);
 
-        PopulateMechanicsAndThermodynamicsPanel(panel, resourceLocator);
+        PopulateMechanicsAndThermodynamicsPanel(panel, gameAssetManager);
 
         notebook->AddPage(panel, _("Mechanics and Thermodynamics"));
     }
@@ -205,7 +205,7 @@ SettingsDialog::SettingsDialog(
     {
         wxPanel * panel = new wxPanel(notebook);
 
-        PopulateDestructiveToolsPanel(panel, resourceLocator);
+        PopulateDestructiveToolsPanel(panel, gameAssetManager);
 
         notebook->AddPage(panel, _("Destructive Tools"));
     }
@@ -217,7 +217,7 @@ SettingsDialog::SettingsDialog(
     {
         wxPanel * panel = new wxPanel(notebook);
 
-        PopulateOtherToolsPanel(panel, resourceLocator);
+        PopulateOtherToolsPanel(panel, gameAssetManager);
 
         notebook->AddPage(panel, _("Other Tools"));
     }
@@ -533,7 +533,7 @@ void SettingsDialog::DoClose()
 
 void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(
     wxPanel * panel,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
 {
     wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
 
@@ -744,7 +744,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(
         {
             mUltraViolentToggleButton = new BitmapToggleButton(
                 boxSizer->GetStaticBox(),
-                resourceLocator.GetIconFilePath("uv_mode_icon"),
+                gameAssetManager.GetIconFilePath("uv_mode_icon"),
                 [this](bool isChecked)
                 {
                     mLiveSettings.SetValue(GameSettings::UltraViolentMode, isChecked);
@@ -1473,9 +1473,9 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
                     {
                         mLiveSettings.ClearAllDirty();
 
-                        mLiveSettings.SetValue<OceanFloorTerrain>(
+                        mLiveSettings.SetValue<OceanFloorHeightMap>(
                             GameSettings::OceanFloorTerrain,
-                            mSettingsManager.GetDefaults().GetValue<OceanFloorTerrain>(GameSettings::OceanFloorTerrain));
+                            mSettingsManager.GetDefaults().GetValue<OceanFloorHeightMap>(GameSettings::OceanFloorTerrain));
 
                         OnLiveSettingsChanged();
                     });
@@ -3123,7 +3123,7 @@ void SettingsDialog::PopulateLightsElectricalFishesNpcsPanel(wxPanel * panel)
 
 void SettingsDialog::PopulateDestructiveToolsPanel(
     wxPanel * panel,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
 {
     wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
 
@@ -3148,7 +3148,7 @@ void SettingsDialog::PopulateDestructiveToolsPanel(
                         "am_bomb_cursor",
                         "fire_extinguishing_bomb_cursor",
                     },
-                    resourceLocator);
+                    gameAssetManager);
 
                 sizer->Add(
                     iconVSizer,
@@ -3297,7 +3297,7 @@ void SettingsDialog::PopulateDestructiveToolsPanel(
                     {
                         "smash_cursor_up"
                     },
-                    resourceLocator);
+                    gameAssetManager);
 
                 sizer->Add(
                     iconVSizer,
@@ -3367,7 +3367,7 @@ void SettingsDialog::PopulateDestructiveToolsPanel(
                     {
                         "blast_cursor_up_1"
                     },
-                    resourceLocator);
+                    gameAssetManager);
 
                 sizer->Add(
                     iconVSizer,
@@ -3463,7 +3463,7 @@ void SettingsDialog::PopulateDestructiveToolsPanel(
                     {
                         "laser_cannon_icon"
                     },
-                    resourceLocator);
+                    gameAssetManager);
 
                 sizer->Add(
                     iconVSizer,
@@ -3525,7 +3525,7 @@ void SettingsDialog::PopulateDestructiveToolsPanel(
 
 void SettingsDialog::PopulateOtherToolsPanel(
     wxPanel * panel,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
 {
     wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
 
@@ -3546,7 +3546,7 @@ void SettingsDialog::PopulateOtherToolsPanel(
                     {
                         "flood_cursor_up"
                     },
-                    resourceLocator);
+                    gameAssetManager);
 
                 sizer->Add(
                     iconVSizer,
@@ -3642,7 +3642,7 @@ void SettingsDialog::PopulateOtherToolsPanel(
                     {
                         "heat_blaster_heat_cursor_up"
                     },
-                    resourceLocator);
+                    gameAssetManager);
 
                 sizer->Add(
                     iconVSizer,
@@ -3739,7 +3739,7 @@ void SettingsDialog::PopulateOtherToolsPanel(
                     {
                         "air_tank_cursor_up"
                     },
-                    resourceLocator);
+                    gameAssetManager);
 
                 sizer->Add(
                     iconVSizer,
@@ -3810,7 +3810,7 @@ void SettingsDialog::PopulateOtherToolsPanel(
                     {
                         "repair_structure_cursor_up"
                     },
-                    resourceLocator);
+                    gameAssetManager);
 
                 sizer->Add(
                     iconVSizer,
@@ -3907,7 +3907,7 @@ void SettingsDialog::PopulateOtherToolsPanel(
                         "scrub_cursor_up",
                         "rot_cursor_up"
                     },
-                    resourceLocator);
+                    gameAssetManager);
 
                 sizer->Add(
                     iconVSizer,
@@ -3977,7 +3977,7 @@ void SettingsDialog::PopulateOtherToolsPanel(
                     {
                         "wind_cursor_up"
                     },
-                    resourceLocator);
+                    gameAssetManager);
 
                 sizer->Add(
                     iconVSizer,
@@ -6798,14 +6798,14 @@ void SettingsDialog::OnPersistenceError(std::string const & errorMessage) const
 wxSizer * SettingsDialog::MakeToolVerticalStripIcons(
     wxWindow * parent,
     std::vector<std::string> && iconNames,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
 {
     wxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
 
     for (size_t i = 0; i < iconNames.size(); ++i)
     {
         wxBitmap bitmap = wxBitmap(
-            resourceLocator.GetCursorFilePath(iconNames[i]).string(),
+            gameAssetManager.GetCursorFilePath(iconNames[i]).string(),
             wxBITMAP_TYPE_PNG);
 
         auto * staticBitmap = new wxStaticBitmap(parent, wxID_ANY, bitmap);

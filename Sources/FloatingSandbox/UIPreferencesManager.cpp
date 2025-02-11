@@ -7,10 +7,11 @@
 
 #include <UILib/StandardSystemPaths.h>
 
-#include <Game/ResourceLocator.h>
+#include <Game/GameAssetManager.h>
+#include <Game/GameVersion.h>
 
-#include <GameCore/GameMath.h>
-#include <GameCore/Utils.h>
+#include <Core/GameMath.h>
+#include <Core/Utils.h>
 
 static std::string const LastPlayedBackgroundMusicSettingName = "last_played_background_music_19.1";
 
@@ -100,7 +101,7 @@ std::optional<picojson::object> UIPreferencesManager::LoadPreferencesRootObject(
 
     if (std::filesystem::exists(preferencesFilePath))
     {
-        auto const preferencesRootValue = Utils::ParseJSONFile(preferencesFilePath);
+        auto const preferencesRootValue = GameAssetManager::LoadJson(preferencesFilePath);
 
         if (preferencesRootValue.is<picojson::object>())
         {
@@ -532,7 +533,7 @@ void UIPreferencesManager::SavePreferences() const
     picojson::object preferencesRootObject;
 
     // Add version
-    preferencesRootObject["version"] = picojson::value(Version::CurrentVersion().ToString());
+    preferencesRootObject["version"] = picojson::value(CurrentGameVersion.ToString());
 
     // Add ship load directories
     {
@@ -669,7 +670,7 @@ void UIPreferencesManager::SavePreferences() const
         preferencesRootObject["language"] = picojson::value(mLocalizationManager.GetDesiredLanguage()->Identifier);
 
     // Save
-    Utils::SaveJSONFile(
+    GameAssetManager::SaveJson(
         picojson::value(preferencesRootObject),
         GetPreferencesFilePath());
 }

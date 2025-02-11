@@ -22,9 +22,9 @@ static int constexpr InterRadioBoxMargin = 0;
 
 BootSettingsDialog::BootSettingsDialog(
     wxWindow * parent,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
     : wxDialog(parent, wxID_ANY, _("Boot Settings"), wxDefaultPosition, wxDefaultSize, wxCAPTION | wxSTAY_ON_TOP)
-    , mResourceLocator(resourceLocator)
+    , mGameAssetManager(gameAssetManager)
 {
     wxBoxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
 
@@ -157,7 +157,7 @@ BootSettingsDialog::BootSettingsDialog(
         vSizer->Add(hSizer, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 10);
     }
 
-    PopulateCheckboxes(BootSettings::Load(resourceLocator.GetBootSettingsFilePath()));
+    PopulateCheckboxes(BootSettings::Load(gameAssetManager.GetBootSettingsFilePath()));
 
     {
         this->SetSizerAndFit(vSizer);
@@ -226,13 +226,13 @@ void BootSettingsDialog::OnSaveAndQuitButton(wxCommandEvent & /*event*/)
     {
         BootSettings::Save(
             settings,
-            mResourceLocator.GetBootSettingsFilePath());
+            mGameAssetManager.GetBootSettingsFilePath());
     }
     else
     {
         try
         {
-            std::filesystem::remove(mResourceLocator.GetBootSettingsFilePath());
+            std::filesystem::remove(mGameAssetManager.GetBootSettingsFilePath());
         }
         catch (...)
         {

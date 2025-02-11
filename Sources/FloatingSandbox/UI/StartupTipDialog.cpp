@@ -13,7 +13,7 @@
 StartupTipDialog::StartupTipDialog(
     wxWindow * parent,
     UIPreferencesManager & uiPreferencesManager,
-    ResourceLocator const & resourceLocator,
+    GameAssetManager const & gameAssetManager,
     LocalizationManager const & localizationManager)
     : wxDialog(parent, wxID_ANY, _("Welcome!"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxSTAY_ON_TOP)
     , mUIPreferencesManager(uiPreferencesManager)
@@ -30,7 +30,7 @@ StartupTipDialog::StartupTipDialog(
 
         html->SetBorders(0);
         html->LoadPage(
-            resourceLocator.GetStartupTipFilePath(
+            gameAssetManager.GetStartupTipFilePath(
                 localizationManager.GetEnforcedLanguageIdentifier(),
                 localizationManager.GetDefaultLanguageIdentifier()).string());
         html->SetSize(

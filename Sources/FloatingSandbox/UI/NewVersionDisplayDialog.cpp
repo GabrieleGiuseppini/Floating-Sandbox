@@ -5,6 +5,8 @@
  ***************************************************************************************/
 #include "NewVersionDisplayDialog.h"
 
+#include <Game/GameVersion.h>
+
 #include <wx/button.h>
 #include <wx/sizer.h>
 #include <wx/statline.h>

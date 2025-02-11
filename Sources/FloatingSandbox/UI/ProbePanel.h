@@ -20,11 +20,12 @@
 
 class ProbePanel final
     : public UnFocusablePanel
-    , public ILifecycleGameEventHandler
-    , public IStatisticsGameEventHandler
-	, public IAtmosphereGameEventHandler
-    , public IGenericGameEventHandler
-    , public IStructuralGameEventHandler
+    , public IStructuralShipEventHandler
+    , public IGenericShipEventHandler
+    , public ISimulationStatisticsEventHandler
+    , public IAtmosphereEventHandler
+    , public IGameEventHandler
+    , public IGameStatisticsEventHandler
 {
 public:
 
@@ -42,14 +43,18 @@ public:
 
     void RegisterEventHandler(IGameController & gameController)
     {
-        gameController.RegisterLifecycleEventHandler(this);
-        gameController.RegisterStatisticsEventHandler(this);
-		gameController.RegisterAtmosphereEventHandler(this);
-        gameController.RegisterGenericEventHandler(this);
-        gameController.RegisterStructuralEventHandler(this);
+        gameController.RegisterStructuralShipEventHandler(this);
+        gameController.RegisterGenericShipEventHandler(this);
+        gameController.RegisterSimulationStatisticsEventHandler(this);
+        gameController.RegisterAtmosphereEventHandler(this);
+        gameController.RegisterGameEventHandler(this);
+        gameController.RegisterGameStatisticsEventHandler(this);
     }
 
-    void OnGameReset() override;
+    void OnBreak(
+        StructuralMaterial const & structuralMaterial,
+        bool isUnderwater,
+        unsigned int size) override;
 
     void OnWaterTaken(float waterTaken) override;
 
@@ -65,20 +70,17 @@ public:
         std::string const & name,
         float value) override;
 
+    void OnStaticPressureUpdated(
+        float netForce,
+        float complexity) override;
+
+    void OnGameReset() override;
+
     void OnFrameRateUpdated(
         float immediateFps,
         float averageFps) override;
 
     void OnCurrentUpdateDurationUpdated(float currentUpdateDuration) override;
-
-    void OnStaticPressureUpdated(
-        float netForce,
-        float complexity) override;
-
-    void OnBreak(
-        StructuralMaterial const & structuralMaterial,
-        bool isUnderwater,
-        unsigned int size) override;
 
 private:
 

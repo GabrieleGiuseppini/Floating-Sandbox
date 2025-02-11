@@ -5,10 +5,10 @@
 ***************************************************************************************/
 #include "SplashScreenDialog.h"
 
-#include <Game/Version.h>
+#include <Game/GameVersion.h>
 
-#include <GameCore/GameException.h>
-#include <GameCore/Log.h>
+#include <Core/GameException.h>
+#include <Core/Log.h>
 
 #include <wx/generic/statbmpg.h>
 #include <wx/settings.h>
@@ -16,7 +16,7 @@
 
 #include <cassert>
 
-SplashScreenDialog::SplashScreenDialog(ResourceLocator const & resourceLocator)
+SplashScreenDialog::SplashScreenDialog(GameAssetManager const & gameAssetManager)
 {
 	Create(
         nullptr, // Orphan
@@ -41,7 +41,7 @@ SplashScreenDialog::SplashScreenDialog(ResourceLocator const & resourceLocator)
     wxBitmap * bmp;
 
     {
-        bmp = new wxBitmap(resourceLocator.GetArtFilePath("splash_screen").string(), wxBITMAP_TYPE_PNG);
+        bmp = new wxBitmap(gameAssetManager.GetArtFilePath("splash_screen").string(), wxBITMAP_TYPE_PNG);
         if (!bmp->IsOk())
         {
             // This is likely to be the first resource load of the game; if it's broken,

@@ -5,12 +5,12 @@
  ***************************************************************************************/
 #include "PreferencesDialog.h"
 
-#include <Game/Version.h>
+#include <Game/GameVersion.h>
 
-#include <GameCore/ExponentialSliderCore.h>
-#include <GameCore/FixedSetSliderCore.h>
-#include <GameCore/IntegralLinearSliderCore.h>
-#include <GameCore/LinearSliderCore.h>
+#include <Core/ExponentialSliderCore.h>
+#include <Core/FixedSetSliderCore.h>
+#include <Core/IntegralLinearSliderCore.h>
+#include <Core/LinearSliderCore.h>
 
 #include <wx/gbsizer.h>
 #include <wx/msgdlg.h>
@@ -38,7 +38,7 @@ PreferencesDialog::PreferencesDialog(
     UIPreferencesManager & uiPreferencesManager,
     std::function<void()> onChangeCallback,
     std::function<void()> shipResetCallback,
-    ResourceLocator const & resourceLocator)
+    GameAssetManager const & gameAssetManager)
     : mParent(parent)
     , mUIPreferencesManager(uiPreferencesManager)
     , mOnChangeCallback(std::move(onChangeCallback))
@@ -63,7 +63,7 @@ PreferencesDialog::PreferencesDialog(
     //
 
     mWarningIcon = std::make_unique<wxBitmap>(
-        resourceLocator.GetIconFilePath("warning_icon").string(),
+        gameAssetManager.GetIconFilePath("warning_icon").string(),
         wxBITMAP_TYPE_PNG);
 
     //
