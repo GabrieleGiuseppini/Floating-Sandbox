@@ -16,15 +16,14 @@
 #include <UILib/UnderConstructionDialog.h>
 #include <UILib/WxHelpers.h>
 
-#include <Game/PngImageFileTools.h>
+#include <Game/FileSystem.h>
+#include <Game/GameVersion.h>
 #include <Game/ShipDeSerializer.h>
-#include <Game/Version.h>
 
-#include <GameOpenGL/GameOpenGL.h>
+#include <OpenGLCore/GameOpenGL.h>
 
-#include <GameCore/Log.h>
-#include <GameCore/UserGameException.h>
-#include <GameCore/Utils.h>
+#include <Core/Log.h>
+#include <Core/UserGameException.h>
 
 #include <wx/button.h>
 #include <wx/combobox.h>
@@ -54,7 +53,7 @@ int constexpr MaxVisualizationTransparency = 128;
 MainFrame::MainFrame(
     wxApp * mainApp,
     wxIcon const & icon,
-    ResourceLocator const & resourceLocator,
+    GameAssetManager const & gameAssetManager,
     LocalizationManager const & localizationManager,
     MaterialDatabase const & materialDatabase,
     ShipTexturizer const & shipTexturizer,
@@ -63,9 +62,9 @@ MainFrame::MainFrame(
     : mMainApp(mainApp)
     , mReturnToGameFunctor(std::move(returnToGameFunctor))
     , mOpenGLManager()
-    , mShipNameNormalizer(new ShipNameNormalizer(resourceLocator))
+    , mShipNameNormalizer(new ShipNameNormalizer(gameAssetManager))
     , mController()
-    , mResourceLocator(resourceLocator)
+    , mGameAssetManager(gameAssetManager)
     , mLocalizationManager(localizationManager)
     , mMaterialDatabase(materialDatabase)
     , mShipTexturizer(shipTexturizer)
@@ -100,7 +99,7 @@ MainFrame::MainFrame(
     // Load static bitmaps
     //
 
-    mNullMaterialBitmap = WxHelpers::LoadBitmap("null_material", MaterialSwathSize, mResourceLocator);
+    mNullMaterialBitmap = WxHelpers::LoadBitmap("null_material", MaterialSwathSize, mGameAssetManager);
 
     //
     // Setup main frame
@@ -277,7 +276,7 @@ MainFrame::MainFrame(
     {
         // Status bar
         {
-            mStatusBar = new StatusBar(mMainPanel, mWorkbenchState.GetDisplayUnitsSystem(), mResourceLocator);
+            mStatusBar = new StatusBar(mMainPanel, mWorkbenchState.GetDisplayUnitsSystem(), mGameAssetManager);
 
             mainVSizer->Add(
                 mStatusBar,
@@ -344,7 +343,7 @@ MainFrame::MainFrame(
             },
             mMaterialDatabase,
             mShipTexturizer,
-            mResourceLocator,
+            mGameAssetManager,
             [&progressCallback](float progress, ProgressMessageType message)
             {
                 // 0.0 -> 0.80
@@ -379,7 +378,7 @@ MainFrame::MainFrame(
 
     mShipLoadDialog = std::make_unique<ShipLoadDialog<ShipLoadDialogUsageType::ForShipBuilder>>(
         this,
-        mResourceLocator);
+        mGameAssetManager);
 
     progressCallback(1.0f, ProgressMessageType::LoadingShipBuilder);
 }
@@ -478,7 +477,7 @@ void MainFrame::OnShipNameChanged(IModelObservable const & model)
 
     std::string const & newName = model.GetShipMetadata().ShipName;
 
-    std::string const newShipFilename = Utils::MakeFilenameSafeString(newName) + ShipDeSerializer::GetShipDefinitionFileExtension();
+    std::string const newShipFilename = FileSystem::MakeFilenameSafeString(newName) + ShipDeSerializer::GetShipDefinitionFileExtension();
 
     if (mCurrentShipFilePath.has_value()
         && std::filesystem::exists(*mCurrentShipFilePath)
@@ -738,7 +737,7 @@ wxRibbonPanel * MainFrame::CreateMainFileRibbonPanel(wxRibbonPage * parent)
         auto * button = new RibbonToolbarButton<BitmapButton>(
             panel,
             wxVERTICAL,
-            mResourceLocator.GetIconFilePath("new_ship_button"),
+            mGameAssetManager.GetIconFilePath("new_ship_button"),
             _("New Ship"),
             [this]()
             {
@@ -764,7 +763,7 @@ wxRibbonPanel * MainFrame::CreateMainFileRibbonPanel(wxRibbonPage * parent)
         auto * button = new RibbonToolbarButton<BitmapButton>(
             panel,
             wxVERTICAL,
-            mResourceLocator.GetIconFilePath("load_ship_button"),
+            mGameAssetManager.GetIconFilePath("load_ship_button"),
             _("Load Ship"),
             [this]()
             {
@@ -790,7 +789,7 @@ wxRibbonPanel * MainFrame::CreateMainFileRibbonPanel(wxRibbonPage * parent)
         mSaveShipButton = new RibbonToolbarButton<BitmapButton>(
             panel,
             wxVERTICAL,
-            mResourceLocator.GetIconFilePath("save_ship_button"),
+            mGameAssetManager.GetIconFilePath("save_ship_button"),
             _("Save Ship"),
             [this]()
             {
@@ -819,7 +818,7 @@ wxRibbonPanel * MainFrame::CreateMainFileRibbonPanel(wxRibbonPage * parent)
         auto * button = new RibbonToolbarButton<BitmapButton>(
             panel,
             wxVERTICAL,
-            mResourceLocator.GetIconFilePath("save_ship_as_button"),
+            mGameAssetManager.GetIconFilePath("save_ship_as_button"),
             _("Save Ship As"),
             [this]()
             {
@@ -835,7 +834,7 @@ wxRibbonPanel * MainFrame::CreateMainFileRibbonPanel(wxRibbonPage * parent)
         mBackupShipButton = new RibbonToolbarButton<BitmapButton>(
             panel,
             wxVERTICAL,
-            mResourceLocator.GetIconFilePath("backup_ship_button"),
+            mGameAssetManager.GetIconFilePath("backup_ship_button"),
             _("Backup Ship"),
             [this]()
             {
@@ -855,7 +854,7 @@ wxRibbonPanel * MainFrame::CreateMainFileRibbonPanel(wxRibbonPage * parent)
         mSaveShipAndGoBackButton = new RibbonToolbarButton<BitmapButton>(
             panel,
             wxVERTICAL,
-            mResourceLocator.GetIconFilePath("save_and_return_to_game_button"),
+            mGameAssetManager.GetIconFilePath("save_and_return_to_game_button"),
             _("Save And Return"),
             [this]()
             {
@@ -876,7 +875,7 @@ wxRibbonPanel * MainFrame::CreateMainFileRibbonPanel(wxRibbonPage * parent)
         auto * button = new RibbonToolbarButton<BitmapButton>(
             panel,
             wxVERTICAL,
-            mResourceLocator.GetIconFilePath("quit_and_return_to_game_button"),
+            mGameAssetManager.GetIconFilePath("quit_and_return_to_game_button"),
             _("Abandon And Return"),
             [this]()
             {
@@ -893,7 +892,7 @@ wxRibbonPanel * MainFrame::CreateMainFileRibbonPanel(wxRibbonPage * parent)
         auto * button = new RibbonToolbarButton<BitmapButton>(
             panel,
             wxVERTICAL,
-            mResourceLocator.GetIconFilePath("quit_button"),
+            mGameAssetManager.GetIconFilePath("quit_button"),
             _("Quit"),
             [this]()
             {
@@ -938,7 +937,7 @@ wxRibbonPanel * MainFrame::CreateMainViewRibbonPanel(wxRibbonPage * parent)
         mZoomInButton = new RibbonToolbarButton<BitmapButton>(
             panel,
             wxVERTICAL,
-            mResourceLocator.GetIconFilePath("zoom_in_medium"),
+            mGameAssetManager.GetIconFilePath("zoom_in_medium"),
             _("Zoom In"),
             [this]()
             {
@@ -966,7 +965,7 @@ wxRibbonPanel * MainFrame::CreateMainViewRibbonPanel(wxRibbonPage * parent)
         mZoomOutButton = new RibbonToolbarButton<BitmapButton>(
             panel,
             wxVERTICAL,
-            mResourceLocator.GetIconFilePath("zoom_out_medium"),
+            mGameAssetManager.GetIconFilePath("zoom_out_medium"),
             _("Zoom Out"),
             [this]()
             {
@@ -994,7 +993,7 @@ wxRibbonPanel * MainFrame::CreateMainViewRibbonPanel(wxRibbonPage * parent)
         auto * button = new RibbonToolbarButton<BitmapButton>(
             panel,
             wxVERTICAL,
-            mResourceLocator.GetIconFilePath("zoom_reset_medium"),
+            mGameAssetManager.GetIconFilePath("zoom_reset_medium"),
             _("Reset View"),
             [this]()
             {
@@ -1043,7 +1042,7 @@ wxRibbonPanel * MainFrame::CreateMainPreferencesRibbonPanel(wxRibbonPage * paren
         auto const button = new RibbonToolbarButton<BitmapButton>(
             panel,
             wxVERTICAL,
-            mResourceLocator.GetIconFilePath("preferences_button"),
+            mGameAssetManager.GetIconFilePath("preferences_button"),
             _("Preferences"),
             [this]()
             {
@@ -1187,7 +1186,7 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
         auto * button = new RibbonToolbarButton<BitmapRadioButton>(
             panel,
             wxVERTICAL,
-            mResourceLocator.GetBitmapFilePath(buttonBitmapName),
+            mGameAssetManager.GetPngImageFilePath(buttonBitmapName),
             _("Edit"),
             [this, visualization]()
             {
@@ -1211,7 +1210,7 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
         auto * button = new RibbonToolbarButton<BitmapRadioButton>(
             panel,
             wxVERTICAL,
-            mResourceLocator.GetBitmapFilePath("game_visualization"),
+            mGameAssetManager.GetPngImageFilePath("game_visualization"),
             _("Game View"),
             [this]()
             {
@@ -1291,7 +1290,7 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
             newButton = new RibbonToolbarButton<BitmapButton>(
                 panel,
                 wxHORIZONTAL,
-                mResourceLocator.GetBitmapFilePath("new_layer_button"),
+                mGameAssetManager.GetPngImageFilePath("new_layer_button"),
                 _("Add/Clear"),
                 clickHandler,
                 _("Add or clean this layer."));
@@ -1301,7 +1300,7 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
             newButton = new RibbonToolbarButton<BitmapButton>(
                 panel,
                 wxHORIZONTAL,
-                mResourceLocator.GetBitmapFilePath("open_image_button"),
+                mGameAssetManager.GetPngImageFilePath("open_image_button"),
                 _("From Image"),
                 clickHandler,
                 _("Import this layer from an image file."));
@@ -1322,7 +1321,7 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
         auto * importButton = new RibbonToolbarButton<BitmapButton>(
             panel,
             wxHORIZONTAL,
-            mResourceLocator.GetBitmapFilePath("open_layer_button"),
+            mGameAssetManager.GetPngImageFilePath("open_layer_button"),
             _("Import"),
             [this, layer, sureQuestion]()
             {
@@ -1359,7 +1358,7 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
             deleteButton = new RibbonToolbarButton<BitmapButton>(
                 panel,
                 wxHORIZONTAL,
-                mResourceLocator.GetBitmapFilePath("delete_layer_button"),
+                mGameAssetManager.GetPngImageFilePath("delete_layer_button"),
                 _("Remove"),
                 [this, layer, sureQuestion]()
                 {
@@ -1474,7 +1473,7 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
             exportButton = new RibbonToolbarButton<BitmapButton>(
                 panel,
                 wxHORIZONTAL,
-                mResourceLocator.GetBitmapFilePath("save_layer_button"),
+                mGameAssetManager.GetPngImageFilePath("save_layer_button"),
                 _("Export"),
                 [this, layer]()
                 {
@@ -1490,7 +1489,7 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
                         }
                         else if (layer == LayerType::ExteriorTexture)
                         {
-                            PngImageFileTools::SavePngImage(
+                            GameAssetManager::SavePngImage(
                                 mController->GetModelController().GetExteriorTextureLayer().Buffer,
                                 dlg.GetChosenFilepath());
                         }
@@ -1498,7 +1497,7 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
                         {
                             assert(layer == LayerType::InteriorTexture);
 
-                            PngImageFileTools::SavePngImage(
+                            GameAssetManager::SavePngImage(
                                 mController->GetModelController().GetInteriorTextureLayer().Buffer,
                                 dlg.GetChosenFilepath());
                         }
@@ -1531,7 +1530,7 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
         mElectricalPanelEditButton = new RibbonToolbarButton<BitmapButton>(
             panel,
             wxVERTICAL,
-            mResourceLocator.GetBitmapFilePath("electrical_panel_edit_medium"),
+            mGameAssetManager.GetPngImageFilePath("electrical_panel_edit_medium"),
             _("Edit Panel"),
             [this]()
             {
@@ -1588,7 +1587,7 @@ wxRibbonPanel * MainFrame::CreateEditUndoRibbonPanel(wxRibbonPage * parent)
         mUndoButton = new RibbonToolbarButton<BitmapButton>(
             panel,
             wxVERTICAL,
-            mResourceLocator.GetIconFilePath("undo_medium"),
+            mGameAssetManager.GetIconFilePath("undo_medium"),
             _("Undo"),
             [this]()
             {
@@ -1638,7 +1637,7 @@ wxRibbonPanel * MainFrame::CreateEditShipRibbonPanel(wxRibbonPage * parent)
         auto button = new RibbonToolbarButton<BitmapButton>(
             panel,
             wxVERTICAL,
-            mResourceLocator.GetIconFilePath("trim_medium"),
+            mGameAssetManager.GetIconFilePath("trim_medium"),
             _("Auto-Trim"),
             [this]()
             {
@@ -1655,7 +1654,7 @@ wxRibbonPanel * MainFrame::CreateEditShipRibbonPanel(wxRibbonPage * parent)
         auto button = new RibbonToolbarButton<BitmapButton>(
             panel,
             wxVERTICAL,
-            mResourceLocator.GetIconFilePath("rotate_90_cw_medium"),
+            mGameAssetManager.GetIconFilePath("rotate_90_cw_medium"),
             _("90 CW"),
             [this]()
             {
@@ -1672,7 +1671,7 @@ wxRibbonPanel * MainFrame::CreateEditShipRibbonPanel(wxRibbonPage * parent)
         auto button = new RibbonToolbarButton<BitmapButton>(
             panel,
             wxVERTICAL,
-            mResourceLocator.GetIconFilePath("rotate_90_ccw_medium"),
+            mGameAssetManager.GetIconFilePath("rotate_90_ccw_medium"),
             _("90 CCW"),
             [this]()
             {
@@ -1689,7 +1688,7 @@ wxRibbonPanel * MainFrame::CreateEditShipRibbonPanel(wxRibbonPage * parent)
         auto button = new RibbonToolbarButton<BitmapButton>(
             panel,
             wxVERTICAL,
-            mResourceLocator.GetIconFilePath("flip_h_medium"),
+            mGameAssetManager.GetIconFilePath("flip_h_medium"),
             _("Flip H"),
             [this]()
             {
@@ -1706,7 +1705,7 @@ wxRibbonPanel * MainFrame::CreateEditShipRibbonPanel(wxRibbonPage * parent)
         auto button = new RibbonToolbarButton<BitmapButton>(
             panel,
             wxVERTICAL,
-            mResourceLocator.GetIconFilePath("flip_v_medium"),
+            mGameAssetManager.GetIconFilePath("flip_v_medium"),
             _("Flip V"),
             [this]()
             {
@@ -1723,7 +1722,7 @@ wxRibbonPanel * MainFrame::CreateEditShipRibbonPanel(wxRibbonPage * parent)
         auto button = new RibbonToolbarButton<BitmapButton>(
             panel,
             wxVERTICAL,
-            mResourceLocator.GetIconFilePath("resize_button"),
+            mGameAssetManager.GetIconFilePath("resize_button"),
             _("Size"),
             [this]()
             {
@@ -1739,7 +1738,7 @@ wxRibbonPanel * MainFrame::CreateEditShipRibbonPanel(wxRibbonPage * parent)
         auto button = new RibbonToolbarButton<BitmapButton>(
             panel,
             wxVERTICAL,
-            mResourceLocator.GetIconFilePath("metadata_button"),
+            mGameAssetManager.GetIconFilePath("metadata_button"),
             _("Properties"),
             [this]()
             {
@@ -1778,7 +1777,7 @@ wxRibbonPanel * MainFrame::CreateEditEditRibbonPanel(wxRibbonPage * parent)
         mCopyButton = new RibbonToolbarButton<BitmapButton>(
             panel,
             wxVERTICAL,
-            mResourceLocator.GetIconFilePath("copy_button"),
+            mGameAssetManager.GetIconFilePath("copy_button"),
             _("Copy"),
             [this]()
             {
@@ -1804,7 +1803,7 @@ wxRibbonPanel * MainFrame::CreateEditEditRibbonPanel(wxRibbonPage * parent)
         mCutButton = new RibbonToolbarButton<BitmapButton>(
             panel,
             wxVERTICAL,
-            mResourceLocator.GetIconFilePath("cut_button"),
+            mGameAssetManager.GetIconFilePath("cut_button"),
             _("Cut"),
             [this]()
             {
@@ -1830,7 +1829,7 @@ wxRibbonPanel * MainFrame::CreateEditEditRibbonPanel(wxRibbonPage * parent)
         mPasteButton = new RibbonToolbarButton<BitmapButton>(
             panel,
             wxVERTICAL,
-            mResourceLocator.GetIconFilePath("paste_button"),
+            mGameAssetManager.GetIconFilePath("paste_button"),
             _("Paste"),
             [this]()
             {
@@ -1882,7 +1881,7 @@ wxRibbonPanel * MainFrame::CreateEditAnalysisRibbonPanel(wxRibbonPage * parent)
         auto button = new RibbonToolbarButton<BitmapButton>(
             panel,
             wxVERTICAL,
-            mResourceLocator.GetIconFilePath("waterline_analysis_icon_medium"),
+            mGameAssetManager.GetIconFilePath("waterline_analysis_icon_medium"),
             _("Waterline"),
             [this]()
             {
@@ -1899,7 +1898,7 @@ wxRibbonPanel * MainFrame::CreateEditAnalysisRibbonPanel(wxRibbonPage * parent)
                     *this,
                     mWorkbenchState.IsWaterlineMarkersEnabled(),
                     mWorkbenchState.GetDisplayUnitsSystem(),
-                    mResourceLocator);
+                    mGameAssetManager);
 
                 dlg.ShowModal();
             },
@@ -1913,7 +1912,7 @@ wxRibbonPanel * MainFrame::CreateEditAnalysisRibbonPanel(wxRibbonPage * parent)
         auto button = new RibbonToolbarButton<BitmapButton>(
             panel,
             wxVERTICAL,
-            mResourceLocator.GetIconFilePath("validate_ship_button"),
+            mGameAssetManager.GetIconFilePath("validate_ship_button"),
             _("Validation"),
             [this]()
             {
@@ -2644,7 +2643,7 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
             {
                 mDeselectButton = new BitmapButton(
                     dynamicPanel,
-                    mResourceLocator.GetIconFilePath("deselect_button"),
+                    mGameAssetManager.GetIconFilePath("deselect_button"),
                     [this]()
                     {
                         Deselect();
@@ -2763,7 +2762,7 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
             {
                 auto * button = new BitmapButton(
                     dynamicPanel,
-                    mResourceLocator.GetIconFilePath("rotate_90_cw_medium"),
+                    mGameAssetManager.GetIconFilePath("rotate_90_cw_medium"),
                     [this]()
                     {
                         PasteRotate90CW();
@@ -2807,7 +2806,7 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
             {
                 auto * button = new BitmapButton(
                     dynamicPanel,
-                    mResourceLocator.GetIconFilePath("rotate_90_ccw_medium"),
+                    mGameAssetManager.GetIconFilePath("rotate_90_ccw_medium"),
                     [this]()
                     {
                         PasteRotate90CCW();
@@ -2851,7 +2850,7 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
             {
                 auto * button = new BitmapButton(
                     dynamicPanel,
-                    mResourceLocator.GetIconFilePath("flip_h_medium"),
+                    mGameAssetManager.GetIconFilePath("flip_h_medium"),
                     [this]()
                     {
                         PasteFlipH();
@@ -2895,7 +2894,7 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
             {
                 auto * button = new BitmapButton(
                     dynamicPanel,
-                    mResourceLocator.GetIconFilePath("flip_v_medium"),
+                    mGameAssetManager.GetIconFilePath("flip_v_medium"),
                     [this]()
                     {
                         PasteFlipV();
@@ -2950,7 +2949,7 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
             {
                 auto * button = new BitmapButton(
                     dynamicPanel,
-                    mResourceLocator.GetIconFilePath("confirm_40x40"),
+                    mGameAssetManager.GetIconFilePath("confirm_40x40"),
                     [this]()
                     {
                         PasteCommit();
@@ -2994,7 +2993,7 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
             {
                 auto * button = new BitmapButton(
                     dynamicPanel,
-                    mResourceLocator.GetIconFilePath("x_40x40"),
+                    mGameAssetManager.GetIconFilePath("x_40x40"),
                     [this]()
                     {
                         PasteAbort();
@@ -3108,7 +3107,7 @@ wxPanel * MainFrame::CreateVisualizationModeHeaderPanel(wxWindow * parent)
             auto * staticBitmap = new wxStaticBitmap(
                 modePanel,
                 wxID_ANY,
-                WxHelpers::LoadBitmap("game_visualization", mResourceLocator));
+                WxHelpers::LoadBitmap("game_visualization", mGameAssetManager));
 
             sizer->Add(
                 staticBitmap,
@@ -3166,7 +3165,7 @@ wxPanel * MainFrame::CreateVisualizationModeHeaderPanel(wxWindow * parent)
             auto * staticBitmap = new wxStaticBitmap(
                 modePanel,
                 wxID_ANY,
-                WxHelpers::LoadBitmap("structural_layer", mResourceLocator));
+                WxHelpers::LoadBitmap("structural_layer", mGameAssetManager));
 
             sizer->Add(
                 staticBitmap,
@@ -3222,7 +3221,7 @@ wxPanel * MainFrame::CreateVisualizationModeHeaderPanel(wxWindow * parent)
             auto * staticBitmap = new wxStaticBitmap(
                 modePanel,
                 wxID_ANY,
-                WxHelpers::LoadBitmap("electrical_layer", mResourceLocator));
+                WxHelpers::LoadBitmap("electrical_layer", mGameAssetManager));
 
             sizer->Add(
                 staticBitmap,
@@ -3268,7 +3267,7 @@ wxPanel * MainFrame::CreateVisualizationModeHeaderPanel(wxWindow * parent)
             auto * staticBitmap = new wxStaticBitmap(
                 modePanel,
                 wxID_ANY,
-                WxHelpers::LoadBitmap("ropes_layer", mResourceLocator));
+                WxHelpers::LoadBitmap("ropes_layer", mGameAssetManager));
 
             sizer->Add(
                 staticBitmap,
@@ -3314,7 +3313,7 @@ wxPanel * MainFrame::CreateVisualizationModeHeaderPanel(wxWindow * parent)
             auto * staticBitmap = new wxStaticBitmap(
                 modePanel,
                 wxID_ANY,
-                WxHelpers::LoadBitmap("exterior_texture_layer", mResourceLocator));
+                WxHelpers::LoadBitmap("exterior_texture_layer", mGameAssetManager));
 
             sizer->Add(
                 staticBitmap,
@@ -3420,7 +3419,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
             {
                 mGameVisualizationNoneModeButton = new BitmapRadioButton(
                     gameVisualizationModesPanel,
-                    mResourceLocator.GetBitmapFilePath("x_small"),
+                    mGameAssetManager.GetPngImageFilePath("x_small"),
                     [this]()
                     {
                         assert(mController);
@@ -3443,7 +3442,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
             {
                 mGameVisualizationAutoTexturizationModeButton = new BitmapRadioButton(
                     gameVisualizationModesPanel,
-                    mResourceLocator.GetBitmapFilePath("autotexturization_mode_icon_small"),
+                    mGameAssetManager.GetPngImageFilePath("autotexturization_mode_icon_small"),
                     [this]()
                     {
                         assert(mController);
@@ -3466,7 +3465,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
             {
                 mGameVisualizationExteriorTextureModeButton = new BitmapRadioButton(
                     gameVisualizationModesPanel,
-                    mResourceLocator.GetBitmapFilePath("structural_texture_mode_icon_small"),
+                    mGameAssetManager.GetPngImageFilePath("structural_texture_mode_icon_small"),
                     [this]()
                     {
                         assert(mController);
@@ -3504,7 +3503,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
             {
                 mStructuralLayerVisualizationNoneModeButton = new BitmapRadioButton(
                     structuralLayerVisualizationModesPanel,
-                    mResourceLocator.GetBitmapFilePath("x_small"),
+                    mGameAssetManager.GetPngImageFilePath("x_small"),
                     [this]()
                     {
                         assert(mController);
@@ -3527,7 +3526,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
             {
                 mStructuralLayerVisualizationMeshModeButton = new BitmapRadioButton(
                     structuralLayerVisualizationModesPanel,
-                    mResourceLocator.GetBitmapFilePath("mesh_mode_icon_small"),
+                    mGameAssetManager.GetPngImageFilePath("mesh_mode_icon_small"),
                     [this]()
                     {
                         assert(mController);
@@ -3550,7 +3549,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
             {
                 mStructuralLayerVisualizationPixelModeButton = new BitmapRadioButton(
                     structuralLayerVisualizationModesPanel,
-                    mResourceLocator.GetBitmapFilePath("pixel_mode_icon_small"),
+                    mGameAssetManager.GetPngImageFilePath("pixel_mode_icon_small"),
                     [this]()
                     {
                         assert(mController);
@@ -3588,7 +3587,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
             {
                 mElectricalLayerVisualizationNoneModeButton = new BitmapRadioButton(
                     electricalLayerVisualizationModesPanel,
-                    mResourceLocator.GetBitmapFilePath("x_small"),
+                    mGameAssetManager.GetPngImageFilePath("x_small"),
                     [this]()
                     {
                         assert(mController);
@@ -3611,7 +3610,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
             {
                 mElectricalLayerVisualizationPixelModeButton = new BitmapRadioButton(
                     electricalLayerVisualizationModesPanel,
-                    mResourceLocator.GetBitmapFilePath("pixel_mode_icon_small"),
+                    mGameAssetManager.GetPngImageFilePath("pixel_mode_icon_small"),
                     [this]()
                     {
                         assert(mController);
@@ -3649,7 +3648,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
             {
                 mRopesLayerVisualizationNoneModeButton = new BitmapRadioButton(
                     ropesLayerVisualizationModesPanel,
-                    mResourceLocator.GetBitmapFilePath("x_small"),
+                    mGameAssetManager.GetPngImageFilePath("x_small"),
                     [this]()
                     {
                         assert(mController);
@@ -3672,7 +3671,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
             {
                 mRopesLayerVisualizationLinesModeButton = new BitmapRadioButton(
                     ropesLayerVisualizationModesPanel,
-                    mResourceLocator.GetBitmapFilePath("lines_mode_icon_small"),
+                    mGameAssetManager.GetPngImageFilePath("lines_mode_icon_small"),
                     [this]()
                     {
                         assert(mController);
@@ -3710,7 +3709,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
             {
                 mExteriorTextureLayerVisualizationNoneModeButton = new BitmapRadioButton(
                     exteriorTextureLayerVisualizationModesPanel,
-                    mResourceLocator.GetBitmapFilePath("x_small"),
+                    mGameAssetManager.GetPngImageFilePath("x_small"),
                     [this]()
                     {
                         assert(mController);
@@ -3733,7 +3732,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
             {
                 mExteriorTextureLayerVisualizationMatteModeButton = new BitmapRadioButton(
                     exteriorTextureLayerVisualizationModesPanel,
-                    mResourceLocator.GetBitmapFilePath("texture_mode_icon_small"),
+                    mGameAssetManager.GetPngImageFilePath("texture_mode_icon_small"),
                     [this]()
                     {
                         assert(mController);
@@ -3769,7 +3768,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
         {
             mViewWaterlineMarkersButton = new BitmapToggleButton(
                 panel,
-                mResourceLocator.GetBitmapFilePath("view_waterline_markers_button"),
+                mGameAssetManager.GetPngImageFilePath("view_waterline_markers_button"),
                 [this](bool isChecked)
                 {
                     assert(mController);
@@ -3792,7 +3791,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
         {
             mViewGridButton = new BitmapToggleButton(
                 panel,
-                mResourceLocator.GetBitmapFilePath("view_grid_button"),
+                mGameAssetManager.GetPngImageFilePath("view_grid_button"),
                 [this](bool isChecked)
                 {
                     assert(mController);
@@ -3844,7 +3843,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
     {
         auto button = new BitmapRadioButton(
             toolbarPanel,
-            mResourceLocator.GetIconFilePath(iconName),
+            mGameAssetManager.GetIconFilePath(iconName),
             [this, tool]()
             {
                 mController->SetCurrentTool(tool);
@@ -5358,7 +5357,7 @@ void MainFrame::ImportExteriorTextureLayerFromImage()
 
                 if (!mResizeDialog)
                 {
-                    mResizeDialog = std::make_unique<ResizeDialog>(this, mResourceLocator);
+                    mResizeDialog = std::make_unique<ResizeDialog>(this, mGameAssetManager);
                 }
 
                 if (!mResizeDialog->ShowModalForTexture(image, targetSize))
@@ -5396,7 +5395,7 @@ void MainFrame::OnPreferences()
 {
     if (!mPreferencesDialog)
     {
-        mPreferencesDialog = std::make_unique<PreferencesDialog>(this, mResourceLocator);
+        mPreferencesDialog = std::make_unique<PreferencesDialog>(this, mGameAssetManager);
     }
 
     mPreferencesDialog->ShowModal(
@@ -5408,7 +5407,7 @@ void MainFrame::OnShipCanvasResize()
 {
     if (!mResizeDialog)
     {
-        mResizeDialog = std::make_unique<ResizeDialog>(this, mResourceLocator);
+        mResizeDialog = std::make_unique<ResizeDialog>(this, mGameAssetManager);
     }
 
     // Make ship preview
@@ -5440,7 +5439,7 @@ void MainFrame::OnShipPropertiesEdit()
 {
     if (!mShipPropertiesEditDialog)
     {
-        mShipPropertiesEditDialog = std::make_unique<ShipPropertiesEditDialog>(this, *mShipNameNormalizer, mResourceLocator);
+        mShipPropertiesEditDialog = std::make_unique<ShipPropertiesEditDialog>(this, *mShipNameNormalizer, mGameAssetManager);
     }
 
     // Make ship preview
@@ -5459,7 +5458,7 @@ void MainFrame::OnElectricalPanelEdit()
 {
     if (!mElectricalPanelEditDialog)
     {
-        mElectricalPanelEditDialog = std::make_unique<ElectricalPanelEditDialog>(this, mResourceLocator);
+        mElectricalPanelEditDialog = std::make_unique<ElectricalPanelEditDialog>(this, mGameAssetManager);
     }
 
     mElectricalPanelEditDialog->ShowModal(
@@ -5490,7 +5489,7 @@ void MainFrame::ValidateShip()
 {
     if (!mModelValidationDialog)
     {
-        mModelValidationDialog = std::make_unique<ModelValidationDialog>(this, mResourceLocator);
+        mModelValidationDialog = std::make_unique<ModelValidationDialog>(this, mGameAssetManager);
     }
 
     mModelValidationDialog->ShowModalForStandAloneValidation(*mController);
@@ -5626,7 +5625,7 @@ void MainFrame::DoNewShip()
     mCurrentShipFilePath.reset();
 
     // Ask user for ship name
-    NewShipNameDialog dlg(this, *mShipNameNormalizer, mResourceLocator);
+    NewShipNameDialog dlg(this, *mShipNameNormalizer, mGameAssetManager);
     std::string const shipName = dlg.AskName();
 
     // Create new controller with empty ship
@@ -5636,7 +5635,7 @@ void MainFrame::DoNewShip()
         mWorkbenchState,
         *this,
         mShipTexturizer,
-        mResourceLocator);
+        mGameAssetManager);
 
     ReconciliateUIWithShipFilename();
 }
@@ -5671,12 +5670,12 @@ bool MainFrame::DoLoadShip(std::filesystem::path const & shipFilePath)
         mWorkbenchState,
         *this,
         mShipTexturizer,
-        mResourceLocator);
+        mGameAssetManager);
 
     // Remember file path - but only if it's a definition file in the "official" format (not a legacy one),
     // and only if it's not a stock ship (otherwise users could overwrite game ships unknowingly)
     if (ShipDeSerializer::IsShipDefinitionFile(shipFilePath)
-        && !Utils::IsFileUnderDirectory(shipFilePath, mResourceLocator.GetInstalledShipFolderPath()))
+        && !FileSystem::IsFileUnderDirectory(shipFilePath, mGameAssetManager.GetInstalledShipFolderPath()))
     {
         mCurrentShipFilePath = shipFilePath;
     }
@@ -5719,7 +5718,7 @@ std::optional<ShipDefinition> MainFrame::DoLoadShipDefinitionAndCheckPassword(st
     // Check password
     //
 
-    if (!AskPasswordDialog::CheckPasswordProtectedEdit(*shipDefinition, this, mResourceLocator))
+    if (!AskPasswordDialog::CheckPasswordProtectedEdit(*shipDefinition, this, mGameAssetManager))
     {
         return std::nullopt;
     }
@@ -5751,7 +5750,7 @@ bool MainFrame::DoSaveShipAsWithValidation()
         }
 
         auto const res = mShipSaveDialog->ShowModal(
-            Utils::MakeFilenameSafeString(mController->GetModelController().GetShipMetadata().ShipName),
+            FileSystem::MakeFilenameSafeString(mController->GetModelController().GetShipMetadata().ShipName),
             ShipSaveDialog::GoalType::FullShip);
 
         if (res == wxID_OK)
@@ -5820,7 +5819,7 @@ bool MainFrame::DoPreSaveShipValidation()
 
     if (!mModelValidationDialog)
     {
-        mModelValidationDialog = std::make_unique<ModelValidationDialog>(this, mResourceLocator);
+        mModelValidationDialog = std::make_unique<ModelValidationDialog>(this, mGameAssetManager);
     }
 
     return mModelValidationDialog->ShowModalForSaveShipValidation(*mController);
@@ -6108,7 +6107,8 @@ void MainFrame::ReconciliateUIWithStructuralMaterial(StructuralMaterial const * 
                     mShipTexturizer.MakeMaterialTextureSample(
                         std::nullopt, // Use shared settings
                         MaterialSwathSize,
-                        *material));
+                        *material,
+                        mGameAssetManager));
 
                 mStructuralForegroundMaterialSelector->SetBitmap(foreStructuralBitmap);
                 mStructuralForegroundMaterialSelector->SetToolTip(material->Name);
@@ -6130,7 +6130,8 @@ void MainFrame::ReconciliateUIWithStructuralMaterial(StructuralMaterial const * 
                     mShipTexturizer.MakeMaterialTextureSample(
                         std::nullopt, // Use shared settings
                         MaterialSwathSize,
-                        *material));
+                        *material,
+                        mGameAssetManager));
 
                 mStructuralBackgroundMaterialSelector->SetBitmap(backStructuralBitmap);
                 mStructuralBackgroundMaterialSelector->SetToolTip(material->Name);
@@ -6204,7 +6205,8 @@ void MainFrame::ReconciliateUIWithRopesMaterial(StructuralMaterial const * mater
                     mShipTexturizer.MakeMaterialTextureSample(
                         std::nullopt, // Use shared settings
                         MaterialSwathSize,
-                        *material));
+                        *material,
+                        mGameAssetManager));
 
                 mRopesForegroundMaterialSelector->SetBitmap(foreRopesBitmap);
                 mRopesForegroundMaterialSelector->SetToolTip(material->Name);
@@ -6226,7 +6228,8 @@ void MainFrame::ReconciliateUIWithRopesMaterial(StructuralMaterial const * mater
                     mShipTexturizer.MakeMaterialTextureSample(
                         std::nullopt, // Use shared settings
                         MaterialSwathSize,
-                        *material));
+                        *material,
+                        mGameAssetManager));
 
                 mRopesBackgroundMaterialSelector->SetBitmap(backRopesBitmap);
                 mRopesBackgroundMaterialSelector->SetToolTip(material->Name);

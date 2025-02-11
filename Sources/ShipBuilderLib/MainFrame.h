@@ -28,12 +28,13 @@
 #include <UILib/ShipLoadDialog.h>
 #include <UILib/ShipSaveDialog.h>
 
-#include <Game/MaterialDatabase.h>
-#include <Game/ResourceLocator.h>
-#include <Game/ShipTexturizer.h>
+#include <Game/GameAssetManager.h>
 
-#include <GameCore/GameTypes.h>
-#include <GameCore/ProgressCallback.h>
+#include <Simulation/MaterialDatabase.h>
+#include <Simulation/ShipTexturizer.h>
+
+#include <Core/GameTypes.h>
+#include <Core/ProgressCallback.h>
 
 #include <wx/accel.h>
 #include <wx/app.h>
@@ -74,7 +75,7 @@ public:
     MainFrame(
         wxApp * mainApp,
         wxIcon const & icon,
-        ResourceLocator const & resourceLocator,
+        GameAssetManager const & gameAssetManager,
         LocalizationManager const & localizationManager,
         MaterialDatabase const & materialDatabase,
         ShipTexturizer const & shipTexturizer,
@@ -396,7 +397,7 @@ private:
     // Helpers
     //
 
-    ResourceLocator const & mResourceLocator;
+    GameAssetManager const & mGameAssetManager;
     LocalizationManager const & mLocalizationManager;
     MaterialDatabase const & mMaterialDatabase;
     ShipTexturizer const & mShipTexturizer;

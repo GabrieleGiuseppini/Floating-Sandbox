@@ -12,8 +12,8 @@ set (SHIPBUILDER_LIB_SOURCES
 	IModelObservable.h
 	InstancedElectricalElementSet.h
 	IUserInterface.h
-	#MainFrame.cpp
-	#MainFrame.h
+	MainFrame.cpp
+	MainFrame.h
 	Model.cpp
 	Model.h
 	ModelController.cpp
