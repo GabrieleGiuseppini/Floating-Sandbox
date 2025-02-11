@@ -7,15 +7,17 @@
 
 #include "Sounds.h"
 
+#include <Game/GameAssetManager.h>
 #include <Game/IGameController.h>
-#include <Game/IGameEventHandlers.h>
-#include <Game/ResourceLocator.h>
+//#include <Game/IGameEventHandlers.h>
 
-#include <GameCore/GameRandomEngine.h>
-#include <GameCore/ProgressCallback.h>
-#include <GameCore/RunningAverage.h>
-#include <GameCore/TupleKeys.h>
-#include <GameCore/Utils.h>
+#include <Simulation/ISimulationEventHandlers.h>
+
+#include <Core/GameRandomEngine.h>
+#include <Core/ProgressCallback.h>
+#include <Core/RunningAverage.h>
+#include <Core/TupleKeys.h>
+#include <Core/Utils.h>
 
 #include <SFML/Audio.hpp>
 
@@ -30,17 +32,18 @@
 #include <vector>
 
 class SoundController
-    : public IWavePhenomenaGameEventHandler
-    , public ICombustionGameEventHandler
-    , public IStructuralGameEventHandler
-	, public IAtmosphereGameEventHandler
-    , public IElectricalElementGameEventHandler
-    , public IGenericGameEventHandler
+    : public IStructuralShipEventHandler
+    , public IGenericShipEventHandler
+    , public IWavePhenomenaEventHandler
+    , public ICombustionEventHandler
+    , public IAtmosphereEventHandler
+    , public IElectricalElementEventHandler
+    , public IGameEventHandler
 {
 public:
 
     SoundController(
-        ResourceLocator const & resourceLocator,
+        GameAssetManager const & gameAssetManager,
         ProgressCallback const & progressCallback);
 
 	virtual ~SoundController();
@@ -202,12 +205,13 @@ public:
 
     void RegisterEventHandler(IGameController & gameController)
     {
+        gameController.RegisterStructuralShipEventHandler(this);
+        gameController.RegisterGenericShipEventHandler(this);
         gameController.RegisterWavePhenomenaEventHandler(this);
         gameController.RegisterCombustionEventHandler(this);
-        gameController.RegisterStructuralEventHandler(this);
 		gameController.RegisterAtmosphereEventHandler(this);
         gameController.RegisterElectricalElementEventHandler(this);
-        gameController.RegisterGenericEventHandler(this);
+        gameController.RegisterGameEventHandler(this);
     }
 
     void OnTsunamiNotification(float x) override;

@@ -256,8 +256,8 @@ struct IGameControllerSettings
 
     // Misc
 
-    virtual OceanFloorHeightMap const & GetOceanFloorHeightMap() const = 0;
-    virtual void SetOceanFloorHeightMap(OceanFloorHeightMap const & value) = 0;
+    virtual OceanFloorHeightMap const & GetOceanFloorTerrain() const = 0;
+    virtual void SetOceanFloorTerrain(OceanFloorHeightMap const & value) = 0;
 
     virtual float GetSeaDepth() const = 0;
     virtual void SetSeaDepth(float value) = 0;

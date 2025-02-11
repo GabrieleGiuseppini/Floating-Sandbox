@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #include "Sounds.h"
 
-#include <GameCore/Utils.h>
+#include <Core/Utils.h>
 
 SoundType StrToSoundType(std::string const & str)
 {

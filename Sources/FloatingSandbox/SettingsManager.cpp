@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #include "SettingsManager.h"
 
+#include <Simulation/OceanFloorHeightMap.h>
+
 #include <cctype>
 #include <sstream>
 
@@ -123,7 +125,7 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(float, NpcPassiveBlastRadiusAdjustment);
 
     // Misc
-    ADD_GC_SETTING(OceanFloorTerrain, OceanFloorTerrain);
+    ADD_GC_SETTING(OceanFloorHeightMap, OceanFloorTerrain);
     ADD_GC_SETTING_WITH_IMMEDIATE(float, SeaDepth);
     ADD_GC_SETTING(float, OceanFloorBumpiness);
     ADD_GC_SETTING_WITH_IMMEDIATE(float, OceanFloorDetailAmplification);
@@ -229,26 +231,26 @@ SettingsManager::SettingsManager(
 //
 
 template<>
-void SettingSerializer::Serialize<OceanFloorTerrain>(
+void SettingSerializer::Serialize<OceanFloorHeightMap>(
     SettingsSerializationContext & context,
     std::string const & settingName,
-    OceanFloorTerrain const & value)
+    OceanFloorHeightMap const & value)
 {
-    auto os = context.GetNamedStream(settingName, "bin");
+    auto os = context.GetNamedBinaryOutputStream(settingName, "bin");
 
     value.SaveToStream(*os);
 }
 
 template<>
-bool SettingSerializer::Deserialize<OceanFloorTerrain>(
+bool SettingSerializer::Deserialize<OceanFloorHeightMap>(
     SettingsDeserializationContext const & context,
     std::string const & settingName,
-    OceanFloorTerrain & value)
+    OceanFloorHeightMap & value)
 {
-    auto const is = context.GetNamedStream(settingName, "bin");
+    auto const is = context.GetNamedBinaryInputStream(settingName, "bin");
     if (!!is)
     {
-        value = OceanFloorTerrain::LoadFromStream(*is);
+        value = OceanFloorHeightMap::LoadFromStream(*is);
         return true;
     }
 

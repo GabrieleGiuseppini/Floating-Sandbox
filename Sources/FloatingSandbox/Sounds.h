@@ -5,12 +5,12 @@
 ***************************************************************************************/
 #pragma once
 
-#include <GameCore/GameException.h>
-#include <GameCore/GameRandomEngine.h>
-#include <GameCore/GameTypes.h>
-#include <GameCore/GameWallClock.h>
-#include <GameCore/Log.h>
-#include <GameCore/TupleKeys.h>
+#include <Core/GameException.h>
+#include <Core/GameRandomEngine.h>
+#include <Core/GameTypes.h>
+#include <Core/GameWallClock.h>
+#include <Core/Log.h>
+#include <Core/TupleKeys.h>
 
 #include <SFML/Audio.hpp>
 

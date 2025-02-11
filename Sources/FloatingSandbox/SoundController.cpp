@@ -5,12 +5,12 @@
 ***************************************************************************************/
 #include "SoundController.h"
 
-#include <Game/GameParameters.h>
-#include <Game/Materials.h>
+#include <Simulation/Materials.h>
+#include <Simulation/SimulationParameters.h>
 
-#include <GameCore/GameException.h>
-#include <GameCore/GameMath.h>
-#include <GameCore/Log.h>
+#include <Core/GameException.h>
+#include <Core/GameMath.h>
+#include <Core/Log.h>
 
 #include <algorithm>
 #include <cassert>
@@ -36,7 +36,7 @@ float constexpr LaserRayVolume = 50.0f;
 float constexpr WindMaxVolume = 70.0f;
 
 SoundController::SoundController(
-    ResourceLocator const & resourceLocator,
+    GameAssetManager const & gameAssetManager,
     ProgressCallback const & progressCallback)
     : // State
       mMasterEffectsVolume(50.0f)
@@ -103,7 +103,7 @@ SoundController::SoundController(
     // Initialize Sounds
     //
 
-    auto soundNames = resourceLocator.GetSoundNames();
+    auto soundNames = gameAssetManager.GetSoundNames();
 
     for (size_t i = 0; i < soundNames.size(); ++i)
     {
@@ -118,7 +118,7 @@ SoundController::SoundController(
         // Load sound file
         //
 
-        std::unique_ptr<SoundFile> soundFile = SoundFile::Load(resourceLocator.GetSoundFilePath(soundName));
+        std::unique_ptr<SoundFile> soundFile = SoundFile::Load(gameAssetManager.GetSoundFilePath(soundName));
 
         //
         // Parse filename
@@ -431,7 +431,7 @@ SoundController::SoundController(
             mLoopedSounds.AddAlternativeForSoundType(
                 soundType,
                 false, // IsUnderwater
-                resourceLocator.GetSoundFilePath(soundName));
+                gameAssetManager.GetSoundFilePath(soundName));
         }
         else if (soundType == SoundType::Break
                 || soundType == SoundType::Destroy
@@ -901,7 +901,7 @@ SoundController::SoundController(
             mLoopedSounds.AddAlternativeForSoundType(
                 soundType,
                 isUnderwater,
-                resourceLocator.GetSoundFilePath(soundName),
+                gameAssetManager.GetSoundFilePath(soundName),
                 loopStartSample,
                 loopEndSample);
         }
@@ -2182,8 +2182,8 @@ void SoundController::OnEngineControllerUpdated(
     {
         case ElectricalMaterial::EngineControllerElementType::JetThrottle:
         {
-            if (oldControllerValue == GameParameters::EngineControllerJetThrottleIdleFraction
-                || newControllerValue == GameParameters::EngineControllerJetThrottleIdleFraction)
+            if (oldControllerValue == SimulationParameters::EngineControllerJetThrottleIdleFraction
+                || newControllerValue == SimulationParameters::EngineControllerJetThrottleIdleFraction)
             {
                 PlayOneShotMultipleChoiceSound(
                     SoundType::EngineThrottleIdle,

@@ -19,12 +19,12 @@ set  (FLOATING_SANDBOX_SOURCES
 	#MusicController.h
 	#ProbePanel.cpp
 	#ProbePanel.h
-	#SettingsManager.cpp
-	#SettingsManager.h
-	#SoundController.cpp
-	#SoundController.h
-	#Sounds.cpp
-	#Sounds.h
+	SettingsManager.cpp
+	SettingsManager.h
+	SoundController.cpp
+	SoundController.h
+	Sounds.cpp
+	Sounds.h
 	#SwitchboardPanel.cpp
 	#SwitchboardPanel.h
 	#ToolController.cpp
@@ -92,6 +92,7 @@ target_link_libraries (FloatingSandbox PRIVATE
 	Game
 	OpenGLCore
 	ShipBuilderLib
+	Simulation
 	UILib
 	sfml-audio
 	sfml-network

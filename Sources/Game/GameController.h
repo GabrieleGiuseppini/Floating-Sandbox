@@ -738,8 +738,8 @@ public:
 
     // Misc
 
-    OceanFloorHeightMap const & GetOceanFloorHeightMap() const override { return mWorld->GetOceanFloorHeightMap(); }
-    void SetOceanFloorHeightMap(OceanFloorHeightMap const & value) override { mWorld->SetOceanFloorHeightMap(value); }
+    OceanFloorHeightMap const & GetOceanFloorTerrain() const override { return mWorld->GetOceanFloorHeightMap(); }
+    void SetOceanFloorTerrain(OceanFloorHeightMap const & value) override { mWorld->SetOceanFloorHeightMap(value); }
 
     float GetSeaDepth() const override { return mFloatParameterSmoothers[SeaDepthParameterSmoother].GetValue(); }
     void SetSeaDepth(float value) override { mFloatParameterSmoothers[SeaDepthParameterSmoother].SetValue(value); }

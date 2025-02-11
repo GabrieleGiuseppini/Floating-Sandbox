@@ -904,7 +904,7 @@ private:
 //
 ///////////////////////////////////////////////////////////////////////////////////////
 
-template<typename TEnum, typename TFileSystem = FileSystem>
+template<typename TEnum, typename TFileSystem = FileSystemImpl>
 class BaseSettingsManager
 {
 public:
