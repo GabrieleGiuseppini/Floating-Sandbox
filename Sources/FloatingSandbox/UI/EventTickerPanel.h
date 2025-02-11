@@ -10,6 +10,8 @@
 #include <Game/IGameController.h>
 #include <Game/IGameEventHandlers.h>
 
+#include <Simulation/ISimulationEventHandlers.h>
+
 #include <wx/wx.h>
 
 #include <memory>
@@ -17,11 +19,11 @@
 
 class EventTickerPanel final
     : public UnFocusablePanel
-    , public ILifecycleGameEventHandler
-    , public IStructuralGameEventHandler
-    , public IWavePhenomenaGameEventHandler
-    , public IElectricalElementGameEventHandler
-    , public IGenericGameEventHandler
+    , public IGenericShipEventHandler
+    , public IStructuralShipEventHandler
+    , public IWavePhenomenaEventHandler
+    , public IElectricalElementEventHandler
+    , public IGameEventHandler
 {
 public:
 
@@ -37,11 +39,11 @@ public:
 
     void RegisterEventHandler(IGameController & gameController)
     {
-        gameController.RegisterLifecycleEventHandler(this);
-        gameController.RegisterStructuralEventHandler(this);
+        gameController.RegisterGenericShipEventHandler(this);
+        gameController.RegisterStructuralShipEventHandler(this);
         gameController.RegisterWavePhenomenaEventHandler(this);
         gameController.RegisterElectricalElementEventHandler(this);
-        gameController.RegisterGenericEventHandler(this);
+        gameController.RegisterGameEventHandler(this);
     }
 
     virtual void OnGameReset() override;
