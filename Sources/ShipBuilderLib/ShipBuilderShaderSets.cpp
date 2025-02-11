@@ -12,7 +12,7 @@
 
 namespace ShipBuilder::_detail {
 
-ProgramKind ShaderFilenameToProgramKind(std::string const & str)
+ProgramKind ShaderNameToProgramKind(std::string const & str)
 {
     std::string lstr = Utils::ToLower(str);
     if (lstr == "canvas")

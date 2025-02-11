@@ -12,13 +12,14 @@
 
 #include <UILib/LocalizationManager.h>
 
-#include <Game/MaterialDatabase.h>
-#include <Game/ResourceLocator.h>
-#include <Game/ShipTexturizer.h>
-#include <Game/Version.h>
+#include <Game/GameAssetManager.h>
+#include <Game/GameVersion.h>
 
-#include <GameCore/BuildInfo.h>
-#include <GameCore/Log.h>
+#include <Simulation/MaterialDatabase.h>
+#include <Simulation/ShipTexturizer.h>
+
+#include <Core/BuildInfo.h>
+#include <Core/Log.h>
 
 #include <wx/app.h>
 #include <wx/msgdlg.h>
@@ -59,7 +60,7 @@ public:
 private:
 
     ShipBuilder::MainFrame * mMainFrame;
-    std::unique_ptr<ResourceLocator> mResourceLocator;
+    std::unique_ptr<GameAssetManager> mGameAssetManager;
     std::unique_ptr<LocalizationManager> mLocalizationManager;
     std::unique_ptr<MaterialDatabase> mMaterialDatabase;
     std::unique_ptr<ShipTexturizer> mShipTexturizer;
@@ -110,7 +111,7 @@ bool MainApp::OnInit()
         // Initialize resource locator
         //
 
-        mResourceLocator = std::make_unique<ResourceLocator>(std::string(argv[0]));
+        mGameAssetManager = std::make_unique<GameAssetManager>(std::string(argv[0]));
 
         //
         // Initialize wxWidgets and language used for localization
@@ -120,16 +121,16 @@ bool MainApp::OnInit()
         wxInitAllImageHandlers();
 
         // Language (system default)
-        mLocalizationManager = LocalizationManager::CreateInstance(std::nullopt, *mResourceLocator);
+        mLocalizationManager = LocalizationManager::CreateInstance(std::nullopt, *mGameAssetManager);
 
         //
         // Initialize helpers
         //
 
-        mMaterialDatabase = std::make_unique<MaterialDatabase>(std::move(MaterialDatabase::Load(*mResourceLocator)));
+        mMaterialDatabase = std::make_unique<MaterialDatabase>(std::move(MaterialDatabase::Load(*mGameAssetManager)));
         mShipTexturizer = std::make_unique<ShipTexturizer>(
             *mMaterialDatabase,
-            *mResourceLocator);
+            *mGameAssetManager);
 
         //
         // Create frame
@@ -138,7 +139,7 @@ bool MainApp::OnInit()
         mMainFrame = new ShipBuilder::MainFrame(
             this,
             wxICON(BBB_SHIP_ICON),
-            *mResourceLocator,
+            *mGameAssetManager,
             *mLocalizationManager,
             *mMaterialDatabase,
             *mShipTexturizer,

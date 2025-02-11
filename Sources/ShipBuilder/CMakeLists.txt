@@ -30,13 +30,15 @@ target_include_directories(ShipBuilder PRIVATE .)
 target_include_directories(ShipBuilder PRIVATE ${wxWidgets_INCLUDE_DIRS})
 target_compile_definitions(ShipBuilder PRIVATE "${wxWidgets_DEFINITIONS}")
 target_link_libraries (ShipBuilder
-	GameCoreLib
-	GameLib
-	GameOpenGLLib
+	Core
+	Game
+	OpenGLCore
 	ShipBuilderLib
+	Simulation
 	UILib
 	${OPENGL_LIBRARIES}
 	${wxWidgets_LIBRARIES}
+	${JPEG_LIBRARY}
 	${ADDITIONAL_LIBRARIES})
 
 
