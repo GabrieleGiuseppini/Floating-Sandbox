@@ -7,7 +7,7 @@
 		{	
 			"worldWidth": 1.0,
 			"worldHeight": 1.0,
-			"filenamePattern": "noise_.*"
+			"frameNamePattern": "noise_.*"
 		}
 	]
 }

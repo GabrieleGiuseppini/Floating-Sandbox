@@ -5,27 +5,27 @@
 	"worldScaling": 1.0,
 	"frames":[
 		{				
-			"filenamePattern": "gilthead_bream_\\d+"
+			"frameNamePattern": "gilthead_bream_\\d+"
 		}
 		,
 		{	
-			"filenamePattern": "barracuda_\\d+"
+			"frameNamePattern": "barracuda_\\d+"
 		}
 		,
 		{	
-			"filenamePattern": "mako_\\d+"
+			"frameNamePattern": "mako_\\d+"
 		}
 		,
 		{	
-			"filenamePattern": "queen_snapper_\\d+"
+			"frameNamePattern": "queen_snapper_\\d+"
 		}
 		,
 		{	
-			"filenamePattern": "tuna_\\d+"
+			"frameNamePattern": "tuna_\\d+"
 		}
 		,
 		{	
-			"filenamePattern": "deepsea_angler_\\d+"
+			"frameNamePattern": "deepsea_angler_\\d+"
 		}
 	]
 }

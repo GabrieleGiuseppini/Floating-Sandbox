@@ -34,6 +34,7 @@ public:
 	struct AssetDescriptor
 	{
 		std::string Name; // e.g. filename stem
+		std::string Filename;
 		std::string RelativePath;
 	};
 

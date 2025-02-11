@@ -7,7 +7,7 @@
 		{	
 			"worldWidth": 2.0,
 			"worldHeight": 2.0,
-			"filenamePattern": "air_bubble_\\d+"
+			"frameNamePattern": "air_bubble_\\d+"
 		}
 	]
 },
@@ -21,7 +21,7 @@
 			"worldHeight": 12.0,
 			"anchorOffsetX": 0,
 			"anchorOffsetY": 0,
-			"filenamePattern": "am_bomb_armor_\\d+"
+			"frameNamePattern": "am_bomb_armor_\\d+"
 		}
 	]
 },
@@ -33,7 +33,7 @@
 		{	
 			"worldWidth": 6.0,
 			"worldHeight": 6.0,
-			"filenamePattern": "am_bomb_sphere_\\d+"
+			"frameNamePattern": "am_bomb_sphere_\\d+"
 		}
 	]
 },
@@ -45,7 +45,7 @@
 		{	
 			"worldWidth": 6.0,
 			"worldHeight": 6.0,
-			"filenamePattern": "am_bomb_sphere_cloud_\\d+"
+			"frameNamePattern": "am_bomb_sphere_cloud_\\d+"
 		}
 	]
 },
@@ -57,7 +57,7 @@
 		{	
 			"worldWidth": 2.0,
 			"worldHeight": 2.0,
-			"filenamePattern": "engine_wake_\\d+"
+			"frameNamePattern": "engine_wake_\\d+"
 		}
 	]
 },
@@ -70,7 +70,7 @@
 			"worldWidth": 8.44,
 			"worldHeight": 12.0,
 			"anchorOffsetX": 24,
-			"filenamePattern": "fire_extinguishing_bomb_\\d+"
+			"frameNamePattern": "fire_extinguishing_bomb_\\d+"
 		}
 	]
 },
@@ -82,7 +82,7 @@
 		{	
 			"worldWidth": 6.0,
 			"worldHeight": 6.0,
-			"filenamePattern": "impact_bomb_.*"
+			"frameNamePattern": "impact_bomb_.*"
 		}
 	]
 },
@@ -94,7 +94,7 @@
 		{	
 			"worldWidth": 1.0,
 			"worldHeight": 1.0,
-			"filenamePattern": "laser_cannon_\\d+"
+			"frameNamePattern": "laser_cannon_\\d+"
 		}
 	]
 },
@@ -108,7 +108,7 @@
 			"worldHeight": 12.0,
 			"anchorOffsetX": -2,
 			"anchorOffsetY": 2,
-			"filenamePattern": "physics_probe_\\d+"
+			"frameNamePattern": "physics_probe_\\d+"
 		}
 	]
 },
@@ -122,7 +122,7 @@
 			"worldHeight": 12.0,
 			"anchorOffsetX": -2,
 			"anchorOffsetY": 2,
-			"filenamePattern": "physics_probe_ping_\\d+"
+			"frameNamePattern": "physics_probe_ping_\\d+"
 		}
 	]
 },
@@ -134,7 +134,7 @@
 		{	
 			"worldWidth": 6.0,
 			"worldHeight": 6.0,
-			"filenamePattern": "pinned_point_.*"
+			"frameNamePattern": "pinned_point_.*"
 		}
 	]
 },
@@ -147,7 +147,7 @@
 			"worldWidth": 12.0,
 			"worldHeight": 12.0,
 			"anchorOffsetX": -7,
-			"filenamePattern": "rc_bomb_\\d+"
+			"frameNamePattern": "rc_bomb_\\d+"
 		}
 	]
 },
@@ -160,7 +160,7 @@
 			"worldWidth": 12.0,
 			"worldHeight": 12.0,
 			"anchorOffsetX": -7,
-			"filenamePattern": "rc_bomb_ping_\\d+"
+			"frameNamePattern": "rc_bomb_ping_\\d+"
 		}
 	]
 },
@@ -172,7 +172,7 @@
 		{	
 			"worldWidth": 24.0,
 			"worldHeight": 24.0,
-			"filenamePattern": "smoke_dark_\\d+"
+			"frameNamePattern": "smoke_dark_\\d+"
 		}
 	]
 },
@@ -184,7 +184,7 @@
 		{	
 			"worldWidth": 24.0,
 			"worldHeight": 24.0,
-			"filenamePattern": "smoke_light_\\d+"
+			"frameNamePattern": "smoke_light_\\d+"
 		}
 	]
 },
@@ -198,7 +198,7 @@
 			"worldHeight": 12.0,
 			"anchorOffsetX": -1,
 			"anchorOffsetY": 57,
-			"filenamePattern": "timer_bomb_\\d+"
+			"frameNamePattern": "timer_bomb_\\d+"
 		}
 	]
 },
@@ -212,7 +212,7 @@
 			"worldHeight": 12.0,
 			"anchorOffsetX": -1,
 			"anchorOffsetY": 57,
-			"filenamePattern": "timer_bomb_fuse_\\d+"
+			"frameNamePattern": "timer_bomb_fuse_\\d+"
 		}
 	]
 }

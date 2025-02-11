@@ -67,6 +67,7 @@ std::vector<IAssetManager::AssetDescriptor> GameAssetManager::EnumerateTextureDa
                 frameDescriptors.push_back(
                     AssetDescriptor{
                         framePath.filename().stem().string(),
+                        framePath.filename().string(),
                         std::filesystem::relative(framePath, databaseRootPath).string()
                     });
             }
@@ -126,6 +127,7 @@ std::vector<IAssetManager::AssetDescriptor> GameAssetManager::EnumerateShaders(s
                 shaderDescriptors.push_back(
                     AssetDescriptor{
                         entryIt.path().filename().stem().string(),
+                        entryIt.path().filename().string(),
                         std::filesystem::relative(entryIt.path(), shaderSetRootPath).string()
                     });
             }
@@ -157,6 +159,7 @@ std::vector<IAssetManager::AssetDescriptor> GameAssetManager::EnumerateFonts(std
             fontDescriptors.push_back(
                 AssetDescriptor{
                     fontPath.filename().stem().string(),
+                    fontPath.filename().string(),
                     std::filesystem::relative(fontPath, fontSetRootPath).string()
                 });
         }

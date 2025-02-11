@@ -18,17 +18,21 @@ ShaderManager<TShaderSet>::ShaderManager(IAssetManager const & assetManager)
     // Load all shader files
     //
 
-    // Shader name -> (isShader, source)
-    std::unordered_map<std::string, std::pair<bool, std::string>> shaderSources;
+    // Shader filename -> ShaderInfo
+    std::unordered_map<std::string, ShaderInfo> shaderSources;
 
     for (auto const & shaderDescriptor : assetManager.EnumerateShaders(TShaderSet::ShaderSetName))
     {
         assert(shaderSources.count(shaderDescriptor.Name) == 0); // Guaranteed by file system
 
         #define IncludeExtension ".glsl"
-        shaderSources[shaderDescriptor.Name] = std::make_pair<bool, std::string>(
-            shaderDescriptor.RelativePath.find(IncludeExtension, shaderDescriptor.RelativePath.size() - sizeof(IncludeExtension)) != std::string::npos,
-            assetManager.LoadShader(TShaderSet::ShaderSetName, shaderDescriptor.RelativePath));
+        shaderSources.try_emplace(
+            shaderDescriptor.Filename,
+            ShaderInfo{
+                shaderDescriptor.Name,
+                assetManager.LoadShader(TShaderSet::ShaderSetName, shaderDescriptor.RelativePath),
+                shaderDescriptor.RelativePath.find(IncludeExtension, shaderDescriptor.RelativePath.size() - sizeof(IncludeExtension)) != std::string::npos
+            });
     }
 
     //
@@ -37,11 +41,11 @@ ShaderManager<TShaderSet>::ShaderManager(IAssetManager const & assetManager)
 
     for (auto const & entryIt : shaderSources)
     {
-        if (entryIt.second.first) // Do not compile include files
+        if (entryIt.second.IsShader) // Do not compile include files
         {
             CompileShader(
-                entryIt.first,
-                entryIt.second.second,
+                entryIt.second.Name,
+                entryIt.second.Source,
                 shaderSources);
         }
     }
@@ -63,7 +67,7 @@ template<typename TShaderSet>
 void ShaderManager<TShaderSet>::CompileShader(
     std::string const & shaderName,
     std::string const & shaderSource,
-    std::unordered_map<std::string, std::pair<bool, std::string>> const & allShaderSources)
+    std::unordered_map<std::string, ShaderInfo> const & allShaderSources)
 {
     try
     {
@@ -201,7 +205,7 @@ void ShaderManager<TShaderSet>::CompileShader(
 template<typename TShaderSet>
 std::string ShaderManager<TShaderSet>::ResolveIncludes(
     std::string const & shaderSource,
-    std::unordered_map<std::string, std::pair<bool, std::string>> const & shaderSources)
+    std::unordered_map<std::string, ShaderInfo> const & shaderSources)
 {
     /*
      * Strategy:
@@ -246,7 +250,7 @@ std::string ShaderManager<TShaderSet>::ResolveIncludes(
                 if (resolvedIncludes.count(includeFilename) == 0)
                 {
                     // Insert include
-                    sSubstitutedSource << includeIt->second.second << sSource.widen('\n');
+                    sSubstitutedSource << includeIt->second.Source << sSource.widen('\n');
 
                     // Remember the files we've included in this path
                     resolvedIncludes.insert(includeFilename);

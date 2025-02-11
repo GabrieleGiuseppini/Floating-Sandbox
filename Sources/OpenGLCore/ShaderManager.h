@@ -321,14 +321,21 @@ private:
 
     explicit ShaderManager(IAssetManager const & assetManager);
 
+    struct ShaderInfo
+    {
+        std::string Name;
+        std::string Source;
+        bool IsShader;
+    };
+
     void CompileShader(
         std::string const & shaderName,
         std::string const & shaderSource,
-        std::unordered_map<std::string, std::pair<bool, std::string>> const & shaderSources);
+        std::unordered_map<std::string, ShaderInfo> const & shaderSources);
 
     static std::string ResolveIncludes(
         std::string const & shaderSource,
-        std::unordered_map<std::string, std::pair<bool, std::string>> const & shaderSources);
+        std::unordered_map<std::string, ShaderInfo> const & shaderSources);
 
     static std::tuple<std::string, std::string> SplitSource(std::string const & source);
 
