@@ -15,13 +15,13 @@
 #include <UILib/LocalizationManager.h>
 #include <UILib/StandardSystemPaths.h>
 
-#include <Game/ResourceLocator.h>
-#include <Game/Version.h>
+#include <Game/GameAssetManager.h>
+#include <Game/GameVersion.h>
 
-#include <GameCore/BuildInfo.h>
-#include <GameCore/Log.h>
-#include <GameCore/SysSpecifics.h>
-#include <GameCore/ThreadManager.h>
+#include <Core/BuildInfo.h>
+#include <Core/Log.h>
+#include <Core/SysSpecifics.h>
+#include <Core/ThreadManager.h>
 
 #include <wx/app.h>
 #include <wx/cmdline.h>
@@ -100,7 +100,7 @@ private:
 private:
 
     MainFrame * mMainFrame;
-    std::unique_ptr<ResourceLocator> mResourceLocator;
+    std::unique_ptr<GameAssetManager> mGameAssetManager;
     std::unique_ptr<LocalizationManager> mLocalizationManager;
 
 
@@ -223,7 +223,7 @@ bool MainApp::OnInit()
         // Initialize resource locator, using executable's path
         //
 
-        mResourceLocator = std::make_unique<ResourceLocator>(std::string(argv[0]));
+        mGameAssetManager = std::make_unique<GameAssetManager>(std::string(argv[0]));
 
         //
         // Initialize wxWidgets and language used for localization
@@ -234,7 +234,7 @@ bool MainApp::OnInit()
 
         // Language
         auto const preferredLanguage = UIPreferencesManager::LoadPreferredLanguage();
-        mLocalizationManager = LocalizationManager::CreateInstance(preferredLanguage, *mResourceLocator);
+        mLocalizationManager = LocalizationManager::CreateInstance(preferredLanguage, *mGameAssetManager);
 
         //
         // See if we've been given a ship file path to start with
@@ -261,7 +261,7 @@ bool MainApp::OnInit()
         // Create frame
         //
 
-        mMainFrame = new MainFrame(this, initialFilePath, *mResourceLocator , *mLocalizationManager);
+        mMainFrame = new MainFrame(this, initialFilePath, *mGameAssetManager, *mLocalizationManager);
 
         SetTopWindow(mMainFrame);
 
@@ -310,7 +310,7 @@ int MainApp::OnExit()
     try
     {
         std::filesystem::path const diagnosticsFolderPath = StandardSystemPaths::GetInstance().GetDiagnosticsFolderPath(true);
-        Logger::Instance.FlushToFile(diagnosticsFolderPath, "last_run");
+        GameAssetManager::SaveTextFile(Logger::Instance.GetAll(), diagnosticsFolderPath / "last_run.log");
     }
     catch (...)
     { /* ignore */
