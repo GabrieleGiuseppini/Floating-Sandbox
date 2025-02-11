@@ -8,10 +8,10 @@
 #include "SoundController.h"
 
 #include <Game/IGameController.h>
-#include <Game/ResourceLocator.h>
+#include <Game/GameAssetManager.h>
 
-#include <GameCore/GameRandomEngine.h>
-#include <GameCore/GameTypes.h>
+#include <Core/GameRandomEngine.h>
+#include <Core/GameTypes.h>
 
 #include <wx/image.h>
 #include <wx/window.h>
@@ -663,7 +663,7 @@ public:
         IToolCursorManager & toolCursorManager,
         IGameController & gameController,
         SoundController & soundController,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 };
 
 class MoveAllTool final : public BaseMoveTool<ShipId>
@@ -674,7 +674,7 @@ public:
         IToolCursorManager & toolCursorManager,
         IGameController & gameController,
         SoundController & soundController,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 };
 
 class MoveGrippedTool final : public Tool
@@ -685,7 +685,7 @@ public:
         IToolCursorManager & toolCursorManager,
         IGameController & gameController,
         SoundController & soundController,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
 public:
 
@@ -1016,7 +1016,7 @@ public:
         IToolCursorManager & toolCursorManager,
         IGameController & gameController,
         SoundController & soundController,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
 public:
 
@@ -1168,7 +1168,7 @@ public:
         IToolCursorManager & toolCursorManager,
         IGameController & gameController,
         SoundController & soundController,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
 public:
 
@@ -1233,7 +1233,7 @@ public:
         IToolCursorManager & toolCursorManager,
         IGameController & gameController,
         SoundController & soundController,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
 public:
 
@@ -1418,7 +1418,7 @@ public:
         IToolCursorManager & toolCursorManager,
         IGameController & gameController,
         SoundController & soundController,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
 public:
 
@@ -1537,7 +1537,7 @@ public:
         IToolCursorManager & toolCursorManager,
         IGameController & gameController,
         SoundController & soundController,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
 public:
 
@@ -1647,7 +1647,7 @@ public:
         IToolCursorManager & toolCursorManager,
         IGameController & gameController,
         SoundController & soundController,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
 public:
 
@@ -1752,7 +1752,7 @@ public:
         IToolCursorManager & toolCursorManager,
         IGameController & gameController,
         SoundController & soundController,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
 public:
 
@@ -1857,7 +1857,7 @@ public:
         IToolCursorManager & toolCursorManager,
         IGameController & gameController,
         SoundController & soundController,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
 public:
 
@@ -1896,7 +1896,7 @@ public:
         IToolCursorManager & toolCursorManager,
         IGameController & gameController,
         SoundController & soundController,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
 public:
 
@@ -2026,7 +2026,7 @@ public:
         IToolCursorManager & toolCursorManager,
         IGameController & gameController,
         SoundController & soundController,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
 public:
 
@@ -2127,7 +2127,7 @@ public:
         IToolCursorManager & toolCursorManager,
         IGameController & gameController,
         SoundController & soundController,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
 public:
 
@@ -2158,7 +2158,7 @@ public:
         IToolCursorManager & toolCursorManager,
         IGameController & gameController,
         SoundController & soundController,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
 public:
 
@@ -2189,7 +2189,7 @@ public:
         IToolCursorManager & toolCursorManager,
         IGameController & gameController,
         SoundController & soundController,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
 public:
 
@@ -2220,7 +2220,7 @@ public:
         IToolCursorManager & toolCursorManager,
         IGameController & gameController,
         SoundController & soundController,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
 public:
 
@@ -2251,7 +2251,7 @@ public:
         IToolCursorManager & toolCursorManager,
         IGameController & gameController,
         SoundController & soundController,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
 public:
 
@@ -2282,7 +2282,7 @@ public:
         IToolCursorManager & toolCursorManager,
         IGameController & gameController,
         SoundController & soundController,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
 public:
 
@@ -2370,7 +2370,7 @@ public:
         IToolCursorManager & toolCursorManager,
         IGameController & gameController,
         SoundController & soundController,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
 public:
 
@@ -2637,7 +2637,7 @@ public:
         IToolCursorManager & toolCursorManager,
         IGameController & gameController,
         SoundController & soundController,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
 public:
 
@@ -2808,7 +2808,7 @@ public:
         IToolCursorManager & toolCursorManager,
         IGameController & gameController,
         SoundController & soundController,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
     void Initialize(InputState const & /*inputState*/) override
     {
@@ -2943,7 +2943,7 @@ public:
         IToolCursorManager & toolCursorManager,
         IGameController & gameController,
         SoundController & soundController,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
 public:
 
@@ -3009,7 +3009,7 @@ public:
         IToolCursorManager & toolCursorManager,
         IGameController & gameController,
         SoundController & soundController,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
 public:
 
@@ -3218,7 +3218,7 @@ public:
         IToolCursorManager & toolCursorManager,
         IGameController & gameController,
         SoundController & soundController,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
 public:
 
@@ -3249,7 +3249,7 @@ public:
         IToolCursorManager & toolCursorManager,
         IGameController & gameController,
         SoundController & soundController,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
 public:
 
@@ -3488,7 +3488,7 @@ public:
         IToolCursorManager & toolCursorManager,
         IGameController & gameController,
         SoundController & soundController,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
 public:
 
@@ -3643,7 +3643,7 @@ public:
         IToolCursorManager & toolCursorManager,
         IGameController & gameController,
         SoundController & soundController,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
 public:
 
@@ -3912,7 +3912,7 @@ public:
         IToolCursorManager & toolCursorManager,
         IGameController & gameController,
         SoundController & soundController,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
 public:
 
@@ -4054,7 +4054,7 @@ public:
         IToolCursorManager & toolCursorManager,
         IGameController & gameController,
         SoundController & soundController,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
 public:
 
@@ -4148,7 +4148,7 @@ public:
         IToolCursorManager & toolCursorManager,
         IGameController & gameController,
         SoundController & soundController,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
 public:
 
@@ -4286,7 +4286,7 @@ public:
         IToolCursorManager & toolCursorManager,
         IGameController & gameController,
         SoundController & soundController,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
     std::optional<NpcSubKindIdType> GetKind() const
     {
@@ -4323,7 +4323,7 @@ public:
         IToolCursorManager & toolCursorManager,
         IGameController & gameController,
         SoundController & soundController,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
     std::optional<NpcSubKindIdType> GetKind() const
     {
@@ -4438,7 +4438,7 @@ public:
         IToolCursorManager & toolCursorManager,
         IGameController & gameController,
         SoundController & soundController,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
 protected:
 
@@ -4603,7 +4603,7 @@ public:
         IToolCursorManager & toolCursorManager,
         IGameController & gameController,
         SoundController & soundController,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
 protected:
 
@@ -4626,7 +4626,7 @@ public:
         IToolCursorManager & toolCursorManager,
         IGameController & gameController,
         SoundController & soundController,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
 protected:
 
@@ -4649,7 +4649,7 @@ public:
         IToolCursorManager & toolCursorManager,
         IGameController & gameController,
         SoundController & soundController,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
 public:
 

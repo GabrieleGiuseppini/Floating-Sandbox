@@ -7,10 +7,11 @@
 
 #include <UILib/StandardSystemPaths.h>
 
-#include <Game/Version.h>
+#include <Game/GameAssetManager.h>
+#include <Game/GameVersion.h>
 
-#include <GameCore/Log.h>
-#include <GameCore/Utils.h>
+#include <Core/Log.h>
+#include <Core/Utils.h>
 
 #include <filesystem>
 
@@ -86,7 +87,7 @@ LONG WINAPI unhandled_exception_handler(struct _EXCEPTION_POINTERS* apExceptionI
         create_minidump(apExceptionInfo, diagnosticsFolderPath, dateTimeString);
 
         // Flush log
-        Logger::Instance.FlushToFile(diagnosticsFolderPath, dateTimeString);
+        GameAssetManager::SaveTextFile(Logger::Instance.GetAll(), diagnosticsFolderPath / (dateTimeString + ".log"));
     }
     catch (...)
     { /* ignore */ }

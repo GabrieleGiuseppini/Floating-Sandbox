@@ -138,6 +138,10 @@ public:
 		picojson::value const & json,
 		std::filesystem::path const & filePath);
 
+	static void SaveTextFile(
+		std::string const & content,
+		std::filesystem::path const & filePath);
+
 	static std::filesystem::path MakeAtlasSpecificationFilename(std::string const & textureDatabaseName)
 	{
 		return textureDatabaseName + ".atlas.json";

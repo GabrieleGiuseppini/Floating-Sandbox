@@ -463,3 +463,10 @@ void GameAssetManager::SaveJson(
     std::string serializedJson = json.serialize(true);
     FileTextWriteStream(filePath).Write(serializedJson);
 }
+
+void GameAssetManager::SaveTextFile(
+    std::string const & content,
+    std::filesystem::path const & filePath)
+{
+    FileTextWriteStream(filePath).Write(content);
+}

@@ -9,9 +9,9 @@
 #include "Tools.h"
 
 #include <Game/IGameController.h>
-#include <Game/ResourceLocator.h>
+#include <Game/GameAssetManager.h>
 
-#include <GameCore/GameTypes.h>
+#include <Core/GameTypes.h>
 
 #include <wx/frame.h>
 #include <wx/image.h>
@@ -31,7 +31,7 @@ public:
         wxWindow * parentWindow,
         IGameController & gameController,
         SoundController & soundController,
-        ResourceLocator const & resourceLocator);
+        GameAssetManager const & gameAssetManager);
 
     std::optional<ToolType> GetCurrentTool() const
     {

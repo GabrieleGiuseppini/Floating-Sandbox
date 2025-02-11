@@ -23,14 +23,14 @@ set  (FLOATING_SANDBOX_SOURCES
 	SoundController.h
 	Sounds.cpp
 	Sounds.h
-	#ToolController.cpp
-	#ToolController.h
-	#Tools.cpp
-	#Tools.h
+	ToolController.cpp
+	ToolController.h
+	Tools.cpp
+	Tools.h
 	UIPreferencesManager.cpp
 	UIPreferencesManager.h
-	#UnhandledExceptionHandler.cpp
-	#UnhandledExceptionHandler.h
+	UnhandledExceptionHandler.cpp
+	UnhandledExceptionHandler.h
 	UpdateChecker.cpp
 	UpdateChecker.h
 )
