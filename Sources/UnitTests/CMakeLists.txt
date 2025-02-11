@@ -90,7 +90,6 @@ target_link_libraries (UnitTests
 	UILib	
 	gmock
 	gtest
-	#${OPENGL_LIBRARIES}
 	${ADDITIONAL_LIBRARIES})
 
 #

@@ -290,8 +290,7 @@ else()
 endif()
 
 # User-defined
-# TODOTEST
-#DefineUserPostInstall()
+DefineUserPostInstall()
 
 ####################################################
 # Diagnostics
