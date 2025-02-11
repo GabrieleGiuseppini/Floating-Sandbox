@@ -20,10 +20,10 @@
  // IAssetManager
  ////////////////////////////////////////////////////////////////////////////////////////////
 
-GameAssetManager::GameAssetManager(std::string const & argv0)
+GameAssetManager::GameAssetManager(std::string const && argv0)
 	: mGameRoot(std::filesystem::canonical(std::filesystem::path(argv0)).parent_path())
     , mDataRoot(mGameRoot / "Data")
-    , mResourcesRoot(mGameRoot / "Resources")
+    , mResourcesRoot(mDataRoot / "Resources")
 	, mTextureRoot(mDataRoot / "Textures")
     , mShaderRoot(mDataRoot / "Shaders")
 {
@@ -125,7 +125,7 @@ std::vector<IAssetManager::AssetDescriptor> GameAssetManager::EnumerateShaders(s
                 std::string shaderFilename = entryIt.path().filename().string();
                 shaderDescriptors.push_back(
                     AssetDescriptor{
-                        entryIt.path().filename().string(),
+                        entryIt.path().filename().stem().string(),
                         std::filesystem::relative(entryIt.path(), shaderSetRootPath).string()
                     });
             }

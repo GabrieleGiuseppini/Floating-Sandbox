@@ -8,13 +8,13 @@
 			"worldHeight": 6.0,
 			"anchorOffsetX": 0,
 			"anchorOffsetY": 45,
-			"filenamePattern": "center_of_buoyancy_0"
+			"frameNamePattern": "center_of_buoyancy_0"
 		},
 		{	
 			"worldHeight": 6.0,
 			"anchorOffsetX": 0,
 			"anchorOffsetY": 45,
-			"filenamePattern": "center_of_mass_1"
+			"frameNamePattern": "center_of_mass_1"
 		}
 	]
 }

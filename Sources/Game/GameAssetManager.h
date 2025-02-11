@@ -17,7 +17,7 @@ class GameAssetManager : public IAssetManager
 {
 public:
 
-	explicit GameAssetManager(std::string const & argv0);
+	explicit GameAssetManager(std::string const && argv0);
 
 	explicit GameAssetManager(std::filesystem::path const & textureRoot);
 
