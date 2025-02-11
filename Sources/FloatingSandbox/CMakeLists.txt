@@ -4,7 +4,7 @@
 #
 
 set  (FLOATING_SANDBOX_SOURCES
-	#AudioController.h
+	AudioController.h
 	BootSettings.cpp
 	BootSettings.h
 	#EventTickerPanel.cpp
@@ -13,10 +13,10 @@ set  (FLOATING_SANDBOX_SOURCES
 	#MainApp.cpp
 	#MainFrame.cpp
 	#MainFrame.h
-	#Music.cpp
-	#Music.h
-	#MusicController.cpp
-	#MusicController.h
+	Music.cpp
+	Music.h
+	MusicController.cpp
+	MusicController.h
 	#ProbePanel.cpp
 	#ProbePanel.h
 	SettingsManager.cpp

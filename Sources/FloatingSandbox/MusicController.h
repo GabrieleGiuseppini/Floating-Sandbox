@@ -7,13 +7,13 @@
 
 #include "Music.h"
 
+#include <Game/GameAssetManager.h>
 #include <Game/IGameController.h>
 #include <Game/IGameEventHandlers.h>
-#include <Game/ResourceLocator.h>
 
-#include <GameCore/GameRandomEngine.h>
-#include <GameCore/GameWallClock.h>
-#include <GameCore/ProgressCallback.h>
+#include <Core/GameRandomEngine.h>
+#include <Core/GameWallClock.h>
+#include <Core/ProgressCallback.h>
 
 #include <SFML/Audio.hpp>
 
@@ -27,13 +27,13 @@
 #include <vector>
 
 class MusicController final
-    : public ILifecycleGameEventHandler
-    , public IGenericGameEventHandler
+    : public IGenericShipEventHandler
+    , public IGameEventHandler
 {
 public:
 
     MusicController(
-        ResourceLocator const & resourceLocator,
+        GameAssetManager const & gameAssetManager,
         ProgressCallback const & progressCallback);
 
 	~MusicController();
@@ -111,8 +111,8 @@ public:
 
     void RegisterEventHandler(IGameController & gameController)
     {
-        gameController.RegisterLifecycleEventHandler(this);
-        gameController.RegisterGenericEventHandler(this);
+        gameController.RegisterGenericShipEventHandler(this);
+        gameController.RegisterGameEventHandler(this);
     }
 
     virtual void OnSinkingBegin(ShipId shipId) override;

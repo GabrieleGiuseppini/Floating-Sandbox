@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #include "MusicController.h"
 
-#include <GameCore/GameException.h>
+#include <Core/GameException.h>
 
 #include <algorithm>
 #include <cassert>
@@ -16,7 +16,7 @@
 using namespace std::chrono_literals;
 
 MusicController::MusicController(
-    ResourceLocator const &  resourceLocator,
+    GameAssetManager const & gameAssetManager,
     ProgressCallback const & progressCallback)
     : // State
       mIsMuted(false)
@@ -42,7 +42,7 @@ MusicController::MusicController(
     // Initialize Music
     //
 
-    auto musicNames = resourceLocator.GetMusicNames();
+    auto musicNames = gameAssetManager.GetMusicNames();
 
     std::sort(musicNames.begin(), musicNames.end()); // Sort music deterministically
 
@@ -75,7 +75,7 @@ MusicController::MusicController(
             // Background music
             //
 
-            mBackgroundMusic.AddToPlaylist(resourceLocator.GetMusicFilePath(musicName));
+            mBackgroundMusic.AddToPlaylist(gameAssetManager.GetMusicFilePath(musicName));
         }
         else if (musicNameMatch[1].str() == "sinkingship")
         {
@@ -86,7 +86,7 @@ MusicController::MusicController(
             // Parse frequency
             bool isRare = (musicNameMatch[2].str() == "rare");
 
-            mSinkingMusic.AddAlternative(resourceLocator.GetMusicFilePath(musicName), isRare);
+            mSinkingMusic.AddAlternative(gameAssetManager.GetMusicFilePath(musicName), isRare);
         }
     }
 
