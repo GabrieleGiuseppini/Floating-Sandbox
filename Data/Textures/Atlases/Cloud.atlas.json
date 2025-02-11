@@ -11,7 +11,7 @@
           "y": 0.13279999792575836
         },
         "displayName": "cloud_0",
-        "filenameStem": "cloud_0",
+        "frameName": "cloud_0",
         "has_own_ambient_light": false,
         "id": {
           "frameIndex": 0,
@@ -54,7 +54,7 @@
           "y": 0.12559999525547028
         },
         "displayName": "cloud_1",
-        "filenameStem": "cloud_1",
+        "frameName": "cloud_1",
         "has_own_ambient_light": false,
         "id": {
           "frameIndex": 1,
@@ -97,7 +97,7 @@
           "y": 0.14399999380111694
         },
         "displayName": "cloud_2",
-        "filenameStem": "cloud_2",
+        "frameName": "cloud_2",
         "has_own_ambient_light": false,
         "id": {
           "frameIndex": 2,
@@ -140,7 +140,7 @@
           "y": 0.14399999380111694
         },
         "displayName": "cloud_3",
-        "filenameStem": "cloud_3",
+        "frameName": "cloud_3",
         "has_own_ambient_light": false,
         "id": {
           "frameIndex": 3,
@@ -183,7 +183,7 @@
           "y": 0.14000000059604645
         },
         "displayName": "cloud_4",
-        "filenameStem": "cloud_4",
+        "frameName": "cloud_4",
         "has_own_ambient_light": false,
         "id": {
           "frameIndex": 4,
@@ -226,7 +226,7 @@
           "y": 0.16399998962879181
         },
         "displayName": "cloud_5",
-        "filenameStem": "cloud_5",
+        "frameName": "cloud_5",
         "has_own_ambient_light": false,
         "id": {
           "frameIndex": 5,
@@ -269,7 +269,7 @@
           "y": 0.13680000603199005
         },
         "displayName": "cloud_6",
-        "filenameStem": "cloud_6",
+        "frameName": "cloud_6",
         "has_own_ambient_light": false,
         "id": {
           "frameIndex": 6,
@@ -312,7 +312,7 @@
           "y": 0.098399996757507324
         },
         "displayName": "cloud_7",
-        "filenameStem": "cloud_7",
+        "frameName": "cloud_7",
         "has_own_ambient_light": false,
         "id": {
           "frameIndex": 7,
@@ -355,7 +355,7 @@
           "y": 0.12800000607967377
         },
         "displayName": "cloud_8",
-        "filenameStem": "cloud_8",
+        "frameName": "cloud_8",
         "has_own_ambient_light": false,
         "id": {
           "frameIndex": 8,
@@ -398,7 +398,7 @@
           "y": 0.12719999253749847
         },
         "displayName": "cloud_9",
-        "filenameStem": "cloud_9",
+        "frameName": "cloud_9",
         "has_own_ambient_light": false,
         "id": {
           "frameIndex": 9,
@@ -441,7 +441,7 @@
           "y": 0.11919999867677689
         },
         "displayName": "cloud_10",
-        "filenameStem": "cloud_10",
+        "frameName": "cloud_10",
         "has_own_ambient_light": false,
         "id": {
           "frameIndex": 10,
@@ -484,7 +484,7 @@
           "y": 0.11599999666213989
         },
         "displayName": "cloud_11",
-        "filenameStem": "cloud_11",
+        "frameName": "cloud_11",
         "has_own_ambient_light": false,
         "id": {
           "frameIndex": 11,
@@ -527,7 +527,7 @@
           "y": 0.12800000607967377
         },
         "displayName": "cloud_12",
-        "filenameStem": "cloud_12",
+        "frameName": "cloud_12",
         "has_own_ambient_light": false,
         "id": {
           "frameIndex": 12,

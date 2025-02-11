@@ -115,6 +115,7 @@ GameController::GameController(
     , mDoDrawHeatBlasterFlame(true)
     // Doers
     , mRenderContext(std::move(renderContext))
+    , mSimulationEventDispatcher(std::move(simulationEventDispatcher))
     , mGameEventDispatcher(std::move(gameEventDispatcher))
     , mNotificationLayer(
         mSimulationParameters.IsUltraViolentMode,
@@ -447,6 +448,7 @@ void GameController::RunGameIteration()
             *mTotalPerfStats);
 
         // Flush events
+        mSimulationEventDispatcher->Flush();
         mGameEventDispatcher->Flush();
 
         //

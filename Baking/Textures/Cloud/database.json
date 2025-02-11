@@ -7,7 +7,7 @@
 	"frames":[
 		{	
 			"worldScaling": 0.0008,
-			"filenamePattern": "cloud_.*"
+			"frameNamePattern": "cloud_.*"
 		}
 	]
 }

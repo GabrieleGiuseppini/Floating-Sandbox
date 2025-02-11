@@ -7,7 +7,7 @@
 	"frames":[
 		{	
 			"worldScaling": 1.0,
-			"filenamePattern": "explosion\\d+_.*"
+			"frameNamePattern": "explosion\\d+_.*"
 		}
 	]
 }

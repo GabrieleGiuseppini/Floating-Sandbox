@@ -120,7 +120,7 @@ struct PerfStats
 
     PerfStats()
     {
-        mMeasurements.resize(static_cast<size_t>(PerfMeasurement::_Last));
+        mMeasurements.resize(static_cast<size_t>(PerfMeasurement::_Last) + 1);
         Reset();
     }
 
