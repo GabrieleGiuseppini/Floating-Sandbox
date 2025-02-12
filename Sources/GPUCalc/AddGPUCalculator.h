@@ -7,7 +7,7 @@
 
 #include "GPUCalculator.h"
 
-#include <GameCore/Vectors.h>
+#include <Core/Vectors.h>
 
 #include <filesystem>
 

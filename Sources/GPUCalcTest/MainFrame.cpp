@@ -14,9 +14,8 @@
 
 #include <GPUCalc/GPUCalculatorFactory.h>
 
-#include <GameCore/GameException.h>
-#include <GameCore/Log.h>
-#include <GameCore/Utils.h>
+#include <Core/GameException.h>
+#include <Core/Log.h>
 
 #include <wx/button.h>
 #include <wx/clipbrd.h>

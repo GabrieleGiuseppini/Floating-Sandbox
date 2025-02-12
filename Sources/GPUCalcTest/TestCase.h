@@ -7,8 +7,8 @@
 
 #include "TestRun.h"
 
-#include <GameCore/FloatingPoint.h>
-#include <GameCore/Log.h>
+#include <Core/FloatingPoint.h>
+#include <Core/Log.h>
 
 #include <stdexcept>
 #include <string>

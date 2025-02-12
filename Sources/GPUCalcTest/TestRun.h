@@ -5,7 +5,7 @@
  ***************************************************************************************/
 #pragma once
 
-#include <GameCore/Log.h>
+#include <Core/Log.h>
 
 #include <string>
 

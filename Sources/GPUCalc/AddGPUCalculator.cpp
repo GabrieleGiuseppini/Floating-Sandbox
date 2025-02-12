@@ -5,9 +5,9 @@
 ***************************************************************************************/
 #include "AddGPUCalculator.h"
 
-#include <GameOpenGL/GameOpenGL.h>
+#include <OpenGLCore/GameOpenGL.h>
 
-#include <GameCore/Log.h>
+#include <Core/Log.h>
 
 AddGPUCalculator::AddGPUCalculator(
     std::unique_ptr<IOpenGLContext> openGLContext,

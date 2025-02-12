@@ -19,11 +19,11 @@ add_executable (GPUCalcTest ${GPU_CALC_TEST_SOURCES})
 target_include_directories(GPUCalcTest PRIVATE ${wxWidgets_INCLUDE_DIRS})
 target_compile_definitions(GPUCalcTest PRIVATE "${wxWidgets_DEFINITIONS}")
 target_link_libraries (GPUCalcTest
-	GameCoreLib
-	GameOpenGLLib
+	Core
+	OpenGLCore
 	GPUCalcLib
-	${ZLIB_LIBRARY}
-	${PNG_LIBRARY}
+	#${ZLIB_LIBRARY}
+	#${PNG_LIBRARY}
 	${OPENGL_LIBRARIES}
 	${wxWidgets_LIBRARIES}
 	${ADDITIONAL_LIBRARIES})

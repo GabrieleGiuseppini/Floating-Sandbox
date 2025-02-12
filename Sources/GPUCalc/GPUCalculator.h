@@ -6,9 +6,9 @@
 #pragma once
 
 #include "IOpenGLContext.h"
-#include "ShaderTraits.h"
+#include "ShaderSets.h"
 
-#include <GameOpenGL/ShaderManager.h>
+#include <OpenGLCore/ShaderManager.h>
 
 #include <cassert>
 #include <filesystem>

@@ -8,7 +8,7 @@
 #include "OpenGLContext.h"
 #include "TestCase.h"
 
-#include <GameOpenGL/GameOpenGL.h>
+#include <OpenGLCore/GameOpenGL.h>
 
 class OpenGLInitTest : public TestCase
 {

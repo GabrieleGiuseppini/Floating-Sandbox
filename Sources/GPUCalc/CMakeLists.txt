@@ -13,8 +13,8 @@ set  (SOURCES
 	IOpenGLContext.h
 	PixelCoordsGPUCalculator.cpp
 	PixelCoordsGPUCalculator.h
-	ShaderTraits.cpp
-	ShaderTraits.h
+	ShaderSets.cpp
+	ShaderSets.h
 	)
 
 source_group(" " FILES ${SOURCES})
@@ -24,7 +24,7 @@ add_library (GPUCalcLib ${SOURCES})
 target_include_directories(GPUCalcLib INTERFACE ..)
 
 target_link_libraries (GPUCalcLib
-	GameCoreLib
-	GameOpenGLLib
+	Core
+	OpenGLCore
 	${OPENGL_LIBRARIES}
 	${ADDITIONAL_LIBRARIES})

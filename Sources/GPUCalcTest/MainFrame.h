@@ -7,7 +7,7 @@
 
 // Bring-in our glad GL environment, before any of the
 // WX OpenGL includes redefines it
-#include <GameOpenGL/GameOpenGL.h>
+#include <OpenGLCore/GameOpenGL.h>
 
 #include <wx/app.h>
 #include <wx/frame.h>
