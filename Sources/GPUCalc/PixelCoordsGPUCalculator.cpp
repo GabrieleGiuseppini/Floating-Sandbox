@@ -5,17 +5,17 @@
 ***************************************************************************************/
 #include "PixelCoordsGPUCalculator.h"
 
-#include <GameOpenGL/GameOpenGL.h>
+#include <OpenGLCore/GameOpenGL.h>
 
-#include <GameCore/Log.h>
+#include <Core/Log.h>
 
 PixelCoordsGPUCalculator::PixelCoordsGPUCalculator(
     std::unique_ptr<IOpenGLContext> openGLContext,
-    std::filesystem::path const & shadersRootDirectory,
+    IAssetManager const & assetManager,
     size_t dataPoints)
     : GPUCalculator(
         std::move(openGLContext),
-        shadersRootDirectory)
+        assetManager)
     , mDataPoints(dataPoints)
     , mFrameSize(CalculateRequiredRenderBufferSize(dataPoints))
 {
@@ -99,7 +99,7 @@ PixelCoordsGPUCalculator::PixelCoordsGPUCalculator(
     mVertexVBO = tmpGLuint;
 
     // Use program
-    GetShaderManager().ActivateProgram<GPUCalcProgramType::PixelCoords>();
+    GetShaderManager().ActivateProgram<GPUCalcShaderSets::ProgramKind::PixelCoords>();
 
     // Bind VBO
     glBindBuffer(GL_ARRAY_BUFFER, *mVertexVBO);
@@ -124,7 +124,7 @@ PixelCoordsGPUCalculator::PixelCoordsGPUCalculator(
 
     // Describe vertex attribute
     glVertexAttribPointer(
-        static_cast<GLuint>(GPUCalcVertexAttributeType::VertexShaderInput0),
+        static_cast<GLuint>(GPUCalcShaderSets::VertexAttributeKind::VertexShaderInput0),
         2,
         GL_FLOAT,
         GL_FALSE,
@@ -132,7 +132,7 @@ PixelCoordsGPUCalculator::PixelCoordsGPUCalculator(
         (void*)0);
 
     // Enable vertex attribute
-    glEnableVertexAttribArray(static_cast<GLuint>(GPUCalcVertexAttributeType::VertexShaderInput0));
+    glEnableVertexAttribArray(static_cast<GLuint>(GPUCalcShaderSets::VertexAttributeKind::VertexShaderInput0));
 }
 
 void PixelCoordsGPUCalculator::Run(vec4f * result)

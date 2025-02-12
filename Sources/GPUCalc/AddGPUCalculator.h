@@ -7,9 +7,8 @@
 
 #include "GPUCalculator.h"
 
+#include <Core/IAssetManager.h>
 #include <Core/Vectors.h>
-
-#include <filesystem>
 
 /*
  * Simple calculator that adds two arrays of vec2's.
@@ -31,7 +30,7 @@ private:
 
     AddGPUCalculator(
         std::unique_ptr<IOpenGLContext> openGLContext,
-        std::filesystem::path const & shadersRootDirectory,
+        IAssetManager const & assetManager,
         size_t dataPoints);
 
     ImageSize CalculateRequiredFrameSize(size_t dataPoints)

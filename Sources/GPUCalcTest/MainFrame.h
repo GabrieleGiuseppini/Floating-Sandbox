@@ -5,6 +5,8 @@
  ***************************************************************************************/
 #pragma once
 
+#include <Game/GameAssetManager.h>
+
 // Bring-in our glad GL environment, before any of the
 // WX OpenGL includes redefines it
 #include <OpenGLCore/GameOpenGL.h>
@@ -66,6 +68,7 @@ private:
 private:
 
     wxApp * const mMainApp;
+    GameAssetManager mGameAssetManager;
 
     wxTextCtrl * mLogTextCtrl;
 

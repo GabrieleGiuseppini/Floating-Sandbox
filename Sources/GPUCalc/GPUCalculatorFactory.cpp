@@ -5,17 +5,20 @@
 ***************************************************************************************/
 #include "GPUCalculatorFactory.h"
 
-#include <GameCore/GameException.h>
+#include <Core/GameException.h>
+
+#include <cassert>
+
+GPUCalculatorFactory * GPUCalculatorFactory::instance;
 
 void GPUCalculatorFactory::Initialize(
     std::function<std::unique_ptr<IOpenGLContext>()> openGLContextFactory,
-    std::filesystem::path const & shadersRootDirectory)
+    IAssetManager const & assetManager)
 {
-    if (!!mOpenGLContextFactory)
-        throw GameException("GPU Calculator Factory's OpenGL Context Factory has already been initialized");
-
-    mShadersRootDirectory = shadersRootDirectory;
-    mOpenGLContextFactory = std::move(openGLContextFactory);
+    assert(instance == nullptr);
+    instance = new GPUCalculatorFactory(
+        std::move(openGLContextFactory),
+        assetManager);
 }
 
 std::unique_ptr<PixelCoordsGPUCalculator> GPUCalculatorFactory::CreatePixelCoordsCalculator(size_t dataPoints)
@@ -25,7 +28,7 @@ std::unique_ptr<PixelCoordsGPUCalculator> GPUCalculatorFactory::CreatePixelCoord
     return std::unique_ptr<PixelCoordsGPUCalculator>(
         new PixelCoordsGPUCalculator(
             mOpenGLContextFactory(),
-            mShadersRootDirectory,
+            mAssetManager,
             dataPoints));
 }
 
@@ -36,12 +39,12 @@ std::unique_ptr<AddGPUCalculator> GPUCalculatorFactory::CreateAddCalculator(size
     return std::unique_ptr<AddGPUCalculator>(
         new AddGPUCalculator(
             mOpenGLContextFactory(),
-            mShadersRootDirectory,
+            mAssetManager,
             dataPoints));
 }
 
 void GPUCalculatorFactory::CheckInitialized()
 {
-    if (!mOpenGLContextFactory)
+    if (instance == nullptr)
         throw GameException("GPU Calculator Factory's OpenGL Context Factory has not been initialized");
 }

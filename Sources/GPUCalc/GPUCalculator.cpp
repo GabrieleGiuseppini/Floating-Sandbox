@@ -9,7 +9,7 @@
 
 GPUCalculator::GPUCalculator(
     std::unique_ptr<IOpenGLContext> openGLContext,
-    std::filesystem::path const & shadersRootDirectory)
+    IAssetManager const & assetManager)
     : mOpenGLContext(std::move(openGLContext))
 {
     ActivateOpenGLContext();
@@ -18,7 +18,7 @@ GPUCalculator::GPUCalculator(
     // Initialize shader manager
     //
 
-    mShaderManager = ShaderManager<GPUCalcShaderManagerTraits>::CreateInstance(shadersRootDirectory);
+    mShaderManager = ShaderManager<GPUCalcShaderSets::ShaderSet>::CreateInstance(assetManager);
 }
 
 ImageSize GPUCalculator::CalculateRequiredRenderBufferSize(size_t pixels)

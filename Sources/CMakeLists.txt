@@ -10,9 +10,9 @@ add_subdirectory(ShipTools)
 add_subdirectory(UILib)
 add_subdirectory(UnitTests)
 
-# TODO: others
-add_subdirectory(GPUCalc)
-add_subdirectory(GPUCalcTest)
+# These are disabled as they are inconsequential to Floating Sandbox
+#add_subdirectory(GPUCalc)
+#add_subdirectory(GPUCalcTest)
 
 if(FS_BUILD_BENCHMARKS)
 	add_subdirectory(Benchmarks)

@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include <cstdint>
 #include <numeric>
 #include <string>
 
@@ -44,7 +45,7 @@ std::string ProgramParameterKindToStr(ProgramParameterKind programParameter);
 
 }
 
-enum class VertexAttributeKind : GLuint
+enum class VertexAttributeKind : std::uint32_t
 {
     VertexShaderInput0 = 0,
 };

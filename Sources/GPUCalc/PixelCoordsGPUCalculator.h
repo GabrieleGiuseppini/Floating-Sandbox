@@ -7,9 +7,9 @@
 
 #include "GPUCalculator.h"
 
-#include <GameCore/Vectors.h>
+#include <Core/IAssetManager.h>
+#include <Core/Vectors.h>
 
-#include <filesystem>
 
 /*
  * Simple calculator that outputs the fragment coordinates passed to the fragment shader.
@@ -33,7 +33,7 @@ private:
 
     PixelCoordsGPUCalculator(
         std::unique_ptr<IOpenGLContext> openGLContext,
-        std::filesystem::path const & shadersRootDirectory,
+        IAssetManager const & assetManager,
         size_t dataPoints);
 
 private:

@@ -31,6 +31,7 @@ const long ID_MAIN_CANVAS = wxNewId();
 
 MainFrame::MainFrame(wxApp * mainApp)
     : mMainApp(mainApp)
+    , mGameAssetManager(mainApp->argv[0].ToStdString())
 {
     (void)mMainApp; // Keeping it around
 
@@ -221,12 +222,12 @@ MainFrame::MainFrame(wxApp * mainApp)
     }
 
     // Register OpenGL context factory
-    GPUCalculatorFactory::GetInstance().Initialize(
+    GPUCalculatorFactory::Initialize(
         []() -> std::unique_ptr<IOpenGLContext>
         {
             return std::make_unique<OpenGLContext>();
         },
-        "Shaders/GPUCalc");
+        mGameAssetManager);
 }
 
 MainFrame::~MainFrame()

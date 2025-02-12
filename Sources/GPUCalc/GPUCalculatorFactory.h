@@ -5,15 +5,15 @@
 ***************************************************************************************/
 #pragma once
 
+#include "AddGPUCalculator.h"
+#include "GPUCalcShaderSets.h"
 #include "GPUCalculator.h"
 #include "IOpenGLContext.h"
-#include "ShaderTraits.h"
-
-#include "AddGPUCalculator.h"
 #include "PixelCoordsGPUCalculator.h"
 
+#include <Core/IAssetManager.h>
+
 #include <cassert>
-#include <filesystem>
 #include <functional>
 #include <memory>
 
@@ -23,14 +23,14 @@ public:
 
     static GPUCalculatorFactory & GetInstance()
     {
-        static GPUCalculatorFactory * instance = new GPUCalculatorFactory();
+        CheckInitialized();
 
         return *instance;
     }
 
-    void Initialize(
+    static void Initialize(
         std::function<std::unique_ptr<IOpenGLContext>()> openGLContextFactory,
-        std::filesystem::path const & shadersRootDirectory);
+        IAssetManager const & assetManager);
 
     std::unique_ptr<PixelCoordsGPUCalculator> CreatePixelCoordsCalculator(size_t dataPoints);
 
@@ -38,11 +38,17 @@ public:
 
 private:
 
-    GPUCalculatorFactory()
+    explicit GPUCalculatorFactory(
+        std::function<std::unique_ptr<IOpenGLContext>()> openGLContextFactory,
+        IAssetManager const & assetManager)
+        : mOpenGLContextFactory(std::move(openGLContextFactory))
+        , mAssetManager(assetManager)
     {}
 
-    void CheckInitialized();
+    static void CheckInitialized();
 
     std::function<std::unique_ptr<IOpenGLContext>()> mOpenGLContextFactory;
-    std::filesystem::path mShadersRootDirectory;
+    IAssetManager const & mAssetManager;
+
+    static GPUCalculatorFactory * instance;
 };

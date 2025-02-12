@@ -11,11 +11,11 @@
 
 AddGPUCalculator::AddGPUCalculator(
     std::unique_ptr<IOpenGLContext> openGLContext,
-    std::filesystem::path const & shadersRootDirectory,
+    IAssetManager const & assetManager,
     size_t dataPoints)
     : GPUCalculator(
         std::move(openGLContext),
-        shadersRootDirectory)
+        assetManager)
     , mDataPoints(dataPoints)
     , mFrameSize(0, 0) // Temporary
 {
@@ -84,9 +84,9 @@ AddGPUCalculator::AddGPUCalculator(
     // Initialize program
     //
 
-    GetShaderManager().ActivateProgram<GPUCalcProgramType::Add>();
+    GetShaderManager().ActivateProgram<GPUCalcShaderSets::ProgramKind::Add>();
 
-    GetShaderManager().SetTextureParameters<GPUCalcProgramType::Add>();
+    GetShaderManager().SetTextureParameters<GPUCalcShaderSets::ProgramKind::Add>();
 
 
     //
@@ -214,7 +214,7 @@ AddGPUCalculator::AddGPUCalculator(
 
     // Describe vertex attribute
     glVertexAttribPointer(
-        static_cast<GLuint>(GPUCalcVertexAttributeType::VertexShaderInput0),
+        static_cast<GLuint>(GPUCalcShaderSets::VertexAttributeKind::VertexShaderInput0),
         4,
         GL_FLOAT,
         GL_FALSE,
@@ -222,7 +222,7 @@ AddGPUCalculator::AddGPUCalculator(
         (void*)0);
 
     // Enable vertex attribute
-    glEnableVertexAttribArray(static_cast<GLuint>(GPUCalcVertexAttributeType::VertexShaderInput0));
+    glEnableVertexAttribArray(static_cast<GLuint>(GPUCalcShaderSets::VertexAttributeKind::VertexShaderInput0));
 }
 
 void AddGPUCalculator::Run(

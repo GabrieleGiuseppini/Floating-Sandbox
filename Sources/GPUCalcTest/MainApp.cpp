@@ -4,7 +4,7 @@
  * Copyright:           Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
  ***************************************************************************************/
 
-#include <GameCore/FloatingPoint.h>
+#include <Core/FloatingPoint.h>
 
 #include "MainFrame.h"
 

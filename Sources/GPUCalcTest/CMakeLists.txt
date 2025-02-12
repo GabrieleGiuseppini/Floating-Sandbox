@@ -20,10 +20,9 @@ target_include_directories(GPUCalcTest PRIVATE ${wxWidgets_INCLUDE_DIRS})
 target_compile_definitions(GPUCalcTest PRIVATE "${wxWidgets_DEFINITIONS}")
 target_link_libraries (GPUCalcTest
 	Core
+	Game
 	OpenGLCore
 	GPUCalcLib
-	#${ZLIB_LIBRARY}
-	#${PNG_LIBRARY}
 	${OPENGL_LIBRARIES}
 	${wxWidgets_LIBRARIES}
 	${ADDITIONAL_LIBRARIES})
@@ -62,11 +61,11 @@ endif (MSVC)
 message (STATUS "Copying data files for GPUCalcTest...")
 
 file(COPY "${CMAKE_SOURCE_DIR}/Data/Shaders/GPUCalc"
-	DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/Debug/Shaders")
+	DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/Debug/Data/Shaders")
 file(COPY "${CMAKE_SOURCE_DIR}/Data/Shaders/GPUCalc"
-	DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/Release/Shaders")
+	DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/Release/Data/Shaders")
 file(COPY "${CMAKE_SOURCE_DIR}/Data/Shaders/GPUCalc"
-	DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/RelWithDebInfo/Shaders")
+	DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/RelWithDebInfo/Data/Shaders")
 
 
 

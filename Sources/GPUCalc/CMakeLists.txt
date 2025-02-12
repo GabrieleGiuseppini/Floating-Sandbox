@@ -6,6 +6,8 @@
 set  (SOURCES
 	AddGPUCalculator.cpp
 	AddGPUCalculator.h
+	GPUCalcShaderSets.cpp
+	GPUCalcShaderSets.h
 	GPUCalculator.cpp
 	GPUCalculator.h
 	GPUCalculatorFactory.cpp
@@ -13,8 +15,6 @@ set  (SOURCES
 	IOpenGLContext.h
 	PixelCoordsGPUCalculator.cpp
 	PixelCoordsGPUCalculator.h
-	ShaderSets.cpp
-	ShaderSets.h
 	)
 
 source_group(" " FILES ${SOURCES})

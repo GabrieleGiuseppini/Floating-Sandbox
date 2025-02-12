@@ -5,13 +5,14 @@
 ***************************************************************************************/
 #pragma once
 
+#include "GPUCalcShaderSets.h"
 #include "IOpenGLContext.h"
-#include "ShaderSets.h"
 
 #include <OpenGLCore/ShaderManager.h>
 
+#include <Core/IAssetManager.h>
+
 #include <cassert>
-#include <filesystem>
 #include <memory>
 
 /*
@@ -23,7 +24,7 @@ protected:
 
     GPUCalculator(
         std::unique_ptr<IOpenGLContext> openGLContext,
-        std::filesystem::path const & shadersRootDirectory);
+        IAssetManager const & assetManager);
 
     static ImageSize CalculateRequiredRenderBufferSize(size_t pixels);
     static ImageSize CalculateRequiredTextureSize(size_t pixels);
@@ -35,7 +36,7 @@ protected:
         mOpenGLContext->Activate();
     }
 
-    ShaderManager<GPUCalcShaderManagerTraits> & GetShaderManager()
+    ShaderManager<GPUCalcShaderSets::ShaderSet> & GetShaderManager()
     {
         return *mShaderManager;
     }
@@ -44,5 +45,5 @@ private:
 
     std::unique_ptr<IOpenGLContext> const mOpenGLContext;
 
-    std::unique_ptr<ShaderManager<GPUCalcShaderManagerTraits>> mShaderManager;
+    std::unique_ptr<ShaderManager<GPUCalcShaderSets::ShaderSet>> mShaderManager;
 };
