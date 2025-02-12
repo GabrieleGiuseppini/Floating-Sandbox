@@ -25,9 +25,9 @@ GameWallClock::duration constexpr PoissonSampleDeltaT = std::chrono::duration_ca
 
 Storm::Storm(
 	World & parentWorld,
-	std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher)
+	SimulationEventDispatcher & simulationEventDispatcher)
 	: mParentWorld(parentWorld)
-	, mSimulationEventHandler(std::move(simulationEventDispatcher))
+	, mSimulationEventHandler(simulationEventDispatcher)
 	, mParameters()
 	, mNextStormTimestamp(GameWallClock::duration::max())
 	, mCurrentStormProgress(0.0f)
@@ -224,7 +224,7 @@ void Storm::Update(SimulationParameters const & simulationParameters)
 			if (GameRandomEngine::GetInstance().GenerateUniformBoolean(mThunderCdf))
 			{
 				// Do thunder!
-				mSimulationEventHandler->OnThunder();
+				mSimulationEventHandler.OnThunder();
 			}
 
 			// Schedule next poisson sampling
@@ -308,7 +308,7 @@ void Storm::Update(SimulationParameters const & simulationParameters)
 	// Notify quantities
 	//
 
-	mSimulationEventHandler->OnRainUpdated(mParameters.RainDensity);
+	mSimulationEventHandler.OnRainUpdated(mParameters.RainDensity);
 
 
     //
@@ -494,7 +494,7 @@ void Storm::TurnStormOn(GameWallClock::time_point now)
     mCurrentStormProgress = 0.0f;
     mLastStormUpdateTimestamp = now;
 
-	mSimulationEventHandler->OnStormBegin();
+	mSimulationEventHandler.OnStormBegin();
 }
 
 void Storm::TurnStormOff(GameWallClock::time_point now)
@@ -505,7 +505,7 @@ void Storm::TurnStormOff(GameWallClock::time_point now)
 		now,
 		mCurrentStormRate);
 
-	mSimulationEventHandler->OnStormEnd();
+	mSimulationEventHandler.OnStormEnd();
 }
 
 void Storm::DoTriggerBackgroundLightning(GameWallClock::time_point now)
@@ -522,7 +522,7 @@ void Storm::DoTriggerBackgroundLightning(GameWallClock::time_point now)
 		std::nullopt);
 
 	// Notify
-	mSimulationEventHandler->OnLightning();
+	mSimulationEventHandler.OnLightning();
 }
 
 void Storm::DoTriggerForegroundLightning(
@@ -538,7 +538,7 @@ void Storm::DoTriggerForegroundLightning(
 		targetWorldPosition);
 
 	// Notify
-	mSimulationEventHandler->OnLightning();
+	mSimulationEventHandler.OnLightning();
 }
 
 void Storm::UpdateLightnings(

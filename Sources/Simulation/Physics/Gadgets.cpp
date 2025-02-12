@@ -63,7 +63,7 @@ void Gadgets::Update(
             assert(!mShipPoints.IsGadgetAttached((*it)->GetPointIndex()));
 
             // Notify (soundless) removal
-            mSimulationEventHandler->OnGadgetRemoved(
+            mSimulationEventHandler.OnGadgetRemoved(
                 (*it)->GetId(),
                 (*it)->GetType(),
                 std::nullopt);

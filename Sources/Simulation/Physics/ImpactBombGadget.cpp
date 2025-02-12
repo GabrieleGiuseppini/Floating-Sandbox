@@ -15,7 +15,7 @@ ImpactBombGadget::ImpactBombGadget(
     GlobalGadgetId id,
     ElementIndex pointIndex,
     World & parentWorld,
-    std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher,
+    SimulationEventDispatcher & simulationEventDispatcher,
     IShipPhysicsHandler & shipPhysicsHandler,
     Points & shipPoints,
     Springs & shipSprings)
@@ -24,7 +24,7 @@ ImpactBombGadget::ImpactBombGadget(
         GadgetType::ImpactBomb,
         pointIndex,
         parentWorld,
-        std::move(simulationEventDispatcher),
+        simulationEventDispatcher,
         shipPhysicsHandler,
         shipPoints,
         shipSprings)
@@ -99,7 +99,7 @@ bool ImpactBombGadget::Update(
                 simulationParameters);
 
             // Notify explosion
-            mSimulationEventHandler->OnBombExplosion(
+            mSimulationEventHandler.OnBombExplosion(
                 GadgetType::ImpactBomb,
                 mShipPoints.IsCachedUnderwater(mPointIndex),
                 1);

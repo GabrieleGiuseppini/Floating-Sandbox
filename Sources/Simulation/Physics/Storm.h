@@ -27,7 +27,7 @@ public:
 
 	Storm(
 		World & parentWorld,
-		std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher);
+		SimulationEventDispatcher & simulationEventDispatcher);
 
     void Update(SimulationParameters const & simulationParameters);
 
@@ -98,7 +98,7 @@ private:
 private:
 
 	World & mParentWorld;
-	std::shared_ptr<SimulationEventDispatcher> mSimulationEventHandler;
+	SimulationEventDispatcher & mSimulationEventHandler;
 
 	//
 	// Lightning state machine

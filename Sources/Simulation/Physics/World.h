@@ -43,7 +43,7 @@ public:
         bool areCloudShadowsEnabled,
         FishSpeciesDatabase const & fishSpeciesDatabase,
         NpcDatabase const & npcDatabase,
-        std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher,
+        SimulationEventDispatcher & simulationEventDispatcher,
         SimulationParameters const & simulationParameters,
         VisibleWorld const & visibleWorld);
 
@@ -506,7 +506,7 @@ private:
     float mCurrentSimulationTime;
 
     // The game event handler
-    std::shared_ptr<SimulationEventDispatcher> mSimulationEventHandler;
+    SimulationEventDispatcher & mSimulationEventHandler;
 
     // The current event recorder (if any)
     EventRecorder * mEventRecorder;

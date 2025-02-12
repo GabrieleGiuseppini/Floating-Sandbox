@@ -26,7 +26,7 @@ public:
         GlobalGadgetId id,
         ElementIndex pointIndex,
         World & parentWorld,
-        std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher,
+        SimulationEventDispatcher & simulationEventDispatcher,
         IShipPhysicsHandler & shipPhysicsHandler,
         Points & shipPoints,
         Springs & shipSprings);
@@ -107,7 +107,7 @@ private:
 
         ++mPingOnStepCounter;
 
-        mSimulationEventHandler->OnRCBombPing(
+        mSimulationEventHandler.OnRCBombPing(
             mParentWorld.GetOceanSurface().IsUnderwater(GetPosition()),
             1);
 

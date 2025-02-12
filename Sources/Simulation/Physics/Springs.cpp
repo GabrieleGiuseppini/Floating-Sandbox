@@ -117,7 +117,7 @@ void Springs::Destroy(
     // Fire spring break event, unless told otherwise
     if (!!(destroyOptions & Springs::DestroyOptions::FireBreakEvent))
     {
-        mSimulationEventHandler->OnBreak(
+        mSimulationEventHandler.OnBreak(
             GetBaseStructuralMaterial(springElementIndex),
             mParentWorld.GetOceanSurface().IsUnderwater(GetEndpointAPosition(springElementIndex, points)), // Arbitrary
             1);
@@ -319,7 +319,7 @@ void Springs::InternalUpdateForStrains(
                         strainState.IsStressed = true;
 
                         // Notify stress
-                        mSimulationEventHandler->OnStress(
+                        mSimulationEventHandler.OnStress(
                             GetBaseStructuralMaterial(s),
                             oceanSurface.IsUnderwater(GetEndpointAPosition(s, points)), // Arbitrary
                             1);

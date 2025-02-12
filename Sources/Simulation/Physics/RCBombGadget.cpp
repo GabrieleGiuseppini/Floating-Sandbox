@@ -15,7 +15,7 @@ RCBombGadget::RCBombGadget(
     GlobalGadgetId id,
     ElementIndex pointIndex,
     World & parentWorld,
-    std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher,
+    SimulationEventDispatcher & simulationEventDispatcher,
     IShipPhysicsHandler & shipPhysicsHandler,
     Points & shipPoints,
     Springs & shipSprings)
@@ -24,7 +24,7 @@ RCBombGadget::RCBombGadget(
         GadgetType::RCBomb,
         pointIndex,
         parentWorld,
-        std::move(simulationEventDispatcher),
+        simulationEventDispatcher,
         shipPhysicsHandler,
         shipPoints,
         shipSprings)
@@ -61,7 +61,7 @@ bool RCBombGadget::Update(
 
                     ++mPingOnStepCounter;
 
-                    mSimulationEventHandler->OnRCBombPing(
+                    mSimulationEventHandler.OnRCBombPing(
                         mShipPoints.IsCachedUnderwater(mPointIndex),
                         1);
 
@@ -142,7 +142,7 @@ bool RCBombGadget::Update(
                     simulationParameters);
 
                 // Notify explosion
-                mSimulationEventHandler->OnBombExplosion(
+                mSimulationEventHandler.OnBombExplosion(
                     GadgetType::RCBomb,
                     mShipPoints.IsCachedUnderwater(mPointIndex),
                     1);

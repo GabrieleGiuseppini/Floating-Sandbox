@@ -653,8 +653,8 @@ bool Ship::SawThrough(
     }
 
     // Notify (including zero)
-    mSimulationEventHandler->OnSawed(true, metalsSawed);
-    mSimulationEventHandler->OnSawed(false, nonMetalsSawed);
+    mSimulationEventHandler.OnSawed(true, metalsSawed);
+    mSimulationEventHandler.OnSawed(false, nonMetalsSawed);
 
     return (metalsSawed > 0 || nonMetalsSawed > 0);
 }
@@ -892,7 +892,7 @@ bool Ship::ApplyLaserCannonThrough(
         }
     }
 
-    mSimulationEventHandler->OnLaserCut(cutCount);
+    mSimulationEventHandler.OnLaserCut(cutCount);
 
     return cutCount > 0;
 }
@@ -1684,7 +1684,7 @@ void Ship::ApplyLightning(
                     simulationParameters);
 
                 // Notify
-                mSimulationEventHandler->OnLightningHit(mPoints.GetStructuralMaterial(pointIndex));
+                mSimulationEventHandler.OnLightningHit(mPoints.GetStructuralMaterial(pointIndex));
 
                 wasDestroyed = true;
             }

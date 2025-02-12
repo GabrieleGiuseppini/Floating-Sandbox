@@ -15,7 +15,7 @@ AntiMatterBombGadget::AntiMatterBombGadget(
     GlobalGadgetId id,
     ElementIndex pointIndex,
     World & parentWorld,
-    std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher,
+    SimulationEventDispatcher & simulationEventDispatcher,
     IShipPhysicsHandler & shipPhysicsHandler,
     Points & shipPoints,
     Springs & shipSprings)
@@ -24,7 +24,7 @@ AntiMatterBombGadget::AntiMatterBombGadget(
         GadgetType::AntiMatterBomb,
         pointIndex,
         parentWorld,
-        std::move(simulationEventDispatcher),
+        simulationEventDispatcher,
         shipPhysicsHandler,
         shipPoints,
         shipSprings)
@@ -37,7 +37,7 @@ AntiMatterBombGadget::AntiMatterBombGadget(
     , mExplosionPosition(vec2f::zero())
 {
     // Notify start containment
-    mSimulationEventHandler->OnAntiMatterBombContained(mId, true);
+    mSimulationEventHandler.OnAntiMatterBombContained(mId, true);
 }
 
 bool AntiMatterBombGadget::Update(
@@ -84,8 +84,8 @@ bool AntiMatterBombGadget::Update(
                 simulationParameters);
 
             // Notify
-            mSimulationEventHandler->OnAntiMatterBombPreImploding();
-            mSimulationEventHandler->OnAntiMatterBombContained(mId, false);
+            mSimulationEventHandler.OnAntiMatterBombPreImploding();
+            mSimulationEventHandler.OnAntiMatterBombContained(mId, false);
 
             // Schedule next transition
             mNextStateTransitionTimePoint = currentWallClockTime + PreImplosionInterval;
@@ -167,7 +167,7 @@ bool AntiMatterBombGadget::Update(
                     simulationParameters);
 
                 // Notify
-                mSimulationEventHandler->OnAntiMatterBombImploding();
+                mSimulationEventHandler.OnAntiMatterBombImploding();
 
                 // Schedule next transition
                 mNextStateTransitionTimePoint = currentWallClockTime + ImplosionInterval;
@@ -249,7 +249,7 @@ bool AntiMatterBombGadget::Update(
                 //
 
                 // Notify explosion
-                mSimulationEventHandler->OnBombExplosion(
+                mSimulationEventHandler.OnBombExplosion(
                     GadgetType::AntiMatterBomb,
                     mShipPoints.IsCachedUnderwater(mPointIndex),
                     1);

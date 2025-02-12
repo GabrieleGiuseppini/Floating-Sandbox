@@ -32,7 +32,7 @@ public:
 
     explicit Fishes(
         FishSpeciesDatabase const & fishSpeciesDatabase,
-        std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher);
+        SimulationEventDispatcher & simulationEventDispatcher);
 
     void Update(
         float currentSimulationTime,
@@ -282,7 +282,7 @@ private:
 private:
 
     FishSpeciesDatabase const & mFishSpeciesDatabase;
-    std::shared_ptr<SimulationEventDispatcher> mSimulationEventHandler;
+    SimulationEventDispatcher & mSimulationEventHandler;
 
     // Shoals never move around in this vector
     std::vector<FishShoal> mFishShoals;

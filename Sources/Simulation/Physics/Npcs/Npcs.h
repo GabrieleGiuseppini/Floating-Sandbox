@@ -1098,7 +1098,7 @@ public:
 	Npcs(
 		Physics::World & parentWorld,
 		NpcDatabase const & npcDatabase,
-		std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher,
+		SimulationEventDispatcher & simulationEventDispatcher,
 		SimulationParameters const & simulationParameters);
 
 	void Update(
@@ -2322,7 +2322,7 @@ private:
 
 	World & mParentWorld;
 	NpcDatabase const & mNpcDatabase;
-	std::shared_ptr<SimulationEventDispatcher> mSimulationEventHandler;
+	SimulationEventDispatcher & mSimulationEventHandler;
 	size_t const mMaxNpcs;
 
 	//

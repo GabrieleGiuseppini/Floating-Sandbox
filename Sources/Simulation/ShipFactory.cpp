@@ -36,7 +36,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData, RgbaImageData> ShipFac
     MaterialDatabase const & materialDatabase,
     ShipTexturizer const & shipTexturizer,
     ShipStrengthRandomizer const & shipStrengthRandomizer,
-    std::shared_ptr<SimulationEventDispatcher> & simulationEventDispatcher,
+    SimulationEventDispatcher & simulationEventDispatcher,
     IAssetManager const & assetManager,
     SimulationParameters const & simulationParameters)
 {
@@ -1876,7 +1876,7 @@ std::tuple<Physics::Points, std::set<ElectricalElementInstanceIndex>> ShipFactor
     std::vector<ShipFactoryPoint> const & pointInfos2,
     World & parentWorld,
     MaterialDatabase const & materialDatabase,
-    std::shared_ptr<SimulationEventDispatcher> & simulationEventDispatcher,
+    SimulationEventDispatcher & simulationEventDispatcher,
     SimulationParameters const & simulationParameters,
     ShipPhysicsData const & physicsData)
 {
@@ -1946,7 +1946,7 @@ Physics::Springs ShipFactory::CreateSprings(
     ElementCount perfectSquareCount,
     Physics::Points & points,
     Physics::World & parentWorld,
-    std::shared_ptr<SimulationEventDispatcher> & simulationEventDispatcher,
+    SimulationEventDispatcher & simulationEventDispatcher,
     SimulationParameters const & simulationParameters)
 {
     Physics::Springs springs(
@@ -2114,7 +2114,7 @@ ElectricalElements ShipFactory::CreateElectricalElements(
     bool rotate90CW,
     ShipId shipId,
     Physics::World & parentWorld,
-    std::shared_ptr<SimulationEventDispatcher> & simulationEventDispatcher,
+    SimulationEventDispatcher & simulationEventDispatcher,
     SimulationParameters const & simulationParameters)
 {
     assert(points.GetRawShipPointCount() == pointInfos2.size());

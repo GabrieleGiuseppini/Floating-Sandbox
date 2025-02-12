@@ -63,6 +63,11 @@ public:
     {
     }
 
+    SimulationEventDispatcher(SimulationEventDispatcher &) = delete;
+    SimulationEventDispatcher(SimulationEventDispatcher &&) = delete;
+    SimulationEventDispatcher operator=(SimulationEventDispatcher &) = delete;
+    SimulationEventDispatcher operator=(SimulationEventDispatcher &&) = delete;
+
 public:
 
     //

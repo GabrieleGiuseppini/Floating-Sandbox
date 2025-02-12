@@ -36,13 +36,13 @@ public:
     Gadgets(
         World & parentWorld,
         ShipId shipId,
-        std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher,
+        SimulationEventDispatcher & simulationEventDispatcher,
         IShipPhysicsHandler & shipPhysicsHandler,
         Points & shipPoints,
         Springs & shipSprings)
         : mParentWorld(parentWorld)
         , mShipId(shipId)
-        , mSimulationEventHandler(std::move(simulationEventDispatcher))
+        , mSimulationEventHandler(simulationEventDispatcher)
         , mShipPhysicsHandler(shipPhysicsHandler)
         , mShipPoints(shipPoints)
         , mShipSprings(shipSprings)
@@ -168,7 +168,7 @@ private:
         if (doNotify)
         {
             // Notify
-            mSimulationEventHandler->OnGadgetPlaced(
+            mSimulationEventHandler.OnGadgetPlaced(
                 gadget->GetId(),
                 gadget->GetType(),
                 mParentWorld.GetOceanSurface().IsUnderwater(
@@ -194,7 +194,7 @@ private:
         if (doNotify)
         {
             // Notify removal
-            mSimulationEventHandler->OnGadgetRemoved(
+            mSimulationEventHandler.OnGadgetRemoved(
                 gadget.GetId(),
                 gadget.GetType(),
                 mParentWorld.GetOceanSurface().IsUnderwater(gadget.GetPosition()));
@@ -307,8 +307,8 @@ private:
     // The ID of the ship we belong to
     ShipId const mShipId;
 
-    // The game event handler
-    std::shared_ptr<SimulationEventDispatcher> mSimulationEventHandler;
+    // The simulation event handler
+    SimulationEventDispatcher & mSimulationEventHandler;
 
     // The handler to invoke for acting on the ship
     IShipPhysicsHandler & mShipPhysicsHandler;

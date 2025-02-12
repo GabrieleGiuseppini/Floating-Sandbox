@@ -52,7 +52,7 @@ public:
 
 public:
 
-    Wind(std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher);
+    Wind(SimulationEventDispatcher & simulationEventDispatcher);
 
     void SetSilence(float silenceAmount);
 
@@ -122,7 +122,7 @@ private:
 
 private:
 
-    std::shared_ptr<SimulationEventDispatcher> mSimulationEventHandler;
+    SimulationEventDispatcher & mSimulationEventHandler;
 
     //
     // Pre-calculated parameters

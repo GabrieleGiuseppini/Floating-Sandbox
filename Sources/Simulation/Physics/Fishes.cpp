@@ -27,9 +27,9 @@ float constexpr AABBMargin = 4.0f;
 
 Fishes::Fishes(
     FishSpeciesDatabase const & fishSpeciesDatabase,
-    std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher)
+    SimulationEventDispatcher & simulationEventDispatcher)
     : mFishSpeciesDatabase(fishSpeciesDatabase)
-    , mSimulationEventHandler(std::move(simulationEventDispatcher))
+    , mSimulationEventHandler(simulationEventDispatcher)
     , mFishShoals()
     , mFishes()
     , mInteractions()
@@ -396,7 +396,7 @@ void Fishes::UpdateNumberOfFishes(
     if (isDirty)
     {
         // Notify new count
-        mSimulationEventHandler->OnFishCountUpdated(mFishes.size());
+        mSimulationEventHandler.OnFishCountUpdated(mFishes.size());
     }
 }
 

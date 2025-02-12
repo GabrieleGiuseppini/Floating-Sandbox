@@ -29,6 +29,11 @@ public:
     {
     }
 
+    GameEventDispatcher(GameEventDispatcher &) = delete;
+    GameEventDispatcher(GameEventDispatcher &&) = delete;
+    GameEventDispatcher operator=(GameEventDispatcher &) = delete;
+    GameEventDispatcher operator=(GameEventDispatcher &&) = delete;
+
 public:
 
     //

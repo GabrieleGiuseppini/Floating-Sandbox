@@ -27,9 +27,9 @@ static std::chrono::seconds constexpr RogueWaveGracePeriod(5);
 
 OceanSurface::OceanSurface(
     World & parentWorld,
-    std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher)
+    SimulationEventDispatcher & simulationEventDispatcher)
     : mParentWorld(parentWorld)
-    , mSimulationEventHandler(std::move(simulationEventDispatcher))
+    , mSimulationEventHandler(simulationEventDispatcher)
     ////////
     , mBasalWaveAmplitude1(0.0f)
     , mBasalWaveAmplitude2(0.0f)
@@ -341,8 +341,7 @@ void OceanSurface::TriggerTsunami(float currentSimulationTime)
         currentSimulationTime);
 
     // Fire tsunami event
-    assert(mSimulationEventHandler);
-    mSimulationEventHandler->OnTsunami(centerX);
+    mSimulationEventHandler.OnTsunami(centerX);
 }
 
 void OceanSurface::TriggerRogueWave(

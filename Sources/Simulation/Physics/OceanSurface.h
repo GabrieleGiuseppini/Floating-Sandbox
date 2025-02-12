@@ -27,7 +27,7 @@ public:
 
     OceanSurface(
         World & parentWorld,
-        std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher);
+        SimulationEventDispatcher & simulationEventDispatcher);
 
     void Update(
         float currentSimulationTime,
@@ -194,7 +194,7 @@ private:
 private:
 
     World & mParentWorld;
-    std::shared_ptr<SimulationEventDispatcher> mSimulationEventHandler;
+    SimulationEventDispatcher & mSimulationEventHandler;
 
     // Smoothing of wind incisiveness
     RunningAverage<15> mWindIncisivenessRunningAverage;

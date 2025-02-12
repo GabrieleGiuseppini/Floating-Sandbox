@@ -153,7 +153,7 @@ bool GameController::TsunamiNotificationStateMachine::Update()
 void GameController::StartTsunamiNotificationStateMachine(float x)
 {
     // Fire notification event
-    mGameEventDispatcher->OnTsunamiNotification(x);
+    mGameEventDispatcher.OnTsunamiNotification(x);
 
     // Start state machine
     mTsunamiNotificationStateMachine.reset(
@@ -199,7 +199,7 @@ void GameController::StartThanosSnapStateMachine(
         //
 
         // Start silence
-        mGameEventDispatcher->OnSilenceStarted();
+        mGameEventDispatcher.OnSilenceStarted();
 
         // Silence world
         mWorld->SetSilence(1.0f);
@@ -435,7 +435,7 @@ void GameController::UpdateAllStateMachines(float currentSimulationTime)
                 mWorld->SetSilence(0.0f);
 
                 // Lift silence
-                mGameEventDispatcher->OnSilenceLifted();
+                mGameEventDispatcher.OnSilenceLifted();
             }
         }
         else

@@ -17,12 +17,12 @@ World::World(
     bool areCloudShadowsEnabled,
     FishSpeciesDatabase const & fishSpeciesDatabase,
     NpcDatabase const & npcDatabase,
-    std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher,
+    SimulationEventDispatcher & simulationEventDispatcher,
     SimulationParameters const & simulationParameters,
     VisibleWorld const & /*visibleWorld*/)
     : mCurrentSimulationTime(0.0f)
     //
-    , mSimulationEventHandler(std::move(simulationEventDispatcher))
+    , mSimulationEventHandler(simulationEventDispatcher)
     , mEventRecorder(nullptr)
     //
     , mAllShips()

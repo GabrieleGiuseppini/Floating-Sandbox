@@ -31,10 +31,10 @@ public:
 
     PinnedPoints(
         World & parentWorld,
-        std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher,
+        SimulationEventDispatcher & simulationEventDispatcher,
         Points & shipPoints)
         : mParentWorld(parentWorld)
-        , mSimulationEventHandler(std::move(simulationEventDispatcher))
+        , mSimulationEventHandler(simulationEventDispatcher)
         , mShipPoints(shipPoints)
         , mCurrentPinnedPoints()
     {
@@ -69,7 +69,7 @@ public:
                 mCurrentPinnedPoints.erase(it);
 
                 // Notify
-                mSimulationEventHandler->OnPinToggled(
+                mSimulationEventHandler.OnPinToggled(
                     false,
                     mParentWorld.GetOceanSurface().IsUnderwater(mShipPoints.GetPosition(*it)));
 
@@ -127,7 +127,7 @@ public:
                 nearestUnpinnedPointIndex);
 
             // Notify
-            mSimulationEventHandler->OnPinToggled(
+            mSimulationEventHandler.OnPinToggled(
                 true,
                 mParentWorld.GetOceanSurface().IsUnderwater(mShipPoints.GetPosition(nearestUnpinnedPointIndex)));
 
@@ -149,7 +149,7 @@ public:
             mShipPoints.Unpin(*it);
 
             // Notify
-            mSimulationEventHandler->OnPinToggled(
+            mSimulationEventHandler.OnPinToggled(
                 false,
                 mParentWorld.GetOceanSurface().IsUnderwater(mShipPoints.GetPosition(*it)));
         }
@@ -171,7 +171,7 @@ private:
     World & mParentWorld;
 
     // The game event handler
-    std::shared_ptr<SimulationEventDispatcher> mSimulationEventHandler;
+    SimulationEventDispatcher & mSimulationEventHandler;
 
     // The container of all the ship's points
     Points & mShipPoints;

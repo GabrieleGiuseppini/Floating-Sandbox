@@ -43,7 +43,7 @@ public:
         ShipId id,
         World & parentWorld,
         MaterialDatabase const & materialDatabase,
-        std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher,
+        SimulationEventDispatcher & simulationEventDispatcher,
         Points && points,
         Springs && springs,
         Triangles && triangles,
@@ -837,7 +837,7 @@ private:
     ShipId const mId;
     World & mParentWorld;
     MaterialDatabase const & mMaterialDatabase;
-    std::shared_ptr<SimulationEventDispatcher> mSimulationEventHandler;
+    SimulationEventDispatcher & mSimulationEventHandler;
     EventRecorder * mEventRecorder;
 
     // All the ship elements - never removed, the repositories maintain their own size forever

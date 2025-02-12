@@ -26,7 +26,7 @@ public:
         GlobalGadgetId id,
         ElementIndex pointIndex,
         World & parentWorld,
-        std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher,
+        SimulationEventDispatcher & simulationEventDispatcher,
         IShipPhysicsHandler & shipPhysicsHandler,
         Points & shipPoints,
         Springs & shipSprings);

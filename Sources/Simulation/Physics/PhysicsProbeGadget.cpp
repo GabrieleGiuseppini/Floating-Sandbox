@@ -15,7 +15,7 @@ PhysicsProbeGadget::PhysicsProbeGadget(
     GlobalGadgetId id,
     ElementIndex pointIndex,
     World & parentWorld,
-    std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher,
+    SimulationEventDispatcher & simulationEventDispatcher,
     IShipPhysicsHandler & shipPhysicsHandler,
     Points & shipPoints,
     Springs & shipSprings)
@@ -24,7 +24,7 @@ PhysicsProbeGadget::PhysicsProbeGadget(
         GadgetType::PhysicsProbe,
         pointIndex,
         parentWorld,
-        std::move(simulationEventDispatcher),
+        simulationEventDispatcher,
         shipPhysicsHandler,
         shipPoints,
         shipSprings)
@@ -55,7 +55,7 @@ bool PhysicsProbeGadget::Update(
                 mNextStateTransitionTimePoint = currentWallClockTime + PingOnInterval;
 
                 // Emit reading
-                mSimulationEventHandler->OnPhysicsProbeReading(
+                mSimulationEventHandler.OnPhysicsProbeReading(
                     mShipPoints.GetVelocity(mPointIndex),
                     mShipPoints.GetTemperature(mPointIndex),
                     mParentWorld.GetOceanSurface().GetDepth(mShipPoints.GetPosition(mPointIndex)),

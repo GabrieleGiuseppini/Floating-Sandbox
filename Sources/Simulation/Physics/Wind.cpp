@@ -18,8 +18,8 @@ float constexpr GustRate = 1.0f;
 float constexpr PoissonSampleRate = 4.0f;
 float constexpr PoissonSampleDeltaT = 1.0f / PoissonSampleRate;
 
-Wind::Wind(std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher)
-    : mSimulationEventHandler(std::move(simulationEventDispatcher))
+Wind::Wind(SimulationEventDispatcher & simulationEventDispatcher)
+    : mSimulationEventHandler(simulationEventDispatcher)
     // Pre-calculated parameters
     , mZeroSpeedMagnitude(0.0f)
     , mBaseSpeedMagnitude(0.0f)
@@ -298,7 +298,7 @@ void Wind::Update(
             * (1.0f - mCurrentSilenceAmount));
 
     // Publish interesting quantities for probes
-    mSimulationEventHandler->OnWindSpeedUpdated(
+    mSimulationEventHandler.OnWindSpeedUpdated(
         mZeroSpeedMagnitude,
         mBaseSpeedMagnitude,
         mBaseAndStormSpeedMagnitude,

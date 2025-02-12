@@ -20,11 +20,11 @@ float constexpr ParticleSize = 0.30f; // For rendering, mostly - given that part
 Npcs::Npcs(
     Physics::World & parentWorld,
     NpcDatabase const & npcDatabase,
-    std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher,
+    SimulationEventDispatcher & simulationEventDispatcher,
     SimulationParameters const & simulationParameters)
     : mParentWorld(parentWorld)
     , mNpcDatabase(npcDatabase)
-    , mSimulationEventHandler(std::move(simulationEventDispatcher))
+    , mSimulationEventHandler(simulationEventDispatcher)
     , mMaxNpcs(simulationParameters.MaxNpcs)
     // Container
     , mStateBuffer()
@@ -585,7 +585,7 @@ void Npcs::OnShipRemoved(ShipId shipId)
                 mShips[s]->BurningNpcs.erase(burningNpcIt);
 
                 // Emit event
-                mSimulationEventHandler->OnPointCombustionEnd();
+                mSimulationEventHandler.OnPointCombustionEnd();
             }
 
             //
@@ -2249,7 +2249,7 @@ bool Npcs::DestroyAt(
                     if (npc->CurrentInteractionSessionId != sessionId)
                     {
                         ElementIndex const primaryParticleIndex = npc->ParticleMesh.Particles[0].ParticleIndex;
-                        mSimulationEventHandler->OnImpact(
+                        mSimulationEventHandler.OnImpact(
                             mParticles.GetMaterial(primaryParticleIndex),
                             mParticles.GetAnyWaterness(primaryParticleIndex) >= 0.5f,
                             GameRandomEngine::GetInstance().GenerateUniformReal(1.0f, 11.0f) * 5000.0f); // Explore whole range
@@ -3089,9 +3089,9 @@ void Npcs::Publish() const
         }
     }
 
-    mSimulationEventHandler->OnSubjectParticleConstrainedRegimeUpdated(constrainedRegimeParticleProbe);
-    mSimulationEventHandler->OnSubjectParticleBarycentricCoordinatesWrtOriginTriangleChanged(subjectParticleBarycentricCoordinatesWrtOriginTriangleChanged);
-    mSimulationEventHandler->OnSubjectParticlePhysicsUpdated(physicsParticleProbe);
+    mSimulationEventHandler.OnSubjectParticleConstrainedRegimeUpdated(constrainedRegimeParticleProbe);
+    mSimulationEventHandler.OnSubjectParticleBarycentricCoordinatesWrtOriginTriangleChanged(subjectParticleBarycentricCoordinatesWrtOriginTriangleChanged);
+    mSimulationEventHandler.OnSubjectParticlePhysicsUpdated(physicsParticleProbe);
 
     if (mCurrentlySelectedNpc.has_value()
         && mStateBuffer[*mCurrentlySelectedNpc].has_value())
@@ -3102,98 +3102,98 @@ void Npcs::Publish() const
             {
                 case StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::BeingPlaced:
                 {
-                    mSimulationEventHandler->OnHumanNpcBehaviorChanged("BeingPlaced");
+                    mSimulationEventHandler.OnHumanNpcBehaviorChanged("BeingPlaced");
                     break;
                 }
 
                 case StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::Constrained_Aerial:
                 {
-                    mSimulationEventHandler->OnHumanNpcBehaviorChanged("Constrained_Aerial");
+                    mSimulationEventHandler.OnHumanNpcBehaviorChanged("Constrained_Aerial");
                     break;
                 }
 
                 case StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::Constrained_Dancing_Repaired:
                 {
-                    mSimulationEventHandler->OnHumanNpcBehaviorChanged("Constrained_Dancing_Repaired");
+                    mSimulationEventHandler.OnHumanNpcBehaviorChanged("Constrained_Dancing_Repaired");
                     break;
                 }
 
                 case StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::Constrained_Electrified:
                 {
-                    mSimulationEventHandler->OnHumanNpcBehaviorChanged("Constrained_Electrified");
+                    mSimulationEventHandler.OnHumanNpcBehaviorChanged("Constrained_Electrified");
                     break;
                 }
 
                 case StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::Constrained_Equilibrium:
                 {
-                    mSimulationEventHandler->OnHumanNpcBehaviorChanged("Constrained_Equilibrium");
+                    mSimulationEventHandler.OnHumanNpcBehaviorChanged("Constrained_Equilibrium");
                     break;
                 }
 
                 case StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::Constrained_Falling:
                 {
-                    mSimulationEventHandler->OnHumanNpcBehaviorChanged("Constrained_Falling");
+                    mSimulationEventHandler.OnHumanNpcBehaviorChanged("Constrained_Falling");
                     break;
                 }
 
                 case StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::Constrained_InWater:
                 {
-                    mSimulationEventHandler->OnHumanNpcBehaviorChanged("Constrained_InWater");
+                    mSimulationEventHandler.OnHumanNpcBehaviorChanged("Constrained_InWater");
                     break;
                 }
 
                 case StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::Constrained_KnockedOut:
                 {
-                    mSimulationEventHandler->OnHumanNpcBehaviorChanged("Constrained_KnockedOut");
+                    mSimulationEventHandler.OnHumanNpcBehaviorChanged("Constrained_KnockedOut");
                     break;
                 }
 
                 case StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::Constrained_PreRising:
                 {
-                    mSimulationEventHandler->OnHumanNpcBehaviorChanged("Constrained_PreRising");
+                    mSimulationEventHandler.OnHumanNpcBehaviorChanged("Constrained_PreRising");
                     break;
                 }
 
                 case StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::Constrained_Rising:
                 {
-                    mSimulationEventHandler->OnHumanNpcBehaviorChanged("Constrained_Rising");
+                    mSimulationEventHandler.OnHumanNpcBehaviorChanged("Constrained_Rising");
                     break;
                 }
 
                 case StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::Constrained_Swimming_Style1:
                 case StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::Constrained_Swimming_Style2:
                 {
-                    mSimulationEventHandler->OnHumanNpcBehaviorChanged("Constrained_Swimming");
+                    mSimulationEventHandler.OnHumanNpcBehaviorChanged("Constrained_Swimming");
                     break;
                 }
 
                 case StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::Constrained_Walking:
                 {
-                    mSimulationEventHandler->OnHumanNpcBehaviorChanged("Constrained_Walking");
+                    mSimulationEventHandler.OnHumanNpcBehaviorChanged("Constrained_Walking");
                     break;
                 }
 
                 case StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::Constrained_WalkingUndecided:
                 {
-                    mSimulationEventHandler->OnHumanNpcBehaviorChanged("Constrained_WalkingUndecided");
+                    mSimulationEventHandler.OnHumanNpcBehaviorChanged("Constrained_WalkingUndecided");
                     break;
                 }
 
                 case StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::Free_Aerial:
                 {
-                    mSimulationEventHandler->OnHumanNpcBehaviorChanged("Free_Aerial");
+                    mSimulationEventHandler.OnHumanNpcBehaviorChanged("Free_Aerial");
                     break;
                 }
 
                 case StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::Free_InWater:
                 {
-                    mSimulationEventHandler->OnHumanNpcBehaviorChanged("Free_InWater");
+                    mSimulationEventHandler.OnHumanNpcBehaviorChanged("Free_InWater");
                     break;
                 }
 
                 case StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::Free_KnockedOut:
                 {
-                    mSimulationEventHandler->OnHumanNpcBehaviorChanged("Free_KnockedOut");
+                    mSimulationEventHandler.OnHumanNpcBehaviorChanged("Free_KnockedOut");
                     break;
                 }
 
@@ -3201,25 +3201,25 @@ void Npcs::Publish() const
                 case StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::Free_Swimming_Style2:
                 case StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::Free_Swimming_Style3:
                 {
-                    mSimulationEventHandler->OnHumanNpcBehaviorChanged("Free_Swimming");
+                    mSimulationEventHandler.OnHumanNpcBehaviorChanged("Free_Swimming");
                     break;
                 }
 
                 case StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::ConstrainedOrFree_Smashed:
                 {
-                    mSimulationEventHandler->OnHumanNpcBehaviorChanged("ConstrainedOrFree_Smashed");
+                    mSimulationEventHandler.OnHumanNpcBehaviorChanged("ConstrainedOrFree_Smashed");
                     break;
                 }
 
                 case StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::BeingRemoved:
                 {
-                    mSimulationEventHandler->OnHumanNpcBehaviorChanged("BeingRemoved");
+                    mSimulationEventHandler.OnHumanNpcBehaviorChanged("BeingRemoved");
                     break;
                 }
 
                 case StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::BeingRemoved_Exploding:
                 {
-                    mSimulationEventHandler->OnHumanNpcBehaviorChanged("BeingRemoved_Exploding");
+                    mSimulationEventHandler.OnHumanNpcBehaviorChanged("BeingRemoved_Exploding");
                     break;
                 }
             }
@@ -3386,7 +3386,7 @@ void Npcs::InternalBeginNpcRemoval(
 #ifdef BARYLAB_PROBING
             if (npc.Id == mCurrentlySelectedNpc)
             {
-                mSimulationEventHandler->OnHumanNpcBehaviorChanged("BeingRemoved");
+                mSimulationEventHandler.OnHumanNpcBehaviorChanged("BeingRemoved");
             }
 #endif
 
@@ -3441,7 +3441,7 @@ void Npcs::InternalBeginDeferredDeletion(
         ship.BurningNpcs.erase(burningNpcIt);
 
         // Emit event
-        mSimulationEventHandler->OnPointCombustionEnd();
+        mSimulationEventHandler.OnPointCombustionEnd();
     }
 
     //
@@ -3548,12 +3548,12 @@ void Npcs::InternalFreeNpcParticles(StateType const & npc)
 
 void Npcs::PublishCount()
 {
-    mSimulationEventHandler->OnNpcCountsUpdated(CalculateActiveNpcCount());
+    mSimulationEventHandler.OnNpcCountsUpdated(CalculateActiveNpcCount());
 }
 
 void Npcs::PublishSelection()
 {
-    mSimulationEventHandler->OnNpcSelectionChanged(mCurrentlySelectedNpc);
+    mSimulationEventHandler.OnNpcSelectionChanged(mCurrentlySelectedNpc);
 }
 
 NpcId Npcs::GetNewNpcId()
@@ -3794,7 +3794,7 @@ void Npcs::TransferNpcToShip(
 
 void Npcs::PublishHumanNpcStats()
 {
-    mSimulationEventHandler->OnHumanNpcCountsUpdated(
+    mSimulationEventHandler.OnHumanNpcCountsUpdated(
         mConstrainedRegimeHumanNpcCount,
         mFreeRegimeHumanNpcCount);
 }

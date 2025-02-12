@@ -46,7 +46,7 @@ public:
         MaterialDatabase const & materialDatabase,
         ShipTexturizer const & shipTexturizer,
         ShipStrengthRandomizer const & shipStrengthRandomizer,
-        std::shared_ptr<SimulationEventDispatcher> & simulationEventDispatcher,
+        SimulationEventDispatcher & simulationEventDispatcher,
         IAssetManager const & assetManager,
         SimulationParameters const & simulationParameters);
 
@@ -163,7 +163,7 @@ private:
         std::vector<ShipFactoryPoint> const & pointInfos2,
         Physics::World & parentWorld,
         MaterialDatabase const & materialDatabase,
-        std::shared_ptr<SimulationEventDispatcher> & simulationEventDispatcher,
+        SimulationEventDispatcher & simulationEventDispatcher,
         SimulationParameters const & simulationParameters,
         ShipPhysicsData const & physicsData);
 
@@ -172,7 +172,7 @@ private:
         ElementCount perfectSquareCount,
         Physics::Points & points,
         Physics::World & parentWorld,
-        std::shared_ptr<SimulationEventDispatcher> & simulationEventDispatcher,
+        SimulationEventDispatcher & simulationEventDispatcher,
         SimulationParameters const & simulationParameters);
 
     static Physics::Triangles CreateTriangles(
@@ -192,7 +192,7 @@ private:
         bool rotate90CW,
         ShipId shipId,
         Physics::World & parentWorld,
-        std::shared_ptr<SimulationEventDispatcher> & simulationEventDispatcher,
+        SimulationEventDispatcher & simulationEventDispatcher,
         SimulationParameters const & simulationParameters);
 
     static Physics::Frontiers CreateFrontiers(

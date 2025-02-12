@@ -15,7 +15,7 @@ TimerBombGadget::TimerBombGadget(
     GlobalGadgetId id,
     ElementIndex pointIndex,
     World & parentWorld,
-    std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher,
+    SimulationEventDispatcher & simulationEventDispatcher,
     IShipPhysicsHandler & shipPhysicsHandler,
     Points & shipPoints,
     Springs & shipSprings)
@@ -24,7 +24,7 @@ TimerBombGadget::TimerBombGadget(
         GadgetType::TimerBomb,
         pointIndex,
         parentWorld,
-        std::move(simulationEventDispatcher),
+        simulationEventDispatcher,
         shipPhysicsHandler,
         shipPoints,
         shipSprings)
@@ -39,7 +39,7 @@ TimerBombGadget::TimerBombGadget(
     , mExplosionPlaneId(NonePlaneId)
 {
     // Notify start slow fuse
-    mSimulationEventHandler->OnTimerBombFuse(
+    mSimulationEventHandler.OnTimerBombFuse(
         mId,
         false);
 }
@@ -78,8 +78,8 @@ bool TimerBombGadget::Update(
                 mState = State::Defusing;
 
                 // Notify
-                mSimulationEventHandler->OnTimerBombFuse(mId, std::nullopt);
-                mSimulationEventHandler->OnTimerBombDefused(true, 1);
+                mSimulationEventHandler.OnTimerBombFuse(mId, std::nullopt);
+                mSimulationEventHandler.OnTimerBombDefused(true, 1);
 
                 // Schedule next transition
                 mNextStateTransitionTimePoint = currentWallClockTime + DefusingInterval / DefuseStepsCount;
@@ -95,7 +95,7 @@ bool TimerBombGadget::Update(
 
                     mState = State::DetonationLeadIn;
 
-                    mSimulationEventHandler->OnTimerBombFuse(mId, std::nullopt);
+                    mSimulationEventHandler.OnTimerBombFuse(mId, std::nullopt);
 
                     // Schedule next transition
                     mNextStateTransitionTimePoint = currentWallClockTime + DetonationLeadInToExplosionInterval;
@@ -182,7 +182,7 @@ bool TimerBombGadget::Update(
                     simulationParameters);
 
                 // Notify explosion
-                mSimulationEventHandler->OnBombExplosion(
+                mSimulationEventHandler.OnBombExplosion(
                     GadgetType::TimerBomb,
                     mShipPoints.IsCachedUnderwater(mPointIndex),
                     1);
@@ -399,7 +399,7 @@ void TimerBombGadget::TransitionToFastFusing(GameWallClock::time_point currentWa
     }
 
     // Notify fast fuse
-    mSimulationEventHandler->OnTimerBombFuse(
+    mSimulationEventHandler.OnTimerBombFuse(
         mId,
         true);
 

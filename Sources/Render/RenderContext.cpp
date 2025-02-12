@@ -374,9 +374,9 @@ void RenderContext::AddShip(
                 new ShipRenderContext(
                     shipId,
                     pointCount,
+                    newShipCount,
                     maxEphemeralParticles,
                     maxSpringsPerPoint,
-                    newShipCount,
                     std::move(exteriorTextureImage),
                     std::move(interiorViewImage),
                     *mShaderManager,

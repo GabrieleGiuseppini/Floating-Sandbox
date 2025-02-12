@@ -139,7 +139,7 @@ protected:
         GadgetType type,
         ElementIndex pointIndex,
         World & parentWorld,
-        std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher,
+        SimulationEventDispatcher & simulationEventDispatcher,
         IShipPhysicsHandler & shipPhysicsHandler,
         Points & shipPoints,
         Springs & shipSprings)
@@ -147,7 +147,7 @@ protected:
         , mType(type)
         , mPointIndex(pointIndex)
         , mParentWorld(parentWorld)
-        , mSimulationEventHandler(std::move(simulationEventDispatcher))
+        , mSimulationEventHandler(simulationEventDispatcher)
         , mShipPhysicsHandler(shipPhysicsHandler)
         , mShipPoints(shipPoints)
         , mShipSprings(shipSprings)
@@ -224,7 +224,7 @@ protected:
     World & mParentWorld;
 
     // The game event handler
-    std::shared_ptr<SimulationEventDispatcher> mSimulationEventHandler;
+    SimulationEventDispatcher & mSimulationEventHandler;
 
     // The handler to invoke for acting on the ship
     IShipPhysicsHandler & mShipPhysicsHandler;

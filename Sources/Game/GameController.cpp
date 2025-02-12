@@ -41,12 +41,6 @@ std::unique_ptr<GameController> GameController::Create(
         materialDatabase,
         npcTextureAtlas);
 
-    // Create simulation event dispatcher
-    auto simulationEventDispatcher = std::make_shared<SimulationEventDispatcher>();
-
-    // Create game event dispatcher
-    auto gameEventDispatcher = std::make_shared<GameEventDispatcher>();
-
     // Create perf stats
     std::unique_ptr<PerfStats> perfStats = std::make_unique<PerfStats>();
 
@@ -69,8 +63,6 @@ std::unique_ptr<GameController> GameController::Create(
     return std::unique_ptr<GameController>(
         new GameController(
             std::move(renderContext),
-            std::move(simulationEventDispatcher),
-            std::move(gameEventDispatcher),
             std::move(perfStats),
             std::move(fishSpeciesDatabase),
             std::move(npcDatabase),
@@ -81,8 +73,6 @@ std::unique_ptr<GameController> GameController::Create(
 
 GameController::GameController(
     std::unique_ptr<RenderContext> renderContext,
-    std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher,
-    std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     std::unique_ptr<PerfStats> perfStats,
     FishSpeciesDatabase && fishSpeciesDatabase,
     NpcDatabase && npcDatabase,
@@ -115,8 +105,8 @@ GameController::GameController(
     , mDoDrawHeatBlasterFlame(true)
     // Doers
     , mRenderContext(std::move(renderContext))
-    , mSimulationEventDispatcher(std::move(simulationEventDispatcher))
-    , mGameEventDispatcher(std::move(gameEventDispatcher))
+    , mSimulationEventDispatcher()
+    , mGameEventDispatcher()
     , mNotificationLayer(
         mSimulationParameters.IsUltraViolentMode,
         false /*isSoundMuted; loaded value will come later*/,
@@ -124,7 +114,7 @@ GameController::GameController(
         false /*isAutoFocusOn; loaded value will come later*/,
         mIsShiftOn,
         mRenderContext->GetDisplayUnitsSystem(),
-        *mSimulationEventDispatcher)
+        mSimulationEventDispatcher)
     , mThreadManager(
         mRenderContext->IsRenderingMultiThreaded(),
         8) // We start "zuinig", as we do not want to pay a ThreadPool price for too many threads
@@ -155,9 +145,9 @@ GameController::GameController(
         mRenderContext->GetVisibleWorld());
 
     // Register ourselves as event handler for the events we care about
-    mSimulationEventDispatcher->RegisterGenericShipEventHandler(this);
-    mSimulationEventDispatcher->RegisterWavePhenomenaEventHandler(this);
-    mSimulationEventDispatcher->RegisterNpcEventHandler(this);
+    mSimulationEventDispatcher.RegisterGenericShipEventHandler(this);
+    mSimulationEventDispatcher.RegisterWavePhenomenaEventHandler(this);
+    mSimulationEventDispatcher.RegisterNpcEventHandler(this);
 
     //
     // Initialize parameter smoothers
@@ -448,8 +438,8 @@ void GameController::RunGameIteration()
             *mTotalPerfStats);
 
         // Flush events
-        mSimulationEventDispatcher->Flush();
-        mGameEventDispatcher->Flush();
+        mSimulationEventDispatcher.Flush();
+        mGameEventDispatcher.Flush();
 
         //
         // Update misc
@@ -2048,7 +2038,7 @@ void GameController::Reset(std::unique_ptr<Physics::World> newWorld)
     mRenderContext->Reset();
 
     // Notify
-    mGameEventDispatcher->OnGameReset();
+    mGameEventDispatcher.OnGameReset();
 }
 
 void GameController::InternalAddShip(
@@ -2078,7 +2068,7 @@ void GameController::InternalAddShip(
     UpdateViewOnShipLoad();
 
     // Notify ship load
-    mGameEventDispatcher->OnShipLoaded(
+    mGameEventDispatcher.OnShipLoaded(
         shipId,
         shipMetadata);
 
@@ -2118,12 +2108,10 @@ void GameController::PublishStats(std::chrono::steady_clock::time_point nowReal)
         : 0.0f;
 
     // Publish frame rate
-    assert(!!mGameEventDispatcher);
-    mGameEventDispatcher->OnFrameRateUpdated(lastFps, totalFps);
+    mGameEventDispatcher.OnFrameRateUpdated(lastFps, totalFps);
 
     // Publish update time
-    assert(!!mGameEventDispatcher);
-    mGameEventDispatcher->OnCurrentUpdateDurationUpdated(lastDeltaPerfStats.GetMeasurement<PerfMeasurement::TotalUpdate>().ToRatio<std::chrono::milliseconds>());
+    mGameEventDispatcher.OnCurrentUpdateDurationUpdated(lastDeltaPerfStats.GetMeasurement<PerfMeasurement::TotalUpdate>().ToRatio<std::chrono::milliseconds>());
 
     // Update status text
     mNotificationLayer.SetStatusTexts(
@@ -2264,7 +2252,7 @@ void GameController::InternalSwitchAutoFocusTarget(std::optional<AutoFocusTarget
         mViewManager.SetAutoFocusTarget(autoFocusTarget);
 
         // Tell the world
-        mGameEventDispatcher->OnAutoFocusTargetChanged(autoFocusTarget);
+        mGameEventDispatcher.OnAutoFocusTargetChanged(autoFocusTarget);
 
         // Reconciliate notification
         mNotificationLayer.SetAutoFocusIndicator(autoFocusTarget.has_value());

@@ -15,7 +15,7 @@ FireExtinguishingBombGadget::FireExtinguishingBombGadget(
     GlobalGadgetId id,
     ElementIndex pointIndex,
     World & parentWorld,
-    std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher,
+    SimulationEventDispatcher & simulationEventDispatcher,
     IShipPhysicsHandler & shipPhysicsHandler,
     Points & shipPoints,
     Springs & shipSprings)
@@ -24,7 +24,7 @@ FireExtinguishingBombGadget::FireExtinguishingBombGadget(
         GadgetType::FireExtinguishingBomb,
         pointIndex,
         parentWorld,
-        std::move(simulationEventDispatcher),
+        simulationEventDispatcher,
         shipPhysicsHandler,
         shipPoints,
         shipSprings)
@@ -191,7 +191,7 @@ void FireExtinguishingBombGadget::Detonate(
             simulationParameters);
 
         // Notify explosion
-        mSimulationEventHandler->OnBombExplosion(
+        mSimulationEventHandler.OnBombExplosion(
             GadgetType::FireExtinguishingBomb,
             mShipPoints.IsCachedUnderwater(mPointIndex),
             1);

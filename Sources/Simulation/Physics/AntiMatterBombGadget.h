@@ -26,7 +26,7 @@ public:
         GlobalGadgetId id,
         ElementIndex pointIndex,
         World & parentWorld,
-        std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher,
+        SimulationEventDispatcher & simulationEventDispatcher,
         IShipPhysicsHandler & shipPhysicsHandler,
         Points & shipPoints,
         Springs & shipSprings);
@@ -53,7 +53,7 @@ public:
         // Stop containment if it's in containment
         if (State::Contained_1 == mState)
         {
-            mSimulationEventHandler->OnAntiMatterBombContained(mId, false);
+            mSimulationEventHandler.OnAntiMatterBombContained(mId, false);
         }
     }
 

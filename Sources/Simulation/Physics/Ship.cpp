@@ -74,7 +74,7 @@ Ship::Ship(
     ShipId id,
     World & parentWorld,
     MaterialDatabase const & materialDatabase,
-    std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher,
+    SimulationEventDispatcher & simulationEventDispatcher,
     Points && points,
     Springs && springs,
     Triangles && triangles,
@@ -84,7 +84,7 @@ Ship::Ship(
     : mId(id)
     , mParentWorld(parentWorld)
     , mMaterialDatabase(materialDatabase)
-    , mSimulationEventHandler(std::move(simulationEventDispatcher))
+    , mSimulationEventHandler(simulationEventDispatcher)
     , mEventRecorder(nullptr)
     , mPoints(std::move(points))
     , mSprings(std::move(springs))
@@ -435,7 +435,7 @@ void Ship::Update(
             waterTakenInStep);
 
         // Notify intaken water
-        mSimulationEventHandler->OnWaterTaken(waterTakenInStep);
+        mSimulationEventHandler.OnWaterTaken(waterTakenInStep);
     }
 
     ///////////////////////////////
@@ -458,7 +458,7 @@ void Ship::Update(
             UpdateWaterVelocities(simulationParameters, waterSplashedInStep);
 
             // Notify
-            mSimulationEventHandler->OnWaterSplashed(waterSplashedInStep);
+            mSimulationEventHandler.OnWaterSplashed(waterSplashedInStep);
         });
 
     parallelTasks.emplace_back(
@@ -502,7 +502,7 @@ void Ship::Update(
     threadManager.GetSimulationThreadPool().RunAndClear(parallelTasks);
 
     // Publish static pressure stats
-    mSimulationEventHandler->OnStaticPressureUpdated(
+    mSimulationEventHandler.OnStaticPressureUpdated(
         mStaticPressureNetForceMagnitudeCount != 0.0f ? mStaticPressureNetForceMagnitudeSum / mStaticPressureNetForceMagnitudeCount : 0.0f,
         mStaticPressureIterationsCount != 0.0f ? mStaticPressureIterationsPercentagesSum / mStaticPressureIterationsCount : 0.0f);
 
@@ -1455,7 +1455,7 @@ void Ship::ApplyWorldSurfaceForces(
 
     if constexpr (DoDisplaceWater)
     {
-        mSimulationEventHandler->OnWaterDisplaced(totalWaterDisplacementMagnitude);
+        mSimulationEventHandler.OnWaterDisplaced(totalWaterDisplacementMagnitude);
     }
 }
 
@@ -2624,7 +2624,7 @@ void Ship::UpdateSinking(float currentSimulationTime)
         {
             // Started sinking
             mParentWorld.GetNpcs().OnShipStartedSinking(mId, currentSimulationTime); // Tell NPCs
-            mSimulationEventHandler->OnSinkingBegin(mId);
+            mSimulationEventHandler.OnSinkingBegin(mId);
             mIsSinking = true;
         }
     }
@@ -2633,7 +2633,7 @@ void Ship::UpdateSinking(float currentSimulationTime)
         if (wetPointCount < mPoints.GetRawShipPointCount() * 1 / 10 + mPoints.GetTotalFactoryWetPoints()) // Low watermark
         {
             // Stopped sinking
-            mSimulationEventHandler->OnSinkingEnd(mId);
+            mSimulationEventHandler.OnSinkingEnd(mId);
             mIsSinking = false;
         }
     }
@@ -3521,7 +3521,7 @@ void Ship::HandlePointDetach(
         if (fireDestroyEvent)
         {
             // Notify destroy
-            mSimulationEventHandler->OnDestroy(
+            mSimulationEventHandler.OnDestroy(
                 mPoints.GetStructuralMaterial(pointElementIndex),
                 mParentWorld.GetOceanSurface().IsUnderwater(mPoints.GetPosition(pointElementIndex)),
                 1);
@@ -3569,7 +3569,7 @@ void Ship::HandlePointRestore(
     if (mDamagedPointsCount == 0 && mBrokenSpringsCount == 0 && mBrokenTrianglesCount == 0)
     {
         mParentWorld.GetNpcs().OnShipRepaired(mId, currentSimulationTime); // Tell NPCs
-        mSimulationEventHandler->OnShipRepaired(mId);
+        mSimulationEventHandler.OnShipRepaired(mId);
     }
 }
 
@@ -3723,7 +3723,7 @@ void Ship::HandleSpringRestore(
 
     // Fire event - using point A's properties (quite arbitrarily)
     auto const endpointAIndex = mSprings.GetEndpointAIndex(springElementIndex);
-    mSimulationEventHandler->OnSpringRepaired(
+    mSimulationEventHandler.OnSpringRepaired(
         mPoints.GetStructuralMaterial(endpointAIndex),
         mParentWorld.GetOceanSurface().IsUnderwater(mPoints.GetPosition(endpointAIndex)),
         1);
@@ -3738,7 +3738,7 @@ void Ship::HandleSpringRestore(
     // Notify if we've just completely restored the ship
     if (mDamagedPointsCount == 0 && mBrokenSpringsCount == 0 && mBrokenTrianglesCount == 0)
     {
-        mSimulationEventHandler->OnShipRepaired(mId);
+        mSimulationEventHandler.OnShipRepaired(mId);
     }
 }
 
@@ -3830,7 +3830,7 @@ void Ship::HandleTriangleRestore(ElementIndex triangleElementIndex)
 
     // Fire event - using point A's properties (quite arbitrarily)
     auto const endpointAIndex = mTriangles.GetPointAIndex(triangleElementIndex);
-    mSimulationEventHandler->OnTriangleRepaired(
+    mSimulationEventHandler.OnTriangleRepaired(
         mPoints.GetStructuralMaterial(endpointAIndex),
         mParentWorld.GetOceanSurface().IsUnderwater(mPoints.GetPosition(endpointAIndex)),
         1);
@@ -3845,7 +3845,7 @@ void Ship::HandleTriangleRestore(ElementIndex triangleElementIndex)
     // Notify if we've just completely restored the ship
     if (mDamagedPointsCount == 0 && mBrokenSpringsCount == 0 && mBrokenTrianglesCount == 0)
     {
-        mSimulationEventHandler->OnShipRepaired(mId);
+        mSimulationEventHandler.OnShipRepaired(mId);
     }
 }
 
@@ -3885,7 +3885,7 @@ void Ship::HandleElectricalElementDestroy(
     {
         case ElectricalElementDestroySpecializationType::Lamp:
         {
-            mSimulationEventHandler->OnLampBroken(
+            mSimulationEventHandler.OnLampBroken(
                 mParentWorld.GetOceanSurface().IsUnderwater(mPoints.GetPosition(pointElementIndex)),
                 1);
 
@@ -3900,7 +3900,7 @@ void Ship::HandleElectricalElementDestroy(
                 currentSimulationTime,
                 simulationParameters);
 
-            mSimulationEventHandler->OnLampExploded(
+            mSimulationEventHandler.OnLampExploded(
                 mParentWorld.GetOceanSurface().IsUnderwater(mPoints.GetPosition(pointElementIndex)),
                 1);
 
@@ -3909,7 +3909,7 @@ void Ship::HandleElectricalElementDestroy(
 
         case ElectricalElementDestroySpecializationType::LampImplosion:
         {
-            mSimulationEventHandler->OnLampImploded(
+            mSimulationEventHandler.OnLampImploded(
                 mParentWorld.GetOceanSurface().IsUnderwater(mPoints.GetPosition(pointElementIndex)),
                 1);
 
@@ -4137,7 +4137,7 @@ void Ship::HandleWatertightDoorUpdated(
         mPoints.SetWater(pointElementIndex, 0.0f);
 
         // Fire event
-        mSimulationEventHandler->OnWatertightDoorClosed(
+        mSimulationEventHandler.OnWatertightDoorClosed(
             mParentWorld.GetOceanSurface().IsUnderwater(mPoints.GetPosition(pointElementIndex)),
             1);
     }
@@ -4148,7 +4148,7 @@ void Ship::HandleWatertightDoorUpdated(
         //
 
         // Fire event
-        mSimulationEventHandler->OnWatertightDoorOpened(
+        mSimulationEventHandler.OnWatertightDoorOpened(
             mParentWorld.GetOceanSurface().IsUnderwater(mPoints.GetPosition(pointElementIndex)),
             1);
     }

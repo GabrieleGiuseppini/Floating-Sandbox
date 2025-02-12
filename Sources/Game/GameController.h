@@ -108,62 +108,52 @@ public:
 
     void RegisterStructuralShipEventHandler(IStructuralShipEventHandler * handler) override
     {
-        assert(!!mSimulationEventDispatcher);
-        mSimulationEventDispatcher->RegisterStructuralShipEventHandler(handler);
+        mSimulationEventDispatcher.RegisterStructuralShipEventHandler(handler);
     }
 
     void RegisterGenericShipEventHandler(IGenericShipEventHandler * handler) override
     {
-        assert(!!mSimulationEventDispatcher);
-        mSimulationEventDispatcher->RegisterGenericShipEventHandler(handler);
+        mSimulationEventDispatcher.RegisterGenericShipEventHandler(handler);
     }
 
     void RegisterWavePhenomenaEventHandler(IWavePhenomenaEventHandler * handler) override
     {
-        assert(!!mSimulationEventDispatcher);
-        mSimulationEventDispatcher->RegisterWavePhenomenaEventHandler(handler);
+        mSimulationEventDispatcher.RegisterWavePhenomenaEventHandler(handler);
     }
 
     void RegisterCombustionEventHandler(ICombustionEventHandler * handler) override
     {
-        assert(!!mSimulationEventDispatcher);
-        mSimulationEventDispatcher->RegisterCombustionEventHandler(handler);
+        mSimulationEventDispatcher.RegisterCombustionEventHandler(handler);
     }
 
     void RegisterSimulationStatisticsEventHandler(ISimulationStatisticsEventHandler * handler) override
     {
-        assert(!!mSimulationEventDispatcher);
-        mSimulationEventDispatcher->RegisterSimulationStatisticsEventHandler(handler);
+        mSimulationEventDispatcher.RegisterSimulationStatisticsEventHandler(handler);
     }
 
     void RegisterAtmosphereEventHandler(IAtmosphereEventHandler * handler) override
     {
-        assert(!!mSimulationEventDispatcher);
-        mSimulationEventDispatcher->RegisterAtmosphereEventHandler(handler);
+        mSimulationEventDispatcher.RegisterAtmosphereEventHandler(handler);
     }
 
     void RegisterElectricalElementEventHandler(IElectricalElementEventHandler * handler) override
     {
-        assert(!!mSimulationEventDispatcher);
-        mSimulationEventDispatcher->RegisterElectricalElementEventHandler(handler);
+        mSimulationEventDispatcher.RegisterElectricalElementEventHandler(handler);
     }
 
     void RegisterNpcEventHandler(INpcEventHandler * handler) override
     {
-        assert(!!mSimulationEventDispatcher);
-        mSimulationEventDispatcher->RegisterNpcEventHandler(handler);
+        mSimulationEventDispatcher.RegisterNpcEventHandler(handler);
     }
 
     void RegisterGameEventHandler(IGameEventHandler * handler) override
     {
-        assert(!!mGameEventDispatcher);
-        mGameEventDispatcher->RegisterGameEventHandler(handler);
+        mGameEventDispatcher.RegisterGameEventHandler(handler);
     }
 
     void RegisterGameStatisticsEventHandler(IGameStatisticsEventHandler * handler) override
     {
-        assert(!!mGameEventDispatcher);
-        mGameEventDispatcher->RegisterGameStatisticsEventHandler(handler);
+        mGameEventDispatcher.RegisterGameStatisticsEventHandler(handler);
     }
 
     void RebindOpenGLContext();
@@ -1061,8 +1051,6 @@ private:
 
     GameController(
         std::unique_ptr<RenderContext> renderContext,
-        std::shared_ptr<SimulationEventDispatcher> simulationEventDispatcher,
-        std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         std::unique_ptr<PerfStats> perfStats,
         FishSpeciesDatabase && fishSpeciesDatabase,
         NpcDatabase && npcDatabase,
@@ -1175,8 +1163,8 @@ private:
     //
 
     std::shared_ptr<RenderContext> mRenderContext;
-    std::shared_ptr<SimulationEventDispatcher> mSimulationEventDispatcher;
-    std::shared_ptr<GameEventDispatcher> mGameEventDispatcher;
+    SimulationEventDispatcher mSimulationEventDispatcher;
+    GameEventDispatcher mGameEventDispatcher;
     NotificationLayer mNotificationLayer;
     ThreadManager mThreadManager;
     ViewManager mViewManager;
