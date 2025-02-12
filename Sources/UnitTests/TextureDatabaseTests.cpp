@@ -38,11 +38,11 @@ TEST(TextureDatabaseTests, Loading)
         TestTextureDatabase{
             MyTestTextureDatabase::DatabaseName,
             {
-                TestTextureDatabase::DatabaseFrameInfo{{"George_0", "George_0.png"}, ImageSize(1, 2)},
-                TestTextureDatabase::DatabaseFrameInfo{{"George_2", "George_2.png"}, ImageSize(222, 223)},
-                TestTextureDatabase::DatabaseFrameInfo{{"John_1", "Hello/John_1.png"}, ImageSize(111, 112)},
-                TestTextureDatabase::DatabaseFrameInfo{{"Ringo_0", "Ringo_0.png"}, ImageSize(2022, 2023)},
-                TestTextureDatabase::DatabaseFrameInfo{{"Ringo_1", "Ringo_1.png"}, ImageSize(2122, 2123)},
+                TestTextureDatabase::DatabaseFrameInfo{{"George_0", "George_0.png", "George_0.png"}, ImageSize(1, 2)},
+                TestTextureDatabase::DatabaseFrameInfo{{"George_2", "George_2.png", "George_2.png"}, ImageSize(222, 223)},
+                TestTextureDatabase::DatabaseFrameInfo{{"John_1", "John_1.png", "Hello/John_1.png"}, ImageSize(111, 112)},
+                TestTextureDatabase::DatabaseFrameInfo{{"Ringo_0", "Ringo_0.png", "Ringo_0.png"}, ImageSize(2022, 2023)},
+                TestTextureDatabase::DatabaseFrameInfo{{"Ringo_1", "Ringo_1.png", "Ringo_1.png"}, ImageSize(2122, 2123)},
             },
             R"xxx(
 [
@@ -172,10 +172,10 @@ TEST(TextureDatabaseTests, NotAllFramesCovered)
         TestTextureDatabase{
             MyTestTextureDatabase::DatabaseName,
             {
-                TestTextureDatabase::DatabaseFrameInfo{{"George_0", "George_0.png"}, ImageSize(1, 2)},
-                TestTextureDatabase::DatabaseFrameInfo{{"John_1", "John_1.png"}, ImageSize(111, 112)},
-                TestTextureDatabase::DatabaseFrameInfo{{"Ringo_0", "Ringo_0.png"}, ImageSize(2022, 2023)},
-                TestTextureDatabase::DatabaseFrameInfo{{"Ringo_1", "Ringo_1.png"}, ImageSize(2122, 2123)},
+                TestTextureDatabase::DatabaseFrameInfo{{"George_0", "George_0.png", "George_0.png"}, ImageSize(1, 2)},
+                TestTextureDatabase::DatabaseFrameInfo{{"John_1", "John_1.png", "John_1.png"}, ImageSize(111, 112)},
+                TestTextureDatabase::DatabaseFrameInfo{{"Ringo_0", "Ringo_0.png", "Ringo_0.png"}, ImageSize(2022, 2023)},
+                TestTextureDatabase::DatabaseFrameInfo{{"Ringo_1", "Ringo_1.png", "Ringo_1.png"}, ImageSize(2122, 2123)},
             },
             R"xxx(
 [
@@ -221,10 +221,10 @@ TEST(TextureDatabaseTests, NotAllFramesFound)
         TestTextureDatabase{
             MyTestTextureDatabase::DatabaseName,
             {
-                TestTextureDatabase::DatabaseFrameInfo{{"George_0", "George_0.png"}, ImageSize(1, 2)},
-                TestTextureDatabase::DatabaseFrameInfo{{"George_2", "George_2.png"}, ImageSize(222, 223)},
-                TestTextureDatabase::DatabaseFrameInfo{{"Ringo_0", "Ringo_0.png"}, ImageSize(2022, 2023)},
-                TestTextureDatabase::DatabaseFrameInfo{{"Ringo_1", "Ringo_1.png"}, ImageSize(2122, 2123)},
+                TestTextureDatabase::DatabaseFrameInfo{{"George_0", "George_0.png", "George_0.png"}, ImageSize(1, 2)},
+                TestTextureDatabase::DatabaseFrameInfo{{"George_2", "George_2.png", "George_2.png"}, ImageSize(222, 223)},
+                TestTextureDatabase::DatabaseFrameInfo{{"Ringo_0", "Ringo_0.png", "Ringo_0.png"}, ImageSize(2022, 2023)},
+                TestTextureDatabase::DatabaseFrameInfo{{"Ringo_1", "Ringo_1.png", "Ringo_1.png"}, ImageSize(2122, 2123)},
             },
             R"xxx(
 [

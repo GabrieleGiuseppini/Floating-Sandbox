@@ -20,9 +20,9 @@ aaa
 bbb
 )";
 
-    std::unordered_map<std::string, std::pair<bool, std::string>> includeFiles;
-    includeFiles["ggg.glsl"] = std::make_pair<bool, std::string>(true, std::string("   \n zorro \n"));
-    includeFiles["inc1.glsl"] = { false, std::string(" \n sancho \n") };
+    std::unordered_map<std::string, TestShaderManager::ShaderInfo> includeFiles;
+    includeFiles["ggg.glsl"] = { "ggg", std::string("   \n zorro \n"), true };
+    includeFiles["inc1.glsl"] = { "incl", std::string(" \n sancho \n"), false};
 
     auto resolvedSource = TestShaderManager::ResolveIncludes(
         source,
@@ -39,9 +39,9 @@ aaa
 bbb
 )";
 
-    std::unordered_map<std::string, std::pair<bool, std::string>> includeFiles;
-    includeFiles["inc2.glslinc"] = std::make_pair<bool, std::string>(true, std::string("nano\n"));
-    includeFiles["inc1.glsl"] = { false, std::string("sancho\n#include \"inc2.glslinc\"") };
+    std::unordered_map<std::string, TestShaderManager::ShaderInfo> includeFiles;
+    includeFiles["inc2.glslinc"] = { "inc2", std::string("nano\n"), true };
+    includeFiles["inc1.glsl"] = { "incl", std::string("sancho\n#include \"inc2.glslinc\""), false};
 
     auto resolvedSource = TestShaderManager::ResolveIncludes(
         source,
@@ -58,9 +58,9 @@ aaa
 bbb
 )";
 
-    std::unordered_map<std::string, std::pair<bool, std::string>> includeFiles;
-    includeFiles["inc2.glslinc"] = std::make_pair<bool, std::string>(true, std::string("#include \"inc1.glsl\"\n"));
-    includeFiles["inc1.glsl"] = { false, std::string("sancho\n#include \"inc2.glslinc\"") };
+    std::unordered_map<std::string, TestShaderManager::ShaderInfo> includeFiles;
+    includeFiles["inc2.glslinc"] = { "inc2", std::string("#include \"inc1.glsl\"\n"), true };
+    includeFiles["inc1.glsl"] = { "incl", std::string("sancho\n#include \"inc2.glslinc\""), false };
 
     auto resolvedSource = TestShaderManager::ResolveIncludes(
         source,
@@ -77,8 +77,8 @@ aaa
 bbb
 )";
 
-    std::unordered_map<std::string, std::pair<bool, std::string>> includeFiles;
-    includeFiles["inc3.glslinc"] = std::make_pair<bool, std::string>(true, std::string("nano\n"));
+    std::unordered_map<std::string, TestShaderManager::ShaderInfo> includeFiles;
+    includeFiles["inc3.glslinc"] = { "inc3", std::string("nano\n"), true };
 
     EXPECT_THROW(
         TestShaderManager::ResolveIncludes(
