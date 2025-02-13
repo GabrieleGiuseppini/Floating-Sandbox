@@ -100,7 +100,7 @@ public:
 
 		// For some reason, the preferences file sometimes is made of all null characters
 		content.erase(
-			std::find(content.begin(), content.end(), '\0'),
+			std::find(content.cbegin(), content.cend(), static_cast<char>('\0')),
 			content.end());
 
 		return content;
