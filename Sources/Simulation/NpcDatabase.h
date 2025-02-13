@@ -147,7 +147,7 @@ public:
 
     HumanTextureFramesType const & GetHumanTextureCoordinatesQuads(NpcSubKindIdType subKindId) const
     {
-        return mHumanSubKinds.at(subKindId).TextureCoordinatesQuads;
+        return mHumanSubKinds.at(subKindId).HumanTextureCoordinatesQuads;
     }
 
     HumanTextureGeometryType const & GetHumanTextureGeometry(NpcSubKindIdType subKindId) const
@@ -199,7 +199,7 @@ public:
 
     TextureCoordinatesQuad const & GetFurnitureTextureCoordinatesQuad(NpcSubKindIdType subKindId) const
     {
-        return mFurnitureSubKinds.at(subKindId).TextureCoordinatesQuad;
+        return mFurnitureSubKinds.at(subKindId).FurnitureTextureCoordinatesQuad;
     }
 
 private:
@@ -218,7 +218,7 @@ private:
         float SizeMultiplier;
         float BodyWidthRandomizationSensitivity;
 
-        HumanTextureFramesType const TextureCoordinatesQuads;
+        HumanTextureFramesType const HumanTextureCoordinatesQuads;
         HumanTextureGeometryType TextureGeometry;
     };
 
@@ -236,7 +236,7 @@ private:
 
         FurnitureGeometryType Geometry;
 
-        TextureCoordinatesQuad TextureCoordinatesQuad;
+        TextureCoordinatesQuad FurnitureTextureCoordinatesQuad;
     };
 
 private:
