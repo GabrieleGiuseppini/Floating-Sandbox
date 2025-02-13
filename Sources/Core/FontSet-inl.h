@@ -109,7 +109,7 @@ FontSet<TFontSet> FontSet<TFontSet>::Load(
         size_t iAsset;
         for (iAsset = 0; iAsset < fontAssetDescriptors.size(); ++iAsset)
         {
-            if (TFontSet::FontNameToFontKind(fontAssetDescriptors[iAsset].Name) == static_cast<TFontSet::FontKindType>(fontKind))
+            if (TFontSet::FontNameToFontKind(fontAssetDescriptors[iAsset].Name) == static_cast<typename TFontSet::FontKindType>(fontKind))
             {
                 break;
             }
