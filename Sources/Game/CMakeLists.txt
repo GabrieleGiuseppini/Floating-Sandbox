@@ -50,4 +50,5 @@ target_include_directories(Game INTERFACE ..)
 target_link_libraries (Game
 	Core
 	Render
+	Simulation
 	${ADDITIONAL_LIBRARIES})
