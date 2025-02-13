@@ -1384,6 +1384,8 @@ inline std::basic_ostream<char> & operator<<(std::basic_ostream<char>& os, Elect
 
 /*
  * Unit systems.
+ *
+ * Note: values of this enum are saved in preferences.
  */
 enum class UnitsSystem
 {

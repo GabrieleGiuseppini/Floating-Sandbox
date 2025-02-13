@@ -117,6 +117,8 @@ public:
 
 	// Helpers
 
+	static bool Exists(std::filesystem::path const & filePath);
+
 	static ImageSize GetImageSize(std::filesystem::path const & filePath);
 
 	template<typename TColor>

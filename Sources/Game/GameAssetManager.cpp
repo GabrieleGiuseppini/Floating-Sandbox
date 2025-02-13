@@ -401,6 +401,11 @@ std::filesystem::path GameAssetManager::GetHelpFilePath(
 // Helpers
 ////////////////////////////////////////////////////////////////////////////////////////////
 
+bool GameAssetManager::Exists(std::filesystem::path const & filePath)
+{
+    return std::filesystem::exists(filePath);
+}
+
 ImageSize GameAssetManager::GetImageSize(std::filesystem::path const & filePath)
 {
     auto readStream = std::make_unique<FileBinaryReadStream>(filePath);

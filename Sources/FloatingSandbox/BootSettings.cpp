@@ -14,24 +14,27 @@ BootSettings BootSettings::Load(std::filesystem::path const & filePath)
 {
     BootSettings settings;
 
-    try
+    if (GameAssetManager::Exists(filePath))
     {
-        auto const rootValue = GameAssetManager::LoadJson(filePath);
-        if (rootValue.is<picojson::object>())
+        try
         {
-            auto const rootObject = rootValue.get<picojson::object>();
-
-            auto const version = Utils::GetMandatoryJsonMember<std::string>(rootObject, "version");
-            if (version == CurrentGameVersion.ToString()) // Boot settings are only valid on the version they're created for
+            auto const rootValue = GameAssetManager::LoadJson(filePath);
+            if (rootValue.is<picojson::object>())
             {
-                settings.DoForceNoGlFinish = Utils::GetOptionalJsonMember<bool>(rootObject, "force_no_glfinish");
-                settings.DoForceNoMultithreadedRendering = Utils::GetOptionalJsonMember<bool>(rootObject, "force_no_multithreaded_rendering");
+                auto const rootObject = rootValue.get<picojson::object>();
+
+                auto const version = Utils::GetMandatoryJsonMember<std::string>(rootObject, "version");
+                if (version == CurrentGameVersion.ToString()) // Boot settings are only valid on the version they're created for
+                {
+                    settings.DoForceNoGlFinish = Utils::GetOptionalJsonMember<bool>(rootObject, "force_no_glfinish");
+                    settings.DoForceNoMultithreadedRendering = Utils::GetOptionalJsonMember<bool>(rootObject, "force_no_multithreaded_rendering");
+                }
             }
         }
-    }
-    catch (...)
-    {
-        // Ignore
+        catch (...)
+        {
+            // Ignore
+        }
     }
 
     return settings;

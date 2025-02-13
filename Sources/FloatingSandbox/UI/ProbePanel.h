@@ -20,7 +20,6 @@
 
 class ProbePanel final
     : public UnFocusablePanel
-    , public IStructuralShipEventHandler
     , public IGenericShipEventHandler
     , public ISimulationStatisticsEventHandler
     , public IAtmosphereEventHandler
@@ -43,18 +42,12 @@ public:
 
     void RegisterEventHandler(IGameController & gameController)
     {
-        gameController.RegisterStructuralShipEventHandler(this);
         gameController.RegisterGenericShipEventHandler(this);
         gameController.RegisterSimulationStatisticsEventHandler(this);
         gameController.RegisterAtmosphereEventHandler(this);
         gameController.RegisterGameEventHandler(this);
         gameController.RegisterGameStatisticsEventHandler(this);
     }
-
-    void OnBreak(
-        StructuralMaterial const & structuralMaterial,
-        bool isUnderwater,
-        unsigned int size) override;
 
     void OnWaterTaken(float waterTaken) override;
 
@@ -108,6 +101,5 @@ private:
     std::unique_ptr<ScalarTimeSeriesProbeControl> mWindSpeedProbe;
     std::unique_ptr<ScalarTimeSeriesProbeControl> mStaticPressureNetForceProbe;
     std::unique_ptr<ScalarTimeSeriesProbeControl> mStaticPressureComplexityProbe;
-    std::unique_ptr<IntegratingScalarTimeSeriesProbeControl> mTotalDamageProbe;
     std::unordered_map<std::string, std::unique_ptr<ScalarTimeSeriesProbeControl>> mCustomProbes;
 };

@@ -18,8 +18,8 @@ namespace GameFontSets {
  */
 enum class FontKind : std::uint32_t
 {
-    Font0 = 0, // TODO: descriptive name
-    Font1 = 1, // TODO: descriptive name
+    Font0 = 0, // StatusText
+    Font1 = 1, // NotificationText; same font as StatusText, but larger and with more spacing
     SevenSegments = 2,
 
     _Last = SevenSegments

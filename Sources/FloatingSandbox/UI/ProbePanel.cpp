@@ -41,8 +41,6 @@ ProbePanel::ProbePanel(wxWindow* parent)
     mStaticPressureNetForceProbe = AddScalarTimeSeriesProbe<ScalarTimeSeriesProbeControl>(_("Static Pressure Net Force"), 120);
     mStaticPressureComplexityProbe = AddScalarTimeSeriesProbe<ScalarTimeSeriesProbeControl>(_("Static Pressure Complexity"), 120);
 
-    mTotalDamageProbe = AddScalarTimeSeriesProbe<IntegratingScalarTimeSeriesProbeControl>(_("Total Damage"), 120);
-
     //
     // Finalize
     //
@@ -68,7 +66,6 @@ void ProbePanel::UpdateSimulation()
         mWindSpeedProbe->UpdateSimulation();
         mStaticPressureNetForceProbe->UpdateSimulation();
         mStaticPressureComplexityProbe->UpdateSimulation();
-        mTotalDamageProbe->UpdateSimulation();
 
         for (auto const & p : mCustomProbes)
         {
@@ -107,7 +104,6 @@ void ProbePanel::OnGameReset()
     mWindSpeedProbe->Reset();
     mStaticPressureNetForceProbe->Reset();
     mStaticPressureComplexityProbe->Reset();
-    mTotalDamageProbe->Reset();
 
     for (auto const & p : mCustomProbes)
     {
@@ -163,12 +159,4 @@ void ProbePanel::OnStaticPressureUpdated(
 {
     mStaticPressureNetForceProbe->RegisterSample(netForce);
     mStaticPressureComplexityProbe->RegisterSample(complexity);
-}
-
-void ProbePanel::OnBreak(
-    StructuralMaterial const & /*structuralMaterial*/,
-    bool /*isUnderwater*/,
-    unsigned int size)
-{
-    mTotalDamageProbe->RegisterSample(static_cast<float>(size));
 }

@@ -224,7 +224,7 @@ FontSet<TFontSet> FontSet<TFontSet>::InternalLoad(std::vector<BffFont> && bffFon
             int const glyphWidth = static_cast<int>(bffFonts[f].GlyphWidths[ch]);
             float const glyphRightAtlasTextureSpace =
                 glyphLeftAtlasTextureSpace
-                + static_cast<float>(glyphWidth - 1) / static_cast<float>(fontTextureAtlas.Metadata.GetSize().width); // Dragons?
+                + static_cast<float>(glyphWidth - 1) / static_cast<float>(fontTextureAtlas.Metadata.GetSize().width); // -1 because 2*dx
 
             // Texture-space top y
             // Note: font texture is flipped vertically (top of character is at lower V coordinates)
@@ -234,9 +234,10 @@ FontSet<TFontSet> FontSet<TFontSet>::InternalLoad(std::vector<BffFont> && bffFon
                 + static_cast<float>(glyphTextureRow) * fontCellHeightAtlasTextureSpace;
 
             // Texture-space bottom y
+            int const glyphHeight = bffFonts[f].CellSize.height;
             float const glyphBottomAtlasTextureSpace =
                 glyphTopAtlasTextureSpace
-                + static_cast<float>(bffFonts[f].CellSize.height - 1) / static_cast<float>(fontTextureAtlas.Metadata.GetSize().height); // Dragons?
+                + static_cast<float>(glyphHeight - 1) / static_cast<float>(fontTextureAtlas.Metadata.GetSize().height); // -1 because 2*dx
 
             GlyphTextureBottomLefts[ch] = vec2f(glyphLeftAtlasTextureSpace, glyphBottomAtlasTextureSpace);
             GlyphTextureTopRights[ch] = vec2f(glyphRightAtlasTextureSpace, glyphTopAtlasTextureSpace);
