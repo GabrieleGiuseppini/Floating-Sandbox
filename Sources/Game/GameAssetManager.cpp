@@ -408,8 +408,8 @@ bool GameAssetManager::Exists(std::filesystem::path const & filePath)
 
 ImageSize GameAssetManager::GetImageSize(std::filesystem::path const & filePath)
 {
-    auto readStream = std::make_unique<FileBinaryReadStream>(filePath);
-    return PngTools::GetImageSize(*readStream);
+    auto readStream = FileBinaryReadStream(filePath);
+    return PngTools::GetImageSize(readStream);
 }
 
 template<>
@@ -426,30 +426,30 @@ ImageData<rgbColor> GameAssetManager::LoadPngImage<rgbColor>(std::filesystem::pa
 
 RgbaImageData GameAssetManager::LoadPngImageRgba(std::filesystem::path const & filePath)
 {
-    auto readStream = std::make_unique<FileBinaryReadStream>(filePath);
-    return PngTools::DecodeImageRgba(*readStream);
+    auto readStream = FileBinaryReadStream(filePath);
+    return PngTools::DecodeImageRgba(readStream);
 }
 
 RgbImageData GameAssetManager::LoadPngImageRgb(std::filesystem::path const & filePath)
 {
-    auto readStream = std::make_unique<FileBinaryReadStream>(filePath);
-    return PngTools::DecodeImageRgb(*readStream);
+    auto readStream = FileBinaryReadStream(filePath);
+    return PngTools::DecodeImageRgb(readStream);
 }
 
 void GameAssetManager::SavePngImage(
     RgbaImageData const & image,
     std::filesystem::path filePath)
 {
-    auto writeStream = std::make_unique<FileBinaryWriteStream>(filePath);
-    PngTools::EncodeImage(image, *writeStream);
+    auto writeStream = FileBinaryWriteStream(filePath);
+    PngTools::EncodeImage(image, writeStream);
 }
 
 void GameAssetManager::SavePngImage(
     RgbImageData const & image,
     std::filesystem::path filePath)
 {
-    auto writeStream = std::make_unique<FileBinaryWriteStream>(filePath);
-    PngTools::EncodeImage(image, *writeStream);
+    auto writeStream = FileBinaryWriteStream(filePath);
+    PngTools::EncodeImage(image, writeStream);
 }
 
 picojson::value GameAssetManager::LoadJson(std::filesystem::path const & filePath)

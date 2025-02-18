@@ -125,7 +125,6 @@ private:
 	std::ifstream mStream;
 };
 
-
 /*
  * Implementation of BinaryWriteStream for file streams.
  */

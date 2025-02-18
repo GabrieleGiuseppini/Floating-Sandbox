@@ -1005,6 +1005,8 @@ struct FloatSize
     }
 };
 
+#pragma pack(pop)
+
 /*
  * Float rectangle.
  */
