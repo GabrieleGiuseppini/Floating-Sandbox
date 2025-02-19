@@ -35,3 +35,26 @@ TEST(SysSpecificsTests, CeilSquarePowerOfTwo)
     EXPECT_EQ(ceil_square_power_of_two(64), 64);
     EXPECT_EQ(ceil_square_power_of_two(65), 256);
 }
+
+TEST(SysSpecificsTests, AlignedAllocation_FromStdLib)
+{
+    auto buf1 = make_unique_buffer_aligned_to_vectorization_word<float>(100);
+    EXPECT_TRUE(is_aligned_to_vectorization_word(buf1.get()));
+}
+
+TEST(SysSpecificsTests, AlignedAllocation_PoorMans)
+{
+    std::vector<void *> ptrs;
+    for (int t = 0; t < 10; ++t)
+    {
+        void * bufPtr1 = _poor_mans_alloc_aligned_to_vectorization_word(16000 * sizeof(float));
+        EXPECT_TRUE(is_aligned_to_vectorization_word(bufPtr1));
+
+        ptrs.push_back(bufPtr1);
+    }
+
+    for (void * ptr : ptrs)
+    {
+        _poor_mans_free_aligned(ptr);
+    }
+}

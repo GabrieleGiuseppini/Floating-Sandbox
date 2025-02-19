@@ -60,10 +60,15 @@
 #define FS_IS_OS_LINUX() 0
 #define FS_IS_OS_MACOS() 0
 #define FS_IS_OS_WINDOWS() 0
+#define FS_IS_OS_ANDROID() 0
 
 #if defined(macintosh) || defined(Macintosh) || (defined(__APPLE__) && defined(__MACH__))
 #undef FS_IS_OS_MACOS
 #define FS_IS_OS_MACOS() 1
+#elif defined(__ANDROID__)
+// Note: also __linux__ is defined, hence here
+#undef FS_IS_OS_ANDROID
+#define FS_IS_OS_ANDROID() 1
 #elif defined(__linux__) || defined(linux) || defined(__linux)
 #undef FS_IS_OS_LINUX
 #define FS_IS_OS_LINUX() 1
@@ -230,16 +235,67 @@ inline constexpr bool is_aligned_to_float_element_count(T element_count) noexcep
 
 #define aligned_to_vword alignas(vectorization_byte_count<size_t>)
 
+ /*
+  * Allocates a buffer of bytes aligned to the vectorization float
+  * byte count, without making use of the standard library - Android doesn't
+  * have aligned_malloc, unless the SDK is at least 28.
+  * *
+  * Separate here for unit tests.
+  */
+inline void * _poor_mans_alloc_aligned_to_vectorization_word(size_t byte_size)
+{
+    // We store the original pointer in the word immediately preceding the calculated beginning
+    // of the buffer
+
+    size_t const enhanced_byte_size = byte_size + sizeof(intptr_t);
+
+    // Calculate extra bytes needed for alignment
+    size_t extra_bytes_for_alignment = 0;
+    if ((enhanced_byte_size % vectorization_byte_count<size_t>) != 0)
+    {
+        extra_bytes_for_alignment = vectorization_byte_count<size_t> -(enhanced_byte_size % vectorization_byte_count<size_t>);
+    }
+
+    void * ptr = malloc(enhanced_byte_size + extra_bytes_for_alignment);
+    assert(ptr != nullptr);
+
+    std::uint8_t * ptr_aligned = reinterpret_cast<std::uint8_t *>(ptr) + extra_bytes_for_alignment;
+    *(reinterpret_cast<intptr_t *>(ptr_aligned)) = reinterpret_cast<intptr_t>(ptr);
+
+    void * const return_ptr = reinterpret_cast<void *>(ptr_aligned + sizeof(intptr_t));
+    assert(is_aligned_to_vectorization_word(return_ptr));
+    return return_ptr;
+}
+
+/*
+ * free() for above manually-aligned pointer.
+ */
+inline void _poor_mans_free_aligned(void * ptr)
+{
+    // We store the original pointer in the word immediately preceding the calculated beginning
+    // of the buffer
+
+    intptr_t orig_ptr = *(reinterpret_cast<intptr_t *>(ptr) - 1);
+    std::free(reinterpret_cast<void *>(orig_ptr));
+}
+
 /*
  * Allocates a buffer of bytes aligned to the vectorization float
  * byte count.
  */
 inline void * alloc_aligned_to_vectorization_word(size_t byte_size)
 {
+    // The vectorization byte count is itself a power of two
     static_assert(vectorization_byte_count<size_t> == ceil_power_of_two(vectorization_byte_count<size_t>));
 
+#if FS_IS_OS_ANDROID()
+
+    return _poor_man_alloc_aligned_to_vectorization_word(byte_size);
+
+#else
+
     // Calculate byte size required to satisfy the aligned_alloc constraints
-    auto aligned_byte_size = (byte_size % vectorization_byte_count<size_t>) == 0
+    size_t const aligned_byte_size = (byte_size % vectorization_byte_count<size_t>) == 0
         ? byte_size
         : byte_size + vectorization_byte_count<size_t> - (byte_size % vectorization_byte_count<size_t>);
 
@@ -248,16 +304,22 @@ inline void * alloc_aligned_to_vectorization_word(size_t byte_size)
 #else
     return aligned_alloc(vectorization_byte_count<size_t>, aligned_byte_size);
 #endif
+
+#endif
 }
 
 inline void free_aligned(void * ptr)
 {
     assert(is_aligned_to_vectorization_word(ptr));
 
+#if FS_IS_OS_ANDROID()
+    _poor_mans_free_aligned(ptr);
+#else
 #ifdef _MSC_VER
     _aligned_free(ptr);
 #else
     std::free(ptr);
+#endif
 #endif
 }
 

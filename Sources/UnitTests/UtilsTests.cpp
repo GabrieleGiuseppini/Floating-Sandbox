@@ -89,6 +89,21 @@ TEST_P(TrimTest, BasicCases)
     EXPECT_EQ(result, expected);
 }
 
+TEST(EndsWith, Basic)
+{
+    EXPECT_EQ(Utils::EndsWith("foo.bar", ".bar"), true);
+    EXPECT_EQ(Utils::EndsWith("foo.bar", "r"), true);
+    EXPECT_EQ(Utils::EndsWith("foo.bar", ".ba"), false);
+}
+
+TEST(ExtractFilenameStem, Basic)
+{
+    EXPECT_EQ(Utils::ExtractFilenameStem("foo.bar"), "foo");
+    EXPECT_EQ(Utils::ExtractFilenameStem("foo.b"), "foo");
+    EXPECT_EQ(Utils::ExtractFilenameStem("foo"), "foo");
+    EXPECT_EQ(Utils::ExtractFilenameStem("foo.bar.hello"), "foo.bar");
+}
+
 TEST(ChangelistToHtml, Basic)
 {
     std::string inputStr = R"(

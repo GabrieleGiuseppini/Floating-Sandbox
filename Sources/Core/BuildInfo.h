@@ -48,7 +48,9 @@ private:
         mArchitecture = "<ARCH?>";
 #endif
 
-#if FS_IS_OS_LINUX()
+#if FS_IS_OS_ANDROID()
+        mOS = "Android";
+#elif FS_IS_OS_LINUX()
         mOS = "Linux";
 #elif FS_IS_OS_MACOS()
         mOS = "MacOS";

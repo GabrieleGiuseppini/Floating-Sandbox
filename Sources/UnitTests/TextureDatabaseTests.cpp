@@ -47,30 +47,30 @@ TEST(TextureDatabaseTests, Loading)
             R"xxx(
 [
     {
-	    "groupName": "MyTestGroup1",
-	    "hasOwnAmbientLight": false,
+	    "group_name": "MyTestGroup1",
+	    "has_own_ambient_light": false,
 	    "frames":[
 		    {
-			    "worldWidth": 10.0,
-			    "worldHeight": 20.0,
-			    "frameNamePattern": "George_\\d+"
+			    "world_width": 10.0,
+			    "world_height": 20.0,
+			    "frame_name_pattern": "George_\\d+"
 		    },
 		    {
-			    "worldWidth": 100.0,
-			    "worldHeight": 200.0,
-			    "frameNamePattern": "John_\\d+"
+			    "world_width": 100.0,
+			    "world_height": 200.0,
+			    "frame_name_pattern": "John_\\d+"
 		    }
 	    ]
     },
     {
-	    "groupName": "MyTestGroup2",
-	    "hasOwnAmbientLight": true,
-        "autoAssignFrameIndices": true,
+	    "group_name": "MyTestGroup2",
+	    "has_own_ambient_light": true,
+        "auto_assign_frame_indices": true,
 	    "frames":[
 		    {
-			    "worldWidth": 10000.0,
-			    "worldHeight": 2000.0,
-			    "frameNamePattern": "Ringo_\\d+"
+			    "world_width": 10000.0,
+			    "world_height": 2000.0,
+			    "frame_name_pattern": "Ringo_\\d+"
 		    }
 	    ]
     }
@@ -142,13 +142,13 @@ TEST(TextureDatabaseTests, NotAllGroupsCovered)
             R"xxx(
 [
     {
-	    "groupName": "MyTestGroup1",
-	    "hasOwnAmbientLight": false,
+	    "group_name": "MyTestGroup1",
+	    "has_own_ambient_light": false,
 	    "frames":[
 		    {
-			    "worldWidth": 10.0,
-			    "worldHeight": 20.0,
-			    "frameNamePattern": "George_\\d+"
+			    "world_width": 10.0,
+			    "world_height": 20.0,
+			    "frame_name_pattern": "George_\\d+"
 		    }
         ]
     }
@@ -180,25 +180,25 @@ TEST(TextureDatabaseTests, NotAllFramesCovered)
             R"xxx(
 [
     {
-	    "groupName": "MyTestGroup1",
-	    "hasOwnAmbientLight": false,
+	    "group_name": "MyTestGroup1",
+	    "has_own_ambient_light": false,
 	    "frames":[
 		    {
-			    "worldWidth": 10.0,
-			    "worldHeight": 20.0,
-			    "frameNamePattern": "George_\\d+"
+			    "world_width": 10.0,
+			    "world_height": 20.0,
+			    "frame_name_pattern": "George_\\d+"
 		    }
 	    ]
     },
     {
-	    "groupName": "MyTestGroup2",
-	    "hasOwnAmbientLight": true,
-        "autoAssignFrameIndices": true,
+	    "group_name": "MyTestGroup2",
+	    "has_own_ambient_light": true,
+        "auto_assign_frame_indices": true,
 	    "frames":[
 		    {
-			    "worldWidth": 10000.0,
-			    "worldHeight": 2000.0,
-			    "frameNamePattern": "Ringo_\\d+"
+			    "world_width": 10000.0,
+			    "world_height": 2000.0,
+			    "frame_name_pattern": "Ringo_\\d+"
 		    }
 	    ]
     }
@@ -229,30 +229,30 @@ TEST(TextureDatabaseTests, NotAllFramesFound)
             R"xxx(
 [
     {
-	    "groupName": "MyTestGroup1",
-	    "hasOwnAmbientLight": false,
+	    "group_name": "MyTestGroup1",
+	    "has_own_ambient_light": false,
 	    "frames":[
 		    {
-			    "worldWidth": 10.0,
-			    "worldHeight": 20.0,
-			    "frameNamePattern": "George_\\d+"
+			    "world_width": 10.0,
+			    "world_height": 20.0,
+			    "frame_name_pattern": "George_\\d+"
 		    },
 		    {
-			    "worldWidth": 100.0,
-			    "worldHeight": 200.0,
-			    "frameNamePattern": "John_\\d+"
+			    "world_width": 100.0,
+			    "world_height": 200.0,
+			    "frame_name_pattern": "John_\\d+"
 		    }
 	    ]
     },
     {
-	    "groupName": "MyTestGroup2",
-	    "hasOwnAmbientLight": true,
-        "autoAssignFrameIndices": true,
+	    "group_name": "MyTestGroup2",
+	    "has_own_ambient_light": true,
+        "auto_assign_frame_indices": true,
 	    "frames":[
 		    {
-			    "worldWidth": 10000.0,
-			    "worldHeight": 2000.0,
-			    "frameNamePattern": "Ringo_\\d+"
+			    "world_width": 10000.0,
+			    "world_height": 2000.0,
+			    "frame_name_pattern": "Ringo_\\d+"
 		    }
 	    ]
     }

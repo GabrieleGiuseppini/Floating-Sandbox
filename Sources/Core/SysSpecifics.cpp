@@ -23,6 +23,8 @@
 #pragma message ("OS:FS_OS_MACOS")
 #elif FS_IS_OS_WINDOWS()
 #pragma message ("OS:FS_OS_WINDOWS")
+#elif FS_IS_OS_ANDROID()
+#pragma message ("OS:FS_OS_ANDROID")
 #else
 #pragma message ("OS:<UNKNOWN>")
 #endif

@@ -257,7 +257,7 @@ typename TextureAtlasBuilder<TTextureDatabase>::AtlasSpecification TextureAtlasB
             return a.InAtlasSize.height > b.InAtlasSize.height
                 || (a.InAtlasSize.height == b.InAtlasSize.height && a.InAtlasSize.width > b.InAtlasSize.width)
                 // Achieve determinism
-                || (a.InAtlasSize.height == b.InAtlasSize.height && a.InAtlasSize.width == b.InAtlasSize.width && a.FrameId > b.FrameId);
+                || (a.InAtlasSize.height == b.InAtlasSize.height && a.InAtlasSize.width == b.InAtlasSize.width && a.FrameId < b.FrameId);
         });
 
     //

@@ -319,6 +319,11 @@ namespace Utils
         return LTrim(RTrim(str));
     }
 
+    inline bool EndsWith(std::string const & str, std::string const & suffix)
+    {
+        return str.find(suffix, str.size() - suffix.size()) != std::string::npos;
+    }
+
     inline std::string ToLower(std::string const & str)
     {
         std::string lstr = str;
@@ -471,6 +476,19 @@ namespace Utils
         ss << std::put_time(std::localtime(&now_c), "%Y%m%d_%H%M%S");
 
         return ss.str();
+    }
+
+    inline std::string ExtractFilenameStem(std::string const & str)
+    {
+        auto const pos = str.rfind('.');
+        if (pos == std::string::npos)
+        {
+            return str;
+        }
+        else
+        {
+            return str.substr(0, pos);
+        }
     }
 
     ////////////////////////////////////////////////////////
