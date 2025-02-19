@@ -4,6 +4,7 @@
 #
 
 set  (SHIP_TOOLS_SOURCES
+	AndroidTextureDatabases.h
 	Baker.h
 	Main.cpp
 )

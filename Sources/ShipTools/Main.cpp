@@ -4,6 +4,7 @@
  * Copyright:			Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
  ***************************************************************************************/
 
+#include "AndroidTextureDatabases.h"
 #include "Baker.h"
 
 #include <Render/GameTextureDatabases.h>
@@ -141,6 +142,13 @@ int DoBakeAtlas(int argc, char ** argv)
             outputDirectoryPath,
             options);
     }
+    else if (Utils::CaseInsensitiveEquals(databaseName, "androidui"))
+    {
+        atlasData = Baker::BakeAtlas<AndroidTextureDatabases::UITextureDatabase>(
+            texturesRootDirectoryPath,
+            outputDirectoryPath,
+            options);
+    }
     else
     {
         throw std::runtime_error("Unrecognized database name '" + databaseName + "'");
@@ -156,5 +164,5 @@ void PrintUsage()
 {
     std::cout << std::endl;
     std::cout << "Usage:" << std::endl;
-    std::cout << " bake_atlas Cloud|Explosion|NPC <textures_root_dir> <out_dir> [[-a] [-b] [-m] [-d] [-r] | -o <options_json>]" << std::endl;
+    std::cout << " bake_atlas Cloud|Explosion|NPC|AndroidUI <textures_root_dir> <out_dir> [[-a] [-b] [-m] [-d] [-r] | -o <options_json>]" << std::endl;
 }
