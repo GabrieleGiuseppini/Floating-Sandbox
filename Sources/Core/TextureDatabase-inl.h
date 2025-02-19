@@ -126,7 +126,7 @@ TextureDatabase<TTextureDatabase> TextureDatabase<TTextureDatabase>::Load(IAsset
         TTextureGroups group = TTextureDatabase::StrToTextureGroup(groupName);
 
         // Load group-wide defaults
-        std::optional<float> groupWorldScaling = Utils::GetOptionalJsonMember<float>(groupJson, "worldScaling");
+        float groupWorldScaling = Utils::GetOptionalJsonMember<float>(groupJson, "worldScaling", 1.0f); // We default to 1.0
         std::optional<float> groupWorldWidth = Utils::GetOptionalJsonMember<float>(groupJson, "worldWidth");
         std::optional<float> groupWorldHeight = Utils::GetOptionalJsonMember<float>(groupJson, "worldHeight");
         bool groupHasOwnAmbientLight = Utils::GetOptionalJsonMember<bool>(groupJson, "hasOwnAmbientLight", false);
@@ -242,14 +242,10 @@ TextureDatabase<TTextureDatabase> TextureDatabase<TTextureDatabase>::Load(IAsset
                         worldWidth = *groupWorldWidth;
                         worldHeight = *groupWorldHeight;
                     }
-                    else if (groupWorldScaling)
-                    {
-                        worldWidth = static_cast<float>(textureSize.width) * (*groupWorldScaling);
-                        worldHeight = static_cast<float>(textureSize.height) * (*groupWorldScaling);
-                    }
                     else
                     {
-                        throw GameException("Texture database: cannot find world dimensions for frame \"" + frameDescriptor.Name + "\"");
+                        worldWidth = static_cast<float>(textureSize.width) * groupWorldScaling;
+                        worldHeight = static_cast<float>(textureSize.height) * groupWorldScaling;
                     }
 
                     bool hasOwnAmbientLight = frameHasOwnAmbientLight.has_value() ? *frameHasOwnAmbientLight : groupHasOwnAmbientLight;
