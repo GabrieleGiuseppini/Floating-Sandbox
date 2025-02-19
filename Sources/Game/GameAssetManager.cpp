@@ -73,7 +73,7 @@ std::vector<IAssetManager::AssetDescriptor> GameAssetManager::EnumerateTextureDa
             }
             else if (entryIt.path().extension().string() != ".txt") // txt allowed
             {
-                LogMessage("WARNING: found file \"" + entryIt.path().string() + "\" with unexpected extension while loading a texture database");
+                LogMessage("WARNING: found file \"" + entryIt.path().string() + "\" with unexpected extension while loading texture database \"" + databaseName + "\"");
             }
         }
     }
@@ -133,7 +133,7 @@ std::vector<IAssetManager::AssetDescriptor> GameAssetManager::EnumerateShaders(s
             }
             else
             {
-                LogMessage("WARNING: found file \"" + entryIt.path().string() + "\" with unexpected extension while loading shaders");
+                LogMessage("WARNING: found file \"" + entryIt.path().string() + "\" with unexpected extension while loading shader set \"" + shaderSetName + "\"");
             }
         }
     }
