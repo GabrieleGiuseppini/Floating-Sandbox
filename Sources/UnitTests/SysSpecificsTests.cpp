@@ -45,9 +45,9 @@ TEST(SysSpecificsTests, AlignedAllocation_FromStdLib)
 TEST(SysSpecificsTests, AlignedAllocation_PoorMans)
 {
     std::vector<void *> ptrs;
-    for (int t = 0; t < 10; ++t)
+    for (int t = 0; t < 20; ++t)
     {
-        void * bufPtr1 = _poor_mans_alloc_aligned_to_vectorization_word(16000 * sizeof(float));
+        void * bufPtr1 = _poor_mans_alloc_aligned_to_vectorization_word((16000 + t) * sizeof(float) + t);
         EXPECT_TRUE(is_aligned_to_vectorization_word(bufPtr1));
 
         ptrs.push_back(bufPtr1);

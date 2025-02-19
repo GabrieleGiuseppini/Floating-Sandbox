@@ -247,22 +247,43 @@ inline void * _poor_mans_alloc_aligned_to_vectorization_word(size_t byte_size)
     // We store the original pointer in the word immediately preceding the calculated beginning
     // of the buffer
 
+    //
+    // 1. Align size
+    //
+
     size_t const enhanced_byte_size = byte_size + sizeof(intptr_t);
 
-    // Calculate extra bytes needed for alignment
-    size_t extra_bytes_for_alignment = 0;
+    // Calculate extra bytes needed for size alignment
+    size_t extra_bytes_for_size_alignment = 0;
     if ((enhanced_byte_size % vectorization_byte_count<size_t>) != 0)
     {
-        extra_bytes_for_alignment = vectorization_byte_count<size_t> -(enhanced_byte_size % vectorization_byte_count<size_t>);
+        extra_bytes_for_size_alignment = vectorization_byte_count<size_t> - (enhanced_byte_size % vectorization_byte_count<size_t>);
     }
 
-    void * ptr = malloc(enhanced_byte_size + extra_bytes_for_alignment);
+    size_t const aligned_size = enhanced_byte_size + extra_bytes_for_size_alignment;
+
+    //
+    // 2. Align pointer
+
+    void * ptr = malloc(aligned_size + vectorization_byte_count<size_t> - 1); // Worst case scenario, enough fluff to allow for alignment
     assert(ptr != nullptr);
 
-    std::uint8_t * ptr_aligned = reinterpret_cast<std::uint8_t *>(ptr) + extra_bytes_for_alignment;
-    *(reinterpret_cast<intptr_t *>(ptr_aligned)) = reinterpret_cast<intptr_t>(ptr);
+    // Calculate extra bytes needed for return pointer alignment
+    intptr_t extra_bytes_for_alignment = 0;
+    intptr_t ptr_integral = reinterpret_cast<intptr_t>(ptr);
+    intptr_t ptr_integral_including_free_pointer = ptr_integral + static_cast<intptr_t>(sizeof(intptr_t));
+    if ((ptr_integral_including_free_pointer % vectorization_byte_count<intptr_t>) != 0)
+    {
+        extra_bytes_for_alignment += vectorization_byte_count<intptr_t> - (ptr_integral_including_free_pointer % vectorization_byte_count<intptr_t>);
+    }
 
-    void * const return_ptr = reinterpret_cast<void *>(ptr_aligned + sizeof(intptr_t));
+    // Store free pointer
+    std::uint8_t * ptr_aligned_before_free_pointer = reinterpret_cast<std::uint8_t *>(ptr) + extra_bytes_for_alignment;
+    *(reinterpret_cast<intptr_t *>(ptr_aligned_before_free_pointer)) = reinterpret_cast<intptr_t>(ptr);
+
+    // Skip free pointer
+    void * const return_ptr = reinterpret_cast<void *>(ptr_aligned_before_free_pointer + sizeof(intptr_t));
+
     assert(is_aligned_to_vectorization_word(return_ptr));
     return return_ptr;
 }
@@ -299,11 +320,16 @@ inline void * alloc_aligned_to_vectorization_word(size_t byte_size)
         ? byte_size
         : byte_size + vectorization_byte_count<size_t> - (byte_size % vectorization_byte_count<size_t>);
 
+    void * ptr;
 #ifdef _MSC_VER
-    return _aligned_malloc(aligned_byte_size, vectorization_byte_count<size_t>);
+    ptr = _aligned_malloc(aligned_byte_size, vectorization_byte_count<size_t>);
 #else
-    return aligned_alloc(vectorization_byte_count<size_t>, aligned_byte_size);
+    ptr = aligned_alloc(vectorization_byte_count<size_t>, aligned_byte_size);
 #endif
+
+    assert(is_aligned_to_vectorization_word(ptr));
+
+    return ptr;
 
 #endif
 }
