@@ -95,8 +95,8 @@ void TextureAtlasFrameMetadata<TTextureDatabase>::Serialize(picojson::object & r
     picojson::object textureCoordinates;
     textureCoordinates["left"] = picojson::value(static_cast<double>(TextureCoordinatesBottomLeft.x));
     textureCoordinates["bottom"] = picojson::value(static_cast<double>(TextureCoordinatesBottomLeft.y));
-    textureCoordinates["anchorCenterX"] = picojson::value(static_cast<double>(TextureCoordinatesAnchorCenter.x));
-    textureCoordinates["anchorCenterY"] = picojson::value(static_cast<double>(TextureCoordinatesAnchorCenter.y));
+    textureCoordinates["anchor_center_x"] = picojson::value(static_cast<double>(TextureCoordinatesAnchorCenter.x));
+    textureCoordinates["anchor_center_y"] = picojson::value(static_cast<double>(TextureCoordinatesAnchorCenter.y));
     textureCoordinates["right"] = picojson::value(static_cast<double>(TextureCoordinatesTopRight.x));
     textureCoordinates["top"] = picojson::value(static_cast<double>(TextureCoordinatesTopRight.y));
     root["texture_coordinates"] = picojson::value(std::move(textureCoordinates));
@@ -123,8 +123,8 @@ TextureAtlasFrameMetadata<TTextureDatabase> TextureAtlasFrameMetadata<TTextureDa
         static_cast<float>(textureCoordinatesJson.at("left").get<double>()),
         static_cast<float>(textureCoordinatesJson.at("bottom").get<double>()));
     vec2f textureCoordinatesAnchorCenter(
-        static_cast<float>(textureCoordinatesJson.at("anchorCenterX").get<double>()),
-        static_cast<float>(textureCoordinatesJson.at("anchorCenterY").get<double>()));
+        static_cast<float>(textureCoordinatesJson.at("anchor_center_x").get<double>()),
+        static_cast<float>(textureCoordinatesJson.at("anchor_center_y").get<double>()));
     vec2f textureCoordinatesTopRight(
         static_cast<float>(textureCoordinatesJson.at("right").get<double>()),
         static_cast<float>(textureCoordinatesJson.at("top").get<double>()));
@@ -255,7 +255,9 @@ typename TextureAtlasBuilder<TTextureDatabase>::AtlasSpecification TextureAtlasB
         [](TextureInfo const & a, TextureInfo const & b)
         {
             return a.InAtlasSize.height > b.InAtlasSize.height
-                || (a.InAtlasSize.height == b.InAtlasSize.height && a.InAtlasSize.width > b.InAtlasSize.width);
+                || (a.InAtlasSize.height == b.InAtlasSize.height && a.InAtlasSize.width > b.InAtlasSize.width)
+                // Achieve determinism
+                || (a.InAtlasSize.height == b.InAtlasSize.height && a.InAtlasSize.width == b.InAtlasSize.width && a.FrameId > b.FrameId);
         });
 
     //

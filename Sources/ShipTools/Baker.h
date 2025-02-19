@@ -31,11 +31,11 @@ public:
         {
             picojson::object rootJsonObject = Utils::GetJsonValueAsObject(Utils::ParseJSONString(FileTextReadStream(optionsJsonFilePath).ReadAll()), "root");
 
-            bool alphaPreMultiply = Utils::GetMandatoryJsonMember<bool>(rootJsonObject, "alphaPreMultiply");
-            bool mipMappable = Utils::GetMandatoryJsonMember<bool>(rootJsonObject, "mipMappable");
-            bool binaryTransparencySmoothing = Utils::GetMandatoryJsonMember<bool>(rootJsonObject, "binaryTransparencySmoothing");
+            bool alphaPreMultiply = Utils::GetMandatoryJsonMember<bool>(rootJsonObject, "alpha_pre_multiply");
+            bool mipMappable = Utils::GetMandatoryJsonMember<bool>(rootJsonObject, "mip_mappable");
+            bool binaryTransparencySmoothing = Utils::GetMandatoryJsonMember<bool>(rootJsonObject, "binary_transparency_smoothing");
             bool regular = Utils::GetMandatoryJsonMember<bool>(rootJsonObject, "regular");
-            bool suppressDuplicates = Utils::GetMandatoryJsonMember<bool>(rootJsonObject, "suppressDuplicates");
+            bool suppressDuplicates = Utils::GetMandatoryJsonMember<bool>(rootJsonObject, "suppress_duplicates");
 
             return AtlasBakingOptions({
                 alphaPreMultiply,

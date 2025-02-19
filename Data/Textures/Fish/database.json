@@ -1,31 +1,31 @@
 [
 
 {
-	"groupName": "Fish",
-	"worldScaling": 1.0,
+	"group_name": "Fish",
+	"world_scaling": 1.0,
 	"frames":[
 		{				
-			"frameNamePattern": "gilthead_bream_\\d+"
+			"frame_name_pattern": "gilthead_bream_\\d+"
 		}
 		,
 		{	
-			"frameNamePattern": "barracuda_\\d+"
+			"frame_name_pattern": "barracuda_\\d+"
 		}
 		,
 		{	
-			"frameNamePattern": "mako_\\d+"
+			"frame_name_pattern": "mako_\\d+"
 		}
 		,
 		{	
-			"frameNamePattern": "queen_snapper_\\d+"
+			"frame_name_pattern": "queen_snapper_\\d+"
 		}
 		,
 		{	
-			"frameNamePattern": "tuna_\\d+"
+			"frame_name_pattern": "tuna_\\d+"
 		}
 		,
 		{	
-			"frameNamePattern": "deepsea_angler_\\d+"
+			"frame_name_pattern": "deepsea_angler_\\d+"
 		}
 	]
 }

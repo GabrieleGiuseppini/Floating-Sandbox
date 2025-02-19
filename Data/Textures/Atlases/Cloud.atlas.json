@@ -10,11 +10,11 @@
           "x": 0.25999999046325684,
           "y": 0.13279999792575836
         },
-        "displayName": "cloud_0",
-        "frameName": "cloud_0",
+        "display_name": "cloud_0",
+        "frame_name": "cloud_0",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 0,
+          "frame_index": 0,
           "group": 0
         },
         "size": {
@@ -31,8 +31,8 @@
         "left": 0
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.158935546875,
-        "anchorCenterY": 0.457275390625,
+        "anchor_center_x": 0.158935546875,
+        "anchor_center_y": 0.457275390625,
         "bottom": 0.376220703125,
         "left": 0.000244140625,
         "right": 0.317138671875,
@@ -53,11 +53,11 @@
           "x": 0.32399997115135193,
           "y": 0.12559999525547028
         },
-        "displayName": "cloud_1",
-        "frameName": "cloud_1",
+        "display_name": "cloud_1",
+        "frame_name": "cloud_1",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 1,
+          "frame_index": 1,
           "group": 0
         },
         "size": {
@@ -74,8 +74,8 @@
         "left": 0
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.197998046875,
-        "anchorCenterY": 0.770751953125,
+        "anchor_center_x": 0.197998046875,
+        "anchor_center_y": 0.770751953125,
         "bottom": 0.694091796875,
         "left": 0.000244140625,
         "right": 0.395751953125,
@@ -96,11 +96,11 @@
           "x": 0.34639999270439148,
           "y": 0.14399999380111694
         },
-        "displayName": "cloud_2",
-        "frameName": "cloud_2",
+        "display_name": "cloud_2",
+        "frame_name": "cloud_2",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 2,
+          "frame_index": 2,
           "group": 0
         },
         "size": {
@@ -117,8 +117,8 @@
         "left": 0
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.211669921875,
-        "anchorCenterY": 0.288330078125,
+        "anchor_center_x": 0.211669921875,
+        "anchor_center_y": 0.288330078125,
         "bottom": 0.200439453125,
         "left": 0.000244140625,
         "right": 0.423095703125,
@@ -139,11 +139,11 @@
           "x": 0.18320000171661377,
           "y": 0.14399999380111694
         },
-        "displayName": "cloud_3",
-        "frameName": "cloud_3",
+        "display_name": "cloud_3",
+        "frame_name": "cloud_3",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 3,
+          "frame_index": 3,
           "group": 0
         },
         "size": {
@@ -160,8 +160,8 @@
         "left": 719
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.463134765625,
-        "anchorCenterY": 0.087646484375,
+        "anchor_center_x": 0.463134765625,
+        "anchor_center_y": 0.087646484375,
         "bottom": 0.000244140625,
         "left": 0.351318359375,
         "right": 0.574462890625,
@@ -182,11 +182,11 @@
           "x": 0.31039997935295105,
           "y": 0.14000000059604645
         },
-        "displayName": "cloud_4",
-        "frameName": "cloud_4",
+        "display_name": "cloud_4",
+        "frame_name": "cloud_4",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 4,
+          "frame_index": 4,
           "group": 0
         },
         "size": {
@@ -203,8 +203,8 @@
         "left": 1177
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.764404296875,
-        "anchorCenterY": 0.085693359375,
+        "anchor_center_x": 0.764404296875,
+        "anchor_center_y": 0.085693359375,
         "bottom": 0.000244140625,
         "left": 0.574951171875,
         "right": 0.953369140625,
@@ -225,11 +225,11 @@
           "x": 0.28719997406005859,
           "y": 0.16399998962879181
         },
-        "displayName": "cloud_5",
-        "frameName": "cloud_5",
+        "display_name": "cloud_5",
+        "frame_name": "cloud_5",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 5,
+          "frame_index": 5,
           "group": 0
         },
         "size": {
@@ -246,8 +246,8 @@
         "left": 0
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.175537109375,
-        "anchorCenterY": 0.100341796875,
+        "anchor_center_x": 0.175537109375,
+        "anchor_center_y": 0.100341796875,
         "bottom": 0.000244140625,
         "left": 0.000244140625,
         "right": 0.350830078125,
@@ -268,11 +268,11 @@
           "x": 0.28880000114440918,
           "y": 0.13680000603199005
         },
-        "displayName": "cloud_6",
-        "frameName": "cloud_6",
+        "display_name": "cloud_6",
+        "frame_name": "cloud_6",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 6,
+          "frame_index": 6,
           "group": 0
         },
         "size": {
@@ -289,8 +289,8 @@
         "left": 867
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.599853515625,
-        "anchorCenterY": 0.283447265625,
+        "anchor_center_x": 0.599853515625,
+        "anchor_center_y": 0.283447265625,
         "bottom": 0.200439453125,
         "left": 0.423583984375,
         "right": 0.775634765625,
@@ -311,11 +311,11 @@
           "x": 0.33919999003410339,
           "y": 0.098399996757507324
         },
-        "displayName": "cloud_7",
-        "frameName": "cloud_7",
+        "display_name": "cloud_7",
+        "frame_name": "cloud_7",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 7,
+          "frame_index": 7,
           "group": 0
         },
         "size": {
@@ -332,8 +332,8 @@
         "left": 811
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.603271484375,
-        "anchorCenterY": 0.754150390625,
+        "anchor_center_x": 0.603271484375,
+        "anchor_center_y": 0.754150390625,
         "bottom": 0.694091796875,
         "left": 0.396240234375,
         "right": 0.809814453125,
@@ -354,11 +354,11 @@
           "x": 0.30879998207092285,
           "y": 0.12800000607967377
         },
-        "displayName": "cloud_8",
-        "frameName": "cloud_8",
+        "display_name": "cloud_8",
+        "frame_name": "cloud_8",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 8,
+          "frame_index": 8,
           "group": 0
         },
         "size": {
@@ -375,8 +375,8 @@
         "left": 650
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.506103515625,
-        "anchorCenterY": 0.453857421875,
+        "anchor_center_x": 0.506103515625,
+        "anchor_center_y": 0.453857421875,
         "bottom": 0.376220703125,
         "left": 0.317626953125,
         "right": 0.694091796875,
@@ -397,11 +397,11 @@
           "x": 0.31279999017715454,
           "y": 0.12719999253749847
         },
-        "displayName": "cloud_9",
-        "frameName": "cloud_9",
+        "display_name": "cloud_9",
+        "frame_name": "cloud_9",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 9,
+          "frame_index": 9,
           "group": 0
         },
         "size": {
@@ -418,8 +418,8 @@
         "left": 754
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.559326171875,
-        "anchorCenterY": 0.615478515625,
+        "anchor_center_x": 0.559326171875,
+        "anchor_center_y": 0.615478515625,
         "bottom": 0.538330078125,
         "left": 0.368408203125,
         "right": 0.749755859375,
@@ -440,11 +440,11 @@
           "x": 0.17679998278617859,
           "y": 0.11919999867677689
         },
-        "displayName": "cloud_10",
-        "frameName": "cloud_10",
+        "display_name": "cloud_10",
+        "frame_name": "cloud_10",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 10,
+          "frame_index": 10,
           "group": 0
         },
         "size": {
@@ -461,8 +461,8 @@
         "left": 1589
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.884033203125,
-        "anchorCenterY": 0.273193359375,
+        "anchor_center_x": 0.884033203125,
+        "anchor_center_y": 0.273193359375,
         "bottom": 0.200439453125,
         "left": 0.776123046875,
         "right": 0.991943359375,
@@ -483,11 +483,11 @@
           "x": 0.24320000410079956,
           "y": 0.11599999666213989
         },
-        "displayName": "cloud_11",
-        "frameName": "cloud_11",
+        "display_name": "cloud_11",
+        "frame_name": "cloud_11",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 11,
+          "frame_index": 11,
           "group": 0
         },
         "size": {
@@ -504,8 +504,8 @@
         "left": 1422
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.843017578125,
-        "anchorCenterY": 0.447021484375,
+        "anchor_center_x": 0.843017578125,
+        "anchor_center_y": 0.447021484375,
         "bottom": 0.376220703125,
         "left": 0.694580078125,
         "right": 0.990966796875,
@@ -526,11 +526,11 @@
           "x": 0.30159997940063477,
           "y": 0.12800000607967377
         },
-        "displayName": "cloud_12",
-        "frameName": "cloud_12",
+        "display_name": "cloud_12",
+        "frame_name": "cloud_12",
         "has_own_ambient_light": false,
         "id": {
-          "frameIndex": 12,
+          "frame_index": 12,
           "group": 0
         },
         "size": {
@@ -547,8 +547,8 @@
         "left": 0
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.184326171875,
-        "anchorCenterY": 0.615966796875,
+        "anchor_center_x": 0.184326171875,
+        "anchor_center_y": 0.615966796875,
         "bottom": 0.538330078125,
         "left": 0.000244140625,
         "right": 0.367919921875,

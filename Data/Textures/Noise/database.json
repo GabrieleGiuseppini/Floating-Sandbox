@@ -1,13 +1,13 @@
 [
 
 {
-	"groupName": "Noise",
-	"hasOwnAmbientLight": false,
+	"group_name": "Noise",
+	"has_own_ambient_light": false,
 	"frames":[
 		{	
-			"worldWidth": 1.0,
-			"worldHeight": 1.0,
-			"frameNamePattern": "noise_.*"
+			"world_width": 1.0,
+			"world_height": 1.0,
+			"frame_name_pattern": "noise_.*"
 		}
 	]
 }

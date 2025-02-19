@@ -1,86 +1,86 @@
 [
 
 {
-	"groupName": "AutoFocusNotification",
-	"hasOwnAmbientLight": false,
+	"group_name": "AutoFocusNotification",
+	"has_own_ambient_light": false,
 	"frames":[
 		{	
-			"worldWidth": 1.0,
-			"worldHeight": 1.0,
-			"frameNamePattern": "autofocus_notification_\\d+"
+			"world_width": 1.0,
+			"world_height": 1.0,
+			"frame_name_pattern": "autofocus_notification_\\d+"
 		}
 	]
 },
 
 {
-	"groupName": "DaylightCycleNotification",
-	"hasOwnAmbientLight": false,
+	"group_name": "DaylightCycleNotification",
+	"has_own_ambient_light": false,
 	"frames":[
 		{	
-			"worldWidth": 1.0,
-			"worldHeight": 1.0,
-			"frameNamePattern": "daylight_cycle_notification_\\d+"
+			"world_width": 1.0,
+			"world_height": 1.0,
+			"frame_name_pattern": "daylight_cycle_notification_\\d+"
 		}
 	]
 },
 
 {
-	"groupName": "Fire",
-	"hasOwnAmbientLight": false,
+	"group_name": "Fire",
+	"has_own_ambient_light": false,
 	"frames":[
 		{	
-			"worldWidth": 1.0,
-			"worldHeight": 1.0,
-			"frameNamePattern": "fire_\\d+"
+			"world_width": 1.0,
+			"world_height": 1.0,
+			"frame_name_pattern": "fire_\\d+"
 		}
 	]
 },
 
 {
-	"groupName": "PhysicsProbePanel",
-	"hasOwnAmbientLight": true,
+	"group_name": "PhysicsProbePanel",
+	"has_own_ambient_light": true,
 	"frames":[
 		{	
-			"worldWidth": 1.0,
-			"worldHeight": 1.0,
-			"frameNamePattern": "physics_probe_panel_\\d+"
+			"world_width": 1.0,
+			"world_height": 1.0,
+			"frame_name_pattern": "physics_probe_panel_\\d+"
 		}
 	]
 },
 
 {
-	"groupName": "ShiftNotification",
-	"hasOwnAmbientLight": true,
+	"group_name": "ShiftNotification",
+	"has_own_ambient_light": true,
 	"frames":[
 		{	
-			"worldWidth": 1.0,
-			"worldHeight": 1.0,
-			"frameNamePattern": "shift_notification_\\d+"
+			"world_width": 1.0,
+			"world_height": 1.0,
+			"frame_name_pattern": "shift_notification_\\d+"
 		}
 	]
 },
 
 
 {
-	"groupName": "SoundMuteNotification",
-	"hasOwnAmbientLight": true,
+	"group_name": "SoundMuteNotification",
+	"has_own_ambient_light": true,
 	"frames":[
 		{	
-			"worldWidth": 1.0,
-			"worldHeight": 1.0,
-			"frameNamePattern": "sound_mute_notification_\\d+"
+			"world_width": 1.0,
+			"world_height": 1.0,
+			"frame_name_pattern": "sound_mute_notification_\\d+"
 		}
 	]
 },
 
 {
-	"groupName": "UVModeNotification",
-	"hasOwnAmbientLight": true,
+	"group_name": "UVModeNotification",
+	"has_own_ambient_light": true,
 	"frames":[
 		{	
-			"worldWidth": 1.0,
-			"worldHeight": 1.0,
-			"frameNamePattern": "uv_mode_notification_\\d+"
+			"world_width": 1.0,
+			"world_height": 1.0,
+			"frame_name_pattern": "uv_mode_notification_\\d+"
 		}
 	]
 }

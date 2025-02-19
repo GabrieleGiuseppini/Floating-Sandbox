@@ -1,20 +1,20 @@
 [
 
 {
-	"groupName": "WaterlineMarker",
-	"hasOwnAmbientLight": false,
+	"group_name": "WaterlineMarker",
+	"has_own_ambient_light": false,
 	"frames":[
 		{	
-			"worldHeight": 6.0,
-			"anchorOffsetX": 0,
-			"anchorOffsetY": 45,
-			"frameNamePattern": "center_of_buoyancy_0"
+			"world_height": 6.0,
+			"anchor_offset_x": 0,
+			"anchor_offset_y": 45,
+			"frame_name_pattern": "center_of_buoyancy_0"
 		},
 		{	
-			"worldHeight": 6.0,
-			"anchorOffsetX": 0,
-			"anchorOffsetY": 45,
-			"frameNamePattern": "center_of_mass_1"
+			"world_height": 6.0,
+			"anchor_offset_x": 0,
+			"anchor_offset_y": 45,
+			"frame_name_pattern": "center_of_mass_1"
 		}
 	]
 }

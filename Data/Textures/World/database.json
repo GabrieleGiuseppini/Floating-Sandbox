@@ -1,182 +1,182 @@
 [
 
 {
-	"groupName": "Land",
-	"hasOwnAmbientLight": false,
-	"autoAssignFrameIndices": true,
+	"group_name": "Land",
+	"has_own_ambient_light": false,
+	"auto_assign_frame_indices": true,
 	"frames":[
 		{
-			"worldWidth": 128.0,
-			"worldHeight": 128.0,
-			"frameNamePattern": "land_0",
-			"displayName": "Sand"
+			"world_width": 128.0,
+			"world_height": 128.0,
+			"frame_name_pattern": "land_0",
+			"display_name": "Sand"
 		},
 		{
-			"worldWidth": 128.0,
-			"worldHeight": 128.0,
-			"frameNamePattern": "land_1",
-			"displayName": "Rock Coarse 1"
+			"world_width": 128.0,
+			"world_height": 128.0,
+			"frame_name_pattern": "land_1",
+			"display_name": "Rock Coarse 1"
 		},
 		{
-			"worldWidth": 100.0,
-			"worldHeight": 100.0,
-			"frameNamePattern": "land_2",
-			"displayName": "Rock Coarse 2"
+			"world_width": 100.0,
+			"world_height": 100.0,
+			"frame_name_pattern": "land_2",
+			"display_name": "Rock Coarse 2"
 		},
 		{
-			"worldWidth": 100.0,
-			"worldHeight": 100.0,
-			"frameNamePattern": "land_3",
-			"displayName": "Rock Coarse 3"
+			"world_width": 100.0,
+			"world_height": 100.0,
+			"frame_name_pattern": "land_3",
+			"display_name": "Rock Coarse 3"
 		},
 		{
-			"worldWidth": 100.0,
-			"worldHeight": 100.0,
-			"frameNamePattern": "land_4",
-			"displayName": "Rock Coarse 4"
+			"world_width": 100.0,
+			"world_height": 100.0,
+			"frame_name_pattern": "land_4",
+			"display_name": "Rock Coarse 4"
 		},
 		{
-			"worldWidth": 100.0,
-			"worldHeight": 100.0,
-			"frameNamePattern": "land_5",
-			"displayName": "Rock Coarse 5"
+			"world_width": 100.0,
+			"world_height": 100.0,
+			"frame_name_pattern": "land_5",
+			"display_name": "Rock Coarse 5"
 		},
 		{
-			"worldWidth": 100.0,
-			"worldHeight": 100.0,
-			"frameNamePattern": "land_6",
-			"displayName": "Rock Coarse 6"
+			"world_width": 100.0,
+			"world_height": 100.0,
+			"frame_name_pattern": "land_6",
+			"display_name": "Rock Coarse 6"
 		},
 		{
-			"worldWidth": 100.0,
-			"worldHeight": 100.0,
-			"frameNamePattern": "land_7",
-			"displayName": "Rock Fine 1"
+			"world_width": 100.0,
+			"world_height": 100.0,
+			"frame_name_pattern": "land_7",
+			"display_name": "Rock Fine 1"
 		},
 		{
-			"worldWidth": 128.0,
-			"worldHeight": 128.0,
-			"frameNamePattern": "land_8",
-			"displayName": "Rock Fine 2"
+			"world_width": 128.0,
+			"world_height": 128.0,
+			"frame_name_pattern": "land_8",
+			"display_name": "Rock Fine 2"
 		},
 		{
-			"worldWidth": 100.0,
-			"worldHeight": 100.0,
-			"frameNamePattern": "land_9",
-			"displayName": "Rock Fine 3"
+			"world_width": 100.0,
+			"world_height": 100.0,
+			"frame_name_pattern": "land_9",
+			"display_name": "Rock Fine 3"
 		},
 		{
-			"worldWidth": 100.0,
-			"worldHeight": 100.0,
-			"frameNamePattern": "land_10",
-			"displayName": "Rock Fine 4"
+			"world_width": 100.0,
+			"world_height": 100.0,
+			"frame_name_pattern": "land_10",
+			"display_name": "Rock Fine 4"
 		},
 		{
-			"worldWidth": 100.0,
-			"worldHeight": 100.0,
-			"frameNamePattern": "land_11",
-			"displayName": "Stratified"
+			"world_width": 100.0,
+			"world_height": 100.0,
+			"frame_name_pattern": "land_11",
+			"display_name": "Stratified"
 		}
 	]
 },
 
 {
-	"groupName": "Ocean",
-	"hasOwnAmbientLight": false,
-	"autoAssignFrameIndices": true,
+	"group_name": "Ocean",
+	"has_own_ambient_light": false,
+	"auto_assign_frame_indices": true,
 	"frames":[
 
 		{	
-			"worldWidth": 64.0,
-			"worldHeight": 32.0,
-			"frameNamePattern": "ocean_caribbean_0",
-			"displayName": "Wavy Clear Thin"
+			"world_width": 64.0,
+			"world_height": 32.0,
+			"frame_name_pattern": "ocean_caribbean_0",
+			"display_name": "Wavy Clear Thin"
 		},
 		{	
-			"worldWidth": 64.0,
-			"worldHeight": 32.0,
-			"frameNamePattern": "ocean_0",
-			"displayName": "Wavy Thin"
-		},
-
-		{	
-			"worldWidth": 64.0,
-			"worldHeight": 64.0,
-			"frameNamePattern": "ocean_caribbean_0",
-			"displayName": "Wavy Clear Wide"
-		},
-		{	
-			"worldWidth": 64.0,
-			"worldHeight": 64.0,
-			"frameNamePattern": "ocean_0",
-			"displayName": "Wavy Wide"
+			"world_width": 64.0,
+			"world_height": 32.0,
+			"frame_name_pattern": "ocean_0",
+			"display_name": "Wavy Thin"
 		},
 
 		{	
-			"worldWidth": 25.0,
-			"worldHeight": 25.0,
-			"frameNamePattern": "ocean_caribbean_1",
-			"displayName": "Crystalline Clear"
+			"world_width": 64.0,
+			"world_height": 64.0,
+			"frame_name_pattern": "ocean_caribbean_0",
+			"display_name": "Wavy Clear Wide"
 		},
 		{	
-			"worldWidth": 25.0,
-			"worldHeight": 25.0,
-			"frameNamePattern": "ocean_1",
-			"displayName": "Crystalline"
-		},
-
-		{	
-			"worldWidth": 100.0,
-			"worldHeight": 100.0,
-			"frameNamePattern": "ocean_caribbean_2",
-			"displayName": "Murky Clear"
-		},
-		{	
-			"worldWidth": 100.0,
-			"worldHeight": 100.0,
-			"frameNamePattern": "ocean_2",
-			"displayName": "Murky"
+			"world_width": 64.0,
+			"world_height": 64.0,
+			"frame_name_pattern": "ocean_0",
+			"display_name": "Wavy Wide"
 		},
 
 		{	
-			"worldWidth": 100.0,
-			"worldHeight": 100.0,
-			"frameNamePattern": "ocean_caribbean_3",
-			"displayName": "Crisp Clear"
+			"world_width": 25.0,
+			"world_height": 25.0,
+			"frame_name_pattern": "ocean_caribbean_1",
+			"display_name": "Crystalline Clear"
 		},
 		{	
-			"worldWidth": 100.0,
-			"worldHeight": 100.0,
-			"frameNamePattern": "ocean_3",
-			"displayName": "Crisp"
-		},
-
-		{	
-			"worldWidth": 32.0,
-			"worldHeight": 32.0,
-			"frameNamePattern": "ocean_caribbean_4",
-			"displayName": "Crystalline Cyan"
+			"world_width": 25.0,
+			"world_height": 25.0,
+			"frame_name_pattern": "ocean_1",
+			"display_name": "Crystalline"
 		},
 
 		{	
-			"worldWidth": 64.0,
-			"worldHeight": 32.0,
-			"frameNamePattern": "ocean_caribbean_4",
-			"displayName": "Cyan Thin"
+			"world_width": 100.0,
+			"world_height": 100.0,
+			"frame_name_pattern": "ocean_caribbean_2",
+			"display_name": "Murky Clear"
+		},
+		{	
+			"world_width": 100.0,
+			"world_height": 100.0,
+			"frame_name_pattern": "ocean_2",
+			"display_name": "Murky"
 		},
 
 		{	
-			"worldWidth": 150.0,
-			"worldHeight": 150.0,
-			"frameNamePattern": "ocean_lava_0",
-			"displayName": "Hot Lava"
+			"world_width": 100.0,
+			"world_height": 100.0,
+			"frame_name_pattern": "ocean_caribbean_3",
+			"display_name": "Crisp Clear"
+		},
+		{	
+			"world_width": 100.0,
+			"world_height": 100.0,
+			"frame_name_pattern": "ocean_3",
+			"display_name": "Crisp"
 		},
 
 		{	
-			"worldWidth": 150.0,
-			"worldHeight": 150.0,
-			"frameNamePattern": "ocean_lava_1",
-			"displayName": "Warm Lava"
+			"world_width": 32.0,
+			"world_height": 32.0,
+			"frame_name_pattern": "ocean_caribbean_4",
+			"display_name": "Crystalline Cyan"
+		},
+
+		{	
+			"world_width": 64.0,
+			"world_height": 32.0,
+			"frame_name_pattern": "ocean_caribbean_4",
+			"display_name": "Cyan Thin"
+		},
+
+		{	
+			"world_width": 150.0,
+			"world_height": 150.0,
+			"frame_name_pattern": "ocean_lava_0",
+			"display_name": "Hot Lava"
+		},
+
+		{	
+			"world_width": 150.0,
+			"world_height": 150.0,
+			"frame_name_pattern": "ocean_lava_1",
+			"display_name": "Warm Lava"
 		}
 	]
 }

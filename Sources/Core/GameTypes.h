@@ -355,6 +355,8 @@ struct PickedNpc
 // Geometry
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
+using ProjectionMatrix = float[4][4];
+
 /*
  * Octants, i.e. the direction of a spring connecting two neighbors.
  *
@@ -1669,10 +1671,20 @@ struct TextureFrameId
             && this->FrameIndex == other.FrameIndex;
     }
 
+    inline bool operator!=(TextureFrameId const & other) const
+    {
+        return !(*this == other);
+    }
+
     inline bool operator<(TextureFrameId const & other) const
     {
         return this->Group < other.Group
             || (this->Group == other.Group && this->FrameIndex < other.FrameIndex);
+    }
+
+    inline bool operator>(TextureFrameId const & other) const
+    {
+        return (*this != other) && !(*this < other);
     }
 
     std::string ToString() const

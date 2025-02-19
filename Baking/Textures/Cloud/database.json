@@ -1,13 +1,13 @@
 [
 
 {
-	"groupName": "Cloud",
+	"group_name": "Cloud",
 	"comment": "World sizes are in NDC coordinates and are calculated as image sizes divided by 1280x1024; in other words, a texture this size would fill the entire screen",
-	"hasOwnAmbientLight": false,
+	"has_own_ambient_light": false,
 	"frames":[
 		{	
-			"worldScaling": 0.0008,
-			"frameNamePattern": "cloud_.*"
+			"world_scaling": 0.0008,
+			"frame_name_pattern": "cloud_.*"
 		}
 	]
 }

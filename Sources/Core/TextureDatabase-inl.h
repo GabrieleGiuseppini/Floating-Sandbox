@@ -34,10 +34,10 @@ void TextureFrameMetadata<TTextureDatabase>::Serialize(picojson::object & root) 
 
     picojson::object frameId;
     frameId["group"] = picojson::value(static_cast<int64_t>(FrameId.Group));
-    frameId["frameIndex"] = picojson::value(static_cast<int64_t>(FrameId.FrameIndex));
+    frameId["frame_index"] = picojson::value(static_cast<int64_t>(FrameId.FrameIndex));
     root["id"] = picojson::value(frameId);
-    root["frameName"] = picojson::value(FrameName);
-    root["displayName"] = picojson::value(DisplayName);
+    root["frame_name"] = picojson::value(FrameName);
+    root["display_name"] = picojson::value(DisplayName);
 }
 
 template <typename TTextureDatabase>
@@ -68,9 +68,9 @@ TextureFrameMetadata<TTextureDatabase> TextureFrameMetadata<TTextureDatabase>::D
 
     picojson::object const & frameIdJson = root.at("id").get<picojson::object>();
     TTextureGroups group = static_cast<TTextureGroups>(frameIdJson.at("group").get<std::int64_t>());
-    TextureFrameIndex frameIndex = static_cast<TextureFrameIndex>(frameIdJson.at("frameIndex").get<std::int64_t>());
-    std::string const & frameName = root.at("frameName").get<std::string>();
-    std::string const & displayName = root.at("displayName").get<std::string>();
+    TextureFrameIndex frameIndex = static_cast<TextureFrameIndex>(frameIdJson.at("frame_index").get<std::int64_t>());
+    std::string const & frameName = root.at("frame_name").get<std::string>();
+    std::string const & displayName = root.at("display_name").get<std::string>();
 
     return TextureFrameMetadata<TTextureDatabase>(
         size,
@@ -122,17 +122,17 @@ TextureDatabase<TTextureDatabase> TextureDatabase<TTextureDatabase>::Load(IAsset
 
         auto groupJson = groupValue.get<picojson::object>();
 
-        std::string groupName = Utils::GetMandatoryJsonMember<std::string>(groupJson, "groupName");
+        std::string groupName = Utils::GetMandatoryJsonMember<std::string>(groupJson, "group_name");
         TTextureGroups group = TTextureDatabase::StrToTextureGroup(groupName);
 
         // Load group-wide defaults
-        float groupWorldScaling = Utils::GetOptionalJsonMember<float>(groupJson, "worldScaling", 1.0f); // We default to 1.0
-        std::optional<float> groupWorldWidth = Utils::GetOptionalJsonMember<float>(groupJson, "worldWidth");
-        std::optional<float> groupWorldHeight = Utils::GetOptionalJsonMember<float>(groupJson, "worldHeight");
-        bool groupHasOwnAmbientLight = Utils::GetOptionalJsonMember<bool>(groupJson, "hasOwnAmbientLight", false);
-        int groupAnchorOffsetX = Utils::GetOptionalJsonMember<int>(groupJson, "anchorOffsetX", 0);
-        int groupAnchorOffsetY = Utils::GetOptionalJsonMember<int>(groupJson, "anchorOffsetY", 0);
-        bool const doAutoAssignFrameIndices = Utils::GetOptionalJsonMember<bool>(groupJson, "autoAssignFrameIndices", false);
+        float groupWorldScaling = Utils::GetOptionalJsonMember<float>(groupJson, "world_scaling", 1.0f); // We default to 1.0
+        std::optional<float> groupWorldWidth = Utils::GetOptionalJsonMember<float>(groupJson, "world_width");
+        std::optional<float> groupWorldHeight = Utils::GetOptionalJsonMember<float>(groupJson, "world_height");
+        bool groupHasOwnAmbientLight = Utils::GetOptionalJsonMember<bool>(groupJson, "has_own_ambient_light", false);
+        int groupAnchorOffsetX = Utils::GetOptionalJsonMember<int>(groupJson, "anchor_offset_x", 0);
+        int groupAnchorOffsetY = Utils::GetOptionalJsonMember<int>(groupJson, "anchor_offset_y", 0);
+        bool const doAutoAssignFrameIndices = Utils::GetOptionalJsonMember<bool>(groupJson, "auto_assign_frame_indices", false);
 
         //
         // Process frames from JSON and build texture frames
@@ -150,16 +150,16 @@ TextureDatabase<TTextureDatabase> TextureDatabase<TTextureDatabase>::Load(IAsset
             auto frameJson = frameValue.get<picojson::object>();
 
             // Get frame properties
-            std::optional<float> const frameWorldScaling = Utils::GetOptionalJsonMember<float>(frameJson, "worldScaling");
-            std::optional<float> frameWorldWidth = Utils::GetOptionalJsonMember<float>(frameJson, "worldWidth");
-            std::optional<float> frameWorldHeight = Utils::GetOptionalJsonMember<float>(frameJson, "worldHeight");
-            std::optional<bool> const frameHasOwnAmbientLight = Utils::GetOptionalJsonMember<bool>(frameJson, "hasOwnAmbientLight");
-            std::optional<int> const frameAnchorOffsetX = Utils::GetOptionalJsonMember<int>(frameJson, "anchorOffsetX");
-            std::optional<int> const frameAnchorOffsetY = Utils::GetOptionalJsonMember<int>(frameJson, "anchorOffsetY");
-            std::optional<std::string> const frameDisplayName = Utils::GetOptionalJsonMember<std::string>(frameJson, "displayName");
+            std::optional<float> const frameWorldScaling = Utils::GetOptionalJsonMember<float>(frameJson, "world_scaling");
+            std::optional<float> frameWorldWidth = Utils::GetOptionalJsonMember<float>(frameJson, "world_width");
+            std::optional<float> frameWorldHeight = Utils::GetOptionalJsonMember<float>(frameJson, "world_height");
+            std::optional<bool> const frameHasOwnAmbientLight = Utils::GetOptionalJsonMember<bool>(frameJson, "has_own_ambient_light");
+            std::optional<int> const frameAnchorOffsetX = Utils::GetOptionalJsonMember<int>(frameJson, "anchor_offset_x");
+            std::optional<int> const frameAnchorOffsetY = Utils::GetOptionalJsonMember<int>(frameJson, "anchor_offset_y");
+            std::optional<std::string> const frameDisplayName = Utils::GetOptionalJsonMember<std::string>(frameJson, "display_name");
 
             // Get filename and make regex out of it
-            std::string const frameNamePattern = Utils::GetMandatoryJsonMember<std::string>(frameJson, "frameNamePattern");
+            std::string const frameNamePattern = Utils::GetMandatoryJsonMember<std::string>(frameJson, "frame_name_pattern");
             std::regex const frameNameRegex("^" + frameNamePattern + "$");
 
             // Find all files matching the regex

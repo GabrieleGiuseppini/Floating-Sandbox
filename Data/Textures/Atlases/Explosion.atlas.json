@@ -10,11 +10,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion1_0",
-        "frameName": "explosion1_0",
+        "display_name": "explosion1_0",
+        "frame_name": "explosion1_0",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 0,
+          "frame_index": 0,
           "group": 0
         },
         "size": {
@@ -31,8 +31,8 @@
         "left": 0
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.0626220703125,
-        "anchorCenterY": 0.0626220703125,
+        "anchor_center_x": 0.0626220703125,
+        "anchor_center_y": 0.0626220703125,
         "bottom": 0.0001220703125,
         "left": 0.0001220703125,
         "right": 0.1248779296875,
@@ -53,11 +53,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion1_1",
-        "frameName": "explosion1_1",
+        "display_name": "explosion1_1",
+        "frame_name": "explosion1_1",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 1,
+          "frame_index": 1,
           "group": 0
         },
         "size": {
@@ -74,8 +74,8 @@
         "left": 512
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.1876220703125,
-        "anchorCenterY": 0.0626220703125,
+        "anchor_center_x": 0.1876220703125,
+        "anchor_center_y": 0.0626220703125,
         "bottom": 0.0001220703125,
         "left": 0.1251220703125,
         "right": 0.2498779296875,
@@ -96,11 +96,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion1_2",
-        "frameName": "explosion1_2",
+        "display_name": "explosion1_2",
+        "frame_name": "explosion1_2",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 2,
+          "frame_index": 2,
           "group": 0
         },
         "size": {
@@ -117,8 +117,8 @@
         "left": 1024
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.3126220703125,
-        "anchorCenterY": 0.0626220703125,
+        "anchor_center_x": 0.3126220703125,
+        "anchor_center_y": 0.0626220703125,
         "bottom": 0.0001220703125,
         "left": 0.2501220703125,
         "right": 0.3748779296875,
@@ -139,11 +139,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion1_3",
-        "frameName": "explosion1_3",
+        "display_name": "explosion1_3",
+        "frame_name": "explosion1_3",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 3,
+          "frame_index": 3,
           "group": 0
         },
         "size": {
@@ -160,8 +160,8 @@
         "left": 1536
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.4376220703125,
-        "anchorCenterY": 0.0626220703125,
+        "anchor_center_x": 0.4376220703125,
+        "anchor_center_y": 0.0626220703125,
         "bottom": 0.0001220703125,
         "left": 0.3751220703125,
         "right": 0.4998779296875,
@@ -182,11 +182,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion1_4",
-        "frameName": "explosion1_4",
+        "display_name": "explosion1_4",
+        "frame_name": "explosion1_4",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 4,
+          "frame_index": 4,
           "group": 0
         },
         "size": {
@@ -203,8 +203,8 @@
         "left": 2048
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.5626220703125,
-        "anchorCenterY": 0.0626220703125,
+        "anchor_center_x": 0.5626220703125,
+        "anchor_center_y": 0.0626220703125,
         "bottom": 0.0001220703125,
         "left": 0.5001220703125,
         "right": 0.6248779296875,
@@ -225,11 +225,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion1_5",
-        "frameName": "explosion1_5",
+        "display_name": "explosion1_5",
+        "frame_name": "explosion1_5",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 5,
+          "frame_index": 5,
           "group": 0
         },
         "size": {
@@ -246,8 +246,8 @@
         "left": 2560
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.6876220703125,
-        "anchorCenterY": 0.0626220703125,
+        "anchor_center_x": 0.6876220703125,
+        "anchor_center_y": 0.0626220703125,
         "bottom": 0.0001220703125,
         "left": 0.6251220703125,
         "right": 0.7498779296875,
@@ -268,11 +268,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion1_6",
-        "frameName": "explosion1_6",
+        "display_name": "explosion1_6",
+        "frame_name": "explosion1_6",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 6,
+          "frame_index": 6,
           "group": 0
         },
         "size": {
@@ -289,8 +289,8 @@
         "left": 3072
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.8126220703125,
-        "anchorCenterY": 0.0626220703125,
+        "anchor_center_x": 0.8126220703125,
+        "anchor_center_y": 0.0626220703125,
         "bottom": 0.0001220703125,
         "left": 0.7501220703125,
         "right": 0.8748779296875,
@@ -311,11 +311,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion1_7",
-        "frameName": "explosion1_7",
+        "display_name": "explosion1_7",
+        "frame_name": "explosion1_7",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 7,
+          "frame_index": 7,
           "group": 0
         },
         "size": {
@@ -332,8 +332,8 @@
         "left": 3584
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.9376220703125,
-        "anchorCenterY": 0.0626220703125,
+        "anchor_center_x": 0.9376220703125,
+        "anchor_center_y": 0.0626220703125,
         "bottom": 0.0001220703125,
         "left": 0.8751220703125,
         "right": 0.9998779296875,
@@ -354,11 +354,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion1_8",
-        "frameName": "explosion1_8",
+        "display_name": "explosion1_8",
+        "frame_name": "explosion1_8",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 8,
+          "frame_index": 8,
           "group": 0
         },
         "size": {
@@ -375,8 +375,8 @@
         "left": 0
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.0626220703125,
-        "anchorCenterY": 0.1876220703125,
+        "anchor_center_x": 0.0626220703125,
+        "anchor_center_y": 0.1876220703125,
         "bottom": 0.1251220703125,
         "left": 0.0001220703125,
         "right": 0.1248779296875,
@@ -397,11 +397,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion1_9",
-        "frameName": "explosion1_9",
+        "display_name": "explosion1_9",
+        "frame_name": "explosion1_9",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 9,
+          "frame_index": 9,
           "group": 0
         },
         "size": {
@@ -418,8 +418,8 @@
         "left": 512
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.1876220703125,
-        "anchorCenterY": 0.1876220703125,
+        "anchor_center_x": 0.1876220703125,
+        "anchor_center_y": 0.1876220703125,
         "bottom": 0.1251220703125,
         "left": 0.1251220703125,
         "right": 0.2498779296875,
@@ -440,11 +440,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion1_10",
-        "frameName": "explosion1_10",
+        "display_name": "explosion1_10",
+        "frame_name": "explosion1_10",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 10,
+          "frame_index": 10,
           "group": 0
         },
         "size": {
@@ -461,8 +461,8 @@
         "left": 1024
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.3126220703125,
-        "anchorCenterY": 0.1876220703125,
+        "anchor_center_x": 0.3126220703125,
+        "anchor_center_y": 0.1876220703125,
         "bottom": 0.1251220703125,
         "left": 0.2501220703125,
         "right": 0.3748779296875,
@@ -483,11 +483,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion1_11",
-        "frameName": "explosion1_11",
+        "display_name": "explosion1_11",
+        "frame_name": "explosion1_11",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 11,
+          "frame_index": 11,
           "group": 0
         },
         "size": {
@@ -504,8 +504,8 @@
         "left": 1536
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.4376220703125,
-        "anchorCenterY": 0.1876220703125,
+        "anchor_center_x": 0.4376220703125,
+        "anchor_center_y": 0.1876220703125,
         "bottom": 0.1251220703125,
         "left": 0.3751220703125,
         "right": 0.4998779296875,
@@ -526,11 +526,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion1_12",
-        "frameName": "explosion1_12",
+        "display_name": "explosion1_12",
+        "frame_name": "explosion1_12",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 12,
+          "frame_index": 12,
           "group": 0
         },
         "size": {
@@ -547,8 +547,8 @@
         "left": 2048
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.5626220703125,
-        "anchorCenterY": 0.1876220703125,
+        "anchor_center_x": 0.5626220703125,
+        "anchor_center_y": 0.1876220703125,
         "bottom": 0.1251220703125,
         "left": 0.5001220703125,
         "right": 0.6248779296875,
@@ -569,11 +569,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion1_13",
-        "frameName": "explosion1_13",
+        "display_name": "explosion1_13",
+        "frame_name": "explosion1_13",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 13,
+          "frame_index": 13,
           "group": 0
         },
         "size": {
@@ -590,8 +590,8 @@
         "left": 2560
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.6876220703125,
-        "anchorCenterY": 0.1876220703125,
+        "anchor_center_x": 0.6876220703125,
+        "anchor_center_y": 0.1876220703125,
         "bottom": 0.1251220703125,
         "left": 0.6251220703125,
         "right": 0.7498779296875,
@@ -612,11 +612,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion1_14",
-        "frameName": "explosion1_14",
+        "display_name": "explosion1_14",
+        "frame_name": "explosion1_14",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 14,
+          "frame_index": 14,
           "group": 0
         },
         "size": {
@@ -633,8 +633,8 @@
         "left": 3072
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.8126220703125,
-        "anchorCenterY": 0.1876220703125,
+        "anchor_center_x": 0.8126220703125,
+        "anchor_center_y": 0.1876220703125,
         "bottom": 0.1251220703125,
         "left": 0.7501220703125,
         "right": 0.8748779296875,
@@ -655,11 +655,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion1_15",
-        "frameName": "explosion1_15",
+        "display_name": "explosion1_15",
+        "frame_name": "explosion1_15",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 15,
+          "frame_index": 15,
           "group": 0
         },
         "size": {
@@ -676,8 +676,8 @@
         "left": 3584
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.9376220703125,
-        "anchorCenterY": 0.1876220703125,
+        "anchor_center_x": 0.9376220703125,
+        "anchor_center_y": 0.1876220703125,
         "bottom": 0.1251220703125,
         "left": 0.8751220703125,
         "right": 0.9998779296875,
@@ -698,11 +698,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion2_16",
-        "frameName": "explosion2_16",
+        "display_name": "explosion2_16",
+        "frame_name": "explosion2_16",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 16,
+          "frame_index": 16,
           "group": 0
         },
         "size": {
@@ -719,8 +719,8 @@
         "left": 0
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.0626220703125,
-        "anchorCenterY": 0.3126220703125,
+        "anchor_center_x": 0.0626220703125,
+        "anchor_center_y": 0.3126220703125,
         "bottom": 0.2501220703125,
         "left": 0.0001220703125,
         "right": 0.1248779296875,
@@ -741,11 +741,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion2_17",
-        "frameName": "explosion2_17",
+        "display_name": "explosion2_17",
+        "frame_name": "explosion2_17",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 17,
+          "frame_index": 17,
           "group": 0
         },
         "size": {
@@ -762,8 +762,8 @@
         "left": 512
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.1876220703125,
-        "anchorCenterY": 0.3126220703125,
+        "anchor_center_x": 0.1876220703125,
+        "anchor_center_y": 0.3126220703125,
         "bottom": 0.2501220703125,
         "left": 0.1251220703125,
         "right": 0.2498779296875,
@@ -784,11 +784,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion2_18",
-        "frameName": "explosion2_18",
+        "display_name": "explosion2_18",
+        "frame_name": "explosion2_18",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 18,
+          "frame_index": 18,
           "group": 0
         },
         "size": {
@@ -805,8 +805,8 @@
         "left": 1024
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.3126220703125,
-        "anchorCenterY": 0.3126220703125,
+        "anchor_center_x": 0.3126220703125,
+        "anchor_center_y": 0.3126220703125,
         "bottom": 0.2501220703125,
         "left": 0.2501220703125,
         "right": 0.3748779296875,
@@ -827,11 +827,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion2_19",
-        "frameName": "explosion2_19",
+        "display_name": "explosion2_19",
+        "frame_name": "explosion2_19",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 19,
+          "frame_index": 19,
           "group": 0
         },
         "size": {
@@ -848,8 +848,8 @@
         "left": 1536
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.4376220703125,
-        "anchorCenterY": 0.3126220703125,
+        "anchor_center_x": 0.4376220703125,
+        "anchor_center_y": 0.3126220703125,
         "bottom": 0.2501220703125,
         "left": 0.3751220703125,
         "right": 0.4998779296875,
@@ -870,11 +870,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion2_20",
-        "frameName": "explosion2_20",
+        "display_name": "explosion2_20",
+        "frame_name": "explosion2_20",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 20,
+          "frame_index": 20,
           "group": 0
         },
         "size": {
@@ -891,8 +891,8 @@
         "left": 2048
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.5626220703125,
-        "anchorCenterY": 0.3126220703125,
+        "anchor_center_x": 0.5626220703125,
+        "anchor_center_y": 0.3126220703125,
         "bottom": 0.2501220703125,
         "left": 0.5001220703125,
         "right": 0.6248779296875,
@@ -913,11 +913,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion2_21",
-        "frameName": "explosion2_21",
+        "display_name": "explosion2_21",
+        "frame_name": "explosion2_21",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 21,
+          "frame_index": 21,
           "group": 0
         },
         "size": {
@@ -934,8 +934,8 @@
         "left": 2560
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.6876220703125,
-        "anchorCenterY": 0.3126220703125,
+        "anchor_center_x": 0.6876220703125,
+        "anchor_center_y": 0.3126220703125,
         "bottom": 0.2501220703125,
         "left": 0.6251220703125,
         "right": 0.7498779296875,
@@ -956,11 +956,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion2_22",
-        "frameName": "explosion2_22",
+        "display_name": "explosion2_22",
+        "frame_name": "explosion2_22",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 22,
+          "frame_index": 22,
           "group": 0
         },
         "size": {
@@ -977,8 +977,8 @@
         "left": 3072
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.8126220703125,
-        "anchorCenterY": 0.3126220703125,
+        "anchor_center_x": 0.8126220703125,
+        "anchor_center_y": 0.3126220703125,
         "bottom": 0.2501220703125,
         "left": 0.7501220703125,
         "right": 0.8748779296875,
@@ -999,11 +999,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion2_23",
-        "frameName": "explosion2_23",
+        "display_name": "explosion2_23",
+        "frame_name": "explosion2_23",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 23,
+          "frame_index": 23,
           "group": 0
         },
         "size": {
@@ -1020,8 +1020,8 @@
         "left": 3584
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.9376220703125,
-        "anchorCenterY": 0.3126220703125,
+        "anchor_center_x": 0.9376220703125,
+        "anchor_center_y": 0.3126220703125,
         "bottom": 0.2501220703125,
         "left": 0.8751220703125,
         "right": 0.9998779296875,
@@ -1042,11 +1042,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion2_24",
-        "frameName": "explosion2_24",
+        "display_name": "explosion2_24",
+        "frame_name": "explosion2_24",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 24,
+          "frame_index": 24,
           "group": 0
         },
         "size": {
@@ -1063,8 +1063,8 @@
         "left": 0
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.0626220703125,
-        "anchorCenterY": 0.4376220703125,
+        "anchor_center_x": 0.0626220703125,
+        "anchor_center_y": 0.4376220703125,
         "bottom": 0.3751220703125,
         "left": 0.0001220703125,
         "right": 0.1248779296875,
@@ -1085,11 +1085,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion2_25",
-        "frameName": "explosion2_25",
+        "display_name": "explosion2_25",
+        "frame_name": "explosion2_25",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 25,
+          "frame_index": 25,
           "group": 0
         },
         "size": {
@@ -1106,8 +1106,8 @@
         "left": 512
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.1876220703125,
-        "anchorCenterY": 0.4376220703125,
+        "anchor_center_x": 0.1876220703125,
+        "anchor_center_y": 0.4376220703125,
         "bottom": 0.3751220703125,
         "left": 0.1251220703125,
         "right": 0.2498779296875,
@@ -1128,11 +1128,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion2_26",
-        "frameName": "explosion2_26",
+        "display_name": "explosion2_26",
+        "frame_name": "explosion2_26",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 26,
+          "frame_index": 26,
           "group": 0
         },
         "size": {
@@ -1149,8 +1149,8 @@
         "left": 1024
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.3126220703125,
-        "anchorCenterY": 0.4376220703125,
+        "anchor_center_x": 0.3126220703125,
+        "anchor_center_y": 0.4376220703125,
         "bottom": 0.3751220703125,
         "left": 0.2501220703125,
         "right": 0.3748779296875,
@@ -1171,11 +1171,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion2_27",
-        "frameName": "explosion2_27",
+        "display_name": "explosion2_27",
+        "frame_name": "explosion2_27",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 27,
+          "frame_index": 27,
           "group": 0
         },
         "size": {
@@ -1192,8 +1192,8 @@
         "left": 1536
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.4376220703125,
-        "anchorCenterY": 0.4376220703125,
+        "anchor_center_x": 0.4376220703125,
+        "anchor_center_y": 0.4376220703125,
         "bottom": 0.3751220703125,
         "left": 0.3751220703125,
         "right": 0.4998779296875,
@@ -1214,11 +1214,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion2_28",
-        "frameName": "explosion2_28",
+        "display_name": "explosion2_28",
+        "frame_name": "explosion2_28",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 28,
+          "frame_index": 28,
           "group": 0
         },
         "size": {
@@ -1235,8 +1235,8 @@
         "left": 2048
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.5626220703125,
-        "anchorCenterY": 0.4376220703125,
+        "anchor_center_x": 0.5626220703125,
+        "anchor_center_y": 0.4376220703125,
         "bottom": 0.3751220703125,
         "left": 0.5001220703125,
         "right": 0.6248779296875,
@@ -1257,11 +1257,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion2_29",
-        "frameName": "explosion2_29",
+        "display_name": "explosion2_29",
+        "frame_name": "explosion2_29",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 29,
+          "frame_index": 29,
           "group": 0
         },
         "size": {
@@ -1278,8 +1278,8 @@
         "left": 2560
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.6876220703125,
-        "anchorCenterY": 0.4376220703125,
+        "anchor_center_x": 0.6876220703125,
+        "anchor_center_y": 0.4376220703125,
         "bottom": 0.3751220703125,
         "left": 0.6251220703125,
         "right": 0.7498779296875,
@@ -1300,11 +1300,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion2_30",
-        "frameName": "explosion2_30",
+        "display_name": "explosion2_30",
+        "frame_name": "explosion2_30",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 30,
+          "frame_index": 30,
           "group": 0
         },
         "size": {
@@ -1321,8 +1321,8 @@
         "left": 3072
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.8126220703125,
-        "anchorCenterY": 0.4376220703125,
+        "anchor_center_x": 0.8126220703125,
+        "anchor_center_y": 0.4376220703125,
         "bottom": 0.3751220703125,
         "left": 0.7501220703125,
         "right": 0.8748779296875,
@@ -1343,11 +1343,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion2_31",
-        "frameName": "explosion2_31",
+        "display_name": "explosion2_31",
+        "frame_name": "explosion2_31",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 31,
+          "frame_index": 31,
           "group": 0
         },
         "size": {
@@ -1364,8 +1364,8 @@
         "left": 3584
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.9376220703125,
-        "anchorCenterY": 0.4376220703125,
+        "anchor_center_x": 0.9376220703125,
+        "anchor_center_y": 0.4376220703125,
         "bottom": 0.3751220703125,
         "left": 0.8751220703125,
         "right": 0.9998779296875,
@@ -1386,11 +1386,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion3_32",
-        "frameName": "explosion3_32",
+        "display_name": "explosion3_32",
+        "frame_name": "explosion3_32",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 32,
+          "frame_index": 32,
           "group": 0
         },
         "size": {
@@ -1407,8 +1407,8 @@
         "left": 0
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.0626220703125,
-        "anchorCenterY": 0.5626220703125,
+        "anchor_center_x": 0.0626220703125,
+        "anchor_center_y": 0.5626220703125,
         "bottom": 0.5001220703125,
         "left": 0.0001220703125,
         "right": 0.1248779296875,
@@ -1429,11 +1429,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion3_33",
-        "frameName": "explosion3_33",
+        "display_name": "explosion3_33",
+        "frame_name": "explosion3_33",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 33,
+          "frame_index": 33,
           "group": 0
         },
         "size": {
@@ -1450,8 +1450,8 @@
         "left": 512
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.1876220703125,
-        "anchorCenterY": 0.5626220703125,
+        "anchor_center_x": 0.1876220703125,
+        "anchor_center_y": 0.5626220703125,
         "bottom": 0.5001220703125,
         "left": 0.1251220703125,
         "right": 0.2498779296875,
@@ -1472,11 +1472,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion3_34",
-        "frameName": "explosion3_34",
+        "display_name": "explosion3_34",
+        "frame_name": "explosion3_34",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 34,
+          "frame_index": 34,
           "group": 0
         },
         "size": {
@@ -1493,8 +1493,8 @@
         "left": 1024
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.3126220703125,
-        "anchorCenterY": 0.5626220703125,
+        "anchor_center_x": 0.3126220703125,
+        "anchor_center_y": 0.5626220703125,
         "bottom": 0.5001220703125,
         "left": 0.2501220703125,
         "right": 0.3748779296875,
@@ -1515,11 +1515,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion3_35",
-        "frameName": "explosion3_35",
+        "display_name": "explosion3_35",
+        "frame_name": "explosion3_35",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 35,
+          "frame_index": 35,
           "group": 0
         },
         "size": {
@@ -1536,8 +1536,8 @@
         "left": 1536
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.4376220703125,
-        "anchorCenterY": 0.5626220703125,
+        "anchor_center_x": 0.4376220703125,
+        "anchor_center_y": 0.5626220703125,
         "bottom": 0.5001220703125,
         "left": 0.3751220703125,
         "right": 0.4998779296875,
@@ -1558,11 +1558,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion3_36",
-        "frameName": "explosion3_36",
+        "display_name": "explosion3_36",
+        "frame_name": "explosion3_36",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 36,
+          "frame_index": 36,
           "group": 0
         },
         "size": {
@@ -1579,8 +1579,8 @@
         "left": 2048
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.5626220703125,
-        "anchorCenterY": 0.5626220703125,
+        "anchor_center_x": 0.5626220703125,
+        "anchor_center_y": 0.5626220703125,
         "bottom": 0.5001220703125,
         "left": 0.5001220703125,
         "right": 0.6248779296875,
@@ -1601,11 +1601,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion3_37",
-        "frameName": "explosion3_37",
+        "display_name": "explosion3_37",
+        "frame_name": "explosion3_37",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 37,
+          "frame_index": 37,
           "group": 0
         },
         "size": {
@@ -1622,8 +1622,8 @@
         "left": 2560
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.6876220703125,
-        "anchorCenterY": 0.5626220703125,
+        "anchor_center_x": 0.6876220703125,
+        "anchor_center_y": 0.5626220703125,
         "bottom": 0.5001220703125,
         "left": 0.6251220703125,
         "right": 0.7498779296875,
@@ -1644,11 +1644,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion3_38",
-        "frameName": "explosion3_38",
+        "display_name": "explosion3_38",
+        "frame_name": "explosion3_38",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 38,
+          "frame_index": 38,
           "group": 0
         },
         "size": {
@@ -1665,8 +1665,8 @@
         "left": 3072
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.8126220703125,
-        "anchorCenterY": 0.5626220703125,
+        "anchor_center_x": 0.8126220703125,
+        "anchor_center_y": 0.5626220703125,
         "bottom": 0.5001220703125,
         "left": 0.7501220703125,
         "right": 0.8748779296875,
@@ -1687,11 +1687,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion3_39",
-        "frameName": "explosion3_39",
+        "display_name": "explosion3_39",
+        "frame_name": "explosion3_39",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 39,
+          "frame_index": 39,
           "group": 0
         },
         "size": {
@@ -1708,8 +1708,8 @@
         "left": 3584
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.9376220703125,
-        "anchorCenterY": 0.5626220703125,
+        "anchor_center_x": 0.9376220703125,
+        "anchor_center_y": 0.5626220703125,
         "bottom": 0.5001220703125,
         "left": 0.8751220703125,
         "right": 0.9998779296875,
@@ -1730,11 +1730,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion3_40",
-        "frameName": "explosion3_40",
+        "display_name": "explosion3_40",
+        "frame_name": "explosion3_40",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 40,
+          "frame_index": 40,
           "group": 0
         },
         "size": {
@@ -1751,8 +1751,8 @@
         "left": 0
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.0626220703125,
-        "anchorCenterY": 0.6876220703125,
+        "anchor_center_x": 0.0626220703125,
+        "anchor_center_y": 0.6876220703125,
         "bottom": 0.6251220703125,
         "left": 0.0001220703125,
         "right": 0.1248779296875,
@@ -1773,11 +1773,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion3_41",
-        "frameName": "explosion3_41",
+        "display_name": "explosion3_41",
+        "frame_name": "explosion3_41",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 41,
+          "frame_index": 41,
           "group": 0
         },
         "size": {
@@ -1794,8 +1794,8 @@
         "left": 512
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.1876220703125,
-        "anchorCenterY": 0.6876220703125,
+        "anchor_center_x": 0.1876220703125,
+        "anchor_center_y": 0.6876220703125,
         "bottom": 0.6251220703125,
         "left": 0.1251220703125,
         "right": 0.2498779296875,
@@ -1816,11 +1816,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion3_42",
-        "frameName": "explosion3_42",
+        "display_name": "explosion3_42",
+        "frame_name": "explosion3_42",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 42,
+          "frame_index": 42,
           "group": 0
         },
         "size": {
@@ -1837,8 +1837,8 @@
         "left": 1024
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.3126220703125,
-        "anchorCenterY": 0.6876220703125,
+        "anchor_center_x": 0.3126220703125,
+        "anchor_center_y": 0.6876220703125,
         "bottom": 0.6251220703125,
         "left": 0.2501220703125,
         "right": 0.3748779296875,
@@ -1859,11 +1859,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion3_43",
-        "frameName": "explosion3_43",
+        "display_name": "explosion3_43",
+        "frame_name": "explosion3_43",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 43,
+          "frame_index": 43,
           "group": 0
         },
         "size": {
@@ -1880,8 +1880,8 @@
         "left": 1536
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.4376220703125,
-        "anchorCenterY": 0.6876220703125,
+        "anchor_center_x": 0.4376220703125,
+        "anchor_center_y": 0.6876220703125,
         "bottom": 0.6251220703125,
         "left": 0.3751220703125,
         "right": 0.4998779296875,
@@ -1902,11 +1902,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion3_44",
-        "frameName": "explosion3_44",
+        "display_name": "explosion3_44",
+        "frame_name": "explosion3_44",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 44,
+          "frame_index": 44,
           "group": 0
         },
         "size": {
@@ -1923,8 +1923,8 @@
         "left": 2048
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.5626220703125,
-        "anchorCenterY": 0.6876220703125,
+        "anchor_center_x": 0.5626220703125,
+        "anchor_center_y": 0.6876220703125,
         "bottom": 0.6251220703125,
         "left": 0.5001220703125,
         "right": 0.6248779296875,
@@ -1945,11 +1945,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion3_45",
-        "frameName": "explosion3_45",
+        "display_name": "explosion3_45",
+        "frame_name": "explosion3_45",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 45,
+          "frame_index": 45,
           "group": 0
         },
         "size": {
@@ -1966,8 +1966,8 @@
         "left": 2560
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.6876220703125,
-        "anchorCenterY": 0.6876220703125,
+        "anchor_center_x": 0.6876220703125,
+        "anchor_center_y": 0.6876220703125,
         "bottom": 0.6251220703125,
         "left": 0.6251220703125,
         "right": 0.7498779296875,
@@ -1988,11 +1988,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion3_46",
-        "frameName": "explosion3_46",
+        "display_name": "explosion3_46",
+        "frame_name": "explosion3_46",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 46,
+          "frame_index": 46,
           "group": 0
         },
         "size": {
@@ -2009,8 +2009,8 @@
         "left": 3072
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.8126220703125,
-        "anchorCenterY": 0.6876220703125,
+        "anchor_center_x": 0.8126220703125,
+        "anchor_center_y": 0.6876220703125,
         "bottom": 0.6251220703125,
         "left": 0.7501220703125,
         "right": 0.8748779296875,
@@ -2031,11 +2031,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion3_47",
-        "frameName": "explosion3_47",
+        "display_name": "explosion3_47",
+        "frame_name": "explosion3_47",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 47,
+          "frame_index": 47,
           "group": 0
         },
         "size": {
@@ -2052,8 +2052,8 @@
         "left": 3584
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.9376220703125,
-        "anchorCenterY": 0.6876220703125,
+        "anchor_center_x": 0.9376220703125,
+        "anchor_center_y": 0.6876220703125,
         "bottom": 0.6251220703125,
         "left": 0.8751220703125,
         "right": 0.9998779296875,
@@ -2074,11 +2074,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion4_48",
-        "frameName": "explosion4_48",
+        "display_name": "explosion4_48",
+        "frame_name": "explosion4_48",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 48,
+          "frame_index": 48,
           "group": 0
         },
         "size": {
@@ -2095,8 +2095,8 @@
         "left": 0
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.0626220703125,
-        "anchorCenterY": 0.8126220703125,
+        "anchor_center_x": 0.0626220703125,
+        "anchor_center_y": 0.8126220703125,
         "bottom": 0.7501220703125,
         "left": 0.0001220703125,
         "right": 0.1248779296875,
@@ -2117,11 +2117,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion4_49",
-        "frameName": "explosion4_49",
+        "display_name": "explosion4_49",
+        "frame_name": "explosion4_49",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 49,
+          "frame_index": 49,
           "group": 0
         },
         "size": {
@@ -2138,8 +2138,8 @@
         "left": 512
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.1876220703125,
-        "anchorCenterY": 0.8126220703125,
+        "anchor_center_x": 0.1876220703125,
+        "anchor_center_y": 0.8126220703125,
         "bottom": 0.7501220703125,
         "left": 0.1251220703125,
         "right": 0.2498779296875,
@@ -2160,11 +2160,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion4_50",
-        "frameName": "explosion4_50",
+        "display_name": "explosion4_50",
+        "frame_name": "explosion4_50",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 50,
+          "frame_index": 50,
           "group": 0
         },
         "size": {
@@ -2181,8 +2181,8 @@
         "left": 1024
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.3126220703125,
-        "anchorCenterY": 0.8126220703125,
+        "anchor_center_x": 0.3126220703125,
+        "anchor_center_y": 0.8126220703125,
         "bottom": 0.7501220703125,
         "left": 0.2501220703125,
         "right": 0.3748779296875,
@@ -2203,11 +2203,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion4_51",
-        "frameName": "explosion4_51",
+        "display_name": "explosion4_51",
+        "frame_name": "explosion4_51",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 51,
+          "frame_index": 51,
           "group": 0
         },
         "size": {
@@ -2224,8 +2224,8 @@
         "left": 1536
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.4376220703125,
-        "anchorCenterY": 0.8126220703125,
+        "anchor_center_x": 0.4376220703125,
+        "anchor_center_y": 0.8126220703125,
         "bottom": 0.7501220703125,
         "left": 0.3751220703125,
         "right": 0.4998779296875,
@@ -2246,11 +2246,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion4_52",
-        "frameName": "explosion4_52",
+        "display_name": "explosion4_52",
+        "frame_name": "explosion4_52",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 52,
+          "frame_index": 52,
           "group": 0
         },
         "size": {
@@ -2267,8 +2267,8 @@
         "left": 2048
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.5626220703125,
-        "anchorCenterY": 0.8126220703125,
+        "anchor_center_x": 0.5626220703125,
+        "anchor_center_y": 0.8126220703125,
         "bottom": 0.7501220703125,
         "left": 0.5001220703125,
         "right": 0.6248779296875,
@@ -2289,11 +2289,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion4_53",
-        "frameName": "explosion4_53",
+        "display_name": "explosion4_53",
+        "frame_name": "explosion4_53",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 53,
+          "frame_index": 53,
           "group": 0
         },
         "size": {
@@ -2310,8 +2310,8 @@
         "left": 2560
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.6876220703125,
-        "anchorCenterY": 0.8126220703125,
+        "anchor_center_x": 0.6876220703125,
+        "anchor_center_y": 0.8126220703125,
         "bottom": 0.7501220703125,
         "left": 0.6251220703125,
         "right": 0.7498779296875,
@@ -2332,11 +2332,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion4_54",
-        "frameName": "explosion4_54",
+        "display_name": "explosion4_54",
+        "frame_name": "explosion4_54",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 54,
+          "frame_index": 54,
           "group": 0
         },
         "size": {
@@ -2353,8 +2353,8 @@
         "left": 3072
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.8126220703125,
-        "anchorCenterY": 0.8126220703125,
+        "anchor_center_x": 0.8126220703125,
+        "anchor_center_y": 0.8126220703125,
         "bottom": 0.7501220703125,
         "left": 0.7501220703125,
         "right": 0.8748779296875,
@@ -2375,11 +2375,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion4_55",
-        "frameName": "explosion4_55",
+        "display_name": "explosion4_55",
+        "frame_name": "explosion4_55",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 55,
+          "frame_index": 55,
           "group": 0
         },
         "size": {
@@ -2396,8 +2396,8 @@
         "left": 3584
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.9376220703125,
-        "anchorCenterY": 0.8126220703125,
+        "anchor_center_x": 0.9376220703125,
+        "anchor_center_y": 0.8126220703125,
         "bottom": 0.7501220703125,
         "left": 0.8751220703125,
         "right": 0.9998779296875,
@@ -2418,11 +2418,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion4_56",
-        "frameName": "explosion4_56",
+        "display_name": "explosion4_56",
+        "frame_name": "explosion4_56",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 56,
+          "frame_index": 56,
           "group": 0
         },
         "size": {
@@ -2439,8 +2439,8 @@
         "left": 0
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.0626220703125,
-        "anchorCenterY": 0.9376220703125,
+        "anchor_center_x": 0.0626220703125,
+        "anchor_center_y": 0.9376220703125,
         "bottom": 0.8751220703125,
         "left": 0.0001220703125,
         "right": 0.1248779296875,
@@ -2461,11 +2461,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion4_57",
-        "frameName": "explosion4_57",
+        "display_name": "explosion4_57",
+        "frame_name": "explosion4_57",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 57,
+          "frame_index": 57,
           "group": 0
         },
         "size": {
@@ -2482,8 +2482,8 @@
         "left": 512
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.1876220703125,
-        "anchorCenterY": 0.9376220703125,
+        "anchor_center_x": 0.1876220703125,
+        "anchor_center_y": 0.9376220703125,
         "bottom": 0.8751220703125,
         "left": 0.1251220703125,
         "right": 0.2498779296875,
@@ -2504,11 +2504,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion4_58",
-        "frameName": "explosion4_58",
+        "display_name": "explosion4_58",
+        "frame_name": "explosion4_58",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 58,
+          "frame_index": 58,
           "group": 0
         },
         "size": {
@@ -2525,8 +2525,8 @@
         "left": 1024
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.3126220703125,
-        "anchorCenterY": 0.9376220703125,
+        "anchor_center_x": 0.3126220703125,
+        "anchor_center_y": 0.9376220703125,
         "bottom": 0.8751220703125,
         "left": 0.2501220703125,
         "right": 0.3748779296875,
@@ -2547,11 +2547,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion4_59",
-        "frameName": "explosion4_59",
+        "display_name": "explosion4_59",
+        "frame_name": "explosion4_59",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 59,
+          "frame_index": 59,
           "group": 0
         },
         "size": {
@@ -2568,8 +2568,8 @@
         "left": 1536
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.4376220703125,
-        "anchorCenterY": 0.9376220703125,
+        "anchor_center_x": 0.4376220703125,
+        "anchor_center_y": 0.9376220703125,
         "bottom": 0.8751220703125,
         "left": 0.3751220703125,
         "right": 0.4998779296875,
@@ -2590,11 +2590,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion4_60",
-        "frameName": "explosion4_60",
+        "display_name": "explosion4_60",
+        "frame_name": "explosion4_60",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 60,
+          "frame_index": 60,
           "group": 0
         },
         "size": {
@@ -2611,8 +2611,8 @@
         "left": 2048
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.5626220703125,
-        "anchorCenterY": 0.9376220703125,
+        "anchor_center_x": 0.5626220703125,
+        "anchor_center_y": 0.9376220703125,
         "bottom": 0.8751220703125,
         "left": 0.5001220703125,
         "right": 0.6248779296875,
@@ -2633,11 +2633,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion4_61",
-        "frameName": "explosion4_61",
+        "display_name": "explosion4_61",
+        "frame_name": "explosion4_61",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 61,
+          "frame_index": 61,
           "group": 0
         },
         "size": {
@@ -2654,8 +2654,8 @@
         "left": 2560
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.6876220703125,
-        "anchorCenterY": 0.9376220703125,
+        "anchor_center_x": 0.6876220703125,
+        "anchor_center_y": 0.9376220703125,
         "bottom": 0.8751220703125,
         "left": 0.6251220703125,
         "right": 0.7498779296875,
@@ -2676,11 +2676,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion4_62",
-        "frameName": "explosion4_62",
+        "display_name": "explosion4_62",
+        "frame_name": "explosion4_62",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 62,
+          "frame_index": 62,
           "group": 0
         },
         "size": {
@@ -2697,8 +2697,8 @@
         "left": 3072
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.8126220703125,
-        "anchorCenterY": 0.9376220703125,
+        "anchor_center_x": 0.8126220703125,
+        "anchor_center_y": 0.9376220703125,
         "bottom": 0.8751220703125,
         "left": 0.7501220703125,
         "right": 0.8748779296875,
@@ -2719,11 +2719,11 @@
           "x": 256,
           "y": 256
         },
-        "displayName": "explosion4_63",
-        "frameName": "explosion4_63",
+        "display_name": "explosion4_63",
+        "frame_name": "explosion4_63",
         "has_own_ambient_light": true,
         "id": {
-          "frameIndex": 63,
+          "frame_index": 63,
           "group": 0
         },
         "size": {
@@ -2740,8 +2740,8 @@
         "left": 3584
       },
       "texture_coordinates": {
-        "anchorCenterX": 0.9376220703125,
-        "anchorCenterY": 0.9376220703125,
+        "anchor_center_x": 0.9376220703125,
+        "anchor_center_y": 0.9376220703125,
         "bottom": 0.8751220703125,
         "left": 0.8751220703125,
         "right": 0.9998779296875,

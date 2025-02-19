@@ -1,218 +1,218 @@
 [
 
 {
-	"groupName": "AirBubble",
-	"hasOwnAmbientLight": false,
+	"group_name": "AirBubble",
+	"has_own_ambient_light": false,
 	"frames":[
 		{	
-			"worldWidth": 2.0,
-			"worldHeight": 2.0,
-			"frameNamePattern": "air_bubble_\\d+"
+			"world_width": 2.0,
+			"world_height": 2.0,
+			"frame_name_pattern": "air_bubble_\\d+"
 		}
 	]
 },
 
 {
-	"groupName": "AntiMatterBombArmor",
-	"hasOwnAmbientLight": false,
+	"group_name": "AntiMatterBombArmor",
+	"has_own_ambient_light": false,
 	"frames":[
 		{	
-			"worldWidth": 12.0,
-			"worldHeight": 12.0,
-			"anchorOffsetX": 0,
-			"anchorOffsetY": 0,
-			"frameNamePattern": "am_bomb_armor_\\d+"
+			"world_width": 12.0,
+			"world_height": 12.0,
+			"anchor_offset_x": 0,
+			"anchor_offset_y": 0,
+			"frame_name_pattern": "am_bomb_armor_\\d+"
 		}
 	]
 },
 
 {
-	"groupName": "AntiMatterBombSphere",
-	"hasOwnAmbientLight": false,
+	"group_name": "AntiMatterBombSphere",
+	"has_own_ambient_light": false,
 	"frames":[
 		{	
-			"worldWidth": 6.0,
-			"worldHeight": 6.0,
-			"frameNamePattern": "am_bomb_sphere_\\d+"
+			"world_width": 6.0,
+			"world_height": 6.0,
+			"frame_name_pattern": "am_bomb_sphere_\\d+"
 		}
 	]
 },
 
 {
-	"groupName": "AntiMatterBombSphereCloud",
-	"hasOwnAmbientLight": true,
+	"group_name": "AntiMatterBombSphereCloud",
+	"has_own_ambient_light": true,
 	"frames":[
 		{	
-			"worldWidth": 6.0,
-			"worldHeight": 6.0,
-			"frameNamePattern": "am_bomb_sphere_cloud_\\d+"
+			"world_width": 6.0,
+			"world_height": 6.0,
+			"frame_name_pattern": "am_bomb_sphere_cloud_\\d+"
 		}
 	]
 },
 
 {
-	"groupName": "EngineWake",
-	"hasOwnAmbientLight": false,
+	"group_name": "EngineWake",
+	"has_own_ambient_light": false,
 	"frames":[
 		{	
-			"worldWidth": 2.0,
-			"worldHeight": 2.0,
-			"frameNamePattern": "engine_wake_\\d+"
+			"world_width": 2.0,
+			"world_height": 2.0,
+			"frame_name_pattern": "engine_wake_\\d+"
 		}
 	]
 },
 
 {
-	"groupName": "FireExtinguishingBomb",
-	"hasOwnAmbientLight": false,
+	"group_name": "FireExtinguishingBomb",
+	"has_own_ambient_light": false,
 	"frames":[
 		{	
-			"worldWidth": 8.44,
-			"worldHeight": 12.0,
-			"anchorOffsetX": 24,
-			"frameNamePattern": "fire_extinguishing_bomb_\\d+"
+			"world_width": 8.44,
+			"world_height": 12.0,
+			"anchor_offset_x": 24,
+			"frame_name_pattern": "fire_extinguishing_bomb_\\d+"
 		}
 	]
 },
 
 {
-	"groupName": "ImpactBomb",
-	"hasOwnAmbientLight": false,
+	"group_name": "ImpactBomb",
+	"has_own_ambient_light": false,
 	"frames":[
 		{	
-			"worldWidth": 6.0,
-			"worldHeight": 6.0,
-			"frameNamePattern": "impact_bomb_.*"
+			"world_width": 6.0,
+			"world_height": 6.0,
+			"frame_name_pattern": "impact_bomb_.*"
 		}
 	]
 },
 
 {
-	"groupName": "LaserCannon",
-	"hasOwnAmbientLight": false,
+	"group_name": "LaserCannon",
+	"has_own_ambient_light": false,
 	"frames":[
 		{	
-			"worldWidth": 1.0,
-			"worldHeight": 1.0,
-			"frameNamePattern": "laser_cannon_\\d+"
+			"world_width": 1.0,
+			"world_height": 1.0,
+			"frame_name_pattern": "laser_cannon_\\d+"
 		}
 	]
 },
 
 {
-	"groupName": "PhysicsProbe",
-	"hasOwnAmbientLight": false,
+	"group_name": "PhysicsProbe",
+	"has_own_ambient_light": false,
 	"frames":[
 		{	
-			"worldWidth": 12.0,
-			"worldHeight": 12.0,
-			"anchorOffsetX": -2,
-			"anchorOffsetY": 2,
-			"frameNamePattern": "physics_probe_\\d+"
+			"world_width": 12.0,
+			"world_height": 12.0,
+			"anchor_offset_x": -2,
+			"anchor_offset_y": 2,
+			"frame_name_pattern": "physics_probe_\\d+"
 		}
 	]
 },
 
 {
-	"groupName": "PhysicsProbePing",
-	"hasOwnAmbientLight": true,
+	"group_name": "PhysicsProbePing",
+	"has_own_ambient_light": true,
 	"frames":[
 		{	
-			"worldWidth": 12.0,
-			"worldHeight": 12.0,
-			"anchorOffsetX": -2,
-			"anchorOffsetY": 2,
-			"frameNamePattern": "physics_probe_ping_\\d+"
+			"world_width": 12.0,
+			"world_height": 12.0,
+			"anchor_offset_x": -2,
+			"anchor_offset_y": 2,
+			"frame_name_pattern": "physics_probe_ping_\\d+"
 		}
 	]
 },
 
 {
-	"groupName": "PinnedPoint",
-	"hasOwnAmbientLight": false,
+	"group_name": "PinnedPoint",
+	"has_own_ambient_light": false,
 	"frames":[
 		{	
-			"worldWidth": 6.0,
-			"worldHeight": 6.0,
-			"frameNamePattern": "pinned_point_.*"
+			"world_width": 6.0,
+			"world_height": 6.0,
+			"frame_name_pattern": "pinned_point_.*"
 		}
 	]
 },
 
 {
-	"groupName": "RCBomb",
-	"hasOwnAmbientLight": false,
+	"group_name": "RCBomb",
+	"has_own_ambient_light": false,
 	"frames":[
 		{	
-			"worldWidth": 12.0,
-			"worldHeight": 12.0,
-			"anchorOffsetX": -7,
-			"frameNamePattern": "rc_bomb_\\d+"
+			"world_width": 12.0,
+			"world_height": 12.0,
+			"anchor_offset_x": -7,
+			"frame_name_pattern": "rc_bomb_\\d+"
 		}
 	]
 },
 
 {
-	"groupName": "RCBombPing",
-	"hasOwnAmbientLight": true,
+	"group_name": "RCBombPing",
+	"has_own_ambient_light": true,
 	"frames":[
 		{	
-			"worldWidth": 12.0,
-			"worldHeight": 12.0,
-			"anchorOffsetX": -7,
-			"frameNamePattern": "rc_bomb_ping_\\d+"
+			"world_width": 12.0,
+			"world_height": 12.0,
+			"anchor_offset_x": -7,
+			"frame_name_pattern": "rc_bomb_ping_\\d+"
 		}
 	]
 },
 
 {
-	"groupName": "SmokeDark",
-	"hasOwnAmbientLight": false,
+	"group_name": "SmokeDark",
+	"has_own_ambient_light": false,
 	"frames":[
 		{	
-			"worldWidth": 24.0,
-			"worldHeight": 24.0,
-			"frameNamePattern": "smoke_dark_\\d+"
+			"world_width": 24.0,
+			"world_height": 24.0,
+			"frame_name_pattern": "smoke_dark_\\d+"
 		}
 	]
 },
 
 {
-	"groupName": "SmokeLight",
-	"hasOwnAmbientLight": false,
+	"group_name": "SmokeLight",
+	"has_own_ambient_light": false,
 	"frames":[
 		{	
-			"worldWidth": 24.0,
-			"worldHeight": 24.0,
-			"frameNamePattern": "smoke_light_\\d+"
+			"world_width": 24.0,
+			"world_height": 24.0,
+			"frame_name_pattern": "smoke_light_\\d+"
 		}
 	]
 },
 
 {
-	"groupName": "TimerBomb",
-	"hasOwnAmbientLight": false,
+	"group_name": "TimerBomb",
+	"has_own_ambient_light": false,
 	"frames":[
 		{	
-			"worldWidth": 12.0,
-			"worldHeight": 12.0,
-			"anchorOffsetX": -1,
-			"anchorOffsetY": 57,
-			"frameNamePattern": "timer_bomb_\\d+"
+			"world_width": 12.0,
+			"world_height": 12.0,
+			"anchor_offset_x": -1,
+			"anchor_offset_y": 57,
+			"frame_name_pattern": "timer_bomb_\\d+"
 		}
 	]
 },
 
 {
-	"groupName": "TimerBombFuse",
-	"hasOwnAmbientLight": true,
+	"group_name": "TimerBombFuse",
+	"has_own_ambient_light": true,
 	"frames":[
 		{	
-			"worldWidth": 12.0,
-			"worldHeight": 12.0,
-			"anchorOffsetX": -1,
-			"anchorOffsetY": 57,
-			"frameNamePattern": "timer_bomb_fuse_\\d+"
+			"world_width": 12.0,
+			"world_height": 12.0,
+			"anchor_offset_x": -1,
+			"anchor_offset_y": 57,
+			"frame_name_pattern": "timer_bomb_fuse_\\d+"
 		}
 	]
 }

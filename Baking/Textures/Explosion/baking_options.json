@@ -1,7 +1,7 @@
 {
-	"alphaPreMultiply": true,
-	"binaryTransparencySmoothing": false,
-	"mipMappable": true,
+	"alpha_pre_multiply": true,
+	"binary_transparency_smoothing": false,
+	"mip_mappable": true,
 	"regular": true,
-	"suppressDuplicates": false
+	"suppress_duplicates": false
 }
