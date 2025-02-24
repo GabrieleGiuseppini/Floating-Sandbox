@@ -1704,7 +1704,7 @@ void WorldRenderContext::ApplyViewModelChanges(RenderParameters const & renderPa
     constexpr float ZFar = 1000.0f;
     constexpr float ZNear = 1.0f;
 
-    ViewModel::ProjectionMatrix globalOrthoMatrix;
+    ProjectionMatrix globalOrthoMatrix;
     renderParameters.View.CalculateGlobalOrthoMatrix(ZFar, ZNear, globalOrthoMatrix);
 
     mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::LandFlatBasic>();

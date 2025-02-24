@@ -311,7 +311,7 @@ inline void * alloc_aligned_to_vectorization_word(size_t byte_size)
 
 #if FS_IS_OS_ANDROID()
 
-    return _poor_man_alloc_aligned_to_vectorization_word(byte_size);
+    return _poor_mans_alloc_aligned_to_vectorization_word(byte_size);
 
 #else
 

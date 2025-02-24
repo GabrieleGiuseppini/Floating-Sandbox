@@ -18,10 +18,6 @@ class ViewModel
 {
 public:
 
-    using ProjectionMatrix = float[4][4];
-
-public:
-
     ViewModel(
         FloatSize const & maxWorldSize,
         float zoom,

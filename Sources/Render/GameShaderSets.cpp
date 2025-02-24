@@ -200,7 +200,7 @@ ProgramKind ShaderNameToProgramKind(std::string const & str)
     else if (lstr == "world_border")
         return ProgramKind::WorldBorder;
     else
-        throw GameException("Unrecognized program \"" + str + "\"");
+        throw GameException("Unrecognized Game program \"" + str + "\"");
 }
 
 std::string ProgramKindToStr(ProgramKind program)
@@ -394,7 +394,7 @@ std::string ProgramKindToStr(ProgramKind program)
     }
 
     assert(false);
-    throw GameException("Unsupported GameShaderProgramType");
+    throw GameException("Unsupported Game ProgramKind");
 }
 
 ProgramParameterKind StrToProgramParameterKind(std::string const & str)
@@ -497,7 +497,7 @@ ProgramParameterKind StrToProgramParameterKind(std::string const & str)
     else if (str == "OceanTexture")
         return ProgramParameterKind::OceanTexture;
     else
-        throw GameException("Unrecognized program parameter \"" + str + "\"");
+        throw GameException("Unrecognized Game program parameter \"" + str + "\"");
 }
 
 std::string ProgramParameterKindToStr(ProgramParameterKind programParameter)
@@ -604,7 +604,7 @@ std::string ProgramParameterKindToStr(ProgramParameterKind programParameter)
     }
 
     assert(false);
-    throw GameException("Unsupported ProgramParameterKind");
+    throw GameException("Unsupported Game ProgramParameterKind");
 }
 
 VertexAttributeKind StrToVertexAttributeKind(std::string const & str)
@@ -758,7 +758,7 @@ VertexAttributeKind StrToVertexAttributeKind(std::string const & str)
     else if (Utils::CaseInsensitiveEquals(str, "GenericMipMappedTextureNdc2"))
         return VertexAttributeKind::GenericMipMappedTextureNdc2;
     else
-        throw GameException("Unrecognized vertex attribute \"" + str + "\"");
+        throw GameException("Unrecognized Game vertex attribute \"" + str + "\"");
 }
 
 }

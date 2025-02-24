@@ -651,7 +651,7 @@ void NotificationRenderContext::ApplyViewModelChanges(RenderParameters const & r
     constexpr float ZFar = 1000.0f;
     constexpr float ZNear = 1.0f;
 
-    ViewModel::ProjectionMatrix globalOrthoMatrix;
+    ProjectionMatrix globalOrthoMatrix;
     renderParameters.View.CalculateGlobalOrthoMatrix(ZFar, ZNear, globalOrthoMatrix);
 
     mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::MultiNotification>();

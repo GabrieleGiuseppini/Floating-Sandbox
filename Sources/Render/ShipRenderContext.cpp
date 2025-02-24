@@ -2652,7 +2652,7 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
 
     auto const & view = renderParameters.View;
 
-    ViewModel::ProjectionMatrix shipOrthoMatrix;
+    ProjectionMatrix shipOrthoMatrix;
 
     //
     // Layer 0: Ropes
