@@ -144,7 +144,7 @@ int DoBakeAtlas(int argc, char ** argv)
     }
     else if (Utils::CaseInsensitiveEquals(databaseName, "androidui"))
     {
-        atlasData = Baker::BakeAtlas<AndroidTextureDatabases::UITextureDatabase>(
+        atlasData = Baker::BakeAtlas<UITextureDatabases::UITextureDatabase>(
             texturesRootDirectoryPath,
             outputDirectoryPath,
             options);

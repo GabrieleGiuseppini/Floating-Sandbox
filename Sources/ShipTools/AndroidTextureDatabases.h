@@ -1,6 +1,6 @@
 /***************************************************************************************
 * Original Author:      Gabriele Giuseppini
-* Created:              2025-02-19
+* Created:              2025-01-26
 * Copyright:            Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
 #pragma once
@@ -10,22 +10,23 @@
 
 #include <string>
 
-//
-// All the texture databases in the Android port. This file is to be kept in-sync
-// (manually) with the Android project, so that we can bake that project's atlases.
-//
+namespace UITextureDatabases {
 
-namespace AndroidTextureDatabases {
 
 // UI
 
 enum class UITextureGroups : uint16_t
 {
-    ToolsIcon = 0,
-    SwipeIcon = 1,
-    SettingsIcon = 2,
+    // Icons
+    DotDotDotIcon = 0,
+    ShipSelectionIcon,
+    ToolsIcon,
+    SettingsIcon,
+    ViewIcon,
+    ExitIcon,
+    UnderContructionIcon,
 
-    _Last = SettingsIcon
+    _Last = UnderContructionIcon
 };
 
 struct UITextureDatabase
@@ -36,12 +37,20 @@ struct UITextureDatabase
 
     static UITextureGroups StrToTextureGroup(std::string const & str)
     {
-        if (Utils::CaseInsensitiveEquals(str, "tools_icon"))
+        if (Utils::CaseInsensitiveEquals(str, "dot_dot_dot_icon"))
+            return UITextureGroups::DotDotDotIcon;
+        else if (Utils::CaseInsensitiveEquals(str, "ship_selection_icon"))
+            return UITextureGroups::ShipSelectionIcon;
+        else if (Utils::CaseInsensitiveEquals(str, "tools_icon"))
             return UITextureGroups::ToolsIcon;
-        else if (Utils::CaseInsensitiveEquals(str, "swipe_icon"))
-            return UITextureGroups::SwipeIcon;
         else if (Utils::CaseInsensitiveEquals(str, "settings_icon"))
             return UITextureGroups::SettingsIcon;
+        else if (Utils::CaseInsensitiveEquals(str, "view_icon"))
+            return UITextureGroups::ViewIcon;
+        else if (Utils::CaseInsensitiveEquals(str, "exit_icon"))
+            return UITextureGroups::ExitIcon;
+        else if (Utils::CaseInsensitiveEquals(str, "under_construction_icon"))
+            return UITextureGroups::UnderContructionIcon;
         else
             throw GameException("Unrecognized UI texture group \"" + str + "\"");
     }
