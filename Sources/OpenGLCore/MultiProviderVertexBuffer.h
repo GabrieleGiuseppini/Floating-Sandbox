@@ -215,6 +215,8 @@ public:
             // This provider's size has changed and others follow, should re-upload everything from here
             //
 
+            // TODO: this case seems to be mergeable with below
+
             InternalUploadAllFromProvider(iFirstDirtyProvider, prefixVertexCount);
         }
         else
@@ -239,8 +241,10 @@ public:
             bool isDirtyInSize = isFirstDirtyProviderDirtyInSize;
             for (size_t iProvider = iFirstDirtyProvider + 1; iProvider < NProviders; ++iProvider)
             {
-                bool const isNewProviderDirtyInSize = mVertexAttributesBuffer[iProvider].size() != mLastUploadedVertexCount[iProvider];
-                if (isDirtyInSize || mDirtyProviders[iProvider] ||  isNewProviderDirtyInSize)
+                // This provider's buffer must be copied iff:
+                //  - Any of the previous providers has changed size, OR
+                //  - This provider is dirty (size or just content)
+                if (isDirtyInSize || mDirtyProviders[iProvider])
                 {
                     // Copy buffer
                     for (size_t vs = 0; vs < mVertexAttributesBuffer[iProvider].size(); ++vs, ++vd)
@@ -253,7 +257,7 @@ public:
                     mDirtyProviders[iProvider] = false;
                 }
 
-                isDirtyInSize |= isNewProviderDirtyInSize;
+                isDirtyInSize |= (mVertexAttributesBuffer[iProvider].size() != mLastUploadedVertexCount[iProvider]);
             }
 
             // Upload dirty part
