@@ -226,6 +226,7 @@ public:
             //
 
             // Begin by rebuilding this buffer
+            // TODO: merge in loop below, make it a while(true) and condition in middle
             assert(mWorkBuffer.size() >= mTotalVertexCount);
             size_t vd = prefixVertexCount;
             for (size_t vs = 0; vs < mVertexAttributesBuffer[iFirstDirtyProvider].size(); ++vs, ++vd)
