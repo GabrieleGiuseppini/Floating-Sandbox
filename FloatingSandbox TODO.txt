@@ -751,6 +751,9 @@
 		- Also GameController::Reset() should clear all events
 	- To further improve parallelism at Ship::Update, could allow threads to publish events by having EventDispatcher allow multiple threads to store* event
 		- No locks needed on read and clean, as it's done after Update has finished
+	- Fix: RenderContext destructor unbinds and then deletes all, causing OpenGL calls with no current context
+		- Need to unbind using finalizer, as first member of RenderContext (thus last dctor called)
+
 
 - Known issues (bugs):
 	- After many many hours, rain looks aweful - very likely due to timer values being high

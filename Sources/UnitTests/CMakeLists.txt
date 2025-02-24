@@ -43,6 +43,7 @@ set (UNIT_TEST_SOURCES
 	LayoutHelperTests.cpp
 	main.cpp
 	Matrix2Tests.cpp
+	MultiProviderVertexBufferTests.cpp
 	ParameterSmootherTests.cpp
 	PortableTimepointTests.cpp
 	PrecalculatedFunctionTests.cpp

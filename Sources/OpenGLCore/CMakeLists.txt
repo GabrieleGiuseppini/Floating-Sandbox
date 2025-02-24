@@ -9,6 +9,7 @@ set  (SOURCES
 	GameOpenGL_Ext.cpp
 	GameOpenGL_Ext.h
 	GameOpenGLMappedBuffer.h
+	MultiProviderVertexBuffer.h
 	ShaderManager.cpp.inl
 	ShaderManager.h
 	TriangleQuadElementArrayVBO.cpp
