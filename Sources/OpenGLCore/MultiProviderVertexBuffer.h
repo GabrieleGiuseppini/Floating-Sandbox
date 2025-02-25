@@ -156,6 +156,7 @@ public:
 
             // Reallocate VBO and upload all
 #ifndef MULTI_PROVIDER_VERTEX_BUFFER_TEST
+            Bind();
             glBufferData(GL_ARRAY_BUFFER, mTotalVertexCount * sizeof(TVertexAttributes), mWorkBuffer.data(), GL_DYNAMIC_DRAW);
             CheckOpenGLError();
 #else
@@ -313,6 +314,7 @@ private:
         if (size > 0)
         {
 #ifndef MULTI_PROVIDER_VERTEX_BUFFER_TEST
+            Bind();
             glBufferSubData(GL_ARRAY_BUFFER, offset * sizeof(TVertexAttributes), size * sizeof(TVertexAttributes), &(mWorkBuffer.data()[offset]));
             CheckOpenGLError();
 #else
