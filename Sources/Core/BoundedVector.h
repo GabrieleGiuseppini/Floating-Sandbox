@@ -159,6 +159,17 @@ public:
         return *new(&(mBuffer[index])) TElement(std::forward<TArgs>(args)...);
     }
 
+    void copy_from(BoundedVector<TElement> const & other, size_t targetOffset, size_t size)
+    {
+        assert(targetOffset + size <= mAllocatedSize);
+        TElement const * restrict src = other.mBuffer.get();
+        TElement * restrict dst = &(mBuffer.get()[targetOffset]);
+        for (size_t s = 0; s < size; ++s)
+        {
+            *(dst++) = *(src++);
+        }
+    }
+
     template <typename TCompare>
     void sort(TCompare comp)
     {

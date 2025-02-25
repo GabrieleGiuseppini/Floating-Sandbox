@@ -10,6 +10,8 @@
 
 	- Bump up version
 
+	- Try perf rendering: ocean vertex buffer padding to be aligned
+
 	- See why ships with international characters show up weird on some Windows'
 
 	- When tsunami starts you can see edges during the shaking

@@ -8,7 +8,6 @@
 #include "GameOpenGL.h"
 
 #include <Core/BoundedVector.h>
-#include <Core/Log.h>
 
 #include <array>
 #include <cassert>
@@ -139,8 +138,6 @@ public:
         {
             // Just rebuild buffer, realloc VBO, and upload all
 
-            LogMessage("*** TODOTEST: Rebuilding whole VBO");
-
             // Rebuild buffer
             mWorkBuffer.reset(mTotalVertexCount);
             for (size_t iProvider = 0; iProvider < NProviders; ++iProvider)
@@ -192,23 +189,20 @@ public:
 
             if (mDirtyProviders[iProvider] || forceRebuild)
             {
-                // Rebuild work buffer for this provider
-
-                LogMessage("*** TODOTEST: Copying P", iProvider, " (", providerBufferSize, ") to ", iWb);
+                // Rebuild work buffer portion for this provider
 
                 if (!isDirty)
                 {
-                    // Remember iDirtyStartWb
+                    // Remember where the dirty portion starts
                     iDirtyStartWb = iWb;
 
                     // From now on we're dirty
                     isDirty = true;
                 }
 
-                for (size_t vs = 0; vs < providerBufferSize; ++vs)
-                {
-                    mWorkBuffer[iWb++] = mVertexAttributesBuffer[iProvider][vs];
-                }
+                // Copy in-place
+                mWorkBuffer.copy_from(mVertexAttributesBuffer[iProvider], iWb, providerBufferSize);
+                iWb += providerBufferSize;
 
                 // Remember (current) end of dirty portion
                 iDirtyEndWb = iWb;
@@ -223,7 +217,6 @@ public:
             else
             {
                 // Advance work buffer, leaving what's there
-                LogMessage("*** TODOTEST: Skipping over P", iProvider, " (", providerBufferSize, ") at ", iWb);
                 iWb += providerBufferSize;
 
                 // No need to update last uploaded vertex count - no change
