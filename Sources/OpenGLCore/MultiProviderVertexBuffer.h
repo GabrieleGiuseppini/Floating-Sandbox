@@ -66,10 +66,12 @@ public:
         mLastAllocatedVBOVertexCount = 0;
 
 #ifndef MULTI_PROVIDER_VERTEX_BUFFER_TEST
+
         // Initialize VBO
         GLuint tmpGLuint;
         glGenBuffers(1, &tmpGLuint);
         mVBO = tmpGLuint;
+
 #endif
     }
 
@@ -98,11 +100,8 @@ public:
         assert(mTotalVertexCount >= mVertexAttributesBuffer[iProvider].size());
         mTotalVertexCount -= mVertexAttributesBuffer[iProvider].size();
 
-        // Clear and ensure size
+        // Clear provider's buffer and ensure size
         mVertexAttributesBuffer[iProvider].reset(nVertices);
-
-        // Remember it's dirty
-        mDirtyProviders[iProvider] = true;
     }
 
     template<typename TProvider>
@@ -120,9 +119,11 @@ public:
         std::size_t const iProvider = static_cast<size_t>(provider);
         assert(iProvider < NProviders);
 
-        size_t const vertexCount = mVertexAttributesBuffer[iProvider].size();
+        // Remember provider is dirty
+        mDirtyProviders[iProvider] = true;
 
         // Update total vertex count
+        size_t const vertexCount = mVertexAttributesBuffer[iProvider].size();
         mTotalVertexCount += vertexCount;
 
         return vertexCount;
@@ -187,13 +188,13 @@ public:
 
         for (size_t iProvider = 0; iProvider < NProviders; ++iProvider)
         {
+            size_t const providerBufferSize = mVertexAttributesBuffer[iProvider].size();
+
             if (mDirtyProviders[iProvider] || forceRebuild)
             {
                 // Rebuild work buffer for this provider
 
-                // TODOHERE: take provider size once and for all
-
-                LogMessage("*** TODOTEST: Copying P", iProvider, " (", mVertexAttributesBuffer[iProvider].size(), ") to ", iWb);
+                LogMessage("*** TODOTEST: Copying P", iProvider, " (", providerBufferSize, ") to ", iWb);
 
                 if (!isDirty)
                 {
@@ -204,7 +205,7 @@ public:
                     isDirty = true;
                 }
 
-                for (size_t vs = 0; vs < mVertexAttributesBuffer[iProvider].size(); ++vs)
+                for (size_t vs = 0; vs < providerBufferSize; ++vs)
                 {
                     mWorkBuffer[iWb++] = mVertexAttributesBuffer[iProvider][vs];
                 }
@@ -213,17 +214,19 @@ public:
                 iDirtyEndWb = iWb;
 
                 // If size has changed, we'll need to keep rebuilding
-                forceRebuild |= (mVertexAttributesBuffer[iProvider].size() != mLastUploadedVertexCount[iProvider]);
+                forceRebuild |= (providerBufferSize != mLastUploadedVertexCount[iProvider]);
 
                 // Reset state for provider
-                mLastUploadedVertexCount[iProvider] = mVertexAttributesBuffer[iProvider].size();
+                mLastUploadedVertexCount[iProvider] = providerBufferSize;
                 mDirtyProviders[iProvider] = false;
             }
             else
             {
                 // Advance work buffer, leaving what's there
-                LogMessage("*** TODOTEST: Skipping over P", iProvider, " (", mVertexAttributesBuffer[iProvider].size(), ") at ", iWb);
-                iWb += mVertexAttributesBuffer[iProvider].size();
+                LogMessage("*** TODOTEST: Skipping over P", iProvider, " (", providerBufferSize, ") at ", iWb);
+                iWb += providerBufferSize;
+
+                // No need to update last uploaded vertex count - no change
             }
         }
 
@@ -239,158 +242,6 @@ public:
                 iDirtyStartWb * sizeof(TVertexAttributes),
                 &(mWorkBuffer.data()[iDirtyStartWb]),
                 (iDirtyEndWb - iDirtyStartWb) * sizeof(TVertexAttributes) });
-#endif
-        }
-
-        ////// TODOOLD
-
-        //////
-        ////// Find prefix of non-dirty provider segments
-        //////
-
-        ////size_t iFirstDirtyProvider;
-        ////size_t prefixVertexCount = 0;
-        ////for (iFirstDirtyProvider = 0; iFirstDirtyProvider < NProviders; ++iFirstDirtyProvider)
-        ////{
-        ////    if (mDirtyProviders[iFirstDirtyProvider])
-        ////    {
-        ////        break;
-        ////    }
-
-        ////    prefixVertexCount += mVertexAttributesBuffer[iFirstDirtyProvider].size();
-        ////}
-
-        ////LogMessage("*** TODOTEST: FirstDirtyProvider=", iFirstDirtyProvider, " PrefixVertexCount=", prefixVertexCount);
-
-        ////if (iFirstDirtyProvider == NProviders)
-        ////{
-        ////    //
-        ////    // Nothing dirty, nothing to do
-        ////    //
-
-        ////    LogMessage("*** TODOTEST: No dirty, NOP");
-
-        ////    // No need to reset state: we're not dirty,
-        ////    // and number of uploaded vertices hasn't change for any provider
-
-        ////    return;
-        ////}
-
-        //////
-        ////// We are dirty from here
-        //////
-
-        //////
-        ////// Process dirty provider segments
-        //////
-
-        ////bool const isFirstDirtyProviderDirtyInSize = mVertexAttributesBuffer[iFirstDirtyProvider].size() != mLastUploadedVertexCount[iFirstDirtyProvider];
-
-        ////if (isFirstDirtyProviderDirtyInSize
-        ////    && iFirstDirtyProvider < NProviders - 1)
-        ////{
-        ////    //
-        ////    // This provider's size has changed and others follow, should re-upload everything from here
-        ////    //
-
-        ////    // TODO: this case seems to be mergeable with below
-
-        ////    InternalUploadAllFromProvider(iFirstDirtyProvider, prefixVertexCount);
-        ////}
-        ////else
-        ////{
-        ////    //
-        ////    // This provider is dirty only in content, or dirty in size but last...
-        ////    //
-
-        ////    // Begin by rebuilding this buffer
-        ////    // TODO: merge in loop below, make it a while(true) and condition in middle
-        ////    assert(mWorkBuffer.size() >= mTotalVertexCount);
-        ////    size_t vd = prefixVertexCount;
-        ////    for (size_t vs = 0; vs < mVertexAttributesBuffer[iFirstDirtyProvider].size(); ++vs, ++vd)
-        ////    {
-        ////        mWorkBuffer[vd] = mVertexAttributesBuffer[iFirstDirtyProvider][vs];
-        ////    }
-
-        ////    // Reset state
-        ////    mLastUploadedVertexCount[iFirstDirtyProvider] = mVertexAttributesBuffer[iFirstDirtyProvider].size();
-        ////    mDirtyProviders[iFirstDirtyProvider] = false;
-
-        ////    // Continue with remaining
-        ////    bool isDirtyInSize = isFirstDirtyProviderDirtyInSize;
-        ////    for (size_t iProvider = iFirstDirtyProvider + 1; iProvider < NProviders; ++iProvider)
-        ////    {
-        ////        // This provider's buffer must be copied iff:
-        ////        //  - Any of the previous providers has changed size, OR
-        ////        //  - This provider is dirty (size or just content)
-        ////        if (isDirtyInSize || mDirtyProviders[iProvider])
-        ////        {
-        ////            // Copy buffer
-        ////            for (size_t vs = 0; vs < mVertexAttributesBuffer[iProvider].size(); ++vs, ++vd)
-        ////            {
-        ////                mWorkBuffer[vd] = mVertexAttributesBuffer[iProvider][vs];
-        ////            }
-
-        ////            // Reset state
-        ////            mLastUploadedVertexCount[iProvider] = mVertexAttributesBuffer[iProvider].size();
-        ////            mDirtyProviders[iProvider] = false;
-        ////        }
-
-        ////        isDirtyInSize |= (mVertexAttributesBuffer[iProvider].size() != mLastUploadedVertexCount[iProvider]);
-        ////    }
-
-        ////    // Upload dirty part
-
-        ////    LogMessage("*** TODOTEST: UploadDirtyPortion From=", prefixVertexCount, " Size=", vd - prefixVertexCount);
-
-        ////    InternalUploadToVBO(prefixVertexCount, vd - prefixVertexCount);
-        ////}
-    }
-
-private:
-
-    void InternalUploadAllFromProvider(size_t iProviderStart, size_t prefixVertexCount)
-    {
-        assert(iProviderStart < NProviders - 1);
-
-        LogMessage("*** TODOTEST: UploadAll From=", iProviderStart, ", PrefixVertexCount=", prefixVertexCount);
-
-        // Repopulate whole buffer from here
-        assert(mWorkBuffer.size() >= mTotalVertexCount);
-        size_t vd = prefixVertexCount;
-        for (size_t iProvider = iProviderStart; iProvider < NProviders; ++iProvider)
-        {
-            for (size_t vs = 0; vs < mVertexAttributesBuffer[iProvider].size(); ++vs, ++vd)
-            {
-                mWorkBuffer[vd] = mVertexAttributesBuffer[iProvider][vs];
-            }
-
-            // Reset state
-            mLastUploadedVertexCount[iProvider] = mVertexAttributesBuffer[iProvider].size();
-            mDirtyProviders[iProvider] = false;
-        }
-
-        // Upload
-        InternalUploadToVBO(prefixVertexCount, vd - prefixVertexCount);
-    }
-
-    void InternalUploadToVBO(size_t offset, size_t size)
-    {
-        assert(offset + size <= mTotalVertexCount);
-        assert(offset + size <= mLastAllocatedVBOVertexCount);
-
-        if (size > 0)
-        {
-#ifndef MULTI_PROVIDER_VERTEX_BUFFER_TEST
-            Bind();
-            glBufferSubData(GL_ARRAY_BUFFER, offset * sizeof(TVertexAttributes), size * sizeof(TVertexAttributes), &(mWorkBuffer.data()[offset]));
-            CheckOpenGLError();
-#else
-            TestActions.push_back({
-                TestAction::ActionKind::UploadVBO,
-                offset * sizeof(TVertexAttributes),
-                &(mWorkBuffer.data()[offset]),
-                size * sizeof(TVertexAttributes) });
 #endif
         }
     }
