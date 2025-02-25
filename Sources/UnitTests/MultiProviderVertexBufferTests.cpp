@@ -1428,8 +1428,9 @@ TEST(MultiProviderVertexBufferTests, ThreeProviders_Change_NoDirty_Empties)
 
     EXPECT_EQ(buffer.TestActions[0].Action, TBuf::TestAction::ActionKind::UploadVBO);
     EXPECT_EQ(buffer.TestActions[0].Offset, 0u * sizeof(TestVertexAttributes));
-    ASSERT_EQ(buffer.TestActions[0].Size, 2u * sizeof(TestVertexAttributes));
+    ASSERT_EQ(buffer.TestActions[0].Size, 3u * sizeof(TestVertexAttributes));
 
     EXPECT_EQ(buffer.TestActions[0].Pointer[0].foo1, 7.0f);
     EXPECT_EQ(buffer.TestActions[0].Pointer[1].foo1, 8.0f);
+    EXPECT_EQ(buffer.TestActions[0].Pointer[2].foo1, 3.0f);
 }
