@@ -410,6 +410,24 @@ TEST(BoundedVectorTests, Indexer)
     EXPECT_EQ(6, vec[1]);
 }
 
+TEST(BoundedVectorTests, CopyFrom)
+{
+    BoundedVector<std::tuple<ElementIndex, float>> vec1(6);
+    vec1.emplace_back(4, 5.0f);
+    vec1.emplace_back(15, 2.0f);
+    vec1.emplace_back(13, 3.0f);
+    vec1.emplace_back(0, 1.0f);
+
+    BoundedVector<std::tuple<ElementIndex, float>> vec2(2);
+    vec2.emplace_back(100, 5.0f);
+    vec2.emplace_back(101, 2.0f);
+
+    vec1.copy_from(vec2, 1, 2);
+
+    EXPECT_EQ(std::get<0>(vec1[1]), ElementIndex(100));
+    EXPECT_EQ(std::get<0>(vec1[2]), ElementIndex(101));
+}
+
 TEST(BoundedVectorTests, Sort)
 {
     BoundedVector<std::tuple<ElementIndex, float>> vec(6);
