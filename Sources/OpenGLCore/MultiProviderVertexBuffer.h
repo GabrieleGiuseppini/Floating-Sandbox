@@ -57,8 +57,8 @@ public:
     {
         for (size_t p = 0; p < NProviders; ++p)
         {
-            mLastUploadedVertexCount[p] = 0;
-            mDirtyProviders[p] = false;
+            mProviderData[p].LastUploadedVertexCount = 0;
+            mProviderData[p].IsDirty = false;
         }
 
         mTotalVertexCount = 0;
@@ -96,11 +96,11 @@ public:
         assert(iProvider < NProviders);
 
         // Update total vertex count
-        assert(mTotalVertexCount >= mVertexAttributesBuffer[iProvider].size());
-        mTotalVertexCount -= mVertexAttributesBuffer[iProvider].size();
+        assert(mTotalVertexCount >= mProviderData[iProvider].VertexAttributesBuffer.size());
+        mTotalVertexCount -= mProviderData[iProvider].VertexAttributesBuffer.size();
 
         // Clear provider's buffer and ensure size
-        mVertexAttributesBuffer[iProvider].reset(nVertices);
+        mProviderData[iProvider].VertexAttributesBuffer.reset(nVertices);
     }
 
     template<typename TProvider>
@@ -109,7 +109,7 @@ public:
         std::size_t const iProvider = static_cast<size_t>(provider);
         assert(iProvider < NProviders);
 
-        mVertexAttributesBuffer[iProvider].emplace_back(vertexAttributes);
+        mProviderData[iProvider].VertexAttributesBuffer.emplace_back(vertexAttributes);
     }
 
     template<typename TProvider>
@@ -119,10 +119,10 @@ public:
         assert(iProvider < NProviders);
 
         // Remember provider is dirty
-        mDirtyProviders[iProvider] = true;
+        mProviderData[iProvider].IsDirty = true;
 
         // Update total vertex count
-        size_t const vertexCount = mVertexAttributesBuffer[iProvider].size();
+        size_t const vertexCount = mProviderData[iProvider].VertexAttributesBuffer.size();
         mTotalVertexCount += vertexCount;
 
         return vertexCount;
@@ -142,14 +142,17 @@ public:
             mWorkBuffer.reset(mTotalVertexCount);
             for (size_t iProvider = 0; iProvider < NProviders; ++iProvider)
             {
-                for (size_t v = 0; v < mVertexAttributesBuffer[iProvider].size(); ++v)
+                auto & providerData = mProviderData[iProvider];
+                size_t providerBufferSize = providerData.VertexAttributesBuffer.size();
+
+                for (size_t v = 0; v < providerBufferSize; ++v)
                 {
-                    mWorkBuffer.emplace_back(mVertexAttributesBuffer[iProvider][v]);
+                    mWorkBuffer.emplace_back(providerData.VertexAttributesBuffer[v]);
                 }
 
                 // Reset state
-                mLastUploadedVertexCount[iProvider] = mVertexAttributesBuffer[iProvider].size();
-                mDirtyProviders[iProvider] = false;
+                providerData.LastUploadedVertexCount = providerBufferSize;
+                providerData.IsDirty = false;
             }
 
             // Reallocate VBO and upload all
@@ -185,9 +188,11 @@ public:
 
         for (size_t iProvider = 0; iProvider < NProviders; ++iProvider)
         {
-            size_t const providerBufferSize = mVertexAttributesBuffer[iProvider].size();
+            auto & providerData = mProviderData[iProvider];
 
-            if (mDirtyProviders[iProvider] || forceRebuild)
+            size_t const providerBufferSize = providerData.VertexAttributesBuffer.size();
+
+            if (providerData.IsDirty || forceRebuild)
             {
                 // Rebuild work buffer portion for this provider
 
@@ -201,18 +206,18 @@ public:
                 }
 
                 // Copy in-place
-                mWorkBuffer.copy_from(mVertexAttributesBuffer[iProvider], iWb, providerBufferSize);
+                mWorkBuffer.copy_from(providerData.VertexAttributesBuffer, iWb, providerBufferSize);
                 iWb += providerBufferSize;
 
                 // Remember (current) end of dirty portion
                 iDirtyEndWb = iWb;
 
                 // If size has changed, we'll need to keep rebuilding
-                forceRebuild |= (providerBufferSize != mLastUploadedVertexCount[iProvider]);
+                forceRebuild |= (providerBufferSize != providerData.LastUploadedVertexCount);
 
                 // Reset state for provider
-                mLastUploadedVertexCount[iProvider] = providerBufferSize;
-                mDirtyProviders[iProvider] = false;
+                providerData.LastUploadedVertexCount = providerBufferSize;
+                providerData.IsDirty = false;
             }
             else
             {
@@ -241,9 +246,14 @@ public:
 
 private:
 
-    std::array<BoundedVector<TVertexAttributes>, NProviders> mVertexAttributesBuffer;
-    std::array<size_t, NProviders> mLastUploadedVertexCount;
-    std::array<bool, NProviders> mDirtyProviders;
+    struct ProviderData
+    {
+        BoundedVector<TVertexAttributes> VertexAttributesBuffer;
+        size_t LastUploadedVertexCount;
+        bool IsDirty;
+    };
+
+    std::array<ProviderData, NProviders> mProviderData;
     std::size_t mTotalVertexCount;
 
     BoundedVector<TVertexAttributes> mWorkBuffer; // For building vertex buffer; always mirror of actual vertex buffer
