@@ -18,6 +18,12 @@
 #include <vector>
 #endif
 
+/*
+ * A vertex buffer that is contributed to by different, independent actors ("providers") that
+ * do not talk to each other.
+ *
+ * Vertex attributed uploaded by each provider are sticky.
+ */
 template<typename TVertexAttributes, size_t NProviders>
 class MultiProviderVertexBuffer
 {
