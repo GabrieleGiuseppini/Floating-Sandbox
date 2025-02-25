@@ -27,6 +27,9 @@
 template<typename TVertexAttributes, size_t NProviders>
 class MultiProviderVertexBuffer
 {
+#ifndef MULTI_PROVIDER_VERTEX_BUFFER_TEST
+    static_assert(NProviders > 1, "Do not use MultiProviderVertexBuffer for just one provider");
+#endif
 
 #ifdef MULTI_PROVIDER_VERTEX_BUFFER_TEST
 public:
