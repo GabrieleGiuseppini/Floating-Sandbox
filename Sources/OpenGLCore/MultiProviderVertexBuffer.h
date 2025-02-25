@@ -53,7 +53,8 @@ public:
 public:
 
     MultiProviderVertexBuffer()
-    : mVBO()
+        : mIsGlobalDirty(false)
+        , mVBO()
     {
         for (size_t p = 0; p < NProviders; ++p)
         {
@@ -120,6 +121,7 @@ public:
 
         // Remember provider is dirty
         mProviderData[iProvider].IsDirty = true;
+        mIsGlobalDirty = true;
 
         // Update total vertex count
         size_t const vertexCount = mProviderData[iProvider].VertexAttributesBuffer.size();
@@ -130,6 +132,17 @@ public:
 
     void RenderUpload()
     {
+        //
+        // We expect to be not dirty most of the times, hence this check is worth it
+        //
+
+        if (!mIsGlobalDirty)
+        {
+            return;
+        }
+
+        mIsGlobalDirty = false; // A bit too early, but will be true when we're done
+
         //
         // First off, if we've grown we need to reallocate and thus need to rebuild buffer
         //
@@ -254,9 +267,10 @@ private:
     };
 
     std::array<ProviderData, NProviders> mProviderData;
-    std::size_t mTotalVertexCount;
+    bool mIsGlobalDirty; // Set when at least one provider is dirty
+    std::size_t mTotalVertexCount; // Total number of vertices, valid at beginning of RenderUpload()
 
-    BoundedVector<TVertexAttributes> mWorkBuffer; // For building vertex buffer; always mirror of actual vertex buffer
+    BoundedVector<TVertexAttributes> mWorkBuffer; // For building single vertex buffer; always mirror of actual VBO
 
     GameOpenGLVBO mVBO;
     size_t mLastAllocatedVBOVertexCount; // only grows
