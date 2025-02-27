@@ -75,6 +75,11 @@ public:
 #endif
     }
 
+    bool IsDirty() const
+    {
+        return mIsGlobalDirty;
+    }
+
     std::size_t GetTotalVertexCount() const
     {
         return mTotalVertexCount;
@@ -91,7 +96,7 @@ public:
     }
 
     template<typename TProvider>
-    void UploadStart(TProvider provider, size_t nVertices)
+    void UploadStart(TProvider provider, size_t nMaxVertices)
     {
         std::size_t const iProvider = static_cast<size_t>(provider);
         assert(iProvider < NProviders);
@@ -101,7 +106,7 @@ public:
         mTotalVertexCount -= mProviderData[iProvider].VertexAttributesBuffer.size();
 
         // Clear provider's buffer and ensure size
-        mProviderData[iProvider].VertexAttributesBuffer.reset(nVertices);
+        mProviderData[iProvider].VertexAttributesBuffer.reset(nMaxVertices);
     }
 
     template<typename TProvider>

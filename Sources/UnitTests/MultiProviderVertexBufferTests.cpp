@@ -38,7 +38,7 @@ TEST(MultiProviderVertexBufferTests, OneProvider_Elements)
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 1>;
     TBuf buffer;
 
-    buffer.UploadStart(0, 2);
+    buffer.UploadStart(0, 3);
     buffer.UploadVertex(0, {1.0f, 10.0f});
     buffer.UploadVertex(0, { 2.0f, 20.0f });
     buffer.UploadEnd(0);
@@ -214,12 +214,12 @@ TEST(MultiProviderVertexBufferTests, TwoProviders_Elements)
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 2>;
     TBuf buffer;
 
-    buffer.UploadStart(0, 2);
+    buffer.UploadStart(0, 3);
     buffer.UploadVertex(0, { 1.0f, 10.0f });
     buffer.UploadVertex(0, { 2.0f, 20.0f });
     buffer.UploadEnd(0);
 
-    buffer.UploadStart(1, 1);
+    buffer.UploadStart(1, 3);
     buffer.UploadVertex(1, { 3.0f, 30.0f });
     buffer.UploadEnd(1);
 
@@ -683,7 +683,7 @@ TEST(MultiProviderVertexBufferTests, ThreeProviders_Elements)
     buffer.UploadVertex(0, { 2.0f, 20.0f });
     buffer.UploadEnd(0);
 
-    buffer.UploadStart(1, 1);
+    buffer.UploadStart(1, 4);
     buffer.UploadVertex(1, { 3.0f, 30.0f });
     buffer.UploadEnd(1);
 
