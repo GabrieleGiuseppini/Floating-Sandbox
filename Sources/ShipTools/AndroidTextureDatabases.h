@@ -24,6 +24,8 @@ enum class UITextureGroups : uint16_t
     SettingsIcon,
     ViewIcon,
     ExitIcon,
+    ToolsEyeQuadrant,
+    ToolIcons,
     UnderContructionIcon,
 
     _Last = UnderContructionIcon
@@ -49,6 +51,10 @@ struct UITextureDatabase
             return UITextureGroups::ViewIcon;
         else if (Utils::CaseInsensitiveEquals(str, "exit_icon"))
             return UITextureGroups::ExitIcon;
+        else if (Utils::CaseInsensitiveEquals(str, "tools_eye_quadrant"))
+            return UITextureGroups::ToolsEyeQuadrant;
+        else if (Utils::CaseInsensitiveEquals(str, "tool_icons"))
+            return UITextureGroups::ToolIcons;
         else if (Utils::CaseInsensitiveEquals(str, "under_construction_icon"))
             return UITextureGroups::UnderContructionIcon;
         else

@@ -381,6 +381,43 @@ TEST(MultiProviderVertexBufferTests, TwoProviders_FirstEmpties)
     EXPECT_EQ(buffer.TestActions[0].Pointer[0].foo1, 3.0f);
 }
 
+TEST(MultiProviderVertexBufferTests, TwoProviders_FirstEmpties_SecondChanges)
+{
+    using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 2>;
+    TBuf buffer;
+
+    buffer.UploadStart(0, 2);
+    buffer.UploadVertex(0, { 1.0f, 10.0f });
+    buffer.UploadVertex(0, { 2.0f, 20.0f });
+    buffer.UploadEnd(0);
+
+    buffer.UploadStart(1, 1);
+    buffer.UploadVertex(1, { 3.0f, 30.0f });
+    buffer.UploadEnd(1);
+
+    buffer.RenderUpload();
+
+    buffer.TestActions.clear();
+
+    buffer.UploadStart(0, 0);
+    buffer.UploadEnd(0);
+
+    buffer.UploadStart(1, 1);
+    buffer.UploadVertex(1, { 4.0f, 40.0f });
+    buffer.UploadEnd(1);
+
+    buffer.RenderUpload();
+
+    EXPECT_EQ(buffer.GetTotalVertexCount(), 1u);
+    ASSERT_EQ(buffer.TestActions.size(), 1u);
+
+    EXPECT_EQ(buffer.TestActions[0].Action, TBuf::TestAction::ActionKind::UploadVBO);
+    EXPECT_EQ(buffer.TestActions[0].Offset, 0u * sizeof(TestVertexAttributes));
+    ASSERT_EQ(buffer.TestActions[0].Size, 1u * sizeof(TestVertexAttributes));
+
+    EXPECT_EQ(buffer.TestActions[0].Pointer[0].foo1, 4.0f);
+}
+
 TEST(MultiProviderVertexBufferTests, TwoProviders_SecondChanges)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 2>;
@@ -521,12 +558,12 @@ TEST(MultiProviderVertexBufferTests, TwoProviders_BothChange)
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 2>;
     TBuf buffer;
 
-    buffer.UploadStart(0, 2);
+    buffer.UploadStart(0, 20);
     buffer.UploadVertex(0, { 1.0f, 10.0f });
     buffer.UploadVertex(0, { 2.0f, 20.0f });
     buffer.UploadEnd(0);
 
-    buffer.UploadStart(1, 1);
+    buffer.UploadStart(1, 10);
     buffer.UploadVertex(1, { 3.0f, 30.0f });
     buffer.UploadEnd(1);
 
@@ -534,12 +571,12 @@ TEST(MultiProviderVertexBufferTests, TwoProviders_BothChange)
 
     buffer.TestActions.clear();
 
-    buffer.UploadStart(0, 2);
+    buffer.UploadStart(0, 20);
     buffer.UploadVertex(0, { 4.0f, 40.0f });
     buffer.UploadVertex(0, { 5.0f, 50.0f });
     buffer.UploadEnd(0);
 
-    buffer.UploadStart(1, 1);
+    buffer.UploadStart(1, 10);
     buffer.UploadVertex(1, { 6.0f, 60.0f });
     buffer.UploadEnd(1);
 
