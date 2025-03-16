@@ -119,7 +119,16 @@ public:
     }
 
     template<typename TProvider>
-    size_t UploadEnd(TProvider provider)
+    void UploadVertices(TProvider provider, BoundedVector<TVertexAttributes> const & vertices)
+    {
+        std::size_t const iProvider = static_cast<size_t>(provider);
+        assert(iProvider < NProviders);
+
+        mProviderData[iProvider].VertexAttributesBuffer.append_from(vertices);
+    }
+
+    template<typename TProvider>
+    void UploadEnd(TProvider provider)
     {
         std::size_t const iProvider = static_cast<size_t>(provider);
         assert(iProvider < NProviders);
@@ -131,8 +140,6 @@ public:
         // Update total vertex count
         size_t const vertexCount = mProviderData[iProvider].VertexAttributesBuffer.size();
         mTotalVertexCount += vertexCount;
-
-        return vertexCount;
     }
 
     void RenderUpload()
@@ -172,6 +179,8 @@ public:
                 providerData.LastUploadedVertexCount = providerBufferSize;
                 providerData.IsDirty = false;
             }
+
+            assert(mWorkBuffer.size() == mTotalVertexCount);
 
             // Reallocate VBO and upload all
 #ifndef MULTI_PROVIDER_VERTEX_BUFFER_TEST
@@ -239,7 +248,7 @@ public:
             }
             else
             {
-                // Advance work buffer, leaving what's there
+                // No change; advance work buffer, leaving what's there
                 iWb += providerBufferSize;
 
                 // No need to update last uploaded vertex count - no change

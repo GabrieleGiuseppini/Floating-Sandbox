@@ -11,7 +11,6 @@ std::unique_ptr<TriangleQuadElementArrayVBO> TriangleQuadElementArrayVBO::Create
 	GLuint tmpGLuint;
 	glGenBuffers(1, &tmpGLuint);
 	GameOpenGLVBO vbo(tmpGLuint);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *vbo);
 
 	return std::unique_ptr<TriangleQuadElementArrayVBO>(
 		new TriangleQuadElementArrayVBO(

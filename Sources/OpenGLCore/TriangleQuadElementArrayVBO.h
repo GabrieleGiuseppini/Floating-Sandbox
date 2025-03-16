@@ -50,7 +50,7 @@ public:
 		assert(mIsDirty);
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mVBO);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, mIndices.size() * sizeof(int), mIndices.data(), GL_STREAM_DRAW);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, mIndices.size() * sizeof(int), mIndices.data(), GL_STATIC_DRAW);
 		CheckOpenGLError();
 
 		mIsDirty = false;
