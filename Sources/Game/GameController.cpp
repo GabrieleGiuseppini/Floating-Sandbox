@@ -455,7 +455,7 @@ void GameController::RunGameIteration()
         mRenderContext->UpdateEnd();
 
         mTotalPerfStats->Update<PerfMeasurement::TotalNetUpdate>(GameChronometer::now() - netStartTime);
-        mTotalPerfStats->Update < PerfMeasurement::TotalUpdate>(GameChronometer::now() - startTime);
+        mTotalPerfStats->Update<PerfMeasurement::TotalUpdate>(GameChronometer::now() - startTime);
     }
 
     ////////////////////////////////////////////////////////////////////////////
