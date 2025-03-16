@@ -17,10 +17,12 @@
 #include <cassert>
 #include <cmath>
 #include <cstdint>
+#include <iomanip>
 #include <limits>
 #include <optional>
 #include <sstream>
 #include <string>
+#include <type_traits>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // Basics
@@ -350,6 +352,25 @@ struct PickedNpc
         , WorldOffset(worldOffset)
     {}
 };
+
+/*
+ * String representation of pointers.
+ */
+
+template<
+    typename TPointer,
+    std::enable_if_t<
+        std::is_pointer_v< TPointer >
+        && !std::is_same_v< std::string* , TPointer >
+        && !std::is_same_v< char         , typename std::remove_cv_t<std::remove_pointer_t<TPointer>> >
+        && !std::is_same_v< unsigned char, typename std::remove_cv_t<std::remove_pointer_t<TPointer>> >,
+        void
+    >* = nullptr>
+inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, TPointer const & ptr)
+{
+    os << std::hex << std::setfill('0') << std::setw(8) << reinterpret_cast<std::uintptr_t>(ptr);
+    return os;
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // Geometry
@@ -1005,9 +1026,22 @@ struct FloatSize
             static_cast<int>(std::roundf(width)),
             static_cast<int>(std::roundf(height)));
     }
+
+    std::string toString() const
+    {
+        std::stringstream ss;
+        ss << std::setprecision(12) << "(" << width << " x " << height << ")";
+        return ss.str();
+    }
 };
 
 #pragma pack(pop)
+
+inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, FloatSize const & fs)
+{
+    os << fs.toString();
+    return os;
+}
 
 /*
  * Float rectangle.
@@ -1036,6 +1070,24 @@ struct FloatRect
     {
         return origin == other.origin
             && size == other.size;
+    }
+
+    float const CalculateRightX() const
+    {
+        return origin.x + size.width;
+    }
+
+    vec2f const CalculateCenter() const
+    {
+        return vec2f(
+            origin.x + size.width / 2.0f,
+            origin.y + size.height / 2.0f);
+    }
+
+    bool Contains(vec2f const & pos) const
+    {
+        return pos.x >= origin.x && pos.x <= origin.x + size.width
+               && pos.y >= origin.y && pos.y <= origin.y + size.height;
     }
 
     bool IsContainedInRect(FloatRect const & container) const

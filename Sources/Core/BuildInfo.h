@@ -60,7 +60,7 @@ private:
         mOS = "<OS?>";
 #endif
 
-        mBuildDate = __DATE__;
+        mBuildDate = __DATE__ " " __TIME__;
 
 #ifdef _DEBUG
         mBuildFlavor = "DEBUG";

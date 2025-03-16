@@ -5,8 +5,6 @@
 ***************************************************************************************/
 #pragma once
 
-#include "Utils.h"
-
 #include <cassert>
 #include <chrono>
 #include <ctime>

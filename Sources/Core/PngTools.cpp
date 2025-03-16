@@ -4,9 +4,8 @@
 * Copyright:            Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
 
-// Include libpng right now, before we pollute the global namespace with e.g. "restrict"
 #if defined(LIBPNG_MODE_LIB)
-#include <png.h>
+#include <png.h> // Include libpng right now, before we pollute the global namespace with e.g. "restrict"
 #elif defined(LIBPNG_MODE_SOURCES)
 #include <libpng/png.h>
 #else

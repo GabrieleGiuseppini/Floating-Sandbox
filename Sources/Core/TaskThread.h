@@ -175,7 +175,7 @@ public:
      */
     TaskCompletionIndicator QueueSynchronizationPoint()
     {
-        return QueueTask([]() {});
+        return QueueTask([](){});
     }
 
 private:

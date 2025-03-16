@@ -170,6 +170,19 @@ public:
         }
     }
 
+    void append_from(BoundedVector<TElement> const & other)
+    {
+        assert(mSize + other.size() <= mAllocatedSize);
+        TElement const * restrict src = other.mBuffer.get();
+        TElement * restrict dst = &(mBuffer.get()[mSize]);
+        for (size_t s = 0; s < other.size(); ++s)
+        {
+            *(dst++) = *(src++);
+        }
+
+        mSize += other.size();
+    }
+
     template <typename TCompare>
     void sort(TCompare comp)
     {

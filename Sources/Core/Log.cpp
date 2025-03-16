@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #include "Log.h"
 
+#include "SysSpecifics.h"
+
 Logger Logger::Instance;
 
 #if FS_IS_OS_WINDOWS()
