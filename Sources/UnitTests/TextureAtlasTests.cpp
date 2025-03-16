@@ -112,37 +112,37 @@ TEST(TextureAtlasTests, Specification_MultipleTextures)
     EXPECT_EQ(128, atlasSpecification.TextureLocationInfos[1].InAtlasSize.width);
     EXPECT_EQ(128, atlasSpecification.TextureLocationInfos[1].InAtlasSize.height);
 
-    EXPECT_EQ(TextureFrameId<MyTestTextureDatabase::MyTextureGroups>(MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 0), atlasSpecification.TextureLocationInfos[2].FrameId);
+    EXPECT_EQ(TextureFrameId<MyTestTextureDatabase::MyTextureGroups>(MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 1), atlasSpecification.TextureLocationInfos[2].FrameId);
     EXPECT_EQ(256, atlasSpecification.TextureLocationInfos[2].InAtlasBottomLeft.x);
     EXPECT_EQ(128, atlasSpecification.TextureLocationInfos[2].InAtlasBottomLeft.y);
     EXPECT_EQ(128, atlasSpecification.TextureLocationInfos[2].InAtlasSize.width);
     EXPECT_EQ(64, atlasSpecification.TextureLocationInfos[2].InAtlasSize.height);
 
-    EXPECT_EQ(TextureFrameId<MyTestTextureDatabase::MyTextureGroups>(MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 1), atlasSpecification.TextureLocationInfos[3].FrameId);
+    EXPECT_EQ(TextureFrameId<MyTestTextureDatabase::MyTextureGroups>(MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 0), atlasSpecification.TextureLocationInfos[3].FrameId);
     EXPECT_EQ(256, atlasSpecification.TextureLocationInfos[3].InAtlasBottomLeft.x);
     EXPECT_EQ(128 + 64, atlasSpecification.TextureLocationInfos[3].InAtlasBottomLeft.y);
     EXPECT_EQ(128, atlasSpecification.TextureLocationInfos[3].InAtlasSize.width);
     EXPECT_EQ(64, atlasSpecification.TextureLocationInfos[3].InAtlasSize.height);
 
-    EXPECT_EQ(TextureFrameId<MyTestTextureDatabase::MyTextureGroups>(MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 3), atlasSpecification.TextureLocationInfos[4].FrameId);
+    EXPECT_EQ(TextureFrameId<MyTestTextureDatabase::MyTextureGroups>(MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 7), atlasSpecification.TextureLocationInfos[4].FrameId);
     EXPECT_EQ(256 + 128, atlasSpecification.TextureLocationInfos[4].InAtlasBottomLeft.x);
     EXPECT_EQ(0, atlasSpecification.TextureLocationInfos[4].InAtlasBottomLeft.y);
     EXPECT_EQ(64, atlasSpecification.TextureLocationInfos[4].InAtlasSize.width);
     EXPECT_EQ(64, atlasSpecification.TextureLocationInfos[4].InAtlasSize.height);
 
-    EXPECT_EQ(TextureFrameId<MyTestTextureDatabase::MyTextureGroups>(MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 5), atlasSpecification.TextureLocationInfos[5].FrameId);
+    EXPECT_EQ(TextureFrameId<MyTestTextureDatabase::MyTextureGroups>(MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 6), atlasSpecification.TextureLocationInfos[5].FrameId);
     EXPECT_EQ(256 + 128, atlasSpecification.TextureLocationInfos[5].InAtlasBottomLeft.x);
     EXPECT_EQ(64, atlasSpecification.TextureLocationInfos[5].InAtlasBottomLeft.y);
     EXPECT_EQ(64, atlasSpecification.TextureLocationInfos[5].InAtlasSize.width);
     EXPECT_EQ(64, atlasSpecification.TextureLocationInfos[5].InAtlasSize.height);
 
-    EXPECT_EQ(TextureFrameId<MyTestTextureDatabase::MyTextureGroups>(MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 6), atlasSpecification.TextureLocationInfos[6].FrameId);
+    EXPECT_EQ(TextureFrameId<MyTestTextureDatabase::MyTextureGroups>(MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 5), atlasSpecification.TextureLocationInfos[6].FrameId);
     EXPECT_EQ(256 + 128, atlasSpecification.TextureLocationInfos[6].InAtlasBottomLeft.x);
     EXPECT_EQ(64 + 64, atlasSpecification.TextureLocationInfos[6].InAtlasBottomLeft.y);
     EXPECT_EQ(64, atlasSpecification.TextureLocationInfos[6].InAtlasSize.width);
     EXPECT_EQ(64, atlasSpecification.TextureLocationInfos[6].InAtlasSize.height);
 
-    EXPECT_EQ(TextureFrameId<MyTestTextureDatabase::MyTextureGroups>(MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 7), atlasSpecification.TextureLocationInfos[7].FrameId);
+    EXPECT_EQ(TextureFrameId<MyTestTextureDatabase::MyTextureGroups>(MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 3), atlasSpecification.TextureLocationInfos[7].FrameId);
     EXPECT_EQ(256 + 128, atlasSpecification.TextureLocationInfos[7].InAtlasBottomLeft.x);
     EXPECT_EQ(64 + 64 + 64, atlasSpecification.TextureLocationInfos[7].InAtlasBottomLeft.y);
     EXPECT_EQ(64, atlasSpecification.TextureLocationInfos[7].InAtlasSize.width);
@@ -304,15 +304,15 @@ TEST(TextureAtlasTests, Specification_DuplicateSuppression)
 
     ASSERT_EQ(3u, atlasSpecification.TextureLocationInfos.size());
 
-    EXPECT_EQ(TextureFrameId<MyTestTextureDatabase::MyTextureGroups>(MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 1), atlasSpecification.TextureLocationInfos[0].FrameId);
-    EXPECT_EQ(TextureFrameId<MyTestTextureDatabase::MyTextureGroups>(MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 3), atlasSpecification.TextureLocationInfos[1].FrameId);
+    EXPECT_EQ(TextureFrameId<MyTestTextureDatabase::MyTextureGroups>(MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 3), atlasSpecification.TextureLocationInfos[0].FrameId);
+    EXPECT_EQ(TextureFrameId<MyTestTextureDatabase::MyTextureGroups>(MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 2), atlasSpecification.TextureLocationInfos[1].FrameId);
     EXPECT_EQ(TextureFrameId<MyTestTextureDatabase::MyTextureGroups>(MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 0), atlasSpecification.TextureLocationInfos[2].FrameId);
 
     ASSERT_EQ(1u, atlasSpecification.DuplicateTextureInfos.size());
 
-    EXPECT_EQ(TextureFrameId<MyTestTextureDatabase::MyTextureGroups>(MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 2), atlasSpecification.DuplicateTextureInfos[0].DuplicateFrameMetadata.FrameId);
+    EXPECT_EQ(TextureFrameId<MyTestTextureDatabase::MyTextureGroups>(MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 1), atlasSpecification.DuplicateTextureInfos[0].DuplicateFrameMetadata.FrameId);
     EXPECT_EQ(stockFrameMetadata.Size, atlasSpecification.DuplicateTextureInfos[0].DuplicateFrameMetadata.Size);
-    EXPECT_EQ(TextureFrameId<MyTestTextureDatabase::MyTextureGroups>(MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 1), atlasSpecification.DuplicateTextureInfos[0].OriginalFrameId);
+    EXPECT_EQ(TextureFrameId<MyTestTextureDatabase::MyTextureGroups>(MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 2), atlasSpecification.DuplicateTextureInfos[0].OriginalFrameId);
 }
 
 TEST(TextureAtlasTests, Placement_InAtlasSizeMatchingFrameSize)
