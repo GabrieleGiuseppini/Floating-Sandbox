@@ -24,6 +24,7 @@ enum class UITextureGroups : uint16_t
     SettingsIcon,
     ViewIcon,
     ExitIcon,
+    CheckboxFrame,
     ToolsEyeQuadrant,
     ToolIcons,
     UnderContructionIcon,
@@ -51,6 +52,8 @@ struct UITextureDatabase
             return UITextureGroups::ViewIcon;
         else if (Utils::CaseInsensitiveEquals(str, "exit_icon"))
             return UITextureGroups::ExitIcon;
+        else if (Utils::CaseInsensitiveEquals(str, "checkbox_frame"))
+            return UITextureGroups::CheckboxFrame;
         else if (Utils::CaseInsensitiveEquals(str, "tools_eye_quadrant"))
             return UITextureGroups::ToolsEyeQuadrant;
         else if (Utils::CaseInsensitiveEquals(str, "tool_icons"))
