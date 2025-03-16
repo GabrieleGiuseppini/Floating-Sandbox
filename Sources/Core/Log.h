@@ -15,8 +15,24 @@
 #include <mutex>
 #include <sstream>
 #include <string>
+#include <type_traits>
 
 namespace /* anonymous */ {
+
+    template<
+        typename TPointer,
+        std::enable_if_t<
+        std::is_pointer_v< TPointer >
+        && !std::is_same_v< std::string*, TPointer >
+        && !std::is_same_v< char, typename std::remove_cv_t<std::remove_pointer_t<TPointer>> >
+        && !std::is_same_v< unsigned char, typename std::remove_cv_t<std::remove_pointer_t<TPointer>> >,
+        void
+    >* = nullptr>
+    std::stringstream & _LogToStream(std::stringstream & ss, TPointer&& ptr)
+    {
+        ss << std::hex << std::setfill('0') << std::setw(8) << reinterpret_cast<std::uintptr_t>(ptr);
+        return ss;
+    }
 
 	template<typename T>
 	std::stringstream & _LogToStream(std::stringstream & ss, T&& t)

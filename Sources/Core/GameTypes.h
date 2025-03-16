@@ -22,7 +22,6 @@
 #include <optional>
 #include <sstream>
 #include <string>
-#include <type_traits>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // Basics
@@ -352,25 +351,6 @@ struct PickedNpc
         , WorldOffset(worldOffset)
     {}
 };
-
-/*
- * String representation of pointers.
- */
-
-template<
-    typename TPointer,
-    std::enable_if_t<
-        std::is_pointer_v< TPointer >
-        && !std::is_same_v< std::string* , TPointer >
-        && !std::is_same_v< char         , typename std::remove_cv_t<std::remove_pointer_t<TPointer>> >
-        && !std::is_same_v< unsigned char, typename std::remove_cv_t<std::remove_pointer_t<TPointer>> >,
-        void
-    >* = nullptr>
-inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, TPointer const & ptr)
-{
-    os << std::hex << std::setfill('0') << std::setw(8) << reinterpret_cast<std::uintptr_t>(ptr);
-    return os;
-}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // Geometry
