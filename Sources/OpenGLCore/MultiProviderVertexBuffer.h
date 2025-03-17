@@ -203,7 +203,7 @@ public:
 
         // Update dirty streak
         mProviderData[iProvider].DirtyStart = std::min(mProviderData[iProvider].DirtyStart, vIndex);
-        mProviderData[iProvider].DirtyEnd = std::max(mProviderData[iProvider].DirtyEnd, vIndex);
+        mProviderData[iProvider].DirtyEnd = std::max(mProviderData[iProvider].DirtyEnd, vIndex + 1);
 
         // Remember we are dirty
         mIsGlobalDirty = true;

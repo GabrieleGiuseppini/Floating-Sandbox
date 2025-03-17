@@ -1580,10 +1580,94 @@ TEST(MultiProviderVertexBufferTests, OneProvider_UpdateStart_FromInitToSize_Upda
     EXPECT_EQ(buffer.TestActions[0].Pointer[1].foo1, 2.0f);
 }
 
+TEST(MultiProviderVertexBufferTests, OneProvider_Elements_NoUpdate_Update)
+{
+    using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 1>;
+    TBuf buffer;
+
+    buffer.UpdateStart(0, 2);
+    buffer.UpdateVertex(0, 0, { 1.0f, 10.0f });
+    buffer.UpdateVertex(0, 1, { 2.0f, 20.0f });
+    buffer.UpdateEnd(0);
+
+    buffer.RenderUpload();
+
+    buffer.TestActions.clear();
+
+    buffer.UpdateStart(0, 2);
+    buffer.UpdateEnd(0);
+
+    buffer.RenderUpload();
+
+    EXPECT_EQ(buffer.GetTotalVertexCount(), 2u);
+    ASSERT_EQ(buffer.TestActions.size(), 0u);
+}
+
+TEST(MultiProviderVertexBufferTests, OneProvider_Elements_UpdateElements_Prefix_Update)
+{
+    using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 1>;
+    TBuf buffer;
+
+    buffer.UpdateStart(0, 2);
+    buffer.UpdateVertex(0, 0, { 1.0f, 10.0f });
+    buffer.UpdateVertex(0, 1, { 2.0f, 20.0f });
+    buffer.UpdateEnd(0);
+
+    buffer.RenderUpload();
+
+    buffer.TestActions.clear();
+
+    buffer.UpdateStart(0, 2);
+    buffer.UpdateVertex(0, 0, { 10.0f, 100.0f });
+    buffer.UpdateEnd(0);
+
+    buffer.RenderUpload();
+
+    EXPECT_EQ(buffer.GetTotalVertexCount(), 2u);
+    ASSERT_EQ(buffer.TestActions.size(), 1u);
+
+    EXPECT_EQ(buffer.TestActions[0].Action, TBuf::TestAction::ActionKind::UploadVBO);
+    EXPECT_EQ(buffer.TestActions[0].Offset, 0u * sizeof(TestVertexAttributes));
+    ASSERT_EQ(buffer.TestActions[0].Size, 1u * sizeof(TestVertexAttributes));
+
+    EXPECT_EQ(buffer.TestActions[0].Pointer[0].foo1, 10.0f);
+    EXPECT_EQ(buffer.TestActions[0].Pointer[1].foo1, 2.0f);
+}
+
+TEST(MultiProviderVertexBufferTests, OneProvider_Elements_UpdateElements_Suffix_Update)
+{
+    using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 1>;
+    TBuf buffer;
+
+    buffer.UpdateStart(0, 2);
+    buffer.UpdateVertex(0, 0, { 1.0f, 10.0f });
+    buffer.UpdateVertex(0, 1, { 2.0f, 20.0f });
+    buffer.UpdateEnd(0);
+
+    buffer.RenderUpload();
+
+    buffer.TestActions.clear();
+
+    buffer.UpdateStart(0, 2);
+    buffer.UpdateVertex(0, 1, { 20.0f, 200.0f });
+    buffer.UpdateEnd(0);
+
+    buffer.RenderUpload();
+
+    EXPECT_EQ(buffer.GetTotalVertexCount(), 2u);
+    ASSERT_EQ(buffer.TestActions.size(), 1u);
+
+    EXPECT_EQ(buffer.TestActions[0].Action, TBuf::TestAction::ActionKind::UploadVBO);
+    EXPECT_EQ(buffer.TestActions[0].Offset, 1u * sizeof(TestVertexAttributes));
+    ASSERT_EQ(buffer.TestActions[0].Size, 1u * sizeof(TestVertexAttributes));
+
+    EXPECT_EQ(buffer.TestActions[0].Pointer[0].foo1, 20.0f); // This is after offset
+}
+
 // TODO:
 
-// OneProvider_Elements_NoUpdate_Update
-// OneProvider_Elements_UpdateElements_Update
+//
+//
 
 // OneProvider_Elements_UpdateStart_FromInitToSize_Update
 // OneProvider_Elements_UpdateStart_FromSizeToSizeLarger_Update
