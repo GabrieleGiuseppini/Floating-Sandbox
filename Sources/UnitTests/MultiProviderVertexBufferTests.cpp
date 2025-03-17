@@ -2123,6 +2123,45 @@ TEST(MultiProviderVertexBufferTests, TwoProviders_PartialUpdates_SuffixOfFirst)
     EXPECT_EQ(buffer.TestActions[0].Pointer[0].foo1, 20.0f);
 }
 
+TEST(MultiProviderVertexBufferTests, TwoProviders_PartialUpdates_Second_ViaPointer)
+{
+    using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 2>;
+    TBuf buffer;
+
+    buffer.UpdateStart(0, 2);
+    buffer.UpdateVertex(0, 0, { 1.0f, 10.0f });
+    buffer.UpdateVertex(0, 1, { 2.0f, 20.0f });
+    buffer.UpdateEnd(0);
+
+    buffer.UpdateStart(1, 3);
+    buffer.UpdateVertex(1, 0, { 3.0f, 30.0f });
+    buffer.UpdateVertex(1, 1, { 4.0f, 40.0f });
+    buffer.UpdateVertex(1, 2, { 5.0f, 50.0f });
+    buffer.UpdateEnd(1);
+
+    buffer.RenderUpload();
+
+    buffer.TestActions.clear();
+
+    buffer.UpdateStart(1, 3);
+    TestVertexAttributes * ptr = buffer.UpdateVertices(1, 1, 2);
+    ptr[0] = { 40.0f, 400.0f };
+    ptr[1] = { 50.0f, 500.0f };
+    buffer.UpdateEnd(0);
+
+    buffer.RenderUpload();
+
+    EXPECT_EQ(buffer.GetTotalVertexCount(), 5u);
+    ASSERT_EQ(buffer.TestActions.size(), 1u);
+
+    EXPECT_EQ(buffer.TestActions[0].Action, TBuf::TestAction::ActionKind::UploadVBO);
+    EXPECT_EQ(buffer.TestActions[0].Offset, 3u * sizeof(TestVertexAttributes));
+    ASSERT_EQ(buffer.TestActions[0].Size, 2u * sizeof(TestVertexAttributes));
+
+    EXPECT_EQ(buffer.TestActions[0].Pointer[0].foo1, 40.0f);
+    EXPECT_EQ(buffer.TestActions[0].Pointer[1].foo1, 50.0f);
+}
+
 TEST(MultiProviderVertexBufferTests, TwoProviders_PartialUpdates_PrefixOfSecond)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 2>;

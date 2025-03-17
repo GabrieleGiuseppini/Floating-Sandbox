@@ -213,6 +213,24 @@ public:
     }
 
     template<typename TProvider>
+    TVertexAttributes * UpdateVertices(TProvider provider, size_t vIndex, size_t vCount)
+    {
+        std::size_t const iProvider = static_cast<size_t>(provider);
+        assert(iProvider < NProviders);
+
+        assert(vIndex + vCount <= mProviderData[iProvider].VertexAttributesBuffer.size());
+
+        // Update dirty streak
+        mProviderData[iProvider].DirtyStart = std::min(mProviderData[iProvider].DirtyStart, vIndex);
+        mProviderData[iProvider].DirtyEnd = std::max(mProviderData[iProvider].DirtyEnd, vIndex + vCount);
+
+        // Remember we are dirty
+        mIsGlobalDirty = true;
+
+        return &(mProviderData[iProvider].VertexAttributesBuffer[vIndex]);
+    }
+
+    template<typename TProvider>
     void UpdateEnd(TProvider provider)
     {
         std::size_t const iProvider = static_cast<size_t>(provider);
