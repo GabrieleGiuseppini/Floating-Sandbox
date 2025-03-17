@@ -10,7 +10,7 @@ struct TestVertexAttributes
     float foo2;
 };
 
-TEST(MultiProviderVertexBufferTests, OneProvider_Initd_VariableSize)
+TEST(MultiProviderVertexBufferTests, OneProvider_Initd_Append)
 {
     MultiProviderVertexBuffer<TestVertexAttributes, 1> buffer;
 
@@ -20,7 +20,7 @@ TEST(MultiProviderVertexBufferTests, OneProvider_Initd_VariableSize)
     EXPECT_EQ(buffer.TestActions.size(), 0u);
 }
 
-TEST(MultiProviderVertexBufferTests, OneProvider_Cleaned_VariableSize)
+TEST(MultiProviderVertexBufferTests, OneProvider_Cleaned_Append)
 {
     MultiProviderVertexBuffer<TestVertexAttributes, 1> buffer;
 
@@ -33,7 +33,7 @@ TEST(MultiProviderVertexBufferTests, OneProvider_Cleaned_VariableSize)
     EXPECT_EQ(buffer.TestActions.size(), 0u);
 }
 
-TEST(MultiProviderVertexBufferTests, OneProvider_Elements_VariableSize)
+TEST(MultiProviderVertexBufferTests, OneProvider_Elements_Append)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 1>;
     TBuf buffer;
@@ -56,7 +56,7 @@ TEST(MultiProviderVertexBufferTests, OneProvider_Elements_VariableSize)
     EXPECT_EQ(buffer.TestActions[0].Pointer[1].foo1, 2.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, OneProvider_Elements_Cleaned_VariableSize)
+TEST(MultiProviderVertexBufferTests, OneProvider_Elements_Cleaned_Append)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 1>;
     TBuf buffer;
@@ -79,7 +79,7 @@ TEST(MultiProviderVertexBufferTests, OneProvider_Elements_Cleaned_VariableSize)
     ASSERT_EQ(buffer.TestActions.size(), 0u);
 }
 
-TEST(MultiProviderVertexBufferTests, OneProvider_Elements_Changes_VariableSize)
+TEST(MultiProviderVertexBufferTests, OneProvider_Elements_Changes_Append)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 1>;
     TBuf buffer;
@@ -110,7 +110,7 @@ TEST(MultiProviderVertexBufferTests, OneProvider_Elements_Changes_VariableSize)
     EXPECT_EQ(buffer.TestActions[0].Pointer[1].foo1, 4.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, OneProvider_Elements_Grows_VariableSize)
+TEST(MultiProviderVertexBufferTests, OneProvider_Elements_Grows_Append)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 1>;
     TBuf buffer;
@@ -143,7 +143,7 @@ TEST(MultiProviderVertexBufferTests, OneProvider_Elements_Grows_VariableSize)
     EXPECT_EQ(buffer.TestActions[0].Pointer[2].foo1, 5.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, OneProvider_Elements_Shrinks_VariableSize)
+TEST(MultiProviderVertexBufferTests, OneProvider_Elements_Shrinks_Append)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 1>;
     TBuf buffer;
@@ -175,7 +175,7 @@ TEST(MultiProviderVertexBufferTests, OneProvider_Elements_Shrinks_VariableSize)
     EXPECT_EQ(buffer.TestActions[0].Pointer[1].foo1, 5.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, OneProvider_Elements_Empties_VariableSize)
+TEST(MultiProviderVertexBufferTests, OneProvider_Elements_Empties_Append)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 1>;
     TBuf buffer;
@@ -199,7 +199,7 @@ TEST(MultiProviderVertexBufferTests, OneProvider_Elements_Empties_VariableSize)
     ASSERT_EQ(buffer.TestActions.size(), 0u);
 }
 
-TEST(MultiProviderVertexBufferTests, TwoProviders_Initd_VariableSize)
+TEST(MultiProviderVertexBufferTests, TwoProviders_Initd_Append)
 {
     MultiProviderVertexBuffer<TestVertexAttributes, 2> buffer;
 
@@ -209,7 +209,7 @@ TEST(MultiProviderVertexBufferTests, TwoProviders_Initd_VariableSize)
     EXPECT_EQ(buffer.TestActions.size(), 0u);
 }
 
-TEST(MultiProviderVertexBufferTests, TwoProviders_Elements_VariableSize)
+TEST(MultiProviderVertexBufferTests, TwoProviders_Elements_Append)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 2>;
     TBuf buffer;
@@ -237,7 +237,7 @@ TEST(MultiProviderVertexBufferTests, TwoProviders_Elements_VariableSize)
     EXPECT_EQ(buffer.TestActions[0].Pointer[2].foo1, 3.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, TwoProviders_FirstChanges_VariableSize)
+TEST(MultiProviderVertexBufferTests, TwoProviders_FirstChanges_Append)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 2>;
     TBuf buffer;
@@ -274,7 +274,7 @@ TEST(MultiProviderVertexBufferTests, TwoProviders_FirstChanges_VariableSize)
     EXPECT_EQ(buffer.TestActions[0].Pointer[2].foo1, 3.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, TwoProviders_FirstGrows_VariableSize)
+TEST(MultiProviderVertexBufferTests, TwoProviders_FirstGrows_Append)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 2>;
     TBuf buffer;
@@ -313,7 +313,7 @@ TEST(MultiProviderVertexBufferTests, TwoProviders_FirstGrows_VariableSize)
     EXPECT_EQ(buffer.TestActions[0].Pointer[3].foo1, 3.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, TwoProviders_FirstShrinks_VariableSize)
+TEST(MultiProviderVertexBufferTests, TwoProviders_FirstShrinks_Append)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 2>;
     TBuf buffer;
@@ -348,7 +348,7 @@ TEST(MultiProviderVertexBufferTests, TwoProviders_FirstShrinks_VariableSize)
     EXPECT_EQ(buffer.TestActions[0].Pointer[1].foo1, 3.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, TwoProviders_FirstEmpties_VariableSize)
+TEST(MultiProviderVertexBufferTests, TwoProviders_FirstEmpties_Append)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 2>;
     TBuf buffer;
@@ -381,7 +381,7 @@ TEST(MultiProviderVertexBufferTests, TwoProviders_FirstEmpties_VariableSize)
     EXPECT_EQ(buffer.TestActions[0].Pointer[0].foo1, 3.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, TwoProviders_FirstEmpties_SecondChanges_VariableSize)
+TEST(MultiProviderVertexBufferTests, TwoProviders_FirstEmpties_SecondChanges_Append)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 2>;
     TBuf buffer;
@@ -418,7 +418,7 @@ TEST(MultiProviderVertexBufferTests, TwoProviders_FirstEmpties_SecondChanges_Var
     EXPECT_EQ(buffer.TestActions[0].Pointer[0].foo1, 4.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, TwoProviders_SecondChanges_VariableSize)
+TEST(MultiProviderVertexBufferTests, TwoProviders_SecondChanges_Append)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 2>;
     TBuf buffer;
@@ -452,7 +452,7 @@ TEST(MultiProviderVertexBufferTests, TwoProviders_SecondChanges_VariableSize)
     EXPECT_EQ(buffer.TestActions[0].Pointer[0].foo1, 4.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, TwoProviders_SecondGrows_VariableSize)
+TEST(MultiProviderVertexBufferTests, TwoProviders_SecondGrows_Append)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 2>;
     TBuf buffer;
@@ -490,7 +490,7 @@ TEST(MultiProviderVertexBufferTests, TwoProviders_SecondGrows_VariableSize)
     EXPECT_EQ(buffer.TestActions[0].Pointer[3].foo1, 5.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, TwoProviders_SecondShrinks_VariableSize)
+TEST(MultiProviderVertexBufferTests, TwoProviders_SecondShrinks_Append)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 2>;
     TBuf buffer;
@@ -525,7 +525,7 @@ TEST(MultiProviderVertexBufferTests, TwoProviders_SecondShrinks_VariableSize)
     EXPECT_EQ(buffer.TestActions[0].Pointer[0].foo1, 5.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, TwoProviders_SecondEmpties_VariableSize)
+TEST(MultiProviderVertexBufferTests, TwoProviders_SecondEmpties_Append)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 2>;
     TBuf buffer;
@@ -553,7 +553,7 @@ TEST(MultiProviderVertexBufferTests, TwoProviders_SecondEmpties_VariableSize)
     ASSERT_EQ(buffer.TestActions.size(), 0u);
 }
 
-TEST(MultiProviderVertexBufferTests, TwoProviders_BothChange_VariableSize)
+TEST(MultiProviderVertexBufferTests, TwoProviders_BothChange_Append)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 2>;
     TBuf buffer;
@@ -594,7 +594,7 @@ TEST(MultiProviderVertexBufferTests, TwoProviders_BothChange_VariableSize)
     EXPECT_EQ(buffer.TestActions[0].Pointer[2].foo1, 6.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, TwoProviders_BothGrow_VariableSize)
+TEST(MultiProviderVertexBufferTests, TwoProviders_BothGrow_Append)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 2>;
     TBuf buffer;
@@ -639,7 +639,7 @@ TEST(MultiProviderVertexBufferTests, TwoProviders_BothGrow_VariableSize)
     EXPECT_EQ(buffer.TestActions[0].Pointer[4].foo1, 8.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, TwoProviders_BothShrink_VariableSize)
+TEST(MultiProviderVertexBufferTests, TwoProviders_BothShrink_Append)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 2>;
     TBuf buffer;
@@ -679,7 +679,7 @@ TEST(MultiProviderVertexBufferTests, TwoProviders_BothShrink_VariableSize)
     EXPECT_EQ(buffer.TestActions[0].Pointer[1].foo1, 6.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, TwoProviders_BothEmpty_VariableSize)
+TEST(MultiProviderVertexBufferTests, TwoProviders_BothEmpty_Append)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 2>;
     TBuf buffer;
@@ -710,7 +710,7 @@ TEST(MultiProviderVertexBufferTests, TwoProviders_BothEmpty_VariableSize)
     ASSERT_EQ(buffer.TestActions.size(), 0u);
 }
 
-TEST(MultiProviderVertexBufferTests, ThreeProviders_Elements_VariableSize)
+TEST(MultiProviderVertexBufferTests, ThreeProviders_Elements_Append)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 3>;
     TBuf buffer;
@@ -747,7 +747,7 @@ TEST(MultiProviderVertexBufferTests, ThreeProviders_Elements_VariableSize)
     EXPECT_EQ(buffer.TestActions[0].Pointer[5].foo1, 6.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, ThreeProviders_FirstChanges_VariableSize)
+TEST(MultiProviderVertexBufferTests, ThreeProviders_FirstChanges_Append)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 3>;
     TBuf buffer;
@@ -794,7 +794,7 @@ TEST(MultiProviderVertexBufferTests, ThreeProviders_FirstChanges_VariableSize)
     EXPECT_EQ(buffer.TestActions[0].Pointer[5].foo1, 6.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, ThreeProviders_FirstGrows_VariableSize)
+TEST(MultiProviderVertexBufferTests, ThreeProviders_FirstGrows_Append)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 3>;
     TBuf buffer;
@@ -842,7 +842,7 @@ TEST(MultiProviderVertexBufferTests, ThreeProviders_FirstGrows_VariableSize)
     EXPECT_EQ(buffer.TestActions[0].Pointer[6].foo1, 6.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, ThreeProviders_FirstShrinks_VariableSize)
+TEST(MultiProviderVertexBufferTests, ThreeProviders_FirstShrinks_Append)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 3>;
     TBuf buffer;
@@ -886,7 +886,7 @@ TEST(MultiProviderVertexBufferTests, ThreeProviders_FirstShrinks_VariableSize)
     EXPECT_EQ(buffer.TestActions[0].Pointer[4].foo1, 6.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, ThreeProviders_FirstEmpties_VariableSize)
+TEST(MultiProviderVertexBufferTests, ThreeProviders_FirstEmpties_Append)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 3>;
     TBuf buffer;
@@ -928,7 +928,7 @@ TEST(MultiProviderVertexBufferTests, ThreeProviders_FirstEmpties_VariableSize)
     EXPECT_EQ(buffer.TestActions[0].Pointer[3].foo1, 6.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, ThreeProviders_SecondChanges_VariableSize)
+TEST(MultiProviderVertexBufferTests, ThreeProviders_SecondChanges_Append)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 3>;
     TBuf buffer;
@@ -971,7 +971,7 @@ TEST(MultiProviderVertexBufferTests, ThreeProviders_SecondChanges_VariableSize)
     EXPECT_EQ(buffer.TestActions[0].Pointer[3].foo1, 6.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, ThreeProviders_SecondGrows_VariableSize)
+TEST(MultiProviderVertexBufferTests, ThreeProviders_SecondGrows_Append)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 3>;
     TBuf buffer;
@@ -1018,7 +1018,7 @@ TEST(MultiProviderVertexBufferTests, ThreeProviders_SecondGrows_VariableSize)
     EXPECT_EQ(buffer.TestActions[0].Pointer[6].foo1, 6.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, ThreeProviders_SecondShrinks_VariableSize)
+TEST(MultiProviderVertexBufferTests, ThreeProviders_SecondShrinks_Append)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 3>;
     TBuf buffer;
@@ -1062,7 +1062,7 @@ TEST(MultiProviderVertexBufferTests, ThreeProviders_SecondShrinks_VariableSize)
     EXPECT_EQ(buffer.TestActions[0].Pointer[3].foo1, 7.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, ThreeProviders_SecondEmpties_VariableSize)
+TEST(MultiProviderVertexBufferTests, ThreeProviders_SecondEmpties_Append)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 3>;
     TBuf buffer;
@@ -1103,7 +1103,7 @@ TEST(MultiProviderVertexBufferTests, ThreeProviders_SecondEmpties_VariableSize)
     EXPECT_EQ(buffer.TestActions[0].Pointer[2].foo1, 6.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, ThreeProviders_ThirdChanges_VariableSize)
+TEST(MultiProviderVertexBufferTests, ThreeProviders_ThirdChanges_Append)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 3>;
     TBuf buffer;
@@ -1147,7 +1147,7 @@ TEST(MultiProviderVertexBufferTests, ThreeProviders_ThirdChanges_VariableSize)
     EXPECT_EQ(buffer.TestActions[0].Pointer[2].foo1, 9.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, ThreeProviders_ThirdGrows_VariableSize)
+TEST(MultiProviderVertexBufferTests, ThreeProviders_ThirdGrows_Append)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 3>;
     TBuf buffer;
@@ -1196,7 +1196,7 @@ TEST(MultiProviderVertexBufferTests, ThreeProviders_ThirdGrows_VariableSize)
     EXPECT_EQ(buffer.TestActions[0].Pointer[6].foo1, 10.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, ThreeProviders_ThirdShrinks_VariableSize)
+TEST(MultiProviderVertexBufferTests, ThreeProviders_ThirdShrinks_Append)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 3>;
     TBuf buffer;
@@ -1237,7 +1237,7 @@ TEST(MultiProviderVertexBufferTests, ThreeProviders_ThirdShrinks_VariableSize)
     EXPECT_EQ(buffer.TestActions[0].Pointer[0].foo1, 8.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, ThreeProviders_ThirdEmpties_VariableSize)
+TEST(MultiProviderVertexBufferTests, ThreeProviders_ThirdEmpties_Append)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 3>;
     TBuf buffer;
@@ -1270,7 +1270,7 @@ TEST(MultiProviderVertexBufferTests, ThreeProviders_ThirdEmpties_VariableSize)
     ASSERT_EQ(buffer.TestActions.size(), 0u);
 }
 
-TEST(MultiProviderVertexBufferTests, ThreeProviders_Change_NoDirty_Change_VariableSize)
+TEST(MultiProviderVertexBufferTests, ThreeProviders_Change_NoDirty_Change_Append)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 3>;
     TBuf buffer;
@@ -1322,7 +1322,7 @@ TEST(MultiProviderVertexBufferTests, ThreeProviders_Change_NoDirty_Change_Variab
     EXPECT_EQ(buffer.TestActions[0].Pointer[5].foo1, 11.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, ThreeProviders_Change_NoDirty_Grows_VariableSize)
+TEST(MultiProviderVertexBufferTests, ThreeProviders_Change_NoDirty_Grows_Append)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 3>;
     TBuf buffer;
@@ -1376,7 +1376,7 @@ TEST(MultiProviderVertexBufferTests, ThreeProviders_Change_NoDirty_Grows_Variabl
     EXPECT_EQ(buffer.TestActions[0].Pointer[6].foo1, 12.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, ThreeProviders_Change_NoDirty_Shrinks_VariableSize)
+TEST(MultiProviderVertexBufferTests, ThreeProviders_Change_NoDirty_Shrinks_Append)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 3>;
     TBuf buffer;
@@ -1426,7 +1426,7 @@ TEST(MultiProviderVertexBufferTests, ThreeProviders_Change_NoDirty_Shrinks_Varia
     EXPECT_EQ(buffer.TestActions[0].Pointer[4].foo1, 10.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, ThreeProviders_Change_NoDirty_Empties_VariableSize)
+TEST(MultiProviderVertexBufferTests, ThreeProviders_Change_NoDirty_Empties_Append)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 3>;
     TBuf buffer;
@@ -1472,7 +1472,7 @@ TEST(MultiProviderVertexBufferTests, ThreeProviders_Change_NoDirty_Empties_Varia
     EXPECT_EQ(buffer.TestActions[0].Pointer[2].foo1, 3.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, Large_VariableSize)
+TEST(MultiProviderVertexBufferTests, Large_Append)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 2>;
     TBuf buffer;
@@ -1516,7 +1516,7 @@ TEST(MultiProviderVertexBufferTests, Large_VariableSize)
     EXPECT_EQ(buffer.GetTotalVertexCount(), 16u);
 }
 
-TEST(MultiProviderVertexBufferTests, NotDirty_VariableSize)
+TEST(MultiProviderVertexBufferTests, NotDirty_Append)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 2>;
     TBuf buffer;
