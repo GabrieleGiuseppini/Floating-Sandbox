@@ -10,7 +10,7 @@ struct TestVertexAttributes
     float foo2;
 };
 
-TEST(MultiProviderVertexBufferTests, OneProvider_Initd_Append)
+TEST(MultiProviderVertexBufferTests, OneProvider_Initd)
 {
     MultiProviderVertexBuffer<TestVertexAttributes, 1> buffer;
 
@@ -20,7 +20,9 @@ TEST(MultiProviderVertexBufferTests, OneProvider_Initd_Append)
     EXPECT_EQ(buffer.TestActions.size(), 0u);
 }
 
-TEST(MultiProviderVertexBufferTests, OneProvider_Cleaned_Append)
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+TEST(MultiProviderVertexBufferTests, OneProvider_Clean_Append)
 {
     MultiProviderVertexBuffer<TestVertexAttributes, 1> buffer;
 
@@ -1554,4 +1556,51 @@ TEST(MultiProviderVertexBufferTests, NotDirty_Append)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
+
+TEST(MultiProviderVertexBufferTests, OneProvider_UpdateStart_FromInitToSize_UpdateElements_Update)
+{
+    using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 1>;
+    TBuf buffer;
+
+    buffer.UpdateStart(0, 2);
+    buffer.UpdateVertex(0, 0, { 1.0f, 10.0f });
+    buffer.UpdateVertex(0, 1, { 2.0f, 20.0f });
+    buffer.UpdateEnd(0);
+
+    buffer.RenderUpload();
+
+    EXPECT_EQ(buffer.GetTotalVertexCount(), 2u);
+    ASSERT_EQ(buffer.TestActions.size(), 1u);
+
+    EXPECT_EQ(buffer.TestActions[0].Action, TBuf::TestAction::ActionKind::AllocateAndUploadVBO);
+    EXPECT_EQ(buffer.TestActions[0].Offset, 0u * sizeof(TestVertexAttributes));
+    ASSERT_EQ(buffer.TestActions[0].Size, 2u * sizeof(TestVertexAttributes));
+
+    EXPECT_EQ(buffer.TestActions[0].Pointer[0].foo1, 1.0f);
+    EXPECT_EQ(buffer.TestActions[0].Pointer[1].foo1, 2.0f);
+}
+
+// TODO:
+
+// OneProvider_Elements_NoUpdate_Update
+// OneProvider_Elements_UpdateElements_Update
+
+// OneProvider_Elements_UpdateStart_FromInitToSize_Update
+// OneProvider_Elements_UpdateStart_FromSizeToSizeLarger_Update
+// OneProvider_Elements_UpdateStart_FromSizeToSizeSmaller_Update
+
+// TwoProviders_UpdateStart_FromInitToSize_UpdateElements_First_Update
+// TwoProviders_Elements_NoUpdate_First_Update
+// TwoProviders_Elements_UpdateElements_First_Update
+
+// TwoProviders_UpdateStart_FromInitToSize_UpdateElements_Second_Update
+// TwoProviders_Elements_NoUpdate_Second_Update
+// TwoProviders_Elements_UpdateElements_Second_Update
+
+// TwoProviders_Elements_UpdateStart_FromInitToSize_First_Update
+// TwoProviders_Elements_UpdateStart_FromSizeToSizeLarger_First_Update // Ensure everything following is uploaded
+// TwoProviders_Elements_UpdateStart_FromSizeToSizeSmaller_First_Update // Ensure everything following is uploaded
+// TwoProviders_Elements_UpdateStart_FromInitToSize_Second_Update
+// TwoProviders_Elements_UpdateStart_FromSizeToSizeLarger_Second_Update
+// TwoProviders_Elements_UpdateStart_FromSizeToSizeSmaller_Second_Update
 

@@ -147,6 +147,77 @@ public:
         mIsGlobalDirty = true;
     }
 
+    /*
+     * Signals that we are going to update elements, and also the (eventually new) number of vertices.
+     *
+     * It's a NOP unless new size is different than current.
+     */
+    template<typename TProvider>
+    void UpdateStart(TProvider provider, size_t nVertices)
+    {
+        std::size_t const iProvider = static_cast<size_t>(provider);
+        assert(iProvider < NProviders);
+
+        // Expectation is that we are not dirty
+        assert(mProviderData[iProvider].DirtyStart == mProviderData[iProvider].VertexAttributesBuffer.size());
+        assert(mProviderData[iProvider].DirtyEnd == 0);
+
+        // Update total vertex count
+        assert(mTotalVertexCount >= mProviderData[iProvider].VertexAttributesBuffer.size());
+        mTotalVertexCount += nVertices - mProviderData[iProvider].VertexAttributesBuffer.size();
+
+        if (nVertices < mProviderData[iProvider].VertexAttributesBuffer.size())
+        {
+            // Buffer is getting smaller...
+            // ...NOP: later we'll realize this buffer has changed size wrt last uploaded, and we'll copy everything after it
+
+            // Make sure provider's buffer can accomodate new number of vertices - leaving old data
+            mProviderData[iProvider].VertexAttributesBuffer.ensure_size_full(nVertices);
+
+            // Remember we are dirty
+            mIsGlobalDirty = true;
+        }
+        else if (nVertices > mProviderData[iProvider].VertexAttributesBuffer.size())
+        {
+            // Buffer is getting larger...
+            // ...make sure new portion is definitely dirty, so that we'll upload it;
+            // on top of that, we'll realize this buffer has grown and we'll copy everything afterwards
+            mProviderData[iProvider].DirtyStart = mProviderData[iProvider].VertexAttributesBuffer.size();
+            mProviderData[iProvider].DirtyEnd = nVertices;
+
+            // Make sure provider's buffer can accomodate new number of vertices - leaving old data
+            mProviderData[iProvider].VertexAttributesBuffer.ensure_size_full(nVertices);
+
+            // Remember we are dirty
+            mIsGlobalDirty = true;
+        }
+    }
+
+    template<typename TProvider>
+    void UpdateVertex(TProvider provider, size_t vIndex, TVertexAttributes const & vertexAttributes)
+    {
+        std::size_t const iProvider = static_cast<size_t>(provider);
+        assert(iProvider < NProviders);
+
+        mProviderData[iProvider].VertexAttributesBuffer[vIndex] = vertexAttributes;
+
+        // Update dirty streak
+        mProviderData[iProvider].DirtyStart = std::min(mProviderData[iProvider].DirtyStart, vIndex);
+        mProviderData[iProvider].DirtyEnd = std::max(mProviderData[iProvider].DirtyEnd, vIndex);
+
+        // Remember we are dirty
+        mIsGlobalDirty = true;
+    }
+
+    template<typename TProvider>
+    void UpdateEnd(TProvider provider)
+    {
+        std::size_t const iProvider = static_cast<size_t>(provider);
+        assert(iProvider < NProviders);
+
+        // Nop
+    }
+
     void RenderUpload()
     {
         //
