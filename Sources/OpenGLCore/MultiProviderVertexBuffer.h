@@ -174,6 +174,9 @@ public:
             // Make sure provider's buffer can accomodate new number of vertices - leaving old data
             mProviderData[iProvider].VertexAttributesBuffer.ensure_size_full(nVertices);
 
+            // Maintain consistency
+            mProviderData[iProvider].DirtyStart = mProviderData[iProvider].VertexAttributesBuffer.size();
+
             // Remember we are dirty
             mIsGlobalDirty = true;
         }
@@ -362,6 +365,9 @@ public:
 
                 // If size has changed, we'll need to keep rebuilding
                 forceRebuild |= (providerBufferSize != providerData.LastUploadedVertexCount);
+
+                // Reset state for provider
+                providerData.LastUploadedVertexCount = providerBufferSize;
             }
         }
 
