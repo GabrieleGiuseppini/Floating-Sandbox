@@ -10,7 +10,7 @@ struct TestVertexAttributes
     float foo2;
 };
 
-TEST(MultiProviderVertexBufferTests, OneProvider_Initd)
+TEST(MultiProviderVertexBufferTests, OneProvider_Initd_VariableSize)
 {
     MultiProviderVertexBuffer<TestVertexAttributes, 1> buffer;
 
@@ -20,12 +20,12 @@ TEST(MultiProviderVertexBufferTests, OneProvider_Initd)
     EXPECT_EQ(buffer.TestActions.size(), 0u);
 }
 
-TEST(MultiProviderVertexBufferTests, OneProvider_Cleaned)
+TEST(MultiProviderVertexBufferTests, OneProvider_Cleaned_VariableSize)
 {
     MultiProviderVertexBuffer<TestVertexAttributes, 1> buffer;
 
-    buffer.UploadStart(0, 0);
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 0);
+    buffer.AppendEnd(0);
 
     buffer.RenderUpload();
 
@@ -33,15 +33,15 @@ TEST(MultiProviderVertexBufferTests, OneProvider_Cleaned)
     EXPECT_EQ(buffer.TestActions.size(), 0u);
 }
 
-TEST(MultiProviderVertexBufferTests, OneProvider_Elements)
+TEST(MultiProviderVertexBufferTests, OneProvider_Elements_VariableSize)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 1>;
     TBuf buffer;
 
-    buffer.UploadStart(0, 3);
-    buffer.UploadVertex(0, {1.0f, 10.0f});
-    buffer.UploadVertex(0, { 2.0f, 20.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 3);
+    buffer.AppendVertex(0, {1.0f, 10.0f});
+    buffer.AppendVertex(0, { 2.0f, 20.0f });
+    buffer.AppendEnd(0);
 
     buffer.RenderUpload();
 
@@ -56,22 +56,22 @@ TEST(MultiProviderVertexBufferTests, OneProvider_Elements)
     EXPECT_EQ(buffer.TestActions[0].Pointer[1].foo1, 2.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, OneProvider_Elements_Cleaned)
+TEST(MultiProviderVertexBufferTests, OneProvider_Elements_Cleaned_VariableSize)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 1>;
     TBuf buffer;
 
-    buffer.UploadStart(0, 2);
-    buffer.UploadVertex(0, { 1.0f, 10.0f });
-    buffer.UploadVertex(0, { 2.0f, 20.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 2);
+    buffer.AppendVertex(0, { 1.0f, 10.0f });
+    buffer.AppendVertex(0, { 2.0f, 20.0f });
+    buffer.AppendEnd(0);
 
     buffer.RenderUpload();
 
     buffer.TestActions.clear();
 
-    buffer.UploadStart(0, 0);
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 0);
+    buffer.AppendEnd(0);
 
     buffer.RenderUpload();
 
@@ -79,24 +79,24 @@ TEST(MultiProviderVertexBufferTests, OneProvider_Elements_Cleaned)
     ASSERT_EQ(buffer.TestActions.size(), 0u);
 }
 
-TEST(MultiProviderVertexBufferTests, OneProvider_Elements_Changes)
+TEST(MultiProviderVertexBufferTests, OneProvider_Elements_Changes_VariableSize)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 1>;
     TBuf buffer;
 
-    buffer.UploadStart(0, 2);
-    buffer.UploadVertex(0, { 1.0f, 10.0f });
-    buffer.UploadVertex(0, { 2.0f, 20.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 2);
+    buffer.AppendVertex(0, { 1.0f, 10.0f });
+    buffer.AppendVertex(0, { 2.0f, 20.0f });
+    buffer.AppendEnd(0);
 
     buffer.RenderUpload();
 
     buffer.TestActions.clear();
 
-    buffer.UploadStart(0, 2);
-    buffer.UploadVertex(0, { 3.0f, 30.0f });
-    buffer.UploadVertex(0, { 4.0f, 40.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 2);
+    buffer.AppendVertex(0, { 3.0f, 30.0f });
+    buffer.AppendVertex(0, { 4.0f, 40.0f });
+    buffer.AppendEnd(0);
 
     buffer.RenderUpload();
 
@@ -110,25 +110,25 @@ TEST(MultiProviderVertexBufferTests, OneProvider_Elements_Changes)
     EXPECT_EQ(buffer.TestActions[0].Pointer[1].foo1, 4.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, OneProvider_Elements_Grows)
+TEST(MultiProviderVertexBufferTests, OneProvider_Elements_Grows_VariableSize)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 1>;
     TBuf buffer;
 
-    buffer.UploadStart(0, 2);
-    buffer.UploadVertex(0, { 1.0f, 10.0f });
-    buffer.UploadVertex(0, { 2.0f, 20.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 2);
+    buffer.AppendVertex(0, { 1.0f, 10.0f });
+    buffer.AppendVertex(0, { 2.0f, 20.0f });
+    buffer.AppendEnd(0);
 
     buffer.RenderUpload();
 
     buffer.TestActions.clear();
 
-    buffer.UploadStart(0, 3);
-    buffer.UploadVertex(0, { 3.0f, 30.0f });
-    buffer.UploadVertex(0, { 4.0f, 40.0f });
-    buffer.UploadVertex(0, { 5.0f, 50.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 3);
+    buffer.AppendVertex(0, { 3.0f, 30.0f });
+    buffer.AppendVertex(0, { 4.0f, 40.0f });
+    buffer.AppendVertex(0, { 5.0f, 50.0f });
+    buffer.AppendEnd(0);
 
     buffer.RenderUpload();
 
@@ -143,25 +143,25 @@ TEST(MultiProviderVertexBufferTests, OneProvider_Elements_Grows)
     EXPECT_EQ(buffer.TestActions[0].Pointer[2].foo1, 5.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, OneProvider_Elements_Shrinks)
+TEST(MultiProviderVertexBufferTests, OneProvider_Elements_Shrinks_VariableSize)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 1>;
     TBuf buffer;
 
-    buffer.UploadStart(0, 3);
-    buffer.UploadVertex(0, { 1.0f, 10.0f });
-    buffer.UploadVertex(0, { 2.0f, 20.0f });
-    buffer.UploadVertex(0, { 3.0f, 20.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 3);
+    buffer.AppendVertex(0, { 1.0f, 10.0f });
+    buffer.AppendVertex(0, { 2.0f, 20.0f });
+    buffer.AppendVertex(0, { 3.0f, 20.0f });
+    buffer.AppendEnd(0);
 
     buffer.RenderUpload();
 
     buffer.TestActions.clear();
 
-    buffer.UploadStart(0, 2);
-    buffer.UploadVertex(0, { 4.0f, 40.0f });
-    buffer.UploadVertex(0, { 5.0f, 50.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 2);
+    buffer.AppendVertex(0, { 4.0f, 40.0f });
+    buffer.AppendVertex(0, { 5.0f, 50.0f });
+    buffer.AppendEnd(0);
 
     buffer.RenderUpload();
 
@@ -175,23 +175,23 @@ TEST(MultiProviderVertexBufferTests, OneProvider_Elements_Shrinks)
     EXPECT_EQ(buffer.TestActions[0].Pointer[1].foo1, 5.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, OneProvider_Elements_Empties)
+TEST(MultiProviderVertexBufferTests, OneProvider_Elements_Empties_VariableSize)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 1>;
     TBuf buffer;
 
-    buffer.UploadStart(0, 3);
-    buffer.UploadVertex(0, { 1.0f, 10.0f });
-    buffer.UploadVertex(0, { 2.0f, 20.0f });
-    buffer.UploadVertex(0, { 3.0f, 20.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 3);
+    buffer.AppendVertex(0, { 1.0f, 10.0f });
+    buffer.AppendVertex(0, { 2.0f, 20.0f });
+    buffer.AppendVertex(0, { 3.0f, 20.0f });
+    buffer.AppendEnd(0);
 
     buffer.RenderUpload();
 
     buffer.TestActions.clear();
 
-    buffer.UploadStart(0, 0);
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 0);
+    buffer.AppendEnd(0);
 
     buffer.RenderUpload();
 
@@ -199,7 +199,7 @@ TEST(MultiProviderVertexBufferTests, OneProvider_Elements_Empties)
     ASSERT_EQ(buffer.TestActions.size(), 0u);
 }
 
-TEST(MultiProviderVertexBufferTests, TwoProviders_Initd)
+TEST(MultiProviderVertexBufferTests, TwoProviders_Initd_VariableSize)
 {
     MultiProviderVertexBuffer<TestVertexAttributes, 2> buffer;
 
@@ -209,19 +209,19 @@ TEST(MultiProviderVertexBufferTests, TwoProviders_Initd)
     EXPECT_EQ(buffer.TestActions.size(), 0u);
 }
 
-TEST(MultiProviderVertexBufferTests, TwoProviders_Elements)
+TEST(MultiProviderVertexBufferTests, TwoProviders_Elements_VariableSize)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 2>;
     TBuf buffer;
 
-    buffer.UploadStart(0, 3);
-    buffer.UploadVertex(0, { 1.0f, 10.0f });
-    buffer.UploadVertex(0, { 2.0f, 20.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 3);
+    buffer.AppendVertex(0, { 1.0f, 10.0f });
+    buffer.AppendVertex(0, { 2.0f, 20.0f });
+    buffer.AppendEnd(0);
 
-    buffer.UploadStart(1, 3);
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadEnd(1);
+    buffer.AppendStart(1, 3);
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendEnd(1);
 
     buffer.RenderUpload();
 
@@ -237,28 +237,28 @@ TEST(MultiProviderVertexBufferTests, TwoProviders_Elements)
     EXPECT_EQ(buffer.TestActions[0].Pointer[2].foo1, 3.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, TwoProviders_FirstChanges)
+TEST(MultiProviderVertexBufferTests, TwoProviders_FirstChanges_VariableSize)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 2>;
     TBuf buffer;
 
-    buffer.UploadStart(0, 2);
-    buffer.UploadVertex(0, { 1.0f, 10.0f });
-    buffer.UploadVertex(0, { 2.0f, 20.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 2);
+    buffer.AppendVertex(0, { 1.0f, 10.0f });
+    buffer.AppendVertex(0, { 2.0f, 20.0f });
+    buffer.AppendEnd(0);
 
-    buffer.UploadStart(1, 1);
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadEnd(1);
+    buffer.AppendStart(1, 1);
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendEnd(1);
 
     buffer.RenderUpload();
 
     buffer.TestActions.clear();
 
-    buffer.UploadStart(0, 2);
-    buffer.UploadVertex(0, { 4.0f, 40.0f });
-    buffer.UploadVertex(0, { 5.0f, 50.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 2);
+    buffer.AppendVertex(0, { 4.0f, 40.0f });
+    buffer.AppendVertex(0, { 5.0f, 50.0f });
+    buffer.AppendEnd(0);
 
     buffer.RenderUpload();
 
@@ -274,29 +274,29 @@ TEST(MultiProviderVertexBufferTests, TwoProviders_FirstChanges)
     EXPECT_EQ(buffer.TestActions[0].Pointer[2].foo1, 3.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, TwoProviders_FirstGrows)
+TEST(MultiProviderVertexBufferTests, TwoProviders_FirstGrows_VariableSize)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 2>;
     TBuf buffer;
 
-    buffer.UploadStart(0, 2);
-    buffer.UploadVertex(0, { 1.0f, 10.0f });
-    buffer.UploadVertex(0, { 2.0f, 20.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 2);
+    buffer.AppendVertex(0, { 1.0f, 10.0f });
+    buffer.AppendVertex(0, { 2.0f, 20.0f });
+    buffer.AppendEnd(0);
 
-    buffer.UploadStart(1, 1);
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadEnd(1);
+    buffer.AppendStart(1, 1);
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendEnd(1);
 
     buffer.RenderUpload();
 
     buffer.TestActions.clear();
 
-    buffer.UploadStart(0, 3);
-    buffer.UploadVertex(0, { 4.0f, 40.0f });
-    buffer.UploadVertex(0, { 5.0f, 50.0f });
-    buffer.UploadVertex(0, { 6.0f, 60.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 3);
+    buffer.AppendVertex(0, { 4.0f, 40.0f });
+    buffer.AppendVertex(0, { 5.0f, 50.0f });
+    buffer.AppendVertex(0, { 6.0f, 60.0f });
+    buffer.AppendEnd(0);
 
     buffer.RenderUpload();
 
@@ -313,27 +313,27 @@ TEST(MultiProviderVertexBufferTests, TwoProviders_FirstGrows)
     EXPECT_EQ(buffer.TestActions[0].Pointer[3].foo1, 3.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, TwoProviders_FirstShrinks)
+TEST(MultiProviderVertexBufferTests, TwoProviders_FirstShrinks_VariableSize)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 2>;
     TBuf buffer;
 
-    buffer.UploadStart(0, 2);
-    buffer.UploadVertex(0, { 1.0f, 10.0f });
-    buffer.UploadVertex(0, { 2.0f, 20.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 2);
+    buffer.AppendVertex(0, { 1.0f, 10.0f });
+    buffer.AppendVertex(0, { 2.0f, 20.0f });
+    buffer.AppendEnd(0);
 
-    buffer.UploadStart(1, 1);
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadEnd(1);
+    buffer.AppendStart(1, 1);
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendEnd(1);
 
     buffer.RenderUpload();
 
     buffer.TestActions.clear();
 
-    buffer.UploadStart(0, 1);
-    buffer.UploadVertex(0, { 4.0f, 40.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 1);
+    buffer.AppendVertex(0, { 4.0f, 40.0f });
+    buffer.AppendEnd(0);
 
     buffer.RenderUpload();
 
@@ -348,26 +348,26 @@ TEST(MultiProviderVertexBufferTests, TwoProviders_FirstShrinks)
     EXPECT_EQ(buffer.TestActions[0].Pointer[1].foo1, 3.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, TwoProviders_FirstEmpties)
+TEST(MultiProviderVertexBufferTests, TwoProviders_FirstEmpties_VariableSize)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 2>;
     TBuf buffer;
 
-    buffer.UploadStart(0, 2);
-    buffer.UploadVertex(0, { 1.0f, 10.0f });
-    buffer.UploadVertex(0, { 2.0f, 20.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 2);
+    buffer.AppendVertex(0, { 1.0f, 10.0f });
+    buffer.AppendVertex(0, { 2.0f, 20.0f });
+    buffer.AppendEnd(0);
 
-    buffer.UploadStart(1, 1);
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadEnd(1);
+    buffer.AppendStart(1, 1);
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendEnd(1);
 
     buffer.RenderUpload();
 
     buffer.TestActions.clear();
 
-    buffer.UploadStart(0, 0);
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 0);
+    buffer.AppendEnd(0);
 
     buffer.RenderUpload();
 
@@ -381,30 +381,30 @@ TEST(MultiProviderVertexBufferTests, TwoProviders_FirstEmpties)
     EXPECT_EQ(buffer.TestActions[0].Pointer[0].foo1, 3.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, TwoProviders_FirstEmpties_SecondChanges)
+TEST(MultiProviderVertexBufferTests, TwoProviders_FirstEmpties_SecondChanges_VariableSize)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 2>;
     TBuf buffer;
 
-    buffer.UploadStart(0, 2);
-    buffer.UploadVertex(0, { 1.0f, 10.0f });
-    buffer.UploadVertex(0, { 2.0f, 20.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 2);
+    buffer.AppendVertex(0, { 1.0f, 10.0f });
+    buffer.AppendVertex(0, { 2.0f, 20.0f });
+    buffer.AppendEnd(0);
 
-    buffer.UploadStart(1, 1);
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadEnd(1);
+    buffer.AppendStart(1, 1);
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendEnd(1);
 
     buffer.RenderUpload();
 
     buffer.TestActions.clear();
 
-    buffer.UploadStart(0, 0);
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 0);
+    buffer.AppendEnd(0);
 
-    buffer.UploadStart(1, 1);
-    buffer.UploadVertex(1, { 4.0f, 40.0f });
-    buffer.UploadEnd(1);
+    buffer.AppendStart(1, 1);
+    buffer.AppendVertex(1, { 4.0f, 40.0f });
+    buffer.AppendEnd(1);
 
     buffer.RenderUpload();
 
@@ -418,27 +418,27 @@ TEST(MultiProviderVertexBufferTests, TwoProviders_FirstEmpties_SecondChanges)
     EXPECT_EQ(buffer.TestActions[0].Pointer[0].foo1, 4.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, TwoProviders_SecondChanges)
+TEST(MultiProviderVertexBufferTests, TwoProviders_SecondChanges_VariableSize)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 2>;
     TBuf buffer;
 
-    buffer.UploadStart(0, 2);
-    buffer.UploadVertex(0, { 1.0f, 10.0f });
-    buffer.UploadVertex(0, { 2.0f, 20.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 2);
+    buffer.AppendVertex(0, { 1.0f, 10.0f });
+    buffer.AppendVertex(0, { 2.0f, 20.0f });
+    buffer.AppendEnd(0);
 
-    buffer.UploadStart(1, 1);
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadEnd(1);
+    buffer.AppendStart(1, 1);
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendEnd(1);
 
     buffer.RenderUpload();
 
     buffer.TestActions.clear();
 
-    buffer.UploadStart(1, 1);
-    buffer.UploadVertex(1, { 4.0f, 40.0f });
-    buffer.UploadEnd(1);
+    buffer.AppendStart(1, 1);
+    buffer.AppendVertex(1, { 4.0f, 40.0f });
+    buffer.AppendEnd(1);
 
     buffer.RenderUpload();
 
@@ -452,28 +452,28 @@ TEST(MultiProviderVertexBufferTests, TwoProviders_SecondChanges)
     EXPECT_EQ(buffer.TestActions[0].Pointer[0].foo1, 4.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, TwoProviders_SecondGrows)
+TEST(MultiProviderVertexBufferTests, TwoProviders_SecondGrows_VariableSize)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 2>;
     TBuf buffer;
 
-    buffer.UploadStart(0, 2);
-    buffer.UploadVertex(0, { 1.0f, 10.0f });
-    buffer.UploadVertex(0, { 2.0f, 20.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 2);
+    buffer.AppendVertex(0, { 1.0f, 10.0f });
+    buffer.AppendVertex(0, { 2.0f, 20.0f });
+    buffer.AppendEnd(0);
 
-    buffer.UploadStart(1, 1);
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadEnd(1);
+    buffer.AppendStart(1, 1);
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendEnd(1);
 
     buffer.RenderUpload();
 
     buffer.TestActions.clear();
 
-    buffer.UploadStart(1, 2);
-    buffer.UploadVertex(1, { 4.0f, 40.0f });
-    buffer.UploadVertex(1, { 5.0f, 50.0f });
-    buffer.UploadEnd(1);
+    buffer.AppendStart(1, 2);
+    buffer.AppendVertex(1, { 4.0f, 40.0f });
+    buffer.AppendVertex(1, { 5.0f, 50.0f });
+    buffer.AppendEnd(1);
 
     buffer.RenderUpload();
 
@@ -490,28 +490,28 @@ TEST(MultiProviderVertexBufferTests, TwoProviders_SecondGrows)
     EXPECT_EQ(buffer.TestActions[0].Pointer[3].foo1, 5.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, TwoProviders_SecondShrinks)
+TEST(MultiProviderVertexBufferTests, TwoProviders_SecondShrinks_VariableSize)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 2>;
     TBuf buffer;
 
-    buffer.UploadStart(0, 2);
-    buffer.UploadVertex(0, { 1.0f, 10.0f });
-    buffer.UploadVertex(0, { 2.0f, 20.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 2);
+    buffer.AppendVertex(0, { 1.0f, 10.0f });
+    buffer.AppendVertex(0, { 2.0f, 20.0f });
+    buffer.AppendEnd(0);
 
-    buffer.UploadStart(1, 2);
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadVertex(1, { 4.0f, 40.0f });
-    buffer.UploadEnd(1);
+    buffer.AppendStart(1, 2);
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendVertex(1, { 4.0f, 40.0f });
+    buffer.AppendEnd(1);
 
     buffer.RenderUpload();
 
     buffer.TestActions.clear();
 
-    buffer.UploadStart(1, 1);
-    buffer.UploadVertex(1, { 5.0f, 50.0f });
-    buffer.UploadEnd(1);
+    buffer.AppendStart(1, 1);
+    buffer.AppendVertex(1, { 5.0f, 50.0f });
+    buffer.AppendEnd(1);
 
     buffer.RenderUpload();
 
@@ -525,27 +525,27 @@ TEST(MultiProviderVertexBufferTests, TwoProviders_SecondShrinks)
     EXPECT_EQ(buffer.TestActions[0].Pointer[0].foo1, 5.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, TwoProviders_SecondEmpties)
+TEST(MultiProviderVertexBufferTests, TwoProviders_SecondEmpties_VariableSize)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 2>;
     TBuf buffer;
 
-    buffer.UploadStart(0, 2);
-    buffer.UploadVertex(0, { 1.0f, 10.0f });
-    buffer.UploadVertex(0, { 2.0f, 20.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 2);
+    buffer.AppendVertex(0, { 1.0f, 10.0f });
+    buffer.AppendVertex(0, { 2.0f, 20.0f });
+    buffer.AppendEnd(0);
 
-    buffer.UploadStart(1, 2);
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadVertex(1, { 4.0f, 40.0f });
-    buffer.UploadEnd(1);
+    buffer.AppendStart(1, 2);
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendVertex(1, { 4.0f, 40.0f });
+    buffer.AppendEnd(1);
 
     buffer.RenderUpload();
 
     buffer.TestActions.clear();
 
-    buffer.UploadStart(1, 0);
-    buffer.UploadEnd(1);
+    buffer.AppendStart(1, 0);
+    buffer.AppendEnd(1);
 
     buffer.RenderUpload();
 
@@ -553,32 +553,32 @@ TEST(MultiProviderVertexBufferTests, TwoProviders_SecondEmpties)
     ASSERT_EQ(buffer.TestActions.size(), 0u);
 }
 
-TEST(MultiProviderVertexBufferTests, TwoProviders_BothChange)
+TEST(MultiProviderVertexBufferTests, TwoProviders_BothChange_VariableSize)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 2>;
     TBuf buffer;
 
-    buffer.UploadStart(0, 20);
-    buffer.UploadVertex(0, { 1.0f, 10.0f });
-    buffer.UploadVertex(0, { 2.0f, 20.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 20);
+    buffer.AppendVertex(0, { 1.0f, 10.0f });
+    buffer.AppendVertex(0, { 2.0f, 20.0f });
+    buffer.AppendEnd(0);
 
-    buffer.UploadStart(1, 10);
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadEnd(1);
+    buffer.AppendStart(1, 10);
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendEnd(1);
 
     buffer.RenderUpload();
 
     buffer.TestActions.clear();
 
-    buffer.UploadStart(0, 20);
-    buffer.UploadVertex(0, { 4.0f, 40.0f });
-    buffer.UploadVertex(0, { 5.0f, 50.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 20);
+    buffer.AppendVertex(0, { 4.0f, 40.0f });
+    buffer.AppendVertex(0, { 5.0f, 50.0f });
+    buffer.AppendEnd(0);
 
-    buffer.UploadStart(1, 10);
-    buffer.UploadVertex(1, { 6.0f, 60.0f });
-    buffer.UploadEnd(1);
+    buffer.AppendStart(1, 10);
+    buffer.AppendVertex(1, { 6.0f, 60.0f });
+    buffer.AppendEnd(1);
 
     buffer.RenderUpload();
 
@@ -594,34 +594,34 @@ TEST(MultiProviderVertexBufferTests, TwoProviders_BothChange)
     EXPECT_EQ(buffer.TestActions[0].Pointer[2].foo1, 6.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, TwoProviders_BothGrow)
+TEST(MultiProviderVertexBufferTests, TwoProviders_BothGrow_VariableSize)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 2>;
     TBuf buffer;
 
-    buffer.UploadStart(0, 2);
-    buffer.UploadVertex(0, { 1.0f, 10.0f });
-    buffer.UploadVertex(0, { 2.0f, 20.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 2);
+    buffer.AppendVertex(0, { 1.0f, 10.0f });
+    buffer.AppendVertex(0, { 2.0f, 20.0f });
+    buffer.AppendEnd(0);
 
-    buffer.UploadStart(1, 1);
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadEnd(1);
+    buffer.AppendStart(1, 1);
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendEnd(1);
 
     buffer.RenderUpload();
 
     buffer.TestActions.clear();
 
-    buffer.UploadStart(0, 3);
-    buffer.UploadVertex(0, { 4.0f, 40.0f });
-    buffer.UploadVertex(0, { 5.0f, 50.0f });
-    buffer.UploadVertex(0, { 6.0f, 60.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 3);
+    buffer.AppendVertex(0, { 4.0f, 40.0f });
+    buffer.AppendVertex(0, { 5.0f, 50.0f });
+    buffer.AppendVertex(0, { 6.0f, 60.0f });
+    buffer.AppendEnd(0);
 
-    buffer.UploadStart(1, 2);
-    buffer.UploadVertex(1, { 7.0f, 70.0f });
-    buffer.UploadVertex(1, { 8.0f, 80.0f });
-    buffer.UploadEnd(1);
+    buffer.AppendStart(1, 2);
+    buffer.AppendVertex(1, { 7.0f, 70.0f });
+    buffer.AppendVertex(1, { 8.0f, 80.0f });
+    buffer.AppendEnd(1);
 
     buffer.RenderUpload();
 
@@ -639,32 +639,32 @@ TEST(MultiProviderVertexBufferTests, TwoProviders_BothGrow)
     EXPECT_EQ(buffer.TestActions[0].Pointer[4].foo1, 8.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, TwoProviders_BothShrink)
+TEST(MultiProviderVertexBufferTests, TwoProviders_BothShrink_VariableSize)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 2>;
     TBuf buffer;
 
-    buffer.UploadStart(0, 2);
-    buffer.UploadVertex(0, { 1.0f, 10.0f });
-    buffer.UploadVertex(0, { 2.0f, 20.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 2);
+    buffer.AppendVertex(0, { 1.0f, 10.0f });
+    buffer.AppendVertex(0, { 2.0f, 20.0f });
+    buffer.AppendEnd(0);
 
-    buffer.UploadStart(1, 2);
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadVertex(1, { 4.0f, 40.0f });
-    buffer.UploadEnd(1);
+    buffer.AppendStart(1, 2);
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendVertex(1, { 4.0f, 40.0f });
+    buffer.AppendEnd(1);
 
     buffer.RenderUpload();
 
     buffer.TestActions.clear();
 
-    buffer.UploadStart(0, 1);
-    buffer.UploadVertex(0, { 5.0f, 50.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 1);
+    buffer.AppendVertex(0, { 5.0f, 50.0f });
+    buffer.AppendEnd(0);
 
-    buffer.UploadStart(1, 1);
-    buffer.UploadVertex(1, { 6.0f, 60.0f });
-    buffer.UploadEnd(1);
+    buffer.AppendStart(1, 1);
+    buffer.AppendVertex(1, { 6.0f, 60.0f });
+    buffer.AppendEnd(1);
 
     buffer.RenderUpload();
 
@@ -679,30 +679,30 @@ TEST(MultiProviderVertexBufferTests, TwoProviders_BothShrink)
     EXPECT_EQ(buffer.TestActions[0].Pointer[1].foo1, 6.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, TwoProviders_BothEmpty)
+TEST(MultiProviderVertexBufferTests, TwoProviders_BothEmpty_VariableSize)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 2>;
     TBuf buffer;
 
-    buffer.UploadStart(0, 2);
-    buffer.UploadVertex(0, { 1.0f, 10.0f });
-    buffer.UploadVertex(0, { 2.0f, 20.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 2);
+    buffer.AppendVertex(0, { 1.0f, 10.0f });
+    buffer.AppendVertex(0, { 2.0f, 20.0f });
+    buffer.AppendEnd(0);
 
-    buffer.UploadStart(1, 2);
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadVertex(1, { 4.0f, 40.0f });
-    buffer.UploadEnd(1);
+    buffer.AppendStart(1, 2);
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendVertex(1, { 4.0f, 40.0f });
+    buffer.AppendEnd(1);
 
     buffer.RenderUpload();
 
     buffer.TestActions.clear();
 
-    buffer.UploadStart(0, 0);
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 0);
+    buffer.AppendEnd(0);
 
-    buffer.UploadStart(1, 0);
-    buffer.UploadEnd(1);
+    buffer.AppendStart(1, 0);
+    buffer.AppendEnd(1);
 
     buffer.RenderUpload();
 
@@ -710,25 +710,25 @@ TEST(MultiProviderVertexBufferTests, TwoProviders_BothEmpty)
     ASSERT_EQ(buffer.TestActions.size(), 0u);
 }
 
-TEST(MultiProviderVertexBufferTests, ThreeProviders_Elements)
+TEST(MultiProviderVertexBufferTests, ThreeProviders_Elements_VariableSize)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 3>;
     TBuf buffer;
 
-    buffer.UploadStart(0, 2);
-    buffer.UploadVertex(0, { 1.0f, 10.0f });
-    buffer.UploadVertex(0, { 2.0f, 20.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 2);
+    buffer.AppendVertex(0, { 1.0f, 10.0f });
+    buffer.AppendVertex(0, { 2.0f, 20.0f });
+    buffer.AppendEnd(0);
 
-    buffer.UploadStart(1, 4);
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadEnd(1);
+    buffer.AppendStart(1, 4);
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendEnd(1);
 
-    buffer.UploadStart(2, 3);
-    buffer.UploadVertex(2, { 4.0f, 40.0f });
-    buffer.UploadVertex(2, { 5.0f, 50.0f });
-    buffer.UploadVertex(2, { 6.0f, 60.0f });
-    buffer.UploadEnd(2);
+    buffer.AppendStart(2, 3);
+    buffer.AppendVertex(2, { 4.0f, 40.0f });
+    buffer.AppendVertex(2, { 5.0f, 50.0f });
+    buffer.AppendVertex(2, { 6.0f, 60.0f });
+    buffer.AppendEnd(2);
 
     buffer.RenderUpload();
 
@@ -747,34 +747,34 @@ TEST(MultiProviderVertexBufferTests, ThreeProviders_Elements)
     EXPECT_EQ(buffer.TestActions[0].Pointer[5].foo1, 6.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, ThreeProviders_FirstChanges)
+TEST(MultiProviderVertexBufferTests, ThreeProviders_FirstChanges_VariableSize)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 3>;
     TBuf buffer;
 
-    buffer.UploadStart(0, 2);
-    buffer.UploadVertex(0, { 1.0f, 10.0f });
-    buffer.UploadVertex(0, { 2.0f, 20.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 2);
+    buffer.AppendVertex(0, { 1.0f, 10.0f });
+    buffer.AppendVertex(0, { 2.0f, 20.0f });
+    buffer.AppendEnd(0);
 
-    buffer.UploadStart(1, 1);
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadEnd(1);
+    buffer.AppendStart(1, 1);
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendEnd(1);
 
-    buffer.UploadStart(2, 3);
-    buffer.UploadVertex(2, { 4.0f, 40.0f });
-    buffer.UploadVertex(2, { 5.0f, 50.0f });
-    buffer.UploadVertex(2, { 6.0f, 60.0f });
-    buffer.UploadEnd(2);
+    buffer.AppendStart(2, 3);
+    buffer.AppendVertex(2, { 4.0f, 40.0f });
+    buffer.AppendVertex(2, { 5.0f, 50.0f });
+    buffer.AppendVertex(2, { 6.0f, 60.0f });
+    buffer.AppendEnd(2);
 
     buffer.RenderUpload();
 
     buffer.TestActions.clear();
 
-    buffer.UploadStart(0, 2);
-    buffer.UploadVertex(0, { 7.0f, 70.0f });
-    buffer.UploadVertex(0, { 8.0f, 80.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 2);
+    buffer.AppendVertex(0, { 7.0f, 70.0f });
+    buffer.AppendVertex(0, { 8.0f, 80.0f });
+    buffer.AppendEnd(0);
 
     buffer.RenderUpload();
 
@@ -794,35 +794,35 @@ TEST(MultiProviderVertexBufferTests, ThreeProviders_FirstChanges)
     EXPECT_EQ(buffer.TestActions[0].Pointer[5].foo1, 6.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, ThreeProviders_FirstGrows)
+TEST(MultiProviderVertexBufferTests, ThreeProviders_FirstGrows_VariableSize)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 3>;
     TBuf buffer;
 
-    buffer.UploadStart(0, 2);
-    buffer.UploadVertex(0, { 1.0f, 10.0f });
-    buffer.UploadVertex(0, { 2.0f, 20.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 2);
+    buffer.AppendVertex(0, { 1.0f, 10.0f });
+    buffer.AppendVertex(0, { 2.0f, 20.0f });
+    buffer.AppendEnd(0);
 
-    buffer.UploadStart(1, 1);
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadEnd(1);
+    buffer.AppendStart(1, 1);
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendEnd(1);
 
-    buffer.UploadStart(2, 3);
-    buffer.UploadVertex(2, { 4.0f, 40.0f });
-    buffer.UploadVertex(2, { 5.0f, 50.0f });
-    buffer.UploadVertex(2, { 6.0f, 60.0f });
-    buffer.UploadEnd(2);
+    buffer.AppendStart(2, 3);
+    buffer.AppendVertex(2, { 4.0f, 40.0f });
+    buffer.AppendVertex(2, { 5.0f, 50.0f });
+    buffer.AppendVertex(2, { 6.0f, 60.0f });
+    buffer.AppendEnd(2);
 
     buffer.RenderUpload();
 
     buffer.TestActions.clear();
 
-    buffer.UploadStart(0, 3);
-    buffer.UploadVertex(0, { 7.0f, 70.0f });
-    buffer.UploadVertex(0, { 8.0f, 80.0f });
-    buffer.UploadVertex(0, { 9.0f, 90.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 3);
+    buffer.AppendVertex(0, { 7.0f, 70.0f });
+    buffer.AppendVertex(0, { 8.0f, 80.0f });
+    buffer.AppendVertex(0, { 9.0f, 90.0f });
+    buffer.AppendEnd(0);
 
     buffer.RenderUpload();
 
@@ -842,33 +842,33 @@ TEST(MultiProviderVertexBufferTests, ThreeProviders_FirstGrows)
     EXPECT_EQ(buffer.TestActions[0].Pointer[6].foo1, 6.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, ThreeProviders_FirstShrinks)
+TEST(MultiProviderVertexBufferTests, ThreeProviders_FirstShrinks_VariableSize)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 3>;
     TBuf buffer;
 
-    buffer.UploadStart(0, 2);
-    buffer.UploadVertex(0, { 1.0f, 10.0f });
-    buffer.UploadVertex(0, { 2.0f, 20.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 2);
+    buffer.AppendVertex(0, { 1.0f, 10.0f });
+    buffer.AppendVertex(0, { 2.0f, 20.0f });
+    buffer.AppendEnd(0);
 
-    buffer.UploadStart(1, 1);
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadEnd(1);
+    buffer.AppendStart(1, 1);
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendEnd(1);
 
-    buffer.UploadStart(2, 3);
-    buffer.UploadVertex(2, { 4.0f, 40.0f });
-    buffer.UploadVertex(2, { 5.0f, 50.0f });
-    buffer.UploadVertex(2, { 6.0f, 60.0f });
-    buffer.UploadEnd(2);
+    buffer.AppendStart(2, 3);
+    buffer.AppendVertex(2, { 4.0f, 40.0f });
+    buffer.AppendVertex(2, { 5.0f, 50.0f });
+    buffer.AppendVertex(2, { 6.0f, 60.0f });
+    buffer.AppendEnd(2);
 
     buffer.RenderUpload();
 
     buffer.TestActions.clear();
 
-    buffer.UploadStart(0, 1);
-    buffer.UploadVertex(0, { 7.0f, 70.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 1);
+    buffer.AppendVertex(0, { 7.0f, 70.0f });
+    buffer.AppendEnd(0);
 
     buffer.RenderUpload();
 
@@ -886,32 +886,32 @@ TEST(MultiProviderVertexBufferTests, ThreeProviders_FirstShrinks)
     EXPECT_EQ(buffer.TestActions[0].Pointer[4].foo1, 6.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, ThreeProviders_FirstEmpties)
+TEST(MultiProviderVertexBufferTests, ThreeProviders_FirstEmpties_VariableSize)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 3>;
     TBuf buffer;
 
-    buffer.UploadStart(0, 2);
-    buffer.UploadVertex(0, { 1.0f, 10.0f });
-    buffer.UploadVertex(0, { 2.0f, 20.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 2);
+    buffer.AppendVertex(0, { 1.0f, 10.0f });
+    buffer.AppendVertex(0, { 2.0f, 20.0f });
+    buffer.AppendEnd(0);
 
-    buffer.UploadStart(1, 1);
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadEnd(1);
+    buffer.AppendStart(1, 1);
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendEnd(1);
 
-    buffer.UploadStart(2, 3);
-    buffer.UploadVertex(2, { 4.0f, 40.0f });
-    buffer.UploadVertex(2, { 5.0f, 50.0f });
-    buffer.UploadVertex(2, { 6.0f, 60.0f });
-    buffer.UploadEnd(2);
+    buffer.AppendStart(2, 3);
+    buffer.AppendVertex(2, { 4.0f, 40.0f });
+    buffer.AppendVertex(2, { 5.0f, 50.0f });
+    buffer.AppendVertex(2, { 6.0f, 60.0f });
+    buffer.AppendEnd(2);
 
     buffer.RenderUpload();
 
     buffer.TestActions.clear();
 
-    buffer.UploadStart(0, 0);
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 0);
+    buffer.AppendEnd(0);
 
     buffer.RenderUpload();
 
@@ -928,33 +928,33 @@ TEST(MultiProviderVertexBufferTests, ThreeProviders_FirstEmpties)
     EXPECT_EQ(buffer.TestActions[0].Pointer[3].foo1, 6.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, ThreeProviders_SecondChanges)
+TEST(MultiProviderVertexBufferTests, ThreeProviders_SecondChanges_VariableSize)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 3>;
     TBuf buffer;
 
-    buffer.UploadStart(0, 2);
-    buffer.UploadVertex(0, { 1.0f, 10.0f });
-    buffer.UploadVertex(0, { 2.0f, 20.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 2);
+    buffer.AppendVertex(0, { 1.0f, 10.0f });
+    buffer.AppendVertex(0, { 2.0f, 20.0f });
+    buffer.AppendEnd(0);
 
-    buffer.UploadStart(1, 1);
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadEnd(1);
+    buffer.AppendStart(1, 1);
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendEnd(1);
 
-    buffer.UploadStart(2, 3);
-    buffer.UploadVertex(2, { 4.0f, 40.0f });
-    buffer.UploadVertex(2, { 5.0f, 50.0f });
-    buffer.UploadVertex(2, { 6.0f, 60.0f });
-    buffer.UploadEnd(2);
+    buffer.AppendStart(2, 3);
+    buffer.AppendVertex(2, { 4.0f, 40.0f });
+    buffer.AppendVertex(2, { 5.0f, 50.0f });
+    buffer.AppendVertex(2, { 6.0f, 60.0f });
+    buffer.AppendEnd(2);
 
     buffer.RenderUpload();
 
     buffer.TestActions.clear();
 
-    buffer.UploadStart(1, 1);
-    buffer.UploadVertex(1, { 7.0f, 70.0f });
-    buffer.UploadEnd(1);
+    buffer.AppendStart(1, 1);
+    buffer.AppendVertex(1, { 7.0f, 70.0f });
+    buffer.AppendEnd(1);
 
     buffer.RenderUpload();
 
@@ -971,34 +971,34 @@ TEST(MultiProviderVertexBufferTests, ThreeProviders_SecondChanges)
     EXPECT_EQ(buffer.TestActions[0].Pointer[3].foo1, 6.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, ThreeProviders_SecondGrows)
+TEST(MultiProviderVertexBufferTests, ThreeProviders_SecondGrows_VariableSize)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 3>;
     TBuf buffer;
 
-    buffer.UploadStart(0, 2);
-    buffer.UploadVertex(0, { 1.0f, 10.0f });
-    buffer.UploadVertex(0, { 2.0f, 20.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 2);
+    buffer.AppendVertex(0, { 1.0f, 10.0f });
+    buffer.AppendVertex(0, { 2.0f, 20.0f });
+    buffer.AppendEnd(0);
 
-    buffer.UploadStart(1, 1);
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadEnd(1);
+    buffer.AppendStart(1, 1);
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendEnd(1);
 
-    buffer.UploadStart(2, 3);
-    buffer.UploadVertex(2, { 4.0f, 40.0f });
-    buffer.UploadVertex(2, { 5.0f, 50.0f });
-    buffer.UploadVertex(2, { 6.0f, 60.0f });
-    buffer.UploadEnd(2);
+    buffer.AppendStart(2, 3);
+    buffer.AppendVertex(2, { 4.0f, 40.0f });
+    buffer.AppendVertex(2, { 5.0f, 50.0f });
+    buffer.AppendVertex(2, { 6.0f, 60.0f });
+    buffer.AppendEnd(2);
 
     buffer.RenderUpload();
 
     buffer.TestActions.clear();
 
-    buffer.UploadStart(1, 2);
-    buffer.UploadVertex(1, { 7.0f, 70.0f });
-    buffer.UploadVertex(1, { 8.0f, 80.0f });
-    buffer.UploadEnd(1);
+    buffer.AppendStart(1, 2);
+    buffer.AppendVertex(1, { 7.0f, 70.0f });
+    buffer.AppendVertex(1, { 8.0f, 80.0f });
+    buffer.AppendEnd(1);
 
     buffer.RenderUpload();
 
@@ -1018,34 +1018,34 @@ TEST(MultiProviderVertexBufferTests, ThreeProviders_SecondGrows)
     EXPECT_EQ(buffer.TestActions[0].Pointer[6].foo1, 6.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, ThreeProviders_SecondShrinks)
+TEST(MultiProviderVertexBufferTests, ThreeProviders_SecondShrinks_VariableSize)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 3>;
     TBuf buffer;
 
-    buffer.UploadStart(0, 2);
-    buffer.UploadVertex(0, { 1.0f, 10.0f });
-    buffer.UploadVertex(0, { 2.0f, 20.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 2);
+    buffer.AppendVertex(0, { 1.0f, 10.0f });
+    buffer.AppendVertex(0, { 2.0f, 20.0f });
+    buffer.AppendEnd(0);
 
-    buffer.UploadStart(1, 2);
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadVertex(1, { 4.0f, 40.0f });
-    buffer.UploadEnd(1);
+    buffer.AppendStart(1, 2);
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendVertex(1, { 4.0f, 40.0f });
+    buffer.AppendEnd(1);
 
-    buffer.UploadStart(2, 3);
-    buffer.UploadVertex(2, { 5.0f, 50.0f });
-    buffer.UploadVertex(2, { 6.0f, 60.0f });
-    buffer.UploadVertex(2, { 7.0f, 70.0f });
-    buffer.UploadEnd(2);
+    buffer.AppendStart(2, 3);
+    buffer.AppendVertex(2, { 5.0f, 50.0f });
+    buffer.AppendVertex(2, { 6.0f, 60.0f });
+    buffer.AppendVertex(2, { 7.0f, 70.0f });
+    buffer.AppendEnd(2);
 
     buffer.RenderUpload();
 
     buffer.TestActions.clear();
 
-    buffer.UploadStart(1, 1);
-    buffer.UploadVertex(1, { 8.0f, 80.0f });
-    buffer.UploadEnd(1);
+    buffer.AppendStart(1, 1);
+    buffer.AppendVertex(1, { 8.0f, 80.0f });
+    buffer.AppendEnd(1);
 
     buffer.RenderUpload();
 
@@ -1062,32 +1062,32 @@ TEST(MultiProviderVertexBufferTests, ThreeProviders_SecondShrinks)
     EXPECT_EQ(buffer.TestActions[0].Pointer[3].foo1, 7.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, ThreeProviders_SecondEmpties)
+TEST(MultiProviderVertexBufferTests, ThreeProviders_SecondEmpties_VariableSize)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 3>;
     TBuf buffer;
 
-    buffer.UploadStart(0, 2);
-    buffer.UploadVertex(0, { 1.0f, 10.0f });
-    buffer.UploadVertex(0, { 2.0f, 20.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 2);
+    buffer.AppendVertex(0, { 1.0f, 10.0f });
+    buffer.AppendVertex(0, { 2.0f, 20.0f });
+    buffer.AppendEnd(0);
 
-    buffer.UploadStart(1, 1);
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadEnd(1);
+    buffer.AppendStart(1, 1);
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendEnd(1);
 
-    buffer.UploadStart(2, 3);
-    buffer.UploadVertex(2, { 4.0f, 40.0f });
-    buffer.UploadVertex(2, { 5.0f, 50.0f });
-    buffer.UploadVertex(2, { 6.0f, 60.0f });
-    buffer.UploadEnd(2);
+    buffer.AppendStart(2, 3);
+    buffer.AppendVertex(2, { 4.0f, 40.0f });
+    buffer.AppendVertex(2, { 5.0f, 50.0f });
+    buffer.AppendVertex(2, { 6.0f, 60.0f });
+    buffer.AppendEnd(2);
 
     buffer.RenderUpload();
 
     buffer.TestActions.clear();
 
-    buffer.UploadStart(1, 0);
-    buffer.UploadEnd(1);
+    buffer.AppendStart(1, 0);
+    buffer.AppendEnd(1);
 
     buffer.RenderUpload();
 
@@ -1103,35 +1103,35 @@ TEST(MultiProviderVertexBufferTests, ThreeProviders_SecondEmpties)
     EXPECT_EQ(buffer.TestActions[0].Pointer[2].foo1, 6.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, ThreeProviders_ThirdChanges)
+TEST(MultiProviderVertexBufferTests, ThreeProviders_ThirdChanges_VariableSize)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 3>;
     TBuf buffer;
 
-    buffer.UploadStart(0, 2);
-    buffer.UploadVertex(0, { 1.0f, 10.0f });
-    buffer.UploadVertex(0, { 2.0f, 20.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 2);
+    buffer.AppendVertex(0, { 1.0f, 10.0f });
+    buffer.AppendVertex(0, { 2.0f, 20.0f });
+    buffer.AppendEnd(0);
 
-    buffer.UploadStart(1, 1);
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadEnd(1);
+    buffer.AppendStart(1, 1);
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendEnd(1);
 
-    buffer.UploadStart(2, 3);
-    buffer.UploadVertex(2, { 4.0f, 40.0f });
-    buffer.UploadVertex(2, { 5.0f, 50.0f });
-    buffer.UploadVertex(2, { 6.0f, 60.0f });
-    buffer.UploadEnd(2);
+    buffer.AppendStart(2, 3);
+    buffer.AppendVertex(2, { 4.0f, 40.0f });
+    buffer.AppendVertex(2, { 5.0f, 50.0f });
+    buffer.AppendVertex(2, { 6.0f, 60.0f });
+    buffer.AppendEnd(2);
 
     buffer.RenderUpload();
 
     buffer.TestActions.clear();
 
-    buffer.UploadStart(2, 3);
-    buffer.UploadVertex(2, { 7.0f, 70.0f });
-    buffer.UploadVertex(2, { 8.0f, 80.0f });
-    buffer.UploadVertex(2, { 9.0f, 90.0f });
-    buffer.UploadEnd(2);
+    buffer.AppendStart(2, 3);
+    buffer.AppendVertex(2, { 7.0f, 70.0f });
+    buffer.AppendVertex(2, { 8.0f, 80.0f });
+    buffer.AppendVertex(2, { 9.0f, 90.0f });
+    buffer.AppendEnd(2);
 
     buffer.RenderUpload();
 
@@ -1147,36 +1147,36 @@ TEST(MultiProviderVertexBufferTests, ThreeProviders_ThirdChanges)
     EXPECT_EQ(buffer.TestActions[0].Pointer[2].foo1, 9.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, ThreeProviders_ThirdGrows)
+TEST(MultiProviderVertexBufferTests, ThreeProviders_ThirdGrows_VariableSize)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 3>;
     TBuf buffer;
 
-    buffer.UploadStart(0, 2);
-    buffer.UploadVertex(0, { 1.0f, 10.0f });
-    buffer.UploadVertex(0, { 2.0f, 20.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 2);
+    buffer.AppendVertex(0, { 1.0f, 10.0f });
+    buffer.AppendVertex(0, { 2.0f, 20.0f });
+    buffer.AppendEnd(0);
 
-    buffer.UploadStart(1, 1);
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadEnd(1);
+    buffer.AppendStart(1, 1);
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendEnd(1);
 
-    buffer.UploadStart(2, 3);
-    buffer.UploadVertex(2, { 4.0f, 40.0f });
-    buffer.UploadVertex(2, { 5.0f, 50.0f });
-    buffer.UploadVertex(2, { 6.0f, 60.0f });
-    buffer.UploadEnd(2);
+    buffer.AppendStart(2, 3);
+    buffer.AppendVertex(2, { 4.0f, 40.0f });
+    buffer.AppendVertex(2, { 5.0f, 50.0f });
+    buffer.AppendVertex(2, { 6.0f, 60.0f });
+    buffer.AppendEnd(2);
 
     buffer.RenderUpload();
 
     buffer.TestActions.clear();
 
-    buffer.UploadStart(2, 4);
-    buffer.UploadVertex(2, { 7.0f, 70.0f });
-    buffer.UploadVertex(2, { 8.0f, 80.0f });
-    buffer.UploadVertex(2, { 9.0f, 90.0f });
-    buffer.UploadVertex(2, { 10.0f, 100.0f });
-    buffer.UploadEnd(2);
+    buffer.AppendStart(2, 4);
+    buffer.AppendVertex(2, { 7.0f, 70.0f });
+    buffer.AppendVertex(2, { 8.0f, 80.0f });
+    buffer.AppendVertex(2, { 9.0f, 90.0f });
+    buffer.AppendVertex(2, { 10.0f, 100.0f });
+    buffer.AppendEnd(2);
 
     buffer.RenderUpload();
 
@@ -1196,34 +1196,34 @@ TEST(MultiProviderVertexBufferTests, ThreeProviders_ThirdGrows)
     EXPECT_EQ(buffer.TestActions[0].Pointer[6].foo1, 10.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, ThreeProviders_ThirdShrinks)
+TEST(MultiProviderVertexBufferTests, ThreeProviders_ThirdShrinks_VariableSize)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 3>;
     TBuf buffer;
 
-    buffer.UploadStart(0, 2);
-    buffer.UploadVertex(0, { 1.0f, 10.0f });
-    buffer.UploadVertex(0, { 2.0f, 20.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 2);
+    buffer.AppendVertex(0, { 1.0f, 10.0f });
+    buffer.AppendVertex(0, { 2.0f, 20.0f });
+    buffer.AppendEnd(0);
 
-    buffer.UploadStart(1, 2);
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadVertex(1, { 4.0f, 40.0f });
-    buffer.UploadEnd(1);
+    buffer.AppendStart(1, 2);
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendVertex(1, { 4.0f, 40.0f });
+    buffer.AppendEnd(1);
 
-    buffer.UploadStart(2, 3);
-    buffer.UploadVertex(2, { 5.0f, 50.0f });
-    buffer.UploadVertex(2, { 6.0f, 60.0f });
-    buffer.UploadVertex(2, { 7.0f, 70.0f });
-    buffer.UploadEnd(2);
+    buffer.AppendStart(2, 3);
+    buffer.AppendVertex(2, { 5.0f, 50.0f });
+    buffer.AppendVertex(2, { 6.0f, 60.0f });
+    buffer.AppendVertex(2, { 7.0f, 70.0f });
+    buffer.AppendEnd(2);
 
     buffer.RenderUpload();
 
     buffer.TestActions.clear();
 
-    buffer.UploadStart(2, 1);
-    buffer.UploadVertex(2, { 8.0f, 80.0f });
-    buffer.UploadEnd(2);
+    buffer.AppendStart(2, 1);
+    buffer.AppendVertex(2, { 8.0f, 80.0f });
+    buffer.AppendEnd(2);
 
     buffer.RenderUpload();
 
@@ -1237,32 +1237,32 @@ TEST(MultiProviderVertexBufferTests, ThreeProviders_ThirdShrinks)
     EXPECT_EQ(buffer.TestActions[0].Pointer[0].foo1, 8.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, ThreeProviders_ThirdEmpties)
+TEST(MultiProviderVertexBufferTests, ThreeProviders_ThirdEmpties_VariableSize)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 3>;
     TBuf buffer;
 
-    buffer.UploadStart(0, 2);
-    buffer.UploadVertex(0, { 1.0f, 10.0f });
-    buffer.UploadVertex(0, { 2.0f, 20.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 2);
+    buffer.AppendVertex(0, { 1.0f, 10.0f });
+    buffer.AppendVertex(0, { 2.0f, 20.0f });
+    buffer.AppendEnd(0);
 
-    buffer.UploadStart(1, 1);
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadEnd(1);
+    buffer.AppendStart(1, 1);
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendEnd(1);
 
-    buffer.UploadStart(2, 3);
-    buffer.UploadVertex(2, { 4.0f, 40.0f });
-    buffer.UploadVertex(2, { 5.0f, 50.0f });
-    buffer.UploadVertex(2, { 6.0f, 60.0f });
-    buffer.UploadEnd(2);
+    buffer.AppendStart(2, 3);
+    buffer.AppendVertex(2, { 4.0f, 40.0f });
+    buffer.AppendVertex(2, { 5.0f, 50.0f });
+    buffer.AppendVertex(2, { 6.0f, 60.0f });
+    buffer.AppendEnd(2);
 
     buffer.RenderUpload();
 
     buffer.TestActions.clear();
 
-    buffer.UploadStart(2, 0);
-    buffer.UploadEnd(2);
+    buffer.AppendStart(2, 0);
+    buffer.AppendEnd(2);
 
     buffer.RenderUpload();
 
@@ -1270,40 +1270,40 @@ TEST(MultiProviderVertexBufferTests, ThreeProviders_ThirdEmpties)
     ASSERT_EQ(buffer.TestActions.size(), 0u);
 }
 
-TEST(MultiProviderVertexBufferTests, ThreeProviders_Change_NoDirty_Change)
+TEST(MultiProviderVertexBufferTests, ThreeProviders_Change_NoDirty_Change_VariableSize)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 3>;
     TBuf buffer;
 
-    buffer.UploadStart(0, 2);
-    buffer.UploadVertex(0, { 1.0f, 10.0f });
-    buffer.UploadVertex(0, { 2.0f, 20.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 2);
+    buffer.AppendVertex(0, { 1.0f, 10.0f });
+    buffer.AppendVertex(0, { 2.0f, 20.0f });
+    buffer.AppendEnd(0);
 
-    buffer.UploadStart(1, 1);
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadEnd(1);
+    buffer.AppendStart(1, 1);
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendEnd(1);
 
-    buffer.UploadStart(2, 3);
-    buffer.UploadVertex(2, { 4.0f, 40.0f });
-    buffer.UploadVertex(2, { 5.0f, 50.0f });
-    buffer.UploadVertex(2, { 6.0f, 60.0f });
-    buffer.UploadEnd(2);
+    buffer.AppendStart(2, 3);
+    buffer.AppendVertex(2, { 4.0f, 40.0f });
+    buffer.AppendVertex(2, { 5.0f, 50.0f });
+    buffer.AppendVertex(2, { 6.0f, 60.0f });
+    buffer.AppendEnd(2);
 
     buffer.RenderUpload();
 
     buffer.TestActions.clear();
 
-    buffer.UploadStart(0, 2);
-    buffer.UploadVertex(0, { 7.0f, 70.0f });
-    buffer.UploadVertex(0, { 8.0f, 80.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 2);
+    buffer.AppendVertex(0, { 7.0f, 70.0f });
+    buffer.AppendVertex(0, { 8.0f, 80.0f });
+    buffer.AppendEnd(0);
 
-    buffer.UploadStart(2, 3);
-    buffer.UploadVertex(2, { 9.0f, 90.0f });
-    buffer.UploadVertex(2, { 10.0f, 100.0f });
-    buffer.UploadVertex(2, { 11.0f, 110.0f });
-    buffer.UploadEnd(2);
+    buffer.AppendStart(2, 3);
+    buffer.AppendVertex(2, { 9.0f, 90.0f });
+    buffer.AppendVertex(2, { 10.0f, 100.0f });
+    buffer.AppendVertex(2, { 11.0f, 110.0f });
+    buffer.AppendEnd(2);
 
     buffer.RenderUpload();
 
@@ -1322,41 +1322,41 @@ TEST(MultiProviderVertexBufferTests, ThreeProviders_Change_NoDirty_Change)
     EXPECT_EQ(buffer.TestActions[0].Pointer[5].foo1, 11.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, ThreeProviders_Change_NoDirty_Grows)
+TEST(MultiProviderVertexBufferTests, ThreeProviders_Change_NoDirty_Grows_VariableSize)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 3>;
     TBuf buffer;
 
-    buffer.UploadStart(0, 2);
-    buffer.UploadVertex(0, { 1.0f, 10.0f });
-    buffer.UploadVertex(0, { 2.0f, 20.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 2);
+    buffer.AppendVertex(0, { 1.0f, 10.0f });
+    buffer.AppendVertex(0, { 2.0f, 20.0f });
+    buffer.AppendEnd(0);
 
-    buffer.UploadStart(1, 1);
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadEnd(1);
+    buffer.AppendStart(1, 1);
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendEnd(1);
 
-    buffer.UploadStart(2, 3);
-    buffer.UploadVertex(2, { 4.0f, 40.0f });
-    buffer.UploadVertex(2, { 5.0f, 50.0f });
-    buffer.UploadVertex(2, { 6.0f, 60.0f });
-    buffer.UploadEnd(2);
+    buffer.AppendStart(2, 3);
+    buffer.AppendVertex(2, { 4.0f, 40.0f });
+    buffer.AppendVertex(2, { 5.0f, 50.0f });
+    buffer.AppendVertex(2, { 6.0f, 60.0f });
+    buffer.AppendEnd(2);
 
     buffer.RenderUpload();
 
     buffer.TestActions.clear();
 
-    buffer.UploadStart(0, 2);
-    buffer.UploadVertex(0, { 7.0f, 70.0f });
-    buffer.UploadVertex(0, { 8.0f, 80.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 2);
+    buffer.AppendVertex(0, { 7.0f, 70.0f });
+    buffer.AppendVertex(0, { 8.0f, 80.0f });
+    buffer.AppendEnd(0);
 
-    buffer.UploadStart(2, 4);
-    buffer.UploadVertex(2, { 9.0f, 90.0f });
-    buffer.UploadVertex(2, { 10.0f, 100.0f });
-    buffer.UploadVertex(2, { 11.0f, 110.0f });
-    buffer.UploadVertex(2, { 12.0f, 120.0f });
-    buffer.UploadEnd(2);
+    buffer.AppendStart(2, 4);
+    buffer.AppendVertex(2, { 9.0f, 90.0f });
+    buffer.AppendVertex(2, { 10.0f, 100.0f });
+    buffer.AppendVertex(2, { 11.0f, 110.0f });
+    buffer.AppendVertex(2, { 12.0f, 120.0f });
+    buffer.AppendEnd(2);
 
     buffer.RenderUpload();
 
@@ -1376,39 +1376,39 @@ TEST(MultiProviderVertexBufferTests, ThreeProviders_Change_NoDirty_Grows)
     EXPECT_EQ(buffer.TestActions[0].Pointer[6].foo1, 12.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, ThreeProviders_Change_NoDirty_Shrinks)
+TEST(MultiProviderVertexBufferTests, ThreeProviders_Change_NoDirty_Shrinks_VariableSize)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 3>;
     TBuf buffer;
 
-    buffer.UploadStart(0, 2);
-    buffer.UploadVertex(0, { 1.0f, 10.0f });
-    buffer.UploadVertex(0, { 2.0f, 20.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 2);
+    buffer.AppendVertex(0, { 1.0f, 10.0f });
+    buffer.AppendVertex(0, { 2.0f, 20.0f });
+    buffer.AppendEnd(0);
 
-    buffer.UploadStart(1, 1);
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadEnd(1);
+    buffer.AppendStart(1, 1);
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendEnd(1);
 
-    buffer.UploadStart(2, 3);
-    buffer.UploadVertex(2, { 4.0f, 40.0f });
-    buffer.UploadVertex(2, { 5.0f, 50.0f });
-    buffer.UploadVertex(2, { 6.0f, 60.0f });
-    buffer.UploadEnd(2);
+    buffer.AppendStart(2, 3);
+    buffer.AppendVertex(2, { 4.0f, 40.0f });
+    buffer.AppendVertex(2, { 5.0f, 50.0f });
+    buffer.AppendVertex(2, { 6.0f, 60.0f });
+    buffer.AppendEnd(2);
 
     buffer.RenderUpload();
 
     buffer.TestActions.clear();
 
-    buffer.UploadStart(0, 2);
-    buffer.UploadVertex(0, { 7.0f, 70.0f });
-    buffer.UploadVertex(0, { 8.0f, 80.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 2);
+    buffer.AppendVertex(0, { 7.0f, 70.0f });
+    buffer.AppendVertex(0, { 8.0f, 80.0f });
+    buffer.AppendEnd(0);
 
-    buffer.UploadStart(2, 2);
-    buffer.UploadVertex(2, { 9.0f, 90.0f });
-    buffer.UploadVertex(2, { 10.0f, 100.0f });
-    buffer.UploadEnd(2);
+    buffer.AppendStart(2, 2);
+    buffer.AppendVertex(2, { 9.0f, 90.0f });
+    buffer.AppendVertex(2, { 10.0f, 100.0f });
+    buffer.AppendEnd(2);
 
     buffer.RenderUpload();
 
@@ -1426,37 +1426,37 @@ TEST(MultiProviderVertexBufferTests, ThreeProviders_Change_NoDirty_Shrinks)
     EXPECT_EQ(buffer.TestActions[0].Pointer[4].foo1, 10.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, ThreeProviders_Change_NoDirty_Empties)
+TEST(MultiProviderVertexBufferTests, ThreeProviders_Change_NoDirty_Empties_VariableSize)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 3>;
     TBuf buffer;
 
-    buffer.UploadStart(0, 2);
-    buffer.UploadVertex(0, { 1.0f, 10.0f });
-    buffer.UploadVertex(0, { 2.0f, 20.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 2);
+    buffer.AppendVertex(0, { 1.0f, 10.0f });
+    buffer.AppendVertex(0, { 2.0f, 20.0f });
+    buffer.AppendEnd(0);
 
-    buffer.UploadStart(1, 1);
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadEnd(1);
+    buffer.AppendStart(1, 1);
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendEnd(1);
 
-    buffer.UploadStart(2, 3);
-    buffer.UploadVertex(2, { 4.0f, 40.0f });
-    buffer.UploadVertex(2, { 5.0f, 50.0f });
-    buffer.UploadVertex(2, { 6.0f, 60.0f });
-    buffer.UploadEnd(2);
+    buffer.AppendStart(2, 3);
+    buffer.AppendVertex(2, { 4.0f, 40.0f });
+    buffer.AppendVertex(2, { 5.0f, 50.0f });
+    buffer.AppendVertex(2, { 6.0f, 60.0f });
+    buffer.AppendEnd(2);
 
     buffer.RenderUpload();
 
     buffer.TestActions.clear();
 
-    buffer.UploadStart(0, 2);
-    buffer.UploadVertex(0, { 7.0f, 70.0f });
-    buffer.UploadVertex(0, { 8.0f, 80.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 2);
+    buffer.AppendVertex(0, { 7.0f, 70.0f });
+    buffer.AppendVertex(0, { 8.0f, 80.0f });
+    buffer.AppendEnd(0);
 
-    buffer.UploadStart(2, 0);
-    buffer.UploadEnd(2);
+    buffer.AppendStart(2, 0);
+    buffer.AppendEnd(2);
 
     buffer.RenderUpload();
 
@@ -1465,83 +1465,83 @@ TEST(MultiProviderVertexBufferTests, ThreeProviders_Change_NoDirty_Empties)
 
     EXPECT_EQ(buffer.TestActions[0].Action, TBuf::TestAction::ActionKind::UploadVBO);
     EXPECT_EQ(buffer.TestActions[0].Offset, 0u * sizeof(TestVertexAttributes));
-    ASSERT_EQ(buffer.TestActions[0].Size, 3u * sizeof(TestVertexAttributes));
+    ASSERT_EQ(buffer.TestActions[0].Size, 2u * sizeof(TestVertexAttributes));
 
     EXPECT_EQ(buffer.TestActions[0].Pointer[0].foo1, 7.0f);
     EXPECT_EQ(buffer.TestActions[0].Pointer[1].foo1, 8.0f);
     EXPECT_EQ(buffer.TestActions[0].Pointer[2].foo1, 3.0f);
 }
 
-TEST(MultiProviderVertexBufferTests, Large)
+TEST(MultiProviderVertexBufferTests, Large_VariableSize)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 2>;
     TBuf buffer;
 
-    buffer.UploadStart(0, 9);
-    buffer.UploadVertex(0, { 1.0f, 10.0f });
-    buffer.UploadVertex(0, { 2.0f, 20.0f });
-    buffer.UploadVertex(0, { 1.0f, 10.0f });
-    buffer.UploadVertex(0, { 2.0f, 20.0f });
-    buffer.UploadVertex(0, { 1.0f, 10.0f });
-    buffer.UploadVertex(0, { 2.0f, 20.0f });
-    buffer.UploadVertex(0, { 1.0f, 10.0f });
-    buffer.UploadVertex(0, { 2.0f, 20.0f });
-    buffer.UploadVertex(0, { 2.0f, 20.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 9);
+    buffer.AppendVertex(0, { 1.0f, 10.0f });
+    buffer.AppendVertex(0, { 2.0f, 20.0f });
+    buffer.AppendVertex(0, { 1.0f, 10.0f });
+    buffer.AppendVertex(0, { 2.0f, 20.0f });
+    buffer.AppendVertex(0, { 1.0f, 10.0f });
+    buffer.AppendVertex(0, { 2.0f, 20.0f });
+    buffer.AppendVertex(0, { 1.0f, 10.0f });
+    buffer.AppendVertex(0, { 2.0f, 20.0f });
+    buffer.AppendVertex(0, { 2.0f, 20.0f });
+    buffer.AppendEnd(0);
 
-    buffer.UploadStart(1, 7);
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadEnd(1);
+    buffer.AppendStart(1, 7);
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendEnd(1);
 
     buffer.RenderUpload();
 
-    buffer.UploadStart(1, 7);
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadEnd(1);
+    buffer.AppendStart(1, 7);
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendEnd(1);
 
     buffer.RenderUpload();
 
     EXPECT_EQ(buffer.GetTotalVertexCount(), 16u);
 }
 
-TEST(MultiProviderVertexBufferTests, NotDirty)
+TEST(MultiProviderVertexBufferTests, NotDirty_VariableSize)
 {
     using TBuf = MultiProviderVertexBuffer<TestVertexAttributes, 2>;
     TBuf buffer;
 
-    buffer.UploadStart(0, 9);
-    buffer.UploadVertex(0, { 1.0f, 10.0f });
-    buffer.UploadVertex(0, { 2.0f, 20.0f });
-    buffer.UploadVertex(0, { 1.0f, 10.0f });
-    buffer.UploadVertex(0, { 2.0f, 20.0f });
-    buffer.UploadVertex(0, { 1.0f, 10.0f });
-    buffer.UploadVertex(0, { 2.0f, 20.0f });
-    buffer.UploadVertex(0, { 1.0f, 10.0f });
-    buffer.UploadVertex(0, { 2.0f, 20.0f });
-    buffer.UploadVertex(0, { 2.0f, 20.0f });
-    buffer.UploadEnd(0);
+    buffer.AppendStart(0, 9);
+    buffer.AppendVertex(0, { 1.0f, 10.0f });
+    buffer.AppendVertex(0, { 2.0f, 20.0f });
+    buffer.AppendVertex(0, { 1.0f, 10.0f });
+    buffer.AppendVertex(0, { 2.0f, 20.0f });
+    buffer.AppendVertex(0, { 1.0f, 10.0f });
+    buffer.AppendVertex(0, { 2.0f, 20.0f });
+    buffer.AppendVertex(0, { 1.0f, 10.0f });
+    buffer.AppendVertex(0, { 2.0f, 20.0f });
+    buffer.AppendVertex(0, { 2.0f, 20.0f });
+    buffer.AppendEnd(0);
 
-    buffer.UploadStart(1, 7);
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadVertex(1, { 3.0f, 30.0f });
-    buffer.UploadEnd(1);
+    buffer.AppendStart(1, 7);
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendVertex(1, { 3.0f, 30.0f });
+    buffer.AppendEnd(1);
 
     buffer.RenderUpload();
 
@@ -1552,3 +1552,6 @@ TEST(MultiProviderVertexBufferTests, NotDirty)
     EXPECT_EQ(buffer.GetTotalVertexCount(), 16u);
     ASSERT_EQ(buffer.TestActions.size(), 0u);
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+

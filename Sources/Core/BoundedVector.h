@@ -159,10 +159,11 @@ public:
         return *new(&(mBuffer[index])) TElement(std::forward<TArgs>(args)...);
     }
 
-    void copy_from(BoundedVector<TElement> const & other, size_t targetOffset, size_t size)
+    void copy_from(BoundedVector<TElement> const & source, size_t sourceOffset, size_t targetOffset, size_t size)
     {
+        assert(sourceOffset + size <= source.mAllocatedSize);
         assert(targetOffset + size <= mAllocatedSize);
-        TElement const * restrict src = other.mBuffer.get();
+        TElement const * restrict src = &(source.mBuffer.get()[sourceOffset]);
         TElement * restrict dst = &(mBuffer.get()[targetOffset]);
         for (size_t s = 0; s < size; ++s)
         {

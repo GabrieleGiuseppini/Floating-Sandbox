@@ -59,7 +59,8 @@ public:
         for (size_t p = 0; p < NProviders; ++p)
         {
             mProviderData[p].LastUploadedVertexCount = 0;
-            mProviderData[p].IsDirty = false;
+            mProviderData[p].DirtyStart = 0;
+            mProviderData[p].DirtyEnd = 0;
         }
 
         mTotalVertexCount = 0;
@@ -95,8 +96,11 @@ public:
         glBindBuffer(GL_ARRAY_BUFFER, *mVBO);
     }
 
+    /*
+     * Clears the buffer to start appending new elements
+     */
     template<typename TProvider>
-    void UploadStart(TProvider provider, size_t nMaxVertices)
+    void AppendStart(TProvider provider, size_t nMaxVertices)
     {
         std::size_t const iProvider = static_cast<size_t>(provider);
         assert(iProvider < NProviders);
@@ -110,7 +114,7 @@ public:
     }
 
     template<typename TProvider>
-    void UploadVertex(TProvider provider, TVertexAttributes const & vertexAttributes)
+    void AppendVertex(TProvider provider, TVertexAttributes const & vertexAttributes)
     {
         std::size_t const iProvider = static_cast<size_t>(provider);
         assert(iProvider < NProviders);
@@ -119,7 +123,7 @@ public:
     }
 
     template<typename TProvider>
-    void UploadVertices(TProvider provider, BoundedVector<TVertexAttributes> const & vertices)
+    void AppendVertices(TProvider provider, BoundedVector<TVertexAttributes> const & vertices)
     {
         std::size_t const iProvider = static_cast<size_t>(provider);
         assert(iProvider < NProviders);
@@ -128,18 +132,19 @@ public:
     }
 
     template<typename TProvider>
-    void UploadEnd(TProvider provider)
+    void AppendEnd(TProvider provider)
     {
         std::size_t const iProvider = static_cast<size_t>(provider);
         assert(iProvider < NProviders);
 
-        // Remember provider is dirty
-        mProviderData[iProvider].IsDirty = true;
-        mIsGlobalDirty = true;
-
         // Update total vertex count
         size_t const vertexCount = mProviderData[iProvider].VertexAttributesBuffer.size();
         mTotalVertexCount += vertexCount;
+
+        // Remember provider is dirty
+        mProviderData[iProvider].DirtyStart = 0;
+        mProviderData[iProvider].DirtyEnd = vertexCount;
+        mIsGlobalDirty = true;
     }
 
     void RenderUpload()
@@ -177,7 +182,8 @@ public:
 
                 // Reset state
                 providerData.LastUploadedVertexCount = providerBufferSize;
-                providerData.IsDirty = false;
+                providerData.DirtyStart = providerBufferSize;
+                providerData.DirtyEnd = 0;
             }
 
             assert(mWorkBuffer.size() == mTotalVertexCount);
@@ -219,10 +225,8 @@ public:
 
             size_t const providerBufferSize = providerData.VertexAttributesBuffer.size();
 
-            if (providerData.IsDirty || forceRebuild)
+            if (forceRebuild)
             {
-                // Rebuild work buffer portion for this provider
-
                 if (!isDirty)
                 {
                     // Remember where the dirty portion starts
@@ -232,26 +236,61 @@ public:
                     isDirty = true;
                 }
 
-                // Copy in-place
-                mWorkBuffer.copy_from(providerData.VertexAttributesBuffer, iWb, providerBufferSize);
+                // Need to copy whole buffer
+                mWorkBuffer.copy_from(providerData.VertexAttributesBuffer, 0, iWb, providerBufferSize);
                 iWb += providerBufferSize;
 
                 // Remember (current) end of dirty portion
                 iDirtyEndWb = iWb;
+
+                // Reset state for provider
+                providerData.LastUploadedVertexCount = providerBufferSize;
+                providerData.DirtyStart = providerBufferSize;
+                providerData.DirtyEnd = 0;
+            }
+            else if (providerData.DirtyStart < providerData.DirtyEnd)
+            {
+                // Rebuild work buffer portion for this provider
+
+                if (!isDirty)
+                {
+                    // Remember where the dirty portion starts
+                    iDirtyStartWb = iWb + providerData.DirtyStart;
+
+                    // From now on we're dirty
+                    isDirty = true;
+                }
+
+                // Copy in-place
+                assert(providerData.DirtyStart <= providerBufferSize);
+                assert(providerData.DirtyEnd <= providerBufferSize);
+                mWorkBuffer.copy_from(
+                    providerData.VertexAttributesBuffer,
+                    providerData.DirtyStart,
+                    iWb + providerData.DirtyStart,
+                    providerData.DirtyEnd - providerData.DirtyStart);
+
+                // Remember (current) end of dirty portion
+                iDirtyEndWb = iWb + providerData.DirtyEnd;
+
+                // Advance work buffer
+                iWb += providerBufferSize;
 
                 // If size has changed, we'll need to keep rebuilding
                 forceRebuild |= (providerBufferSize != providerData.LastUploadedVertexCount);
 
                 // Reset state for provider
                 providerData.LastUploadedVertexCount = providerBufferSize;
-                providerData.IsDirty = false;
+                providerData.DirtyStart = providerBufferSize;
+                providerData.DirtyEnd = 0;
             }
             else
             {
-                // No change; advance work buffer, leaving what's there
+                // Not dirty; advance work buffer, leaving what's there
                 iWb += providerBufferSize;
 
-                // No need to update last uploaded vertex count - no change
+                // If size has changed, we'll need to keep rebuilding
+                forceRebuild |= (providerBufferSize != providerData.LastUploadedVertexCount);
             }
         }
 
@@ -277,7 +316,8 @@ private:
     {
         BoundedVector<TVertexAttributes> VertexAttributesBuffer;
         size_t LastUploadedVertexCount;
-        bool IsDirty;
+        size_t DirtyStart; // Start index of dirty streak in buffer; == BufferSize when not dirty
+        size_t DirtyEnd; // End index of dirty streak in buffer; == 0 when not dirty
     };
 
     std::array<ProviderData, NProviders> mProviderData;
