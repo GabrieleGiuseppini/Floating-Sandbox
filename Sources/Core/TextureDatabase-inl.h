@@ -35,7 +35,7 @@ void TextureFrameMetadata<TTextureDatabase>::Serialize(picojson::object & root) 
     picojson::object anchorOffsetFrame;
     anchorOffsetFrame["x"] = picojson::value(static_cast<double>(AnchorOffsetFrame.x));
     anchorOffsetFrame["y"] = picojson::value(static_cast<double>(AnchorOffsetFrame.y));
-    root["anchor_center_frame"] = picojson::value(anchorOffsetFrame);
+    root["anchor_offset_frame"] = picojson::value(anchorOffsetFrame);
 
     picojson::object frameId;
     frameId["group"] = picojson::value(static_cast<int64_t>(FrameId.Group));

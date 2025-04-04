@@ -2,13 +2,17 @@
   "frames": [
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion1_0",
         "frame_name": "explosion1_0",
@@ -31,8 +35,6 @@
         "left": 0
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.0626220703125,
-        "anchor_center_y": 0.0626220703125,
         "bottom": 0.0001220703125,
         "left": 0.0001220703125,
         "right": 0.1248779296875,
@@ -45,13 +47,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion1_1",
         "frame_name": "explosion1_1",
@@ -74,8 +80,6 @@
         "left": 512
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.1876220703125,
-        "anchor_center_y": 0.0626220703125,
         "bottom": 0.0001220703125,
         "left": 0.1251220703125,
         "right": 0.2498779296875,
@@ -88,13 +92,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion1_2",
         "frame_name": "explosion1_2",
@@ -117,8 +125,6 @@
         "left": 1024
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.3126220703125,
-        "anchor_center_y": 0.0626220703125,
         "bottom": 0.0001220703125,
         "left": 0.2501220703125,
         "right": 0.3748779296875,
@@ -131,13 +137,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion1_3",
         "frame_name": "explosion1_3",
@@ -160,8 +170,6 @@
         "left": 1536
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.4376220703125,
-        "anchor_center_y": 0.0626220703125,
         "bottom": 0.0001220703125,
         "left": 0.3751220703125,
         "right": 0.4998779296875,
@@ -174,13 +182,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion1_4",
         "frame_name": "explosion1_4",
@@ -203,8 +215,6 @@
         "left": 2048
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.5626220703125,
-        "anchor_center_y": 0.0626220703125,
         "bottom": 0.0001220703125,
         "left": 0.5001220703125,
         "right": 0.6248779296875,
@@ -217,13 +227,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion1_5",
         "frame_name": "explosion1_5",
@@ -246,8 +260,6 @@
         "left": 2560
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.6876220703125,
-        "anchor_center_y": 0.0626220703125,
         "bottom": 0.0001220703125,
         "left": 0.6251220703125,
         "right": 0.7498779296875,
@@ -260,13 +272,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion1_6",
         "frame_name": "explosion1_6",
@@ -289,8 +305,6 @@
         "left": 3072
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.8126220703125,
-        "anchor_center_y": 0.0626220703125,
         "bottom": 0.0001220703125,
         "left": 0.7501220703125,
         "right": 0.8748779296875,
@@ -303,13 +317,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion1_7",
         "frame_name": "explosion1_7",
@@ -332,8 +350,6 @@
         "left": 3584
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.9376220703125,
-        "anchor_center_y": 0.0626220703125,
         "bottom": 0.0001220703125,
         "left": 0.8751220703125,
         "right": 0.9998779296875,
@@ -346,13 +362,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion1_8",
         "frame_name": "explosion1_8",
@@ -375,8 +395,6 @@
         "left": 0
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.0626220703125,
-        "anchor_center_y": 0.1876220703125,
         "bottom": 0.1251220703125,
         "left": 0.0001220703125,
         "right": 0.1248779296875,
@@ -389,13 +407,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion1_9",
         "frame_name": "explosion1_9",
@@ -418,8 +440,6 @@
         "left": 512
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.1876220703125,
-        "anchor_center_y": 0.1876220703125,
         "bottom": 0.1251220703125,
         "left": 0.1251220703125,
         "right": 0.2498779296875,
@@ -432,13 +452,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion1_10",
         "frame_name": "explosion1_10",
@@ -461,8 +485,6 @@
         "left": 1024
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.3126220703125,
-        "anchor_center_y": 0.1876220703125,
         "bottom": 0.1251220703125,
         "left": 0.2501220703125,
         "right": 0.3748779296875,
@@ -475,13 +497,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion1_11",
         "frame_name": "explosion1_11",
@@ -504,8 +530,6 @@
         "left": 1536
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.4376220703125,
-        "anchor_center_y": 0.1876220703125,
         "bottom": 0.1251220703125,
         "left": 0.3751220703125,
         "right": 0.4998779296875,
@@ -518,13 +542,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion1_12",
         "frame_name": "explosion1_12",
@@ -547,8 +575,6 @@
         "left": 2048
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.5626220703125,
-        "anchor_center_y": 0.1876220703125,
         "bottom": 0.1251220703125,
         "left": 0.5001220703125,
         "right": 0.6248779296875,
@@ -561,13 +587,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion1_13",
         "frame_name": "explosion1_13",
@@ -590,8 +620,6 @@
         "left": 2560
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.6876220703125,
-        "anchor_center_y": 0.1876220703125,
         "bottom": 0.1251220703125,
         "left": 0.6251220703125,
         "right": 0.7498779296875,
@@ -604,13 +632,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion1_14",
         "frame_name": "explosion1_14",
@@ -633,8 +665,6 @@
         "left": 3072
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.8126220703125,
-        "anchor_center_y": 0.1876220703125,
         "bottom": 0.1251220703125,
         "left": 0.7501220703125,
         "right": 0.8748779296875,
@@ -647,13 +677,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion1_15",
         "frame_name": "explosion1_15",
@@ -676,8 +710,6 @@
         "left": 3584
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.9376220703125,
-        "anchor_center_y": 0.1876220703125,
         "bottom": 0.1251220703125,
         "left": 0.8751220703125,
         "right": 0.9998779296875,
@@ -690,13 +722,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion2_16",
         "frame_name": "explosion2_16",
@@ -719,8 +755,6 @@
         "left": 0
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.0626220703125,
-        "anchor_center_y": 0.3126220703125,
         "bottom": 0.2501220703125,
         "left": 0.0001220703125,
         "right": 0.1248779296875,
@@ -733,13 +767,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion2_17",
         "frame_name": "explosion2_17",
@@ -762,8 +800,6 @@
         "left": 512
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.1876220703125,
-        "anchor_center_y": 0.3126220703125,
         "bottom": 0.2501220703125,
         "left": 0.1251220703125,
         "right": 0.2498779296875,
@@ -776,13 +812,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion2_18",
         "frame_name": "explosion2_18",
@@ -805,8 +845,6 @@
         "left": 1024
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.3126220703125,
-        "anchor_center_y": 0.3126220703125,
         "bottom": 0.2501220703125,
         "left": 0.2501220703125,
         "right": 0.3748779296875,
@@ -819,13 +857,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion2_19",
         "frame_name": "explosion2_19",
@@ -848,8 +890,6 @@
         "left": 1536
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.4376220703125,
-        "anchor_center_y": 0.3126220703125,
         "bottom": 0.2501220703125,
         "left": 0.3751220703125,
         "right": 0.4998779296875,
@@ -862,13 +902,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion2_20",
         "frame_name": "explosion2_20",
@@ -891,8 +935,6 @@
         "left": 2048
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.5626220703125,
-        "anchor_center_y": 0.3126220703125,
         "bottom": 0.2501220703125,
         "left": 0.5001220703125,
         "right": 0.6248779296875,
@@ -905,13 +947,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion2_21",
         "frame_name": "explosion2_21",
@@ -934,8 +980,6 @@
         "left": 2560
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.6876220703125,
-        "anchor_center_y": 0.3126220703125,
         "bottom": 0.2501220703125,
         "left": 0.6251220703125,
         "right": 0.7498779296875,
@@ -948,13 +992,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion2_22",
         "frame_name": "explosion2_22",
@@ -977,8 +1025,6 @@
         "left": 3072
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.8126220703125,
-        "anchor_center_y": 0.3126220703125,
         "bottom": 0.2501220703125,
         "left": 0.7501220703125,
         "right": 0.8748779296875,
@@ -991,13 +1037,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion2_23",
         "frame_name": "explosion2_23",
@@ -1020,8 +1070,6 @@
         "left": 3584
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.9376220703125,
-        "anchor_center_y": 0.3126220703125,
         "bottom": 0.2501220703125,
         "left": 0.8751220703125,
         "right": 0.9998779296875,
@@ -1034,13 +1082,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion2_24",
         "frame_name": "explosion2_24",
@@ -1063,8 +1115,6 @@
         "left": 0
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.0626220703125,
-        "anchor_center_y": 0.4376220703125,
         "bottom": 0.3751220703125,
         "left": 0.0001220703125,
         "right": 0.1248779296875,
@@ -1077,13 +1127,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion2_25",
         "frame_name": "explosion2_25",
@@ -1106,8 +1160,6 @@
         "left": 512
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.1876220703125,
-        "anchor_center_y": 0.4376220703125,
         "bottom": 0.3751220703125,
         "left": 0.1251220703125,
         "right": 0.2498779296875,
@@ -1120,13 +1172,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion2_26",
         "frame_name": "explosion2_26",
@@ -1149,8 +1205,6 @@
         "left": 1024
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.3126220703125,
-        "anchor_center_y": 0.4376220703125,
         "bottom": 0.3751220703125,
         "left": 0.2501220703125,
         "right": 0.3748779296875,
@@ -1163,13 +1217,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion2_27",
         "frame_name": "explosion2_27",
@@ -1192,8 +1250,6 @@
         "left": 1536
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.4376220703125,
-        "anchor_center_y": 0.4376220703125,
         "bottom": 0.3751220703125,
         "left": 0.3751220703125,
         "right": 0.4998779296875,
@@ -1206,13 +1262,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion2_28",
         "frame_name": "explosion2_28",
@@ -1235,8 +1295,6 @@
         "left": 2048
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.5626220703125,
-        "anchor_center_y": 0.4376220703125,
         "bottom": 0.3751220703125,
         "left": 0.5001220703125,
         "right": 0.6248779296875,
@@ -1249,13 +1307,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion2_29",
         "frame_name": "explosion2_29",
@@ -1278,8 +1340,6 @@
         "left": 2560
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.6876220703125,
-        "anchor_center_y": 0.4376220703125,
         "bottom": 0.3751220703125,
         "left": 0.6251220703125,
         "right": 0.7498779296875,
@@ -1292,13 +1352,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion2_30",
         "frame_name": "explosion2_30",
@@ -1321,8 +1385,6 @@
         "left": 3072
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.8126220703125,
-        "anchor_center_y": 0.4376220703125,
         "bottom": 0.3751220703125,
         "left": 0.7501220703125,
         "right": 0.8748779296875,
@@ -1335,13 +1397,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion2_31",
         "frame_name": "explosion2_31",
@@ -1364,8 +1430,6 @@
         "left": 3584
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.9376220703125,
-        "anchor_center_y": 0.4376220703125,
         "bottom": 0.3751220703125,
         "left": 0.8751220703125,
         "right": 0.9998779296875,
@@ -1378,13 +1442,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion3_32",
         "frame_name": "explosion3_32",
@@ -1407,8 +1475,6 @@
         "left": 0
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.0626220703125,
-        "anchor_center_y": 0.5626220703125,
         "bottom": 0.5001220703125,
         "left": 0.0001220703125,
         "right": 0.1248779296875,
@@ -1421,13 +1487,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion3_33",
         "frame_name": "explosion3_33",
@@ -1450,8 +1520,6 @@
         "left": 512
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.1876220703125,
-        "anchor_center_y": 0.5626220703125,
         "bottom": 0.5001220703125,
         "left": 0.1251220703125,
         "right": 0.2498779296875,
@@ -1464,13 +1532,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion3_34",
         "frame_name": "explosion3_34",
@@ -1493,8 +1565,6 @@
         "left": 1024
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.3126220703125,
-        "anchor_center_y": 0.5626220703125,
         "bottom": 0.5001220703125,
         "left": 0.2501220703125,
         "right": 0.3748779296875,
@@ -1507,13 +1577,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion3_35",
         "frame_name": "explosion3_35",
@@ -1536,8 +1610,6 @@
         "left": 1536
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.4376220703125,
-        "anchor_center_y": 0.5626220703125,
         "bottom": 0.5001220703125,
         "left": 0.3751220703125,
         "right": 0.4998779296875,
@@ -1550,13 +1622,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion3_36",
         "frame_name": "explosion3_36",
@@ -1579,8 +1655,6 @@
         "left": 2048
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.5626220703125,
-        "anchor_center_y": 0.5626220703125,
         "bottom": 0.5001220703125,
         "left": 0.5001220703125,
         "right": 0.6248779296875,
@@ -1593,13 +1667,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion3_37",
         "frame_name": "explosion3_37",
@@ -1622,8 +1700,6 @@
         "left": 2560
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.6876220703125,
-        "anchor_center_y": 0.5626220703125,
         "bottom": 0.5001220703125,
         "left": 0.6251220703125,
         "right": 0.7498779296875,
@@ -1636,13 +1712,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion3_38",
         "frame_name": "explosion3_38",
@@ -1665,8 +1745,6 @@
         "left": 3072
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.8126220703125,
-        "anchor_center_y": 0.5626220703125,
         "bottom": 0.5001220703125,
         "left": 0.7501220703125,
         "right": 0.8748779296875,
@@ -1679,13 +1757,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion3_39",
         "frame_name": "explosion3_39",
@@ -1708,8 +1790,6 @@
         "left": 3584
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.9376220703125,
-        "anchor_center_y": 0.5626220703125,
         "bottom": 0.5001220703125,
         "left": 0.8751220703125,
         "right": 0.9998779296875,
@@ -1722,13 +1802,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion3_40",
         "frame_name": "explosion3_40",
@@ -1751,8 +1835,6 @@
         "left": 0
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.0626220703125,
-        "anchor_center_y": 0.6876220703125,
         "bottom": 0.6251220703125,
         "left": 0.0001220703125,
         "right": 0.1248779296875,
@@ -1765,13 +1847,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion3_41",
         "frame_name": "explosion3_41",
@@ -1794,8 +1880,6 @@
         "left": 512
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.1876220703125,
-        "anchor_center_y": 0.6876220703125,
         "bottom": 0.6251220703125,
         "left": 0.1251220703125,
         "right": 0.2498779296875,
@@ -1808,13 +1892,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion3_42",
         "frame_name": "explosion3_42",
@@ -1837,8 +1925,6 @@
         "left": 1024
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.3126220703125,
-        "anchor_center_y": 0.6876220703125,
         "bottom": 0.6251220703125,
         "left": 0.2501220703125,
         "right": 0.3748779296875,
@@ -1851,13 +1937,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion3_43",
         "frame_name": "explosion3_43",
@@ -1880,8 +1970,6 @@
         "left": 1536
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.4376220703125,
-        "anchor_center_y": 0.6876220703125,
         "bottom": 0.6251220703125,
         "left": 0.3751220703125,
         "right": 0.4998779296875,
@@ -1894,13 +1982,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion3_44",
         "frame_name": "explosion3_44",
@@ -1923,8 +2015,6 @@
         "left": 2048
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.5626220703125,
-        "anchor_center_y": 0.6876220703125,
         "bottom": 0.6251220703125,
         "left": 0.5001220703125,
         "right": 0.6248779296875,
@@ -1937,13 +2027,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion3_45",
         "frame_name": "explosion3_45",
@@ -1966,8 +2060,6 @@
         "left": 2560
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.6876220703125,
-        "anchor_center_y": 0.6876220703125,
         "bottom": 0.6251220703125,
         "left": 0.6251220703125,
         "right": 0.7498779296875,
@@ -1980,13 +2072,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion3_46",
         "frame_name": "explosion3_46",
@@ -2009,8 +2105,6 @@
         "left": 3072
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.8126220703125,
-        "anchor_center_y": 0.6876220703125,
         "bottom": 0.6251220703125,
         "left": 0.7501220703125,
         "right": 0.8748779296875,
@@ -2023,13 +2117,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion3_47",
         "frame_name": "explosion3_47",
@@ -2052,8 +2150,6 @@
         "left": 3584
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.9376220703125,
-        "anchor_center_y": 0.6876220703125,
         "bottom": 0.6251220703125,
         "left": 0.8751220703125,
         "right": 0.9998779296875,
@@ -2066,13 +2162,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion4_48",
         "frame_name": "explosion4_48",
@@ -2095,8 +2195,6 @@
         "left": 0
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.0626220703125,
-        "anchor_center_y": 0.8126220703125,
         "bottom": 0.7501220703125,
         "left": 0.0001220703125,
         "right": 0.1248779296875,
@@ -2109,13 +2207,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion4_49",
         "frame_name": "explosion4_49",
@@ -2138,8 +2240,6 @@
         "left": 512
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.1876220703125,
-        "anchor_center_y": 0.8126220703125,
         "bottom": 0.7501220703125,
         "left": 0.1251220703125,
         "right": 0.2498779296875,
@@ -2152,13 +2252,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion4_50",
         "frame_name": "explosion4_50",
@@ -2181,8 +2285,6 @@
         "left": 1024
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.3126220703125,
-        "anchor_center_y": 0.8126220703125,
         "bottom": 0.7501220703125,
         "left": 0.2501220703125,
         "right": 0.3748779296875,
@@ -2195,13 +2297,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion4_51",
         "frame_name": "explosion4_51",
@@ -2224,8 +2330,6 @@
         "left": 1536
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.4376220703125,
-        "anchor_center_y": 0.8126220703125,
         "bottom": 0.7501220703125,
         "left": 0.3751220703125,
         "right": 0.4998779296875,
@@ -2238,13 +2342,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion4_52",
         "frame_name": "explosion4_52",
@@ -2267,8 +2375,6 @@
         "left": 2048
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.5626220703125,
-        "anchor_center_y": 0.8126220703125,
         "bottom": 0.7501220703125,
         "left": 0.5001220703125,
         "right": 0.6248779296875,
@@ -2281,13 +2387,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion4_53",
         "frame_name": "explosion4_53",
@@ -2310,8 +2420,6 @@
         "left": 2560
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.6876220703125,
-        "anchor_center_y": 0.8126220703125,
         "bottom": 0.7501220703125,
         "left": 0.6251220703125,
         "right": 0.7498779296875,
@@ -2324,13 +2432,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion4_54",
         "frame_name": "explosion4_54",
@@ -2353,8 +2465,6 @@
         "left": 3072
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.8126220703125,
-        "anchor_center_y": 0.8126220703125,
         "bottom": 0.7501220703125,
         "left": 0.7501220703125,
         "right": 0.8748779296875,
@@ -2367,13 +2477,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion4_55",
         "frame_name": "explosion4_55",
@@ -2396,8 +2510,6 @@
         "left": 3584
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.9376220703125,
-        "anchor_center_y": 0.8126220703125,
         "bottom": 0.7501220703125,
         "left": 0.8751220703125,
         "right": 0.9998779296875,
@@ -2410,13 +2522,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion4_56",
         "frame_name": "explosion4_56",
@@ -2439,8 +2555,6 @@
         "left": 0
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.0626220703125,
-        "anchor_center_y": 0.9376220703125,
         "bottom": 0.8751220703125,
         "left": 0.0001220703125,
         "right": 0.1248779296875,
@@ -2453,13 +2567,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion4_57",
         "frame_name": "explosion4_57",
@@ -2482,8 +2600,6 @@
         "left": 512
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.1876220703125,
-        "anchor_center_y": 0.9376220703125,
         "bottom": 0.8751220703125,
         "left": 0.1251220703125,
         "right": 0.2498779296875,
@@ -2496,13 +2612,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion4_58",
         "frame_name": "explosion4_58",
@@ -2525,8 +2645,6 @@
         "left": 1024
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.3126220703125,
-        "anchor_center_y": 0.9376220703125,
         "bottom": 0.8751220703125,
         "left": 0.2501220703125,
         "right": 0.3748779296875,
@@ -2539,13 +2657,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion4_59",
         "frame_name": "explosion4_59",
@@ -2568,8 +2690,6 @@
         "left": 1536
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.4376220703125,
-        "anchor_center_y": 0.9376220703125,
         "bottom": 0.8751220703125,
         "left": 0.3751220703125,
         "right": 0.4998779296875,
@@ -2582,13 +2702,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion4_60",
         "frame_name": "explosion4_60",
@@ -2611,8 +2735,6 @@
         "left": 2048
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.5626220703125,
-        "anchor_center_y": 0.9376220703125,
         "bottom": 0.8751220703125,
         "left": 0.5001220703125,
         "right": 0.6248779296875,
@@ -2625,13 +2747,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion4_61",
         "frame_name": "explosion4_61",
@@ -2654,8 +2780,6 @@
         "left": 2560
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.6876220703125,
-        "anchor_center_y": 0.9376220703125,
         "bottom": 0.8751220703125,
         "left": 0.6251220703125,
         "right": 0.7498779296875,
@@ -2668,13 +2792,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion4_62",
         "frame_name": "explosion4_62",
@@ -2697,8 +2825,6 @@
         "left": 3072
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.8126220703125,
-        "anchor_center_y": 0.9376220703125,
         "bottom": 0.8751220703125,
         "left": 0.7501220703125,
         "right": 0.8748779296875,
@@ -2711,13 +2837,17 @@
     },
     {
       "frame": {
-        "anchor_center": {
+        "anchor_center_pixel": {
           "x": 256,
           "y": 256
         },
         "anchor_center_world": {
           "x": 256,
           "y": 256
+        },
+        "anchor_offset_frame": {
+          "x": 0,
+          "y": 0
         },
         "display_name": "explosion4_63",
         "frame_name": "explosion4_63",
@@ -2740,8 +2870,6 @@
         "left": 3584
       },
       "texture_coordinates": {
-        "anchor_center_x": 0.9376220703125,
-        "anchor_center_y": 0.9376220703125,
         "bottom": 0.8751220703125,
         "left": 0.8751220703125,
         "right": 0.9998779296875,
