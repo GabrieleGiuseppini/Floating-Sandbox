@@ -48,7 +48,6 @@ public:
     float TextureSpaceHeight; // Height in [0.0, 1.0] space (where 1.0 is the atlas' height), exclusive of dead-center dx's
 
     vec2f TextureCoordinatesBottomLeft; // In [0.0, 1.0] space, inclusive dead-center dx
-    vec2f TextureCoordinatesAnchorCenter; // In [0.0, 1.0] space, inclusive dead-center dx
     vec2f TextureCoordinatesTopRight; // In [0.0, 1.0] space, inclusive dead-center dx
 
     int FrameLeftX; // In pixel-coordinate space
@@ -60,7 +59,6 @@ public:
         float textureSpaceWidth,
         float textureSpaceHeight,
         vec2f textureCoordinatesBottomLeft,
-        vec2f textureCoordinatesAnchorCenter,
         vec2f textureCoordinatesTopRight,
         int frameLeftX,
         int frameBottomY,
@@ -68,7 +66,6 @@ public:
         : TextureSpaceWidth(textureSpaceWidth)
         , TextureSpaceHeight(textureSpaceHeight)
         , TextureCoordinatesBottomLeft(textureCoordinatesBottomLeft)
-        , TextureCoordinatesAnchorCenter(textureCoordinatesAnchorCenter)
         , TextureCoordinatesTopRight(textureCoordinatesTopRight)
         , FrameLeftX(frameLeftX)
         , FrameBottomY(frameBottomY)

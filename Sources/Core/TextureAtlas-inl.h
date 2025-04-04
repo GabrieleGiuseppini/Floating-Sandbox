@@ -95,8 +95,6 @@ void TextureAtlasFrameMetadata<TTextureDatabase>::Serialize(picojson::object & r
     picojson::object textureCoordinates;
     textureCoordinates["left"] = picojson::value(static_cast<double>(TextureCoordinatesBottomLeft.x));
     textureCoordinates["bottom"] = picojson::value(static_cast<double>(TextureCoordinatesBottomLeft.y));
-    textureCoordinates["anchor_center_x"] = picojson::value(static_cast<double>(TextureCoordinatesAnchorCenter.x));
-    textureCoordinates["anchor_center_y"] = picojson::value(static_cast<double>(TextureCoordinatesAnchorCenter.y));
     textureCoordinates["right"] = picojson::value(static_cast<double>(TextureCoordinatesTopRight.x));
     textureCoordinates["top"] = picojson::value(static_cast<double>(TextureCoordinatesTopRight.y));
     root["texture_coordinates"] = picojson::value(std::move(textureCoordinates));
@@ -122,9 +120,6 @@ TextureAtlasFrameMetadata<TTextureDatabase> TextureAtlasFrameMetadata<TTextureDa
     vec2f textureCoordinatesBottomLeft(
         static_cast<float>(textureCoordinatesJson.at("left").get<double>()),
         static_cast<float>(textureCoordinatesJson.at("bottom").get<double>()));
-    vec2f textureCoordinatesAnchorCenter(
-        static_cast<float>(textureCoordinatesJson.at("anchor_center_x").get<double>()),
-        static_cast<float>(textureCoordinatesJson.at("anchor_center_y").get<double>()));
     vec2f textureCoordinatesTopRight(
         static_cast<float>(textureCoordinatesJson.at("right").get<double>()),
         static_cast<float>(textureCoordinatesJson.at("top").get<double>()));
@@ -140,7 +135,6 @@ TextureAtlasFrameMetadata<TTextureDatabase> TextureAtlasFrameMetadata<TTextureDa
         textureSpaceWidth,
         textureSpaceHeight,
         textureCoordinatesBottomLeft,
-        textureCoordinatesAnchorCenter,
         textureCoordinatesTopRight,
         frameLeftX,
         frameBottomY,
@@ -652,10 +646,6 @@ TextureAtlas<TTextureDatabase> TextureAtlasBuilder<TTextureDatabase>::InternalBu
             vec2f(
                 dx + static_cast<float>(frameActualPosition.x) / static_cast<float>(specification.AtlasSize.width),
                 dy + static_cast<float>(frameActualPosition.y) / static_cast<float>(specification.AtlasSize.height)),
-            // Anchor center
-            vec2f(
-                dx + static_cast<float>(frameActualPosition.x + textureFrame.Metadata.AnchorCenter.x) / static_cast<float>(specification.AtlasSize.width),
-                dy + static_cast<float>(frameActualPosition.y + textureFrame.Metadata.AnchorCenter.y) / static_cast<float>(specification.AtlasSize.height)),
             // Top-right
             vec2f(
                 static_cast<float>(frameActualPosition.x + textureFrame.TextureData.Size.width) / static_cast<float>(specification.AtlasSize.width) - dx,

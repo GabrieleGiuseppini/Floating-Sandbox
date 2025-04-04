@@ -168,8 +168,9 @@ FontSet<TFontSet> FontSet<TFontSet>::InternalLoad(std::vector<BffFont> && bffFon
             static_cast<float>(bffFonts[f].FontTexture.Size.width),
             static_cast<float>(bffFonts[f].FontTexture.Size.height),
             false,
-            ImageCoordinates(0, 0),
-            vec2f::zero(),
+            ImageCoordinates(0, 0), // Anchor
+            vec2f::zero(), // Anchor
+            vec2f::zero(), // Anchor
             TextureFrameId<DummyFontTextureGroups>(
                 DummyFontTextureGroups::Font,
                 static_cast<TextureFrameIndex>(f)),

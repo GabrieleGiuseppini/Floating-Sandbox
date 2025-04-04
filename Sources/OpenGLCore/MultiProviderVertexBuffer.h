@@ -61,6 +61,7 @@ public:
             mProviderData[p].LastUploadedVertexCount = 0;
             mProviderData[p].DirtyStart = 0;
             mProviderData[p].DirtyEnd = 0;
+            mProviderData[p].CurrentDiagState = ProviderData::DiagState::None;
         }
 
         mTotalVertexCount = 0;
@@ -105,12 +106,16 @@ public:
         std::size_t const iProvider = static_cast<size_t>(provider);
         assert(iProvider < NProviders);
 
+        assert(mProviderData[iProvider].CurrentDiagState == ProviderData::DiagState::None);
+
         // Update total vertex count
         assert(mTotalVertexCount >= mProviderData[iProvider].VertexAttributesBuffer.size());
         mTotalVertexCount -= mProviderData[iProvider].VertexAttributesBuffer.size();
 
         // Clear provider's buffer and ensure size
         mProviderData[iProvider].VertexAttributesBuffer.reset(nMaxVertices);
+
+        mProviderData[iProvider].CurrentDiagState = ProviderData::DiagState::Appending;
     }
 
     template<typename TProvider>
@@ -118,6 +123,8 @@ public:
     {
         std::size_t const iProvider = static_cast<size_t>(provider);
         assert(iProvider < NProviders);
+
+        assert(mProviderData[iProvider].CurrentDiagState == ProviderData::DiagState::Appending);
 
         mProviderData[iProvider].VertexAttributesBuffer.emplace_back(vertexAttributes);
     }
@@ -128,7 +135,20 @@ public:
         std::size_t const iProvider = static_cast<size_t>(provider);
         assert(iProvider < NProviders);
 
+        assert(mProviderData[iProvider].CurrentDiagState == ProviderData::DiagState::Appending);
+
         mProviderData[iProvider].VertexAttributesBuffer.append_from(vertices);
+    }
+
+    template<typename TProvider>
+    TVertexAttributes * AppendVertices(TProvider provider, size_t vCount)
+    {
+        std::size_t const iProvider = static_cast<size_t>(provider);
+        assert(iProvider < NProviders);
+
+        assert(mProviderData[iProvider].CurrentDiagState == ProviderData::DiagState::Appending);
+
+        return &mProviderData[iProvider].VertexAttributesBuffer.emplace_back_ghost(vCount);
     }
 
     template<typename TProvider>
@@ -136,6 +156,8 @@ public:
     {
         std::size_t const iProvider = static_cast<size_t>(provider);
         assert(iProvider < NProviders);
+
+        assert(mProviderData[iProvider].CurrentDiagState == ProviderData::DiagState::Appending);
 
         // Update total vertex count
         size_t const vertexCount = mProviderData[iProvider].VertexAttributesBuffer.size();
@@ -145,6 +167,8 @@ public:
         mProviderData[iProvider].DirtyStart = 0;
         mProviderData[iProvider].DirtyEnd = vertexCount;
         mIsGlobalDirty = true;
+
+        mProviderData[iProvider].CurrentDiagState = ProviderData::DiagState::None;
     }
 
     /*
@@ -158,13 +182,16 @@ public:
         std::size_t const iProvider = static_cast<size_t>(provider);
         assert(iProvider < NProviders);
 
+        assert(mProviderData[iProvider].CurrentDiagState == ProviderData::DiagState::None);
+
         // Expectation is that we are not dirty
         assert(mProviderData[iProvider].DirtyStart == mProviderData[iProvider].VertexAttributesBuffer.size());
         assert(mProviderData[iProvider].DirtyEnd == 0);
 
         // Update total vertex count
         assert(mTotalVertexCount >= mProviderData[iProvider].VertexAttributesBuffer.size());
-        mTotalVertexCount += nVertices - mProviderData[iProvider].VertexAttributesBuffer.size();
+        mTotalVertexCount -= mProviderData[iProvider].VertexAttributesBuffer.size();
+        mTotalVertexCount += nVertices;
 
         if (nVertices < mProviderData[iProvider].VertexAttributesBuffer.size())
         {
@@ -194,6 +221,8 @@ public:
             // Remember we are dirty
             mIsGlobalDirty = true;
         }
+
+        mProviderData[iProvider].CurrentDiagState = ProviderData::DiagState::Updating;
     }
 
     template<typename TProvider>
@@ -201,6 +230,8 @@ public:
     {
         std::size_t const iProvider = static_cast<size_t>(provider);
         assert(iProvider < NProviders);
+
+        assert(mProviderData[iProvider].CurrentDiagState == ProviderData::DiagState::Updating);
 
         mProviderData[iProvider].VertexAttributesBuffer[vIndex] = vertexAttributes;
 
@@ -217,6 +248,8 @@ public:
     {
         std::size_t const iProvider = static_cast<size_t>(provider);
         assert(iProvider < NProviders);
+
+        assert(mProviderData[iProvider].CurrentDiagState == ProviderData::DiagState::Updating);
 
         assert(vIndex + vCount <= mProviderData[iProvider].VertexAttributesBuffer.size());
 
@@ -236,7 +269,11 @@ public:
         std::size_t const iProvider = static_cast<size_t>(provider);
         assert(iProvider < NProviders);
 
+        assert(mProviderData[iProvider].CurrentDiagState == ProviderData::DiagState::Updating);
+
         // Nop
+
+        mProviderData[iProvider].CurrentDiagState = ProviderData::DiagState::None;
     }
 
     void RenderUpload()
@@ -413,6 +450,14 @@ private:
         size_t LastUploadedVertexCount;
         size_t DirtyStart; // Start index of dirty streak in buffer; == BufferSize when not dirty
         size_t DirtyEnd; // End index of dirty streak in buffer; == 0 when not dirty
+
+        // For diagnostics - to verify we are either appending or updating at any given time
+        enum class DiagState
+        {
+            None,
+            Appending,
+            Updating
+        } CurrentDiagState;
     };
 
     std::array<ProviderData, NProviders> mProviderData;

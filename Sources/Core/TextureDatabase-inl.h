@@ -22,15 +22,20 @@ void TextureFrameMetadata<TTextureDatabase>::Serialize(picojson::object & root) 
 
     root["has_own_ambient_light"] = picojson::value(HasOwnAmbientLight);
 
-    picojson::object anchorCenter;
-    anchorCenter["x"] = picojson::value(static_cast<int64_t>(AnchorCenter.x));
-    anchorCenter["y"] = picojson::value(static_cast<int64_t>(AnchorCenter.y));
-    root["anchor_center"] = picojson::value(anchorCenter);
+    picojson::object anchorCenterPixel;
+    anchorCenterPixel["x"] = picojson::value(static_cast<int64_t>(AnchorCenterPixel.x));
+    anchorCenterPixel["y"] = picojson::value(static_cast<int64_t>(AnchorCenterPixel.y));
+    root["anchor_center_pixel"] = picojson::value(anchorCenterPixel);
 
     picojson::object anchorCenterWorld;
     anchorCenterWorld["x"] = picojson::value(static_cast<double>(AnchorCenterWorld.x));
     anchorCenterWorld["y"] = picojson::value(static_cast<double>(AnchorCenterWorld.y));
     root["anchor_center_world"] = picojson::value(anchorCenterWorld);
+
+    picojson::object anchorOffsetFrame;
+    anchorOffsetFrame["x"] = picojson::value(static_cast<double>(AnchorOffsetFrame.x));
+    anchorOffsetFrame["y"] = picojson::value(static_cast<double>(AnchorOffsetFrame.y));
+    root["anchor_center_frame"] = picojson::value(anchorOffsetFrame);
 
     picojson::object frameId;
     frameId["group"] = picojson::value(static_cast<int64_t>(FrameId.Group));
@@ -56,15 +61,20 @@ TextureFrameMetadata<TTextureDatabase> TextureFrameMetadata<TTextureDatabase>::D
 
     bool hasOwnAmbientLight = root.at("has_own_ambient_light").get<bool>();
 
-    picojson::object const & anchorCenterJson = root.at("anchor_center").get<picojson::object>();
-    ImageCoordinates anchorCenter(
-        static_cast<int>(anchorCenterJson.at("x").get<int64_t>()),
-        static_cast<int>(anchorCenterJson.at("y").get<int64_t>()));
+    picojson::object const & anchorCenterPixelJson = root.at("anchor_center_pixel").get<picojson::object>();
+    ImageCoordinates anchorCenterPixel(
+        static_cast<int>(anchorCenterPixelJson.at("x").get<int64_t>()),
+        static_cast<int>(anchorCenterPixelJson.at("y").get<int64_t>()));
 
     picojson::object const & anchorCenterWorldJson = root.at("anchor_center_world").get<picojson::object>();
     vec2f anchorCenterWorld(
         static_cast<float>(anchorCenterWorldJson.at("x").get<double>()),
         static_cast<float>(anchorCenterWorldJson.at("y").get<double>()));
+
+    picojson::object const & anchorOffsetFrameJson = root.at("anchor_offset_frame").get<picojson::object>();
+    vec2f anchorOffsetFrame(
+        static_cast<float>(anchorOffsetFrameJson.at("x").get<double>()),
+        static_cast<float>(anchorOffsetFrameJson.at("y").get<double>()));
 
     picojson::object const & frameIdJson = root.at("id").get<picojson::object>();
     TTextureGroups group = static_cast<TTextureGroups>(frameIdJson.at("group").get<std::int64_t>());
@@ -77,8 +87,9 @@ TextureFrameMetadata<TTextureDatabase> TextureFrameMetadata<TTextureDatabase>::D
         worldWidth,
         worldHeight,
         hasOwnAmbientLight,
-        anchorCenter,
+        anchorCenterPixel,
         anchorCenterWorld,
+        anchorOffsetFrame,
         TextureFrameId<TTextureGroups>(group, frameIndex),
         frameName,
         displayName);
@@ -250,12 +261,17 @@ TextureDatabase<TTextureDatabase> TextureDatabase<TTextureDatabase>::Load(IAsset
 
                     bool hasOwnAmbientLight = frameHasOwnAmbientLight.has_value() ? *frameHasOwnAmbientLight : groupHasOwnAmbientLight;
 
-                    int anchorX = (textureSize.width / 2) + (frameAnchorOffsetX ? *frameAnchorOffsetX : groupAnchorOffsetX);
-                    int anchorY = (textureSize.height / 2) + (frameAnchorOffsetY ? *frameAnchorOffsetY : groupAnchorOffsetY);
+                    // Transform to center-based, pixels
+                    int anchorCenterPixelX = (textureSize.width / 2) + (frameAnchorOffsetX ? *frameAnchorOffsetX : groupAnchorOffsetX);
+                    int anchorCenterPixelY = (textureSize.height / 2) + (frameAnchorOffsetY ? *frameAnchorOffsetY : groupAnchorOffsetY);
 
-                    // Transform to world
-                    float anchorWorldX = static_cast<float>(anchorX) * worldWidth / static_cast<float>(textureSize.width);
-                    float anchorWorldY = static_cast<float>(textureSize.height - anchorY) * worldHeight / static_cast<float>(textureSize.height);
+                    // Transform to center-based, world
+                    float anchorCenterWorldX = static_cast<float>(anchorCenterPixelX) * worldWidth / static_cast<float>(textureSize.width);
+                    float anchorCenterWorldY = static_cast<float>(textureSize.height - anchorCenterPixelY) * worldHeight / static_cast<float>(textureSize.height);
+
+                    // Transform to frame
+                    float anchorOffsetFrameX = static_cast<float>(frameAnchorOffsetX ? *frameAnchorOffsetX : groupAnchorOffsetX) / static_cast<float>(textureSize.width);
+                    float anchorOffsetFrameY = static_cast<float>(frameAnchorOffsetY ? *frameAnchorOffsetY : groupAnchorOffsetY) / static_cast<float>(textureSize.height);
 
                     //
                     // Store frame specification
@@ -269,11 +285,14 @@ TextureDatabase<TTextureDatabase> TextureDatabase<TTextureDatabase>::Load(IAsset
                                 worldHeight,
                                 hasOwnAmbientLight,
                                 ImageCoordinates(
-                                    anchorX,
-                                    anchorY),
+                                    anchorCenterPixelX,
+                                    anchorCenterPixelY),
                                 vec2f(
-                                    anchorWorldX,
-                                    anchorWorldY),
+                                    anchorCenterWorldX,
+                                    anchorCenterWorldY),
+                                vec2f(
+                                    anchorOffsetFrameX,
+                                    anchorOffsetFrameY),
                                 TextureFrameId<TTextureGroups>(group, frameIndex),
                                 frameDescriptor.Name,
                                 frameDisplayName.has_value() ? *frameDisplayName : frameDescriptor.Name),

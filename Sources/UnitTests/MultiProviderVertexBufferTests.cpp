@@ -2147,7 +2147,7 @@ TEST(MultiProviderVertexBufferTests, TwoProviders_PartialUpdates_Second_ViaPoint
     TestVertexAttributes * ptr = buffer.UpdateVertices(1, 1, 2);
     ptr[0] = { 40.0f, 400.0f };
     ptr[1] = { 50.0f, 500.0f };
-    buffer.UpdateEnd(0);
+    buffer.UpdateEnd(1);
 
     buffer.RenderUpload();
 

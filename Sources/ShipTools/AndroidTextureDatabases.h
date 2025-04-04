@@ -26,7 +26,12 @@ enum class UITextureGroups : uint16_t
     ExitIcon,
     CheckboxFrame,
     ToolsEyeQuadrant,
+    SliderGuideTip,
+    SliderGuideBody,
+    SliderKnob,
     ToolIcons,
+    TriangleH,
+    TriangleV,
     UnderContructionIcon,
 
     _Last = UnderContructionIcon
@@ -56,8 +61,18 @@ struct UITextureDatabase
             return UITextureGroups::CheckboxFrame;
         else if (Utils::CaseInsensitiveEquals(str, "tools_eye_quadrant"))
             return UITextureGroups::ToolsEyeQuadrant;
+        else if (Utils::CaseInsensitiveEquals(str, "slider_guide_tip"))
+            return UITextureGroups::SliderGuideTip;
+        else if (Utils::CaseInsensitiveEquals(str, "slider_guide_body"))
+            return UITextureGroups::SliderGuideBody;
+        else if (Utils::CaseInsensitiveEquals(str, "slider_knob"))
+            return UITextureGroups::SliderKnob;
         else if (Utils::CaseInsensitiveEquals(str, "tool_icons"))
             return UITextureGroups::ToolIcons;
+        else if (Utils::CaseInsensitiveEquals(str, "triangle_h"))
+            return UITextureGroups::TriangleH;
+        else if (Utils::CaseInsensitiveEquals(str, "triangle_v"))
+            return UITextureGroups::TriangleV;
         else if (Utils::CaseInsensitiveEquals(str, "under_construction_icon"))
             return UITextureGroups::UnderContructionIcon;
         else

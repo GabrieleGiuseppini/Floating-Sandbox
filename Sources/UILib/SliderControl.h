@@ -57,7 +57,7 @@ public:
             height,
             label,
             toolTipLabel,
-            onValueChanged,
+            std::move(onValueChanged),
             std::move(sliderCore),
             nullptr)
     {

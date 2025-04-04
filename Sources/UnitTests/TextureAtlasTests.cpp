@@ -46,6 +46,7 @@ TEST(TextureAtlasTests, Specification_OneTexture)
                     false,
                     ImageCoordinates(0, 0),
                     vec2f::zero(),
+                    vec2f::zero(),
                     TextureFrameId<MyTestTextureDatabase::MyTextureGroups>(MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 5),
                     "0", "0"
                 },
@@ -88,6 +89,7 @@ TEST(TextureAtlasTests, Specification_MultipleTextures)
                     1.0f, 1.0f,
                     false,
                     ImageCoordinates(0, 0),
+                    vec2f::zero(),
                     vec2f::zero(),
                     TextureFrameId<MyTestTextureDatabase::MyTextureGroups>(MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 15),
                     "0", "0"
@@ -239,6 +241,7 @@ TEST(TextureAtlasTests, Specification_RoundsAtlasSize)
                     false,
                     ImageCoordinates(0, 0),
                     vec2f::zero(),
+                    vec2f::zero(),
                     TextureFrameId<MyTestTextureDatabase::MyTextureGroups>(MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 15),
                     "0", "0"
                 },
@@ -261,6 +264,7 @@ TEST(TextureAtlasTests, Specification_DuplicateSuppression)
         1.0f, 1.0f,
         false,
         ImageCoordinates(0, 0),
+        vec2f::zero(),
         vec2f::zero(),
         TextureFrameId<MyTestTextureDatabase::MyTextureGroups>(MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 15),
         "0", "0");
@@ -348,6 +352,7 @@ TEST(TextureAtlasTests, Placement_InAtlasSizeMatchingFrameSize)
                         false,
                         ImageCoordinates(0, 0),
                         vec2f::zero(),
+                        vec2f::zero(),
                         frameId,
                         "0", "0"
                     },
@@ -363,7 +368,8 @@ TEST(TextureAtlasTests, Placement_InAtlasSizeMatchingFrameSize)
                         1.0f, 1.0f,
                         false,
                         ImageCoordinates(1, 2),
-                        vec2f::zero(),
+                        vec2f(30.0f, 35.0f),
+                        vec2f(40.0f, 45.0f),
                         frameId,
                         "1", "1"
                     },
@@ -404,15 +410,11 @@ TEST(TextureAtlasTests, Placement_InAtlasSizeMatchingFrameSize)
 
     EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 0 }).TextureCoordinatesBottomLeft.x, dx + 4.0f / 12.0f, 0.0001f));
     EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 0 }).TextureCoordinatesBottomLeft.y, dy + 0.0f / 8.0f, 0.0001f));
-    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 0 }).TextureCoordinatesAnchorCenter.x, dx + 4.0f / 12.0f + 0.0f / 12.0f, 0.0001f));
-    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 0 }).TextureCoordinatesAnchorCenter.y, dy + 0.0f / 8.0f + 0.0f / 8.0f, 0.0001f));
     EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 0 }).TextureCoordinatesTopRight.x, 4.0f / 12.0f + 8.0f / 12.0f - dx, 0.0001f));
     EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 0 }).TextureCoordinatesTopRight.y, 0.0f / 8.0f + 8.0f / 8.0f - dy, 0.0001f));
 
     EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 1 }).TextureCoordinatesBottomLeft.x, dx, 0.0001f));
     EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 1 }).TextureCoordinatesBottomLeft.y, dy, 0.0001f));
-    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 1 }).TextureCoordinatesAnchorCenter.x, dx + 1.0f / 12.0f, 0.0001f));
-    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 1 }).TextureCoordinatesAnchorCenter.y, dy + 2.0f / 8.0f, 0.0001f));
     EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 1 }).TextureCoordinatesTopRight.x, 4.0f / 12.0f - dx, 0.0001f));
     EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 1 }).TextureCoordinatesTopRight.y, 4.0f / 8.0f - dy, 0.0001f));
 }
@@ -450,6 +452,7 @@ TEST(TextureAtlasTests, Placement_InAtlasSizeLargerThanFrameSize)
                         false,
                         ImageCoordinates(0, 0),
                         vec2f::zero(),
+                        vec2f::zero(),
                         frameId,
                         "0", "0"
                     },
@@ -465,6 +468,7 @@ TEST(TextureAtlasTests, Placement_InAtlasSizeLargerThanFrameSize)
                         1.0f, 1.0f,
                         false,
                         ImageCoordinates(2, 3),
+                        vec2f::zero(),
                         vec2f::zero(),
                         frameId,
                         "1", "1"
@@ -517,16 +521,12 @@ TEST(TextureAtlasTests, Placement_InAtlasSizeLargerThanFrameSize)
     // Frame 0: @ (4 + 1, 0 + 1) x (5, 5)
     EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 0 }).TextureCoordinatesBottomLeft.x, dx + 5.0f / 12.0f, 0.01f));
     EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 0 }).TextureCoordinatesBottomLeft.y, dy + 1.0f / 8.0f, 0.01f));
-    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 0 }).TextureCoordinatesAnchorCenter.x, dx + 5.0f / 12.0f + 0.0f / 12.0f, 0.01f));
-    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 0 }).TextureCoordinatesAnchorCenter.y, dy + 1.0f / 8.0f + 0.0f / 8.0f, 0.01f));
     EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 0 }).TextureCoordinatesTopRight.x, 5.0f / 12.0f + 5.0f / 12.0f - dx, 0.01f));
     EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 0 }).TextureCoordinatesTopRight.y, 1.0f / 8.0f + 5.0f / 8.0f - dy, 0.01f));
 
     // Frame 1: @ (0 + 0, 0 + 1) x (3, 2)
     EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 1 }).TextureCoordinatesBottomLeft.x, dx, 0.01f));
     EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 1 }).TextureCoordinatesBottomLeft.y, dy + 1.0f / 8.0f, 0.01f));
-    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 1 }).TextureCoordinatesAnchorCenter.x, dx + 2.0f / 12.0f, 0.01f));
-    EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 1 }).TextureCoordinatesAnchorCenter.y, dy + 1.0f / 8.0f + 3.0f / 8.0f, 0.01f));
     EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 1 }).TextureCoordinatesTopRight.x, 0.0f / 12.0f + 3.0f / 12.0f - dx, 0.01f));
     EXPECT_TRUE(ApproxEquals(atlas.Metadata.GetFrameMetadata({ MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 1 }).TextureCoordinatesTopRight.y, 1.0f / 8.0f + 2.0f / 8.0f - dy, 0.01f));
 }
@@ -556,6 +556,7 @@ TEST(TextureAtlasTests, Placement_Duplicates)
                     false,
                     ImageCoordinates(0, 0),
                     vec2f::zero(),
+                    vec2f::zero(),
                     TextureFrameId<MyTestTextureDatabase::MyTextureGroups>(MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 2),
                     "1b", "1b"),
                 TextureFrameId<MyTestTextureDatabase::MyTextureGroups>(MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 1)
@@ -577,6 +578,7 @@ TEST(TextureAtlasTests, Placement_Duplicates)
                         false,
                         ImageCoordinates(0, 0),
                         vec2f::zero(),
+                        vec2f::zero(),
                         frameId,
                         "0", "0"
                     },
@@ -593,6 +595,7 @@ TEST(TextureAtlasTests, Placement_Duplicates)
                         false,
                         ImageCoordinates(2, 3),
                         vec2f::zero(),
+                        vec2f::zero(),
                         frameId,
                         "1a", "1a"
                     },
@@ -604,9 +607,6 @@ TEST(TextureAtlasTests, Placement_Duplicates)
     EXPECT_EQ(
         atlas.Metadata.GetFrameMetadata({ MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 1 }).TextureCoordinatesBottomLeft,
         atlas.Metadata.GetFrameMetadata({ MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 2 }).TextureCoordinatesBottomLeft);
-    EXPECT_EQ(
-        atlas.Metadata.GetFrameMetadata({ MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 1 }).TextureCoordinatesAnchorCenter,
-        atlas.Metadata.GetFrameMetadata({ MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 2 }).TextureCoordinatesAnchorCenter);
     EXPECT_EQ(
         atlas.Metadata.GetFrameMetadata({ MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 1 }).TextureCoordinatesTopRight,
         atlas.Metadata.GetFrameMetadata({ MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 2 }).TextureCoordinatesTopRight);

@@ -46,12 +46,16 @@ struct TextureFrameMetadata
     bool HasOwnAmbientLight;
 
     // Anchor point: when this texture is requested to be drawn at a specific
-    // world coordinate, that is the coordinate of this point, in frame (pixel) coordinates
-    ImageCoordinates AnchorCenter;
+    // world coordinate, that is the coordinate of this point, in pixel (in-frame) coordinates
+    ImageCoordinates AnchorCenterPixel;
 
     // Anchor point in texture frame coordinates scaled to world coordinates
     // (i.e. [0.0, 1.0] * WorldWidth/Height)
     vec2f AnchorCenterWorld;
+
+    // Anchor point: when this texture is requested to be drawn at a specific
+    // place, the place has to be shifted by this amount, in frame coordinates (i.e. [0.0, 1.0])
+    vec2f AnchorOffsetFrame;
 
     // The ID of this frame
     TextureFrameId<typename TTextureDatabase::TextureGroupsType> FrameId;
@@ -67,8 +71,9 @@ struct TextureFrameMetadata
         float worldWidth,
         float worldHeight,
         bool hasOwnAmbientLight,
-        ImageCoordinates const & anchorCenter,
+        ImageCoordinates const & anchorCenterPixel,
         vec2f const & anchorCenterWorld,
+        vec2f const & anchorOffsetFrame,
         TextureFrameId<typename TTextureDatabase::TextureGroupsType> frameId,
         std::string const & frameName,
         std::string const & displayName)
@@ -76,8 +81,9 @@ struct TextureFrameMetadata
         , WorldWidth(worldWidth)
         , WorldHeight(worldHeight)
         , HasOwnAmbientLight(hasOwnAmbientLight)
-        , AnchorCenter(anchorCenter)
+        , AnchorCenterPixel(anchorCenterPixel)
         , AnchorCenterWorld(anchorCenterWorld)
+        , AnchorOffsetFrame(anchorOffsetFrame)
         , FrameId(frameId)
         , FrameName(frameName)
         , DisplayName(displayName)

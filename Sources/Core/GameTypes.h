@@ -993,11 +993,18 @@ struct FloatSize
             && height == other.height;
     }
 
-    inline constexpr FloatSize operator/(float other) const
+    inline constexpr FloatSize operator+(FloatSize const & other) const
     {
         return FloatSize(
-            width / other,
-            height / other);
+            width + other.width,
+            height + other.height);
+    }
+
+    inline constexpr FloatSize operator/(float scale) const
+    {
+        return FloatSize(
+            width / scale,
+            height / scale);
     }
 
     inline vec2i to_vec2i_round() const
