@@ -289,7 +289,7 @@ public:
             specification,
             options,
             frameLoader,
-            SimpleProgressCallback([](float) {}));
+            SimpleProgressCallback::Dummy());
     }
 
     /*

@@ -1063,14 +1063,16 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
                     //LogMessage("TODOTEST: ...buffers swapped.");
                 }),
             mGameAssetManager,
-            [this, &splash](float progress, ProgressMessageType message)
-            {
-                // 0.0 -> 0.3
-                splash->UpdateProgress(progress / 3.44444f, message);
-                this->mMainApp->Yield();
-                this->mMainApp->Yield();
-                this->mMainApp->Yield();
-            });
+            ProgressCallback(
+                [this, &splash](float progress, ProgressMessageType message)
+                {
+                    splash->UpdateProgress(progress, message);
+                    this->mMainApp->Yield();
+                    this->mMainApp->Yield();
+                    this->mMainApp->Yield();
+                },
+                0.0f,
+                0.3f));
     }
     catch (std::exception const & e)
     {
@@ -1092,14 +1094,16 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     {
         mSoundController = std::make_unique<SoundController>(
             mGameAssetManager,
-            [&splash, this](float progress, ProgressMessageType message)
-            {
-                // 0.3 -> 0.7
-                splash->UpdateProgress(0.3f + progress / 2.5f, message);
-                this->mMainApp->Yield();
-                this->mMainApp->Yield();
-                this->mMainApp->Yield();
-            });
+            ProgressCallback(
+                [&splash, this](float progress, ProgressMessageType message)
+                {
+                    splash->UpdateProgress(progress, message);
+                    this->mMainApp->Yield();
+                    this->mMainApp->Yield();
+                    this->mMainApp->Yield();
+                },
+                0.3f,
+                0.4f));
     }
     catch (std::exception const & e)
     {
@@ -1121,14 +1125,16 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     {
         mMusicController = std::make_unique<MusicController>(
             mGameAssetManager,
-            [&splash, this](float progress, ProgressMessageType message)
-            {
-                // 0.7 -> 0.75
-                splash->UpdateProgress(0.7f + progress / 20.0f, message);
-                this->mMainApp->Yield();
-                this->mMainApp->Yield();
-                this->mMainApp->Yield();
-            });
+            ProgressCallback(
+                [&splash, this](float progress, ProgressMessageType message)
+                {
+                    splash->UpdateProgress(progress, message);
+                    this->mMainApp->Yield();
+                    this->mMainApp->Yield();
+                    this->mMainApp->Yield();
+                },
+                0.7f,
+                0.05f));
     }
     catch (std::exception const & e)
     {
@@ -1181,14 +1187,16 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
         *mSoundController,
         *mUIPreferencesManager,
         mGameAssetManager,
-        [&splash, this](float progress, ProgressMessageType message)
-        {
-            // 0.75 -> 0.85
-            splash->UpdateProgress(0.75f + progress * 0.10f, message);
-            this->mMainApp->Yield();
-            this->mMainApp->Yield();
-            this->mMainApp->Yield();
-        });
+        ProgressCallback(
+            [&splash, this](float progress, ProgressMessageType message)
+            {
+                splash->UpdateProgress(progress, message);
+                this->mMainApp->Yield();
+                this->mMainApp->Yield();
+                this->mMainApp->Yield();
+            },
+            0.75f,
+            0.10f));
 
     mMainPanelSizer->Add(mElectricalPanel, 0, wxEXPAND); // Expand horizontally
 
@@ -1247,14 +1255,16 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
                 {
                     this->SwitchFromShipBuilder(shipFilePath);
                 },
-                [&splash, this](float progress, ProgressMessageType message)
-                {
-                    // 0.85 -> 0.99
-                    splash->UpdateProgress(0.85f + progress * 0.14f, message);
-                    this->mMainApp->Yield();
-                    this->mMainApp->Yield();
-                    this->mMainApp->Yield();
-                });
+                ProgressCallback(
+                    [&splash, this](float progress, ProgressMessageType message)
+                    {
+                        splash->UpdateProgress(progress, message);
+                        this->mMainApp->Yield();
+                        this->mMainApp->Yield();
+                        this->mMainApp->Yield();
+                    },
+                    0.85f,
+                    0.14f));
         }
         catch (std::exception const & e)
         {

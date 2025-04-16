@@ -26,11 +26,7 @@ CompositeMaterialPalette::CompositeMaterialPalette(
         materialDatabase.GetStructuralMaterialPalette(),
         shipTexturizer,
         gameAssetManager,
-        [&progressCallback](float progress, ProgressMessageType message)
-        {
-            // 0.0 -> 0.33
-            progressCallback(progress * 0.3333f, message);
-        });
+        progressCallback.MakeSubCallback(0.0f, 0.33f));
 
     mStructuralMaterialPalette->Bind(
         fsEVT_STRUCTURAL_MATERIAL_SELECTED,
@@ -44,11 +40,7 @@ CompositeMaterialPalette::CompositeMaterialPalette(
         materialDatabase.GetElectricalMaterialPalette(),
         shipTexturizer,
         gameAssetManager,
-        [&progressCallback](float progress, ProgressMessageType message)
-        {
-            // 0.33 -> 0.66
-            progressCallback(0.3333f + progress * 0.3333f, message);
-        });
+        progressCallback.MakeSubCallback(0.33f, 0.33f));
 
     mElectricalMaterialPalette->Bind(
         fsEVT_ELECTRICAL_MATERIAL_SELECTED,
@@ -62,11 +54,7 @@ CompositeMaterialPalette::CompositeMaterialPalette(
         materialDatabase.GetRopeMaterialPalette(),
         shipTexturizer,
         gameAssetManager,
-        [&progressCallback](float progress, ProgressMessageType message)
-        {
-            // 0.66 -> 1.0
-            progressCallback(0.6666f + progress * 0.3333f, message);
-        });
+        progressCallback.MakeSubCallback(0.66f, 0.33f));
 
     mRopesMaterialPalette->Bind(
         fsEVT_STRUCTURAL_MATERIAL_SELECTED,

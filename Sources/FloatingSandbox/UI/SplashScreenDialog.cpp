@@ -149,6 +149,7 @@ SplashScreenDialog::SplashScreenDialog(GameAssetManager const & gameAssetManager
         mProgressStrings.Add(_("Loading fish texture atlas..."));
         mProgressStrings.Add(_("Loading world textures..."));
         mProgressStrings.Add(_("Initializing graphics..."));
+        mProgressStrings.Add(_("Initializing UI..."));
         mProgressStrings.Add(_("Loading sounds..."));
         mProgressStrings.Add(_("Loading music..."));
         mProgressStrings.Add(_("Loading electrical panel..."));
