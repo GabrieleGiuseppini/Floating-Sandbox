@@ -1110,7 +1110,6 @@ private:
     GameOpenGLTexture mCloudTextureAtlasOpenGLHandle;
 
     GameOpenGLTexture mCloudShadowsTextureOpenGLHandle;
-    size_t mCloudShadowsTextureSize;
     bool mHasCloudShadowsTextureBeenAllocated;
 
     std::vector<TextureFrameSpecification<GameTextureDatabases::WorldTextureDatabase>> mOceanTextureFrameSpecifications;

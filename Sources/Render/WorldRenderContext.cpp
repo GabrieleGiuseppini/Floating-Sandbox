@@ -83,7 +83,6 @@ WorldRenderContext::WorldRenderContext(
     , mCloudTextureAtlasMetadata()
     , mCloudTextureAtlasOpenGLHandle()
     , mCloudShadowsTextureOpenGLHandle()
-    , mCloudShadowsTextureSize(0)
     , mHasCloudShadowsTextureBeenAllocated(false)
     , mOceanTextureFrameSpecifications()
     , mOceanTextureOpenGLHandle()
