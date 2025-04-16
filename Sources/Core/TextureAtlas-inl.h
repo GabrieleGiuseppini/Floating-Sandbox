@@ -574,7 +574,7 @@ TextureAtlas<TTextureDatabase> TextureAtlasBuilder<TTextureDatabase>::InternalBu
     AtlasSpecification const & specification,
     TextureAtlasOptions options,
     std::function<TextureFrame<TTextureDatabase>(TextureFrameId<TTextureGroups> const &)> frameLoader,
-    ProgressCallback const & progressCallback)
+    SimpleProgressCallback const & progressCallback)
 {
     // The DX's to sample pixels in their dead center
     float const dx = 0.5f / static_cast<float>(specification.AtlasSize.width);
@@ -595,10 +595,6 @@ TextureAtlas<TTextureDatabase> TextureAtlasBuilder<TTextureDatabase>::InternalBu
 
     for (auto const & textureLocationInfo : specification.TextureLocationInfos)
     {
-        progressCallback(
-            static_cast<float>(allAtlasFrameMetadata.size()) / static_cast<float>(specification.TextureLocationInfos.size()),
-            ProgressMessageType::None);
-
         // Load frame
         TextureFrame<TTextureDatabase> textureFrame = frameLoader(textureLocationInfo.FrameId);
         ImageData<rgbaColor> textureImageData = ImageData<rgbaColor>(
@@ -656,6 +652,8 @@ TextureAtlas<TTextureDatabase> TextureAtlasBuilder<TTextureDatabase>::InternalBu
 
         // Store
         allAtlasFrameMetadata.push_back(atlasFrameMetadata);
+
+        progressCallback(static_cast<float>(allAtlasFrameMetadata.size()) / static_cast<float>(specification.TextureLocationInfos.size()));
     }
 
     // Process dupes, if any
@@ -680,7 +678,7 @@ TextureAtlas<TTextureDatabase> TextureAtlasBuilder<TTextureDatabase>::InternalBu
         allAtlasFrameMetadata.push_back(atlasFrameMetadata);
     }
 
-    progressCallback(1.0f, ProgressMessageType::None);
+    progressCallback(1.0f);
 
     // Create atlas image
     RgbaImageData atlasImageData(

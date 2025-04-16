@@ -344,11 +344,7 @@ MainFrame::MainFrame(
             mMaterialDatabase,
             mShipTexturizer,
             mGameAssetManager,
-            [&progressCallback](float progress, ProgressMessageType message)
-            {
-                // 0.0 -> 0.80
-                progressCallback(progress * 0.8f, message);
-            });
+            progressCallback.MakeSubCallback(0.0f, 0.8f));
     }
 
     //

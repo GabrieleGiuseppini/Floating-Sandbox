@@ -20,7 +20,7 @@ aaa
 bbb
 )";
 
-    std::unordered_map<std::string, TestShaderManager::ShaderInfo> includeFiles;
+    std::map<std::string, TestShaderManager::ShaderInfo> includeFiles;
     includeFiles["ggg.glsl"] = { "ggg", std::string("   \n zorro \n"), true };
     includeFiles["inc1.glsl"] = { "incl", std::string(" \n sancho \n"), false};
 
@@ -39,7 +39,7 @@ aaa
 bbb
 )";
 
-    std::unordered_map<std::string, TestShaderManager::ShaderInfo> includeFiles;
+    std::map<std::string, TestShaderManager::ShaderInfo> includeFiles;
     includeFiles["inc2.glslinc"] = { "inc2", std::string("nano\n"), true };
     includeFiles["inc1.glsl"] = { "incl", std::string("sancho\n#include \"inc2.glslinc\""), false};
 
@@ -58,7 +58,7 @@ aaa
 bbb
 )";
 
-    std::unordered_map<std::string, TestShaderManager::ShaderInfo> includeFiles;
+    std::map<std::string, TestShaderManager::ShaderInfo> includeFiles;
     includeFiles["inc2.glslinc"] = { "inc2", std::string("#include \"inc1.glsl\"\n"), true };
     includeFiles["inc1.glsl"] = { "incl", std::string("sancho\n#include \"inc2.glslinc\""), false };
 
@@ -77,7 +77,7 @@ aaa
 bbb
 )";
 
-    std::unordered_map<std::string, TestShaderManager::ShaderInfo> includeFiles;
+    std::map<std::string, TestShaderManager::ShaderInfo> includeFiles;
     includeFiles["inc3.glslinc"] = { "inc3", std::string("nano\n"), true };
 
     EXPECT_THROW(

@@ -12,14 +12,16 @@
 #include <unordered_set>
 
 template<typename TShaderSet>
-ShaderManager<TShaderSet>::ShaderManager(IAssetManager const & assetManager)
+ShaderManager<TShaderSet>::ShaderManager(
+    IAssetManager const & assetManager,
+    SimpleProgressCallback const & progressCallback)
 {
     //
     // Load all shader files
     //
 
     // Shader filename -> ShaderInfo
-    std::unordered_map<std::string, ShaderInfo> shaderSources;
+    std::map<std::string, ShaderInfo> shaderSources;
 
     for (auto const & shaderDescriptor : assetManager.EnumerateShaders(TShaderSet::ShaderSetName))
     {
@@ -35,10 +37,13 @@ ShaderManager<TShaderSet>::ShaderManager(IAssetManager const & assetManager)
             });
     }
 
+    progressCallback(0.02f);
+
     //
     // Compile all and only shader files (not includes)
     //
 
+    size_t progress = 0;
     for (auto const & entryIt : shaderSources)
     {
         if (entryIt.second.IsShader) // Do not compile include files
@@ -48,6 +53,9 @@ ShaderManager<TShaderSet>::ShaderManager(IAssetManager const & assetManager)
                 entryIt.second.Source,
                 shaderSources);
         }
+
+        ++progress;
+        progressCallback(0.02f + static_cast<float>(progress) / static_cast<float>(shaderSources.size()) * 0.9f);
     }
 
     //
@@ -67,7 +75,7 @@ template<typename TShaderSet>
 void ShaderManager<TShaderSet>::CompileShader(
     std::string const & shaderName,
     std::string const & shaderSource,
-    std::unordered_map<std::string, ShaderInfo> const & allShaderSources)
+    std::map<std::string, ShaderInfo> const & allShaderSources)
 {
     try
     {
@@ -205,7 +213,7 @@ void ShaderManager<TShaderSet>::CompileShader(
 template<typename TShaderSet>
 std::string ShaderManager<TShaderSet>::ResolveIncludes(
     std::string const & shaderSource,
-    std::unordered_map<std::string, ShaderInfo> const & shaderSources)
+    std::map<std::string, ShaderInfo> const & shaderSources)
 {
     /*
      * Strategy:
@@ -336,7 +344,7 @@ std::tuple<std::string, std::string> ShaderManager<TShaderSet>::SplitSource(std:
         {
             // Found beginning of fragment shader
 
-            // Initialize fragment shader GLSL version
+             // Initialize fragment shader GLSL version
             fragmentShaderCode << "#version " << match[1].str() << sSource.widen('\n');
 
             // Initialize fragment shader with common code

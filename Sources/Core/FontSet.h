@@ -95,7 +95,7 @@ struct FontSet final
 
     static FontSet<TFontSet> Load(
         IAssetManager const & assetManager,
-        ProgressCallback const & progressCallback);
+        SimpleProgressCallback const & progressCallback);
 
     FontSet(
         std::vector<FontMetadata> && metadata,

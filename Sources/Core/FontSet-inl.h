@@ -87,7 +87,7 @@ BffFont BffFont::Load(
 template<typename TFontSet>
 FontSet<TFontSet> FontSet<TFontSet>::Load(
     IAssetManager const & assetManager,
-    ProgressCallback const & progressCallback)
+    SimpleProgressCallback const & progressCallback)
 {
     //
     // Get list of available fonts
@@ -126,9 +126,7 @@ FontSet<TFontSet> FontSet<TFontSet>::Load(
                 fontAssetDescriptors[iAsset].RelativePath,
                 assetManager));
 
-        progressCallback(
-            static_cast<float>(bffFonts.size()) / static_cast<float>(FontCount),
-            ProgressMessageType::LoadingFonts);
+        progressCallback(static_cast<float>(bffFonts.size()) / static_cast<float>(FontCount));
     }
 
     if (bffFonts.size() != FontCount)

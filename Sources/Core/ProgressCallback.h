@@ -9,6 +9,63 @@
 #include <functional>
 #include <string>
 
+// The progress value is the progress that will be reached at the end of the operation.
+
+struct SimpleProgressCallback final
+{
+	static SimpleProgressCallback Dummy()
+	{
+		return SimpleProgressCallback([](float) {});
+	}
+
+	SimpleProgressCallback(std::function<void(float progress)> callback)
+			: mCallback(std::move(callback))
+			, mMinOutputRange(0.0f)
+			, mOutputRangeWidth(1.0f)
+	{}
+
+	SimpleProgressCallback(
+		std::function<void(float progress)> callback, // Will be invoked with values in range
+		float minOutputRange,
+		float outputRangeWidth)
+			: mCallback(std::move(callback))
+			, mMinOutputRange(minOutputRange)
+			, mOutputRangeWidth(outputRangeWidth)
+	{}
+
+	/*
+	 * User provides 0.0-1.0, but the original callback
+	 * is invoked on our range.
+	 */
+	void operator()(float progress) const
+	{
+		mCallback(mMinOutputRange + progress * mOutputRangeWidth);
+	}
+
+	/*
+	 * User of the new callback provides 0.0-1.0, but this callback
+	 * is invoked on the specified range - chained with our range.
+	 */
+	SimpleProgressCallback MakeSubCallback(
+		float minOutputRange,
+		float outputRangeWidth) const
+	{
+		return SimpleProgressCallback(
+			[this](float progress)
+			{
+				(*this)(progress);
+			},
+			minOutputRange,
+			outputRangeWidth);
+	}
+
+private:
+
+	std::function<void(float progress)> const mCallback;
+	float const mMinOutputRange;
+	float const mOutputRangeWidth;
+};
+
 enum class ProgressMessageType : std::size_t
 {
 	None = 0,						// Used when no message is propagated
@@ -22,6 +79,7 @@ enum class ProgressMessageType : std::size_t
 	LoadingFishTextureAtlas,		// "Loading fish texture atlas..."
 	LoadingWorldTextures,			// "Loading world textures..."
 	InitializingGraphics,			// "Initializing graphics..."
+	InitializingUI,					// "Initializing UI..."
 	LoadingSounds,					// "Loading sounds..."
 	LoadingMusic,					// "Loading music..."
 	LoadingElectricalPanel,			// "Loading electrical panel..."
@@ -33,5 +91,83 @@ enum class ProgressMessageType : std::size_t
 	_Last = Ready
 };
 
-// The progress value is the progress that will be reached at the end of the operation
-using ProgressCallback = std::function<void(float progress, ProgressMessageType message)>;
+struct ProgressCallback final
+{
+	ProgressCallback(std::function<void(float progress, ProgressMessageType message)> callback)
+			: mCallback(std::move(callback))
+			, mMinOutputRange(0.0f)
+			, mOutputRangeWidth(1.0f)
+	{}
+
+	ProgressCallback(
+		std::function<void(float progress, ProgressMessageType message)> callback, // Will be invoked with values in range
+		float minOutputRange,
+		float outputRangeWidth)
+			: mCallback(std::move(callback))
+		  	, mMinOutputRange(minOutputRange)
+		  	, mOutputRangeWidth(outputRangeWidth)
+	{}
+
+	/*
+	 * User provides 0.0-1.0, but the original callback
+	 * is invoked on our range.
+	 */
+	void operator()(float progress, ProgressMessageType message) const
+	{
+		mCallback(mMinOutputRange + progress * mOutputRangeWidth, message);
+	}
+
+	/*
+	 * User of the new callback provides 0.0-1.0, but this callback
+	 * is invoked on the specified range - chained with our range.
+	 */
+	ProgressCallback MakeSubCallback(
+		float minOutputRange,
+		float outputRangeWidth) const
+	{
+		return ProgressCallback(
+			[this](float progress, ProgressMessageType message)
+			{
+				(*this)(progress, message);
+			},
+			minOutputRange,
+            outputRangeWidth);
+	}
+
+	/*
+	 * User of the new callback provides 0.0-1.0, but this callback
+	 * is invoked on the specified range - chained with our range.
+	 */
+	SimpleProgressCallback MakeSubCallback(
+		float minOutputRange,
+		float outputRangeWidth,
+		ProgressMessageType message) const
+	{
+		return SimpleProgressCallback(
+			[this, message=message](float progress)
+			{
+				(*this)(progress, message);
+			},
+			minOutputRange,
+            outputRangeWidth);
+	}
+
+	/*
+	 * Creates a new simple callback that outputs the same range as this callback,
+	 * on the specified callback.
+	 */
+    SimpleProgressCallback CloneToSimpleCallback(std::function<void(float progress)> callback) const
+    {
+        return SimpleProgressCallback(
+            callback,
+            mMinOutputRange,
+            mOutputRangeWidth);
+    }
+
+private:
+
+	std::function<void(float progress, ProgressMessageType message)> mCallback;
+	float const mMinOutputRange;
+	float const mOutputRangeWidth;
+};
+

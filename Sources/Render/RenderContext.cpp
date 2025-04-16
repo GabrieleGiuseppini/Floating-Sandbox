@@ -150,7 +150,7 @@ RenderContext::RenderContext(
 
             LogMessage("Initializing shaders...");
 
-            mShaderManager = ShaderManager<GameShaderSets::ShaderSet>::CreateInstance(assetManager);
+            mShaderManager = ShaderManager<GameShaderSets::ShaderSet>::CreateInstance(assetManager, SimpleProgressCallback::Dummy());
 
             LogMessage("...shaders initialized.");
         });

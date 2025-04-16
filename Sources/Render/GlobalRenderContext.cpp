@@ -81,7 +81,7 @@ void GlobalRenderContext::InitializeGenericTextures()
         genericLinearTextureDatabase,
         TextureAtlasOptions::None,
         mAssetManager,
-        [](float, ProgressMessageType) {});
+        SimpleProgressCallback::Dummy());
 
     LogMessage("Generic linear texture atlas size: ", genericLinearTextureAtlas.Image.Size.ToString());
 
@@ -158,7 +158,7 @@ void GlobalRenderContext::InitializeGenericTextures()
         genericMipMappedTextureDatabase,
         TextureAtlasOptions::MipMappable,
         mAssetManager,
-        [](float, ProgressMessageType) {});
+        SimpleProgressCallback::Dummy());
 
     LogMessage("Generic mipmapped texture atlas size: ", genericMipMappedTextureAtlas.Image.Size.ToString());
 

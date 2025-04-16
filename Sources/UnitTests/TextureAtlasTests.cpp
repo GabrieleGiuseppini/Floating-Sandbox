@@ -376,7 +376,7 @@ TEST(TextureAtlasTests, Placement_InAtlasSizeMatchingFrameSize)
                     frame1Image.Clone());
             }
         },
-        [](float, ProgressMessageType) {});
+        SimpleProgressCallback::Dummy());
 
     EXPECT_EQ(atlas.Metadata.GetSize().width, 12);
     EXPECT_EQ(atlas.Metadata.GetSize().height, 8);
@@ -476,7 +476,7 @@ TEST(TextureAtlasTests, Placement_InAtlasSizeLargerThanFrameSize)
                     frame1Image.Clone());
             }
         },
-        [](float, ProgressMessageType) {});
+        SimpleProgressCallback::Dummy());
 
     EXPECT_EQ(atlas.Metadata.GetSize().width, 12);
     EXPECT_EQ(atlas.Metadata.GetSize().height, 8);
@@ -602,7 +602,7 @@ TEST(TextureAtlasTests, Placement_Duplicates)
                     frame1aImage.Clone());
             }
         },
-        [](float, ProgressMessageType) {});
+        SimpleProgressCallback::Dummy());
 
     EXPECT_EQ(
         atlas.Metadata.GetFrameMetadata({ MyTestTextureDatabase::MyTextureGroups::MyTestGroup1, 1 }).TextureCoordinatesBottomLeft,

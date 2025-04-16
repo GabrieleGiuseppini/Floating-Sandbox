@@ -276,7 +276,7 @@ public:
         mProviderData[iProvider].CurrentDiagState = ProviderData::DiagState::None;
     }
 
-    void RenderUpload()
+    size_t RenderUpload()
     {
         //
         // We expect to be not dirty most of the times, hence this check is worth it
@@ -284,7 +284,7 @@ public:
 
         if (!mIsGlobalDirty)
         {
-            return;
+            return 0;
         }
 
         mIsGlobalDirty = false; // A bit too early, but will be true when we're done
@@ -332,7 +332,7 @@ public:
 
             mLastAllocatedVBOVertexCount = mTotalVertexCount;
 
-            return;
+            return mTotalVertexCount;
         }
 
         //
@@ -428,17 +428,26 @@ public:
 
         if (iDirtyEndWb > iDirtyStartWb)
         {
+            size_t const nVertices = (iDirtyEndWb - iDirtyStartWb);
+
 #ifndef MULTI_PROVIDER_VERTEX_BUFFER_TEST
             Bind();
-            glBufferSubData(GL_ARRAY_BUFFER, iDirtyStartWb * sizeof(TVertexAttributes), (iDirtyEndWb - iDirtyStartWb) * sizeof(TVertexAttributes), &(mWorkBuffer.data()[iDirtyStartWb]));
+            glBufferSubData(GL_ARRAY_BUFFER, iDirtyStartWb * sizeof(TVertexAttributes), nVertices * sizeof(TVertexAttributes), &(mWorkBuffer.data()[iDirtyStartWb]));
             CheckOpenGLError();
 #else
             TestActions.push_back({
                 TestAction::ActionKind::UploadVBO,
                 iDirtyStartWb * sizeof(TVertexAttributes),
                 &(mWorkBuffer.data()[iDirtyStartWb]),
-                (iDirtyEndWb - iDirtyStartWb) * sizeof(TVertexAttributes) });
+                nVertices * sizeof(TVertexAttributes) });
 #endif
+
+            return nVertices;
+        }
+        else
+        {
+            assert(iDirtyEndWb == iDirtyStartWb);
+            return 0;
         }
     }
 

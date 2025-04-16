@@ -614,7 +614,7 @@ void WorldRenderContext::InitializeFishTextures()
         fishTextureDatabase,
         TextureAtlasOptions::MipMappable,
         mAssetManager,
-        [](float, ProgressMessageType) {});
+        SimpleProgressCallback::Dummy());
 
     LogMessage("Fish texture atlas size: ", fishTextureAtlas.Image.Size);
 

@@ -8,6 +8,7 @@
 #include "GameOpenGL.h"
 
 #include <Core/IAssetManager.h>
+#include <Core/ProgressCallback.h>
 #include <Core/Vectors.h>
 
 #include <cassert>
@@ -18,7 +19,6 @@
 #include <memory>
 #include <set>
 #include <sstream>
-#include <unordered_map>
 #include <vector>
 
 /*
@@ -33,10 +33,12 @@ private:
 
 public:
 
-    static std::unique_ptr<ShaderManager> CreateInstance(IAssetManager const & assetManager)
+    static std::unique_ptr<ShaderManager> CreateInstance(
+        IAssetManager const & assetManager,
+        SimpleProgressCallback const & progressCallback)
     {
         return std::unique_ptr<ShaderManager>(
-            new ShaderManager(assetManager));
+            new ShaderManager(assetManager, progressCallback));
     }
 
     template <typename TShaderSet::ProgramKindType Program>
@@ -83,6 +85,29 @@ public:
                 }
             }
         }
+    }
+
+    template <typename TShaderSet::ProgramKindType Program, typename TShaderSet::ProgramParameterKindType Parameter>
+    inline void SetProgramParameter(int value)
+    {
+        SetProgramParameter<Parameter>(Program, value);
+    }
+
+    template <typename TShaderSet::ProgramParameterKindType Parameter>
+    inline void SetProgramParameter(
+        typename TShaderSet::ProgramKindType program,
+        int value)
+    {
+        uint32_t const programIndex = static_cast<uint32_t>(program);
+        uint32_t constexpr ParameterIndex = static_cast<uint32_t>(Parameter);
+
+        assert(mPrograms[programIndex].UniformLocations[ParameterIndex] != NoParameterLocation);
+
+        glUniform1i(
+            mPrograms[programIndex].UniformLocations[ParameterIndex],
+            value);
+
+        CheckUniformError(program, Parameter);
     }
 
     template <typename TShaderSet::ProgramKindType Program, typename TShaderSet::ProgramParameterKindType Parameter>
@@ -247,6 +272,31 @@ public:
         CheckUniformError(program, Parameter);
     }
 
+    /*
+     * Warning: changes currently-active program
+     */
+    template <typename TShaderSet::ProgramParameterKindType Parameter>
+    inline void SetProgramParameterInAllShaders(float const (*value)[4])
+    {
+        constexpr uint32_t parameterIndex = static_cast<uint32_t>(Parameter);
+        assert(parameterIndex < mProgramsByProgramParameter.size());
+        for (typename TShaderSet::ProgramKindType program : mProgramsByProgramParameter[parameterIndex])
+        {
+            uint32_t const programIndex = static_cast<uint32_t>(program);
+            assert(mPrograms[programIndex].UniformLocations[parameterIndex] != NoParameterLocation);
+
+            ActivateProgram(program);
+
+            glUniformMatrix4fv(
+                mPrograms[programIndex].UniformLocations[parameterIndex],
+                1,
+                GL_FALSE,
+                &(value[0][0]));
+
+            CheckUniformError(program, Parameter);
+        }
+    }
+
     template <typename TShaderSet::ProgramParameterKindType Parameter>
     inline void SetProgramParameterVec4fArray(
         typename TShaderSet::ProgramKindType program,
@@ -319,7 +369,9 @@ private:
 
 private:
 
-    explicit ShaderManager(IAssetManager const & assetManager);
+    ShaderManager(
+        IAssetManager const & assetManager,
+        SimpleProgressCallback const & progressCallback);
 
     struct ShaderInfo
     {
@@ -331,11 +383,11 @@ private:
     void CompileShader(
         std::string const & shaderName,
         std::string const & shaderSource,
-        std::unordered_map<std::string, ShaderInfo> const & shaderSources);
+        std::map<std::string, ShaderInfo> const & shaderSources);
 
     static std::string ResolveIncludes(
         std::string const & shaderSource,
-        std::unordered_map<std::string, ShaderInfo> const & shaderSources);
+        std::map<std::string, ShaderInfo> const & shaderSources);
 
     static std::tuple<std::string, std::string> SplitSource(std::string const & source);
 

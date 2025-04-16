@@ -65,7 +65,7 @@ NotificationRenderContext::NotificationRenderContext(
 
     auto fontSet = FontSet<GameFontSets::FontSet>::Load(
         assetManager,
-        [](float, ProgressMessageType) {});
+        SimpleProgressCallback::Dummy());
 
     LogMessage("Font texture atlas size: ", fontSet.Atlas.Size);
 

@@ -92,7 +92,7 @@ View::View(
     // Load shader manager
     //
 
-    mShaderManager = ShaderManager<ShaderSet>::CreateInstance(gameAssetManager);
+    mShaderManager = ShaderManager<ShaderSet>::CreateInstance(gameAssetManager, SimpleProgressCallback::Dummy());
 
     // Set texture samplers in programs
     mShaderManager->ActivateProgram<ProgramKind::MipMappedTextureQuad>();
@@ -117,7 +117,7 @@ View::View(
             mipmappedTextureDatabase,
             TextureAtlasOptions::MipMappable,
             gameAssetManager,
-            [](float, ProgressMessageType) {});
+            SimpleProgressCallback::Dummy());
 
         LogMessage("ShipBuilder mipmapped texture atlas size: ", mipmappedTextureAtlas.Image.Size.ToString());
 

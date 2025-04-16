@@ -222,7 +222,7 @@ public:
         TextureDatabase<TTextureDatabase> const & database,
         TextureAtlasOptions options,
         IAssetManager const & assetManager,
-        ProgressCallback const & progressCallback)
+        SimpleProgressCallback const & progressCallback)
     {
         auto frameLoader = [&database, &assetManager](TextureFrameId<TTextureGroups> const & frameId) -> TextureFrame<TTextureDatabase>
             {
@@ -289,7 +289,7 @@ public:
             specification,
             options,
             frameLoader,
-            [](float, ProgressMessageType) {});
+            SimpleProgressCallback([](float) {}));
     }
 
     /*
@@ -303,7 +303,7 @@ public:
         TextureDatabase<TTextureDatabase> const & database,
         TextureAtlasOptions options,
         IAssetManager const & assetManager,
-        ProgressCallback const & progressCallback)
+        SimpleProgressCallback const & progressCallback)
     {
         if (!!(options & TextureAtlasOptions::SuppressDuplicates))
         {
@@ -412,7 +412,7 @@ private:
         AtlasSpecification const & specification,
         TextureAtlasOptions options,
         std::function<TextureFrame<TTextureDatabase>(TextureFrameId<TTextureGroups> const &)> frameLoader,
-        ProgressCallback const & progressCallback);
+        SimpleProgressCallback const & progressCallback);
 
     static void CopyImage(
         ImageData<rgbaColor> && sourceImage,

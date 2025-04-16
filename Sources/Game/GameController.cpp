@@ -51,10 +51,7 @@ std::unique_ptr<GameController> GameController::Create(
         std::move(npcTextureAtlas),
         *perfStats,
         gameAssetManager,
-        [&progressCallback](float progress, ProgressMessageType message)
-        {
-            progressCallback(0.9f * progress, message);
-        });
+        progressCallback.MakeSubCallback(0.0f, 0.9f)); // Progress: 0.0-0.9
 
     //
     // Create controller
