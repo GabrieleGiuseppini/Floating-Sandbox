@@ -30,7 +30,7 @@ public:
         IAssetManager const & assetManager,
         ShaderManager<GameShaderSets::ShaderSet> & shaderManager);
 
-    ~GlobalRenderContext();
+    ~GlobalRenderContext() = default;
 
     void InitializeNoiseTextures();
 

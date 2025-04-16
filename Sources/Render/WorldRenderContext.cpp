@@ -97,7 +97,7 @@ WorldRenderContext::WorldRenderContext(
     , mLandAvailableThumbnails()
     // Parameters
     , mSunRaysInclination(1.0f)
-    , mIsSunRaysInclinationDirty(1.0f)
+    , mIsSunRaysInclinationDirty(true)
 {
     GLuint tmpGLuint;
 
@@ -509,10 +509,6 @@ WorldRenderContext::WorldRenderContext(
     CheckOpenGLError();
 }
 
-WorldRenderContext::~WorldRenderContext()
-{
-}
-
 void WorldRenderContext::InitializeCloudTextures()
 {
     // Load atlas
@@ -532,7 +528,7 @@ void WorldRenderContext::InitializeCloudTextures()
     CheckOpenGLError();
 
     // Upload atlas texture
-    GameOpenGL::UploadTexture(std::move(cloudTextureAtlas.Image));
+    GameOpenGL::UploadTexture(cloudTextureAtlas.Image);
 
     // Set repeat mode
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -987,24 +983,27 @@ void WorldRenderContext::RenderPrepareLightnings(RenderParameters const & /*rend
 
 void WorldRenderContext::RenderPrepareClouds(RenderParameters const & /*renderParameters*/)
 {
-    glBindBuffer(GL_ARRAY_BUFFER, *mCloudVBO);
-
-    if (mCloudVertexBuffer.size() > mCloudVBOAllocatedVertexSize)
+    if (!mCloudVertexBuffer.empty())
     {
-        // Re-allocate VBO buffer and upload
-        glBufferData(GL_ARRAY_BUFFER, mCloudVertexBuffer.size() * sizeof(CloudVertex), mCloudVertexBuffer.data(), GL_STREAM_DRAW);
-        CheckOpenGLError();
+        glBindBuffer(GL_ARRAY_BUFFER, *mCloudVBO);
 
-        mCloudVBOAllocatedVertexSize = mCloudVertexBuffer.size();
-    }
-    else
-    {
-        // No size change, just upload VBO buffer
-        glBufferSubData(GL_ARRAY_BUFFER, 0, mCloudVertexBuffer.size() * sizeof(CloudVertex), mCloudVertexBuffer.data());
-        CheckOpenGLError();
-    }
+        if (mCloudVertexBuffer.size() > mCloudVBOAllocatedVertexSize)
+        {
+            // Re-allocate VBO buffer and upload
+            glBufferData(GL_ARRAY_BUFFER, mCloudVertexBuffer.size() * sizeof(CloudVertex), mCloudVertexBuffer.data(), GL_STREAM_DRAW);
+            CheckOpenGLError();
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+            mCloudVBOAllocatedVertexSize = mCloudVertexBuffer.size();
+        }
+        else
+        {
+            // No size change, just upload VBO buffer
+            glBufferSubData(GL_ARRAY_BUFFER, 0, mCloudVertexBuffer.size() * sizeof(CloudVertex), mCloudVertexBuffer.data());
+            CheckOpenGLError();
+        }
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
 }
 
 void WorldRenderContext::RenderDrawCloudsAndBackgroundLightnings(RenderParameters const & renderParameters)
@@ -1411,29 +1410,32 @@ void WorldRenderContext::RenderDrawOceanFloor(RenderParameters const & renderPar
 
 void WorldRenderContext::RenderPrepareFishes(RenderParameters const & /*renderParameters*/)
 {
-    glBindBuffer(GL_ARRAY_BUFFER, *mFishVBO);
-
-    if (mFishVertexBuffer.size() > mFishVBOAllocatedVertexSize)
+    if (!mFishVertexBuffer.empty())
     {
-        // Re-allocate VBO buffer and upload
-        glBufferData(GL_ARRAY_BUFFER, mFishVertexBuffer.size() * sizeof(FishVertex), mFishVertexBuffer.data(), GL_STREAM_DRAW);
-        CheckOpenGLError();
+        glBindBuffer(GL_ARRAY_BUFFER, *mFishVBO);
 
-        mFishVBOAllocatedVertexSize = mFishVertexBuffer.size();
-    }
-    else
-    {
-        // No size change, just upload VBO buffer
-        glBufferSubData(GL_ARRAY_BUFFER, 0, mFishVertexBuffer.size() * sizeof(FishVertex), mFishVertexBuffer.data());
-        CheckOpenGLError();
-    }
+        if (mFishVertexBuffer.size() > mFishVBOAllocatedVertexSize)
+        {
+            // Re-allocate VBO buffer and upload
+            glBufferData(GL_ARRAY_BUFFER, mFishVertexBuffer.size() * sizeof(FishVertex), mFishVertexBuffer.data(), GL_STREAM_DRAW);
+            CheckOpenGLError();
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+            mFishVBOAllocatedVertexSize = mFishVertexBuffer.size();
+        }
+        else
+        {
+            // No size change, just upload VBO buffer
+            glBufferSubData(GL_ARRAY_BUFFER, 0, mFishVertexBuffer.size() * sizeof(FishVertex), mFishVertexBuffer.data());
+            CheckOpenGLError();
+        }
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
 }
 
 void WorldRenderContext::RenderDrawFishes(RenderParameters const & renderParameters)
 {
-    if (mFishVertexBuffer.size() > 0)
+    if (!mFishVertexBuffer.empty())
     {
         glBindVertexArray(*mFishVAO);
 

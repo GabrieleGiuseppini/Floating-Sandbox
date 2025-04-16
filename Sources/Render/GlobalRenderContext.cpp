@@ -28,9 +28,6 @@ GlobalRenderContext::GlobalRenderContext(
 {
 }
 
-GlobalRenderContext::~GlobalRenderContext()
-{}
-
 void GlobalRenderContext::InitializeNoiseTextures()
 {
     //
@@ -101,7 +98,7 @@ void GlobalRenderContext::InitializeGenericTextures()
     CheckOpenGLError();
 
     // Upload atlas texture
-    GameOpenGL::UploadTexture(std::move(genericLinearTextureAtlas.Image));
+    GameOpenGL::UploadTexture(genericLinearTextureAtlas.Image);
 
     // Set repeat mode
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -222,7 +219,7 @@ void GlobalRenderContext::InitializeExplosionTextures()
     CheckOpenGLError();
 
     // Upload atlas texture
-    GameOpenGL::UploadTexture(std::move(explosionTextureAtlas.Image));
+    GameOpenGL::UploadTexture(explosionTextureAtlas.Image);
 
     // Set repeat mode - we want to clamp, to leverage the fact that
     // all frames are perfectly transparent at the edges

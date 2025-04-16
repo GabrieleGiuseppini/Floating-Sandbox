@@ -41,7 +41,7 @@ public:
         ShaderManager<GameShaderSets::ShaderSet> & shaderManager,
         GlobalRenderContext & globalRenderContext);
 
-    ~WorldRenderContext();
+    ~WorldRenderContext() = default;
 
     void InitializeCloudTextures();
 

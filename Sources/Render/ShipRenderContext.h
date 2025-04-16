@@ -12,7 +12,6 @@
 #include "RenderStatistics.h"
 
 #include <OpenGLCore/GameOpenGL.h>
-#include <OpenGLCore/GameOpenGLMappedBuffer.h>
 #include <OpenGLCore/ShaderManager.h>
 
 #include <Core/BoundedVector.h>

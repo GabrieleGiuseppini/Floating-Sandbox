@@ -3,6 +3,7 @@
 * Created:              2018-10-07
 * Copyright:            Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
+#pragma once
 
 #include <cstdint>
 

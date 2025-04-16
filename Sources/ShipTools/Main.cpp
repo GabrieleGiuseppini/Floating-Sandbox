@@ -135,6 +135,13 @@ int DoBakeAtlas(int argc, char ** argv)
             outputDirectoryPath,
             options);
     }
+    else if (Utils::CaseInsensitiveEquals(databaseName, "fish"))
+    {
+        atlasData = Baker::BakeAtlas<GameTextureDatabases::FishTextureDatabase>(
+            texturesRootDirectoryPath,
+            outputDirectoryPath,
+            options);
+    }
     else if (Utils::CaseInsensitiveEquals(databaseName, "npc"))
     {
         atlasData = Baker::BakeAtlas<GameTextureDatabases::NpcTextureDatabase>(

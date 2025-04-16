@@ -15,7 +15,6 @@
 #include "WorldRenderContext.h"
 
 #include <OpenGLCore/GameOpenGL.h>
-#include <OpenGLCore/GameOpenGLMappedBuffer.h>
 #include <OpenGLCore/ShaderManager.h>
 
 #include <Core/AABB.h>
