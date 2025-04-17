@@ -1862,7 +1862,6 @@ void WorldRenderContext::ApplyViewModelChanges(RenderParameters const & renderPa
 
     mCloudNormalizedViewCamY = 2.0f / (1.0f + std::exp(-12.0f * renderParameters.View.GetCameraWorldPosition().y / renderParameters.View.GetHalfMaxWorldHeight())) - 1.0f;
 
-
     //
     // Recalculate world border
     //
@@ -1904,7 +1903,6 @@ void WorldRenderContext::ApplyEffectiveAmbientLightIntensityChanges(RenderParame
     mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::Stars>();
     mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::Stars, GameShaderSets::ProgramParameterKind::StarTransparency>(
         pow(std::max(0.0f, 1.0f - renderParameters.EffectiveAmbientLightIntensity), 3.0f));
-
 }
 
 void WorldRenderContext::ApplySkyChanges(RenderParameters const & renderParameters)
@@ -1914,7 +1912,6 @@ void WorldRenderContext::ApplySkyChanges(RenderParameters const & renderParamete
     // Set parameters in all programs
 
     vec3f const effectiveMoonlightColor = renderParameters.EffectiveMoonlightColor.toVec3f();
-
 
     mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::Sky>();
 
