@@ -49,22 +49,34 @@ ProgramKind ShaderNameToProgramKind(std::string const & str)
         return ProgramKind::MultiNotification;
     else if (lstr == "ocean_depth_basic")
         return ProgramKind::OceanDepthBasic;
-    else if (lstr == "ocean_depth_detailed_background")
-        return ProgramKind::OceanDepthDetailedBackground;
-    else if (lstr == "ocean_depth_detailed_foreground")
-        return ProgramKind::OceanDepthDetailedForeground;
+    else if (lstr == "ocean_depth_detailed_background_lower")
+        return ProgramKind::OceanDepthDetailedBackgroundLower;
+    else if (lstr == "ocean_depth_detailed_background_upper")
+        return ProgramKind::OceanDepthDetailedBackgroundUpper;
+    else if (lstr == "ocean_depth_detailed_foreground_lower")
+        return ProgramKind::OceanDepthDetailedForegroundLower;
+    else if (lstr == "ocean_depth_detailed_foreground_upper")
+        return ProgramKind::OceanDepthDetailedForegroundUpper;
     else if (lstr == "ocean_flat_basic")
         return ProgramKind::OceanFlatBasic;
-    else if (lstr == "ocean_flat_detailed_background")
-        return ProgramKind::OceanFlatDetailedBackground;
-    else if (lstr == "ocean_flat_detailed_foreground")
-        return ProgramKind::OceanFlatDetailedForeground;
+    else if (lstr == "ocean_flat_detailed_background_lower")
+        return ProgramKind::OceanFlatDetailedBackgroundLower;
+    else if (lstr == "ocean_flat_detailed_background_upper")
+        return ProgramKind::OceanFlatDetailedBackgroundUpper;
+    else if (lstr == "ocean_flat_detailed_foreground_lower")
+        return ProgramKind::OceanFlatDetailedForegroundLower;
+    else if (lstr == "ocean_flat_detailed_foreground_upper")
+        return ProgramKind::OceanFlatDetailedForegroundUpper;
     else if (lstr == "ocean_texture_basic")
         return ProgramKind::OceanTextureBasic;
-    else if (lstr == "ocean_texture_detailed_background")
-        return ProgramKind::OceanTextureDetailedBackground;
-    else if (lstr == "ocean_texture_detailed_foreground")
-        return ProgramKind::OceanTextureDetailedForeground;
+    else if (lstr == "ocean_texture_detailed_background_lower")
+        return ProgramKind::OceanTextureDetailedBackgroundLower;
+    else if (lstr == "ocean_texture_detailed_background_upper")
+        return ProgramKind::OceanTextureDetailedBackgroundUpper;
+    else if (lstr == "ocean_texture_detailed_foreground_lower")
+        return ProgramKind::OceanTextureDetailedForegroundLower;
+    else if (lstr == "ocean_texture_detailed_foreground_upper")
+        return ProgramKind::OceanTextureDetailedForegroundUpper;
     else if (lstr == "physics_probe_panel")
         return ProgramKind::PhysicsProbePanel;
     else if (lstr == "rain")
@@ -241,22 +253,34 @@ std::string ProgramKindToStr(ProgramKind program)
             return "MultiNotification";
         case ProgramKind::OceanDepthBasic:
             return "OceanDepthBasic";
-        case ProgramKind::OceanDepthDetailedBackground:
-            return "OceanDepthDetailedBackground";
-        case ProgramKind::OceanDepthDetailedForeground:
-            return "OceanDepthDetailedForeground";
+        case ProgramKind::OceanDepthDetailedBackgroundLower:
+            return "OceanDepthDetailedBackgroundLower";
+        case ProgramKind::OceanDepthDetailedBackgroundUpper:
+            return "OceanDepthDetailedBackgroundUpper";
+        case ProgramKind::OceanDepthDetailedForegroundLower:
+            return "OceanDepthDetailedForegroundLower";
+        case ProgramKind::OceanDepthDetailedForegroundUpper:
+            return "OceanDepthDetailedForegroundUpper";
         case ProgramKind::OceanFlatBasic:
             return "OceanFlatBasic";
-        case ProgramKind::OceanFlatDetailedBackground:
-            return "OceanFlatDetailedBackground";
-        case ProgramKind::OceanFlatDetailedForeground:
-            return "OceanFlatDetailedForeground";
+        case ProgramKind::OceanFlatDetailedBackgroundLower:
+            return "OceanFlatDetailedBackgroundLower";
+        case ProgramKind::OceanFlatDetailedBackgroundUpper:
+            return "OceanFlatDetailedBackgroundUpper";
+        case ProgramKind::OceanFlatDetailedForegroundLower:
+            return "OceanFlatDetailedForegroundLower";
+        case ProgramKind::OceanFlatDetailedForegroundUpper:
+            return "OceanFlatDetailedForegroundUpper";
         case ProgramKind::OceanTextureBasic:
             return "OceanTextureBasic";
-        case ProgramKind::OceanTextureDetailedBackground:
-            return "OceanTextureDetailedBackground";
-        case ProgramKind::OceanTextureDetailedForeground:
-            return "OceanTextureDetailedForeground";
+        case ProgramKind::OceanTextureDetailedBackgroundLower:
+            return "OceanTextureDetailedBackgroundLower";
+        case ProgramKind::OceanTextureDetailedBackgroundUpper:
+            return "OceanTextureDetailedBackgroundUpper";
+        case ProgramKind::OceanTextureDetailedForegroundLower:
+            return "OceanTextureDetailedForegroundLower";
+        case ProgramKind::OceanTextureDetailedForegroundUpper:
+            return "OceanTextureDetailedForegroundUpper";
         case ProgramKind::PhysicsProbePanel:
             return "PhysicsProbePanel";
         case ProgramKind::Rain:
@@ -628,10 +652,12 @@ VertexAttributeKind StrToVertexAttributeKind(std::string const & str)
         return VertexAttributeKind::Land;
     else if (Utils::CaseInsensitiveEquals(str, "OceanBasic"))
         return VertexAttributeKind::OceanBasic;
-    else if (Utils::CaseInsensitiveEquals(str, "OceanDetailed1"))
-        return VertexAttributeKind::OceanDetailed1;
-    else if (Utils::CaseInsensitiveEquals(str, "OceanDetailed2"))
-        return VertexAttributeKind::OceanDetailed2;
+    else if (Utils::CaseInsensitiveEquals(str, "OceanDetailed1Upper"))
+        return VertexAttributeKind::OceanDetailed1Upper;
+    else if (Utils::CaseInsensitiveEquals(str, "OceanDetailed2Upper"))
+        return VertexAttributeKind::OceanDetailed2Upper;
+    else if (Utils::CaseInsensitiveEquals(str, "OceanDetailed1Lower"))
+        return VertexAttributeKind::OceanDetailed1Lower;
     else if (Utils::CaseInsensitiveEquals(str, "Fish1"))
         return VertexAttributeKind::Fish1;
     else if (Utils::CaseInsensitiveEquals(str, "Fish2"))

@@ -1,3 +1,6 @@
+TODO
+- 15% performance improvements in rendering
+
 1.19.1
 - Added explosive furniture NPCs
 	- ...adding a whole new dimension to the game!

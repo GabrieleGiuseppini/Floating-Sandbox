@@ -203,6 +203,31 @@ public:
         CheckUniformError(program, Parameter);
     }
 
+    /*
+     * Warning: changes currently-active program
+     */
+    template <typename TShaderSet::ProgramParameterKindType Parameter>
+    inline void SetProgramParameterInAllShaders(vec3f const & val)
+    {
+        constexpr uint32_t parameterIndex = static_cast<uint32_t>(Parameter);
+        assert(parameterIndex < mProgramsByProgramParameter.size());
+        for (typename TShaderSet::ProgramKindType program : mProgramsByProgramParameter[parameterIndex])
+        {
+            uint32_t const programIndex = static_cast<uint32_t>(program);
+            assert(mPrograms[programIndex].UniformLocations[parameterIndex] != NoParameterLocation);
+
+            ActivateProgram(program);
+
+            glUniform3f(
+                mPrograms[programIndex].UniformLocations[parameterIndex],
+                val.x,
+                val.y,
+                val.z);
+
+            CheckUniformError(program, Parameter);
+        }
+    }
+
     template <typename TShaderSet::ProgramKindType Program, typename TShaderSet::ProgramParameterKindType Parameter>
     inline void SetProgramParameter(vec4f const & val)
     {

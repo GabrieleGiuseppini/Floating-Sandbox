@@ -3,9 +3,11 @@
 #define in attribute
 #define out varying
 
+#ifdef IS_UPPER
+
 // Inputs
-in vec3 inOceanDetailed1;	// Position (vec2), yTexture (float)
-in vec4 inOceanDetailed2;	// yBack/yMid/yFront/dYFront2 (float, world y)
+in vec3 inOceanDetailed1Upper;	// Position (vec2), yTexture (float)
+in vec4 inOceanDetailed2Upper;	// yBack/yMid/yFront/dYFront2 (float, world y)
 
 // Parameters
 uniform mat4 paramOrthoMatrix;
@@ -18,15 +20,39 @@ out vec4 yVectorWorld; // yBackWorld/yMidWorld/yFrontWorld/dYFront2World
 void main()
 {
     // Calculate position
-    vec4 posNdc = paramOrthoMatrix * vec4(inOceanDetailed1.xy, -1.0, 1.0);
+    vec4 posNdc = paramOrthoMatrix * vec4(inOceanDetailed1Upper.xy, -1.0, 1.0);
     gl_Position = posNdc;
 
     // Pass values to fragment shader
     shadowPosNdc = vec2(posNdc.x, posNdc.y - paramOrthoMatrix[3][1]);
-    worldCoordsAndYTexture = inOceanDetailed1;
-    yVectorWorld = inOceanDetailed2;
+    worldCoordsAndYTexture = inOceanDetailed1Upper;
+    yVectorWorld = inOceanDetailed2Upper;
 }
 
+#else
+
+// Inputs
+in vec3 inOceanDetailed1Lower;	// Position (vec2), yTexture (float)
+
+// Parameters
+uniform mat4 paramOrthoMatrix;
+
+// Outputs
+out vec2 shadowPosNdc;
+out vec3 worldCoordsAndYTexture;
+
+void main()
+{
+    // Calculate position
+    vec4 posNdc = paramOrthoMatrix * vec4(inOceanDetailed1Lower.xy, -1.0, 1.0);
+    gl_Position = posNdc;
+
+    // Pass values to fragment shader
+    shadowPosNdc = vec2(posNdc.x, posNdc.y - paramOrthoMatrix[3][1]);
+    worldCoordsAndYTexture = inOceanDetailed1Lower;
+}
+
+#endif
 
 ###FRAGMENT-120
 
@@ -39,7 +65,9 @@ void main()
 // Inputs from previous shader
 in vec2 shadowPosNdc;
 in vec3 worldCoordsAndYTexture;
+#ifdef IS_UPPER
 in vec4 yVectorWorld; // yBackWorld/yMidWorld/yFrontWorld/dYFront2World
+#endif
 
 // Input textures
 uniform sampler2D paramNoiseTexture;
@@ -66,9 +94,7 @@ void main()
         worldCoordsAndYTexture.y,
         paramSunRaysInclination,
         paramSharedTexture,
-        paramNoiseTexture);
-    // Adjust shadow's dynamic range: [0.0, 1.0, 2.0] -> [0.0, 1.0, 1.4]
-    shadowFactor = 1.3 * shadowFactor - 0.3 * shadowFactor * shadowFactor;
+        paramNoiseTexture);    
     textureColor = vec4(textureColor.xyz * shadowFactor, textureColor.w * (1.0 - paramOceanTransparency));
 
     // Calculate lamp tool intensity
@@ -92,11 +118,16 @@ void main()
         vec3(0.0),
         darkeningFactor * (1.0 - lampToolIntensity));
 
+#ifdef IS_UPPER
     // Apply detail
-    gl_FragColor = CalculateDetailedOceanPlaneColor(
+    gl_FragColor = CalculateDetailedOceanPlaneColorUpper(
         vec4(textureColor.xyz, textureColor.w * (1.0 - paramOceanTransparency)),
         worldCoordsAndYTexture.y,
         yVectorWorld, 
         paramEffectiveMoonlightColor, 
         paramEffectiveAmbientLightIntensity);
+#else
+    // Apply detail
+    gl_FragColor = vec4(textureColor.xyz, textureColor.w * (1.0 - paramOceanTransparency));
+#endif
 }

@@ -1,6 +1,6 @@
 #include "static_parameters.glslinc"
 
-vec4 CalculateDetailedOceanPlaneColor(
+vec4 CalculateDetailedOceanPlaneColorUpper(
     vec4 baseColor,    
     float yWorld,
     vec4 yVector, // Back, Mid, Front, d2Front
@@ -127,6 +127,9 @@ float GetShadowFactor(
     float depthBoost = (2.0 - shadowSample);
     #define DEPTH_SPEED 0.1
     shadowSample = 1.0 + (shadowSample - 1.0) * exp(depth * depthBoost * DEPTH_SPEED);
+
+    // Adjust shadow's dynamic range: [0.0, 1.0, 2.0] -> [0.0, 1.0, 1.4]
+    shadowSample = 1.3 * shadowSample - 0.3 * shadowSample * shadowSample;
 
     return shadowSample;
 }

@@ -369,7 +369,8 @@ public:
         float d2YFront,
         RenderParameters const & renderParameters)
     {
-        float const yTop = std::max(yBack, std::max(yMid, yFront)) + 10.0f; // Magic offset to allow shader to anti-alias close to the boundary
+        float const yTop = std::max(yBack, std::max(yMid, yFront)) + mOceanDetailedUpperBandMagicOffset;
+        float const yBottom = std::min(yBack, std::min(yMid, yFront)) - mOceanDetailedUpperBandMagicOffset;
         float const yVisibleWorldBottom = renderParameters.View.GetVisibleWorld().BottomRight.y;
 
         //
@@ -378,27 +379,41 @@ public:
 
         OceanDetailedSegment & oceanSegment = mOceanDetailedSegmentBuffer.emplace_back();
 
-        oceanSegment.x1 = x;
-        oceanSegment.y1 = yTop;
-        oceanSegment.yBack1 = yBack;
-        oceanSegment.yMid1 = yMid;
-        oceanSegment.yFront1 = yFront;
-        oceanSegment.d2YFront1 = d2YFront;
+        oceanSegment.x_upper_1 = x;
+        oceanSegment.y_upper_1 = yTop;
+        oceanSegment.yBack_upper_1 = yBack;
+        oceanSegment.yMid_upper_1 = yMid;
+        oceanSegment.yFront_upper_1 = yFront;
+        oceanSegment.d2yFront_upper_1 = d2YFront;
 
-        oceanSegment.x2 = x;
-        oceanSegment.y2 = yVisibleWorldBottom;
-        oceanSegment.yBack2 = yBack;
-        oceanSegment.yMid2 = yMid;
-        oceanSegment.yFront2 = yFront;
-        oceanSegment.d2YFront2 = d2YFront;
+        oceanSegment.x_upper_2 = x;
+        oceanSegment.y_upper_2 = std::max(yVisibleWorldBottom, yBottom);
+        oceanSegment.yBack_upper_2 = yBack;
+        oceanSegment.yMid_upper_2 = yMid;
+        oceanSegment.yFront_upper_2 = yFront;
+        oceanSegment.d2yFront_upper_2 = d2YFront;
+
+        oceanSegment.x_lower_1 = x;
+        oceanSegment.y_lower_1 = oceanSegment.y_upper_2;
+
+        oceanSegment.x_lower_2 = x;
+        oceanSegment.y_lower_2 = yVisibleWorldBottom;
 
         switch (renderParameters.OceanRenderMode)
         {
             case OceanRenderModeType::Texture:
             {
                 // We squash the top a little towards the rest position, to give a slight ondulation
-                oceanSegment.yTexture1 = yTop * 0.75f;
-                oceanSegment.yTexture2 = yVisibleWorldBottom;
+                oceanSegment.yTexture_upper_1 = yTop * 0.75f; // Topmost pixel
+                oceanSegment.yTexture_lower_2 = yVisibleWorldBottom; // Lowest pixel
+
+                // The middle pixel's texture y is proportional to the upper (or lower) band's width
+                // TODO: see if may be simplified
+                oceanSegment.yTexture_lower_1 =
+                    oceanSegment.yTexture_lower_2
+                    + (oceanSegment.yTexture_upper_1 - oceanSegment.yTexture_lower_2)
+                        * (oceanSegment.y_lower_1 - oceanSegment.y_lower_2) / (oceanSegment.y_upper_1 - oceanSegment.y_lower_2);
+                oceanSegment.yTexture_upper_2 = oceanSegment.yTexture_lower_1;
 
                 break;
             }
@@ -406,8 +421,10 @@ public:
             case OceanRenderModeType::Depth:
             {
                 // Nop, but be nice
-                oceanSegment.yTexture1 = 0.0f;
-                oceanSegment.yTexture2 = 0.0f;
+                oceanSegment.yTexture_upper_1 = 0.0f;
+                oceanSegment.yTexture_upper_2 = 0.0f;
+                oceanSegment.yTexture_lower_1 = 0.0f;
+                oceanSegment.yTexture_lower_2 = 0.0f;
 
                 break;
             }
@@ -415,8 +432,10 @@ public:
             case OceanRenderModeType::Flat:
             {
                 // Nop, but be nice
-                oceanSegment.yTexture1 = 0.0f;
-                oceanSegment.yTexture2 = 0.0f;
+                oceanSegment.yTexture_upper_1 = 0.0f;
+                oceanSegment.yTexture_upper_2 = 0.0f;
+                oceanSegment.yTexture_lower_1 = 0.0f;
+                oceanSegment.yTexture_lower_2 = 0.0f;
 
                 break;
             }
@@ -887,21 +906,29 @@ private:
 
     struct OceanDetailedSegment
     {
-        float x1;
-        float y1;
-        float yTexture1;
-        float yBack1;
-        float yMid1;
-        float yFront1;
-        float d2YFront1;
+        float x_upper_1;
+        float y_upper_1;
+        float yTexture_upper_1;
+        float yBack_upper_1;
+        float yMid_upper_1;
+        float yFront_upper_1;
+        float d2yFront_upper_1;
 
-        float x2;
-        float y2;
-        float yTexture2;
-        float yBack2;
-        float yMid2;
-        float yFront2;
-        float d2YFront2;
+        float x_lower_1;
+        float y_lower_1;
+        float yTexture_lower_1;
+
+        float x_upper_2;
+        float y_upper_2;
+        float yTexture_upper_2;
+        float yBack_upper_2;
+        float yMid_upper_2;
+        float yFront_upper_2;
+        float d2yFront_upper_2;
+
+        float x_lower_2;
+        float y_lower_2;
+        float yTexture_lower_2;
     };
 
     struct FishVertex
@@ -1056,6 +1083,7 @@ private:
     BoundedVector<OceanDetailedSegment> mOceanDetailedSegmentBuffer;
     GameOpenGLVBO mOceanDetailedSegmentVBO;
     size_t mOceanDetailedSegmentVBOAllocatedVertexSize;
+    float mOceanDetailedUpperBandMagicOffset; // Magic offset to allow shader to anti-alias close to the boundary
 
     BoundedVector<FishVertex> mFishVertexBuffer;
     GameOpenGLVBO mFishVBO;
