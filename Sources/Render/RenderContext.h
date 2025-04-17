@@ -1208,6 +1208,11 @@ public:
             });
     }
 
+    inline void UploadShipsEnd()
+    {
+        // Nop
+    }
+
     void UploadRectSelection(
         vec2f const & centerPosition,
         vec2f const & verticalDir,
@@ -1224,11 +1229,6 @@ public:
             color,
             elapsedSimulationTime,
             mRenderParameters.View);
-    }
-
-    inline void UploadShipsEnd()
-    {
-        // Nop
     }
 
     void UploadEnd();

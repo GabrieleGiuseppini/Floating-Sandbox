@@ -1064,7 +1064,7 @@ void Ship::ApplyWorldParticleForces(
         //
 
         staticForce +=
-            simulationParameters.Gravity
+            SimulationParameters::Gravity
             * mPoints.GetMass(pointIndex); // Material + Augmentation + Water
 
         //

@@ -279,9 +279,16 @@ inline void GenerateIntegralLinePath(
 }
 
 #if defined(__GNUC__)
+/* Test for GCC >= 7.3.1 */
+#if __GNUC__ > 7 || \
+    (__GNUC__ == 7 && (__GNUC_MINOR__ > 3 || \
+                       (__GNUC_MINOR__ == 3 && \
+                        __GNUC_PATCHLEVEL__ >= 1)))
 #pragma GCC diagnostic push
 // We load a vec2f below (2 floats) into a 4-float register
 #pragma GCC diagnostic ignored "-Warray-bounds="
+#define HAS_DISABLED_ARRAY_BOUNDS
+#endif
 #endif
 
 inline void MakeQuadInto(

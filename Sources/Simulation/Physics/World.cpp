@@ -1228,8 +1228,8 @@ std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> World::BeginP
     return mNpcs->BeginPlaceNewFurnitureNpc(
         subKind,
         position,
-        mCurrentSimulationTime,
-        doMoveWholeMesh);
+        doMoveWholeMesh,
+        mCurrentSimulationTime);
 }
 
 std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> World::BeginPlaceNewHumanNpc(
@@ -1241,8 +1241,8 @@ std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> World::BeginP
     return mNpcs->BeginPlaceNewHumanNpc(
         subKind,
         position,
-        mCurrentSimulationTime,
-        doMoveWholeMesh);
+        doMoveWholeMesh,
+        mCurrentSimulationTime);
 }
 
 std::optional<PickedNpc> World::ProbeNpcAt(

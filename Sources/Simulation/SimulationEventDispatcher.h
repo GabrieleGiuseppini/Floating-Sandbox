@@ -85,7 +85,7 @@ public:
     virtual void OnImpact(
         StructuralMaterial const & structuralMaterial,
         bool isUnderwater,
-        float kineticEnergy)
+        float kineticEnergy) override
     {
         mImpactEvents[std::make_tuple(&structuralMaterial, isUnderwater)] += kineticEnergy;
     }

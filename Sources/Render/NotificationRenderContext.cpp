@@ -305,7 +305,7 @@ NotificationRenderContext::NotificationRenderContext(
     }
 
     //
-    // Initialize Rect Selection Ray
+    // Initialize Rect Selection
     //
 
     {
