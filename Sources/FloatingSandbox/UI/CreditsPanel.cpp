@@ -172,9 +172,6 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
         {1, wxS("SFML (https://www.sfml-dev.org/)"), 0},
         {2, _("Copyright (c) Laurent Gomila"), VMargin},
 
-        {1, wxS("DevIL (http://openil.sourceforge.net/)"), 0},
-        {2, _("Denton Woods et al"), VMargin},
-
         {1, wxS("picojson (https://github.com/kazuho/picojson)"), 0},
         {2, _("Copyright (c) 2009-2010 Cybozu Labs, Inc.; Copyright (c) 2011-2014 Kazuho Oku"), VMargin},
 

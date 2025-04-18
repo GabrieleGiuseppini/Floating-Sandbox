@@ -10,9 +10,9 @@
 
 	- Bump up version
 
-	- Try perf rendering: ocean vertex buffer padding to be aligned
-
 	- See why ships with international characters show up weird on some Windows'
+	- See bug reported on GameJolt by MeloPlayground: count of NPCs in going bad
+		- "I think it was when I selected all the npcs and put them in the air (There was more than 2000)"
 
 	- When tsunami starts you can see edges during the shaking
 
@@ -22,8 +22,9 @@
 	- DoDisplaceWater setting should also control Fishes and NPCs
 		- ...find if anything else displaces water without checking toggle
 
-	- Ocean render optimization:
-		- Could be due to ocean texture not being mipmapped (bandwidth to transfer texture)
+	- Ocean render optimizations:
+		- Try perf rendering: ocean vertex buffer padding to be aligned
+		- Slow rendering: could be due to ocean texture not being mipmapped (bandwidth to transfer texture)
 			- See what LOD is used at default zoom, I'm afraid it's 1
 
 	- No redistribute
