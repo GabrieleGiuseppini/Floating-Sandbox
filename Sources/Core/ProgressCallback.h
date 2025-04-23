@@ -25,7 +25,7 @@ struct SimpleProgressCallback final
 	{}
 
 	SimpleProgressCallback(
-		std::function<void(float progress)> callback, // Will be invoked with values in range
+		std::function<void(float progress)> callback, // Will be invoked with values in range, while user invokes us with 0.0-1.0
 		float minOutputRange,
 		float outputRangeWidth)
 			: mCallback(std::move(callback))
@@ -51,12 +51,9 @@ struct SimpleProgressCallback final
 		float outputRangeWidth) const
 	{
 		return SimpleProgressCallback(
-			[this](float progress)
-			{
-				(*this)(progress);
-			},
-			minOutputRange,
-			outputRangeWidth);
+			mCallback,
+			mMinOutputRange + (minOutputRange * mOutputRangeWidth),
+			outputRangeWidth * mOutputRangeWidth);
 	}
 
 private:
@@ -126,12 +123,9 @@ struct ProgressCallback final
 		float outputRangeWidth) const
 	{
 		return ProgressCallback(
-			[this](float progress, ProgressMessageType message)
-			{
-				(*this)(progress, message);
-			},
-			minOutputRange,
-            outputRangeWidth);
+			mCallback,
+			mMinOutputRange + (minOutputRange * mOutputRangeWidth),
+            outputRangeWidth * mOutputRangeWidth);
 	}
 
 	/*
@@ -146,10 +140,10 @@ struct ProgressCallback final
 		return SimpleProgressCallback(
 			[this, message=message](float progress)
 			{
-				(*this)(progress, message);
+				mCallback(progress, message);
 			},
-			minOutputRange,
-            outputRangeWidth);
+			mMinOutputRange + (minOutputRange * mOutputRangeWidth),
+			outputRangeWidth * mOutputRangeWidth);
 	}
 
 	/*

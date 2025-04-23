@@ -183,7 +183,57 @@ TEST_F(ProgressCallbackTests, ProgressCallback_Direct_WithRange_SubCallback_Twic
     EXPECT_NEAR(mProgressCalls[2], Pc3Left + 1.0f * 0.8f * 0.2f * 0.4f, 0.0001f);
 }
 
-TEST_F(ProgressCallbackTests, SimpleCallback_Direct_SubCallback_Once)
+////////////////////////////////////////////////////////
+
+TEST_F(ProgressCallbackTests, SimpleCallback_Direct_NoRange)
+{
+    SimpleProgressCallback sc = SimpleProgressCallback(
+        [&](float progress)
+        {
+            mProgressCalls.push_back(progress);
+        });
+
+    // Test
+
+    sc(0.0f);
+    sc(0.4f);
+    sc(1.0f);
+
+    // Verify
+
+    ASSERT_EQ(mProgressCalls.size(), 3u);
+
+    EXPECT_NEAR(mProgressCalls[0], 0.0f, 0.0001f);
+    EXPECT_NEAR(mProgressCalls[1], 0.4f, 0.0001f);
+    EXPECT_NEAR(mProgressCalls[2], 1.0f, 0.0001f);
+}
+
+TEST_F(ProgressCallbackTests, SimpleCallback_Direct_WithRange)
+{
+    SimpleProgressCallback sc = SimpleProgressCallback(
+        [&](float progress)
+        {
+            mProgressCalls.push_back(progress);
+        },
+        0.2f,
+        0.4f);
+
+    // Test
+
+    sc(0.0f);
+    sc(0.4f);
+    sc(1.0f);
+
+    // Verify
+
+    ASSERT_EQ(mProgressCalls.size(), 3u);
+
+    EXPECT_NEAR(mProgressCalls[0], 0.2f, 0.0001f);
+    EXPECT_NEAR(mProgressCalls[1], 0.2f + 0.4f * 0.4f, 0.0001f);
+    EXPECT_NEAR(mProgressCalls[2], 0.6f, 0.0001f);
+}
+
+TEST_F(ProgressCallbackTests, SimpleCallback_Direct_NoRange_SubCallback_Once)
 {
     SimpleProgressCallback sc = SimpleProgressCallback(
         [&](float progress)
@@ -208,7 +258,7 @@ TEST_F(ProgressCallbackTests, SimpleCallback_Direct_SubCallback_Once)
     EXPECT_NEAR(mProgressCalls[2], 0.6f, 0.0001f);
 }
 
-TEST_F(ProgressCallbackTests, SimpleCallback_Direct_SubCallback_Twice)
+TEST_F(ProgressCallbackTests, SimpleCallback_Direct_NoRange_SubCallback_Twice)
 {
     SimpleProgressCallback sc = SimpleProgressCallback(
         [&](float progress)
