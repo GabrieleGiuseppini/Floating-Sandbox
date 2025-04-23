@@ -316,6 +316,12 @@ std::vector<std::filesystem::path> GameAssetManager::GetPngImageFilePaths(std::s
     return filepaths;
 }
 
+std::filesystem::path GameAssetManager::GetShipNamePrefixListFilePath() const
+{
+    return mDataRoot / "Misc" / "ship_name_prefixes.txt";
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////
 // Theme Settings
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -326,17 +332,12 @@ std::filesystem::path GameAssetManager::GetThemeSettingsRootFilePath() const
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
-// Ship
+// Simulation
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 std::filesystem::path GameAssetManager::GetDefaultOceanFloorHeightMapFilePath() const
 {
     return mDataRoot / "Misc" / "default_ocean_floor_height_map.png";
-}
-
-std::filesystem::path GameAssetManager::GetShipNamePrefixListFilePath() const
-{
-    return mDataRoot / "Misc" / "ship_name_prefixes.txt";
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////

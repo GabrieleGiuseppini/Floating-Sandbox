@@ -15,7 +15,6 @@
 
 #include <cstdint>
 #include <filesystem>
-#include <optional>
 
 /*
  * All the logic to load and save ships from and to files, both legacy definition format

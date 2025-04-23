@@ -7,10 +7,6 @@
 
 #include "IGameEventHandlers.h"
 
-#include <Core/Log.h>
-#include <Core/TupleKeys.h>
-
-#include <algorithm>
 #include <optional>
 #include <vector>
 

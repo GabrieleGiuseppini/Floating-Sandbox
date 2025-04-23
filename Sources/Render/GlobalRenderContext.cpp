@@ -301,6 +301,8 @@ void GlobalRenderContext::RenderPrepareStart()
 {
     if (mPerlinNoise_4_32_043_ToUpload)
     {
+        mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::NoiseTexture>();
+
         mUploadedNoiseTexturesManager.UploadFrame(
             NoiseType::Perlin_4_32_043,
             *mPerlinNoise_4_32_043_ToUpload,
@@ -314,6 +316,8 @@ void GlobalRenderContext::RenderPrepareStart()
 
     if (mPerlinNoise_8_1024_073_ToUpload)
     {
+        mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::NoiseTexture>();
+
         mUploadedNoiseTexturesManager.UploadFrame(
             NoiseType::Perlin_8_1024_073,
             *mPerlinNoise_8_1024_073_ToUpload,

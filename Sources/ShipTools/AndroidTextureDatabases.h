@@ -12,9 +12,6 @@
 
 namespace UITextureDatabases {
 
-
-// UI
-
 enum class UITextureGroups : uint16_t
 {
     // Icons
@@ -22,6 +19,7 @@ enum class UITextureGroups : uint16_t
     ShipSelectionIcon,
     ToolsIcon,
     SettingsIcon,
+    TimeOfDayIcon,
     ViewIcon,
     ExitIcon,
     CheckboxFrame,
@@ -53,6 +51,8 @@ struct UITextureDatabase
             return UITextureGroups::ToolsIcon;
         else if (Utils::CaseInsensitiveEquals(str, "settings_icon"))
             return UITextureGroups::SettingsIcon;
+        else if (Utils::CaseInsensitiveEquals(str, "time_of_day_icon"))
+            return UITextureGroups::TimeOfDayIcon;
         else if (Utils::CaseInsensitiveEquals(str, "view_icon"))
             return UITextureGroups::ViewIcon;
         else if (Utils::CaseInsensitiveEquals(str, "exit_icon"))

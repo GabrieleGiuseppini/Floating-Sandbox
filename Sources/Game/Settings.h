@@ -16,6 +16,7 @@
 #include <algorithm>
 #include <cassert>
 #include <chrono>
+#include <filesystem>
 #include <functional>
 #include <memory>
 #include <optional>

@@ -1897,7 +1897,7 @@ void GameController::SetTimeOfDay(float value)
             1.0f,
             mTimeOfDay));
 
-    // Calcualate new sun rays inclination:
+    // Calculate new sun rays inclination:
     // ToD = 1 => inclination = +1 (45 degrees)
     // ToD = 0 => inclination = -1 (45 degrees)
     mRenderContext->SetSunRaysInclination(2.0f * mTimeOfDay - 1.0f);

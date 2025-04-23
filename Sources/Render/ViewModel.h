@@ -231,11 +231,6 @@ public:
         RecalculateAttributes();
     }
 
-    float GetCanvasWidthToHeightRatio() const
-    {
-        return mAspectRatio;
-    }
-
     //
     // Coordinate transformations
     //

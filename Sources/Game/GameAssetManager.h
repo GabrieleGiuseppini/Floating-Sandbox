@@ -87,15 +87,15 @@ public:
 
 	std::vector<std::filesystem::path> GetPngImageFilePaths(std::string const & pngImageNamePattern) const;
 
+	std::filesystem::path GetShipNamePrefixListFilePath() const;
+
 	// Theme Settings
 
 	std::filesystem::path GetThemeSettingsRootFilePath() const;
 
-	// Ship
+	// Simulation
 
 	std::filesystem::path GetDefaultOceanFloorHeightMapFilePath() const;
-
-	std::filesystem::path GetShipNamePrefixListFilePath() const;
 
 	// Help
 

@@ -339,6 +339,20 @@ public:
     void SetAutoFocusTarget(std::optional<AutoFocusTargetKindType> const & autoFocusTarget) override;
 
     //
+    // NPCs
+    //
+
+    size_t GetMaxNpcs() const override { return mSimulationParameters.MaxNpcs; }
+    void SetMaxNpcs(size_t value) override { mSimulationParameters.MaxNpcs = value; }
+    size_t GetMinMaxNpcs() const override { return SimulationParameters::MinMaxNpcs; }
+    size_t GetMaxMaxNpcs() const override { return SimulationParameters::MaxMaxNpcs; }
+
+    size_t GetNpcsPerGroup() const override { return mSimulationParameters.NpcsPerGroup; }
+    void SetNpcsPerGroup(size_t value) override { mSimulationParameters.NpcsPerGroup = value; }
+    size_t GetMinNpcsPerGroup() const override { return SimulationParameters::MinNpcsPerGroup; }
+    size_t GetMaxNpcsPerGroup() const override { return SimulationParameters::MaxNpcsPerGroup; }
+
+    //
     // UI parameters
     //
 
@@ -370,7 +384,7 @@ public:
     /////////////////////////////////////////////////////////
 
     //
-    // Game parameters
+    // Simulation
     //
 
     float GetSimulationStepTimeDuration() const override { return SimulationParameters::SimulationStepTimeDuration<float>; }
@@ -715,16 +729,6 @@ public:
     void SetNpcPassiveBlastRadiusAdjustment(float value) override { mSimulationParameters.NpcPassiveBlastRadiusAdjustment = value; }
     float GetMinNpcPassiveBlastRadiusAdjustment() const override { return SimulationParameters::MinNpcPassiveBlastRadiusAdjustment; }
     float GetMaxNpcPassiveBlastRadiusAdjustment() const override { return SimulationParameters::MaxNpcPassiveBlastRadiusAdjustment; }
-
-    size_t GetMaxNpcs() const override { return mSimulationParameters.MaxNpcs; }
-    void SetMaxNpcs(size_t value) { mSimulationParameters.MaxNpcs = value; }
-    size_t GetMinMaxNpcs() const { return SimulationParameters::MinMaxNpcs; }
-    size_t GetMaxMaxNpcs() const { return SimulationParameters::MaxMaxNpcs; }
-
-    size_t GetNpcsPerGroup() const override { return mSimulationParameters.NpcsPerGroup; }
-    void SetNpcsPerGroup(size_t value) { mSimulationParameters.NpcsPerGroup = value; }
-    size_t GetMinNpcsPerGroup() const { return SimulationParameters::MinNpcsPerGroup; }
-    size_t GetMaxNpcsPerGroup() const { return SimulationParameters::MaxNpcsPerGroup; }
 
     // Misc
 

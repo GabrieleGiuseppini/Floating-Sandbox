@@ -89,18 +89,18 @@ public:
                 textureDatabase,
                 atlasOptions,
                 assetManager,
-                [](float, ProgressMessageType)
+                SimpleProgressCallback([](float)
                 {
                     std::cout << ".";
-                })
+                }))
             : TextureAtlasBuilder<TTextureDatabase>::BuildAtlas(
                 textureDatabase,
                 atlasOptions,
                 assetManager,
-                [](float, ProgressMessageType)
+                SimpleProgressCallback([](float)
                 {
                     std::cout << ".";
-                });
+                }));
 
         std::cout << std::endl;
 

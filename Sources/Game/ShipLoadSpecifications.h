@@ -9,7 +9,7 @@
 
 #include <filesystem>
 
-struct ShipLoadSpecifications
+struct ShipLoadSpecifications final
 {
 	std::filesystem::path DefinitionFilepath;
 	ShipLoadOptions LoadOptions;
