@@ -78,14 +78,14 @@ enum class ProgressMessageType : std::size_t
 	LoadingCloudTextureAtlas,		// "Loading cloud texture atlas..."
 	LoadingFishTextureAtlas,		// "Loading fish texture atlas..."
 	LoadingWorldTextures,			// "Loading world textures..."
-	InitializingGraphics,			// "Initializing graphics..."
+	InitializingGraphics,			// "Initializing graphics..." - 10
 	InitializingUI,					// "Initializing UI..."
 	LoadingSounds,					// "Loading sounds..."
 	LoadingMusic,					// "Loading music..."
-	LoadingElectricalPanel,			// "Loading electrical panel..."
+	LoadingElectricalPanel,			// "Loading electrical panel..." - 14
 	LoadingShipBuilder,				// "Loading ShipBuilder..."
 	LoadingMaterialPalette,			// "Loading materials palette..."
-	Calibrating,					// "Calibrating game on the computer..."
+	Calibrating,					// "Calibrating game on the computer..." - 17
 	Ready,							// "Ready!"
 
 	_Last = Ready

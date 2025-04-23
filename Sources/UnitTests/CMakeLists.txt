@@ -47,6 +47,7 @@ set (UNIT_TEST_SOURCES
 	ParameterSmootherTests.cpp
 	PortableTimepointTests.cpp
 	PrecalculatedFunctionTests.cpp
+	ProgressCallbackTests.cpp
 	RopeBufferTests.cpp
 	SettingsTests.cpp
 	ShaderManagerTests.cpp
