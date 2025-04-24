@@ -383,7 +383,7 @@ TEST(AlgorithmsTests, SmoothBufferAndAdd_12_5_NeonVectorized)
 // IntegrateAndResetDynamicForces
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-size_t constexpr IntegrateAndResetDynamicForcesInputSize = 4 + 17 + 2;
+size_t constexpr IntegrateAndResetDynamicForcesInputSize = 4 + 18 + 2;
 
 struct IntegrateAndResetDynamicForcesPoints
 {
@@ -452,7 +452,7 @@ void RunIntegrateAndResetDynamicForcesTest_2(Algorithm algorithm)
         points,
         2, // Number of partitions
         4, // Start
-        21, // End
+        22, // End
         dynamicForceBuffers,
         dt,
         velocityFactor);
@@ -465,7 +465,7 @@ void RunIntegrateAndResetDynamicForcesTest_2(Algorithm algorithm)
     {
         auto const fi = static_cast<float>(i);
 
-        if (i < 4 || i >= 21)
+        if (i < 4 || i >= 22)
         {
             EXPECT_FLOAT_EQ(points.positionBuffer[i].x, 10.0f + fi);
             EXPECT_FLOAT_EQ(points.positionBuffer[i].y, 20.0f + fi);
