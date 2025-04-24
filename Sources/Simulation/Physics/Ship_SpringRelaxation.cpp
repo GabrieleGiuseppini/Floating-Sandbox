@@ -285,10 +285,6 @@ void Ship::IntegrateAndResetDynamicForces(
     }
 }
 
-///////////////////////////////////////////////////////////////
-// SSE
-///////////////////////////////////////////////////////////////
-
 #if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
 
 void Ship::ApplySpringsForces(
@@ -990,7 +986,7 @@ float Ship::CalculateIntegrationVelocityFactor(
     // Considering that:
     //
     //  v1 = d*v0
-    //  v2 = d*v1 =(d^2)*v0
+    //  v2 = d*v1 = (d^2)*v0
     //  ...
     //  vN = (d^N)*v0
     //
