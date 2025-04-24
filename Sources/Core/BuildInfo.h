@@ -52,6 +52,7 @@ private:
 #if FS_IS_ARM_NEON()
         mArchitecture += " (NEON)";
 #endif
+#endif
 
 #if FS_IS_OS_ANDROID()
         mOS = "Android";

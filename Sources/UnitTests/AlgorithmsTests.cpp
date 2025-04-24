@@ -371,3 +371,148 @@ TEST(AlgorithmsTests, SmoothBufferAndAdd_12_5_SSEVectorized)
     RunSmoothBufferAndAddTest_12_5(Algorithms::SmoothBufferAndAdd_SSEVectorized<12, 5>);
 }
 #endif
+
+#if FS_IS_ARM_NEON()
+TEST(AlgorithmsTests, SmoothBufferAndAdd_12_5_NeonVectorized)
+{
+    RunSmoothBufferAndAddTest_12_5(Algorithms::SmoothBufferAndAdd_NeonVectorized<12, 5>);
+}
+#endif
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+// IntegrateAndResetDynamicForces
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+size_t constexpr IntegrateAndResetDynamicForcesInputSize = 4 + 17 + 2;
+
+struct IntegrateAndResetDynamicForcesPoints
+{
+    float * GetPositionBufferAsFloat()
+    {
+        return reinterpret_cast<float *>(positionBuffer);
+    }
+
+    float * GetVelocityBufferAsFloat()
+    {
+        return reinterpret_cast<float *>(velocityBuffer);
+    }
+
+    float const * GetStaticForceBufferAsFloat() const
+    {
+        return reinterpret_cast<float const *>(staticForceBuffer);
+    }
+
+    float const * GetIntegrationFactorBufferAsFloat() const
+    {
+        return reinterpret_cast<float const *>(integrationFactorBuffer);
+    }
+
+    vec2f positionBuffer[IntegrateAndResetDynamicForcesInputSize];
+    vec2f velocityBuffer[IntegrateAndResetDynamicForcesInputSize];
+    vec2f staticForceBuffer[IntegrateAndResetDynamicForcesInputSize];
+    vec2f integrationFactorBuffer[IntegrateAndResetDynamicForcesInputSize];
+
+    vec2f parallelDynamicForceBuffers[2][IntegrateAndResetDynamicForcesInputSize];
+};
+
+template<typename Algorithm>
+void RunIntegrateAndResetDynamicForcesTest_2(Algorithm algorithm)
+{
+    //
+    // Populate
+    //
+
+    IntegrateAndResetDynamicForcesPoints points;
+
+    for (size_t i = 0; i < IntegrateAndResetDynamicForcesInputSize; ++i)
+    {
+        auto const fi = static_cast<float>(i);
+
+        points.positionBuffer[i] = vec2f(10.0f + fi, 20.0f + fi);
+        points.velocityBuffer[i] = vec2f(100.0f + fi, 200.0f + fi);
+        points.staticForceBuffer[i] = vec2f(1000.0f + fi, 2000.0f + fi);
+        points.integrationFactorBuffer[i] = vec2f(1.0f + fi, 2.0f + fi);
+
+        points.parallelDynamicForceBuffers[0][i] = vec2f(50.0f + fi, 500.0f + fi);
+        points.parallelDynamicForceBuffers[1][i] = vec2f(70.0f + fi, 700.0f + fi);
+    }
+
+    //
+    // Run test
+    //
+
+    float const dt = 1.0f / 64.0f;
+    float const velocityFactor = 0.9f;
+
+    float * const restrict dynamicForceBuffers[2] = {
+        reinterpret_cast<float *>(points.parallelDynamicForceBuffers[0]),
+        reinterpret_cast<float *>(points.parallelDynamicForceBuffers[1]) };
+
+    algorithm(
+        points,
+        4, // Start
+        21, // End
+        dynamicForceBuffers,
+        dt,
+        velocityFactor);
+
+    //
+    // Verify
+    //
+
+    for (size_t i = 0; i < IntegrateAndResetDynamicForcesInputSize; ++i)
+    {
+        auto const fi = static_cast<float>(i);
+
+        if (i < 4 || i >= 21)
+        {
+            EXPECT_FLOAT_EQ(points.positionBuffer[i].x, 10.0f + fi);
+            EXPECT_FLOAT_EQ(points.positionBuffer[i].y, 20.0f + fi);
+
+            EXPECT_FLOAT_EQ(points.velocityBuffer[i].x, 100.0f + fi);
+            EXPECT_FLOAT_EQ(points.velocityBuffer[i].y, 200.0f + fi);
+
+            EXPECT_FLOAT_EQ(points.parallelDynamicForceBuffers[0][i].x, 50.0f + fi);
+            EXPECT_FLOAT_EQ(points.parallelDynamicForceBuffers[0][i].y, 500.0f + fi);
+            EXPECT_FLOAT_EQ(points.parallelDynamicForceBuffers[1][i].x, 70.0f + fi);
+            EXPECT_FLOAT_EQ(points.parallelDynamicForceBuffers[1][i].y, 700.0f + fi);
+        }
+        else
+        {
+            vec2f const totalDynamicForce = vec2f(50.0f + fi, 500.0f + fi) + vec2f(70.0f + fi, 700.0f + fi);
+            vec2f const deltaPos =
+                vec2f(100.0f + fi, 200.0f + fi) * dt
+                + (totalDynamicForce + points.staticForceBuffer[i]) * points.integrationFactorBuffer[i];
+
+            EXPECT_FLOAT_EQ(points.positionBuffer[i].x, 10.0f + fi + deltaPos.x);
+            EXPECT_FLOAT_EQ(points.positionBuffer[i].y, 20.0f + fi + deltaPos.y);
+
+            EXPECT_FLOAT_EQ(points.velocityBuffer[i].x, deltaPos.x * velocityFactor);
+            EXPECT_FLOAT_EQ(points.velocityBuffer[i].y, deltaPos.y * velocityFactor);
+
+            EXPECT_FLOAT_EQ(points.parallelDynamicForceBuffers[0][i].x, 0.0f);
+            EXPECT_FLOAT_EQ(points.parallelDynamicForceBuffers[0][i].y, 0.0f);
+            EXPECT_FLOAT_EQ(points.parallelDynamicForceBuffers[1][i].x, 0.0f);
+            EXPECT_FLOAT_EQ(points.parallelDynamicForceBuffers[1][i].y, 0.0f);
+        }
+    }
+}
+
+TEST(AlgorithmsTests, RunIntegrateAndResetDynamicForcesTest_2_Naive)
+{
+    RunIntegrateAndResetDynamicForcesTest_2(Algorithms::IntegrateAndResetDynamicForces_Naive<IntegrateAndResetDynamicForcesPoints, 2>);
+}
+
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
+TEST(AlgorithmsTests, RunIntegrateAndResetDynamicForcesTest_2_SSEVectorized)
+{
+    RunIntegrateAndResetDynamicForcesTest_2(Algorithms::IntegrateAndResetDynamicForces_SSEVectorized<IntegrateAndResetDynamicForcesPoints, 2>);
+}
+#endif
+
+#if FS_IS_ARM_NEON()
+TEST(AlgorithmsTests, RunIntegrateAndResetDynamicForcesTest_2_NeonVectorized)
+{
+    RunIntegrateAndResetDynamicForcesTest_2(Algorithms::IntegrateAndResetDynamicForces_NeonVectorized<IntegrateAndResetDynamicForcesPoints, 2>);
+}
+#endif

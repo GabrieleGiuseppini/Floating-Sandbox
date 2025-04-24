@@ -558,4 +558,110 @@ inline void SmoothBufferAndAdd(
 #endif
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+// IntegrateAndResetDynamicForces
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+template<typename TPoints, size_t NBuffers>
+inline void IntegrateAndResetDynamicForces_Naive(
+    TPoints & points,
+    ElementIndex startPointIndex,
+    ElementIndex endPointIndex,
+    float * const restrict * dynamicForceBuffers,
+    float dt,
+    float velocityFactor) noexcept
+{
+    //
+    // This loop is compiled with packed SSE instructions on MSVC 2022,
+    // integrating two points at each iteration
+    //
+    // We loop by floats
+    //
+
+    // Take the four buffers that we need as restrict pointers, so that the compiler
+    // can better see it should parallelize this loop as much as possible
+
+    float * restrict const positionBuffer = points.GetPositionBufferAsFloat() + startPointIndex * 2;
+    float * restrict const velocityBuffer = points.GetVelocityBufferAsFloat() + startPointIndex * 2;
+    float const * const restrict staticForceBuffer = points.GetStaticForceBufferAsFloat() + startPointIndex * 2;
+    float const * const restrict integrationFactorBuffer = points.GetIntegrationFactorBufferAsFloat() + startPointIndex * 2;
+
+    size_t const count = (endPointIndex - startPointIndex) * 2;
+    for (size_t i = 0; i < count; ++i)
+    {
+        float totalDynamicForce = 0.0f;
+        for (size_t b = 0; b < NBuffers; ++b)
+        {
+            totalDynamicForce += (dynamicForceBuffers[b] + startPointIndex * 2)[i];
+        }
+
+        //
+        // Verlet integration (fourth order, with velocity being first order)
+        //
+
+        float const deltaPos =
+            velocityBuffer[i] * dt
+            + (totalDynamicForce + staticForceBuffer[i]) * integrationFactorBuffer[i];
+
+        positionBuffer[i] += deltaPos;
+        velocityBuffer[i] = deltaPos * velocityFactor;
+
+        // Zero out spring forces now that we've integrated them
+        for (size_t b = 0; b < NBuffers; ++b)
+        {
+            (dynamicForceBuffers[b] + startPointIndex * 2)[i] = 0.0f;
+        }
+    }
+}
+
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
+template<typename TPoints, size_t NBuffers>
+inline void IntegrateAndResetDynamicForces_SSEVectorized(
+    TPoints & points,
+    ElementIndex startPointIndex,
+    ElementIndex endPointIndex,
+    float * const restrict * dynamicForceBuffers,
+    float dt,
+    float velocityFactor) noexcept
+{
+    // Since Naive gets vectorized by VS, we use that
+    IntegrateAndResetDynamicForces_Naive<TPoints, NBuffers>(points, startPointIndex, endPointIndex, dynamicForceBuffers, dt, velocityFactor);
+}
+#endif
+
+#if FS_IS_ARM_NEON() // Implies ARM anyways
+template<typename TPoints, size_t NBuffers>
+inline void IntegrateAndResetDynamicForces_NeonVectorized(
+    TPoints & points,
+    ElementIndex startPointIndex,
+    ElementIndex endPointIndex,
+    float * const restrict * dynamicForceBuffers,
+    float dt,
+    float velocityFactor) noexcept
+{
+    // TODOHERE
+}
+#endif
+
+/*
+ * Integrates forces and resets dynamic forces.
+ */
+template<typename TPoints, size_t NBuffers>
+inline void IntegrateAndResetDynamicForces(
+    TPoints & points,
+    ElementIndex startPointIndex,
+    ElementIndex endPointIndex,
+    float * const restrict * dynamicForceBuffers,
+    float dt,
+    float velocityFactor) noexcept
+{
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
+    IntegrateAndResetDynamicForces_SSEVectorized<TPoints, NBuffers>(points, startPointIndex, endPointIndex, dynamicForceBuffers, dt, velocityFactor);
+#elif FS_IS_ARM_NEON()
+    IntegrateAndResetDynamicForces_NeonVectorized<TPoints, NBuffers>(points, startPointIndex, endPointIndex, dynamicForceBuffers, dt, velocityFactor);
+#else
+    IntegrateAndResetDynamicForces_Naive<TPoints, NBuffers>(points, startPointIndex, endPointIndex, dynamicForceBuffers, dt, velocityFactor);
+#endif
+}
+
 }
