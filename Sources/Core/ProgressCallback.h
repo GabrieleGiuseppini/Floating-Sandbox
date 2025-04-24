@@ -56,6 +56,18 @@ struct SimpleProgressCallback final
 			outputRangeWidth * mOutputRangeWidth);
 	}
 
+	/*
+	 * Creates a new simple callback that outputs the same range as this callback,
+	 * on the specified callback.
+	 */
+	SimpleProgressCallback Clone(std::function<void(float progress)> callback) const
+	{
+		return SimpleProgressCallback(
+			callback,
+			mMinOutputRange,
+			mOutputRangeWidth);
+	}
+
 private:
 
 	std::function<void(float progress)> const mCallback;

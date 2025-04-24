@@ -12,7 +12,10 @@
 
 	- See why ships with international characters show up weird on some Windows'
 	- See bug reported on GameJolt by MeloPlayground: count of NPCs in going bad
-		- "I think it was when I selected all the npcs and put them in the air (There was more than 2000)"
+		! "I think it was when I selected all the npcs and put them in the air (There was more than 2000)"
+		- Ask version
+	- I found it: ShipBuilder: exporting structural layer and re-importing it is not the same
+		- Happens with the FS Birthday ship
 
 	- When tsunami starts you can see edges during the shaking
 
@@ -26,6 +29,7 @@
 		- Try perf rendering: ocean vertex buffer padding to be aligned
 		- Slow rendering: could be due to ocean texture not being mipmapped (bandwidth to transfer texture)
 			- See what LOD is used at default zoom, I'm afraid it's 1
+		- Halve Perlin noise size
 
 	- No redistribute
 		+ @ License

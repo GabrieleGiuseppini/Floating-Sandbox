@@ -326,7 +326,9 @@ inline void MakeQuadInto(
 }
 
 #if defined(__GNUC__)
+#ifdef HAS_DISABLED_ARRAY_BOUNDS
 #pragma GCC diagnostic pop
+#endif
 #endif
 
 inline Quad MakeQuad(

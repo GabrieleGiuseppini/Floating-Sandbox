@@ -92,6 +92,22 @@
 #define FS_IS_PLATFORM_PC() 1
 #endif
 
+//
+// ARM NEON
+//
+
+// FS_IS_ARM_NEON --implies--> FS_IS_ARCHITECTURE_ARM
+
+#define FS_IS_ARM_NEON() 0
+
+#if FS_IS_ARCHITECTURE_ARM_32() || FS_IS_ARCHITECTURE_ARM_64()
+// For now we assume NEON if we are on ARM
+#if defined(__ARM_NEON)
+#undef FS_IS_ARM_NEON
+#define FS_IS_ARM_NEON() 1
+#endif
+#endif
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 using register_int_32 = std::int32_t;
@@ -165,6 +181,8 @@ inline constexpr T ceil_square_power_of_two(T value)
 #include <pmmintrin.h>
 */
 #include <pmmintrin.h>
+#elif (FS_IS_ARCHITECTURE_ARM_32() || FS_IS_ARCHITECTURE_ARM_64()) && FS_IS_ARM_NEON()
+#include <arm_neon.h>
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -173,7 +191,7 @@ inline constexpr T ceil_square_power_of_two(T value)
 
 // The number of floats we want to be able to compute in a single vectorization step.
 // Dictates alignment of buffers.
-// Targeting SSE
+// Targeting SSE, NEON
 
 template <typename T>
 static constexpr T vectorization_float_count = 4; // A.k.a. the vectorization word size

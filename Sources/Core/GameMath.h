@@ -52,6 +52,9 @@ inline register_int_32 FastTruncateToInt32(float value) noexcept
 {
 #if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
     return _mm_cvtt_ss2si(_mm_load_ss(&value));
+#elif FS_IS_ARCHITECTURE_ARM_64() && FS_IS_ARM_NEON()
+    // A64 only
+    return vcvts_s32_f32(value);
 #else
     return static_cast<register_int_32>(value);
 #endif
@@ -94,9 +97,9 @@ inline register_int_64 FastTruncateToInt64(float value) noexcept
 
 /*
  *
- * Converts the floating - point value to a 64 - bit integer, truncating it towards negative infinity.
+ * Converts the floating-point value to a 64-bit integer, truncating it towards negative infinity.
  *
- * Assumes the result fits a 64 - bit value.The behavior is undefined if it doesn't.
+ * Assumes the result fits a 64-bit value. The behavior is undefined if it doesn't.
  *
  * As one would expect, FastTruncateToInt64TowardsNInfinity(-7.6) == -8.
  */

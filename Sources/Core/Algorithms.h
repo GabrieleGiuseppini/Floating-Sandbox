@@ -489,6 +489,55 @@ inline void SmoothBufferAndAdd_SSEVectorized(
 }
 #endif
 
+#if FS_IS_ARM_NEON() // Implies ARM anyways
+template<size_t BufferSize, size_t SmoothingSize>
+inline void SmoothBufferAndAdd_NeonVectorized(
+    float const * restrict inBuffer,
+    float * restrict outBuffer) noexcept
+{
+    // This code is vectorized for Neon = 4 floats
+    static_assert(vectorization_float_count<size_t> >= 4);
+    static_assert(is_aligned_to_float_element_count(BufferSize));
+    static_assert((SmoothingSize % 2) == 1);
+    assert(is_aligned_to_vectorization_word(inBuffer));
+    assert(is_aligned_to_vectorization_word(outBuffer));
+
+    float32x4_t const centralWeight = vdupq_n_f32(static_cast<float>((SmoothingSize / 2) + 1));
+    float32x4_t const scaling = vdupq_n_f32(
+        (1.0f / static_cast<float>(SmoothingSize))
+        * (1.0f / static_cast<float>(SmoothingSize)));
+
+    for (size_t i = 0; i < BufferSize; i += 4)
+    {
+        // Central sample
+        float32x4_t accumulatedHeight = vmulq_f32(
+            vld1q_f32(inBuffer + i),
+            centralWeight);
+
+        // Lateral samples; l is offset from central
+        for (size_t l = 1; l <= SmoothingSize / 2; ++l)
+        {
+            float32x4_t const lateralWeight = vdupq_n_f32(static_cast<float>((SmoothingSize / 2) + 1 - l));
+
+            accumulatedHeight = vmlaq_f32(
+                accumulatedHeight,
+                vaddq_f32(
+                        vld1q_f32(inBuffer + i - l),
+                        vld1q_f32(inBuffer + i + l)),
+                lateralWeight);
+        }
+
+        // Update output
+        vst1q_f32(
+            outBuffer + i,
+            vmlaq_f32(
+                vld1q_f32(outBuffer + i),
+                accumulatedHeight,
+                scaling));
+    }
+}
+#endif
+
 /*
  * Calculates a two-pass average on a window of width SmoothingSize,
  * centered on the sample.
@@ -502,6 +551,8 @@ inline void SmoothBufferAndAdd(
 {
 #if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
     SmoothBufferAndAdd_SSEVectorized<BufferSize, SmoothingSize>(inBuffer, outBuffer);
+#elif FS_IS_ARM_NEON()
+    SmoothBufferAndAdd_NeonVectorized<BufferSize, SmoothingSize>(inBuffer, outBuffer);
 #else
     SmoothBufferAndAdd_Naive<BufferSize, SmoothingSize>(inBuffer, outBuffer);
 #endif

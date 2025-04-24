@@ -48,6 +48,11 @@ private:
         mArchitecture = "<ARCH?>";
 #endif
 
+#if FS_IS_ARCHITECTURE_ARM_32() || FS_IS_ARCHITECTURE_ARM_64()
+#if FS_IS_ARM_NEON()
+        mArchitecture += " (NEON)";
+#endif
+
 #if FS_IS_OS_ANDROID()
         mOS = "Android";
 #elif FS_IS_OS_LINUX()
