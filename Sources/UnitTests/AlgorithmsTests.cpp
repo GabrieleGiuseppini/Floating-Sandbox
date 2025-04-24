@@ -407,12 +407,12 @@ struct IntegrateAndResetDynamicForcesPoints
         return reinterpret_cast<float const *>(integrationFactorBuffer);
     }
 
-    vec2f positionBuffer[IntegrateAndResetDynamicForcesInputSize];
-    vec2f velocityBuffer[IntegrateAndResetDynamicForcesInputSize];
-    vec2f staticForceBuffer[IntegrateAndResetDynamicForcesInputSize];
-    vec2f integrationFactorBuffer[IntegrateAndResetDynamicForcesInputSize];
+    vec2f positionBuffer[IntegrateAndResetDynamicForcesInputSize + 1];
+    vec2f velocityBuffer[IntegrateAndResetDynamicForcesInputSize + 1];
+    vec2f staticForceBuffer[IntegrateAndResetDynamicForcesInputSize + 1];
+    vec2f integrationFactorBuffer[IntegrateAndResetDynamicForcesInputSize + 1];
 
-    vec2f parallelDynamicForceBuffers[2][IntegrateAndResetDynamicForcesInputSize];
+    vec2f parallelDynamicForceBuffers[2][IntegrateAndResetDynamicForcesInputSize + 1];
 };
 
 template<typename Algorithm>
@@ -450,6 +450,7 @@ void RunIntegrateAndResetDynamicForcesTest_2(Algorithm algorithm)
 
     algorithm(
         points,
+        2, // Number of partitions
         4, // Start
         21, // End
         dynamicForceBuffers,
@@ -500,19 +501,19 @@ void RunIntegrateAndResetDynamicForcesTest_2(Algorithm algorithm)
 
 TEST(AlgorithmsTests, RunIntegrateAndResetDynamicForcesTest_2_Naive)
 {
-    RunIntegrateAndResetDynamicForcesTest_2(Algorithms::IntegrateAndResetDynamicForces_Naive<IntegrateAndResetDynamicForcesPoints, 2>);
+    RunIntegrateAndResetDynamicForcesTest_2(Algorithms::IntegrateAndResetDynamicForces_Naive<IntegrateAndResetDynamicForcesPoints>);
 }
 
 #if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
 TEST(AlgorithmsTests, RunIntegrateAndResetDynamicForcesTest_2_SSEVectorized)
 {
-    RunIntegrateAndResetDynamicForcesTest_2(Algorithms::IntegrateAndResetDynamicForces_SSEVectorized<IntegrateAndResetDynamicForcesPoints, 2>);
+    RunIntegrateAndResetDynamicForcesTest_2(Algorithms::IntegrateAndResetDynamicForces_SSEVectorized<IntegrateAndResetDynamicForcesPoints>);
 }
 #endif
 
 #if FS_IS_ARM_NEON()
 TEST(AlgorithmsTests, RunIntegrateAndResetDynamicForcesTest_2_NeonVectorized)
 {
-    RunIntegrateAndResetDynamicForcesTest_2(Algorithms::IntegrateAndResetDynamicForces_NeonVectorized<IntegrateAndResetDynamicForcesPoints, 2>);
+    RunIntegrateAndResetDynamicForcesTest_2(Algorithms::IntegrateAndResetDynamicForces_NeonVectorized<IntegrateAndResetDynamicForcesPoints>);
 }
 #endif

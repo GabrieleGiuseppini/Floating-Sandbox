@@ -562,9 +562,10 @@ inline void SmoothBufferAndAdd(
 // IntegrateAndResetDynamicForces
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-template<typename TPoints, size_t NBuffers>
+template<typename TPoints>
 inline void IntegrateAndResetDynamicForces_Naive(
     TPoints & points,
+    size_t nBuffers,
     ElementIndex startPointIndex,
     ElementIndex endPointIndex,
     float * const restrict * dynamicForceBuffers,
@@ -590,7 +591,7 @@ inline void IntegrateAndResetDynamicForces_Naive(
     for (size_t i = 0; i < count; ++i)
     {
         float totalDynamicForce = 0.0f;
-        for (size_t b = 0; b < NBuffers; ++b)
+        for (size_t b = 0; b < nBuffers; ++b)
         {
             totalDynamicForce += (dynamicForceBuffers[b] + startPointIndex * 2)[i];
         }
@@ -607,7 +608,7 @@ inline void IntegrateAndResetDynamicForces_Naive(
         velocityBuffer[i] = deltaPos * velocityFactor;
 
         // Zero out spring forces now that we've integrated them
-        for (size_t b = 0; b < NBuffers; ++b)
+        for (size_t b = 0; b < nBuffers; ++b)
         {
             (dynamicForceBuffers[b] + startPointIndex * 2)[i] = 0.0f;
         }
@@ -615,37 +616,174 @@ inline void IntegrateAndResetDynamicForces_Naive(
 }
 
 #if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
-template<typename TPoints, size_t NBuffers>
+template<typename TPoints>
 inline void IntegrateAndResetDynamicForces_SSEVectorized(
     TPoints & points,
+    size_t nBuffers,
     ElementIndex startPointIndex,
     ElementIndex endPointIndex,
     float * const restrict * dynamicForceBuffers,
     float dt,
     float velocityFactor) noexcept
 {
-    // Since Naive gets vectorized by VS, we use that
-    IntegrateAndResetDynamicForces_Naive<TPoints, NBuffers>(points, startPointIndex, endPointIndex, dynamicForceBuffers, dt, velocityFactor);
+    // This implementation is for 4-float SSE
+    static_assert(vectorization_float_count<int> >= 4);
+
+    float * restrict const positionBuffer = points.GetPositionBufferAsFloat();
+    float * restrict const velocityBuffer = points.GetVelocityBufferAsFloat();
+    float const * const restrict staticForceBuffer = points.GetStaticForceBufferAsFloat();
+    float const * const restrict integrationFactorBuffer = points.GetIntegrationFactorBufferAsFloat();
+
+    float * const restrict * restrict const dynamicForceBufferOfBuffers = dynamicForceBuffers;
+
+    __m128 const zero_4 = _mm_setzero_ps();
+    __m128 const dt_4 = _mm_load1_ps(&dt);
+    __m128 const velocityFactor_4 = _mm_load1_ps(&velocityFactor);
+
+    for (size_t i = startPointIndex * 2; i < endPointIndex * 2; i += 4) // Two components per vector
+    {
+        __m128 springForce_2 = zero_4;
+        for (size_t b = 0; b < nBuffers; ++b)
+        {
+            springForce_2 =
+                _mm_add_ps(
+                    springForce_2,
+                    _mm_load_ps(dynamicForceBufferOfBuffers[b] + i));
+        }
+
+        // vec2f const deltaPos =
+        //    velocityBuffer[i] * dt
+        //    + (springForceBuffer[i] + externalForceBuffer[i]) * integrationFactorBuffer[i];
+        __m128 const deltaPos_2 =
+            _mm_add_ps(
+                _mm_mul_ps(
+                    _mm_load_ps(velocityBuffer + i),
+                    dt_4),
+                _mm_mul_ps(
+                    _mm_add_ps(
+                        springForce_2,
+                        _mm_load_ps(staticForceBuffer + i)),
+                    _mm_load_ps(integrationFactorBuffer + i)));
+
+        // positionBuffer[i] += deltaPos;
+        __m128 pos_2 = _mm_load_ps(positionBuffer + i);
+        pos_2 = _mm_add_ps(pos_2, deltaPos_2);
+        _mm_store_ps(positionBuffer + i, pos_2);
+
+        // velocityBuffer[i] = deltaPos * velocityFactor;
+        __m128 const vel_2 =
+            _mm_mul_ps(
+                deltaPos_2,
+                velocityFactor_4);
+        _mm_store_ps(velocityBuffer + i, vel_2);
+
+        // Zero out spring forces now that we've integrated them
+        for (size_t b = 0; b < nBuffers; ++b)
+        {
+            _mm_store_ps(dynamicForceBufferOfBuffers[b] + i, zero_4);
+        }
+    }
 }
 #endif
 
 #if FS_IS_ARM_NEON() // Implies ARM anyways
-template<typename TPoints, size_t NBuffers>
+template<typename TPoints>
 inline void IntegrateAndResetDynamicForces_NeonVectorized(
     TPoints & points,
+    size_t nBuffers,
     ElementIndex startPointIndex,
     ElementIndex endPointIndex,
     float * const restrict * dynamicForceBuffers,
     float dt,
     float velocityFactor) noexcept
 {
-    // TODOHERE
+    // TODOHERE: this was SSE
+    // This implementation is for 4-float SSE
+    static_assert(vectorization_float_count<int> >= 4);
+
+    float const dt = simulationParameters.MechanicalSimulationStepTimeDuration<float>();
+    float const velocityFactor = CalculateIntegrationVelocityFactor(dt, simulationParameters);
+
+    float * restrict const positionBuffer = mPoints.GetPositionBufferAsFloat();
+    float * restrict const velocityBuffer = mPoints.GetVelocityBufferAsFloat();
+    float const * const restrict staticForceBuffer = mPoints.GetStaticForceBufferAsFloat();
+    float const * const restrict integrationFactorBuffer = mPoints.GetIntegrationFactorBufferAsFloat();
+
+    float * const restrict * restrict const dynamicForceBufferOfBuffers = mPoints.GetDynamicForceBuffersAsFloat();
+
+    __m128 const zero_4 = _mm_setzero_ps();
+    __m128 const dt_4 = _mm_load1_ps(&dt);
+    __m128 const velocityFactor_4 = _mm_load1_ps(&velocityFactor);
+
+    for (size_t i = startPointIndex * 2; i < endPointIndex * 2; i += 4) // Two components per vector
+    {
+        __m128 springForce_2 = zero_4;
+        for (size_t b = 0; b < parallelism; ++b)
+        {
+            springForce_2 =
+                _mm_add_ps(
+                    springForce_2,
+                    _mm_load_ps(dynamicForceBufferOfBuffers[b] + i));
+        }
+
+        // vec2f const deltaPos =
+        //    velocityBuffer[i] * dt
+        //    + (springForceBuffer[i] + externalForceBuffer[i]) * integrationFactorBuffer[i];
+        __m128 const deltaPos_2 =
+            _mm_add_ps(
+                _mm_mul_ps(
+                    _mm_load_ps(velocityBuffer + i),
+                    dt_4),
+                _mm_mul_ps(
+                    _mm_add_ps(
+                        springForce_2,
+                        _mm_load_ps(staticForceBuffer + i)),
+                    _mm_load_ps(integrationFactorBuffer + i)));
+
+        // positionBuffer[i] += deltaPos;
+        __m128 pos_2 = _mm_load_ps(positionBuffer + i);
+        pos_2 = _mm_add_ps(pos_2, deltaPos_2);
+        _mm_store_ps(positionBuffer + i, pos_2);
+
+        // velocityBuffer[i] = deltaPos * velocityFactor;
+        __m128 const vel_2 =
+            _mm_mul_ps(
+                deltaPos_2,
+                velocityFactor_4);
+        _mm_store_ps(velocityBuffer + i, vel_2);
+
+        // Zero out spring forces now that we've integrated them
+        for (size_t b = 0; b < parallelism; ++b)
+        {
+            _mm_store_ps(dynamicForceBufferOfBuffers[b] + i, zero_4);
+        }
+    }
 }
 #endif
 
 /*
  * Integrates forces and resets dynamic forces.
  */
+
+template<typename TPoints>
+inline void IntegrateAndResetDynamicForces(
+    TPoints & points,
+    size_t nBuffers,
+    ElementIndex startPointIndex,
+    ElementIndex endPointIndex,
+    float * const restrict * dynamicForceBuffers,
+    float dt,
+    float velocityFactor) noexcept
+{
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
+    IntegrateAndResetDynamicForces_SSEVectorized<TPoints>(points, nBuffers, startPointIndex, endPointIndex, dynamicForceBuffers, dt, velocityFactor);
+#elif FS_IS_ARM_NEON()
+    IntegrateAndResetDynamicForces_NeonVectorized<TPoints>(points, nBuffers, startPointIndex, endPointIndex, dynamicForceBuffers, dt, velocityFactor);
+#else
+    IntegrateAndResetDynamicForces_Naive<TPoints>(points, nBuffers, startPointIndex, endPointIndex, dynamicForceBuffers, dt, velocityFactor);
+#endif
+}
+
 template<typename TPoints, size_t NBuffers>
 inline void IntegrateAndResetDynamicForces(
     TPoints & points,
@@ -655,13 +793,14 @@ inline void IntegrateAndResetDynamicForces(
     float dt,
     float velocityFactor) noexcept
 {
-#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
-    IntegrateAndResetDynamicForces_SSEVectorized<TPoints, NBuffers>(points, startPointIndex, endPointIndex, dynamicForceBuffers, dt, velocityFactor);
-#elif FS_IS_ARM_NEON()
-    IntegrateAndResetDynamicForces_NeonVectorized<TPoints, NBuffers>(points, startPointIndex, endPointIndex, dynamicForceBuffers, dt, velocityFactor);
-#else
-    IntegrateAndResetDynamicForces_Naive<TPoints, NBuffers>(points, startPointIndex, endPointIndex, dynamicForceBuffers, dt, velocityFactor);
-#endif
+    IntegrateAndResetDynamicForces<TPoints>(
+        points,
+        NBuffers,
+        startPointIndex,
+        endPointIndex,
+        dynamicForceBuffers,
+        dt,
+        velocityFactor);
 }
 
 }
