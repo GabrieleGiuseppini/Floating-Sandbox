@@ -522,22 +522,12 @@ private:
         SimulationParameters const & simulationParameters,
         ThreadManager & threadManager);
 
-    void ApplySpringsForces(
-        ElementIndex startSpringIndex,
-        ElementIndex endSpringIndex,
-        vec2f * restrict dynamicForceBuffer);
-
     inline void IntegrateAndResetDynamicForces(
         ElementIndex startPointIndex,
         ElementIndex endPointIndex,
         SimulationParameters const & simulationParameters);
 
     inline float CalculateIntegrationVelocityFactor(float dt, SimulationParameters const & simulationParameters) const;
-    inline void IntegrateAndResetDynamicForces_1(ElementIndex startPointIndex, ElementIndex endPointIndex, SimulationParameters const & simulationParameters);
-    inline void IntegrateAndResetDynamicForces_2(ElementIndex startPointIndex, ElementIndex endPointIndex, SimulationParameters const & simulationParameters);
-    inline void IntegrateAndResetDynamicForces_3(ElementIndex startPointIndex, ElementIndex endPointIndex, SimulationParameters const & simulationParameters);
-    inline void IntegrateAndResetDynamicForces_4(ElementIndex startPointIndex, ElementIndex endPointIndex, SimulationParameters const & simulationParameters);
-    inline void IntegrateAndResetDynamicForces_N(size_t parallelism, ElementIndex startPointIndex, ElementIndex endPointIndex, SimulationParameters const & simulationParameters);
 
     void HandleCollisionsWithSeaFloor(
         ElementIndex startPointIndex,

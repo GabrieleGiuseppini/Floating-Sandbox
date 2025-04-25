@@ -1,6 +1,5 @@
 #include <Core/Algorithms.h>
 
-
 #include <Core/GameTypes.h>
 #include <Core/Vectors.h>
 
@@ -8,6 +7,10 @@
 #include <cmath>
 
 #include "gtest/gtest.h"
+
+#ifdef _MSC_VER
+#pragma warning(disable : 4324) // std::optional of StateType gets padded because of alignment requirements
+#endif
 
 struct SpringEndpoints
 {
@@ -566,5 +569,321 @@ TEST(AlgorithmsTests, RunIntegrateAndResetDynamicForcesTest_2_SSEVectorized)
 TEST(AlgorithmsTests, RunIntegrateAndResetDynamicForcesTest_2_NeonVectorized)
 {
     RunIntegrateAndResetDynamicForcesTest_2(Algorithms::IntegrateAndResetDynamicForces_NeonVectorized<IntegrateAndResetDynamicForcesPoints>);
+}
+#endif
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+// ApplySpringForces
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Geometry:
+//  - Springs:
+//      - 3 perfect squares
+//      - 4 springs
+//      - 1 spring
+
+//
+//        09    --21--   10
+//    /      |         |     \
+//   17      18        19     20
+//  /        |         |        \
+// 05 --15-- 06 --08-- 07 --16-- 08
+// |         |         |         |
+// 03 01  02 04 05  06 11 09  10 12
+// |         |         |         |
+// 01 --13-- 02 --07-- 03 --14-- 04
+//
+
+size_t constexpr ApplySpringForcesPointCount = 1 + 10 + 4; // 1 prefix, 10 real, 4 suffix
+
+size_t constexpr ApplySpringForcesSpringCount = 1 + 21 + 1; // 1 prefix, 21 real, 1 suffix
+
+struct ApplySpringForcesPoints
+{
+    vec2f const * GetPositionBufferAsVec2() const
+    {
+        return positionBuffer;
+    }
+
+    vec2f const * GetVelocityBufferAsVec2() const
+    {
+        return velocityBuffer;
+    }
+
+    aligned_to_vword vec2f positionBuffer[ApplySpringForcesPointCount];
+    aligned_to_vword vec2f velocityBuffer[ApplySpringForcesPointCount];
+};
+
+struct ApplySpringForcesSprings
+{
+    using Endpoints = SpringEndpoints;
+
+    ElementCount GetPerfectSquareCount() const
+    {
+        return 3;
+    }
+
+    Endpoints const * GetEndpointsBuffer() const
+    {
+        return endpointsBuffer;
+    }
+
+    float const * GetRestLengthBuffer() const
+    {
+        return restLengthBuffer;
+    }
+
+    float const * GetStiffnessCoefficientBuffer() const
+    {
+        return stiffnessCoefficientBuffer;
+    }
+
+    float const * GetDampingCoefficientBuffer() const
+    {
+        return dampingCoefficientBuffer;
+    }
+
+    aligned_to_vword Endpoints endpointsBuffer[ApplySpringForcesSpringCount];
+    aligned_to_vword float restLengthBuffer[ApplySpringForcesSpringCount];
+    aligned_to_vword float stiffnessCoefficientBuffer[ApplySpringForcesSpringCount];
+    aligned_to_vword float dampingCoefficientBuffer[ApplySpringForcesSpringCount];
+};
+
+template<typename Algorithm>
+void RunApplySpringForcesTest(Algorithm algorithm)
+{
+    //
+    // Populate
+    //
+
+    aligned_to_vword vec2f dynamicForceBuffer[ApplySpringForcesPointCount];
+
+    ApplySpringForcesPoints points;
+
+    for (size_t i = 0; i < ApplySpringForcesPointCount; ++i)
+    {
+        auto const fi = static_cast<float>(i);
+
+        points.positionBuffer[i] = vec2f(10.0f + fi, 20.0f + fi);
+        points.velocityBuffer[i] = vec2f(100.0f + fi, 200.0f + fi);
+
+        dynamicForceBuffer[i] = vec2f(50.0f + fi, 500.0f + fi);
+    }
+
+    ApplySpringForcesSprings springs;
+
+    springs.endpointsBuffer[0] = { 0, 0 };
+
+    springs.endpointsBuffer[1] = { 5, 2 };
+    springs.endpointsBuffer[2] = { 6, 1 };
+    springs.endpointsBuffer[3] = { 5, 1 };
+    springs.endpointsBuffer[4] = { 6, 2 };
+
+    springs.endpointsBuffer[5] = { 2, 7 };
+    springs.endpointsBuffer[6] = { 6, 3 };
+    springs.endpointsBuffer[7] = { 2, 3 };
+    springs.endpointsBuffer[8] = { 6, 7 };
+
+    springs.endpointsBuffer[9] = { 7, 4 };
+    springs.endpointsBuffer[10] = { 8, 3 };
+    springs.endpointsBuffer[11] = { 7, 3 };
+    springs.endpointsBuffer[12] = { 8, 4 };
+
+    springs.endpointsBuffer[13] = { 1, 2 };
+    springs.endpointsBuffer[14] = { 4, 3 };
+    springs.endpointsBuffer[15] = { 6, 5 };
+    springs.endpointsBuffer[16] = { 8, 7 };
+    springs.endpointsBuffer[17] = { 9, 5 };
+    springs.endpointsBuffer[18] = { 9, 6 };
+    springs.endpointsBuffer[19] = { 10, 7 };
+    springs.endpointsBuffer[20] = { 10, 8 };
+    springs.endpointsBuffer[21] = { 10, 9 };
+
+    for (size_t i = 0; i < ApplySpringForcesSpringCount; ++i)
+    {
+        auto const fi = static_cast<float>(i);
+
+        springs.restLengthBuffer[i] = 1.0f + fi;
+        springs.stiffnessCoefficientBuffer[i] = 10.0f + fi;
+        springs.dampingCoefficientBuffer[i] = 100.0f + fi;
+    }
+
+    //
+    // Run test
+    //
+
+    algorithm(
+        points,
+        springs,
+        1, // Start
+        22, // End
+        dynamicForceBuffer);
+
+    //
+    // Verify
+    //
+
+    auto CalculateExpectedForce = [&](int springIndex)
+        {
+            auto const & ep = springs.endpointsBuffer[springIndex];
+            vec2f d = points.positionBuffer[ep.PointBIndex] - points.positionBuffer[ep.PointAIndex];
+            float fSpring = (d.length() - springs.restLengthBuffer[springIndex]) * springs.stiffnessCoefficientBuffer[springIndex];
+            vec2f v = points.velocityBuffer[ep.PointBIndex] - points.velocityBuffer[ep.PointAIndex];
+            float fDamp = v.dot(d.normalise()) * springs.dampingCoefficientBuffer[springIndex];
+            vec2f f = d.normalise() * (fSpring + fDamp);
+            return f;
+        };
+
+    for (size_t i = 0; i < ApplySpringForcesPointCount; ++i)
+    {
+        auto const fi = static_cast<float>(i);
+
+        if (i < 1 || i >= 11)
+        {
+            EXPECT_FLOAT_EQ(dynamicForceBuffer[i].x, 50.0f + fi);
+            EXPECT_FLOAT_EQ(dynamicForceBuffer[i].y, 500.0f + fi);
+        }
+        else
+        {
+            vec2f expectedDynamicForce;
+            switch (i)
+            {
+                case 1:
+                {
+                    expectedDynamicForce =
+                        CalculateExpectedForce(13)
+                        - CalculateExpectedForce(2)
+                        - CalculateExpectedForce(3);
+
+                    break;
+                }
+
+                case 2:
+                {
+                    expectedDynamicForce =
+                        - CalculateExpectedForce(13)
+                        - CalculateExpectedForce(1)
+                        - CalculateExpectedForce(4)
+                        + CalculateExpectedForce(5)
+                        + CalculateExpectedForce(7);
+
+                    break;
+                }
+
+                case 3:
+                {
+                    expectedDynamicForce =
+                        - CalculateExpectedForce(7)
+                        - CalculateExpectedForce(6)
+                        - CalculateExpectedForce(11)
+                        - CalculateExpectedForce(10)
+                        - CalculateExpectedForce(14);
+
+                    break;
+                }
+
+                case 4:
+                {
+                    expectedDynamicForce =
+                        CalculateExpectedForce(14)
+                        - CalculateExpectedForce(9)
+                        - CalculateExpectedForce(12);
+
+                    break;
+                }
+
+                case 5:
+                {
+                    expectedDynamicForce =
+                        CalculateExpectedForce(3)
+                        - CalculateExpectedForce(17)
+                        - CalculateExpectedForce(15)
+                        + CalculateExpectedForce(1);
+
+                    break;
+                }
+
+                case 6:
+                {
+                    expectedDynamicForce =
+                        CalculateExpectedForce(2)
+                        + CalculateExpectedForce(15)
+                        - CalculateExpectedForce(18)
+                        + CalculateExpectedForce(8)
+                        + CalculateExpectedForce(6)
+                        + CalculateExpectedForce(4);
+
+                    break;
+                }
+
+                case 7:
+                {
+                    expectedDynamicForce =
+                        - CalculateExpectedForce(5)
+                        - CalculateExpectedForce(8)
+                        - CalculateExpectedForce(19)
+                        - CalculateExpectedForce(16)
+                        + CalculateExpectedForce(9)
+                        + CalculateExpectedForce(11);
+
+                    break;
+                }
+
+                case 8:
+                {
+                    expectedDynamicForce =
+                        CalculateExpectedForce(10)
+                        + CalculateExpectedForce(16)
+                        - CalculateExpectedForce(20)
+                        + CalculateExpectedForce(12);
+
+                    break;
+                }
+
+                case 9:
+                {
+                    expectedDynamicForce =
+                        CalculateExpectedForce(17)
+                        - CalculateExpectedForce(21)
+                        + CalculateExpectedForce(18);
+
+                    break;
+                }
+
+                case 10:
+                {
+                    expectedDynamicForce =
+                        CalculateExpectedForce(21)
+                        + CalculateExpectedForce(20)
+                        + CalculateExpectedForce(19);
+
+                    break;
+                }
+            }
+
+            expectedDynamicForce += vec2f(50.0f + fi, 500.0f + fi);
+
+            EXPECT_FLOAT_EQ(dynamicForceBuffer[i].x, expectedDynamicForce.x);
+            EXPECT_FLOAT_EQ(dynamicForceBuffer[i].y, expectedDynamicForce.y);
+        }
+    }
+}
+
+TEST(AlgorithmsTests, RunApplySpringForcesTest_Naive)
+{
+    RunApplySpringForcesTest(Algorithms::ApplySpringsForces_Naive<ApplySpringForcesPoints, ApplySpringForcesSprings>);
+}
+
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
+TEST(AlgorithmsTests, RunApplySpringForcesTest_SSEVectorized)
+{
+    RunApplySpringForcesTest(Algorithms::ApplySpringsForces_SSEVectorized<ApplySpringForcesPoints, ApplySpringForcesSprings>);
+}
+#endif
+
+#if FS_IS_ARM_NEON()
+TEST(AlgorithmsTests, RunApplySpringForcesTest_NeonVectorized)
+{
+    RunApplySpringForcesTest(Algorithms::ApplySpringsForces_NeonVectorized<ApplySpringForcesPoints, ApplySpringForcesSprings>);
 }
 #endif

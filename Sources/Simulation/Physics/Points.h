@@ -1016,6 +1016,11 @@ public:
         return mPositionBuffer;
     }
 
+    vec2f const * GetPositionBufferAsVec2() const
+    {
+        return mPositionBuffer.data();
+    }
+
     vec2f * GetPositionBufferAsVec2()
     {
         return mPositionBuffer.data();
@@ -1053,6 +1058,11 @@ public:
     vec2f const & GetVelocity(ElementIndex pointElementIndex) const noexcept
     {
         return mVelocityBuffer[pointElementIndex];
+    }
+
+    vec2f const * GetVelocityBufferAsVec2() const
+    {
+        return mVelocityBuffer.data();
     }
 
     vec2f * GetVelocityBufferAsVec2()
