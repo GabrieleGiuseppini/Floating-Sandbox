@@ -193,8 +193,14 @@ inline constexpr T ceil_square_power_of_two(T value)
 // Dictates alignment of buffers.
 // Targeting SSE, NEON
 
+// A.k.a. the vectorization word size
+#if !FS_IS_ARM_NEON()
 template <typename T>
-static constexpr T vectorization_float_count = 4; // A.k.a. the vectorization word size
+static constexpr T vectorization_float_count = 4;
+#else
+template <typename T>
+static constexpr T vectorization_float_count = 4 * 4; // We want to use the 4x4 load/stores
+#endif
 
 template <typename T>
 static constexpr T vectorization_byte_count = vectorization_float_count<T> * sizeof(float);

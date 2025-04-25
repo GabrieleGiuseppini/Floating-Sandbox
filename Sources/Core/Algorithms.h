@@ -697,65 +697,78 @@ inline void IntegrateAndResetDynamicForces_NeonVectorized(
     float dt,
     float velocityFactor) noexcept
 {
-    // TODOHERE: this was SSE
-    // This implementation is for 4-float SSE
-    static_assert(vectorization_float_count<int> >= 4);
+    // This implementation is for 4-float times 4 elements vectorization
+    static_assert(vectorization_float_count<int> >= 4 * 4);
+    assert(is_aligned_to_float_element_count(endPointIndex - startPointIndex));
 
-    float const dt = simulationParameters.MechanicalSimulationStepTimeDuration<float>();
-    float const velocityFactor = CalculateIntegrationVelocityFactor(dt, simulationParameters);
+    float * restrict const positionBuffer = points.GetPositionBufferAsFloat();
+    float * restrict const velocityBuffer = points.GetVelocityBufferAsFloat();
+    float const * const restrict staticForceBuffer = points.GetStaticForceBufferAsFloat();
+    float const * const restrict integrationFactorBuffer = points.GetIntegrationFactorBufferAsFloat();
 
-    float * restrict const positionBuffer = mPoints.GetPositionBufferAsFloat();
-    float * restrict const velocityBuffer = mPoints.GetVelocityBufferAsFloat();
-    float const * const restrict staticForceBuffer = mPoints.GetStaticForceBufferAsFloat();
-    float const * const restrict integrationFactorBuffer = mPoints.GetIntegrationFactorBufferAsFloat();
+    float * const restrict * restrict const dynamicForceBufferOfBuffers = dynamicForceBuffers;
 
-    float * const restrict * restrict const dynamicForceBufferOfBuffers = mPoints.GetDynamicForceBuffersAsFloat();
-
-    __m128 const zero_4 = _mm_setzero_ps();
-    __m128 const dt_4 = _mm_load1_ps(&dt);
-    __m128 const velocityFactor_4 = _mm_load1_ps(&velocityFactor);
-
-    for (size_t i = startPointIndex * 2; i < endPointIndex * 2; i += 4) // Two components per vector
+    float32x4x4_t zero_4_4;
+    for (int e = 0; e < 4; ++e)
     {
-        __m128 springForce_2 = zero_4;
-        for (size_t b = 0; b < parallelism; ++b)
+        zero_4_4.val[e] = vdupq_n_f32(0.0f);
+    }
+    float32x4_t const dt_4 = vdupq_n_f32(dt);
+    float32x4_t const velocityFactor_4 = vdupq_n_f32(velocityFactor);
+
+    for (size_t i = startPointIndex * 2; i < endPointIndex * 2; i += 4 * 4) // Two components per vector, 4 vectors at a time
+    {
+        // Add spring forces
+
+        float32x4x4_t springForce = zero_4_4;
+        for (size_t b = 0; b < nBuffers; ++b)
         {
-            springForce_2 =
-                _mm_add_ps(
-                    springForce_2,
-                    _mm_load_ps(dynamicForceBufferOfBuffers[b] + i));
+            float32x4x4_t dynamicForces = vld4q_f32(dynamicForceBufferOfBuffers[b] + i);
+
+            for (int e = 0; e < 4; ++e)
+            {
+                springForce.val[e] = vaddq_f32(
+                    springForce.val[e],
+                    dynamicForces.val[e]);
+            }
         }
 
-        // vec2f const deltaPos =
-        //    velocityBuffer[i] * dt
-        //    + (springForceBuffer[i] + externalForceBuffer[i]) * integrationFactorBuffer[i];
-        __m128 const deltaPos_2 =
-            _mm_add_ps(
-                _mm_mul_ps(
-                    _mm_load_ps(velocityBuffer + i),
+        // Calculate deltaPos =
+        //         velocity[i] * dt
+        //         + (springForce[i] + staticForce[i]) * integrationFactor[i];
+
+        // Update positions and velocities:
+        //      position[i] += deltaPos;
+        //      velocity[i] = deltaPos * velocityFactor;
+
+        float32x4x4_t velocity = vld4q_f32(velocityBuffer + i);
+        float32x4x4_t staticForce = vld4q_f32(staticForceBuffer + i);
+        float32x4x4_t integrationFactor = vld4q_f32(integrationFactorBuffer + i);
+        float32x4x4_t position = vld4q_f32(positionBuffer + i);
+
+        for (int e = 0; e < 4; ++e)
+        {
+            float32x4_t const deltaPos = vaddq_f32(
+                vmulq_f32(
+                    velocity.val[e],
                     dt_4),
-                _mm_mul_ps(
-                    _mm_add_ps(
-                        springForce_2,
-                        _mm_load_ps(staticForceBuffer + i)),
-                    _mm_load_ps(integrationFactorBuffer + i)));
+                vmulq_f32(
+                    vaddq_f32(
+                        springForce.val[e],
+                        staticForce.val[e]),
+                    integrationFactor.val[e]));
 
-        // positionBuffer[i] += deltaPos;
-        __m128 pos_2 = _mm_load_ps(positionBuffer + i);
-        pos_2 = _mm_add_ps(pos_2, deltaPos_2);
-        _mm_store_ps(positionBuffer + i, pos_2);
+            position.val[e] = vaddq_f32(position.val[e], deltaPos);
+            velocity.val[e] = vmulq_f32(deltaPos, velocityFactor_4);
+        }
 
-        // velocityBuffer[i] = deltaPos * velocityFactor;
-        __m128 const vel_2 =
-            _mm_mul_ps(
-                deltaPos_2,
-                velocityFactor_4);
-        _mm_store_ps(velocityBuffer + i, vel_2);
+        vst4q_f32(positionBuffer + i, position);
+        vst4q_f32(velocityBuffer + i, velocity);
 
         // Zero out spring forces now that we've integrated them
-        for (size_t b = 0; b < parallelism; ++b)
+        for (size_t b = 0; b < nBuffers; ++b)
         {
-            _mm_store_ps(dynamicForceBufferOfBuffers[b] + i, zero_4);
+            vst4q_f32(dynamicForceBufferOfBuffers[b] + i, zero_4_4);
         }
     }
 }
