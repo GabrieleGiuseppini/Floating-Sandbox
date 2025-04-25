@@ -314,12 +314,14 @@ TEST(AlgorithmsTests, DiffuseLight_SSEVectorized_8Lamps)
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 template<typename Algorithm>
-void RunSmoothBufferAndAddTest_12_5(Algorithm algorithm)
+void RunSmoothBufferAndAddTest(Algorithm algorithm)
 {
     // Prefix of buffer "body" necessary to include half of average window
     // (with initial zeroes) *and* making the buffer "body" aligned
     size_t constexpr BufferBodyPrefixSize = make_aligned_float_element_count(5 / 2); // Before "body"
     size_t constexpr BufferPrefixSize = BufferBodyPrefixSize - (5 / 2); // Before zeroes
+
+#if !FS_IS_ARM_NEON()
     static_assert(BufferPrefixSize == 2);
 
     aligned_to_vword float inBuffer[] = {
@@ -358,24 +360,71 @@ void RunSmoothBufferAndAddTest_12_5(Algorithm algorithm)
     EXPECT_FLOAT_EQ((6.0f * 1.0f + 150.0f * 2.0f + 1000.0f * 3.0f + 7.0f * 2.0f + -5.0f * 1.0f) / 25.0f + 2.0f, outBuffer[9]);
     EXPECT_FLOAT_EQ((150.0f * 1.0f + 1000.0f * 2.0f + 7.0f * 3.0f + -5.0f * 2.0f + 0.0f * 1.0f) / 25.0f + 2.0f, outBuffer[10]);
     EXPECT_FLOAT_EQ((1000.0f * 1.0f + 7.0f * 2.0f + -5.0f * 3.0f + 0.0f * 2.0f + 0.0f * 1.0f) / 25.0f + 2.0f, outBuffer[11]);
+#else
+    static_assert(BufferPrefixSize == 14);
+
+    aligned_to_vword float inBuffer[] = {
+        0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,// BufferPrefix
+
+        0.0f,
+        0.0f,
+
+        1.0f, 4.0f, 5.0f, 100.0f,
+        200.0f, 2.0f, 5.0f,  6.0f,
+        150.0f, 1000.0f, 7.0f, -5.0,
+        4000.0f, 40.0f, 100.0f, 120.0,
+
+        0.0f,
+        0.0f
+    };
+
+    aligned_to_vword float outBuffer[] = {
+        2.0f, 2.0f, 2.0f, 2.0f,
+        2.0f, 2.0f, 2.0f, 2.0f,
+        2.0f, 2.0f, 2.0f, 2.0f,
+        2.0f, 2.0f, 2.0f, 2.0f
+    };
+
+    algorithm(
+        inBuffer + BufferPrefixSize + 2,
+        outBuffer);
+
+    EXPECT_FLOAT_EQ((0.0f * 1.0f + 0.0f * 2.0f + 1.0f * 3.0f + 4.0f * 2.0f + 5.0f * 1.0f) / 25.0f + 2.0f, outBuffer[0]);
+    EXPECT_FLOAT_EQ((0.0f * 1.0f + 1.0f * 2.0f + 4.0f * 3.0f + 5.0f * 2.0f + 100.0f * 1.0f) / 25.0f + 2.0f, outBuffer[1]);
+    EXPECT_FLOAT_EQ((1.0f * 1.0f + 4.0f * 2.0f + 5.0f * 3.0f + 100.0f * 2.0f + 200.0f * 1.0f) / 25.0f + 2.0f, outBuffer[2]);
+    EXPECT_FLOAT_EQ((4.0f * 1.0f + 5.0f * 2.0f + 100.0f * 3.0f + 200.0f * 2.0f + 2.0f * 1.0f) / 25.0f + 2.0f, outBuffer[3]);
+    EXPECT_FLOAT_EQ((5.0f * 1.0f + 100.0f * 2.0f + 200.0f * 3.0f + 2.0f * 2.0f + 5.0f * 1.0f) / 25.0f + 2.0f, outBuffer[4]);
+    EXPECT_FLOAT_EQ((100.0f * 1.0f + 200.0f * 2.0f + 2.0f * 3.0f + 5.0f * 2.0f + 6.0f * 1.0f) / 25.0f + 2.0f, outBuffer[5]);
+    EXPECT_FLOAT_EQ((200.0f * 1.0f + 2.0f * 2.0f + 5.0f * 3.0f + 6.0f * 2.0f + 150.0f * 1.0f) / 25.0f + 2.0f, outBuffer[6]);
+    EXPECT_FLOAT_EQ((2.0f * 1.0f + 5.0f * 2.0f + 6.0f * 3.0f + 150.0f * 2.0f + 1000.0f * 1.0f) / 25.0f + 2.0f, outBuffer[7]);
+    EXPECT_FLOAT_EQ((5.0f * 1.0f + 6.0f * 2.0f + 150.0f * 3.0f + 1000.0f * 2.0f + 7.0f * 1.0f) / 25.0f + 2.0f, outBuffer[8]);
+    EXPECT_FLOAT_EQ((6.0f * 1.0f + 150.0f * 2.0f + 1000.0f * 3.0f + 7.0f * 2.0f + -5.0f * 1.0f) / 25.0f + 2.0f, outBuffer[9]);
+    EXPECT_FLOAT_EQ((150.0f * 1.0f + 1000.0f * 2.0f + 7.0f * 3.0f + -5.0f * 2.0f + 4000.0f * 1.0f) / 25.0f + 2.0f, outBuffer[10]);
+    EXPECT_FLOAT_EQ((1000.0f * 1.0f + 7.0f * 2.0f + -5.0f * 3.0f + 4000.0f * 2.0f + 40.0f * 1.0f) / 25.0f + 2.0f, outBuffer[11]);
+
+    EXPECT_FLOAT_EQ((7.0f * 1.0f + -5.0f * 2.0f + 4000.0f * 3.0f + 40.0f * 2.0f + 100.0f * 1.0f) / 25.0f + 2.0f, outBuffer[12]);
+    EXPECT_FLOAT_EQ((-5.0f * 1.0f + 4000.0f * 2.0f + 40.0f * 3.0f + 100.0f * 2.0f + 120.0f * 1.0f) / 25.0f + 2.0f, outBuffer[13]);
+    EXPECT_FLOAT_EQ((4000.0f * 1.0f + 40.0f * 2.0f + 100.0f * 3.0f + 120.0f * 2.0f + 0.0f * 1.0f) / 25.0f + 2.0f, outBuffer[14]);
+    EXPECT_FLOAT_EQ((40.0f * 1.0f + 100.0f * 2.0f + 120.0f * 3.0f + 0.0f * 2.0f + 0.0f * 1.0f) / 25.0f + 2.0f, outBuffer[15]);
+#endif
 }
 
 TEST(AlgorithmsTests, SmoothBufferAndAdd_12_5_Naive)
 {
-    RunSmoothBufferAndAddTest_12_5(Algorithms::SmoothBufferAndAdd_Naive<12, 5>);
+    RunSmoothBufferAndAddTest(Algorithms::SmoothBufferAndAdd_Naive<12, 5>);
 }
 
 #if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
 TEST(AlgorithmsTests, SmoothBufferAndAdd_12_5_SSEVectorized)
 {
-    RunSmoothBufferAndAddTest_12_5(Algorithms::SmoothBufferAndAdd_SSEVectorized<12, 5>);
+    RunSmoothBufferAndAddTest(Algorithms::SmoothBufferAndAdd_SSEVectorized<12, 5>);
 }
 #endif
 
 #if FS_IS_ARM_NEON()
-TEST(AlgorithmsTests, SmoothBufferAndAdd_12_5_NeonVectorized)
+TEST(AlgorithmsTests, SmoothBufferAndAdd_16_5_NeonVectorized)
 {
-    RunSmoothBufferAndAddTest_12_5(Algorithms::SmoothBufferAndAdd_NeonVectorized<12, 5>);
+    RunSmoothBufferAndAddTest_16_5(Algorithms::SmoothBufferAndAdd_NeonVectorized<16, 5>);
 }
 #endif
 
@@ -407,12 +456,14 @@ struct IntegrateAndResetDynamicForcesPoints
         return reinterpret_cast<float const *>(integrationFactorBuffer);
     }
 
-    vec2f positionBuffer[IntegrateAndResetDynamicForcesInputSize];
-    vec2f velocityBuffer[IntegrateAndResetDynamicForcesInputSize];
-    vec2f staticForceBuffer[IntegrateAndResetDynamicForcesInputSize];
-    vec2f integrationFactorBuffer[IntegrateAndResetDynamicForcesInputSize];
+    aligned_to_vword vec2f positionBuffer[IntegrateAndResetDynamicForcesInputSize];
+    aligned_to_vword vec2f velocityBuffer[IntegrateAndResetDynamicForcesInputSize];
+    aligned_to_vword vec2f staticForceBuffer[IntegrateAndResetDynamicForcesInputSize];
+    aligned_to_vword vec2f integrationFactorBuffer[IntegrateAndResetDynamicForcesInputSize];
 
-    vec2f parallelDynamicForceBuffers[2][IntegrateAndResetDynamicForcesInputSize];
+    aligned_to_vword vec2f parallelDynamicForceBuffer0[IntegrateAndResetDynamicForcesInputSize];
+    aligned_to_vword vec2f parallelDynamicForceBuffer1[IntegrateAndResetDynamicForcesInputSize];
+    vec2f * parallelDynamicForceBuffers[2]{ parallelDynamicForceBuffer0, parallelDynamicForceBuffer1 };
 };
 
 template<typename Algorithm>
