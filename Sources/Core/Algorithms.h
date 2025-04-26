@@ -1532,7 +1532,6 @@ inline void ApplySpringsForces_NeonVectorized(
     float const * restrict const dampingCoefficientBuffer = springs.GetDampingCoefficientBuffer();
 
     float32x4_t const Zero = vdupq_n_f32(0.0f);
-    aligned_to_vword vec2f tmpSpringForces[4];
 
     ElementIndex s = startSpringIndex;
 

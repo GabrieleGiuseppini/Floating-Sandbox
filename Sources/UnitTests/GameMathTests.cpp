@@ -44,7 +44,6 @@ TEST_P(FastModTest, FastModTest)
     EXPECT_TRUE(ApproxEquals(result, expectedResult, 0.00001f));
 }
 
-
 TEST(GameMathTests, FastPowTest_Basic)
 {
     float result = FastPow(0.1f, 2.0f);
