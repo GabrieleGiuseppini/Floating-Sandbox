@@ -1520,7 +1520,537 @@ inline void ApplySpringsForces_NeonVectorized(
     ElementIndex endSpringIndex,
     vec2f * restrict dynamicForceBuffer)
 {
-    // TODOHERE
+    // This implementation is for 4-float Neon
+    static_assert(vectorization_float_count<int> >= 4);
+
+    vec2f const * restrict const positionBuffer = points.GetPositionBufferAsVec2();
+    vec2f const * restrict const velocityBuffer = points.GetVelocityBufferAsVec2();
+
+    typename TSprings::Endpoints const * restrict const endpointsBuffer = springs.GetEndpointsBuffer();
+    float const * restrict const restLengthBuffer = springs.GetRestLengthBuffer();
+    float const * restrict const stiffnessCoefficientBuffer = springs.GetStiffnessCoefficientBuffer();
+    float const * restrict const dampingCoefficientBuffer = springs.GetDampingCoefficientBuffer();
+
+    float32x4_t const Zero = vdupq_n_f32(0.0f);
+    aligned_to_vword vec2f tmpSpringForces[4];
+
+    ElementIndex s = startSpringIndex;
+
+    //
+    // 1. Perfect squares
+    //
+
+    ElementCount const endSpringIndexPerfectSquare = std::min(endSpringIndex, springs.GetPerfectSquareCount() * 4);
+
+    for (; s < endSpringIndexPerfectSquare; s += 4)
+    {
+        // Q register notation:
+        //   low (left, or top) -> height (right, or bottom)
+
+        //
+        //    J          M   ---  a
+        //    |\        /|
+        //    | \s0  s1/ |
+        //    |  \    /  |
+        //  s2|   \  /   |s3
+        //    |    \/    |
+        //    |    /\    |
+        //    |   /  \   |
+        //    |  /    \  |
+        //    | /      \ |
+        //    |/        \|
+        //    K          L  ---  b
+        //
+
+        ElementIndex const pointJIndex = endpointsBuffer[s + 0].PointAIndex;
+        ElementIndex const pointKIndex = endpointsBuffer[s + 1].PointBIndex;
+        ElementIndex const pointLIndex = endpointsBuffer[s + 0].PointBIndex;
+        ElementIndex const pointMIndex = endpointsBuffer[s + 1].PointAIndex;
+
+        assert(pointJIndex == endpointsBuffer[s + 2].PointAIndex);
+        assert(pointKIndex == endpointsBuffer[s + 2].PointBIndex);
+        assert(pointLIndex == endpointsBuffer[s + 3].PointBIndex);
+        assert(pointMIndex == endpointsBuffer[s + 3].PointAIndex);
+
+        //
+        // Calculate displacements, string lengths, and spring directions
+        //
+
+        float32x2_t const j_pos_xy = vld1_f32(reinterpret_cast<float const *>(positionBuffer + pointJIndex));
+        float32x2_t const k_pos_xy = vld1_f32(reinterpret_cast<float const *>(positionBuffer + pointKIndex));
+        float32x2_t const l_pos_xy = vld1_f32(reinterpret_cast<float const *>(positionBuffer + pointLIndex));
+        float32x2_t const m_pos_xy = vld1_f32(reinterpret_cast<float const *>(positionBuffer + pointMIndex));
+
+        float32x4_t const lk_pos_xyxy = vcombine_f32(l_pos_xy, k_pos_xy);
+        float32x4_t const kl_pos_xyxy = vcombine_f32(k_pos_xy, l_pos_xy);
+        float32x4_t const jj_pos_xyxy = vcombine_f32(j_pos_xy, j_pos_xy);
+        float32x4_t const mm_pos_xyxy = vcombine_f32(m_pos_xy, m_pos_xy);
+
+        float32x4_t const dis_s0x_s0y_s2x_s2y = vsubq_f32(lk_pos_xyxy, jj_pos_xyxy);
+        float32x4_t const dis_s1x_s1y_s3x_s3y = vsubq_f32(kl_pos_xyxy, mm_pos_xyxy);
+
+        float32x4x2_t const dis_s0s1s2s3_xxxx_yyyy = vtrnq_f32(dis_s0x_s0y_s2x_s2y, dis_s1x_s1y_s3x_s3y);
+
+
+        // Calculate spring lengths: sqrt( x*x + y*y )
+
+        float32x4_t const sq_len =
+            vaddq_f32(
+                vmulq_f32(dis_s0s1s2s3_xxxx_yyyy.val[0], dis_s0s1s2s3_xxxx_yyyy.val[0]),
+                vmulq_f32(dis_s0s1s2s3_xxxx_yyyy.val[1], dis_s0s1s2s3_xxxx_yyyy.val[1]));
+
+        uint32x4_t const invalidMask = vceqq_f32(sq_len, Zero); // SL==0 => 1/SL==0, to maintain "normalized == (0, 0)", as in vec2f
+
+        // One newtown-rhapson step
+        float32x4_t s0s1s2s3_springLength_inv = vrsqrteq_f32(sq_len);
+        s0s1s2s3_springLength_inv = vmulq_f32(
+            s0s1s2s3_springLength_inv,
+            vrsqrtsq_f32(
+                vmulq_f32(sq_len, s0s1s2s3_springLength_inv),
+                s0s1s2s3_springLength_inv));
+
+//        // One extra step
+//        s0s1s2s3_springLength_inv = vmulq_f32(
+//            s0s1s2s3_springLength_inv,
+//            vrsqrtsq_f32(
+//                vmulq_f32(sq_len, s0s1s2s3_springLength_inv),
+//                s0s1s2s3_springLength_inv));
+
+        s0s1s2s3_springLength_inv =
+            vandq_u32(
+                s0s1s2s3_springLength_inv,
+                vmvnq_u32(invalidMask));
+
+        // One newtown-rhapson step
+        float32x4_t s0s1s2s3_springLength = vrecpeq_f32(s0s1s2s3_springLength_inv);
+        s0s1s2s3_springLength = vmulq_f32(
+            s0s1s2s3_springLength,
+            vrecpsq_f32(
+                s0s1s2s3_springLength_inv,
+                s0s1s2s3_springLength));
+
+//        // One extra step
+//        s0s1s2s3_springLength = vmulq_f32(
+//            s0s1s2s3_springLength,
+//            vrecpsq_f32(
+//                s0s1s2s3_springLength_inv,
+//                s0s1s2s3_springLength));
+
+        s0s1s2s3_springLength =
+            vandq_u32(
+                s0s1s2s3_springLength,
+                vmvnq_u32(invalidMask));
+
+
+        // Calculate spring directions
+
+        float32x4_t const s0s1s2s3_sdir_x = vmulq_f32(dis_s0s1s2s3_xxxx_yyyy.val[0], s0s1s2s3_springLength_inv);
+        float32x4_t const s0s1s2s3_sdir_y = vmulq_f32(dis_s0s1s2s3_xxxx_yyyy.val[1], s0s1s2s3_springLength_inv);
+
+        //////////////////////////////////////////////////////////////////////////////////////////////
+
+        //
+        // 1. Hooke's law
+        //
+
+        // Calculate springs' forces' moduli - for endpoint A:
+        //    (displacementLength[s] - restLength[s]) * stiffness[s]
+        //
+        // Strategy:
+        //
+        // ( springLength[s0] - restLength[s0] ) * stiffness[s0]
+        // ( springLength[s1] - restLength[s1] ) * stiffness[s1]
+        // ( springLength[s2] - restLength[s2] ) * stiffness[s2]
+        // ( springLength[s3] - restLength[s3] ) * stiffness[s3]
+        //
+
+        float32x4_t const s0s1s2s3_hooke_forceModuli =
+            vmulq_f32(
+                vsubq_f32(
+                    s0s1s2s3_springLength,
+                    vld1q_f32(reinterpret_cast<float const *>(restLengthBuffer + s))),
+                vld1q_f32(reinterpret_cast<float const *>(stiffnessCoefficientBuffer + s)));
+
+
+        //
+        // 2. Damper forces
+        //
+        // Damp the velocities of each endpoint pair, as if the points were also connected by a damper
+        // along the same direction as the spring, for endpoint A:
+        //      relVelocity.dot(springDir) * dampingCoeff[s]
+        //
+        // Strategy:
+        //
+        // (s0_relv_x * s0_sdir_x  +  s0_relv_y * s0_sdir_y) * dampCoeff[s0]
+        // (s1_relv_x * s1_sdir_x  +  s1_relv_y * s1_sdir_y) * dampCoeff[s1]
+        // (s2_relv_x * s2_sdir_x  +  s2_relv_y * s2_sdir_y) * dampCoeff[s2]
+        // (s3_relv_x * s3_sdir_x  +  s3_relv_y * s3_sdir_y) * dampCoeff[s3]
+        //
+
+        float32x2_t const j_vel_xy = vld1_f32(reinterpret_cast<float const *>(velocityBuffer + pointJIndex));
+        float32x2_t const k_vel_xy = vld1_f32(reinterpret_cast<float const *>(velocityBuffer + pointKIndex));
+        float32x2_t const l_vel_xy = vld1_f32(reinterpret_cast<float const *>(velocityBuffer + pointLIndex));
+        float32x2_t const m_vel_xy = vld1_f32(reinterpret_cast<float const *>(velocityBuffer + pointMIndex));
+
+        float32x4_t const lk_vel_xyxy = vcombine_f32(l_vel_xy, k_vel_xy);
+        float32x4_t const kl_vel_xyxy = vcombine_f32(k_vel_xy, l_vel_xy);
+        float32x4_t const jj_vel_xyxy = vcombine_f32(j_vel_xy, j_vel_xy);
+        float32x4_t const mm_vel_xyxy = vcombine_f32(m_vel_xy, m_vel_xy);
+
+        float32x4_t const rvel_s0x_s0y_s2x_s2y = vsubq_f32(lk_vel_xyxy, jj_vel_xyxy);
+        float32x4_t const rvel_s1x_s1y_s3x_s3y = vsubq_f32(kl_vel_xyxy, mm_vel_xyxy);
+
+        float32x4x2_t const rvel_s0s1s2s3_xxxx_yyyy = vtrnq_f32(rvel_s0x_s0y_s2x_s2y, rvel_s1x_s1y_s3x_s3y);
+
+        float32x4_t const s0s1s2s3_damping_forceModuli =
+            vmulq_f32(
+                vaddq_f32( // Dot product
+                    vmulq_f32(rvel_s0s1s2s3_xxxx_yyyy.val[0], s0s1s2s3_sdir_x),
+                    vmulq_f32(rvel_s0s1s2s3_xxxx_yyyy.val[1], s0s1s2s3_sdir_y)),
+                vld1q_f32(reinterpret_cast<float const *>(dampingCoefficientBuffer + s)));
+
+
+        //
+        // 3. Apply forces:
+        //      force A = springDir * (hookeForce + dampingForce)
+        //      force B = - forceA
+        //
+        // Strategy:
+        //
+        //  s0_tforce_a_x  =   s0_sdir_x  *  (  hookeForce[s0] + dampingForce[s0] )
+        //  s1_tforce_a_x  =   s1_sdir_x  *  (  hookeForce[s1] + dampingForce[s1] )
+        //  s2_tforce_a_x  =   s2_sdir_x  *  (  hookeForce[s2] + dampingForce[s2] )
+        //  s3_tforce_a_x  =   s3_sdir_x  *  (  hookeForce[s3] + dampingForce[s3] )
+        //
+        //  s0_tforce_a_y  =   s0_sdir_y  *  (  hookeForce[s0] + dampingForce[s0] )
+        //  s1_tforce_a_y  =   s1_sdir_y  *  (  hookeForce[s1] + dampingForce[s1] )
+        //  s2_tforce_a_y  =   s2_sdir_y  *  (  hookeForce[s2] + dampingForce[s2] )
+        //  s3_tforce_a_y  =   s3_sdir_y  *  (  hookeForce[s3] + dampingForce[s3] )
+        //
+
+        float32x4_t const tForceModuli = vaddq_f32(s0s1s2s3_hooke_forceModuli, s0s1s2s3_damping_forceModuli);
+
+        float32x4_t const s0s1s2s3_tforceA_x =
+            vmulq_f32(
+                s0s1s2s3_sdir_x,
+                tForceModuli);
+
+        float32x4_t const s0s1s2s3_tforceA_y =
+            vmulq_f32(
+                s0s1s2s3_sdir_y,
+                tForceModuli);
+
+        //
+        // Unpack and add forces:
+        //      dynamicForceBuffer[pointAIndex] += total_forceA;
+        //      dynamicForceBuffer[pointBIndex] -= total_forceA;
+        //
+        // j_dforce += s0_a_tforce + s2_a_tforce
+        // m_dforce += s1_a_tforce + s3_a_tforce
+        //
+        // l_dforce -= s0_a_tforce + s3_a_tforce
+        // k_dforce -= s1_a_tforce + s2_a_tforce
+
+        float32x4x2_t const s0xy_s1xy_s2xy_s3xy = vzipq_f32(s0s1s2s3_tforceA_x, s0s1s2s3_tforceA_y);
+
+        float32x4_t const jfxy_mfxy = vaddq_f32(
+            s0xy_s1xy_s2xy_s3xy.val[0],
+            s0xy_s1xy_s2xy_s3xy.val[1]);
+
+        float32x4_t const lfxy_kfxy = vaddq_f32(
+            s0xy_s1xy_s2xy_s3xy.val[0],
+            vextq_f32(s0xy_s1xy_s2xy_s3xy.val[1], s0xy_s1xy_s2xy_s3xy.val[1], 2)); // Flip S2 and S3
+
+        float32x2_t jf = vld1_f32(reinterpret_cast<float const *>(dynamicForceBuffer + pointJIndex));
+        jf = vadd_f32(jf, vget_low_f32(jfxy_mfxy));
+        vst1_f32(reinterpret_cast<float *>(dynamicForceBuffer + pointJIndex), jf);
+
+        float32x2_t mf = vld1_f32(reinterpret_cast<float const *>(dynamicForceBuffer + pointMIndex));
+        mf = vadd_f32(mf, vget_high_f32(jfxy_mfxy));
+        vst1_f32(reinterpret_cast<float *>(dynamicForceBuffer + pointMIndex), mf);
+
+        float32x2_t lf = vld1_f32(reinterpret_cast<float const *>(dynamicForceBuffer + pointLIndex));
+        lf = vsub_f32(lf, vget_low_f32(lfxy_kfxy));
+        vst1_f32(reinterpret_cast<float *>(dynamicForceBuffer + pointLIndex), lf);
+
+        float32x2_t kf = vld1_f32(reinterpret_cast<float const *>(dynamicForceBuffer + pointKIndex));
+        kf = vsub_f32(kf, vget_high_f32(lfxy_kfxy));
+        vst1_f32(reinterpret_cast<float *>(dynamicForceBuffer + pointKIndex), kf);
+    }
+
+    //
+    // 2. Remaining four-by-four's
+    //
+
+    ElementCount const endSpringIndexVectorized = endSpringIndex - (endSpringIndex % 4);
+
+    for (; s < endSpringIndexVectorized; s += 4)
+    {
+        //
+        // Calculate displacements, string lengths, and spring directions
+        //
+
+        float32x2_t const s0pa_pos_xy = vld1_f32(reinterpret_cast<float const *>(positionBuffer + endpointsBuffer[s + 0].PointAIndex));
+        float32x2_t const s0pb_pos_xy = vld1_f32(reinterpret_cast<float const *>(positionBuffer + endpointsBuffer[s + 0].PointBIndex));
+        float32x2_t const s0_dis_xy = vsub_f32(s0pb_pos_xy, s0pa_pos_xy);
+
+        float32x2_t const s1pa_pos_xy = vld1_f32(reinterpret_cast<float const *>(positionBuffer + endpointsBuffer[s + 1].PointAIndex));
+        float32x2_t const s1pb_pos_xy = vld1_f32(reinterpret_cast<float const *>(positionBuffer + endpointsBuffer[s + 1].PointBIndex));
+        float32x2_t const s1_dis_xy = vsub_f32(s1pb_pos_xy, s1pa_pos_xy);
+
+        float32x2_t const s2pa_pos_xy = vld1_f32(reinterpret_cast<float const *>(positionBuffer + endpointsBuffer[s + 2].PointAIndex));
+        float32x2_t const s2pb_pos_xy = vld1_f32(reinterpret_cast<float const *>(positionBuffer + endpointsBuffer[s + 2].PointBIndex));
+        float32x2_t const s2_dis_xy = vsub_f32(s2pb_pos_xy, s2pa_pos_xy);
+
+        float32x2_t const s3pa_pos_xy = vld1_f32(reinterpret_cast<float const *>(positionBuffer + endpointsBuffer[s + 3].PointAIndex));
+        float32x2_t const s3pb_pos_xy = vld1_f32(reinterpret_cast<float const *>(positionBuffer + endpointsBuffer[s + 3].PointBIndex));
+        float32x2_t const s3_dis_xy = vsub_f32(s3pb_pos_xy, s3pa_pos_xy);
+
+        // Combine all into xxxx,yyyyy
+
+        float32x4_t const s0s2_dis_xyxy = vcombine_f32(s0_dis_xy, s2_dis_xy);
+        float32x4_t const s1s3_dis_xyxy = vcombine_f32(s1_dis_xy, s3_dis_xy);
+        float32x4x2_t const s0s1s2s3_dis_xxxx_yyyy = vtrnq_f32(s0s2_dis_xyxy, s1s3_dis_xyxy);
+
+
+
+        // Calculate spring lengths: sqrt( x*x + y*y )
+
+        float32x4_t const sq_len =
+            vaddq_f32(
+                vmulq_f32(s0s1s2s3_dis_xxxx_yyyy.val[0], s0s1s2s3_dis_xxxx_yyyy.val[0]),
+                vmulq_f32(s0s1s2s3_dis_xxxx_yyyy.val[1], s0s1s2s3_dis_xxxx_yyyy.val[1]));
+
+        uint32x4_t const invalidMask = vceqq_f32(sq_len, Zero); // SL==0 => 1/SL==0, to maintain "normalized == (0, 0)", as in vec2f
+
+        // One newtown-rhapson step
+        float32x4_t s0s1s2s3_springLength_inv = vrsqrteq_f32(sq_len);
+        s0s1s2s3_springLength_inv = vmulq_f32(
+            s0s1s2s3_springLength_inv,
+            vrsqrtsq_f32(
+                vmulq_f32(sq_len, s0s1s2s3_springLength_inv),
+                s0s1s2s3_springLength_inv));
+
+//        // One extra step
+//        s0s1s2s3_springLength_inv = vmulq_f32(
+//            s0s1s2s3_springLength_inv,
+//            vrsqrtsq_f32(
+//                vmulq_f32(sq_len, s0s1s2s3_springLength_inv),
+//                s0s1s2s3_springLength_inv));
+
+        s0s1s2s3_springLength_inv =
+            vandq_u32(
+                s0s1s2s3_springLength_inv,
+                vmvnq_u32(invalidMask));
+
+        // One newtown-rhapson step
+        float32x4_t s0s1s2s3_springLength = vrecpeq_f32(s0s1s2s3_springLength_inv);
+        s0s1s2s3_springLength = vmulq_f32(
+            s0s1s2s3_springLength,
+            vrecpsq_f32(
+                s0s1s2s3_springLength_inv,
+                s0s1s2s3_springLength));
+
+//        // One extra step
+//        s0s1s2s3_springLength = vmulq_f32(
+//            s0s1s2s3_springLength,
+//            vrecpsq_f32(
+//                s0s1s2s3_springLength_inv,
+//                s0s1s2s3_springLength));
+
+        s0s1s2s3_springLength =
+            vandq_u32(
+                s0s1s2s3_springLength,
+                vmvnq_u32(invalidMask));
+
+
+        // Calculate spring directions
+
+        float32x4_t const s0s1s2s3_sdir_x = vmulq_f32(s0s1s2s3_dis_xxxx_yyyy.val[0], s0s1s2s3_springLength_inv);
+        float32x4_t const s0s1s2s3_sdir_y = vmulq_f32(s0s1s2s3_dis_xxxx_yyyy.val[1], s0s1s2s3_springLength_inv);
+
+        //////////////////////////////////////////////////////////////////////////////////////////////
+
+        //
+        // 1. Hooke's law
+        //
+
+        // Calculate springs' forces' moduli - for endpoint A:
+        //    (displacementLength[s] - restLength[s]) * stiffness[s]
+        //
+        // Strategy:
+        //
+        // ( springLength[s0] - restLength[s0] ) * stiffness[s0]
+        // ( springLength[s1] - restLength[s1] ) * stiffness[s1]
+        // ( springLength[s2] - restLength[s2] ) * stiffness[s2]
+        // ( springLength[s3] - restLength[s3] ) * stiffness[s3]
+        //
+
+        float32x4_t const s0s1s2s3_hooke_forceModuli =
+            vmulq_f32(
+                vsubq_f32(
+                    s0s1s2s3_springLength,
+                    vld1q_f32(reinterpret_cast<float const *>(restLengthBuffer + s))),
+                vld1q_f32(reinterpret_cast<float const *>(stiffnessCoefficientBuffer + s)));
+
+        //
+        // 2. Damper forces
+        //
+        // Damp the velocities of each endpoint pair, as if the points were also connected by a damper
+        // along the same direction as the spring, for endpoint A:
+        //      relVelocity.dot(springDir) * dampingCoeff[s]
+        //
+        // Strategy:
+        //
+        // ( relV[s0].x * sprDir[s0].x  +  relV[s0].y * sprDir[s0].y )  *  dampCoeff[s0]
+        // ( relV[s1].x * sprDir[s1].x  +  relV[s1].y * sprDir[s1].y )  *  dampCoeff[s1]
+        // ( relV[s2].x * sprDir[s2].x  +  relV[s2].y * sprDir[s2].y )  *  dampCoeff[s2]
+        // ( relV[s3].x * sprDir[s3].x  +  relV[s3].y * sprDir[s3].y )  *  dampCoeff[s3]
+        //
+
+        float32x2_t const s0pa_vel_xy = vld1_f32(reinterpret_cast<float const *>(velocityBuffer + endpointsBuffer[s + 0].PointAIndex));
+        float32x2_t const s0pb_vel_xy = vld1_f32(reinterpret_cast<float const *>(velocityBuffer + endpointsBuffer[s + 0].PointBIndex));
+        float32x2_t const s0_rvel_xy = vsub_f32(s0pb_vel_xy, s0pa_vel_xy);
+
+        float32x2_t const s1pa_vel_xy = vld1_f32(reinterpret_cast<float const *>(velocityBuffer + endpointsBuffer[s + 1].PointAIndex));
+        float32x2_t const s1pb_vel_xy = vld1_f32(reinterpret_cast<float const *>(velocityBuffer + endpointsBuffer[s + 1].PointBIndex));
+        float32x2_t const s1_rvel_xy = vsub_f32(s1pb_vel_xy, s1pa_vel_xy);
+
+        float32x2_t const s2pa_vel_xy = vld1_f32(reinterpret_cast<float const *>(velocityBuffer + endpointsBuffer[s + 2].PointAIndex));
+        float32x2_t const s2pb_vel_xy = vld1_f32(reinterpret_cast<float const *>(velocityBuffer + endpointsBuffer[s + 2].PointBIndex));
+        float32x2_t const s2_rvel_xy = vsub_f32(s2pb_vel_xy, s2pa_vel_xy);
+
+        float32x2_t const s3pa_vel_xy = vld1_f32(reinterpret_cast<float const *>(velocityBuffer + endpointsBuffer[s + 3].PointAIndex));
+        float32x2_t const s3pb_vel_xy = vld1_f32(reinterpret_cast<float const *>(velocityBuffer + endpointsBuffer[s + 3].PointBIndex));
+        float32x2_t const s3_rvel_xy = vsub_f32(s3pb_vel_xy, s3pa_vel_xy);
+
+        float32x4_t const rvel_s0x_s0y_s2x_s2y = vcombine_f32(s0_rvel_xy, s2_rvel_xy);
+        float32x4_t const rvel_s1x_s1y_s3x_s3y = vcombine_f32(s1_rvel_xy, s3_rvel_xy);
+
+        float32x4x2_t const rvel_s0s1s2s3_xxxx_yyyy = vtrnq_f32(rvel_s0x_s0y_s2x_s2y, rvel_s1x_s1y_s3x_s3y);
+
+        float32x4_t const s0s1s2s3_damping_forceModuli =
+            vmulq_f32(
+                vaddq_f32( // Dot product
+                    vmulq_f32(rvel_s0s1s2s3_xxxx_yyyy.val[0], s0s1s2s3_sdir_x),
+                    vmulq_f32(rvel_s0s1s2s3_xxxx_yyyy.val[1], s0s1s2s3_sdir_y)),
+                vld1q_f32(reinterpret_cast<float const *>(dampingCoefficientBuffer + s)));
+
+        //
+        // 3. Apply forces:
+        //      force A = springDir * (hookeForce + dampingForce)
+        //      force B = - forceA
+        //
+        // Strategy:
+        //
+        //  total_forceA[s0].x  =   springDir[s0].x  *  (  hookeForce[s0] + dampingForce[s0] )
+        //  total_forceA[s1].x  =   springDir[s1].x  *  (  hookeForce[s1] + dampingForce[s1] )
+        //  total_forceA[s2].x  =   springDir[s2].x  *  (  hookeForce[s2] + dampingForce[s2] )
+        //  total_forceA[s3].x  =   springDir[s3].x  *  (  hookeForce[s3] + dampingForce[s3] )
+        //
+        //  total_forceA[s0].y  =   springDir[s0].y  *  (  hookeForce[s0] + dampingForce[s0] )
+        //  total_forceA[s1].y  =   springDir[s1].y  *  (  hookeForce[s1] + dampingForce[s1] )
+        //  total_forceA[s2].y  =   springDir[s2].y  *  (  hookeForce[s2] + dampingForce[s2] )
+        //  total_forceA[s3].y  =   springDir[s3].y  *  (  hookeForce[s3] + dampingForce[s3] )
+        //
+
+        float32x4_t const tForceModuli = vaddq_f32(s0s1s2s3_hooke_forceModuli, s0s1s2s3_damping_forceModuli);
+
+        float32x4_t const s0s1s2s3_tforceA_x =
+            vmulq_f32(
+                s0s1s2s3_sdir_x,
+                tForceModuli);
+
+        float32x4_t const s0s1s2s3_tforceA_y =
+            vmulq_f32(
+                s0s1s2s3_sdir_y,
+                tForceModuli);
+
+
+        //
+        // Unpack and add forces:
+        //      pointSpringForceBuffer[pointAIndex] += total_forceA;
+        //      pointSpringForceBuffer[pointBIndex] -= total_forceA;
+        //
+
+        float32x4x2_t const s0xy_s1xy_s2xy_s3xy = vzipq_f32(s0s1s2s3_tforceA_x, s0s1s2s3_tforceA_y);
+
+        float32x2_t const s0f = vget_low_f32(s0xy_s1xy_s2xy_s3xy.val[0]);
+        float32x2_t s0f_pa = vld1_f32(reinterpret_cast<float const *>(dynamicForceBuffer + endpointsBuffer[s + 0].PointAIndex));
+        s0f_pa = vadd_f32(s0f_pa, s0f);
+        vst1_f32(reinterpret_cast<float *>(dynamicForceBuffer + endpointsBuffer[s + 0].PointAIndex), s0f_pa);
+        float32x2_t s0f_pb = vld1_f32(reinterpret_cast<float const *>(dynamicForceBuffer + endpointsBuffer[s + 0].PointBIndex));
+        s0f_pb = vsub_f32(s0f_pb, s0f);
+        vst1_f32(reinterpret_cast<float *>(dynamicForceBuffer + endpointsBuffer[s + 0].PointBIndex), s0f_pb);
+
+        float32x2_t const s1f = vget_high_f32(s0xy_s1xy_s2xy_s3xy.val[0]);
+        float32x2_t s1f_pa = vld1_f32(reinterpret_cast<float const *>(dynamicForceBuffer + endpointsBuffer[s + 1].PointAIndex));
+        s1f_pa = vadd_f32(s1f_pa, s1f);
+        vst1_f32(reinterpret_cast<float *>(dynamicForceBuffer + endpointsBuffer[s + 1].PointAIndex), s1f_pa);
+        float32x2_t s1f_pb = vld1_f32(reinterpret_cast<float const *>(dynamicForceBuffer + endpointsBuffer[s + 1].PointBIndex));
+        s1f_pb = vsub_f32(s1f_pb, s1f);
+        vst1_f32(reinterpret_cast<float *>(dynamicForceBuffer + endpointsBuffer[s + 1].PointBIndex), s1f_pb);
+
+        float32x2_t const s2f = vget_low_f32(s0xy_s1xy_s2xy_s3xy.val[1]);
+        float32x2_t s2f_pa = vld1_f32(reinterpret_cast<float const *>(dynamicForceBuffer + endpointsBuffer[s + 2].PointAIndex));
+        s2f_pa = vadd_f32(s2f_pa, s2f);
+        vst1_f32(reinterpret_cast<float *>(dynamicForceBuffer + endpointsBuffer[s + 2].PointAIndex), s2f_pa);
+        float32x2_t s2f_pb = vld1_f32(reinterpret_cast<float const *>(dynamicForceBuffer + endpointsBuffer[s + 2].PointBIndex));
+        s2f_pb = vsub_f32(s2f_pb, s2f);
+        vst1_f32(reinterpret_cast<float *>(dynamicForceBuffer + endpointsBuffer[s + 2].PointBIndex), s2f_pb);
+
+        float32x2_t const s3f = vget_high_f32(s0xy_s1xy_s2xy_s3xy.val[1]);
+        float32x2_t s3f_pa = vld1_f32(reinterpret_cast<float const *>(dynamicForceBuffer + endpointsBuffer[s + 3].PointAIndex));
+        s3f_pa = vadd_f32(s3f_pa, s3f);
+        vst1_f32(reinterpret_cast<float *>(dynamicForceBuffer + endpointsBuffer[s + 3].PointAIndex), s3f_pa);
+        float32x2_t s3f_pb = vld1_f32(reinterpret_cast<float const *>(dynamicForceBuffer + endpointsBuffer[s + 3].PointBIndex));
+        s3f_pb = vsub_f32(s3f_pb, s3f);
+        vst1_f32(reinterpret_cast<float *>(dynamicForceBuffer + endpointsBuffer[s + 3].PointBIndex), s3f_pb);
+    }
+
+    //
+    // 3. Remaining one-by-one's
+    //
+
+    for (; s < endSpringIndex; ++s)
+    {
+        auto const pointAIndex = endpointsBuffer[s].PointAIndex;
+        auto const pointBIndex = endpointsBuffer[s].PointBIndex;
+
+        vec2f const displacement = positionBuffer[pointBIndex] - positionBuffer[pointAIndex];
+        float const displacementLength = displacement.length();
+        vec2f const springDir = displacement.normalise(displacementLength);
+
+        //
+        // 1. Hooke's law
+        //
+
+        // Calculate spring force on point A
+        float const fSpring =
+            (displacementLength - restLengthBuffer[s])
+            * stiffnessCoefficientBuffer[s];
+
+        //
+        // 2. Damper forces
+        //
+        // Damp the velocities of each endpoint pair, as if the points were also connected by a damper
+        // along the same direction as the spring
+        //
+
+        // Calculate damp force on point A
+        vec2f const relVelocity = velocityBuffer[pointBIndex] - velocityBuffer[pointAIndex];
+        float const fDamp =
+            relVelocity.dot(springDir)
+            * dampingCoefficientBuffer[s];
+
+        //
+        // 3. Apply forces
+        //
+
+        vec2f const forceA = springDir * (fSpring + fDamp);
+        dynamicForceBuffer[pointAIndex] += forceA;
+        dynamicForceBuffer[pointBIndex] -= forceA;
+    }
 }
 #endif
 
