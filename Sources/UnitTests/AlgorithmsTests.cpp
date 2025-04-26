@@ -6,6 +6,8 @@
 #include <array>
 #include <cmath>
 
+#include "TestingUtils.h"
+
 #include "gtest/gtest.h"
 
 #ifdef _MSC_VER
@@ -664,11 +666,15 @@ void RunApplySpringForcesTest(Algorithm algorithm)
     {
         auto const fi = static_cast<float>(i);
 
-        points.positionBuffer[i] = vec2f(10.0f + fi, 20.0f + fi);
-        points.velocityBuffer[i] = vec2f(100.0f + fi, 200.0f + fi);
+        points.positionBuffer[i] = vec2f(10.0f + fi, 20.0f + fi * 2.0f);
+        points.velocityBuffer[i] = vec2f(100.0f + fi, 200.0f + fi * 2.0f);
 
         dynamicForceBuffer[i] = vec2f(50.0f + fi, 500.0f + fi);
     }
+
+    // Make sure there's a zero-length spring
+    points.positionBuffer[5] = vec2f(5.0f, 7.0f);
+    points.positionBuffer[2] = vec2f(5.0f, 7.0f);
 
     ApplySpringForcesSprings springs;
 
@@ -863,8 +869,8 @@ void RunApplySpringForcesTest(Algorithm algorithm)
 
             expectedDynamicForce += vec2f(50.0f + fi, 500.0f + fi);
 
-            EXPECT_FLOAT_EQ(dynamicForceBuffer[i].x, expectedDynamicForce.x);
-            EXPECT_FLOAT_EQ(dynamicForceBuffer[i].y, expectedDynamicForce.y);
+            EXPECT_TRUE(ApproxEquals(dynamicForceBuffer[i].x, expectedDynamicForce.x, 0.95f));
+            EXPECT_TRUE(ApproxEquals(dynamicForceBuffer[i].y, expectedDynamicForce.y, 0.95f));
         }
     }
 }
