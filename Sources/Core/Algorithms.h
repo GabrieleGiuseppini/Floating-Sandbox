@@ -559,6 +559,144 @@ inline void SmoothBufferAndAdd(
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
+// CalculateSpringVectors
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+template<typename TEndpoints>
+inline void CalculateSpringVectors_Naive(
+    ElementIndex springIndex,
+    vec2f const * restrict const positionBuffer,
+    TEndpoints const * restrict const endpointsBuffer,
+    float * restrict const outCachedLengthBuffer,
+    vec2f * restrict const outCachedNormalizedVectorBuffer)
+{
+    for (size_t s = springIndex; s < springIndex + 4; ++s)
+    {
+        vec2f const dis = (positionBuffer[endpointsBuffer[s].PointBIndex] - positionBuffer[endpointsBuffer[s].PointAIndex]);
+        float const springLength = dis.length();
+        outCachedLengthBuffer[s] = springLength;
+        outCachedNormalizedVectorBuffer[s] = dis.normalise_approx(springLength);
+    }
+}
+
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
+template<typename TEndpoints>
+inline void CalculateSpringVectors_SSEVectorized(
+    ElementIndex springIndex,
+    vec2f const * restrict const positionBuffer,
+    TEndpoints const * restrict const endpointsBuffer,
+    float * restrict const outCachedLengthBuffer,
+    vec2f * restrict const outCachedNormalizedVectorBuffer)
+{
+    // This code is vectorized for SSE = 4 floats
+    static_assert(vectorization_float_count<size_t> >= 4);
+
+    __m128 const Zero = _mm_setzero_ps();
+
+    // Spring 0 displacement (s0_position.x, s0_position.y, *, *)
+    __m128 const s0pa_pos_xy = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double const * restrict>(positionBuffer + endpointsBuffer[springIndex + 0].PointAIndex)));
+    __m128 const s0pb_pos_xy = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double const * restrict>(positionBuffer + endpointsBuffer[springIndex + 0].PointBIndex)));
+    // s0_displacement.x, s0_displacement.y, *, *
+    __m128 const s0_displacement_xy = _mm_sub_ps(s0pb_pos_xy, s0pa_pos_xy);
+
+    // Spring 1 displacement (s1_position.x, s1_position.y, *, *)
+    __m128 const s1pa_pos_xy = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double const * restrict>(positionBuffer + endpointsBuffer[springIndex + 1].PointAIndex)));
+    __m128 const s1pb_pos_xy = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double const * restrict>(positionBuffer + endpointsBuffer[springIndex + 1].PointBIndex)));
+    // s1_displacement.x, s1_displacement.y
+    __m128 const s1_displacement_xy = _mm_sub_ps(s1pb_pos_xy, s1pa_pos_xy);
+
+    // s0_displacement.x, s0_displacement.y, s1_displacement.x, s1_displacement.y
+    __m128 const s0s1_displacement_xy = _mm_movelh_ps(s0_displacement_xy, s1_displacement_xy); // First argument goes low
+
+    // Spring 2 displacement (s2_position.x, s2_position.y, *, *)
+    __m128 const s2pa_pos_xy = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double const * restrict>(positionBuffer + endpointsBuffer[springIndex + 2].PointAIndex)));
+    __m128 const s2pb_pos_xy = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double const * restrict>(positionBuffer + endpointsBuffer[springIndex + 2].PointBIndex)));
+    // s2_displacement.x, s2_displacement.y
+    __m128 const s2_displacement_xy = _mm_sub_ps(s2pb_pos_xy, s2pa_pos_xy);
+
+    // Spring 3 displacement (s3_position.x, s3_position.y, *, *)
+    __m128 const s3pa_pos_xy = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double const * restrict>(positionBuffer + endpointsBuffer[springIndex + 3].PointAIndex)));
+    __m128 const s3pb_pos_xy = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double const * restrict>(positionBuffer + endpointsBuffer[springIndex + 3].PointBIndex)));
+    // s3_displacement.x, s3_displacement.y
+    __m128 const s3_displacement_xy = _mm_sub_ps(s3pb_pos_xy, s3pa_pos_xy);
+
+    // s2_displacement.x, s2_displacement.y, s3_displacement.x, s3_displacement.y
+    __m128 const s2s3_displacement_xy = _mm_movelh_ps(s2_displacement_xy, s3_displacement_xy); // First argument goes low
+
+    // Shuffle displacements:
+    // s0_displacement.x, s1_displacement.x, s2_displacement.x, s3_displacement.x
+    __m128 s0s1s2s3_displacement_x = _mm_shuffle_ps(s0s1_displacement_xy, s2s3_displacement_xy, 0x88);
+    // s0_displacement.y, s1_displacement.y, s2_displacement.y, s3_displacement.y
+    __m128 s0s1s2s3_displacement_y = _mm_shuffle_ps(s0s1_displacement_xy, s2s3_displacement_xy, 0xDD);
+
+    // Calculate spring lengths
+
+    // s0_displacement.x^2, s1_displacement.x^2, s2_displacement.x^2, s3_displacement.x^2
+    __m128 const s0s1s2s3_displacement_x2 = _mm_mul_ps(s0s1s2s3_displacement_x, s0s1s2s3_displacement_x);
+    // s0_displacement.y^2, s1_displacement.y^2, s2_displacement.y^2, s3_displacement.y^2
+    __m128 const s0s1s2s3_displacement_y2 = _mm_mul_ps(s0s1s2s3_displacement_y, s0s1s2s3_displacement_y);
+
+    // s0_displacement.x^2 + s0_displacement.y^2, s1_displacement.x^2 + s1_displacement.y^2, s2_displacement..., s3_displacement...
+    __m128 const s0s1s2s3_displacement_x2_p_y2 = _mm_add_ps(s0s1s2s3_displacement_x2, s0s1s2s3_displacement_y2);
+
+    __m128 const validMask = _mm_cmpneq_ps(s0s1s2s3_displacement_x2_p_y2, Zero);
+
+    __m128 const s0s1s2s3_springLength_inv =
+        _mm_and_ps(
+            _mm_rsqrt_ps(s0s1s2s3_displacement_x2_p_y2),
+            validMask);
+
+    __m128 const s0s1s2s3_springLength =
+        _mm_and_ps(
+            _mm_rcp_ps(s0s1s2s3_springLength_inv),
+            validMask);
+
+    // Store length
+    _mm_store_ps(outCachedLengthBuffer + springIndex, s0s1s2s3_springLength);
+
+    // Calculate spring directions
+    __m128 const s0s1s2s3_sdir_x = _mm_mul_ps(s0s1s2s3_displacement_x, s0s1s2s3_springLength_inv);
+    __m128 const s0s1s2s3_sdir_y = _mm_mul_ps(s0s1s2s3_displacement_y, s0s1s2s3_springLength_inv);
+
+    // Store directions
+    __m128 s0s1_sdir_xy = _mm_unpacklo_ps(s0s1s2s3_sdir_x, s0s1s2s3_sdir_y); // a[0], b[0], a[1], b[1]
+    __m128 s2s3_sdir_xy = _mm_unpackhi_ps(s0s1s2s3_sdir_x, s0s1s2s3_sdir_y); // a[2], b[2], a[3], b[3]
+    _mm_store_ps(reinterpret_cast<float *>(outCachedNormalizedVectorBuffer + springIndex), s0s1_sdir_xy);
+    _mm_store_ps(reinterpret_cast<float *>(outCachedNormalizedVectorBuffer + springIndex + 2), s2s3_sdir_xy);
+}
+#endif
+
+#if FS_IS_ARM_NEON() // Implies ARM anyways
+template<typename TEndpoints>
+inline void CalculateSpringVectors_NeonVectorized(
+    ElementIndex springIndex,
+    vec2f const * restrict const positionBuffer,
+    TEndpoints const * restrict const endpointsBuffer,
+    float * restrict const outCachedLengthBuffer,
+    vec2f * restrict const outCachedNormalizedVectorBuffer)
+{
+    // TODOHERE
+}
+#endif
+
+template<typename TEndpoints>
+inline void CalculateSpringVectors(
+    ElementIndex springIndex,
+    vec2f const * restrict const positionBuffer,
+    TEndpoints const * restrict const endpointsBuffer,
+    float * restrict const outCachedLengthBuffer,
+    vec2f * restrict const cachedNormalizedVectorBuffer)
+{
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
+    CalculateSpringVectors_SSEVectorized<TEndpoints>(springIndex, positionBuffer, endpointsBuffer, outCachedLengthBuffer, cachedNormalizedVectorBuffer);
+#elif FS_IS_ARM_NEON()
+    CalculateSpringVectors_NeonVectorized<TEndpoints>(springIndex, positionBuffer, endpointsBuffer, outCachedLengthBuffer, cachedNormalizedVectorBuffer);
+#else
+    CalculateSpringVectors_Naive<TEndpoints>(springIndex, positionBuffer, endpointsBuffer, outCachedLengthBuffer, cachedNormalizedVectorBuffer);
+#endif
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
 // IntegrateAndResetDynamicForces
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 

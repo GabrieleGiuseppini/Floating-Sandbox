@@ -5,6 +5,8 @@
  ***************************************************************************************/
 #include "Physics.h"
 
+#include <Core/Algorithms.h>
+
 #include <cmath>
 
 namespace Physics {
@@ -244,7 +246,7 @@ void Springs::UploadStressedSpringElements(
     }
 }
 
-void Springs::UpdateForStrains(
+void Springs::UpdateForStrainsAndCacheSpringVectors(
     float currentSimulationTime,
     SimulationParameters const & simulationParameters,
     Points & points,
@@ -252,18 +254,18 @@ void Springs::UpdateForStrains(
 {
     if (stressRenderMode == StressRenderModeType::None)
     {
-        InternalUpdateForStrains<false>(currentSimulationTime, simulationParameters, points);
+        InternalUpdateForStrainsAndCacheSpringVectors<false>(currentSimulationTime, simulationParameters, points);
     }
     else
     {
-        InternalUpdateForStrains<true>(currentSimulationTime, simulationParameters, points);
+        InternalUpdateForStrainsAndCacheSpringVectors<true>(currentSimulationTime, simulationParameters, points);
     }
 }
 
 ////////////////////////////////////////////////////////////////////
 
 template<bool DoUpdateStress>
-void Springs::InternalUpdateForStrains(
+void Springs::InternalUpdateForStrainsAndCacheSpringVectors(
     float currentSimulationTime,
     SimulationParameters const & simulationParameters,
     Points & points)
@@ -276,86 +278,23 @@ void Springs::InternalUpdateForStrains(
     float * restrict const cachedLengthBuffer = mCachedVectorialLengthBuffer.data();
     vec2f * restrict const cachedNormalizedVectorBuffer = mCachedVectorialNormalizedVectorBuffer.data();
 
-    __m128 const Zero = _mm_setzero_ps();
-
     // Visit all springs
-    static_assert(vectorization_float_count<size_t> >= 4);
     assert(is_aligned_to_float_element_count(GetBufferElementCount()));
     for (ElementIndex s_0 = 0; s_0 < GetBufferElementCount(); s_0 += 4)
     {
-        // Spring 0 displacement (s0_position.x, s0_position.y, *, *)
-        __m128 const s0pa_pos_xy = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double const * restrict>(positionBuffer + endpointsBuffer[s_0 + 0].PointAIndex)));
-        __m128 const s0pb_pos_xy = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double const * restrict>(positionBuffer + endpointsBuffer[s_0 + 0].PointBIndex)));
-        // s0_displacement.x, s0_displacement.y, *, *
-        __m128 const s0_displacement_xy = _mm_sub_ps(s0pb_pos_xy, s0pa_pos_xy);
+        //
+        // Calculate and cache vector info for these four springs
+        //
 
-        // Spring 1 displacement (s1_position.x, s1_position.y, *, *)
-        __m128 const s1pa_pos_xy = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double const * restrict>(positionBuffer + endpointsBuffer[s_0 + 1].PointAIndex)));
-        __m128 const s1pb_pos_xy = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double const * restrict>(positionBuffer + endpointsBuffer[s_0 + 1].PointBIndex)));
-        // s1_displacement.x, s1_displacement.y
-        __m128 const s1_displacement_xy = _mm_sub_ps(s1pb_pos_xy, s1pa_pos_xy);
-
-        // s0_displacement.x, s0_displacement.y, s1_displacement.x, s1_displacement.y
-        __m128 const s0s1_displacement_xy = _mm_movelh_ps(s0_displacement_xy, s1_displacement_xy); // First argument goes low
-
-        // Spring 2 displacement (s2_position.x, s2_position.y, *, *)
-        __m128 const s2pa_pos_xy = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double const * restrict>(positionBuffer + endpointsBuffer[s_0 + 2].PointAIndex)));
-        __m128 const s2pb_pos_xy = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double const * restrict>(positionBuffer + endpointsBuffer[s_0 + 2].PointBIndex)));
-        // s2_displacement.x, s2_displacement.y
-        __m128 const s2_displacement_xy = _mm_sub_ps(s2pb_pos_xy, s2pa_pos_xy);
-
-        // Spring 3 displacement (s3_position.x, s3_position.y, *, *)
-        __m128 const s3pa_pos_xy = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double const * restrict>(positionBuffer + endpointsBuffer[s_0 + 3].PointAIndex)));
-        __m128 const s3pb_pos_xy = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double const * restrict>(positionBuffer + endpointsBuffer[s_0 + 3].PointBIndex)));
-        // s3_displacement.x, s3_displacement.y
-        __m128 const s3_displacement_xy = _mm_sub_ps(s3pb_pos_xy, s3pa_pos_xy);
-
-        // s2_displacement.x, s2_displacement.y, s3_displacement.x, s3_displacement.y
-        __m128 const s2s3_displacement_xy = _mm_movelh_ps(s2_displacement_xy, s3_displacement_xy); // First argument goes low
-
-        // Shuffle displacements:
-        // s0_displacement.x, s1_displacement.x, s2_displacement.x, s3_displacement.x
-        __m128 s0s1s2s3_displacement_x = _mm_shuffle_ps(s0s1_displacement_xy, s2s3_displacement_xy, 0x88);
-        // s0_displacement.y, s1_displacement.y, s2_displacement.y, s3_displacement.y
-        __m128 s0s1s2s3_displacement_y = _mm_shuffle_ps(s0s1_displacement_xy, s2s3_displacement_xy, 0xDD);
-
-        // Calculate spring lengths
-
-        // s0_displacement.x^2, s1_displacement.x^2, s2_displacement.x^2, s3_displacement.x^2
-        __m128 const s0s1s2s3_displacement_x2 = _mm_mul_ps(s0s1s2s3_displacement_x, s0s1s2s3_displacement_x);
-        // s0_displacement.y^2, s1_displacement.y^2, s2_displacement.y^2, s3_displacement.y^2
-        __m128 const s0s1s2s3_displacement_y2 = _mm_mul_ps(s0s1s2s3_displacement_y, s0s1s2s3_displacement_y);
-
-        // s0_displacement.x^2 + s0_displacement.y^2, s1_displacement.x^2 + s1_displacement.y^2, s2_displacement..., s3_displacement...
-        __m128 const s0s1s2s3_displacement_x2_p_y2 = _mm_add_ps(s0s1s2s3_displacement_x2, s0s1s2s3_displacement_y2);
-
-        __m128 const validMask = _mm_cmpneq_ps(s0s1s2s3_displacement_x2_p_y2, Zero);
-
-        __m128 const s0s1s2s3_springLength_inv =
-            _mm_and_ps(
-                _mm_rsqrt_ps(s0s1s2s3_displacement_x2_p_y2),
-                validMask);
-
-        __m128 const s0s1s2s3_springLength =
-            _mm_and_ps(
-                _mm_rcp_ps(s0s1s2s3_springLength_inv),
-                validMask);
-
-        // Store length
-        _mm_store_ps(cachedLengthBuffer + s_0, s0s1s2s3_springLength);
-
-        // Calculate spring directions
-        __m128 const s0s1s2s3_sdir_x = _mm_mul_ps(s0s1s2s3_displacement_x, s0s1s2s3_springLength_inv);
-        __m128 const s0s1s2s3_sdir_y = _mm_mul_ps(s0s1s2s3_displacement_y, s0s1s2s3_springLength_inv);
-
-        // Store directions
-        __m128 s0s1_sdir_xy = _mm_unpacklo_ps(s0s1s2s3_sdir_x, s0s1s2s3_sdir_y); // a[0], b[0], a[1], b[1]
-        __m128 s2s3_sdir_xy = _mm_unpackhi_ps(s0s1s2s3_sdir_x, s0s1s2s3_sdir_y); // a[2], b[2], a[3], b[3]
-        _mm_store_ps(reinterpret_cast<float *>(cachedNormalizedVectorBuffer + s_0), s0s1_sdir_xy);
-        _mm_store_ps(reinterpret_cast<float *>(cachedNormalizedVectorBuffer + s_0 + 2), s2s3_sdir_xy);
+        Algorithms::CalculateSpringVectors(
+            s_0,
+            positionBuffer,
+            endpointsBuffer,
+            cachedLengthBuffer,
+            cachedNormalizedVectorBuffer);
 
         //
-        // Do strain checks on these four springs now now
+        // Do strain checks on these four springs now
         //
 
         for (ElementIndex s = s_0, i = 0; i < 4; ++i, ++s)

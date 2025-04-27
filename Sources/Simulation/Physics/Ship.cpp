@@ -207,9 +207,6 @@ bool Ship::ReplayRecordedEvent(
     return false;
 }
 
-// TODOTEST
-#define FS_PROFILE_SHIP_UPDATE
-
 void Ship::Update(
     float currentSimulationTime,
     Storm::Parameters const & stormParameters,
@@ -328,7 +325,7 @@ void Ship::Update(
     // Update strain for all springs - may cause springs to break,
     // rerouting frontiers
     //
-    // Note: also calculated cached vectorial info for each spring
+    // Note: also calculates cached vectorial info for each spring
     ///////////////////////////////////////////////////////////////////
 
     if (stressRenderMode != StressRenderModeType::None)
@@ -343,7 +340,7 @@ void Ship::Update(
     // - Inputs: P.Position, S.SpringDeletion, S.RestLength, S.BreakingElongation
     // - Outputs: S.Destroy(), P.Stress, S.CachedVectorialInfo
     // - Fires events, updates frontiers
-    mSprings.UpdateForStrains(
+    mSprings.UpdateForStrainsAndCacheSpringVectors(
         currentSimulationTime,
         simulationParameters,
         mPoints,

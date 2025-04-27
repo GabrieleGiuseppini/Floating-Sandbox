@@ -434,6 +434,75 @@ TEST(AlgorithmsTests, SmoothBufferAndAdd_16_5_NeonVectorized)
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
+// CalculateSpringVectors
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+template<typename Algorithm>
+void RunCalculateSpringVectorsTest(Algorithm algorithm)
+{
+    static size_t constexpr NumSprings = 5; // Plus one at end
+
+    static std::array<vec2f, NumSprings * 2> const positions = {
+        vec2f(0.0f, 0.0f),
+        vec2f(0.0f, 0.0f),
+        vec2f(1.0f, 1.0f),
+        vec2f(2.0f, 2.0f),
+        vec2f(0.3f, 0.5f),
+        vec2f(0.2f, 0.7f),
+        vec2f(1000.0f, 2000.0f),
+        vec2f(10000.0f, 20000.0f),
+        vec2f(10.0f, 20.0f),
+        vec2f(20.0f, 30.0f)
+    };
+
+    static std::array<SpringEndpoints, NumSprings> const endpoints = {
+        SpringEndpoints{0, 1},
+        SpringEndpoints{2, 3},
+        SpringEndpoints{4, 5},
+        SpringEndpoints{6, 7},
+        SpringEndpoints{8, 9}
+    };
+
+    std::array<float, NumSprings> lengths;
+    std::array<vec2f, NumSprings> normalizedVectors;
+
+    algorithm(
+        0,
+        positions.data(),
+        endpoints.data(),
+        lengths.data(),
+        normalizedVectors.data());
+
+    for (size_t s = 0; s < 4; ++s)
+    {
+        vec2f const dis = (positions[endpoints[s].PointBIndex] - positions[endpoints[s].PointAIndex]);
+
+        EXPECT_TRUE(ApproxEquals(lengths[s], dis.length(), 0.001f * dis.length()));
+        EXPECT_TRUE(ApproxEquals(normalizedVectors[s].x, dis.normalise().x, 0.001f));
+        EXPECT_TRUE(ApproxEquals(normalizedVectors[s].y, dis.normalise().y, 0.001f));
+    }
+}
+
+TEST(AlgorithmsTests, CalculateSpringVectors_Naive)
+{
+    RunCalculateSpringVectorsTest(Algorithms::CalculateSpringVectors_Naive<SpringEndpoints>);
+}
+
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
+TEST(AlgorithmsTests, CalculateSpringVectors_SSEVectorized)
+{
+    RunCalculateSpringVectorsTest(Algorithms::CalculateSpringVectors_SSEVectorized<SpringEndpoints>);
+}
+#endif
+
+#if FS_IS_ARM_NEON()
+TEST(AlgorithmsTests, CalculateSpringVectors_NeonVectorized)
+{
+    RunCalculateSpringVectorsTest(Algorithms::CalculateSpringVectors_NeonVectorized<SpringEndpoints>);
+}
+#endif
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
 // IntegrateAndResetDynamicForces
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 

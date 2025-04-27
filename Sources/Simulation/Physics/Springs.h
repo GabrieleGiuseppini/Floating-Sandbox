@@ -239,8 +239,10 @@ public:
     /*
      * Calculates the current strain - due to tension or compression - and acts depending on it,
      * eventually breaking springs.
+     *
+     * Also caches spring vectors - length and normalized vectors.
      */
-    void UpdateForStrains(
+    void UpdateForStrainsAndCacheSpringVectors(
         float currentSimulationTime,
         SimulationParameters const & simulationParameters,
         Points & points,
@@ -602,7 +604,7 @@ public:
 private:
 
     template<bool DoUpdateStress>
-    inline void InternalUpdateForStrains(
+    inline void InternalUpdateForStrainsAndCacheSpringVectors(
         float currentSimulationTime,
         SimulationParameters const & simulationParameters,
         Points & points);
