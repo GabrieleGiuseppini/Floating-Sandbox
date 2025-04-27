@@ -91,6 +91,9 @@ void Springs::Add(
         / 2.0f;
     mMaterialThermalConductivityBuffer.emplace_back(thermalConductivity);
 
+    // Prepare room
+    mCachedVectorialInfoBuffer.emplace_back(0.0f, vec2f::zero());
+
     // Calculate parameters for this spring
     UpdateCoefficients(
         springIndex,
@@ -276,8 +279,13 @@ void Springs::InternalUpdateForStrains(
         {
             auto & strainState = mStrainStateBuffer[s];
 
+            // Calculate vectorial info once and cache it
+            vec2f const disVector = points.GetPosition(GetEndpointBIndex(s)) - points.GetPosition(GetEndpointAIndex(s));
+            float const springLength = disVector.length();
+            mCachedVectorialInfoBuffer[s] = CachedVectorialInfo(springLength, disVector.normalise_approx(springLength));
+
             // Calculate strain
-            float const strain = GetLength(s, points) - mRestLengthBuffer[s];
+            float const strain = springLength - mRestLengthBuffer[s];
             float const absStrain = std::abs(strain);
 
             // Check against breaking elongation

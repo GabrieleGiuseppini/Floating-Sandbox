@@ -53,6 +53,24 @@ public:
         {}
     };
 
+    /*
+     * Vector-like properties of this spring, cached at the right moments in the simulation
+     * so that they may be reused as needed.
+     */
+    struct CachedVectorialInfo
+    {
+        float Length;
+        vec2f NormalizedVector; // Oriented A->B
+
+        CachedVectorialInfo(
+            float length,
+            vec2f normalizedVector)
+            : Length(length)
+            , NormalizedVector(normalizedVector)
+        {
+        }
+    };
+
 private:
 
     /*
@@ -149,6 +167,7 @@ public:
         , mMaterialPropertiesBuffer(mBufferElementCount, mElementCount, MaterialProperties(0.0f, 0.0f, 0.0f, 0.0f))
         , mBaseStructuralMaterialBuffer(mBufferElementCount, mElementCount, nullptr)
         , mIsRopeBuffer(mBufferElementCount, mElementCount, false)
+        , mCachedVectorialInfoBuffer(mBufferElementCount, mElementCount, CachedVectorialInfo(0.0f, vec2f::zero()))
         // Water
         , mWaterPermeabilityBuffer(mBufferElementCount, mElementCount, 0.0f)
         // Heat
@@ -548,6 +567,11 @@ public:
         return mIsRopeBuffer[springElementIndex];
     }
 
+    CachedVectorialInfo const & GetCachedVectorialInfo(ElementIndex springElementIndex) const
+    {
+        return mCachedVectorialInfoBuffer[springElementIndex];
+    }
+
     //
     // Water
     //
@@ -653,6 +677,7 @@ private:
     Buffer<MaterialProperties> mMaterialPropertiesBuffer;
     Buffer<StructuralMaterial const *> mBaseStructuralMaterialBuffer;
     Buffer<bool> mIsRopeBuffer;
+    Buffer<CachedVectorialInfo> mCachedVectorialInfoBuffer;
 
     //
     // Water

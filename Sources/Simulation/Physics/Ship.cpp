@@ -207,6 +207,9 @@ bool Ship::ReplayRecordedEvent(
     return false;
 }
 
+// TODOTEST
+#define FS_PROFILE_SHIP_UPDATE
+
 void Ship::Update(
     float currentSimulationTime,
     Storm::Parameters const & stormParameters,
@@ -324,6 +327,8 @@ void Ship::Update(
     ///////////////////////////////////////////////////////////////////
     // Update strain for all springs - may cause springs to break,
     // rerouting frontiers
+    //
+    // Note: also calculated cached vectorial info for each spring
     ///////////////////////////////////////////////////////////////////
 
     if (stressRenderMode != StressRenderModeType::None)
@@ -336,7 +341,7 @@ void Ship::Update(
 #endif
 
     // - Inputs: P.Position, S.SpringDeletion, S.RestLength, S.BreakingElongation
-    // - Outputs: S.Destroy(), P.Stress
+    // - Outputs: S.Destroy(), P.Stress, S.CachedVectorialInfo
     // - Fires events, updates frontiers
     mSprings.UpdateForStrains(
         currentSimulationTime,
@@ -2578,7 +2583,9 @@ void Ship::UpdateWaterVelocities(
             auto const & cs = mPoints.GetConnectedSprings(pointIndex).ConnectedSprings[s];
 
             // Normalized spring vector, oriented point -> other endpoint
-            vec2f const springNormalizedVector = (mPoints.GetPosition(cs.OtherEndpointIndex) - mPoints.GetPosition(pointIndex)).normalise_approx();
+            vec2f const springNormalizedVector = (pointIndex == mSprings.GetEndpointAIndex(cs.SpringIndex))
+                ? mSprings.GetCachedVectorialInfo(cs.SpringIndex).NormalizedVector
+                : -mSprings.GetCachedVectorialInfo(cs.SpringIndex).NormalizedVector;
 
             // Component of the point's own water velocity along the spring
             float const pointWaterVelocityAlongSpring =
@@ -2708,8 +2715,10 @@ void Ship::UpdateWaterVelocities(
                 // splintered water colliding with whole other endpoint
                 //
 
-                // FUTURE: get rid of this re-calculation once we pre-calculate all spring normalized vectors
-                vec2f const springNormalizedVector = (mPoints.GetPosition(cs.OtherEndpointIndex) - mPoints.GetPosition(pointIndex)).normalise_approx();
+                // Normalized spring vector, oriented point -> other endpoint
+                vec2f const springNormalizedVector = (pointIndex == mSprings.GetEndpointAIndex(cs.SpringIndex))
+                    ? mSprings.GetCachedVectorialInfo(cs.SpringIndex).NormalizedVector
+                    : -mSprings.GetCachedVectorialInfo(cs.SpringIndex).NormalizedVector;
 
                 float ma = springOutboundQuantityOfWater;
                 float va = springOutboundWaterVelocities[s].length();
