@@ -588,7 +588,7 @@ inline void CalculateSpringVectors_SSEVectorized(
     float * restrict const outCachedLengthBuffer,
     vec2f * restrict const outCachedNormalizedVectorBuffer)
 {
-    // This code is vectorized for SSE = 4 floats
+    // This code is vectorized for at least 4 floats
     static_assert(vectorization_float_count<size_t> >= 4);
 
     __m128 const Zero = _mm_setzero_ps();
@@ -675,7 +675,98 @@ inline void CalculateSpringVectors_NeonVectorized(
     float * restrict const outCachedLengthBuffer,
     vec2f * restrict const outCachedNormalizedVectorBuffer)
 {
-    // TODOHERE
+    // This code is vectorized for at least 4 floats
+    static_assert(vectorization_float_count<size_t> >= 4);
+
+    float32x4_t const Zero = vdupq_n_f32(0.0f);
+
+    //
+    // Calculate displacements, string lengths, and spring directions
+    //
+
+    float32x2_t const s0pa_pos_xy = vld1_f32(reinterpret_cast<float const *>(positionBuffer + endpointsBuffer[springIndex + 0].PointAIndex));
+    float32x2_t const s0pb_pos_xy = vld1_f32(reinterpret_cast<float const *>(positionBuffer + endpointsBuffer[springIndex + 0].PointBIndex));
+    float32x2_t const s0_dis_xy = vsub_f32(s0pb_pos_xy, s0pa_pos_xy);
+
+    float32x2_t const s1pa_pos_xy = vld1_f32(reinterpret_cast<float const *>(positionBuffer + endpointsBuffer[springIndex + 1].PointAIndex));
+    float32x2_t const s1pb_pos_xy = vld1_f32(reinterpret_cast<float const *>(positionBuffer + endpointsBuffer[springIndex + 1].PointBIndex));
+    float32x2_t const s1_dis_xy = vsub_f32(s1pb_pos_xy, s1pa_pos_xy);
+
+    float32x2_t const s2pa_pos_xy = vld1_f32(reinterpret_cast<float const *>(positionBuffer + endpointsBuffer[springIndex + 2].PointAIndex));
+    float32x2_t const s2pb_pos_xy = vld1_f32(reinterpret_cast<float const *>(positionBuffer + endpointsBuffer[springIndex + 2].PointBIndex));
+    float32x2_t const s2_dis_xy = vsub_f32(s2pb_pos_xy, s2pa_pos_xy);
+
+    float32x2_t const s3pa_pos_xy = vld1_f32(reinterpret_cast<float const *>(positionBuffer + endpointsBuffer[springIndex + 3].PointAIndex));
+    float32x2_t const s3pb_pos_xy = vld1_f32(reinterpret_cast<float const *>(positionBuffer + endpointsBuffer[springIndex + 3].PointBIndex));
+    float32x2_t const s3_dis_xy = vsub_f32(s3pb_pos_xy, s3pa_pos_xy);
+
+    // Combine all into xxxx,yyyyy
+
+    float32x4_t const s0s2_dis_xyxy = vcombine_f32(s0_dis_xy, s2_dis_xy);
+    float32x4_t const s1s3_dis_xyxy = vcombine_f32(s1_dis_xy, s3_dis_xy);
+    float32x4x2_t const s0s1s2s3_dis_xxxx_yyyy = vtrnq_f32(s0s2_dis_xyxy, s1s3_dis_xyxy);
+
+    // Calculate spring lengths: sqrt( x*x + y*y )
+
+    float32x4_t const sq_len =
+        vaddq_f32(
+            vmulq_f32(s0s1s2s3_dis_xxxx_yyyy.val[0], s0s1s2s3_dis_xxxx_yyyy.val[0]),
+            vmulq_f32(s0s1s2s3_dis_xxxx_yyyy.val[1], s0s1s2s3_dis_xxxx_yyyy.val[1]));
+
+    uint32x4_t const invalidMask = vceqq_f32(sq_len, Zero); // SL==0 => 1/SL==0, to maintain "normalized == (0, 0)", as in vec2f
+
+    // One newtown-rhapson step
+    float32x4_t s0s1s2s3_springLength_inv = vrsqrteq_f32(sq_len);
+    s0s1s2s3_springLength_inv = vmulq_f32(
+        s0s1s2s3_springLength_inv,
+        vrsqrtsq_f32(
+            vmulq_f32(sq_len, s0s1s2s3_springLength_inv),
+            s0s1s2s3_springLength_inv));
+
+//        // One extra step
+//        s0s1s2s3_springLength_inv = vmulq_f32(
+//            s0s1s2s3_springLength_inv,
+//            vrsqrtsq_f32(
+//                vmulq_f32(sq_len, s0s1s2s3_springLength_inv),
+//                s0s1s2s3_springLength_inv));
+
+    s0s1s2s3_springLength_inv =
+        vandq_u32(
+            s0s1s2s3_springLength_inv,
+            vmvnq_u32(invalidMask));
+
+    // One newtown-rhapson step
+    float32x4_t s0s1s2s3_springLength = vrecpeq_f32(s0s1s2s3_springLength_inv);
+    s0s1s2s3_springLength = vmulq_f32(
+        s0s1s2s3_springLength,
+        vrecpsq_f32(
+            s0s1s2s3_springLength_inv,
+            s0s1s2s3_springLength));
+
+//        // One extra step
+//        s0s1s2s3_springLength = vmulq_f32(
+//            s0s1s2s3_springLength,
+//            vrecpsq_f32(
+//                s0s1s2s3_springLength_inv,
+//                s0s1s2s3_springLength));
+
+    s0s1s2s3_springLength =
+        vandq_u32(
+            s0s1s2s3_springLength,
+            vmvnq_u32(invalidMask));
+
+    // Store
+    vst1q_f32(outCachedLengthBuffer + springIndex, s0s1s2s3_springLength);
+
+    // Calculate spring directions
+
+    float32x4_t const s0s1s2s3_sdir_x = vmulq_f32(s0s1s2s3_dis_xxxx_yyyy.val[0], s0s1s2s3_springLength_inv);
+    float32x4_t const s0s1s2s3_sdir_y = vmulq_f32(s0s1s2s3_dis_xxxx_yyyy.val[1], s0s1s2s3_springLength_inv);
+
+    // Store directions
+    float32x4x2_t const s0xy_s1xy_s2xy_s3xy = vzipq_f32(s0s1s2s3_sdir_x, s0s1s2s3_sdir_y);
+    vst1q_f32(reinterpret_cast<float *>(outCachedNormalizedVectorBuffer + springIndex), s0xy_s1xy_s2xy_s3xy.val[0]);
+    vst1q_f32(reinterpret_cast<float *>(outCachedNormalizedVectorBuffer + springIndex + 2), s0xy_s1xy_s2xy_s3xy.val[1]);
 }
 #endif
 

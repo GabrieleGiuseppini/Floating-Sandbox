@@ -817,24 +817,18 @@
 
 	- See if additional springs (e.g. between i and i+2) help
 
-	= Cached spring lengths (*)
-		! Spring lengths are reused between water update and heat update, and don't change again
-			- Cache quantities in Update loop that comes first or last
-				- Make it clear that the Update function calculates them: TBD in name
-				- Alternatively, use lambda
-					- Verify with assembly that there's no overhead with empty lambda
-				- Alternatively use Algorithms::CalculateSpringDirAndReciprocalLengths
-		- Cache spring length, spring dir
+	+ Cached spring lengths (*)
+		+ Spring lengths are reused between water update and heat update, and don't change again
+			+ Cache quantities in Update loop that comes first or last
+				+ Make it clear that the Update function calculates them: TBD in name
+		+ Cache spring length, spring dir
 			+ Valid as long as points don't move
 				+ In DEBUG, mark mPoints.mDiagnostic_ArePositionsDirty on each position change, and expose mPoints.Diagnostic_ClearDirtyPositions() which is
 				  invoked after Springs' cached lengths are re-calculated
 					+ Force position changes to go through setters
 						+ Except for buffered ones, follow these manually and invoke mPoints.Diagnostic_MarkPositionsAsDirty()
 						+ Verify assembly for SetPosition(GetPosition.x, GetPosition.y + foo)
-			- Used by: water update, heat update, Springs::UpdateStrains
-				- Also use instead of factory rest lengths at:
-					- Water
-					- Heat
+			+ Used by: water update, heat update, Springs::UpdateStrains
 
 	- Investigate Gauss-Seidel from SpringLab
 		- It has better stiffness (bending large model: 180 vs. 108)
