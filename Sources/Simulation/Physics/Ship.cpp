@@ -216,6 +216,10 @@ void Ship::Update(
     ThreadManager & threadManager,
     PerfStats & perfStats)
 {
+#ifdef FS_PROFILE_SHIP_UPDATE
+    auto const updateStartTimestamp = std::chrono::steady_clock::now();
+#endif
+
     /////////////////////////////////////////////////////////////////
     //         This is where most of the magic happens             //
     /////////////////////////////////////////////////////////////////
@@ -282,6 +286,10 @@ void Ship::Update(
     // and ocean floor collision handling
     ///////////////////////////////////////////////////////////////////
 
+#ifdef FS_PROFILE_SHIP_UPDATE
+    auto startTimestamp1 = std::chrono::steady_clock::now();
+#endif
+
     {
         auto const springsStartTime = std::chrono::steady_clock::now();
 
@@ -289,6 +297,10 @@ void Ship::Update(
 
         perfStats.Update<PerfMeasurement::TotalShipsSpringsUpdate>(std::chrono::steady_clock::now() - springsStartTime);
     }
+
+#ifdef FS_PROFILE_SHIP_UPDATE
+    auto const elapsedSpringRelaxation = std::chrono::steady_clock::now() - startTimestamp1;
+#endif
 
     ///////////////////////////////////////////////////////////////////
     // Trim for world bounds
@@ -319,7 +331,11 @@ void Ship::Update(
         mPoints.ResetStress();
     }
 
-    // - Inputs: P.Position, S.SpringDeletion, S.ResetLength, S.BreakingElongation
+#ifdef FS_PROFILE_SHIP_UPDATE
+    startTimestamp1 = std::chrono::steady_clock::now();
+#endif
+
+    // - Inputs: P.Position, S.SpringDeletion, S.RestLength, S.BreakingElongation
     // - Outputs: S.Destroy(), P.Stress
     // - Fires events, updates frontiers
     mSprings.UpdateForStrains(
@@ -327,6 +343,10 @@ void Ship::Update(
         simulationParameters,
         mPoints,
         stressRenderMode);
+
+#ifdef FS_PROFILE_SHIP_UPDATE
+    auto const elapsedUpdateForStress = std::chrono::steady_clock::now() - startTimestamp1;
+#endif
 
     ///////////////////////////////////////////////////////////////////
     // Reset static forces, now that we have integrated them
@@ -348,17 +368,29 @@ void Ship::Update(
     // geometric centers - hence needs to come _after _ UpdateForStrains()
     ///////////////////////////////////////////////////////////////////
 
+#ifdef FS_PROFILE_SHIP_UPDATE
+    startTimestamp1 = std::chrono::steady_clock::now();
+#endif
+
     ApplyWorldForces(
         effectiveAirDensity,
         effectiveWaterDensity,
         simulationParameters,
         externalAabbSet);
 
+#ifdef FS_PROFILE_SHIP_UPDATE
+    auto const elapsedWorldForces = std::chrono::steady_clock::now() - startTimestamp1;
+#endif
+
     // Cached depths are valid from now on --------------------------->
 
     ///////////////////////////////////////////////////////////////////
     // Rot points
     ///////////////////////////////////////////////////////////////////
+
+#ifdef FS_PROFILE_SHIP_UPDATE
+    startTimestamp1 = std::chrono::steady_clock::now();
+#endif
 
     // - Inputs: Position, Water, IsLeaking
     // - Output: Decay
@@ -392,6 +424,10 @@ void Ship::Update(
             simulationParameters);
     }
 
+#ifdef FS_PROFILE_SHIP_UPDATE
+    auto const elapsedRotPoints = std::chrono::steady_clock::now() - startTimestamp1;
+#endif
+
     /////////////////////////////////////////////////////////////////
     // Update gadgets
     /////////////////////////////////////////////////////////////////
@@ -416,6 +452,10 @@ void Ship::Update(
     // Update water dynamics - may generate ephemeral particles
     /////////////////////////////////////////////////////////////////
 
+#ifdef FS_PROFILE_SHIP_UPDATE
+    startTimestamp1 = std::chrono::steady_clock::now();
+#endif
+
     //
     // Update intake of pressure and water
     //
@@ -438,9 +478,20 @@ void Ship::Update(
         mSimulationEventHandler.OnWaterTaken(waterTakenInStep);
     }
 
+#ifdef FS_PROFILE_SHIP_UPDATE
+    auto const elapsedWaterDynamics = std::chrono::steady_clock::now() - startTimestamp1;
+#endif
+
     ///////////////////////////////
     // Parallel run 1 START
     ///////////////////////////////
+
+#ifdef FS_PROFILE_SHIP_UPDATE
+    std::chrono::steady_clock::duration elapsedWaterDiffusion;
+    std::chrono::steady_clock::duration elapsedEqualizeInternalPressure;
+    std::chrono::steady_clock::duration elapsedStaticPressure;
+    std::chrono::steady_clock::duration elapsedHeatPropagation;
+#endif
 
     assert(parallelTasks.empty()); // We want the first task to run on the main thread
 
@@ -451,6 +502,10 @@ void Ship::Update(
             // Diffuse water (Cost: 14)
             //
 
+#ifdef FS_PROFILE_SHIP_UPDATE
+            auto startTimestamp2 = std::chrono::steady_clock::now();
+#endif
+
             float waterSplashedInStep = 0.f;
 
             // - Inputs: Position, Water, WaterVelocity, WaterMomentum, ConnectedSprings
@@ -459,6 +514,10 @@ void Ship::Update(
 
             // Notify
             mSimulationEventHandler.OnWaterSplashed(waterSplashedInStep);
+
+#ifdef FS_PROFILE_SHIP_UPDATE
+            elapsedWaterDiffusion = std::chrono::steady_clock::now() - startTimestamp2;
+#endif
         });
 
     parallelTasks.emplace_back(
@@ -468,13 +527,25 @@ void Ship::Update(
             // Equalize internal pressure (Cost: 1.5)
             //
 
+#ifdef FS_PROFILE_SHIP_UPDATE
+            auto startTimestamp2 = std::chrono::steady_clock::now();
+#endif
+
             // - Inputs: InternalPressure, ConnectedSprings
             // - Outpus: InternalPressure
             EqualizeInternalPressure(simulationParameters);
 
+#ifdef FS_PROFILE_SHIP_UPDATE
+            elapsedEqualizeInternalPressure = std::chrono::steady_clock::now() - startTimestamp2;
+#endif
+
             //
             // Apply static pressure forces (Cost: 10)
             //
+
+#ifdef FS_PROFILE_SHIP_UPDATE
+            startTimestamp2 = std::chrono::steady_clock::now();
+#endif
 
             if (simulationParameters.StaticPressureForceAdjustment > 0.0f)
             {
@@ -486,9 +557,17 @@ void Ship::Update(
                     simulationParameters);
             }
 
+#ifdef FS_PROFILE_SHIP_UPDATE
+            elapsedStaticPressure = std::chrono::steady_clock::now() - startTimestamp2;
+#endif
+
             //
             // Propagate heat (Cost: 4)
             //
+
+#ifdef FS_PROFILE_SHIP_UPDATE
+            startTimestamp2 = std::chrono::steady_clock::now();
+#endif
 
             // - Inputs: P.Position, P.Temperature, P.ConnectedSprings, P.Water
             // - Outputs: P.Temperature
@@ -497,6 +576,10 @@ void Ship::Update(
                 SimulationParameters::SimulationStepTimeDuration<float>,
                 stormParameters,
                 simulationParameters);
+
+#ifdef FS_PROFILE_SHIP_UPDATE
+            elapsedHeatPropagation = std::chrono::steady_clock::now() - startTimestamp2;
+#endif
         });
 
     threadManager.GetSimulationThreadPool().RunAndClear(parallelTasks);
@@ -505,6 +588,10 @@ void Ship::Update(
     mSimulationEventHandler.OnStaticPressureUpdated(
         mStaticPressureNetForceMagnitudeCount != 0.0f ? mStaticPressureNetForceMagnitudeSum / mStaticPressureNetForceMagnitudeCount : 0.0f,
         mStaticPressureIterationsCount != 0.0f ? mStaticPressureIterationsPercentagesSum / mStaticPressureIterationsCount : 0.0f);
+
+#ifdef FS_PROFILE_SHIP_UPDATE
+    auto const elapsedParallel1 = std::chrono::steady_clock::now() - startTimestamp1;
+#endif
 
     ///////////////////////////////
     // Parallel run 1 END
@@ -545,6 +632,10 @@ void Ship::Update(
     // Diffuse light
     //
 
+#ifdef FS_PROFILE_SHIP_UPDATE
+    startTimestamp1 = std::chrono::steady_clock::now();
+#endif
+
     // - Inputs: P.Position, P.PlaneId, EL.AvailableLight
     //      - EL.AvailableLight depends on electricals which depend on water
     // - Outputs: P.Light
@@ -552,9 +643,17 @@ void Ship::Update(
         simulationParameters,
         threadManager);
 
+#ifdef FS_PROFILE_SHIP_UPDATE
+    auto const elapsedLightDiffusion = std::chrono::steady_clock::now() - startTimestamp1;
+#endif
+
     //
     // Update slow combustion state machine
     //
+
+#ifdef FS_PROFILE_SHIP_UPDATE
+    startTimestamp1 = std::chrono::steady_clock::now();
+#endif
 
     if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowStep1, SimulationParameters::ParticleUpdateLowFrequencyPeriod))
     {
@@ -608,6 +707,10 @@ void Ship::Update(
         mParentWorld.GetCurrentRadialWindField(),
         simulationParameters);
 
+#ifdef FS_PROFILE_SHIP_UPDATE
+    auto const elapsedCombustion = std::chrono::steady_clock::now() - startTimestamp1;
+#endif
+
     //
     // Update highlights
     //
@@ -623,6 +726,10 @@ void Ship::Update(
     ///////////////////////////////////////////////////////////////////
     // Update spring parameters
     ///////////////////////////////////////////////////////////////////
+
+#ifdef FS_PROFILE_SHIP_UPDATE
+    startTimestamp1 = std::chrono::steady_clock::now();
+#endif
 
     if (mCurrentSimulationSequenceNumber.IsStepOf(SpringDecayAndTemperatureStep1, SimulationParameters::ParticleUpdateLowFrequencyPeriod))
     {
@@ -649,13 +756,25 @@ void Ship::Update(
             mPoints);
     }
 
+#ifdef FS_PROFILE_SHIP_UPDATE
+    auto const elapsedUpdateSpringParameters = std::chrono::steady_clock::now() - startTimestamp1;
+#endif
+
     ///////////////////////////////////////////////////////////////////
     // Update ephemeral particles
     ///////////////////////////////////////////////////////////////////
 
+#ifdef FS_PROFILE_SHIP_UPDATE
+    startTimestamp1 = std::chrono::steady_clock::now();
+#endif
+
     mPoints.UpdateEphemeralParticles(
         currentSimulationTime,
         simulationParameters);
+
+#ifdef FS_PROFILE_SHIP_UPDATE
+    auto const elapsedUpdateEphemeralParticles = std::chrono::steady_clock::now() - startTimestamp1;
+#endif
 
     ///////////////////////////////////////////////////////////////////
     // Update cleanup
@@ -675,6 +794,80 @@ void Ship::Update(
 
     VerifyInvariants();
 
+#endif
+
+#ifdef FS_PROFILE_SHIP_UPDATE
+    auto const updateEndTimestamp = std::chrono::steady_clock::now();
+
+    static std::chrono::microseconds springRelaxationTotal{0};
+    static std::chrono::microseconds updateForStressTotal{0};
+    static std::chrono::microseconds rotPointsTotal{0};
+    static std::chrono::microseconds worldForcesTotal{0};
+    static std::chrono::microseconds waterDynamicsTotal{0};
+    static std::chrono::microseconds parallel1Total{0};
+    static std::chrono::microseconds lightDiffusionTotal{0};
+    static std::chrono::microseconds combustionTotal{0};
+    static std::chrono::microseconds updateSpringParametersTotal{0};
+    static std::chrono::microseconds waterDiffusionTotal{0};
+    static std::chrono::microseconds equalizeInternalPressureTotal{0};
+    static std::chrono::microseconds staticPressureTotal{0};
+    static std::chrono::microseconds heatPropagationTotal{0};
+    static std::chrono::microseconds ephemeralParticlesTotal{0};
+    static std::chrono::microseconds totalUpdateTotal{0};
+    static int profilingFrameCounter = 0;
+
+    springRelaxationTotal += std::chrono::duration_cast<std::chrono::microseconds>(elapsedSpringRelaxation);
+    updateForStressTotal += std::chrono::duration_cast<std::chrono::microseconds>(elapsedUpdateForStress);
+    rotPointsTotal += std::chrono::duration_cast<std::chrono::microseconds>(elapsedRotPoints);
+    worldForcesTotal += std::chrono::duration_cast<std::chrono::microseconds>(elapsedWorldForces);
+    waterDynamicsTotal += std::chrono::duration_cast<std::chrono::microseconds>(elapsedWaterDynamics);
+    parallel1Total += std::chrono::duration_cast<std::chrono::microseconds>(elapsedParallel1);
+    lightDiffusionTotal += std::chrono::duration_cast<std::chrono::microseconds>(elapsedLightDiffusion);
+    combustionTotal += std::chrono::duration_cast<std::chrono::microseconds>(elapsedCombustion);
+    updateSpringParametersTotal += std::chrono::duration_cast<std::chrono::microseconds>(elapsedUpdateSpringParameters);
+    waterDiffusionTotal += std::chrono::duration_cast<std::chrono::microseconds>(elapsedWaterDiffusion);
+    equalizeInternalPressureTotal += std::chrono::duration_cast<std::chrono::microseconds>(elapsedEqualizeInternalPressure);
+    staticPressureTotal += std::chrono::duration_cast<std::chrono::microseconds>(elapsedStaticPressure);
+    heatPropagationTotal += std::chrono::duration_cast<std::chrono::microseconds>(elapsedHeatPropagation);
+    ephemeralParticlesTotal += std::chrono::duration_cast<std::chrono::microseconds>(elapsedUpdateEphemeralParticles);
+    totalUpdateTotal += std::chrono::duration_cast<std::chrono::microseconds>(updateEndTimestamp - updateStartTimestamp);
+    ++profilingFrameCounter;
+
+    if (0 == (profilingFrameCounter % 40))
+    {
+        LogMessage("*** Ship update: springRelax=", springRelaxationTotal.count() / profilingFrameCounter / 1000.0f,
+                   " updateForStress=", updateForStressTotal.count() / profilingFrameCounter / 1000.0f,
+                   " rotPoints=", rotPointsTotal.count() / profilingFrameCounter / 1000.0f,
+                   " worldForces=", worldForcesTotal.count() / profilingFrameCounter / 1000.0f,
+                   " waterDynamics=", waterDynamicsTotal.count() / profilingFrameCounter / 1000.0f,
+                   " parallel1=", parallel1Total.count() / profilingFrameCounter / 1000.0f,
+                   " (waterDiffusion=", waterDiffusionTotal.count() / profilingFrameCounter / 1000.0f,
+                   " equalizeInternalPressure=", equalizeInternalPressureTotal.count() / profilingFrameCounter / 1000.0f,
+                   " staticPressure=", staticPressureTotal.count() / profilingFrameCounter / 1000.0f,
+                   " heatPropagation=", heatPropagationTotal.count() / profilingFrameCounter / 1000.0f, ")",
+                   " lightDiffusion=", lightDiffusionTotal.count() / profilingFrameCounter / 1000.0f,
+                   " combustion=", combustionTotal.count() / profilingFrameCounter / 1000.0f,
+                   " updateSpringParameters=", updateSpringParametersTotal.count() / profilingFrameCounter / 1000.0f,
+                   " ephemeralParticles=", ephemeralParticlesTotal.count() / profilingFrameCounter / 1000.0f,
+                   " total: ", totalUpdateTotal.count() / profilingFrameCounter / 1000.0f, "ms");
+
+        springRelaxationTotal = std::chrono::microseconds(0);
+        updateForStressTotal = std::chrono::microseconds(0);
+        rotPointsTotal = std::chrono::microseconds(0);
+        worldForcesTotal = std::chrono::microseconds(0);
+        waterDynamicsTotal = std::chrono::microseconds(0);
+        parallel1Total = std::chrono::microseconds(0);
+        lightDiffusionTotal = std::chrono::microseconds(0);
+        combustionTotal = std::chrono::microseconds(0);
+        updateSpringParametersTotal = std::chrono::microseconds(0);
+        waterDiffusionTotal = std::chrono::microseconds(0);
+        equalizeInternalPressureTotal = std::chrono::microseconds(0);
+        staticPressureTotal = std::chrono::microseconds(0);
+        heatPropagationTotal = std::chrono::microseconds(0);
+        ephemeralParticlesTotal = std::chrono::microseconds(0);
+        totalUpdateTotal = std::chrono::microseconds(0);
+        profilingFrameCounter = 0;
+    }
 #endif
 }
 
@@ -1282,7 +1475,6 @@ void Ship::ApplyWorldSurfaceForces(
                 //
 
                 // Normal to surface - calculated between p1 and p3; points outside
-                // TODO: make it normalise_approx()
                 vec2f const surfaceNormal = (nextPointPosition - previousPointPosition).normalise().to_perpendicular();
 
                 // Velocity along normal - capped to the same direction as velocity, to avoid suction force
@@ -2364,7 +2556,7 @@ void Ship::UpdateWaterVelocities(
         //    including impermeable ones - as we'll eventually bounce back along those
         //
 
-        // A higher crazyness gives more emphasys to bernoulli's velocity, as if pressures
+        // A higher crazyness gives more emphasis to bernoulli's velocity, as if pressures
         // and gravity were exaggerated
         //
         // WV[t] = WV[t-1] + alpha * Bernoulli
