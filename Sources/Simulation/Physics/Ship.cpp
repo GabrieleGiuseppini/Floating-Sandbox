@@ -1282,6 +1282,7 @@ void Ship::ApplyWorldSurfaceForces(
                 //
 
                 // Normal to surface - calculated between p1 and p3; points outside
+                // TODO: make it normalise_approx()
                 vec2f const surfaceNormal = (nextPointPosition - previousPointPosition).normalise().to_perpendicular();
 
                 // Velocity along normal - capped to the same direction as velocity, to avoid suction force
