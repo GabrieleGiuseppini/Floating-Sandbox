@@ -91,8 +91,9 @@ void Springs::Add(
         / 2.0f;
     mMaterialThermalConductivityBuffer.emplace_back(thermalConductivity);
 
-    // Prepare room
-    mCachedVectorialInfoBuffer.emplace_back(0.0f, vec2f::zero());
+    // Make room
+    mCachedVectorialLengthBuffer.emplace_back(0.0f);
+    mCachedVectorialNormalizedVectorBuffer.emplace_back(vec2f::zero());
 
     // Calculate parameters for this spring
     UpdateCoefficients(
@@ -270,87 +271,168 @@ void Springs::InternalUpdateForStrains(
     float constexpr StrainLowWatermark = 0.08f; // Less than this multiplier to become non-stressed
 
     OceanSurface const & oceanSurface = mParentWorld.GetOceanSurface();
+    vec2f const * restrict const positionBuffer = points.GetPositionBufferAsVec2();
+    Endpoints const * restrict const endpointsBuffer = GetEndpointsBuffer();
+    float * restrict const cachedLengthBuffer = mCachedVectorialLengthBuffer.data();
+    vec2f * restrict const cachedNormalizedVectorBuffer = mCachedVectorialNormalizedVectorBuffer.data();
+
+    __m128 const Zero = _mm_setzero_ps();
 
     // Visit all springs
-    for (ElementIndex s : *this)
+    static_assert(vectorization_float_count<size_t> >= 4);
+    assert(is_aligned_to_float_element_count(GetBufferElementCount()));
+    for (ElementIndex s_0 = 0; s_0 < GetBufferElementCount(); s_0 += 4)
     {
-        // Avoid breaking deleted springs
-        if (!mIsDeletedBuffer[s])
+        // Spring 0 displacement (s0_position.x, s0_position.y, *, *)
+        __m128 const s0pa_pos_xy = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double const * restrict>(positionBuffer + endpointsBuffer[s_0 + 0].PointAIndex)));
+        __m128 const s0pb_pos_xy = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double const * restrict>(positionBuffer + endpointsBuffer[s_0 + 0].PointBIndex)));
+        // s0_displacement.x, s0_displacement.y, *, *
+        __m128 const s0_displacement_xy = _mm_sub_ps(s0pb_pos_xy, s0pa_pos_xy);
+
+        // Spring 1 displacement (s1_position.x, s1_position.y, *, *)
+        __m128 const s1pa_pos_xy = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double const * restrict>(positionBuffer + endpointsBuffer[s_0 + 1].PointAIndex)));
+        __m128 const s1pb_pos_xy = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double const * restrict>(positionBuffer + endpointsBuffer[s_0 + 1].PointBIndex)));
+        // s1_displacement.x, s1_displacement.y
+        __m128 const s1_displacement_xy = _mm_sub_ps(s1pb_pos_xy, s1pa_pos_xy);
+
+        // s0_displacement.x, s0_displacement.y, s1_displacement.x, s1_displacement.y
+        __m128 const s0s1_displacement_xy = _mm_movelh_ps(s0_displacement_xy, s1_displacement_xy); // First argument goes low
+
+        // Spring 2 displacement (s2_position.x, s2_position.y, *, *)
+        __m128 const s2pa_pos_xy = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double const * restrict>(positionBuffer + endpointsBuffer[s_0 + 2].PointAIndex)));
+        __m128 const s2pb_pos_xy = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double const * restrict>(positionBuffer + endpointsBuffer[s_0 + 2].PointBIndex)));
+        // s2_displacement.x, s2_displacement.y
+        __m128 const s2_displacement_xy = _mm_sub_ps(s2pb_pos_xy, s2pa_pos_xy);
+
+        // Spring 3 displacement (s3_position.x, s3_position.y, *, *)
+        __m128 const s3pa_pos_xy = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double const * restrict>(positionBuffer + endpointsBuffer[s_0 + 3].PointAIndex)));
+        __m128 const s3pb_pos_xy = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double const * restrict>(positionBuffer + endpointsBuffer[s_0 + 3].PointBIndex)));
+        // s3_displacement.x, s3_displacement.y
+        __m128 const s3_displacement_xy = _mm_sub_ps(s3pb_pos_xy, s3pa_pos_xy);
+
+        // s2_displacement.x, s2_displacement.y, s3_displacement.x, s3_displacement.y
+        __m128 const s2s3_displacement_xy = _mm_movelh_ps(s2_displacement_xy, s3_displacement_xy); // First argument goes low
+
+        // Shuffle displacements:
+        // s0_displacement.x, s1_displacement.x, s2_displacement.x, s3_displacement.x
+        __m128 s0s1s2s3_displacement_x = _mm_shuffle_ps(s0s1_displacement_xy, s2s3_displacement_xy, 0x88);
+        // s0_displacement.y, s1_displacement.y, s2_displacement.y, s3_displacement.y
+        __m128 s0s1s2s3_displacement_y = _mm_shuffle_ps(s0s1_displacement_xy, s2s3_displacement_xy, 0xDD);
+
+        // Calculate spring lengths
+
+        // s0_displacement.x^2, s1_displacement.x^2, s2_displacement.x^2, s3_displacement.x^2
+        __m128 const s0s1s2s3_displacement_x2 = _mm_mul_ps(s0s1s2s3_displacement_x, s0s1s2s3_displacement_x);
+        // s0_displacement.y^2, s1_displacement.y^2, s2_displacement.y^2, s3_displacement.y^2
+        __m128 const s0s1s2s3_displacement_y2 = _mm_mul_ps(s0s1s2s3_displacement_y, s0s1s2s3_displacement_y);
+
+        // s0_displacement.x^2 + s0_displacement.y^2, s1_displacement.x^2 + s1_displacement.y^2, s2_displacement..., s3_displacement...
+        __m128 const s0s1s2s3_displacement_x2_p_y2 = _mm_add_ps(s0s1s2s3_displacement_x2, s0s1s2s3_displacement_y2);
+
+        __m128 const validMask = _mm_cmpneq_ps(s0s1s2s3_displacement_x2_p_y2, Zero);
+
+        __m128 const s0s1s2s3_springLength_inv =
+            _mm_and_ps(
+                _mm_rsqrt_ps(s0s1s2s3_displacement_x2_p_y2),
+                validMask);
+
+        __m128 const s0s1s2s3_springLength =
+            _mm_and_ps(
+                _mm_rcp_ps(s0s1s2s3_springLength_inv),
+                validMask);
+
+        // Store length
+        _mm_store_ps(cachedLengthBuffer + s_0, s0s1s2s3_springLength);
+
+        // Calculate spring directions
+        __m128 const s0s1s2s3_sdir_x = _mm_mul_ps(s0s1s2s3_displacement_x, s0s1s2s3_springLength_inv);
+        __m128 const s0s1s2s3_sdir_y = _mm_mul_ps(s0s1s2s3_displacement_y, s0s1s2s3_springLength_inv);
+
+        // Store directions
+        __m128 s0s1_sdir_xy = _mm_unpacklo_ps(s0s1s2s3_sdir_x, s0s1s2s3_sdir_y); // a[0], b[0], a[1], b[1]
+        __m128 s2s3_sdir_xy = _mm_unpackhi_ps(s0s1s2s3_sdir_x, s0s1s2s3_sdir_y); // a[2], b[2], a[3], b[3]
+        _mm_store_ps(reinterpret_cast<float *>(cachedNormalizedVectorBuffer + s_0), s0s1_sdir_xy);
+        _mm_store_ps(reinterpret_cast<float *>(cachedNormalizedVectorBuffer + s_0 + 2), s2s3_sdir_xy);
+
+        //
+        // Do strain checks on these four springs now now
+        //
+
+        for (ElementIndex s = s_0, i = 0; i < 4; ++i, ++s)
         {
-            auto & strainState = mStrainStateBuffer[s];
-
-            // Calculate vectorial info once and cache it
-            vec2f const disVector = points.GetPosition(GetEndpointBIndex(s)) - points.GetPosition(GetEndpointAIndex(s));
-            float const springLength = disVector.length();
-            mCachedVectorialInfoBuffer[s] = CachedVectorialInfo(springLength, disVector.normalise_approx(springLength));
-
-            // Calculate strain
-            float const strain = springLength - mRestLengthBuffer[s];
-            float const absStrain = std::abs(strain);
-
-            // Check against breaking elongation
-            float const breakingElongation = strainState.BreakingElongation;
-            if (absStrain > breakingElongation)
+            // Avoid breaking deleted springs
+            if (!mIsDeletedBuffer[s])
             {
-                // It's broken!
+                auto & strainState = mStrainStateBuffer[s];
 
-                // Destroy this spring
-                this->Destroy(
-                    s,
-                    DestroyOptions::FireBreakEvent // Notify Break
-                    | DestroyOptions::DestroyAllTriangles,
-                    currentSimulationTime,
-                    simulationParameters,
-                    points);
-            }
-            else
-            {
-                if (strainState.IsStressed)
+                // Calculate strain
+                float const strain = cachedLengthBuffer[s] - mRestLengthBuffer[s];
+                float const absStrain = std::abs(strain);
+
+                // Check against breaking elongation
+                float const breakingElongation = strainState.BreakingElongation;
+                if (absStrain > breakingElongation)
                 {
-                    // Stressed spring...
-                    // ...see if should un-stress it
+                    // It's broken!
 
-                    if (absStrain < StrainLowWatermark * breakingElongation)
-                    {
-                        // It's not stressed anymore
-                        strainState.IsStressed = false;
-                    }
+                    // Destroy this spring
+                    this->Destroy(
+                        s,
+                        DestroyOptions::FireBreakEvent // Notify Break
+                        | DestroyOptions::DestroyAllTriangles,
+                        currentSimulationTime,
+                        simulationParameters,
+                        points);
                 }
                 else
                 {
-                    // Not stressed spring
-                    // ...see if should stress it
-
-                    if (absStrain > strainState.StrainThresholdFraction * breakingElongation)
+                    if (strainState.IsStressed)
                     {
-                        // It's stressed!
-                        strainState.IsStressed = true;
+                        // Stressed spring...
+                        // ...see if should un-stress it
 
-                        // Notify stress
-                        mSimulationEventHandler.OnStress(
-                            GetBaseStructuralMaterial(s),
-                            oceanSurface.IsUnderwater(GetEndpointAPosition(s, points)), // Arbitrary
-                            1);
+                        if (absStrain < StrainLowWatermark * breakingElongation)
+                        {
+                            // It's not stressed anymore
+                            strainState.IsStressed = false;
+                        }
                     }
-                }
-
-                // Update stress
-                if constexpr (DoUpdateStress)
-                {
-                    float const stress = strain / breakingElongation; // Between -1.0 and +1.0
-
-                    if (std::abs(stress) > std::abs(points.GetStress(GetEndpointAIndex(s))))
+                    else
                     {
-                        points.SetStress(
-                            GetEndpointAIndex(s),
-                            stress);
+                        // Not stressed spring
+                        // ...see if should stress it
+
+                        if (absStrain > strainState.StrainThresholdFraction * breakingElongation)
+                        {
+                            // It's stressed!
+                            strainState.IsStressed = true;
+
+                            // Notify stress
+                            mSimulationEventHandler.OnStress(
+                                GetBaseStructuralMaterial(s),
+                                oceanSurface.IsUnderwater(GetEndpointAPosition(s, points)), // Arbitrary
+                                1);
+                        }
                     }
 
-                    if (std::abs(stress) > std::abs(points.GetStress(GetEndpointBIndex(s))))
+                    // Update stress
+                    if constexpr (DoUpdateStress)
                     {
-                        points.SetStress(
-                            GetEndpointBIndex(s),
-                            stress);
+                        float const stress = strain / breakingElongation; // Between -1.0 and +1.0
+
+                        if (std::abs(stress) > std::abs(points.GetStress(GetEndpointAIndex(s))))
+                        {
+                            points.SetStress(
+                                GetEndpointAIndex(s),
+                                stress);
+                        }
+
+                        if (std::abs(stress) > std::abs(points.GetStress(GetEndpointBIndex(s))))
+                        {
+                            points.SetStress(
+                                GetEndpointBIndex(s),
+                                stress);
+                        }
                     }
                 }
             }

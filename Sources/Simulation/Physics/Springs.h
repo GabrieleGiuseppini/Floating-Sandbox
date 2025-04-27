@@ -53,24 +53,6 @@ public:
         {}
     };
 
-    /*
-     * Vector-like properties of this spring, cached at the right moments in the simulation
-     * so that they may be reused as needed.
-     */
-    struct CachedVectorialInfo
-    {
-        float Length;
-        vec2f NormalizedVector; // Oriented A->B
-
-        CachedVectorialInfo(
-            float length,
-            vec2f normalizedVector)
-            : Length(length)
-            , NormalizedVector(normalizedVector)
-        {
-        }
-    };
-
 private:
 
     /*
@@ -150,7 +132,7 @@ public:
         //////////////////////////////////
         , mIsDeletedBuffer(mBufferElementCount, mElementCount, true)
         // Endpoints
-        , mEndpointsBuffer(mBufferElementCount, mElementCount, Endpoints(NoneElementIndex, NoneElementIndex))
+        , mEndpointsBuffer(mBufferElementCount, mElementCount, Endpoints(0, 0))
         // Factory endpoint octants
         , mFactoryEndpointOctantsBuffer(mBufferElementCount, mElementCount, EndpointOctants(0, 4))
         // Super triangles
@@ -167,7 +149,8 @@ public:
         , mMaterialPropertiesBuffer(mBufferElementCount, mElementCount, MaterialProperties(0.0f, 0.0f, 0.0f, 0.0f))
         , mBaseStructuralMaterialBuffer(mBufferElementCount, mElementCount, nullptr)
         , mIsRopeBuffer(mBufferElementCount, mElementCount, false)
-        , mCachedVectorialInfoBuffer(mBufferElementCount, mElementCount, CachedVectorialInfo(0.0f, vec2f::zero()))
+        , mCachedVectorialLengthBuffer(mBufferElementCount, mElementCount, 0.0f)
+        , mCachedVectorialNormalizedVectorBuffer(mBufferElementCount, mElementCount, vec2f::zero())
         // Water
         , mWaterPermeabilityBuffer(mBufferElementCount, mElementCount, 0.0f)
         // Heat
@@ -567,9 +550,14 @@ public:
         return mIsRopeBuffer[springElementIndex];
     }
 
-    CachedVectorialInfo const & GetCachedVectorialInfo(ElementIndex springElementIndex) const
+    float GetCachedVectorialLength(ElementIndex springElementIndex) const
     {
-        return mCachedVectorialInfoBuffer[springElementIndex];
+        return mCachedVectorialLengthBuffer[springElementIndex];
+    }
+
+    vec2f const & GetCachedVectorialNormalizedVector(ElementIndex springElementIndex) const
+    {
+        return mCachedVectorialNormalizedVectorBuffer[springElementIndex];
     }
 
     //
@@ -677,7 +665,8 @@ private:
     Buffer<MaterialProperties> mMaterialPropertiesBuffer;
     Buffer<StructuralMaterial const *> mBaseStructuralMaterialBuffer;
     Buffer<bool> mIsRopeBuffer;
-    Buffer<CachedVectorialInfo> mCachedVectorialInfoBuffer;
+    Buffer<float> mCachedVectorialLengthBuffer;
+    Buffer<vec2f> mCachedVectorialNormalizedVectorBuffer;
 
     //
     // Water

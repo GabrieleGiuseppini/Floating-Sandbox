@@ -2584,8 +2584,8 @@ void Ship::UpdateWaterVelocities(
 
             // Normalized spring vector, oriented point -> other endpoint
             vec2f const springNormalizedVector = (pointIndex == mSprings.GetEndpointAIndex(cs.SpringIndex))
-                ? mSprings.GetCachedVectorialInfo(cs.SpringIndex).NormalizedVector
-                : -mSprings.GetCachedVectorialInfo(cs.SpringIndex).NormalizedVector;
+                ? mSprings.GetCachedVectorialNormalizedVector(cs.SpringIndex)
+                : -mSprings.GetCachedVectorialNormalizedVector(cs.SpringIndex);
 
             // Component of the point's own water velocity along the spring
             float const pointWaterVelocityAlongSpring =
@@ -2717,8 +2717,8 @@ void Ship::UpdateWaterVelocities(
 
                 // Normalized spring vector, oriented point -> other endpoint
                 vec2f const springNormalizedVector = (pointIndex == mSprings.GetEndpointAIndex(cs.SpringIndex))
-                    ? mSprings.GetCachedVectorialInfo(cs.SpringIndex).NormalizedVector
-                    : -mSprings.GetCachedVectorialInfo(cs.SpringIndex).NormalizedVector;
+                    ? mSprings.GetCachedVectorialNormalizedVector(cs.SpringIndex)
+                    : -mSprings.GetCachedVectorialNormalizedVector(cs.SpringIndex);
 
                 float ma = springOutboundQuantityOfWater;
                 float va = springOutboundWaterVelocities[s].length();
