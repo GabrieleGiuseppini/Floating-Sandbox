@@ -10,6 +10,11 @@
 
 	- Bump up version
 
+	- Ocean rendering:
+		- Check if the 20ms for upload we see on Dell when ocean high detail is enabled, are due to uploading cloud shadows asynchronously
+			- Test: buffer cloud shadows into a member, and then upload at on-render-thread upload
+		- See how it would look if cloud shadows at night would be visible via moonlight 
+
 	- See why ships with international characters show up weird on some Windows'
 	- See bug reported on GameJolt by MeloPlayground: count of NPCs in going bad
 		! "I think it was when I selected all the npcs and put them in the air (There was more than 2000)"
