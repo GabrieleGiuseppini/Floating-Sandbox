@@ -7,6 +7,7 @@
 
 #include "ThreadManager.h"
 
+#include <atomic>
 #include <cassert>
 #include <condition_variable>
 #include <functional>
@@ -65,21 +66,22 @@ private:
     // Our thread lock
     std::mutex mLock;
 
-    // Our threads
+    // Our threads (N-1, as main thread also plays)
     std::vector<std::thread> mThreads;
 
     // The condition variable to wake up threads
     std::condition_variable mWorkerThreadSignal;
 
-    // The condition variable to wake up the main thread
-    std::condition_variable mMainThreadSignal;
-
     // The tasks currently awaiting to be picked up;
-    // expected to be empty at each Run invocation
-    std::deque<Task const *> mRemainingTasks;
+    // threads takes all but the last one
+    std::vector<Task> const * mTasksToRun;
 
-    // The number of tasks awaiting for completion
-    size_t mTasksToComplete;
+    // Also serves as proxy to index of next task to pick.
+    // Begins with N-1, as last task is for main thread, and can go lower than zero if too many threads are eager to work
+    std::atomic<int> mTasksToComplete;
+
+    // Number of tasks that still have to complete. Trails opposite of mTasksToComplete
+    std::atomic<size_t> mCompletedTasks;
 
     // Set to true when have to stop
     bool mIsStop;

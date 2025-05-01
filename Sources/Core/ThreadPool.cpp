@@ -16,9 +16,9 @@ ThreadPool::ThreadPool(
     : mLock()
     , mThreads()
     , mWorkerThreadSignal()
-    , mMainThreadSignal()
-    , mRemainingTasks()
+    , mTasksToRun(nullptr)
     , mTasksToComplete(0)
+    , mCompletedTasks(0)
     , mIsStop(false)
 {
     LogMessage("ThreadPool: creating thread pool with parallelism=", parallelism);
@@ -56,8 +56,8 @@ ThreadPool::~ThreadPool()
 
 void ThreadPool::Run(std::vector<Task> const & tasks)
 {
-    assert(mRemainingTasks.empty());
-    assert(0 == mTasksToComplete);
+    assert(!tasks.empty());
+    assert(mTasksToComplete <= 0);
 
     // Shortcut to avoid paying synchronization penalties
     // in trivial cases
@@ -71,50 +71,37 @@ void ThreadPool::Run(std::vector<Task> const & tasks)
         return;
     }
 
-    // Queue all the task (pointers) except the first one,
-    // which we're gonna run immediately now to guarantee
-    // that the first task always runs on the main thread
+    // Queue all the tasks
     {
         std::unique_lock const lock{ mLock };
 
-        for (size_t t = 1; t < tasks.size(); ++t)
-        {
-            mRemainingTasks.push_back(&(tasks[t]));
-        }
-
-        mTasksToComplete = mRemainingTasks.size();
+        mTasksToRun = &tasks;
+        mTasksToComplete.store(static_cast<int>(tasks.size()) - 1); // Take already the main thread one into account
+        mCompletedTasks.store(1); // Take already the main thread one into account
     }
 
-    // Signal threads
+    // Signal threads that tasks are available
     mWorkerThreadSignal.notify_all();
 
-    // Run the first task on the main thread
-    if (!tasks.empty())
-    {
-        RunTask(tasks.front());
-    }
+    // Run the Nth task on the main thread
+    RunTask(tasks.back());
 
-    // Run the remaining tasks on own thread, if needed
+    // Run the remaining tasks on main thread, if needed
     RunRemainingTasksLoop();
 
     // Only returns when there are no more tasks
-    assert(mRemainingTasks.empty());
+    assert(mTasksToComplete.load() <= 0);
 
     // Wait until all tasks are completed
     {
-        std::unique_lock lock{ mLock };
-
-        if (0 != mTasksToComplete)
+        // ...in a spinlock
+        while (true)
         {
-            // Wait for signal
-            mMainThreadSignal.wait(
-                lock,
-                [this]()
-                {
-                    return 0 == mTasksToComplete;
-                });
-
-            assert(0 == mTasksToComplete);
+            assert(mCompletedTasks.load() >= 0 && mCompletedTasks.load() <= tasks.size());
+            if (mCompletedTasks.load() == tasks.size())
+            {
+                break;
+            }
         }
     }
 }
@@ -147,7 +134,9 @@ void ThreadPool::ThreadLoop(ThreadManager & threadManager)
                 lock,
                 [this]()
                 {
-                    return mIsStop || !mRemainingTasks.empty();
+                    // Condition to leave the wait
+                    // Note: other threads may empty mTasksToComplete - that's fine, this thread won't run
+                    return mIsStop || mTasksToComplete.load() > 0;
                 });
 
             if (mIsStop)
@@ -178,18 +167,8 @@ void ThreadPool::RunRemainingTasksLoop()
         // De-queue a task
         //
 
-        Task const * task = nullptr;
-        {
-            std::unique_lock const lock{ mLock };
-
-            if (!mRemainingTasks.empty())
-            {
-                task = mRemainingTasks.front();
-                mRemainingTasks.pop_front();
-            }
-        }
-
-        if (task == nullptr)
+        int const oldTasksToComplete = mTasksToComplete.fetch_sub(1);
+        if (oldTasksToComplete <= 0)
         {
             // No more tasks
             return;
@@ -199,26 +178,13 @@ void ThreadPool::RunRemainingTasksLoop()
         // Run the task
         //
 
-        RunTask(*task);
+        RunTask((*mTasksToRun)[oldTasksToComplete - 1]);
 
         //
         // Signal task completion
         //
 
-        {
-            std::unique_lock const lock{ mLock };
-
-            assert(mTasksToComplete > 0);
-
-            --mTasksToComplete;
-            if (0 == mTasksToComplete)
-            {
-                // All tasks completed...
-
-                // ...signal main thread
-                mMainThreadSignal.notify_one();
-            }
-        }
+        ++mCompletedTasks;
     }
 }
 

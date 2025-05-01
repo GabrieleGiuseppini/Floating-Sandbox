@@ -496,7 +496,7 @@ void Ship::Update(
     GameChronometer::duration elapsedHeatPropagation;
 #endif
 
-    assert(parallelTasks.empty()); // We want the first task to run on the main thread
+    assert(parallelTasks.empty());
 
     parallelTasks.emplace_back(
         [&]()
