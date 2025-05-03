@@ -225,126 +225,36 @@ inline void DiffuseLight_SSEVectorized(
             //  distance = pointPosition - lampPosition
             //  newLight = lampDistanceCoeff * (lampSpreadMaxDistance - distance)
             //  pointLight = max(newLight, pointLight) // Just max, to avoid having to normalize everything to 1.0
-
-            //
-            // 1 - 0,1,2,3
             //
 
-            // Calculate distance
-            __m128 displacementX_4 = _mm_sub_ps(pointPosX_4, lampPosX_4);
-            __m128 displacementY_4 = _mm_sub_ps(pointPosY_4, lampPosY_4);
-            __m128 distanceSquare_4 = _mm_add_ps(
-                _mm_mul_ps(displacementX_4, displacementX_4),
-                _mm_mul_ps(displacementY_4, displacementY_4));
-            __m128 distance_4 = _mm_sqrt_ps(distanceSquare_4);
+            for (int rot = 0; rot < 4; ++rot)
+            {
+                // Calculate distance
+                __m128 displacementX_4 = _mm_sub_ps(pointPosX_4, lampPosX_4);
+                __m128 displacementY_4 = _mm_sub_ps(pointPosY_4, lampPosY_4);
+                __m128 distanceSquare_4 = _mm_add_ps(
+                    _mm_mul_ps(displacementX_4, displacementX_4),
+                    _mm_mul_ps(displacementY_4, displacementY_4));
+                __m128 distance_4 = _mm_sqrt_ps(distanceSquare_4);
 
-            // Calculate new light
-            __m128 newLight_4 = _mm_mul_ps(
-                lampDistanceCoeff_4,
-                _mm_sub_ps(lampSpreadMaxDistance_4, distance_4));
+                // Calculate new light
+                __m128 newLight_4 = _mm_mul_ps(
+                    lampDistanceCoeff_4,
+                    _mm_sub_ps(lampSpreadMaxDistance_4, distance_4));
 
-            // Mask with plane ID
-            __m128i planeMask = _mm_cmpgt_epi32(pointPlaneId_4, lampPlaneId_4);
-            newLight_4 = _mm_andnot_ps(_mm_castsi128_ps(planeMask), newLight_4);
+                // Mask with plane ID
+                __m128i planeMask = _mm_cmpgt_epi32(pointPlaneId_4, lampPlaneId_4);
+                newLight_4 = _mm_andnot_ps(_mm_castsi128_ps(planeMask), newLight_4);
 
-            // Point light
-            pointLight_4 = _mm_max_ps(pointLight_4, newLight_4);
+                // Point light
+                pointLight_4 = _mm_max_ps(pointLight_4, newLight_4);
 
-            // Rotate -> 1,2,3,0
-            pointPosX_4 = _mm_castsi128_ps(_mm_shuffle_epi32(_mm_castps_si128(pointPosX_4), _MM_SHUFFLE(0, 3, 2, 1)));
-            pointPosY_4 = _mm_castsi128_ps(_mm_shuffle_epi32(_mm_castps_si128(pointPosY_4), _MM_SHUFFLE(0, 3, 2, 1)));
-            pointPlaneId_4 = _mm_shuffle_epi32(pointPlaneId_4, _MM_SHUFFLE(0, 3, 2, 1));
-            pointLight_4 = _mm_castsi128_ps(_mm_shuffle_epi32(_mm_castps_si128(pointLight_4), _MM_SHUFFLE(0, 3, 2, 1)));
-
-            //
-            // 2 - 1,2,3,0
-            //
-
-            // Calculate distance
-            displacementX_4 = _mm_sub_ps(pointPosX_4, lampPosX_4);
-            displacementY_4 = _mm_sub_ps(pointPosY_4, lampPosY_4);
-            distanceSquare_4 = _mm_add_ps(
-                _mm_mul_ps(displacementX_4, displacementX_4),
-                _mm_mul_ps(displacementY_4, displacementY_4));
-            distance_4 = _mm_sqrt_ps(distanceSquare_4);
-
-            // Calculate new light
-            newLight_4 = _mm_mul_ps(
-                lampDistanceCoeff_4,
-                _mm_sub_ps(lampSpreadMaxDistance_4, distance_4));
-
-            // Mask with plane ID
-            planeMask = _mm_cmpgt_epi32(pointPlaneId_4, lampPlaneId_4);
-            newLight_4 = _mm_andnot_ps(_mm_castsi128_ps(planeMask), newLight_4);
-
-            // Point light
-            pointLight_4 = _mm_max_ps(pointLight_4, newLight_4);
-
-            // Rotate -> 2,3,0,1
-            pointPosX_4 = _mm_castsi128_ps(_mm_shuffle_epi32(_mm_castps_si128(pointPosX_4), _MM_SHUFFLE(0, 3, 2, 1)));
-            pointPosY_4 = _mm_castsi128_ps(_mm_shuffle_epi32(_mm_castps_si128(pointPosY_4), _MM_SHUFFLE(0, 3, 2, 1)));
-            pointPlaneId_4 = _mm_shuffle_epi32(pointPlaneId_4, _MM_SHUFFLE(0, 3, 2, 1));
-            pointLight_4 = _mm_castsi128_ps(_mm_shuffle_epi32(_mm_castps_si128(pointLight_4), _MM_SHUFFLE(0, 3, 2, 1)));
-
-            //
-            // 3 - 2,3,0,1
-            //
-
-            // Calculate distance
-            displacementX_4 = _mm_sub_ps(pointPosX_4, lampPosX_4);
-            displacementY_4 = _mm_sub_ps(pointPosY_4, lampPosY_4);
-            distanceSquare_4 = _mm_add_ps(
-                _mm_mul_ps(displacementX_4, displacementX_4),
-                _mm_mul_ps(displacementY_4, displacementY_4));
-            distance_4 = _mm_sqrt_ps(distanceSquare_4);
-
-            // Calculate new light
-            newLight_4 = _mm_mul_ps(
-                lampDistanceCoeff_4,
-                _mm_sub_ps(lampSpreadMaxDistance_4, distance_4));
-
-            // Mask with plane ID
-            planeMask = _mm_cmpgt_epi32(pointPlaneId_4, lampPlaneId_4);
-            newLight_4 = _mm_andnot_ps(_mm_castsi128_ps(planeMask), newLight_4);
-
-            // Point light
-            pointLight_4 = _mm_max_ps(pointLight_4, newLight_4);
-
-            // Rotate -> 3,0,1,2
-            pointPosX_4 = _mm_castsi128_ps(_mm_shuffle_epi32(_mm_castps_si128(pointPosX_4), _MM_SHUFFLE(0, 3, 2, 1)));
-            pointPosY_4 = _mm_castsi128_ps(_mm_shuffle_epi32(_mm_castps_si128(pointPosY_4), _MM_SHUFFLE(0, 3, 2, 1)));
-            pointPlaneId_4 = _mm_shuffle_epi32(pointPlaneId_4, _MM_SHUFFLE(0, 3, 2, 1));
-            pointLight_4 = _mm_castsi128_ps(_mm_shuffle_epi32(_mm_castps_si128(pointLight_4), _MM_SHUFFLE(0, 3, 2, 1)));
-
-            //
-            // 4 - 3,0,1,2
-            //
-
-            // Calculate distance
-            displacementX_4 = _mm_sub_ps(pointPosX_4, lampPosX_4);
-            displacementY_4 = _mm_sub_ps(pointPosY_4, lampPosY_4);
-            distanceSquare_4 = _mm_add_ps(
-                _mm_mul_ps(displacementX_4, displacementX_4),
-                _mm_mul_ps(displacementY_4, displacementY_4));
-            distance_4 = _mm_sqrt_ps(distanceSquare_4);
-
-            // Calculate new light
-            newLight_4 = _mm_mul_ps(
-                lampDistanceCoeff_4,
-                _mm_sub_ps(lampSpreadMaxDistance_4, distance_4));
-
-            // Mask with plane ID
-            planeMask = _mm_cmpgt_epi32(pointPlaneId_4, lampPlaneId_4);
-            newLight_4 = _mm_andnot_ps(_mm_castsi128_ps(planeMask), newLight_4);
-
-            // Point light
-            pointLight_4 = _mm_max_ps(pointLight_4, newLight_4);
-
-            // Rotate -> 0,1,2,3
-            pointPosX_4 = _mm_castsi128_ps(_mm_shuffle_epi32(_mm_castps_si128(pointPosX_4), _MM_SHUFFLE(0, 3, 2, 1)));
-            pointPosY_4 = _mm_castsi128_ps(_mm_shuffle_epi32(_mm_castps_si128(pointPosY_4), _MM_SHUFFLE(0, 3, 2, 1)));
-            pointPlaneId_4 = _mm_shuffle_epi32(pointPlaneId_4, _MM_SHUFFLE(0, 3, 2, 1));
-            pointLight_4 = _mm_castsi128_ps(_mm_shuffle_epi32(_mm_castps_si128(pointLight_4), _MM_SHUFFLE(0, 3, 2, 1)));
+                // Rotate: 0,1,2,3 -> 1,2,3,0
+                pointPosX_4 = _mm_castsi128_ps(_mm_shuffle_epi32(_mm_castps_si128(pointPosX_4), _MM_SHUFFLE(0, 3, 2, 1)));
+                pointPosY_4 = _mm_castsi128_ps(_mm_shuffle_epi32(_mm_castps_si128(pointPosY_4), _MM_SHUFFLE(0, 3, 2, 1)));
+                pointPlaneId_4 = _mm_shuffle_epi32(pointPlaneId_4, _MM_SHUFFLE(0, 3, 2, 1));
+                pointLight_4 = _mm_castsi128_ps(_mm_shuffle_epi32(_mm_castps_si128(pointLight_4), _MM_SHUFFLE(0, 3, 2, 1)));
+            }
         }
 
         //
