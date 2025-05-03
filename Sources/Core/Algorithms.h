@@ -247,8 +247,8 @@ inline void DiffuseLight_SSEVectorized(
                 _mm_sub_ps(lampSpreadMaxDistance_4, distance_4));
 
             // Mask with plane ID
-            __m128i invalidMask = _mm_cmpgt_epi32(pointPlaneId_4, lampPlaneId_4);
-            newLight_4 = _mm_andnot_ps(_mm_castsi128_ps(invalidMask), newLight_4);
+            __m128i planeMask = _mm_cmpgt_epi32(pointPlaneId_4, lampPlaneId_4);
+            newLight_4 = _mm_andnot_ps(_mm_castsi128_ps(planeMask), newLight_4);
 
             // Point light
             pointLight_4 = _mm_max_ps(pointLight_4, newLight_4);
@@ -277,8 +277,8 @@ inline void DiffuseLight_SSEVectorized(
                 _mm_sub_ps(lampSpreadMaxDistance_4, distance_4));
 
             // Mask with plane ID
-            invalidMask = _mm_cmpgt_epi32(pointPlaneId_4, lampPlaneId_4);
-            newLight_4 = _mm_andnot_ps(_mm_castsi128_ps(invalidMask), newLight_4);
+            planeMask = _mm_cmpgt_epi32(pointPlaneId_4, lampPlaneId_4);
+            newLight_4 = _mm_andnot_ps(_mm_castsi128_ps(planeMask), newLight_4);
 
             // Point light
             pointLight_4 = _mm_max_ps(pointLight_4, newLight_4);
@@ -307,8 +307,8 @@ inline void DiffuseLight_SSEVectorized(
                 _mm_sub_ps(lampSpreadMaxDistance_4, distance_4));
 
             // Mask with plane ID
-            invalidMask = _mm_cmpgt_epi32(pointPlaneId_4, lampPlaneId_4);
-            newLight_4 = _mm_andnot_ps(_mm_castsi128_ps(invalidMask), newLight_4);
+            planeMask = _mm_cmpgt_epi32(pointPlaneId_4, lampPlaneId_4);
+            newLight_4 = _mm_andnot_ps(_mm_castsi128_ps(planeMask), newLight_4);
 
             // Point light
             pointLight_4 = _mm_max_ps(pointLight_4, newLight_4);
@@ -337,8 +337,8 @@ inline void DiffuseLight_SSEVectorized(
                 _mm_sub_ps(lampSpreadMaxDistance_4, distance_4));
 
             // Mask with plane ID
-            invalidMask = _mm_cmpgt_epi32(pointPlaneId_4, lampPlaneId_4);
-            newLight_4 = _mm_andnot_ps(_mm_castsi128_ps(invalidMask), newLight_4);
+            planeMask = _mm_cmpgt_epi32(pointPlaneId_4, lampPlaneId_4);
+            newLight_4 = _mm_andnot_ps(_mm_castsi128_ps(planeMask), newLight_4);
 
             // Point light
             pointLight_4 = _mm_max_ps(pointLight_4, newLight_4);
@@ -356,6 +356,155 @@ inline void DiffuseLight_SSEVectorized(
 
         pointLight_4 = _mm_min_ps(pointLight_4, *(__m128*)One4f);
         _mm_store_ps(outLightBuffer + p, pointLight_4);
+    }
+}
+#endif
+
+#if FS_IS_ARM_NEON() // Implies ARM anyways
+template<typename TVector>
+inline void DiffuseLight_NeonVectorized(
+    ElementIndex const pointStart,
+    ElementIndex const pointEnd,
+    TVector const * restrict pointPositions,
+    PlaneId const * restrict pointPlaneIds,
+    TVector const * restrict lampPositions,
+    PlaneId const * restrict lampPlaneIds,
+    float const * restrict lampDistanceCoeffs,
+    float const * restrict lampSpreadMaxDistances,
+    ElementIndex const lampCount,
+    float * restrict outLightBuffer) noexcept
+{
+    // This implementation is for 4-float vectorization
+    static_assert(vectorization_float_count<size_t> >= 4);
+    assert((pointStart % 4) == 0);
+    assert((pointEnd % 4) == 0);
+    assert((lampCount % 4) == 0);
+    assert(is_aligned_to_vectorization_word(pointPositions));
+    assert(is_aligned_to_vectorization_word(pointPlaneIds));
+    assert(is_aligned_to_vectorization_word(lampPositions));
+    assert(is_aligned_to_vectorization_word(lampPlaneIds));
+    assert(is_aligned_to_vectorization_word(lampDistanceCoeffs));
+    assert(is_aligned_to_vectorization_word(lampSpreadMaxDistances));
+    assert(is_aligned_to_vectorization_word(outLightBuffer));
+
+    // Caller is assumed to have skipped this when there are no lamps
+    assert(lampCount > 0);
+
+    float32x4_t const zero_4 = vdupq_n_f32(0.0f);
+    float32x4_t const one_4 = vdupq_n_f32(1.0f);
+
+    //
+    // Visit all points in groups of 4
+    //
+
+    for (ElementIndex p = pointStart; p < pointEnd; p += 4)
+    {
+        //
+        // Prepare point data
+        //
+
+        // Load point positions
+        float32x4x2_t pointPos01020304_xxxx_yyyy = vld2q_f32(reinterpret_cast<float const *>(pointPositions + p));
+
+        // Load point planes
+        uint32x4_t pointPln01020304 = vld1q_u32(reinterpret_cast<std::uint32_t const *>(pointPlaneIds + p));
+
+        // Resultant point light
+        float32x4_t pointLgt01020304 = zero_4;
+
+        //
+        // Go through all lamps, 4 by 4
+        // can safely visit deleted lamps as their current will always be zero
+        //
+
+        for (ElementIndex l = 0; l < lampCount; l += 4)
+        {
+            // Load lamp positions
+            float32x4x2_t const lampPos01020304_xxxx_yyyy = vld2q_f32(reinterpret_cast<float const *>(lampPositions + l));
+
+            // Load lamp planes
+            uint32x4_t const lampPln01020304 = vld1q_u32(reinterpret_cast<std::uint32_t const *>(lampPlaneIds + l));
+
+            // Load lamp coeffs
+            float32x4_t const lampDistanceCoeff01020304 = vld1q_f32(reinterpret_cast<float const *>(lampDistanceCoeffs + l));
+            float32x4_t const lampSpreadMaxDistance01020304 = vld1q_f32(reinterpret_cast<float const *>(lampSpreadMaxDistances + l));
+
+            //
+            // We now perform the following four times, each time rotating the 4 points around the four slots
+            // of their registers:
+            //  distance = pointPosition - lampPosition
+            //  newLight = lampDistanceCoeff * (lampSpreadMaxDistance - distance)
+            //  pointLight = max(newLight, pointLight) // Just max, to avoid having to normalize everything to 1.0
+            //
+
+            for (int rot = 0; rot < 4; ++rot)
+            {
+                // Calculate distance
+
+                float32x4_t displacementX = vsubq_f32(
+                    pointPos01020304_xxxx_yyyy.val[0],
+                    lampPos01020304_xxxx_yyyy.val[0]);
+                float32x4_t displacementY = vsubq_f32(
+                    pointPos01020304_xxxx_yyyy.val[1],
+                    lampPos01020304_xxxx_yyyy.val[1]);
+                float32x4_t distanceSquare_4 = vaddq_f32(
+                    vmulq_f32(displacementX, displacementX),
+                    vmulq_f32(displacementY, displacementY));
+
+                uint32x4_t const validMask = vcgtq_f32(distanceSquare_4, zero_4); // Valid where > 0 (distance is always >= 0)
+
+                // One newtown-rhapson step
+                float32x4_t distance_4_inv = vrsqrteq_f32(distanceSquare_4);
+                distance_4_inv = vmulq_f32(
+                    distance_4_inv,
+                    vrsqrtsq_f32(
+                        vmulq_f32(distanceSquare_4, distance_4_inv),
+                        distance_4_inv));
+
+                // One newtown-rhapson step
+                float32x4_t distance_4 = vrecpeq_f32(distance_4_inv);
+                distance_4 = vmulq_f32(
+                    distance_4,
+                    vrecpsq_f32(
+                        distance_4_inv,
+                        distance_4));
+
+                distance_4 =
+                    vandq_u32(
+                        distance_4,
+                        validMask);
+
+                // Calculate new light
+                float32x4_t newLight_4 = vmulq_f32(
+                    lampDistanceCoeff01020304,
+                    vsubq_f32(lampSpreadMaxDistance01020304, distance_4));
+
+                // Mask with plane ID
+                uint32x4_t const planeMask = vcleq_u32(pointPln01020304, lampPln01020304);
+                newLight_4 = vandq_u32(newLight_4, planeMask);
+
+                // Point light
+                pointLgt01020304 = vmaxq_f32(pointLgt01020304, newLight_4);
+
+                // Rotate: 0,1,2,3 -> 1,2,3,0
+                pointPos01020304_xxxx_yyyy.val[0] = vextq_f32(
+                    pointPos01020304_xxxx_yyyy.val[0],
+                    pointPos01020304_xxxx_yyyy.val[0],
+                    1);
+                pointPos01020304_xxxx_yyyy.val[1] = vextq_f32(
+                    pointPos01020304_xxxx_yyyy.val[1],
+                    pointPos01020304_xxxx_yyyy.val[1],
+                    1);
+                pointPln01020304 = vextq_f32(pointPln01020304, pointPln01020304, 1);
+                pointLgt01020304 = vextq_f32(pointLgt01020304, pointLgt01020304, 1);
+            }
+        }
+
+        //
+        // Store the 4 point lights, capping them to 1.0
+        //
+
+        vst1q_f32(outLightBuffer + p, vminq_f32(pointLgt01020304, one_4));
     }
 }
 #endif
@@ -379,6 +528,18 @@ inline void DiffuseLight(
 {
 #if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
     DiffuseLight_SSEVectorized(
+        pointStart,
+        pointEnd,
+        pointPositions,
+        pointPlaneIds,
+        lampPositions,
+        lampPlaneIds,
+        lampDistanceCoeffs,
+        lampSpreadMaxDistances,
+        lampCount,
+        outLightBuffer);
+#elif FS_IS_ARM_NEON()
+    DiffuseLight_NeonVectorized(
         pointStart,
         pointEnd,
         pointPositions,
@@ -713,7 +874,7 @@ inline void CalculateSpringVectors_NeonVectorized(
             vmulq_f32(s0s1s2s3_dis_xxxx_yyyy.val[0], s0s1s2s3_dis_xxxx_yyyy.val[0]),
             vmulq_f32(s0s1s2s3_dis_xxxx_yyyy.val[1], s0s1s2s3_dis_xxxx_yyyy.val[1]));
 
-    uint32x4_t const invalidMask = vceqq_f32(sq_len, Zero); // SL==0 => 1/SL==0, to maintain "normalized == (0, 0)", as in vec2f
+    uint32x4_t const validMask = vcgtq_f32(sq_len, Zero); // SL==0 => 1/SL==0, to maintain "normalized == (0, 0)", as in vec2f
 
     // One newtown-rhapson step
     float32x4_t s0s1s2s3_springLength_inv = vrsqrteq_f32(sq_len);
@@ -723,17 +884,10 @@ inline void CalculateSpringVectors_NeonVectorized(
             vmulq_f32(sq_len, s0s1s2s3_springLength_inv),
             s0s1s2s3_springLength_inv));
 
-//        // One extra step
-//        s0s1s2s3_springLength_inv = vmulq_f32(
-//            s0s1s2s3_springLength_inv,
-//            vrsqrtsq_f32(
-//                vmulq_f32(sq_len, s0s1s2s3_springLength_inv),
-//                s0s1s2s3_springLength_inv));
-
     s0s1s2s3_springLength_inv =
         vandq_u32(
             s0s1s2s3_springLength_inv,
-            vmvnq_u32(invalidMask));
+            validMask);
 
     // One newtown-rhapson step
     float32x4_t s0s1s2s3_springLength = vrecpeq_f32(s0s1s2s3_springLength_inv);
@@ -743,17 +897,10 @@ inline void CalculateSpringVectors_NeonVectorized(
             s0s1s2s3_springLength_inv,
             s0s1s2s3_springLength));
 
-//        // One extra step
-//        s0s1s2s3_springLength = vmulq_f32(
-//            s0s1s2s3_springLength,
-//            vrecpsq_f32(
-//                s0s1s2s3_springLength_inv,
-//                s0s1s2s3_springLength));
-
     s0s1s2s3_springLength =
         vandq_u32(
             s0s1s2s3_springLength,
-            vmvnq_u32(invalidMask));
+            validMask);
 
     // Store
     vst1q_f32(outCachedLengthBuffer + springIndex, s0s1s2s3_springLength);
@@ -1827,7 +1974,7 @@ inline void ApplySpringsForces_NeonVectorized(
                 vmulq_f32(dis_s0s1s2s3_xxxx_yyyy.val[0], dis_s0s1s2s3_xxxx_yyyy.val[0]),
                 vmulq_f32(dis_s0s1s2s3_xxxx_yyyy.val[1], dis_s0s1s2s3_xxxx_yyyy.val[1]));
 
-        uint32x4_t const invalidMask = vceqq_f32(sq_len, Zero); // SL==0 => 1/SL==0, to maintain "normalized == (0, 0)", as in vec2f
+        uint32x4_t const validMask = vcgtq_f32(sq_len, Zero); // SL==0 => 1/SL==0, to maintain "normalized == (0, 0)", as in vec2f
 
         // One newtown-rhapson step
         float32x4_t s0s1s2s3_springLength_inv = vrsqrteq_f32(sq_len);
@@ -1837,17 +1984,10 @@ inline void ApplySpringsForces_NeonVectorized(
                 vmulq_f32(sq_len, s0s1s2s3_springLength_inv),
                 s0s1s2s3_springLength_inv));
 
-//        // One extra step
-//        s0s1s2s3_springLength_inv = vmulq_f32(
-//            s0s1s2s3_springLength_inv,
-//            vrsqrtsq_f32(
-//                vmulq_f32(sq_len, s0s1s2s3_springLength_inv),
-//                s0s1s2s3_springLength_inv));
-
         s0s1s2s3_springLength_inv =
             vandq_u32(
                 s0s1s2s3_springLength_inv,
-                vmvnq_u32(invalidMask));
+                validMask);
 
         // One newtown-rhapson step
         float32x4_t s0s1s2s3_springLength = vrecpeq_f32(s0s1s2s3_springLength_inv);
@@ -1857,17 +1997,10 @@ inline void ApplySpringsForces_NeonVectorized(
                 s0s1s2s3_springLength_inv,
                 s0s1s2s3_springLength));
 
-//        // One extra step
-//        s0s1s2s3_springLength = vmulq_f32(
-//            s0s1s2s3_springLength,
-//            vrecpsq_f32(
-//                s0s1s2s3_springLength_inv,
-//                s0s1s2s3_springLength));
-
         s0s1s2s3_springLength =
             vandq_u32(
                 s0s1s2s3_springLength,
-                vmvnq_u32(invalidMask));
+                validMask);
 
 
         // Calculate spring directions
@@ -2049,7 +2182,7 @@ inline void ApplySpringsForces_NeonVectorized(
                 vmulq_f32(s0s1s2s3_dis_xxxx_yyyy.val[0], s0s1s2s3_dis_xxxx_yyyy.val[0]),
                 vmulq_f32(s0s1s2s3_dis_xxxx_yyyy.val[1], s0s1s2s3_dis_xxxx_yyyy.val[1]));
 
-        uint32x4_t const invalidMask = vceqq_f32(sq_len, Zero); // SL==0 => 1/SL==0, to maintain "normalized == (0, 0)", as in vec2f
+        uint32x4_t const validMask = vcgtq_f32(sq_len, Zero); // SL==0 => 1/SL==0, to maintain "normalized == (0, 0)", as in vec2f
 
         // One newtown-rhapson step
         float32x4_t s0s1s2s3_springLength_inv = vrsqrteq_f32(sq_len);
@@ -2059,17 +2192,10 @@ inline void ApplySpringsForces_NeonVectorized(
                 vmulq_f32(sq_len, s0s1s2s3_springLength_inv),
                 s0s1s2s3_springLength_inv));
 
-//        // One extra step
-//        s0s1s2s3_springLength_inv = vmulq_f32(
-//            s0s1s2s3_springLength_inv,
-//            vrsqrtsq_f32(
-//                vmulq_f32(sq_len, s0s1s2s3_springLength_inv),
-//                s0s1s2s3_springLength_inv));
-
         s0s1s2s3_springLength_inv =
             vandq_u32(
                 s0s1s2s3_springLength_inv,
-                vmvnq_u32(invalidMask));
+                validMask);
 
         // One newtown-rhapson step
         float32x4_t s0s1s2s3_springLength = vrecpeq_f32(s0s1s2s3_springLength_inv);
@@ -2079,17 +2205,10 @@ inline void ApplySpringsForces_NeonVectorized(
                 s0s1s2s3_springLength_inv,
                 s0s1s2s3_springLength));
 
-//        // One extra step
-//        s0s1s2s3_springLength = vmulq_f32(
-//            s0s1s2s3_springLength,
-//            vrecpsq_f32(
-//                s0s1s2s3_springLength_inv,
-//                s0s1s2s3_springLength));
-
         s0s1s2s3_springLength =
             vandq_u32(
                 s0s1s2s3_springLength,
-                vmvnq_u32(invalidMask));
+                validMask);
 
 
         // Calculate spring directions

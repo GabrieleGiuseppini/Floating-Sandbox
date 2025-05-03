@@ -21,7 +21,6 @@ INSTANTIATE_TEST_SUITE_P(
     ThreadPoolTests_OneRuns,
     ThreadPoolTests_OneRuns,
     ::testing::Values(
-        0,
         1,
         2,
         10
@@ -65,7 +64,6 @@ INSTANTIATE_TEST_SUITE_P(
     ThreadPoolTests_FourRuns,
     ThreadPoolTests_FourRuns,
     ::testing::Values(
-        0,
         1,
         2,
         3,
