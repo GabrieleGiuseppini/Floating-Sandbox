@@ -21,12 +21,11 @@ namespace Algorithms {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Currently unused - just by benchmarks
-template<typename TVector>
 inline void DiffuseLight_Naive(
-    TVector const * pointPositions,
+    vec2f const * pointPositions,
     PlaneId const * pointPlaneIds,
     ElementIndex const pointCount,
-    TVector const * lampPositions,
+    vec2f const * lampPositions,
     PlaneId const * lampPlaneIds,
     float const * lampDistanceCoeffs,
     float const * lampSpreadMaxDistances,
@@ -65,13 +64,12 @@ inline void DiffuseLight_Naive(
     }
 }
 
-template<typename TVector>
 inline void DiffuseLight_Vectorized(
     ElementIndex const pointStart,
     ElementIndex const pointEnd,
-    TVector const * restrict pointPositions,
+    vec2f const * restrict pointPositions,
     PlaneId const * restrict pointPlaneIds,
-    TVector const * restrict lampPositions,
+    vec2f const * restrict lampPositions,
     PlaneId const * restrict lampPlaneIds,
     float const * restrict lampDistanceCoeffs,
     float const * restrict lampSpreadMaxDistances,
@@ -106,7 +104,7 @@ inline void DiffuseLight_Vectorized(
 
     for (ElementIndex p = pointStart; p < pointEnd; p += 4)
     {
-        TVector const * const restrict batchPointPositions = &(pointPositions[p]);
+        vec2f const * const restrict batchPointPositions = &(pointPositions[p]);
         PlaneId const * const restrict batchPointPlaneIds = &(pointPlaneIds[p]);
         float * const restrict batchOutLightBuffer = &(outLightBuffer[p]);
 
@@ -151,13 +149,12 @@ inline void DiffuseLight_Vectorized(
 }
 
 #if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
-template<typename TVector>
 inline void DiffuseLight_SSEVectorized(
     ElementIndex const pointStart,
     ElementIndex const pointEnd,
-    TVector const * restrict pointPositions,
+    vec2f const * restrict pointPositions,
     PlaneId const * restrict pointPlaneIds,
-    TVector const * restrict lampPositions,
+    vec2f const * restrict lampPositions,
     PlaneId const * restrict lampPlaneIds,
     float const * restrict lampDistanceCoeffs,
     float const * restrict lampSpreadMaxDistances,
@@ -361,13 +358,12 @@ inline void DiffuseLight_SSEVectorized(
 #endif
 
 #if FS_IS_ARM_NEON() // Implies ARM anyways
-template<typename TVector>
 inline void DiffuseLight_NeonVectorized(
     ElementIndex const pointStart,
     ElementIndex const pointEnd,
-    TVector const * restrict pointPositions,
+    vec2f const * restrict pointPositions,
     PlaneId const * restrict pointPlaneIds,
-    TVector const * restrict lampPositions,
+    vec2f const * restrict lampPositions,
     PlaneId const * restrict lampPlaneIds,
     float const * restrict lampDistanceCoeffs,
     float const * restrict lampSpreadMaxDistances,
@@ -513,13 +509,12 @@ inline void DiffuseLight_NeonVectorized(
  * Diffuse light from each lamp to all points on the same or lower plane ID,
  * inverse-proportionally to the lamp-point distance
  */
-template<typename TVector>
 inline void DiffuseLight(
     ElementIndex const pointStart,
     ElementIndex const pointEnd,
-    TVector const * pointPositions,
+    vec2f const * pointPositions,
     PlaneId const * pointPlaneIds,
-    TVector const * lampPositions,
+    vec2f const * lampPositions,
     PlaneId const * lampPlaneIds,
     float const * lampDistanceCoeffs,
     float const * lampSpreadMaxDistances,
