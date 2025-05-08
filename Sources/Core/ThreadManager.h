@@ -6,6 +6,7 @@
 #pragma once
 
 #include <cstdint>
+#include <functional>
 #include <memory>
 
 class ThreadPool;
@@ -22,7 +23,8 @@ public:
 
     ThreadManager(
         bool isRenderingMultithreaded,
-        size_t maxInitialParallelism);
+        size_t maxInitialParallelism,
+        std::function<void()> && setCurrentThreadAsHighPriorityFunctor);
 
     size_t GetSimulationParallelism() const;
 
@@ -38,6 +40,8 @@ public:
         return mMaxSimulationParallelism;
     }
 
+    void SetCurrentThreadAsHighPriority();
+
     ThreadPool & GetSimulationThreadPool();
 
 private:
@@ -47,6 +51,7 @@ private:
 private:
 
     size_t const mMaxSimulationParallelism; // Calculated via init args and hardware concurrency; never changes
+    std::function<void()> mSetCurrentThreadAsHighPriorityFunctor;
 
     std::unique_ptr<ThreadPool> mSimulationThreadPool;
 };

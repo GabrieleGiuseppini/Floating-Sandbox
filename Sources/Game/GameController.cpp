@@ -114,7 +114,8 @@ GameController::GameController(
         mSimulationEventDispatcher)
     , mThreadManager(
         mRenderContext->IsRenderingMultiThreaded(),
-        8) // We start "zuinig", as we do not want to pay a ThreadPool price for too many threads
+        8, // We start "zuinig", as we do not want to pay a ThreadPool price for too many threads
+        []() {}) // No high-priority callback for PC
     , mViewManager(*mRenderContext)
     // Smoothing
     , mFloatParameterSmoothers()

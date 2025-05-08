@@ -406,7 +406,7 @@ void World::Pull(
         simulationParameters);
 }
 
-void World::DestroyAt(
+float World::DestroyAt(
     vec2f const & targetPos,
     float radiusMultiplier,
     SessionId const & sessionId,
@@ -442,6 +442,8 @@ void World::DestroyAt(
         targetPos,
         6.5f + radiusMultiplier,
         std::chrono::milliseconds(0));
+
+    return radius;
 }
 
 void World::RepairAt(

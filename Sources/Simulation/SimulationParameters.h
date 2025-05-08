@@ -674,6 +674,15 @@ struct SimulationParameters
     static float constexpr GripToolRadiusTransitionWidthFraction = 0.25f; // How much grip radius is enlarged to allow for a smooth transition region
 
     //
+    // Computation
+    //
+
+    // How many springs/points we want to run on each SpringRelaxation thread (SpringsForces & Integration);
+    // depends on computer speed and tries to strike a balance preventing too much thread overhead
+    ElementCount SpringRelaxationSpringsPerThread;
+    ElementCount SpringRelaxationPointsPerThread;
+
+    //
     // Limits
     //
 

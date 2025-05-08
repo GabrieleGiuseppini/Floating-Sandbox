@@ -113,6 +113,7 @@ void ThreadPool::ThreadLoop(ThreadManager & threadManager)
     //
 
     threadManager.InitializeThisThread();
+    threadManager.SetCurrentThreadAsHighPriority();
 
     //
     // Run thread loop until thread pool is destroyed

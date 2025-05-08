@@ -219,7 +219,7 @@ public:
         vec2f const & target,
         SimulationParameters const & simulationParameters);
 
-    void DestroyAt(
+    float DestroyAt(
         vec2f const & targetPos,
         float radiusMultiplier,
         SessionId const & sessionId,

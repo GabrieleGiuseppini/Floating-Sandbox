@@ -132,5 +132,8 @@ SimulationParameters::SimulationParameters()
     , WindMakerToolWindSpeed(80.0f)
     , IsUltraViolentMode(false)
     , MoveToolInertia(3.0f)
+    // Computation
+    , SpringRelaxationSpringsPerThread(7000) // Recalculated by calibration on platforms that depend on it
+    , SpringRelaxationPointsPerThread(3500) // Recalculated by calibration on platforms that depend on it
 {
 }

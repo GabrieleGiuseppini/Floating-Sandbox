@@ -2,8 +2,6 @@
 * Original Author:		Gabriele Giuseppini
 * Created:				2018-04-22
 * Copyright:			Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
-*
-* Contains code from Tom Forsyth - https://tomforsyth1000.github.io/papers/fast_vert_cache_opt.html
 ***************************************************************************************/
 #include "ShipFactory.h"
 
@@ -19,9 +17,8 @@
 #include <algorithm>
 #include <cassert>
 #include <chrono>
-#include <set>
+#include <optional>
 #include <sstream>
-#include <unordered_map>
 #include <utility>
 
 using namespace Physics;
@@ -271,16 +268,10 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData, RgbaImageData> ShipFac
     // relaxation algorithm - and hopefully to improve cache hits
     //
 
-    float originalSpringACMR = CalculateACMR(springInfos1);
-
     auto [pointInfos2, pointIndexRemap, springInfos2, springIndexRemap, perfectSquareCount] = OptimizeLayout(
         pointIndexMatrix,
         pointInfos1,
         springInfos1);
-
-    float optimizedSpringACMR = CalculateACMR(springInfos2);
-
-    LogMessage("ShipFactory: Spring ACMR: original=", originalSpringACMR, ", optimized=", optimizedSpringACMR);
 
     // Note: we don't optimize triangles, as tests indicate that performance gets (marginally) worse,
     // and at the same time, it makes sense to use the natural order of the triangles as it ensures
@@ -454,7 +445,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData, RgbaImageData> ShipFac
         points.GetRawShipPointCount(), "raw/", points.GetBufferElementCount(), "buf points, ",
         springs.GetElementCount(), " springs (", perfectSquareCount, " perfect squares, ", perfectSquareCount * 4 * 100 / std::max(1u, springs.GetElementCount()), "%), ",
         triangles.GetElementCount(), " triangles, ",
-        electricalElements.GetElementCount(), " electrical elements, ",
+        electricalElements.GetElementCount(), " electrical elements (", electricalElements.GetLampCount(), " lamps), ",
         frontiers.GetElementCount(), " frontiers.");
 
     auto ship = std::make_unique<Ship>(
@@ -2280,105 +2271,3 @@ void ShipFactory::VerifyShipInvariants(
     }
 }
 #endif
-
-//////////////////////////////////////////////////////////////////////////////////////////////////
-// Vertex cache optimization
-//////////////////////////////////////////////////////////////////////////////////////////////////
-
-float ShipFactory::CalculateACMR(std::vector<ShipFactorySpring> const & springInfos)
-{
-    //
-    // Calculate the average cache miss ratio
-    //
-
-    if (springInfos.empty())
-    {
-        return 0.0f;
-    }
-
-    TestLRUVertexCache<VertexCacheSize> cache;
-
-    float cacheMisses = 0.0f;
-
-    for (size_t s = 0; s < springInfos.size(); ++s)
-    {
-        if (!cache.UseVertex(springInfos[s].PointAIndex))
-        {
-            cacheMisses += 1.0f;
-        }
-
-        if (!cache.UseVertex(springInfos[s].PointBIndex))
-        {
-            cacheMisses += 1.0f;
-        }
-    }
-
-    return cacheMisses / static_cast<float>(springInfos.size());
-}
-
-float ShipFactory::CalculateACMR(std::vector<ShipFactoryTriangle> const & triangleInfos)
-{
-    //
-    // Calculate the average cache miss ratio
-    //
-
-    if (triangleInfos.empty())
-    {
-        return 0.0f;
-    }
-
-    TestLRUVertexCache<VertexCacheSize> cache;
-
-    float cacheMisses = 0.0f;
-
-    for (auto const & triangleInfo : triangleInfos)
-    {
-        if (!cache.UseVertex(triangleInfo.PointIndices1[0]))
-        {
-            cacheMisses += 1.0f;
-        }
-
-        if (!cache.UseVertex(triangleInfo.PointIndices1[1]))
-        {
-            cacheMisses += 1.0f;
-        }
-
-        if (!cache.UseVertex(triangleInfo.PointIndices1[2]))
-        {
-            cacheMisses += 1.0f;
-        }
-    }
-
-    return cacheMisses / static_cast<float>(triangleInfos.size());
-}
-
-template<size_t Size>
-bool ShipFactory::TestLRUVertexCache<Size>::UseVertex(size_t vertexIndex)
-{
-    for (auto it = mEntries.cbegin(); it != mEntries.cend(); ++it)
-    {
-        if (vertexIndex == *it)
-        {
-            // It's already in the cache...
-            // ...move it to front
-            mEntries.erase(it);
-            mEntries.push_front(vertexIndex);
-
-            // It was a cache hit
-            return true;
-        }
-    }
-
-    // Not in the cache...
-    // ...insert in front of cache
-    mEntries.push_front(vertexIndex);
-
-    // Trim
-    while (mEntries.size() > Size)
-    {
-        mEntries.pop_back();
-    }
-
-    // It was a cache miss
-    return false;
-}

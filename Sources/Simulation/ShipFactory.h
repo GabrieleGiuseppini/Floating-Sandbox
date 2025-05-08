@@ -19,15 +19,9 @@
 #include <Core/GameTypes.h>
 #include <Core/IndexRemap.h>
 
-#include <algorithm>
 #include <cstdint>
-#include <limits>
-#include <list>
-#include <map>
 #include <memory>
-#include <optional>
 #include <set>
-#include <unordered_map>
 #include <vector>
 
 /*
@@ -206,29 +200,4 @@ private:
         Physics::Springs const & springs,
         Physics::Triangles const & triangles);
 #endif
-
-private:
-
-    /////////////////////////////////////////////////////////////////
-    // Vertex cache optimization
-    /////////////////////////////////////////////////////////////////
-
-    static float CalculateACMR(std::vector<ShipFactorySpring> const & springInfos);
-
-    static float CalculateACMR(std::vector<ShipFactoryTriangle> const & triangleInfos);
-
-    // See Tom Forsyth's comments: using 32 is good enough; apparently 64 does not yield significant differences
-    static size_t constexpr VertexCacheSize = 32;
-
-    template <size_t Size>
-    class TestLRUVertexCache
-    {
-    public:
-
-        bool UseVertex(size_t vertexIndex);
-
-    private:
-
-        std::list<size_t> mEntries;
-    };
 };

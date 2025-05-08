@@ -14,11 +14,13 @@ void Ship::RecalculateSpringRelaxationParallelism(
     size_t simulationParallelism,
     SimulationParameters const & simulationParameters)
 {
-    RecalculateSpringRelaxationSpringForcesParallelism(simulationParallelism);
+    RecalculateSpringRelaxationSpringForcesParallelism(simulationParallelism, simulationParameters);
     RecalculateSpringRelaxationIntegrationAndSeaFloorCollisionParallelism(simulationParallelism, simulationParameters);
 }
 
-void Ship::RecalculateSpringRelaxationSpringForcesParallelism(size_t simulationParallelism)
+void Ship::RecalculateSpringRelaxationSpringForcesParallelism(
+    size_t simulationParallelism,
+    SimulationParameters const & simulationParameters)
 {
     // Clear threading state
     mSpringRelaxationSpringForcesTasks.clear();
@@ -36,6 +38,7 @@ void Ship::RecalculateSpringRelaxationSpringForcesParallelism(size_t simulationP
     // 1,000,000 : 1t = 103000  2t = 66000  3t = 48000  4t = 56000  5t = 64000  6t = 7t = 8t = 122000
 
     size_t springRelaxationParallelism;
+#if !FS_IS_PLATFORM_MOBILE()
     if (numberOfSprings < 50000)
     {
         // Not worth it
@@ -46,6 +49,12 @@ void Ship::RecalculateSpringRelaxationSpringForcesParallelism(size_t simulationP
         // Go for 4 - more than 4 makes algorithm always worse
         springRelaxationParallelism = std::min(size_t(4), simulationParallelism);
     }
+    (void)simulationParameters;
+#else
+    springRelaxationParallelism = std::min(
+        static_cast<size_t>(numberOfSprings / simulationParameters.SpringRelaxationSpringsPerThread),
+        simulationParallelism);
+#endif
 
     LogMessage("Ship::RecalculateSpringRelaxationSpringForcesParallelism: springs=", numberOfSprings, " simulationParallelism=", simulationParallelism,
         " springRelaxationParallelism=", springRelaxationParallelism);
@@ -104,11 +113,18 @@ void Ship::RecalculateSpringRelaxationIntegrationAndSeaFloorCollisionParallelism
 
     ElementCount const numberOfPoints = mPoints.GetBufferElementCount();
 
-    size_t const actualParallelism = std::max(
+    size_t actualParallelism;
+#if !FS_IS_PLATFORM_MOBILE()
+    actualParallelism = std::max(
         std::min(
             numberOfPoints <= 12000 ? size_t(1) : (size_t(1) + (numberOfPoints - 12000) / 4000),
             simulationParallelism),
         size_t(1)); // Capping to 1!
+#else
+    actualParallelism = std::min(
+        static_cast<size_t>(numberOfPoints / simulationParameters.SpringRelaxationPointsPerThread),
+        simulationParallelism);
+#endif
 
     LogMessage("Ship::RecalculateSpringRelaxationIntegrationAndSeaFloorCollisionParallelism: points=", numberOfPoints, " simulationParallelism=", simulationParallelism,
         " actualParallelism=", actualParallelism);

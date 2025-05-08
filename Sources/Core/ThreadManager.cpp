@@ -26,8 +26,10 @@ size_t ThreadManager::GetNumberOfProcessors()
 
 ThreadManager::ThreadManager(
     bool isRenderingMultithreaded,
-    size_t maxInitialParallelism)
+    size_t maxInitialParallelism,
+    std::function<void()> && setCurrentThreadAsHighPriorityFunctor)
     : mMaxSimulationParallelism(CalculateMaxSimulationParallelism(isRenderingMultithreaded))
+    , mSetCurrentThreadAsHighPriorityFunctor(std::move(setCurrentThreadAsHighPriorityFunctor))
 {
     size_t const simulationParallelism = std::min(mMaxSimulationParallelism, maxInitialParallelism);
 
@@ -37,6 +39,11 @@ ThreadManager::ThreadManager(
 
     // Set parallelism
     SetSimulationParallelism(simulationParallelism);
+}
+
+void ThreadManager::SetCurrentThreadAsHighPriority()
+{
+    mSetCurrentThreadAsHighPriorityFunctor();
 }
 
 size_t ThreadManager::GetSimulationParallelism() const

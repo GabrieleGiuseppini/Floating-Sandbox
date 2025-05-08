@@ -515,7 +515,7 @@ private:
         SimulationParameters const & simulationParameters);
 
     void RecalculateSpringRelaxationParallelism(size_t simulationParallelism, SimulationParameters const & simulationParameters);
-    void RecalculateSpringRelaxationSpringForcesParallelism(size_t simulationParallelism);
+    void RecalculateSpringRelaxationSpringForcesParallelism(size_t simulationParallelism, SimulationParameters const & simulationParameters);
     void RecalculateSpringRelaxationIntegrationAndSeaFloorCollisionParallelism(size_t simulationParallelism, SimulationParameters const & simulationParameters);
 
     void RunSpringRelaxationAndDynamicForcesIntegration(
