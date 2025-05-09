@@ -215,7 +215,7 @@ std::filesystem::path GameAssetManager::GetDefaultShipDefinitionFilePath() const
 
 std::filesystem::path GameAssetManager::GetFallbackShipDefinitionFilePath() const
 {
-    return mDataRoot / "Built-in Ships" / "fallback_ship.png";
+    return mDataRoot / "Built-in Ships" / "fallback_ship.shp2";
 }
 
 std::filesystem::path GameAssetManager::GetApril1stShipDefinitionFilePath() const
