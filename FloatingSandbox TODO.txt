@@ -19,10 +19,11 @@
 	- See bug reported on GameJolt by MeloPlayground: count of NPCs in going bad
 		! "I think it was when I selected all the npcs and put them in the air (There was more than 2000)"
 		- Ask version
-	- I found it: ShipBuilder: exporting structural layer and re-importing it is not the same
+	- I found this one: ShipBuilder: exporting structural layer and re-importing it is not the same
 		- Happens with the FS Birthday ship
 
 	- When tsunami starts you can see edges during the shaking
+		- Also port to Android
 
 	- Reduce ghost forces from depth pressure
 		- See https://discord.com/channels/925233659118755842/1313073164879921203/1313073164879921203
