@@ -1087,9 +1087,7 @@ void NotificationRenderContext::RenderPrepareLaserRay()
 
         // Set time parameter
         mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::LaserRay>();
-        mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::Time>(
-            GameShaderSets::ProgramKind::LaserRay,
-            GameWallClock::GetInstance().NowAsFloat());
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::LaserRay, GameShaderSets::ProgramParameterKind::Time>(GameWallClock::GetInstance().NowAsFloat());
     }
 }
 
@@ -1125,9 +1123,7 @@ void NotificationRenderContext::RenderPrepareMultiNotification()
 
         // Set time parameter
         mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::MultiNotification>();
-        mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::Time>(
-            GameShaderSets::ProgramKind::MultiNotification,
-            GameWallClock::GetInstance().ContinuousNowAsFloat());
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::MultiNotification, GameShaderSets::ProgramParameterKind::Time>(GameWallClock::GetInstance().ContinuousNowAsFloat());
     }
 }
 

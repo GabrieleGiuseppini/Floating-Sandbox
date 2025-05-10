@@ -76,7 +76,7 @@ RgbaImageData ShipTexturizer::MakeAutoTexture(
     int maxTextureSize,
     IAssetManager const & assetManager) const
 {
-    auto const startTime = GameChronometer::now();
+    auto const startTime = GameChronometer::Now();
 
     // Zero-out cache usage counts
     ResetMaterialTextureCacheUseCounts();
@@ -107,7 +107,7 @@ RgbaImageData ShipTexturizer::MakeAutoTexture(
 
     LogMessage("ShipTexturizer: completed auto-texturization:",
         " shipSize=", shipSize, " textureSize=", textureSize,
-        " time=", std::chrono::duration_cast<std::chrono::microseconds>(GameChronometer::now() - startTime).count(), "us");
+        " time=", std::chrono::duration_cast<std::chrono::microseconds>(GameChronometer::Now() - startTime).count(), "us");
 
     return texture;
 }
@@ -333,7 +333,7 @@ RgbaImageData ShipTexturizer::MakeInteriorViewTexture(
     ShipSpaceSize const & shipSize,
     RgbaImageData const & backgroundTexture) const
 {
-    auto const startTime = GameChronometer::now();
+    auto const startTime = GameChronometer::Now();
 
     //
     // Start with a copy of the background
@@ -375,7 +375,7 @@ RgbaImageData ShipTexturizer::MakeInteriorViewTexture(
 
     LogMessage("ShipTexturizer: completed interior view:",
         " shipSize=", shipSize, " textureSize=", interiorView.Size,
-        " time=", std::chrono::duration_cast<std::chrono::microseconds>(GameChronometer::now() - startTime).count(), "us");
+        " time=", std::chrono::duration_cast<std::chrono::microseconds>(GameChronometer::Now() - startTime).count(), "us");
 
     return interiorView;
 }

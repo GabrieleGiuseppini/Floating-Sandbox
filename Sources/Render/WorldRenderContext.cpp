@@ -1659,9 +1659,7 @@ void WorldRenderContext::RenderPrepareRain(RenderParameters const & /*renderPara
         if (mRainDensity != 0.0f)
         {
             // Set time parameter
-            mShaderManager.SetProgramParameter<GameShaderSets::ProgramParameterKind::Time>(
-                GameShaderSets::ProgramKind::Rain,
-                GameWallClock::GetInstance().NowAsFloat());
+            mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::Rain, GameShaderSets::ProgramParameterKind::Time>(GameWallClock::GetInstance().NowAsFloat());
         }
     }
 }

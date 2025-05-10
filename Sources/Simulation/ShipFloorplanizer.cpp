@@ -19,7 +19,7 @@ ShipFactoryFloorPlan ShipFloorplanizer::BuildFloorplan(
 	IndexRemap const & pointIndexRemap,
 	std::vector<ShipFactorySpring> const & springInfos2) const
 {
-	auto const startTime = GameChronometer::now();
+	auto const startTime = GameChronometer::Now();
 
 	//
 	// 1. Build list of springs that we do not want to use as floors;
@@ -141,7 +141,7 @@ ShipFactoryFloorPlan ShipFloorplanizer::BuildFloorplan(
 	}
 
 	LogMessage("ShipFloorplanizer: completed floorplan: floorTiles=", floorPlan.size(),
-		" time=", std::chrono::duration_cast<std::chrono::microseconds>(GameChronometer::now() - startTime).count(), "us");
+		" time=", std::chrono::duration_cast<std::chrono::microseconds>(GameChronometer::Now() - startTime).count(), "us");
 
 	return floorPlan;
 }

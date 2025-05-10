@@ -218,7 +218,7 @@ void Ship::Update(
     PerfStats & perfStats)
 {
 #ifdef FS_PROFILE_SHIP_UPDATE
-    auto const updateStartTimestamp = GameChronometer::now();
+    auto const updateStartTimestamp = GameChronometer::Now();
 #endif
 
     /////////////////////////////////////////////////////////////////
@@ -288,19 +288,19 @@ void Ship::Update(
     ///////////////////////////////////////////////////////////////////
 
 #ifdef FS_PROFILE_SHIP_UPDATE
-    auto startTimestamp1 = GameChronometer::now();
+    auto startTimestamp1 = GameChronometer::Now();
 #endif
 
     {
-        auto const springsStartTime = GameChronometer::now();
+        auto const springsStartTime = GameChronometer::Now();
 
         RunSpringRelaxationAndDynamicForcesIntegration(simulationParameters, threadManager);
 
-        perfStats.Update<PerfMeasurement::TotalShipsSpringsUpdate>(GameChronometer::now() - springsStartTime);
+        perfStats.Update<PerfMeasurement::TotalShipsSpringsUpdate>(GameChronometer::Now() - springsStartTime);
     }
 
 #ifdef FS_PROFILE_SHIP_UPDATE
-    auto const elapsedSpringRelaxation = GameChronometer::now() - startTimestamp1;
+    auto const elapsedSpringRelaxation = GameChronometer::Now() - startTimestamp1;
 #endif
 
     ///////////////////////////////////////////////////////////////////
@@ -335,7 +335,7 @@ void Ship::Update(
     }
 
 #ifdef FS_PROFILE_SHIP_UPDATE
-    startTimestamp1 = GameChronometer::now();
+    startTimestamp1 = GameChronometer::Now();
 #endif
 
     // - Inputs: P.Position, S.SpringDeletion, S.RestLength, S.BreakingElongation
@@ -348,7 +348,7 @@ void Ship::Update(
         stressRenderMode);
 
 #ifdef FS_PROFILE_SHIP_UPDATE
-    auto const elapsedUpdateForStress = GameChronometer::now() - startTimestamp1;
+    auto const elapsedUpdateForStress = GameChronometer::Now() - startTimestamp1;
 #endif
 
     ///////////////////////////////////////////////////////////////////
@@ -372,7 +372,7 @@ void Ship::Update(
     ///////////////////////////////////////////////////////////////////
 
 #ifdef FS_PROFILE_SHIP_UPDATE
-    startTimestamp1 = GameChronometer::now();
+    startTimestamp1 = GameChronometer::Now();
 #endif
 
     ApplyWorldForces(
@@ -382,7 +382,7 @@ void Ship::Update(
         externalAabbSet);
 
 #ifdef FS_PROFILE_SHIP_UPDATE
-    auto const elapsedWorldForces = GameChronometer::now() - startTimestamp1;
+    auto const elapsedWorldForces = GameChronometer::Now() - startTimestamp1;
 #endif
 
     // Cached depths are valid from now on --------------------------->
@@ -392,7 +392,7 @@ void Ship::Update(
     ///////////////////////////////////////////////////////////////////
 
 #ifdef FS_PROFILE_SHIP_UPDATE
-    startTimestamp1 = GameChronometer::now();
+    startTimestamp1 = GameChronometer::Now();
 #endif
 
     // - Inputs: Position, Water, IsLeaking
@@ -428,7 +428,7 @@ void Ship::Update(
     }
 
 #ifdef FS_PROFILE_SHIP_UPDATE
-    auto const elapsedRotPoints = GameChronometer::now() - startTimestamp1;
+    auto const elapsedRotPoints = GameChronometer::Now() - startTimestamp1;
 #endif
 
     /////////////////////////////////////////////////////////////////
@@ -456,7 +456,7 @@ void Ship::Update(
     /////////////////////////////////////////////////////////////////
 
 #ifdef FS_PROFILE_SHIP_UPDATE
-    startTimestamp1 = GameChronometer::now();
+    startTimestamp1 = GameChronometer::Now();
 #endif
 
     //
@@ -482,7 +482,7 @@ void Ship::Update(
     }
 
 #ifdef FS_PROFILE_SHIP_UPDATE
-    auto const elapsedWaterDynamics = GameChronometer::now() - startTimestamp1;
+    auto const elapsedWaterDynamics = GameChronometer::Now() - startTimestamp1;
 #endif
 
     ///////////////////////////////
@@ -506,7 +506,7 @@ void Ship::Update(
             //
 
 #ifdef FS_PROFILE_SHIP_UPDATE
-            auto startTimestamp2 = GameChronometer::now();
+            auto startTimestamp2 = GameChronometer::Now();
 #endif
 
             float waterSplashedInStep = 0.f;
@@ -519,7 +519,7 @@ void Ship::Update(
             mSimulationEventHandler.OnWaterSplashed(waterSplashedInStep);
 
 #ifdef FS_PROFILE_SHIP_UPDATE
-            elapsedWaterDiffusion = GameChronometer::now() - startTimestamp2;
+            elapsedWaterDiffusion = GameChronometer::Now() - startTimestamp2;
 #endif
         });
 
@@ -531,7 +531,7 @@ void Ship::Update(
             //
 
 #ifdef FS_PROFILE_SHIP_UPDATE
-            auto startTimestamp2 = GameChronometer::now();
+            auto startTimestamp2 = GameChronometer::Now();
 #endif
 
             // - Inputs: InternalPressure, ConnectedSprings
@@ -539,7 +539,7 @@ void Ship::Update(
             EqualizeInternalPressure(simulationParameters);
 
 #ifdef FS_PROFILE_SHIP_UPDATE
-            elapsedEqualizeInternalPressure = GameChronometer::now() - startTimestamp2;
+            elapsedEqualizeInternalPressure = GameChronometer::Now() - startTimestamp2;
 #endif
 
             //
@@ -547,7 +547,7 @@ void Ship::Update(
             //
 
 #ifdef FS_PROFILE_SHIP_UPDATE
-            startTimestamp2 = GameChronometer::now();
+            startTimestamp2 = GameChronometer::Now();
 #endif
 
             if (simulationParameters.StaticPressureForceAdjustment > 0.0f)
@@ -561,7 +561,7 @@ void Ship::Update(
             }
 
 #ifdef FS_PROFILE_SHIP_UPDATE
-            elapsedStaticPressure = GameChronometer::now() - startTimestamp2;
+            elapsedStaticPressure = GameChronometer::Now() - startTimestamp2;
 #endif
 
             //
@@ -569,7 +569,7 @@ void Ship::Update(
             //
 
 #ifdef FS_PROFILE_SHIP_UPDATE
-            startTimestamp2 = GameChronometer::now();
+            startTimestamp2 = GameChronometer::Now();
 #endif
 
             // - Inputs: P.Position, P.Temperature, P.ConnectedSprings, P.Water
@@ -581,7 +581,7 @@ void Ship::Update(
                 simulationParameters);
 
 #ifdef FS_PROFILE_SHIP_UPDATE
-            elapsedHeatPropagation = GameChronometer::now() - startTimestamp2;
+            elapsedHeatPropagation = GameChronometer::Now() - startTimestamp2;
 #endif
         });
 
@@ -593,7 +593,7 @@ void Ship::Update(
         mStaticPressureIterationsCount != 0.0f ? mStaticPressureIterationsPercentagesSum / mStaticPressureIterationsCount : 0.0f);
 
 #ifdef FS_PROFILE_SHIP_UPDATE
-    auto const elapsedParallel1 = GameChronometer::now() - startTimestamp1;
+    auto const elapsedParallel1 = GameChronometer::Now() - startTimestamp1;
 #endif
 
     ///////////////////////////////
@@ -636,7 +636,7 @@ void Ship::Update(
     //
 
 #ifdef FS_PROFILE_SHIP_UPDATE
-    startTimestamp1 = GameChronometer::now();
+    startTimestamp1 = GameChronometer::Now();
 #endif
 
     // - Inputs: P.Position, P.PlaneId, EL.AvailableLight
@@ -647,7 +647,7 @@ void Ship::Update(
         threadManager);
 
 #ifdef FS_PROFILE_SHIP_UPDATE
-    auto const elapsedLightDiffusion = GameChronometer::now() - startTimestamp1;
+    auto const elapsedLightDiffusion = GameChronometer::Now() - startTimestamp1;
 #endif
 
     //
@@ -655,7 +655,7 @@ void Ship::Update(
     //
 
 #ifdef FS_PROFILE_SHIP_UPDATE
-    startTimestamp1 = GameChronometer::now();
+    startTimestamp1 = GameChronometer::Now();
 #endif
 
     if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowStep1, SimulationParameters::ParticleUpdateLowFrequencyPeriod))
@@ -711,7 +711,7 @@ void Ship::Update(
         simulationParameters);
 
 #ifdef FS_PROFILE_SHIP_UPDATE
-    auto const elapsedCombustion = GameChronometer::now() - startTimestamp1;
+    auto const elapsedCombustion = GameChronometer::Now() - startTimestamp1;
 #endif
 
     //
@@ -731,7 +731,7 @@ void Ship::Update(
     ///////////////////////////////////////////////////////////////////
 
 #ifdef FS_PROFILE_SHIP_UPDATE
-    startTimestamp1 = GameChronometer::now();
+    startTimestamp1 = GameChronometer::Now();
 #endif
 
     if (mCurrentSimulationSequenceNumber.IsStepOf(SpringDecayAndTemperatureStep1, SimulationParameters::ParticleUpdateLowFrequencyPeriod))
@@ -760,7 +760,7 @@ void Ship::Update(
     }
 
 #ifdef FS_PROFILE_SHIP_UPDATE
-    auto const elapsedUpdateSpringParameters = GameChronometer::now() - startTimestamp1;
+    auto const elapsedUpdateSpringParameters = GameChronometer::Now() - startTimestamp1;
 #endif
 
     ///////////////////////////////////////////////////////////////////
@@ -768,7 +768,7 @@ void Ship::Update(
     ///////////////////////////////////////////////////////////////////
 
 #ifdef FS_PROFILE_SHIP_UPDATE
-    startTimestamp1 = GameChronometer::now();
+    startTimestamp1 = GameChronometer::Now();
 #endif
 
     mPoints.UpdateEphemeralParticles(
@@ -776,7 +776,7 @@ void Ship::Update(
         simulationParameters);
 
 #ifdef FS_PROFILE_SHIP_UPDATE
-    auto const elapsedUpdateEphemeralParticles = GameChronometer::now() - startTimestamp1;
+    auto const elapsedUpdateEphemeralParticles = GameChronometer::Now() - startTimestamp1;
 #endif
 
     ///////////////////////////////////////////////////////////////////
@@ -800,7 +800,7 @@ void Ship::Update(
 #endif
 
 #ifdef FS_PROFILE_SHIP_UPDATE
-    auto const updateEndTimestamp = GameChronometer::now();
+    auto const updateEndTimestamp = GameChronometer::Now();
 
     static std::chrono::microseconds springRelaxationTotal{0};
     static std::chrono::microseconds updateForStressTotal{0};

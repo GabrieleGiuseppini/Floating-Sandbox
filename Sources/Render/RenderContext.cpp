@@ -434,12 +434,12 @@ void RenderContext::UpdateStart()
     // know that CPU buffers are safe to be used
     if (!!mLastRenderUploadEndCompletionIndicator)
     {
-        auto const waitStart = GameChronometer::now();
+        auto const waitStart = GameChronometer::Now();
 
         mLastRenderUploadEndCompletionIndicator->Wait();
         mLastRenderUploadEndCompletionIndicator.reset();
 
-        mPerfStats.Update<PerfMeasurement::TotalWaitForRenderUpload>(GameChronometer::now() - waitStart);
+        mPerfStats.Update<PerfMeasurement::TotalWaitForRenderUpload>(GameChronometer::Now() - waitStart);
     }
 }
 
@@ -463,12 +463,12 @@ void RenderContext::UploadStart()
     // GPU buffers are free to be used
     if (!!mLastRenderDrawCompletionIndicator)
     {
-        auto const waitStart = GameChronometer::now();
+        auto const waitStart = GameChronometer::Now();
 
         mLastRenderDrawCompletionIndicator->Wait();
         mLastRenderDrawCompletionIndicator.reset();
 
-        mPerfStats.Update<PerfMeasurement::TotalWaitForRenderDraw>(GameChronometer::now() - waitStart);
+        mPerfStats.Update<PerfMeasurement::TotalWaitForRenderDraw>(GameChronometer::Now() - waitStart);
     }
 
     mWorldRenderContext->UploadStart();
@@ -499,7 +499,7 @@ void RenderContext::Draw()
     mLastRenderDrawCompletionIndicator = mRenderThread.QueueTask(
         [this, renderParameters = mRenderParameters.TakeSnapshotAndClear(), lampToolToSet = mLampToolToSet]() mutable
         {
-            auto const startTime = GameChronometer::now();
+            auto const startTime = GameChronometer::Now();
 
             RenderStatistics renderStats;
 
@@ -564,7 +564,7 @@ void RenderContext::Draw()
                 mGlobalRenderContext->RenderPrepareEnd(); // Updates global element indices
 
                 // Update stats
-                mPerfStats.Update<PerfMeasurement::TotalUploadRenderDraw>(GameChronometer::now() - startTime);
+                mPerfStats.Update<PerfMeasurement::TotalUploadRenderDraw>(GameChronometer::Now() - startTime);
             }
 
             //
@@ -629,7 +629,7 @@ void RenderContext::Draw()
             mSwapRenderBuffersFunction();
 
             // Update stats
-            mPerfStats.Update<PerfMeasurement::TotalRenderDraw>(GameChronometer::now() - startTime);
+            mPerfStats.Update<PerfMeasurement::TotalRenderDraw>(GameChronometer::Now() - startTime);
             mRenderStats.store(renderStats);
         });
 

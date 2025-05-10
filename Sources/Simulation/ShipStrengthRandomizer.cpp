@@ -150,7 +150,7 @@ void ShipStrengthRandomizer::RandomizeStrength_Batik(
     //  - A crack should propagate as fast as possible to the nearest feature (i.e.earlier crack or frontier)
     //
 
-    auto const startTime = GameChronometer::now();
+    auto const startTime = GameChronometer::Now();
 
     // Setup deterministic randomness
 
@@ -385,7 +385,7 @@ void ShipStrengthRandomizer::RandomizeStrength_Batik(
 
     LogMessage("ShipStrengthRandomizer: completed randomization:",
         " numberOfCracks=", numberOfCracks,
-        " time=", std::chrono::duration_cast<std::chrono::microseconds>(GameChronometer::now() - startTime).count(), "us");
+        " time=", std::chrono::duration_cast<std::chrono::microseconds>(GameChronometer::Now() - startTime).count(), "us");
 }
 
 template<typename TRandomEngine>
@@ -467,6 +467,7 @@ void ShipStrengthRandomizer::PropagateBatikCrack(
     // Flag points on crack
     //
 
+    // Futurework: perf: do this inline
     for (auto const & p : crackPointCoords)
     {
         distanceMatrix[p].Distance = 0.0f;

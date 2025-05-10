@@ -401,13 +401,13 @@ void GameController::RunGameIteration()
 
     if (doUpdate)
     {
-        auto const startTime = GameChronometer::now();
+        auto const startTime = GameChronometer::Now();
 
         // Tell RenderContext we're starting an update
         // (waits until the last upload has completed)
         mRenderContext->UpdateStart();
 
-        auto const netStartTime = GameChronometer::now();
+        auto const netStartTime = GameChronometer::Now();
 
         float const nowGame = GameWallClock::GetInstance().NowAsFloat();
 
@@ -452,8 +452,8 @@ void GameController::RunGameIteration()
         // Tell RenderContext we've finished an update
         mRenderContext->UpdateEnd();
 
-        mTotalPerfStats->Update<PerfMeasurement::TotalNetUpdate>(GameChronometer::now() - netStartTime);
-        mTotalPerfStats->Update<PerfMeasurement::TotalUpdate>(GameChronometer::now() - startTime);
+        mTotalPerfStats->Update<PerfMeasurement::TotalNetUpdate>(GameChronometer::Now() - netStartTime);
+        mTotalPerfStats->Update<PerfMeasurement::TotalUpdate>(GameChronometer::Now() - startTime);
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -466,7 +466,7 @@ void GameController::RunGameIteration()
     {
         mRenderContext->UploadStart();
 
-        auto const netStartTime = GameChronometer::now();
+        auto const netStartTime = GameChronometer::Now();
 
         // Update view manager
         // Note: some Upload()'s need to use ViewModel values, which have then to match the
@@ -491,7 +491,7 @@ void GameController::RunGameIteration()
 
         mRenderContext->UploadEnd();
 
-        mTotalPerfStats->Update<PerfMeasurement::TotalNetRenderUpload>(GameChronometer::now() - netStartTime);
+        mTotalPerfStats->Update<PerfMeasurement::TotalNetRenderUpload>(GameChronometer::Now() - netStartTime);
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -499,12 +499,12 @@ void GameController::RunGameIteration()
     ////////////////////////////////////////////////////////////////////////////
 
     {
-        auto const startTime = GameChronometer::now();
+        auto const startTime = GameChronometer::Now();
 
         // Render
         mRenderContext->Draw();
 
-        mTotalPerfStats->Update<PerfMeasurement::TotalMainThreadRenderDraw>(GameChronometer::now() - startTime);
+        mTotalPerfStats->Update<PerfMeasurement::TotalMainThreadRenderDraw>(GameChronometer::Now() - startTime);
     }
 
     // Tell RenderContext we've finished a rendering cycle

@@ -37,7 +37,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData, RgbaImageData> ShipFac
     IAssetManager const & assetManager,
     SimulationParameters const & simulationParameters)
 {
-    auto const totalStartTime = GameChronometer::now();
+    auto const totalStartTime = GameChronometer::Now();
 
     //
     // Process load options
@@ -461,7 +461,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData, RgbaImageData> ShipFac
         std::move(interiorTextureImage));
 
     LogMessage("ShipFactory: Create() took ",
-        std::chrono::duration_cast<std::chrono::microseconds>(GameChronometer::now() - totalStartTime).count(), "us");
+        std::chrono::duration_cast<std::chrono::microseconds>(GameChronometer::Now() - totalStartTime).count(), "us");
 
     return std::make_tuple(
         std::move(ship),
@@ -1584,7 +1584,7 @@ std::vector<ShipFactoryFrontier> ShipFactory::CreateShipFrontiers(
     ShipFactoryPointPairToIndexMap const & pointPairToSpringIndex1Map,
     IndexRemap const & springIndexRemap)
 {
-    auto const startTime = GameChronometer::now();
+    auto const startTime = GameChronometer::Now();
 
     //
     // Detect and create frontiers
@@ -1719,7 +1719,7 @@ std::vector<ShipFactoryFrontier> ShipFactory::CreateShipFrontiers(
     }
 
     LogMessage("ShipFactory: completed frontiers:",
-        " time=", std::chrono::duration_cast<std::chrono::microseconds>(GameChronometer::now() - startTime).count(), "us");
+        " time=", std::chrono::duration_cast<std::chrono::microseconds>(GameChronometer::Now() - startTime).count(), "us");
 
     return shipFactoryFrontiers;
 }
