@@ -4307,19 +4307,23 @@ void Npcs::RenderNpc(
 
                     leftUpperLegQuad = {
                         {
-                            legTop - leftUpperLegTraverseDir * halfLegW,
-                            leftKneeOrFootPosition - leftLegJ,
-                            legTop + leftUpperLegTraverseDir * halfLegW,
-                            leftKneeOrFootPosition + leftLegJ
+                            {
+                                legTop - leftUpperLegTraverseDir * halfLegW,
+                                leftKneeOrFootPosition - leftLegJ,
+                                legTop + leftUpperLegTraverseDir * halfLegW,
+                                leftKneeOrFootPosition + leftLegJ
+                            }
                         },
                         upperLegTextureQuad };
 
                     leftLowerLegQuad = {
                         {
-                            leftKneeOrFootPosition - leftLegJ,
-                            leftKneeOrFootPosition + leftLowerLegVector - leftLowerLegTraverseDir * halfLegW,
-                            leftKneeOrFootPosition + leftLegJ,
-                            leftKneeOrFootPosition + leftLowerLegVector + leftLowerLegTraverseDir * halfLegW
+                            {
+                                leftKneeOrFootPosition - leftLegJ,
+                                leftKneeOrFootPosition + leftLowerLegVector - leftLowerLegTraverseDir * halfLegW,
+                                leftKneeOrFootPosition + leftLegJ,
+                                leftKneeOrFootPosition + leftLowerLegVector + leftLowerLegTraverseDir * halfLegW
+                            }
                         },
                         lowerLegTextureQuad };
 
@@ -4331,19 +4335,23 @@ void Npcs::RenderNpc(
 
                     rightUpperLegQuad = {
                         {
-                            legTop - rightUpperLegTraverseDir * halfLegW,
-                            rightKneeOrFootPosition - rightLegJ,
-                            legTop + rightUpperLegTraverseDir * halfLegW,
-                            rightKneeOrFootPosition + rightLegJ
+                            {
+                                legTop - rightUpperLegTraverseDir * halfLegW,
+                                rightKneeOrFootPosition - rightLegJ,
+                                legTop + rightUpperLegTraverseDir * halfLegW,
+                                rightKneeOrFootPosition + rightLegJ
+                            }
                         },
                         upperLegTextureQuad };
 
                     rightLowerLegQuad = {
                         {
-                            rightKneeOrFootPosition - rightLegJ,
-                            rightKneeOrFootPosition + rightLowerLegVector - rightLowerLegTraverseDir * halfLegW,
-                            rightKneeOrFootPosition + rightLegJ,
-                            rightKneeOrFootPosition + rightLowerLegVector + rightLowerLegTraverseDir * halfLegW
+                            {
+                                rightKneeOrFootPosition - rightLegJ,
+                                rightKneeOrFootPosition + rightLowerLegVector - rightLowerLegTraverseDir * halfLegW,
+                                rightKneeOrFootPosition + rightLegJ,
+                                rightKneeOrFootPosition + rightLowerLegVector + rightLowerLegTraverseDir * halfLegW
+                            }
                         },
                         lowerLegTextureQuad };
                 }
