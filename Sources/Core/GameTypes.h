@@ -1479,6 +1479,18 @@ enum class NoiseType : std::uint32_t
     Perlin_8_1024_073 = 3
 };
 
+/*
+ * Parameters of a gripped move.
+ */
+struct GrippedMoveParameters
+{
+    // All in world coords
+    vec2f GripCenter;
+    float GripRadius;
+    vec2f MoveOffset;
+    vec2f InertialVelocity;
+};
+
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // Rendering
 ////////////////////////////////////////////////////////////////////////////////////////////////

@@ -228,18 +228,20 @@ void Ship::RotateBy(
 }
 
 void Ship::MoveGrippedBy(
-    vec2f const & gripCenter,
-    float const gripRadius,
-    vec2f const & moveOffset,
-    vec2f const & inertialVelocity,
+    std::vector<GrippedMoveParameters> const & moves,
     SimulationParameters const & simulationParameters)
 {
-    float const squareAugmentedGripRadius =
-        (gripRadius * (1.0f + SimulationParameters::GripToolRadiusTransitionWidthFraction / 2.0f))
-        * (gripRadius * (1.0f + SimulationParameters::GripToolRadiusTransitionWidthFraction / 2.0f));
-
-    // Water velocity is actual movement
-    vec2f const impartedWaterVelocity = moveOffset / SimulationParameters::SimulationStepTimeDuration<float>;
+    std::vector<float> squareAugmentedGripRadii;
+    std::transform(
+        moves.cbegin(),
+        moves.cend(),
+        std::back_inserter(squareAugmentedGripRadii),
+        [](GrippedMoveParameters const & m)
+        {
+            return
+                (m.GripRadius * (1.0f + SimulationParameters::GripToolRadiusTransitionWidthFraction / 2.0f))
+                * (m.GripRadius * (1.0f + SimulationParameters::GripToolRadiusTransitionWidthFraction / 2.0f));
+        });
 
     vec2f * const restrict positionBuffer = mPoints.GetPositionBufferAsVec2();
     vec2f * const restrict velocityBuffer = mPoints.GetVelocityBufferAsVec2();
@@ -250,22 +252,42 @@ void Ship::MoveGrippedBy(
 
     for (auto const p : mPoints.RawShipPoints())
     {
-        // Check if in grip
-        float const squarePointRadius = (positionBuffer[p] - gripCenter).squareLength();
-        if (squarePointRadius <= squareAugmentedGripRadius)
+        // Check if in grip, and of which move
+        //
+        // Since it's physically impossible to be in two grips, here we pick the closest grip - if any
+        std::optional<size_t> bestMove;
+        float bestSquarePointDistance = std::numeric_limits<float>::max();
+        for (size_t m = 0; m < moves.size(); ++m)
+        {
+            float const squarePointDistance = (positionBuffer[p] - moves[m].GripCenter).squareLength();
+            if (squarePointDistance <= squareAugmentedGripRadii[m])
+            {
+                if (squarePointDistance < bestSquarePointDistance)
+                {
+                    bestMove = m;
+                    bestSquarePointDistance = squarePointDistance;
+                }
+            }
+        }
+
+        if (bestMove.has_value())
         {
             // Scale based on distance (1.0 at center, 0.0 at border)
             float const scale = (
-                1.0f - LinearStep(
-                    1.0f - SimulationParameters::GripToolRadiusTransitionWidthFraction,
-                    1.0f,
-                    std::sqrtf(squarePointRadius / squareAugmentedGripRadius))
-                )
-                * isPinnedBuffer[p]; // Nothing if pinned
+                                    1.0f - LinearStep(
+                                        1.0f - SimulationParameters::GripToolRadiusTransitionWidthFraction,
+                                        1.0f,
+                                        std::sqrtf(bestSquarePointDistance / squareAugmentedGripRadii[*bestMove]))
+                                )
+                                * isPinnedBuffer[p]; // Nothing if pinned
 
-            positionBuffer[p] += moveOffset * scale;
-            velocityBuffer[p] = velocityBuffer[p] * (1.0f - scale) + inertialVelocity * scale;
-            waterVelocityBuffer[p] = waterVelocityBuffer[p] * (1.0f - scale) - impartedWaterVelocity * scale;
+            positionBuffer[p] += moves[*bestMove].MoveOffset * scale;
+            velocityBuffer[p] =
+                velocityBuffer[p] * (1.0f - scale)
+                + moves[*bestMove].InertialVelocity * scale; // Only inertial here
+            waterVelocityBuffer[p] =
+                waterVelocityBuffer[p] * (1.0f - scale)
+                - moves[*bestMove].MoveOffset / SimulationParameters::SimulationStepTimeDuration<float> * scale; // Water velocity is actual movement
 
             // Zero-out already-existing forces
             staticForceBuffer[p] *= 1.0f - scale;
@@ -285,7 +307,7 @@ void Ship::MoveGrippedBy(
 
 void Ship::RotateGrippedBy(
     vec2f const & gripCenter,
-    float const gripRadius,
+    float gripRadius,
     float angle,
     float inertialAngle,
     SimulationParameters const & simulationParameters)

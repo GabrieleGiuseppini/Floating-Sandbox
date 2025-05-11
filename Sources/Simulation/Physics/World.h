@@ -195,15 +195,12 @@ public:
         SimulationParameters const & simulationParameters);
 
     void MoveGrippedBy(
-        vec2f const & gripCenter,
-        float const gripRadius,
-        vec2f const & moveOffset,
-        vec2f const & inertialWorldOffset,
+        std::vector<GrippedMoveParameters> const & movesWorld,
         SimulationParameters const & simulationParameters);
 
     void RotateGrippedBy(
         vec2f const & gripCenter,
-        float const gripRadius,
+        float gripRadius,
         float angle,
         float inertialAngle,
         SimulationParameters const & simulationParameters);

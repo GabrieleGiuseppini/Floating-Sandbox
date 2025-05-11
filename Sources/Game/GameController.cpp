@@ -861,10 +861,14 @@ void GameController::MoveGrippedBy(
     // Apply action
     assert(!!mWorld);
     mWorld->MoveGrippedBy(
-        worldGripCenter,
-        worldGripRadius,
-        worldOffset,
-        inertialWorldOffset,
+        {
+            GrippedMoveParameters{
+                worldGripCenter,
+                worldGripRadius,
+                worldOffset,
+                inertialWorldOffset / SimulationParameters::SimulationStepTimeDuration<float>
+            }
+        },
         mSimulationParameters);
 
     // Notify

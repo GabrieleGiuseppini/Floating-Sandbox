@@ -329,26 +329,20 @@ void World::RotateBy(
 }
 
 void World::MoveGrippedBy(
-    vec2f const & gripCenter,
-    float const gripRadius,
-    vec2f const & moveOffset,
-    vec2f const & inertialWorldOffset,
+    std::vector<GrippedMoveParameters> const & moves,
     SimulationParameters const & simulationParameters)
 {
     for (auto & ship : mAllShips)
     {
         ship->MoveGrippedBy(
-            gripCenter,
-            gripRadius,
-            moveOffset,
-            inertialWorldOffset / SimulationParameters::SimulationStepTimeDuration<float>,
+            moves,
             simulationParameters);
     }
 }
 
 void World::RotateGrippedBy(
     vec2f const & gripCenter,
-    float const gripRadius,
+    float gripRadius,
     float angle,
     float inertialAngle,
     SimulationParameters const & simulationParameters)
