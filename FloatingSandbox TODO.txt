@@ -71,6 +71,7 @@
 				- Replace Flames' dual upload
 		- Also, new fire emitter for black smore
 			- See if this item was somewhere else in the plan
+		- Also TimerBomb's wet fuse should do same smoke (current one is ugly)
 
 	- New materials (*)
 

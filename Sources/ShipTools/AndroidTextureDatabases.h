@@ -22,6 +22,7 @@ enum class UITextureGroups : uint16_t
     TimeOfDayIcon,
     ViewIcon,
     ExitIcon,
+    ExplosionIcon,
     ReloadIcon,
     CheckboxFrame,
     ToolsEyeQuadrant,
@@ -58,6 +59,8 @@ struct UITextureDatabase
             return UITextureGroups::ViewIcon;
         else if (Utils::CaseInsensitiveEquals(str, "exit_icon"))
             return UITextureGroups::ExitIcon;
+        else if (Utils::CaseInsensitiveEquals(str, "explosion_icon"))
+            return UITextureGroups::ExplosionIcon;
         else if (Utils::CaseInsensitiveEquals(str, "reload_icon"))
             return UITextureGroups::ReloadIcon;
         else if (Utils::CaseInsensitiveEquals(str, "checkbox_frame"))
