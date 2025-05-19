@@ -13,6 +13,7 @@
 #include <functional>
 #include <mutex>
 #include <deque>
+#include <string>
 #include <thread>
 #include <vector>
 
@@ -55,7 +56,9 @@ public:
 
 private:
 
-    void ThreadLoop(ThreadManager & threadManager);
+    void ThreadLoop(
+        std::string threadName,
+        ThreadManager & threadManager);
 
     void RunRemainingTasksLoop();
 

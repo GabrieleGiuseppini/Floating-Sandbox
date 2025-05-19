@@ -27,23 +27,19 @@ size_t ThreadManager::GetNumberOfProcessors()
 ThreadManager::ThreadManager(
     bool isRenderingMultithreaded,
     size_t maxInitialParallelism,
-    std::function<void()> && setCurrentThreadAsHighPriorityFunctor)
-    : mMaxSimulationParallelism(CalculateMaxSimulationParallelism(isRenderingMultithreaded))
-    , mSetCurrentThreadAsHighPriorityFunctor(std::move(setCurrentThreadAsHighPriorityFunctor))
+    std::function<void(std::string const &, bool)> && platformSpecificThreadInitializationFunctor)
+    : mIsRenderingMultithreaded(isRenderingMultithreaded)
+    , mMaxSimulationParallelism(CalculateMaxSimulationParallelism(isRenderingMultithreaded))
+    , mPlatformSpecificThreadInitializationFunctor(std::move(platformSpecificThreadInitializationFunctor))
 {
     size_t const simulationParallelism = std::min(mMaxSimulationParallelism, maxInitialParallelism);
 
-    LogMessage("ThreadManager: isRenderingMultithreaded=", (isRenderingMultithreaded ? "YES" : "NO"),
+    LogMessage("ThreadManager: isRenderingMultithreaded=", (mIsRenderingMultithreaded ? "YES" : "NO"),
         " maxSimulationParallelism=", mMaxSimulationParallelism,
-        " simulationParallism=", simulationParallelism);
+        " simulationParallelism=", simulationParallelism);
 
     // Set parallelism
     SetSimulationParallelism(simulationParallelism);
-}
-
-void ThreadManager::SetCurrentThreadAsHighPriority()
-{
-    mSetCurrentThreadAsHighPriorityFunctor();
 }
 
 size_t ThreadManager::GetSimulationParallelism() const
@@ -64,12 +60,9 @@ void ThreadManager::SetSimulationParallelism(size_t parallelism)
     mSimulationThreadPool = std::make_unique<ThreadPool>(parallelism, *this);
 }
 
-ThreadPool & ThreadManager::GetSimulationThreadPool()
-{
-    return *mSimulationThreadPool;
-}
-
-void ThreadManager::InitializeThisThread()
+void ThreadManager::InitializeThisThread(
+    std::string const & threadName,
+    bool isHighPriority)
 {
 #if FS_IS_OS_WINDOWS()
     LogMessage("Thread processor: ", GetCurrentProcessorNumber());
@@ -85,6 +78,13 @@ void ThreadManager::InitializeThisThread()
 #ifdef FLOATING_POINT_CHECKS
     EnableFloatingPointExceptions();
 #endif
+
+    mPlatformSpecificThreadInitializationFunctor(threadName, isHighPriority);
+}
+
+ThreadPool & ThreadManager::GetSimulationThreadPool()
+{
+    return *mSimulationThreadPool;
 }
 
 size_t ThreadManager::CalculateMaxSimulationParallelism(bool isRenderingMultithreaded)

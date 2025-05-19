@@ -23,6 +23,7 @@
 
 std::unique_ptr<GameController> GameController::Create(
     RenderDeviceProperties const & renderDeviceProperties,
+    ThreadManager & threadManager,
     GameAssetManager const & gameAssetManager,
     ProgressCallback const & progressCallback)
 {
@@ -50,6 +51,7 @@ std::unique_ptr<GameController> GameController::Create(
         FloatSize(SimulationParameters::MaxWorldWidth, SimulationParameters::MaxWorldHeight),
         std::move(npcTextureAtlas),
         *perfStats,
+        threadManager,
         gameAssetManager,
         progressCallback.MakeSubCallback(0.0f, 0.9f)); // Progress: 0.0-0.9
 
@@ -64,6 +66,7 @@ std::unique_ptr<GameController> GameController::Create(
             std::move(fishSpeciesDatabase),
             std::move(npcDatabase),
             std::move(materialDatabase),
+            threadManager,
             gameAssetManager,
             progressCallback));
 }
@@ -74,6 +77,7 @@ GameController::GameController(
     FishSpeciesDatabase && fishSpeciesDatabase,
     NpcDatabase && npcDatabase,
     MaterialDatabase && materialDatabase,
+    ThreadManager & threadManager,
     GameAssetManager const & gameAssetManager,
     ProgressCallback const & progressCallback)
     // State machines
@@ -112,10 +116,7 @@ GameController::GameController(
         mIsShiftOn,
         mRenderContext->GetDisplayUnitsSystem(),
         mSimulationEventDispatcher)
-    , mThreadManager(
-        mRenderContext->IsRenderingMultiThreaded(),
-        8, // We start "zuinig", as we do not want to pay a ThreadPool price for too many threads
-        []() {}) // No high-priority callback for PC
+    , mThreadManager(threadManager)
     , mViewManager(*mRenderContext)
     // Smoothing
     , mFloatParameterSmoothers()

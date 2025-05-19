@@ -28,6 +28,7 @@
 #include <Core/SysSpecifics.h>
 #include <Core/TaskThread.h>
 #include <Core/TextureAtlas.h>
+#include <Core/ThreadManager.h>
 #include <Core/Vectors.h>
 
 #include <array>
@@ -56,17 +57,13 @@ public:
         FloatSize const & maxWorldSize,
         TextureAtlas<GameTextureDatabases::NpcTextureDatabase> && npcTextureAtlas,
         PerfStats & perfStats,
+        ThreadManager & threadManager,
         IAssetManager const & assetManager,
         ProgressCallback const & progressCallback);
 
     ~RenderContext();
 
 public:
-
-    bool IsRenderingMultiThreaded() const
-    {
-        return mIsRenderingMultithreaded;
-    }
 
     //
     // World and view properties
@@ -1267,8 +1264,6 @@ private:
     //
     // Render Thread
     //
-
-    bool const mIsRenderingMultithreaded;
 
     // The thread running all of our OpenGL calls
     TaskThread mRenderThread;

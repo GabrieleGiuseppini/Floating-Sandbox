@@ -380,7 +380,7 @@ public:
     {
     }
 
-    inline vec3f operator+(vec3f const & other) const
+    inline constexpr vec3f operator+(vec3f const & other) const
     {
         return vec3f(
             x + other.x,
@@ -388,7 +388,7 @@ public:
             z + other.z);
     }
 
-    inline vec3f operator-(vec3f const & other) const
+    inline constexpr vec3f operator-(vec3f const & other) const
     {
         return vec3f(
             x - other.x,
@@ -396,7 +396,7 @@ public:
             z - other.z);
     }
 
-    inline vec3f operator-() const
+    inline constexpr vec3f operator-() const
     {
         return vec3f(
             -x,
@@ -404,7 +404,7 @@ public:
             -z);
     }
 
-    inline vec3f operator*(float other) const
+    inline constexpr vec3f operator*(float other) const
     {
         return vec3f(
             x * other,
@@ -412,7 +412,7 @@ public:
             z * other);
     }
 
-    inline vec3f operator/(float other) const
+    inline constexpr vec3f operator/(float other) const
     {
         return vec3f(
             x / other,
@@ -420,7 +420,7 @@ public:
             z / other);
     }
 
-    inline vec3f & operator+=(vec3f const & other)
+    inline constexpr vec3f & operator+=(vec3f const & other)
     {
         x += other.x;
         y += other.y;
@@ -428,7 +428,7 @@ public:
         return *this;
     }
 
-    inline vec3f & operator-=(vec3f const & other)
+    inline constexpr vec3f & operator-=(vec3f const & other)
     {
         x -= other.x;
         y -= other.y;
@@ -436,7 +436,7 @@ public:
         return *this;
     }
 
-    inline vec3f & operator*=(float other)
+    inline constexpr vec3f & operator*=(float other)
     {
         x *= other;
         y *= other;
@@ -444,7 +444,7 @@ public:
         return *this;
     }
 
-    inline vec3f & operator/=(float other)
+    inline constexpr vec3f & operator/=(float other)
     {
         x /= other;
         y /= other;

@@ -5,6 +5,7 @@
  ***************************************************************************************/
 #pragma once
 
+#include "BootSettings.h"
 #include "MusicController.h"
 #include "SettingsManager.h"
 #include "SoundController.h"
@@ -30,6 +31,8 @@
 #include <Game/GameController.h>
 #include <Game/IGameEventHandlers.h>
 #include <Game/ShipLoadSpecifications.h>
+
+#include <Core/ThreadManager.h>
 
 #include "UI/SplashScreenDialog.h" // Need to include this (which includes wxGLCanvas) *after* our glad.h has been included,
  // so that wxGLCanvas ends up *not* including the system's OpenGL header but glad's instead
@@ -62,6 +65,8 @@ public:
     MainFrame(
         wxApp * mainApp,
         std::optional<std::filesystem::path> initialShipFilePath,
+        BootSettings bootSettings,
+        ThreadManager & threadManager,
         GameAssetManager const & gameAssetManager,
         LocalizationManager & localizationManager);
 
@@ -86,10 +91,13 @@ private:
 
     std::unique_ptr<ShipBuilder::MainFrame> mShipBuilderMainFrame;
 
+    BootSettings mBootSettings;
+
     //
     // Helpers
     //
 
+    ThreadManager & mThreadManager;
     GameAssetManager const & mGameAssetManager;
     LocalizationManager & mLocalizationManager;
     std::unique_ptr<GameController> mGameController;

@@ -10,24 +10,23 @@
 
 #include <cassert>
 
-TaskThread::TaskThread()
-    : TaskThread(false)
-{}
-
-TaskThread::TaskThread(bool isMultithreaded)
+TaskThread::TaskThread(
+    std::string threadName,
+    bool isMultithreaded,
+    ThreadManager & threadManager)
     : mHasThread(isMultithreaded)
     , mIsStop(false)
 {
     if (mHasThread)
     {
-        LogMessage("TaskThread::TaskThread(): starting thread...");
+        LogMessage("TaskThread::TaskThread(): starting \"", threadName, "\" thread...");
 
         // Start thread
-        mThread = std::thread(&TaskThread::ThreadLoop, this);
+        mThread = std::thread(&TaskThread::ThreadLoop, this, std::move(threadName), &threadManager);
     }
     else
     {
-        LogMessage("TaskThread::TaskThread(): not starting thread - will be simulating multi-threading");
+        LogMessage("TaskThread::TaskThread(): not starting \"", threadName, "\" thread - will be simulating multi-threading");
     }
 }
 
@@ -54,7 +53,9 @@ TaskThread::~TaskThread()
     }
 }
 
-void TaskThread::ThreadLoop()
+void TaskThread::ThreadLoop(
+    std::string threadName,
+    ThreadManager * threadManager)
 {
     assert(mHasThread); // This method only runs if we're truly multi-threaded
 
@@ -62,7 +63,7 @@ void TaskThread::ThreadLoop()
     // Initialize thread
     //
 
-    ThreadManager::InitializeThisThread();
+    threadManager->InitializeThisThread(threadName, false);
 
     //
     // Run loop

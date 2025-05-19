@@ -28,9 +28,10 @@ ThreadPool::ThreadPool(
     // Start N-1 threads (main thread is one of them)
     for (size_t i = 0; i < parallelism - 1; ++i)
     {
-        mThreads.emplace_back([this, &threadManager]()
+        std::string threadName = "FS TPool " + std::to_string(i + 1);
+        mThreads.emplace_back([this, threadName, &threadManager]()
             {
-                ThreadLoop(threadManager);
+                ThreadLoop(threadName, threadManager);
             });
     }
 }
@@ -106,14 +107,15 @@ void ThreadPool::Run(std::vector<Task> const & tasks)
     }
 }
 
-void ThreadPool::ThreadLoop(ThreadManager & threadManager)
+void ThreadPool::ThreadLoop(
+    std::string threadName,
+    ThreadManager & threadManager)
 {
     //
     // Initialize thread
     //
 
-    threadManager.InitializeThisThread();
-    threadManager.SetCurrentThreadAsHighPriority();
+    threadManager.InitializeThisThread(threadName, true);
 
     //
     // Run thread loop until thread pool is destroyed

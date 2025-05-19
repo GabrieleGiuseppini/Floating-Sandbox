@@ -46,7 +46,7 @@ public:
 
     inline time_point Now() const
     {
-        if (!!mLastResumeTime)
+        if (mLastResumeTime.has_value())
         {
             // We're running
             return mLastPauseTime + (std::chrono::steady_clock::now() - *mLastResumeTime);
@@ -142,7 +142,7 @@ public:
     {
         if (isPaused)
         {
-            if (!!mLastResumeTime)
+            if (mLastResumeTime.has_value())
             {
                 mLastPauseTime = Now();
                 mLastResumeTime.reset();

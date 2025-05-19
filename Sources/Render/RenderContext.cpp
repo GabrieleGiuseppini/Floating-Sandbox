@@ -27,27 +27,6 @@ namespace /*anonymous*/ {
             return !GameOpenGL::AvoidGlFinish;
         }
     }
-
-    bool CalculateIsMultithreaded(std::optional<bool> doForceNoMultithreadedRenderingOverride)
-    {
-        bool const hasEnoughThreads = ThreadManager::GetNumberOfProcessors() > 1;
-
-        if (doForceNoMultithreadedRenderingOverride.has_value())
-        {
-            // Use override as-is
-            return hasEnoughThreads && !(*doForceNoMultithreadedRenderingOverride);
-        }
-        else
-        {
-#if FS_IS_OS_MACOS() // Do not use multi-threaded rendering on MacOS
-            return false;
-#elif FS_IS_OS_LINUX() // Do not use multi-threaded rendering on X11
-            return false;
-#else
-            return hasEnoughThreads;
-#endif
-        }
-    }
 }
 
 RenderContext::RenderContext(
@@ -55,12 +34,12 @@ RenderContext::RenderContext(
     FloatSize const & maxWorldSize,
     TextureAtlas<GameTextureDatabases::NpcTextureDatabase> && npcTextureAtlas,
     PerfStats & perfStats,
+    ThreadManager & threadManager,
     IAssetManager const & assetManager,
     ProgressCallback const & progressCallback)
     : mDoInvokeGlFinish(false) // Will be recalculated
     // Thread
-    , mIsRenderingMultithreaded(CalculateIsMultithreaded(renderDeviceProperties.DoForceNoMultithreadedRendering))
-    , mRenderThread(mIsRenderingMultithreaded)
+    , mRenderThread("FS RenderThread", threadManager.IsRenderingMultiThreaded(), threadManager)
     , mLastRenderUploadEndCompletionIndicator()
     , mLastRenderDrawCompletionIndicator()
     // Shader manager

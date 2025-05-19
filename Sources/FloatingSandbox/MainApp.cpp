@@ -8,6 +8,7 @@
 // The main application. This journey begins from here.
 //
 
+#include "BootSettings.h"
 #include "MainFrame.h"
 #include "UIPreferencesManager.h"
 #include "UnhandledExceptionHandler.h"
@@ -80,6 +81,27 @@ ULONG GetCurrentTimerResolution()
 }
 #endif
 
+bool CalculateIsRenderingMultithreaded(std::optional<bool> doForceNoMultithreadedRenderingOverride)
+{
+    bool const hasEnoughThreads = ThreadManager::GetNumberOfProcessors() > 1;
+
+    if (doForceNoMultithreadedRenderingOverride.has_value())
+    {
+        // Use override as-is
+        return hasEnoughThreads && !(*doForceNoMultithreadedRenderingOverride);
+    }
+    else
+    {
+#if FS_IS_OS_MACOS() // Do not use multi-threaded rendering on MacOS
+        return false;
+#elif FS_IS_OS_LINUX() // Do not use multi-threaded rendering on X11
+        return false;
+#else
+        return hasEnoughThreads;
+#endif
+    }
+}
+
 class MainApp final : public wxApp
 {
 public:
@@ -101,6 +123,7 @@ private:
 
     MainFrame * mMainFrame;
     std::unique_ptr<GameAssetManager> mGameAssetManager;
+    std::unique_ptr<ThreadManager> mThreadManager;
     std::unique_ptr<LocalizationManager> mLocalizationManager;
 
 
@@ -175,12 +198,6 @@ MainApp::MainApp()
 #endif
 
     //
-    // Initialize this thread
-    //
-
-    ThreadManager::InitializeThisThread();
-
-    //
     // Install handler for unhandled exceptions
     //
 
@@ -220,10 +237,34 @@ bool MainApp::OnInit()
     try
     {
         //
-        // Initialize resource locator, using executable's path
+        // Initialize asset manager, using executable's path
         //
 
         mGameAssetManager = std::make_unique<GameAssetManager>(std::string(argv[0]));
+
+        //
+        // Load boot settings
+        //
+
+        auto const bootSettings = BootSettings::Load(mGameAssetManager->GetBootSettingsFilePath());
+
+        //
+        // Create thread manager
+        //
+
+        mThreadManager = std::make_unique<ThreadManager>(
+            CalculateIsRenderingMultithreaded(bootSettings.DoForceNoMultithreadedRendering),
+            8, // We start "zuinig", as we do not want to pay a ThreadPool price for too many threads
+            [this](std::string const &, bool)
+            {
+                // No platform-specific initialization for PC
+            });
+
+        //
+        // Initialize this thread
+        //
+
+        mThreadManager->InitializeThisThread("FS Main Thread", false);
 
         //
         // Initialize wxWidgets and language used for localization
@@ -261,7 +302,13 @@ bool MainApp::OnInit()
         // Create frame
         //
 
-        mMainFrame = new MainFrame(this, initialFilePath, *mGameAssetManager, *mLocalizationManager);
+        mMainFrame = new MainFrame(
+            this,
+            initialFilePath,
+            bootSettings,
+            *mThreadManager,
+            *mGameAssetManager,
+            *mLocalizationManager);
 
         SetTopWindow(mMainFrame);
 

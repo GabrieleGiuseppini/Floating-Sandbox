@@ -6,7 +6,8 @@
 
 TEST(TaskThreadTests, Synchronous)
 {
-    TaskThread t;
+    ThreadManager threadManager{ false, 16, [](std::string const &, bool) {} };
+    TaskThread t("Test thread", true, threadManager);
 
     bool isDone = false;
     auto tc = t.QueueTask(
@@ -22,7 +23,8 @@ TEST(TaskThreadTests, Synchronous)
 
 TEST(TaskThreadTests, Asynchronous)
 {
-    TaskThread t;
+    ThreadManager threadManager{ false, 16, [](std::string const &, bool) {} };
+    TaskThread t("Test thread", true, threadManager);
 
     bool isDone = false;
     t.QueueTask(
@@ -41,7 +43,8 @@ TEST(TaskThreadTests, Asynchronous)
 
 TEST(TaskThreadTests, RunSynchronously)
 {
-    TaskThread t;
+    ThreadManager threadManager{ false, 16, [](std::string const &, bool) {} };
+    TaskThread t("Test thread", true, threadManager);
 
     bool isDone = false;
     t.RunSynchronously(
@@ -55,7 +58,8 @@ TEST(TaskThreadTests, RunSynchronously)
 
 TEST(TaskThreadTests, QueueSynchronizationPoint)
 {
-    TaskThread t;
+    ThreadManager threadManager{ false, 16, [](std::string const &, bool) {} };
+    TaskThread t("Test thread", true, threadManager);
 
     bool isDone = false;
     t.RunSynchronously(

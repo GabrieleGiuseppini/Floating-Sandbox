@@ -144,7 +144,7 @@ bool MainApp::OnInit()
             *mMaterialDatabase,
             *mShipTexturizer,
             {},
-            [](float, ProgressMessageType){});
+            ProgressCallback([](float, ProgressMessageType){}));
 
         SetTopWindow(mMainFrame);
 

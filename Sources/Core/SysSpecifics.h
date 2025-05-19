@@ -101,7 +101,6 @@
 #define FS_IS_ARM_NEON() 0
 
 #if FS_IS_ARCHITECTURE_ARM_32() || FS_IS_ARCHITECTURE_ARM_64()
-// For now we assume NEON if we are on ARM
 #if defined(__ARM_NEON)
 #undef FS_IS_ARM_NEON
 #define FS_IS_ARM_NEON() 1

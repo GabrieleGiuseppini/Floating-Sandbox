@@ -14,7 +14,7 @@ public:
 
 protected:
 
-    ThreadManager mThreadManager{ false, 16, []() {} };
+    ThreadManager mThreadManager{ false, 16, [](std::string const &, bool) {} };
 };
 
 INSTANTIATE_TEST_SUITE_P(
@@ -57,7 +57,7 @@ public:
 
 protected:
 
-    ThreadManager mThreadManager{ false, 16, []() {} };
+    ThreadManager mThreadManager{ false, 16, [](std::string const &, bool) {} };
 };
 
 INSTANTIATE_TEST_SUITE_P(

@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #pragma once
 
+#include "ThreadManager.h"
+
 #include <condition_variable>
 #include <deque>
 #include <functional>
@@ -102,8 +104,10 @@ public:
 
 public:
 
-    TaskThread();
-    explicit TaskThread(bool isMultithreaded);
+    TaskThread(
+        std::string threadName,
+        bool isMultithreaded,
+        ThreadManager & threadManager);
 
     ~TaskThread();
 
@@ -180,7 +184,9 @@ public:
 
 private:
 
-    void ThreadLoop();
+    void ThreadLoop(
+        std::string threadName,
+        ThreadManager * threadManager);
 
 private:
 

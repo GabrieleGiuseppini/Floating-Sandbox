@@ -66,6 +66,7 @@ public:
 
     static std::unique_ptr<GameController> Create(
         RenderDeviceProperties const & renderDeviceProperties,
+        ThreadManager & threadManager,
         GameAssetManager const & gameAssetManager,
         ProgressCallback const & progressCallback);
 
@@ -1059,6 +1060,7 @@ private:
         FishSpeciesDatabase && fishSpeciesDatabase,
         NpcDatabase && npcDatabase,
         MaterialDatabase && materialDatabase,
+        ThreadManager & threadManager,
         GameAssetManager const & gameAssetManager,
         ProgressCallback const & progressCallback);
 
@@ -1170,7 +1172,7 @@ private:
     SimulationEventDispatcher mSimulationEventDispatcher;
     GameEventDispatcher mGameEventDispatcher;
     NotificationLayer mNotificationLayer;
-    ThreadManager mThreadManager;
+    ThreadManager & mThreadManager;
     ViewManager mViewManager;
     std::unique_ptr<EventRecorder> mEventRecorder;
 

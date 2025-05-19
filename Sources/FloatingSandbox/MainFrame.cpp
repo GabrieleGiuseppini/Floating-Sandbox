@@ -5,7 +5,6 @@
  ***************************************************************************************/
 #include "MainFrame.h"
 
-#include "BootSettings.h"
 #include "UI/AboutDialog.h"
 #include "UI/BootSettingsDialog.h"
 #include "UI/CheckForUpdatesDialog.h"
@@ -106,10 +105,14 @@ long const ID_CHECK_UPDATES_TIMER = wxNewId();
 MainFrame::MainFrame(
     wxApp * mainApp,
     std::optional<std::filesystem::path> initialShipFilePath,
+    BootSettings bootSettings,
+    ThreadManager & threadManager,
     GameAssetManager const & gameAssetManager,
     LocalizationManager & localizationManager)
     : mMainApp(mainApp)
     , mShipBuilderMainFrame()
+    , mBootSettings(bootSettings)
+    , mThreadManager(threadManager)
     , mGameAssetManager(gameAssetManager)
     , mLocalizationManager(localizationManager)
     , mGameController()
@@ -990,13 +993,6 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     auto const postInitializeStartTimestamp = std::chrono::steady_clock::now();
 
     //
-    // Load boot settings
-    //
-
-    auto const bootSettings = BootSettings::Load(mGameAssetManager.GetBootSettingsFilePath());
-
-
-    //
     // Create splash screen
     //
 
@@ -1045,8 +1041,8 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
                     mMainGLCanvas->GetSize().GetWidth(),
                     mMainGLCanvas->GetSize().GetHeight()),
                 mMainGLCanvas->GetContentScaleFactor(),
-                bootSettings.DoForceNoGlFinish,
-                bootSettings.DoForceNoMultithreadedRendering,
+                mBootSettings.DoForceNoGlFinish,
+                mBootSettings.DoForceNoMultithreadedRendering,
                 std::bind(&MainFrame::MakeOpenGLContextCurrent, this),
                 [this]()
                 {
@@ -1062,6 +1058,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 
                     //LogMessage("TODOTEST: ...buffers swapped.");
                 }),
+            mThreadManager,
             mGameAssetManager,
             ProgressCallback(
                 [this, &splash](float progress, ProgressMessageType message)
