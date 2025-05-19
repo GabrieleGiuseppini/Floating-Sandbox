@@ -19,6 +19,7 @@
 #include "GameTypes.h"
 #include "IAssetManager.h"
 #include "ImageData.h"
+#include "ImageTools.h"
 
 #include <picojson.h>
 
@@ -89,6 +90,21 @@ struct TextureFrameMetadata
         , DisplayName(displayName)
     {}
 
+    TextureFrameMetadata Resize(float resizeFactor) const
+    {
+        return TextureFrameMetadata(
+            Size * resizeFactor,
+            WorldWidth,
+            WorldHeight,
+            HasOwnAmbientLight,
+            AnchorCenterPixel * resizeFactor,
+            AnchorCenterWorld,
+            AnchorOffsetFrame,
+            FrameId,
+            FrameName,
+            DisplayName);
+    }
+
     void Serialize(picojson::object & root) const;
 
     static TextureFrameMetadata Deserialize(picojson::object const & root);
@@ -116,6 +132,18 @@ struct TextureFrame
             Metadata,
             TextureData.Clone());
     }
+
+    TextureFrame Resize(float resizeFactor) const
+    {
+        auto const resizedMetadata = Metadata.Resize(resizeFactor);
+
+        return TextureFrame(
+            resizedMetadata,
+            ImageTools::Resize(
+                TextureData,
+                resizedMetadata.Size,
+                ImageTools::FilterKind::Bilinear));
+    }
 };
 
 template <typename TTextureDatabase>
@@ -139,6 +167,8 @@ struct TextureFrameSpecification
         RgbaImageData imageData = assetManager.LoadTextureDatabaseFrameRGBA(
             TTextureDatabase::DatabaseName,
             RelativePath);
+
+        assert(imageData.Size == Metadata.Size);
 
         return TextureFrame<TTextureDatabase>(
             Metadata,
@@ -183,7 +213,9 @@ public:
         return static_cast<TextureFrameIndex>(mFrameSpecifications.size());
     }
 
-    inline TextureFrame<TTextureDatabase> LoadFrame(TextureFrameIndex frameIndex, IAssetManager const & assetManager) const
+    inline TextureFrame<TTextureDatabase> LoadFrame(
+        TextureFrameIndex frameIndex,
+        IAssetManager const & assetManager) const
     {
         return mFrameSpecifications[frameIndex].LoadFrame(assetManager);
     }

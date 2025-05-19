@@ -128,6 +128,76 @@ TEST(TextureDatabaseTests, Loading)
     }
 }
 
+TEST(TextureDatabaseTests, MetadataResize)
+{
+    // Prepare test DB
+    TestAssetManager testAssetManager;
+    testAssetManager.TestTextureDatabases =
+    {
+        TestTextureDatabase{
+            MyTestTextureDatabase::DatabaseName,
+            {
+                TestTextureDatabase::DatabaseFrameInfo{{"George_0", "George_0.png", "George_0.png"}, ImageSize(222, 224)},
+                TestTextureDatabase::DatabaseFrameInfo{{"John_1", "John_1.png", "Hello/John_1.png"}, ImageSize(111, 112)},
+                TestTextureDatabase::DatabaseFrameInfo{{"Ringo_0", "Ringo_0.png", "Ringo_0.png"}, ImageSize(2022, 2023)},
+                TestTextureDatabase::DatabaseFrameInfo{{"Ringo_1", "Ringo_1.png", "Ringo_1.png"}, ImageSize(2122, 2123)},
+            },
+            R"xxx(
+[
+    {
+	    "group_name": "MyTestGroup1",
+	    "has_own_ambient_light": false,
+	    "frames":[
+		    {
+			    "world_width": 10.0,
+			    "world_height": 20.0,
+			    "frame_name_pattern": "George_\\d+",
+                "anchor_offset_x": -10,
+			    "anchor_offset_y": -14
+		    },
+		    {
+			    "world_width": 100.0,
+			    "world_height": 200.0,
+			    "frame_name_pattern": "John_\\d+"
+		    }
+	    ]
+    },
+    {
+	    "group_name": "MyTestGroup2",
+	    "has_own_ambient_light": true,
+        "auto_assign_frame_indices": true,
+	    "frames":[
+		    {
+			    "world_width": 10000.0,
+			    "world_height": 2000.0,
+			    "frame_name_pattern": "Ringo_\\d+"
+		    }
+	    ]
+    }
+]
+                )xxx"
+            }
+    };
+
+    // Load texture database
+    auto db = TextureDatabase<MyTestTextureDatabase>::Load(testAssetManager);
+
+    auto const & groups = db.GetGroups();
+    ASSERT_EQ(groups.size(), 2);
+
+    ASSERT_EQ(groups[0].Group, MyTestTextureDatabase::MyTextureGroups::MyTestGroup1);
+    ASSERT_EQ(groups[0].GetFrameCount(), 2);
+
+    auto const & fs3 = groups[0].GetFrameSpecification(0);
+    ASSERT_EQ(fs3.RelativePath, "George_0.png");
+    EXPECT_EQ(fs3.Metadata.Size, ImageSize(222, 224));
+    EXPECT_EQ(fs3.Metadata.AnchorCenterPixel, ImageCoordinates(111 - 10, 112 - 14));
+
+    auto const resizedMetadata = fs3.Metadata.Resize(0.5f);
+    EXPECT_EQ(resizedMetadata.Size, ImageSize(111, 112));
+    EXPECT_EQ(resizedMetadata.AnchorCenterPixel, ImageCoordinates(55 - 5 + 1, 56 - 7));
+}
+
 TEST(TextureDatabaseTests, NotAllGroupsCovered)
 {
     // Prepare test DB

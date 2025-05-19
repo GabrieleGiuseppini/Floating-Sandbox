@@ -80,6 +80,7 @@ void GlobalRenderContext::InitializeGenericTextures()
     auto genericLinearTextureAtlas = TextureAtlasBuilder<GameTextureDatabases::GenericLinearTextureDatabase>::BuildAtlas(
         genericLinearTextureDatabase,
         TextureAtlasOptions::None,
+        1.0f,
         mAssetManager,
         SimpleProgressCallback::Dummy());
 
@@ -157,6 +158,7 @@ void GlobalRenderContext::InitializeGenericTextures()
     auto genericMipMappedTextureAtlas = TextureAtlasBuilder<GameTextureDatabases::GenericMipMappedTextureDatabase>::BuildAtlas(
         genericMipMappedTextureDatabase,
         TextureAtlasOptions::MipMappable,
+        1.0f,
         mAssetManager,
         SimpleProgressCallback::Dummy());
 

@@ -221,19 +221,20 @@ public:
     static TextureAtlas<TTextureDatabase> BuildAtlas(
         TextureDatabase<TTextureDatabase> const & database,
         TextureAtlasOptions options,
+        float resizeFactor,
         IAssetManager const & assetManager,
         SimpleProgressCallback const & progressCallback)
     {
-        auto frameLoader = [&database, &assetManager](TextureFrameId<TTextureGroups> const & frameId) -> TextureFrame<TTextureDatabase>
+        auto frameLoader = [&](TextureFrameId<TTextureGroups> const & frameId) -> TextureFrame<TTextureDatabase>
             {
-                return database.GetGroup(frameId.Group).LoadFrame(frameId.FrameIndex, assetManager);
+                return database.GetGroup(frameId.Group).LoadFrame(frameId.FrameIndex, assetManager).Resize(resizeFactor);
             };
 
         // Build TextureInfo's
         std::vector<TextureInfo> textureInfos;
         for (auto const & group : database.GetGroups())
         {
-            AddTextureInfos(group, options, textureInfos);
+            AddTextureInfos(group, options, resizeFactor, textureInfos);
         }
 
         // Build specification
@@ -302,6 +303,7 @@ public:
     static TextureAtlas<TTextureDatabase> BuildRegularAtlas(
         TextureDatabase<TTextureDatabase> const & database,
         TextureAtlasOptions options,
+        float resizeFactor,
         IAssetManager const & assetManager,
         SimpleProgressCallback const & progressCallback)
     {
@@ -315,7 +317,7 @@ public:
         for (auto const & group : database.GetGroups())
         {
             // Note: we'll verify later whether dimensions are suitable for a regular atlas
-            AddTextureInfos(group, options, textureInfos);
+            AddTextureInfos(group, options, resizeFactor, textureInfos);
         }
 
         // Build specification - verifies whether dimensions are suitable for a regular atlas
@@ -325,9 +327,9 @@ public:
         return InternalBuildAtlas(
             specification,
             options | TextureAtlasOptions::MipMappable,
-            [&database, &assetManager](TextureFrameId<TTextureGroups> const & frameId)
+            [&](TextureFrameId<TTextureGroups> const & frameId) -> TextureFrame<TTextureDatabase>
             {
-                return database.GetGroup(frameId.Group).LoadFrame(frameId.FrameIndex, assetManager);
+                return database.GetGroup(frameId.Group).LoadFrame(frameId.FrameIndex, assetManager).Resize(resizeFactor);
             },
             progressCallback);
     }
@@ -423,17 +425,20 @@ private:
     static inline void AddTextureInfos(
         TextureGroup<TTextureDatabase> const & group,
         TextureAtlasOptions options,
+        float resizeFactor,
         std::vector<TextureInfo> /* out */ & textureInfos)
     {
         std::transform(
             group.GetFrameSpecifications().cbegin(),
             group.GetFrameSpecifications().cend(),
             std::back_inserter(textureInfos),
-            [&options](auto const & frame)
+            [&](auto const & frame)
             {
+                auto const frameSize = frame.Metadata.Size * resizeFactor;
+
                 return TextureInfo(
                     frame.Metadata.FrameId,
-                    MakeInAtlasSize(frame.Metadata.Size, options));
+                    MakeInAtlasSize(frameSize, options));
             });
     }
 

@@ -628,6 +628,13 @@ struct _IntegralCoordinates
             this->y - offset.height);
     }
 
+    inline _IntegralCoordinates<TIntegralTag> operator*(float factor) const
+    {
+        return _IntegralCoordinates<TIntegralTag>(
+            static_cast<int>(std::roundf(static_cast<float>(this->x) * factor)),
+            static_cast<int>(std::roundf(static_cast<float>(this->y) * factor)));
+    }
+
     inline _IntegralCoordinates<TIntegralTag> scale(_IntegralCoordinates<TIntegralTag> const & multiplier) const
     {
         return _IntegralCoordinates<TIntegralTag>(

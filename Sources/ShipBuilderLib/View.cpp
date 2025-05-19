@@ -116,6 +116,7 @@ View::View(
         auto mipmappedTextureAtlas = TextureAtlasBuilder<MipMappedTextureDatabase>::BuildAtlas(
             mipmappedTextureDatabase,
             TextureAtlasOptions::MipMappable,
+            1.0f,
             gameAssetManager,
             SimpleProgressCallback::Dummy());
 

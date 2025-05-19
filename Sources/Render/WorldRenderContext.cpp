@@ -627,6 +627,7 @@ void WorldRenderContext::InitializeFishTextures()
     auto fishTextureAtlas = TextureAtlasBuilder<GameTextureDatabases::FishTextureDatabase>::BuildAtlas(
         fishTextureDatabase,
         TextureAtlasOptions::MipMappable,
+        1.0f,
         mAssetManager,
         SimpleProgressCallback::Dummy());
 
