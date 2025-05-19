@@ -52,7 +52,8 @@ public:
     static std::tuple<size_t, ImageSize> BakeAtlas(
         std::filesystem::path const & texturesRootDirectoryPath,
         std::filesystem::path const & outputDirectoryPath,
-        AtlasBakingOptions const & options)
+        AtlasBakingOptions const & options,
+        float resizeFactor)
     {
         if (!std::filesystem::exists(texturesRootDirectoryPath))
         {
@@ -88,6 +89,7 @@ public:
             ? TextureAtlasBuilder<TTextureDatabase>::BuildRegularAtlas(
                 textureDatabase,
                 atlasOptions,
+                resizeFactor,
                 assetManager,
                 SimpleProgressCallback([](float)
                 {
@@ -96,6 +98,7 @@ public:
             : TextureAtlasBuilder<TTextureDatabase>::BuildAtlas(
                 textureDatabase,
                 atlasOptions,
+                resizeFactor,
                 assetManager,
                 SimpleProgressCallback([](float)
                 {

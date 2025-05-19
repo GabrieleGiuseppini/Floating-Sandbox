@@ -52,7 +52,7 @@ int main(int argc, char ** argv)
 
 int DoBakeAtlas(int argc, char ** argv)
 {
-    if (argc < 5 || argc > 7)
+    if (argc < 5)
     {
         PrintUsage();
         return 0;
@@ -67,6 +67,7 @@ int DoBakeAtlas(int argc, char ** argv)
         false,
         false
         });
+    float resizeFactor = 1.0f;
 
     for (int i = 5; i < argc; ++i)
     {
@@ -102,6 +103,17 @@ int DoBakeAtlas(int argc, char ** argv)
 
             ++i;
         }
+        else if (option == "-z")
+        {
+            if (i == argc - 1)
+            {
+                throw std::runtime_error("Missing resize factor");
+            }
+
+            resizeFactor = static_cast<float>(atof(argv[i + 1]));
+
+            ++i;
+        }
         else
         {
             throw std::runtime_error("Unrecognized option '" + option + "'");
@@ -119,6 +131,7 @@ int DoBakeAtlas(int argc, char ** argv)
     std::cout << "  mip-mappable                  : " << options.MipMappable << std::endl;
     std::cout << "  regular                       : " << options.Regular << std::endl;
     std::cout << "  duplicates suppression        : " << options.SuppressDuplicates << std::endl;
+    std::cout << "  resize factor                 : " << resizeFactor << std::endl;
 
     std::tuple<size_t, ImageSize> atlasData{ 0, ImageSize(0, 0) };
     if (Utils::CaseInsensitiveEquals(databaseName, "cloud"))
@@ -126,35 +139,40 @@ int DoBakeAtlas(int argc, char ** argv)
         atlasData = Baker::BakeAtlas<GameTextureDatabases::CloudTextureDatabase>(
             texturesRootDirectoryPath,
             outputDirectoryPath,
-            options);
+            options,
+            resizeFactor);
     }
     else if (Utils::CaseInsensitiveEquals(databaseName, "explosion"))
     {
         atlasData = Baker::BakeAtlas<GameTextureDatabases::ExplosionTextureDatabase>(
             texturesRootDirectoryPath,
             outputDirectoryPath,
-            options);
+            options,
+            resizeFactor);
     }
     else if (Utils::CaseInsensitiveEquals(databaseName, "fish"))
     {
         atlasData = Baker::BakeAtlas<GameTextureDatabases::FishTextureDatabase>(
             texturesRootDirectoryPath,
             outputDirectoryPath,
-            options);
+            options,
+            resizeFactor);
     }
     else if (Utils::CaseInsensitiveEquals(databaseName, "npc"))
     {
         atlasData = Baker::BakeAtlas<GameTextureDatabases::NpcTextureDatabase>(
             texturesRootDirectoryPath,
             outputDirectoryPath,
-            options);
+            options,
+            resizeFactor);
     }
     else if (Utils::CaseInsensitiveEquals(databaseName, "androidui"))
     {
         atlasData = Baker::BakeAtlas<UITextureDatabases::UITextureDatabase>(
             texturesRootDirectoryPath,
             outputDirectoryPath,
-            options);
+            options,
+            resizeFactor);
     }
     else
     {
@@ -171,5 +189,5 @@ void PrintUsage()
 {
     std::cout << std::endl;
     std::cout << "Usage:" << std::endl;
-    std::cout << " bake_atlas Cloud|Explosion|NPC|AndroidUI <textures_root_dir> <out_dir> [[-a] [-b] [-m] [-d] [-r] | -o <options_json>]" << std::endl;
+    std::cout << " bake_atlas Cloud|Explosion|NPC|AndroidUI <textures_root_dir> <out_dir> [[-a] [-b] [-m] [-d] [-r] | -o <options_json>] [-z <resize_factor>]" << std::endl;
 }
