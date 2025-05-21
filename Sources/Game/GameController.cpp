@@ -923,11 +923,16 @@ void GameController::DestroyAt(
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
+    float const worldRadius =
+        mSimulationParameters.DestroyRadius
+        * radiusMultiplier
+        * (mSimulationParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+
     // Apply action
     assert(!!mWorld);
     mWorld->DestroyAt(
         worldCoordinates,
-        radiusMultiplier,
+        worldRadius,
         sessionId,
         mSimulationParameters);
 }

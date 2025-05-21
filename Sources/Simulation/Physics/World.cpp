@@ -400,17 +400,12 @@ void World::Pull(
         simulationParameters);
 }
 
-float World::DestroyAt(
+void World::DestroyAt(
     vec2f const & targetPos,
-    float radiusMultiplier,
+    float radius,
     SessionId const & sessionId,
     SimulationParameters const & simulationParameters)
 {
-    float const radius =
-        simulationParameters.DestroyRadius
-        * radiusMultiplier
-        * (simulationParameters.IsUltraViolentMode ? 10.0f : 1.0f);
-
     // Ships
     for (auto & ship : mAllShips)
     {
@@ -434,10 +429,8 @@ float World::DestroyAt(
     // Scare fishes at bit
     mFishes.DisturbAt(
         targetPos,
-        6.5f + radiusMultiplier,
+        6.5f,
         std::chrono::milliseconds(0));
-
-    return radius;
 }
 
 void World::RepairAt(

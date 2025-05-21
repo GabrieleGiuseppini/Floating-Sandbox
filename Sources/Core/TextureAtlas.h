@@ -227,7 +227,10 @@ public:
     {
         auto frameLoader = [&](TextureFrameId<TTextureGroups> const & frameId) -> TextureFrame<TTextureDatabase>
             {
-                return database.GetGroup(frameId.Group).LoadFrame(frameId.FrameIndex, assetManager).Resize(resizeFactor);
+                if (resizeFactor != 1.0f)
+                    return database.GetGroup(frameId.Group).LoadFrame(frameId.FrameIndex, assetManager).Resize(resizeFactor);
+                else
+                    return database.GetGroup(frameId.Group).LoadFrame(frameId.FrameIndex, assetManager);
             };
 
         // Build TextureInfo's
@@ -329,7 +332,10 @@ public:
             options | TextureAtlasOptions::MipMappable,
             [&](TextureFrameId<TTextureGroups> const & frameId) -> TextureFrame<TTextureDatabase>
             {
-                return database.GetGroup(frameId.Group).LoadFrame(frameId.FrameIndex, assetManager).Resize(resizeFactor);
+                if (resizeFactor != 1.0f)
+                    return database.GetGroup(frameId.Group).LoadFrame(frameId.FrameIndex, assetManager).Resize(resizeFactor);
+                else
+                    return database.GetGroup(frameId.Group).LoadFrame(frameId.FrameIndex, assetManager);
             },
             progressCallback);
     }
