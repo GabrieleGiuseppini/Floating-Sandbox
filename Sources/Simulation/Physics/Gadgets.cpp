@@ -194,7 +194,7 @@ std::optional<bool> Gadgets::TogglePhysicsProbeAt(
     vec2f const & targetPos,
     SimulationParameters const & simulationParameters)
 {
-    float const squareSearchRadius = simulationParameters.ToolSearchRadius * simulationParameters.ToolSearchRadius;
+    float const squareSearchRadius = simulationParameters.ObjectSearchRadiusWorld * simulationParameters.ObjectSearchRadiusWorld;
 
     if (!!mCurrentPhysicsProbeGadget)
     {

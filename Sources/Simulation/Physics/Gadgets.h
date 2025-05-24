@@ -206,7 +206,7 @@ private:
         vec2f const & targetPos,
         SimulationParameters const & simulationParameters)
     {
-        float const squareSearchRadius = simulationParameters.ToolSearchRadius * simulationParameters.ToolSearchRadius;
+        float const squareSearchRadius = simulationParameters.ObjectSearchRadiusWorld * simulationParameters.ObjectSearchRadiusWorld;
 
         //
         // See first if there's a gadget within the search radius, most recent first;

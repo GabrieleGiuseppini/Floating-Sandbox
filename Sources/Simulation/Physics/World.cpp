@@ -211,14 +211,14 @@ void World::OnBlast(
 
 void World::PickConnectedComponentToMove(
     vec2f const & pickPosition,
-    std::optional<GlobalConnectedComponentId> & connectedComponentId,
-    SimulationParameters const & simulationParameters) const
+    float searchRadius,
+    std::optional<GlobalConnectedComponentId> & connectedComponentId) const
 {
     for (auto & ship : mAllShips)
     {
         auto candidateConnectedComponentId = ship->PickConnectedComponentToMove(
             pickPosition,
-            simulationParameters);
+            searchRadius);
 
         if (!!candidateConnectedComponentId)
         {
@@ -368,13 +368,13 @@ void World::EndMoveGrippedBy(SimulationParameters const & simulationParameters)
 
 std::optional<GlobalElementId> World::PickObjectForPickAndPull(
     vec2f const & pickPosition,
-    SimulationParameters const & simulationParameters)
+    float searchRadius)
 {
     for (auto & ship : mAllShips)
     {
         auto elementIndex = ship->PickObjectForPickAndPull(
             pickPosition,
-            simulationParameters);
+            searchRadius);
 
         if (elementIndex.has_value())
         {

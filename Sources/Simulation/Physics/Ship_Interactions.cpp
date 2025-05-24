@@ -32,13 +32,13 @@ namespace Physics {
 
 std::optional<ConnectedComponentId> Ship::PickConnectedComponentToMove(
     vec2f const & pickPosition,
-    SimulationParameters const & simulationParameters) const
+    float searchRadius) const
 {
     //
     // Find closest non-ephemeral point within the radius
     //
 
-    float const squareSearchRadius = simulationParameters.ToolSearchRadius * simulationParameters.ToolSearchRadius;
+    float const squareSearchRadius = searchRadius * searchRadius;
 
     // Separate orphaned and non-orphaned points; we'll choose
     // orphaned when there are no non-orphaned
@@ -381,14 +381,13 @@ void Ship::EndMoveGrippedBy(SimulationParameters const & /*simulationParameters*
 
 std::optional<ElementIndex> Ship::PickObjectForPickAndPull(
     vec2f const & pickPosition,
-    SimulationParameters const & /*simulationParameters*/)
+    float searchRadius)
 {
     //
     // Find closest point - of any type - within the search radius
     //
 
-    float constexpr SearchRadius = 0.75f; // Magic number
-    float constexpr SquareSearchRadius = SearchRadius * SearchRadius;
+    float const squareSearchRadius = searchRadius * searchRadius;
 
     float bestSquareDistance = std::numeric_limits<float>::max();
     ElementIndex bestPoint = NoneElementIndex;
@@ -396,7 +395,7 @@ std::optional<ElementIndex> Ship::PickObjectForPickAndPull(
     for (auto p : mPoints)
     {
         float const squareDistance = (mPoints.GetPosition(p) - pickPosition).squareLength();
-        if (squareDistance < SquareSearchRadius
+        if (squareDistance < squareSearchRadius
             && squareDistance < bestSquareDistance
             && mPoints.IsActive(p)
             && !mPoints.IsPinned(p))

@@ -165,8 +165,8 @@ public:
 
     void PickConnectedComponentToMove(
         vec2f const & pickPosition,
-        std::optional<GlobalConnectedComponentId> & connectedComponentId,
-        SimulationParameters const & simulationParameters) const;
+        float searchRadius,
+        std::optional<GlobalConnectedComponentId> & connectedComponentId) const;
 
     void MoveBy(
         GlobalConnectedComponentId connectedComponentId,
@@ -209,7 +209,7 @@ public:
 
     std::optional<GlobalElementId> PickObjectForPickAndPull(
         vec2f const & pickPosition,
-        SimulationParameters const & simulationParameters);
+        float searchRadius);
 
     void Pull(
         GlobalElementId elementId,

@@ -592,7 +592,8 @@ struct SimulationParameters
 
     // Interactions
 
-    float ToolSearchRadius;
+    static int constexpr ShipSearchRadiusScreen = 11; // For search of ship parts, which requires playability
+    static float constexpr ObjectSearchRadiusWorld = 2.0f; // For search of toggable items, which requires precision
 
     float DestroyRadius;
     static float constexpr MinDestroyRadius = 0.5f;

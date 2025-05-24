@@ -111,7 +111,6 @@ SimulationParameters::SimulationParameters()
     , DoDayLightCycle(false)
     , DayLightCycleDuration(std::chrono::minutes(4))
     // Interactions
-    , ToolSearchRadius(2.0f)
     , DestroyRadius(0.5f)
     , RepairRadius(4.0f)
     , RepairSpeedAdjustment(1.0f)
