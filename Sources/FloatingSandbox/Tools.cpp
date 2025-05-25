@@ -325,7 +325,7 @@ void SwirlTool::ApplyTool(
         inputState.IsShiftKeyDown ? mDownMinusCursorImage : mDownPlusCursorImage,
         strengthFraction);
 
-    // Draw
+    // Swirl
     mGameController.SwirlAt(
         inputState.MousePosition,
         inputState.IsShiftKeyDown
