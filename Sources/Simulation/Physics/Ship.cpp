@@ -2535,6 +2535,14 @@ void Ship::UpdateWaterVelocities(
     std::array<vec2f, SimulationParameters::MaxSpringsPerPoint> springOutboundWaterVelocities;
 
     //
+    // Quantities for water kinetic energy loss, used
+    // only for sound
+    //
+    // Not on Mobile (as it's a small feature that costs a lot!)
+    //
+
+#if !FS_IS_PLATFORM_MOBILE()
+    //
     // Precalculate point "freeness factors", i.e. how much each point's
     // quantity of water "suppresses" splashes from adjacent kinetic energy losses:
     //
@@ -2550,6 +2558,13 @@ void Ship::UpdateWaterVelocities(
             FastExp(-oldPointWaterBufferData[pointIndex] * 10.0f);
     }
 
+    // Count of non-hull free and drowned neighbor points for a given point
+    float pointSplashNeighbors;
+    float pointSplashFreeNeighbors;
+
+    // Kinetic energy lost for a given point
+    float pointKineticEnergyLoss;
+#endif
 
     //
     // Visit all non-ephemeral points and move water and its momenta
@@ -2574,9 +2589,10 @@ void Ship::UpdateWaterVelocities(
         // WaterCrazyness=1   -> alpha=Wh
         float const alphaCrazyness = 1.0f + simulationParameters.WaterCrazyness * (oldPointWaterBufferData[pointIndex] - 1.0f);
 
-        // Count of non-hull free and drowned neighbor points
-        float pointSplashNeighbors = 0.0f;
-        float pointSplashFreeNeighbors = 0.0f;
+#if !FS_IS_PLATFORM_MOBILE()
+        pointSplashNeighbors = 0.0f;
+        pointSplashFreeNeighbors = 0.0f;
+#endif
 
         totalOutboundWaterFlowWeight = 0.0f;
 
@@ -2644,6 +2660,7 @@ void Ship::UpdateWaterVelocities(
             // Update total outbound flow weight
             totalOutboundWaterFlowWeight += springOutboundWaterFlowWeights[s];
 
+#if !FS_IS_PLATFORM_MOBILE()
             //
             // Update splash neighbors counts
             //
@@ -2653,6 +2670,7 @@ void Ship::UpdateWaterVelocities(
                 * pointFreenessFactorBufferData[cs.OtherEndpointIndex];
 
             pointSplashNeighbors += mSprings.GetWaterPermeability(cs.SpringIndex);
+#endif
         }
 
         //
@@ -2678,8 +2696,10 @@ void Ship::UpdateWaterVelocities(
         //    and update destination's momenta accordingly
         //
 
+#if !FS_IS_PLATFORM_MOBILE()
         // Kinetic energy lost at this point
-        float pointKineticEnergyLoss = 0.0f;
+        pointKineticEnergyLoss = 0.0f;
+#endif
 
         for (size_t s = 0; s < connectedSpringCount; ++s)
         {
@@ -2712,7 +2732,7 @@ void Ship::UpdateWaterVelocities(
                     springOutboundWaterVelocities[s]
                     * springOutboundQuantityOfWater;
 
-
+#if !FS_IS_PLATFORM_MOBILE()
                 //
                 // Update point's kinetic energy loss:
                 // splintered water colliding with whole other endpoint
@@ -2741,6 +2761,7 @@ void Ship::UpdateWaterVelocities(
                 // more positive (perfectly inelastic -> deltaK == max); we will pickup
                 // deltaKb later
                 pointKineticEnergyLoss += std::max(deltaKa, 0.0f);
+#endif
             }
             else
             {
@@ -2760,7 +2781,7 @@ void Ship::UpdateWaterVelocities(
                     springOutboundWaterVelocities[s]
                     * springOutboundQuantityOfWater;
 
-
+#if !FS_IS_PLATFORM_MOBILE()
                 //
                 // Update point's kinetic energy loss:
                 // entire splintered water
@@ -2776,9 +2797,11 @@ void Ship::UpdateWaterVelocities(
 
                 assert(deltaKa >= 0.0f);
                 pointKineticEnergyLoss += deltaKa;
+#endif
             }
         }
 
+#if !FS_IS_PLATFORM_MOBILE()
         //
         // 4) Update water splash
         //
@@ -2792,14 +2815,16 @@ void Ship::UpdateWaterVelocities(
                 * pointSplashFreeNeighbors
                 / pointSplashNeighbors;
         }
+#endif
     }
 
-
+#if !FS_IS_PLATFORM_MOBILE()
     //
     // Average kinetic energy loss
     //
 
     waterSplashed = mWaterSplashedRunningAverage.Update(waterSplashed);
+#endif
 
 
     //
@@ -2860,8 +2885,10 @@ void Ship::RecalculateLightDiffusionParallelism(size_t simulationParallelism)
 
     ElementCount const numberOfPoints = mPoints.GetAlignedShipPointCount(); // No real reason to skip ephemerals, other than they're not expected to have light
 
+    ElementCount constexpr PointsPerThread = 1000; // Was 2000 at 19.1
+
     size_t const lightDiffusionParallelism = std::max(
-        std::min(static_cast<size_t>(numberOfPoints) / 2000, simulationParallelism),
+        std::min(static_cast<size_t>(numberOfPoints) / PointsPerThread, simulationParallelism),
         size_t(1));
 
     LogMessage("Ship::RecalculateLightDiffusionParallelism: points=", numberOfPoints, " simulationParallelism=", simulationParallelism,

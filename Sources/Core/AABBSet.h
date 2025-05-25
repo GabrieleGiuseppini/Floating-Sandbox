@@ -75,6 +75,31 @@ public:
         }
     }
 
+    inline std::optional<AABB> MakeUnion(float minArea) const
+    {
+        AABB result;
+
+        std::for_each(
+            mAABBs.cbegin(),
+            mAABBs.cend(),
+            [&result, &minArea](AABB const & elem)
+            {
+                if (elem.CalculateArea() >= minArea)
+                {
+                    result.ExtendTo(elem);
+                }
+            });
+
+        if (result.GetWidth() > 0.0f && result.GetHeight() > 0.0f)
+        {
+            return result;
+        }
+        else
+        {
+            return std::nullopt;
+        }
+    }
+
     // Note: at this moment we assume that we don't need to track AABBs back to
     // their origin (being ships or whatever else);
     // if and when that is not the case anymore, then we will change the signature
