@@ -27,6 +27,7 @@
 #include <Core/ThreadManager.h>
 #include <Core/Vectors.h>
 
+#include <atomic>
 #include <list>
 #include <memory>
 #include <optional>
@@ -511,13 +512,21 @@ private:
         float effectiveWaterDensity,
         SimulationParameters const & simulationParameters);
 
-    void RecalculateSpringRelaxationParallelism(size_t simulationParallelism, SimulationParameters const & simulationParameters);
-    void RecalculateSpringRelaxationSpringForcesParallelism(size_t simulationParallelism, SimulationParameters const & simulationParameters);
-    void RecalculateSpringRelaxationIntegrationAndSeaFloorCollisionParallelism(size_t simulationParallelism, SimulationParameters const & simulationParameters);
+    //
+    // Spring relaxation
+    //
 
-    void RunSpringRelaxationAndDynamicForcesIntegration(
-        SimulationParameters const & simulationParameters,
-        ThreadManager & threadManager);
+    void RecalculateSpringRelaxationParallelism(size_t simulationParallelism, SimulationParameters const & simulationParameters);
+
+    void RunSpringRelaxation(ThreadManager & threadManager);
+
+    void RunSpringRelaxation_Thread(
+        size_t threadIndex,
+        ElementIndex startSpringIndex,
+        ElementIndex endSpringIndex,
+        ElementIndex startPointIndex,
+        ElementIndex endPointIndex,
+        SimulationParameters const & simulationParameters);
 
     inline void IntegrateAndResetDynamicForces(
         ElementIndex startPointIndex,
@@ -525,6 +534,10 @@ private:
         SimulationParameters const & simulationParameters);
 
     inline float CalculateIntegrationVelocityFactor(float dt, SimulationParameters const & simulationParameters) const;
+
+    //
+    //
+    //
 
     void HandleCollisionsWithSeaFloor(
         ElementIndex startPointIndex,
@@ -904,9 +917,11 @@ private:
     //
 
     // The spring relaxation tasks
-    std::vector<typename ThreadPool::Task> mSpringRelaxationSpringForcesTasks;
-    std::vector<typename ThreadPool::Task> mSpringRelaxationIntegrationTasks;
-    std::vector<typename ThreadPool::Task> mSpringRelaxationIntegrationAndSeaFloorCollisionTasks;
+    std::vector<typename ThreadPool::Task> mSpringRelaxationTasks;
+
+    // The signals for completions for threads to synchronize with each other
+    std::atomic<int> mSpringRelaxationSpringForcesCompleted;
+    std::atomic<int> mSpringRelaxationIntegrationsCompleted;
 
     //
     // Static pressure

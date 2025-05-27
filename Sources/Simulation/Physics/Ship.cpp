@@ -294,7 +294,7 @@ void Ship::Update(
     {
         auto const springsStartTime = GameChronometer::Now();
 
-        RunSpringRelaxationAndDynamicForcesIntegration(simulationParameters, threadManager);
+        RunSpringRelaxation(threadManager);
 
         perfStats.Update<PerfMeasurement::TotalShipsSpringsUpdate>(GameChronometer::Now() - springsStartTime);
     }

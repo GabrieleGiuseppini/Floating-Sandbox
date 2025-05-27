@@ -14,16 +14,8 @@ void Ship::RecalculateSpringRelaxationParallelism(
     size_t simulationParallelism,
     SimulationParameters const & simulationParameters)
 {
-    RecalculateSpringRelaxationSpringForcesParallelism(simulationParallelism, simulationParameters);
-    RecalculateSpringRelaxationIntegrationAndSeaFloorCollisionParallelism(simulationParallelism, simulationParameters);
-}
-
-void Ship::RecalculateSpringRelaxationSpringForcesParallelism(
-    size_t simulationParallelism,
-    SimulationParameters const & simulationParameters)
-{
     // Clear threading state
-    mSpringRelaxationSpringForcesTasks.clear();
+    mSpringRelaxationTasks.clear();
 
     //
     // Given the available simulation parallelism as a constraint (max), calculate
@@ -56,55 +48,8 @@ void Ship::RecalculateSpringRelaxationSpringForcesParallelism(
         simulationParallelism);
 #endif
 
-    LogMessage("Ship::RecalculateSpringRelaxationSpringForcesParallelism: springs=", numberOfSprings, " simulationParallelism=", simulationParallelism,
+    LogMessage("Ship::RecalculateSpringRelaxationParallelism: springs=", numberOfSprings, " simulationParallelism=", simulationParallelism,
         " springRelaxationParallelism=", springRelaxationParallelism);
-
-    //
-    // Prepare dynamic force buffers
-    //
-
-    mPoints.SetDynamicForceParallelism(springRelaxationParallelism);
-
-    //
-    // Prepare tasks
-    //
-    // We want all but the last thread to work on a multiple of the vectorization word size
-    //
-
-    //assert(numberOfSprings >= static_cast<ElementCount>(springRelaxationParallelism) * vectorization_float_count<ElementCount>); // Commented out because: numberOfSprings may be < 4
-    ElementCount const numberOfVecSpringsPerThread = numberOfSprings / (static_cast<ElementCount>(springRelaxationParallelism) * vectorization_float_count<ElementCount>);
-
-    ElementIndex springStart = 0;
-    for (size_t t = 0; t < springRelaxationParallelism; ++t)
-    {
-        ElementIndex const springEnd = (t < springRelaxationParallelism - 1)
-            ? springStart + numberOfVecSpringsPerThread * vectorization_float_count<ElementCount>
-            : numberOfSprings;
-
-        vec2f * restrict const dynamicForceBuffer = mPoints.GetParallelDynamicForceBuffer(t);
-
-        mSpringRelaxationSpringForcesTasks.emplace_back(
-            [this, springStart, springEnd, dynamicForceBuffer]()
-            {
-                Algorithms::ApplySpringsForces(
-                    mPoints,
-                    mSprings,
-                    springStart,
-                    springEnd,
-                    dynamicForceBuffer);
-            });
-
-        springStart = springEnd;
-    }
-}
-
-void Ship::RecalculateSpringRelaxationIntegrationAndSeaFloorCollisionParallelism(
-    size_t simulationParallelism,
-    SimulationParameters const & simulationParameters)
-{
-    // Clear threading state
-    mSpringRelaxationIntegrationTasks.clear();
-    mSpringRelaxationIntegrationAndSeaFloorCollisionTasks.clear();
 
     //
     // Given the available simulation parallelism as a constraint (max), calculate
@@ -113,116 +58,210 @@ void Ship::RecalculateSpringRelaxationIntegrationAndSeaFloorCollisionParallelism
 
     ElementCount const numberOfPoints = mPoints.GetBufferElementCount();
 
-    size_t actualParallelism;
+    size_t integrationParallelism;
 #if !FS_IS_PLATFORM_MOBILE()
-    actualParallelism = std::max(
+    integrationParallelism = std::max(
         std::min(
             numberOfPoints <= 12000 ? size_t(1) : (size_t(1) + (numberOfPoints - 12000) / 4000),
             simulationParallelism),
         size_t(1)); // Capping to 1!
 #else
-    actualParallelism = std::min(
+    integrationParallelism = std::min(
         static_cast<size_t>(numberOfPoints / simulationParameters.SpringRelaxationPointsPerThread),
         simulationParallelism);
 #endif
 
-    LogMessage("Ship::RecalculateSpringRelaxationIntegrationAndSeaFloorCollisionParallelism: points=", numberOfPoints, " simulationParallelism=", simulationParallelism,
-        " actualParallelism=", actualParallelism);
+    LogMessage("Ship::RecalculateSpringRelaxationParallelism: points=", numberOfPoints, " simulationParallelism=", simulationParallelism,
+        " integrationParallelism=", integrationParallelism);
+
+    //
+    // Calculate final parallelism
+    //
+
+    // TODO: re-check algo: springs par'm and integr par'm are _min_
+    // TODO: make sure numberOfSprings/Points >= final_parallelism * vec_float_count, unless we have less than 4
+
+    size_t const commonParallelism = std::max(springRelaxationParallelism, integrationParallelism);
+
+    //
+    // Prepare dynamic force buffers
+    //
+
+    mPoints.SetDynamicForceParallelism(commonParallelism);
 
     //
     // Prepare tasks
     //
-    // We want each thread to work on a multiple of our vectorization word size
+    // We want all but the last thread to work on a multiple of the vectorization word size
     //
 
-    //assert((numberOfPoints % (static_cast<ElementCount>(actualParallelism) * vectorization_float_count<ElementCount>)) == 0); // Commented out because: only applies to non-last thread
-    assert(numberOfPoints >= static_cast<ElementCount>(actualParallelism) * vectorization_float_count<ElementCount>);
-    ElementCount const numberOfVecPointsPerThread = numberOfPoints / (static_cast<ElementCount>(actualParallelism) * vectorization_float_count<ElementCount>);
+    // TODO: other asserts here
 
+    //assert(numberOfSprings >= static_cast<ElementCount>(commonParallelism) * vectorization_float_count<ElementCount>); // Commented out because: numberOfSprings may be < 4
+    ElementCount const numberOfVecSpringsPerThread = numberOfSprings / (static_cast<ElementCount>(commonParallelism) * vectorization_float_count<ElementCount>);
+
+    //assert((numberOfPoints % (static_cast<ElementCount>(commonParallelism) * vectorization_float_count<ElementCount>)) == 0); // Commented out because: only applies to non-last thread
+    assert(numberOfPoints >= static_cast<ElementCount>(commonParallelism) * vectorization_float_count<ElementCount>);
+    ElementCount const numberOfVecPointsPerThread = numberOfPoints / (static_cast<ElementCount>(commonParallelism) * vectorization_float_count<ElementCount>);
+
+    ElementIndex springStart = 0;
     ElementIndex pointStart = 0;
-    for (size_t t = 0; t < actualParallelism; ++t)
+    for (size_t t = 0; t < commonParallelism; ++t)
     {
-        ElementIndex const pointEnd = (t < actualParallelism - 1)
+        ElementIndex const springEnd = (t < commonParallelism - 1)
+            ? springStart + numberOfVecSpringsPerThread * vectorization_float_count<ElementCount>
+            : numberOfSprings;
+
+        ElementIndex const pointEnd = (t < commonParallelism - 1)
             ? pointStart + numberOfVecPointsPerThread * vectorization_float_count<ElementCount>
             : numberOfPoints;
 
-        assert(((pointEnd - pointStart) % vectorization_float_count<ElementCount>) == 0);
-
-        // Note: we store a reference to SimulationParameters in the lambda; this is only safe
-        // if SimulationParameters is never re-created
-
-        mSpringRelaxationIntegrationTasks.emplace_back(
-            [this, pointStart, pointEnd, &simulationParameters]()
+        mSpringRelaxationTasks.emplace_back(
+            [this, t, springStart, springEnd, pointStart, pointEnd, &simulationParameters]()
             {
-                IntegrateAndResetDynamicForces(
+                RunSpringRelaxation_Thread(
+                    t,
+                    springStart,
+                    springEnd,
                     pointStart,
                     pointEnd,
                     simulationParameters);
             });
 
-        mSpringRelaxationIntegrationAndSeaFloorCollisionTasks.emplace_back(
-            [this, pointStart, pointEnd, &simulationParameters]()
-            {
-                IntegrateAndResetDynamicForces(
-                    pointStart,
-                    pointEnd,
-                    simulationParameters);
-
-                HandleCollisionsWithSeaFloor(
-                    pointStart,
-                    pointEnd,
-                    simulationParameters);
-            });
-
+        springStart = springEnd;
         pointStart = pointEnd;
     }
 }
 
-void Ship::RunSpringRelaxationAndDynamicForcesIntegration(
-    SimulationParameters const & simulationParameters,
-    ThreadManager & threadManager)
+void Ship::RunSpringRelaxation(ThreadManager & threadManager)
 {
+    //
+    // Prepare inter-thread signals
+    //
+
+    mSpringRelaxationSpringForcesCompleted = 0;
+    mSpringRelaxationIntegrationsCompleted = 0;
+
+    //
+    // Run spring relaxation
+    //
+
+    auto & threadPool = threadManager.GetSimulationThreadPool();
+    threadPool.Run(mSpringRelaxationTasks);
+
+#ifdef _DEBUG
+
+    //
+    // We have dirtied positions
+    //
+
+    mPoints.Diagnostic_MarkPositionsAsDirty();
+#endif
+}
+
+void Ship::RunSpringRelaxation_Thread(
+    size_t threadIndex,
+    ElementIndex startSpringIndex,
+    ElementIndex endSpringIndex,
+    ElementIndex startPointIndex,
+    ElementIndex endPointIndex,
+    SimulationParameters const & simulationParameters)
+{
+    //
+    // This routine is run ONCE by each thread - in parallel, each on a different start-end point index slice;
+    // threads sync among themselves via spinlocks using atomic counters
+    //
+    // I really think this is a work of art
+    //
+
     // We run the sea floor collision detection every these many iterations of the spring relaxation loop
     int constexpr SeaFloorCollisionPeriod = 2;
 
-    auto & threadPool = threadManager.GetSimulationThreadPool();
+    // Get the dynamic forces buffer dedicated to this thread
+    vec2f * restrict const dynamicForceBuffer = mPoints.GetParallelDynamicForceBuffer(threadIndex);
+
+    // Get the total count of threads participating
+    int const numberOfThreads = static_cast<int>(mSpringRelaxationTasks.size());
+
+    //
+    // Loop for all mechanical dynamics iterations
+    //
 
     int const numMechanicalDynamicsIterations = simulationParameters.NumMechanicalDynamicsIterations<int>();
     for (int iter = 0; iter < numMechanicalDynamicsIterations; ++iter)
     {
         // - DynamicForces = 0 | others at first iteration only
 
+        //
         // Apply spring forces
-        threadPool.Run(mSpringRelaxationSpringForcesTasks);
+        //
+
+        Algorithms::ApplySpringsForces(
+            mPoints,
+            mSprings,
+            startSpringIndex,
+            endSpringIndex,
+            dynamicForceBuffer);
 
         // - DynamicForces = sf | sf + others at first iteration only
 
-        if ((iter % SeaFloorCollisionPeriod) < SeaFloorCollisionPeriod - 1)
-        {
-            // Integrate dynamic and static forces,
-            // and reset dynamic forces
+        // Signal completion
+        //++mSpringRelaxationSpringForcesCompleted;
+        mSpringRelaxationSpringForcesCompleted.fetch_add(1, std::memory_order_acq_rel);
 
-            threadPool.Run(mSpringRelaxationIntegrationTasks);
+        //
+        // Wait for all completions
+        //
+
+        // ...in a spinlock
+        while (true)
+        {
+            if (mSpringRelaxationSpringForcesCompleted.load() == (iter + 1) * numberOfThreads)
+            {
+                break;
+            }
         }
-        else
+
+        //
+        // Integrate dynamic and static forces,
+        // and reset dynamic forces
+        //
+
+        IntegrateAndResetDynamicForces(
+            startPointIndex,
+            endPointIndex,
+            simulationParameters);
+
+        if ((iter % SeaFloorCollisionPeriod) == SeaFloorCollisionPeriod - 1)
         {
-            assert((iter % SeaFloorCollisionPeriod) == SeaFloorCollisionPeriod - 1);
-
-            // Integrate dynamic and static forces,
-            // and reset dynamic forces
-
             // Handle collisions with sea floor
             //  - Changes position and velocity
 
-            threadPool.Run(mSpringRelaxationIntegrationAndSeaFloorCollisionTasks);
+            HandleCollisionsWithSeaFloor(
+                startPointIndex,
+                endPointIndex,
+                simulationParameters);
         }
 
         // - DynamicForces = 0
-    }
 
-#ifdef _DEBUG
-    mPoints.Diagnostic_MarkPositionsAsDirty();
-#endif
+        // Signal completion
+        //++mSpringRelaxationIntegrationsCompleted;
+        mSpringRelaxationIntegrationsCompleted.fetch_add(1, std::memory_order_acq_rel);
+
+        //
+        // Wait for all completions
+        //
+
+        // ...in a spinlock
+        while (true)
+        {
+            if (mSpringRelaxationIntegrationsCompleted.load() == (iter + 1) * numberOfThreads)
+            {
+                break;
+            }
+        }
+    }
 }
 
 void Ship::IntegrateAndResetDynamicForces(
@@ -233,7 +272,7 @@ void Ship::IntegrateAndResetDynamicForces(
     float const dt = simulationParameters.MechanicalSimulationStepTimeDuration<float>();
     float const velocityFactor = CalculateIntegrationVelocityFactor(dt, simulationParameters);
 
-    switch (mSpringRelaxationSpringForcesTasks.size())
+    switch (mSpringRelaxationTasks.size())
     {
         case 1:
         {
@@ -291,7 +330,7 @@ void Ship::IntegrateAndResetDynamicForces(
         {
             Algorithms::IntegrateAndResetDynamicForces<Points>(
                 mPoints,
-                mSpringRelaxationSpringForcesTasks.size(),
+                mSpringRelaxationTasks.size(),
                 startPointIndex,
                 endPointIndex,
                 mPoints.GetDynamicForceBuffersAsFloat(),
