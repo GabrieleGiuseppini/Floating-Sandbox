@@ -22,99 +22,62 @@ void Ship::RecalculateSpringRelaxationParallelism(
     // the best parallelism for the spring relaxation algorithm
     //
 
+    // TODOTEST
+
     ElementCount const numberOfSprings = mSprings.GetElementCount();
 
-    // Springs -> Threads:
-    //    10,000 : 1t = 800  2t = 970  3t = 1000  4t = 5t = 6t = 8t =
-    //    50,000 : 1t = 4000  2t = 3600  3t = 2900  4t = 2900  5t = 3500  6t = 8t =
-    // 1,000,000 : 1t = 103000  2t = 66000  3t = 48000  4t = 56000  5t = 64000  6t = 7t = 8t = 122000
-
-    size_t springRelaxationParallelism;
-#if !FS_IS_PLATFORM_MOBILE()
-    if (numberOfSprings < 50000)
-    {
-        // Not worth it
-        springRelaxationParallelism = 1;
-    }
-    else
-    {
-        // Go for 4 - more than 4 makes algorithm always worse
-        springRelaxationParallelism = std::min(size_t(4), simulationParallelism);
-    }
-    (void)simulationParameters;
-#else
-    springRelaxationParallelism = std::min(
-        static_cast<size_t>(numberOfSprings / simulationParameters.SpringRelaxationSpringsPerThread),
-        simulationParallelism);
-#endif
-
-    LogMessage("Ship::RecalculateSpringRelaxationParallelism: springs=", numberOfSprings, " simulationParallelism=", simulationParallelism,
-        " springRelaxationParallelism=", springRelaxationParallelism);
-
-    //
-    // Given the available simulation parallelism as a constraint (max), calculate
-    // the best parallelism for integration and collisions
-    //
+    ElementCount constexpr SpringsPerThread = 1024;
+    static_assert((SpringsPerThread % vectorization_float_count<ElementCount>) == 0);
+    size_t springRelaxationParallelism = numberOfSprings / SpringsPerThread;
+    if ((numberOfSprings % SpringsPerThread) != 0)
+        ++springRelaxationParallelism;
 
     ElementCount const numberOfPoints = mPoints.GetBufferElementCount();
 
-    size_t integrationParallelism;
-#if !FS_IS_PLATFORM_MOBILE()
-    integrationParallelism = std::max(
-        std::min(
-            numberOfPoints <= 12000 ? size_t(1) : (size_t(1) + (numberOfPoints - 12000) / 4000),
-            simulationParallelism),
-        size_t(1)); // Capping to 1!
-#else
-    integrationParallelism = std::min(
-        static_cast<size_t>(numberOfPoints / simulationParameters.SpringRelaxationPointsPerThread),
-        simulationParallelism);
-#endif
+    ElementCount constexpr PointsPerThread = 1024;
+    static_assert((PointsPerThread % vectorization_float_count<ElementCount>) == 0);
+    size_t pointRelaxationParallelism = numberOfPoints / PointsPerThread;
+    if ((numberOfPoints % PointsPerThread) != 0)
+        ++pointRelaxationParallelism;
 
-    LogMessage("Ship::RecalculateSpringRelaxationParallelism: points=", numberOfPoints, " simulationParallelism=", simulationParallelism,
-        " integrationParallelism=", integrationParallelism);
+    size_t const algorithmParallelism = Clamp(std::max(springRelaxationParallelism, pointRelaxationParallelism), size_t(1), simulationParallelism);
 
-    //
-    // Calculate final parallelism
-    //
-
-    // TODO: re-check algo: springs par'm and integr par'm are _min_
-    // TODO: make sure numberOfSprings/Points >= final_parallelism * vec_float_count, unless we have less than 4
-
-    size_t const commonParallelism = std::max(springRelaxationParallelism, integrationParallelism);
+    LogMessage("Ship::RecalculateSpringRelaxationParallelism: springRelaxationParallelism=", springRelaxationParallelism, " pointRelaxationParallelism=", pointRelaxationParallelism,
+        " simulationParallelism=", simulationParallelism, " algorithmParallelism=", algorithmParallelism);
 
     //
     // Prepare dynamic force buffers
     //
 
-    mPoints.SetDynamicForceParallelism(commonParallelism);
+    mPoints.SetDynamicForceParallelism(algorithmParallelism);
 
     //
     // Prepare tasks
     //
-    // We want all but the last thread to work on a multiple of the vectorization word size
+    // We want threads to work on a multiple of the vectorization word size - unless there aren't enough elements
     //
 
-    // TODO: other asserts here
-
-    //assert(numberOfSprings >= static_cast<ElementCount>(commonParallelism) * vectorization_float_count<ElementCount>); // Commented out because: numberOfSprings may be < 4
-    ElementCount const numberOfVecSpringsPerThread = numberOfSprings / (static_cast<ElementCount>(commonParallelism) * vectorization_float_count<ElementCount>);
-
-    //assert((numberOfPoints % (static_cast<ElementCount>(commonParallelism) * vectorization_float_count<ElementCount>)) == 0); // Commented out because: only applies to non-last thread
-    assert(numberOfPoints >= static_cast<ElementCount>(commonParallelism) * vectorization_float_count<ElementCount>);
-    ElementCount const numberOfVecPointsPerThread = numberOfPoints / (static_cast<ElementCount>(commonParallelism) * vectorization_float_count<ElementCount>);
+    ElementCount const numberOfVecSpringsPerThread = numberOfSprings / (static_cast<ElementCount>(algorithmParallelism) * vectorization_float_count<ElementCount>);
+    ElementCount const numberOfVecPointsPerThread = numberOfPoints / (static_cast<ElementCount>(algorithmParallelism) * vectorization_float_count<ElementCount>);
 
     ElementIndex springStart = 0;
     ElementIndex pointStart = 0;
-    for (size_t t = 0; t < commonParallelism; ++t)
+    for (size_t t = 0; t < algorithmParallelism; ++t)
     {
-        ElementIndex const springEnd = (t < commonParallelism - 1)
-            ? springStart + numberOfVecSpringsPerThread * vectorization_float_count<ElementCount>
+        ElementIndex const springEnd = (t < algorithmParallelism - 1)
+            ? std::min(
+                springStart + numberOfVecSpringsPerThread * vectorization_float_count<ElementCount>,
+                numberOfSprings)
             : numberOfSprings;
 
-        ElementIndex const pointEnd = (t < commonParallelism - 1)
-            ? pointStart + numberOfVecPointsPerThread * vectorization_float_count<ElementCount>
+        ElementIndex const pointEnd = (t < algorithmParallelism - 1)
+            ? std::min(
+                pointStart + numberOfVecPointsPerThread * vectorization_float_count<ElementCount>,
+                numberOfPoints)
             : numberOfPoints;
+
+        ////LogMessage("TODOTEST: T", t, ": s=", springStart, "-", springEnd, " = ", (springEnd - springStart), " (", numberOfSprings, ") "
+        ////            "p=", pointStart, "-", pointEnd, " = ", (pointEnd - pointStart), " (", numberOfPoints, ")");
 
         mSpringRelaxationTasks.emplace_back(
             [this, t, springStart, springEnd, pointStart, pointEnd, &simulationParameters]()
