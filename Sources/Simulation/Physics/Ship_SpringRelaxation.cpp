@@ -22,22 +22,16 @@ void Ship::RecalculateSpringRelaxationParallelism(
     // the best parallelism for the spring relaxation algorithm
     //
 
-    // TODOTEST
-
     ElementCount const numberOfSprings = mSprings.GetElementCount();
 
-    ElementCount constexpr SpringsPerThread = 1024;
-    static_assert((SpringsPerThread % vectorization_float_count<ElementCount>) == 0);
-    size_t springRelaxationParallelism = numberOfSprings / SpringsPerThread;
-    if ((numberOfSprings % SpringsPerThread) != 0)
+    size_t springRelaxationParallelism = numberOfSprings / simulationParameters.SpringRelaxationSpringsPerThread;
+    if ((numberOfSprings % simulationParameters.SpringRelaxationSpringsPerThread) != 0)
         ++springRelaxationParallelism;
 
     ElementCount const numberOfPoints = mPoints.GetBufferElementCount();
 
-    ElementCount constexpr PointsPerThread = 1024;
-    static_assert((PointsPerThread % vectorization_float_count<ElementCount>) == 0);
-    size_t pointRelaxationParallelism = numberOfPoints / PointsPerThread;
-    if ((numberOfPoints % PointsPerThread) != 0)
+    size_t pointRelaxationParallelism = numberOfPoints / simulationParameters.SpringRelaxationPointsPerThread;
+    if ((numberOfPoints % simulationParameters.SpringRelaxationPointsPerThread) != 0)
         ++pointRelaxationParallelism;
 
     size_t const algorithmParallelism = Clamp(std::max(springRelaxationParallelism, pointRelaxationParallelism), size_t(1), simulationParallelism);

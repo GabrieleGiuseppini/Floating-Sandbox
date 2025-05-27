@@ -1,4 +1,6 @@
 TODO
+- Significant performance improvements in spring relaxation algorithm
+	- Implemented state-of-the-art multithreading of the spring relaxation algorithm - zero system calls for synchronizing the hundreds of different steps of the algorithm!
 - 15% performance improvements in rendering
 
 1.19.1

@@ -678,8 +678,6 @@ struct SimulationParameters
     // Computation
     //
 
-    // How many springs/points we want to run on each SpringRelaxation thread (SpringsForces & Integration);
-    // depends on computer speed and tries to strike a balance preventing too much thread overhead
     ElementCount SpringRelaxationSpringsPerThread;
     ElementCount SpringRelaxationPointsPerThread;
 
