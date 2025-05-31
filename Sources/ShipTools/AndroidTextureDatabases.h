@@ -24,17 +24,22 @@ enum class UITextureGroups : uint16_t
     ExitIcon,
     ExplosionIcon,
     ReloadIcon,
+    RogueWaveIcon,
+    TriggersIcon,
+    TsunamiIcon,
+    UnderConstructionIcon,
+    UVModeIcon,
     CheckboxFrame,
     ToolsEyeQuadrant,
     SliderGuideTip,
     SliderGuideBody,
     SliderKnob,
+    StormIcon,
     ToolIcons,
     TriangleH,
     TriangleV,
-    UnderContructionIcon,
 
-    _Last = UnderContructionIcon
+    _Last = TriangleV
 };
 
 struct UITextureDatabase
@@ -63,6 +68,16 @@ struct UITextureDatabase
             return UITextureGroups::ExplosionIcon;
         else if (Utils::CaseInsensitiveEquals(str, "reload_icon"))
             return UITextureGroups::ReloadIcon;
+        else if (Utils::CaseInsensitiveEquals(str, "rogue_wave_icon"))
+            return UITextureGroups::RogueWaveIcon;
+        else if (Utils::CaseInsensitiveEquals(str, "triggers_icon"))
+            return UITextureGroups::TriggersIcon;
+        else if (Utils::CaseInsensitiveEquals(str, "tsunami_icon"))
+            return UITextureGroups::TsunamiIcon;
+        else if (Utils::CaseInsensitiveEquals(str, "under_construction_icon"))
+            return UITextureGroups::UnderConstructionIcon;
+        else if (Utils::CaseInsensitiveEquals(str, "uv_mode_icon"))
+            return UITextureGroups::UVModeIcon;
         else if (Utils::CaseInsensitiveEquals(str, "checkbox_frame"))
             return UITextureGroups::CheckboxFrame;
         else if (Utils::CaseInsensitiveEquals(str, "tools_eye_quadrant"))
@@ -73,14 +88,14 @@ struct UITextureDatabase
             return UITextureGroups::SliderGuideBody;
         else if (Utils::CaseInsensitiveEquals(str, "slider_knob"))
             return UITextureGroups::SliderKnob;
+        else if (Utils::CaseInsensitiveEquals(str, "storm_icon"))
+            return UITextureGroups::StormIcon;
         else if (Utils::CaseInsensitiveEquals(str, "tool_icons"))
             return UITextureGroups::ToolIcons;
         else if (Utils::CaseInsensitiveEquals(str, "triangle_h"))
             return UITextureGroups::TriangleH;
         else if (Utils::CaseInsensitiveEquals(str, "triangle_v"))
             return UITextureGroups::TriangleV;
-        else if (Utils::CaseInsensitiveEquals(str, "under_construction_icon"))
-            return UITextureGroups::UnderContructionIcon;
         else
             throw GameException("Unrecognized UI texture group \"" + str + "\"");
     }

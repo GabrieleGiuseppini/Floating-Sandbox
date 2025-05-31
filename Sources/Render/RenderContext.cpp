@@ -116,6 +116,11 @@ RenderContext::RenderContext(
             // Set depth test parameters for when we'll need them
             glDepthMask(GL_TRUE);
             glDepthFunc(GL_LEQUAL);
+
+            // Enable point sprite
+            // (https://community.khronos.org/t/understanding-gl-pointcoord-always-0/70368/9)
+            glEnable(0x8861); // GL_POINT_SPRITE
+            glGetError(); // Eat error code just in case
         });
 
     progressCallback(0.05f, ProgressMessageType::LoadingShaders);

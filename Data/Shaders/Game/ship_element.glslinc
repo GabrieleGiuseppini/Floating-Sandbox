@@ -101,6 +101,9 @@ uniform float paramHeatShift;
 #if STRESS_RENDER_MODE != 0
 uniform vec4 paramStressColorMap[12];
 #endif
+#ifdef FOR_POINTS
+uniform float paramShipParticleRenderMode;
+#endif
 
 #ifndef WITH_MATTE_COLOR
 // Input texture
@@ -240,5 +243,16 @@ void main()
         stressCol.w);
 #else
 #error Unrecognized value for STRESS_RENDER_MODE
-#endif        
+#endif
+
+#ifdef FOR_POINTS
+    if (paramShipParticleRenderMode != 0.0)
+    {
+        // Make it a round particle
+        float d = length(gl_PointCoord - vec2(0.5)) * 2.0;
+        gl_FragColor.a *= 1.0 - smoothstep(0.92, 1.0, d);
+        if (gl_FragColor.a < 0.2) // Don't mess with depth
+            discard;
+    }
+#endif
 } 

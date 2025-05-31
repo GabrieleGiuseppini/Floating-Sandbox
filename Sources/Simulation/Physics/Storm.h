@@ -73,6 +73,8 @@ public:
 
 	void TriggerLightning(SimulationParameters const & simulationParameters);
 
+    void TriggerForegroundLightningAt(vec2f const & targetWorldPosition);
+
 private:
 
 	void RecalculateCoefficients(

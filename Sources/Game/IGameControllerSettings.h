@@ -442,6 +442,9 @@ struct IGameControllerSettings
     virtual ShipViewModeType GetShipViewMode() const = 0;
     virtual void SetShipViewMode(ShipViewModeType shipViewMode) = 0;
 
+    virtual ShipParticleRenderModeType GetShipParticleRenderMode() const = 0;
+    virtual void SetShipParticleRenderMode(ShipParticleRenderModeType shipParticleRenderMode) = 0;
+
     virtual DebugShipRenderModeType GetDebugShipRenderMode() const = 0;
     virtual void SetDebugShipRenderMode(DebugShipRenderModeType debugShipRenderMode) = 0;
 

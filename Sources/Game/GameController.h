@@ -985,6 +985,9 @@ public:
     ShipViewModeType GetShipViewMode() const override { return mRenderContext->GetShipViewMode(); }
     void SetShipViewMode(ShipViewModeType shipViewMode) override { mRenderContext->SetShipViewMode(shipViewMode); }
 
+    ShipParticleRenderModeType GetShipParticleRenderMode() const override { return mRenderContext->GetShipParticleRenderMode(); }
+    void SetShipParticleRenderMode(ShipParticleRenderModeType shipParticleRenderMode) override { mRenderContext->SetShipParticleRenderMode(shipParticleRenderMode); }
+
     DebugShipRenderModeType GetDebugShipRenderMode() const override { return mRenderContext->GetDebugShipRenderMode(); }
     void SetDebugShipRenderMode(DebugShipRenderModeType debugShipRenderMode) override { mRenderContext->SetDebugShipRenderMode(debugShipRenderMode); }
 

@@ -341,7 +341,7 @@ void Storm::Upload(RenderContext & renderContext) const
 
 void Storm::TriggerStorm()
 {
-    if (!!mNextStormTimestamp)
+    if (mNextStormTimestamp.has_value())
     {
         // Turn on storm now
         TurnStormOn(GameWallClock::GetInstance().Now());
@@ -353,8 +353,8 @@ void Storm::TriggerLightning(SimulationParameters const & simulationParameters)
 	// Do a foreground lightning if we have a target and if we feel like doing it
 	if (GameRandomEngine::GetInstance().GenerateUniformBoolean(simulationParameters.LightningBlastProbability))
 	{
-		auto target = mParentWorld.FindSuitableLightningTarget();
-		if (!!target)
+		auto const target = mParentWorld.FindSuitableLightningTarget();
+		if (target.has_value())
 		{
 			DoTriggerForegroundLightning(GameWallClock::GetInstance().Now(), *target);
 			return;
@@ -363,6 +363,11 @@ void Storm::TriggerLightning(SimulationParameters const & simulationParameters)
 
 	// No luck, do a background lightning
 	DoTriggerBackgroundLightning(GameWallClock::GetInstance().Now());
+}
+
+void Storm::TriggerForegroundLightningAt(vec2f const & targetWorldPosition)
+{
+    DoTriggerForegroundLightning(GameWallClock::GetInstance().Now(), targetWorldPosition);
 }
 
 //////////////////////////////////////////////////////////////////////////////

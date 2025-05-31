@@ -359,21 +359,11 @@ inline void DiffuseLight_NeonVectorized(
 
                 uint32x4_t const validMask = vcgtq_f32(distanceSquare_4, zero_4); // Valid where > 0 (distance is always >= 0)
 
-                // One newtown-rhapson step
+                // Zero newtown-rhapson steps, it's for lighting after all
                 float32x4_t distance_4_inv = vrsqrteq_f32(distanceSquare_4);
-                distance_4_inv = vmulq_f32(
-                    distance_4_inv,
-                    vrsqrtsq_f32(
-                        vmulq_f32(distanceSquare_4, distance_4_inv),
-                        distance_4_inv));
 
-                // One newtown-rhapson step
+                // Zero newtown-rhapson steps, it's for lighting after all
                 float32x4_t distance_4 = vrecpeq_f32(distance_4_inv);
-                distance_4 = vmulq_f32(
-                    distance_4,
-                    vrecpsq_f32(
-                        distance_4_inv,
-                        distance_4));
 
                 distance_4 =
                     vandq_u32(

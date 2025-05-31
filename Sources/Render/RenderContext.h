@@ -679,6 +679,17 @@ public:
         mVectorFieldLengthMultiplier = vectorFieldLengthMultiplier;
     }
 
+    ShipParticleRenderModeType GetShipParticleRenderMode() const
+    {
+        return mRenderParameters.ShipParticleRenderMode;
+    }
+
+    void SetShipParticleRenderMode(ShipParticleRenderModeType shipParticleRenderMode)
+    {
+        mRenderParameters.ShipParticleRenderMode = shipParticleRenderMode;
+        mRenderParameters.AreShipStructureRenderModeSelectorsDirty = true;
+    }
+
     DebugShipRenderModeType GetDebugShipRenderMode() const
     {
         return mRenderParameters.DebugShipRenderMode;

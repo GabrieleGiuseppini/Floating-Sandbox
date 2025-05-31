@@ -2065,6 +2065,18 @@ void GameController::InternalAddShip(
     // Add ship to our world
     mWorld->AddShip(std::move(ship));
 
+    // Calculate ship particle render mode:
+    //  - If at least one ship has at least one spring or one triangle, then Fragment mode;
+    //  - Else: Particle mode
+    if (mWorld->GetAllShipSpringCount() == 0 && mWorld->GetAllShipTriangleCount() == 0)
+    {
+        mRenderContext->SetShipParticleRenderMode(ShipParticleRenderModeType::Particle);
+    }
+    else
+    {
+        mRenderContext->SetShipParticleRenderMode(ShipParticleRenderModeType::Fragment);
+    }
+
     // Add ship to rendering engine
     mRenderContext->AddShip(
         shipId,

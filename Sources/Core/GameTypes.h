@@ -1602,6 +1602,15 @@ enum class StressRenderModeType
 };
 
 /*
+ * The ways in which ships particles (points) may be rendered.
+ */
+enum class ShipParticleRenderModeType
+{
+    Fragment,
+    Particle
+};
+
+/*
  * The debug ways in which ships may be rendered.
  */
 enum class DebugShipRenderModeType

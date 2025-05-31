@@ -68,6 +68,7 @@ struct RenderParameters
     HeatRenderModeType HeatRenderMode;
     float HeatSensitivity;
     StressRenderModeType StressRenderMode;
+    ShipParticleRenderModeType ShipParticleRenderMode;
     DebugShipRenderModeType DebugShipRenderMode;
     NpcRenderModeType NpcRenderMode;
     rgbColor NpcQuadFlatColor;

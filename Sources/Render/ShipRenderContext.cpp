@@ -152,6 +152,8 @@ ShipRenderContext::ShipRenderContext(
     , mExplosionTextureAtlasMetadata(globalRenderContext.GetExplosionTextureAtlasMetadata())
     , mGenericLinearTextureAtlasMetadata(globalRenderContext.GetGenericLinearTextureAtlasMetadata())
     , mGenericMipMappedTextureAtlasMetadata(globalRenderContext.GetGenericMipMappedTextureAtlasMetadata())
+    // Calculated parameters - all of these will be calculated later
+    , mPointSize(0.0f)
     // Non-render parameters - all of these will be calculated later
     , mShipFlameHalfQuadWidth(0.0f)
     , mShipFlameQuadHeight(0.0f)
@@ -1731,7 +1733,7 @@ void ShipRenderContext::RenderDraw(
             {
                 mShaderManager.ActivateProgram(mShipPointsProgram);
 
-                glPointSize(renderParameters.View.WorldOffsetToPhysicalDisplayOffset(0.3f));
+                glPointSize(mPointSize);
 
                 glDrawElements(
                     GL_POINTS,
@@ -2628,6 +2630,8 @@ void ShipRenderContext::ApplyShipStructureRenderModeChanges(RenderParameters con
 void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderParameters)
 {
     //
+    // Ortho-matrixes
+    //
     // Each plane Z segment is divided into a number of layers, one for each type of rendering we do for a ship:
     //      - 0: Ropes (always behind)
     //      - 1: Flames (background, i.e. flames that are on ropes, so these are drawn *behind* triangles on same plane, like ropes are)
@@ -2947,6 +2951,33 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
     mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::ShipPointToPointArrows>();
     mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::ShipPointToPointArrows, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         shipOrthoMatrix);
+
+    /////////////////////////////////////////////
+
+    //
+    // Calculated parameters
+    //
+    // Note: we get here when either ViewModel is dirty, or ShipParticleRenderMode is dirty
+    //
+
+    // Point size
+
+    switch (renderParameters.ShipParticleRenderMode)
+    {
+        case ShipParticleRenderModeType::Fragment:
+        {
+            mPointSize = renderParameters.View.WorldOffsetToPhysicalDisplayOffset(0.3f);
+            mShaderManager.SetProgramParameterInAllShaders<GameShaderSets::ProgramParameterKind::ShipParticleRenderMode>(0.0f);
+            break;
+        }
+
+        case ShipParticleRenderModeType::Particle:
+        {
+            mPointSize = renderParameters.View.WorldOffsetToPhysicalDisplayOffset(1.0f);
+            mShaderManager.SetProgramParameterInAllShaders<GameShaderSets::ProgramParameterKind::ShipParticleRenderMode>(1.0f);
+            break;
+        }
+    }
 }
 
 void ShipRenderContext::ApplyEffectiveAmbientLightIntensityChanges(RenderParameters const & renderParameters)

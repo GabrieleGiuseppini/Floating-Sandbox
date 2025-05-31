@@ -68,6 +68,10 @@ public:
 
     size_t GetShipPointCount(ShipId shipId) const;
 
+    size_t GetAllShipSpringCount() const;
+
+    size_t GetAllShipTriangleCount() const;
+
     Geometry::AABBSet GetAllShipAABBs() const
     {
         return mAllShipAABBs;
@@ -380,6 +384,8 @@ public:
     void TriggerStorm();
 
     void TriggerLightning(SimulationParameters const & simulationParameters);
+
+    void TriggerLightningAt(vec2f const & targetWorldPosition);
 
     void HighlightElectricalElement(GlobalElectricalElementId electricalElementId);
 

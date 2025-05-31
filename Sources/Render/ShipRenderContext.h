@@ -1842,6 +1842,12 @@ private:
 private:
 
     //
+    // Calculated parameters
+    //
+
+    float mPointSize; // For ship particle rendering
+
+    //
     // Externally-controlled parameters that only affect Upload (i.e. that do
     // not affect rendering directly) or that purely serve as input to calculated
     // render parameters

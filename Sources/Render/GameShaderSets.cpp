@@ -473,6 +473,8 @@ ProgramParameterKind StrToProgramParameterKind(std::string const & str)
         return ProgramParameterKind::RainDensity;
     else if (str == "ShipDepthDarkeningSensitivity")
         return ProgramParameterKind::ShipDepthDarkeningSensitivity;
+    else if (str == "ShipParticleRenderMode")
+        return ProgramParameterKind::ShipParticleRenderMode;
     else if (str == "StarTransparency")
         return ProgramParameterKind::StarTransparency;
     else if (str == "StressColorMap")
@@ -578,6 +580,8 @@ std::string ProgramParameterKindToStr(ProgramParameterKind programParameter)
             return "RainDensity";
         case ProgramParameterKind::ShipDepthDarkeningSensitivity:
             return "ShipDepthDarkeningSensitivity";
+        case ProgramParameterKind::ShipParticleRenderMode:
+            return "ShipParticleRenderMode";
         case ProgramParameterKind::StarTransparency:
             return "StarTransparency";
         case ProgramParameterKind::StressColorMap:

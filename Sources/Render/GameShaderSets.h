@@ -149,6 +149,7 @@ enum class ProgramParameterKind : std::uint8_t
     RainAngle,
     RainDensity,
     ShipDepthDarkeningSensitivity,
+    ShipParticleRenderMode,
     StarTransparency,
     StressColorMap,
     SunRaysInclination,

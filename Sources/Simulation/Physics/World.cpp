@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <numeric>
 
 namespace Physics {
 
@@ -116,6 +117,30 @@ size_t World::GetShipPointCount(ShipId shipId) const
     assert(shipId >= 0 && shipId < mAllShips.size());
 
     return mAllShips[shipId]->GetPointCount();
+}
+
+size_t World::GetAllShipSpringCount() const
+{
+    return std::accumulate(
+        mAllShips.cbegin(),
+        mAllShips.cend(),
+        size_t(0),
+        [](size_t total, auto const & ship)
+        {
+            return total + ship->GetSprings().GetElementCount();
+        });
+}
+
+size_t World::GetAllShipTriangleCount() const
+{
+    return std::accumulate(
+        mAllShips.cbegin(),
+        mAllShips.cend(),
+        size_t(0),
+        [](size_t total, auto const & ship)
+        {
+            return total + ship->GetTriangles().GetElementCount();
+        });
 }
 
 bool World::IsUnderwater(GlobalElementId elementId) const
@@ -1136,6 +1161,11 @@ void World::TriggerStorm()
 void World::TriggerLightning(SimulationParameters const & simulationParameters)
 {
     mStorm.TriggerLightning(simulationParameters);
+}
+
+void World::TriggerLightningAt(vec2f const & targetWorldPosition)
+{
+    mStorm.TriggerForegroundLightningAt(targetWorldPosition);
 }
 
 void World::TriggerRogueWave()

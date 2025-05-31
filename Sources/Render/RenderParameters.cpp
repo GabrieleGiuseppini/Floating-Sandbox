@@ -47,6 +47,7 @@ RenderParameters::RenderParameters(
 	, HeatRenderMode(HeatRenderModeType::Incandescence)
 	, HeatSensitivity(0.0f)
 	, StressRenderMode(StressRenderModeType::None)
+	, ShipParticleRenderMode(ShipParticleRenderModeType::Fragment)
 	, DebugShipRenderMode(DebugShipRenderModeType::None)
 	, NpcRenderMode(NpcRenderModeType::Texture)
 	, NpcQuadFlatColor(143, 201, 242)
