@@ -690,6 +690,90 @@
 				and zebra mussels could be something in lake water settings
 				these would slowly colonize the hull and put weight on it			
 
+	- Nuclear bomb (from Denis Nesterenco):
+		Nuclear Bomb Idea for Floating Sandbox
+		1. Main Effects of a Nuclear Explosion
+		A nuclear explosion in the game should include several key elements:
+		* Massive blast wave – instantly shatters the ship into pieces, creating a giant shockwave on the water.
+		* Fireball – the center of the explosion reaches temperatures high enough to melt and vaporize metal.
+		* Powerful pressure surge – ships are torn apart, with debris flying in all directions.
+		* Gigantic tsunami – if the bomb detonates in water, it creates a huge wave that sweeps everything away.
+		* Radiation contamination – any objects within the affected zone slowly deteriorate due to radiation.
+		2. Stages of a Nuclear Explosion
+		2a. Flash and Thermal Radiation
+		A blinding flash instantly illuminates the entire screen.
+		Everything at the epicenter ignites or vaporizes instantly.
+		Metal becomes white-hot, while wooden parts burst into flames.
+		2b. Shockwave
+		A fraction of a second after the flash, a powerful blast wave follows.
+		The ship is torn apart – the closer it is to the epicenter, the greater the damage.
+		Water is pushed away from the explosion, forming a crater on the surface.
+		3. Mushroom Cloud and Radiation
+		After the explosion, a massive mushroom cloud rises above the detonation site.
+		Radioactive fallout gradually descends onto the water, causing long-term destruction.
+		4. Interaction with Water
+		If the explosion occurs underwater, a giant water dome forms, followed by a powerful tsunami.
+		Ships farther away might not break apart immediately, but they could capsize due to the wave.
+		If a ship is on the surface, the force of the explosion could push it sideways or submerge it due to water pressure.
+		5. Player Tools
+		* Power selection – from "tactical charge" to "megaton bomb."
+		* Destruction radius customization – create a compact explosion or wipe out the entire map.
+		* Different explosion types – airburst (shockwave), underwater detonation (tsunami), contact explosion (instant vaporization).
+		* Slow-motion mode – observe destruction in cinematic slow-motion.
+		How Would It Look in the Game?
+		Imagine: you drop the bomb, and within a second, the screen is engulfed in a blinding flash. The ship begins to melt, and in an instant, a massive blast wave obliterates everything into splinters. The water boils, debris flies in all directions, and then... silence—only broken by a colossal tsunami surging towards the remnants.
+
+	- 1. bombs
+		Types:
+		* Conventional bomb - falls downward on a ballistic trajectory, explodes on contact with the ship or water.
+		* Fusion bomb - creates a powerful blast wave, tearing through the ship's hull.
+		* Concrete bomb - punctures several decks before detonating.
+		* Nuclear Bomb - the most powerful explosion with heat radiation, shockwave, tsunami, and radiation.
+		Mechanics:
+		The player chooses a drop location.
+		The bomb falls, taking into account air resistance and gravity.
+		The impact creates a funnel of damage, holes in the hull, and possible fire.
+
+	- 2. Rockets
+		Types:
+		* Winged missile - flies low over the water, strikes the target with a powerful explosion.
+		* Ballistic Missile - Launches in an arc, pierces the ship from above.
+		* Hypersonic Missile - incredible speed, almost impossible to shoot down.
+		* Nuclear Missile - creates an explosion of colossal force, possibly even destroying the entire map.
+		Mechanics:
+		The player selects a target, the missile flies to it automatically.
+		It is possible to control the missile in flight.
+		On impact - a powerful explosion, holes, flying debris.
+		flying debris.
+
+	- 3. Mines
+		Types:
+		* Contact mine - detonates when touched by a ship.
+		* Non-contact mine - detonates when the target approaches, creating an underwater explosion.
+		* Nuclear Mine - rare type, can destroy an entire fleet.
+		Mechanics:
+		The player places mines in the water.
+		Ships may accidentally bump into them.
+		The underwater explosion creates a hull rupture and a hurricane wave.
+		and a shockwave.
+
+	- 4. torpedoes
+		Types:
+		* Conventional torpedo - travels directly to target, explodes on contact.
+		* Homing torpedo - corrects course, finds ship automatically.
+		* Supercavitation torpedo - moves very fast, pierces hull through.
+		* Nuclear Torpedo - powerful underwater explosion with a huge tsunami.
+		Mechanics:
+		Launched from a submarine or ship.
+		The torpedo moves in the water, given resistance.
+		When detonated, it pierces the hull, creating flooding.
+
+	- Additional mechanics
+		* Fuel and Ammunition - hitting an ammunition depot amplifies the explosion.
+		* Fire and smoke effects - fires, detonation, fire flashes.
+		* Depth charges - special bombs to destroy submarines.
+
+
 - Testers:
 	- Pac0master: Intel core i5-8600K 6 cores, NVIDIA GeForce RTX 2070
 	- Oxurus: Intel i3, Intel(R) HD Graphics 2000, OpenGL 3.1
