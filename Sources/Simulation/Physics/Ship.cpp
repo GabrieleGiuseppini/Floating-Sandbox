@@ -3309,6 +3309,13 @@ void Ship::RunConnectivityVisit()
     mPlaneTriangleIndicesToRender.clear();
     mPlaneTriangleIndicesToRender.push_back(totalPlaneTrianglesCount); // First plane starts at zero, and we have zero triangles
 
+    // Initialize count of points in this connected component
+    size_t currentConnectedComponentPointCount = 1;
+
+    // Flag to remember whether we still have an un-finalized connected component, which would happen
+    // when we are holding on to orphaned points waiting for a larger connected component
+    bool hasUnfinalizedConnectedComponent = false;
+
     // Visit all non-ephemeral points
     for (auto pointIndex : mPoints.RawShipPointsReverse())
     {
@@ -3327,9 +3334,6 @@ void Ship::RunConnectivityVisit()
             // Add point to queue
             assert(pointsToPropagateFrom.empty());
             pointsToPropagateFrom.push(pointIndex);
-
-            // Initialize count of points in this connected component
-            size_t currentConnectedComponentPointCount = 1;
 
             // Visit all points reachable from this point via springs
             while (!pointsToPropagateFrom.empty())
@@ -3379,25 +3383,63 @@ void Ship::RunConnectivityVisit()
                 totalPlaneTrianglesCount += mPoints.GetConnectedOwnedTrianglesCount(currentPointIndex);
             }
 
-            // Remember count of points in this connected component
-            assert(mConnectedComponentSizes.size() == static_cast<size_t>(currentPlaneId));
-            mConnectedComponentSizes.push_back(currentConnectedComponentPointCount);
-
-            // Remember the starting index of the triangles in the next plane
-            assert(mPlaneTriangleIndicesToRender.size() == static_cast<size_t>(currentPlaneId + 1));
-            mPlaneTriangleIndicesToRender.push_back(totalPlaneTrianglesCount);
-
             //
-            // Flood completed
+            // Now, if we have visited a ral connected component (i.e. > 1 particles, implying there's
+            // at least one spring and thus a component), store its information and start a new connected
+            // component; otherwise, hold on to this plane, eventually adding more to it
             //
 
-            // Remember max plane ID ever
-            mMaxMaxPlaneId = std::max(mMaxMaxPlaneId, currentPlaneId);
+            if (currentConnectedComponentPointCount > 1)
+            {
+                // Remember count of points in this connected component
+                assert(mConnectedComponentSizes.size() == static_cast<size_t>(currentPlaneId));
+                mConnectedComponentSizes.push_back(currentConnectedComponentPointCount);
 
-            // Next we begin a new plane and connected component
-            ++currentPlaneId;
-            currentPlaneIdFloat = static_cast<float>(currentPlaneId);
+                // Remember the starting index of the triangles in the next plane
+                assert(mPlaneTriangleIndicesToRender.size() == static_cast<size_t>(currentPlaneId + 1));
+                mPlaneTriangleIndicesToRender.push_back(totalPlaneTrianglesCount);
+
+                //
+                // Flood completed
+                //
+
+                // Remember max plane ID ever
+                mMaxMaxPlaneId = std::max(mMaxMaxPlaneId, currentPlaneId);
+
+                // Next we begin a new plane and connected component
+                ++currentPlaneId;
+                currentPlaneIdFloat = static_cast<float>(currentPlaneId);
+
+                // Initialize count of points in the new connected component
+                currentConnectedComponentPointCount = 1;
+
+                // No more deferred points
+                hasUnfinalizedConnectedComponent = false;
+            }
+            else
+            {
+                // Keep going, remembering that we are accumulating
+                hasUnfinalizedConnectedComponent = true;
+            }
         }
+    }
+
+    if (hasUnfinalizedConnectedComponent)
+    {
+        //
+        // Finalize last connected component
+        //
+
+        // Remember count of points in this connected component
+        assert(mConnectedComponentSizes.size() == static_cast<size_t>(currentPlaneId));
+        mConnectedComponentSizes.push_back(currentConnectedComponentPointCount);
+
+        // Remember the starting index of the triangles in the next plane
+        assert(mPlaneTriangleIndicesToRender.size() == static_cast<size_t>(currentPlaneId + 1));
+        mPlaneTriangleIndicesToRender.push_back(totalPlaneTrianglesCount);
+
+        // Remember max plane ID ever
+        mMaxMaxPlaneId = std::max(mMaxMaxPlaneId, currentPlaneId);
     }
 
 #ifdef RENDER_FLOOD_DISTANCE
