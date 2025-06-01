@@ -2969,7 +2969,7 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
 
         case ShipParticleRenderModeType::Particle:
         {
-            mPointSize = renderParameters.View.WorldOffsetToPhysicalDisplayOffset(1.0f);
+            mPointSize = renderParameters.View.WorldOffsetToPhysicalDisplayOffset(1.5f);
             mShaderManager.SetProgramParameterInAllShaders<GameShaderSets::ProgramParameterKind::ShipParticleRenderMode>(1.0f);
             break;
         }
