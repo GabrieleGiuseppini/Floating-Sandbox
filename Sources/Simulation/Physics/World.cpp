@@ -815,7 +815,8 @@ std::optional<ToolApplicationLocus> World::InjectPressureAt(
 
 bool World::FloodAt(
     vec2f const & targetPos,
-    float waterQuantityMultiplier,
+    float radius,
+    float flowSign,
     SimulationParameters const & simulationParameters)
 {
     // Flood all ships
@@ -824,7 +825,8 @@ bool World::FloodAt(
     {
         bool hasFlooded = ship->FloodAt(
             targetPos,
-            waterQuantityMultiplier,
+            radius,
+            flowSign,
             simulationParameters);
 
         anyHasFlooded |= hasFlooded;

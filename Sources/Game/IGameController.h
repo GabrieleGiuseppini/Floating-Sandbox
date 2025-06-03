@@ -133,7 +133,7 @@ struct IGameController
     virtual void TogglePinAt(DisplayLogicalCoordinates const & screenCoordinates) = 0;
     virtual void RemoveAllPins() = 0;
     virtual std::optional<ToolApplicationLocus> InjectPressureAt(DisplayLogicalCoordinates const & screenCoordinates, float pressureQuantityMultiplier) = 0;
-    virtual bool FloodAt(DisplayLogicalCoordinates const & screenCoordinates, float waterQuantityMultiplier) = 0;
+    virtual bool FloodAt(DisplayLogicalCoordinates const & screenCoordinates, float flowSign) = 0;
     virtual void ToggleAntiMatterBombAt(DisplayLogicalCoordinates const & screenCoordinates) = 0;
     virtual void ToggleFireExtinguishingBombAt(DisplayLogicalCoordinates const & screenCoordinates) = 0;
     virtual void ToggleImpactBombAt(DisplayLogicalCoordinates const & screenCoordinates) = 0;

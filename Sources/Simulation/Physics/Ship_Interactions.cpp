@@ -1136,17 +1136,21 @@ std::optional<ToolApplicationLocus> Ship::InjectPressureAt(
 
 bool Ship::FloodAt(
     vec2f const & targetPos,
-    float waterQuantityMultiplier,
+    float radius,
+    float flowSign,
     SimulationParameters const & simulationParameters)
 {
-    float const searchRadius = simulationParameters.FloodRadius;
+    //
+    // New quantity of water:
+    //  - When adding: w' = w + DQ
+    //  - When removing: w' = max(w - max(AQ*w, DQ), 0) = w - min(max(AQ*w, DQ), w)
+    //
 
-    // Delta quantity of water, added or removed;
-    // actual quantity removed depends on pre-existing water
-    float const quantityOfWaterDelta =
+    float const dq =
         simulationParameters.FloodQuantity
-        * waterQuantityMultiplier
         * (simulationParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+
+    float const aq = simulationParameters.IsUltraViolentMode ? 0.8f : 0.5f;
 
     // Multiplier to get internal pressure delta from water delta
     float const volumetricWaterPressure = Formulae::CalculateVolumetricWaterPressure(simulationParameters.WaterTemperature, simulationParameters);
@@ -1155,7 +1159,7 @@ bool Ship::FloodAt(
     // Find the (non-ephemeral) non-hull points in the radius
     //
 
-    float const searchSquareRadius = searchRadius * searchRadius;
+    float const searchSquareRadius = radius * radius;
 
     bool anyWasApplied = false;
     for (auto const pointIndex : mPoints.RawShipPoints())
@@ -1169,12 +1173,25 @@ bool Ship::FloodAt(
                 // Update water
                 //
 
-                // Make sure we don't remove more water than available
-                float const actualQuantityOfWaterDelta = std::max(-mPoints.GetWater(pointIndex), quantityOfWaterDelta);
+                float const w = mPoints.GetWater(pointIndex);
+
+                float actualQuantityOfWaterDelta;
+                if (flowSign >= 0.0f)
+                {
+                    actualQuantityOfWaterDelta = dq;
+                }
+                else
+                {
+                    actualQuantityOfWaterDelta = -std::min(
+                        std::max(aq * w, dq),
+                        w);
+                }
+
+                LogMessage(w, " ", actualQuantityOfWaterDelta);
 
                 mPoints.SetWater(
                     pointIndex,
-                    mPoints.GetWater(pointIndex) + actualQuantityOfWaterDelta);
+                    w + actualQuantityOfWaterDelta);
 
                 //
                 // Update internal pressure

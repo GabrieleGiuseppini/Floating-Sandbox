@@ -299,7 +299,8 @@ public:
 
     bool FloodAt(
         vec2f const & targetPos,
-        float waterQuantityMultiplier,
+        float radius,
+        float flowSign,
         SimulationParameters const & simulationParameters);
 
     void ToggleAntiMatterBombAt(

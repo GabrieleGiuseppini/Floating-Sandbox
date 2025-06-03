@@ -250,7 +250,7 @@ public:
     void TogglePinAt(DisplayLogicalCoordinates const & screenCoordinates) override;
     void RemoveAllPins() override;
     std::optional<ToolApplicationLocus> InjectPressureAt(DisplayLogicalCoordinates const & screenCoordinates, float pressureQuantityMultiplier) override;
-    bool FloodAt(DisplayLogicalCoordinates const & screenCoordinates, float waterQuantityMultiplier) override;
+    bool FloodAt(DisplayLogicalCoordinates const & screenCoordinates, float flowSign) override;
     void ToggleAntiMatterBombAt(DisplayLogicalCoordinates const & screenCoordinates) override;
     void ToggleFireExtinguishingBombAt(DisplayLogicalCoordinates const & screenCoordinates) override;
     void ToggleImpactBombAt(DisplayLogicalCoordinates const & screenCoordinates) override;

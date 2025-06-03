@@ -1228,7 +1228,7 @@ std::optional<ToolApplicationLocus> GameController::InjectPressureAt(
 
 bool GameController::FloodAt(
     DisplayLogicalCoordinates const & screenCoordinates,
-    float waterQuantityMultiplier)
+    float flowSign)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
@@ -1236,7 +1236,8 @@ bool GameController::FloodAt(
     assert(!!mWorld);
     return mWorld->FloodAt(
         worldCoordinates,
-        waterQuantityMultiplier,
+        mSimulationParameters.FloodRadius,
+        flowSign,
         mSimulationParameters);
 }
 
