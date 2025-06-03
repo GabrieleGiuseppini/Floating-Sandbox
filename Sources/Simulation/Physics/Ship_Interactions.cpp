@@ -1182,12 +1182,13 @@ bool Ship::FloodAt(
                 }
                 else
                 {
+                    // Remove a lot when water above 1.0 (it's the extra water that doesn't impact rendered water)
+                    float const aqp = w > 5.0f ? 0.95f : aq;
+
                     actualQuantityOfWaterDelta = -std::min(
-                        std::max(aq * w, dq),
+                        std::max(aqp * w, dq),
                         w);
                 }
-
-                LogMessage(w, " ", actualQuantityOfWaterDelta);
 
                 mPoints.SetWater(
                     pointIndex,
