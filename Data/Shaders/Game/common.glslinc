@@ -23,9 +23,11 @@ vec3 ApplyDither(
     vec2 fragCoords,
     sampler2D noiseTexture)
 {
+    #define DITHER_MAGNITUDE 1.5
+
     vec2 noiseCoords = fragCoords / vec2(NOISE_2_WIDTH, NOISE_2_HEIGHT);
     float noise = texture2D(noiseTexture, noiseCoords).x;
-    color += mix(-0.5/255.0, 0.5/255.0, noise);
+    color += mix(-DITHER_MAGNITUDE/255.0, DITHER_MAGNITUDE/255.0, noise);
     return color;
 }
 

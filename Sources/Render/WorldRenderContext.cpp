@@ -939,6 +939,9 @@ void WorldRenderContext::RenderDrawSky(RenderParameters const & renderParameters
 
         mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::Sky>();
 
+        mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::NoiseTexture>();
+        glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(NoiseType::Fine));
+
         glDrawArrays(GL_TRIANGLES, 0, 6);
         CheckOpenGLError();
 
