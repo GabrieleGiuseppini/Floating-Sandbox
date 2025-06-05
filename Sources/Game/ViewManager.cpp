@@ -198,10 +198,7 @@ void ViewManager::FocusOn(
     // One-shot
 
     // Invoked when there's no auto-focus
-    //
-    // Well, may also be called when we have auto-focus, but we know we
-    // won't update (e.g. a particle-only ship)
-    //assert(!mAutoFocus.has_value());
+    assert(!mAutoFocus.has_value());
 
     InternalFocusOn(aabb, widthMultiplier, heightMultiplier, zoomToleranceMultiplierMin, zoomToleranceMultiplierMax, anchorAabbCenterAtCurrentScreenPosition);
 }
@@ -377,10 +374,7 @@ void ViewManager::InternalFocusOn(
      */
 
     // This is only called when we have no auto-focus
-    //
-    // Well, may also be called when we have auto-focus, but we know we
-    // won't update (e.g. a particle-only ship)
-    //assert(!mAutoFocus.has_value());
+    assert(!mAutoFocus.has_value());
 
     //
     // Calculate zoom
