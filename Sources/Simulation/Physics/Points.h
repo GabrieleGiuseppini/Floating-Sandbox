@@ -773,6 +773,18 @@ public:
         return pointIndex >= mAlignedShipPointCount;
     }
 
+    Geometry::AABB CalculateAABB() const
+    {
+        Geometry::AABB box;
+
+        for (ElementIndex pointIndex : RawShipPoints())
+        {
+            box.ExtendTo(GetPosition(pointIndex));
+        }
+
+        return box;
+    }
+
     void RegisterShipPhysicsHandler(IShipPhysicsHandler * shipPhysicsHandler)
     {
         mShipPhysicsHandler = shipPhysicsHandler;
@@ -925,18 +937,6 @@ public:
     void ColorPointForDebugging(
         ElementIndex pointIndex,
         rgbaColor const & color);
-
-    // For experiments
-    Geometry::AABB CalculateAABB() const
-    {
-        Geometry::AABB box;
-        for (ElementIndex pointIndex : RawShipPoints())
-        {
-            box.ExtendTo(GetPosition(pointIndex));
-        }
-
-        return box;
-    }
 
     //
     // Render
