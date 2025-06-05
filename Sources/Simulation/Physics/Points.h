@@ -927,7 +927,7 @@ public:
         rgbaColor const & color);
 
     // For experiments
-    Geometry::AABB MakeAABB() const
+    Geometry::AABB CalculateAABB() const
     {
         Geometry::AABB box;
         for (ElementIndex pointIndex : RawShipPoints())

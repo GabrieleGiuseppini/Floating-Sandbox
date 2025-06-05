@@ -77,6 +77,8 @@ public:
         return mAllShipAABBs;
     }
 
+    Geometry::AABB CalculateAllShipParticleAABB() const;
+
     Npcs const & GetNpcs() const
     {
         assert(!!mNpcs);

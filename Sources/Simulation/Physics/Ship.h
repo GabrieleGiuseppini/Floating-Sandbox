@@ -61,6 +61,8 @@ public:
 
     Geometry::AABBSet CalculateAABBs() const;
 
+    Geometry::AABB CalculateParticleAABB() const;
+
     PlaneId GetMaxPlaneId() const
     {
         return mMaxMaxPlaneId;

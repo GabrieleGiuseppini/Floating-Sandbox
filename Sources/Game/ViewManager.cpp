@@ -198,7 +198,10 @@ void ViewManager::FocusOn(
     // One-shot
 
     // Invoked when there's no auto-focus
-    assert(!mAutoFocus.has_value());
+    //
+    // Well, may also be called when we have auto-focus, but we know we
+    // won't update (e.g. a particle-only ship)
+    //assert(!mAutoFocus.has_value());
 
     InternalFocusOn(aabb, widthMultiplier, heightMultiplier, zoomToleranceMultiplierMin, zoomToleranceMultiplierMax, anchorAabbCenterAtCurrentScreenPosition);
 }
@@ -374,7 +377,10 @@ void ViewManager::InternalFocusOn(
      */
 
     // This is only called when we have no auto-focus
-    assert(!mAutoFocus.has_value());
+    //
+    // Well, may also be called when we have auto-focus, but we know we
+    // won't update (e.g. a particle-only ship)
+    //assert(!mAutoFocus.has_value());
 
     //
     // Calculate zoom
@@ -389,7 +395,7 @@ void ViewManager::InternalFocusOn(
     // Check zoom against tolerance
     float const currentZoom = 1.0f / mInverseZoomParameterSmoother.GetValue();
     assert(currentZoom * zoomToleranceMultiplierMin <= currentZoom * zoomToleranceMultiplierMax);
-    if (newAutoFocusZoom >= currentZoom * zoomToleranceMultiplierMin && newAutoFocusZoom <= currentZoom * zoomToleranceMultiplierMax)
+    if (newAutoFocusZoom > currentZoom * zoomToleranceMultiplierMin && newAutoFocusZoom < currentZoom * zoomToleranceMultiplierMax)
     {
         // Doesn't pass tolerance
         return;

@@ -185,6 +185,11 @@ Geometry::AABBSet Ship::CalculateAABBs() const
     return allAABBs;
 }
 
+Geometry::AABB Ship::CalculateParticleAABB() const
+{
+    return mPoints.CalculateAABB();
+}
+
 void Ship::SetEventRecorder(EventRecorder * eventRecorder)
 {
     mEventRecorder = eventRecorder;

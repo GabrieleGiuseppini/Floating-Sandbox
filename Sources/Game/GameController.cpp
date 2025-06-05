@@ -1836,6 +1836,17 @@ void GameController::ResetView()
     if (mViewManager.GetAutoFocusTarget().has_value())
     {
         mViewManager.ResetAutoFocusAlterations();
+
+        if (mViewManager.GetAutoFocusTarget() == AutoFocusTargetKindType::Ship)
+        {
+            // Check whether this is a particle-only ship
+            auto const shipAABBs = mWorld->GetAllShipAABBs().MakeUnion();
+            if (!shipAABBs.has_value())
+            {
+                // Given that we won't auto-focus on thip ship, do a single focus on it now
+                FocusOnShips();
+            }
+        }
     }
     else
     {
@@ -1848,11 +1859,15 @@ void GameController::FocusOnShips()
 {
     if (mWorld)
     {
-        auto const aabb = mWorld->GetAllShipAABBs().MakeUnion();
-        if (aabb.has_value())
+        auto aabb = mWorld->GetAllShipAABBs().MakeUnion();
+        if (!aabb.has_value())
         {
-            mViewManager.FocusOn(*aabb, 1.0f, 1.0f, 1.0f, 1.0f, false);
+            // No triangles - particle-only ship
+            aabb = mWorld->CalculateAllShipParticleAABB();
         }
+
+        assert(aabb.has_value());
+        mViewManager.FocusOn(*aabb, 1.0f, 1.0f, 1.0f, 1.0f, false);
     }
 }
 
@@ -2208,6 +2223,19 @@ void GameController::UpdateViewOnShipLoad()
         {
             // Reset user offsets
             mViewManager.ResetAutoFocusAlterations();
+
+            // We'll focus at next frame
+
+        }
+
+        // Check whether this is a particle-only ship
+        auto const shipAABBs = mWorld->GetAllShipAABBs().MakeUnion();
+        if (!shipAABBs.has_value())
+        {
+            // Given that we won't auto-focus on thip ship, do a single focus on it now,
+            // regardless of auto-focus-on-ship-load (as we're supposed to focus on ship
+            // anyways)
+            FocusOnShips();
         }
 
         return;

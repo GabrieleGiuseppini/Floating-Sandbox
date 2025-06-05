@@ -143,6 +143,17 @@ size_t World::GetAllShipTriangleCount() const
         });
 }
 
+Geometry::AABB World::CalculateAllShipParticleAABB() const
+{
+    Geometry::AABB uberAABB;
+    for (auto const & ship : mAllShips)
+    {
+        uberAABB.ExtendTo(ship->CalculateParticleAABB());
+    }
+
+    return uberAABB;
+}
+
 bool World::IsUnderwater(GlobalElementId elementId) const
 {
     auto const shipId = elementId.GetShipId();
