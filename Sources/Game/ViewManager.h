@@ -17,7 +17,7 @@ class ViewManager
 {
 public:
 
-    explicit ViewManager(
+    ViewManager(
         std::optional<AutoFocusTargetKindType> autoFocusTarget,
         RenderContext & renderContext);
 

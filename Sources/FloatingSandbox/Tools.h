@@ -3549,7 +3549,7 @@ public:
                 // We are currently not engaged
 
                 // Send first interaction, together with probe
-                bool hasBeenApplied = mGameController.ApplyElectricSparkAt(
+                bool const hasBeenApplied = mGameController.ApplyElectricSparkAt(
                     inputState.MousePosition,
                     0,
                     interactionLengthMultiplier);
