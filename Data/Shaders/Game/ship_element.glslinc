@@ -250,9 +250,7 @@ void main()
     {
         // Make it a round particle
         float d = length(gl_PointCoord - vec2(0.5)) * 2.0;
-        gl_FragColor.a *= 1.0 - smoothstep(0.92, 1.0, d);
-        //if (gl_FragColor.a < 0.3) // Don't mess with depth
-        //    discard;
+        gl_FragColor.a *= 1.0 - smoothstep(0.90, 1.0, d);
     }
 #endif
 } 

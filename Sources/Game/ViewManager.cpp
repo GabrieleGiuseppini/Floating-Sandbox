@@ -13,7 +13,9 @@ float constexpr NdcFractionZoomTarget = 0.7f; // Fraction of the [0, 2] NDC spac
 
 float constexpr SmootherTerminationThreshold = 0.00005f; // How close to target we stop smoothing
 
-ViewManager::ViewManager(RenderContext & renderContext)
+ViewManager::ViewManager(
+    std::optional<AutoFocusTargetKindType> autoFocusTarget,
+    RenderContext & renderContext)
     : mRenderContext(renderContext)
     // Defaults
     , mCameraSpeedAdjustment(1.0f)
@@ -54,8 +56,7 @@ ViewManager::ViewManager(RenderContext & renderContext)
     //
     , mAutoFocus() // Set later
 {
-    // Default: continuous auto-focus is ON on ships
-    SetAutoFocusTarget(AutoFocusTargetKindType::Ship);
+    SetAutoFocusTarget(autoFocusTarget);
 }
 
 float ViewManager::GetCameraSpeedAdjustment() const

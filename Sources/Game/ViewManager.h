@@ -17,7 +17,9 @@ class ViewManager
 {
 public:
 
-    explicit ViewManager(RenderContext & renderContext);
+    explicit ViewManager(
+        std::optional<AutoFocusTargetKindType> autoFocusTarget,
+        RenderContext & renderContext);
 
     float GetCameraSpeedAdjustment() const;
     void SetCameraSpeedAdjustment(float value);

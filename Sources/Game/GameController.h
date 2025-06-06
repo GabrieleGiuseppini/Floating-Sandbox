@@ -1097,6 +1097,8 @@ private:
 
     void UpdateAutoFocus();
 
+    std::optional<AutoFocusTargetKindType> CalculateEffectiveAutoFocusTarget() const;
+
     void InternalSwitchAutoFocusTarget(std::optional<AutoFocusTargetKindType> const & autoFocusTarget);
 
 private:
@@ -1165,6 +1167,7 @@ private:
     bool mDoShowTsunamiNotifications;
     bool mDoShowNpcNotifications;
     bool mDoDrawHeatBlasterFlame;
+    std::optional<AutoFocusTargetKindType> mAutoFocusTarget;
 
 
     //

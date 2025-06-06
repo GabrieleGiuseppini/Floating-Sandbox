@@ -104,6 +104,7 @@ GameController::GameController(
     , mDoShowTsunamiNotifications(true)
     , mDoShowNpcNotifications(true)
     , mDoDrawHeatBlasterFlame(true)
+    , mAutoFocusTarget(AutoFocusTargetKindType::Ship) // Default: continuous auto-focus is ON on ships
     // Doers
     , mRenderContext(std::move(renderContext))
     , mSimulationEventDispatcher()
@@ -117,7 +118,7 @@ GameController::GameController(
         mRenderContext->GetDisplayUnitsSystem(),
         mSimulationEventDispatcher)
     , mThreadManager(threadManager)
-    , mViewManager(*mRenderContext)
+    , mViewManager(mAutoFocusTarget, *mRenderContext)
     // Smoothing
     , mFloatParameterSmoothers()
     // Stats
@@ -286,7 +287,7 @@ GameController::GameController(
     // Reconcialiate notifications with startup parameters
     //
 
-    mNotificationLayer.SetAutoFocusIndicator(mViewManager.GetAutoFocusTarget().has_value());
+    mNotificationLayer.SetAutoFocusIndicator(mAutoFocusTarget.has_value());
 }
 
 GameController::~GameController()
@@ -1833,24 +1834,18 @@ void GameController::ResetView()
     // If there's auto-focus on <X>, we re-center; if not, we focus one-off on ships
     //
 
-    if (mViewManager.GetAutoFocusTarget().has_value())
+    // Calculate effective target (none if Ship, but no AABBs exist)
+    auto const effectiveAutoFocusTarget = CalculateEffectiveAutoFocusTarget();
+
+    // Set in view manager, unconditionally (resetting its state)
+    mViewManager.SetAutoFocusTarget(effectiveAutoFocusTarget);
+
+    if (effectiveAutoFocusTarget.has_value())
     {
         mViewManager.ResetAutoFocusAlterations();
-
-        if (mViewManager.GetAutoFocusTarget() == AutoFocusTargetKindType::Ship)
-        {
-            // Check whether this is a particle-only ship
-            auto const shipAABBs = mWorld->GetAllShipAABBs().MakeUnion();
-            if (!shipAABBs.has_value())
-            {
-                // Given that we won't auto-focus on thip ship, do a single focus on it now
-                FocusOnShips();
-            }
-        }
     }
     else
     {
-        // Focus on ships (one-off)
         FocusOnShips();
     }
 }
@@ -1883,7 +1878,7 @@ vec2f GameController::ScreenOffsetToWorldOffset(DisplayLogicalSize const & scree
 
 std::optional<AutoFocusTargetKindType> GameController::GetAutoFocusTarget() const
 {
-    return mViewManager.GetAutoFocusTarget();
+    return mAutoFocusTarget;
 }
 
 void GameController::SetAutoFocusTarget(std::optional<AutoFocusTargetKindType> const & autoFocusTarget)
@@ -1903,6 +1898,7 @@ void GameController::SetAutoFocusTarget(std::optional<AutoFocusTargetKindType> c
 
     // Switch
     InternalSwitchAutoFocusTarget(autoFocusTarget);
+    mViewManager.SetAutoFocusTarget(autoFocusTarget);
 
     // Reset user offsets if we're switching to an actual auto-focus
     if (autoFocusTarget.has_value())
@@ -2214,45 +2210,43 @@ bool GameController::CalculateAreCloudShadowsEnabled(OceanRenderDetailType ocean
 
 void GameController::UpdateViewOnShipLoad()
 {
-    auto const currentAutoFocusTarget = mViewManager.GetAutoFocusTarget();
+    // Calculate effective target (none if Ship, but no AABBs exist)
+    auto const effectiveAutoFocusTarget = CalculateEffectiveAutoFocusTarget();
 
-    if (currentAutoFocusTarget == AutoFocusTargetKindType::Ship)
+    // Set in view manager
+    if (effectiveAutoFocusTarget != mViewManager.GetAutoFocusTarget())
     {
-        // Honor auto-focus on ship load
-        if (mViewManager.GetDoAutoFocusOnShipLoad())
-        {
-            // Reset user offsets
-            mViewManager.ResetAutoFocusAlterations();
+        mViewManager.SetAutoFocusTarget(effectiveAutoFocusTarget);
+    }
 
-            // We'll focus at next frame
+    if (effectiveAutoFocusTarget == AutoFocusTargetKindType::Ship)
+    {
+        // Reset user offsets
+        mViewManager.ResetAutoFocusAlterations();
 
-        }
-
-        // Check whether this is a particle-only ship
-        auto const shipAABBs = mWorld->GetAllShipAABBs().MakeUnion();
-        if (!shipAABBs.has_value())
-        {
-            // Given that we won't auto-focus on thip ship, do a single focus on it now,
-            // regardless of auto-focus-on-ship-load (as we're supposed to focus on ship
-            // anyways)
-            FocusOnShips();
-        }
+        // We'll focus at next frame
 
         return;
     }
-
-    if (currentAutoFocusTarget == AutoFocusTargetKindType::SelectedNpc)
+    else if (effectiveAutoFocusTarget == AutoFocusTargetKindType::SelectedNpc)
     {
         // Check whether we still have a selected NPC after the load
         if (!mWorld->GetNpcs().GetCurrentlySelectedNpc().has_value())
         {
             // Disable auto-focus
             InternalSwitchAutoFocusTarget(std::nullopt);
+            mViewManager.SetAutoFocusTarget(std::nullopt);
+
+            // Continue, we might want to auto-focus on ship if enabled
+        }
+        else
+        {
+            return;
         }
     }
 
-    // Honor auto-focus on ship load
-    if (mViewManager.GetDoAutoFocusOnShipLoad())
+    if (mViewManager.GetDoAutoFocusOnShipLoad()
+        || (!effectiveAutoFocusTarget.has_value() && mAutoFocusTarget == AutoFocusTargetKindType::Ship)) // Even if no AABBs, focus on particles
     {
         // Focus on ships (one-off)
         FocusOnShips();
@@ -2285,6 +2279,7 @@ void GameController::UpdateAutoFocus()
         {
             // Disable auto-focus
             InternalSwitchAutoFocusTarget(std::nullopt);
+            mViewManager.SetAutoFocusTarget(std::nullopt);
         }
     }
     else
@@ -2295,17 +2290,29 @@ void GameController::UpdateAutoFocus()
     }
 }
 
+std::optional<AutoFocusTargetKindType> GameController::CalculateEffectiveAutoFocusTarget() const
+{
+    // If Ship but no "normal" AABBs, then no auto-focus
+    if (mAutoFocusTarget == AutoFocusTargetKindType::Ship
+        && (!mWorld || !mWorld->GetAllShipAABBs().MakeUnion().has_value()))
+    {
+        // Cannot do Ship
+        return std::nullopt;
+    }
+
+    return mAutoFocusTarget;
+}
+
 void GameController::InternalSwitchAutoFocusTarget(std::optional<AutoFocusTargetKindType> const & autoFocusTarget)
 {
-    if (mViewManager.GetAutoFocusTarget() != autoFocusTarget)
+    if (mAutoFocusTarget != autoFocusTarget)
     {
-        // Switch target
-        mViewManager.SetAutoFocusTarget(autoFocusTarget);
+        mAutoFocusTarget = autoFocusTarget;
 
         // Tell the world
-        mGameEventDispatcher.OnAutoFocusTargetChanged(autoFocusTarget);
+        mGameEventDispatcher.OnAutoFocusTargetChanged(mAutoFocusTarget);
 
         // Reconciliate notification
-        mNotificationLayer.SetAutoFocusIndicator(autoFocusTarget.has_value());
+        mNotificationLayer.SetAutoFocusIndicator(mAutoFocusTarget.has_value());
     }
 }

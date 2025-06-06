@@ -777,9 +777,11 @@ public:
     {
         Geometry::AABB box;
 
+        vec2f const * restrict pPtr = mPositionBuffer.data();
         for (ElementIndex pointIndex : RawShipPoints())
         {
-            box.ExtendTo(GetPosition(pointIndex));
+            vec2f const pos = pPtr[pointIndex];
+            box.ExtendTo(pos);
         }
 
         return box;
