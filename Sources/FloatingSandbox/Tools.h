@@ -3538,7 +3538,7 @@ public:
                         mEngagementData->IsUnderwater = isUnderwater;
                     }
 
-                    // Update towards target
+                    // Converge length multiplier towards target
                     mEngagementData->CurrentLengthMultiplier +=
                         0.18f
                         * (interactionLengthMultiplier - mEngagementData->CurrentLengthMultiplier);

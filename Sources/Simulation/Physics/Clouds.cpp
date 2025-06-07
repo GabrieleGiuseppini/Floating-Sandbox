@@ -156,7 +156,7 @@ void Clouds::Update(
     {
         cloud->Update(globalCloudSpeed);
 
-        // Manage clouds leaving space: rollover and update darkening when crossing border
+        // Manage clouds leaving space: rollover when crossing border
         if (baseAndStormSpeedMagnitude >= 0.0f && cloud->X > MaxCloudSpaceX)
         {
             cloud->X -= CloudSpaceWidth;
@@ -166,7 +166,7 @@ void Clouds::Update(
             cloud->X += CloudSpaceWidth;
         }
 
-        // Update darkening anyway, as still non-storm clouds should still change their color
+        // Update darkening, as still non-storm clouds should still change their color
         // (or else they remain dark)
         cloud->Darkening = stormParameters.CloudDarkening;
     }
@@ -176,6 +176,9 @@ void Clouds::Update(
     for (auto it = mStormClouds.begin(); it != mStormClouds.end();)
     {
         (*it)->Update(stormGlobalCloudSpeed);
+
+        // Update darkening
+        (*it)->Darkening = stormParameters.CloudDarkening;
 
         // Manage clouds leaving space: retire when cross border if too many, else rollover
         if (baseAndStormSpeedMagnitude >= 0.0f && (*it)->X > MaxCloudSpaceX)
@@ -189,7 +192,6 @@ void Clouds::Update(
                 // Rollover and catch up
                 (*it)->X -= CloudSpaceWidth;
                 (*it)->Scale = stormParameters.CloudsSize;
-                (*it)->Darkening = stormParameters.CloudDarkening;
                 ++it;
             }
         }
@@ -204,7 +206,6 @@ void Clouds::Update(
                 // Rollover and catch up
                 (*it)->X += CloudSpaceWidth;
                 (*it)->Scale = stormParameters.CloudsSize;
-                (*it)->Darkening = stormParameters.CloudDarkening;
                 ++it;
             }
         }
