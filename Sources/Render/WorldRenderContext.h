@@ -211,39 +211,17 @@ public:
         //
 
         size_t const cloudTextureIndex = static_cast<size_t>(cloudId) % mCloudTextureAtlasMetadata->GetAllFramesMetadata().size();
-
         auto const & cloudAtlasFrameMetadata = mCloudTextureAtlasMetadata->GetFrameMetadata(
             GameTextureDatabases::CloudTextureGroups::Cloud,
             static_cast<TextureFrameIndex>(cloudTextureIndex));
 
         float const aspectRatio = renderParameters.View.GetAspectRatio();
 
-        float ndcWidth;
-        float ndcHeight;
-        float leftX;
-        float bottomY;
-        if (aspectRatio >= 1.0f)
-        {
-            // Horizontal: spec'd width rules
-
-            ndcWidth = scale * cloudAtlasFrameMetadata.FrameMetadata.WorldWidth;
-            ndcHeight = scale * cloudAtlasFrameMetadata.FrameMetadata.WorldHeight * aspectRatio;
-
-            leftX = ndcX - scale * cloudAtlasFrameMetadata.FrameMetadata.AnchorCenterWorld.x;
-            bottomY = ndcY - scale * cloudAtlasFrameMetadata.FrameMetadata.AnchorCenterWorld.y * aspectRatio;
-        }
-        else
-        {
-            // Vertical: spec'd height rules
-
-            ndcHeight = scale * cloudAtlasFrameMetadata.FrameMetadata.WorldHeight;
-            ndcWidth = scale * cloudAtlasFrameMetadata.FrameMetadata.WorldWidth / aspectRatio;
-
-            bottomY = ndcY - scale * cloudAtlasFrameMetadata.FrameMetadata.AnchorCenterWorld.y;
-            leftX = ndcX - scale * cloudAtlasFrameMetadata.FrameMetadata.AnchorCenterWorld.x / aspectRatio;
-        }
-
+        float const ndcWidth = scale * cloudAtlasFrameMetadata.FrameMetadata.WorldWidth;
+        float const ndcHeight = scale * cloudAtlasFrameMetadata.FrameMetadata.WorldHeight * aspectRatio;
+        float const leftX = ndcX - ndcWidth / 2.0f;
         float const rightX = leftX + ndcWidth;
+        float const bottomY = ndcY - ndcHeight / 2.0f;
         float const topY = bottomY + ndcHeight;
 
         float const textureWidthAdjust = std::max(cloudAtlasFrameMetadata.TextureSpaceWidth, cloudAtlasFrameMetadata.TextureSpaceHeight);

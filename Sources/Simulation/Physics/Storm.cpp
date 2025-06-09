@@ -126,7 +126,7 @@ void Storm::Update(SimulationParameters const & simulationParameters)
 
 	float constexpr MaxClouds = 28.0f;
 	float constexpr MinCloudSize = 2.85f;
-	float constexpr MaxCloudSize = 4.5f;
+	float constexpr MaxCloudSize = 4.5f; // At this size, all the clouds we currently have still spawn fully in hidden portion of sky: max WorldSize now is 0.69, with max scale 4.5 => max width = 3.105; spawned @ ndcX=3.0 yields leftX = 1.5
     float constexpr MaxAirTemperatureDelta = -15.0f;
 
     // Calculate progress of storm: 0.0f = beginning, 1.0f = end
