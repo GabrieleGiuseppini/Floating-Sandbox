@@ -992,8 +992,7 @@ private:
 
     // The last spring relaxation computation parameters; used to detect changes
     std::optional<SpringRelaxationParallelComputationModeType> mCurrentSpringRelaxationParallelComputationMode;
-    size_t mCurrentSpringRelaxationComputationSpringForcesParallelismOverride;
-    size_t mCurrentSpringRelaxationComputationIntegrationParallelismOverride;
+    size_t mCurrentSpringRelaxationComputationParallelism;
 
     //
     // Static pressure

@@ -398,11 +398,8 @@ public:
     SpringRelaxationParallelComputationModeType GetSpringRelaxationParallelComputationMode() const override { return mSimulationParameters.SpringRelaxationParallelComputationMode; }
     void SetSpringRelaxationParallelComputationMode(SpringRelaxationParallelComputationModeType value) override {mSimulationParameters.SpringRelaxationParallelComputationMode = value; }
 
-    size_t GetSpringRelaxationComputationSpringForcesParallelismOverride() const override { return mSimulationParameters.SpringRelaxationComputationSpringForcesParallelismOverride; }
-    void SetSpringRelaxationComputationSpringForcesParallelismOverride(size_t value) override { mSimulationParameters.SpringRelaxationComputationSpringForcesParallelismOverride = value; }
-
-    size_t GetSpringRelaxationComputationIntegrationParallelismOverride() const override { return mSimulationParameters.SpringRelaxationComputationIntegrationParallelismOverride; }
-    void  SetSpringRelaxationComputationIntegrationParallelismOverride(size_t value) override { mSimulationParameters.SpringRelaxationComputationIntegrationParallelismOverride = value; }
+    size_t GetSpringRelaxationComputationParallelism() const override { return mSimulationParameters.SpringRelaxationComputationParallelism; }
+    void SetSpringRelaxationComputationParallelism(size_t value) override { mSimulationParameters.SpringRelaxationComputationParallelism = value; }
 
     float GetNumMechanicalDynamicsIterationsAdjustment() const override { return mSimulationParameters.NumMechanicalDynamicsIterationsAdjustment; }
     void SetNumMechanicalDynamicsIterationsAdjustment(float value) override { mSimulationParameters.NumMechanicalDynamicsIterationsAdjustment = value; }

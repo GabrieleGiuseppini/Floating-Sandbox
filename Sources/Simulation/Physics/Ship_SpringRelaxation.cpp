@@ -40,30 +40,9 @@ void Ship::RecalculateSpringRelaxationParallelism_FullSpeed(
     size_t simulationParallelism,
     SimulationParameters const & simulationParameters)
 {
-    //
-    // Given the available simulation parallelism as a constraint (max), calculate
-    // the best parallelism for the spring relaxation algorithm
-    //
+    size_t const algorithmParallelism = std::min(simulationParameters.SpringRelaxationComputationParallelism, simulationParallelism);
 
-    ElementCount const numberOfSprings = mSprings.GetElementCount();
-
-    size_t springRelaxationParallelism = numberOfSprings / simulationParameters.SpringRelaxationComputationFullSpeedSpringsPerThread;
-    if ((numberOfSprings % simulationParameters.SpringRelaxationComputationFullSpeedSpringsPerThread) != 0)
-        ++springRelaxationParallelism;
-    if (simulationParameters.SpringRelaxationComputationSpringForcesParallelismOverride != 0)
-        springRelaxationParallelism = simulationParameters.SpringRelaxationComputationSpringForcesParallelismOverride;
-
-    ElementCount const numberOfPoints = mPoints.GetBufferElementCount();
-
-    size_t pointRelaxationParallelism = numberOfPoints / simulationParameters.SpringRelaxationComputationFullSpeedPointsPerThread;
-    if ((numberOfPoints % simulationParameters.SpringRelaxationComputationFullSpeedPointsPerThread) != 0)
-        ++pointRelaxationParallelism;
-    if (simulationParameters.SpringRelaxationComputationIntegrationParallelismOverride != 0)
-        pointRelaxationParallelism = simulationParameters.SpringRelaxationComputationIntegrationParallelismOverride;
-
-    size_t const algorithmParallelism = Clamp(std::max(springRelaxationParallelism, pointRelaxationParallelism), size_t(1), simulationParallelism);
-
-    LogMessage("Ship::RecalculateSpringRelaxationParallelism_FullSpeed: springRelaxationParallelism=", springRelaxationParallelism, " pointRelaxationParallelism=", pointRelaxationParallelism,
+    LogMessage("Ship::RecalculateSpringRelaxationParallelism_FullSpeed:",
         " simulationParallelism=", simulationParallelism, " algorithmParallelism=", algorithmParallelism);
 
     //
@@ -80,7 +59,10 @@ void Ship::RecalculateSpringRelaxationParallelism_FullSpeed(
 
     mSpringRelaxation_FullSpeed_Tasks.clear();
 
+    ElementCount const numberOfSprings = mSprings.GetElementCount();
     ElementCount const numberOfVecSpringsPerThread = numberOfSprings / (static_cast<ElementCount>(algorithmParallelism) * vectorization_float_count<ElementCount>);
+
+    ElementCount const numberOfPoints = mPoints.GetBufferElementCount();
     ElementCount const numberOfVecPointsPerThread = numberOfPoints / (static_cast<ElementCount>(algorithmParallelism) * vectorization_float_count<ElementCount>);
 
     ElementIndex springStart = 0;
@@ -121,52 +103,17 @@ void Ship::RecalculateSpringRelaxationParallelism_StepByStep(
     size_t simulationParallelism,
     SimulationParameters const & simulationParameters)
 {
-    //
-    // Spring forces
-    //
+    size_t const algorithmParallelism = std::min(simulationParameters.SpringRelaxationComputationParallelism, simulationParallelism);
 
-    //
-    // Given the available simulation parallelism as a constraint (max), calculate
-    // the best parallelism for the spring relaxation algorithm
-    //
+    LogMessage("Ship::RecalculateSpringRelaxationParallelism_StepByStep:",
+        " simulationParallelism=", simulationParallelism, " algorithmParallelism=", algorithmParallelism);
 
-    ElementCount const numberOfSprings = mSprings.GetElementCount();
-
-    // Springs -> Threads:
-    //    10,000 : 1t = 800  2t = 970  3t = 1000  4t = 5t = 6t = 8t =
-    //    50,000 : 1t = 4000  2t = 3600  3t = 2900  4t = 2900  5t = 3500  6t = 8t =
-    // 1,000,000 : 1t = 103000  2t = 66000  3t = 48000  4t = 56000  5t = 64000  6t = 7t = 8t = 122000
-
-    size_t springRelaxationParallelism;
-#if !FS_IS_PLATFORM_MOBILE()
-    if (numberOfSprings < 50000)
-    {
-        // Not worth it
-        springRelaxationParallelism = 1;
-    }
-    else
-    {
-        // Go for 4 - more than 4 makes algorithm always worse
-        springRelaxationParallelism = std::min(size_t(4), simulationParallelism);
-    }
-    (void)simulationParameters;
-#else
-    springRelaxationParallelism = std::min(
-        static_cast<size_t>(numberOfSprings / simulationParameters.SpringRelaxationComputationStepByStepSpringsPerThread),
-        simulationParallelism);
-#endif
-
-    if (simulationParameters.SpringRelaxationComputationSpringForcesParallelismOverride != 0)
-        springRelaxationParallelism = std::min(simulationParameters.SpringRelaxationComputationSpringForcesParallelismOverride, simulationParallelism);
-
-    LogMessage("Ship::RecalculateSpringRelaxationParallelism_StepByStep: springs=", numberOfSprings, " simulationParallelism=", simulationParallelism,
-        " springRelaxationParallelism=", springRelaxationParallelism);
 
     //
     // Prepare dynamic force buffers
     //
 
-    mPoints.SetDynamicForceParallelism(springRelaxationParallelism);
+    mPoints.SetDynamicForceParallelism(algorithmParallelism);
 
     //
     // Prepare tasks
@@ -175,14 +122,20 @@ void Ship::RecalculateSpringRelaxationParallelism_StepByStep(
     //
 
     mSpringRelaxation_StepByStep_SpringForcesTasks.clear();
+    mSpringRelaxation_StepByStep_IntegrationTasks.clear();
+    mSpringRelaxation_StepByStep_IntegrationAndSeaFloorCollisionTasks.clear();
 
-    //assert(numberOfSprings >= static_cast<ElementCount>(springRelaxationParallelism) * vectorization_float_count<ElementCount>); // Commented out because: numberOfSprings may be < 4
-    ElementCount const numberOfVecSpringsPerThread = numberOfSprings / (static_cast<ElementCount>(springRelaxationParallelism) * vectorization_float_count<ElementCount>);
+    ElementCount const numberOfSprings = mSprings.GetElementCount();
+    ElementCount const numberOfVecSpringsPerThread = numberOfSprings / (static_cast<ElementCount>(algorithmParallelism) * vectorization_float_count<ElementCount>);
+
+    ElementCount const numberOfPoints = mPoints.GetBufferElementCount();
+    ElementCount const numberOfVecPointsPerThread = numberOfPoints / (static_cast<ElementCount>(algorithmParallelism) * vectorization_float_count<ElementCount>);
 
     ElementIndex springStart = 0;
-    for (size_t t = 0; t < springRelaxationParallelism; ++t)
+    ElementIndex pointStart = 0;
+    for (size_t t = 0; t < algorithmParallelism; ++t)
     {
-        ElementIndex const springEnd = (t < springRelaxationParallelism - 1)
+        ElementIndex const springEnd = (t < algorithmParallelism - 1)
             ? springStart + numberOfVecSpringsPerThread * vectorization_float_count<ElementCount>
             : numberOfSprings;
 
@@ -200,55 +153,8 @@ void Ship::RecalculateSpringRelaxationParallelism_StepByStep(
             });
 
         springStart = springEnd;
-    }
 
-    //
-    // Integration
-    //
-
-    //
-    // Given the available simulation parallelism as a constraint (max), calculate
-    // the best parallelism for integration and collisions
-    //
-
-    ElementCount const numberOfPoints = mPoints.GetBufferElementCount();
-
-    size_t integrationParallelism;
-#if !FS_IS_PLATFORM_MOBILE()
-    integrationParallelism = std::max(
-        std::min(
-            numberOfPoints <= 12000 ? size_t(1) : (size_t(1) + (numberOfPoints - 12000) / 4000),
-            simulationParallelism),
-        size_t(1)); // Capping to 1!
-#else
-    integrationParallelism = std::min(
-        static_cast<size_t>(numberOfPoints / simulationParameters.SpringRelaxationComputationStepByStepPointsPerThread),
-        simulationParallelism);
-#endif
-
-    if (simulationParameters.SpringRelaxationComputationIntegrationParallelismOverride != 0)
-        integrationParallelism = std::min(simulationParameters.SpringRelaxationComputationIntegrationParallelismOverride, simulationParallelism);
-
-    LogMessage("Ship::RecalculateSpringRelaxationParallelism_StepByStep: points=", numberOfPoints, " simulationParallelism=", simulationParallelism,
-        " integrationParallelism=", integrationParallelism);
-
-    //
-    // Prepare tasks
-    //
-    // We want each thread to work on a multiple of our vectorization word size
-    //
-
-    mSpringRelaxation_StepByStep_IntegrationTasks.clear();
-    mSpringRelaxation_StepByStep_IntegrationAndSeaFloorCollisionTasks.clear();
-
-    //assert((numberOfPoints % (static_cast<ElementCount>(integrationParallelism) * vectorization_float_count<ElementCount>)) == 0); // Commented out because: only applies to non-last thread
-    assert(numberOfPoints >= static_cast<ElementCount>(integrationParallelism) * vectorization_float_count<ElementCount>);
-    ElementCount const numberOfVecPointsPerThread = numberOfPoints / (static_cast<ElementCount>(integrationParallelism) * vectorization_float_count<ElementCount>);
-
-    ElementIndex pointStart = 0;
-    for (size_t t = 0; t < integrationParallelism; ++t)
-    {
-        ElementIndex const pointEnd = (t < integrationParallelism - 1)
+        ElementIndex const pointEnd = (t < algorithmParallelism - 1)
             ? pointStart + numberOfVecPointsPerThread * vectorization_float_count<ElementCount>
             : numberOfPoints;
 
@@ -258,22 +164,22 @@ void Ship::RecalculateSpringRelaxationParallelism_StepByStep(
         // if SimulationParameters is never re-created
 
         mSpringRelaxation_StepByStep_IntegrationTasks.emplace_back(
-            [this, pointStart, pointEnd, springRelaxationParallelism, &simulationParameters]()
+            [this, pointStart, pointEnd, algorithmParallelism, &simulationParameters]()
             {
                 IntegrateAndResetDynamicForces(
                     pointStart,
                     pointEnd,
-                    springRelaxationParallelism,
+                    algorithmParallelism,
                     simulationParameters);
             });
 
         mSpringRelaxation_StepByStep_IntegrationAndSeaFloorCollisionTasks.emplace_back(
-            [this, pointStart, pointEnd, springRelaxationParallelism, &simulationParameters]()
+            [this, pointStart, pointEnd, algorithmParallelism, &simulationParameters]()
             {
                 IntegrateAndResetDynamicForces(
                     pointStart,
                     pointEnd,
-                    springRelaxationParallelism,
+                    algorithmParallelism,
                     simulationParameters);
 
                 HandleCollisionsWithSeaFloor(
@@ -290,32 +196,9 @@ void Ship::RecalculateSpringRelaxationParallelism_Hybrid(
     size_t simulationParallelism,
     SimulationParameters const & simulationParameters)
 {
-    //
-    // Given the available simulation parallelism as a constraint (max), calculate
-    // the best parallelism for the spring relaxation algorithm
-    //
+    size_t const algorithmParallelism = std::min(simulationParameters.SpringRelaxationComputationParallelism, simulationParallelism);
 
-    // TODOHERE: see what's the final algo for this one; here we are using the "FullSpeed" params for the time being
-
-    ElementCount const numberOfSprings = mSprings.GetElementCount();
-
-    size_t springRelaxationParallelism = numberOfSprings / simulationParameters.SpringRelaxationComputationFullSpeedSpringsPerThread;
-    if ((numberOfSprings % simulationParameters.SpringRelaxationComputationFullSpeedSpringsPerThread) != 0)
-        ++springRelaxationParallelism;
-    if (simulationParameters.SpringRelaxationComputationSpringForcesParallelismOverride != 0)
-        springRelaxationParallelism = simulationParameters.SpringRelaxationComputationSpringForcesParallelismOverride;
-
-    ElementCount const numberOfPoints = mPoints.GetBufferElementCount();
-
-    size_t pointRelaxationParallelism = numberOfPoints / simulationParameters.SpringRelaxationComputationFullSpeedPointsPerThread;
-    if ((numberOfPoints % simulationParameters.SpringRelaxationComputationFullSpeedPointsPerThread) != 0)
-        ++pointRelaxationParallelism;
-    if (simulationParameters.SpringRelaxationComputationIntegrationParallelismOverride != 0)
-        pointRelaxationParallelism = simulationParameters.SpringRelaxationComputationIntegrationParallelismOverride;
-
-    size_t const algorithmParallelism = Clamp(std::max(springRelaxationParallelism, pointRelaxationParallelism), size_t(1), simulationParallelism);
-
-    LogMessage("Ship::RecalculateSpringRelaxationParallelism_Hybrid: springRelaxationParallelism=", springRelaxationParallelism, " pointRelaxationParallelism=", pointRelaxationParallelism,
+    LogMessage("Ship::RecalculateSpringRelaxationParallelism_Hybrid:",
         " simulationParallelism=", simulationParallelism, " algorithmParallelism=", algorithmParallelism);
 
     //
@@ -333,7 +216,10 @@ void Ship::RecalculateSpringRelaxationParallelism_Hybrid(
     mSpringRelaxation_Hybrid_1_Tasks.clear();
     mSpringRelaxation_Hybrid_2_Tasks.clear();
 
+    ElementCount const numberOfSprings = mSprings.GetElementCount();
     ElementCount const numberOfVecSpringsPerThread = numberOfSprings / (static_cast<ElementCount>(algorithmParallelism) * vectorization_float_count<ElementCount>);
+
+    ElementCount const numberOfPoints = mPoints.GetBufferElementCount();
     ElementCount const numberOfVecPointsPerThread = numberOfPoints / (static_cast<ElementCount>(algorithmParallelism) * vectorization_float_count<ElementCount>);
 
     ElementIndex springStart = 0;

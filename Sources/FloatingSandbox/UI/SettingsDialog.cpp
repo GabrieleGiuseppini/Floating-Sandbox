@@ -6211,9 +6211,9 @@ void SettingsDialog::PopulateParallelismExperimentsPanel(wxPanel * panel)
             CellBorderOuter);
     }
 
-    // Springs slider
+    // Parallelism slider
     {
-        mSpringRelaxationComputationSpringForcesParallelismOverrideSlider = new SliderControl<size_t>(
+        mSpringRelaxationComputationParallelismSlider = new SliderControl<size_t>(
             panel,
             SliderControl<size_t>::DirectionType::Vertical,
             SliderWidth,
@@ -6222,7 +6222,7 @@ void SettingsDialog::PopulateParallelismExperimentsPanel(wxPanel * panel)
             "",
             [this](size_t value)
             {
-                this->mLiveSettings.SetValue(GameSettings::SpringRelaxationComputationSpringForcesParallelismOverride, value);
+                this->mLiveSettings.SetValue(GameSettings::SpringRelaxationComputationParallelism, value);
                 this->OnLiveSettingsChanged();
             },
             std::make_unique<IntegralLinearSliderCore<size_t>>(
@@ -6230,34 +6230,8 @@ void SettingsDialog::PopulateParallelismExperimentsPanel(wxPanel * panel)
                 8));
 
         gridSizer->Add(
-            mSpringRelaxationComputationSpringForcesParallelismOverrideSlider,
+            mSpringRelaxationComputationParallelismSlider,
             wxGBPosition(0, 1),
-            wxGBSpan(1, 1),
-            wxEXPAND | wxALL,
-            CellBorderOuter);
-    }
-
-    // Points slider
-    {
-        mSpringRelaxationComputationIntegrationParallelismOverrideSlider = new SliderControl<size_t>(
-            panel,
-            SliderControl<size_t>::DirectionType::Vertical,
-            SliderWidth,
-            SliderHeight,
-            _("P-PARL"),
-            "",
-            [this](size_t value)
-            {
-                this->mLiveSettings.SetValue(GameSettings::SpringRelaxationComputationIntegrationParallelismOverride, value);
-                this->OnLiveSettingsChanged();
-            },
-            std::make_unique<IntegralLinearSliderCore<size_t>>(
-                0,
-                8));
-
-        gridSizer->Add(
-            mSpringRelaxationComputationIntegrationParallelismOverrideSlider,
-            wxGBPosition(0, 2),
             wxGBSpan(1, 1),
             wxEXPAND | wxALL,
             CellBorderOuter);
@@ -6740,8 +6714,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
         }
     }
 
-    mSpringRelaxationComputationSpringForcesParallelismOverrideSlider->SetValue(settings.GetValue<size_t>(GameSettings::SpringRelaxationComputationSpringForcesParallelismOverride));
-    mSpringRelaxationComputationIntegrationParallelismOverrideSlider->SetValue(settings.GetValue<size_t>(GameSettings::SpringRelaxationComputationIntegrationParallelismOverride));
+    mSpringRelaxationComputationParallelismSlider->SetValue(settings.GetValue<size_t>(GameSettings::SpringRelaxationComputationParallelism));
 #endif
 }
 

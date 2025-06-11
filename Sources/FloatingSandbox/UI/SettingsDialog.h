@@ -247,8 +247,7 @@ private:
 #if PARALLELISM_EXPERIMENTS
     // Parallelism Experiment
     wxRadioBox * mSpringRelaxationParallelComputationModeRadioBox;
-    SliderControl<size_t> * mSpringRelaxationComputationSpringForcesParallelismOverrideSlider;
-    SliderControl<size_t> * mSpringRelaxationComputationIntegrationParallelismOverrideSlider;
+    SliderControl<size_t> * mSpringRelaxationComputationParallelismSlider;
 #endif
 
     //////////////////////////////////////////////////////

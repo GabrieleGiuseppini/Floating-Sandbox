@@ -126,8 +126,7 @@ Ship::Ship(
     , mAirBubblesCreatedCount(0)
     , mCurrentSimulationParallelism(0) // We'll detect a difference on first run
     , mCurrentSpringRelaxationParallelComputationMode() // We'll detect a difference on first run
-    , mCurrentSpringRelaxationComputationSpringForcesParallelismOverride(0) // We'll detect a difference on first run
-    , mCurrentSpringRelaxationComputationIntegrationParallelismOverride(0) // We'll detect a difference on first run
+    , mCurrentSpringRelaxationComputationParallelism(0) // We'll detect a difference on first run
     // Static pressure
     , mStaticPressureBuffer(mPoints.GetAlignedShipPointCount())
     , mStaticPressureNetForceMagnitudeSum(0.0f)
@@ -3260,8 +3259,7 @@ void Ship::UpdateForSimulationParameters(
     size_t const simulationParallelism = threadManager.GetSimulationParallelism();
     if (simulationParallelism != mCurrentSimulationParallelism
         || simulationParameters.SpringRelaxationParallelComputationMode != mCurrentSpringRelaxationParallelComputationMode
-        || simulationParameters.SpringRelaxationComputationSpringForcesParallelismOverride != mCurrentSpringRelaxationComputationSpringForcesParallelismOverride
-        || simulationParameters.SpringRelaxationComputationIntegrationParallelismOverride != mCurrentSpringRelaxationComputationIntegrationParallelismOverride)
+        || simulationParameters.SpringRelaxationComputationParallelism != mCurrentSpringRelaxationComputationParallelism)
     {
         // Re-calculate spring relaxation parallelism
         RecalculateSpringRelaxationParallelism(simulationParallelism, simulationParameters);
@@ -3272,8 +3270,7 @@ void Ship::UpdateForSimulationParameters(
         // Remember new values
         mCurrentSimulationParallelism = simulationParallelism;
         mCurrentSpringRelaxationParallelComputationMode = simulationParameters.SpringRelaxationParallelComputationMode;
-        mCurrentSpringRelaxationComputationSpringForcesParallelismOverride = simulationParameters.SpringRelaxationComputationSpringForcesParallelismOverride;
-        mCurrentSpringRelaxationComputationIntegrationParallelismOverride = simulationParameters.SpringRelaxationComputationIntegrationParallelismOverride;
+        mCurrentSpringRelaxationComputationParallelism = simulationParameters.SpringRelaxationComputationParallelism;
     }
 }
 

@@ -1774,6 +1774,12 @@
 =================================================
 Current perf:
 =================================================
+<Android version> (contains: hybrid spring relax parallelization, ocean rendering)
+- Default: 2.37ms (was: 3.8)
+- Titanic: 3.37ms (was: 5.7)
+- Isla: 50 FPS 15.5ms (with thermal stutter) (was: 16.1)
+
+
 1.18.0.1 (40 iterations, lowered integration threads, equalize internal pressure on thread):
 + Default ship (19932 spr, 9328 pts): 64FPS
 	  UPD: (0.0 + 3.68 (71.0%)) UPL:(0.0 + 0.05)
