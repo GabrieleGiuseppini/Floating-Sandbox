@@ -27,7 +27,7 @@
 #include <string>
 #include <vector>
 
-#define PARALLELISM_EXPERIMENTS 1
+#define PARALLELISM_EXPERIMENTS 0
 
 class SettingsDialog : public wxFrame
 {

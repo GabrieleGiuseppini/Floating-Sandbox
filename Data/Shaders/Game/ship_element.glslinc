@@ -251,6 +251,11 @@ void main()
         // Make it a round particle
         float d = length(gl_PointCoord - vec2(0.5)) * 2.0;
         gl_FragColor.a *= 1.0 - smoothstep(0.90, 1.0, d);
+
+        // Add glare
+        d = length(gl_PointCoord - vec2(0.625, 0.375)) * 4.0;
+        float glareDepth = (1.0 - smoothstep(0.15, 1.0, d)) * 0.6;
+        gl_FragColor.rgb = min(gl_FragColor.rgb + vec3(glareDepth), vec3(1.));
     }
 #endif
 } 
