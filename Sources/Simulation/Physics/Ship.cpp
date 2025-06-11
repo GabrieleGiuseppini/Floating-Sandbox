@@ -125,6 +125,9 @@ Ship::Ship(
     , mLastQueriedPointIndex(NoneElementIndex)
     , mAirBubblesCreatedCount(0)
     , mCurrentSimulationParallelism(0) // We'll detect a difference on first run
+    , mCurrentSpringRelaxationParallelComputationMode() // We'll detect a difference on first run
+    , mCurrentSpringRelaxationComputationSpringForcesParallelismOverride(0) // We'll detect a difference on first run
+    , mCurrentSpringRelaxationComputationIntegrationParallelismOverride(0) // We'll detect a difference on first run
     // Static pressure
     , mStaticPressureBuffer(mPoints.GetAlignedShipPointCount())
     , mStaticPressureNetForceMagnitudeSum(0.0f)
@@ -253,17 +256,17 @@ void Ship::Update(
     // Process eventual parameter changes
     ///////////////////////////////////////////////////////////////////
 
-    mPoints.UpdateForGameParameters(
+    mPoints.UpdateForSimulationParameters(
         simulationParameters);
 
-    mSprings.UpdateForGameParameters(
+    mSprings.UpdateForSimulationParameters(
         simulationParameters,
         mPoints);
 
-    mElectricalElements.UpdateForGameParameters(
+    mElectricalElements.UpdateForSimulationParameters(
         simulationParameters);
 
-    UpdateForSimulationParallelism(
+    UpdateForSimulationParameters(
         simulationParameters,
         threadManager);
 
@@ -299,7 +302,7 @@ void Ship::Update(
     {
         auto const springsStartTime = GameChronometer::Now();
 
-        RunSpringRelaxation(threadManager);
+        RunSpringRelaxation(threadManager, simulationParameters);
 
         perfStats.Update<PerfMeasurement::TotalShipsSpringsUpdate>(GameChronometer::Now() - springsStartTime);
     }
@@ -3250,12 +3253,15 @@ void Ship::RotPoints(
 // Private helpers
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
-void Ship::UpdateForSimulationParallelism(
+void Ship::UpdateForSimulationParameters(
     SimulationParameters const & simulationParameters,
     ThreadManager & threadManager)
 {
     size_t const simulationParallelism = threadManager.GetSimulationParallelism();
-    if (simulationParallelism != mCurrentSimulationParallelism)
+    if (simulationParallelism != mCurrentSimulationParallelism
+        || simulationParameters.SpringRelaxationParallelComputationMode != mCurrentSpringRelaxationParallelComputationMode
+        || simulationParameters.SpringRelaxationComputationSpringForcesParallelismOverride != mCurrentSpringRelaxationComputationSpringForcesParallelismOverride
+        || simulationParameters.SpringRelaxationComputationIntegrationParallelismOverride != mCurrentSpringRelaxationComputationIntegrationParallelismOverride)
     {
         // Re-calculate spring relaxation parallelism
         RecalculateSpringRelaxationParallelism(simulationParallelism, simulationParameters);
@@ -3263,8 +3269,11 @@ void Ship::UpdateForSimulationParallelism(
         // Re-calculate light diffusion parallelism
         RecalculateLightDiffusionParallelism(simulationParallelism);
 
-        // Remember new value
+        // Remember new values
         mCurrentSimulationParallelism = simulationParallelism;
+        mCurrentSpringRelaxationParallelComputationMode = simulationParameters.SpringRelaxationParallelComputationMode;
+        mCurrentSpringRelaxationComputationSpringForcesParallelismOverride = simulationParameters.SpringRelaxationComputationSpringForcesParallelismOverride;
+        mCurrentSpringRelaxationComputationIntegrationParallelismOverride = simulationParameters.SpringRelaxationComputationIntegrationParallelismOverride;
     }
 }
 

@@ -678,8 +678,17 @@ struct SimulationParameters
     // Computation
     //
 
-    ElementCount SpringRelaxationSpringsPerThread;
-    ElementCount SpringRelaxationPointsPerThread;
+    SpringRelaxationParallelComputationModeType SpringRelaxationParallelComputationMode;
+
+    ElementCount SpringRelaxationComputationFullSpeedSpringsPerThread;
+    ElementCount SpringRelaxationComputationFullSpeedPointsPerThread;
+    ElementCount SpringRelaxationComputationStepByStepSpringsPerThread;
+    ElementCount SpringRelaxationComputationStepByStepPointsPerThread;
+
+    // Overrides to experiment different threading configurations;
+    // applied when different than 0
+    size_t SpringRelaxationComputationSpringForcesParallelismOverride;
+    size_t SpringRelaxationComputationIntegrationParallelismOverride;
 
     //
     // Limits

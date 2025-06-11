@@ -13,6 +13,9 @@
 enum class GameSettings : size_t
 {
     MaxNumSimulationThreads = 0,
+    SpringRelaxationParallelComputationMode,
+    SpringRelaxationComputationSpringForcesParallelismOverride,
+    SpringRelaxationComputationIntegrationParallelismOverride,
     NumMechanicalDynamicsIterationsAdjustment,
     SpringStiffnessAdjustment,
     SpringDampingAdjustment,

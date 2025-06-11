@@ -132,7 +132,17 @@ SimulationParameters::SimulationParameters()
     , IsUltraViolentMode(false)
     , MoveToolInertia(3.0f)
     // Computation
-    , SpringRelaxationSpringsPerThread(1024)
-    , SpringRelaxationPointsPerThread(1024)
+    // TODOTEST
+    , SpringRelaxationParallelComputationMode(SpringRelaxationParallelComputationModeType::StepByStep)
+    //, SpringRelaxationParallelComputationMode(SpringRelaxationParallelComputationModeType::Hybrid)
+    // TODOTEST
+    , SpringRelaxationComputationFullSpeedSpringsPerThread(1024)
+    , SpringRelaxationComputationFullSpeedPointsPerThread(1024)
+//    , SpringRelaxationComputationFullSpeedSpringsPerThread(7500)
+//    , SpringRelaxationComputationFullSpeedPointsPerThread(3800)
+    , SpringRelaxationComputationStepByStepSpringsPerThread(1024) // Recalculated by calibration on platforms that depend on it
+    , SpringRelaxationComputationStepByStepPointsPerThread(1024) // Recalculated by calibration on platforms that depend on it
+    , SpringRelaxationComputationSpringForcesParallelismOverride(0)
+    , SpringRelaxationComputationIntegrationParallelismOverride(0)
 {
 }

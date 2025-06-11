@@ -258,6 +258,20 @@ SettingsDialog::SettingsDialog(
         notebook->AddPage(panel, _("Settings Management"));
     }
 
+#if PARALLELISM_EXPERIMENTS
+    //
+    // Parallelism Experiment
+    //
+
+    {
+        wxPanel * panel = new wxPanel(notebook);
+
+        PopulateParallelismExperimentsPanel(panel);
+
+        notebook->AddPage(panel, _("Parallelism Experiments"));
+    }
+#endif
+
     dialogVSizer->Add(notebook, 0);
     dialogVSizer->Fit(notebook); // Workaround for multi-line bug
 
@@ -6151,6 +6165,112 @@ void SettingsDialog::PopulateSettingsManagementPanel(wxPanel * panel)
     panel->SetSizer(gridSizer);
 }
 
+#if PARALLELISM_EXPERIMENTS
+void SettingsDialog::PopulateParallelismExperimentsPanel(wxPanel * panel)
+{
+    wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
+
+    // Mode radio
+    {
+        wxString springRelaxationParallelComputationModeChoices[] =
+        {
+            "StepByStep",
+            "FullSpeed",
+            "Hybrid"
+        };
+
+        mSpringRelaxationParallelComputationModeRadioBox = new wxRadioBox(panel, wxID_ANY, "Computation Mode", wxDefaultPosition, wxDefaultSize,
+            WXSIZEOF(springRelaxationParallelComputationModeChoices), springRelaxationParallelComputationModeChoices, 1, wxRA_SPECIFY_COLS);
+        mSpringRelaxationParallelComputationModeRadioBox->Bind(
+            wxEVT_RADIOBOX,
+            [this](wxCommandEvent & event)
+            {
+                auto const selectedMode = event.GetSelection();
+                if (0 == selectedMode)
+                {
+                    mLiveSettings.SetValue(GameSettings::SpringRelaxationParallelComputationMode, SpringRelaxationParallelComputationModeType::StepByStep);
+                }
+                else if (1 == selectedMode)
+                {
+                    mLiveSettings.SetValue(GameSettings::SpringRelaxationParallelComputationMode, SpringRelaxationParallelComputationModeType::FullSpeed);
+                }
+                else
+                {
+                    assert(2 == selectedMode);
+                    mLiveSettings.SetValue(GameSettings::SpringRelaxationParallelComputationMode, SpringRelaxationParallelComputationModeType::Hybrid);
+                }
+
+                OnLiveSettingsChanged();
+            });
+
+        gridSizer->Add(
+            mSpringRelaxationParallelComputationModeRadioBox,
+            wxGBPosition(0, 0),
+            wxGBSpan(1, 1),
+            wxEXPAND | wxALL,
+            CellBorderOuter);
+    }
+
+    // Springs slider
+    {
+        mSpringRelaxationComputationSpringForcesParallelismOverrideSlider = new SliderControl<size_t>(
+            panel,
+            SliderControl<size_t>::DirectionType::Vertical,
+            SliderWidth,
+            SliderHeight,
+            _("S-PARL"),
+            "",
+            [this](size_t value)
+            {
+                this->mLiveSettings.SetValue(GameSettings::SpringRelaxationComputationSpringForcesParallelismOverride, value);
+                this->OnLiveSettingsChanged();
+            },
+            std::make_unique<IntegralLinearSliderCore<size_t>>(
+                0,
+                8));
+
+        gridSizer->Add(
+            mSpringRelaxationComputationSpringForcesParallelismOverrideSlider,
+            wxGBPosition(0, 1),
+            wxGBSpan(1, 1),
+            wxEXPAND | wxALL,
+            CellBorderOuter);
+    }
+
+    // Points slider
+    {
+        mSpringRelaxationComputationIntegrationParallelismOverrideSlider = new SliderControl<size_t>(
+            panel,
+            SliderControl<size_t>::DirectionType::Vertical,
+            SliderWidth,
+            SliderHeight,
+            _("P-PARL"),
+            "",
+            [this](size_t value)
+            {
+                this->mLiveSettings.SetValue(GameSettings::SpringRelaxationComputationIntegrationParallelismOverride, value);
+                this->OnLiveSettingsChanged();
+            },
+            std::make_unique<IntegralLinearSliderCore<size_t>>(
+                0,
+                8));
+
+        gridSizer->Add(
+            mSpringRelaxationComputationIntegrationParallelismOverrideSlider,
+            wxGBPosition(0, 2),
+            wxGBSpan(1, 1),
+            wxEXPAND | wxALL,
+            CellBorderOuter);
+    }
+
+    // Finalize panel
+
+    WxHelpers::MakeAllColumnsExpandable(gridSizer);
+
+    panel->SetSizer(gridSizer);
+}
+#endif
+
 void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & settings)
 {
     //
@@ -6593,6 +6713,36 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
 
     mMaxNumSimulationThreadsSlider->SetValue(settings.GetValue<unsigned int>(GameSettings::MaxNumSimulationThreads));
     mNumMechanicalIterationsAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::NumMechanicalDynamicsIterationsAdjustment));
+
+#if PARALLELISM_EXPERIMENTS
+    //
+    // Parallelism Experiments
+    //
+
+    switch (settings.GetValue<SpringRelaxationParallelComputationModeType>(GameSettings::SpringRelaxationParallelComputationMode))
+    {
+        case SpringRelaxationParallelComputationModeType::StepByStep:
+        {
+            mSpringRelaxationParallelComputationModeRadioBox->SetSelection(0);
+            break;
+        }
+
+        case SpringRelaxationParallelComputationModeType::FullSpeed:
+        {
+            mSpringRelaxationParallelComputationModeRadioBox->SetSelection(1);
+            break;
+        }
+
+        case SpringRelaxationParallelComputationModeType::Hybrid:
+        {
+            mSpringRelaxationParallelComputationModeRadioBox->SetSelection(2);
+            break;
+        }
+    }
+
+    mSpringRelaxationComputationSpringForcesParallelismOverrideSlider->SetValue(settings.GetValue<size_t>(GameSettings::SpringRelaxationComputationSpringForcesParallelismOverride));
+    mSpringRelaxationComputationIntegrationParallelismOverrideSlider->SetValue(settings.GetValue<size_t>(GameSettings::SpringRelaxationComputationIntegrationParallelismOverride));
+#endif
 }
 
 void SettingsDialog::ReconciliateOceanRenderModeSettings()

@@ -519,21 +519,67 @@ private:
     // Spring relaxation
     //
 
-    void RecalculateSpringRelaxationParallelism(size_t simulationParallelism, SimulationParameters const & simulationParameters);
+    void RecalculateSpringRelaxationParallelism(
+        size_t simulationParallelism,
+        SimulationParameters const & simulationParameters);
 
-    void RunSpringRelaxation(ThreadManager & threadManager);
+    void RecalculateSpringRelaxationParallelism_FullSpeed(
+        size_t simulationParallelism,
+        SimulationParameters const & simulationParameters);
 
-    void RunSpringRelaxation_Thread(
+    void RecalculateSpringRelaxationParallelism_StepByStep(
+        size_t simulationParallelism,
+        SimulationParameters const & simulationParameters);
+
+    void RecalculateSpringRelaxationParallelism_Hybrid(
+        size_t simulationParallelism,
+        SimulationParameters const & simulationParameters);
+
+    void RunSpringRelaxation(
+        ThreadManager & threadManager,
+        SimulationParameters const & simulationParameters);
+
+    void RunSpringRelaxation_FullSpeed(ThreadManager & threadManager);
+
+    void RunSpringRelaxation_FullSpeed_Thread(
         size_t threadIndex,
         ElementIndex startSpringIndex,
         ElementIndex endSpringIndex,
         ElementIndex startPointIndex,
         ElementIndex endPointIndex,
+        size_t parallelism,
+        SimulationParameters const & simulationParameters);
+
+    void RunSpringRelaxation_StepByStep(
+        ThreadManager & threadManager,
+        SimulationParameters const & simulationParameters);
+
+    void RunSpringRelaxation_Hybrid(
+        ThreadManager & threadManager,
+        SimulationParameters const & simulationParameters);
+
+    void RunSpringRelaxation_Hybrid_Thread_1(
+        size_t threadIndex,
+        ElementIndex startSpringIndex,
+        ElementIndex endSpringIndex,
+        ElementIndex startPointIndex,
+        ElementIndex endPointIndex,
+        size_t parallelism,
+        SimulationParameters const & simulationParameters);
+
+    void RunSpringRelaxation_Hybrid_Thread_2(
+        size_t threadIndex,
+        ElementIndex startSpringIndex,
+        ElementIndex endSpringIndex,
+        ElementIndex startPointIndex,
+        ElementIndex endPointIndex,
+        size_t parallelism,
         SimulationParameters const & simulationParameters);
 
     inline void IntegrateAndResetDynamicForces(
         ElementIndex startPointIndex,
         ElementIndex endPointIndex,
+        size_t parallelism,
         SimulationParameters const & simulationParameters);
 
     inline float CalculateIntegrationVelocityFactor(float dt, SimulationParameters const & simulationParameters) const;
@@ -605,7 +651,7 @@ private:
     // Misc
     /////////////////////////////////////////////////////////////////////////
 
-    inline void UpdateForSimulationParallelism(
+    inline void UpdateForSimulationParameters(
         SimulationParameters const & simulationParameters,
         ThreadManager & threadManager);
 
@@ -919,12 +965,35 @@ private:
     // Spring relaxation
     //
 
+    // FullSpeed mode
+
     // The spring relaxation tasks
-    std::vector<typename ThreadPool::Task> mSpringRelaxationTasks;
+    std::vector<typename ThreadPool::Task> mSpringRelaxation_FullSpeed_Tasks;
 
     // The signals for completions for threads to synchronize with each other
-    std::atomic<int> mSpringRelaxationSpringForcesCompleted;
-    std::atomic<int> mSpringRelaxationIntegrationsCompleted;
+    std::atomic<int> mSpringRelaxation_FullSpeed_SpringForcesCompleted;
+    std::atomic<int> mSpringRelaxation_FullSpeed_IntegrationsCompleted;
+
+    // StepByStep mode
+
+    // The spring relaxation tasks
+    std::vector<typename ThreadPool::Task> mSpringRelaxation_StepByStep_SpringForcesTasks;
+    std::vector<typename ThreadPool::Task> mSpringRelaxation_StepByStep_IntegrationTasks;
+    std::vector<typename ThreadPool::Task> mSpringRelaxation_StepByStep_IntegrationAndSeaFloorCollisionTasks;
+
+    // Hybrid mode
+
+    // The spring relaxation tasks
+    std::vector<typename ThreadPool::Task> mSpringRelaxation_Hybrid_1_Tasks;
+    std::vector<typename ThreadPool::Task> mSpringRelaxation_Hybrid_2_Tasks;
+
+    // The signals for completions for threads to synchronize with each other
+    std::atomic<int> mSpringRelaxation_Hybrid_IterationCompleted;
+
+    // The last spring relaxation computation parameters; used to detect changes
+    std::optional<SpringRelaxationParallelComputationModeType> mCurrentSpringRelaxationParallelComputationMode;
+    size_t mCurrentSpringRelaxationComputationSpringForcesParallelismOverride;
+    size_t mCurrentSpringRelaxationComputationIntegrationParallelismOverride;
 
     //
     // Static pressure

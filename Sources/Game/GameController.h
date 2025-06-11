@@ -395,6 +395,15 @@ public:
     unsigned int GetMinMaxNumSimulationThreads() const override { return 1; }
     unsigned int GetMaxMaxNumSimulationThreads() const override { return static_cast<unsigned int>(mThreadManager.GetMaxSimulationParallelism()); }
 
+    SpringRelaxationParallelComputationModeType GetSpringRelaxationParallelComputationMode() const override { return mSimulationParameters.SpringRelaxationParallelComputationMode; }
+    void SetSpringRelaxationParallelComputationMode(SpringRelaxationParallelComputationModeType value) override {mSimulationParameters.SpringRelaxationParallelComputationMode = value; }
+
+    size_t GetSpringRelaxationComputationSpringForcesParallelismOverride() const override { return mSimulationParameters.SpringRelaxationComputationSpringForcesParallelismOverride; }
+    void SetSpringRelaxationComputationSpringForcesParallelismOverride(size_t value) override { mSimulationParameters.SpringRelaxationComputationSpringForcesParallelismOverride = value; }
+
+    size_t GetSpringRelaxationComputationIntegrationParallelismOverride() const override { return mSimulationParameters.SpringRelaxationComputationIntegrationParallelismOverride; }
+    void  SetSpringRelaxationComputationIntegrationParallelismOverride(size_t value) override { mSimulationParameters.SpringRelaxationComputationIntegrationParallelismOverride = value; }
+
     float GetNumMechanicalDynamicsIterationsAdjustment() const override { return mSimulationParameters.NumMechanicalDynamicsIterationsAdjustment; }
     void SetNumMechanicalDynamicsIterationsAdjustment(float value) override { mSimulationParameters.NumMechanicalDynamicsIterationsAdjustment = value; }
     float GetMinNumMechanicalDynamicsIterationsAdjustment() const override { return SimulationParameters::MinNumMechanicalDynamicsIterationsAdjustment; }

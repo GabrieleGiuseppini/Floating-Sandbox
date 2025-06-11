@@ -900,6 +900,8 @@ inline void IntegrateAndResetDynamicForces_SSEVectorized(
     // This implementation is for 4-float SSE
     static_assert(vectorization_float_count<int> >= 4);
 
+    assert(((endPointIndex - startPointIndex) % 2) == 0);
+
     float * restrict const positionBuffer = points.GetPositionBufferAsFloat();
     float * restrict const velocityBuffer = points.GetVelocityBufferAsFloat();
     float const * const restrict staticForceBuffer = points.GetStaticForceBufferAsFloat();

@@ -27,6 +27,8 @@
 #include <string>
 #include <vector>
 
+#define PARALLELISM_EXPERIMENTS 1
+
 class SettingsDialog : public wxFrame
 {
 public:
@@ -242,6 +244,13 @@ private:
     wxTextCtrl * mSaveSettingsDescriptionTextCtrl;
     wxButton * mSaveSettingsButton;
 
+#if PARALLELISM_EXPERIMENTS
+    // Parallelism Experiment
+    wxRadioBox * mSpringRelaxationParallelComputationModeRadioBox;
+    SliderControl<size_t> * mSpringRelaxationComputationSpringForcesParallelismOverrideSlider;
+    SliderControl<size_t> * mSpringRelaxationComputationIntegrationParallelismOverrideSlider;
+#endif
+
     //////////////////////////////////////////////////////
 
     // Buttons
@@ -268,6 +277,9 @@ private:
     void PopulateRenderingPanel(wxPanel * panel);
     void PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel);
     void PopulateSettingsManagementPanel(wxPanel * panel);
+#if PARALLELISM_EXPERIMENTS
+    void PopulateParallelismExperimentsPanel(wxPanel * panel);
+#endif
 
     void SyncControlsWithSettings(Settings<GameSettings> const & settings);
     void ReconciliateOceanRenderModeSettings();

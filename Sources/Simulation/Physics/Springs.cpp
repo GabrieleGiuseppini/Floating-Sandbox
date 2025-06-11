@@ -161,7 +161,7 @@ void Springs::Restore(
         simulationParameters);
 }
 
-void Springs::UpdateForGameParameters(
+void Springs::UpdateForSimulationParameters(
     SimulationParameters const & simulationParameters,
     Points const & points)
 {

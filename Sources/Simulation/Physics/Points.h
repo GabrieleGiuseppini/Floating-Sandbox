@@ -908,7 +908,7 @@ public:
 
     void OnOrphaned(ElementIndex pointElementIndex);
 
-    void UpdateForGameParameters(SimulationParameters const & simulationParameters);
+    void UpdateForSimulationParameters(SimulationParameters const & simulationParameters);
 
     void UpdateCombustionLowFrequency(
         ElementIndex pointOffset,

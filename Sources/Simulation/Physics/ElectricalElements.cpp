@@ -1048,7 +1048,7 @@ void ElectricalElements::OnElectricSpark(
     }
 }
 
-void ElectricalElements::UpdateForGameParameters(SimulationParameters const & simulationParameters)
+void ElectricalElements::UpdateForSimulationParameters(SimulationParameters const & simulationParameters)
 {
     //
     // Recalculate lamp coefficients, if needed

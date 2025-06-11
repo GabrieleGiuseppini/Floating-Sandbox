@@ -589,7 +589,7 @@ public:
         float currentSimulationTime,
         SimulationParameters const & simulationParameters);
 
-    void UpdateForGameParameters(SimulationParameters const & simulationParameters);
+    void UpdateForSimulationParameters(SimulationParameters const & simulationParameters);
 
     void Update(
         GameWallClock::time_point currentWallClockTime,

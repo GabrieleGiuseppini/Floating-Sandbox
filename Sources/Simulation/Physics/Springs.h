@@ -200,7 +200,7 @@ public:
         SimulationParameters const & simulationParameters,
         Points const & points);
 
-    void UpdateForGameParameters(
+    void UpdateForSimulationParameters(
         SimulationParameters const & simulationParameters,
         Points const & points);
 
