@@ -216,46 +216,51 @@ public:
         float const ndcHeight = scale * cloudAtlasFrameMetadata.FrameMetadata.WorldHeight * aspectRatio;
         float const leftX = ndc.x - ndcWidth / 2.0f;
         float const rightX = leftX + ndcWidth;
-        float const bottomY = ndc.y - ndcHeight / 2.0f;
-        float const topY = bottomY + ndcHeight;
 
-        float const textureWidthAdjust = std::max(cloudAtlasFrameMetadata.TextureSpaceWidth, cloudAtlasFrameMetadata.TextureSpaceHeight);
+        // Cut short here if invisible
+        if (leftX <= 1.0f && rightX >= -1.0f)
+        {
+            float const bottomY = ndc.y - ndcHeight / 2.0f;
+            float const topY = bottomY + ndcHeight;
 
-        // top-left
-        mCloudVertexBuffer.emplace_back(
-            vec2f(leftX, topY),
-            vec2f(cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x, cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y),
-            vec2f(-1.0f, 1.0f),
-            darkening,
-            volumetricGrowthProgress,
-            textureWidthAdjust);
+            float const textureWidthAdjust = std::max(cloudAtlasFrameMetadata.TextureSpaceWidth, cloudAtlasFrameMetadata.TextureSpaceHeight);
 
-        // bottom-left
-        mCloudVertexBuffer.emplace_back(
-            vec2f(leftX, bottomY),
-            cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft,
-            vec2f(-1.0f, -1.0f),
-            darkening,
-            volumetricGrowthProgress,
-            textureWidthAdjust);
+            // top-left
+            mCloudVertexBuffer.emplace_back(
+                vec2f(leftX, topY),
+                vec2f(cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.x, cloudAtlasFrameMetadata.TextureCoordinatesTopRight.y),
+                vec2f(-1.0f, 1.0f),
+                darkening,
+                volumetricGrowthProgress,
+                textureWidthAdjust);
 
-        // top-right
-        mCloudVertexBuffer.emplace_back(
-            vec2f(rightX, topY),
-            cloudAtlasFrameMetadata.TextureCoordinatesTopRight,
-            vec2f(1.0f, 1.0f),
-            darkening,
-            volumetricGrowthProgress,
-            textureWidthAdjust);
+            // bottom-left
+            mCloudVertexBuffer.emplace_back(
+                vec2f(leftX, bottomY),
+                cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft,
+                vec2f(-1.0f, -1.0f),
+                darkening,
+                volumetricGrowthProgress,
+                textureWidthAdjust);
 
-        // bottom-right
-        mCloudVertexBuffer.emplace_back(
-            vec2f(rightX, bottomY),
-            vec2f(cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x, cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y),
-            vec2f(1.0f, -1.0f),
-            darkening,
-            volumetricGrowthProgress,
-            textureWidthAdjust);
+            // top-right
+            mCloudVertexBuffer.emplace_back(
+                vec2f(rightX, topY),
+                cloudAtlasFrameMetadata.TextureCoordinatesTopRight,
+                vec2f(1.0f, 1.0f),
+                darkening,
+                volumetricGrowthProgress,
+                textureWidthAdjust);
+
+            // bottom-right
+            mCloudVertexBuffer.emplace_back(
+                vec2f(rightX, bottomY),
+                vec2f(cloudAtlasFrameMetadata.TextureCoordinatesTopRight.x, cloudAtlasFrameMetadata.TextureCoordinatesBottomLeft.y),
+                vec2f(1.0f, -1.0f),
+                darkening,
+                volumetricGrowthProgress,
+                textureWidthAdjust);
+        }
     }
 
     void UploadCloudsEnd();

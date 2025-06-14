@@ -1,6 +1,8 @@
 TODO
 - Significant performance improvements in spring relaxation algorithm
 - 15% performance improvements in rendering
+- Clouds' horizontal positions are now perspective-corrected
+	- Thanks to Dario Bazzichetto for the idea!
 
 1.19.1
 - Added explosive furniture NPCs
