@@ -502,7 +502,7 @@ WorldRenderContext::WorldRenderContext(
         CheckOpenGLError();
 
         // Set repeat mode
-        glTexParameteri(GL_TEXTURE_1D, 0x2802, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         CheckOpenGLError();
 
         // Set filtering
