@@ -285,7 +285,9 @@ void Clouds::UpdateShadows(
         // Apply the same perspective that we apply for clouds, so that shadows are correct
         // (a bit hacky having to deal with perspective here, but that's in the nature of cloud shadows)
         // Note: when we're paused and panning, this won't update - a bit buggy
-        vec2f const perspectivedCloudPos = viewModel.ApplyCloudPerspectiveTransformation(c->X, c->Y, c->Z);
+        vec2f perspectivedCloudPos = viewModel.ApplyCloudPerspectiveTransformation(c->X, c->Y, c->Z);
+        // Convert back into our space ([-1.5, 1.5])
+        perspectivedCloudPos.x /= 3.0f;
 
         float const leftEdgeX = perspectivedCloudPos.x - cloudSize / 2.0f;
 
@@ -295,100 +297,101 @@ void Clouds::UpdateShadows(
         // Integral part
         // Note: leftEdgeIndexF might be negative now, and we want I(-7.6)==-8 (because of left-right interpolation)
         register_int const leftEdgeIndexI = FastTruncateToArchIntTowardsNInfinity(leftEdgeIndexF);
-        assert(leftEdgeIndexI < static_cast<register_int>(ShadowBufferSize));
-
-        // Fractional part within sample index and the next sample index
-        float const sampleIndexDx = leftEdgeIndexF - leftEdgeIndexI;
-
-        // Coeffs:
-        // i-1 (n1): fraction of total shadow onto i-1; depends on fraction of buffer cell covered
-        // i (z): fraction of total shadow onto i; independent on buffer cell (always 0.5)
-        // i+1 (p1): fraction of total shadow onto i+1; depends on fraction of buffer cell covered
-
-        float constexpr EdgeShadow = 0.75f;
-        float const edgeN1Coeff = 1.0f - (1.0f - EdgeShadow) * (1.0f - sampleIndexDx) / 2.0f;
-        float const edgeZCoeff = 1.0f - (1.0f - EdgeShadow) * 1.0f / 2.0f;
-        float const edgeP1Coeff = 1.0f - (1.0f - EdgeShadow) * sampleIndexDx / 2.0f;
-
-        float constexpr FullShadow = 0.6f;
-        float const fullN1Coeff = 1.0f - (1.0f - FullShadow) * (1.0f - sampleIndexDx) / 2.0f;
-        float const fullZCoeff = 1.0f - (1.0f - FullShadow) * 1.0f / 2.0f;
-        float const fullP1Coeff = 1.0f - (1.0f - FullShadow) * sampleIndexDx / 2.0f;
-
-        assert(edgeN1Coeff <= 1.0f && edgeZCoeff <= 1.0f && edgeP1Coeff <= 1.0f);
-        assert(fullN1Coeff <= 1.0f && fullZCoeff <= 1.0f && fullP1Coeff <= 1.0f);
-
-        // Edge indices
-        register_int const iLeftEdgeLeft = Clamp(leftEdgeIndexI - ShadowEdgeHalfThicknessElementCount, register_int(1), static_cast<register_int>(ShadowBufferSize - 2));
-        register_int const iLeftEdgeRight = std::min(leftEdgeIndexI + ShadowEdgeHalfThicknessElementCount, static_cast<register_int>(ShadowBufferSize - 2));
-        register_int const iRightEdgeLeft = std::min(leftEdgeIndexI + cloudSizeElementCount - ShadowEdgeHalfThicknessElementCount, static_cast<register_int>(ShadowBufferSize - 2));
-        register_int const iRightEdgeRight = std::min(leftEdgeIndexI + cloudSizeElementCount + ShadowEdgeHalfThicknessElementCount, static_cast<register_int>(ShadowBufferSize - 2));
-
-        register_int i = iLeftEdgeLeft;
-
-        //
-        // Left edge
-        //
-
-        for (; i < iLeftEdgeRight; ++i)
+        if (leftEdgeIndexI < static_cast<register_int>(ShadowBufferSize))
         {
-            assert(i >= 1 && i <= static_cast<register_int>(ShadowBufferSize - 2));
+            // Fractional part within sample index and the next sample index
+            float const sampleIndexDx = leftEdgeIndexF - leftEdgeIndexI;
 
-            shadowBuffer[i - 1] *= edgeN1Coeff;
-            shadowBuffer[i] *= edgeZCoeff;
-            shadowBuffer[i + 1] *= edgeP1Coeff;
-        }
+            // Coeffs:
+            // i-1 (n1): fraction of total shadow onto i-1; depends on fraction of buffer cell covered
+            // i (z): fraction of total shadow onto i; independent on buffer cell (always 0.5)
+            // i+1 (p1): fraction of total shadow onto i+1; depends on fraction of buffer cell covered
 
-        //
-        // Middle
-        //
-        //     i         i
-        //   N Z P
-        //     N Z P
-        //       N Z P
-        //         N Z P
-        //           N Z P
-        //             N Z P
-        //
+            float constexpr EdgeShadow = 0.75f;
+            float const edgeN1Coeff = 1.0f - (1.0f - EdgeShadow) * (1.0f - sampleIndexDx) / 2.0f;
+            float const edgeZCoeff = 1.0f - (1.0f - EdgeShadow) * 1.0f / 2.0f;
+            float const edgeP1Coeff = 1.0f - (1.0f - EdgeShadow) * sampleIndexDx / 2.0f;
 
-        if (i < iRightEdgeLeft - 1)
-        {
-            assert(i >= 1 && i <= static_cast<register_int>(ShadowBufferSize - 2));
+            float constexpr FullShadow = 0.6f;
+            float const fullN1Coeff = 1.0f - (1.0f - FullShadow) * (1.0f - sampleIndexDx) / 2.0f;
+            float const fullZCoeff = 1.0f - (1.0f - FullShadow) * 1.0f / 2.0f;
+            float const fullP1Coeff = 1.0f - (1.0f - FullShadow) * sampleIndexDx / 2.0f;
 
-            shadowBuffer[i - 1] *= fullN1Coeff;
-            shadowBuffer[i] *= fullN1Coeff * fullZCoeff;
+            assert(edgeN1Coeff <= 1.0f && edgeZCoeff <= 1.0f && edgeP1Coeff <= 1.0f);
+            assert(fullN1Coeff <= 1.0f && fullZCoeff <= 1.0f && fullP1Coeff <= 1.0f);
 
-            ++i;
-        }
+            // Edge indices
+            register_int const iLeftEdgeLeft = Clamp(leftEdgeIndexI - ShadowEdgeHalfThicknessElementCount, register_int(1), static_cast<register_int>(ShadowBufferSize - 2));
+            register_int const iLeftEdgeRight = std::min(leftEdgeIndexI + ShadowEdgeHalfThicknessElementCount, static_cast<register_int>(ShadowBufferSize - 2));
+            register_int const iRightEdgeLeft = std::min(leftEdgeIndexI + cloudSizeElementCount - ShadowEdgeHalfThicknessElementCount, static_cast<register_int>(ShadowBufferSize - 2));
+            register_int const iRightEdgeRight = std::min(leftEdgeIndexI + cloudSizeElementCount + ShadowEdgeHalfThicknessElementCount, static_cast<register_int>(ShadowBufferSize - 2));
 
-        for (; i < iRightEdgeLeft - 1; ++i)
-        {
-            assert(i >= 1 && i <= static_cast<register_int>(ShadowBufferSize - 2));
+            register_int i = iLeftEdgeLeft;
 
-            shadowBuffer[i] *= FullShadow;
-        }
+            //
+            // Left edge
+            //
 
-        if (i < iRightEdgeLeft)
-        {
-            assert(i >= 1 && i <= static_cast<register_int>(ShadowBufferSize - 2));
+            for (; i < iLeftEdgeRight; ++i)
+            {
+                assert(i >= 1 && i <= static_cast<register_int>(ShadowBufferSize - 2));
 
-            shadowBuffer[i] *= fullZCoeff * fullP1Coeff;
-            shadowBuffer[i + 1] *= fullP1Coeff;
+                shadowBuffer[i - 1] *= edgeN1Coeff;
+                shadowBuffer[i] *= edgeZCoeff;
+                shadowBuffer[i + 1] *= edgeP1Coeff;
+            }
 
-            ++i;
-        }
+            //
+            // Middle
+            //
+            //     i         i
+            //   N Z P
+            //     N Z P
+            //       N Z P
+            //         N Z P
+            //           N Z P
+            //             N Z P
+            //
 
-        //
-        // Right edge
-        //
+            if (i < iRightEdgeLeft - 1)
+            {
+                assert(i >= 1 && i <= static_cast<register_int>(ShadowBufferSize - 2));
 
-        for (; i < iRightEdgeRight; ++i)
-        {
-            assert(i >= 1 && i <= static_cast<register_int>(ShadowBufferSize - 2));
+                shadowBuffer[i - 1] *= fullN1Coeff;
+                shadowBuffer[i] *= fullN1Coeff * fullZCoeff;
 
-            shadowBuffer[i - 1] *= edgeN1Coeff;
-            shadowBuffer[i] *= edgeZCoeff;
-            shadowBuffer[i + 1] *= edgeP1Coeff;
+                ++i;
+            }
+
+            for (; i < iRightEdgeLeft - 1; ++i)
+            {
+                assert(i >= 1 && i <= static_cast<register_int>(ShadowBufferSize - 2));
+
+                shadowBuffer[i] *= FullShadow;
+            }
+
+            if (i < iRightEdgeLeft)
+            {
+                assert(i >= 1 && i <= static_cast<register_int>(ShadowBufferSize - 2));
+
+                shadowBuffer[i] *= fullZCoeff * fullP1Coeff;
+                shadowBuffer[i + 1] *= fullP1Coeff;
+
+                ++i;
+            }
+
+            //
+            // Right edge
+            //
+
+            for (; i < iRightEdgeRight; ++i)
+            {
+                assert(i >= 1 && i <= static_cast<register_int>(ShadowBufferSize - 2));
+
+                shadowBuffer[i - 1] *= edgeN1Coeff;
+                shadowBuffer[i] *= edgeZCoeff;
+                shadowBuffer[i + 1] *= edgeP1Coeff;
+            }
         }
     }
 }

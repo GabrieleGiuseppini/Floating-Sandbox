@@ -265,11 +265,6 @@ public:
 
     void UploadCloudsEnd();
 
-    bool IsCloudShadowsRenderingEnabled(RenderParameters const & renderParameters) const
-    {
-        return renderParameters.OceanRenderDetail == OceanRenderDetailType::Detailed;
-    }
-
     void UploadCloudShadows(
         float const * shadowBuffer,
         size_t shadowSampleCount);
