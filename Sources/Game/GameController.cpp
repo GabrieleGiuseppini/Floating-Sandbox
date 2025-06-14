@@ -142,7 +142,7 @@ GameController::GameController(
         mNpcDatabase,
         mSimulationEventDispatcher,
         mSimulationParameters,
-        mRenderContext->GetVisibleWorld());
+        mRenderContext->GetViewModel());
 
     // Register ourselves as event handler for the events we care about
     mSimulationEventDispatcher.RegisterGenericShipEventHandler(this);
@@ -432,7 +432,7 @@ void GameController::RunGameIteration()
         assert(!!mWorld);
         mWorld->Update(
             mSimulationParameters,
-            mRenderContext->GetVisibleWorld(),
+            mRenderContext->GetViewModel(),
             mRenderContext->GetStressRenderMode(),
             mThreadManager,
             *mTotalPerfStats);
@@ -2006,7 +2006,7 @@ ShipMetadata GameController::InternalResetAndLoadShip(
         mNpcDatabase,
         mSimulationEventDispatcher,
         mSimulationParameters,
-        mRenderContext->GetVisibleWorld());
+        mRenderContext->GetViewModel());
 
     // Produce ship
     auto const shipId = newWorld->GetNextShipId();

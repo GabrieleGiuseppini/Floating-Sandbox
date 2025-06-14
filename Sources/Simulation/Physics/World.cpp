@@ -20,7 +20,7 @@ World::World(
     NpcDatabase const & npcDatabase,
     SimulationEventDispatcher & simulationEventDispatcher,
     SimulationParameters const & simulationParameters,
-    VisibleWorld const & /*visibleWorld*/)
+    ViewModel const & viewModel)
     : mCurrentSimulationTime(0.0f)
     //
     , mSimulationEventHandler(simulationEventDispatcher)
@@ -42,7 +42,7 @@ World::World(
     mStars.Update(mCurrentSimulationTime, simulationParameters);
     mStorm.Update(simulationParameters);
     mWind.Update(mStorm.GetParameters(), simulationParameters);
-    mClouds.Update(mCurrentSimulationTime, mWind.GetBaseAndStormSpeedMagnitude(), mStorm.GetParameters(), simulationParameters);
+    mClouds.Update(mCurrentSimulationTime, mWind.GetBaseAndStormSpeedMagnitude(), mStorm.GetParameters(), simulationParameters, viewModel);
     mOceanSurface.Update(mCurrentSimulationTime, mWind, simulationParameters);
     mOceanFloor.Update(simulationParameters);
 }
@@ -1459,7 +1459,7 @@ bool World::RestoreTriangle(GlobalElementId triangleId)
 
 void World::Update(
     SimulationParameters const & simulationParameters,
-    VisibleWorld const & visibleWorld,
+    ViewModel const & viewModel,
     StressRenderModeType stressRenderMode,
     ThreadManager & threadManager,
     PerfStats & perfStats)
@@ -1480,7 +1480,7 @@ void World::Update(
 
     mWind.Update(mStorm.GetParameters(), simulationParameters);
 
-    mClouds.Update(mCurrentSimulationTime, mWind.GetBaseAndStormSpeedMagnitude(), mStorm.GetParameters(), simulationParameters);
+    mClouds.Update(mCurrentSimulationTime, mWind.GetBaseAndStormSpeedMagnitude(), mStorm.GetParameters(), simulationParameters, viewModel);
 
     mOceanSurface.Update(mCurrentSimulationTime, mWind, simulationParameters);
 
@@ -1510,7 +1510,7 @@ void World::Update(
     {
         auto const startTime = std::chrono::steady_clock::now();
 
-        mFishes.Update(mCurrentSimulationTime, mOceanSurface, mOceanFloor, simulationParameters, visibleWorld, mAllShipAABBs);
+        mFishes.Update(mCurrentSimulationTime, mOceanSurface, mOceanFloor, simulationParameters, viewModel.GetVisibleWorld(), mAllShipAABBs);
 
         perfStats.Update<PerfMeasurement::TotalFishUpdate>(std::chrono::steady_clock::now() - startTime);
     }

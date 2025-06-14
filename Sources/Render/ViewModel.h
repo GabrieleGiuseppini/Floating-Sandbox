@@ -461,6 +461,44 @@ public:
         matrix[3][2] = shipZStart + layerZFraction;
     }
 
+    inline vec2f ApplyCloudPerspectiveTransformation(
+        float virtualX,         // [-1.5, +1.5]
+        float virtualY,         // [0.0, +1.0]
+        float virtualZ) const   // [0.0, +1.0]
+    {
+        // Normalize Z: 0.0 (closest) -> ZMin, 1.0 (furthest): ZMax
+        float const normalizedZ = (CloudPerspectiveZMin + virtualZ * (CloudPerspectiveZMax - CloudPerspectiveZMin));
+
+        // Calculate NDC x
+
+        // Map input slice [-0.5, +0.5] into NDC [-1.0, +1.0]
+        // (and whole range into NDC [-3.0, 3.0]
+        float ndcX = virtualX * 2.0f;
+
+        // Apply perspective transform
+        //
+        // First off, the ndcX shift is CamX/normalizedZ (negligible at furthest Z, full (unchanged) at nearest Z)
+        //
+        // Nearest clouds (NormZ = ZMin): expand ndcX so that the maximum ndc X we have (i.e. result of perspective transformation)
+        //      is fully offset by the maximum Cam offset (so that we remain in the [-3, +3] range)
+        //          * maximum Cam offset at ZMin is 1.0/ZMin
+        //          * ndcX' = ndcX * f - MaxCamOffset/ZMin => f = 1 + 1/3 * 1/ZMin
+        // Furthest clouds (NormZ = ZMax): expand ndcX so that the maximum ndc X we have (i.e. result of perspective transformation)
+        //      is fully offset by the maximum Cam offset (so that we remain in the [-3, +3] range)
+        //          * maximum Cam offset at ZMax is 1.0/ZMax
+        //          * ndcX' = ndcX * f - MaxCamOffset/ZMax => f = 1 + 1/3 * 1/ZMax
+        //
+        float const xScaler = 1.0f + 1.0f / 3.0f * 1.0f / normalizedZ;
+        ndcX = ndcX * xScaler - mCloudNormalizedViewCam.x / normalizedZ;
+
+        // Calculate NDC y
+
+        // Apply perspective transform
+        float const ndcY = (virtualY - mCloudNormalizedViewCam.y) / normalizedZ;
+
+        return vec2f(ndcX, ndcY);
+    }
+
 private:
 
     float CalculateVisibleWorldWidth(float zoom) const
@@ -490,18 +528,34 @@ private:
 
         mWorldToPhysicalDisplayFactor = static_cast<float>(mCanvasPhysicalSize.height) / mVisibleWorld.Height;
 
+        //
         // Ortho Matrix: transforms world into NDC (-1, ..., +1)
         //
         //  2 / WrdW            0                   0                0
         //  0                   2 / WrdH            0                0
         //  0                   0                   WrdZMult         0
         //  -2 * CamX / WrdW    -2 * CamY / WrdH    ZOffset          1
+        //
 
         // Recalculate kernel Ortho Matrix cells
         mKernelOrthoMatrix[0][0] = 2.0f / mVisibleWorld.Width;
         mKernelOrthoMatrix[1][1] = 2.0f / mVisibleWorld.Height;
         mKernelOrthoMatrix[3][0] = -2.0f * (mCam.x + (mPixelOffsetX / mWorldToPhysicalDisplayFactor)) / mVisibleWorld.Width;
         mKernelOrthoMatrix[3][1] = -2.0f * (mCam.y + (mPixelOffsetY / mWorldToPhysicalDisplayFactor)) / mVisibleWorld.Height;
+
+        //
+        // Recalculate cached members for clouds perspective
+        //
+
+        // X: mapped linearly onto [-1.0, 1.0]
+        mCloudNormalizedViewCam.x = mCam.x / mHalfMaxWorldWidth;
+
+        // Y: warped so perspective is more visible at lower y
+        //
+        // At cam MAX: 2/(1 + e**-12) - 1 == 0.9999
+        // At cam 0: 0.0
+        // At cam -MAX: 2/(1 + e**12) - 1 == -0.9999
+        mCloudNormalizedViewCam.y = 2.0f / (1.0f + std::exp(-12.0f * mCam.y / mHalfMaxWorldHeight)) - 1.0f;
     }
 
     void RecalculateAspectRatio()
@@ -514,6 +568,8 @@ private:
     // Constants
     static float constexpr MaxZoom = 100.0f;
     static float constexpr ZoomHeightConstant = 2.0f * 70.0f; // World height at zoom=1.0
+    static float constexpr CloudPerspectiveZMin = 1.0f;
+    static float constexpr CloudPerspectiveZMax = 20.0f * CloudPerspectiveZMin; // Magic number: so that at this (furthest) Z, denominator is so large that clouds at virtualY=1.0 appear slightly above the horizon
 
     // Primary inputs
     float const mHalfMaxWorldWidth;
@@ -531,4 +587,5 @@ private:
     VisibleWorld mVisibleWorld;
     float mWorldToPhysicalDisplayFactor;
     ProjectionMatrix mKernelOrthoMatrix; // Common subset of all ortho matrices
+    vec2f mCloudNormalizedViewCam;
 };

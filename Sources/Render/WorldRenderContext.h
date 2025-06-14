@@ -198,37 +198,8 @@ public:
         // We use Normalized Device Coordinates here
         //
 
-        // Normalize Z: 0.0 (closest) -> ZMin, 1.0 (furthest): ZMax
-        float constexpr ZMin = 1.0f;
-        float constexpr ZMax = 20.0f * ZMin; // Magic number: so that at this (furthest) Z, denominator is so large that clouds at virtualY=1.0 appear slightly above the horizon
-        float const normalizedZ = (ZMin + virtualZ * (ZMax - ZMin));
-
-        // Calculate NDC x
-
-        // Map input slice [-0.5, +0.5] into NDC [-1.0, +1.0]
-        // (and whole range into NDC [-3.0, 3.0]
-        float ndcX = virtualX * 2.0f;
-
-        // Apply perspective transform
-        //
-        // First off, the ndcX shift is CamX/normalizedZ (negligible at furthest Z, full (unchanged) at nearest Z)
-        //
-        // Nearest clouds (NormZ = ZMin): expand ndcX so that the maximum ndc X we have (i.e. result of perspective transformation)
-        //      is fully offset by the maximum Cam offset (so that we remain in the [-3, +3] range)
-        //          * maximum Cam offset at ZMin is 1.0/ZMin
-        //          * ndcX' = ndcX * f - MaxCamOffset/ZMin => f = 1 + 1/3 * 1/ZMin
-        // Furthest clouds (NormZ = ZMax): expand ndcX so that the maximum ndc X we have (i.e. result of perspective transformation)
-        //      is fully offset by the maximum Cam offset (so that we remain in the [-3, +3] range)
-        //          * maximum Cam offset at ZMax is 1.0/ZMax
-        //          * ndcX' = ndcX * f - MaxCamOffset/ZMax => f = 1 + 1/3 * 1/ZMax
-        //
-        float const xScaler = 1.0f + 1.0f / 3.0f * 1.0f / normalizedZ;
-        ndcX = ndcX * xScaler - mCloudNormalizedViewCamX / normalizedZ;
-
-        // Calculate NDC y
-
-        // Apply perspective transform
-        float const ndcY = (virtualY - mCloudNormalizedViewCamY) / normalizedZ;
+        // Apply perspective transformation
+        vec2f const ndc = renderParameters.View.ApplyCloudPerspectiveTransformation(virtualX, virtualY, virtualZ);
 
         //
         // Populate quad in buffer
@@ -243,9 +214,9 @@ public:
 
         float const ndcWidth = scale * cloudAtlasFrameMetadata.FrameMetadata.WorldWidth;
         float const ndcHeight = scale * cloudAtlasFrameMetadata.FrameMetadata.WorldHeight * aspectRatio;
-        float const leftX = ndcX - ndcWidth / 2.0f;
+        float const leftX = ndc.x - ndcWidth / 2.0f;
         float const rightX = leftX + ndcWidth;
-        float const bottomY = ndcY - ndcHeight / 2.0f;
+        float const bottomY = ndc.y - ndcHeight / 2.0f;
         float const topY = bottomY + ndcHeight;
 
         float const textureWidthAdjust = std::max(cloudAtlasFrameMetadata.TextureSpaceWidth, cloudAtlasFrameMetadata.TextureSpaceHeight);
@@ -1092,8 +1063,6 @@ private:
     BoundedVector<CloudVertex> mCloudVertexBuffer;
     GameOpenGLVBO mCloudVBO;
     size_t mCloudVBOAllocatedVertexSize;
-    float mCloudNormalizedViewCamX;
-    float mCloudNormalizedViewCamY;
 
     BoundedVector<LandSegment> mLandSegmentBuffer;
     GameOpenGLVBO mLandSegmentVBO;

@@ -8,6 +8,7 @@
 #include "../SimulationParameters.h"
 
 #include <Render/RenderContext.h>
+#include <Render/ViewModel.h>
 
 #include <Core/Buffer.h>
 #include <Core/GameMath.h>
@@ -34,7 +35,8 @@ public:
         float currentSimulationTime,
         float baseAndStormSpeedMagnitude,
         Storm::Parameters const & stormParameters,
-        SimulationParameters const & simulationParameters);
+        SimulationParameters const & simulationParameters,
+        ViewModel const & viewModel);
 
     void Upload(RenderContext & renderContext) const;
 
@@ -42,7 +44,9 @@ private:
 
     struct Cloud;
 
-    inline void UpdateShadows(std::vector<std::unique_ptr<Cloud>> const & clouds);
+    inline void UpdateShadows(
+        std::vector<std::unique_ptr<Cloud>> const & clouds,
+        ViewModel const & viewModel);
     inline void OffsetShadowsBuffer_Mean();
     inline void OffsetShadowsBuffer_Min();
 

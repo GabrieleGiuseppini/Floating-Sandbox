@@ -52,7 +52,8 @@ void Clouds::Update(
     float /*currentSimulationTime*/,
     float baseAndStormSpeedMagnitude,
     Storm::Parameters const & stormParameters,
-    SimulationParameters const & simulationParameters)
+    SimulationParameters const & simulationParameters,
+    ViewModel const & viewModel)
 {
     float const windSign = baseAndStormSpeedMagnitude < 0.0f ? -1.0f : 1.0f;
 
@@ -223,8 +224,8 @@ void Clouds::Update(
     {
         mShadowBuffer.fill<ShadowBufferSize>(1.0f);
 
-        UpdateShadows(mClouds);
-        UpdateShadows(mStormClouds);
+        UpdateShadows(mClouds, viewModel);
+        UpdateShadows(mStormClouds, viewModel);
 
         OffsetShadowsBuffer_Min();
     }
@@ -278,7 +279,9 @@ void Clouds::Upload(RenderContext & renderContext) const
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-void Clouds::UpdateShadows(std::vector<std::unique_ptr<Cloud>> const & clouds)
+void Clouds::UpdateShadows(
+    std::vector<std::unique_ptr<Cloud>> const & clouds,
+    ViewModel const & viewModel)
 {
     float constexpr BaseCloudSize = 0.3f; // In cloud X space
 
@@ -289,7 +292,12 @@ void Clouds::UpdateShadows(std::vector<std::unique_ptr<Cloud>> const & clouds)
         float const cloudSize = BaseCloudSize * c->Scale;
         register_int const cloudSizeElementCount = FastTruncateToArchInt(cloudSize / ShadowBufferDx);
 
-        float const leftEdgeX = c->X - cloudSize / 2.0f;
+        // Apply the same perspective that we apply for clouds, so that shadows are correct
+        // (a bit hacky having to deal with perspective here, but that's in the nature of cloud shadows)
+        // Note: when we're paused and panning, this won't update - a bit buggy
+        vec2f const perspectivedCloudPos = viewModel.ApplyCloudPerspectiveTransformation(c->X, c->Y, c->Z);
+
+        float const leftEdgeX = perspectivedCloudPos.x - cloudSize / 2.0f;
 
         // Fractional index in the sample array - might be negative
         float const leftEdgeIndexF = (leftEdgeX + CloudSpaceWidth / 2.0f) / ShadowBufferDx;

@@ -15,6 +15,7 @@
 #include "../SimulationParameters.h"
 
 #include <Render/RenderContext.h>
+#include <Render/ViewModel.h>
 
 #include <Core/AABBSet.h>
 #include <Core/GameChronometer.h>
@@ -45,7 +46,7 @@ public:
         NpcDatabase const & npcDatabase,
         SimulationEventDispatcher & simulationEventDispatcher,
         SimulationParameters const & simulationParameters,
-        VisibleWorld const & visibleWorld);
+        ViewModel const & viewModel);
 
     ShipId GetNextShipId() const;
 
@@ -497,7 +498,7 @@ public:
 
     void Update(
         SimulationParameters const & simulationParameters,
-        VisibleWorld const & visibleWorld,
+        ViewModel const & viewModel,
         StressRenderModeType stressRenderMode,
         ThreadManager & threadManager,
         PerfStats & perfStats);
