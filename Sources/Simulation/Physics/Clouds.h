@@ -8,7 +8,6 @@
 #include "../SimulationParameters.h"
 
 #include <Render/RenderContext.h>
-#include <Render/ViewModel.h>
 
 #include <Core/Buffer.h>
 #include <Core/GameMath.h>
@@ -27,18 +26,15 @@ class Clouds
 
 public:
 
-    explicit Clouds(bool areShadowsEnabled);
-
-    void SetShadowsEnabled(bool value);
+    Clouds();
 
     void Update(
         float currentSimulationTime,
         float baseAndStormSpeedMagnitude,
         Storm::Parameters const & stormParameters,
-        SimulationParameters const & simulationParameters,
-        ViewModel const & viewModel);
+        SimulationParameters const & simulationParameters);
 
-    void Upload(RenderContext & renderContext) const;
+    void Upload(RenderContext & renderContext);
 
 private:
 
@@ -47,7 +43,9 @@ private:
     inline void UpdateShadows(
         std::vector<std::unique_ptr<Cloud>> const & clouds,
         ViewModel const & viewModel);
+
     inline void OffsetShadowsBuffer_Mean();
+
     inline void OffsetShadowsBuffer_Min();
 
 private:
@@ -112,8 +110,6 @@ private:
     //
     // Shadows
     //
-
-    bool mAreShadowsEnabled; // Calculated from outside and given here; never read from here
 
     Buffer<float> mShadowBuffer;
 };

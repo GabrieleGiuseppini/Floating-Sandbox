@@ -15,12 +15,10 @@ namespace Physics {
 
 World::World(
     OceanFloorHeightMap && oceanFloorHeightMap,
-    bool areCloudShadowsEnabled,
     FishSpeciesDatabase const & fishSpeciesDatabase,
     NpcDatabase const & npcDatabase,
     SimulationEventDispatcher & simulationEventDispatcher,
-    SimulationParameters const & simulationParameters,
-    ViewModel const & viewModel)
+    SimulationParameters const & simulationParameters)
     : mCurrentSimulationTime(0.0f)
     //
     , mSimulationEventHandler(simulationEventDispatcher)
@@ -30,7 +28,7 @@ World::World(
     , mStars()
     , mStorm(*this, mSimulationEventHandler)
     , mWind(mSimulationEventHandler)
-    , mClouds(areCloudShadowsEnabled)
+    , mClouds()
     , mOceanSurface(*this, mSimulationEventHandler)
     , mOceanFloor(std::move(oceanFloorHeightMap))
     , mFishes(fishSpeciesDatabase, mSimulationEventHandler)
@@ -42,7 +40,7 @@ World::World(
     mStars.Update(mCurrentSimulationTime, simulationParameters);
     mStorm.Update(simulationParameters);
     mWind.Update(mStorm.GetParameters(), simulationParameters);
-    mClouds.Update(mCurrentSimulationTime, mWind.GetBaseAndStormSpeedMagnitude(), mStorm.GetParameters(), simulationParameters, viewModel);
+    mClouds.Update(mCurrentSimulationTime, mWind.GetBaseAndStormSpeedMagnitude(), mStorm.GetParameters(), simulationParameters);
     mOceanSurface.Update(mCurrentSimulationTime, mWind, simulationParameters);
     mOceanFloor.Update(simulationParameters);
 }
@@ -1480,7 +1478,7 @@ void World::Update(
 
     mWind.Update(mStorm.GetParameters(), simulationParameters);
 
-    mClouds.Update(mCurrentSimulationTime, mWind.GetBaseAndStormSpeedMagnitude(), mStorm.GetParameters(), simulationParameters, viewModel);
+    mClouds.Update(mCurrentSimulationTime, mWind.GetBaseAndStormSpeedMagnitude(), mStorm.GetParameters(), simulationParameters);
 
     mOceanSurface.Update(mCurrentSimulationTime, mWind, simulationParameters);
 

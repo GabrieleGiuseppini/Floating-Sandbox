@@ -41,12 +41,10 @@ public:
 
     World(
         OceanFloorHeightMap && oceanFloorHeightMap,
-        bool areCloudShadowsEnabled,
         FishSpeciesDatabase const & fishSpeciesDatabase,
         NpcDatabase const & npcDatabase,
         SimulationEventDispatcher & simulationEventDispatcher,
-        SimulationParameters const & simulationParameters,
-        ViewModel const & viewModel);
+        SimulationParameters const & simulationParameters);
 
     ShipId GetNextShipId() const;
 
@@ -92,11 +90,6 @@ public:
         assert(!!mNpcs);
 
         return *mNpcs;
-    }
-
-    void SetAreCloudShadowsEnabled(bool value)
-    {
-        mClouds.SetShadowsEnabled(value);
     }
 
     inline void DisturbOceanAt(

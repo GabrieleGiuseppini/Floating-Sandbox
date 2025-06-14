@@ -973,7 +973,7 @@ public:
     void SetFlatOceanColor(rgbColor const & color) override { mRenderContext->SetFlatOceanColor(color); }
 
     OceanRenderDetailType GetOceanRenderDetail() const override { return mRenderContext->GetOceanRenderDetail(); }
-    void SetOceanRenderDetail(OceanRenderDetailType value) override;
+    void SetOceanRenderDetail(OceanRenderDetailType value) override { mRenderContext->SetOceanRenderDetail(value); }
 
     LandRenderModeType GetLandRenderMode() const override { return mRenderContext->GetLandRenderMode(); }
     void SetLandRenderMode(LandRenderModeType landRenderMode) override { mRenderContext->SetLandRenderMode(landRenderMode); }
@@ -1094,8 +1094,6 @@ private:
         bool doAnchorToScreen);
 
     void NotifyNpcPlacementError(NpcCreationFailureReasonType reason);
-
-    static bool CalculateAreCloudShadowsEnabled(OceanRenderDetailType oceanRenderDetail);
 
     // Auto-focus
 

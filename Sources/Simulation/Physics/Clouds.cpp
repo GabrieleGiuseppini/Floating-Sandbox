@@ -34,26 +34,19 @@ static register_int constexpr ShadowEdgeHalfThicknessElementCount = 1;
 
 /////////////////////////////////////////////////////////////////////////////////
 
-Clouds::Clouds(bool areShadowsEnabled)
+Clouds::Clouds()
     : mLastCloudId(0)
     , mClouds()
     , mStormClouds()
-    , mAreShadowsEnabled(areShadowsEnabled)
     , mShadowBuffer(ShadowBufferSize)
 {
-}
-
-void Clouds::SetShadowsEnabled(bool value)
-{
-    mAreShadowsEnabled = value;
 }
 
 void Clouds::Update(
     float /*currentSimulationTime*/,
     float baseAndStormSpeedMagnitude,
     Storm::Parameters const & stormParameters,
-    SimulationParameters const & simulationParameters,
-    ViewModel const & viewModel)
+    SimulationParameters const & simulationParameters)
 {
     float const windSign = baseAndStormSpeedMagnitude < 0.0f ? -1.0f : 1.0f;
 
@@ -215,23 +208,9 @@ void Clouds::Update(
             ++it;
         }
     }
-
-    //
-    // Update shadows
-    //
-
-    if (mAreShadowsEnabled)
-    {
-        mShadowBuffer.fill<ShadowBufferSize>(1.0f);
-
-        UpdateShadows(mClouds, viewModel);
-        UpdateShadows(mStormClouds, viewModel);
-
-        OffsetShadowsBuffer_Min();
-    }
 }
 
-void Clouds::Upload(RenderContext & renderContext) const
+void Clouds::Upload(RenderContext & renderContext)
 {
     //
     // Upload clouds
@@ -269,8 +248,19 @@ void Clouds::Upload(RenderContext & renderContext) const
     // Upload shadows
     //
 
-    if (mAreShadowsEnabled)
+    if (renderContext.GetOceanRenderDetail() == OceanRenderDetailType::Detailed)
     {
+        // Update shadows
+        {
+            mShadowBuffer.fill<ShadowBufferSize>(1.0f);
+
+            UpdateShadows(mClouds, renderContext.GetViewModel());
+            UpdateShadows(mStormClouds, renderContext.GetViewModel());
+
+            OffsetShadowsBuffer_Min();
+        }
+
+        // Upload shadows
         renderContext.UploadCloudShadows(
             mShadowBuffer.data(),
             mShadowBuffer.GetSize());

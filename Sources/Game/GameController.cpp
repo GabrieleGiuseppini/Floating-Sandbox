@@ -137,12 +137,10 @@ GameController::GameController(
     // Create world
     mWorld = std::make_unique<Physics::World>(
         OceanFloorHeightMap::LoadFromImage(gameAssetManager.LoadPngImageRgb(gameAssetManager.GetDefaultOceanFloorHeightMapFilePath())),
-        CalculateAreCloudShadowsEnabled(mRenderContext->GetOceanRenderDetail()),
         mFishSpeciesDatabase,
         mNpcDatabase,
         mSimulationEventDispatcher,
-        mSimulationParameters,
-        mRenderContext->GetViewModel());
+        mSimulationParameters);
 
     // Register ourselves as event handler for the events we care about
     mSimulationEventDispatcher.RegisterGenericShipEventHandler(this);
@@ -1942,12 +1940,6 @@ void GameController::SetDoDayLightCycle(bool value)
     }
 }
 
-void GameController::SetOceanRenderDetail(OceanRenderDetailType value)
-{
-    mRenderContext->SetOceanRenderDetail(value);
-    mWorld->SetAreCloudShadowsEnabled(CalculateAreCloudShadowsEnabled(value));
-}
-
 ////////////////////////////////////////////////////////////////////////////////////////
 
 void GameController::OnTsunami(float x)
@@ -2001,12 +1993,10 @@ ShipMetadata GameController::InternalResetAndLoadShip(
     // Create a new world
     auto newWorld = std::make_unique<Physics::World>(
         OceanFloorHeightMap(mWorld->GetOceanFloorHeightMap()),
-        CalculateAreCloudShadowsEnabled(mRenderContext->GetOceanRenderDetail()),
         mFishSpeciesDatabase,
         mNpcDatabase,
         mSimulationEventDispatcher,
-        mSimulationParameters,
-        mRenderContext->GetViewModel());
+        mSimulationParameters);
 
     // Produce ship
     auto const shipId = newWorld->GetNextShipId();
@@ -2200,12 +2190,6 @@ void GameController::NotifyNpcPlacementError(NpcCreationFailureReasonType reason
             break;
         }
     }
-}
-
-bool GameController::CalculateAreCloudShadowsEnabled(OceanRenderDetailType oceanRenderDetail)
-{
-    // Note: also RenderContext infers applicability of shadows via detail, independently
-    return (oceanRenderDetail == OceanRenderDetailType::Detailed);
 }
 
 void GameController::UpdateViewOnShipLoad()
