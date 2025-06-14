@@ -18,10 +18,17 @@ enum class UITextureGroups : uint16_t
     DotDotDotIcon = 0,
     ShipSelectionIcon,
     ToolsIcon,
+    NpcIcon,
     SettingsIcon,
     TimeOfDayIcon,
     ViewIcon,
+
     ExitIcon,
+    NpcFurnitureGroupIcon,
+    NpcHumanGroupIcon,
+    NpcMoveIcon,
+    NpcRemoveIcon,
+    NpcTurnaroundIcon,
     ReloadIcon,
     RogueWaveIcon,
     TriggersIcon,
@@ -55,6 +62,8 @@ struct UITextureDatabase
             return UITextureGroups::ShipSelectionIcon;
         else if (Utils::CaseInsensitiveEquals(str, "tools_icon"))
             return UITextureGroups::ToolsIcon;
+        else if (Utils::CaseInsensitiveEquals(str, "npc_icon"))
+            return UITextureGroups::NpcIcon;
         else if (Utils::CaseInsensitiveEquals(str, "settings_icon"))
             return UITextureGroups::SettingsIcon;
         else if (Utils::CaseInsensitiveEquals(str, "time_of_day_icon"))
@@ -63,6 +72,16 @@ struct UITextureDatabase
             return UITextureGroups::ViewIcon;
         else if (Utils::CaseInsensitiveEquals(str, "exit_icon"))
             return UITextureGroups::ExitIcon;
+        else if (Utils::CaseInsensitiveEquals(str, "npc_furniture_group_icon"))
+            return UITextureGroups::NpcFurnitureGroupIcon;
+        else if (Utils::CaseInsensitiveEquals(str, "npc_human_group_icon"))
+            return UITextureGroups::NpcHumanGroupIcon;
+        else if (Utils::CaseInsensitiveEquals(str, "npc_move_icon"))
+            return UITextureGroups::NpcMoveIcon;
+        else if (Utils::CaseInsensitiveEquals(str, "npc_remove_icon"))
+            return UITextureGroups::NpcRemoveIcon;
+        else if (Utils::CaseInsensitiveEquals(str, "npc_turnaround_icon"))
+            return UITextureGroups::NpcTurnaroundIcon;
         else if (Utils::CaseInsensitiveEquals(str, "reload_icon"))
             return UITextureGroups::ReloadIcon;
         else if (Utils::CaseInsensitiveEquals(str, "rogue_wave_icon"))

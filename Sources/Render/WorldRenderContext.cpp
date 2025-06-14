@@ -35,6 +35,7 @@ WorldRenderContext::WorldRenderContext(
     , mCloudVertexBuffer()
     , mCloudVBO()
     , mCloudVBOAllocatedVertexSize(0u)
+    , mCloudNormalizedViewCamX(0.0f)
     , mCloudNormalizedViewCamY(0.0f)
     , mLandSegmentBuffer()
     , mLandSegmentVBO()
@@ -1859,9 +1860,17 @@ void WorldRenderContext::ApplyViewModelChanges(RenderParameters const & renderPa
         globalOrthoMatrix);
 
     //
-    // Freeze here view cam's y - warped so perspective is more visible at lower y
+    // Freeze here view cam's x and y - warped so perspective is more visible at lower y
     //
 
+    // X: mapped linearly onto [-1.0, 1.0]
+    mCloudNormalizedViewCamX = renderParameters.View.GetCameraWorldPosition().x / renderParameters.View.GetHalfMaxWorldWidth();
+
+    // Y: warped so perspective is more visible at lower y
+    //
+    // At cam MAX: 2/(1 + e**-12) - 1 == 0.9999
+    // At cam 0: 0.0
+    // At cam -MAX: 2/(1 + e**12) - 1 == -0.9999
     mCloudNormalizedViewCamY = 2.0f / (1.0f + std::exp(-12.0f * renderParameters.View.GetCameraWorldPosition().y / renderParameters.View.GetHalfMaxWorldHeight())) - 1.0f;
 
     //
