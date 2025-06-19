@@ -60,6 +60,7 @@
 					  - TODO: is this ameliorated by the early pixel discard? Do test mentioned above
 			! New ad-hoc dark smoke texture
 			! New shader with growing effect similar to clouds shader
+				! Or leveraging darker areas: instead of becoming transparent, threshold towrads dark grows and cuts off rest
 				! Need a new shader anyway, 'cause black smoke looks awful when it fades away
 				! Texture coords are params (set @ initialization, texture never changes)
 				! Also random rotation angle

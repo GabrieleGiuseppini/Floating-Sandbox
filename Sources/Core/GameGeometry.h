@@ -300,12 +300,14 @@ inline void MakeQuadInto(
 {
 #if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
 
+    assert(is_aligned_to_vectorization_word(&quad));
+
     __m128d vd = _mm_shuffle_pd(
-        _mm_load_pd(reinterpret_cast<double const *>(&centerTop)),
-        _mm_load_pd(reinterpret_cast<double const *>(&centerBottom)),
+        _mm_loadu_pd(reinterpret_cast<double const *>(&centerTop)),
+        _mm_loadu_pd(reinterpret_cast<double const *>(&centerBottom)),
         0);
 
-    __m128d hd0 = _mm_load_pd(reinterpret_cast<double const *>(&hDir));
+    __m128d hd0 = _mm_loadu_pd(reinterpret_cast<double const *>(&hDir));
     __m128 hd = _mm_movelh_ps(_mm_castpd_ps(hd0), _mm_castpd_ps(hd0));
 
     __m128 h = _mm_mul_ps(hd, _mm_load1_ps(&halfWidth));
@@ -314,6 +316,21 @@ inline void MakeQuadInto(
     __m128 right = _mm_add_ps(_mm_castpd_ps(vd), h);
     _mm_store_ps(&(quad.fptr[0]), left);
     _mm_store_ps(&(quad.fptr[4]), right);
+
+#elif FS_IS_ARM_NEON() // Implies ARM anyways
+
+    assert(is_aligned_to_vectorization_word(&quad));
+
+    float32x4_t vd = vcombine_f32(
+        vld1_f32(reinterpret_cast<float const *>(&centerTop)),
+        vld1_f32(reinterpret_cast<float const *>(&centerBottom)));
+
+    float32x2_t hd0 = vld1_f32(reinterpret_cast<float const *>(&hDir));
+    float32x4_t hd = vcombine_f32(hd0, hd0);
+    float32x4_t h = vmulq_f32(hd, vld1q_dup_f32(&halfWidth));
+
+    vst1q_f32(reinterpret_cast<float *>(&(quad.fptr[0])), vsubq_f32(vd, h));
+    vst1q_f32(reinterpret_cast<float *>(&(quad.fptr[4])), vaddq_f32(vd, h));
 
 #else
 
@@ -337,7 +354,7 @@ inline Quad MakeQuad(
     vec2f const & hDir,
     float halfWidth)
 {
-    Quad quad;
+    FS_ALIGN16_BEG Quad quad FS_ALIGN16_END;
     MakeQuadInto(
         centerTop,
         centerBottom,
