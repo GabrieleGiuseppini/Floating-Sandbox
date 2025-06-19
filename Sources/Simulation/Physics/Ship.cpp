@@ -155,9 +155,9 @@ void Ship::Announce()
     mElectricalElements.AnnounceInstancedElements();
 }
 
-Geometry::AABBSet Ship::CalculateAABBs() const
+Geometry::AABBSet Ship::CalculateExternalAABBs() const
 {
-    Geometry::AABBSet allAABBs;
+    Geometry::AABBSet allExternalAABBs;
 
     for (FrontierId frontierId : mFrontiers.GetFrontierIds())
     {
@@ -180,11 +180,11 @@ Geometry::AABBSet Ship::CalculateAABBs() const
                     break;
             }
 
-            allAABBs.Add(aabb);
+            allExternalAABBs.Add(aabb);
         }
     }
 
-    return allAABBs;
+    return allExternalAABBs;
 }
 
 Geometry::AABB Ship::CalculateParticleAABB() const
@@ -220,7 +220,7 @@ void Ship::Update(
     Storm::Parameters const & stormParameters,
     SimulationParameters const & simulationParameters,
     StressRenderModeType stressRenderMode,
-    Geometry::AABBSet & externalAabbSet,
+    Geometry::AABBSet & externalAabbSet, // output
     ThreadManager & threadManager,
     PerfStats & perfStats)
 {
@@ -1187,7 +1187,7 @@ void Ship::ApplyWorldForces(
     float effectiveAirDensity,
     float effectiveWaterDensity,
     SimulationParameters const & simulationParameters,
-    Geometry::AABBSet & externalAabbSet)
+    Geometry::AABBSet & externalAabbSet) // output
 {
     // New buffer to which new cached depths will be written to
     std::shared_ptr<Buffer<float>> newCachedPointDepths = mPoints.AllocateWorkBufferFloat();
@@ -1360,7 +1360,7 @@ void Ship::ApplyWorldSurfaceForces(
     float effectiveWaterDensity,
     Buffer<float> & newCachedPointDepths,
     SimulationParameters const & simulationParameters,
-    Geometry::AABBSet & externalAabbSet)
+    Geometry::AABBSet & externalAabbSet) // output
 {
     float totalWaterDisplacementMagnitude = 0.0f;
 

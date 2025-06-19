@@ -71,9 +71,9 @@ public:
 
     size_t GetAllShipTriangleCount() const;
 
-    Geometry::AABBSet GetAllShipAABBs() const
+    Geometry::AABBSet GetAllShipExternalAABBs() const
     {
-        return mAllShipAABBs;
+        return mAllShipExternalAABBs;
     }
 
     Geometry::AABB CalculateAllShipParticleAABB() const;
@@ -522,9 +522,9 @@ private:
     Fishes mFishes;
     std::unique_ptr<Npcs> mNpcs; // Pointer simply because of #include dependencies
 
-    // The set of all ship AABB's in the world, updated at each
+    // The set of all ships' external AABB's in the world, updated at each
     // simulation cycle and at each ship addition
-    Geometry::AABBSet mAllShipAABBs;
+    Geometry::AABBSet mAllShipExternalAABBs;
 };
 
 }

@@ -1853,7 +1853,7 @@ void GameController::FocusOnShips()
 {
     if (mWorld)
     {
-        auto aabb = mWorld->GetAllShipAABBs().MakeUnion();
+        auto aabb = mWorld->GetAllShipExternalAABBs().MakeUnion();
         if (!aabb.has_value())
         {
             // No triangles - particle-only ship
@@ -2246,7 +2246,7 @@ void GameController::UpdateAutoFocus()
     if (currentAutoFocusTarget == AutoFocusTargetKindType::Ship)
     {
         // Auto-focus on ship
-        mViewManager.UpdateAutoFocus(mWorld->GetAllShipAABBs().MakeUnion());
+        mViewManager.UpdateAutoFocus(mWorld->GetAllShipExternalAABBs().MakeUnion());
     }
     else if (currentAutoFocusTarget == AutoFocusTargetKindType::SelectedNpc)
     {
@@ -2279,7 +2279,7 @@ std::optional<AutoFocusTargetKindType> GameController::CalculateEffectiveAutoFoc
 {
     // If Ship but no "normal" AABBs, then no auto-focus
     if (mAutoFocusTarget == AutoFocusTargetKindType::Ship
-        && (!mWorld || !mWorld->GetAllShipAABBs().MakeUnion().has_value()))
+        && (!mWorld || !mWorld->GetAllShipExternalAABBs().MakeUnion().has_value()))
     {
         // Cannot do Ship
         return std::nullopt;

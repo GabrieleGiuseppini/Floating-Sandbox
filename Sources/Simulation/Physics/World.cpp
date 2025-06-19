@@ -34,7 +34,7 @@ World::World(
     , mFishes(fishSpeciesDatabase, mSimulationEventHandler)
     , mNpcs(std::make_unique<Npcs>(*this, npcDatabase, mSimulationEventHandler, simulationParameters))
     //
-    , mAllShipAABBs()
+    , mAllShipExternalAABBs()
 {
     // Initialize world pieces that need to be initialized now
     mStars.Update(mCurrentSimulationTime, simulationParameters);
@@ -54,7 +54,7 @@ ShipId World::GetNextShipId() const
 
 void World::AddShip(std::unique_ptr<Ship> ship)
 {
-    auto const shipAABBs = ship->CalculateAABBs();
+    auto const shipExternalAABBs = ship->CalculateExternalAABBs();
 
     // Store ship
     assert(ship->GetId() == static_cast<ShipId>(mAllShips.size()));
@@ -65,9 +65,9 @@ void World::AddShip(std::unique_ptr<Ship> ship)
     mNpcs->OnShipAdded(*mAllShips.back());
 
     // Update AABBSet
-    for (auto const & aabb : shipAABBs.GetItems())
+    for (auto const & aabb : shipExternalAABBs.GetItems())
     {
-        mAllShipAABBs.Add(aabb);
+        mAllShipExternalAABBs.Add(aabb);
     }
 }
 
@@ -1466,7 +1466,7 @@ void World::Update(
     mCurrentSimulationTime += SimulationParameters::SimulationStepTimeDuration<float>;
 
     // Prepare all AABBs
-    mAllShipAABBs.Clear();
+    mAllShipExternalAABBs.Clear();
 
     //
     // Update all subsystems
@@ -1491,7 +1491,7 @@ void World::Update(
             mStorm.GetParameters(),
             simulationParameters,
             stressRenderMode,
-            mAllShipAABBs,
+            mAllShipExternalAABBs,
             threadManager,
             perfStats);
     }
@@ -1508,7 +1508,7 @@ void World::Update(
     {
         auto const startTime = std::chrono::steady_clock::now();
 
-        mFishes.Update(mCurrentSimulationTime, mOceanSurface, mOceanFloor, simulationParameters, viewModel.GetVisibleWorld(), mAllShipAABBs);
+        mFishes.Update(mCurrentSimulationTime, mOceanSurface, mOceanFloor, simulationParameters, viewModel.GetVisibleWorld(), mAllShipExternalAABBs);
 
         perfStats.Update<PerfMeasurement::TotalFishUpdate>(std::chrono::steady_clock::now() - startTime);
     }
@@ -1563,11 +1563,11 @@ void World::RenderUpload(
     // AABBs
     if (renderContext.GetShowAABBs())
     {
-        renderContext.UploadAABBsStart(mAllShipAABBs.GetCount());
+        renderContext.UploadAABBsStart(mAllShipExternalAABBs.GetCount());
 
         auto constexpr ShipAABBColor = rgbaColor(18, 8, 255, 255).toVec4f();
 
-        for (auto const & aabb : mAllShipAABBs.GetItems())
+        for (auto const & aabb : mAllShipExternalAABBs.GetItems())
         {
             renderContext.UploadAABB(
                 aabb,

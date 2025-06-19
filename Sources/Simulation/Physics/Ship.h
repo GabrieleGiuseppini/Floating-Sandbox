@@ -59,7 +59,7 @@ public:
     World const & GetParentWorld() const { return mParentWorld; }
     World & GetParentWorld() { return mParentWorld; }
 
-    Geometry::AABBSet CalculateAABBs() const;
+    Geometry::AABBSet CalculateExternalAABBs() const;
 
     Geometry::AABB CalculateParticleAABB() const;
 
