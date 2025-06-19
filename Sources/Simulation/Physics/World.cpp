@@ -1576,6 +1576,29 @@ void World::RenderUpload(
 
         renderContext.UploadAABBsEnd();
     }
+
+    // TODOTEST
+    {
+        renderContext.UploadAABBsStart(2);
+
+        {
+            auto foo = mAllShipExternalAABBs.MakeWeightedUnion();
+            if (foo.has_value())
+            {
+                renderContext.UploadAABB(*foo, rgbaColor(18, 8, 255, 255).toVec4f());
+            }
+        }
+
+        {
+            auto foo = mAllShipExternalAABBs.MakeUnion();
+            if (foo.has_value())
+            {
+                renderContext.UploadAABB(*foo, rgbaColor(255, 8, 18, 255).toVec4f());
+            }
+        }
+
+        renderContext.UploadAABBsEnd();
+    }
 }
 
 }

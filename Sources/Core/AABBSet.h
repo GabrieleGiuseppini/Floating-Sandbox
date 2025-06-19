@@ -114,14 +114,10 @@ public:
         mAABBs.clear();
     }
 
-private:
+protected:
 
     std::vector<TElement> mAABBs;
 };
-
-//class AABBSet : public _AABBSet<AABB>
-//{
-//};
 
 class AABBSet: public _AABBSet<AABB>
 { };
@@ -130,6 +126,68 @@ class ShipAABBSet : public _AABBSet<ShipAABB>
 {
 public:
 
+    inline std::optional<AABB> MakeWeightedUnion() const
+    {
+        if (mAABBs.empty())
+        {
+            return std::nullopt;
+        }
+        else
+        {
+            //
+            // Centers
+            //
+
+            vec2f centersSum = vec2f::zero();
+            float weightsSum = 0.0f;
+            float maxWeight = 0.0f;
+            for (auto const & aabb : mAABBs)
+            {
+                float const w = static_cast<float>(aabb.FrontierEdgeCount);
+
+                centersSum += aabb.CalculateCenter() * w;
+                weightsSum += w;
+                maxWeight = std::max(maxWeight, w);
+            }
+
+            assert(weightsSum > 0.0f);
+            vec2f const center = centersSum / weightsSum;
+
+            //
+            // Extension
+            //
+
+            float leftOffset = 0.0f;
+            float rightOffset = 0.0f;
+            float topOffset = 0.0f;
+            float bottomOffset = 0.0f;
+
+            for (auto const & aabb : mAABBs)
+            {
+                //auto const c = aabb.CalculateCenter();
+                float const w = static_cast<float>(aabb.FrontierEdgeCount) / maxWeight;
+
+                float const lp = (aabb.BottomLeft.x - center.x) * w;
+                leftOffset = std::min(leftOffset, lp);
+                float const rp = (aabb.TopRight.x - center.x) * w;
+                rightOffset = std::max(rightOffset, rp);
+                float const tp = (aabb.TopRight.y - center.y) * w;
+                topOffset = std::max(topOffset, tp);
+                float const bp = (aabb.BottomLeft.y - center.y) * w;
+                bottomOffset = std::min(bottomOffset, bp);
+            }
+
+            //
+            // Produce result
+            //
+
+            AABB result = AABB(
+                center + vec2f(rightOffset, topOffset),
+                center + vec2f(leftOffset, bottomOffset));
+
+            return result;
+        }
+    }
 };
 
 }
