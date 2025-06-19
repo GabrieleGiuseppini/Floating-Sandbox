@@ -15,7 +15,8 @@
 namespace Geometry {
 
 // Set of AABBs
-class AABBSet
+template<typename TElement>
+class _AABBSet
 {
 public:
 
@@ -24,7 +25,7 @@ public:
         return mAABBs.size();
     }
 
-    inline std::vector<AABB> const & GetItems() const noexcept
+    inline std::vector<TElement> const & GetItems() const noexcept
     {
         return mAABBs;
     }
@@ -53,7 +54,7 @@ public:
             });
     }
 
-    inline std::optional<AABB> MakeUnion() const
+    inline std::optional<TElement> MakeUnion() const
     {
         if (mAABBs.empty())
         {
@@ -61,12 +62,12 @@ public:
         }
         else
         {
-            AABB result;
+            TElement result;
 
             std::for_each(
                 mAABBs.cbegin(),
                 mAABBs.cend(),
-                [&result](AABB const & elem)
+                [&result](TElement const & elem)
                 {
                     result.ExtendTo(elem);
                 });
@@ -75,9 +76,9 @@ public:
         }
     }
 
-    inline std::optional<AABB> MakeUnion(float minArea) const
+    inline std::optional<TElement> MakeUnion(float minArea) const
     {
-        AABB result;
+        TElement result;
 
         std::for_each(
             mAABBs.cbegin(),
@@ -103,7 +104,7 @@ public:
     // Note: at this moment we assume that we don't need to track AABBs back to
     // their origin (being ships or whatever else);
     // if and when that is not the case anymore, then we will change the signature
-    inline void Add(AABB const & aabb) noexcept
+    inline void Add(TElement const & aabb) noexcept
     {
         mAABBs.emplace_back(aabb);
     }
@@ -115,7 +116,20 @@ public:
 
 private:
 
-    std::vector<AABB> mAABBs;
+    std::vector<TElement> mAABBs;
+};
+
+//class AABBSet : public _AABBSet<AABB>
+//{
+//};
+
+class AABBSet: public _AABBSet<AABB>
+{ };
+
+class ShipAABBSet : public _AABBSet<ShipAABB>
+{
+public:
+
 };
 
 }

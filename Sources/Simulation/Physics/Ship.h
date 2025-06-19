@@ -59,7 +59,7 @@ public:
     World const & GetParentWorld() const { return mParentWorld; }
     World & GetParentWorld() { return mParentWorld; }
 
-    Geometry::AABBSet CalculateExternalAABBs() const;
+    Geometry::ShipAABBSet CalculateExternalAABBs() const;
 
     Geometry::AABB CalculateParticleAABB() const;
 
@@ -98,7 +98,7 @@ public:
 		Storm::Parameters const & stormParameters,
         SimulationParameters const & simulationParameters,
         StressRenderModeType stressRenderMode,
-        Geometry::AABBSet & externalAabbSet,
+        Geometry::ShipAABBSet & externalAabbSet,
         ThreadManager & threadManager,
         PerfStats & perfStats);
 
@@ -488,7 +488,7 @@ private:
         float effectiveAirDensity,
         float effectiveWaterDensity,
         SimulationParameters const & simulationParameters,
-        Geometry::AABBSet & externalAabbSet);
+        Geometry::ShipAABBSet & externalAabbSet);
 
     void ApplyWorldParticleForces(
         float effectiveAirDensity,
@@ -502,7 +502,7 @@ private:
         float effectiveWaterDensity,
         Buffer<float> & newCachedPointDepths,
         SimulationParameters const & simulationParameters,
-        Geometry::AABBSet & externalAabbSet);
+        Geometry::ShipAABBSet & externalAabbSet);
 
     void ApplyStaticPressureForces(
         float effectiveAirDensity,

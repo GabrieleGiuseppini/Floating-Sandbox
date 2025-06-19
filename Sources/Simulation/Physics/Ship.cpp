@@ -155,16 +155,16 @@ void Ship::Announce()
     mElectricalElements.AnnounceInstancedElements();
 }
 
-Geometry::AABBSet Ship::CalculateExternalAABBs() const
+Geometry::ShipAABBSet Ship::CalculateExternalAABBs() const
 {
-    Geometry::AABBSet allExternalAABBs;
+    Geometry::ShipAABBSet allExternalAABBs;
 
     for (FrontierId frontierId : mFrontiers.GetFrontierIds())
     {
         auto & frontier = mFrontiers.GetFrontier(frontierId);
         if (frontier.Type == FrontierType::External)
         {
-            Geometry::AABB aabb;
+            Geometry::ShipAABB aabb;
 
             ElementIndex const frontierStartEdge = frontier.StartingEdgeIndex;
             for (ElementIndex edgeIndex = frontierStartEdge; /*checked in loop*/; /*advanced in loop*/)
@@ -179,6 +179,8 @@ Geometry::AABBSet Ship::CalculateExternalAABBs() const
                 if (edgeIndex == frontierStartEdge)
                     break;
             }
+
+            aabb.FrontierEdgeCount = frontier.Size;
 
             allExternalAABBs.Add(aabb);
         }
@@ -220,7 +222,7 @@ void Ship::Update(
     Storm::Parameters const & stormParameters,
     SimulationParameters const & simulationParameters,
     StressRenderModeType stressRenderMode,
-    Geometry::AABBSet & externalAabbSet, // output
+    Geometry::ShipAABBSet & externalAabbSet, // output
     ThreadManager & threadManager,
     PerfStats & perfStats)
 {
@@ -1187,7 +1189,7 @@ void Ship::ApplyWorldForces(
     float effectiveAirDensity,
     float effectiveWaterDensity,
     SimulationParameters const & simulationParameters,
-    Geometry::AABBSet & externalAabbSet) // output
+    Geometry::ShipAABBSet & externalAabbSet) // output
 {
     // New buffer to which new cached depths will be written to
     std::shared_ptr<Buffer<float>> newCachedPointDepths = mPoints.AllocateWorkBufferFloat();
@@ -1360,7 +1362,7 @@ void Ship::ApplyWorldSurfaceForces(
     float effectiveWaterDensity,
     Buffer<float> & newCachedPointDepths,
     SimulationParameters const & simulationParameters,
-    Geometry::AABBSet & externalAabbSet) // output
+    Geometry::ShipAABBSet & externalAabbSet) // output
 {
     float totalWaterDisplacementMagnitude = 0.0f;
 
@@ -1414,7 +1416,7 @@ void Ship::ApplyWorldSurfaceForces(
     for (FrontierId frontierId : mFrontiers.GetFrontierIds())
     {
         // Initialize AABB and geometric center
-        Geometry::AABB aabb;
+        Geometry::ShipAABB aabb;
         vec2f geometricCenter = vec2f::zero();
 
         auto & frontier = mFrontiers.GetFrontier(frontierId);
@@ -1642,6 +1644,8 @@ void Ship::ApplyWorldSurfaceForces(
         //
         // Finalize AABB and geometric center update
         //
+
+        aabb.FrontierEdgeCount = frontier.Size;
 
         geometricCenter /= static_cast<float>(frontier.Size);
 

@@ -40,7 +40,7 @@ public:
         OceanFloor const & oceanFloor,
         SimulationParameters const & simulationParameters,
         VisibleWorld const & visibleWorld,
-        Geometry::AABBSet const & aabbSet);
+        Geometry::ShipAABBSet const & aabbSet);
 
     void Upload(RenderContext & renderContext) const;
 
@@ -224,7 +224,7 @@ private:
         float currentSimulationTime,
         OceanSurface & oceanSurface,
         OceanFloor const & oceanFloor,
-        Geometry::AABBSet const & aabbSet,
+        Geometry::ShipAABBSet const & aabbSet,
         SimulationParameters const & simulationParameters,
         VisibleWorld const & visibleWorld);
 
@@ -234,7 +234,7 @@ private:
         float currentSimulationTime,
         OceanSurface & oceanSurface,
         OceanFloor const & oceanFloor,
-        Geometry::AABBSet const & aabbSet,
+        Geometry::ShipAABBSet const & aabbSet,
         SimulationParameters const & simulationParameters,
         VisibleWorld const & visibleWorld);
 
@@ -265,7 +265,7 @@ private:
         float xVariance,
         float yVariance,
         OceanFloor const & oceanFloor,
-        Geometry::AABBSet const & aabbSet);
+        Geometry::ShipAABBSet const & aabbSet);
 
     inline static vec2f FindNewCruisingTargetPosition(
         vec2f const & currentPosition,

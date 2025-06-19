@@ -1854,14 +1854,16 @@ void GameController::FocusOnShips()
     if (mWorld)
     {
         auto aabb = mWorld->GetAllShipExternalAABBs().MakeUnion();
-        if (!aabb.has_value())
+        if (aabb.has_value())
+        {
+            mViewManager.FocusOn(*aabb, 1.0f, 1.0f, 1.0f, 1.0f, false);
+        }
+        else
         {
             // No triangles - particle-only ship
-            aabb = mWorld->CalculateAllShipParticleAABB();
+            assert(aabb.has_value());
+            mViewManager.FocusOn(mWorld->CalculateAllShipParticleAABB(), 1.0f, 1.0f, 1.0f, 1.0f, false);
         }
-
-        assert(aabb.has_value());
-        mViewManager.FocusOn(*aabb, 1.0f, 1.0f, 1.0f, 1.0f, false);
     }
 }
 

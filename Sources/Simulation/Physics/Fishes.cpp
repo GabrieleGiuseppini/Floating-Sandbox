@@ -45,7 +45,7 @@ void Fishes::Update(
     OceanFloor const & oceanFloor,
     SimulationParameters const & simulationParameters,
     VisibleWorld const & visibleWorld,
-    Geometry::AABBSet const & aabbSet)
+    Geometry::ShipAABBSet const & aabbSet)
 {
     //
     // Update parameters that changed, if any
@@ -218,7 +218,7 @@ void Fishes::UpdateNumberOfFishes(
     float /*currentSimulationTime*/,
     OceanSurface & /*oceanSurface*/,
     OceanFloor const & oceanFloor,
-    Geometry::AABBSet const & aabbSet,
+    Geometry::ShipAABBSet const & aabbSet,
     SimulationParameters const & simulationParameters,
     VisibleWorld const & visibleWorld)
 {
@@ -457,7 +457,7 @@ void Fishes::UpdateDynamics(
     float currentSimulationTime,
     OceanSurface & oceanSurface,
     OceanFloor const & oceanFloor,
-    Geometry::AABBSet const & aabbSet,
+    Geometry::ShipAABBSet const & aabbSet,
     SimulationParameters const & simulationParameters,
     VisibleWorld const & visibleWorld)
 {
@@ -1362,7 +1362,7 @@ vec2f Fishes::FindPosition(
     float xVariance,
     float yVariance,
     OceanFloor const & oceanFloor,
-    Geometry::AABBSet const & aabbSet)
+    Geometry::ShipAABBSet const & aabbSet)
 {
     vec2f position;
 

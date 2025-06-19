@@ -124,4 +124,59 @@ public:
     }
 };
 
+struct ShipAABB : public AABB
+{
+public:
+
+    ElementCount FrontierEdgeCount;
+
+    ShipAABB()
+        : AABB()
+        , FrontierEdgeCount(0)
+    {
+    }
+
+    ShipAABB(
+        float left,
+        float right,
+        float top,
+        float bottom,
+        ElementCount frontierEdgeCount)
+        : AABB(
+            left,
+            right,
+            top,
+            bottom)
+        , FrontierEdgeCount(frontierEdgeCount)
+    {
+    }
+
+    ShipAABB(
+        vec2f const topRight,
+        vec2f const bottomLeft,
+        ElementCount frontierEdgeCount)
+        : AABB(
+            topRight,
+            bottomLeft)
+        , FrontierEdgeCount(frontierEdgeCount)
+    {
+    }
+
+    inline void ExtendTo(ShipAABB const & other)
+    {
+        if (other.TopRight.x > TopRight.x)
+            TopRight.x = other.TopRight.x;
+        if (other.TopRight.y > TopRight.y)
+            TopRight.y = other.TopRight.y;
+        if (other.BottomLeft.x < BottomLeft.x)
+            BottomLeft.x = other.BottomLeft.x;
+        if (other.BottomLeft.y < BottomLeft.y)
+            BottomLeft.y = other.BottomLeft.y;
+
+        FrontierEdgeCount += other.FrontierEdgeCount;
+    }
+
+    using AABB::ExtendTo;
+};
+
 }

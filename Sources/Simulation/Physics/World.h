@@ -71,7 +71,7 @@ public:
 
     size_t GetAllShipTriangleCount() const;
 
-    Geometry::AABBSet GetAllShipExternalAABBs() const
+    Geometry::ShipAABBSet GetAllShipExternalAABBs() const
     {
         return mAllShipExternalAABBs;
     }
@@ -524,7 +524,7 @@ private:
 
     // The set of all ships' external AABB's in the world, updated at each
     // simulation cycle and at each ship addition
-    Geometry::AABBSet mAllShipExternalAABBs;
+    Geometry::ShipAABBSet mAllShipExternalAABBs;
 };
 
 }

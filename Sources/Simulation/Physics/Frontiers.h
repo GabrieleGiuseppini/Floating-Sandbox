@@ -51,7 +51,7 @@ public:
         FrontierType Type;
         ElementIndex StartingEdgeIndex; // Arbitrary first edge in this frontier
         ElementCount Size; // Being a closed curve, this is both # of edges and # of points
-        Geometry::AABB AABB; // Only updated during Ship updates
+        Geometry::ShipAABB AABB; // Only updated during Ship updates
         vec2f GeometricCenterPosition; // Only updated during Ship updates
 
         Frontier(
