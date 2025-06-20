@@ -2404,7 +2404,7 @@ inline std::optional<Geometry::AABB> MakeAABBWeightedUnion_SSEVectorized(std::ve
 
     float constexpr FrontierEdgeCountThreshold = 3.0f;
 
-    vec2f centersSum = vec2f::zero();
+    __m128 centersSum = _mm_setzero_ps(); // CxCyCxCy (yes, repeated - no choice with SSE)
     float weightsSum = 0.0f;
     float maxWeight = 0.0f;
     for (auto const & aabb : aabbs)
@@ -2413,9 +2413,16 @@ inline std::optional<Geometry::AABB> MakeAABBWeightedUnion_SSEVectorized(std::ve
         {
             float const w = aabb.FrontierEdgeCount - FrontierEdgeCountThreshold;
 
-            centersSum += vec2f(
-                aabb.TopRight.x + aabb.BottomLeft.x,
-                aabb.TopRight.y + aabb.BottomLeft.y) * w;
+            __m128 const rtlb = _mm_loadu_ps(&(aabb.TopRight.x));
+            __m128 const lbrt = _mm_shuffle_ps(rtlb, rtlb, 0x4E);
+
+            // centersSum = centersSum + (rtlb + lbrt) * w
+            centersSum = _mm_add_ps(
+                _mm_mul_ps(
+                    _mm_add_ps(rtlb, lbrt),
+                    _mm_load_ps1(&w)),
+                centersSum);
+
             weightsSum += w;
             maxWeight = std::max(maxWeight, w);
         }
@@ -2426,10 +2433,10 @@ inline std::optional<Geometry::AABB> MakeAABBWeightedUnion_SSEVectorized(std::ve
         return std::nullopt;
     }
 
-    FS_ALIGN16_BEG vec2f const center FS_ALIGN16_END = centersSum / 2.0f / weightsSum;
-
-    // cx, cy, cx, cy
-    __m128 const center_4 = _mm_castpd_ps(_mm_load_pd1(reinterpret_cast<double const *>(&center)));
+    // center_4 = center / 2.0 / weightsSum
+    __m128 const center_4 = _mm_div_ps(
+        _mm_mul_ps(centersSum, *(__m128 *)ZeroPointFive4f),
+        _mm_load_ps1(&weightsSum));
 
     //
     // Extent
@@ -2444,12 +2451,13 @@ inline std::optional<Geometry::AABB> MakeAABBWeightedUnion_SSEVectorized(std::ve
         if (aabb.FrontierEdgeCount > FrontierEdgeCountThreshold)
         {
             float const w = (aabb.FrontierEdgeCount - FrontierEdgeCountThreshold) * maxWeightRep;
-            __m128 const w_4 = _mm_load_ps1(&w);
 
             __m128 const rtlb = _mm_loadu_ps(&(aabb.TopRight.x));
+
+            // rtlb_weighted_offsets = (rtlb - cxcycxcy) * w
             __m128 const rtlb_weighted_offsets = _mm_mul_ps(
                 _mm_sub_ps(rtlb, center_4),
-                w_4);
+                _mm_load_ps1(&w));
 
             rtlb_offsets_max = _mm_max_ps(rtlb_offsets_max, rtlb_weighted_offsets);
             rtlb_offsets_min = _mm_min_ps(rtlb_offsets_min, rtlb_weighted_offsets);
