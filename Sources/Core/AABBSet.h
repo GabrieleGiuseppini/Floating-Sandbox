@@ -6,6 +6,7 @@
 #pragma once
 
 #include "AABB.h"
+#include "Algorithms.h"
 #include "Vectors.h"
 
 #include <algorithm>
@@ -128,69 +129,7 @@ public:
 
     inline std::optional<AABB> MakeWeightedUnion() const
     {
-        //
-        // Centers
-        //
-
-       ElementCount constexpr FrontierEdgeCountThreshold = 3;
-
-        vec2f centersSum = vec2f::zero();
-        float weightsSum = 0.0f;
-        float maxWeight = 0.0f;
-        for (auto const & aabb : mAABBs)
-        {
-            if (aabb.FrontierEdgeCount > FrontierEdgeCountThreshold)
-            {
-                float const w = static_cast<float>(aabb.FrontierEdgeCount - FrontierEdgeCountThreshold);
-
-                centersSum += aabb.CalculateCenter() * w;
-                weightsSum += w;
-                maxWeight = std::max(maxWeight, w);
-            }
-        }
-
-        if (weightsSum == 0.0f)
-        {
-            return std::nullopt;
-        }
-
-        vec2f const center = centersSum / weightsSum;
-
-        //
-        // Extent
-        //
-
-        float leftOffset = 0.0f;
-        float rightOffset = 0.0f;
-        float topOffset = 0.0f;
-        float bottomOffset = 0.0f;
-
-        for (auto const & aabb : mAABBs)
-        {
-            if (aabb.FrontierEdgeCount > FrontierEdgeCountThreshold)
-            {
-                float const w = static_cast<float>(aabb.FrontierEdgeCount - FrontierEdgeCountThreshold) / maxWeight;
-
-                float const lp = (aabb.BottomLeft.x - center.x) * w;
-                leftOffset = std::min(leftOffset, lp);
-                float const rp = (aabb.TopRight.x - center.x) * w;
-                rightOffset = std::max(rightOffset, rp);
-                float const tp = (aabb.TopRight.y - center.y) * w;
-                topOffset = std::max(topOffset, tp);
-                float const bp = (aabb.BottomLeft.y - center.y) * w;
-                bottomOffset = std::min(bottomOffset, bp);
-            }
-        }
-
-        //
-        // Produce result
-        //
-
-        AABB result = AABB(
-            center + vec2f(rightOffset, topOffset),
-            center + vec2f(leftOffset, bottomOffset));
-
-        return result;
+        return Algorithms::MakeAABBWeightedUnion(mAABBs);
     }
 };
 

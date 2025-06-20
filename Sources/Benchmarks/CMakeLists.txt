@@ -4,6 +4,7 @@ set (BENCHMARK_SOURCES
         DivisionByZero.cpp
         GameMath.cpp
         Logarithm.cpp
+	MakeAABBWeightedUnion.cpp
         PrecalculatedFunction.cpp
         SingleVectorNormalization.cpp
 	Step.cpp
