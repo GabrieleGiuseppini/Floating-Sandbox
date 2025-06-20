@@ -180,7 +180,7 @@ Geometry::ShipAABBSet Ship::CalculateExternalAABBs() const
                     break;
             }
 
-            aabb.FrontierEdgeCount = frontier.Size;
+            aabb.FrontierEdgeCount = static_cast<float>(frontier.Size);
 
             allExternalAABBs.Add(aabb);
         }
@@ -1645,7 +1645,7 @@ void Ship::ApplyWorldSurfaceForces(
         // Finalize AABB and geometric center update
         //
 
-        aabb.FrontierEdgeCount = frontier.Size;
+        aabb.FrontierEdgeCount = static_cast<float>(frontier.Size);
 
         geometricCenter /= static_cast<float>(frontier.Size);
 

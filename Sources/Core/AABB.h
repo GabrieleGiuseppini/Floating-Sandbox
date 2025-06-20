@@ -128,7 +128,7 @@ struct ShipAABB : public AABB
 {
 public:
 
-    ElementCount FrontierEdgeCount;
+    float FrontierEdgeCount;
 
     ShipAABB()
         : AABB()
@@ -147,7 +147,7 @@ public:
             right,
             top,
             bottom)
-        , FrontierEdgeCount(frontierEdgeCount)
+        , FrontierEdgeCount(static_cast<float>(frontierEdgeCount))
     {
     }
 
@@ -158,7 +158,7 @@ public:
         : AABB(
             topRight,
             bottomLeft)
-        , FrontierEdgeCount(frontierEdgeCount)
+        , FrontierEdgeCount(static_cast<float>(frontierEdgeCount))
     {
     }
 

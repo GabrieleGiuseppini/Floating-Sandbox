@@ -2333,7 +2333,7 @@ inline std::optional<Geometry::AABB> MakeAABBWeightedUnion_Naive(std::vector<Geo
     // Centers
     //
 
-    ElementCount constexpr FrontierEdgeCountThreshold = 3;
+    float constexpr FrontierEdgeCountThreshold = 3.0f;
 
     vec2f centersSum = vec2f::zero();
     float weightsSum = 0.0f;
@@ -2342,7 +2342,7 @@ inline std::optional<Geometry::AABB> MakeAABBWeightedUnion_Naive(std::vector<Geo
     {
         if (aabb.FrontierEdgeCount > FrontierEdgeCountThreshold)
         {
-            float const w = static_cast<float>(aabb.FrontierEdgeCount - FrontierEdgeCountThreshold);
+            float const w = aabb.FrontierEdgeCount - FrontierEdgeCountThreshold;
 
             centersSum += aabb.CalculateCenter() * w;
             weightsSum += w;
@@ -2370,7 +2370,7 @@ inline std::optional<Geometry::AABB> MakeAABBWeightedUnion_Naive(std::vector<Geo
     {
         if (aabb.FrontierEdgeCount > FrontierEdgeCountThreshold)
         {
-            float const w = static_cast<float>(aabb.FrontierEdgeCount - FrontierEdgeCountThreshold) / maxWeight;
+            float const w = (aabb.FrontierEdgeCount - FrontierEdgeCountThreshold) / maxWeight;
 
             float const lp = (aabb.BottomLeft.x - center.x) * w;
             leftOffset = std::min(leftOffset, lp);
