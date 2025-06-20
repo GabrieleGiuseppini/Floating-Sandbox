@@ -17,8 +17,12 @@ struct AABB
 {
 public:
 
+#pragma pack(push, 1)
+
     vec2f TopRight;
     vec2f BottomLeft;
+
+#pragma pack(pop)
 
     AABB()
         : TopRight(std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest())

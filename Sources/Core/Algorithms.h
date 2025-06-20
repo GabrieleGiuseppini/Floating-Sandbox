@@ -2398,8 +2398,6 @@ inline std::optional<Geometry::AABB> MakeAABBWeightedUnion_Naive(std::vector<Geo
 
 inline std::optional<Geometry::AABB> MakeAABBWeightedUnion_SSEVectorized(std::vector<Geometry::ShipAABB> const & aabbs) noexcept
 {
-    // TODOHERE
-
     //
     // Centers
     //
@@ -2428,31 +2426,32 @@ inline std::optional<Geometry::AABB> MakeAABBWeightedUnion_SSEVectorized(std::ve
         return std::nullopt;
     }
 
-    vec2f const center = centersSum / 2.0f / weightsSum;
+    FS_ALIGN16_BEG vec2f const center FS_ALIGN16_END = centersSum / 2.0f / weightsSum;
+
+    // cx, cy, cx, cy
+    __m128 const center_4 = _mm_castpd_ps(_mm_load_pd1(reinterpret_cast<double const *>(&center)));
 
     //
     // Extent
     //
 
-    float leftOffset = 0.0f;
-    float rightOffset = 0.0f;
-    float topOffset = 0.0f;
-    float bottomOffset = 0.0f;
+    __m128 rtlb_offsets_max = _mm_setzero_ps();
+    __m128 rtlb_offsets_min = _mm_setzero_ps();
 
     for (auto const & aabb : aabbs)
     {
         if (aabb.FrontierEdgeCount > FrontierEdgeCountThreshold)
         {
             float const w = (aabb.FrontierEdgeCount - FrontierEdgeCountThreshold) / maxWeight;
+            __m128 const w_4 = _mm_load_ps1(&w);
 
-            float const lp = (aabb.BottomLeft.x - center.x) * w;
-            leftOffset = std::min(leftOffset, lp);
-            float const rp = (aabb.TopRight.x - center.x) * w;
-            rightOffset = std::max(rightOffset, rp);
-            float const tp = (aabb.TopRight.y - center.y) * w;
-            topOffset = std::max(topOffset, tp);
-            float const bp = (aabb.BottomLeft.y - center.y) * w;
-            bottomOffset = std::min(bottomOffset, bp);
+            __m128 const rtlb = _mm_loadu_ps(&(aabb.TopRight.x));
+            __m128 const rtlb_weighted_offsets = _mm_mul_ps(
+                _mm_sub_ps(rtlb, center_4),
+                w_4);
+
+            rtlb_offsets_max = _mm_max_ps(rtlb_offsets_max, rtlb_weighted_offsets);
+            rtlb_offsets_min = _mm_min_ps(rtlb_offsets_min, rtlb_weighted_offsets);
         }
     }
 
@@ -2460,9 +2459,13 @@ inline std::optional<Geometry::AABB> MakeAABBWeightedUnion_SSEVectorized(std::ve
     // Produce result
     //
 
-    auto const result = Geometry::AABB(
-        center + vec2f(rightOffset, topOffset),
-        center + vec2f(leftOffset, bottomOffset));
+    __m128 const res1 = _mm_add_ps(center_4, rtlb_offsets_max); // Of this one we want the top two lanes
+    __m128 const res2 = _mm_add_ps(center_4, rtlb_offsets_min); // Of this one we want the bottom two lanes
+    __m128 const res = _mm_shuffle_ps(res1, res2, 0xE4);
+
+    Geometry::AABB result;
+
+    _mm_storeu_ps(&(result.TopRight.x), res);
 
     return result;
 }
