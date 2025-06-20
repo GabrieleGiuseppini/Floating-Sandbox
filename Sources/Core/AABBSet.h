@@ -128,44 +128,48 @@ public:
 
     inline std::optional<AABB> MakeWeightedUnion() const
     {
-        if (mAABBs.empty())
-        {
-            return std::nullopt;
-        }
-        else
-        {
-            //
-            // Centers
-            //
+        //
+        // Centers
+        //
 
-            vec2f centersSum = vec2f::zero();
-            float weightsSum = 0.0f;
-            float maxWeight = 0.0f;
-            for (auto const & aabb : mAABBs)
+       ElementCount constexpr FrontierEdgeCountThreshold = 3;
+
+        vec2f centersSum = vec2f::zero();
+        float weightsSum = 0.0f;
+        float maxWeight = 0.0f;
+        for (auto const & aabb : mAABBs)
+        {
+            if (aabb.FrontierEdgeCount > FrontierEdgeCountThreshold)
             {
-                float const w = static_cast<float>(aabb.FrontierEdgeCount);
+                float const w = static_cast<float>(aabb.FrontierEdgeCount - FrontierEdgeCountThreshold);
 
                 centersSum += aabb.CalculateCenter() * w;
                 weightsSum += w;
                 maxWeight = std::max(maxWeight, w);
             }
+        }
 
-            assert(weightsSum > 0.0f);
-            vec2f const center = centersSum / weightsSum;
+        if (weightsSum == 0.0f)
+        {
+            return std::nullopt;
+        }
 
-            //
-            // Extension
-            //
+        vec2f const center = centersSum / weightsSum;
 
-            float leftOffset = 0.0f;
-            float rightOffset = 0.0f;
-            float topOffset = 0.0f;
-            float bottomOffset = 0.0f;
+        //
+        // Extent
+        //
 
-            for (auto const & aabb : mAABBs)
+        float leftOffset = 0.0f;
+        float rightOffset = 0.0f;
+        float topOffset = 0.0f;
+        float bottomOffset = 0.0f;
+
+        for (auto const & aabb : mAABBs)
+        {
+            if (aabb.FrontierEdgeCount > FrontierEdgeCountThreshold)
             {
-                //auto const c = aabb.CalculateCenter();
-                float const w = static_cast<float>(aabb.FrontierEdgeCount) / maxWeight;
+                float const w = static_cast<float>(aabb.FrontierEdgeCount - FrontierEdgeCountThreshold) / maxWeight;
 
                 float const lp = (aabb.BottomLeft.x - center.x) * w;
                 leftOffset = std::min(leftOffset, lp);
@@ -176,17 +180,17 @@ public:
                 float const bp = (aabb.BottomLeft.y - center.y) * w;
                 bottomOffset = std::min(bottomOffset, bp);
             }
-
-            //
-            // Produce result
-            //
-
-            AABB result = AABB(
-                center + vec2f(rightOffset, topOffset),
-                center + vec2f(leftOffset, bottomOffset));
-
-            return result;
         }
+
+        //
+        // Produce result
+        //
+
+        AABB result = AABB(
+            center + vec2f(rightOffset, topOffset),
+            center + vec2f(leftOffset, bottomOffset));
+
+        return result;
     }
 };
 
