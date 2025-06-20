@@ -2415,7 +2415,9 @@ inline std::optional<Geometry::AABB> MakeAABBWeightedUnion_SSEVectorized(std::ve
         {
             float const w = aabb.FrontierEdgeCount - FrontierEdgeCountThreshold;
 
-            centersSum += aabb.CalculateCenter() * w;
+            centersSum += vec2f(
+                aabb.TopRight.x + aabb.BottomLeft.x,
+                aabb.TopRight.y + aabb.BottomLeft.y) * w;
             weightsSum += w;
             maxWeight = std::max(maxWeight, w);
         }
@@ -2426,7 +2428,7 @@ inline std::optional<Geometry::AABB> MakeAABBWeightedUnion_SSEVectorized(std::ve
         return std::nullopt;
     }
 
-    vec2f const center = centersSum / weightsSum;
+    vec2f const center = centersSum / 2.0f / weightsSum;
 
     //
     // Extent
