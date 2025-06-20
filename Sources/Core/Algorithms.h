@@ -2344,6 +2344,77 @@ inline std::optional<Geometry::AABB> MakeAABBWeightedUnion_Naive(std::vector<Geo
         {
             float const w = aabb.FrontierEdgeCount - FrontierEdgeCountThreshold;
 
+            centersSum += vec2f(
+                aabb.TopRight.x + aabb.BottomLeft.x,
+                aabb.TopRight.y + aabb.BottomLeft.y) * w;
+            weightsSum += w;
+            maxWeight = std::max(maxWeight, w);
+        }
+    }
+
+    if (weightsSum == 0.0f)
+    {
+        return std::nullopt;
+    }
+
+    vec2f const center = centersSum / 2.0f / weightsSum;
+
+    //
+    // Extent
+    //
+
+    float leftOffset = 0.0f;
+    float rightOffset = 0.0f;
+    float topOffset = 0.0f;
+    float bottomOffset = 0.0f;
+
+    for (auto const & aabb : aabbs)
+    {
+        if (aabb.FrontierEdgeCount > FrontierEdgeCountThreshold)
+        {
+            float const w = (aabb.FrontierEdgeCount - FrontierEdgeCountThreshold) / maxWeight;
+
+            float const lp = (aabb.BottomLeft.x - center.x) * w;
+            leftOffset = std::min(leftOffset, lp);
+            float const rp = (aabb.TopRight.x - center.x) * w;
+            rightOffset = std::max(rightOffset, rp);
+            float const tp = (aabb.TopRight.y - center.y) * w;
+            topOffset = std::max(topOffset, tp);
+            float const bp = (aabb.BottomLeft.y - center.y) * w;
+            bottomOffset = std::min(bottomOffset, bp);
+        }
+    }
+
+    //
+    // Produce result
+    //
+
+    auto const result = Geometry::AABB(
+        center + vec2f(rightOffset, topOffset),
+        center + vec2f(leftOffset, bottomOffset));
+
+    return result;
+}
+
+inline std::optional<Geometry::AABB> MakeAABBWeightedUnion_SSEVectorized(std::vector<Geometry::ShipAABB> const & aabbs) noexcept
+{
+    // TODOHERE
+
+    //
+    // Centers
+    //
+
+    float constexpr FrontierEdgeCountThreshold = 3.0f;
+
+    vec2f centersSum = vec2f::zero();
+    float weightsSum = 0.0f;
+    float maxWeight = 0.0f;
+    for (auto const & aabb : aabbs)
+    {
+        if (aabb.FrontierEdgeCount > FrontierEdgeCountThreshold)
+        {
+            float const w = aabb.FrontierEdgeCount - FrontierEdgeCountThreshold;
+
             centersSum += aabb.CalculateCenter() * w;
             weightsSum += w;
             maxWeight = std::max(maxWeight, w);
@@ -2397,9 +2468,7 @@ inline std::optional<Geometry::AABB> MakeAABBWeightedUnion_Naive(std::vector<Geo
 inline std::optional<Geometry::AABB> MakeAABBWeightedUnion(std::vector<Geometry::ShipAABB> const & aabbs) noexcept
 {
 #if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
-    // TODOTEST
-    //return MakeAABBWeightedUnion_SSEVectorized(aabbs);
-    return MakeAABBWeightedUnion_Naive(aabbs);
+    return MakeAABBWeightedUnion_SSEVectorized(aabbs);
 #elif FS_IS_ARM_NEON()
     // TODOHERE
     return ApplySpringsForces_NeonVectorized<TPoints>(points, springs, startSpringIndex, endSpringIndex, dynamicForceBuffer);

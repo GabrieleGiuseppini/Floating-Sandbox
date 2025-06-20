@@ -1,5 +1,6 @@
 #include <Core/Algorithms.h>
 
+#include <Core/GameGeometry.h>
 #include <Core/GameTypes.h>
 #include <Core/Vectors.h>
 
@@ -1060,5 +1061,132 @@ TEST(AlgorithmsTests, RunApplySpringForcesTest_SSEVectorized)
 TEST(AlgorithmsTests, RunApplySpringForcesTest_NeonVectorized)
 {
     RunApplySpringForcesTest(Algorithms::ApplySpringsForces_NeonVectorized<ApplySpringForcesPoints, ApplySpringForcesSprings>);
+}
+#endif
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+// MakeAABBWeightedUnion
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+template<typename Algorithm>
+void RunMakeAABBWeightedUnionTest(Algorithm algorithm)
+{
+    std::vector<Geometry::ShipAABB> aabbSet;
+
+    aabbSet.emplace_back(
+        -10.0f,
+        7.0f,
+        12.0f,
+        6.0f,
+        12);
+
+    aabbSet.emplace_back(
+        -1000.0f,
+        7000.0f,
+        12000.0f,
+        6000.0f,
+        2); // Ignored
+
+    aabbSet.emplace_back(
+        -10.0f,
+        -7.0f,
+        -1.0f,
+        -6.0f,
+        4);
+
+    auto const result = algorithm(aabbSet);
+
+    ASSERT_TRUE(result.has_value());
+
+    // Expectation
+
+    float const w1 = 12.0f - 3.0f;
+    vec2f center1 = vec2f(-3.0f, 18.0f) / 2.0f * w1;
+    float const w2 = 4.0f - 3.0f;
+    vec2f center3 = vec2f(-17.0f, -7.0f) / 2.0f * w2;
+    vec2f center = (center1 + center3) / (w1 + w2);
+
+    float const maxWeight = std::max(w1, w2);
+
+    float left = std::min(
+        (-10.f - center.x) * w1 / maxWeight,
+        (-10.f - center.x) * w2 / maxWeight);
+    float right = std::max(
+        (7.f - center.x) * w1 / maxWeight,
+        (-7.f - center.x) * w2 / maxWeight);
+    float top = std::max(
+        (12.f - center.y) * w1 / maxWeight,
+        (-1.f - center.y) * w2 / maxWeight);
+    float bottom = std::min(
+        (6.f - center.y) * w1 / maxWeight,
+        (-6.f - center.y) * w2 / maxWeight);
+
+    EXPECT_FLOAT_EQ(result->BottomLeft.x, center.x + left);
+    EXPECT_FLOAT_EQ(result->TopRight.x, center.x + right);
+    EXPECT_FLOAT_EQ(result->TopRight.y, center.y + top);
+    EXPECT_FLOAT_EQ(result->BottomLeft.y, center.y + bottom);
+}
+
+template<typename Algorithm>
+void RunMakeAABBWeightedUnionTest_Empty(Algorithm algorithm)
+{
+    std::vector<Geometry::ShipAABB> aabbSet;
+
+    //
+    // 1. Fully empty
+    //
+
+    auto const result1 = algorithm(aabbSet);
+
+    EXPECT_FALSE(result1.has_value());
+
+    //
+    // 2. All AABBs under threshold
+    //
+
+    aabbSet.emplace_back(
+        Geometry::ShipAABB(
+            -10.0f,
+            10.f,
+            10.0f,
+            -10.f,
+            2));
+
+    auto const result2 = algorithm(aabbSet);
+
+    EXPECT_FALSE(result2.has_value());
+}
+
+TEST(AlgorithmsTests, MakeAABBWeightedUnion_Naive)
+{
+    RunMakeAABBWeightedUnionTest(Algorithms::MakeAABBWeightedUnion_Naive);
+}
+
+TEST(AlgorithmsTests, MakeAABBWeightedUnion_Naive_Empty)
+{
+    RunMakeAABBWeightedUnionTest_Empty(Algorithms::MakeAABBWeightedUnion_Naive);
+}
+
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
+TEST(AlgorithmsTests, MakeAABBWeightedUnion_SSEVectorized)
+{
+    RunMakeAABBWeightedUnionTest(Algorithms::MakeAABBWeightedUnion_SSEVectorized);
+}
+
+TEST(AlgorithmsTests, MakeAABBWeightedUnion_SSEVectorized_Empty)
+{
+    RunMakeAABBWeightedUnionTest_Empty(Algorithms::MakeAABBWeightedUnion_SSEVectorized);
+}
+#endif
+
+#if FS_IS_ARM_NEON()
+TEST(AlgorithmsTests, MakeAABBWeightedUnion_NeonVectorized)
+{
+    RunMakeAABBWeightedUnionTest(Algorithms::MakeAABBWeightedUnion_NeonVectorized);
+}
+
+TEST(AlgorithmsTests, MakeAABBWeightedUnion_NeonVectorized_Empty)
+{
+    RunMakeAABBWeightedUnionTest_Empty(Algorithms::MakeAABBWeightedUnion_NeonVectorized);
 }
 #endif
