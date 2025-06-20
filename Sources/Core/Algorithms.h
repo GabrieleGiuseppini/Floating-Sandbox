@@ -2437,12 +2437,13 @@ inline std::optional<Geometry::AABB> MakeAABBWeightedUnion_SSEVectorized(std::ve
 
     __m128 rtlb_offsets_max = _mm_setzero_ps();
     __m128 rtlb_offsets_min = _mm_setzero_ps();
+    float const maxWeightRep = 1.0f / maxWeight;
 
     for (auto const & aabb : aabbs)
     {
         if (aabb.FrontierEdgeCount > FrontierEdgeCountThreshold)
         {
-            float const w = (aabb.FrontierEdgeCount - FrontierEdgeCountThreshold) / maxWeight;
+            float const w = (aabb.FrontierEdgeCount - FrontierEdgeCountThreshold) * maxWeightRep;
             __m128 const w_4 = _mm_load_ps1(&w);
 
             __m128 const rtlb = _mm_loadu_ps(&(aabb.TopRight.x));
