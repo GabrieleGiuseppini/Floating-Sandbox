@@ -55,6 +55,7 @@ ViewManager::ViewManager(
     , mCameraWorldPositionParameterSmootherContingentMultiplier(1.0f)
     //
     , mAutoFocus() // Set later
+    , mAutoFocusOnShipMaxZoom()
 {
     SetAutoFocusTarget(autoFocusTarget);
 }
@@ -217,7 +218,7 @@ void ViewManager::UpdateAutoFocus(std::optional<Geometry::AABB> const & aabb)
         //      - Auto-focus zoom is the zoom required to ensure that the AABB's width and height
         //        fall in a specific sub-window of the physical display window
         //      - User zoom is the zoom offset exherted by the user
-        //      - The final zoom is the sum of the two zooms
+        //      - The final zoom is the product of the two zooms
         // - Pan:
         //      - Auto-focus pan is the pan required to ensure that the center of the AABB is at
         //        the center of the physical display window, after auto-focus zoom is applied
@@ -230,6 +231,14 @@ void ViewManager::UpdateAutoFocus(std::optional<Geometry::AABB> const & aabb)
         //
 
         mAutoFocus->CurrentAutoFocusZoom = InternalCalculateZoom(*aabb, 1.0f, 1.0f, mAutoFocus->AutoFocusTarget);
+
+        // Apply limits
+        if (mAutoFocus->AutoFocusTarget == AutoFocusTargetKindType::Ship)
+        {
+            mAutoFocus->CurrentAutoFocusZoom = std::min(
+                mAutoFocus->CurrentAutoFocusZoom,
+                mAutoFocusOnShipMaxZoom.value_or(std::numeric_limits<float>::max()));
+        }
 
         //
         // Pan
@@ -311,6 +320,15 @@ void ViewManager::ResetAutoFocusAlterations()
     mAutoFocus->ResetUserOffsets();
 }
 
+void ViewManager::SetAutoFocusOnShipLimitAABB(Geometry::AABB const & aabb)
+{
+    // Store limit - no zoom values greater than this
+    // (i.e. no magnification greater than this)
+    mAutoFocusOnShipMaxZoom =
+        InternalCalculateZoomForAABB(aabb, 1.0f, 1.0f, mRenderContext)
+        * 1.6f; // Some magic slack to get indeed a bit closer
+}
+
 ///////////////////////////////////////////////////////////
 
 float ViewManager::CalculateParameterSmootherConvergenceFactor(float cameraSpeedAdjustment)
@@ -339,7 +357,7 @@ float ViewManager::CalculateParameterSmootherConvergenceFactor(float cameraSpeed
     }
 }
 
-float ViewManager::CalculateAutoFocusMaxZoom(std::optional<AutoFocusTargetKindType> targetKind)
+float ViewManager::GetMaxZoomForTarget(std::optional<AutoFocusTargetKindType> targetKind)
 {
     if (targetKind == AutoFocusTargetKindType::Ship)
     {
@@ -444,16 +462,22 @@ float ViewManager::InternalCalculateZoom(
     float heightMultiplier,
     std::optional<AutoFocusTargetKindType> targetKind) const
 {
+    return std::min(
+        InternalCalculateZoomForAABB(aabb, widthMultiplier, heightMultiplier, mRenderContext),
+        GetMaxZoomForTarget(targetKind));
+}
+
+float ViewManager::InternalCalculateZoomForAABB(
+    Geometry::AABB const & aabb,
+    float widthMultiplier,
+    float heightMultiplier,
+    RenderContext const & renderContext)
+{
     // Clamp dimensions from below to 1.0 (don't want to zoom to smaller than 1m)
     float const width = std::max(aabb.GetWidth(), 1.0f) * widthMultiplier;
     float const height = std::max(aabb.GetHeight(), 1.0f) * heightMultiplier;
 
-    // Calculate max zoom
-    float const maxZoom = CalculateAutoFocusMaxZoom(targetKind);
-
     return std::min(
-        std::min(
-            mRenderContext.CalculateZoomForWorldWidth(width / NdcFractionZoomTarget),
-            mRenderContext.CalculateZoomForWorldHeight(height / NdcFractionZoomTarget)),
-        maxZoom);
+        renderContext.CalculateZoomForWorldWidth(width / NdcFractionZoomTarget),
+        renderContext.CalculateZoomForWorldHeight(height / NdcFractionZoomTarget));
 }

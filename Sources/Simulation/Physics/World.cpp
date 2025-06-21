@@ -141,6 +141,21 @@ size_t World::GetAllShipTriangleCount() const
         });
 }
 
+std::optional<Geometry::AABB> World::GetLargestShipExternalAABBS() const
+{
+    std::optional<Geometry::AABB> largestAABB;
+
+    for (auto const & aabb : mAllShipExternalAABBs.GetItems())
+    {
+        if (!largestAABB.has_value() || aabb.CalculateArea() > largestAABB->CalculateArea())
+        {
+            largestAABB = aabb;
+        }
+    }
+
+    return largestAABB;
+}
+
 Geometry::AABB World::CalculateAllShipParticleAABB() const
 {
     Geometry::AABB uberAABB;
@@ -1572,29 +1587,6 @@ void World::RenderUpload(
             renderContext.UploadAABB(
                 aabb,
                 ShipAABBColor);
-        }
-
-        renderContext.UploadAABBsEnd();
-    }
-
-    // TODOTEST
-    {
-        renderContext.UploadAABBsStart(2);
-
-        {
-            auto foo = mAllShipExternalAABBs.MakeWeightedUnion();
-            if (foo.has_value())
-            {
-                renderContext.UploadAABB(*foo, rgbaColor(18, 8, 255, 255).toVec4f());
-            }
-        }
-
-        {
-            auto foo = mAllShipExternalAABBs.MakeUnion();
-            if (foo.has_value())
-            {
-                renderContext.UploadAABB(*foo, rgbaColor(255, 8, 18, 255).toVec4f());
-            }
         }
 
         renderContext.UploadAABBsEnd();

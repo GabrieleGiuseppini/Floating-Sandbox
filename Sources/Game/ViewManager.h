@@ -54,11 +54,14 @@ public:
     // Removes user offsets and returns to "pure autofocus"
     void ResetAutoFocusAlterations();
 
+    // Sets limits on auto-focus for ships
+    void SetAutoFocusOnShipLimitAABB(Geometry::AABB const & aabb);
+
 private:
 
     static float CalculateParameterSmootherConvergenceFactor(float cameraSpeedAdjustment);
 
-    static inline float CalculateAutoFocusMaxZoom(std::optional<AutoFocusTargetKindType> targetKind);
+    static inline float GetMaxZoomForTarget(std::optional<AutoFocusTargetKindType> targetKind);
 
     void InternalFocusOn(
         Geometry::AABB const & aabb,
@@ -73,6 +76,12 @@ private:
         float widthMultiplier,
         float heightMultiplier,
         std::optional<AutoFocusTargetKindType> targetKind) const;
+
+    static inline float InternalCalculateZoomForAABB(
+        Geometry::AABB const & aabb,
+        float widthMultiplier,
+        float heightMultiplier,
+        RenderContext const & renderContext);
 
 private:
 
@@ -115,4 +124,7 @@ private:
     };
 
     std::optional<AutoFocusSessionData> mAutoFocus; // When set, we're doing auto-focus
+
+    // Limits for auto-focus - imposed from outside
+    std::optional<float> mAutoFocusOnShipMaxZoom; // Max magnification - we won't magnify more than this
 };

@@ -76,6 +76,8 @@ public:
         return mAllShipExternalAABBs;
     }
 
+    std::optional<Geometry::AABB> GetLargestShipExternalAABBS() const;
+
     Geometry::AABB CalculateAllShipParticleAABB() const;
 
     Npcs const & GetNpcs() const
