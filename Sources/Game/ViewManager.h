@@ -83,6 +83,8 @@ private:
         float heightMultiplier,
         RenderContext const & renderContext);
 
+    inline float InternalCalculateAutoFocusOnShipMaxZoom(Geometry::AABB const & aabb) const;
+
 private:
 
     RenderContext & mRenderContext;
@@ -126,5 +128,6 @@ private:
     std::optional<AutoFocusSessionData> mAutoFocus; // When set, we're doing auto-focus
 
     // Limits for auto-focus - imposed from outside
+    std::optional<Geometry::AABB> mAutoFocusOnShipLimitAABB; // Stored so we may recalculate on view model changed
     std::optional<float> mAutoFocusOnShipMaxZoom; // Max magnification - we won't magnify more than this
 };

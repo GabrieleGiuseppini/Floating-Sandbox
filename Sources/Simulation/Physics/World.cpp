@@ -141,7 +141,7 @@ size_t World::GetAllShipTriangleCount() const
         });
 }
 
-std::optional<Geometry::AABB> World::GetLargestShipExternalAABBS() const
+std::optional<Geometry::AABB> World::GetLargestShipExternalAABB() const
 {
     std::optional<Geometry::AABB> largestAABB;
 

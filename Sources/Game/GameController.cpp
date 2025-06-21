@@ -2196,7 +2196,7 @@ void GameController::NotifyNpcPlacementError(NpcCreationFailureReasonType reason
 void GameController::UpdateViewOnShipLoad()
 {
     // Update limit auto-focus on ship limit
-    auto const largestAABB = mWorld->GetLargestShipExternalAABBS();
+    auto const largestAABB = mWorld->GetLargestShipExternalAABB();
     if (largestAABB.has_value())
     {
         mViewManager.SetAutoFocusOnShipLimitAABB(*largestAABB);

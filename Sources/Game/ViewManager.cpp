@@ -55,6 +55,7 @@ ViewManager::ViewManager(
     , mCameraWorldPositionParameterSmootherContingentMultiplier(1.0f)
     //
     , mAutoFocus() // Set later
+    , mAutoFocusOnShipLimitAABB()
     , mAutoFocusOnShipMaxZoom()
 {
     SetAutoFocusTarget(autoFocusTarget);
@@ -125,6 +126,12 @@ void ViewManager::OnViewModelUpdated()
     // Pickup eventual changes to view model constraints
     mInverseZoomParameterSmoother.ReClamp();
     mInverseZoomParameterSmoother.ReClamp();
+
+    // Recalculate limits, if any
+    if (mAutoFocusOnShipLimitAABB.has_value())
+    {
+        mAutoFocusOnShipMaxZoom = InternalCalculateAutoFocusOnShipMaxZoom(*mAutoFocusOnShipLimitAABB);
+    }
 }
 
 void ViewManager::Pan(vec2f const & worldOffset)
@@ -322,11 +329,11 @@ void ViewManager::ResetAutoFocusAlterations()
 
 void ViewManager::SetAutoFocusOnShipLimitAABB(Geometry::AABB const & aabb)
 {
-    // Store limit - no zoom values greater than this
-    // (i.e. no magnification greater than this)
-    mAutoFocusOnShipMaxZoom =
-        InternalCalculateZoomForAABB(aabb, 1.0f, 1.0f, mRenderContext)
-        * 1.6f; // Some magic slack to get indeed a bit closer
+    // Store new limit AABB
+    mAutoFocusOnShipLimitAABB = aabb;
+
+    // Store zoom limit
+    mAutoFocusOnShipMaxZoom = InternalCalculateAutoFocusOnShipMaxZoom(aabb);
 }
 
 ///////////////////////////////////////////////////////////
@@ -480,4 +487,13 @@ float ViewManager::InternalCalculateZoomForAABB(
     return std::min(
         renderContext.CalculateZoomForWorldWidth(width / NdcFractionZoomTarget),
         renderContext.CalculateZoomForWorldHeight(height / NdcFractionZoomTarget));
+}
+
+float ViewManager::InternalCalculateAutoFocusOnShipMaxZoom(Geometry::AABB const & aabb) const
+{
+    // No zoom values greater than this
+    // (i.e. no magnification greater than this)
+    return
+        InternalCalculateZoomForAABB(aabb, 1.0f, 1.0f, mRenderContext)
+        * 1.6f; // Some magic slack to get indeed a bit closer
 }
