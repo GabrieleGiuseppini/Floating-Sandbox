@@ -2396,6 +2396,7 @@ inline std::optional<Geometry::AABB> MakeAABBWeightedUnion_Naive(std::vector<Geo
     return result;
 }
 
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
 inline std::optional<Geometry::AABB> MakeAABBWeightedUnion_SSEVectorized(std::vector<Geometry::ShipAABB> const & aabbs) noexcept
 {
     //
@@ -2478,14 +2479,22 @@ inline std::optional<Geometry::AABB> MakeAABBWeightedUnion_SSEVectorized(std::ve
 
     return result;
 }
+#endif
+
+#if FS_IS_ARM_NEON() // Implies ARM anyways
+inline std::optional<Geometry::AABB> MakeAABBWeightedUnion_NeonVectorized(std::vector<Geometry::ShipAABB> const & aabbs) noexcept
+{
+    // TODOTEST
+    return MakeAABBWeightedUnion_Naive(aabbs);
+}
+#endif
 
 inline std::optional<Geometry::AABB> MakeAABBWeightedUnion(std::vector<Geometry::ShipAABB> const & aabbs) noexcept
 {
 #if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
     return MakeAABBWeightedUnion_SSEVectorized(aabbs);
 #elif FS_IS_ARM_NEON()
-    // TODOHERE
-    return ApplySpringsForces_NeonVectorized<TPoints>(points, springs, startSpringIndex, endSpringIndex, dynamicForceBuffer);
+    return MakeAABBWeightedUnion_NeonVectorized(aabbs);
 #else
     return MakeAABBWeightedUnion_Naive(aabbs);
 #endif
