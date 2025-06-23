@@ -99,6 +99,8 @@ set (TOOLS_SOURCES
 	Tools/SelectionTool.h
 	Tools/StructuralRectangleTool.cpp
 	Tools/StructuralRectangleTool.h
+	Tools/StructureTracerTool.cpp
+	Tools/StructureTracerTool.h
 	Tools/TextureEraserTool.cpp
 	Tools/TextureEraserTool.h
 	Tools/TextureMagicWandTool.cpp

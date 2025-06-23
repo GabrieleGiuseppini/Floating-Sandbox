@@ -4482,6 +4482,22 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
         {
             wxGridBagSizer * toolsSizer = new wxGridBagSizer(ButtonMargin, ButtonMargin);
 
+            // StructureTracer
+            {
+                auto button = makeToolButton(
+                    ToolType::StructureTracer,
+                    exteriorTextureToolbarPanel,
+                    "structure_tracer_button",
+                    _("Automatically generates structures out of the texture layer."));
+
+                toolsSizer->Add(
+                    button,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    0,
+                    0);
+            }
+
             // Eraser
             {
                 auto button = makeToolButton(
@@ -4492,7 +4508,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 
                 toolsSizer->Add(
                     button,
-                    wxGBPosition(0, 0),
+                    wxGBPosition(1, 0),
                     wxGBSpan(1, 1),
                     0,
                     0);
@@ -4508,7 +4524,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 
                 toolsSizer->Add(
                     button,
-                    wxGBPosition(0, 1),
+                    wxGBPosition(1, 1),
                     wxGBSpan(1, 1),
                     0,
                     0);
@@ -4524,7 +4540,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 
                 toolsSizer->Add(
                     button,
-                    wxGBPosition(1, 0),
+                    wxGBPosition(2, 0),
                     wxGBSpan(1, 1),
                     0,
                     0);
@@ -4540,7 +4556,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 
                 toolsSizer->Add(
                     button,
-                    wxGBPosition(1, 1),
+                    wxGBPosition(2, 1),
                     wxGBSpan(1, 1),
                     0,
                     0);
@@ -6376,6 +6392,7 @@ void MainFrame::ReconciliateUIWithSelectedTool(
             case ToolType::ElectricalSampler:
             case ToolType::RopeSampler:
             case ToolType::StructuralMeasuringTapeTool:
+            case ToolType::StructureTracer:
             {
                 // Don't have settings
                 assert(false);

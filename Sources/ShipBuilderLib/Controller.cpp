@@ -15,6 +15,7 @@
 #include "Tools/SamplerTool.h"
 #include "Tools/SelectionTool.h"
 #include "Tools/StructuralRectangleTool.h"
+#include "Tools/StructureTracerTool.h"
 #include "Tools/TextureEraserTool.h"
 #include "Tools/TextureMagicWandTool.h"
 
@@ -2364,6 +2365,13 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
         case ToolType::StructuralRectangle:
         {
             return std::make_unique<StructuralRectangleTool>(
+                *this,
+                mGameAssetManager);
+        }
+
+        case ToolType::StructureTracer:
+        {
+            return std::make_unique<StructureTracerTool>(
                 *this,
                 mGameAssetManager);
         }

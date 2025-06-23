@@ -23,6 +23,7 @@ enum class UITextureGroups : uint16_t
     TimeOfDayIcon,
     ViewIcon,
 
+    CloseIcon,
     ExitIcon,
     NpcFurnitureGroupIcon,
     NpcHumanGroupIcon,
@@ -70,6 +71,8 @@ struct UITextureDatabase
             return UITextureGroups::TimeOfDayIcon;
         else if (Utils::CaseInsensitiveEquals(str, "view_icon"))
             return UITextureGroups::ViewIcon;
+        else if (Utils::CaseInsensitiveEquals(str, "close_icon"))
+            return UITextureGroups::CloseIcon;
         else if (Utils::CaseInsensitiveEquals(str, "exit_icon"))
             return UITextureGroups::ExitIcon;
         else if (Utils::CaseInsensitiveEquals(str, "npc_furniture_group_icon"))

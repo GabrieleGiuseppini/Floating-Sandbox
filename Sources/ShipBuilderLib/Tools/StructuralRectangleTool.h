@@ -17,7 +17,7 @@
 
 namespace ShipBuilder {
 
-class StructuralRectangleTool : public Tool
+class StructuralRectangleTool final : public Tool
 {
 public:
 

@@ -48,8 +48,9 @@ enum class ToolType : std::uint32_t
     ExteriorTexturePaste,
     InteriorTexturePaste,
     StructuralRectangle,
+    StructureTracer,
 
-    _Last = StructuralRectangle
+    _Last = StructureTracer
 };
 
 enum class ToolClass
