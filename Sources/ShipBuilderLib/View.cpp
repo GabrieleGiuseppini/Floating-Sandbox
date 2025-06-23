@@ -1082,8 +1082,6 @@ void View::UpdateExteriorTextureLayerVisualization(
 void View::RemoveExteriorTextureLayerVisualization()
 {
     mHasExteriorTextureLayerVisualization = false;
-
-    mViewModel.RemoveExteriorTextureLayerVisualizationTextureSize();
 }
 
 void View::UploadInteriorTextureLayerVisualization(RgbaImageData const & texture)
@@ -1161,8 +1159,6 @@ void View::UpdateInteriorTextureLayerVisualization(
 void View::RemoveInteriorTextureLayerVisualization()
 {
     mHasInteriorTextureLayerVisualization = false;
-
-    mViewModel.RemoveInteriorTextureLayerVisualizationTextureSize();
 }
 
 void View::UploadDebugRegionOverlay(ShipSpaceRect const & rect)
@@ -1321,7 +1317,22 @@ void View::UploadDashedRectangleOverlay(
     ShipSpaceCoordinates const & cornerB)
 {
     // Store rect
-    mDashedRectangleOverlayRect.emplace(cornerA, cornerB);
+    mDashedRectangleOverlayRect.emplace(
+        cornerA.ToFloat(),
+        cornerB.ToFloat());
+
+    // Update overlay
+    UpdateDashedRectangleOverlay();
+}
+
+void View::UploadDashedRectangleOverlay_Exterior(
+    ImageCoordinates const & cornerA,
+    ImageCoordinates const & cornerB)
+{
+    // Store rect
+    mDashedRectangleOverlayRect.emplace(
+        mViewModel.ExteriorTextureSpaceToFractionalShipSpace(cornerA),
+        mViewModel.ExteriorTextureSpaceToFractionalShipSpace(cornerB));
 
     // Update overlay
     UpdateDashedRectangleOverlay();
@@ -2301,8 +2312,9 @@ void View::UpdateDashedRectangleOverlay()
     std::vector<DashedLineOverlayVertex> vertexBuffer;
 
 
-    vec2f const cornerA = mDashedRectangleOverlayRect->first.ToFloat();
-    vec2f const cornerB = mDashedRectangleOverlayRect->second.ToFloat();
+
+    vec2f const cornerA = mDashedRectangleOverlayRect->first;
+    vec2f const cornerB = mDashedRectangleOverlayRect->second;
 
     // Calculate width and height, in ship (signed) and in pixels (absolute)
     float const shipWidth = cornerB.x - cornerA.x;

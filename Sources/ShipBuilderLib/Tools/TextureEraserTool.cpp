@@ -421,7 +421,7 @@ std::optional<ImageRect> TextureEraserTool<TLayerType>::CalculateApplicableRect(
 
     ImageCoordinates const origin = ImageCoordinates(coords.x, coords.y - (pencilSize - 1));
 
-    ImageRect  textureRect;
+    ImageRect textureRect;
     if constexpr (TLayerType == LayerType::ExteriorTexture)
     {
         textureRect = { { 0, 0}, mController.GetModelController().GetExteriorTextureSize() };

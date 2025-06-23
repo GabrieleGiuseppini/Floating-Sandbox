@@ -13,8 +13,6 @@
 
 #include <Core/GameTypes.h>
 
-#include <wx/image.h>
-
 #include <optional>
 
 namespace ShipBuilder {
@@ -40,11 +38,15 @@ public:
 
 private:
 
-    // TODOHERE
+    void DrawOverlay(std::optional<ImageCoordinates> const & cornerCoordinates);
+
+    std::optional<ImageRect> CalculateApplicableRect(ImageCoordinates const & cornerCoordinates) const;
+
+    void DoTracing(ImageRect const & textureRect);
 
 private:
 
-    // TODOHERE
+    std::optional<ImageCoordinates> mStartCorner; // When set, we're drawing the rectangle overlay
 };
 
 }

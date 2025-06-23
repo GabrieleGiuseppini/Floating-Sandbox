@@ -154,21 +154,11 @@ public:
         // No need to recalc attributes
     }
 
-    void RemoveExteriorTextureLayerVisualizationTextureSize()
-    {
-        mExteriorTextureLayerVisualizationTextureSize.reset();
-    }
-
     void SetInteriorTextureLayerVisualizationTextureSize(ImageSize const & size)
     {
         mInteriorTextureLayerVisualizationTextureSize = size;
 
         // No need to recalc attributes
-    }
-
-    void RemoveInteriorTextureLayerVisualizationTextureSize()
-    {
-        mInteriorTextureLayerVisualizationTextureSize.reset();
     }
 
     DisplayPhysicalSize const & GetDisplayPhysicalSize() const
@@ -428,8 +418,8 @@ private:
     DisplayLogicalSize mDisplayLogicalSize;
     DisplayPhysicalSize mDisplayPhysicalSize;
     ShipSpaceSize mShipSize;
-    std::optional<ImageSize> mExteriorTextureLayerVisualizationTextureSize;
-    std::optional<ImageSize> mInteriorTextureLayerVisualizationTextureSize;
+    std::optional<ImageSize> mExteriorTextureLayerVisualizationTextureSize; // Sticky, also after viz removed (as we might still need transformations)
+    std::optional<ImageSize> mInteriorTextureLayerVisualizationTextureSize; // Sticky, also after viz removed (as we might still need transformations)
 
     // Calculated attributes
     float mDisplayPhysicalToShipSpaceFactor; // # ship pixels for 1 display pixel

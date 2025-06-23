@@ -319,6 +319,11 @@ public:
         ShipSpaceCoordinates const & cornerA,
         ShipSpaceCoordinates const & cornerB);
 
+    // Exterior Texture space
+    void UploadDashedRectangleOverlay_Exterior(
+        ImageCoordinates const & cornerA,
+        ImageCoordinates const & cornerB);
+
     void RemoveDashedRectangleOverlay();
 
     //
@@ -644,7 +649,7 @@ private:
     // DashedRectangleOverlay
     GameOpenGLVAO mDashedRectangleOverlayVAO;
     GameOpenGLVBO mDashedRectangleOverlayVBO;
-    std::optional<std::pair<ShipSpaceCoordinates, ShipSpaceCoordinates>> mDashedRectangleOverlayRect;
+    std::optional<std::pair<vec2f, vec2f>> mDashedRectangleOverlayRect; // In fractional ship space
 
     // Waterline markers
     GameOpenGLVAO mWaterlineMarkersVAO;

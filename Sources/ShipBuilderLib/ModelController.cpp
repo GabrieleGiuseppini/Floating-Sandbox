@@ -1288,6 +1288,52 @@ GenericUndoPayload ModelController::StructuralRectangle(
         std::nullopt);
 }
 
+GenericUndoPayload ModelController::StructureTracer(
+    ImageRect const & textureRect,
+    StructuralMaterial const * edgeMaterial,
+    StructuralMaterial const * fillMaterial)
+{
+    assert(mModel.HasLayer(LayerType::Structural));
+    assert(mModel.HasLayer(LayerType::ExteriorTexture));
+    assert(!mIsStructuralLayerInEphemeralVisualization);
+
+    //
+    // Calculate rect in ship space
+    //
+
+    ShipSpaceRect const shipRect = ExteriorImageRectToContainingShipSpaceRect(textureRect);
+
+    //
+    // Prepare undo
+    //
+
+    StructuralLayerData structuralLayerRegionBackup = mModel.GetStructuralLayer().MakeRegionBackup(shipRect);
+
+    //
+    // Update model
+    //
+
+    DoStructureTracer(
+        textureRect,
+        edgeMaterial,
+        fillMaterial);
+
+    //
+    // Update visualization
+    //
+
+    RegisterDirtyVisualization<VisualizationType::Game>(shipRect);
+    RegisterDirtyVisualization<VisualizationType::StructuralLayer>(shipRect);
+
+    return GenericUndoPayload(
+        shipRect.origin,
+        std::move(structuralLayerRegionBackup),
+        std::nullopt,
+        std::nullopt,
+        std::nullopt,
+        std::nullopt);
+}
+
 std::optional<ShipSpaceRect> ModelController::StructuralFlood(
     ShipSpaceCoordinates const & start,
     StructuralMaterial const * material,
@@ -3041,6 +3087,30 @@ void ModelController::DoStructuralRectangle(
                     WriteParticle(coords, lineMaterial);
                 }
             }
+        }
+    }
+}
+
+void ModelController::DoStructureTracer(
+    ImageRect const & textureRect,
+    StructuralMaterial const * edgeMaterial,
+    StructuralMaterial const * fillMaterial)
+{
+    auto const & exteriorTextureLayerBuffer = mModel.GetExteriorTextureLayer().Buffer;
+
+    // TODOHERE
+    (void)textureRect;
+    (void)edgeMaterial;
+    (void)fillMaterial;
+    (void)exteriorTextureLayerBuffer;
+
+    // TODOTEST
+    ShipSpaceRect const shipRect = ExteriorImageRectToContainingShipSpaceRect(textureRect);
+    for (int y = shipRect.origin.y; y < shipRect.origin.y + shipRect.size.height; ++y)
+    {
+        for (int x = shipRect.origin.x; x < shipRect.origin.x + shipRect.size.width; ++x)
+        {
+            WriteParticle(ShipSpaceCoordinates(x, y), edgeMaterial);
         }
     }
 }
