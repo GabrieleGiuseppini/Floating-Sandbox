@@ -1584,14 +1584,6 @@ void View::Render()
         }
     }
 
-    if (mPrimaryVisualization != VisualizationType::StructuralLayer)
-    {
-        if (mHasStructuralLayerVisualization)
-        {
-            RenderStructuralLayerVisualization();
-        }
-    }
-
     if (mPrimaryVisualization != VisualizationType::ExteriorTextureLayer)
     {
         if (mHasExteriorTextureLayerVisualization)
@@ -1605,6 +1597,14 @@ void View::Render()
         if (mHasInteriorTextureLayerVisualization)
         {
             RenderInteriorTextureLayerVisualization();
+        }
+    }
+
+    if (mPrimaryVisualization != VisualizationType::StructuralLayer)
+    {
+        if (mHasStructuralLayerVisualization)
+        {
+            RenderStructuralLayerVisualization();
         }
     }
 
