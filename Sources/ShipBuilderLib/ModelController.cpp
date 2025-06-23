@@ -1314,6 +1314,7 @@ GenericUndoPayload ModelController::StructureTracer(
     //
 
     DoStructureTracer(
+        shipRect,
         textureRect,
         edgeMaterial,
         fillMaterial);
@@ -3092,27 +3093,49 @@ void ModelController::DoStructuralRectangle(
 }
 
 void ModelController::DoStructureTracer(
+    ShipSpaceRect const & shipRect,
     ImageRect const & textureRect,
     StructuralMaterial const * edgeMaterial,
     StructuralMaterial const * fillMaterial)
 {
     auto const & exteriorTextureLayerBuffer = mModel.GetExteriorTextureLayer().Buffer;
 
+    LogMessage("TODOTEST: DoStructureTracer: textureRect=", textureRect, " shipRect = ", shipRect);
+    LogMessage("TODOTEST: otherShip=", ExteriorTextureSpaceToShipSpace(textureRect.origin));
+
+    //
+    // Vertical pass
+    //
+
+    for (int tx = textureRect.origin.x; tx < textureRect.origin.x + textureRect.size.width; ++tx)
+    {
+        // Init state at ty = 0
+        bool isScanLineFull = exteriorTextureLayerBuffer[{tx, 0}].a != 0;
+
+        for (int ty = textureRect.origin.y + 1; ty < textureRect.origin.y + textureRect.size.height; ++ty)
+        {
+            bool const isPixelFull = exteriorTextureLayerBuffer[{tx, ty}].a != 0;
+
+            if (isScanLineFull && !isPixelFull)
+            {
+                // End of full region, write edge at previous
+                WriteParticle(ExteriorTextureSpaceToShipSpace(ImageCoordinates(tx, ty - 1)), edgeMaterial);
+            }
+            else if (!isScanLineFull && isPixelFull)
+            {
+                // Just entering full
+                WriteParticle(ExteriorTextureSpaceToShipSpace(ImageCoordinates(tx, ty)), edgeMaterial);
+            }
+
+            isScanLineFull = isPixelFull;
+        }
+    }
+
     // TODOHERE
     (void)textureRect;
     (void)edgeMaterial;
     (void)fillMaterial;
     (void)exteriorTextureLayerBuffer;
-
-    // TODOTEST
-    ShipSpaceRect const shipRect = ExteriorImageRectToContainingShipSpaceRect(textureRect);
-    for (int y = shipRect.origin.y; y < shipRect.origin.y + shipRect.size.height; ++y)
-    {
-        for (int x = shipRect.origin.x; x < shipRect.origin.x + shipRect.size.width; ++x)
-        {
-            WriteParticle(ShipSpaceCoordinates(x, y), edgeMaterial);
-        }
-    }
 }
 
 void ModelController::WriteParticle(

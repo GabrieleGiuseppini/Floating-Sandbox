@@ -46,6 +46,8 @@ void StructureTracerTool::OnLeftMouseDown()
     assert(!mStartCorner.has_value());
     mStartCorner = ScreenToTextureSpace(LayerType::ExteriorTexture, GetCurrentMouseCoordinates());
 
+    LogMessage("TODOTEST: startCorner=", *mStartCorner);
+
     DrawOverlay(*mStartCorner);
 }
 
@@ -101,7 +103,6 @@ std::optional<ImageRect> StructureTracerTool::CalculateApplicableRect(ImageCoord
     assert(mStartCorner.has_value());
 
     ImageRect theoreticalRect(*mStartCorner, cornerCoordinates);
-    theoreticalRect.size += ImageSize(1, 1);
 
     return theoreticalRect.MakeIntersectionWith(ImageRect{ { 0, 0}, mController.GetModelController().GetExteriorTextureSize() });
 }

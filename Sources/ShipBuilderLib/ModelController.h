@@ -429,6 +429,13 @@ public:
             ImageSize::FromFloatFloor(shipRect.size.ToFloat().scale(shipToTexture)));
     }
 
+    ShipSpaceCoordinates ExteriorTextureSpaceToShipSpace(ImageCoordinates const & imageCoordinates) const
+    {
+        vec2f const textureToShip = GetExteriorTextureSpaceToShipSpaceFactor(GetExteriorTextureSize(), GetShipSize());
+
+        return ShipSpaceCoordinates::FromFloatFloor(imageCoordinates.ToFloat().scale(textureToShip));
+    }
+
     ShipSpaceRect ExteriorImageRectToContainingShipSpaceRect(ImageRect const & imageRect) const;
 
     void SetExteriorTextureLayer(
@@ -600,6 +607,7 @@ private:
         std::optional<StructuralMaterial const *> fillMaterial);
 
     void DoStructureTracer(
+        ShipSpaceRect const & shipRect,
         ImageRect const & textureRect,
         StructuralMaterial const * edgeMaterial,
         StructuralMaterial const * fillMaterial);

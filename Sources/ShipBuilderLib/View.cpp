@@ -1340,8 +1340,7 @@ void View::UploadDashedRectangleOverlay_Exterior(
 
 void View::RemoveDashedRectangleOverlay()
 {
-    assert(mDashedRectangleOverlayRect.has_value());
-
+    // Note: we might not have it
     mDashedRectangleOverlayRect.reset();
 }
 
