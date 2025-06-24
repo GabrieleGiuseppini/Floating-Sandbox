@@ -2909,7 +2909,7 @@ ShipSpaceRect ModelController::ImageRectToContainingShipSpaceRect(
     vec2f const & shipToImageFactor) const
 {
     // Here we map the texture coords to the ship coords in the same "texturing" fashion as we do for rendering;
-    // We do this because the texture for a particle at ship coords (x, y) is sampled at the center of the
+    // we do this because the texture for a particle at ship coords (x, y) is sampled at the center of the
     // texture's quad for that particle.
     //
     // Here we want to calculate the ship rect whose tessellation guarantees coverage of this texture rect.
@@ -3116,34 +3116,81 @@ void ModelController::DoStructureTracer(
     StructuralMaterial const * edgeMaterial,
     StructuralMaterial const * fillMaterial)
 {
+    // Here we map the texture coords to the ship coords in the same "texturing" fashion as we do for rendering;
+    // we do this because the texture for a particle at ship coords (x, y) is sampled at the center of the
+    // texture's quad for that particle.
+    //
+    // Here we want to calculate the ship rect whose tessellation guarantees coverage of this texture rect.
+    // By observing that the pixel at coordinate t is covered by the line between ship coordinate s(t) and s(t+1),
+    // we set edge particles as follows:
+    //  Out->In transition: we detect entering texture image at texture coordinates t; assuming more particles will
+    //                      follow, we place an edge particle at s(t)
+    //  In-Out transition: we detecting leaving texture image at texture coordinates t; assuming there were particles
+    //                      earlier (at s(t-1)), we place an edge particle at s(t-1) + 1
+    //
+    // The formula for s(t) is the "texturization" one, i.s. e = (t - o/2) / o, where o is the number of texture
+    // pixels in one ship quad.
+
     auto const & exteriorTextureLayerBuffer = mModel.GetExteriorTextureLayer().Buffer;
 
-    LogMessage("TODOTEST: DoStructureTracer: textureRect=", textureRect, " shipRect = ", shipRect);
-    LogMessage("TODOTEST: otherShip=", ExteriorTextureSpaceToShipSpace(textureRect.origin));
+    vec2f const shipToTexture = GetShipSpaceToTextureSpaceFactor(GetShipSize(), GetExteriorTextureSize());
 
     //
-    // Vertical pass
+    // Vertical pass - bottom -> up
     //
+
+    uint8_t constexpr AlphaThreshold = 4; // Ignore noise
 
     for (int tx = textureRect.origin.x; tx < textureRect.origin.x + textureRect.size.width; ++tx)
     {
         // Init state at ty = 0
-        bool isScanLineFull = exteriorTextureLayerBuffer[{tx, 0}].a != 0;
+        bool isScanLineFull = exteriorTextureLayerBuffer[{tx, textureRect.origin.y}].a > AlphaThreshold;
 
         for (int ty = textureRect.origin.y + 1; ty < textureRect.origin.y + textureRect.size.height; ++ty)
         {
-            bool const isPixelFull = exteriorTextureLayerBuffer[{tx, ty}].a != 0;
+            bool const isPixelFull = exteriorTextureLayerBuffer[{tx, ty}].a > AlphaThreshold;
 
-            if (isScanLineFull && !isPixelFull)
+            // TODOTEST
+            ShipSpaceCoordinates s(-1, -1);
+            if (!isScanLineFull && isPixelFull)
             {
-                // End of full region, write edge at previous
-                WriteParticle(ExteriorTextureSpaceToShipSpace(ImageCoordinates(tx, ty - 1)), edgeMaterial);
+                // Out->In
+
+                // Place at s(t)
+                s = ShipSpaceCoordinates::FromFloatFloor(ImageCoordinates(tx, ty).ToFloat() / shipToTexture - vec2f(0.0f, 0.5f));
             }
-            else if (!isScanLineFull && isPixelFull)
+            else if (isScanLineFull && !isPixelFull)
             {
-                // Just entering full
-                WriteParticle(ExteriorTextureSpaceToShipSpace(ImageCoordinates(tx, ty)), edgeMaterial);
+                // In->Out
+
+                // Place at s(t-1) + 1
+                s = ShipSpaceCoordinates::FromFloatFloor(
+                        ImageCoordinates(tx, ty - 1).ToFloat() / shipToTexture - vec2f(0.0f, 0.5f)
+                        + vec2f(0.0f, 1.0f));
             }
+            else if (isScanLineFull && isPixelFull)
+            {
+                // Filler
+                // TODOHERE
+            }
+
+            if (s.IsInRect(shipRect))
+            {
+                WriteParticle(s, edgeMaterial);
+            }
+
+            //if (isPixelFull)
+            //{
+            //    vec2f const todo = ImageCoordinates(tx, ty).ToFloat() / shipToTexture - vec2f(0.0f, 0.5f);
+            //    ShipSpaceCoordinates s = ShipSpaceCoordinates::FromFloatFloor(todo);
+
+            //    LogMessage(tx, ", ", ty, " => ", todo, " => ", s, " = ", int(exteriorTextureLayerBuffer[{tx, ty}].a));
+
+            //    if (s.IsInRect(shipRect))
+            //    {
+            //        WriteParticle(s, edgeMaterial);
+            //    }
+            //}
 
             isScanLineFull = isPixelFull;
         }

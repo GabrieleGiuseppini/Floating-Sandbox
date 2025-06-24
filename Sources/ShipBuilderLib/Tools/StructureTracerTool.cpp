@@ -46,8 +46,6 @@ void StructureTracerTool::OnLeftMouseDown()
     assert(!mStartCorner.has_value());
     mStartCorner = ScreenToTextureSpace(LayerType::ExteriorTexture, GetCurrentMouseCoordinates());
 
-    LogMessage("TODOTEST: startCorner=", *mStartCorner);
-
     DrawOverlay(*mStartCorner);
 }
 
