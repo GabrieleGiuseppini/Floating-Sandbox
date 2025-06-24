@@ -3135,11 +3135,11 @@ void ModelController::DoStructureTracer(
 
     vec2f const shipToTexture = GetShipSpaceToTextureSpaceFactor(GetShipSize(), GetExteriorTextureSize());
 
+    uint8_t constexpr AlphaThreshold = 4; // Ignore noise
+
     //
     // Vertical pass - bottom -> up
     //
-
-    uint8_t constexpr AlphaThreshold = 4; // Ignore noise
 
     for (int tx = textureRect.origin.x; tx < textureRect.origin.x + textureRect.size.width; ++tx)
     {
@@ -3181,18 +3181,53 @@ void ModelController::DoStructureTracer(
                 WriteParticle(s, edgeMaterial);
             }
 
-            //if (isPixelFull)
-            //{
-            //    vec2f const todo = ImageCoordinates(tx, ty).ToFloat() / shipToTexture - vec2f(0.0f, 0.5f);
-            //    ShipSpaceCoordinates s = ShipSpaceCoordinates::FromFloatFloor(todo);
+            isScanLineFull = isPixelFull;
+        }
+    }
 
-            //    LogMessage(tx, ", ", ty, " => ", todo, " => ", s, " = ", int(exteriorTextureLayerBuffer[{tx, ty}].a));
+    //
+    // Horizontal pass - left->right
+    //
 
-            //    if (s.IsInRect(shipRect))
-            //    {
-            //        WriteParticle(s, edgeMaterial);
-            //    }
-            //}
+    for (int ty = textureRect.origin.y; ty < textureRect.origin.y + textureRect.size.height; ++ty)
+    {
+        // Calculate s.y once for entire scan line
+        int sy = static_cast<int>(std::floorf(static_cast<float>(ty) / shipToTexture.y));
+
+        // Init state at tx = 0
+        bool isScanLineFull = exteriorTextureLayerBuffer[{textureRect.origin.x, ty}].a > AlphaThreshold;
+
+        for (int tx = textureRect.origin.x + 1; tx < textureRect.origin.x + textureRect.size.width; ++tx)
+        {
+            bool const isPixelFull = exteriorTextureLayerBuffer[{tx, ty}].a > AlphaThreshold;
+
+            // TODOTEST
+            int sx = -1;
+            if (!isScanLineFull && isPixelFull)
+            {
+                // Out->In
+
+                // Place at s(t)
+                sx = static_cast<int>(std::floorf(static_cast<float>(tx) / shipToTexture.x - 0.5f));
+            }
+            else if (isScanLineFull && !isPixelFull)
+            {
+                // In->Out
+
+                // Place at s(t-1) + 1
+                sx = static_cast<int>(std::floorf(static_cast<float>(tx - 1) / shipToTexture.x - 0.5f)) + 1;
+            }
+            else if (isScanLineFull && isPixelFull)
+            {
+                // Filler
+                // TODOHERE
+            }
+
+            ShipSpaceCoordinates const s(sx, sy);
+            if (s.IsInRect(shipRect))
+            {
+                WriteParticle(s, edgeMaterial);
+            }
 
             isScanLineFull = isPixelFull;
         }
