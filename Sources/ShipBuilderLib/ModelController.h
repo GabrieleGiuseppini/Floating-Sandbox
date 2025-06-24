@@ -395,34 +395,16 @@ public:
         return mModel.GetExteriorTextureLayer().Buffer.Size;
     }
 
-    static vec2f GetShipSpaceToExteriorTextureSpaceFactor(
-        ShipSpaceSize const & shipSize,
-        ImageSize const & textureSize)
-    {
-        return vec2f(
-            static_cast<float>(textureSize.width) / static_cast<float>(shipSize.width),
-            static_cast<float>(textureSize.height) / static_cast<float>(shipSize.height));
-    }
-
-    static vec2f GetExteriorTextureSpaceToShipSpaceFactor(
-        ImageSize const & textureSize,
-        ShipSpaceSize const & shipSize)
-    {
-        return vec2f(
-            static_cast<float>(shipSize.width) / static_cast<float>(textureSize.width),
-            static_cast<float>(shipSize.height) / static_cast<float>(textureSize.height));
-    }
-
     ImageCoordinates ShipSpaceToExteriorTextureSpace(ShipSpaceCoordinates const & shipCoordinates) const
     {
-        vec2f const shipToTexture = GetShipSpaceToExteriorTextureSpaceFactor(GetShipSize(), GetExteriorTextureSize());
+        vec2f const shipToTexture = GetShipSpaceToTextureSpaceFactor(GetShipSize(), GetExteriorTextureSize());
 
         return ImageCoordinates::FromFloatFloor(shipCoordinates.ToFloat().scale(shipToTexture));
     }
 
     ImageRect ShipSpaceToExteriorTextureSpace(ShipSpaceRect const & shipRect) const
     {
-        vec2f const shipToTexture = GetShipSpaceToExteriorTextureSpaceFactor(GetShipSize(), GetExteriorTextureSize());
+        vec2f const shipToTexture = GetShipSpaceToTextureSpaceFactor(GetShipSize(), GetExteriorTextureSize());
 
         return ImageRect(
             ImageCoordinates::FromFloatFloor(shipRect.origin.ToFloat().scale(shipToTexture)),
@@ -431,12 +413,17 @@ public:
 
     ShipSpaceCoordinates ExteriorTextureSpaceToShipSpace(ImageCoordinates const & imageCoordinates) const
     {
-        vec2f const textureToShip = GetExteriorTextureSpaceToShipSpaceFactor(GetExteriorTextureSize(), GetShipSize());
+        vec2f const textureToShip = GetTextureSpaceToShipSpaceFactor(GetExteriorTextureSize(), GetShipSize());
 
         return ShipSpaceCoordinates::FromFloatFloor(imageCoordinates.ToFloat().scale(textureToShip));
     }
 
-    ShipSpaceRect ExteriorImageRectToContainingShipSpaceRect(ImageRect const & imageRect) const;
+    ShipSpaceRect ExteriorImageRectToContainingShipSpaceRect(ImageRect const & imageRect) const
+    {
+        return ImageRectToContainingShipSpaceRect(
+            imageRect,
+            GetShipSpaceToTextureSpaceFactor(GetShipSize(), GetExteriorTextureSize()));
+    }
 
     void SetExteriorTextureLayer(
         TextureLayerData && exteriorTextureLayer,
@@ -481,41 +468,28 @@ public:
         return mModel.GetInteriorTextureLayer().Buffer.Size;
     }
 
-    static vec2f GetShipSpaceToInteriorTextureSpaceFactor(
-        ShipSpaceSize const & shipSize,
-        ImageSize const & textureSize)
-    {
-        return vec2f(
-            static_cast<float>(textureSize.width) / static_cast<float>(shipSize.width),
-            static_cast<float>(textureSize.height) / static_cast<float>(shipSize.height));
-    }
-
-    static vec2f GetInteriorTextureSpaceToShipSpaceFactor(
-        ImageSize const & textureSize,
-        ShipSpaceSize const & shipSize)
-    {
-        return vec2f(
-            static_cast<float>(shipSize.width) / static_cast<float>(textureSize.width),
-            static_cast<float>(shipSize.height) / static_cast<float>(textureSize.height));
-    }
-
     ImageCoordinates ShipSpaceToInteriorTextureSpace(ShipSpaceCoordinates const & shipCoordinates) const
     {
-        vec2f const shipToTexture = GetShipSpaceToInteriorTextureSpaceFactor(GetShipSize(), GetInteriorTextureSize());
+        vec2f const shipToTexture = GetShipSpaceToTextureSpaceFactor(GetShipSize(), GetInteriorTextureSize());
 
         return ImageCoordinates::FromFloatFloor(shipCoordinates.ToFloat().scale(shipToTexture));
     }
 
     ImageRect ShipSpaceToInteriorTextureSpace(ShipSpaceRect const & shipRect) const
     {
-        vec2f const shipToTexture = GetShipSpaceToInteriorTextureSpaceFactor(GetShipSize(), GetInteriorTextureSize());
+        vec2f const shipToTexture = GetShipSpaceToTextureSpaceFactor(GetShipSize(), GetInteriorTextureSize());
 
         return ImageRect(
             ImageCoordinates::FromFloatFloor(shipRect.origin.ToFloat().scale(shipToTexture)),
             ImageSize::FromFloatFloor(shipRect.size.ToFloat().scale(shipToTexture)));
     }
 
-    ShipSpaceRect InteriorImageRectToContainingShipSpaceRect(ImageRect const & imageRect) const;
+    ShipSpaceRect InteriorImageRectToContainingShipSpaceRect(ImageRect const & imageRect) const
+    {
+        return ImageRectToContainingShipSpaceRect(
+            imageRect,
+            GetShipSpaceToTextureSpaceFactor(GetShipSize(), GetInteriorTextureSize()));
+    }
 
     void SetInteriorTextureLayer(TextureLayerData && interiorTextureLayer);
     void RemoveInteriorTextureLayer();
@@ -563,6 +537,22 @@ public:
     void UpdateVisualizations(
         View & view,
         GameAssetManager const & gameAssetManager);
+
+    //
+    // Coords
+    //
+
+    ShipSpaceRect ImageRectToContainingShipSpaceRect(
+        ImageRect const & imageRect,
+        vec2f const & shipToImageFactor) const;
+
+    static vec2f GetShipSpaceToTextureSpaceFactor(
+        ShipSpaceSize const & shipSize,
+        ImageSize const & textureSize);
+
+    static vec2f GetTextureSpaceToShipSpaceFactor(
+        ImageSize const & textureSize,
+        ShipSpaceSize const & shipSize);
 
 private:
 

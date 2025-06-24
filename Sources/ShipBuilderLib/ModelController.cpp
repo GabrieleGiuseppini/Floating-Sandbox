@@ -419,7 +419,7 @@ void ModelController::ResizeShip(
         assert(!mIsExteriorTextureLayerInEphemeralVisualization);
 
         // Convert to texture space
-        vec2f const shipToTexture = GetShipSpaceToExteriorTextureSpaceFactor(originalShipSize, GetExteriorTextureSize());
+        vec2f const shipToTexture = GetShipSpaceToTextureSpaceFactor(originalShipSize, GetExteriorTextureSize());
 
         mModel.SetExteriorTextureLayer(
             mModel.GetExteriorTextureLayer().MakeReframed(
@@ -436,7 +436,7 @@ void ModelController::ResizeShip(
         assert(!mIsInteriorTextureLayerInEphemeralVisualization);
 
         // Convert to texture space
-        vec2f const shipToTexture = GetShipSpaceToInteriorTextureSpaceFactor(originalShipSize, GetInteriorTextureSize());
+        vec2f const shipToTexture = GetShipSpaceToTextureSpaceFactor(originalShipSize, GetInteriorTextureSize());
 
         mModel.SetInteriorTextureLayer(
             mModel.GetInteriorTextureLayer().MakeReframed(
@@ -2070,24 +2070,6 @@ TextureLayerData const & ModelController::GetExteriorTextureLayer() const
     return mModel.GetExteriorTextureLayer();
 }
 
-ShipSpaceRect ModelController::ExteriorImageRectToContainingShipSpaceRect(ImageRect const & imageRect) const
-{
-    vec2f const imageToShipFactor = GetExteriorTextureSpaceToShipSpaceFactor(GetExteriorTextureSize(), GetShipSize());
-
-    ShipSpaceRect containingRect(
-        ShipSpaceCoordinates(
-            static_cast<int>(std::floor(static_cast<float>(imageRect.origin.x) * imageToShipFactor.x)),
-            static_cast<int>(std::floor(static_cast<float>(imageRect.origin.y) * imageToShipFactor.y))),
-        ShipSpaceSize(
-            static_cast<int>(std::ceil(static_cast<float>(imageRect.size.width) * imageToShipFactor.x)),
-            static_cast<int>(std::ceil(static_cast<float>(imageRect.size.height) * imageToShipFactor.y))));
-
-    // Make sure not too wide
-    auto const intersection = containingRect.MakeIntersectionWith(ShipSpaceRect(GetShipSize()));
-    assert(intersection.has_value());
-    return *intersection;
-}
-
 void ModelController::SetExteriorTextureLayer(
     TextureLayerData && exteriorTextureLayer,
     std::optional<std::string> originalTextureArtCredits)
@@ -2300,24 +2282,6 @@ TextureLayerData const & ModelController::GetInteriorTextureLayer() const
     assert(mModel.HasLayer(LayerType::InteriorTexture));
 
     return mModel.GetInteriorTextureLayer();
-}
-
-ShipSpaceRect ModelController::InteriorImageRectToContainingShipSpaceRect(ImageRect const & imageRect) const
-{
-    vec2f const imageToShipFactor = GetInteriorTextureSpaceToShipSpaceFactor(GetInteriorTextureSize(), GetShipSize());
-
-    ShipSpaceRect containingRect(
-        ShipSpaceCoordinates(
-            static_cast<int>(std::floor(static_cast<float>(imageRect.origin.x) * imageToShipFactor.x)),
-            static_cast<int>(std::floor(static_cast<float>(imageRect.origin.y) * imageToShipFactor.y))),
-        ShipSpaceSize(
-            static_cast<int>(std::ceil(static_cast<float>(imageRect.size.width) * imageToShipFactor.x)),
-            static_cast<int>(std::ceil(static_cast<float>(imageRect.size.height) * imageToShipFactor.y))));
-
-    // Make sure not too wide
-    auto const intersection = containingRect.MakeIntersectionWith(ShipSpaceRect(GetShipSize()));
-    assert(intersection.has_value());
-    return *intersection;
 }
 
 void ModelController::SetInteriorTextureLayer(TextureLayerData && textureLayer)
@@ -2939,6 +2903,60 @@ void ModelController::UpdateVisualizations(
 
     mDirtyInteriorTextureLayerVisualizationRegion.reset();
 }
+
+ShipSpaceRect ModelController::ImageRectToContainingShipSpaceRect(
+    ImageRect const & imageRect,
+    vec2f const & shipToImageFactor) const
+{
+    // Here we map the texture coords to the ship coords in the same "texturing" fashion as we do for rendering;
+    // We do this because the texture for a particle at ship coords (x, y) is sampled at the center of the
+    // texture's quad for that particle.
+    //
+    // Here we want to calculate the ship rect whose tessellation guarantees coverage of this texture rect.
+    // By observing that the pixel at coordinate t is covered by the line between ship coordinate s(t) and s(t+1),
+    // we create this covering rect using s(t_start) and s(t_end) + 1, where t_end is the last texture coordinate
+    // (i.e. it's t_start + t_size - 1).
+    //
+    // The formula for s(t) is the "texturization" one, i.s. e = (t - o/2) / o, where o is the number of texture
+    // pixels in one ship quad.
+
+    ShipSpaceCoordinates const s_start = ShipSpaceCoordinates::FromFloatFloor(
+        vec2f(
+            (static_cast<float>(imageRect.origin.x) - shipToImageFactor.x / 2.0f) / shipToImageFactor.x,
+            (static_cast<float>(imageRect.origin.y) - shipToImageFactor.y / 2.0f) / shipToImageFactor.y));
+    ShipSpaceCoordinates const s_end = ShipSpaceCoordinates::FromFloatFloor(
+        vec2f(
+            (static_cast<float>(imageRect.origin.x + imageRect.size.width - 1) - shipToImageFactor.x / 2.0f) / shipToImageFactor.x + 1.0f,
+            (static_cast<float>(imageRect.origin.y + imageRect.size.height - 1) - shipToImageFactor.y / 2.0f) / shipToImageFactor.y + 1.0f));
+
+    ShipSpaceRect containingRect(
+        s_start,
+        s_end - s_start + ShipSpaceSize(1, 1)); // size = (end - start) + 1
+
+    // Make sure not too wide
+    auto const intersection = containingRect.MakeIntersectionWith(ShipSpaceRect(GetShipSize()));
+    assert(intersection.has_value());
+    return *intersection;
+}
+
+vec2f ModelController::GetShipSpaceToTextureSpaceFactor(
+    ShipSpaceSize const & shipSize,
+    ImageSize const & textureSize)
+{
+    return vec2f(
+        static_cast<float>(textureSize.width) / static_cast<float>(shipSize.width),
+        static_cast<float>(textureSize.height) / static_cast<float>(shipSize.height));
+}
+
+vec2f ModelController::GetTextureSpaceToShipSpaceFactor(
+    ImageSize const & textureSize,
+    ShipSpaceSize const & shipSize)
+{
+    return vec2f(
+        static_cast<float>(shipSize.width) / static_cast<float>(textureSize.width),
+        static_cast<float>(shipSize.height) / static_cast<float>(textureSize.height));
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
