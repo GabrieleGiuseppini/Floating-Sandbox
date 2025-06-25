@@ -109,10 +109,11 @@ void StructureTracerTool::DoTracing(ImageRect const & textureRect)
 {
     // Do
 
-    auto undoPayload = mController.GetModelController().StructureTracer(
+    auto undoPayload = mController.GetModelController().StructureTrace(
         textureRect,
         mController.GetWorkbenchState().GetStructuralForegroundMaterial(),
-        mController.GetWorkbenchState().GetStructuralBackgroundMaterial());
+        mController.GetWorkbenchState().GetStructuralBackgroundMaterial(),
+        mController.GetWorkbenchState().GetTextureStructureTracerAlphaThreshold());
 
     // Store undo
 

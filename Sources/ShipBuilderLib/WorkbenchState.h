@@ -278,6 +278,16 @@ public:
         mTextureMagicWandIsContiguous = value;
     }
 
+    std::uint8_t GetTextureStructureTracerAlphaThreshold() const
+    {
+        return mTextureStructureTracerAlphaThreshold;
+    }
+
+    void SetTextureStructureTracerAlphaThreshold(std::uint8_t value)
+    {
+        mTextureStructureTracerAlphaThreshold = value;
+    }
+
     std::uint32_t GetTextureEraserToolSize() const
     {
         return mTextureEraserToolSize;
@@ -506,6 +516,7 @@ private:
     unsigned int mTextureMagicWandTolerance; // 0-100
     bool mTextureMagicWandIsAntiAliased;
     bool mTextureMagicWandIsContiguous;
+    std::uint8_t mTextureStructureTracerAlphaThreshold; // 0-254
     std::uint32_t mTextureEraserToolSize;
     bool mSelectionIsAllLayers;
     bool mPasteIsTransparent;

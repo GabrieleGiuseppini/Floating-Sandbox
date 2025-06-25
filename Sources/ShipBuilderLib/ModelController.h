@@ -268,10 +268,11 @@ public:
         StructuralMaterial const * lineMaterial,
         std::optional<StructuralMaterial const *> fillMaterial);
 
-    GenericUndoPayload StructureTracer(
+    GenericUndoPayload StructureTrace(
         ImageRect const & textureRect,
         StructuralMaterial const * edgeMaterial,
-        StructuralMaterial const * fillMaterial);
+        StructuralMaterial const * fillMaterial,
+        std::uint8_t alphaThreshold);
 
     std::optional<ShipSpaceRect> StructuralFlood(
         ShipSpaceCoordinates const & start,
@@ -596,11 +597,12 @@ private:
         StructuralMaterial const * lineMaterial,
         std::optional<StructuralMaterial const *> fillMaterial);
 
-    void DoStructureTracer(
+    typename LayerTypeTraits<LayerType::Structural>::buffer_type MakeStructureTrace(
         ShipSpaceRect const & shipRect,
         ImageRect const & textureRect,
         StructuralMaterial const * edgeMaterial,
-        StructuralMaterial const * fillMaterial);
+        StructuralMaterial const * fillMaterial,
+        std::uint8_t alphaThreshold) const;
 
     inline void WriteParticle(
         ShipSpaceCoordinates const & coords,

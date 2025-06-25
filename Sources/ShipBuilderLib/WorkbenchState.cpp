@@ -66,6 +66,7 @@ WorkbenchState::WorkbenchState(
     mTextureMagicWandTolerance = 0;
     mTextureMagicWandIsAntiAliased = true;
     mTextureMagicWandIsContiguous = true;
+    mTextureStructureTracerAlphaThreshold = 4; // Just ignore noise
     mTextureEraserToolSize = 4;
     mSelectionIsAllLayers = false;
     mPasteIsTransparent = false;

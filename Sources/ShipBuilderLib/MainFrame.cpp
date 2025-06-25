@@ -2592,6 +2592,84 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
         }
     }
 
+    // Texture structure tracer
+    {
+        wxPanel * dynamicPanel = new wxPanel(mToolSettingsRibbonPanel);
+        wxGridBagSizer * dynamicPanelGridSizer = new wxGridBagSizer(RibbonToolbarButtonMargin, RibbonToolbarButtonMargin + RibbonToolbarButtonMargin);
+
+        // Alpha-Threshold label
+        {
+            auto * staticText = new wxStaticText(dynamicPanel, wxID_ANY, _("Alpha Threshold:"));
+            staticText->SetForegroundColour(labelColor);
+
+            dynamicPanelGridSizer->Add(
+                staticText,
+                wxGBPosition(0, 0),
+                wxGBSpan(1, 1),
+                wxALIGN_CENTER_VERTICAL);
+        }
+
+        // Alpha-Threshold slider
+        {
+            mTextureStructureTracerAlphaThresholdSlider = new wxSlider(dynamicPanel, wxID_ANY, mWorkbenchState.GetTextureStructureTracerAlphaThreshold(), 0, 254,
+                wxDefaultPosition, wxSize(80, -1), wxSL_HORIZONTAL);
+
+            mTextureStructureTracerAlphaThresholdSlider->SetToolTip(_("The minimum alpha value for a texture pixel to be considered opaque; values of alpha greater than this value are considered opaque."));
+
+            mTextureStructureTracerAlphaThresholdSlider->Bind(
+                wxEVT_SLIDER,
+                [this](wxCommandEvent &)
+                {
+                    mWorkbenchState.SetTextureStructureTracerAlphaThreshold(mTextureStructureTracerAlphaThresholdSlider->GetValue());
+                    mTextureStructureTracerAlphaThresholdEditSpinBox->SetValue(mTextureStructureTracerAlphaThresholdSlider->GetValue());
+                });
+
+            dynamicPanelGridSizer->Add(
+                mTextureStructureTracerAlphaThresholdSlider,
+                wxGBPosition(0, 1),
+                wxGBSpan(1, 2),
+                wxALIGN_CENTER_VERTICAL);
+        }
+
+        // Alpha-Threshold spin box
+        {
+            mTextureStructureTracerAlphaThresholdEditSpinBox = new EditSpinBox<std::uint8_t>(
+                dynamicPanel,
+                40,
+                0,
+                254,
+                mWorkbenchState.GetTextureStructureTracerAlphaThreshold(),
+                _("The minimum alpha value for a texture pixel to be considered opaque; values of alpha greater than this value are considered opaque."),
+                [this](std::uint8_t value)
+                {
+                    mWorkbenchState.SetTextureStructureTracerAlphaThreshold(value);
+                    mTextureStructureTracerAlphaThresholdSlider->SetValue(value);
+                });
+
+            dynamicPanelGridSizer->Add(
+                mTextureStructureTracerAlphaThresholdEditSpinBox,
+                wxGBPosition(0, 3),
+                wxGBSpan(1, 2),
+                wxALIGN_CENTER_VERTICAL);
+        }
+
+        dynamicPanel->SetSizerAndFit(dynamicPanelGridSizer);
+
+        // Insert in place
+        {
+            mToolSettingsPanelsSizer->Add(
+                dynamicPanel,
+                0,
+                wxALIGN_CENTER_VERTICAL,
+                0);
+
+            mToolSettingsPanels.emplace_back(
+                std::vector<ToolType>{
+                    ToolType::StructureTracer},
+                dynamicPanel);
+        }
+    }
+
     // Selection
     {
         wxPanel * dynamicPanel = new wxPanel(mToolSettingsRibbonPanel);
@@ -6358,6 +6436,12 @@ void MainFrame::ReconciliateUIWithSelectedTool(
                 break;
             }
 
+            case ToolType::StructureTracer:
+            {
+                mToolSettingsRibbonPanel->SetLabel("Structure Tracer");
+                break;
+            }
+
             case ToolType::StructuralSelection:
             case ToolType::ElectricalSelection:
             case ToolType::RopeSelection:
@@ -6392,7 +6476,6 @@ void MainFrame::ReconciliateUIWithSelectedTool(
             case ToolType::ElectricalSampler:
             case ToolType::RopeSampler:
             case ToolType::StructuralMeasuringTapeTool:
-            case ToolType::StructureTracer:
             {
                 // Don't have settings
                 assert(false);

@@ -429,6 +429,8 @@ private:
     std::vector<std::tuple<std::vector<ToolType>, wxPanel *>> mToolSettingsPanels;
     wxSlider * mTextureMagicWandToleranceSlider;
     EditSpinBox<std::uint32_t> * mTextureMagicWandToleranceEditSpinBox;
+    wxSlider * mTextureStructureTracerAlphaThresholdSlider;
+    EditSpinBox<std::uint8_t> * mTextureStructureTracerAlphaThresholdEditSpinBox;
     BitmapButton * mDeselectButton;
 
 
