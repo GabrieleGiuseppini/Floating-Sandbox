@@ -202,6 +202,11 @@ public:
         return mFurnitureSubKinds.at(subKindId).FurnitureTextureCoordinatesQuad;
     }
 
+    TextureCoordinatesQuad const & GetSpareIconTextureCoordinatesQuad(TextureFrameIndex frameIndex) const
+    {
+        return mSpareIconTextureCoordinatesQuads.at(frameIndex);
+    }
+
 private:
 
     struct HumanSubKind
@@ -272,6 +277,7 @@ private:
     NpcDatabase(
         std::map<NpcSubKindIdType, HumanSubKind> && humanSubKinds,
         std::map<NpcSubKindIdType, FurnitureSubKind> && furnitureSubKinds,
+        std::vector<TextureCoordinatesQuad> && spareIconTextureCoordinatesQuads,
         StringTable && stringTable);
 
     static HumanSubKind ParseHumanSubKind(
@@ -341,4 +347,6 @@ private:
 
     std::vector<std::vector<NpcSubKindIdType>> mHumanSubKindIdsByRole;
     std::vector<std::vector<NpcSubKindIdType>> mFurnitureSubKindIdsByRole;
+
+    std::vector<TextureCoordinatesQuad> mSpareIconTextureCoordinatesQuads; // Indexed by frame ID
 };

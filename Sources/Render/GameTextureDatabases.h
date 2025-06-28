@@ -258,8 +258,9 @@ struct FishTextureDatabase
 enum class NpcTextureGroups : uint16_t
 {
     Npc = 0,
+    Icon = 1, // Misc icons handy to have in this database, as they're used with NPCs
 
-    _Last = Npc
+    _Last = Icon
 };
 
 struct NpcTextureDatabase
@@ -272,6 +273,8 @@ struct NpcTextureDatabase
     {
         if (Utils::CaseInsensitiveEquals(str, "NPC"))
             return NpcTextureGroups::Npc;
+        else if (Utils::CaseInsensitiveEquals(str, "Icon"))
+            return NpcTextureGroups::Icon;
         else
             throw GameException("Unrecognized NPC texture group \"" + str + "\"");
     }

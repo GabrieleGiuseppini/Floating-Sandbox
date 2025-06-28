@@ -7,9 +7,22 @@
 	"frames":[
 		{	
 			"world_scaling": 1.0,
-			"frame_name_pattern": ".*"
+			"frame_name_pattern": "^(?!icon_).*"
+		}
+	]
+},
+
+{
+	"group_name": "Icon",
+	"has_own_ambient_light": false,
+	"auto_assign_frame_indices": false,
+	"frames":[
+		{	
+			"world_scaling": 1.0,
+			"frame_name_pattern": "^icon_.*_\\d+"
 		}
 	]
 }
+
 
 ]

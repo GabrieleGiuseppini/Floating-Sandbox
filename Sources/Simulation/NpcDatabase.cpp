@@ -110,6 +110,22 @@ NpcDatabase NpcDatabase::Load(
     }
 
     //
+    // Spare icons
+    //
+
+    std::vector<TextureCoordinatesQuad> spareIconTextureCoordinatesQuads;
+
+    for (size_t f = 0; f < npcTextureAtlas.Metadata.GetFrameCount(GameTextureDatabases::NpcTextureGroups::Icon); ++f)
+    {
+        auto const & frameMetadata = npcTextureAtlas.Metadata.GetFrameMetadata(GameTextureDatabases::NpcTextureGroups::Icon, TextureFrameIndex(f));
+        spareIconTextureCoordinatesQuads.emplace_back(TextureCoordinatesQuad{
+            frameMetadata.TextureCoordinatesBottomLeft.x,
+            frameMetadata.TextureCoordinatesTopRight.x,
+            frameMetadata.TextureCoordinatesBottomLeft.y,
+            frameMetadata.TextureCoordinatesTopRight.y});
+    }
+
+    //
     // StringTable
 
     StringTable stringTable = ParseStringTable(
@@ -124,6 +140,7 @@ NpcDatabase NpcDatabase::Load(
     return NpcDatabase(
         std::move(humanSubKinds),
         std::move(furnitureSubKinds),
+        std::move(spareIconTextureCoordinatesQuads),
         std::move(stringTable));
 }
 
@@ -146,9 +163,11 @@ std::vector<std::tuple<NpcSubKindIdType, std::string>> NpcDatabase::GetFurniture
 NpcDatabase::NpcDatabase(
     std::map<NpcSubKindIdType, HumanSubKind> && humanSubKinds,
     std::map<NpcSubKindIdType, FurnitureSubKind> && furnitureSubKinds,
+    std::vector<TextureCoordinatesQuad> && spareIconTextureCoordinatesQuads,
     StringTable && stringTable)
     : mHumanSubKinds(std::move(humanSubKinds))
     , mFurnitureSubKinds(std::move(furnitureSubKinds))
+    , mSpareIconTextureCoordinatesQuads(std::move(spareIconTextureCoordinatesQuads))
     , mStringTable(std::move(stringTable))
 {
     // Build lookup tables
