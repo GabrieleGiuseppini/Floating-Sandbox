@@ -4141,7 +4141,7 @@ class PlaceNpcToolBase : public Tool
     //      - Reset: Abort;
     //
 
-public:
+protected:
 
     PlaceNpcToolBase(
         ToolType toolType,

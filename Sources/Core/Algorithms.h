@@ -362,10 +362,10 @@ inline void DiffuseLight_NeonVectorized(
 
                 uint32x4_t const validMask = vcgtq_f32(distanceSquare_4, zero_4); // Valid where > 0 (distance is always >= 0)
 
-                // Zero newtown-rhapson steps, it's for lighting after all
+                // Zero newton-rhapson steps, it's for lighting after all
                 float32x4_t distance_4_inv = vrsqrteq_f32(distanceSquare_4);
 
-                // Zero newtown-rhapson steps, it's for lighting after all
+                // Zero newton-rhapson steps, it's for lighting after all
                 float32x4_t distance_4 = vrecpeq_f32(distance_4_inv);
 
                 distance_4 =
@@ -774,7 +774,7 @@ inline void CalculateSpringVectors_NeonVectorized(
 
     uint32x4_t const validMask = vcgtq_f32(sq_len, Zero); // SL==0 => 1/SL==0, to maintain "normalized == (0, 0)", as in vec2f
 
-    // One newtown-rhapson step
+    // One newton-rhapson step
     float32x4_t s0s1s2s3_springLength_inv = vrsqrteq_f32(sq_len);
     s0s1s2s3_springLength_inv = vmulq_f32(
         s0s1s2s3_springLength_inv,
@@ -787,7 +787,7 @@ inline void CalculateSpringVectors_NeonVectorized(
             s0s1s2s3_springLength_inv,
             validMask);
 
-    // One newtown-rhapson step
+    // One newton-rhapson step
     float32x4_t s0s1s2s3_springLength = vrecpeq_f32(s0s1s2s3_springLength_inv);
     s0s1s2s3_springLength = vmulq_f32(
         s0s1s2s3_springLength,
@@ -1876,7 +1876,7 @@ inline void ApplySpringsForces_NeonVectorized(
 
         uint32x4_t const validMask = vcgtq_f32(sq_len, Zero); // SL==0 => 1/SL==0, to maintain "normalized == (0, 0)", as in vec2f
 
-        // One newtown-rhapson step
+        // One newton-rhapson step
         float32x4_t s0s1s2s3_springLength_inv = vrsqrteq_f32(sq_len);
         s0s1s2s3_springLength_inv = vmulq_f32(
             s0s1s2s3_springLength_inv,
@@ -1889,7 +1889,7 @@ inline void ApplySpringsForces_NeonVectorized(
                 s0s1s2s3_springLength_inv,
                 validMask);
 
-        // One newtown-rhapson step
+        // One newton-rhapson step
         float32x4_t s0s1s2s3_springLength = vrecpeq_f32(s0s1s2s3_springLength_inv);
         s0s1s2s3_springLength = vmulq_f32(
             s0s1s2s3_springLength,
@@ -2084,7 +2084,7 @@ inline void ApplySpringsForces_NeonVectorized(
 
         uint32x4_t const validMask = vcgtq_f32(sq_len, Zero); // SL==0 => 1/SL==0, to maintain "normalized == (0, 0)", as in vec2f
 
-        // One newtown-rhapson step
+        // One newton-rhapson step
         float32x4_t s0s1s2s3_springLength_inv = vrsqrteq_f32(sq_len);
         s0s1s2s3_springLength_inv = vmulq_f32(
             s0s1s2s3_springLength_inv,
@@ -2097,7 +2097,7 @@ inline void ApplySpringsForces_NeonVectorized(
                 s0s1s2s3_springLength_inv,
                 validMask);
 
-        // One newtown-rhapson step
+        // One newton-rhapson step
         float32x4_t s0s1s2s3_springLength = vrecpeq_f32(s0s1s2s3_springLength_inv);
         s0s1s2s3_springLength = vmulq_f32(
             s0s1s2s3_springLength,
@@ -2484,8 +2484,86 @@ inline std::optional<Geometry::AABB> MakeAABBWeightedUnion_SSEVectorized(std::ve
 #if FS_IS_ARM_NEON() // Implies ARM anyways
 inline std::optional<Geometry::AABB> MakeAABBWeightedUnion_NeonVectorized(std::vector<Geometry::ShipAABB> const & aabbs) noexcept
 {
-    // TODOTEST
-    return MakeAABBWeightedUnion_Naive(aabbs);
+    //
+    // Centers
+    //
+
+    float constexpr FrontierEdgeCountThreshold = 3.0f;
+
+    float32x4_t centersSum = vdupq_n_f32(0.0f); // CxCyCxCy (yes, repeated - no choice with SSE)
+    float weightsSum = 0.0f;
+    float maxWeight = 0.0f;
+    for (auto const & aabb : aabbs)
+    {
+        if (aabb.FrontierEdgeCount > FrontierEdgeCountThreshold)
+        {
+            float const w = aabb.FrontierEdgeCount - FrontierEdgeCountThreshold;
+
+            float32x4_t const rtlb = vld1q_f32(&(aabb.TopRight.x));
+            float32x4_t const lbrt = vextq_f32(rtlb, rtlb, 2);
+
+            // centersSum = centersSum + (rtlb + lbrt) * w
+            centersSum = vaddq_f32(
+                vmulq_f32(
+                    vaddq_f32(rtlb, lbrt),
+                    vld1q_dup_f32(&w)),
+                centersSum);
+
+            weightsSum += w;
+            maxWeight = std::max(maxWeight, w);
+        }
+    }
+
+    if (weightsSum == 0.0f)
+    {
+        return std::nullopt;
+    }
+
+    // center_4 = center / 2.0 / weightsSum
+    float32x4_t const center_4 = vmulq_f32(
+        vmulq_f32(centersSum, vdupq_n_f32(0.5f)),
+        vdupq_n_f32(1.0f / weightsSum));
+
+    //
+    // Extent
+    //
+
+    float32x4_t rtlb_offsets_max = vdupq_n_f32(0.0f);
+    float32x4_t rtlb_offsets_min = vdupq_n_f32(0.0f);
+    float const maxWeightRep = 1.0f / maxWeight;
+
+    for (auto const & aabb : aabbs)
+    {
+        if (aabb.FrontierEdgeCount > FrontierEdgeCountThreshold)
+        {
+            float const w = (aabb.FrontierEdgeCount - FrontierEdgeCountThreshold) * maxWeightRep;
+
+            float32x4_t const rtlb = vld1q_f32(&(aabb.TopRight.x));
+
+            // rtlb_weighted_offsets = (rtlb - cxcycxcy) * w
+            float32x4_t const rtlb_weighted_offsets = vmulq_f32(
+                vsubq_f32(rtlb, center_4),
+                vdupq_n_f32(w));
+
+            rtlb_offsets_max = vmaxq_f32(rtlb_offsets_max, rtlb_weighted_offsets);
+            rtlb_offsets_min = vminq_f32(rtlb_offsets_min, rtlb_weighted_offsets);
+        }
+    }
+
+    //
+    // Produce result
+    //
+
+    float32x4_t const res1 = vaddq_f32(center_4, rtlb_offsets_max); // Of this one we want the top two lanes
+    float32x4_t const res2 = vaddq_f32(center_4, rtlb_offsets_min); // Of this one we want the bottom two lanes
+    float32x4_t res = vextq_f32(res2, res1, 2);
+    res = vextq_u64(res, res, 1); // Swap two halves
+
+    Geometry::AABB result;
+
+    vst1q_f32(&(result.TopRight.x), res);
+
+    return result;
 }
 #endif
 
