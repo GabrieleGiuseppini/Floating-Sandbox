@@ -343,10 +343,9 @@ private:
 
     std::map<NpcSubKindIdType, HumanSubKind> mHumanSubKinds;
     std::map<NpcSubKindIdType, FurnitureSubKind> mFurnitureSubKinds;
+    std::vector<TextureCoordinatesQuad> mSpareIconTextureCoordinatesQuads; // Indexed by frame ID
     StringTable mStringTable;
 
     std::vector<std::vector<NpcSubKindIdType>> mHumanSubKindIdsByRole;
     std::vector<std::vector<NpcSubKindIdType>> mFurnitureSubKindIdsByRole;
-
-    std::vector<TextureCoordinatesQuad> mSpareIconTextureCoordinatesQuads; // Indexed by frame ID
 };

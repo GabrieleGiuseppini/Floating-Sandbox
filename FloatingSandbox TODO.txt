@@ -10,6 +10,8 @@
 
 	- Bump up version
 
+	- Lightning tool, like in Android
+
 	- Ocean rendering:
 		- Check if the 20ms for upload we see on Dell when ocean high detail is enabled, are due to uploading cloud shadows asynchronously
 			- Test: buffer cloud shadows into a member, and then upload at on-render-thread upload
@@ -579,6 +581,9 @@
 		- Types
 
 - Suggestions to spec:
+
+	- Sails system: new layer with sails, so they can be on top of structure
+		- Or: one sets *nodes* in new layer, and a sail is spawn
 
 	- Material: gravity shield
 	- Explosions improvements:
