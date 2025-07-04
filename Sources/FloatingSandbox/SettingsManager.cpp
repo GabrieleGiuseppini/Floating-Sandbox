@@ -42,9 +42,8 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
 {
     BaseSettingsManagerFactory factory;
 
-    ADD_GC_SETTING(unsigned int, MaxNumSimulationThreads);
+    ADD_GC_SETTING(size_t, SimulationParallelism);
     ADD_GC_SETTING(SpringRelaxationParallelComputationModeType, SpringRelaxationParallelComputationMode);
-    ADD_GC_SETTING(size_t, SpringRelaxationComputationParallelism);
     ADD_GC_SETTING(float, NumMechanicalDynamicsIterationsAdjustment);
     ADD_GC_SETTING(float, SpringStiffnessAdjustment);
     ADD_GC_SETTING(float, SpringDampingAdjustment);

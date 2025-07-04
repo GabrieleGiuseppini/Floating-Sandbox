@@ -39,7 +39,7 @@ RenderContext::RenderContext(
     ProgressCallback const & progressCallback)
     : mDoInvokeGlFinish(false) // Will be recalculated
     // Thread
-    , mRenderThread("FS RenderThread", threadManager.IsRenderingMultiThreaded(), threadManager)
+    , mRenderThread(ThreadManager::ThreadTaskKind::Render, "FS RenderThread", 0, threadManager.IsRenderingMultiThreaded(), threadManager)
     , mLastRenderUploadEndCompletionIndicator()
     , mLastRenderDrawCompletionIndicator()
     // Shader manager

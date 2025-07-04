@@ -679,7 +679,6 @@ struct SimulationParameters
     //
 
     SpringRelaxationParallelComputationModeType SpringRelaxationParallelComputationMode;
-    size_t SpringRelaxationComputationParallelism;
 
     //
     // Limits

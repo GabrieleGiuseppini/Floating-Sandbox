@@ -30,6 +30,7 @@ public:
 public:
 
     explicit ThreadPool(
+        ThreadManager::ThreadTaskKind threadTaskKind,
         size_t parallelism,
         ThreadManager & threadManager);
 
@@ -58,6 +59,7 @@ private:
 
     void ThreadLoop(
         std::string threadName,
+        size_t threadTaskIndex,
         ThreadManager & threadManager);
 
     void RunRemainingTasksLoop();
@@ -65,6 +67,8 @@ private:
     void RunTask(Task const & task);
 
 private:
+
+    ThreadManager::ThreadTaskKind const mThreadTaskKind;
 
     // Our thread lock
     std::mutex mLock;

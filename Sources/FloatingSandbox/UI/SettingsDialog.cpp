@@ -5658,26 +5658,26 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            // Max Simulation Threads
+            // Simulation Parallelism
             {
-                mMaxNumSimulationThreadsSlider = new SliderControl<unsigned int>(
+                mSimulationParallelismSlider = new SliderControl<size_t>(
                     performanceBoxSizer->GetStaticBox(),
-                    SliderControl<unsigned int>::DirectionType::Vertical,
+                    SliderControl<size_t>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Max Threads"),
                     _("Sets a cap to the maximum number of threads used for the simulation."),
-                    [this](unsigned int value)
+                    [this](size_t value)
                     {
-                        this->mLiveSettings.SetValue(GameSettings::MaxNumSimulationThreads, value);
+                        this->mLiveSettings.SetValue(GameSettings::SimulationParallelism, value);
                         this->OnLiveSettingsChanged();
                     },
-                    std::make_unique<IntegralLinearSliderCore<unsigned int>>(
-                        mGameControllerSettingsOptions.GetMinMaxNumSimulationThreads(),
-                        mGameControllerSettingsOptions.GetMaxMaxNumSimulationThreads()));
+                    std::make_unique<IntegralLinearSliderCore<size_t>>(
+                        mGameControllerSettingsOptions.GetMinSimulationParallelism(),
+                        mGameControllerSettingsOptions.GetMaxSimulationParallelism()));
 
                 performanceSizer->Add(
-                    mMaxNumSimulationThreadsSlider,
+                    mSimulationParallelismSlider,
                     wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -6211,32 +6211,6 @@ void SettingsDialog::PopulateParallelismExperimentsPanel(wxPanel * panel)
             CellBorderOuter);
     }
 
-    // Parallelism slider
-    {
-        mSpringRelaxationComputationParallelismSlider = new SliderControl<size_t>(
-            panel,
-            SliderControl<size_t>::DirectionType::Vertical,
-            SliderWidth,
-            SliderHeight,
-            _("S-PARL"),
-            "",
-            [this](size_t value)
-            {
-                this->mLiveSettings.SetValue(GameSettings::SpringRelaxationComputationParallelism, value);
-                this->OnLiveSettingsChanged();
-            },
-            std::make_unique<IntegralLinearSliderCore<size_t>>(
-                0,
-                8));
-
-        gridSizer->Add(
-            mSpringRelaxationComputationParallelismSlider,
-            wxGBPosition(0, 1),
-            wxGBSpan(1, 1),
-            wxEXPAND | wxALL,
-            CellBorderOuter);
-    }
-
     // Finalize panel
 
     WxHelpers::MakeAllColumnsExpandable(gridSizer);
@@ -6685,8 +6659,8 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mGenerateDebrisCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoGenerateDebris));
     mGenerateSparklesForCutsCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoGenerateSparklesForCuts));
 
-    mMaxNumSimulationThreadsSlider->SetValue(settings.GetValue<unsigned int>(GameSettings::MaxNumSimulationThreads));
     mNumMechanicalIterationsAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::NumMechanicalDynamicsIterationsAdjustment));
+    mSimulationParallelismSlider->SetValue(settings.GetValue<unsigned int>(GameSettings::SimulationParallelism));
 
 #if PARALLELISM_EXPERIMENTS
     //
@@ -6713,8 +6687,6 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
             break;
         }
     }
-
-    mSpringRelaxationComputationParallelismSlider->SetValue(settings.GetValue<size_t>(GameSettings::SpringRelaxationComputationParallelism));
 #endif
 }
 

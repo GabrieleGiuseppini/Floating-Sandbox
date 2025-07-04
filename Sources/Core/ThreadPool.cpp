@@ -11,9 +11,11 @@
 #include <algorithm>
 
 ThreadPool::ThreadPool(
+    ThreadManager::ThreadTaskKind threadTaskKind,
     size_t parallelism,
     ThreadManager & threadManager)
-    : mLock()
+    : mThreadTaskKind(threadTaskKind)
+    , mLock()
     , mThreads()
     , mWorkerThreadSignal()
     , mTasksToRun(nullptr)
@@ -29,9 +31,9 @@ ThreadPool::ThreadPool(
     for (size_t i = 0; i < parallelism - 1; ++i)
     {
         std::string threadName = "FS TPool " + std::to_string(i + 1);
-        mThreads.emplace_back([this, threadName, &threadManager]()
+        mThreads.emplace_back([this, threadName, i, &threadManager]()
             {
-                ThreadLoop(threadName, threadManager);
+                ThreadLoop(threadName, i + 1, threadManager);
             });
     }
 }
@@ -109,13 +111,14 @@ void ThreadPool::Run(std::vector<Task> const & tasks)
 
 void ThreadPool::ThreadLoop(
     std::string threadName,
+    size_t threadTaskIndex,
     ThreadManager & threadManager)
 {
     //
     // Initialize thread
     //
 
-    threadManager.InitializeThisThread(threadName, true);
+    threadManager.InitializeThisThread(mThreadTaskKind, threadName, threadTaskIndex);
 
     //
     // Run thread loop until thread pool is destroyed

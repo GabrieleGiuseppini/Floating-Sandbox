@@ -390,16 +390,13 @@ public:
 
     float GetSimulationStepTimeDuration() const override { return SimulationParameters::SimulationStepTimeDuration<float>; }
 
-    unsigned int GetMaxNumSimulationThreads() const override { return static_cast<unsigned int>(mThreadManager.GetSimulationParallelism()); }
-    void SetMaxNumSimulationThreads(unsigned int value) override { mThreadManager.SetSimulationParallelism(static_cast<size_t>(value)); }
-    unsigned int GetMinMaxNumSimulationThreads() const override { return 1; }
-    unsigned int GetMaxMaxNumSimulationThreads() const override { return static_cast<unsigned int>(mThreadManager.GetMaxSimulationParallelism()); }
+    size_t GetSimulationParallelism() const override { return mThreadManager.GetSimulationParallelism(); }
+    void SetSimulationParallelism(size_t value) override { mThreadManager.SetSimulationParallelism(value); }
+    size_t GetMinSimulationParallelism() const override { return 1; }
+    size_t GetMaxSimulationParallelism() const override { return mThreadManager.GetMaxSimulationParallelism(); }
 
     SpringRelaxationParallelComputationModeType GetSpringRelaxationParallelComputationMode() const override { return mSimulationParameters.SpringRelaxationParallelComputationMode; }
     void SetSpringRelaxationParallelComputationMode(SpringRelaxationParallelComputationModeType value) override {mSimulationParameters.SpringRelaxationParallelComputationMode = value; }
-
-    size_t GetSpringRelaxationComputationParallelism() const override { return mSimulationParameters.SpringRelaxationComputationParallelism; }
-    void SetSpringRelaxationComputationParallelism(size_t value) override { mSimulationParameters.SpringRelaxationComputationParallelism = value; }
 
     float GetNumMechanicalDynamicsIterationsAdjustment() const override { return mSimulationParameters.NumMechanicalDynamicsIterationsAdjustment; }
     void SetNumMechanicalDynamicsIterationsAdjustment(float value) override { mSimulationParameters.NumMechanicalDynamicsIterationsAdjustment = value; }

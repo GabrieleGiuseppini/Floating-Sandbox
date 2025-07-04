@@ -126,7 +126,6 @@ Ship::Ship(
     , mAirBubblesCreatedCount(0)
     , mCurrentSimulationParallelism(0) // We'll detect a difference on first run
     , mCurrentSpringRelaxationParallelComputationMode() // We'll detect a difference on first run
-    , mCurrentSpringRelaxationComputationParallelism(0) // We'll detect a difference on first run
     // Static pressure
     , mStaticPressureBuffer(mPoints.GetAlignedShipPointCount())
     , mStaticPressureNetForceMagnitudeSum(0.0f)
@@ -3262,8 +3261,7 @@ void Ship::UpdateForSimulationParameters(
 {
     size_t const simulationParallelism = threadManager.GetSimulationParallelism();
     if (simulationParallelism != mCurrentSimulationParallelism
-        || simulationParameters.SpringRelaxationParallelComputationMode != mCurrentSpringRelaxationParallelComputationMode
-        || simulationParameters.SpringRelaxationComputationParallelism != mCurrentSpringRelaxationComputationParallelism)
+        || simulationParameters.SpringRelaxationParallelComputationMode != mCurrentSpringRelaxationParallelComputationMode)
     {
         // Re-calculate spring relaxation parallelism
         RecalculateSpringRelaxationParallelism(simulationParallelism, simulationParameters);
@@ -3274,7 +3272,6 @@ void Ship::UpdateForSimulationParameters(
         // Remember new values
         mCurrentSimulationParallelism = simulationParallelism;
         mCurrentSpringRelaxationParallelComputationMode = simulationParameters.SpringRelaxationParallelComputationMode;
-        mCurrentSpringRelaxationComputationParallelism = simulationParameters.SpringRelaxationComputationParallelism;
     }
 }
 

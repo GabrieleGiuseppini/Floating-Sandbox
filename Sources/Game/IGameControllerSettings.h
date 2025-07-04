@@ -24,14 +24,11 @@ struct IGameControllerSettings
 {
     virtual float GetSimulationStepTimeDuration() const = 0;
 
-    virtual unsigned int GetMaxNumSimulationThreads() const = 0;
-    virtual void SetMaxNumSimulationThreads(unsigned int value) = 0;
+    virtual size_t GetSimulationParallelism() const = 0;
+    virtual void SetSimulationParallelism(size_t value) = 0;
 
     virtual SpringRelaxationParallelComputationModeType GetSpringRelaxationParallelComputationMode() const = 0;
     virtual void SetSpringRelaxationParallelComputationMode(SpringRelaxationParallelComputationModeType value) = 0;
-
-    virtual size_t GetSpringRelaxationComputationParallelism() const = 0;
-    virtual void SetSpringRelaxationComputationParallelism(size_t value) = 0;
 
     virtual float GetNumMechanicalDynamicsIterationsAdjustment() const = 0;
     virtual void SetNumMechanicalDynamicsIterationsAdjustment(float value) = 0;

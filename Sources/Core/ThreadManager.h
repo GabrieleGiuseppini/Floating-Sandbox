@@ -16,19 +16,40 @@ class ThreadManager final
 {
 public:
 
+    enum class ThreadTaskKind
+    {
+        MainAndSimulation,
+        Simulation,
+        Render,
+        Other
+    };
+
     static size_t GetNumberOfProcessors();
 
 public:
 
+    using PlatformSpecificThreadInitializationFunction = std::function<void(ThreadTaskKind, std::string const &, size_t)>;
+
     ThreadManager(
         bool isRenderingMultithreaded,
-        size_t maxInitialParallelism,
-        std::function<void(std::string const &, bool)> && platformSpecificThreadInitializationFunctor);
+        size_t simulationParallelism,
+        PlatformSpecificThreadInitializationFunction && platformSpecificThreadInitializationFunctor);
 
     bool IsRenderingMultiThreaded() const
     {
         return mIsRenderingMultithreaded;
     }
+
+    void InitializeThisThread(
+        ThreadTaskKind threadTaskKind,
+        std::string const & threadName,
+        size_t threadTaskIndex);
+
+    static size_t GetThisThreadProcessor();
+
+    //
+    // Simulation Parallelism applies to all simulation tasks, including SpringRelaxation and LightDiffusion
+    //
 
     size_t GetSimulationParallelism() const;
 
@@ -44,22 +65,13 @@ public:
         return mMaxSimulationParallelism;
     }
 
-    void InitializeThisThread(
-        std::string const & threadName,
-        bool isHighPriority);
-
     ThreadPool & GetSimulationThreadPool();
 
 private:
 
-    static size_t CalculateMaxSimulationParallelism(bool isRenderingMultithreaded);
-
-private:
-
     bool const mIsRenderingMultithreaded;
-
-    size_t const mMaxSimulationParallelism; // Calculated via init args and hardware concurrency; never changes
-    std::function<void(std::string const &, bool)> mPlatformSpecificThreadInitializationFunctor;
+    size_t const mMaxSimulationParallelism; // Calculated via hardware concurrency; never changes
+    PlatformSpecificThreadInitializationFunction const mPlatformSpecificThreadInitializationFunctor;
 
     std::unique_ptr<ThreadPool> mSimulationThreadPool;
 };

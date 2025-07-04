@@ -5,7 +5,7 @@
  ***************************************************************************************/
 
 //
-// The main application. This journey begins from here.
+// The main application. The journey begins from here.
 //
 
 #include "BootSettings.h"
@@ -100,6 +100,13 @@ bool CalculateIsRenderingMultithreaded(std::optional<bool> doForceNoMultithreade
         return hasEnoughThreads;
 #endif
     }
+}
+
+size_t CalculateInitialSimulationParallelism(bool isRenderingMultiThreaded)
+{
+    return std::min(
+        size_t(4),
+        ThreadManager::GetNumberOfProcessors() - (isRenderingMultiThreaded ? 1 : 0));
 }
 
 class MainApp final : public wxApp
@@ -254,8 +261,8 @@ bool MainApp::OnInit()
 
         mThreadManager = std::make_unique<ThreadManager>(
             CalculateIsRenderingMultithreaded(bootSettings.DoForceNoMultithreadedRendering),
-            8, // We start "zuinig", as we do not want to pay a ThreadPool price for too many threads
-            [this](std::string const &, bool)
+            CalculateInitialSimulationParallelism(CalculateIsRenderingMultithreaded(bootSettings.DoForceNoMultithreadedRendering)),
+            [this](ThreadManager::ThreadTaskKind, std::string const &, size_t)
             {
                 // No platform-specific initialization for PC
             });
@@ -264,7 +271,7 @@ bool MainApp::OnInit()
         // Initialize this thread
         //
 
-        mThreadManager->InitializeThisThread("FS Main Thread", false);
+        mThreadManager->InitializeThisThread(ThreadManager::ThreadTaskKind::MainAndSimulation, "FS Main Thread", 0);
 
         //
         // Initialize wxWidgets and language used for localization

@@ -22,8 +22,8 @@
  */
 struct IGameControllerSettingsOptions
 {
-    virtual unsigned int GetMinMaxNumSimulationThreads() const = 0;
-    virtual unsigned int GetMaxMaxNumSimulationThreads() const = 0;
+    virtual size_t GetMinSimulationParallelism() const = 0;
+    virtual size_t GetMaxSimulationParallelism() const = 0;
 
     virtual float GetMinNumMechanicalDynamicsIterationsAdjustment() const = 0;
     virtual float GetMaxNumMechanicalDynamicsIterationsAdjustment() const = 0;

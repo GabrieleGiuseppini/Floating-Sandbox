@@ -105,7 +105,9 @@ public:
 public:
 
     TaskThread(
+        ThreadManager::ThreadTaskKind threadTaskKind,
         std::string threadName,
+        size_t threadTaskIndex,
         bool isMultithreaded,
         ThreadManager & threadManager);
 
@@ -185,7 +187,9 @@ public:
 private:
 
     void ThreadLoop(
+        ThreadManager::ThreadTaskKind threadTaskKind,
         std::string threadName,
+        size_t threadTaskIndex,
         ThreadManager * threadManager);
 
 private:

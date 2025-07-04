@@ -40,16 +40,13 @@ void Ship::RecalculateSpringRelaxationParallelism_FullSpeed(
     size_t simulationParallelism,
     SimulationParameters const & simulationParameters)
 {
-    size_t const algorithmParallelism = std::min(simulationParameters.SpringRelaxationComputationParallelism, simulationParallelism);
-
-    LogMessage("Ship::RecalculateSpringRelaxationParallelism_FullSpeed:",
-        " simulationParallelism=", simulationParallelism, " algorithmParallelism=", algorithmParallelism);
+    LogMessage("Ship::RecalculateSpringRelaxationParallelism_FullSpeed: simulationParallelism=", simulationParallelism);
 
     //
     // Prepare dynamic force buffers
     //
 
-    mPoints.SetDynamicForceParallelism(algorithmParallelism);
+    mPoints.SetDynamicForceParallelism(simulationParallelism);
 
     //
     // Prepare tasks
@@ -60,29 +57,29 @@ void Ship::RecalculateSpringRelaxationParallelism_FullSpeed(
     mSpringRelaxation_FullSpeed_Tasks.clear();
 
     ElementCount const numberOfSprings = mSprings.GetElementCount();
-    ElementCount const numberOfVecSpringsPerThread = numberOfSprings / (static_cast<ElementCount>(algorithmParallelism) * vectorization_float_count<ElementCount>);
+    ElementCount const numberOfVecSpringsPerThread = numberOfSprings / (static_cast<ElementCount>(simulationParallelism) * vectorization_float_count<ElementCount>);
 
     ElementCount const numberOfPoints = mPoints.GetBufferElementCount();
-    ElementCount const numberOfVecPointsPerThread = numberOfPoints / (static_cast<ElementCount>(algorithmParallelism) * vectorization_float_count<ElementCount>);
+    ElementCount const numberOfVecPointsPerThread = numberOfPoints / (static_cast<ElementCount>(simulationParallelism) * vectorization_float_count<ElementCount>);
 
     ElementIndex springStart = 0;
     ElementIndex pointStart = 0;
-    for (size_t t = 0; t < algorithmParallelism; ++t)
+    for (size_t t = 0; t < simulationParallelism; ++t)
     {
-        ElementIndex const springEnd = (t < algorithmParallelism - 1)
+        ElementIndex const springEnd = (t < simulationParallelism - 1)
             ? std::min(
                 springStart + numberOfVecSpringsPerThread * vectorization_float_count<ElementCount>,
                 numberOfSprings)
             : numberOfSprings;
 
-        ElementIndex const pointEnd = (t < algorithmParallelism - 1)
+        ElementIndex const pointEnd = (t < simulationParallelism - 1)
             ? std::min(
                 pointStart + numberOfVecPointsPerThread * vectorization_float_count<ElementCount>,
                 numberOfPoints)
             : numberOfPoints;
 
         mSpringRelaxation_FullSpeed_Tasks.emplace_back(
-            [this, t, springStart, springEnd, pointStart, pointEnd, algorithmParallelism, &simulationParameters]()
+            [this, t, springStart, springEnd, pointStart, pointEnd, simulationParallelism, &simulationParameters]()
             {
                 RunSpringRelaxation_FullSpeed_Thread(
                     t,
@@ -90,7 +87,7 @@ void Ship::RecalculateSpringRelaxationParallelism_FullSpeed(
                     springEnd,
                     pointStart,
                     pointEnd,
-                    algorithmParallelism,
+                    simulationParallelism,
                     simulationParameters);
             });
 
@@ -103,17 +100,14 @@ void Ship::RecalculateSpringRelaxationParallelism_StepByStep(
     size_t simulationParallelism,
     SimulationParameters const & simulationParameters)
 {
-    size_t const algorithmParallelism = std::min(simulationParameters.SpringRelaxationComputationParallelism, simulationParallelism);
-
-    LogMessage("Ship::RecalculateSpringRelaxationParallelism_StepByStep:",
-        " simulationParallelism=", simulationParallelism, " algorithmParallelism=", algorithmParallelism);
+    LogMessage("Ship::RecalculateSpringRelaxationParallelism_StepByStep: simulationParallelism=", simulationParallelism);
 
 
     //
     // Prepare dynamic force buffers
     //
 
-    mPoints.SetDynamicForceParallelism(algorithmParallelism);
+    mPoints.SetDynamicForceParallelism(simulationParallelism);
 
     //
     // Prepare tasks
@@ -126,16 +120,16 @@ void Ship::RecalculateSpringRelaxationParallelism_StepByStep(
     mSpringRelaxation_StepByStep_IntegrationAndSeaFloorCollisionTasks.clear();
 
     ElementCount const numberOfSprings = mSprings.GetElementCount();
-    ElementCount const numberOfVecSpringsPerThread = numberOfSprings / (static_cast<ElementCount>(algorithmParallelism) * vectorization_float_count<ElementCount>);
+    ElementCount const numberOfVecSpringsPerThread = numberOfSprings / (static_cast<ElementCount>(simulationParallelism) * vectorization_float_count<ElementCount>);
 
     ElementCount const numberOfPoints = mPoints.GetBufferElementCount();
-    ElementCount const numberOfVecPointsPerThread = numberOfPoints / (static_cast<ElementCount>(algorithmParallelism) * vectorization_float_count<ElementCount>);
+    ElementCount const numberOfVecPointsPerThread = numberOfPoints / (static_cast<ElementCount>(simulationParallelism) * vectorization_float_count<ElementCount>);
 
     ElementIndex springStart = 0;
     ElementIndex pointStart = 0;
-    for (size_t t = 0; t < algorithmParallelism; ++t)
+    for (size_t t = 0; t < simulationParallelism; ++t)
     {
-        ElementIndex const springEnd = (t < algorithmParallelism - 1)
+        ElementIndex const springEnd = (t < simulationParallelism - 1)
             ? springStart + numberOfVecSpringsPerThread * vectorization_float_count<ElementCount>
             : numberOfSprings;
 
@@ -154,7 +148,7 @@ void Ship::RecalculateSpringRelaxationParallelism_StepByStep(
 
         springStart = springEnd;
 
-        ElementIndex const pointEnd = (t < algorithmParallelism - 1)
+        ElementIndex const pointEnd = (t < simulationParallelism - 1)
             ? pointStart + numberOfVecPointsPerThread * vectorization_float_count<ElementCount>
             : numberOfPoints;
 
@@ -164,22 +158,22 @@ void Ship::RecalculateSpringRelaxationParallelism_StepByStep(
         // if SimulationParameters is never re-created
 
         mSpringRelaxation_StepByStep_IntegrationTasks.emplace_back(
-            [this, pointStart, pointEnd, algorithmParallelism, &simulationParameters]()
+            [this, pointStart, pointEnd, simulationParallelism, &simulationParameters]()
             {
                 IntegrateAndResetDynamicForces(
                     pointStart,
                     pointEnd,
-                    algorithmParallelism,
+                    simulationParallelism,
                     simulationParameters);
             });
 
         mSpringRelaxation_StepByStep_IntegrationAndSeaFloorCollisionTasks.emplace_back(
-            [this, pointStart, pointEnd, algorithmParallelism, &simulationParameters]()
+            [this, pointStart, pointEnd, simulationParallelism, &simulationParameters]()
             {
                 IntegrateAndResetDynamicForces(
                     pointStart,
                     pointEnd,
-                    algorithmParallelism,
+                    simulationParallelism,
                     simulationParameters);
 
                 HandleCollisionsWithSeaFloor(
@@ -196,16 +190,13 @@ void Ship::RecalculateSpringRelaxationParallelism_Hybrid(
     size_t simulationParallelism,
     SimulationParameters const & simulationParameters)
 {
-    size_t const algorithmParallelism = std::min(simulationParameters.SpringRelaxationComputationParallelism, simulationParallelism);
-
-    LogMessage("Ship::RecalculateSpringRelaxationParallelism_Hybrid:",
-        " simulationParallelism=", simulationParallelism, " algorithmParallelism=", algorithmParallelism);
+    LogMessage("Ship::RecalculateSpringRelaxationParallelism_Hybrid: simulationParallelism=", simulationParallelism);
 
     //
     // Prepare dynamic force buffers
     //
 
-    mPoints.SetDynamicForceParallelism(algorithmParallelism);
+    mPoints.SetDynamicForceParallelism(simulationParallelism);
 
     //
     // Prepare tasks
@@ -217,29 +208,29 @@ void Ship::RecalculateSpringRelaxationParallelism_Hybrid(
     mSpringRelaxation_Hybrid_2_Tasks.clear();
 
     ElementCount const numberOfSprings = mSprings.GetElementCount();
-    ElementCount const numberOfVecSpringsPerThread = numberOfSprings / (static_cast<ElementCount>(algorithmParallelism) * vectorization_float_count<ElementCount>);
+    ElementCount const numberOfVecSpringsPerThread = numberOfSprings / (static_cast<ElementCount>(simulationParallelism) * vectorization_float_count<ElementCount>);
 
     ElementCount const numberOfPoints = mPoints.GetBufferElementCount();
-    ElementCount const numberOfVecPointsPerThread = numberOfPoints / (static_cast<ElementCount>(algorithmParallelism) * vectorization_float_count<ElementCount>);
+    ElementCount const numberOfVecPointsPerThread = numberOfPoints / (static_cast<ElementCount>(simulationParallelism) * vectorization_float_count<ElementCount>);
 
     ElementIndex springStart = 0;
     ElementIndex pointStart = 0;
-    for (size_t t = 0; t < algorithmParallelism; ++t)
+    for (size_t t = 0; t < simulationParallelism; ++t)
     {
-        ElementIndex const springEnd = (t < algorithmParallelism - 1)
+        ElementIndex const springEnd = (t < simulationParallelism - 1)
             ? std::min(
                 springStart + numberOfVecSpringsPerThread * vectorization_float_count<ElementCount>,
                 numberOfSprings)
             : numberOfSprings;
 
-        ElementIndex const pointEnd = (t < algorithmParallelism - 1)
+        ElementIndex const pointEnd = (t < simulationParallelism - 1)
             ? std::min(
                 pointStart + numberOfVecPointsPerThread * vectorization_float_count<ElementCount>,
                 numberOfPoints)
             : numberOfPoints;
 
         mSpringRelaxation_Hybrid_1_Tasks.emplace_back(
-            [this, t, springStart, springEnd, pointStart, pointEnd, algorithmParallelism, &simulationParameters]()
+            [this, t, springStart, springEnd, pointStart, pointEnd, simulationParallelism, &simulationParameters]()
             {
                 RunSpringRelaxation_Hybrid_Thread_1(
                     t,
@@ -247,12 +238,12 @@ void Ship::RecalculateSpringRelaxationParallelism_Hybrid(
                     springEnd,
                     pointStart,
                     pointEnd,
-                    algorithmParallelism,
+                    simulationParallelism,
                     simulationParameters);
             });
 
         mSpringRelaxation_Hybrid_2_Tasks.emplace_back(
-            [this, t, springStart, springEnd, pointStart, pointEnd, algorithmParallelism, &simulationParameters]()
+            [this, t, springStart, springEnd, pointStart, pointEnd, simulationParallelism, &simulationParameters]()
             {
                 RunSpringRelaxation_Hybrid_Thread_2(
                     t,
@@ -260,7 +251,7 @@ void Ship::RecalculateSpringRelaxationParallelism_Hybrid(
                     springEnd,
                     pointStart,
                     pointEnd,
-                    algorithmParallelism,
+                    simulationParallelism,
                     simulationParameters);
             });
 

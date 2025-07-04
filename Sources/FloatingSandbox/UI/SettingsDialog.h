@@ -27,7 +27,9 @@
 #include <string>
 #include <vector>
 
-#define PARALLELISM_EXPERIMENTS 0
+// TODOTEST
+//#define PARALLELISM_EXPERIMENTS 0
+#define PARALLELISM_EXPERIMENTS 1
 
 class SettingsDialog : public wxFrame
 {
@@ -230,8 +232,8 @@ private:
     wxRadioBox * mVectorFieldRenderModeRadioBox;
     wxCheckBox * mGenerateDebrisCheckBox;
     wxCheckBox * mGenerateSparklesForCutsCheckBox;
-    SliderControl<unsigned int> * mMaxNumSimulationThreadsSlider;
     SliderControl<float> * mNumMechanicalIterationsAdjustmentSlider;
+    SliderControl<size_t> * mSimulationParallelismSlider;
 
     // Settings Management
     wxListCtrl * mPersistedSettingsListCtrl;
@@ -247,7 +249,6 @@ private:
 #if PARALLELISM_EXPERIMENTS
     // Parallelism Experiment
     wxRadioBox * mSpringRelaxationParallelComputationModeRadioBox;
-    SliderControl<size_t> * mSpringRelaxationComputationParallelismSlider;
 #endif
 
     //////////////////////////////////////////////////////

@@ -133,6 +133,5 @@ SimulationParameters::SimulationParameters()
     , MoveToolInertia(3.0f)
     // Computation
     , SpringRelaxationParallelComputationMode(SpringRelaxationParallelComputationModeType::Hybrid)
-    , SpringRelaxationComputationParallelism(4) // After a lot of experimenting, 4 is a magic number
 {
 }

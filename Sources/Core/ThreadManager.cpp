@@ -15,6 +15,9 @@
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <Windows.h>
+#elif FS_IS_OS_ANDROID()
+#include <sys/syscall.h>
+#include <unistd.h>
 #endif
 
 size_t ThreadManager::GetNumberOfProcessors()
@@ -26,20 +29,56 @@ size_t ThreadManager::GetNumberOfProcessors()
 
 ThreadManager::ThreadManager(
     bool isRenderingMultithreaded,
-    size_t maxInitialParallelism,
-    std::function<void(std::string const &, bool)> && platformSpecificThreadInitializationFunctor)
+    size_t simulationParallelism,
+    PlatformSpecificThreadInitializationFunction && platformSpecificThreadInitializationFunctor)
     : mIsRenderingMultithreaded(isRenderingMultithreaded)
-    , mMaxSimulationParallelism(CalculateMaxSimulationParallelism(isRenderingMultithreaded))
+    , mMaxSimulationParallelism(GetNumberOfProcessors())
     , mPlatformSpecificThreadInitializationFunctor(std::move(platformSpecificThreadInitializationFunctor))
 {
-    size_t const simulationParallelism = std::min(mMaxSimulationParallelism, maxInitialParallelism);
-
     LogMessage("ThreadManager: isRenderingMultithreaded=", (mIsRenderingMultithreaded ? "YES" : "NO"),
-        " maxSimulationParallelism=", mMaxSimulationParallelism,
-        " simulationParallelism=", simulationParallelism);
+        " simulationParallelism=", simulationParallelism,
+        " maxSimulationParallelism=", mMaxSimulationParallelism);
 
     // Set parallelism
     SetSimulationParallelism(simulationParallelism);
+}
+
+void ThreadManager::InitializeThisThread(
+    ThreadTaskKind threadTaskKind,
+    std::string const & threadName,
+    size_t threadTaskIndex)
+{
+    //
+    // Initialize floating point handling
+    //
+
+    // Avoid denormal numbers for very small quantities
+    EnableFloatingPointFlushToZero();
+
+#ifdef FLOATING_POINT_CHECKS
+    EnableFloatingPointExceptions();
+#endif
+
+    mPlatformSpecificThreadInitializationFunctor(threadTaskKind, threadName, threadTaskIndex);
+}
+
+size_t ThreadManager::GetThisThreadProcessor()
+{
+#if FS_IS_OS_WINDOWS()
+    return GetCurrentProcessorNumber();
+#elif FS_IS_OS_ANDROID()
+    unsigned cpu;
+    if (syscall(__NR_getcpu, &cpu, NULL, NULL) < 0)
+    {
+        return static_cast<size_t>(-1);
+    }
+    else
+    {
+        return static_cast<size_t>(cpu);
+    }
+#else
+    return static_cast<size_t>(-1);
+#endif
 }
 
 size_t ThreadManager::GetSimulationParallelism() const
@@ -57,45 +96,10 @@ void ThreadManager::SetSimulationParallelism(size_t parallelism)
 
     mSimulationThreadPool.reset();
 
-    mSimulationThreadPool = std::make_unique<ThreadPool>(parallelism, *this);
-}
-
-void ThreadManager::InitializeThisThread(
-    std::string const & threadName,
-    bool isHighPriority)
-{
-#if FS_IS_OS_WINDOWS()
-    LogMessage("Thread processor: ", GetCurrentProcessorNumber());
-#endif
-
-    //
-    // Initialize floating point handling
-    //
-
-    // Avoid denormal numbers for very small quantities
-    EnableFloatingPointFlushToZero();
-
-#ifdef FLOATING_POINT_CHECKS
-    EnableFloatingPointExceptions();
-#endif
-
-    mPlatformSpecificThreadInitializationFunctor(threadName, isHighPriority);
+    mSimulationThreadPool = std::make_unique<ThreadPool>(ThreadManager::ThreadTaskKind::Simulation, parallelism, *this);
 }
 
 ThreadPool & ThreadManager::GetSimulationThreadPool()
 {
     return *mSimulationThreadPool;
-}
-
-size_t ThreadManager::CalculateMaxSimulationParallelism(bool isRenderingMultithreaded)
-{
-    auto const numberOfProcessors = GetNumberOfProcessors();
-
-    // Calculate max simulation parallelism
-
-    int availableThreads = static_cast<int>(numberOfProcessors);
-    if (isRenderingMultithreaded)
-        --availableThreads;
-
-    return std::max(availableThreads, 1); // Includes this thread
 }
