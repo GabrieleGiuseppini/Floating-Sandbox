@@ -6660,7 +6660,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mGenerateSparklesForCutsCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoGenerateSparklesForCuts));
 
     mNumMechanicalIterationsAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::NumMechanicalDynamicsIterationsAdjustment));
-    mSimulationParallelismSlider->SetValue(settings.GetValue<unsigned int>(GameSettings::SimulationParallelism));
+    mSimulationParallelismSlider->SetValue(settings.GetValue<size_t>(GameSettings::SimulationParallelism));
 
 #if PARALLELISM_EXPERIMENTS
     //
