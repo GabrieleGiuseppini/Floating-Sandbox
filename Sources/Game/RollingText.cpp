@@ -33,7 +33,7 @@ void RollingText::AddLine(
 	mLines.emplace_front(text, lifetime);
 
 	//
-	// Scroll all lines up
+	// Scroll all other lines up
 	//
 
 	unsigned int nextLineMinYOffset = 0 + LineHeight;

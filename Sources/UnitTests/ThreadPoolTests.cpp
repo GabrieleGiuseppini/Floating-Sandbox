@@ -14,7 +14,7 @@ public:
 
 protected:
 
-    ThreadManager mThreadManager{ false, 16, [](std::string const &, bool) {} };
+    ThreadManager mThreadManager{ false, 16, [](ThreadManager::ThreadTaskKind, std::string const &, size_t) {} };
 };
 
 INSTANTIATE_TEST_SUITE_P(
@@ -43,7 +43,7 @@ TEST_P(ThreadPoolTests_OneRuns, One_Runs)
     ASSERT_TRUE(std::none_of(results.cbegin(), results.cend(), [](bool b) { return b; }));
 
     // Run
-    ThreadPool t(1, mThreadManager);
+    ThreadPool t(ThreadManager::ThreadTaskKind::MainAndSimulation, 1, mThreadManager);
     t.Run(tasks);
 
     ASSERT_TRUE(std::all_of(results.cbegin(), results.cend(), [](bool b) { return b; }));
@@ -57,7 +57,7 @@ public:
 
 protected:
 
-    ThreadManager mThreadManager{ false, 16, [](std::string const &, bool) {} };
+    ThreadManager mThreadManager{ false, 16, [](ThreadManager::ThreadTaskKind, std::string const &, size_t) {} };
 };
 
 INSTANTIATE_TEST_SUITE_P(
@@ -92,7 +92,7 @@ TEST_P(ThreadPoolTests_FourRuns, Four_Runs)
     ASSERT_TRUE(std::none_of(results.cbegin(), results.cend(), [](bool b) { return b; }));
 
     // Run
-    ThreadPool t(4, mThreadManager);
+    ThreadPool t(ThreadManager::ThreadTaskKind::MainAndSimulation, 4, mThreadManager);
     t.Run(tasks);
 
     ASSERT_TRUE(std::all_of(results.cbegin(), results.cend(), [](bool b) { return b; }));

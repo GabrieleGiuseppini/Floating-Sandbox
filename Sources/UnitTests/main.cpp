@@ -1,3 +1,5 @@
+#include <Core/FloatingPoint.h>
+
 #include <iostream>
 
 #include "gtest/gtest.h"
@@ -37,6 +39,8 @@ int main(int argc, char **argv)
 
 #endif
 #endif
+
+    EnableFloatingPointFlushToZero();
 
     ::testing::InitGoogleTest(&argc, argv);
 

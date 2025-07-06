@@ -848,32 +848,30 @@ void RunApplySpringForcesTest(Algorithm algorithm)
 
     ApplySpringForcesSprings springs;
 
-    springs.endpointsBuffer[0] = { 0, 0 };
+    springs.endpointsBuffer[0] = { 5, 2 };
+    springs.endpointsBuffer[1] = { 6, 1 };
+    springs.endpointsBuffer[2] = { 5, 1 };
+    springs.endpointsBuffer[3] = { 6, 2 };
 
-    springs.endpointsBuffer[1] = { 5, 2 };
-    springs.endpointsBuffer[2] = { 6, 1 };
-    springs.endpointsBuffer[3] = { 5, 1 };
-    springs.endpointsBuffer[4] = { 6, 2 };
+    springs.endpointsBuffer[4] = { 2, 7 };
+    springs.endpointsBuffer[5] = { 6, 3 };
+    springs.endpointsBuffer[6] = { 2, 3 };
+    springs.endpointsBuffer[7] = { 6, 7 };
 
-    springs.endpointsBuffer[5] = { 2, 7 };
-    springs.endpointsBuffer[6] = { 6, 3 };
-    springs.endpointsBuffer[7] = { 2, 3 };
-    springs.endpointsBuffer[8] = { 6, 7 };
+    springs.endpointsBuffer[8] = { 7, 4 };
+    springs.endpointsBuffer[9] = { 8, 3 };
+    springs.endpointsBuffer[10] = { 7, 3 };
+    springs.endpointsBuffer[11] = { 8, 4 };
 
-    springs.endpointsBuffer[9] = { 7, 4 };
-    springs.endpointsBuffer[10] = { 8, 3 };
-    springs.endpointsBuffer[11] = { 7, 3 };
-    springs.endpointsBuffer[12] = { 8, 4 };
-
-    springs.endpointsBuffer[13] = { 1, 2 };
-    springs.endpointsBuffer[14] = { 4, 3 };
-    springs.endpointsBuffer[15] = { 6, 5 };
-    springs.endpointsBuffer[16] = { 8, 7 };
-    springs.endpointsBuffer[17] = { 9, 5 };
-    springs.endpointsBuffer[18] = { 9, 6 };
-    springs.endpointsBuffer[19] = { 10, 7 };
-    springs.endpointsBuffer[20] = { 10, 8 };
-    springs.endpointsBuffer[21] = { 10, 9 };
+    springs.endpointsBuffer[12] = { 1, 2 };
+    springs.endpointsBuffer[13] = { 4, 3 };
+    springs.endpointsBuffer[14] = { 6, 5 };
+    springs.endpointsBuffer[15] = { 8, 7 };
+    springs.endpointsBuffer[16] = { 9, 5 };
+    springs.endpointsBuffer[17] = { 9, 6 };
+    springs.endpointsBuffer[18] = { 10, 7 };
+    springs.endpointsBuffer[19] = { 10, 8 };
+    springs.endpointsBuffer[20] = { 10, 9 };
 
     for (size_t i = 0; i < ApplySpringForcesSpringCount; ++i)
     {
@@ -891,8 +889,8 @@ void RunApplySpringForcesTest(Algorithm algorithm)
     algorithm(
         points,
         springs,
-        1, // Start
-        22, // End
+        0, // Start
+        21, // End
         dynamicForceBuffer);
 
     //
@@ -927,9 +925,9 @@ void RunApplySpringForcesTest(Algorithm algorithm)
                 case 1:
                 {
                     expectedDynamicForce =
-                        CalculateExpectedForce(13)
-                        - CalculateExpectedForce(2)
-                        - CalculateExpectedForce(3);
+                        CalculateExpectedForce(12)
+                        - CalculateExpectedForce(1)
+                        - CalculateExpectedForce(2);
 
                     break;
                 }
@@ -937,11 +935,11 @@ void RunApplySpringForcesTest(Algorithm algorithm)
                 case 2:
                 {
                     expectedDynamicForce =
-                        - CalculateExpectedForce(13)
-                        - CalculateExpectedForce(1)
-                        - CalculateExpectedForce(4)
-                        + CalculateExpectedForce(5)
-                        + CalculateExpectedForce(7);
+                        - CalculateExpectedForce(12)
+                        - CalculateExpectedForce(0)
+                        - CalculateExpectedForce(3)
+                        + CalculateExpectedForce(4)
+                        + CalculateExpectedForce(6);
 
                     break;
                 }
@@ -949,11 +947,11 @@ void RunApplySpringForcesTest(Algorithm algorithm)
                 case 3:
                 {
                     expectedDynamicForce =
-                        - CalculateExpectedForce(7)
                         - CalculateExpectedForce(6)
-                        - CalculateExpectedForce(11)
+                        - CalculateExpectedForce(5)
                         - CalculateExpectedForce(10)
-                        - CalculateExpectedForce(14);
+                        - CalculateExpectedForce(9)
+                        - CalculateExpectedForce(13);
 
                     break;
                 }
@@ -961,9 +959,9 @@ void RunApplySpringForcesTest(Algorithm algorithm)
                 case 4:
                 {
                     expectedDynamicForce =
-                        CalculateExpectedForce(14)
-                        - CalculateExpectedForce(9)
-                        - CalculateExpectedForce(12);
+                        CalculateExpectedForce(13)
+                        - CalculateExpectedForce(8)
+                        - CalculateExpectedForce(11);
 
                     break;
                 }
@@ -971,10 +969,10 @@ void RunApplySpringForcesTest(Algorithm algorithm)
                 case 5:
                 {
                     expectedDynamicForce =
-                        CalculateExpectedForce(3)
-                        - CalculateExpectedForce(17)
-                        - CalculateExpectedForce(15)
-                        + CalculateExpectedForce(1);
+                        CalculateExpectedForce(2)
+                        - CalculateExpectedForce(16)
+                        - CalculateExpectedForce(14)
+                        + CalculateExpectedForce(0);
 
                     break;
                 }
@@ -982,12 +980,12 @@ void RunApplySpringForcesTest(Algorithm algorithm)
                 case 6:
                 {
                     expectedDynamicForce =
-                        CalculateExpectedForce(2)
-                        + CalculateExpectedForce(15)
-                        - CalculateExpectedForce(18)
-                        + CalculateExpectedForce(8)
-                        + CalculateExpectedForce(6)
-                        + CalculateExpectedForce(4);
+                        CalculateExpectedForce(1)
+                        + CalculateExpectedForce(14)
+                        - CalculateExpectedForce(17)
+                        + CalculateExpectedForce(7)
+                        + CalculateExpectedForce(5)
+                        + CalculateExpectedForce(3);
 
                     break;
                 }
@@ -995,12 +993,12 @@ void RunApplySpringForcesTest(Algorithm algorithm)
                 case 7:
                 {
                     expectedDynamicForce =
-                        - CalculateExpectedForce(5)
-                        - CalculateExpectedForce(8)
-                        - CalculateExpectedForce(19)
-                        - CalculateExpectedForce(16)
-                        + CalculateExpectedForce(9)
-                        + CalculateExpectedForce(11);
+                        - CalculateExpectedForce(4)
+                        - CalculateExpectedForce(7)
+                        - CalculateExpectedForce(18)
+                        - CalculateExpectedForce(15)
+                        + CalculateExpectedForce(8)
+                        + CalculateExpectedForce(10);
 
                     break;
                 }
@@ -1008,10 +1006,10 @@ void RunApplySpringForcesTest(Algorithm algorithm)
                 case 8:
                 {
                     expectedDynamicForce =
-                        CalculateExpectedForce(10)
-                        + CalculateExpectedForce(16)
-                        - CalculateExpectedForce(20)
-                        + CalculateExpectedForce(12);
+                        CalculateExpectedForce(9)
+                        + CalculateExpectedForce(15)
+                        - CalculateExpectedForce(19)
+                        + CalculateExpectedForce(11);
 
                     break;
                 }
@@ -1019,9 +1017,9 @@ void RunApplySpringForcesTest(Algorithm algorithm)
                 case 9:
                 {
                     expectedDynamicForce =
-                        CalculateExpectedForce(17)
-                        - CalculateExpectedForce(21)
-                        + CalculateExpectedForce(18);
+                        CalculateExpectedForce(16)
+                        - CalculateExpectedForce(20)
+                        + CalculateExpectedForce(17);
 
                     break;
                 }
@@ -1029,9 +1027,9 @@ void RunApplySpringForcesTest(Algorithm algorithm)
                 case 10:
                 {
                     expectedDynamicForce =
-                        CalculateExpectedForce(21)
-                        + CalculateExpectedForce(20)
-                        + CalculateExpectedForce(19);
+                        CalculateExpectedForce(20)
+                        + CalculateExpectedForce(19)
+                        + CalculateExpectedForce(18);
 
                     break;
                 }

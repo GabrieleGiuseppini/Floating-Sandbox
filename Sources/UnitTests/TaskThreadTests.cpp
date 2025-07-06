@@ -6,8 +6,8 @@
 
 TEST(TaskThreadTests, Synchronous)
 {
-    ThreadManager threadManager{ false, 16, [](std::string const &, bool) {} };
-    TaskThread t("Test thread", true, threadManager);
+    ThreadManager threadManager{ false, 16, [](ThreadManager::ThreadTaskKind, std::string const &, size_t) {} };
+    TaskThread t(ThreadManager::ThreadTaskKind::MainAndSimulation, "Test thread", 0, true, threadManager);
 
     bool isDone = false;
     auto tc = t.QueueTask(
@@ -23,8 +23,8 @@ TEST(TaskThreadTests, Synchronous)
 
 TEST(TaskThreadTests, Asynchronous)
 {
-    ThreadManager threadManager{ false, 16, [](std::string const &, bool) {} };
-    TaskThread t("Test thread", true, threadManager);
+    ThreadManager threadManager{ false, 16, [](ThreadManager::ThreadTaskKind, std::string const &, size_t) {} };
+    TaskThread t(ThreadManager::ThreadTaskKind::MainAndSimulation, "Test thread", 0, true, threadManager);
 
     bool isDone = false;
     t.QueueTask(
@@ -43,8 +43,8 @@ TEST(TaskThreadTests, Asynchronous)
 
 TEST(TaskThreadTests, RunSynchronously)
 {
-    ThreadManager threadManager{ false, 16, [](std::string const &, bool) {} };
-    TaskThread t("Test thread", true, threadManager);
+    ThreadManager threadManager{ false, 16, [](ThreadManager::ThreadTaskKind, std::string const &, size_t) {} };
+    TaskThread t(ThreadManager::ThreadTaskKind::MainAndSimulation, "Test thread", 0, true, threadManager);
 
     bool isDone = false;
     t.RunSynchronously(
@@ -58,8 +58,8 @@ TEST(TaskThreadTests, RunSynchronously)
 
 TEST(TaskThreadTests, QueueSynchronizationPoint)
 {
-    ThreadManager threadManager{ false, 16, [](std::string const &, bool) {} };
-    TaskThread t("Test thread", true, threadManager);
+    ThreadManager threadManager{ false, 16, [](ThreadManager::ThreadTaskKind, std::string const &, size_t) {} };
+    TaskThread t(ThreadManager::ThreadTaskKind::MainAndSimulation, "Test thread", 0, true, threadManager);
 
     bool isDone = false;
     t.RunSynchronously(
