@@ -1264,7 +1264,7 @@ NpcKindType World::GetNpcKind(NpcId id)
     return mNpcs->GetNpcKind(id);
 }
 
-std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> World::BeginPlaceNewFurnitureNpc(
+NpcPlacementOutcome World::BeginPlaceNewFurnitureNpc(
     std::optional<NpcSubKindIdType> subKind,
     vec2f const & position,
     bool doMoveWholeMesh)
@@ -1277,7 +1277,7 @@ std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> World::BeginP
         mCurrentSimulationTime);
 }
 
-std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> World::BeginPlaceNewHumanNpc(
+NpcPlacementOutcome World::BeginPlaceNewHumanNpc(
     std::optional<NpcSubKindIdType> subKind,
     vec2f const & position,
     bool doMoveWholeMesh)
@@ -1389,7 +1389,7 @@ void World::AbortNewNpc(NpcId id)
     mNpcs->AbortNewNpc(id);
 }
 
-std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> World::AddNpcGroup(
+NpcPlacementFailureReasonType World::AddNpcGroup(
     NpcKindType kind,
     VisibleWorld const & visibleWorld,
     SimulationParameters const & simulationParameters)

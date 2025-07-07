@@ -184,6 +184,11 @@ public:
         mSize += other.size();
     }
 
+    void copy_to(TElement * destination) const
+    {
+        memcpy(destination, mBuffer.get(), mSize * sizeof(TElement));
+    }
+
     template <typename TCompare>
     void sort(TCompare comp)
     {

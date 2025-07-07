@@ -1458,15 +1458,14 @@ std::optional<PickedNpc> GameController::BeginPlaceNewFurnitureNpc(
         worldCoordinates,
         doMoveWholeMesh || mIsPaused);
 
-    auto const & pickedNpcId = std::get<0>(result);
-    if (pickedNpcId.has_value())
+    if (result.Npc.has_value())
     {
-        OnBeginPlaceNewNpc(pickedNpcId->Id, true);
-        return pickedNpcId;
+        OnBeginPlaceNewNpc(result.Npc->Id, true);
+        return result.Npc;
     }
     else
     {
-        NotifyNpcPlacementError(std::get<1>(result));
+        NotifyNpcPlacementError(result.FailureReason);
         return std::nullopt;
     }
 }
@@ -1484,15 +1483,14 @@ std::optional<PickedNpc> GameController::BeginPlaceNewHumanNpc(
         worldCoordinates,
         doMoveWholeMesh || mIsPaused);
 
-    auto const & pickedNpcId = std::get<0>(result);
-    if (pickedNpcId.has_value())
+    if (result.Npc.has_value())
     {
-        OnBeginPlaceNewNpc(pickedNpcId->Id, true);
-        return pickedNpcId;
+        OnBeginPlaceNewNpc(result.Npc->Id, true);
+        return result.Npc;
     }
     else
     {
-        NotifyNpcPlacementError(std::get<1>(result));
+        NotifyNpcPlacementError(result.FailureReason);
         return std::nullopt;
     }
 }
@@ -1609,18 +1607,9 @@ void GameController::AddNpcGroup(NpcKindType kind)
         mRenderContext->GetVisibleWorld(),
         mSimulationParameters);
 
-    auto const & pickedNpcId = std::get<0>(result);
-    if (pickedNpcId.has_value())
+    if (result != NpcPlacementFailureReasonType::Success)
     {
-        // Mey-be-futurework: it's not so nice to focus on (first) NPC when placing group
-        ////if (kind == NpcKindType::Human)
-        ////{
-        ////    OnBeginPlaceNewNpc(*pickedNpcId, false);
-        ////}
-    }
-    else
-    {
-        NotifyNpcPlacementError(std::get<1>(result));
+        NotifyNpcPlacementError(result);
     }
 }
 
@@ -2169,23 +2158,23 @@ void GameController::OnBeginPlaceNewNpc(
     }
 }
 
-void GameController::NotifyNpcPlacementError(NpcCreationFailureReasonType reason)
+void GameController::NotifyNpcPlacementError(NpcPlacementFailureReasonType reason)
 {
     switch (reason)
     {
-        case NpcCreationFailureReasonType::Success:
+        case NpcPlacementFailureReasonType::Success:
         {
             assert(false);
             break;
         }
 
-        case NpcCreationFailureReasonType::TooManyNpcs:
+        case NpcPlacementFailureReasonType::TooManyNpcs:
         {
             mNotificationLayer.PublishNotificationText("TOO MANY NPCS!");
             break;
         }
 
-        case NpcCreationFailureReasonType::TooManyCaptains:
+        case NpcPlacementFailureReasonType::TooManyCaptains:
         {
             mNotificationLayer.PublishNotificationText("TOO MANY CAPTAINS!");
             break;

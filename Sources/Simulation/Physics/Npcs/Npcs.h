@@ -1139,13 +1139,13 @@ public:
 
 	NpcKindType GetNpcKind(NpcId id);
 
-	std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> BeginPlaceNewFurnitureNpc(
+	NpcPlacementOutcome BeginPlaceNewFurnitureNpc(
 		std::optional<NpcSubKindIdType> subKind,
 		vec2f const & worldCoordinates,
 		bool doMoveWholeMesh,
 		float currentSimulationTime);
 
-	std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> BeginPlaceNewHumanNpc(
+	NpcPlacementOutcome BeginPlaceNewHumanNpc(
 		std::optional<NpcSubKindIdType> subKind,
 		vec2f const & worldCoordinates,
 		bool doMoveWholeMesh,
@@ -1199,7 +1199,7 @@ public:
 
 	void AbortNewNpc(NpcId id);
 
-	std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> AddNpcGroup(
+	NpcPlacementFailureReasonType AddNpcGroup(
 		NpcKindType kind,
 		VisibleWorld const & visibleWorld,
 		float currentSimulationTime,

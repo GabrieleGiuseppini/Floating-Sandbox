@@ -1090,7 +1090,7 @@ private:
         NpcId const & npcId,
         bool doAnchorToScreen);
 
-    void NotifyNpcPlacementError(NpcCreationFailureReasonType reason);
+    void NotifyNpcPlacementError(NpcPlacementFailureReasonType reason);
 
     // Auto-focus
 

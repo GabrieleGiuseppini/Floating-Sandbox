@@ -174,7 +174,7 @@ struct GameController::ThanosSnapStateMachine
 
     ThanosSnapStateMachine(
         float centerX,
-        float isSparseMode,
+        bool isSparseMode,
         float startSimulationTimestamp)
         : CenterX(centerX)
         , IsSparseMode(isSparseMode)

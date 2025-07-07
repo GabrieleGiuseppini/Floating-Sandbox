@@ -333,25 +333,6 @@ namespace std {
     };
 }
 
-/*
- * Return type of picking an NPC.
- */
-struct PickedNpc
-{
-    NpcId Id;
-    int ParticleOrdinal;
-    vec2f WorldOffset;
-
-    PickedNpc(
-        NpcId id,
-        int particleOrdinal,
-        vec2f const & worldOffset)
-        : Id(id)
-        , ParticleOrdinal(particleOrdinal)
-        , WorldOffset(worldOffset)
-    {}
-};
-
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // Geometry
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1307,13 +1288,41 @@ enum class NpcFurnitureRoleType : std::uint32_t
 NpcFurnitureRoleType StrToNpcFurnitureRoleType(std::string const & str);
 
 /*
+ * Return type of picking an NPC.
+ */
+struct PickedNpc
+{
+    NpcId Id;
+    int ParticleOrdinal;
+    vec2f WorldOffset;
+
+    PickedNpc(
+        NpcId id,
+        int particleOrdinal,
+        vec2f const & worldOffset)
+        : Id(id)
+        , ParticleOrdinal(particleOrdinal)
+        , WorldOffset(worldOffset)
+    {}
+};
+
+/*
  * Reasons for NPC placement failure.
  */
-enum class NpcCreationFailureReasonType
+enum class NpcPlacementFailureReasonType
 {
     Success,
     TooManyNpcs,
     TooManyCaptains
+};
+
+/*
+ * Return type of attempting to place an NPC.
+ */
+struct NpcPlacementOutcome
+{
+    std::optional<PickedNpc> Npc;
+    NpcPlacementFailureReasonType FailureReason;
 };
 
 enum class NpcFloorKindType

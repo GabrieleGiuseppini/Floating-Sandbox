@@ -692,7 +692,7 @@ NpcKindType Npcs::GetNpcKind(NpcId id)
     return mStateBuffer[id]->Kind;
 }
 
-std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> Npcs::BeginPlaceNewFurnitureNpc(
+NpcPlacementOutcome Npcs::BeginPlaceNewFurnitureNpc(
     std::optional<NpcSubKindIdType> subKind,
     vec2f const & worldCoordinates,
     bool doMoveWholeMesh,
@@ -706,7 +706,7 @@ std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> Npcs::BeginPl
 
     if (CalculateTotalNpcCount() >= mMaxNpcs)
     {
-        return { std::nullopt, NpcCreationFailureReasonType::TooManyNpcs };
+        return { std::nullopt, NpcPlacementFailureReasonType::TooManyNpcs };
     }
 
     //
@@ -730,7 +730,7 @@ std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> Npcs::BeginPl
 
             if (mParticles.GetRemainingParticlesCount() < 2)
             {
-                return { std::nullopt, NpcCreationFailureReasonType::TooManyNpcs };
+                return { std::nullopt, NpcPlacementFailureReasonType::TooManyNpcs };
             }
 
             // TODO
@@ -743,7 +743,7 @@ std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> Npcs::BeginPl
 
             if (mParticles.GetRemainingParticlesCount() < 1)
             {
-                return { std::nullopt, NpcCreationFailureReasonType::TooManyNpcs };
+                return { std::nullopt, NpcPlacementFailureReasonType::TooManyNpcs };
             }
 
             // Primary
@@ -797,7 +797,7 @@ std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> Npcs::BeginPl
 
             if (mParticles.GetRemainingParticlesCount() < 4)
             {
-                return { std::nullopt, NpcCreationFailureReasonType::TooManyNpcs };
+                return { std::nullopt, NpcPlacementFailureReasonType::TooManyNpcs };
             }
 
             // Create Particles
@@ -989,10 +989,10 @@ std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> Npcs::BeginPl
     mShips[shipId]->TotalNpcStats.Add(*mStateBuffer[npcId]);
     PublishCount();
 
-    return { PickedNpc(npcId, ParticleOrdinal, vec2f::zero()), NpcCreationFailureReasonType::Success };
+    return { PickedNpc(npcId, ParticleOrdinal, vec2f::zero()), NpcPlacementFailureReasonType::Success };
 }
 
-std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> Npcs::BeginPlaceNewHumanNpc(
+NpcPlacementOutcome Npcs::BeginPlaceNewHumanNpc(
     std::optional<NpcSubKindIdType> subKind,
     vec2f const & worldCoordinates,
     bool doMoveWholeMesh,
@@ -1006,7 +1006,7 @@ std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> Npcs::BeginPl
 
     if (CalculateTotalNpcCount() >= mMaxNpcs || mParticles.GetRemainingParticlesCount() < 2)
     {
-        return { std::nullopt, NpcCreationFailureReasonType::TooManyNpcs };
+        return { std::nullopt, NpcPlacementFailureReasonType::TooManyNpcs };
     }
 
     //
@@ -1208,7 +1208,7 @@ std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> Npcs::BeginPl
     mShips[shipId]->TotalNpcStats.Add(*mStateBuffer[npcId]);
     PublishCount();
 
-    return { PickedNpc(npcId, ParticleOrdinal, vec2f::zero()), NpcCreationFailureReasonType::Success };
+    return { PickedNpc(npcId, ParticleOrdinal, vec2f::zero()), NpcPlacementFailureReasonType::Success };
 }
 
 std::optional<PickedNpc> Npcs::ProbeNpcAt(
@@ -1571,7 +1571,7 @@ void Npcs::AbortNewNpc(NpcId id)
     mStateBuffer[id].reset();
 }
 
-std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> Npcs::AddNpcGroup(
+NpcPlacementFailureReasonType Npcs::AddNpcGroup(
     NpcKindType kind,
     VisibleWorld const & visibleWorld,
     float currentSimulationTime,
@@ -1723,7 +1723,6 @@ std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> Npcs::AddNpcGroup
     alreadyChosenTriangles.reserve(simulationParameters.NpcsPerGroup);
 
     size_t nNpcsAdded = 0;
-    NpcId firstNpcId;
     for (; nNpcsAdded < simulationParameters.NpcsPerGroup; ++nNpcsAdded)
     {
         //
@@ -1779,7 +1778,7 @@ std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> Npcs::AddNpcGroup
         // Create NPC
         //
 
-        std::tuple<std::optional<PickedNpc>, NpcCreationFailureReasonType> placementOutcome;
+        NpcPlacementOutcome placementOutcome;
 
         switch (kind)
         {
@@ -1837,25 +1836,20 @@ std::tuple<std::optional<NpcId>, NpcCreationFailureReasonType> Npcs::AddNpcGroup
             }
         }
 
-        if (!std::get<0>(placementOutcome).has_value())
+        if (!placementOutcome.Npc.has_value())
         {
             // Couldn't add NPC, so we're done
             break;
         }
 
         InternalCompleteNewNpc(
-            std::get<0>(placementOutcome)->Id,
+            placementOutcome.Npc->Id,
             currentSimulationTime);
-
-        if (nNpcsAdded == 0)
-        {
-            firstNpcId = std::get<0>(placementOutcome)->Id;
-        }
     }
 
     return (nNpcsAdded > 0)
-        ? std::make_tuple(firstNpcId, NpcCreationFailureReasonType::Success)
-        : std::make_tuple(std::optional<NpcId>(), NpcCreationFailureReasonType::TooManyNpcs);
+        ? NpcPlacementFailureReasonType::Success
+        : NpcPlacementFailureReasonType::TooManyNpcs;
 }
 
 void Npcs::TurnaroundNpc(NpcId id)
@@ -3336,7 +3330,7 @@ void Npcs::InternalMoveNpcBy(
     auto & npc = *mStateBuffer[id];
 
     // Calculate absolute velocity for this delta movement - we want it clamped
-    vec2f const targetAbsoluteVelocity = (deltaAnchorPosition / SimulationParameters::SimulationStepTimeDuration<float> *mGlobalDampingFactor).clamp_length_upper(SimulationParameters::MaxNpcToolMoveVelocityMagnitude);
+    vec2f const targetAbsoluteVelocity = (deltaAnchorPosition / SimulationParameters::SimulationStepTimeDuration<float> * mGlobalDampingFactor).clamp_length_upper(SimulationParameters::MaxNpcToolMoveVelocityMagnitude);
 
     // Move particles
     for (size_t p = 0; p < npc.ParticleMesh.Particles.size(); ++p)
