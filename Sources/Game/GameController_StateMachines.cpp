@@ -78,7 +78,7 @@ bool GameController::TsunamiNotificationStateMachine::Update()
             auto const progress = GameWallClock::Progress(now, mCurrentStateStartTime, 1s);
 
             // Set tremor
-            mRenderContext->SetPixelOffset(progress * TremorAmplitude * sin(TremorAngularVelocity * now), 0.0f);
+            mRenderContext->SetPixelOffset(0.0f, progress * TremorAmplitude * sin(TremorAngularVelocity * now));
 
             // See if time to transition
             if (progress >= 1.0f)
@@ -95,7 +95,7 @@ bool GameController::TsunamiNotificationStateMachine::Update()
             auto const progress = GameWallClock::Progress(now, mCurrentStateStartTime, 4500ms);
 
             // Set tremor
-            mRenderContext->SetPixelOffset(TremorAmplitude * sin(TremorAngularVelocity * now), 0.0f);
+            mRenderContext->SetPixelOffset(0.0f, TremorAmplitude * sin(TremorAngularVelocity * now));
 
             // See if time to transition
             if (progress >= 1.0f)
@@ -116,7 +116,7 @@ bool GameController::TsunamiNotificationStateMachine::Update()
             auto const progress = GameWallClock::Progress(now, mCurrentStateStartTime, 500ms);
 
             // Set tremor
-            mRenderContext->SetPixelOffset(TremorAmplitude * sin(TremorAngularVelocity * now), 0.0f);
+            mRenderContext->SetPixelOffset(0.0f, TremorAmplitude * sin(TremorAngularVelocity * now));
 
             // See if time to transition
             if (progress >= 1.0f)
@@ -130,10 +130,10 @@ bool GameController::TsunamiNotificationStateMachine::Update()
 
         case StateType::RumblingFadeOut:
         {
-            auto const progress = GameWallClock::Progress(now, mCurrentStateStartTime, 2s);
+            auto const progress = GameWallClock::Progress(now, mCurrentStateStartTime, 3s);
 
             // Set tremor
-            mRenderContext->SetPixelOffset((1.0f - progress) * TremorAmplitude * sin(TremorAngularVelocity * now), 0.0f);
+            mRenderContext->SetPixelOffset(0.0f, (1.0f - progress) * TremorAmplitude * sin(TremorAngularVelocity * now));
 
             // See if time to transition
             if (progress >= 1.0f)

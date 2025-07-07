@@ -276,7 +276,7 @@ public:
         float yLand,
         RenderParameters const & renderParameters)
     {
-        float const yVisibleWorldBottom = renderParameters.View.GetVisibleWorld().BottomRight.y;
+        float const yVisibleWorldBottom = renderParameters.View.GetVisibleWorldWithPixelOffset().BottomRight.y;
 
         //
         // Store Land element
@@ -304,7 +304,7 @@ public:
         float yOcean,
         RenderParameters const & renderParameters)
     {
-        float const yVisibleWorldBottom = renderParameters.View.GetVisibleWorld().BottomRight.y;
+        float const yVisibleWorldBottom = renderParameters.View.GetVisibleWorldWithPixelOffset().BottomRight.y;
 
         //
         // Store ocean element
@@ -364,7 +364,7 @@ public:
     {
         float const yTop = std::max(yBack, std::max(yMid, yFront)) + mOceanDetailedUpperBandMagicOffset;
         float const yBottom = std::min(yBack, std::min(yMid, yFront)) - mOceanDetailedUpperBandMagicOffset;
-        float const yVisibleWorldBottom = renderParameters.View.GetVisibleWorld().BottomRight.y;
+        float const yVisibleWorldBottom = renderParameters.View.GetVisibleWorldWithPixelOffset().BottomRight.y;
 
         //
         // Store ocean element

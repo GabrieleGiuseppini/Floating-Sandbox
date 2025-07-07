@@ -171,6 +171,11 @@ public:
         return mVisibleWorld;
     }
 
+    VisibleWorld const & GetVisibleWorldWithPixelOffset() const
+    {
+        return mVisibleWorldWithPixelOffset;
+    }
+
     float const GetHalfMaxWorldWidth() const
     {
         return mHalfMaxWorldWidth;
@@ -515,18 +520,33 @@ private:
 
     void RecalculateAttributes()
     {
+        float const visibleWorldWidth = CalculateVisibleWorldWidth(mZoom);
+        float const visibleWorldHeight = CalculateVisibleWorldHeight(mZoom);
+
+        mWorldToPhysicalDisplayFactor = static_cast<float>(mCanvasPhysicalSize.height) / visibleWorldHeight;
+
         mVisibleWorld.Center = mCam;
-        mVisibleWorld.Width = CalculateVisibleWorldWidth(mZoom);
-        mVisibleWorld.Height = CalculateVisibleWorldHeight(mZoom);
-
+        mVisibleWorld.Width = visibleWorldWidth;
+        mVisibleWorld.Height = visibleWorldHeight;
         mVisibleWorld.TopLeft = vec2f(
-            mCam.x - (mVisibleWorld.Width / 2.0f),
-            mCam.y + (mVisibleWorld.Height / 2.0f));
+            mVisibleWorld.Center.x - (visibleWorldWidth / 2.0f),
+            mVisibleWorld.Center.y + (visibleWorldHeight / 2.0f));
         mVisibleWorld.BottomRight = vec2f(
-            mCam.x + (mVisibleWorld.Width /2.0f),
-            mCam.y - (mVisibleWorld.Height / 2.0f));
+            mVisibleWorld.Center.x + (visibleWorldWidth / 2.0f),
+            mVisibleWorld.Center.y - (visibleWorldHeight / 2.0f));
 
-        mWorldToPhysicalDisplayFactor = static_cast<float>(mCanvasPhysicalSize.height) / mVisibleWorld.Height;
+        float const pixelOffsetWorldX = mPixelOffsetX / mWorldToPhysicalDisplayFactor;
+        float const pixelOffsetWorldY = mPixelOffsetY / mWorldToPhysicalDisplayFactor;
+
+        mVisibleWorldWithPixelOffset.Center = mCam + vec2f(pixelOffsetWorldX, pixelOffsetWorldY);
+        mVisibleWorldWithPixelOffset.Width = visibleWorldWidth;
+        mVisibleWorldWithPixelOffset.Height = visibleWorldHeight;
+        mVisibleWorldWithPixelOffset.TopLeft = vec2f(
+            mVisibleWorldWithPixelOffset.Center.x - (visibleWorldWidth / 2.0f),
+            mVisibleWorldWithPixelOffset.Center.y + (visibleWorldHeight / 2.0f));
+        mVisibleWorldWithPixelOffset.BottomRight = vec2f(
+            mVisibleWorldWithPixelOffset.Center.x + (visibleWorldWidth / 2.0f),
+            mVisibleWorldWithPixelOffset.Center.y - (visibleWorldHeight / 2.0f));
 
         //
         // Ortho Matrix: transforms world into NDC (-1, ..., +1)
@@ -540,8 +560,8 @@ private:
         // Recalculate kernel Ortho Matrix cells
         mKernelOrthoMatrix[0][0] = 2.0f / mVisibleWorld.Width;
         mKernelOrthoMatrix[1][1] = 2.0f / mVisibleWorld.Height;
-        mKernelOrthoMatrix[3][0] = -2.0f * (mCam.x + (mPixelOffsetX / mWorldToPhysicalDisplayFactor)) / mVisibleWorld.Width;
-        mKernelOrthoMatrix[3][1] = -2.0f * (mCam.y + (mPixelOffsetY / mWorldToPhysicalDisplayFactor)) / mVisibleWorld.Height;
+        mKernelOrthoMatrix[3][0] = -2.0f * (mCam.x + pixelOffsetWorldX) / mVisibleWorld.Width;
+        mKernelOrthoMatrix[3][1] = -2.0f * (mCam.y + pixelOffsetWorldY) / mVisibleWorld.Height;
 
         //
         // Recalculate cached members for clouds perspective
@@ -584,7 +604,8 @@ private:
 
     // Calculated attributes
     float mAspectRatio;
-    VisibleWorld mVisibleWorld;
+    VisibleWorld mVisibleWorld; // Does not account for pixel offset
+    VisibleWorld mVisibleWorldWithPixelOffset;
     float mWorldToPhysicalDisplayFactor;
     ProjectionMatrix mKernelOrthoMatrix; // Common subset of all ortho matrices
     vec2f mCloudNormalizedViewCam;
