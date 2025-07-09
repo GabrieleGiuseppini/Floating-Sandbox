@@ -30,15 +30,7 @@ struct ShipLoadOptions
 		, Rotate90CW(rotate90CW)
 	{}
 
-	static ShipLoadOptions FromJson(picojson::object const & optionsRoot)
-	{
-		return ShipLoadOptions(
-			Utils::GetMandatoryJsonMember<bool>(optionsRoot, "flip_horizontally"),
-			Utils::GetMandatoryJsonMember<bool>(optionsRoot, "flip_vertically"),
-			Utils::GetMandatoryJsonMember<bool>(optionsRoot, "rotate_90cw"));
-	}
-
-	picojson::object ToJson() const
+	picojson::object Serialize() const
 	{
 		picojson::object optionsRoot;
 
@@ -47,5 +39,13 @@ struct ShipLoadOptions
 		optionsRoot.emplace("rotate_90cw", picojson::value(Rotate90CW));
 
 		return optionsRoot;
+	}
+
+	static ShipLoadOptions Deserialize(picojson::object const & optionsRoot)
+	{
+		return ShipLoadOptions(
+			Utils::GetMandatoryJsonMember<bool>(optionsRoot, "flip_horizontally"),
+			Utils::GetMandatoryJsonMember<bool>(optionsRoot, "flip_vertically"),
+			Utils::GetMandatoryJsonMember<bool>(optionsRoot, "rotate_90cw"));
 	}
 };

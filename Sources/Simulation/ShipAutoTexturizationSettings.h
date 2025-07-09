@@ -33,6 +33,6 @@ struct ShipAutoTexturizationSettings
         , MaterialTextureTransparency(0.0f)
     {}
 
-    static ShipAutoTexturizationSettings FromJSON(picojson::object const & jsonObject);
-    picojson::object ToJSON() const;
+    static ShipAutoTexturizationSettings Deserialize(picojson::object const & jsonObject);
+    picojson::object Serialize() const;
 };

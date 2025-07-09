@@ -297,7 +297,7 @@ void UIPreferencesManager::LoadPreferences()
         if (auto shipAutoTexturizationSharedSettingsIt = preferencesRootObject->find("ship_auto_texturization_default_settings");
             shipAutoTexturizationSharedSettingsIt != preferencesRootObject->end() && shipAutoTexturizationSharedSettingsIt->second.is<picojson::object>())
         {
-            mGameController.SetShipAutoTexturizationSharedSettings(ShipAutoTexturizationSettings::FromJSON(shipAutoTexturizationSharedSettingsIt->second.get<picojson::object>()));
+            mGameController.SetShipAutoTexturizationSharedSettings(ShipAutoTexturizationSettings::Deserialize(shipAutoTexturizationSharedSettingsIt->second.get<picojson::object>()));
         }
 
         // We don't load/save this setting on purpose
@@ -590,7 +590,7 @@ void UIPreferencesManager::SavePreferences() const
     preferencesRootObject["display_units_system"] = picojson::value(static_cast<std::int64_t>(mGameController.GetDisplayUnitsSystem()));
 
     // Add ship auto-texturization shared settings
-    preferencesRootObject["ship_auto_texturization_default_settings"] = picojson::value(mGameController.GetShipAutoTexturizationSharedSettings().ToJSON());
+    preferencesRootObject["ship_auto_texturization_default_settings"] = picojson::value(mGameController.GetShipAutoTexturizationSharedSettings().Serialize());
 
     // We don't load/save this setting on purpose
     ////// Add ship auto-texturization force shared settings onto ship

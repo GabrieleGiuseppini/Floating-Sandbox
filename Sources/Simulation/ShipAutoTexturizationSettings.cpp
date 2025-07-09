@@ -8,7 +8,7 @@
 #include <Core/GameException.h>
 #include <Core/Utils.h>
 
-ShipAutoTexturizationSettings ShipAutoTexturizationSettings::FromJSON(picojson::object const & jsonObject)
+ShipAutoTexturizationSettings ShipAutoTexturizationSettings::Deserialize(picojson::object const & jsonObject)
 {
     auto const modeIt = jsonObject.find("mode");
     if (modeIt == jsonObject.end())
@@ -34,7 +34,7 @@ ShipAutoTexturizationSettings ShipAutoTexturizationSettings::FromJSON(picojson::
         materialTextureTransparency);
 }
 
-picojson::object ShipAutoTexturizationSettings::ToJSON() const
+picojson::object ShipAutoTexturizationSettings::Serialize() const
 {
     picojson::object jsonObject;
 

@@ -32,6 +32,7 @@ set  (SIMULATION_SOURCES
 	ShipFloorplanizer.cpp
 	ShipFloorplanizer.h
 	ShipLoadOptions.h
+	ShipLocator.h
 	ShipMetadata.h
 	ShipOverlays.cpp
 	ShipOverlays.h

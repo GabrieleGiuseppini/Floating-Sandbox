@@ -6,6 +6,7 @@ TODO
 	- Thanks to Dario Bazzichetto for the idea!
 - ShipBuilder:
 	- Added StructureTracer tool: automatically traces a ship's hull from a texture
+- ...and a few more small improvements here and there!
 
 1.19.1
 - Added explosive furniture NPCs

@@ -157,7 +157,7 @@ ShipLegacyFormatDeSerializer::JsonDefinition ShipLegacyFormatDeSerializer::LoadL
         }
 
         // Parse
-        autoTexturizationSettings = ShipAutoTexturizationSettings::FromJSON(memberIt->second.get<picojson::object>());
+        autoTexturizationSettings = ShipAutoTexturizationSettings::Deserialize(memberIt->second.get<picojson::object>());
     }
 
     bool const doHideElectricalsInPreview = Utils::GetOptionalJsonMember<bool>(
