@@ -230,5 +230,5 @@ void PrintUsage()
     std::cout << std::endl;
     std::cout << "Usage:" << std::endl;
     std::cout << " bake_atlas Cloud|Explosion|NPC|AndroidUI <textures_root_dir> <out_dir> [[-a] [-b] [-m] [-d] [-r] | -o <options_json>] [-z <resize_factor>]" << std::endl;
-    std::cout << " bake_ship_database <ship_directory_json> <ship_root_dir> <out_dir>" << std::endl;
+    std::cout << " bake_ship_database <ship_directory_json> <ship_root_dir> <out_dir> <max_preview_w> <max_preview_h>" << std::endl;
 }

@@ -25,7 +25,7 @@
 
 struct ShipDatabase final
 {
-	static int constexpr MaxAtlasSize = 4096;
+	static int constexpr MaxPreviewAtlasSize = 4096;
 
 	static std::string const SpecificationFilename;
 
@@ -37,18 +37,18 @@ struct ShipDatabase final
 
 		ShipPreviewData PreviewData;
 
-		size_t AtlasIndex;
-		TextureFrameIndex FrameIndex;
+		size_t PreviewAtlasIndex;
+		TextureFrameIndex PreviewFrameIndex;
 
 		ShipEntry(
 			ShipLocator && locator,
 			ShipPreviewData && previewData,
-			size_t atlasIndex,
-			TextureFrameIndex frameIndex)
+			size_t previewAtlasIndex,
+			TextureFrameIndex previewFrameIndex)
 			: Locator(std::move(locator))
 			, PreviewData(std::move(previewData))
-			, AtlasIndex(atlasIndex)
-			, FrameIndex(frameIndex)
+			, PreviewAtlasIndex(previewAtlasIndex)
+			, PreviewFrameIndex(previewFrameIndex)
 		{ }
 
 		picojson::value Serialize() const;
@@ -107,13 +107,13 @@ public:
 	struct Output
 	{
 		ShipDatabase Database;
-		std::vector<RgbaImageData> AtlasImages;
+		std::vector<RgbaImageData> PreviewAtlasImages;
 
 		Output(
 			ShipDatabase && database,
-			std::vector<RgbaImageData> && atlasImages)
+			std::vector<RgbaImageData> && previewAtlasImages)
 			: Database(std::move(database))
-			, AtlasImages(std::move(atlasImages))
+			, PreviewAtlasImages(std::move(previewAtlasImages))
 		{ }
 	};
 
@@ -121,7 +121,7 @@ public:
 
 private:
 
-	ImageSize mMaxPreviewImageSize;
+	ImageSize const mMaxPreviewImageSize;
 
 	struct WorkingListEntry
 	{

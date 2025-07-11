@@ -10,6 +10,7 @@
 #include <Core/GameException.h>
 #include <Core/Utils.h>
 
+#include <cassert>
 #include <optional>
 
 std::string const ShipDatabase::SpecificationFilename = "ship_database.json";
@@ -25,8 +26,8 @@ picojson::value ShipDatabase::ShipEntry::Serialize() const
 
     root["locator"] = Locator.Serialize();
     root["preview_data"] = PreviewData.Serialize();
-    root["atlas_index"] = picojson::value(static_cast<std::int64_t>(AtlasIndex));
-    root["frame_index"] = picojson::value(static_cast<std::int64_t>(FrameIndex));
+    root["preview_atlas_index"] = picojson::value(static_cast<std::int64_t>(PreviewAtlasIndex));
+    root["preview_frame_index"] = picojson::value(static_cast<std::int64_t>(PreviewFrameIndex));
 
     return picojson::value(root);
 }
@@ -37,14 +38,14 @@ ShipDatabase::ShipEntry ShipDatabase::ShipEntry::Deserialize(picojson::value con
 
     ShipLocator locator = ShipLocator::Deserialize(entryRootAsObject.at("locator"));
     ShipPreviewData previewData = ShipPreviewData::Deserialize(entryRootAsObject.at("preview_data"));
-    size_t atlasIndex = static_cast<size_t>(Utils::GetJsonValueAs<std::int64_t>(entryRootAsObject.at("atlas_index"), "atlas_index"));
-    TextureFrameIndex frameIndex = static_cast<TextureFrameIndex>(Utils::GetJsonValueAs<std::int64_t>(entryRootAsObject.at("frame_index"), "frame_index"));
+    size_t previewAtlasIndex = static_cast<size_t>(Utils::GetJsonValueAs<std::int64_t>(entryRootAsObject.at("preview_atlas_index"), "preview_atlas_index"));
+    TextureFrameIndex previewFrameIndex = static_cast<TextureFrameIndex>(Utils::GetJsonValueAs<std::int64_t>(entryRootAsObject.at("preview_frame_index"), "preview_frame_index"));
 
     return ShipEntry(
         std::move(locator),
         std::move(previewData),
-        atlasIndex,
-        frameIndex);
+        previewAtlasIndex,
+        previewFrameIndex);
 }
 
 picojson::value ShipDatabase::Serialize() const
@@ -66,19 +67,19 @@ picojson::value ShipDatabase::Serialize() const
 
 
     //
-    // Atlases
+    // Preview atlases
     //
 
-    picojson::array serializedAtlases;
+    picojson::array serializedPreviewAtlases;
 
-    for (auto const & atlasMetadata : PreviewAtlasMetadatas)
+    for (auto const & previewAtlasMetadata : PreviewAtlasMetadatas)
     {
-        picojson::object serializedAtlas;
-        atlasMetadata.Serialize(serializedAtlas);
-        serializedAtlases.push_back(picojson::value(serializedAtlas));
+        picojson::object serializedPreviewAtlasMetadata;
+        previewAtlasMetadata.Serialize(serializedPreviewAtlasMetadata);
+        serializedPreviewAtlases.push_back(picojson::value(serializedPreviewAtlasMetadata));
     }
 
-    root["atlases"] = picojson::value(serializedAtlases);
+    root["preview_atlases"] = picojson::value(serializedPreviewAtlases);
 
     return picojson::value(root);
 }
@@ -103,18 +104,18 @@ ShipDatabase ShipDatabase::Deserialize(picojson::value const & specification)
     }
 
     //
-    // Atlases
+    // Preview atlases
     //
 
-    std::vector<TextureAtlasMetadata<ShipPreviewTextureDatabase>> atlases;
-    for (auto const & entry : Utils::GetMandatoryJsonArray(specificationAsObject, "atlases"))
+    std::vector<TextureAtlasMetadata<ShipPreviewTextureDatabase>> previewAtlasMetadatas;
+    for (auto const & entry : Utils::GetMandatoryJsonArray(specificationAsObject, "preview_atlases"))
     {
-        atlases.emplace_back(TextureAtlasMetadata<ShipPreviewTextureDatabase>::Deserialize(Utils::GetJsonValueAsObject(entry, "ShipDatabase::ShipEntry")));
+        previewAtlasMetadatas.emplace_back(TextureAtlasMetadata<ShipPreviewTextureDatabase>::Deserialize(Utils::GetJsonValueAsObject(entry, "ShipDatabase::ShipEntry")));
     }
 
     return ShipDatabase(
         std::move(ships),
-        std::move(atlases));
+        std::move(previewAtlasMetadatas));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -153,16 +154,18 @@ void ShipDatabaseBuilder::AddShip(BinaryReadStream && inputStream, ShipLocator l
 ShipDatabaseBuilder::Output ShipDatabaseBuilder::Build()
 {
     std::vector<ShipDatabase::ShipEntry> outputShips;
-    std::vector<TextureAtlasMetadata<ShipDatabase::ShipPreviewTextureDatabase>> outputAtlasMetadata;
-    std::vector<RgbaImageData> outputAtlasImages;
+    std::vector<TextureAtlasMetadata<ShipDatabase::ShipPreviewTextureDatabase>> outputPreviewAtlasMetadata;
+    std::vector<RgbaImageData> outputPreviewAtlasImages;
 
     std::optional<TextureAtlas<ShipDatabase::ShipPreviewTextureDatabase>> currentAtlas;
     std::vector<TextureFrame<ShipDatabase::ShipPreviewTextureDatabase>> currentTextureFrames;
     size_t currentAtlasFrameStart = 0;
 
     // Process all ships
-    currentTextureFrames.emplace_back(std::move(mWorkingList[0].PreviewImageFrame)); // Initialize first frame
-    for (size_t ship = 0; ship < mWorkingList.size(); /*incremented in loop*/)
+    assert(mWorkingList.size() > 0);
+    currentTextureFrames.emplace_back(std::move(mWorkingList[0].PreviewImageFrame)); // Initialize first frame; no need to adjust
+    assert(currentTextureFrames.back().Metadata.FrameId.FrameIndex == 0);
+    for (size_t ship = 0; ; /*incremented in loop*/)
     {
         assert(ship >= currentAtlasFrameStart);
 
@@ -171,22 +174,29 @@ ShipDatabaseBuilder::Output ShipDatabaseBuilder::Build()
             currentTextureFrames,
             TextureAtlasOptions::BinaryTransparencySmoothing);
 
-        if (candidateAtlas.Metadata.GetSize().width < ShipDatabase::MaxAtlasSize
-            && candidateAtlas.Metadata.GetSize().height < ShipDatabase::MaxAtlasSize)
+        if (candidateAtlas.Metadata.GetSize().width < ShipDatabase::MaxPreviewAtlasSize
+            && candidateAtlas.Metadata.GetSize().height < ShipDatabase::MaxPreviewAtlasSize)
         {
             // Candidate atlas is good
             currentAtlas.emplace(std::move(candidateAtlas));
 
             // Consume current ship
+            assert(currentTextureFrames.size() > 0); // Already contains this ship
             outputShips.emplace_back(
                 ShipDatabase::ShipEntry(
                     std::move(mWorkingList[ship].Locator),
                     std::move(mWorkingList[ship].PreviewData),
-                    outputAtlasImages.size(), // atlasIndex
-                    static_cast<TextureFrameIndex>(currentTextureFrames.size()))); // frameIndex
+                    outputPreviewAtlasImages.size(), // atlasIndex
+                    static_cast<TextureFrameIndex>(currentTextureFrames.size() - 1))); // frameIndex
 
             // Proceed to next ship
             ++ship;
+            if (ship == mWorkingList.size())
+            {
+                break;
+            }
+
+            // Initialize new ship
             currentTextureFrames.emplace_back(std::move(mWorkingList[ship].PreviewImageFrame));
             // Update frame index
             currentTextureFrames.back().Metadata.FrameId = TextureFrameId<ShipDatabase::ShipPreviewTextureDatabase::TextureGroupsType>(
@@ -206,8 +216,8 @@ ShipDatabaseBuilder::Output ShipDatabaseBuilder::Build()
 
             // Consume currentAtlas, containing[currentAtlasFrameStart, ship - 1]
             assert(ship >= 1);
-            outputAtlasMetadata.emplace_back(currentAtlas->Metadata);
-            outputAtlasImages.emplace_back(std::move(currentAtlas->Image));
+            outputPreviewAtlasMetadata.emplace_back(currentAtlas->Metadata);
+            outputPreviewAtlasImages.emplace_back(std::move(currentAtlas->Image));
 
             // Restart clean
             currentAtlas.reset();
@@ -221,8 +231,8 @@ ShipDatabaseBuilder::Output ShipDatabaseBuilder::Build()
     if (currentAtlas.has_value())
     {
         // Consume currentAtlas
-        outputAtlasMetadata.emplace_back(currentAtlas->Metadata);
-        outputAtlasImages.emplace_back(std::move(currentAtlas->Image));
+        outputPreviewAtlasMetadata.emplace_back(currentAtlas->Metadata);
+        outputPreviewAtlasImages.emplace_back(std::move(currentAtlas->Image));
     }
 
     // Prepare for next session
@@ -231,6 +241,6 @@ ShipDatabaseBuilder::Output ShipDatabaseBuilder::Build()
     return Output(
         ShipDatabase(
             std::move(outputShips),
-            std::move(outputAtlasMetadata)),
-        std::move(outputAtlasImages));
+            std::move(outputPreviewAtlasMetadata)),
+        std::move(outputPreviewAtlasImages));
 }

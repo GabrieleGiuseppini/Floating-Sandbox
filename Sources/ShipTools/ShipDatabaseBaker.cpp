@@ -10,6 +10,7 @@
 #include <Simulation/ShipDatabase.h>
 
 #include <Core/GameException.h>
+#include <Core/Log.h>
 #include <Core/PngTools.h>
 #include <Core/Utils.h>
 
@@ -54,6 +55,11 @@ void ShipDatabaseBaker::Bake(
     // Read directory
     ShipDirectory shipDirectory = ShipDirectory::Deserialize(Utils::ParseJSONString(FileTextReadStream(inputShipDirectoryFilePath).ReadAll()));
 
+    if (shipDirectory.Locators.empty())
+    {
+        throw std::runtime_error("Input ship directory file '" + inputShipDirectoryFilePath.string() + "' contains an empty directory");
+    }
+
     // Instantiate builder
     ShipDatabaseBuilder builder(maxPreviewImageSize);
 
@@ -68,6 +74,8 @@ void ShipDatabaseBaker::Bake(
     // Build
     auto output = builder.Build();
 
+    LogMessage("Database ready: ", output.Database.Ships.size(), " ship(s), ", output.PreviewAtlasImages.size(), " preview atlas(es).");
+
     // Save outcome
 
     // Ship database specification
@@ -75,9 +83,9 @@ void ShipDatabaseBaker::Bake(
     FileTextWriteStream(shipDatabaseSpecificationFilePath).Write(output.Database.Serialize().serialize(true));
 
     // Preview atlases
-    for (size_t iAtlas = 0; iAtlas < output.AtlasImages.size(); ++iAtlas)
+    for (size_t iAtlas = 0; iAtlas < output.PreviewAtlasImages.size(); ++iAtlas)
     {
         auto writeStream = FileBinaryWriteStream(outputDirectoryPath / ShipDatabase::MakePreviewAtlasFilename(iAtlas));
-        PngTools::EncodeImage(output.AtlasImages[iAtlas], writeStream);
+        PngTools::EncodeImage(output.PreviewAtlasImages[iAtlas], writeStream);
     }
 }
