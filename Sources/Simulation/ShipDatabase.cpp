@@ -174,8 +174,8 @@ ShipDatabaseBuilder::Output ShipDatabaseBuilder::Build()
             currentTextureFrames,
             TextureAtlasOptions::BinaryTransparencySmoothing);
 
-        if (candidateAtlas.Metadata.GetSize().width < ShipDatabase::MaxPreviewAtlasSize
-            && candidateAtlas.Metadata.GetSize().height < ShipDatabase::MaxPreviewAtlasSize)
+        if (candidateAtlas.Metadata.GetSize().width <= ShipDatabase::MaxPreviewAtlasSize
+            && candidateAtlas.Metadata.GetSize().height <= ShipDatabase::MaxPreviewAtlasSize)
         {
             // Candidate atlas is good
             currentAtlas.emplace(std::move(candidateAtlas));
@@ -221,7 +221,11 @@ ShipDatabaseBuilder::Output ShipDatabaseBuilder::Build()
 
             // Restart clean
             currentAtlas.reset();
-            currentTextureFrames.clear();
+            currentTextureFrames.erase(currentTextureFrames.begin(), currentTextureFrames.end() - 1); // Leave last one
+            // Update frame index of last one (it's now the first of its atlas)
+            currentTextureFrames.back().Metadata.FrameId = TextureFrameId<ShipDatabase::ShipPreviewTextureDatabase::TextureGroupsType>(
+                ShipDatabase::ShipPreviewTextureDatabase::TextureGroupsType::Preview,
+                static_cast<TextureFrameIndex>(0));
             currentAtlasFrameStart = ship;
 
             // Retry this ship
