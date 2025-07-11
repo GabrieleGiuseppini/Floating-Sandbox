@@ -5,8 +5,10 @@
 
 set  (SHIP_TOOLS_SOURCES
 	AndroidTextureDatabases.h
-	Baker.h
+	AtlasBaker.h
 	Main.cpp
+	ShipDatabaseBaker.cpp
+	ShipDatabaseBaker.h
 )
 
 source_group(" " FILES ${SHIP_TOOLS_SOURCES})

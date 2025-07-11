@@ -27,17 +27,17 @@ struct ShipLocator final
         : RelativeFilePath(relativeFilePath)
     {}
 
-    picojson::object Serialize() const
+    picojson::value Serialize() const
     {
         picojson::object locatorRoot;
 
 		locatorRoot.emplace("relative_file_path", picojson::value(RelativeFilePath));
 
-		return locatorRoot;
+		return picojson::value(locatorRoot);
     }
 
-    static ShipLocator Deserialize(picojson::object const & locatorRoot)
+    static ShipLocator Deserialize(picojson::value const & locatorRoot)
     {
-        return ShipLocator(Utils::GetMandatoryJsonMember<std::string>(locatorRoot, "relative_file_path"));
+        return ShipLocator(Utils::GetMandatoryJsonMember<std::string>(Utils::GetJsonValueAsObject(locatorRoot, "ShipLocator"), "relative_file_path"));
     }
 };

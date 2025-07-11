@@ -107,7 +107,7 @@ TextureDatabase<TTextureDatabase> TextureDatabase<TTextureDatabase>::Load(IAsset
     picojson::value root = assetManager.LoadTetureDatabaseSpecification(TTextureDatabase::DatabaseName);
     if (!root.is<picojson::array>())
     {
-        throw GameException("Texture database \"" + TTextureDatabase::DatabaseName + "\" specification file is not contain a JSON array");
+        throw GameException("Texture database \"" + TTextureDatabase::DatabaseName + "\" specification file is not a JSON array");
     }
 
     //

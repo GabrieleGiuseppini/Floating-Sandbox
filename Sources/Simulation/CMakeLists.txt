@@ -23,6 +23,8 @@ set  (SIMULATION_SOURCES
 	RopeBuffer.h
 	ShipAutoTexturizationSettings.cpp
 	ShipAutoTexturizationSettings.h
+	ShipDatabase.cpp
+	ShipDatabase.h
 	ShipDefinition.h
 	ShipDefinitionFormatDeSerializer.cpp
 	ShipDefinitionFormatDeSerializer.h

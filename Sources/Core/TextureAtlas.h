@@ -258,7 +258,7 @@ public:
      * Builds an atlas with the specified textures.
      */
     static TextureAtlas<TTextureDatabase> BuildAtlas(
-        std::vector<TextureFrame<TTextureDatabase>> && textureFrames,
+        std::vector<TextureFrame<TTextureDatabase>> const & textureFrames,
         TextureAtlasOptions options)
     {
         auto frameLoader = [&textureFrames](TextureFrameId<TTextureGroups> const & frameId) -> TextureFrame<TTextureDatabase>

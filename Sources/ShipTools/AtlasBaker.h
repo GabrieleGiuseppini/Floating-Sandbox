@@ -15,7 +15,7 @@
 #include <iostream>
 #include <string>
 
-class Baker
+class AtlasBaker
 {
 public:
 
@@ -49,7 +49,7 @@ public:
 public:
 
     template<typename TTextureDatabase>
-    static std::tuple<size_t, ImageSize> BakeAtlas(
+    static std::tuple<size_t, ImageSize> Bake(
         std::filesystem::path const & texturesRootDirectoryPath,
         std::filesystem::path const & outputDirectoryPath,
         AtlasBakingOptions const & options,
