@@ -282,6 +282,7 @@ ShipLegacyFormatDeSerializer::JsonDefinition ShipLegacyFormatDeSerializer::LoadL
             author,
             artCredits,
             yearBuilt,
+            std::nullopt, // Category
             description,
             ShipSpaceToWorldSpaceCoordsRatio(1.0f, 1.0f), // When loading legacy, scale is always 1:1
             doHideElectricalsInPreview,

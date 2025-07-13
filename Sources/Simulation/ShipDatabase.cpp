@@ -15,9 +15,9 @@
 
 std::string const ShipDatabase::SpecificationFilename = "ship_database.json";
 
-std::string ShipDatabase::MakePreviewAtlasFilename(size_t atlasIndex)
+std::string ShipDatabase::MakePreviewAtlasFilename(size_t previewAtlasIndex)
 {
-    return "preview_atlas_" + std::to_string(atlasIndex) + ".png";
+    return "preview_atlas_" + std::to_string(previewAtlasIndex) + ".png";
 }
 
 picojson::value ShipDatabase::ShipEntry::Serialize() const

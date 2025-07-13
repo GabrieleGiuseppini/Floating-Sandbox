@@ -93,6 +93,7 @@ TEST(ShipDefinitionFormatDeSerializerTests, Metadata_Full)
     ShipMetadata sourceMd("Test ship");
     sourceMd.ArtCredits = "KillerWhale";
     sourceMd.Author = "Gabriele Giuseppini";
+    sourceMd.Category = ShipCategoryType::Fictional;
     sourceMd.Description = "Supercaligragilisticexpiralidocius";
     sourceMd.Password = 0x1122334455667788u;
     sourceMd.Scale = ShipSpaceToWorldSpaceCoordsRatio(4.0f, 100.5f);
@@ -109,6 +110,7 @@ TEST(ShipDefinitionFormatDeSerializerTests, Metadata_Full)
 
     EXPECT_EQ(sourceMd.ArtCredits, targetMd.ArtCredits);
     EXPECT_EQ(sourceMd.Author, targetMd.Author);
+    EXPECT_EQ(sourceMd.Category, targetMd.Category);
     EXPECT_EQ(sourceMd.Description, targetMd.Description);
     EXPECT_EQ(sourceMd.Password, targetMd.Password);
     EXPECT_EQ(sourceMd.Scale, targetMd.Scale);
@@ -133,6 +135,7 @@ TEST(ShipDefinitionFormatDeSerializerTests, Metadata_Minimal)
 
     EXPECT_FALSE(sourceMd.ArtCredits.has_value());
     EXPECT_FALSE(sourceMd.Author.has_value());
+    EXPECT_FALSE(sourceMd.Category.has_value());
     EXPECT_FALSE(sourceMd.Description.has_value());
     EXPECT_FALSE(sourceMd.Password.has_value());
     EXPECT_EQ(sourceMd.ShipName, targetMd.ShipName);

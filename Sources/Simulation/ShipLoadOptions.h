@@ -41,11 +41,13 @@ struct ShipLoadOptions
 		return optionsRoot;
 	}
 
-	static ShipLoadOptions Deserialize(picojson::object const & optionsRoot)
+	static ShipLoadOptions Deserialize(picojson::value const & optionsRoot)
 	{
+        auto const & optionsRootAsObject = Utils::GetJsonValueAsObject(optionsRoot, "ShipMetadata");
+
 		return ShipLoadOptions(
-			Utils::GetMandatoryJsonMember<bool>(optionsRoot, "flip_horizontally"),
-			Utils::GetMandatoryJsonMember<bool>(optionsRoot, "flip_vertically"),
-			Utils::GetMandatoryJsonMember<bool>(optionsRoot, "rotate_90cw"));
+			Utils::GetMandatoryJsonMember<bool>(optionsRootAsObject, "flip_horizontally"),
+			Utils::GetMandatoryJsonMember<bool>(optionsRootAsObject, "flip_vertically"),
+			Utils::GetMandatoryJsonMember<bool>(optionsRootAsObject, "rotate_90cw"));
 	}
 };

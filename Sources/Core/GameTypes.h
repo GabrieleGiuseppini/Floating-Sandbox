@@ -1420,6 +1420,20 @@ enum class SwitchType
 };
 
 /*
+ * Types of ships in the game.
+ *
+ * Note: enum value are serialized in ship files, do not change.
+ */
+enum class ShipCategoryType : std::uint32_t
+{
+    Historical = 0,
+    Fictional = 1,
+    Physics = 2,
+
+    _Last = Physics
+};
+
+/*
  * Types of power probes.
  */
 enum class PowerProbeType

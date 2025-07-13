@@ -30,7 +30,7 @@ struct ShipLoadSpecifications final
 	{
 		return ShipLoadSpecifications(
 			Utils::GetMandatoryJsonMember<std::string>(specsRoot, "definition_filepath"),
-			ShipLoadOptions::Deserialize(Utils::GetMandatoryJsonObject(specsRoot, "options")));
+			ShipLoadOptions::Deserialize(specsRoot.at("options")));
 	}
 
 	picojson::object ToJson() const

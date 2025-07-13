@@ -23,6 +23,7 @@
 #include <Core/GameTypes.h>
 
 #include <wx/button.h>
+#include <wx/combobox.h>
 #include <wx/dialog.h>
 #include <wx/panel.h>
 #include <wx/radiobut.h>
@@ -73,6 +74,7 @@ private:
     bool IsAutoTexturizationSettingsDirty() const;
 
     std::optional<std::string> MakeString(wxString && value);
+    std::optional<ShipCategoryType> MakeCategory(int value);
 
 private:
 
@@ -87,6 +89,8 @@ private:
     wxTextCtrl * mShipNameTextCtrl;
     wxTextCtrl * mShipAuthorTextCtrl;
     wxTextCtrl * mArtCreditsTextCtrl;
+    wxComboBox * mCategoryComboBox;
+    bool mIsCategoryComboBoxDirty;
     wxTextCtrl * mYearBuiltTextCtrl;
 
     wxTextCtrl * mDescriptionTextCtrl;

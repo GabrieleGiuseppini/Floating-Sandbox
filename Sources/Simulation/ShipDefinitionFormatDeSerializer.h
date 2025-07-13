@@ -131,6 +131,7 @@ private:
         Author = MAKE_TAG('A', 'U', 'T', '1'),
         ArtCredits = MAKE_TAG('A', 'C', 'R', '1'),
         YearBuilt = MAKE_TAG('Y', 'R', 'B', '1'),
+        Category = MAKE_TAG('C', 'T', 'G', '1'),
         Description = MAKE_TAG('D', 'E', 'S', '1'),
         Scale = MAKE_TAG('S', 'C', 'L', '1'),
         Password = MAKE_TAG('P', 'P', 'P', '1'),

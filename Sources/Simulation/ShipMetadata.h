@@ -29,6 +29,8 @@ public:
 
     std::optional<std::string> YearBuilt;
 
+    std::optional<ShipCategoryType> Category;
+
     std::optional<std::string> Description;
 
     ShipSpaceToWorldSpaceCoordsRatio Scale;
@@ -43,6 +45,7 @@ public:
         , Author()
         , ArtCredits()
         , YearBuilt()
+        , Category()
         , Description()
         , Scale(1.0f, 1.0f) // Default is 1:1
         , DoHideElectricalsInPreview(false)
@@ -56,6 +59,7 @@ public:
         std::optional<std::string> author,
         std::optional<std::string> artCredits,
         std::optional<std::string> yearBuilt,
+        std::optional<ShipCategoryType> category,
         std::optional<std::string> description,
         ShipSpaceToWorldSpaceCoordsRatio scale,
         bool doHideElectricalsInPreview,
@@ -65,6 +69,7 @@ public:
         , Author(std::move(author))
         , ArtCredits(std::move(artCredits))
         , YearBuilt(std::move(yearBuilt))
+        , Category(std::move(category))
         , Description(std::move(description))
         , Scale(scale)
         , DoHideElectricalsInPreview(doHideElectricalsInPreview)
@@ -100,6 +105,11 @@ public:
             root.emplace("year_built", picojson::value(*YearBuilt));
         }
 
+        if (Category.has_value())
+        {
+            root.emplace("category", picojson::value(static_cast<std::int64_t>(*Category)));
+        }
+
         if (Description.has_value())
         {
             root.emplace("description", picojson::value(*Description));
@@ -129,6 +139,7 @@ public:
         auto const author = Utils::GetOptionalJsonMember<std::string>(rootAsObject, "created_by");
         auto const artCredits = Utils::GetOptionalJsonMember<std::string>(rootAsObject, "art_credits");
         auto const yearBuilt = Utils::GetOptionalJsonMember<std::string>(rootAsObject, "year_built");
+        auto const categoryInt = Utils::GetOptionalJsonMember<std::int64_t>(rootAsObject, "category");
         auto const description = Utils::GetOptionalJsonMember<std::string>(rootAsObject, "description");
 
         auto const scaleObj = Utils::GetMandatoryJsonMember<picojson::object>(rootAsObject, "scale");
@@ -145,6 +156,7 @@ public:
             author,
             artCredits,
             yearBuilt,
+            categoryInt.has_value() ? static_cast<ShipCategoryType>(*categoryInt) : std::optional<ShipCategoryType>(),
             description,
             ShipSpaceToWorldSpaceCoordsRatio(scaleInputUnits, scaleOutputUnits),
             doHideElectricalsInPreview,

@@ -336,6 +336,18 @@ namespace Utils
         return lstr;
     }
 
+    inline std::string ToUpper(std::string const & str)
+    {
+        std::string ustr = str;
+        std::transform(
+            ustr.begin(),
+            ustr.end(),
+            ustr.begin(),
+            [](unsigned char c) { return static_cast<unsigned char>(std::toupper(c)); });
+
+        return ustr;
+    }
+
     inline bool CaseInsensitiveEquals(std::string const & str1, std::string const & str2)
     {
         if (str1.length() != str2.length())

@@ -686,6 +686,14 @@ size_t ShipDefinitionFormatDeSerializer::AppendMetadata(
             buffer);
     }
 
+    if (metadata.Category.has_value())
+    {
+        sectionBodySize += AppendMetadataEntry(
+            MetadataTagType::Category,
+            static_cast<std::uint64_t>(*metadata.Category),
+            buffer);
+    }
+
     if (metadata.Description.has_value())
     {
         sectionBodySize += AppendMetadataEntry(
@@ -1263,7 +1271,7 @@ size_t ShipDefinitionFormatDeSerializer::AppendPngPreview(
             StructuralElement const & element = structuralLayer.Buffer[{x + minX, y + minY}];
             previewRawData[{x, y}] = element.Material != nullptr
                 ? element.Material->RenderColor
-                : rgbaColor(EmptyMaterialColorKey, 255);
+                : rgbaColor(EmptyMaterialColorKey, 0);
         }
     }
 
@@ -1578,24 +1586,20 @@ ShipMetadata ShipDefinitionFormatDeSerializer::ReadMetadata(DeSerializationBuffe
                 break;
             }
 
+            case static_cast<uint32_t>(MetadataTagType::Category):
+            {
+                std::uint64_t category;
+                buffer.ReadAt<std::uint64_t>(offset, category);
+                metadata.Category = static_cast<ShipCategoryType>(category);
+
+                break;
+            }
+
             case static_cast<uint32_t>(MetadataTagType::Description):
             {
                 std::string tmpStr;
                 buffer.ReadAt<std::string>(offset, tmpStr);
                 metadata.Description = tmpStr;
-
-                break;
-            }
-
-            case static_cast<uint32_t>(MetadataTagType::Scale) :
-            {
-                float inputUnits;
-                size_t readOffset = buffer.ReadAt<float>(offset, inputUnits);
-
-                float outputUnits;
-                buffer.ReadAt<float>(offset + readOffset, outputUnits);
-
-                metadata.Scale = ShipSpaceToWorldSpaceCoordsRatio(inputUnits, outputUnits);
 
                 break;
             }
@@ -1617,6 +1621,19 @@ ShipMetadata ShipDefinitionFormatDeSerializer::ReadMetadata(DeSerializationBuffe
                 std::uint64_t password;
                 buffer.ReadAt<std::uint64_t>(offset, password);
                 metadata.Password = static_cast<PasswordHash>(password);
+
+                break;
+            }
+
+            case static_cast<uint32_t>(MetadataTagType::Scale):
+            {
+                float inputUnits;
+                size_t readOffset = buffer.ReadAt<float>(offset, inputUnits);
+
+                float outputUnits;
+                buffer.ReadAt<float>(offset + readOffset, outputUnits);
+
+                metadata.Scale = ShipSpaceToWorldSpaceCoordsRatio(inputUnits, outputUnits);
 
                 break;
             }

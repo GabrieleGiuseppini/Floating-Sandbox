@@ -318,6 +318,77 @@ void ShipPropertiesEditDialog::PopulateMetadataPanel(wxPanel * panel)
 
     vSizer->AddSpacer(VerticalSeparatorSize);
 
+    // Category
+    {
+        {
+            auto label = new wxStaticText(panel, wxID_ANY, _("Category"), wxDefaultPosition, wxDefaultSize,
+                wxALIGN_CENTER);
+
+            vSizer->Add(label, 0, wxALIGN_CENTER_HORIZONTAL, 0);
+        }
+
+        {
+            size_t constexpr NCategories = static_cast<size_t>(ShipCategoryType::_Last) + 1;
+            wxArrayString choices;
+            for (size_t c = 0; c < NCategories; ++c)
+            {
+                switch (static_cast<ShipCategoryType>(c))
+                {
+                    case ShipCategoryType::Fictional:
+                    {
+                        choices.Add(_T("Fictional"));
+                        break;
+                    }
+
+                    case ShipCategoryType::Historical:
+                    {
+                        choices.Add(_T("Historical"));
+                        break;
+                    }
+
+                    case ShipCategoryType::Physics:
+                    {
+                        choices.Add(_T("Physics"));
+                        break;
+                    }
+                }
+            }
+
+            mCategoryComboBox = new wxComboBox(
+                panel,
+                wxID_ANY,
+                wxEmptyString,
+                wxDefaultPosition,
+                wxDefaultSize,
+                choices,
+                wxCB_DROPDOWN | wxCB_READONLY);
+
+            mCategoryComboBox->Bind(
+                wxEVT_COMBOBOX,
+                [this](wxCommandEvent & event)
+                {
+                    mIsCategoryComboBoxDirty = true;
+                    OnDirty();
+                    event.Skip();
+                });
+
+            mIsCategoryComboBoxDirty = false;
+
+            vSizer->Add(mCategoryComboBox, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 0);
+        }
+
+        {
+            auto label = new wxStaticText(panel, wxID_ANY, _("Category of the ship"), wxDefaultPosition, wxDefaultSize,
+                wxALIGN_CENTER);
+
+            label->SetFont(explanationFont);
+
+            vSizer->Add(label, 0, wxALL | wxEXPAND, 0);
+        }
+    }
+
+    vSizer->AddSpacer(VerticalSeparatorSize);
+
     // Year Built
     {
         {
@@ -1090,6 +1161,7 @@ void ShipPropertiesEditDialog::OnOkButton(wxCommandEvent & /*event*/)
             MakeString(mShipAuthorTextCtrl->GetValue()),
             MakeString(mArtCreditsTextCtrl->GetValue()),
             MakeString(mYearBuiltTextCtrl->GetValue()),
+            MakeCategory(mCategoryComboBox->GetSelection()),
             MakeString(mDescriptionTextCtrl->GetValue()),
             mSessionData->Metadata.Scale, // CODEWORK: not editable in this version
             mSessionData->Metadata.DoHideElectricalsInPreview,
@@ -1191,6 +1263,16 @@ void ShipPropertiesEditDialog::ReconciliateUI()
         mArtCreditsTextCtrl->ChangeValue(wxEmptyString);
         mArtCreditsTextCtrl->Enable(false);
     }
+
+    if (mSessionData->Metadata.Category.has_value())
+    {
+        mCategoryComboBox->SetSelection(static_cast<int>(*mSessionData->Metadata.Category));
+    }
+    else
+    {
+        mCategoryComboBox->SetSelection(wxNOT_FOUND);
+    }
+    mIsCategoryComboBoxDirty = false;
 
     mYearBuiltTextCtrl->ChangeValue(mSessionData->Metadata.YearBuilt.value_or(""));
 
@@ -1301,6 +1383,7 @@ bool ShipPropertiesEditDialog::IsMetadataDirty() const
     return mShipNameTextCtrl->IsModified()
         || mShipAuthorTextCtrl->IsModified()
         || mArtCreditsTextCtrl->IsModified()
+        || mIsCategoryComboBoxDirty
         || mYearBuiltTextCtrl->IsModified()
         || mDescriptionTextCtrl->IsModified()
         || mIsPasswordHashModified;
@@ -1325,6 +1408,18 @@ std::optional<std::string> ShipPropertiesEditDialog::MakeString(wxString && valu
         return std::nullopt;
     else
         return trimmedValue;
+}
+
+std::optional<ShipCategoryType> ShipPropertiesEditDialog::MakeCategory(int selection)
+{
+    if (selection == wxNOT_FOUND)
+    {
+        return std::nullopt;
+    }
+    else
+    {
+        return static_cast<ShipCategoryType>(selection);
+    }
 }
 
 }
