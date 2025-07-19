@@ -122,13 +122,21 @@ ShipDatabase ShipDatabase::Deserialize(picojson::value const & specification)
 
 void ShipDatabaseBuilder::AddShip(BinaryReadStream && inputStream, ShipLocator locator)
 {
-    // Preview data
+    // Load preview image
     auto const initialPosition = inputStream.GetCurrentPosition();
-    ShipPreviewData previewData = ShipDefinitionFormatDeSerializer::LoadPreviewData(inputStream);
-
-    // Preview image
-    inputStream.SetPosition(initialPosition);
     RgbaImageData previewImage = ShipDefinitionFormatDeSerializer::LoadPreviewImage(inputStream, mMaxPreviewImageSize);
+    inputStream.SetPosition(initialPosition);
+
+    AddShip(
+        std::move(inputStream),
+        std::move(previewImage),
+        std::move(locator));
+}
+
+void ShipDatabaseBuilder::AddShip(BinaryReadStream && inputStream, RgbaImageData && previewImage, ShipLocator locator)
+{
+    // Load preview data
+    ShipPreviewData previewData = ShipDefinitionFormatDeSerializer::LoadPreviewData(inputStream);
 
     // Store in working set
     mWorkingList.emplace_back(

@@ -17,10 +17,24 @@ public:
 
 	struct ShipDirectory
 	{
-		std::vector<ShipLocator> Locators;
+		struct Entry
+		{
+			ShipLocator Locator;
+			bool HasExternalPreviewImage;
 
-		explicit ShipDirectory(std::vector<ShipLocator> && locators)
-			: Locators(std::move(locators))
+			Entry(
+				ShipLocator locator,
+				bool hasExternalPreviewImage)
+				: Locator(locator)
+				, HasExternalPreviewImage(hasExternalPreviewImage)
+			{
+			}
+		};
+
+		std::vector<Entry> Entries;
+
+		explicit ShipDirectory(std::vector<Entry> && entries)
+			: Entries(std::move(entries))
 		{
 		}
 

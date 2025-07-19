@@ -21,14 +21,19 @@ ShipDatabaseBaker::ShipDirectory ShipDatabaseBaker::ShipDirectory::Deserialize(p
         throw GameException("ShipDirectory specification is not a JSON array");
     }
 
-    std::vector<ShipLocator> locators;
+    std::vector<ShipDirectory::Entry> entries;
 
     for (auto const & entry : specification.get<picojson::array>())
     {
-        locators.emplace_back(ShipLocator::Deserialize(entry));
+        auto const & entryAsObject = Utils::GetJsonValueAsObject(entry, "ShipDirectory::Entry");
+
+        auto const locator = ShipLocator::Deserialize(entryAsObject.at("locator"));
+        auto const hasExternalPreviewImage = Utils::GetOptionalJsonMember<bool>(entryAsObject, "has_external_preview_image", false);
+
+        entries.emplace_back(locator, hasExternalPreviewImage);
     }
 
-    return ShipDirectory(std::move(locators));
+    return ShipDirectory(std::move(entries));
 }
 
 void ShipDatabaseBaker::Bake(
@@ -55,7 +60,7 @@ void ShipDatabaseBaker::Bake(
     // Read directory
     ShipDirectory shipDirectory = ShipDirectory::Deserialize(Utils::ParseJSONString(FileTextReadStream(inputShipDirectoryFilePath).ReadAll()));
 
-    if (shipDirectory.Locators.empty())
+    if (shipDirectory.Entries.empty())
     {
         throw std::runtime_error("Input ship directory file '" + inputShipDirectoryFilePath.string() + "' contains an empty directory");
     }
@@ -64,11 +69,27 @@ void ShipDatabaseBaker::Bake(
     ShipDatabaseBuilder builder(maxPreviewImageSize);
 
     // Add ships
-    for (auto const & locator : shipDirectory.Locators)
+    for (auto const & entry : shipDirectory.Entries)
     {
-        builder.AddShip(
-            FileBinaryReadStream(inputShipRootDirectoryPath / locator.RelativeFilePath),
-            locator);
+        std::filesystem::path shipFilePath = inputShipRootDirectoryPath / entry.Locator.RelativeFilePath;
+
+        if (!entry.HasExternalPreviewImage)
+        {
+            builder.AddShip(
+                FileBinaryReadStream(shipFilePath),
+                entry.Locator);
+        }
+        else
+        {
+            // Load the preview file from the same directory as the database specification
+            auto const previewImageFilePath = inputShipDirectoryFilePath.parent_path() / shipFilePath.filename().replace_extension("png");
+            auto previewImageFileStream = FileBinaryReadStream(previewImageFilePath);
+
+            builder.AddShip(
+                FileBinaryReadStream(shipFilePath),
+                PngTools::DecodeImageRgba(previewImageFileStream),
+                entry.Locator);
+        }
     }
 
     // Build

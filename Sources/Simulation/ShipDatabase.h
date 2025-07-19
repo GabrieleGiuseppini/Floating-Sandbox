@@ -104,6 +104,8 @@ public:
 
 	void AddShip(BinaryReadStream && inputStream, ShipLocator locator);
 
+    void AddShip(BinaryReadStream && inputStream, RgbaImageData && previewImage, ShipLocator locator);
+
 	struct Output
 	{
 		ShipDatabase Database;

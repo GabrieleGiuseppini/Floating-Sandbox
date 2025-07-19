@@ -988,6 +988,13 @@ struct FloatSize
             height + other.height);
     }
 
+    inline constexpr FloatSize operator*(float scale) const
+    {
+        return FloatSize(
+            width * scale,
+            height * scale);
+    }
+
     inline constexpr FloatSize operator/(float scale) const
     {
         return FloatSize(
