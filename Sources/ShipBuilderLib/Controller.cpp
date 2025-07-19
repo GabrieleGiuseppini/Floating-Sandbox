@@ -1044,11 +1044,14 @@ void Controller::AutoTrim()
 
     if (boundingRect.has_value())
     {
+        // Leave a 1-particle border around
         InternalResizeShip(
-            boundingRect->size,
+            ShipSpaceSize(
+                boundingRect->size.width + 2,
+                boundingRect->size.height + 2),
             ShipSpaceCoordinates(
-                -boundingRect->origin.x,
-                -boundingRect->origin.y),
+                -boundingRect->origin.x + 1,
+                -boundingRect->origin.y + 1),
             _("Trim"));
     }
 }
