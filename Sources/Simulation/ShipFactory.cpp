@@ -410,7 +410,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData, RgbaImageData> ShipFac
             ShipAutoTexturizationSettings( // Custom
                 ShipAutoTexturizationModeType::MaterialTextures,
                 0.15f,
-                0.65f),
+                0.45f),
             ShipTexturizer::MaxHighDefinitionTextureSize,
             assetManager);
 
