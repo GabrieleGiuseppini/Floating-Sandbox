@@ -482,7 +482,7 @@ public:
 
         // Apply perspective transform
         //
-        // First off, the ndcX shift is normalizedCamX/normalizedZ (negligible at furthest Z, full (unchanged) at nearest Z)
+        // First off, the ndcX shift is normalizedCamX/normalizedZ (negligible at furthest Z, full (1.0) at nearest Z)
         //
         // Nearest clouds (NormZ = ZMin): expand ndcX so that the maximum ndc X we have (i.e. result of perspective transformation)
         //      is fully offset by the maximum Cam offset (so that we remain in the [-3, +3] range)
