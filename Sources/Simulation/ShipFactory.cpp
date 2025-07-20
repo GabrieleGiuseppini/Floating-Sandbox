@@ -448,6 +448,8 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData, RgbaImageData> ShipFac
         electricalElements.GetElementCount(), " electrical elements (", electricalElements.GetLampCount(), " lamps), ",
         frontiers.GetElementCount(), " frontiers.");
 
+    LogMessage("             Exterior texture: W=", exteriorTextureImage.Size.width, " H=", exteriorTextureImage.Size.height);
+
     auto ship = std::make_unique<Ship>(
         shipId,
         parentWorld,
