@@ -287,7 +287,7 @@ void Clouds::UpdateShadows(
         // Note: when we're paused and panning, this won't update - a bit buggy
         vec2f perspectivedCloudPos = viewModel.ApplyCloudPerspectiveTransformation(c->X, c->Y, c->Z);
         // Convert back into our space ([-1.5, 1.5])
-        perspectivedCloudPos.x /= 3.0f;
+        perspectivedCloudPos.x /= 2.0f;
 
         float const leftEdgeX = perspectivedCloudPos.x - cloudSize / 2.0f;
 

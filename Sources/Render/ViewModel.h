@@ -482,19 +482,21 @@ public:
 
         // Apply perspective transform
         //
-        // First off, the ndcX shift is normalizedCamX/normalizedZ (negligible at furthest Z, full (1.0) at nearest Z)
+        // First off, the ndcX shift is k*normalizedCamX/normalizedZ (negligible at furthest Z, full (k) at nearest Z)
+        //      - k is a "magnitude" amount
         //
         // Nearest clouds (NormZ = ZMin): expand ndcX so that the maximum ndc X we have (i.e. result of perspective transformation)
         //      is fully offset by the maximum Cam offset (so that we remain in the [-3, +3] range)
-        //          * maximum Cam offset at ZMin is 1.0/ZMin
-        //          * ndcX' = ndcX * f - MaxCamOffset/ZMin => f = 1 + 1/3 * 1/ZMin
+        //          * maximum Cam offset at ZMin is k/ZMin
+        //          * ndcX' = ndcX * f - k*MaxCamOffset/ZMin => f = 1 + 1/3 * k/ZMin
         // Furthest clouds (NormZ = ZMax): expand ndcX so that the maximum ndc X we have (i.e. result of perspective transformation)
         //      is fully offset by the maximum Cam offset (so that we remain in the [-3, +3] range)
-        //          * maximum Cam offset at ZMax is 1.0/ZMax
-        //          * ndcX' = ndcX * f - MaxCamOffset/ZMax => f = 1 + 1/3 * 1/ZMax
+        //          * maximum Cam offset at ZMax is k/ZMax
+        //          * ndcX' = ndcX * f - k*MaxCamOffset/ZMax => f = 1 + 1/3 * k/ZMax
         //
-        float const xScaler = 1.0f + 1.0f / 3.0f * 1.0f / normalizedZ;
-        ndcX = ndcX * xScaler - mCloudNormalizedViewCam.x / normalizedZ;
+        float constexpr K = 4.0f; // Magic number
+        float const xScaler = 1.0f + 1.0f / 3.0f * K / normalizedZ;
+        ndcX = ndcX * xScaler - K * mCloudNormalizedViewCam.x / normalizedZ;
 
         // Calculate NDC y
 
