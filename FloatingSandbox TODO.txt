@@ -1194,6 +1194,9 @@
 			- Structural materials:
 				- Soft rubber
 					- For joints
+				- Gold and copper (from TimCan)
+					- Copper would still decay but it would be second slowest to concrete material 
+					- Gold would be heavy but unable to corrode like stainless steel
 				- Check Longhorn's materials
 					- A) New colors for existing materials
 					- B) New materials altogether

@@ -43,6 +43,7 @@ enum class UITextureGroups : uint16_t
     SliderKnob,
     StormIcon,
     ToolIcons,
+    LaserCannon,
     TriangleH,
     TriangleV,
 
@@ -111,6 +112,8 @@ struct UITextureDatabase
             return UITextureGroups::StormIcon;
         else if (Utils::CaseInsensitiveEquals(str, "tool_icons"))
             return UITextureGroups::ToolIcons;
+        else if (Utils::CaseInsensitiveEquals(str, "laser_cannon"))
+            return UITextureGroups::LaserCannon;
         else if (Utils::CaseInsensitiveEquals(str, "triangle_h"))
             return UITextureGroups::TriangleH;
         else if (Utils::CaseInsensitiveEquals(str, "triangle_v"))
