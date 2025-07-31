@@ -1902,6 +1902,8 @@ public:
 
     void Initialize(InputState const & /*inputState*/) override
     {
+        mCurrentAction.reset();
+
         SetCurrentCursor();
     }
 
@@ -1910,7 +1912,6 @@ public:
         if (mCurrentAction.has_value())
         {
             StopSounds(*mCurrentAction);
-            mCurrentAction.reset();
         }
     }
 
@@ -2032,14 +2033,19 @@ public:
 
     void Initialize(InputState const & /*inputState*/) override
     {
+        mIsEngaged = false;
+
         // Update cursor
         SetCurrentCursor();
     }
 
     void Deinitialize() override
     {
-        // Stop sound
-        mSoundController.StopFloodHoseSound();
+        if (mIsEngaged)
+        {
+            // Stop sound
+            mSoundController.StopFloodHoseSound();
+        }
     }
 
     void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override

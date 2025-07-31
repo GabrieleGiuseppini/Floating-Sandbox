@@ -36,8 +36,10 @@ enum class UITextureGroups : uint16_t
     TsunamiIcon,
     UnderConstructionIcon,
     UVModeIcon,
+
     CheckboxFrame,
     ToolsEyeQuadrant,
+    SettingsIcons,
     SliderGuideTip,
     SliderGuideBody,
     SliderKnob,
@@ -102,6 +104,8 @@ struct UITextureDatabase
             return UITextureGroups::CheckboxFrame;
         else if (Utils::CaseInsensitiveEquals(str, "tools_eye_quadrant"))
             return UITextureGroups::ToolsEyeQuadrant;
+        else if (Utils::CaseInsensitiveEquals(str, "settings_icons"))
+            return UITextureGroups::SettingsIcons;
         else if (Utils::CaseInsensitiveEquals(str, "slider_guide_tip"))
             return UITextureGroups::SliderGuideTip;
         else if (Utils::CaseInsensitiveEquals(str, "slider_guide_body"))

@@ -1040,7 +1040,7 @@ std::optional<ToolApplicationLocus> Ship::InjectPressureAt(
     // Find closest (non-ephemeral) non-hull point in the radius
     //
 
-    float bestSquareDistance = 1.2F;
+    float bestSquareDistance = 1.2f;
     ElementIndex bestPointIndex = NoneElementIndex;
 
     for (auto const pointIndex : mPoints.RawShipPoints())
