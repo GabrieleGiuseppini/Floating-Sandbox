@@ -946,11 +946,15 @@ void GameController::RepairAt(
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
+    float const worldRadius =
+        mSimulationParameters.RepairRadius
+        * radiusMultiplier;
+
     // Apply action
     assert(!!mWorld);
     mWorld->RepairAt(
         worldCoordinates,
-        radiusMultiplier,
+        worldRadius,
         repairStepId,
         mSimulationParameters);
 }
@@ -1358,12 +1362,14 @@ bool GameController::ScrubThrough(
     vec2f const startWorldCoordinates = mRenderContext->ScreenToWorld(startScreenCoordinates);
     vec2f const endWorldCoordinates = mRenderContext->ScreenToWorld(endScreenCoordinates);
 
+    float const worldRadius = mSimulationParameters.ScrubRotToolRadius; // Yes, using the same for symmetry
+
     // Apply action
     assert(!!mWorld);
     return mWorld->ScrubThrough(
         startWorldCoordinates,
         endWorldCoordinates,
-        mSimulationParameters);
+        worldRadius);
 }
 
 bool GameController::RotThrough(
@@ -1373,11 +1379,14 @@ bool GameController::RotThrough(
     vec2f const startWorldCoordinates = mRenderContext->ScreenToWorld(startScreenCoordinates);
     vec2f const endWorldCoordinates = mRenderContext->ScreenToWorld(endScreenCoordinates);
 
+    float const worldRadius = mSimulationParameters.ScrubRotToolRadius; // Yes, using the same for symmetry
+
     // Apply action
     assert(!!mWorld);
     return mWorld->RotThrough(
         startWorldCoordinates,
         endWorldCoordinates,
+        worldRadius,
         mSimulationParameters);
 }
 

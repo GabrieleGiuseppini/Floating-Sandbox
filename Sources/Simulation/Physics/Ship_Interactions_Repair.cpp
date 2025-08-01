@@ -15,16 +15,12 @@ namespace Physics {
 
 void Ship::RepairAt(
     vec2f const & targetPos,
-    float radiusMultiplier,
+    float radius,
     SequenceNumber repairStepId,
     float currentSimulationTime,
     SimulationParameters const & simulationParameters)
 {
-    float const searchRadius =
-        simulationParameters.RepairRadius
-        * radiusMultiplier;
-
-    float const squareSearchRadius = searchRadius * searchRadius;
+    float const squareSearchRadius = radius * radius;
 
     //
     // Pass 1: straighten one-spring and two-spring naked springs
@@ -131,7 +127,7 @@ void Ship::RepairAt(
             }
         }
 
-        // b) Visit all springs, trying to restore their rest lenghts
+        // b) Visit all springs, trying to restore their rest lengths
         for (auto const & cs : mPoints.GetConnectedSprings(pointIndex).ConnectedSprings)
         {
             if (mSprings.GetRestLength(cs.SpringIndex) != mSprings.GetFactoryRestLength(cs.SpringIndex))
@@ -156,7 +152,7 @@ void Ship::RepairAt(
             }
         }
 
-        // c) Restore electrical element - iff point is not damanged
+        // c) Restore electrical element - iff point is not damaged
         if (!mPoints.IsDamaged(pointIndex))
         {
             auto const electricalElementIndex = mPoints.GetElectricalElement(pointIndex);
@@ -240,7 +236,7 @@ void Ship::StraightenOneSpringChains(ElementIndex pointIndex)
 
                         if (ccwDelta < nearestCCWSpringDeltaOctant)
                         {
-                            nearestCCWSpringIndex = cs.SpringIndex;
+                            nearestCCWSpringIndex = static_cast<int>(cs.SpringIndex);
                             nearestCCWSpringDeltaOctant = ccwDelta;
                         }
                     }
@@ -553,7 +549,7 @@ bool Ship::RepairFromAttractor(
 
                     if (cwDelta < nearestCWSpringDeltaOctant)
                     {
-                        nearestCWSpringIndex = cs.SpringIndex;
+                        nearestCWSpringIndex = static_cast<int>(cs.SpringIndex);
                         nearestCWSpringDeltaOctant = cwDelta;
                     }
 
@@ -567,7 +563,7 @@ bool Ship::RepairFromAttractor(
 
                     if (ccwDelta < nearestCCWSpringDeltaOctant)
                     {
-                        nearestCCWSpringIndex = cs.SpringIndex;
+                        nearestCCWSpringIndex = static_cast<int>(cs.SpringIndex);
                         nearestCCWSpringDeltaOctant = ccwDelta;
                     }
                 }

@@ -1286,24 +1286,13 @@ void Ship::DetonateAntiMatterBombs()
 bool Ship::ScrubThrough(
     vec2f const & startPos,
     vec2f const & endPos,
-    SimulationParameters const & simulationParameters)
+    float radius)
 {
-    float const scrubRadius = simulationParameters.ScrubRotToolRadius;
-
     //
     // Find all points in the radius of the segment
     //
 
-    // Calculate normal to the segment (doesn't really matter which orientation)
-    vec2f normalizedSegment = (endPos - startPos).normalise();
-    vec2f segmentNormal = vec2f(-normalizedSegment.y, normalizedSegment.x);
-
-    // Calculate bounding box for segment *and* search radius
-    Geometry::AABB boundingBox(
-        std::min(startPos.x, endPos.x) - scrubRadius,   // Left
-        std::max(startPos.x, endPos.x) + scrubRadius,   // Right
-        std::max(startPos.y, endPos.y) + scrubRadius,   // Top
-        std::min(startPos.y, endPos.y) - scrubRadius);  // Bottom
+    float const squareRadius = radius * radius;
 
     // Visit all points (excluding ephemerals, they don't rot and
     // thus we don't need to scrub them!)
@@ -1312,28 +1301,23 @@ bool Ship::ScrubThrough(
     {
         auto const & pointPosition = mPoints.GetPosition(pointIndex);
 
-        // First check whether the point is in the bounding box
-        if (boundingBox.Contains(pointPosition))
+        if (float const squarePointDistance = Geometry::Segment::SquareDistanceToPoint(startPos, endPos, pointPosition);
+            squarePointDistance <= squareRadius)
         {
-            // Distance = projection of (start->point) vector on segment normal
-            float const distance = std::abs((pointPosition - startPos).dot(segmentNormal));
+            //
+            // Scrub this point, with magnitude dependent from distance
+            //
 
-            // Check whether this point is in the radius
-            if (distance <= scrubRadius)
-            {
-                //
-                // Scrub this point, with magnitude dependent from distance
-                //
+            float const distance = std::sqrt(squarePointDistance);
 
-                float const newDecay =
-                    mPoints.GetDecay(pointIndex)
-                    + 0.5f * (1.0f - mPoints.GetDecay(pointIndex)) * (scrubRadius - distance) / scrubRadius;
+            float const newDecay =
+                mPoints.GetDecay(pointIndex)
+                + 0.5f * (1.0f - mPoints.GetDecay(pointIndex)) * (radius - distance) / radius;
 
-                mPoints.SetDecay(pointIndex, newDecay);
+            mPoints.SetDecay(pointIndex, newDecay);
 
-                // Remember at least one point has been scrubbed
-                hasScrubbed |= true;
-            }
+            // Remember at least one point has been scrubbed
+            hasScrubbed |= true;
         }
     }
 
@@ -1349,10 +1333,9 @@ bool Ship::ScrubThrough(
 bool Ship::RotThrough(
     vec2f const & startPos,
     vec2f const & endPos,
+    float radius,
     SimulationParameters const & simulationParameters)
 {
-    float const rotRadius = simulationParameters.ScrubRotToolRadius; // Yes, using the same for symmetry
-
     float const decayCoeffMultiplier = simulationParameters.IsUltraViolentMode
         ? 2.5f
         : 1.0f;
@@ -1361,16 +1344,7 @@ bool Ship::RotThrough(
     // Find all points in the radius of the segment
     //
 
-    // Calculate normal to the segment (doesn't really matter which orientation)
-    vec2f normalizedSegment = (endPos - startPos).normalise();
-    vec2f segmentNormal = vec2f(-normalizedSegment.y, normalizedSegment.x);
-
-    // Calculate bounding box for segment *and* search radius
-    Geometry::AABB boundingBox(
-        std::min(startPos.x, endPos.x) - rotRadius,   // Left
-        std::max(startPos.x, endPos.x) + rotRadius,   // Right
-        std::max(startPos.y, endPos.y) + rotRadius,   // Top
-        std::min(startPos.y, endPos.y) - rotRadius);  // Bottom
+    float const squareRadius = radius * radius;
 
     // Visit all points (excluding ephemerals, they don't rot and
     // thus we don't need to rot them!)
@@ -1379,33 +1353,28 @@ bool Ship::RotThrough(
     {
         auto const & pointPosition = mPoints.GetPosition(pointIndex);
 
-        // First check whether the point is in the bounding box
-        if (boundingBox.Contains(pointPosition))
+        if (float const squarePointDistance = Geometry::Segment::SquareDistanceToPoint(startPos, endPos, pointPosition);
+            squarePointDistance <= squareRadius)
         {
-            // Distance = projection of (start->point) vector on segment normal
-            float const distance = std::abs((pointPosition - startPos).dot(segmentNormal));
+            //
+            // Rot this point, with magnitude dependent from distance,
+            // and more pronounced when the point is underwater or has water
+            //
 
-            // Check whether this point is in the radius
-            if (distance <= rotRadius)
-            {
-                //
-                // Rot this point, with magnitude dependent from distance,
-                // and more pronounced when the point is underwater or has water
-                //
+            float const distance = std::sqrt(squarePointDistance);
 
-                float const decayCoeff = (mParentWorld.GetOceanSurface().IsUnderwater(pointPosition) || mPoints.GetWater(pointIndex) >= 1.0f)
-                    ? 0.0175f
-                    : 0.010f;
+            float const decayCoeff = (mParentWorld.GetOceanSurface().IsUnderwater(pointPosition) || mPoints.GetWater(pointIndex) >= 1.0f)
+                ? 0.0175f
+                : 0.010f;
 
-                float const newDecay =
-                    mPoints.GetDecay(pointIndex)
-                    * (1.0f - decayCoeff * decayCoeffMultiplier * (rotRadius - distance) / rotRadius);
+            float const newDecay =
+                mPoints.GetDecay(pointIndex)
+                * (1.0f - decayCoeff * decayCoeffMultiplier * (radius - distance) / radius);
 
-                mPoints.SetDecay(pointIndex, newDecay);
+            mPoints.SetDecay(pointIndex, newDecay);
 
-                // Remember at least one point has been rotted
-                hasRotted |= true;
-            }
+            // Remember at least one point has been rotted
+            hasRotted |= true;
         }
     }
 

@@ -226,7 +226,7 @@ public:
 
     void RepairAt(
         vec2f const & targetPos,
-        float radiusMultiplier,
+        float radius,
         SequenceNumber repairStepId,
         SimulationParameters const & simulationParameters);
 
@@ -343,11 +343,12 @@ public:
     bool ScrubThrough(
         vec2f const & startPos,
         vec2f const & endPos,
-        SimulationParameters const & simulationParameters);
+        float radius);
 
     bool RotThrough(
         vec2f const & startPos,
         vec2f const & endPos,
+        float radius,
         SimulationParameters const & simulationParameters);
 
     void ApplyThanosSnap(

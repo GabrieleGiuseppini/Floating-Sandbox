@@ -484,7 +484,7 @@ void World::DestroyAt(
 
 void World::RepairAt(
     vec2f const & targetPos,
-    float radiusMultiplier,
+    float radius,
     SequenceNumber repairStepId,
     SimulationParameters const & simulationParameters)
 {
@@ -492,7 +492,7 @@ void World::RepairAt(
     {
         ship->RepairAt(
             targetPos,
-            radiusMultiplier,
+            radius,
             repairStepId,
             mCurrentSimulationTime,
             simulationParameters);
@@ -1023,7 +1023,7 @@ std::optional<bool> World::AdjustOceanFloorTo(
 bool World::ScrubThrough(
     vec2f const & startPos,
     vec2f const & endPos,
-    SimulationParameters const & simulationParameters)
+    float radius)
 {
     // Scrub all ships
     bool anyHasScrubbed = false;
@@ -1032,7 +1032,7 @@ bool World::ScrubThrough(
         bool const hasScrubbed = ship->ScrubThrough(
             startPos,
             endPos,
-            simulationParameters);
+            radius);
 
         anyHasScrubbed |= hasScrubbed;
     }
@@ -1043,6 +1043,7 @@ bool World::ScrubThrough(
 bool World::RotThrough(
     vec2f const & startPos,
     vec2f const & endPos,
+    float radius,
     SimulationParameters const & simulationParameters)
 {
     // Rot all ships
@@ -1052,6 +1053,7 @@ bool World::RotThrough(
         bool const hasRotted = ship->RotThrough(
             startPos,
             endPos,
+            radius,
             simulationParameters);
 
         anyHasRotted |= hasRotted;
