@@ -14,7 +14,6 @@ namespace UITextureDatabases {
 
 enum class UITextureGroups : uint16_t
 {
-    // Icons
     DotDotDotIcon = 0,
     ShipSelectionIcon,
     ToolsIcon,
@@ -24,6 +23,7 @@ enum class UITextureGroups : uint16_t
     ViewIcon,
 
     CloseIcon,
+    ElectricalPanelIcon,
     ExitIcon,
     NpcFurnitureGroupIcon,
     NpcHumanGroupIcon,
@@ -39,6 +39,16 @@ enum class UITextureGroups : uint16_t
 
     CheckboxFrame,
     ToolsEyeQuadrant,
+    ElecElem_AutomaticSwitch,
+    ElecElem_EngineTelegraph,
+    ElecElem_Gauge,
+    ElecElem_InteractivePushSwitch,
+    ElecElem_InteractiveToggleSwitch,
+    ElecElem_JetEngineThrottle,
+    ElecElem_JetEngineThrust,
+    ElecElem_PowerMonitor,
+    ElecElem_ShipSoundSwitch,
+    ElecElem_WatertightDoor,
     SettingsIcons,
     SliderGuideTip,
     SliderGuideBody,
@@ -76,6 +86,8 @@ struct UITextureDatabase
             return UITextureGroups::ViewIcon;
         else if (Utils::CaseInsensitiveEquals(str, "close_icon"))
             return UITextureGroups::CloseIcon;
+        else if (Utils::CaseInsensitiveEquals(str, "electrical_panel_icon"))
+            return UITextureGroups::ElectricalPanelIcon;
         else if (Utils::CaseInsensitiveEquals(str, "exit_icon"))
             return UITextureGroups::ExitIcon;
         else if (Utils::CaseInsensitiveEquals(str, "npc_furniture_group_icon"))
@@ -104,6 +116,26 @@ struct UITextureDatabase
             return UITextureGroups::CheckboxFrame;
         else if (Utils::CaseInsensitiveEquals(str, "tools_eye_quadrant"))
             return UITextureGroups::ToolsEyeQuadrant;
+        else if (Utils::CaseInsensitiveEquals(str, "elec_elem_automatic_switch"))
+            return UITextureGroups::ElecElem_AutomaticSwitch;
+        else if (Utils::CaseInsensitiveEquals(str, "elec_elem_engine_telegraph"))
+            return UITextureGroups::ElecElem_EngineTelegraph;
+        else if (Utils::CaseInsensitiveEquals(str, "elec_elem_gauge"))
+            return UITextureGroups::ElecElem_Gauge;
+        else if (Utils::CaseInsensitiveEquals(str, "elec_elem_interactive_push_switch"))
+            return UITextureGroups::ElecElem_InteractivePushSwitch;
+        else if (Utils::CaseInsensitiveEquals(str, "elec_elem_interactive_toggle_switch"))
+            return UITextureGroups::ElecElem_InteractiveToggleSwitch;
+        else if (Utils::CaseInsensitiveEquals(str, "elec_elem_jet_engine_throttle"))
+            return UITextureGroups::ElecElem_JetEngineThrottle;
+        else if (Utils::CaseInsensitiveEquals(str, "elec_elem_jet_engine_thrust"))
+            return UITextureGroups::ElecElem_JetEngineThrust;
+        else if (Utils::CaseInsensitiveEquals(str, "elec_elem_power_monitor"))
+            return UITextureGroups::ElecElem_PowerMonitor;
+        else if (Utils::CaseInsensitiveEquals(str, "elec_elem_ship_sound_switch"))
+            return UITextureGroups::ElecElem_ShipSoundSwitch;
+        else if (Utils::CaseInsensitiveEquals(str, "elec_elem_watertight_door"))
+            return UITextureGroups::ElecElem_WatertightDoor;
         else if (Utils::CaseInsensitiveEquals(str, "settings_icons"))
             return UITextureGroups::SettingsIcons;
         else if (Utils::CaseInsensitiveEquals(str, "slider_guide_tip"))

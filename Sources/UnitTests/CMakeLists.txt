@@ -35,6 +35,7 @@ set (UNIT_TEST_SOURCES
 	FontSetTests.cpp	
 	GameGeometryTests.cpp
 	GameMathTests.cpp
+	GameTypesTests.cpp
 	ImageToolsTests.cpp
 	IndexRemapTests.cpp
 	InstancedElectricalElementSetTests.cpp

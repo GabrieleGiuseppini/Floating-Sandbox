@@ -1009,6 +1009,53 @@ struct FloatSize
             static_cast<int>(std::roundf(height)));
     }
 
+    float dimension(DirectionType direction) const
+    {
+        if (direction == DirectionType::Horizontal)
+        {
+            return width;
+        }
+        else
+        {
+            assert(direction == DirectionType::Vertical);
+            return height;
+        }
+    }
+
+    float opposite_dimension(DirectionType direction) const
+    {
+        if (direction == DirectionType::Horizontal)
+        {
+            return height;
+        }
+        else
+        {
+            assert(direction == DirectionType::Vertical);
+            return width;
+        }
+    }
+
+    FloatSize fit(FloatSize const & outer) const
+    {
+        float const outerAspectRatio = outer.width / outer.height;
+        float const ourImageAspectRatio = width / height;
+
+        float newWidth;
+        float newHeight;
+        if (outerAspectRatio >= ourImageAspectRatio)
+        {
+            newHeight = outer.height;
+            newWidth = newHeight * ourImageAspectRatio;
+        }
+        else
+        {
+            newWidth = outer.width;
+            newHeight = newWidth / ourImageAspectRatio;
+        }
+
+        return FloatSize(newWidth, newHeight);
+    }
+
     std::string toString() const
     {
         std::stringstream ss;
