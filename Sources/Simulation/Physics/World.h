@@ -42,6 +42,7 @@ public:
     World(
         OceanFloorHeightMap && oceanFloorHeightMap,
         FishSpeciesDatabase const & fishSpeciesDatabase,
+        size_t underwaterPlantsSpeciesCount,
         NpcDatabase const & npcDatabase,
         SimulationEventDispatcher & simulationEventDispatcher,
         SimulationParameters const & simulationParameters);
@@ -523,6 +524,7 @@ private:
     OceanSurface mOceanSurface;
     OceanFloor mOceanFloor;
     Fishes mFishes;
+    UnderwaterPlants mUnderwaterPlants;
     std::unique_ptr<Npcs> mNpcs; // Pointer simply because of #include dependencies
 
     // The set of all ships' external AABB's in the world, updated at each

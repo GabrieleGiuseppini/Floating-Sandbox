@@ -38,6 +38,12 @@ public:
 
 public:
 
+    struct CoordinatesProxy
+    {
+        register_int sampleIndexI;
+        float sampleIndexDx;
+    };
+
     /*
      * Assumption: x is in world boundaries.
      */
@@ -63,6 +69,18 @@ public:
 
         return mSamples[sampleIndexI].SampleValue
             + mSamples[sampleIndexI].SampleValuePlusOneMinusSampleValue * sampleIndexDx;
+    }
+
+    /*
+     * Assumption: x is in world boundaries.
+     */
+    float GetHeightAt(CoordinatesProxy const & coords) const noexcept
+    {
+        assert(coords.sampleIndexI >= 0 && coords.sampleIndexI < SamplesCount);
+        assert(coords.sampleIndexDx >= 0.0f && coords.sampleIndexDx < 1.0f);
+
+        return mSamples[coords.sampleIndexI].SampleValue
+            + mSamples[coords.sampleIndexI].SampleValuePlusOneMinusSampleValue * coords.sampleIndexDx;
     }
 
     /*
@@ -103,6 +121,32 @@ public:
         return vec2f(
             -mSamples[sampleIndexI].SampleValuePlusOneMinusSampleValue,
             Dx).normalise();
+    }
+
+    /*
+     * Assumption: x is in world boundaries.
+     */
+    CoordinatesProxy GetCoordinatesProxyAt(float x) const noexcept
+    {
+        assert(x >= -SimulationParameters::HalfMaxWorldWidth && x <= SimulationParameters::HalfMaxWorldWidth);
+
+        //
+        // Find sample index and interpolate in-between that sample and the next
+        //
+
+        // Fractional index in the sample array
+        float const sampleIndexF = (x + SimulationParameters::HalfMaxWorldWidth) / Dx;
+
+        // Integral part
+        register_int const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
+
+        // Fractional part within sample index and the next sample index
+        float const sampleIndexDx = sampleIndexF - sampleIndexI;
+
+        assert(sampleIndexI >= 0 && sampleIndexI < SamplesCount);
+        assert(sampleIndexDx >= 0.0f && sampleIndexDx < 1.0f);
+
+        return CoordinatesProxy{ sampleIndexI, sampleIndexDx };
     }
 
     void AdjustTo(

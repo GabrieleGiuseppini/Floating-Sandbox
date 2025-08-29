@@ -32,7 +32,14 @@ public:
 
     void SetHeightMap(OceanFloorHeightMap const & heightMap);
 
+    bool IsDirty() const
+    {
+        return mIsDirty;
+    }
+
     void Update(SimulationParameters const & simulationParameters);
+
+    void UpdateEnd();
 
     void Upload(
         SimulationParameters const & simulationParameters,
@@ -113,6 +120,34 @@ public:
     }
 
     /*
+     * Assumption: x is in world boundaries.
+     */
+    inline float GetMinHeightAt(float x) const noexcept
+    {
+        assert(x >= -SimulationParameters::HalfMaxWorldWidth && x <= SimulationParameters::HalfMaxWorldWidth);
+
+        //
+        // Find sample index and return min of sample values
+        //
+
+        // Fractional index in the sample array
+        float const sampleIndexF = (x + SimulationParameters::HalfMaxWorldWidth) / Dx;
+
+        // Integral part
+        register_int const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
+
+        // Fractional part within sample index and the next sample index
+        float const sampleIndexDx = sampleIndexF - sampleIndexI;
+
+        assert(sampleIndexI >= 0 && sampleIndexI < SamplesCount);
+        assert(sampleIndexDx >= 0.0f && sampleIndexDx < 1.0f);
+
+        return std::min(
+            mSamples[sampleIndexI].SampleValue,
+            mSamples[sampleIndexI].SampleValue + mSamples[sampleIndexI].SampleValuePlusOneMinusSampleValue);
+    }
+
+    /*
      * Assumption: x is within world boundaries.
      */
     inline vec2f GetNormalAt(register_int sampleIndexI) const noexcept
@@ -173,6 +208,10 @@ private:
 
     // The current samples, calculated from the components
     std::unique_ptr<Sample[]> mSamples;
+
+    // Whether the floor samples have changed in the current simulation step;
+    // cleared at end of each simulation step
+    bool mIsDirty;
 
     //
     // The game parameters for which we're current

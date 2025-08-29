@@ -173,6 +173,7 @@ enum class GenericLinearTextureGroups : uint16_t
     PhysicsProbePanel,
     ShiftNotification,
     SoundMuteNotification,
+    UnderwaterPlant,
     UVModeNotification,
 
     _Last = UVModeNotification
@@ -198,6 +199,8 @@ struct GenericLinearTextureDatabase
             return GenericLinearTextureGroups::ShiftNotification;
         else if (Utils::CaseInsensitiveEquals(str, "SoundMuteNotification"))
             return GenericLinearTextureGroups::SoundMuteNotification;
+        else if (Utils::CaseInsensitiveEquals(str, "UnderwaterPlant"))
+            return GenericLinearTextureGroups::UnderwaterPlant;
         else if (Utils::CaseInsensitiveEquals(str, "UVModeNotification"))
             return GenericLinearTextureGroups::UVModeNotification;
         else

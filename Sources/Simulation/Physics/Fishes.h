@@ -30,7 +30,7 @@ class Fishes
 
 public:
 
-    explicit Fishes(
+    Fishes(
         FishSpeciesDatabase const & fishSpeciesDatabase,
         SimulationEventDispatcher & simulationEventDispatcher);
 

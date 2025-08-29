@@ -16,6 +16,7 @@ namespace Physics {
 World::World(
     OceanFloorHeightMap && oceanFloorHeightMap,
     FishSpeciesDatabase const & fishSpeciesDatabase,
+    size_t underwaterPlantsSpeciesCount,
     NpcDatabase const & npcDatabase,
     SimulationEventDispatcher & simulationEventDispatcher,
     SimulationParameters const & simulationParameters)
@@ -32,6 +33,7 @@ World::World(
     , mOceanSurface(*this, mSimulationEventHandler)
     , mOceanFloor(std::move(oceanFloorHeightMap))
     , mFishes(fishSpeciesDatabase, mSimulationEventHandler)
+    , mUnderwaterPlants(underwaterPlantsSpeciesCount)
     , mNpcs(std::make_unique<Npcs>(*this, npcDatabase, mSimulationEventHandler, simulationParameters))
     //
     , mAllShipExternalAABBs()
@@ -43,6 +45,7 @@ World::World(
     mClouds.Update(mCurrentSimulationTime, mWind.GetBaseAndStormSpeedMagnitude(), mStorm.GetParameters(), simulationParameters);
     mOceanSurface.Update(mCurrentSimulationTime, mWind, simulationParameters);
     mOceanFloor.Update(simulationParameters);
+    mUnderwaterPlants.Update(mCurrentSimulationTime, mOceanSurface, mOceanFloor, simulationParameters);
 }
 
 ShipId World::GetNextShipId() const
@@ -1530,8 +1533,10 @@ void World::Update(
         perfStats.Update<PerfMeasurement::TotalFishUpdate>(std::chrono::steady_clock::now() - startTime);
     }
 
+    mUnderwaterPlants.Update(mCurrentSimulationTime, mOceanSurface, mOceanFloor, simulationParameters);
+
     //
-    // Signal update end (for quantities that needed to persist during whole Update cycle)
+    // Signal update end (for quantities/state that needed to persist during whole Update cycle)
     //
 
     mWind.UpdateEnd();
@@ -1542,6 +1547,8 @@ void World::Update(
     }
 
     mNpcs->UpdateEnd();
+
+    mOceanFloor.UpdateEnd();
 }
 
 void World::RenderUpload(
@@ -1561,6 +1568,8 @@ void World::RenderUpload(
     mOceanSurface.Upload(renderContext);
 
     mFishes.Upload(renderContext);
+
+    mUnderwaterPlants.Upload(renderContext);
 
     // Ships
     {

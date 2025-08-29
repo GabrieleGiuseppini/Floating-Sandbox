@@ -209,6 +209,8 @@ ProgramKind ShaderNameToProgramKind(std::string const & str)
         return ProgramKind::Text;
     else if (lstr == "texture_notifications")
         return ProgramKind::TextureNotifications;
+    else if (lstr == "underwater_plant")
+        return ProgramKind::UnderwaterPlant;
     else if (lstr == "world_border")
         return ProgramKind::WorldBorder;
     else
@@ -413,6 +415,8 @@ std::string ProgramKindToStr(ProgramKind program)
             return "Text";
         case ProgramKind::TextureNotifications:
             return "TextureNotifications";
+        case ProgramKind::UnderwaterPlant:
+            return "UnderwaterPlant";
         case ProgramKind::WorldBorder:
             return "WorldBorder";
     }
@@ -670,6 +674,14 @@ VertexAttributeKind StrToVertexAttributeKind(std::string const & str)
         return VertexAttributeKind::Fish3;
     else if (Utils::CaseInsensitiveEquals(str, "Fish4"))
         return VertexAttributeKind::Fish4;
+    else if (Utils::CaseInsensitiveEquals(str, "UnderwaterPlantStatic1"))
+        return VertexAttributeKind::UnderwaterPlantStatic1;
+    else if (Utils::CaseInsensitiveEquals(str, "UnderwaterPlantStatic2"))
+        return VertexAttributeKind::UnderwaterPlantStatic2;
+    else if (Utils::CaseInsensitiveEquals(str, "UnderwaterPlantStatic3"))
+        return VertexAttributeKind::UnderwaterPlantStatic3;
+    else if (Utils::CaseInsensitiveEquals(str, "UnderwaterPlantDynamic1"))
+        return VertexAttributeKind::UnderwaterPlantDynamic1;
     else if (Utils::CaseInsensitiveEquals(str, "AMBombPreImplosion1"))
         return VertexAttributeKind::AMBombPreImplosion1;
     else if (Utils::CaseInsensitiveEquals(str, "AMBombPreImplosion2"))

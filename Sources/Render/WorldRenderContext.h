@@ -61,6 +61,11 @@ public:
         return mLandAvailableThumbnails;
     }
 
+    size_t GetUnderwaterPlantsSpeciesCount() const
+    {
+        return mGlobalRenderContext.GetGenericLinearTextureAtlasMetadata().GetFrameCount(GameTextureDatabases::GenericLinearTextureDatabase::TextureGroupsType::UnderwaterPlant);
+    }
+
     inline float GetStormAmbientDarkening() const
     {
         return mStormAmbientDarkening;
@@ -506,6 +511,54 @@ public:
 
     void UploadFishesEnd();
 
+    void UploadUnderwaterPlantStaticVertexAttributesStart(size_t underwaterPlantCount);
+
+    // TODOHERE
+    inline void UploadUnderwaterPlantStaticVertexAttributes(
+        vec2f const & centerBottomPosition,
+        size_t speciesIndex,
+        float scale,
+        float personalitySeed)
+    {
+        auto const & frame = mGlobalRenderContext.GetGenericLinearTextureAtlasMetadata().GetFrameMetadata(
+            TextureFrameId(
+                GameTextureDatabases::GenericLinearTextureDatabase::TextureGroupsType::UnderwaterPlant,
+                static_cast<TextureFrameIndex>(speciesIndex)));
+
+        // Calculate bounding box, assuming texture is fully rotated
+        float const worldWidth = frame.FrameMetadata.WorldWidth * scale;
+        float const worldHeight = frame.FrameMetadata.WorldHeight * scale;
+        float const maxSize = std::max(worldWidth, worldHeight);;
+        float const leftX = centerBottomPosition.x - maxSize / 2.0f;
+        float const rightX = centerBottomPosition.x + maxSize / 2.0f;
+
+        // Top-left
+        mUnderwaterPlantStaticVertexBuffer.emplace_back(
+            vec2f(leftX, centerBottomPosition.y + worldHeight),
+            personalitySeed,
+            static_cast<float>(speciesIndex));
+
+        // Bottom-left
+        mUnderwaterPlantStaticVertexBuffer.emplace_back(
+            vec2f(leftX, centerBottomPosition.y),
+            personalitySeed,
+            static_cast<float>(speciesIndex));
+
+        // Top-right
+        mUnderwaterPlantStaticVertexBuffer.emplace_back(
+            vec2f(rightX, centerBottomPosition.y + worldHeight),
+            personalitySeed,
+            static_cast<float>(speciesIndex));
+
+        // Bottom-right
+        mUnderwaterPlantStaticVertexBuffer.emplace_back(
+            vec2f(rightX, centerBottomPosition.y),
+            personalitySeed,
+            static_cast<float>(speciesIndex));
+    }
+
+    void UploadUnderwaterPlantStaticVertexAttributesEnd();
+
     inline void UploadAMBombPreImplosion(
         vec2f const & centerPosition,
         float progress,
@@ -667,6 +720,9 @@ public:
 
     void RenderPrepareFishes(RenderParameters const & renderParameters);
     void RenderDrawFishes(RenderParameters const & renderParameters);
+
+    void RenderPrepareUnderwaterPlants(RenderParameters const & renderParameters);
+    void RenderDrawUnderwaterPlants(RenderParameters const & renderParameters);
 
     void RenderPrepareAMBombPreImplosions(RenderParameters const & renderParameters);
     void RenderDrawAMBombPreImplosions(RenderParameters const & renderParameters);
@@ -958,6 +1014,36 @@ private:
         {}
     };
 
+    struct UnderwaterPlantStaticVertex
+    {
+        vec2f position;
+        float personalitySeed;
+        float pad1;
+        vec4f pad2;
+        float speciesIndex;
+
+        UnderwaterPlantStaticVertex(
+            vec2f _position,
+            float _personalitySeed,
+            float _speciesIndex)
+            : position(_position)
+            , personalitySeed(_personalitySeed)
+            , speciesIndex(_speciesIndex)
+        {
+        }
+    };
+
+    struct UnderwaterPlantDynamicVertex
+    {
+        float worldOceanRelativeY; // negative underneath
+
+        UnderwaterPlantDynamicVertex(
+            float _worldOceanRelativeY)
+            : worldOceanRelativeY(_worldOceanRelativeY)
+        {
+        }
+    };
+
     struct AMBombPreImplosionVertex
     {
         vec2f vertex;
@@ -1081,6 +1167,14 @@ private:
     GameOpenGLVBO mFishVBO;
     size_t mFishVBOAllocatedVertexSize;
 
+    BoundedVector<UnderwaterPlantStaticVertex> mUnderwaterPlantStaticVertexBuffer;
+    GameOpenGLVBO mUnderwaterPlantStaticVBO;
+    size_t mUnderwaterPlantStaticVBOAllocatedVertexSize;
+    bool mIsUnderwaterPlantStaticVertexBufferDirty;
+    BoundedVector<UnderwaterPlantDynamicVertex> mUnderwaterPlantDynamicVertexBuffer;
+    GameOpenGLVBO mUnderwaterPlantDynamicVBO;
+    size_t mUnderwaterPlantDynamicVBOAllocatedVertexSize;
+
     std::vector<AMBombPreImplosionVertex> mAMBombPreImplosionVertexBuffer;
     GameOpenGLVBO mAMBombPreImplosionVBO;
     size_t mAMBombPreImplosionVBOAllocatedVertexSize;
@@ -1116,6 +1210,7 @@ private:
     GameOpenGLVAO mOceanBasicVAO;
     GameOpenGLVAO mOceanDetailedVAO;
     GameOpenGLVAO mFishVAO;
+    GameOpenGLVAO mUnderwaterPlantVAO;
     GameOpenGLVAO mAMBombPreImplosionVAO;
     GameOpenGLVAO mCrossOfLightVAO;
     GameOpenGLVAO mAABBVAO;

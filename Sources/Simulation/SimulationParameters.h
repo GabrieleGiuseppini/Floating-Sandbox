@@ -452,6 +452,16 @@ struct SimulationParameters
     static float constexpr MinFishShoalRadiusAdjustment = 0.1f;
     static float constexpr MaxFishShoalRadiusAdjustment = 100.0f;
 
+    // Underwater plants
+
+    float UnderwaterPlantsDensity; // 1/km^2
+    static float constexpr MinUnderwaterPlantsDensity = 0.0f;
+    static float constexpr MaxUnderwaterPlantsDensity = 1000.0f;
+
+    float UnderwaterPlantSizeMultiplier;
+    static constexpr float MinUnderwaterPlantSizeMultiplier = 1.0f;
+    static constexpr float MaxUnderwaterPlantSizeMultiplier = 40.0f;
+
     //
     // NPCs
     //

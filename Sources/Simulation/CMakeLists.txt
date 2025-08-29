@@ -107,6 +107,8 @@ set  (PHYSICS_SOURCES
 	Physics/TimerBombGadget.h
 	Physics/Triangles.cpp
 	Physics/Triangles.h
+	Physics/UnderwaterPlants.cpp
+	Physics/UnderwaterPlants.h
 	Physics/Wind.cpp
 	Physics/Wind.h
 	Physics/World.cpp

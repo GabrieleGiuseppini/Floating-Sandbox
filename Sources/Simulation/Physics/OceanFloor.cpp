@@ -21,6 +21,7 @@ OceanFloor::OceanFloor(OceanFloorHeightMap && heightMap)
     //  - The sample index for x==max (HalfMaxWorldWidth) is SamplesCount - 1
     //  - To allow for our "rough check" at x==max, we need an addressable value for sample[SamplesCount].SampleValue
     , mSamples(new Sample[SamplesCount + 1])
+    , mIsDirty(false)
     , mCurrentSeaDepth(0.0f)
     , mCurrentOceanFloorBumpiness(0.0f)
     , mCurrentOceanFloorDetailAmplification(0.0f)
@@ -34,6 +35,9 @@ OceanFloor::OceanFloor(OceanFloorHeightMap && heightMap)
 
     // Calculate samples
     CalculateResultantSampleValues();
+
+    // Remember we're dirty
+    mIsDirty = true;
 }
 
 void OceanFloor::SetHeightMap(OceanFloorHeightMap const & heightMap)
@@ -43,6 +47,9 @@ void OceanFloor::SetHeightMap(OceanFloorHeightMap const & heightMap)
 
     // Recalculate samples
     CalculateResultantSampleValues();
+
+    // Remember we're dirty
+    mIsDirty = true;
 }
 
 void OceanFloor::Update(SimulationParameters const & simulationParameters)
@@ -72,7 +79,15 @@ void OceanFloor::Update(SimulationParameters const & simulationParameters)
 
         // Recalculate samples
         CalculateResultantSampleValues();
+
+        // Remember we are dirty
+        mIsDirty = true;
     }
+}
+
+void OceanFloor::UpdateEnd()
+{
+    mIsDirty = false;
 }
 
 void OceanFloor::Upload(
@@ -197,6 +212,7 @@ std::optional<bool> OceanFloor::AdjustTo(
         float const newSampleValue = leftTargetY + slopeY * (x - leftX);
 
         // Decide whether it's a significant change
+        // (consumed by tool)
         hasAdjusted |= std::abs(newSampleValue - mSamples[s].SampleValue) > 0.2f;
 
         // Translate sample value into terrain change
@@ -209,6 +225,9 @@ std::optional<bool> OceanFloor::AdjustTo(
         // Update terrain and samples
         SetTerrainHeight(s, newTerrainProfileSampleValue);
     }
+
+    // Remember we're dirty now
+    mIsDirty = true;
 
     return hasAdjusted;
 }
@@ -249,6 +268,9 @@ void OceanFloor::DisplaceAt(
         float rYOffset = yOffset * sampleIndexDx;
         SetTerrainHeight(sampleIndexI + 1, mHeightMap[sampleIndexI + 1] + rYOffset);
     }
+
+    // Remember we're dirty now
+    mIsDirty = true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////

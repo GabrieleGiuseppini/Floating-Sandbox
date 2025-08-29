@@ -48,6 +48,13 @@ WorldRenderContext::WorldRenderContext(
     , mFishVertexBuffer()
     , mFishVBO()
     , mFishVBOAllocatedVertexSize(0u)
+    , mUnderwaterPlantStaticVertexBuffer()
+    , mUnderwaterPlantStaticVBO()
+    , mUnderwaterPlantStaticVBOAllocatedVertexSize(0u)
+    , mIsUnderwaterPlantStaticVertexBufferDirty(false) // Will be eventually uploaded
+    , mUnderwaterPlantDynamicVertexBuffer()
+    , mUnderwaterPlantDynamicVBO()
+    , mUnderwaterPlantDynamicVBOAllocatedVertexSize(0u)
     , mAMBombPreImplosionVertexBuffer()
     , mAMBombPreImplosionVBO()
     , mAMBombPreImplosionVBOAllocatedVertexSize(0u)
@@ -74,6 +81,7 @@ WorldRenderContext::WorldRenderContext(
     , mOceanBasicVAO()
     , mOceanDetailedVAO()
     , mFishVAO()
+    , mUnderwaterPlantVAO()
     , mAMBombPreImplosionVAO()
     , mCrossOfLightVAO()
     , mAABBVAO()
@@ -104,8 +112,8 @@ WorldRenderContext::WorldRenderContext(
     // Initialize buffers
     //
 
-    GLuint vbos[13];
-    glGenBuffers(13, vbos);
+    GLuint vbos[15];
+    glGenBuffers(15, vbos);
     mSkyVBO = vbos[0];
     mStarVBO = vbos[1];
     mLightningVBO = vbos[2];
@@ -114,11 +122,13 @@ WorldRenderContext::WorldRenderContext(
     mOceanBasicSegmentVBO = vbos[5];
     mOceanDetailedSegmentVBO = vbos[6];
     mFishVBO = vbos[7];
-    mAMBombPreImplosionVBO = vbos[8];
-    mCrossOfLightVBO = vbos[9];
-    mAABBVBO = vbos[10];
-    mRainVBO = vbos[11];
-    mWorldBorderVBO = vbos[12];
+    mUnderwaterPlantStaticVBO = vbos[8];
+    mUnderwaterPlantDynamicVBO = vbos[9];
+    mAMBombPreImplosionVBO = vbos[10];
+    mCrossOfLightVBO = vbos[11];
+    mAABBVBO = vbos[12];
+    mRainVBO = vbos[13];
+    mWorldBorderVBO = vbos[14];
 
     //
     // Initialize Sky VAO
@@ -337,6 +347,7 @@ WorldRenderContext::WorldRenderContext(
     mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanTextureDetailedForegroundUpper>();
     mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::OceanTextureDetailedForegroundUpper>();
 
+
     //
     // Initialize Fish VAO
     //
@@ -365,6 +376,51 @@ WorldRenderContext::WorldRenderContext(
     ////mGlobalRenderContext.GetElementIndices().Bind()
 
     glBindVertexArray(0);
+
+
+    //
+    // Initialize Underwater Plant VAO
+    //
+
+    {
+        glGenVertexArrays(1, &tmpGLuint);
+        mUnderwaterPlantVAO = tmpGLuint;
+
+        glBindVertexArray(*mUnderwaterPlantVAO);
+        CheckOpenGLError();
+
+        // Describe vertex attributes
+
+        glBindBuffer(GL_ARRAY_BUFFER, *mUnderwaterPlantStaticVBO);
+        static_assert(sizeof(UnderwaterPlantStaticVertex) == (8 + 1) * sizeof(float));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::UnderwaterPlantStatic1));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::UnderwaterPlantStatic1), 4, GL_FLOAT, GL_FALSE, sizeof(UnderwaterPlantStaticVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::UnderwaterPlantStatic2));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::UnderwaterPlantStatic2), 4, GL_FLOAT, GL_FALSE, sizeof(UnderwaterPlantStaticVertex), (void *)(4 * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::UnderwaterPlantStatic3));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::UnderwaterPlantStatic3), 1, GL_FLOAT, GL_FALSE, sizeof(UnderwaterPlantStaticVertex), (void *)(8 * sizeof(float)));
+        CheckOpenGLError();
+
+        glBindBuffer(GL_ARRAY_BUFFER, *mUnderwaterPlantDynamicVBO);
+        static_assert(sizeof(UnderwaterPlantDynamicVertex) == 1 * sizeof(float));
+        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::UnderwaterPlantDynamic1));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::UnderwaterPlantDynamic1), 1, GL_FLOAT, GL_FALSE, sizeof(UnderwaterPlantDynamicVertex), (void *)0);
+        CheckOpenGLError();
+
+        // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
+        // in the VAO. So we won't associate the element VBO here, but rather before each drawing call.
+        ////mGlobalRenderContext.GetElementIndices().Bind()
+
+        // Set per-species texture properties
+
+        // TODOHERE
+
+        glBindVertexArray(0);
+
+        // Set texture parameters
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::UnderwaterPlant>();
+        mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::UnderwaterPlant>();
+    }
 
 
     //
@@ -825,6 +881,23 @@ void WorldRenderContext::UploadFishesStart(size_t fishCount)
 }
 
 void WorldRenderContext::UploadFishesEnd()
+{
+    // Nop
+}
+
+void WorldRenderContext::UploadUnderwaterPlantStaticVertexAttributesStart(size_t underwaterPlantCount)
+{
+    //
+    // Underwater plants are sticky, and we clear them when we upload
+    //
+
+    mUnderwaterPlantStaticVertexBuffer.reset(4 * underwaterPlantCount);
+    mIsUnderwaterPlantStaticVertexBufferDirty = true;
+
+    mGlobalRenderContext.GetElementIndices().EnsureSize(underwaterPlantCount);
+}
+
+void WorldRenderContext::UploadUnderwaterPlantStaticVertexAttributesEnd()
 {
     // Nop
 }
@@ -1526,6 +1599,89 @@ void WorldRenderContext::RenderDrawFishes(RenderParameters const & renderParamet
     }
 }
 
+void WorldRenderContext::RenderPrepareUnderwaterPlants(RenderParameters const & /*renderParameters*/)
+{
+    //
+    // Static attributes
+    //
+
+    if (mIsUnderwaterPlantStaticVertexBufferDirty)
+    {
+        if (!mUnderwaterPlantStaticVertexBuffer.empty())
+        {
+            glBindBuffer(GL_ARRAY_BUFFER, *mUnderwaterPlantStaticVBO);
+
+            if (mUnderwaterPlantStaticVertexBuffer.size() > mUnderwaterPlantStaticVBOAllocatedVertexSize)
+            {
+                // Re-allocate VBO buffer and upload
+                glBufferData(GL_ARRAY_BUFFER, mUnderwaterPlantStaticVertexBuffer.size() * sizeof(UnderwaterPlantStaticVertex), mUnderwaterPlantStaticVertexBuffer.data(), GL_STATIC_DRAW);
+                CheckOpenGLError();
+
+                mUnderwaterPlantStaticVBOAllocatedVertexSize = mUnderwaterPlantStaticVertexBuffer.size();
+            }
+            else
+            {
+                // No size change, just upload VBO buffer
+                glBufferSubData(GL_ARRAY_BUFFER, 0, mUnderwaterPlantStaticVertexBuffer.size() * sizeof(UnderwaterPlantStaticVertex), mUnderwaterPlantStaticVertexBuffer.data());
+                CheckOpenGLError();
+            }
+
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+        }
+
+        mIsUnderwaterPlantStaticVertexBufferDirty = false;
+    }
+
+    //
+    // Dynamics attributes (always dirty)
+    //
+
+    if (!mUnderwaterPlantDynamicVertexBuffer.empty())
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, *mUnderwaterPlantDynamicVBO);
+
+        if (mUnderwaterPlantDynamicVertexBuffer.size() > mUnderwaterPlantDynamicVBOAllocatedVertexSize)
+        {
+            // Re-allocate VBO buffer and upload
+            glBufferData(GL_ARRAY_BUFFER, mUnderwaterPlantDynamicVertexBuffer.size() * sizeof(UnderwaterPlantDynamicVertex), mUnderwaterPlantDynamicVertexBuffer.data(), GL_STREAM_DRAW);
+            CheckOpenGLError();
+
+            mUnderwaterPlantDynamicVBOAllocatedVertexSize = mUnderwaterPlantDynamicVertexBuffer.size();
+        }
+        else
+        {
+            // No size change, just upload VBO buffer
+            glBufferSubData(GL_ARRAY_BUFFER, 0, mUnderwaterPlantDynamicVertexBuffer.size() * sizeof(UnderwaterPlantDynamicVertex), mUnderwaterPlantDynamicVertexBuffer.data());
+            CheckOpenGLError();
+        }
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+}
+
+void WorldRenderContext::RenderDrawUnderwaterPlants(RenderParameters const & /*renderParameters*/)
+{
+    if (!mUnderwaterPlantStaticVertexBuffer.empty())
+    {
+        glBindVertexArray(*mUnderwaterPlantVAO);
+
+        // Intel bug: cannot associate with VAO
+        mGlobalRenderContext.GetElementIndices().Bind();
+
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::UnderwaterPlant>();
+
+        assert((mUnderwaterPlantStaticVertexBuffer.size() % 4) == 0);
+        glDrawElements(
+            GL_TRIANGLES,
+            static_cast<GLsizei>(mUnderwaterPlantStaticVertexBuffer.size() / 4 * 6),
+            GL_UNSIGNED_INT,
+            (GLvoid *)0);
+        CheckOpenGLError();
+
+        glBindVertexArray(0);
+    }
+}
+
 void WorldRenderContext::RenderPrepareAMBombPreImplosions(RenderParameters const & /*renderParameters*/)
 {
     if (!mAMBombPreImplosionVertexBuffer.empty())
@@ -1839,6 +1995,10 @@ void WorldRenderContext::ApplyViewModelChanges(RenderParameters const & renderPa
 
     mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::FishesDetailed>();
     mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::FishesDetailed, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
+        globalOrthoMatrix);
+
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::UnderwaterPlant>();
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::UnderwaterPlant, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         globalOrthoMatrix);
 
     mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::AMBombPreImplosion>();

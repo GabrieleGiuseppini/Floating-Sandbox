@@ -448,6 +448,11 @@ public:
         mRenderParameters.IsLandRenderDetailDirty = true;
     }
 
+    size_t GetUnderwaterPlantsSpeciesCount() const
+    {
+        return mWorldRenderContext->GetUnderwaterPlantsSpeciesCount();
+    }
+
     //
     // Ship rendering properties
     //
@@ -1066,6 +1071,29 @@ public:
     inline void UploadFishesEnd()
     {
         mWorldRenderContext->UploadFishesEnd();
+    }
+
+    inline void UploadUnderwaterPlantStaticVertexAttributesStart(size_t underwaterPlantCount)
+    {
+        mWorldRenderContext->UploadUnderwaterPlantStaticVertexAttributesStart(underwaterPlantCount);
+    }
+
+    inline void UploadUnderwaterPlantStaticVertexAttributes(
+        vec2f const & centerBottomPosition,
+        size_t speciesIndex,
+        float scale,
+        float personalitySeed)
+    {
+        mWorldRenderContext->UploadUnderwaterPlantStaticVertexAttributes(
+            centerBottomPosition,
+            speciesIndex,
+            scale,
+            personalitySeed);
+    }
+
+    inline void UploadUnderwaterPlantStaticVertexAttributesEnd()
+    {
+        mWorldRenderContext->UploadUnderwaterPlantStaticVertexAttributesEnd();
     }
 
     inline void UploadAMBombPreImplosion(

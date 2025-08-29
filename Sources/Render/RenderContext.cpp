@@ -535,6 +535,8 @@ void RenderContext::Draw()
 
                 mWorldRenderContext->RenderPrepareFishes(renderParameters);
 
+                mWorldRenderContext->RenderPrepareUnderwaterPlants(renderParameters);
+
                 mWorldRenderContext->RenderPrepareAMBombPreImplosions(renderParameters);
 
                 mWorldRenderContext->RenderPrepareCrossesOfLight(renderParameters);
@@ -573,6 +575,8 @@ void RenderContext::Draw()
                 }
 
                 glDisable(GL_DEPTH_TEST);
+
+                mWorldRenderContext->RenderDrawUnderwaterPlants(renderParameters); // To be covered by ocean floor and last ocean layer
 
                 mWorldRenderContext->RenderDrawOceanFloor(renderParameters);
 

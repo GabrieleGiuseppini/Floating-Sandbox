@@ -138,6 +138,7 @@ GameController::GameController(
     mWorld = std::make_unique<Physics::World>(
         OceanFloorHeightMap::LoadFromImage(gameAssetManager.LoadPngImageRgb(gameAssetManager.GetDefaultOceanFloorHeightMapFilePath())),
         mFishSpeciesDatabase,
+        mRenderContext->GetUnderwaterPlantsSpeciesCount(),
         mNpcDatabase,
         mSimulationEventDispatcher,
         mSimulationParameters);
@@ -1993,6 +1994,7 @@ ShipMetadata GameController::InternalResetAndLoadShip(
     auto newWorld = std::make_unique<Physics::World>(
         OceanFloorHeightMap(mWorld->GetOceanFloorHeightMap()),
         mFishSpeciesDatabase,
+        mRenderContext->GetUnderwaterPlantsSpeciesCount(),
         mNpcDatabase,
         mSimulationEventDispatcher,
         mSimulationParameters);
