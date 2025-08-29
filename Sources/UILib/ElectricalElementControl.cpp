@@ -258,7 +258,7 @@ std::optional<EngineControllerTelegraphElectricalElementControl::TelegraphValue>
 void EngineControllerTelegraphElectricalElementControl::MoveToPoint(wxPoint const & point)
 {
     // Map to value
-    std::optional<TelegraphValue> value = PointToValue(point);
+    std::optional<TelegraphValue> const value = PointToValue(point);
 
     // Move to value, if valid and different
     if (value.has_value()
@@ -416,7 +416,7 @@ void EngineControllerJetEngineThrottleElectricalElementControl::OnMouseMove(wxMo
 
                 Refresh();
             }
-            // Go to Zero if can, and more than magic stide
+            // Go to Zero if can, and more than magic stride
             else if (!mIdleBlockHandleDown && yStride < -IdleThreshold)
             {
                 // Go to Zero

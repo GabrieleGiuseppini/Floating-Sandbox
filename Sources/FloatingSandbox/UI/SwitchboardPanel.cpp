@@ -690,12 +690,6 @@ void SwitchboardPanel::OnPowerProbeCreated(
 
                 break;
             }
-
-            default:
-            {
-                assert(false);
-                return;
-            }
         }
 
         assert(ctrl != nullptr);

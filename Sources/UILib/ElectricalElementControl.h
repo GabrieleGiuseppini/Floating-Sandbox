@@ -39,8 +39,7 @@ public:
 
 public:
 
-    virtual ~ElectricalElementControl()
-    {}
+    virtual ~ElectricalElementControl() = default;
 
     ControlType GetControlType() const
     {
@@ -103,8 +102,7 @@ class IDisablableElectricalElementControl
 {
 public:
 
-    virtual ~IDisablableElectricalElementControl()
-    {}
+    virtual ~IDisablableElectricalElementControl() = default;
 
     virtual bool IsEnabled() const = 0;
 
@@ -115,8 +113,7 @@ class IInteractiveElectricalElementControl
 {
 public:
 
-    virtual ~IInteractiveElectricalElementControl()
-    {}
+    virtual ~IInteractiveElectricalElementControl() = default;
 
     virtual void SetKeyboardShortcutLabel(std::string const & label) = 0;
 
@@ -141,8 +138,7 @@ class SwitchElectricalElementControl
 {
 public:
 
-    virtual ~SwitchElectricalElementControl()
-    {}
+    virtual ~SwitchElectricalElementControl() = default;
 
     ElectricalState GetState() const
     {
@@ -258,8 +254,7 @@ class InteractiveSwitchElectricalElementControl
 {
 public:
 
-    virtual ~InteractiveSwitchElectricalElementControl()
-    {}
+    virtual ~InteractiveSwitchElectricalElementControl() = default;
 
     virtual void SetKeyboardShortcutLabel(std::string const & label) override
     {

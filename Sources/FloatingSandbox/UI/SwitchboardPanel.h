@@ -272,7 +272,7 @@ private:
             , Control(control)
             , DisablableControl(disablableControl)
             , InteractiveControl(interactiveControl)
-            , PanelElementMetadata(panelElementMetadata)
+            , PanelElementMetadata(std::move(panelElementMetadata))
         {}
     };
 
