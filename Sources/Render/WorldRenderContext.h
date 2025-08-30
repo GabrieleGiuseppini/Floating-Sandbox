@@ -106,10 +106,16 @@ public:
 
     void UploadStarsEnd();
 
-    inline void UploadWind(float smoothedWindSpeedMagnitude)
+    inline void UploadWind(
+        float currentSmoothedWindSpeedMagnitude,
+        float basisWindSpeedMagnitude)
     {
-        mRainWindSpeedMagnitude = smoothedWindSpeedMagnitude;
-        mIsRainWindSpeedMagnitudeDirty = true;
+        mCurrentSmoothedWindSpeedMagnitude = currentSmoothedWindSpeedMagnitude;
+
+        if (basisWindSpeedMagnitude != mBasisWindSpeedMagnitude)
+        {
+            mBasisWindSpeedMagnitude = basisWindSpeedMagnitude;
+        }
     }
 
     inline bool UploadStormAmbientDarkening(float darkening)
@@ -513,13 +519,15 @@ public:
 
     void UploadUnderwaterPlantStaticVertexAttributesStart(size_t underwaterPlantCount);
 
-    // TODOHERE
     inline void UploadUnderwaterPlantStaticVertexAttributes(
         vec2f const & centerBottomPosition,
         size_t speciesIndex,
         float scale,
         float personalitySeed)
     {
+        // TODOHERE
+
+
         auto const & frame = mGlobalRenderContext.GetGenericLinearTextureAtlasMetadata().GetFrameMetadata(
             TextureFrameId(
                 GameTextureDatabases::GenericLinearTextureDatabase::TextureGroupsType::UnderwaterPlant,
@@ -536,24 +544,32 @@ public:
         mUnderwaterPlantStaticVertexBuffer.emplace_back(
             vec2f(leftX, centerBottomPosition.y + worldHeight),
             personalitySeed,
+            // TODOTEST
+            vec2f(0.0f, 1.0f),
             static_cast<float>(speciesIndex));
 
         // Bottom-left
         mUnderwaterPlantStaticVertexBuffer.emplace_back(
             vec2f(leftX, centerBottomPosition.y),
             personalitySeed,
+            // TODOTEST
+            vec2f(0.0f, 0.0f),
             static_cast<float>(speciesIndex));
 
         // Top-right
         mUnderwaterPlantStaticVertexBuffer.emplace_back(
             vec2f(rightX, centerBottomPosition.y + worldHeight),
             personalitySeed,
+            // TODOTEST
+            vec2f(1.0f, 1.0f),
             static_cast<float>(speciesIndex));
 
         // Bottom-right
         mUnderwaterPlantStaticVertexBuffer.emplace_back(
             vec2f(rightX, centerBottomPosition.y),
             personalitySeed,
+            // TODOTEST
+            vec2f(1.0f, 0.0f),
             static_cast<float>(speciesIndex));
     }
 
@@ -739,6 +755,8 @@ public:
     void RenderDrawAABBs(RenderParameters const & renderParameters);
 
     void RenderDrawWorldBorder(RenderParameters const & renderParameters);
+
+    void RenderPrepareEnd();
 
 private:
 
@@ -1019,15 +1037,18 @@ private:
         vec2f position;
         float personalitySeed;
         float pad1;
-        vec4f pad2;
+        vec2f todoTextureCoords;
+        vec2f pad2;
         float speciesIndex;
 
         UnderwaterPlantStaticVertex(
             vec2f _position,
             float _personalitySeed,
+            vec2f _todoTextureCoords,
             float _speciesIndex)
             : position(_position)
             , personalitySeed(_personalitySeed)
+            , todoTextureCoords(_todoTextureCoords)
             , speciesIndex(_speciesIndex)
         {
         }
@@ -1192,8 +1213,6 @@ private:
     GameOpenGLVBO mRainVBO;
     float mRainDensity;
     bool mIsRainDensityDirty;
-    float mRainWindSpeedMagnitude;
-    bool mIsRainWindSpeedMagnitudeDirty;
 
     std::vector<WorldBorderVertex> mWorldBorderVertexBuffer;
     GameOpenGLVBO mWorldBorderVBO;
@@ -1241,6 +1260,13 @@ private:
     // Thumbnails
     std::vector<std::pair<std::string, RgbaImageData>> mOceanAvailableThumbnails;
     std::vector<std::pair<std::string, RgbaImageData>> mLandAvailableThumbnails;
+
+    //
+    // External scalars
+    //
+
+    std::optional<float> mCurrentSmoothedWindSpeedMagnitude; // When set, is dirty
+    std::optional<float> mBasisWindSpeedMagnitude; // When set, is dirty
 
     //
     // Parameters (storage here)

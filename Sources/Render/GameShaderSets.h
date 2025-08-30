@@ -128,6 +128,7 @@ enum class ProgramParameterKind : std::uint8_t
     AtlasTile1Dx = 0,
     AtlasTile1LeftBottomTextureCoordinates,
     AtlasTile1Size,
+    AtlasTileGeometryIndexed,
     CrepuscularColor,
     EffectiveAmbientLightIntensity,
     EffectiveMoonlightColor,

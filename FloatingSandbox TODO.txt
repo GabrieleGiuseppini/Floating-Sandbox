@@ -1319,13 +1319,15 @@
 					+ Linear
 					- MipMapped
 				+ Return actual count @ GetUnderwaterPlantsSpeciesCount()
-			= cctor: 
+			+ cctor: 
 				+ Initialize underwater plant VAO
 					+ Two VBOs: one more static, the other (underwater depths) really dynamic
 						+ Plant vertex buffer is static, and consists of single (scaled) quads per-plant, with texture coords
-				- Initialize underwater plant textures
-					- Set array for texture-specific params, and vertex attribs has index in this array (i.e. plant type)
-						- Based on global context :: linear atlas
+				+ Initialize underwater plant textures
+					+ Set array for texture-specific params, and vertex attribs has index in this array (i.e. plant type)
+						+ Based on global context :: linear atlas
+			+ Rough test for textures:
+				+ VertexAttribs take temp'ly uv coords (0,...,1)
 			+ UploadUnderwaterPlantStaticVertexAttributesStart()
 				+ mUnderwaterPlantStaticVertexAttributesBuffer.clear()
 				+ mIsUnderwaterPlantStaticVertexAttributesBufferDirty=true
@@ -1339,18 +1341,17 @@
 				- Copy in bounded vector, keeping size max
 				- Copy times 4
 				- mIsUnderwaterPlantsDynamicInstanceAttributesBufferDirty = true;
-			- UploadWind:
-				- Takes current (whatever) + basis
-				- Stores also basis and marks it as dirty IFF different
-					- mBasisWindSpeed, mIsBasisWindSpeedDirty
+			+ UploadWind:
+				+ Takes current (whatever) + basis
+				+ Stores also basis and marks it as dirty IFF different
+					+ mBasisWindSpeed, mIsBasisWindSpeedDirty
 			= RenderPrepareUnderwaterPlants:
 				+ If mIsUnderwaterPlantStaticVertexAttributesBufferDirty:
 					+ Upload
 					+ mIsUnderwaterPlantStaticVertexAttributesBufferDirty = false
 				+ Upload dynamic
-				- If mBasisWindSpeed:
+				= If mIsBasisWindSpeedDirty:
 					- Calc and set parameter
-					- mBasisWindSpeed = false
 			+ RenderDrawUnderwaterPlants:
 				+ Rendered behind last ocean layer			
 					+ So behind water

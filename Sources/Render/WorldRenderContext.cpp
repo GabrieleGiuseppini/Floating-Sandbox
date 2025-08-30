@@ -68,8 +68,6 @@ WorldRenderContext::WorldRenderContext(
     , mRainVBO()
     , mRainDensity(0.0)
     , mIsRainDensityDirty(true)
-    , mRainWindSpeedMagnitude(0.0f)
-    , mIsRainWindSpeedMagnitudeDirty(true)
     , mWorldBorderVertexBuffer()
     , mWorldBorderVBO()
     // VAOs
@@ -102,6 +100,9 @@ WorldRenderContext::WorldRenderContext(
     // Thumbnails
     , mOceanAvailableThumbnails()
     , mLandAvailableThumbnails()
+    // External scalars
+    , mCurrentSmoothedWindSpeedMagnitude()
+    , mBasisWindSpeedMagnitude()
     // Parameters
     , mSunRaysInclination(1.0f)
     , mIsSunRaysInclinationDirty(true)
@@ -411,15 +412,36 @@ WorldRenderContext::WorldRenderContext(
         // in the VAO. So we won't associate the element VBO here, but rather before each drawing call.
         ////mGlobalRenderContext.GetElementIndices().Bind()
 
-        // Set per-species texture properties
-
-        // TODOHERE
-
         glBindVertexArray(0);
 
-        // Set texture parameters
         mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::UnderwaterPlant>();
+
+        // Set texture parameters
         mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::UnderwaterPlant>();
+
+        // Set per-species texture properties
+        {
+            std::vector<vec4f> atlasTileGeometries;
+            for (size_t fi = 0; fi < mGlobalRenderContext.GetGenericLinearTextureAtlasMetadata().GetFrameCount(GameTextureDatabases::GenericLinearTextureDatabase::TextureGroupsType::UnderwaterPlant); ++fi)
+            {
+                auto const & frame = mGlobalRenderContext.GetGenericLinearTextureAtlasMetadata().GetFrameMetadata(
+                    TextureFrameId(
+                        GameTextureDatabases::GenericLinearTextureDatabase::TextureGroupsType::UnderwaterPlant,
+                        static_cast<TextureFrameIndex>(fi)));
+
+                atlasTileGeometries.emplace_back(
+                    vec4f(
+                        frame.TextureCoordinatesBottomLeft.x,
+                        frame.TextureCoordinatesBottomLeft.y,
+                        frame.TextureSpaceWidth,
+                        frame.TextureSpaceHeight));
+            }
+
+            mShaderManager.SetProgramParameterVec4fArray<GameShaderSets::ProgramParameterKind::AtlasTileGeometryIndexed>(
+                GameShaderSets::ProgramKind::UnderwaterPlant,
+                atlasTileGeometries.data(),
+                atlasTileGeometries.size());
+        }
     }
 
 
@@ -1657,6 +1679,15 @@ void WorldRenderContext::RenderPrepareUnderwaterPlants(RenderParameters const & 
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
+
+    //
+    // Wind
+    //
+
+    if (mBasisWindSpeedMagnitude.has_value())
+    {
+        // TODOHERE: calculate and set parameter(s)
+    }
 }
 
 void WorldRenderContext::RenderDrawUnderwaterPlants(RenderParameters const & /*renderParameters*/)
@@ -1799,20 +1830,18 @@ void WorldRenderContext::RenderPrepareRain(RenderParameters const & /*renderPara
             mIsRainDensityDirty = false; // Uploaded
         }
 
-        if (mIsRainWindSpeedMagnitudeDirty)
+        if (mCurrentSmoothedWindSpeedMagnitude.has_value())
         {
             float const rainAngle = SmoothStep(
                 30.0f,
                 250.0f,
-                std::abs(mRainWindSpeedMagnitude))
-                * ((mRainWindSpeedMagnitude < 0.0f) ? -1.0f : 1.0f)
+                std::abs(*mCurrentSmoothedWindSpeedMagnitude))
+                * ((*mCurrentSmoothedWindSpeedMagnitude < 0.0f) ? -1.0f : 1.0f)
                 * 0.8f;
 
             // Set parameter
             mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::Rain, GameShaderSets::ProgramParameterKind::RainAngle>(
                 rainAngle);
-
-            mIsRainWindSpeedMagnitudeDirty = false; // Uploaded
         }
 
         if (mRainDensity != 0.0f)
@@ -1897,6 +1926,12 @@ void WorldRenderContext::RenderDrawWorldBorder(RenderParameters const & /*render
 
         glBindVertexArray(0);
     }
+}
+
+void WorldRenderContext::RenderPrepareEnd()
+{
+    mCurrentSmoothedWindSpeedMagnitude.reset();
+    mBasisWindSpeedMagnitude.reset();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////

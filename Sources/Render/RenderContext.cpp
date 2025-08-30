@@ -547,6 +547,8 @@ void RenderContext::Draw()
 
                 mNotificationRenderContext->RenderPrepare();
 
+                mWorldRenderContext->RenderPrepareEnd();
+
                 mGlobalRenderContext->RenderPrepareEnd(); // Updates global element indices
 
                 // Update stats

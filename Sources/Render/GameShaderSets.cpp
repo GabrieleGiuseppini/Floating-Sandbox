@@ -433,6 +433,8 @@ ProgramParameterKind StrToProgramParameterKind(std::string const & str)
         return ProgramParameterKind::AtlasTile1LeftBottomTextureCoordinates;
     else if (str == "AtlasTile1Size")
         return ProgramParameterKind::AtlasTile1Size;
+    else if (str == "AtlasTileGeometryIndexed")
+        return ProgramParameterKind::AtlasTileGeometryIndexed;
     else if (str == "CrepuscularColor")
         return ProgramParameterKind::CrepuscularColor;
     else if (str == "EffectiveAmbientLightIntensity")
@@ -540,6 +542,8 @@ std::string ProgramParameterKindToStr(ProgramParameterKind programParameter)
             return "AtlasTile1LeftBottomTextureCoordinates";
         case ProgramParameterKind::AtlasTile1Size:
             return "AtlasTile1Size";
+        case ProgramParameterKind::AtlasTileGeometryIndexed:
+            return "AtlasTileGeometryIndexed";
         case ProgramParameterKind::CrepuscularColor:
             return "CrepuscularColor";
         case ProgramParameterKind::EffectiveAmbientLightIntensity:

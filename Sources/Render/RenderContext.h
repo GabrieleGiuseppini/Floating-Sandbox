@@ -866,12 +866,14 @@ public:
         mWorldRenderContext->UploadStarsEnd();
     }
 
-    inline void UploadWind(vec2f speed)
+    inline void UploadWind(
+        vec2f currentSpeed,
+        float basisWindSpeedMagnitude)
     {
-        float const smoothedWindMagnitude = mWindSpeedMagnitudeRunningAverage.Update(speed.x);
+        float const smoothedWindMagnitude = mWindSpeedMagnitudeRunningAverage.Update(currentSpeed.x);
         if (smoothedWindMagnitude != mCurrentWindSpeedMagnitude) // Damp frequency of calls
         {
-            mWorldRenderContext->UploadWind(smoothedWindMagnitude);
+            mWorldRenderContext->UploadWind(smoothedWindMagnitude, basisWindSpeedMagnitude);
 
             mCurrentWindSpeedMagnitude = smoothedWindMagnitude;
         }
