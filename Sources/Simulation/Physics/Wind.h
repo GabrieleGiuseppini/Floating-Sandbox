@@ -66,6 +66,17 @@ public:
 
     /*
      * Returns the (signed) base speed magnitude - i.e. the magnitude of the unmodulated
+     * wind speed.
+     *
+     * Km/h.
+     */
+    float GetBaseSpeedMagnitude() const
+    {
+        return mBaseSpeedMagnitude;
+    }
+
+    /*
+     * Returns the (signed) base speed magnitude - i.e. the magnitude of the unmodulated
      * wind speed - with the storm speed magnitude on top of it.
      *
      * Km/h.

@@ -24,7 +24,6 @@
 #include <Core/ImageData.h>
 #include <Core/PerfStats.h>
 #include <Core/ProgressCallback.h>
-#include <Core/RunningAverage.h>
 #include <Core/SysSpecifics.h>
 #include <Core/TaskThread.h>
 #include <Core/TextureAtlas.h>
@@ -866,17 +865,14 @@ public:
         mWorldRenderContext->UploadStarsEnd();
     }
 
-    inline void UploadWind(
-        vec2f currentSpeed,
-        float basisWindSpeedMagnitude)
+    inline void UploadWind(vec2f const & instantSpeed)
     {
-        float const smoothedWindMagnitude = mWindSpeedMagnitudeRunningAverage.Update(currentSpeed.x);
-        if (smoothedWindMagnitude != mCurrentWindSpeedMagnitude) // Damp frequency of calls
-        {
-            mWorldRenderContext->UploadWind(smoothedWindMagnitude, basisWindSpeedMagnitude);
+        mWorldRenderContext->UploadWind(instantSpeed);
+    }
 
-            mCurrentWindSpeedMagnitude = smoothedWindMagnitude;
-        }
+    inline void UploadUnderwaterCurrent(float spaceVelocity, float timeVelocity)
+    {
+        mWorldRenderContext->UploadUnderwaterCurrent(spaceVelocity, timeVelocity);
     }
 
     inline void UploadStormAmbientDarkening(float darkening)
@@ -1098,6 +1094,11 @@ public:
         mWorldRenderContext->UploadUnderwaterPlantStaticVertexAttributesEnd();
     }
 
+    inline void UploadUnderwaterPlantRotationAngle(float rotationAngle)
+    {
+        mWorldRenderContext->UploadUnderwaterPlantRotationAngle(rotationAngle);
+    }
+
     inline void UploadAMBombPreImplosion(
         vec2f const & centerPosition,
         float progress,
@@ -1268,7 +1269,7 @@ public:
 
     void UploadEnd();
 
-    void Draw();
+    void Draw(float currentSimulationTime);
 
     void RenderEnd();
 
@@ -1360,14 +1361,6 @@ private:
     //
 
     RenderParameters mRenderParameters;
-
-    //
-    // State
-    //
-
-    // Wind
-    RunningAverage<32> mWindSpeedMagnitudeRunningAverage;
-    float mCurrentWindSpeedMagnitude;
 
 
     //

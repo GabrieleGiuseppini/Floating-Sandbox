@@ -45,7 +45,7 @@ World::World(
     mClouds.Update(mCurrentSimulationTime, mWind.GetBaseAndStormSpeedMagnitude(), mStorm.GetParameters(), simulationParameters);
     mOceanSurface.Update(mCurrentSimulationTime, mWind, simulationParameters);
     mOceanFloor.Update(simulationParameters);
-    mUnderwaterPlants.Update(mCurrentSimulationTime, mOceanSurface, mOceanFloor, simulationParameters);
+    mUnderwaterPlants.Update(mCurrentSimulationTime, mWind, mOceanSurface, mOceanFloor, simulationParameters);
 }
 
 ShipId World::GetNextShipId() const
@@ -1533,7 +1533,7 @@ void World::Update(
         perfStats.Update<PerfMeasurement::TotalFishUpdate>(std::chrono::steady_clock::now() - startTime);
     }
 
-    mUnderwaterPlants.Update(mCurrentSimulationTime, mOceanSurface, mOceanFloor, simulationParameters);
+    mUnderwaterPlants.Update(mCurrentSimulationTime, mWind, mOceanSurface, mOceanFloor, simulationParameters);
 
     //
     // Signal update end (for quantities/state that needed to persist during whole Update cycle)
@@ -1560,6 +1560,15 @@ void World::RenderUpload(
     mWind.Upload(renderContext);
 
     mStorm.Upload(renderContext);
+
+    // Underwater currents
+    {
+        float const timeVelocity = Formulae::CalculateUnderwaterCurrentTimeVelocity(
+            mWind.GetBaseSpeedMagnitude(),
+            simulationParameters);
+
+        renderContext.UploadUnderwaterCurrent(SimulationParameters::UnderwaterCurrentSpaceVelocity, timeVelocity);
+    }
 
     mClouds.Upload(renderContext);
 

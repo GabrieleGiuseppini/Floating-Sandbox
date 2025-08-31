@@ -152,6 +152,7 @@ enum class ProgramParameterKind : std::uint8_t
     RainDensity,
     ShipDepthDarkeningSensitivity,
     ShipParticleRenderMode,
+    SimulationTime,
     StarTransparency,
     StressColorMap,
     SunRaysInclination,
@@ -159,6 +160,9 @@ enum class ProgramParameterKind : std::uint8_t
     TextureLighteningStrength,
     TextureScaling,
     Time,
+    UnderwaterCurrentSpaceVelocity,
+    UnderwaterCurrentTimeVelocity,
+    UnderwaterPlantRotationAngle,
     ViewportSize,
     WaterColor,
     WaterContrast,
@@ -225,7 +229,6 @@ enum class VertexAttributeKind : std::uint32_t
 
     UnderwaterPlantStatic1 = 0,
     UnderwaterPlantStatic2 = 1,
-    UnderwaterPlantStatic3 = 2,
     UnderwaterPlantDynamic1 = 3,
 
     AMBombPreImplosion1 = 0,

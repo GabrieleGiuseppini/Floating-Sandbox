@@ -213,7 +213,7 @@ void GameOpenGL::LinkShaderProgram(
     if (!success)
     {
         char infoLog[1024];
-        glGetShaderInfoLog(*shaderProgram, sizeof(infoLog), NULL, infoLog);
+        glGetProgramInfoLog(*shaderProgram, sizeof(infoLog), NULL, infoLog);
         throw GameException("Error linking " + programName + " shader program: " + std::string(infoLog));
     }
 }

@@ -504,7 +504,7 @@ void GameController::RunGameIteration()
         auto const startTime = GameChronometer::Now();
 
         // Render
-        mRenderContext->Draw();
+        mRenderContext->Draw(mWorld->GetCurrentSimulationTime());
 
         mTotalPerfStats->Update<PerfMeasurement::TotalMainThreadRenderDraw>(GameChronometer::Now() - startTime);
     }

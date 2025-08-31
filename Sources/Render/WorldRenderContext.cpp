@@ -101,8 +101,15 @@ WorldRenderContext::WorldRenderContext(
     , mOceanAvailableThumbnails()
     , mLandAvailableThumbnails()
     // External scalars
-    , mCurrentSmoothedWindSpeedMagnitude()
-    , mBasisWindSpeedMagnitude()
+    , mWindSpeedMagnitudeRunningAverage(0.0f)
+    , mCurrentSmoothedWindSpeedMagnitude(0.0f)
+    , mIsCurrentSmoothedWindSpeedMagnitudeDirty(true)
+    , mCurrentUnderwaterCurrentSpaceVelocity(0.0f)
+    , mIsCurrentUnderwaterCurrentSpaceVelocityDirty(true)
+    , mCurrentUnderwaterCurrentTimeVelocity(0.0f)
+    , mIsCurrentUnderwaterCurrentTimeVelocityDirty(true)
+    , mCurrentUnderwaterPlantsRotationAngle(0.0f)
+    , mIsCurrentUnderwaterPlantsRotationAngleDirty(true)
     // Parameters
     , mSunRaysInclination(1.0f)
     , mIsSunRaysInclinationDirty(true)
@@ -393,13 +400,11 @@ WorldRenderContext::WorldRenderContext(
         // Describe vertex attributes
 
         glBindBuffer(GL_ARRAY_BUFFER, *mUnderwaterPlantStaticVBO);
-        static_assert(sizeof(UnderwaterPlantStaticVertex) == (8 + 1) * sizeof(float));
+        static_assert(sizeof(UnderwaterPlantStaticVertex) == (4 + 3) * sizeof(float));
         glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::UnderwaterPlantStatic1));
         glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::UnderwaterPlantStatic1), 4, GL_FLOAT, GL_FALSE, sizeof(UnderwaterPlantStaticVertex), (void *)0);
         glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::UnderwaterPlantStatic2));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::UnderwaterPlantStatic2), 4, GL_FLOAT, GL_FALSE, sizeof(UnderwaterPlantStaticVertex), (void *)(4 * sizeof(float)));
-        glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::UnderwaterPlantStatic3));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::UnderwaterPlantStatic3), 1, GL_FLOAT, GL_FALSE, sizeof(UnderwaterPlantStaticVertex), (void *)(8 * sizeof(float)));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::UnderwaterPlantStatic2), 3, GL_FLOAT, GL_FALSE, sizeof(UnderwaterPlantStaticVertex), (void *)(4 * sizeof(float)));
         CheckOpenGLError();
 
         glBindBuffer(GL_ARRAY_BUFFER, *mUnderwaterPlantDynamicVBO);
@@ -421,6 +426,10 @@ WorldRenderContext::WorldRenderContext(
 
         // Set per-species texture properties
         {
+            vec2f const atlasPixelDx = vec2f(
+                1.0f / static_cast<float>(mGlobalRenderContext.GetGenericLinearTextureAtlasMetadata().GetSize().width),
+                1.0f / static_cast<float>(mGlobalRenderContext.GetGenericLinearTextureAtlasMetadata().GetSize().height));
+
             std::vector<vec4f> atlasTileGeometries;
             for (size_t fi = 0; fi < mGlobalRenderContext.GetGenericLinearTextureAtlasMetadata().GetFrameCount(GameTextureDatabases::GenericLinearTextureDatabase::TextureGroupsType::UnderwaterPlant); ++fi)
             {
@@ -431,10 +440,10 @@ WorldRenderContext::WorldRenderContext(
 
                 atlasTileGeometries.emplace_back(
                     vec4f(
-                        frame.TextureCoordinatesBottomLeft.x,
-                        frame.TextureCoordinatesBottomLeft.y,
-                        frame.TextureSpaceWidth,
-                        frame.TextureSpaceHeight));
+                        frame.TextureCoordinatesBottomLeft.x + atlasPixelDx.x,
+                        frame.TextureCoordinatesBottomLeft.y + atlasPixelDx.y,
+                        frame.TextureSpaceWidth - atlasPixelDx.x * 2.0f,
+                        frame.TextureSpaceHeight - atlasPixelDx.y * 2.0f));
             }
 
             mShaderManager.SetProgramParameterVec4fArray<GameShaderSets::ProgramParameterKind::AtlasTileGeometryIndexed>(
@@ -756,6 +765,9 @@ void WorldRenderContext::OnReset(RenderParameters const & renderParameters)
         // Re-generate noise
         mGlobalRenderContext.RegeneratePerlin_8_1024_073_Noise();
     }
+
+    // Reset state
+    mWindSpeedMagnitudeRunningAverage.Reset(0.0f);
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -1290,8 +1302,6 @@ void WorldRenderContext::RenderPrepareOcean(RenderParameters const & renderParam
     if (mIsSunRaysInclinationDirty)
     {
         mShaderManager.SetProgramParameterInAllShaders<GameShaderSets::ProgramParameterKind::SunRaysInclination>(mSunRaysInclination);
-
-        mIsSunRaysInclinationDirty = false;
     }
 }
 
@@ -1621,7 +1631,9 @@ void WorldRenderContext::RenderDrawFishes(RenderParameters const & renderParamet
     }
 }
 
-void WorldRenderContext::RenderPrepareUnderwaterPlants(RenderParameters const & /*renderParameters*/)
+void WorldRenderContext::RenderPrepareUnderwaterPlants(
+    float currentSimulationTime,
+    RenderParameters const & /*renderParameters*/)
 {
     //
     // Static attributes
@@ -1631,6 +1643,8 @@ void WorldRenderContext::RenderPrepareUnderwaterPlants(RenderParameters const & 
     {
         if (!mUnderwaterPlantStaticVertexBuffer.empty())
         {
+            LogMessage("TODOTEST: uploading UWPlants Static Vertex Attribs");
+
             glBindBuffer(GL_ARRAY_BUFFER, *mUnderwaterPlantStaticVBO);
 
             if (mUnderwaterPlantStaticVertexBuffer.size() > mUnderwaterPlantStaticVBOAllocatedVertexSize)
@@ -1681,13 +1695,33 @@ void WorldRenderContext::RenderPrepareUnderwaterPlants(RenderParameters const & 
     }
 
     //
-    // Wind
+    // Parameters
     //
 
-    if (mBasisWindSpeedMagnitude.has_value())
+    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::UnderwaterPlant>();
+
+    if (mIsCurrentUnderwaterPlantsRotationAngleDirty)
     {
-        // TODOHERE: calculate and set parameter(s)
+        LogMessage("TODOTEST: uploading UnderwaterPlantRotationAngle");
+
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::UnderwaterPlant, GameShaderSets::ProgramParameterKind::UnderwaterPlantRotationAngle>(mCurrentUnderwaterPlantsRotationAngle);
     }
+
+    if (mIsCurrentUnderwaterCurrentSpaceVelocityDirty)
+    {
+        LogMessage("TODOTEST: uploading UnderwaterCurrentSpaceVelocity");
+
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::UnderwaterPlant, GameShaderSets::ProgramParameterKind::UnderwaterCurrentSpaceVelocity>(mCurrentUnderwaterCurrentSpaceVelocity);
+    }
+
+    if (mIsCurrentUnderwaterCurrentTimeVelocityDirty)
+    {
+        LogMessage("TODOTEST: uploading UnderwaterCurrentTimeVelocity");
+
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::UnderwaterPlant, GameShaderSets::ProgramParameterKind::UnderwaterCurrentTimeVelocity>(mCurrentUnderwaterCurrentTimeVelocity);
+    }
+
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::UnderwaterPlant, GameShaderSets::ProgramParameterKind::SimulationTime>(currentSimulationTime);
 }
 
 void WorldRenderContext::RenderDrawUnderwaterPlants(RenderParameters const & /*renderParameters*/)
@@ -1830,13 +1864,13 @@ void WorldRenderContext::RenderPrepareRain(RenderParameters const & /*renderPara
             mIsRainDensityDirty = false; // Uploaded
         }
 
-        if (mCurrentSmoothedWindSpeedMagnitude.has_value())
+        if (mIsCurrentSmoothedWindSpeedMagnitudeDirty)
         {
             float const rainAngle = SmoothStep(
                 30.0f,
                 250.0f,
-                std::abs(*mCurrentSmoothedWindSpeedMagnitude))
-                * ((*mCurrentSmoothedWindSpeedMagnitude < 0.0f) ? -1.0f : 1.0f)
+                std::abs(mCurrentSmoothedWindSpeedMagnitude))
+                * ((mCurrentSmoothedWindSpeedMagnitude < 0.0f) ? -1.0f : 1.0f)
                 * 0.8f;
 
             // Set parameter
@@ -1930,8 +1964,12 @@ void WorldRenderContext::RenderDrawWorldBorder(RenderParameters const & /*render
 
 void WorldRenderContext::RenderPrepareEnd()
 {
-    mCurrentSmoothedWindSpeedMagnitude.reset();
-    mBasisWindSpeedMagnitude.reset();
+    mIsCurrentSmoothedWindSpeedMagnitudeDirty = false;
+    mIsCurrentUnderwaterCurrentSpaceVelocityDirty = false;
+    mIsCurrentUnderwaterCurrentTimeVelocityDirty = false;
+    mIsCurrentUnderwaterPlantsRotationAngleDirty = false;
+
+    mIsSunRaysInclinationDirty = false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////

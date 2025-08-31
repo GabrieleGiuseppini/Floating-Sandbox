@@ -481,6 +481,8 @@ ProgramParameterKind StrToProgramParameterKind(std::string const & str)
         return ProgramParameterKind::ShipDepthDarkeningSensitivity;
     else if (str == "ShipParticleRenderMode")
         return ProgramParameterKind::ShipParticleRenderMode;
+    else if (str == "SimulationTime")
+        return ProgramParameterKind::SimulationTime;
     else if (str == "StarTransparency")
         return ProgramParameterKind::StarTransparency;
     else if (str == "StressColorMap")
@@ -495,6 +497,12 @@ ProgramParameterKind StrToProgramParameterKind(std::string const & str)
         return ProgramParameterKind::TextureScaling;
     else if (str == "Time")
         return ProgramParameterKind::Time;
+    else if (str == "UnderwaterCurrentSpaceVelocity")
+        return ProgramParameterKind::UnderwaterCurrentSpaceVelocity;
+    else if (str == "UnderwaterCurrentTimeVelocity")
+        return ProgramParameterKind::UnderwaterCurrentTimeVelocity;
+    else if (str == "UnderwaterPlantRotationAngle")
+        return ProgramParameterKind::UnderwaterPlantRotationAngle;
     else if (str == "ViewportSize")
         return ProgramParameterKind::ViewportSize;
     else if (str == "WaterColor")
@@ -590,6 +598,8 @@ std::string ProgramParameterKindToStr(ProgramParameterKind programParameter)
             return "ShipDepthDarkeningSensitivity";
         case ProgramParameterKind::ShipParticleRenderMode:
             return "ShipParticleRenderMode";
+        case ProgramParameterKind::SimulationTime:
+            return "SimulationTime";
         case ProgramParameterKind::StarTransparency:
             return "StarTransparency";
         case ProgramParameterKind::StressColorMap:
@@ -604,6 +614,12 @@ std::string ProgramParameterKindToStr(ProgramParameterKind programParameter)
             return "TextureScaling";
         case ProgramParameterKind::Time:
             return "Time";
+        case ProgramParameterKind::UnderwaterCurrentSpaceVelocity:
+            return "UnderwaterCurrentSpaceVelocity";
+        case ProgramParameterKind::UnderwaterCurrentTimeVelocity:
+            return "UnderwaterCurrentTimeVelocity";
+        case ProgramParameterKind::UnderwaterPlantRotationAngle:
+            return "UnderwaterPlantRotationAngle";
         case ProgramParameterKind::ViewportSize:
             return "ViewportSize";
         case ProgramParameterKind::WaterColor:
@@ -682,8 +698,6 @@ VertexAttributeKind StrToVertexAttributeKind(std::string const & str)
         return VertexAttributeKind::UnderwaterPlantStatic1;
     else if (Utils::CaseInsensitiveEquals(str, "UnderwaterPlantStatic2"))
         return VertexAttributeKind::UnderwaterPlantStatic2;
-    else if (Utils::CaseInsensitiveEquals(str, "UnderwaterPlantStatic3"))
-        return VertexAttributeKind::UnderwaterPlantStatic3;
     else if (Utils::CaseInsensitiveEquals(str, "UnderwaterPlantDynamic1"))
         return VertexAttributeKind::UnderwaterPlantDynamic1;
     else if (Utils::CaseInsensitiveEquals(str, "AMBombPreImplosion1"))

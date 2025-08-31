@@ -326,6 +326,12 @@ struct SimulationParameters
     static float constexpr MinRainFloodAdjustment = 0.0f;
     static float constexpr MaxRainFloodAdjustment = 3600.0f / (MaxRainQuantity * SimulationStepTimeDuration<float>); // Guarantees that max is one meter/frame
 
+    // Underwater current
+
+    static float constexpr UnderwaterCurrentSpaceVelocity = 2.0f * Pi<float> / 100.0f; // Period: 100m
+
+    static float constexpr UnderwaterCurrentTimeVelocityZero = 2.0f * Pi<float> / 11.0f; // Period: 11s
+
     // Heat and combustion
 
     float AirTemperature; // Kelvin

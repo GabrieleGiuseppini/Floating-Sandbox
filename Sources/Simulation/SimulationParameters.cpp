@@ -88,8 +88,8 @@ SimulationParameters::SimulationParameters()
     , DoFishShoaling(true)
     , FishShoalRadiusAdjustment(1.0f)
     // Underwater plants
-    , UnderwaterPlantsDensity(200.0f)
-    , UnderwaterPlantSizeMultiplier(1.0f)
+    , UnderwaterPlantsDensity(500.0f)
+    , UnderwaterPlantSizeMultiplier(2.0f)
     // NPCs
     , NpcSpringReductionFractionAdjustment(1.0f)
     , NpcSpringDampingCoefficientAdjustment(1.0f)

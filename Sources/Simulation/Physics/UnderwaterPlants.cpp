@@ -15,14 +15,18 @@ namespace Physics {
 
 UnderwaterPlants::UnderwaterPlants(size_t speciesCount)
     : mSpeciesCount(speciesCount)
-    , mArePlantsDirtyForRendering(false)
+    , mArePlantsDirtyForRendering(true)
+    , mCurrentRotationAngle(0.0f)
+    , mIsCurrentRotationAngleDirtyForRendering(true)
     , mCurrentDensity(0.0f)
     , mCurrentSizeMultiplier(0.0f)
+    , mCurrentWindBaseSpeedMagnitude(0.0f)
 {
 }
 
 void UnderwaterPlants::Update(
     float /*currentSimulationTime*/,
+    Wind const & wind,
     OceanSurface const & oceanSurface,
     OceanFloor const & oceanFloor,
     SimulationParameters const & simulationParameters)
@@ -71,6 +75,23 @@ void UnderwaterPlants::Update(
     {
         mUnderwaterDepths[i] = oceanSurface.GetHeightAt(mOceanSurfaceCoordinatesProxies[i]);
     }
+
+    //
+    // Update rotation angle
+    //
+
+    if (wind.GetBaseSpeedMagnitude() != mCurrentWindBaseSpeedMagnitude)
+    {
+        float const absWindSpeed = std::abs(wind.GetBaseSpeedMagnitude());
+
+        mCurrentRotationAngle =
+            Pi<float> / 2.0f
+            * (0.05f + 0.0055f * absWindSpeed - 0.000025f * absWindSpeed * absWindSpeed);
+
+        mCurrentWindBaseSpeedMagnitude = wind.GetBaseSpeedMagnitude();
+
+        mIsCurrentRotationAngleDirtyForRendering = true;
+    }
 }
 
 void UnderwaterPlants::Upload(RenderContext & renderContext)
@@ -91,6 +112,13 @@ void UnderwaterPlants::Upload(RenderContext & renderContext)
         renderContext.UploadUnderwaterPlantStaticVertexAttributesEnd();
 
         mArePlantsDirtyForRendering = false;
+    }
+
+    if (mIsCurrentRotationAngleDirtyForRendering)
+    {
+        renderContext.UploadUnderwaterPlantRotationAngle(mCurrentRotationAngle);
+
+        mIsCurrentRotationAngleDirtyForRendering = false;
     }
 }
 
@@ -142,6 +170,8 @@ void UnderwaterPlants::RepopulatePlants(
             nPlants = plantCount - mPlants.size();
         }
 
+        LogMessage("TODOTEST: Species ", iSpecies, ": ", nPlants);
+
         for (size_t p = 0; p < nPlants; ++p)
         {
             // Choose X
@@ -150,7 +180,7 @@ void UnderwaterPlants::RepopulatePlants(
             // Choose basis scale
             float const basisScale = GameRandomEngine::GetInstance().GenerateNormalReal(
                 1.0f, // Mean
-                0.1f); // StdDev
+                0.5f); // StdDev
 
             // Choose personality seed
             float const personalitySeed = GameRandomEngine::GetInstance().GenerateNormalizedUniformReal();
@@ -185,7 +215,7 @@ void UnderwaterPlants::RecalculateBottomYs(OceanFloor const & oceanFloor)
 {
     for (auto & plant : mPlants)
     {
-        plant.BottomY = oceanFloor.GetMinHeightAt(plant.CenterX); // Cover roots
+        plant.BottomY = oceanFloor.GetMinHeightAt(plant.CenterX) - 0.2f; // Cover roots underneath semi-transparent ocean floor
     }
 }
 

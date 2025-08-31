@@ -21,6 +21,7 @@
 #include <Core/GameTypes.h>
 #include <Core/IAssetManager.h>
 #include <Core/ImageData.h>
+#include <Core/RunningAverage.h>
 #include <Core/TextureAtlas.h>
 #include <Core/Vectors.h>
 
@@ -28,7 +29,6 @@
 #include <cassert>
 #include <cmath>
 #include <memory>
-#include <optional>
 #include <string>
 #include <vector>
 
@@ -106,15 +106,28 @@ public:
 
     void UploadStarsEnd();
 
-    inline void UploadWind(
-        float currentSmoothedWindSpeedMagnitude,
-        float basisWindSpeedMagnitude)
+    inline void UploadWind(vec2f const & instantSpeed)
     {
-        mCurrentSmoothedWindSpeedMagnitude = currentSmoothedWindSpeedMagnitude;
-
-        if (basisWindSpeedMagnitude != mBasisWindSpeedMagnitude)
+        float const smoothedWindMagnitude = mWindSpeedMagnitudeRunningAverage.Update(instantSpeed.x);
+        if (smoothedWindMagnitude != mCurrentSmoothedWindSpeedMagnitude) // Damp frequency of calls
         {
-            mBasisWindSpeedMagnitude = basisWindSpeedMagnitude;
+            mCurrentSmoothedWindSpeedMagnitude = smoothedWindMagnitude;
+            mIsCurrentSmoothedWindSpeedMagnitudeDirty = true;
+        }
+    }
+
+    inline void UploadUnderwaterCurrent(float spaceVelocity, float timeVelocity)
+    {
+        if (spaceVelocity != mCurrentUnderwaterCurrentSpaceVelocity)
+        {
+            mCurrentUnderwaterCurrentSpaceVelocity = spaceVelocity;
+            mIsCurrentUnderwaterCurrentSpaceVelocityDirty = true;
+        }
+
+        if (timeVelocity != mCurrentUnderwaterCurrentTimeVelocity)
+        {
+            mCurrentUnderwaterCurrentTimeVelocity = timeVelocity;
+            mIsCurrentUnderwaterCurrentTimeVelocityDirty = true;
         }
     }
 
@@ -525,9 +538,6 @@ public:
         float scale,
         float personalitySeed)
     {
-        // TODOHERE
-
-
         auto const & frame = mGlobalRenderContext.GetGenericLinearTextureAtlasMetadata().GetFrameMetadata(
             TextureFrameId(
                 GameTextureDatabases::GenericLinearTextureDatabase::TextureGroupsType::UnderwaterPlant,
@@ -540,40 +550,53 @@ public:
         float const leftX = centerBottomPosition.x - maxSize / 2.0f;
         float const rightX = centerBottomPosition.x + maxSize / 2.0f;
 
+        // Plant space coords: height in 0.0...1.0, width in 0.0...A/R (so that rotation is homogeneous)
+        float const halfSpaceCoordsWidth = maxSize / worldHeight / 2.0f;
+        float const textureWidthInSpaceCoords = worldWidth / worldHeight;
+
         // Top-left
         mUnderwaterPlantStaticVertexBuffer.emplace_back(
             vec2f(leftX, centerBottomPosition.y + worldHeight),
+            vec2f(-halfSpaceCoordsWidth, 1.0f),
+            textureWidthInSpaceCoords,
             personalitySeed,
-            // TODOTEST
-            vec2f(0.0f, 1.0f),
             static_cast<float>(speciesIndex));
 
         // Bottom-left
         mUnderwaterPlantStaticVertexBuffer.emplace_back(
             vec2f(leftX, centerBottomPosition.y),
+            vec2f(-halfSpaceCoordsWidth, 0.0f),
+            textureWidthInSpaceCoords,
             personalitySeed,
-            // TODOTEST
-            vec2f(0.0f, 0.0f),
             static_cast<float>(speciesIndex));
 
         // Top-right
         mUnderwaterPlantStaticVertexBuffer.emplace_back(
             vec2f(rightX, centerBottomPosition.y + worldHeight),
+            vec2f(halfSpaceCoordsWidth, 1.0f),
+            textureWidthInSpaceCoords,
             personalitySeed,
-            // TODOTEST
-            vec2f(1.0f, 1.0f),
             static_cast<float>(speciesIndex));
 
         // Bottom-right
         mUnderwaterPlantStaticVertexBuffer.emplace_back(
             vec2f(rightX, centerBottomPosition.y),
+            vec2f(halfSpaceCoordsWidth, 0.0f),
+            textureWidthInSpaceCoords,
             personalitySeed,
-            // TODOTEST
-            vec2f(1.0f, 0.0f),
             static_cast<float>(speciesIndex));
     }
 
     void UploadUnderwaterPlantStaticVertexAttributesEnd();
+
+    inline void UploadUnderwaterPlantRotationAngle(float rotationAngle)
+    {
+        if (rotationAngle != mCurrentUnderwaterPlantsRotationAngle)
+        {
+            mCurrentUnderwaterPlantsRotationAngle = rotationAngle;
+            mIsCurrentUnderwaterPlantsRotationAngleDirty = true;
+        }
+    }
 
     inline void UploadAMBombPreImplosion(
         vec2f const & centerPosition,
@@ -737,7 +760,7 @@ public:
     void RenderPrepareFishes(RenderParameters const & renderParameters);
     void RenderDrawFishes(RenderParameters const & renderParameters);
 
-    void RenderPrepareUnderwaterPlants(RenderParameters const & renderParameters);
+    void RenderPrepareUnderwaterPlants(float currentSimulationTime, RenderParameters const & renderParameters);
     void RenderDrawUnderwaterPlants(RenderParameters const & renderParameters);
 
     void RenderPrepareAMBombPreImplosions(RenderParameters const & renderParameters);
@@ -1035,20 +1058,21 @@ private:
     struct UnderwaterPlantStaticVertex
     {
         vec2f position;
+        vec2f plantSpaceCoords;
+        float textureWidthInSpaceCoords;
         float personalitySeed;
-        float pad1;
-        vec2f todoTextureCoords;
-        vec2f pad2;
         float speciesIndex;
 
         UnderwaterPlantStaticVertex(
             vec2f _position,
+            vec2f _plantSpaceCoords,
+            float _textureWidthInSpaceCoords,
             float _personalitySeed,
-            vec2f _todoTextureCoords,
             float _speciesIndex)
             : position(_position)
+            , plantSpaceCoords(_plantSpaceCoords)
+            , textureWidthInSpaceCoords(_textureWidthInSpaceCoords)
             , personalitySeed(_personalitySeed)
-            , todoTextureCoords(_todoTextureCoords)
             , speciesIndex(_speciesIndex)
         {
         }
@@ -1265,8 +1289,20 @@ private:
     // External scalars
     //
 
-    std::optional<float> mCurrentSmoothedWindSpeedMagnitude; // When set, is dirty
-    std::optional<float> mBasisWindSpeedMagnitude; // When set, is dirty
+    // Wind
+    RunningAverage<32> mWindSpeedMagnitudeRunningAverage;
+    float mCurrentSmoothedWindSpeedMagnitude;
+    bool mIsCurrentSmoothedWindSpeedMagnitudeDirty;
+
+    // Underwater currents
+    float mCurrentUnderwaterCurrentSpaceVelocity;
+    bool mIsCurrentUnderwaterCurrentSpaceVelocityDirty;
+    float mCurrentUnderwaterCurrentTimeVelocity;
+    bool mIsCurrentUnderwaterCurrentTimeVelocityDirty;
+
+    // Underwater plants
+    float mCurrentUnderwaterPlantsRotationAngle;
+    bool mIsCurrentUnderwaterPlantsRotationAngleDirty;
 
     //
     // Parameters (storage here)

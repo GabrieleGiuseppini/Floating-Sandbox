@@ -231,6 +231,14 @@ public:
             (targetFlameWindRotationAngle - flameWindRotationAngle)
             * FlameWindRotationAngleConvergenceRate;
     }
+
+    static float CalculateUnderwaterCurrentTimeVelocity(
+        float basisWindSpeed,
+        SimulationParameters const & simulationParameters)
+    {
+        return simulationParameters.UnderwaterCurrentTimeVelocityZero
+            * (1.0f + std::abs(basisWindSpeed) / 100.0f * 0.5f);
+    }
 };
 
 }

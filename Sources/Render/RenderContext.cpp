@@ -67,9 +67,6 @@ RenderContext::RenderContext(
         maxWorldSize,
         renderDeviceProperties.InitialCanvasSize,
         renderDeviceProperties.LogicalToPhysicalDisplayFactor)
-    // State
-    , mWindSpeedMagnitudeRunningAverage(0.0f)
-    , mCurrentWindSpeedMagnitude(0.0f)
     // Statistics
     , mPerfStats(perfStats)
     , mRenderStats()
@@ -305,9 +302,6 @@ void RenderContext::Reset()
             // Notify other layers
             mWorldRenderContext->OnReset(mRenderParameters);
         });
-
-    // Reset state
-    mWindSpeedMagnitudeRunningAverage.Reset(0.0f);
 }
 
 void RenderContext::ValidateShipTexture(RgbaImageData const & texture) const
@@ -472,7 +466,7 @@ void RenderContext::UploadEnd()
     mLastRenderUploadEndCompletionIndicator = mRenderThread.QueueSynchronizationPoint();
 }
 
-void RenderContext::Draw()
+void RenderContext::Draw(float currentSimulationTime)
 {
     assert(!mLastRenderDrawCompletionIndicator);
 
@@ -481,7 +475,7 @@ void RenderContext::Draw()
     //
     // Take a copy of the current render parameters and clean its dirtyness, and of the current render state
     mLastRenderDrawCompletionIndicator = mRenderThread.QueueTask(
-        [this, renderParameters = mRenderParameters.TakeSnapshotAndClear(), lampToolToSet = mLampToolToSet]() mutable
+        [this, renderParameters = mRenderParameters.TakeSnapshotAndClear(), lampToolToSet = mLampToolToSet, currentSimulationTime = currentSimulationTime]() mutable
         {
             auto const startTime = GameChronometer::Now();
 
@@ -535,7 +529,7 @@ void RenderContext::Draw()
 
                 mWorldRenderContext->RenderPrepareFishes(renderParameters);
 
-                mWorldRenderContext->RenderPrepareUnderwaterPlants(renderParameters);
+                mWorldRenderContext->RenderPrepareUnderwaterPlants(currentSimulationTime, renderParameters);
 
                 mWorldRenderContext->RenderPrepareAMBombPreImplosions(renderParameters);
 

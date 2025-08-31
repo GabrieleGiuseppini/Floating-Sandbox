@@ -1250,7 +1250,7 @@
 					- Like generator, but only generates power when daylight above threshold, *and* when on frontier
 				- Redo template!
 
-	- Underwater plants (*)
+	= Underwater plants (*)
 		! If plant above water it should be flat
 		! Generalized concept of "underwater currents", via Formulae to ensure consistency in a distributed implementation 
 			- Plants bend with the "current"
@@ -1295,11 +1295,16 @@
 				- Upload underwaterDepth
 					- As buffer, and RenderContext duplicates 4-way
 
+		- Finalize images
+			- Make 256
+			- Large transparent border
+
 		- SettingsDialog
 			- Density
 			- SizeMultiplier
 
 		- Tests:
+			- Wind on Rain (we've touched that)
 			- Density changes
 			- Ocean floor changes do propagate:
 				- Manual (tool)
@@ -1332,9 +1337,11 @@
 				+ mUnderwaterPlantStaticVertexAttributesBuffer.clear()
 				+ mIsUnderwaterPlantStaticVertexAttributesBufferDirty=true
 				+ Ensure element indices
-			= UploadUnderwaterPlantStaticVertexAttributes
+			+ UploadUnderwaterPlantStaticVertexAttributes
 				+ Actual quad is based off 90degree rotation, as bounding box around rotated texture using theo max
-				- PlantSpace coords: 1.0 for height, variable (<>1) for width
+				+ PlantSpace coords: 1.0 for height, variable (<>1) for width
+				+ TextureWidthInPlantSpace: which part of plant space width is texture width
+					+ Redo ShaderToy shader
 			+ UploadUnderwaterPlantStaticVertexAttributesEnd
 			- UploadUnderwaterPlantDynamicInstanceAttributes(std::vector const &)	
 				- assert size consistent with mUnderwaterPlantStaticVertexAttributesBuffer
@@ -1345,25 +1352,47 @@
 				+ Takes current (whatever) + basis
 				+ Stores also basis and marks it as dirty IFF different
 					+ mBasisWindSpeed, mIsBasisWindSpeedDirty
-			= RenderPrepareUnderwaterPlants:
+			+ RenderPrepareUnderwaterPlants:
 				+ If mIsUnderwaterPlantStaticVertexAttributesBufferDirty:
 					+ Upload
 					+ mIsUnderwaterPlantStaticVertexAttributesBufferDirty = false
 				+ Upload dynamic
-				= If mIsBasisWindSpeedDirty:
-					- Calc and set parameter
 			+ RenderDrawUnderwaterPlants:
 				+ Rendered behind last ocean layer			
 					+ So behind water
-				= Make sure texture unit activated and texture handle is bound (should be the case already for both linear and mipmapped)
+				+ Make sure texture unit activated and texture handle is bound (should be the case already for both linear and mipmapped)
 			= Shader:
-				- Shader calculates rotation (in fragment shader) based on world X (running current sinusoid)
-					- spatial_velocity, time_velocity set by WorldRenderContext as shader parameters
-						- time_velocity calc'd via Formulae
-					- max rotation depends on wind speed, also set by WorldRenderContext as shader parameter
-					- also t_sim set as shader parameter
-						- See if exists one we may reuse
-				+ Shader:
+				+ Params:
+					+ Add all to ShaderSets
+
+					+ World/RenderContext::UploadWind: back to just instant speed
+
+					+ World::Upload: section for underwater currents, after Wind::Upload:						
+						+ Calculate UnderwaterCurrentTimeVelocity via Formulae
+						+ RenderContext::UploadUnderwaterCurrent(spaceVelocity, timeVelocity)
+							-> WorldRenderContext::UploadUnderwaterCurrent
+								+ Check either: if different than mCurrent, set/do w/dirty
+
+					+ UnderwaterPlants::Update:
+						+ Takes Wind
+						+ Calc rotation angle if changed, sets mIsXXXDirtyForRendering
+					+ UnderwaterPlants::Upload:
+						+ if mIsXXXDirtyForRendering:
+							+ RenderContext::UploadUnderwaterPlantRotationAngle
+								+ > WorldRenderContext::UploadUnderwaterPlantRotationAngle
+									+ Check: if different than mCurrent, set/do w/dirty
+							+ mIsXXXDirtyForRendering = false
+
+					+ WorldRenderContext::RenderPrepareUnderwaterPlants:
+						+ Now takes simulation time
+						+ If rotation angle dirty: set
+						+ If spaceVelocity dirty: set
+						+ If timeVelocity dirty: set
+						+ Set Simulation Time
+
+					+ WorldRenderContext::UploadEnd
+						+ Reset flags
+				+ Shader on ShaderToy:
 					+ Basis
 					+ Test little high-frequency ripples
 						+ x
@@ -1388,6 +1417,10 @@
 						+ Used @ rotation, as simple additional phase
 
 					+ Test other images
+
+				+ Shader in FS
+					+ Redo vertex attribs
+					+ Copy code from shadertoy
 
 				- Effects to try:
 					- Cloud shadows

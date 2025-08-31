@@ -27,6 +27,7 @@ public:
 
     void Update(
         float currentSimulationTime,
+        Wind const & wind,
         OceanSurface const & oceanSurface,
         OceanFloor const & oceanFloor,
         SimulationParameters const & simulationParameters);
@@ -85,11 +86,19 @@ private:
     std::vector<float> mUnderwaterDepths;
 
     //
+    // Calculated values
+    //
+
+    float mCurrentRotationAngle;
+    bool mIsCurrentRotationAngleDirtyForRendering;
+
+    //
     // Parameters that the calculated values are current with
     //
 
     float mCurrentDensity;
     float mCurrentSizeMultiplier;
+    float mCurrentWindBaseSpeedMagnitude;
 };
 
 }
