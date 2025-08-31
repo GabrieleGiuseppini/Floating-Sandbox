@@ -426,10 +426,6 @@ WorldRenderContext::WorldRenderContext(
 
         // Set per-species texture properties
         {
-            vec2f const atlasPixelDx = vec2f(
-                1.0f / static_cast<float>(mGlobalRenderContext.GetGenericLinearTextureAtlasMetadata().GetSize().width),
-                1.0f / static_cast<float>(mGlobalRenderContext.GetGenericLinearTextureAtlasMetadata().GetSize().height));
-
             std::vector<vec4f> atlasTileGeometries;
             for (size_t fi = 0; fi < mGlobalRenderContext.GetGenericLinearTextureAtlasMetadata().GetFrameCount(GameTextureDatabases::GenericLinearTextureDatabase::TextureGroupsType::UnderwaterPlant); ++fi)
             {
@@ -440,10 +436,18 @@ WorldRenderContext::WorldRenderContext(
 
                 atlasTileGeometries.emplace_back(
                     vec4f(
-                        frame.TextureCoordinatesBottomLeft.x + atlasPixelDx.x,
-                        frame.TextureCoordinatesBottomLeft.y + atlasPixelDx.y,
-                        frame.TextureSpaceWidth - atlasPixelDx.x * 2.0f,
-                        frame.TextureSpaceHeight - atlasPixelDx.y * 2.0f));
+                        frame.TextureCoordinatesBottomLeft.x,
+                        frame.TextureCoordinatesBottomLeft.y,
+                        frame.TextureCoordinatesTopRight.x,
+                        frame.TextureCoordinatesTopRight.y));
+
+                // H-specular
+                atlasTileGeometries.emplace_back(
+                    vec4f(
+                        frame.TextureCoordinatesTopRight.x,
+                        frame.TextureCoordinatesBottomLeft.y,
+                        frame.TextureCoordinatesBottomLeft.x,
+                        frame.TextureCoordinatesTopRight.y));
             }
 
             mShaderManager.SetProgramParameterVec4fArray<GameShaderSets::ProgramParameterKind::AtlasTileGeometryIndexed>(

@@ -1080,13 +1080,15 @@ public:
         vec2f const & centerBottomPosition,
         size_t speciesIndex,
         float scale,
-        float personalitySeed)
+        float personalitySeed,
+        bool isSpecular)
     {
         mWorldRenderContext->UploadUnderwaterPlantStaticVertexAttributes(
             centerBottomPosition,
             speciesIndex,
             scale,
-            personalitySeed);
+            personalitySeed,
+            isSpecular);
     }
 
     inline void UploadUnderwaterPlantStaticVertexAttributesEnd()

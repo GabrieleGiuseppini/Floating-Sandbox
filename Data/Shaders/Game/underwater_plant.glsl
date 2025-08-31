@@ -5,14 +5,14 @@
 
 // Inputs
 in vec4 inUnderwaterPlantStatic1;  // Position, PlantSpaceCoords
-in vec3 inUnderwaterPlantStatic2; // TextureWidthInSpaceCoords, PersonalitySeed, SpeciesIndex
+in vec3 inUnderwaterPlantStatic2; // TextureWidthInSpaceCoords, PersonalitySeed, AtlasTileIndex
 in float inUnderwaterPlantDynamic1; // VertexWorldOceanRelativeY, negative underneath
 
 // Outputs
 out vec2 vertexPlantSpaceCoords;
 out float vertexTextureWidthInSpaceCoords;
 out float vertexPersonalitySeed;
-out float vertexSpeciesIndex;
+out float vertexAtlasTileIndex;
 out float vertexWorldOceanRelativeY;
 out float vertexWorldX;
 
@@ -24,8 +24,9 @@ void main()
     vertexPlantSpaceCoords = inUnderwaterPlantStatic1.zw;
     vertexTextureWidthInSpaceCoords = inUnderwaterPlantStatic2.x;
     vertexPersonalitySeed = inUnderwaterPlantStatic2.y;
-    vertexSpeciesIndex = inUnderwaterPlantStatic2.z;
-    vertexWorldOceanRelativeY = inUnderwaterPlantDynamic1;
+    vertexAtlasTileIndex = inUnderwaterPlantStatic2.z;
+    //vertexWorldOceanRelativeY = inUnderwaterPlantDynamic1;
+    vertexWorldOceanRelativeY = -100;
     vertexWorldX = inUnderwaterPlantStatic1.x;
 
     gl_Position = paramOrthoMatrix * vec4(inUnderwaterPlantStatic1.xy, -1.0, 1.0);
@@ -39,12 +40,12 @@ void main()
 in vec2 vertexPlantSpaceCoords;
 in float vertexTextureWidthInSpaceCoords;
 in float vertexPersonalitySeed;
-in float vertexSpeciesIndex;
+in float vertexAtlasTileIndex;
 in float vertexWorldOceanRelativeY;
 in float vertexWorldX;
 
 // The texture
-uniform vec4 paramAtlasTileGeometryIndexed[4]; // Keep size with # of underwater plant textures
+uniform vec4 paramAtlasTileGeometryIndexed[4 * 2]; // Keep size with # of underwater plant textures
 uniform sampler2D paramGenericLinearTexturesAtlasTexture;
 
 // Params
@@ -66,7 +67,7 @@ void main()
 {
     #define PI 3.1415926535
 
-    int vertexSpeciesIndexI = int(vertexSpeciesIndex);
+    int vertexAtlasTileIndexI = int(vertexAtlasTileIndex);
 
     // Underwater pulse: -1..1
     float underwaterPulse = sin(paramUnderwaterCurrentSpaceVelocity * vertexWorldX + paramUnderwaterCurrentTimeVelocity * paramSimulationTime + vertexPersonalitySeed * PI / 6.);
@@ -99,9 +100,10 @@ void main()
     virtualTextureCoords = clamp(virtualTextureCoords, vec2(0.), vec2(1.0));    
     
     // Map virtual texture coords to atlas coords
-    vec2 textureCoords = 
-        paramAtlasTileGeometryIndexed[vertexSpeciesIndexI].xy
-        + paramAtlasTileGeometryIndexed[vertexSpeciesIndexI].zw * virtualTextureCoords;
+    vec2 textureCoords = mix(
+            paramAtlasTileGeometryIndexed[vertexAtlasTileIndexI].xy,
+            paramAtlasTileGeometryIndexed[vertexAtlasTileIndexI].zw,
+            virtualTextureCoords);
     
     // Sample!
     gl_FragColor = texture2D(paramGenericLinearTexturesAtlasTexture, textureCoords);

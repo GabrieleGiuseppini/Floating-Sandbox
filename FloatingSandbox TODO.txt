@@ -1295,9 +1295,21 @@
 				- Upload underwaterDepth
 					- As buffer, and RenderContext duplicates 4-way
 
+		+ Specularity: at texture geometry:
+			+ UnderwaterPlants: get boolean
+			+ Upload
+			+ WorldRenderContext init: duplicate species, flipping H
+			+ WorldRenderContext upload: store atlasTileIndex = 2 * species + isSpecular
+
+		- Fix texture truncation & bleeding
+			+ FIX: negative scale
+			+ FIX: interpolate coords between bl and tr
+			+ FIX: calc'n of rated quad is wrong - width is 2*
+			- FIX: quad height must also take into account rotated width (for when w>h), and thus virtual Y max must also be calculated
+
 		- Finalize images
 			- Make 256
-			- Large transparent border
+			- Large transparent side border
 
 		- SettingsDialog
 			- Density
@@ -1317,6 +1329,9 @@
 
 			- Perf impact on Rendering
 				- Save main as "prev" first
+				- Try mipmapped (copy folder for comparisons)
+
+		- Remove all logs
 
 		- Changelist
 

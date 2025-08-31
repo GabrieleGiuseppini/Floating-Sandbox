@@ -62,18 +62,21 @@ private:
         float const BasisScale;
         float Scale;
         float const PersonalitySeed;
+        bool const IsSpecular;
 
         Plant(
             float centerX,
             size_t speciesIndex,
             float basisScale,
-            float personalitySeed)
+            float personalitySeed,
+            bool isSpecular)
             : CenterX(centerX)
             , BottomY(0.0f) // Will be recalculated
             , SpeciesIndex(speciesIndex)
             , BasisScale(basisScale)
             , Scale(basisScale) // Will be recalculated
             , PersonalitySeed(personalitySeed)
+            , IsSpecular(isSpecular)
         {}
     };
 

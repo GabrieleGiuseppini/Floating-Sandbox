@@ -536,7 +536,8 @@ public:
         vec2f const & centerBottomPosition,
         size_t speciesIndex,
         float scale,
-        float personalitySeed)
+        float personalitySeed,
+        bool isSpecular)
     {
         auto const & frame = mGlobalRenderContext.GetGenericLinearTextureAtlasMetadata().GetFrameMetadata(
             TextureFrameId(
@@ -546,13 +547,16 @@ public:
         // Calculate bounding box, assuming texture is fully rotated
         float const worldWidth = frame.FrameMetadata.WorldWidth * scale;
         float const worldHeight = frame.FrameMetadata.WorldHeight * scale;
-        float const maxSize = std::max(worldWidth, worldHeight);;
+        float const maxSize = std::max(worldWidth, worldHeight * 2.0f);
         float const leftX = centerBottomPosition.x - maxSize / 2.0f;
         float const rightX = centerBottomPosition.x + maxSize / 2.0f;
 
         // Plant space coords: height in 0.0...1.0, width in 0.0...A/R (so that rotation is homogeneous)
-        float const halfSpaceCoordsWidth = maxSize / worldHeight / 2.0f;
+        float const halfSpaceCoordsWidth = (maxSize / worldHeight) / 2.0f;
         float const textureWidthInSpaceCoords = worldWidth / worldHeight;
+
+        // Tile index: take into account that we add h-flipped versions
+        float const atlasTileIndex = static_cast<float>(speciesIndex * 2) + (isSpecular ? 1 : 0);
 
         // Top-left
         mUnderwaterPlantStaticVertexBuffer.emplace_back(
@@ -560,7 +564,7 @@ public:
             vec2f(-halfSpaceCoordsWidth, 1.0f),
             textureWidthInSpaceCoords,
             personalitySeed,
-            static_cast<float>(speciesIndex));
+            atlasTileIndex);
 
         // Bottom-left
         mUnderwaterPlantStaticVertexBuffer.emplace_back(
@@ -568,7 +572,7 @@ public:
             vec2f(-halfSpaceCoordsWidth, 0.0f),
             textureWidthInSpaceCoords,
             personalitySeed,
-            static_cast<float>(speciesIndex));
+            atlasTileIndex);
 
         // Top-right
         mUnderwaterPlantStaticVertexBuffer.emplace_back(
@@ -576,7 +580,7 @@ public:
             vec2f(halfSpaceCoordsWidth, 1.0f),
             textureWidthInSpaceCoords,
             personalitySeed,
-            static_cast<float>(speciesIndex));
+            atlasTileIndex);
 
         // Bottom-right
         mUnderwaterPlantStaticVertexBuffer.emplace_back(
@@ -584,7 +588,7 @@ public:
             vec2f(halfSpaceCoordsWidth, 0.0f),
             textureWidthInSpaceCoords,
             personalitySeed,
-            static_cast<float>(speciesIndex));
+            atlasTileIndex);
     }
 
     void UploadUnderwaterPlantStaticVertexAttributesEnd();
@@ -1061,19 +1065,19 @@ private:
         vec2f plantSpaceCoords;
         float textureWidthInSpaceCoords;
         float personalitySeed;
-        float speciesIndex;
+        float atlasTileIndex;
 
         UnderwaterPlantStaticVertex(
             vec2f _position,
             vec2f _plantSpaceCoords,
             float _textureWidthInSpaceCoords,
             float _personalitySeed,
-            float _speciesIndex)
+            float _atlasTileIndex)
             : position(_position)
             , plantSpaceCoords(_plantSpaceCoords)
             , textureWidthInSpaceCoords(_textureWidthInSpaceCoords)
             , personalitySeed(_personalitySeed)
-            , speciesIndex(_speciesIndex)
+            , atlasTileIndex(_atlasTileIndex)
         {
         }
     };

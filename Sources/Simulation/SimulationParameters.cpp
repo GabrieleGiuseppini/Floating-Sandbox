@@ -89,7 +89,7 @@ SimulationParameters::SimulationParameters()
     , FishShoalRadiusAdjustment(1.0f)
     // Underwater plants
     , UnderwaterPlantsDensity(500.0f)
-    , UnderwaterPlantSizeMultiplier(2.0f)
+    , UnderwaterPlantSizeMultiplier(1.0f)
     // NPCs
     , NpcSpringReductionFractionAdjustment(1.0f)
     , NpcSpringDampingCoefficientAdjustment(1.0f)

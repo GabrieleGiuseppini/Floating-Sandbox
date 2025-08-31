@@ -106,7 +106,8 @@ void UnderwaterPlants::Upload(RenderContext & renderContext)
                 vec2f(plant.CenterX, plant.BottomY),
                 plant.SpeciesIndex,
                 plant.Scale,
-                plant.PersonalitySeed);
+                plant.PersonalitySeed,
+                plant.IsSpecular);
         }
 
         renderContext.UploadUnderwaterPlantStaticVertexAttributesEnd();
@@ -178,9 +179,12 @@ void UnderwaterPlants::RepopulatePlants(
             float const x = GameRandomEngine::GetInstance().GenerateUniformReal(-SimulationParameters::HalfMaxWorldWidth, SimulationParameters::HalfMaxWorldWidth);
 
             // Choose basis scale
-            float const basisScale = GameRandomEngine::GetInstance().GenerateNormalReal(
-                1.0f, // Mean
-                0.5f); // StdDev
+            float const basisScale = Clamp(
+                GameRandomEngine::GetInstance().GenerateNormalReal(
+                    1.0f, // Mean
+                    0.5f), // StdDev
+                0.25f,
+                10.0f);
 
             // Choose personality seed
             float const personalitySeed = GameRandomEngine::GetInstance().GenerateNormalizedUniformReal();
@@ -190,7 +194,8 @@ void UnderwaterPlants::RepopulatePlants(
                 x,
                 iSpecies,
                 basisScale,
-                personalitySeed);
+                personalitySeed,
+                (mPlants.size() % 2) == 1); // IsSpecular
 
             // Calculate ocean surface proxy
             mOceanSurfaceCoordinatesProxies.emplace_back(oceanSurface.GetCoordinatesProxyAt(x));
