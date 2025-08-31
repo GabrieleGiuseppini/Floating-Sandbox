@@ -69,7 +69,7 @@ void main()
     int vertexSpeciesIndexI = int(vertexSpeciesIndex);
 
     // Underwater pulse: -1..1
-    float underwaterPulse = sin(paramUnderwaterCurrentSpaceVelocity * vertexWorldX + paramUnderwaterCurrentTimeVelocity * paramSimulationTime + vertexPersonalitySeed * PI / 7.);
+    float underwaterPulse = sin(paramUnderwaterCurrentSpaceVelocity * vertexWorldX + paramUnderwaterCurrentTimeVelocity * paramSimulationTime + vertexPersonalitySeed * PI / 6.);
     
     // Rotation angle is higher the higher we go
     float maxRotAngle = paramUnderwaterPlantRotationAngle * underwaterPulse;

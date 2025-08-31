@@ -328,7 +328,7 @@ struct SimulationParameters
 
     // Underwater current
 
-    static float constexpr UnderwaterCurrentSpaceVelocity = 2.0f * Pi<float> / 100.0f; // Period: 100m
+    static float constexpr UnderwaterCurrentSpaceVelocity = 2.0f * Pi<float> / 600.0f; // Period: 600m
 
     static float constexpr UnderwaterCurrentTimeVelocityZero = 2.0f * Pi<float> / 11.0f; // Period: 11s
 

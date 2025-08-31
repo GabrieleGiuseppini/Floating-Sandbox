@@ -1305,6 +1305,7 @@
 
 		- Tests:
 			- Wind on Rain (we've touched that)
+
 			- Density changes
 			- Ocean floor changes do propagate:
 				- Manual (tool)
@@ -1313,7 +1314,9 @@
 				- Ocean depth
 				- ...et all others
 			- OceanSurface is sampled
+
 			- Perf impact on Rendering
+				- Save main as "prev" first
 
 		- Changelist
 
