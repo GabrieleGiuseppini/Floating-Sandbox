@@ -400,11 +400,11 @@ WorldRenderContext::WorldRenderContext(
         // Describe vertex attributes
 
         glBindBuffer(GL_ARRAY_BUFFER, *mUnderwaterPlantStaticVBO);
-        static_assert(sizeof(UnderwaterPlantStaticVertex) == (4 + 3) * sizeof(float));
+        static_assert(sizeof(UnderwaterPlantStaticVertex) == (4 + 2 + 1 + 1) * sizeof(float));
         glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::UnderwaterPlantStatic1));
         glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::UnderwaterPlantStatic1), 4, GL_FLOAT, GL_FALSE, sizeof(UnderwaterPlantStaticVertex), (void *)0);
         glEnableVertexAttribArray(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::UnderwaterPlantStatic2));
-        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::UnderwaterPlantStatic2), 3, GL_FLOAT, GL_FALSE, sizeof(UnderwaterPlantStaticVertex), (void *)(4 * sizeof(float)));
+        glVertexAttribPointer(static_cast<GLuint>(GameShaderSets::VertexAttributeKind::UnderwaterPlantStatic2), 4, GL_FLOAT, GL_FALSE, sizeof(UnderwaterPlantStaticVertex), (void *)(4 * sizeof(float)));
         CheckOpenGLError();
 
         glBindBuffer(GL_ARRAY_BUFFER, *mUnderwaterPlantDynamicVBO);

@@ -5,12 +5,12 @@
 
 // Inputs
 in vec4 inUnderwaterPlantStatic1;  // Position, PlantSpaceCoords
-in vec3 inUnderwaterPlantStatic2; // TextureWidthInSpaceCoords, PersonalitySeed, AtlasTileIndex
+in vec4 inUnderwaterPlantStatic2; // TextureInSpaceCoords, PersonalitySeed, AtlasTileIndex
 in float inUnderwaterPlantDynamic1; // VertexWorldOceanRelativeY, negative underneath
 
 // Outputs
 out vec2 vertexPlantSpaceCoords;
-out float vertexTextureWidthInSpaceCoords;
+out vec2 vertexTextureInSpaceCoords;
 out float vertexPersonalitySeed;
 out float vertexAtlasTileIndex;
 out float vertexWorldOceanRelativeY;
@@ -22,9 +22,9 @@ uniform mat4 paramOrthoMatrix;
 void main()
 {
     vertexPlantSpaceCoords = inUnderwaterPlantStatic1.zw;
-    vertexTextureWidthInSpaceCoords = inUnderwaterPlantStatic2.x;
-    vertexPersonalitySeed = inUnderwaterPlantStatic2.y;
-    vertexAtlasTileIndex = inUnderwaterPlantStatic2.z;
+    vertexTextureInSpaceCoords = inUnderwaterPlantStatic2.xy;
+    vertexPersonalitySeed = inUnderwaterPlantStatic2.z;
+    vertexAtlasTileIndex = inUnderwaterPlantStatic2.w;
     //vertexWorldOceanRelativeY = inUnderwaterPlantDynamic1;
     vertexWorldOceanRelativeY = -100;
     vertexWorldX = inUnderwaterPlantStatic1.x;
@@ -38,7 +38,7 @@ void main()
 
 // Inputs from previous shader
 in vec2 vertexPlantSpaceCoords;
-in float vertexTextureWidthInSpaceCoords;
+in vec2 vertexTextureInSpaceCoords;
 in float vertexPersonalitySeed;
 in float vertexAtlasTileIndex;
 in float vertexWorldOceanRelativeY;
@@ -94,10 +94,10 @@ void main()
     //
     
     // Map rotated plant-space coords to virtual texture coords (0..1)
-    vec2 virtualTextureCoords = vec2(
-        (rotatedPlantSpacePosition.x / vertexTextureWidthInSpaceCoords) + 0.5,
-        rotatedPlantSpacePosition.y);
-    virtualTextureCoords = clamp(virtualTextureCoords, vec2(0.), vec2(1.0));    
+    vec2 virtualTextureCoords = 
+        rotatedPlantSpacePosition * vertexTextureInSpaceCoords 
+        + vec2(0.5, 0.0); // Center x
+    virtualTextureCoords = clamp(virtualTextureCoords, vec2(0.), vec2(1.0)); // Relying on transparent border in tiles
     
     // Map virtual texture coords to atlas coords
     vec2 textureCoords = mix(

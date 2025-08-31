@@ -544,49 +544,75 @@ public:
                 GameTextureDatabases::GenericLinearTextureDatabase::TextureGroupsType::UnderwaterPlant,
                 static_cast<TextureFrameIndex>(speciesIndex)));
 
-        // Calculate bounding box, assuming texture is fully rotated
         float const worldWidth = frame.FrameMetadata.WorldWidth * scale;
         float const worldHeight = frame.FrameMetadata.WorldHeight * scale;
-        float const maxSize = std::max(worldWidth, worldHeight * 2.0f);
-        float const leftX = centerBottomPosition.x - maxSize / 2.0f;
-        float const rightX = centerBottomPosition.x + maxSize / 2.0f;
 
-        // Plant space coords: height in 0.0...1.0, width in 0.0...A/R (so that rotation is homogeneous)
-        float const halfSpaceCoordsWidth = (maxSize / worldHeight) / 2.0f;
-        float const textureWidthInSpaceCoords = worldWidth / worldHeight;
+        // Calculate bounding box, assuming texture is fully rotated
+        float const maxWorldWidth = std::max(
+            worldWidth,
+            worldHeight * 2.0f); // When fully rotated
+        float const maxWorldHeight = std::max(
+            worldHeight,
+            worldWidth / 2.0f); // When fully rotated
+        float const leftX = centerBottomPosition.x - maxWorldWidth / 2.0f;
+        float const rightX = centerBottomPosition.x + maxWorldWidth / 2.0f;
+
+        // 1. Calculate plan space coordinates: all we need here are coordinates
+        // that respect the euclidean space, so that rotations work fine.
+        // We choose arbitrarily height=1.0 (at top of max quad), and adjust
+        // width according to max quad width
+        float const plantSpaceHeight = 1.0f;
+        float const plantSpaceWidth = maxWorldWidth / maxWorldHeight;
+
+        // 2. Calculate multiplicative factor for plan space coordinates, which
+        // transform their portion corresponding to the texture image
+        // into normalized texture coordinates (0..1, 0..1); parts outside of the 0..1
+        // rect (which are outside of the texture image) will be clamped by the shader
+        vec2f const textureInSpaceCoords = vec2f(
+            maxWorldWidth / worldWidth / plantSpaceWidth,
+            maxWorldHeight / worldHeight / plantSpaceHeight);
+
+        // TODOTEST
+        static size_t TODO = 242;
+        if (speciesIndex != TODO)
+        {
+            LogMessage("TODOTEST: Species=", speciesIndex, " world=", worldWidth, "x", worldHeight, " bounding=", maxWorldWidth, "x", maxWorldHeight,
+                " v=", plantSpaceWidth, "x", plantSpaceHeight, " textureInSpaceCoords=", textureInSpaceCoords);
+            TODO = speciesIndex;
+        }
 
         // Tile index: take into account that we add h-flipped versions
         float const atlasTileIndex = static_cast<float>(speciesIndex * 2) + (isSpecular ? 1 : 0);
 
         // Top-left
         mUnderwaterPlantStaticVertexBuffer.emplace_back(
-            vec2f(leftX, centerBottomPosition.y + worldHeight),
-            vec2f(-halfSpaceCoordsWidth, 1.0f),
-            textureWidthInSpaceCoords,
+            vec2f(leftX, centerBottomPosition.y + maxWorldHeight),
+            vec2f(-plantSpaceWidth / 2.0f, 1.0f),
+            textureInSpaceCoords,
             personalitySeed,
             atlasTileIndex);
 
         // Bottom-left
         mUnderwaterPlantStaticVertexBuffer.emplace_back(
             vec2f(leftX, centerBottomPosition.y),
-            vec2f(-halfSpaceCoordsWidth, 0.0f),
-            textureWidthInSpaceCoords,
+            vec2f(-plantSpaceWidth / 2.0f, 0.0f),
+            textureInSpaceCoords,
             personalitySeed,
             atlasTileIndex);
 
         // Top-right
         mUnderwaterPlantStaticVertexBuffer.emplace_back(
-            vec2f(rightX, centerBottomPosition.y + worldHeight),
-            vec2f(halfSpaceCoordsWidth, 1.0f),
-            textureWidthInSpaceCoords,
+            vec2f(rightX, centerBottomPosition.y + maxWorldHeight),
+            vec2f(plantSpaceWidth / 2.0f, 1.0f),
+            textureInSpaceCoords,
             personalitySeed,
             atlasTileIndex);
 
         // Bottom-right
         mUnderwaterPlantStaticVertexBuffer.emplace_back(
             vec2f(rightX, centerBottomPosition.y),
-            vec2f(halfSpaceCoordsWidth, 0.0f),
-            textureWidthInSpaceCoords,
+            vec2f(plantSpaceWidth / 2.0f, 0.0f),
+            textureInSpaceCoords,
             personalitySeed,
             atlasTileIndex);
     }
@@ -1063,19 +1089,19 @@ private:
     {
         vec2f position;
         vec2f plantSpaceCoords;
-        float textureWidthInSpaceCoords;
+        vec2f textureInSpaceCoords;
         float personalitySeed;
         float atlasTileIndex;
 
         UnderwaterPlantStaticVertex(
             vec2f _position,
             vec2f _plantSpaceCoords,
-            float _textureWidthInSpaceCoords,
+            vec2f _textureInSpaceCoords,
             float _personalitySeed,
             float _atlasTileIndex)
             : position(_position)
             , plantSpaceCoords(_plantSpaceCoords)
-            , textureWidthInSpaceCoords(_textureWidthInSpaceCoords)
+            , textureInSpaceCoords(_textureInSpaceCoords)
             , personalitySeed(_personalitySeed)
             , atlasTileIndex(_atlasTileIndex)
         {

@@ -1301,39 +1301,12 @@
 			+ WorldRenderContext init: duplicate species, flipping H
 			+ WorldRenderContext upload: store atlasTileIndex = 2 * species + isSpecular
 
-		- Fix texture truncation & bleeding
+		= Fix texture truncation & bleeding
 			+ FIX: negative scale
 			+ FIX: interpolate coords between bl and tr
 			+ FIX: calc'n of rated quad is wrong - width is 2*
-			- FIX: quad height must also take into account rotated width (for when w>h), and thus virtual Y max must also be calculated
-
-		- Finalize images
-			- Make 256
-			- Large transparent side border
-
-		- SettingsDialog
-			- Density
-			- SizeMultiplier
-
-		- Tests:
-			- Wind on Rain (we've touched that)
-
-			- Density changes
-			- Ocean floor changes do propagate:
-				- Manual (tool)
-				- Profile
-				- Bumpiness 
-				- Ocean depth
-				- ...et all others
-			- OceanSurface is sampled
-
-			- Perf impact on Rendering
-				- Save main as "prev" first
-				- Try mipmapped (copy folder for comparisons)
-
-		- Remove all logs
-
-		- Changelist
+			+ FIX: quad height must also take into account rotated width (for when w>h), and thus virtual Y max must also be calculated
+			- FIX: bounding box must take into account rotation; need *diagonals*
 
 		= Rendering (WorldRenderContext):
 			= Set of plant images (mipmapped generic texture)
@@ -1379,7 +1352,7 @@
 				+ Rendered behind last ocean layer			
 					+ So behind water
 				+ Make sure texture unit activated and texture handle is bound (should be the case already for both linear and mipmapped)
-			= Shader:
+			+ Shader:
 				+ Params:
 					+ Add all to ShaderSets
 
@@ -1440,159 +1413,40 @@
 					+ Redo vertex attribs
 					+ Copy code from shadertoy
 
-				- Effects to try:
-					- Cloud shadows
-				/*
 
-mat2 GetRotationMatrix(float angle)
-{
-    mat2 m;
-    m[0][0] = cos(angle); m[0][1] = -sin(angle);
-    m[1][0] = sin(angle); m[1][1] = cos(angle);
+		- Shader finalization:
+			- EffectiveAmbientLight, LampTool (, Moonlight?)
+				- Copy from Fishes
+			- Try cloud shadows
 
-    return m;
-}
+		- Finalize images
+			- Make 256
+			- Large transparent side border
 
-void mainImage( out vec4 fragColor, in vec2 fragCoord )
-{
-    vec3 bgColor = vec3(0.0, 0.0, 0.8);
-    
-    //
-    //     ----------  vy=1
-    //     |        |
-    //     |        |
-    //     ----------
-    // vx: -1   0   +1
-    //
-    
-    // Pretend height of texture image, in pixels; 0.1 screen from bottom, 0.1 screen from top
-    #define PRETEND_PLANT_TEXTURE_HEIGHT_FRACTION 0.8
-    float pretendPlantTextureHeight = iResolution.y * PRETEND_PLANT_TEXTURE_HEIGHT_FRACTION;
-    
-    // Pretend width of texture image, off height obeying aspect ratio
-    #define TEXTURE_WIDTH 530.0
-    #define TEXTURE_HEIGHT 872.0
-    #define TEXTURE_AR TEXTURE_WIDTH / TEXTURE_HEIGHT
-    float pretendPlanTextureWidth = pretendPlantTextureHeight * TEXTURE_AR;
-    
-    // Calculate plant space position based off texture size
-    vec2 plantSpacePosition = vec2(
-        (fragCoord.x -iResolution.x / 2.0)  / pretendPlantTextureHeight,
-        (fragCoord.y - (1.0 - PRETEND_PLANT_TEXTURE_HEIGHT_FRACTION) / 2.0 * iResolution.y) / pretendPlantTextureHeight);
-        
-    // Fraction of virtual space occupied by texture;
-    // longest dimension occupies 1.0, shortest occupies an A/R fraction of it.
-    // We do this to ensure coords that we'll rotate are homogeneous
-    //
-    // Here we know h > w
-    vec2 plantSpaceFractionForTexture = vec2(
-        pretendPlanTextureWidth / pretendPlantTextureHeight,
-        1.0);
-        
-    /*
-    if (plantSpacePosition.x < -1.0 || plantSpacePosition.x > 1.0 || plantSpacePosition.y > 1.0)
-    {
-        fragColor = vec4(bgColor, 1.0);
-        return;
-    }
-    */
-        
-    float vertexWorldX = 242.0 + plantSpacePosition.x * 1.242;
-    float underwaterDepth = 10.0; // Of bottom
-    float vertexWorldOceanRelativeY = -underwaterDepth + plantSpacePosition.y * 1.242; // Negative underneath
-    
-    // TODOTEST: depth by mouse
-    underwaterDepth = iMouse.y / pretendPlantTextureHeight;
-    vertexWorldOceanRelativeY = -underwaterDepth + plantSpacePosition.y * 1.242;
-    //vertexWorldOceanRelativeY = -underwaterDepth + plantSpacePosition.y;
-    
-    float instancePersonalitySeed = 0.3;
-    
-    
-    #define PI 3.1415926
-    
-    float paramUnderwaterCurrentSpaceVelocity = 2.0 * PI / 20.0;
-    float paramUnderwaterCurrentTimeVelocity = 2.0 * PI / 10.0;
-    float paramUnderwaterCurrentWindDirectionX = -1.0;
-    float paramUnderwaterCurrentWindMagnitude = 20.0;
-    //float paramUnderwaterCurrentMaxRotationAngle = (PI / 2.0) * paramUnderwaterCurrentWindMagnitude / 80.0;
-    float paramUnderwaterCurrentMaxRotationAngle = (PI / 2.0) * (0.05 + 0.0055*paramUnderwaterCurrentWindMagnitude - 0.000025*paramUnderwaterCurrentWindMagnitude*paramUnderwaterCurrentWindMagnitude);
-    float paramSimulationTime = iTime;
-    
-    vec2 paramAtlasTile1LeftBottomTextureCoordinates = vec2(0.0, 0.0); // Inclusive of dead-center
-    vec2 paramAtlasTile1Size = vec2(1.0, 1.0); // Inclusive of dead-center
-    
-    ///////////////////////////////////////////////////
-    
-    // Underwater pulse: -1..1
-    float underwaterPulse = sin(paramUnderwaterCurrentSpaceVelocity * vertexWorldX + paramUnderwaterCurrentTimeVelocity * paramSimulationTime + instancePersonalitySeed * PI/7.);
-    
-    // Rotation angle is higher the higher we go
-    float maxRotAngle = paramUnderwaterCurrentMaxRotationAngle * underwaterPulse;
-    float angle = maxRotAngle * plantSpacePosition.y;
+		- SettingsDialog
+			- Density
+			- SizeMultiplier
 
-    // X ripples
-    float xRipples = 0.011 * sin(30.37 * vertexWorldX + paramSimulationTime * 5.9) * step(vertexWorldOceanRelativeY, 0.0);
-    angle += paramUnderwaterCurrentMaxRotationAngle * xRipples;    
-    
-    // Plant flattening (stiffening)
-    angle = mix(
-        0.0,
-        //paramUnderwaterCurrentMaxRotationAngle * paramUnderwaterCurrentWindDirectionX,
-        angle,
-        1.0 + clamp(-vertexWorldOceanRelativeY, -1.0, 0.0)); // still angle on surface; upright above surface
-        //smoothstep(-1.0, 0.0, -worldOceanRelativeY)); // still angle on surface; upright above surface
-            
-    // Rotate around bottom
-    vec2 rotatedPlantSpacePosition = plantSpacePosition * GetRotationMatrix(angle);
-    
-    //
-    // Sample texture
-    //
-    
-    // Map rotated plant-space coords to virtual texture coords (0..1)
-    vec2 virtualTextureCoords = vec2(
-        (rotatedPlantSpacePosition.x / plantSpaceFractionForTexture.x) + 0.5,
-        rotatedPlantSpacePosition.y / plantSpaceFractionForTexture.y);
-    virtualTextureCoords = clamp(virtualTextureCoords, vec2(0.), vec2(1.0));    
-    
-    // Map virtual texture coords to atlas coords
-    vec2 textureCoords = 
-        paramAtlasTile1LeftBottomTextureCoordinates
-        + paramAtlasTile1Size * virtualTextureCoords;
-    
-    // Sample!
-    vec4 col = texture(iChannel0, textureCoords);
-    
-    /*
-    if (rotatedPlantSpacePosition.x >= -paramTextureWidthFractionHalf && rotatedPlantSpacePosition.x <= paramTextureWidthFractionHalf && 
-        rotatedPlantSpacePosition.y >= 0.0 && rotatedPlantSpacePosition.y <= paramTextureHeightFractionHalf * 2.)
-        col=vec4(1.0);
-    else
-        col=vec4(vec3(0.), 1.);
-    */
+		- Tests:
+			- Wind on Rain (we've touched that)
 
-    ///////////////////////////////////////////////////
+			- Density changes
+			- Ocean floor changes do propagate:
+				- Manual (tool)
+				- Profile
+				- Bumpiness 
+				- Ocean depth
+				- ...et all others
+			- OceanSurface is sampled
 
-    // Output to screen
-    fragColor = vec4(
-        mix(
-            bgColor,
-            col.rgb,
-            col.a * step(0.0, rotatedPlantSpacePosition.y)),
-        1.0);
-        
-    // Draw ocean line at worldOceanRelativeY = 0
-    float lineD = abs(vertexWorldOceanRelativeY);
-    float lineDepth = step(lineD, 0.0025);
-    fragColor = mix(
-        fragColor,
-        vec4(1.),
-        lineDepth);
-}
+			- Perf impact on Rendering
+				- Save main as "prev" first
+				- Try mipmapped (copy folder for comparisons)
 
+		- Remove all logs
 
-				*/
+		- Changelist
+
 
 
 	- "Soft" setting for ocean floors

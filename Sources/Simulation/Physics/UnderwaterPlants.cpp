@@ -171,8 +171,6 @@ void UnderwaterPlants::RepopulatePlants(
             nPlants = plantCount - mPlants.size();
         }
 
-        LogMessage("TODOTEST: Species ", iSpecies, ": ", nPlants);
-
         for (size_t p = 0; p < nPlants; ++p)
         {
             // Choose X
