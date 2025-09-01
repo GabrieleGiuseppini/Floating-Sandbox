@@ -6,14 +6,14 @@
 // Inputs
 in vec4 inUnderwaterPlantStatic1;  // Position, PlantSpaceCoords
 in vec4 inUnderwaterPlantStatic2; // TextureInSpaceCoords, PersonalitySeed, AtlasTileIndex
-in float inUnderwaterPlantDynamic1; // VertexWorldOceanRelativeY, negative underneath
+in float inUnderwaterPlantDynamic1; // VertexOceanY, negative underneath
 
 // Outputs
 out vec2 vertexPlantSpaceCoords;
 out vec2 vertexTextureInSpaceCoords;
 out float vertexPersonalitySeed;
 out float vertexAtlasTileIndex;
-out float vertexWorldOceanRelativeY;
+out float vertexOceanY;
 out vec2 vertexWorld;
 
 // Parameters
@@ -25,8 +25,7 @@ void main()
     vertexTextureInSpaceCoords = inUnderwaterPlantStatic2.xy;
     vertexPersonalitySeed = inUnderwaterPlantStatic2.z;
     vertexAtlasTileIndex = inUnderwaterPlantStatic2.w;
-    //vertexWorldOceanRelativeY = inUnderwaterPlantDynamic1;
-    vertexWorldOceanRelativeY = -100;
+    vertexOceanY = inUnderwaterPlantDynamic1;
     vertexWorld = inUnderwaterPlantStatic1.xy;
 
     gl_Position = paramOrthoMatrix * vec4(inUnderwaterPlantStatic1.xy, -1.0, 1.0);
@@ -45,7 +44,7 @@ in vec2 vertexPlantSpaceCoords;
 in vec2 vertexTextureInSpaceCoords;
 in float vertexPersonalitySeed;
 in float vertexAtlasTileIndex;
-in float vertexWorldOceanRelativeY;
+in float vertexOceanY;
 in vec2 vertexWorld;
 
 // The texture
@@ -75,6 +74,9 @@ void main()
 {
     int vertexAtlasTileIndexI = int(vertexAtlasTileIndex);
 
+    // Negative underneath
+    float vertexWorldOceanDepth = vertexWorld.y - vertexOceanY;
+
     // Underwater pulse: -1..1
     float underwaterPulse = sin(paramUnderwaterCurrentSpaceVelocity * vertexWorld.x + paramUnderwaterCurrentTimeVelocity * paramSimulationTime + vertexPersonalitySeed * PI / 6.);
     
@@ -83,14 +85,14 @@ void main()
     float angle = maxRotAngle * vertexPlantSpaceCoords.y;
 
     // X ripples
-    float xRipples = 0.011 * sin(30.37 * vertexWorld.x + paramSimulationTime * 5.9) * step(vertexWorldOceanRelativeY, 0.0);
+    float xRipples = 0.011 * sin(30.37 * vertexWorld.x + paramSimulationTime * 5.9) * step(vertexWorldOceanDepth, 0.0);
     angle += paramUnderwaterPlantRotationAngle * xRipples;    
     
     // Plant flattening (stiffening)
     angle = mix(
         0.0,
         angle,
-        1.0 + clamp(-vertexWorldOceanRelativeY, -1.0, 0.0)); // still angle on surface; upright above surface
+        1.0 + clamp(-vertexWorldOceanDepth, -1.0, 0.0)); // still angle on surface; upright above surface
             
     // Rotate around bottom
     vec2 rotatedPlantSpacePosition = vertexPlantSpaceCoords * GetRotationMatrix(angle);

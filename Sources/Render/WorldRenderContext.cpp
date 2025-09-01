@@ -932,6 +932,8 @@ void WorldRenderContext::UploadUnderwaterPlantStaticVertexAttributesStart(size_t
     mUnderwaterPlantStaticVertexBuffer.reset(4 * underwaterPlantCount);
     mIsUnderwaterPlantStaticVertexBufferDirty = true;
 
+    mUnderwaterPlantDynamicVertexBuffer.reset_full(4 * underwaterPlantCount);
+
     mGlobalRenderContext.GetElementIndices().EnsureSize(underwaterPlantCount);
 }
 

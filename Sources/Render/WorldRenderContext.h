@@ -606,6 +606,23 @@ public:
 
     void UploadUnderwaterPlantStaticVertexAttributesEnd();
 
+    inline void UploadUnderwaterPlantOceanDepths(std::vector<float> const & oceanDepths)
+    {
+        assert(oceanDepths.size() * 4 == mUnderwaterPlantDynamicVertexBuffer.size());
+
+        static_assert(sizeof(UnderwaterPlantDynamicVertex) == sizeof(float));
+
+        float * restrict tgt = reinterpret_cast<float *>(mUnderwaterPlantDynamicVertexBuffer.data());
+
+        for (size_t i = 0; i < oceanDepths.size(); ++i)
+        {
+            *(tgt++) = oceanDepths[i];
+            *(tgt++) = oceanDepths[i];
+            *(tgt++) = oceanDepths[i];
+            *(tgt++) = oceanDepths[i];
+        }
+    }
+
     inline void UploadUnderwaterPlantRotationAngle(float rotationAngle)
     {
         if (rotationAngle != mCurrentUnderwaterPlantsRotationAngle)
@@ -1097,11 +1114,11 @@ private:
 
     struct UnderwaterPlantDynamicVertex
     {
-        float worldOceanRelativeY; // negative underneath
+        float oceanHeight; // Unadulterated - i.e. positive up, 0 at 0
 
         UnderwaterPlantDynamicVertex(
-            float _worldOceanRelativeY)
-            : worldOceanRelativeY(_worldOceanRelativeY)
+            float _oceanHeight)
+            : oceanHeight(_oceanHeight)
         {
         }
     };

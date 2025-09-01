@@ -1096,6 +1096,12 @@ public:
         mWorldRenderContext->UploadUnderwaterPlantStaticVertexAttributesEnd();
     }
 
+    template<typename TOceanDepths>
+    inline void UploadUnderwaterPlantOceanDepths(TOceanDepths const & oceanDepths)
+    {
+        mWorldRenderContext->UploadUnderwaterPlantOceanDepths(oceanDepths);
+    }
+
     inline void UploadUnderwaterPlantRotationAngle(float rotationAngle)
     {
         mWorldRenderContext->UploadUnderwaterPlantRotationAngle(rotationAngle);

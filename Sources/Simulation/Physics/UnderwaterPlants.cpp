@@ -68,16 +68,16 @@ void UnderwaterPlants::Update(
     }
 
     assert(mOceanSurfaceCoordinatesProxies.size() == mPlants.size());
-    assert(mUnderwaterDepths.size() == mPlants.size());
+    assert(mOceanDepths.size() == mPlants.size());
 
     //
-    // Update underwater depths
+    // Update ocean depths
     //
 
     size_t const n = mPlants.size();
     for (size_t i = 0; i < n; ++i)
     {
-        mUnderwaterDepths[i] = oceanSurface.GetHeightAt(mOceanSurfaceCoordinatesProxies[i]);
+        mOceanDepths[i] = oceanSurface.GetHeightAt(mOceanSurfaceCoordinatesProxies[i]);
     }
 
     //
@@ -119,6 +119,8 @@ void UnderwaterPlants::Upload(RenderContext & renderContext)
         mArePlantsDirtyForRendering = false;
     }
 
+    renderContext.UploadUnderwaterPlantOceanDepths(mOceanDepths);
+
     if (mIsCurrentRotationAngleDirtyForRendering)
     {
         renderContext.UploadUnderwaterPlantRotationAngle(mCurrentRotationAngle);
@@ -136,7 +138,7 @@ void UnderwaterPlants::RepopulatePlants(
 {
     mPlants.clear();
     mOceanSurfaceCoordinatesProxies.clear();
-    mUnderwaterDepths.clear();
+    mOceanDepths.clear();
 
     //
     // Calculate plant count
@@ -155,7 +157,7 @@ void UnderwaterPlants::RepopulatePlants(
 
     mPlants.reserve(plantCount);
     mOceanSurfaceCoordinatesProxies.reserve(plantCount);
-    mUnderwaterDepths.reserve(plantCount);
+    mOceanDepths.reserve(plantCount);
 
     //
     // Populate
@@ -203,13 +205,13 @@ void UnderwaterPlants::RepopulatePlants(
             mOceanSurfaceCoordinatesProxies.emplace_back(oceanSurface.GetCoordinatesProxyAt(x));
 
             // Make room for underwater depths
-            mUnderwaterDepths.emplace_back(0.0f);
+            mOceanDepths.emplace_back(0.0f);
         }
     }
 
     assert(mPlants.size() == plantCount);
     assert(mOceanSurfaceCoordinatesProxies.size() == plantCount);
-    assert(mUnderwaterDepths.size() == plantCount);
+    assert(mOceanDepths.size() == plantCount);
 
     // Populate bottom Y's
     RecalculateBottomYs(oceanFloor);

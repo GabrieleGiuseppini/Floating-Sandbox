@@ -86,7 +86,7 @@ private:
 
     std::vector<OceanSurface::CoordinatesProxy> mOceanSurfaceCoordinatesProxies;
 
-    std::vector<float> mUnderwaterDepths;
+    std::vector<float> mOceanDepths;
 
     //
     // Calculated values

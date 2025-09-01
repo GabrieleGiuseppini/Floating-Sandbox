@@ -1260,8 +1260,7 @@
 			! 1.0 * sin(spatial_velocity * x + time_velocity * t_sim)
 				! spatial_velocity, time_velocity from SimulationParameters
 				! time_velocity also depends on wind magnitude
-
-		= Physics:
+		+ Physics:
 			+ UnderwaterPlants container
 			+ Density parameter for generation
 				+ Default: 200 Max: 1000
@@ -1288,12 +1287,14 @@
 			+ SizeMultiplier
 				+ SimulationParam
 				+ Change detection
-			= RenderUpload:
+			+ RenderUpload:
 				+ if mArePlantsDirtyForRendering (set at population changes and at ocean floor changes => y)
 					+ Upload x, y, scale, whatever proxy for texture coords
 					+ mArePlantsDirtyForRendering = false
-				- Upload underwaterDepth
-					- As buffer, and RenderContext duplicates 4-way
+				+ Upload oceanHeight (unadulterated, i.e. positive up, 0 at 0)
+					+ Rename @ UnderwaterPlants and WorldRenderContext
+					+ As buffer, and RenderContext duplicates 4-way
+				+ Shader: calculate relative depth (via world Y)
 
 		+ Specularity: at texture geometry:
 			+ UnderwaterPlants: get boolean
@@ -1337,11 +1338,11 @@
 				+ TextureWidthInPlantSpace: which part of plant space width is texture width
 					+ Redo ShaderToy shader
 			+ UploadUnderwaterPlantStaticVertexAttributesEnd
-			- UploadUnderwaterPlantDynamicInstanceAttributes(std::vector const &)	
-				- assert size consistent with mUnderwaterPlantStaticVertexAttributesBuffer
-				- Copy in bounded vector, keeping size max
-				- Copy times 4
-				- mIsUnderwaterPlantsDynamicInstanceAttributesBufferDirty = true;
+			= UploadUnderwaterPlantDynamicInstanceAttributes(std::vector const &)	
+				+ assert size consistent with mUnderwaterPlantStaticVertexAttributesBuffer
+				+ Copy in bounded vector, keeping size max
+				+ Copy times 4
+				- Check disassembly
 			+ UploadWind:
 				+ Takes current (whatever) + basis
 				+ Stores also basis and marks it as dirty IFF different
