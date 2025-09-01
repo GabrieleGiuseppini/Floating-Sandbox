@@ -14,7 +14,7 @@ out vec2 vertexTextureInSpaceCoords;
 out float vertexPersonalitySeed;
 out float vertexAtlasTileIndex;
 out float vertexWorldOceanRelativeY;
-out float vertexWorldX;
+out vec2 vertexWorld;
 
 // Parameters
 uniform mat4 paramOrthoMatrix;
@@ -27,7 +27,7 @@ void main()
     vertexAtlasTileIndex = inUnderwaterPlantStatic2.w;
     //vertexWorldOceanRelativeY = inUnderwaterPlantDynamic1;
     vertexWorldOceanRelativeY = -100;
-    vertexWorldX = inUnderwaterPlantStatic1.x;
+    vertexWorld = inUnderwaterPlantStatic1.xy;
 
     gl_Position = paramOrthoMatrix * vec4(inUnderwaterPlantStatic1.xy, -1.0, 1.0);
 }
@@ -36,13 +36,17 @@ void main()
 
 #define in varying
 
+#include "common.glslinc"
+#include "lamp_tool.glslinc"
+#include "ocean.glslinc"
+
 // Inputs from previous shader
 in vec2 vertexPlantSpaceCoords;
 in vec2 vertexTextureInSpaceCoords;
 in float vertexPersonalitySeed;
 in float vertexAtlasTileIndex;
 in float vertexWorldOceanRelativeY;
-in float vertexWorldX;
+in vec2 vertexWorld;
 
 // The texture
 uniform vec4 paramAtlasTileGeometryIndexed[4 * 2]; // Keep size with # of underwater plant textures
@@ -53,6 +57,10 @@ uniform float paramSimulationTime;
 uniform float paramUnderwaterPlantRotationAngle;
 uniform float paramUnderwaterCurrentSpaceVelocity;
 uniform float paramUnderwaterCurrentTimeVelocity;
+
+uniform float paramEffectiveAmbientLightIntensity;
+uniform float paramOceanDepthDarkeningRate;
+
 
 mat2 GetRotationMatrix(float angle)
 {
@@ -65,19 +73,17 @@ mat2 GetRotationMatrix(float angle)
 
 void main()
 {
-    #define PI 3.1415926535
-
     int vertexAtlasTileIndexI = int(vertexAtlasTileIndex);
 
     // Underwater pulse: -1..1
-    float underwaterPulse = sin(paramUnderwaterCurrentSpaceVelocity * vertexWorldX + paramUnderwaterCurrentTimeVelocity * paramSimulationTime + vertexPersonalitySeed * PI / 6.);
+    float underwaterPulse = sin(paramUnderwaterCurrentSpaceVelocity * vertexWorld.x + paramUnderwaterCurrentTimeVelocity * paramSimulationTime + vertexPersonalitySeed * PI / 6.);
     
     // Rotation angle is higher the higher we go
     float maxRotAngle = paramUnderwaterPlantRotationAngle * underwaterPulse;
     float angle = maxRotAngle * vertexPlantSpaceCoords.y;
 
     // X ripples
-    float xRipples = 0.011 * sin(30.37 * vertexWorldX + paramSimulationTime * 5.9) * step(vertexWorldOceanRelativeY, 0.0);
+    float xRipples = 0.011 * sin(30.37 * vertexWorld.x + paramSimulationTime * 5.9) * step(vertexWorldOceanRelativeY, 0.0);
     angle += paramUnderwaterPlantRotationAngle * xRipples;    
     
     // Plant flattening (stiffening)
@@ -106,10 +112,26 @@ void main()
             virtualTextureCoords);
     
     // Sample!
-    gl_FragColor = texture2D(paramGenericLinearTexturesAtlasTexture, textureCoords);
+    vec4 underwaterPlantSample = texture2D(paramGenericLinearTexturesAtlasTexture, textureCoords);
 
-    // TODOTEST
+    //////////////////////////////////////
 
-    //vec2 textureCoords = paramAtlasTileGeometryIndexed[vertexSpeciesIndexI].xy + vertexTextureCoords * paramAtlasTileGeometryIndexed[vertexSpeciesIndexI].zw;
-    //gl_FragColor = texture2D(paramGenericLinearTexturesAtlasTexture, textureCoords);
+    // Calculate depth darkening
+    float darkeningFactor = CalculateOceanDepthDarkeningFactor(
+        vertexWorld.y,
+        paramOceanDepthDarkeningRate);
+
+    // Calculate lamp tool intensity
+    float lampToolIntensity = CalculateLampToolIntensity(gl_FragCoord.xy);
+
+    // Apply depth-darkening
+    underwaterPlantSample.xyz = mix(
+        underwaterPlantSample.xyz,
+        vec3(0.),
+        darkeningFactor * (1.0 - lampToolIntensity));
+
+    // Apply ambient light
+    underwaterPlantSample.xyz *= max(paramEffectiveAmbientLightIntensity, lampToolIntensity);
+
+    gl_FragColor = underwaterPlantSample;
 }

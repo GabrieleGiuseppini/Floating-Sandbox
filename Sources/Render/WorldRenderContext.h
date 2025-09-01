@@ -547,47 +547,34 @@ public:
         float const worldWidth = frame.FrameMetadata.WorldWidth * scale;
         float const worldHeight = frame.FrameMetadata.WorldHeight * scale;
 
-        // Calculate bounding box, assuming texture is fully rotated
-        float const maxWorldWidth = std::max(
-            worldWidth,
-            worldHeight * 2.0f); // When fully rotated
-        float const maxWorldHeight = std::max(
-            worldHeight,
-            worldWidth / 2.0f); // When fully rotated
-        float const leftX = centerBottomPosition.x - maxWorldWidth / 2.0f;
-        float const rightX = centerBottomPosition.x + maxWorldWidth / 2.0f;
+        // Calculate bounding box, as box contained in circle whose radius is the diagonal of the frame
+        float const diagonalLength = std::sqrtf((worldWidth / 2.0f) * (worldWidth / 2.0f) + worldHeight * worldHeight);
+        FloatSize const boundingBoxSize = FloatSize(diagonalLength * 2.0f, diagonalLength);
+        float const leftX = centerBottomPosition.x - boundingBoxSize.width / 2.0f;
+        float const rightX = centerBottomPosition.x + boundingBoxSize.width / 2.0f;
 
-        // 1. Calculate plan space coordinates: all we need here are coordinates
+        // 1. Calculate plant space coordinates: all we need here are coordinates
         // that respect the euclidean space, so that rotations work fine.
         // We choose arbitrarily height=1.0 (at top of max quad), and adjust
-        // width according to max quad width
+        // width according to max quad width - that is, 2.0
+        float const plantSpaceWidth = 2.0f;
         float const plantSpaceHeight = 1.0f;
-        float const plantSpaceWidth = maxWorldWidth / maxWorldHeight;
 
         // 2. Calculate multiplicative factor for plan space coordinates, which
         // transform their portion corresponding to the texture image
         // into normalized texture coordinates (0..1, 0..1); parts outside of the 0..1
         // rect (which are outside of the texture image) will be clamped by the shader
         vec2f const textureInSpaceCoords = vec2f(
-            maxWorldWidth / worldWidth / plantSpaceWidth,
-            maxWorldHeight / worldHeight / plantSpaceHeight);
-
-        // TODOTEST
-        static size_t TODO = 242;
-        if (speciesIndex != TODO)
-        {
-            LogMessage("TODOTEST: Species=", speciesIndex, " world=", worldWidth, "x", worldHeight, " bounding=", maxWorldWidth, "x", maxWorldHeight,
-                " v=", plantSpaceWidth, "x", plantSpaceHeight, " textureInSpaceCoords=", textureInSpaceCoords);
-            TODO = speciesIndex;
-        }
+            boundingBoxSize.width / worldWidth / plantSpaceWidth,
+            boundingBoxSize.height / worldHeight / plantSpaceHeight);
 
         // Tile index: take into account that we add h-flipped versions
         float const atlasTileIndex = static_cast<float>(speciesIndex * 2) + (isSpecular ? 1 : 0);
 
         // Top-left
         mUnderwaterPlantStaticVertexBuffer.emplace_back(
-            vec2f(leftX, centerBottomPosition.y + maxWorldHeight),
-            vec2f(-plantSpaceWidth / 2.0f, 1.0f),
+            vec2f(leftX, centerBottomPosition.y + boundingBoxSize.height),
+            vec2f(-plantSpaceWidth / 2.0f, plantSpaceHeight),
             textureInSpaceCoords,
             personalitySeed,
             atlasTileIndex);
@@ -602,8 +589,8 @@ public:
 
         // Top-right
         mUnderwaterPlantStaticVertexBuffer.emplace_back(
-            vec2f(rightX, centerBottomPosition.y + maxWorldHeight),
-            vec2f(plantSpaceWidth / 2.0f, 1.0f),
+            vec2f(rightX, centerBottomPosition.y + boundingBoxSize.height),
+            vec2f(plantSpaceWidth / 2.0f, plantSpaceHeight),
             textureInSpaceCoords,
             personalitySeed,
             atlasTileIndex);

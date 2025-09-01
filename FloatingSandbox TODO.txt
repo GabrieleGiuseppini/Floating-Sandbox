@@ -1301,12 +1301,15 @@
 			+ WorldRenderContext init: duplicate species, flipping H
 			+ WorldRenderContext upload: store atlasTileIndex = 2 * species + isSpecular
 
-		= Fix texture truncation & bleeding
+		+ Fix texture truncation & bleeding
 			+ FIX: negative scale
 			+ FIX: interpolate coords between bl and tr
 			+ FIX: calc'n of rated quad is wrong - width is 2*
 			+ FIX: quad height must also take into account rotated width (for when w>h), and thus virtual Y max must also be calculated
-			- FIX: bounding box must take into account rotation; need *diagonals*
+			+ FIX: bounding box must take into account rotation; need *diagonals*
+
+		- Sort by X for perf
+		+ static_assert SimParms::MaxWorldEtc for detecting becoming dynamic
 
 		= Rendering (WorldRenderContext):
 			= Set of plant images (mipmapped generic texture)
@@ -1414,10 +1417,13 @@
 					+ Copy code from shadertoy
 
 
-		- Shader finalization:
-			- EffectiveAmbientLight, LampTool (, Moonlight?)
-				- Copy from Fishes
+		= Shader finalization:
+			+ EffectiveAmbientLight
+			+ LampTool
+			+ OceanDarkeningRate
+				+ Copy from Fishes
 			- Try cloud shadows
+			- Retry flattening
 
 		- Finalize images
 			- Make 256

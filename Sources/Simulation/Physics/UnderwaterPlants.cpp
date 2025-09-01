@@ -13,6 +13,10 @@
 
 namespace Physics {
 
+// Canary: if one day world size becomes a runtime property, this implementation
+// will have to change
+static_assert(SimulationParameters::MaxWorldWidth > 0.0f);
+
 UnderwaterPlants::UnderwaterPlants(size_t speciesCount)
     : mSpeciesCount(speciesCount)
     , mArePlantsDirtyForRendering(true)
