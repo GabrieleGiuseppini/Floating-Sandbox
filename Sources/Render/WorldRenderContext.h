@@ -610,16 +610,21 @@ public:
     {
         assert(oceanDepths.size() * 4 == mUnderwaterPlantDynamicVertexBuffer.size());
 
+        //
+        // Super-vectorized (4*4) on VS
+        //
+
         static_assert(sizeof(UnderwaterPlantDynamicVertex) == sizeof(float));
 
         float * restrict tgt = reinterpret_cast<float *>(mUnderwaterPlantDynamicVertexBuffer.data());
-
-        for (size_t i = 0; i < oceanDepths.size(); ++i)
+        size_t const nSrc = oceanDepths.size();
+        for (size_t i = 0; i < nSrc; ++i)
         {
-            *(tgt++) = oceanDepths[i];
-            *(tgt++) = oceanDepths[i];
-            *(tgt++) = oceanDepths[i];
-            *(tgt++) = oceanDepths[i];
+            float const d = oceanDepths[i];
+            *(tgt++) = d;
+            *(tgt++) = d;
+            *(tgt++) = d;
+            *(tgt++) = d;
         }
     }
 

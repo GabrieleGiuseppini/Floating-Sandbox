@@ -1309,10 +1309,9 @@
 			+ FIX: quad height must also take into account rotated width (for when w>h), and thus virtual Y max must also be calculated
 			+ FIX: bounding box must take into account rotation; need *diagonals*
 
-		- Sort by X for perf
 		+ static_assert SimParms::MaxWorldEtc for detecting becoming dynamic
 
-		= Rendering (WorldRenderContext):
+		+ Rendering (WorldRenderContext):
 			= Set of plant images (mipmapped generic texture)
 				- https://www.istockphoto.com/nl/search/2/image-film?phrase=acquatic%20plants%20transparent
 				= Try both linear and mipmapped
@@ -1338,11 +1337,11 @@
 				+ TextureWidthInPlantSpace: which part of plant space width is texture width
 					+ Redo ShaderToy shader
 			+ UploadUnderwaterPlantStaticVertexAttributesEnd
-			= UploadUnderwaterPlantDynamicInstanceAttributes(std::vector const &)	
+			+ UploadUnderwaterPlantDynamicInstanceAttributes(std::vector const &)	
 				+ assert size consistent with mUnderwaterPlantStaticVertexAttributesBuffer
 				+ Copy in bounded vector, keeping size max
 				+ Copy times 4
-				- Check disassembly
+				+ Check disassembly
 			+ UploadWind:
 				+ Takes current (whatever) + basis
 				+ Stores also basis and marks it as dirty IFF different
@@ -1418,13 +1417,7 @@
 					+ Copy code from shadertoy
 
 
-		= Shader finalization:
-			+ EffectiveAmbientLight
-			+ LampTool
-			+ OceanDarkeningRate
-				+ Copy from Fishes
-			- Try cloud shadows
-			- Retry flattening
+		- Sort by X for perf
 
 		- Finalize images
 			- Make 256
@@ -1438,7 +1431,7 @@
 			- Wind on Rain (we've touched that)
 
 			- Density changes
-			- Ocean floor changes do propagate:
+			- Ocean floor changes do propagate: (also verify we upload here and only here, via existing logs)
 				- Manual (tool)
 				- Profile
 				- Bumpiness 
@@ -1450,7 +1443,16 @@
 				- Save main as "prev" first
 				- Try mipmapped (copy folder for comparisons)
 
+		= Shader finalization:
+			+ EffectiveAmbientLight
+			+ LampTool
+			+ OceanDarkeningRate
+				+ Copy from Fishes
+			- Try cloud shadows
+			- Retry flattening
+
 		- Remove all logs
+			- WorldRenderContext.cpp
 
 		- Changelist
 

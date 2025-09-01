@@ -135,12 +135,7 @@ public:
 
         // Integral part
         register_int const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
-
-        // Fractional part within sample index and the next sample index
-        float const sampleIndexDx = sampleIndexF - sampleIndexI;
-
         assert(sampleIndexI >= 0 && sampleIndexI < SamplesCount);
-        assert(sampleIndexDx >= 0.0f && sampleIndexDx < 1.0f);
 
         return std::min(
             mSamples[sampleIndexI].SampleValue,
