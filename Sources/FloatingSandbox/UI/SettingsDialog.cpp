@@ -187,15 +187,15 @@ SettingsDialog::SettingsDialog(
     }
 
     //
-    // Lights, Electricals, Fishes, NPCs
+    // Lights, Electricals, Marine Life
     //
 
     {
         wxPanel * panel = new wxPanel(notebook);
 
-        PopulateLightsElectricalFishesNpcsPanel(panel);
+        PopulateLightsElectricalMarineLifePanel(panel);
 
-        notebook->AddPage(panel, _("Lights, Electricals, Fishes, NPCs"));
+        notebook->AddPage(panel, _("Lights, Electricals, Marine Life"));
     }
 
     //
@@ -2632,7 +2632,7 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
     panel->SetSizer(gridSizer);
 }
 
-void SettingsDialog::PopulateLightsElectricalFishesNpcsPanel(wxPanel * panel)
+void SettingsDialog::PopulateLightsElectricalMarineLifePanel(wxPanel * panel)
 {
     wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
 
@@ -2781,7 +2781,7 @@ void SettingsDialog::PopulateLightsElectricalFishesNpcsPanel(wxPanel * panel)
         gridSizer->Add(
             boxSizer,
             wxGBPosition(0, 0),
-            wxGBSpan(1, 1),
+            wxGBSpan(1, 4),
             wxEXPAND | wxALL,
             CellBorderOuter);
     }
@@ -2860,8 +2860,87 @@ void SettingsDialog::PopulateLightsElectricalFishesNpcsPanel(wxPanel * panel)
 
         gridSizer->Add(
             lightsBoxSizer,
-            wxGBPosition(0, 1),
-            wxGBSpan(1, 1),
+            wxGBPosition(0, 4),
+            wxGBSpan(1, 2),
+            wxEXPAND | wxALL,
+            CellBorderOuter);
+    }
+
+    //
+    // Underwater plants
+    //
+
+    {
+        wxStaticBoxSizer * underwaterPlantsBoxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Marine Plants"));
+
+        {
+            wxGridBagSizer * underwaterPlantsSizer = new wxGridBagSizer(0, 0);
+
+            // Density
+            {
+                mUnderwaterPlantsDensitySlider = new SliderControl<float>(
+                    underwaterPlantsBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Density"),
+                    _("The density of plants (Km^2)."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::UnderwaterPlantsDensity, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions.GetMinUnderwaterPlantsDensity(),
+                        mGameControllerSettingsOptions.GetMaxUnderwaterPlantsDensity()));
+
+                underwaterPlantsSizer->Add(
+                    mUnderwaterPlantsDensitySlider,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Size multiplier
+            {
+                mUnderwaterPlantSizeMultiplierSlider = new SliderControl<float>(
+                    underwaterPlantsBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Size Multiplier"),
+                    _("Magnifies or minimizes the physical size of plants."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::UnderwaterPlantSizeMultiplier, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions.GetMinUnderwaterPlantSizeMultiplier(),
+                        mGameControllerSettingsOptions.GetMaxUnderwaterPlantSizeMultiplier()));
+
+                underwaterPlantsSizer->Add(
+                    mUnderwaterPlantSizeMultiplierSlider,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            WxHelpers::MakeAllColumnsExpandable(underwaterPlantsSizer);
+
+            underwaterPlantsBoxSizer->Add(
+                underwaterPlantsSizer,
+                1,
+                wxEXPAND | wxALL,
+                StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            underwaterPlantsBoxSizer,
+            wxGBPosition(0, 6),
+            wxGBSpan(1, 2),
             wxEXPAND | wxALL,
             CellBorderOuter);
     }
@@ -3017,7 +3096,7 @@ void SettingsDialog::PopulateLightsElectricalFishesNpcsPanel(wxPanel * panel)
         gridSizer->Add(
             boxSizer,
             wxGBPosition(1, 0),
-            wxGBSpan(1, 1),
+            wxGBSpan(1, 4),
             wxEXPAND | wxALL,
             CellBorderOuter);
     }
@@ -3122,8 +3201,8 @@ void SettingsDialog::PopulateLightsElectricalFishesNpcsPanel(wxPanel * panel)
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(1, 1),
-            wxGBSpan(1, 1),
+            wxGBPosition(1, 4),
+            wxGBSpan(1, 4),
             wxEXPAND | wxALL,
             CellBorderOuter);
     }
@@ -6304,7 +6383,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mDayLightCycleDurationSlider->Enable(settings.GetValue<bool>(GameSettings::DoDayLightCycle));
 
     //
-    // Lights, Electricals, Fishes, NPCs
+    // Lights, Electricals, Marine Life
     //
 
     mLuminiscenceSlider->SetValue(settings.GetValue<float>(GameSettings::LuminiscenceAdjustment));
@@ -6323,6 +6402,8 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mNpcFrictionAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::NpcFrictionAdjustment));
     mNpcSizeMultiplierSlider->SetValue(settings.GetValue<float>(GameSettings::NpcSizeMultiplier));
     mNpcPassiveBlastRadiusAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::NpcPassiveBlastRadiusAdjustment));
+    mUnderwaterPlantsDensitySlider->SetValue(settings.GetValue<float>(GameSettings::UnderwaterPlantsDensity));
+    mUnderwaterPlantSizeMultiplierSlider->SetValue(settings.GetValue<float>(GameSettings::UnderwaterPlantSizeMultiplier));
 
     //
     // Destructive Tools

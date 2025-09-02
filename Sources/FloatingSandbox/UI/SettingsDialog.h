@@ -131,7 +131,7 @@ private:
     wxCheckBox * mDoDayLightCycleCheckBox;
     SliderControl<std::chrono::minutes::rep> * mDayLightCycleDurationSlider;
 
-    // Lights, Electricals, Fishes, NPCs
+    // Lights, Electricals, Marine Life
     SliderControl<float> * mLuminiscenceSlider;
     SliderControl<float> * mLightSpreadSlider;
     SliderControl<float> * mEngineThrustAdjustmentSlider;
@@ -147,6 +147,8 @@ private:
     SliderControl<float> * mNpcFrictionAdjustmentSlider;
     SliderControl<float> * mNpcSizeMultiplierSlider;
     SliderControl<float> * mNpcPassiveBlastRadiusAdjustmentSlider;
+    SliderControl<float> * mUnderwaterPlantsDensitySlider;
+    SliderControl<float> * mUnderwaterPlantSizeMultiplierSlider;
 
     // Destructive Tools
     SliderControl<float> * mDestroyRadiusSlider;
@@ -271,7 +273,7 @@ private:
     void PopulateWaterAndOceanPanel(wxPanel * panel);
     void PopulateWindAndWavesPanel(wxPanel * panel);
     void PopulateAirAndSkyPanel(wxPanel * panel);
-    void PopulateLightsElectricalFishesNpcsPanel(wxPanel * panel);
+    void PopulateLightsElectricalMarineLifePanel(wxPanel * panel);
     void PopulateDestructiveToolsPanel(wxPanel * panel, GameAssetManager const & gameAssetManager);
     void PopulateOtherToolsPanel(wxPanel * panel, GameAssetManager const & gameAssetManager);
     void PopulateRenderingPanel(wxPanel * panel);

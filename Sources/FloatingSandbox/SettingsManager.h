@@ -90,6 +90,10 @@ enum class GameSettings : size_t
     DoFishShoaling,
     FishShoalRadiusAdjustment,
 
+    // Underwater plants
+    UnderwaterPlantsDensity,
+    UnderwaterPlantSizeMultiplier,
+
     // NPCs
     NpcFrictionAdjustment,
     NpcSizeMultiplier,

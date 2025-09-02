@@ -1417,15 +1417,28 @@
 					+ Copy code from shadertoy
 
 
-		- Sort by X for perf
+		+ Sort by X for perf
+			+ Change Populate():
+				+ Populate only plants
+					+ Calculate bottom Y using helper
+					+ Calculate scales using helper
+				+ Sort plans
+				+ Loop over plants:
+					+ Calculate proxy
+					+ Make room for ocean depths
+				+ Done
+				
 
 		- Finalize images
 			- Make 256
 			- Large transparent side border
 
-		- SettingsDialog
-			- Density
-			- SizeMultiplier
+		+ SettingsDialog
+			+ SettingsManager
+			+ Density
+			+ SizeMultiplier
+
+		- TODO: how to adjust ranges of settings to prevent a humongous rendering time?
 
 		- Tests:
 			- Wind on Rain (we've touched that)
@@ -1448,7 +1461,6 @@
 			+ LampTool
 			+ OceanDarkeningRate
 				+ Copy from Fishes
-			- Try cloud shadows
 			- Retry flattening
 
 		- Remove all logs

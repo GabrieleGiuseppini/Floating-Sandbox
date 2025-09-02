@@ -9,6 +9,7 @@
 #include <Core/Log.h>
 #include <Core/SysSpecifics.h>
 
+#include <algorithm>
 #include <cassert>
 
 namespace Physics {
@@ -160,7 +161,7 @@ void UnderwaterPlants::RepopulatePlants(
     mOceanDepths.reserve(plantCount);
 
     //
-    // Populate
+    // 1. Populate plants
     //
 
     for (size_t iSpecies = 0; iSpecies < mSpeciesCount; ++iSpecies)
@@ -196,44 +197,67 @@ void UnderwaterPlants::RepopulatePlants(
             // Create plant
             mPlants.emplace_back(
                 x,
+                CalculateBottomY(x, oceanFloor),
                 iSpecies,
                 basisScale,
+                CalculateScale(basisScale, simulationParameters.UnderwaterPlantSizeMultiplier),
                 personalitySeed,
                 (mPlants.size() % 2) == 1); // IsSpecular
-
-            // Calculate ocean surface proxy
-            mOceanSurfaceCoordinatesProxies.emplace_back(oceanSurface.GetCoordinatesProxyAt(x));
-
-            // Make room for underwater depths
-            mOceanDepths.emplace_back(0.0f);
         }
     }
 
     assert(mPlants.size() == plantCount);
+
+    // Sort plants so to achieve better cache locality when calculating ocean depths
+    std::sort(
+        mPlants.begin(),
+        mPlants.end(),
+        [](Plant const & p1, Plant const & p2) -> bool
+        {
+            return p1.CenterX < p2.CenterX;
+        });
+
+    //
+    // 2. Populate auxiliary data structures
+    //
+
+    for (Plant const & plant : mPlants)
+    {
+        // Calculate ocean surface proxy
+        mOceanSurfaceCoordinatesProxies.emplace_back(oceanSurface.GetCoordinatesProxyAt(plant.CenterX));
+
+        // Make room for underwater depths
+        mOceanDepths.emplace_back(0.0f);
+    }
+
     assert(mOceanSurfaceCoordinatesProxies.size() == plantCount);
     assert(mOceanDepths.size() == plantCount);
-
-    // Populate bottom Y's
-    RecalculateBottomYs(oceanFloor);
-
-    // Calculate sizes
-    RecalculateScales(simulationParameters.UnderwaterPlantSizeMultiplier);
 }
 
 void UnderwaterPlants::RecalculateBottomYs(OceanFloor const & oceanFloor)
 {
     for (auto & plant : mPlants)
     {
-        plant.BottomY = oceanFloor.GetMinHeightAt(plant.CenterX) - 0.2f; // Cover roots underneath semi-transparent ocean floor
+        plant.BottomY = CalculateBottomY(plant.CenterX, oceanFloor);
     }
+}
+
+float UnderwaterPlants::CalculateBottomY(float x, OceanFloor const & oceanFloor)
+{
+    return oceanFloor.GetMinHeightAt(x) - 0.2f; // Cover roots underneath semi-transparent ocean floor
 }
 
 void UnderwaterPlants::RecalculateScales(float sizeMultiplier)
 {
     for (auto & plant : mPlants)
     {
-        plant.Scale = plant.BasisScale * sizeMultiplier;
+        plant.Scale = CalculateScale(plant.BasisScale, sizeMultiplier);
     }
+}
+
+float UnderwaterPlants::CalculateScale(float basisScale, float sizeMultiplier)
+{
+    return basisScale * sizeMultiplier;
 }
 
 }

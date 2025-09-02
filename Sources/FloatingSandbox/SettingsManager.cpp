@@ -120,6 +120,10 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(bool, DoFishShoaling);
     ADD_GC_SETTING(float, FishShoalRadiusAdjustment);
 
+    // Underwater plants
+    ADD_GC_SETTING(float, UnderwaterPlantsDensity);
+    ADD_GC_SETTING(float, UnderwaterPlantSizeMultiplier);
+
     // NPCs
     ADD_GC_SETTING(float, NpcFrictionAdjustment);
     ADD_GC_SETTING(float, NpcSizeMultiplier);

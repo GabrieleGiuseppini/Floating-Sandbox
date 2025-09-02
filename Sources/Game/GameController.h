@@ -704,6 +704,18 @@ public:
     float GetMinFishShoalRadiusAdjustment() const override { return SimulationParameters::MinFishShoalRadiusAdjustment; }
     float GetMaxFishShoalRadiusAdjustment() const override { return SimulationParameters::MaxFishShoalRadiusAdjustment; }
 
+    // Underwater plants
+
+    float GetUnderwaterPlantsDensity() const override { return mSimulationParameters.UnderwaterPlantsDensity; }
+    void SetUnderwaterPlantsDensity(float value) override { mSimulationParameters.UnderwaterPlantsDensity = value; }
+    float GetMinUnderwaterPlantsDensity() const override { return SimulationParameters::MinUnderwaterPlantsDensity; }
+    float GetMaxUnderwaterPlantsDensity() const override { return SimulationParameters::MaxUnderwaterPlantsDensity; }
+
+    float GetUnderwaterPlantSizeMultiplier() const override { return mSimulationParameters.UnderwaterPlantSizeMultiplier; }
+    void SetUnderwaterPlantSizeMultiplier(float value) override { mSimulationParameters.UnderwaterPlantSizeMultiplier = value; }
+    float GetMinUnderwaterPlantSizeMultiplier() const override { return SimulationParameters::MinUnderwaterPlantSizeMultiplier; }
+    float GetMaxUnderwaterPlantSizeMultiplier() const override { return SimulationParameters::MaxUnderwaterPlantSizeMultiplier; }
+
     // NPCs
 
     float GetNpcSpringReductionFractionAdjustment() const override { return mSimulationParameters.NpcSpringReductionFractionAdjustment; }

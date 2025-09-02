@@ -43,7 +43,11 @@ private:
 
     void RecalculateBottomYs(OceanFloor const & oceanFloor);
 
+    static inline float CalculateBottomY(float x, OceanFloor const & oceanFloor);
+
     void RecalculateScales(float sizeMultiplier);
+
+    static inline float CalculateScale(float basisScale, float sizeMultiplier);
 
 private:
 
@@ -55,26 +59,28 @@ private:
 
     struct Plant
     {
-        float const CenterX;
+        float CenterX; // const
         float BottomY;
 
-        size_t const SpeciesIndex;
-        float const BasisScale;
+        size_t SpeciesIndex; // const
+        float BasisScale; // const
         float Scale;
-        float const PersonalitySeed;
-        bool const IsSpecular;
+        float PersonalitySeed; // const
+        bool IsSpecular; // const
 
         Plant(
             float centerX,
+            float currentBottomY, // Initial
             size_t speciesIndex,
             float basisScale,
+            float currentScale, // Initial
             float personalitySeed,
             bool isSpecular)
             : CenterX(centerX)
-            , BottomY(0.0f) // Will be recalculated
+            , BottomY(currentBottomY)
             , SpeciesIndex(speciesIndex)
             , BasisScale(basisScale)
-            , Scale(basisScale) // Will be recalculated
+            , Scale(currentScale)
             , PersonalitySeed(personalitySeed)
             , IsSpecular(isSpecular)
         {}

@@ -214,6 +214,14 @@ struct IGameControllerSettingsOptions
     virtual float GetMinFishShoalRadiusAdjustment() const = 0;
     virtual float GetMaxFishShoalRadiusAdjustment() const = 0;
 
+    // Underwater plants
+
+    virtual float GetMinUnderwaterPlantsDensity() const = 0;
+    virtual float GetMaxUnderwaterPlantsDensity() const = 0;
+
+    virtual float GetMinUnderwaterPlantSizeMultiplier() const = 0;
+    virtual float GetMaxUnderwaterPlantSizeMultiplier() const = 0;
+
     // NPCs
 
     virtual float GetMinNpcSpringReductionFractionAdjustment() const = 0;
