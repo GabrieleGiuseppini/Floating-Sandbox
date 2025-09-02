@@ -1453,7 +1453,7 @@
 			- OceanSurface is sampled
 
 			- Perf impact on Rendering
-				- Save main as "prev" first
+				= Save main as "prev" first
 				- Try mipmapped (copy folder for comparisons)
 
 		= Shader finalization:
@@ -1462,6 +1462,8 @@
 			+ OceanDarkeningRate
 				+ Copy from Fishes
 			- Retry flattening
+			- Try perf impact with packing uniforms in vec's
+				- Copy current to "...Next" first
 
 		- Remove all logs
 			- WorldRenderContext.cpp
