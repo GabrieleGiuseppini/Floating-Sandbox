@@ -1438,23 +1438,18 @@
 			+ Density
 			+ SizeMultiplier
 
-		- TODO: how to adjust ranges of settings to prevent a humongous rendering time?
-
 		- Tests:
-			- Wind on Rain (we've touched that)
-
-			- Density changes
-			- Ocean floor changes do propagate: (also verify we upload here and only here, via existing logs)
-				- Manual (tool)
-				- Profile
-				- Bumpiness 
-				- Ocean depth
-				- ...et all others
-			- OceanSurface is sampled
-
-			- Perf impact on Rendering
-				= Save main as "prev" first
-				- Try mipmapped (copy folder for comparisons)
+			+ Wind on Rain (we've touched that)
+			+ Density changes
+			+ Ocean floor changes do propagate: (also verify we upload here and only here, via existing logs)
+				+ Manual (tool)
+				+ Profile
+				+ Bumpiness 
+				+ Ocean depth
+			+ OceanSurface is sampled
+			= Perf impact on Rendering
+				+ Save main as "prev" first
+				- Try mipmapped
 
 		= Shader finalization:
 			+ EffectiveAmbientLight
@@ -1467,6 +1462,8 @@
 
 		- Remove all logs
 			- WorldRenderContext.cpp
+
+		- Merge into master
 
 		- Changelist
 
@@ -1706,6 +1703,9 @@
 				   the only way I have to help visualising what I mean is by adding some noise on top of an image of the ships and the darkness of the colour would represent the rate of decay
 
 	- Underwater currents
+		- Option 0: with current underwater plants
+			- On frontiers
+			- On orphaned points
 		- Option 1:
 			- New piecewise line across ocean:
 				- Divide the ocean width in N chunks (N ~=256)
