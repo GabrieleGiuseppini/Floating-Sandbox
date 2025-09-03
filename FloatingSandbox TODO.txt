@@ -1432,6 +1432,14 @@
 		- Finalize images
 			- Make 256
 			- Large transparent side border
+			- Adjust atlas tile array @ shader
+
+		= Patches
+			+ Cctor: decide # (4-8) and locii (in vector<float>)
+			- Populate:
+				- Go through locii via mod
+					- Clamp to world, modding back when outside
+				- Later: see if we need to leave the last 10% for uniform placing
 
 		+ SettingsDialog
 			+ SettingsManager
@@ -1450,18 +1458,25 @@
 			= Perf impact on Rendering
 				+ Save main as "prev" first
 				- Try mipmapped
+					+ Save linear as "prev"
 
 		= Shader finalization:
 			+ EffectiveAmbientLight
 			+ LampTool
 			+ OceanDarkeningRate
 				+ Copy from Fishes
-			- Retry flattening
+			= Retry flattening
+				- Do proper wind direction
+				- Cleanup commented-out code
 			- Try perf impact with packing uniforms in vec's
 				- Copy current to "...Next" first
 
 		- Remove all logs
 			- WorldRenderContext.cpp
+
+		- Test on Dell
+			- Rendering impact (w/density changes)
+			- Static vertex reloads (w/density changes)
 
 		- Merge into master
 

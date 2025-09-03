@@ -14,12 +14,14 @@
 
 namespace Physics {
 
-// Canary: if one day world size becomes a runtime property, this implementation
-// will have to change
-static_assert(SimulationParameters::MaxWorldWidth > 0.0f);
+size_t constexpr MinPatchCount = 15;
+size_t constexpr MaxPatchCount = 25;
+static float constexpr PatchRadius = SimulationParameters::MaxWorldWidth / 80.0f; // Also serves as canary: if one day world size becomes a runtime property, this implementation will have to change
+size_t constexpr UniformlyDistributedPercentage = 50;
 
 UnderwaterPlants::UnderwaterPlants(size_t speciesCount)
     : mSpeciesCount(speciesCount)
+    , mPatchLocii(GeneratePatchLocii())
     , mArePlantsDirtyForRendering(true)
     , mCurrentRotationAngle(0.0f)
     , mIsCurrentRotationAngleDirtyForRendering(true)
@@ -132,6 +134,26 @@ void UnderwaterPlants::Upload(RenderContext & renderContext)
 
 //////////////////////////////////////////////////////////////////////////////////////////
 
+std::vector<float> UnderwaterPlants::GeneratePatchLocii()
+{
+    // Choose number of patches
+
+    size_t const nPatches = GameRandomEngine::GetInstance().GenerateUniformInteger(MinPatchCount, MaxPatchCount);
+
+    // Generate patch locii
+
+    float const maxWorldX = SimulationParameters::HalfMaxWorldWidth - PatchRadius; // Make sure patch locii are not too close to borders
+
+    std::vector<float> locii;
+
+    for (size_t n = 0; n < nPatches; ++n)
+    {
+        locii.emplace_back(GameRandomEngine::GetInstance().GenerateUniformReal(-maxWorldX, maxWorldX));
+    }
+
+    return locii;
+}
+
 void UnderwaterPlants::RepopulatePlants(
     OceanSurface const & oceanSurface,
     OceanFloor const & oceanFloor,
@@ -178,17 +200,38 @@ void UnderwaterPlants::RepopulatePlants(
             nPlants = plantCount - mPlants.size();
         }
 
+        size_t firstUniformlyDistributedPlant = (nPlants * UniformlyDistributedPercentage) / 100; // Last x% is uniformly distributed
+
         for (size_t p = 0; p < nPlants; ++p)
         {
             // Choose X
-            float const x = GameRandomEngine::GetInstance().GenerateUniformReal(-SimulationParameters::HalfMaxWorldWidth, SimulationParameters::HalfMaxWorldWidth);
+            float x;
+            if (p >= firstUniformlyDistributedPlant)
+            {
+                x = GameRandomEngine::GetInstance().GenerateUniformReal(-SimulationParameters::HalfMaxWorldWidth, SimulationParameters::HalfMaxWorldWidth);
+            }
+            else
+            {
+                x = GameRandomEngine::GetInstance().GenerateNormalReal(
+                    mPatchLocii[mPlants.size() % mPatchLocii.size()],
+                    PatchRadius / 2.0f);
+
+                if (x < -SimulationParameters::HalfMaxWorldWidth)
+                {
+                    x = -(std::fmod(-x, SimulationParameters::MaxWorldWidth) - SimulationParameters::MaxWorldWidth / 2.0f);
+                }
+                else if (x > SimulationParameters::HalfMaxWorldWidth)
+                {
+                    x = std::fmod(x, SimulationParameters::MaxWorldWidth) - SimulationParameters::MaxWorldWidth / 2.0f;
+                }
+            }
 
             // Choose basis scale
             float const basisScale = Clamp(
                 GameRandomEngine::GetInstance().GenerateNormalReal(
                     1.0f, // Mean
                     0.5f), // StdDev
-                0.25f,
+                0.5f,
                 10.0f);
 
             // Choose personality seed

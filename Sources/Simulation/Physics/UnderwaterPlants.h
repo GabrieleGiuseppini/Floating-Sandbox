@@ -36,6 +36,8 @@ public:
 
 private:
 
+    static std::vector<float> GeneratePatchLocii();
+
     void RepopulatePlants(
         OceanSurface const & oceanSurface,
         OceanFloor const & oceanFloor,
@@ -56,6 +58,8 @@ private:
     //
     // Container
     //
+
+    std::vector<float> mPatchLocii; // x's of the plant patches
 
     struct Plant
     {
