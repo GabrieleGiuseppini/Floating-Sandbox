@@ -103,6 +103,8 @@ void UnderwaterPlants::Update(
 
 void UnderwaterPlants::Upload(RenderContext & renderContext)
 {
+    // Upload plant structures - only if they've changed
+
     if (mArePlantsDirtyForRendering)
     {
         renderContext.UploadUnderwaterPlantStaticVertexAttributesStart(mPlants.size());
@@ -122,7 +124,11 @@ void UnderwaterPlants::Upload(RenderContext & renderContext)
         mArePlantsDirtyForRendering = false;
     }
 
+    // Upload plants' depths - always
+
     renderContext.UploadUnderwaterPlantOceanDepths(mOceanDepths);
+
+    // Upload rotation angle - only if it has changed
 
     if (mIsCurrentRotationAngleDirtyForRendering)
     {
