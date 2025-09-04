@@ -1429,7 +1429,8 @@
 				+ Done
 				
 
-		- Finalize images
+		= Finalize images
+			- Corals
 			- Make 256
 			- Large transparent side border
 			- Adjust atlas tile array @ shader
@@ -1440,6 +1441,7 @@
 				- Go through locii via mod
 					- Clamp to world, modding back when outside
 				- Later: see if we need to leave the last 10% for uniform placing
+			- Test: # plants < # patches
 
 		+ SettingsDialog
 			+ SettingsManager

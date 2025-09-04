@@ -14,10 +14,11 @@
 
 namespace Physics {
 
-size_t constexpr MinPatchCount = 15;
-size_t constexpr MaxPatchCount = 25;
-static float constexpr PatchRadius = SimulationParameters::MaxWorldWidth / 80.0f; // Also serves as canary: if one day world size becomes a runtime property, this implementation will have to change
-size_t constexpr UniformlyDistributedPercentage = 50;
+size_t constexpr MinPatchCount = 170;
+size_t constexpr MaxPatchCount = 200;
+static float constexpr PatchRadius = SimulationParameters::MaxWorldWidth / 250.0f; // Also serves as canary: if one day world size becomes a runtime property, this implementation will have to change
+static float constexpr PatchStdDev = PatchRadius / 16.0f;
+size_t constexpr UniformlyDistributedPercentage = 5;
 
 UnderwaterPlants::UnderwaterPlants(size_t speciesCount)
     : mSpeciesCount(speciesCount)
@@ -206,7 +207,7 @@ void UnderwaterPlants::RepopulatePlants(
             nPlants = plantCount - mPlants.size();
         }
 
-        size_t firstUniformlyDistributedPlant = (nPlants * UniformlyDistributedPercentage) / 100; // Last x% is uniformly distributed
+        size_t firstUniformlyDistributedPlant = (nPlants * (100 - UniformlyDistributedPercentage)) / 100; // Last x% is uniformly distributed
 
         for (size_t p = 0; p < nPlants; ++p)
         {
@@ -214,13 +215,15 @@ void UnderwaterPlants::RepopulatePlants(
             float x;
             if (p >= firstUniformlyDistributedPlant)
             {
-                x = GameRandomEngine::GetInstance().GenerateUniformReal(-SimulationParameters::HalfMaxWorldWidth, SimulationParameters::HalfMaxWorldWidth);
+                x = GameRandomEngine::GetInstance().GenerateUniformReal(
+                    -SimulationParameters::HalfMaxWorldWidth,
+                    SimulationParameters::HalfMaxWorldWidth);
             }
             else
             {
                 x = GameRandomEngine::GetInstance().GenerateNormalReal(
                     mPatchLocii[mPlants.size() % mPatchLocii.size()],
-                    PatchRadius / 2.0f);
+                    PatchStdDev);
 
                 if (x < -SimulationParameters::HalfMaxWorldWidth)
                 {
