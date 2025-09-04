@@ -48,7 +48,7 @@ in float vertexOceanY;
 in vec2 vertexWorld;
 
 // The texture
-uniform vec4 paramAtlasTileGeometryIndexed[4 * 2]; // Keep size with # of underwater plant textures
+uniform vec4 paramAtlasTileGeometryIndexed[7 * 2]; // Keep size with # of underwater plant textures
 uniform sampler2D paramGenericLinearTexturesAtlasTexture;
 
 // Params
@@ -78,7 +78,7 @@ void main()
     float vertexWorldOceanDepth = vertexWorld.y - vertexOceanY;
 
     // Underwater pulse: -1..1
-    float underwaterPulse = sin(paramUnderwaterCurrentSpaceVelocity * vertexWorld.x + paramUnderwaterCurrentTimeVelocity * paramSimulationTime + vertexPersonalitySeed * PI / 6.);
+    float underwaterPulse = sin(paramUnderwaterCurrentSpaceVelocity * vertexWorld.x + paramUnderwaterCurrentTimeVelocity * paramSimulationTime + vertexPersonalitySeed * PI / 4.);
     
     // Rotation angle is higher the higher we go
     float maxRotAngle = paramUnderwaterPlantRotationAngle * underwaterPulse;
@@ -90,9 +90,11 @@ void main()
     
     // Plant flattening (stiffening)
     angle = mix(
-        0.0,
+        //0.0,
+        PI / 2.0,
         angle,
-        1.0 + clamp(-vertexWorldOceanDepth, -1.0, 0.0)); // still angle on surface; upright above surface
+        //1.0 + clamp(-vertexWorldOceanDepth, -1.0, 0.0)); // still angle on surface; upright above surface
+        1.0 + clamp(-vertexWorldOceanDepth, -3.0, 0.0) / 3.0); // still angle on surface; upright above surface
             
     // Rotate around bottom
     vec2 rotatedPlantSpacePosition = vertexPlantSpaceCoords * GetRotationMatrix(angle);

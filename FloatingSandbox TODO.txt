@@ -1430,7 +1430,7 @@
 				
 
 		= Finalize images
-			- Corals
+			+ Corals
 			- Make 256
 			- Large transparent side border
 			- Adjust atlas tile array @ shader
@@ -1467,6 +1467,7 @@
 			+ LampTool
 			+ OceanDarkeningRate
 				+ Copy from Fishes
+			- Personality
 			= Retry flattening
 				- Do proper wind direction
 				- Cleanup commented-out code
@@ -1475,6 +1476,7 @@
 
 		- Remove all logs
 			- WorldRenderContext.cpp
+			- UnderwaterPlants.cpp
 
 		- Test on Dell
 			- Rendering impact (w/density changes)

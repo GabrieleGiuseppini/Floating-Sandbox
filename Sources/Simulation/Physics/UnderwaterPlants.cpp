@@ -207,6 +207,8 @@ void UnderwaterPlants::RepopulatePlants(
             nPlants = plantCount - mPlants.size();
         }
 
+        LogMessage("TODOTEST: Species ", iSpecies, ": ", nPlants, " plants");
+
         size_t firstUniformlyDistributedPlant = (nPlants * (100 - UniformlyDistributedPercentage)) / 100; // Last x% is uniformly distributed
 
         for (size_t p = 0; p < nPlants; ++p)
