@@ -249,7 +249,7 @@ void UnderwaterPlants::RepopulatePlants(
                     1.0f, // Mean
                     0.5f), // StdDev
                 0.5f,
-                4.0f);
+                3.0f);
 
             // Choose personality seed
             float const personalitySeed = GameRandomEngine::GetInstance().GenerateNormalizedUniformReal();

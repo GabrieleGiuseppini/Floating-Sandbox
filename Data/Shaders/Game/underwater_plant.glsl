@@ -78,14 +78,14 @@ void main()
     float vertexWorldOceanDepth = vertexWorld.y - vertexOceanY;
 
     // Underwater pulse: -1..1
-    float underwaterPulse = sin(paramUnderwaterCurrentSpaceVelocity * vertexWorld.x + paramUnderwaterCurrentTimeVelocity * paramSimulationTime + vertexPersonalitySeed * PI / 4.);
+    float underwaterPulse = sin(paramUnderwaterCurrentSpaceVelocity * vertexWorld.x + paramUnderwaterCurrentTimeVelocity * paramSimulationTime + vertexPersonalitySeed * PI / 3.);
     
     // Rotation angle is higher the higher we go
     float maxRotAngle = paramUnderwaterPlantRotationAngle * underwaterPulse;
     float angle = maxRotAngle * vertexPlantSpaceCoords.y;
 
     // X ripples
-    float xRipples = 0.011 * sin(30.37 * vertexWorld.x + paramSimulationTime * 5.9) * step(vertexWorldOceanDepth, 0.0);
+    float xRipples = 0.009 * sin(30.37 * vertexWorld.x + paramSimulationTime * 5.9) * step(vertexWorldOceanDepth, 0.0);
     angle += paramUnderwaterPlantRotationAngle * xRipples;    
     
     // Plant flattening (stiffening)

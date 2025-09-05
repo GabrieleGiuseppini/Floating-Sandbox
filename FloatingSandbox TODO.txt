@@ -1427,8 +1427,9 @@
 					+ Calculate proxy
 					+ Make room for ocean depths
 				+ Done
+		
+		+ Lower depth darkening
 				
-
 		= Finalize images
 			+ Corals
 			- Buy
@@ -1436,7 +1437,6 @@
 			- Make 256
 				- Large transparent side border
 			= Adjust atlas tile array @ shader
-		- Lower depth darkening
 
 		= Patches
 			+ Cctor: decide # (4-8) and locii (in vector<float>)
@@ -1444,7 +1444,7 @@
 				+ Go through locii via mod
 					+ Clamp to world, modding back when outside
 				+ Later: see if we need to leave the last 10% for uniform placing
-			- f[n] = Z - (1 - a)^n * Z
+			+ f[n] = Z - (1 - a)^n * Z
 				- With: f[0] = 0; f[n] = f[n-1] + a * (Z - f[n-1])
 				- f[n] is the sum of all consumed elements at the beginning of step N
 				- invert Y = Z - (1 - a)^n Z as a function of n, Z, and Y
