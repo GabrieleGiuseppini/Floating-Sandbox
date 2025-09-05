@@ -6,6 +6,7 @@
 #include "Physics.h"
 
 #include <Core/GameRandomEngine.h>
+#include <Core/Log.h>
 #include <Core/SysSpecifics.h>
 
 #include <algorithm>
@@ -176,6 +177,9 @@ void UnderwaterPlants::RepopulatePlants(
     //
 
     size_t plantCount = static_cast<size_t>(simulationParameters.UnderwaterPlantsDensity * SimulationParameters::MaxWorldWidth / 1000.0f);
+
+    LogMessage("Number of underwater plants: ", plantCount);
+
     if (plantCount == 0)
     {
         return;
@@ -183,8 +187,6 @@ void UnderwaterPlants::RepopulatePlants(
 
     // Round to ceil power of two, so we can use all species with our subdivision algorithm
     plantCount = std::max(plantCount, ceil_power_of_two(mSpeciesCount));
-
-    LogMessage("Number of underwater plants: ", plantCount);
 
     mPlants.reserve(plantCount);
     mOceanSurfaceCoordinatesProxies.reserve(plantCount);
@@ -198,10 +200,16 @@ void UnderwaterPlants::RepopulatePlants(
     //
 
     float const lastSpeciesPlantsCount = std::min(200.0f, static_cast<float>(plantCount));
-    float const alpha = 1.0f - std::powf(lastSpeciesPlantsCount / static_cast<float>(plantCount), 1.0f / static_cast<float>(mSpeciesCount - 1));
+    float const alpha = std::min(
+        1.0f - std::powf(
+            lastSpeciesPlantsCount / static_cast<float>(plantCount),
+            1.0f / static_cast<float>(mSpeciesCount - 1)),
+        1.0f);
 
     for (size_t iSpecies = 0; iSpecies < mSpeciesCount; ++iSpecies)
     {
+        assert(mPlants.size() <= plantCount);
+
         // Calculate number of plants that we want to create for this species
         size_t nPlants;
         if (iSpecies < mSpeciesCount - 1)

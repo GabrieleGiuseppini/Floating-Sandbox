@@ -462,11 +462,11 @@ struct SimulationParameters
 
     float UnderwaterPlantsDensity; // 1/km^2
     static float constexpr MinUnderwaterPlantsDensity = 0.0f;
-    static float constexpr MaxUnderwaterPlantsDensity = 1000.0f;
+    static float constexpr MaxUnderwaterPlantsDensity = 5000.0f;
 
     float UnderwaterPlantSizeMultiplier;
     static constexpr float MinUnderwaterPlantSizeMultiplier = 1.0f;
-    static constexpr float MaxUnderwaterPlantSizeMultiplier = 10.0f;
+    static constexpr float MaxUnderwaterPlantSizeMultiplier = 5.0f;
 
     //
     // NPCs

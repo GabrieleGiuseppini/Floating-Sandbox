@@ -1438,7 +1438,7 @@
 				- Large transparent side border
 			= Adjust atlas tile array @ shader
 
-		= Patches
+		+ Patches
 			+ Cctor: decide # (4-8) and locii (in vector<float>)
 			+ Populate:
 				+ Go through locii via mod
@@ -1451,7 +1451,7 @@
 				- a = 1 - (1 - Y/Z)^(1/n)
 				- W (constraint: # left) = Z - Y => Y = Z - W
 				- a = 1 - (W/Z)^(1/n)
-			- Test: # plants < # patches
+			+ Test: # plants < # patches
 
 		+ SettingsDialog
 			+ SettingsManager
