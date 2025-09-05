@@ -1432,10 +1432,11 @@
 				
 		= Finalize images
 			+ Corals
-			- Buy
+			= Buy
 				- Backup
 			- Make 256
 				- Large transparent side border
+				+ 0, 1
 			= Adjust atlas tile array @ shader
 
 		+ Patches
@@ -1477,7 +1478,7 @@
 			+ LampTool
 			+ OceanDarkeningRate
 				+ Copy from Fishes
-			- Personality
+			+ Personality
 			= Retry flattening
 				- Do proper wind direction
 				- Cleanup commented-out code
