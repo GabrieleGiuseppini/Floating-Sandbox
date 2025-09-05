@@ -1431,9 +1431,11 @@
 
 		= Finalize images
 			+ Corals
+			- Buy
+				- Backup
 			- Make 256
-			- Large transparent side border
-			- Adjust atlas tile array @ shader
+				- Large transparent side border
+			= Adjust atlas tile array @ shader
 		- Lower depth darkening
 
 		= Patches
@@ -1484,7 +1486,7 @@
 
 		- Remove all logs
 			- WorldRenderContext.cpp
-			- UnderwaterPlants.cpp
+			+ UnderwaterPlants.cpp
 
 		- Test on Dell
 			- Rendering impact (w/density changes)
