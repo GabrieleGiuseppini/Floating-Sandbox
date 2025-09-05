@@ -199,15 +199,25 @@ void UnderwaterPlants::RepopulatePlants(
         size_t nPlants;
         if (iSpecies < mSpeciesCount - 1)
         {
-            nPlants = (plantCount - mPlants.size()) / 2;
+            // TODOTEST
+            //nPlants = (plantCount - mPlants.size()) / 2;
+
+            float const lastSpeciesPlantsCount = std::min(200.0f, static_cast<float>(plantCount));
+            float const alpha = 1.0f - std::powf(lastSpeciesPlantsCount / static_cast<float>(plantCount), 1.0f / static_cast<float>(mSpeciesCount - 1));
+
+            nPlants = static_cast<size_t>(static_cast<float>(plantCount - mPlants.size()) * alpha);
+
+            LogMessage("TODOTEST: Species ", iSpecies, ": lastSpeciesPlantsCount=", lastSpeciesPlantsCount, " alpha=", alpha, " nPlants=", nPlants);
         }
         else
         {
             // Last species: do all remaining
             nPlants = plantCount - mPlants.size();
+
+            LogMessage("TODOTEST: Species ", iSpecies, ": ", nPlants, " plants");
         }
 
-        LogMessage("TODOTEST: Species ", iSpecies, ": ", nPlants, " plants");
+        //LogMessage("TODOTEST: Species ", iSpecies, ": ", nPlants, " plants");
 
         size_t firstUniformlyDistributedPlant = (nPlants * (100 - UniformlyDistributedPercentage)) / 100; // Last x% is uniformly distributed
 
@@ -243,7 +253,7 @@ void UnderwaterPlants::RepopulatePlants(
                     1.0f, // Mean
                     0.5f), // StdDev
                 0.5f,
-                10.0f);
+                4.0f);
 
             // Choose personality seed
             float const personalitySeed = GameRandomEngine::GetInstance().GenerateNormalizedUniformReal();

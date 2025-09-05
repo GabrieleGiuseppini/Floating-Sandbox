@@ -1434,19 +1434,27 @@
 			- Make 256
 			- Large transparent side border
 			- Adjust atlas tile array @ shader
+		- Lower depth darkening
 
 		= Patches
 			+ Cctor: decide # (4-8) and locii (in vector<float>)
-			- Populate:
-				- Go through locii via mod
-					- Clamp to world, modding back when outside
-				- Later: see if we need to leave the last 10% for uniform placing
+			+ Populate:
+				+ Go through locii via mod
+					+ Clamp to world, modding back when outside
+				+ Later: see if we need to leave the last 10% for uniform placing
+			- f[n] = Z - (1 - a)^n * Z
+				- With: f[0] = 0; f[n] = f[n-1] + a * (Z - f[n-1])
+				- f[n] is the sum of all consumed elements at the beginning of step N
+				- invert Y = Z - (1 - a)^n Z as a function of n, Z, and Y
+				- a = 1 - (1 - Y/Z)^(1/n)
+				- W (constraint: # left) = Z - Y => Y = Z - W
+				- a = 1 - (W/Z)^(1/n)
 			- Test: # plants < # patches
 
 		+ SettingsDialog
 			+ SettingsManager
 			+ Density
-			+ SizeMultiplier
+			+ SizeMultiplier		
 
 		- Tests:
 			+ Wind on Rain (we've touched that)
@@ -1459,8 +1467,8 @@
 			+ OceanSurface is sampled
 			= Perf impact on Rendering
 				+ Save main as "prev" first
-				- Try mipmapped
-					+ Save linear as "prev"
+				- Try mipmapped -- SHOULD IMPROVE!
+					- Save current (linear) as "next"
 
 		= Shader finalization:
 			+ EffectiveAmbientLight
@@ -1485,6 +1493,8 @@
 		- Merge into master
 
 		- Changelist
+
+		- Move this work item to Done
 
 
 

@@ -81,7 +81,7 @@
 			"frame_name_pattern": "underwater_plant_0"
 		},
 		{	
-			"world_height": 2.0,
+			"world_width": 0.8,
 			"frame_name_pattern": "underwater_plant_1"
 		},
 		{	
@@ -93,15 +93,15 @@
 			"frame_name_pattern": "underwater_plant_3"
 		},
 		{	
-			"world_height": 4.0,
+			"world_height": 2.0,
 			"frame_name_pattern": "underwater_plant_4"
 		},
 		{	
-			"world_width": 1.0,
+			"world_height": 4.0,
 			"frame_name_pattern": "underwater_plant_5"
 		},
 		{	
-			"world_width": 0.7,
+			"world_width": 1.0,
 			"frame_name_pattern": "underwater_plant_6"
 		}
 	]
