@@ -18,7 +18,7 @@ RenderParameters::RenderParameters(
 	, CrepuscularColor (0xe5, 0xd3, 0xe5)
 	, CloudRenderDetail(CloudRenderDetailType::Detailed)
 	, OceanTransparency(0.594f)
-	, OceanDepthDarkeningRate(0.126745f)
+	, OceanDepthDarkeningRate(0.078f)
 	, OceanRenderMode(OceanRenderModeType::Flat)
 	, DepthOceanColorStart(0x4a, 0x84, 0x9f)
 	, DepthOceanColorEnd(0x00, 0x00, 0x00)
