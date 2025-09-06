@@ -1434,10 +1434,11 @@
 			+ Corals
 			= Buy
 				- Backup
-			- Make 256
-				- Large transparent side border
+			+ Make 256
+				+ Large transparent side border
 				+ 0, 1
-			= Adjust atlas tile array @ shader
+				+ 2, 3, 4, 5, 6
+			+ Adjust atlas tile array @ shader
 
 		+ Patches
 			+ Cctor: decide # (4-8) and locii (in vector<float>)
@@ -1490,7 +1491,7 @@
 			+ UnderwaterPlants.cpp
 
 		- Test on Dell
-			- Rendering impact (w/density changes)
+			- Rendering impact (test against density 0)
 			- Static vertex reloads (w/density changes)
 
 		- Merge into master
