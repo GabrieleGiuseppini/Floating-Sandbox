@@ -1430,10 +1430,10 @@
 		
 		+ Lower depth darkening
 				
-		= Finalize images
+		+ Finalize images
 			+ Corals
-			= Buy
-				- Backup
+			+ Buy
+				+ Backup
 			+ Make 256
 				+ Large transparent side border
 				+ 0, 1
