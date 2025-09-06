@@ -513,6 +513,8 @@ ProgramParameterKind StrToProgramParameterKind(std::string const & str)
         return ProgramParameterKind::WaterLevelThreshold;
     else if (str == "WidthNdc")
         return ProgramParameterKind::WidthNdc;
+    else if (str == "WindDirection")
+        return ProgramParameterKind::WindDirection;
     else if (str == "Zoom")
         return ProgramParameterKind::Zoom;
     // Textures
@@ -630,6 +632,8 @@ std::string ProgramParameterKindToStr(ProgramParameterKind programParameter)
             return "WaterLevelThreshold";
         case ProgramParameterKind::WidthNdc:
             return "WidthNdc";
+        case ProgramParameterKind::WindDirection:
+            return "WindDirection";
         case ProgramParameterKind::Zoom:
             return "Zoom";
             // Textures

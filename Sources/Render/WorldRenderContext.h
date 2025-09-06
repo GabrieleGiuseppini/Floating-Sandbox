@@ -114,6 +114,13 @@ public:
             mCurrentSmoothedWindSpeedMagnitude = smoothedWindMagnitude;
             mIsCurrentSmoothedWindSpeedMagnitudeDirty = true;
         }
+
+        float const windDirection = (instantSpeed.x >= 0.0f) ? 1.0f : -1.0f;
+        if (windDirection != mCurrentWindDirection) // Damp frequency of calls
+        {
+            mCurrentWindDirection = windDirection;
+            mIsCurrentWindDirectionDirty = true;
+        }
     }
 
     inline void UploadUnderwaterCurrent(float spaceVelocity, float timeVelocity)
@@ -1332,6 +1339,8 @@ private:
     RunningAverage<32> mWindSpeedMagnitudeRunningAverage;
     float mCurrentSmoothedWindSpeedMagnitude;
     bool mIsCurrentSmoothedWindSpeedMagnitudeDirty;
+    float mCurrentWindDirection;
+    bool mIsCurrentWindDirectionDirty;
 
     // Underwater currents
     float mCurrentUnderwaterCurrentSpaceVelocity;

@@ -104,6 +104,8 @@ WorldRenderContext::WorldRenderContext(
     , mWindSpeedMagnitudeRunningAverage(0.0f)
     , mCurrentSmoothedWindSpeedMagnitude(0.0f)
     , mIsCurrentSmoothedWindSpeedMagnitudeDirty(true)
+    , mCurrentWindDirection(1.0f) // Will be recalculated
+    , mIsCurrentWindDirectionDirty(true)
     , mCurrentUnderwaterCurrentSpaceVelocity(0.0f)
     , mIsCurrentUnderwaterCurrentSpaceVelocityDirty(true)
     , mCurrentUnderwaterCurrentTimeVelocity(0.0f)
@@ -1727,6 +1729,15 @@ void WorldRenderContext::RenderPrepareUnderwaterPlants(
         mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::UnderwaterPlant, GameShaderSets::ProgramParameterKind::UnderwaterCurrentTimeVelocity>(mCurrentUnderwaterCurrentTimeVelocity);
     }
 
+    if (mIsCurrentWindDirectionDirty)
+    {
+        LogMessage("TODOTEST: uploading WindDirection");
+
+        // Set parameter
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::UnderwaterPlant, GameShaderSets::ProgramParameterKind::WindDirection>(
+            mCurrentWindDirection);
+    }
+
     mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::UnderwaterPlant, GameShaderSets::ProgramParameterKind::SimulationTime>(currentSimulationTime);
 }
 
@@ -1971,6 +1982,7 @@ void WorldRenderContext::RenderDrawWorldBorder(RenderParameters const & /*render
 void WorldRenderContext::RenderPrepareEnd()
 {
     mIsCurrentSmoothedWindSpeedMagnitudeDirty = false;
+    mIsCurrentWindDirectionDirty = false;
     mIsCurrentUnderwaterCurrentSpaceVelocityDirty = false;
     mIsCurrentUnderwaterCurrentTimeVelocityDirty = false;
     mIsCurrentUnderwaterPlantsRotationAngleDirty = false;

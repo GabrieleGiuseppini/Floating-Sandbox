@@ -1481,15 +1481,14 @@
 				+ Copy from Fishes
 			+ Personality
 			= Retry flattening
-				- Do proper wind direction
-					- Requires shader parameter and member, which gets set dirty @ existing UploadWind, and is reset and UploadEnd
-					- Use in shader
-				- See why "roots" show up
+				+ Do proper wind direction
+					+ Requires shader parameter and member, which gets set dirty @ existing UploadWind, and is reset and UploadEnd
+					+ Use in shader
+				- FIX: bottom (roots) should not rotate - or else "roots" show up
+					- TODO: how exactly?
 				+ Cleanup commented-out code
 			- Try perf impact with packing uniforms in vec's
 				- Copy current to "...Next" first
-
-		- Test splash sound when using wave maker @ close zoom
 
 		- Remove all logs
 			- WorldRenderContext.cpp

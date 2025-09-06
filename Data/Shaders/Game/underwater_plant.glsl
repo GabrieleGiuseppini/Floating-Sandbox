@@ -56,6 +56,7 @@ uniform float paramSimulationTime;
 uniform float paramUnderwaterPlantRotationAngle;
 uniform float paramUnderwaterCurrentSpaceVelocity;
 uniform float paramUnderwaterCurrentTimeVelocity;
+uniform float paramWindDirection;
 
 uniform float paramEffectiveAmbientLightIntensity;
 uniform float paramOceanDepthDarkeningRate;
@@ -91,7 +92,7 @@ void main()
     // Plant flattening
     angle = mix(
         angle,
-        PI / 2.0,
+        PI / 2.0 * paramWindDirection,
         smoothstep(-3.0, 0.0, vertexWorldOceanDepth)); // Still angle below surface; flat on surface
             
     // Rotate around bottom

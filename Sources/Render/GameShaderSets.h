@@ -168,6 +168,7 @@ enum class ProgramParameterKind : std::uint8_t
     WaterContrast,
     WaterLevelThreshold,
     WidthNdc,
+    WindDirection,
     Zoom,
 
     // Textures
