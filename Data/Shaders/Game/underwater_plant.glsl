@@ -88,13 +88,11 @@ void main()
     float xRipples = 0.009 * sin(30.37 * vertexWorld.x + paramSimulationTime * 5.9) * step(vertexWorldOceanDepth, 0.0);
     angle += paramUnderwaterPlantRotationAngle * xRipples;    
     
-    // Plant flattening (stiffening)
+    // Plant flattening
     angle = mix(
-        //0.0,
-        PI / 2.0,
         angle,
-        //1.0 + clamp(-vertexWorldOceanDepth, -1.0, 0.0)); // still angle on surface; upright above surface
-        1.0 + clamp(-vertexWorldOceanDepth, -3.0, 0.0) / 3.0); // still angle on surface; upright above surface
+        PI / 2.0,
+        smoothstep(-3.0, 0.0, vertexWorldOceanDepth)); // Still angle below surface; flat on surface
             
     // Rotate around bottom
     vec2 rotatedPlantSpacePosition = vertexPlantSpaceCoords * GetRotationMatrix(angle);
