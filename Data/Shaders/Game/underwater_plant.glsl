@@ -93,7 +93,7 @@ void main()
     angle = mix(
         angle,
         PI / 2.0 * 0.95 * paramWindDirection,
-        smoothstep(-3.0, 0.0, vertexWorldOceanDepth) * min(vertexPlantSpaceCoords.y * 10.0, 1.0)); // Still angle below surface; flat on surface
+        smoothstep(-3.0, 0.0, vertexWorldOceanDepth) * min(vertexPlantSpaceCoords.y * 10.0, 1.0)); // Still angle below surface; flat on surface. And no rotation at the roots
             
     // Rotate around bottom
     vec2 rotatedPlantSpacePosition = vertexPlantSpaceCoords * GetRotationMatrix(angle);

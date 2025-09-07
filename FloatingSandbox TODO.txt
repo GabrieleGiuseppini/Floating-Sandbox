@@ -1503,9 +1503,13 @@
 				+ FIX: bottom (roots) should not rotate - or else "roots" show up
 					+ No rotation at roots
 				+ Cleanup commented-out code
-			- Try perf impact with packing uniforms in vec's
-				- Copy current to "prev" first
-			- Make textures' bottoms narrow
+			X Try perf impact with packing uniforms in vec's
+				+ Copy current to "prev" first
+				X Zoom 0.04, SizeMultiplier & density max:
+					+ Before: 12.6-12.9 (avg: 12.7)
+					+ After: same
+
+			- Make textures' bottoms narrow, and centered
 
 		- Remove all logs
 			- WorldRenderContext.cpp
