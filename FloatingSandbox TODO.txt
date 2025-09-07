@@ -450,11 +450,12 @@
 		+ S.S. Andrea Doria, in _TO_TAKE
 			+ Already in credits, ship is ready
 		- From LJKMagic
-			- Asked credits
+			= Asked credits: LJKMagic 
 			+ Taken A.S. Te Aroha
-			- DEV Aratere: asked "DEV" (under To Take)
+			= DEV Aratere: asked "DEV" (under To Take)
+				- "D.E.V.", rename
 		- From Mrs. Magic:
-			+ Asked credits: "Mrs. Magic"
+			= Asked credits: "Mrs. Magic"
 			= Alaska (in To Take)
 			- Oslofjord: asked to fix it
 
@@ -1490,7 +1491,7 @@
 								- Linear: 12.6-12.9 (avg: 12.8)
 								- MipMapped: 12.6-12.9 (avg: 12.7)
 
-		= Shader finalization:
+		+ Shader finalization:
 			+ EffectiveAmbientLight
 			+ LampTool
 			+ OceanDarkeningRate
@@ -1509,8 +1510,6 @@
 					+ Before: 12.6-12.9 (avg: 12.7)
 					+ After: same
 			+ Make textures' bottoms narrow, and centered
-
-			- FIX: patch rectangle
 
 		- Remove all logs
 			- WorldRenderContext.cpp
