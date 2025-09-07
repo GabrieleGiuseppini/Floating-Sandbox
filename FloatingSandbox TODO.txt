@@ -376,9 +376,10 @@
 	- Ukrainian: DioxCode, Denis
 	- Spanish (Latin American): Joadix (Fallback: The G a z e r W o l f)
 
-	- Portuguese: Kiko
-		- Add to credits: "Kiko", and change in other sections as well, and also in .shp files
-		- Fallback: The G a z e r W o l f
+	- Portuguese: matheusvhs
+		- Add to credits: "Mr.H556"
+		- He's doing .pot
+
 	- Hungarian: S.S. Atlantic
 		= Doing HTMLs
 		- Add to credits:
@@ -448,6 +449,15 @@
 			- Move to final
 		+ S.S. Andrea Doria, in _TO_TAKE
 			+ Already in credits, ship is ready
+		- From LJKMagic
+			- Asked credits
+			+ Taken A.S. Te Aroha
+			- DEV Aratere: asked "DEV" (under To Take)
+		- From Mrs. Magic:
+			+ Asked credits: "Mrs. Magic"
+			= Alaska (in To Take)
+			- Oslofjord: asked to fix it
+
 		- Konigsbreg, under _TO_TRY
 			+ Already in credits, cleared by author
 			- Need to cleanup
