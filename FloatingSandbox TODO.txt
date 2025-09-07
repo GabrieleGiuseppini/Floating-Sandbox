@@ -453,11 +453,16 @@
 			= Asked credits: LJKMagic 
 			+ Taken A.S. Te Aroha
 			= DEV Aratere: asked "DEV" (under To Take)
-				- "D.E.V.", rename
+				- "D.E.V.", rename - asked D/E
+		- Lorotanic
+			- Fix its metadata
+			- Fix lights switch (OFF by default)
+			- Replace existing
 		- From Mrs. Magic:
 			= Asked credits: "Mrs. Magic"
 			= Alaska (in To Take)
-			- Oslofjord: asked to fix it
+			= Oslofjord: asked to fix it
+				- Receive it
 
 		- Konigsbreg, under _TO_TRY
 			+ Already in credits, cleared by author
@@ -1515,13 +1520,18 @@
 			+ WorldRenderContext.cpp
 			+ UnderwaterPlants.cpp
 
-		- Test on Dell
-			- Rendering impact (test against density 0)
-			- Static vertex reloads (w/density changes)
+		= Test on old Dell
+			+ Rendering impact (test against density 0)
+				+ Old: zoom 0.04: rnd=11.0-11.6
+				+ New: zoom 0.04: rnd=16			
+			+ Static vertex reloads (by playing with density changes)
+			- See if bad perf due to dynamic uploads (comment-out for test)
+			- Disable on low-gfx-score computers
+				- Re-test on old Dell
 
 		- Merge into master
 
-		- Changelist
+		+ Changelist
 
 		- Move this work item to Done
 
