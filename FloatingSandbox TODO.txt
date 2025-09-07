@@ -10,9 +10,23 @@
 
 	- Bump up version
 
-	- Try Android font
+	= Underwater plants (*)
+
+	+ No redistribute
+		+ @ License
+	
+	+ When tsunami starts you can see edges during the shaking
+		+ Also port to Android
+
+	- DoDisplaceWater setting should also control Fishes and NPCs
+		- ...find if anything else displaces water without checking toggle
 
 	- Lightning tool, like in Android
+
+
+
+
+	- Try Android font
 
 	- Fishes on wreck (see paper in Malta book)
 
@@ -21,6 +35,11 @@
 			- Test: buffer cloud shadows into a member, and then upload at on-render-thread upload
 		- See how it would look if cloud shadows at night would be visible via moonlight
 			- If goes through: port to Android
+	- Ocean render optimizations:
+		- Try perf rendering: ocean vertex buffer padding to be aligned
+		- Slow rendering: could be due to ocean texture not being mipmapped (bandwidth to transfer texture)
+			- See what LOD is used at default zoom, I'm afraid it's 1
+		- Halve Perlin noise size
 
 	- Try optimization in CollisionOnOceanFloor:
 		- Vectorize calculation of height field Y:
@@ -37,27 +56,8 @@
 	- I found this one: ShipBuilder: exporting structural layer and re-importing it is not the same
 		- Happens with the FS Birthday ship
 
-	+ When tsunami starts you can see edges during the shaking
-		+ Also port to Android
-
-	- Underwater plants (*)
-
 	- Reduce ghost forces from depth pressure
 		- See https://discord.com/channels/925233659118755842/1313073164879921203/1313073164879921203
-
-	- DoDisplaceWater setting should also control Fishes and NPCs
-		- ...find if anything else displaces water without checking toggle
-
-	- Ocean render optimizations:
-		- Try perf rendering: ocean vertex buffer padding to be aligned
-		- Slow rendering: could be due to ocean texture not being mipmapped (bandwidth to transfer texture)
-			- See what LOD is used at default zoom, I'm afraid it's 1
-		- Halve Perlin noise size
-
-	- No redistribute
-		+ @ License
-		- @ Atlases
-		- EULA @ installer?
 
 	- Look at non-anti-aliased borders
 		! On my new dell, also 1.18 shows non-anti-aliased borders
@@ -1482,7 +1482,7 @@
 			= Perf impact on Rendering
 				+ Save main as "prev" first
 				- Try mipmapped -- SHOULD IMPROVE!
-					- Save current (linear) as "next"
+					+ Save current (linear) as "prev"
 
 		= Shader finalization:
 			+ EffectiveAmbientLight
@@ -1498,7 +1498,7 @@
 					+ No rotation at roots
 				+ Cleanup commented-out code
 			- Try perf impact with packing uniforms in vec's
-				- Copy current to "...Next" first
+				- Copy current to "prev" first
 
 		- Remove all logs
 			- WorldRenderContext.cpp
