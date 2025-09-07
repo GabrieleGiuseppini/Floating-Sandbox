@@ -1520,14 +1520,23 @@
 			+ WorldRenderContext.cpp
 			+ UnderwaterPlants.cpp
 
-		= Test on old Dell
+		+ Test on old Dell
 			+ Rendering impact (test against density 0)
 				+ Old: zoom 0.04: rnd=11.0-11.6
 				+ New: zoom 0.04: rnd=16			
 			+ Static vertex reloads (by playing with density changes)
-			- See if bad perf due to dynamic uploads (comment-out for test)
-			- Disable on low-gfx-score computers
-				- Re-test on old Dell
+			X See if bad perf due to dynamic uploads (comment-out for test)
+			+ Lower on low-gfx-score computers
+				+ Re-test on old Dell
+				+ Re-test on new Dell
+
+		- FIX: rectangle patch (again...) with plant 6
+			X Option 1: all powers of two
+				- Check first how we build the atlas
+				- Port to Android - write it there!
+			- Option 2: more border above
+			- Option 3: alpha cut in shader at 0.0 and 1.0
+				- Replaces clamp
 
 		- Merge into master
 
