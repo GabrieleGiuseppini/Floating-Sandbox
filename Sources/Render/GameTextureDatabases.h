@@ -112,8 +112,9 @@ enum class GenericMipMappedTextureGroups : uint16_t
     SmokeLight,
     TimerBomb,
     TimerBombFuse,
+    UnderwaterPlant,
 
-    _Last = TimerBombFuse
+    _Last = UnderwaterPlant
 };
 
 struct GenericMipMappedTextureDatabase
@@ -158,6 +159,8 @@ struct GenericMipMappedTextureDatabase
             return GenericMipMappedTextureGroups::TimerBomb;
         else if (Utils::CaseInsensitiveEquals(str, "TimerBombFuse"))
             return GenericMipMappedTextureGroups::TimerBombFuse;
+        else if (Utils::CaseInsensitiveEquals(str, "UnderwaterPlant"))
+            return GenericMipMappedTextureGroups::UnderwaterPlant;
         else
             throw GameException("Unrecognized GenericMipMappedTexture texture group \"" + str + "\"");
     }
@@ -173,7 +176,6 @@ enum class GenericLinearTextureGroups : uint16_t
     PhysicsProbePanel,
     ShiftNotification,
     SoundMuteNotification,
-    UnderwaterPlant,
     UVModeNotification,
 
     _Last = UVModeNotification
@@ -199,8 +201,6 @@ struct GenericLinearTextureDatabase
             return GenericLinearTextureGroups::ShiftNotification;
         else if (Utils::CaseInsensitiveEquals(str, "SoundMuteNotification"))
             return GenericLinearTextureGroups::SoundMuteNotification;
-        else if (Utils::CaseInsensitiveEquals(str, "UnderwaterPlant"))
-            return GenericLinearTextureGroups::UnderwaterPlant;
         else if (Utils::CaseInsensitiveEquals(str, "UVModeNotification"))
             return GenericLinearTextureGroups::UVModeNotification;
         else

@@ -1470,7 +1470,7 @@
 			+ Density
 			+ SizeMultiplier		
 
-		- Tests:
+		+ Tests:
 			+ Wind on Rain (we've touched that)
 			+ Density changes
 			+ Ocean floor changes do propagate: (also verify we upload here and only here, via existing logs)
@@ -1479,10 +1479,16 @@
 				+ Bumpiness 
 				+ Ocean depth
 			+ OceanSurface is sampled
-			= Perf impact on Rendering
+			+ Perf impact on Rendering
 				+ Save main as "prev" first
-				- Try mipmapped -- SHOULD IMPROVE!
+				+ Try mipmapped -- SHOULD IMPROVE!
 					+ Save current (linear) as "prev"
+					+ Test:
+						+ Look'n'feel
+						+ Perf:
+							+ Zoom 0.04, SizeMultiplier & density max:
+								- Linear: 12.6-12.9 (avg: 12.8)
+								- MipMapped: 12.6-12.9 (avg: 12.7)
 
 		= Shader finalization:
 			+ EffectiveAmbientLight
@@ -1499,6 +1505,7 @@
 				+ Cleanup commented-out code
 			- Try perf impact with packing uniforms in vec's
 				- Copy current to "prev" first
+			- Make textures' bottoms narrow
 
 		- Remove all logs
 			- WorldRenderContext.cpp
