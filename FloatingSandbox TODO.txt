@@ -1511,8 +1511,8 @@
 					+ After: same
 			+ Make textures' bottoms narrow, and centered
 
-		- Remove all logs
-			- WorldRenderContext.cpp
+		+ Remove all logs
+			+ WorldRenderContext.cpp
 			+ UnderwaterPlants.cpp
 
 		- Test on Dell

@@ -1651,8 +1651,6 @@ void WorldRenderContext::RenderPrepareUnderwaterPlants(
     {
         if (!mUnderwaterPlantStaticVertexBuffer.empty())
         {
-            LogMessage("TODOTEST: uploading UWPlants Static Vertex Attribs");
-
             glBindBuffer(GL_ARRAY_BUFFER, *mUnderwaterPlantStaticVBO);
 
             if (mUnderwaterPlantStaticVertexBuffer.size() > mUnderwaterPlantStaticVBOAllocatedVertexSize)
@@ -1710,29 +1708,21 @@ void WorldRenderContext::RenderPrepareUnderwaterPlants(
 
     if (mIsCurrentUnderwaterPlantsRotationAngleDirty)
     {
-        LogMessage("TODOTEST: uploading UnderwaterPlantRotationAngle");
-
         mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::UnderwaterPlant, GameShaderSets::ProgramParameterKind::UnderwaterPlantRotationAngle>(mCurrentUnderwaterPlantsRotationAngle);
     }
 
     if (mIsCurrentUnderwaterCurrentSpaceVelocityDirty)
     {
-        LogMessage("TODOTEST: uploading UnderwaterCurrentSpaceVelocity");
-
         mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::UnderwaterPlant, GameShaderSets::ProgramParameterKind::UnderwaterCurrentSpaceVelocity>(mCurrentUnderwaterCurrentSpaceVelocity);
     }
 
     if (mIsCurrentUnderwaterCurrentTimeVelocityDirty)
     {
-        LogMessage("TODOTEST: uploading UnderwaterCurrentTimeVelocity");
-
         mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::UnderwaterPlant, GameShaderSets::ProgramParameterKind::UnderwaterCurrentTimeVelocity>(mCurrentUnderwaterCurrentTimeVelocity);
     }
 
     if (mIsCurrentWindDirectionDirty)
     {
-        LogMessage("TODOTEST: uploading WindDirection");
-
         // Set parameter
         mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::UnderwaterPlant, GameShaderSets::ProgramParameterKind::WindDirection>(
             mCurrentWindDirection);
