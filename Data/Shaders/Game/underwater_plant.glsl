@@ -92,8 +92,8 @@ void main()
     // Plant flattening
     angle = mix(
         angle,
-        PI / 2.0 * paramWindDirection,
-        smoothstep(-3.0, 0.0, vertexWorldOceanDepth)); // Still angle below surface; flat on surface
+        PI / 2.0 * 0.95 * paramWindDirection,
+        smoothstep(-3.0, 0.0, vertexWorldOceanDepth) * min(vertexPlantSpaceCoords.y * 10.0, 1.0)); // Still angle below surface; flat on surface
             
     // Rotate around bottom
     vec2 rotatedPlantSpacePosition = vertexPlantSpaceCoords * GetRotationMatrix(angle);

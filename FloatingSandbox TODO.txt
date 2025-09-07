@@ -1480,12 +1480,12 @@
 			+ OceanDarkeningRate
 				+ Copy from Fishes
 			+ Personality
-			= Retry flattening
+			+ Retry flattening
 				+ Do proper wind direction
 					+ Requires shader parameter and member, which gets set dirty @ existing UploadWind, and is reset and UploadEnd
 					+ Use in shader
-				- FIX: bottom (roots) should not rotate - or else "roots" show up
-					- TODO: how exactly?
+				+ FIX: bottom (roots) should not rotate - or else "roots" show up
+					+ No rotation at roots
 				+ Cleanup commented-out code
 			- Try perf impact with packing uniforms in vec's
 				- Copy current to "...Next" first

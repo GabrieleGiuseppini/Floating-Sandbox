@@ -314,7 +314,7 @@ void Wind::UpdateEnd()
 
 void Wind::Upload(RenderContext & renderContext) const
 {
-    renderContext.UploadWind(mCurrentWindSpeed);
+    renderContext.UploadWind(mCurrentWindSpeed, mBaseSpeedMagnitude);
 }
 
 GameWallClock::duration Wind::ChooseDuration(float minSeconds, float maxSeconds)

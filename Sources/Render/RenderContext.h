@@ -865,9 +865,9 @@ public:
         mWorldRenderContext->UploadStarsEnd();
     }
 
-    inline void UploadWind(vec2f const & instantSpeed)
+    inline void UploadWind(vec2f const & instantSpeed, float basisWindMagnitude)
     {
-        mWorldRenderContext->UploadWind(instantSpeed);
+        mWorldRenderContext->UploadWind(instantSpeed, basisWindMagnitude);
     }
 
     inline void UploadUnderwaterCurrent(float spaceVelocity, float timeVelocity)

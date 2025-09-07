@@ -106,7 +106,7 @@ public:
 
     void UploadStarsEnd();
 
-    inline void UploadWind(vec2f const & instantSpeed)
+    inline void UploadWind(vec2f const & instantSpeed, float basisWindMagnitude)
     {
         float const smoothedWindMagnitude = mWindSpeedMagnitudeRunningAverage.Update(instantSpeed.x);
         if (smoothedWindMagnitude != mCurrentSmoothedWindSpeedMagnitude) // Damp frequency of calls
@@ -115,7 +115,7 @@ public:
             mIsCurrentSmoothedWindSpeedMagnitudeDirty = true;
         }
 
-        float const windDirection = (instantSpeed.x >= 0.0f) ? 1.0f : -1.0f;
+        float const windDirection = (basisWindMagnitude >= 0.0f) ? 1.0f : -1.0f;
         if (windDirection != mCurrentWindDirection) // Damp frequency of calls
         {
             mCurrentWindDirection = windDirection;
