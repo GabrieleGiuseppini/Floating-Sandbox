@@ -643,6 +643,7 @@ TextureAtlas<TTextureDatabase> TextureAtlasBuilder<TTextureDatabase>::InternalBu
                 dx + static_cast<float>(frameActualPosition.x) / static_cast<float>(specification.AtlasSize.width),
                 dy + static_cast<float>(frameActualPosition.y) / static_cast<float>(specification.AtlasSize.height)),
             // Top-right
+            // Note: this is equivalent to bottom_left + dx + (frame_size - 1) / (atlas_size)
             vec2f(
                 static_cast<float>(frameActualPosition.x + textureFrame.TextureData.Size.width) / static_cast<float>(specification.AtlasSize.width) - dx,
                 static_cast<float>(frameActualPosition.y + textureFrame.TextureData.Size.height) / static_cast<float>(specification.AtlasSize.height) - dy),
