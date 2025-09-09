@@ -63,7 +63,7 @@ public:
 
     size_t GetUnderwaterPlantsSpeciesCount() const
     {
-        return mGlobalRenderContext.GetGenericMipMappedTextureAtlasMetadata().GetFrameCount(GameTextureDatabases::GenericMipMappedTextureDatabase::TextureGroupsType::UnderwaterPlant);
+        return mGlobalRenderContext.GetGenericLinearTextureAtlasMetadata().GetFrameCount(GameTextureDatabases::GenericLinearTextureDatabase::TextureGroupsType::UnderwaterPlant);
     }
 
     inline float GetStormAmbientDarkening() const
@@ -546,9 +546,9 @@ public:
         float personalitySeed,
         bool isSpecular)
     {
-        auto const & frame = mGlobalRenderContext.GetGenericMipMappedTextureAtlasMetadata().GetFrameMetadata(
+        auto const & frame = mGlobalRenderContext.GetGenericLinearTextureAtlasMetadata().GetFrameMetadata(
             TextureFrameId(
-                GameTextureDatabases::GenericMipMappedTextureDatabase::TextureGroupsType::UnderwaterPlant,
+                GameTextureDatabases::GenericLinearTextureDatabase::TextureGroupsType::UnderwaterPlant,
                 static_cast<TextureFrameIndex>(speciesIndex)));
 
         float const worldWidth = frame.FrameMetadata.WorldWidth * scale;

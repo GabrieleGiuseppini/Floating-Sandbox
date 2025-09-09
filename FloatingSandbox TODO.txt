@@ -1566,9 +1566,9 @@
 				- Do on all other plants
 				- Add comment in database
 				- Redo all textures
-			- Option 5: back to linear
+			+ Option 5: back to linear
 			- When done:
-				- Cleanup shader
+				+ Cleanup shader
 				- Cleanup code
 
 		- Do we need 512-pixel textures?

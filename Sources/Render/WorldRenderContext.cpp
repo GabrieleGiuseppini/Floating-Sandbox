@@ -429,11 +429,11 @@ WorldRenderContext::WorldRenderContext(
         // Set per-species texture properties
         {
             std::vector<vec4f> atlasTileGeometries;
-            for (size_t fi = 0; fi < mGlobalRenderContext.GetGenericMipMappedTextureAtlasMetadata().GetFrameCount(GameTextureDatabases::GenericMipMappedTextureDatabase::TextureGroupsType::UnderwaterPlant); ++fi)
+            for (size_t fi = 0; fi < mGlobalRenderContext.GetGenericLinearTextureAtlasMetadata().GetFrameCount(GameTextureDatabases::GenericLinearTextureDatabase::TextureGroupsType::UnderwaterPlant); ++fi)
             {
-                auto const & frame = mGlobalRenderContext.GetGenericMipMappedTextureAtlasMetadata().GetFrameMetadata(
+                auto const & frame = mGlobalRenderContext.GetGenericLinearTextureAtlasMetadata().GetFrameMetadata(
                     TextureFrameId(
-                        GameTextureDatabases::GenericMipMappedTextureDatabase::TextureGroupsType::UnderwaterPlant,
+                        GameTextureDatabases::GenericLinearTextureDatabase::TextureGroupsType::UnderwaterPlant,
                         static_cast<TextureFrameIndex>(fi)));
 
                 atlasTileGeometries.emplace_back(

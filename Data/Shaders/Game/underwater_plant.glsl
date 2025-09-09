@@ -49,7 +49,7 @@ in vec2 vertexWorld;
 
 // The texture
 uniform vec4 paramAtlasTileGeometryIndexed[7 * 2]; // Keep size with # of underwater plant textures
-uniform sampler2D paramGenericMipMappedTexturesAtlasTexture;
+uniform sampler2D paramGenericLinearTexturesAtlasTexture;
 
 // Params
 uniform float paramSimulationTime;
@@ -115,7 +115,7 @@ void main()
             virtualTextureCoords);
     
     // Sample!
-    vec4 underwaterPlantSample = texture2D(paramGenericMipMappedTexturesAtlasTexture, textureCoords);
+    vec4 underwaterPlantSample = texture2D(paramGenericLinearTexturesAtlasTexture, textureCoords);
 
     //////////////////////////////////////
 
