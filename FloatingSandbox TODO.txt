@@ -318,7 +318,7 @@
 
 		+ Move this work item to Done
 
-	- Bump up version
+	- Bump up version: 1.19.2
 
 	+ No redistribute
 		+ @ License
@@ -344,7 +344,9 @@
 		- See how it would look if cloud shadows at night would be visible via moonlight
 			- If goes through: port to Android
 	- Ocean render optimizations:
-		- Try perf rendering: ocean vertex buffer padding to be aligned
+		+ Baseline: 5.60-5.67-5.80 @ camy~-100
+		X Try perf rendering: ocean vertex buffer padding to be aligned
+			+ 5.60-5.68
 		- Slow rendering: could be due to ocean texture not being mipmapped (bandwidth to transfer texture)
 			- See what LOD is used at default zoom, I'm afraid it's 1
 		- Halve Perlin noise size
@@ -1812,6 +1814,7 @@
 		- Option 0: with current underwater plants
 			- On frontiers
 			- On orphaned points
+			- For vortex: try adding small force perpendicular to direction
 		- Option 1:
 			- New piecewise line across ocean:
 				- Divide the ocean width in N chunks (N ~=256)

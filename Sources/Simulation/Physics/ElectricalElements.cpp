@@ -1150,7 +1150,8 @@ void ElectricalElements::Upload(
     for (auto const jetEngineElementIndex : mJetEnginesSortedByPlaneId)
     {
         auto const & engineState = mElementStateBuffer[jetEngineElementIndex].Engine;
-        if (engineState.CurrentJetEngineFlameVector != vec2f::zero())
+        if (engineState.CurrentJetEngineFlameVector != vec2f::zero()
+            && !IsDeleted(jetEngineElementIndex)) // When deleted the flame vector does not update
         {
             auto const pointIndex = mPointIndexBuffer[jetEngineElementIndex];
 
