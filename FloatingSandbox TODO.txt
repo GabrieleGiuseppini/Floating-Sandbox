@@ -1570,8 +1570,6 @@
 				+ Cleanup shader
 				+ Cleanup code
 
-		- Do we want 512-pixel textures?
-
 		- Merge into master
 
 		+ Changelist
