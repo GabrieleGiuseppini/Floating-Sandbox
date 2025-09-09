@@ -1432,7 +1432,6 @@
 					+ Redo vertex attribs
 					+ Copy code from shadertoy
 
-
 		+ Sort by X for perf
 			+ Change Populate():
 				+ Populate only plants
@@ -1530,7 +1529,7 @@
 				+ Re-test on old Dell
 				+ Re-test on new Dell
 
-		- FIX: rectangle patch (again...) with plant 6
+		+ FIX: rectangle patch (again...) with plant 6
 			X Option 1: all powers of two
 				- Check first how we build the atlas
 				- Port to Android - write it there!
@@ -1567,11 +1566,11 @@
 				- Add comment in database
 				- Redo all textures
 			+ Option 5: back to linear
-			- When done:
+			+ When done:
 				+ Cleanup shader
-				- Cleanup code
+				+ Cleanup code
 
-		- Do we need 512-pixel textures?
+		- Do we want 512-pixel textures?
 
 		- Merge into master
 
