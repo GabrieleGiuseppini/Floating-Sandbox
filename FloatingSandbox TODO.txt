@@ -1534,9 +1534,44 @@
 			X Option 1: all powers of two
 				- Check first how we build the atlas
 				- Port to Android - write it there!
-			- Option 2: more border above
-			- Option 3: alpha cut in shader at 0.0 and 1.0
-				- Replaces clamp
+			+ Check Atlas itself and see what could be falling there
+				+ Need helper to save image: Render/ImageFileTools.h/cpp
+				+ Check individual mipmaps
+				+ Count pixels
+			! Theo values:
+				- Atlas: 4096x2048
+				- MipMap 3 H=256 = 1/8
+				+ Species 6 in-atlas size: 256x256
+				- Species 6 LB corner in MipMap 3: 192, 191 (paint) => 192, 64 (bottom origin)
+				+ Species 6 LB corner in Atlas: 1536, 512 (bottom origin) => 1536, 1535 (paint)
+				- Species 6 LB corner in Atlas space: 0.375, 0.25
+				- Species 6 RB corner in Atlas space: 0.4375, 0.375
+				- Species 6 in-atlas size in Atlas space: 0.0625, 0.125
+				- Species 6 size in Atlas space: 0.0625, 0.125
+				- Dx: 0.0001220703125, 0.000244140625
+				- Species 6 LB corner in Atlas space, incl. dx: 0.3751220703125, 0.250244140625
+					- {x=0.379760742 y=0.250244141 }
+				- Species 6 RB corner in Atlas space, incl. dx: 0.4373779296875, 0.374755859375
+					- {x=0.432739258 y=0.374755859 }
+			+ Confirmed that theoretical y (==actual y) yields artifact
+				! Hence, theory seems wrong...but it's not!
+			+ Try clamp in shader
+			~ Option 2: alpha cut in shader at <= 0.0 and >= 1.0
+				+ Replaces clamp
+			X Option 3: try nearest filters
+			+ Option 4: 1-px border below (if needed)
+				+ Comment-out mask in shader
+				X Do on plant 2 to verify: 1 pixel
+				+ Do on plant 2 to verify: 2 pixels
+				- Do on all other plants
+				- Add comment in database
+				- Redo all textures
+			- Option 5: back to linear
+			- When done:
+				- Cleanup shader
+				- Cleanup code
+
+		- Do we need 512-pixel textures?
 
 		- Merge into master
 
