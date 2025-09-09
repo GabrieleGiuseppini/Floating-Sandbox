@@ -3,7 +3,7 @@ TODO
 - Improved auto-focus on ship
 - Clouds' horizontal positions are now perspective-corrected
 	- Thanks to Dario Bazzichetto for the idea!
-- Performance improvements:
+- Various performance improvements
 	- Significant performance improvements in spring relaxation algorithm
 	- 15% performance improvements in rendering
 - ShipBuilder:
