@@ -9,6 +9,8 @@ set  (SOURCES
 	GameOpenGL_Ext.cpp
 	GameOpenGL_Ext.h
 	GameOpenGLMappedBuffer.h
+	ImageFileTools.cpp
+	ImageFileTools.h
 	MultiProviderVertexBuffer.h
 	ShaderManager.cpp.inl
 	ShaderManager.h
