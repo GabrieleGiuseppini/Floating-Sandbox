@@ -230,7 +230,7 @@ enum class VertexAttributeKind : std::uint32_t
 
     UnderwaterPlantStatic1 = 0,
     UnderwaterPlantStatic2 = 1,
-    UnderwaterPlantDynamic1 = 3,
+    UnderwaterPlantDynamic1 = 2,
 
     AMBombPreImplosion1 = 0,
     AMBombPreImplosion2 = 1,
