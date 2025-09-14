@@ -779,10 +779,10 @@
 			+ Taken A.S. Te Aroha
 			+ DEV Aratere: (under To Take)
 				+ Rename to D/E
-		- Lorotanic
-			- Fix its metadata
-			- Fix lights switch (OFF by default)
-			- Replace existing
+		+ Lorotanic
+			+ Fix its metadata
+			+ Fix lights switch (OFF by default)
+			+ Replace existing
 		+ From Mrs. Magic (The_Raven):
 			+ Asked credits: "Mrs. Magic"
 			+ Alaska (in To Take)
