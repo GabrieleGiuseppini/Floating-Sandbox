@@ -8,6 +8,12 @@
 
 	=========================================================================
 
+	+ No redistribute
+		+ @ License
+	
+	+ When tsunami starts you can see edges during the shaking
+		+ Also port to Android
+
 	+ Underwater plants
 		! If plant above water it should be flat
 		! Generalized concept of "underwater currents", via Formulae to ensure consistency in a distributed implementation 
@@ -318,13 +324,13 @@
 
 		+ Move this work item to Done
 
+	+ Send beta
+	+ Bump up version
+
+
+
 	- Bump up version: 1.19.2
 
-	+ No redistribute
-		+ @ License
-	
-	+ When tsunami starts you can see edges during the shaking
-		+ Also port to Android
 
 	- DoDisplaceWater setting should also control Fishes and NPCs
 		- ...find if anything else displaces water without checking toggle
@@ -759,9 +765,6 @@
 			+ Test: _TO_TRY/Bartosz1944PL
 			- Asked credits
 			- Move to final
-		+ S.S. Andrea Doria, in _TO_TAKE
-			+ Already in credits, ship is ready
-
 
 
 
@@ -771,6 +774,8 @@
 				- Check ShipBucket
 			+ Garibaldi: take (check meta)
 			+ MAS: take for replace (check meta)
+		- MIA: two ships
+			- Replace Chateau?
 		+ From BumBumBaby (under _TOTEST)
 			+ Oceanos: take
 				+ Credits: BumBumBaby
@@ -788,9 +793,6 @@
 			+ Alaska (in To Take)
 			+ Oslofjord: (in To Take)
 
-		- Konigsbreg, under _TO_TRY
-			+ Already in credits, cleared by author
-			- Need to cleanup
 		
 
 - Ubuntu:
