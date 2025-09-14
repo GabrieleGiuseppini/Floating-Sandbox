@@ -118,14 +118,14 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
         {1, wxS("Daniel Tammeling (linux)"), VMargin3},
 
         {0, _("SHIP ENGINEERING"), 0},
+        {2, wxS("Albert Windsor    Takara    Rockabilly Rebel    McShooter2018    sinking_feeling    braun    P1X    Higuys153    QHM    Mrs. Magic"), 0},
         {2, wxS("Pandadude12345    John Smith    Dkuz    Loree    Daewoom    Arkstar_    BeamierBoomer    Kazindel    KV Mauvmellow    Longhorn"), 0},
         {2, wxS("JackTheBrickfilmMaker    Michael Bozarth    Officer TimCan    Darek225    HummeL    Fox Assor    Mattytitanic    LostLinerLegend"), 0},
         {2, wxS("Pac0master    CorbinPasta93    Yorkie    Bluefox    Kiko    Raynair    Menta1ity    Transportation Fan    BumBumBaby    LJKMagic"), 0},
         {2, wxS("Matthew Anderson    DennisDanielGrimaldo    blue_funnel    Charles Calvin    Denis    Aqua    Hellooping    Ventrix    M2L"), 0},
         {2, wxS("Dumbphones    NotTelling    Hugo_2503    _ASTYuu_    Serhiiiihres    CPM    Pocketwatch    MTF    Gustav Shedletsky"), 0},
         {2, wxS("Mia    Truce#3326    RetroGraczzPL    Nomadavid    Wreno    R.M.S. Atlantic    Golden    doctor1922    TheCochu444yt"), 0},
-        {2, wxS("MasterGarfield    Aur\xe9lien WOLFF    Alex di Roma    2017 Leonardo    FER ZCL    AvSimplified    Techo    Ha-Ha Hans"), 0},
-        {2, wxS("Albert Windsor    Takara    Rockabilly Rebel    McShooter2018    sinking_feeling    braun    P1X    Higuys153    QHM"), VMargin3},
+        {2, wxS("MasterGarfield    Aur\xe9lien WOLFF    Alex di Roma    2017 Leonardo    FER ZCL    AvSimplified    Techo    Ha-Ha Hans"), VMargin3},
 
         {0, _("FACTORY OF IDEAS"), 0},
         {1, wxS("Mattia Giuseppini"), VMargin3},

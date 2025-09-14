@@ -783,10 +783,10 @@
 			- Fix its metadata
 			- Fix lights switch (OFF by default)
 			- Replace existing
-		- From Mrs. Magic (The_Raven):
-			= Asked credits: "Mrs. Magic"
-			= Alaska (in To Take)
-			= Oslofjord: (in To Take)
+		+ From Mrs. Magic (The_Raven):
+			+ Asked credits: "Mrs. Magic"
+			+ Alaska (in To Take)
+			+ Oslofjord: (in To Take)
 
 		- Konigsbreg, under _TO_TRY
 			+ Already in credits, cleared by author
