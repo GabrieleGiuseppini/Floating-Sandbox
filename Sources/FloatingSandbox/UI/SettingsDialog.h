@@ -27,9 +27,7 @@
 #include <string>
 #include <vector>
 
-// TODOTEST
-//#define PARALLELISM_EXPERIMENTS 0
-#define PARALLELISM_EXPERIMENTS 1
+#define PARALLELISM_EXPERIMENTS 0
 
 class SettingsDialog : public wxFrame
 {

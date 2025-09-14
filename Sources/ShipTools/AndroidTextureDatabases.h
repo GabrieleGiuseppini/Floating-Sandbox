@@ -22,7 +22,9 @@ enum class UITextureGroups : uint16_t
     TimeOfDayIcon,
     ViewIcon,
 
+    AutoFocusOnShipIcon,
     CloseIcon,
+    CpuPerformanceIcon,
     ElectricalPanelIcon,
     ExitIcon,
     NpcFurnitureGroupIcon,
@@ -30,8 +32,11 @@ enum class UITextureGroups : uint16_t
     NpcMoveIcon,
     NpcRemoveIcon,
     NpcTurnaroundIcon,
+    OceanDepthDarkeningIcon,
     ReloadIcon,
+    RenderShipIcon,
     RogueWaveIcon,
+    ThermometerIcon,
     TriggersIcon,
     TsunamiIcon,
     UnderConstructionIcon,
@@ -84,8 +89,12 @@ struct UITextureDatabase
             return UITextureGroups::TimeOfDayIcon;
         else if (Utils::CaseInsensitiveEquals(str, "view_icon"))
             return UITextureGroups::ViewIcon;
+        else if (Utils::CaseInsensitiveEquals(str, "auto_focus_on_ship_icon"))
+            return UITextureGroups::AutoFocusOnShipIcon;
         else if (Utils::CaseInsensitiveEquals(str, "close_icon"))
             return UITextureGroups::CloseIcon;
+        else if (Utils::CaseInsensitiveEquals(str, "cpu_performance_icon"))
+            return UITextureGroups::CpuPerformanceIcon;
         else if (Utils::CaseInsensitiveEquals(str, "electrical_panel_icon"))
             return UITextureGroups::ElectricalPanelIcon;
         else if (Utils::CaseInsensitiveEquals(str, "exit_icon"))
@@ -100,10 +109,16 @@ struct UITextureDatabase
             return UITextureGroups::NpcRemoveIcon;
         else if (Utils::CaseInsensitiveEquals(str, "npc_turnaround_icon"))
             return UITextureGroups::NpcTurnaroundIcon;
+        else if (Utils::CaseInsensitiveEquals(str, "ocean_depth_darkening_icon"))
+            return UITextureGroups::OceanDepthDarkeningIcon;
         else if (Utils::CaseInsensitiveEquals(str, "reload_icon"))
             return UITextureGroups::ReloadIcon;
+        else if (Utils::CaseInsensitiveEquals(str, "render_ship_icon"))
+            return UITextureGroups::RenderShipIcon;
         else if (Utils::CaseInsensitiveEquals(str, "rogue_wave_icon"))
             return UITextureGroups::RogueWaveIcon;
+        else if (Utils::CaseInsensitiveEquals(str, "thermometer_icon"))
+            return UITextureGroups::ThermometerIcon;
         else if (Utils::CaseInsensitiveEquals(str, "triggers_icon"))
             return UITextureGroups::TriggersIcon;
         else if (Utils::CaseInsensitiveEquals(str, "tsunami_icon"))

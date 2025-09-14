@@ -20,6 +20,12 @@ bool AskPasswordDialog::CheckPasswordProtectedEdit(
     wxWindow * parent,
     GameAssetManager const & gameAssetManager)
 {
+    //// TODOTEST
+    //(void)shipDefinition;
+    //(void)parent;
+    //(void)gameAssetManager;
+    //return true;
+
     if (!shipDefinition.Metadata.Password.has_value())
     {
         // No password to check

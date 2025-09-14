@@ -331,6 +331,8 @@
 
 	- Lightning tool, like in Android
 
+	- See perf impact with double the world
+
 
 
 
@@ -759,20 +761,32 @@
 			- Move to final
 		+ S.S. Andrea Doria, in _TO_TAKE
 			+ Already in credits, ship is ready
-		- From LJKMagic
-			= Asked credits: LJKMagic 
+
+
+
+
+		= From MattyTitanic (under _TOTEST) (+ already credited)
+			- Agincourt (very cool)
+				- Asked to make balanced, he's making it
+				- Check ShipBucket
+			+ Garibaldi: take (check meta)
+			+ MAS: take for replace (check meta)
+		+ From BumBumBaby (under _TOTEST)
+			+ Oceanos: take
+				+ Credits: BumBumBaby
+		+ From LJKMagic
+			+ Asked credits: LJKMagic 
 			+ Taken A.S. Te Aroha
-			= DEV Aratere: asked "DEV" (under To Take)
-				- "D.E.V.", rename - asked D/E
+			+ DEV Aratere: (under To Take)
+				+ Rename to D/E
 		- Lorotanic
 			- Fix its metadata
 			- Fix lights switch (OFF by default)
 			- Replace existing
-		- From Mrs. Magic:
+		- From Mrs. Magic (The_Raven):
 			= Asked credits: "Mrs. Magic"
 			= Alaska (in To Take)
-			= Oslofjord: asked to fix it
-				- Receive it
+			= Oslofjord: (in To Take)
 
 		- Konigsbreg, under _TO_TRY
 			+ Already in credits, cleared by author
