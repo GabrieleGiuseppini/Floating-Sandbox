@@ -774,8 +774,8 @@
 				- Check ShipBucket
 			+ Garibaldi: take (check meta)
 			+ MAS: take for replace (check meta)
-		- MIA: two ships
-			- Replace Chateau?
+		+ MIA: two ships
+			+ Replace Chateau
 		+ From BumBumBaby (under _TOTEST)
 			+ Oceanos: take
 				+ Credits: BumBumBaby

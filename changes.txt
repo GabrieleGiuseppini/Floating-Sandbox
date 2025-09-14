@@ -8,7 +8,7 @@ TODO
 	- 15% performance improvements in rendering
 - ShipBuilder:
 	- Added StructureTracer tool: automatically traces a ship's hull from a texture
-- Added 8 new ships
+- Added 9 new ships
 - ...and a few more small improvements and glitch fixes here and there!
 
 1.19.1
