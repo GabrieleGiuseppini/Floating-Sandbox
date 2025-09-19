@@ -218,8 +218,8 @@ public:
 
     void BlitFromRegion(
         Buffer2D const & source,
-        _IntegralRect<TIntegralTag> const & sourceRegion,
-        _IntegralCoordinates<TIntegralTag> const & targetPos)
+        _IntegralRect<TIntegralTag> const & sourceRegion, // Expected to be contained in source buffer
+        _IntegralCoordinates<TIntegralTag> const & targetPos) // Might be anywhere
     {
         BlitFromRegion(
             source,

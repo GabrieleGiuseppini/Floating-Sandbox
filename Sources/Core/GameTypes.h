@@ -445,6 +445,11 @@ struct _IntegralSize
             static_cast<int>(std::roundf(static_cast<float>(this->height) * factor)));
     }
 
+    float CalculateAspectRatio() const
+    {
+        return static_cast<float>(this->width) / static_cast<float>(this->height);
+    }
+
     inline size_t GetLinearSize() const
     {
         return this->width * this->height;
@@ -1163,6 +1168,15 @@ struct FloatRect
                 newOrigin,
                 newSize);
         }
+    }
+
+    FloatRect MakeScaled(float proportion) const
+    {
+        auto const center = CalculateCenter();
+        auto const newSize = size * proportion;
+        return FloatRect(
+            vec2f(center.x - newSize.width / 2.0f, center.y - newSize.height / 2.0f),
+            newSize);
     }
 
     std::string ToString() const

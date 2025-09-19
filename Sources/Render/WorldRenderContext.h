@@ -929,6 +929,11 @@ private:
     void RecalculateClearCanvasColor(RenderParameters const & renderParameters);
     void RecalculateWorldBorder(RenderParameters const & renderParameters);
 
+    RgbaImageData InternalMakeThumbnail(
+        RgbaImageData const & imageData,
+        float worldWidth,
+        float worldHeight);
+
 private:
 
     IAssetManager const & mAssetManager;

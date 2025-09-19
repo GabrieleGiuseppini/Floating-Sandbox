@@ -35,6 +35,7 @@ enum class UITextureGroups : uint16_t
     OceanDepthDarkeningIcon,
     ReloadIcon,
     RenderShipIcon,
+    RenderWorldIcon,
     RogueWaveIcon,
     ThermometerIcon,
     TriggersIcon,
@@ -115,6 +116,8 @@ struct UITextureDatabase
             return UITextureGroups::ReloadIcon;
         else if (Utils::CaseInsensitiveEquals(str, "render_ship_icon"))
             return UITextureGroups::RenderShipIcon;
+        else if (Utils::CaseInsensitiveEquals(str, "render_world_icon"))
+            return UITextureGroups::RenderWorldIcon;
         else if (Utils::CaseInsensitiveEquals(str, "rogue_wave_icon"))
             return UITextureGroups::RogueWaveIcon;
         else if (Utils::CaseInsensitiveEquals(str, "thermometer_icon"))
@@ -172,6 +175,20 @@ struct UITextureDatabase
         else
             throw GameException("Unrecognized UI texture group \"" + str + "\"");
     }
+};
+
+// Placeholders for dynamically-constructed atlases
+
+enum class DynamicAtlasTextureGroupsType : uint16_t
+{
+    Item = 0,
+
+    _Last = Item
+};
+
+struct DynamicAtlasTextureDatabase
+{
+    using TextureGroupsType = DynamicAtlasTextureGroupsType;
 };
 
 }

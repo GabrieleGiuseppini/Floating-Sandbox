@@ -12,7 +12,7 @@
 #include <cstring>
 #include <limits>
 
-ImageSize constexpr ThumbnailSize(32, 32);
+int constexpr ThumbnailSize = 32;
 
 WorldRenderContext::WorldRenderContext(
     IAssetManager const & assetManager,
@@ -673,10 +673,10 @@ void WorldRenderContext::InitializeWorldTextures()
         auto originalTextureImage = mAssetManager.LoadTextureDatabaseFrameRGBA(
             GameTextureDatabases::WorldTextureDatabase::DatabaseName,
             tfs.RelativePath);
-        auto textureThumbnail = ImageTools::Resize(
+        auto textureThumbnail = InternalMakeThumbnail(
             originalTextureImage,
-            originalTextureImage.Size.ShrinkToFit(ThumbnailSize),
-            ImageTools::FilterKind::Bilinear);
+            tfs.Metadata.WorldWidth,
+            tfs.Metadata.WorldHeight);
 
         assert(static_cast<size_t>(tfs.Metadata.FrameId.FrameIndex) == mOceanAvailableThumbnails.size());
 
@@ -697,10 +697,10 @@ void WorldRenderContext::InitializeWorldTextures()
         auto originalTextureImage = mAssetManager.LoadTextureDatabaseFrameRGBA(
             GameTextureDatabases::WorldTextureDatabase::DatabaseName,
             tfs.RelativePath);
-        auto textureThumbnail = ImageTools::Resize(
+        auto textureThumbnail = InternalMakeThumbnail(
             originalTextureImage,
-            originalTextureImage.Size.ShrinkToFit(ThumbnailSize),
-            ImageTools::FilterKind::Bilinear);
+            tfs.Metadata.WorldWidth,
+            tfs.Metadata.WorldHeight);
 
         assert(static_cast<size_t>(tfs.Metadata.FrameId.FrameIndex) == mLandAvailableThumbnails.size());
 
@@ -2495,4 +2495,80 @@ void WorldRenderContext::RecalculateWorldBorder(RenderParameters const & renderP
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
+}
+
+RgbaImageData WorldRenderContext::InternalMakeThumbnail(
+    RgbaImageData const & imageData,
+    float worldWidth,
+    float worldHeight)
+{
+    //
+    // Create thumbnail from image scaled according to world A/R,
+    // and eventually repeated to fill the thumbnail
+    //
+
+    // Create template
+
+    ImageSize templateSize(0, 0);
+    if (worldWidth >= worldHeight)
+    {
+        templateSize = ImageSize(
+            ThumbnailSize,
+            static_cast<int>(std::roundf(static_cast<float>(ThumbnailSize) * worldHeight / worldWidth)));
+    }
+    else
+    {
+        templateSize = ImageSize(
+            static_cast<int>(std::roundf(static_cast<float>(ThumbnailSize) * worldWidth / worldHeight)),
+            ThumbnailSize);
+    }
+
+    assert(templateSize.width > 0 && templateSize.width <= ThumbnailSize
+        && templateSize.height > 0 && templateSize.height <= ThumbnailSize);
+
+    RgbaImageData const templateImage = ImageTools::Resize(
+        imageData,
+        templateSize,
+        ImageTools::FilterKind::Bilinear);
+
+    //
+    // Repeat template to fill thumbnail
+    //
+
+    RgbaImageData thumbnailImage = RgbaImageData(ThumbnailSize, ThumbnailSize);
+
+    if (worldWidth >= worldHeight)
+    {
+        // Repeat vertically
+        for (int yStart = 0; yStart < thumbnailImage.Size.height; /*incremented in loop*/)
+        {
+            int const yToCopy = std::min(thumbnailImage.Size.height - yStart, templateSize.height);
+            assert(yToCopy > 0);
+
+            thumbnailImage.BlitFromRegion(
+                templateImage,
+                ImageRect({ 0, 0 }, ImageSize(ThumbnailSize, yToCopy)),
+                { 0, yStart });
+
+            yStart += yToCopy;
+        }
+    }
+    else
+    {
+        // Repeat horizontally
+        for (int xStart = 0; xStart < thumbnailImage.Size.width; /*incremented in loop*/)
+        {
+            int const xToCopy = std::min(thumbnailImage.Size.width - xStart, templateSize.width);
+            assert(xToCopy > 0);
+
+            thumbnailImage.BlitFromRegion(
+                templateImage,
+                ImageRect({ 0, 0 }, ImageSize(xToCopy, ThumbnailSize)),
+                { xStart, 0 });
+
+            xStart += xToCopy;
+        }
+    }
+
+    return thumbnailImage;
 }
