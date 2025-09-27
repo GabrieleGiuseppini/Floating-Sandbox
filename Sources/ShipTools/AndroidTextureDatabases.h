@@ -27,16 +27,21 @@ enum class UITextureGroups : uint16_t
     CpuPerformanceIcon,
     ElectricalPanelIcon,
     ExitIcon,
+    LandTextureThumbnail, // Dedicated
     NpcFurnitureGroupIcon,
     NpcHumanGroupIcon,
     NpcMoveIcon,
     NpcRemoveIcon,
     NpcTurnaroundIcon,
     OceanDepthDarkeningIcon,
+    OceanDepthThumbnail, // Dedicated
+    OceanTextureThumbnail, // Dedicated
     ReloadIcon,
     RenderShipIcon,
     RenderWorldIcon,
     RogueWaveIcon,
+    SkyCrepuscolarThumbnail, // Dedicated
+    StormIcon,
     ThermometerIcon,
     TriggersIcon,
     TsunamiIcon,
@@ -55,11 +60,11 @@ enum class UITextureGroups : uint16_t
     ElecElem_PowerMonitor,
     ElecElem_ShipSoundSwitch,
     ElecElem_WatertightDoor,
+    MatteQuad,
     SettingsIcons,
     SliderGuideTip,
     SliderGuideBody,
     SliderKnob,
-    StormIcon,
     ToolIcons,
     LaserCannon,
     TriangleH,
@@ -100,6 +105,8 @@ struct UITextureDatabase
             return UITextureGroups::ElectricalPanelIcon;
         else if (Utils::CaseInsensitiveEquals(str, "exit_icon"))
             return UITextureGroups::ExitIcon;
+        else if (Utils::CaseInsensitiveEquals(str, "land_texture_thumbnail"))
+            return UITextureGroups::LandTextureThumbnail;
         else if (Utils::CaseInsensitiveEquals(str, "npc_furniture_group_icon"))
             return UITextureGroups::NpcFurnitureGroupIcon;
         else if (Utils::CaseInsensitiveEquals(str, "npc_human_group_icon"))
@@ -112,6 +119,10 @@ struct UITextureDatabase
             return UITextureGroups::NpcTurnaroundIcon;
         else if (Utils::CaseInsensitiveEquals(str, "ocean_depth_darkening_icon"))
             return UITextureGroups::OceanDepthDarkeningIcon;
+        else if (Utils::CaseInsensitiveEquals(str, "ocean_depth_thumbnail"))
+            return UITextureGroups::OceanDepthThumbnail;
+        else if (Utils::CaseInsensitiveEquals(str, "ocean_texture_thumbnail"))
+            return UITextureGroups::OceanTextureThumbnail;
         else if (Utils::CaseInsensitiveEquals(str, "reload_icon"))
             return UITextureGroups::ReloadIcon;
         else if (Utils::CaseInsensitiveEquals(str, "render_ship_icon"))
@@ -120,6 +131,10 @@ struct UITextureDatabase
             return UITextureGroups::RenderWorldIcon;
         else if (Utils::CaseInsensitiveEquals(str, "rogue_wave_icon"))
             return UITextureGroups::RogueWaveIcon;
+        else if (Utils::CaseInsensitiveEquals(str, "sky_crepuscolar_thumbnail"))
+            return UITextureGroups::SkyCrepuscolarThumbnail;
+        else if (Utils::CaseInsensitiveEquals(str, "storm_icon"))
+            return UITextureGroups::StormIcon;
         else if (Utils::CaseInsensitiveEquals(str, "thermometer_icon"))
             return UITextureGroups::ThermometerIcon;
         else if (Utils::CaseInsensitiveEquals(str, "triggers_icon"))
@@ -154,6 +169,8 @@ struct UITextureDatabase
             return UITextureGroups::ElecElem_ShipSoundSwitch;
         else if (Utils::CaseInsensitiveEquals(str, "elec_elem_watertight_door"))
             return UITextureGroups::ElecElem_WatertightDoor;
+        else if (Utils::CaseInsensitiveEquals(str, "matte_quad"))
+            return UITextureGroups::MatteQuad;
         else if (Utils::CaseInsensitiveEquals(str, "settings_icons"))
             return UITextureGroups::SettingsIcons;
         else if (Utils::CaseInsensitiveEquals(str, "slider_guide_tip"))
@@ -162,8 +179,6 @@ struct UITextureDatabase
             return UITextureGroups::SliderGuideBody;
         else if (Utils::CaseInsensitiveEquals(str, "slider_knob"))
             return UITextureGroups::SliderKnob;
-        else if (Utils::CaseInsensitiveEquals(str, "storm_icon"))
-            return UITextureGroups::StormIcon;
         else if (Utils::CaseInsensitiveEquals(str, "tool_icons"))
             return UITextureGroups::ToolIcons;
         else if (Utils::CaseInsensitiveEquals(str, "laser_cannon"))
