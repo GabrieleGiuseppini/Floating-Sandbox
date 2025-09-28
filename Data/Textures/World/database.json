@@ -143,8 +143,8 @@
 			"display_name": "Crystalline Clear"
 		},
 		{	
-			"world_width": 25.0,
-			"world_height": 25.0,
+			"world_width": 64.0,
+			"world_height": 64.0,
 			"frame_name_pattern": "ocean_1",
 			"display_name": "Crystalline 1"
 		},
