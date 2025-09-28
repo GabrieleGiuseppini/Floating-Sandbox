@@ -331,6 +331,8 @@
 
 	- Bump up version: 1.19.2
 
+	+ Higher-definition world textures (from Android work)
+
 
 	- DoDisplaceWater setting should also control Fishes and NPCs
 		- ...find if anything else displaces water without checking toggle
