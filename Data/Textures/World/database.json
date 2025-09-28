@@ -6,14 +6,32 @@
 	"auto_assign_frame_indices": true,
 	"frames":[
 		{
-			"world_width": 128.0,
-			"world_height": 128.0,
+			"world_width": 100.0,
+			"world_height": 100.0,
 			"frame_name_pattern": "land_0",
-			"display_name": "Sand"
+			"display_name": "Sand 1"
 		},
 		{
-			"world_width": 128.0,
-			"world_height": 128.0,
+			"world_width": 100.0,
+			"world_height": 100.0,
+			"frame_name_pattern": "land_19",
+			"display_name": "Sand 2"
+		},
+		{
+			"world_width": 100.0,
+			"world_height": 100.0,
+			"frame_name_pattern": "land_20",
+			"display_name": "Sand 3"
+		},
+		{
+			"world_width": 100.0,
+			"world_height": 100.0,
+			"frame_name_pattern": "land_12",
+			"display_name": "Sand 4"
+		},
+		{
+			"world_width": 100.0,
+			"world_height": 100.0,
 			"frame_name_pattern": "land_1",
 			"display_name": "Rock Coarse 1"
 		},
@@ -54,8 +72,8 @@
 			"display_name": "Rock Fine 1"
 		},
 		{
-			"world_width": 128.0,
-			"world_height": 128.0,
+			"world_width": 100.0,
+			"world_height": 100.0,
 			"frame_name_pattern": "land_8",
 			"display_name": "Rock Fine 2"
 		},
@@ -75,7 +93,13 @@
 			"world_width": 100.0,
 			"world_height": 100.0,
 			"frame_name_pattern": "land_11",
-			"display_name": "Stratified"
+			"display_name": "Stratified 1"
+		},
+		{
+			"world_width": 100.0,
+			"world_height": 100.0,
+			"frame_name_pattern": "land_14",
+			"display_name": "Stratified 2"
 		}
 	]
 },
@@ -122,7 +146,13 @@
 			"world_width": 25.0,
 			"world_height": 25.0,
 			"frame_name_pattern": "ocean_1",
-			"display_name": "Crystalline"
+			"display_name": "Crystalline 1"
+		},
+		{	
+			"world_width": 64.0,
+			"world_height": 64.0,
+			"frame_name_pattern": "ocean_4",
+			"display_name": "Crystalline 2"
 		},
 
 		{	
@@ -144,13 +174,7 @@
 			"frame_name_pattern": "ocean_caribbean_3",
 			"display_name": "Crisp Clear"
 		},
-		{	
-			"world_width": 100.0,
-			"world_height": 100.0,
-			"frame_name_pattern": "ocean_3",
-			"display_name": "Crisp"
-		},
-
+		
 		{	
 			"world_width": 32.0,
 			"world_height": 32.0,

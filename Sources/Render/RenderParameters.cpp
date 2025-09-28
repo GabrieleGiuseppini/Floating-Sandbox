@@ -28,7 +28,7 @@ RenderParameters::RenderParameters(
 	, ShowShipThroughOcean(false)
 	, LandRenderMode(LandRenderModeType::Texture)
 	, FlatLandColor(0x72, 0x46, 0x05)
-	, LandTextureIndex(3) // Rock Coarse 3
+	, LandTextureIndex(6) // Rock Coarse 3
 	, LandRenderDetail(LandRenderDetailType::Detailed)
 	// Ship
 	, ShipViewMode(ShipViewModeType::Exterior)

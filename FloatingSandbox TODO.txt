@@ -340,8 +340,6 @@
 	- See perf impact with double the world
 
 
-
-
 	- Try Android font
 
 	- Fishes on wreck (see paper in Malta book)
@@ -378,7 +376,7 @@
 		- See https://discord.com/channels/925233659118755842/1313073164879921203/1313073164879921203
 
 	- Look at non-anti-aliased borders
-		! On my new dell, also 1.18 shows non-anti-aliased borders
+		! On my new dell, also 1.18 shows non-anti-aliased borders - so it's a problem with my box
 
 	= See if fire may emit Heavy smoke
 		! Gist:
