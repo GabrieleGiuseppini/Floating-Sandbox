@@ -3,10 +3,10 @@ TODO
 - Improved auto-focus on ship
 - Clouds' horizontal positions are now perspective-corrected
 	- Thanks to Dario Bazzichetto for the idea!
-- Improved resolution of land and ocean textures
 - Various performance improvements
 	- Significant performance improvements in spring relaxation algorithm
 	- 15% performance improvements in rendering
+- Added more ocean floor textures!
 - ShipBuilder:
 	- Added StructureTracer tool: automatically traces a ship's hull from a texture
 - Added 9 new ships
