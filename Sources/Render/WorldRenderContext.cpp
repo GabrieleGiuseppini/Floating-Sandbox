@@ -92,8 +92,10 @@ WorldRenderContext::WorldRenderContext(
     , mHasCloudShadowsTextureBeenAllocated(false)
     , mOceanTextureFrameSpecifications()
     , mOceanTextureOpenGLHandle()
+    , mCurrentlyLoadedOceanTextureIndex(std::numeric_limits<size_t>::max())
     , mLandTextureFrameSpecifications()
     , mLandTextureOpenGLHandle()
+    , mCurrentlyLoadedLandTextureIndex(std::numeric_limits<size_t>::max())
     , mFishTextureAtlasMetadata()
     , mFishTextureAtlasOpenGLHandle()
     , mGenericLinearTextureAtlasMetadata(globalRenderContext.GetGenericLinearTextureAtlasMetadata())
@@ -2227,72 +2229,77 @@ void WorldRenderContext::ApplyOceanRenderParametersChanges(RenderParameters cons
 
 void WorldRenderContext::ApplyOceanTextureIndexChanges(RenderParameters const & renderParameters)
 {
-    //
-    // Reload the ocean texture
-    //
+    if (renderParameters.OceanTextureIndex != mCurrentlyLoadedOceanTextureIndex) // Perf: avoid whole dance when just resetting defaults
+    {
+        //
+        // Reload the ocean texture
+        //
 
-    // Destroy previous texture
-    mOceanTextureOpenGLHandle.reset();
+        // Destroy previous texture
+        mOceanTextureOpenGLHandle.reset();
 
-    // Clamp the texture index
-    auto clampedOceanTextureIndex = std::min(renderParameters.OceanTextureIndex, mOceanTextureFrameSpecifications.size() - 1);
+        // Clamp the texture index
+        auto clampedOceanTextureIndex = std::min(renderParameters.OceanTextureIndex, mOceanTextureFrameSpecifications.size() - 1);
 
-    // Load texture image
-    auto oceanTextureFrame = mOceanTextureFrameSpecifications[clampedOceanTextureIndex].LoadFrame(mAssetManager);
+        // Load texture image
+        auto oceanTextureFrame = mOceanTextureFrameSpecifications[clampedOceanTextureIndex].LoadFrame(mAssetManager);
 
-    // Activate texture
-    mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::OceanTexture>();
+        // Activate texture
+        mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::OceanTexture>();
 
-    // Create texture
-    GLuint tmpGLuint;
-    glGenTextures(1, &tmpGLuint);
-    mOceanTextureOpenGLHandle = tmpGLuint;
+        // Create texture
+        GLuint tmpGLuint;
+        glGenTextures(1, &tmpGLuint);
+        mOceanTextureOpenGLHandle = tmpGLuint;
 
-    // Bind texture
-    glBindTexture(GL_TEXTURE_2D, *mOceanTextureOpenGLHandle);
-    CheckOpenGLError();
+        // Bind texture
+        glBindTexture(GL_TEXTURE_2D, *mOceanTextureOpenGLHandle);
+        CheckOpenGLError();
 
-    // Upload texture
-    GameOpenGL::UploadMipmappedTexture(
-        std::move(oceanTextureFrame.TextureData),
-        GL_RGB8);
+        // Upload texture
+        GameOpenGL::UploadMipmappedTexture(
+            std::move(oceanTextureFrame.TextureData),
+            GL_RGB8);
 
-    // Set repeat mode
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    CheckOpenGLError();
+        // Set repeat mode
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        CheckOpenGLError();
 
-    // Set filtering
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    CheckOpenGLError();
+        // Set filtering
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        CheckOpenGLError();
 
-    // Set texture and texture parameters in shaders
+        // Set texture and texture parameters in shaders
 
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanTextureBasic>();
-    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanTextureBasic, GameShaderSets::ProgramParameterKind::TextureScaling>(
-        1.0f / oceanTextureFrame.Metadata.WorldWidth,
-        1.0f / oceanTextureFrame.Metadata.WorldHeight);
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanTextureBasic>();
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanTextureBasic, GameShaderSets::ProgramParameterKind::TextureScaling>(
+            1.0f / oceanTextureFrame.Metadata.WorldWidth,
+            1.0f / oceanTextureFrame.Metadata.WorldHeight);
 
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanTextureDetailedBackgroundLower>();
-    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanTextureDetailedBackgroundLower, GameShaderSets::ProgramParameterKind::TextureScaling>(
-        1.0f / oceanTextureFrame.Metadata.WorldWidth,
-        1.0f / oceanTextureFrame.Metadata.WorldHeight);
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanTextureDetailedBackgroundLower>();
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanTextureDetailedBackgroundLower, GameShaderSets::ProgramParameterKind::TextureScaling>(
+            1.0f / oceanTextureFrame.Metadata.WorldWidth,
+            1.0f / oceanTextureFrame.Metadata.WorldHeight);
 
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanTextureDetailedBackgroundUpper>();
-    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanTextureDetailedBackgroundUpper, GameShaderSets::ProgramParameterKind::TextureScaling>(
-        1.0f / oceanTextureFrame.Metadata.WorldWidth,
-        1.0f / oceanTextureFrame.Metadata.WorldHeight);
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanTextureDetailedBackgroundUpper>();
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanTextureDetailedBackgroundUpper, GameShaderSets::ProgramParameterKind::TextureScaling>(
+            1.0f / oceanTextureFrame.Metadata.WorldWidth,
+            1.0f / oceanTextureFrame.Metadata.WorldHeight);
 
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanTextureDetailedForegroundLower>();
-    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanTextureDetailedForegroundLower, GameShaderSets::ProgramParameterKind::TextureScaling>(
-        1.0f / oceanTextureFrame.Metadata.WorldWidth,
-        1.0f / oceanTextureFrame.Metadata.WorldHeight);
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanTextureDetailedForegroundLower>();
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanTextureDetailedForegroundLower, GameShaderSets::ProgramParameterKind::TextureScaling>(
+            1.0f / oceanTextureFrame.Metadata.WorldWidth,
+            1.0f / oceanTextureFrame.Metadata.WorldHeight);
 
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanTextureDetailedForegroundUpper>();
-    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanTextureDetailedForegroundUpper, GameShaderSets::ProgramParameterKind::TextureScaling>(
-        1.0f / oceanTextureFrame.Metadata.WorldWidth,
-        1.0f / oceanTextureFrame.Metadata.WorldHeight);
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanTextureDetailedForegroundUpper>();
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanTextureDetailedForegroundUpper, GameShaderSets::ProgramParameterKind::TextureScaling>(
+            1.0f / oceanTextureFrame.Metadata.WorldWidth,
+            1.0f / oceanTextureFrame.Metadata.WorldHeight);
+
+        mCurrentlyLoadedOceanTextureIndex = renderParameters.OceanTextureIndex;
+    }
 }
 
 void WorldRenderContext::ApplyLandRenderParametersChanges(RenderParameters const & renderParameters)
@@ -2310,59 +2317,64 @@ void WorldRenderContext::ApplyLandRenderParametersChanges(RenderParameters const
 
 void WorldRenderContext::ApplyLandTextureIndexChanges(RenderParameters const & renderParameters)
 {
-    //
-    // Reload the land texture
-    //
+    if (renderParameters.LandTextureIndex != mCurrentlyLoadedLandTextureIndex) // Perf: avoid whole dance when just resetting defaults
+    {
+        //
+        // Reload the land texture
+        //
 
-    // Destroy previous texture
-    mLandTextureOpenGLHandle.reset();
+        // Destroy previous texture
+        mLandTextureOpenGLHandle.reset();
 
-    // Clamp the texture index
-    auto clampedLandTextureIndex = std::min(renderParameters.LandTextureIndex, mLandTextureFrameSpecifications.size() - 1);
+        // Clamp the texture index
+        auto clampedLandTextureIndex = std::min(renderParameters.LandTextureIndex, mLandTextureFrameSpecifications.size() - 1);
 
-    // Load texture image
-    auto landTextureFrame = mLandTextureFrameSpecifications[clampedLandTextureIndex].LoadFrame(mAssetManager);
+        // Load texture image
+        auto landTextureFrame = mLandTextureFrameSpecifications[clampedLandTextureIndex].LoadFrame(mAssetManager);
 
-    // Activate texture
-    mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::LandTexture>();
+        // Activate texture
+        mShaderManager.ActivateTexture<GameShaderSets::ProgramParameterKind::LandTexture>();
 
-    // Create texture
-    GLuint tmpGLuint;
-    glGenTextures(1, &tmpGLuint);
-    mLandTextureOpenGLHandle = tmpGLuint;
+        // Create texture
+        GLuint tmpGLuint;
+        glGenTextures(1, &tmpGLuint);
+        mLandTextureOpenGLHandle = tmpGLuint;
 
-    // Bind texture
-    glBindTexture(GL_TEXTURE_2D, *mLandTextureOpenGLHandle);
-    CheckOpenGLError();
+        // Bind texture
+        glBindTexture(GL_TEXTURE_2D, *mLandTextureOpenGLHandle);
+        CheckOpenGLError();
 
-    // Upload texture
-    GameOpenGL::UploadMipmappedTexture(
-        std::move(landTextureFrame.TextureData),
-        GL_RGB8);
+        // Upload texture
+        GameOpenGL::UploadMipmappedTexture(
+            std::move(landTextureFrame.TextureData),
+            GL_RGB8);
 
-    // Set repeat mode
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    CheckOpenGLError();
+        // Set repeat mode
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        CheckOpenGLError();
 
-    // Set filtering
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    CheckOpenGLError();
+        // Set filtering
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        CheckOpenGLError();
 
-    // Set texture and texture parameters in all texture shaders
+        // Set texture and texture parameters in all texture shaders
 
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::LandTextureBasic>();
-    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::LandTextureBasic, GameShaderSets::ProgramParameterKind::TextureScaling>(
-        1.0f / landTextureFrame.Metadata.WorldWidth,
-        1.0f / landTextureFrame.Metadata.WorldHeight);
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::LandTextureBasic>();
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::LandTextureBasic>();
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::LandTextureBasic, GameShaderSets::ProgramParameterKind::TextureScaling>(
+            1.0f / landTextureFrame.Metadata.WorldWidth,
+            1.0f / landTextureFrame.Metadata.WorldHeight);
+        mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::LandTextureBasic>();
 
-    mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::LandTextureDetailed>();
-    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::LandTextureDetailed, GameShaderSets::ProgramParameterKind::TextureScaling>(
-        1.0f / landTextureFrame.Metadata.WorldWidth,
-        1.0f / landTextureFrame.Metadata.WorldHeight);
-    mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::LandTextureDetailed>();
+        mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::LandTextureDetailed>();
+        mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::LandTextureDetailed, GameShaderSets::ProgramParameterKind::TextureScaling>(
+            1.0f / landTextureFrame.Metadata.WorldWidth,
+            1.0f / landTextureFrame.Metadata.WorldHeight);
+        mShaderManager.SetTextureParameters<GameShaderSets::ProgramKind::LandTextureDetailed>();
+
+        mCurrentlyLoadedLandTextureIndex = renderParameters.LandTextureIndex;
+    }
 }
 
 template <typename TVertexBuffer>

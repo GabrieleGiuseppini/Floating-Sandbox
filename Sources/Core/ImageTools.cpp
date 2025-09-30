@@ -82,7 +82,7 @@ RgbaImageData ImageTools::MakeGreyscale(RgbaImageData const & imageData)
         for (int c = 0; c < w; ++c)
         {
             auto const & src = imageData.Data[rowStartIndex + c];
-            int const grey = (static_cast<int>(src.r) + static_cast<int>(src.g) + static_cast<int>(src.b)) / 3;
+            rgbaColor::data_type const grey = static_cast<rgbaColor::data_type>((static_cast<int>(src.r) + static_cast<int>(src.g) + static_cast<int>(src.b)) / 3);
             newImageData[rowStartIndex + c] = rgbaColor(grey, grey, grey, src.a);
         }
     }

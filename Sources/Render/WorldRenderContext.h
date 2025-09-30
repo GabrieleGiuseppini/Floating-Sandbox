@@ -1323,9 +1323,11 @@ private:
 
     std::vector<TextureFrameSpecification<GameTextureDatabases::WorldTextureDatabase>> mOceanTextureFrameSpecifications;
     GameOpenGLTexture mOceanTextureOpenGLHandle;
+    size_t mCurrentlyLoadedOceanTextureIndex;
 
     std::vector<TextureFrameSpecification<GameTextureDatabases::WorldTextureDatabase>> mLandTextureFrameSpecifications;
     GameOpenGLTexture mLandTextureOpenGLHandle;
+    size_t mCurrentlyLoadedLandTextureIndex;
 
     std::unique_ptr<TextureAtlasMetadata<GameTextureDatabases::FishTextureDatabase>> mFishTextureAtlasMetadata;
     GameOpenGLTexture mFishTextureAtlasOpenGLHandle;
