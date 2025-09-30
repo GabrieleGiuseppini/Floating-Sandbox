@@ -42,6 +42,13 @@ public:
         int x,
         int y);
 
+    static RgbaImageData MakeGreyscale(RgbaImageData const & imageData);
+
+    static RgbaImageData MakeVerticalGradient(
+        rgbColor const & startColor,
+        rgbColor const & endColor,
+        ImageSize imageSize);
+
     /*
      * Multiplies the r, g, and b channels by the alpha channel.
      */

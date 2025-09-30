@@ -986,6 +986,13 @@ struct FloatSize
             && height == other.height;
     }
 
+    inline constexpr FloatSize operator-(FloatSize const & other) const
+    {
+        return FloatSize(
+            width - other.width,
+            height - other.height);
+    }
+
     inline constexpr FloatSize operator+(FloatSize const & other) const
     {
         return FloatSize(
@@ -1005,6 +1012,11 @@ struct FloatSize
         return FloatSize(
             width / scale,
             height / scale);
+    }
+
+    inline vec2f to_vec2f() const
+    {
+        return vec2f(width, height);
     }
 
     inline vec2i to_vec2i_round() const
@@ -1104,6 +1116,13 @@ struct FloatRect
     {
         return origin == other.origin
             && size == other.size;
+    }
+
+    vec2f const CalculateTopRight() const
+    {
+        return vec2f(
+            origin.x + size.width,
+            origin.y + size.height);
     }
 
     float const CalculateRightX() const

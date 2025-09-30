@@ -70,6 +70,56 @@ void ImageTools::Overlay(
     }
 }
 
+RgbaImageData ImageTools::MakeGreyscale(RgbaImageData const & imageData)
+{
+    std::unique_ptr<rgbaColor[]> newImageData = std::make_unique<rgbaColor[]>(imageData.Size.GetLinearSize());
+
+    int const h = imageData.Size.height;
+    int const w = imageData.Size.width;
+    for (int r = 0; r < h; ++r)
+    {
+        auto const rowStartIndex = r * w;
+        for (int c = 0; c < w; ++c)
+        {
+            auto const & src = imageData.Data[rowStartIndex + c];
+            int const grey = (static_cast<int>(src.r) + static_cast<int>(src.g) + static_cast<int>(src.b)) / 3;
+            newImageData[rowStartIndex + c] = rgbaColor(grey, grey, grey, src.a);
+        }
+    }
+
+    return RgbaImageData(imageData.Size, std::move(newImageData));
+}
+
+RgbaImageData ImageTools::MakeVerticalGradient(
+        rgbColor const & startColor,
+        rgbColor const & endColor,
+        ImageSize imageSize)
+{
+    std::unique_ptr<rgbaColor[]> newImageData = std::make_unique<rgbaColor[]>(imageSize.GetLinearSize());
+
+    if (imageSize.height > 0)
+    {
+        int const h = imageSize.height;
+        int const w = imageSize.width;
+        vec3f startColorF = startColor.toVec3f();
+        vec3f endColorF = endColor.toVec3f();
+        for (int r = 0; r < h; ++r)
+        {
+            rgbaColor const color = rgbaColor(
+                Mix(endColorF, startColorF, static_cast<float>(r) / static_cast<float>(h - 1)),
+                rgbaColor::data_type_max);
+
+            auto const rowStartIndex = r * w;
+            for (int c = 0; c < w; ++c)
+            {
+                newImageData[rowStartIndex + c] = color;
+            }
+        }
+    }
+
+    return RgbaImageData(imageSize, std::move(newImageData));
+}
+
 void ImageTools::AlphaPreMultiply(RgbaImageData & imageData)
 {
     size_t const pixelCount = imageData.Size.GetLinearSize();
