@@ -767,11 +767,10 @@
 			- Move to final
 
 
-
-		= From MattyTitanic (under _TOTEST) (+ already credited)
-			- Agincourt (very cool)
-				- Asked to make balanced, he's making it
-				- Check ShipBucket
+		+ From MattyTitanic (under _TOTEST) (+ already credited)
+			+ Agincourt (very cool)
+				+ Asked to make balanced, he's making it
+				+ Check ShipBucket
 			+ Garibaldi: take (check meta)
 			+ MAS: take for replace (check meta)
 		+ MIA: two ships
