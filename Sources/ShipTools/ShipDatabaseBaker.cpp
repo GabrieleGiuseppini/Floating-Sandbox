@@ -10,9 +10,10 @@
 #include <Simulation/ShipDatabase.h>
 
 #include <Core/GameException.h>
-#include <Core/Log.h>
 #include <Core/PngTools.h>
 #include <Core/Utils.h>
+
+#include <iostream>
 
 ShipDatabaseBaker::ShipDirectory ShipDatabaseBaker::ShipDirectory::Deserialize(picojson::value const & specification)
 {
@@ -95,7 +96,7 @@ void ShipDatabaseBaker::Bake(
     // Build
     auto output = builder.Build();
 
-    LogMessage("Database ready: ", output.Database.Ships.size(), " ship(s), ", output.PreviewAtlasImages.size(), " preview atlas(es).");
+    std::cout << "Database ready: " << output.Database.Ships.size() << " ship(s), " << output.PreviewAtlasImages.size() << " preview atlas(es)." << std::endl;
 
     // Save outcome
 
