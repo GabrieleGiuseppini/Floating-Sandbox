@@ -35,7 +35,7 @@ Floating Sandbox is featured at [GameJolt](https://gamejolt.com/games/floating-s
 Some nerdy facts here.
 * The most CPU-hungry algorithms are implemented with x86 instrinsics (targeting SSE-2) to take advantage of vectorized operations; for example, the newtonian integration step operates on 4 floats at a time
 * The physical state of particles and springs is maintained in memory-aligned buffers, grouping quantities together as a function of the main algorithms operating on them - thus improving locality and reducing cache misses
-* The spring relaxation algorithm (aka rigidity simulation) is at the core of the simulation, consuming about 60% of the time spent for the simulation of each single frame. At each frame we solve 40 micro-iterations, each distributed on as many cores as possible and implemented with finely-optimized routines written with x86 intrinsics; you may read more about these optimizations on [my technical blog](https://gabrielegiuseppini.wordpress.com/2023/04/01/adventures-with-2d-mass-spring-networks-part-i/)
+* The spring relaxation algorithm (aka rigidity simulation) is at the core of the simulation, consuming about 60% of the time spent for the simulation of each single frame. At each frame we solve 40 micro-iterations, each distributed on as many cores as possible and implemented with finely-optimized routines written with x86 and ARM intrinsics; you may read more about these optimizations on [my technical blog](https://gabrielegiuseppini.wordpress.com/2023/04/01/adventures-with-2d-mass-spring-networks-part-i/)
 * As the topology of the ship's mesh changes during the game due to destruction and wrecking, the simulator constantly re-calculates the external boundaries of each connected component via an algorithm that only operates on the neighborhood of topology changes
 * The ocean surface is simulated with modified (Shallow Water Equations)[https://en.wikipedia.org/wiki/Shallow_water_equations] (SWE's), coupled with rigid bodies to generate surface perturbations
 * The physics of NPC's takes place in a [barycentric coordinate system](https://en.wikipedia.org/wiki/Barycentric_coordinate_system), tracing NPC's particles' trajectories within the triangular ship mesh
@@ -50,7 +50,8 @@ And even with all of this, the simulator still adapts itself to the characterist
 	- OpenGL 2.1 or later
 		- If your graphics card does not support OpenGL 2.1, try upgrading its drivers - most likely there's a newer version with support for 2.1
 - Linux:
-	- Either 64-bit or 32-bit
+	- Either 64-bit or 32-bit, x86 or ARM
+		- With optimizations targeting both SSE2 (x86) and NEON (ARMv7-A, covering also ARMv8-A)
 	- X11 and GTK3
 	- OpenGL 2.1 or later, MESA drivers are fine
 	- OpenAL, Vorbis and FLAC
