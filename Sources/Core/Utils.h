@@ -254,6 +254,19 @@ namespace Utils
                 memberName));
     }
 
+    inline picojson::value const & GetMandatoryJsonValue(
+        picojson::object const & obj,
+        std::string const & memberName)
+    {
+        auto const & memberIt = obj.find(memberName);
+        if (obj.end() == memberIt)
+        {
+            throw GameException("Error parsing JSON: cannot find member \"" + memberName + "\"");
+        }
+
+        return memberIt->second;
+    }
+
     inline picojson::object GetMandatoryJsonObject(
         picojson::object const & obj,
         std::string const & memberName)

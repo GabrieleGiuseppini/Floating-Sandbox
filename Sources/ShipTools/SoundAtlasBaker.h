@@ -13,6 +13,5 @@ public:
 
 	static std::tuple<size_t, size_t> Bake(
 		std::filesystem::path const & soundsRootDirectoryPath,
-		std::string const & atlasName,
 		std::filesystem::path const & outputDirectoryPath);
 };

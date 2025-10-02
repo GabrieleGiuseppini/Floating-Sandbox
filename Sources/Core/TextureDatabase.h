@@ -25,7 +25,6 @@
 
 #include <cassert>
 #include <cstdint>
-#include <map>
 #include <memory>
 #include <regex>
 #include <set>

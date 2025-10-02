@@ -35,6 +35,16 @@ struct SoundAssetProperties
             , End(end)
         { }
 
+        picojson::value Serialize() const
+        {
+            picojson::object root;
+
+            root.emplace("start", picojson::value(static_cast<std::int64_t>(Start)));
+            root.emplace("end", picojson::value(static_cast<std::int64_t>(End)));
+
+            return picojson::value(root);
+        }
+
         static LoopPointsType Deserialize(picojson::object const & object)
         {
             return LoopPointsType(
@@ -55,6 +65,20 @@ struct SoundAssetProperties
         , LoopPoints(std::move(loopPoints))
         , Volume(volume)
     { }
+
+    picojson::value Serialize() const
+    {
+        picojson::object root;
+
+        if (LoopPoints.has_value())
+        {
+            root.emplace("loop_points", LoopPoints->Serialize());
+        }
+
+        root.emplace("volume", picojson::value(Volume));
+
+        return picojson::value(root);
+    }
 
     static SoundAssetProperties Deserialize(
         std::string const & name,
@@ -81,14 +105,33 @@ struct SoundAssetProperties
 
 struct SoundAssetBuffer
 {
-    float * restrict Ptr;
+    size_t Offset; // Number of frames
     size_t Size; // Number of frames
 
     SoundAssetBuffer(
-        float * restrict ptr,
+        size_t offset,
         size_t size)
-        : Ptr(ptr)
+        : Offset(offset)
         , Size(size)
     {
+    }
+
+    picojson::value Serialize() const
+    {
+        picojson::object root;
+
+        root.emplace("offset", picojson::value(static_cast<std::int64_t>(Offset)));
+        root.emplace("size", picojson::value(static_cast<std::int64_t>(Size)));
+
+        return picojson::value(root);
+    }
+
+    static SoundAssetBuffer Deserialize(picojson::value const & value)
+    {
+        auto const & rootObject = Utils::GetJsonValueAsObject(value, "SoundAssetBuffer");
+
+        return SoundAssetBuffer(
+            Utils::GetMandatoryJsonMember<size_t>(rootObject, "offset"),
+            Utils::GetMandatoryJsonMember<size_t>(rootObject, "size"));
     }
 };

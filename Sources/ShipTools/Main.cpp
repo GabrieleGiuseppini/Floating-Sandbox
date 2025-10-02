@@ -103,28 +103,26 @@ int DoBakeSoundAtlas(int argc, char ** argv)
     // Parse args
     //
 
-    if (argc != 5)
+    if (argc != 4)
     {
         PrintUsage();
         return 0;
     }
 
     std::filesystem::path const soundsRootDirectoryPath(argv[2]);
-    std::string const atlasName = argv[3];
-    std::filesystem::path const outputDirectoryPath(argv[4]);
+    std::filesystem::path const outputDirectoryPath(argv[3]);
 
     std::cout << SEPARATOR << std::endl;
 
     std::cout << "Running bake_sound_atlas:" << std::endl;
     std::cout << "  sounds root directory         : " << soundsRootDirectoryPath << std::endl;
-    std::cout << "  atlas name                    : " << atlasName << std::endl;
     std::cout << "  output directory              : " << outputDirectoryPath << std::endl;
 
     //
     // Bake
     //
 
-    auto const [soundCount, atlasFileSize] = SoundAtlasBaker::Bake(soundsRootDirectoryPath, atlasName, outputDirectoryPath);
+    auto const [soundCount, atlasFileSize] = SoundAtlasBaker::Bake(soundsRootDirectoryPath, outputDirectoryPath);
 
     //
     // Stats
@@ -275,6 +273,6 @@ void PrintUsage()
     std::cout << std::endl;
     std::cout << "Usage:" << std::endl;
     std::cout << " bake_ship_database <ship_directory_json> <ship_root_dir> <out_dir> <max_preview_w> <max_preview_h>" << std::endl;
-    std::cout << " bake_sound_atlas <sounds_root_dir> <atlas_name> <out_dir>" << std::endl;
+    std::cout << " bake_sound_atlas <sounds_root_dir> <out_dir>" << std::endl;
     std::cout << " bake_texture_atlas Cloud|Explosion|NPC|AndroidUI <textures_root_dir> <out_dir> [[-a] [-b] [-m] [-d] [-r] | -o <options_json>] [-z <resize_factor>]" << std::endl;
 }

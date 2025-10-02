@@ -11,13 +11,16 @@
 #include <SoundCore/SoundTypes.h>
 
 #include <Core/GameException.h>
+#include <Core/SysSpecifics.h>
 #include <Core/Utils.h>
 
+#include <cassert>
 #include <iostream>
+
+static std::string const SoundAssetFileExtension = ".raw";
 
 std::tuple<size_t, size_t> SoundAtlasBaker::Bake(
 	std::filesystem::path const & soundsRootDirectoryPath,
-	std::string const & atlasName,
 	std::filesystem::path const & outputDirectoryPath)
 {
 	//
@@ -32,7 +35,7 @@ std::tuple<size_t, size_t> SoundAtlasBaker::Bake(
 	{
 		if (std::filesystem::is_regular_file(entryIt.path()))
 		{
-			if (entryIt.path().extension().string() == ".raw")
+			if (entryIt.path().extension().string() == SoundAssetFileExtension)
 			{
 				assetNames.emplace_back(entryIt.path().filename().stem().string());
 			}
@@ -62,12 +65,63 @@ std::tuple<size_t, size_t> SoundAtlasBaker::Bake(
 	std::cout << "Enumerated " << assetNames.size() << " assets and deserialized " << assetPropertiesProvider.size() << " asset property overrides." << std::endl;
 
 	//
-	// TODOHERE
+	// Prepare output file
 	//
 
+	auto const outputAtlasDataFilePathTmp = outputDirectoryPath / "atlas.dat.tmp";
 
-	(void)atlasName; // TODO: nuke?
-	(void)outputDirectoryPath;
-	// TODOHERE
-	return { 0, 0 };
+	if (std::filesystem::exists(outputAtlasDataFilePathTmp))
+	{
+		std::filesystem::remove(outputAtlasDataFilePathTmp);
+	}
+
+	auto outputStream = FileBinaryWriteStream(outputAtlasDataFilePathTmp);
+
+	//
+	// Build atlas
+	//
+
+	auto const atlasMetadata = SoundAtlasBuilder::BuildAtlas(
+		assetNames,
+		assetPropertiesProvider,
+		[&](std::string const & assetName) -> Buffer<float>
+		{
+			auto const assetFilePath = outputDirectoryPath / (assetName + SoundAssetFileExtension);
+			auto const assetFileSizeBytes = static_cast<size_t>(std::filesystem::file_size(assetFilePath));
+			assert((assetFileSizeBytes % sizeof(float)) == 0);
+			auto const assetFileSizeFloats = assetFileSizeBytes / sizeof(float);
+			auto const bufferSizeFloats = make_aligned_float_element_count(assetFileSizeFloats);
+			Buffer<float> buf(bufferSizeFloats);
+
+			FileBinaryReadStream readStream(assetFilePath);
+			readStream.Read(reinterpret_cast<std::uint8_t *>(buf.data()), assetFileSizeBytes);
+
+			// Pad with zeroes
+			for (size_t i = assetFileSizeFloats; i < bufferSizeFloats; ++i)
+			{
+				buf[i] = 0.0f;
+			}
+
+			return buf;
+		},
+		outputStream);
+
+	//
+	// Finalize atlas
+	//
+
+	auto const outputAtlasDataFilePath = outputDirectoryPath / "atlas.dat";
+
+	if (std::filesystem::exists(outputAtlasDataFilePath))
+	{
+		std::filesystem::remove(outputAtlasDataFilePath);
+	}
+
+	std::filesystem::rename(outputAtlasDataFilePathTmp, outputAtlasDataFilePath);
+
+	auto const outputAssetMetadataFilePath = outputDirectoryPath / "atlas.json";
+
+	FileTextWriteStream(outputAssetMetadataFilePath).Write(atlasMetadata.Serialize().to_str());
+
+	return { atlasMetadata.Entries.size(), static_cast<size_t>(std::filesystem::file_size(outputAtlasDataFilePath)) };
 }

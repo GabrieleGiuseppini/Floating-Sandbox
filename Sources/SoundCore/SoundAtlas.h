@@ -30,6 +30,65 @@ struct SoundAtlasAssetMetadata
         , Properties(properties)
         , Buffer(buffer)
     { }
+
+    picojson::value Serialize() const
+    {
+        picojson::object root;
+
+        root.emplace("name", Name);
+        root.emplace("properties", Properties.Serialize());
+        root.emplace("buffer", Buffer.Serialize());
+
+        return picojson::value(root);
+    }
+
+    static SoundAtlasAssetMetadata Deserialize(picojson::value const & value)
+    {
+        auto const & rootObject = Utils::GetJsonValueAsObject(value, "SoundAtlasAssetMetadata");
+
+        auto const assetName = Utils::GetMandatoryJsonMember<std::string>(rootObject, "name");
+
+        return SoundAtlasAssetMetadata(
+            assetName,
+            SoundAssetProperties::Deserialize(assetName, Utils::GetMandatoryJsonValue(rootObject, "properties")),
+            SoundAssetBuffer::Deserialize(Utils::GetMandatoryJsonValue(rootObject, "buffer")));
+    }
+};
+
+struct SoundAtlasAssetsMetadata
+{
+    // Indexed by asset name
+    std::unordered_map<std::string, SoundAtlasAssetMetadata> Entries;
+
+    explicit SoundAtlasAssetsMetadata(std::unordered_map<std::string, SoundAtlasAssetMetadata> && entries)
+        : Entries(std::move(entries))
+    {
+    }
+
+    picojson::value Serialize() const
+    {
+        picojson::object root;
+
+        for (auto const & entry : Entries)
+        {
+            root.emplace(entry.first, entry.second.Serialize());
+        }
+
+        return picojson::value(root);
+    }
+
+    static SoundAtlasAssetsMetadata Dererialize(picojson::value const & value)
+    {
+        auto const & rootObject = Utils::GetJsonValueAsObject(value, "SoundAtlasAssetsMetadata");
+
+        std::unordered_map<std::string, SoundAtlasAssetMetadata> entries;
+        for (auto const & entry : rootObject)
+        {
+            entries.emplace(entry.first, SoundAtlasAssetMetadata::Deserialize(entry.second));
+        }
+
+        return SoundAtlasAssetsMetadata(std::move(entries));
+    }
 };
 
 struct SoundAtlas
@@ -37,16 +96,16 @@ struct SoundAtlas
 public:
 
     // Metadata - indexed by asset name
-    std::unordered_map<std::string, SoundAtlasAssetMetadata> AssetsMetadata;
+    SoundAtlasAssetsMetadata AssetsMetadata;
 
     // The buffer itself, owned by the atlas
-    Buffer<float> AtlasBuffer;
+    Buffer<float> AtlasData;
 
     SoundAtlas(
-        std::unordered_map<std::string, SoundAtlasAssetMetadata> && assetsMetadata,
-        Buffer<float> && atlasBuffer)
+        SoundAtlasAssetsMetadata && assetsMetadata,
+        Buffer<float> && atlasData)
         : AssetsMetadata(std::move(assetsMetadata))
-        , AtlasBuffer(std::move(atlasBuffer))
+        , AtlasData(std::move(atlasData))
     {
     }
 
@@ -63,8 +122,9 @@ class SoundAtlasBuilder
 {
 public:
 
-    static SoundAtlas BuildAtlas(
+    static SoundAtlasAssetsMetadata BuildAtlas(
         std::vector<std::string> const & assetNames,
         std::unordered_map<std::string, SoundAssetProperties> assetPropertiesProvider,
-        std::function<Buffer<float>(std::string const & assetName)> const & assetLoader);
+        std::function<Buffer<float>(std::string const & assetName)> const & assetLoader,
+        BinaryWriteStream & outputStream);
 };
