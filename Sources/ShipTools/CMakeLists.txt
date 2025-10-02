@@ -5,10 +5,12 @@
 
 set  (SHIP_TOOLS_SOURCES
 	AndroidTextureDatabases.h
-	AtlasBaker.h
 	Main.cpp
 	ShipDatabaseBaker.cpp
 	ShipDatabaseBaker.h
+	SoundAtlasBaker.cpp
+	SoundAtlasBaker.h
+	TextureAtlasBaker.h
 )
 
 source_group(" " FILES ${SHIP_TOOLS_SOURCES})
@@ -17,7 +19,7 @@ add_executable (ShipTools ${SHIP_TOOLS_SOURCES})
 
 target_link_libraries (ShipTools
 	Core
-	#Simulation
+	SoundCore
 	Game
 	${ADDITIONAL_LIBRARIES})
 

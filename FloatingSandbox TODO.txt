@@ -327,11 +327,32 @@
 	+ Send beta
 	+ Bump up version
 
+	+ Higher-definition world textures (from Android work)
 
 
 	- Bump up version: 1.19.2
 
-	+ Higher-definition world textures (from Android work)
+	- Ships:
+		- R.M.S. Lusitania (PRE WW2) - in _TO_TAKE - from karlos
+			- Ask credits
+			- Fix metadata
+			- Add ship
+			- Add credits
+			- Update changelist
+
+	= pt_BR localization:
+		+ HTML
+		+ NPC
+		= po - asked to fill-in missing entries for my mistake
+		+ Update code
+			+ FIX: nuke MakeLanguageIdentifier; do double search
+			+ Test myself
+		= Ask PortugueseGuy|Joadix to test
+		+ Ask Joadix to test
+		- Add to credits: "Mr.H556"
+		- Changelist
+
+	- Remember for localization: br_PT has latest text as of October 1, the others not
 
 
 	- DoDisplaceWater setting should also control Fishes and NPCs
@@ -693,10 +714,7 @@
 	- Russian: DioxCode (Fallback: Ilya_Voloshin, Faulttix#8691)
 	- Ukrainian: DioxCode, Denis
 	- Spanish (Latin American): Joadix (Fallback: The G a z e r W o l f)
-
-	- Portuguese: matheusvhs
-		- Add to credits: "Mr.H556"
-		- He's doing .pot
+	- Portuguese-Brazilian: matheusvhs ("Mr.H556")
 
 	- Hungarian: S.S. Atlantic
 		= Doing HTMLs

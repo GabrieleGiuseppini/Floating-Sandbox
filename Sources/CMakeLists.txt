@@ -7,6 +7,7 @@ add_subdirectory(Simulation)
 add_subdirectory(ShipBuilder)
 add_subdirectory(ShipBuilderLib)
 add_subdirectory(ShipTools)
+add_subdirectory(SoundCore)
 add_subdirectory(UILib)
 add_subdirectory(UnitTests)
 

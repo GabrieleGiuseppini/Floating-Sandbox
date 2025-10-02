@@ -76,6 +76,10 @@ The actual application for the ShipBuilder on PC. Implements its UI.
 
 A command-line interface for development-time tasks around Floating Sandbox, such as the baking of textures into atlases.
 
+## SoundCore
+
+Core sound sub-system definitions for the Anroid port (the PC port uses OpenAL). It's here as it's used by _ShipTools_ to bake sound atlases for Android.
+
 ## UnitTests
 
 Unit tests for some important functionalities of the game, which would be otherwise hard to thoroughly test via the game itself. Mostly tests _Core_ and _Simulation_ components.

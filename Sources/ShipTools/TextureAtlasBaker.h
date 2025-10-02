@@ -3,6 +3,7 @@
 * Created:				2019-12-10
 * Copyright:			Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
+#pragma once
 
 #include <Core/TextureAtlas.h>
 #include <Core/TextureDatabase.h>
@@ -15,11 +16,11 @@
 #include <iostream>
 #include <string>
 
-class AtlasBaker
+class TextureAtlasBaker
 {
 public:
 
-    struct AtlasBakingOptions
+    struct BakingOptions
     {
         bool AlphaPremultiply;
         bool BinaryTransparencySmoothing;
@@ -27,7 +28,7 @@ public:
         bool Regular;
         bool SuppressDuplicates;
 
-        static AtlasBakingOptions Deserialize(std::filesystem::path const & optionsJsonFilePath)
+        static BakingOptions Deserialize(std::filesystem::path const & optionsJsonFilePath)
         {
             picojson::object rootJsonObject = Utils::GetJsonValueAsObject(Utils::ParseJSONString(FileTextReadStream(optionsJsonFilePath).ReadAll()), "root");
 
@@ -37,7 +38,7 @@ public:
             bool regular = Utils::GetMandatoryJsonMember<bool>(rootJsonObject, "regular");
             bool suppressDuplicates = Utils::GetMandatoryJsonMember<bool>(rootJsonObject, "suppress_duplicates");
 
-            return AtlasBakingOptions({
+            return BakingOptions({
                 alphaPreMultiply,
                 binaryTransparencySmoothing,
                 mipMappable,
@@ -52,7 +53,7 @@ public:
     static std::tuple<size_t, ImageSize> Bake(
         std::filesystem::path const & texturesRootDirectoryPath,
         std::filesystem::path const & outputDirectoryPath,
-        AtlasBakingOptions const & options,
+        BakingOptions const & options,
         float resizeFactor)
     {
         if (!std::filesystem::exists(texturesRootDirectoryPath))

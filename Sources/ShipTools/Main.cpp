@@ -5,8 +5,9 @@
  ***************************************************************************************/
 
 #include "AndroidTextureDatabases.h"
-#include "AtlasBaker.h"
 #include "ShipDatabaseBaker.h"
+#include "SoundAtlasBaker.h"
+#include "TextureAtlasBaker.h"
 
 #include <Render/GameTextureDatabases.h>
 
@@ -20,9 +21,11 @@
 
 #define SEPARATOR "------------------------------------------------------"
 
-int DoBakeAtlas(int argc, char ** argv);
-
 int DoBakeShipDatabase(int argc, char ** argv);
+
+int DoBakeSoundAtlas(int argc, char ** argv);
+
+int DoBakeTextureAtlas(int argc, char ** argv);
 
 void PrintUsage();
 
@@ -37,13 +40,17 @@ int main(int argc, char ** argv)
     std::string verb(argv[1]);
     try
     {
-        if (verb == "bake_atlas")
-        {
-            return DoBakeAtlas(argc, argv);
-        }
-        else if (verb == "bake_ship_database")
+        if (verb == "bake_ship_database")
         {
             return DoBakeShipDatabase(argc, argv);
+        }
+        else if (verb == "bake_sound_atlas")
+        {
+            return DoBakeSoundAtlas(argc, argv);
+        }
+        else if (verb == "bake_texture_atlas")
+        {
+            return DoBakeTextureAtlas(argc, argv);
         }
         else
         {
@@ -57,7 +64,78 @@ int main(int argc, char ** argv)
     }
 }
 
-int DoBakeAtlas(int argc, char ** argv)
+int DoBakeShipDatabase(int argc, char ** argv)
+{
+    if (argc < 7)
+    {
+        PrintUsage();
+        return 0;
+    }
+
+    std::filesystem::path const shipDirectoryJsonFilePath(argv[2]);
+    std::filesystem::path const shipRootPath(argv[3]);
+    std::filesystem::path const outputDirectoryPath(argv[4]);
+    int const maxPreviewImageSizeWidth = atoi(argv[5]);
+    int const maxPreviewImageSizeHeight = atoi(argv[6]);
+
+    std::cout << SEPARATOR << std::endl;
+
+    std::cout << "Running bake_ship_database:" << std::endl;
+    std::cout << "  directory json                : " << shipDirectoryJsonFilePath << std::endl;
+    std::cout << "  ship root directory           : " << shipRootPath << std::endl;
+    std::cout << "  output directory              : " << outputDirectoryPath << std::endl;
+    std::cout << "  max preview image size        : " << maxPreviewImageSizeWidth << "x" << maxPreviewImageSizeHeight << std::endl;
+
+    ShipDatabaseBaker::Bake(
+        shipDirectoryJsonFilePath,
+        shipRootPath,
+        outputDirectoryPath,
+        ImageSize(maxPreviewImageSizeWidth, maxPreviewImageSizeHeight));
+
+    std::cout << "Baking completed." << std::endl;
+
+    return 0;
+}
+
+int DoBakeSoundAtlas(int argc, char ** argv)
+{
+    //
+    // Parse args
+    //
+
+    if (argc != 5)
+    {
+        PrintUsage();
+        return 0;
+    }
+
+    std::filesystem::path const soundsRootDirectoryPath(argv[2]);
+    std::string const atlasName = argv[3];
+    std::filesystem::path const outputDirectoryPath(argv[4]);
+
+    std::cout << SEPARATOR << std::endl;
+
+    std::cout << "Running bake_sound_atlas:" << std::endl;
+    std::cout << "  sounds root directory         : " << soundsRootDirectoryPath << std::endl;
+    std::cout << "  atlas name                    : " << atlasName << std::endl;
+    std::cout << "  output directory              : " << outputDirectoryPath << std::endl;
+
+    //
+    // Bake
+    //
+
+    auto const [soundCount, atlasFileSize] = SoundAtlasBaker::Bake(soundsRootDirectoryPath, atlasName, outputDirectoryPath);
+
+    //
+    // Stats
+    //
+
+    std::cout << "Baking completed - " << soundCount << " sounds, " << static_cast<float>(atlasFileSize) / (1024.0f * 1024.0f) << " MBs." << std::endl;
+
+    return 0;
+}
+
+int DoBakeTextureAtlas(int argc, char ** argv)
 {
     if (argc < 5)
     {
@@ -68,7 +146,7 @@ int DoBakeAtlas(int argc, char ** argv)
     std::string const databaseName = argv[2];
     std::filesystem::path texturesRootDirectoryPath(argv[3]);
     std::filesystem::path outputDirectoryPath(argv[4]);
-    AtlasBaker::AtlasBakingOptions options({
+    TextureAtlasBaker::BakingOptions options({
         false,
         false,
         false,
@@ -106,7 +184,7 @@ int DoBakeAtlas(int argc, char ** argv)
                 throw std::runtime_error("Missing options json filepath");
             }
 
-            options = AtlasBaker::AtlasBakingOptions::Deserialize(argv[i + 1]);
+            options = TextureAtlasBaker::BakingOptions::Deserialize(argv[i + 1]);
 
             ++i;
         }
@@ -129,7 +207,7 @@ int DoBakeAtlas(int argc, char ** argv)
 
     std::cout << SEPARATOR << std::endl;
 
-    std::cout << "Running bake_atlas:" << std::endl;
+    std::cout << "Running bake_texture_atlas:" << std::endl;
     std::cout << "  database name                 : " << databaseName << std::endl;
     std::cout << "  textures root directory       : " << texturesRootDirectoryPath << std::endl;
     std::cout << "  output directory              : " << outputDirectoryPath << std::endl;
@@ -143,7 +221,7 @@ int DoBakeAtlas(int argc, char ** argv)
     std::tuple<size_t, ImageSize> atlasData{ 0, ImageSize(0, 0) };
     if (Utils::CaseInsensitiveEquals(databaseName, "cloud"))
     {
-        atlasData = AtlasBaker::Bake<GameTextureDatabases::CloudTextureDatabase>(
+        atlasData = TextureAtlasBaker::Bake<GameTextureDatabases::CloudTextureDatabase>(
             texturesRootDirectoryPath,
             outputDirectoryPath,
             options,
@@ -151,7 +229,7 @@ int DoBakeAtlas(int argc, char ** argv)
     }
     else if (Utils::CaseInsensitiveEquals(databaseName, "explosion"))
     {
-        atlasData = AtlasBaker::Bake<GameTextureDatabases::ExplosionTextureDatabase>(
+        atlasData = TextureAtlasBaker::Bake<GameTextureDatabases::ExplosionTextureDatabase>(
             texturesRootDirectoryPath,
             outputDirectoryPath,
             options,
@@ -159,7 +237,7 @@ int DoBakeAtlas(int argc, char ** argv)
     }
     else if (Utils::CaseInsensitiveEquals(databaseName, "fish"))
     {
-        atlasData = AtlasBaker::Bake<GameTextureDatabases::FishTextureDatabase>(
+        atlasData = TextureAtlasBaker::Bake<GameTextureDatabases::FishTextureDatabase>(
             texturesRootDirectoryPath,
             outputDirectoryPath,
             options,
@@ -167,7 +245,7 @@ int DoBakeAtlas(int argc, char ** argv)
     }
     else if (Utils::CaseInsensitiveEquals(databaseName, "npc"))
     {
-        atlasData = AtlasBaker::Bake<GameTextureDatabases::NpcTextureDatabase>(
+        atlasData = TextureAtlasBaker::Bake<GameTextureDatabases::NpcTextureDatabase>(
             texturesRootDirectoryPath,
             outputDirectoryPath,
             options,
@@ -175,7 +253,7 @@ int DoBakeAtlas(int argc, char ** argv)
     }
     else if (Utils::CaseInsensitiveEquals(databaseName, "androidui"))
     {
-        atlasData = AtlasBaker::Bake<UITextureDatabases::UITextureDatabase>(
+        atlasData = TextureAtlasBaker::Bake<UITextureDatabases::UITextureDatabase>(
             texturesRootDirectoryPath,
             outputDirectoryPath,
             options,
@@ -192,43 +270,11 @@ int DoBakeAtlas(int argc, char ** argv)
     return 0;
 }
 
-int DoBakeShipDatabase(int argc, char ** argv)
-{
-    if (argc < 7)
-    {
-        PrintUsage();
-        return 0;
-    }
-
-    std::filesystem::path const shipDirectoryJsonFilePath(argv[2]);
-    std::filesystem::path const shipRootPath(argv[3]);
-    std::filesystem::path const outputDirectoryPath(argv[4]);
-    int const maxPreviewImageSizeWidth = atoi(argv[5]);
-    int const maxPreviewImageSizeHeight = atoi(argv[6]);
-
-    std::cout << SEPARATOR << std::endl;
-
-    std::cout << "Running bake_ship_database:" << std::endl;
-    std::cout << "  directory json                : " << shipDirectoryJsonFilePath << std::endl;
-    std::cout << "  ship root directory           : " << shipRootPath << std::endl;
-    std::cout << "  output directory              : " << outputDirectoryPath << std::endl;
-    std::cout << "  max preview image size        : " << maxPreviewImageSizeWidth << "x" << maxPreviewImageSizeHeight << std::endl;
-
-    ShipDatabaseBaker::Bake(
-        shipDirectoryJsonFilePath,
-        shipRootPath,
-        outputDirectoryPath,
-        ImageSize(maxPreviewImageSizeWidth, maxPreviewImageSizeHeight));
-
-    std::cout << "Baking completed." << std::endl;
-
-    return 0;
-}
-
 void PrintUsage()
 {
     std::cout << std::endl;
     std::cout << "Usage:" << std::endl;
-    std::cout << " bake_atlas Cloud|Explosion|NPC|AndroidUI <textures_root_dir> <out_dir> [[-a] [-b] [-m] [-d] [-r] | -o <options_json>] [-z <resize_factor>]" << std::endl;
     std::cout << " bake_ship_database <ship_directory_json> <ship_root_dir> <out_dir> <max_preview_w> <max_preview_h>" << std::endl;
+    std::cout << " bake_sound_atlas <sounds_root_dir> <atlas_name> <out_dir>" << std::endl;
+    std::cout << " bake_texture_atlas Cloud|Explosion|NPC|AndroidUI <textures_root_dir> <out_dir> [[-a] [-b] [-m] [-d] [-r] | -o <options_json>] [-z <resize_factor>]" << std::endl;
 }
