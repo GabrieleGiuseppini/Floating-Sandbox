@@ -18,16 +18,13 @@
 
 struct SoundAtlasAssetMetadata
 {
-    std::string Name;
     SoundAssetProperties Properties;
     SoundAssetBuffer Buffer;
 
     SoundAtlasAssetMetadata(
-        std::string const & name,
         SoundAssetProperties const & properties,
         SoundAssetBuffer const & buffer)
-        : Name(name)
-        , Properties(properties)
+        : Properties(properties)
         , Buffer(buffer)
     { }
 
@@ -35,7 +32,6 @@ struct SoundAtlasAssetMetadata
     {
         picojson::object root;
 
-        root.emplace("name", Name);
         root.emplace("properties", Properties.Serialize());
         root.emplace("buffer", Buffer.Serialize());
 
@@ -49,7 +45,6 @@ struct SoundAtlasAssetMetadata
         auto const assetName = Utils::GetMandatoryJsonMember<std::string>(rootObject, "name");
 
         return SoundAtlasAssetMetadata(
-            assetName,
             SoundAssetProperties::Deserialize(assetName, Utils::GetMandatoryJsonValue(rootObject, "properties")),
             SoundAssetBuffer::Deserialize(Utils::GetMandatoryJsonValue(rootObject, "buffer")));
     }

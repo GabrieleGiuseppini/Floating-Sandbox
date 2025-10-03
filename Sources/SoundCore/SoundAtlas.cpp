@@ -67,7 +67,6 @@ SoundAtlasAssetsMetadata SoundAtlasBuilder::BuildAtlas(
         atlasEntriesMetadata.emplace(
             assetName,
             SoundAtlasAssetMetadata(
-                assetName, // TODO
                 assetPropertiesSearchIt != assetPropertiesProvider.end()
                     ? assetPropertiesSearchIt->second
                     : SoundAssetProperties(
