@@ -75,7 +75,7 @@ struct SoundAssetProperties
             root.emplace("loop_points", LoopPoints->Serialize());
         }
 
-        root.emplace("volume", picojson::value(Volume));
+        root.emplace("volume", picojson::value(static_cast<double>(Volume)));
 
         return picojson::value(root);
     }

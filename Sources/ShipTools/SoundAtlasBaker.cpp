@@ -86,7 +86,7 @@ std::tuple<size_t, size_t> SoundAtlasBaker::Bake(
 		assetPropertiesProvider,
 		[&](std::string const & assetName) -> Buffer<float>
 		{
-			auto const assetFilePath = outputDirectoryPath / (assetName + SoundAssetFileExtension);
+			auto const assetFilePath = soundsRootDirectoryPath / (assetName + SoundAssetFileExtension);
 			auto const assetFileSizeBytes = static_cast<size_t>(std::filesystem::file_size(assetFilePath));
 			assert((assetFileSizeBytes % sizeof(float)) == 0);
 			auto const assetFileSizeFloats = assetFileSizeBytes / sizeof(float);
@@ -122,7 +122,7 @@ std::tuple<size_t, size_t> SoundAtlasBaker::Bake(
 
 	auto const outputAssetMetadataFilePath = outputDirectoryPath / "atlas.json";
 
-	FileTextWriteStream(outputAssetMetadataFilePath).Write(atlasMetadata.Serialize().to_str());
+	FileTextWriteStream(outputAssetMetadataFilePath).Write(Utils::MakeStringFromJSON(atlasMetadata.Serialize()));
 
 	return { atlasMetadata.Entries.size(), static_cast<size_t>(std::filesystem::file_size(outputAtlasDataFilePath)) };
 }
