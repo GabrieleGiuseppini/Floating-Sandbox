@@ -115,7 +115,7 @@ public:
 
     static SoundAtlas Deserialize(
         picojson::value const & atlasJson,
-        BinaryReadStream & atlasData);
+        BinaryReadStream & atlasDataStream);
 };
 
 class SoundAtlasBuilder
@@ -124,7 +124,7 @@ public:
 
     static SoundAtlasAssetsMetadata BuildAtlas(
         std::vector<std::string> const & assetNames,
-        std::unordered_map<std::string, SoundAssetProperties> assetPropertiesProvider,
+        std::unordered_map<std::string, SoundAssetProperties> const & assetPropertiesProvider,
         std::function<Buffer<float>(std::string const & assetName)> const & assetLoader,
         BinaryWriteStream & outputStream);
 };

@@ -75,7 +75,7 @@ std::tuple<size_t, size_t> SoundAtlasBaker::Bake(
 		std::filesystem::remove(outputAtlasDataFilePathTmp);
 	}
 
-	auto outputStream = FileBinaryWriteStream(outputAtlasDataFilePathTmp);
+	auto outputStream = std::unique_ptr<BinaryWriteStream>(new FileBinaryWriteStream(outputAtlasDataFilePathTmp));
 
 	//
 	// Build atlas
@@ -91,10 +91,9 @@ std::tuple<size_t, size_t> SoundAtlasBaker::Bake(
 			assert((assetFileSizeBytes % sizeof(float)) == 0);
 			auto const assetFileSizeFloats = assetFileSizeBytes / sizeof(float);
 			auto const bufferSizeFloats = make_aligned_float_element_count(assetFileSizeFloats);
-			Buffer<float> buf(bufferSizeFloats);
 
-			FileBinaryReadStream readStream(assetFilePath);
-			readStream.Read(reinterpret_cast<std::uint8_t *>(buf.data()), assetFileSizeBytes);
+			Buffer<float> buf(bufferSizeFloats);
+			FileBinaryReadStream(assetFilePath).Read(reinterpret_cast<std::uint8_t *>(buf.data()), assetFileSizeBytes);
 
 			// Pad with zeroes
 			for (size_t i = assetFileSizeFloats; i < bufferSizeFloats; ++i)
@@ -104,7 +103,9 @@ std::tuple<size_t, size_t> SoundAtlasBaker::Bake(
 
 			return buf;
 		},
-		outputStream);
+		*outputStream);
+
+	outputStream.reset();
 
 	//
 	// Finalize atlas
