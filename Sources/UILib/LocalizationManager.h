@@ -97,8 +97,6 @@ private:
         , mLocale(std::move(locale))
     {}
 
-    static std::string MakeLanguageIdentifier(wxString const & canonicalLanguageName);
-
     static std::vector<LanguageInfo> MakeAvailableLanguages(GameAssetManager const & gameAssetManager);
 
     static LanguageInfo MakeDefaultLanguage();

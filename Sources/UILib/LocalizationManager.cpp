@@ -27,13 +27,32 @@ std::unique_ptr<LocalizationManager> LocalizationManager::CreateInstance(
     if (desiredLanguageIdentifier.has_value())
     {
         // Make sure the specified identifier is a language supported by us
-        auto const it = std::find_if(
+        auto it = std::find_if(
             availableLanguages.cbegin(),
             availableLanguages.cend(),
             [&desiredLanguageIdentifier](auto const & al)
             {
                 return al.Identifier == *desiredLanguageIdentifier;
             });
+        if (it == availableLanguages.cend())
+        {
+            // No luck searching verbatim
+
+            // See if we're looking for a sub-language
+            if (auto const underscorePos = desiredLanguageIdentifier->find('_');
+                underscorePos != std::string::npos)
+            {
+                // We're searching for a sub-language; see if can find the parent language
+                std::string const desiredParentLanguageIdentifier = desiredLanguageIdentifier->substr(0, underscorePos);
+                it = std::find_if(
+                    availableLanguages.cbegin(),
+                    availableLanguages.cend(),
+                    [&desiredParentLanguageIdentifier](auto const & al)
+                    {
+                        return al.Identifier == desiredParentLanguageIdentifier;
+                    });
+            }
+        }
 
         if (it != availableLanguages.cend())
         {
@@ -89,7 +108,7 @@ std::unique_ptr<LocalizationManager> LocalizationManager::CreateInstance(
         LogMessage("Enforced language for desired identifier \"", desiredLanguageIdentifier.value_or("<N/A>"),
             "\": \"", enforcedLanguage, "\"");
 
-        enforcedLanguageIdentifier = MakeLanguageIdentifier(enforcedLanguage);
+        enforcedLanguageIdentifier = enforcedLanguage;
     }
     else
     {
@@ -167,11 +186,6 @@ wxString LocalizationManager::MakeErrorMessage(UserGameException const & excepti
     return errorMessage;
 }
 
-std::string LocalizationManager::MakeLanguageIdentifier(wxString const & canonicalLanguageName)
-{
-    return canonicalLanguageName.BeforeFirst('_').ToStdString();
-}
-
 std::vector<LocalizationManager::LanguageInfo> LocalizationManager::MakeAvailableLanguages(GameAssetManager const & gameAssetManager)
 {
     std::vector<LanguageInfo> languages;
@@ -189,14 +203,14 @@ std::vector<LocalizationManager::LanguageInfo> LocalizationManager::MakeAvailabl
             auto const wxLangInfo = wxLocale::FindLanguageInfo(languageName);
             if (wxLangInfo == nullptr)
             {
-                LogMessage("WARNING: language directory \"", languageName, "\" is not a recognized language");
+                LogMessage("WARNING: language directory \"", languageName, "\" is not a language recognized by wxWidgets");
             }
             else
             {
                 // Accepted as a valid language
                 languages.emplace_back(
                     wxLangInfo->Description.ToStdString(),
-                    MakeLanguageIdentifier(wxLangInfo->CanonicalName),
+                    wxLangInfo->CanonicalName.ToStdString(),
                     static_cast<wxLanguage>(wxLangInfo->Language));
             }
         }
