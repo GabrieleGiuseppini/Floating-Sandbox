@@ -38,11 +38,11 @@ struct SoundAtlasAssetMetadata
         return picojson::value(root);
     }
 
-    static SoundAtlasAssetMetadata Deserialize(picojson::value const & value)
+    static SoundAtlasAssetMetadata Deserialize(
+        std::string const & assetName,
+        picojson::value const & value)
     {
         auto const & rootObject = Utils::GetJsonValueAsObject(value, "SoundAtlasAssetMetadata");
-
-        auto const assetName = Utils::GetMandatoryJsonMember<std::string>(rootObject, "name");
 
         return SoundAtlasAssetMetadata(
             SoundAssetProperties::Deserialize(assetName, Utils::GetMandatoryJsonValue(rootObject, "properties")),
@@ -79,7 +79,7 @@ struct SoundAtlasAssetsMetadata
         std::unordered_map<std::string, SoundAtlasAssetMetadata> entries;
         for (auto const & entry : rootObject)
         {
-            entries.emplace(entry.first, SoundAtlasAssetMetadata::Deserialize(entry.second));
+            entries.emplace(entry.first, SoundAtlasAssetMetadata::Deserialize(entry.first, entry.second));
         }
 
         return SoundAtlasAssetsMetadata(std::move(entries));

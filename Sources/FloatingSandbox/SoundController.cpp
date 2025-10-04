@@ -105,6 +105,8 @@ SoundController::SoundController(
 
     auto soundNames = gameAssetManager.GetSoundNames();
 
+    std::regex const soundTypeRegex(R"(([^_]+)(?:_.+)?)");
+
     for (size_t i = 0; i < soundNames.size(); ++i)
     {
         std::string const & soundName = soundNames[i];
@@ -124,7 +126,6 @@ SoundController::SoundController(
         // Parse filename
         //
 
-        std::regex soundTypeRegex(R"(([^_]+)(?:_.+)?)");
         std::smatch soundTypeMatch;
         if (!std::regex_match(soundName, soundTypeMatch, soundTypeRegex))
         {
@@ -132,10 +133,10 @@ SoundController::SoundController(
         }
 
         assert(soundTypeMatch.size() == 1 + 1);
-        SoundType soundType = StrToSoundType(soundTypeMatch[1].str());
+        SoundType const soundType = StrToSoundType(soundTypeMatch[1].str());
         if (soundType == SoundType::Saw)
         {
-            std::regex sawRegex(R"(([^_]+)(?:_(underwater))?)");
+            std::regex const sawRegex(R"(([^_]+)(?:_(underwater))?)");
             std::smatch uMatch;
             if (!std::regex_match(soundName, uMatch, sawRegex))
             {
@@ -162,9 +163,9 @@ SoundController::SoundController(
         }
         else if (soundType == SoundType::ElectricSpark)
         {
-            std::regex sawRegex(R"(([^_]+)(?:_(underwater))?)");
+            std::regex const electricSparkRegex(R"(([^_]+)(?:_(underwater))?)");
             std::smatch uMatch;
-            if (!std::regex_match(soundName, uMatch, sawRegex))
+            if (!std::regex_match(soundName, uMatch, electricSparkRegex))
             {
                 throw GameException("Electric Spark sound filename \"" + soundName + "\" is not recognized");
             }
@@ -197,9 +198,9 @@ SoundController::SoundController(
         }
         else if (soundType == SoundType::Sawed)
         {
-            std::regex mRegex(R"(([^_]+)_([^_]+))");
+            std::regex const sawedRegex(R"(([^_]+)_([^_]+))");
             std::smatch mMatch;
-            if (!std::regex_match(soundName, mMatch, mRegex))
+            if (!std::regex_match(soundName, mMatch, sawedRegex))
             {
                 throw GameException("M sound filename \"" + soundName + "\" is not recognized");
             }
@@ -444,7 +445,7 @@ SoundController::SoundController(
             // MSU sound
             //
 
-            std::regex msuRegex(R"(([^_]+)_([^_]+)_([^_]+)_(?:(underwater)_)?\d+)");
+            std::regex const msuRegex(R"(([^_]+)_([^_]+)_([^_]+)_(?:(underwater)_)?\d+)");
             std::smatch msuMatch;
             if (!std::regex_match(soundName, msuMatch, msuRegex))
             {
@@ -454,10 +455,10 @@ SoundController::SoundController(
             assert(msuMatch.size() == 1 + 4);
 
             // 1. Parse MaterialSoundType
-            StructuralMaterial::MaterialSoundType materialSound = StructuralMaterial::StrToMaterialSoundType(msuMatch[2].str());
+            StructuralMaterial::MaterialSoundType const materialSound = StructuralMaterial::StrToMaterialSoundType(msuMatch[2].str());
 
             // 2. Parse Size
-            SizeType sizeType = StrToSizeType(msuMatch[3].str());
+            SizeType const sizeType = StrToSizeType(msuMatch[3].str());
 
             // 3. Parse Underwater
             bool isUnderwater;
@@ -470,7 +471,6 @@ SoundController::SoundController(
             {
                 isUnderwater = false;
             }
-
 
             //
             // Store sound buffer
@@ -485,7 +485,7 @@ SoundController::SoundController(
             // M sound
             //
 
-            std::regex mRegex(R"(([^_]+)_([^_]+)_\d+)");
+            std::regex const mRegex(R"(([^_]+)_([^_]+)_\d+)");
             std::smatch mMatch;
             if (!std::regex_match(soundName, mMatch, mRegex))
             {
@@ -495,8 +495,7 @@ SoundController::SoundController(
             assert(mMatch.size() == 1 + 2);
 
             // 1. Parse MaterialSoundType
-            StructuralMaterial::MaterialSoundType materialSound = StructuralMaterial::StrToMaterialSoundType(mMatch[2].str());
-
+            StructuralMaterial::MaterialSoundType const materialSound = StructuralMaterial::StrToMaterialSoundType(mMatch[2].str());
 
             //
             // Store sound buffer
@@ -511,7 +510,7 @@ SoundController::SoundController(
             // DslU sound
             //
 
-            std::regex dsluRegex(R"(([^_]+)_([^_]+)_(?:(underwater)_)?\d+)");
+            std::regex const dsluRegex(R"(([^_]+)_([^_]+)_(?:(underwater)_)?\d+)");
             std::smatch dsluMatch;
             if (!std::regex_match(soundName, dsluMatch, dsluRegex))
             {
@@ -521,7 +520,7 @@ SoundController::SoundController(
             assert(dsluMatch.size() >= 1 + 2 && dsluMatch.size() <= 1 + 3);
 
             // 1. Parse Duration
-            DurationShortLongType durationType = StrToDurationShortLongType(dsluMatch[2].str());
+            DurationShortLongType const durationType = StrToDurationShortLongType(dsluMatch[2].str());
 
             // 2. Parse Underwater
             bool isUnderwater;
@@ -534,7 +533,6 @@ SoundController::SoundController(
             {
                 isUnderwater = false;
             }
-
 
             //
             // Store sound buffer
@@ -578,7 +576,7 @@ SoundController::SoundController(
             // - one-shot sound
             //
 
-            std::regex sRegex(R"(([^_]+)_\d+)");
+            std::regex const sRegex(R"(([^_]+)_\d+)");
             std::smatch sMatch;
             if (!std::regex_match(soundName, sMatch, sRegex))
             {
@@ -600,7 +598,7 @@ SoundController::SoundController(
             // - continuous sound
             //
 
-            std::regex sRegex(R"(([^_]+)_\d+)");
+            std::regex const sRegex(R"(([^_]+)_\d+)");
             std::smatch sMatch;
             if (!std::regex_match(soundName, sMatch, sRegex))
             {
@@ -638,7 +636,7 @@ SoundController::SoundController(
             // Looped U sound
             //
 
-            std::regex uRegex(R"(([^_]+)(?:_(underwater))?)");
+            std::regex const uRegex(R"(([^_]+)(?:_(underwater))?)");
             std::smatch uMatch;
             if (!std::regex_match(soundName, uMatch, uRegex))
             {
@@ -658,7 +656,6 @@ SoundController::SoundController(
             {
                 isUnderwater = false;
             }
-
 
             //
             // Store sound
@@ -911,7 +908,7 @@ SoundController::SoundController(
             // U sound
             //
 
-            std::regex uRegex(R"(([^_]+)_(?:(underwater)_)?\d+)");
+            std::regex const uRegex(R"(([^_]+)_(?:(underwater)_)?\d+)");
             std::smatch uMatch;
             if (!std::regex_match(soundName, uMatch, uRegex))
             {
