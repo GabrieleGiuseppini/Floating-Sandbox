@@ -338,7 +338,7 @@
 			- Fix metadata
 			- Add ship
 			- Add credits
-			- Update changelist
+			- Update changelist	
 
 	= pt_BR localization:
 		+ HTML
@@ -354,6 +354,8 @@
 
 	- Remember for localization: br_PT has latest text as of October 1, the others not
 
+
+	- Fix SoundController::OnBombExplosion: it's using max() when it should be using min()
 
 	- DoDisplaceWater setting should also control Fishes and NPCs
 		- ...find if anything else displaces water without checking toggle
