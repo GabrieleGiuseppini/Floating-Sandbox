@@ -9,6 +9,8 @@
 #include <Core/SysSpecifics.h>
 
 #include <cassert>
+#include <optional>
+#include <regex>
 
 SoundAtlas SoundAtlas::Deserialize(
     picojson::value const & atlasJson,
@@ -43,6 +45,29 @@ SoundAtlasAssetsMetadata SoundAtlasBuilder::BuildAtlas(
     std::function<Buffer<float>(std::string const & assetName)> const & assetLoader,
     BinaryWriteStream & outputStream)
 {
+    //
+    // Bake regexes for searching asset names
+    //
+
+    struct SearchEntry
+    {
+        std::regex AssetNamePattern;
+        SoundAssetProperties AssetProperties;
+    };
+
+    std::vector<SearchEntry> assetPropertiesSearchEntries;
+
+    for (auto const & it : assetPropertiesProvider)
+    {
+        assetPropertiesSearchEntries.emplace_back(SearchEntry({
+            std::regex(std::string("^") + it.first + "$"),
+            it.second }));
+    }
+
+    //
+    // Visit all assets
+    //
+
     std::unordered_map<std::string, SoundAtlasAssetMetadata> atlasEntriesMetadata;
 
     size_t currentInAtlasOffset = 0; // Floats
@@ -57,25 +82,42 @@ SoundAtlasAssetsMetadata SoundAtlasBuilder::BuildAtlas(
         Buffer<float> buf = assetLoader(assetName);
 
         //
-        // Create metadata
+        // Lookup properties
         //
 
-        auto const & assetPropertiesSearchIt = assetPropertiesProvider.find(assetName);
+        std::optional<std::size_t> assetPropropertiesIndex;
+        for (size_t p = 0; p < assetPropertiesSearchEntries.size(); ++p)
+        {
+            if (std::regex_match(assetName, assetPropertiesSearchEntries[p].AssetNamePattern))
+            {
+                LogMessage("    Property match: \"", assetPropertiesSearchEntries[p].AssetProperties.Name, "\"");
+                assetPropropertiesIndex = p;
+                break;
+            }
+
+        }
+
+        //
+        // Create metadata
+        //
 
         assert(atlasEntriesMetadata.find(assetName) == atlasEntriesMetadata.end());
 
         atlasEntriesMetadata.emplace(
             assetName,
             SoundAtlasAssetMetadata(
-                assetPropertiesSearchIt != assetPropertiesProvider.end()
-                    ? assetPropertiesSearchIt->second
+                assetPropropertiesIndex.has_value()
+                    ? SoundAssetProperties(
+                        assetName,
+                        assetPropertiesSearchEntries[*assetPropropertiesIndex].AssetProperties.LoopPoints,
+                        assetPropertiesSearchEntries[*assetPropropertiesIndex].AssetProperties.Volume)
                     : SoundAssetProperties(
                         assetName,
                         std::nullopt,
                         1.0f),
-                    SoundAssetBuffer(
-                        currentInAtlasOffset,
-                        buf.GetSize())));
+                SoundAssetBuffer(
+                    currentInAtlasOffset,
+                    buf.GetSize())));
 
         //
         // Write asset

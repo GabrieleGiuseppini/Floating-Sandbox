@@ -37,10 +37,14 @@ std::tuple<size_t, size_t> SoundAtlasBaker::Bake(
 		{
 			if (entryIt.path().extension().string() == SoundAssetFileExtension)
 			{
+				// Sound
+
 				assetNames.emplace_back(entryIt.path().filename().stem().string());
 			}
 			else if (entryIt.path().extension().string() == ".json")
 			{
+				// Json
+
 				if (hasFoundJson)
 				{
 					throw GameException("Found more than one json file in input directory");
