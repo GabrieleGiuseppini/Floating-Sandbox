@@ -1711,7 +1711,7 @@ private:
     std::unordered_map<TInstanceId, PlayingSoundInfo> mPlayingSounds;
 
     //
-    // Counts of currently-playing sounds, by sound type
+    // Counts of currently-playing sounds, by sound type; for adjusting volumes
     //
 
     std::unordered_map<SoundType, size_t> mCurrentlyPlayingSoundCountsPerSoundType;

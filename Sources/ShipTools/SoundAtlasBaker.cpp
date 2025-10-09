@@ -99,6 +99,15 @@ std::tuple<size_t, size_t> SoundAtlasBaker::Bake(
 			Buffer<float> buf(bufferSizeFloats);
 			FileBinaryReadStream(assetFilePath).Read(reinterpret_cast<std::uint8_t *>(buf.data()), assetFileSizeBytes);
 
+			// Check buffer
+			for (size_t i = 0; i < assetFileSizeFloats; ++i)
+			{
+				if (std::fabs(buf[i]) > 1.0f)
+				{
+					throw GameException("Sound \"" + assetName + "\" is not normalized! (" + std::to_string(buf[i]) + ")");
+				}
+			}
+
 			// Pad with zeroes
 			for (size_t i = assetFileSizeFloats; i < bufferSizeFloats; ++i)
 			{
