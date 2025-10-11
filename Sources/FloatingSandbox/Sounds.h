@@ -1523,7 +1523,8 @@ public:
         // 5 -> 0.1
         // 10 -> 0.01
         // y = 0.01076043 + 0.986362*e^(-0.5049688*x)
-        size_t & playingCount = mCurrentlyPlayingSoundCountsPerSoundType[soundType];
+        std::int32_t & playingCount = mCurrentlyPlayingSoundCountsPerSoundType[soundType];
+        assert(playingCount >= 0);
         volume *= Clamp(0.01076043f + 0.986362f * std::exp(-0.5049688f * static_cast<float>(playingCount)), 0.0f, 1.0f);
 
         // Setup sound
@@ -1591,6 +1592,7 @@ public:
 
                 // Maintain count and aggregate volume
                 mCurrentlyPlayingSoundCountsPerSoundType[soundType]--;
+                assert(mCurrentlyPlayingSoundCountsPerSoundType[soundType] >= 0);
             }
         }
     }
@@ -1717,5 +1719,5 @@ private:
     // Counts of currently-playing sounds, by sound type; for adjusting volumes
     //
 
-    std::unordered_map<SoundType, size_t> mCurrentlyPlayingSoundCountsPerSoundType;
+    std::unordered_map<SoundType, std::int32_t> mCurrentlyPlayingSoundCountsPerSoundType;
 };
