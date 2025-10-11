@@ -2459,6 +2459,7 @@ void ElectricalElements::UpdateSinks(
 
                     if (std::abs(targetAbsRpm - engineState.CurrentAbsRpm) < 0.005f)
                     {
+                        // Reached target
                         engineState.CurrentAbsRpm = targetAbsRpm;
                     }
                 }
@@ -2466,12 +2467,20 @@ void ElectricalElements::UpdateSinks(
                 {
                     // Going down - overshoot
 
+                    // Overshoot amount:
+                    //  Small responsiveness (0.005): MaxOvershoot
+                    //  High responsiveness: (0.4): MinOvershoot
+                    float constexpr MaxOvershoot = 0.2f;
+                    float constexpr MinOvershoot = 0.05f;
+                    float const overshoot = MaxOvershoot + (MinOvershoot - MaxOvershoot) * LinearStep(0.005f, 0.4f, engineState.Responsiveness);
+
                     engineState.CurrentAbsRpm =
                         engineState.CurrentAbsRpm
-                        - (engineState.CurrentAbsRpm - (targetAbsRpm - 0.2f)) * engineState.Responsiveness;
+                        - (engineState.CurrentAbsRpm - (targetAbsRpm - overshoot)) * engineState.Responsiveness;
 
                     if (engineState.CurrentAbsRpm < targetAbsRpm)
                     {
+                        // Reached target
                         engineState.CurrentAbsRpm = targetAbsRpm;
                     }
                 }
@@ -2487,6 +2496,7 @@ void ElectricalElements::UpdateSinks(
 
                 if (std::abs(targetThrustMagnitude - engineState.CurrentThrustMagnitude) < 0.005f)
                 {
+                    // Reached target
                     engineState.CurrentThrustMagnitude = targetThrustMagnitude;
                 }
             }
