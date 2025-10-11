@@ -1581,14 +1581,17 @@ public:
         if (auto it = mPlayingSounds.find(instanceId);
             it != mPlayingSounds.end())
         {
-            SoundType const soundType = it->second.Type;
+            if (it->second.IsPlaying)
+            {
+                SoundType const soundType = it->second.Type;
 
-            // Mark as not playing anymore, and let the sound run to its end
-            it->second.IsPlaying = false;
-            it->second.Sound->setLoop(false);
+                // Mark as not playing anymore, and let the sound run to its end
+                it->second.IsPlaying = false;
+                it->second.Sound->setLoop(false);
 
-            // Maintain count and aggregate volume
-            mCurrentlyPlayingSoundCountsPerSoundType[soundType]--;
+                // Maintain count and aggregate volume
+                mCurrentlyPlayingSoundCountsPerSoundType[soundType]--;
+            }
         }
     }
 
