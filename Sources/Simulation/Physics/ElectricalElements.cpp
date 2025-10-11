@@ -2449,13 +2449,31 @@ void ElectricalElements::UpdateSinks(
             {
                 float const targetAbsRpm = std::abs(targetRpm);
 
-                engineState.CurrentAbsRpm =
-                    engineState.CurrentAbsRpm
-                    + (targetAbsRpm - engineState.CurrentAbsRpm) * engineState.Responsiveness;
-
-                if (std::abs(targetAbsRpm - engineState.CurrentAbsRpm) < 0.001f)
+                if (engineState.CurrentAbsRpm <= targetAbsRpm)
                 {
-                    engineState.CurrentAbsRpm = targetAbsRpm;
+                    // Going up
+
+                    engineState.CurrentAbsRpm =
+                        engineState.CurrentAbsRpm
+                        + (targetAbsRpm - engineState.CurrentAbsRpm) * engineState.Responsiveness;
+
+                    if (std::abs(targetAbsRpm - engineState.CurrentAbsRpm) < 0.005f)
+                    {
+                        engineState.CurrentAbsRpm = targetAbsRpm;
+                    }
+                }
+                else
+                {
+                    // Going down - overshoot
+
+                    engineState.CurrentAbsRpm =
+                        engineState.CurrentAbsRpm
+                        - (engineState.CurrentAbsRpm - (targetAbsRpm - 0.2f)) * engineState.Responsiveness;
+
+                    if (engineState.CurrentAbsRpm < targetAbsRpm)
+                    {
+                        engineState.CurrentAbsRpm = targetAbsRpm;
+                    }
                 }
             }
 
@@ -2467,7 +2485,7 @@ void ElectricalElements::UpdateSinks(
                     engineState.CurrentThrustMagnitude
                     + (targetThrustMagnitude - engineState.CurrentThrustMagnitude) * engineState.Responsiveness;
 
-                if (std::abs(targetThrustMagnitude - engineState.CurrentThrustMagnitude) < 0.001f)
+                if (std::abs(targetThrustMagnitude - engineState.CurrentThrustMagnitude) < 0.005f)
                 {
                     engineState.CurrentThrustMagnitude = targetThrustMagnitude;
                 }
