@@ -2470,7 +2470,7 @@ void ElectricalElements::UpdateSinks(
                     // Overshoot amount:
                     //  Small responsiveness (0.005): MaxOvershoot
                     //  High responsiveness: (0.4): MinOvershoot
-                    float constexpr MaxOvershoot = 0.2f;
+                    float constexpr MaxOvershoot = 0.15f;
                     float constexpr MinOvershoot = 0.05f;
                     float const overshoot = MaxOvershoot + (MinOvershoot - MaxOvershoot) * LinearStep(0.005f, 0.4f, engineState.Responsiveness);
 
