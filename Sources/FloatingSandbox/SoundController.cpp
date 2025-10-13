@@ -2542,10 +2542,18 @@ void SoundController::OnBombExplosion(
                 SoundType::BombExplosion,
                 SoundGroupType::Effects,
                 isUnderwater,
-                std::max(
-                    100.0f,
-                    50.0f * size),
+                100.0f,
                 true);
+
+            if (size > 1)
+            {
+                PlayUOneShotMultipleChoiceSound(
+                    SoundType::BombExplosion,
+                    SoundGroupType::Effects,
+                    isUnderwater,
+                    100.0f,
+                    true);
+            }
 
             break;
         }
