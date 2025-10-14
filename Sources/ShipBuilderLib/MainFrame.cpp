@@ -4664,7 +4664,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
     }
 
     //
-    // Exterior Texture toolbar
+    // Interior Texture toolbar
     //
 
     {
@@ -5470,13 +5470,18 @@ void MainFrame::ImportExteriorTextureLayerFromImage()
                     rgbaColor::zero());
             }
 
-            // Optimize alignment
-            image = TextureAlignmentOptimizer::OptimizeAlignment(image, shipSize);
+            //
+            // Optimize alignment, if enabled
+            //
+
+            RgbaImageData newImage = mWorkbenchState.GetDoTextureAlignmentOptimization()
+                ? TextureAlignmentOptimizer::OptimizeAlignment(image, shipSize)
+                : image.Clone();
 
             // Set texture
             mController->SetExteriorTextureLayer(
                 _("Import Exterior Layer"),
-                TextureLayerData(std::move(image)),
+                TextureLayerData(std::move(newImage)),
                 std::nullopt);
         }
         catch (std::runtime_error const & exc)

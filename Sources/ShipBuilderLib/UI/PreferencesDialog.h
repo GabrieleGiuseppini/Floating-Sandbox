@@ -13,6 +13,7 @@
 #include <Game/GameAssetManager.h>
 
 #include <wx/bmpcbox.h>
+#include <wx/checkbox.h>
 #include <wx/clrpicker.h>
 #include <wx/dialog.h>
 
@@ -47,6 +48,7 @@ private:
 
     EditSpinBox<int> * mNewShipSizeWidthSpinBox;
     EditSpinBox<int> * mNewShipSizeHeightSpinBox;
+    wxCheckBox * mDoTextureAlignmentOptimizationCheckBox;
     wxColourPickerCtrl * mCanvasBackgroundColorColourPicker;
     wxBitmapComboBox * mPresetColorsComboBox;
 

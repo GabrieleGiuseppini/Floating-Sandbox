@@ -5,6 +5,8 @@
  ***************************************************************************************/
 #include "TextureAlignmentOptimizer.h"
 
+#include "WorkbenchState.h"
+
 #include <Core/Log.h>
 
 #include <algorithm>
@@ -12,8 +14,6 @@
 #include <limits>
 
 namespace ShipBuilder {
-
-static int constexpr MaxTextureSize = 4096; // Upper limit to how much we want to go
 
 RgbaImageData TextureAlignmentOptimizer::OptimizeAlignment(
 	RgbaImageData const & source,
@@ -43,10 +43,8 @@ RgbaImageData TextureAlignmentOptimizer::OptimizeAlignment(
 
 	int const minX = *std::min_element(leftX.cbegin(), leftX.cend());
 	int const maxX = *std::max_element(rightX.cbegin(), rightX.cend());
-	int const minY = *std::min_element(topY.cbegin(), topY.cend());
-	int const maxY = *std::max_element(bottomY.cbegin(), bottomY.cend());
-
-	LogMessage("X: ", minX, " -> ", maxX, "  Y: ", minY, " -> ", maxY);
+	int const minY = *std::min_element(bottomY.cbegin(), bottomY.cend());
+	int const maxY = *std::max_element(topY.cbegin(), topY.cend());
 
 	//
 	// Optimize
@@ -87,6 +85,11 @@ RgbaImageData TextureAlignmentOptimizer::OptimizeAlignment(
 		source.Size.width + bestHOffsets.first + bestHOffsets.second,
 		source.Size.height + bestVOffsets.first + bestVOffsets.second);
 
+	assert(newTextureSize.width >= 0);
+	assert(source.Size.width > WorkbenchState::GetMaxTextureDimension() || newTextureSize.width <= WorkbenchState::GetMaxTextureDimension());
+	assert(newTextureSize.height >= 0);
+	assert(source.Size.height > WorkbenchState::GetMaxTextureDimension() || newTextureSize.height <= WorkbenchState::GetMaxTextureDimension());
+
 	RgbaImageData newImage(newTextureSize, rgbaColor(rgbaColor::data_type_max, rgbaColor::data_type_max, rgbaColor::data_type_max, 0));
 
 	// Blit source portion into it
@@ -105,45 +108,43 @@ RgbaImageData TextureAlignmentOptimizer::OptimizeAlignment(
 				source.Size.height - sourceOrigin.y)),
 		targetOrigin);
 
-	// TODOHERE
-	auto const leftWaste = CalculateWasteOnLeftEdge(leftX, bestHOffsets.first, structureMeshSize.width, newTextureSize.width);
-	auto const rightWaste = CalculateWasteOnRightEdge(rightX, bestHOffsets.first, structureMeshSize.width, newTextureSize.width);
-	float const wasteH = leftWaste + rightWaste;
-	auto const bottomWaste = CalculateWasteOnLeftEdge(bottomY, bestVOffsets.first, structureMeshSize.height, newTextureSize.height);
-	auto const topWaste = CalculateWasteOnRightEdge(topY, bestVOffsets.first, structureMeshSize.height, newTextureSize.height);
-	float const wasteV = bottomWaste + topWaste;
-	LogMessage("Best offsets: H: ", bestHOffsets.first, ",", bestHOffsets.second, "  V: ", bestVOffsets.first, ",", bestVOffsets.second, "  WasteH: ", wasteH,
-				" (", leftWaste, " + ", rightWaste, ") WasteV: ", wasteV, " (", bottomWaste, " + ", topWaste, ")");
+	//auto const leftWaste = CalculateWasteOnLeftEdge(leftX, bestHOffsets.first, structureMeshSize.width, newTextureSize.width);
+	//auto const rightWaste = CalculateWasteOnRightEdge(rightX, bestHOffsets.first, structureMeshSize.width, newTextureSize.width);
+	//float const wasteH = leftWaste + rightWaste;
+	//auto const bottomWaste = CalculateWasteOnLeftEdge(bottomY, bestVOffsets.first, structureMeshSize.height, newTextureSize.height);
+	//auto const topWaste = CalculateWasteOnRightEdge(topY, bestVOffsets.first, structureMeshSize.height, newTextureSize.height);
+	//float const wasteV = bottomWaste + topWaste;
+	//LogMessage("Best offsets: H: ", bestHOffsets.first, ",", bestHOffsets.second, "  V: ", bestVOffsets.first, ",", bestVOffsets.second, "  WasteH: ", wasteH,
+	//			" (", leftWaste, " + ", rightWaste, ") WasteV: ", wasteV, " (", bottomWaste, " + ", topWaste, ")");
 
-	auto const leftWaste0 = CalculateWasteOnLeftEdge(leftX, 0, structureMeshSize.width, source.Size.width);
-	auto const rightWaste0 = CalculateWasteOnRightEdge(rightX, 0, structureMeshSize.width, source.Size.width);
-	float const wasteH0 = leftWaste0 + rightWaste0;
-	auto const bottomWaste0 = CalculateWasteOnLeftEdge(bottomY, 0, structureMeshSize.height, source.Size.height);
-	auto const topWaste0 = CalculateWasteOnRightEdge(topY, 0, structureMeshSize.height, source.Size.height);
-	float const wasteV0 = bottomWaste0 + topWaste0;
-	LogMessage("  WasteH0: ", wasteH0, " (", leftWaste0, " + ", rightWaste0, ") WasteV0: ", wasteV0, " (", bottomWaste0, " + ", topWaste0, ")");
+	//auto const leftWaste0 = CalculateWasteOnLeftEdge(leftX, 0, structureMeshSize.width, source.Size.width);
+	//auto const rightWaste0 = CalculateWasteOnRightEdge(rightX, 0, structureMeshSize.width, source.Size.width);
+	//float const wasteH0 = leftWaste0 + rightWaste0;
+	//auto const bottomWaste0 = CalculateWasteOnLeftEdge(bottomY, 0, structureMeshSize.height, source.Size.height);
+	//auto const topWaste0 = CalculateWasteOnRightEdge(topY, 0, structureMeshSize.height, source.Size.height);
+	//float const wasteV0 = bottomWaste0 + topWaste0;
+	//LogMessage("  WasteH0: ", wasteH0, " (", leftWaste0, " + ", rightWaste0, ") WasteV0: ", wasteV0, " (", bottomWaste0, " + ", topWaste0, ")");
 
-	{
-		std::vector<int> _leftX;
-		_leftX.reserve(newImage.Size.height);
-		std::vector<int> _rightX;
-		_rightX.reserve(newImage.Size.height);
-		std::vector<int> _topY;
-		_topY.reserve(newImage.Size.width);
-		std::vector<int> _bottomY;
-		_bottomY.reserve(newImage.Size.width);
+	//{
+	//	std::vector<int> _leftX;
+	//	_leftX.reserve(newImage.Size.height);
+	//	std::vector<int> _rightX;
+	//	_rightX.reserve(newImage.Size.height);
+	//	std::vector<int> _topY;
+	//	_topY.reserve(newImage.Size.width);
+	//	std::vector<int> _bottomY;
+	//	_bottomY.reserve(newImage.Size.width);
 
-		CalculateEdges(newImage, _leftX, _rightX, _topY, _bottomY);
+	//	CalculateEdges(newImage, _leftX, _rightX, _topY, _bottomY);
 
-		auto const leftWasteZ = CalculateWasteOnLeftEdge(_leftX, 0, structureMeshSize.width, newImage.Size.width);
-		auto const rightWasteZ = CalculateWasteOnRightEdge(_rightX, 0, structureMeshSize.width, newImage.Size.width);
-		float const wasteHZ = leftWasteZ + rightWasteZ;
-		auto const bottomWasteZ = CalculateWasteOnLeftEdge(_bottomY, 0, structureMeshSize.height, newImage.Size.height);
-		auto const topWasteZ = CalculateWasteOnRightEdge(_topY, 0, structureMeshSize.height, newImage.Size.height);
-		float const wasteVZ = bottomWasteZ + topWasteZ;
-		LogMessage("  WasteHZ: ", wasteHZ, " (", leftWasteZ, " + ", rightWasteZ, ") WasteVZ: ", wasteVZ, " (", bottomWasteZ, " + ", topWasteZ, ")");
-	}
-
+	//	auto const leftWasteZ = CalculateWasteOnLeftEdge(_leftX, 0, structureMeshSize.width, newImage.Size.width);
+	//	auto const rightWasteZ = CalculateWasteOnRightEdge(_rightX, 0, structureMeshSize.width, newImage.Size.width);
+	//	float const wasteHZ = leftWasteZ + rightWasteZ;
+	//	auto const bottomWasteZ = CalculateWasteOnLeftEdge(_bottomY, 0, structureMeshSize.height, newImage.Size.height);
+	//	auto const topWasteZ = CalculateWasteOnRightEdge(_topY, 0, structureMeshSize.height, newImage.Size.height);
+	//	float const wasteVZ = bottomWasteZ + topWasteZ;
+	//	LogMessage("  WasteHZ: ", wasteHZ, " (", leftWasteZ, " + ", rightWasteZ, ") WasteVZ: ", wasteVZ, " (", bottomWasteZ, " + ", topWasteZ, ")");
+	//}
 
 	return newImage;
 }
@@ -256,7 +257,7 @@ float TextureAlignmentOptimizer::CalculateWasteOnLeftEdge(
 		{
 			// leftX is to the left of tCenter now, and thus the texture is clipped.
 			// We penalize this situation as the worst
-			return std::numeric_limits<float>::max();
+			return std::numeric_limits<float>::max() / 10.0f;
 		}
 
 		// Now calculate t at the center of this ship quad - guaranteed to be to the left of or at tx(o)
@@ -298,7 +299,7 @@ float TextureAlignmentOptimizer::CalculateWasteOnRightEdge(
 		{
 			// rightX is to the right of tCenter now, and thus the texture is clipped.
 			// We penalize this situation as the worst
-			return std::numeric_limits<float>::max();
+			return std::numeric_limits<float>::max() / 10.0f;
 		}
 
 		// Now calculate t at the center of this ship quad - guaranteed to be to the right of or at tx(o)
@@ -333,23 +334,21 @@ std::pair<int, int> TextureAlignmentOptimizer::CalculateOptimalOffsets(
 	// Calculate overestimation of texture pixels per ship quad
 	int const pixelsPerQuad = static_cast<int>(std::ceilf(static_cast<float>(textureSize) / static_cast<float>(structureMeshSize)));
 
-	// Loop for offsets between -ppq/2 (but constrained to not remove any pixels) and ppq/2 finding minimum;
+	// Loop for offsets between -ppq (but constrained to not remove any pixels) and ppq finding minimum;
 	// reason for limits is to maintain similar size as much as possible
 	std::pair<int, int> bestOffsets{ 0, 0 };
 	float minWaste = std::numeric_limits<float>::max();
-	for (int leftOffset = -std::min(pixelsPerQuad / 2, minLeftX); leftOffset <= pixelsPerQuad / 2; ++leftOffset)
+	for (int leftOffset = -std::min(pixelsPerQuad, minLeftX); leftOffset <= pixelsPerQuad; ++leftOffset)
 	{
-		for (int rightOffset = -std::min(pixelsPerQuad / 2, textureSize - maxRightX - 1); rightOffset <= pixelsPerQuad / 2; ++rightOffset)
+		for (int rightOffset = -std::min(pixelsPerQuad, textureSize - maxRightX - 1); rightOffset <= pixelsPerQuad; ++rightOffset)
 		{
 			// Calculate new texture size
 			int const newTextureSize = textureSize + leftOffset + rightOffset;
-			if (newTextureSize <= MaxTextureSize)
+			if (newTextureSize <= WorkbenchState::GetMaxTextureDimension())
 			{
 				auto const leftWaste = CalculateWasteOnLeftEdge(leftX, leftOffset, structureMeshSize, newTextureSize);
 				auto const rightWaste = CalculateWasteOnRightEdge(rightX, leftOffset, structureMeshSize, newTextureSize);
 				float const newWaste = leftWaste + rightWaste;
-
-				LogMessage("@ ", leftOffset, ",", rightOffset, ": newWaste=", newWaste, " (", leftWaste, " + ", rightWaste, ") leftOffset=", leftOffset, " textureSize=", newTextureSize);
 
 				if (newWaste < minWaste)
 				{

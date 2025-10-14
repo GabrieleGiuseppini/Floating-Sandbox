@@ -329,16 +329,28 @@
 
 	+ Higher-definition world textures (from Android work)
 
-	= Texture alignment optimizer
+	+ Texture alignment optimizer
 		+ Do
 			+ FIX: top/bottom wastes @ TextureTest2 should be equal
 				! Right waste: tx=300 => sx=100, tCenter=301.5, waste=1.5 x9 => 13.5
 			+ See if constraining search to half a ship quad yields comparable results
 		+ Verify waste in Model import matches optimal
-		- Add checkbox for it at Preferences (default ON)
-		- Tests:
-			- Texture hitting all edges
-		- Remove logs
+		+ Add checkbox for it at Preferences (default ON)
+			+ Workbench state
+			+ UI
+			+ Use @ TextureLoad
+			+ Test OK/Cancel
+		+ See if larger search radius reduces waste on that ship
+		+ assert final texture size
+		+ Tests:
+			+ Texture hitting all edges
+			+ Texture too large
+				+ H
+				+ V
+		+ Remove logs
+		+ Mark item @ Android/Ships
+		+ Model validation checks: texture size
+			+ Move MaxTextureSize to WorkBench
 
 
 	- Bump up version: 1.19.2
@@ -362,8 +374,6 @@
 		+ Ask Joadix to test
 		- Add to credits: "Mr.H556"
 		- Changelist
-
-	- Remember for localization: br_PT has latest text as of October 1, the others not
 
 
 	- Fix SoundController::OnBombExplosion: it's using max() when it should be using min()
