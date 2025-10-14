@@ -330,11 +330,12 @@
 	+ Higher-definition world textures (from Android work)
 
 	= Texture alignment optimizer
-		= Do
+		+ Do
 			+ FIX: top/bottom wastes @ TextureTest2 should be equal
 				! Right waste: tx=300 => sx=100, tCenter=301.5, waste=1.5 x9 => 13.5
-			- See if constraining search to half a ship quad yields comparable results
-		- Verify waste in Model import matches optimal
+			+ See if constraining search to half a ship quad yields comparable results
+		+ Verify waste in Model import matches optimal
+		- Add checkbox for it at Preferences (default ON)
 		- Tests:
 			- Texture hitting all edges
 		- Remove logs
