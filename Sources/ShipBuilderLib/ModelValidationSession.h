@@ -95,6 +95,10 @@ private:
         std::vector<ShipSpaceCoordinates> const & propagationSources,
         std::vector<ShipSpaceCoordinates> const & propagationTargets,
         Buffer2D<CVElement, ShipSpaceTag> & connectivityVisitBuffer);
+
+    void CheckExteriorLayerTextureSize();
+
+    void CheckInteriorLayerTextureSize();
 };
 
 }

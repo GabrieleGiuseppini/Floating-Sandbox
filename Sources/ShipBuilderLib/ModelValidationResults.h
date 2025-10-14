@@ -23,7 +23,9 @@ public:
         UnpoweredElectricalComponent,
         UnconsumedElectricalSource,
         UnpoweredEngineComponent,
-        UnconsumedEngineSource
+        UnconsumedEngineSource,
+        ExteriorLayerTextureTooLarge,
+        InteriorLayerTextureTooLarge
     };
 
     enum class SeverityType
@@ -110,4 +112,5 @@ private:
     bool mHasErrors;
     bool mHasWarnings;
 };
+
 }

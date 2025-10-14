@@ -154,7 +154,7 @@ void ModelValidationDialog::ShowModalForStandAloneValidation(Controller & contro
     CentreOnParent(wxBOTH);
 
     // Start validation
-    StartValidation();    
+    StartValidation();
 
     wxDialog::ShowModal();
 }
@@ -560,6 +560,34 @@ void ModelValidationDialog::ShowResults(ModelValidationResults const & results)
                             else
                             {
                                 labelText = _("All engine controllers in the electrical layer are connected to at least one engine.");
+                            }
+
+                            break;
+                        }
+
+                        case ModelValidationIssue::CheckClassType::ExteriorLayerTextureTooLarge:
+                        {
+                            if (issue.GetSeverity() != ModelValidationIssue::SeverityType::Success)
+                            {
+                                labelText = _("The exterior layer texture might be too large for some computers. Resize the texture in the exterior layer so that no dimension is larger than 4096 pixels.");
+                            }
+                            else
+                            {
+                                labelText = _("The exterior layer texture is not too large.");
+                            }
+
+                            break;
+                        }
+
+                        case ModelValidationIssue::CheckClassType::InteriorLayerTextureTooLarge:
+                        {
+                            if (issue.GetSeverity() != ModelValidationIssue::SeverityType::Success)
+                            {
+                                labelText = _("The interior layer texture might be too large for some computers. Resize the texture in the interior layer so that no dimension is larger than 4096 pixels.");
+                            }
+                            else
+                            {
+                                labelText = _("The interior layer texture is not too large.");
                             }
 
                             break;

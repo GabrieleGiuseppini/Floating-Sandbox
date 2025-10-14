@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #include "ModelValidationSession.h"
 
+#include "WorkbenchState.h"
+
 #include <cassert>
 #include <queue>
 
@@ -59,6 +61,14 @@ void ModelValidationSession::InitializeValidationSteps()
         mValidationSteps.emplace_back(std::bind(&ModelValidationSession::CheckTooManyLights, this));
         mValidationSteps.emplace_back(std::bind(&ModelValidationSession::CheckTooManyElectricalPanelElements, this));
         mValidationSteps.emplace_back(std::bind(&ModelValidationSession::ValidateElectricalConnectivity, this));
+    }
+    if (mModel.HasLayer(LayerType::ExteriorTexture))
+    {
+        mValidationSteps.emplace_back(std::bind(&ModelValidationSession::CheckExteriorLayerTextureSize, this));
+    }
+    if (mModel.HasLayer(LayerType::InteriorTexture))
+    {
+        mValidationSteps.emplace_back(std::bind(&ModelValidationSession::CheckInteriorLayerTextureSize, this));
     }
 }
 
@@ -518,6 +528,26 @@ size_t ModelValidationSession::CountElectricallyUnconnected(
     }
 
     return unconnectedComponentsCount;
+}
+
+void ModelValidationSession::CheckExteriorLayerTextureSize()
+{
+    assert(mModel.HasLayer(LayerType::ExteriorTexture));
+
+    auto const & exteriorLayer = mModel.GetExteriorTextureLayer();
+    mResults.AddIssue(
+        ModelValidationIssue::CheckClassType::ExteriorLayerTextureTooLarge,
+        (exteriorLayer.Buffer.Size.width > WorkbenchState::GetMaxTextureDimension() || exteriorLayer.Buffer.Size.height > WorkbenchState::GetMaxTextureDimension()) ? ModelValidationIssue::SeverityType::Warning : ModelValidationIssue::SeverityType::Success);
+}
+
+void ModelValidationSession::CheckInteriorLayerTextureSize()
+{
+    assert(mModel.HasLayer(LayerType::InteriorTexture));
+
+    auto const & interiorLayer = mModel.GetInteriorTextureLayer();
+    mResults.AddIssue(
+        ModelValidationIssue::CheckClassType::InteriorLayerTextureTooLarge,
+        (interiorLayer.Buffer.Size.width > WorkbenchState::GetMaxTextureDimension() || interiorLayer.Buffer.Size.height > WorkbenchState::GetMaxTextureDimension()) ? ModelValidationIssue::SeverityType::Warning : ModelValidationIssue::SeverityType::Success);
 }
 
 }
