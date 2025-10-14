@@ -329,6 +329,16 @@
 
 	+ Higher-definition world textures (from Android work)
 
+	= Texture alignment optimizer
+		= Do
+			+ FIX: top/bottom wastes @ TextureTest2 should be equal
+				! Right waste: tx=300 => sx=100, tCenter=301.5, waste=1.5 x9 => 13.5
+			- See if constraining search to half a ship quad yields comparable results
+		- Verify waste in Model import matches optimal
+		- Tests:
+			- Texture hitting all edges
+		- Remove logs
+
 
 	- Bump up version: 1.19.2
 
@@ -347,7 +357,7 @@
 		+ Update code
 			+ FIX: nuke MakeLanguageIdentifier; do double search
 			+ Test myself
-		= Ask PortugueseGuy|Joadix to test
+		+ Ask PortugueseGuy|Joadix to test
 		+ Ask Joadix to test
 		- Add to credits: "Mr.H556"
 		- Changelist

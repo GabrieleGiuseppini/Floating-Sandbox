@@ -29,6 +29,8 @@ set (SHIPBUILDER_LIB_SOURCES
 	ShipBuilderTypes.h
 	ShipNameNormalizer.cpp
 	ShipNameNormalizer.h
+	TextureAlignmentOptimizer.cpp
+	TextureAlignmentOptimizer.h
 	UndoStack.cpp
 	UndoStack.h
 	View.cpp

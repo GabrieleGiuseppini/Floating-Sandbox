@@ -5,6 +5,8 @@
  ***************************************************************************************/
 #include "MainFrame.h"
 
+#include "TextureAlignmentOptimizer.h"
+
 #include "UI/AskPasswordDialog.h"
 #include "UI/NewShipNameDialog.h"
 #include "UI/WaterlineAnalyzerDialog.h"
@@ -4566,7 +4568,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     ToolType::StructureTracer,
                     exteriorTextureToolbarPanel,
                     "structure_tracer_button",
-                    _("Automatically generates structures out of the texture layer."));
+                    _("Trace a structure covering the texture layer."));
 
                 toolsSizer->Add(
                     button,
@@ -5467,6 +5469,9 @@ void MainFrame::ImportExteriorTextureLayerFromImage()
                     ImageCoordinates(originOffset.x, originOffset.y),
                     rgbaColor::zero());
             }
+
+            // Optimize alignment
+            image = TextureAlignmentOptimizer::OptimizeAlignment(image, shipSize);
 
             // Set texture
             mController->SetExteriorTextureLayer(

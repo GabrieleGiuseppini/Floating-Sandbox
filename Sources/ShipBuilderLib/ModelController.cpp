@@ -3139,7 +3139,7 @@ typename LayerTypeTraits<LayerType::Structural>::buffer_type ModelController::Ma
     //  In-Out transition: we detecting leaving texture image at texture coordinates t; assuming there were particles
     //                      earlier (at s(t-1)), we place an edge particle at s(t-1) + 1
     //
-    // The formula for s(t) is the "texturization" one, i.s. e = (t - o/2) / o, where o is the number of texture
+    // The formula for s(t) is the "texturization" one, i.e. s = (t - o/2) / o, where o is the number of texture
     // pixels in one ship quad.
 
     //
