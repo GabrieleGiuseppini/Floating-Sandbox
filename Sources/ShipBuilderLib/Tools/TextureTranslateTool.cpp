@@ -207,18 +207,39 @@ void TextureTranslateTool<TLayer>::DoTranslate(ImageCoordinates const & endPosit
 
         if (!mEngagementData->IsDirty)
         {
-            // TODOHERE: from session
+            size_t const undoPayloadCost = mEngagementData->OriginalTextureLayerData->Buffer.GetByteSize();
 
-            //size_t const undoPayloadCost = undoPayload.GetTotalCost();
+            mController.StoreUndoAction(
+                _("Translate"),
+                undoPayloadCost,
+                mController.GetModelController().GetDirtyState(),
+                [sourceLayerData = mEngagementData->OriginalTextureLayerData->Clone()](Controller & controller) mutable
+                {
+                    if constexpr (TLayer == LayerType::ExteriorTexture)
+                    {
+                        controller.Restore(
+                            GenericUndoPayload(
+                                { 0, 0 },
+                                std::nullopt,
+                                std::nullopt,
+                                std::nullopt,
+                                std::move(sourceLayerData),
+                                std::nullopt));
+                    }
+                    else
+                    {
+                        static_assert(TLayer == LayerType::InteriorTexture);
 
-            //mController.StoreUndoAction(
-            //    _("Translate"),
-            //    undoPayloadCost,
-            //    mController.GetModelController().GetDirtyState(),
-            //    [undoPayload = std::move(undoPayload)](Controller & controller) mutable
-            //    {
-            //        controller.Restore(std::move(undoPayload));
-            //    });
+                        controller.Restore(
+                            GenericUndoPayload(
+                                { 0, 0 },
+                                std::nullopt,
+                                std::nullopt,
+                                std::nullopt,
+                                std::nullopt,
+                                std::move(sourceLayerData)));
+                    }
+                });
 
             mEngagementData->IsDirty = true;
         }

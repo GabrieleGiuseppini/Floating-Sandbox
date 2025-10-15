@@ -355,20 +355,20 @@
 	= ShipBuilder: Texture Translate Tool
 		+ Icon
 		+ Cursor
-		= Tool
+		+ Tool
 			+ Templated on layer type
 			+ Copy from StructuralRectangleTool
-			= MouseDown starts, MouseUp finalizes
+			+ MouseDown starts, MouseUp finalizes
 				+ Start: take full copy of layer (TextureLayerData, using ModelController::CloneXXXLayer), in engagement data
-				= Move: 
+				+ Move: 
 					+ Blit that to ModelController
 						+ Create new empty (transp) texture
 						+ Blit into it
-					- Make undo (first time only)
+					+ Make undo (first time only)
 			+ SHIFT lock
 			! No limits
-		- Test:
-			- Undo
+		= Test:
+			+ Undo
 			- Move out of bounds
 		- Add to changelist
 		- Merge into master
