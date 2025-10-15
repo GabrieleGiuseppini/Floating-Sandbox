@@ -453,7 +453,7 @@ public:
 
     void MakeExteriorLayerFromImage(
         TextureLayerData const & source,
-        ImageCoordinates const & sourceOrigin,
+        ImageRect const & sourceRegion,
         ImageCoordinates const & targetOrigin);
 
     void RestoreExteriorTextureLayerRegionEphemeralVisualization(
@@ -517,6 +517,11 @@ public:
     void RestoreInteriorTextureLayer(std::unique_ptr<TextureLayerData> interiorTextureLayer);
 
     void InteriorTextureRegionEraseForEphemeralVisualization(ImageRect const & region);
+
+    void MakeInteriorLayerFromImage(
+        TextureLayerData const & source,
+        ImageRect const & sourceRegion,
+        ImageCoordinates const & targetOrigin);
 
     void RestoreInteriorTextureLayerRegionEphemeralVisualization(
         typename LayerTypeTraits<LayerType::InteriorTexture>::buffer_type const & backupBuffer,
@@ -694,6 +699,11 @@ private:
         ImageRect const & targetRegion,
         ImageCoordinates const & targetCoordinates,
         bool isTransparent);
+
+    TextureLayerData MakeTextureLayerFromImage(
+        TextureLayerData const & source,
+        ImageRect const & sourceRegion,
+        ImageCoordinates const & targetOrigin);
 
     // Viz
 

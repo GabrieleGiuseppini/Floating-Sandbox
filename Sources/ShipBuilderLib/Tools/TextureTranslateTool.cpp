@@ -50,10 +50,7 @@ void TextureTranslateTool<TLayer>::OnMouseMove(DisplayLogicalCoordinates const &
 {
     if (mEngagementData)
     {
-        DoTranslate(
-            mEngagementData->StartPosition,
-            ScreenToTextureSpace(TLayer, GetCurrentMouseCoordinates()),
-            mEngagementData->IsDirty);
+        DoTranslate(ScreenToTextureSpace(TLayer, GetCurrentMouseCoordinates()));
     }
 }
 
@@ -100,10 +97,7 @@ void TextureTranslateTool<TLayer>::OnShiftKeyDown()
     {
         if (mEngagementData->IsDirty) // Prevent dirtying if nothing has ever changed (i.e. if mouse hasn't moved)
         {
-            DoTranslate(
-                mEngagementData->StartPosition,
-                ScreenToTextureSpace(TLayer, GetCurrentMouseCoordinates()),
-                mEngagementData->IsDirty);
+            DoTranslate(ScreenToTextureSpace(TLayer, GetCurrentMouseCoordinates()));
         }
     }
 }
@@ -117,10 +111,7 @@ void TextureTranslateTool<TLayer>::OnShiftKeyUp()
     {
         if (mEngagementData->IsDirty) // Prevent dirtying if nothing has ever changed (i.e. if mouse hasn't moved)
         {
-            DoTranslate(
-                mEngagementData->StartPosition,
-                ScreenToTextureSpace(TLayer, GetCurrentMouseCoordinates()),
-                mEngagementData->IsDirty);
+            DoTranslate(ScreenToTextureSpace(TLayer, GetCurrentMouseCoordinates()));
         }
     }
 }
@@ -129,11 +120,11 @@ void TextureTranslateTool<TLayer>::OnShiftKeyUp()
 
 
 template<LayerType TLayer>
-void TextureTranslateTool<TLayer>::DoTranslate(
-    ImageCoordinates const & startPosition,
-    ImageCoordinates const & endPosition,
-    bool & isFirst)
+void TextureTranslateTool<TLayer>::DoTranslate(ImageCoordinates const & endPosition)
 {
+    assert(mEngagementData.has_value());
+    assert(mEngagementData->OriginalTextureLayerData);
+
     //
     // Apply SHIFT lock
     //
@@ -142,15 +133,15 @@ void TextureTranslateTool<TLayer>::DoTranslate(
     if (mIsShiftDown)
     {
         // Constrain to either horizontally or vertically
-        if (std::abs(actualEndPosition.x - startPosition.x) > std::abs(actualEndPosition.y - startPosition.y))
+        if (std::abs(actualEndPosition.x - mEngagementData->StartPosition.x) > std::abs(actualEndPosition.y - mEngagementData->StartPosition.y))
         {
             // X is larger
-            actualEndPosition.y = startPosition.y;
+            actualEndPosition.y = mEngagementData->StartPosition.y;
         }
         else
         {
             // Y is larger
-            actualEndPosition.x = startPosition.x;
+            actualEndPosition.x = mEngagementData->StartPosition.x;
         }
     }
 
@@ -158,53 +149,86 @@ void TextureTranslateTool<TLayer>::DoTranslate(
     // Translate
     //
 
-    ImageSize offset = endPosition - startPosition;
+    ImageSize offset = actualEndPosition - mEngagementData->StartPosition;
 
     LogMessage("TODOHERE: offset=", offset);
 
-    if constexpr (TLayer == LayerType::ExteriorTexture)
+    ImageCoordinates sourceOrigin(0, 0);
+    ImageCoordinates targetOrigin(0, 0);
+
+    if (offset.width >= 0)
     {
-        // TODOHERE
-        //auto undoPayload = mController.GetModelController().StructuralRectangle(
-        //    rect,
-        //    mController.GetWorkbenchState().GetStructuralRectangleLineSize(),
-        //    lineMaterial,
-        //    fillMaterial);
+        sourceOrigin.x = 0;
+        targetOrigin.x = offset.width;
     }
     else
     {
-        static_assert(TLayer == LayerType::InteriorTexture);
-
-        // TODOHERE
+        sourceOrigin.x = -offset.width;
+        targetOrigin.x = 0;
     }
 
-    //
-    // Store undo
-    //
-
-    if (!isFirst)
+    if (offset.height >= 0)
     {
-        // TODOHERE: from session
-
-        //size_t const undoPayloadCost = undoPayload.GetTotalCost();
-
-        //mController.StoreUndoAction(
-        //    _("Translate"),
-        //    undoPayloadCost,
-        //    mController.GetModelController().GetDirtyState(),
-        //    [undoPayload = std::move(undoPayload)](Controller & controller) mutable
-        //    {
-        //        controller.Restore(std::move(undoPayload));
-        //    });
-
-        isFirst = false;
+        sourceOrigin.y = 0;
+        targetOrigin.y = offset.height;
+    }
+    else
+    {
+        sourceOrigin.y = -offset.height;
+        targetOrigin.y = 0;
     }
 
-    //
-    // Finalize
-    //
+    auto const sourceRegion =
+        ImageRect(sourceOrigin, mEngagementData->OriginalTextureLayerData->Buffer.Size)
+        .MakeIntersectionWith(ImageRect(ImageCoordinates(0, 0), mEngagementData->OriginalTextureLayerData->Buffer.Size));
 
-    mController.LayerChangeEpilog({ TLayer });
+    if (sourceRegion.has_value())
+    {
+        if constexpr (TLayer == LayerType::ExteriorTexture)
+        {
+            mController.GetModelController().MakeExteriorLayerFromImage(
+                *mEngagementData->OriginalTextureLayerData,
+                *sourceRegion,
+                targetOrigin);
+        }
+        else
+        {
+            static_assert(TLayer == LayerType::InteriorTexture);
+
+            mController.GetModelController().MakeInteriorLayerFromImage(
+                *mEngagementData->OriginalTextureLayerData,
+                *sourceRegion,
+                targetOrigin);
+        }
+
+        //
+        // Store undo
+        //
+
+        if (!mEngagementData->IsDirty)
+        {
+            // TODOHERE: from session
+
+            //size_t const undoPayloadCost = undoPayload.GetTotalCost();
+
+            //mController.StoreUndoAction(
+            //    _("Translate"),
+            //    undoPayloadCost,
+            //    mController.GetModelController().GetDirtyState(),
+            //    [undoPayload = std::move(undoPayload)](Controller & controller) mutable
+            //    {
+            //        controller.Restore(std::move(undoPayload));
+            //    });
+
+            mEngagementData->IsDirty = true;
+        }
+
+        //
+        // Finalize
+        //
+
+        mController.LayerChangeEpilog({ TLayer });
+    }
 }
 
 }

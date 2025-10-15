@@ -360,16 +360,19 @@
 			+ Copy from StructuralRectangleTool
 			= MouseDown starts, MouseUp finalizes
 				+ Start: take full copy of layer (TextureLayerData, using ModelController::CloneXXXLayer), in engagement data
-				- Move: 
-					- Blit that to ModelController
-						- Create new empty (transp) texture
-						- Blit into it
+				= Move: 
+					+ Blit that to ModelController
+						+ Create new empty (transp) texture
+						+ Blit into it
 					- Make undo (first time only)
-			= SHIFT lock
+			+ SHIFT lock
 			! No limits
 		- Test:
 			- Undo
+			- Move out of bounds
 		- Add to changelist
+		- Merge into master
+			- Nuke branch
 
 
 	- Bump up version: 1.19.2

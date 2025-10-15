@@ -44,10 +44,7 @@ protected:
 
 private:
 
-    void DoTranslate(
-        ImageCoordinates const & startPosition,
-        ImageCoordinates const & endPosition,
-        bool & isFirst);
+    void DoTranslate(ImageCoordinates const & endPosition);
 
 private:
 

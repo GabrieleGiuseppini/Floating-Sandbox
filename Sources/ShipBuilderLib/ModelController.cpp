@@ -2267,15 +2267,22 @@ void ModelController::ExteriorTextureRegionEraseForEphemeralVisualization(ImageR
 
 void ModelController::MakeExteriorLayerFromImage(
     TextureLayerData const & source,
-    ImageCoordinates const & sourceOrigin,
+    ImageRect const & sourceRegion,
     ImageCoordinates const & targetOrigin)
 {
-    assert(sourceOrigin == ImageCoordinates(0, 0) || targetOrigin == ImageCoordinates(0, 0));
+    assert(mModel.HasLayer(LayerType::ExteriorTexture));
+    assert(!mIsExteriorTextureLayerInEphemeralVisualization);
 
-    // TODOHERE
-    (void)source;
+    mModel.SetExteriorTextureLayer(
+        MakeTextureLayerFromImage(
+            source,
+            sourceRegion,
+            targetOrigin));
 
-    // Finalize
+    //
+    // Update visualization
+    //
+
     mGameVisualizationTexture.reset();
     mGameVisualizationAutoTexturizationTexture.release();
     RegisterDirtyVisualization<VisualizationType::Game>(GetWholeShipRect());
@@ -2479,6 +2486,28 @@ void ModelController::InteriorTextureRegionEraseForEphemeralVisualization(ImageR
     // Remember we are in temp visualization now
     mIsInteriorTextureLayerInEphemeralVisualization = true;
 }
+
+void ModelController::MakeInteriorLayerFromImage(
+    TextureLayerData const & source,
+    ImageRect const & sourceRegion,
+    ImageCoordinates const & targetOrigin)
+{
+    assert(mModel.HasLayer(LayerType::InteriorTexture));
+    assert(!mIsInteriorTextureLayerInEphemeralVisualization);
+
+    mModel.SetInteriorTextureLayer(
+        MakeTextureLayerFromImage(
+            source,
+            sourceRegion,
+            targetOrigin));
+
+    //
+    // Update visualization
+    //
+
+    RegisterDirtyVisualization<VisualizationType::InteriorTextureLayer>(GetWholeInteriorTextureRect());
+}
+
 
 void ModelController::RestoreInteriorTextureLayerRegionEphemeralVisualization(
     typename LayerTypeTraits<LayerType::InteriorTexture>::buffer_type const & backupBuffer,
@@ -3972,6 +4001,23 @@ void ModelController::DoInteriorTextureRegionBufferPaste(
     //
 
     RegisterDirtyVisualization<VisualizationType::InteriorTextureLayer>(targetRegion);
+}
+
+TextureLayerData ModelController::MakeTextureLayerFromImage(
+    TextureLayerData const & source,
+    ImageRect const & sourceRegion,
+    ImageCoordinates const & targetOrigin)
+{
+    RgbaImageData newTexture(
+        source.Buffer.Size,
+        rgbaColor(rgbaColor::data_type_max, rgbaColor::data_type_max, rgbaColor::data_type_max, 0));
+
+    newTexture.BlitFromRegion(
+        source.Buffer,
+        sourceRegion,
+        targetOrigin);
+
+    return TextureLayerData(std::move(newTexture));
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
