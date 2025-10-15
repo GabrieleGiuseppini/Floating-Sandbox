@@ -367,9 +367,9 @@
 					+ Make undo (first time only)
 			+ SHIFT lock
 			! No limits
-		= Test:
+		+ Test:
 			+ Undo
-			- Move out of bounds
+			+ Move out of bounds
 		- Add to changelist
 		- Merge into master
 			- Nuke branch

@@ -151,8 +151,6 @@ void TextureTranslateTool<TLayer>::DoTranslate(ImageCoordinates const & endPosit
 
     ImageSize offset = actualEndPosition - mEngagementData->StartPosition;
 
-    LogMessage("TODOHERE: offset=", offset);
-
     ImageCoordinates sourceOrigin(0, 0);
     ImageCoordinates targetOrigin(0, 0);
 
