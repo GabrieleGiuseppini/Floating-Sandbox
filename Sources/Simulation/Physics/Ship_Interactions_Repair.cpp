@@ -120,9 +120,9 @@ void Ship::RepairAt(
                     mTriangles.Restore(fct);
 
                     // Attempt to restore all endpoints
-                    AttemptPointRestore(mTriangles.GetPointAIndex(fct), currentSimulationTime);
-                    AttemptPointRestore(mTriangles.GetPointBIndex(fct), currentSimulationTime);
-                    AttemptPointRestore(mTriangles.GetPointCIndex(fct), currentSimulationTime);
+                    AttemptPointRestore(mTriangles.GetPointAIndex(fct), currentSimulationTime, simulationParameters);
+                    AttemptPointRestore(mTriangles.GetPointBIndex(fct), currentSimulationTime, simulationParameters);
+                    AttemptPointRestore(mTriangles.GetPointCIndex(fct), currentSimulationTime, simulationParameters);
                 }
             }
         }
@@ -159,7 +159,7 @@ void Ship::RepairAt(
             if (NoneElementIndex != electricalElementIndex
                 && mElectricalElements.IsDeleted(electricalElementIndex))
             {
-                mElectricalElements.Restore(electricalElementIndex);
+                mElectricalElements.Restore(electricalElementIndex, mPoints, simulationParameters);
             }
         }
     }
@@ -852,8 +852,8 @@ bool Ship::RepairFromAttractor(
                         mSprings.GetFactoryRestLength(fcs.SpringIndex));
 
                     // Attempt to restore both endpoints
-                    AttemptPointRestore(attractorPointIndex, currentSimulationTime);
-                    AttemptPointRestore(attracteePointIndex, currentSimulationTime);
+                    AttemptPointRestore(attractorPointIndex, currentSimulationTime, simulationParameters);
+                    AttemptPointRestore(attracteePointIndex, currentSimulationTime, simulationParameters);
 
                     // Recalculate the spring's coefficients, since we have changed the
                     // spring's rest length

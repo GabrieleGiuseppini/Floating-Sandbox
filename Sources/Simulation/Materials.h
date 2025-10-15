@@ -287,6 +287,7 @@ public:
         PowerMonitor,
         ShipSound,
         SmokeEmitter,
+        TimerSwitch,
         WaterPump,
         WaterSensingSwitch,
         WatertightDoor
@@ -379,6 +380,9 @@ public:
     // Water pump
     float WaterPumpNominalForce;
 
+    // Timer
+    float TimerDurationSeconds;
+
     // Palette
     std::optional<MaterialPaletteCoordinatesType> PaletteCoordinates;
 
@@ -425,6 +429,7 @@ public:
         InteractiveSwitchElementType interactiveSwitchType,
         ShipSoundElementType shipSoundType,
         float waterPumpNominalForce,
+        float timerDurationSeconds,
         std::optional<MaterialPaletteCoordinatesType> paletteCoordinates)
         : ColorKey(colorKey)
         , Name(name)
@@ -451,6 +456,7 @@ public:
         , InteractiveSwitchType(interactiveSwitchType)
         , ShipSoundType(shipSoundType)
         , WaterPumpNominalForce(waterPumpNominalForce)
+        , TimerDurationSeconds(timerDurationSeconds)
         , PaletteCoordinates(paletteCoordinates)
     {
     }
@@ -486,6 +492,7 @@ public:
         , InteractiveSwitchType(InteractiveSwitchElementType::Push)
         , ShipSoundType(ShipSoundElementType::Bell1)
         , WaterPumpNominalForce(0.0f)
+        , TimerDurationSeconds(0.0f)
         , PaletteCoordinates(std::nullopt)
     {
     }

@@ -76,7 +76,8 @@ struct IShipPhysicsHandler
      */
     virtual void HandlePointRestore(
         ElementIndex pointElementIndex,
-        float currentSimulationTime) = 0;
+        float currentSimulationTime,
+        SimulationParameters const & simulationParameters) = 0;
 
     /*
      * Invoked whenever a spring is destroyed.

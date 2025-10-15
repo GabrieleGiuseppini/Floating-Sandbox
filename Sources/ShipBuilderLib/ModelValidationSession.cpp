@@ -357,6 +357,16 @@ void ModelValidationSession::ValidateElectricalConnectivity()
                         break;
                     }
 
+                    case ElectricalMaterial::ElectricalElementType::TimerSwitch:
+                    {
+                        electricalConnectivityVisitBuffer[coords].flags.isConductive = true; // Acts as a switch
+                        engineConnectivityVisitBuffer[coords].flags.isConductive = false;
+                        electricalComponents.push_back(coords);
+
+                        hasElectricals = true;
+                        break;
+                    }
+
                     case ElectricalMaterial::ElectricalElementType::WaterPump:
                     {
                         electricalConnectivityVisitBuffer[coords].flags.isConductive = electricalMaterial->ConductsElectricity;

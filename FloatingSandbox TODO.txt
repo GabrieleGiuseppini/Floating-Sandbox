@@ -374,6 +374,9 @@
 		+ Merge into master
 			+ Nuke branch
 
+	- Timer switches (*)
+		- changelist
+		- Port to Android (just files and electrical materials)
 
 	- Bump up version: 1.19.2
 
@@ -1644,9 +1647,25 @@
 					- Lights that flicker forever
 				- Logic Gates
 					- ...to be worked on...
-				- Delayed switch
-					- Different durations
-					- Simple state machine @ UpdateAutomaticConductivity
+				- Timer switches (*)
+					- materials json
+						- Different durations: 1s, 3s, 5s x {ON, OFF}
+					+ TimerSwitchState:
+						- IsOperating: == is powered
+						- opt<end_ts>: when set, we're counting down and reaching target we toggle
+					+ Xs Switch ON: 
+						- Conductive
+						- When powered for the firt time, clock starts ticking; at target: becomes not conductive
+						- When powered off, becomes conductive again, and resets timer
+					+ Xs Switch OFF:
+						- Not conductive
+						- When powered for the firt time, clock starts ticking; at target: becomes conductive
+						- When powered off, becomes not conductive again, and resets timer
+					+ Simple state machine @ UpdateAutomaticConductivityToggles
+					+ Reset conductivity each time state is reset
+						+ Repair
+					- Tests:
+						- Repair
 					- Gfx: Clock dial (normalized on duration), new ElectricalControl
 					- Sound: clock
 				- Thermal switch

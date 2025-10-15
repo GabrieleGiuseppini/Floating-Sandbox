@@ -877,6 +877,12 @@ void MaterialPalette<TLayer>::PopulateMaterialProperties(TMaterial const * mater
                     break;
                 }
 
+                case ElectricalMaterial::ElectricalElementType::TimerSwitch:
+                {
+                    typeProp->SetValue(_("Timed Switch"));
+                    break;
+                }
+
                 case ElectricalMaterial::ElectricalElementType::WaterPump:
                 {
                     typeProp->SetValue(_("Water Pump"));

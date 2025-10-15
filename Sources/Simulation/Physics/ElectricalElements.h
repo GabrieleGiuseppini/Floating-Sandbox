@@ -301,6 +301,26 @@ private:
             {}
         };
 
+        struct TimerSwitchState
+        {
+            // When set, we are powered
+            bool IsOperating;
+
+            // When set, we're waiting for the switch to automatically toggle its conductivity state
+            std::optional<float> AutoToggleSimulationTime;
+
+            TimerSwitchState()
+            {
+                Reset();
+            }
+
+            void Reset()
+            {
+                IsOperating = false;
+                AutoToggleSimulationTime.reset();
+            }
+        };
+
         struct WaterPumpState
         {
             float NominalForce;
@@ -358,6 +378,7 @@ private:
         PowerMonitorState PowerMonitor;
         ShipSoundState ShipSound;
         SmokeEmitterState SmokeEmitter;
+        TimerSwitchState TimerSwitch;
         WaterPumpState WaterPump;
         WaterSensingSwitchState WaterSensingSwitch;
         WatertightDoorState WatertightDoor;
@@ -402,6 +423,11 @@ private:
         ElementState(SmokeEmitterState smokeEmitter)
             : SmokeEmitter(smokeEmitter)
         {}
+
+        ElementState(TimerSwitchState timerSwitch)
+            : TimerSwitch(timerSwitch)
+        {
+        }
 
         ElementState(WaterPumpState waterPump)
             : WaterPump(waterPump)
@@ -580,7 +606,10 @@ public:
         float currentSimulationTime,
         SimulationParameters const & simulationParameters);
 
-    void Restore(ElementIndex electricalElementIndex);
+    void Restore(
+        ElementIndex electricalElementIndex,
+        Points & points,
+        SimulationParameters const & simulationParameters);
 
     void OnPhysicalStructureChanged(Points const & points);
 

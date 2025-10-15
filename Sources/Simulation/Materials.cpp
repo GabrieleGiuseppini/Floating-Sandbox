@@ -330,6 +330,13 @@ ElectricalMaterial ElectricalMaterial::Create(
             waterPumpNominalForce = Utils::GetMandatoryJsonMember<float>(electricalMaterialJson, "water_pump_nominal_force");
         }
 
+        // Timer duration
+        float timerDurationSeconds = 0.0f;
+        if (ElectricalElementType::TimerSwitch == electricalType)
+        {
+            timerDurationSeconds = Utils::GetMandatoryJsonMember<float>(electricalMaterialJson, "timer_duration");
+        }
+
         // Palette coordinates
         std::optional<MaterialPaletteCoordinatesType> paletteCoordinates;
         auto const & paletteCoordinatesJson = Utils::GetOptionalJsonObject(electricalMaterialJson, "palette_coordinates");
@@ -364,6 +371,7 @@ ElectricalMaterial ElectricalMaterial::Create(
             interactiveSwitchType,
             shipSoundType,
             waterPumpNominalForce,
+            timerDurationSeconds,
             paletteCoordinates);
     }
     catch (GameException const & ex)
@@ -396,6 +404,8 @@ ElectricalMaterial::ElectricalElementType ElectricalMaterial::StrToElectricalEle
         return ElectricalElementType::ShipSound;
     else if (Utils::CaseInsensitiveEquals(str, "SmokeEmitter"))
         return ElectricalElementType::SmokeEmitter;
+    else if (Utils::CaseInsensitiveEquals(str, "TimerSwitch"))
+        return ElectricalElementType::TimerSwitch;
     else if (Utils::CaseInsensitiveEquals(str, "WaterPump"))
         return ElectricalElementType::WaterPump;
     else if (Utils::CaseInsensitiveEquals(str, "WaterSensingSwitch"))
@@ -608,6 +618,7 @@ std::string ElectricalMaterial::MakeInstancedElementLabel(ElectricalElementInsta
         case ElectricalElementType::Lamp:
         case ElectricalElementType::OtherSink:
         case ElectricalElementType::SmokeEmitter:
+        case ElectricalElementType::TimerSwitch:
         {
             // These are never instanced
             assert(false);

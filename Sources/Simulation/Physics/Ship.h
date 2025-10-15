@@ -670,7 +670,8 @@ private:
 
     void AttemptPointRestore(
         ElementIndex pointElementIndex,
-        float currentSimulationTime);
+        float currentSimulationTime,
+        SimulationParameters const & simulationParameters);
 
     void InternalSpawnAirBubble(
         vec2f const & position,
@@ -743,7 +744,8 @@ public:
 
     void HandlePointRestore(
         ElementIndex pointElementIndex,
-        float currentSimulationTime) override;
+        float currentSimulationTime,
+        SimulationParameters const & simulationParameters) override;
 
     void HandleSpringDestroy(
         ElementIndex springElementIndex,

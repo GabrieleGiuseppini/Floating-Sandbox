@@ -216,6 +216,18 @@ void ElectricalElements::Add(
             break;
         }
 
+        case ElectricalMaterial::ElectricalElementType::TimerSwitch:
+        {
+            // State
+            mElementStateBuffer.emplace_back(ElementState::TimerSwitchState());
+
+            // Indices
+            mSinks.emplace_back(elementIndex); // It's a sink so that we may update its "currently powered" state
+            mAutomaticConductivityTogglingElements.emplace_back(elementIndex);
+
+            break;
+        }
+
         case ElectricalMaterial::ElectricalElementType::WaterPump:
         {
             // State
@@ -422,6 +434,7 @@ void ElectricalElements::AnnounceInstancedElements()
             case ElectricalMaterial::ElectricalElementType::Lamp:
             case ElectricalMaterial::ElectricalElementType::OtherSink:
             case ElectricalMaterial::ElectricalElementType::SmokeEmitter:
+            case ElectricalMaterial::ElectricalElementType::TimerSwitch:
             {
                 // Nothing to announce for these
                 break;
@@ -478,6 +491,7 @@ void ElectricalElements::HighlightElectricalElement(
         }
 
         case ElectricalMaterial::ElectricalElementType::InteractiveSwitch:
+        case ElectricalMaterial::ElectricalElementType::TimerSwitch:
         case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
         {
             points.StartElectricalElementHighlight(
@@ -808,6 +822,7 @@ void ElectricalElements::Destroy(
         case ElectricalMaterial::ElectricalElementType::EngineTransmission:
         case ElectricalMaterial::ElectricalElementType::OtherSink:
         case ElectricalMaterial::ElectricalElementType::SmokeEmitter:
+        case ElectricalMaterial::ElectricalElementType::TimerSwitch:
         {
             break;
         }
@@ -835,7 +850,10 @@ void ElectricalElements::Destroy(
     mIsDeletedBuffer[electricalElementIndex] = true;
 }
 
-void ElectricalElements::Restore(ElementIndex electricalElementIndex)
+void ElectricalElements::Restore(
+    ElementIndex electricalElementIndex,
+    Points & points,
+    SimulationParameters const & simulationParameters)
 {
     // Connectivity is taken care by ship destroy handler, as usual
 
@@ -907,6 +925,23 @@ void ElectricalElements::Restore(ElementIndex electricalElementIndex)
             // Nothing else to do: at the next UpdateSinks() that makes this sound work, there will be a state change
 
             assert(!mElementStateBuffer[electricalElementIndex].ShipSound.IsPlaying);
+
+            break;
+        }
+
+        case ElectricalMaterial::ElectricalElementType::TimerSwitch:
+        {
+            mElementStateBuffer[electricalElementIndex].TimerSwitch.Reset();
+
+            // Restore default conductivity, if current is different
+            if (mConductivityBuffer[electricalElementIndex].ConductsElectricity != mConductivityBuffer[electricalElementIndex].MaterialConductsElectricity)
+            {
+                InternalSetSwitchState(
+                    electricalElementIndex,
+                    static_cast<ElectricalState>(mConductivityBuffer[electricalElementIndex].MaterialConductsElectricity),
+                    points,
+                    simulationParameters);
+            }
 
             break;
         }
@@ -1201,6 +1236,7 @@ void ElectricalElements::InternalSetSwitchState(
         // Show notifications - for some types only
         if (simulationParameters.DoShowElectricalNotifications
             && (mMaterialTypeBuffer[elementIndex] == ElectricalMaterial::ElectricalElementType::InteractiveSwitch
+                || mMaterialTypeBuffer[elementIndex] == ElectricalMaterial::ElectricalElementType::TimerSwitch
                 || mMaterialTypeBuffer[elementIndex] == ElectricalMaterial::ElectricalElementType::WaterSensingSwitch))
         {
             HighlightElectricalElement(elementIndex, points);
@@ -1441,57 +1477,88 @@ void ElectricalElements::UpdateAutomaticConductivityToggles(
         {
             switch (GetMaterialType(elementIndex))
             {
-            case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
-            {
-                auto & waterSensingSwitchState = mElementStateBuffer[elementIndex].WaterSensingSwitch;
-
-                // No transitions if in grace period
-                if (currentSimulationTime >= waterSensingSwitchState.GracePeriodEndSimulationTime)
+                case ElectricalMaterial::ElectricalElementType::TimerSwitch:
                 {
-                    // When higher than watermark: conductivity state toggles to opposite than material's
-                    // When lower than watermark: conductivity state toggles to same as material's
+                    auto & timerSwitchState = mElementStateBuffer[elementIndex].TimerSwitch;
 
-                    float constexpr WaterLowWatermark = 0.05f;
-                    float constexpr WaterHighWatermark = 0.45f;
-
-                    float constexpr GracePeriodInterval = 3.0f;
-
-                    if (mConductivityBuffer[elementIndex].ConductsElectricity == mConductivityBuffer[elementIndex].MaterialConductsElectricity
-                        && points.GetWater(GetPointIndex(elementIndex)) >= WaterHighWatermark)
+                    if (timerSwitchState.AutoToggleSimulationTime.has_value())
                     {
-                        // Toggle to opposite of material
-                        InternalSetSwitchState(
-                            elementIndex,
-                            static_cast<ElectricalState>(!mConductivityBuffer[elementIndex].MaterialConductsElectricity),
-                            points,
-                            simulationParameters);
+                        assert(timerSwitchState.IsOperating);
 
-                        // Start grace period
-                        waterSensingSwitchState.GracePeriodEndSimulationTime = currentSimulationTime + GracePeriodInterval;
-                    }
-                    else if (mConductivityBuffer[elementIndex].ConductsElectricity != mConductivityBuffer[elementIndex].MaterialConductsElectricity
-                        && points.GetWater(GetPointIndex(elementIndex)) <= WaterLowWatermark)
-                    {
-                        // Toggle to material's
-                        InternalSetSwitchState(
-                            elementIndex,
-                            static_cast<ElectricalState>(mConductivityBuffer[elementIndex].MaterialConductsElectricity),
-                            points,
-                            simulationParameters);
+                        // We haven't toggled yet
+                        assert(mConductivityBuffer[elementIndex].ConductsElectricity == mConductivityBuffer[elementIndex].MaterialConductsElectricity);
 
-                        // Start grace period
-                        waterSensingSwitchState.GracePeriodEndSimulationTime = currentSimulationTime + GracePeriodInterval;
+                        if (currentSimulationTime > *timerSwitchState.AutoToggleSimulationTime)
+                        {
+                            //
+                            // Toggle to opposite of own
+                            //
+
+                            InternalSetSwitchState(
+                                elementIndex,
+                                static_cast<ElectricalState>(!mConductivityBuffer[elementIndex].MaterialConductsElectricity),
+                                points,
+                                simulationParameters);
+
+                            // No need to keep running now
+                            timerSwitchState.AutoToggleSimulationTime.reset();
+                        }
                     }
+
+                    break;
                 }
 
-                break;
-            }
+                case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
+                {
+                    auto & waterSensingSwitchState = mElementStateBuffer[elementIndex].WaterSensingSwitch;
 
-            default:
-            {
-                // Shouldn't be here - all automatically-toggling elements should have been handled
-                assert(false);
-            }
+                    // No transitions if in grace period
+                    if (currentSimulationTime >= waterSensingSwitchState.GracePeriodEndSimulationTime)
+                    {
+                        // When higher than watermark: conductivity state toggles to opposite than material's
+                        // When lower than watermark: conductivity state toggles to same as material's
+
+                        float constexpr WaterLowWatermark = 0.05f;
+                        float constexpr WaterHighWatermark = 0.45f;
+
+                        float constexpr GracePeriodInterval = 3.0f;
+
+                        if (mConductivityBuffer[elementIndex].ConductsElectricity == mConductivityBuffer[elementIndex].MaterialConductsElectricity
+                            && points.GetWater(GetPointIndex(elementIndex)) >= WaterHighWatermark)
+                        {
+                            // Toggle to opposite of material
+                            InternalSetSwitchState(
+                                elementIndex,
+                                static_cast<ElectricalState>(!mConductivityBuffer[elementIndex].MaterialConductsElectricity),
+                                points,
+                                simulationParameters);
+
+                            // Start grace period
+                            waterSensingSwitchState.GracePeriodEndSimulationTime = currentSimulationTime + GracePeriodInterval;
+                        }
+                        else if (mConductivityBuffer[elementIndex].ConductsElectricity != mConductivityBuffer[elementIndex].MaterialConductsElectricity
+                            && points.GetWater(GetPointIndex(elementIndex)) <= WaterLowWatermark)
+                        {
+                            // Toggle to material's
+                            InternalSetSwitchState(
+                                elementIndex,
+                                static_cast<ElectricalState>(mConductivityBuffer[elementIndex].MaterialConductsElectricity),
+                                points,
+                                simulationParameters);
+
+                            // Start grace period
+                            waterSensingSwitchState.GracePeriodEndSimulationTime = currentSimulationTime + GracePeriodInterval;
+                        }
+                    }
+
+                    break;
+                }
+
+                default:
+                {
+                    // Shouldn't be here - all automatically-toggling elements should have been handled
+                    assert(false);
+                }
             }
         }
     }
@@ -2176,6 +2243,51 @@ void ElectricalElements::UpdateSinks(
                             // Make sure we re-calculate the next emission timestamp
                             mElementStateBuffer[sinkElementIndex].SmokeEmitter.NextEmissionSimulationTimestamp = 0.0f;
                         }
+                    }
+                }
+
+                break;
+            }
+
+            case ElectricalMaterial::ElectricalElementType::TimerSwitch:
+            {
+                if (!IsDeleted(sinkElementIndex))
+                {
+                    // Update state machine
+                    if (!isConnectedToPower && mElementStateBuffer[sinkElementIndex].TimerSwitch.IsOperating)
+                    {
+                        //
+                        // Powered -> Not Powered
+                        //
+
+                        // Stop operating
+                        mElementStateBuffer[sinkElementIndex].TimerSwitch.IsOperating = false;
+
+                        // Reset timer
+                        mElementStateBuffer[sinkElementIndex].TimerSwitch.AutoToggleSimulationTime.reset();
+
+                        // TODOHERE
+                        // Restore default conductivity, if current is different
+                        if (mConductivityBuffer[sinkElementIndex].ConductsElectricity != mConductivityBuffer[sinkElementIndex].MaterialConductsElectricity)
+                        {
+                            InternalSetSwitchState(
+                                sinkElementIndex,
+                                static_cast<ElectricalState>(mConductivityBuffer[sinkElementIndex].MaterialConductsElectricity),
+                                points,
+                                simulationParameters);
+                        }
+                    }
+                    else if (isConnectedToPower && !mElementStateBuffer[sinkElementIndex].TimerSwitch.IsOperating)
+                    {
+                        //
+                        // Not Powered -> Powered
+                        //
+
+                        // Start operating
+                        mElementStateBuffer[sinkElementIndex].TimerSwitch.IsOperating = true;
+
+                        // Start clock ticking
+                        mElementStateBuffer[sinkElementIndex].TimerSwitch.AutoToggleSimulationTime = currentSimulationTime + mMaterialBuffer[sinkElementIndex]->TimerDurationSeconds;
                     }
                 }
 
