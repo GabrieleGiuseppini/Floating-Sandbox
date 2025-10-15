@@ -18,6 +18,7 @@
 #include "Tools/StructureTracerTool.h"
 #include "Tools/TextureEraserTool.h"
 #include "Tools/TextureMagicWandTool.h"
+#include "Tools/TextureTranslateTool.h"
 
 #include <cassert>
 
@@ -2249,7 +2250,7 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
                 mGameAssetManager);
         }
 
-        case ToolType::StructuralMeasuringTapeTool:
+        case ToolType::StructuralMeasuringTape:
         {
             return std::make_unique<MeasuringTapeTool>(
                 *this,
@@ -2380,6 +2381,20 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
         case ToolType::StructureTracer:
         {
             return std::make_unique<StructureTracerTool>(
+                *this,
+                mGameAssetManager);
+        }
+
+        case ToolType::ExteriorTextureTranslate:
+        {
+            return std::make_unique<ExteriorTextureTranslateTool>(
+                *this,
+                mGameAssetManager);
+        }
+
+        case ToolType::InteriorTextureTranslate:
+        {
+            return std::make_unique<InteriorTextureTranslateTool>(
                 *this,
                 mGameAssetManager);
         }

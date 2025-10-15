@@ -17,7 +17,7 @@ MeasuringTapeTool::MeasuringTapeTool(
     Controller & controller,
     GameAssetManager const & gameAssetManager)
     : Tool(
-        ToolType::StructuralMeasuringTapeTool,
+        ToolType::StructuralMeasuringTape,
         controller)
     , mIsShiftDown(false)
     , mHasOverlay(false)

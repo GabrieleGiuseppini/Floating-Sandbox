@@ -2265,6 +2265,23 @@ void ModelController::ExteriorTextureRegionEraseForEphemeralVisualization(ImageR
     mIsExteriorTextureLayerInEphemeralVisualization = true;
 }
 
+void ModelController::MakeExteriorLayerFromImage(
+    TextureLayerData const & source,
+    ImageCoordinates const & sourceOrigin,
+    ImageCoordinates const & targetOrigin)
+{
+    assert(sourceOrigin == ImageCoordinates(0, 0) || targetOrigin == ImageCoordinates(0, 0));
+
+    // TODOHERE
+    (void)source;
+
+    // Finalize
+    mGameVisualizationTexture.reset();
+    mGameVisualizationAutoTexturizationTexture.release();
+    RegisterDirtyVisualization<VisualizationType::Game>(GetWholeShipRect());
+    RegisterDirtyVisualization<VisualizationType::ExteriorTextureLayer>(GetWholeExteriorTextureRect());
+}
+
 void ModelController::RestoreExteriorTextureLayerRegionEphemeralVisualization(
     typename LayerTypeTraits<LayerType::ExteriorTexture>::buffer_type const & backupBuffer,
     ImageRect const & backupBufferRegion,

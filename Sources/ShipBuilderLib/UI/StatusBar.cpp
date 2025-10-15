@@ -465,7 +465,7 @@ void StatusBar::RefreshCurrentToolType()
     {
         switch (*mCurrentToolType)
         {
-            case ToolType::StructuralMeasuringTapeTool:
+            case ToolType::StructuralMeasuringTape:
             {
                 bitmap = mMeasuringTapeToolBitmap;
                 break;
@@ -490,7 +490,7 @@ void StatusBar::RefreshToolOutput()
     {
         switch (*mCurrentToolType)
         {
-            case ToolType::StructuralMeasuringTapeTool:
+            case ToolType::StructuralMeasuringTape:
             {
                 if (mMeasuredWorldLength.has_value())
                 {

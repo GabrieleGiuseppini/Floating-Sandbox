@@ -4076,7 +4076,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
             // MeasuringTape
             {
                 auto button = makeToolButton(
-                    ToolType::StructuralMeasuringTapeTool,
+                    ToolType::StructuralMeasuringTape,
                     structuralToolbarPanel,
                     "measuring_tape_icon",
                     _("Measure lengths."));
@@ -4573,6 +4573,22 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                 toolsSizer->Add(
                     button,
                     wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    0,
+                    0);
+            }
+
+            // Translate
+            {
+                auto button = makeToolButton(
+                    ToolType::ExteriorTextureTranslate,
+                    exteriorTextureToolbarPanel,
+                    "pan_icon",
+                    _("Translate the texture layer."));
+
+                toolsSizer->Add(
+                    button,
+                    wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
                     0,
                     0);
@@ -6357,7 +6373,8 @@ void MainFrame::ReconciliateUIWithSelectedTool(
             tt == ToolType::InteriorTextureEraser
             || tt == ToolType::InteriorTextureMagicWand
             || tt == ToolType::InteriorTexturePaste
-            || tt == ToolType::InteriorTextureSelection)
+            || tt == ToolType::InteriorTextureSelection
+            || tt == ToolType::InteriorTextureTranslate)
             continue;
 
         bool const mustBeSelected = (i == static_cast<size_t>(tool));
@@ -6375,7 +6392,8 @@ void MainFrame::ReconciliateUIWithSelectedTool(
         if (t == ToolType::InteriorTextureEraser
             || t == ToolType::InteriorTextureMagicWand
             || t == ToolType::InteriorTexturePaste
-            || t == ToolType::InteriorTextureSelection)
+            || t == ToolType::InteriorTextureSelection
+            || t == ToolType::InteriorTextureTranslate)
             continue;
 
         bool mustBeEnabled = mToolButtons[static_cast<size_t>(t)]->GetValue();
@@ -6485,7 +6503,9 @@ void MainFrame::ReconciliateUIWithSelectedTool(
             case ToolType::StructuralSampler:
             case ToolType::ElectricalSampler:
             case ToolType::RopeSampler:
-            case ToolType::StructuralMeasuringTapeTool:
+            case ToolType::StructuralMeasuringTape:
+            case ToolType::ExteriorTextureTranslate:
+            case ToolType::InteriorTextureTranslate:
             {
                 // Don't have settings
                 assert(false);

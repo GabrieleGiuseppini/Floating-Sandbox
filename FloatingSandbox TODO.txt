@@ -329,7 +329,7 @@
 
 	+ Higher-definition world textures (from Android work)
 
-	+ Texture alignment optimizer
+	+ ShipBuilder: Texture alignment optimizer
 		+ Do
 			+ FIX: top/bottom wastes @ TextureTest2 should be equal
 				! Right waste: tx=300 => sx=100, tCenter=301.5, waste=1.5 x9 => 13.5
@@ -351,6 +351,25 @@
 		+ Mark item @ Android/Ships
 		+ Model validation checks: texture size
 			+ Move MaxTextureSize to WorkBench
+
+	= ShipBuilder: Texture Translate Tool
+		+ Icon
+		+ Cursor
+		= Tool
+			+ Templated on layer type
+			+ Copy from StructuralRectangleTool
+			= MouseDown starts, MouseUp finalizes
+				+ Start: take full copy of layer (TextureLayerData, using ModelController::CloneXXXLayer), in engagement data
+				- Move: 
+					- Blit that to ModelController
+						- Create new empty (transp) texture
+						- Blit into it
+					- Make undo (first time only)
+			= SHIFT lock
+			! No limits
+		- Test:
+			- Undo
+		- Add to changelist
 
 
 	- Bump up version: 1.19.2

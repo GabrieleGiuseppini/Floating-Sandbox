@@ -107,6 +107,8 @@ set (TOOLS_SOURCES
 	Tools/TextureEraserTool.h
 	Tools/TextureMagicWandTool.cpp
 	Tools/TextureMagicWandTool.h
+	Tools/TextureTranslateTool.cpp
+	Tools/TextureTranslateTool.h
 	Tools/Tool.cpp
 	Tools/Tool.h
 )

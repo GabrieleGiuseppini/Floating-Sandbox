@@ -451,6 +451,11 @@ public:
 
     void ExteriorTextureRegionEraseForEphemeralVisualization(ImageRect const & region);
 
+    void MakeExteriorLayerFromImage(
+        TextureLayerData const & source,
+        ImageCoordinates const & sourceOrigin,
+        ImageCoordinates const & targetOrigin);
+
     void RestoreExteriorTextureLayerRegionEphemeralVisualization(
         typename LayerTypeTraits<LayerType::ExteriorTexture>::buffer_type const & backupBuffer,
         ImageRect const & backupBufferRegion,
