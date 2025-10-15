@@ -352,7 +352,7 @@
 		+ Model validation checks: texture size
 			+ Move MaxTextureSize to WorkBench
 
-	= ShipBuilder: Texture Translate Tool
+	+ ShipBuilder: Texture Translate Tool
 		+ Icon
 		+ Cursor
 		+ Tool
@@ -370,9 +370,9 @@
 		+ Test:
 			+ Undo
 			+ Move out of bounds
-		- Add to changelist
-		- Merge into master
-			- Nuke branch
+		+ Add to changelist
+		+ Merge into master
+			+ Nuke branch
 
 
 	- Bump up version: 1.19.2
