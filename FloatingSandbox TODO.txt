@@ -1715,9 +1715,17 @@
 					- Do we really need them?
 					- Gfx: Clock dial (normalized on duration), new ElectricalControl
 					- Sound: clock
-				- Thermal switch
 				- Non-instanced sounds, i.e. sounds without a switch
-					- They play based on power
+					! They play based on power
+					! Not self-powered (like now)
+					! They are sinks (like now)
+					- materials json:
+						- non-instanced; conductive; not self-powered
+							! gate on (by default)
+					- AnnounceInstancedElements: check whether instanced
+					- Destroy, Restore: do not publish OnSwitchEnabled if ! instanced
+				- Thermal switch
+					- Exactly like water-sensing
 				- Solar panel
 					- Like generator, but only generates power when daylight above threshold, *and* when on frontier
 				- Redo template!

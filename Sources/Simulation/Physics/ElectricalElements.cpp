@@ -1731,7 +1731,8 @@ void ElectricalElements::UpdateSourcesAndPropagation(
                 case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
                 case ElectricalMaterial::ElectricalElementType::WatertightDoor:
                 {
-                    assert(false); // At the moment our only sources are generators
+                    // Not a source; at the moment our only sources are generators
+                    assert(false);
                     break;
                 }
             }
