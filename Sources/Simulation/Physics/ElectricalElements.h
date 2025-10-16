@@ -502,6 +502,7 @@ public:
         , mMaterialBuffer(mBufferElementCount, mElementCount, nullptr)
         , mMaterialTypeBuffer(mBufferElementCount, mElementCount, ElectricalMaterial::ElectricalElementType::Cable)
         , mConductivityBuffer(mBufferElementCount, mElementCount, Conductivity(false))
+        , mGateStateBuffer(mBufferElementCount, mElementCount, false)
         , mMaterialHeatGeneratedBuffer(mBufferElementCount, mElementCount, 0.0f)
         , mMaterialOperatingTemperaturesBuffer(mBufferElementCount, mElementCount, OperatingTemperatures(0.0f, 0.0f))
         , mMaterialLuminiscenceBuffer(mBufferElementCount, mElementCount, 0.0f)
@@ -606,10 +607,7 @@ public:
         float currentSimulationTime,
         SimulationParameters const & simulationParameters);
 
-    void Restore(
-        ElementIndex electricalElementIndex,
-        Points & points,
-        SimulationParameters const & simulationParameters);
+    void Restore(ElementIndex electricalElementIndex);
 
     void OnPhysicalStructureChanged(Points const & points);
 
@@ -843,7 +841,7 @@ private:
         Points const & points,
         Springs const & springs);
 
-    void UpdateAutomaticConductivityToggles(
+    void UpdateAutomaticConductivityAndGateToggles(
         float currentSimulationTime,
         Points & points,
         SimulationParameters const & simulationParameters);
@@ -942,6 +940,14 @@ private:
 
     // Conductivity
     Buffer<Conductivity> mConductivityBuffer;
+
+    // Gate state
+    //
+    // Controls propagation out of (conductive-connected) electrical elements.
+    // It is yet another way to control connectivity, allowing certain elements
+    // (e.g. timer switches) to be constantly connected to power (so that they
+    // may have a concept of "operating") and yet control connectivity in the circuit.
+    Buffer<bool> mGateStateBuffer;
 
     // Heat
     Buffer<float> mMaterialHeatGeneratedBuffer;

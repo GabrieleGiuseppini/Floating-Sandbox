@@ -30,6 +30,7 @@ void ElectricalElements::Add(
     mMaterialBuffer.emplace_back(&electricalMaterial);
     mMaterialTypeBuffer.emplace_back(electricalMaterial.ElectricalType);
     mConductivityBuffer.emplace_back(electricalMaterial.ConductsElectricity);
+    mGateStateBuffer.emplace_back(electricalMaterial.GateState);
     mMaterialHeatGeneratedBuffer.emplace_back(electricalMaterial.HeatGenerated);
     mMaterialOperatingTemperaturesBuffer.emplace_back(
         electricalMaterial.MinimumOperatingTemperature,
@@ -850,10 +851,7 @@ void ElectricalElements::Destroy(
     mIsDeletedBuffer[electricalElementIndex] = true;
 }
 
-void ElectricalElements::Restore(
-    ElementIndex electricalElementIndex,
-    Points & points,
-    SimulationParameters const & simulationParameters)
+void ElectricalElements::Restore(ElementIndex electricalElementIndex)
 {
     // Connectivity is taken care by ship destroy handler, as usual
 
@@ -933,15 +931,8 @@ void ElectricalElements::Restore(
         {
             mElementStateBuffer[electricalElementIndex].TimerSwitch.Reset();
 
-            // Restore default conductivity, if current is different
-            if (mConductivityBuffer[electricalElementIndex].ConductsElectricity != mConductivityBuffer[electricalElementIndex].MaterialConductsElectricity)
-            {
-                InternalSetSwitchState(
-                    electricalElementIndex,
-                    static_cast<ElectricalState>(mConductivityBuffer[electricalElementIndex].MaterialConductsElectricity),
-                    points,
-                    simulationParameters);
-            }
+            // Restore default gate state
+            mGateStateBuffer[electricalElementIndex] = mMaterialBuffer[electricalElementIndex]->GateState;
 
             break;
         }
@@ -1134,10 +1125,10 @@ void ElectricalElements::Update(
     }
 
     //
-    // 2. Update automatic conductivity toggles (e.g. water-sensing switches)
+    // 2. Update automatic conductivity toggles (e.g. water-sensing switches) and gate states (e.g. timer switches)
     //
 
-    UpdateAutomaticConductivityToggles(
+    UpdateAutomaticConductivityAndGateToggles(
         currentSimulationTime,
         points,
         simulationParameters);
@@ -1147,6 +1138,9 @@ void ElectricalElements::Update(
     //
     // We do this regardless of dirty elements, as elements might have changed their state autonomously
     // (e.g. generators might have become wet, switches might have been toggled, etc.)
+    //
+    // Here we propagate source "power state" to all conducting-connected elements,
+    // obeying at the same time elements' gate states
     //
 
     UpdateSourcesAndPropagation(
@@ -1234,9 +1228,9 @@ void ElectricalElements::InternalSetSwitchState(
         }
 
         // Show notifications - for some types only
+        assert(mMaterialTypeBuffer[elementIndex] != ElectricalMaterial::ElectricalElementType::TimerSwitch);
         if (simulationParameters.DoShowElectricalNotifications
             && (mMaterialTypeBuffer[elementIndex] == ElectricalMaterial::ElectricalElementType::InteractiveSwitch
-                || mMaterialTypeBuffer[elementIndex] == ElectricalMaterial::ElectricalElementType::TimerSwitch
                 || mMaterialTypeBuffer[elementIndex] == ElectricalMaterial::ElectricalElementType::WaterSensingSwitch))
         {
             HighlightElectricalElement(elementIndex, points);
@@ -1300,7 +1294,7 @@ void ElectricalElements::UpdateEngineConductivity(
     Springs const & springs)
 {
     //
-    // Starting from all engine controller, we follow engine-transmitting elements
+    // Starting from all engine controllers, we follow engine-transmitting elements
     // and create "engine groups" (connected components), each of which is
     // assigned an Engine Group ID.
     //
@@ -1460,7 +1454,7 @@ void ElectricalElements::UpdateEngineConductivity(
     mEngineGroupStates.resize(engineGroupCount);
 }
 
-void ElectricalElements::UpdateAutomaticConductivityToggles(
+void ElectricalElements::UpdateAutomaticConductivityAndGateToggles(
     float currentSimulationTime,
     Points & points,
     SimulationParameters const & simulationParameters)
@@ -1491,14 +1485,13 @@ void ElectricalElements::UpdateAutomaticConductivityToggles(
                         if (currentSimulationTime > *timerSwitchState.AutoToggleSimulationTime)
                         {
                             //
-                            // Toggle to opposite of own
+                            // Toggle
                             //
 
-                            InternalSetSwitchState(
-                                elementIndex,
-                                static_cast<ElectricalState>(!mConductivityBuffer[elementIndex].MaterialConductsElectricity),
-                                points,
-                                simulationParameters);
+                            mGateStateBuffer[elementIndex] = !mMaterialBuffer[elementIndex]->GateState;
+
+                            // Highlight element
+                            HighlightElectricalElement(elementIndex, points);
 
                             // No need to keep running now
                             timerSwitchState.AutoToggleSimulationTime.reset();
@@ -1583,12 +1576,12 @@ void ElectricalElements::UpdateSourcesAndPropagation(
         if (!IsDeleted(sourceElementIndex))
         {
             //
-            // Check pre-conditions that need to be satisfied before visiting the connectivity graph
+            // Check pre-conditions that need to be satisfied by source before visiting the connectivity graph
             //
 
             auto const sourcePointIndex = GetPointIndex(sourceElementIndex);
 
-            bool preconditionsSatisfied = false;
+            bool sourcePreconditionsSatisfied = false;
 
             switch (GetMaterialType(sourceElementIndex))
             {
@@ -1653,7 +1646,7 @@ void ElectricalElements::UpdateSourcesAndPropagation(
                         }
                     }
 
-                    preconditionsSatisfied = isProducingCurrent;
+                    sourcePreconditionsSatisfied = isProducingCurrent;
 
                     //
                     // Check if it's a state change
@@ -1690,7 +1683,8 @@ void ElectricalElements::UpdateSourcesAndPropagation(
                 }
             }
 
-            if (preconditionsSatisfied
+            if (sourcePreconditionsSatisfied
+                && mGateStateBuffer[sourceElementIndex] // Though doesn't make too much sense to have gate-OFF sources
                 // Make sure we haven't visited it already
                 && newConnectivityVisitSequenceNumber != mCurrentConnectivityVisitSequenceNumberBuffer[sourceElementIndex])
             {
@@ -1701,11 +1695,11 @@ void ElectricalElements::UpdateSourcesAndPropagation(
                 // Mark starting point as visited
                 mCurrentConnectivityVisitSequenceNumberBuffer[sourceElementIndex] = newConnectivityVisitSequenceNumber;
 
-                // Add source to queue
+                // Initialize queue with source
                 assert(electricalElementsToVisit.empty());
                 electricalElementsToVisit.push(sourceElementIndex);
 
-                // Visit all electrical elements electrically reachable from this source
+                // Visit all electrical elements electrically reachable (i.e. conducting) from this source
                 while (!electricalElementsToVisit.empty())
                 {
                     auto const e = electricalElementsToVisit.front();
@@ -1713,6 +1707,9 @@ void ElectricalElements::UpdateSourcesAndPropagation(
 
                     // Already marked as visited
                     assert(newConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[e]);
+
+                    // This element must be gate-on, or else we wouldn't be here
+                    assert(mGateStateBuffer[e]);
 
                     for (auto const cce : mConductingConnectedElectricalElementsBuffer[e])
                     {
@@ -1724,8 +1721,11 @@ void ElectricalElements::UpdateSourcesAndPropagation(
                             // Mark it as visited
                             mCurrentConnectivityVisitSequenceNumberBuffer[cce] = newConnectivityVisitSequenceNumber;
 
-                            // Add to queue
-                            electricalElementsToVisit.push(cce);
+                            // Add to queue if it's gate-ON, so we may visit its conductive-connected neighbors
+                            if (mGateStateBuffer[cce])
+                            {
+                                electricalElementsToVisit.push(cce);
+                            }
                         }
                     }
                 }
@@ -2266,16 +2266,8 @@ void ElectricalElements::UpdateSinks(
                         // Reset timer
                         mElementStateBuffer[sinkElementIndex].TimerSwitch.AutoToggleSimulationTime.reset();
 
-                        // TODOHERE
-                        // Restore default conductivity, if current is different
-                        if (mConductivityBuffer[sinkElementIndex].ConductsElectricity != mConductivityBuffer[sinkElementIndex].MaterialConductsElectricity)
-                        {
-                            InternalSetSwitchState(
-                                sinkElementIndex,
-                                static_cast<ElectricalState>(mConductivityBuffer[sinkElementIndex].MaterialConductsElectricity),
-                                points,
-                                simulationParameters);
-                        }
+                        // Reset gate state
+                        mGateStateBuffer[sinkElementIndex] = mMaterialBuffer[sinkElementIndex]->GateState;
                     }
                     else if (isConnectedToPower && !mElementStateBuffer[sinkElementIndex].TimerSwitch.IsOperating)
                     {
@@ -2288,6 +2280,9 @@ void ElectricalElements::UpdateSinks(
 
                         // Start clock ticking
                         mElementStateBuffer[sinkElementIndex].TimerSwitch.AutoToggleSimulationTime = currentSimulationTime + mMaterialBuffer[sinkElementIndex]->TimerDurationSeconds;
+
+                        // Our gate state is the default
+                        assert(mGateStateBuffer[sinkElementIndex] == mMaterialBuffer[sinkElementIndex]->GateState);
                     }
                 }
 

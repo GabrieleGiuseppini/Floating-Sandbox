@@ -230,6 +230,7 @@ ElectricalMaterial ElectricalMaterial::Create(
 
         bool isSelfPowered = Utils::GetOptionalJsonMember<bool>(electricalMaterialJson, "is_self_powered", false);
         bool conductsElectricity = Utils::GetMandatoryJsonMember<bool>(electricalMaterialJson, "conducts_electricity");
+        bool gateState = Utils::GetOptionalJsonMember<bool>(electricalMaterialJson, "gate_state", true);
 
         // Lamps properties
         float luminiscence = 0.0f;
@@ -353,6 +354,7 @@ ElectricalMaterial ElectricalMaterial::Create(
             electricalType,
             isSelfPowered,
             conductsElectricity,
+            gateState,
             luminiscence,
             lightColor,
             lightSpread,

@@ -3538,8 +3538,7 @@ void Ship::DestroyConnectedTriangles(
 
 void Ship::AttemptPointRestore(
     ElementIndex pointElementIndex,
-    float currentSimulationTime,
-    SimulationParameters const & simulationParameters)
+    float currentSimulationTime)
 {
     //
     // A point is eligible for restore if it's damaged and has all of its factory springs and all
@@ -3550,7 +3549,7 @@ void Ship::AttemptPointRestore(
         && mPoints.GetConnectedTriangles(pointElementIndex).ConnectedTriangles.size() == mPoints.GetFactoryConnectedTriangles(pointElementIndex).ConnectedTriangles.size()
         && mPoints.IsDamaged(pointElementIndex))
     {
-        mPoints.Restore(pointElementIndex, currentSimulationTime, simulationParameters);
+        mPoints.Restore(pointElementIndex, currentSimulationTime);
     }
 }
 
@@ -3833,8 +3832,7 @@ void Ship::HandleEphemeralParticleDestroy(ElementIndex pointElementIndex)
 
 void Ship::HandlePointRestore(
     ElementIndex pointElementIndex,
-    float currentSimulationTime,
-    SimulationParameters const & simulationParameters)
+    float currentSimulationTime)
 {
     //
     // Restore the connected electrical element, if any and if it's deleted
@@ -3846,10 +3844,7 @@ void Ship::HandlePointRestore(
     if (NoneElementIndex != electricalElementIndex
         && mElectricalElements.IsDeleted(electricalElementIndex))
     {
-        mElectricalElements.Restore(
-            electricalElementIndex,
-            mPoints,
-            simulationParameters);
+        mElectricalElements.Restore(electricalElementIndex);
     }
 
     // Update count of damaged points

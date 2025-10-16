@@ -1664,8 +1664,52 @@
 					+ Simple state machine @ UpdateAutomaticConductivityToggles
 					+ Reset conductivity each time state is reset
 						+ Repair
+					= FIX: Broken:
+						- After turning off, it becomes disconnected and thus at next iteration we detect it's not powered and reset to its default, i.e. connected; then next we detect it's powered and start clock towards off
+							- We could live with not resetting it to its default
+						- Restore: (and create): if switch is OFF by default, it will be disconnected
+							- i.e. an OFF switch won't ever be powered
+						- Option 1:
+							- These switches are always conductive by default (so we can detect whether OFF switches are powered)
+							- Toggling (to OFF) still severs connections though
+								- And then an ON switch would only work once, as it would become isolated after turning off
+						- Option 2:
+							- These switches are always conductive by default (so we can detect whether OFF switches are powered)
+							- And they are also always conductive; a new state dictates connectivity
+								- At connectivity visit: do not follow...BROKEN: back to original problem: if we don't follow a connection, the switch might look like unconnected
+						= Option 3:
+							! Add "gate flags" buffer
+							+ Prework:
+								+ See why conducts_electricity=False works for:
+									+ Engines
+										+ For engines we care about "connected", not "conductive connected"
+									+ Ship sounds: they are switches and will become connected from user action
+							+ Electric material: gate_state boolean
+								+ Default: true
+							+ electric json: TimerSwitches:
+								+ conducts: always true
+								+ gate_state: on=true off=false
+							+ New bool buffer
+							+ Add():
+								+ Store in buf
+							+ Propagation: check gate before adding to queue @ "while (!electricalElementsToVisit.empty())"
+							+ 1. UpdateAutomaticConductivityToggles():
+								+ Do not call InternalSetSwitchState
+								+ Set gate
+								+ Do highlight
+							+ 2. UpdateSinks():
+								+ Do not call InternalSetSwitchState
+								+ Set gate
+							+ 3. Restore():
+								+ Doesn't need those args anymore, undo that change
+								+ Just reset gate state
+							+ InternalSetSwitchState: this one is never called by TimerSwitch (verify), hence remove automagic highlight
+								+ assert it's not
+
+							- Remove defaults from all switch statements - list all enum values
+
 					- Tests:
-						- Repair
+						+ Repair
 					- Gfx: Clock dial (normalized on duration), new ElectricalControl
 					- Sound: clock
 				- Thermal switch

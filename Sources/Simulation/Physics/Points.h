@@ -904,8 +904,7 @@ public:
 
     void Restore(
         ElementIndex pointElementIndex,
-        float currentSimulationTime,
-        SimulationParameters const & simulationParameters);
+        float currentSimulationTime);
 
     void OnOrphaned(ElementIndex pointElementIndex);
 

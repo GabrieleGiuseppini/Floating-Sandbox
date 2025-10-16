@@ -343,6 +343,7 @@ public:
 
     bool IsSelfPowered;
     bool ConductsElectricity;
+    bool GateState;
 
     // Lamp
     float Luminiscence;
@@ -411,6 +412,7 @@ public:
         ElectricalElementType electricalType,
         bool isSelfPowered,
         bool conductsElectricity,
+        bool gateState,
         float luminiscence,
         vec4f lightColor,
         float lightSpread,
@@ -437,6 +439,7 @@ public:
         , ElectricalType(electricalType)
         , IsSelfPowered(isSelfPowered)
         , ConductsElectricity(conductsElectricity)
+        , GateState(gateState)
         , Luminiscence(luminiscence)
         , LightColor(lightColor)
         , LightSpread(lightSpread)
@@ -473,6 +476,7 @@ public:
         , ElectricalType(ElectricalElementType::Cable)
         , IsSelfPowered(false)
         , ConductsElectricity(true)
+        , GateState(true)
         , Luminiscence(1.0f)
         , LightColor(vec4f::zero())
         , LightSpread(1.0f)
