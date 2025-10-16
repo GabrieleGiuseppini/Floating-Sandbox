@@ -376,14 +376,17 @@ void ElectricalElements::AnnounceInstancedElements()
 
             case ElectricalMaterial::ElectricalElementType::ShipSound:
             {
-                // Ships sounds announce themselves as switches
-                mSimulationEventHandler.OnSwitchCreated(
-                    GlobalElectricalElementId(mShipId, elementIndex),
-                    mInstanceInfos[elementIndex].InstanceIndex,
-                    SwitchType::ShipSoundSwitch,
-                    static_cast<ElectricalState>(mConductivityBuffer[elementIndex].ConductsElectricity),
-                    *mMaterialBuffer[elementIndex],
-                    mInstanceInfos[elementIndex].PanelElementMetadata);
+                // Instanced ship sounds announce themselves as switches
+                if (mInstanceInfos[elementIndex].InstanceIndex != NoneElectricalElementInstanceIndex)
+                {
+                    mSimulationEventHandler.OnSwitchCreated(
+                        GlobalElectricalElementId(mShipId, elementIndex),
+                        mInstanceInfos[elementIndex].InstanceIndex,
+                        SwitchType::ShipSoundSwitch,
+                        static_cast<ElectricalState>(mConductivityBuffer[elementIndex].ConductsElectricity),
+                        *mMaterialBuffer[elementIndex],
+                        mInstanceInfos[elementIndex].PanelElementMetadata);
+                }
 
                 break;
             }
@@ -761,8 +764,11 @@ void ElectricalElements::Destroy(
                     false); // Irrelevant
             }
 
-            // Publish disable
-            mSimulationEventHandler.OnSwitchEnabled(GlobalElectricalElementId(mShipId, electricalElementIndex), false);
+            // Publish disable, if instanced
+            if (mInstanceInfos[electricalElementIndex].InstanceIndex != NoneElectricalElementInstanceIndex)
+            {
+                mSimulationEventHandler.OnSwitchEnabled(GlobalElectricalElementId(mShipId, electricalElementIndex), false);
+            }
 
             break;
         }
@@ -923,8 +929,11 @@ void ElectricalElements::Restore(ElementIndex electricalElementIndex)
 
         case ElectricalMaterial::ElectricalElementType::ShipSound:
         {
-            // Notify enabling
-            mSimulationEventHandler.OnSwitchEnabled(GlobalElectricalElementId(mShipId, electricalElementIndex), true);
+            // Notify enabling, if instanced
+            if (mInstanceInfos[electricalElementIndex].InstanceIndex != NoneElectricalElementInstanceIndex)
+            {
+                mSimulationEventHandler.OnSwitchEnabled(GlobalElectricalElementId(mShipId, electricalElementIndex), true);
+            }
 
             // Nothing else to do: at the next UpdateSinks() that makes this sound work, there will be a state change
 

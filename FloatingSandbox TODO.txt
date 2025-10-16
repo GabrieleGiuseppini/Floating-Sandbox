@@ -374,7 +374,10 @@
 		+ Merge into master
 			+ Nuke branch
 
-	- Timer switches (*)
+	= New electrical materials (*)
+		+ Timer Switches
+		+ Automatic Sounds
+		- Thermal Switches
 		- Redo template
 		- changelist
 		- Port to Android (just files and electrical materials)
@@ -1715,16 +1718,16 @@
 					- Do we really need them?
 					- Gfx: Clock dial (normalized on duration), new ElectricalControl
 					- Sound: clock
-				- Non-instanced sounds, i.e. sounds without a switch
+				+ Non-instanced sounds, i.e. sounds without a switch
 					! They play based on power
 					! Not self-powered (like now)
 					! They are sinks (like now)
-					- materials json:
-						- non-instanced; conductive; not self-powered
+					+ materials json:
+						+ non-instanced; conductive; not self-powered
 							! gate on (by default)
-						- New group @ Palette
-					- AnnounceInstancedElements: check whether instanced
-					- Destroy, Restore: do not publish OnSwitchEnabled if ! instanced
+						+ New group @ Palette
+					+ AnnounceInstancedElements: check whether instanced
+					+ Destroy, Restore: do not publish OnSwitchEnabled if ! instanced
 				- Thermal switch
 					- Exactly like water-sensing
 					- Has own histeresys

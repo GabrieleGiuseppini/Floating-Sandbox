@@ -1914,6 +1914,261 @@
 	}
     },
 
+
+
+
+    {
+        "color_key": "#429000",
+	"conducts_electricity": true,
+        "electrical_type": "ShipSound",
+        "heat_generated": 0.0,
+	"is_instanced": false,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "Automatic Queen Mary Horn",
+	"ship_sound_type": "QueenMaryHorn",
+        "palette_coordinates": {
+		"category": "Sounds",
+		"sub_category": "Automatic Horns",
+		"sub_category_ordinal": 0
+	}
+    },
+
+    {
+        "color_key": "#429100",
+	"conducts_electricity": true,
+        "electrical_type": "ShipSound",
+        "heat_generated": 0.0,
+	"is_instanced": false,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "Automatic Four Funnel Liner Whistle",
+	"ship_sound_type": "FourFunnelLinerWhistle",
+        "palette_coordinates": {
+		"category": "Sounds",
+		"sub_category": "Automatic Horns",
+		"sub_category_ordinal": 1
+	}
+    },
+
+    {
+        "color_key": "#429200",
+	"conducts_electricity": true,
+        "electrical_type": "ShipSound",
+        "heat_generated": 0.0,
+	"is_instanced": false,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "Automatic Tripod Horn",
+	"ship_sound_type": "TripodHorn",
+        "palette_coordinates": {
+		"category": "Sounds",
+		"sub_category": "Automatic Horns",
+		"sub_category_ordinal": 2
+	}
+    },
+
+    {
+        "color_key": "#429300",
+	"conducts_electricity": true,
+        "electrical_type": "ShipSound",
+        "heat_generated": 0.0,
+	"is_instanced": false,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "Automatic Pipe Whistle",
+	"ship_sound_type": "PipeWhistle",
+        "palette_coordinates": {
+		"category": "Sounds",
+		"sub_category": "Automatic Horns",
+		"sub_category_ordinal": 3
+	}
+    },
+
+    {
+        "color_key": "#429400",
+	"conducts_electricity": true,
+        "electrical_type": "ShipSound",
+        "heat_generated": 0.0,
+	"is_instanced": false,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "Automatic Lake Freighter Horn",
+	"ship_sound_type": "LakeFreighterHorn",
+        "palette_coordinates": {
+		"category": "Sounds",
+		"sub_category": "Automatic Horns",
+		"sub_category_ordinal": 4
+	}
+    },
+
+    {
+        "color_key": "#429500",
+	"conducts_electricity": true,
+        "electrical_type": "ShipSound",
+        "heat_generated": 0.0,
+	"is_instanced": false,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "Automatic Shieldhall Steam Siren",
+	"ship_sound_type": "ShieldhallSteamSiren",
+        "palette_coordinates": {
+		"category": "Sounds",
+		"sub_category": "Automatic Horns",
+		"sub_category_ordinal": 5
+	}
+    },
+
+    {
+        "color_key": "#429600",
+	"conducts_electricity": true,
+        "electrical_type": "ShipSound",
+        "heat_generated": 0.0,
+	"is_instanced": false,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "Automatic Queen Elizabeth 2 Horn",
+	"ship_sound_type": "QueenElizabeth2Horn",
+        "palette_coordinates": {
+		"category": "Sounds",
+		"sub_category": "Automatic Horns",
+		"sub_category_ordinal": 6
+	}
+    },
+
+    {
+        "color_key": "#429700",
+	"conducts_electricity": true,
+        "electrical_type": "ShipSound",
+        "heat_generated": 0.0,
+	"is_instanced": false,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "Automatic S.S. Rex Whistle",
+	"ship_sound_type": "SSRexWhistle",
+        "palette_coordinates": {
+		"category": "Sounds",
+		"sub_category": "Automatic Horns",
+		"sub_category_ordinal": 7
+	}
+    },
+
+    {
+        "color_key": "#42A000",
+	"conducts_electricity": true,
+        "electrical_type": "ShipSound",
+        "heat_generated": 0.0,
+	"is_instanced": false,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "Automatic Bell 1",
+	"ship_sound_type": "Bell1",
+        "palette_coordinates": {
+		"category": "Sounds",
+		"sub_category": "Automatic Bells",
+		"sub_category_ordinal": 0
+	}
+    },
+
+    {
+        "color_key": "#42A100",
+	"conducts_electricity": true,
+        "electrical_type": "ShipSound",
+        "heat_generated": 0.0,
+	"is_instanced": false,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "Automatic Bell 2",
+	"ship_sound_type": "Bell2",
+        "palette_coordinates": {
+		"category": "Sounds",
+		"sub_category": "Automatic Bells",
+		"sub_category_ordinal": 1
+	}
+    },
+
+    {
+        "color_key": "#42B000",
+	"conducts_electricity": true,
+        "electrical_type": "ShipSound",
+        "heat_generated": 0.0,
+	"is_instanced": false,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "Automatic Klaxon 1",
+	"ship_sound_type": "Klaxon1",
+        "palette_coordinates": {
+		"category": "Sounds",
+		"sub_category": "Automatic Klaxons",
+		"sub_category_ordinal": 0
+	}
+    },
+
+    {
+        "color_key": "#42C000",
+	"conducts_electricity": true,
+        "electrical_type": "ShipSound",
+        "heat_generated": 0.0,
+	"is_instanced": false,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "Automatic Nuclear Alarm",
+	"ship_sound_type": "NuclearAlarm1",
+        "palette_coordinates": {
+		"category": "Sounds",
+		"sub_category": "Automatic Alarms",
+		"sub_category_ordinal": 0
+	}
+    },
+
+    {
+        "color_key": "#42C100",
+	"conducts_electricity": true,
+        "electrical_type": "ShipSound",
+        "heat_generated": 0.0,
+	"is_instanced": false,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "Automatic Evacuation Alarm 1",
+	"ship_sound_type": "EvacuationAlarm1",
+        "palette_coordinates": {
+		"category": "Sounds",
+		"sub_category": "Automatic Alarms",
+		"sub_category_ordinal": 1
+	}
+    },
+
+    {
+        "color_key": "#42C200",
+	"conducts_electricity": true,
+        "electrical_type": "ShipSound",
+        "heat_generated": 0.0,
+	"is_instanced": false,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "Automatic Evacuation Alarm 2",
+	"ship_sound_type": "EvacuationAlarm2",
+        "palette_coordinates": {
+		"category": "Sounds",
+		"sub_category": "Automatic Alarms",
+		"sub_category_ordinal": 2
+	}
+    },
+
     {
         "color_key": "#FC2020",
 	"conducts_electricity": true,
@@ -2119,12 +2374,20 @@
 		"category": "Sounds",
 		"groups":[
 			{
-				"name": "Sounds",
+				"name": "Switched Sounds",
 				"sub_categories": [
 					"Horns",
 					"Bells",
 					"Klaxons",
 					"Alarms"]
+			},
+			{
+				"name": "Automatic Sounds",
+				"sub_categories": [
+					"Automatic Horns",
+					"Automatic Bells",
+					"Automatic Klaxons",
+					"Automatic Alarms"]
 			}
 		]
 	    },
