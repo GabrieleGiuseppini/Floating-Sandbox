@@ -1647,37 +1647,37 @@
 					- Lights that flicker forever
 				- Logic Gates
 					- ...to be worked on...
-				- Timer switches (*)
-					- materials json
-						- Different durations: 1s, 3s, 5s x {ON, OFF}
+				= Timer switches (*)
+					+ materials json
+						+ Different durations: 1s, 3s, 5s x {ON, OFF}
 					+ TimerSwitchState:
-						- IsOperating: == is powered
-						- opt<end_ts>: when set, we're counting down and reaching target we toggle
+						+ IsOperating: == is powered
+						+ opt<end_ts>: when set, we're counting down and reaching target we toggle
 					+ Xs Switch ON: 
-						- Conductive
-						- When powered for the firt time, clock starts ticking; at target: becomes not conductive
-						- When powered off, becomes conductive again, and resets timer
+						+ Conductive
+						+ When powered for the firt time, clock starts ticking; at target: becomes not conductive
+						+ When powered off, becomes conductive again, and resets timer
 					+ Xs Switch OFF:
-						- Not conductive
-						- When powered for the firt time, clock starts ticking; at target: becomes conductive
-						- When powered off, becomes not conductive again, and resets timer
+						+ Not conductive
+						+ When powered for the firt time, clock starts ticking; at target: becomes conductive
+						+ When powered off, becomes not conductive again, and resets timer
 					+ Simple state machine @ UpdateAutomaticConductivityToggles
 					+ Reset conductivity each time state is reset
 						+ Repair
-					= FIX: Broken:
-						- After turning off, it becomes disconnected and thus at next iteration we detect it's not powered and reset to its default, i.e. connected; then next we detect it's powered and start clock towards off
+					+ FIX: Broken:
+						! After turning off, it becomes disconnected and thus at next iteration we detect it's not powered and reset to its default, i.e. connected; then next we detect it's powered and start clock towards off
 							- We could live with not resetting it to its default
-						- Restore: (and create): if switch is OFF by default, it will be disconnected
+						! Restore: (and create): if switch is OFF by default, it will be disconnected
 							- i.e. an OFF switch won't ever be powered
-						- Option 1:
+						X Option 1:
 							- These switches are always conductive by default (so we can detect whether OFF switches are powered)
 							- Toggling (to OFF) still severs connections though
 								- And then an ON switch would only work once, as it would become isolated after turning off
-						- Option 2:
+						X Option 2:
 							- These switches are always conductive by default (so we can detect whether OFF switches are powered)
 							- And they are also always conductive; a new state dictates connectivity
 								- At connectivity visit: do not follow...BROKEN: back to original problem: if we don't follow a connection, the switch might look like unconnected
-						= Option 3:
+						+ Option 3:
 							! Add "gate flags" buffer
 							+ Prework:
 								+ See why conducts_electricity=False works for:
@@ -1706,7 +1706,10 @@
 							+ InternalSetSwitchState: this one is never called by TimerSwitch (verify), hence remove automagic highlight
 								+ assert it's not
 
-							- Remove defaults from all switch statements - list all enum values
+							+ Remove defaults from all switch statements - list all enum values
+								+ See pipewhistle disturbance timing on fish
+
+					- FIX: sound of lamp
 
 					- Tests:
 						+ Repair

@@ -265,7 +265,8 @@ void ElectricalElements::Add(
             break;
         }
 
-        default:
+        // Nop's
+        case ElectricalMaterial::ElectricalElementType::InteractiveSwitch:
         {
             // State - dummy
             mElementStateBuffer.emplace_back(ElementState::DummyState());
@@ -543,7 +544,12 @@ void ElectricalElements::HighlightElectricalElement(
             break;
         }
 
-        default:
+        case ElectricalMaterial::ElectricalElementType::Cable:
+        case ElectricalMaterial::ElectricalElementType::EngineController:
+        case ElectricalMaterial::ElectricalElementType::EngineTransmission:
+        case ElectricalMaterial::ElectricalElementType::Lamp:
+        case ElectricalMaterial::ElectricalElementType::OtherSink:
+        case ElectricalMaterial::ElectricalElementType::SmokeEmitter:
         {
             // Shouldn't be invoked for non-highlightable elements
             assert(false);
@@ -1065,7 +1071,18 @@ void ElectricalElements::OnElectricSpark(
                 break;
             }
 
-            default:
+            case ElectricalMaterial::ElectricalElementType::Cable:
+            case ElectricalMaterial::ElectricalElementType::EngineController:
+            case ElectricalMaterial::ElectricalElementType::EngineTransmission:
+            case ElectricalMaterial::ElectricalElementType::InteractiveSwitch:
+            case ElectricalMaterial::ElectricalElementType::OtherSink:
+            case ElectricalMaterial::ElectricalElementType::PowerMonitor:
+            case ElectricalMaterial::ElectricalElementType::ShipSound:
+            case ElectricalMaterial::ElectricalElementType::SmokeEmitter:
+            case ElectricalMaterial::ElectricalElementType::TimerSwitch:
+            case ElectricalMaterial::ElectricalElementType::WaterPump:
+            case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
+            case ElectricalMaterial::ElectricalElementType::WatertightDoor:
             {
                 // We don't disable anything else, we rely on generators going off
                 break;
@@ -1433,7 +1450,18 @@ void ElectricalElements::UpdateEngineConductivity(
                                 break;
                             }
 
-                            default:
+                            case ElectricalMaterial::ElectricalElementType::Cable:
+                            case ElectricalMaterial::ElectricalElementType::Generator:
+                            case ElectricalMaterial::ElectricalElementType::InteractiveSwitch:
+                            case ElectricalMaterial::ElectricalElementType::Lamp:
+                            case ElectricalMaterial::ElectricalElementType::OtherSink:
+                            case ElectricalMaterial::ElectricalElementType::PowerMonitor:
+                            case ElectricalMaterial::ElectricalElementType::ShipSound:
+                            case ElectricalMaterial::ElectricalElementType::SmokeEmitter:
+                            case ElectricalMaterial::ElectricalElementType::TimerSwitch:
+                            case ElectricalMaterial::ElectricalElementType::WaterPump:
+                            case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
+                            case ElectricalMaterial::ElectricalElementType::WatertightDoor:
                             {
                                 // Nothing to do
                                 break;
@@ -1547,7 +1575,19 @@ void ElectricalElements::UpdateAutomaticConductivityAndGateToggles(
                     break;
                 }
 
-                default:
+                case ElectricalMaterial::ElectricalElementType::Cable:
+                case ElectricalMaterial::ElectricalElementType::Engine:
+                case ElectricalMaterial::ElectricalElementType::EngineController:
+                case ElectricalMaterial::ElectricalElementType::EngineTransmission:
+                case ElectricalMaterial::ElectricalElementType::Generator:
+                case ElectricalMaterial::ElectricalElementType::InteractiveSwitch:
+                case ElectricalMaterial::ElectricalElementType::Lamp:
+                case ElectricalMaterial::ElectricalElementType::OtherSink:
+                case ElectricalMaterial::ElectricalElementType::PowerMonitor:
+                case ElectricalMaterial::ElectricalElementType::ShipSound:
+                case ElectricalMaterial::ElectricalElementType::SmokeEmitter:
+                case ElectricalMaterial::ElectricalElementType::WaterPump:
+                case ElectricalMaterial::ElectricalElementType::WatertightDoor:
                 {
                     // Shouldn't be here - all automatically-toggling elements should have been handled
                     assert(false);
@@ -1676,7 +1716,20 @@ void ElectricalElements::UpdateSourcesAndPropagation(
                     break;
                 }
 
-                default:
+                case ElectricalMaterial::ElectricalElementType::Cable:
+                case ElectricalMaterial::ElectricalElementType::Engine:
+                case ElectricalMaterial::ElectricalElementType::EngineController:
+                case ElectricalMaterial::ElectricalElementType::EngineTransmission:
+                case ElectricalMaterial::ElectricalElementType::InteractiveSwitch:
+                case ElectricalMaterial::ElectricalElementType::Lamp:
+                case ElectricalMaterial::ElectricalElementType::OtherSink:
+                case ElectricalMaterial::ElectricalElementType::PowerMonitor:
+                case ElectricalMaterial::ElectricalElementType::ShipSound:
+                case ElectricalMaterial::ElectricalElementType::SmokeEmitter:
+                case ElectricalMaterial::ElectricalElementType::TimerSwitch:
+                case ElectricalMaterial::ElectricalElementType::WaterPump:
+                case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
+                case ElectricalMaterial::ElectricalElementType::WatertightDoor:
                 {
                     assert(false); // At the moment our only sources are generators
                     break;
@@ -2092,77 +2145,84 @@ void ElectricalElements::UpdateSinks(
                             // Disturb ocean, with delays depending on sound
                             switch (mMaterialBuffer[sinkElementIndex]->ShipSoundType)
                             {
-                            case ElectricalMaterial::ShipSoundElementType::QueenMaryHorn:
-                            {
-                                mParentWorld.DisturbOcean(std::chrono::milliseconds(250));
-                                break;
-                            }
+                                case ElectricalMaterial::ShipSoundElementType::QueenMaryHorn:
+                                {
+                                    mParentWorld.DisturbOcean(std::chrono::milliseconds(250));
+                                    break;
+                                }
 
-                            case ElectricalMaterial::ShipSoundElementType::FourFunnelLinerWhistle:
-                            {
-                                mParentWorld.DisturbOcean(std::chrono::milliseconds(600));
-                                break;
-                            }
+                                case ElectricalMaterial::ShipSoundElementType::FourFunnelLinerWhistle:
+                                {
+                                    mParentWorld.DisturbOcean(std::chrono::milliseconds(600));
+                                    break;
+                                }
 
-                            case ElectricalMaterial::ShipSoundElementType::TripodHorn:
-                            {
-                                mParentWorld.DisturbOcean(std::chrono::milliseconds(500));
-                                break;
-                            }
+                                case ElectricalMaterial::ShipSoundElementType::TripodHorn:
+                                {
+                                    mParentWorld.DisturbOcean(std::chrono::milliseconds(500));
+                                    break;
+                                }
 
-                            case ElectricalMaterial::ShipSoundElementType::LakeFreighterHorn:
-                            {
-                                mParentWorld.DisturbOcean(std::chrono::milliseconds(150));
-                                break;
-                            }
+                                case ElectricalMaterial::ShipSoundElementType::LakeFreighterHorn:
+                                {
+                                    mParentWorld.DisturbOcean(std::chrono::milliseconds(150));
+                                    break;
+                                }
 
-                            case ElectricalMaterial::ShipSoundElementType::ShieldhallSteamSiren:
-                            {
-                                mParentWorld.DisturbOcean(std::chrono::milliseconds(550));
-                                break;
-                            }
+                                case ElectricalMaterial::ShipSoundElementType::ShieldhallSteamSiren:
+                                {
+                                    mParentWorld.DisturbOcean(std::chrono::milliseconds(550));
+                                    break;
+                                }
 
-                            case ElectricalMaterial::ShipSoundElementType::QueenElizabeth2Horn:
-                            {
-                                mParentWorld.DisturbOcean(std::chrono::milliseconds(250));
-                                break;
-                            }
+                                case ElectricalMaterial::ShipSoundElementType::QueenElizabeth2Horn:
+                                {
+                                    mParentWorld.DisturbOcean(std::chrono::milliseconds(250));
+                                    break;
+                                }
 
-                            case ElectricalMaterial::ShipSoundElementType::SSRexWhistle:
-                            {
-                                mParentWorld.DisturbOcean(std::chrono::milliseconds(250));
-                                break;
-                            }
+                                case ElectricalMaterial::ShipSoundElementType::SSRexWhistle:
+                                {
+                                    mParentWorld.DisturbOcean(std::chrono::milliseconds(250));
+                                    break;
+                                }
 
-                            case ElectricalMaterial::ShipSoundElementType::Klaxon1:
-                            {
-                                mParentWorld.DisturbOcean(std::chrono::milliseconds(100));
-                                break;
-                            }
+                                case ElectricalMaterial::ShipSoundElementType::Klaxon1:
+                                {
+                                    mParentWorld.DisturbOcean(std::chrono::milliseconds(100));
+                                    break;
+                                }
 
-                            case ElectricalMaterial::ShipSoundElementType::NuclearAlarm1:
-                            {
-                                mParentWorld.DisturbOcean(std::chrono::milliseconds(500));
-                                break;
-                            }
+                                case ElectricalMaterial::ShipSoundElementType::NuclearAlarm1:
+                                {
+                                    mParentWorld.DisturbOcean(std::chrono::milliseconds(500));
+                                    break;
+                                }
 
-                            case ElectricalMaterial::ShipSoundElementType::EvacuationAlarm1:
-                            {
-                                mParentWorld.DisturbOcean(std::chrono::milliseconds(100));
-                                break;
-                            }
+                                case ElectricalMaterial::ShipSoundElementType::EvacuationAlarm1:
+                                {
+                                    mParentWorld.DisturbOcean(std::chrono::milliseconds(100));
+                                    break;
+                                }
 
-                            case ElectricalMaterial::ShipSoundElementType::EvacuationAlarm2:
-                            {
-                                mParentWorld.DisturbOcean(std::chrono::milliseconds(100));
-                                break;
-                            }
+                                case ElectricalMaterial::ShipSoundElementType::EvacuationAlarm2:
+                                {
+                                    mParentWorld.DisturbOcean(std::chrono::milliseconds(100));
+                                    break;
+                                }
 
-                            default:
-                            {
-                                // Do not disturb
-                                break;
-                            }
+                                case ElectricalMaterial::ShipSoundElementType::PipeWhistle:
+                                {
+                                    mParentWorld.DisturbOcean(std::chrono::milliseconds(1200));
+                                    break;
+                                }
+
+                                case ElectricalMaterial::ShipSoundElementType::Bell1:
+                                case ElectricalMaterial::ShipSoundElementType::Bell2:
+                                {
+                                    // Do not disturb
+                                    break;
+                                }
                             }
 
                             // Show notifications
@@ -2454,8 +2514,14 @@ void ElectricalElements::UpdateSinks(
                 break;
             }
 
-            default:
+            case ElectricalMaterial::ElectricalElementType::Cable:
+            case ElectricalMaterial::ElectricalElementType::Engine:
+            case ElectricalMaterial::ElectricalElementType::EngineTransmission:
+            case ElectricalMaterial::ElectricalElementType::Generator:
+            case ElectricalMaterial::ElectricalElementType::InteractiveSwitch:
+            case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
             {
+                // Not a sink
                 assert(false);
                 break;
             }
