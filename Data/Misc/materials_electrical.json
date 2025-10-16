@@ -518,6 +518,23 @@
 	},
 	"timer_duration": 5.0
     },
+    {
+        "color_key": "#887028",
+	"conducts_electricity": true,
+        "electrical_type": "TimerSwitch",
+	"gate_state": true,
+        "heat_generated": 0.0,
+	"is_instanced": false,
+        "maximum_operating_temperature": 1783.15,
+        "minimum_operating_temperature": 173.15,
+        "name": "Timed Switch ON 10s",
+        "palette_coordinates": {
+		"category": "Switches",
+		"sub_category": "Timed Switches",
+		"sub_category_ordinal": 3
+	},
+	"timer_duration": 10.0
+    },
 
     {
         "color_key": "#187022",
@@ -532,7 +549,7 @@
         "palette_coordinates": {
 		"category": "Switches",
 		"sub_category": "Timed Switches",
-		"sub_category_ordinal": 3
+		"sub_category_ordinal": 4
 	},
 	"timer_duration": 1.0
     },
@@ -549,7 +566,7 @@
         "palette_coordinates": {
 		"category": "Switches",
 		"sub_category": "Timed Switches",
-		"sub_category_ordinal": 4
+		"sub_category_ordinal": 5
 	},
 	"timer_duration": 3.0
     },
@@ -566,9 +583,26 @@
         "palette_coordinates": {
 		"category": "Switches",
 		"sub_category": "Timed Switches",
-		"sub_category_ordinal": 5
+		"sub_category_ordinal": 6
 	},
 	"timer_duration": 5.0
+    },
+    {
+        "color_key": "#187028",
+	"conducts_electricity": true,
+        "electrical_type": "TimerSwitch",
+	"gate_state": false,
+        "heat_generated": 0.0,
+	"is_instanced": false,
+        "maximum_operating_temperature": 1783.15,
+        "minimum_operating_temperature": 173.15,
+        "name": "Timed Switch OFF 10s",
+        "palette_coordinates": {
+		"category": "Switches",
+		"sub_category": "Timed Switches",
+		"sub_category_ordinal": 7
+	},
+	"timer_duration": 10.0
     },
 
 

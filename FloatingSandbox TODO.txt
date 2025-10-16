@@ -1722,10 +1722,12 @@
 					- materials json:
 						- non-instanced; conductive; not self-powered
 							! gate on (by default)
+						- New group @ Palette
 					- AnnounceInstancedElements: check whether instanced
 					- Destroy, Restore: do not publish OnSwitchEnabled if ! instanced
 				- Thermal switch
 					- Exactly like water-sensing
+					- Has own histeresys
 				- Solar panel
 					- Like generator, but only generates power when daylight above threshold, *and* when on frontier
 				- Redo template!
