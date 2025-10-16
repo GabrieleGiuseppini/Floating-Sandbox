@@ -1502,7 +1502,8 @@ enum class SwitchType
 {
     InteractiveToggleSwitch,
     InteractivePushSwitch,
-    AutomaticSwitch,
+    AutomaticThermalSwitch,
+    AutomaticWaterSwitch,
     ShipSoundSwitch
 };
 

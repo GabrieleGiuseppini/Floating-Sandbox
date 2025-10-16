@@ -374,14 +374,14 @@
 		+ Merge into master
 			+ Nuke branch
 
-	= New electrical materials (*)
+	+ New electrical materials (*)
 		+ Timer Switches
 		+ Automatic Sounds
 		+ Thermal Switches
 		+ Redo template
 		+ changelist
-		- Merge into master, and delete branch
-		- Port to Android (just files and electrical materials)
+		+ Merge into master, and delete branch
+		+ Port to Android (just files and electrical materials)
 
 	- Bump up version: 1.19.2
 

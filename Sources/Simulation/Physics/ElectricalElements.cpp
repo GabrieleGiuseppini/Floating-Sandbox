@@ -345,7 +345,7 @@ void ElectricalElements::AnnounceInstancedElements()
 
             case ElectricalMaterial::ElectricalElementType::InteractiveSwitch:
             {
-                SwitchType switchType = SwitchType::AutomaticSwitch; // Arbitrary, for MSVC
+                SwitchType switchType = SwitchType::InteractivePushSwitch; // Arbitrary, for MSVC
                 switch (mMaterialBuffer[elementIndex]->InteractiveSwitchType)
                 {
                     case ElectricalMaterial::InteractiveSwitchElementType::Push:
@@ -410,7 +410,7 @@ void ElectricalElements::AnnounceInstancedElements()
                     mSimulationEventHandler.OnSwitchCreated(
                         GlobalElectricalElementId(mShipId, elementIndex),
                         mInstanceInfos[elementIndex].InstanceIndex,
-                        SwitchType::AutomaticSwitch,
+                        SwitchType::AutomaticThermalSwitch,
                         static_cast<ElectricalState>(mConductivityBuffer[elementIndex].ConductsElectricity),
                         *mMaterialBuffer[elementIndex],
                         mInstanceInfos[elementIndex].PanelElementMetadata);
@@ -439,7 +439,7 @@ void ElectricalElements::AnnounceInstancedElements()
                     mSimulationEventHandler.OnSwitchCreated(
                         GlobalElectricalElementId(mShipId, elementIndex),
                         mInstanceInfos[elementIndex].InstanceIndex,
-                        SwitchType::AutomaticSwitch,
+                        SwitchType::AutomaticWaterSwitch,
                         static_cast<ElectricalState>(mConductivityBuffer[elementIndex].ConductsElectricity),
                         *mMaterialBuffer[elementIndex],
                         mInstanceInfos[elementIndex].PanelElementMetadata);

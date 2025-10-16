@@ -166,11 +166,12 @@ SwitchboardPanel::SwitchboardPanel(
         progressSteps += 1.0f; // 1.0f
         progressCallback(progressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
 
-        mAutomaticSwitchOnEnabledBitmap.LoadFile(gameAssetManager.GetPngImageFilePath("automatic_switch_on_enabled").string(), wxBITMAP_TYPE_PNG);
+        mAutomaticSwitchOnWaterEnabledBitmap.LoadFile(gameAssetManager.GetPngImageFilePath("automatic_switch_on_water_enabled").string(), wxBITMAP_TYPE_PNG);
+        mAutomaticSwitchOnThermalEnabledBitmap.LoadFile(gameAssetManager.GetPngImageFilePath("automatic_switch_on_thermal_enabled").string(), wxBITMAP_TYPE_PNG);
         mAutomaticSwitchOffEnabledBitmap.LoadFile(gameAssetManager.GetPngImageFilePath("automatic_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
         mAutomaticSwitchOnDisabledBitmap.LoadFile(gameAssetManager.GetPngImageFilePath("automatic_switch_on_disabled").string(), wxBITMAP_TYPE_PNG);
         mAutomaticSwitchOffDisabledBitmap.LoadFile(gameAssetManager.GetPngImageFilePath("automatic_switch_off_disabled").string(), wxBITMAP_TYPE_PNG);
-        mMinBitmapSize.DecTo(mAutomaticSwitchOnEnabledBitmap.GetSize());
+        mMinBitmapSize.DecTo(mAutomaticSwitchOnWaterEnabledBitmap.GetSize());
 
         progressSteps += 1.0f; // 2.0f
         progressCallback(progressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
@@ -552,11 +553,33 @@ void SwitchboardPanel::OnSwitchCreated(
                 break;
             }
 
-            case SwitchType::AutomaticSwitch:
+            case SwitchType::AutomaticThermalSwitch:
             {
                 auto ctrl = new AutomaticSwitchElectricalElementControl(
                     mSwitchPanel,
-                    mAutomaticSwitchOnEnabledBitmap,
+                    mAutomaticSwitchOnThermalEnabledBitmap,
+                    mAutomaticSwitchOffEnabledBitmap,
+                    mAutomaticSwitchOnDisabledBitmap,
+                    mAutomaticSwitchOffDisabledBitmap,
+                    *label,
+                    mPassiveCursor,
+                    [this, electricalElementId]()
+                    {
+                        this->OnTick(electricalElementId);
+                    },
+                    state);
+
+                swCtrl = ctrl;
+                intCtrl = nullptr;
+
+                break;
+            }
+
+            case SwitchType::AutomaticWaterSwitch:
+            {
+                auto ctrl = new AutomaticSwitchElectricalElementControl(
+                    mSwitchPanel,
+                    mAutomaticSwitchOnWaterEnabledBitmap,
                     mAutomaticSwitchOffEnabledBitmap,
                     mAutomaticSwitchOnDisabledBitmap,
                     mAutomaticSwitchOffDisabledBitmap,
