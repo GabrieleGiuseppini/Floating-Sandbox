@@ -378,8 +378,8 @@
 		+ Timer Switches
 		+ Automatic Sounds
 		+ Thermal Switches
-		- Redo template
-		- changelist
+		+ Redo template
+		+ changelist
 		- Merge into master, and delete branch
 		- Port to Android (just files and electrical materials)
 

@@ -1,4 +1,10 @@
 TODO
+- Added 3 new electrical materials:
+	- Thermal switches: toggle automatically with temperature
+	- Timer switches: toggle automatically with time
+		- Can now construct circuits that evolve over time!
+	- Non-instanced sounds: like the "normal" sounds, but without a switch - playing automatically when powered
+		- For example, playing an alarm when the ship gets hot
 - Added underwater plants
 - Improved auto-focus on ship
 - Clouds' horizontal positions are now perspective-corrected

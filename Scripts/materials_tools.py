@@ -141,7 +141,8 @@ def verify(filename):
 
         # Verify palette
         if not 'palette_coordinates' in material:
-            if not 'is_exempt_from_palette' in material or material['is_exempt_from_palette'] == False:
+            if (not 'is_exempt_from_palette' in material or material['is_exempt_from_palette'] == False) \
+                and (not 'is_legacy_electrical' in material or material['is_legacy_electrical'] ==  False):
                 print("ERROR: {}: has no 'palette_coordinates' but is not exempt from palette".format(material_name))
 
 
