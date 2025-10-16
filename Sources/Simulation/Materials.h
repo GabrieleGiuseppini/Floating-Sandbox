@@ -287,6 +287,7 @@ public:
         PowerMonitor,
         ShipSound,
         SmokeEmitter,
+        ThermalSwitch,
         TimerSwitch,
         WaterPump,
         WaterSensingSwitch,
@@ -378,6 +379,9 @@ public:
     // Ship sound
     ShipSoundElementType ShipSoundType;
 
+    // Thermal switch
+    float ThermalSwitchTransitionTemperature; // K
+
     // Water pump
     float WaterPumpNominalForce;
 
@@ -430,6 +434,7 @@ public:
         EngineControllerElementType engineControllerType,
         InteractiveSwitchElementType interactiveSwitchType,
         ShipSoundElementType shipSoundType,
+        float thermalSwitchTransitionTemperature,
         float waterPumpNominalForce,
         float timerDurationSeconds,
         std::optional<MaterialPaletteCoordinatesType> paletteCoordinates)
@@ -458,6 +463,7 @@ public:
         , EngineControllerType(engineControllerType)
         , InteractiveSwitchType(interactiveSwitchType)
         , ShipSoundType(shipSoundType)
+        , ThermalSwitchTransitionTemperature(thermalSwitchTransitionTemperature)
         , WaterPumpNominalForce(waterPumpNominalForce)
         , TimerDurationSeconds(timerDurationSeconds)
         , PaletteCoordinates(paletteCoordinates)
@@ -495,6 +501,7 @@ public:
         , EngineControllerType(EngineControllerElementType::Telegraph)
         , InteractiveSwitchType(InteractiveSwitchElementType::Push)
         , ShipSoundType(ShipSoundElementType::Bell1)
+        , ThermalSwitchTransitionTemperature(1000.0f)
         , WaterPumpNominalForce(0.0f)
         , TimerDurationSeconds(0.0f)
         , PaletteCoordinates(std::nullopt)

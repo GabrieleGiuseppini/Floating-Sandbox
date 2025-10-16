@@ -377,9 +377,10 @@
 	= New electrical materials (*)
 		+ Timer Switches
 		+ Automatic Sounds
-		- Thermal Switches
+		+ Thermal Switches
 		- Redo template
 		- changelist
+		- Merge into master, and delete branch
 		- Port to Android (just files and electrical materials)
 
 	- Bump up version: 1.19.2
@@ -1728,9 +1729,26 @@
 						+ New group @ Palette
 					+ AnnounceInstancedElements: check whether instanced
 					+ Destroy, Restore: do not publish OnSwitchEnabled if ! instanced
-				- Thermal switch
-					- Exactly like water-sensing
-					- Has own histeresys
+				+ Thermal switch
+					! Exactly like water-sensing
+						! On and Off
+					! Has own histeresys
+					+ Electrical Materials:
+						+ ThermalSwitchTransitionTemperature (K)
+					+ materials json:
+						+ Add ON, OFF X 100, 500
+						+ New sub-category @ Palette
+					+ ShipBuilder properties:
+						+ Display temperature
+						+ Display timer duration
+					+ Copy all from water-sensing switch
+						+ Including announcement
+					+ Tests:
+						+ Palette:
+							+ Properties of three new guys
+						+ Destroy/Repair
+							+ Panel
+							+ Functioning
 				- Solar panel
 					- Like generator, but only generates power when daylight above threshold, *and* when on frontier
 				- Redo template!

@@ -301,6 +301,16 @@ private:
             {}
         };
 
+        struct ThermalSwitchState
+        {
+            float GracePeriodEndSimulationTime;
+
+            ThermalSwitchState()
+                : GracePeriodEndSimulationTime(0.0f)
+            {
+            }
+        };
+
         struct TimerSwitchState
         {
             // When set, we are powered
@@ -378,6 +388,7 @@ private:
         PowerMonitorState PowerMonitor;
         ShipSoundState ShipSound;
         SmokeEmitterState SmokeEmitter;
+        ThermalSwitchState ThermalSwitch;
         TimerSwitchState TimerSwitch;
         WaterPumpState WaterPump;
         WaterSensingSwitchState WaterSensingSwitch;
@@ -423,6 +434,11 @@ private:
         ElementState(SmokeEmitterState smokeEmitter)
             : SmokeEmitter(smokeEmitter)
         {}
+
+        ElementState(ThermalSwitchState thermalSwitch)
+            : ThermalSwitch(thermalSwitch)
+        {
+        }
 
         ElementState(TimerSwitchState timerSwitch)
             : TimerSwitch(timerSwitch)

@@ -465,6 +465,202 @@
     },
 
 
+    {
+        "color_key": "#986000",
+	"conducts_electricity": true,
+        "electrical_type": "ThermalSwitch",
+        "heat_generated": 0.0,
+	"is_instanced": true,
+        "maximum_operating_temperature": 1783.15,
+        "minimum_operating_temperature": 173.15,
+        "name": "Thermal Switch ON Low",
+        "palette_coordinates": {
+		"category": "Switches",
+		"sub_category": "Thermal Switches",
+		"sub_category_ordinal": 0
+	},
+	"thermal_switch_transition_temperature": 373.15
+    },
+    {
+        "color_key": "#986600",
+	"conducts_electricity": true,
+        "electrical_type": "ThermalSwitch",
+        "heat_generated": 0.0,
+	"is_instanced": true,
+        "maximum_operating_temperature": 1783.15,
+        "minimum_operating_temperature": 173.15,
+        "name": "Thermal Switch ON Medium",
+        "palette_coordinates": {
+		"category": "Switches",
+		"sub_category": "Thermal Switches",
+		"sub_category_ordinal": 1
+	},
+	"thermal_switch_transition_temperature": 773.15
+    },
+    {
+        "color_key": "#986C00",
+	"conducts_electricity": true,
+        "electrical_type": "ThermalSwitch",
+        "heat_generated": 0.0,
+	"is_instanced": true,
+        "maximum_operating_temperature": 1783.15,
+        "minimum_operating_temperature": 173.15,
+        "name": "Thermal Switch ON High",
+        "palette_coordinates": {
+		"category": "Switches",
+		"sub_category": "Thermal Switches",
+		"sub_category_ordinal": 2
+	},
+	"thermal_switch_transition_temperature": 1273.15
+    },
+    {
+        "color_key": "#286000",
+	"conducts_electricity": false,
+        "electrical_type": "ThermalSwitch",
+        "heat_generated": 0.0,
+	"is_instanced": true,
+        "maximum_operating_temperature": 1783.15,
+        "minimum_operating_temperature": 173.15,
+        "name": "Thermal Switch OFF Low",
+        "palette_coordinates": {
+		"category": "Switches",
+		"sub_category": "Thermal Switches",
+		"sub_category_ordinal": 3
+	},
+	"thermal_switch_transition_temperature": 373.15
+    },
+    {
+        "color_key": "#286600",
+	"conducts_electricity": false,
+        "electrical_type": "ThermalSwitch",
+        "heat_generated": 0.0,
+	"is_instanced": true,
+        "maximum_operating_temperature": 1783.15,
+        "minimum_operating_temperature": 173.15,
+        "name": "Thermal Switch OFF Medium",
+        "palette_coordinates": {
+		"category": "Switches",
+		"sub_category": "Thermal Switches",
+		"sub_category_ordinal": 4
+	},
+	"thermal_switch_transition_temperature": 773.15
+    },
+    {
+        "color_key": "#286C00",
+	"conducts_electricity": false,
+        "electrical_type": "ThermalSwitch",
+        "heat_generated": 0.0,
+	"is_instanced": true,
+        "maximum_operating_temperature": 1783.15,
+        "minimum_operating_temperature": 173.15,
+        "name": "Thermal Switch OFF High",
+        "palette_coordinates": {
+		"category": "Switches",
+		"sub_category": "Thermal Switches",
+		"sub_category_ordinal": 5
+	},
+	"thermal_switch_transition_temperature": 1273.15
+    },
+
+    {
+        "color_key": "#987000",
+	"conducts_electricity": true,
+        "electrical_type": "ThermalSwitch",
+        "heat_generated": 0.0,
+	"is_instanced": false,
+        "maximum_operating_temperature": 1783.15,
+        "minimum_operating_temperature": 173.15,
+        "name": "Non-Instanced Thermal Switch ON Low",
+        "palette_coordinates": {
+		"category": "Switches",
+		"sub_category": "Thermal Switches",
+		"sub_category_ordinal": 6
+	},
+	"thermal_switch_transition_temperature": 373.15
+    },
+    {
+        "color_key": "#987600",
+	"conducts_electricity": true,
+        "electrical_type": "ThermalSwitch",
+        "heat_generated": 0.0,
+	"is_instanced": false,
+        "maximum_operating_temperature": 1783.15,
+        "minimum_operating_temperature": 173.15,
+        "name": "Non-Instanced Thermal Switch ON Medium",
+        "palette_coordinates": {
+		"category": "Switches",
+		"sub_category": "Thermal Switches",
+		"sub_category_ordinal": 7
+	}
+	,
+	"thermal_switch_transition_temperature": 773.15
+    },
+    {
+        "color_key": "#987C00",
+	"conducts_electricity": true,
+        "electrical_type": "ThermalSwitch",
+        "heat_generated": 0.0,
+	"is_instanced": false,
+        "maximum_operating_temperature": 1783.15,
+        "minimum_operating_temperature": 173.15,
+        "name": "Non-Instanced Thermal Switch ON High",
+        "palette_coordinates": {
+		"category": "Switches",
+		"sub_category": "Thermal Switches",
+		"sub_category_ordinal": 8
+	}
+	,
+	"thermal_switch_transition_temperature": 1273.15
+    },
+
+    {
+        "color_key": "#287000",
+	"conducts_electricity": false,
+        "electrical_type": "ThermalSwitch",
+        "heat_generated": 0.0,
+	"is_instanced": false,
+        "maximum_operating_temperature": 1783.15,
+        "minimum_operating_temperature": 173.15,
+        "name": "Non-Instanced Thermal Switch OFF Low",
+        "palette_coordinates": {
+		"category": "Switches",
+		"sub_category": "Thermal Switches",
+		"sub_category_ordinal": 9
+	},
+	"thermal_switch_transition_temperature": 373.15
+    },
+    {
+        "color_key": "#287600",
+	"conducts_electricity": false,
+        "electrical_type": "ThermalSwitch",
+        "heat_generated": 0.0,
+	"is_instanced": false,
+        "maximum_operating_temperature": 1783.15,
+        "minimum_operating_temperature": 173.15,
+        "name": "Non-Instanced Thermal Switch OFF Medium",
+        "palette_coordinates": {
+		"category": "Switches",
+		"sub_category": "Thermal Switches",
+		"sub_category_ordinal": 10
+	},
+	"thermal_switch_transition_temperature": 773.15
+    },
+    {
+        "color_key": "#287C00",
+	"conducts_electricity": false,
+        "electrical_type": "ThermalSwitch",
+        "heat_generated": 0.0,
+	"is_instanced": false,
+        "maximum_operating_temperature": 1783.15,
+        "minimum_operating_temperature": 173.15,
+        "name": "Non-Instanced Thermal Switch OFF High",
+        "palette_coordinates": {
+		"category": "Switches",
+		"sub_category": "Thermal Switches",
+		"sub_category_ordinal": 11
+	},
+	"thermal_switch_transition_temperature": 1273.15
+    },
 
 
     {
@@ -2318,6 +2514,7 @@
 					"Interactive Switches",
 					"Push Switches",
 					"Timed Switches",
+					"Thermal Switches",
 					"Water Switches"]
 			}
 		]

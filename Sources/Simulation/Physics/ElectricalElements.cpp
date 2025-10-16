@@ -217,6 +217,17 @@ void ElectricalElements::Add(
             break;
         }
 
+        case ElectricalMaterial::ElectricalElementType::ThermalSwitch:
+        {
+            // State
+            mElementStateBuffer.emplace_back(ElementState::ThermalSwitchState());
+
+            // Indices
+            mAutomaticConductivityTogglingElements.emplace_back(elementIndex);
+
+            break;
+        }
+
         case ElectricalMaterial::ElectricalElementType::TimerSwitch:
         {
             // State
@@ -391,6 +402,23 @@ void ElectricalElements::AnnounceInstancedElements()
                 break;
             }
 
+            case ElectricalMaterial::ElectricalElementType::ThermalSwitch:
+            {
+                // Announce thermal switches that are instanced as automatic switches
+                if (mInstanceInfos[elementIndex].InstanceIndex != NoneElectricalElementInstanceIndex)
+                {
+                    mSimulationEventHandler.OnSwitchCreated(
+                        GlobalElectricalElementId(mShipId, elementIndex),
+                        mInstanceInfos[elementIndex].InstanceIndex,
+                        SwitchType::AutomaticSwitch,
+                        static_cast<ElectricalState>(mConductivityBuffer[elementIndex].ConductsElectricity),
+                        *mMaterialBuffer[elementIndex],
+                        mInstanceInfos[elementIndex].PanelElementMetadata);
+                }
+
+                break;
+            }
+
             case ElectricalMaterial::ElectricalElementType::WaterPump:
             {
                 mSimulationEventHandler.OnWaterPumpCreated(
@@ -405,7 +433,7 @@ void ElectricalElements::AnnounceInstancedElements()
 
             case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
             {
-                // Announce water-sensing switches that are instanced as switches
+                // Announce water-sensing switches that are instanced as automatic switches
                 if (mInstanceInfos[elementIndex].InstanceIndex != NoneElectricalElementInstanceIndex)
                 {
                     mSimulationEventHandler.OnSwitchCreated(
@@ -496,6 +524,7 @@ void ElectricalElements::HighlightElectricalElement(
         }
 
         case ElectricalMaterial::ElectricalElementType::InteractiveSwitch:
+        case ElectricalMaterial::ElectricalElementType::ThermalSwitch:
         case ElectricalMaterial::ElectricalElementType::TimerSwitch:
         case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
         {
@@ -773,6 +802,22 @@ void ElectricalElements::Destroy(
             break;
         }
 
+        case ElectricalMaterial::ElectricalElementType::ThermalSwitch:
+        {
+            // See whether we need to publish a disable
+            if (mInstanceInfos[electricalElementIndex].InstanceIndex != NoneElectricalElementInstanceIndex)
+            {
+                // Publish disable
+                mSimulationEventHandler.OnSwitchEnabled(
+                    GlobalElectricalElementId(
+                        mShipId,
+                        electricalElementIndex),
+                    false);
+            }
+
+            break;
+        }
+
         case ElectricalMaterial::ElectricalElementType::WaterPump:
         {
             mElementStateBuffer[electricalElementIndex].WaterPump.TargetNormalizedForce = 0.0f;
@@ -942,6 +987,22 @@ void ElectricalElements::Restore(ElementIndex electricalElementIndex)
             break;
         }
 
+        case ElectricalMaterial::ElectricalElementType::ThermalSwitch:
+        {
+            // See whether we need to publish an enable
+            if (mInstanceInfos[electricalElementIndex].InstanceIndex != NoneElectricalElementInstanceIndex)
+            {
+                // Publish disable
+                mSimulationEventHandler.OnSwitchEnabled(
+                    GlobalElectricalElementId(
+                        mShipId,
+                        electricalElementIndex),
+                    true);
+            }
+
+            break;
+        }
+
         case ElectricalMaterial::ElectricalElementType::TimerSwitch:
         {
             mElementStateBuffer[electricalElementIndex].TimerSwitch.Reset();
@@ -1088,6 +1149,7 @@ void ElectricalElements::OnElectricSpark(
             case ElectricalMaterial::ElectricalElementType::PowerMonitor:
             case ElectricalMaterial::ElectricalElementType::ShipSound:
             case ElectricalMaterial::ElectricalElementType::SmokeEmitter:
+            case ElectricalMaterial::ElectricalElementType::ThermalSwitch:
             case ElectricalMaterial::ElectricalElementType::TimerSwitch:
             case ElectricalMaterial::ElectricalElementType::WaterPump:
             case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
@@ -1257,6 +1319,7 @@ void ElectricalElements::InternalSetSwitchState(
         assert(mMaterialTypeBuffer[elementIndex] != ElectricalMaterial::ElectricalElementType::TimerSwitch);
         if (simulationParameters.DoShowElectricalNotifications
             && (mMaterialTypeBuffer[elementIndex] == ElectricalMaterial::ElectricalElementType::InteractiveSwitch
+                || mMaterialTypeBuffer[elementIndex] == ElectricalMaterial::ElectricalElementType::ThermalSwitch
                 || mMaterialTypeBuffer[elementIndex] == ElectricalMaterial::ElectricalElementType::WaterSensingSwitch))
         {
             HighlightElectricalElement(elementIndex, points);
@@ -1467,6 +1530,7 @@ void ElectricalElements::UpdateEngineConductivity(
                             case ElectricalMaterial::ElectricalElementType::PowerMonitor:
                             case ElectricalMaterial::ElectricalElementType::ShipSound:
                             case ElectricalMaterial::ElectricalElementType::SmokeEmitter:
+                            case ElectricalMaterial::ElectricalElementType::ThermalSwitch:
                             case ElectricalMaterial::ElectricalElementType::TimerSwitch:
                             case ElectricalMaterial::ElectricalElementType::WaterPump:
                             case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
@@ -1508,6 +1572,51 @@ void ElectricalElements::UpdateAutomaticConductivityAndGateToggles(
         {
             switch (GetMaterialType(elementIndex))
             {
+                case ElectricalMaterial::ElectricalElementType::ThermalSwitch:
+                {
+                    auto & thermalSwitchState = mElementStateBuffer[elementIndex].ThermalSwitch;
+
+                    // No transitions if in grace period
+                    if (currentSimulationTime >= thermalSwitchState.GracePeriodEndSimulationTime)
+                    {
+                        // When higher than watermark: conductivity state toggles to opposite than material's
+                        // When lower than watermark: conductivity state toggles to same as material's
+
+                        float constexpr WatermarkFraction = 0.1f; // 10%
+
+                        float constexpr GracePeriodInterval = 3.0f;
+
+                        if (mConductivityBuffer[elementIndex].ConductsElectricity == mConductivityBuffer[elementIndex].MaterialConductsElectricity
+                            && points.GetTemperature(GetPointIndex(elementIndex)) >= mMaterialBuffer[elementIndex]->ThermalSwitchTransitionTemperature * (1.0f + WatermarkFraction))
+                        {
+                            // Toggle to opposite of material
+                            InternalSetSwitchState(
+                                elementIndex,
+                                static_cast<ElectricalState>(!mConductivityBuffer[elementIndex].MaterialConductsElectricity),
+                                points,
+                                simulationParameters);
+
+                            // Start grace period
+                            thermalSwitchState.GracePeriodEndSimulationTime = currentSimulationTime + GracePeriodInterval;
+                        }
+                        else if (mConductivityBuffer[elementIndex].ConductsElectricity != mConductivityBuffer[elementIndex].MaterialConductsElectricity
+                            && points.GetTemperature(GetPointIndex(elementIndex)) <= mMaterialBuffer[elementIndex]->ThermalSwitchTransitionTemperature * (1.0f - WatermarkFraction))
+                        {
+                            // Toggle to material's
+                            InternalSetSwitchState(
+                                elementIndex,
+                                static_cast<ElectricalState>(mConductivityBuffer[elementIndex].MaterialConductsElectricity),
+                                points,
+                                simulationParameters);
+
+                            // Start grace period
+                            thermalSwitchState.GracePeriodEndSimulationTime = currentSimulationTime + GracePeriodInterval;
+                        }
+                    }
+
+                    break;
+                }
+
                 case ElectricalMaterial::ElectricalElementType::TimerSwitch:
                 {
                     auto & timerSwitchState = mElementStateBuffer[elementIndex].TimerSwitch;
@@ -1735,6 +1844,7 @@ void ElectricalElements::UpdateSourcesAndPropagation(
                 case ElectricalMaterial::ElectricalElementType::PowerMonitor:
                 case ElectricalMaterial::ElectricalElementType::ShipSound:
                 case ElectricalMaterial::ElectricalElementType::SmokeEmitter:
+                case ElectricalMaterial::ElectricalElementType::ThermalSwitch:
                 case ElectricalMaterial::ElectricalElementType::TimerSwitch:
                 case ElectricalMaterial::ElectricalElementType::WaterPump:
                 case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
@@ -2529,6 +2639,7 @@ void ElectricalElements::UpdateSinks(
             case ElectricalMaterial::ElectricalElementType::EngineTransmission:
             case ElectricalMaterial::ElectricalElementType::Generator:
             case ElectricalMaterial::ElectricalElementType::InteractiveSwitch:
+            case ElectricalMaterial::ElectricalElementType::ThermalSwitch:
             case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
             {
                 // Not a sink

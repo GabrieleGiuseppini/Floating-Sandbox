@@ -324,6 +324,13 @@ ElectricalMaterial ElectricalMaterial::Create(
             shipSoundType = StrToShipSoundElementType(shipSoundTypeStr);
         }
 
+        // Thermal switch properties
+        float thermalSwitchTransitionTemperature = 0.0f;
+        if (ElectricalElementType::ThermalSwitch == electricalType)
+        {
+            thermalSwitchTransitionTemperature = Utils::GetMandatoryJsonMember<float>(electricalMaterialJson, "thermal_switch_transition_temperature");
+        }
+
         // Water pump properties
         float waterPumpNominalForce = 0.0f;
         if (ElectricalElementType::WaterPump == electricalType)
@@ -372,6 +379,7 @@ ElectricalMaterial ElectricalMaterial::Create(
             engineControllerType,
             interactiveSwitchType,
             shipSoundType,
+            thermalSwitchTransitionTemperature,
             waterPumpNominalForce,
             timerDurationSeconds,
             paletteCoordinates);
@@ -406,6 +414,8 @@ ElectricalMaterial::ElectricalElementType ElectricalMaterial::StrToElectricalEle
         return ElectricalElementType::ShipSound;
     else if (Utils::CaseInsensitiveEquals(str, "SmokeEmitter"))
         return ElectricalElementType::SmokeEmitter;
+    else if (Utils::CaseInsensitiveEquals(str, "ThermalSwitch"))
+        return ElectricalElementType::ThermalSwitch;
     else if (Utils::CaseInsensitiveEquals(str, "TimerSwitch"))
         return ElectricalElementType::TimerSwitch;
     else if (Utils::CaseInsensitiveEquals(str, "WaterPump"))
@@ -594,6 +604,12 @@ std::string ElectricalMaterial::MakeInstancedElementLabel(ElectricalElementInsta
                 }
             }
 
+            break;
+        }
+
+        case ElectricalElementType::ThermalSwitch:
+        {
+            ss << "ThermalSwitch " << " #" << static_cast<int>(instanceIndex);
             break;
         }
 

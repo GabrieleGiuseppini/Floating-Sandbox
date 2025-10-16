@@ -877,9 +877,29 @@ void MaterialPalette<TLayer>::PopulateMaterialProperties(TMaterial const * mater
                     break;
                 }
 
+                case ElectricalMaterial::ElectricalElementType::ThermalSwitch:
+                {
+                    typeProp->SetValue(_("Thermal Switch"));
+
+                    {
+                        auto prop = AddFloatProperty(mElectricalMaterialPropertyGrids[1], "ThermalSwitchTransitionTemperature", _("Threshold Temperature (K)"));
+                        ++grid1PropertyCount;
+                        prop->SetValue(material->ThermalSwitchTransitionTemperature);
+                    }
+
+                    break;
+                }
+
                 case ElectricalMaterial::ElectricalElementType::TimerSwitch:
                 {
                     typeProp->SetValue(_("Timed Switch"));
+
+                    {
+                        auto prop = AddFloatProperty(mElectricalMaterialPropertyGrids[1], "TimerDurationSeconds", _("Timer Duration (s)"));
+                        ++grid1PropertyCount;
+                        prop->SetValue(material->TimerDurationSeconds);
+                    }
+
                     break;
                 }
 
