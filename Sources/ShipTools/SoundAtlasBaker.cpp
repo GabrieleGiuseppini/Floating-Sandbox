@@ -104,13 +104,16 @@ std::tuple<size_t, size_t> SoundAtlasBaker::Bake(
 			{
 				if (std::fabs(buf[i]) > 1.0f)
 				{
-					if (std::fabs(buf[i]) - 1.0f > 0.01f)
+					if (std::fabs(buf[i]) - 1.0f > 0.15f)
 					{
 						throw GameException("Sound \"" + assetName + "\" is not normalized! (" + std::to_string(buf[i]) + ")");
 					}
+					else
+					{
+						// Just flatten
+						buf[i] = (buf[i] >= 0.0f) ? 1.0f : -1.0f;
+					}
 
-					// Just flatten
-					buf[i] = (buf[i] >= 0.0f) ? 1.0f : -1.0f;
 				}
 			}
 
