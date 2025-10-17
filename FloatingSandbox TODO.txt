@@ -406,7 +406,7 @@
 		- Changelist
 
 
-	- Fix SoundController::OnBombExplosion: it's using max() when it should be using min()
+	- Fix SoundController where it's using max() when it should be using min()
 
 	- DoDisplaceWater setting should also control Fishes and NPCs
 		- ...find if anything else displaces water without checking toggle
@@ -444,7 +444,7 @@
 	- See why ships with international characters show up weird on some Windows'
 	- See bug reported on GameJolt by MeloPlayground: count of NPCs in going bad
 		! "I think it was when I selected all the npcs and put them in the air (There was more than 2000)"
-		- Ask version
+		! 1.19.1
 	- I found this one: ShipBuilder: exporting structural layer and re-importing it is not the same
 		- Happens with the FS Birthday ship
 

@@ -200,11 +200,18 @@ public:
         mCurrentPopulatedSize = other.mCurrentPopulatedSize;
     }
 
-    inline void swap(Buffer & other) noexcept
+    void swap(Buffer & other) noexcept
     {
         std::swap(mBuffer, other.mBuffer);
         std::swap(mSize, other.mSize);
         std::swap(mCurrentPopulatedSize, other.mCurrentPopulatedSize);
+    }
+
+    void truncate_size(size_t newSize) noexcept
+    {
+        assert(newSize <= mSize);
+        mSize = newSize;
+        mCurrentPopulatedSize = std::min(mCurrentPopulatedSize, newSize);
     }
 
     /*

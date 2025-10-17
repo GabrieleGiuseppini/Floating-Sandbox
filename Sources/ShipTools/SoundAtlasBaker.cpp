@@ -85,6 +85,8 @@ std::tuple<size_t, size_t> SoundAtlasBaker::Bake(
 	// Build atlas
 	//
 
+	size_t samplesTrimmed = 0;
+
 	auto const atlasMetadata = SoundAtlasBuilder::BuildAtlas(
 		assetNames,
 		assetPropertiesProvider,
@@ -96,10 +98,17 @@ std::tuple<size_t, size_t> SoundAtlasBaker::Bake(
 			auto const assetFileSizeFloats = assetFileSizeBytes / sizeof(float);
 			auto const bufferSizeFloats = make_aligned_float_element_count(assetFileSizeFloats);
 
+			//
+			// Load buffer
+			//
+
 			Buffer<float> buf(bufferSizeFloats);
 			FileBinaryReadStream(assetFilePath).Read(reinterpret_cast<std::uint8_t *>(buf.data()), assetFileSizeBytes);
 
+			//
 			// Check buffer
+			//
+
 			for (size_t i = 0; i < assetFileSizeFloats; ++i)
 			{
 				if (std::fabs(buf[i]) > 1.0f)
@@ -117,8 +126,24 @@ std::tuple<size_t, size_t> SoundAtlasBaker::Bake(
 				}
 			}
 
+			//
+			// Trim right
+			//
+
+			float constexpr TrimTolerance = 0.01f;
+
+			size_t trimmedAssetFileSizeFloats = assetFileSizeFloats;
+			for (;
+				trimmedAssetFileSizeFloats > 0 && std::fabs(buf[trimmedAssetFileSizeFloats - 1]) < TrimTolerance;
+				--trimmedAssetFileSizeFloats, ++samplesTrimmed);
+
+			// Truncate buffer
+			auto const trimmedBufferSizeFloats = make_aligned_float_element_count(trimmedAssetFileSizeFloats);
+			assert(trimmedBufferSizeFloats <= bufferSizeFloats);
+			buf.truncate_size(trimmedBufferSizeFloats);
+
 			// Pad with zeroes
-			for (size_t i = assetFileSizeFloats; i < bufferSizeFloats; ++i)
+			for (size_t i = trimmedAssetFileSizeFloats; i < trimmedBufferSizeFloats; ++i)
 			{
 				buf[i] = 0.0f;
 			}
@@ -128,6 +153,8 @@ std::tuple<size_t, size_t> SoundAtlasBaker::Bake(
 		*outputStream);
 
 	outputStream.reset();
+
+	std::cout << "Samples trimmed: " << samplesTrimmed << std::endl;
 
 	//
 	// Finalize atlas
