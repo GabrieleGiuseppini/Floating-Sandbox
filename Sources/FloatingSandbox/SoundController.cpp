@@ -402,8 +402,8 @@ SoundController::SoundController(
                 100.0f,
                 mMasterEffectsVolume,
                 mMasterEffectsMuted,
-                1500ms,
-                1500ms,
+                1500ms, // Note: has no effect (we control via aggregate volume)
+                1500ms, // Note: has no effect (we control via aggregate volume)
                 0.2f);
         }
         else if (soundType == SoundType::TimerBombSlowFuse)

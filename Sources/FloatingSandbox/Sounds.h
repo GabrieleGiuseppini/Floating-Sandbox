@@ -1236,7 +1236,7 @@ public:
         assert(mAlternativesByObject.count(objectId) == 1);
         size_t alternative = mAlternativesByObject[objectId];
 
-        // Update number ofobjects that are playing this alternative
+        // Update number of objects that are playing this alternative
         --mSoundAlternativePlayCounts[alternative];
 
         // Remove object<->alternative mapping
