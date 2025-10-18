@@ -402,8 +402,8 @@ SoundController::SoundController(
                 100.0f,
                 mMasterEffectsVolume,
                 mMasterEffectsMuted,
-                1500ms, // Note: has no effect (we control via aggregate volume)
-                1500ms, // Note: has no effect (we control via aggregate volume)
+                1500ms,
+                1500ms,
                 0.2f);
         }
         else if (soundType == SoundType::TimerBombSlowFuse)
@@ -1868,8 +1868,8 @@ void SoundController::OnLampImploded(
 
 void SoundController::OnWaterTaken(float waterTaken)
 {
-    // 50 * (-1 / 2.4^(0.3 * x) + 1)
-    float rushVolume = 40.f * (-1.f / std::pow(2.4f, std::min(90.0f, 0.3f * std::abs(waterTaken))) + 1.f);
+    // 40 * (-1 / 2.4^(0.5 * x) + 1)
+    float rushVolume = 40.f * (-1.f / std::pow(2.4f, std::min(90.0f, 0.5f * std::abs(waterTaken))) + 1.f);
 
     // Starts automatically if volume greater than zero
     mWaterRushSound.SetVolume(rushVolume);
@@ -1907,7 +1907,6 @@ void SoundController::OnWaterSplashed(float waterSplashed)
     }
 
     mLastWaterSplashed = waterSplashed;
-
 
     //
     // Adjust continuous splash sound
