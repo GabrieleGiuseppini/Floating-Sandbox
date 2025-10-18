@@ -1970,7 +1970,9 @@ void SoundController::OnWaterDisplaced(float waterDisplacedMagnitude)
 
 void SoundController::OnAirBubbleSurfaced(unsigned int size)
 {
-    auto const volume = std::min(25.0f, static_cast<float>(size) * 10.0f);
+    // 2.2 * x - 0.04 * x ^ 2
+    float const sf = static_cast<float>(std::min(size, 25u));
+    float const volume = 2.2f * sf - 0.04f * sf * sf;
 
     mAirBubblesSurfacingSound.Pulse(volume);
 }
