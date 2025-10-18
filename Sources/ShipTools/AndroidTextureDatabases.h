@@ -22,6 +22,7 @@ enum class UITextureGroups : uint16_t
     TimeOfDayIcon,
     ViewIcon,
 
+    AirBubblesSurfacingIcon,
     AutoFocusOnShipIcon,
     CloseIcon,
     CpuPerformanceIcon,
@@ -47,6 +48,7 @@ enum class UITextureGroups : uint16_t
     TsunamiIcon,
     UnderConstructionIcon,
     UVModeIcon,
+    WindIcon,
 
     CheckboxFrame,
     ToolsEyeQuadrant,
@@ -95,6 +97,8 @@ struct UITextureDatabase
             return UITextureGroups::TimeOfDayIcon;
         else if (Utils::CaseInsensitiveEquals(str, "view_icon"))
             return UITextureGroups::ViewIcon;
+        else if (Utils::CaseInsensitiveEquals(str, "air_bubbles_surfacing_icon"))
+            return UITextureGroups::AirBubblesSurfacingIcon;
         else if (Utils::CaseInsensitiveEquals(str, "auto_focus_on_ship_icon"))
             return UITextureGroups::AutoFocusOnShipIcon;
         else if (Utils::CaseInsensitiveEquals(str, "close_icon"))
@@ -145,6 +149,8 @@ struct UITextureDatabase
             return UITextureGroups::UnderConstructionIcon;
         else if (Utils::CaseInsensitiveEquals(str, "uv_mode_icon"))
             return UITextureGroups::UVModeIcon;
+        else if (Utils::CaseInsensitiveEquals(str, "wind_icon"))
+            return UITextureGroups::WindIcon;
         else if (Utils::CaseInsensitiveEquals(str, "checkbox_frame"))
             return UITextureGroups::CheckboxFrame;
         else if (Utils::CaseInsensitiveEquals(str, "tools_eye_quadrant"))
