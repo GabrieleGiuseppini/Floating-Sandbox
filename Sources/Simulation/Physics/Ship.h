@@ -501,7 +501,7 @@ private:
     void ApplyWorldSurfaceForces(
         float effectiveAirDensity,
         float effectiveWaterDensity,
-        Buffer<float> & newCachedPointDepths,
+        Buffer<float> const & newCachedPointDepths,
         SimulationParameters const & simulationParameters,
         Geometry::ShipAABBSet & externalAabbSet);
 

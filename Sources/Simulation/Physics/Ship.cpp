@@ -1359,7 +1359,7 @@ template<bool DoDisplaceWater>
 void Ship::ApplyWorldSurfaceForces(
     float effectiveAirDensity,
     float effectiveWaterDensity,
-    Buffer<float> & newCachedPointDepths,
+    Buffer<float> const & newCachedPointDepths,
     SimulationParameters const & simulationParameters,
     Geometry::ShipAABBSet & externalAabbSet) // output
 {
@@ -2242,7 +2242,7 @@ void Ship::UpdatePressureAndWaterInflow(
             // Internal water height
             float const internalWaterHeight = mPoints.GetWater(pointIndex);
 
-            float totalDeltaWater = 0.0f;
+            float totalPointDeltaWater = 0.0f;
 
             if (pointCompositeLeaking.LeakingSources.StructuralLeak != 0.0f)
             {
@@ -2308,7 +2308,13 @@ void Ship::UpdatePressureAndWaterInflow(
                         pointIndex,
                         mPoints.GetWater(pointIndex) + deltaWater_Structural);
 
-                    totalDeltaWater += deltaWater_Structural;
+                    // Only count water taken if this point has a spring, to avoid counting
+                    // water and generating bubbles for orphaned particles
+                    // (note that leaking points have no connected triangles)
+                    if (!mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.empty())
+                    {
+                        totalPointDeltaWater += deltaWater_Structural;
+                    }
                 }
 
                 //
@@ -2364,7 +2370,7 @@ void Ship::UpdatePressureAndWaterInflow(
                     pointIndex,
                     mPoints.GetWater(pointIndex) + deltaWater_Forced);
 
-                totalDeltaWater += deltaWater_Forced;
+                totalPointDeltaWater += deltaWater_Forced;
 
                 //
                 // 4) Update pressure due to forced leaks (pumps)
@@ -2384,7 +2390,7 @@ void Ship::UpdatePressureAndWaterInflow(
             // 5) Check if it's time to produce air bubbles
             //
 
-            mPoints.GetCumulatedIntakenWater(pointIndex) += totalDeltaWater;
+            mPoints.GetCumulatedIntakenWater(pointIndex) += totalPointDeltaWater;
             if (mPoints.GetCumulatedIntakenWater(pointIndex) > cumulatedIntakenWaterThresholdForAirBubbles)
             {
                 // Generate air bubbles - but not on ropes as that looks awful
@@ -2411,7 +2417,7 @@ void Ship::UpdatePressureAndWaterInflow(
             // "farewell"
             if (!mPoints.IsRope(pointIndex))
             {
-                waterTakenInStep += totalDeltaWater;
+                waterTakenInStep += totalPointDeltaWater;
             }
         }
     }
