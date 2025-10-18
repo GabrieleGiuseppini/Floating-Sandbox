@@ -2243,6 +2243,7 @@ void Ship::UpdatePressureAndWaterInflow(
             float const internalWaterHeight = mPoints.GetWater(pointIndex);
 
             float totalPointDeltaWater = 0.0f;
+            float totalPointDeltaWaterForStepTotal = 0.0f; // For total returned - discounts orhpaned points' structural
 
             if (pointCompositeLeaking.LeakingSources.StructuralLeak != 0.0f)
             {
@@ -2308,12 +2309,14 @@ void Ship::UpdatePressureAndWaterInflow(
                         pointIndex,
                         mPoints.GetWater(pointIndex) + deltaWater_Structural);
 
-                    // Only count water taken if this point has a spring, to avoid counting
-                    // water and generating bubbles for orphaned particles
-                    // (note that leaking points have no connected triangles)
+                    // Update total delta water
+                    totalPointDeltaWater += deltaWater_Structural;
                     if (!mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.empty())
                     {
-                        totalPointDeltaWater += deltaWater_Structural;
+                        // Only count water taken if this point has a spring, to avoid counting
+                        // water and generating bubbles for orphaned particles
+                        // (note that leaking points have no connected triangles)qq
+                        totalPointDeltaWaterForStepTotal += deltaWater_Structural;
                     }
                 }
 
@@ -2370,7 +2373,9 @@ void Ship::UpdatePressureAndWaterInflow(
                     pointIndex,
                     mPoints.GetWater(pointIndex) + deltaWater_Forced);
 
+                // Update total delta water
                 totalPointDeltaWater += deltaWater_Forced;
+                totalPointDeltaWaterForStepTotal += deltaWater_Forced;
 
                 //
                 // 4) Update pressure due to forced leaks (pumps)
@@ -2417,7 +2422,7 @@ void Ship::UpdatePressureAndWaterInflow(
             // "farewell"
             if (!mPoints.IsRope(pointIndex))
             {
-                waterTakenInStep += totalPointDeltaWater;
+                waterTakenInStep += totalPointDeltaWaterForStepTotal;
             }
         }
     }
