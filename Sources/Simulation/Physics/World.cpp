@@ -256,6 +256,14 @@ void World::OnBlast(
         std::chrono::milliseconds(150));
 }
 
+void World::OnEvacuationAlarm(ShipId shipId)
+{
+    //
+    // Panic NPCs
+    //
+
+    mNpcs->OnEvacuationAlarm(shipId);
+}
 
 //////////////////////////////////////////////////////////////////////////////
 // Interactions

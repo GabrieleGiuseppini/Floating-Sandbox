@@ -582,20 +582,35 @@ std::string ElectricalMaterial::MakeInstancedElementLabel(ElectricalElementInsta
                 }
 
                 case ShipSoundElementType::QueenMaryHorn:
-                case ShipSoundElementType::FourFunnelLinerWhistle:
                 case ShipSoundElementType::TripodHorn:
-                case ShipSoundElementType::PipeWhistle:
                 case ShipSoundElementType::LakeFreighterHorn:
                 case ShipSoundElementType::ShieldhallSteamSiren:
                 case ShipSoundElementType::QueenElizabeth2Horn:
-                case ShipSoundElementType::SSRexWhistle:
                 {
                     ss << "Horn #" << static_cast<int>(instanceIndex);
                     break;
                 }
 
+                case ShipSoundElementType::FourFunnelLinerWhistle:
+                case ShipSoundElementType::PipeWhistle:
+                case ShipSoundElementType::SSRexWhistle:
+                {
+                    ss << "Whistle #" << static_cast<int>(instanceIndex);
+                    break;
+                }
+
                 case ShipSoundElementType::Klaxon1:
+                {
+                    ss << "Klaxon #" << static_cast<int>(instanceIndex);
+                    break;
+                }
+
                 case ShipSoundElementType::NuclearAlarm1:
+                {
+                    ss << "NuclearAlarm #" << static_cast<int>(instanceIndex);
+                    break;
+                }
+
                 case ShipSoundElementType::EvacuationAlarm1:
                 case ShipSoundElementType::EvacuationAlarm2:
                 {

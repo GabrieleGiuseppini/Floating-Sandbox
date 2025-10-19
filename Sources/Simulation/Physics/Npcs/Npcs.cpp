@@ -263,7 +263,7 @@ void Npcs::Update(
         if (ship.has_value())
         {
             // Sinking panic level
-            ship->SinkingShipPanicLevel -= ship->SinkingShipPanicLevel * 0.0008f;
+            ship->SinkingShipPanicLevel -= ship->SinkingShipPanicLevel * 0.001f;
 
             // Post-repair mode
             if (ship->ShipReparationStartSimulationTimestamp.has_value()
@@ -2762,9 +2762,13 @@ void Npcs::OnShipTriangleDestroyed(
     }
 }
 
-void Npcs::OnShipStartedSinking(
-    ShipId shipId,
-    float /*currentSimulationTime*/)
+void Npcs::OnShipStartedSinking(ShipId shipId)
+{
+    assert(mShips[shipId].has_value());
+    mShips[shipId]->SinkingShipPanicLevel = 1.0f;
+}
+
+void Npcs::OnEvacuationAlarm(ShipId shipId)
 {
     assert(mShips[shipId].has_value());
     mShips[shipId]->SinkingShipPanicLevel = 1.0f;

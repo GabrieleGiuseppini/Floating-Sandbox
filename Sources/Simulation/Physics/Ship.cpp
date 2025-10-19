@@ -2855,7 +2855,7 @@ void Ship::UpdateWaterVelocities(
     mPoints.UpdateWaterVelocitiesFromMomenta();
 }
 
-void Ship::UpdateSinking(float currentSimulationTime)
+void Ship::UpdateSinking(float /*currentSimulationTime*/)
 {
     //
     // Calculate total number of wet points
@@ -2874,7 +2874,7 @@ void Ship::UpdateSinking(float currentSimulationTime)
         if (wetPointCount > mPoints.GetRawShipPointCount() * 3 / 10 + mPoints.GetTotalFactoryWetPoints()) // High watermark
         {
             // Started sinking
-            mParentWorld.GetNpcs().OnShipStartedSinking(mId, currentSimulationTime); // Tell NPCs
+            mParentWorld.GetNpcs().OnShipStartedSinking(mId); // Tell NPCs
             mSimulationEventHandler.OnSinkingBegin(mId);
             mIsSinking = true;
         }

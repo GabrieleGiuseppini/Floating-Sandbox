@@ -2262,7 +2262,7 @@ void ElectricalElements::UpdateSinks(
                                 true,
                                 points.IsCachedUnderwater(GetPointIndex(sinkElementIndex)));
 
-                            // Disturb ocean, with delays depending on sound
+                            // Disturb ocean with delays depending on sound, and panic NPCs
                             switch (mMaterialBuffer[sinkElementIndex]->ShipSoundType)
                             {
                                 case ElectricalMaterial::ShipSoundElementType::QueenMaryHorn:
@@ -2322,12 +2322,14 @@ void ElectricalElements::UpdateSinks(
                                 case ElectricalMaterial::ShipSoundElementType::EvacuationAlarm1:
                                 {
                                     mParentWorld.DisturbOcean(std::chrono::milliseconds(100));
+                                    mParentWorld.OnEvacuationAlarm(mShipId);
                                     break;
                                 }
 
                                 case ElectricalMaterial::ShipSoundElementType::EvacuationAlarm2:
                                 {
                                     mParentWorld.DisturbOcean(std::chrono::milliseconds(100));
+                                    mParentWorld.OnEvacuationAlarm(mShipId);
                                     break;
                                 }
 

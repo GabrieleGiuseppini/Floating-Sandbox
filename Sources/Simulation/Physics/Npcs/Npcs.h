@@ -1321,9 +1321,9 @@ public:
 		ShipId shipId,
 		ElementIndex triangleElementIndex);
 
-	void OnShipStartedSinking(
-		ShipId shipId,
-		float currentSimulationTime);
+	void OnShipStartedSinking(ShipId shipId);
+
+	void OnEvacuationAlarm(ShipId shipId);
 
 	void OnShipRepaired(
 		ShipId shipId,

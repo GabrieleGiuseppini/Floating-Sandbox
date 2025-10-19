@@ -162,6 +162,8 @@ public:
         ExplosionType explosionType,
         SimulationParameters const & simulationParameters);
 
+    void OnEvacuationAlarm(ShipId shipId);
+
     //
     // Interactions
     //

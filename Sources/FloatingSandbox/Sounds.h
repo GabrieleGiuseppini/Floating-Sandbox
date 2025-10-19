@@ -682,7 +682,7 @@ struct ContinuousInertialSound
 
     void SetVolume(float volume)
     {
-        auto now = GameWallClock::GetInstance().Now();
+        auto const now = GameWallClock::GetInstance().Now();
 
         if (volume > 0.0f)
         {
