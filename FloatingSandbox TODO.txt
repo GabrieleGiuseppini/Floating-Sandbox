@@ -386,8 +386,13 @@
 	- Bump up version: 1.19.2
 
 	- Ships:
+		- Yestanic
+			- -In _TO_TAKE
+				- Fix name, metadata, etc.
+			- Add "Titania" to credits
+			- Update changelist
 		- R.M.S. Lusitania (PRE WW2) - in _TO_TAKE - from karlos
-			- Ask credits
+			- Add to credits: "elkarlos"
 			- Fix metadata
 			- Add ship
 			- Add credits
@@ -1615,6 +1620,9 @@
 				- ~"Structure"+"Form/Variant/Kind/Genre/Class"
 		- New materials:
 			- Structural materials:
+				- TEST: destroying gunpowder (et al) makes it explode
+					- New material property: "explodes on break"
+					- Do @ detaching points
 				- Soft rubber
 					- For joints
 				- Gold and copper (from TimCan)
