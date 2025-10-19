@@ -371,7 +371,7 @@ public:
     {
         if (!!mFadeInStartTimestamp)
         {
-            auto elapsedMillis = std::chrono::duration_cast<std::chrono::milliseconds>(
+            auto const elapsedMillis = std::chrono::duration_cast<std::chrono::milliseconds>(
                 GameWallClock::GetInstance().Elapsed(*mFadeInStartTimestamp));
 
             // Check if we're done
@@ -398,7 +398,7 @@ public:
         }
         else if (!!mFadeOutStartTimestamp)
         {
-            auto elapsedMillis = std::chrono::duration_cast<std::chrono::milliseconds>(
+            auto const elapsedMillis = std::chrono::duration_cast<std::chrono::milliseconds>(
                 GameWallClock::GetInstance().Elapsed(*mFadeOutStartTimestamp));
 
             // Check if we're done

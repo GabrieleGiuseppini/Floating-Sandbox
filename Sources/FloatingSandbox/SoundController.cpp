@@ -28,9 +28,9 @@ float constexpr RepairVolume = 40.0f;
 float constexpr TerrainAdjustVolume = 40.0f;
 float constexpr SawVolume = 50.0f;
 float constexpr SawedVolume = 80.0f;
-std::chrono::milliseconds constexpr SawedInertiaDuration = std::chrono::milliseconds(200);
+std::chrono::milliseconds constexpr SawedInertiaDuration = 200ms;
 float constexpr LaserCutVolume = 100.0f;
-std::chrono::milliseconds constexpr LaserCutInertiaDuration = std::chrono::milliseconds(200);
+std::chrono::milliseconds constexpr LaserCutInertiaDuration = 200ms;
 float constexpr WaveSplashTriggerSize = 0.5f;
 float constexpr LaserRayVolume = 50.0f;
 float constexpr WindMaxVolume = 70.0f;
@@ -303,8 +303,8 @@ SoundController::SoundController(
                 20.0f,
                 mMasterToolsVolume,
                 mMasterToolsMuted,
-                std::chrono::milliseconds(2500),
-                std::chrono::milliseconds(5000));
+                2500ms,
+                5000ms);
         }
         else if (soundType == SoundType::FishScream)
         {
@@ -402,7 +402,7 @@ SoundController::SoundController(
                 100.0f,
                 mMasterEffectsVolume,
                 mMasterEffectsMuted,
-                1500ms,
+                2000ms,
                 1500ms,
                 0.2f);
         }
@@ -1745,7 +1745,7 @@ void SoundController::OnCombustionSmothered()
     PlayOneShotMultipleChoiceSound(
         SoundType::FireSizzling,
         SoundGroupType::Effects,
-        100.0f,
+        60.0f,
         true);
 }
 
