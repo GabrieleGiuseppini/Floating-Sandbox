@@ -11,7 +11,6 @@
 #include <SoundCore/SoundTypes.h>
 
 #include <Core/GameException.h>
-#include <Core/SysSpecifics.h>
 #include <Core/Utils.h>
 
 #include <cassert>
@@ -96,13 +95,12 @@ std::tuple<size_t, size_t> SoundAtlasBaker::Bake(
 			auto const assetFileSizeBytes = static_cast<size_t>(std::filesystem::file_size(assetFilePath));
 			assert((assetFileSizeBytes % sizeof(float)) == 0);
 			auto const assetFileSizeFloats = assetFileSizeBytes / sizeof(float);
-			auto const bufferSizeFloats = make_aligned_float_element_count(assetFileSizeFloats);
 
 			//
 			// Load buffer
 			//
 
-			Buffer<float> buf(bufferSizeFloats);
+			Buffer<float> buf(assetFileSizeFloats);
 			FileBinaryReadStream(assetFilePath).Read(reinterpret_cast<std::uint8_t *>(buf.data()), assetFileSizeBytes);
 
 			//
@@ -122,7 +120,6 @@ std::tuple<size_t, size_t> SoundAtlasBaker::Bake(
 						// Just flatten
 						buf[i] = (buf[i] >= 0.0f) ? 1.0f : -1.0f;
 					}
-
 				}
 			}
 
@@ -138,15 +135,8 @@ std::tuple<size_t, size_t> SoundAtlasBaker::Bake(
 				--trimmedAssetFileSizeFloats, ++samplesTrimmed);
 
 			// Truncate buffer
-			auto const trimmedBufferSizeFloats = make_aligned_float_element_count(trimmedAssetFileSizeFloats);
-			assert(trimmedBufferSizeFloats <= bufferSizeFloats);
-			buf.truncate_size(trimmedBufferSizeFloats);
-
-			// Pad with zeroes
-			for (size_t i = trimmedAssetFileSizeFloats; i < trimmedBufferSizeFloats; ++i)
-			{
-				buf[i] = 0.0f;
-			}
+			assert(trimmedAssetFileSizeFloats <= assetFileSizeFloats);
+			buf.truncate_size(trimmedAssetFileSizeFloats);
 
 			return buf;
 		},
