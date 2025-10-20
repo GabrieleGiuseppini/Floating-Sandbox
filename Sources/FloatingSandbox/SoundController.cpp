@@ -2585,7 +2585,7 @@ void SoundController::OnTimerBombFuse(
     GlobalGadgetId gadgetId,
     std::optional<bool> isFast)
 {
-    if (!!isFast)
+    if (isFast.has_value())
     {
         if (*isFast)
         {
