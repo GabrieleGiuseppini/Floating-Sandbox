@@ -1632,7 +1632,7 @@ void SoundController::OnDestroy(
     bool isUnderwater,
     unsigned int size)
 {
-    if (!!(structuralMaterial.MaterialSound))
+    if (structuralMaterial.MaterialSound.has_value())
     {
         PlayMSUOneShotMultipleChoiceSound(
             SoundType::Destroy,
@@ -1647,7 +1647,7 @@ void SoundController::OnDestroy(
 
 void SoundController::OnLightningHit(StructuralMaterial const & structuralMaterial)
 {
-    if (!!(structuralMaterial.MaterialSound))
+    if (structuralMaterial.MaterialSound.has_value())
     {
         PlayMOneShotMultipleChoiceSound(
             SoundType::LightningHit,
@@ -1663,7 +1663,7 @@ void SoundController::OnSpringRepaired(
     bool isUnderwater,
     unsigned int size)
 {
-    if (!!(structuralMaterial.MaterialSound))
+    if (structuralMaterial.MaterialSound.has_value())
     {
         PlayMSUOneShotMultipleChoiceSound(
             SoundType::RepairSpring,
@@ -1681,7 +1681,7 @@ void SoundController::OnTriangleRepaired(
     bool isUnderwater,
     unsigned int size)
 {
-    if (!!(structuralMaterial.MaterialSound))
+    if (structuralMaterial.MaterialSound.has_value())
     {
         PlayMSUOneShotMultipleChoiceSound(
             SoundType::RepairTriangle,
