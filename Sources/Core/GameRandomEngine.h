@@ -47,41 +47,21 @@ public:
         T count,
         T previous)
     {
-        // Choose randomly, but avoid choosing the last-chosen again
-        T chosen = GenerateUniformInteger<T>(0, count - 2);
-        if (chosen >= previous)
+        assert(count != 0);
+
+        if (count == 1)
         {
-            ++chosen;
+            return 0;
+        }
+
+        // Choose randomly, but avoid choosing the last-chosen again
+        T chosen = GenerateUniformInteger<T>(0, count - 1);
+        if (chosen == previous)
+        {
+            chosen = (chosen + 1) % count;
         }
 
         return chosen;
-    }
-
-    /*
-     * Returns a value between first and last, included, with the exclusion of
-     * previous, if the latter is in the first-last range.
-     */
-    template <typename T>
-    inline T ChooseNew(
-        T first,
-        T last,
-        T previous)
-    {
-        // Choose randomly, but avoid choosing the last-chosen again
-        if (previous >= first && previous <= last)
-        {
-            T chosen = GenerateUniformInteger<T>(first, last - 1);
-            if (chosen >= previous)
-            {
-                ++chosen;
-            }
-
-            return chosen;
-        }
-        else
-        {
-            return GenerateUniformInteger<T>(first, last);
-        }
     }
 
     template <typename T>
