@@ -2513,9 +2513,7 @@ void SoundController::OnBombExplosion(
                 SoundType::AntiMatterBombExplosion,
                 SoundGroupType::Effects,
                 isUnderwater,
-                std::max(
-                    100.0f,
-                    50.0f * size),
+                100.0f,
                 true);
 
             break;
@@ -2984,23 +2982,12 @@ void SoundController::ChooseAndPlayOneShotMultipleChoiceSound(
     // Choose sound file
     //
 
-    size_t chosenIndex;
-    if (1 == sound.Choices.size())
-    {
-        // Nothing to choose
-        chosenIndex = 0;
-    }
-    else
-    {
-        assert(sound.Choices.size() >= 2);
+    // Choose randomly, but avoid choosing the last-chosen sound again
+    size_t const chosenIndex = GameRandomEngine::GetInstance().ChooseNew(
+        sound.Choices.size(),
+        sound.LastPlayedSoundIndex);
 
-        // Choose randomly, but avoid choosing the last-chosen sound again
-        chosenIndex = GameRandomEngine::GetInstance().ChooseNew(
-            sound.Choices.size(),
-            sound.LastPlayedSoundIndex);
-
-        sound.LastPlayedSoundIndex = chosenIndex;
-    }
+    sound.LastPlayedSoundIndex = chosenIndex;
 
     //LogMessage(sound.Choices[chosenIndex]->Filename, " @ ", volume);
 
