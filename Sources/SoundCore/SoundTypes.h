@@ -10,48 +10,53 @@
 
 #include <picojson.h>
 
+#include <cassert>
+#include <cstdint>
 #include <optional>
 #include <string>
 
 enum class SoundChannelModeType
 {
     Mono,
-    Stero
+    Stereo
+};
+
+struct LoopPointsType
+{
+    std::int32_t Start; // In-sound frame index
+    std::int32_t End; // In-sound frame index; excluded
+
+    LoopPointsType(
+        std::int32_t start,
+        std::int32_t end)
+        : Start(start)
+        , End(end)
+    {
+        // Prevent zero-size loops from existing
+        assert(end > start);
+    }
+
+    picojson::value Serialize() const
+    {
+        picojson::object root;
+
+        root.emplace("start", picojson::value(static_cast<std::int64_t>(Start)));
+        root.emplace("end", picojson::value(static_cast<std::int64_t>(End)));
+
+        return picojson::value(root);
+    }
+
+    static LoopPointsType Deserialize(picojson::object const & object)
+    {
+        return LoopPointsType(
+            Utils::GetMandatoryJsonMember<std::int32_t>(object, "start"),
+            Utils::GetMandatoryJsonMember<std::int32_t>(object, "end"));
+    }
 };
 
 struct SoundAssetProperties
 {
     std::string Name;
-
-    struct LoopPointsType
-    {
-        size_t Start; // Frame index
-        size_t End; // Frame index; excluded
-
-        LoopPointsType(
-            size_t start,
-            size_t end)
-            : Start(start)
-            , End(end)
-        { }
-
-        picojson::value Serialize() const
-        {
-            picojson::object root;
-
-            root.emplace("start", picojson::value(static_cast<std::int64_t>(Start)));
-            root.emplace("end", picojson::value(static_cast<std::int64_t>(End)));
-
-            return picojson::value(root);
-        }
-
-        static LoopPointsType Deserialize(picojson::object const & object)
-        {
-            return LoopPointsType(
-                Utils::GetMandatoryJsonMember<size_t>(object, "start"),
-                Utils::GetMandatoryJsonMember<size_t>(object, "end"));
-        }
-    };
 
     std::optional<LoopPointsType> LoopPoints; // If set, it's looping sound
 
@@ -86,12 +91,12 @@ struct SoundAssetProperties
     {
         auto const & rootObject = Utils::GetJsonValueAsObject(value, "SoundAssetProperties");
 
-        std::optional<SoundAssetProperties::LoopPointsType> loopPoints;
+        std::optional<LoopPointsType> loopPoints;
 
         auto const loopPointsJsonObject = Utils::GetOptionalJsonObject(rootObject, "loop_points");
         if (loopPointsJsonObject.has_value())
         {
-            loopPoints = SoundAssetProperties::LoopPointsType::Deserialize(*loopPointsJsonObject);
+            loopPoints = LoopPointsType::Deserialize(*loopPointsJsonObject);
         }
 
         auto const volumeJsonValue = Utils::GetOptionalJsonMember<float>(rootObject, "volume");
@@ -105,15 +110,17 @@ struct SoundAssetProperties
 
 struct SoundAssetBuffer
 {
-    size_t Offset; // Number of frames
-    size_t Size; // Number of frames
+    std::int32_t Offset; // Number of frames
+    std::int32_t Size; // Number of frames
 
     SoundAssetBuffer(
-        size_t offset,
-        size_t size)
+        std::int32_t offset,
+        std::int32_t size)
         : Offset(offset)
         , Size(size)
     {
+        // Prevent zero-size buffers from existing
+        assert(size > 0);
     }
 
     picojson::value Serialize() const
@@ -131,7 +138,7 @@ struct SoundAssetBuffer
         auto const & rootObject = Utils::GetJsonValueAsObject(value, "SoundAssetBuffer");
 
         return SoundAssetBuffer(
-            Utils::GetMandatoryJsonMember<size_t>(rootObject, "offset"),
-            Utils::GetMandatoryJsonMember<size_t>(rootObject, "size"));
+            Utils::GetMandatoryJsonMember<std::int32_t>(rootObject, "offset"),
+            Utils::GetMandatoryJsonMember<std::int32_t>(rootObject, "size"));
     }
 };

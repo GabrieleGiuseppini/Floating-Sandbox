@@ -27,8 +27,7 @@ SoundAtlas SoundAtlas::Deserialize(
     //
 
     auto const atlasDataSizeBytes = atlasDataStream.GetSize();
-
-    assert((atlasDataSizeBytes % vectorization_byte_count<size_t>) == 0);
+    assert((atlasDataSizeBytes % sizeof(float)) == 0);
 
     auto const atlastDataSizeFloats = atlasDataSizeBytes / sizeof(float);
     Buffer<float> buf(atlastDataSizeFloats);
@@ -51,17 +50,20 @@ SoundAtlasAssetsMetadata SoundAtlasBuilder::BuildAtlas(
 
     struct SearchEntry
     {
+        std::string AssetName;
         std::regex AssetNamePattern;
         SoundAssetProperties AssetProperties;
+        bool HasBeenVisited;
     };
 
     std::vector<SearchEntry> assetPropertiesSearchEntries;
-
     for (auto const & it : assetPropertiesProvider)
     {
         assetPropertiesSearchEntries.emplace_back(SearchEntry({
+            it.first,
             std::regex(std::string("^") + it.first + "$"),
-            it.second }));
+            it.second,
+            false }));
     }
 
     //
@@ -92,6 +94,7 @@ SoundAtlasAssetsMetadata SoundAtlasBuilder::BuildAtlas(
             {
                 LogMessage("    Property match: \"", assetPropertiesSearchEntries[p].AssetProperties.Name, "\"");
                 assetPropropertiesIndex = p;
+                assetPropertiesSearchEntries[p].HasBeenVisited = true;
                 break;
             }
 
@@ -116,8 +119,8 @@ SoundAtlasAssetsMetadata SoundAtlasBuilder::BuildAtlas(
                         std::nullopt,
                         1.0f),
                 SoundAssetBuffer(
-                    currentInAtlasOffset,
-                    buf.GetSize())));
+                    static_cast<std::int32_t>(currentInAtlasOffset),
+                    static_cast<std::int32_t>(buf.GetSize()))));
 
         //
         // Write asset
@@ -126,6 +129,18 @@ SoundAtlasAssetsMetadata SoundAtlasBuilder::BuildAtlas(
         outputStream.Write(reinterpret_cast<std::uint8_t const *>(buf.data()), Buffer<float>::CalculateByteSize(buf.GetSize()));
 
         currentInAtlasOffset += buf.GetSize();
+    }
+
+    //
+    // Ensure we have used all provided asset properties
+    //
+
+    for (auto const & ase : assetPropertiesSearchEntries)
+    {
+        if (!ase.HasBeenVisited)
+        {
+            LogMessage("WARNING: Properties of asset \"", ase.AssetName, "\" have not been consumed!");
+        }
     }
 
     return SoundAtlasAssetsMetadata(std::move(atlasEntriesMetadata));
