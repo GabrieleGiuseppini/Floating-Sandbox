@@ -2525,9 +2525,7 @@ void SoundController::OnBombExplosion(
                 SoundType::FireExtinguishingBombExplosion,
                 SoundGroupType::Effects,
                 isUnderwater,
-                std::max(
-                    100.0f,
-                    75.0f * size),
+                100.0f,
                 true);
 
             break;

@@ -1703,7 +1703,7 @@ public:
         ElementIndex pointElementIndex,
         bool isWater)
     {
-        assert(IsBurningForSmothering(pointElementIndex));
+        assert(IsBurningForSmothering(pointElementIndex) || IsBurningForExtinguisherHeatSubtraction(pointElementIndex));
 
         auto const combustionState = mCombustionStateBuffer[pointElementIndex].State;
 
