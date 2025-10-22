@@ -1787,7 +1787,7 @@ void SoundController::OnImpact(
     bool isUnderwater,
     float kineticEnergy) // Dissipated, J
 {
-    if (!!(structuralMaterial.MaterialSound))
+    if (structuralMaterial.MaterialSound.has_value())
     {
         // Transform kinetic energy into size
         unsigned int const size = static_cast<unsigned int>(std::floorf(kineticEnergy / 5000.0f));
@@ -2527,6 +2527,16 @@ void SoundController::OnBombExplosion(
                 isUnderwater,
                 100.0f,
                 true);
+
+            if (size > 1)
+            {
+                PlayUOneShotMultipleChoiceSound(
+                    SoundType::FireExtinguishingBombExplosion,
+                    SoundGroupType::Effects,
+                    isUnderwater,
+                    100.0f,
+                    true);
+            }
 
             break;
         }

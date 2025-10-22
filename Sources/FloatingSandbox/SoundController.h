@@ -583,6 +583,7 @@ private:
             case SoundType::RepairSpring:
             case SoundType::RepairTriangle:
                 return std::chrono::milliseconds(200);
+            case SoundType::FireSizzling:
             case SoundType::WaterReactionTriggered:
             case SoundType::WaterReactionExplosion:
                 return std::chrono::milliseconds(500);
