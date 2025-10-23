@@ -43,7 +43,7 @@ SoundAtlas SoundAtlas::Deserialize(
     Buffer<float> buf(totalAtlasDataSizeFloats);
 
     size_t currentBufferIndexFloats = 0;
-    for (size_t atlasFileIndex = 1; atlasFileIndex < atlasDataFileCount; ++atlasFileIndex)
+    for (size_t atlasFileIndex = 1; atlasFileIndex <= atlasDataFileCount; ++atlasFileIndex)
     {
         LogMessage("Loading sound atlas data file ", atlasFileIndex);
 

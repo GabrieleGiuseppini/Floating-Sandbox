@@ -13,6 +13,7 @@
 #include <Core/GameException.h>
 #include <Core/Utils.h>
 
+#include <algorithm>
 #include <cassert>
 #include <iostream>
 
@@ -64,6 +65,9 @@ std::tuple<size_t, size_t> SoundAtlasBaker::Bake(
 			}
 		}
 	}
+
+	// Ensure determinism in order of files in data file
+	std::sort(assetNames.begin(), assetNames.end());
 
 	std::cout << "Enumerated " << assetNames.size() << " assets and deserialized " << assetPropertiesProvider.size() << " asset property overrides." << std::endl;
 
