@@ -45,6 +45,8 @@ SoundAtlas SoundAtlas::Deserialize(
     size_t currentBufferIndexFloats = 0;
     for (size_t atlasFileIndex = 1; atlasFileIndex < atlasDataFileCount; ++atlasFileIndex)
     {
+        LogMessage("Loading sound atlas data file ", atlasFileIndex);
+
         auto atlasFileInputStream = atlasDataInputStreamFactory(atlasFileIndex);
         assert(atlasFileInputStream);
 
