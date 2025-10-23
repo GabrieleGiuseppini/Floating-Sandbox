@@ -53,7 +53,7 @@ public:
         if (std::find(mShipLoadDirectories.cbegin(), mShipLoadDirectories.cend(), shipLoadDirectory) == mShipLoadDirectories.cend())
         {
             // Add in front
-            mShipLoadDirectories.insert(mShipLoadDirectories.cbegin(), shipLoadDirectory);
+            mShipLoadDirectories.insert(mShipLoadDirectories.begin(), shipLoadDirectory);
         }
     }
 
