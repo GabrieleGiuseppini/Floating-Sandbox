@@ -2632,9 +2632,7 @@ void SoundController::OnTimerBombDefused(
         SoundType::TimerBombDefused,
         SoundGroupType::Effects,
         isUnderwater,
-        std::max(
-            100.0f,
-            30.0f * size),
+        std::min(30.0f * static_cast<float>(size), 100.0f),
         true);
 }
 
