@@ -898,7 +898,7 @@ void ShipLoadDialog<TUsageType>::RepopulateRecentDirectoriesComboBox(std::vector
             && dir != mStandardInstalledShipFolderPath
             && dir != mUserShipFolderPath)
         {
-            assert(mRecentDirectoriesComboBox->FindString(dir.string()) == wxNOT_FOUND);
+            assert(mRecentDirectoriesComboBox->FindString(dir.string(), true) == wxNOT_FOUND);
             mRecentDirectoriesComboBox->Append(dir.string());
         }
     }
@@ -906,7 +906,7 @@ void ShipLoadDialog<TUsageType>::RepopulateRecentDirectoriesComboBox(std::vector
     // Re-select currently-selected directory, as long as it's in the list of recent directories
     wxString dirToSelect;
     if (!currentlySelectedDir.empty()
-        && mRecentDirectoriesComboBox->FindString(currentlySelectedDir) != wxNOT_FOUND)
+        && mRecentDirectoriesComboBox->FindString(currentlySelectedDir, true) != wxNOT_FOUND)
     {
         dirToSelect = currentlySelectedDir;
     }
