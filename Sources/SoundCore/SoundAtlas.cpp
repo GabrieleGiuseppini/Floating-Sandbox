@@ -14,7 +14,7 @@
 
 SoundAtlas SoundAtlas::Deserialize(
     picojson::value const & atlasJson,
-    BinaryReadStream & atlasDataStream)
+    std::function<std::unique_ptr<BinaryReadStream>(size_t atlasFileIndex)> && atlasDataInputStreamFactory)
 {
     //
     // Load metadata
@@ -26,12 +26,34 @@ SoundAtlas SoundAtlas::Deserialize(
     // Load entire stream into buffer
     //
 
-    auto const atlasDataSizeBytes = atlasDataStream.GetSize();
-    assert((atlasDataSizeBytes % sizeof(float)) == 0);
+    size_t totalAtlasDataSizeFloats = 0;
+    size_t atlasDataFileCount = 0;
+    for (size_t atlasFileIndex = 1; ; ++atlasFileIndex)
+    {
+        auto atlasFileInputStream = atlasDataInputStreamFactory(atlasFileIndex);
+        if (!atlasFileInputStream)
+            break;
 
-    auto const atlastDataSizeFloats = atlasDataSizeBytes / sizeof(float);
-    Buffer<float> buf(atlastDataSizeFloats);
-    atlasDataStream.Read(reinterpret_cast<std::uint8_t *>(buf.data()), atlasDataSizeBytes);
+        auto const atlasFileSizeBytes = atlasFileInputStream->GetSize();
+        assert((atlasFileSizeBytes % sizeof(float)) == 0);
+        totalAtlasDataSizeFloats += atlasFileSizeBytes / sizeof(float);
+        ++atlasDataFileCount;
+    }
+
+    Buffer<float> buf(totalAtlasDataSizeFloats);
+
+    size_t currentBufferIndexFloats = 0;
+    for (size_t atlasFileIndex = 1; atlasFileIndex < atlasDataFileCount; ++atlasFileIndex)
+    {
+        auto atlasFileInputStream = atlasDataInputStreamFactory(atlasFileIndex);
+        assert(atlasFileInputStream);
+
+        auto const atlasFileSizeBytes = atlasFileInputStream->GetSize();
+        assert((atlasFileSizeBytes % sizeof(float)) == 0);
+        atlasFileInputStream->Read(reinterpret_cast<std::uint8_t *>(&buf[currentBufferIndexFloats]), atlasFileSizeBytes);
+
+        currentBufferIndexFloats += atlasFileSizeBytes / sizeof(float);
+    }
 
     return SoundAtlas(
         std::move(metadata),
@@ -42,7 +64,8 @@ SoundAtlasAssetsMetadata SoundAtlasBuilder::BuildAtlas(
     std::vector<std::string> const & assetNames,
     std::unordered_map<std::string, SoundAssetProperties> const & assetPropertiesProvider,
     std::function<Buffer<float>(std::string const & assetName)> const & assetLoader,
-    BinaryWriteStream & outputStream)
+    size_t maxAtlasFileSizeBytes,
+    std::function<std::unique_ptr<BinaryWriteStream>(size_t atlasFileIndex)> && outputStreamFactory)
 {
     //
     // Bake regexes for searching asset names
@@ -70,9 +93,13 @@ SoundAtlasAssetsMetadata SoundAtlasBuilder::BuildAtlas(
     // Visit all assets
     //
 
+    size_t currentAtlasFileSizeBytes = 0;
+    size_t currentAtlasFileIndex = 1; // We start at 1
+    std::unique_ptr<BinaryWriteStream> currentAtlasFileOutputStream;
     std::unordered_map<std::string, SoundAtlasAssetMetadata> atlasEntriesMetadata;
 
-    size_t currentInAtlasOffset = 0; // Floats
+    size_t currentInAtlasOffsetFloats = 0; // Floats
+
     for (auto const & assetName : assetNames)
     {
         LogMessage("Loading sound asset \"", assetName, "\"");
@@ -119,16 +146,34 @@ SoundAtlasAssetsMetadata SoundAtlasBuilder::BuildAtlas(
                         std::nullopt,
                         1.0f),
                 SoundAssetBuffer(
-                    static_cast<std::int32_t>(currentInAtlasOffset),
+                    static_cast<std::int32_t>(currentInAtlasOffsetFloats),
                     static_cast<std::int32_t>(buf.GetSize()))));
 
         //
         // Write asset
         //
 
-        outputStream.Write(reinterpret_cast<std::uint8_t const *>(buf.data()), Buffer<float>::CalculateByteSize(buf.GetSize()));
+        if (!currentAtlasFileOutputStream)
+        {
+            // Create new stream
+            currentAtlasFileOutputStream = outputStreamFactory(currentAtlasFileIndex);
+            currentAtlasFileSizeBytes = 0;
+            ++currentAtlasFileIndex;
+        }
 
-        currentInAtlasOffset += buf.GetSize();
+        // Write
+        size_t const assetByteSize = Buffer<float>::CalculateByteSize(buf.GetSize());
+        currentAtlasFileOutputStream->Write(reinterpret_cast<std::uint8_t const *>(buf.data()), assetByteSize);
+        currentAtlasFileSizeBytes += assetByteSize;
+        currentInAtlasOffsetFloats += buf.GetSize();
+
+        // Check if exceeded size
+        if (currentAtlasFileSizeBytes >= maxAtlasFileSizeBytes)
+        {
+            // Close current file
+            assert(currentAtlasFileOutputStream);
+            currentAtlasFileOutputStream.reset();
+        }
     }
 
     //

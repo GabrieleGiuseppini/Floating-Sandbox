@@ -68,17 +68,21 @@ std::tuple<size_t, size_t> SoundAtlasBaker::Bake(
 	std::cout << "Enumerated " << assetNames.size() << " assets and deserialized " << assetPropertiesProvider.size() << " asset property overrides." << std::endl;
 
 	//
-	// Prepare output file
+	// Nuke existing atlas files
 	//
 
-	auto const outputAtlasDataFilePathTmp = outputDirectoryPath / "atlas.dat.tmp";
-
-	if (std::filesystem::exists(outputAtlasDataFilePathTmp))
+	for (size_t atlasFileIndex = 1; ; ++atlasFileIndex)
 	{
-		std::filesystem::remove(outputAtlasDataFilePathTmp);
+		auto const outputAtlasDataFilePath = outputDirectoryPath / SoundAtlas::MakeAtlasFilename(atlasFileIndex);
+		if (std::filesystem::exists(outputAtlasDataFilePath))
+		{
+			std::filesystem::remove(outputAtlasDataFilePath);
+		}
+		else
+		{
+			break;
+		}
 	}
-
-	auto outputStream = std::unique_ptr<BinaryWriteStream>(new FileBinaryWriteStream(outputAtlasDataFilePathTmp));
 
 	//
 	// Build atlas
@@ -140,9 +144,12 @@ std::tuple<size_t, size_t> SoundAtlasBaker::Bake(
 
 			return buf;
 		},
-		*outputStream);
-
-	outputStream.reset();
+		25 * 1024 * 1024, // 24MB, comfy for git
+		[&](size_t atlasFileIndex) -> std::unique_ptr<BinaryWriteStream>
+		{
+			return std::unique_ptr<BinaryWriteStream>(
+				new FileBinaryWriteStream(outputDirectoryPath / SoundAtlas::MakeAtlasFilename(atlasFileIndex)));
+		});
 
 	std::cout << "Samples trimmed: " << samplesTrimmed << std::endl;
 
@@ -150,18 +157,24 @@ std::tuple<size_t, size_t> SoundAtlasBaker::Bake(
 	// Finalize atlas
 	//
 
-	auto const outputAtlasDataFilePath = outputDirectoryPath / "atlas.dat";
-
-	if (std::filesystem::exists(outputAtlasDataFilePath))
-	{
-		std::filesystem::remove(outputAtlasDataFilePath);
-	}
-
-	std::filesystem::rename(outputAtlasDataFilePathTmp, outputAtlasDataFilePath);
-
+	// Write json
 	auto const outputAssetMetadataFilePath = outputDirectoryPath / "atlas.json";
-
 	FileTextWriteStream(outputAssetMetadataFilePath).Write(Utils::MakeStringFromJSON(atlasMetadata.Serialize()));
 
-	return { atlasMetadata.Entries.size(), static_cast<size_t>(std::filesystem::file_size(outputAtlasDataFilePath)) };
+	// Calc total file size
+	size_t totalAtlasFilesSize = 0;
+	for (size_t atlasFileIndex = 1; ; ++atlasFileIndex)
+	{
+		auto const outputAtlasDataFilePath = outputDirectoryPath / SoundAtlas::MakeAtlasFilename(atlasFileIndex);
+		if (std::filesystem::exists(outputAtlasDataFilePath))
+		{
+			totalAtlasFilesSize += static_cast<size_t>(std::filesystem::file_size(outputAtlasDataFilePath));
+		}
+		else
+		{
+			break;
+		}
+	}
+
+	return { atlasMetadata.Entries.size(), totalAtlasFilesSize };
 }

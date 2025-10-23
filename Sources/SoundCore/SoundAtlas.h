@@ -108,9 +108,15 @@ public:
     // De/Serialization
     //
 
+    static std::string MakeAtlasFilename(size_t atlasFileIndex)
+    {
+        assert(atlasFileIndex > 0);
+        return std::string("atlas_") + std::to_string(atlasFileIndex) + ".dat";
+    }
+
     static SoundAtlas Deserialize(
         picojson::value const & atlasJson,
-        BinaryReadStream & atlasDataStream);
+        std::function<std::unique_ptr<BinaryReadStream>(size_t fileIndex)> && atlasDataInputStreamFactory);
 };
 
 class SoundAtlasBuilder
@@ -121,5 +127,6 @@ public:
         std::vector<std::string> const & assetNames,
         std::unordered_map<std::string, SoundAssetProperties> const & assetPropertiesProvider,
         std::function<Buffer<float>(std::string const & assetName)> const & assetLoader,
-        BinaryWriteStream & outputStream);
+        size_t maxAtlasFileSizeBytes,
+        std::function<std::unique_ptr<BinaryWriteStream>(size_t fileIndex)> && outputStreamFactory);
 };
