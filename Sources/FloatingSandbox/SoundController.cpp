@@ -1433,10 +1433,10 @@ void SoundController::PlayLaserRaySound(bool isAmplified)
 
 void SoundController::StopLaserRaySound()
 {
+    mLaserCutSound.Stop();
+
     mLaserRayNormalSound.Stop();
     mLaserRayAmplifiedSound.Stop();
-
-    mLaserCutSound.Stop();
 }
 
 void SoundController::PlayBlastToolSlow1Sound()
@@ -2097,9 +2097,9 @@ void SoundController::OnLightFlicker(
         SoundGroupType::Effects,
         duration,
         isUnderwater,
-        std::max(
+        std::min(
             100.0f,
-            30.0f * size),
+            50.0f * static_cast<float>(size)),
         true);
 }
 
