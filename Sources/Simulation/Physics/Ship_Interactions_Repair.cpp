@@ -230,7 +230,7 @@ void Ship::StraightenOneSpringChains(ElementIndex pointIndex)
                         if (cwDelta < 0)
                             cwDelta += 8;
 
-                        assert(cwDelta > 0 && cwDelta < 8);
+                        assert(cwDelta >= 0 && cwDelta < 8);
                         int ccwDelta = 8 - cwDelta;
                         assert(ccwDelta > 0);
 
@@ -243,7 +243,7 @@ void Ship::StraightenOneSpringChains(ElementIndex pointIndex)
                 }
 
                 assert(nearestCCWSpringIndex >= 0);
-                assert(nearestCCWSpringDeltaOctant > 0);
+                assert(nearestCCWSpringDeltaOctant >= 0);
 
                 //
                 // Calculate this spring's world angle wrt nearest CCW
@@ -526,7 +526,7 @@ bool Ship::RepairFromAttractor(
                     attractorPointIndex);
 
                 //
-                // 1. Find nearest CW spring and nearest CCW spring
+                // 1. Find nearest CW spring and nearest CCW spring (in factory space)
                 // (which might end up being the same spring in case there's only one spring)
                 //
 
@@ -544,6 +544,8 @@ bool Ship::RepairFromAttractor(
                         mSprings.GetFactoryEndpointOctant(cs.SpringIndex, attractorPointIndex)
                         - factoryPointSpringOctant;
 
+                    // Note: cwDelta might be zero when there are ropes with same alignment as springs
+
                     if (cwDelta < 0)
                         cwDelta += 8;
 
@@ -557,9 +559,11 @@ bool Ship::RepairFromAttractor(
                     // CCW
                     //
 
-                    assert(cwDelta > 0 && cwDelta < 8);
+                    assert(cwDelta >= 0 && cwDelta < 8);
                     int ccwDelta = 8 - cwDelta;
-                    assert(ccwDelta > 0);
+                    if (ccwDelta == 8)
+                        ccwDelta = 0;
+                    assert(ccwDelta >= 0);
 
                     if (ccwDelta < nearestCCWSpringDeltaOctant)
                     {
@@ -569,9 +573,9 @@ bool Ship::RepairFromAttractor(
                 }
 
                 assert(nearestCWSpringIndex >= 0);
-                assert(nearestCWSpringDeltaOctant > 0);
+                assert(nearestCWSpringDeltaOctant >= 0);
                 assert(nearestCCWSpringIndex >= 0);
-                assert(nearestCCWSpringDeltaOctant > 0);
+                assert(nearestCCWSpringDeltaOctant >= 0);
 
                 //
                 // 2. Calculate this spring's world angle by
@@ -584,21 +588,22 @@ bool Ship::RepairFromAttractor(
                 ElementIndex const cwSpringOtherEndpointIndex =
                     mSprings.GetOtherEndpointIndex(nearestCWSpringIndex, attractorPointIndex);
 
-                // Angle between these two springs (internal angle)
-                float neighborsAngleCw =
+                // World angle between these two springs (internal angle)
+                float neighborsWorldAngleCw =
                     (ccwSpringOtherEndpointIndex == cwSpringOtherEndpointIndex)
                     ? 2.0f * Pi<float>
                     : (mPoints.GetPosition(ccwSpringOtherEndpointIndex) - mPoints.GetPosition(attractorPointIndex))
                     .angleCw(mPoints.GetPosition(cwSpringOtherEndpointIndex) - mPoints.GetPosition(attractorPointIndex));
 
-                if (neighborsAngleCw < 0.0f)
-                    neighborsAngleCw += 2.0f * Pi<float>;
+                if (neighborsWorldAngleCw < 0.0f)
+                    neighborsWorldAngleCw += 2.0f * Pi<float>;
 
                 // Interpolated angle - offset from CCW spring
-                float const interpolatedAngleCwFromCCWSpring =
-                    neighborsAngleCw
-                    / static_cast<float>(nearestCWSpringDeltaOctant + nearestCCWSpringDeltaOctant) // Span between two springs, in octants
-                    * static_cast<float>(nearestCCWSpringDeltaOctant);
+                float const interpolatedAngleCwFromCCWSpring = (nearestCWSpringDeltaOctant + nearestCCWSpringDeltaOctant > 0)
+                    ? neighborsWorldAngleCw
+                      / static_cast<float>(nearestCWSpringDeltaOctant + nearestCCWSpringDeltaOctant) // Span between two springs, in octants
+                      * static_cast<float>(nearestCCWSpringDeltaOctant)
+                    : 0.0f;
 
                 // And finally, the target world angle (world angle is 0 at E), by adding
                 // interpolated CCW spring angle offset to world angle of CCW spring
