@@ -14,7 +14,8 @@
 
 SoundAtlas SoundAtlas::Deserialize(
     picojson::value const & atlasJson,
-    std::function<std::unique_ptr<BinaryReadStream>(size_t atlasFileIndex)> && atlasDataInputStreamFactory)
+    std::function<std::unique_ptr<BinaryReadStream>(size_t atlasFileIndex)> && atlasDataInputStreamFactory,
+    SimpleProgressCallback const & progressCallback)
 {
     //
     // Load metadata
@@ -55,6 +56,8 @@ SoundAtlas SoundAtlas::Deserialize(
         atlasFileInputStream->Read(reinterpret_cast<std::uint8_t *>(&buf[currentBufferIndexFloats]), atlasFileSizeBytes);
 
         currentBufferIndexFloats += atlasFileSizeBytes / sizeof(float);
+
+        progressCallback(static_cast<float>(atlasFileIndex) / static_cast<float>(atlasDataFileCount));
     }
 
     return SoundAtlas(

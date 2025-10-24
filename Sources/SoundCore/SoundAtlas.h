@@ -8,6 +8,7 @@
 #include "SoundTypes.h"
 
 #include <Core/Buffer.h>
+#include <Core/ProgressCallback.h>
 #include <Core/Streams.h>
 
 #include <functional>
@@ -116,7 +117,8 @@ public:
 
     static SoundAtlas Deserialize(
         picojson::value const & atlasJson,
-        std::function<std::unique_ptr<BinaryReadStream>(size_t fileIndex)> && atlasDataInputStreamFactory);
+        std::function<std::unique_ptr<BinaryReadStream>(size_t fileIndex)> && atlasDataInputStreamFactory,
+        SimpleProgressCallback const & progressCallback);
 };
 
 class SoundAtlasBuilder
