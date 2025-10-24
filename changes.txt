@@ -1,4 +1,4 @@
-TODO
+TODO: 1.19.2
 - Added 3 new electrical materials:
 	- Thermal switches: toggle automatically with temperature
 	- Timer switches: toggle automatically with time
@@ -16,7 +16,7 @@ TODO
 - ShipBuilder:
 	- Added StructureTracer tool: automatically traces a ship's hull from a texture
 	- Added tool for finely traslating texture layer pixel-by-pixel
-- Added 10 new ships
+- Added 12 new ships
 - ...and a few more small improvements and glitch fixes here and there!
 
 1.19.1

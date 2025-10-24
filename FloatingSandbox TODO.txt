@@ -385,18 +385,18 @@
 
 	- Bump up version: 1.19.2
 
-	- Ships:
-		- Yestanic
-			- -In _TO_TAKE
-				- Fix name, metadata, etc.
-			- Add "Titania" to credits
-			- Update changelist
-		- R.M.S. Lusitania (PRE WW2) - in _TO_TAKE - from karlos
+	= Ships:
+		+ Yestanic
+			+ -In _TO_TAKE
+				+ Fix name, metadata, etc.
+			+ Add "Titania" to credits
+			+ Update changelist
+		+ R.M.S. Lusitania (PRE WW2) - in _TO_TAKE - from karlos
 			- Add to credits: "elkarlos"
-			- Fix metadata
-			- Add ship
-			- Add credits
-			- Update changelist	
+			+ Fix metadata
+			+ Add ship
+			+ Add credits
+			+ Update changelist	
 
 	= pt_BR localization:
 		+ HTML
