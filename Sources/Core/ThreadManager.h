@@ -21,7 +21,6 @@ public:
         MainAndSimulation,
         Simulation,
         Render,
-        Audio,
         Other
     };
 
