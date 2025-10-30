@@ -408,10 +408,9 @@
 		+ Ask PortugueseGuy|Joadix to test
 		+ Ask Joadix to test
 		- Add to credits: "Mr.H556"
-		- Changelist
+		- Changelist (w/credits!)
 
-
-	- Fix SoundController where it's using max() when it should be using min()
+	- Lower DisplacementWaveSmoothnessAdjust - 0.0 is quite cool
 
 	- DoDisplaceWater setting should also control Fishes and NPCs
 		- ...find if anything else displaces water without checking toggle
