@@ -383,42 +383,47 @@
 		+ Merge into master, and delete branch
 		+ Port to Android (just files and electrical materials)
 
-	- Bump up version: 1.19.2
-
-	= Ships:
+	+ Ships:
 		+ Yestanic
 			+ -In _TO_TAKE
 				+ Fix name, metadata, etc.
 			+ Add "Titania" to credits
 			+ Update changelist
 		+ R.M.S. Lusitania (PRE WW2) - in _TO_TAKE - from karlos
-			- Add to credits: "elkarlos"
+			+ Add to credits: "elkarlos"
 			+ Fix metadata
 			+ Add ship
 			+ Add credits
 			+ Update changelist	
 
+	- Lightning tool, like in Android
+
 	= pt_BR localization:
 		+ HTML
 		+ NPC
 		= po - asked to fill-in missing entries for my mistake
+			- Fix "No New Updates"
 		+ Update code
 			+ FIX: nuke MakeLanguageIdentifier; do double search
 			+ Test myself
 		+ Ask PortugueseGuy|Joadix to test
 		+ Ask Joadix to test
-		- Add to credits: "Mr.H556"
+		= Add to credits: "Mr.H556"
 		- Changelist (w/credits!)
 
+	- Bump up version: 1.19.2
+
+	----------------------------------------------------------
+
 	- Lower DisplacementWaveSmoothnessAdjust - 0.0 is quite cool
+
+	- Try perlin on rot - just in shader:
+		rot = rot * (0.5 + 0.5 * sample)
 
 	- DoDisplaceWater setting should also control Fishes and NPCs
 		- ...find if anything else displaces water without checking toggle
 
-	- Lightning tool, like in Android
-
 	- See perf impact with double the world
-
 
 	- Try Android font
 

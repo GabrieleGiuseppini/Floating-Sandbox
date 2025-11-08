@@ -2514,10 +2514,10 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
                     _("Number of Stars"),
                     _("The number of stars in the sky."),
                     [this](unsigned int value)
-                {
-                    this->mLiveSettings.SetValue(GameSettings::NumberOfStars, value);
-                    this->OnLiveSettingsChanged();
-                },
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::NumberOfStars, value);
+                        this->OnLiveSettingsChanged();
+                    },
                     std::make_unique<IntegralLinearSliderCore<unsigned int>>(
                         mGameControllerSettingsOptions.GetMinNumberOfStars(),
                         mGameControllerSettingsOptions.GetMaxNumberOfStars()));
@@ -2540,10 +2540,10 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
                     _("Number of Clouds"),
                     _("The number of clouds in the world's sky. This is the total number of clouds in the world; at any moment in time, the number of clouds that are visible will be less than or equal to this value."),
                     [this](unsigned int value)
-                {
-                    this->mLiveSettings.SetValue(GameSettings::NumberOfClouds, value);
-                    this->OnLiveSettingsChanged();
-                },
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::NumberOfClouds, value);
+                        this->OnLiveSettingsChanged();
+                    },
                     std::make_unique<IntegralLinearSliderCore<unsigned int>>(
                         mGameControllerSettingsOptions.GetMinNumberOfClouds(),
                         mGameControllerSettingsOptions.GetMaxNumberOfClouds()));
