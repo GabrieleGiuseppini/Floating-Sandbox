@@ -2140,7 +2140,7 @@ void WorldRenderContext::ApplyEffectiveAmbientLightIntensityChanges(RenderParame
 
     mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::Stars>();
     mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::Stars, GameShaderSets::ProgramParameterKind::StarTransparency>(
-        pow(std::max(0.0f, 1.0f - renderParameters.EffectiveAmbientLightIntensity), 3.0f));
+        std::powf(std::max(0.0f, 1.0f - renderParameters.EffectiveAmbientLightIntensity), 3.0f));
 }
 
 void WorldRenderContext::ApplySkyChanges(RenderParameters const & renderParameters)
