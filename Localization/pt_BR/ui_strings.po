@@ -2597,7 +2597,7 @@ msgstr "Sem Debug"
 
 #: ..\Sources\FloatingSandbox\UI\CheckForUpdatesDialog.cpp:159
 msgid "No New Updates"
-msgstr "Uma nova versão está disponível! Atualize agora!"
+msgstr "Sem Atualizações"
 
 #: ..\Sources\ShipBuilderLib\MainFrame.cpp:3674
 msgid "No visualization: the electrical layer is not drawn."
