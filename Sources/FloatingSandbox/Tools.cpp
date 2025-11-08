@@ -746,6 +746,24 @@ LampTool::LampTool(
 }
 
 ////////////////////////////////////////////////////////////////////////
+// LightningStrikeTool
+////////////////////////////////////////////////////////////////////////
+
+LightningStrikeTool::LightningStrikeTool(
+    IToolCursorManager & toolCursorManager,
+    IGameController & gameController,
+    SoundController & soundController,
+    GameAssetManager const & gameAssetManager)
+    : OneShotTool(
+        ToolType::LightningStrike,
+        toolCursorManager,
+        gameController,
+        soundController)
+    , mCursorImage(WxHelpers::LoadCursorImage("lightning_cursor_and_icon", 11, 29, gameAssetManager))
+{
+}
+
+////////////////////////////////////////////////////////////////////////
 // NPCs
 ////////////////////////////////////////////////////////////////////////
 

@@ -513,6 +513,11 @@ MainFrame::MainFrame(
             }
 
             {
+                auto menuItem = ADD_TOOL_MENUITEM(_("LightningStrike"), wxS("\t6"), "lightning_cursor_and_icon", ToolType::LightningStrike, false);
+                ADD_PLAIN_ACCELERATOR_KEY('6', menuItem);
+            }
+
+            {
                 auto menuItem = ADD_TOOL_MENUITEM(_("Adjust Terrain"), wxS("\tJ"), "terrain_adjust_cursor_up", ToolType::TerrainAdjust, false);
                 ADD_PLAIN_ACCELERATOR_KEY('J', menuItem);
             }

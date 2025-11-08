@@ -245,6 +245,13 @@ ToolController::ToolController(
             gameAssetManager));
 
     mAllTools.emplace_back(
+        std::make_unique<LightningStrikeTool>(
+            *this,
+            gameController,
+            soundController,
+            gameAssetManager));
+
+    mAllTools.emplace_back(
         std::make_unique<PlaceFurnitureNpcTool>(
             *this,
             gameController,

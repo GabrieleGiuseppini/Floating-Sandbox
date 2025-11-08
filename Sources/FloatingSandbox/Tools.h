@@ -63,6 +63,7 @@ enum class ToolType : std::uint32_t
     WindMaker,
     LaserCannon,
     Lamp,
+    LightningStrike,
     // NPC tools below
     PlaceFurnitureNpc,
     PlaceHumanNpc,
@@ -4129,6 +4130,36 @@ private:
     // The cursors
     wxImage const mUpCursorImage;
     wxImage const mDownCursorImage;
+};
+
+class LightningStrikeTool final : public OneShotTool
+{
+public:
+
+    LightningStrikeTool(
+        IToolCursorManager & toolCursorManager,
+        IGameController & gameController,
+        SoundController & soundController,
+        GameAssetManager const & gameAssetManager);
+
+public:
+
+    void Initialize(InputState const & /*inputState*/) override
+    {
+        // Reset cursor
+        mToolCursorManager.SetToolCursor(mCursorImage);
+    }
+
+    void OnLeftMouseDown(InputState const & inputState) override
+    {
+        mGameController.TriggerLightningAt(inputState.MousePosition);
+    }
+
+    void OnLeftMouseUp(InputState const & /*inputState*/) override {}
+
+private:
+
+    wxImage const mCursorImage;
 };
 
 /////////////////////////////////////////////

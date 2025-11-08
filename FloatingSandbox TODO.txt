@@ -396,7 +396,8 @@
 			+ Add credits
 			+ Update changelist	
 
-	- Lightning tool, like in Android
+	+ Lightning tool, like in Android
+		+ Changelist
 
 	= pt_BR localization:
 		+ HTML
@@ -410,6 +411,20 @@
 		+ Ask Joadix to test
 		= Add to credits: "Mr.H556"
 		- Changelist (w/credits!)
+
+	- Localization:
+		- Extract strings
+		- Update all po's
+		- IT
+			- Do
+		- RU
+			- Send
+		- UK
+			- Send
+		- ES
+			- Send
+		- pt_BR
+			- Send
 
 	- Bump up version: 1.19.2
 

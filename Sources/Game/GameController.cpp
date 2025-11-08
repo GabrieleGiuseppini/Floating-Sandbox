@@ -1449,6 +1449,15 @@ void GameController::ResetLamp()
     mRenderContext->ResetLamp();
 }
 
+void GameController::TriggerLightningAt(DisplayLogicalCoordinates const & screenCoordinates)
+{
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+
+    // Do action
+    assert(!!mWorld);
+    mWorld->TriggerLightningAt(worldCoordinates);
+}
+
 NpcKindType GameController::GetNpcKind(NpcId id)
 {
     assert(!!mWorld);

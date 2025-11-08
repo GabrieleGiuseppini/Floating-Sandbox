@@ -151,6 +151,7 @@ struct IGameController
     virtual void AttractFish(DisplayLogicalCoordinates const & screenCoordinates, float radius, std::chrono::milliseconds delay) = 0;
     virtual void SetLampAt(DisplayLogicalCoordinates const & screenCoordinates, float radiusScreenFraction) = 0;
     virtual void ResetLamp() = 0;
+    virtual void TriggerLightningAt(DisplayLogicalCoordinates const & screenCoordinates) = 0;
     virtual NpcKindType GetNpcKind(NpcId id) = 0;
     virtual std::optional<PickedNpc> BeginPlaceNewFurnitureNpc(std::optional<NpcSubKindIdType> subKind, DisplayLogicalCoordinates const & screenCoordinates, bool doMoveWholeMesh) = 0;
     virtual std::optional<PickedNpc> BeginPlaceNewHumanNpc(std::optional<NpcSubKindIdType> subKind, DisplayLogicalCoordinates const & screenCoordinates, bool doMoveWholeMesh) = 0;
