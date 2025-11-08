@@ -413,8 +413,8 @@
 		- Changelist (w/credits!)
 
 	- Localization:
-		- Extract strings
-		- Update all po's
+		+ Extract strings
+		+ Update all po's
 		- IT
 			- Do
 		- RU
