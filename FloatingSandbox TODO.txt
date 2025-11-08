@@ -412,19 +412,24 @@
 		= Add to credits: "Mr.H556"
 		- Changelist (w/credits!)
 
-	- Localization:
+	= Localization:
 		+ Extract strings
 		+ Update all po's
-		- IT
-			- Do
+		= IT
+			= Do
+			+ Compile to mo
 		- RU
 			- Send
+			- Compile to mo
 		- UK
 			- Send
+			- Compile to mo
 		- ES
 			- Send
+			- Compile to mo
 		- pt_BR
 			- Send
+			- Compile to mo
 
 	- Bump up version: 1.19.2
 
