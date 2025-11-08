@@ -943,10 +943,9 @@ private:
     // Water splashes
     RunningAverage<30> mWaterSplashedRunningAverage;
 
-    // Last luminiscence adjustment that we've run the light diffusion algorithm with;
-    // used to avoid running diffusion when luminiscence adjustment is zero and we've
-    // already ran once with zero (so to zero out buffer)
-    float mLastLuminiscenceAdjustmentDiffused;
+    // Remembers whether we've populated the light buffer at the previous step;
+    // used to zero out buffer when luminiscence is disabled
+    bool mIsLightBufferPopulated;
 
     // Normally at 1.0, set to 0.0 during repair to turn off updates that hinder the
     // repair process

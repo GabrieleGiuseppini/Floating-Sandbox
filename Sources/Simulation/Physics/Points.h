@@ -1752,6 +1752,11 @@ public:
         return mLightBuffer.data();
     }
 
+    void ZeroLightBuffer()
+    {
+        mLightBuffer.fill(0.0f);
+    }
+
     //
     // Wind dynamics
     //

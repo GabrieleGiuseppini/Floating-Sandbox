@@ -696,6 +696,8 @@ struct SimulationParameters
 
     SpringRelaxationParallelComputationModeType SpringRelaxationParallelComputationMode;
 
+    bool IsLightingEnabled; // For perf switches; at the moment only used on Android
+
     //
     // Limits
     //

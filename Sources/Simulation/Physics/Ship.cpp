@@ -120,7 +120,7 @@ Ship::Ship(
     , mBrokenTrianglesCount(0)
     , mIsSinking(false)
     , mWaterSplashedRunningAverage()
-    , mLastLuminiscenceAdjustmentDiffused(-1.0f)
+    , mIsLightBufferPopulated(false)
     , mRepairGracePeriodMultiplier(1.0f)
     , mLastQueriedPointIndex(NoneElementIndex)
     , mAirBubblesCreatedCount(0)
@@ -2964,8 +2964,16 @@ void Ship::DiffuseLight(
 
     // Shortcut
     if (mElectricalElements.Lamps().empty()
-        || (simulationParameters.LuminiscenceAdjustment == 0.0f && mLastLuminiscenceAdjustmentDiffused == 0.0f))
+        || !simulationParameters.IsLightingEnabled
+        || simulationParameters.LuminiscenceAdjustment == 0.0f)
     {
+        // Zer out buffer if it's dirty
+        if (mIsLightBufferPopulated)
+        {
+            mPoints.ZeroLightBuffer();
+            mIsLightBufferPopulated = false;
+        }
+
         return;
     }
 
@@ -2996,8 +3004,9 @@ void Ship::DiffuseLight(
 
     threadManager.GetSimulationThreadPool().Run(mLightDiffusionTasks);
 
-    // Remember that we've diffused light with this luminiscence adjustment
-    mLastLuminiscenceAdjustmentDiffused = simulationParameters.LuminiscenceAdjustment;
+    // Remember that we've diffused light, so we will zero out the buffer
+    // when we stop running the algo
+    mIsLightBufferPopulated = true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
