@@ -16,5 +16,5 @@ struct SoundParameters
     static SoundChannelModeType constexpr SoundChannelMode = SoundChannelModeType::Mono;
     static std::size_t constexpr SoundChannelCount = (SoundChannelMode == SoundChannelModeType::Mono) ? 1 : 2;
 
-    static size_t constexpr MaxPlayingSounds = 256;
+    static size_t constexpr MaxPlayingSounds = 128;
 };
