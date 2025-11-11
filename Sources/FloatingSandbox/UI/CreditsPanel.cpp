@@ -324,7 +324,7 @@ void CreditsPanel::OnScrollTimer(wxTimerEvent & /*event*/)
     if (!mCreditsBitmapBufferedPaintDC)
         return;
 
-    auto now = std::chrono::steady_clock::now();
+    auto const now = std::chrono::steady_clock::now();
     if (now - mStartTimestamp > std::chrono::seconds(2))
     {
         mCurrentScrollOffsetY += 2;

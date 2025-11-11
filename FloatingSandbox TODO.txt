@@ -796,7 +796,7 @@
 	- Russian: DioxCode (Fallback: Ilya_Voloshin, Faulttix#8691)
 	- Ukrainian: DioxCode, Denis
 	- Spanish (Latin American): Joadix (Fallback: The G a z e r W o l f)
-	- Portuguese-Brazilian: matheusvhs ("Mr.H556")
+	- Portuguese-Brazilian: matheusvhs ("Matheus Silva")
 
 	- Hungarian: S.S. Atlantic
 		= Doing HTMLs

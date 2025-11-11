@@ -28,6 +28,7 @@ enum class UITextureGroups : uint16_t
     CpuPerformanceIcon,
     ElectricalPanelIcon,
     ExitIcon,
+    InfoIcon,
     LandTextureThumbnail, // Dedicated
     NpcFurnitureGroupIcon,
     NpcHumanGroupIcon,
@@ -109,6 +110,8 @@ struct UITextureDatabase
             return UITextureGroups::ElectricalPanelIcon;
         else if (Utils::CaseInsensitiveEquals(str, "exit_icon"))
             return UITextureGroups::ExitIcon;
+        else if (Utils::CaseInsensitiveEquals(str, "info_icon"))
+            return UITextureGroups::InfoIcon;
         else if (Utils::CaseInsensitiveEquals(str, "land_texture_thumbnail"))
             return UITextureGroups::LandTextureThumbnail;
         else if (Utils::CaseInsensitiveEquals(str, "npc_furniture_group_icon"))
