@@ -55,7 +55,7 @@ public:
         : mCenters()
         , mIsCentersBufferDirty(false)
         , mPointToPointArrows()
-        , mIsPointToPointArrowsBufferDirty(true)
+        , mIsPointToPointArrowsBufferDirty(false)
     {}
 
     void Upload(
