@@ -87,7 +87,7 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
         {1, wxS("Gabriele Giuseppini (Italian)"), 0},
         {1, wxS("Ilya Voloshin (https://vk.com/1lvol) (Russian)"), 0},
         {1, wxS("Joaquin Olivera (Joadix100) (Spanish)"), 0},
-        {1, wxS("Mr.H556 (Brazilian Portuguese)"), 0},
+        {1, wxS("Matheus Silva (Brazilian Portuguese)"), 0},
         {1, wxS("Roman Shavernew (DioxCode) (Russian, Ukrainian)"), VMargin3},
 
         {0, _("TESTING"), 0},
@@ -112,6 +112,7 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
         {1, wxS("Denis"), 0},
         {1, wxS("Damien"), 0},
         {1, wxS("Longhorn"), 0},
+        {1, wxS("Mattytitanic"), 0},
         {1, wxS("Dario Bazzichetto"), VMargin3},
 
         {0, _("BUILD ENGINEERING"), 0},
