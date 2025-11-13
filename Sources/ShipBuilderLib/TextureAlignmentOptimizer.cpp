@@ -26,13 +26,13 @@ RgbaImageData TextureAlignmentOptimizer::OptimizeAlignment(
 	//
 
 	std::vector<int> leftX;
-	leftX.reserve(source.Size.width);
+	leftX.reserve(source.Size.height);
 	std::vector<int> rightX;
-	rightX.reserve(source.Size.width);
+	rightX.reserve(source.Size.height);
 	std::vector<int> topY;
-	topY.reserve(source.Size.height);
+	topY.reserve(source.Size.width);
 	std::vector<int> bottomY;
-	bottomY.reserve(source.Size.height);
+	bottomY.reserve(source.Size.width);
 
 	CalculateEdges(source, leftX, rightX, topY, bottomY);
 
