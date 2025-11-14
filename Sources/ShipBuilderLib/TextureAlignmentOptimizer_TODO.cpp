@@ -28,23 +28,31 @@ RgbaImageData TextureAlignmentOptimizer_TODO::OptimizeAlignment(
 	//	* y=0 is at bottom, grows going up
 	//
 
-	std::vector<int> leftX(source.Size.height, -1); // -1 is marker for "not existing"
+	std::vector<int> leftX(source.Size.height, source.Size.width);
 	std::vector<int> rightX(source.Size.height, -1);
 	std::vector<int> topY(source.Size.width, -1);
-	std::vector<int> bottomY(source.Size.width, -1);
+	std::vector<int> bottomY(source.Size.width, source.Size.height);
 
 	CalculateEdges(source, leftX, rightX, topY, bottomY);
 
+	//int const minX = *std::min_element(leftX.cbegin(), leftX.cend());
+	//int const maxX = *std::max_element(rightX.cbegin(), rightX.cend());
+	int const minY = *std::min_element(bottomY.cbegin(), bottomY.cend());
+	int const maxY = *std::max_element(topY.cbegin(), topY.cend());
+
 	//
-	// TODOTEST
+	// Calculate segments
 	//
 
-	int constexpr MinStreakSize = 5;
+	//int constexpr MinStreakSize = 5;
+	int constexpr MinStreakSize = 10;
 
-	std::vector<int> newLeftX(leftX);
-	std::vector<int> newRightX(rightX);
-	std::vector<int> newTopY(topY);
-	std::vector<int> newBottomY(bottomY);
+	struct Segment
+	{
+		int StartIndex;
+		int Length;
+		int Value;
+	};
 
 	struct StreakSession
 	{
@@ -52,16 +60,19 @@ RgbaImageData TextureAlignmentOptimizer_TODO::OptimizeAlignment(
 		int Value;
 	};
 
+
 	std::optional<StreakSession> currentStreak;
 
 	// Bottom
+
+	std::vector<Segment> bottomSegments;
 
 	currentStreak.reset();
 
 	for (int x = 0; x <= source.Size.width; ++x)
 	{
 		bool interruptsCurrentStreak = false;
-		if (x == source.Size.width || bottomY[x] == -1)
+		if (x == source.Size.width || bottomY[x] == source.Size.height)
 		{
 			// Interrupt streak if we have one
 			interruptsCurrentStreak = currentStreak.has_value();
@@ -72,7 +83,7 @@ RgbaImageData TextureAlignmentOptimizer_TODO::OptimizeAlignment(
 			if (!currentStreak.has_value())
 			{
 				// Start streak
-				currentStreak.emplace(StreakSession{x, newValue});
+				currentStreak.emplace(StreakSession{ x, newValue });
 			}
 			else if (newValue != currentStreak->Value)
 			{
@@ -86,13 +97,17 @@ RgbaImageData TextureAlignmentOptimizer_TODO::OptimizeAlignment(
 
 			int const streakLength = x - currentStreak->StartIndex;
 			assert(streakLength > 0);
-			if (streakLength > MinStreakSize)
+			if (streakLength >= MinStreakSize)
 			{
-				LogMessage("Streak: ", streakLength, " X ", currentStreak->Value, " @ ", currentStreak->StartIndex, " -> ", x);
+				bottomSegments.emplace_back(Segment{
+					currentStreak->StartIndex,
+					streakLength,
+					currentStreak->Value
+					});
 			}
 
 			// Start new streak
-			if (x == source.Size.width || bottomY[x] == -1)
+			if (x == source.Size.width || bottomY[x] == source.Size.height)
 			{
 				currentStreak.reset();
 			}
@@ -103,16 +118,120 @@ RgbaImageData TextureAlignmentOptimizer_TODO::OptimizeAlignment(
 		}
 	}
 
-	// TODOTEST
-	LogMessage("-------------------------------------");
-
-	int const shipToTextureH = static_cast<int>(std::ceilf(static_cast<float>(source.Size.height) / static_cast<float>(structureMeshSize.height)));
-	LogMessage("shipToTextureH=", shipToTextureH);
-	for (int y = 0; y < shipToTextureH * 2; ++y)
+	LogMessage("Level 1 segments:");
+	for (size_t s = 0; s < bottomSegments.size(); ++s)
 	{
-		float const waste = CalculateWasteOnLeftEdge(y, 0, structureMeshSize.height, source.Size.height);
-		LogMessage("y=", y, ": ", waste);
+		if (s > 0 && bottomSegments[s].StartIndex != bottomSegments[s - 1].StartIndex + bottomSegments[s - 1].Length)
+			LogMessage("");
+
+		LogMessage("    @ ", bottomSegments[s].StartIndex, " len: ", bottomSegments[s].Length, "   ", bottomSegments[s].Value);
 	}
+
+
+	//
+	// Find best offset wrt bottom segments
+	//
+
+	// Calculate overestimation of texture pixels per ship quad
+	int const pixelsPerQuadH = static_cast<int>(std::ceilf(static_cast<float>(source.Size.height) / static_cast<float>(structureMeshSize.height)));
+
+	int bestBottomOffset = 0;
+	float minWaste = std::numeric_limits<float>::max();
+	for (int bottomOffset = -pixelsPerQuadH; bottomOffset <= pixelsPerQuadH; ++bottomOffset)
+	{
+		if (minY + bottomOffset >= 0 && maxY + bottomOffset < source.Size.height)
+		{
+			float stepWaste = 0.0f;
+			for (auto const & segment : bottomSegments)
+			{
+				float const segmentWaste = CalculateWasteOnLeftEdge(segment.Value, bottomOffset, structureMeshSize.height, source.Size.height);
+				stepWaste += segmentWaste * static_cast<float>(segment.Length);
+			}
+
+			LogMessage("bottomOffset=", bottomOffset, " => waste=", stepWaste);
+
+			if (stepWaste < minWaste)
+			{
+				bestBottomOffset = bottomOffset;
+				minWaste = stepWaste;
+			}
+		}
+	}
+
+	LogMessage("-----");
+	LogMessage("bestBottomOffset=", bestBottomOffset);
+
+
+
+	//
+	// TODOTEST
+	//
+
+
+	std::vector<int> newLeftX(leftX);
+	std::vector<int> newRightX(rightX);
+	std::vector<int> newTopY(topY);
+	std::vector<int> newBottomY(bottomY);
+
+
+
+	//// Bottom
+
+	//currentStreak.reset();
+
+	//for (int x = 0; x <= source.Size.width; ++x)
+	//{
+	//	bool interruptsCurrentStreak = false;
+	//	if (x == source.Size.width || bottomY[x] == -1)
+	//	{
+	//		// Interrupt streak if we have one
+	//		interruptsCurrentStreak = currentStreak.has_value();
+	//	}
+	//	else
+	//	{
+	//		int const newValue = bottomY[x];
+	//		if (!currentStreak.has_value())
+	//		{
+	//			// Start streak
+	//			currentStreak.emplace(StreakSession{x, newValue});
+	//		}
+	//		else if (newValue != currentStreak->Value)
+	//		{
+	//			interruptsCurrentStreak = true;
+	//		}
+	//	}
+
+	//	if (interruptsCurrentStreak)
+	//	{
+	//		assert(currentStreak.has_value());
+
+	//		int const streakLength = x - currentStreak->StartIndex;
+	//		assert(streakLength > 0);
+	//		if (streakLength > MinStreakSize)
+	//		{
+	//			LogMessage("Streak: ", streakLength, " X ", currentStreak->Value, " @ ", currentStreak->StartIndex, " -> ", x);
+	//		}
+
+	//		// Start new streak
+	//		if (x == source.Size.width || bottomY[x] == -1)
+	//		{
+	//			currentStreak.reset();
+	//		}
+	//		else
+	//		{
+	//			currentStreak.emplace(StreakSession{ x, bottomY[x] });
+	//		}
+	//	}
+	//}
+
+	//// TODOTEST
+	//LogMessage("-------------------------------------");
+	//LogMessage("pixelsPerQuadH=", pixelsPerQuadH);
+	//for (int y = 0; y < pixelsPerQuadH * 2; ++y)
+	//{
+	//	float const waste = CalculateWasteOnLeftEdge(y, 0, structureMeshSize.height, source.Size.height);
+	//	LogMessage("y=", y, ": ", waste);
+	//}
 
 
 	// TODOTEST
