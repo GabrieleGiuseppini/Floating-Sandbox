@@ -20,6 +20,8 @@ RgbaImageData TextureAlignmentOptimizer_TODO::OptimizeAlignment(
 	RgbaImageData const & source,
 	ShipSpaceSize const & structureMeshSize)
 {
+	// TODO: nop if pixelsPerShip is < ~4
+
 	//
 	// Calculate edges
 	//
@@ -219,6 +221,13 @@ float TextureAlignmentOptimizer_TODO::CalculateWasteOnLeftEdge(
 	// s that covers this pixel
 	int const sx = static_cast<int>(std::floorf(static_cast<float>(txo) / shipToTexture - 0.5f));
 	assert(sx >= -1);
+
+	if (sx < 0)
+	{
+		// leftX is to the left of the first possible tCenter, and thus the texture is clipped.
+		// We penalize this situation as the worst
+		return std::numeric_limits<float>::max() / 10.0f;
+	}
 
 	// Now calculate t at the center of this ship quad - guaranteed to be to the left of or at tx(o)
 	float const tCenter = (static_cast<float>(sx) + 0.5f) * shipToTexture;

@@ -255,7 +255,7 @@ float TextureAlignmentOptimizer::CalculateWasteOnLeftEdge(
 		assert(sx >= -1);
 		if (sx < 0)
 		{
-			// leftX is to the left of tCenter now, and thus the texture is clipped.
+			// leftX is to the left of the first possible tCenter, and thus the texture is clipped.
 			// We penalize this situation as the worst
 			return std::numeric_limits<float>::max() / 10.0f;
 		}
