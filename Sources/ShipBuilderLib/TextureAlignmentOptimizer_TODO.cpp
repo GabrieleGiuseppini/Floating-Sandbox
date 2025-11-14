@@ -44,8 +44,7 @@ RgbaImageData TextureAlignmentOptimizer_TODO::OptimizeAlignment(
 	// Calculate segments
 	//
 
-	//int constexpr MinStreakSize = 5;
-	int constexpr MinStreakSize = 10;
+	int constexpr MinStreakSize = 5;
 
 	struct Segment
 	{
@@ -161,82 +160,86 @@ RgbaImageData TextureAlignmentOptimizer_TODO::OptimizeAlignment(
 	LogMessage("-----");
 	LogMessage("bestBottomOffset=", bestBottomOffset);
 
-
-
 	//
-	// TODOTEST
+	// Resample TODOTEST
 	//
 
+	//std::vector<int> newLeftX(leftX);
+	//std::vector<int> newRightX(rightX);
+	//std::vector<int> newTopY(topY);
+	//std::vector<int> newBottomY(bottomY);
 
-	std::vector<int> newLeftX(leftX);
-	std::vector<int> newRightX(rightX);
-	std::vector<int> newTopY(topY);
-	std::vector<int> newBottomY(bottomY);
+	// Bottom
 
+	RgbaImageData newImage(source.Size, rgbaColor(rgbaColor::data_type_max, rgbaColor::data_type_max, rgbaColor::data_type_max, 0));
 
+	size_t iCurrentSegment = 0;
 
-	//// Bottom
+	for (int x = 0; x < source.Size.width;)
+	{
+		if (bottomY[x] != source.Size.height)
+		{
+			assert(topY[x] >= 0);
 
-	//currentStreak.reset();
+			if (iCurrentSegment < bottomSegments.size() && x == bottomSegments[iCurrentSegment].StartIndex)
+			{
+				// Segment
 
-	//for (int x = 0; x <= source.Size.width; ++x)
-	//{
-	//	bool interruptsCurrentStreak = false;
-	//	if (x == source.Size.width || bottomY[x] == -1)
-	//	{
-	//		// Interrupt streak if we have one
-	//		interruptsCurrentStreak = currentStreak.has_value();
-	//	}
-	//	else
-	//	{
-	//		int const newValue = bottomY[x];
-	//		if (!currentStreak.has_value())
-	//		{
-	//			// Start streak
-	//			currentStreak.emplace(StreakSession{x, newValue});
-	//		}
-	//		else if (newValue != currentStreak->Value)
-	//		{
-	//			interruptsCurrentStreak = true;
-	//		}
-	//	}
+				float const tx = static_cast<float>(bottomSegments[iCurrentSegment].Value);
+				assert(bottomY[x] == bottomSegments[iCurrentSegment].Value);
 
-	//	if (interruptsCurrentStreak)
-	//	{
-	//		assert(currentStreak.has_value());
+				// s that covers pixel
+				int const sx = static_cast<int>(std::floorf(tx / pixelsPerQuadH - 0.5f));
+				assert(sx >= -1);
 
-	//		int const streakLength = x - currentStreak->StartIndex;
-	//		assert(streakLength > 0);
-	//		if (streakLength > MinStreakSize)
-	//		{
-	//			LogMessage("Streak: ", streakLength, " X ", currentStreak->Value, " @ ", currentStreak->StartIndex, " -> ", x);
-	//		}
+				// Now calculate t at the center of this ship quad - guaranteed to be to the left of or at tx
+				float const tCenter = (static_cast<float>(sx) + 0.5f) * pixelsPerQuadH;
+				assert(tx >= tCenter);
 
-	//		// Start new streak
-	//		if (x == source.Size.width || bottomY[x] == -1)
-	//		{
-	//			currentStreak.reset();
-	//		}
-	//		else
-	//		{
-	//			currentStreak.emplace(StreakSession{ x, bottomY[x] });
-	//		}
-	//	}
-	//}
+				// Don't tolerate waste larger than half quad
+				int newBottomY = bottomY[x];
+				LogMessage("waste=", tx - tCenter, " threshold=", pixelsPerQuadH / 2.0f);
+				if ((tx - tCenter) > pixelsPerQuadH / 2.0f)
+				{
+					// Positionate at threshold - i.e. at beginning of sx+1
+					newBottomY = static_cast<int>(std::ceilf(static_cast<float>(sx + 1) * pixelsPerQuadH));
 
-	//// TODOTEST
-	//LogMessage("-------------------------------------");
-	//LogMessage("pixelsPerQuadH=", pixelsPerQuadH);
-	//for (int y = 0; y < pixelsPerQuadH * 2; ++y)
-	//{
-	//	float const waste = CalculateWasteOnLeftEdge(y, 0, structureMeshSize.height, source.Size.height);
-	//	LogMessage("y=", y, ": ", waste);
-	//}
+					LogMessage("Larger than threshold: tx=", tx, " sx=", sx, "   ", bottomY[x], " -> ", newBottomY);
 
+					LogMessage("  new waste=", static_cast<float>(newBottomY) - tCenter);
+				}
+				else
+				{
+					LogMessage("Smaller than threshold: tx=", tx, " sx=", sx);
+				}
 
-	// TODOTEST
-	(void)structureMeshSize;
-	return source.Clone();
+				for (int i = 0; i < bottomSegments[iCurrentSegment].Length; ++i)
+				{
+					int newTopY = topY[x + i];
+					BlitColumn(source, newImage, x + i, bottomY[x], topY[x], newBottomY, newTopY);
+				}
+
+				x += bottomSegments[iCurrentSegment].Length;
+
+				++iCurrentSegment;
+			}
+			else
+			{
+				// Column
+				BlitColumn(source, newImage, x, bottomY[x], topY[x], bottomY[x], topY[x]);
+
+				++x;
+			}
+		}
+		else
+		{
+			assert(topY[x] == -1);
+
+			++x;
+		}
+	}
+
+	return newImage;
 }
 
 void TextureAlignmentOptimizer_TODO::CalculateEdges(
@@ -354,6 +357,29 @@ float TextureAlignmentOptimizer_TODO::CalculateWasteOnLeftEdge(
 
 	// Calculate waste
 	return txo - tCenter;
+}
+
+void TextureAlignmentOptimizer_TODO::BlitColumn(
+	RgbaImageData const & source,
+	RgbaImageData & target,
+	int x,
+	int ySourceBottom,
+	int ySourceTop,
+	int yTargetBottom,
+	int yTargetTop)
+{
+	float const deltaSource = static_cast<float>(ySourceTop - ySourceBottom);
+	float const deltaTarget = static_cast<float>(yTargetTop - yTargetBottom);
+
+	for (int y = yTargetBottom; y <= yTargetTop; ++y)
+	{
+		// Calculate source pixel
+		float sourceYf = static_cast<float>(ySourceBottom) + static_cast<float>(y - yTargetBottom) / deltaTarget * deltaSource; // TODO: deltaTarget==0
+		// Nearest
+		int sourceY = static_cast<int>(std::roundf(sourceYf));
+
+		target[{x, y}] = source[{x, sourceY}];
+	}
 }
 
 }

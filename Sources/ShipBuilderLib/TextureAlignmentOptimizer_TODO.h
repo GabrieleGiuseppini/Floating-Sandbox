@@ -34,6 +34,15 @@ private:
 		int offset,
 		int structureMeshSize,
 		int textureSize);
+
+	static inline void BlitColumn(
+		RgbaImageData const & source,
+		RgbaImageData & target,
+		int x,
+		int ySourceBottom,
+		int ySourceTop,
+		int yTargetBottom,
+		int yTargetTop);
 };
 
 }
