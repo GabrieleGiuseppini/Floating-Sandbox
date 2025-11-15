@@ -3187,6 +3187,9 @@ typename LayerTypeTraits<LayerType::Structural>::buffer_type ModelController::Ma
     //
     // The formula for s(t) is the "texturization" one, i.e. s = (t - o/2) / o, where o is the number of texture
     // pixels in one ship quad.
+    //
+    // Note that we do not take into account the ability to cover with just *triangles*, so to not overcomplicate the algorithm.
+    // But that would be a nice improvement.
 
     //
     // Allocate buffer and make it clear (fully "transparent")

@@ -20,8 +20,6 @@ RgbaImageData TextureAlignmentOptimizer_TODO2::OptimizeAlignment(
 	RgbaImageData const & source,
 	ShipSpaceSize const & structureMeshSize)
 {
-	// TODO: nop if pixelsPerShip is < ~4
-
 	//
 	// Calculate edges
 	//
@@ -44,40 +42,40 @@ RgbaImageData TextureAlignmentOptimizer_TODO2::OptimizeAlignment(
 	// Calculate segments
 	//
 
-	// Calculate overestimation of texture pixels per ship quad
-	int const pixelsPerQuadH = static_cast<int>(std::ceilf(static_cast<float>(source.Size.height) / static_cast<float>(structureMeshSize.height)));
-	int const pixelsPerQuadW = static_cast<int>(std::ceilf(static_cast<float>(source.Size.width) / static_cast<float>(structureMeshSize.width)));
+	// Calculate overestimation of texture pixels per ship quad, to use for min segment lengths
+	int const minSegmentHLength = static_cast<int>(std::ceilf(static_cast<float>(source.Size.width) / static_cast<float>(structureMeshSize.width)));
+	int const minSegmentVLength = static_cast<int>(std::ceilf(static_cast<float>(source.Size.height) / static_cast<float>(structureMeshSize.height)));
 
-	LogMessage("pixelsPerQuadH=", pixelsPerQuadH, " pixelsPerQuadW=", pixelsPerQuadW);
+	LogMessage("TextureAlignmentOptimizer: pixelsPerQuadH=", minSegmentHLength, " pixelsPerQuadW=", minSegmentVLength);
 
-	std::vector<Segment> leftSegments = CalculateSegments(leftX, source.Size.width, pixelsPerQuadW);
-	std::vector<Segment> rightSegments = CalculateSegments(rightX, -1, pixelsPerQuadW);
-	std::vector<Segment> bottomSegments = CalculateSegments(bottomY, source.Size.height, pixelsPerQuadH);
-	std::vector<Segment> topSegments = CalculateSegments(topY, -1, pixelsPerQuadH);
+	std::vector<Segment> leftSegments = CalculateSegments(leftX, source.Size.width, minSegmentVLength);
+	std::vector<Segment> rightSegments = CalculateSegments(rightX, -1, minSegmentVLength);
+	std::vector<Segment> bottomSegments = CalculateSegments(bottomY, source.Size.height, minSegmentHLength);
+	std::vector<Segment> topSegments = CalculateSegments(topY, -1, minSegmentHLength);
 
-	LogMessage("Left segments:");
-	for (auto const & s : leftSegments)
-	{
-		LogMessage("    @ ", s.StartIndex, " len: ", s.Length, "   ", s.Value);
-	}
+	//LogMessage("Left segments:");
+	//for (auto const & s : leftSegments)
+	//{
+	//	LogMessage("    @ ", s.StartIndex, " len: ", s.Length, "   ", s.Value);
+	//}
 
-	LogMessage("Right segments:");
-	for (auto const & s : rightSegments)
-	{
-		LogMessage("    @ ", s.StartIndex, " len: ", s.Length, "   ", s.Value);
-	}
+	//LogMessage("Right segments:");
+	//for (auto const & s : rightSegments)
+	//{
+	//	LogMessage("    @ ", s.StartIndex, " len: ", s.Length, "   ", s.Value);
+	//}
 
-	LogMessage("Bottom segments:");
-	for (auto const & s : bottomSegments)
-	{
-		LogMessage("    @ ", s.StartIndex, " len: ", s.Length, "   ", s.Value);
-	}
+	//LogMessage("Bottom segments:");
+	//for (auto const & s : bottomSegments)
+	//{
+	//	LogMessage("    @ ", s.StartIndex, " len: ", s.Length, "   ", s.Value);
+	//}
 
-	LogMessage("Top segments:");
-	for (auto const & s : topSegments)
-	{
-		LogMessage("    @ ", s.StartIndex, " len: ", s.Length, "   ", s.Value);
-	}
+	//LogMessage("Top segments:");
+	//for (auto const & s : topSegments)
+	//{
+	//	LogMessage("    @ ", s.StartIndex, " len: ", s.Length, "   ", s.Value);
+	//}
 
 	//
 	// Optimize
@@ -101,7 +99,7 @@ RgbaImageData TextureAlignmentOptimizer_TODO2::OptimizeAlignment(
 		structureMeshSize.width,
 		source.Size.width);
 
-	LogMessage("bestHOffsets: ", std::get<0>(bestHOffsets), ", ", std::get<1>(bestHOffsets));
+	LogMessage("TextureAlignmentOptimizer: bestHOffsets: ", std::get<0>(bestHOffsets), ", ", std::get<1>(bestHOffsets));
 
 	// Vertical
 	std::pair<int, int> const bestVOffsets = CalculateOptimalOffsets(
@@ -112,7 +110,7 @@ RgbaImageData TextureAlignmentOptimizer_TODO2::OptimizeAlignment(
 		structureMeshSize.height,
 		source.Size.height);
 
-	LogMessage("bestVOffsets: ", std::get<0>(bestVOffsets), ", ", std::get<1>(bestVOffsets));
+	LogMessage("TextureAlignmentOptimizer: bestVOffsets: ", std::get<0>(bestVOffsets), ", ", std::get<1>(bestVOffsets));
 
 	//
 	// Create new texture
@@ -144,22 +142,6 @@ RgbaImageData TextureAlignmentOptimizer_TODO2::OptimizeAlignment(
 				source.Size.width - sourceOrigin.x,
 				source.Size.height - sourceOrigin.y)),
 		targetOrigin);
-
-
-	// TODOTEST
-	LogMessage("---------------------");
-	std::vector<int> newLeftX(newImage.Size.height, newImage.Size.width);
-	std::vector<int> newRightX(newImage.Size.height, -1);
-	std::vector<int> newTopY(newImage.Size.width, -1);
-	std::vector<int> newBottomY(newImage.Size.width, newImage.Size.height);
-	CalculateEdges(newImage, newLeftX, newRightX, newTopY, newBottomY);
-	for (int y = 0; y < newImage.Size.height; ++y)
-	{
-		if (newRightX[y] != -1)
-		{
-			LogMessage(y, ": ", newRightX[y]);
-		}
-	}
 
 	return newImage;
 }
@@ -330,16 +312,17 @@ std::pair<int, int> TextureAlignmentOptimizer_TODO2::CalculateOptimalOffsets(
 	// Calculate overestimation of texture pixels per ship quad
 	int const pixelsPerQuad = static_cast<int>(std::ceilf(static_cast<float>(textureSize) / static_cast<float>(structureMeshSize)));
 
-	// Calculate search radius
-	int const searchRadius = pixelsPerQuad * 2;
+	// Calculate search radii - magic numbers to constrain stretching
+	int const searchRadiusShift = pixelsPerQuad * 8;
+	int const searchRadiusStretch = pixelsPerQuad * 2;
 
-	// Loop for offsets between -ppq (but constrained to not remove any pixels) and ppq finding minimum;
+	// Loop for offsets between -searchRadius (but constrained to not remove any pixels) and searchRadius, finding minimum;
 	// reason for limits is to maintain similar size as much as possible
 	std::pair<int, int> bestOffsets{ 0, 0 };
 	float minWaste = std::numeric_limits<float>::max();
-	for (int leftOffset = -std::min(searchRadius, minLeftX); leftOffset <= searchRadius; ++leftOffset)
+	for (int leftOffset = -std::min(searchRadiusShift, minLeftX); leftOffset <= searchRadiusShift; ++leftOffset)
 	{
-		for (int rightOffset = -std::min(searchRadius, textureSize - maxRightX - 1); rightOffset <= searchRadius; ++rightOffset)
+		for (int rightOffset = -std::min(searchRadiusStretch, textureSize - maxRightX - 1); rightOffset <= searchRadiusStretch; ++rightOffset)
 		{
 			// Calculate new texture size
 			int const newTextureSize = textureSize + leftOffset + rightOffset;
@@ -349,13 +332,13 @@ std::pair<int, int> TextureAlignmentOptimizer_TODO2::CalculateOptimalOffsets(
 				auto const rightWaste = CalculateWasteOnRightEdge(rightXSegments, leftOffset, structureMeshSize, newTextureSize);
 
 				if (leftOffset == 0 && rightOffset == 0)
-					LogMessage("@L=", leftOffset, " R=", rightOffset, ": Waste: ", leftWaste, " ", rightWaste);
+					LogMessage("TextureAlignmentOptimizer: @L=", leftOffset, " R=", rightOffset, ": Waste: ", leftWaste, " ", rightWaste);
 
 				float const newWaste = leftWaste + rightWaste;
 				if (newWaste < minWaste
 					|| (newWaste == minWaste && std::abs(leftOffset) <= std::abs(std::get<0>(bestOffsets)) && std::abs(rightOffset) <= std::abs(std::get<1>(bestOffsets))))
 				{
-					LogMessage("@L=", leftOffset, " R=", rightOffset, ": Waste: ", leftWaste, " ", rightWaste);
+					LogMessage("TextureAlignmentOptimizer: @L=", leftOffset, " R=", rightOffset, ": Waste: ", leftWaste, " ", rightWaste);
 
 					bestOffsets = { leftOffset, rightOffset };
 					minWaste = newWaste;
@@ -412,7 +395,7 @@ float TextureAlignmentOptimizer_TODO2::CalculateWasteOnLeftEdge(
 	}
 
 	// Now calculate t at the center of this ship quad - guaranteed to be to the left of or at tx(o)
-	float const tCenter = (static_cast<float>(sx) + 0.5f) * shipToTexture;
+	float const tCenter = std::roundf((static_cast<float>(sx) + 0.5f) * shipToTexture);
 	assert(static_cast<float>(txo) >= tCenter);
 
 	// Calculate waste
@@ -464,7 +447,7 @@ float TextureAlignmentOptimizer_TODO2::CalculateWasteOnRightEdge(
 	}
 
 	// Now calculate t at the center of this ship quad - guaranteed to be to the left of or at tx(o)
-	float const tCenter = (static_cast<float>(sx) + 0.5f) * shipToTexture;
+	float const tCenter = std::roundf((static_cast<float>(sx) + 0.5f) * shipToTexture);
 	assert(static_cast<float>(txo) <= tCenter);
 
 	// Calculate waste: we consider pixel at tx(o) ending (to the right) at tx(o)+1,
