@@ -33,6 +33,8 @@ set (SHIPBUILDER_LIB_SOURCES
 	TextureAlignmentOptimizer.h
 	TextureAlignmentOptimizer_TODO.cpp
 	TextureAlignmentOptimizer_TODO.h
+	TextureAlignmentOptimizer_TODO2.cpp
+	TextureAlignmentOptimizer_TODO2.h
 	UndoStack.cpp
 	UndoStack.h
 	View.cpp

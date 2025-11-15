@@ -108,22 +108,22 @@ RgbaImageData TextureAlignmentOptimizer::OptimizeAlignment(
 				source.Size.height - sourceOrigin.y)),
 		targetOrigin);
 
-	//auto const leftWaste = CalculateWasteOnLeftEdge(leftX, bestHOffsets.first, structureMeshSize.width, newTextureSize.width);
-	//auto const rightWaste = CalculateWasteOnRightEdge(rightX, bestHOffsets.first, structureMeshSize.width, newTextureSize.width);
-	//float const wasteH = leftWaste + rightWaste;
-	//auto const bottomWaste = CalculateWasteOnLeftEdge(bottomY, bestVOffsets.first, structureMeshSize.height, newTextureSize.height);
-	//auto const topWaste = CalculateWasteOnRightEdge(topY, bestVOffsets.first, structureMeshSize.height, newTextureSize.height);
-	//float const wasteV = bottomWaste + topWaste;
-	//LogMessage("Best offsets: H: ", bestHOffsets.first, ",", bestHOffsets.second, "  V: ", bestVOffsets.first, ",", bestVOffsets.second, "  WasteH: ", wasteH,
-	//			" (", leftWaste, " + ", rightWaste, ") WasteV: ", wasteV, " (", bottomWaste, " + ", topWaste, ")");
+	auto const leftWaste = CalculateWasteOnLeftEdge(leftX, bestHOffsets.first, structureMeshSize.width, newTextureSize.width);
+	auto const rightWaste = CalculateWasteOnRightEdge(rightX, bestHOffsets.first, structureMeshSize.width, newTextureSize.width);
+	float const wasteH = leftWaste + rightWaste;
+	auto const bottomWaste = CalculateWasteOnLeftEdge(bottomY, bestVOffsets.first, structureMeshSize.height, newTextureSize.height);
+	auto const topWaste = CalculateWasteOnRightEdge(topY, bestVOffsets.first, structureMeshSize.height, newTextureSize.height);
+	float const wasteV = bottomWaste + topWaste;
+	LogMessage("Best offsets: H: ", bestHOffsets.first, ",", bestHOffsets.second, "  V: ", bestVOffsets.first, ",", bestVOffsets.second, "  WasteH: ", wasteH,
+				" (", leftWaste, " + ", rightWaste, ") WasteV: ", wasteV, " (", bottomWaste, " + ", topWaste, ")");
 
-	//auto const leftWaste0 = CalculateWasteOnLeftEdge(leftX, 0, structureMeshSize.width, source.Size.width);
-	//auto const rightWaste0 = CalculateWasteOnRightEdge(rightX, 0, structureMeshSize.width, source.Size.width);
-	//float const wasteH0 = leftWaste0 + rightWaste0;
-	//auto const bottomWaste0 = CalculateWasteOnLeftEdge(bottomY, 0, structureMeshSize.height, source.Size.height);
-	//auto const topWaste0 = CalculateWasteOnRightEdge(topY, 0, structureMeshSize.height, source.Size.height);
-	//float const wasteV0 = bottomWaste0 + topWaste0;
-	//LogMessage("  WasteH0: ", wasteH0, " (", leftWaste0, " + ", rightWaste0, ") WasteV0: ", wasteV0, " (", bottomWaste0, " + ", topWaste0, ")");
+	auto const leftWaste0 = CalculateWasteOnLeftEdge(leftX, 0, structureMeshSize.width, source.Size.width);
+	auto const rightWaste0 = CalculateWasteOnRightEdge(rightX, 0, structureMeshSize.width, source.Size.width);
+	float const wasteH0 = leftWaste0 + rightWaste0;
+	auto const bottomWaste0 = CalculateWasteOnLeftEdge(bottomY, 0, structureMeshSize.height, source.Size.height);
+	auto const topWaste0 = CalculateWasteOnRightEdge(topY, 0, structureMeshSize.height, source.Size.height);
+	float const wasteV0 = bottomWaste0 + topWaste0;
+	LogMessage("  WasteH0: ", wasteH0, " (", leftWaste0, " + ", rightWaste0, ") WasteV0: ", wasteV0, " (", bottomWaste0, " + ", topWaste0, ")");
 
 	//{
 	//	std::vector<int> _leftX;
