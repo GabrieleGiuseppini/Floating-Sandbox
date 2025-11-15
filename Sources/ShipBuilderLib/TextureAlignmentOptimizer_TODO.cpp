@@ -188,36 +188,79 @@ RgbaImageData TextureAlignmentOptimizer_TODO::OptimizeAlignment(
 				float const tx = static_cast<float>(bottomSegments[iCurrentSegment].Value);
 				assert(bottomY[x] == bottomSegments[iCurrentSegment].Value);
 
-				// s that covers pixel
-				int const sx = static_cast<int>(std::floorf(tx / pixelsPerQuadH - 0.5f));
-				assert(sx >= -1);
+				// Ship particle whose quad this pixel belongs to
+				// (and whose tessellation does NOT necessarily cover it)
+				int const sx = static_cast<int>(std::floorf(tx / pixelsPerQuadH));
 
-				// Now calculate t at the center of this ship quad - guaranteed to be to the left of or at tx
+				// Calculate t at the center of the ship quad
 				float const tCenter = (static_cast<float>(sx) + 0.5f) * pixelsPerQuadH;
-				assert(tx >= tCenter);
 
-				// Don't tolerate waste larger than half quad
 				int newBottomY = bottomY[x];
-				LogMessage("waste=", tx - tCenter, " threshold=", pixelsPerQuadH / 2.0f);
-				if ((tx - tCenter) > pixelsPerQuadH / 2.0f)
+				if (tx < tCenter)
 				{
-					// Positionate at threshold - i.e. at beginning of sx+1
-					newBottomY = static_cast<int>(std::ceilf(static_cast<float>(sx + 1) * pixelsPerQuadH));
-
-					LogMessage("Larger than threshold: tx=", tx, " sx=", sx, "   ", bottomY[x], " -> ", newBottomY);
-
-					LogMessage("  new waste=", static_cast<float>(newBottomY) - tCenter);
+					// To cover this pixel, we'll need a ship particle to the left (i.e. sx - 1)
+					// TODOHERE
+					newBottomY = static_cast<int>(std::ceilf((static_cast<float>(sx - 1) + 0.5f) * pixelsPerQuadH));
 				}
-				else
+				else if (tx > tCenter)
 				{
-					LogMessage("Smaller than threshold: tx=", tx, " sx=", sx);
+					// This pixel is covered by sx
+					// TODOHERE
+					newBottomY = static_cast<int>(std::ceilf(tCenter));
 				}
+
+				LogMessage("tx=", tx, " sx=", sx, " tCenter=", tCenter, " newBottomY=", newBottomY);
 
 				for (int i = 0; i < bottomSegments[iCurrentSegment].Length; ++i)
 				{
-					int newTopY = topY[x + i];
-					BlitColumn(source, newImage, x + i, bottomY[x], topY[x], newBottomY, newTopY);
+					BlitColumn(source, newImage, x + i, bottomY[x], topY[x + i], newBottomY, topY[x + i]);
 				}
+
+
+				// TODOOLD
+
+				//// s that covers pixel
+				//int const sx = static_cast<int>(std::floorf(tx / pixelsPerQuadH - 0.5f));
+				//assert(sx >= -1);
+
+				//// Now calculate t at the center of this ship quad - guaranteed to be to the left of or at tx
+				//float const tCenter = (static_cast<float>(sx) + 0.5f) * pixelsPerQuadH;
+				//assert(tx >= tCenter);
+
+				//// Calculate waste
+				//float const waste = tx - tCenter;
+
+				//// Don't tolerate waste larger than half quad
+				//int newBottomY = bottomY[x];
+				//LogMessage("waste=", waste, " threshold=", pixelsPerQuadH / 2.0f);
+				//if (waste > pixelsPerQuadH / 2.0f)
+				//{
+				//	// Positionate at center of sx+1
+				//	//newBottomY = static_cast<int>(std::ceilf((static_cast<float>(sx + 1) + 0.5f) * pixelsPerQuadH));
+				//	newBottomY = static_cast<int>(std::ceilf(tCenter + pixelsPerQuadH));
+
+				//	LogMessage("Larger than threshold: tx=", tx, " sx=", sx, "   ", bottomY[x], " -> ", newBottomY);
+				//}
+				//else
+				//{
+				//	// Positionate at threshold - i.e. at beginning of sx+1
+				//	//newBottomY = static_cast<int>(std::ceilf(static_cast<float>(sx + 1) * pixelsPerQuadH));
+
+				//	// Positionate at previous tCenter
+				//	//newBottomY = static_cast<int>(std::ceilf((static_cast<float>(sx) + 0.5f) * pixelsPerQuadH));
+				//	newBottomY = static_cast<int>(std::ceilf(tCenter));
+
+				//	LogMessage("Larger than threshold: tx=", tx, " sx=", sx, "   ", bottomY[x], " -> ", newBottomY);
+				//}
+				////else
+				////{
+				////	LogMessage("Smaller than threshold: tx=", tx, " sx=", sx);
+				////}
+
+				//for (int i = 0; i < bottomSegments[iCurrentSegment].Length; ++i)
+				//{
+				//	BlitColumn(source, newImage, x + i, bottomY[x], topY[x + i], newBottomY, topY[x + i]);
+				//}
 
 				x += bottomSegments[iCurrentSegment].Length;
 

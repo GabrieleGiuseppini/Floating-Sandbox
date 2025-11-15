@@ -5497,6 +5497,7 @@ void MainFrame::ImportExteriorTextureLayerFromImage()
             //    ? TextureAlignmentOptimizer::OptimizeAlignment(image, shipSize)
             //    : image.Clone();
             RgbaImageData newImage = TextureAlignmentOptimizer_TODO::OptimizeAlignment(image, shipSize);
+            //RgbaImageData newImage = image.Clone();
 
             // Set texture
             mController->SetExteriorTextureLayer(
