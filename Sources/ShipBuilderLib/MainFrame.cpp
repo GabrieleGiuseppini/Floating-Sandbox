@@ -5,10 +5,7 @@
  ***************************************************************************************/
 #include "MainFrame.h"
 
-// TODOTEST
 #include "TextureAlignmentOptimizer.h"
-#include "TextureAlignmentOptimizer_TODO.h"
-#include "TextureAlignmentOptimizer_TODO2.h"
 
 #include "UI/AskPasswordDialog.h"
 #include "UI/NewShipNameDialog.h"
@@ -5493,15 +5490,9 @@ void MainFrame::ImportExteriorTextureLayerFromImage()
             // Optimize alignment, if enabled
             //
 
-            // TODOTEST
-            //RgbaImageData newImage = mWorkbenchState.GetDoTextureAlignmentOptimization()
-            //    ? TextureAlignmentOptimizer::OptimizeAlignment(image, shipSize)
-            //    : image.Clone();
-            //RgbaImageData newImage = TextureAlignmentOptimizer_TODO::OptimizeAlignment(image, shipSize);
             RgbaImageData newImage = mWorkbenchState.GetDoTextureAlignmentOptimization()
-                ? TextureAlignmentOptimizer_TODO2::OptimizeAlignment(image, shipSize)
+                ? TextureAlignmentOptimizer::OptimizeAlignment(image, shipSize)
                 : image.Clone();
-            //RgbaImageData newImage = image.Clone();
 
             // Set texture
             mController->SetExteriorTextureLayer(

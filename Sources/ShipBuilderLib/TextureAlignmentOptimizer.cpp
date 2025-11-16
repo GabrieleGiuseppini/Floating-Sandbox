@@ -1,6 +1,6 @@
 /***************************************************************************************
  * Original Author:     Gabriele Giuseppini
- * Created:             2025-10-13
+ * Created:             2025-11-15
  * Copyright:           Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
  ***************************************************************************************/
 #include "TextureAlignmentOptimizer.h"
@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <cassert>
 #include <limits>
+#include <optional>
 
 namespace ShipBuilder {
 
@@ -25,26 +26,56 @@ RgbaImageData TextureAlignmentOptimizer::OptimizeAlignment(
 	//	* y=0 is at bottom, grows going up
 	//
 
-	std::vector<int> leftX;
-	leftX.reserve(source.Size.height);
-	std::vector<int> rightX;
-	rightX.reserve(source.Size.height);
-	std::vector<int> topY;
-	topY.reserve(source.Size.width);
-	std::vector<int> bottomY;
-	bottomY.reserve(source.Size.width);
+	std::vector<int> leftX(source.Size.height, source.Size.width);
+	std::vector<int> rightX(source.Size.height, -1);
+	std::vector<int> topY(source.Size.width, -1);
+	std::vector<int> bottomY(source.Size.width, source.Size.height);
 
 	CalculateEdges(source, leftX, rightX, topY, bottomY);
-
-	assert(!leftX.empty());
-	assert(!rightX.empty());
-	assert(!topY.empty());
-	assert(!bottomY.empty());
 
 	int const minX = *std::min_element(leftX.cbegin(), leftX.cend());
 	int const maxX = *std::max_element(rightX.cbegin(), rightX.cend());
 	int const minY = *std::min_element(bottomY.cbegin(), bottomY.cend());
 	int const maxY = *std::max_element(topY.cbegin(), topY.cend());
+
+	//
+	// Calculate segments
+	//
+
+	// Calculate overestimation of texture pixels per ship quad, to use for min segment lengths
+	int const minSegmentHLength = static_cast<int>(std::ceilf(static_cast<float>(source.Size.width) / static_cast<float>(structureMeshSize.width)));
+	int const minSegmentVLength = static_cast<int>(std::ceilf(static_cast<float>(source.Size.height) / static_cast<float>(structureMeshSize.height)));
+
+	LogMessage("TextureAlignmentOptimizer: pixelsPerQuadH=", minSegmentHLength, " pixelsPerQuadW=", minSegmentVLength);
+
+	std::vector<Segment> leftSegments = CalculateSegments(leftX, source.Size.width, minSegmentVLength);
+	std::vector<Segment> rightSegments = CalculateSegments(rightX, -1, minSegmentVLength);
+	std::vector<Segment> bottomSegments = CalculateSegments(bottomY, source.Size.height, minSegmentHLength);
+	std::vector<Segment> topSegments = CalculateSegments(topY, -1, minSegmentHLength);
+
+	//LogMessage("Left segments:");
+	//for (auto const & s : leftSegments)
+	//{
+	//	LogMessage("    @ ", s.StartIndex, " len: ", s.Length, "   ", s.Value);
+	//}
+
+	//LogMessage("Right segments:");
+	//for (auto const & s : rightSegments)
+	//{
+	//	LogMessage("    @ ", s.StartIndex, " len: ", s.Length, "   ", s.Value);
+	//}
+
+	//LogMessage("Bottom segments:");
+	//for (auto const & s : bottomSegments)
+	//{
+	//	LogMessage("    @ ", s.StartIndex, " len: ", s.Length, "   ", s.Value);
+	//}
+
+	//LogMessage("Top segments:");
+	//for (auto const & s : topSegments)
+	//{
+	//	LogMessage("    @ ", s.StartIndex, " len: ", s.Length, "   ", s.Value);
+	//}
 
 	//
 	// Optimize
@@ -61,21 +92,25 @@ RgbaImageData TextureAlignmentOptimizer::OptimizeAlignment(
 
 	// Horizontal
 	std::pair<int, int> const bestHOffsets = CalculateOptimalOffsets(
-		leftX,
-		rightX,
+		leftSegments,
+		rightSegments,
 		minX,
 		maxX,
 		structureMeshSize.width,
 		source.Size.width);
 
+	LogMessage("TextureAlignmentOptimizer: bestHOffsets: ", std::get<0>(bestHOffsets), ", ", std::get<1>(bestHOffsets));
+
 	// Vertical
 	std::pair<int, int> const bestVOffsets = CalculateOptimalOffsets(
-		bottomY,
-		topY,
+		bottomSegments,
+		topSegments,
 		minY,
 		maxY,
 		structureMeshSize.height,
 		source.Size.height);
+
+	LogMessage("TextureAlignmentOptimizer: bestVOffsets: ", std::get<0>(bestVOffsets), ", ", std::get<1>(bestVOffsets));
 
 	//
 	// Create new texture
@@ -108,44 +143,6 @@ RgbaImageData TextureAlignmentOptimizer::OptimizeAlignment(
 				source.Size.height - sourceOrigin.y)),
 		targetOrigin);
 
-	auto const leftWaste = CalculateWasteOnLeftEdge(leftX, bestHOffsets.first, structureMeshSize.width, newTextureSize.width);
-	auto const rightWaste = CalculateWasteOnRightEdge(rightX, bestHOffsets.first, structureMeshSize.width, newTextureSize.width);
-	float const wasteH = leftWaste + rightWaste;
-	auto const bottomWaste = CalculateWasteOnLeftEdge(bottomY, bestVOffsets.first, structureMeshSize.height, newTextureSize.height);
-	auto const topWaste = CalculateWasteOnRightEdge(topY, bestVOffsets.first, structureMeshSize.height, newTextureSize.height);
-	float const wasteV = bottomWaste + topWaste;
-	LogMessage("Best offsets: H: ", bestHOffsets.first, ",", bestHOffsets.second, "  V: ", bestVOffsets.first, ",", bestVOffsets.second, "  WasteH: ", wasteH,
-				" (", leftWaste, " + ", rightWaste, ") WasteV: ", wasteV, " (", bottomWaste, " + ", topWaste, ")");
-
-	auto const leftWaste0 = CalculateWasteOnLeftEdge(leftX, 0, structureMeshSize.width, source.Size.width);
-	auto const rightWaste0 = CalculateWasteOnRightEdge(rightX, 0, structureMeshSize.width, source.Size.width);
-	float const wasteH0 = leftWaste0 + rightWaste0;
-	auto const bottomWaste0 = CalculateWasteOnLeftEdge(bottomY, 0, structureMeshSize.height, source.Size.height);
-	auto const topWaste0 = CalculateWasteOnRightEdge(topY, 0, structureMeshSize.height, source.Size.height);
-	float const wasteV0 = bottomWaste0 + topWaste0;
-	LogMessage("  WasteH0: ", wasteH0, " (", leftWaste0, " + ", rightWaste0, ") WasteV0: ", wasteV0, " (", bottomWaste0, " + ", topWaste0, ")");
-
-	//{
-	//	std::vector<int> _leftX;
-	//	_leftX.reserve(newImage.Size.height);
-	//	std::vector<int> _rightX;
-	//	_rightX.reserve(newImage.Size.height);
-	//	std::vector<int> _topY;
-	//	_topY.reserve(newImage.Size.width);
-	//	std::vector<int> _bottomY;
-	//	_bottomY.reserve(newImage.Size.width);
-
-	//	CalculateEdges(newImage, _leftX, _rightX, _topY, _bottomY);
-
-	//	auto const leftWasteZ = CalculateWasteOnLeftEdge(_leftX, 0, structureMeshSize.width, newImage.Size.width);
-	//	auto const rightWasteZ = CalculateWasteOnRightEdge(_rightX, 0, structureMeshSize.width, newImage.Size.width);
-	//	float const wasteHZ = leftWasteZ + rightWasteZ;
-	//	auto const bottomWasteZ = CalculateWasteOnLeftEdge(_bottomY, 0, structureMeshSize.height, newImage.Size.height);
-	//	auto const topWasteZ = CalculateWasteOnRightEdge(_topY, 0, structureMeshSize.height, newImage.Size.height);
-	//	float const wasteVZ = bottomWasteZ + topWasteZ;
-	//	LogMessage("  WasteHZ: ", wasteHZ, " (", leftWasteZ, " + ", rightWasteZ, ") WasteVZ: ", wasteVZ, " (", bottomWasteZ, " + ", topWasteZ, ")");
-	//}
-
 	return newImage;
 }
 
@@ -174,7 +171,7 @@ void TextureAlignmentOptimizer::CalculateEdges(
 
 		if (x < source.Size.width)
 		{
-			leftX.push_back(x);
+			leftX[y] = x;
 		}
 
 		x = source.Size.width - 1;
@@ -189,7 +186,7 @@ void TextureAlignmentOptimizer::CalculateEdges(
 
 		if (x >= 0)
 		{
-			rightX.push_back(x);
+			rightX[y] = x;
 		}
 	}
 
@@ -209,7 +206,7 @@ void TextureAlignmentOptimizer::CalculateEdges(
 
 		if (y >= 0)
 		{
-			topY.push_back(y);
+			topY[x] = y;
 		}
 
 		y = 0;
@@ -224,99 +221,80 @@ void TextureAlignmentOptimizer::CalculateEdges(
 
 		if (y < source.Size.height)
 		{
-			bottomY.push_back(y);
+			bottomY[x] = y;
 		}
 	}
 }
 
-float TextureAlignmentOptimizer::CalculateWasteOnLeftEdge(
-	std::vector<int> const & leftX,
-	int offset,
-	int structureMeshSize,
-	int textureSize)
+std::vector<TextureAlignmentOptimizer::Segment> TextureAlignmentOptimizer::CalculateSegments(
+	std::vector<int> const & xValues,
+	int emptyXValue,
+	int minSegmentLength)
 {
-	//
-	// Calculate number of pixels wasted by a structure that completely covers edge
-	//
-	// The pixel at coordinate t is covered by the line between ship coordinate s(t) and s(t+1).
-	// The formula for s(t) is the "texturization" one, i.e. s = (t - o/2) / o, where o is the number of texture
-	// pixels in one ship quad.
-	//
-
-	float const shipToTexture = static_cast<float>(textureSize) / static_cast<float>(structureMeshSize);
-
-	float totalWaste = 0.0f;
-	for (int tx : leftX)
+	struct SegmentSession
 	{
-		int const txo = tx + offset;
+		int StartIndex;
+		int Value;
+	};
 
-		// s that covers this pixel
-		int const sx = static_cast<int>(std::floorf(static_cast<float>(txo) / shipToTexture - 0.5f));
-		assert(sx >= -1);
-		if (sx < 0)
+	std::optional<SegmentSession> currentSegment;
+
+	std::vector<Segment> segments;
+	for (int x = 0; x <= xValues.size(); ++x)
+	{
+		bool interruptsCurrentSegment = false;
+		if (x == xValues.size() || xValues[x] == emptyXValue)
 		{
-			// leftX is to the left of the first possible tCenter, and thus the texture is clipped.
-			// We penalize this situation as the worst
-			return std::numeric_limits<float>::max() / 10.0f;
+			// Interrupt segment if we have one
+			interruptsCurrentSegment = currentSegment.has_value();
+		}
+		else
+		{
+			int const newValue = xValues[x];
+			if (!currentSegment.has_value())
+			{
+				// Start segment
+				currentSegment.emplace(SegmentSession{ x, newValue });
+			}
+			else if (newValue != currentSegment->Value)
+			{
+				interruptsCurrentSegment = true;
+			}
 		}
 
-		// Now calculate t at the center of this ship quad - guaranteed to be to the left of or at tx(o)
-		float const tCenter = (static_cast<float>(sx) + 0.5f) * shipToTexture;
-		assert(static_cast<float>(txo) >= tCenter);
-
-		// Calculate waste: we consider pixel at tx(o) ending (to the left) at tx(o)
-		totalWaste += (txo - tCenter);
-	}
-
-	return totalWaste;
-}
-
-float TextureAlignmentOptimizer::CalculateWasteOnRightEdge(
-	std::vector<int> const & rightX,
-	int offset,
-	int structureMeshSize,
-	int textureSize)
-{
-	//
-	// Calculate number of pixels wasted by a structure that completely covers edge
-	//
-	// The pixel at coordinate t is covered by the line between ship coordinate s(t) and s(t+1).
-	// The formula for s(t) is the "texturization" one, i.e. s = (t - o/2) / o, where o is the number of texture
-	// pixels in one ship quad.
-	//
-
-	float const shipToTexture = static_cast<float>(textureSize) / static_cast<float>(structureMeshSize);
-
-	float totalWaste = 0.0f;
-	for (int tx : rightX)
-	{
-		int const txo = tx + offset;
-
-		// s that covers this pixel
-		int const sx = static_cast<int>(std::floorf(static_cast<float>(txo) / shipToTexture - 0.5f)) + 1;
-		assert(sx <= structureMeshSize);
-		if (sx == structureMeshSize)
+		if (interruptsCurrentSegment)
 		{
-			// rightX is to the right of tCenter now, and thus the texture is clipped.
-			// We penalize this situation as the worst
-			return std::numeric_limits<float>::max() / 10.0f;
+			assert(currentSegment.has_value());
+
+			int const segmentLength = x - currentSegment->StartIndex;
+			assert(segmentLength > 0);
+			if (segmentLength >= minSegmentLength)
+			{
+				segments.emplace_back(Segment{
+					currentSegment->StartIndex,
+					segmentLength,
+					currentSegment->Value
+					});
+			}
+
+			// Start new segment
+			if (x == xValues.size() || xValues[x] == emptyXValue)
+			{
+				currentSegment.reset();
+			}
+			else
+			{
+				currentSegment.emplace(SegmentSession{ x, xValues[x] });
+			}
 		}
-
-		// Now calculate t at the center of this ship quad - guaranteed to be to the right of or at tx(o)
-		float const tCenter = (static_cast<float>(sx) + 0.5f) * shipToTexture;
-		assert(static_cast<float>(txo) <= tCenter);
-
-		// Calculate waste: we consider pixel at tx(o) ending (to the right) at tx(o)+1,
-		// i.e. we consider the pixel's width
-		totalWaste += std::fabs(tCenter - (txo + 1));
 	}
 
-	return totalWaste;
+	return segments;
 }
 
 std::pair<int, int> TextureAlignmentOptimizer::CalculateOptimalOffsets(
-	std::vector<int> const & leftX,
-	std::vector<int> const & rightX,
+	std::vector<Segment> const & leftXSegments,
+	std::vector<Segment> const & rightXSegments,
 	int minLeftX,
 	int maxRightX,
 	int structureMeshSize,
@@ -334,24 +312,34 @@ std::pair<int, int> TextureAlignmentOptimizer::CalculateOptimalOffsets(
 	// Calculate overestimation of texture pixels per ship quad
 	int const pixelsPerQuad = static_cast<int>(std::ceilf(static_cast<float>(textureSize) / static_cast<float>(structureMeshSize)));
 
-	// Loop for offsets between -ppq (but constrained to not remove any pixels) and ppq finding minimum;
+	// Calculate search radii - magic numbers to constrain stretching
+	int const searchRadiusShift = pixelsPerQuad * 8;
+	int const searchRadiusStretch = pixelsPerQuad * 2;
+
+	// Loop for offsets between -searchRadius (but constrained to not remove any pixels) and searchRadius, finding minimum;
 	// reason for limits is to maintain similar size as much as possible
 	std::pair<int, int> bestOffsets{ 0, 0 };
 	float minWaste = std::numeric_limits<float>::max();
-	for (int leftOffset = -std::min(pixelsPerQuad, minLeftX); leftOffset <= pixelsPerQuad; ++leftOffset)
+	for (int leftOffset = -std::min(searchRadiusShift, minLeftX); leftOffset <= searchRadiusShift; ++leftOffset)
 	{
-		for (int rightOffset = -std::min(pixelsPerQuad, textureSize - maxRightX - 1); rightOffset <= pixelsPerQuad; ++rightOffset)
+		for (int rightOffset = -std::min(searchRadiusStretch, textureSize - maxRightX - 1); rightOffset <= searchRadiusStretch; ++rightOffset)
 		{
 			// Calculate new texture size
 			int const newTextureSize = textureSize + leftOffset + rightOffset;
 			if (newTextureSize <= WorkbenchState::GetMaxTextureDimension())
 			{
-				auto const leftWaste = CalculateWasteOnLeftEdge(leftX, leftOffset, structureMeshSize, newTextureSize);
-				auto const rightWaste = CalculateWasteOnRightEdge(rightX, leftOffset, structureMeshSize, newTextureSize);
-				float const newWaste = leftWaste + rightWaste;
+				auto const leftWaste = CalculateWasteOnLeftEdge(leftXSegments, leftOffset, structureMeshSize, newTextureSize);
+				auto const rightWaste = CalculateWasteOnRightEdge(rightXSegments, leftOffset, structureMeshSize, newTextureSize);
 
-				if (newWaste < minWaste)
+				if (leftOffset == 0 && rightOffset == 0)
+					LogMessage("TextureAlignmentOptimizer: @L=", leftOffset, " R=", rightOffset, ": Waste: ", leftWaste, " ", rightWaste);
+
+				float const newWaste = leftWaste + rightWaste;
+				if (newWaste < minWaste
+					|| (newWaste == minWaste && std::abs(leftOffset) <= std::abs(std::get<0>(bestOffsets)) && std::abs(rightOffset) <= std::abs(std::get<1>(bestOffsets))))
 				{
+					LogMessage("TextureAlignmentOptimizer: @L=", leftOffset, " R=", rightOffset, ": Waste: ", leftWaste, " ", rightWaste);
+
 					bestOffsets = { leftOffset, rightOffset };
 					minWaste = newWaste;
 				}
@@ -360,6 +348,111 @@ std::pair<int, int> TextureAlignmentOptimizer::CalculateOptimalOffsets(
 	}
 
 	return bestOffsets;
+}
+
+float TextureAlignmentOptimizer::CalculateWasteOnLeftEdge(
+	std::vector<Segment> const & leftXSegments,
+	int offset,
+	int structureMeshSize,
+	int textureSize)
+{
+	float waste = 0.0f;
+	for (auto const & segment : leftXSegments)
+	{
+		waste += CalculateWasteOnLeftEdge(segment.Value, offset, structureMeshSize, textureSize) * static_cast<float>(segment.Length);
+	}
+
+	return waste;
+}
+
+float TextureAlignmentOptimizer::CalculateWasteOnLeftEdge(
+	int leftX,
+	int offset,
+	int structureMeshSize,
+	int textureSize)
+{
+	//
+	// Calculate number of pixels wasted by a structure that completely covers edge
+	//
+	// The pixel at coordinate t is covered by the line between ship coordinate s(t) and s(t+1).
+	// The formula for s(t) is the "texturization" one, i.e. s = (t - o/2) / o, where o is the number of texture
+	// pixels in one ship quad.
+	//
+
+	float const shipToTexture = static_cast<float>(textureSize) / static_cast<float>(structureMeshSize);
+
+	int const txo = leftX + offset;
+
+	// s that covers this pixel
+	int const sx = static_cast<int>(std::floorf(static_cast<float>(txo) / shipToTexture - 0.5f));
+	assert(sx >= -1);
+
+	if (sx < 0)
+	{
+		// leftX is to the left of the first possible tCenter, and thus the texture is clipped.
+		// We penalize this situation as the worst
+		return std::numeric_limits<float>::max() / 10.0f;
+	}
+
+	// Now calculate t at the center of this ship quad - guaranteed to be to the left of or at tx(o)
+	float const tCenter = std::roundf((static_cast<float>(sx) + 0.5f) * shipToTexture);
+	assert(static_cast<float>(txo) >= tCenter);
+
+	// Calculate waste
+	return txo - tCenter;
+}
+
+float TextureAlignmentOptimizer::CalculateWasteOnRightEdge(
+	std::vector<Segment> const & rightXSegments,
+	int offset,
+	int structureMeshSize,
+	int textureSize)
+{
+	float waste = 0.0f;
+	for (auto const & segment : rightXSegments)
+	{
+		waste += CalculateWasteOnRightEdge(segment.Value, offset, structureMeshSize, textureSize) * static_cast<float>(segment.Length);
+	}
+
+	return waste;
+}
+
+float TextureAlignmentOptimizer::CalculateWasteOnRightEdge(
+	int rightX,
+	int offset,
+	int structureMeshSize,
+	int textureSize)
+{
+	//
+	// Calculate number of pixels wasted by a structure that completely covers edge
+	//
+	// The pixel at coordinate t is covered by the line between ship coordinate s(t) and s(t+1).
+	// The formula for s(t) is the "texturization" one, i.e. s = (t - o/2) / o, where o is the number of texture
+	// pixels in one ship quad.
+	//
+
+	float const shipToTexture = static_cast<float>(textureSize) / static_cast<float>(structureMeshSize);
+
+	int const txo = rightX + offset;
+
+	// s that covers this pixel
+	int const sx = static_cast<int>(std::floorf(static_cast<float>(txo) / shipToTexture - 0.5f)) + 1;
+	assert(sx <= structureMeshSize);
+
+	if (sx == structureMeshSize)
+	{
+		// rightX is to the right of tCenter now, and thus the texture is clipped.
+		// We penalize this situation as the worst
+		return std::numeric_limits<float>::max() / 10.0f;
+	}
+
+	// Now calculate t at the center of this ship quad - guaranteed to be to the left of or at tx(o)
+	float const tCenter = std::roundf((static_cast<float>(sx) + 0.5f) * shipToTexture);
+	assert(static_cast<float>(txo) <= tCenter);
+
+	// Calculate waste: we consider pixel at tx(o) ending (to the right) at tx(o)+1,
+	// i.e. we consider the pixel's width
+	return std::fabs(tCenter - (txo + 1));
 }
 
 }
