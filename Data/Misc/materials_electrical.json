@@ -927,6 +927,26 @@
 	}
     },
     {
+        "color_key": "#31EA00",
+	"conducts_electricity": false,
+        "electrical_type": "Engine",
+	"engine_direction": 1.570796327,
+	"engine_power": 50.0,
+	"engine_responsiveness": 0.04,
+	"engine_type": "Outboard",
+        "heat_generated": 2000.0,
+	"is_instanced": true,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "50HP Outboard Engine U/D",
+        "palette_coordinates": {
+		"category": "Engines",
+		"sub_category": "Outboard Engines",
+		"sub_category_ordinal": 6
+	}
+    },
+    {
         "color_key": "#30EA00",
 	"conducts_electricity": false,
         "electrical_type": "Engine",
@@ -943,7 +963,7 @@
         "palette_coordinates": {
 		"category": "Engines",
 		"sub_category": "Outboard Engines",
-		"sub_category_ordinal": 6
+		"sub_category_ordinal": 7
 	}
     },
 

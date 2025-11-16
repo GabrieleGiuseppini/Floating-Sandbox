@@ -351,6 +351,12 @@ void ShipPropertiesEditDialog::PopulateMetadataPanel(wxPanel * panel)
                         choices.Add(_T("Physics"));
                         break;
                     }
+
+                    case ShipCategoryType::Transport:
+                    {
+                        choices.Add(_T("Transport"));
+                        break;
+                    }
                 }
             }
 

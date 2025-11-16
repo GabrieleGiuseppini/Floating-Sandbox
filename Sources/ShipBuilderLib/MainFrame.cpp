@@ -5468,22 +5468,19 @@ void MainFrame::ImportExteriorTextureLayerFromImage()
                     mResizeDialog = std::make_unique<ResizeDialog>(this, mGameAssetManager);
                 }
 
-                if (!mResizeDialog->ShowModalForTexture(image, targetSize))
+                if (mResizeDialog->ShowModalForTexture(image, targetSize))
                 {
-                    // User aborted
-                    return;
+                    //
+                    // Resize
+                    //
+
+                    auto const originOffset = mResizeDialog->GetOffset();
+
+                    image = image.MakeReframed(
+                        ImageSize(targetSize.width, targetSize.height),
+                        ImageCoordinates(originOffset.x, originOffset.y),
+                        rgbaColor::zero());
                 }
-
-                //
-                // Resize
-                //
-
-                auto const originOffset = mResizeDialog->GetOffset();
-
-                image = image.MakeReframed(
-                    ImageSize(targetSize.width, targetSize.height),
-                    ImageCoordinates(originOffset.x, originOffset.y),
-                    rgbaColor::zero());
             }
 
             //

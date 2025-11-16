@@ -1517,8 +1517,9 @@ enum class ShipCategoryType : std::uint32_t
     Historical = 0,
     Fictional = 1,
     Physics = 2,
+    Transport = 3,
 
-    _Last = Physics
+    _Last = Transport
 };
 
 /*
