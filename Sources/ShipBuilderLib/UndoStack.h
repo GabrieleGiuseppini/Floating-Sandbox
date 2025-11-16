@@ -127,7 +127,7 @@ private:
 private:
 
     static size_t constexpr MaxEntries = 20;
-    static size_t constexpr MaxCost = (1000 * 1000) * 20;
+    static size_t constexpr MaxCost = (1000 * 1000) * 80;
 
     std::deque<std::unique_ptr<UndoAction>> mStack;
     size_t mTotalCost;

@@ -112,13 +112,13 @@
 				+ MeasuringTape
 				+ Material under cursor (for drop tool)
 
-- Tools:
+= Tools:
 	! Most tools should pan when the (captured) mouse is outside of the canvas
 		- Via BaseTool::ScrollIntoViewIfNeeded, which simply forwards to IUserInterface::ScrollIntoViewIfNeeded(display logical)
 	+ Tool:
 		+ Stores all protected references passed from cctors: IUserInterface, ModelController, View
 		+ Same abstract methods from game - but all pure
-	- All tools:
+	= All tools:
 		+ Pencil (S, E)
 			+ Settings: Size
 		+ Eraser (S, E)
@@ -692,6 +692,10 @@
 	- Test User Ships folder
 
 - Misc:
+	- Layer import:
+		! Goal: export->import should be fully idempotent
+		- Make optimization explicit (remove from preferences)
+		- Make choice to maintain aspect ratio explicit (instead of having to Cancel to continue w/no resize)
 	- Fix: when there are validation issues during "Save", deciding to save without fixing goes on as "SaveAs"
 	- Once selected, selection could be moved right away, instead of having to copy'n'paste
 	- Localization:
