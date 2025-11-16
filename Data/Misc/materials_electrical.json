@@ -2380,6 +2380,20 @@
 	}
     },
     {
+        "color_key": "#FC2828",
+	"conducts_electricity": true,
+        "electrical_type": "OtherSink",
+        "heat_generated": 2500000.0,
+        "maximum_operating_temperature": 1783.15,
+        "minimum_operating_temperature": 173.15,
+        "name": "Heating Element 2.5MW",
+        "palette_coordinates": {
+		"category": "Other Elements",
+		"sub_category": "Heating Elements",
+		"sub_category_ordinal": 1
+	}
+    },
+    {
         "color_key": "#FC3030",
 	"conducts_electricity": true,
         "electrical_type": "OtherSink",
@@ -2390,7 +2404,7 @@
         "palette_coordinates": {
 		"category": "Other Elements",
 		"sub_category": "Heating Elements",
-		"sub_category_ordinal": 1
+		"sub_category_ordinal": 2
 	}
     },
 
