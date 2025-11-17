@@ -382,7 +382,6 @@
 		+ changelist
 		+ Merge into master, and delete branch
 		+ Port to Android (just files and electrical materials)
-
 	+ Ships:
 		+ Yestanic
 			+ -In _TO_TAKE
@@ -395,9 +394,17 @@
 			+ Add ship
 			+ Add credits
 			+ Update changelist	
-
 	+ Lightning tool, like in Android
 		+ Changelist
+	+ Explosive materials on break
+		+ Code
+		+ Material: Nitroglycerin X 2
+		+ Port to Android
+			+ Simulation code
+			+ Saturn V engines
+				+ Scratch->assets
+			+ Dutch Dark Dragon nozzle
+		+ changelist
 
 	= pt_BR localization:
 		+ HTML

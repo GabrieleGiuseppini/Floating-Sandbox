@@ -106,6 +106,7 @@ public:
     float ExplosiveCombustionHeatRadius; // m
 
     // Misc
+    bool ExplodesOnBreak;
     float WindReceptivity;
     float WaterReactivity; // When > 0, material explodes with this quantity of water threshold
     bool IsLegacyElectrical;
@@ -183,6 +184,7 @@ public:
         float explosiveCombustionHeat,
         float explosiveCombustionHeatRadius,
         // Misc
+        bool explodesOnBreak,
         float windReceptivity,
         float waterReactivity,
         bool isLegacyElectrical,
@@ -219,6 +221,7 @@ public:
         , ExplosiveCombustionForceRadius(explosiveCombustionForceRadius)
         , ExplosiveCombustionHeat(explosiveCombustionHeat)
         , ExplosiveCombustionHeatRadius(explosiveCombustionHeatRadius)
+        , ExplodesOnBreak(explodesOnBreak)
         , WindReceptivity(windReceptivity)
         , WaterReactivity(waterReactivity)
         , IsLegacyElectrical(isLegacyElectrical)
@@ -261,6 +264,7 @@ public:
         , ExplosiveCombustionForceRadius(1.0f)
         , ExplosiveCombustionHeat(0.0f)
         , ExplosiveCombustionHeatRadius(1.0f)
+        , ExplodesOnBreak(false)
         , WindReceptivity(1.0f)
         , WaterReactivity(0.0f)
         , IsLegacyElectrical(false)

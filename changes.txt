@@ -6,6 +6,7 @@ TODO: 1.19.2
 		- Can now construct circuits that evolve over time!
 	- Non-instanced sounds: like the "normal" sounds, but without a switch - playing automatically when powered
 		- For example, playing an alarm when the ship gets hot
+- Added Nitroglycerin material: explodes with shocks
 - Added underwater plants
 - Improved auto-focus on ship
 - Clouds' horizontal positions are now perspective-corrected
