@@ -446,10 +446,28 @@
 			+ Do with script
 		+ Add to 1 PC rocket
 
+		+ Fix Android's Saturn V
+			= Work on version on Desktop
+			+ Compare with Android's -- this one should just have nitro
+			+ Replace diesel with Android's (old) nitro (y=8)
+			+ Re-fix gameplay
+			+ Store file in both places
+
+
+		+ Verify PC's Saturn V
+
 		- Port to Android
 			- Simulation code
 			- structural material
 		- Test on phone
+			- Saturn V
+			- Dutch dragon
+				- For weaker nitro material - avtly fix in structure
+
+		- Test: also gunpowder exploding on break
+			- On Android; test with existing:
+				- June 21 - has gunpowder?
+				- Dutch Dark Dragon - has gunpowder?
 
 	= pt_BR localization:
 		+ HTML
