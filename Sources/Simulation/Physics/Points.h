@@ -1599,7 +1599,10 @@ public:
         return mTotalFactoryWetPoints;
     }
 
-    void Damage(ElementIndex pointElementIndex)
+    void Damage(
+        ElementIndex pointElementIndex,
+        float currentSimulationTime,
+        SimulationParameters const & simulationParameters)
     {
         // Start structural leaking - but only if the point is originally not hull,
         // as we never allow hull points to take water in
@@ -1611,8 +1614,8 @@ public:
         // Check if it's the first time we get damaged
         if (!mIsDamagedBuffer[pointElementIndex])
         {
-            // Invoke handler
-            mShipPhysicsHandler->HandlePointDamaged(pointElementIndex);
+            // Do damage
+            InternalDoDamage(pointElementIndex, currentSimulationTime, simulationParameters);
 
             // Flag ourselves as damaged
             mIsDamagedBuffer[pointElementIndex] = true;
@@ -2168,6 +2171,11 @@ public:
 #endif
 
 private:
+
+    void InternalDoDamage(
+        ElementIndex pointElementIndex,
+        float currentSimulationTime,
+        SimulationParameters const & simulationParameters);
 
     void CalculateCombustionDecayParameters(
         float combustionSpeedAdjustment,

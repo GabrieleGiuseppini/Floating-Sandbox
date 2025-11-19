@@ -129,61 +129,6 @@ void Springs::Destroy(
             1);
     }
 
-    // Check whether we should explode
-    {
-        auto const & endpoints = mEndpointsBuffer[springElementIndex];
-
-        ElementIndex explosivePointIndex = NoneElementIndex;
-        if (points.GetStructuralMaterial(endpoints.PointAIndex).ExplodesOnBreak)
-        {
-            explosivePointIndex = endpoints.PointAIndex;
-        }
-        else if (points.GetStructuralMaterial(endpoints.PointBIndex).ExplodesOnBreak)
-        {
-            explosivePointIndex = endpoints.PointBIndex;
-        }
-
-        if (explosivePointIndex != NoneElementIndex)
-        {
-            auto const & material = points.GetStructuralMaterial(explosivePointIndex);
-
-            float const blastForce =
-                material.ExplosiveCombustionForce
-                * 1000.0f; // KN -> N
-
-            float const blastForceRadius =
-                material.ExplosiveCombustionForceRadius
-                * (simulationParameters.IsUltraViolentMode ? 4.0f : 1.0f);
-
-            float const blastHeat =
-                material.ExplosiveCombustionHeat
-                * simulationParameters.CombustionHeatAdjustment
-                * (simulationParameters.IsUltraViolentMode ? 10.0f : 1.0f);
-
-            float const blastHeatRadius =
-                material.ExplosiveCombustionHeatRadius
-                * (simulationParameters.IsUltraViolentMode ? 4.0f : 1.0f);
-
-            // Start explosion
-            mShipPhysicsHandler->StartExplosion(
-                currentSimulationTime,
-                points.GetPlaneId(explosivePointIndex),
-                points.GetPosition(explosivePointIndex),
-                blastForce,
-                blastForceRadius,
-                blastHeat,
-                blastHeatRadius,
-                10.0f, // Render radius offset
-                ExplosionType::Combustion,
-                simulationParameters);
-
-            // Notify explosion
-            mSimulationEventHandler.OnCombustionExplosion(
-                points.IsCachedUnderwater(explosivePointIndex),
-                1);
-        }
-    }
-
     // Zero out our dynamics coefficients, so that we can still calculate Hooke's
     // and damping forces for this spring without running the risk of
     // affecting non-deleted points

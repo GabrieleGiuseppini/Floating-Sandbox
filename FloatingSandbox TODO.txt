@@ -405,8 +405,8 @@
 				+ Scratch->assets
 			+ Dutch Dark Dragon nozzle
 		+ changelist
-		= FIX: we're exploding for each spring connected to the point
-			- Do @ Points::Damage() if it's the first time
+		+ FIX: we're exploding for each spring connected to the point
+			+ Do @ Points::Damage() if it's the first time
 				! Places where we check and set mIsDamagedBuffer
 					! Points::Detach
 						! Does:
@@ -436,14 +436,19 @@
 							! Ship::HandleSpringDestroy
 
 				+ Undo current hacks first
-				- Move from where we put it
-				- While you're at it, make sure everything's inlined
-					- Except InternalDamage(), called if ! damaged, and which does notification + explosion
-			- Make colors
-			- Port to Android
-				- Simulation code
-				- structural material
-			- Add to 2 PC rockets
+				+ Move from where we put it
+				+ While you're at it, make sure everything's inlined
+					+ Except InternalDamage(), called if ! damaged, and which does notification + explosion
+				+ "ExplodesOnBreak" -> "ExplodesOnDamage"
+					+ json
+					+ Material
+		- Make colors
+			- Do with script
+
+		- Port to Android
+			- Simulation code
+			- structural material
+		- Add to 2 PC rockets
 
 	= pt_BR localization:
 		+ HTML

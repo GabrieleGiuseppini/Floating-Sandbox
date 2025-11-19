@@ -3930,8 +3930,8 @@ void Ship::HandleSpringDestroy(
     //  - They'll start leaking if they're not hull, among other things
     //
 
-    mPoints.Damage(pointAIndex);
-    mPoints.Damage(pointBIndex);
+    mPoints.Damage(pointAIndex, currentSimulationTime, simulationParameters);
+    mPoints.Damage(pointBIndex, currentSimulationTime, simulationParameters);
 
 
     //

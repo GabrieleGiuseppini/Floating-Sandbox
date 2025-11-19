@@ -606,8 +606,8 @@ void Points::Detach(
         // Note: it's unclear in 2025 which codepaths would lead here, given that
         // PhysicsHandler::HandlePointDetach() will have ultimately damaged the point
 
-        // Invoke handler
-        mShipPhysicsHandler->HandlePointDamaged(pointElementIndex);
+        // Do damage
+        InternalDoDamage(pointElementIndex, currentSimulationTime, simulationParameters);
 
         // Flag ourselves as damaged
         mIsDamagedBuffer[pointElementIndex] = true;
@@ -2265,6 +2265,56 @@ void Points::UpdateMasses(SimulationParameters const & simulationParameters)
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
+
+void Points::InternalDoDamage(
+    ElementIndex pointElementIndex,
+    float currentSimulationTime,
+    SimulationParameters const & simulationParameters)
+{
+    // Invoke handler
+    mShipPhysicsHandler->HandlePointDamaged(pointElementIndex);
+
+    // Explode, if we're suppposed to
+    if (GetStructuralMaterial(pointElementIndex).ExplodesOnDamage)
+    {
+        auto const & material = GetStructuralMaterial(pointElementIndex);
+
+        float const blastForce =
+            material.ExplosiveCombustionForce
+            * 1000.0f; // KN -> N
+
+        float const blastForceRadius =
+            material.ExplosiveCombustionForceRadius
+            * (simulationParameters.IsUltraViolentMode ? 4.0f : 1.0f);
+
+        float const blastHeat =
+            material.ExplosiveCombustionHeat
+            * simulationParameters.CombustionHeatAdjustment
+            * (simulationParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+
+        float const blastHeatRadius =
+            material.ExplosiveCombustionHeatRadius
+            * (simulationParameters.IsUltraViolentMode ? 4.0f : 1.0f);
+
+        // Start explosion
+        mShipPhysicsHandler->StartExplosion(
+            currentSimulationTime,
+            GetPlaneId(pointElementIndex),
+            GetPosition(pointElementIndex),
+            blastForce,
+            blastForceRadius,
+            blastHeat,
+            blastHeatRadius,
+            10.0f, // Render radius offset
+            ExplosionType::Combustion,
+            simulationParameters);
+
+        // Notify explosion
+        mSimulationEventHandler.OnCombustionExplosion(
+            IsCachedUnderwater(pointElementIndex),
+            1);
+    }
+}
 
 void Points::CalculateCombustionDecayParameters(
     float combustionSpeedAdjustment,
