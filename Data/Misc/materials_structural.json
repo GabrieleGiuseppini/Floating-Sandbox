@@ -1825,16 +1825,16 @@
         {
             "buoyancy_volume_fill": 1.0,
             "color_key": [
-                "#F1F5C1",
-                "#FFC371",
-                "#FFFFBE",
-                "#FFFF71",
-                "#F7FF71",
-                "#B1FFE7",
-                "#CCE7D2",
-                "#FFB5F1",
-                "#FFFF72",
-                "#C2C682"
+                "#273849",
+                "#6B0600",
+                "#C2C746",
+                "#675A00",
+                "#2D7300",
+                "#00626F",
+                "#022A5A",
+                "#6D0079",
+                "#8F4700",
+                "#00190A"
             ],
             "combustion_type": "Explosion",
             "elasticity_coefficient": 0.5,
@@ -1870,16 +1870,16 @@
         {
             "buoyancy_volume_fill": 1.0,
             "color_key": [
-                "#E1E5B1",
-                "#FFB361",
-                "#FFFFAE",
-                "#FFFF61",
-                "#E7FF61",
-                "#A1FFD7",
-                "#BCD7C2",
-                "#FFA5E1",
-                "#FFF461",
-                "#B2B672"
+                "#28394a",
+                "#6C0700",
+                "#C3C847",
+                "#685B00",
+                "#2E7400",
+                "#006370",
+                "#032B5B",
+                "#6E007A",
+                "#904800",
+                "#001A0B"
             ],
             "combustion_type": "Explosion",
             "elasticity_coefficient": 0.5,
@@ -4458,7 +4458,7 @@
                             "Diesel",
                             "Gunpowder",
                             "Nitroglycerin Light",
-			    "Nitroglycerin Strong"
+                            "Nitroglycerin Strong"
                         ]
                     }
                 ]
