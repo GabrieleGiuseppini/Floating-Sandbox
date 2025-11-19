@@ -396,7 +396,7 @@
 			+ Update changelist	
 	+ Lightning tool, like in Android
 		+ Changelist
-	+ Explosive materials on break
+	= Explosive materials on break
 		+ Code
 		+ Material: Nitroglycerin X 2
 		+ Port to Android
@@ -405,6 +405,45 @@
 				+ Scratch->assets
 			+ Dutch Dark Dragon nozzle
 		+ changelist
+		= FIX: we're exploding for each spring connected to the point
+			- Do @ Points::Damage() if it's the first time
+				! Places where we check and set mIsDamagedBuffer
+					! Points::Detach
+						! Does:
+							! Ship::HandlePointDetach
+								! Destroys all springs
+									! ShipHandler::HandleSpringDestroy
+										! Points::Damage
+							! If not damaged:
+								! >> Can this ever be?
+								! ShipHandler::HandlePointDamaged
+								! Mark as damaged
+						! Called from:
+							! Points::DetachPointForDestroy
+								! Called from:
+									! DestroyAt
+							! ThanosSnap
+							! Lightning
+							! ExplosionStateMachine
+								! But just for forced one-point detachment
+					! Points::Damage
+						! Does: 
+							! SetStructurallyLeaking
+							! If not damaged:
+								! ShipHandler::HandlePointDamaged
+								! Mark as damaged 
+						! Called from:
+							! Ship::HandleSpringDestroy
+
+				+ Undo current hacks first
+				- Move from where we put it
+				- While you're at it, make sure everything's inlined
+					- Except InternalDamage(), called if ! damaged, and which does notification + explosion
+			- Make colors
+			- Port to Android
+				- Simulation code
+				- structural material
+			- Add to 2 PC rockets
 
 	= pt_BR localization:
 		+ HTML

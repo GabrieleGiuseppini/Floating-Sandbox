@@ -603,6 +603,9 @@ void Points::Detach(
     // Check if it's the first time we get damaged
     if (!mIsDamagedBuffer[pointElementIndex])
     {
+        // Note: it's unclear in 2025 which codepaths would lead here, given that
+        // PhysicsHandler::HandlePointDetach() will have ultimately damaged the point
+
         // Invoke handler
         mShipPhysicsHandler->HandlePointDamaged(pointElementIndex);
 
