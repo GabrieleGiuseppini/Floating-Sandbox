@@ -442,13 +442,13 @@
 				+ "ExplodesOnBreak" -> "ExplodesOnDamage"
 					+ json
 					+ Material
-		- Make colors
-			- Do with script
+		= Make colors
+			+ Do with script
+		- Add to 2 PC rockets
 
 		- Port to Android
 			- Simulation code
 			- structural material
-		- Add to 2 PC rockets
 
 	= pt_BR localization:
 		+ HTML

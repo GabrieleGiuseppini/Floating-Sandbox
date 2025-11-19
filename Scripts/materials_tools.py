@@ -459,8 +459,8 @@ def dump_materials(filename, field_names):
 
 
 def print_usage():
-    print("Usage: materials_tools.py add_color <material_name> <input_json> <output_json> <base_reference_color> <target_reference_color> <base_color_1> <base_color_2> ...")
-    print("Usage: materials_tools.py add_variants <material_name> <input_json> <output_json>")
+    print("Usage: materials_tools.py add_color <material_name> <input_json> <output_json> <base_reference_color> <target_reference_color> [<base_color_1> <base_color_2> ...]")
+    print("Usage: materials_tools.py add_variants <material_group_name> <input_json> <output_json>")
     print("Usage: materials_tools.py dump_materials <input_json> <field_1> <field_2> ...")
     print("Usage: materials_tools.py verify <input_json>")
 
