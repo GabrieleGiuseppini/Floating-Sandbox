@@ -456,15 +456,21 @@
 
 		+ Verify PC's Saturn V
 
-		- Port to Android
-			- Simulation code
-			- structural material
+		+ Port to Android
+			+ Simulation code
+			+ structural material
+		+ Fix Dutch Dragon
+			+ In OneShare
+			+ 1. Temp nitro's: light="#F1F5C1" strong="#E1E5B1"
+			+ 2. Fix ship changing color
+			+ 3. Remove temp nitro's
+			+ Copy to Android
 		- Test on phone
 			- Saturn V
 			- Dutch dragon
 				- For weaker nitro material - avtly fix in structure
 
-		- Test: also gunpowder exploding on break
+		- Test: also gunpowder exploding on break?
 			- On Android; test with existing:
 				- June 21 - has gunpowder?
 				- Dutch Dark Dragon - has gunpowder?
