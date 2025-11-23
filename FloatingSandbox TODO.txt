@@ -396,7 +396,7 @@
 			+ Update changelist	
 	+ Lightning tool, like in Android
 		+ Changelist
-	= Explosive materials on break
+	+ Explosive materials on break
 		+ Code
 		+ Material: Nitroglycerin X 2
 		+ Port to Android
@@ -465,15 +465,10 @@
 			+ 2. Fix ship changing color
 			+ 3. Remove temp nitro's
 			+ Copy to Android
-		- Test on phone
-			- Saturn V
-			- Dutch dragon
-				- For weaker nitro material - avtly fix in structure
-
-		- Test: also gunpowder exploding on break?
-			- On Android; test with existing:
-				- June 21 - has gunpowder?
-				- Dutch Dark Dragon - has gunpowder?
+		+ Test on phone
+			+ Saturn V
+			+ Dutch dragon
+				+ For weaker nitro material - evtly fix in structure
 
 	= pt_BR localization:
 		+ HTML
