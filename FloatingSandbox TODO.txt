@@ -453,7 +453,6 @@
 			+ Re-fix gameplay
 			+ Store file in both places
 
-
 		+ Verify PC's Saturn V
 
 		+ Port to Android
@@ -470,6 +469,19 @@
 			+ Dutch dragon
 				+ For weaker nitro material - evtly fix in structure
 
+	- ShipSounds @ SoundController:
+		- ISoundController, at Game
+			- PlayOneShotShipSound(ShipSoundType)
+		- Implemented by SoundController
+			- As dedicated one-shot sound; stopped before new one started
+		- ISoundController * passed to ShipBuilderLib::MainFrame
+			- Given:
+				- FS: own
+				- ShipBuilder.exe: nullptr
+			- Stores in member
+			- Passes to MaterialPalette
+		- MaterialPalette:
+			- When ship sound material selected: if mSoundController: play
 	= pt_BR localization:
 		+ HTML
 		+ NPC
@@ -1824,8 +1836,8 @@
 								+ See pipewhistle disturbance timing on fish
 					+ Tests:
 						+ Repair
-				- Timer switches instanced:
-					- Do we really need them?
+				= Timer switches instanced:
+					+ Do
 					- Gfx: Clock dial (normalized on duration), new ElectricalControl
 					- Sound: clock
 				+ Non-instanced sounds, i.e. sounds without a switch
@@ -2377,27 +2389,46 @@
 						- SoundController: play sound
 				- Stop PendingShipPlace tool
 
-- Passengers:
-	- Ship has number of passengers
-		- "like how many people would be aboard & as the ship sinks it like shows how many people are alive, escaped via life boat or died"
-		- Maybe a life count? like you have sorta a life count on the top right of the screen that says Alive: number. Dead: Number.
+- Collision detection - for multiple ships
+
+	! Gist:
+		! Goal is to check crossing of external frontier edges
+		! A "structure" is used for optimized search of frontier edge endpoints (see below)
+		! At end of Update(), each ship adds itself to CollisionTODO &:
+			! Frontier is visited
+			! Each edge is checked against closed-by edges
+				! Here can use spatial coherence: the previous point is close by this point, so may want to start searching the structure from here
+				! Need to check also neighboring quads
+					! Need to dimension minimum quad size accordingly, TODOHERE
+			! If collision is detected, reaction happens immediately (with position move)
+				! TODO: what if multiple collisions?
+			! Edge is then added to the structure
+				! Optimization: last ship does not add self
+			
+
+	- Possible structures:
+		- Quadtree, with adaptive subdivision (i.e. no down a cell if not needed)
+		- Nearest neighbor: http://www.cs.umd.edu/~mount/ANN/
+
+
++ Passengers:
+	+ Ship has number of passengers
+		+ "like how many people would be aboard & as the ship sinks it like shows how many people are alive, escaped via life boat or died"
+		+ Maybe a life count? like you have sorta a life count on the top right of the screen that says Alive: number. Dead: Number.
 		  And as the ship is sinking you press a button like say A (abandon) for example and people will start heading to the life boats
 		  to survive. The counter will stop once the ship is fully under the surface of the ocean or the entire boat deck is under water.
 		  The boat deck would be highlighted sorta like how the light system works.
+	+ Moving passengers
+		+ Separate layer provides floors, ladders, and obstacles
+		+ Can get away at beginning with pacman-like figures
+		+ For more realistic version:
+			+ Skeleton with 10 parts (8 limbs, body, head)
+			+ Need to make these actions:
+				+ Walk
+				+ Fall
+				+ Climb
+				+ Swim
 
-	- Moving passengers
-		- Separate layer provides floors, ladders, and obstacles
-		- Can get away at beginning with pacman-like figures
-		- For more realistic version:
-			- Skeleton with 10 parts (8 limbs, body, head)
-			- Need to make these actions:
-				- Walk
-				- Fall
-				- Climb
-				- Swim
-
-- Collision detection - for multiple ships
-	- Nearest neighbor: http://www.cs.umd.edu/~mount/ANN/
 
 ==============================================================================
 ==============================================================================
