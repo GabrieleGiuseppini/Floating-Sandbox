@@ -481,10 +481,9 @@
 				+ ShipBuilder.exe: nullptr
 			+ Stores in member
 			+ Passes to MaterialPalette
-		= MaterialPalette:
-			= When ship sound material hovered on: if mSoundController: play
-			- Fix: Entering->Leaving
-				- Option 1: SoundController remembers currently-playing sound type, and Leaving calls StopXYZ(old material)
+		+ MaterialPalette:
+			+ When ship sound material hovered on: if mSoundController: play
+		- Test ShipBuilder normal
 
 	= pt_BR localization:
 		+ HTML

@@ -1565,9 +1565,7 @@ void SoundController::PlayElectricalPanelDockSound(bool isUndock)
         true);
 }
 
-void SoundController::PlayOneShotShipSound(
-    std::optional<ElectricalMaterial::ShipSoundElementType> shipSoundElementType,
-    float volume)
+void SoundController::PlayOneShotShipSound(std::optional<ElectricalMaterial::ShipSoundElementType> shipSoundElementType)
 {
     if (shipSoundElementType.has_value())
     {
@@ -1584,7 +1582,7 @@ void SoundController::PlayOneShotShipSound(
             // Start new
             mOneShotShipSound = std::make_unique<GameSound>(
                 *srchIt->second,
-                volume,
+                35.0f,
                 mMasterEffectsVolume,
                 mMasterEffectsMuted);
 

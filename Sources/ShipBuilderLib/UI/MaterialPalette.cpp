@@ -35,8 +35,8 @@ MaterialPalette<TLayer>::MaterialPalette(
     : wxPopupTransientWindow(parent, wxPU_CONTAINS_CONTROLS | wxBORDER_SIMPLE)
     , mMaterialPalette(materialPalette)
     , mSoundController(soundController)
-    , mCurrentMaterialInPropertyGrid(nullptr)
     , mCurrentPlane()
+    , mCurrentMaterialHoveredOn(nullptr)
 {
     SetBackgroundColour(wxColour("WHITE"));
 
@@ -394,7 +394,6 @@ wxPanel * MaterialPalette<TLayer>::CreateCategoryPanel(
                         [this, material, materialButton](wxMouseEvent & /*event*/)
                         {
                             PopulateMaterialProperties(material);
-                            mCurrentMaterialInPropertyGrid = material;
 
                             if constexpr (TLayer == LayerType::Electrical)
                             {
@@ -402,10 +401,11 @@ wxPanel * MaterialPalette<TLayer>::CreateCategoryPanel(
                                     && material->ElectricalType == ElectricalMaterial::ElectricalElementType::ShipSound
                                     && mSoundController != nullptr)
                                 {
-                                    LogMessage("Playing ", material ? material->Name : "");
-                                    mSoundController->PlayOneShotShipSound(material->ShipSoundType, 40.0f);
+                                    mSoundController->PlayOneShotShipSound(material->ShipSoundType);
                                 }
                             }
+
+                            mCurrentMaterialHoveredOn = material;
                         });
 
                     // Bind mouse leave
@@ -413,19 +413,19 @@ wxPanel * MaterialPalette<TLayer>::CreateCategoryPanel(
                         wxEVT_LEAVE_WINDOW,
                         [this, material](wxMouseEvent & /*event*/)
                         {
-                            if (material == mCurrentMaterialInPropertyGrid)
+                            if (material == mCurrentMaterialHoveredOn)
                             {
-                                mCurrentMaterialInPropertyGrid = nullptr;
                                 PopulateMaterialProperties(nullptr);
-                            }
 
-                            if constexpr (TLayer == LayerType::Electrical)
-                            {
-                                if (mSoundController != nullptr)
+                                if constexpr (TLayer == LayerType::Electrical)
                                 {
-                                    LogMessage("Leaving ", material ? material->Name : "");
-                                    mSoundController->PlayOneShotShipSound(std::nullopt, 0.0f);
+                                    if (mSoundController != nullptr)
+                                    {
+                                        mSoundController->PlayOneShotShipSound(std::nullopt);
+                                    }
                                 }
+
+                                mCurrentMaterialHoveredOn = nullptr;
                             }
                         });
 

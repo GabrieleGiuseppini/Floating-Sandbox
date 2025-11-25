@@ -190,13 +190,14 @@ private:
     // Material properties
     std::array<wxPropertyGrid *, 2> mStructuralMaterialPropertyGrids;
     std::array<wxPropertyGrid *, 2> mElectricalMaterialPropertyGrids;
-    TMaterial const * mCurrentMaterialInPropertyGrid;
 
     //
     // State
     //
 
     std::optional<MaterialPlaneType> mCurrentPlane;
+
+    TMaterial const * mCurrentMaterialHoveredOn;
 };
 
 }

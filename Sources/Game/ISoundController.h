@@ -16,9 +16,7 @@ struct ISoundController
 {
     virtual ~ISoundController() = default;
 
-    virtual void PlayOneShotShipSound(
-        std::optional<ElectricalMaterial::ShipSoundElementType> shipSoundElementType,
-        float volume) = 0;
+    virtual void PlayOneShotShipSound(std::optional<ElectricalMaterial::ShipSoundElementType> shipSoundElementType) = 0;
 
     virtual void PlayErrorSound() = 0;
 };

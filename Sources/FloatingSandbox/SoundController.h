@@ -185,9 +185,7 @@ public:
 
     void PlayElectricalPanelDockSound(bool isUndock);
 
-    void PlayOneShotShipSound(
-        std::optional<ElectricalMaterial::ShipSoundElementType> shipSoundElementType,
-        float volume) override;
+    void PlayOneShotShipSound(std::optional<ElectricalMaterial::ShipSoundElementType> shipSoundElementType) override;
 
     void PlayTickSound();
 
