@@ -8,6 +8,7 @@
 #include "MaterialPalette.h"
 
 #include <Game/GameAssetManager.h>
+#include <Game/ISoundController.h>
 
 #include <Simulation/Layers.h>
 #include <Simulation/MaterialDatabase.h>
@@ -34,6 +35,7 @@ public:
         std::function<void(fsStructuralMaterialSelectedEvent const & event)> onRopeLayerMaterialSelected,
         MaterialDatabase const & materialDatabase,
         ShipTexturizer const & shipTexturizer,
+        ISoundController * soundController,
         GameAssetManager const & gameAssetManager,
         ProgressCallback const & progressCallback);
 

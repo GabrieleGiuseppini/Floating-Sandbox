@@ -663,6 +663,7 @@ SoundController::SoundController(
 
             float loopStartSample = 0.0f;
             float loopEndSample = 0.0f;
+            ElectricalMaterial::ShipSoundElementType shipSoundElementType;
             switch (soundType)
             {
                 case SoundType::ShipBell1:
@@ -677,6 +678,8 @@ SoundController::SoundController(
                         loopStartSample = 0.88127f;
                         loopEndSample = 1.77351f;
                     }
+
+                    shipSoundElementType = ElectricalMaterial::ShipSoundElementType::Bell1;
 
                     break;
                 }
@@ -694,6 +697,8 @@ SoundController::SoundController(
                         loopEndSample = 0.936961f;
                     }
 
+                    shipSoundElementType = ElectricalMaterial::ShipSoundElementType::Bell2;
+
                     break;
                 }
 
@@ -709,6 +714,8 @@ SoundController::SoundController(
                         loopStartSample = 0.507846f;
                         loopEndSample = 1.76757f;
                     }
+
+                    shipSoundElementType = ElectricalMaterial::ShipSoundElementType::QueenMaryHorn;
 
                     break;
                 }
@@ -726,6 +733,8 @@ SoundController::SoundController(
                         loopEndSample = loopStartSample + 1.41698f;
                     }
 
+                    shipSoundElementType = ElectricalMaterial::ShipSoundElementType::FourFunnelLinerWhistle;
+
                     break;
                 }
 
@@ -741,6 +750,8 @@ SoundController::SoundController(
                         loopStartSample = 1.7388f;
                         loopEndSample = loopStartSample + 1.09977f;
                     }
+
+                    shipSoundElementType = ElectricalMaterial::ShipSoundElementType::TripodHorn;
 
                     break;
                 }
@@ -758,6 +769,8 @@ SoundController::SoundController(
                         loopEndSample = loopStartSample + 1.3156f;
                     }
 
+                    shipSoundElementType = ElectricalMaterial::ShipSoundElementType::PipeWhistle;
+
                     break;
                 }
 
@@ -773,6 +786,8 @@ SoundController::SoundController(
                         loopStartSample = 4.46073f;
                         loopEndSample = 10.5897f;
                     }
+
+                    shipSoundElementType = ElectricalMaterial::ShipSoundElementType::LakeFreighterHorn;
 
                     break;
                 }
@@ -790,6 +805,8 @@ SoundController::SoundController(
                         loopEndSample = 9.81619f;
                     }
 
+                    shipSoundElementType = ElectricalMaterial::ShipSoundElementType::ShieldhallSteamSiren;
+
                     break;
                 }
 
@@ -805,6 +822,8 @@ SoundController::SoundController(
                         loopStartSample = 2.77712f;
                         loopEndSample = 4.73236f;
                     }
+
+                    shipSoundElementType = ElectricalMaterial::ShipSoundElementType::QueenElizabeth2Horn;
 
                     break;
                 }
@@ -822,6 +841,8 @@ SoundController::SoundController(
                         loopEndSample = 6.90735f;
                     }
 
+                    shipSoundElementType = ElectricalMaterial::ShipSoundElementType::SSRexWhistle;
+
                     break;
                 }
 
@@ -837,6 +858,8 @@ SoundController::SoundController(
                         loopStartSample = 0.904989f;
                         loopEndSample = loopStartSample + 0.704739f;
                     }
+
+                    shipSoundElementType = ElectricalMaterial::ShipSoundElementType::Klaxon1;
 
                     break;
                 }
@@ -854,6 +877,8 @@ SoundController::SoundController(
                         loopEndSample = loopStartSample + 1.27698f;
                     }
 
+                    shipSoundElementType = ElectricalMaterial::ShipSoundElementType::NuclearAlarm1;
+
                     break;
                 }
 
@@ -869,6 +894,8 @@ SoundController::SoundController(
                         loopStartSample = 0.0f;
                         loopEndSample = 2.1254f;
                     }
+
+                    shipSoundElementType = ElectricalMaterial::ShipSoundElementType::EvacuationAlarm1;
 
                     break;
                 }
@@ -886,6 +913,8 @@ SoundController::SoundController(
                         loopEndSample = 2.74667f;
                     }
 
+                    shipSoundElementType = ElectricalMaterial::ShipSoundElementType::EvacuationAlarm2;
+
                     break;
                 }
 
@@ -901,6 +930,18 @@ SoundController::SoundController(
                 gameAssetManager.GetSoundFilePath(soundName),
                 loopStartSample,
                 loopEndSample);
+
+            //
+            // Store sound buffer (for ISoundController interactions)
+            //
+
+            if (!isUnderwater)
+            {
+                assert(mShipSoundSoundBuffers.count(shipSoundElementType) == 0);
+                mShipSoundSoundBuffers.try_emplace(
+                    shipSoundElementType,
+                    soundFile->Clone());
+            }
         }
         else
         {
@@ -1522,6 +1563,43 @@ void SoundController::PlayElectricalPanelDockSound(bool isUndock)
         SoundGroupType::Effects,
         100.0f,
         true);
+}
+
+void SoundController::PlayOneShotShipSound(
+    std::optional<ElectricalMaterial::ShipSoundElementType> shipSoundElementType,
+    float volume)
+{
+    if (shipSoundElementType.has_value())
+    {
+        auto const & srchIt = mShipSoundSoundBuffers.find(*shipSoundElementType);
+        if (srchIt != mShipSoundSoundBuffers.end())
+        {
+            // Stop current (if any)
+            if (mOneShotShipSound)
+            {
+                mOneShotShipSound->stop();
+                mOneShotShipSound.reset();
+            }
+
+            // Start new
+            mOneShotShipSound = std::make_unique<GameSound>(
+                *srchIt->second,
+                volume,
+                mMasterEffectsVolume,
+                mMasterEffectsMuted);
+
+            mOneShotShipSound->play();
+        }
+    }
+    else
+    {
+        // Stop current (if any)
+        if (mOneShotShipSound)
+        {
+            mOneShotShipSound->stop();
+            mOneShotShipSound.reset();
+        }
+    }
 }
 
 void SoundController::PlayTickSound()

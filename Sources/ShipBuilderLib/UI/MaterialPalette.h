@@ -8,6 +8,7 @@
 #include "../ShipBuilderTypes.h"
 
 #include <Game/GameAssetManager.h>
+#include <Game/ISoundController.h>
 
 #include <Simulation/Layers.h>
 #include <Simulation/Materials.h>
@@ -109,6 +110,7 @@ public:
         wxWindow * parent,
         MaterialDatabase::Palette<TMaterial> const & materialPalette,
         ShipTexturizer const & shipTexturizer,
+        ISoundController * soundController,
         GameAssetManager const & gameAssetManager,
         ProgressCallback const & progressCallback);
 
@@ -152,6 +154,7 @@ private:
 private:
 
     MaterialDatabase::Palette<TMaterial> const & mMaterialPalette;
+    ISoundController * const mSoundController;
 
     wxSizer * mRootHSizer;
 

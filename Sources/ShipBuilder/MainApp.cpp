@@ -143,6 +143,7 @@ bool MainApp::OnInit()
             *mLocalizationManager,
             *mMaterialDatabase,
             *mShipTexturizer,
+            nullptr,
             {},
             ProgressCallback([](float, ProgressMessageType){}));
 

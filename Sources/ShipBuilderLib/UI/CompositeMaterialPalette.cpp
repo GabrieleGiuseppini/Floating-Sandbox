@@ -14,6 +14,7 @@ CompositeMaterialPalette::CompositeMaterialPalette(
     std::function<void(fsStructuralMaterialSelectedEvent const & event)> onRopeLayerMaterialSelected,
     MaterialDatabase const & materialDatabase,
     ShipTexturizer const & shipTexturizer,
+    ISoundController * soundController,
     GameAssetManager const & gameAssetManager,
     ProgressCallback const & progressCallback)
     : mOnStructuralLayerMaterialSelected(std::move(onStructuralLayerMaterialSelected))
@@ -25,6 +26,7 @@ CompositeMaterialPalette::CompositeMaterialPalette(
         parent,
         materialDatabase.GetStructuralMaterialPalette(),
         shipTexturizer,
+        soundController,
         gameAssetManager,
         progressCallback.MakeSubCallback(0.0f, 0.33f));
 
@@ -39,6 +41,7 @@ CompositeMaterialPalette::CompositeMaterialPalette(
         parent,
         materialDatabase.GetElectricalMaterialPalette(),
         shipTexturizer,
+        soundController,
         gameAssetManager,
         progressCallback.MakeSubCallback(0.33f, 0.33f));
 
@@ -53,6 +56,7 @@ CompositeMaterialPalette::CompositeMaterialPalette(
         parent,
         materialDatabase.GetRopeMaterialPalette(),
         shipTexturizer,
+        soundController,
         gameAssetManager,
         progressCallback.MakeSubCallback(0.66f, 0.33f));
 

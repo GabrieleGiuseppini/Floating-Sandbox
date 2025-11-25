@@ -20,6 +20,7 @@ set  (GAME_SOURCES
 	IGameControllerSettings.h
 	IGameControllerSettingsOptions.h
 	IGameEventHandlers.h
+	ISoundController.h
 	NotificationLayer.cpp
 	NotificationLayer.h
 	RollingText.cpp

@@ -469,19 +469,23 @@
 			+ Dutch dragon
 				+ For weaker nitro material - evtly fix in structure
 
-	- ShipSounds @ SoundController:
-		- ISoundController, at Game
-			- PlayOneShotShipSound(ShipSoundType)
-		- Implemented by SoundController
-			- As dedicated one-shot sound; stopped before new one started
-		- ISoundController * passed to ShipBuilderLib::MainFrame
-			- Given:
-				- FS: own
-				- ShipBuilder.exe: nullptr
-			- Stores in member
-			- Passes to MaterialPalette
-		- MaterialPalette:
-			- When ship sound material selected: if mSoundController: play
+	= ShipSounds @ SoundController:
+		+ ISoundController, at Game
+			+ PlayOneShotShipSound(ShipSoundType)
+			+ PlayErrorSound
+		+ Implemented by SoundController
+			+ As dedicated one-shot sound; stopped before new one started
+		+ ISoundController * passed to ShipBuilderLib::MainFrame
+			+ Given:
+				+ FS: own
+				+ ShipBuilder.exe: nullptr
+			+ Stores in member
+			+ Passes to MaterialPalette
+		= MaterialPalette:
+			= When ship sound material hovered on: if mSoundController: play
+			- Fix: Entering->Leaving
+				- Option 1: SoundController remembers currently-playing sound type, and Leaving calls StopXYZ(old material)
+
 	= pt_BR localization:
 		+ HTML
 		+ NPC

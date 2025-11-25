@@ -59,6 +59,7 @@ MainFrame::MainFrame(
     LocalizationManager const & localizationManager,
     MaterialDatabase const & materialDatabase,
     ShipTexturizer const & shipTexturizer,
+    ISoundController * soundController,
     std::function<void(std::optional<std::filesystem::path>)> returnToGameFunctor,
     ProgressCallback const & progressCallback)
     : mMainApp(mainApp)
@@ -70,6 +71,7 @@ MainFrame::MainFrame(
     , mLocalizationManager(localizationManager)
     , mMaterialDatabase(materialDatabase)
     , mShipTexturizer(shipTexturizer)
+    , mSoundController(soundController)
     , mWorkCanvasHScrollBar(nullptr)
     , mWorkCanvasVScrollBar(nullptr)
     // UI State
@@ -345,6 +347,7 @@ MainFrame::MainFrame(
             },
             mMaterialDatabase,
             mShipTexturizer,
+            mSoundController,
             mGameAssetManager,
             progressCallback.MakeSubCallback(0.0f, 0.8f));
     }

@@ -29,10 +29,12 @@ MaterialPalette<TLayer>::MaterialPalette(
     wxWindow * parent,
     MaterialDatabase::Palette<TMaterial> const & materialPalette,
     ShipTexturizer const & shipTexturizer,
+    ISoundController * soundController,
     GameAssetManager const & gameAssetManager,
     ProgressCallback const & progressCallback)
     : wxPopupTransientWindow(parent, wxPU_CONTAINS_CONTROLS | wxBORDER_SIMPLE)
     , mMaterialPalette(materialPalette)
+    , mSoundController(soundController)
     , mCurrentMaterialInPropertyGrid(nullptr)
     , mCurrentPlane()
 {
@@ -393,6 +395,17 @@ wxPanel * MaterialPalette<TLayer>::CreateCategoryPanel(
                         {
                             PopulateMaterialProperties(material);
                             mCurrentMaterialInPropertyGrid = material;
+
+                            if constexpr (TLayer == LayerType::Electrical)
+                            {
+                                if (material != nullptr
+                                    && material->ElectricalType == ElectricalMaterial::ElectricalElementType::ShipSound
+                                    && mSoundController != nullptr)
+                                {
+                                    LogMessage("Playing ", material ? material->Name : "");
+                                    mSoundController->PlayOneShotShipSound(material->ShipSoundType, 40.0f);
+                                }
+                            }
                         });
 
                     // Bind mouse leave
@@ -404,6 +417,15 @@ wxPanel * MaterialPalette<TLayer>::CreateCategoryPanel(
                             {
                                 mCurrentMaterialInPropertyGrid = nullptr;
                                 PopulateMaterialProperties(nullptr);
+                            }
+
+                            if constexpr (TLayer == LayerType::Electrical)
+                            {
+                                if (mSoundController != nullptr)
+                                {
+                                    LogMessage("Leaving ", material ? material->Name : "");
+                                    mSoundController->PlayOneShotShipSound(std::nullopt, 0.0f);
+                                }
                             }
                         });
 

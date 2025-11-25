@@ -29,6 +29,7 @@
 #include <UILib/ShipSaveDialog.h>
 
 #include <Game/GameAssetManager.h>
+#include <Game/ISoundController.h>
 
 #include <Simulation/MaterialDatabase.h>
 #include <Simulation/ShipTexturizer.h>
@@ -79,6 +80,7 @@ public:
         LocalizationManager const & localizationManager,
         MaterialDatabase const & materialDatabase,
         ShipTexturizer const & shipTexturizer,
+        ISoundController * soundController,
         std::function<void(std::optional<std::filesystem::path>)> returnToGameFunctor,
         ProgressCallback const & progressCallback);
 
@@ -401,6 +403,7 @@ private:
     LocalizationManager const & mLocalizationManager;
     MaterialDatabase const & mMaterialDatabase;
     ShipTexturizer const & mShipTexturizer;
+    ISoundController * const mSoundController;
 
     //
     // UI

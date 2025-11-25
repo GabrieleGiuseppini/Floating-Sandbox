@@ -9,6 +9,7 @@
 
 #include <Game/GameAssetManager.h>
 #include <Game/IGameController.h>
+#include <Game/ISoundController.h>
 
 #include <Simulation/ISimulationEventHandlers.h>
 
@@ -31,7 +32,9 @@
 #include <vector>
 
 class SoundController
-    : public IStructuralShipEventHandler
+    : public ISoundController
+    ///
+    , public IStructuralShipEventHandler
     , public IGenericShipEventHandler
     , public IWavePhenomenaEventHandler
     , public ICombustionEventHandler
@@ -182,9 +185,13 @@ public:
 
     void PlayElectricalPanelDockSound(bool isUndock);
 
+    void PlayOneShotShipSound(
+        std::optional<ElectricalMaterial::ShipSoundElementType> shipSoundElementType,
+        float volume) override;
+
     void PlayTickSound();
 
-    void PlayErrorSound();
+    void PlayErrorSound() override;
 
     //
     // Updating
@@ -619,7 +626,7 @@ private:
     std::unordered_map<SoundType, std::vector<PlayingSound>> mCurrentlyPlayingOneShotSounds;
 
     //
-    // Continuous sounds
+    // Dedicated sounds
     //
 
     ContinuousInertialSound mSawedMetalSound;
@@ -661,4 +668,7 @@ private:
     ContinuousMultipleChoiceAggregateSound<GlobalGadgetId> mAntiMatterBombContainedSounds;
 
     MultiInstanceLoopedSounds<GlobalElectricalElementId> mLoopedSounds;
+
+    std::unordered_map<ElectricalMaterial::ShipSoundElementType, std::unique_ptr<SoundFile>> mShipSoundSoundBuffers;
+    std::unique_ptr<GameSound> mOneShotShipSound;
 };
