@@ -382,6 +382,7 @@
 		+ changelist
 		+ Merge into master, and delete branch
 		+ Port to Android (just files and electrical materials)
+
 	+ Ships:
 		+ Yestanic
 			+ -In _TO_TAKE
@@ -469,7 +470,7 @@
 			+ Dutch dragon
 				+ For weaker nitro material - evtly fix in structure
 
-	= ShipSounds @ SoundController:
+	+ ShipSounds @ SoundController:
 		+ ISoundController, at Game
 			+ PlayOneShotShipSound(ShipSoundType)
 			+ PlayErrorSound
@@ -483,7 +484,7 @@
 			+ Passes to MaterialPalette
 		+ MaterialPalette:
 			+ When ship sound material hovered on: if mSoundController: play
-		- Test ShipBuilder normal
+		+ Test ShipBuilder normal
 
 	= pt_BR localization:
 		+ HTML

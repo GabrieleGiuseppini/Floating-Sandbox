@@ -1963,8 +1963,8 @@ void SoundController::OnWaterSplashed(float waterSplashed)
         //...but only by discrete leaps
         if (waterSplashed > mCurrentWaterSplashedTrigger)
         {
-            // 10 * (1 - 1.8^(-0.08 * x))
-            float const waveVolume = 10.f * (1.0f - std::pow(1.8f, -0.08f * std::min(1800.0f, std::abs(waterSplashed))));
+            // 9 * (1 - 1.8^(-0.08 * x))
+            float const waveVolume = 9.0f * (1.0f - std::pow(1.8f, -0.08f * std::min(1800.0f, std::abs(waterSplashed))));
 
             PlayOneShotMultipleChoiceSound(
                 SoundType::Wave,
