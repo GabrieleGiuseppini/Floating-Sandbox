@@ -508,9 +508,9 @@
 		- RU
 			+ Send
 			- Compile to mo
-		- UK
+		+ UK
 			+ Send
-			- Compile to mo
+			+ Compile to mo
 		+ ES
 			+ Send
 			+ Compile to mo
