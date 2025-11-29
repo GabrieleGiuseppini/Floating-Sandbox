@@ -524,6 +524,11 @@
 
 	- Lower DisplacementWaveSmoothnessAdjust - 0.0 is quite cool
 
+	- Improvements from Bandit:
+		- Maybe add that silt simulation upon impact (because silt doesnt really work in its current state)
+		- Fix the ships smashing into the sea bed so there's better shipwrecks (My favorite part of FS to be honest)
+			- See if it's due to too much elasticity
+
 	- ShipBuilder:
 		- Add pixel measurement next to ship measurement (*)
 
@@ -1110,21 +1115,17 @@
 		- DevIL: so's?
 
 - Marketing:
-	- Vegas:
-		- Screenshots:
-			- Wreck at night w/wout lamp
-			- Ship from afar at night, w large lamp
-			- Twilight
-			- Temperature overlay
-			- Stress overlay
-	- GameJolt:
-		- Use new video as preview
 	- www.floatingsandbox.com:
 		- Embed GameJolt Widget
 		- Talk about builder (w/screenshot) on main page
 	- After release: update Wordpress post w/new engine stuff
 		- Connectivity
 		- Types
+	- Video: Physics in Floating Sandbox
+		- Heated air bubbles
+		- Draw tool + air bubbles
+		- Wreck floating after sucking water out
+		- Draw making particles of completely AM-destroyed ship reappearing after a while
 
 - Suggestions to spec:
 
@@ -2372,30 +2373,48 @@
 				- Checkbox for "Set as default" => UIPreferencesManager::Save()
 				- At Save, before saving - notify that a reload is necessary
 
-- Multiple ships:
-	- Better done after collision detection
-	- When ship loaded (added):
-		- World adds it not to mShips, but as opt<Ship> mPendingShip
-			- Not considered in Update(), but considered in Render()
-		- MainFrame begins new PendingShipPlace tool
-			- OnMouseMove: tell GameController (->World) mouse position as GameController::MovePendingShipTo(screen coords)
-				- Ship::MoveTo(world x, y):
-					- Moves all Points by (x,y)-mCurrentRepresentativePosition
-						- Ship::mCurrentRepresentativePosition (init'd as {0,0}) tracks current "center"
-					- mCurrentRepresentativePosition = (x,y)
-			- OnLDown:
-				- Tell GameController (DropPendingShip(x, y)) which:
-					- Tells World via World::DropPendingShip(x, y):
-						- Final Ship::MoveTo()
-						- Move ship from mPendingShip into mShips
-					- Fires IGameEventHandler::OnPendingShipPlaced(shipId)
-						- EventTicker: say this and other Reset/Load
-						- SoundController: play sound
-				- Stop PendingShipPlace tool
+- Collision detection - with multiple ships
 
-- Collision detection - for multiple ships
+	- Phase 1: multiple ships
+		- Phase 1a: UI & multiple-ship mechanics
+			- TODO: following is old; see if still good
+			- When ship loaded (added):
+				- World adds it not to mShips, but as opt<Ship> mPendingShip
+					- Not considered in Update(), but considered in Render()
+				- MainFrame begins new PendingShipPlace tool
+					- OnMouseMove: tell GameController (->World) mouse position as GameController::MovePendingShipTo(screen coords)
+						- Ship::MoveTo(world x, y):
+							- Moves all Points by (x,y)-mCurrentRepresentativePosition
+								- Ship::mCurrentRepresentativePosition (init'd as {0,0}) tracks current "center"
+							- mCurrentRepresentativePosition = (x,y)
+					- OnLDown:
+						- Tell GameController (DropPendingShip(x, y)) which:
+							- Tells World via World::DropPendingShip(x, y):
+								- Final Ship::MoveTo()
+								- Move ship from mPendingShip into mShips
+							- Fires IGameEventHandler::OnPendingShipPlaced(shipId)
+								- EventTicker: say this and other Reset/Load
+								- SoundController: play sound
+						- Stop PendingShipPlace tool
+		- Phase 1b: OpenGL optimization
+			! Goal is to merge N batches for N ships into single batches
+			- To address: plane depths
+				- Currently, each time MaxPlanes of a ship changes, we recalc matrices
+				- When everything is in a batch, all plane depths still need to honor Ship->Plane hierarchy
+					- Just one matrix must be able to work with all ships, hence float depth needs to include # ships together with conn component ID
+					- When a ship is added # ships changes, hence all existing ships need to adjust their depths -- and re-upload them
+					- But also dynamically-recalculated depths (@ connectivity changes) need to know # ships, obviously
+				- Still need to know # of connected components in order to calculate final depths
+					- Option 1: exact upper bound
+						- Check if we consume connected component IDs @:
+							- Points
+							- Springs
+						- Then calculate upper bound accordingly as max # of those primitives that consume connected component IDs
+					- Option 2: approx upper bound, with cramming all in last plane
+			- Now we don't need anymore to refresh matrices @ max planes changes
+				- Matrices are invariant with # of ships and # of planes
 
-	! Gist:
+	- Phase 2: collision detection
 		! Goal is to check crossing of external frontier edges
 		! A "structure" is used for optimized search of frontier edge endpoints (see below)
 		! At end of Update(), each ship adds itself to CollisionTODO &:
@@ -2408,12 +2427,10 @@
 				! TODO: what if multiple collisions?
 			! Edge is then added to the structure
 				! Optimization: last ship does not add self
-			
 
-	- Possible structures:
-		- Quadtree, with adaptive subdivision (i.e. no down a cell if not needed)
-		- Nearest neighbor: http://www.cs.umd.edu/~mount/ANN/
-
+		! Possible structures:
+			- Quadtree, with adaptive subdivision (i.e. no down a cell if not needed)
+			- Nearest neighbor: http://www.cs.umd.edu/~mount/ANN/
 
 + Passengers:
 	+ Ship has number of passengers
