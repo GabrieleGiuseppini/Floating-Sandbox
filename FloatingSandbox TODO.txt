@@ -486,7 +486,7 @@
 			+ When ship sound material hovered on: if mSoundController: play
 		+ Test ShipBuilder normal
 
-	= pt_BR localization:
+	+ pt_BR localization:
 		+ HTML
 		+ NPC
 		+ po - asked to fill-in missing entries for my mistake
@@ -497,7 +497,7 @@
 		+ Ask PortugueseGuy|Joadix to test
 		+ Ask Joadix to test
 		+ Add to credits: "Matheus Silva"
-		- Changelist (w/credits!)
+		+ Changelist (w/credits!)
 
 	= Localization:
 		+ Extract strings
@@ -506,17 +506,17 @@
 			= Do
 			+ Compile to mo
 		- RU
-			- Send
+			+ Send
 			- Compile to mo
 		- UK
-			- Send
+			+ Send
 			- Compile to mo
-		- ES
-			- Send
-			- Compile to mo
-		- pt_BR
-			- Send
-			- Compile to mo
+		+ ES
+			+ Send
+			+ Compile to mo
+		+ pt_BR
+			+ Send
+			+ Compile to mo
 
 	- Bump up version: 1.19.2
 
