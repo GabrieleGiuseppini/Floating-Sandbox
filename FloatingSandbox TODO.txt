@@ -502,10 +502,10 @@
 	= Localization:
 		+ Extract strings
 		+ Update all po's
-		= IT
-			= Do
+		+ IT
+			+ Do
 			+ Compile to mo
-		- RU
+		= RU
 			+ Send
 			- Compile to mo
 		+ UK
