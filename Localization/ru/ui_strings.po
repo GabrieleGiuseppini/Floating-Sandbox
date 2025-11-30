@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Floating Sandbox\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-11-08 13:54+0100\n"
+"PO-Revision-Date: 2025-11-30 16:14+0100\n"
 "Last-Translator: matheusvhs\n"
 "Language-Team: Ilya Voloshin; Roman Shavernew (DioxCode)\n"
 "Language: ru\n"
@@ -563,7 +563,7 @@ msgstr ""
 
 #: ..\Sources\ShipBuilderLib\MainFrame.cpp:2604
 msgid "Alpha Threshold:"
-msgstr ""
+msgstr "Порог Альфа Канала:"
 
 #: ..\Sources\ShipBuilderLib\MainFrame.cpp:1872
 msgid "Analysis"
@@ -758,13 +758,11 @@ msgstr "Цвет фона холста:"
 
 #: ..\Sources\ShipBuilderLib\UI\ShipPropertiesEditDialog.cpp:324
 msgid "Category"
-msgstr ""
+msgstr "Категория"
 
 #: ..\Sources\ShipBuilderLib\UI\ShipPropertiesEditDialog.cpp:381
-#, fuzzy
-#| msgid "Change order of ships"
 msgid "Category of the ship"
-msgstr "Изменение порядка следования судов"
+msgstr "Категория корабля"
 
 #: ..\Sources\ShipBuilderLib\UI\ResizeDialog.cpp:469
 msgid "Center Texture"
@@ -1021,10 +1019,8 @@ msgid "Deletes the selected settings."
 msgstr "Удаляет выбранные настройки."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2886
-#, fuzzy
-#| msgid "Density Adjust"
 msgid "Density"
-msgstr "Регулировка плотности"
+msgstr "Плотность"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:1059
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2273
@@ -2137,10 +2133,8 @@ msgid "Initializing OpenGL..."
 msgstr "Инициализация OpenGL ..."
 
 #: ..\Sources\FloatingSandbox\UI\SplashScreenDialog.cpp:152
-#, fuzzy
-#| msgid "Initializing noise..."
 msgid "Initializing UI..."
-msgstr "Инициализация шума ..."
+msgstr "Инициализация пользовательского интерфейса..."
 
 #: ..\Sources\FloatingSandbox\UI\SplashScreenDialog.cpp:151
 msgid "Initializing graphics..."
@@ -2250,20 +2244,16 @@ msgid "Lightning Hit Probability"
 msgstr "Вероятность попадания молнии"
 
 #: ..\Sources\FloatingSandbox\MainFrame.cpp:516
-#, fuzzy
-#| msgid "Lightning Hit Probability"
 msgid "LightningStrike"
-msgstr "Вероятность попадания молнии"
+msgstr "Удар Молнией"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2794
 msgid "Lights"
 msgstr "Свет"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:198
-#, fuzzy
-#| msgid "Lights, Electricals, Fishes, NPCs"
 msgid "Lights, Electricals, Marine Life"
-msgstr "Свет, электрика, рыбы, НИПы"
+msgstr "Свет, электрика, Морская жизнь"
 
 #: ..\Sources\ShipBuilderLib\MainFrame.cpp:2119
 #: ..\Sources\ShipBuilderLib\MainFrame.cpp:2207
@@ -2390,10 +2380,8 @@ msgid "Magnifies or minimizes the physical size of fishes."
 msgstr "Увеличивает или уменьшает физический размер рыб."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2913
-#, fuzzy
-#| msgid "Magnifies or minimizes the physical size of NPCs."
 msgid "Magnifies or minimizes the physical size of plants."
-msgstr "Увеличивает или уменьшает физический размер НИПов."
+msgstr "Увеличивает или уменьшает физический размер растений."
 
 #: ..\Sources\ShipBuilderLib\MainFrame.cpp:944
 msgid "Magnify the view (+)."
@@ -2401,7 +2389,7 @@ msgstr "Увеличьте обзор (+)."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2874
 msgid "Marine Plants"
-msgstr ""
+msgstr "Морские растения"
 
 #: ..\Sources\FloatingSandbox\MainFrame.cpp:2346
 #: ..\Sources\ShipBuilderLib\MainFrame.cpp:5726
@@ -2717,7 +2705,7 @@ msgstr ""
 
 #: ..\Sources\ShipBuilderLib\UI\PreferencesDialog.cpp:134
 msgid "Optimize exterior layer texture on import:"
-msgstr ""
+msgstr "Оптимизирование наружного текстурного слоя на импорте:"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:4131
 msgid "Options"
@@ -2784,7 +2772,7 @@ msgstr "Приращение панорамирования"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:271
 msgid "Parallelism Experiments"
-msgstr ""
+msgstr "Эксперименты по параллелизму"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:3173
 msgid "Passive Blast Radius Adjust"
@@ -3914,10 +3902,8 @@ msgstr ""
 "Плотность пузырьков воздуха, образующихся при попадании воды на корабль."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2887
-#, fuzzy
-#| msgid "The radius of bomb explosions (m)."
 msgid "The density of plants (Km^2)."
-msgstr "Радиус взрыва бомбы (метры)."
+msgstr "Плотность растений (километр^2)."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2591
 msgid "The duration of a full daylight cycle (minutes)."
@@ -4028,7 +4014,7 @@ msgstr ""
 
 #: ..\Sources\ShipBuilderLib\UI\ModelValidationDialog.cpp:576
 msgid "The exterior layer texture is not too large."
-msgstr ""
+msgstr "Наружный слой текстуры не слишком большой."
 
 #: ..\Sources\ShipBuilderLib\UI\ModelValidationDialog.cpp:572
 msgid ""
@@ -4036,6 +4022,9 @@ msgid ""
 "texture in the exterior layer so that no dimension is larger than 4096 "
 "pixels."
 msgstr ""
+"Наружный слой текстуры может быть слишком большим для некоторых компьютеров. "
+"Измените размер текстуры интерьерного слоя так, чтобы ни один размер не был "
+"выше 4096 пикселей."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:3314
 msgid "The heat generated by bomb explosions (KJ/s)."
@@ -4055,7 +4044,7 @@ msgstr "Высота холста."
 
 #: ..\Sources\ShipBuilderLib\UI\ModelValidationDialog.cpp:590
 msgid "The interior layer texture is not too large."
-msgstr ""
+msgstr "Интерьерный слой текстуры не слишком большой."
 
 #: ..\Sources\ShipBuilderLib\UI\ModelValidationDialog.cpp:586
 msgid ""
@@ -4063,6 +4052,9 @@ msgid ""
 "texture in the interior layer so that no dimension is larger than 4096 "
 "pixels."
 msgstr ""
+"Интерьерный слой текстуры может быть слишком большим для некоторых "
+"компьютеров. Измените размер текстуры интерьерного слоя так, чтобы ни один "
+"размер не был выше 4096 пикселей."
 
 #: ..\Sources\FloatingSandbox\UI\CheckForUpdatesDialog.cpp:163
 #, c-format
@@ -4097,6 +4089,8 @@ msgid ""
 "The minimum alpha value for a texture pixel to be considered opaque; values "
 "of alpha greater than this value are considered opaque."
 msgstr ""
+"Минимальнаый порог альфы канала пикселя текстуры; величины альфа канала "
+"больше порога, будут оценены как непрозрачные."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:2541
 msgid ""
@@ -4244,10 +4238,8 @@ msgid "Thermal Expansion Coefficient (1/MK)"
 msgstr "Коэффициент теплового расширения (1/MK)"
 
 #: ..\Sources\ShipBuilderLib\UI\MaterialPalette.cpp:882
-#, fuzzy
-#| msgid "Water Switch"
 msgid "Thermal Switch"
-msgstr "Переключатель воды"
+msgstr "Термопереключатель"
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:955
 msgid "Thermodynamics"
@@ -4284,18 +4276,14 @@ msgstr ""
 "жесткости физических тел."
 
 #: ..\Sources\UILib\LocalizationManager.cpp:172
-#, fuzzy
-#| msgid ""
-#| "This ship cannot be loaded because it has unrecognized materials - it was "
-#| "likely created with a non-standard release of Floating Sandbox."
 msgid ""
 "This ship cannot be loaded because it has unrecognized materials - it was "
 "likely created with a different version of Floating Sandbox or with a non-"
 "standard release."
 msgstr ""
 "Этот корабль не может быть загружен, потому что он имеет нераспознанные "
-"материалы - вероятно, он был создан с помощью нестандартного выпуска "
-"Floating Sandbox."
+"материалы - вероятно, он был создан с помощью устаревшого, или "
+"нестандартного выпуска Floating Sandbox."
 
 #: ..\Sources\UILib\LocalizationManager.cpp:166
 msgid ""
@@ -4317,22 +4305,16 @@ msgid ""
 msgstr "Лицензия для Маттиа, Элии и всех остальных детей мира!"
 
 #: ..\Sources\ShipBuilderLib\UI\MaterialPalette.cpp:885
-#, fuzzy
-#| msgid "Melting Temperature (K)"
 msgid "Threshold Temperature (K)"
-msgstr "Температура плавления (K)"
+msgstr "Пороговая температура для переключения (K)"
 
 #: ..\Sources\ShipBuilderLib\UI\MaterialPalette.cpp:895
-#, fuzzy
-#| msgid "Toggle Switch"
 msgid "Timed Switch"
-msgstr "Перекидной переключатель"
+msgstr "Переключатель замедленного действия"
 
 #: ..\Sources\ShipBuilderLib\UI\MaterialPalette.cpp:898
-#, fuzzy
-#| msgid "Duration"
 msgid "Timer Duration (s)"
-msgstr "Продолжительность"
+msgstr "Время Таймера (сек.)"
 
 #: ..\Sources\FloatingSandbox\MainFrame.cpp:486
 msgid "Toggle Anti-Matter Bomb"
@@ -4388,13 +4370,11 @@ msgstr "Громкость инструментов"
 
 #: ..\Sources\ShipBuilderLib\MainFrame.cpp:4571
 msgid "Trace a structure covering the texture layer."
-msgstr ""
+msgstr "Трасировка изображения в структурный слой."
 
 #: ..\Sources\ShipBuilderLib\MainFrame.cpp:4587
-#, fuzzy
-#| msgid "Save the structural layer"
 msgid "Translate the texture layer."
-msgstr "Сохраните структурный слой"
+msgstr "Трансляция слоя изображения."
 
 #: ..\Sources\FloatingSandbox\UI\SettingsDialog.cpp:4347
 msgid "Transparency"
@@ -4654,6 +4634,8 @@ msgid ""
 "When enabled, textures imported into the exterior layer are slightly "
 "modified to optimize coverage by the structure layer."
 msgstr ""
+"Если включено, импорт текстур в наружный слой немного оптимизирован для "
+"покрытия структурного слоя."
 
 #: ..\Sources\ShipBuilderLib\MainFrame.cpp:2471
 msgid ""

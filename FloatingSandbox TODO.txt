@@ -499,15 +499,15 @@
 		+ Add to credits: "Matheus Silva"
 		+ Changelist (w/credits!)
 
-	= Localization:
+	+ Localization:
 		+ Extract strings
 		+ Update all po's
 		+ IT
 			+ Do
 			+ Compile to mo
-		= RU
+		+ RU
 			+ Send
-			- Compile to mo
+			+ Compile to mo
 		+ UK
 			+ Send
 			+ Compile to mo
@@ -519,6 +519,8 @@
 			+ Compile to mo
 
 	- Bump up version: 1.19.2
+
+	- Do build - TODOHERE
 
 	----------------------------------------------------------
 
