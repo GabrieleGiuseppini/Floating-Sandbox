@@ -2534,13 +2534,31 @@ void ElectricalElements::UpdateSinks(
                 // We run this also when deleted, as it's part of our wind-down state machine
                 //
 
-                // Converge current force
-                waterPumpState.CurrentNormalizedForce +=
-                    (waterPumpState.TargetNormalizedForce - waterPumpState.CurrentNormalizedForce)
-                    * 0.03f; // Convergence rate, magic number
-                if (std::abs(waterPumpState.CurrentNormalizedForce - waterPumpState.TargetNormalizedForce) < 0.001f)
+                if (waterPumpState.CurrentNormalizedForce < waterPumpState.TargetNormalizedForce)
                 {
-                    waterPumpState.CurrentNormalizedForce = waterPumpState.TargetNormalizedForce;
+                    // Going up
+
+                    waterPumpState.CurrentNormalizedForce +=
+                        (waterPumpState.TargetNormalizedForce - waterPumpState.CurrentNormalizedForce)
+                        * 0.03f; // Convergence rate, magic number
+
+                    if (std::abs(waterPumpState.CurrentNormalizedForce - waterPumpState.TargetNormalizedForce) < 0.005f)
+                    {
+                        waterPumpState.CurrentNormalizedForce = waterPumpState.TargetNormalizedForce;
+                    }
+                }
+                else
+                {
+                    // Going down - fast
+
+                    waterPumpState.CurrentNormalizedForce +=
+                        (waterPumpState.TargetNormalizedForce - waterPumpState.CurrentNormalizedForce)
+                        * 0.1f; // Convergence rate, magic number
+
+                    if (std::abs(waterPumpState.CurrentNormalizedForce - waterPumpState.TargetNormalizedForce) < 0.05f)
+                    {
+                        waterPumpState.CurrentNormalizedForce = waterPumpState.TargetNormalizedForce;
+                    }
                 }
 
                 // Calculate force
@@ -2550,7 +2568,7 @@ void ElectricalElements::UpdateSinks(
                     waterPumpForce = 0.0f;
                 }
 
-                // Apply force to point
+                // Apply water pump force to point
                 points.GetLeakingComposite(pointIndex).LeakingSources.WaterPumpForce = waterPumpForce;
 
                 // Eventually publish force change notification

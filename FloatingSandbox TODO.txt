@@ -561,6 +561,7 @@
 
 	- Try optimization in CollisionOnOceanFloor:
 		- Vectorize calculation of height field Y:
+			- TODOHERE: two of these
 			- Loop 4 points (followed by single loop)
 				- Do prefix calculations, accumulating into vec4
 				- Calculate delta y at once

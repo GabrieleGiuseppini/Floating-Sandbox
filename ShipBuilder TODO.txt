@@ -180,6 +180,8 @@
 			+ Selection spec (*)
 		- Ellipses
 		- Traslate (aka move)
+			- Structural, Electrical, Ropes
+			+ External
 		+ Magic Eraser (for texture layer only)
 			+ Tolerance (0-100): % of distance(this color, start color)/max_distance
 			+ Anti-aliasing (bool): when on, alpha = distance(this color, start color)/tolerance_distance
@@ -655,7 +657,6 @@
 		+ Pseudo-cursor
 			+ One of many types; removed with a single call
 
-
 + WorkbenchState
 	+ Independent from model - exclusively tools-related settings
 		+ So no need to reset/change/update at new model creation
@@ -694,8 +695,14 @@
 - Misc:
 	- Layer import:
 		! Goal: export->import should be fully idempotent
-		- Make optimization explicit (remove from preferences)
-		- Make choice to maintain aspect ratio explicit (instead of having to Cancel to continue w/no resize)
+			! Make optimization explicit (remove from preferences)
+			! Make choice to maintain aspect ratio explicit (instead of having to Cancel to continue w/no resize)
+		- New dialog: TextureImportDialog
+			- 3 choices:
+				- Maintain aspect ratio: shows target sizes
+				- Optimize
+					- Remove from preferences then
+				- Do nothing - import as-is
 	- Fix: when there are validation issues during "Save", deciding to save without fixing goes on as "SaveAs"
 	- Once selected, selection could be moved right away, instead of having to copy'n'paste
 	- Localization:
