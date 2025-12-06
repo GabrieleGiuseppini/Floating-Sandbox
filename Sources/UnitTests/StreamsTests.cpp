@@ -64,7 +64,7 @@ TEST(Streams, MemoryTextReadStream_ReadAllLines)
 
     std::vector<std::string> read = stream.ReadAllLines();
 
-    ASSERT_EQ(read.size(), 3);
+    ASSERT_EQ(read.size(), 3u);
     EXPECT_EQ(read[0], " Hello");
     EXPECT_EQ(read[1], "World\r");
     EXPECT_EQ(read[2], "Out There! ");

@@ -47,7 +47,7 @@ TEST(FontSetTests, Load)
 
 	// Metadata
 
-	ASSERT_EQ(fontSet.Metadata.size(), 3);
+	ASSERT_EQ(fontSet.Metadata.size(), 3u);
 
 	EXPECT_EQ(fontSet.Metadata[0].CellSize.width, 32);
 	EXPECT_EQ(fontSet.Metadata[0].CellSize.height, 20);

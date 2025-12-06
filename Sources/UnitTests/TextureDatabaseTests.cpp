@@ -83,7 +83,7 @@ TEST(TextureDatabaseTests, Loading)
     auto db = TextureDatabase<MyTestTextureDatabase>::Load(testAssetManager);
 
     auto const & groups = db.GetGroups();
-    ASSERT_EQ(groups.size(), 2);
+    ASSERT_EQ(groups.size(), 2u);
 
     // Group 1
     {
@@ -183,7 +183,7 @@ TEST(TextureDatabaseTests, MetadataResize)
     auto db = TextureDatabase<MyTestTextureDatabase>::Load(testAssetManager);
 
     auto const & groups = db.GetGroups();
-    ASSERT_EQ(groups.size(), 2);
+    ASSERT_EQ(groups.size(), 2u);
 
     ASSERT_EQ(groups[0].Group, MyTestTextureDatabase::MyTextureGroups::MyTestGroup1);
     ASSERT_EQ(groups[0].GetFrameCount(), 2);
