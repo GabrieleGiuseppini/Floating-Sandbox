@@ -520,7 +520,7 @@
 
 	= Release:
 		+ Bump up version: 1.19.2
-		= Windows
+		+ Windows
 			+ MSI variable
 			+ Commit & push
 			+ 64-bit MSI
@@ -531,25 +531,25 @@
 				+ Rename MSI
 				+ Sign MSI
 				+ Test upgrade from previous version
-			= 32-bit MSI
+			+ 32-bit MSI
 				+ Cleanup Install
-				= Build Release Install (after clean)
-				- Sign two exes
-				- Make MSI
-				- Rename MSI
-				- Sign MSI
-				- Test clean install
-					- Verify it's a 32-bit process
-		- Ubuntu
-			- rm -rf ~/floating-sandbox
-			- pull 
-			- rm -rf build; mkdir build; cd build
-			- cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
-			- make install
-			- Make tar ("cd ~/floating-sandbox && tar -cvf ../Floating-Sandbox-1.16.5-x64.tar . && cd -")
-			- Zip tar
-			- Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
-		- Send 3 installers to dev server for final smoke test
+				+ Build Release Install (after clean)
+				+ Sign two exes
+				+ Make MSI
+				+ Rename MSI
+				+ Sign MSI
+				+ Test clean install
+					+ Verify it's a 32-bit process
+		+ Ubuntu
+			+ rm -rf ~/floating-sandbox
+			+ pull 
+			+ rm -rf build; mkdir build; cd build
+			+ cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
+			+ make install
+			+ Make tar ("cd ~/floating-sandbox && tar -cvf ../Floating-Sandbox-1.19.2-x64.tar . && cd -")
+			+ Zip tar
+			+ Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
+		+ Send x64 installer to dev server for final smoke test
 		- Wait for test results
 		*******
 		- Cut tag on github
@@ -559,6 +559,23 @@
 			- Verify Windows Defender
 				- Report file as safe (https://gamejolt.com/privacy)
 			- Post
+Dear shipmates,
+
+After almost one year of hard work on the Android port [https://gamejolt.com/p/october-android-port-update-c7sek58x], we're happy to release a new update for PC! 
+
+This update carries A TON of improvements that came to see the light while working on the Android port - not only significant performance improvements, but also new little features here and there, and many bug fixes!
+And with the Android port release only a few days ahead, this PC release aligns the two deliverables 100% with each other!
+
+Here's the changelist for this version:
+-- TODO
+
+Looking forward to seeing your reactions to this update! 
+
+P.S.: Stay tuned for the Android launch - it's really behind the corner!
+
+Gabe
+
+
 		- www.floatingsandbox.com:
 			- Update current version in FAQ
 			- Wait a day or two, to exclude disastrous bugs
@@ -574,6 +591,9 @@
 		- Maybe add that silt simulation upon impact (because silt doesnt really work in its current state)
 		- Fix the ships smashing into the sea bed so there's better shipwrecks (My favorite part of FS to be honest)
 			- See if it's due to too much elasticity
+
+	- Marine life: above water and on slope look weird
+		! Obviously - we flatten them horizontally
 
 	- ShipBuilder:
 		- Add pixel measurement next to ship measurement (*)
@@ -913,8 +933,8 @@
 		- rm -rf build; mkdir build; cd build
 		- cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
 		- make install
-		- Make tar ("cd ~/floating-sandbox && tar -cvf ../Floating-Sandbox-1.16.5-x64.tar . && cd -")
-		- Zip tar
+		- Make tar ("cd ~/floating-sandbox && tar -cvf ../Floating-Sandbox-1.16.5-x64.tar . && cd ..")
+		- Zip tar ("gzip Floating-Sandbox*.tar")
 		- Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
 	- Send 3 installers to dev server for final smoke test
 	- Wait for test results
