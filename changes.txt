@@ -1,4 +1,4 @@
-TODO: 1.19.2
+1.19.2
 - Added new "LightningStrike" tool - conjures lightnings against the ship
 - Added 3 new electrical materials:
 	- Thermal switches: toggle automatically with temperature
