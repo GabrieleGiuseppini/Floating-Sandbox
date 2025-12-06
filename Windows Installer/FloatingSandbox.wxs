@@ -19,7 +19,7 @@
 
         <MajorUpgrade AllowSameVersionUpgrades="yes" DowngradeErrorMessage="A newer version of $(var.ShortApplicationName) is already installed." />
 
-        <Icon Id="FsIcon.ico" SourceFile="..\FloatingSandbox\Resources\ShipAAA.ico" />
+        <Icon Id="FsIcon.ico" SourceFile="..\Sources\FloatingSandbox\Resources\ShipAAA.ico" />
         <Property Id="ARPPRODUCTICON" Value="FsIcon.ico" />
 
         <Property Id="ARPHELPLINK" Value="$(var.InfoURL)" />

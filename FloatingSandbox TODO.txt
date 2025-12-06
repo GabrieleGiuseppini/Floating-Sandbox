@@ -520,20 +520,20 @@
 
 	= Release:
 		+ Bump up version: 1.19.2
-		- Windows
-			- MSI variable
-			- Commit & push
-			- 64-bit MSI
-				- Cleanup Install
-				- Build Release Install (after clean)
-				- Sign two exes
-				- Make MSI
-				- Rename MSI
-				- Sign MSI
-				- Test upgrade from previous version
-			- 32-bit MSI
-				- Cleanup Install
-				- Build Release Install (after clean)
+		= Windows
+			+ MSI variable
+			+ Commit & push
+			+ 64-bit MSI
+				+ Cleanup Install
+				+ Build Release Install (after clean)
+				+ Sign two exes
+				+ Make MSI
+				+ Rename MSI
+				+ Sign MSI
+				+ Test upgrade from previous version
+			= 32-bit MSI
+				+ Cleanup Install
+				= Build Release Install (after clean)
 				- Sign two exes
 				- Make MSI
 				- Rename MSI
@@ -895,7 +895,7 @@
 			- Build Release Install (after clean)
 			- Sign two exes
 			- Make MSI
-			- Rename MSI
+			- Rename MSI (e.g. Floating-Sandbox-1.19.2-x64)
 			- Sign MSI
 			- Test upgrade from previous version
 		- 32-bit MSI
@@ -903,7 +903,7 @@
 			- Build Release Install (after clean)
 			- Sign two exes
 			- Make MSI
-			- Rename MSI
+			- Rename MSI (e.g. Floating-Sandbox-1.19.2-x86)
 			- Sign MSI
 			- Test clean install
 				- Verify it's a 32-bit process
