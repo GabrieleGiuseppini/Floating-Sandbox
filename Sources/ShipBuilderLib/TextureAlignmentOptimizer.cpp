@@ -240,10 +240,11 @@ std::vector<TextureAlignmentOptimizer::Segment> TextureAlignmentOptimizer::Calcu
 	std::optional<SegmentSession> currentSegment;
 
 	std::vector<Segment> segments;
-	for (int x = 0; x <= xValues.size(); ++x)
+	int const xMax = static_cast<int>(xValues.size());
+	for (int x = 0; x <= xMax; ++x)
 	{
 		bool interruptsCurrentSegment = false;
-		if (x == xValues.size() || xValues[x] == emptyXValue)
+		if (x == xMax || xValues[x] == emptyXValue)
 		{
 			// Interrupt segment if we have one
 			interruptsCurrentSegment = currentSegment.has_value();
@@ -278,7 +279,7 @@ std::vector<TextureAlignmentOptimizer::Segment> TextureAlignmentOptimizer::Calcu
 			}
 
 			// Start new segment
-			if (x == xValues.size() || xValues[x] == emptyXValue)
+			if (x == xMax || xValues[x] == emptyXValue)
 			{
 				currentSegment.reset();
 			}

@@ -38,7 +38,7 @@ public:
 	{
 		auto const currentPos = mStream.tellg();
 		mStream.seekg(0, std::ios::end);
-		auto const size = mStream.tellg();
+		auto const size = static_cast<size_t>(mStream.tellg());
 		mStream.seekg(currentPos);
 		return size;
 	}
@@ -56,7 +56,7 @@ public:
 	size_t Read(std::uint8_t * buffer, size_t size) override
 	{
 		mStream.read(reinterpret_cast<char *>(buffer), size);
-		return mStream.gcount();
+		return static_cast<size_t>(mStream.gcount());
 	}
 
 	size_t Skip(size_t size) override
