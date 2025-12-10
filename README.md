@@ -61,7 +61,7 @@ And even with all of this, the simulator still adapts itself to the characterist
 <img src="https://i.imgur.com/6LOVsqX.jpg">
 
 # History
-I started coding this game after stumbling upon Luke Wren's and Francis Racicot's (Pac0master) [Ship Sandbox](https://github.com/Wren6991/Ship-Sandbox). After becoming fascinated by it, I [forked](https://github.com/GabrieleGiuseppini/Ship-Sandbox) Luke's GitHub repo and started playing with the source code. After less than a year I realized I had rewritten all of the original code, while improving the game's FPS rate from 7 to 30 (on my old 2009 laptop!). At that moment I decided that my new project was worthy of a new name and a new source code repository, the one you are looking at now.
+I started coding this game after stumbling upon Luke Wren's and Francis Racicot's (Pac0master) [Ship Sandbox](https://github.com/Wren6991/Ship-Sandbox). After becoming fascinated by it, I decided to write a physics engine making use of standard low-latency techniques - data locality and cache-friendliness, intrinsics, vectorization - and general enough to allow for fantasy to roam wild!
 
 # Building the Game
 I build this game with Visual Studio 2022 (thus with full C++ 17 support) on Windows. From time to time I also build on Ubuntu to ensure the codebase is still portable.

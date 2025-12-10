@@ -8,589 +8,21 @@
 
 	=========================================================================
 
-	+ No redistribute
-		+ @ License
-	
-	+ When tsunami starts you can see edges during the shaking
-		+ Also port to Android
-
-	+ Underwater plants
-		! If plant above water it should be flat
-		! Generalized concept of "underwater currents", via Formulae to ensure consistency in a distributed implementation 
-			- Plants bend with the "current"
-				- Current is a horizontal sinusoid, fixed frequency, phase continuasly shifting
-					- Phase shifts with wind magnitude: |modulo| always greater than 0 though				
-				- Height of sinusoid dictates bend angle
-			! 1.0 * sin(spatial_velocity * x + time_velocity * t_sim)
-				! spatial_velocity, time_velocity from SimulationParameters
-				! time_velocity also depends on wind magnitude
-		+ Physics:
-			+ UnderwaterPlants container
-			+ Density parameter for generation
-				+ Default: 200 Max: 1000
-				+ Detect changes and update population accordingly, from scratch
-				+ Use logarithmic probabilities for types
-			+ Each plant has:
-				+ Position (of bottom)
-					+ x: calculated at creation time via random uniform distribution; never changes
-					+ y: calculated at creation time and when ocean floor changes
-						+ As min y of ocean floor samples around x (so that roots are covered)
-						+ Detect changes to coean floor profile and update accordingly (*)
-				+ UnderwaterDepth: calculated at Update() time
-					+ Lives in separate buffer and uploaded to RenderContext at each frame (when "underwaterDepthDirty")
-					+ Main buffer though holds OceanSurface-provided "proxy for fast coords" to quickly sample depth
-						+ Might be best to have fast proxies in own buffer (for speed, like we do with points, etc.)
-				+ Type
-					+ With distribution as progressive powers of 1/2 for each available type
-				+ Scale
-			+ Floor changes propagate to UnderwaterPlants (for updating positions) (*)
-				+ OceanFloor has mIsDirty
-					+ Set to true each time y's change (for params or for heightmap update)
-					+ Cleared at OceanFloor::UpdateEnd() (via that new mechanism for after-update cleanups)
-				+ UnderwaterPlants::Update() checks it (takes OceanFloor const &) and recalcs as appropriate
-			+ SizeMultiplier
-				+ SimulationParam
-				+ Change detection
-			+ RenderUpload:
-				+ if mArePlantsDirtyForRendering (set at population changes and at ocean floor changes => y)
-					+ Upload x, y, scale, whatever proxy for texture coords
-					+ mArePlantsDirtyForRendering = false
-				+ Upload oceanHeight (unadulterated, i.e. positive up, 0 at 0)
-					+ Rename @ UnderwaterPlants and WorldRenderContext
-					+ As buffer, and RenderContext duplicates 4-way
-				+ Shader: calculate relative depth (via world Y)
-
-		+ Specularity: at texture geometry:
-			+ UnderwaterPlants: get boolean
-			+ Upload
-			+ WorldRenderContext init: duplicate species, flipping H
-			+ WorldRenderContext upload: store atlasTileIndex = 2 * species + isSpecular
-
-		+ Fix texture truncation & bleeding
-			+ FIX: negative scale
-			+ FIX: interpolate coords between bl and tr
-			+ FIX: calc'n of rated quad is wrong - width is 2*
-			+ FIX: quad height must also take into account rotated width (for when w>h), and thus virtual Y max must also be calculated
-			+ FIX: bounding box must take into account rotation; need *diagonals*
-
-		+ static_assert SimParms::MaxWorldEtc for detecting becoming dynamic
-
-		+ Rendering (WorldRenderContext):
-			= Set of plant images (mipmapped generic texture)
-				- https://www.istockphoto.com/nl/search/2/image-film?phrase=acquatic%20plants%20transparent
-				= Try both linear and mipmapped
-					+ Linear
-					- MipMapped
-				+ Return actual count @ GetUnderwaterPlantsSpeciesCount()
-			+ cctor: 
-				+ Initialize underwater plant VAO
-					+ Two VBOs: one more static, the other (underwater depths) really dynamic
-						+ Plant vertex buffer is static, and consists of single (scaled) quads per-plant, with texture coords
-				+ Initialize underwater plant textures
-					+ Set array for texture-specific params, and vertex attribs has index in this array (i.e. plant type)
-						+ Based on global context :: linear atlas
-			+ Rough test for textures:
-				+ VertexAttribs take temp'ly uv coords (0,...,1)
-			+ UploadUnderwaterPlantStaticVertexAttributesStart()
-				+ mUnderwaterPlantStaticVertexAttributesBuffer.clear()
-				+ mIsUnderwaterPlantStaticVertexAttributesBufferDirty=true
-				+ Ensure element indices
-			+ UploadUnderwaterPlantStaticVertexAttributes
-				+ Actual quad is based off 90degree rotation, as bounding box around rotated texture using theo max
-				+ PlantSpace coords: 1.0 for height, variable (<>1) for width
-				+ TextureWidthInPlantSpace: which part of plant space width is texture width
-					+ Redo ShaderToy shader
-			+ UploadUnderwaterPlantStaticVertexAttributesEnd
-			+ UploadUnderwaterPlantDynamicInstanceAttributes(std::vector const &)	
-				+ assert size consistent with mUnderwaterPlantStaticVertexAttributesBuffer
-				+ Copy in bounded vector, keeping size max
-				+ Copy times 4
-				+ Check disassembly
-			+ UploadWind:
-				+ Takes current (whatever) + basis
-				+ Stores also basis and marks it as dirty IFF different
-					+ mBasisWindSpeed, mIsBasisWindSpeedDirty
-			+ RenderPrepareUnderwaterPlants:
-				+ If mIsUnderwaterPlantStaticVertexAttributesBufferDirty:
-					+ Upload
-					+ mIsUnderwaterPlantStaticVertexAttributesBufferDirty = false
-				+ Upload dynamic
-			+ RenderDrawUnderwaterPlants:
-				+ Rendered behind last ocean layer			
-					+ So behind water
-				+ Make sure texture unit activated and texture handle is bound (should be the case already for both linear and mipmapped)
-			+ Shader:
-				+ Params:
-					+ Add all to ShaderSets
-
-					+ World/RenderContext::UploadWind: back to just instant speed
-
-					+ World::Upload: section for underwater currents, after Wind::Upload:						
-						+ Calculate UnderwaterCurrentTimeVelocity via Formulae
-						+ RenderContext::UploadUnderwaterCurrent(spaceVelocity, timeVelocity)
-							-> WorldRenderContext::UploadUnderwaterCurrent
-								+ Check either: if different than mCurrent, set/do w/dirty
-
-					+ UnderwaterPlants::Update:
-						+ Takes Wind
-						+ Calc rotation angle if changed, sets mIsXXXDirtyForRendering
-					+ UnderwaterPlants::Upload:
-						+ if mIsXXXDirtyForRendering:
-							+ RenderContext::UploadUnderwaterPlantRotationAngle
-								+ > WorldRenderContext::UploadUnderwaterPlantRotationAngle
-									+ Check: if different than mCurrent, set/do w/dirty
-							+ mIsXXXDirtyForRendering = false
-
-					+ WorldRenderContext::RenderPrepareUnderwaterPlants:
-						+ Now takes simulation time
-						+ If rotation angle dirty: set
-						+ If spaceVelocity dirty: set
-						+ If timeVelocity dirty: set
-						+ Set Simulation Time
-
-					+ WorldRenderContext::UploadEnd
-						+ Reset flags
-				+ Shader on ShaderToy:
-					+ Basis
-					+ Test little high-frequency ripples
-						+ x
-						X y
-					+ Shader flattens plant (augmenting rotation ramp-up) based on underwaterDepth
-						+ Calc pretend yWorld based on fragCoords
-						+ Draw line at y=0
-						+ Calc depth based on mouse.y
-						X Re-try flattening after fixing texture w/more border
-
-					+ Make actual formula for wind speed
-						- 0 => PI/2 * 0.05?
-						- 20 => PI/2 * 0.25
-						- 100 => PI/2 * 0.5?
-						- PI/2 * (0.05 + windSpeed * 0.45 / 100) ?
-						+ Test whole range:
-							- 0 
-							- 20
-							- 100
-					
-					+ Personality seed (per-plant)
-						+ Used @ rotation, as simple additional phase
-
-					+ Test other images
-
-				+ Shader in FS
-					+ Redo vertex attribs
-					+ Copy code from shadertoy
-
-		+ Sort by X for perf
-			+ Change Populate():
-				+ Populate only plants
-					+ Calculate bottom Y using helper
-					+ Calculate scales using helper
-				+ Sort plans
-				+ Loop over plants:
-					+ Calculate proxy
-					+ Make room for ocean depths
-				+ Done
-		
-		+ Lower depth darkening
-				
-		+ Finalize images
-			+ Corals
-			+ Buy
-				+ Backup
-			+ Make 256
-				+ Large transparent side border
-				+ 0, 1
-				+ 2, 3, 4, 5, 6
-			+ Adjust atlas tile array @ shader
-
-		+ Patches
-			+ Cctor: decide # (4-8) and locii (in vector<float>)
-			+ Populate:
-				+ Go through locii via mod
-					+ Clamp to world, modding back when outside
-				+ Later: see if we need to leave the last 10% for uniform placing
-			+ f[n] = Z - (1 - a)^n * Z
-				- With: f[0] = 0; f[n] = f[n-1] + a * (Z - f[n-1])
-				- f[n] is the sum of all consumed elements at the beginning of step N
-				- invert Y = Z - (1 - a)^n Z as a function of n, Z, and Y
-				- a = 1 - (1 - Y/Z)^(1/n)
-				- W (constraint: # left) = Z - Y => Y = Z - W
-				- a = 1 - (W/Z)^(1/n)
-			+ Test: # plants < # patches
-
-		+ SettingsDialog
-			+ SettingsManager
-			+ Density
-			+ SizeMultiplier		
-
-		+ Tests:
-			+ Wind on Rain (we've touched that)
-			+ Density changes
-			+ Ocean floor changes do propagate: (also verify we upload here and only here, via existing logs)
-				+ Manual (tool)
-				+ Profile
-				+ Bumpiness 
-				+ Ocean depth
-			+ OceanSurface is sampled
-			+ Perf impact on Rendering
-				+ Save main as "prev" first
-				+ Try mipmapped -- SHOULD IMPROVE!
-					+ Save current (linear) as "prev"
-					+ Test:
-						+ Look'n'feel
-						+ Perf:
-							+ Zoom 0.04, SizeMultiplier & density max:
-								- Linear: 12.6-12.9 (avg: 12.8)
-								- MipMapped: 12.6-12.9 (avg: 12.7)
-
-		+ Shader finalization:
-			+ EffectiveAmbientLight
-			+ LampTool
-			+ OceanDarkeningRate
-				+ Copy from Fishes
-			+ Personality
-			+ Retry flattening
-				+ Do proper wind direction
-					+ Requires shader parameter and member, which gets set dirty @ existing UploadWind, and is reset and UploadEnd
-					+ Use in shader
-				+ FIX: bottom (roots) should not rotate - or else "roots" show up
-					+ No rotation at roots
-				+ Cleanup commented-out code
-			X Try perf impact with packing uniforms in vec's
-				+ Copy current to "prev" first
-				X Zoom 0.04, SizeMultiplier & density max:
-					+ Before: 12.6-12.9 (avg: 12.7)
-					+ After: same
-			+ Make textures' bottoms narrow, and centered
-
-		+ Remove all logs
-			+ WorldRenderContext.cpp
-			+ UnderwaterPlants.cpp
-
-		+ Test on old Dell
-			+ Rendering impact (test against density 0)
-				+ Old: zoom 0.04: rnd=11.0-11.6
-				+ New: zoom 0.04: rnd=16			
-			+ Static vertex reloads (by playing with density changes)
-			X See if bad perf due to dynamic uploads (comment-out for test)
-			+ Lower on low-gfx-score computers
-				+ Re-test on old Dell
-				+ Re-test on new Dell
-
-		+ FIX: rectangle patch (again...) with plant 6
-			X Option 1: all powers of two
-				- Check first how we build the atlas
-				- Port to Android - write it there!
-			+ Check Atlas itself and see what could be falling there
-				+ Need helper to save image: Render/ImageFileTools.h/cpp
-				+ Check individual mipmaps
-				+ Count pixels
-			! Theo values:
-				- Atlas: 4096x2048
-				- MipMap 3 H=256 = 1/8
-				+ Species 6 in-atlas size: 256x256
-				- Species 6 LB corner in MipMap 3: 192, 191 (paint) => 192, 64 (bottom origin)
-				+ Species 6 LB corner in Atlas: 1536, 512 (bottom origin) => 1536, 1535 (paint)
-				- Species 6 LB corner in Atlas space: 0.375, 0.25
-				- Species 6 RB corner in Atlas space: 0.4375, 0.375
-				- Species 6 in-atlas size in Atlas space: 0.0625, 0.125
-				- Species 6 size in Atlas space: 0.0625, 0.125
-				- Dx: 0.0001220703125, 0.000244140625
-				- Species 6 LB corner in Atlas space, incl. dx: 0.3751220703125, 0.250244140625
-					- {x=0.379760742 y=0.250244141 }
-				- Species 6 RB corner in Atlas space, incl. dx: 0.4373779296875, 0.374755859375
-					- {x=0.432739258 y=0.374755859 }
-			+ Confirmed that theoretical y (==actual y) yields artifact
-				! Hence, theory seems wrong...but it's not!
-			+ Try clamp in shader
-			~ Option 2: alpha cut in shader at <= 0.0 and >= 1.0
-				+ Replaces clamp
-			X Option 3: try nearest filters
-			+ Option 4: 1-px border below (if needed)
-				+ Comment-out mask in shader
-				X Do on plant 2 to verify: 1 pixel
-				+ Do on plant 2 to verify: 2 pixels
-				- Do on all other plants
-				- Add comment in database
-				- Redo all textures
-			+ Option 5: back to linear
-			+ When done:
-				+ Cleanup shader
-				+ Cleanup code
-
-		+ Merge into master
-
-		+ Changelist
-
-		+ Move this work item to Done
-
-	+ Send beta
-	+ Bump up version
-
-	+ Higher-definition world textures (from Android work)
-
-	+ ShipBuilder: Texture alignment optimizer
-		+ Do
-			+ FIX: top/bottom wastes @ TextureTest2 should be equal
-				! Right waste: tx=300 => sx=100, tCenter=301.5, waste=1.5 x9 => 13.5
-			+ See if constraining search to half a ship quad yields comparable results
-		+ Verify waste in Model import matches optimal
-		+ Add checkbox for it at Preferences (default ON)
-			+ Workbench state
-			+ UI
-			+ Use @ TextureLoad
-			+ Test OK/Cancel
-		+ See if larger search radius reduces waste on that ship
-		+ assert final texture size
-		+ Tests:
-			+ Texture hitting all edges
-			+ Texture too large
-				+ H
-				+ V
-		+ Remove logs
-		+ Mark item @ Android/Ships
-		+ Model validation checks: texture size
-			+ Move MaxTextureSize to WorkBench
-
-	+ ShipBuilder: Texture Translate Tool
-		+ Icon
-		+ Cursor
-		+ Tool
-			+ Templated on layer type
-			+ Copy from StructuralRectangleTool
-			+ MouseDown starts, MouseUp finalizes
-				+ Start: take full copy of layer (TextureLayerData, using ModelController::CloneXXXLayer), in engagement data
-				+ Move: 
-					+ Blit that to ModelController
-						+ Create new empty (transp) texture
-						+ Blit into it
-					+ Make undo (first time only)
-			+ SHIFT lock
-			! No limits
-		+ Test:
-			+ Undo
-			+ Move out of bounds
-		+ Add to changelist
-		+ Merge into master
-			+ Nuke branch
-
-	+ New electrical materials (*)
-		+ Timer Switches
-		+ Automatic Sounds
-		+ Thermal Switches
-		+ Redo template
-		+ changelist
-		+ Merge into master, and delete branch
-		+ Port to Android (just files and electrical materials)
-
-	+ Ships:
-		+ Yestanic
-			+ -In _TO_TAKE
-				+ Fix name, metadata, etc.
-			+ Add "Titania" to credits
-			+ Update changelist
-		+ R.M.S. Lusitania (PRE WW2) - in _TO_TAKE - from karlos
-			+ Add to credits: "elkarlos"
-			+ Fix metadata
-			+ Add ship
-			+ Add credits
-			+ Update changelist	
-	+ Lightning tool, like in Android
-		+ Changelist
-	+ Explosive materials on break
-		+ Code
-		+ Material: Nitroglycerin X 2
-		+ Port to Android
-			+ Simulation code
-			+ Saturn V engines
-				+ Scratch->assets
-			+ Dutch Dark Dragon nozzle
-		+ changelist
-		+ FIX: we're exploding for each spring connected to the point
-			+ Do @ Points::Damage() if it's the first time
-				! Places where we check and set mIsDamagedBuffer
-					! Points::Detach
-						! Does:
-							! Ship::HandlePointDetach
-								! Destroys all springs
-									! ShipHandler::HandleSpringDestroy
-										! Points::Damage
-							! If not damaged:
-								! >> Can this ever be?
-								! ShipHandler::HandlePointDamaged
-								! Mark as damaged
-						! Called from:
-							! Points::DetachPointForDestroy
-								! Called from:
-									! DestroyAt
-							! ThanosSnap
-							! Lightning
-							! ExplosionStateMachine
-								! But just for forced one-point detachment
-					! Points::Damage
-						! Does: 
-							! SetStructurallyLeaking
-							! If not damaged:
-								! ShipHandler::HandlePointDamaged
-								! Mark as damaged 
-						! Called from:
-							! Ship::HandleSpringDestroy
-
-				+ Undo current hacks first
-				+ Move from where we put it
-				+ While you're at it, make sure everything's inlined
-					+ Except InternalDamage(), called if ! damaged, and which does notification + explosion
-				+ "ExplodesOnBreak" -> "ExplodesOnDamage"
-					+ json
-					+ Material
-		+ Make colors
-			+ Do with script
-		+ Add to 1 PC rocket
-
-		+ Fix Android's Saturn V
-			= Work on version on Desktop
-			+ Compare with Android's -- this one should just have nitro
-			+ Replace diesel with Android's (old) nitro (y=8)
-			+ Re-fix gameplay
-			+ Store file in both places
-
-		+ Verify PC's Saturn V
-
-		+ Port to Android
-			+ Simulation code
-			+ structural material
-		+ Fix Dutch Dragon
-			+ In OneShare
-			+ 1. Temp nitro's: light="#F1F5C1" strong="#E1E5B1"
-			+ 2. Fix ship changing color
-			+ 3. Remove temp nitro's
-			+ Copy to Android
-		+ Test on phone
-			+ Saturn V
-			+ Dutch dragon
-				+ For weaker nitro material - evtly fix in structure
-
-	+ ShipSounds @ SoundController:
-		+ ISoundController, at Game
-			+ PlayOneShotShipSound(ShipSoundType)
-			+ PlayErrorSound
-		+ Implemented by SoundController
-			+ As dedicated one-shot sound; stopped before new one started
-		+ ISoundController * passed to ShipBuilderLib::MainFrame
-			+ Given:
-				+ FS: own
-				+ ShipBuilder.exe: nullptr
-			+ Stores in member
-			+ Passes to MaterialPalette
-		+ MaterialPalette:
-			+ When ship sound material hovered on: if mSoundController: play
-		+ Test ShipBuilder normal
-
-	+ pt_BR localization:
-		+ HTML
-		+ NPC
-		+ po - asked to fill-in missing entries for my mistake
-			+ Fix "No New Updates"
-		+ Update code
-			+ FIX: nuke MakeLanguageIdentifier; do double search
-			+ Test myself
-		+ Ask PortugueseGuy|Joadix to test
-		+ Ask Joadix to test
-		+ Add to credits: "Matheus Silva"
-		+ Changelist (w/credits!)
-
-	+ Localization:
-		+ Extract strings
-		+ Update all po's
-		+ IT
-			+ Do
-			+ Compile to mo
-		+ RU
-			+ Send
-			+ Compile to mo
-		+ UK
-			+ Send
-			+ Compile to mo
-		+ ES
-			+ Send
-			+ Compile to mo
-		+ pt_BR
-			+ Send
-			+ Compile to mo
-
-	= Release:
-		+ Bump up version: 1.19.2
-		+ Windows
-			+ MSI variable
-			+ Commit & push
-			+ 64-bit MSI
-				+ Cleanup Install
-				+ Build Release Install (after clean)
-				+ Sign two exes
-				+ Make MSI
-				+ Rename MSI
-				+ Sign MSI
-				+ Test upgrade from previous version
-			+ 32-bit MSI
-				+ Cleanup Install
-				+ Build Release Install (after clean)
-				+ Sign two exes
-				+ Make MSI
-				+ Rename MSI
-				+ Sign MSI
-				+ Test clean install
-					+ Verify it's a 32-bit process
-		+ Ubuntu
-			+ rm -rf ~/floating-sandbox
-			+ pull 
-			+ rm -rf build; mkdir build; cd build
-			+ cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
-			+ make install
-			+ Make tar ("cd ~/floating-sandbox && tar -cvf ../Floating-Sandbox-1.19.2-x64.tar . && cd -")
-			+ Zip tar
-			+ Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
-		+ Send x64 installer to dev server for final smoke test
-		- Wait for test results
-		*******
-		- Cut tag on github
-		- Copy binaries to Prev
-		- Copy MSIs to scratch and GoogleDrive
-		- Upload packages to GameJolt
-			- Verify Windows Defender
-				- Report file as safe (https://gamejolt.com/privacy)
-			- Post
-Dear shipmates,
-
-After almost one year of hard work on the Android port [https://gamejolt.com/p/october-android-port-update-c7sek58x], we're happy to release a new update for PC! 
-
-This update carries A TON of improvements that came to see the light while working on the Android port - not only significant performance improvements, but also new little features here and there, and many bug fixes!
-And with the Android port release only a few days ahead, this PC release aligns the two deliverables 100% with each other!
-
-Here's the changelist for this version:
--- TODO
-
-Looking forward to seeing your reactions to this update! 
-
-P.S.: Stay tuned for the Android launch - it's really behind the corner!
-
-Gabe
-
-
-		- www.floatingsandbox.com:
-			- Update current version in FAQ
-			- Wait a day or two, to exclude disastrous bugs
-			- Upload changes2.txt
-				- Test w/old FS
-		- Bump up version
-
-	----------------------------------------------------------
-
 	- Lower DisplacementWaveSmoothnessAdjust - 0.0 is quite cool
+
+	- Try adding a setting (if not already there) for WaveMaker's speed <-> fatness of interactive waves
+
+	- Replace need for "dWorld = abs(dFdy(yWorld)); // World per pixel" in ocean.glslinc with parameter
+		- Param whouls already exist! World in Y
+		- Set at view changes obviously
+		- Verify with this real "derivative" it still looks good, at all zooms
+		- Port to Android if ok
 
 	- Improvements from Bandit:
 		- Maybe add that silt simulation upon impact (because silt doesnt really work in its current state)
 		- Fix the ships smashing into the sea bed so there's better shipwrecks (My favorite part of FS to be honest)
 			- See if it's due to too much elasticity
+			- See if it's due to underwater pressure
 
 	- Marine life: above water and on slope look weird
 		! Obviously - we flatten them horizontally
@@ -18209,3 +17641,561 @@ IF WX:
 			+ Wait a day or two, to exclude disastrous bugs
 			+ Upload changes2.txt
 				+ Test w/old FS
+
+===============================================================================
+1.19.2:
+
+	+ No redistribute
+		+ @ License
+	
+	+ When tsunami starts you can see edges during the shaking
+		+ Also port to Android
+
+	+ Underwater plants
+		! If plant above water it should be flat
+		! Generalized concept of "underwater currents", via Formulae to ensure consistency in a distributed implementation 
+			- Plants bend with the "current"
+				- Current is a horizontal sinusoid, fixed frequency, phase continuasly shifting
+					- Phase shifts with wind magnitude: |modulo| always greater than 0 though				
+				- Height of sinusoid dictates bend angle
+			! 1.0 * sin(spatial_velocity * x + time_velocity * t_sim)
+				! spatial_velocity, time_velocity from SimulationParameters
+				! time_velocity also depends on wind magnitude
+		+ Physics:
+			+ UnderwaterPlants container
+			+ Density parameter for generation
+				+ Default: 200 Max: 1000
+				+ Detect changes and update population accordingly, from scratch
+				+ Use logarithmic probabilities for types
+			+ Each plant has:
+				+ Position (of bottom)
+					+ x: calculated at creation time via random uniform distribution; never changes
+					+ y: calculated at creation time and when ocean floor changes
+						+ As min y of ocean floor samples around x (so that roots are covered)
+						+ Detect changes to coean floor profile and update accordingly (*)
+				+ UnderwaterDepth: calculated at Update() time
+					+ Lives in separate buffer and uploaded to RenderContext at each frame (when "underwaterDepthDirty")
+					+ Main buffer though holds OceanSurface-provided "proxy for fast coords" to quickly sample depth
+						+ Might be best to have fast proxies in own buffer (for speed, like we do with points, etc.)
+				+ Type
+					+ With distribution as progressive powers of 1/2 for each available type
+				+ Scale
+			+ Floor changes propagate to UnderwaterPlants (for updating positions) (*)
+				+ OceanFloor has mIsDirty
+					+ Set to true each time y's change (for params or for heightmap update)
+					+ Cleared at OceanFloor::UpdateEnd() (via that new mechanism for after-update cleanups)
+				+ UnderwaterPlants::Update() checks it (takes OceanFloor const &) and recalcs as appropriate
+			+ SizeMultiplier
+				+ SimulationParam
+				+ Change detection
+			+ RenderUpload:
+				+ if mArePlantsDirtyForRendering (set at population changes and at ocean floor changes => y)
+					+ Upload x, y, scale, whatever proxy for texture coords
+					+ mArePlantsDirtyForRendering = false
+				+ Upload oceanHeight (unadulterated, i.e. positive up, 0 at 0)
+					+ Rename @ UnderwaterPlants and WorldRenderContext
+					+ As buffer, and RenderContext duplicates 4-way
+				+ Shader: calculate relative depth (via world Y)
+
+		+ Specularity: at texture geometry:
+			+ UnderwaterPlants: get boolean
+			+ Upload
+			+ WorldRenderContext init: duplicate species, flipping H
+			+ WorldRenderContext upload: store atlasTileIndex = 2 * species + isSpecular
+
+		+ Fix texture truncation & bleeding
+			+ FIX: negative scale
+			+ FIX: interpolate coords between bl and tr
+			+ FIX: calc'n of rated quad is wrong - width is 2*
+			+ FIX: quad height must also take into account rotated width (for when w>h), and thus virtual Y max must also be calculated
+			+ FIX: bounding box must take into account rotation; need *diagonals*
+
+		+ static_assert SimParms::MaxWorldEtc for detecting becoming dynamic
+
+		+ Rendering (WorldRenderContext):
+			= Set of plant images (mipmapped generic texture)
+				- https://www.istockphoto.com/nl/search/2/image-film?phrase=acquatic%20plants%20transparent
+				= Try both linear and mipmapped
+					+ Linear
+					- MipMapped
+				+ Return actual count @ GetUnderwaterPlantsSpeciesCount()
+			+ cctor: 
+				+ Initialize underwater plant VAO
+					+ Two VBOs: one more static, the other (underwater depths) really dynamic
+						+ Plant vertex buffer is static, and consists of single (scaled) quads per-plant, with texture coords
+				+ Initialize underwater plant textures
+					+ Set array for texture-specific params, and vertex attribs has index in this array (i.e. plant type)
+						+ Based on global context :: linear atlas
+			+ Rough test for textures:
+				+ VertexAttribs take temp'ly uv coords (0,...,1)
+			+ UploadUnderwaterPlantStaticVertexAttributesStart()
+				+ mUnderwaterPlantStaticVertexAttributesBuffer.clear()
+				+ mIsUnderwaterPlantStaticVertexAttributesBufferDirty=true
+				+ Ensure element indices
+			+ UploadUnderwaterPlantStaticVertexAttributes
+				+ Actual quad is based off 90degree rotation, as bounding box around rotated texture using theo max
+				+ PlantSpace coords: 1.0 for height, variable (<>1) for width
+				+ TextureWidthInPlantSpace: which part of plant space width is texture width
+					+ Redo ShaderToy shader
+			+ UploadUnderwaterPlantStaticVertexAttributesEnd
+			+ UploadUnderwaterPlantDynamicInstanceAttributes(std::vector const &)	
+				+ assert size consistent with mUnderwaterPlantStaticVertexAttributesBuffer
+				+ Copy in bounded vector, keeping size max
+				+ Copy times 4
+				+ Check disassembly
+			+ UploadWind:
+				+ Takes current (whatever) + basis
+				+ Stores also basis and marks it as dirty IFF different
+					+ mBasisWindSpeed, mIsBasisWindSpeedDirty
+			+ RenderPrepareUnderwaterPlants:
+				+ If mIsUnderwaterPlantStaticVertexAttributesBufferDirty:
+					+ Upload
+					+ mIsUnderwaterPlantStaticVertexAttributesBufferDirty = false
+				+ Upload dynamic
+			+ RenderDrawUnderwaterPlants:
+				+ Rendered behind last ocean layer			
+					+ So behind water
+				+ Make sure texture unit activated and texture handle is bound (should be the case already for both linear and mipmapped)
+			+ Shader:
+				+ Params:
+					+ Add all to ShaderSets
+
+					+ World/RenderContext::UploadWind: back to just instant speed
+
+					+ World::Upload: section for underwater currents, after Wind::Upload:						
+						+ Calculate UnderwaterCurrentTimeVelocity via Formulae
+						+ RenderContext::UploadUnderwaterCurrent(spaceVelocity, timeVelocity)
+							-> WorldRenderContext::UploadUnderwaterCurrent
+								+ Check either: if different than mCurrent, set/do w/dirty
+
+					+ UnderwaterPlants::Update:
+						+ Takes Wind
+						+ Calc rotation angle if changed, sets mIsXXXDirtyForRendering
+					+ UnderwaterPlants::Upload:
+						+ if mIsXXXDirtyForRendering:
+							+ RenderContext::UploadUnderwaterPlantRotationAngle
+								+ > WorldRenderContext::UploadUnderwaterPlantRotationAngle
+									+ Check: if different than mCurrent, set/do w/dirty
+							+ mIsXXXDirtyForRendering = false
+
+					+ WorldRenderContext::RenderPrepareUnderwaterPlants:
+						+ Now takes simulation time
+						+ If rotation angle dirty: set
+						+ If spaceVelocity dirty: set
+						+ If timeVelocity dirty: set
+						+ Set Simulation Time
+
+					+ WorldRenderContext::UploadEnd
+						+ Reset flags
+				+ Shader on ShaderToy:
+					+ Basis
+					+ Test little high-frequency ripples
+						+ x
+						X y
+					+ Shader flattens plant (augmenting rotation ramp-up) based on underwaterDepth
+						+ Calc pretend yWorld based on fragCoords
+						+ Draw line at y=0
+						+ Calc depth based on mouse.y
+						X Re-try flattening after fixing texture w/more border
+
+					+ Make actual formula for wind speed
+						- 0 => PI/2 * 0.05?
+						- 20 => PI/2 * 0.25
+						- 100 => PI/2 * 0.5?
+						- PI/2 * (0.05 + windSpeed * 0.45 / 100) ?
+						+ Test whole range:
+							- 0 
+							- 20
+							- 100
+					
+					+ Personality seed (per-plant)
+						+ Used @ rotation, as simple additional phase
+
+					+ Test other images
+
+				+ Shader in FS
+					+ Redo vertex attribs
+					+ Copy code from shadertoy
+
+		+ Sort by X for perf
+			+ Change Populate():
+				+ Populate only plants
+					+ Calculate bottom Y using helper
+					+ Calculate scales using helper
+				+ Sort plans
+				+ Loop over plants:
+					+ Calculate proxy
+					+ Make room for ocean depths
+				+ Done
+		
+		+ Lower depth darkening
+				
+		+ Finalize images
+			+ Corals
+			+ Buy
+				+ Backup
+			+ Make 256
+				+ Large transparent side border
+				+ 0, 1
+				+ 2, 3, 4, 5, 6
+			+ Adjust atlas tile array @ shader
+
+		+ Patches
+			+ Cctor: decide # (4-8) and locii (in vector<float>)
+			+ Populate:
+				+ Go through locii via mod
+					+ Clamp to world, modding back when outside
+				+ Later: see if we need to leave the last 10% for uniform placing
+			+ f[n] = Z - (1 - a)^n * Z
+				- With: f[0] = 0; f[n] = f[n-1] + a * (Z - f[n-1])
+				- f[n] is the sum of all consumed elements at the beginning of step N
+				- invert Y = Z - (1 - a)^n Z as a function of n, Z, and Y
+				- a = 1 - (1 - Y/Z)^(1/n)
+				- W (constraint: # left) = Z - Y => Y = Z - W
+				- a = 1 - (W/Z)^(1/n)
+			+ Test: # plants < # patches
+
+		+ SettingsDialog
+			+ SettingsManager
+			+ Density
+			+ SizeMultiplier		
+
+		+ Tests:
+			+ Wind on Rain (we've touched that)
+			+ Density changes
+			+ Ocean floor changes do propagate: (also verify we upload here and only here, via existing logs)
+				+ Manual (tool)
+				+ Profile
+				+ Bumpiness 
+				+ Ocean depth
+			+ OceanSurface is sampled
+			+ Perf impact on Rendering
+				+ Save main as "prev" first
+				+ Try mipmapped -- SHOULD IMPROVE!
+					+ Save current (linear) as "prev"
+					+ Test:
+						+ Look'n'feel
+						+ Perf:
+							+ Zoom 0.04, SizeMultiplier & density max:
+								- Linear: 12.6-12.9 (avg: 12.8)
+								- MipMapped: 12.6-12.9 (avg: 12.7)
+
+		+ Shader finalization:
+			+ EffectiveAmbientLight
+			+ LampTool
+			+ OceanDarkeningRate
+				+ Copy from Fishes
+			+ Personality
+			+ Retry flattening
+				+ Do proper wind direction
+					+ Requires shader parameter and member, which gets set dirty @ existing UploadWind, and is reset and UploadEnd
+					+ Use in shader
+				+ FIX: bottom (roots) should not rotate - or else "roots" show up
+					+ No rotation at roots
+				+ Cleanup commented-out code
+			X Try perf impact with packing uniforms in vec's
+				+ Copy current to "prev" first
+				X Zoom 0.04, SizeMultiplier & density max:
+					+ Before: 12.6-12.9 (avg: 12.7)
+					+ After: same
+			+ Make textures' bottoms narrow, and centered
+
+		+ Remove all logs
+			+ WorldRenderContext.cpp
+			+ UnderwaterPlants.cpp
+
+		+ Test on old Dell
+			+ Rendering impact (test against density 0)
+				+ Old: zoom 0.04: rnd=11.0-11.6
+				+ New: zoom 0.04: rnd=16			
+			+ Static vertex reloads (by playing with density changes)
+			X See if bad perf due to dynamic uploads (comment-out for test)
+			+ Lower on low-gfx-score computers
+				+ Re-test on old Dell
+				+ Re-test on new Dell
+
+		+ FIX: rectangle patch (again...) with plant 6
+			X Option 1: all powers of two
+				- Check first how we build the atlas
+				- Port to Android - write it there!
+			+ Check Atlas itself and see what could be falling there
+				+ Need helper to save image: Render/ImageFileTools.h/cpp
+				+ Check individual mipmaps
+				+ Count pixels
+			! Theo values:
+				- Atlas: 4096x2048
+				- MipMap 3 H=256 = 1/8
+				+ Species 6 in-atlas size: 256x256
+				- Species 6 LB corner in MipMap 3: 192, 191 (paint) => 192, 64 (bottom origin)
+				+ Species 6 LB corner in Atlas: 1536, 512 (bottom origin) => 1536, 1535 (paint)
+				- Species 6 LB corner in Atlas space: 0.375, 0.25
+				- Species 6 RB corner in Atlas space: 0.4375, 0.375
+				- Species 6 in-atlas size in Atlas space: 0.0625, 0.125
+				- Species 6 size in Atlas space: 0.0625, 0.125
+				- Dx: 0.0001220703125, 0.000244140625
+				- Species 6 LB corner in Atlas space, incl. dx: 0.3751220703125, 0.250244140625
+					- {x=0.379760742 y=0.250244141 }
+				- Species 6 RB corner in Atlas space, incl. dx: 0.4373779296875, 0.374755859375
+					- {x=0.432739258 y=0.374755859 }
+			+ Confirmed that theoretical y (==actual y) yields artifact
+				! Hence, theory seems wrong...but it's not!
+			+ Try clamp in shader
+			~ Option 2: alpha cut in shader at <= 0.0 and >= 1.0
+				+ Replaces clamp
+			X Option 3: try nearest filters
+			+ Option 4: 1-px border below (if needed)
+				+ Comment-out mask in shader
+				X Do on plant 2 to verify: 1 pixel
+				+ Do on plant 2 to verify: 2 pixels
+				- Do on all other plants
+				- Add comment in database
+				- Redo all textures
+			+ Option 5: back to linear
+			+ When done:
+				+ Cleanup shader
+				+ Cleanup code
+
+		+ Merge into master
+
+		+ Changelist
+
+		+ Move this work item to Done
+
+	+ Send beta
+	+ Bump up version
+
+	+ Higher-definition world textures (from Android work)
+
+	+ ShipBuilder: Texture alignment optimizer
+		+ Do
+			+ FIX: top/bottom wastes @ TextureTest2 should be equal
+				! Right waste: tx=300 => sx=100, tCenter=301.5, waste=1.5 x9 => 13.5
+			+ See if constraining search to half a ship quad yields comparable results
+		+ Verify waste in Model import matches optimal
+		+ Add checkbox for it at Preferences (default ON)
+			+ Workbench state
+			+ UI
+			+ Use @ TextureLoad
+			+ Test OK/Cancel
+		+ See if larger search radius reduces waste on that ship
+		+ assert final texture size
+		+ Tests:
+			+ Texture hitting all edges
+			+ Texture too large
+				+ H
+				+ V
+		+ Remove logs
+		+ Mark item @ Android/Ships
+		+ Model validation checks: texture size
+			+ Move MaxTextureSize to WorkBench
+
+	+ ShipBuilder: Texture Translate Tool
+		+ Icon
+		+ Cursor
+		+ Tool
+			+ Templated on layer type
+			+ Copy from StructuralRectangleTool
+			+ MouseDown starts, MouseUp finalizes
+				+ Start: take full copy of layer (TextureLayerData, using ModelController::CloneXXXLayer), in engagement data
+				+ Move: 
+					+ Blit that to ModelController
+						+ Create new empty (transp) texture
+						+ Blit into it
+					+ Make undo (first time only)
+			+ SHIFT lock
+			! No limits
+		+ Test:
+			+ Undo
+			+ Move out of bounds
+		+ Add to changelist
+		+ Merge into master
+			+ Nuke branch
+
+	+ New electrical materials (*)
+		+ Timer Switches
+		+ Automatic Sounds
+		+ Thermal Switches
+		+ Redo template
+		+ changelist
+		+ Merge into master, and delete branch
+		+ Port to Android (just files and electrical materials)
+
+	+ Ships:
+		+ Yestanic
+			+ -In _TO_TAKE
+				+ Fix name, metadata, etc.
+			+ Add "Titania" to credits
+			+ Update changelist
+		+ R.M.S. Lusitania (PRE WW2) - in _TO_TAKE - from karlos
+			+ Add to credits: "elkarlos"
+			+ Fix metadata
+			+ Add ship
+			+ Add credits
+			+ Update changelist	
+	+ Lightning tool, like in Android
+		+ Changelist
+	+ Explosive materials on break
+		+ Code
+		+ Material: Nitroglycerin X 2
+		+ Port to Android
+			+ Simulation code
+			+ Saturn V engines
+				+ Scratch->assets
+			+ Dutch Dark Dragon nozzle
+		+ changelist
+		+ FIX: we're exploding for each spring connected to the point
+			+ Do @ Points::Damage() if it's the first time
+				! Places where we check and set mIsDamagedBuffer
+					! Points::Detach
+						! Does:
+							! Ship::HandlePointDetach
+								! Destroys all springs
+									! ShipHandler::HandleSpringDestroy
+										! Points::Damage
+							! If not damaged:
+								! >> Can this ever be?
+								! ShipHandler::HandlePointDamaged
+								! Mark as damaged
+						! Called from:
+							! Points::DetachPointForDestroy
+								! Called from:
+									! DestroyAt
+							! ThanosSnap
+							! Lightning
+							! ExplosionStateMachine
+								! But just for forced one-point detachment
+					! Points::Damage
+						! Does: 
+							! SetStructurallyLeaking
+							! If not damaged:
+								! ShipHandler::HandlePointDamaged
+								! Mark as damaged 
+						! Called from:
+							! Ship::HandleSpringDestroy
+
+				+ Undo current hacks first
+				+ Move from where we put it
+				+ While you're at it, make sure everything's inlined
+					+ Except InternalDamage(), called if ! damaged, and which does notification + explosion
+				+ "ExplodesOnBreak" -> "ExplodesOnDamage"
+					+ json
+					+ Material
+		+ Make colors
+			+ Do with script
+		+ Add to 1 PC rocket
+
+		+ Fix Android's Saturn V
+			= Work on version on Desktop
+			+ Compare with Android's -- this one should just have nitro
+			+ Replace diesel with Android's (old) nitro (y=8)
+			+ Re-fix gameplay
+			+ Store file in both places
+
+		+ Verify PC's Saturn V
+
+		+ Port to Android
+			+ Simulation code
+			+ structural material
+		+ Fix Dutch Dragon
+			+ In OneShare
+			+ 1. Temp nitro's: light="#F1F5C1" strong="#E1E5B1"
+			+ 2. Fix ship changing color
+			+ 3. Remove temp nitro's
+			+ Copy to Android
+		+ Test on phone
+			+ Saturn V
+			+ Dutch dragon
+				+ For weaker nitro material - evtly fix in structure
+
+	+ ShipSounds @ SoundController:
+		+ ISoundController, at Game
+			+ PlayOneShotShipSound(ShipSoundType)
+			+ PlayErrorSound
+		+ Implemented by SoundController
+			+ As dedicated one-shot sound; stopped before new one started
+		+ ISoundController * passed to ShipBuilderLib::MainFrame
+			+ Given:
+				+ FS: own
+				+ ShipBuilder.exe: nullptr
+			+ Stores in member
+			+ Passes to MaterialPalette
+		+ MaterialPalette:
+			+ When ship sound material hovered on: if mSoundController: play
+		+ Test ShipBuilder normal
+
+	+ pt_BR localization:
+		+ HTML
+		+ NPC
+		+ po - asked to fill-in missing entries for my mistake
+			+ Fix "No New Updates"
+		+ Update code
+			+ FIX: nuke MakeLanguageIdentifier; do double search
+			+ Test myself
+		+ Ask PortugueseGuy|Joadix to test
+		+ Ask Joadix to test
+		+ Add to credits: "Matheus Silva"
+		+ Changelist (w/credits!)
+
+	+ Localization:
+		+ Extract strings
+		+ Update all po's
+		+ IT
+			+ Do
+			+ Compile to mo
+		+ RU
+			+ Send
+			+ Compile to mo
+		+ UK
+			+ Send
+			+ Compile to mo
+		+ ES
+			+ Send
+			+ Compile to mo
+		+ pt_BR
+			+ Send
+			+ Compile to mo
+
+	+ Release:
+		+ Bump up version: 1.19.2
+		+ Windows
+			+ MSI variable
+			+ Commit & push
+			+ 64-bit MSI
+				+ Cleanup Install
+				+ Build Release Install (after clean)
+				+ Sign two exes
+				+ Make MSI
+				+ Rename MSI
+				+ Sign MSI
+				+ Test upgrade from previous version
+			+ 32-bit MSI
+				+ Cleanup Install
+				+ Build Release Install (after clean)
+				+ Sign two exes
+				+ Make MSI
+				+ Rename MSI
+				+ Sign MSI
+				+ Test clean install
+					+ Verify it's a 32-bit process
+		+ Ubuntu
+			+ rm -rf ~/floating-sandbox
+			+ pull 
+			+ rm -rf build; mkdir build; cd build
+			+ cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
+			+ make install
+			+ Make tar ("cd ~/floating-sandbox && tar -cvf ../Floating-Sandbox-1.19.2-x64.tar . && cd -")
+			+ Zip tar
+			+ Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
+		+ Send x64 installer to dev server for final smoke test
+		+ Wait for test results
+		*******
+		+ Cut tag on github
+		+ Copy binaries to Prev
+		+ Copy MSIs to scratch and GoogleDrive
+		+ Upload packages to GameJolt
+		+ Post on GameJolt
+		+ www.floatingsandbox.com:
+			+ Update current version in FAQ
+			+ Upload changes2.txt
+				+ Test w/old FS
+		+ Bump up version
