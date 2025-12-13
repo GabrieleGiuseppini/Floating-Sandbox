@@ -88,6 +88,17 @@ public:
         return resulty1 * (1.0f - fy) + resulty2 * fy;
     }
 
+    static inline RgbaImageData TrimTransparent(RgbaImageData imageData)
+    {
+        return InternalTrim<rgbaColor>(
+            std::move(imageData),
+            [](rgbaColor const & c) -> bool
+            {
+                // Trim if fully transparent
+                return c.a == 0;
+            });
+    }
+
     static inline RgbImageData TrimWhite(RgbImageData imageData)
     {
         return InternalTrim<rgbColor>(
