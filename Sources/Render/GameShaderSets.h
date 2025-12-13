@@ -169,7 +169,7 @@ enum class ProgramParameterKind : std::uint8_t
     WaterLevelThreshold,
     WidthNdc,
     WindDirection,
-    Zoom,
+    WorldPerPixel,
 
     // Textures
     SharedTexture,                          // 0, for programs that don't use a dedicated unit and hence will keep binding different textures (font, ship texture, stressed ship texture, cloud shadows)

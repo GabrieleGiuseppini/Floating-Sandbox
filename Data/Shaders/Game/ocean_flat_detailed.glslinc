@@ -80,6 +80,9 @@ uniform float paramOceanDepthDarkeningRate;
 uniform vec3 paramOceanFlatColor;
 uniform float paramOceanTransparency;
 uniform float paramSunRaysInclination; // 0.0==vertical, 1.0/-1.0==45/-45 degrees
+#ifdef IS_UPPER
+uniform float paramWorldPerPixel;
+#endif
 
 void main()
 {
@@ -125,7 +128,8 @@ void main()
         vec4(color, (1.0 - paramOceanTransparency)),
         yWorld,
         yVectorWorld,
-        paramEffectiveMoonlightColor, 
+        paramWorldPerPixel,
+        paramEffectiveMoonlightColor,
         paramEffectiveAmbientLightIntensity);
 #else
     // Apply detail

@@ -4,6 +4,7 @@ vec4 CalculateDetailedOceanPlaneColorUpper(
     vec4 baseColor,    
     float yWorld,
     vec4 yVector, // Back, Mid, Front, d2Front
+    float worldPerPixel,
     vec3 moonlightColor,
     float effectiveAmbientLightIntensity)
 {
@@ -13,8 +14,7 @@ vec4 CalculateDetailedOceanPlaneColorUpper(
     // We use the second derivative to offset the border width vertically
     //
     
-    float dWorld = abs(dFdy(yWorld)); // World per pixel
-    float basalBorderWidth = 1.5 * dWorld; // pixels
+    float basalBorderWidth = 1.5 * worldPerPixel; // pixels
 
 #ifdef RENDER_ALL_PLANES
     float borderWidthHalfBack = basalBorderWidth + abs(dFdx(yVector.x)) * 1.2;
@@ -22,7 +22,7 @@ vec4 CalculateDetailedOceanPlaneColorUpper(
 #endif
 
     float borderWidthHalfFront = basalBorderWidth + abs(dFdx(yVector.z)) * 1.2;
-    float yFrontMidBorder = yVector.z + borderWidthHalfFront * yVector.w / (dWorld * 70.);
+    float yFrontMidBorder = yVector.z + borderWidthHalfFront * yVector.w / (worldPerPixel * 70.);
 
     //
     // Color

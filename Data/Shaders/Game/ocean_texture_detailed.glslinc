@@ -81,6 +81,9 @@ uniform float paramOceanDepthDarkeningRate;
 uniform float paramOceanTransparency;
 uniform float paramSunRaysInclination; // 0.0==vertical, 1.0/-1.0==45/-45 degrees
 uniform vec2 paramTextureScaling;
+#ifdef IS_UPPER
+uniform float paramWorldPerPixel;
+#endif
 
 void main()
 {
@@ -123,8 +126,9 @@ void main()
     gl_FragColor = CalculateDetailedOceanPlaneColorUpper(
         vec4(textureColor.xyz, textureColor.w * (1.0 - paramOceanTransparency)),
         worldCoordsAndYTexture.y,
-        yVectorWorld, 
-        paramEffectiveMoonlightColor, 
+        yVectorWorld,
+        paramWorldPerPixel,
+        paramEffectiveMoonlightColor,
         paramEffectiveAmbientLightIntensity);
 #else
     // Apply detail

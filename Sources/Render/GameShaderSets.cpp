@@ -515,8 +515,8 @@ ProgramParameterKind StrToProgramParameterKind(std::string const & str)
         return ProgramParameterKind::WidthNdc;
     else if (str == "WindDirection")
         return ProgramParameterKind::WindDirection;
-    else if (str == "Zoom")
-        return ProgramParameterKind::Zoom;
+    else if (str == "WorldPerPixel")
+        return ProgramParameterKind::WorldPerPixel;
     // Textures
     else if (str == "SharedTexture")
         return ProgramParameterKind::SharedTexture;
@@ -634,8 +634,8 @@ std::string ProgramParameterKindToStr(ProgramParameterKind programParameter)
             return "WidthNdc";
         case ProgramParameterKind::WindDirection:
             return "WindDirection";
-        case ProgramParameterKind::Zoom:
-            return "Zoom";
+        case ProgramParameterKind::WorldPerPixel:
+            return "WorldPerPixel";
             // Textures
         case ProgramParameterKind::SharedTexture:
             return "SharedTexture";

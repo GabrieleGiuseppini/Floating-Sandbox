@@ -10,13 +10,22 @@
 
 	- Lower DisplacementWaveSmoothnessAdjust - 0.0 is quite cool
 
-	- Try adding a setting (if not already there) for WaveMaker's speed <-> fatness of interactive waves
+	- Try adding a setting for WaveMaker's speed <-> fatness of interactive waves
+		- Affects OceanSurface::AdjustTo
 
-	- Replace need for "dWorld = abs(dFdy(yWorld)); // World per pixel" in ocean.glslinc with parameter
-		- Param whouls already exist! World in Y
-		- Set at view changes obviously
-		- Verify with this real "derivative" it still looks good, at all zooms
+	= Replace need for "dWorld = abs(dFdy(yWorld)); // World per pixel" in ocean.glslinc with parameter
+		! Param does not exist already
+		+ WorldPerPixel, float
+		+ Set at WorldRenderContext::ApplyViewModelChanges
+		+ Verify with this real "derivative" it still looks good, at all zooms
+		+ Test:
+			+ Flat
+			+ Depth
+			+ Texture
 		- Port to Android if ok
+			- Render/ShaderSets
+			- WorldRenderContext::ApplyViewModelChanges
+			- shaders
 
 	- Improvements from Bandit:
 		- Maybe add that silt simulation upon impact (because silt doesnt really work in its current state)
@@ -29,6 +38,7 @@
 
 	- ShipBuilder:
 		- Add pixel measurement next to ship measurement (*)
+		- Make Undo survive return to game and back
 
 	- Try perlin on rot - just in shader:
 		rot = rot * (0.5 + 0.5 * sample)
@@ -1246,6 +1256,7 @@
 					- Copper would still decay but it would be second slowest to concrete material 
 					- Gold would be heavy but unable to corrode like stainless steel
 				- Check Longhorn's materials
+					- Ask for latest
 					- A) New colors for existing materials
 					- B) New materials altogether
 					- Then these should be taken care of:

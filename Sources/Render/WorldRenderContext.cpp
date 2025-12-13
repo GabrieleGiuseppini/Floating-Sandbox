@@ -1987,7 +1987,7 @@ void WorldRenderContext::RenderPrepareEnd()
 void WorldRenderContext::ApplyViewModelChanges(RenderParameters const & renderParameters)
 {
     //
-    // Update ortho matrix in all programs
+    // Update ortho matrix and view-dependent parameters in all programs
     //
 
     constexpr float ZFar = 1000.0f;
@@ -1995,6 +1995,12 @@ void WorldRenderContext::ApplyViewModelChanges(RenderParameters const & renderPa
 
     ProjectionMatrix globalOrthoMatrix;
     renderParameters.View.CalculateGlobalOrthoMatrix(ZFar, ZNear, globalOrthoMatrix);
+
+    float const worldPerPixel = renderParameters.View.PhysicalDisplayOffsetToWorldOffset(1.0f);
+
+    LogMessage("TODOTEST: worldPerPixel=", worldPerPixel);
+
+    //
 
     mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::LandFlatBasic>();
     mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::LandFlatBasic, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
@@ -2023,6 +2029,8 @@ void WorldRenderContext::ApplyViewModelChanges(RenderParameters const & renderPa
     mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanDepthDetailedBackgroundUpper>();
     mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanDepthDetailedBackgroundUpper, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         globalOrthoMatrix);
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanDepthDetailedBackgroundUpper, GameShaderSets::ProgramParameterKind::WorldPerPixel>(
+        worldPerPixel);
 
     mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanDepthDetailedForegroundLower>();
     mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanDepthDetailedForegroundLower, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
@@ -2031,6 +2039,8 @@ void WorldRenderContext::ApplyViewModelChanges(RenderParameters const & renderPa
     mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanDepthDetailedForegroundUpper>();
     mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanDepthDetailedForegroundUpper, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         globalOrthoMatrix);
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanDepthDetailedForegroundUpper, GameShaderSets::ProgramParameterKind::WorldPerPixel>(
+        worldPerPixel);
 
     mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanFlatBasic>();
     mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanFlatBasic, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
@@ -2043,6 +2053,8 @@ void WorldRenderContext::ApplyViewModelChanges(RenderParameters const & renderPa
     mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanFlatDetailedBackgroundUpper>();
     mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanFlatDetailedBackgroundUpper, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         globalOrthoMatrix);
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanFlatDetailedBackgroundUpper, GameShaderSets::ProgramParameterKind::WorldPerPixel>(
+        worldPerPixel);
 
     mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanFlatDetailedForegroundLower>();
     mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanFlatDetailedForegroundLower, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
@@ -2051,6 +2063,8 @@ void WorldRenderContext::ApplyViewModelChanges(RenderParameters const & renderPa
     mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanFlatDetailedForegroundUpper>();
     mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanFlatDetailedForegroundUpper, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         globalOrthoMatrix);
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanFlatDetailedForegroundUpper, GameShaderSets::ProgramParameterKind::WorldPerPixel>(
+        worldPerPixel);
 
     mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanTextureBasic>();
     mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanTextureBasic, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
@@ -2063,6 +2077,8 @@ void WorldRenderContext::ApplyViewModelChanges(RenderParameters const & renderPa
     mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanTextureDetailedBackgroundUpper>();
     mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanTextureDetailedBackgroundUpper, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         globalOrthoMatrix);
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanTextureDetailedBackgroundUpper, GameShaderSets::ProgramParameterKind::WorldPerPixel>(
+        worldPerPixel);
 
     mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanTextureDetailedForegroundLower>();
     mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanTextureDetailedForegroundLower, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
@@ -2071,6 +2087,8 @@ void WorldRenderContext::ApplyViewModelChanges(RenderParameters const & renderPa
     mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::OceanTextureDetailedForegroundUpper>();
     mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanTextureDetailedForegroundUpper, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
         globalOrthoMatrix);
+    mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::OceanTextureDetailedForegroundUpper, GameShaderSets::ProgramParameterKind::WorldPerPixel>(
+        worldPerPixel);
 
     mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::FishesBasic>();
     mShaderManager.SetProgramParameter<GameShaderSets::ProgramKind::FishesBasic, GameShaderSets::ProgramParameterKind::OrthoMatrix>(
