@@ -1,3 +1,7 @@
+TODO
+- Improved bulkiness of tsunami's and interactive waves
+	- And added a new setting to customize it at will
+
 1.19.2
 - Added new "LightningStrike" tool - conjures lightnings against the ship
 - Added 3 new electrical materials:

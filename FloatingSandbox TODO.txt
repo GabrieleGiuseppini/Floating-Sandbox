@@ -10,17 +10,17 @@
 
 	+ Lower DisplacementWaveSmoothnessAdjust - 0.0 is quite cool
 
-	= Try adding a setting for WaveMaker's speed <-> fatness of interactive waves
+	+ Try adding a setting for WaveMaker's speed <-> fatness of interactive waves
 		+ Param: "InteractiveWave"
 		+ Func: AdjustOceanSurfaceTo -> ImpartInteractiveWaveAt
 		+ Affects OceanSurface::AdjustTo and decay
 			+ OceanSurface stores value and uses it there		
 		+ SettingsDialog
 		+ Decide default value
-		- If ok:
-			- Port setting to Android (SettingsWindow)
-				- Replace both DisplacementWaves in waves panel
-			- Add to PC changelist
+		+ If ok:
+			+ Port setting to Android (SettingsWindow)
+				+ Replace both DisplacementWaves in waves panel
+			+ Add to PC changelist
 
 	+ Replace need for "dWorld = abs(dFdy(yWorld)); // World per pixel" in ocean.glslinc with parameter
 		! Param does not exist already
