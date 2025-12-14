@@ -149,7 +149,7 @@ public:
         return CoordinatesProxy{ sampleIndexI, sampleIndexDx };
     }
 
-    void AdjustTo(
+    void ApplyInteractiveWaveAt(
         vec2f const & worldCoordinates,
         float worldRadius);
 
@@ -263,6 +263,7 @@ private:
     float mBasalWaveHeightAdjustment;
     float mBasalWaveLengthAdjustment;
     float mBasalWaveSpeedAdjustment;
+    float mInteractiveWaveGrowthRateAdjustment;
     std::chrono::minutes mTsunamiRate;
     std::chrono::seconds mRogueWaveRate;
 

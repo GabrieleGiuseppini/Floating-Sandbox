@@ -1013,11 +1013,11 @@ void World::DetonateAntiMatterBombs()
     }
 }
 
-void World::AdjustOceanSurfaceTo(
+void World::ApplyInteractiveWaveAt(
     vec2f const & worldCoordinates,
     float worldRadius)
 {
-    mOceanSurface.AdjustTo(
+    mOceanSurface.ApplyInteractiveWaveAt(
         worldCoordinates,
         worldRadius);
 }

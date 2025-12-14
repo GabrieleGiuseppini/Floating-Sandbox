@@ -142,7 +142,7 @@ struct IGameController
     virtual void ToggleTimerBombAt(DisplayLogicalCoordinates const & screenCoordinates) = 0;
     virtual void DetonateRCBombs() = 0;
     virtual void DetonateAntiMatterBombs() = 0;
-    virtual void AdjustOceanSurfaceTo(DisplayLogicalCoordinates const & screenCoordinates, int screenRadius) = 0;
+    virtual void ApplyInteractiveWaveAt(DisplayLogicalCoordinates const & screenCoordinates, int screenRadius) = 0;
     virtual std::optional<bool> AdjustOceanFloorTo(vec2f const & startWorldPosition, vec2f const & endWorldPosition) = 0;
     virtual bool ScrubThrough(DisplayLogicalCoordinates const & startScreenCoordinates, DisplayLogicalCoordinates const & endScreenCoordinates) = 0;
     virtual bool RotThrough(DisplayLogicalCoordinates const & startScreenCoordinates, DisplayLogicalCoordinates const & endScreenCoordinates) = 0;

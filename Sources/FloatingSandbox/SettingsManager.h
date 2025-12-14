@@ -46,6 +46,7 @@ enum class GameSettings : size_t
     BasalWaveHeightAdjustment,
     BasalWaveLengthAdjustment,
     BasalWaveSpeedAdjustment,
+    InteractiveWaveGrowthRateAdjustment,
     TsunamiRate,
     RogueWaveRate,
     DoModulateWind,

@@ -109,6 +109,7 @@ private:
     SliderControl<float> * mWaveSmoothnessAdjustmentSlider;
     SliderControl<std::chrono::minutes::rep> * mTsunamiRateSlider;
     SliderControl<std::chrono::seconds::rep> * mRogueWaveRateSlider;
+    SliderControl<float> * mInteractiveWaveGrowthRateAdjustmentAdjustmentSlider;
     SliderControl<float> * mStormStrengthAdjustmentSlider;
     wxCheckBox * mDoRainWithStormCheckBox;
     SliderControl<float> * mRainFloodAdjustmentSlider;

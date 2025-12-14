@@ -2317,7 +2317,7 @@ public:
         {
             if (inputState.IsLeftMouseDown)
             {
-                mGameController.AdjustOceanSurfaceTo(inputState.MousePosition, PointerRadius);
+                mGameController.ApplyInteractiveWaveAt(inputState.MousePosition, PointerRadius);
             }
             else
             {
@@ -2334,7 +2334,7 @@ public:
             if (inputState.IsLeftMouseDown)
             {
                 // State change: start
-                mGameController.AdjustOceanSurfaceTo(inputState.MousePosition, PointerRadius);
+                mGameController.ApplyInteractiveWaveAt(inputState.MousePosition, PointerRadius);
 
                 mSoundController.PlayWaveMakerSound();
                 SetCurrentCursor(inputState);

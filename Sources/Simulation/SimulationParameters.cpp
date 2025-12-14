@@ -46,11 +46,12 @@ SimulationParameters::SimulationParameters()
     , BasalWaveHeightAdjustment(1.0f)
     , BasalWaveLengthAdjustment(1.0f)
     , BasalWaveSpeedAdjustment(2.0f)
+    , InteractiveWaveGrowthRateAdjustment(0.25f)
     , TsunamiRate(12)
     , RogueWaveRate(32)
     , DoDisplaceWater(true)
     , WaterDisplacementWaveHeightAdjustment(1.0f)
-    , WaveSmoothnessAdjustment(0.203125f)
+    , WaveSmoothnessAdjustment(0.0f) // Was 0.203125f up to 1.19.2
     // Storm
     , StormRate(60)
     , StormDuration(60 * 4) // 4 minutes

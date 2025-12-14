@@ -1332,7 +1332,7 @@ void GameController::DetonateAntiMatterBombs()
     mWorld->DetonateAntiMatterBombs();
 }
 
-void GameController::AdjustOceanSurfaceTo(
+void GameController::ApplyInteractiveWaveAt(
     DisplayLogicalCoordinates const & screenCoordinates,
     int screenRadius)
 {
@@ -1341,7 +1341,7 @@ void GameController::AdjustOceanSurfaceTo(
 
     // Apply action
     assert(mWorld);
-    mWorld->AdjustOceanSurfaceTo(worldCoordinates, worldRadius);
+    mWorld->ApplyInteractiveWaveAt(worldCoordinates, worldRadius);
 }
 
 std::optional<bool> GameController::AdjustOceanFloorTo(

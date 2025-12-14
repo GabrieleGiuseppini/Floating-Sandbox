@@ -277,6 +277,10 @@ struct SimulationParameters
     static float constexpr MinBasalWaveSpeedAdjustment = 0.75f;
     static float constexpr MaxBasalWaveSpeedAdjustment = 20.0f;
 
+    float InteractiveWaveGrowthRateAdjustment;
+    static float constexpr MinInteractiveWaveGrowthRateAdjustment = 0.1f;
+    static float constexpr MaxInteractiveWaveGrowthRateAdjustment = 3.0f;
+
     std::chrono::minutes TsunamiRate;
     static std::chrono::minutes constexpr MinTsunamiRate = std::chrono::minutes(0);
     static std::chrono::minutes constexpr MaxTsunamiRate = std::chrono::minutes(240);

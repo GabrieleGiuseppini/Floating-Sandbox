@@ -8,10 +8,19 @@
 
 	=========================================================================
 
-	- Lower DisplacementWaveSmoothnessAdjust - 0.0 is quite cool
+	+ Lower DisplacementWaveSmoothnessAdjust - 0.0 is quite cool
 
-	- Try adding a setting for WaveMaker's speed <-> fatness of interactive waves
-		- Affects OceanSurface::AdjustTo
+	= Try adding a setting for WaveMaker's speed <-> fatness of interactive waves
+		+ Param: "InteractiveWave"
+		+ Func: AdjustOceanSurfaceTo -> ImpartInteractiveWaveAt
+		+ Affects OceanSurface::AdjustTo and decay
+			+ OceanSurface stores value and uses it there		
+		+ SettingsDialog
+		+ Decide default value
+		- FIX: shader
+		- If ok:
+			- Port setting to Android (SettingsWindow)
+			- Add to changelist
 
 	= Replace need for "dWorld = abs(dFdy(yWorld)); // World per pixel" in ocean.glslinc with parameter
 		! Param does not exist already
@@ -47,6 +56,7 @@
 		- ...find if anything else displaces water without checking toggle
 
 	- See perf impact with double the world
+		- Check on old Dell
 
 	- Try Android font
 

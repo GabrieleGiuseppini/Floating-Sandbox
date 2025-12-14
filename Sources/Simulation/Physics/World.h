@@ -333,7 +333,7 @@ public:
 
     void DetonateAntiMatterBombs();
 
-    void AdjustOceanSurfaceTo(
+    void ApplyInteractiveWaveAt(
         vec2f const & worldCoordinates,
         float worldRadius);
 

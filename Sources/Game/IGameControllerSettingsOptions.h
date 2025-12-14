@@ -119,6 +119,9 @@ struct IGameControllerSettingsOptions
     virtual float GetMinBasalWaveSpeedAdjustment() const = 0;
     virtual float GetMaxBasalWaveSpeedAdjustment() const = 0;
 
+    virtual float GetMinInteractiveWaveGrowthRateAdjustment() const = 0;
+    virtual float GetMaxInteractiveWaveGrowthRateAdjustment() const = 0;
+
     virtual std::chrono::minutes GetMinTsunamiRate() const = 0;
     virtual std::chrono::minutes GetMaxTsunamiRate() const = 0;
 

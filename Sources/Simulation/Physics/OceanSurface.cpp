@@ -45,6 +45,7 @@ OceanSurface::OceanSurface(
     , mBasalWaveHeightAdjustment(std::numeric_limits<float>::max())
     , mBasalWaveLengthAdjustment(std::numeric_limits<float>::max())
     , mBasalWaveSpeedAdjustment(std::numeric_limits<float>::max())
+    , mInteractiveWaveGrowthRateAdjustment(std::numeric_limits<float>::max())
     , mTsunamiRate(std::chrono::minutes::max())
     , mRogueWaveRate(std::chrono::seconds::max())
     ////////
@@ -96,6 +97,11 @@ void OceanSurface::Update(
         RecalculateWaveCoefficients(wind, simulationParameters);
     }
 
+    if (mInteractiveWaveGrowthRateAdjustment != simulationParameters.InteractiveWaveGrowthRateAdjustment)
+    {
+        mInteractiveWaveGrowthRateAdjustment = simulationParameters.InteractiveWaveGrowthRateAdjustment;
+    }
+
     if (mTsunamiRate != simulationParameters.TsunamiRate
         || mRogueWaveRate != simulationParameters.RogueWaveRate)
     {
@@ -109,7 +115,7 @@ void OceanSurface::Update(
     // Tsunami
     if (mSWETsunamiWaveStateMachine.has_value())
     {
-        if (currentSimulationTime > mSWETsunamiWaveStateMachine->GetStartSimulationTime() + 5.0f)
+        if (currentSimulationTime > mSWETsunamiWaveStateMachine->GetStartSimulationTime() + 5.0f / mInteractiveWaveGrowthRateAdjustment)
         {
             // Done
             mSWETsunamiWaveStateMachine.reset();
@@ -120,7 +126,7 @@ void OceanSurface::Update(
             ImpartInteractiveWave(
                 mSWETsunamiWaveStateMachine->GetCenterX(),
                 mSWETsunamiWaveStateMachine->GetTargetRelativeHeight(),
-                mSWETsunamiWaveStateMachine->GetRate(),
+                mSWETsunamiWaveStateMachine->GetRate() * mInteractiveWaveGrowthRateAdjustment,
                 0.0f);
         }
     }
@@ -151,7 +157,7 @@ void OceanSurface::Update(
     // Rogue Wave
     if (mSWERogueWaveWaveStateMachine.has_value())
     {
-        if (currentSimulationTime > mSWERogueWaveWaveStateMachine->GetStartSimulationTime() + 2.0f)
+        if (currentSimulationTime > mSWERogueWaveWaveStateMachine->GetStartSimulationTime() + 2.0f / mInteractiveWaveGrowthRateAdjustment)
         {
             // Done
             mSWERogueWaveWaveStateMachine.reset();
@@ -162,7 +168,7 @@ void OceanSurface::Update(
             ImpartInteractiveWave(
                 mSWERogueWaveWaveStateMachine->GetCenterX(),
                 mSWERogueWaveWaveStateMachine->GetTargetRelativeHeight(),
-                mSWERogueWaveWaveStateMachine->GetRate(),
+                mSWERogueWaveWaveStateMachine->GetRate() * mInteractiveWaveGrowthRateAdjustment,
                 0.0f);
         }
     }
@@ -219,13 +225,13 @@ void OceanSurface::Update(
     }
 
     //
-    // 2. Interactive Waves Update
+    // 3. Interactive Waves Update
     //
 
     UpdateInteractiveWaves();
 
     //
-    // 3. SWE Update
+    // 4. SWE Update
     //
 
     SmoothDeltaBufferIntoHeightField();
@@ -238,7 +244,7 @@ void OceanSurface::Update(
     // AdvectFields();
 
     //
-    // 4. Generate Samples
+    // 5. Generate Samples
     //
 
     GenerateSamples(
@@ -247,7 +253,7 @@ void OceanSurface::Update(
         simulationParameters);
 
     //
-    // 5. Reset Interactive Waves
+    // 6. Reset Interactive Waves
     //
 
     ResetInteractiveWaves();
@@ -273,7 +279,7 @@ void OceanSurface::Upload(RenderContext & renderContext) const
     }
 }
 
-void OceanSurface::AdjustTo(
+void OceanSurface::ApplyInteractiveWaveAt(
     vec2f const & worldCoordinates,
     float worldRadius)
 {
@@ -289,7 +295,7 @@ void OceanSurface::AdjustTo(
     ImpartInteractiveWave(
         worldCoordinates.x,
         targetRelativeHeight,
-        heightGrowthCoefficientGrowthRate,
+        heightGrowthCoefficientGrowthRate * mInteractiveWaveGrowthRateAdjustment,
         worldRadius);
 }
 
@@ -778,7 +784,8 @@ void OceanSurface::UpdateInteractiveWaves()
 void OceanSurface::ResetInteractiveWaves()
 {
     mInteractiveWaveTargetHeightGrowthCoefficient.fill<SamplesCount>(0.0f);
-    mInteractiveWaveHeightGrowthCoefficientGrowthRate.fill<SamplesCount>(0.1f); // Magic number: rate with which we stop pinning the SWE height field
+    float constexpr DecayBaseRate = 0.1f; // Magic number: rate with which we stop pinning the SWE height field
+    mInteractiveWaveHeightGrowthCoefficientGrowthRate.fill<SamplesCount>(DecayBaseRate * mInteractiveWaveGrowthRateAdjustment);
 }
 
 void OceanSurface::SmoothDeltaBufferIntoHeightField()

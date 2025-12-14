@@ -1868,7 +1868,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
         gridSizer->Add(
             wavesBoxSizer,
             wxGBPosition(0, 2),
-            wxGBSpan(1, 3),
+            wxGBSpan(1, 4),
             wxEXPAND | wxALL,
             CellBorderOuter);
     }
@@ -1972,7 +1972,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
 
         gridSizer->Add(
             displacementWavesBoxSizer,
-            wxGBPosition(0, 5),
+            wxGBPosition(0, 6),
             wxGBSpan(1, 2),
             wxEXPAND | wxALL,
             CellBorderOuter);
@@ -2053,6 +2053,59 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
             wavePhenomenaBoxSizer,
             wxGBPosition(1, 0),
             wxGBSpan(1, 2),
+            wxEXPAND | wxALL,
+            CellBorderOuter);
+    }
+
+    //
+    // Interactive Waves
+    //
+
+    {
+        wxStaticBoxSizer * interactiveWavesBoxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Interactive Waves"));
+
+        {
+            wxGridBagSizer * interactiveWavesSizer = new wxGridBagSizer(0, 0);
+
+            // Growth Rate Adjustment
+            {
+                mInteractiveWaveGrowthRateAdjustmentAdjustmentSlider = new SliderControl<float>(
+                    interactiveWavesBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Bulkiness"),
+                    _("Controls how wide interactive waves (WaveMaker, tsunami's, rogue waves) spawn."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::InteractiveWaveGrowthRateAdjustment, 1.0f / value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        1.0f / mGameControllerSettingsOptions.GetMaxInteractiveWaveGrowthRateAdjustment(),
+                        1.0f / mGameControllerSettingsOptions.GetMinInteractiveWaveGrowthRateAdjustment()));
+
+                interactiveWavesSizer->Add(
+                    mInteractiveWaveGrowthRateAdjustmentAdjustmentSlider,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            WxHelpers::MakeAllColumnsExpandable(interactiveWavesSizer);
+
+            interactiveWavesBoxSizer->Add(
+                interactiveWavesSizer,
+                1,
+                wxEXPAND | wxALL,
+                StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            interactiveWavesBoxSizer,
+            wxGBPosition(1, 2),
+            wxGBSpan(1, 1),
             wxEXPAND | wxALL,
             CellBorderOuter);
     }
@@ -2236,7 +2289,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
 
         gridSizer->Add(
             stormsBoxSizer,
-            wxGBPosition(1, 2),
+            wxGBPosition(1, 3),
             wxGBSpan(1, 5),
             wxEXPAND | wxALL,
             CellBorderOuter);
@@ -6357,6 +6410,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mWaveSmoothnessAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::WaveSmoothnessAdjustment));
     mTsunamiRateSlider->SetValue(settings.GetValue<std::chrono::minutes>(GameSettings::TsunamiRate).count());
     mRogueWaveRateSlider->SetValue(settings.GetValue<std::chrono::seconds>(GameSettings::RogueWaveRate).count());
+    mInteractiveWaveGrowthRateAdjustmentAdjustmentSlider->SetValue(1.0f / settings.GetValue<float>(GameSettings::InteractiveWaveGrowthRateAdjustment));
     mStormStrengthAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::StormStrengthAdjustment));
     mDoRainWithStormCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoRainWithStorm));
     mRainFloodAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::RainFloodAdjustment));

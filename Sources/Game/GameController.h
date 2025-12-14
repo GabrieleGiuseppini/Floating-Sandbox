@@ -259,7 +259,7 @@ public:
     void ToggleTimerBombAt(DisplayLogicalCoordinates const & screenCoordinates) override;
     void DetonateRCBombs() override;
     void DetonateAntiMatterBombs() override;
-    void AdjustOceanSurfaceTo(DisplayLogicalCoordinates const & screenCoordinates, int screenRadius) override;
+    void ApplyInteractiveWaveAt(DisplayLogicalCoordinates const & screenCoordinates, int screenRadius) override;
     std::optional<bool> AdjustOceanFloorTo(vec2f const & startWorldPosition, vec2f const & endWorldPosition) override;
     bool ScrubThrough(DisplayLogicalCoordinates const & startScreenCoordinates, DisplayLogicalCoordinates const & endScreenCoordinates) override;
     bool RotThrough(DisplayLogicalCoordinates const & startScreenCoordinates, DisplayLogicalCoordinates const & endScreenCoordinates) override;
@@ -548,6 +548,11 @@ public:
     void SetBasalWaveSpeedAdjustment(float value) override { mSimulationParameters.BasalWaveSpeedAdjustment = value; }
     float GetMinBasalWaveSpeedAdjustment() const override { return SimulationParameters::MinBasalWaveSpeedAdjustment; }
     float GetMaxBasalWaveSpeedAdjustment() const override { return SimulationParameters::MaxBasalWaveSpeedAdjustment; }
+
+    float GetInteractiveWaveGrowthRateAdjustment() const override { return mSimulationParameters.InteractiveWaveGrowthRateAdjustment; }
+    void SetInteractiveWaveGrowthRateAdjustment(float value) override { mSimulationParameters.InteractiveWaveGrowthRateAdjustment = value; }
+    float GetMinInteractiveWaveGrowthRateAdjustment() const override { return SimulationParameters::MinInteractiveWaveGrowthRateAdjustment; }
+    float GetMaxInteractiveWaveGrowthRateAdjustment() const override { return SimulationParameters::MaxInteractiveWaveGrowthRateAdjustment; }
 
     std::chrono::minutes GetTsunamiRate() const override { return mSimulationParameters.TsunamiRate; }
     void SetTsunamiRate(std::chrono::minutes value) override { mSimulationParameters.TsunamiRate = value; }
