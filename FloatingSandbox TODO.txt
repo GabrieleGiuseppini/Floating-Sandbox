@@ -36,7 +36,7 @@
 			+ WorldRenderContext::ApplyViewModelChanges
 			+ shaders			
 
-	= Texture preview improvement work (*)
+	+ Texture preview improvement work (*)
 
 	- Fix SettingsDialog/Russian-Ukrainian issue from Denis
 
