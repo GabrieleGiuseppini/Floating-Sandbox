@@ -296,7 +296,7 @@ RgbaImageData ShipDefinitionFormatDeSerializer::LoadPreviewImage(
             {
                 case static_cast<uint32_t>(MainSectionTagType::TextureLayer_PNG):
                 {
-                    previewImage.emplace(ReadPngImageAndResize(inputStream, sectionHeader.SectionBodySize, maxSize));
+                    previewImage.emplace(ReadPngImageAndMakePreview(inputStream, sectionHeader.SectionBodySize, maxSize));
 
                     LogMessage("ShipDefinitionFormatDeSerializer: returning preview from texture layer section");
 
@@ -305,7 +305,7 @@ RgbaImageData ShipDefinitionFormatDeSerializer::LoadPreviewImage(
 
                 case static_cast<uint32_t>(MainSectionTagType::Preview_PNG):
                 {
-                    previewImage.emplace(ReadPngImageAndResize(inputStream, sectionHeader.SectionBodySize, maxSize));
+                    previewImage.emplace(ReadPngImageAndMakePreview(inputStream, sectionHeader.SectionBodySize, maxSize));
 
                     LogMessage("ShipDefinitionFormatDeSerializer: returning preview from preview section");
 
@@ -1389,15 +1389,16 @@ RgbaImageData ShipDefinitionFormatDeSerializer::ReadPngImage(
     return image;
 }
 
-RgbaImageData ShipDefinitionFormatDeSerializer::ReadPngImageAndResize(
+RgbaImageData ShipDefinitionFormatDeSerializer::ReadPngImageAndMakePreview(
     BinaryReadStream & shipDefinitionInputStream,
     size_t imageDataSize,
     ImageSize const & maxSize)
 {
-    RgbaImageData orig = ReadPngImage(shipDefinitionInputStream, imageDataSize);
+    RgbaImageData trimmed = ImageTools::TrimTransparent(
+        ReadPngImage(shipDefinitionInputStream, imageDataSize));
     return ImageTools::Resize(
-        orig,
-        orig.Size.ShrinkToFit(maxSize),
+        trimmed,
+        trimmed.Size.ShrinkToFit(maxSize),
         ImageTools::FilterKind::Bilinear);
 }
 

@@ -17,12 +17,12 @@
 			+ OceanSurface stores value and uses it there		
 		+ SettingsDialog
 		+ Decide default value
-		- FIX: shader
 		- If ok:
 			- Port setting to Android (SettingsWindow)
-			- Add to changelist
+				- Replace both DisplacementWaves in waves panel
+			- Add to PC changelist
 
-	= Replace need for "dWorld = abs(dFdy(yWorld)); // World per pixel" in ocean.glslinc with parameter
+	+ Replace need for "dWorld = abs(dFdy(yWorld)); // World per pixel" in ocean.glslinc with parameter
 		! Param does not exist already
 		+ WorldPerPixel, float
 		+ Set at WorldRenderContext::ApplyViewModelChanges
@@ -31,10 +31,14 @@
 			+ Flat
 			+ Depth
 			+ Texture
-		- Port to Android if ok
-			- Render/ShaderSets
-			- WorldRenderContext::ApplyViewModelChanges
-			- shaders
+		+ Port to Android:
+			+ Render/ShaderSets
+			+ WorldRenderContext::ApplyViewModelChanges
+			+ shaders			
+
+	= Texture preview improvement work (*)
+
+	- Fix SettingsDialog/Russian-Ukrainian issue from Denis
 
 	- Improvements from Bandit:
 		- Maybe add that silt simulation upon impact (because silt doesnt really work in its current state)

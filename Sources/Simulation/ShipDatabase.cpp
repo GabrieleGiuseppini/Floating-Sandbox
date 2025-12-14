@@ -127,12 +127,9 @@ void ShipDatabaseBuilder::AddShip(BinaryReadStream && inputStream, ShipLocator l
     RgbaImageData previewImage = ShipDefinitionFormatDeSerializer::LoadPreviewImage(inputStream, mMaxPreviewImageSize);
     inputStream.SetPosition(initialPosition);
 
-    // Trim image on transparency
-    RgbaImageData trimmedPreviewImage = ImageTools::TrimTransparent(std::move(previewImage));
-
     AddShip(
         std::move(inputStream),
-        std::move(trimmedPreviewImage),
+        std::move(previewImage),
         std::move(locator));
 }
 

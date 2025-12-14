@@ -315,7 +315,7 @@ private:
         BinaryReadStream & shipDefinitionInputStream,
         size_t imageDataSize);
 
-    static RgbaImageData ReadPngImageAndResize(
+    static RgbaImageData ReadPngImageAndMakePreview(
         BinaryReadStream & shipDefinitionInputStream,
         size_t imageDataSize,
         ImageSize const & maxSize);
