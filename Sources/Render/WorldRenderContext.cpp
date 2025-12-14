@@ -1998,8 +1998,6 @@ void WorldRenderContext::ApplyViewModelChanges(RenderParameters const & renderPa
 
     float const worldPerPixel = renderParameters.View.PhysicalDisplayOffsetToWorldOffset(1.0f);
 
-    LogMessage("TODOTEST: worldPerPixel=", worldPerPixel);
-
     //
 
     mShaderManager.ActivateProgram<GameShaderSets::ProgramKind::LandFlatBasic>();
