@@ -259,79 +259,115 @@ TImageData ImageTools::InternalResizeBilinear(
     using f_vec_type = typename TImageData::element_type::f_vector_type;
     auto const imageF = InternalToFloat(image);
 
-    // Strategy: for each target pixel, find source pixel
+    // Conversion factors
+    float const tgtToSrcX = static_cast<float>(image.Size.width) / static_cast<float>(newSize.width);
+    float const tgtToSrcY = static_cast<float>(image.Size.height) / static_cast<float>(newSize.height);
 
-    // 0-1 space
-    float const tgtToSrcW = static_cast<float>(image.Size.width);
-    float const tgtToSrcH = static_cast<float>(image.Size.height);
-
-    // We sample target pixels at their center
-    float const tgtPixelDW = 1.0f / static_cast<float>(newSize.width);
-    float const tgtPixelDH = 1.0f / static_cast<float>(newSize.height);
-    float yf = tgtPixelDH / 2.0f;
-    for (int y = 0; y < newSize.height; ++y, yf += tgtPixelDH)
+    // Strategy: for each target pixel, find source pixel)
+    for (int tgtY = 0; tgtY < newSize.height; ++tgtY)
     {
-        float const srcYF = yf * tgtToSrcH;
-        int const srcY = static_cast<int>(FastTruncateToArchInt(srcYF));
-        float const srcYDF = srcYF - srcY;
+        // Calculate source y
+        float const srcY = static_cast<float>(tgtY) * tgtToSrcY;
+        assert(srcY >= 0.0f);
+        int const srcY0 = std::min(static_cast<int>(FastTruncateToArchInt(srcY)), image.Size.height - 1);
+        int const srcY1 = std::min(srcY0 + 1, image.Size.height - 1);
 
-        int otherSrcY;
-        float thisDy;
-        if (srcYDF >= 0.5f)
+        float const dy = srcY - static_cast<float>(srcY0);
+        assert(dy >= 0.0f && dy < 1.0f);
+
+        for (int tgtX = 0; tgtX < newSize.width; ++tgtX)
         {
-            // Next
-            otherSrcY = (srcY + 1 < image.Size.height)
-                ? srcY + 1
-                : srcY; // Reuse same
-            thisDy = srcYDF - 0.5f;
-        }
-        else
-        {
-            // Prev
-            otherSrcY = (srcY > 0)
-                ? srcY - 1
-                : srcY; // Reuse same
-            thisDy = 0.5f - srcYDF;
-        }
+            // Calculate source x
+            float const srcX = static_cast<float>(tgtX) * tgtToSrcX;
+            assert(srcX >= 0.0f);
+            int const srcX0 = std::min(static_cast<int>(FastTruncateToArchInt(srcX)), image.Size.width - 1);
+            int const srcX1 = std::min(srcX0 + 1, image.Size.width - 1);
 
-        assert(thisDy >= 0.0f && thisDy < 1.0f);
-
-        float xf = tgtPixelDW / 2.0f;
-        for (int x = 0; x < newSize.width; ++x, xf += tgtPixelDW)
-        {
-            float const srcXF = xf * tgtToSrcW;
-            int const srcX = static_cast<int>(FastTruncateToArchInt(srcXF));
-            float const srcXDF = srcXF - srcX;
-
-            int otherSrcX;
-            float thisDx;
-            if (srcXDF >= 0.5f)
-            {
-                // Next
-                otherSrcX = (srcX + 1 < image.Size.width)
-                    ? srcX + 1
-                    : srcX; // Reuse same
-                thisDx = srcXDF - 0.5f;
-            }
-            else
-            {
-                // Prev
-                otherSrcX = (srcX > 0)
-                    ? srcX - 1
-                    : srcX; // Reuse same
-                thisDx = 0.5f - srcXDF;
-            }
-
-            assert(thisDx >= 0.0f && thisDx < 1.0f);
+            float const dx = srcX - static_cast<float>(srcX0);
+            assert(dx >= 0.0f && dx < 1.0f);
 
             // Interpolate this-y X
-            f_vec_type const thisY_X = Mix(imageF[{srcX, srcY}], imageF[{otherSrcX, srcY}], thisDx);
+            f_vec_type const thisY_X = Mix(imageF[{srcX0, srcY0}], imageF[{srcX1, srcY0}], dx);
             // Interpolate other-t Y
-            f_vec_type const otherY_X = Mix(imageF[{srcX, otherSrcY}], imageF[{otherSrcX, otherSrcY}], thisDx);
+            f_vec_type const otherY_X = Mix(imageF[{srcX0, srcY1}], imageF[{srcX1, srcY1}], dx);
             // Interpolate Y's
-            result[{x, y}] = color_type(Mix(thisY_X, otherY_X, thisDy));
+            result[{tgtX, tgtY}] = color_type(Mix(thisY_X, otherY_X, dy));
         }
     }
+
+
+    // TODOOLD
+    //// 0-1 space
+    //float const tgtToSrcW = static_cast<float>(image.Size.width);
+    //float const tgtToSrcH = static_cast<float>(image.Size.height);
+
+    //// We sample target pixels at their center
+    //float const tgtPixelDW = 1.0f / static_cast<float>(newSize.width);
+    //float const tgtPixelDH = 1.0f / static_cast<float>(newSize.height);
+    //float yf = tgtPixelDH / 2.0f;
+    //for (int y = 0; y < newSize.height; ++y, yf += tgtPixelDH)
+    //{
+    //    float const srcYF = yf * tgtToSrcH;
+    //    int const srcY = static_cast<int>(FastTruncateToArchInt(srcYF));
+    //    float const srcYDF = srcYF - srcY;
+
+    //    int otherSrcY;
+    //    float thisDy;
+    //    if (srcYDF >= 0.5f)
+    //    {
+    //        // Next
+    //        otherSrcY = (srcY + 1 < image.Size.height)
+    //            ? srcY + 1
+    //            : srcY; // Reuse same
+    //        thisDy = srcYDF - 0.5f;
+    //    }
+    //    else
+    //    {
+    //        // Prev
+    //        otherSrcY = (srcY > 0)
+    //            ? srcY - 1
+    //            : srcY; // Reuse same
+    //        thisDy = 0.5f - srcYDF;
+    //    }
+
+    //    assert(thisDy >= 0.0f && thisDy < 1.0f);
+
+    //    float xf = tgtPixelDW / 2.0f;
+    //    for (int x = 0; x < newSize.width; ++x, xf += tgtPixelDW)
+    //    {
+    //        float const srcXF = xf * tgtToSrcW;
+    //        int const srcX = static_cast<int>(FastTruncateToArchInt(srcXF));
+    //        float const srcXDF = srcXF - srcX;
+
+    //        int otherSrcX;
+    //        float thisDx;
+    //        if (srcXDF >= 0.5f)
+    //        {
+    //            // Next
+    //            otherSrcX = (srcX + 1 < image.Size.width)
+    //                ? srcX + 1
+    //                : srcX; // Reuse same
+    //            thisDx = srcXDF - 0.5f;
+    //        }
+    //        else
+    //        {
+    //            // Prev
+    //            otherSrcX = (srcX > 0)
+    //                ? srcX - 1
+    //                : srcX; // Reuse same
+    //            thisDx = 0.5f - srcXDF;
+    //        }
+
+    //        assert(thisDx >= 0.0f && thisDx < 1.0f);
+
+    //        // Interpolate this-y X
+    //        f_vec_type const thisY_X = Mix(imageF[{srcX, srcY}], imageF[{otherSrcX, srcY}], thisDx);
+    //        // Interpolate other-t Y
+    //        f_vec_type const otherY_X = Mix(imageF[{srcX, otherSrcY}], imageF[{otherSrcX, otherSrcY}], thisDx);
+    //        // Interpolate Y's
+    //        result[{x, y}] = color_type(Mix(thisY_X, otherY_X, thisDy));
+    //    }
+    //}
 
     return result;
 }
