@@ -63,14 +63,16 @@ TImageData ImageTools::ResizeNicer(
     for (int srcY = 0; srcY < image.Size.height; ++srcY)
     {
         InternalResizeDimension_TriangleFilter<TImageData>(
-            srcWidth,
-            tgtWidth,
+            image.Size.width,
+            widthScaleFactor,
             [&](int srcX) -> f_color_type
             {
+                assert(srcX >= 0 && srcX < image.Size.width);
                 return srcImageF[{srcX, srcY}];
             },
             [&](int tgtX, f_color_type const & c)
             {
+                assert(tgtX >= 0 && tgtX < newSize.width);
                 widthImageF[{tgtX, srcY}] = c;
             });
     }
@@ -90,14 +92,16 @@ TImageData ImageTools::ResizeNicer(
     for (int srcX = 0; srcX < newSize.width; ++srcX)
     {
         InternalResizeDimension_TriangleFilter<TImageData>(
-            srcHeight,
-            tgtHeight,
+            image.Size.height,
+            heightScaleFactor,
             [&](int srcY) -> f_color_type
             {
+                assert(srcY >= 0 && srcY < image.Size.height);
                 return widthImageF[{srcX, srcY}];
             },
             [&](int tgtY, f_color_type const & c)
             {
+                assert(tgtY >= 0 && tgtY < newSize.height);
                 heightImageF[{srcX, tgtY}] = c;
             });
     }
@@ -287,8 +291,8 @@ RgbImageData ImageTools::ToRgb(RgbaImageData const & imageData)
 
 template<typename TImageData, typename TSourceGetter, typename TTargetSetter>
 static void ImageTools::InternalResizeDimension_TriangleFilter(
-    float srcSize,
-    float tgtSize,
+    int srcSize,
+    float srcToTgt,
     TSourceGetter const & srcGetter,
     TTargetSetter const & tgtSetter)
 {
@@ -299,20 +303,17 @@ static void ImageTools::InternalResizeDimension_TriangleFilter(
     // going into the same target pixels, using a triangle filter for the weights
     //
 
-    // Conversion factor
-    float const srcToTgt = tgtSize / srcSize;
-
     // Currently-accumulated target pixel
     f_color_type currentTgtPixelSum = f_color_type();
     float currentTgtPixelWeightSum = 0.0f;
     int currentTgtI = 0;
 
-    for (float srcI = 0; srcI < srcSize; ++srcI)
+    for (int srcI = 0; srcI < srcSize; ++srcI)
     {
         // The coord of pixel 0 is half of a (target) pixel width;
         // this makes most sense when thinking of weights - for example, pixel 0
         // should not have a weight of 0
-        float const srcICoords = 0.5f + srcI;
+        float const srcICoords = 0.5f + static_cast<float>(srcI);
 
         // Calculate the target coord
         float const tgtIf = srcICoords * srcToTgt;
@@ -337,7 +338,7 @@ static void ImageTools::InternalResizeDimension_TriangleFilter(
         float const w = 1.0f - std::abs(0.5f - tgtI_fract) / 0.5f; // 1.0 at center, 0.0 at edges
 
         // Update target pixel
-        currentTgtPixelSum += srcGetter(static_cast<int>(srcI)) * w;
+        currentTgtPixelSum += srcGetter(srcI) * w;
         currentTgtPixelWeightSum += w;
     }
 
