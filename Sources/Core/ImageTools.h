@@ -31,6 +31,11 @@ public:
         ImageSize const & newSize,
         FilterKind filter);
 
+    template<typename TImageData>
+    static TImageData ResizeNicer(
+        TImageData const & image,
+        ImageSize const & newSize);
+
     static void BlendWithColor(
         RgbaImageData & imageData,
         rgbColor const & color,
@@ -133,6 +138,13 @@ public:
     static RgbImageData ToRgb(RgbaImageData const & imageData);
 
 private:
+
+    template<typename TImageData, typename TSourceGetter, typename TTargetSetter>
+    static void InternalResizeDimension_TriangleFilter(
+        float srcSize,
+        float tgtSize,
+        TSourceGetter const & srcGetter,
+        TTargetSetter const & tgtSetter);
 
     template<typename TImageData>
     static TImageData InternalResizeNearest(
@@ -265,4 +277,7 @@ private:
 
     template<typename TImageData>
     static Buffer2D<typename TImageData::element_type::f_vector_type, struct ImageTag> InternalToFloat(TImageData const & imageData);
+
+    template<typename TImageData>
+    static TImageData InternalFromFloat(Buffer2D<typename TImageData::element_type::f_vector_type, struct ImageTag> const & imageData);
 };

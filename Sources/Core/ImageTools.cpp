@@ -5,6 +5,9 @@
 ***************************************************************************************/
 #include "ImageTools.h"
 
+// TODOTEST
+#include "Log.h"
+
 #include <type_traits>
 
 template<typename TImageData>
@@ -32,6 +35,78 @@ TImageData ImageTools::Resize(
 
 template RgbaImageData ImageTools::Resize(RgbaImageData const & image, ImageSize const & newSize, FilterKind filter);
 template RgbImageData ImageTools::Resize(RgbImageData const & image, ImageSize const & newSize, FilterKind filter);
+
+template<typename TImageData>
+TImageData ImageTools::ResizeNicer(
+    TImageData const & image,
+    ImageSize const & newSize)
+{
+    using color_type = typename TImageData::element_type;
+    using f_color_type = typename TImageData::element_type::f_vector_type;
+
+    assert(image.Size.width > 0 && image.Size.height > 0);
+    assert(newSize.width > 0 && newSize.height > 0);
+
+    //
+    // Width
+    //
+
+    float const srcWidth = static_cast<float>(image.Size.width);
+    float const tgtWidth = static_cast<float>(newSize.width);
+    float const widthScaleFactor = tgtWidth / srcWidth;
+
+    LogMessage("TODO: widthScaleFactor=", widthScaleFactor);
+
+    auto const srcImageF = InternalToFloat(image);
+    Buffer2D<f_color_type, struct ImageTag> widthImageF(newSize.width, image.Size.height);
+
+    for (int srcY = 0; srcY < image.Size.height; ++srcY)
+    {
+        InternalResizeDimension_TriangleFilter<TImageData>(
+            srcWidth,
+            tgtWidth,
+            [&](int srcX) -> f_color_type
+            {
+                return srcImageF[{srcX, srcY}];
+            },
+            [&](int tgtX, f_color_type const & c)
+            {
+                widthImageF[{tgtX, srcY}] = c;
+            });
+    }
+
+    //
+    // Height
+    //
+
+    float const srcHeight = static_cast<float>(image.Size.height);
+    float const tgtHeight = static_cast<float>(newSize.height);
+    float const heightScaleFactor = tgtHeight / srcHeight;
+
+    LogMessage("TODO: heightScaleFactor=", heightScaleFactor);
+
+    Buffer2D<f_color_type, struct ImageTag> heightImageF(newSize.width, newSize.height);
+
+    for (int srcX = 0; srcX < newSize.width; ++srcX)
+    {
+        InternalResizeDimension_TriangleFilter<TImageData>(
+            srcHeight,
+            tgtHeight,
+            [&](int srcY) -> f_color_type
+            {
+                return widthImageF[{srcX, srcY}];
+            },
+            [&](int tgtY, f_color_type const & c)
+            {
+                heightImageF[{srcX, tgtY}] = c;
+            });
+    }
+
+    return InternalFromFloat<TImageData>(heightImageF);
+}
+
+template RgbaImageData ImageTools::ResizeNicer(RgbaImageData const & image, ImageSize const & newSize);
+template RgbImageData ImageTools::ResizeNicer(RgbImageData const & image, ImageSize const & newSize);
 
 void ImageTools::BlendWithColor(
     RgbaImageData & imageData,
@@ -208,6 +283,69 @@ RgbImageData ImageTools::ToRgb(RgbaImageData const & imageData)
     return RgbImageData(imageData.Size, std::move(newImageData));
 }
 
+//////////////////////////////////////////////////////////////////////////
+
+template<typename TImageData, typename TSourceGetter, typename TTargetSetter>
+static void ImageTools::InternalResizeDimension_TriangleFilter(
+    float srcSize,
+    float tgtSize,
+    TSourceGetter const & srcGetter,
+    TTargetSetter const & tgtSetter)
+{
+    using f_color_type = typename TImageData::element_type::f_vector_type;
+
+    //
+    // Strategy: visit each source pixel, decide where it goes in target, and average all the ones
+    // going into the same target pixels, using a triangle filter for the weights
+    //
+
+    // Conversion factor
+    float const srcToTgt = tgtSize / srcSize;
+
+    // Currently-accumulated target pixel
+    f_color_type currentTgtPixelSum = f_color_type();
+    float currentTgtPixelWeightSum = 0.0f;
+    int currentTgtI = 0;
+
+    for (float srcI = 0; srcI < srcSize; ++srcI)
+    {
+        // The coord of pixel 0 is half of a (target) pixel width;
+        // this makes most sense when thinking of weights - for example, pixel 0
+        // should not have a weight of 0
+        float const srcICoords = 0.5f + srcI;
+
+        // Calculate the target coord
+        float const tgtIf = srcICoords * srcToTgt;
+        float const tgtIf_floor = std::floorf(tgtIf);
+        int const tgtI = static_cast<int>(tgtIf_floor);
+
+        if (tgtI != currentTgtI)
+        {
+            // Close current target pixel
+            assert(currentTgtPixelWeightSum > 0.0f);
+            tgtSetter(currentTgtI, currentTgtPixelSum / currentTgtPixelWeightSum);
+
+            // Open new one
+            currentTgtPixelSum = f_color_type();
+            currentTgtPixelWeightSum = 0.0f;
+            currentTgtI = tgtI;
+        }
+
+        // Calculate weight
+        float const tgtI_fract = tgtIf - tgtIf_floor;
+        assert(tgtI_fract >= 0.0f && tgtI_fract < 1.0f);
+        float const w = 1.0f - std::abs(0.5f - tgtI_fract) / 0.5f; // 1.0 at center, 0.0 at edges
+
+        // Update target pixel
+        currentTgtPixelSum += srcGetter(static_cast<int>(srcI)) * w;
+        currentTgtPixelWeightSum += w;
+    }
+
+    // Store last one
+    assert(currentTgtPixelWeightSum > 0.0f);
+    tgtSetter(currentTgtI, currentTgtPixelSum / currentTgtPixelWeightSum);
+}
+
 template<typename TImageData>
 TImageData ImageTools::InternalResizeNearest(
     TImageData const & image,
@@ -350,6 +488,22 @@ Buffer2D<typename TImageData::element_type::f_vector_type, struct ImageTag> Imag
     for (size_t i = 0; i < sz; ++i)
     {
         *(trg + i) = (src + i)->toVec();
+    }
+
+    return result;
+}
+
+template<typename TImageData>
+TImageData ImageTools::InternalFromFloat(Buffer2D<typename TImageData::element_type::f_vector_type, struct ImageTag> const & imageData)
+{
+    TImageData result(imageData.Size);
+
+    typename TImageData::element_type::f_vector_type  const * const restrict src = imageData.Data.get();
+    typename TImageData::element_type * const restrict trg = result.Data.get();
+    size_t const sz = imageData.GetLinearSize();
+    for (size_t i = 0; i < sz; ++i)
+    {
+        *(trg + i) = TImageData::element_type(*(src + i));
     }
 
     return result;
