@@ -148,6 +148,13 @@ private:
 
     template<typename TImageData, typename TSourceGetter, typename TTargetSetter>
     static inline void InternalResizeDimension_BoxFilter(
+        int srcSize,
+        float srcToTgt,
+        TSourceGetter const & srcGetter,
+        TTargetSetter const & tgtSetter);
+
+    template<typename TImageData, typename TSourceGetter, typename TTargetSetter>
+    static inline void InternalResizeDimension_BoxFilter(
         int tgtSize,
         float srcSize,
         float tgtToSrc,

@@ -78,12 +78,30 @@ TImageData ImageTools::ResizeNicer(
     //        });
     //}
 
+    // TODOTEST
+    //for (int srcY = 0; srcY < image.Size.height; ++srcY)
+    //{
+    //    InternalResizeDimension_BoxFilter<TImageData>(
+    //        newSize.width,
+    //        srcWidth,
+    //        1.0f / widthScaleFactor,
+    //        [&](int srcX) -> f_color_type
+    //        {
+    //            assert(srcX >= 0 && srcX < image.Size.width);
+    //            return srcImageF[{srcX, srcY}];
+    //        },
+    //        [&](int tgtX, f_color_type const & c)
+    //        {
+    //            assert(tgtX >= 0 && tgtX < newSize.width);
+    //            widthImageF[{tgtX, srcY}] = c;
+    //        });
+    //}
+
     for (int srcY = 0; srcY < image.Size.height; ++srcY)
     {
         InternalResizeDimension_BoxFilter<TImageData>(
-            newSize.width,
-            srcWidth,
-            1.0f / widthScaleFactor,
+            image.Size.width,
+            widthScaleFactor,
             [&](int srcX) -> f_color_type
             {
                 assert(srcX >= 0 && srcX < image.Size.width);
@@ -126,12 +144,30 @@ TImageData ImageTools::ResizeNicer(
     //        });
     //}
 
+    // TODOTEST
+    //for (int srcX = 0; srcX < newSize.width; ++srcX)
+    //{
+    //    InternalResizeDimension_BoxFilter<TImageData>(
+    //        newSize.height,
+    //        srcHeight,
+    //        1.0f / heightScaleFactor,
+    //        [&](int srcY) -> f_color_type
+    //        {
+    //            assert(srcY >= 0 && srcY < image.Size.height);
+    //            return widthImageF[{srcX, srcY}];
+    //        },
+    //        [&](int tgtY, f_color_type const & c)
+    //        {
+    //            assert(tgtY >= 0 && tgtY < newSize.height);
+    //            heightImageF[{srcX, tgtY}] = c;
+    //        });
+    //}
+
     for (int srcX = 0; srcX < newSize.width; ++srcX)
     {
         InternalResizeDimension_BoxFilter<TImageData>(
-            newSize.height,
-            srcHeight,
-            1.0f / heightScaleFactor,
+            image.Size.height,
+            heightScaleFactor,
             [&](int srcY) -> f_color_type
             {
                 assert(srcY >= 0 && srcY < image.Size.height);
@@ -385,6 +421,108 @@ static void ImageTools::InternalResizeDimension_TriangleFilter(
     // Store last one
     assert(currentTgtPixelWeightSum > 0.0f);
     tgtSetter(currentTgtI, currentTgtPixelSum / currentTgtPixelWeightSum);
+}
+
+template<typename TImageData, typename TSourceGetter, typename TTargetSetter>
+static void ImageTools::InternalResizeDimension_BoxFilter(
+    int srcSize,
+    float srcToTgt,
+    TSourceGetter const & srcGetter,
+    TTargetSetter const & tgtSetter)
+{
+    assert(srcToTgt < 1.0f); // This filter is for cases where each target pixel gets at least one source pixel
+
+    using f_color_type = typename TImageData::element_type::f_vector_type;
+
+    //
+    // Strategy: visit each source pixel, decide where it goes in target, and average all the ones
+    // going into the same target pixels, using a box filter for the weights, and the fraction
+    // of the source pixel that falls in the target pixel
+    //
+
+    // Currently-accumulated target pixel
+    f_color_type currentTgtPixelSum = f_color_type();
+    float currentTgtPixelWeightSum = 0.0f;
+
+    // The end of the current target pixel, in space coordinates;
+    // this value corresponds to the beginning of the next target pixel
+    float const tgtToSrc = 1.0f / srcToTgt;
+    float currentTgtEndInSourceSpace = tgtToSrc;
+
+    // TODOTEST: see if better
+    int currentTgtI = 0;
+
+    for (int srcI = 0; srcI < srcSize; ++srcI)
+    {
+        if (srcI == srcSize - 1)
+            LogMessage("HERE");
+
+        float todo = static_cast<float>(currentTgtI + 1) * tgtToSrc;
+        LogMessage("currentTgtEndInSourceSpace=", currentTgtEndInSourceSpace, " or ", todo);
+
+        // Calculate the target coord for (the beginning of) this source pixel
+        float const tgtIStart = static_cast<float>(srcI) * srcToTgt;
+
+        // Calculate the target coord of the end of this source pixel
+        float const tgtIEnd = tgtIStart + srcToTgt;
+
+        // TODOHERE: this is broken: tgtIEnd is in target space
+        if (tgtIEnd >= currentTgtEndInSourceSpace)
+        {
+            // This source pixel crosses the target pixel boundary
+
+            assert(tgtIStart < currentTgtEndInSourceSpace);
+
+            //
+            // Incorporate the part of the pixel that falls in this target pixel
+            //
+
+            f_color_type const c = srcGetter(srcI);
+
+            // Calculate the fraction of the pixel within the target pixel
+            float const pixelFraction = currentTgtEndInSourceSpace - tgtIStart;
+
+            LogMessage("  pixelFraction=", pixelFraction);
+
+            // Add fraction to current sum
+            currentTgtPixelSum += c * pixelFraction;
+            currentTgtPixelWeightSum += pixelFraction;
+
+            //
+            // Publish current
+            //
+
+            assert(currentTgtPixelWeightSum > 0.0f);
+            tgtSetter(static_cast<int>(std::floorf(tgtIStart)), currentTgtPixelSum / currentTgtPixelWeightSum);
+
+            //
+            // Move on to next target pixel
+            //
+
+            currentTgtPixelSum = c * (1.0f - pixelFraction);
+            currentTgtPixelWeightSum = (1.0f - pixelFraction);
+            currentTgtEndInSourceSpace += tgtToSrc;
+
+            ++currentTgtI;
+        }
+        else
+        {
+            // This source pixel falls fully in the target pixel boundary
+
+            LogMessage("  pixelFraction=1.0");
+
+            // Update target pixel
+            currentTgtPixelSum += srcGetter(srcI);
+            currentTgtPixelWeightSum += 1.0f;
+        }
+    }
+
+    // TODOHERE
+    assert(currentTgtPixelWeightSum == 0.0f);
+
+    //// Store last one
+    //assert(currentTgtPixelWeightSum > 0.0f);
+    //tgtSetter(currentTgtI, currentTgtPixelSum / currentTgtPixelWeightSum);
 }
 
 template<typename TImageData, typename TSourceGetter, typename TTargetSetter>
