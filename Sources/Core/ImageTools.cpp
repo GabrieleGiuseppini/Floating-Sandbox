@@ -440,38 +440,29 @@ static void ImageTools::InternalResizeDimension_BoxFilter(
     // of the source pixel that falls in the target pixel
     //
 
+    float const tgtToSrc = 1.0f / srcToTgt;
+
     // Currently-accumulated target pixel
     f_color_type currentTgtPixelSum = f_color_type();
     float currentTgtPixelWeightSum = 0.0f;
 
-    // The end of the current target pixel, in space coordinates;
+    // The end of the current target pixel, in target coordinates;
     // this value corresponds to the beginning of the next target pixel
-    float const tgtToSrc = 1.0f / srcToTgt;
-    float currentTgtEndInSourceSpace = tgtToSrc;
-
-    // TODOTEST: see if better
-    int currentTgtI = 0;
+    float currentTgtEnd = 1.0f;
 
     for (int srcI = 0; srcI < srcSize; ++srcI)
     {
-        if (srcI == srcSize - 1)
-            LogMessage("HERE");
-
-        float todo = static_cast<float>(currentTgtI + 1) * tgtToSrc;
-        LogMessage("currentTgtEndInSourceSpace=", currentTgtEndInSourceSpace, " or ", todo);
-
         // Calculate the target coord for (the beginning of) this source pixel
         float const tgtIStart = static_cast<float>(srcI) * srcToTgt;
 
         // Calculate the target coord of the end of this source pixel
         float const tgtIEnd = tgtIStart + srcToTgt;
 
-        // TODOHERE: this is broken: tgtIEnd is in target space
-        if (tgtIEnd >= currentTgtEndInSourceSpace)
+        if (tgtIEnd >= currentTgtEnd)
         {
             // This source pixel crosses the target pixel boundary
 
-            assert(tgtIStart < currentTgtEndInSourceSpace);
+            assert(tgtIStart <= currentTgtEnd);
 
             //
             // Incorporate the part of the pixel that falls in this target pixel
@@ -479,10 +470,8 @@ static void ImageTools::InternalResizeDimension_BoxFilter(
 
             f_color_type const c = srcGetter(srcI);
 
-            // Calculate the fraction of the pixel within the target pixel
-            float const pixelFraction = currentTgtEndInSourceSpace - tgtIStart;
-
-            LogMessage("  pixelFraction=", pixelFraction);
+            // Calculate the fraction of the source pixel within the target pixel
+            float const pixelFraction = (currentTgtEnd - tgtIStart) * tgtToSrc;
 
             // Add fraction to current sum
             currentTgtPixelSum += c * pixelFraction;
@@ -501,28 +490,17 @@ static void ImageTools::InternalResizeDimension_BoxFilter(
 
             currentTgtPixelSum = c * (1.0f - pixelFraction);
             currentTgtPixelWeightSum = (1.0f - pixelFraction);
-            currentTgtEndInSourceSpace += tgtToSrc;
-
-            ++currentTgtI;
+            currentTgtEnd += 1.0f;
         }
         else
         {
             // This source pixel falls fully in the target pixel boundary
-
-            LogMessage("  pixelFraction=1.0");
 
             // Update target pixel
             currentTgtPixelSum += srcGetter(srcI);
             currentTgtPixelWeightSum += 1.0f;
         }
     }
-
-    // TODOHERE
-    assert(currentTgtPixelWeightSum == 0.0f);
-
-    //// Store last one
-    //assert(currentTgtPixelWeightSum > 0.0f);
-    //tgtSetter(currentTgtI, currentTgtPixelSum / currentTgtPixelWeightSum);
 }
 
 template<typename TImageData, typename TSourceGetter, typename TTargetSetter>
