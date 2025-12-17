@@ -60,11 +60,30 @@ TImageData ImageTools::ResizeNicer(
     auto const srcImageF = InternalToFloat(image);
     Buffer2D<f_color_type, struct ImageTag> widthImageF(newSize.width, image.Size.height);
 
+    // TODOTEST
+    //for (int srcY = 0; srcY < image.Size.height; ++srcY)
+    //{
+    //    InternalResizeDimension_TriangleFilter<TImageData>(
+    //        image.Size.width,
+    //        widthScaleFactor,
+    //        [&](int srcX) -> f_color_type
+    //        {
+    //            assert(srcX >= 0 && srcX < image.Size.width);
+    //            return srcImageF[{srcX, srcY}];
+    //        },
+    //        [&](int tgtX, f_color_type const & c)
+    //        {
+    //            assert(tgtX >= 0 && tgtX < newSize.width);
+    //            widthImageF[{tgtX, srcY}] = c;
+    //        });
+    //}
+
     for (int srcY = 0; srcY < image.Size.height; ++srcY)
     {
-        InternalResizeDimension_TriangleFilter<TImageData>(
-            image.Size.width,
-            widthScaleFactor,
+        InternalResizeDimension_BoxFilter<TImageData>(
+            newSize.width,
+            srcWidth,
+            1.0f / widthScaleFactor,
             [&](int srcX) -> f_color_type
             {
                 assert(srcX >= 0 && srcX < image.Size.width);
@@ -89,11 +108,30 @@ TImageData ImageTools::ResizeNicer(
 
     Buffer2D<f_color_type, struct ImageTag> heightImageF(newSize.width, newSize.height);
 
+    // TODOTEST
+    //for (int srcX = 0; srcX < newSize.width; ++srcX)
+    //{
+    //    InternalResizeDimension_TriangleFilter<TImageData>(
+    //        image.Size.height,
+    //        heightScaleFactor,
+    //        [&](int srcY) -> f_color_type
+    //        {
+    //            assert(srcY >= 0 && srcY < image.Size.height);
+    //            return widthImageF[{srcX, srcY}];
+    //        },
+    //        [&](int tgtY, f_color_type const & c)
+    //        {
+    //            assert(tgtY >= 0 && tgtY < newSize.height);
+    //            heightImageF[{srcX, tgtY}] = c;
+    //        });
+    //}
+
     for (int srcX = 0; srcX < newSize.width; ++srcX)
     {
-        InternalResizeDimension_TriangleFilter<TImageData>(
-            image.Size.height,
-            heightScaleFactor,
+        InternalResizeDimension_BoxFilter<TImageData>(
+            newSize.height,
+            srcHeight,
+            1.0f / heightScaleFactor,
             [&](int srcY) -> f_color_type
             {
                 assert(srcY >= 0 && srcY < image.Size.height);
@@ -296,6 +334,8 @@ static void ImageTools::InternalResizeDimension_TriangleFilter(
     TSourceGetter const & srcGetter,
     TTargetSetter const & tgtSetter)
 {
+    assert(srcToTgt < 1.0f); // This filter is for cases where each target pixel gets at least one source pixel
+
     using f_color_type = typename TImageData::element_type::f_vector_type;
 
     //
@@ -345,6 +385,70 @@ static void ImageTools::InternalResizeDimension_TriangleFilter(
     // Store last one
     assert(currentTgtPixelWeightSum > 0.0f);
     tgtSetter(currentTgtI, currentTgtPixelSum / currentTgtPixelWeightSum);
+}
+
+template<typename TImageData, typename TSourceGetter, typename TTargetSetter>
+static void ImageTools::InternalResizeDimension_BoxFilter(
+    int tgtSize,
+    float srcSize,
+    float tgtToSrc,
+    TSourceGetter const & srcGetter,
+    TTargetSetter const & tgtSetter)
+{
+    assert(tgtToSrc > 1.0f); // This filter is for cases where each target pixel gets at least one source pixel
+
+    using f_color_type = typename TImageData::element_type::f_vector_type;
+
+    //
+    // Strategy: visit each target pixel, decide which source pixels falls in it, and average all of them,
+    // weighting by how much of the pixel fits in it
+    //
+
+    for (int tgtI = 0; tgtI < tgtSize; ++tgtI)
+    {
+        // Calculate the edges of this pixel in source coordinates
+        float const tgtIf = static_cast<float>(tgtI);
+        float const srcIStart = std::floorf(tgtIf * tgtToSrc);
+        float const srcILast = std::floorf((tgtIf + 1.0f) * tgtToSrc);
+
+        // Visit all source pixels falling into this target pixel
+        f_color_type currentTgtPixelSum = f_color_type();
+        float currentTgtPixelWeightSum = 0.0f;
+        for (float srcI = srcIStart; srcI <= std::min(srcILast, srcSize - 1.0f); srcI += 1.0f)
+        {
+            // Calculate fraction of this source pixel that falls into the target pixel
+            float pixelFraction;
+            if (srcI < tgtIf * tgtToSrc)
+            {
+                assert(srcI + 1.0f >= tgtIf * tgtToSrc); // Not sure
+
+                pixelFraction = 1.0f - (tgtIf * tgtToSrc - srcI);
+                assert(pixelFraction <= 1.0f);
+            }
+            else if (srcI + 1.0f >= (tgtIf + 1.0f) * tgtToSrc)
+            {
+                assert(srcI <= (tgtIf + 1.0f) * tgtToSrc); // Not sure
+
+                pixelFraction = (tgtIf + 1.0f) * tgtToSrc - srcI;
+                assert(pixelFraction <= 1.0f);
+            }
+            else
+            {
+                pixelFraction = 1.0f;
+            }
+
+            //
+            // Accumulate this target pixel, using its fraction as weight
+            //
+
+            currentTgtPixelSum += srcGetter(static_cast<int>(srcI)) * pixelFraction;
+            currentTgtPixelWeightSum += pixelFraction;
+        }
+
+        // Store
+        assert(currentTgtPixelWeightSum > 0.0f);
+        tgtSetter(tgtI, currentTgtPixelSum / currentTgtPixelWeightSum);
+    }
 }
 
 template<typename TImageData>

@@ -69,6 +69,7 @@
 	- Ocean rendering:
 		- Check if the 20ms for upload we see on Dell when ocean high detail is enabled, are due to uploading cloud shadows asynchronously
 			- Test: buffer cloud shadows into a member, and then upload at on-render-thread upload
+			- Check also on Moto
 		- See how it would look if cloud shadows at night would be visible via moonlight
 			- If goes through: port to Android
 	- Ocean render optimizations:

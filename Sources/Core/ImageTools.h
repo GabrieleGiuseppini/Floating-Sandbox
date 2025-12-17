@@ -146,6 +146,14 @@ private:
         TSourceGetter const & srcGetter,
         TTargetSetter const & tgtSetter);
 
+    template<typename TImageData, typename TSourceGetter, typename TTargetSetter>
+    static inline void InternalResizeDimension_BoxFilter(
+        int tgtSize,
+        float srcSize,
+        float tgtToSrc,
+        TSourceGetter const & srcGetter,
+        TTargetSetter const & tgtSetter);
+
     template<typename TImageData>
     static TImageData InternalResizeNearest(
         TImageData const & image,
