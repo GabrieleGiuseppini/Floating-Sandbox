@@ -69,7 +69,6 @@ TImageData ImageTools::ResizeNicer(
         InternalResizeDimension_Bilinear<TImageData>(
             image.Size.width,
             newSize.width,
-            widthScaleFactor,
             [&](int srcX) -> f_color_type
             {
                 assert(srcX >= 0 && srcX < image.Size.width);
@@ -121,7 +120,6 @@ TImageData ImageTools::ResizeNicer(
         InternalResizeDimension_Bilinear<TImageData>(
             image.Size.height,
             newSize.height,
-            heightScaleFactor,
             [&](int srcY) -> f_color_type
             {
                 assert(srcY >= 0 && srcY < image.Size.height);
@@ -339,13 +337,9 @@ template<typename TImageData, typename TSourceGetter, typename TTargetSetter>
 static void ImageTools::InternalResizeDimension_Bilinear(
     int srcSize,
     int tgtSize,
-    float srcToTgt,
     TSourceGetter const & srcGetter,
     TTargetSetter const & tgtSetter)
 {
-    //assert(srcToTgt >= 0.5f); // This filter is for cases where each target pixel needs at most its two neighbors; includes resizing a bit, and enlarging to anything
-    (void)srcToTgt;
-
     using f_color_type = typename TImageData::element_type::f_vector_type;
 
     //

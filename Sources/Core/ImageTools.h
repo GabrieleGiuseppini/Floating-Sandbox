@@ -143,7 +143,6 @@ private:
     static inline void InternalResizeDimension_Bilinear(
         int srcSize,
         int tgtSize,
-        float srcToTgt,
         TSourceGetter const & srcGetter,
         TTargetSetter const & tgtSetter);
 

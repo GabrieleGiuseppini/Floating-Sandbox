@@ -72,6 +72,8 @@ void ShipDatabaseBaker::Bake(
     // Add ships
     for (auto const & entry : shipDirectory.Entries)
     {
+        std::cout << "Adding ship: " << entry.Locator.RelativeFilePath << std::endl;
+
         std::filesystem::path shipFilePath = inputShipRootDirectoryPath / entry.Locator.RelativeFilePath;
 
         if (!entry.HasExternalPreviewImage)
