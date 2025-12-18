@@ -140,8 +140,9 @@ public:
 private:
 
     template<typename TImageData, typename TSourceGetter, typename TTargetSetter>
-    static inline void InternalResizeDimension_TriangleFilter(
+    static inline void InternalResizeDimension_Bilinear(
         int srcSize,
+        int tgtSize,
         float srcToTgt,
         TSourceGetter const & srcGetter,
         TTargetSetter const & tgtSetter);

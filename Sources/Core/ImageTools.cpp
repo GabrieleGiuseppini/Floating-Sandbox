@@ -62,29 +62,14 @@ TImageData ImageTools::ResizeNicer(
     Buffer2D<f_color_type, struct ImageTag> widthImageF(newSize.width, image.Size.height);
 
     // TODOTEST
-    //for (int srcY = 0; srcY < image.Size.height; ++srcY)
-    //{
-    //    InternalResizeDimension_TriangleFilter<TImageData>(
-    //        image.Size.width,
-    //        widthScaleFactor,
-    //        [&](int srcX) -> f_color_type
-    //        {
-    //            assert(srcX >= 0 && srcX < image.Size.width);
-    //            return srcImageF[{srcX, srcY}];
-    //        },
-    //        [&](int tgtX, f_color_type const & c)
-    //        {
-    //            assert(tgtX >= 0 && tgtX < newSize.width);
-    //            widthImageF[{tgtX, srcY}] = c;
-    //        });
-    //}
-
     for (int srcY = 0; srcY < image.Size.height; ++srcY)
     {
-        InternalResizeDimension_BoxFilter<TImageData>(
+        (void)widthScaleFactorInverse;
+
+        InternalResizeDimension_Bilinear<TImageData>(
             image.Size.width,
+            newSize.width,
             widthScaleFactor,
-            widthScaleFactorInverse,
             [&](int srcX) -> f_color_type
             {
                 assert(srcX >= 0 && srcX < image.Size.width);
@@ -96,6 +81,24 @@ TImageData ImageTools::ResizeNicer(
                 widthImageF[{tgtX, srcY}] = c;
             });
     }
+
+    //for (int srcY = 0; srcY < image.Size.height; ++srcY)
+    //{
+    //    InternalResizeDimension_BoxFilter<TImageData>(
+    //        image.Size.width,
+    //        widthScaleFactor,
+    //        widthScaleFactorInverse,
+    //        [&](int srcX) -> f_color_type
+    //        {
+    //            assert(srcX >= 0 && srcX < image.Size.width);
+    //            return srcImageF[{srcX, srcY}];
+    //        },
+    //        [&](int tgtX, f_color_type const & c)
+    //        {
+    //            assert(tgtX >= 0 && tgtX < newSize.width);
+    //            widthImageF[{tgtX, srcY}] = c;
+    //        });
+    //}
 
     //
     // Height
@@ -111,29 +114,14 @@ TImageData ImageTools::ResizeNicer(
     Buffer2D<f_color_type, struct ImageTag> heightImageF(newSize.width, newSize.height);
 
     // TODOTEST
-    //for (int srcX = 0; srcX < newSize.width; ++srcX)
-    //{
-    //    InternalResizeDimension_TriangleFilter<TImageData>(
-    //        image.Size.height,
-    //        heightScaleFactor,
-    //        [&](int srcY) -> f_color_type
-    //        {
-    //            assert(srcY >= 0 && srcY < image.Size.height);
-    //            return widthImageF[{srcX, srcY}];
-    //        },
-    //        [&](int tgtY, f_color_type const & c)
-    //        {
-    //            assert(tgtY >= 0 && tgtY < newSize.height);
-    //            heightImageF[{srcX, tgtY}] = c;
-    //        });
-    //}
-
     for (int srcX = 0; srcX < newSize.width; ++srcX)
     {
-        InternalResizeDimension_BoxFilter<TImageData>(
+        (void)heightScaleFactorInverse;
+
+        InternalResizeDimension_Bilinear<TImageData>(
             image.Size.height,
+            newSize.height,
             heightScaleFactor,
-            heightScaleFactorInverse,
             [&](int srcY) -> f_color_type
             {
                 assert(srcY >= 0 && srcY < image.Size.height);
@@ -145,6 +133,24 @@ TImageData ImageTools::ResizeNicer(
                 heightImageF[{srcX, tgtY}] = c;
             });
     }
+
+    //for (int srcX = 0; srcX < newSize.width; ++srcX)
+    //{
+    //    InternalResizeDimension_BoxFilter<TImageData>(
+    //        image.Size.height,
+    //        heightScaleFactor,
+    //        heightScaleFactorInverse,
+    //        [&](int srcY) -> f_color_type
+    //        {
+    //            assert(srcY >= 0 && srcY < image.Size.height);
+    //            return widthImageF[{srcX, srcY}];
+    //        },
+    //        [&](int tgtY, f_color_type const & c)
+    //        {
+    //            assert(tgtY >= 0 && tgtY < newSize.height);
+    //            heightImageF[{srcX, tgtY}] = c;
+    //        });
+    //}
 
     return InternalFromFloat<TImageData>(heightImageF);
 }
@@ -330,63 +336,62 @@ RgbImageData ImageTools::ToRgb(RgbaImageData const & imageData)
 //////////////////////////////////////////////////////////////////////////
 
 template<typename TImageData, typename TSourceGetter, typename TTargetSetter>
-static void ImageTools::InternalResizeDimension_TriangleFilter(
+static void ImageTools::InternalResizeDimension_Bilinear(
     int srcSize,
+    int tgtSize,
     float srcToTgt,
     TSourceGetter const & srcGetter,
     TTargetSetter const & tgtSetter)
 {
-    assert(srcToTgt < 1.0f); // This filter is for cases where each target pixel gets at least one source pixel
+    //assert(srcToTgt >= 0.5f); // This filter is for cases where each target pixel needs at most its two neighbors; includes resizing a bit, and enlarging to anything
+    (void)srcToTgt;
 
     using f_color_type = typename TImageData::element_type::f_vector_type;
 
     //
-    // Strategy: visit each source pixel, decide where it goes in target, and average all the ones
-    // going into the same target pixels, using a triangle filter for the weights
+    // Strategy: for each target pixel, find source pixel
     //
 
-    // Currently-accumulated target pixel
-    f_color_type currentTgtPixelSum = f_color_type();
-    float currentTgtPixelWeightSum = 0.0f;
-    int currentTgtI = 0;
+    // For target in 0-1 space
+    float const tgtToSrc = static_cast<float>(srcSize);
 
-    for (int srcI = 0; srcI < srcSize; ++srcI)
+    // We sample target pixels at their center
+    float const tgtPixelDi = 1.0f / static_cast<float>(tgtSize);
+
+    float tgtIF = tgtPixelDi / 2.0f;
+    for (int tgtI = 0; tgtI < tgtSize; ++tgtI, tgtIF += tgtPixelDi)
     {
-        // The coord of pixel 0 is half of a (target) pixel width;
-        // this makes most sense when thinking of weights - for example, pixel 0
-        // should not have a weight of 0
-        float const srcICoords = 0.5f + static_cast<float>(srcI);
+        float const srcIF = tgtIF * tgtToSrc;
+        int const srcI = static_cast<int>(FastTruncateToArchInt(srcIF));
+        float const srcIDF = srcIF - srcI;
 
-        // Calculate the target coord
-        float const tgtIf = srcICoords * srcToTgt;
-        float const tgtIf_floor = std::floorf(tgtIf);
-        int const tgtI = static_cast<int>(tgtIf_floor);
-
-        if (tgtI != currentTgtI)
+        int otherSrcI;
+        float thisDi;
+        if (srcIDF >= 0.5f)
         {
-            // Close current target pixel
-            assert(currentTgtPixelWeightSum > 0.0f);
-            tgtSetter(currentTgtI, currentTgtPixelSum / currentTgtPixelWeightSum);
-
-            // Open new one
-            currentTgtPixelSum = f_color_type();
-            currentTgtPixelWeightSum = 0.0f;
-            currentTgtI = tgtI;
+            // Next
+            otherSrcI = (srcI < srcSize - 1)
+                ? srcI + 1
+                : srcI; // Reuse same
+            thisDi = srcIDF - 0.5f;
+        }
+        else
+        {
+            // Prev
+            otherSrcI = (srcI > 0)
+                ? srcI - 1
+                : srcI; // Reuse same
+            thisDi = 0.5f - srcIDF;
         }
 
-        // Calculate weight
-        float const tgtI_fract = tgtIf - tgtIf_floor;
-        assert(tgtI_fract >= 0.0f && tgtI_fract < 1.0f);
-        float const w = 1.0f - std::abs(0.5f - tgtI_fract) / 0.5f; // 1.0 at center, 0.0 at edges
+        assert(thisDi >= 0.0f && thisDi < 1.0f);
 
-        // Update target pixel
-        currentTgtPixelSum += srcGetter(srcI) * w;
-        currentTgtPixelWeightSum += w;
+        // Interpolate
+        f_color_type const c = Mix(srcGetter(srcI), srcGetter(otherSrcI), thisDi);
+
+        // Store
+        tgtSetter(tgtI, c);
     }
-
-    // Store last one
-    assert(currentTgtPixelWeightSum > 0.0f);
-    tgtSetter(currentTgtI, currentTgtPixelSum / currentTgtPixelWeightSum);
 }
 
 template<typename TImageData, typename TSourceGetter, typename TTargetSetter>
