@@ -387,7 +387,7 @@ static void ImageTools::InternalResizeDimension_TriangleFilter(
 
 template<typename TImageData, typename TSourceGetter, typename TTargetSetter>
 static void ImageTools::InternalResizeDimension_BoxFilter(
-    int srcSize,
+    int const srcSize,
     float srcToTgt,
     TSourceGetter const & srcGetter,
     TTargetSetter const & tgtSetter)
@@ -412,19 +412,17 @@ static void ImageTools::InternalResizeDimension_BoxFilter(
     // this value corresponds to the beginning of the next target pixel
     float currentTgtEnd = 1.0f;
 
-    for (int srcI = 0; srcI < srcSize; ++srcI)
+    float tgtI = 0.0f; // The target coord for (the beginning of) the source pixel in the loop
+    for (int srcI = 0; srcI < srcSize; ++srcI, tgtI += srcToTgt)
     {
-        // Calculate the target coord for (the beginning of) this source pixel
-        float const tgtIStart = static_cast<float>(srcI) * srcToTgt;
-
         // Calculate the target coord of the end of this source pixel
-        float const tgtIEnd = tgtIStart + srcToTgt;
+        float const tgtIEnd = tgtI + srcToTgt;
 
         if (tgtIEnd >= currentTgtEnd || srcI == srcSize - 1)
         {
             // This source pixel crosses the target pixel boundary, or it's the last pixel
 
-            assert(tgtIStart <= currentTgtEnd);
+            assert(tgtI <= currentTgtEnd);
 
             //
             // Incorporate the part of the pixel that falls in this target pixel
@@ -435,7 +433,7 @@ static void ImageTools::InternalResizeDimension_BoxFilter(
             // Calculate the fraction of the source pixel within the target pixel;
             // note that the last pixel might still be fully in the target pixel,
             // hence we cap pixelFraction
-            float const pixelFraction = std::min((currentTgtEnd - tgtIStart) * tgtToSrc, 1.0f);
+            float const pixelFraction = std::min((currentTgtEnd - tgtI) * tgtToSrc, 1.0f);
 
             // Add fraction to current sum
             currentTgtPixelSum += c * pixelFraction;
@@ -446,7 +444,7 @@ static void ImageTools::InternalResizeDimension_BoxFilter(
             //
 
             assert(currentTgtPixelWeightSum > 0.0f);
-            tgtSetter(static_cast<int>(std::floorf(tgtIStart)), currentTgtPixelSum / currentTgtPixelWeightSum);
+            tgtSetter(static_cast<int>(std::floorf(tgtI)), currentTgtPixelSum / currentTgtPixelWeightSum);
 
             //
             // Move on to next target pixel
