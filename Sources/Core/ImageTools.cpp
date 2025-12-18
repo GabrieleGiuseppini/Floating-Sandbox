@@ -56,6 +56,11 @@ TImageData ImageTools::ResizeNicer(
     assert(image.Size.width > 0 && image.Size.height > 0);
     assert(newSize.width > 0 && newSize.height > 0);
 
+    if (image.Size == newSize)
+    {
+        return image.Clone();
+    }
+
     //
     // Width
     //

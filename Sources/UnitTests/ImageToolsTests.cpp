@@ -259,7 +259,7 @@ TEST(ImageToolsTests, Resize_Idempotent_Bilinear)
     }
 }
 
-TEST(ImageToolsTests, Resize_Idempotent_Nicer)
+TEST(ImageToolsTests, Resize_IdempotentBothDirs_Nicer)
 {
     RgbImageData sourceImage(4, 4);
     for (uint8_t y = 0; y < sourceImage.Size.height; ++y)
@@ -284,6 +284,36 @@ TEST(ImageToolsTests, Resize_Idempotent_Nicer)
             auto cd = destImage[{x, y}];
             auto cs = sourceImage[{x, y}];
             EXPECT_EQ(cd, cs);
+        }
+    }
+}
+
+TEST(ImageToolsTests, Resize_IdempotentOneDir_Nicer)
+{
+    RgbImageData sourceImage(4, 4);
+    for (uint8_t y = 0; y < sourceImage.Size.height; ++y)
+    {
+        for (uint8_t x = 0; x < sourceImage.Size.width; ++x)
+        {
+            sourceImage[{x, y}] = rgbColor(x, y, 4);
+        }
+    }
+
+    RgbImageData destImage = ImageTools::ResizeNicer(
+        sourceImage,
+        ImageSize(2, 4));
+
+    ASSERT_EQ(destImage.Size.width, 2);
+    ASSERT_EQ(destImage.Size.height, 4);
+
+    for (uint8_t y = 0; y < destImage.Size.height; ++y)
+    {
+        for (uint8_t x = 0; x < destImage.Size.width; ++x)
+        {
+            auto cd = destImage[{x, y}];
+            auto cs1 = sourceImage[{x * 2, y}];
+            auto cs2 = sourceImage[{x * 2 + 1, y}];
+            EXPECT_EQ(cd, rgbColor((cs1.toVec() + cs2.toVec()) / 2.0f));
         }
     }
 }
