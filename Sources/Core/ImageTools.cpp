@@ -89,18 +89,22 @@ TImageData ImageTools::ResizeNicer(
 
             for (int srcY = 0; srcY < image.Size.height; ++srcY)
             {
+                f_color_type const * restrict srcPtr = &(srcImageF[{0, srcY}]);
+                f_color_type * restrict widthImagePtr = &(widthImageF[{0, srcY}]);
+
                 InternalResizeDimension_Bilinear<TImageData>(
                     image.Size.width,
                     newSize.width,
+                    widthScaleFactorInverse,
                     [&](int srcX) -> f_color_type
                     {
                         assert(srcX >= 0 && srcX < image.Size.width);
-                        return srcImageF[{srcX, srcY}];
+                        return srcPtr[srcX];
                     },
                     [&](int tgtX, f_color_type const & c)
                     {
                         assert(tgtX >= 0 && tgtX < newSize.width);
-                        widthImageF[{tgtX, srcY}] = c;
+                        *(widthImagePtr + tgtX) = c;
                     });
             }
         }
@@ -113,6 +117,9 @@ TImageData ImageTools::ResizeNicer(
 
         for (int srcY = 0; srcY < image.Size.height; ++srcY)
         {
+            f_color_type const * restrict srcPtr = &(srcImageF[{0, srcY}]);
+            f_color_type * restrict widthImagePtr = &(widthImageF[{0, srcY}]);
+
             InternalResizeDimension_BoxFilter<TImageData>(
                 image.Size.width,
                 widthScaleFactor,
@@ -120,12 +127,12 @@ TImageData ImageTools::ResizeNicer(
                 [&](int srcX) -> f_color_type
                 {
                     assert(srcX >= 0 && srcX < image.Size.width);
-                    return srcImageF[{srcX, srcY}];
+                    return srcPtr[srcX];
                 },
                 [&](int tgtX, f_color_type const & c)
                 {
                     assert(tgtX >= 0 && tgtX < newSize.width);
-                    widthImageF[{tgtX, srcY}] = c;
+                    *(widthImagePtr + tgtX) = c;
                 });
         }
     }
@@ -160,6 +167,7 @@ TImageData ImageTools::ResizeNicer(
                 InternalResizeDimension_Bilinear<TImageData>(
                     image.Size.height,
                     newSize.height,
+                    heightScaleFactorInverse,
                     [&](int srcY) -> f_color_type
                     {
                         assert(srcY >= 0 && srcY < image.Size.height);
@@ -385,6 +393,7 @@ template<typename TImageData, typename TSourceGetter, typename TTargetSetter>
 static void ImageTools::InternalResizeDimension_Bilinear(
     int srcSize,
     int tgtSize,
+    float tgtToSrc,
     TSourceGetter const & srcGetter,
     TTargetSetter const & tgtSetter)
 {
@@ -394,16 +403,9 @@ static void ImageTools::InternalResizeDimension_Bilinear(
     // Strategy: for each target pixel, find source pixel
     //
 
-    // For target in 0-1 space
-    float const tgtToSrc = static_cast<float>(srcSize);
-
-    // We sample target pixels at their center
-    float const tgtPixelDi = 1.0f / static_cast<float>(tgtSize);
-
-    float tgtIF = tgtPixelDi / 2.0f;
-    for (int tgtI = 0; tgtI < tgtSize; ++tgtI, tgtIF += tgtPixelDi)
+    float srcIF = tgtToSrc / 2.0f; // We sample target pixels at their center, so we start with this offset
+    for (int tgtI = 0; tgtI < tgtSize; ++tgtI, srcIF += tgtToSrc)
     {
-        float const srcIF = tgtIF * tgtToSrc;
         int const srcI = static_cast<int>(FastTruncateToArchInt(srcIF));
         float const srcIDF = srcIF - srcI;
 
