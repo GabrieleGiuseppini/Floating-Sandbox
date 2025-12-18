@@ -70,25 +70,34 @@ TImageData ImageTools::ResizeNicer(
 
     if (widthScaleFactor >= 0.5f)
     {
-        //
-        // Bilinear
-        //
-
-        for (int srcY = 0; srcY < image.Size.height; ++srcY)
+        if (widthScaleFactor == 1.0f)
         {
-            InternalResizeDimension_Bilinear<TImageData>(
-                image.Size.width,
-                newSize.width,
-                [&](int srcX) -> f_color_type
-                {
-                    assert(srcX >= 0 && srcX < image.Size.width);
-                    return srcImageF[{srcX, srcY}];
-                },
-                [&](int tgtX, f_color_type const & c)
-                {
-                    assert(tgtX >= 0 && tgtX < newSize.width);
-                    widthImageF[{tgtX, srcY}] = c;
-                });
+            assert(image.Size.width == newSize.width);
+
+            widthImageF.CloneFrom(srcImageF);
+        }
+        else
+        {
+            //
+            // Bilinear
+            //
+
+            for (int srcY = 0; srcY < image.Size.height; ++srcY)
+            {
+                InternalResizeDimension_Bilinear<TImageData>(
+                    image.Size.width,
+                    newSize.width,
+                    [&](int srcX) -> f_color_type
+                    {
+                        assert(srcX >= 0 && srcX < image.Size.width);
+                        return srcImageF[{srcX, srcY}];
+                    },
+                    [&](int tgtX, f_color_type const & c)
+                    {
+                        assert(tgtX >= 0 && tgtX < newSize.width);
+                        widthImageF[{tgtX, srcY}] = c;
+                    });
+            }
         }
     }
     else
@@ -127,27 +136,36 @@ TImageData ImageTools::ResizeNicer(
 
     Buffer2D<f_color_type, struct ImageTag> heightImageF(newSize.width, newSize.height);
 
-    if (widthScaleFactor >= 0.5f)
+    if (heightScaleFactor >= 0.5f)
     {
-        //
-        // Bilinear
-        //
-
-        for (int srcX = 0; srcX < newSize.width; ++srcX)
+        if (heightScaleFactor == 1.0f)
         {
-            InternalResizeDimension_Bilinear<TImageData>(
-                image.Size.height,
-                newSize.height,
-                [&](int srcY) -> f_color_type
-                {
-                    assert(srcY >= 0 && srcY < image.Size.height);
-                    return widthImageF[{srcX, srcY}];
-                },
-                [&](int tgtY, f_color_type const & c)
-                {
-                    assert(tgtY >= 0 && tgtY < newSize.height);
-                    heightImageF[{srcX, tgtY}] = c;
-                });
+            assert(image.Size.height == newSize.height);
+
+            heightImageF.CloneFrom(widthImageF);
+        }
+        else
+        {
+            //
+            // Bilinear
+            //
+
+            for (int srcX = 0; srcX < newSize.width; ++srcX)
+            {
+                InternalResizeDimension_Bilinear<TImageData>(
+                    image.Size.height,
+                    newSize.height,
+                    [&](int srcY) -> f_color_type
+                    {
+                        assert(srcY >= 0 && srcY < image.Size.height);
+                        return widthImageF[{srcX, srcY}];
+                    },
+                    [&](int tgtY, f_color_type const & c)
+                    {
+                        assert(tgtY >= 0 && tgtY < newSize.height);
+                        heightImageF[{srcX, tgtY}] = c;
+                    });
+            }
         }
     }
     else

@@ -155,6 +155,13 @@ public:
             std::move(newData));
     }
 
+    void CloneFrom(Buffer2D const & other)
+    {
+        assert(Size == other.Size);
+
+        std::memcpy(Data.get(), other.Data.get(), mLinearSize * sizeof(TElement));
+    }
+
     Buffer2D CloneRegion(_IntegralRect<TIntegralTag> const & regionRect) const
     {
         // The requested region is entirely within this buffer
