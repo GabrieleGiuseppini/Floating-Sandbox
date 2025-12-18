@@ -420,9 +420,9 @@ static void ImageTools::InternalResizeDimension_BoxFilter(
         // Calculate the target coord of the end of this source pixel
         float const tgtIEnd = tgtIStart + srcToTgt;
 
-        if (tgtIEnd >= currentTgtEnd)
+        if (tgtIEnd >= currentTgtEnd || srcI == srcSize - 1)
         {
-            // This source pixel crosses the target pixel boundary
+            // This source pixel crosses the target pixel boundary, or it's the last pixel
 
             assert(tgtIStart <= currentTgtEnd);
 
@@ -432,8 +432,10 @@ static void ImageTools::InternalResizeDimension_BoxFilter(
 
             f_color_type const c = srcGetter(srcI);
 
-            // Calculate the fraction of the source pixel within the target pixel
-            float const pixelFraction = (currentTgtEnd - tgtIStart) * tgtToSrc;
+            // Calculate the fraction of the source pixel within the target pixel;
+            // note that the last pixel might still be fully in the target pixel,
+            // hence we cap pixelFraction
+            float const pixelFraction = std::min((currentTgtEnd - tgtIStart) * tgtToSrc, 1.0f);
 
             // Add fraction to current sum
             currentTgtPixelSum += c * pixelFraction;
