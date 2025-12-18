@@ -1,3 +1,4 @@
+#include <Core/ImageData.h>
 #include <Core/GameTypes.h>
 #include <Core/SysSpecifics.h>
 #include <Core/Vectors.h>
@@ -32,3 +33,5 @@ void MakeGraph2(
     std::vector<float> & springsStiffnessCoefficient,
     std::vector<float> & springsDamperCoefficient,
     std::vector<float> & springsRestLength);
+
+RgbaImageData MakeRgbaImageData(ImageSize const & size);

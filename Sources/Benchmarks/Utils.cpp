@@ -145,3 +145,9 @@ void MakeGraph2(
         springsRestLength.emplace_back(1.0f + static_cast<float>(i % 2));
     }
 }
+
+RgbaImageData MakeRgbaImageData(ImageSize const & size)
+{
+    RgbaImageData image(size);
+    return image;
+}

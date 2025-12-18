@@ -3,6 +3,7 @@ set (BENCHMARK_SOURCES
         DiffuseLight.cpp
         DivisionByZero.cpp
         GameMath.cpp
+	ImageTools.cpp
         Logarithm.cpp
 	MakeAABBWeightedUnion.cpp
         PrecalculatedFunction.cpp
