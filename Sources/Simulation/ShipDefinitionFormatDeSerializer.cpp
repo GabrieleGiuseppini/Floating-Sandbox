@@ -1396,15 +1396,10 @@ RgbaImageData ShipDefinitionFormatDeSerializer::ReadPngImageAndMakePreview(
 {
     RgbaImageData trimmed = ImageTools::TrimTransparent(
         ReadPngImage(shipDefinitionInputStream, imageDataSize));
-    // TODOTEST
-    //return ImageTools::Resize(
-        //trimmed,
-        //trimmed.Size.ShrinkToFit(maxSize),
-        //ImageTools::FilterKind::Bilinear);
-
-    return ImageTools::ResizeNicer(
+    return ImageTools::Resize(
         trimmed,
-        trimmed.Size.ShrinkToFit(maxSize));
+        trimmed.Size.ShrinkToFit(maxSize),
+        ImageTools::FilterKind::Bilinear);
 }
 
 void ShipDefinitionFormatDeSerializer::ReadFileHeader(

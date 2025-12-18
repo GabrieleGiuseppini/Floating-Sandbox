@@ -150,6 +150,7 @@ private:
     static inline void InternalResizeDimension_BoxFilter(
         int srcSize,
         float srcToTgt,
+        float tgtToSrc,
         TSourceGetter const & srcGetter,
         TTargetSetter const & tgtSetter);
 

@@ -54,6 +54,7 @@ TImageData ImageTools::ResizeNicer(
     float const srcWidth = static_cast<float>(image.Size.width);
     float const tgtWidth = static_cast<float>(newSize.width);
     float const widthScaleFactor = tgtWidth / srcWidth;
+    float const widthScaleFactorInverse = srcWidth / tgtWidth;
 
     LogMessage("TODO: widthScaleFactor=", widthScaleFactor);
 
@@ -83,6 +84,7 @@ TImageData ImageTools::ResizeNicer(
         InternalResizeDimension_BoxFilter<TImageData>(
             image.Size.width,
             widthScaleFactor,
+            widthScaleFactorInverse,
             [&](int srcX) -> f_color_type
             {
                 assert(srcX >= 0 && srcX < image.Size.width);
@@ -102,6 +104,7 @@ TImageData ImageTools::ResizeNicer(
     float const srcHeight = static_cast<float>(image.Size.height);
     float const tgtHeight = static_cast<float>(newSize.height);
     float const heightScaleFactor = tgtHeight / srcHeight;
+    float const heightScaleFactorInverse = srcHeight / tgtHeight;
 
     LogMessage("TODO: heightScaleFactor=", heightScaleFactor);
 
@@ -130,6 +133,7 @@ TImageData ImageTools::ResizeNicer(
         InternalResizeDimension_BoxFilter<TImageData>(
             image.Size.height,
             heightScaleFactor,
+            heightScaleFactorInverse,
             [&](int srcY) -> f_color_type
             {
                 assert(srcY >= 0 && srcY < image.Size.height);
@@ -389,6 +393,7 @@ template<typename TImageData, typename TSourceGetter, typename TTargetSetter>
 static void ImageTools::InternalResizeDimension_BoxFilter(
     int const srcSize,
     float srcToTgt,
+    float tgtToSrc,
     TSourceGetter const & srcGetter,
     TTargetSetter const & tgtSetter)
 {
@@ -402,18 +407,18 @@ static void ImageTools::InternalResizeDimension_BoxFilter(
     // of the source pixel that falls in the target pixel
     //
 
-    float const tgtToSrc = 1.0f / srcToTgt;
-
-    // Currently-accumulated target pixel
-    f_color_type currentTgtPixelSum = f_color_type();
-    float currentTgtPixelWeightSum = 0.0f;
+    // The current target pixel
+    int tgtI = 0; // Ordinal
+    float tgtF = 0.0f; // The target coord for (the beginning of) the source pixel in the loop (within the ordinal)
 
     // The end of the current target pixel, in target coordinates;
     // this value corresponds to the beginning of the next target pixel
     float currentTgtEnd = 1.0f;
 
-    int tgtI = 0; // The current target pixel ordinal
-    float tgtF = 0.0f; // The target coord for (the beginning of) the source pixel in the loop
+    // Currently-accumulated target pixel
+    f_color_type currentTgtPixelSum = f_color_type();
+    float currentTgtPixelWeightSum = 0.0f;
+
     for (int srcI = 0; srcI < srcSize; ++srcI, tgtF += srcToTgt)
     {
         // Calculate the target coord of the end of this source pixel
@@ -434,7 +439,6 @@ static void ImageTools::InternalResizeDimension_BoxFilter(
             // Calculate the fraction of the source pixel within the target pixel;
             // note that the last pixel might still be fully in the target pixel,
             // hence we cap pixelFraction
-            // TODO: use pixel fraction in target space?
             float const pixelFraction = std::min((currentTgtEnd - tgtF) * tgtToSrc, 1.0f);
 
             // Add fraction to current sum
@@ -445,8 +449,8 @@ static void ImageTools::InternalResizeDimension_BoxFilter(
             // Publish current
             //
 
-            assert(currentTgtPixelWeightSum > 0.0f);
             assert(static_cast<int>(std::floorf(tgtF)) == tgtI);
+            assert(currentTgtPixelWeightSum > 0.0f);
             tgtSetter(tgtI, currentTgtPixelSum / currentTgtPixelWeightSum);
 
             //
