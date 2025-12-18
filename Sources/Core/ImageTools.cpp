@@ -41,6 +41,18 @@ TImageData ImageTools::ResizeNicer(
     TImageData const & image,
     ImageSize const & newSize)
 {
+    //
+    // Cases based on scale factor across each direction:
+    //
+    //  - SF >= 0.5 (including up to +inf): enlarging, or reducing to at most half (not smaller);
+    //                                      each target pixel is contributed to by at most two source
+    //                                      pixels (but also by a fraction of one),
+    //                                      so use bilinear
+    //  - SF < 0.5: reducing to less than half (way smaller);
+    //                                      each target pixel is contributed by more than two pixels,
+    //                                      so use BoxFilter
+    //
+
     using color_type = typename TImageData::element_type;
     using f_color_type = typename TImageData::element_type::f_vector_type;
 
@@ -56,48 +68,60 @@ TImageData ImageTools::ResizeNicer(
     float const widthScaleFactor = tgtWidth / srcWidth;
     float const widthScaleFactorInverse = srcWidth / tgtWidth;
 
-    LogMessage("TODO: widthScaleFactor=", widthScaleFactor);
-
     auto const srcImageF = InternalToFloat(image);
     Buffer2D<f_color_type, struct ImageTag> widthImageF(newSize.width, image.Size.height);
 
-    // TODOTEST
-    for (int srcY = 0; srcY < image.Size.height; ++srcY)
+    if (widthScaleFactor >= 0.5f)
     {
-        (void)widthScaleFactorInverse;
+        LogMessage(" Bi");
 
-        InternalResizeDimension_Bilinear<TImageData>(
-            image.Size.width,
-            newSize.width,
-            [&](int srcX) -> f_color_type
-            {
-                assert(srcX >= 0 && srcX < image.Size.width);
-                return srcImageF[{srcX, srcY}];
-            },
-            [&](int tgtX, f_color_type const & c)
-            {
-                assert(tgtX >= 0 && tgtX < newSize.width);
-                widthImageF[{tgtX, srcY}] = c;
-            });
+        //
+        // Bilinear
+        //
+
+        for (int srcY = 0; srcY < image.Size.height; ++srcY)
+        {
+            InternalResizeDimension_Bilinear<TImageData>(
+                image.Size.width,
+                newSize.width,
+                [&](int srcX) -> f_color_type
+                {
+                    assert(srcX >= 0 && srcX < image.Size.width);
+                    return srcImageF[{srcX, srcY}];
+                },
+                [&](int tgtX, f_color_type const & c)
+                {
+                    assert(tgtX >= 0 && tgtX < newSize.width);
+                    widthImageF[{tgtX, srcY}] = c;
+                });
+        }
     }
+    else
+    {
+        LogMessage(" Box");
 
-    //for (int srcY = 0; srcY < image.Size.height; ++srcY)
-    //{
-    //    InternalResizeDimension_BoxFilter<TImageData>(
-    //        image.Size.width,
-    //        widthScaleFactor,
-    //        widthScaleFactorInverse,
-    //        [&](int srcX) -> f_color_type
-    //        {
-    //            assert(srcX >= 0 && srcX < image.Size.width);
-    //            return srcImageF[{srcX, srcY}];
-    //        },
-    //        [&](int tgtX, f_color_type const & c)
-    //        {
-    //            assert(tgtX >= 0 && tgtX < newSize.width);
-    //            widthImageF[{tgtX, srcY}] = c;
-    //        });
-    //}
+        //
+        // BoxFilter
+        //
+
+        for (int srcY = 0; srcY < image.Size.height; ++srcY)
+        {
+            InternalResizeDimension_BoxFilter<TImageData>(
+                image.Size.width,
+                widthScaleFactor,
+                widthScaleFactorInverse,
+                [&](int srcX) -> f_color_type
+                {
+                    assert(srcX >= 0 && srcX < image.Size.width);
+                    return srcImageF[{srcX, srcY}];
+                },
+                [&](int tgtX, f_color_type const & c)
+                {
+                    assert(tgtX >= 0 && tgtX < newSize.width);
+                    widthImageF[{tgtX, srcY}] = c;
+                });
+        }
+    }
 
     //
     // Height
@@ -108,47 +132,59 @@ TImageData ImageTools::ResizeNicer(
     float const heightScaleFactor = tgtHeight / srcHeight;
     float const heightScaleFactorInverse = srcHeight / tgtHeight;
 
-    LogMessage("TODO: heightScaleFactor=", heightScaleFactor);
-
     Buffer2D<f_color_type, struct ImageTag> heightImageF(newSize.width, newSize.height);
 
-    // TODOTEST
-    for (int srcX = 0; srcX < newSize.width; ++srcX)
+    if (widthScaleFactor >= 0.5f)
     {
-        (void)heightScaleFactorInverse;
+        LogMessage(" Bi");
 
-        InternalResizeDimension_Bilinear<TImageData>(
-            image.Size.height,
-            newSize.height,
-            [&](int srcY) -> f_color_type
-            {
-                assert(srcY >= 0 && srcY < image.Size.height);
-                return widthImageF[{srcX, srcY}];
-            },
-            [&](int tgtY, f_color_type const & c)
-            {
-                assert(tgtY >= 0 && tgtY < newSize.height);
-                heightImageF[{srcX, tgtY}] = c;
-            });
+        //
+        // Bilinear
+        //
+
+        for (int srcX = 0; srcX < newSize.width; ++srcX)
+        {
+            InternalResizeDimension_Bilinear<TImageData>(
+                image.Size.height,
+                newSize.height,
+                [&](int srcY) -> f_color_type
+                {
+                    assert(srcY >= 0 && srcY < image.Size.height);
+                    return widthImageF[{srcX, srcY}];
+                },
+                [&](int tgtY, f_color_type const & c)
+                {
+                    assert(tgtY >= 0 && tgtY < newSize.height);
+                    heightImageF[{srcX, tgtY}] = c;
+                });
+        }
     }
+    else
+    {
+        LogMessage(" Box");
 
-    //for (int srcX = 0; srcX < newSize.width; ++srcX)
-    //{
-    //    InternalResizeDimension_BoxFilter<TImageData>(
-    //        image.Size.height,
-    //        heightScaleFactor,
-    //        heightScaleFactorInverse,
-    //        [&](int srcY) -> f_color_type
-    //        {
-    //            assert(srcY >= 0 && srcY < image.Size.height);
-    //            return widthImageF[{srcX, srcY}];
-    //        },
-    //        [&](int tgtY, f_color_type const & c)
-    //        {
-    //            assert(tgtY >= 0 && tgtY < newSize.height);
-    //            heightImageF[{srcX, tgtY}] = c;
-    //        });
-    //}
+        //
+        // BoxFilter
+        //
+
+        for (int srcX = 0; srcX < newSize.width; ++srcX)
+        {
+            InternalResizeDimension_BoxFilter<TImageData>(
+                image.Size.height,
+                heightScaleFactor,
+                heightScaleFactorInverse,
+                [&](int srcY) -> f_color_type
+                {
+                    assert(srcY >= 0 && srcY < image.Size.height);
+                    return widthImageF[{srcX, srcY}];
+                },
+                [&](int tgtY, f_color_type const & c)
+                {
+                    assert(tgtY >= 0 && tgtY < newSize.height);
+                    heightImageF[{srcX, tgtY}] = c;
+                });
+        }
+    }
 
     return InternalFromFloat<TImageData>(heightImageF);
 }
