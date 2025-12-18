@@ -438,7 +438,7 @@ static void ImageTools::InternalResizeDimension_Bilinear(
 
 template<typename TImageData, typename TSourceGetter, typename TTargetSetter>
 static void ImageTools::InternalResizeDimension_BoxFilter(
-    int const srcSize,
+    int srcSize,
     float srcToTgt,
     float tgtToSrc,
     TSourceGetter const & srcGetter,
@@ -466,12 +466,13 @@ static void ImageTools::InternalResizeDimension_BoxFilter(
     f_color_type currentTgtPixelSum = f_color_type();
     float currentTgtPixelWeightSum = 0.0f;
 
-    for (int srcI = 0; srcI < srcSize; ++srcI, tgtF += srcToTgt)
+    int const lastSize = srcSize - 1;
+    for (int srcI = 0; srcI <= lastSize; ++srcI, tgtF += srcToTgt)
     {
         // Calculate the target coord of the end of this source pixel
         float const tgtFEnd = tgtF + srcToTgt;
 
-        if (tgtFEnd >= currentTgtEnd || srcI == srcSize - 1)
+        if (tgtFEnd >= currentTgtEnd || srcI == lastSize)
         {
             // This source pixel crosses the target pixel boundary, or it's the last pixel
 
