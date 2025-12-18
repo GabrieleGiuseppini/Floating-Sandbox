@@ -5,9 +5,6 @@
 ***************************************************************************************/
 #include "ImageTools.h"
 
-// TODOTEST
-#include "Log.h"
-
 #include <type_traits>
 
 template<typename TImageData>
@@ -73,8 +70,6 @@ TImageData ImageTools::ResizeNicer(
 
     if (widthScaleFactor >= 0.5f)
     {
-        LogMessage(" Bi");
-
         //
         // Bilinear
         //
@@ -98,8 +93,6 @@ TImageData ImageTools::ResizeNicer(
     }
     else
     {
-        LogMessage(" Box");
-
         //
         // BoxFilter
         //
@@ -136,8 +129,6 @@ TImageData ImageTools::ResizeNicer(
 
     if (widthScaleFactor >= 0.5f)
     {
-        LogMessage(" Bi");
-
         //
         // Bilinear
         //
@@ -161,8 +152,6 @@ TImageData ImageTools::ResizeNicer(
     }
     else
     {
-        LogMessage(" Box");
-
         //
         // BoxFilter
         //
