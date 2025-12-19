@@ -2421,7 +2421,7 @@ inline std::optional<Geometry::AABB> MakeAABBWeightedUnion_SSEVectorized(std::ve
             centersSum = _mm_add_ps(
                 _mm_mul_ps(
                     _mm_add_ps(rtlb, lbrt),
-                    _mm_load_ps1(&w)),
+                    _mm_set_ps1(w)),
                 centersSum);
 
             weightsSum += w;
@@ -2437,7 +2437,7 @@ inline std::optional<Geometry::AABB> MakeAABBWeightedUnion_SSEVectorized(std::ve
     // center_4 = center / 2.0 / weightsSum
     __m128 const center_4 = _mm_div_ps(
         _mm_mul_ps(centersSum, *(__m128 *)ZeroPointFive4f),
-        _mm_load_ps1(&weightsSum));
+        _mm_set_ps1(weightsSum));
 
     //
     // Extent
@@ -2458,7 +2458,7 @@ inline std::optional<Geometry::AABB> MakeAABBWeightedUnion_SSEVectorized(std::ve
             // rtlb_weighted_offsets = (rtlb - cxcycxcy) * w
             __m128 const rtlb_weighted_offsets = _mm_mul_ps(
                 _mm_sub_ps(rtlb, center_4),
-                _mm_load_ps1(&w));
+                _mm_set_ps1(w));
 
             rtlb_offsets_max = _mm_max_ps(rtlb_offsets_max, rtlb_weighted_offsets);
             rtlb_offsets_min = _mm_min_ps(rtlb_offsets_min, rtlb_weighted_offsets);
@@ -2578,5 +2578,89 @@ inline std::optional<Geometry::AABB> MakeAABBWeightedUnion(std::vector<Geometry:
 #endif
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+// MixVec4f
+///////////////////////////////////////////////////////////////////////////////////////////////////////
 
+inline void MixVec4f_Naive(
+    float const * restrict vector1,
+    float const * restrict vector2,
+    float * restrict vectorOutput,
+    float weight) noexcept
+{
+    for (size_t i = 0; i < 4; ++i)
+    {
+        vectorOutput[i] = vector1[i] + (vector2[i] - vector1[i]) * weight;
+    }
+}
+
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
+inline void MixVec4f_SSEVectorized(
+    float const * restrict vector1,
+    float const * restrict vector2,
+    float * restrict vectorOutput,
+    float weight) noexcept
+{
+    __m128 v1 = _mm_loadu_ps(vector1);
+    __m128 const v2 = _mm_loadu_ps(vector2);
+    __m128 const w = _mm_set_ps1(weight);
+    v1 = _mm_add_ps(
+        v1,
+        _mm_mul_ps(
+            _mm_sub_ps(v2, v1),
+            w));
+
+    _mm_storeu_ps(vectorOutput, v1);
+}
+#endif
+
+#if FS_IS_ARM_NEON()
+inline void MixVec4f_NeonVectorized(
+    float const * restrict vector1,
+    float const * restrict vector2,
+    float * restrict vectorOutput,
+    float weight) noexcept
+{
+    float32x2_t v1 = vld1_f32(vector1);
+    float32x2_t const v2 = vld1_f32(vector2);
+    float32x2_t const w = vdupq_n_f32(weight);
+
+    v1 = vaddq_f32(
+        v1,
+        vmulq_f32(
+            vsubq_f32(v2, v1),
+            w));
+
+    vst4q_f32(vectorOutput, v1);
+}
+#endif
+
+inline void MixVec4f(
+    float const * restrict vector1,
+    float const * restrict vector2,
+    float * restrict vectorOutput,
+    float weight) noexcept
+{
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
+    MixVec4f_SSEVectorized(vector1, vector2, vectorOutput, weight);
+#elif FS_IS_ARM_NEON()
+    MixVec4f_NeonVectorized(vector1, vector2, vectorOutput, weight);
+#else
+    MixVec4f_Naive(vector1, vector2, vectorOutput, weight);
+#endif
+}
+
+}
+
+// Specialization of Mix() from GameMath for vec4f types
+inline vec4f Mix(vec4f const & v1, vec4f const & v2, float w)
+{
+    vec4f output;
+    Algorithms::MixVec4f(
+        reinterpret_cast<float const * restrict>(&v1),
+        reinterpret_cast<float const * restrict>(&v2),
+        reinterpret_cast<float * restrict>(&output),
+        w);
+
+    return output;
 }

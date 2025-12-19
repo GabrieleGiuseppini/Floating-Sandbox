@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #include "ImageTools.h"
 
+#include "Algorithms.h" // Picks up specialization for vec4f
+
 #include <type_traits>
 
 template<typename TImageData>

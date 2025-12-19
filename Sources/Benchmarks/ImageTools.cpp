@@ -27,7 +27,7 @@ static void ImageTools_Resize_Bilinear_Up(benchmark::State& state)
 }
 BENCHMARK(ImageTools_Resize_Bilinear_Up);
 
-static void ImageTools_Resize_Bilinear_Down(benchmark::State& state)
+static void ImageTools_Resize_Bilinear_Down_2(benchmark::State& state)
 {
     auto srcImage = MakeRgbaImageData(ImageSize(SizeHigh, SizeHigh));
     ImageSize newSize(SizeLow, SizeLow);
@@ -41,7 +41,7 @@ static void ImageTools_Resize_Bilinear_Down(benchmark::State& state)
 
     benchmark::DoNotOptimize(result);
 }
-BENCHMARK(ImageTools_Resize_Bilinear_Down);
+BENCHMARK(ImageTools_Resize_Bilinear_Down_2);
 
 static void ImageTools_ResizeNicer_Up(benchmark::State& state)
 {

@@ -1188,3 +1188,47 @@ TEST(AlgorithmsTests, MakeAABBWeightedUnion_NeonVectorized_Empty)
     RunMakeAABBWeightedUnionTest_Empty(Algorithms::MakeAABBWeightedUnion_NeonVectorized);
 }
 #endif
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+// MixVec4f
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+template<typename Algorithm>
+void RunMixVec4fTest(Algorithm algorithm)
+{
+    vec4f const vec1(0.3f, 4.0f, 500.0f, 1234.0f);
+    vec4f const vec2(1.7f, 7.0f, 777.0f, 13.5f);
+    vec4f output;
+
+    float const weight = 3.7f;
+
+    algorithm(
+        reinterpret_cast<float const *>(&vec1),
+        reinterpret_cast<float const *>(&vec2),
+        reinterpret_cast<float *>(&output),
+        weight);
+
+    EXPECT_FLOAT_EQ(output.x, vec1.x + (vec2.x - vec1.x) * weight);
+    EXPECT_FLOAT_EQ(output.y, vec1.y + (vec2.y - vec1.y) * weight);
+    EXPECT_FLOAT_EQ(output.z, vec1.z + (vec2.z - vec1.z) * weight);
+    EXPECT_FLOAT_EQ(output.w, vec1.w + (vec2.w - vec1.w) * weight);
+}
+
+TEST(AlgorithmsTests, MixVec4f_Naive)
+{
+    RunMixVec4fTest(Algorithms::MixVec4f_Naive);
+}
+
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
+TEST(AlgorithmsTests, MixVec4f_SSEVectorized)
+{
+    RunMixVec4fTest(Algorithms::MixVec4f_SSEVectorized);
+}
+#endif
+
+#if FS_IS_ARM_NEON()
+TEST(AlgorithmsTests, MixVec4f_NeonVectorized)
+{
+    RunMixVec4fTest(Algorithms::MixVec4f_NeonVectorized);
+}
+#endif
