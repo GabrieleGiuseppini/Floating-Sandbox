@@ -541,10 +541,8 @@ static void ImageTools::InternalResizeDimension_BoxFilter(
     int const lastSize = srcSize - 1;
     for (int srcI = 0; srcI <= lastSize; ++srcI, tgtF += srcToTgt)
     {
-        // Calculate the target coord of the end of this source pixel
-        float const tgtFEnd = tgtF + srcToTgt;
-
-        if (tgtFEnd >= currentTgtEnd || srcI == lastSize)
+        // Check whether this source pixel closes the current target pixel
+        if (tgtF + srcToTgt >= currentTgtEnd || srcI == lastSize)
         {
             // This source pixel crosses the target pixel boundary, or it's the last pixel
 
