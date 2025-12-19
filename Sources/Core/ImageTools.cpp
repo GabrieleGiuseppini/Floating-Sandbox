@@ -7,6 +7,7 @@
 
 #include "Algorithms.h" // Picks up specialization for vec4f
 
+#include <memory>
 #include <type_traits>
 
 template<typename TImageData>
@@ -54,14 +55,30 @@ TImageData ImageTools::ResizeNicer(
 
     using color_type = typename TImageData::element_type;
     using f_color_type = typename TImageData::element_type::f_vector_type;
+    using image_data_f = Buffer2D<typename TImageData::element_type::f_vector_type, struct ImageTag>;
 
     assert(image.Size.width > 0 && image.Size.height > 0);
     assert(newSize.width > 0 && newSize.height > 0);
+
+    //
+    // Take care of trivial cases first
+    //
 
     if (image.Size == newSize)
     {
         return image.Clone();
     }
+
+    //
+    // Do directions independently
+    //
+
+    // Convert source image to floats
+    image_data_f srcImageF = InternalToFloat(image);
+
+    // For perf, remembers whether we can do the final vecf->color conversion as streaming,
+    // or as trimmed (clamped)
+    bool doFinalTrim = false;
 
     //
     // Width
@@ -72,16 +89,34 @@ TImageData ImageTools::ResizeNicer(
     float const widthScaleFactor = tgtWidth / srcWidth;
     float const widthScaleFactorInverse = srcWidth / tgtWidth;
 
-    auto const srcImageF = InternalToFloat(image);
-    Buffer2D<f_color_type, struct ImageTag> widthImageF(newSize.width, image.Size.height);
+    std::unique_ptr<image_data_f> wOutputImageF; // For cases where we need a new buffer for output of W resizing
+    image_data_f * wOutputImageFPtr;
+
+    if (widthScaleFactor > 1.0f)
+    {
+        // Larger, have to write to new buffer
+        wOutputImageF = std::make_unique<image_data_f>(newSize.width, image.Size.height);
+        wOutputImageFPtr = wOutputImageF.get();
+    }
+    else if (widthScaleFactor == 1.0f)
+    {
+        // Same, can re-use source as output of this step
+        assert(image.Size.width == newSize.width);
+        wOutputImageFPtr = &(srcImageF);
+        // No trim change (size is same)
+    }
+    else
+    {
+        // Smaller, can re-use source as output of this step but need to trim
+        wOutputImageFPtr = &(srcImageF);
+        doFinalTrim = true;
+    }
 
     if (widthScaleFactor >= 0.5f)
     {
         if (widthScaleFactor == 1.0f)
         {
-            assert(image.Size.width == newSize.width);
-
-            widthImageF.CloneFrom(srcImageF);
+            // Nop
         }
         else
         {
@@ -92,7 +127,7 @@ TImageData ImageTools::ResizeNicer(
             for (int srcY = 0; srcY < image.Size.height; ++srcY)
             {
                 f_color_type const * restrict srcPtr = &(srcImageF[{0, srcY}]);
-                f_color_type * restrict widthImagePtr = &(widthImageF[{0, srcY}]);
+                f_color_type * restrict widthImagePtr = &((*wOutputImageFPtr)[{0, srcY}]);
 
                 InternalResizeDimension_Bilinear<TImageData>(
                     image.Size.width,
@@ -120,7 +155,7 @@ TImageData ImageTools::ResizeNicer(
         for (int srcY = 0; srcY < image.Size.height; ++srcY)
         {
             f_color_type const * restrict srcPtr = &(srcImageF[{0, srcY}]);
-            f_color_type * restrict widthImagePtr = &(widthImageF[{0, srcY}]);
+            f_color_type * restrict widthImagePtr = &((*wOutputImageFPtr)[{0, srcY}]);
 
             InternalResizeDimension_BoxFilter<TImageData>(
                 image.Size.width,
@@ -148,15 +183,37 @@ TImageData ImageTools::ResizeNicer(
     float const heightScaleFactor = tgtHeight / srcHeight;
     float const heightScaleFactorInverse = srcHeight / tgtHeight;
 
-    Buffer2D<f_color_type, struct ImageTag> heightImageF(newSize.width, newSize.height);
+    std::unique_ptr<image_data_f> hOutputImageF; // For cases where we need a new buffer for output of H resizing
+    image_data_f * hOutputImageFPtr;
+
+    if (heightScaleFactor > 1.0f)
+    {
+        // Larger, have to write to new buffer
+        hOutputImageF = std::make_unique<image_data_f>(newSize.width, newSize.height);
+        hOutputImageFPtr = hOutputImageF.get();
+
+        // No need to trim anymore
+        doFinalTrim = false;
+    }
+    else if (heightScaleFactor == 1.0f)
+    {
+        // Same, can re-use source as output of this step
+        assert(image.Size.height == newSize.height);
+        hOutputImageFPtr = wOutputImageFPtr;
+        // No trim change (size is same)
+    }
+    else
+    {
+        // Smaller, can re-use source as output of this step but need to trim
+        hOutputImageFPtr = wOutputImageFPtr;
+        doFinalTrim = true;
+    }
 
     if (heightScaleFactor >= 0.5f)
     {
         if (heightScaleFactor == 1.0f)
         {
-            assert(image.Size.height == newSize.height);
-
-            heightImageF.CloneFrom(widthImageF);
+            // Nop
         }
         else
         {
@@ -173,12 +230,12 @@ TImageData ImageTools::ResizeNicer(
                     [&](int srcY) -> f_color_type
                     {
                         assert(srcY >= 0 && srcY < image.Size.height);
-                        return widthImageF[{srcX, srcY}];
+                        return (*wOutputImageFPtr)[{srcX, srcY}];
                     },
                     [&](int tgtY, f_color_type const & c)
                     {
                         assert(tgtY >= 0 && tgtY < newSize.height);
-                        heightImageF[{srcX, tgtY}] = c;
+                        (*hOutputImageFPtr)[{srcX, tgtY}] = c;
                     });
             }
         }
@@ -198,17 +255,28 @@ TImageData ImageTools::ResizeNicer(
                 [&](int srcY) -> f_color_type
                 {
                     assert(srcY >= 0 && srcY < image.Size.height);
-                    return widthImageF[{srcX, srcY}];
+                    return (*wOutputImageFPtr)[{srcX, srcY}];
                 },
                 [&](int tgtY, f_color_type const & c)
                 {
                     assert(tgtY >= 0 && tgtY < newSize.height);
-                    heightImageF[{srcX, tgtY}] = c;
+                    (*hOutputImageFPtr)[{srcX, tgtY}] = c;
                 });
         }
     }
 
-    return InternalFromFloat<TImageData>(heightImageF);
+    //
+    // Return converted result
+    //
+
+    if (doFinalTrim)
+    {
+        return InternalFromFloat<TImageData>(*hOutputImageFPtr, newSize);
+    }
+    else
+    {
+        return InternalFromFloat<TImageData>(*hOutputImageFPtr);
+    }
 }
 
 template RgbaImageData ImageTools::ResizeNicer(RgbaImageData const & image, ImageSize const & newSize);
@@ -683,6 +751,32 @@ TImageData ImageTools::InternalFromFloat(Buffer2D<typename TImageData::element_t
     for (size_t i = 0; i < sz; ++i)
     {
         *(trg + i) = TImageData::element_type(*(src + i));
+    }
+
+    return result;
+}
+
+template<typename TImageData>
+TImageData ImageTools::InternalFromFloat(
+    Buffer2D<typename TImageData::element_type::f_vector_type, struct ImageTag> const & imageData,
+    ImageSize const & trimmedSize)
+{
+    TImageData result(trimmedSize);
+
+    int const w = trimmedSize.width;
+    int const wSkip = imageData.Size.width;
+    int const height = trimmedSize.height;
+    typename TImageData::element_type::f_vector_type  const * restrict src = imageData.Data.get();
+    typename TImageData::element_type * restrict trg = result.Data.get();
+    for (int y = 0; y < height; ++y)
+    {
+        for (int x = 0; x < w; ++x)
+        {
+            *(trg + x) = TImageData::element_type(*(src + x));
+        }
+
+        src += wSkip;
+        trg += w;
     }
 
     return result;

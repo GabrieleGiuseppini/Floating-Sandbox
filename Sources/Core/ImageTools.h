@@ -289,4 +289,9 @@ private:
 
     template<typename TImageData>
     static TImageData InternalFromFloat(Buffer2D<typename TImageData::element_type::f_vector_type, struct ImageTag> const & imageData);
+
+    template<typename TImageData>
+    static TImageData InternalFromFloat(
+        Buffer2D<typename TImageData::element_type::f_vector_type, struct ImageTag> const & imageData,
+        ImageSize const & trimmedSize);
 };
