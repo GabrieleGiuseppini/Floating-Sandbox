@@ -259,7 +259,9 @@ TEST(ImageToolsTests, Resize_Idempotent_Bilinear)
     }
 }
 
-TEST(ImageToolsTests, Resize_IdempotentBothDirs_Nicer)
+/////////////////////////// Nicer
+
+TEST(ImageToolsTests, ResizeNicer_IdempotentBothDirs)
 {
     RgbImageData sourceImage(4, 4);
     for (uint8_t y = 0; y < sourceImage.Size.height; ++y)
@@ -288,7 +290,37 @@ TEST(ImageToolsTests, Resize_IdempotentBothDirs_Nicer)
     }
 }
 
-TEST(ImageToolsTests, Resize_IdempotentOneDir_Nicer)
+TEST(ImageToolsTests, ResizeNicer_IdempotentW)
+{
+    RgbImageData sourceImage(4, 4);
+    for (uint8_t y = 0; y < sourceImage.Size.height; ++y)
+    {
+        for (uint8_t x = 0; x < sourceImage.Size.width; ++x)
+        {
+            sourceImage[{x, y}] = rgbColor(x, y, 4);
+        }
+    }
+
+    RgbImageData destImage = ImageTools::ResizeNicer(
+        sourceImage,
+        ImageSize(4, 2));
+
+    ASSERT_EQ(destImage.Size.width, 4);
+    ASSERT_EQ(destImage.Size.height, 2);
+
+    for (uint8_t y = 0; y < destImage.Size.height; ++y)
+    {
+        for (uint8_t x = 0; x < destImage.Size.width; ++x)
+        {
+            auto cd = destImage[{x, y}];
+            auto cs1 = sourceImage[{x, y * 2}];
+            auto cs2 = sourceImage[{x, y * 2 + 1}];
+            EXPECT_EQ(cd, rgbColor((cs1.toVec() + cs2.toVec()) / 2.0f));
+        }
+    }
+}
+
+TEST(ImageToolsTests, ResizeNicer_IdempotentH)
 {
     RgbImageData sourceImage(4, 4);
     for (uint8_t y = 0; y < sourceImage.Size.height; ++y)
@@ -317,3 +349,63 @@ TEST(ImageToolsTests, Resize_IdempotentOneDir_Nicer)
         }
     }
 }
+
+TEST(ImageToolsTests, ResizeNicer_LargerW_LargerH)
+{
+    RgbaImageData sourceImage(4, 4);
+    uint8_t c = 10;
+    for (uint8_t y = 0; y < sourceImage.Size.height; ++y)
+    {
+        for (uint8_t x = 0; x < sourceImage.Size.width; ++x)
+        {
+            sourceImage[{x, y}] = rgbaColor(c, c, c, c);
+            ++c;
+        }
+    }
+
+    RgbaImageData destImage = ImageTools::ResizeNicer(
+        sourceImage,
+        ImageSize(8, 8));
+
+    // Verify
+
+    EXPECT_EQ(
+        int(destImage[ImageCoordinates(0, 0)].r),
+        10);
+
+    EXPECT_EQ(
+        int(destImage[ImageCoordinates(1, 0)].r),
+        std::roundf(
+            10 * 0.75f * 0.25f + 11 * 0.25f * 0.25f
+            + 10 * 0.75f * 0.75f + 11 * 0.25f * 0.75f
+        ));
+
+    EXPECT_EQ(
+        int(destImage[ImageCoordinates(1, 1)].r),
+        std::roundf(
+            10 * 0.75f * 0.75f + 11 * 0.25f * 0.75f
+            + 14 * 0.75f * 0.25f + 15 * 0.25f * 0.25f
+        ));
+
+    EXPECT_EQ(
+        int(destImage[ImageCoordinates(6, 6)].r),
+        std::roundf(
+            20 * 0.25f * 0.25f + 21 * 0.75f * 0.25f
+            + 24 * 0.25f * 0.75f + 25 * 0.75f * 0.75f
+        ));
+
+    EXPECT_EQ(
+        int(destImage[ImageCoordinates(7, 7)].r),
+        25);
+}
+
+// TODO: ResizeNicer_Smaller1W_LargerH
+// TODO: ResizeNicer_Smaller2W_LargerH
+
+// TODO: ResizeNicer_LargerW_Smaller1H
+// TODO: ResizeNicer_Smaller1W_Smaller1H
+// TODO: ResizeNicer_Smaller2W_Smaller1H
+
+// TODO: ResizeNicer_LargerW_Smaller2H
+// TODO: ResizeNicer_Smaller1W_Smaller2H
+// TODO: ResizeNicer_Smaller2W_Smaller2H
