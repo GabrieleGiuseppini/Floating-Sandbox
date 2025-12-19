@@ -399,8 +399,115 @@ TEST(ImageToolsTests, ResizeNicer_LargerW_LargerH)
         25);
 }
 
-// TODO: ResizeNicer_Smaller1W_LargerH
-// TODO: ResizeNicer_Smaller2W_LargerH
+TEST(ImageToolsTests, ResizeNicer_Smaller1W_LargerH)
+{
+    RgbaImageData sourceImage(12, 12);
+    uint8_t c = 10;
+    for (uint8_t y = 0; y < sourceImage.Size.height; ++y)
+    {
+        for (uint8_t x = 0; x < sourceImage.Size.width; ++x)
+        {
+            sourceImage[{x, y}] = rgbaColor(c, c, c, c);
+            ++c;
+        }
+    }
+
+    RgbaImageData destImage = ImageTools::ResizeNicer(
+        sourceImage,
+        ImageSize(9, 24));
+
+    // Verify
+
+    EXPECT_EQ(
+        int(destImage[ImageCoordinates(0, 0)].r),
+        std::roundf(
+            (10 * 0.833333313f + 11 * 0.166666687f) * 0.25f
+            + (10 * 0.833333313f + 11 * 0.166666687f) * 0.75f
+        ));
+
+    EXPECT_EQ(
+        int(destImage[ImageCoordinates(1, 0)].r),
+        std::roundf(
+            (11 * 0.5f + 12 * 0.5f) * 0.5f
+            + (11 * 0.5f + 12 * 0.5f) * 0.5f
+        ));
+
+    EXPECT_EQ(
+        int(destImage[ImageCoordinates(1, 1)].r),
+        std::roundf(
+            (11 * 0.5f + 12 * 0.5f) * 0.75f
+            + (23 * 0.5f + 24 * 0.5f) * 0.25f
+        ));
+
+    EXPECT_EQ(
+        int(destImage[ImageCoordinates(7, 22)].r),
+        std::roundf(
+            (139 * 0.5f + 140 * 0.5f) * 0.25f
+            + (151 * 0.5f + 152 * 0.5f) * 0.75f
+        ));
+
+    EXPECT_EQ(
+        int(destImage[ImageCoordinates(8, 23)].r),
+        std::roundf(
+            (152 * 0.166f + 153 * 0.833f) * 0.75f
+            + (152 * 0.166f + 153 * 0.833f) * 0.25f
+        ));
+}
+
+TEST(ImageToolsTests, ResizeNicer_Smaller2W_LargerH)
+{
+    RgbaImageData sourceImage(12, 12);
+    uint8_t c = 10;
+    for (uint8_t y = 0; y < sourceImage.Size.height; ++y)
+    {
+        for (uint8_t x = 0; x < sourceImage.Size.width; ++x)
+        {
+            sourceImage[{x, y}] = rgbaColor(c, c, c, c);
+            ++c;
+        }
+    }
+
+    RgbaImageData destImage = ImageTools::ResizeNicer(
+        sourceImage,
+        ImageSize(3, 24));
+
+    // Verify
+
+    EXPECT_EQ(
+        int(destImage[ImageCoordinates(0, 0)].r),
+        std::roundf(
+            (10 + 11 + 12 + 13) / 4.0f * 0.75f
+            + (10 + 11 + 12 + 13) / 4.0f * 0.25f
+        ));
+
+    EXPECT_EQ(
+        int(destImage[ImageCoordinates(1, 0)].r),
+        std::roundf(
+            (14 + 15 + 16 + 17) / 4.0f * 0.75f
+            + (14 + 15 + 16 + 17) / 4.0f * 0.25f
+        ));
+
+    EXPECT_EQ(
+        int(destImage[ImageCoordinates(1, 1)].r),
+        std::roundf(
+            (14 + 15 + 16 + 17) / 4.0f * 0.75f
+            + (26 + 27 + 28 + 29) / 4.0f * 0.25f
+        ));
+
+    EXPECT_EQ(
+        int(destImage[ImageCoordinates(1, 22)].r),
+        std::roundf(
+            (134 + 135 + 136 + 137) / 4.0f * 0.25f
+            + (146 + 147 + 148 + 149) / 4.0f * 0.75f
+        ));
+
+    EXPECT_EQ(
+        int(destImage[ImageCoordinates(2, 23)].r),
+        std::roundf(
+            (150 + 151 + 152 + 153) / 4.0f * 0.75f
+            + (150 + 151 + 152 + 153) / 4.0f * 0.25f
+        ));
+}
 
 // TODO: ResizeNicer_LargerW_Smaller1H
 // TODO: ResizeNicer_Smaller1W_Smaller1H

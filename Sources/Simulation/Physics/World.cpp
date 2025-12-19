@@ -192,6 +192,7 @@ void World::OnBlast(
     // Blast NPCs
     //
 
+    assert(mNpcs);
     mNpcs->ApplyBlast(
         shipId,
         centerPosition,
