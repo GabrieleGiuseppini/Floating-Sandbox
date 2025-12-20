@@ -674,6 +674,75 @@ TEST(ImageToolsTests, ResizeNicer_Smaller2W_Smaller1H)
         ));
 }
 
-// TODO: ResizeNicer_LargerW_Smaller2H
+TEST(ImageToolsTests, ResizeNicer_LargerW_Smaller2H)
+{
+    RgbaImageData sourceImage(12, 12);
+    uint8_t c = 10;
+    for (uint8_t y = 0; y < sourceImage.Size.height; ++y)
+    {
+        for (uint8_t x = 0; x < sourceImage.Size.width; ++x)
+        {
+            sourceImage[{x, y}] = rgbaColor(c, c, c, c);
+            ++c;
+        }
+    }
+
+    RgbaImageData destImage = ImageTools::ResizeNicer(
+        sourceImage,
+        ImageSize(24, 3));
+
+    // Verify
+
+    // (0 * 0.75, 0 * 0.25) @ 0-3
+    EXPECT_EQ(
+        int(destImage[ImageCoordinates(0, 0)].r),
+        std::roundf(
+            ((10 * 0.75f + 10 * 0.25f)
+            + (22 * 0.75f + 22 * 0.25f)
+            + (34 * 0.75f + 34 * 0.25f)
+            + (46 * 0.75f + 46 * 0.25f)) / 4.0f
+        ));
+
+    // (0 * 0.75f + 1 * 0.25f) @ 0-3
+    EXPECT_EQ(
+        int(destImage[ImageCoordinates(1, 0)].r),
+        std::roundf(
+            ((10 * 0.75f + 11 * 0.25f)
+            + (22 * 0.75f + 23 * 0.25f)
+            + (34 * 0.75f + 35 * 0.25f)
+            + (46 * 0.75f + 47 * 0.25f)) / 4.0f
+        ));
+
+    // (0 * 0.75f + 1 * 0.25f) @ 4-7
+    EXPECT_EQ(
+        int(destImage[ImageCoordinates(1, 1)].r),
+        std::roundf(
+            ((58 * 0.75f + 59 * 0.25f)
+            + (70 * 0.75f + 71 * 0.25f)
+            + (82 * 0.75f + 83 * 0.25f)
+            + (94 * 0.75f + 95 * 0.25f)) / 4.0f
+        ));
+
+    // 10 * 0.25 + 11 * 0.75 @ 4-7
+    EXPECT_EQ(
+        int(destImage[ImageCoordinates(22, 1)].r),
+        std::roundf(
+            ((68 * 0.25f + 69 * 0.75f)
+            + (80 * 0.25f + 81 * 0.75f)
+            + (92 * 0.75f + 93 * 0.25f)
+            + (104 * 0.75f + 105 * 0.25f)) / 4.0f
+        ));
+
+    // 11 * 0.75 + 11 * 0.25 @ 8-11
+    EXPECT_EQ(
+        int(destImage[ImageCoordinates(23, 2)].r),
+        std::roundf(
+            ((117 * 0.75f + 117 * 0.25f)
+            + (129 * 0.75f + 129 * 0.25f)
+            + (141 * 0.75f + 141 * 0.25f)
+            + (153 * 0.75f + 153 * 0.25f)) / 4.0f
+        ));
+}
+
 // TODO: ResizeNicer_Smaller1W_Smaller2H
 // TODO: ResizeNicer_Smaller2W_Smaller2H
